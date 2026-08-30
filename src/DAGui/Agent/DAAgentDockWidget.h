@@ -78,10 +78,14 @@ public Q_SLOTS:
     /// 权限模式"显式设置"状态（启动推送）：缓存供 onWebReady 判定 A13 确认卡
     /// （默认全自动不弹卡，仅用户曾显式写入的 yolo 跨重启时二次确认）
     void onPermissionModeExplicitChanged(bool explicitSet);
-    /// 工具调用需审批（ask 决策），推送审批卡到 web（args 含 _tier/_rememberable）
+    /// 工具调用需审批（ask 决策），推送审批卡到 web（args 含 _tier/_rememberable/_subagent）
     void onToolApprovalRequest(const QString& callId, const QString& toolName, const QJsonObject& args);
     /// 审批作废（子进程退出/崩溃/切换会话），通知 web 撤卡
     void onToolApprovalDismissed(const QString& callId);
+
+    // ---- 子 agent（subagent-phase1 C） ----
+    /// 子 agent 任务进度（subagent_progress 协议消息原文），推送到 web 渲染进度卡片
+    void onAgentSubagentProgress(const QJsonObject& progress);
 
 Q_SIGNALS:
     /**

@@ -65,6 +65,8 @@ public:
     void dismissToolApproval(const QString& callId);
     /// 推送启动 yolo 确认卡（A13：启动读到 yolo 时弹一次确认，拒绝则降级 auto）
     void appendStartupYoloConfirm(const QString& text, const QString& okLabel, const QString& cancelLabel);
+    /// 推送子 agent 任务进度（subagent_progress 协议消息原文，JS 渲染进度卡片）
+    void updateSubagentProgress(const QJsonObject& payload);
     void setTokenStats(const QString& label, int inputTokens, int outputTokens,
                        int totalTokens, int contextWindow, const QString& source);
     void resetTokenStats();

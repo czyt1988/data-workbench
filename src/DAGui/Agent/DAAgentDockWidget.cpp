@@ -283,7 +283,18 @@ void DAAgentDockWidget::onWebReady()
         {"approvalApproved", tr("Approved")},        // cn:已批准
         {"approvalDenied", tr("Denied")},            // cn:已拒绝
         {"approvalApprovedRemembered", tr("Approved (remembered for this session)")},  // cn:已批准（本会话已记住）
-        {"approvalCodeMoreLines", tr("%1 more lines")}  // cn:还有 %1 行
+        {"approvalCodeMoreLines", tr("%1 more lines")},  // cn:还有 %1 行
+        {"approvalFromSubagent", tr("From subagent: %1")},  // cn:来自子 Agent：%1
+        // —— 子 agent 进度卡片（subagent-phase1 C）——
+        {"subagentTaskCount", tr("%1 subagent task(s)")},  // cn:%1 个子 Agent 任务
+        {"subagentProgress", tr("%1/%2 done")},             // cn:%1/%2 已完成
+        {"subagentCompleted", tr("completed")},             // cn:已完成
+        {"subagentQueued", tr("queued")},                   // cn:排队中
+        {"subagentRunning", tr("running")},                 // cn:运行中
+        {"subagentDone", tr("done")},                       // cn:完成
+        {"subagentFailed", tr("failed")},                   // cn:失败
+        {"subagentTimeout", tr("timeout")},                 // cn:超时
+        {"subagentStopped", tr("stopped")}                  // cn:已停止
     });
     // 启动中优先推 starting 态，缓解 JS-ready 竞态——agent 信号若在 chat.html 加载
     // 完成前触发，此处补推当前 starting/busy 态
@@ -818,10 +829,10 @@ void DAAgentDockWidget::onPermissionModeExplicitChanged(bool explicitSet)
 /**
  * @brief 工具调用需审批（ask 决策）：推送审批卡到 web
  *
- * args 已由 Module 补齐 _tier/_rememberable；此处组装 payload 转发。
+ * args 已由 Module 补齐 _tier/_rememberable/_subagent；此处组装 payload 转发。
  * @param callId 工具调用 ID
  * @param toolName 工具名称
- * @param args 工具参数（含 _tier/_rememberable）
+ * @param args 工具参数（含 _tier/_rememberable/_subagent）
  */
 void DAAgentDockWidget::onToolApprovalRequest(const QString& callId, const QString& toolName, const QJsonObject& args)
 {
@@ -829,13 +840,16 @@ void DAAgentDockWidget::onToolApprovalRequest(const QString& callId, const QStri
     if (!d->mChannel) return;
     QJsonObject payload;
     payload[QStringLiteral("tool")] = toolName;
-    // 剥离内部字段 _tier/_rememberable 后作为展示参数，避免用户看到实现细节
+    // 剥离内部字段 _tier/_rememberable/_subagent 后作为展示参数，避免用户看到实现细节；
+    // _subagent（子 agent 来源上下文，如 "explore #1"）转正为 payload.subagent 供 JS 渲染
     QJsonObject shownArgs = args;
     const QString tier       = shownArgs.take(QStringLiteral("_tier")).toString();
     const bool rememberable  = shownArgs.take(QStringLiteral("_rememberable")).toBool();
+    const QString subagent   = shownArgs.take(QStringLiteral("_subagent")).toString();
     payload[QStringLiteral("args")]         = shownArgs;
     payload[QStringLiteral("tier")]         = tier;
     payload[QStringLiteral("rememberable")] = rememberable;
+    payload[QStringLiteral("subagent")]     = subagent;
     d->mChannel->appendToolApproval(callId, payload);
 }
 
@@ -848,6 +862,22 @@ void DAAgentDockWidget::onToolApprovalDismissed(const QString& callId)
     DA_D(d);
     if (d->mChannel) {
         d->mChannel->dismissToolApproval(callId);
+    }
+}
+
+/**
+ * @brief 子 agent 任务进度：推送 subagent_progress 协议消息原文到 web
+ *
+ * 载荷含 call_id/task_id?/subagent?/state/message?/results?（母文档 §7）；
+ * JS 端以 call_id 为键建进度卡片、按 task_id 幂等更新任务行，心跳（无
+ * task_id 的 running 态）由 JS 忽略。
+ * @param progress subagent_progress 协议消息原文
+ */
+void DAAgentDockWidget::onAgentSubagentProgress(const QJsonObject& progress)
+{
+    DA_D(d);
+    if (d->mChannel) {
+        d->mChannel->updateSubagentProgress(progress);
     }
 }
 

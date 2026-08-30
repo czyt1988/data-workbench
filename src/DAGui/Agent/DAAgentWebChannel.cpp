@@ -460,6 +460,19 @@ void DAAgentWebChannel::dismissToolApproval(const QString& callId)
 }
 
 /**
+ * @brief 推送子 agent 任务进度到 web（JS 渲染进度卡片）
+ * @param payload subagent_progress 协议消息原文（call_id/task_id?/subagent?/state/message?/results?）
+ */
+void DAAgentWebChannel::updateSubagentProgress(const QJsonObject& payload)
+{
+    // payload 原样序列化为 JSON 对象推给 JS：updateSubagentProgress({...})
+    // JS 端以 call_id 为键建卡、task_id 幂等更新任务行（心跳无 task_id，JS 忽略）
+    QJsonDocument doc(payload);
+    QString json = QString::fromUtf8(doc.toJson(QJsonDocument::Compact));
+    callJS(QStringLiteral("updateSubagentProgress(") + json + QStringLiteral(")"));
+}
+
+/**
  * @brief 推送启动 yolo 确认卡到 web（A13：启动读到显式设置的 yolo 弹一次确认）
  * @param text 确认文案
  * @param okLabel 确认按钮文案

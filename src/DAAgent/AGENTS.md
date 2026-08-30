@@ -99,6 +99,9 @@ DAWorkbench 的 AI Agent 助手模块：内嵌 LLM 聊天 + 数据分析工具�
 | `DAAgentToolSpec.h` | 结构化工具规格值类型（`DAAgentToolSpec` / `DAAgentToolParam`，零 JSON 依赖，见 § 15.4） |
 | `DAAgentToolSpecJson.h/.cpp` | 工具规格序列化投影：`DA::toJson(const DAAgentToolSpec&)` → OpenAI function schema（见 § 15.4） |
 | `DAAgentToolBase.h/.cpp` | **瘦**工具基类（`class DAAgent_API DAAgentToolBase`，模块根目录）：`dataMgr`/`findData`/`allDatas` + `errorResponse`/`successResponse`；图表方法已移入 `DAAgentChartToolBase`（见 § 七） |
+| `DAAgentSubagentDef.h/.cpp` | 子 agent 定义数据结构（子 agent 一期 Q4）：name/description/tools 白名单/systemPrompt/permissions（预留，解析存留不生效）；frontmatter 解析/序列化、md 文件读写 |
+| `DAAgentSubagentManager.h/.cpp` | 子 agent 定义库（镜像 `DAAgentManager`）：`<exe>/daAgent/subagents/*.md` 加载/CRUD（save 支持 oldName 重命名）、`ensureDefaultSubagents` 播种内置 `explore`（仅文件缺失时）、`registerBuiltin`（插件注入）；信号 `subagentListChanged()` |
+| `subagent-explore.md` | 内置 explore 子 agent 定义（qrc `/da/agent`，白名单 6 个只读工具，全权限模式零弹窗） |
 | `DAAgentAPI.h` | `DAAgent_API` 导出宏 |
 
 ### 3.2 `src/DAGui/Agent/`（聊天 UI，属 DAGui 模块）
@@ -117,6 +120,7 @@ DAWorkbench 的 AI Agent 助手模块：内嵌 LLM 聊天 + 数据分析工具�
 |------|------|
 | `agent_runner.py` | 唯一入口脚本：协议收发、LLM 配置、langgraph 图构建、agent 循环；权限层（permission-layer）：存储 §8 权限字段、`tool_node` 发起 `tool_call` 前对代码执行工具调 `permission_judge` 产出 `safety` 裁决、gated_tools 长超时与审批挂起计时（approval_pending/tool_exec_start） |
 | `permission_judge.py` | 代码内容判定管线（咨询方）：静态危险模式（deny/escalate，清单由 `code_patterns` 配置注入）+ 可选判官模型（复用当前供应商凭据），产出 `{verdict, reason, source}`；`run_script` 按 `workspace_root` 解析入口文件后走同一管线（判定边界=入口文件，不递归） |
+| `subagent_orchestrator.py` | 子 agent 编排器（子 agent 一期）：`dispatch_subagents` 工具本地执行——定义解析/白名单求交、`Semaphore` 并发限流、单任务 `wait_for` 墙钟超时、停止级联（共享 stop_event）、`subagent_progress` 进度/心跳上报、usage 聚合；与主图共用 `build_agent_graph` 图构建器（`enable_ask_user=False` + 工具子集） |
 | `context_manager.py` / `error_classifier.py` / `retry_wrapper.py` | 上下文压缩/截断、错误分类、退避重试（agent_runner 的基础设施模块） |
 
 ### 3.4 `src/APP/`（集成点）
@@ -164,7 +168,7 @@ stdout 专用于协议，**绝对禁止在 stdout 打印日志**（污染协议�
 
 | type | 载荷 | 说明 |
 |------|------|------|
-| `init` | `config`{base_url, api_key, model, context_window, compaction_threshold, max_recent_messages, tool_result_max_chars, tool_result_preview_chars, **permission_mode, workspace_root, gated_tools[], tool_approval_timeout_sec, code_patterns{deny[],escalate[]}, judge{model,timeout_sec}**} + `tools`(schema 数组) + `system_prompt` | 启动时一次性下发；config 缺 base_url/api_key/model 任一则报错退出；上下文管理参数有默认值兜底；权限层字段由 `DAAgentBridge::buildPermissionConfig()` 组装（母文档 §8，Python 侧存储并在 auto 模式消费） |
+| `init` | `config`{base_url, api_key, model, context_window, compaction_threshold, max_recent_messages, tool_result_max_chars, tool_result_preview_chars, **permission_mode, workspace_root, gated_tools[], tool_approval_timeout_sec, code_patterns{deny[],escalate[]}, judge{model,timeout_sec}**} + `tools`(schema 数组) + `system_prompt` + **`subagents`(定义数组)** | 启动时一次性下发；config 缺 base_url/api_key/model 任一则报错退出；上下文管理参数有默认值兜底；权限层字段由 `DAAgentBridge::buildPermissionConfig()` 组装（母文档 §8，Python 侧存储并在 auto 模式消费）；subagents 每元素 `{name, description, tools[], system_prompt}`（子 agent 一期，定义集非空时 Python 注入 `dispatch_subagents` 工具） |
 | `user_msg` | `content` | 用户消息，触发一轮 agent 推理 |
 | `tool_result` | `call_id` + `result` | 工具执行结果回传（RPC 应答） |
 | `approval_pending` | `call_id` | 权限门进入 Ask、挂起等待用户审批时下发；Python 侧收到后挂起工具 RPC 超时倒计时（审批等待不设时限，见铁律 T16） |
@@ -172,7 +176,8 @@ stdout 专用于协议，**绝对禁止在 stdout 打印日志**（污染协议�
 | `user_answer` | `answer` | 用户对 HITL 问题的回答，触发 `resume()` |
 | `load_session` | `session_id` + `messages`(JSON 数组，T6 记录的 message 字段) | **切换/恢复会话**时下发历史 messages 重建 langgraph state（不重启子进程）；Python 端 `graph.aupdate_state` 注入后回 `session_loaded` 确认 |
 | `reconfigure` | `config`{base_url, api_key, model, max_output_tokens, context_window, ..., 权限层字段同 `init`} | **热替换 LLM 配置**（不重启子进程、不丢 MemorySaver 会话状态）：Python 端 `AgentRunner.reconfigure()` 热替换 ChatOpenAI + compactor/token_estimator，图与 state 不动，回 `ready` 确认。消息在 stdin 排队，当前轮跑完后主循环处理，下一轮用新模型（见 §15.3）。权限模式切换/设置页保存后经此同步权限层字段（Python 仅存储 + 按模式决定是否判定） |
-| `stop` | — | 优雅停止，子进程退出主循环 |
+| `update_subagents` | `subagents`(定义数组，形状同 `init`) | **子 agent 定义热更新**（子 agent 一期 Q17）：定义保存/删除/插件注入后由 `DAAgentSubagentManager` 触发、`DAAgentBridge::sendUpdateSubagents` 下发；Python 端 `SubagentOrchestrator.update_definitions()` 重建 dispatch schema 与 bind_tools（不重建图、不动会话状态）；运行中任务用派发时快照不受影响 |
+| `stop` | — | 优雅停止，子进程退出主循环（子 agent 任务经共享 stop_event 级联终止，Q7） |
 
 ### 5.2 Python → C++（stdout）
 
@@ -182,9 +187,10 @@ stdout 专用于协议，**绝对禁止在 stdout 打印日志**（污染协议�
 | `ready` | `model` | 初始化完成（或 `reconfigure` 热替换完成），C++ 停止 ready 计时器。Module 的 `agentReady` 处理器在非恢复路径（`isRecovering()==false` 且无 pending load_session）时早返回，故 `reconfigure` 复用本信号安全无副作用 |
 | `token` | `content` | 流式 token |
 | `message_end` | `content` | 本轮最终回复（agent_node 在无 tool_calls 时发送） |
-| `tool_call` | `call_id` + `tool` + `arguments` + 可选 `safety`{verdict: allow/deny/uncertain, reason: str, source: rules/model/none} | 请求 C++ 执行工具；C++ 回传 `tool_result`。`safety` 为 Python 侧代码裁决，**仅 auto 模式 + code_exec 工具**（`run_code`/`run_script`）产出，其余缺省不带；C++ 权限门消费：deny→拒绝（脱敏文案）、allow→放行（判官已配置时）、uncertain/缺失→ask（判官未配置时 allow 也降级 ask，D1） |
+| `tool_call` | `call_id` + `tool` + `arguments` + 可选 `safety`{verdict: allow/deny/uncertain, reason: str, source: rules/model/none} + 可选 `subagent_id` | 请求 C++ 执行工具；C++ 回传 `tool_result`。`safety` 为 Python 侧代码裁决，**仅 auto 模式 + code_exec 工具**（`run_code`/`run_script`）产出，其余缺省不带；C++ 权限门消费：deny→拒绝（脱敏文案）、allow→放行（判官已配置时）、uncertain/缺失→ask（判官未配置时 allow 也降级 ask，D1）。`subagent_id` 为子 agent 任务 id（如 `explore #1`，子 agent 发起的 RPC 标记；主 agent 调用不带），与 `safety` 并存；C++ 侧**执行照常（同一权限门执法）但不写会话 JSONL、不转发 `agentToolCall` 信号**（见铁律 T17），Ask 路径记入 `PendingApproval.subagentId` 供终态撤卡（Q18） |
+| `subagent_progress` | `call_id`(dispatch 工具调用 id) + `task_id`? + `subagent`? + `state`(spawned/running/done/error/timeout/stopped) + `message`? + `results`?(聚合态) | 子 agent 派发进度（子 agent 一期）：派发开始逐任务 spawned（卡片创建锚点）、每任务状态变化、30s 心跳（无 task_id 的 running 态，C++ 忽略 UI 侧仅重置无活动计时器保活看门狗）、派发结束聚合 done（`results.tasks` 携带各任务终态）。任务终态（timeout/stopped/error）或聚合结束触发 Q18 撤卡（按 `subagentId` 清除挂起审批卡并逐条 emit `agentToolApprovalDismissed`） |
 | `question` | `text` + `options` | HITL 提问（**只发一次**，见铁律 T8） |
-| `usage` | `input_tokens` + `output_tokens` + `total_tokens` + `source` | LLM `usage_metadata` 权威 token 统计回传（`_stream_llm` 读 `collected_chunks.usage_metadata`）；C++ 收到后发 `agentUsage` 信号供 UI 显示占比 |
+| `usage` | `input_tokens` + `output_tokens` + `total_tokens` + `source` | LLM `usage_metadata` 权威 token 统计回传（`_stream_llm` 读 `collected_chunks.usage_metadata`）；C++ 收到后发 `agentUsage` 信号供 UI 显示占比。子 agent 派发结束后编排器聚合一条 `source="subagents"` |
 | `session_loaded` | `session_id` | `load_session` 后 Python 重建 state 完成的确认；C++ 收到才允许下一轮 `sendMessage`（见铁律 T15） |
 | `error` | `message` | 子进程侧错误 |
 | `done` | — | 本轮处理结束（暂停于 interrupt 时不发） |
@@ -314,6 +320,10 @@ chat.js 选项按钮 → `chatBridge.onUserSelect(answer)` → `DAAgentWebChanne
 | `agent/tool_result_preview_chars` | 截断后工具结果预览长度（字符数） | 2000 |
 | `agent/max_sessions` | 配置目录保留的自由会话最大数量（超出按 updatedAt 倒序删最旧），由 `DAAgentModule::cleanupSessions` 读取 | 20 |
 | `agent/session_retention_days` | 自由会话保留天数（早于此天数的会话启动时清理），由 `DAAgentModule::cleanupSessions` 读取 | 30 |
+| `agent/subagent_timeout_sec` | 单个子 agent 任务墙钟超时（秒；审批等待计入），设置页「Agent 参数」暴露 | 600 |
+| `agent/subagent_recursion_limit` | 子 agent 图最大推理步数，设置页「Agent 参数」暴露 | 60 |
+| `agent/subagent_max_concurrency` | 并发子 agent 数（内部键，可调低不可调高，上限 2） | 2 |
+| `agent/subagent_batch_limit` | 单批派发上限（内部键，上限 4） | 4 |
 
 > 接口层 JSON 键（12 个）：`base_url` / `model` / `api_key` / `context_window` / `compaction_threshold` / `max_recent_messages` / `tool_result_max_chars` / `tool_result_preview_chars` / `ready_timeout_sec` / `stop_timeout_sec` / `max_sessions` / `session_retention_days`。`getLLMConfig` 全量 round-trip（带默认值兜底）；`setLLMConfig` 对每个 key 逐一 `config.contains()` 守卫（key 存在即写，含空串；api_key 传空串可清空），api_key 经 `DAAgentModule` 内部 DPAPI 加密后写入。
 
@@ -407,6 +417,11 @@ Windows 文本模式行尾是 `\r\n`，`indexOf('\n')` 会留下 `'\r'` 导致 `
 - **模式与超时**：模式是 C++ 状态，切换即时生效（门即时消费）并经 `reconfigure` 同步 Python（仅用于决定是否花费判定成本）。工具 RPC 超时只计执行时长、不计审批等待：门进入 Ask 时下发 `approval_pending`，Python 侧倒计时挂起（用户审批等待不设时限）；批准后下发 `tool_exec_start`，Python 从执行起点重新计完整超时。超时预算与模式解耦：gated_tools（file_write+code_exec）用 `tool_approval_timeout_sec`（默认 600s，覆盖长时间代码执行），其余工具 60s。
 - **默认模式为全自动（yolo）+ A13 仅对显式设置弹卡**：ini 无 `agent/permission_mode` 键时 `mode()` 返回默认值 yolo；`modeExplicitlySet()`（ini 是否含键）区分「用户显式设置」与默认值。A13 启动确认卡仅对**显式设置**的 yolo 弹出（跨重启二次确认），默认值 yolo 静默进入全自动。`DAAgentModule::pushPermissionMode` 经 `permissionModeExplicitChanged(bool)` 下发显式标志，Dock 缓存后在 onWebReady 判定弹卡。
 
+### T17. 子 agent（subagent-phase1）：消息过滤、同门执法、终态撤卡
+- **带 `subagent_id` 的 `tool_call`/`tool_result` 禁止持久化与渲染**：子 agent 的工具调用经同一 `DAAgentBridge::executeTool` 权限门执法（C++ 唯一执法点不变，子 agent 天然继承父当前激活模式与分级，Q5），但 `DAAgentModule::connectSignals` 的持久化 lambda 与 UI 信号转发**必须过滤**（不写会话 JSONL、不 emit `agentToolCall`/`agentToolResult`）——子转录不落盘、不进主聊天流（Q8），只执行。审批信号链不受过滤影响（审批走 C++ 内部信号、本就不落盘）。
+- **审批卡上下文与终态撤卡（Q18）**：Ask 路径 `PendingApproval` 记录 `subagentId`，审批卡经 `args._subagent` 携带子 agent 来源（同 `_tier`/`_rememberable` 先例，不改信号签名；Dock 剥离该键转正为 payload.subagent 供 JS 渲染「来自子 Agent」前缀）；任务进入终态（timeout/stopped/error）或派发聚合结束时，C++ 按 `subagentId` 主动 dismiss 挂起审批卡（emit `agentToolApprovalDismissed`），防"身后执行"——任务已死而用户事后批准导致无人消费的副作用落地。撤销前已批准的迟到结果由 Python 按 call_id 严格匹配丢弃，无害。
+- **进度心跳不产生 UI 噪音**：`subagent_progress` 的 30s 心跳是无 task_id 的 running 态（保活看门狗），Dock/JS 忽略不更新任务行；进度卡片以 `call_id` 为键、任务行以 `task_id` 为键幂等更新（乱序/迟到消息防御）。
+
 ---
 
 ## 十二、调试指南
@@ -439,6 +454,8 @@ Windows 文本模式行尾是 `\r\n`，`indexOf('\n')` 会留下 `'\r'` 导致 `
 | LLM 配置 | `src/APP/SettingPages/DAAgentSettingsWidget.cpp`（设置页，经 `setAgentInterface`）+ `src/DAAgent/DAAgentModule.cpp` `getLLMConfig`/`setLLMConfig`（agent-config.ini） |
 | 权限模式/规则/判官配置 | `src/APP/SettingPages/DAAgentPermissionSettingsWidget.cpp`（设置页，经 `get/setPermissionConfig`）+ `src/DAAgent/DAAgentPermissionManager.h/.cpp`（引擎：模式/分级/路径策略/会话记忆，`agent-permissions.json` + `agent-config.ini`） |
 | 代码内容判定 | `src/PyScripts/DAWorkbench/agent/permission_judge.py`（静态规则+判官）+ `agent_runner.py` `tool_node`（`tool_call.safety` 生产），见铁律 T16 |
+| 子 agent 定义管理 | `src/DAAgent/DAAgentSubagentManager.h/.cpp`（定义库 + 内置播种）+ `src/APP/Dialog/DAAgentManagerDialog.cpp`（管理 UI 双 Tab）+ `src/APP/Dialog/DAAgentSubagentEditDialog.cpp`（结构化编辑器）；定义存 `<exe>/daAgent/subagents/*.md` |
+| 子 agent 派发/编排 | `src/PyScripts/DAWorkbench/agent/subagent_orchestrator.py`（编排器）+ `agent_runner.py`（`dispatch_subagents` 路由/RPC 多路复用分发器），见铁律 T17 |
 | Dock/Ribbon 集成 | `src/APP/DAAppDockingArea.cpp`（创建）/ `DAAppController.cpp`（connect 信号链，§ 六）/ `DAAppRibbonArea.cpp`（toggle action） |
 
 ---

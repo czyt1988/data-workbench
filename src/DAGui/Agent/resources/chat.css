@@ -1246,3 +1246,55 @@ body {
     color: #666;
     font-style: italic;
 }
+
+/* ===========================================================================
+   子 agent 进度卡片（subagent-phase1 C，复用工具分组容器样式）
+   =========================================================================== */
+
+/* 任务行：状态圆点 + 任务名 + 状态文案（提示词摘要挂 title tooltip） */
+.subagent-task {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    border: 1px solid #e8e8e8;
+    border-radius: 6px;
+    background: #fff;
+    font-size: 12px;
+    color: #555;
+    min-width: 0;
+    flex-shrink: 0;
+}
+
+/* 排队/已停止态圆点（区别于 running/ok/err 的灰点） */
+.status-dot.idle {
+    background: #bbb;
+}
+
+.subagent-task-name {
+    font-family: var(--mono-font);
+    font-weight: 600;
+    color: var(--link-color);
+    flex-shrink: 0;
+}
+
+.subagent-task-meta {
+    flex: 1 1 auto;
+    min-width: 0;
+    color: #888;
+    font-size: 12px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* 审批卡子 agent 来源前缀（Q18）：与工具名/参数摘要同卡展示 */
+.approval-from-subagent {
+    font-size: 12px;
+    color: #8a6d3b;
+    background: rgba(184, 134, 11, 0.08);
+    border-radius: 4px;
+    padding: 3px 8px;
+    align-self: flex-start;
+    font-family: var(--mono-font);
+}

@@ -38,7 +38,15 @@ let i18n = {
     approvalApproveRemember: 'Approve && remember for this session',
     approvalApproved: 'Approved', approvalDenied: 'Denied',
     approvalApprovedRemembered: 'Approved (remembered for this session)',
-    approvalCodeMoreLines: '%1 more lines'
+    approvalCodeMoreLines: '%1 more lines',
+    approvalFromSubagent: 'From subagent: %1',
+    // —— 子 agent 进度卡片（subagent-phase1 C）——
+    subagentTaskCount: '%1 subagent task(s)',
+    subagentProgress: '%1/%2 done',
+    subagentCompleted: 'completed',
+    subagentQueued: 'queued', subagentRunning: 'running',
+    subagentDone: 'done', subagentFailed: 'failed',
+    subagentTimeout: 'timeout', subagentStopped: 'stopped'
 };
 let agentBusy = false;          // 当前是否思考中（驱动 send-btn 的 Send/Stop 切换）
 let tokenStatsCache = null;     // 缓存最近一次 setTokenStats 的 5 值，供 popover 渲染
@@ -348,6 +356,162 @@ function updateToolGroupHeader() {
     }
 }
 
+// —— 子 agent 进度卡片（subagent-phase1 C）——
+// C++ 经 DAAgentWebChannel::updateSubagentProgress 推送 subagent_progress 协议消息：
+//   {call_id, task_id?, subagent?, state: spawned|running|done|error|timeout|stopped,
+//    message?, results?}；心跳为无 task_id 的 running 态（忽略）；聚合态为无
+//   task_id 的 done（results.tasks 携带各任务终态）。卡片以 call_id 为键，
+//   任务行以 task_id 为键幂等更新（乱序/迟到消息防御）。
+var subagentCards = {};  // call_id → {group, tasks: {task_id: {el, terminal}}}
+
+// 派发卡片创建（spawned 首条触发；折叠态，复用工具分组样式）。
+function createSubagentGroup(callId) {
+    flushAgentMessage();
+    closeToolGroup();  // 前序工具分组收尾，进度卡片独立成卡
+    let group = document.createElement('div');
+    group.className = 'tool-group subagent-group active';
+    group.dataset.callId = callId;
+    group.innerHTML =
+        '<button class="tool-group-head" type="button">' +
+            '<span class="status-dot running"></span>' +
+            '<span class="group-title"></span>' +
+            '<span class="group-meta"></span>' +
+            CHEVRON_SVG +
+        '</button>' +
+        '<div class="tool-group-body"></div>';
+    group.querySelector('.tool-group-head').addEventListener('click', function() {
+        group.classList.toggle('open');
+    });
+    document.getElementById('messages').appendChild(group);
+    return group;
+}
+
+// 任务行创建（task_id 形如 "explore #1"，message 为 spawned 携带的提示词摘要）。
+function createSubagentTaskRow(taskId, message) {
+    let row = document.createElement('div');
+    row.className = 'subagent-task';
+    row.dataset.taskId = taskId;
+    row.innerHTML =
+        '<span class="status-dot idle"></span>' +
+        '<span class="subagent-task-name"></span>' +
+        '<span class="subagent-task-meta"></span>';
+    row.querySelector('.subagent-task-name').textContent = taskId;
+    let meta = row.querySelector('.subagent-task-meta');
+    meta.textContent = message || (i18n.subagentQueued || 'queued');
+    if (message) {
+        row.title = message;  // 完整提示词摘要挂 tooltip（折叠行内省略）
+    }
+    return row;
+}
+
+// 任务行状态更新（幂等：终态只允许一次，后续同任务消息忽略）。
+function updateSubagentTaskRow(entry, taskId, state, message) {
+    let t = entry.tasks[taskId];
+    if (!t) {
+        if (state !== 'spawned') return;  // 未知任务（乱序/迟到）——忽略
+        let el = createSubagentTaskRow(taskId, message);
+        entry.group.querySelector('.tool-group-body').appendChild(el);
+        t = entry.tasks[taskId] = { el: el, terminal: false };
+    }
+    if (t.terminal) return;  // 已终态——幂等防御
+    let dot = t.el.querySelector('.status-dot');
+    let meta = t.el.querySelector('.subagent-task-meta');
+    if (state === 'spawned') {
+        if (dot) dot.className = 'status-dot idle';
+    } else if (state === 'running') {
+        if (dot) dot.className = 'status-dot running';
+        if (meta) meta.textContent = i18n.subagentRunning || 'running';
+    } else if (state === 'done') {
+        t.terminal = true;
+        if (dot) dot.className = 'status-dot ok';
+        if (meta) meta.textContent = i18n.subagentDone || 'done';
+    } else if (state === 'error' || state === 'timeout') {
+        t.terminal = true;
+        if (dot) dot.className = 'status-dot err';
+        if (meta) meta.textContent = message || (state === 'timeout'
+            ? (i18n.subagentTimeout || 'timeout') : (i18n.subagentFailed || 'failed'));
+        if (message) t.el.title = message;
+    } else if (state === 'stopped') {
+        t.terminal = true;
+        if (dot) dot.className = 'status-dot idle';
+        if (meta) meta.textContent = i18n.subagentStopped || 'stopped';
+    }
+}
+
+// 刷新派发卡片头：任务计数 + 进度（终态数/总数），全部终态转 completed。
+function updateSubagentGroupHeader(entry) {
+    let total = 0, done = 0;
+    for (var id in entry.tasks) {
+        if (!Object.prototype.hasOwnProperty.call(entry.tasks, id)) continue;
+        total++;
+        if (entry.tasks[id].terminal) done++;
+    }
+    let title = entry.group.querySelector('.group-title');
+    if (title) {
+        title.textContent = fmtTmpl(i18n.subagentTaskCount || '%1 subagent task(s)', total);
+    }
+    let meta = entry.group.querySelector('.group-meta');
+    let dot = entry.group.querySelector('.status-dot');
+    if (total > 0 && done >= total) {
+        if (meta) meta.textContent = '\u00b7 ' + (i18n.subagentCompleted || 'completed');
+        if (dot) dot.className = 'status-dot ok';
+        entry.group.classList.remove('active');
+    } else {
+        if (meta) {
+            meta.textContent = '\u00b7 ' + String(i18n.subagentProgress || '%1/%2 done')
+                .replace('%1', done).replace('%2', total);
+        }
+        if (dot) dot.className = 'status-dot running';
+    }
+}
+
+// C++ 推送子 agent 进度（subagent_progress 协议消息原文）。
+function updateSubagentProgress(payload) {
+    payload = payload || {};
+    let callId = payload.call_id || '';
+    if (!callId) return;
+    let taskId = payload.task_id || '';
+    let state = payload.state || '';
+
+    // 心跳：无 task_id 的 running 态（仅保活看门狗），UI 忽略不产生噪音
+    if (!taskId && state === 'running') return;
+
+    let entry = subagentCards[callId];
+    if (!entry) {
+        if (state !== 'spawned') return;  // 未知派发的迟到消息——忽略
+        entry = subagentCards[callId] = { group: createSubagentGroup(callId), tasks: {} };
+    }
+
+    if (!taskId) {
+        // 聚合终态（派发结束）：results.tasks 携带各任务 status，未终态的行按此收尾
+        let results = (payload.results && typeof payload.results === 'object')
+            ? (payload.results.tasks || []) : [];
+        for (let i = 0; i < results.length; i++) {
+            let r = results[i];
+            if (!r || !r.task_id) continue;
+            if (r.status === 'ok') {
+                updateSubagentTaskRow(entry, r.task_id, 'done', '');
+            } else if (r.status === 'timeout') {
+                updateSubagentTaskRow(entry, r.task_id, 'timeout', r.error || '');
+            } else if (r.status === 'stopped') {
+                updateSubagentTaskRow(entry, r.task_id, 'stopped', '');
+            } else if (r.status === 'error') {
+                updateSubagentTaskRow(entry, r.task_id, 'error', r.error || '');
+            }
+        }
+        // 聚合到达即派发结束：残余未终态行（进度消息丢失）统一按 done 收尾防御
+        for (var id in entry.tasks) {
+            if (Object.prototype.hasOwnProperty.call(entry.tasks, id) && !entry.tasks[id].terminal) {
+                updateSubagentTaskRow(entry, id, 'done', '');
+            }
+        }
+    } else {
+        updateSubagentTaskRow(entry, taskId, state, payload.message || '');
+    }
+    updateSubagentGroupHeader(entry);
+    scrollToBottom();
+}
+
 // —— 被 C++ 调用的函数 ——
 // 通过 DAAgentWebChannel::callJS(evaluateJavaScript) 调用
 
@@ -525,6 +689,7 @@ function clearChat() {
     currentAgentMsg = null;
     currentToolGroup = null;
     pendingToolCards = [];
+    subagentCards = {};
 }
 
 // —— 输入区/状态栏 web 化（被 C++ 经 DAAgentWebChannel::callJS 调用）——
@@ -848,6 +1013,7 @@ function appendToolApproval(callId, payload) {
     var args = (payload.args && typeof payload.args === 'object') ? payload.args : {};
     var tier = payload.tier || 'unknown';
     var rememberable = !!payload.rememberable;
+    var subagent = payload.subagent || '';  // 子 agent 来源上下文（Q18；主 agent 调用为空）
 
     var card = document.createElement('div');
     card.className = 'approval-card pending';
@@ -866,6 +1032,14 @@ function appendToolApproval(callId, payload) {
     title.textContent = toolName + ' ' + (i18n.approvalNeeds || 'needs your approval');
     head.appendChild(title);
     card.appendChild(head);
+
+    // 子 agent 来源上下文（Q18）：审批由子 agent 发起时渲染"来自子 Agent：explore #1"
+    if (subagent) {
+        var from = document.createElement('div');
+        from.className = 'approval-from-subagent';
+        from.textContent = fmtTmpl(i18n.approvalFromSubagent || 'From subagent: %1', subagent);
+        card.appendChild(from);
+    }
 
     // 摘要区：代码执行显示代码预览/脚本路径，文件写入显示路径+参数摘要
     var body = document.createElement('div');

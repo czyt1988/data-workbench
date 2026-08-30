@@ -92,6 +92,8 @@ private:
     QSpinBox* mSpinInactivityTimeout;
     QSpinBox* mSpinMaxRestarts;
     QSpinBox* mSpinRecursionLimit;
+    QSpinBox* mSpinSubagentTimeout;
+    QSpinBox* mSpinSubagentRecursionLimit;
     QCheckBox* mCheckAutoPrestart;
 };
 

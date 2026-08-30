@@ -275,6 +275,8 @@ void DAAppController::initialize()
         // 权限层（permission-layer P1）：接口信号 → Dock 槽（4 条），Dock 信号 → 接口方法（3 条）
         connect(agent, &DAAgentInterface::agentToolApprovalRequest, dock, &DAAgentDockWidget::onToolApprovalRequest);
         connect(agent, &DAAgentInterface::agentToolApprovalDismissed, dock, &DAAgentDockWidget::onToolApprovalDismissed);
+        // 子 agent 进度（subagent-phase1 C）：接口信号 → Dock 槽（进度卡片渲染）
+        connect(agent, &DAAgentInterface::agentSubagentProgress, dock, &DAAgentDockWidget::onAgentSubagentProgress);
         connect(agent, &DAAgentInterface::permissionModeChanged, dock, &DAAgentDockWidget::onPermissionModeChanged);
         // 模式"显式设置"状态（启动推送）：Dock 据此决定 A13 确认卡（默认全自动不弹卡）
         connect(agent, &DAAgentInterface::permissionModeExplicitChanged, dock, &DAAgentDockWidget::onPermissionModeExplicitChanged);

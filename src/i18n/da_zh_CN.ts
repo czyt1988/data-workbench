@@ -154,17 +154,17 @@
 <context>
     <name>DA::DAAgentBridge</name>
     <message>
-        <location filename="../DAAgent/DAAgentBridge.cpp" line="+175"/>
+        <location filename="../DAAgent/DAAgentBridge.cpp" line="+181"/>
         <source>Agent process startup timed out</source>
         <translation>Agent 进程启动超时</translation>
     </message>
     <message>
-        <location line="+36"/>
+        <location line="+45"/>
         <source>Agent subprocess not ready within %1 ms, initialization may have failed, check logs</source>
         <translation>Agent 子进程启动后 %1 毫秒内未就绪，初始化可能失败，请查看日志排查</translation>
     </message>
     <message>
-        <location line="+279"/>
+        <location line="+297"/>
         <source>Failed to write to agent subprocess stdin</source>
         <translation>写入 agent 子进程 stdin 失败</translation>
     </message>
@@ -174,7 +174,7 @@
         <translation>解析 agent 标准输出的 JSON 行失败：%1，错误：%2</translation>
     </message>
     <message>
-        <location line="+350"/>
+        <location line="+435"/>
         <source>Failed to parse trailing JSON line from agent stdout: %1, error: %2</source>
         <translation>解析 agent 标准输出的末尾 JSON 行失败：%1，错误：%2</translation>
     </message>
@@ -197,7 +197,7 @@
 <context>
     <name>DA::DAAgentDockWidget</name>
     <message>
-        <location filename="../DAGui/Agent/DAAgentDockWidget.cpp" line="+245"/>
+        <location filename="../DAGui/Agent/DAAgentDockWidget.cpp" line="+247"/>
         <source>Ready</source>
         <translation>就绪</translation>
     </message>
@@ -232,7 +232,7 @@
         <translation>新建会话</translation>
     </message>
     <message>
-        <location line="+751"/>
+        <location line="+796"/>
         <source>tokens: ~%1 / %2</source>
         <translation>token: ~%1 / %2</translation>
     </message>
@@ -242,17 +242,17 @@
         <translation>token: %1 / %2</translation>
     </message>
     <message>
-        <location line="-645"/>
+        <location line="-690"/>
         <source>tokens: -</source>
         <translation>token: -</translation>
     </message>
     <message>
-        <location line="+609"/>
+        <location line="+654"/>
         <source>(untitled)</source>
         <translation>（未命名）</translation>
     </message>
     <message>
-        <location line="-608"/>
+        <location line="-653"/>
         <source>input: %1</source>
         <translation>输入：%1</translation>
     </message>
@@ -422,7 +422,57 @@
         <translation>还有 %1 行</translation>
     </message>
     <message>
-        <location line="+17"/>
+        <location line="+1"/>
+        <source>From subagent: %1</source>
+        <translation>来自子 Agent：%1</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>%1 subagent task(s)</source>
+        <translation>%1 个子 Agent 任务</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>%1/%2 done</source>
+        <translation>%1/%2 已完成</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>completed</source>
+        <translation>已完成</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>queued</source>
+        <translation>排队中</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>running</source>
+        <translation>运行中</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>done</source>
+        <translation>完成</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>failed</source>
+        <translation>失败</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>timeout</source>
+        <translation>超时</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>stopped</source>
+        <translation>已停止</translation>
+    </message>
+    <message>
+        <location line="+19"/>
         <source>The permission mode is Full Auto from last session. Code execution and file writes will run without asking. Keep Full Auto mode?</source>
         <translation>上次会话留在全自动权限模式。代码执行与文件写入将不再询问直接执行。是否保持全自动模式？</translation>
     </message>
@@ -437,7 +487,7 @@
         <translation>切换为自动</translation>
     </message>
     <message>
-        <location line="+604"/>
+        <location line="+636"/>
         <source>API quota exhausted, please check account balance or change API key</source>
         <translation>API 配额已耗尽，请检查账户余额或更换 API Key</translation>
     </message>
@@ -559,63 +609,93 @@
 <context>
     <name>DA::DAAgentManagerDialog</name>
     <message>
-        <location filename="../APP/Dialog/DAAgentManagerDialog.cpp" line="+19"/>
+        <location filename="../APP/Dialog/DAAgentManagerDialog.cpp" line="+25"/>
         <source>Agent Manager</source>
         <translation>Agent 管理</translation>
     </message>
     <message>
-        <location line="+23"/>
+        <location line="+29"/>
+        <location line="+46"/>
         <source>Add</source>
         <translation>添加</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="-45"/>
+        <location line="+46"/>
         <source>Edit</source>
         <translation>编辑</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="-45"/>
+        <location line="+46"/>
         <source>Delete</source>
         <translation>删除</translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location line="-40"/>
+        <source>Prompt Library</source>
+        <translation>提示词库</translation>
+    </message>
+    <message>
+        <location line="+8"/>
         <source>Close</source>
         <translation>关闭</translation>
     </message>
     <message>
-        <location line="+73"/>
+        <location line="+23"/>
+        <source>Subagent definitions available for dispatch. Edit to change tools or instructions.</source>
+        <translation>可派发的子 Agent 定义，编辑可调整工具白名单与提示词</translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>Subagents</source>
+        <translation>子 Agent</translation>
+    </message>
+    <message>
+        <location line="+70"/>
         <location line="+40"/>
         <location line="+28"/>
+        <location line="+81"/>
+        <location line="+45"/>
+        <location line="+29"/>
         <source>Tip</source>
         <translation>提示</translation>
     </message>
     <message>
-        <location line="-67"/>
+        <location line="-222"/>
         <location line="+40"/>
+        <location line="+109"/>
+        <location line="+45"/>
         <source>Save failed</source>
         <translation>保存失败</translation>
     </message>
     <message>
-        <location line="+16"/>
+        <location line="-138"/>
+        <location line="+155"/>
         <source>Confirm Delete</source>
         <translation>确认删除</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="-154"/>
         <source>Are you sure to delete agent &quot;%1&quot;?</source>
         <translation>确定删除 Agent「%1」吗？</translation>
     </message>
     <message>
         <location line="+11"/>
+        <location line="+155"/>
         <source>Delete failed</source>
         <translation>删除失败</translation>
+    </message>
+    <message>
+        <location line="-11"/>
+        <source>Are you sure to delete subagent &quot;%1&quot;?</source>
+        <translation>确定删除子 Agent「%1」吗？</translation>
     </message>
 </context>
 <context>
     <name>DA::DAAgentModule</name>
     <message>
-        <location filename="../DAAgent/DAAgentModule.cpp" line="+333"/>
+        <location filename="../DAAgent/DAAgentModule.cpp" line="+354"/>
         <source>Agent system prompt file is empty, fallback to built-in default: %1</source>
         <translation>Agent 系统提示词文件为空，回退到内置默认提示词：%1</translation>
     </message>
@@ -625,18 +705,18 @@
         <translation>读取 Agent 系统提示词文件失败，回退到内置默认提示词：%1</translation>
     </message>
     <message>
-        <location line="+120"/>
+        <location line="+141"/>
         <source>LLM is not configured, cannot start agent. Please configure LLM in settings first.</source>
         <translation>LLM 未配置，无法启动 Agent，请先在设置中配置 LLM</translation>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+966"/>
+        <location line="+987"/>
         <source>LLM is not configured. Please configure LLM in settings first.</source>
         <translation>LLM 未配置，请先在设置中配置 LLM</translation>
     </message>
     <message>
-        <location line="-955"/>
+        <location line="-976"/>
         <source>Cannot find Python interpreter path, please configure it in settings</source>
         <translation>无法找到 Python 解释器路径，请在设置页配置 Python 解释器</translation>
     </message>
@@ -646,7 +726,7 @@
         <translation>无法找到 agent_runner.py 路径: %1</translation>
     </message>
     <message>
-        <location line="+949"/>
+        <location line="+970"/>
         <source>LLM is not configured, skip agent analysis. Please configure LLM in settings first.</source>
         <translation>LLM 未配置，跳过 Agent 分析，请先在设置中配置 LLM</translation>
     </message>
@@ -807,7 +887,7 @@
         <translation>新增覆盖</translation>
     </message>
     <message>
-        <location line="+112"/>
+        <location line="+115"/>
         <source>Hard safety rule: cannot be edited or removed</source>
         <translation>硬性安全规则：不可编辑或删除</translation>
     </message>
@@ -839,11 +919,12 @@
     <message>
         <location line="-12"/>
         <location line="+6"/>
+        <location line="+18"/>
         <source> sec</source>
         <translation>秒</translation>
     </message>
     <message>
-        <location line="-99"/>
+        <location line="-117"/>
         <source>Base URL</source>
         <translation>基础地址</translation>
     </message>
@@ -853,7 +934,7 @@
         <translation>API 密钥</translation>
     </message>
     <message>
-        <location line="+117"/>
+        <location line="+128"/>
         <source>Ready Timeout</source>
         <translation>就绪超时</translation>
     </message>
@@ -863,7 +944,7 @@
         <translation>停止超时</translation>
     </message>
     <message>
-        <location line="-155"/>
+        <location line="-166"/>
         <source>Add Provider</source>
         <translation>新增供应商</translation>
     </message>
@@ -978,6 +1059,16 @@
         <translation>图最大推理步数。每轮工具调用耗 3 步。建议 150。</translation>
     </message>
     <message>
+        <location line="+7"/>
+        <source>Wall-clock timeout (seconds) for each subagent task. Waiting for approval counts towards this limit. Recommended: 600.</source>
+        <translation>单个子 Agent 任务的墙钟超时(秒)。等待用户批准也计入该时限。建议 600。</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Max reasoning steps for each subagent task. Recommended: 60.</source>
+        <translation>单个子 Agent 任务的最大推理步数。建议 60。</translation>
+    </message>
+    <message>
         <location line="+4"/>
         <source>Prestart the agent subprocess on launch. Disable to save memory.</source>
         <translation>启动时预启动 agent 子进程。关闭可节省内存。</translation>
@@ -1039,6 +1130,16 @@
     </message>
     <message>
         <location line="+1"/>
+        <source>Subagent Timeout</source>
+        <translation>子 Agent 超时</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Subagent Reasoning Limit</source>
+        <translation>子 Agent 推理上限</translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Auto prestart on launch</source>
         <translation>启动时自动预热</translation>
     </message>
@@ -1048,7 +1149,7 @@
         <translation>Agent 设置</translation>
     </message>
     <message>
-        <location line="+98"/>
+        <location line="+100"/>
         <source>(unnamed)</source>
         <translation>（未命名）</translation>
     </message>
@@ -1066,6 +1167,90 @@
         <location filename="../APP/SettingPages/DAAgentSettingsWidget.h" line="+39"/>
         <source>Agent LLM Settings</source>
         <translation>Agent LLM 设置</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAAgentSubagentEditDialog</name>
+    <message>
+        <location filename="../APP/Dialog/DAAgentSubagentEditDialog.cpp" line="+61"/>
+        <source>Unregistered tool (kept in definition)</source>
+        <translation>未注册的工具（保留在定义中）</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Edit Subagent</source>
+        <translation>编辑子 Agent</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>New Subagent</source>
+        <translation>新增子 Agent</translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>snake_case name used by dispatch</source>
+        <translation>snake_case 名称（派发时引用）</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Name:</source>
+        <translation>名称：</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Short description shown to the main agent</source>
+        <translation>展示给主 Agent 的简短描述</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Description:</source>
+        <translation>描述：</translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Allowed tools:</source>
+        <translation>工具白名单：</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Only checked tools can be called by this subagent. Permission rules still apply on every call.</source>
+        <translation>子 Agent 只能调用勾选的工具；每次调用仍受权限规则约束</translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>System prompt:</source>
+        <translation>系统提示词：</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Write the subagent instructions here (Markdown supported). It should finish autonomously and end with a structured summary.</source>
+        <translation>在此编写子 Agent 指引（支持 Markdown），应自主完成任务并输出结构化总结</translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>Save</source>
+        <translation>保存</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <location line="+6"/>
+        <source>Tip</source>
+        <translation>提示</translation>
+    </message>
+    <message>
+        <location line="-5"/>
+        <source>Name cannot be empty</source>
+        <translation>名称不能为空</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>A subagent named &quot;%1&quot; already exists, please choose another name</source>
+        <translation>已存在同名子 Agent「%1」，请更换名称</translation>
     </message>
 </context>
 <context>
@@ -2356,7 +2541,7 @@ Config</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+691"/>
+        <location filename="../APP/DAAppController.cpp" line="+695"/>
         <source>Save Project</source>
         <translation>保存工程</translation>
     </message>
@@ -3025,12 +3210,12 @@ Config</source>
     <message>
         <location line="+3"/>
         <location line="+27"/>
-        <location line="+409"/>
+        <location line="+406"/>
         <source>View</source>
         <translation>视图</translation>
     </message>
     <message>
-        <location line="-435"/>
+        <location line="-432"/>
         <source>Display</source>
         <translation>视图显示</translation>
     </message>
@@ -3115,12 +3300,18 @@ Config</source>
         <translation>剪切板</translation>
     </message>
     <message>
-        <location line="-329"/>
+        <location line="-338"/>
+        <location line="+454"/>
+        <source>Chart Style</source>
+        <translation>图表样式</translation>
+    </message>
+    <message>
+        <location line="-445"/>
         <source>Set ribbon theme</source>
         <translation>设置主题</translation>
     </message>
     <message>
-        <location line="+840"/>
+        <location line="+837"/>
         <location line="+2"/>
         <source>AI Agent</source>
         <translation>AI智能体</translation>
@@ -3141,12 +3332,12 @@ Config</source>
         <translation>执行agent</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Run AI analysis with the selected agent prompt</source>
         <translation>使用当前选中的 agent 提示词执行 AI 分析</translation>
     </message>
     <message>
-        <location line="+43"/>
+        <location line="+44"/>
         <source>Agent</source>
         <translation>Agent</translation>
     </message>
@@ -3167,7 +3358,7 @@ Config</source>
         <translation>Agent 模块未就绪</translation>
     </message>
     <message>
-        <location line="-988"/>
+        <location line="-987"/>
         <location line="+357"/>
         <source>Item</source>
         <translation>图元</translation>
@@ -3186,18 +3377,18 @@ Config</source>
     </message>
     <message>
         <location line="-366"/>
-        <location line="+450"/>
+        <location line="+447"/>
         <source>Workflow Run</source>
         <translation>运行</translation>
     </message>
     <message>
-        <location line="-449"/>
-        <location line="+452"/>
+        <location line="-446"/>
+        <location line="+449"/>
         <source>Run</source>
         <translation>运行</translation>
     </message>
     <message>
-        <location line="-450"/>
+        <location line="-447"/>
         <location line="+276"/>
         <source>Figure</source>
         <translation>绘图</translation>
@@ -3219,14 +3410,13 @@ Config</source>
         <translation>绘图</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <location line="+4"/>
-        <location line="+512"/>
+        <location line="+5"/>
+        <location line="+509"/>
         <source>Chart Edit</source>
         <translation>绘图编辑</translation>
     </message>
     <message>
-        <location line="-514"/>
+        <location line="-511"/>
         <source>Chart Setting</source>
         <translation>绘图设置</translation>
     </message>
@@ -3237,12 +3427,12 @@ Config</source>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+514"/>
+        <location line="+511"/>
         <source>Select Tool</source>
         <translation>选区工具</translation>
     </message>
     <message>
-        <location line="-513"/>
+        <location line="-510"/>
         <source>Chart Assist Tool</source>
         <translation>图表辅助工具</translation>
     </message>
@@ -3274,7 +3464,7 @@ Config</source>
         <translation>分组</translation>
     </message>
     <message>
-        <location line="+31"/>
+        <location line="+28"/>
         <source>Workflow View</source>
         <translation>显示</translation>
     </message>
@@ -3285,13 +3475,12 @@ Config</source>
     </message>
     <message>
         <location line="+24"/>
-        <location line="+2"/>
         <source>Chart Operate</source>
         <translation>绘图操作</translation>
     </message>
     <message>
-        <location line="-449"/>
-        <location line="+495"/>
+        <location line="-444"/>
+        <location line="+492"/>
         <source>Theme</source>
         <translation>主题</translation>
     </message>
@@ -9896,60 +10085,223 @@ Config</source>
 <context>
     <name>DA::DAWorkbenchAboutDialog</name>
     <message>
-        <location filename="../APP/Dialog/DAWorkbenchAboutDialog.cpp" line="+25"/>
-        <source>DAWorkbench, LGPL, Version: %1.%2.%3</source>
-        <translation>DAWorkbench,LGPL,版本:%1.%2.%3</translation>
+        <location filename="../APP/Dialog/DAWorkbenchAboutDialog.cpp" line="+138"/>
+        <source>Version %1.%2.%3</source>
+        <translation>版本 %1.%2.%3</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Email: czy.t@163.com</source>
-        <translation>邮箱:czy.t@163.com</translation>
+        <location line="+4"/>
+        <source>AI Agent driven data analysis workbench</source>
+        <translation>AI Agent 驱动的数据分析工作台</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>GitHub: https://github.com/czyt1988/data-workbench</source>
-        <translation>GitHub:https://github.com/czyt1988/data-workbench</translation>
+        <location line="+8"/>
+        <source>The third-party libraries listed above retain their original licenses, please refer to the corresponding projects for details.</source>
+        <translation>上述第三方库保留其原始许可证，详见对应项目。</translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>DAWorkbench is an AI Agent driven data analysis workbench built on C++17/Qt, featuring a directed-graph workflow engine, embedded Python (pandas/numpy) data processing, interactive publication-grade charting, and a plugin architecture supporting both C++ and Python extensions.</source>
+        <translation>DAWorkbench 是一个基于 C++17/Qt 的 AI Agent 驱动数据分析工作台，具备有向图工作流引擎、内嵌 Python（pandas/numpy）数据处理、交互式出版级图表绘制，以及同时支持 C++ 与 Python 扩展的插件架构。</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>This software is open source under the LGPL v3.0 license.</source>
+        <translation>本软件基于 LGPL v3.0 许可证开源。</translation>
     </message>
     <message>
         <location line="+2"/>
-        <source>Third party list:</source>
-        <translation>第三方库列表:</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>SARibbon, MIT, Version: %1.%2.%3</source>
-        <translation>SARibbon,MIT,版本:%1.%2.%3</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>spdlog, MIT, Version: %1.%2.%3</source>
-        <translation>spdlog,MIT,版本:%1.%2.%3</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Qt-Advanced-Docking-System, LGPL v2.1, Version:</source>
-        <translation>Qt-Advanced-Docking-System,LGPL v2.1,版本:</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>qwt, LGPL, Version: %1</source>
-        <translation>qwt,LGPL,版本:%1</translation>
+        <source>Project homepage: %1</source>
+        <translation>项目主页：%1</translation>
     </message>
     <message>
         <location line="+3"/>
-        <source>pybind11, BSD, Version: %1.%2</source>
-        <translation>pybind11,BSD,版本:%1.%2</translation>
+        <source>Documentation: %1</source>
+        <translation>文档：%1</translation>
     </message>
     <message>
-        <location line="-1"/>
-        <source>This is a Python dependent version</source>
-        <translation>此版本依赖python环境</translation>
+        <location line="+3"/>
+        <source>Contact email: %1</source>
+        <translation>联系邮箱：%1</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>C++ Third-Party Libraries</source>
+        <translation>C++ 第三方库</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Application and UI framework</source>
+        <translation>应用程序与 UI 框架</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Ribbon style main window framework</source>
+        <translation>Ribbon 风格主窗口框架</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Advanced docking system</source>
+        <translation>高级停靠系统</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Plotting engine (maintained fork with QwtFigure extensions)</source>
+        <translation>绘图引擎（维护分支，含 QwtFigure 扩展）</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Logging library</source>
+        <translation>日志库</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Seamless C++/Python interoperability</source>
+        <translation>C++/Python 无缝互操作</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>ZIP archive reading/writing</source>
+        <translation>ZIP 压缩包读写</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Data compression</source>
+        <translation>数据压缩</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Ordered hash map</source>
+        <translation>有序哈希表</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Lightweight CTK widget set</source>
+        <translation>轻量 CTK 控件集</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>General purpose widgets</source>
+        <translation>通用控件</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <location line="+35"/>
+        <source>Name</source>
+        <translation>名称</translation>
+    </message>
+    <message>
+        <location line="-34"/>
+        <location line="+35"/>
+        <source>Usage</source>
+        <translation>用途</translation>
+    </message>
+    <message>
+        <location line="-34"/>
+        <location line="+35"/>
+        <source>License</source>
+        <translation>许可证</translation>
+    </message>
+    <message>
+        <location line="-34"/>
+        <source>Version</source>
+        <translation>版本</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Python Dependencies</source>
+        <translation>Python 依赖</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Embedded Python interpreter: %1</source>
+        <translation>内嵌 Python 解释器：%1</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Core data analysis</source>
+        <translation>核心数据分析</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Numerical computing</source>
+        <translation>数值计算</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Scientific computing</source>
+        <translation>科学计算</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Excel file reading/writing</source>
+        <translation>Excel 文件读写</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Text encoding detection</source>
+        <translation>文本编码检测</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Arrow/Parquet data format</source>
+        <translation>Arrow/Parquet 数据格式</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Plotting foundation</source>
+        <translation>绘图基础</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Statistical plotting</source>
+        <translation>统计绘图</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Wavelet analysis</source>
+        <translation>小波分析</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>AI Agent orchestration framework</source>
+        <translation>AI Agent 编排框架</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>LLM service integration</source>
+        <translation>LLM 服务集成</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>LangGraph command line tools</source>
+        <translation>LangGraph 命令行工具</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Data model validation</source>
+        <translation>数据模型校验</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Token counting</source>
+        <translation>Token 计数</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Python logging</source>
+        <translation>Python 日志</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Type hint backports</source>
+        <translation>类型注解向后移植</translation>
     </message>
 </context>
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-1442"/>
+        <location filename="../APP/DAAppController.cpp" line="-1446"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>
@@ -12762,12 +13114,12 @@ Config</source>
 <context>
     <name>DAWorkbenchAboutDialog</name>
     <message>
-        <location filename="../APP/Dialog/DAWorkbenchAboutDialog.ui" line="+14"/>
-        <source>About</source>
-        <translation>关于</translation>
+        <location filename="../APP/Dialog/DAWorkbenchAboutDialog.ui" line="+20"/>
+        <source>About DAWorkbench</source>
+        <translation>关于 DAWorkbench</translation>
     </message>
     <message>
-        <location line="+28"/>
+        <location line="+159"/>
         <source>OK</source>
         <translation>确认</translation>
     </message>

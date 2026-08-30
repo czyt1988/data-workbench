@@ -26,6 +26,7 @@
 - 🟢 **Markdown 渲染**：新增 `DAMarkdownView` 通用 Markdown 渲染控件（`src/DAGui/MarkdownView/`）
 - 🟢 **AI 分析 Ribbon 标签**：新增「AI 分析」标签页（`mCategoryAgent` / `mAgentGallery` / `populateAgentGallery`）
 - 🟢 **Agent 权限模式**：AI 分析新增权限模式——全自动 / 智能判定 / 每次询问三档可选，聊天工具栏随时切换；**默认模式为全自动（yolo）**，未显式配置时静默生效。文件写入与代码执行等危险操作执行前自动拦截或弹审批卡征求确认；系统目录写入在任何模式下禁止。智能判定模式下代码内容先经静态危险模式规则、再经可选判官模型自动放行/拒绝，拿不准时降级询问用户。设置页可自定义路径规则、代码危险模式清单与工具风险分级；会话内切入全自动需二次确认，跨重启时仅对用户显式设置过的全自动弹启动确认卡（默认全自动不弹卡）
+- 🟢 **子 Agent 委派**：AI 分析支持子 Agent——主 AI 可将探索调研类任务委派给多个子 Agent 并行执行并汇总结论（如“并行探索工作区每个数据集的结构与数据质量”），聊天界面实时展示各子任务进度；内置只读探索子 Agent `explore`，任意权限模式下零打扰。Agent 管理新增「子 Agent」页签，可新建/编辑/删除子 Agent（自定义描述、可用工具范围与指令）；子 Agent 的写文件、执行代码等操作与主 AI 走同一权限管控，需要批准时审批卡会标注来源子 Agent，任务超时或被停止后未决的审批自动撤销。设置页新增子 Agent 单任务超时与推理步数上限
 
 ### 改进
 
@@ -36,6 +37,7 @@
 
 - 🔴 **`DAAgentInterface` 会话 API**：新增会话管理接口（`createSession` / `switchSession` / `deleteSession` 等），见 `src/DAAgent/DAAgentInterface.h:75` 注释「破坏性接口变更，插件需重编译」——依赖该接口的插件需重新编译
 - 🔴 **`DAAgentInterface` 权限 API**：新增权限层接口（`getPermissionConfig` / `setPermissionConfig` / `getPermissionMode` / `setPermissionMode` / `sendToolApproval` / `setScriptWorkspaceDir`）与审批/模式信号（`agentToolApprovalRequest` / `agentToolApprovalDismissed` / `permissionModeChanged`）——依赖该接口的插件需重新编译
+- 🔴 **`DAAgentInterface` 子 Agent API**：新增子 agent 管理接口（`registerBuiltinSubagent` / `subagentDefinitions` / `saveSubagent` / `deleteSubagent` / `registeredToolNames`）与子 agent 信号（`agentSubagentProgress` / `subagentListChanged`）——依赖该接口的插件需重新编译
 
 ---
 

@@ -250,6 +250,17 @@ void DAAgentSettingsWidget::setupAgentSettingsTab()
     mSpinRecursionLimit->setToolTip(tr("Max graph reasoning steps. Each tool-call cycle consumes 3 steps. Recommended: 150."));  //cn:图最大推理步数。每轮工具调用耗 3 步。建议 150。
     mSpinRecursionLimit->setValue(150);
 
+    // ---- 子 agent（subagent-phase1 C，Q16）：全局统一作用于所有子 agent ----
+    mSpinSubagentTimeout = new QSpinBox(this);
+    mSpinSubagentTimeout->setRange(60, 3600);
+    mSpinSubagentTimeout->setSuffix(tr(" sec"));  //cn:秒
+    mSpinSubagentTimeout->setToolTip(tr("Wall-clock timeout (seconds) for each subagent task. Waiting for approval counts towards this limit. Recommended: 600."));  //cn:单个子 Agent 任务的墙钟超时(秒)。等待用户批准也计入该时限。建议 600。
+    mSpinSubagentTimeout->setValue(600);
+    mSpinSubagentRecursionLimit = new QSpinBox(this);
+    mSpinSubagentRecursionLimit->setRange(10, 150);
+    mSpinSubagentRecursionLimit->setToolTip(tr("Max reasoning steps for each subagent task. Recommended: 60."));  //cn:单个子 Agent 任务的最大推理步数。建议 60。
+    mSpinSubagentRecursionLimit->setValue(60);
+
     mCheckAutoPrestart = new QCheckBox(this);
     mCheckAutoPrestart->setToolTip(tr("Prestart the agent subprocess on launch. Disable to save memory."));  //cn:启动时预启动 agent 子进程。关闭可节省内存。
     mCheckAutoPrestart->setChecked(true);
@@ -267,6 +278,8 @@ void DAAgentSettingsWidget::setupAgentSettingsTab()
     form->addRow(tr("Inactivity timeout"), mSpinInactivityTimeout);  //cn:无活动超时
     form->addRow(tr("Max process restarts"), mSpinMaxRestarts);  //cn:最大进程重启次数
     form->addRow(tr("Reasoning iteration limit"), mSpinRecursionLimit);  //cn:推理迭代上限
+    form->addRow(tr("Subagent Timeout"), mSpinSubagentTimeout);  //cn:子 Agent 超时
+    form->addRow(tr("Subagent Reasoning Limit"), mSpinSubagentRecursionLimit);  //cn:子 Agent 推理上限
     form->addRow(tr("Auto prestart on launch"), mCheckAutoPrestart);  //cn:启动时自动预热
 
     mTabWidget->addTab(page, tr("Agent Settings"));  //cn:Agent 设置
@@ -285,6 +298,8 @@ void DAAgentSettingsWidget::setupAgentSettingsTab()
     connect(mSpinInactivityTimeout, QOverload<int>::of(&QSpinBox::valueChanged), this, mark);
     connect(mSpinMaxRestarts, QOverload<int>::of(&QSpinBox::valueChanged), this, mark);
     connect(mSpinRecursionLimit, QOverload<int>::of(&QSpinBox::valueChanged), this, mark);
+    connect(mSpinSubagentTimeout, QOverload<int>::of(&QSpinBox::valueChanged), this, mark);
+    connect(mSpinSubagentRecursionLimit, QOverload<int>::of(&QSpinBox::valueChanged), this, mark);
     connect(mCheckAutoPrestart, &QCheckBox::toggled, this, mark);
 }
 
@@ -435,6 +450,8 @@ void DAAgentSettingsWidget::loadConfig()
     mSpinInactivityTimeout->setValue(jsonInt(c, "inactivity_timeout_sec", 240));
     mSpinMaxRestarts->setValue(jsonInt(c, "max_subprocess_restarts", 3));
     mSpinRecursionLimit->setValue(jsonInt(c, "recursion_limit", 150));
+    mSpinSubagentTimeout->setValue(jsonInt(c, "subagent_timeout_sec", 600));
+    mSpinSubagentRecursionLimit->setValue(jsonInt(c, "subagent_recursion_limit", 60));
     mCheckAutoPrestart->setChecked(jsonBool(c, "auto_prestart", true));
 }
 
@@ -462,6 +479,8 @@ void DAAgentSettingsWidget::saveConfig()
     c["inactivity_timeout_sec"]   = mSpinInactivityTimeout->value();
     c["max_subprocess_restarts"]  = mSpinMaxRestarts->value();
     c["recursion_limit"]          = mSpinRecursionLimit->value();
+    c["subagent_timeout_sec"]     = mSpinSubagentTimeout->value();
+    c["subagent_recursion_limit"] = mSpinSubagentRecursionLimit->value();
     c["auto_prestart"]            = mCheckAutoPrestart->isChecked();
     mAgentInterface->setLLMConfig(c);
 }

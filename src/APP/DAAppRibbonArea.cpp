@@ -1172,7 +1172,7 @@ void DAAppRibbonArea::onActionAgentManage()
     if (!ops) {
         return;
     }
-    DA::DAAgentManagerDialog dlg(ops, app());
+    DA::DAAgentManagerDialog dlg(ops, agent, app());
     QString prevTitle = mSelectedAgentTitle;
     dlg.exec();
     // 管理结束后刷新 gallery（agentPrompts 直接读磁盘最新状态）
