@@ -33,6 +33,8 @@ da_add_library(
     QT_PUBLIC Core Gui Widgets PrintSupport Concurrent OpenGL
     LINK_PUBLIC DAPyBindQt
     LINK_PRIVATE DAUtils DAMessageHandler
-    THIRDPARTY qwt python pybind11
+    # DAWidgets 提供 DAFontEditPannelWidget/DAColorPickerButton 等基础 UI 控件，
+    # 用于 DAChartTextEditorPopup 富文本编辑弹窗，仅 .cpp 内部使用（PIMPL），私有链接即可
+    THIRDPARTY qwt python pybind11 DAWidgets
     HEADERS_DIRS . MarkSymbol
 )

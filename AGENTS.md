@@ -447,3 +447,4 @@ Linux GCC 下 `uint64_t` 是 `unsigned long`，MSVC 下是 `unsigned long long`�
 - 构建请优先阅读 root `build.md`（包含 PowerShell 专用说明），或直接使用 `scripts/build.ps1`
 - `src/DAGui/NodeSetting/` 为工作流节点通用设置面板模块，遵循 ChartSetting 的三层架构 (基类→面板→具体面板 + 单例工厂 + QStackedWidget 调度器)
 - 如果你首次编译或者首次使用`git worktree`命令,你需要先拉取第三方库：`git submodule update --init --recursive`
+- 第三方库有如下几个库也是我维护，你在此项目中是可用改动的：`src\3rdparty\SARibbon`、`src\3rdparty\qwt`、`src\3rdparty\DAWidgets`,除了这三个库，其它第三方库禁止改动其代码

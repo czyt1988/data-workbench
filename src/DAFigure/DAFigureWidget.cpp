@@ -39,6 +39,7 @@
 #include "DAChartPolygonRegionSelectEditor.h"
 #include "DAChartItemCreatInteractor.h"
 #include "DAChartArrowEditor.h"
+#include "DAChartTextMarkerEditor.h"
 #include "DADataProbeMarker.h"
 #include "DALogCategory.h"
 // qwt
@@ -138,18 +139,18 @@ public:
                 editor, &EditorType::beginEdit, fig, [ fig = this->fig ]() { fig->emitChartEditorBeginEdit(); });
 
             DAFigureWidget::connect(editor, &EditorType::finishedEdit, fig, [ fig = this->fig, editor, plot ](bool isCancel) {
-                if (isCancel)
-                    return;
-
-                QwtPlotItem* item = editor->takeItem();
-                if (DAChartWidget* chart = qobject_cast< DAChartWidget* >(plot)) {
-                    fig->addItem_(chart, item, true);
-                } else {
-                    daCritical << tr("Unexpected plotting operation: a chart that does not belong to the DAChartWidget "
-                                  "type was added to the figure");  //cn:意外的绘图操作：不属于 DAChartWidget 类型的图表被添加到了 figure 中
-                    item->detach();
-                    delete item;
+                if (!isCancel) {
+                    QwtPlotItem* item = editor->takeItem();
+                    if (DAChartWidget* chart = qobject_cast< DAChartWidget* >(plot)) {
+                        fig->addItem_(chart, item, true);
+                    } else {
+                        daCritical << tr("Unexpected plotting operation: a chart that does not belong to the DAChartWidget "
+                                      "type was added to the figure");  //cn:意外的绘图操作：不属于 DAChartWidget 类型的图表被添加到了 figure 中
+                        item->detach();
+                        delete item;
+                    }
                 }
+                // 取消路径同样需要发射EndEdit，保证ribbon按钮状态复位
                 fig->emitChartEditorFinishEdit();
             });
 
@@ -195,6 +196,7 @@ public:
     void beginArrowMarkerEditor();
     void beginVerticalProbeEditor();
     void beginHorizontalProbeEditor();
+    void beginTextMarkerEditor();
 };
 
 /**
@@ -285,6 +287,20 @@ void DAFigureWidget::PrivateData::beginVerticalProbeEditor()
 void DAFigureWidget::PrivateData::beginHorizontalProbeEditor()
 {
     mChartEditor = beginSelectEditor< DAChartItemCreatInteractor >(createHorizontalDataProbePlotItem);
+}
+
+/**
+ * @brief 开始文本标注编辑器
+ *
+ * 文本添加模式在覆盖层上显示文本编辑光标（覆盖层是编辑期间的鼠标事件接收者），
+ * 编辑结束覆盖层销毁，光标随之恢复
+ */
+void DAFigureWidget::PrivateData::beginTextMarkerEditor()
+{
+    mChartEditor = beginSelectEditor< DAChartTextMarkerEditor >();
+    if (mChartEditor) {
+        mChartEditor->setCursor(Qt::IBeamCursor);
+    }
 }
 
 //===================================================
@@ -1265,6 +1281,9 @@ void DAFigureWidget::beginChartEditor(ChartEditorType type)
         break;
     case HorizontalDataProbe:
         d->beginHorizontalProbeEditor();
+        break;
+    case TextMarker:
+        d->beginTextMarkerEditor();
         break;
     default:
         daWarning << tr("Unsupported chart editor type: %1").arg(type);  //cn:不支持的图表编辑器类型：%1

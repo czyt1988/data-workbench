@@ -39,6 +39,7 @@
 #include "qwt_plot_shapeitem.h"
 // DA
 #include "DADataProbeMarker.h"
+#include "DAChartTextMarker.h"
 
 namespace {
 /// QwtScaleWidget 序列化块版本号
@@ -440,6 +441,7 @@ DECLARE_INITCHARTITEMSERIALIZE_FUN(QwtPlotItem::Rtti_PlotGrid, QwtPlotGrid)
 DECLARE_INITCHARTITEMSERIALIZE_FUN(QwtPlotItem::Rtti_PlotLegend, QwtPlotLegendItem)
 DECLARE_INITCHARTITEMSERIALIZE_FUN(QwtPlotItem::Rtti_PlotMarker, QwtPlotMarker)
 DECLARE_INITCHARTITEMSERIALIZE_FUN(DA::DADataProbeMarker::Rtti_DataProbeMarker, DA::DADataProbeMarker)
+DECLARE_INITCHARTITEMSERIALIZE_FUN(DA::DAChartTextMarker::Rtti_TextMarker, DA::DAChartTextMarker)
 DECLARE_INITCHARTITEMSERIALIZE_FUN(QwtPlotItem::Rtti_PlotSpectroCurve, QwtPlotSpectroCurve)
 DECLARE_INITCHARTITEMSERIALIZE_FUN(QwtPlotItem::Rtti_PlotBarChart, QwtPlotBarChart)
 DECLARE_INITCHARTITEMSERIALIZE_FUN(QwtPlotItem::Rtti_PlotIntervalCurve, QwtPlotIntervalCurve)
@@ -462,6 +464,8 @@ QHash< int, std::pair< DAChartItemSerialize::FpSerializeIn, DAChartItemSerialize
         INITCHARTITEMSERIALIZE_MAKE_IN_OUT_PAIR(QwtPlotItem::Rtti_PlotMarker, QwtPlotMarker);
     res[ DA::DADataProbeMarker::Rtti_DataProbeMarker ] =
         INITCHARTITEMSERIALIZE_MAKE_IN_OUT_PAIR(DA::DADataProbeMarker::Rtti_DataProbeMarker, DA::DADataProbeMarker);
+    res[ DA::DAChartTextMarker::Rtti_TextMarker ] =
+        INITCHARTITEMSERIALIZE_MAKE_IN_OUT_PAIR(DA::DAChartTextMarker::Rtti_TextMarker, DA::DAChartTextMarker);
     res[ QwtPlotItem::Rtti_PlotSpectroCurve ] =
         INITCHARTITEMSERIALIZE_MAKE_IN_OUT_PAIR(QwtPlotItem::Rtti_PlotSpectroCurve, QwtPlotSpectroCurve);
     res[ QwtPlotItem::Rtti_PlotBarChart ] =
@@ -1112,6 +1116,41 @@ QDataStream& operator>>(QDataStream& in, DA::DADataProbeMarker* item)
     item->setProbeColor(probeColor);
     item->setLabelVisible(labelVisible);
     // 基类 QwtPlotMarker（最后读取，覆盖 lineStyle/labelAlignment 为正确值）
+    in >> static_cast< QwtPlotMarker* >(item);
+    return in;
+}
+
+/**
+ * @brief DA::DAChartTextMarker(Rtti_TextMarker)指针的序列化
+ *
+ * DAChartTextMarker 的富文本内容保存在基类 QwtPlotMarker 的 label(QwtText)中，
+ * QwtText 的序列化包含 text/font/renderFlags/color/borderRadius/borderPen/backgroundBrush
+ * 及 PaintAttributes，HTML 内容可无损往返，因此此处仅转发基类即可
+ */
+QDataStream& operator<<(QDataStream& out, const DA::DAChartTextMarker* item)
+{
+    out << DA::gc_dachart_version << DA::gc_dachart_magic_mark;
+    // 基类 QwtPlotMarker（含 label 的 QwtText 完整序列化）
+    out << static_cast< const QwtPlotMarker* >(item);
+    return out;
+}
+
+/**
+ * @brief DA::DAChartTextMarker(Rtti_TextMarker)指针的反序列化
+ * @param in 输入数据流
+ * @param item DAChartTextMarker指针
+ * @return 输入数据流
+ */
+QDataStream& operator>>(QDataStream& in, DA::DAChartTextMarker* item)
+{
+    int version;
+    std::uint32_t magic;
+    in >> version >> magic;
+    if (DA::gc_dachart_magic_mark != magic) {
+        throw DA::DABadSerializeExpection();
+        return in;
+    }
+    // 基类 QwtPlotMarker（label 的 HTML 文本经 QwtText::AutoText 自动识别为富文本）
     in >> static_cast< QwtPlotMarker* >(item);
     return in;
 }

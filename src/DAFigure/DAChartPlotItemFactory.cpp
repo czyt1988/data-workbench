@@ -21,6 +21,7 @@
 #include "qwt_plot_arrowmarker.h"
 #include "qwt_plot_boxchart.h"
 #include "DADataProbeMarker.h"
+#include "DAChartTextMarker.h"
 namespace DA
 {
 /**
@@ -50,6 +51,7 @@ static QHash< int, DAChartPlotItemFactory::FpItemCreate > initDAChartPlotItemFac
     res[ QwtPlotItem::Rtti_PlotArrowMarker ]   = []() -> QwtPlotItem* { return new QwtPlotArrowMarker(); };
     res[ QwtPlotItem::Rtti_PlotBoxChart ]      = []() -> QwtPlotItem* { return new QwtPlotBoxChart(); };
     res[ DADataProbeMarker::Rtti_DataProbeMarker ] = []() -> QwtPlotItem* { return new DADataProbeMarker(DADataProbeMarker::VerticalProbe); };
+    res[ DAChartTextMarker::Rtti_TextMarker ]      = []() -> QwtPlotItem* { return new DAChartTextMarker(); };
     return res;
 }
 

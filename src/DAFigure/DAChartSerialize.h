@@ -48,6 +48,7 @@ class QwtPlotShapeItem;
 namespace DA
 {
 class DADataProbeMarker;
+class DAChartTextMarker;
 }
 ///
 /// \brief 序列化类都是带异常的，使用中需要处理异常
@@ -226,6 +227,9 @@ DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtPlotMarker* item);
 // DA::DADataProbeMarker(Rtti_DataProbeMarker)指针的序列化
 DAFIGURE_API QDataStream& operator<<(QDataStream& out, const DA::DADataProbeMarker* item);
 DAFIGURE_API QDataStream& operator>>(QDataStream& in, DA::DADataProbeMarker* item);
+// DA::DAChartTextMarker(Rtti_TextMarker)指针的序列化
+DAFIGURE_API QDataStream& operator<<(QDataStream& out, const DA::DAChartTextMarker* item);
+DAFIGURE_API QDataStream& operator>>(QDataStream& in, DA::DAChartTextMarker* item);
 // QwtPlotSpectroCurve(Rtti_PlotSpectroCurve)指针的序列化
 DAFIGURE_API QDataStream& operator<<(QDataStream& out, const QwtPlotSpectroCurve* item);
 DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtPlotSpectroCurve* item);

@@ -179,6 +179,7 @@ constexpr char ChartEditorAddCrossMarker[]     = "actionChartEditorAddCrossMarke
 constexpr char ChartEditorAddHLineMarker[]     = "actionChartEditorAddHLineMarker";
 constexpr char ChartEditorAddVLineMarker[]     = "actionChartEditorAddVLineMarker";
 constexpr char ChartEditorAddArrowMarker[]     = "actionChartEditorAddArrowMarker";
+constexpr char ChartEditorAddTextMarker[]     = "actionChartEditorAddTextMarker";
 constexpr char AddHorizontalPlotProbeMarker[]  = "actionAddHorizontalPlotProbeMarker";
 constexpr char AddVerticalPlotProbeMarker[]    = "actionAddVerticalPlotProbeMarker";
 constexpr char ChartDataPickerSetting[]        = "actionChartDataPickerSetting";

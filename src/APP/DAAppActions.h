@@ -176,6 +176,7 @@ public:
     QAction* actionChartEditorAddHLineMarker;   ///< 添加水平标记
     QAction* actionChartEditorAddVLineMarker;   ///< 添加垂直标记
     QAction* actionChartEditorAddArrowMarker;   ///< 添加箭头标记
+    QAction* actionChartEditorAddTextMarker;    ///< 添加文本标注
     QActionGroup* actionGroupChartEditor;  ///< charteditor的action group，注意，这个actiongroup包含了actionChartEditorResizeSubChart
     QAction* actionAddVerticalPlotProbeMarker;    ///< 添加垂直数据探针标记
     QAction* actionAddHorizontalPlotProbeMarker;  ///< 添加水平数据探针标记

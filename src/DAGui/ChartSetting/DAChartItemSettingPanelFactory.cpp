@@ -19,7 +19,9 @@
 #include "DAChartBoxChartSettingPanel.h"
 #include "DAChartLegendSettingPanel.h"
 #include "DAChartDataProbeMarkerSettingPanel.h"
+#include "DAChartTextMarkerSettingPanel.h"
 #include "DADataProbeMarker.h"
+#include "DAChartTextMarker.h"
 #include "qwt_plot_item.h"
 
 namespace DA
@@ -185,6 +187,11 @@ void DAChartItemSettingPanelFactory::registerAllKnownPanels()
     // DADataProbeMarker → 数据探针设置面板
     registerPanel(DADataProbeMarker::Rtti_DataProbeMarker, []() {
         return new DAChartDataProbeMarkerSettingPanel();
+    });
+
+    // DAChartTextMarker → 文本标注设置面板
+    registerPanel(DAChartTextMarker::Rtti_TextMarker, []() {
+        return new DAChartTextMarkerSettingPanel();
     });
 }
 

@@ -56,6 +56,7 @@ public:
         ArrowMarker,             ///< 箭头标记
         VerticalDataProbe,       ///< 垂直数据探针
         HorizontalDataProbe,     ///< 水平数据探针
+        TextMarker,              ///< 文本标注
         BuilinEditorCount,       ///< 内置编辑器数量
         UserDefineEditor = 1000  ///< 用户自定义编辑器
     };

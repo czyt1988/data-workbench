@@ -87,7 +87,7 @@ Python层: DAPyBindQt → DAPyScripts → DAPyCommonWidgets → DAPyWorkFlow
 | **DAPyWorkFlow** | DAUtils, DAGraphicsView, DAPyBindQt | Qt::Core/Gui/Widgets | Python3, pybind11 |
 | **DAData** | Qt::Core/Gui/Widgets, DAPyBindQt, DAPyScripts | DAUtils | Python3, pybind11 |
 | **DAGraphicsView** | Qt::Core/Gui/Widgets/Xml/Svg | DAUtils | — |
-| **DAFigure** | Qt::Core/Gui/Widgets/PrintSupport/Concurrent/OpenGL, Qwt | DAUtils | — |
+| **DAFigure** | Qt::Core/Gui/Widgets/PrintSupport/Concurrent/OpenGL, Qwt, DAWidgets | DAUtils | — |
 | **DAGui** | DAUtils, DAMessageHandler, DAData, DAPyWorkFlow, DAFigure, DAPyBindQt, DAPyScripts, DAPyCommonWidgets, Qt, SARibbon, QtAdvancedDocking, qwt, DALiteCtk, quazip | Qt6::Core5Compat (if Qt6) | Python3, pybind11 |
 | **DAInterface** | **DAGui** (PUBLIC → 传递至所有消费者) | Qt, SARibbon, QtAdvancedDocking, qwt, DALiteCtk | Python3, pybind11 |
 | **DAPluginSupport** | **DAInterface** (PUBLIC), **DAPyWorkFlow** (PUBLIC), Qt | QtAdvancedDocking | Python3, pybind11 |
@@ -354,7 +354,7 @@ graph BT
 - 树视图：`DAFigureTreeView` + Models（图/子图/图元/轴 层级导航）
 - 撤销命令：`DAFigureWidgetCommands`（创建/删除/调整大小/附加图元）
 
-外部依赖：DAUtils (PRIVATE), Qwt (PUBLIC), Qt OpenGL/PrintSupport/Concurrent
+外部依赖：DAUtils (PRIVATE), Qwt (PUBLIC), DAWidgets (PRIVATE, DAFontEditPannelWidget/DAColorPickerButton 等基础 UI 控件，用于文本标注富文本编辑弹窗), Qt OpenGL/PrintSupport/Concurrent
 
 消费者：DAGui (PUBLIC link → 图表设置面板)，APP (传递 → 主窗口集成)
 

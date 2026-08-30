@@ -762,6 +762,7 @@ void DAAppRibbonArea::buildContextCategoryChartEdit()
     mPannelChartAssistTool->addMediumAction(mActions->actionChartEditorAddHLineMarker);
     mPannelChartAssistTool->addMediumAction(mActions->actionChartEditorAddVLineMarker);
     mPannelChartAssistTool->addLargeAction(mActions->actionChartEditorAddArrowMarker);
+    mPannelChartAssistTool->addMediumAction(mActions->actionChartEditorAddTextMarker);
 }
 
 /**

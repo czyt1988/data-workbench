@@ -1,0 +1,8 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg viewBox="0 0 200 200" version="1.1" xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+    <!-- 字母T：横条 -->
+    <path d="M 40 34 L 160 34 Q 168 34 168 42 L 168 54 Q 168 62 160 62 L 118 62 L 118 158 Q 118 166 110 166 L 90 166 Q 82 166 82 158 L 82 62 L 40 62 Q 32 62 32 54 L 32 42 Q 32 34 40 34 Z" fill="#497CAD"/>
+    <!-- 下方短基线：暗示图表上的文本标注 -->
+    <path d="M 60 180 L 140 180 Q 146 180 146 186 L 146 190 Q 146 196 140 196 L 60 196 Q 54 196 54 190 L 54 186 Q 54 180 60 180 Z" fill="#497CAD"/>
+</svg>
