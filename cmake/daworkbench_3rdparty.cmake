@@ -171,6 +171,39 @@ function(da_link_3rdparty _target)
     endforeach()
 endfunction()
 
+# 预查找全部第三方包（仅创建 IMPORTED 目标，不链接到任何 target）。
+# 供插件 standalone 构建使用：DAWorkbenchTargets.cmake 的导出目标 INTERFACE 依赖
+# pybind11::headers / qwt::plot / ads::... 等第三方目标，必须先存在才能 include。
+function(da_link_3rdparty_find_all)
+    # 常规 lib/cmake 包
+    foreach(_pkg SARibbonBar DALiteCtk DAWidgets spdlog qwt)
+        _da_3rdparty_find_in_libcmake(${_pkg} "")
+    endforeach()
+    # share/cmake 包（包名与逻辑名不同的在此映射）
+    _da_3rdparty_find_in_sharecmake(pybind11 "")
+    _da_3rdparty_find_in_sharecmake(tsl-ordered-map "")
+    # ADS：新旧包名回退
+    set(_ads_new qtadvanceddocking-qt${QT_VERSION_MAJOR})
+    find_package(${_ads_new} CONFIG QUIET)
+    if(NOT ${_ads_new}_FOUND)
+        _da_3rdparty_find_in_libcmake(qt${QT_VERSION_MAJOR}advanceddocking "")
+    endif()
+    # quazip
+    find_package(QuaZip-Qt${QT_VERSION_MAJOR} QUIET)
+    if(NOT QuaZip-Qt${QT_VERSION_MAJOR}_FOUND)
+        set(_quazip_pkg QuaZip-Qt${QT_VERSION_MAJOR})
+        file(GLOB _da_quazip LIST_DIRECTORIES true "${DA_INSTALL_LIB_CMAKE_PATH}/${_quazip_pkg}*")
+        if(_da_quazip)
+            list(SORT _da_quazip)
+            list(REVERSE _da_quazip)
+            list(GET _da_quazip 0 _da_quazip_dir)
+            find_package(${_quazip_pkg} PATHS ${_da_quazip_dir} NO_DEFAULT_PATH QUIET)
+        endif()
+    endif()
+    # python（Interpreter + Development）
+    find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
+endfunction()
+
 # =============================================================================
 # 以下为旧版 damacro_import_* 宏（单参版），已被 da_link_3rdparty 取代。
 # 过渡期保留（旧调用点未迁移完），全部迁移完成后将整体删除。

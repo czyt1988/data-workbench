@@ -280,6 +280,8 @@ function(da_add_executable)
         AUTOMOC ON
         AUTOUIC ON
         AUTORCC ON
+        CXX_STANDARD 17
+        CXX_STANDARD_REQUIRED ON
         CXX_EXTENSIONS OFF
         DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX}
         VERSION ${DA_AE_VERSION}
@@ -375,6 +377,7 @@ endfunction()
 #
 # 使用前插件 CMakeLists 顶部需自行完成引导（cmake_minimum_required / project /
 # 计算 DAWorkbench_INSTALL_DIR 并设置 CMAKE_INSTALL_PREFIX / include 工具文件）。
+# 顶层构建时（CMAKE_SOURCE_DIR != 项目自身目录）由顶层已设置好相关环境。
 #
 # da_add_plugin(
 #     NAME <name>
@@ -428,6 +431,8 @@ function(da_add_plugin)
         AUTOMOC ON
         AUTOUIC ON
         AUTORCC ON
+        CXX_STANDARD 17
+        CXX_STANDARD_REQUIRED ON
         CXX_EXTENSIONS OFF
         DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX}
         VERSION ${DA_AP_VERSION}

@@ -284,6 +284,8 @@ endif()
 
 
 install(FILES
+    "${CMAKE_CURRENT_LIST_DIR}/cmake/DAWorkbench.cmake"
+    "${CMAKE_CURRENT_LIST_DIR}/cmake/daworkbench_3rdparty.cmake"
     "${CMAKE_CURRENT_LIST_DIR}/cmake/daworkbench_plugin_utils.cmake"
     "${CMAKE_CURRENT_LIST_DIR}/cmake/create_win32_resource_version.cmake"
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${DA_PROJECT_NAME}
