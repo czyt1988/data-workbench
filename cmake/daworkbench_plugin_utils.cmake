@@ -2,21 +2,39 @@
 # DAWorkbench 插件构建支持（standalone 模式）
 #
 # 本文件随 DAWorkbench 安装到 lib/cmake/DAWorkbench/ 下，供插件脱离主工程独立构建时
-# include。提供 da_plugin_bootstrap() 完成 standalone 引导：
-#   1. project() 先行（确保 CMAKE_CXX_COMPILER_ID / CMAKE_SIZEOF_VOID_P 已定义，
-#      否则安装目录名公式会出现空段，见历史 bug）
-#   2. 计算 DAWorkbench 安装目录并设置 CMAKE_INSTALL_PREFIX / CMAKE_PREFIX_PATH /
-#      DAWorkbench_DIR，使 find_package(DAWorkbench) 与第三方库查找均指向该目录
-#   3. include DAWorkbench.cmake 与 daworkbench_3rdparty.cmake（提供 da_add_plugin /
-#      da_link_3rdparty）
+# include。提供两个入口：
 #
-# 用法（插件 CMakeLists 顶部，代替原 27 行手写引导块）：
+# - da_plugin_bootstrap(name desc)：单插件工程的一站式引导（project() + 环境），
+#   适用场景：插件 CMakeLists 即顶层 CMakeLists（data-workbench/plugins/* 模式）
+#
+# - da_plugin_env_setup()：仅设置环境（不含 project()），适用场景：宿主工程自身有
+#   project(带 VERSION) 且包含多个插件子目录（如 GreeDataWorkbench：根 project 的
+#   PROJECT_VERSION 被 updater 版本播种/打包命名依赖，不能被插件 project() 覆盖）。
+#   调用前需设置 DAWorkbench_INSTALL_PATH 指向 DAWorkbench 安装目录（布局非
+#   "本目录/../bin_..." 的工程必须显式传入）。
+#
+# 环境设置内容：
+#   1. 计算 DAWorkbench 安装目录并设置 CMAKE_INSTALL_PREFIX / CMAKE_PREFIX_PATH /
+#      DAWorkbench_DIR，使 find_package(DAWorkbench) 与第三方库查找均指向该目录
+#   2. include DAWorkbench.cmake 与 daworkbench_3rdparty.cmake（提供 da_add_plugin /
+#      da_link_3rdparty）
+#   3. 预 find DAWorkbench 导出目标的全部传递依赖（Qt 组件/第三方库/OpenGL）
+#   4. C++17 / DEBUG_POSTFIX / MSVC /utf-8
+#
+# 用法一（单插件工程，代替原 27 行手写引导块）：
 #   cmake_minimum_required(VERSION 3.16)
 #   include("${CMAKE_CURRENT_LIST_DIR}/../../cmake/daworkbench_plugin_utils.cmake")
 #   da_plugin_bootstrap("MyPlugin" "My plugin description")
-#   # 此后可用 da_add_plugin(...)
+#   da_add_plugin(...)
 #
-# 顶层构建时（作为主工程 add_subdirectory 的子目录）不需要调用本函数：
+# 用法二（多插件宿主工程，根 CMakeLists）：
+#   project(MyHost VERSION 1.0.0 LANGUAGES CXX)
+#   set(DAWorkbench_INSTALL_PATH "${CMAKE_CURRENT_LIST_DIR}/data-workbench/bin_Release_qt...")
+#   include("${DAWorkbench_DIR}/daworkbench_plugin_utils.cmake")
+#   da_plugin_env_setup()
+#   add_subdirectory(插件目录)
+#
+# 顶层构建时（作为主工程 add_subdirectory 的子目录）不需要调用这两个函数：
 # 主工程根 CMakeLists 已 include 全部工具文件并设置好环境。
 #
 
@@ -30,9 +48,12 @@ if(MSVC)
     add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
 endif()
 
-function(da_plugin_bootstrap _plugin_name _plugin_description)
-    project(${_plugin_name} LANGUAGES CXX DESCRIPTION ${_plugin_description})
-
+# ---------------------------------------------------------------------------
+# 环境设置（不含 project()）。da_plugin_bootstrap 内部调用本函数；
+# 多插件宿主工程的根 CMakeLists 也可直接调用（此时须先自行 project() 并设置
+# DAWorkbench_INSTALL_PATH）。函数结束把关键变量上抛到调用者作用域。
+# ---------------------------------------------------------------------------
+function(da_plugin_env_setup)
     find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
 
     # 平台判断（project() 之后 CMAKE_SIZEOF_VOID_P 才有值）
@@ -55,10 +76,10 @@ function(da_plugin_bootstrap _plugin_name _plugin_description)
     endif()
 
     # DAWorkbench 安装目录：与主工程安装布局一致（bin_<Config>_qt<X>_<Compiler>_<Arch>），
-    # 可通过 DAWorkbench_INSTALL_PATH 覆盖
+    # 可通过 DAWorkbench_INSTALL_PATH 覆盖（非默认布局的宿主工程必须传入）
     if(NOT DEFINED DAWorkbench_INSTALL_PATH)
         set(DAWorkbench_INSTALL_PATH "${CMAKE_CURRENT_LIST_DIR}/../../bin_${_config_type}_qt${QT_VERSION}_${CMAKE_CXX_COMPILER_ID}_${_platform_name}")
-        message(STATUS "da_plugin_bootstrap: DAWorkbench_INSTALL_PATH not defined, set to ${DAWorkbench_INSTALL_PATH}")
+        message(STATUS "da_plugin_env_setup: DAWorkbench_INSTALL_PATH not defined, set to ${DAWorkbench_INSTALL_PATH}")
     endif()
     set(DAWorkbench_INSTALL_DIR ${DAWorkbench_INSTALL_PATH})
     set(DAWorkbench_DIR "${DAWorkbench_INSTALL_DIR}/lib/cmake/DAWorkbench")
@@ -104,9 +125,16 @@ function(da_plugin_bootstrap _plugin_name _plugin_description)
     # 覆盖范围内，逐一预 find 以创建 IMPORTED 目标
     da_link_3rdparty_find_all()
 
+    # C++17 与 Debug 后缀（原 damacro_plugin_setting 的职责）
+    set(CMAKE_CXX_STANDARD 17)
+    set(CMAKE_CXX_STANDARD_REQUIRED ON)
+    set(CMAKE_DEBUG_POSTFIX "d")
+
+    # 上抛到调用者作用域（add_subdirectory 的子目录会继承这些目录级变量）
+    set(DA_MIN_QT_VERSION 5.14 PARENT_SCOPE)
     set(DA_PROJECT_NAME "DAWorkbench" PARENT_SCOPE)
     set(DA_VERSION "${DAWorkbench_VERSION}" PARENT_SCOPE)
-    set(DAWorkbench_INSTALL_DIR ${DAWorkbench_INSTALL_DIR} PARENT_SCOPE)
+    set(DAWorkbench_INSTALL_DIR "${DAWorkbench_INSTALL_DIR}" PARENT_SCOPE)
     set(DAWorkbench_DIR "${DAWorkbench_DIR}" PARENT_SCOPE)
     set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH}" PARENT_SCOPE)
     set(CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}" PARENT_SCOPE)
@@ -117,12 +145,35 @@ function(da_plugin_bootstrap _plugin_name _plugin_description)
     # find_package(Qt${QT_VERSION_MAJOR} ...) 必需
     set(QT_VERSION_MAJOR "${QT_VERSION_MAJOR}" PARENT_SCOPE)
     set(QT_VERSION "${QT_VERSION}" PARENT_SCOPE)
+    set(CMAKE_CXX_STANDARD "${CMAKE_CXX_STANDARD}" PARENT_SCOPE)
+    set(CMAKE_CXX_STANDARD_REQUIRED "${CMAKE_CXX_STANDARD_REQUIRED}" PARENT_SCOPE)
+    set(CMAKE_DEBUG_POSTFIX "${CMAKE_DEBUG_POSTFIX}" PARENT_SCOPE)
 
-    # C++17 与 Debug 后缀（原 damacro_plugin_setting 的职责）
-    set(CMAKE_CXX_STANDARD 17 PARENT_SCOPE)
-    set(CMAKE_CXX_STANDARD_REQUIRED ON PARENT_SCOPE)
-    set(CMAKE_DEBUG_POSTFIX "d")
-    set(CMAKE_DEBUG_POSTFIX "d" PARENT_SCOPE)
+    message(STATUS "da_plugin_env_setup: DAWorkbench install prefix ${CMAKE_INSTALL_PREFIX}")
+endfunction()
 
+# ---------------------------------------------------------------------------
+# 单插件工程的一站式引导：project() 先行（确保 CMAKE_CXX_COMPILER_ID /
+# CMAKE_SIZEOF_VOID_P 已定义，否则安装目录名公式会出现空段）+ da_plugin_env_setup。
+# ---------------------------------------------------------------------------
+function(da_plugin_bootstrap _plugin_name _plugin_description)
+    project(${_plugin_name} LANGUAGES CXX DESCRIPTION ${_plugin_description})
+    da_plugin_env_setup()
+    # env_setup 的 PARENT_SCOPE 只上抛到本函数作用域，需继续上抛给真正的调用者
+    set(DA_MIN_QT_VERSION 5.14 PARENT_SCOPE)
+    set(DA_PROJECT_NAME "DAWorkbench" PARENT_SCOPE)
+    set(DA_VERSION "${DA_VERSION}" PARENT_SCOPE)
+    set(DAWorkbench_INSTALL_DIR "${DAWorkbench_INSTALL_DIR}" PARENT_SCOPE)
+    set(DAWorkbench_DIR "${DAWorkbench_DIR}" PARENT_SCOPE)
+    set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH}" PARENT_SCOPE)
+    set(CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}" PARENT_SCOPE)
+    set(DA_INSTALL_LIB_CMAKE_PATH "${DA_INSTALL_LIB_CMAKE_PATH}" PARENT_SCOPE)
+    set(DA_INSTALL_LIB_SHARE_PATH "${DA_INSTALL_LIB_SHARE_PATH}" PARENT_SCOPE)
+    set(tsl-ordered-map_DIR "${tsl-ordered-map_DIR}" PARENT_SCOPE)
+    set(QT_VERSION_MAJOR "${QT_VERSION_MAJOR}" PARENT_SCOPE)
+    set(QT_VERSION "${QT_VERSION}" PARENT_SCOPE)
+    set(CMAKE_CXX_STANDARD "${CMAKE_CXX_STANDARD}" PARENT_SCOPE)
+    set(CMAKE_CXX_STANDARD_REQUIRED "${CMAKE_CXX_STANDARD_REQUIRED}" PARENT_SCOPE)
+    set(CMAKE_DEBUG_POSTFIX "${CMAKE_DEBUG_POSTFIX}" PARENT_SCOPE)
     message(STATUS "da_plugin_bootstrap: ${_plugin_name} -> install prefix ${CMAKE_INSTALL_PREFIX}")
 endfunction()

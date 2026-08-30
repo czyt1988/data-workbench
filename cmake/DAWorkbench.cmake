@@ -375,9 +375,10 @@ endfunction()
 # da_add_plugin —— 插件一站式声明（合并原 damacro_plugin_setting /
 # damacro_plugin_install 及各插件手写属性块）
 #
-# 使用前插件 CMakeLists 顶部需自行完成引导（cmake_minimum_required / project /
-# 计算 DAWorkbench_INSTALL_DIR 并设置 CMAKE_INSTALL_PREFIX / include 工具文件）。
-# 顶层构建时（CMAKE_SOURCE_DIR != 项目自身目录）由顶层已设置好相关环境。
+# 使用前插件 CMakeLists 顶部需自行完成引导：
+# - 单插件工程：include daworkbench_plugin_utils.cmake 后调用 da_plugin_bootstrap()
+# - 多插件宿主工程（根 CMakeLists 有自己的 project(VERSION)）：调用 da_plugin_env_setup()
+# - 顶层构建（作为主工程 add_subdirectory 子目录）：主工程已设置好环境，无需引导
 #
 # da_add_plugin(
 #     NAME <name>
@@ -389,11 +390,14 @@ endfunction()
 #     [LINK_PUBLIC <mod...>] [LINK_PRIVATE <mod...>]   # DAWorkbench::<mod>
 #     [THIRDPARTY <lib...>]             # 自动以 INSTALL_DIR=DAWorkbench_INSTALL_DIR 导入
 #     [INCLUDE_PRIVATE <dir...>]        # 私有 include 目录（绝对或相对路径）
+#     [OUTPUT_TO_INSTALL]               # DLL 直接输出到安装目录 bin/plugins
+#                                       #   （默认输出构建树 ${CMAKE_BINARY_DIR}/bin/plugins）
 # )
-# 输出：构建树 lib/plugins 与 bin/plugins，安装到 bin/plugins（不进导出集）
+# 输出：构建树 lib/plugins 与 bin/plugins（或安装目录 bin/plugins），安装到 bin/plugins
+# （不进导出集）
 # ===========================================================================
 function(da_add_plugin)
-    set(_opts "")
+    set(_opts OUTPUT_TO_INSTALL)
     set(_one NAME VERSION BUILD_DEFINE)
     set(_multi SOURCES QT_PUBLIC QT_PRIVATE QT_WIN32_PUBLIC LINK_PUBLIC LINK_PRIVATE
         THIRDPARTY INCLUDE_PRIVATE COMPILE_DEFINITIONS_PRIVATE)
@@ -427,6 +431,14 @@ function(da_add_plugin)
 
     add_library(${_name} SHARED ${DA_AP_SOURCES})
     target_compile_definitions(${_name} PRIVATE ${DA_AP_BUILD_DEFINE})
+    # 默认输出到构建树（bin/plugins，与主工程测试/调试布局一致）；
+    # OUTPUT_TO_INSTALL：宿主工程直接把 DLL 输出到 DAWorkbench 安装目录的 bin/plugins
+    # （GreeDataWorkbench 等垂直领域工程的模式，构建完即可被主程序加载，无需 install 步骤）
+    if(DA_AP_OUTPUT_TO_INSTALL)
+        set(_plugin_runtime_dir "${DAWorkbench_INSTALL_DIR}/bin/plugins")
+    else()
+        set(_plugin_runtime_dir "${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}/plugins")
+    endif()
     set_target_properties(${_name} PROPERTIES
         AUTOMOC ON
         AUTOUIC ON
@@ -439,7 +451,7 @@ function(da_add_plugin)
         EXPORT_NAME ${_name}
         ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib/plugins"
         LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib/plugins"
-        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}/plugins"
+        RUNTIME_OUTPUT_DIRECTORY "${_plugin_runtime_dir}"
     )
 
     foreach(_m ${DA_AP_QT_PUBLIC})
