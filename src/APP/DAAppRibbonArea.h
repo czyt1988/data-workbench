@@ -76,46 +76,9 @@ class DAPyWorkFlowOperateWidget;
  *
  * @todo  后续抽象出DAAppRibbonAreaInterface，DAAppRibbonArea继承DAAppRibbonAreaInterface，并把可暴露的方法暴露出来，实现插件化
  *
- *```
- * 标签的固定objectname
- * 主页标签:da-ribbon-category-main
- *     通用pannel:da-ribbon-pannel-main.common
- *     数据操作pannel：da-pannel-main.data-opt
- *     绘图操作pannel：da-pannel-main.chart-opt
- *     工作流pannel：da-pannel-main.workflow
- *     设置pannel：da-pannel-main.setting
- * 数据标签:da-ribbon-category-data
- *     数据操作pannel:da-pannel-data.data-opt
- *     数据文件夹操作pannel:da-pannel-data.folder-opt
- * 视图标签:da-ribbon-category-view
- *     视图pannel:da-pannel-view.main
- * 编辑标签:da-ribbon-category-edit
- *     工作流编辑pannel:da-pannel-edit.workflow
- * 绘图标签：da-ribbon-category-figure
- *     绘图编辑：da-pannel-figure.fig_setting
- *     添加绘图：da-pannel-figure.chart-add
- * 工作流编辑上下文标签：da-ribbon-contextcategory-workflow
- *  工作流视图category：da-ribbon-category-workflow.view
- *     视图pannel：da-pannel-context.workflow.view
- *     导出pannel：da-pannel-context.workflow.export
- *  工作流编辑category：da-ribbon-category-workflow.edit
- *     条目pannel：da-pannel-context.workflow.item
- *     文本pannel：da-pannel-context.workflow.text
- *     背景pannel：da-pannel-context.workflow.background
- *     分组pannel：da-pannel-context.workflow.group
- *  工作流运行category：da-ribbon-category-workflow.run
- *     运行pannel：da-pannel-context.workflow.run
- *
- * DataFrame上下文标签:da-ribbon-contextcategory-dataframe
- *   DataFrame操作category:da-ribbon-category-dataframe.operate
- *      坐标设置pannel:da-pannel-dataframe.operate.axes
- *      类型设置pannel:da-pannel-dataframe.operate.type
- * Chart上下文标签：da-ribbon-contextcategory-chart
- *  Chart操作category：da-ribbon-category-chart.opt
- *     绘图窗口设置pannel:da-pannel-context-chartedit.fig_setting
- *     图表设置pannel:da-pannel-context-chartedit.chart_setting
- *  Chart编辑category：da-ribbon-category-chart.edit
- * ```
+ * 标签和panel的固定objectname契约统一定义在 @ref DAUiObjectNames.h（单一事实来源），
+ * 本类构建时全部通过 DA::UiNames::Ribbon / DA::UiNames::Menu 常量赋值，
+ * 插件侧查询请同样引用该头文件的常量，禁止手写字符串字面量。
  */
 class DAAppRibbonArea : public DARibbonAreaInterface
 {

@@ -12,6 +12,7 @@
 #include "DAAppProject.h"
 #include "DALogCategory.h"
 #include "DAUIInterface.h"
+#include "DAUiObjectNames.h"
 #include "DACommandInterface.h"
 #include "DAAppCommand.h"
 #include "DAAppDataManager.h"
@@ -189,50 +190,50 @@ void DAAppDockingArea::buildDockingArea()
     // QLabel* centerLabel = new QLabel(mApp);
     // auto center         = createCenterDockWidget(centerLabel, QStringLiteral("centerLabel"));
 
-    mWorkFlowOperateDock = createCenterDockWidget(mWorkFlowOperateWidget, QStringLiteral("da_workFlowOperateWidgetDock"));
+    mWorkFlowOperateDock = createCenterDockWidget(mWorkFlowOperateWidget, QString::fromUtf8(UiNames::Dock::WorkFlowOperateWidgetDock));
     mWorkFlowOperateDock->setIcon(QIcon(":/app/bright/Icon/showWorkFlow.svg"));
     mWorkFlowOperateDock->setFeature(ads::CDockWidget::DockWidgetClosable, false);
 
     mChartOperateDock =
-        createDockWidgetTabAtCenterDockArea(mChartOperateWidget, QStringLiteral("da_chartOperateWidgetDock"));
+        createDockWidgetTabAtCenterDockArea(mChartOperateWidget, QString::fromUtf8(UiNames::Dock::ChartOperateWidgetDock));
     mChartOperateDock->setIcon(QIcon(":/app/bright/Icon/showChart.svg"));
     mChartOperateDock->setToggleViewActionMode(ads::CDockWidget::ActionModeToggle);
     mChartOperateDock->setFeature(ads::CDockWidget::DockWidgetClosable, false);
 
-    mDataOperateDock = createDockWidgetTabAtCenterDockArea(mDataOperateWidget, QStringLiteral("da_dataOperateWidgetDock"));
+    mDataOperateDock = createDockWidgetTabAtCenterDockArea(mDataOperateWidget, QString::fromUtf8(UiNames::Dock::DataOperateWidgetDock));
     mDataOperateDock->setIcon(QIcon(":/app/bright/Icon/showTable.svg"));
     mDataOperateDock->setFeature(ads::CDockWidget::DockWidgetClosable, false);
     mDataOperateDock->raise();
 
     // 左侧管理区 - 工作流节点窗口
     mWorkflowNodeListDock = createDockWidget(
-        mWorkflowNodeListWidget, ads::LeftDockWidgetArea, QStringLiteral("da_workflowNodeListWidgetDock"));
+        mWorkflowNodeListWidget, ads::LeftDockWidgetArea, QString::fromUtf8(UiNames::Dock::WorkflowNodeListWidgetDock));
     mWorkflowNodeListDock->setFeature(ads::CDockWidget::DockWidgetClosable, false);
 
     mChartManageDock = createDockWidgetAsTab(
-        mChartManageWidget, QStringLiteral("da_chartManageWidgetDock"), mWorkflowNodeListDock->dockAreaWidget());
+        mChartManageWidget, QString::fromUtf8(UiNames::Dock::ChartManageWidgetDock), mWorkflowNodeListDock->dockAreaWidget());
     mChartManageDock->setFeature(ads::CDockWidget::DockWidgetClosable, false);
 
     mDataManageDock = createDockWidgetAsTab(
-        mDataManageWidget, QStringLiteral("da_dataManageWidgetDock"), mWorkflowNodeListDock->dockAreaWidget());
+        mDataManageWidget, QString::fromUtf8(UiNames::Dock::DataManageWidgetDock), mWorkflowNodeListDock->dockAreaWidget());
     mDataManageDock->setFeature(ads::CDockWidget::DockWidgetClosable, false);
     mDataManageDock->raise();
 
     // 右侧附属区 - 添加设置视图
     mSettingContainerDock =
-        createDockWidget(mSettingContainerWidget, ads::RightDockWidgetArea, QStringLiteral("da_settingDock"));
+        createDockWidget(mSettingContainerWidget, ads::RightDockWidgetArea, QString::fromUtf8(UiNames::Dock::SettingDock));
     mSettingContainerDock->setIcon(QIcon(":/app/bright/Icon/showSettingWidget.svg"));
     // Agent 助手 Dock —— 作为右侧附属区的标签页，与"设置"同组
     mAgentDockWidget = new DAAgentDockWidget(mApp);
-    mAgentDockWidget->setObjectName(QStringLiteral("da_agentDockWidget"));
+    mAgentDockWidget->setObjectName(QString::fromUtf8(UiNames::Dock::AgentDockWidget));
     mAgentDock = createDockWidgetAsTab(
         mAgentDockWidget,
-        QStringLiteral("da_agentDockWidgetDock"),
+        QString::fromUtf8(UiNames::Dock::AgentDockWidgetDock),
         mSettingContainerDock->dockAreaWidget());
     mAgentDock->setIcon(QIcon(":/app/bright/Icon/showAgent.svg"));
 
     // 日志窗口 —— pin to right，auto-hide 到右侧边栏
-    mMessageLogDock = new ads::CDockWidget(dockManager(), QStringLiteral("da_messageLogViewWidgetDock"));
+    mMessageLogDock = new ads::CDockWidget(dockManager(), QString::fromUtf8(UiNames::Dock::MessageLogViewWidgetDock));
     mMessageLogDock->setWidget(mMessageLogViewWidget);
     mMessageLogDock->setIcon(QIcon(":/app/bright/Icon/showInfomation.svg"));
     dockManager()->addAutoHideDockWidget(ads::SideBarRight, mMessageLogDock);
@@ -258,9 +259,9 @@ void DAAppDockingArea::buildDockingArea()
 void DAAppDockingArea::buildWorkflowAboutWidgets()
 {
     mWorkFlowOperateWidget = new DAAppWorkFlowOperateWidget(mApp);
-    mWorkFlowOperateWidget->setObjectName(QStringLiteral("da_workFlowOperateWidget"));
+    mWorkFlowOperateWidget->setObjectName(QString::fromUtf8(UiNames::Dock::WorkFlowOperateWidget));
     mWorkflowNodeListWidget = new DAPyWorkFlowNodeListWidget(mApp);
-    mWorkflowNodeListWidget->setObjectName(QStringLiteral("da_workflowNodeListWidget"));
+    mWorkflowNodeListWidget->setObjectName(QString::fromUtf8(UiNames::Dock::WorkflowNodeListWidget));
     // 把工作流操作窗口设置到工程中
     DAAppProject* project = DA_APP_CORE.getAppProject();
     project->setDockingAreaInterface(this);
@@ -274,13 +275,13 @@ void DAAppDockingArea::buildChartAboutWidgets()
     DADataManager* dmgr = mDataMgr->dataManager();
 
     DAAppChartOperateWidget* appChartOptWidget = new DAAppChartOperateWidget(mApp);
-    appChartOptWidget->setObjectName(QStringLiteral("da_chartOperateWidget"));
+    appChartOptWidget->setObjectName(QString::fromUtf8(UiNames::Dock::ChartOperateWidget));
     appChartOptWidget->setDataManager(dmgr);
     appChartOptWidget->setupFigureFactory(new DAAppFigureFactory());
     mChartOperateWidget = appChartOptWidget;
 
     mChartManageWidget = new DAAppChartManageWidget(mApp);
-    mChartManageWidget->setObjectName(QStringLiteral("da_chartManageWidget"));
+    mChartManageWidget->setObjectName(QString::fromUtf8(UiNames::Dock::ChartManageWidget));
 
     mChartManageWidget->setChartOperateWidget(mChartOperateWidget);
 }
@@ -292,10 +293,10 @@ void DAAppDockingArea::buildDataAboutWidgets()
 {
     DADataManager* dmgr = mDataMgr->dataManager();
     mDataOperateWidget  = new DADataOperateWidget(dmgr, mApp);
-    mDataOperateWidget->setObjectName(QStringLiteral("da_dataOperateWidget"));
+    mDataOperateWidget->setObjectName(QString::fromUtf8(UiNames::Dock::DataOperateWidget));
 
     mDataManageWidget = new DADataManageWidget(mApp);
-    mDataManageWidget->setObjectName(QStringLiteral("da_dataManageWidget"));
+    mDataManageWidget->setObjectName(QString::fromUtf8(UiNames::Dock::DataManageWidget));
     mDataManageWidget->setDataManager(dmgr);
 }
 
@@ -306,10 +307,10 @@ void DAAppDockingArea::buildOtherWidgets()
 {
     // 右侧附属区 - 添加设置视图
     mSettingContainerWidget = new DASettingContainerWidget(mApp);
-    mSettingContainerWidget->setObjectName(QStringLiteral("da_settingContainerWidget"));
+    mSettingContainerWidget->setObjectName(QString::fromUtf8(UiNames::Dock::SettingContainerWidget));
     // 日志窗口
     mMessageLogViewWidget = new DAMessageLogViewWidget(mApp);
-    mMessageLogViewWidget->setObjectName(QStringLiteral("da_messageLogViewWidget"));
+    mMessageLogViewWidget->setObjectName(QString::fromUtf8(UiNames::Dock::MessageLogViewWidget));
 }
 
 /**
@@ -523,8 +524,8 @@ bool DAAppDockingArea::showMarkdownFile(const QString& filePath)
     // 首次：创建 markdown 控件 + dock 标签页，挂到中央区
     if (nullptr == mMarkdownView) {
         mMarkdownView = new DAMarkdownView(mApp);
-        mMarkdownView->setObjectName(QStringLiteral("da_markdownView"));
-        mMarkdownDock = createDockWidgetTabAtCenterDockArea(mMarkdownView, QStringLiteral("da_markdownViewDock"));
+        mMarkdownView->setObjectName(QString::fromUtf8(UiNames::Dock::MarkdownView));
+        mMarkdownDock = createDockWidgetTabAtCenterDockArea(mMarkdownView, QString::fromUtf8(UiNames::Dock::MarkdownViewDock));
         mMarkdownDock->setIcon(QIcon(":/app/bright/Icon/markdown.svg"));
         // 默认标题（无文件时）
         mMarkdownDock->setWindowTitle(tr("Markdown Viewer"));  // cn:Markdown 查看器

@@ -144,7 +144,11 @@ void DAActionsInterface::retranslateUi()
  */
 QAction* DAActionsInterface::findAction(const char* objname)
 {
-    return d_ptr->mObjectToAction.value(objname, nullptr);
+    QAction* act = d_ptr->mObjectToAction.value(objname, nullptr);
+    if (nullptr == act) {
+        qWarning() << "DAActionsInterface::findAction: no action named" << objname;
+    }
+    return act;
 }
 
 /**
@@ -154,5 +158,9 @@ QAction* DAActionsInterface::findAction(const char* objname)
  */
 QAction* DAActionsInterface::findAction(const QString& objname)
 {
-    return d_ptr->mObjectToAction.value(objname, nullptr);
+    QAction* act = d_ptr->mObjectToAction.value(objname, nullptr);
+    if (nullptr == act) {
+        qWarning() << "DAActionsInterface::findAction: no action named" << objname;
+    }
+    return act;
 }

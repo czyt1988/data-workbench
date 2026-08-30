@@ -1,4 +1,5 @@
 #include "DAAppActions.h"
+#include "DAUiObjectNames.h"
 #include <QActionGroup>
 #include <QPainter>
 #include <QVector>
@@ -46,164 +47,164 @@ void DAAppActions::buildActions()
 void DAAppActions::buildMainAction()
 {
     // Main Category
-    actionOpen          = createAction("actionOpen", ":/app/bright/Icon/file.svg");
-    actionSave          = createAction("actionSave", ":/app/bright/Icon/save.svg");
-    actionSaveAs        = createAction("actionSaveAs", ":/app/bright/Icon/save-as.svg");
-    actionAppendProject = createAction("actionAppendProject", ":/app/bright/Icon/appendProject.svg");
-    actionOpenMarkdown  = createAction("actionOpenMarkdown", ":/app/bright/Icon/markdown.svg");
+    actionOpen          = createAction(UiNames::Action::Open, ":/app/bright/Icon/file.svg");
+    actionSave          = createAction(UiNames::Action::Save, ":/app/bright/Icon/save.svg");
+    actionSaveAs        = createAction(UiNames::Action::SaveAs, ":/app/bright/Icon/save-as.svg");
+    actionAppendProject = createAction(UiNames::Action::AppendProject, ":/app/bright/Icon/appendProject.svg");
+    actionOpenMarkdown  = createAction(UiNames::Action::OpenMarkdown, ":/app/bright/Icon/markdown.svg");
     // 注意Redo/undo action在ribbonArea中生成
     actionRedo    = nullptr;
     actionUndo    = nullptr;
-    actionSetting = createAction("actionSetting", ":/app/bright/Icon/setting.svg");
+    actionSetting = createAction(UiNames::Action::Setting, ":/app/bright/Icon/setting.svg");
     // Config Category
-    actionPluginManager = createAction("actionPluginManager", ":/app/bright/Icon/plugin.svg");
+    actionPluginManager = createAction(UiNames::Action::PluginManager, ":/app/bright/Icon/plugin.svg");
     //
-    actionAbout = createAction("actionAbout", ":/app/bright/Icon/about.svg");
+    actionAbout = createAction(UiNames::Action::About, ":/app/bright/Icon/about.svg");
 }
 
 void DAAppActions::buildDataAction()
 {
     // Data Category
-    actionAddData    = createAction("actionAddData", ":/app/bright/Icon/addData.svg");
-    actionRemoveData = createAction("actionRemoveData", ":/app/bright/Icon/removeData.svg");
+    actionAddData    = createAction(UiNames::Action::AddData, ":/app/bright/Icon/addData.svg");
+    actionRemoveData = createAction(UiNames::Action::RemoveData, ":/app/bright/Icon/removeData.svg");
     // 数据操作的上下文标签 Data Operate Context Category
-    actionRemoveRow         = createAction("actionRemoveRow", ":/app/bright/Icon/removeRow.svg");
-    actionRemoveColumn      = createAction("actionRemoveColumn", ":/app/bright/Icon/removeColumn.svg");
-    actionInsertRow         = createAction("actionInsertRow", ":/app/bright/Icon/insertRow.svg");
-    actionInsertRowAbove    = createAction("actionInsertRowAbove", ":/app/bright/Icon/insertRowAbove.svg");
-    actionInsertColumnRight = createAction("actionInsertColumnRight", ":/app/bright/Icon/insertColumnRight.svg");
-    actionInsertColumnLeft  = createAction("actionInsertColumnLeft", ":/app/bright/Icon/insertColumnLeft.svg");
-    actionRenameColumns     = createAction("actionRenameColumns", ":/app/bright/Icon/renameColumns.svg");
-    actionRenameColumn      = createAction("actionRenameColumn", ":/app/bright/Icon/renameColumn.svg");
-    actionCopyColumnName    = createAction("actionCopyColumnName", ":/app/bright/Icon/copyColumnName.svg");
-    actionGotoMax           = createAction("actionGotoMax", ":/app/bright/Icon/gotoMax.svg");
-    actionGotoMin           = createAction("actionGotoMin", ":/app/bright/Icon/gotoMin.svg");
-    actionShowColumnDescribe = createAction("actionShowColumnDescribe", ":/app/bright/Icon/showInfomation.svg");
-    actionRemoveCell        = createAction("actionRemoveCell", ":/app/bright/Icon/removeCell.svg");
-    actionCastToNum         = createAction("actionCastToNum", ":/app/bright/Icon/castToNum.svg");
-    actionCastToString      = createAction("actionCastToString", ":/app/bright/Icon/castToString.svg");
-    actionCastToDatetime    = createAction("actionCastToDatetime", ":/app/bright/Icon/castToDatetime.svg");
+    actionRemoveRow         = createAction(UiNames::Action::RemoveRow, ":/app/bright/Icon/removeRow.svg");
+    actionRemoveColumn      = createAction(UiNames::Action::RemoveColumn, ":/app/bright/Icon/removeColumn.svg");
+    actionInsertRow         = createAction(UiNames::Action::InsertRow, ":/app/bright/Icon/insertRow.svg");
+    actionInsertRowAbove    = createAction(UiNames::Action::InsertRowAbove, ":/app/bright/Icon/insertRowAbove.svg");
+    actionInsertColumnRight = createAction(UiNames::Action::InsertColumnRight, ":/app/bright/Icon/insertColumnRight.svg");
+    actionInsertColumnLeft  = createAction(UiNames::Action::InsertColumnLeft, ":/app/bright/Icon/insertColumnLeft.svg");
+    actionRenameColumns     = createAction(UiNames::Action::RenameColumns, ":/app/bright/Icon/renameColumns.svg");
+    actionRenameColumn      = createAction(UiNames::Action::RenameColumn, ":/app/bright/Icon/renameColumn.svg");
+    actionCopyColumnName    = createAction(UiNames::Action::CopyColumnName, ":/app/bright/Icon/copyColumnName.svg");
+    actionGotoMax           = createAction(UiNames::Action::GotoMax, ":/app/bright/Icon/gotoMax.svg");
+    actionGotoMin           = createAction(UiNames::Action::GotoMin, ":/app/bright/Icon/gotoMin.svg");
+    actionShowColumnDescribe = createAction(UiNames::Action::ShowColumnDescribe, ":/app/bright/Icon/showInfomation.svg");
+    actionRemoveCell        = createAction(UiNames::Action::RemoveCell, ":/app/bright/Icon/removeCell.svg");
+    actionCastToNum         = createAction(UiNames::Action::CastToNum, ":/app/bright/Icon/castToNum.svg");
+    actionCastToString      = createAction(UiNames::Action::CastToString, ":/app/bright/Icon/castToString.svg");
+    actionCastToDatetime    = createAction(UiNames::Action::CastToDatetime, ":/app/bright/Icon/castToDatetime.svg");
 
-    actionChangeToIndex = createAction("actionChangeToIndex", ":/app/bright/Icon/changeToIndex.svg");
+    actionChangeToIndex = createAction(UiNames::Action::ChangeToIndex, ":/app/bright/Icon/changeToIndex.svg");
 
     // 表格样式清除 action
-    actionClearStyleSelected = createAction("actionClearStyleSelected", ":/app/bright/Icon/removeCell.svg");
-    actionClearStyleAll      = createAction("actionClearStyleAll", ":/app/bright/Icon/removeData.svg");
+    actionClearStyleSelected = createAction(UiNames::Action::ClearStyleSelected, ":/app/bright/Icon/removeCell.svg");
+    actionClearStyleAll      = createAction(UiNames::Action::ClearStyleAll, ":/app/bright/Icon/removeData.svg");
     // 表格列显示格式 action
-    actionTableFormatCells   = createAction("actionTableFormatCells", ":/app/bright/Icon/tableFormat.svg");
+    actionTableFormatCells   = createAction(UiNames::Action::TableFormatCells, ":/app/bright/Icon/tableFormat.svg");
 }
 
 void DAAppActions::buildChartAction()
 {
     // 绘图标签 Chart Category
-    actionAddFigure       = createAction("actionAddFigure", ":/app/bright/Icon/addFigure.svg");
-    actionFigureNewXYAxis = createAction("actionFigureNewXYAxis", ":/app/bright/Icon/newAxis.svg");
-    actionChartAddCurve   = createAction("actionChartAddCurve", ":/app/chart-type/Icon/chart-type/chart-curve.svg");
+    actionAddFigure       = createAction(UiNames::Action::AddFigure, ":/app/bright/Icon/addFigure.svg");
+    actionFigureNewXYAxis = createAction(UiNames::Action::FigureNewXYAxis, ":/app/bright/Icon/newAxis.svg");
+    actionChartAddCurve   = createAction(UiNames::Action::ChartAddCurve, ":/app/chart-type/Icon/chart-type/chart-curve.svg");
     actionChartAddScatter2D =
-        createAction("actionChartAddScatter2D", ":/app/chart-type/Icon/chart-type/chart-scatter-2d.svg");
+        createAction(UiNames::Action::ChartAddScatter2D, ":/app/chart-type/Icon/chart-type/chart-scatter-2d.svg");
     actionChartAddErrorBar =
-        createAction("actionChartAddErrorBar", ":/app/chart-type/Icon/chart-type/chart-intervalcurve.svg");
-    actionChartAddBoxPlot = createAction("actionChartAddBoxPlot", ":/app/chart-type/Icon/chart-type/chart-OHLC.svg");
-    actionChartAddBar     = createAction("actionChartAddBar", ":/app/chart-type/Icon/chart-type/chart-bar.svg");
-    actionChartAddMultiBar = createAction("actionChartAddMultiBar", ":/app/chart-type/Icon/chart-type/chart-multibar.svg");
+        createAction(UiNames::Action::ChartAddErrorBar, ":/app/chart-type/Icon/chart-type/chart-intervalcurve.svg");
+    actionChartAddBoxPlot = createAction(UiNames::Action::ChartAddBoxPlot, ":/app/chart-type/Icon/chart-type/chart-OHLC.svg");
+    actionChartAddBar     = createAction(UiNames::Action::ChartAddBar, ":/app/chart-type/Icon/chart-type/chart-bar.svg");
+    actionChartAddMultiBar = createAction(UiNames::Action::ChartAddMultiBar, ":/app/chart-type/Icon/chart-type/chart-multibar.svg");
     actionChartAddHistogramBar =
-        createAction("actionChartAddHistogramBar", ":/app/chart-type/Icon/chart-type/chart-histogram.svg");
+        createAction(UiNames::Action::ChartAddHistogramBar, ":/app/chart-type/Icon/chart-type/chart-histogram.svg");
     actionChartAddContourMap =
-        createAction("actionChartAddContourMap", ":/app/chart-type/Icon/chart-type/chart-spectrocurve.svg");
+        createAction(UiNames::Action::ChartAddContourMap, ":/app/chart-type/Icon/chart-type/chart-spectrocurve.svg");
     actionChartAddCloudMap =
-        createAction("actionChartAddCloudMap", ":/app/chart-type/Icon/chart-type/chart-spectrogram.svg");
+        createAction(UiNames::Action::ChartAddCloudMap, ":/app/chart-type/Icon/chart-type/chart-spectrogram.svg");
     actionChartAddVectorfield =
-        createAction("actionChartAddVectorfield", ":/app/chart-type/Icon/chart-type/chart-vectorfield.svg");
-    actionChartAdd3DSurface = createAction("actionChartAdd3DSurface", ":/app/chart-type/Icon/chart-type/chart-surface3d.svg");
-    actionChartAdd3DBar     = createAction("actionChartAdd3DBar", ":/app/chart-type/Icon/chart-type/chart-bar3d.svg");
-    actionChartAdd3DLine    = createAction("actionChartAdd3DLine", ":/app/chart-type/Icon/chart-type/chart-line3d.svg");
+        createAction(UiNames::Action::ChartAddVectorfield, ":/app/chart-type/Icon/chart-type/chart-vectorfield.svg");
+    actionChartAdd3DSurface = createAction(UiNames::Action::ChartAdd3DSurface, ":/app/chart-type/Icon/chart-type/chart-surface3d.svg");
+    actionChartAdd3DBar     = createAction(UiNames::Action::ChartAdd3DBar, ":/app/chart-type/Icon/chart-type/chart-bar3d.svg");
+    actionChartAdd3DLine    = createAction(UiNames::Action::ChartAdd3DLine, ":/app/chart-type/Icon/chart-type/chart-line3d.svg");
 
     // 统计绘图 Stats Plot
-    actionStatsHistplot     = createAction("actionStatsHistplot", ":/app/chart-type/Icon/chart-type/stats-histplot.svg");
-    actionStatsKdeplot1d    = createAction("actionStatsKdeplot1d", ":/app/chart-type/Icon/chart-type/stats-kdeplot.svg");
-    actionStatsKdeplot2d    = createAction("actionStatsKdeplot2d", ":/app/chart-type/Icon/chart-type/stats-kdeplot-2d.svg");
-    actionStatsBoxplot      = createAction("actionStatsBoxplot", ":/app/chart-type/Icon/chart-type/stats-boxplot.svg");
-    actionStatsHeatmap      = createAction("actionStatsHeatmap", ":/app/chart-type/Icon/chart-type/stats-heatmap.svg");
-    actionStatsScatterplot  = createAction("actionStatsScatterplot", ":/app/chart-type/Icon/chart-type/stats-scatterplot.svg");
-    actionStatsBarplot      = createAction("actionStatsBarplot", ":/app/chart-type/Icon/chart-type/stats-barplot.svg");
-    actionStatsRegplot      = createAction("actionStatsRegplot", ":/app/chart-type/Icon/chart-type/stats-regplot.svg");
-    actionStatsECDFplot     = createAction("actionStatsECDFplot", ":/app/chart-type/Icon/chart-type/stats-ecdfplot.svg");
+    actionStatsHistplot     = createAction(UiNames::Action::StatsHistplot, ":/app/chart-type/Icon/chart-type/stats-histplot.svg");
+    actionStatsKdeplot1d    = createAction(UiNames::Action::StatsKdeplot1d, ":/app/chart-type/Icon/chart-type/stats-kdeplot.svg");
+    actionStatsKdeplot2d    = createAction(UiNames::Action::StatsKdeplot2d, ":/app/chart-type/Icon/chart-type/stats-kdeplot-2d.svg");
+    actionStatsBoxplot      = createAction(UiNames::Action::StatsBoxplot, ":/app/chart-type/Icon/chart-type/stats-boxplot.svg");
+    actionStatsHeatmap      = createAction(UiNames::Action::StatsHeatmap, ":/app/chart-type/Icon/chart-type/stats-heatmap.svg");
+    actionStatsScatterplot  = createAction(UiNames::Action::StatsScatterplot, ":/app/chart-type/Icon/chart-type/stats-scatterplot.svg");
+    actionStatsBarplot      = createAction(UiNames::Action::StatsBarplot, ":/app/chart-type/Icon/chart-type/stats-barplot.svg");
+    actionStatsRegplot      = createAction(UiNames::Action::StatsRegplot, ":/app/chart-type/Icon/chart-type/stats-regplot.svg");
+    actionStatsECDFplot     = createAction(UiNames::Action::StatsECDFplot, ":/app/chart-type/Icon/chart-type/stats-ecdfplot.svg");
 
     actionFigureSettingApplyAllChart =
-        createAction("actionFigureSettingApplyAllChart", ":/app/bright/Icon/apply-to-all-figure.svg", true, true);
-    actionChartEnableGrid  = createAction("actionChartEnableGrid", ":/app/bright/Icon/chart-grid.svg", true, false);
-    actionChartEnableGridX = createAction("actionChartEnableGridX", ":/app/bright/Icon/chart-grid-x.svg", true, false);
-    actionChartEnableGridY = createAction("actionChartEnableGridY", ":/app/bright/Icon/chart-grid-y.svg", true, false);
+        createAction(UiNames::Action::FigureSettingApplyAllChart, ":/app/bright/Icon/apply-to-all-figure.svg", true, true);
+    actionChartEnableGrid  = createAction(UiNames::Action::ChartEnableGrid, ":/app/bright/Icon/chart-grid.svg", true, false);
+    actionChartEnableGridX = createAction(UiNames::Action::ChartEnableGridX, ":/app/bright/Icon/chart-grid-x.svg", true, false);
+    actionChartEnableGridY = createAction(UiNames::Action::ChartEnableGridY, ":/app/bright/Icon/chart-grid-y.svg", true, false);
     actionChartEnableGridXMin =
-        createAction("actionChartEnableGridXMin", ":/app/bright/Icon/chart-grid-xmin.svg", true, false);
+        createAction(UiNames::Action::ChartEnableGridXMin, ":/app/bright/Icon/chart-grid-xmin.svg", true, false);
     actionChartEnableGridYMin =
-        createAction("actionChartEnableGridYMin", ":/app/bright/Icon/chart-grid-ymin.svg", true, false);
-    actionChartEnableZoom = createAction("actionChartEnableZoom", ":/app/bright/Icon/chart-zoomer.svg", true, false);
-    actionChartZoomIn     = createAction("actionChartZoomIn", ":/app/bright/Icon/zoomIn.svg");
-    actionChartZoomOut    = createAction("actionChartZoomOut", ":/app/bright/Icon/zoomOut.svg");
-    actionChartZoomAll    = createAction("actionChartZoomAll", ":/app/bright/Icon/viewAll.svg");
-    actionChartEnablePan  = createAction("actionChartEnablePan", ":/app/bright/Icon/chart-pan.svg", true, false);
+        createAction(UiNames::Action::ChartEnableGridYMin, ":/app/bright/Icon/chart-grid-ymin.svg", true, false);
+    actionChartEnableZoom = createAction(UiNames::Action::ChartEnableZoom, ":/app/bright/Icon/chart-zoomer.svg", true, false);
+    actionChartZoomIn     = createAction(UiNames::Action::ChartZoomIn, ":/app/bright/Icon/zoomIn.svg");
+    actionChartZoomOut    = createAction(UiNames::Action::ChartZoomOut, ":/app/bright/Icon/zoomOut.svg");
+    actionChartZoomAll    = createAction(UiNames::Action::ChartZoomAll, ":/app/bright/Icon/viewAll.svg");
+    actionChartEnablePan  = createAction(UiNames::Action::ChartEnablePan, ":/app/bright/Icon/chart-pan.svg", true, false);
 
     actionGroupChartPickers = new QActionGroup(this);
-    actionGroupChartPickers->setObjectName(QStringLiteral("actionGroupChartPickers"));
+    actionGroupChartPickers->setObjectName(QString::fromUtf8(UiNames::Action::GroupChartPickers));
     actionGroupChartPickers->setExclusionPolicy(QActionGroup::ExclusionPolicy::ExclusiveOptional);  // 允许都不选中
     actionChartEnablePickerCross = createAction(
-        "actionChartEnablePickerCross", ":/app/bright/Icon/chart-picker.svg", true, false, actionGroupChartPickers);
+        UiNames::Action::ChartEnablePickerCross, ":/app/bright/Icon/chart-picker.svg", true, false, actionGroupChartPickers);
     actionChartEnablePickerXY = createAction(
-        "actionChartEnablePickerXY", ":/app/bright/Icon/chart-picker-xy.svg", true, false, actionGroupChartPickers);
+        UiNames::Action::ChartEnablePickerXY, ":/app/bright/Icon/chart-picker-xy.svg", true, false, actionGroupChartPickers);
     actionChartEnablePickerY = createAction(
-        "actionChartEnablePickerY", ":/app/bright/Icon/chart-picker-y.svg", true, false, actionGroupChartPickers);
-    actionChartLinkAllPickerEnabled = createAction("actionLinkAllPicker", ":/app/bright/Icon/link-pick.svg", true, false);
+        UiNames::Action::ChartEnablePickerY, ":/app/bright/Icon/chart-picker-y.svg", true, false, actionGroupChartPickers);
+    actionChartLinkAllPickerEnabled = createAction(UiNames::Action::LinkAllPicker, ":/app/bright/Icon/link-pick.svg", true, false);
 
     actionGroupChartPickerTextRegion = new QActionGroup(this);
-    actionGroupChartPickerTextRegion->setObjectName(QStringLiteral("actionGroupChartPickerTextRegion"));
+    actionGroupChartPickerTextRegion->setObjectName(QString::fromUtf8(UiNames::Action::GroupChartPickerTextRegion));
     actionGroupChartPickerTextRegion->setExclusive(true);
     actionChartPickerTextAtLeftTop = createAction(
-        "actionChartPickerTextAtLeftTop", ":/app/bright/Icon/left-top.svg", true, false, actionGroupChartPickerTextRegion);
+        UiNames::Action::ChartPickerTextAtLeftTop, ":/app/bright/Icon/left-top.svg", true, false, actionGroupChartPickerTextRegion);
     actionChartPickerTextAtLeftTop->setData(QwtPlotSeriesDataPicker::TextOnCanvasTopLeft);
     actionChartPickerTextAtLeftBottom = createAction(
-        "actionChartPickerTextAtLeftBottom", ":/app/bright/Icon/left-bottom.svg", true, false, actionGroupChartPickerTextRegion);
+        UiNames::Action::ChartPickerTextAtLeftBottom, ":/app/bright/Icon/left-bottom.svg", true, false, actionGroupChartPickerTextRegion);
     actionChartPickerTextAtLeftBottom->setData(QwtPlotSeriesDataPicker::TextOnCanvasBottomLeft);
     actionChartPickerTextAtRightTop = createAction(
-        "actionChartPickerTextAtRightTop", ":/app/bright/Icon/right-top.svg", true, false, actionGroupChartPickerTextRegion);
+        UiNames::Action::ChartPickerTextAtRightTop, ":/app/bright/Icon/right-top.svg", true, false, actionGroupChartPickerTextRegion);
     actionChartPickerTextAtRightTop->setData(QwtPlotSeriesDataPicker::TextOnCanvasTopRight);
-    actionChartPickerTextAtRightBottom = createAction("actionChartPickerTextAtRightBottom",
+    actionChartPickerTextAtRightBottom = createAction(UiNames::Action::ChartPickerTextAtRightBottom,
                                                       ":/app/bright/Icon/right-bottom.svg",
                                                       true,
                                                       false,
                                                       actionGroupChartPickerTextRegion);
     actionChartPickerTextAtRightBottom->setData(QwtPlotSeriesDataPicker::TextOnCanvasBottomRight);
     actionChartPickerTextFollowMouse = createAction(
-        "actionChartPickerTextFollowMouse", ":/app/bright/Icon/follow-mouse.svg", true, true, actionGroupChartPickerTextRegion);
+        UiNames::Action::ChartPickerTextFollowMouse, ":/app/bright/Icon/follow-mouse.svg", true, true, actionGroupChartPickerTextRegion);
     actionChartPickerTextFollowMouse->setData(QwtPlotSeriesDataPicker::TextFollowMouse);
-    actionChartYPickerShowXValueEnabled = createAction("actionChartYPickerShowXValueEnabled", true, true);
+    actionChartYPickerShowXValueEnabled = createAction(UiNames::Action::ChartYPickerShowXValueEnabled, true, true);
 
-    actionChartEnableLegend = createAction("actionChartEnableLegend", ":/app/bright/Icon/chart-legend.svg", true, false);
-    actionCopyFigureInClipboard = createAction("actionCopyFigureInClipboard", ":/app/bright/Icon/copy-figure.svg");
+    actionChartEnableLegend = createAction(UiNames::Action::ChartEnableLegend, ":/app/bright/Icon/chart-legend.svg", true, false);
+    actionCopyFigureInClipboard = createAction(UiNames::Action::CopyFigureInClipboard, ":/app/bright/Icon/copy-figure.svg");
 
     actionGroupChartEditor = new QActionGroup(this);
     actionGroupChartEditor->setExclusionPolicy(QActionGroup::ExclusionPolicy::ExclusiveOptional);  // 允许所有都不选择
     actionChartEditorResizeSubChart = createAction(
-        "actionChartEditorResizeSubChart", ":/app/bright/Icon/figureResizeChart.svg", true, false, actionGroupChartEditor);
+        UiNames::Action::ChartEditorResizeSubChart, ":/app/bright/Icon/figureResizeChart.svg", true, false, actionGroupChartEditor);
     actionChartEditorRectSelector = createAction(
-        "actionChartEditorRectSelector", ":/app/bright/Icon/chart-selector-rect.svg", true, false, actionGroupChartEditor);
+        UiNames::Action::ChartEditorRectSelector, ":/app/bright/Icon/chart-selector-rect.svg", true, false, actionGroupChartEditor);
     actionChartEditorEllipseSelector = createAction(
-        "actionChartEditorEllipseSelector", ":/app/bright/Icon/chart-selector-ellipse.svg", true, false, actionGroupChartEditor);
+        UiNames::Action::ChartEditorEllipseSelector, ":/app/bright/Icon/chart-selector-ellipse.svg", true, false, actionGroupChartEditor);
     actionChartEditorPolygonSelector = createAction(
-        "actionChartEditorPolygonSelector", ":/app/bright/Icon/chart-selector-polygon.svg", true, false, actionGroupChartEditor);
+        UiNames::Action::ChartEditorPolygonSelector, ":/app/bright/Icon/chart-selector-polygon.svg", true, false, actionGroupChartEditor);
     actionChartEditorAddCrossMarker = createAction(
-        "actionChartEditorAddCrossMarker", ":/app/bright/Icon/chart-corss-marker.svg", true, false, actionGroupChartEditor);
+        UiNames::Action::ChartEditorAddCrossMarker, ":/app/bright/Icon/chart-corss-marker.svg", true, false, actionGroupChartEditor);
     actionChartEditorAddHLineMarker = createAction(
-        "actionChartEditorAddHLineMarker", ":/app/bright/Icon/chart-hline-marker.svg", true, false, actionGroupChartEditor);
+        UiNames::Action::ChartEditorAddHLineMarker, ":/app/bright/Icon/chart-hline-marker.svg", true, false, actionGroupChartEditor);
     actionChartEditorAddVLineMarker = createAction(
-        "actionChartEditorAddVLineMarker", ":/app/bright/Icon/chart-vline-marker.svg", true, false, actionGroupChartEditor);
+        UiNames::Action::ChartEditorAddVLineMarker, ":/app/bright/Icon/chart-vline-marker.svg", true, false, actionGroupChartEditor);
     actionChartEditorAddArrowMarker = createAction(
-        "actionChartEditorAddArrowMarker", ":/app/bright/Icon/arrow.svg", true, false, actionGroupChartEditor);
+        UiNames::Action::ChartEditorAddArrowMarker, ":/app/bright/Icon/arrow.svg", true, false, actionGroupChartEditor);
     actionAddHorizontalPlotProbeMarker = createAction(
-        "actionAddHorizontalPlotProbeMarker", ":/app/bright/Icon/arrow.svg", true, false, actionGroupChartEditor);
+        UiNames::Action::AddHorizontalPlotProbeMarker, ":/app/bright/Icon/arrow.svg", true, false, actionGroupChartEditor);
     actionAddVerticalPlotProbeMarker = createAction(
-        "actionAddVerticalPlotProbeMarker", ":/app/bright/Icon/plot-probe.svg", true, false, actionGroupChartEditor);
-    actionChartDataPickerSetting   = createAction("actionChartDataPickerSetting", ":/DAGui/icon/data-picker-setting.svg");
+        UiNames::Action::AddVerticalPlotProbeMarker, ":/app/bright/Icon/plot-probe.svg", true, false, actionGroupChartEditor);
+    actionChartDataPickerSetting   = createAction(UiNames::Action::ChartDataPickerSetting, ":/DAGui/icon/data-picker-setting.svg");
     actionChartEditorResizeSubChart->setData(static_cast< int >(DAFigureWidget::SubChartEditor));
     actionChartEditorRectSelector->setData(static_cast< int >(DAFigureWidget::RectSelectEditor));
     actionChartEditorEllipseSelector->setData(static_cast< int >(DAFigureWidget::EllipseSelectEditor));
@@ -219,64 +220,64 @@ void DAAppActions::buildChartAction()
 void DAAppActions::buildViewAction()
 {
     // View Category
-    actionShowWorkFlowArea = createAction("actionShowWorkFlowArea", ":/app/bright/Icon/showWorkFlow.svg");
+    actionShowWorkFlowArea = createAction(UiNames::Action::ShowWorkFlowArea, ":/app/bright/Icon/showWorkFlow.svg");
     actionShowWorkFlowManagerArea =
-        createAction("actionShowWorkFlowManagerArea", ":/app/bright/Icon/workflow-manager-view.svg");
-    actionShowChartArea        = createAction("actionShowChartArea", ":/app/bright/Icon/showChart.svg");
-    actionShowChartManagerArea = createAction("actionShowChartManagerArea", ":/app/bright/Icon/chart-manager-view.svg");
-    actionShowDataArea         = createAction("actionShowDataArea", ":/app/bright/Icon/showTable.svg");
-    actionShowDataManagerArea  = createAction("actionShowDataManagerArea", ":/app/bright/Icon/data-manager-view.svg");
-    actionShowMessageLogView   = createAction("actionShowMessageLogView", ":/app/bright/Icon/showInfomation.svg");
-    actionShowSettingWidget    = createAction("actionShowSettingWidget", ":/app/bright/Icon/showSettingWidget.svg");
-    actionShowLeftSideBar = createAction("actionShowLeftSideBar", ":/app/bright/Icon/left-sider-bar.svg", true, true);
-    actionShowRightSideBar = createAction("actionShowRightSideBar", ":/app/bright/Icon/right-sider-bar.svg", true, true);
-    actionShowAgentArea = createAction("actionShowAgentArea", ":/app/bright/Icon/showAgent.svg");
+        createAction(UiNames::Action::ShowWorkFlowManagerArea, ":/app/bright/Icon/workflow-manager-view.svg");
+    actionShowChartArea        = createAction(UiNames::Action::ShowChartArea, ":/app/bright/Icon/showChart.svg");
+    actionShowChartManagerArea = createAction(UiNames::Action::ShowChartManagerArea, ":/app/bright/Icon/chart-manager-view.svg");
+    actionShowDataArea         = createAction(UiNames::Action::ShowDataArea, ":/app/bright/Icon/showTable.svg");
+    actionShowDataManagerArea  = createAction(UiNames::Action::ShowDataManagerArea, ":/app/bright/Icon/data-manager-view.svg");
+    actionShowMessageLogView   = createAction(UiNames::Action::ShowMessageLogView, ":/app/bright/Icon/showInfomation.svg");
+    actionShowSettingWidget    = createAction(UiNames::Action::ShowSettingWidget, ":/app/bright/Icon/showSettingWidget.svg");
+    actionShowLeftSideBar = createAction(UiNames::Action::ShowLeftSideBar, ":/app/bright/Icon/left-sider-bar.svg", true, true);
+    actionShowRightSideBar = createAction(UiNames::Action::ShowRightSideBar, ":/app/bright/Icon/right-sider-bar.svg", true, true);
+    actionShowAgentArea = createAction(UiNames::Action::ShowAgentArea, ":/app/bright/Icon/showAgent.svg");
 }
 
 void DAAppActions::buildWorkflowAction()
 {
     // workflow 编辑
-    actionWorkflowNew = createAction("actionWorkflowNew", ":/app/bright/Icon/newWorkflow.svg");
+    actionWorkflowNew = createAction(UiNames::Action::WorkflowNew, ":/app/bright/Icon/newWorkflow.svg");
     actionWorkflowEnableItemLinkageMove =
-        createAction("actionWorkflowEnableItemLinkageMove", ":/app/bright/Icon/itemLinkageMove.svg", true, false);
-    actionItemGrouping       = createAction("actionItemSetGroup", ":/app/bright/Icon/item-set-group.svg");
-    actionItemUngroup        = createAction("actionItemCancelGroup", ":/app/bright/Icon/item-cancel-group.svg");
-    actionWorkflowLinkEnable = createAction("actionWorkflowLinkEnable", ":/app/bright/Icon/link.svg", true, true);
+        createAction(UiNames::Action::WorkflowEnableItemLinkageMove, ":/app/bright/Icon/itemLinkageMove.svg", true, false);
+    actionItemGrouping       = createAction(UiNames::Action::ItemSetGroup, ":/app/bright/Icon/item-set-group.svg");
+    actionItemUngroup        = createAction(UiNames::Action::ItemCancelGroup, ":/app/bright/Icon/item-cancel-group.svg");
+    actionWorkflowLinkEnable = createAction(UiNames::Action::WorkflowLinkEnable, ":/app/bright/Icon/link.svg", true, true);
     // workflow下面的状态action都是checkable状态的
     actionGroupWorkflowStartEdit = new QActionGroup(this);
-    actionGroupWorkflowStartEdit->setObjectName(QStringLiteral("actionGroupWorkflowStartEdit"));
+    actionGroupWorkflowStartEdit->setObjectName(QString::fromUtf8(UiNames::Action::GroupWorkflowStartEdit));
     actionGroupWorkflowStartEdit->setExclusionPolicy(QActionGroup::ExclusionPolicy::ExclusiveOptional);  // 允许都不选中
     actionWorkflowStartDrawRect =
-        createAction("actionStartDrawRect", ":/app/bright/Icon/drawRect.svg", true, false, actionGroupWorkflowStartEdit);
+        createAction(UiNames::Action::StartDrawRect, ":/app/bright/Icon/drawRect.svg", true, false, actionGroupWorkflowStartEdit);
     actionWorkflowStartDrawText =
-        createAction("actionStartDrawText", ":/app/bright/Icon/drawText.svg", true, false, actionGroupWorkflowStartEdit);
+        createAction(UiNames::Action::StartDrawText, ":/app/bright/Icon/drawText.svg", true, false, actionGroupWorkflowStartEdit);
     // workflow-背景图相关
-    actionWorkflowAddBackgroundPixmap = createAction("actionAddBackgroundPixmap", ":/app/bright/Icon/backgroundPixmap.svg");
+    actionWorkflowAddBackgroundPixmap = createAction(UiNames::Action::AddBackgroundPixmap, ":/app/bright/Icon/backgroundPixmap.svg");
     actionWorkflowLockBackgroundPixmap =
-        createAction("actionLockBackgroundPixmap", ":/app/bright/Icon/lock-bk.svg", true, false);
+        createAction(UiNames::Action::LockBackgroundPixmap, ":/app/bright/Icon/lock-bk.svg", true, false);
     actionWorkflowEnableItemMoveWithBackground =
-        createAction("actionEnableItemMoveWithBackground", ":/app/bright/Icon/itemMoveWithBackground.svg", true, false);
+        createAction(UiNames::Action::EnableItemMoveWithBackground, ":/app/bright/Icon/itemMoveWithBackground.svg", true, false);
     // workflow-视图操作
-    actionWorkflowShowGrid     = createAction("actionWorkflowShowGrid", ":/app/bright/Icon/showGrid.svg", true, true);
-    actionWorkflowViewReadOnly = createAction("actionWorkflowViewLock", ":/app/bright/Icon/lock-view.svg", true, false);
-    actionWorkflowViewMarker = createAction("actionWorkflowViewMarker", ":/app/bright/Icon/view-marker.svg", true, false);
+    actionWorkflowShowGrid     = createAction(UiNames::Action::WorkflowShowGrid, ":/app/bright/Icon/showGrid.svg", true, true);
+    actionWorkflowViewReadOnly = createAction(UiNames::Action::WorkflowViewLock, ":/app/bright/Icon/lock-view.svg", true, false);
+    actionWorkflowViewMarker = createAction(UiNames::Action::WorkflowViewMarker, ":/app/bright/Icon/view-marker.svg", true, false);
     // 运行
-    actionWorkflowRun       = createAction("actionWorkflowRun", ":/app/bright/Icon/run.svg");
-    actionWorkflowTerminate = createAction("actionWorkflowTerminate", ":/app/bright/Icon/stop.svg");
+    actionWorkflowRun       = createAction(UiNames::Action::WorkflowRun, ":/app/bright/Icon/run.svg");
+    actionWorkflowTerminate = createAction(UiNames::Action::WorkflowTerminate, ":/app/bright/Icon/stop.svg");
     actionWorkflowTerminate->setEnabled(false);
     // 导出
-    actionExportWorkflowSceneToImage = createAction("actionExportWorkflowSceneToImage", ":/app/bright/Icon/exportToPic.svg");
-    actionExportWorkflowSceneToPNG = createAction("actionExportWorkflowSceneToPNG", ":/app/bright/Icon/exportToPng.svg");
+    actionExportWorkflowSceneToImage = createAction(UiNames::Action::ExportWorkflowSceneToImage, ":/app/bright/Icon/exportToPic.svg");
+    actionExportWorkflowSceneToPNG = createAction(UiNames::Action::ExportWorkflowSceneToPNG, ":/app/bright/Icon/exportToPng.svg");
 }
 
 void DAAppActions::buildOtherActions()
 {
     actionGroupRibbonTheme = new QActionGroup(this);
-    actionGroupRibbonTheme->setObjectName(QStringLiteral("actionGroupRibbonTheme"));
-    actionRibbonThemeOffice2013 = createAction("actionRibbonThemeOffice2013", true, true, actionGroupRibbonTheme);
-    actionRibbonThemeOffice2016Blue = createAction("actionRibbonThemeOffice2016Blue", true, false, actionGroupRibbonTheme);
-    actionRibbonThemeOffice2021Blue = createAction("actionRibbonThemeOffice2021Blue", true, false, actionGroupRibbonTheme);
-    actionRibbonThemeDark = createAction("actionRibbonThemeDark", true, false, actionGroupRibbonTheme);
+    actionGroupRibbonTheme->setObjectName(QString::fromUtf8(UiNames::Action::GroupRibbonTheme));
+    actionRibbonThemeOffice2013 = createAction(UiNames::Action::RibbonThemeOffice2013, true, true, actionGroupRibbonTheme);
+    actionRibbonThemeOffice2016Blue = createAction(UiNames::Action::RibbonThemeOffice2016Blue, true, false, actionGroupRibbonTheme);
+    actionRibbonThemeOffice2021Blue = createAction(UiNames::Action::RibbonThemeOffice2021Blue, true, false, actionGroupRibbonTheme);
+    actionRibbonThemeDark = createAction(UiNames::Action::RibbonThemeDark, true, false, actionGroupRibbonTheme);
 }
 
 void DAAppActions::buildColorThemeActions()

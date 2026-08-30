@@ -21,6 +21,7 @@ set(DA_LIB_HEADER_FILES
     DARibbonAreaInterface.h
     DAUIExtendInterface.h
     DAUIInterface.h
+    DAUiObjectNames.h
     DAInterfaceHelper.h
 )
 set(DA_LIB_SOURCE_FILES
