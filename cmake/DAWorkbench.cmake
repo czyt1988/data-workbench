@@ -306,6 +306,14 @@ function(da_add_executable)
         target_link_options(${_name} PRIVATE "/MANIFEST:NO")
     endif()
 
+    # 自身源码目录与构建目录（对应旧宏 damacro_app_setting 的 CMAKE_INCLUDE_CURRENT_DIR）：
+    # 子目录源文件（PythonBinding/、SettingPages/、Dialog/）以 "DAAppCore.h"、
+    # "Dialog/xxx.h" 形式引用模块根目录头文件，缺少该路径会 C1083
+    target_include_directories(${_name} PRIVATE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+    )
+
     foreach(_m ${DA_AE_QT_PUBLIC})
         target_link_libraries(${_name} PUBLIC Qt${QT_VERSION_MAJOR}::${_m})
     endforeach()
