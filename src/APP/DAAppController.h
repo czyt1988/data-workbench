@@ -24,6 +24,7 @@ class QGraphicsItem;
 class QMenu;
 // qwt
 class QwtPlotItem;
+class QwtText;
 // Qt-Advanced-Docking-System 前置申明
 namespace ads
 {
@@ -182,6 +183,12 @@ private Q_SLOTS:
     void onActionAddDataTriggered();
     // 移除数据
     void onActionRemoveDataTriggered();
+    // 重命名数据集（树视图选中项进入编辑）
+    void onActionRenameDataTriggered();
+    // 导出数据（大按钮，format 为空则按保存对话框后缀判定）
+    void onActionExportDataTriggered();
+    // 按指定格式导出（csv/excel/pickle/parquet）
+    void onActionExportDataAsTriggered();
     //===================================================
     // 绘图标签 Chart Category
     //===================================================
@@ -272,6 +279,20 @@ private Q_SLOTS:
     void onActionChartDataPickerSettingTriggered();
     // 绘图编辑器的切换
     void onActionGroupChartEditorTriggered(QAction* a);
+    //===================================================
+    // 图表上下文-文字标签
+    //===================================================
+    // 图表标题行编辑器提交
+    void onChartTitleEditingFinished();
+    // X轴标题行编辑器提交
+    void onChartXAxisTitleEditingFinished();
+    // Y轴标题行编辑器提交
+    void onChartYAxisTitleEditingFinished();
+    // 图例位置按钮组切换
+    void onActionGroupChartLegendPositionTriggered(QAction* act);
+    // 图表文字字体变化（作用于选中文字图元，无选中回退图表标题）
+    void onChartFontChanged(const QFont& f);
+    void onChartFontColorChanged(const QColor& c);
     //===================================================
     // 数据操作的上下文标签 Data Operate Context Category
     //===================================================
@@ -406,6 +427,12 @@ private Q_SLOTS:
     void onRibbonThemeComboCurrentIndexChanged(int index);
     // 恢复默认布局（运行时立即生效）
     void onActionResetDefaultLayoutTriggered();
+    // 布局方案下拉切换 → 应用方案
+    void onLayoutSchemeComboCurrentIndexChanged(int index);
+    // 保存当前布局为命名方案（QInputDialog 输入名）
+    void onActionSaveCurrentLayoutTriggered();
+    // 删除当前下拉选中的自定义方案（预置不可删）
+    void onActionRemoveLayoutTriggered();
 private Q_SLOTS:
     //===================================================
     // DAPyWorkFlowOperateWidget的槽
@@ -495,6 +522,9 @@ private:
     void selectColumnInDataFrameWidget(DADataOperateOfDataFrameWidget* w, int col);
     // 显示统计绘图引导对话框并预选指定类型
     void showStatsChartGuide(DA::DAChartTypes type);
+    // 执行导出：取选中数据集 → 保存对话框 → exportToFile → daInfo/daWarning 反馈
+    // format 非空时直接使用（子菜单路径），为空时由文件后缀判定（大按钮路径）
+    void exportSelectedData(const QString& format);
     // 执行 Python 统计绘图的公共逻辑
     void executeStatsPlot(const QJsonObject& params, DA::DAFigureWidget* fig, DA::DAChartWidget* chart, const DAData& data);
     // 确保当前 Figure 和 Chart 存在（不存在则创建）
@@ -505,6 +535,13 @@ private:
     void activateUndoStackForWidget(DAAbstractOperateWidget* w);
     // 视图页-外观面板：填充主题下拉（10款完整枚举，与设置页一致）并同步当前值
     void setupRibbonThemeCombo();
+    // 视图页-布局面板：把布局管理器的方案列表填入下拉
+    void refreshLayoutSchemeCombo();
+    // 把字体/字体颜色应用到当前图表：优先选中文字图元（QwtPlotTextLabel/带label的marker），
+    // 无选中或非文字图元回退到图表标题（D8）
+    void applyChartFont(const QFont& f, const QColor& c, bool hasColor);
+    // QwtText 的字体/颜色应用辅助：hasColor=true 仅改颜色，false 仅改字体
+    static void applyQwtTextStyle(QwtText& txt, const QFont& f, const QColor& c, bool hasColor);
 
 private:
     AppMainWindow* mMainWindow { nullptr };

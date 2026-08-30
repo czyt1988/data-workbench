@@ -26,6 +26,7 @@
 #include <QStandardPaths>
 #include <QFontComboBox>
 #include <QComboBox>
+#include <QLineEdit>
 #include <QInputDialog>
 #include <QMenu>
 // ui
@@ -190,10 +191,13 @@ void DAAppRibbonArea::resetText()
     mPannelSetting->setPanelName(tr("Config"));              // cn:配置
     mCategoryData->setCategoryName(tr("Data"));              // cn:数据
     mPannelDataOperate->setPanelName(tr("Data Operation"));  // cn:数据操作
+    mPannelDataExport->setPanelName(tr("Export"));           // cn:导出
+    mMenuExportData->setTitle(tr("Export Format"));          // cn:导出格式
 
     mCategoryView->setCategoryName(tr("View"));                // cn:视图
     mPannelViewMainView->setPanelName(tr("Display"));          // cn:视图显示
     mPannelViewLayout->setPanelName(tr("Layout"));             // cn:布局
+    mComboxLayoutSchemeContainer->setPrefix(tr("Scheme"));     // cn:方案
     mPannelViewAppearance->setPanelName(tr("Appearance"));     // cn:外观
     mComboxRibbonThemeContainer->setPrefix(tr("Theme"));       // cn:主题
 
@@ -231,6 +235,11 @@ void DAAppRibbonArea::resetText()
     mContextChart->setContextTitle(tr("Chart"));                         // cn:绘图
     mCategoryChartStyle->setCategoryName(tr("Chart Style"));             // cn:绘图样式
     mCategoryChartTextEdit->setCategoryName(tr("Chart Text"));           // cn:图表文字
+    mEditChartTitleContainer->setPrefix(tr("Title"));                   // cn:标题
+    mEditChartXAxisTitleContainer->setPrefix(tr("X Axis"));             // cn:X轴
+    mEditChartYAxisTitleContainer->setPrefix(tr("Y Axis"));             // cn:Y轴
+    mPannelChartTextFont->setPanelName(tr("Font"));                      // cn:字体
+    mPannelChartTextLegend->setPanelName(tr("Legend Position"));         // cn:图例位置
     mPannelFigureSettingForContext->setPanelName(tr("Figure Setting"));  // cn:绘图窗口设置
     mPannelChartSetting->setPanelName(tr("Chart Setting"));              // cn:图表设置
     mPanelFigureTheme->setPanelName(tr("Figure Theme"));                 // cn:绘图主题
@@ -331,6 +340,8 @@ void DAAppRibbonArea::buildRibbonMainCategory()
 /**
  * @brief 构建数据标签
  * objectname=da-ribbon-category-data
+ *
+ * 结构：| 数据操作 | 导出 |
  */
 void DAAppRibbonArea::buildRibbonDataCategory()
 {
@@ -343,7 +354,23 @@ void DAAppRibbonArea::buildRibbonDataCategory()
     mPannelDataOperate->setObjectName(QString::fromUtf8(UiNames::Ribbon::DataOperatePanel));
     mPannelDataOperate->addLargeAction(mActions->actionAddData);
     mPannelDataOperate->addLargeAction(mActions->actionRemoveData);
+    mPannelDataOperate->addLargeAction(mActions->actionRenameData);
     mCategoryData->addPanel(mPannelDataOperate);
+
+    //--------Export--------------------------------------------------
+    mMenuExportData = new SARibbonMenu(mApp);
+    mMenuExportData->setObjectName(QString::fromUtf8(UiNames::Menu::ExportData));
+    mMenuExportData->setIcon(QIcon(QStringLiteral(":/app/bright/Icon/exportToPng.svg")));
+    mMenuExportData->addAction(mActions->actionExportDataCsv);
+    mMenuExportData->addAction(mActions->actionExportDataExcel);
+    mMenuExportData->addAction(mActions->actionExportDataPickle);
+    mMenuExportData->addAction(mActions->actionExportDataParquet);
+    mActions->actionExportData->setMenu(mMenuExportData);
+
+    mPannelDataExport = new SARibbonPanel(mCategoryData);
+    mPannelDataExport->setObjectName(QString::fromUtf8(UiNames::Ribbon::DataExportPanel));
+    mPannelDataExport->addLargeAction(mActions->actionExportData, QToolButton::MenuButtonPopup);
+    mCategoryData->addPanel(mPannelDataExport);
 
     //----------------------------------------------------------
 
@@ -381,11 +408,17 @@ void DAAppRibbonArea::buildRibbonViewCategory()
     mCategoryView->addPanel(mPannelViewMainView);
 
     //--------布局--------------------------------------------------
-    // 阶段一仅提供「恢复默认布局」（运行时立即生效，仅重置顶层 dock）；
-    // 布局方案管理（预置+自定义）为阶段二功能
+    // 方案下拉（预置+自定义，由 DAAppLayoutManager 提供内容）+
+    // 恢复默认布局 + 保存当前布局 + 删除自定义布局
     mPannelViewLayout = new SARibbonPanel(mCategoryView);
     mPannelViewLayout->setObjectName(QString::fromUtf8(UiNames::Ribbon::ViewLayoutPanel));
+    mComboxLayoutSchemeContainer = new SARibbonLineWidgetContainer(mPannelViewLayout);
+    mComboxLayoutScheme          = new QComboBox(mComboxLayoutSchemeContainer);
+    mComboxLayoutSchemeContainer->setWidget(mComboxLayoutScheme);
+    mPannelViewLayout->addWidget(mComboxLayoutSchemeContainer, SARibbonPanelItem::Medium);
     mPannelViewLayout->addLargeAction(mActions->actionResetDefaultLayout);
+    mPannelViewLayout->addMediumAction(mActions->actionSaveCurrentLayout);
+    mPannelViewLayout->addMediumAction(mActions->actionRemoveLayout);
     mCategoryView->addPanel(mPannelViewLayout);
 
     //--------外观--------------------------------------------------
@@ -768,13 +801,53 @@ void DAAppRibbonArea::buildContextCategoryChartEdit()
 /**
  * @brief 构建chart上下文-文字标签
  *
- * 位于现有 Chart 上下文组内（避免新增 context 组触发 SARibbon 颜色轮转索引耦合），
- * 阶段一仅建立骨架 category，标题/轴标题行编辑器、字体工具、图例位置按钮组在阶段二填充
+ * 位于现有 Chart 上下文组内（避免新增 context 组触发 SARibbon 颜色轮转索引耦合）。
+ * 结构：| 标题（图表标题+X/Y轴标题行编辑器，Ribbon内联不弹窗 D9）| 字体（作用于选中
+ * 文字图元，无选中回退图表标题 D8）| 图例位置（上/下/左/右互斥按钮组）|
  */
 void DAAppRibbonArea::buildContextCategoryChartText_()
 {
     mCategoryChartTextEdit = mContextChart->addCategoryPage(tr("Chart Text"));  // cn:图表文字
     mCategoryChartTextEdit->setObjectName(QString::fromUtf8(UiNames::Ribbon::ChartTextEditCategory));
+    //---- 标题面板：三个行编辑器，editingFinished 提交 ----
+    SARibbonPanel* titlePanel = mCategoryChartTextEdit->addPanel(tr("Title"));  // cn:标题
+    titlePanel->setObjectName(QString::fromUtf8(UiNames::Ribbon::ChartTextEditTitlePanel));
+    mEditChartTitleContainer = new SARibbonLineWidgetContainer(titlePanel);
+    mEditChartTitle          = new QLineEdit(mEditChartTitleContainer);
+    mEditChartTitle->setClearButtonEnabled(true);
+    mEditChartTitle->setMinimumWidth(120);
+    mEditChartTitleContainer->setWidget(mEditChartTitle);
+    titlePanel->addWidget(mEditChartTitleContainer, SARibbonPanelItem::Medium);
+    mEditChartXAxisTitleContainer = new SARibbonLineWidgetContainer(titlePanel);
+    mEditChartXAxisTitle           = new QLineEdit(mEditChartXAxisTitleContainer);
+    mEditChartXAxisTitle->setClearButtonEnabled(true);
+    mEditChartXAxisTitle->setMinimumWidth(80);
+    mEditChartXAxisTitleContainer->setWidget(mEditChartXAxisTitle);
+    titlePanel->addWidget(mEditChartXAxisTitleContainer, SARibbonPanelItem::Medium);
+    mEditChartYAxisTitleContainer = new SARibbonLineWidgetContainer(titlePanel);
+    mEditChartYAxisTitle           = new QLineEdit(mEditChartYAxisTitleContainer);
+    mEditChartYAxisTitle->setClearButtonEnabled(true);
+    mEditChartYAxisTitle->setMinimumWidth(80);
+    mEditChartYAxisTitleContainer->setWidget(mEditChartYAxisTitle);
+    titlePanel->addWidget(mEditChartYAxisTitleContainer, SARibbonPanelItem::Medium);
+
+    //---- 字体面板：作用于选中文字图元，无选中回退图表标题 ----
+    mPannelChartTextFont = mCategoryChartTextEdit->addPanel(tr("Font"));  // cn:字体
+    mPannelChartTextFont->setObjectName(QString::fromUtf8(UiNames::Ribbon::ChartTextEditFontPanel));
+    mChartFontEditPannel = new DAFontEditPannelWidget(mPannelChartTextFont);
+    mPannelChartTextFont->addWidget(mChartFontEditPannel, SARibbonPanelItem::Large);
+
+    //---- 图例位置面板：上/下/左/右互斥按钮组 ----
+    mPannelChartTextLegend = mCategoryChartTextEdit->addPanel(tr("Legend Position"));  // cn:图例位置
+    mPannelChartTextLegend->setObjectName(QString::fromUtf8(UiNames::Ribbon::ChartTextEditLegendPanel));
+    mPannelChartTextLegend->addMediumAction(mActions->actionChartLegendAtTop);
+    mPannelChartTextLegend->addMediumAction(mActions->actionChartLegendAtBottom);
+    mPannelChartTextLegend->addMediumAction(mActions->actionChartLegendAtLeft);
+    mPannelChartTextLegend->addMediumAction(mActions->actionChartLegendAtRight);
+
+    // connect：字体工具转发（仿 Workflow 模式）
+    connect(mChartFontEditPannel, &DAFontEditPannelWidget::currentFontChanged, this, &DAAppRibbonArea::selectedChartFont);
+    connect(mChartFontEditPannel, &DAFontEditPannelWidget::currentFontColorChanged, this, &DAAppRibbonArea::selectedChartFontColor);
 }
 
 /**
@@ -893,6 +966,7 @@ void DAAppRibbonArea::updateChartAboutRibbon(DAChartWidget* chart)
     updateChartZoomPanAboutRibbon(chart);
     updateChartPickerAboutRibbon(chart);
     updateChartLegendAboutRibbon(chart);
+    updateChartTextAboutRibbon(chart);
 }
 
 /**
@@ -953,6 +1027,40 @@ void DAAppRibbonArea::updateChartLegendAboutRibbon(DAChartWidget* chart)
         return;
     }
     mActions->actionChartEnableLegend->setChecked(chart->isLegendEnabled());
+}
+
+/**
+ * @brief 更新图表文字页的界面状态
+ *
+ * currentChart 变化时刷新标题/轴标题行编辑器文本与图例位置按钮勾选
+ * @param chart
+ */
+void DAAppRibbonArea::updateChartTextAboutRibbon(DAChartWidget* chart)
+{
+    if (nullptr == chart) {
+        return;
+    }
+    {
+        QSignalBlocker b1(mEditChartTitle), b2(mEditChartXAxisTitle), b3(mEditChartYAxisTitle);
+        mEditChartTitle->setText(chart->getChartTitle());
+        mEditChartXAxisTitle->setText(chart->getAxisLabel(QwtAxis::XBottom));
+        mEditChartYAxisTitle->setText(chart->getAxisLabel(QwtAxis::YLeft));
+    }
+    // 图例位置按钮勾选同步
+    Qt::Alignment align = chart->getLegendPosition();
+    QAction* checked    = nullptr;
+    if (align & Qt::AlignTop) {
+        checked = mActions->actionChartLegendAtTop;
+    } else if (align & Qt::AlignBottom) {
+        checked = mActions->actionChartLegendAtBottom;
+    } else if (align & Qt::AlignLeft) {
+        checked = mActions->actionChartLegendAtLeft;
+    } else if (align & Qt::AlignRight) {
+        checked = mActions->actionChartLegendAtRight;
+    }
+    for (QAction* a : mActions->actionGroupChartLegendPosition->actions()) {
+        a->setChecked(a == checked);
+    }
 }
 
 /**

@@ -13,6 +13,9 @@
 #include <QSet>
 #include <QMessageBox>
 #include <QPointer>
+#include <QClipboard>
+#include <QGuiApplication>
+#include <QItemSelectionModel>
 // cmd
 #include "Commands/DACommandsDataFrame.h"
 #include "Commands/DACommandsTableStyle.h"
@@ -393,6 +396,134 @@ int DADataOperateOfDataFrameWidget::removeSelectCell()
     }
     push(cmd.release());
     return cells.size();
+}
+
+/**
+ * @brief 粘贴剪贴板内容到当前选区左上角
+ *
+ * 解析剪贴板 TSV 文本（Tab 分列、\n 分行，与 copySelectionToClipboard 格式对称），
+ * 从当前选中区左上角起填充；超出数据表边界的部分丢弃并 daWarning 提示丢弃规模（D9）。
+ * 数值列遇非数值文本时按 iat 现有转换链路处理（写入失败则整条命令回滚）。
+ * 撤销命令走 DADataOperatePageWidget::push 统一入口（push 即激活栈）。
+ * @return 成功写入的单元格数（0 表示未写入）
+ */
+int DADataOperateOfDataFrameWidget::pasteFromClipboard()
+{
+    DAPyDataFrame df = getDataframe();
+    if (df.isNone()) {
+        return 0;
+    }
+    QClipboard* cb = QGuiApplication::clipboard();
+    if (!cb) {
+        return 0;
+    }
+    QString text = cb->text();
+    if (text.isEmpty()) {
+        daWarning << tr("Clipboard is empty");  // cn:剪贴板为空
+        return 0;
+    }
+    // 定位选区左上角；无选区时用当前光标格
+    QModelIndex anchor;
+    if (QItemSelectionModel* sm = ui->tableView->selectionModel()) {
+        const QModelIndexList idxs = sm->selectedIndexes();
+        if (!idxs.isEmpty()) {
+            anchor = idxs.first();
+        } else {
+            anchor = sm->currentIndex();
+        }
+    }
+    if (!anchor.isValid()) {
+        daWarning << tr("Please select a cell to paste into");  // cn:请先选中要粘贴的起始单元格
+        return 0;
+    }
+    auto shape  = df.shape();
+    const int dfRows = static_cast< int >(shape.first);
+    const int dfCols = static_cast< int >(shape.second);
+    const int startRow = anchor.row();
+    const int startCol = anchor.column();
+    if (startRow >= dfRows || startCol >= dfCols) {
+        return 0;
+    }
+    // 解析 TSV（Tab 分列、\n 分行、\r 行尾剔除）
+    const QStringList lines = text.split(QLatin1Char('\n'));
+    QList< int > rows, cols;
+    QList< QVariant > values;
+    int droppedRows = 0, droppedCols = 0;
+    int contentLineCount = 0;
+    for (int r = 0; r < lines.size(); ++r) {
+        QString line = lines[ r ];
+        // 结尾换行产生的末尾空行跳过；中间空行保留占位（与复制格式对称）
+        if (r == lines.size() - 1 && line.isEmpty()) {
+            break;
+        }
+        if (line.endsWith(QLatin1Char('\r'))) {
+            line.chop(1);
+        }
+        const QStringList fields = line.split(QLatin1Char('\t'));
+        const bool rowOverflow = (startRow + contentLineCount >= dfRows);
+        int lineDroppedCols = 0;
+        for (int c = 0; c < fields.size(); ++c) {
+            if (startCol + c >= dfCols) {
+                ++lineDroppedCols;
+                continue;
+            }
+            if (rowOverflow) {
+                continue;
+            }
+            rows.append(startRow + contentLineCount);
+            cols.append(startCol + c);
+            values.append(fields[ c ]);
+        }
+        if (rowOverflow) {
+            ++droppedRows;
+        } else {
+            droppedCols += lineDroppedCols;
+        }
+        ++contentLineCount;
+    }
+    if (rows.isEmpty()) {
+        daWarning << tr("Nothing to paste: the clipboard content exceeds the table boundary");  // cn:无可粘贴内容：剪贴板内容超出表格边界
+        return 0;
+    }
+    if (droppedRows > 0 || droppedCols > 0) {
+        daWarning << tr("Paste partially dropped: %1 row(s) and %2 cell(s) outside the table were ignored")
+                        .arg(droppedRows)
+                        .arg(droppedCols);  // cn:粘贴部分丢弃：%1 行与 %2 个单元格超出表格范围被忽略
+    }
+    std::unique_ptr< DACommandDataFrame_paste > cmd(new DACommandDataFrame_paste(df, rows, cols, values));
+    QPointer< DADataTableModel > modle = mModel;
+    cmd->setCallBack([ modle, rows, cols ]() {
+        if (modle) {
+            const auto size = qMin(rows.size(), cols.size());
+            for (int i = 0; i < size; ++i) {
+                modle->notifyDataChanged(rows[ i ], cols[ i ]);
+            }
+        }
+    });
+    if (!cmd->exec()) {
+        // 数值列写入非数值等场景：整条命令回滚
+        daWarning << tr("Paste failed: the content does not match the column data type");  // cn:粘贴失败：内容与列数据类型不匹配
+        return 0;
+    }
+    push(cmd.release());
+    return rows.size();
+}
+
+/**
+ * @brief 剪切选中区
+ *
+ * 先按复制格式导出到剪贴板，再把选中区置 nan（复用 DACommandDataFrame_setnan，可撤销）
+ * @return 受影响单元格数
+ */
+int DADataOperateOfDataFrameWidget::cutSelection()
+{
+    // 先复制（失败说明无选中）
+    if (!ui->tableView->copySelectionToClipboard()) {
+        daWarning << tr("No cells selected to cut");  // cn:没有选中可剪切的单元格
+        return 0;
+    }
+    // 复制成功说明有选中，置 nan（同 removeSelectCell 语义）
+    return removeSelectCell();
 }
 
 /**

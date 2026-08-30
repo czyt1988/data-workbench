@@ -306,6 +306,40 @@ bool DACommandDataFrame_setnan::exec()
 
 ///////////////////
 
+DACommandDataFrame_paste::DACommandDataFrame_paste(
+    const DAPyDataFrame& df, const QList< int >& rows, const QList< int >& columns, const QList< QVariant >& newdatas, QUndoCommand* par
+)
+    : DACommandWithRedoCount(par), DACallBackInterface(), mDataframe(df), mRows(rows), mColumns(columns), mNewdatas(newdatas)
+{
+    // 构造时提取旧值，供 undo 写回
+    for (int i = 0; i < mRows.size(); ++i) {
+        mOlddatas.append(df.iatObj(rows[ i ], columns[ i ]));
+    }
+    setText(QObject::tr("paste data"));  // cn:粘贴数据
+}
+
+void DACommandDataFrame_paste::undo()
+{
+    for (int i = 0; i < mRows.size(); ++i) {
+        mDataframe.iat(mRows[ i ], mColumns[ i ], mOlddatas[ i ]);
+    }
+    callback();
+}
+
+bool DACommandDataFrame_paste::exec()
+{
+    // 逐格写入，任一格失败即返回 false（QUndoStack 会触发 undo 回滚）
+    for (int i = 0; i < mRows.size(); ++i) {
+        if (!mDataframe.iat(mRows[ i ], mColumns[ i ], mNewdatas[ i ])) {
+            return false;
+        }
+    }
+    callback();
+    return true;
+}
+
+///////////////////
+
 //----------------------------------------------------
 //
 //----------------------------------------------------

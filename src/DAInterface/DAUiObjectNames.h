@@ -111,6 +111,12 @@ constexpr char SelectAll[]  = "actionSelectAll";
 // ---- 数据 ----
 constexpr char AddData[]        = "actionAddData";
 constexpr char RemoveData[]     = "actionRemoveData";
+constexpr char RenameData[]     = "actionRenameData";
+constexpr char ExportData[]     = "actionExportData";
+constexpr char ExportDataCsv[]     = "actionExportDataCsv";
+constexpr char ExportDataExcel[]   = "actionExportDataExcel";
+constexpr char ExportDataPickle[]  = "actionExportDataPickle";
+constexpr char ExportDataParquet[] = "actionExportDataParquet";
 constexpr char RemoveRow[]      = "actionRemoveRow";
 constexpr char RemoveColumn[]   = "actionRemoveColumn";
 constexpr char InsertRow[]      = "actionInsertRow";
@@ -211,6 +217,8 @@ constexpr char ShowLeftSideBar[]        = "actionShowLeftSideBar";
 constexpr char ShowRightSideBar[]       = "actionShowRightSideBar";
 constexpr char ShowAgentArea[]          = "actionShowAgentArea";
 constexpr char ResetDefaultLayout[]     = "actionResetDefaultLayout";
+constexpr char SaveCurrentLayout[]      = "actionSaveCurrentLayout";
+constexpr char RemoveLayout[]           = "actionRemoveLayout";
 // ---- 工作流 ----
 constexpr char WorkflowNew[]     = "actionWorkflowNew";
 constexpr char WorkflowEnableItemLinkageMove[] = "actionWorkflowEnableItemLinkageMove";
@@ -273,6 +281,8 @@ namespace Menu
 {
 constexpr char InsertRow[]    = "menuInsertRow";
 constexpr char InsertColumn[] = "menuInsertColumn";
+constexpr char ExportData[]   = "menuExportData";
+constexpr char LayoutManage[] = "menuLayoutManage";
 constexpr char ExportWorkflowSceneToImage[] = "exportWorkflowSceneToImageMenu";
 constexpr char ChartPickSetting[]           = "mMenuChartPickSetting";  ///< 历史命名，保留
 constexpr char ViewLineMarkers[]            = "menuViewLineMarkers";

@@ -62,7 +62,7 @@
 <context>
     <name>DA::AppMainWindow</name>
     <message>
-        <location filename="../APP/AppMainWindow.cpp" line="+77"/>
+        <location filename="../APP/AppMainWindow.cpp" line="+78"/>
         <source>Initializing core interface...</source>
         <translation>正在初始化核心接口...</translation>
     </message>
@@ -72,7 +72,7 @@
         <translation>正在创建用户界面...</translation>
     </message>
     <message>
-        <location line="+27"/>
+        <location line="+30"/>
         <source>Restore UI state</source>
         <translation>加载界面状态信息</translation>
     </message>
@@ -1287,7 +1287,7 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="../APP/DAAppActions.cpp" line="+404"/>
+        <location filename="../APP/DAAppActions.cpp" line="+414"/>
         <source>Open</source>
         <translation>打开</translation>
     </message>
@@ -1381,7 +1381,7 @@ Data</source>
         <translation>从表格中移除数据</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+16"/>
         <source>Add 
 Figure</source>
         <translation>添加
@@ -1781,7 +1781,7 @@ All</source>
         <translation>启用或禁用图表中的图例</translation>
     </message>
     <message>
-        <location line="-114"/>
+        <location line="-126"/>
         <source>Open Markdown</source>
         <translation>打开 Markdown</translation>
     </message>
@@ -1791,7 +1791,71 @@ All</source>
         <translation>打开 Markdown 文件并在中央区显示</translation>
     </message>
     <message>
-        <location line="+42"/>
+        <location line="+13"/>
+        <source>Rename 
+Data</source>
+        <translation>重命名
+            数据</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Rename the selected dataset</source>
+        <translation>重命名选中的数据集</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Export 
+Data</source>
+        <translation>导出
+            数据</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Export the selected data to a file</source>
+        <translation>导出选中的数据到文件</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Export CSV</source>
+        <translation>导出 CSV</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Export the selected data to a CSV file</source>
+        <translation>导出选中的数据为 CSV 文件</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Export Excel</source>
+        <translation>导出 Excel</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Export the selected data to an Excel file</source>
+        <translation>导出选中的数据为 Excel 文件</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Export Pickle</source>
+        <translation>导出 Pickle</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Export the selected data to a pickle file</source>
+        <translation>导出选中的数据为 Pickle 文件</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Export Parquet</source>
+        <translation>导出 Parquet</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Export the selected data to a parquet file</source>
+        <translation>导出选中的数据为 Parquet 文件</translation>
+    </message>
+    <message>
+        <location line="+30"/>
         <source>Add 
 Surface 3D</source>
         <translation>3D曲面图</translation>
@@ -2620,6 +2684,30 @@ Layout</source>
         <translation>立即恢复默认窗口布局</translation>
     </message>
     <message>
+        <location line="+1"/>
+        <source>Save 
+Layout</source>
+        <translation>保存
+            当前布局</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Save the current window layout as a named scheme</source>
+        <translation>把当前窗口布局保存为命名方案</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Remove 
+Layout</source>
+        <translation>删除
+            布局方案</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Remove the selected custom layout scheme</source>
+        <translation>删除选中的自定义布局方案</translation>
+    </message>
+    <message>
         <location line="+4"/>
         <source>Redo</source>
         <translation>重做</translation>
@@ -2643,7 +2731,7 @@ Layout</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+707"/>
+        <location filename="../APP/DAAppController.cpp" line="+740"/>
         <source>Save Project</source>
         <translation>保存工程</translation>
     </message>
@@ -2680,12 +2768,102 @@ Layout</source>
         <translation>图片保存失败：%1</translation>
     </message>
     <message>
-        <location line="+508"/>
+        <location line="+129"/>
+        <source>Default</source>
+        <translation>默认布局</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Focus Analysis</source>
+        <translation>专注分析</translation>
+    </message>
+    <message>
+        <location line="+38"/>
+        <source>Save Layout</source>
+        <translation>保存布局方案</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Layout scheme name:</source>
+        <translation>布局方案名称：</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Cannot overwrite preset layout schemes, please use another name</source>
+        <translation>不能覆盖预置布局方案，请换一个名称</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Layout scheme &apos;%1&apos; saved</source>
+        <translation>布局方案"%1"已保存</translation>
+    </message>
+    <message>
+        <location line="+23"/>
+        <source>Preset layout schemes cannot be removed</source>
+        <translation>预置布局方案不可删除</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Layout scheme &apos;%1&apos; removed</source>
+        <translation>布局方案"%1"已删除</translation>
+    </message>
+    <message>
+        <location line="+359"/>
+        <source>Please select a dataset to rename</source>
+        <translation>请先选中要重命名的数据集</translation>
+    </message>
+    <message>
+        <location line="+55"/>
+        <source>Please select a dataset to export</source>
+        <translation>请先选中要导出的数据</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>CSV File</source>
+        <translation>CSV 文件</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Excel File</source>
+        <translation>Excel 文件</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Pickle File</source>
+        <translation>Pickle 文件</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Parquet File</source>
+        <translation>Parquet 文件</translation>
+    </message>
+    <message>
+        <location line="+19"/>
+        <source>Export Data</source>
+        <translation>导出数据</translation>
+    </message>
+    <message>
+        <location line="+33"/>
+        <source>Cannot determine export format, please select a file suffix</source>
+        <translation>无法确定导出格式，请选择带后缀的文件名</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Data exported successfully, path: %1</source>
+        <translation>数据导出成功，路径:%1</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Data export failed, path: %1, reason: %2</source>
+        <translation>数据导出失败，路径:%1，原因:%2</translation>
+    </message>
+    <message>
+        <location line="+75"/>
         <source>Before creating a new coordinate, you need to create a figure</source>
         <translation>在创建一个坐标系之前，需要先创建一个绘图窗口</translation>
     </message>
     <message>
-        <location line="-1294"/>
+        <location line="-1559"/>
         <source>Please select the data operation window</source>
         <translation>请选中数据操作窗口</translation>
     </message>
@@ -2795,27 +2973,17 @@ Layout</source>
         <translation>深色2</translation>
     </message>
     <message>
-        <location line="+54"/>
-        <source>Cut is not available for tables yet</source>
-        <translation>表格剪切功能暂未实现</translation>
-    </message>
-    <message>
-        <location line="+17"/>
+        <location line="+177"/>
         <source>No cells selected to copy</source>
         <translation>没有选中可复制的单元格</translation>
     </message>
     <message>
-        <location line="+20"/>
-        <source>Paste is not available for tables yet</source>
-        <translation>表格粘贴功能暂未实现</translation>
-    </message>
-    <message>
-        <location line="+335"/>
+        <location line="+514"/>
         <source>Figure &apos;%1&apos; not found, it may have been closed or renamed</source>
         <translation>未找到绘图&quot;%1&quot;，可能已关闭或被重命名</translation>
     </message>
     <message>
-        <location line="+712"/>
+        <location line="+870"/>
         <source>Rename Column</source>
         <translation>重命名此列</translation>
     </message>
@@ -2892,7 +3060,7 @@ Layout</source>
         <translation>选中的数据源为空</translation>
     </message>
     <message>
-        <location line="-1936"/>
+        <location line="-2359"/>
         <source>Before running the workflow, you need to save the project</source>
         <translation>在运行工作流之前，需要先保存工程</translation>
     </message>
@@ -2900,7 +3068,7 @@ Layout</source>
 <context>
     <name>DA::DAAppDataManager</name>
     <message>
-        <location filename="../APP/DAAppDataManager.cpp" line="+34"/>
+        <location filename="../APP/DAAppDataManager.cpp" line="+35"/>
         <source>Begin importing file: %1</source>
         <translation>开始导入文件:%1</translation>
     </message>
@@ -2908,6 +3076,31 @@ Layout</source>
         <location line="+6"/>
         <source>Python scripts not initialized, cannot import file: %1</source>
         <translation>Python脚本未初始化，无法导入文件:%1</translation>
+    </message>
+    <message>
+        <location line="+22"/>
+        <source>Only DataFrame data can be exported</source>
+        <translation>仅支持导出 DataFrame 数据</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Python scripts not initialized</source>
+        <translation>Python 脚本未初始化</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Python scripts not initialized, cannot export file: %1</source>
+        <translation>Python脚本未初始化，无法导出文件:%1</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Data is empty, cannot export</source>
+        <translation>数据为空，无法导出</translation>
+    </message>
+    <message>
+        <location line="+18"/>
+        <source>Unsupported export format: %1</source>
+        <translation>不支持的导出格式:%1</translation>
     </message>
 </context>
 <context>
@@ -2966,6 +3159,24 @@ Layout</source>
         <location line="+4"/>
         <source>Failed to open markdown file: %1</source>
         <translation>打开 Markdown 文件失败:%1</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAAppLayoutManager</name>
+    <message>
+        <location filename="../APP/DAAppLayoutManager.cpp" line="+93"/>
+        <source>Layout scheme &apos;%1&apos; not found</source>
+        <translation>未找到布局方案"%1"</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Failed to restore layout scheme &apos;%1&apos;, it may be saved by an incompatible version</source>
+        <translation>布局方案"%1"恢复失败，可能由不兼容的版本保存</translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>Preset layout schemes cannot be removed</source>
+        <translation>预置布局方案不可删除</translation>
     </message>
 </context>
 <context>
@@ -3336,7 +3547,7 @@ Layout</source>
 <context>
     <name>DA::DAAppRibbonArea</name>
     <message>
-        <location filename="../APP/DAAppRibbonArea.cpp" line="+183"/>
+        <location filename="../APP/DAAppRibbonArea.cpp" line="+184"/>
         <location line="+3"/>
         <source>File</source>
         <translation>文件</translation>
@@ -3353,14 +3564,14 @@ Layout</source>
     </message>
     <message>
         <location line="-1"/>
-        <location line="+24"/>
-        <location line="+101"/>
-        <location line="+233"/>
+        <location line="+27"/>
+        <location line="+106"/>
+        <location line="+257"/>
         <source>Workflow</source>
         <translation>工作流</translation>
     </message>
     <message>
-        <location line="-355"/>
+        <location line="-387"/>
         <source>Data Operation</source>
         <translation>数据操作</translation>
     </message>
@@ -3376,13 +3587,18 @@ Layout</source>
     </message>
     <message>
         <location line="+6"/>
-        <location line="+28"/>
-        <location line="+401"/>
+        <source>Export Format</source>
+        <translation>导出格式</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <location line="+29"/>
+        <location line="+430"/>
         <source>View</source>
         <translation>视图</translation>
     </message>
     <message>
-        <location line="-428"/>
+        <location line="-458"/>
         <source>Display</source>
         <translation>视图显示</translation>
     </message>
@@ -3393,99 +3609,128 @@ Layout</source>
     </message>
     <message>
         <location line="+1"/>
+        <source>Scheme</source>
+        <translation>方案</translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Appearance</source>
         <translation>外观</translation>
     </message>
     <message>
         <location line="+3"/>
-        <location line="+219"/>
+        <location line="+248"/>
         <source>DataFrame</source>
         <translation>DataFrame</translation>
     </message>
     <message>
-        <location line="-218"/>
-        <location line="+220"/>
+        <location line="-247"/>
+        <location line="+249"/>
         <source>Operate</source>
         <translation>操作</translation>
     </message>
     <message>
-        <location line="-219"/>
-        <location line="+222"/>
+        <location line="-248"/>
+        <location line="+251"/>
         <source>Axes</source>
         <translation>Axes</translation>
     </message>
     <message>
-        <location line="-221"/>
-        <location line="+234"/>
+        <location line="-250"/>
+        <location line="+263"/>
         <source>Column</source>
         <translation>列</translation>
     </message>
     <message>
-        <location line="-233"/>
+        <location line="-262"/>
         <location line="+6"/>
-        <location line="+237"/>
+        <location line="+266"/>
         <location line="+5"/>
         <source>Type</source>
         <translation>类型</translation>
     </message>
     <message>
-        <location line="-247"/>
+        <location line="-276"/>
         <location line="+6"/>
-        <location line="+252"/>
+        <location line="+281"/>
         <location line="+4"/>
         <source>Format</source>
         <translation>格式</translation>
     </message>
     <message>
-        <location line="-261"/>
-        <location line="+267"/>
+        <location line="-290"/>
+        <location line="+296"/>
         <source>Table Style</source>
         <translation>表格样式</translation>
     </message>
     <message>
-        <location line="-266"/>
-        <location line="+270"/>
+        <location line="-295"/>
+        <location line="+299"/>
         <source>Fill</source>
         <translation>底色</translation>
     </message>
     <message>
-        <location line="-269"/>
+        <location line="-298"/>
+        <location line="+29"/>
         <location line="+277"/>
+        <location line="+317"/>
         <source>Font</source>
         <translation>字体</translation>
     </message>
     <message>
-        <location line="-276"/>
-        <location line="+282"/>
+        <location line="-622"/>
+        <location line="+311"/>
         <source>Clear</source>
         <translation>清除</translation>
     </message>
     <message>
-        <location line="-276"/>
+        <location line="-305"/>
         <source>Fill Color</source>
         <translation>填充颜色</translation>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+344"/>
+        <location line="+373"/>
         <source>Workflow Edit</source>
         <translation>编辑</translation>
     </message>
     <message>
-        <location line="-374"/>
-        <location line="+31"/>
-        <location line="+348"/>
+        <location line="-406"/>
+        <location line="+34"/>
+        <location line="+377"/>
         <source>Clipboard</source>
         <translation>剪切板</translation>
     </message>
     <message>
-        <location line="-334"/>
-        <location line="+452"/>
+        <location line="-363"/>
+        <location line="+481"/>
         <source>Chart Style</source>
         <translation>图表样式</translation>
     </message>
     <message>
-        <location line="+375"/>
+        <location line="-479"/>
+        <location line="+575"/>
+        <source>Title</source>
+        <translation>标题</translation>
+    </message>
+    <message>
+        <location line="-574"/>
+        <source>X Axis</source>
+        <translation>X轴</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Y Axis</source>
+        <translation>Y轴</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <location line="+599"/>
+        <source>Legend Position</source>
+        <translation>图例位置</translation>
+    </message>
+    <message>
+        <location line="+326"/>
         <location line="+2"/>
         <source>AI Agent</source>
         <translation>AI智能体</translation>
@@ -3532,54 +3777,54 @@ Layout</source>
         <translation>Agent 模块未就绪</translation>
     </message>
     <message>
-        <location line="-967"/>
-        <location line="+352"/>
+        <location line="-1071"/>
+        <location line="+381"/>
         <source>Item</source>
         <translation>图元</translation>
     </message>
     <message>
-        <location line="-351"/>
-        <location line="+360"/>
+        <location line="-380"/>
+        <location line="+389"/>
         <source>Text</source>
         <translation>文本</translation>
     </message>
     <message>
-        <location line="-359"/>
-        <location line="+364"/>
+        <location line="-388"/>
+        <location line="+393"/>
         <source>Background</source>
         <translation>背景</translation>
     </message>
     <message>
-        <location line="-361"/>
-        <location line="+442"/>
+        <location line="-390"/>
+        <location line="+471"/>
         <source>Workflow Run</source>
         <translation>运行</translation>
     </message>
     <message>
-        <location line="-441"/>
-        <location line="+444"/>
+        <location line="-470"/>
+        <location line="+473"/>
         <source>Run</source>
         <translation>运行</translation>
     </message>
     <message>
-        <location line="-442"/>
-        <location line="+277"/>
+        <location line="-471"/>
+        <location line="+306"/>
         <source>Figure</source>
         <translation>绘图</translation>
     </message>
     <message>
-        <location line="-271"/>
-        <location line="+543"/>
+        <location line="-300"/>
+        <location line="+573"/>
         <source>Chart Text</source>
         <translation>图表文字</translation>
     </message>
     <message>
-        <location line="-542"/>
+        <location line="-567"/>
         <source>Figure Setting</source>
         <translation>绘图设置</translation>
     </message>
     <message>
-        <location line="-6"/>
+        <location line="-11"/>
         <source>Add Chart</source>
         <translation>添加绘图</translation>
     </message>
@@ -3589,13 +3834,13 @@ Layout</source>
         <translation>绘图</translation>
     </message>
     <message>
-        <location line="+6"/>
-        <location line="+504"/>
+        <location line="+11"/>
+        <location line="+528"/>
         <source>Chart Edit</source>
         <translation>绘图编辑</translation>
     </message>
     <message>
-        <location line="-506"/>
+        <location line="-530"/>
         <source>Chart Setting</source>
         <translation>绘图设置</translation>
     </message>
@@ -3606,12 +3851,12 @@ Layout</source>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+513"/>
+        <location line="+537"/>
         <source>Select Tool</source>
         <translation>选区工具</translation>
     </message>
     <message>
-        <location line="-512"/>
+        <location line="-536"/>
         <source>Chart Assist Tool</source>
         <translation>图表辅助工具</translation>
     </message>
@@ -3632,8 +3877,8 @@ Layout</source>
         <translation>把工作流的场景导出为图片</translation>
     </message>
     <message>
-        <location line="-16"/>
-        <location line="+299"/>
+        <location line="-21"/>
+        <location line="+328"/>
         <source>Stats Plot</source>
         <translation>统计绘图</translation>
     </message>
@@ -3648,7 +3893,8 @@ Layout</source>
         <translation>显示</translation>
     </message>
     <message>
-        <location line="+36"/>
+        <location line="-459"/>
+        <location line="+495"/>
         <source>Export</source>
         <translation>导出</translation>
     </message>
@@ -3658,8 +3904,8 @@ Layout</source>
         <translation>绘图操作</translation>
     </message>
     <message>
-        <location line="-484"/>
-        <location line="+525"/>
+        <location line="-513"/>
+        <location line="+554"/>
         <source>Theme</source>
         <translation>主题</translation>
     </message>
@@ -3669,7 +3915,7 @@ Layout</source>
         <translation>辅助工具</translation>
     </message>
     <message>
-        <location line="+34"/>
+        <location line="+74"/>
         <source>Recent Files</source>
         <translation>最近打开的文件</translation>
     </message>
@@ -8373,7 +8619,7 @@ Layout</source>
 <context>
     <name>DA::DADataManagerTreeWidget</name>
     <message>
-        <location filename="../DAGui/DADataManagerTreeWidget.cpp" line="+420"/>
+        <location filename="../DAGui/DADataManagerTreeWidget.cpp" line="+423"/>
         <source>Search...</source>
         <translation>搜索</translation>
     </message>
@@ -8381,7 +8627,7 @@ Layout</source>
 <context>
     <name>DA::DADataOperateOfDataFrameWidget</name>
     <message>
-        <location filename="../DAGui/DADataOperateOfDataFrameWidget.cpp" line="+238"/>
+        <location filename="../DAGui/DADataOperateOfDataFrameWidget.cpp" line="+241"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
@@ -8397,7 +8643,7 @@ Layout</source>
     </message>
     <message>
         <location line="+42"/>
-        <location line="+170"/>
+        <location line="+298"/>
         <location line="+35"/>
         <location line="+41"/>
         <location line="+42"/>
@@ -8407,15 +8653,45 @@ Layout</source>
         <translation>请选择正确的列</translation>
     </message>
     <message>
-        <location line="-1035"/>
-        <location line="+700"/>
+        <location line="-1163"/>
+        <location line="+828"/>
         <location line="+61"/>
         <location line="+48"/>
         <source>Please select a valid cell</source>
         <translation>请选择正确的单元格</translation>
     </message>
     <message>
-        <location line="-767"/>
+        <location line="-889"/>
+        <source>Clipboard is empty</source>
+        <translation>剪贴板为空</translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>Please select a cell to paste into</source>
+        <translation>请先选中要粘贴的起始单元格</translation>
+    </message>
+    <message>
+        <location line="+49"/>
+        <source>Nothing to paste: the clipboard content exceeds the table boundary</source>
+        <translation>无可粘贴内容：剪贴板内容超出表格边界</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Paste partially dropped: %1 row(s) and %2 cell(s) outside the table were ignored</source>
+        <translation>粘贴部分丢弃：%1 行与 %2 个单元格超出表格范围被忽略</translation>
+    </message>
+    <message>
+        <location line="+16"/>
+        <source>Paste failed: the content does not match the column data type</source>
+        <translation>粘贴失败：内容与列数据类型不匹配</translation>
+    </message>
+    <message>
+        <location line="+17"/>
+        <source>No cells selected to cut</source>
+        <translation>没有选中可剪切的单元格</translation>
+    </message>
+    <message>
+        <location line="+22"/>
         <source>Table has no columns</source>
         <translation>表格没有列</translation>
     </message>
@@ -10573,7 +10849,7 @@ Layout</source>
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-1460"/>
+        <location filename="../APP/DAAppController.cpp" line="-1489"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>
@@ -14351,7 +14627,12 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>改变列数据类型</translation>
     </message>
     <message>
-        <location line="+61"/>
+        <location line="+64"/>
+        <source>paste data</source>
+        <translation>粘贴数据</translation>
+    </message>
+    <message>
+        <location line="+31"/>
         <source>eval data</source>
         <translation>列运算</translation>
     </message>

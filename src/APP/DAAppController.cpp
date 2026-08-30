@@ -20,6 +20,9 @@
 // qwt
 #include "qwt_figure.h"
 #include "qwt_plot_series_data_picker.h"
+#include <QwtPlotMarker>
+#include <QwtPlotTextLabel>
+#include <QwtText>
 // SARibbon
 #include "SARibbonGlobal.h"
 #include "SARibbonMainWindow.h"
@@ -108,6 +111,7 @@
 #include "DAAgentDockWidget.h"       // DAAppDockingArea 仅前向声明；PMF connect 需完整类型（plan-02）
 //
 #include "SettingPages/DAAppConfig.h"
+#include "DAAppLayoutManager.h"
 #include "DALogCategory.h"
 
 #ifndef DAAPPRIBBONAREA_WINDOW_NAME
@@ -366,6 +370,12 @@ void DAAppController::initConnection()
     // Data Category
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionAddData, onActionAddDataTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionRemoveData, onActionRemoveDataTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionRenameData, onActionRenameDataTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionExportData, onActionExportDataTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionExportDataCsv, onActionExportDataAsTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionExportDataExcel, onActionExportDataAsTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionExportDataPickle, onActionExportDataAsTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionExportDataParquet, onActionExportDataAsTriggered);
     // Chart Category
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionAddFigure, onActionAddFigureTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionFigureNewXYAxis, onActionFigureNewXYAxisTriggered);
@@ -417,6 +427,22 @@ void DAAppController::initConnection()
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnableLegend, onActionChartEnableLegendTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionCopyFigureInClipboard, onActionCopyFigureToClipboardTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartDataPickerSetting, onActionChartDataPickerSettingTriggered);
+    // 图表上下文-文字标签
+    connect(mRibbon->mEditChartTitle, &QLineEdit::editingFinished, this, &DAAppController::onChartTitleEditingFinished);
+    connect(mRibbon->mEditChartXAxisTitle,
+            &QLineEdit::editingFinished,
+            this,
+            &DAAppController::onChartXAxisTitleEditingFinished);
+    connect(mRibbon->mEditChartYAxisTitle,
+            &QLineEdit::editingFinished,
+            this,
+            &DAAppController::onChartYAxisTitleEditingFinished);
+    connect(mActions->actionGroupChartLegendPosition,
+            &QActionGroup::triggered,
+            this,
+            &DAAppController::onActionGroupChartLegendPositionTriggered);
+    connect(mRibbon, &DAAppRibbonArea::selectedChartFont, this, &DAAppController::onChartFontChanged);
+    connect(mRibbon, &DAAppRibbonArea::selectedChartFontColor, this, &DAAppController::onChartFontColorChanged);
     for (QAction* act : std::as_const(mActions->actionListOfColorTheme)) {
         connect(act, &QAction::triggered, this, [ this, act ]() { onActionGroupFigureThemeTriggered(act); });
     }
@@ -511,11 +537,18 @@ void DAAppController::initConnection()
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionSelectAll, onActionSelectAllTriggered);
     // 视图页-布局/外观
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionResetDefaultLayout, onActionResetDefaultLayoutTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionSaveCurrentLayout, onActionSaveCurrentLayoutTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionRemoveLayout, onActionRemoveLayoutTriggered);
     setupRibbonThemeCombo();
     connect(mRibbon->mComboxRibbonTheme,
             QOverload< int >::of(&QComboBox::currentIndexChanged),
             this,
             &DAAppController::onRibbonThemeComboCurrentIndexChanged);
+    refreshLayoutSchemeCombo();
+    connect(mRibbon->mComboxLayoutScheme,
+            QOverload< int >::of(&QComboBox::currentIndexChanged),
+            this,
+            &DAAppController::onLayoutSchemeComboCurrentIndexChanged);
     //===================================================
     // setDockAreaInterface 有其他的绑定
     //===================================================
@@ -1654,6 +1687,109 @@ void DAAppController::onActionResetDefaultLayoutTriggered()
 }
 
 /**
+ * @brief 视图页-布局面板：把布局管理器的方案列表填入下拉
+ *
+ * 预置方案显示翻译名（Default→默认布局 / Focus Analysis→专注分析），自定义方案显示原名
+ */
+void DAAppController::refreshLayoutSchemeCombo()
+{
+    QComboBox* combo = mRibbon->mComboxLayoutScheme;
+    DAAppLayoutManager* mgr = mMainWindow ? mMainWindow->getLayoutManager() : nullptr;
+    if (!combo || !mgr) {
+        return;
+    }
+    QSignalBlocker blocker(combo);
+    combo->clear();
+    const QStringList names = mgr->layoutNames();
+    for (const QString& n : names) {
+        QString display;
+        if (n == QStringLiteral("Default")) {
+            display = tr("Default");  // cn:默认布局
+        } else if (n == QStringLiteral("Focus Analysis")) {
+            display = tr("Focus Analysis");  // cn:专注分析
+        } else {
+            display = n;
+        }
+        combo->addItem(display, n);
+    }
+}
+
+/**
+ * @brief 布局方案下拉切换 → 应用所选方案
+ */
+void DAAppController::onLayoutSchemeComboCurrentIndexChanged(int index)
+{
+    if (index < 0) {
+        return;
+    }
+    DAAppLayoutManager* mgr = mMainWindow ? mMainWindow->getLayoutManager() : nullptr;
+    if (!mgr) {
+        return;
+    }
+    QString name = mRibbon->mComboxLayoutScheme->itemData(index).toString();
+    if (name.isEmpty()) {
+        return;
+    }
+    mgr->openLayout(name);
+}
+
+/**
+ * @brief 保存当前布局为命名方案（弹命名输入框）
+ */
+void DAAppController::onActionSaveCurrentLayoutTriggered()
+{
+    DAAppLayoutManager* mgr = mMainWindow ? mMainWindow->getLayoutManager() : nullptr;
+    if (!mgr) {
+        return;
+    }
+    bool ok    = false;
+    QString name = QInputDialog::getText(app(),
+                                         tr("Save Layout"),         // cn:保存布局方案
+                                         tr("Layout scheme name:"),  // cn:布局方案名称：
+                                         QLineEdit::Normal,
+                                         QString(),
+                                         &ok);
+    if (!ok || name.isEmpty()) {
+        return;
+    }
+    if (mgr->isPreset(name)) {
+        daWarning << tr("Cannot overwrite preset layout schemes, please use another name");  // cn:不能覆盖预置布局方案，请换一个名称
+        return;
+    }
+    if (mgr->saveLayoutAs(name)) {
+        daInfo << tr("Layout scheme '%1' saved").arg(name);  // cn:布局方案"%1"已保存
+        refreshLayoutSchemeCombo();
+        // 选中新保存的方案
+        int idx = mRibbon->mComboxLayoutScheme->findData(name);
+        if (idx >= 0) {
+            QSignalBlocker b(mRibbon->mComboxLayoutScheme);
+            mRibbon->mComboxLayoutScheme->setCurrentIndex(idx);
+        }
+    }
+}
+
+/**
+ * @brief 删除当前下拉选中的自定义布局方案（预置不可删）
+ */
+void DAAppController::onActionRemoveLayoutTriggered()
+{
+    DAAppLayoutManager* mgr = mMainWindow ? mMainWindow->getLayoutManager() : nullptr;
+    QComboBox* combo        = mRibbon->mComboxLayoutScheme;
+    if (!mgr || !combo || combo->currentIndex() < 0) {
+        return;
+    }
+    QString name = combo->currentData().toString();
+    if (name.isEmpty() || mgr->isPreset(name)) {
+        daWarning << tr("Preset layout schemes cannot be removed");  // cn:预置布局方案不可删除
+        return;
+    }
+    if (mgr->removeLayout(name)) {
+        daInfo << tr("Layout scheme '%1' removed").arg(name);  // cn:布局方案"%1"已删除
+        refreshLayoutSchemeCombo();
+    }
+}
+
+/**
  * @brief 主页剪贴板-剪切（按焦点路由）
  */
 void DAAppController::onActionCutTriggered()
@@ -1663,8 +1799,11 @@ void DAAppController::onActionCutTriggered()
             act->trigger();
         }
     } else if (isLastFocusedOnDataOptWidget()) {
-        // 阶段二实现（表格粘贴/剪切/删除）
-        daWarning << tr("Cut is not available for tables yet");  // cn:表格剪切功能暂未实现
+        if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
+            if (dfopt->cutSelection() > 0) {
+                setDirty();
+            }
+        }
     }
 }
 
@@ -1700,8 +1839,11 @@ void DAAppController::onActionPasteTriggered()
             act->trigger();
         }
     } else if (isLastFocusedOnDataOptWidget()) {
-        // 阶段二实现（表格粘贴/剪切/删除）
-        daWarning << tr("Paste is not available for tables yet");  // cn:表格粘贴功能暂未实现
+        if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
+            if (dfopt->pasteFromClipboard() > 0) {
+                setDirty();
+            }
+        }
     }
 }
 
@@ -1977,6 +2119,162 @@ void DAAppController::onActionRemoveDataTriggered()
     DADataManageWidget* dmw = mDock->getDataManageWidget();
     dmw->removeSelectData();
     setDirty();
+}
+
+/**
+ * @brief 重命名数据集
+ *
+ * 定位数据管理树当前选中项，触发视图编辑（QTreeView::edit），
+ * 提交经 DADataManagerTreeModel::setData 落 DAData::setName（拒绝重名/空名）
+ */
+void DAAppController::onActionRenameDataTriggered()
+{
+    DADataManageWidget* dmw = mDock->getDataManageWidget();
+    if (!dmw) {
+        return;
+    }
+    DADataManagerTreeWidget* tree = dmw->getTreeWidget();
+    if (!tree) {
+        return;
+    }
+    QTreeView* tv = tree->getTreeView();
+    if (!tv) {
+        return;
+    }
+    QModelIndex cur = tv->currentIndex();
+    if (!cur.isValid()) {
+        daWarning << tr("Please select a dataset to rename");  // cn:请先选中要重命名的数据集
+        return;
+    }
+    // Series 子项不可编辑（模型 flags 已限制），非数据项编辑提交会被 setData 拒绝
+    tv->edit(cur);
+    mDock->raiseDockByWidget((QWidget*)(dmw));
+}
+
+/**
+ * @brief 导出数据（大按钮：弹出保存对话框，格式按所选过滤器/后缀判定）
+ */
+void DAAppController::onActionExportDataTriggered()
+{
+    exportSelectedData(QString());
+}
+
+/**
+ * @brief 按指定格式导出（子菜单路径：csv/excel/pickle/parquet）
+ */
+void DAAppController::onActionExportDataAsTriggered()
+{
+    QString format;
+    QAction* act = qobject_cast< QAction* >(sender());
+    if (act == mActions->actionExportDataCsv) {
+        format = "csv";
+    } else if (act == mActions->actionExportDataExcel) {
+        format = "excel";
+    } else if (act == mActions->actionExportDataPickle) {
+        format = "pickle";
+    } else if (act == mActions->actionExportDataParquet) {
+        format = "parquet";
+    }
+    if (!format.isEmpty()) {
+        exportSelectedData(format);
+    }
+}
+
+/**
+ * @brief 导出当前选中的数据集
+ *
+ * 取数据管理器选中数据（getSelectDatas，无选中回退当前操作数据），弹保存对话框，
+ * 委托 DAAppDataManager::exportToFile 完成（io.py 的 da_to_*），结果 daInfo/daWarning 反馈
+ * @param format 指定格式（csv/excel/pickle/parquet）；为空时按保存对话框后缀判定
+ */
+void DAAppController::exportSelectedData(const QString& format)
+{
+    // 优先取数据管理器选中数据，无选中时回退当前操作数据
+    QList< DAData > datas = mDatas->getSelectDatas();
+    DAData d;
+    if (!datas.isEmpty()) {
+        d = datas.first();
+    } else {
+        d = mDatas->getOperateData();
+    }
+    if (d.isNull()) {
+        daWarning << tr("Please select a dataset to export");  // cn:请先选中要导出的数据
+        return;
+    }
+    QString name = d.getName();
+    if (name.isEmpty()) {
+        name = QStringLiteral("data");
+    }
+    // 过滤器与默认后缀
+    QString csvFilter     = tr("CSV File") + QStringLiteral(" (*.csv)");    // cn:CSV 文件
+    QString excelFilter   = tr("Excel File") + QStringLiteral(" (*.xlsx)");  // cn:Excel 文件
+    QString pickleFilter  = tr("Pickle File") + QStringLiteral(" (*.pkl)");  // cn:Pickle 文件
+    QString parquetFilter = tr("Parquet File") + QStringLiteral(" (*.parquet)");  // cn:Parquet 文件
+    QString selectedFilter;
+    if (format == "csv") {
+        selectedFilter = csvFilter;
+    } else if (format == "excel") {
+        selectedFilter = excelFilter;
+    } else if (format == "pickle") {
+        selectedFilter = pickleFilter;
+    } else if (format == "parquet") {
+        selectedFilter = parquetFilter;
+    }
+    QString defaultSuffix;
+    if (!selectedFilter.isEmpty()) {
+        int i = selectedFilter.lastIndexOf(QLatin1String("*."));
+        if (i >= 0) {
+            defaultSuffix = selectedFilter.mid(i + 2, selectedFilter.indexOf(')', i) - i - 2);
+        }
+    }
+    QString path = QFileDialog::getSaveFileName(app(),
+                                                tr("Export Data"),  // cn:导出数据
+                                                name,
+                                                csvFilter + ";;" + excelFilter + ";;" + pickleFilter + ";;" + parquetFilter,
+                                                &selectedFilter);
+    if (path.isEmpty()) {
+        return;
+    }
+    // 确定格式：优先显式 format，其次按过滤器，最后按后缀
+    QString fmt = format;
+    if (fmt.isEmpty()) {
+        if (selectedFilter == csvFilter) {
+            fmt = "csv";
+        } else if (selectedFilter == excelFilter) {
+            fmt = "excel";
+        } else if (selectedFilter == pickleFilter) {
+            fmt = "pickle";
+        } else if (selectedFilter == parquetFilter) {
+            fmt = "parquet";
+        }
+    }
+    if (fmt.isEmpty()) {
+        QString suffix = QFileInfo(path).suffix().toLower();
+        if (suffix == "csv") {
+            fmt = "csv";
+        } else if (suffix == "xlsx" || suffix == "xls") {
+            fmt = "excel";
+        } else if (suffix == "pkl" || suffix == "pickle") {
+            fmt = "pickle";
+        } else if (suffix == "parquet") {
+            fmt = "parquet";
+        }
+    }
+    if (fmt.isEmpty()) {
+        daWarning << tr("Cannot determine export format, please select a file suffix");  // cn:无法确定导出格式，请选择带后缀的文件名
+        return;
+    }
+    // 补默认后缀
+    if (QFileInfo(path).suffix().isEmpty() && !defaultSuffix.isEmpty()) {
+        path += QStringLiteral(".") + defaultSuffix;
+    }
+    QString err;
+    DA_WAIT_CURSOR_SCOPED();
+    if (mDatas->exportToFile(d, path, fmt, &err)) {
+        daInfo << tr("Data exported successfully, path: %1").arg(path);  // cn:数据导出成功，路径:%1
+    } else {
+        daWarning << tr("Data export failed, path: %1, reason: %2").arg(path, err);  // cn:数据导出失败，路径:%1，原因:%2
+    }
 }
 
 /**
@@ -2590,6 +2888,164 @@ void DAAppController::onActionCopyFigureToClipboardTriggered()
         return;
     }
     fig->copyToClipboard();
+}
+
+/**
+ * @brief 图表标题行编辑器提交（D9：Ribbon内联编辑，不弹对话框）
+ */
+void DAAppController::onChartTitleEditingFinished()
+{
+    DAChartWidget* chart = getCurrentChart();
+    if (!chart) {
+        return;
+    }
+    QString text = mRibbon->mEditChartTitle->text();
+    if (text == chart->getChartTitle()) {
+        return;
+    }
+    chart->setChartTitle(text);
+    chart->replot();
+    setDirty();
+}
+
+/**
+ * @brief X轴标题行编辑器提交
+ */
+void DAAppController::onChartXAxisTitleEditingFinished()
+{
+    DAChartWidget* chart = getCurrentChart();
+    if (!chart) {
+        return;
+    }
+    QString text = mRibbon->mEditChartXAxisTitle->text();
+    if (text == chart->getAxisLabel(QwtAxis::XBottom)) {
+        return;
+    }
+    chart->setAxisLabel(QwtAxis::XBottom, text);
+    chart->replot();
+    setDirty();
+}
+
+/**
+ * @brief Y轴标题行编辑器提交
+ */
+void DAAppController::onChartYAxisTitleEditingFinished()
+{
+    DAChartWidget* chart = getCurrentChart();
+    if (!chart) {
+        return;
+    }
+    QString text = mRibbon->mEditChartYAxisTitle->text();
+    if (text == chart->getAxisLabel(QwtAxis::YLeft)) {
+        return;
+    }
+    chart->setAxisLabel(QwtAxis::YLeft, text);
+    chart->replot();
+    setDirty();
+}
+
+/**
+ * @brief 图例位置按钮组切换
+ */
+void DAAppController::onActionGroupChartLegendPositionTriggered(QAction* act)
+{
+    DAChartWidget* chart = getCurrentChart();
+    if (!chart || !act || !act->isChecked()) {
+        return;
+    }
+    bool isok  = false;
+    int alignV = act->data().toInt(&isok);
+    if (!isok) {
+        return;
+    }
+    chart->setLegendPosition(static_cast< Qt::Alignment >(alignV));
+    chart->replot();
+    setDirty();
+}
+
+/**
+ * @brief 图表文字字体变化
+ */
+void DAAppController::onChartFontChanged(const QFont& f)
+{
+    applyChartFont(f, QColor(), false);
+}
+
+/**
+ * @brief 图表文字字体颜色变化
+ */
+void DAAppController::onChartFontColorChanged(const QColor& c)
+{
+    applyChartFont(QFont(), c, true);
+}
+
+/**
+ * @brief 把字体/颜色应用到当前图表（D8 路由）
+ *
+ * 优先作用于选中的文字图元（QwtPlotTextLabel / 带 label 的 QwtPlotMarker / DAChartTextMarker），
+ * 无选中或非文字图元时回退到图表标题，避免按钮经常灰着
+ */
+void DAAppController::applyChartFont(const QFont& f, const QColor& c, bool hasColor)
+{
+    DAChartWidget* chart = getCurrentChart();
+    if (!chart) {
+        return;
+    }
+    // 取当前选中图元（经设置面板的同一路径）
+    QwtPlotItem* item = nullptr;
+    DASettingContainerWidget* setting = getSettingContainerWidget();
+    if (setting) {
+        if (DAChartSettingWidget* chartSetting = setting->getChartSettingWidget()) {
+            item = chartSetting->getCurrentPlotItem();
+        }
+    }
+    const QFont font      = f;
+    const QColor fontColor = c;
+    if (item) {
+        // 文字图元分支：QwtPlotTextLabel 或带 label 的 marker
+        if (QwtPlotTextLabel* label = dynamic_cast< QwtPlotTextLabel* >(item)) {
+            QwtText txt = label->text();
+            applyQwtTextStyle(txt, font, fontColor, hasColor);
+            label->setText(txt);
+            chart->replot();
+            setDirty();
+            return;
+        }
+        if (QwtPlotMarker* marker = dynamic_cast< QwtPlotMarker* >(item)) {
+            QwtText txt = marker->label();
+            if (!txt.isEmpty()) {
+                applyQwtTextStyle(txt, font, fontColor, hasColor);
+                marker->setLabel(txt);
+                chart->replot();
+                setDirty();
+                return;
+            }
+        }
+    }
+    // 回退：图表标题
+    QwtText title = chart->title();
+    applyQwtTextStyle(title, font, fontColor, hasColor);
+    chart->setTitle(title);
+    chart->replot();
+    setDirty();
+}
+
+/**
+ * @brief QwtText 的字体/颜色应用辅助
+ * @param txt 目标文本
+ * @param f 字体（hasColor=false 时生效）
+ * @param c 颜色（hasColor=true 时生效）
+ * @param hasColor true=仅改颜色，false=仅改字体
+ */
+void DAAppController::applyQwtTextStyle(QwtText& txt, const QFont& f, const QColor& c, bool hasColor)
+{
+    if (hasColor) {
+        if (c.isValid()) {
+            txt.setColor(c);
+        }
+    } else {
+        txt.setFont(f);
+    }
 }
 
 void DAAppController::onActionChartDataPickerSettingTriggered()

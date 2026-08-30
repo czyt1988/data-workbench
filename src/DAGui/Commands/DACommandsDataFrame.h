@@ -199,6 +199,32 @@ private:
 };
 
 /**
+ * @brief 批量写入单元格（粘贴）
+ *
+ * 参照 DACommandDataFrame_setnan 的批量旧值模式：构造时提取旧值，
+ * redo 批量 iat 写新值、undo 写回旧值。行列表 mRows/mColumns 与新值列表
+ * mNewdatas 一一对应（同行同列的多次写入按顺序覆盖）
+ */
+class DAGUI_API DACommandDataFrame_paste : public DACommandWithRedoCount, public DACallBackInterface
+{
+public:
+    DACommandDataFrame_paste(const DAPyDataFrame& df,
+                             const QList< int >& rows,
+                             const QList< int >& columns,
+                             const QList< QVariant >& newdatas,
+                             QUndoCommand* par = nullptr);
+    virtual void undo() override;
+    virtual bool exec() override;
+
+private:
+    DAPyDataFrame mDataframe;
+    QList< int > mRows;
+    QList< int > mColumns;
+    QList< QVariant > mNewdatas;
+    QList< pybind11::object > mOlddatas;
+};
+
+/**
  * @brief evaldatas
  */
 class DAGUI_API DACommandDataFrame_evalDatas : public DACommandWithTemporaryData, public DACallBackInterface

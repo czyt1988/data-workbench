@@ -73,6 +73,14 @@ void DAAppActions::buildDataAction()
     // Data Category
     actionAddData    = createAction(UiNames::Action::AddData, ":/app/bright/Icon/addData.svg");
     actionRemoveData = createAction(UiNames::Action::RemoveData, ":/app/bright/Icon/removeData.svg");
+    // 重命名数据集（树视图定位选中项并触发编辑）
+    actionRenameData = createAction(UiNames::Action::RenameData, ":/app/bright/Icon/renameColumn.svg");
+    // 数据导出（大按钮 + 三格式子项，挂在导出菜单中）
+    actionExportData        = createAction(UiNames::Action::ExportData, ":/app/bright/Icon/exportToPic.svg");
+    actionExportDataCsv     = createAction(UiNames::Action::ExportDataCsv, ":/app/bright/Icon/exportToPng.svg");
+    actionExportDataExcel   = createAction(UiNames::Action::ExportDataExcel, ":/app/bright/Icon/exportToPng.svg");
+    actionExportDataPickle  = createAction(UiNames::Action::ExportDataPickle, ":/app/bright/Icon/exportToPng.svg");
+    actionExportDataParquet = createAction(UiNames::Action::ExportDataParquet, ":/app/bright/Icon/exportToPng.svg");
     // 数据操作的上下文标签 Data Operate Context Category
     actionRemoveRow         = createAction(UiNames::Action::RemoveRow, ":/app/bright/Icon/removeRow.svg");
     actionRemoveColumn      = createAction(UiNames::Action::RemoveColumn, ":/app/bright/Icon/removeColumn.svg");
@@ -260,6 +268,8 @@ void DAAppActions::buildViewAction()
     actionShowRightSideBar = createAction(UiNames::Action::ShowRightSideBar, ":/app/bright/Icon/right-sider-bar.svg", true, true);
     actionShowAgentArea = createAction(UiNames::Action::ShowAgentArea, ":/app/bright/Icon/showAgent.svg");
     actionResetDefaultLayout = createAction(UiNames::Action::ResetDefaultLayout, ":/app/bright/Icon/viewAll.svg");
+    actionSaveCurrentLayout  = createAction(UiNames::Action::SaveCurrentLayout, ":/app/bright/Icon/save.svg");
+    actionRemoveLayout       = createAction(UiNames::Action::RemoveLayout, ":/app/bright/Icon/removeData.svg");
 }
 
 void DAAppActions::buildWorkflowAction()
@@ -423,6 +433,18 @@ void DAAppActions::retranslateUi()
     actionAddData->setToolTip(tr("Add data to the table"));                       // cn:添加数据到表格
     actionRemoveData->setText(tr("Remove \nData"));                               // cn:移除\n数据
     actionRemoveData->setToolTip(tr("Remove data from the table"));               // cn:从表格中移除数据
+    actionRenameData->setText(tr("Rename \nData"));                               // cn:重命名\n数据
+    actionRenameData->setToolTip(tr("Rename the selected dataset"));              // cn:重命名选中的数据集
+    actionExportData->setText(tr("Export \nData"));                               // cn:导出\n数据
+    actionExportData->setToolTip(tr("Export the selected data to a file"));       // cn:导出选中的数据到文件
+    actionExportDataCsv->setText(tr("Export CSV"));                               // cn:导出 CSV
+    actionExportDataCsv->setToolTip(tr("Export the selected data to a CSV file"));  // cn:导出选中的数据为 CSV 文件
+    actionExportDataExcel->setText(tr("Export Excel"));                           // cn:导出 Excel
+    actionExportDataExcel->setToolTip(tr("Export the selected data to an Excel file"));  // cn:导出选中的数据为 Excel 文件
+    actionExportDataPickle->setText(tr("Export Pickle"));                         // cn:导出 Pickle
+    actionExportDataPickle->setToolTip(tr("Export the selected data to a pickle file"));  // cn:导出选中的数据为 Pickle 文件
+    actionExportDataParquet->setText(tr("Export Parquet"));                       // cn:导出 Parquet
+    actionExportDataParquet->setToolTip(tr("Export the selected data to a parquet file"));  // cn:导出选中的数据为 Parquet 文件
     //-----------------------------------------------------
     // Chart Category
     //-----------------------------------------------------
@@ -683,6 +705,10 @@ void DAAppActions::retranslateUi()
     actionSelectAll->setToolTip(tr("Select all content"));            // cn:全选内容
     actionResetDefaultLayout->setText(tr("Reset \nLayout"));          // cn:恢复\n默认布局
     actionResetDefaultLayout->setToolTip(tr("Restore the default window layout immediately"));  // cn:立即恢复默认窗口布局
+    actionSaveCurrentLayout->setText(tr("Save \nLayout"));           // cn:保存\n当前布局
+    actionSaveCurrentLayout->setToolTip(tr("Save the current window layout as a named scheme"));  // cn:把当前窗口布局保存为命名方案
+    actionRemoveLayout->setText(tr("Remove \nLayout"));              // cn:删除\n布局方案
+    actionRemoveLayout->setToolTip(tr("Remove the selected custom layout scheme"));  // cn:删除选中的自定义布局方案
 
     //
     if (actionRedo) {

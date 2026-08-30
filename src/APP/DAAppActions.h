@@ -67,6 +67,12 @@ public:
     //===================================================
     QAction* actionAddData;     ///< 添加数据
     QAction* actionRemoveData;  ///< 移除数据
+    QAction* actionRenameData;  ///< 重命名数据集（树视图触发编辑）
+    QAction* actionExportData;         ///< 导出数据（大按钮，弹保存对话框，按后缀定格式）
+    QAction* actionExportDataCsv;      ///< 导出csv
+    QAction* actionExportDataExcel;    ///< 导出excel
+    QAction* actionExportDataPickle;   ///< 导出pickle
+    QAction* actionExportDataParquet;  ///< 导出parquet
 
     //===================================================
     // 数据操作的上下文标签 Data Operate Context Category
@@ -210,6 +216,8 @@ public:
     QAction* actionShowRightSideBar;  ///< 显示/隐藏右边侧边栏
     QAction* actionShowAgentArea;  ///< 显示 Agent 助手区域
     QAction* actionResetDefaultLayout;  ///< 恢复默认布局（运行时立即生效）
+    QAction* actionSaveCurrentLayout;   ///< 保存当前布局为方案
+    QAction* actionRemoveLayout;        ///< 删除选中的自定义布局方案
 
     //===================================================
     // 颜色主题

@@ -42,6 +42,7 @@
 #include "SettingPages/DAAppConfig.h"
 #include "DAAppProjectActionPolicy.h"
 #include "DAAppWindowStateSerializer.h"
+#include "DAAppLayoutManager.h"
 #include "DALogCategory.h"
 // Qt-Advanced-Docking-System
 #include "DockManager.h"
@@ -100,6 +101,9 @@ AppMainWindow::AppMainWindow(QWidget* parent) : SARibbonMainWindow(parent)
     ribbonBar()->setRibbonStyle(SARibbonBar::RibbonStyleCompactTwoRow);
     // 抓取默认布局快照：dock 已建好、未加载用户状态、早于插件加载
     mDefaultUIStateSnapshot = saveUIState();
+    // 布局方案管理器（预置 Default=启动快照 / Focus Analysis=隐藏侧栏；自定义读磁盘）
+    mLayoutManager = new DAAppLayoutManager(this, this);
+    mLayoutManager->initialize(mDefaultUIStateSnapshot);
     // 界面状态的加载要在init之前，因为inti的插件会改变界面，如果在之后就永远改变不了界面了
     bool hasUIStateFile = isHaveStateSettingFile();
     if (hasUIStateFile) {
