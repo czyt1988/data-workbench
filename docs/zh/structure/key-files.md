@@ -250,15 +250,15 @@ set(qwt_DIR ${DA_INSTALL_LIB_CMAKE_PATH}/qwt)
 
 ```cmake
 # 设置插件信息
-macro(damacro_plugin_setting name desc major minor patch install_dir)
+function(da_plugin_bootstrap name desc)
 
 # 导入第三方库
-macro(damacro_import_SARibbonBar target install_dir)
-macro(damacro_import_qwt target install_dir)
+function(da_add_plugin ...)
+function(da_link_3rdparty target LIBS ...)
 # ...
 
 # 安装插件
-macro(damacro_plugin_install)
+function(da_add_library/da_add_executable/da_add_test)
 ```
 
 ---

@@ -88,52 +88,32 @@ Scripts -->|操作| IF
 
 ## CMake 配置详解
 
-DAWorkBench 采用 **嵌入式（embedded）** 绑定方案：绑定代码通过 `PYBIND11_EMBEDDED_MODULE` 宏以进程内模块形式注册到解释器，而非用 `pybind11_add_module` 编译成独立的 `.pyd`。因此 CMake 侧不产生单独的绑定目标，而是把绑定源文件并入对应库的源列表，再通过项目封装的导入宏链接 Python 与 pybind11。
+DAWorkBench 采用 **嵌入式（embedded）** 绑定方案：绑定代码通过 `PYBIND11_EMBEDDED_MODULE` 宏以进程内模块形式注册到解释器，而非用 `pybind11_add_module` 编译成独立的 `.pyd`。因此 CMake 侧不产生单独的绑定目标，而是把绑定源文件并入对应库的源列表，再通过项目封装的 `da_link_3rdparty` 统一导入函数链接 Python 与 pybind11。
 
-=== "Python 与 pybind11 导入宏"
+=== "Python 与 pybind11 导入函数"
 
-    项目在 `cmake/daworkbench_3rdparty.cmake` 中封装了两个导入宏，各库（如 `DAInterface`）通过它们完成链接：
+    项目在 `cmake/daworkbench_3rdparty.cmake` 中封装了统一导入函数 `da_link_3rdparty`，各库（如 `DAInterface`）通过 `THIRDPARTY` 参数（或直接调用）完成链接：
 
     ```cmake
-    # cmake/daworkbench_3rdparty.cmake:183-207  —— damacro_import_Python
-    macro(damacro_import_Python __target_name)
-        # 未固定版本号，按系统环境解析（可通过 Python3_ROOT_DIR 指定非系统 Python）
-        find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
-        if(${Python3_FOUND})
-            message(STATUS "  |-find python")
-            # ... 打印 Python3_VERSION / INCLUDE_DIRS / LIBRARIES 等诊断信息
-        endif()
-        target_link_libraries(${__target_name} PRIVATE ${Python3_LIBRARIES})
-        target_include_directories(${__target_name} PRIVATE ${Python3_INCLUDE_DIRS})
-    endmacro()
+    # LIBS 中的 python：未固定版本号，按系统环境解析（可通过 Python3_ROOT_DIR 指定非系统 Python）
+    find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
+    target_link_libraries(${_target} ${_scope} ${Python3_LIBRARIES})
+    target_include_directories(${_target} ${_scope} ${Python3_INCLUDE_DIRS})
 
-    # cmake/daworkbench_3rdparty.cmake:209-238  —— damacro_import_pybind11
-    macro(damacro_import_pybind11 __target_name)
-        # pybind11 安装在 share/cmake 而非 lib/cmake，先按默认查找，找不到再回退到安装目录
-        find_package(pybind11)
-        if(pybind11_FOUND)
-            message(STATUS "  |-finded tsl-ordered-map")
-        else()
-            if(DEFINED DA_INSTALL_LIB_SHARE_PATH)
-                set(_lib_dir ${DA_INSTALL_LIB_SHARE_PATH}/pybind11)
-                find_package(pybind11 PATHS ${_lib_dir})  # cn:回退到本地安装目录查找
-            endif()
-        endif()
-        if(pybind11_FOUND)
-            target_link_libraries(${__target_name} PUBLIC pybind11::headers)
-        endif()
-    endmacro()
+    # LIBS 中的 pybind11：安装在 share/cmake 而非 lib/cmake，先按默认查找，
+    # 找不到再回退到 DA_INSTALL_LIB_SHARE_PATH 安装目录；pybind11 是 header-only，
+    # 默认 PUBLIC 链接 pybind11::headers（下游编译绑定头需要）
     ```
 
-    上述两个宏的关键点：
+    上述导入行为的关键点：
 
     - **不固定 Python 版本**：`find_package(Python3 COMPONENTS Interpreter Development REQUIRED)` 不带 `3.8` 版本约束，由系统环境解析；如需指向非系统 Python，可通过 `Python3_ROOT_DIR` 改变查找路径。
-    - **不直接链接 `Python3::Python` / `Python3::Module`**：链接统一由 `damacro_import_Python` 完成（链接 `${Python3_LIBRARIES}`、包含 `${Python3_INCLUDE_DIRS}`）。
+    - **不直接链接 `Python3::Python` / `Python3::Module`**：链接统一由 `da_link_3rdparty` 的 `python` 项完成（链接 `${Python3_LIBRARIES}`、包含 `${Python3_INCLUDE_DIRS}`，默认 PRIVATE 作用域）。
     - **pybind11 仅链接 `pybind11::headers`**：因为绑定走 `PYBIND11_EMBEDDED_MODULE`，不需要 `pybind11::module`，也不调用 `pybind11_add_module`。
 
 === "嵌入绑定源文件（以 DAInterface 为例）"
 
-    `src/DAInterface/CMakeLists.txt` 把绑定源文件并入库源列表，再用导入宏链接依赖：
+    `src/DAInterface/CMakeLists.txt` 把绑定源文件并入库源列表，`da_add_library` 的 `THIRDPARTY` 参数链接依赖：
 
     ```cmake
     # src/DAInterface/CMakeLists.txt:47-54  —— 绑定源文件并入 DAInterface 库
@@ -151,16 +131,20 @@ DAWorkBench 采用 **嵌入式（embedded）** 绑定方案：绑定代码通过
                 ${DA_LIB_SOURCE_FILES}
                 ${DA_GLOBAL_HEADER})
 
-    # src/DAInterface/CMakeLists.txt:88-91  —— 链接 Python 与 pybind11
-    damacro_import_Python(${DA_LIB_NAME})      # cn:链接 ${Python3_LIBRARIES}
-    damacro_import_pybind11(${DA_LIB_NAME})    # cn:链接 pybind11::headers
+    # da_add_library 的 THIRDPARTY 参数 —— 链接 Python 与 pybind11
+    da_add_library(
+        NAME DAInterface
+        ...
+        THIRDPARTY SARibbonBar ads qwt ctk python pybind11   # cn:python 链接 ${Python3_LIBRARIES}，
+                                                            #     pybind11 链接 pybind11::headers
+    )
     ```
 
     上述嵌入配置的关键点：
 
     - 绑定源文件以 `target_sources` / 源列表方式并入库，**不**用 `pybind11_add_module` 生成独立 `.pyd`。
     - `DAInterfacePythonBinding.cpp` 内通过 `PYBIND11_EMBEDDED_MODULE(da_interface, m)` 在进程内注册模块，Python 端 `import da_interface` 即由解释器从已注册的内置模块加载。
-    - 项目中所有绑定库（DAApp、DAInterface、DAData、DAFigure、DAPyWorkFlow 等）均沿用此模式，各自在 `CMakeLists.txt` 中调用 `damacro_import_Python` + `damacro_import_pybind11`。
+    - 项目中所有绑定库（DAApp、DAInterface、DAData、DAFigure、DAPyWorkFlow 等）均沿用此模式，各自在 `CMakeLists.txt` 的 `da_add_library` 的 `THIRDPARTY` 参数中声明 `python pybind11`。
 
 === "自动部署 Python 运行时（DA_ENABLE_AUTO_INSTALL_PYTHON_ENV）"
 

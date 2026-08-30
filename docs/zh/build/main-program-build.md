@@ -161,7 +161,7 @@ set(tsl-ordered-map_DIR ${DA_INSTALL_LIB_SHARE_PATH}/tsl-ordered-map)
 ```
 
 !!! info "ADS 4.x 包名变更"
-    Qt-Advanced-Docking-System 从 4.x 起将包名由 `qt6advanceddocking`（`qt5advanceddocking`）重命名为 `qtadvanceddocking-qt6`（`qtadvanceddocking-qt5`）。项目的 `damacro_import_QtAdvancedDocking` 宏会先 `find_package(qtadvanceddocking-qt${QT_VERSION_MAJOR})` 尝试新名，失败再回退到旧名 `qt${QT_VERSION_MAJOR}advanceddocking`，因此无需手动设置 `xxx_DIR`。
+    Qt-Advanced-Docking-System 从 4.x 起将包名由 `qt6advanceddocking`（`qt5advanceddocking`）重命名为 `qtadvanceddocking-qt6`（`qtadvanceddocking-qt5`）。项目的 `da_link_3rdparty`（LIBS 中的 `ads`）会先 `find_package(qtadvanceddocking-qt${QT_VERSION_MAJOR})` 尝试新名，失败再回退到旧名 `qt${QT_VERSION_MAJOR}advanceddocking`，因此无需手动设置 `xxx_DIR`。
 
 如修改了安装路径（非默认 `CMAKE_INSTALL_PREFIX`），需在构建时通过 `-DCMAKE_PREFIX_PATH` 或对应 `xxx_DIR` 指定正确位置。
 

@@ -138,82 +138,22 @@ C++ 插件入口只需继承 `DAAbstractNodePlugin` 并实现 `createNodeFactory
 下面的 CMake 示例展示了根目录配置文件的完整内容：
 
 ```cmake
-cmake_minimum_required(VERSION 3.5)
-project(MyPlugin
-        DESCRIPTION "this cmake file is the top cmake file of MyPlugin"
-)
+cmake_minimum_required(VERSION 3.16)
 
-set(DA_MIN_QT_VERSION 5.14)
-
-# 系统位数判断 - 用于生成安装目录名称
-if("${CMAKE_SIZEOF_VOID_P}" STREQUAL "4")
-    set(_platform_name "x86")
-else()
-    set(_platform_name "x64")
+# standalone 构建时引导（顶层构建时由主工程根 CMakeLists 提供环境）
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+    include(${CMAKE_CURRENT_LIST_DIR}/../../cmake/daworkbench_plugin_utils.cmake)
+    da_plugin_bootstrap("MyPlugin" "My Plugin for DAWorkbench")
 endif()
 
-# Qt 依赖 - 自动选择 Qt6 或 Qt5
-find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
-
-# 指定 data-workbench 安装目录 - 必须与主程序安装目录一致
-set(DAWorkbench_INSTALL_FOLDER_NAME "bin_${CMAKE_BUILD_TYPE}_qt${QT_VERSION}_${CMAKE_CXX_COMPILER_ID}_${_platform_name}")
-set(DAWorkbench_INSTALL_DIR "${CMAKE_CURRENT_LIST_DIR}/data-workbench/${DAWorkbench_INSTALL_FOLDER_NAME}")
-set(DAWorkbench_DIR "${DAWorkbench_INSTALL_DIR}/lib/cmake/DAWorkbench")
-
-# 引入辅助工具 - 使用主项目提供的 cmake 宏
-list(APPEND CMAKE_MODULE_PATH ${DAWorkbench_INSTALL_DIR})
-list(APPEND CMAKE_MODULE_PATH ${DAWorkbench_DIR})
-include(${DAWorkbench_DIR}/daworkbench_plugin_utils.cmake)
-
-# 设置安装目录 - 插件安装到主程序目录
-set(CMAKE_INSTALL_PREFIX ${DAWorkbench_INSTALL_DIR})
-
-# 添加 src 目录
-add_subdirectory(src)
-
-if(MSVC)
-    # 为 MSVC 设置链接器标志以禁止生成清单文件
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /MANIFEST:NO")
-    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /MANIFEST:NO")
-endif()
-```
-
-上述根目录 CMake 配置的关键点：
-
-- `DA_MIN_QT_VERSION` 设置最低 Qt 版本要求（5.14）
-- `DAWorkbench_INSTALL_FOLDER_NAME` 根据构建类型、Qt 版本和编译器自动命名
-- `DAWorkbench_INSTALL_DIR` 指定 data-workbench 的安装路径，必须与主程序安装目录一致
-- `DAWorkbench_DIR` 用于查找 data-workbench 的 CMake 配置文件
-- `daworkbench_plugin_utils.cmake` 包含所有插件辅助宏（`damacro_plugin_setting` / `damacro_import_*` / `damacro_plugin_install`，详见[工程封装的 CMake 辅助宏](../build/large-cmake-project-guide.md#工程封装的-cmake-辅助宏)）
-- MSVC 编译器下禁用清单文件生成
-
-### src 目录 CMakeLists.txt
-
-src 目录 CMake 文件负责具体的插件配置，包括设置插件信息、链接依赖、设置属性等。
-
-`src` 目录的 CMake 文件会继承顶层目录的变量（`DAWorkbench_INSTALL_DIR`、`DAWorkbench_DIR` 等可直接使用）。下面的 CMake 示例展示了 src 目录配置文件的完整内容：
-
-```cmake
-cmake_minimum_required(VERSION 3.5)
-
-# 插件信息设置 - 使用辅助宏简化配置
-damacro_plugin_setting(
-    "MyPlugin"                       # 插件名称
-    "My Plugin for DAWorkbench"      # 插件描述
-    0                                # 主版本号
-    0                                # 次版本号
-    1                                # 补丁版本号
-    ${DAWorkbench_INSTALL_DIR}       # 安装目录
-)
-
-# Qt 依赖 - 查找所需的 Qt 模块
-find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
-find_package(Qt${QT_VERSION_MAJOR} ${DA_MIN_QT_VERSION} COMPONENTS
-    Core Gui Widgets Xml Svg PrintSupport
-    REQUIRED
-)
-if(Qt5_POSITION_INDEPENDENT_CODE)
-    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+# 顶层构建时 DAWorkbench::* targets 已由 add_subdirectory(src) 创建，无需 find_package；
+# standalone 构建时按组件清单查找（DAWorkbench_DIR 由 da_plugin_bootstrap 指向安装目录）
+if(NOT TARGET DAWorkbench::DAUtils)
+    find_package(DAWorkbench COMPONENTS
+        DAUtils DAMessageHandler DAData DAPyWorkFlow DAPyBindQt
+        DAPyScripts DAPyCommonWidgets DAGraphicsView
+        DAFigure DAGui DAInterface DAPluginSupport
+    )
 endif()
 
 # 源文件 - 使用 file(GLOB) 自动收集源文件（!!!!** 注意按实际文件变更 **!!!!）
@@ -222,85 +162,30 @@ file(GLOB DA_PLUGIN_SOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 file(GLOB DA_PLUGIN_QT_UI_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.ui")
 file(GLOB DA_PLUGIN_QT_RC_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.qrc")
 
-# 创建动态库 - 插件必须是动态库
-add_library(${DA_PLUGIN_NAME} SHARED
-    ${DA_PLUGIN_HEADER_FILES}
-    ${DA_PLUGIN_SOURCE_FILES}
-    ${DA_PLUGIN_QT_UI_FILES}
-    ${DA_PLUGIN_QT_RC_FILES}
+# 一次调用完成插件 target 创建、属性设置（输出 bin/plugins）、第三方导入与安装
+da_add_plugin(
+    NAME MyPlugin
+    BUILD_DEFINE MYPLUGIN_PLUGIN_BUILD
+    SOURCES ${DA_PLUGIN_HEADER_FILES}
+            ${DA_PLUGIN_SOURCE_FILES}
+            ${DA_PLUGIN_QT_UI_FILES}
+            ${DA_PLUGIN_QT_RC_FILES}
+    QT_PRIVATE Core Gui Widgets Xml Svg PrintSupport
+    LINK_PUBLIC DAUtils DAPyWorkFlow DAPyBindQt DAPyScripts
+                DAPyCommonWidgets DAInterface DAPluginSupport
+    THIRDPARTY SARibbonBar DALiteCtk ads qwt orderedmap
 )
-
-# 链接 Qt - 使用 Qt 版本变量
-target_link_libraries(${DA_PLUGIN_NAME} PRIVATE
-    Qt${QT_VERSION_MAJOR}::Core
-    Qt${QT_VERSION_MAJOR}::Gui
-    Qt${QT_VERSION_MAJOR}::Widgets
-    Qt${QT_VERSION_MAJOR}::Xml
-    Qt${QT_VERSION_MAJOR}::Svg
-    Qt${QT_VERSION_MAJOR}::PrintSupport
-)
-
-# Windows 平台专用：AxContainer 仅在 Windows 上可用
-if(WIN32)
-    find_package(Qt${QT_VERSION_MAJOR} COMPONENTS AxContainer REQUIRED)
-    target_link_libraries(${DA_PLUGIN_NAME} PRIVATE Qt${QT_VERSION_MAJOR}::AxContainer)
-endif()
-
-# 导入第三方库（使用辅助宏）- 自动处理依赖路径
-damacro_import_SARibbonBar(${DA_PLUGIN_NAME} ${DAWorkbench_INSTALL_DIR})
-damacro_import_DALiteCtk(${DA_PLUGIN_NAME} ${DAWorkbench_INSTALL_DIR})
-damacro_import_QtAdvancedDocking(${DA_PLUGIN_NAME} ${DAWorkbench_INSTALL_DIR})
-damacro_import_qwt(${DA_PLUGIN_NAME} ${DAWorkbench_INSTALL_DIR})
-damacro_import_orderedmap(${DA_PLUGIN_NAME} ${DAWorkbench_INSTALL_DIR})
-
-# 导入 DA 模块 - 使用 find_package 查找主程序模块（按插件实际依赖裁剪）
-find_package(DAWorkbench COMPONENTS
-    DAUtils DAMessageHandler DAData DAPyWorkFlow DAPyBindQt
-    DAPyScripts DAPyCommonWidgets DAGraphicsView
-    DAFigure DACommonWidgets DAGui DAInterface DAPluginSupport
-)
-
-target_link_libraries(${DA_PLUGIN_NAME} PUBLIC
-    DAWorkbench::DAUtils
-    DAWorkbench::DAPyWorkFlow
-    DAWorkbench::DAPyBindQt
-    DAWorkbench::DAPyScripts
-    DAWorkbench::DAPyCommonWidgets
-    DAWorkbench::DAInterface
-    DAWorkbench::DAPluginSupport
-)
-
-# Windows 平台专用：Office 自动化封装仅在 Windows 上可用
-if(WIN32)
-    find_package(DAWorkbench COMPONENTS DAAxOfficeWrapper)
-    target_link_libraries(${DA_PLUGIN_NAME} PUBLIC DAWorkbench::DAAxOfficeWrapper)
-endif()
-
-# 设置属性 - 启用 Qt 自动处理工具
-set_target_properties(${DA_PLUGIN_NAME} PROPERTIES
-    AUTOMOC ON                       # 自动处理 Q_OBJECT 宏
-    AUTOUIC ON                       # 自动处理 .ui 文件
-    AUTORCC ON                       # 自动处理 .qrc 文件
-    CXX_EXTENSIONS OFF
-    DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX}
-    VERSION ${DA_PLUGIN_VERSION}
-    EXPORT_NAME ${DA_PLUGIN_NAME}
-    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-    RUNTIME_OUTPUT_DIRECTORY "${DAWorkbench_INSTALL_DIR}/bin/plugins"  # 输出到插件目录
-)
-
-# 安装插件 - 使用辅助宏
-damacro_plugin_install()
 ```
 
 上述 src 目录 CMake 配置的关键点：
 
-- 使用 `damacro_plugin_setting` 设置插件信息（生成 `DA_PLUGIN_NAME`、`DA_PLUGIN_VERSION` 等变量）
+- standalone 构建时在顶部调用 `da_plugin_bootstrap` 完成 project/安装目录/工具文件引导
 - 使用 `file(GLOB)` 收集源文件、头文件、UI 文件和资源文件
-- 使用 `damacro_import_*` 导入第三方库
-- Windows 平台的 `AxContainer` / `DAAxOfficeWrapper` 依赖必须用 `if(WIN32)` 保护，否则 Linux 下无法构建
-- 使用 `damacro_plugin_install` 配置插件安装
+- `da_add_plugin` 一次完成 target 创建、`_PLUGIN_BUILD` 宏定义、Qt/DA 模块/第三方库链接、
+  属性设置与安装（VERSION 缺省继承根 `DA_VERSION`）
+- Windows 平台的 `AxContainer` / `DAAxOfficeWrapper` 依赖用 `QT_WIN32_PUBLIC` /
+  `LINK_WIN32_PUBLIC` 参数表达，否则 Linux 下无法构建
+- 第三方库经 `THIRDPARTY` 参数导入（内部走 `da_link_3rdparty`，自动处理安装目录查找）
 
 ---
 

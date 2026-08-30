@@ -498,70 +498,83 @@ set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_LIST_DIR}/${my_install_dir_name}")
 
 ![完整开发环境2](../../assets/PIC/cmake-after-install2.png)
 
-## 工程封装的 CMake 辅助宏
+## 工程封装的 CMake 声明式构建 API
 
-项目在 `cmake/` 目录下封装了一组辅助宏，插件与模块的 `CMakeLists.txt` 通过它们简化配置。
+项目在 `cmake/` 目录下封装了一组声明式构建函数（全部为 CMake `function`，无 `macro`），
+模块与插件的 `CMakeLists.txt` 通过单次调用完成 target 创建、依赖链接、属性设置、安装导出。
 
-### damacro_plugin_setting
+### da_add_library —— DA 库模块
 
-设置插件基本信息，包括名称、描述和版本号。此宏简化了插件 CMake 配置的编写。宏签名：
-
-```cmake
-macro(damacro_plugin_setting _plugin_name _plugin_description _plugin_ver_major _plugin_ver_minor _plugin_ver_path _daworkbench_intall_dir)
-```
-
-输入参数说明：
-
-- `_plugin_name`：插件库名称，决定生成的 DLL/SO 文件名
-- `_plugin_description`：插件功能描述文本
-- `_plugin_ver_major` / `_plugin_ver_minor` / `_plugin_ver_path`：主/次/修订版本号
-- `_daworkbench_intall_dir`：data-workbench 安装目录
-
-下面的 CMake 示例展示了插件设置宏的使用方法：
+一次调用完成：`add_library(SHARED)` + `DAWorkbench::` 别名 + 构建宏定义 + AUTOMOC/UIC/RCC +
+Qt 组件查找链接 + DA 模块链接 + 第三方库导入 + Windows rc 版本资源 + `install(TARGETS EXPORT ...)` +
+头文件安装。`VERSION` 缺省继承根 CMakeLists 的 `DA_VERSION`（版本统一）。
 
 ```cmake
-damacro_plugin_setting(
-    "PluginName"        # 插件名称 - 将生成 DA_PLUGIN_NAME 变量
-    "Description"       # 插件描述 - 将生成 DA_PLUGIN_FULL_DESCRIPTION 变量
-    0                   # 主版本号
-    0                   # 次版本号
-    1                   # 补丁版本号
-    ${INSTALL_DIR}      # 安装目录路径
+da_add_library(
+    NAME DAUtils                        # 模块名（target 名）
+    BUILD_DEFINE DAUTILS_BUILD          # 编译 DLL 的私有宏（C++ 源码 #ifdef 依赖，逐字一致）
+    DESCRIPTION "DA Utils Lib"
+    SOURCES ${HEADERS} ${SOURCES}       # 文件清单（模块自行 GLOB 或显式列举）
+    QT_PUBLIC Core Gui Widgets Xml      # 自动 find_package + PUBLIC 链接 Qt::组件
+    LINK_PUBLIC DAShared                # PUBLIC 链接 DAWorkbench::<mod>
+    THIRDPARTY spdlog                   # 经 da_link_3rdparty 导入
+    HEADERS_DIRS .                      # GLOB 收集 *.h/*.hpp 安装到 include/DAWorkbench/<name>
 )
 ```
 
-执行此宏后，将生成以下可用变量：
+### da_add_executable —— 主程序
 
-- `DA_PLUGIN_NAME` - 插件名称（由 `_plugin_name` 决定）
-- `DA_PLUGIN_DESCRIPTION` - 插件描述
-- `DA_PLUGIN_VERSION_MAJOR` / `DA_PLUGIN_VERSION_MINOR` / `DA_PLUGIN_VERSION_PATCH` - 三段版本号
-- `DA_PLUGIN_VERSION` - 完整版本号（三段版本号以 `.` 拼接，如 `0.0.1`）
-- `DA_PLUGIN_FULL_DESCRIPTION` - 完整描述（`${DA_PLUGIN_NAME} ${DA_PLUGIN_VERSION} | ${DA_PLUGIN_DESCRIPTION}` 拼接）
-- `DA_MIN_QT_VERSION` - 最低 Qt 版本要求
+合并原 app 三段式宏与手写块（rc 资源/子系统切换/第三方 DLL 部署等）。
 
-### damacro_import_*
+### da_add_plugin —— 插件
 
-导入第三方库，简化第三方库的链接配置。这些宏自动处理库路径和依赖关系。
-
-下面的 CMake 示例展示了第三方库导入宏的使用方法：
+一次调用完成插件的 target 创建、属性设置（输出到 `bin/plugins`）与安装：
 
 ```cmake
-# 导入各类第三方库 - 参数为目标名称和安装目录
-damacro_import_SARibbonBar(${DA_PLUGIN_NAME} ${INSTALL_DIR})    # Ribbon 界面框架
-damacro_import_DALiteCtk(${DA_PLUGIN_NAME} ${INSTALL_DIR})      # CTK 精简版
-damacro_import_QtAdvancedDocking(${DA_PLUGIN_NAME} ${INSTALL_DIR})  # Dock 窗口系统
-damacro_import_qwt(${DA_PLUGIN_NAME} ${INSTALL_DIR})            # 科学图表库
-damacro_import_orderedmap(${DA_PLUGIN_NAME} ${INSTALL_DIR})     # 有序 map 实现
+da_add_plugin(
+    NAME DataAnalysis
+    BUILD_DEFINE DATAANALYSIS_PLUGIN_BUILD
+    SOURCES ${HEADERS} ${SOURCES}
+    QT_PRIVATE Core Gui Widgets
+    LINK_PRIVATE DAUtils DAGui          # 自动 DAWorkbench:: 前缀
+    THIRDPARTY SARibbonBar qwt python   # 自动以 INSTALL_DIR=DAWorkbench 安装目录导入
+)
 ```
 
-这些宏将自动设置链接库路径和依赖，确保插件能正确使用主程序安装的第三方库。
+### da_plugin_bootstrap —— 插件 standalone 引导
 
-### damacro_plugin_install
-
-安装插件到目标目录，将编译产物复制到主程序的插件目录。
+插件脱离主工程独立构建时（`cmake -S plugins/<name> -B build`），在 CMakeLists 顶部调用：
 
 ```cmake
-damacro_plugin_install()
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+    include(${CMAKE_CURRENT_LIST_DIR}/../../cmake/daworkbench_plugin_utils.cmake)
+    da_plugin_bootstrap("MyPlugin" "My plugin description")
+endif()
 ```
 
-此宏无需参数，自动将插件安装到 `bin/plugins/` 目录下。
+该函数完成 `project()` 先行、安装目录名计算（`bin_<Config>_qt<X>_<Compiler>_<Arch>`）、
+`CMAKE_PREFIX_PATH`/`CMAKE_INSTALL_PREFIX` 设置、DAWorkbench 与全部第三方包预查找、
+C++17/DEBUG_POSTFIX/MSVC `/utf-8` 设置。
+
+### da_link_3rdparty —— 第三方库导入
+
+```cmake
+da_link_3rdparty(<target>
+    LIBS <SARibbonBar|DALiteCtk|DAWidgets|ads|qwt|spdlog|quazip|python|pybind11|orderedmap ...>
+    [INSTALL_DIR <dir>]      # 插件 standalone 构建时传 DAWorkbench 安装目录
+    [SCOPE <PUBLIC|PRIVATE>] # 默认 PRIVATE（pybind11/orderedmap 为 PUBLIC）
+)
+```
+
+查找策略：`find_package(CONFIG QUIET)` → 安装目录 glob 版本回退 → `FATAL_ERROR`；
+ADS/QuaZip 自动处理 Qt5/Qt6 新旧包名。
+
+### 部署函数（保留）
+
+- `dafun_set_bin_name(_var)`：计算平台相关安装目录名
+- `dafun_deploy_3rdparty_dlls(<target> [PLUGIN_DIR <dir>])`：构建期复制第三方 DLL 到输出目录
+- `dafun_install_deploy_qt_runtime(<target> SCAN_TARGETS ... PLUGIN_DIR ...)`：安装期 windeployqt 部署完整 Qt 运行时
+
+> 历史上的 `damacro_lib_setting` / `damacro_set_lib_properties` / `damacro_lib_install` /
+> `damacro_app_setting` / `damacro_plugin_setting` / `damacro_import_*` 等三段式宏已删除，
+> 由上述声明式 API 取代。
