@@ -4,16 +4,9 @@
 # DAData 库
 
 cmake_minimum_required(VERSION 3.16)
-damacro_lib_setting(
-    "DAData"
-    "Data Lib For DA | https://github.com/czyt1988"
-    0
-    0
-    3
-)
 
 ########################################################
-# 文件加载 #!!!!** 注意变更 **!!!!
+# 文件加载
 ########################################################
 set(DA_LIB_HEADER_FILES
     DAAbstractData.h
@@ -45,61 +38,17 @@ list(APPEND DA_LIB_SOURCE_FILES
     DADataUndoCommand.cpp
 )
 
-add_library(${DA_LIB_NAME} SHARED
-            ${DA_LIB_HEADER_FILES}
+da_add_library(
+    NAME DAData
+    BUILD_DEFINE DADATA_BUILDLIB
+    DESCRIPTION "Data Lib For DA | https://github.com/czyt1988"
+    SOURCES ${DA_LIB_HEADER_FILES}
             ${DA_LIB_SOURCE_FILES}
-            ${DA_GLOBAL_HEADER}
-)	
-# 构建库定义的宏
-target_compile_definitions(${DA_LIB_NAME} PRIVATE DADATA_BUILDLIB)#!!!!** 注意变更 **!!!!
-add_library(${DA_PROJECT_NAME}::${DA_LIB_NAME} ALIAS ${DA_LIB_NAME})
-
-# -------------link Qt--------------------------
-target_link_libraries(${DA_LIB_NAME} PUBLIC
-    Qt${QT_VERSION_MAJOR}::Core
-    Qt${QT_VERSION_MAJOR}::Gui
-    Qt${QT_VERSION_MAJOR}::Widgets
+            ${CMAKE_CURRENT_SOURCE_DIR}/../DAGlobals.h
+    QT_PUBLIC Core Gui Widgets
+    # DAData 的头文件包含了 DAPyBindQt/DAPyScripts 的内容，需公开链接
+    LINK_PUBLIC DAPyBindQt DAPyScripts
+    LINK_PRIVATE DAUtils DAMessageHandler
+    THIRDPARTY python pybind11
+    HEADERS ${DA_LIB_HEADER_FILES}
 )
-message(STATUS "${DA_LIB_NAME} Qt${QT_VERSION_MAJOR}.${QT_VERSION_MINOR}.${QT_VERSION_PATCH}")
-
-# -------------link Python--------------------------
-damacro_import_Python(${DA_LIB_NAME})
-
-# -------------link pybind11--------------------------
-damacro_import_pybind11(${DA_LIB_NAME})
-message(STATUS "  |-pybind11 include: ${pybind11_DIR}/include")
-
-# -------------link DAWorkBench--------------------------
-target_link_libraries(${DA_LIB_NAME} PRIVATE
-    ${DA_PROJECT_NAME}::DAUtils
-    ${DA_PROJECT_NAME}::DAMessageHandler
-)
-
-# DAData的头文件包含了DAPyBindQt库的内容，因此DAPyBindQt需要公开链接
-target_link_libraries(${DA_LIB_NAME} PUBLIC
-    ${DA_PROJECT_NAME}::DAPyBindQt
-    ${DA_PROJECT_NAME}::DAPyScripts
-)
-include_directories(${DAPyBindQt_INCLUDE_DIR})
-message(STATUS "  |-link ${DA_PROJECT_NAME}::DAPyBindQt")
-message(STATUS "  | |-include dir:${DAPyBindQt_INCLUDE_DIR}")
-message(STATUS "  |-link ${DA_PROJECT_NAME}::DAPyScripts")
-message(STATUS "  | |-include dir:${DAPyScripts_INCLUDE_DIR}")
-
-########################################################
-# 设置通用库属性
-########################################################
-damacro_set_lib_properties(${DA_LIB_NAME} ${DA_LIB_VERSION})
-
-
-########################################################
-# 安装
-########################################################
-damacro_lib_install()
-
-install(FILES
-    ${DA_LIB_HEADER_FILES}
-    DESTINATION include/${DA_PROJECT_NAME}/${DA_LIB_NAME}
-    COMPONENT headers
-)
-

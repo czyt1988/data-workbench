@@ -4,55 +4,23 @@
 # DAMessageHandler 库
 
 cmake_minimum_required(VERSION 3.16)
-damacro_lib_setting(
-    "DAMessageHandler"
-    "DAWorkbench log lib | https://github.com/czyt1988"
-    0
-    0
-    2
-)
+
 ########################################################
 # 文件加载
 ########################################################
 file(GLOB DA_LIB_HEADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
 file(GLOB DA_LIB_SOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 
-
-add_library(${DA_LIB_NAME} SHARED
-            ${DA_LIB_HEADER_FILES}
+da_add_library(
+    NAME DAMessageHandler
+    BUILD_DEFINE DAMESSAGEHANDLER_BUILDLIB
+    DESCRIPTION "DAWorkbench log lib | https://github.com/czyt1988"
+    SOURCES ${DA_LIB_HEADER_FILES}
             ${DA_LIB_SOURCE_FILES}
-            ${DA_GLOBAL_HEADER}
-)	
-# 构建库定义的宏,必须为Private
-target_compile_definitions(${DA_LIB_NAME} PRIVATE DAMESSAGEHANDLER_BUILDLIB)
-# 定义别名让DAWorkbench::${DA_LIB_NAME}也能获取到
-add_library(${DA_PROJECT_NAME}::${DA_LIB_NAME} ALIAS ${DA_LIB_NAME})
-########################################################
-# 依赖链接
-########################################################
-target_link_libraries(${DA_LIB_NAME} PUBLIC
-    Qt${QT_VERSION_MAJOR}::Core
-)
-target_link_libraries(${DA_LIB_NAME} PRIVATE
-    ${DA_PROJECT_NAME}::DAUtils
-)
-# -------------link 3rdparty spdlog--------------------------
-# DAMessageHandler依赖spdlog
-# spdlog是header only
-damacro_import_spdlog(${DA_LIB_NAME})
-
-########################################################
-# 设置通用库属性
-########################################################
-damacro_set_lib_properties(${DA_LIB_NAME} ${DA_LIB_VERSION})
-
-########################################################
-# 安装
-########################################################
-damacro_lib_install()
-
-install(FILES
-    ${DA_LIB_HEADER_FILES}
-    DESTINATION include/${DA_PROJECT_NAME}/${DA_LIB_NAME}
-    COMPONENT headers
+            ${CMAKE_CURRENT_SOURCE_DIR}/../DAGlobals.h
+    QT_PUBLIC Core
+    LINK_PRIVATE DAUtils
+    # spdlog 是 DAMessageHandler 的直接依赖
+    THIRDPARTY spdlog
+    HEADERS ${DA_LIB_HEADER_FILES}
 )

@@ -4,16 +4,9 @@
 # DAFigure 库
 
 cmake_minimum_required(VERSION 3.16)
-damacro_lib_setting(
-    "DAFigure"
-    "DA Figure Widgets Base On QWT | https://github.com/czyt1988"
-    0
-    0
-    3
-)
 
 ########################################################
-# 文件加载 #!!!!** 注意变更 **!!!!
+# 文件加载
 ########################################################
 file(GLOB DA_LIB_HEADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
 file(GLOB DA_LIB_SOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
@@ -24,8 +17,11 @@ file(GLOB DA_LIB_SOURCE_FILES_Models "${CMAKE_CURRENT_SOURCE_DIR}/Models/*.cpp")
 file(GLOB DA_LIB_QT_UI_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.ui")
 file(GLOB DA_LIB_QT_RC_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.qrc")
 
-add_library(${DA_LIB_NAME} SHARED
-            ${DA_LIB_HEADER_FILES}
+da_add_library(
+    NAME DAFigure
+    BUILD_DEFINE DAFIGURE_BUILD
+    DESCRIPTION "DA Figure Widgets Base On QWT | https://github.com/czyt1988"
+    SOURCES ${DA_LIB_HEADER_FILES}
             ${DA_LIB_SOURCE_FILES}
             ${DA_LIB_HEADER_FILES_MarkSymbol}
             ${DA_LIB_SOURCE_FILES_MarkSymbol}
@@ -33,51 +29,10 @@ add_library(${DA_LIB_NAME} SHARED
             ${DA_LIB_SOURCE_FILES_Models}
             ${DA_LIB_QT_UI_FILES}
             ${DA_LIB_QT_RC_FILES}
-            ${DA_GLOBAL_HEADER}
-)	
-# 构建库定义的宏,注意必须为Private
-target_compile_definitions(${DA_LIB_NAME} PRIVATE DAFIGURE_BUILD)#!!!!** 注意变更 **!!!!
-add_library(${DA_PROJECT_NAME}::${DA_LIB_NAME} ALIAS ${DA_LIB_NAME})
-
-# -------------link Qt--------------------------
-message(STATUS "${DA_LIB_NAME} Qt${QT_VERSION_MAJOR}.${QT_VERSION_MINOR}.${QT_VERSION_PATCH}")
-target_link_libraries(${DA_LIB_NAME} PUBLIC
-    Qt${QT_VERSION_MAJOR}::Core
-    Qt${QT_VERSION_MAJOR}::Gui
-    Qt${QT_VERSION_MAJOR}::Widgets
-    Qt${QT_VERSION_MAJOR}::PrintSupport
-    Qt${QT_VERSION_MAJOR}::Concurrent
-    Qt${QT_VERSION_MAJOR}::OpenGL
-)
-target_link_libraries(${DA_LIB_NAME} PRIVATE
-    ${DA_PROJECT_NAME}::DAUtils
-    ${DA_PROJECT_NAME}::DAMessageHandler
-)
-# -------------link 3rdparty qwt--------------------------
-damacro_import_qwt(${DA_LIB_NAME})
-
-# -------------link Python & pybind11--------------------------
-damacro_import_Python(${DA_LIB_NAME})
-damacro_import_pybind11(${DA_LIB_NAME})
-target_link_libraries(${DA_LIB_NAME} PUBLIC ${DA_PROJECT_NAME}::DAPyBindQt)
-
-########################################################
-# 设置通用库属性
-########################################################
-damacro_set_lib_properties(${DA_LIB_NAME} ${DA_LIB_VERSION})
-
-########################################################
-# 安装
-########################################################
-damacro_lib_install()
-
-install(FILES
-    ${DA_LIB_HEADER_FILES}
-    DESTINATION include/${DA_PROJECT_NAME}/${DA_LIB_NAME}
-    COMPONENT headers
-)
-install(FILES
-    ${DA_LIB_HEADER_FILES_MarkSymbol}
-    DESTINATION include/${DA_PROJECT_NAME}/${DA_LIB_NAME}/MarkSymbol
-    COMPONENT headers
+            ${CMAKE_CURRENT_SOURCE_DIR}/../DAGlobals.h
+    QT_PUBLIC Core Gui Widgets PrintSupport Concurrent OpenGL
+    LINK_PUBLIC DAPyBindQt
+    LINK_PRIVATE DAUtils DAMessageHandler
+    THIRDPARTY qwt python pybind11
+    HEADERS_DIRS . MarkSymbol
 )

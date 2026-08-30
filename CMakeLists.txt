@@ -26,6 +26,8 @@ message(STATUS "DA Version is ${DA_VERSION}")
 set(DA_PROJECT_NAME "DAWorkbench")
 # 这是所有DAWorkbench模块的总targets，所有模块都向这个target导出
 set(DA_TARGET_NAME "DAWorkbenchTargets")
+# 主程序目标名（翻译块/安装期部署直接引用，替代原由 src/APP 上抛的 DA_APP_NAME）
+set(DA_APP_NAME "DAWorkBench")
 
 project(${DA_PROJECT_NAME}
         VERSION ${DA_VERSION}

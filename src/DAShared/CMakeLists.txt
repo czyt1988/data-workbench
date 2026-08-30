@@ -1,16 +1,9 @@
 ﻿
 # Cmake的命令不区分打下写，例如message，set等命令；但Cmake的变量区分大小写
 # 为统一风格，本项目的Cmake命令全部采用小写，变量全部采用大写加下划线组合。
-# DAUtils 库
+# DAShared 库（INTERFACE 纯头文件库）
 
 cmake_minimum_required(VERSION 3.16)
-damacro_lib_setting(
-    "DAShared"
-    "DA DAShared Lib | https://github.com/czyt1988"
-    0
-    0
-    4
-)
 
 ########################################################
 # Qt
@@ -31,25 +24,10 @@ endif()
 file(GLOB DA_LIB_HEADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
 file(GLOB DA_LIB_HPP_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.hpp")
 
-add_library(${DA_LIB_NAME} INTERFACE)
-
-# 添加头文件目录
-target_include_directories(${DA_LIB_NAME} INTERFACE
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}>
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/${DA_PROJECT_NAME}/${DA_LIB_NAME}>
-)
-########################################################
-# 安装
-########################################################
-
-install(FILES
-    ${DA_LIB_HEADER_FILES}
-    DESTINATION include/${DA_PROJECT_NAME}/${DA_LIB_NAME}
-    COMPONENT headers
-)
-
-install(FILES
-    ${DA_LIB_HPP_FILES}
-    DESTINATION include/${DA_PROJECT_NAME}/${DA_LIB_NAME}
-    COMPONENT headers
+da_add_library(
+    NAME DAShared
+    TYPE INTERFACE
+    SOURCES ${DA_LIB_HEADER_FILES} ${DA_LIB_HPP_FILES}
+    QT_PUBLIC Core
+    HEADERS ${DA_LIB_HEADER_FILES} ${DA_LIB_HPP_FILES}
 )

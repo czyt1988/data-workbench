@@ -35,11 +35,14 @@
 #     [LINK_PUBLIC <mod...>]            # PUBLIC 链接 DAWorkbench::<mod>
 #     [LINK_PRIVATE <mod...>]
 #     [THIRDPARTY <lib...>]             # 经 da_link_3rdparty 导入（SARibbonBar/qwt/...）
+#     [THIRDPARTY_PUBLIC <lib...>]      # 同上，但 PUBLIC 链接（下游需要其头文件路径）
 #     [HEADERS <files...>]              # 显式头文件清单（安装到 include/DAWorkbench/<name>）
 #     [HEADERS_DIRS <dir...>]           # 相对子目录列表（'.'=模块根），GLOB 收集 *.h/*.hpp 安装
 #     [PUBLIC_SUBDIRS <dir...>]         # 同 HEADERS_DIRS，且额外生成 PUBLIC include 路径
 #                                       #   （ui 窗口提升场景，如 DAGui/Dialog）
 #     [COMPILE_DEFINITIONS_PRIVATE <def...>]
+#     [COMPILE_OPTIONS_PRIVATE <opt...>]
+#     [WIN32_LINK_PRIVATE <lib...>]     # 仅 WIN32 下私有链接系统库（Crypt32 等）
 #     [NO_RC]                           # 不生成 Windows dll 版本资源
 #     [NO_EXPORT]                       # 不加入 DAWorkbenchTargets 导出集
 #     [NO_INSTALL_HEADERS]              # 不安装头文件
@@ -48,8 +51,9 @@
 function(da_add_library)
     set(_opts NO_RC NO_EXPORT NO_INSTALL_HEADERS)
     set(_one NAME VERSION TYPE BUILD_DEFINE DESCRIPTION)
-    set(_multi SOURCES QT_PUBLIC QT_PRIVATE LINK_PUBLIC LINK_PRIVATE THIRDPARTY
-        HEADERS HEADERS_DIRS PUBLIC_SUBDIRS COMPILE_DEFINITIONS_PRIVATE)
+    set(_multi SOURCES QT_PUBLIC QT_PRIVATE LINK_PUBLIC LINK_PRIVATE THIRDPARTY THIRDPARTY_PUBLIC
+        HEADERS HEADERS_DIRS PUBLIC_SUBDIRS COMPILE_DEFINITIONS_PRIVATE COMPILE_OPTIONS_PRIVATE
+        WIN32_LINK_PRIVATE)
     cmake_parse_arguments(DA_AL "${_opts}" "${_one}" "${_multi}" ${ARGN})
 
     if(NOT DA_AL_NAME)
@@ -121,8 +125,17 @@ function(da_add_library)
         if(DA_AL_COMPILE_DEFINITIONS_PRIVATE)
             target_compile_definitions(${_name} PRIVATE ${DA_AL_COMPILE_DEFINITIONS_PRIVATE})
         endif()
+        if(DA_AL_COMPILE_OPTIONS_PRIVATE)
+            target_compile_options(${_name} PRIVATE ${DA_AL_COMPILE_OPTIONS_PRIVATE})
+        endif()
+        if(WIN32 AND DA_AL_WIN32_LINK_PRIVATE)
+            target_link_libraries(${_name} PRIVATE ${DA_AL_WIN32_LINK_PRIVATE})
+        endif()
         if(DA_AL_THIRDPARTY)
             da_link_3rdparty(${_name} LIBS ${DA_AL_THIRDPARTY})
+        endif()
+        if(DA_AL_THIRDPARTY_PUBLIC)
+            da_link_3rdparty(${_name} LIBS ${DA_AL_THIRDPARTY_PUBLIC} SCOPE PUBLIC)
         endif()
 
         # Qt 日志带上代码位置（原 damacro_lib_install_no_rc 行为）

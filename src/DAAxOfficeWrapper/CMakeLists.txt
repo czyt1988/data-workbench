@@ -4,56 +4,21 @@
 # DAAxOfficeWrapper 库
 
 cmake_minimum_required(VERSION 3.16)
-damacro_lib_setting(
-    "DAAxOfficeWrapper"
-    "office ax container qt wrapper | https://github.com/czyt1988"
-    0
-    0
-    1
-)
 
 ########################################################
 # 文件加载
 ########################################################
 file(GLOB DA_LIB_HEADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
 file(GLOB DA_LIB_SOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
-add_library(${DA_LIB_NAME} SHARED
-            ${DA_LIB_HEADER_FILES}
+
+da_add_library(
+    NAME DAAxOfficeWrapper
+    BUILD_DEFINE DAAXOFFICEWRAPPER_BUILDLIB
+    DESCRIPTION "office ax container qt wrapper | https://github.com/czyt1988"
+    SOURCES ${DA_LIB_HEADER_FILES}
             ${DA_LIB_SOURCE_FILES}
-            ${DA_GLOBAL_HEADER}
-)	
-add_library(${DA_PROJECT_NAME}::${DA_LIB_NAME} ALIAS ${DA_LIB_NAME})
-# 构建库定义的宏
-target_compile_definitions(${DA_LIB_NAME} PRIVATE DAAXOFFICEWRAPPER_BUILDLIB)
-########################################################
-# 依赖链接
-########################################################
-target_link_libraries(${DA_LIB_NAME} PUBLIC
-    Qt${QT_VERSION_MAJOR}::Core
-    Qt${QT_VERSION_MAJOR}::Gui
-    Qt${QT_VERSION_MAJOR}::Widgets
-    Qt${QT_VERSION_MAJOR}::Xml
-    Qt${QT_VERSION_MAJOR}::AxContainer
+            ${CMAKE_CURRENT_SOURCE_DIR}/../DAGlobals.h
+    QT_PUBLIC Core Gui Widgets Xml AxContainer
+    LINK_PRIVATE DAUtils DAMessageHandler
+    HEADERS ${DA_LIB_HEADER_FILES}
 )
-target_link_libraries(${DA_LIB_NAME} PRIVATE
-    ${DA_PROJECT_NAME}::DAUtils
-    ${DA_PROJECT_NAME}::DAMessageHandler
-)
-
-
-########################################################
-# 设置通用库属性
-########################################################
-damacro_set_lib_properties(${DA_LIB_NAME} ${DA_LIB_VERSION})
-
-########################################################
-# 安装
-########################################################
-damacro_lib_install()
-
-install(FILES
-    ${DA_LIB_HEADER_FILES}
-    DESTINATION include/${DA_PROJECT_NAME}/${DA_LIB_NAME}
-    COMPONENT headers
-)
-

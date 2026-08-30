@@ -22,6 +22,7 @@ configure_file(
 
 ########################################################
 # 加载库
+# 模块间依赖由各模块 target_link_libraries 表达，无需 add_dependencies
 ########################################################
 add_subdirectory(DAShared)
 add_subdirectory(DAUtils)
@@ -29,44 +30,18 @@ add_subdirectory(DAUtils)
 if(WIN32)
     # DAAxOfficeWrapper基于Axcontainer是windows独有的技术
     add_subdirectory(DAAxOfficeWrapper)
-    add_dependencies(DAAxOfficeWrapper DAUtils)
 endif()
 
 add_subdirectory(DAMessageHandler)
-add_dependencies(DAMessageHandler DAUtils)
-
 add_subdirectory(DAPyBindQt)
-
 add_subdirectory(DAPyScripts)
-add_dependencies(DAPyScripts DAPyBindQt)
-
 add_subdirectory(DAPyCommonWidgets)
-add_dependencies(DAPyCommonWidgets DAPyBindQt)
-
-add_subdirectory(DAPyWorkFlow)
-add_dependencies(DAPyWorkFlow DAUtils DAGraphicsView DAPyBindQt)
-
-add_subdirectory(DAData)
-add_dependencies(DAData DAUtils DAPyBindQt DAPyScripts)
-
-
-
-
 add_subdirectory(DAGraphicsView)
-add_dependencies(DAGraphicsView DAUtils)
-
+add_subdirectory(DAPyWorkFlow)
+add_subdirectory(DAData)
 add_subdirectory(DAFigure)
 add_subdirectory(DAGui)
-
 add_subdirectory(DAInterface)
-add_dependencies(DAInterface DAGui)
-
 add_subdirectory(DAAgent)
-
 add_subdirectory(DAPluginSupport)
-add_dependencies(DAPluginSupport DAInterface DAPyWorkFlow)
-
 add_subdirectory(APP)
-# 将 App 目标名继续传递到根作用域，供根 CMakeLists.txt 的翻译块 add_dependencies 使用
-set(DA_APP_NAME ${DA_APP_NAME} PARENT_SCOPE)
-
