@@ -122,13 +122,6 @@ macro(damacro_set_lib_properties _target_name _version_str)
         LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
     )
-    if(${CMAKE_CXX_COMPILER_ID} STREQUAL "MSVC")
-        # 这里是为 MSVC 编译器设置的选项
-        target_link_options(${_target_name} PRIVATE /VERBOSE)
-        # 或者设置其他 MSVC 特定的编译或链接选项
-    else()
-        # 这里是为非 MSVC 编译器设置的选项（如果有的话）
-    endif()
 endmacro(damacro_set_lib_properties)
 
 macro(damacro_set_app_properties _target_name _version_str)

@@ -1,9 +1,9 @@
 
 # Cmake的命令不区分打下写，例如message，set等命令；但Cmake的变量区分大小写
 # 为统一风格，本项目的Cmake命令全部采用小写，变量全部采用大写加下划线组合。
-# DAPyCommonWidgets 库
+# DAWorkBench 应用主程序
 
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.16)
 damacro_app_setting(
     "DAWorkBench"
     "DAWorkBench App"

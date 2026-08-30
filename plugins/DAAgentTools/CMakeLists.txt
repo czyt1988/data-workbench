@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.16)
 
 ########################################################
 # 获取安装目录名称（照 DataAnalysis L12-32）
@@ -15,7 +15,18 @@ endif()
 # DA安装路径设置
 ########################################################
 find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
-set(DAWorkbench_INSTALL_FOLDER_NAME bin_${CMAKE_BUILD_TYPE}_qt${QT_VERSION_MAJOR}_${CMAKE_CXX_COMPILER_ID}_${_platform_name})
+# 安装目录名公式与其余插件（DataAnalysis/DASystemNodes）保持一致：
+# qt${QT_VERSION}（完整版本号，如 qt5.15.16），且多配置生成器（VS）下
+# CMAKE_BUILD_TYPE 为空，用 DA_INSTALL_CONFIG_TYPE 代替
+if(CMAKE_CONFIGURATION_TYPES)
+    set(_install_config_type "${DA_INSTALL_CONFIG_TYPE}")
+    if(NOT _install_config_type)
+        set(_install_config_type "Release")
+    endif()
+else()
+    set(_install_config_type "${CMAKE_BUILD_TYPE}")
+endif()
+set(DAWorkbench_INSTALL_FOLDER_NAME bin_${_install_config_type}_qt${QT_VERSION}_${CMAKE_CXX_COMPILER_ID}_${_platform_name})
 set(DAWorkbench_INSTALL_DIR "${CMAKE_CURRENT_LIST_DIR}/../../${DAWorkbench_INSTALL_FOLDER_NAME}")
 set(DAWorkbench_DIR "${DAWorkbench_INSTALL_DIR}/lib/cmake/DAWorkbench")
 message(STATUS "DAWorkbench_INSTALL_DIR=${DAWorkbench_INSTALL_DIR}")

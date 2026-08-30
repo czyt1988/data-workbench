@@ -2,7 +2,7 @@
 # Cmake的命令不区分打下写，例如message，set等命令；但Cmake的变量区分大小写
 # 为统一风格，本项目的Cmake命令全部采用小写，变量全部采用大写加下划线组合。
 
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.16)
 project(DAWorkBench-3rdparty-build
         DESCRIPTION "DataWorkBench : 3rdparty build"
 )
@@ -25,7 +25,19 @@ else()
     set(DA_PLATFORM_NAME "x64")
 endif()
 
-set(DA_BIN_DIR_NAME bin_${CMAKE_BUILD_TYPE}_qt${QT_VERSION}_${CMAKE_CXX_COMPILER_ID}_${DA_PLATFORM_NAME})
+# 构建类型：多配置生成器（Visual Studio）下 CMAKE_BUILD_TYPE 为空，
+# 用缓存变量 DA_INSTALL_CONFIG_TYPE 代替（与主工程 cmake/daworkbench_utils.cmake
+# 的 dafun_set_bin_name 保持同一公式，否则安装目录名不一致会导致主工程找不到第三方库）
+if(CMAKE_CONFIGURATION_TYPES)
+    set(DA_3RDPARTY_CONFIG_TYPE "${DA_INSTALL_CONFIG_TYPE}" CACHE STRING
+        "安装目录使用的构建类型（仅多配置生成器生效，如 Visual Studio）")
+    if(NOT DA_3RDPARTY_CONFIG_TYPE)
+        set(DA_3RDPARTY_CONFIG_TYPE "Release")
+    endif()
+else()
+    set(DA_3RDPARTY_CONFIG_TYPE "${CMAKE_BUILD_TYPE}")
+endif()
+set(DA_BIN_DIR_NAME bin_${DA_3RDPARTY_CONFIG_TYPE}_qt${QT_VERSION}_${CMAKE_CXX_COMPILER_ID}_${DA_PLATFORM_NAME})
 set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_LIST_DIR}/../../${DA_BIN_DIR_NAME}" CACHE PATH "Install all third-party libraries into the default installation directory of the current build." FORCE)
 ########################################################
 # 第三方库参数设置

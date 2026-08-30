@@ -6,7 +6,7 @@
 # 请先单独编译第三方库后，安装，并把安装目录设置到和此安装目录一致
 
 #3.16是qt6要求的最低版本
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.16)
 
 ########################################################
 # 版本定义
@@ -83,36 +83,3 @@ add_subdirectory(DASystemNodes)
 # DAAgentTools：平台内置 agent 工具插件（16 工具，plan-03 从 DAAgentModule 搬迁）。
 # agent 工具依赖 Python（6 个工具经 DAPyDataFrame.h 用 pandas）。
 add_subdirectory(DAAgentTools)
-
-
-##################################
-# 翻译
-##################################
-
-# find_package(Qt${QT_VERSION_MAJOR} COMPONENTS LinguistTools QUIET)
-
-# # 命名规则一定要按照qt的命名规则，否则无法找到xx_zh_CN或者xxx_en_US
-# set(DA_TS_FILES
-#     "${CMAKE_CURRENT_LIST_DIR}/da_plugins_zh_CN.ts"
-#     "${CMAKE_CURRENT_LIST_DIR}/da_plugins_en_US.ts"
-# )
-# # DA 在 初始化的时候会查找translations和translations_user两个目录的翻译，插件的翻译建议在translations_user中
-# set(DA_BUILD_TRANSLATIONS_DIR ${DAWorkbench_INSTALL_DIR}/bin/translations_user)
-
-# # 让qm文件直接生成到DA_BUILD_TRANSLATIONS_DIR下
-# set_source_files_properties(${DA_TS_FILES} PROPERTIES OUTPUT_LOCATION ${DA_BUILD_TRANSLATIONS_DIR})
-
-# if("${QT_VERSION_MAJOR}" STREQUAL "5")
-#     qt5_create_translation(DA_QM_FILES ${CMAKE_CURRENT_LIST_DIR} ${DA_TS_FILES} OPTIONS -source-language en_US -no-obsolete)
-# else()
-#     qt6_create_translation(DA_QM_FILES ${CMAKE_CURRENT_LIST_DIR} ${DA_TS_FILES} OPTIONS -source-language en_US -no-obsolete)
-# endif()
-# # 添加更新翻译的目标
-# add_custom_target(daplugins_update_translations DEPENDS ${DA_TS_FILES})
-
-# # 添加发布翻译的目标
-# add_custom_target(daplugins_release_translations DEPENDS ${DA_QM_FILES})
-
-# # 安装翻译 - 在install上使用
-# set(CMAKE_INSTALL_PREFIX ${DAWorkbench_INSTALL_DIR})
-# install(DIRECTORY ${DA_BUILD_TRANSLATIONS_DIR} DESTINATION bin)

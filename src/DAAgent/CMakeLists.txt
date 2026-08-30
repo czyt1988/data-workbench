@@ -1,5 +1,5 @@
 # DAAgent 库 —— 严格参照 DAFigure/CMakeLists.txt 的宏调用模式
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.16)
 
 # damacro_lib_setting 设定 DA_LIB_NAME / DA_LIB_VERSION / DA_GLOBAL_HEADER、
 # C++17、DEBUG_POSTFIX、安装前缀等（见 cmake/daworkbench_utils.cmake）

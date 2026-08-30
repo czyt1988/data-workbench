@@ -3,7 +3,7 @@
 # 为统一风格，本项目的Cmake命令全部采用小写，变量全部采用大写加下划线组合。
 # {{plugin-base-name}}Plugin 库
 
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.16)
 
 ########################################################
 # 获取安装目录名称
@@ -21,7 +21,16 @@ endif()
 # DA安装路径设置
 ########################################################
 find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
-set(DAWorkbench_INSTALL_FOLDER_NAME bin_${CMAKE_BUILD_TYPE}_qt${QT_VERSION}_${CMAKE_CXX_COMPILER_ID}_${_platform_name})
+# 多配置生成器（Visual Studio）下 CMAKE_BUILD_TYPE 为空，用 DA_INSTALL_CONFIG_TYPE 代替
+if(CMAKE_CONFIGURATION_TYPES)
+    set(_install_config_type "${DA_INSTALL_CONFIG_TYPE}")
+    if(NOT _install_config_type)
+        set(_install_config_type "Release")
+    endif()
+else()
+    set(_install_config_type "${CMAKE_BUILD_TYPE}")
+endif()
+set(DAWorkbench_INSTALL_FOLDER_NAME bin_${_install_config_type}_qt${QT_VERSION}_${CMAKE_CXX_COMPILER_ID}_${_platform_name})
 set(DAWorkbench_INSTALL_DIR "${CMAKE_CURRENT_LIST_DIR}/../../${DAWorkbench_INSTALL_FOLDER_NAME}")
 set(DAWorkbench_DIR "${DAWorkbench_INSTALL_DIR}/lib/cmake/DAWorkbench")
 message(STATUS "DAWorkbench_INSTALL_DIR=${DAWorkbench_INSTALL_DIR}")

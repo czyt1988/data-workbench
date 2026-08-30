@@ -51,30 +51,6 @@ macro(damacro_import_xx x_namespace x_libname __target_name)
     damacro_import_xxx(${x_libname} ${x_namespace} ${x_libname} ${__target_name})
 endmacro(damacro_import_xx)
 
-# 这个宏是引入share/cmake目录的库，例如tsl-ordered-map
-macro(damacro_import_xx_sharepath x_namespace x_libname __target_name)
-    find_package(${x_libname})
-    if(${x_libname}_FOUND)
-        message(STATUS "  |-finded ${x_libname}")
-    else()
-        message(STATUS "  |-can not find ${x_libname}")
-        if(DEFINED DA_INSTALL_LIB_SHARE_PATH)
-            set(_lib_dir ${DA_INSTALL_LIB_SHARE_PATH}/${x_libname})
-            message(STATUS "  |-try to find in ${_lib_dir}")
-            find_package(${x_libname} PATHS ${_lib_dir})
-        endif()
-    endif()
-    # 链接的第三方库
-    if(${x_libname}_FOUND)
-        target_link_libraries(${__target_name} PRIVATE
-            ${x_namespace}::${x_libname}
-        )
-        message(STATUS "  |-link ${x_namespace}::${x_libname}")
-    else()
-        message(FATAL_ERROR "  can not find ${x_libname}")
-    endif()
-endmacro(damacro_import_xx_sharepath)
-
 #
 # 这个宏针对libname和namespace一样的模块引入
 # 例如
@@ -84,31 +60,6 @@ endmacro(damacro_import_xx_sharepath)
 macro(damacro_import_x x_libname __target_name)
     damacro_import_xx(${x_libname} ${x_libname} ${__target_name})
 endmacro(damacro_import_x)
-
-# damacro_import_SARibbonBar(${DA_LIB_NAME})
-#macro(damacro_import_SARibbonBar __target_name)
-#    find_package(SARibbonBar)
-#    if(SARibbonBar_FOUND)
-#        message(STATUS "  |-finded SARibbonBar")
-#        message(STATUS "  | |-include dir:${SARibbonBar_INCLUDE_DIR}")
-#    else()
-#        message(STATUS "  |-can not find SARibbonBar")
-#        if(DEFINED DA_INSTALL_LIB_CMAKE_PATH)
-#            set(_lib_dir ${DA_INSTALL_LIB_CMAKE_PATH}/SARibbonBar)
-#            message(STATUS "  |-try to find in ${_lib_dir}")
-#            find_package(SARibbonBar PATHS ${_lib_dir})
-#        endif()
-#    endif()
-#    # 链接的第三方库
-#    if(SARibbonBar_FOUND)
-#        target_link_libraries(${__target_name} PRIVATE
-#            SARibbonBar::SARibbonBar
-#        )
-#        message(STATUS "  |-link SARibbonBar::SARibbonBar")
-#    else()
-#        message(ERROR "  can not find SARibbonBar")
-#    endif()
-#endmacro(damacro_import_SARibbonBar)
 
 macro(damacro_import_SARibbonBar __target_name)
     damacro_import_x(SARibbonBar ${__target_name})
@@ -223,9 +174,9 @@ macro(damacro_import_pybind11 __target_name)
     # 而是在share/cmake下面
     find_package(pybind11)
     if(pybind11_FOUND)
-        message(STATUS "  |-finded tsl-ordered-map")
+        message(STATUS "  |-finded pybind11")
     else()
-        message(STATUS "  |-can not find tsl-ordered-map")
+        message(STATUS "  |-can not find pybind11")
         if(DEFINED DA_INSTALL_LIB_SHARE_PATH)
             set(_lib_dir ${DA_INSTALL_LIB_SHARE_PATH}/pybind11)
             message(STATUS "  |-try to find in ${_lib_dir}")
