@@ -315,6 +315,7 @@ void DAAppRibbonArea::buildRibbonMainCategory()
     mPannelMainCreate->addLargeAction(mActions->actionAddData);
     mPannelMainCreate->addLargeAction(mActions->actionAddFigure);
     mPannelMainCreate->addLargeAction(mActions->actionWorkflowNew);
+    mCategoryMain->addPanel(mPannelMainCreate);
 
     //--------配置--------------------------------------------------
     mPannelSetting = new SARibbonPanel(mCategoryMain);
