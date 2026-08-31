@@ -263,6 +263,10 @@ void DAAgentModule::initialize(DACoreInterface* core)
     d->mAgentManager = new DAAgentManager(this);
     d->mAgentManager->ensureDefaultAgent();
     d->mAgentManager->loadAgents();
+    // 定义列表变化透传给接口，供插件 initialize() 注入内置 agent 后
+    // Ribbon gallery 兜底刷新（gallery 首次构建早于插件加载）
+    connect(d->mAgentManager, &DAAgentManager::agentListChanged,
+            this, &DAAgentInterface::agentListChanged);
 
     // 子 agent 定义库（子 agent 一期）：播种内置 explore（仅文件缺失时写入）、
     // 加载用户已有定义。mSubagentManager 为 QObject，parent=this，随 Module 释放。

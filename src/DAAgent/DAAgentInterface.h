@@ -205,5 +205,7 @@ Q_SIGNALS:
     void agentSubagentProgress(const QJsonObject& progress);
     /// 子 agent 定义列表变化（加载/保存/删除/插件注入后），供管理 UI 刷新
     void subagentListChanged();
+    /// 提示词库列表变化（保存/删除/插件注入内置 agent 后），供 Ribbon gallery 刷新
+    void agentListChanged();
 };
 } // namespace DA

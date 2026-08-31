@@ -124,6 +124,7 @@ graph TB
 | [上下文管理](./context-management.md) | Token 估算、上下文压缩、工具结果截断、溢出恢复 |
 | [崩溃恢复与重连](./crash-recovery.md) | 进程生命周期、自动重启、会话恢复、重试退避 |
 | [工具开发指南](./tool-development.md) | 工具基类、注册机制、内置工具、自定义工具开发 |
+| [通过插件注册内置 Agent](./register-builtin-agent-via-plugin.md) | 插件注入 agent 提示词/领域工具/系统提示词的完整模式（DAPaperAgent 参考实现） |
 | [会话持久化](./session-management.md) | JSONL 格式、会话索引、导出导入、自动清理 |
 
 ---

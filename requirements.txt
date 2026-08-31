@@ -2,6 +2,7 @@ numpy
 loguru
 pandas
 scipy
+statsmodels>=0.14
 openpyxl
 chardet
 PyWavelets

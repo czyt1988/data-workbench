@@ -81,6 +81,95 @@ function initMarkdown() {
             return '<pre><code class="hljs">' + md.utils.escapeHtml(str) + '</code></pre>';
         }
     });
+    setupMathRules(md);
+}
+
+// —— KaTeX 数学公式渲染（与 MarkdownView/resources/markdown.js 保持一致）——
+// 识别 $...$（行内）与 $$...$$（独立成行）两类 LaTeX 公式，经 katex.renderToString
+// 输出 HTML。$ 内侧紧邻非空白字符，避免 "$10 与 $20" 之类的货币误判。
+function setupMathRules(markdown) {
+    // 行内公式 $...$：要求开 $ 后与闭 $ 前均非空白，且闭 $ 后不是数字（排除 "$5 1990s$"）
+    markdown.inline.ruler.after('escape', 'math_inline', function(state, silent) {
+        var start = state.pos;
+        if (state.src[start] !== '$') return false;
+        if (start > 0 && !/[\s(\[]/.test(state.src[start - 1])) return false;  // 前需空白/括号
+        var pos = start + 1;
+        if (pos >= state.posMax || /\s/.test(state.src[pos])) return false;   // 开 $ 后非空白
+        var found = -1;
+        while (pos < state.posMax) {
+            if (state.src[pos] === '$' && !/\s/.test(state.src[pos - 1])) { found = pos; break; }
+            if (state.src[pos] === '\n') break;  // 行内公式不跨行
+            pos++;
+        }
+        if (found < 0) return false;
+        if (found + 1 < state.posMax && /[0-9]/.test(state.src[found + 1])) return false;  // 闭 $ 后非数字
+        if (!silent) {
+            var token = state.push('math_inline', 'math', 0);
+            token.markup = '$';
+            token.content = state.src.slice(start + 1, found);
+        }
+        state.pos = found + 1;
+        return true;
+    });
+    markdown.renderer.rules.math_inline = function(tokens, idx) {
+        return renderKatex(tokens[idx].content, false);
+    };
+    // 独立公式 $$...$$：整块匹配（含前后空行由 block 环境处理）
+    markdown.block.ruler.after('blockquote', 'math_block', function(state, startLine, endLine, silent) {
+        var startPos = state.bMarks[startLine] + state.tShift[startLine];
+        var maxPos = state.eMarks[startLine];
+        var line = state.src.slice(startPos, maxPos);
+        var m = /^\s*\$\$([\s\S]+?)\$\$\s*$/.exec(state.src.slice(startPos, state.eMarks[endLine - 1]));
+        if (!m) {
+            // 多行 $$：首行以 $$ 开头，向后查找 $$ 结束行
+            if (!/^\s*\$\$/.test(line)) return false;
+            var endL = startLine + 1;
+            var foundEnd = false;
+            while (endL < endLine) {
+                var l = state.src.slice(state.bMarks[endL] + state.tShift[endL], state.eMarks[endL]);
+                if (/\$\$\s*$/.test(l)) { foundEnd = true; break; }
+                endL++;
+            }
+            if (!foundEnd) return false;
+            var tex = [];
+            for (var i = startLine; i <= endL; i++) {
+                var cl = state.src.slice(state.bMarks[i] + state.tShift[i], state.eMarks[i]);
+                cl = cl.replace(/^\s*\$\$/, '').replace(/\$\$\s*$/, '');
+                tex.push(cl);
+            }
+            if (!silent) {
+                var token = state.push('math_block', 'math', 0);
+                token.block = true;
+                token.content = tex.join('\n').trim();
+                token.map = [startLine, endL + 1];
+            }
+            state.line = endL + 1;
+            return true;
+        }
+        if (!silent) {
+            var token2 = state.push('math_block', 'math', 0);
+            token2.block = true;
+            token2.content = m[1].trim();
+            token2.map = [startLine, startLine + 1];
+        }
+        state.line = startLine + 1;
+        return true;
+    });
+    markdown.renderer.rules.math_block = function(tokens, idx) {
+        return '<p class="math-block">' + renderKatex(tokens[idx].content, true) + '</p>';
+    };
+}
+
+function renderKatex(tex, displayMode) {
+    if (typeof katex === 'undefined' || !katex) {
+        // katex 未加载（资源缺失）时降级为代码文本，保持内容不丢
+        return '<code>' + (displayMode ? '$$' + tex + '$$' : '$' + tex + '$') + '</code>';
+    }
+    try {
+        return katex.renderToString(tex, {throwOnError: false, displayMode: !!displayMode});
+    } catch (e) {
+        return '<code>' + (displayMode ? '$$' + tex + '$$' : '$' + tex + '$') + '</code>';
+    }
 }
 
 function createMessageBubble(className) {

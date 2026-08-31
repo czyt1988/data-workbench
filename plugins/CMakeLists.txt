@@ -83,3 +83,7 @@ add_subdirectory(DASystemNodes)
 # DAAgentTools：平台内置 agent 工具插件（16 工具，plan-03 从 DAAgentModule 搬迁）。
 # agent 工具依赖 Python（6 个工具经 DAPyDataFrame.h 用 pandas）。
 add_subdirectory(DAAgentTools)
+# DAPaperAgent：论文撰写 agent 插件（registerBuiltinAgent 机制参考实现 +
+# search_literature/verify_doi 文献工具），开发指南见
+# docs/zh/dev-guide/agent/register-builtin-agent-via-plugin.md
+add_subdirectory(DAPaperAgent)

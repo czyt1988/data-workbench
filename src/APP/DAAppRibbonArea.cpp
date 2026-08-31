@@ -1101,6 +1101,18 @@ void DAAppRibbonArea::buildRibbonAgentCategory()
 
     connect(mActionAgentManage, &QAction::triggered, this, &DAAppRibbonArea::onActionAgentManage);
     connect(mActionRunAgent, &QAction::triggered, this, &DAAppRibbonArea::onActionRunAgent);
+    // gallery 首次构建早于插件加载（createUi 先于 initPlugins），插件注入的内置
+    // agent 依赖此信号兜底刷新（保存/删除/插件 registerBuiltinAgent 均触发）；
+    // 保留当前选中项，与管理对话框关闭后的刷新行为一致
+    if (DA::DAAgentInterface* agent = DA_APP_CORE.getAgentInterface()) {
+        connect(agent, &DA::DAAgentInterface::agentListChanged, this, [this]() {
+            QString prevTitle = mSelectedAgentTitle;
+            populateAgentGallery();
+            if (!prevTitle.isEmpty()) {
+                mSelectedAgentTitle = prevTitle;
+            }
+        });
+    }
 }
 
 /**
