@@ -41,9 +41,12 @@ void DADataManagerTreeWidget::PrivateData::init()
     // 创建模型和代理模型
     model = new DADataManagerTreeModel(q_ptr);
     model->setExpandDataframeToSeries(true);
+    // 数据集重命名：启用模型编辑位 + 视图编辑触发（双击/选中回车）
+    model->setEnableEdit(true);
     proxyModel = new DADataManagerTreeFilterProxyModel(q_ptr);
     proxyModel->setSourceModel(model);
     ui->treeView->setModel(proxyModel);
+    ui->treeView->setEditTriggers(QAbstractItemView::DoubleClicked | QAbstractItemView::EditKeyPressed);
     //  设置列宽
     ui->treeView->header()->setStretchLastSection(true);
     ui->treeView->setDragEnabled(true);                          // 启用拖曳

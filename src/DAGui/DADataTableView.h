@@ -16,14 +16,15 @@ public:
     // 设置datafarme
     void setData(const DAData& d);
     DAData getData() const;
+    // 把选中单元格按包围矩形拼成 Tab/换行分隔的文本写入剪贴板，读 Qt::DisplayRole（随显示格式）
+    // 主页剪贴板路由 actionCopy 表格分支也调用此函数
+    bool copySelectionToClipboard();
 
 protected:
     // Ctrl+C / Ctrl+Insert 复制选中单元格到剪贴板
     void keyPressEvent(QKeyEvent* event) override;
 
 private:
-    // 把选中单元格按包围矩形拼成 Tab/换行分隔的文本，读 Qt::DisplayRole（随显示格式）
-    bool copySelectionToClipboard();
 };
 }
 #endif  // DADATATABLEVIEW_H

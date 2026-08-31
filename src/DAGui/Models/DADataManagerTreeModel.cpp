@@ -474,7 +474,6 @@ void DADataManagerTreeModel::clear()
     }
 }
 
-/**
 Qt::ItemFlags DADataManagerTreeModel::flags(const QModelIndex& index) const
 {
     Qt::ItemFlags flags = QStandardItemModel::flags(index);
@@ -533,13 +532,73 @@ QVariant DADataManagerTreeModel::data(const QModelIndex& index, int role) const
             }
         } else if (data.isSeries()) {
             DAPySeries series = data.toSeries();
-            return PY::toString(series.dtype());
+            DAPyDType dtype   = series.dtypeObject();
+            return dtype.name();
         }
     }
 
     return QVariant();
 }
-**/
+
+/**
+ * @brief 设置是否允许编辑（重命名数据集）
+ * @param on
+ */
+void DADataManagerTreeModel::setEnableEdit(bool on)
+{
+    d_ptr->enableEdit = on;
+}
+
+/**
+ * @brief 是否允许编辑
+ * @return
+ */
+bool DADataManagerTreeModel::isEnableEdit() const
+{
+    return d_ptr->enableEdit;
+}
+
+/**
+ * @brief 编辑提交（重命名数据集）
+ *
+ * 第一列 EditRole：取该 item 对应的 DAData 落 setName，同步 item 文本；
+ * 重名冲突由 DADataManager 层约束（重名时 setName 后 itemToData 检索按名称可能失效，
+ * 这里直接拒绝与现有名称重复的重命名，保证树检索一致性）
+ * @param index
+ * @param value 新名称
+ * @param role
+ * @return 成功返回 true
+ */
+bool DADataManagerTreeModel::setData(const QModelIndex& index, const QVariant& value, int role)
+{
+    if (Qt::EditRole != role || !index.isValid() || index.column() != 0) {
+        return QStandardItemModel::setData(index, value, role);
+    }
+    if (!d_ptr->enableEdit) {
+        return false;
+    }
+    QStandardItem* item = itemFromIndex(index);
+    if (!item) {
+        return false;
+    }
+    DAData data = itemToData(item);
+    if (data.isNull()) {
+        return false;
+    }
+    QString newName = value.toString().trimmed();
+    if (newName.isEmpty() || newName == data.getName()) {
+        return false;
+    }
+    // 拒绝与现有数据集重名（树/选择器按名称检索）
+    if (getAllDataframeNames().contains(newName)) {
+        return false;
+    }
+    data.setName(newName);
+    // 同步 item 显示文本（QStandardItem::setText 会触发 dataChanged）
+    item->setText(newName);
+    Q_EMIT dataChanged(index, index, { role });
+    return true;
+}
 
 Qt::DropActions DADataManagerTreeModel::supportedDragActions() const
 {

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 布局管理：窗口布局排布示意（中灰外框 + 主蓝标题栏 + 浅蓝面板块） -->
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px"
+	 width="200px" height="200px" viewBox="0 0 200 200" enable-background="new 0 0 200 200" xml:space="preserve">
+<!-- 窗口外框：中灰 -->
+<rect x="8" y="20" fill="#FFFFFF" stroke="#727272" stroke-width="10" width="184" height="164"/>
+<!-- 标题栏：主蓝 -->
+<rect x="13" y="25" fill="#5280C1" width="174" height="28"/>
+<!-- 左侧面板：浅蓝填充 -->
+<rect x="22" y="62" fill="#BDCDE8" width="90" height="108"/>
+<!-- 右侧上下面板：中灰描边 -->
+<rect x="120" y="62" fill="none" stroke="#727272" stroke-width="7" width="58" height="50"/>
+<rect x="120" y="120" fill="none" stroke="#727272" stroke-width="7" width="58" height="50"/>
+</svg>

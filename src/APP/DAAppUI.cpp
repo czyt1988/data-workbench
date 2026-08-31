@@ -170,9 +170,8 @@ void DAAppUI::setFeatureVisible(DAWorkbenchFeatureType feature, bool on)
             dockingArea->hideDockWidget(wfOperateWidget);
             dockingArea->hideDockWidget(wfNodeListWidget);
         }
-        // 主页与编辑标签下的workflow panel
-        ribbonArea->mPannelMainWorkflowOpt->setVisible(on);
-        ribbonArea->mPannelEditWorkflow->setVisible(on);
+        // 主页创建面板下的「新建工作流」按钮（工作流入口随功能显隐）
+        actions->actionWorkflowNew->setVisible(on);
         // workflow上下文标签（编辑工作流时出现的浮动标签组），使用类型化枚举接口
         if (on) {
             ribbonArea->showContextCategory(DAAppRibbonArea::ContextCategoryWorkflow);

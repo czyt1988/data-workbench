@@ -161,6 +161,56 @@ void DAPyScriptsIO::read_and_add_to_datamanager(const QString& filepath, const Q
 }
 
 /**
+ * @def FUNCTION_DF_STR_DICT
+ * @brief 导出封装宏：映射 py 中的 fun(df, path, args) 函数
+ *
+ * io.py 的 da_to_* 系列签名固定为 (df, path, args: Optional[Dict])，
+ * 此宏展开为返回 bool 的成员函数，异常经 err 出参带回
+ */
+#define FUNCTION_DF_STR_DICT(functionName, pyFunctionName)                                                              \
+    bool DAPyScriptsIO::functionName(const DAPyDataFrame& df, const QString& path, const QVariantMap& args, QString* err) \
+    {                                                                                                                    \
+        try {                                                                                                            \
+            pybind11::object fn = attr(#pyFunctionName);                                                                 \
+            if (fn.is_none()) {                                                                                          \
+                qDebug() << "da_io.py have no attr " #pyFunctionName;                                                    \
+                if (err) {                                                                                               \
+                    *err = QString("da_io.py have no attr %1").arg(QStringLiteral(#pyFunctionName));                     \
+                }                                                                                                        \
+                return false;                                                                                            \
+            }                                                                                                            \
+            fn(df.object(), pybind11::cast(path), pybind11::cast(args));                                                 \
+            return true;                                                                                                 \
+        } catch (const std::exception& e) {                                                                              \
+            if (err) {                                                                                                   \
+                *err = e.what();                                                                                         \
+            }                                                                                                            \
+            qDebug() << e.what();                                                                                        \
+        }                                                                                                                \
+        return false;                                                                                                    \
+    }
+
+/**
+ * @brief 导出csv
+ */
+FUNCTION_DF_STR_DICT(to_csv, da_to_csv)
+
+/**
+ * @brief 导出excel
+ */
+FUNCTION_DF_STR_DICT(to_excel, da_to_excel)
+
+/**
+ * @brief 导出pickle
+ */
+FUNCTION_DF_STR_DICT(to_pickle, da_to_pickle)
+
+/**
+ * @brief 导出parquet
+ */
+FUNCTION_DF_STR_DICT(to_parquet, da_to_parquet)
+
+/**
  * @brief 导入库
  */
 bool DAPyScriptsIO::import()

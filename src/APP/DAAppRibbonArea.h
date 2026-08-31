@@ -27,6 +27,7 @@ public Q_SLOTS:                                                                 
 
 // Qt
 class QComboBox;
+class QLineEdit;
 class QToolBar;
 class QMenuBar;
 class QFontComboBox;
@@ -113,8 +114,6 @@ public:
     SARibbonCategory* getRibbonCategoryMain() const;
     // 通过DACommandInterface构建redo/undo的action
     void buildRedoUndo();
-    // 更新ActionLockBackgroundPixmap的check statue
-    void updateActionLockBackgroundPixmapCheckStatue(bool c);
     // 显示上下文(会把其他上下文隐藏)
     void showContextCategory(ContextCategoryType type);
     // 隐藏上下文
@@ -150,10 +149,8 @@ private:
     void buildRibbonMainCategory();
     // 构建数据标签
     void buildRibbonDataCategory();
-    // 构建主页
+    // 构建视图标签
     void buildRibbonViewCategory();
-    // 构建编辑标签，编辑标签是通用的编辑功能，例如添加文字，添加形状等
-    void buildRibbonEditCategory();
     // 构建绘图标签
     void buildRibbonFigureCategory();
     // 构建快速响应栏
@@ -184,46 +181,9 @@ private Q_SLOTS:
 private:
     void populateAgentGallery();
 
-    DAAPPRIBBONAREA_COMMON_SETTING_H(Edit)
     DAAPPRIBBONAREA_COMMON_SETTING_H(WorkFlowEdit)
 
 Q_SIGNALS:
-    /**
-       @fn selectedPen
-       @brief 画笔选中了
-
-       这是一个通用的画笔信号
-       @param p
-     */
-    void selectedPen(const QPen& p);
-
-    /**
-       @fn selectedBrush
-       @brief 画刷选中了
-
-        这是一个通用的画刷选中信号
-       @param b
-     */
-    void selectedBrush(const QBrush& b);
-
-    /**
-       @fn selectedFont
-       @brief 字体选中了
-
-       这是一个通用的字体选中信号
-       @param f
-     */
-    void selectedFont(const QFont& f);
-
-    /**
-       @fn selectedFontColor
-       @brief 字体颜色选中了
-
-       这是一个通用的字体颜色选中信号
-       @param f
-     */
-    void selectedFontColor(const QColor& c);
-
     /**
        @brief 画笔选中了
 
@@ -251,7 +211,7 @@ Q_SIGNALS:
     /**
        @brief 字体颜色选中了
 
-       这是一个通用的字体颜色选中信号
+        这是一个通用的字体颜色选中信号
        @param f
      */
     void selectedWorkflowItemFontColor(const QColor& c);
@@ -274,35 +234,31 @@ private:
                                                         // main
                                                         //----------------------------------------------------
     SARibbonCategory* mCategoryMain { nullptr };        ///< 主页标签
-    SARibbonPanel* mPannelMainFileOpt { nullptr };      ///< 文件操作
-    SARibbonPanel* mPannelMainDataOpt { nullptr };      ///< 数据操作
-    SARibbonPanel* mPannelMainChartOpt { nullptr };     ///< 数据操作
-    SARibbonPanel* mPannelMainWorkflowOpt { nullptr };  ///< 工作流在main的pannel
+    SARibbonPanel* mPannelMainFileOpt { nullptr };      ///< 文件操作（打开/保存/另存/追加工程/最近文件）
+    SARibbonPanel* mPannelMainClipboard { nullptr };    ///< 剪贴板（撤销/重做/剪切/复制/粘贴/删除/全选，按焦点路由）
+    SARibbonPanel* mPannelMainCreate { nullptr };       ///< 创建（添加数据/添加绘图/新建工作流）
     SARibbonPanel* mPannelSetting { nullptr };          ///< 设定
-                                                        //----------------------------------------------------
-                                                        // data
-                                                        //----------------------------------------------------
+    //----------------------------------------------------
+    // data
+    //----------------------------------------------------
     SARibbonCategory* mCategoryData { nullptr };        ///< 数据标签
     SARibbonPanel* mPannelDataOperate { nullptr };      ///< 数据操作
+    SARibbonPanel* mPannelDataExport { nullptr };       ///< 数据导出
+    QMenu* mMenuExportData { nullptr };                 ///< 数据导出格式菜单
                                                         //----------------------------------------------------
                                                         // view
                                                         //----------------------------------------------------
     SARibbonCategory* mCategoryView { nullptr };        ///< 视图标签
     SARibbonPanel* mPannelViewMainView { nullptr };     ///< 主要视图操作
-    //----------------------------------------------------
-    // edit
-    //----------------------------------------------------
-    //--widget
-    DAFontEditPannelWidget* mEditFontEditPannel { nullptr };          ///< 工作流的字体编辑器
-    DAShapeEditPannelWidget* mEditShapeEditPannelWidget { nullptr };  ///< 图框编辑
-    SARibbonCategory* mCategoryEdit { nullptr };                      ///< 编辑标签
-    SARibbonPanel* mPannelEditWorkflow { nullptr };                   ///< 主要编辑操作
+    SARibbonPanel* mPannelViewLayout { nullptr };       ///< 布局管理
+    SARibbonPanel* mPannelViewAppearance { nullptr };   ///< 外观（Ribbon主题）
+    QComboBox* mComboxRibbonTheme { nullptr };          ///< Ribbon主题选择器
+    SARibbonLineWidgetContainer* mComboxRibbonThemeContainer { nullptr };  ///< Ribbon主题选择器container
 
     //----------------------------------------------------
     // figure
     //----------------------------------------------------
     SARibbonCategory* mCategoryFigure { nullptr };    ///< 绘图标签
-    SARibbonPanel* mPannelFigureSetting { nullptr };  ///< 绘图的设置
     SARibbonPanel* mPannelChartAdd { nullptr };       ///< 添加绘图
     SARibbonPanel* mPannelStatsPlot { nullptr };      ///< 统计绘图面板
 
@@ -312,6 +268,7 @@ private:
     SARibbonContextCategory* mContextDataFrame { nullptr };                ///< 对应dataframe的上下文
     SARibbonCategory* mCategoryDataframeOperate { nullptr };               ///< dataframe对应的category
     SARibbonPanel* mPannelDataframeOperateAxes { nullptr };                ///< 数据信息的编辑
+    SARibbonPanel* mPannelDataframeOperateColumn { nullptr };              ///< 列级操作（五件套，与表头右键共用）
     SARibbonPanel* mPannelDataframeOperateDType { nullptr };               ///< 数据类型的编辑
     SARibbonLineWidgetContainer* mComboxColumnTypesContainer { nullptr };  ///< 列类型选择器的container
     DAPyDTypeComboBox* mComboxColumnTypes { nullptr };                     ///< 列类型选择器
@@ -361,7 +318,7 @@ private:
     //----------------------------------------------------
     SARibbonContextCategory* mContextChart { nullptr };                      ///< 对应Chart的上下文
     SARibbonCategory* mCategoryChartStyle { nullptr };                       ///< Chart样式标签
-    SARibbonPanel* mPannelFigureSettingForContext { nullptr };               ///< 绘图的设置
+    SARibbonPanel* mPannelFigureSettingForContext { nullptr };               ///< 绘图的设置（位于Chart Edit标签）
     SARibbonPanel* mPannelChartSetting { nullptr };                          ///< 图表的设置
     SARibbonButtonGroupWidget* mChartGridDirActionsButtonGroup { nullptr };  ///< grid的方向
     SARibbonButtonGroupWidget* mChartGridMinActionsButtonGroup { nullptr };  ///< grid的min设置
@@ -369,7 +326,6 @@ private:
     SARibbonGallery* mFigureThemeGallery { nullptr };                        ///< 绘图样式
     SARibbonCategory* mCategoryChartEdit { nullptr };                        ///< Chart编辑标签
     SARibbonPanel* mPannelChartSelectTool { nullptr };                       ///< 图表选区
-    SARibbonPanel* mPannelChartSelectOpt { nullptr };                        ///< 图表选区操作
     SARibbonPanel* mPannelChartAssistTool { nullptr };                       ///< 辅助工具
     //----------------------------------------------------
     // AI分析（agent 提示词库）
@@ -392,8 +348,8 @@ private:
     QMenu* mMenuViewLineMarkers { nullptr };                   ///< 视图标记线
     QMenu* mMenuInsertRow { nullptr };                         ///< 针对insertrow的action menu
     QMenu* mMenuInsertColumn { nullptr };                      ///< 这对insertcol的action menu
-    QMenu* mMenuTheme { nullptr };                             ///< 主题菜单
     QMenu* mMenuChartPickSetting { nullptr };                  ///< chart的picker设置
+    QMenu* mMenuChartLegendPosition { nullptr };               ///< chart的图例位置菜单（挂在actionChartEnableLegend下）
 };
 }  // namespace DA
 #endif  // DAAPPRIBBONAREA_H

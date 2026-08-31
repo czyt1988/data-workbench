@@ -24,6 +24,7 @@ class QGraphicsItem;
 class QMenu;
 // qwt
 class QwtPlotItem;
+class QwtText;
 // Qt-Advanced-Docking-System 前置申明
 namespace ads
 {
@@ -182,6 +183,12 @@ private Q_SLOTS:
     void onActionAddDataTriggered();
     // 移除数据
     void onActionRemoveDataTriggered();
+    // 重命名数据集（树视图选中项进入编辑）
+    void onActionRenameDataTriggered();
+    // 导出数据（大按钮，format 为空则按保存对话框后缀判定）
+    void onActionExportDataTriggered();
+    // 按指定格式导出（csv/excel/pickle/parquet）
+    void onActionExportDataAsTriggered();
     //===================================================
     // 绘图标签 Chart Category
     //===================================================
@@ -273,6 +280,11 @@ private Q_SLOTS:
     // 绘图编辑器的切换
     void onActionGroupChartEditorTriggered(QAction* a);
     //===================================================
+    // 图例位置菜单（挂在actionChartEnableLegend下）
+    //===================================================
+    // 图例位置菜单切换
+    void onActionGroupChartLegendPositionTriggered(QAction* act);
+    //===================================================
     // 数据操作的上下文标签 Data Operate Context Category
     //===================================================
     // 移除选中行
@@ -361,12 +373,14 @@ private Q_SLOTS:
     // 允许连线
     void onActionWorkflowLinkEnableTriggered(bool on);
 
-    // 通用的字体变更
-    void onEditFontChanged(const QFont& f);
-    void onEditFontColorChanged(const QColor& c);
-    // 通用的背景和框线变更
-    void onEditBrushChanged(const QBrush& b);
-    void onEditPenChanged(const QPen& p);
+    //===================================================
+    // 主页剪贴板（按焦点路由：工作流→inner action；表格→复制/粘贴；图表→复制绘图）
+    //===================================================
+    void onActionCutTriggered();
+    void onActionCopyTriggered();
+    void onActionPasteTriggered();
+    void onActionDeleteTriggered();
+    void onActionSelectAllTriggered();
 
     // 当前工作流的字体变更
     void onCurrentWorkflowFontChanged(const QFont& f);
@@ -400,8 +414,12 @@ private Q_SLOTS:
     //===================================================
     // 其他
     //===================================================
-    // 主题切换
-    void onActionGroupRibbonThemeTriggered(QAction* a);
+    // 视图页-外观面板的主题下拉切换（写 DA_CONFIG_KEY_RIBBON_THEME 持久化）
+    void onRibbonThemeComboCurrentIndexChanged(int index);
+    // 恢复默认布局（触发前弹确认框）
+    void onActionResetDefaultLayoutTriggered();
+    // 打开布局管理对话框（保存/应用/删除布局方案）
+    void onActionManageLayoutsTriggered();
 private Q_SLOTS:
     //===================================================
     // DAPyWorkFlowOperateWidget的槽
@@ -491,6 +509,9 @@ private:
     void selectColumnInDataFrameWidget(DADataOperateOfDataFrameWidget* w, int col);
     // 显示统计绘图引导对话框并预选指定类型
     void showStatsChartGuide(DA::DAChartTypes type);
+    // 执行导出：取选中数据集 → 保存对话框 → exportToFile → daInfo/daWarning 反馈
+    // format 非空时直接使用（子菜单路径），为空时由文件后缀判定（大按钮路径）
+    void exportSelectedData(const QString& format);
     // 执行 Python 统计绘图的公共逻辑
     void executeStatsPlot(const QJsonObject& params, DA::DAFigureWidget* fig, DA::DAChartWidget* chart, const DAData& data);
     // 确保当前 Figure 和 Chart 存在（不存在则创建）
@@ -499,6 +520,8 @@ private:
     void activateContextCategoryForWidget(QWidget* widget);
     // 激活操作窗口当前的undo栈（焦点切到数据操作/绘图窗口时同步全局undo/redo action状态）
     void activateUndoStackForWidget(DAAbstractOperateWidget* w);
+    // 视图页-外观面板：填充主题下拉（10款完整枚举，与设置页一致）并同步当前值
+    void setupRibbonThemeCombo();
 
 private:
     AppMainWindow* mMainWindow { nullptr };

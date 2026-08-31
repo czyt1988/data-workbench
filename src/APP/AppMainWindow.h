@@ -23,6 +23,7 @@ class DAAppController;
 class DAAppPluginManager;
 class DAAppConfig;
 class DAAppSettingDialog;
+class DAAppLayoutManager;
 
 class AppMainWindow : public SARibbonMainWindow
 {
@@ -47,6 +48,8 @@ public:
     bool restoreUIState();
     // 重置ui
     void resetUIState();
+    // 运行时恢复默认布局（立即生效，仅重置顶层dock；快照在构造时抓取）
+    void restoreDefaultLayout();
     // 设置是否在退出时保存ui的状态
     bool isSaveUIStateOnClose() const;
     void setSaveUIStateOnClose(bool v);
@@ -65,6 +68,10 @@ public:
 
     // 获取插件管理器
     DAAppPluginManager* getPluginManager() const;
+    // 获取 dock 区域（布局管理器经此操作侧边栏显隐）
+    DAAppDockingArea* getDockArea() const { return mDockArea; }
+    // 获取布局方案管理器（initialize 后有效）
+    DAAppLayoutManager* getLayoutManager() const { return mLayoutManager; }
 
 protected:
     void changeEvent(QEvent* e);
@@ -100,6 +107,8 @@ private:
     DAAppSettingDialog* mSettingDialog { nullptr };  ///< 设置窗口,避免过多的中间传递
     bool mIsSaveUIStateOnClose { false };            ///< 是否在退出时记录程序的状态
     QTimer* mAutosaveTimer { nullptr };               ///< 自动保存定时器
+    QByteArray mDefaultUIStateSnapshot;               ///< 启动时抓取的默认布局快照（dock已建好、未加载用户状态）
+    DAAppLayoutManager* mLayoutManager { nullptr };  ///< 布局方案管理器（预置+自定义）
 };
 }  // namespace DA
 #endif  // METHODMAINWINDOW_H

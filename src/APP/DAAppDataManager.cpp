@@ -13,6 +13,7 @@
 #include "DAStringUtil.h"
 #include "DALogCategory.h"
 #include "DAPyScripts.h"
+#include "pandas/DAPyDataFrame.h"
 
 namespace DA
 {
@@ -39,6 +40,68 @@ bool DAAppDataManager::importFromFile(const QString& f, const QVariantMap& args,
         }
         daWarning << tr("Python scripts not initialized, cannot import file: %1").arg(f);  // cn:Python脚本未初始化，无法导入文件:%1
     } catch (const std::exception& e) {
+        qCritical() << e.what();
+    }
+    return false;
+}
+
+/**
+ * @brief 导出数据到文件
+ *
+ * 支持四格式（csv/excel/pickle/parquet），调用 io.py 的 da_to_* 系列（args 字典版），
+ * 与 importFromFile 对称
+ * @param d 待导出的数据（须为 DataFrame）
+ * @param f 目标文件路径
+ * @param format 小写格式名：csv/excel/pickle/parquet
+ * @param err 失败原因出参
+ * @return 成功返回 true
+ */
+bool DAAppDataManager::exportToFile(const DAData& d, const QString& f, const QString& format, QString* err)
+{
+    if (!d.isDataFrame()) {
+        if (err) {
+            *err = tr("Only DataFrame data can be exported");  // cn:仅支持导出 DataFrame 数据
+        }
+        return false;
+    }
+    try {
+        if (!DAPyScripts::isInitScripts()) {
+            if (err) {
+                *err = tr("Python scripts not initialized");  // cn:Python 脚本未初始化
+            }
+            daWarning << tr("Python scripts not initialized, cannot export file: %1").arg(f);  // cn:Python脚本未初始化，无法导出文件:%1
+            return false;
+        }
+        DAPyDataFrame df = d.toDataFrame();
+        if (df.isNone()) {
+            if (err) {
+                *err = tr("Data is empty, cannot export");  // cn:数据为空，无法导出
+            }
+            return false;
+        }
+        DAPyScriptsIO& io = DAPyScripts::getIO();
+        // 默认不带 index 导出（对齐用户直觉），特殊需求可经 args 扩展
+        QVariantMap args { { "index", false } };
+        bool ok = false;
+        if (format == "csv") {
+            ok = io.to_csv(df, f, args, err);
+        } else if (format == "excel") {
+            ok = io.to_excel(df, f, args, err);
+        } else if (format == "pickle") {
+            ok = io.to_pickle(df, f, QVariantMap(), err);  // to_pickle 无 index 参数
+        } else if (format == "parquet") {
+            ok = io.to_parquet(df, f, QVariantMap(), err);  // to_parquet 无 index 参数
+        } else {
+            if (err) {
+                *err = tr("Unsupported export format: %1").arg(format);  // cn:不支持的导出格式:%1
+            }
+            return false;
+        }
+        return ok;
+    } catch (const std::exception& e) {
+        if (err) {
+            *err = QString::fromStdString(e.what());
+        }
         qCritical() << e.what();
     }
     return false;

@@ -62,7 +62,7 @@
 <context>
     <name>DA::AppMainWindow</name>
     <message>
-        <location filename="../APP/AppMainWindow.cpp" line="+77"/>
+        <location filename="../APP/AppMainWindow.cpp" line="+78"/>
         <source>Initializing core interface...</source>
         <translation>Initializing core interface...</translation>
     </message>
@@ -72,7 +72,7 @@
         <translation>Creating user interface...</translation>
     </message>
     <message>
-        <location line="+22"/>
+        <location line="+30"/>
         <source>Restore UI state</source>
         <translation>Restore UI state</translation>
     </message>
@@ -87,7 +87,7 @@
         <translation>Preparing interface...</translation>
     </message>
     <message>
-        <location line="+53"/>
+        <location line="+52"/>
         <source>Question</source>
         <translation>Question</translation>
     </message>
@@ -131,6 +131,16 @@
         <location line="+18"/>
         <source>UI state has been reset, the default layout will be applied on next launch</source>
         <translation>UI state has been reset, the default layout will be applied on next launch</translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Default layout snapshot is not ready</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Default layout restored</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+29"/>
@@ -1277,7 +1287,7 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="../APP/DAAppActions.cpp" line="+388"/>
+        <location filename="../APP/DAAppActions.cpp" line="+414"/>
         <source>Open</source>
         <translation>Open</translation>
     </message>
@@ -1371,7 +1381,7 @@ Data</translation>
         <translation>Remove data from the table</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+16"/>
         <source>Add 
 Figure</source>
         <translation>Add 
@@ -1739,7 +1749,7 @@ All</translation>
         <translation>Legend</translation>
     </message>
     <message>
-        <location line="+47"/>
+        <location line="+52"/>
         <source>To Numeric</source>
         <translation>To Numeric</translation>
     </message>
@@ -1774,32 +1784,12 @@ All</translation>
         <translation>Show Information Window</translation>
     </message>
     <message>
-        <location line="+14"/>
-        <source>Office 2013 Theme</source>
-        <translation>Office 2013 Theme</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Office 2016 Blue Theme</source>
-        <translation>Office 2016 Blue Theme</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Office 2021 Blue Theme</source>
-        <translation>Office 2021 Blue Theme</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Dark Theme</source>
-        <translation>Dark Theme</translation>
-    </message>
-    <message>
-        <location line="-146"/>
+        <location line="-134"/>
         <source>Enable or disable legend in the chart</source>
         <translation>Enable or disable legend in the chart</translation>
     </message>
     <message>
-        <location line="-114"/>
+        <location line="-126"/>
         <source>Open Markdown</source>
         <translation>Open Markdown</translation>
     </message>
@@ -1809,7 +1799,69 @@ All</translation>
         <translation>Open a Markdown file and display it in the central area</translation>
     </message>
     <message>
-        <location line="+42"/>
+        <location line="+13"/>
+        <source>Rename 
+Data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Rename the selected dataset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Export 
+Data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Export the selected data to a file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Export CSV</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Export the selected data to a CSV file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Export Excel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Export the selected data to an Excel file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Export Pickle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Export the selected data to a pickle file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Export Parquet</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Export the selected data to a parquet file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+30"/>
         <source>Add 
 Surface 3D</source>
         <translation>Add 
@@ -1943,6 +1995,46 @@ Line 3D</translation>
         <location line="+1"/>
         <source>Copy the figure to the clipboard</source>
         <translation>Copy the figure to the clipboard</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Legend Top</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Place the legend at the top of the chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Legend Bottom</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Place the legend at the bottom of the chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Legend Left</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Place the legend at the left of the chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Legend Right</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Place the legend at the right of the chart</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+2"/>
@@ -2552,7 +2644,79 @@ Config</translation>
         <translation>Show the plugin manager</translation>
     </message>
     <message>
-        <location line="+9"/>
+        <location line="+2"/>
+        <source>Cut</source>
+        <translation type="unfinished">Cut</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Cut the selection to the clipboard</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Copy</source>
+        <translation type="unfinished">Copy</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Copy the selection to the clipboard</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Paste</source>
+        <translation type="unfinished">Paste</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Paste from the clipboard</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Delete</source>
+        <translation type="unfinished">Delete</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Delete the selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Select All</source>
+        <translation type="unfinished">Select All</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Select all content</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Reset 
+Layout</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Restore the default window layout (confirmation required)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Manage 
+Layouts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Open the layout manager to save, apply or remove layout schemes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
         <source>Redo</source>
         <translation>Redo</translation>
     </message>
@@ -2575,18 +2739,18 @@ Config</translation>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+696"/>
+        <location filename="../APP/DAAppController.cpp" line="+740"/>
         <source>Save Project</source>
         <translation>Save Project</translation>
     </message>
     <message>
         <location line="+19"/>
-        <location line="+864"/>
+        <location line="+847"/>
         <source>Warning</source>
         <translation>Warning</translation>
     </message>
     <message>
-        <location line="-853"/>
+        <location line="-836"/>
         <source>Failed to save project! Path: %1</source>
         <translation>Failed to save project! Path: %1</translation>
     </message>
@@ -2612,12 +2776,82 @@ Config</translation>
         <translation>Failed to save image to %1</translation>
     </message>
     <message>
-        <location line="+419"/>
+        <location line="+129"/>
+        <source>Default</source>
+        <translation type="unfinished">Default</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Focus Analysis</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+34"/>
+        <source>Reset Layout</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>This will restore the default window layout. Continue?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+325"/>
+        <source>Please select a dataset to rename</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+55"/>
+        <source>Please select a dataset to export</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>CSV File</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Excel File</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Pickle File</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Parquet File</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+19"/>
+        <source>Export Data</source>
+        <translation type="unfinished">Export Data</translation>
+    </message>
+    <message>
+        <location line="+33"/>
+        <source>Cannot determine export format, please select a file suffix</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Data exported successfully, path: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Data export failed, path: %1, reason: %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+75"/>
         <source>Before creating a new coordinate, you need to create a figure</source>
         <translation>Before creating a new coordinate, you need to create a figure</translation>
     </message>
     <message>
-        <location line="-1205"/>
+        <location line="-1559"/>
         <source>Please select the data operation window</source>
         <translation>Please select the data operation window</translation>
     </message>
@@ -2672,17 +2906,72 @@ Config</translation>
         <translation>Markdown files</translation>
     </message>
     <message>
-        <location line="+328"/>
+        <location line="+311"/>
         <source>Received null project interface</source>
         <translation>Received null project interface</translation>
     </message>
     <message>
-        <location line="+366"/>
+        <location line="+37"/>
+        <source>Windows 7</source>
+        <translation type="unfinished">Windows 7</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Office 2013</source>
+        <translation type="unfinished">Office 2013</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Office 2016 Blue</source>
+        <translation type="unfinished">Office 2016 Blue</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Office 2016 Green</source>
+        <translation type="unfinished">Office 2016 Green</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Office 2016 Dark</source>
+        <translation type="unfinished">Office 2016 Dark</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Office 2021 Blue</source>
+        <translation type="unfinished">Office 2021 Blue</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Office 2021 Green</source>
+        <translation type="unfinished">Office 2021 Green</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Office 2021 Dark</source>
+        <translation type="unfinished">Office 2021 Dark</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Dark</source>
+        <translation type="unfinished">Dark</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Dark 2</source>
+        <translation type="unfinished">Dark 2</translation>
+    </message>
+    <message>
+        <location line="+177"/>
+        <source>No cells selected to copy</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+514"/>
         <source>Figure &apos;%1&apos; not found, it may have been closed or renamed</source>
         <translation>Figure &apos;%1&apos; not found, it may have been closed or renamed</translation>
     </message>
     <message>
-        <location line="+712"/>
+        <location line="+870"/>
         <source>Rename Column</source>
         <translation>Rename Column</translation>
     </message>
@@ -2759,7 +3048,7 @@ Config</translation>
         <translation>The selected data source is empty</translation>
     </message>
     <message>
-        <location line="-1830"/>
+        <location line="-2359"/>
         <source>Before running the workflow, you need to save the project</source>
         <translation>Before running the workflow, you need to save the project</translation>
     </message>
@@ -2767,7 +3056,7 @@ Config</translation>
 <context>
     <name>DA::DAAppDataManager</name>
     <message>
-        <location filename="../APP/DAAppDataManager.cpp" line="+34"/>
+        <location filename="../APP/DAAppDataManager.cpp" line="+35"/>
         <source>Begin importing file: %1</source>
         <translation>Begin importing file: %1</translation>
     </message>
@@ -2775,6 +3064,31 @@ Config</translation>
         <location line="+6"/>
         <source>Python scripts not initialized, cannot import file: %1</source>
         <translation>Python scripts not initialized, cannot import file: %1</translation>
+    </message>
+    <message>
+        <location line="+22"/>
+        <source>Only DataFrame data can be exported</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Python scripts not initialized</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Python scripts not initialized, cannot export file: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Data is empty, cannot export</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+18"/>
+        <source>Unsupported export format: %1</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -2833,6 +3147,137 @@ Config</translation>
         <location line="+4"/>
         <source>Failed to open markdown file: %1</source>
         <translation>Failed to open markdown file: %1</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAAppLayoutManager</name>
+    <message>
+        <location filename="../APP/DAAppLayoutManager.cpp" line="+93"/>
+        <source>Layout scheme &apos;%1&apos; not found</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Failed to restore layout scheme &apos;%1&apos;, it may be saved by an incompatible version</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>Preset layout schemes cannot be removed</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DA::DALayoutManagerDialog</name>
+    <message>
+        <location filename="../APP/Dialog/DALayoutManagerDialog.cpp" line="+17"/>
+        <source>Layout Manager</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+22"/>
+        <source>Double-click a scheme to apply it</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Save Current</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Apply Selected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Delete Selected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Reset Default</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Save the current window layout as a named scheme</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Apply the selected layout scheme</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Delete the selected custom layout scheme (presets cannot be deleted)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Restore the default window layout</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Close</source>
+        <translation>Close</translation>
+    </message>
+    <message>
+        <location line="+41"/>
+        <source>Default</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Focus Analysis</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+33"/>
+        <source>Save Layout</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Layout scheme name:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Cannot overwrite preset layout schemes, please use another name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Layout scheme &apos;%1&apos; saved</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+26"/>
+        <source>Remove Layout</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Remove layout scheme &apos;%1&apos;?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>Reset Layout</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>This will restore the default window layout. Continue?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>Layout scheme &apos;%1&apos; removed</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -3203,36 +3648,31 @@ Config</translation>
 <context>
     <name>DA::DAAppRibbonArea</name>
     <message>
-        <location filename="../APP/DAAppRibbonArea.cpp" line="+191"/>
+        <location filename="../APP/DAAppRibbonArea.cpp" line="+184"/>
+        <location line="+3"/>
         <source>File</source>
         <translation>File</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="-1"/>
         <source>Main</source>
         <translation>Main</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>File Operation</source>
-        <translation>File Operation</translation>
-    </message>
-    <message>
-        <location line="+1"/>
+        <location line="+5"/>
         <source>Config</source>
         <translation>Config</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <location line="+23"/>
-        <location line="+95"/>
-        <location line="+244"/>
+        <location line="-1"/>
+        <location line="+27"/>
+        <location line="+106"/>
+        <location line="+257"/>
         <source>Workflow</source>
         <translation>Workflow</translation>
     </message>
     <message>
-        <location line="-361"/>
-        <location line="+2"/>
+        <location line="-387"/>
         <source>Data Operation</source>
         <translation>Data Operation</translation>
     </message>
@@ -3242,110 +3682,156 @@ Config</translation>
         <translation>Data</translation>
     </message>
     <message>
-        <location line="+3"/>
-        <location line="+27"/>
-        <location line="+406"/>
+        <location line="-3"/>
+        <source>Create</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Export Format</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <location line="+29"/>
+        <location line="+430"/>
         <source>View</source>
         <translation>View</translation>
     </message>
     <message>
-        <location line="-432"/>
+        <location line="-458"/>
         <source>Display</source>
         <translation>Display</translation>
     </message>
     <message>
-        <location line="+2"/>
-        <location line="+197"/>
+        <location line="+1"/>
+        <source>Layout</source>
+        <translation type="unfinished">Layout</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Scheme</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Appearance</source>
+        <translation type="unfinished">Appearance</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <location line="+248"/>
         <source>DataFrame</source>
         <translation>DataFrame</translation>
     </message>
     <message>
-        <location line="-196"/>
-        <location line="+198"/>
+        <location line="-247"/>
+        <location line="+249"/>
         <source>Operate</source>
         <translation>Operate</translation>
     </message>
     <message>
-        <location line="-197"/>
-        <location line="+200"/>
+        <location line="-248"/>
+        <location line="+251"/>
         <source>Axes</source>
         <translation>Axes</translation>
     </message>
     <message>
-        <location line="-199"/>
+        <location line="-250"/>
+        <location line="+263"/>
+        <source>Column</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-262"/>
         <location line="+6"/>
-        <location line="+206"/>
+        <location line="+266"/>
         <location line="+5"/>
         <source>Type</source>
         <translation>Type</translation>
     </message>
     <message>
-        <location line="-216"/>
+        <location line="-276"/>
         <location line="+6"/>
-        <location line="+221"/>
+        <location line="+281"/>
         <location line="+4"/>
         <source>Format</source>
         <translation>Format</translation>
     </message>
     <message>
-        <location line="-230"/>
-        <location line="+236"/>
+        <location line="-290"/>
+        <location line="+296"/>
         <source>Table Style</source>
         <translation>Table Style</translation>
     </message>
     <message>
-        <location line="-235"/>
-        <location line="+239"/>
+        <location line="-295"/>
+        <location line="+299"/>
         <source>Fill</source>
         <translation>Fill</translation>
     </message>
     <message>
-        <location line="-238"/>
-        <location line="+246"/>
+        <location line="-298"/>
+        <location line="+29"/>
+        <location line="+277"/>
+        <location line="+317"/>
         <source>Font</source>
         <translation>Font</translation>
     </message>
     <message>
-        <location line="-245"/>
-        <location line="+251"/>
+        <location line="-622"/>
+        <location line="+311"/>
         <source>Clear</source>
         <translation>Clear</translation>
     </message>
     <message>
-        <location line="-246"/>
-        <source>Edit</source>
-        <translation>Edit</translation>
-    </message>
-    <message>
-        <location line="+4"/>
+        <location line="-305"/>
         <source>Fill Color</source>
         <translation>Fill Color</translation>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+349"/>
+        <location line="+373"/>
         <source>Workflow Edit</source>
         <translation>Workflow Edit</translation>
     </message>
     <message>
-        <location line="-348"/>
-        <location line="+353"/>
+        <location line="-406"/>
+        <location line="+34"/>
+        <location line="+377"/>
         <source>Clipboard</source>
         <translation>Clipboard</translation>
     </message>
     <message>
-        <location line="-338"/>
-        <location line="+454"/>
+        <location line="-363"/>
+        <location line="+481"/>
         <source>Chart Style</source>
         <translation>Chart Style</translation>
     </message>
     <message>
-        <location line="-445"/>
-        <source>Set ribbon theme</source>
-        <translation>Set ribbon theme</translation>
+        <location line="-479"/>
+        <location line="+575"/>
+        <source>Title</source>
+        <translation type="unfinished">Title</translation>
     </message>
     <message>
-        <location line="+839"/>
+        <location line="-574"/>
+        <source>X Axis</source>
+        <translation type="unfinished">X Axis</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Y Axis</source>
+        <translation type="unfinished">Y Axis</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <location line="+599"/>
+        <source>Legend Position</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+326"/>
         <location line="+2"/>
         <source>AI Agent</source>
         <translation>AI Agent</translation>
@@ -3392,49 +3878,54 @@ Config</translation>
         <translation>Agent module is not ready</translation>
     </message>
     <message>
-        <location line="-989"/>
-        <location line="+357"/>
+        <location line="-1071"/>
+        <location line="+381"/>
         <source>Item</source>
         <translation>Item</translation>
     </message>
     <message>
-        <location line="-356"/>
-        <location line="+365"/>
+        <location line="-380"/>
+        <location line="+389"/>
         <source>Text</source>
         <translation>Text</translation>
     </message>
     <message>
-        <location line="-364"/>
-        <location line="+369"/>
+        <location line="-388"/>
+        <location line="+393"/>
         <source>Background</source>
         <translation>Background</translation>
     </message>
     <message>
-        <location line="-366"/>
-        <location line="+447"/>
+        <location line="-390"/>
+        <location line="+471"/>
         <source>Workflow Run</source>
         <translation>Workflow Run</translation>
     </message>
     <message>
-        <location line="-446"/>
-        <location line="+449"/>
+        <location line="-470"/>
+        <location line="+473"/>
         <source>Run</source>
         <translation>Run</translation>
     </message>
     <message>
-        <location line="-447"/>
-        <location line="+276"/>
+        <location line="-471"/>
+        <location line="+306"/>
         <source>Figure</source>
         <translation>Figure</translation>
     </message>
     <message>
-        <location line="-275"/>
-        <location line="+6"/>
+        <location line="-300"/>
+        <location line="+573"/>
+        <source>Chart Text</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-567"/>
         <source>Figure Setting</source>
         <translation>Figure Setting</translation>
     </message>
     <message>
-        <location line="-5"/>
+        <location line="-11"/>
         <source>Add Chart</source>
         <translation>Add Chart</translation>
     </message>
@@ -3444,13 +3935,13 @@ Config</translation>
         <translation>Chart</translation>
     </message>
     <message>
-        <location line="+5"/>
-        <location line="+509"/>
+        <location line="+11"/>
+        <location line="+528"/>
         <source>Chart Edit</source>
         <translation>Chart Edit</translation>
     </message>
     <message>
-        <location line="-511"/>
+        <location line="-530"/>
         <source>Chart Setting</source>
         <translation>Chart Setting</translation>
     </message>
@@ -3461,17 +3952,17 @@ Config</translation>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+511"/>
+        <location line="+537"/>
         <source>Select Tool</source>
         <translation>Select Tool</translation>
     </message>
     <message>
-        <location line="-510"/>
+        <location line="-536"/>
         <source>Chart Assist Tool</source>
         <translation>Chart Assist Tool</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+2"/>
         <location line="+1"/>
         <source>View Marker</source>
         <translation>View Marker</translation>
@@ -3487,8 +3978,8 @@ Config</translation>
         <translation>Export Workflow Graphics Scene To Image</translation>
     </message>
     <message>
-        <location line="-18"/>
-        <location line="+303"/>
+        <location line="-21"/>
+        <location line="+328"/>
         <source>Stats Plot</source>
         <translation>Stats Plot</translation>
     </message>
@@ -3503,28 +3994,29 @@ Config</translation>
         <translation>Workflow View</translation>
     </message>
     <message>
-        <location line="+36"/>
+        <location line="-459"/>
+        <location line="+495"/>
         <source>Export</source>
         <translation>Export</translation>
     </message>
     <message>
-        <location line="+24"/>
+        <location line="+26"/>
         <source>Chart Operate</source>
         <translation>Chart Operate</translation>
     </message>
     <message>
-        <location line="-444"/>
-        <location line="+492"/>
+        <location line="-513"/>
+        <location line="+554"/>
         <source>Theme</source>
         <translation>Theme</translation>
     </message>
     <message>
-        <location line="+22"/>
+        <location line="+33"/>
         <source>Assist Tools</source>
         <translation>Assist Tools</translation>
     </message>
     <message>
-        <location line="+18"/>
+        <location line="+74"/>
         <source>Recent Files</source>
         <translation>Recent Files</translation>
     </message>
@@ -8228,7 +8720,7 @@ Config</translation>
 <context>
     <name>DA::DADataManagerTreeWidget</name>
     <message>
-        <location filename="../DAGui/DADataManagerTreeWidget.cpp" line="+420"/>
+        <location filename="../DAGui/DADataManagerTreeWidget.cpp" line="+423"/>
         <source>Search...</source>
         <translation>Search...</translation>
     </message>
@@ -8236,7 +8728,7 @@ Config</translation>
 <context>
     <name>DA::DADataOperateOfDataFrameWidget</name>
     <message>
-        <location filename="../DAGui/DADataOperateOfDataFrameWidget.cpp" line="+238"/>
+        <location filename="../DAGui/DADataOperateOfDataFrameWidget.cpp" line="+241"/>
         <source>Warning</source>
         <translation>Warning</translation>
     </message>
@@ -8252,7 +8744,7 @@ Config</translation>
     </message>
     <message>
         <location line="+42"/>
-        <location line="+170"/>
+        <location line="+298"/>
         <location line="+35"/>
         <location line="+41"/>
         <location line="+42"/>
@@ -8262,15 +8754,45 @@ Config</translation>
         <translation>Please select a valid column</translation>
     </message>
     <message>
-        <location line="-1035"/>
-        <location line="+700"/>
+        <location line="-1163"/>
+        <location line="+828"/>
         <location line="+61"/>
         <location line="+48"/>
         <source>Please select a valid cell</source>
         <translation>Please select a valid cell</translation>
     </message>
     <message>
-        <location line="-767"/>
+        <location line="-889"/>
+        <source>Clipboard is empty</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>Please select a cell to paste into</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+49"/>
+        <source>Nothing to paste: the clipboard content exceeds the table boundary</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Paste partially dropped: %1 row(s) and %2 cell(s) outside the table were ignored</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+16"/>
+        <source>Paste failed: the content does not match the column data type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+17"/>
+        <source>No cells selected to cut</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+22"/>
         <source>Table has no columns</source>
         <translation>Table has no columns</translation>
     </message>
@@ -8691,12 +9213,12 @@ Config</translation>
 <context>
     <name>DA::DAFigureWidget</name>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="+148"/>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="+147"/>
         <source>Unexpected plotting operation: a chart that does not belong to the DAChartWidget type was added to the figure</source>
         <translation>Unexpected plotting operation: a chart that does not belong to the DAChartWidget type was added to the figure</translation>
     </message>
     <message>
-        <location line="+1188"/>
+        <location line="+1142"/>
         <source>Unsupported chart editor type: %1</source>
         <translation>Unsupported chart editor type: %1</translation>
     </message>
@@ -10428,7 +10950,7 @@ Config</translation>
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-1469"/>
+        <location filename="../APP/DAAppController.cpp" line="-1489"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>
@@ -12454,7 +12976,7 @@ Config</translation>
 <context>
     <name>DAFigureWidget</name>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="-1248"/>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="-1202"/>
         <source>Figure</source>
         <translation>Figure</translation>
     </message>
@@ -14200,7 +14722,12 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>change column type</translation>
     </message>
     <message>
-        <location line="+61"/>
+        <location line="+64"/>
+        <source>paste data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+31"/>
         <source>eval data</source>
         <translation>eval data</translation>
     </message>

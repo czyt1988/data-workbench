@@ -132,6 +132,10 @@ public Q_SLOTS:
     bool changeSelectColumnToIndex();
     // 显示列统计信息（表头右键），通过 pandas describe 获取
     void showColumnDescribe(int col);
+    // 粘贴剪贴板内容到当前选区左上角（仅填充选区，溢出丢弃），可撤销，返回写入单元格数
+    int pasteFromClipboard();
+    // 剪切选中区（复制 + 置nan），可撤销，返回受影响单元格数
+    int cutSelection();
 Q_SIGNALS:
     /**
      * @brief 选中的列或者类型发生了变化

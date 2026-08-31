@@ -340,7 +340,7 @@ def da_to_csv(df, path: str, args: Optional[Dict] = None):
 @log_function_call
 def da_to_excel(df, path: str, args: Optional[Dict] = None):
     '''
-    保存csv文件
+    保存excel文件
     '''
     if args is None:
         args = {}

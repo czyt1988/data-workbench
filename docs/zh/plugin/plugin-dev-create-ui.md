@@ -78,29 +78,28 @@ flowchart TD
 
 ### 隐藏系统窗口
 
-插件可以隐藏主程序中不需要的系统窗口，实现定制化界面。以下示例演示如何隐藏工作流相关的界面组件：
+插件可以隐藏主程序中不需要的功能模块，实现定制化界面。推荐使用 `DAUIInterface::setFeatureVisible`，一次调用即可隐藏该功能关联的全部 Dock 窗口、Ribbon 面板、上下文标签和 action：
 
 ```cpp
 void MyPlugin::initialize()
 {
     // 获取UI接口
     DA::DAUIInterface* ui = core()->getUiInterface();
-    
-    // 获取各个界面区域接口
-    DA::DADockingAreaInterface* dockArea    = ui->getDockingArea();
-    DA::DAActionsInterface* actionInterface = ui->getActionInterface();
-    DA::DARibbonAreaInterface* ribbonArea   = ui->getRibbonArea();
-    
-    // 隐藏不需要的Dock窗口，如工作流操作窗口和节点列表窗口
-    dockArea->hideDockWidget(dockArea->getWorkFlowOperateWidget());
-    dockArea->hideDockWidget(dockArea->getWorkflowNodeListWidget());
-    
-    // 隐藏不需要的Ribbon面板，如工作流面板
-    safeHideRibbonPanel(ribbonArea, "da-pannel-main.workflow");
+
+    // 隐藏工作流功能模块（Dock 窗口、Ribbon 按钮、上下文标签一并隐藏）
+    ui->setFeatureVisible(DA::DAWorkbenchFeatureType::Workflow, false);
 }
 ```
 
-执行上述代码后，工作流相关的 Dock 窗口和 Ribbon 面板被隐藏，用户界面更加简洁。
+执行上述代码后，工作流相关的 Dock 窗口和 Ribbon 入口被隐藏，用户界面更加简洁。当前仅支持 `Workflow`，未支持的功能会打印警告并直接返回。
+
+如需隐藏单个 Dock 窗口，也可以通过 DockingArea 接口单独操作：
+
+```cpp
+DA::DADockingAreaInterface* dockArea = ui->getDockingArea();
+dockArea->hideDockWidget(dockArea->getWorkFlowOperateWidget());
+dockArea->hideDockWidget(dockArea->getWorkflowNodeListWidget());
+```
 
 ### 添加自定义Dock窗口
 

@@ -30,6 +30,14 @@ public:
     DAPyDataFrame read_pkl(const QString& filepath, const QVariantMap& args, QString* err = nullptr);
     // 读取并直接添加到datamanager
     void read_and_add_to_datamanager(const QString& filepath, const QVariantMap& args, QString* err = nullptr);
+    // 导出为csv（调用io.py的da_to_csv，args透传pandas）
+    bool to_csv(const DAPyDataFrame& df, const QString& path, const QVariantMap& args, QString* err = nullptr);
+    // 导出为excel
+    bool to_excel(const DAPyDataFrame& df, const QString& path, const QVariantMap& args, QString* err = nullptr);
+    // 导出为pickle
+    bool to_pickle(const DAPyDataFrame& df, const QString& path, const QVariantMap& args, QString* err = nullptr);
+    // 导出为parquet
+    bool to_parquet(const DAPyDataFrame& df, const QString& path, const QVariantMap& args, QString* err = nullptr);
     // 引入
     bool import();
 };
