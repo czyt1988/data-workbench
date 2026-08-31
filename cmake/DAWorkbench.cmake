@@ -72,6 +72,10 @@ function(da_add_library)
 
     set(_name ${DA_AL_NAME})
 
+    # 必须先于任何 ${CMAKE_INSTALL_*} 的使用：首个被处理的库（如 DAUtils）若在
+    # GNUInstallDirs 定义变量前求值，导出的安装头文件路径会缺 "include" 前缀
+    include(GNUInstallDirs)
+
     # Qt 组件统一查找（PUBLIC/PRIVATE 去重后一次 find_package）
     if(DA_AL_QT_PUBLIC OR DA_AL_QT_PRIVATE)
         set(_qt_comps ${DA_AL_QT_PUBLIC} ${DA_AL_QT_PRIVATE})
@@ -181,7 +185,6 @@ function(da_add_library)
             )
         endif()
 
-        include(GNUInstallDirs)
         if(NOT DA_AL_NO_EXPORT)
             install(TARGETS ${_name}
                 EXPORT ${DA_TARGET_NAME}
@@ -434,6 +437,8 @@ function(da_add_plugin)
 
     set(_name ${DA_AP_NAME})
 
+    include(GNUInstallDirs)
+
     if(DA_AP_QT_PUBLIC OR DA_AP_QT_PRIVATE OR DA_AP_QT_WIN32_PUBLIC)
         set(_qt_comps ${DA_AP_QT_PUBLIC} ${DA_AP_QT_PRIVATE})
         if(WIN32)
@@ -502,7 +507,6 @@ function(da_add_plugin)
             INSTALL_DIR "${DAWorkbench_INSTALL_DIR}")
     endif()
 
-    include(GNUInstallDirs)
     install(TARGETS ${_name}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}/plugins
     )
