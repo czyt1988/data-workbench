@@ -1,13 +1,18 @@
 # -*- coding: utf-8 -*-
 """If / Else diamond conditional node"""
 
+import os
 from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, NodeDisplay, LinkPointStyle
+
+# 图标目录（包根/icon），按本文件位置计算绝对路径，
+# 兼容目录扫描（spec_from_file_location）与 entry_points 两种节点发现模式
+_ICON_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "icon")
 
 
 @NodeDef(
     name="If / Else",
     category=_("System / Flow Control"),  # cn:系统 / 流程控制
-    icon="",
+    icon=os.path.join(_ICON_DIR, "ifElse.svg"),
     description=_("Conditional branch node. Forwards input data to the 'true' or 'false' output port based on the boolean condition input. The unmatched branch outputs None, so only one path executes downstream."),  # cn:条件分支节点。根据布尔条件输入将数据转发到 true 或 false 输出端口。未匹配的分支输出 None，仅一条路径向下执行。
     style=NodeDisplay(
         body_shape="Diamond",

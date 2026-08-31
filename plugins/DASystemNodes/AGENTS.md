@@ -17,6 +17,7 @@ DASystemNodes/
         ├── __init__.py         # 导出所有节点类
         ├── setup.py            # entry_points 声明（data_workbench.plugin）
         ├── utils.py            # 通用工具函数（如 data_to_text）
+        ├── icon/               # 节点图标（SVG，200×200，配色遵循 icon-ui-design-guide.md）
         └── nodes/
             ├── start.py        # 工作流起点
             ├── end.py          # 工作流终点
@@ -65,19 +66,33 @@ copy /Y "plugins\DASystemNodes\PyScripts\DASystemNodes\nodes\text_viewer.py" `
 
 **setup_i18n() 调用时机**：必须在 `__init__.py` 顶部、节点模块导入之前调用，否则 `_()` 未定义会导致节点注册失败。
 
+### 图标（icon）机制
+
+`@NodeDef(icon=...)` 用于**节点工具箱**（节点树/列表图标 + 拖拽 pixmap），C++ 侧经 `QIcon(iconPath)` 直接加载，因此：
+
+- **必须提供绝对路径或 Qt 资源路径**（如 `:/DAGui/icon/xxx.svg`）；裸短名（如 `icon="describe"`）无法被 QIcon 解析，会静默回退默认节点图标
+- 本包的做法：图标放包内 `icon/` 目录（200×200 SVG，配色遵循 [icon-ui-design-guide.md](../../docs/zh/dev-guide/general/icon-ui-design-guide.md)），节点文件用 `__file__` 计算绝对路径（见上方模板的 `_ICON_DIR`）
+- 用 `__file__` 相对定位而非 Python 相对导入，是因为目录扫描模式（`spec_from_file_location`）下包不保证在 `sys.path` 中
+- CMake 会把整个包（含 `icon/`）复制到 `pyplugins/`，无需额外安装规则
+- 空字符串 `icon=""` 表示无图标，工具箱显示默认节点图标
+
 ### 最小节点模板
 
 ```python
 # -*- coding: utf-8 -*-
 """My Node brief description."""  # docstring 改英文（作为 description 降级回退）
 
+import os
 from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
+
+# 图标目录（包根/icon），按本文件位置计算绝对路径
+_ICON_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "icon")
 
 
 @NodeDef(
     name="My Node",            # 显示名称（必填，保持英文不翻译）
     category=_("System / Xxx"),  # cn:系统 / Xxx  分类路径，用 " / " 分层，翻译
-    icon="",                   # 图标路径（可空）
+    icon=os.path.join(_ICON_DIR, "myNode.svg"),  # 图标绝对路径（可空字符串）
 )
 class MyNode:
     """My Node brief description."""

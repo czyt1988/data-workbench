@@ -1,14 +1,19 @@
 # -*- coding: utf-8 -*-
 """Delay node: wait a specified number of seconds before passing data downstream"""
 
+import os
 import time
 from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
+
+# 图标目录（包根/icon），按本文件位置计算绝对路径，
+# 兼容目录扫描（spec_from_file_location）与 entry_points 两种节点发现模式
+_ICON_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "icon")
 
 
 @NodeDef(
     name="Delay",
     category=_("System / Flow Control"),  # cn:系统 / 流程控制
-    icon="",
+    icon=os.path.join(_ICON_DIR, "delay.svg"),
     description=_("Pauses execution for a specified number of seconds, then forwards the trigger input to the output unchanged. Useful for timing control or rate-limiting in workflows."),  # cn:暂停执行指定秒数，然后将触发输入原样转发到输出。用于工作流中的定时控制或限流。
 )
 class DelayNode:

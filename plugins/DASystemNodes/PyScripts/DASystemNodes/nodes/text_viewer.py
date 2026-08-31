@@ -2,9 +2,14 @@
 """Text viewer node: display input data as text on the node body"""
 
 import logging
+import os
 from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Parameter, NodeDisplay
 
 logger = logging.getLogger("DASystemNodes.TextViewer")
+
+# 图标目录（包根/icon），按本文件位置计算绝对路径，
+# 兼容目录扫描（spec_from_file_location）与 entry_points 两种节点发现模式
+_ICON_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "icon")
 
 _DEFAULT_FONT = {
     "family": "Microsoft YaHei",
@@ -79,7 +84,7 @@ def _wrap_text_by_width(painter, text, max_width, font):
 @NodeDef(
     name="Text Viewer",
     category=_("System / Display"),  # cn:系统 / 显示
-    icon="",
+    icon=os.path.join(_ICON_DIR, "textViewer.svg"),
     description=_("Displays input data as text directly on the node body. Supports font customization, auto-wrap, text truncation, and optional console logging. Useful for inspecting intermediate data during workflow execution."),  # cn:将输入数据以文本形式直接显示在节点体上。支持字体自定义、自动换行、文本截断和可选的控制台日志输出。用于检查工作流执行过程中的中间数据。
     style=NodeDisplay(
         background_color="#FDFDFD",
