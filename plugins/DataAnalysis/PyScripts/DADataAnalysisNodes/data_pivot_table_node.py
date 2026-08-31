@@ -1,13 +1,17 @@
 # -*- coding: utf-8 -*-
 """DataPivotTable — pivot table node"""
+import os
 from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
 from DADataAnalysisCore.operations import create_pivot_table
 
 
+# 图标目录（包根/icon），按本文件位置计算绝对路径，兼容目录扫描与 entry_points 两种节点发现模式
+_ICON_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "icon")
+
 @NodeDef(
     name="Pivot Table",
     category=_("Data Operations"),  # cn:数据操作
-    icon="pivot",
+    icon=os.path.join(_ICON_DIR, "pivotTable.svg"),
     description=_("Creates a pivot table from a DataFrame. Specify row index columns, optional column index columns, value columns, and an aggregation function (mean, sum, count, min, or max)."),  # cn:从 DataFrame 创建透视表。指定行索引列、可选的列索引列、值列和聚合函数（均值、求和、计数、最小值或最大值）。
 )
 class DataPivotTableNode:

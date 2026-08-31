@@ -33,9 +33,10 @@ DataAnalysis/
     │   │   ├── update_po.py    # 从 # cn: 注释自动填充 .po
     │   │   └── locale/         # .pot/.po/.mo 文件
     │   └── update-i18n.sh      # 一键生成翻译文件
-    └── DADataAnalysisNodes/     # 工作流节点定义（22 节点）
+    └── DADataAnalysisNodes/     # 工作流节点定义（21 节点）
         ├── __init__.py
         ├── setup.py
+        ├── icon/               # 节点图标（21 个 SVG，200×200，配色遵循 icon-ui-design-guide.md）
         └── *_node.py           # 节点定义文件
 ```
 
@@ -81,6 +82,14 @@ DataAnalysis/
 - `@NodeDef(description=...)` 用 `_()` 包裹翻译，显示在 tooltip 中
 - 类 docstring 改为英文（作为 `description` 的降级回退，不经过 `_()` 翻译）
 - `paint()` 中硬编码文本用 `_()` 包裹
+
+### 节点图标（icon/ 机制）
+
+`@NodeDef(icon=...)` 经 C++ 侧 `QIcon(iconPath)` 直接加载，**裸短名会静默回退默认图标**（详见 `plugins/DASystemNodes/AGENTS.md`）。本包做法与 DASystemNodes 一致：
+
+- 图标放包内 `icon/` 目录（200×200 SVG，配色遵循 [icon-ui-design-guide.md](../../docs/zh/dev-guide/general/icon-ui-design-guide.md)）
+- 节点文件用 `_ICON_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "icon")` 计算绝对路径，`icon=os.path.join(_ICON_DIR, "xxx.svg")`
+- CMake `install(DIRECTORY ...)` 与 `file(COPY ...)` 已含整个包，`icon/` 随包复制，无需额外安装规则
 
 ### i18n 工作流
 

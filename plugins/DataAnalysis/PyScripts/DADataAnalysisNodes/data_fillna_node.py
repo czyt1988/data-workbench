@@ -1,13 +1,17 @@
 # -*- coding: utf-8 -*-
 """DataFillNa — missing value filling node"""
+import os
 from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
 from DADataAnalysisCore.cleaning import fillna_impl
 
 
+# 图标目录（包根/icon），按本文件位置计算绝对路径，兼容目录扫描与 entry_points 两种节点发现模式
+_ICON_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "icon")
+
 @NodeDef(
     name="Fill NA",
     category=_("Data Cleaning"),  # cn:数据清洗
-    icon="fill_na",
+    icon=os.path.join(_ICON_DIR, "fillNa.svg"),
     description=_("Fills missing values (NaN) in a DataFrame using a specified method: constant value, forward fill, backward fill, mean, median, or mode."),  # cn:使用指定方法填充 DataFrame 中的缺失值（NaN）：常量值、前向填充、后向填充、均值、中位数或众数。
 )
 class DataFillNaNode:

@@ -12,10 +12,13 @@ from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
 from DADataAnalysisCore.io import export_data
 
 
+# 图标目录（包根/icon），按本文件位置计算绝对路径，兼容目录扫描与 entry_points 两种节点发现模式
+_ICON_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "icon")
+
 @NodeDef(
     name="Data Export",
     category=_("Data Analysis"),  # cn:数据分析
-    icon="data_export",
+    icon=os.path.join(_ICON_DIR, "dataExport.svg"),
     description=_("Exports a DataFrame to a file in CSV, JSON, Excel, Parquet, or Feather format. Specify the output path and format; the output directory is created automatically if it does not exist."),  # cn:将 DataFrame 导出为 CSV、JSON、Excel、Parquet 或 Feather 格式文件。指定输出路径和格式；输出目录不存在时自动创建。
 )
 class DataExportNode:

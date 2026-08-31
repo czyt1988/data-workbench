@@ -1,13 +1,17 @@
 # -*- coding: utf-8 -*-
 """DataRemoveOutliersIQR — IQR outlier removal node"""
+import os
 from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
 from DADataAnalysisCore.cleaning import remove_outliers_iqr_impl
 
 
+# 图标目录（包根/icon），按本文件位置计算绝对路径，兼容目录扫描与 entry_points 两种节点发现模式
+_ICON_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "icon")
+
 @NodeDef(
     name="Remove Outliers IQR",
     category=_("Data Cleaning"),  # cn:数据清洗
-    icon="outlier_iqr",
+    icon=os.path.join(_ICON_DIR, "outlierIqr.svg"),
     description=_("Removes outlier rows from a DataFrame using the IQR (interquartile range) method. Values outside 1.5×IQR (configurable) from the quartiles are treated as outliers and removed."),  # cn:使用 IQR（四分位距）方法移除 DataFrame 中的异常值行。偏离四分位数 1.5×IQR（可配置）以外的值被视为异常值并移除。
 )
 class DataRemoveOutliersIQRNode:

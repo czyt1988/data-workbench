@@ -1,13 +1,17 @@
 # -*- coding: utf-8 -*-
 """DataSearch — search node."""
+import os
 from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
 from DADataAnalysisCore.operations import search_dataframe
 
 
+# 图标目录（包根/icon），按本文件位置计算绝对路径，兼容目录扫描与 entry_points 两种节点发现模式
+_ICON_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "icon")
+
 @NodeDef(
     name="Search",
     category=_("Data Operations"),  # cn:数据操作
-    icon="search",
+    icon=os.path.join(_ICON_DIR, "search.svg"),
     description=_("Searches a DataFrame for rows matching a pattern in a specified column. Supports regex patterns and case-sensitive matching. Outputs matching rows and the match count."),  # cn:在 DataFrame 的指定列中搜索匹配模式的行。支持正则表达式和区分大小写匹配。输出匹配行和匹配数。
 )
 class DataSearchNode:

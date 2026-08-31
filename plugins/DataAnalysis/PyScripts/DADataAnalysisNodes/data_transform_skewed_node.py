@@ -1,10 +1,14 @@
 # -*- coding: utf-8 -*-
 """DataTransformSkewed — skewed data transformation node."""
+import os
 from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
 from DADataAnalysisCore.cleaning import transform_skewed_impl
 
 
-@NodeDef(name="Transform Skewed", category=_("Data Cleaning"), icon="skew")  # cn:数据清洗
+# 图标目录（包根/icon），按本文件位置计算绝对路径，兼容目录扫描与 entry_points 两种节点发现模式
+_ICON_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "icon")
+
+@NodeDef(name="Transform Skewed", category=_("Data Cleaning"), icon=os.path.join(_ICON_DIR, "transformSkewed.svg"))  # cn:数据清洗
 class DataTransformSkewedNode:
     """Transform skewed data to approximate a normal distribution."""
 

@@ -1,13 +1,17 @@
 # -*- coding: utf-8 -*-
 """DataFillInterpolate — interpolation filling node"""
+import os
 from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
 from DADataAnalysisCore.cleaning import interpolate_impl
 
 
+# 图标目录（包根/icon），按本文件位置计算绝对路径，兼容目录扫描与 entry_points 两种节点发现模式
+_ICON_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "icon")
+
 @NodeDef(
     name="Interpolate",
     category=_("Data Cleaning"),  # cn:数据清洗
-    icon="interpolate",
+    icon=os.path.join(_ICON_DIR, "interpolate.svg"),
     description=_("Fills missing values (NaN) by interpolation. Supports linear, polynomial, spline, and time-based interpolation methods."),  # cn:通过插值填充缺失值（NaN）。支持线性、多项式、样条和时间插值方法。
 )
 class DataFillInterpolateNode:

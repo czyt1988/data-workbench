@@ -1,13 +1,17 @@
 # -*- coding: utf-8 -*-
 """DataDropDuplicates - drop duplicate rows node"""
+import os
 from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
 from DADataAnalysisCore.cleaning import drop_duplicates_impl
 
 
+# 图标目录（包根/icon），按本文件位置计算绝对路径，兼容目录扫描与 entry_points 两种节点发现模式
+_ICON_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "icon")
+
 @NodeDef(
     name="Drop Duplicates",
     category=_("Data Cleaning"),  # cn:数据清洗
-    icon="drop_dup",
+    icon=os.path.join(_ICON_DIR, "dropDuplicates.svg"),
     description=_("Removes duplicate rows from a DataFrame. Specify which columns to check for duplicates (comma-separated, empty = all columns) and whether to keep the first, last, or no duplicate occurrence."),  # cn:删除 DataFrame 中的重复行。指定用于识别重复的列（逗号分隔，空表示全部列），以及保留第一个、最后一个还是不保留重复项。
 )
 class DataDropDuplicatesNode:

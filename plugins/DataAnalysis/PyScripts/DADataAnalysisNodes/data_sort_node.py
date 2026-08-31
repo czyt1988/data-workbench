@@ -1,13 +1,17 @@
 # -*- coding: utf-8 -*-
 """DataSort — sort node."""
+import os
 from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
 from DADataAnalysisCore.operations import sort_dataframe
 
 
+# 图标目录（包根/icon），按本文件位置计算绝对路径，兼容目录扫描与 entry_points 两种节点发现模式
+_ICON_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "icon")
+
 @NodeDef(
     name="Sort",
     category=_("Data Operations"),  # cn:数据操作
-    icon="sort",
+    icon=os.path.join(_ICON_DIR, "sort.svg"),
     description=_("Sorts a DataFrame by one or more columns. Specify column names as a comma-separated list and choose ascending or descending order."),  # cn:按一个或多个列对 DataFrame 排序。列名以逗号分隔，可选择升序或降序。
 )
 class DataSortNode:

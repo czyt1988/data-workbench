@@ -13,10 +13,13 @@ from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
 from DADataAnalysisCore.io import read_data
 
 
+# 图标目录（包根/icon），按本文件位置计算绝对路径，兼容目录扫描与 entry_points 两种节点发现模式
+_ICON_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "icon")
+
 @NodeDef(
     name="Data Source",
     category=_("Data Analysis"),  # cn:数据分析
-    icon="data_source",
+    icon=os.path.join(_ICON_DIR, "dataSource.svg"),
     description=_("Loads data from a file (CSV, Excel, JSON, or Parquet) into a DataFrame. Configure the file path and format; CSV supports encoding and separator options, Excel supports sheet selection."),  # cn:从文件（CSV、Excel、JSON 或 Parquet）加载数据为 DataFrame。配置文件路径和格式；CSV 支持编码和分隔符选项，Excel 支持工作表选择。
 )
 class DataSourceNode:

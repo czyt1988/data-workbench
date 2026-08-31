@@ -1,13 +1,17 @@
 # -*- coding: utf-8 -*-
 """DataQuery — query expression node"""
+import os
 from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
 from DADataAnalysisCore.operations import query_dataframe
 
 
+# 图标目录（包根/icon），按本文件位置计算绝对路径，兼容目录扫描与 entry_points 两种节点发现模式
+_ICON_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "icon")
+
 @NodeDef(
     name="Query",
     category=_("Data Operations"),  # cn:数据操作
-    icon="query",
+    icon=os.path.join(_ICON_DIR, "query.svg"),
     description=_("Filters DataFrame rows using a pandas query expression (e.g. 'age > 25 and name == \"John\"'). Outputs the filtered data and the result row count."),  # cn:使用 pandas query 表达式（如 'age > 25 and name == "John"'）筛选 DataFrame 行。输出筛选后的数据和结果行数。
 )
 class DataQueryNode:

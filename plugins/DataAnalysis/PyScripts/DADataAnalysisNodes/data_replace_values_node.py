@@ -1,13 +1,17 @@
 # -*- coding: utf-8 -*-
 """DataReplaceValues — value replacement node."""
+import os
 from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
 from DADataAnalysisCore.cleaning import replace_values_impl
 
 
+# 图标目录（包根/icon），按本文件位置计算绝对路径，兼容目录扫描与 entry_points 两种节点发现模式
+_ICON_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "icon")
+
 @NodeDef(
     name="Replace Values",
     category=_("Data Cleaning"),  # cn:数据清洗
-    icon="replace",
+    icon=os.path.join(_ICON_DIR, "replaceValues.svg"),
     description=_("Replaces a specific value with a new value in a selected column. Matching is case-sensitive. Outputs the modified DataFrame and the count of replacements made."),  # cn:在选定列中将指定旧值替换为新值。区分大小写。输出修改后的 DataFrame 和替换次数。
 )
 class DataReplaceValuesNode:

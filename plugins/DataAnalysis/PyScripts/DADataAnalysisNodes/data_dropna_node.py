@@ -1,14 +1,18 @@
 # -*- coding: utf-8 -*-
 """DataDropNa - drop missing values node"""
+import os
 import pandas as pd
 from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
 from DADataAnalysisCore.cleaning import dropna_impl
 
 
+# 图标目录（包根/icon），按本文件位置计算绝对路径，兼容目录扫描与 entry_points 两种节点发现模式
+_ICON_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "icon")
+
 @NodeDef(
     name="Drop NA",
     category=_("Data Cleaning"),  # cn:数据清洗
-    icon="drop_na",
+    icon=os.path.join(_ICON_DIR, "dropNa.svg"),
     description=_("Removes rows or columns containing missing values (NaN). Supports 'any' (drop if any value is missing) or 'all' (drop only if all values are missing) strategies, with optional column subset and minimum non-missing count threshold."),  # cn:删除包含缺失值（NaN）的行或列。支持 'any'（任一缺失即删除）或 'all'（全部缺失才删除）策略，可选列子集和非缺失值最小数量阈值。
 )
 class DataDropNaNode:

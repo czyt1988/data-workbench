@@ -15,14 +15,18 @@ try:
 except ImportError:
     HAS_MATPLOTLIB = False
 
+import os
 import pandas as pd
 from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
 
 
+# 图标目录（包根/icon），按本文件位置计算绝对路径，兼容目录扫描与 entry_points 两种节点发现模式
+_ICON_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "icon")
+
 @NodeDef(
     name="Data Plot",
     category=_("Data Analysis"),  # cn:数据分析
-    icon="data_plot",
+    icon=os.path.join(_ICON_DIR, "dataPlot.svg"),
     description=_("Generates a bar, line, or scatter chart from a DataFrame and saves it as a PNG image. Specify the target column and chart type; the file path is output for downstream use."),  # cn:从 DataFrame 生成柱状图、折线图或散点图并保存为 PNG 图片。指定目标列和图表类型；输出文件路径供下游使用。
 )
 class DataPlotNode:

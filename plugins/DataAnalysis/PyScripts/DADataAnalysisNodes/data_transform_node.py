@@ -7,14 +7,18 @@ dropping, and missing value filling, and passes the transformed result to
 downstream nodes via the output port.
 """
 
+import os
 import pandas as pd
 from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
 
 
+# 图标目录（包根/icon），按本文件位置计算绝对路径，兼容目录扫描与 entry_points 两种节点发现模式
+_ICON_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "icon")
+
 @NodeDef(
     name="Data Transform",
     category=_("Data Analysis"),  # cn:数据分析
-    icon="data_transform",
+    icon=os.path.join(_ICON_DIR, "dataTransform.svg"),
     description=_("Transforms a DataFrame column: rename a column, drop a column, or fill missing values in a column. Specify the target column, operation type, and the corresponding parameter (new name or fill value)."),  # cn:变换 DataFrame 列：重命名列、删除列或填充列中的缺失值。指定目标列、操作类型和相应参数（新列名或填充值）。
 )
 class DataTransformNode:

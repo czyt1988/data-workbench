@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+<rect x="8" y="46" width="60" height="108" rx="6" fill="#5280C1"/>
+<rect x="15" y="53" width="46" height="94" fill="#FFFFFF"/>
+<rect x="15" y="53" width="46" height="18" fill="#BDCDE8"/>
+<rect x="22" y="80" width="32" height="9" rx="4" fill="#B2B2B2"/>
+<rect x="22" y="101" width="32" height="9" rx="4" fill="#B2B2B2"/>
+<rect x="22" y="122" width="32" height="9" rx="4" fill="#B2B2B2"/>
+<path d="M78,88 H92 V72 L116,100 L92,128 V112 H78 Z" fill="#669E8B"/>
+<path d="M124,24 H168 L190,46 V176 H124 Z" fill="#FFFFFF" stroke="#727272" stroke-width="7" stroke-linejoin="round"/>
+<path d="M168,24 V46 H190 Z" fill="#B2B2B2"/>
+<rect x="136" y="66" width="42" height="12" rx="6" fill="#BDCDE8"/>
+<rect x="136" y="92" width="42" height="10" rx="5" fill="#B2B2B2"/>
+<rect x="136" y="114" width="42" height="10" rx="5" fill="#B2B2B2"/>
+<rect x="136" y="136" width="42" height="10" rx="5" fill="#B2B2B2"/>
+</svg>

@@ -1,14 +1,18 @@
 # -*- coding: utf-8 -*-
 """DataEval — expression evaluation node"""
 
+import os
 from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
 from DADataAnalysisCore.operations import eval_expression
 
 
+# 图标目录（包根/icon），按本文件位置计算绝对路径，兼容目录扫描与 entry_points 两种节点发现模式
+_ICON_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "icon")
+
 @NodeDef(
     name="Eval Expression",
     category=_("Data Operations"),  # cn:数据操作
-    icon="eval",
+    icon=os.path.join(_ICON_DIR, "eval.svg"),
     description=_("Evaluates a pandas eval expression on a DataFrame (e.g. 'C = A + B' to create a new column from arithmetic). Outputs the resulting DataFrame with the expression applied."),  # cn:在 DataFrame 上执行 pandas eval 表达式（如 'C = A + B' 通过算术运算创建新列）。输出应用表达式后的 DataFrame。
 )
 class DataEvalNode:

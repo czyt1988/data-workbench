@@ -1,13 +1,17 @@
 # -*- coding: utf-8 -*-
 """DataRemoveOutliersZScore — Z-score outlier removal node."""
+import os
 from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
 from DADataAnalysisCore.cleaning import remove_outliers_zscore_impl
 
 
+# 图标目录（包根/icon），按本文件位置计算绝对路径，兼容目录扫描与 entry_points 两种节点发现模式
+_ICON_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "icon")
+
 @NodeDef(
     name="Remove Outliers Z-Score",
     category=_("Data Cleaning"),  # cn:数据清洗
-    icon="outlier_zscore",
+    icon=os.path.join(_ICON_DIR, "outlierZscore.svg"),
     description=_("Removes outlier rows from a DataFrame using Z-score method. A row is removed if its Z-score (standard deviations from the mean) in the specified column exceeds the threshold (default 3.0)."),  # cn:使用 Z-score 方法移除 DataFrame 中的异常值行。若指定列的 Z-score（偏离均值的标准差倍数）超过阈值（默认 3.0）则移除该行。
 )
 class DataRemoveOutliersZScoreNode:

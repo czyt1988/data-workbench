@@ -1,13 +1,17 @@
 # -*- coding: utf-8 -*-
 """DataFilterByColumn — filter by column range node"""
+import os
 from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
 from DADataAnalysisCore.operations import filter_by_column_range
 
 
+# 图标目录（包根/icon），按本文件位置计算绝对路径，兼容目录扫描与 entry_points 两种节点发现模式
+_ICON_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "icon")
+
 @NodeDef(
     name="Filter By Column",
     category=_("Data Operations"),  # cn:数据操作
-    icon="filter_col",
+    icon=os.path.join(_ICON_DIR, "filterByColumn.svg"),
     description=_("Filters DataFrame rows by a numeric column's value range. Set min and/or max thresholds (inclusive); a value of 0 means no limit on that bound."),  # cn:按数值列的值范围筛选 DataFrame 行。设置最小和/或最大阈值（包含），值为 0 表示该边界不限制。
 )
 class DataFilterByColumnNode:
