@@ -280,19 +280,10 @@ private Q_SLOTS:
     // 绘图编辑器的切换
     void onActionGroupChartEditorTriggered(QAction* a);
     //===================================================
-    // 图表上下文-文字标签
+    // 图例位置菜单（挂在actionChartEnableLegend下）
     //===================================================
-    // 图表标题行编辑器提交
-    void onChartTitleEditingFinished();
-    // X轴标题行编辑器提交
-    void onChartXAxisTitleEditingFinished();
-    // Y轴标题行编辑器提交
-    void onChartYAxisTitleEditingFinished();
-    // 图例位置按钮组切换
+    // 图例位置菜单切换
     void onActionGroupChartLegendPositionTriggered(QAction* act);
-    // 图表文字字体变化（作用于选中文字图元，无选中回退图表标题）
-    void onChartFontChanged(const QFont& f);
-    void onChartFontColorChanged(const QColor& c);
     //===================================================
     // 数据操作的上下文标签 Data Operate Context Category
     //===================================================
@@ -425,14 +416,10 @@ private Q_SLOTS:
     //===================================================
     // 视图页-外观面板的主题下拉切换（写 DA_CONFIG_KEY_RIBBON_THEME 持久化）
     void onRibbonThemeComboCurrentIndexChanged(int index);
-    // 恢复默认布局（运行时立即生效）
+    // 恢复默认布局（触发前弹确认框）
     void onActionResetDefaultLayoutTriggered();
-    // 布局方案下拉切换 → 应用方案
-    void onLayoutSchemeComboCurrentIndexChanged(int index);
-    // 保存当前布局为命名方案（QInputDialog 输入名）
-    void onActionSaveCurrentLayoutTriggered();
-    // 删除当前下拉选中的自定义方案（预置不可删）
-    void onActionRemoveLayoutTriggered();
+    // 打开布局管理对话框（保存/应用/删除布局方案）
+    void onActionManageLayoutsTriggered();
 private Q_SLOTS:
     //===================================================
     // DAPyWorkFlowOperateWidget的槽
@@ -535,13 +522,6 @@ private:
     void activateUndoStackForWidget(DAAbstractOperateWidget* w);
     // 视图页-外观面板：填充主题下拉（10款完整枚举，与设置页一致）并同步当前值
     void setupRibbonThemeCombo();
-    // 视图页-布局面板：把布局管理器的方案列表填入下拉
-    void refreshLayoutSchemeCombo();
-    // 把字体/字体颜色应用到当前图表：优先选中文字图元（QwtPlotTextLabel/带label的marker），
-    // 无选中或非文字图元回退到图表标题（D8）
-    void applyChartFont(const QFont& f, const QColor& c, bool hasColor);
-    // QwtText 的字体/颜色应用辅助：hasColor=true 仅改颜色，false 仅改字体
-    static void applyQwtTextStyle(QwtText& txt, const QFont& f, const QColor& c, bool hasColor);
 
 private:
     AppMainWindow* mMainWindow { nullptr };

@@ -268,8 +268,7 @@ void DAAppActions::buildViewAction()
     actionShowRightSideBar = createAction(UiNames::Action::ShowRightSideBar, ":/app/bright/Icon/right-sider-bar.svg", true, true);
     actionShowAgentArea = createAction(UiNames::Action::ShowAgentArea, ":/app/bright/Icon/showAgent.svg");
     actionResetDefaultLayout = createAction(UiNames::Action::ResetDefaultLayout, ":/app/bright/Icon/viewAll.svg");
-    actionSaveCurrentLayout  = createAction(UiNames::Action::SaveCurrentLayout, ":/app/bright/Icon/save.svg");
-    actionRemoveLayout       = createAction(UiNames::Action::RemoveLayout, ":/app/bright/Icon/removeData.svg");
+    actionManageLayouts      = createAction(UiNames::Action::ManageLayouts, ":/app/bright/Icon/layoutManage.svg");
 }
 
 void DAAppActions::buildWorkflowAction()
@@ -704,11 +703,9 @@ void DAAppActions::retranslateUi()
     actionSelectAll->setText(tr("Select All"));                       // cn:全选
     actionSelectAll->setToolTip(tr("Select all content"));            // cn:全选内容
     actionResetDefaultLayout->setText(tr("Reset \nLayout"));          // cn:恢复\n默认布局
-    actionResetDefaultLayout->setToolTip(tr("Restore the default window layout immediately"));  // cn:立即恢复默认窗口布局
-    actionSaveCurrentLayout->setText(tr("Save \nLayout"));           // cn:保存\n当前布局
-    actionSaveCurrentLayout->setToolTip(tr("Save the current window layout as a named scheme"));  // cn:把当前窗口布局保存为命名方案
-    actionRemoveLayout->setText(tr("Remove \nLayout"));              // cn:删除\n布局方案
-    actionRemoveLayout->setToolTip(tr("Remove the selected custom layout scheme"));  // cn:删除选中的自定义布局方案
+    actionResetDefaultLayout->setToolTip(tr("Restore the default window layout (confirmation required)"));  // cn:恢复默认窗口布局（需确认）
+    actionManageLayouts->setText(tr("Manage \nLayouts"));             // cn:布局\n管理
+    actionManageLayouts->setToolTip(tr("Open the layout manager to save, apply or remove layout schemes"));  // cn:打开布局管理对话框，保存、应用或删除布局方案
 
     //
     if (actionRedo) {

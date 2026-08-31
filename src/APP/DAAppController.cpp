@@ -63,6 +63,7 @@
 #include "DAPluginManagerDialog.h"
 #include "DAAppSettingDialog.h"
 #include "Dialog/DAExportToPngSettingDialog.h"
+#include "Dialog/DALayoutManagerDialog.h"
 #include "Dialog/DAWorkbenchAboutDialog.h"
 // DAWidgets
 #include "DAFontEditPannelWidget.h"
@@ -427,22 +428,11 @@ void DAAppController::initConnection()
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnableLegend, onActionChartEnableLegendTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionCopyFigureInClipboard, onActionCopyFigureToClipboardTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartDataPickerSetting, onActionChartDataPickerSettingTriggered);
-    // 图表上下文-文字标签
-    connect(mRibbon->mEditChartTitle, &QLineEdit::editingFinished, this, &DAAppController::onChartTitleEditingFinished);
-    connect(mRibbon->mEditChartXAxisTitle,
-            &QLineEdit::editingFinished,
-            this,
-            &DAAppController::onChartXAxisTitleEditingFinished);
-    connect(mRibbon->mEditChartYAxisTitle,
-            &QLineEdit::editingFinished,
-            this,
-            &DAAppController::onChartYAxisTitleEditingFinished);
+    // 图例位置菜单（挂在actionChartEnableLegend下）
     connect(mActions->actionGroupChartLegendPosition,
             &QActionGroup::triggered,
             this,
             &DAAppController::onActionGroupChartLegendPositionTriggered);
-    connect(mRibbon, &DAAppRibbonArea::selectedChartFont, this, &DAAppController::onChartFontChanged);
-    connect(mRibbon, &DAAppRibbonArea::selectedChartFontColor, this, &DAAppController::onChartFontColorChanged);
     for (QAction* act : std::as_const(mActions->actionListOfColorTheme)) {
         connect(act, &QAction::triggered, this, [ this, act ]() { onActionGroupFigureThemeTriggered(act); });
     }
@@ -537,18 +527,12 @@ void DAAppController::initConnection()
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionSelectAll, onActionSelectAllTriggered);
     // 视图页-布局/外观
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionResetDefaultLayout, onActionResetDefaultLayoutTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionSaveCurrentLayout, onActionSaveCurrentLayoutTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionRemoveLayout, onActionRemoveLayoutTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionManageLayouts, onActionManageLayoutsTriggered);
     setupRibbonThemeCombo();
     connect(mRibbon->mComboxRibbonTheme,
             QOverload< int >::of(&QComboBox::currentIndexChanged),
             this,
             &DAAppController::onRibbonThemeComboCurrentIndexChanged);
-    refreshLayoutSchemeCombo();
-    connect(mRibbon->mComboxLayoutScheme,
-            QOverload< int >::of(&QComboBox::currentIndexChanged),
-            this,
-            &DAAppController::onLayoutSchemeComboCurrentIndexChanged);
     //===================================================
     // setDockAreaInterface 有其他的绑定
     //===================================================
@@ -1677,116 +1661,35 @@ void DAAppController::onRibbonThemeComboCurrentIndexChanged(int index)
 }
 
 /**
- * @brief 恢复默认布局（运行时立即生效，仅重置顶层 dock）
+ * @brief 恢复默认布局（触发前弹确认框）
  */
 void DAAppController::onActionResetDefaultLayoutTriggered()
 {
-    if (mMainWindow) {
-        mMainWindow->restoreDefaultLayout();
+    if (!mMainWindow) {
+        return;
     }
+    if (QMessageBox::question(app(),
+                              tr("Reset Layout"),  // cn:恢复默认布局
+                              tr("This will restore the default window layout. Continue?"),  // cn:将恢复默认窗口布局，是否继续？
+                              QMessageBox::Yes | QMessageBox::No,
+                              QMessageBox::No)
+        != QMessageBox::Yes) {
+        return;
+    }
+    mMainWindow->restoreDefaultLayout();
 }
 
 /**
- * @brief 视图页-布局面板：把布局管理器的方案列表填入下拉
- *
- * 预置方案显示翻译名（Default→默认布局 / Focus Analysis→专注分析），自定义方案显示原名
+ * @brief 打开布局管理对话框（保存/应用/删除布局方案）
  */
-void DAAppController::refreshLayoutSchemeCombo()
-{
-    QComboBox* combo = mRibbon->mComboxLayoutScheme;
-    DAAppLayoutManager* mgr = mMainWindow ? mMainWindow->getLayoutManager() : nullptr;
-    if (!combo || !mgr) {
-        return;
-    }
-    QSignalBlocker blocker(combo);
-    combo->clear();
-    const QStringList names = mgr->layoutNames();
-    for (const QString& n : names) {
-        QString display;
-        if (n == QStringLiteral("Default")) {
-            display = tr("Default");  // cn:默认布局
-        } else if (n == QStringLiteral("Focus Analysis")) {
-            display = tr("Focus Analysis");  // cn:专注分析
-        } else {
-            display = n;
-        }
-        combo->addItem(display, n);
-    }
-}
-
-/**
- * @brief 布局方案下拉切换 → 应用所选方案
- */
-void DAAppController::onLayoutSchemeComboCurrentIndexChanged(int index)
-{
-    if (index < 0) {
-        return;
-    }
-    DAAppLayoutManager* mgr = mMainWindow ? mMainWindow->getLayoutManager() : nullptr;
-    if (!mgr) {
-        return;
-    }
-    QString name = mRibbon->mComboxLayoutScheme->itemData(index).toString();
-    if (name.isEmpty()) {
-        return;
-    }
-    mgr->openLayout(name);
-}
-
-/**
- * @brief 保存当前布局为命名方案（弹命名输入框）
- */
-void DAAppController::onActionSaveCurrentLayoutTriggered()
+void DAAppController::onActionManageLayoutsTriggered()
 {
     DAAppLayoutManager* mgr = mMainWindow ? mMainWindow->getLayoutManager() : nullptr;
     if (!mgr) {
         return;
     }
-    bool ok    = false;
-    QString name = QInputDialog::getText(app(),
-                                         tr("Save Layout"),         // cn:保存布局方案
-                                         tr("Layout scheme name:"),  // cn:布局方案名称：
-                                         QLineEdit::Normal,
-                                         QString(),
-                                         &ok);
-    if (!ok || name.isEmpty()) {
-        return;
-    }
-    if (mgr->isPreset(name)) {
-        daWarning << tr("Cannot overwrite preset layout schemes, please use another name");  // cn:不能覆盖预置布局方案，请换一个名称
-        return;
-    }
-    if (mgr->saveLayoutAs(name)) {
-        daInfo << tr("Layout scheme '%1' saved").arg(name);  // cn:布局方案"%1"已保存
-        refreshLayoutSchemeCombo();
-        // 选中新保存的方案
-        int idx = mRibbon->mComboxLayoutScheme->findData(name);
-        if (idx >= 0) {
-            QSignalBlocker b(mRibbon->mComboxLayoutScheme);
-            mRibbon->mComboxLayoutScheme->setCurrentIndex(idx);
-        }
-    }
-}
-
-/**
- * @brief 删除当前下拉选中的自定义布局方案（预置不可删）
- */
-void DAAppController::onActionRemoveLayoutTriggered()
-{
-    DAAppLayoutManager* mgr = mMainWindow ? mMainWindow->getLayoutManager() : nullptr;
-    QComboBox* combo        = mRibbon->mComboxLayoutScheme;
-    if (!mgr || !combo || combo->currentIndex() < 0) {
-        return;
-    }
-    QString name = combo->currentData().toString();
-    if (name.isEmpty() || mgr->isPreset(name)) {
-        daWarning << tr("Preset layout schemes cannot be removed");  // cn:预置布局方案不可删除
-        return;
-    }
-    if (mgr->removeLayout(name)) {
-        daInfo << tr("Layout scheme '%1' removed").arg(name);  // cn:布局方案"%1"已删除
-        refreshLayoutSchemeCombo();
-    }
+    DA::DALayoutManagerDialog dlg(mgr, app());
+    dlg.exec();
 }
 
 /**
@@ -2891,61 +2794,7 @@ void DAAppController::onActionCopyFigureToClipboardTriggered()
 }
 
 /**
- * @brief 图表标题行编辑器提交（D9：Ribbon内联编辑，不弹对话框）
- */
-void DAAppController::onChartTitleEditingFinished()
-{
-    DAChartWidget* chart = getCurrentChart();
-    if (!chart) {
-        return;
-    }
-    QString text = mRibbon->mEditChartTitle->text();
-    if (text == chart->getChartTitle()) {
-        return;
-    }
-    chart->setChartTitle(text);
-    chart->replot();
-    setDirty();
-}
-
-/**
- * @brief X轴标题行编辑器提交
- */
-void DAAppController::onChartXAxisTitleEditingFinished()
-{
-    DAChartWidget* chart = getCurrentChart();
-    if (!chart) {
-        return;
-    }
-    QString text = mRibbon->mEditChartXAxisTitle->text();
-    if (text == chart->getAxisLabel(QwtAxis::XBottom)) {
-        return;
-    }
-    chart->setAxisLabel(QwtAxis::XBottom, text);
-    chart->replot();
-    setDirty();
-}
-
-/**
- * @brief Y轴标题行编辑器提交
- */
-void DAAppController::onChartYAxisTitleEditingFinished()
-{
-    DAChartWidget* chart = getCurrentChart();
-    if (!chart) {
-        return;
-    }
-    QString text = mRibbon->mEditChartYAxisTitle->text();
-    if (text == chart->getAxisLabel(QwtAxis::YLeft)) {
-        return;
-    }
-    chart->setAxisLabel(QwtAxis::YLeft, text);
-    chart->replot();
-    setDirty();
-}
-
-/**
- * @brief 图例位置按钮组切换
+ * @brief 图例位置菜单切换（挂在actionChartEnableLegend下的上/下/左/右互斥组）
  */
 void DAAppController::onActionGroupChartLegendPositionTriggered(QAction* act)
 {
@@ -2961,91 +2810,6 @@ void DAAppController::onActionGroupChartLegendPositionTriggered(QAction* act)
     chart->setLegendPosition(static_cast< Qt::Alignment >(alignV));
     chart->replot();
     setDirty();
-}
-
-/**
- * @brief 图表文字字体变化
- */
-void DAAppController::onChartFontChanged(const QFont& f)
-{
-    applyChartFont(f, QColor(), false);
-}
-
-/**
- * @brief 图表文字字体颜色变化
- */
-void DAAppController::onChartFontColorChanged(const QColor& c)
-{
-    applyChartFont(QFont(), c, true);
-}
-
-/**
- * @brief 把字体/颜色应用到当前图表（D8 路由）
- *
- * 优先作用于选中的文字图元（QwtPlotTextLabel / 带 label 的 QwtPlotMarker / DAChartTextMarker），
- * 无选中或非文字图元时回退到图表标题，避免按钮经常灰着
- */
-void DAAppController::applyChartFont(const QFont& f, const QColor& c, bool hasColor)
-{
-    DAChartWidget* chart = getCurrentChart();
-    if (!chart) {
-        return;
-    }
-    // 取当前选中图元（经设置面板的同一路径）
-    QwtPlotItem* item = nullptr;
-    DASettingContainerWidget* setting = getSettingContainerWidget();
-    if (setting) {
-        if (DAChartSettingWidget* chartSetting = setting->getChartSettingWidget()) {
-            item = chartSetting->getCurrentPlotItem();
-        }
-    }
-    const QFont font      = f;
-    const QColor fontColor = c;
-    if (item) {
-        // 文字图元分支：QwtPlotTextLabel 或带 label 的 marker
-        if (QwtPlotTextLabel* label = dynamic_cast< QwtPlotTextLabel* >(item)) {
-            QwtText txt = label->text();
-            applyQwtTextStyle(txt, font, fontColor, hasColor);
-            label->setText(txt);
-            chart->replot();
-            setDirty();
-            return;
-        }
-        if (QwtPlotMarker* marker = dynamic_cast< QwtPlotMarker* >(item)) {
-            QwtText txt = marker->label();
-            if (!txt.isEmpty()) {
-                applyQwtTextStyle(txt, font, fontColor, hasColor);
-                marker->setLabel(txt);
-                chart->replot();
-                setDirty();
-                return;
-            }
-        }
-    }
-    // 回退：图表标题
-    QwtText title = chart->title();
-    applyQwtTextStyle(title, font, fontColor, hasColor);
-    chart->setTitle(title);
-    chart->replot();
-    setDirty();
-}
-
-/**
- * @brief QwtText 的字体/颜色应用辅助
- * @param txt 目标文本
- * @param f 字体（hasColor=false 时生效）
- * @param c 颜色（hasColor=true 时生效）
- * @param hasColor true=仅改颜色，false=仅改字体
- */
-void DAAppController::applyQwtTextStyle(QwtText& txt, const QFont& f, const QColor& c, bool hasColor)
-{
-    if (hasColor) {
-        if (c.isValid()) {
-            txt.setColor(c);
-        }
-    } else {
-        txt.setFont(f);
-    }
 }
 
 void DAAppController::onActionChartDataPickerSettingTriggered()

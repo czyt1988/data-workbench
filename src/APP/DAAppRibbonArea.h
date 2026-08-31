@@ -130,8 +130,6 @@ public:
     void updateChartZoomPanAboutRibbon(DAChartWidget* chart);
     void updateChartPickerAboutRibbon(DAChartWidget* chart);
     void updateChartLegendAboutRibbon(DAChartWidget* chart);
-    // 更新图表文字页（标题/轴标题行编辑器文本、图例位置按钮勾选）
-    void updateChartTextAboutRibbon(DAChartWidget* chart);
     //
     void updateWorkflowAboutRibbon(DAPyWorkFlowOperateWidget* wfo);
     // 重置文字
@@ -169,8 +167,6 @@ private:
     void buildContextCategoryWorkflowRun_();
     // 构建chart上下文
     void buildContextCategoryChartEdit();
-    // 构建chart上下文-文字标签
-    void buildContextCategoryChartText_();
     // 构建ApplicationMenu
     void buildApplicationMenu();
     // 构建右工具栏
@@ -215,22 +211,10 @@ Q_SIGNALS:
     /**
        @brief 字体颜色选中了
 
-       这是一个通用的字体颜色选中信号
+        这是一个通用的字体颜色选中信号
        @param f
      */
     void selectedWorkflowItemFontColor(const QColor& c);
-
-    /**
-       @brief 图表文字字体选中（仿 Workflow 模式的专用转发信号）
-       @param f
-     */
-    void selectedChartFont(const QFont& f);
-
-    /**
-       @brief 图表文字字体颜色选中
-       @param c
-     */
-    void selectedChartFontColor(const QColor& c);
 
 protected:
     // 设置dock区，有些pannel的action是依赖dock界面的，统一在这里设置
@@ -253,7 +237,6 @@ private:
     SARibbonPanel* mPannelMainFileOpt { nullptr };      ///< 文件操作（打开/保存/另存/追加工程/最近文件）
     SARibbonPanel* mPannelMainClipboard { nullptr };    ///< 剪贴板（撤销/重做/剪切/复制/粘贴/删除/全选，按焦点路由）
     SARibbonPanel* mPannelMainCreate { nullptr };       ///< 创建（添加数据/添加绘图/新建工作流）
-    SARibbonPanel* mPannelMainWorkflowOpt { nullptr };  ///< 工作流在main的pannel（合并进创建面板后此成员仍被 setFeatureVisible 引用）
     SARibbonPanel* mPannelSetting { nullptr };          ///< 设定
     //----------------------------------------------------
     // data
@@ -268,9 +251,6 @@ private:
     SARibbonCategory* mCategoryView { nullptr };        ///< 视图标签
     SARibbonPanel* mPannelViewMainView { nullptr };     ///< 主要视图操作
     SARibbonPanel* mPannelViewLayout { nullptr };       ///< 布局管理
-    QComboBox* mComboxLayoutScheme { nullptr };         ///< 布局方案选择器
-    SARibbonLineWidgetContainer* mComboxLayoutSchemeContainer { nullptr };  ///< 布局方案选择器container
-    QMenu* mMenuLayoutManage { nullptr };               ///< 布局管理菜单（删除自定义方案）
     SARibbonPanel* mPannelViewAppearance { nullptr };   ///< 外观（Ribbon主题）
     QComboBox* mComboxRibbonTheme { nullptr };          ///< Ribbon主题选择器
     SARibbonLineWidgetContainer* mComboxRibbonThemeContainer { nullptr };  ///< Ribbon主题选择器container
@@ -344,16 +324,6 @@ private:
     SARibbonButtonGroupWidget* mChartGridMinActionsButtonGroup { nullptr };  ///< grid的min设置
     SARibbonPanel* mPanelFigureTheme { nullptr };                            ///< 绘图样式
     SARibbonGallery* mFigureThemeGallery { nullptr };                        ///< 绘图样式
-    SARibbonCategory* mCategoryChartTextEdit { nullptr };                    ///< Chart文字标签
-    QLineEdit* mEditChartTitle { nullptr };                                   ///< 图表标题行编辑器
-    SARibbonLineWidgetContainer* mEditChartTitleContainer { nullptr };        ///< 图表标题container
-    QLineEdit* mEditChartXAxisTitle { nullptr };                              ///< X轴标题行编辑器
-    SARibbonLineWidgetContainer* mEditChartXAxisTitleContainer { nullptr };   ///< X轴标题container
-    QLineEdit* mEditChartYAxisTitle { nullptr };                              ///< Y轴标题行编辑器
-    SARibbonLineWidgetContainer* mEditChartYAxisTitleContainer { nullptr };   ///< Y轴标题container
-    DAFontEditPannelWidget* mChartFontEditPannel { nullptr };                 ///< 图表文字字体工具
-    SARibbonPanel* mPannelChartTextFont { nullptr };                          ///< 图表文字字体面板
-    SARibbonPanel* mPannelChartTextLegend { nullptr };                        ///< 图例位置面板
     SARibbonCategory* mCategoryChartEdit { nullptr };                        ///< Chart编辑标签
     SARibbonPanel* mPannelChartSelectTool { nullptr };                       ///< 图表选区
     SARibbonPanel* mPannelChartAssistTool { nullptr };                       ///< 辅助工具
@@ -379,6 +349,7 @@ private:
     QMenu* mMenuInsertRow { nullptr };                         ///< 针对insertrow的action menu
     QMenu* mMenuInsertColumn { nullptr };                      ///< 这对insertcol的action menu
     QMenu* mMenuChartPickSetting { nullptr };                  ///< chart的picker设置
+    QMenu* mMenuChartLegendPosition { nullptr };               ///< chart的图例位置菜单（挂在actionChartEnableLegend下）
 };
 }  // namespace DA
 #endif  // DAAPPRIBBONAREA_H

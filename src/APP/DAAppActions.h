@@ -215,9 +215,8 @@ public:
     QAction* actionShowLeftSideBar;   ///< 显示/隐藏左边侧边栏
     QAction* actionShowRightSideBar;  ///< 显示/隐藏右边侧边栏
     QAction* actionShowAgentArea;  ///< 显示 Agent 助手区域
-    QAction* actionResetDefaultLayout;  ///< 恢复默认布局（运行时立即生效）
-    QAction* actionSaveCurrentLayout;   ///< 保存当前布局为方案
-    QAction* actionRemoveLayout;        ///< 删除选中的自定义布局方案
+    QAction* actionResetDefaultLayout;  ///< 恢复默认布局（触发前弹确认框）
+    QAction* actionManageLayouts;       ///< 打开布局管理对话框（保存/应用/删除布局方案）
 
     //===================================================
     // 颜色主题

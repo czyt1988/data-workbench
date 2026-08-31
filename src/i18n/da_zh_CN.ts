@@ -2680,32 +2680,20 @@ Layout</source>
     </message>
     <message>
         <location line="+1"/>
-        <source>Restore the default window layout immediately</source>
-        <translation>立即恢复默认窗口布局</translation>
+        <source>Restore the default window layout (confirmation required)</source>
+        <translation>恢复默认窗口布局（需确认）</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Save 
-Layout</source>
-        <translation>保存
-            当前布局</translation>
+        <source>Manage 
+Layouts</source>
+        <translation>布局
+管理</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Save the current window layout as a named scheme</source>
-        <translation>把当前窗口布局保存为命名方案</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Remove 
-Layout</source>
-        <translation>删除
-            布局方案</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Remove the selected custom layout scheme</source>
-        <translation>删除选中的自定义布局方案</translation>
+        <source>Open the layout manager to save, apply or remove layout schemes</source>
+        <translation>打开布局管理对话框，保存、应用或删除布局方案</translation>
     </message>
     <message>
         <location line="+4"/>
@@ -2778,37 +2766,17 @@ Layout</source>
         <translation>专注分析</translation>
     </message>
     <message>
-        <location line="+38"/>
-        <source>Save Layout</source>
-        <translation>保存布局方案</translation>
+        <location line="+34"/>
+        <source>Reset Layout</source>
+        <translation>恢复默认布局</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Layout scheme name:</source>
-        <translation>布局方案名称：</translation>
+        <source>This will restore the default window layout. Continue?</source>
+        <translation>将恢复默认窗口布局，是否继续？</translation>
     </message>
     <message>
-        <location line="+8"/>
-        <source>Cannot overwrite preset layout schemes, please use another name</source>
-        <translation>不能覆盖预置布局方案，请换一个名称</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>Layout scheme &apos;%1&apos; saved</source>
-        <translation>布局方案"%1"已保存</translation>
-    </message>
-    <message>
-        <location line="+23"/>
-        <source>Preset layout schemes cannot be removed</source>
-        <translation>预置布局方案不可删除</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>Layout scheme &apos;%1&apos; removed</source>
-        <translation>布局方案"%1"已删除</translation>
-    </message>
-    <message>
-        <location line="+359"/>
+        <location line="+325"/>
         <source>Please select a dataset to rename</source>
         <translation>请先选中要重命名的数据集</translation>
     </message>
@@ -3177,6 +3145,119 @@ Layout</source>
         <location line="+14"/>
         <source>Preset layout schemes cannot be removed</source>
         <translation>预置布局方案不可删除</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DALayoutManagerDialog</name>
+    <message>
+        <location filename="../APP/Dialog/DALayoutManagerDialog.cpp" line="+17"/>
+        <source>Layout Manager</source>
+        <translation>布局管理</translation>
+    </message>
+    <message>
+        <location line="+22"/>
+        <source>Double-click a scheme to apply it</source>
+        <translation>双击方案可直接应用</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Save Current</source>
+        <translation>保存当前布局</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Apply Selected</source>
+        <translation>应用选中布局</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Delete Selected</source>
+        <translation>删除选中布局</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Reset Default</source>
+        <translation>恢复默认布局</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Save the current window layout as a named scheme</source>
+        <translation>把当前窗口布局保存为命名方案</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Apply the selected layout scheme</source>
+        <translation>应用选中的布局方案</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Delete the selected custom layout scheme (presets cannot be deleted)</source>
+        <translation>删除选中的自定义布局方案（预置方案不可删除）</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Restore the default window layout</source>
+        <translation>恢复默认窗口布局</translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Close</source>
+        <translation>关闭</translation>
+    </message>
+    <message>
+        <location line="+41"/>
+        <source>Default</source>
+        <translation>默认布局</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Focus Analysis</source>
+        <translation>专注分析</translation>
+    </message>
+    <message>
+        <location line="+33"/>
+        <source>Save Layout</source>
+        <translation>保存布局方案</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Layout scheme name:</source>
+        <translation>布局方案名称：</translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Cannot overwrite preset layout schemes, please use another name</source>
+        <translation>不能覆盖预置布局方案，请换一个名称</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Layout scheme &apos;%1&apos; saved</source>
+        <translation>布局方案"%1"已保存</translation>
+    </message>
+    <message>
+        <location line="+26"/>
+        <source>Remove Layout</source>
+        <translation>删除布局方案</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Remove layout scheme &apos;%1&apos;?</source>
+        <translation>确定删除布局方案"%1"吗？</translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>Reset Layout</source>
+        <translation>恢复默认布局</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>This will restore the default window layout. Continue?</source>
+        <translation>将恢复默认窗口布局，是否继续？</translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>Layout scheme &apos;%1&apos; removed</source>
+        <translation>布局方案"%1"已删除</translation>
     </message>
 </context>
 <context>
