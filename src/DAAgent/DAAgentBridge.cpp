@@ -492,7 +492,7 @@ QJsonObject DAAgentBridge::buildPermissionConfig() const
     p["workspace_root"]             = mgr->workspaceRoot();
     p["gated_tools"]                = QJsonArray::fromStringList(DAAgentPermissionManager::gatedTools());
     p["tool_approval_timeout_sec"]  = mgr->toolApprovalTimeoutSec();
-    p["code_patterns"]              = mgr->codePatterns();
+    p["code_patterns"]              = mgr->codePatterns().toJson();
     p["judge"]                      = QJsonObject{
         {QStringLiteral("model"), mgr->judgeModel()},
         {QStringLiteral("timeout_sec"), mgr->judgeTimeoutSec()},
@@ -725,6 +725,13 @@ void DAAgentBridge::handleJsonLine(const QJsonObject& msg)
         d->mTurnActive = false;
         d->mWaitingUserAnswer = false;
         emit agentBusy(false);
+        // turn_summary（Python send_done 附带）：回合完成度统计。
+        // possibly_incomplete=true 表示模型"话说一半就停"（执行过工具但
+        // 最终回复是意图性短句、无产出物）——提示用户任务可能未完成。
+        QJsonObject ts = msg.value("turn_summary").toObject();
+        if (ts.value("possibly_incomplete").toBool(false)) {
+            emit agentTurnPossiblyIncomplete(ts.value("tool_rounds").toInt(0));
+        }
         emit agentDone();
     }
 }

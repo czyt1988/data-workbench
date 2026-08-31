@@ -201,7 +201,7 @@ markdown_extensions:
 
 | 文件 | 说明 |
 |------|------|
-| `agent-config.ini` | Agent LLM 配置，`[agent]` 节包含 `llm_base_url`、`llm_model`、`llm_api_key`（DPAPI 加密的 QByteArray）、`ready_timeout_sec`、`stop_timeout_sec` |
+| `agent-config.json` | Agent 配置（分组稀疏 JSON：llm/execution/subagent/permission），api_key 为 DPAPI 加密 base64；由 `DAAgentConfig` 读写，旧版 `agent-config.ini` 自动迁移为 `.bak` |
 | `recent-files.ini` | 最近打开的工程文件列表（`RecentFiles` 键） |
 
 ---

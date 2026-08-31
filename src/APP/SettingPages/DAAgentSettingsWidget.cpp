@@ -1,6 +1,6 @@
 // DAAgentSettingsWidget.cpp
-// 持久化经 mAgentInterface->getProviders/setProviders（供应商，api_key 内部加解密）
-// 与 get/setLLMConfig（其它设置）走 agent-config.ini。设置页只传明文。
+// 持久化经 mAgentInterface->getProviders/setProviders（供应商结构体列表，api_key 持久化时
+// 由配置层加密）与 get/setLLMConfig（其它设置）走 agent-config.json。设置页只传明文。
 // 供应商增删改经弹出对话框（DAProviderEditDialog），主页面仅只读展示。
 #include "DAAgentSettingsWidget.h"
 #include "Dialog/DAProviderEditDialog.h"
@@ -20,35 +20,6 @@
 #include <QFrame>
 #include <QSignalBlocker>
 #include <QIcon>
-
-namespace {
-// Qt5/Qt6 双兼容 helper：取值并兜底默认值（QJsonObject::value(key,default) Qt5 不存在）
-int jsonInt(const QJsonObject& o, const char* key, int def)
-{
-    QJsonValue v = o.value(QLatin1String(key));
-    return v.isDouble() ? v.toInt() : def;
-}
-
-double jsonDouble(const QJsonObject& o, const char* key, double def)
-{
-    QJsonValue v = o.value(QLatin1String(key));
-    return v.isDouble() ? v.toDouble() : def;
-}
-
-bool jsonBool(const QJsonObject& o, const char* key, bool def)
-{
-    QJsonValue v = o.value(QLatin1String(key));
-    return v.isBool() ? v.toBool() : def;
-}
-
-// 取模型 id（兼容字符串与对象格式）
-QString modelIdOf(const QJsonValue& mv)
-{
-    if (mv.isString()) return mv.toString();
-    if (mv.isObject()) return mv.toObject().value("id").toString();
-    return {};
-}
-}  // namespace
 
 namespace DA
 {
@@ -246,8 +217,10 @@ void DAAgentSettingsWidget::setupAgentSettingsTab()
     mSpinMaxRestarts->setValue(3);
 
     mSpinRecursionLimit = new QSpinBox(this);
-    mSpinRecursionLimit->setRange(20, 1000);
-    mSpinRecursionLimit->setToolTip(tr("Max graph reasoning steps. Each tool-call cycle consumes 3 steps. Recommended: 150."));  //cn:图最大推理步数。每轮工具调用耗 3 步。建议 150。
+    // -1 = 不限制（Python 侧转换为 langgraph 的 None；每回合预算，非会话累计）
+    mSpinRecursionLimit->setRange(-1, 1000000);
+    mSpinRecursionLimit->setSpecialValueText(tr("No limit"));  //cn:无限制
+    mSpinRecursionLimit->setToolTip(tr("Max graph reasoning steps per turn (each tool-call cycle consumes 3 steps). Set to -1 for no limit. Recommended: 150."));  //cn:单回合图最大推理步数（每轮工具调用耗 3 步）。设为 -1 表示不限制。建议 150。
     mSpinRecursionLimit->setValue(150);
 
     // ---- 子 agent（subagent-phase1 C，Q16）：全局统一作用于所有子 agent ----
@@ -257,8 +230,10 @@ void DAAgentSettingsWidget::setupAgentSettingsTab()
     mSpinSubagentTimeout->setToolTip(tr("Wall-clock timeout (seconds) for each subagent task. Waiting for approval counts towards this limit. Recommended: 600."));  //cn:单个子 Agent 任务的墙钟超时(秒)。等待用户批准也计入该时限。建议 600。
     mSpinSubagentTimeout->setValue(600);
     mSpinSubagentRecursionLimit = new QSpinBox(this);
-    mSpinSubagentRecursionLimit->setRange(10, 150);
-    mSpinSubagentRecursionLimit->setToolTip(tr("Max reasoning steps for each subagent task. Recommended: 60."));  //cn:单个子 Agent 任务的最大推理步数。建议 60。
+    // -1 = 不限制（Python 编排器转换为 langgraph 的 None）
+    mSpinSubagentRecursionLimit->setRange(-1, 1000000);
+    mSpinSubagentRecursionLimit->setSpecialValueText(tr("No limit"));  //cn:无限制
+    mSpinSubagentRecursionLimit->setToolTip(tr("Max reasoning steps for each subagent task. Set to -1 for no limit. Recommended: 60."));  //cn:单个子 Agent 任务的最大推理步数。设为 -1 表示不限制。建议 60。
     mSpinSubagentRecursionLimit->setValue(60);
 
     mCheckAutoPrestart = new QCheckBox(this);
@@ -313,7 +288,7 @@ QStringList DAAgentSettingsWidget::collectProviderNames(int excludeIdx) const
     QStringList names;
     for (int i = 0; i < mProviders.size(); ++i) {
         if (i == excludeIdx) continue;
-        names.append(mProviders.at(i).toObject().value("name").toString());
+        names.append(mProviders.at(i).name);
     }
     return names;
 }
@@ -322,7 +297,7 @@ QStringList DAAgentSettingsWidget::collectProviderNames(int excludeIdx) const
 void DAAgentSettingsWidget::onAddProvider()
 {
     QStringList existing = collectProviderNames();
-    DAProviderEditDialog dlg(QJsonObject(), existing, QString(), this);
+    DAProviderEditDialog dlg(DAAgentProvider(), existing, QString(), this);
     if (dlg.exec() == QDialog::Accepted) {
         mProviders.append(dlg.getProvider());
         refreshProviderList();
@@ -336,10 +311,9 @@ void DAAgentSettingsWidget::onEditProvider()
 {
     int idx = mProviderList->currentRow();
     if (idx < 0 || idx >= mProviders.size()) return;
-    QJsonObject cur = mProviders.at(idx).toObject();
-    QString oldName = cur.value("name").toString();
+    QString oldName = mProviders.at(idx).name;
     QStringList existing = collectProviderNames(idx);
-    DAProviderEditDialog dlg(cur, existing, oldName, this);
+    DAProviderEditDialog dlg(mProviders.at(idx), existing, oldName, this);
     if (dlg.exec() == QDialog::Accepted) {
         mProviders.replace(idx, dlg.getProvider());
         refreshProviderList();
@@ -380,8 +354,8 @@ void DAAgentSettingsWidget::refreshProviderList()
 {
     QSignalBlocker blocker(mProviderList);
     mProviderList->clear();
-    for (int i = 0; i < mProviders.size(); ++i) {
-        QString name = mProviders.at(i).toObject().value("name").toString();
+    for (const DAAgentProvider& p : std::as_const(mProviders)) {
+        QString name = p.name;
         if (name.isEmpty()) name = tr("(unnamed)");  //cn:（未命名）
         new QListWidgetItem(name, mProviderList);
     }
@@ -397,24 +371,21 @@ void DAAgentSettingsWidget::showProviderInfo(int idx)
         mInfoApiKey->clear();
         return;
     }
-    QJsonObject p = mProviders.at(idx).toObject();
-    mInfoName->setText(p.value("name").toString());
-    mInfoBaseUrl->setText(p.value("base_url").toString());
+    const DAAgentProvider& p = mProviders.at(idx);
+    mInfoName->setText(p.name);
+    mInfoBaseUrl->setText(p.baseUrl);
     // api_key 脱敏：仅显示是否已设置（不显示明文/掩码）
-    QString key = p.value("api_key").toString();
-    if (key.isEmpty()) {
+    if (p.apiKey.isEmpty()) {
         mInfoApiKey->setText(tr("not set"));  //cn:未设置
     } else {
         mInfoApiKey->setText(tr("set (hidden)"));  //cn:已设置(隐藏)
     }
-    const QJsonArray models = p.value("models").toArray();
-    for (const QJsonValue& mv : models) {
+    for (const DAAgentModel& m : p.models) {
         int row = mInfoModelTable->rowCount();
         mInfoModelTable->insertRow(row);
-        mInfoModelTable->setItem(row, 0, new QTableWidgetItem(modelIdOf(mv)));
-        QJsonObject mo = mv.toObject();
-        mInfoModelTable->setItem(row, 1, new QTableWidgetItem(QString::number(mo.value("context_window").toInt(262144))));
-        mInfoModelTable->setItem(row, 2, new QTableWidgetItem(QString::number(mo.value("max_output_tokens").toInt(8192))));
+        mInfoModelTable->setItem(row, 0, new QTableWidgetItem(m.id));
+        mInfoModelTable->setItem(row, 1, new QTableWidgetItem(QString::number(m.contextWindow)));
+        mInfoModelTable->setItem(row, 2, new QTableWidgetItem(QString::number(m.maxOutputTokens)));
     }
 }
 
@@ -436,23 +407,23 @@ void DAAgentSettingsWidget::loadConfig()
     } else {
         showProviderInfo(-1);
     }
-    QJsonObject c = mAgentInterface->getLLMConfig();
-    mReadyTimeoutSpin->setValue(jsonInt(c, "ready_timeout_sec", 60));
-    mStopTimeoutSpin->setValue(jsonInt(c, "stop_timeout_sec", 5));
-    mCompactionThresholdSpin->setValue(jsonDouble(c, "compaction_threshold", 0.85));
-    mMaxRecentMsgSpin->setValue(jsonInt(c, "max_recent_messages", 10));
-    mToolResultMaxCharsSpin->setValue(jsonInt(c, "tool_result_max_chars", 20000));
-    mToolResultPreviewCharsSpin->setValue(jsonInt(c, "tool_result_preview_chars", 2000));
-    mMaxSessionsSpin->setValue(jsonInt(c, "max_sessions", 20));
-    mSessionRetentionDaysSpin->setValue(jsonInt(c, "session_retention_days", 30));
-    mSpinMaxRetries->setValue(jsonInt(c, "max_retries", 7));
-    mSpinRequestTimeout->setValue(jsonInt(c, "request_timeout_sec", 120));
-    mSpinInactivityTimeout->setValue(jsonInt(c, "inactivity_timeout_sec", 240));
-    mSpinMaxRestarts->setValue(jsonInt(c, "max_subprocess_restarts", 3));
-    mSpinRecursionLimit->setValue(jsonInt(c, "recursion_limit", 150));
-    mSpinSubagentTimeout->setValue(jsonInt(c, "subagent_timeout_sec", 600));
-    mSpinSubagentRecursionLimit->setValue(jsonInt(c, "subagent_recursion_limit", 60));
-    mCheckAutoPrestart->setChecked(jsonBool(c, "auto_prestart", true));
+    const DAAgentLLMConfig c = mAgentInterface->getLLMConfig();
+    mReadyTimeoutSpin->setValue(c.readyTimeoutSec());
+    mStopTimeoutSpin->setValue(c.stopTimeoutSec());
+    mCompactionThresholdSpin->setValue(c.compactionThreshold());
+    mMaxRecentMsgSpin->setValue(c.maxRecentMessages());
+    mToolResultMaxCharsSpin->setValue(c.toolResultMaxChars());
+    mToolResultPreviewCharsSpin->setValue(c.toolResultPreviewChars());
+    mMaxSessionsSpin->setValue(c.maxSessions());
+    mSessionRetentionDaysSpin->setValue(c.sessionRetentionDays());
+    mSpinMaxRetries->setValue(c.maxRetries());
+    mSpinRequestTimeout->setValue(c.requestTimeoutSec());
+    mSpinInactivityTimeout->setValue(c.inactivityTimeoutSec());
+    mSpinMaxRestarts->setValue(c.maxSubprocessRestarts());
+    mSpinRecursionLimit->setValue(c.recursionLimit());
+    mSpinSubagentTimeout->setValue(c.subagentTimeoutSec());
+    mSpinSubagentRecursionLimit->setValue(c.subagentRecursionLimit());
+    mCheckAutoPrestart->setChecked(c.autoPrestart());
 }
 
 /** @brief 将界面配置保存到接口 */
@@ -462,26 +433,26 @@ void DAAgentSettingsWidget::saveConfig()
         daDebug << "[DAAgentSettings] saveConfig skipped: no agent interface injected";
         return;
     }
-    // 保存供应商（api_key 明文传入，接口内部加密）
+    // 保存供应商（api_key 明文传入，持久化时由配置层加密）
     mAgentInterface->setProviders(mProviders);
     // 保存其它设置（不含 context_window/max_output_tokens，由激活模型派生）
-    QJsonObject c;
-    c["ready_timeout_sec"]         = mReadyTimeoutSpin->value();
-    c["stop_timeout_sec"]          = mStopTimeoutSpin->value();
-    c["compaction_threshold"]      = mCompactionThresholdSpin->value();
-    c["max_recent_messages"]       = mMaxRecentMsgSpin->value();
-    c["tool_result_max_chars"]     = mToolResultMaxCharsSpin->value();
-    c["tool_result_preview_chars"] = mToolResultPreviewCharsSpin->value();
-    c["max_sessions"]              = mMaxSessionsSpin->value();
-    c["session_retention_days"]    = mSessionRetentionDaysSpin->value();
-    c["max_retries"]              = mSpinMaxRetries->value();
-    c["request_timeout_sec"]      = mSpinRequestTimeout->value();
-    c["inactivity_timeout_sec"]   = mSpinInactivityTimeout->value();
-    c["max_subprocess_restarts"]  = mSpinMaxRestarts->value();
-    c["recursion_limit"]          = mSpinRecursionLimit->value();
-    c["subagent_timeout_sec"]     = mSpinSubagentTimeout->value();
-    c["subagent_recursion_limit"] = mSpinSubagentRecursionLimit->value();
-    c["auto_prestart"]            = mCheckAutoPrestart->isChecked();
+    DAAgentLLMConfig c;
+    c.setReadyTimeoutSec(mReadyTimeoutSpin->value());
+    c.setStopTimeoutSec(mStopTimeoutSpin->value());
+    c.setCompactionThreshold(mCompactionThresholdSpin->value());
+    c.setMaxRecentMessages(mMaxRecentMsgSpin->value());
+    c.setToolResultMaxChars(mToolResultMaxCharsSpin->value());
+    c.setToolResultPreviewChars(mToolResultPreviewCharsSpin->value());
+    c.setMaxSessions(mMaxSessionsSpin->value());
+    c.setSessionRetentionDays(mSessionRetentionDaysSpin->value());
+    c.setMaxRetries(mSpinMaxRetries->value());
+    c.setRequestTimeoutSec(mSpinRequestTimeout->value());
+    c.setInactivityTimeoutSec(mSpinInactivityTimeout->value());
+    c.setMaxSubprocessRestarts(mSpinMaxRestarts->value());
+    c.setRecursionLimit(mSpinRecursionLimit->value());
+    c.setSubagentTimeoutSec(mSpinSubagentTimeout->value());
+    c.setSubagentRecursionLimit(mSpinSubagentRecursionLimit->value());
+    c.setAutoPrestart(mCheckAutoPrestart->isChecked());
     mAgentInterface->setLLMConfig(c);
 }
 

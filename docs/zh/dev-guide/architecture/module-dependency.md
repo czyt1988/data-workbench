@@ -443,7 +443,7 @@ graph BT
 
 提供内容：
 - `DAAgentInterface` — 公共接口：14 个 agent 生命周期/会话信号 + `registerTool`/`registerSystemPrompt` + `sendUserAnswer`/`newSession` + `get/setLLMConfig` + 会话管理纯虚方法
-- `DAAgentModule` — 接口实现：工具注册表、系统提示词组装、懒启动、Bridge 信号转发（**不持有 Dock**）、`agent-config.ini` 持久化（api_key 内部 DPAPI 加解密）
+- `DAAgentModule` — 接口实现：工具注册表、系统提示词组装、懒启动、Bridge 信号转发（**不持有 Dock**）、`DAAgentConfig`（agent-config.json）持久化（api_key 在序列化边界 DPAPI 加解密）
 - `DAAgentBridge` — QProcess 子进程管理 + JSON Lines 协议解析
 - `DAAgentSessionStore` — 会话持久化层（JSONL 读写/索引/清理）
 - `DAAgentToolBase` — 瘦工具基类（`DAAgent_API` 导出，供插件跨 DLL 继承）

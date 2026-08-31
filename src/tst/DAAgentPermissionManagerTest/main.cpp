@@ -5,7 +5,9 @@
 // 隔离策略（镜像 DAAgentSessionStoreTest）：main() 起手调
 // QStandardPaths::setTestModeEnabled(true)，把 AppDataLocation 重定向到临时目录
 //（DADir::getAppDataPath/getConfigPath 用 static 缓存，必须先于任何路径查询打开）。
-// 每个用例 init() 删除 agent-permissions.json + agent-config.ini，用例间相互独立。
+// 每个用例 init() 删除 agent-permissions.json + agent-config.json，用例间相互独立。
+// 权限标量经共享的 DAAgentConfig 实例读写（agent-config.json permission 分组），
+// 测试构造 mgr 时注入。
 
 #include <QtTest/QtTest>
 #include <QCoreApplication>
@@ -15,20 +17,21 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QSettings>
 
 #include "DAAgentPermissionManager.h"
 #include "DAAgentPermissionRule.h"
+#include "DAAgentConfig.h"
 #include "DADir.h"
 
 using DA::DAAgentPermissionManager;
 using DA::DAAgentPermissionRule;
+using DA::DAAgentConfig;
 
 class DAAgentPermissionManagerTest : public QObject
 {
     Q_OBJECT
 private Q_SLOTS:
-    void init();  // 每个用例前删除权限配置与 ini（用例间隔离）
+    void init();  // 每个用例前删除权限配置与 agent 配置（用例间隔离）
 
     void testDecisionMatrix();      // 3 模式 × 5 分级（母文档 §4）
     void testHardDenyPriority();    // 硬 deny 全模式优先（先于 yolo 放行与会话记忆）
@@ -37,7 +40,7 @@ private Q_SLOTS:
     void testWorkspaceVariable();   // ${workspace} 解析 + run_script 相对路径
     void testSeedingAndBackfill();  // 缺失播种 + 硬 deny 强制回填（A4）
     void testTierOfFallback();      // tier_overrides → 内置表 → 参数约定 → unknown
-    void testConfigRoundTrip();     // getConfig/setConfig contains 守卫
+    void testConfigRoundTrip();     // getConfig/setConfig 稀疏守卫
     void testGatedTools();          // gated_tools 清单（A9）
 
 private:
@@ -62,10 +65,13 @@ QJsonObject DAAgentPermissionManagerTest::writeParams(const QString& key, const 
 
 void DAAgentPermissionManagerTest::init()
 {
-    // 删除权限配置文件 + agent-config.ini（模式/判官等派生配置），确保干净起点
+    // 删除权限配置文件 + agent-config.json（模式/判官等标量配置），确保干净起点
     QFile::remove(configDir() + "/agent-permissions.json");
     QFile::remove(configDir() + "/agent-permissions.json.tmp");
+    QFile::remove(configDir() + "/agent-config.json");
+    QFile::remove(configDir() + "/agent-config.json.tmp");
     QFile::remove(configDir() + "/agent-config.ini");
+    QFile::remove(configDir() + "/agent-config.ini.bak");
 }
 
 // ---------------------------------------------------------------------------
@@ -74,7 +80,9 @@ void DAAgentPermissionManagerTest::init()
 
 void DAAgentPermissionManagerTest::testDecisionMatrix()
 {
-    DAAgentPermissionManager mgr;
+    DAAgentConfig cfg;
+    QVERIFY(cfg.load());
+    DAAgentPermissionManager mgr(&cfg);
     QVERIFY(mgr.load());  // 播种默认规则
 
     // 工作区：注入 ${workspace}，使 4 条工作区 allow 种子生效
@@ -113,10 +121,7 @@ void DAAgentPermissionManagerTest::testDecisionMatrix()
     QCOMPARE(mgr.decide("some_plugin_tool", noPath, {}).action, DAAgentPermissionManager::Ask);
 
     // manual_block_inapp_tools=true → inapp_mutate 也 ask（D2）
-    {
-        QSettings s(configDir() + "/agent-config.ini", QSettings::IniFormat);
-        s.setValue("agent/manual_block_inapp_tools", true);
-    }
+    cfg.setManualBlockInappTools(true);
     QCOMPARE(mgr.decide("create_chart", noPath, {}).action, DAAgentPermissionManager::Ask);
 
     // Decision.tier 回填正确
@@ -130,7 +135,9 @@ void DAAgentPermissionManagerTest::testDecisionMatrix()
 
 void DAAgentPermissionManagerTest::testHardDenyPriority()
 {
-    DAAgentPermissionManager mgr;
+    DAAgentConfig cfg;
+    QVERIFY(cfg.load());
+    DAAgentPermissionManager mgr(&cfg);
     QVERIFY(mgr.load());
     const QJsonObject sysPath = writeParams("file_path", "C:/Windows/System32/evil.dll");
     const QJsonObject pfPath  = writeParams("file_path", "C:/Program Files/app/x.txt");
@@ -158,7 +165,9 @@ void DAAgentPermissionManagerTest::testHardDenyPriority()
 
 void DAAgentPermissionManagerTest::testSessionMemory()
 {
-    DAAgentPermissionManager mgr;
+    DAAgentConfig cfg;
+    QVERIFY(cfg.load());
+    DAAgentPermissionManager mgr(&cfg);
     QVERIFY(mgr.load());
     mgr.setMode("auto");
 
@@ -194,7 +203,9 @@ void DAAgentPermissionManagerTest::testSessionMemory()
 
 void DAAgentPermissionManagerTest::testCodeExecJudge()
 {
-    DAAgentPermissionManager mgr;
+    DAAgentConfig cfg;
+    QVERIFY(cfg.load());
+    DAAgentPermissionManager mgr(&cfg);
     QVERIFY(mgr.load());
     mgr.setMode("auto");
     const QJsonObject code = QJsonObject{{"code", "print(1)"}};
@@ -223,10 +234,7 @@ void DAAgentPermissionManagerTest::testCodeExecJudge()
 
     // 判官已配置：allow 放行，uncertain/缺失 ask，deny 拒绝
     mgr.setMode("auto");
-    {
-        QSettings s(configDir() + "/agent-config.ini", QSettings::IniFormat);
-        s.setValue("agent/judge_model", "gpt-4o-mini");
-    }
+    cfg.setJudgeModel(QStringLiteral("gpt-4o-mini"));
     QVERIFY(mgr.judgeConfigured());
     QCOMPARE(mgr.judgeModel(), QStringLiteral("gpt-4o-mini"));
     QCOMPARE(mgr.decide("run_code", code, QJsonObject{{"verdict", "allow"}}).action,
@@ -244,7 +252,9 @@ void DAAgentPermissionManagerTest::testCodeExecJudge()
 
 void DAAgentPermissionManagerTest::testWorkspaceVariable()
 {
-    DAAgentPermissionManager mgr;
+    DAAgentConfig cfg;
+    QVERIFY(cfg.load());
+    DAAgentPermissionManager mgr(&cfg);
     QVERIFY(mgr.load());
     mgr.setMode("auto");
 
@@ -273,7 +283,9 @@ void DAAgentPermissionManagerTest::testWorkspaceVariable()
     QCOMPARE(mgr.decide("run_script", absOut, {}).action, DAAgentPermissionManager::Ask);
 
     // 未注入工作区时 ${workspace} 规则不命中（变量空=不匹配），区外询问
-    DAAgentPermissionManager mgr2;
+    DAAgentConfig cfg2;
+    QVERIFY(cfg2.load());
+    DAAgentPermissionManager mgr2(&cfg2);
     QVERIFY(mgr2.load());
     mgr2.setMode("auto");
     QCOMPARE(mgr2.decide("write_file", writeParams("file_path", ws + "/a.txt"), {}).action,
@@ -295,8 +307,8 @@ void DAAgentPermissionManagerTest::testSeedingAndBackfill()
         QCOMPARE(mgr.rules().size(), 8);
         QVERIFY(QFile::exists(mgr.configFilePath()));
         // 危险模式种子已回填（deny/escalate 非空）
-        QVERIFY(!mgr.codePatterns().value("deny").toArray().isEmpty());
-        QVERIFY(!mgr.codePatterns().value("escalate").toArray().isEmpty());
+        QVERIFY(!mgr.codePatterns().deny.isEmpty());
+        QVERIFY(!mgr.codePatterns().escalate.isEmpty());
     }
 
     // 二次加载不重复播种
@@ -323,7 +335,9 @@ void DAAgentPermissionManagerTest::testSeedingAndBackfill()
         QVERIFY(mgr.save());
     }
     {
-        DAAgentPermissionManager mgr;
+        DAAgentConfig cfg;
+        QVERIFY(cfg.load());
+        DAAgentPermissionManager mgr(&cfg);
         QVERIFY(mgr.load());
         QCOMPARE(mgr.rules().size(), 8);  // 回填到 8
         // 且系统目录仍被拦截
@@ -361,22 +375,29 @@ void DAAgentPermissionManagerTest::testTierOfFallback()
              DAAgentPermissionManager::tierUnknown());
 
     // tier_overrides 最高优先
-    mgr.setTierOverrides(QJsonObject{{"my_plugin_tool", "read"}, {"write_file", "code_exec"}});
+    QHash< QString, QString > overrides;
+    overrides.insert("my_plugin_tool", "read");
+    overrides.insert("write_file", "code_exec");
+    mgr.setTierOverrides(overrides);
     QCOMPARE(mgr.tierOf("my_plugin_tool", QJsonObject{{"file_path", "x"}}),
              DAAgentPermissionManager::tierRead());
     QCOMPARE(mgr.tierOf("write_file", {}), DAAgentPermissionManager::tierCodeExec());
     // 非法 tier 值忽略，回落内置表
-    mgr.setTierOverrides(QJsonObject{{"write_file", "bogus_tier"}});
+    QHash< QString, QString > bogus;
+    bogus.insert("write_file", "bogus_tier");
+    mgr.setTierOverrides(bogus);
     QCOMPARE(mgr.tierOf("write_file", {}), DAAgentPermissionManager::tierFileWrite());
 }
 
 // ---------------------------------------------------------------------------
-// getConfig/setConfig round-trip（contains 守卫，镜像 setLLMConfig 风格）
+// getConfig/setConfig round-trip（稀疏守卫：未 engage 的标量不受影响）
 // ---------------------------------------------------------------------------
 
 void DAAgentPermissionManagerTest::testConfigRoundTrip()
 {
-    DAAgentPermissionManager mgr;
+    DAAgentConfig cfg;
+    QVERIFY(cfg.load());
+    DAAgentPermissionManager mgr(&cfg);
     QVERIFY(mgr.load());
 
     // 默认值：未配置 → yolo（默认全自动），且非显式设置（A13 启动确认卡不弹的判据）
@@ -386,42 +407,46 @@ void DAAgentPermissionManagerTest::testConfigRoundTrip()
     QCOMPARE(mgr.judgeTimeoutSec(), 30);
     QVERIFY(!mgr.manualBlockInappTools());
 
-    // setConfig 部分 key：只写携带的，规则不受影响
+    // setConfig 部分标量：只写 engage 的，规则不受影响
     const int rulesBefore = mgr.rules().size();
-    QJsonObject patch;
-    patch["mode"]                      = "manual";
-    patch["tool_approval_timeout_sec"] = 900;
-    patch["manual_block_inapp_tools"]  = true;
-    patch["judge_model"]               = "judge-model-x";
-    patch["judge_timeout_sec"]         = 45;
+    DA::DAAgentPermissionConfig patch;
+    patch.setMode(QStringLiteral("manual"));
+    patch.setToolApprovalTimeoutSec(900);
+    patch.setManualBlockInappTools(true);
+    patch.setJudgeModel(QStringLiteral("judge-model-x"));
+    patch.setJudgeTimeoutSec(45);
     mgr.setConfig(patch);
     QCOMPARE(mgr.mode(), QStringLiteral("manual"));
-    QVERIFY(mgr.modeExplicitlySet());  // 显式写入后 ini 含键（A13 跨重启确认判据）
+    QVERIFY(mgr.modeExplicitlySet());  // 显式写入后配置含键（A13 跨重启确认判据）
     QCOMPARE(mgr.toolApprovalTimeoutSec(), 900);
     QVERIFY(mgr.manualBlockInappTools());
     QCOMPARE(mgr.judgeModel(), QStringLiteral("judge-model-x"));
     QCOMPARE(mgr.judgeTimeoutSec(), 45);
-    QCOMPARE(mgr.rules().size(), rulesBefore);  // 未携带 rules key 不动规则
+    QCOMPARE(mgr.rules().size(), rulesBefore);  // setConfig 之外的 rules 不动
 
     // 非法模式忽略
-    mgr.setConfig(QJsonObject{{"mode", "weird"}});
+    DA::DAAgentPermissionConfig weird;
+    weird.setMode(QStringLiteral("weird"));
+    mgr.setConfig(weird);
     QCOMPARE(mgr.mode(), QStringLiteral("manual"));
 
     // getConfig 汇总
-    const QJsonObject all = mgr.getConfig();
-    QCOMPARE(all.value("mode").toString(), QStringLiteral("manual"));
-    QCOMPARE(all.value("tool_approval_timeout_sec").toInt(), 900);
-    QCOMPARE(all.value("manual_block_inapp_tools").toBool(), true);
-    QCOMPARE(all.value("judge_model").toString(), QStringLiteral("judge-model-x"));
-    QCOMPARE(all.value("rules").toArray().size(), rulesBefore);
+    const DA::DAAgentPermissionConfig all = mgr.getConfig();
+    QCOMPARE(all.mode(), QStringLiteral("manual"));
+    QCOMPARE(all.toolApprovalTimeoutSec(), 900);
+    QCOMPARE(all.manualBlockInappTools(), true);
+    QCOMPARE(all.judgeModel(), QStringLiteral("judge-model-x"));
+    QCOMPARE(all.rules().size(), rulesBefore);
 
     // setConfig 携带 rules：整体替换 + 硬 deny 回填
-    QJsonArray onlyAllow;
+    QList< DAAgentPermissionRule > onlyAllow;
     for (const DAAgentPermissionRule& r : mgr.rules()) {
-        if (r.action == "allow") onlyAllow.append(r.toJson());
+        if (r.action == "allow") {
+            onlyAllow.append(r);
+        }
     }
-    QJsonObject rulesPatch;
-    rulesPatch["rules"] = onlyAllow;
+    DA::DAAgentPermissionConfig rulesPatch;
+    rulesPatch.setRules(onlyAllow);
     mgr.setConfig(rulesPatch);
     // 4 条 allow 原样保留 + 4 条硬 deny 回填
     QCOMPARE(mgr.rules().size(), onlyAllow.size() + 4);

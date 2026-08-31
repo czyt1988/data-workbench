@@ -59,19 +59,19 @@ public:
     /// @copydoc DAAgentInterface::isRunning
     bool isRunning() const override;
     /// @copydoc DAAgentInterface::getLLMConfig
-    QJsonObject getLLMConfig() const override;
+    DAAgentLLMConfig getLLMConfig() const override;
     /// @copydoc DAAgentInterface::setLLMConfig
-    void setLLMConfig(const QJsonObject& config) override;
+    void setLLMConfig(const DAAgentLLMConfig& config) override;
 
     // ---- 供应商与多模型管理（override DAAgentInterface 6 个新纯虚） ----
     /// @copydoc DAAgentInterface::getProviders
-    QJsonArray getProviders() const override;
+    QList< DAAgentProvider > getProviders() const override;
     /// @copydoc DAAgentInterface::setProviders
-    void setProviders(const QJsonArray& providers) override;
+    void setProviders(const QList< DAAgentProvider >& providers) override;
     /// @copydoc DAAgentInterface::getActiveProvider
     QString getActiveProvider() const override;
     /// @copydoc DAAgentInterface::getAvailableModels
-    QVariantList getAvailableModels() const override;
+    QList< DAAgentModelRef > getAvailableModels() const override;
     /// @copydoc DAAgentInterface::getActiveModel
     QString getActiveModel() const override;
     /// @copydoc DAAgentInterface::setActiveModel
@@ -107,9 +107,9 @@ public:
 
     // ---- 权限层（override DAAgentInterface 契约 1 一次性 ABI 批处理 6 个纯虚） ----
     /// @copydoc DAAgentInterface::getPermissionConfig
-    QJsonObject getPermissionConfig() const override;
+    DAAgentPermissionConfig getPermissionConfig() const override;
     /// @copydoc DAAgentInterface::setPermissionConfig
-    void setPermissionConfig(const QJsonObject& config) override;
+    void setPermissionConfig(const DAAgentPermissionConfig& config) override;
     /// @copydoc DAAgentInterface::getPermissionMode
     QString getPermissionMode() const override;
     /// @copydoc DAAgentInterface::setPermissionMode
@@ -171,8 +171,6 @@ private:
     void emitTokenUsageForSession(const QString& sid);
     // 会话累计 token 清零（新建/删除当前/恢复时调用）
     void resetCumulativeTokens();
-    // 供应商管理私有辅助：从激活供应商同步 base_url/api_key/model 到 flat ini keys
-    void syncActiveConnection();
 
     DA_DECLARE_PRIVATE(DAAgentModule)
 };

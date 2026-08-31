@@ -7,9 +7,7 @@
 #include <QSpinBox>
 #include <QDoubleSpinBox>
 #include <QCheckBox>
-#include <QJsonObject>
-#include <QJsonArray>
-#include <QVariantList>
+#include <QList>
 
 class QTabWidget;
 class QSplitter;
@@ -26,6 +24,8 @@ namespace DA
  *  - "Model Providers"：左侧 QSplitter 供应商列表（只读选择）+ 上方 Add/Edit/Remove 图标按钮；
  *    右侧只读信息面板（名称/base_url/api_key/模型表格）。增删改经弹出对话框完成，不在主页面内联编辑。
  *  - "Agent Settings"：超时/上下文阈值/会话/容错/预启动（context_window 已移至模型属性，不再在此编辑）。
+ *
+ * 配置经接口结构体（QList<DAAgentProvider> / DAAgentLLMConfig）读写，api_key 内存态明文。
  */
 class DAAgentSettingsWidget : public DAAbstractSettingPage
 {
@@ -76,7 +76,7 @@ private:
     QLabel* mInfoBaseUrl;
     QLabel* mInfoApiKey;
     QTableWidget* mInfoModelTable;
-    QJsonArray mProviders;  ///< 内存中的供应商缓存（api_key 明文）
+    QList< DAAgentProvider > mProviders;  ///< 内存中的供应商缓存（api_key 明文）
 
     // ---- Tab2: Agent 其它设置 ----
     QSpinBox* mReadyTimeoutSpin;

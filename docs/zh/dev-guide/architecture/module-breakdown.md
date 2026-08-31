@@ -963,7 +963,7 @@ flowchart TD
 ```
 src/DAAgent/
 ├── DAAgentInterface.h              # 公共接口契约（14 个生命周期/会话信号 + registerTool/registerSystemPrompt + LLM 配置读写 + 会话管理纯虚方法）
-├── DAAgentModule.h/.cpp            # 接口实现：工具注册表、系统提示词组装、懒启动、Bridge 信号转发（不持有 Dock）；agent-config.ini 持久化（api_key 内部 DPAPI 加解密）
+├── DAAgentModule.h/.cpp            # 接口实现：工具注册表、系统提示词组装、懒启动、Bridge 信号转发（不持有 Dock）；DAAgentConfig（agent-config.json）持久化（api_key 在序列化边界 DPAPI 加解密）
 ├── DAAgentManager.h/.cpp           # agent 管理调度
 ├── DAAgentBridge.h/.cpp            # QProcess 子进程管理 + JSON Lines 协议解析
 ├── DAAgentPrompt.h/.cpp            # 提示词库

@@ -1,5 +1,6 @@
 // DAAgentPermissionManager.cpp
 #include "DAAgentPermissionManager.h"
+#include "DAAgentConfig.h"
 #include "DADir.h"
 #include <QFile>
 #include <QDir>
@@ -8,7 +9,6 @@
 #include <QJsonArray>
 #include <QJsonValue>
 #include <QJsonParseError>
-#include <QSettings>
 #include <QCoreApplication>
 #include <QStandardPaths>
 #include <utility>  // std::as_const（非 const 容器范围迭代防 COW）
@@ -35,13 +35,6 @@ const char* kTierUnknown     = "unknown";
 const char* kActionAllow = "allow";
 const char* kActionDeny  = "deny";
 const char* kActionAsk   = "ask";
-
-/// ini key（agent-config.ini agent/ 组，母文档 §7.2）
-const char* kKeyPermissionMode        = "agent/permission_mode";
-const char* kKeyApprovalTimeoutSec    = "agent/tool_approval_timeout_sec";
-const char* kKeyJudgeModel            = "agent/judge_model";
-const char* kKeyJudgeTimeoutSec       = "agent/judge_timeout_sec";
-const char* kKeyManualBlockInappTools = "agent/manual_block_inapp_tools";
 
 /// 20 个内置工具的风险分级表（母文档 §5）
 const QHash< QString, QString >& builtinTierTable()
@@ -86,10 +79,26 @@ bool isValidTier(const QString& tier)
            || tier == QLatin1String(kTierUnknown);
 }
 
-/// 打开 agent-config.ini（显式路径，与 DAAgentModule 各读写点一致）
-QSettings openAgentIni()
+// ---- tierOverrides ↔ JSON 对象（QHash 无自带投影，此处集中转换） ----
+
+QHash< QString, QString > tierOverridesFromJson(const QJsonObject& o)
 {
-    return QSettings(DA::DADir::getConfigPath() + "/agent-config.ini", QSettings::IniFormat);
+    QHash< QString, QString > out;
+    for (auto it = o.constBegin(); it != o.constEnd(); ++it) {
+        if (it.value().isString()) {
+            out.insert(it.key(), it.value().toString());
+        }
+    }
+    return out;
+}
+
+QJsonObject tierOverridesToJson(const QHash< QString, QString >& overrides)
+{
+    QJsonObject o;
+    for (auto it = overrides.constBegin(); it != overrides.constEnd(); ++it) {
+        o[it.key()] = it.value();
+    }
+    return o;
 }
 
 } // namespace
@@ -109,11 +118,11 @@ public:
     // 工作区内 4 个写工具 allow 种子（§9.1）
     static QList< DAAgentPermissionRule > workspaceAllowSeeds();
     // 代码危险模式种子（§9.2）
-    static QJsonObject seedCodePatterns();
+    static DAAgentCodePatterns seedCodePatterns();
 
     QList< DAAgentPermissionRule > mRules;
-    QJsonObject mCodePatterns;               ///< {deny:[...], escalate:[...]}
-    QJsonObject mTierOverrides;              ///< {tool: tier}
+    DAAgentCodePatterns mCodePatterns;                   ///< {deny:[...], escalate:[...]}
+    QHash< QString, QString > mTierOverrides;            ///< {tool: tier}
     QString mWorkspaceRoot;                  ///< 脚本工作区根（${workspace}），规范化
     QString mProjectDir;                     ///< 工程文件所在目录（${project}），规范化
     QHash< QString, QStringList > mSessionMemory;  ///< tool → 已批准路径前缀（规范化）
@@ -157,11 +166,11 @@ QList< DAAgentPermissionRule > DAAgentPermissionManager::PrivateData::workspaceA
     return seeds;
 }
 
-QJsonObject DAAgentPermissionManager::PrivateData::seedCodePatterns()
+DAAgentCodePatterns DAAgentPermissionManager::PrivateData::seedCodePatterns()
 {
     // §9.2 种子清单（Python 计划二消费）
-    QJsonObject p;
-    p[QStringLiteral("deny")] = QJsonArray{
+    DAAgentCodePatterns p;
+    p.deny = QStringList{
         QStringLiteral("subprocess"),
         QStringLiteral("os\\.system"),
         QStringLiteral("os\\.popen"),
@@ -173,7 +182,7 @@ QJsonObject DAAgentPermissionManager::PrivateData::seedCodePatterns()
         QStringLiteral("pickle\\.loads"),
         QStringLiteral("sys\\.exit"),
     };
-    p[QStringLiteral("escalate")] = QJsonArray{
+    p.escalate = QStringList{
         QStringLiteral("socket\\."),
         QStringLiteral("requests\\.(get|post|put|delete)"),
         QStringLiteral("urllib"),
@@ -278,8 +287,11 @@ QString DAAgentPermissionManager::systemPathDenyMessage()
 
 /**
  * @brief 构造函数
+ * @param config 权限标量的共享配置模型（agent-config.json permission 分组；
+ *               空指针时标量取默认值，供独立测试构造）
  */
-DAAgentPermissionManager::DAAgentPermissionManager() : DA_PIMPL_CONSTRUCT
+DAAgentPermissionManager::DAAgentPermissionManager(DAAgentConfig* config)
+    : DA_PIMPL_CONSTRUCT, mConfig(config)
 {
 }
 
@@ -342,11 +354,11 @@ bool DAAgentPermissionManager::load()
         }
     }
     // code_patterns / tier_overrides（缺失时回填种子，保证 init 全量下发有内容）
-    d->mCodePatterns = root.value(QStringLiteral("code_patterns")).toObject();
-    if (d->mCodePatterns.isEmpty()) {
+    d->mCodePatterns = DAAgentCodePatterns::fromJson(root.value(QStringLiteral("code_patterns")).toObject());
+    if (d->mCodePatterns.deny.isEmpty() && d->mCodePatterns.escalate.isEmpty()) {
         d->mCodePatterns = PrivateData::seedCodePatterns();
     }
-    d->mTierOverrides = root.value(QStringLiteral("tier_overrides")).toObject();
+    d->mTierOverrides = tierOverridesFromJson(root.value(QStringLiteral("tier_overrides")).toObject());
 
     // 硬 deny 强制回填（A4：不可经配置删除）
     const QList< DAAgentPermissionRule > hardSeeds = PrivateData::hardDenySeeds();
@@ -386,8 +398,8 @@ bool DAAgentPermissionManager::save() const
         rulesArr.append(r.toJson());
     }
     root[QStringLiteral("rules")]          = rulesArr;
-    root[QStringLiteral("code_patterns")]  = d->mCodePatterns;
-    root[QStringLiteral("tier_overrides")] = d->mTierOverrides;
+    root[QStringLiteral("code_patterns")]  = d->mCodePatterns.toJson();
+    root[QStringLiteral("tier_overrides")] = tierOverridesToJson(d->mTierOverrides);
 
     const QString path = configFilePath();
     QDir().mkpath(QFileInfo(path).absolutePath());
@@ -450,9 +462,9 @@ void DAAgentPermissionManager::setRules(const QList< DAAgentPermissionRule >& ru
 
 /**
  * @brief 代码危险模式 {deny:[...], escalate:[...]}
- * @return 危险模式对象
+ * @return 危险模式结构体
  */
-QJsonObject DAAgentPermissionManager::codePatterns() const
+DAAgentCodePatterns DAAgentPermissionManager::codePatterns() const
 {
     DA_DC(d);
     return d->mCodePatterns;
@@ -460,9 +472,9 @@ QJsonObject DAAgentPermissionManager::codePatterns() const
 
 /**
  * @brief 设置代码危险模式
- * @param patterns 危险模式对象
+ * @param patterns 危险模式结构体
  */
-void DAAgentPermissionManager::setCodePatterns(const QJsonObject& patterns)
+void DAAgentPermissionManager::setCodePatterns(const DAAgentCodePatterns& patterns)
 {
     DA_D(d);
     d->mCodePatterns = patterns;
@@ -472,7 +484,7 @@ void DAAgentPermissionManager::setCodePatterns(const QJsonObject& patterns)
  * @brief 分级覆盖表 {tool: tier}
  * @return 覆盖表
  */
-QJsonObject DAAgentPermissionManager::tierOverrides() const
+QHash< QString, QString > DAAgentPermissionManager::tierOverrides() const
 {
     DA_DC(d);
     return d->mTierOverrides;
@@ -482,7 +494,7 @@ QJsonObject DAAgentPermissionManager::tierOverrides() const
  * @brief 设置分级覆盖表
  * @param overrides 覆盖表
  */
-void DAAgentPermissionManager::setTierOverrides(const QJsonObject& overrides)
+void DAAgentPermissionManager::setTierOverrides(const QHash< QString, QString >& overrides)
 {
     DA_D(d);
     d->mTierOverrides = overrides;
@@ -498,12 +510,8 @@ void DAAgentPermissionManager::setTierOverrides(const QJsonObject& overrides)
  */
 QString DAAgentPermissionManager::mode() const
 {
-    QSettings s = openAgentIni();
-    const QString m = s.value(QLatin1String(kKeyPermissionMode), QLatin1String(kModeYolo)).toString();
-    if (m == QLatin1String(kModeYolo) || m == QLatin1String(kModeAuto) || m == QLatin1String(kModeManual)) {
-        return m;
-    }
-    return QString::fromLatin1(kModeYolo);
+    // 经共享配置模型读取（未注入时默认 yolo）
+    return mConfig ? mConfig->permissionMode() : QString::fromLatin1(kModeYolo);
 }
 
 /**
@@ -517,21 +525,21 @@ void DAAgentPermissionManager::setMode(const QString& mode)
         qWarning() << "DAAgentPermissionManager::setMode: invalid mode ignored:" << mode;
         return;
     }
-    QSettings s = openAgentIni();
-    s.setValue(QLatin1String(kKeyPermissionMode), mode);
+    if (mConfig) {
+        mConfig->setPermissionMode(mode);
+    }
 }
 
 /**
- * @brief 模式是否由用户显式写入过（ini 含 agent/permission_mode 键）
+ * @brief 模式是否由用户显式写入过（配置含 permission.mode 键）
  *
  * 未显式设置时 mode() 返回默认值 yolo；A13 启动确认卡仅对显式设置的
  * yolo 弹出——默认值静默进入全自动，不视为用户的危险态选择。
- * @return true=ini 中存在模式键（曾显式设置）
+ * @return true=配置中存在模式键（曾显式设置）
  */
 bool DAAgentPermissionManager::modeExplicitlySet() const
 {
-    QSettings s = openAgentIni();
-    return s.contains(QLatin1String(kKeyPermissionMode));
+    return mConfig ? mConfig->permissionModeSet() : false;
 }
 
 // ===========================================================================
@@ -753,17 +761,16 @@ QString DAAgentPermissionManager::sessionScopeKey(const QString& tool, const QJs
 }
 
 // ===========================================================================
-// ini 派生配置
+// 配置模型派生标量（agent-config.json permission 分组，经注入的 DAAgentConfig）
 // ===========================================================================
 
 /**
- * @brief 判官是否已配置（agent/judge_model 非空，D1 兜底判据）
+ * @brief 判官是否已配置（judge_model 非空，D1 兜底判据）
  * @return 是否配置
  */
 bool DAAgentPermissionManager::judgeConfigured() const
 {
-    QSettings s = openAgentIni();
-    return !s.value(QLatin1String(kKeyJudgeModel)).toString().trimmed().isEmpty();
+    return !judgeModel().isEmpty();
 }
 
 /**
@@ -772,8 +779,7 @@ bool DAAgentPermissionManager::judgeConfigured() const
  */
 QString DAAgentPermissionManager::judgeModel() const
 {
-    QSettings s = openAgentIni();
-    return s.value(QLatin1String(kKeyJudgeModel)).toString().trimmed();
+    return mConfig ? mConfig->judgeModel() : QString();
 }
 
 /**
@@ -782,8 +788,7 @@ QString DAAgentPermissionManager::judgeModel() const
  */
 int DAAgentPermissionManager::judgeTimeoutSec() const
 {
-    QSettings s = openAgentIni();
-    return qMax(1, s.value(QLatin1String(kKeyJudgeTimeoutSec), 30).toInt());
+    return mConfig ? mConfig->judgeTimeoutSec() : 30;
 }
 
 /**
@@ -795,8 +800,7 @@ int DAAgentPermissionManager::judgeTimeoutSec() const
  */
 int DAAgentPermissionManager::toolApprovalTimeoutSec() const
 {
-    QSettings s = openAgentIni();
-    return qMax(1, s.value(QLatin1String(kKeyApprovalTimeoutSec), 600).toInt());
+    return mConfig ? mConfig->toolApprovalTimeoutSec() : 600;
 }
 
 /**
@@ -805,8 +809,7 @@ int DAAgentPermissionManager::toolApprovalTimeoutSec() const
  */
 bool DAAgentPermissionManager::manualBlockInappTools() const
 {
-    QSettings s = openAgentIni();
-    return s.value(QLatin1String(kKeyManualBlockInappTools), false).toBool();
+    return mConfig ? mConfig->manualBlockInappTools() : false;
 }
 
 // ===========================================================================
@@ -977,67 +980,52 @@ DAAgentPermissionManager::decide(const QString& tool, const QJsonObject& params,
 
 /**
  * @brief 汇总全部权限配置（模式/超时/开关/判官 + 规则/危险模式/分级覆盖）
- * @return 配置 JSON
+ * @return 权限配置结构体（标量总是 engage，值类型部分为当前引擎状态）
  */
-QJsonObject DAAgentPermissionManager::getConfig() const
+DAAgentPermissionConfig DAAgentPermissionManager::getConfig() const
 {
     DA_DC(d);
-    QJsonObject c;
-    c[QStringLiteral("mode")]                     = mode();
-    c[QStringLiteral("tool_approval_timeout_sec")] = toolApprovalTimeoutSec();
-    c[QStringLiteral("manual_block_inapp_tools")]  = manualBlockInappTools();
-    c[QStringLiteral("judge_model")]               = judgeModel();
-    c[QStringLiteral("judge_timeout_sec")]         = judgeTimeoutSec();
-    QJsonArray rulesArr;
-    for (const DAAgentPermissionRule& r : d->mRules) {
-        rulesArr.append(r.toJson());
-    }
-    c[QStringLiteral("rules")]          = rulesArr;
-    c[QStringLiteral("code_patterns")]  = d->mCodePatterns;
-    c[QStringLiteral("tier_overrides")] = d->mTierOverrides;
+    DAAgentPermissionConfig c;
+    c.setMode(mode());
+    c.setToolApprovalTimeoutSec(toolApprovalTimeoutSec());
+    c.setManualBlockInappTools(manualBlockInappTools());
+    c.setJudgeModel(judgeModel());
+    c.setJudgeTimeoutSec(judgeTimeoutSec());
+    c.setRules(d->mRules);
+    c.setCodePatterns(d->mCodePatterns);
+    c.setTierOverrides(d->mTierOverrides);
     return c;
 }
 
 /**
- * @brief 按 contains 守卫写入配置（镜像 setLLMConfig 风格：key 存在即写）
- * @param config 配置 JSON（setConfig 后规则/危险模式/覆盖表变更会落盘）
+ * @brief 按稀疏守卫写入配置（标量未 engage 不受影响；规则/危险模式/覆盖表整体替换）
+ * @param config 权限配置结构体（标量部分写共享配置模型，值类型部分变更落盘
+ *        agent-permissions.json；配置模型落盘由调用方 DAAgentModule 统一 save）
  */
-void DAAgentPermissionManager::setConfig(const QJsonObject& config)
+void DAAgentPermissionManager::setConfig(const DAAgentPermissionConfig& config)
 {
     DA_D(d);
-    bool fileChanged = false;
 
-    if (config.contains(QStringLiteral("mode"))) {
-        setMode(config.value(QStringLiteral("mode")).toString());
+    // 标量：经共享配置模型写入（未 engage 的标量不受影响，保持原稀疏守卫语义）
+    if (config.modeSet()) {
+        setMode(config.mode());
     }
-    QSettings s = openAgentIni();
-    if (config.contains(QStringLiteral("tool_approval_timeout_sec"))) {
-        s.setValue(QLatin1String(kKeyApprovalTimeoutSec),
-                   qMax(1, config.value(QStringLiteral("tool_approval_timeout_sec")).toInt(600)));
+    if (config.toolApprovalTimeoutSecSet() && mConfig) {
+        mConfig->setToolApprovalTimeoutSec(config.toolApprovalTimeoutSec());
     }
-    if (config.contains(QStringLiteral("manual_block_inapp_tools"))) {
-        s.setValue(QLatin1String(kKeyManualBlockInappTools),
-                   config.value(QStringLiteral("manual_block_inapp_tools")).toBool(false));
+    if (config.manualBlockInappToolsSet() && mConfig) {
+        mConfig->setManualBlockInappTools(config.manualBlockInappTools());
     }
-    if (config.contains(QStringLiteral("judge_model"))) {
-        s.setValue(QLatin1String(kKeyJudgeModel),
-                   config.value(QStringLiteral("judge_model")).toString().trimmed());
+    if (config.judgeModelSet() && mConfig) {
+        mConfig->setJudgeModel(config.judgeModel());
     }
-    if (config.contains(QStringLiteral("judge_timeout_sec"))) {
-        s.setValue(QLatin1String(kKeyJudgeTimeoutSec),
-                   qMax(1, config.value(QStringLiteral("judge_timeout_sec")).toInt(30)));
+    if (config.judgeTimeoutSecSet() && mConfig) {
+        mConfig->setJudgeTimeoutSec(config.judgeTimeoutSec());
     }
-    if (config.contains(QStringLiteral("rules"))) {
-        QList< DAAgentPermissionRule > rules;
-        const QJsonArray arr = config.value(QStringLiteral("rules")).toArray();
-        for (const QJsonValue& v : arr) {
-            if (v.isObject()) {
-                rules.append(DAAgentPermissionRule::fromJson(v.toObject()));
-            }
-        }
-        d->mRules    = rules;
-        fileChanged = true;
-        // 硬 deny 强制回填（A4：设置页不允许删除）
+    // 值类型：engage 才整体替换（原 JSON contains 守卫；含清空场景），硬 deny 强制回填
+    bool fileChanged = false;
+    if (config.rulesSet()) {
+        d->mRules = config.rules();
         const QList< DAAgentPermissionRule > hardSeeds = PrivateData::hardDenySeeds();
         for (const DAAgentPermissionRule& seed : hardSeeds) {
             bool found = false;
@@ -1051,17 +1039,18 @@ void DAAgentPermissionManager::setConfig(const QJsonObject& config)
                 d->mRules.append(seed);
             }
         }
+        fileChanged = true;
     }
-    if (config.contains(QStringLiteral("code_patterns"))) {
-        d->mCodePatterns = config.value(QStringLiteral("code_patterns")).toObject();
+    if (config.codePatternsSet()) {
+        d->mCodePatterns = config.codePatterns();
         fileChanged      = true;
     }
-    if (config.contains(QStringLiteral("tier_overrides"))) {
-        d->mTierOverrides = config.value(QStringLiteral("tier_overrides")).toObject();
+    if (config.tierOverridesSet()) {
+        d->mTierOverrides = config.tierOverrides();
         fileChanged       = true;
     }
     if (fileChanged) {
-        save();
+        save();  // 规则/危险模式/覆盖表落盘 agent-permissions.json
     }
 }
 

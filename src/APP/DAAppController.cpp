@@ -278,7 +278,21 @@ void DAAppController::initialize()
         connect(agent, &DAAgentInterface::sessionCleared, dock, &DAAgentDockWidget::onSessionCleared);
         connect(agent, &DAAgentInterface::systemMessage, dock, &DAAgentDockWidget::onSystemMessage);
         // 供应商/多模型选择：接口信号 → Dock 槽（2 条），Dock 信号 → 接口方法（1 条）
-        connect(agent, &DAAgentInterface::availableModelsChanged, dock, &DAAgentDockWidget::onAvailableModelsChanged);
+        // availableModelsChanged 载荷为 DAAgentModelRef 结构体列表（DAGui 不依赖 DAAgent，
+        // 经 APP 桥接层转换为 QVariantMap{provider,model,context_window,max_output_tokens}）
+        connect(agent, &DAAgentInterface::availableModelsChanged, dock,
+                [dock](const QList< DA::DAAgentModelRef >& models) {
+                    QVariantList vl;
+                    for (const DA::DAAgentModelRef& m : models) {
+                        QVariantMap vm;
+                        vm["provider"]         = m.provider;
+                        vm["model"]            = m.model;
+                        vm["context_window"]   = m.contextWindow;
+                        vm["max_output_tokens"] = m.maxOutputTokens;
+                        vl.append(vm);
+                    }
+                    dock->onAvailableModelsChanged(vl);
+                });
         connect(agent, &DAAgentInterface::activeModelChanged, dock, &DAAgentDockWidget::onActiveModelChanged);
         connect(dock, &DAAgentDockWidget::activeModelChangeRequested, agent, &DAAgentInterface::setActiveModel);
         // 权限层（permission-layer P1）：接口信号 → Dock 槽（4 条），Dock 信号 → 接口方法（3 条）

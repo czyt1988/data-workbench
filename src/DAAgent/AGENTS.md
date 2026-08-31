@@ -31,7 +31,7 @@ DAWorkbench 的 AI Agent 助手模块：内嵌 LLM 聊天 + 数据分析工具�
 │  src/DAAgent/                                                  │
 │   DAAgentInterface   — 公共接口（14 信号 + 工具/提示词注册）   │
 │   DAAgentModule      — 接口实现：工具注册表、系统提示词组装、    │
-│                        懒启动、LLM 配置读写（agent-config.ini）、│
+│                        懒启动、LLM 配置读写（agent-config.json）、│
 │                        会话生命周期、cleanupSessions（读 ini 的  │
 │                        max_sessions/session_retention_days）    │
 │   DAAgentToolBase    — 瘦工具基类（DAAgent_API，数据/响应方法）  │
@@ -92,7 +92,7 @@ DAWorkbench 的 AI Agent 助手模块：内嵌 LLM 聊天 + 数据分析工具�
 | 文件 | 职责 |
 |------|------|
 | `DAAgentInterface.h` | 公共接口：14 个信号 + `registerTool` / `registerSystemPrompt` / `showDockWidget` / `hideDockWidget`（no-op）/ `sendMessage` / `stop` / `sendUserAnswer` / `newSession` / `isRunning` / `getLLMConfig` / `setLLMConfig` |
-| `DAAgentModule.h/.cpp` | 接口实现：工具注册表 `m_tools`、系统提示词 `m_systemPrompts`、懒启动、`connectSignals()`（仅 Bridge→Module 持久化/状态 lambda，**不连 Dock**）、LLM 配置读写（agent-config.ini + api_key DPAPI 加解密）、Python/脚本路径探测 |
+| `DAAgentModule.h/.cpp` | 接口实现：工具注册表 `m_tools`、系统提示词 `m_systemPrompts`、懒启动、`connectSignals()`（仅 Bridge→Module 持久化/状态 lambda，**不连 Dock**）、LLM 配置读写（DAAgentConfig + api_key DPAPI 加解密）、Python/脚本路径探测 |
 | `DAAgentBridge.h/.cpp` | QProcess 生命周期（start/stop/超时）、stdin/stdout 读写、JSON Lines 解析分发、工具执行兜底；`sendLoadSession` 下发历史 messages 重建 state |
 | `DAAgentSessionStore.h/.cpp` | 会话持久化层（非 QObject，PIMPL）：JSONL append-only 读写、全局索引（原子写 tmp+rename）、`cleanupOldSessions`（数量+时间双限）、`setLastActive`/`lastActiveSession`（按工程过滤的精确匹配）、自动标题、工程导入导出 |
 | `DAAbstractAgentTool.h` | 工具抽象基类（纯虚）：`getToolSpec`（返回结构化 `DAAgentToolSpec`）/ `execute` / `getOwnerModule` |
@@ -299,37 +299,63 @@ chat.js 选项按钮 → `chatBridge.onUserSelect(answer)` → `DAAgentWebChanne
 
 ---
 
-## 九、配置持久化（agent-config.ini）
+## 九、配置持久化（agent-config.json，DAAgentConfig 领域模型）
 
-> DAAgent 库**无法链接 APP 的 DAAppConfig**，因此用 QSettings 持久化。**唯一入口是 `DAAgentInterface::getLLMConfig` / `setLLMConfig`**，读写显式路径 `DA::DADir::getConfigPath() + "/agent-config.ini"`。APP 设置页（`src/APP/SettingPages/DAAgentSettingsWidget`）经 `setAgentInterface` 注入接口，`loadConfig` 调 `getLLMConfig`（返回明文 QJsonObject）、`saveConfig` 调 `setLLMConfig`（传明文 QJsonObject）——页面不接触 QSettings / 加解密。
+> DAAgent 库**无法链接 APP 的 DAAppConfig**，配置独立持久化于 `<config>/agent-config.json`（与 `agent-permissions.json` 同目录，统一 JSON 格式）。**唯一入口是 `DAAgentConfig`**（`src/DAAgent/DAAgentConfig.h/.cpp`）：`load()`/`save()` 是唯一接触存储格式的代码（将来换 YAML 等格式只改这两个函数），`DAAgentModule::PrivateData::mConfig` 持有单一实例（`initialize()` 最先 `load()`，运行期所有读写均经此内存模型，不再逐调用重读文件）。APP 设置页经 `DAAgentInterface` 结构体接口读写（`get/setLLMConfig` 传 `DAAgentLLMConfig`、`get/setProviders` 传 `QList<DAAgentProvider>`），页面不接触文件与加解密。
 
-| Key | 含义 | 默认值 |
-|-----|------|--------|
-| `agent/llm_base_url` | LLM Base URL（激活供应商派生，见 `agent/providers`） | — |
-| `agent/llm_api_key` | **DPAPI 加密**后 Base64（Windows 当前用户作用域；非 Windows 仅为 base64，开发用）；激活供应商派生 | — |
-| `agent/llm_model` | 当前激活模型 id（激活供应商下的某个模型） | — |
-| `agent/providers` | 供应商 JSON 数组（Compact 字符串）：每元素 `{name, base_url, api_key(加密 base64), models:[{id,context_window,max_output_tokens}]}`。由 `getProviders`/`setProviders` 读写，api_key 内部 DPAPI 加解密；模型为对象，含每模型上下文窗口与最大输出 token | — |
-| `agent/active_provider` | 当前激活供应商名称（Dock 模型下拉选择 / 设置页 apply 写入） | — |
-| `agent/max_output_tokens` | 当前激活模型最大输出 token（由激活模型派生，随 init 下发 Python `max_tokens`），默认 8192 | 8192 |
-| `agent/ready_timeout_sec` | 子进程就绪超时（覆盖 langchain 冷启动 ~17s） | 60 |
-| `agent/stop_timeout_sec` | stopAgent 等待退出超时 | 5 |
-| `agent/context_window` | 模型上下文窗口大小（tokens），用于触发压缩判断 | 1048576 |
-| `agent/compaction_threshold` | 自动压缩触发比例（0.85 = 窗口 85% 时触发） | 0.85 |
-| `agent/max_recent_messages` | 压缩后保留最近消息条数 | 10 |
-| `agent/tool_result_max_chars` | 工具结果截断阈值（字符数），超此长度截断为预览 | 50000 |
-| `agent/tool_result_preview_chars` | 截断后工具结果预览长度（字符数） | 2000 |
-| `agent/max_sessions` | 配置目录保留的自由会话最大数量（超出按 updatedAt 倒序删最旧），由 `DAAgentModule::cleanupSessions` 读取 | 20 |
-| `agent/session_retention_days` | 自由会话保留天数（早于此天数的会话启动时清理），由 `DAAgentModule::cleanupSessions` 读取 | 30 |
-| `agent/subagent_timeout_sec` | 单个子 agent 任务墙钟超时（秒；审批等待计入），设置页「Agent 参数」暴露 | 600 |
-| `agent/subagent_recursion_limit` | 子 agent 图最大推理步数，设置页「Agent 参数」暴露 | 60 |
-| `agent/subagent_max_concurrency` | 并发子 agent 数（内部键，可调低不可调高，上限 2） | 2 |
-| `agent/subagent_batch_limit` | 单批派发上限（内部键，上限 4） | 4 |
+### 9.1 分组结构（稀疏：只落盘显式设置过的键，读取时代码兜底默认值）
 
-> 接口层 JSON 键（12 个）：`base_url` / `model` / `api_key` / `context_window` / `compaction_threshold` / `max_recent_messages` / `tool_result_max_chars` / `tool_result_preview_chars` / `ready_timeout_sec` / `stop_timeout_sec` / `max_sessions` / `session_retention_days`。`getLLMConfig` 全量 round-trip（带默认值兜底）；`setLLMConfig` 对每个 key 逐一 `config.contains()` 守卫（key 存在即写，含空串；api_key 传空串可清空），api_key 经 `DAAgentModule` 内部 DPAPI 加密后写入。
+| 分组 | 键 | 含义 | 默认值 |
+|------|-----|------|--------|
+| `llm` | `base_url` | LLM Base URL（激活供应商派生） | — |
+| | `api_key` | **DPAPI 加密**后 Base64（Windows 当前用户作用域；非 Windows 仅为 base64）；激活供应商派生 | — |
+| | `model` | 当前激活模型 id | — |
+| | `providers` | 供应商数组（原生 JSON，非字符串）：每元素 `{name, base_url, api_key(加密), models:[{id,context_window,max_output_tokens}]}` | — |
+| | `active_provider` | 当前激活供应商名称 | — |
+| | `context_window` | 模型上下文窗口（tokens），触发压缩判断 | 262144 |
+| | `max_output_tokens` | 激活模型最大输出 token（随 init 下发 `max_tokens`） | 8192 |
+| | `max_retries` | LLM 临时错误自动重试次数 | 7 |
+| | `request_timeout_sec` | 单次 LLM 请求超时 | 120 |
+| `execution` | `ready_timeout_sec` | 子进程就绪超时（覆盖 langchain 冷启动 ~17s） | 60 |
+| | `stop_timeout_sec` | stopAgent 等待退出超时 | 5 |
+| | `inactivity_timeout_sec` | 看门狗无活动超时 | 240 |
+| | `max_subprocess_restarts` | 崩溃自动重启上限 | 3 |
+| | `recursion_limit` | LangGraph 图最大推理步数 | 150 |
+| | `auto_prestart` | 启动时预热子进程开关 | true |
+| | `compaction_threshold` | 自动压缩触发比例 | 0.85 |
+| | `max_recent_messages` | 压缩后保留最近消息条数 | 10 |
+| | `tool_result_max_chars` | 工具结果截断阈值（字符） | 20000 |
+| | `tool_result_preview_chars` | 截断后预览长度（字符） | 2000 |
+| | `max_sessions` | 自由会话最大保留数（仅 C++ 侧用） | 20 |
+| | `session_retention_days` | 自由会话保留天数（仅 C++ 侧用） | 30 |
+| `subagent` | `timeout_sec` | 单个子 agent 任务墙钟超时（审批等待计入） | 600 |
+| | `recursion_limit` | 子 agent 图最大推理步数 | 60 |
+| | `max_concurrency` | 并发子 agent 数（内部键，上限 2） | 2 |
+| | `batch_limit` | 单批派发上限（内部键，上限 4） | 4 |
+| `permission` | `mode` | 权限模式 yolo/auto/manual（权限引擎读） | yolo |
+| | `tool_approval_timeout_sec` | gated_tools 批准后执行超时 | 600 |
+| | `judge_model` | 判官模型名（空=未配置） | — |
+| | `judge_timeout_sec` | 判官单次调用超时 | 30 |
+| | `manual_block_inapp_tools` | manual 模式拦截应用内修改工具 | false |
 
-> 注：`max_sessions` / `session_retention_days` 仅 C++ 侧用（`getLLMConfig` 不下发 Python）。三处默认值须一致：设置页 spin range/setValue、`src/APP/SettingPages/DAAgentSettingsWidget::loadConfig`/`saveConfig`、`DAAgentModule::cleanupSessions` 的 QSettings 读取。`cleanupOldSessions` 入口已加 `qMax(1, maxCount)` / `qMax(0, retentionDays)` 防护 ini 被手改为 0/负时误删全部。
+### 9.2 结构体接口（配置结构体化，破坏性接口变更）
 
-加密：`api_key` 由 `DAAgentModule` 内部 DPAPI 加解密（Win，DAAgent link `Crypt32`；`encryptApiKey`/`decryptApiKey` 为本模块匿名命名空间静态函数）/ base64 fallback（非 Win，开发用）。设置页只经接口传明文，不做任何加解密。**日志/诊断禁止打印 api_key 明文**（只打加密 blob 大小）。
+- `DAAgentLLMConfig`（23 个 `std::optional` 稀疏字段）：getter 兜底默认值、`setXxx` engage、`xXXSet()` 查询是否显式设置；`mergeFrom()` 仅吸收 engaged 字段（= 原 `setLLMConfig` 的 contains 守卫语义，api_key engaged 空串即清空）
+- `DAAgentProvider`/`DAAgentModel`/`DAAgentModelRef`（`DAAgentProvider.h`）：供应商/模型值类型，api_key 内存态明文
+- `DAAgentPermissionConfig`/`DAAgentCodePatterns`（`DAAgentPermissionConfig.h`）：权限 5 标量稀疏 + rules/codePatterns/tierOverrides 三值类型（各自带 engage 标志）
+- `DAAgentConfig::toRunnerConfigJson()`：init/reconfigure 协议投影（扁平 key 与 Python `agent_runner.py` 逐键一致，见 9.1 默认值列）
+
+### 9.3 旧 ini 迁移（一次性，`DAAgentConfig::load()` 内幂等执行）
+
+判定顺序：① json 合法 → 解析；② **旧 agent-config.ini 存在 → 键覆盖式合并 → save() → ini 改名 `agent-config.ini.bak`**（同时覆盖「老版本首次升级」与「回滚旧版再用→再升级」（json+ini 并存时 ini 键为旧版最新值，其余键保留 json 值）两个场景）；③ json 缺失/损坏且无 ini → 从 `.bak` 恢复重建；④ 损坏且无恢复源 → 默认值自愈覆盖；⑤ 全新安装 → 空配置不落盘。**回滚到旧版程序需手动把 `.bak` 改回 `agent-config.ini`**。注册表→ini 迁移（`main.cpp migrateSettingsFromRegistry`）保留，形成 注册表→ini→json 链式迁移。
+
+### 9.4 其他约定
+
+- api_key 加解密只发生在 `DAAgentConfig::save()/load()` 边界（DPAPI，DAAgent link `Crypt32`；非 Win base64 fallback）；内存态/接口层一律明文。**日志/诊断禁止打印 api_key 明文**
+- `permission.mode` 的「是否显式设置」（`permissionModeSet()`）是 A13 启动确认卡判据：ini 时代靠键存在性，JSON 时代靠 optional engaged——迁移后语义不变
+- `max_sessions`/`session_retention_days` 仅 C++ 侧消费（不下发 Python）；默认值唯一定义于 `DAAgentLLMConfig` getter（消灭了旧版三处默认值须一致的问题）；`cleanupOldSessions` 入口仍有 `qMax` 防护
+- Python 侧不读任何配置文件：全部经 stdin `init`/`reconfigure` 消息的 `config` 字段下发（key 不变）
+- `DAAgentPermissionManager` 构造注入共享 `DAAgentConfig*`（权限 5 标量单一数据源；未注入时取默认值，供独立测试构造）
 
 ---
 
@@ -338,7 +364,7 @@ chat.js 选项按钮 → `chatBridge.onUserSelect(answer)` → `DAAgentWebChanne
 1. `DAAppCore::initialize()` → `new DAAgentModule(this, this)` + `initialize()`（创建 Bridge、预连接 Bridge→Module 信号；**不注册工具、不创建 Dock**——20 个内置工具由插件 `DAAgentTools` 注册）。
 2. `DAAppDockingArea::buildDockingArea()` → `new DAAgentDockWidget` + `createDockWidgetAsTab`（左侧标签页）。
 3. `DAAppController::initialize()` → 用 `connect()` 把 Dock 的 8 个信号（其中 7 个连到接口方法）↔ 接口的 14 个信号（其中 13 个连到 Dock 槽）对接（决策 D3b，替代旧的 `setDockWidget` 注入）+ 绑定 `actionShowAgentArea` toggle action（详见 § 六）。
-4. **懒启动**：首次 `sendMessage()` → `startAgentInternal()` → 读 `agent-config.ini` LLM 配置 + 探测 Python/脚本路径 → `m_bridge->startAgent(...)`。
+4. **懒启动**：首次 `sendMessage()` → `startAgentInternal()` → 经 `DAAgentConfig::toRunnerConfigJson()` 取 LLM 配置 + 探测 Python/脚本路径 → `m_bridge->startAgent(...)`。
 5. **退出**：`DAAgentBridge` 析构自动 `stopAgent()`（写 `stop` 消息 → `waitForFinished(stopTimeout)` → 必要时 `kill()`）。
 
 ---
@@ -451,8 +477,8 @@ Windows 文本模式行尾是 `\r\n`，`indexOf('\n')` 会留下 `'\r'` 导致 `
 | 改 C++↔JS 桥 | `src/DAGui/Agent/DAAgentWebChannel.cpp`（注意 `toJsString` 转义与 `chatBridge` 注册名） |
 | 改协议 | `DAAgentBridge.cpp`（C++ 侧）+ `agent_runner.py` `StdioProtocol`/`main()`（Python 侧）——**两端必须同步** |
 | 改 agent 推理逻辑 | `agent_runner.py` `AgentRunner`（图构建/节点/路由） |
-| LLM 配置 | `src/APP/SettingPages/DAAgentSettingsWidget.cpp`（设置页，经 `setAgentInterface`）+ `src/DAAgent/DAAgentModule.cpp` `getLLMConfig`/`setLLMConfig`（agent-config.ini） |
-| 权限模式/规则/判官配置 | `src/APP/SettingPages/DAAgentPermissionSettingsWidget.cpp`（设置页，经 `get/setPermissionConfig`）+ `src/DAAgent/DAAgentPermissionManager.h/.cpp`（引擎：模式/分级/路径策略/会话记忆，`agent-permissions.json` + `agent-config.ini`） |
+| LLM 配置 | `src/APP/SettingPages/DAAgentSettingsWidget.cpp`（设置页，经 `setAgentInterface`）+ `src/DAAgent/DAAgentModule.cpp` `getLLMConfig`/`setLLMConfig`（经 `DAAgentConfig`，agent-config.json） |
+| 权限模式/规则/判官配置 | `src/APP/SettingPages/DAAgentPermissionSettingsWidget.cpp`（设置页，经 `get/setPermissionConfig`）+ `src/DAAgent/DAAgentPermissionManager.h/.cpp`（引擎：模式/分级/路径策略/会话记忆，`agent-permissions.json` + `agent-config.json` permission 分组，经注入的 `DAAgentConfig`） |
 | 代码内容判定 | `src/PyScripts/DAWorkbench/agent/permission_judge.py`（静态规则+判官）+ `agent_runner.py` `tool_node`（`tool_call.safety` 生产），见铁律 T16 |
 | 子 agent 定义管理 | `src/DAAgent/DAAgentSubagentManager.h/.cpp`（定义库 + 内置播种）+ `src/APP/Dialog/DAAgentManagerDialog.cpp`（管理 UI 双 Tab）+ `src/APP/Dialog/DAAgentSubagentEditDialog.cpp`（结构化编辑器）；定义存 `<exe>/daAgent/subagents/*.md` |
 | 子 agent 派发/编排 | `src/PyScripts/DAWorkbench/agent/subagent_orchestrator.py`（编排器）+ `agent_runner.py`（`dispatch_subagents` 路由/RPC 多路复用分发器），见铁律 T17 |
