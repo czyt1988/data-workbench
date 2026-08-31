@@ -1277,7 +1277,7 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="../APP/DAAppActions.cpp" line="+381"/>
+        <location filename="../APP/DAAppActions.cpp" line="+388"/>
         <source>Open</source>
         <translation>Open</translation>
     </message>
@@ -1739,7 +1739,7 @@ All</translation>
         <translation>Legend</translation>
     </message>
     <message>
-        <location line="+42"/>
+        <location line="+47"/>
         <source>To Numeric</source>
         <translation>To Numeric</translation>
     </message>
@@ -1794,7 +1794,7 @@ All</translation>
         <translation>Dark Theme</translation>
     </message>
     <message>
-        <location line="-141"/>
+        <location line="-146"/>
         <source>Enable or disable legend in the chart</source>
         <translation>Enable or disable legend in the chart</translation>
     </message>
@@ -1946,6 +1946,16 @@ Line 3D</translation>
     </message>
     <message>
         <location line="+2"/>
+        <source>Pointer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Select chart elements by clicking, drag to move, Delete to remove</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Add Rect</source>
         <translation>Add Rect</translation>
     </message>
@@ -2013,6 +2023,16 @@ Line 3D</translation>
         <location line="+1"/>
         <source>Add an arrow marker to the chart</source>
         <translation>Add an arrow marker to the chart</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add Text</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add a text marker to the chart</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
@@ -2555,24 +2575,24 @@ Config</translation>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+695"/>
+        <location filename="../APP/DAAppController.cpp" line="+696"/>
         <source>Save Project</source>
         <translation>Save Project</translation>
     </message>
     <message>
         <location line="+19"/>
-        <location line="+841"/>
+        <location line="+864"/>
         <source>Warning</source>
         <translation>Warning</translation>
     </message>
     <message>
-        <location line="-830"/>
+        <location line="-853"/>
         <source>Failed to save project! Path: %1</source>
         <translation>Failed to save project! Path: %1</translation>
     </message>
     <message>
         <location line="+3"/>
-        <location line="+591"/>
+        <location line="+614"/>
         <source>Project saved successfully, path: %1</source>
         <translation>Project saved successfully, path: %1</translation>
     </message>
@@ -2592,29 +2612,29 @@ Config</translation>
         <translation>Failed to save image to %1</translation>
     </message>
     <message>
-        <location line="+417"/>
+        <location line="+419"/>
         <source>Before creating a new coordinate, you need to create a figure</source>
         <translation>Before creating a new coordinate, you need to create a figure</translation>
     </message>
     <message>
-        <location line="-1180"/>
+        <location line="-1205"/>
         <source>Please select the data operation window</source>
         <translation>Please select the data operation window</translation>
     </message>
     <message>
         <location line="-50"/>
-        <location line="+500"/>
+        <location line="+523"/>
         <location line="+73"/>
         <source>Project File</source>
         <translation>Project File</translation>
     </message>
     <message>
-        <location line="-555"/>
+        <location line="-578"/>
         <source>Whether to overwrite the file: %1</source>
         <translation>Whether to overwrite the file: %1</translation>
     </message>
     <message>
-        <location line="+442"/>
+        <location line="+465"/>
         <location line="+19"/>
         <source>Question</source>
         <translation>Question</translation>
@@ -2657,7 +2677,7 @@ Config</translation>
         <translation>Received null project interface</translation>
     </message>
     <message>
-        <location line="+364"/>
+        <location line="+366"/>
         <source>Figure &apos;%1&apos; not found, it may have been closed or renamed</source>
         <translation>Figure &apos;%1&apos; not found, it may have been closed or renamed</translation>
     </message>
@@ -2739,7 +2759,7 @@ Config</translation>
         <translation>The selected data source is empty</translation>
     </message>
     <message>
-        <location line="-1828"/>
+        <location line="-1830"/>
         <source>Before running the workflow, you need to save the project</source>
         <translation>Before running the workflow, you need to save the project</translation>
     </message>
@@ -2760,7 +2780,7 @@ Config</translation>
 <context>
     <name>DA::DAAppDockingArea</name>
     <message>
-        <location filename="../APP/DAAppDockingArea.cpp" line="+69"/>
+        <location filename="../APP/DAAppDockingArea.cpp" line="+70"/>
         <source>Workflow Node</source>
         <translation>Workflow Node</translation>
     </message>
@@ -3183,7 +3203,7 @@ Config</translation>
 <context>
     <name>DA::DAAppRibbonArea</name>
     <message>
-        <location filename="../APP/DAAppRibbonArea.cpp" line="+190"/>
+        <location filename="../APP/DAAppRibbonArea.cpp" line="+191"/>
         <source>File</source>
         <translation>File</translation>
     </message>
@@ -3325,7 +3345,7 @@ Config</translation>
         <translation>Set ribbon theme</translation>
     </message>
     <message>
-        <location line="+837"/>
+        <location line="+839"/>
         <location line="+2"/>
         <source>AI Agent</source>
         <translation>AI Agent</translation>
@@ -3372,7 +3392,7 @@ Config</translation>
         <translation>Agent module is not ready</translation>
     </message>
     <message>
-        <location line="-987"/>
+        <location line="-989"/>
         <location line="+357"/>
         <source>Item</source>
         <translation>Item</translation>
@@ -3499,12 +3519,12 @@ Config</translation>
         <translation>Theme</translation>
     </message>
     <message>
-        <location line="+21"/>
+        <location line="+22"/>
         <source>Assist Tools</source>
         <translation>Assist Tools</translation>
     </message>
     <message>
-        <location line="+17"/>
+        <location line="+18"/>
         <source>Recent Files</source>
         <translation>Recent Files</translation>
     </message>
@@ -7744,6 +7764,99 @@ Config</translation>
     </message>
 </context>
 <context>
+    <name>DA::DAChartTextMarkerSettingPanel</name>
+    <message>
+        <location filename="../DAGui/ChartSetting/DAChartTextMarkerSettingPanel.cpp" line="+54"/>
+        <source>Basic</source>
+        <translation type="unfinished">Basic</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Title</source>
+        <translation type="unfinished">Title</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Z Value</source>
+        <translation type="unfinished">Z Value</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>X Axis</source>
+        <translation type="unfinished">X Axis</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Y Axis</source>
+        <translation type="unfinished">Y Axis</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Anchor X</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Anchor Y</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Text</source>
+        <translation type="unfinished">Text</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Edit Rich Text...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Content</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Font</source>
+        <translation type="unfinished">Font</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Text Color</source>
+        <translation type="unfinished">Text Color</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Alignment</source>
+        <translation type="unfinished">Alignment</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Background</source>
+        <translation type="unfinished">Background</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Border Radius</source>
+        <translation type="unfinished">Border Radius</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Background Brush</source>
+        <translation type="unfinished">Background Brush</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Layout</source>
+        <translation type="unfinished">Layout</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Spacing</source>
+        <translation type="unfinished">Spacing</translation>
+    </message>
+</context>
+<context>
     <name>DA::DAChartTradingCurveSettingPanel</name>
     <message>
         <location filename="../DAGui/ChartSetting/DAChartTradingCurveSettingPanel.cpp" line="+48"/>
@@ -8583,7 +8696,7 @@ Config</translation>
         <translation>Unexpected plotting operation: a chart that does not belong to the DAChartWidget type was added to the figure</translation>
     </message>
     <message>
-        <location line="+1122"/>
+        <location line="+1188"/>
         <source>Unsupported chart editor type: %1</source>
         <translation>Unsupported chart editor type: %1</translation>
     </message>
@@ -10315,7 +10428,7 @@ Config</translation>
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-1446"/>
+        <location filename="../APP/DAAppController.cpp" line="-1469"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>
@@ -12341,7 +12454,7 @@ Config</translation>
 <context>
     <name>DAFigureWidget</name>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="-1184"/>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="-1248"/>
         <source>Figure</source>
         <translation>Figure</translation>
     </message>
@@ -13141,7 +13254,7 @@ Config</translation>
 <context>
     <name>DataAnalysisUI</name>
     <message>
-        <location filename="../../plugins/DataAnalysis/DataAnalysisUI.cpp" line="+84"/>
+        <location filename="../../plugins/DataAnalysis/DataAnalysisUI.cpp" line="+87"/>
         <location line="+87"/>
         <source>Data Cleaning</source>
         <translation>Data Cleaning</translation>
@@ -14852,6 +14965,16 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>move 3D plot item to another chart</translation>
     </message>
     <message>
+        <location line="+58"/>
+        <source>remove item from chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+68"/>
+        <source>move plot item position</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../DAFigure/Models/DAStandardItemPlot.cpp" line="+72"/>
         <source>layout-%1</source>
         <translation>layout-%1</translation>
@@ -15081,6 +15204,56 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <location line="+10"/>
         <source>Failed to initialize script runner: %1</source>
         <translation>Failed to initialize script runner: %1</translation>
+    </message>
+    <message>
+        <location filename="../DAFigure/DAChartTextEditorPopup.cpp" line="+78"/>
+        <source>Text Background Color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Strikethrough</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Superscript</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Subscript</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Clear</source>
+        <translation type="unfinished">Clear</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Clear character format of selected text</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+19"/>
+        <source>Cancel</source>
+        <translation type="unfinished">Cancel</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>OK</source>
+        <translation type="unfinished">OK</translation>
+    </message>
+    <message>
+        <location filename="../DAFigure/DAChartTextMarkerEditor.cpp" line="+128"/>
+        <source>Text Marker</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Text</source>
+        <translation type="unfinished">Text</translation>
     </message>
 </context>
 <context>

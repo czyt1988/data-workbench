@@ -4,6 +4,7 @@
 #include <QUndoCommand>
 #include <QPointer>
 #include <QRectF>
+#include "DAChartElementHitTester.h"
 class QWidget;
 class QwtPlotItem;
 class Qwt3DPlotItem;
@@ -219,19 +220,68 @@ public:
 class DAFIGURE_API DAFigureWidgetCommandMove3DItem : public DAFigureWidgetCommandBase
 {
 public:
-	DAFigureWidgetCommandMove3DItem(DAFigureWidget* fig,
+    DAFigureWidgetCommandMove3DItem(DAFigureWidget* fig,
                                   DAChart3DWidget* sourceChart3D,
                                   DAChart3DWidget* targetChart3D,
                                   Qwt3DPlotItem* item,
                                   QUndoCommand* par = nullptr);
-	~DAFigureWidgetCommandMove3DItem();
-	void redo() override;
-	void undo() override;
+    ~DAFigureWidgetCommandMove3DItem();
+    void redo() override;
+    void undo() override;
 
 public:
-	QPointer< DAChart3DWidget > mSourceChart3D;
-	QPointer< DAChart3DWidget > mTargetChart3D;
-	Qwt3DPlotItem* mItem;
+    QPointer< DAChart3DWidget > mSourceChart3D;
+    QPointer< DAChart3DWidget > mTargetChart3D;
+    Qwt3DPlotItem* mItem;
+};
+
+/**
+ * @brief 把图元从绘图分离（删除）
+ *
+ * redo: item->detach()
+ * undo: item->attach(chart)
+ * 析构时若 item 仍处于 detach 态则 delete（与 AttachItem 的 mNeedDelete 模式对称）
+ */
+class DAFIGURE_API DAFigureWidgetCommandDetachItem : public DAFigureWidgetCommandBase
+{
+public:
+    DAFigureWidgetCommandDetachItem(DAFigureWidget* fig,
+                                    DAChartWidget* chart,
+                                    QwtPlotItem* item,
+                                    QUndoCommand* par = nullptr);
+    ~DAFigureWidgetCommandDetachItem();
+    void redo() override;
+    void undo() override;
+
+public:
+    QPointer< DAChartWidget > mChart;
+    QwtPlotItem* mItem;
+    bool mNeedDelete { false };
+};
+
+/**
+ * @brief 改变图元在绘图内的几何位置（拖动移动）
+ *
+ * 几何快照通过 DAChartElementHitTester::itemGeometry/setItemGeometry 记录与恢复，
+ * 支持 marker 族（锚点）与箭头（起终点）
+ */
+class DAFIGURE_API DAFigureWidgetCommandMovePlotItemPosition : public DAFigureWidgetCommandBase
+{
+public:
+    DAFigureWidgetCommandMovePlotItemPosition(DAFigureWidget* fig,
+                                              DAChartWidget* chart,
+                                              QwtPlotItem* item,
+                                              const DAChartElementHitTester::ItemGeometry& oldGeo,
+                                              const DAChartElementHitTester::ItemGeometry& newGeo,
+                                              QUndoCommand* par = nullptr);
+    void redo() override;
+    void undo() override;
+
+public:
+    QPointer< DAChartWidget > mChart;
+    QwtPlotItem* mItem;
+    DAChartElementHitTester::ItemGeometry mOldGeo;
+    DAChartElementHitTester::ItemGeometry mNewGeo;
 };
 }
 #endif  // DAFIGUREWIDGETCOMMANDS_H

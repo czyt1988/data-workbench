@@ -1754,6 +1754,8 @@ void DAAppController::onFigureCreated(DAFigureWidget* f)
     setDirty();
     connect(f, &DAFigureWidget::currentChartChanged, this, &DAAppController::onCurrentChartChanged);
     connect(f, &DAFigureWidget::chartEditorStatusChanged, this, &DAAppController::onChartEditorStatusChanged);
+    // 指针工具在图中选中元素 → 联动属性设置面板（与树形控件点击同链路）
+    connect(f, &DAFigureWidget::figureElementClicked, this, &DAAppController::onFigureElementClicked);
 }
 
 /**

@@ -753,6 +753,7 @@ void DAAppRibbonArea::buildContextCategoryChartEdit()
     mCategoryChartEdit->setObjectName(QString::fromUtf8(UiNames::Ribbon::ChartEditCategory));
     // 选区工具
     mPannelChartSelectTool = mCategoryChartEdit->addPanel(tr("Select Tool"));  // cn:选区工具
+    mPannelChartSelectTool->addLargeAction(mActions->actionChartEditorPointerSelector);
     mPannelChartSelectTool->addLargeAction(mActions->actionChartEditorRectSelector);
     mPannelChartSelectTool->addMediumAction(mActions->actionChartEditorEllipseSelector);
     mPannelChartSelectTool->addMediumAction(mActions->actionChartEditorPolygonSelector);

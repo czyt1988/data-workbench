@@ -617,4 +617,116 @@ void DAFigureWidgetCommandMove3DItem::undo()
     mSourceChart3D->update();
 }
 
+//----------------------------------------------------
+// DAFigureWidgetCommandDetachItem
+//----------------------------------------------------
+
+/**
+ * @brief 构造函数
+ * @param fig 关联的绘图窗口
+ * @param chart 图元所在的图表
+ * @param item 要删除的图元
+ * @param par 父命令
+ */
+DAFigureWidgetCommandDetachItem::DAFigureWidgetCommandDetachItem(DAFigureWidget* fig,
+                                                                 DAChartWidget* chart,
+                                                                 QwtPlotItem* item,
+                                                                 QUndoCommand* par)
+    : DAFigureWidgetCommandBase(fig, par), mChart(chart), mItem(item), mNeedDelete(false)
+{
+    setText(QObject::tr("remove item from chart"));  // cn:删除绘图中的图元
+}
+
+/**
+ * @brief 析构函数
+ *
+ * item 处于 detach 态（redo 后）时由本命令负责销毁
+ */
+DAFigureWidgetCommandDetachItem::~DAFigureWidgetCommandDetachItem()
+{
+    if (mNeedDelete && mItem) {
+        delete mItem;
+        mItem = nullptr;
+    }
+}
+
+/**
+ * @brief 重做操作：将图元从图表分离
+ */
+void DAFigureWidgetCommandDetachItem::redo()
+{
+    if (!mChart || !mItem) {
+        return;
+    }
+    mItem->detach();
+    mNeedDelete = true;
+    if (mChart) {
+        mChart->replot();
+    }
+}
+
+/**
+ * @brief 撤销操作：将图元重新附加到图表
+ */
+void DAFigureWidgetCommandDetachItem::undo()
+{
+    if (!mChart || !mItem) {
+        return;
+    }
+    mItem->attach(mChart.data());
+    mNeedDelete = false;
+    if (mChart) {
+        mChart->replot();
+    }
+}
+
+//----------------------------------------------------
+// DAFigureWidgetCommandMovePlotItemPosition
+//----------------------------------------------------
+
+/**
+ * @brief 构造函数
+ * @param fig 关联的绘图窗口
+ * @param chart 图元所在的图表
+ * @param item 要移动的图元
+ * @param oldGeo 移动前几何快照
+ * @param newGeo 移动后几何快照
+ * @param par 父命令
+ */
+DAFigureWidgetCommandMovePlotItemPosition::DAFigureWidgetCommandMovePlotItemPosition(
+    DAFigureWidget* fig,
+    DAChartWidget* chart,
+    QwtPlotItem* item,
+    const DAChartElementHitTester::ItemGeometry& oldGeo,
+    const DAChartElementHitTester::ItemGeometry& newGeo,
+    QUndoCommand* par)
+    : DAFigureWidgetCommandBase(fig, par), mChart(chart), mItem(item), mOldGeo(oldGeo), mNewGeo(newGeo)
+{
+    setText(QObject::tr("move plot item position"));  // cn:移动图元位置
+}
+
+/**
+ * @brief 重做操作：恢复到移动后几何
+ */
+void DAFigureWidgetCommandMovePlotItemPosition::redo()
+{
+    if (!mChart || !mItem) {
+        return;
+    }
+    DAChartElementHitTester::setItemGeometry(mItem, mNewGeo);
+    mChart->replot();
+}
+
+/**
+ * @brief 撤销操作：恢复到移动前几何
+ */
+void DAFigureWidgetCommandMovePlotItemPosition::undo()
+{
+    if (!mChart || !mItem) {
+        return;
+    }
+    DAChartElementHitTester::setItemGeometry(mItem, mOldGeo);
+    mChart->replot();
+}
+
 }  // namespace DA

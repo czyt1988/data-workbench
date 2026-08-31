@@ -41,6 +41,7 @@
 #include "DAChartArrowEditor.h"
 #include "DAChartTextMarkerEditor.h"
 #include "DADataProbeMarker.h"
+#include "DAFigurePointerSelectorOverlay.h"
 #include "DALogCategory.h"
 // qwt
 #include "qwt_figure.h"
@@ -150,8 +151,7 @@ public:
                         delete item;
                     }
                 }
-                // 取消路径同样需要发射EndEdit，保证ribbon按钮状态复位
-                fig->emitChartEditorFinishEdit();
+                // EndEdit状态统一在onFigureChartEditorFinished中发射，保证所有编辑器类型（含指针选择器）ribbon按钮复位
             });
 
             return editor;
@@ -197,6 +197,7 @@ public:
     void beginVerticalProbeEditor();
     void beginHorizontalProbeEditor();
     void beginTextMarkerEditor();
+    void beginPointerSelectorEditor();
 };
 
 /**
@@ -301,6 +302,49 @@ void DAFigureWidget::PrivateData::beginTextMarkerEditor()
     if (mChartEditor) {
         mChartEditor->setCursor(Qt::IBeamCursor);
     }
+}
+
+/**
+ * @brief 开始指针选择器
+ *
+ * 指针工具是持久会话（不因单次交互结束），选择/拖动/删除绘图元素。
+ * 选中结果经 figureElementClicked 信号联动属性面板；
+ * 删除与移动经信号回到 DAFigureWidget 走 undo 栈
+ */
+void DAFigureWidget::PrivateData::beginPointerSelectorEditor()
+{
+    DAFigureWidget* fig = q_ptr;
+    DAFigurePointerSelectorOverlay* overlay = new DAFigurePointerSelectorOverlay(fig->figure(), fig);
+    mChartEditor                            = overlay;
+    overlay->setEnabled(true);
+    overlay->show();
+    overlay->raise();
+    fig->emitChartEditorBeginEdit();
+    // 元素选中 → 联动属性面板
+    DAFigureWidget::connect(
+        overlay, &DAFigurePointerSelectorOverlay::elementSelected, fig, &DAFigureWidget::figureElementClicked);
+    // 删除请求 → 走undo栈
+    DAFigureWidget::connect(overlay, &DAFigurePointerSelectorOverlay::requestRemoveItem, fig, [ fig ](QwtPlotItem* item) {
+        if (DAChartWidget* chart = fig->findChartFromItem(item)) {
+            fig->removeItem_(chart, item);
+        }
+    });
+    // 位置移动请求 → 走undo栈
+    DAFigureWidget::connect(overlay,
+                            &DAFigurePointerSelectorOverlay::requestMoveItemPosition,
+                            fig,
+                            [ fig ](QwtPlotItem* item,
+                                    const DAChartElementHitTester::ItemGeometry& oldGeo,
+                                    const DAChartElementHitTester::ItemGeometry& newGeo) {
+                                if (DAChartWidget* chart = fig->findChartFromItem(item)) {
+                                    fig->moveItemPosition_(chart, item, oldGeo, newGeo);
+                                }
+                            });
+    // Esc退出 → 结束编辑会话（走现有endChartEditor销毁流程）
+    DAFigureWidget::connect(
+        overlay, &DAFigurePointerSelectorOverlay::finished, fig, &DAFigureWidget::onFigureChartEditorFinished);
+    DAFigureWidget::connect(
+        overlay, &DAFigureWidgetOverlay::activeWidgetChanged, fig, &DAFigureWidget::onOverlayActiveWidgetChanged);
 }
 
 //===================================================
@@ -1285,6 +1329,9 @@ void DAFigureWidget::beginChartEditor(ChartEditorType type)
     case TextMarker:
         d->beginTextMarkerEditor();
         break;
+    case PointerSelector:
+        d->beginPointerSelectorEditor();
+        break;
     default:
         daWarning << tr("Unsupported chart editor type: %1").arg(type);  //cn:不支持的图表编辑器类型：%1
         break;
@@ -1424,6 +1471,37 @@ bool DAFigureWidget::addItem_(QwtPlotItem* item)
 void DAFigureWidget::addItem_(DAChartWidget* chart, QwtPlotItem* item, bool skipfirstRedo)
 {
     push(new DAFigureWidgetCommandAttachItem(this, chart, item, skipfirstRedo));
+}
+
+/**
+ * @brief 支持redo/undo的删除item（detach）
+ * @param chart item所在的绘图
+ * @param item 要删除的item
+ */
+void DAFigureWidget::removeItem_(DAChartWidget* chart, QwtPlotItem* item)
+{
+    if (!chart || !item) {
+        return;
+    }
+    push(new DAFigureWidgetCommandDetachItem(this, chart, item));
+}
+
+/**
+ * @brief 支持redo/undo的图元位置移动
+ * @param chart item所在的绘图
+ * @param item 要移动的item
+ * @param oldGeo 移动前几何
+ * @param newGeo 移动后几何
+ */
+void DAFigureWidget::moveItemPosition_(DAChartWidget* chart,
+                                       QwtPlotItem* item,
+                                       const DAChartElementHitTester::ItemGeometry& oldGeo,
+                                       const DAChartElementHitTester::ItemGeometry& newGeo)
+{
+    if (!chart || !item || !oldGeo.valid || !newGeo.valid) {
+        return;
+    }
+    push(new DAFigureWidgetCommandMovePlotItemPosition(this, chart, item, oldGeo, newGeo));
 }
 
 /**
@@ -1708,6 +1786,9 @@ void DAFigureWidget::onFigureChartEditorFinished(bool isCancel)
 {
     Q_UNUSED(isCancel);
     endChartEditor();
+    // 指针选择器等非创建型编辑器的 finished 信号不经 EditorFactory 的 lambda，
+    // 这里统一发射结束状态，保证ribbon按钮复位
+    emitChartEditorFinishEdit();
 }
 
 /**

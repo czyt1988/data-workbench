@@ -31,6 +31,7 @@ public:
         RTTILineEditor,                 ///< 用于给图表添加线段，对应DAChartLineEditor
         RTTITwoPointEditor,             ///< 两点编辑器基类，对应DAAbstractTwoPointEditor
         RTTITextEditor,                 ///< 用于给图表添加文本标注，对应DAChartTextMarkerEditor
+        RTTIPointerSelector,            ///< 指针选择器，对应DAChartPointerSelectorEditor
     };
 
     const QwtPlot* plot() const;

@@ -186,6 +186,8 @@ void DAAppActions::buildChartAction()
     actionGroupChartEditor->setExclusionPolicy(QActionGroup::ExclusionPolicy::ExclusiveOptional);  // 允许所有都不选择
     actionChartEditorResizeSubChart = createAction(
         UiNames::Action::ChartEditorResizeSubChart, ":/app/bright/Icon/figureResizeChart.svg", true, false, actionGroupChartEditor);
+    actionChartEditorPointerSelector = createAction(
+        UiNames::Action::ChartEditorPointerSelector, ":/app/bright/Icon/chart-pointer-selector.svg", true, false, actionGroupChartEditor);
     actionChartEditorRectSelector = createAction(
         UiNames::Action::ChartEditorRectSelector, ":/app/bright/Icon/chart-selector-rect.svg", true, false, actionGroupChartEditor);
     actionChartEditorEllipseSelector = createAction(
@@ -208,6 +210,7 @@ void DAAppActions::buildChartAction()
         UiNames::Action::AddVerticalPlotProbeMarker, ":/app/bright/Icon/plot-probe.svg", true, false, actionGroupChartEditor);
     actionChartDataPickerSetting   = createAction(UiNames::Action::ChartDataPickerSetting, ":/DAGui/icon/data-picker-setting.svg");
     actionChartEditorResizeSubChart->setData(static_cast< int >(DAFigureWidget::SubChartEditor));
+    actionChartEditorPointerSelector->setData(static_cast< int >(DAFigureWidget::PointerSelector));
     actionChartEditorRectSelector->setData(static_cast< int >(DAFigureWidget::RectSelectEditor));
     actionChartEditorEllipseSelector->setData(static_cast< int >(DAFigureWidget::EllipseSelectEditor));
     actionChartEditorPolygonSelector->setData(static_cast< int >(DAFigureWidget::PolygonSelectEditor));
@@ -508,6 +511,9 @@ void DAAppActions::retranslateUi()
     actionCopyFigureInClipboard->setText(tr("Copy To Clipboard"));                     // cn:复制到剪切板
     actionCopyFigureInClipboard->setToolTip(tr("Copy the figure to the clipboard"));   // cn:将绘图复制到剪切板
 
+    actionChartEditorPointerSelector->setText(tr("Pointer"));  // cn:指针
+    actionChartEditorPointerSelector->setToolTip(
+        tr("Select chart elements by clicking, drag to move, Delete to remove"));  // cn:点击选择绘图元素（曲线/坐标轴/标题等），拖动移动，Delete删除
     actionChartEditorRectSelector->setText(tr("Add Rect"));                                // cn:添加矩形
     actionChartEditorRectSelector->setToolTip(tr("Add a rectangle to the chart"));         // cn:添加矩形
     actionChartEditorEllipseSelector->setText(tr("Add Ellipse"));                          // cn:添加椭圆

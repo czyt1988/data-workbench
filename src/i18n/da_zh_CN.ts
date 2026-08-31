@@ -1277,7 +1277,7 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="../APP/DAAppActions.cpp" line="+381"/>
+        <location filename="../APP/DAAppActions.cpp" line="+388"/>
         <source>Open</source>
         <translation>打开</translation>
     </message>
@@ -1731,7 +1731,7 @@ All</source>
         <translation>图例</translation>
     </message>
     <message>
-        <location line="+42"/>
+        <location line="+47"/>
         <source>To Numeric</source>
         <translation>转换为数值类型</translation>
     </message>
@@ -1786,7 +1786,7 @@ All</source>
         <translation>深色主题</translation>
     </message>
     <message>
-        <location line="-141"/>
+        <location line="-146"/>
         <source>Enable or disable legend in the chart</source>
         <translation>启用或禁用图表中的图例</translation>
     </message>
@@ -1936,6 +1936,16 @@ Line 3D</source>
     </message>
     <message>
         <location line="+2"/>
+        <source>Pointer</source>
+        <translation>指针</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Select chart elements by clicking, drag to move, Delete to remove</source>
+        <translation>点击选择绘图元素，拖动移动，Delete删除</translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Add Rect</source>
         <translation>添加矩形</translation>
     </message>
@@ -2003,6 +2013,16 @@ Line 3D</source>
         <location line="+1"/>
         <source>Add an arrow marker to the chart</source>
         <translation>添加箭头标记</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add Text</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add a text marker to the chart</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
@@ -2541,24 +2561,24 @@ Config</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+695"/>
+        <location filename="../APP/DAAppController.cpp" line="+696"/>
         <source>Save Project</source>
         <translation>保存工程</translation>
     </message>
     <message>
         <location line="+19"/>
-        <location line="+841"/>
+        <location line="+864"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location line="-830"/>
+        <location line="-853"/>
         <source>Failed to save project! Path: %1</source>
         <translation>工程保存失败！路径为:%1</translation>
     </message>
     <message>
         <location line="+3"/>
-        <location line="+591"/>
+        <location line="+614"/>
         <source>Project saved successfully, path: %1</source>
         <translation>工程保存成功，路径为:%1</translation>
     </message>
@@ -2578,29 +2598,29 @@ Config</source>
         <translation>图片保存失败：%1</translation>
     </message>
     <message>
-        <location line="+417"/>
+        <location line="+419"/>
         <source>Before creating a new coordinate, you need to create a figure</source>
         <translation>在创建一个坐标系之前，需要先创建一个绘图窗口</translation>
     </message>
     <message>
-        <location line="-1180"/>
+        <location line="-1205"/>
         <source>Please select the data operation window</source>
         <translation>请选中数据操作窗口</translation>
     </message>
     <message>
         <location line="-50"/>
-        <location line="+500"/>
+        <location line="+523"/>
         <location line="+73"/>
         <source>Project File</source>
         <translation>工程文件</translation>
     </message>
     <message>
-        <location line="-555"/>
+        <location line="-578"/>
         <source>Whether to overwrite the file: %1</source>
         <translation>是否覆盖文件:%1</translation>
     </message>
     <message>
-        <location line="+442"/>
+        <location line="+465"/>
         <location line="+19"/>
         <source>Question</source>
         <translation>疑问</translation>
@@ -2643,7 +2663,7 @@ Config</source>
         <translation>获取到空工程接口</translation>
     </message>
     <message>
-        <location line="+364"/>
+        <location line="+366"/>
         <source>Figure &apos;%1&apos; not found, it may have been closed or renamed</source>
         <translation>未找到绘图&quot;%1&quot;，可能已关闭或被重命名</translation>
     </message>
@@ -2725,7 +2745,7 @@ Config</source>
         <translation>选中的数据源为空</translation>
     </message>
     <message>
-        <location line="-1828"/>
+        <location line="-1830"/>
         <source>Before running the workflow, you need to save the project</source>
         <translation>在运行工作流之前，需要先保存工程</translation>
     </message>
@@ -2746,7 +2766,7 @@ Config</source>
 <context>
     <name>DA::DAAppDockingArea</name>
     <message>
-        <location filename="../APP/DAAppDockingArea.cpp" line="+69"/>
+        <location filename="../APP/DAAppDockingArea.cpp" line="+70"/>
         <source>Workflow Node</source>
         <translation>节点</translation>
     </message>
@@ -3169,7 +3189,7 @@ Config</source>
 <context>
     <name>DA::DAAppRibbonArea</name>
     <message>
-        <location filename="../APP/DAAppRibbonArea.cpp" line="+190"/>
+        <location filename="../APP/DAAppRibbonArea.cpp" line="+191"/>
         <source>File</source>
         <translation>文件</translation>
     </message>
@@ -3311,7 +3331,7 @@ Config</source>
         <translation>设置主题</translation>
     </message>
     <message>
-        <location line="+837"/>
+        <location line="+839"/>
         <location line="+2"/>
         <source>AI Agent</source>
         <translation>AI智能体</translation>
@@ -3358,7 +3378,7 @@ Config</source>
         <translation>Agent 模块未就绪</translation>
     </message>
     <message>
-        <location line="-987"/>
+        <location line="-989"/>
         <location line="+357"/>
         <source>Item</source>
         <translation>图元</translation>
@@ -3485,12 +3505,12 @@ Config</source>
         <translation>主题</translation>
     </message>
     <message>
-        <location line="+21"/>
+        <location line="+22"/>
         <source>Assist Tools</source>
         <translation>辅助工具</translation>
     </message>
     <message>
-        <location line="+17"/>
+        <location line="+18"/>
         <source>Recent Files</source>
         <translation>最近打开的文件</translation>
     </message>
@@ -7730,6 +7750,99 @@ Config</source>
     </message>
 </context>
 <context>
+    <name>DA::DAChartTextMarkerSettingPanel</name>
+    <message>
+        <location filename="../DAGui/ChartSetting/DAChartTextMarkerSettingPanel.cpp" line="+54"/>
+        <source>Basic</source>
+        <translation type="unfinished">基础</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Title</source>
+        <translation type="unfinished">标题</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Z Value</source>
+        <translation type="unfinished">Z值</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>X Axis</source>
+        <translation type="unfinished">X轴</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Y Axis</source>
+        <translation type="unfinished">Y轴</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Anchor X</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Anchor Y</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Text</source>
+        <translation type="unfinished">文本</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Edit Rich Text...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Content</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Font</source>
+        <translation type="unfinished">字体</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Text Color</source>
+        <translation type="unfinished">文字颜色</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Alignment</source>
+        <translation type="unfinished">对齐</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Background</source>
+        <translation type="unfinished">背景</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Border Radius</source>
+        <translation type="unfinished">边框圆角</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Background Brush</source>
+        <translation type="unfinished">背景画刷</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Layout</source>
+        <translation type="unfinished">布局</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Spacing</source>
+        <translation type="unfinished">间距</translation>
+    </message>
+</context>
+<context>
     <name>DA::DAChartTradingCurveSettingPanel</name>
     <message>
         <location filename="../DAGui/ChartSetting/DAChartTradingCurveSettingPanel.cpp" line="+48"/>
@@ -8569,7 +8682,7 @@ Config</source>
         <translation>意外的绘图操作：不属于 DAChartWidget 类型的图表被添加到了 figure 中</translation>
     </message>
     <message>
-        <location line="+1122"/>
+        <location line="+1188"/>
         <source>Unsupported chart editor type: %1</source>
         <translation>不支持的图表编辑器类型：%1</translation>
     </message>
@@ -10301,7 +10414,7 @@ Config</source>
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-1446"/>
+        <location filename="../APP/DAAppController.cpp" line="-1469"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>
@@ -12327,7 +12440,7 @@ Config</source>
 <context>
     <name>DAFigureWidget</name>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="-1184"/>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="-1248"/>
         <source>Figure</source>
         <translation>绘图</translation>
     </message>
@@ -13127,7 +13240,7 @@ Config</source>
 <context>
     <name>DataAnalysisUI</name>
     <message>
-        <location filename="../../plugins/DataAnalysis/DataAnalysisUI.cpp" line="+84"/>
+        <location filename="../../plugins/DataAnalysis/DataAnalysisUI.cpp" line="+87"/>
         <location line="+87"/>
         <source>Data Cleaning</source>
         <translation>数据清洗</translation>
@@ -14844,6 +14957,16 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>移动3D图元到另一个绘图</translation>
     </message>
     <message>
+        <location line="+58"/>
+        <source>remove item from chart</source>
+        <translation>删除绘图中的图元</translation>
+    </message>
+    <message>
+        <location line="+68"/>
+        <source>move plot item position</source>
+        <translation>移动图元位置</translation>
+    </message>
+    <message>
         <location filename="../DAFigure/Models/DAStandardItemPlot.cpp" line="+72"/>
         <source>layout-%1</source>
         <translation>布局-%1</translation>
@@ -15073,6 +15196,56 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <location line="+10"/>
         <source>Failed to initialize script runner: %1</source>
         <translation>初始化脚本执行引擎失败：%1</translation>
+    </message>
+    <message>
+        <location filename="../DAFigure/DAChartTextEditorPopup.cpp" line="+78"/>
+        <source>Text Background Color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Strikethrough</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Superscript</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Subscript</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Clear</source>
+        <translation type="unfinished">清除</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Clear character format of selected text</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+19"/>
+        <source>Cancel</source>
+        <translation type="unfinished">取消</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>OK</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DAFigure/DAChartTextMarkerEditor.cpp" line="+128"/>
+        <source>Text Marker</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Text</source>
+        <translation type="unfinished">文本</translation>
     </message>
 </context>
 <context>

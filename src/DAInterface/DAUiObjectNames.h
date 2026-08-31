@@ -172,6 +172,7 @@ constexpr char ChartYPickerShowXValueEnabled[] = "actionChartYPickerShowXValueEn
 constexpr char ChartEnableLegend[]    = "actionChartEnableLegend";
 constexpr char CopyFigureInClipboard[] = "actionCopyFigureInClipboard";
 constexpr char ChartEditorResizeSubChart[]     = "actionChartEditorResizeSubChart";
+constexpr char ChartEditorPointerSelector[]    = "actionChartEditorPointerSelector";
 constexpr char ChartEditorRectSelector[]       = "actionChartEditorRectSelector";
 constexpr char ChartEditorEllipseSelector[]    = "actionChartEditorEllipseSelector";
 constexpr char ChartEditorPolygonSelector[]    = "actionChartEditorPolygonSelector";

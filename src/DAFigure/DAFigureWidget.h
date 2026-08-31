@@ -7,6 +7,8 @@
 #include "DAChartFactory.h"
 #include "DAColorTheme.h"
 #include "DAFigureChartEditorWidgetOverlay.h"
+#include "DAChartElementHitTester.h"
+#include "DAFigureElementSelection.h"
 // qt
 class QPaintEvent;
 class QFocusEvent;
@@ -57,6 +59,7 @@ public:
         VerticalDataProbe,       ///< 垂直数据探针
         HorizontalDataProbe,     ///< 水平数据探针
         TextMarker,              ///< 文本标注
+        PointerSelector,         ///< 指针选择工具（选择/拖动/删除绘图元素）
         BuilinEditorCount,       ///< 内置编辑器数量
         UserDefineEditor = 1000  ///< 用户自定义编辑器
     };
@@ -233,6 +236,13 @@ public:
     // redo/undo的additem
     bool addItem_(QwtPlotItem* item);
     void addItem_(DAChartWidget* chart, QwtPlotItem* item, bool skipfirstRedo = false);
+    // 支持redo/undo的removeitem（detach）
+    void removeItem_(DAChartWidget* chart, QwtPlotItem* item);
+    // 支持redo/undo的图元位置移动
+    void moveItemPosition_(DAChartWidget* chart,
+                           QwtPlotItem* item,
+                           const DAChartElementHitTester::ItemGeometry& oldGeo,
+                           const DAChartElementHitTester::ItemGeometry& newGeo);
     // 支持redo/undo的addCurve，等同于gca()->addCurve
     QwtPlotCurve* addCurve_(const QVector< QPointF >& xyDatas);
     QwtPlotCurve* addScatter_(const QVector< QPointF >& xyDatas);
@@ -296,6 +306,13 @@ Q_SIGNALS:
      * @brief chartEditorStatusChanged
      */
     void chartEditorStatusChanged(DA::DAFigureWidget::ChartEditorStatus status);
+
+    /**
+     * @brief 绘图元素被选中的信号（指针工具/树形控件等来源）
+     *
+     * 由DAAppController消费，联动右侧属性设置面板
+     */
+    void figureElementClicked(const DA::DAFigureElementSelection& sel);
 
 protected:
     bool eventFilter(QObject* obj, QEvent* event) override;

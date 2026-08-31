@@ -169,6 +169,7 @@ public:
     QAction* actionChartPickerTextFollowMouse;       ///< ypicker的文字跟随鼠标
     QAction* actionChartYPickerShowXValueEnabled;    ///< ypicker显示x值
 
+    QAction* actionChartEditorPointerSelector;  ///< 指针选择工具（选择/拖动/删除绘图元素）
     QAction* actionChartEditorRectSelector;     ///< 矩形选框
     QAction* actionChartEditorEllipseSelector;  ///< 椭圆选框
     QAction* actionChartEditorPolygonSelector;  ///< 多边形选框
