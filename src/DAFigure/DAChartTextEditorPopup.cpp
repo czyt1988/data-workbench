@@ -72,6 +72,8 @@ DAChartTextEditorPopup::PrivateData::PrivateData(DAChartTextEditorPopup* p) : q_
 void DAChartTextEditorPopup::PrivateData::buildFontPanel(QHBoxLayout* lay)
 {
     mFontPanel = new DAFontEditPannelWidget(q_ptr);
+    // 弹窗工具栏高度受限，字体面板使用单排布局
+    mFontPanel->setLayoutMode(DAFontEditPannelWidget::SingleRowLayout);
     lay->addWidget(mFontPanel, 1);
 
     mBgColorButton = new DAColorPickerButton(q_ptr);

@@ -15,7 +15,8 @@ namespace DA
  *
  * 用于 DAChartTextMarker 的富文本实时编辑，窗口标志为 Qt::Popup：
  * - 在锚点附近弹出，自动避开锚点且不超出屏幕
- * - 工具栏复用 DAWidgets 的 DAFontEditPannelWidget（字体/字号/加粗/斜体/下划线/文字颜色）
+ * - 工具栏复用 DAWidgets 的 DAFontEditPannelWidget（字体/字号/加粗/斜体/下划线/文字颜色，
+ *   采用 SingleRowLayout 单排布局以压缩工具栏高度）
  *   与 DAColorPickerButton（文字背景色），另有删除线/上标/下标/清除格式按钮
  * - 文本或格式变化时发射 textChanged(html)，调用方据此实时刷新绘图
  *
