@@ -886,8 +886,9 @@ void DAAppRibbonArea::setDockingArea(DAAppDockingArea* dock)
 {
     mDockArea = dock;
     buildMenu();
-    buildRibbon();
+    // Undo/Redo 由 QUndoGroup 生成，必须先于 buildRibbon 创建（主页剪贴板面板会直接引用）
     buildRedoUndo();
+    buildRibbon();
     resetText();
 }
 
