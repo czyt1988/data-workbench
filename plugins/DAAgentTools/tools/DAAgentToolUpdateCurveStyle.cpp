@@ -49,8 +49,9 @@ DAAgentToolSpec DAAgentToolUpdateCurveStyle::getToolSpec() const
     using Type = DAAgentToolParam::Type;
     DAAgentToolSpec spec{QStringLiteral("update_curve_style"),
                          QStringLiteral("Modify the appearance of an existing curve (color, line style, width, "
-                                        "symbol, fill). Identify the curve by its title or index. Use list_figures to "
-                                        "discover curve names.")};
+                                        "symbol, fill). Identify the curve by its title (legend label) or index. Use "
+                                        "list_chart_items with item_type='curve' to discover curve names and "
+                                        "indices.")};
     spec.addParam({QStringLiteral("chart_id"),
                    QStringLiteral("Chart identifier (title or index). Empty or 'current' for active chart."),
                    {Type::String}});
@@ -58,7 +59,8 @@ DAAgentToolSpec DAAgentToolUpdateCurveStyle::getToolSpec() const
                    QStringLiteral("Figure name to target a specific figure. Empty for current active figure."),
                    {Type::String}});
     spec.addParam({QStringLiteral("curve_name"),
-                   QStringLiteral("Curve title or index (0-based). Use list_figures to find curve names."),
+                   QStringLiteral("Curve title (legend label) or index (0-based). Use list_chart_items "
+                                  "(item_type='curve') to find curve names and indices."),
                    {Type::String},
                    true});
     spec.addParam({QStringLiteral("color"),
@@ -130,7 +132,7 @@ QJsonObject DAAgentToolUpdateCurveStyle::execute(const QJsonObject& params)
     }
 
     if (!target) {
-        return errorResponse(QString("Curve '%1' not found. Use list_figures to see available curves.").arg(curveName));
+        return errorResponse(QString("Curve '%1' not found. Use list_chart_items (item_type='curve') to see available curves.").arg(curveName));
     }
 
     bool changed = false;

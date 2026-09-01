@@ -128,4 +128,67 @@ void DAAgentChartToolBase::enableAutoScale(DAChartWidget* chart) const
     chart->setAxisAutoScale(QwtPlot::xBottom, true);
     chart->setAxisAutoScale(QwtPlot::yLeft, true);
 }
+
+/**
+ * @brief 按 item_type 语义过滤 item 列表
+ * @param items 待过滤的 item 列表（QwtPlot::itemList 的 z 序）
+ * @param itemType 类型过滤词：'curve' / 'annotation' / 'region' / 'any'（空或未知值均按 any）
+ * @return 过滤后的 item 列表，保持原 z 序；索引口径与 remove_chart_item 的 item_name 索引匹配一致
+ */
+QwtPlotItemList DAAgentChartToolBase::filterChartItems(const QwtPlotItemList& items, const QString& itemType)
+{
+    QString type = itemType.toLower();
+    if (type.isEmpty()) {
+        type = "any";
+    }
+    QwtPlotItemList candidates;
+    for (QwtPlotItem* item : items) {
+        if (!item) continue;
+        int rtti = item->rtti();
+        if (type == "curve") {
+            if (rtti == QwtPlotItem::Rtti_PlotCurve) candidates.append(item);
+        } else if (type == "annotation") {
+            if (rtti == QwtPlotItem::Rtti_PlotMarker) candidates.append(item);
+        } else if (type == "region") {
+            // Regions are QwtPlotShapeItem — exclude known non-data items
+            if (rtti != QwtPlotItem::Rtti_PlotCurve
+                && rtti != QwtPlotItem::Rtti_PlotMarker
+                && rtti != QwtPlotItem::Rtti_PlotGrid
+                && rtti != QwtPlotItem::Rtti_PlotLegend) {
+                candidates.append(item);
+            }
+        } else {
+            // "any" — match all items except grid and legend
+            if (rtti != QwtPlotItem::Rtti_PlotGrid
+                && rtti != QwtPlotItem::Rtti_PlotLegend) {
+                candidates.append(item);
+            }
+        }
+    }
+    return candidates;
+}
+
+/**
+ * @brief 获取 item 的语义类型名
+ * @param item 图表元素
+ * @return 'curve'（曲线）/ 'annotation'（标记）/ 'region'（形状等其余元素）；
+ *         grid/legend 等被 filterChartItems 排除的类型返回 "other"
+ */
+QString DAAgentChartToolBase::chartItemTypeName(const QwtPlotItem* item)
+{
+    if (!item) {
+        return QStringLiteral("other");
+    }
+    const int rtti = item->rtti();
+    if (rtti == QwtPlotItem::Rtti_PlotCurve) {
+        return QStringLiteral("curve");
+    }
+    if (rtti == QwtPlotItem::Rtti_PlotMarker) {
+        return QStringLiteral("annotation");
+    }
+    if (rtti == QwtPlotItem::Rtti_PlotGrid || rtti == QwtPlotItem::Rtti_PlotLegend) {
+        return QStringLiteral("other");
+    }
+    return QStringLiteral("region");
+}
 }  // namespace DA

@@ -1,7 +1,5 @@
 #include "DAAgentToolRemoveChartItem.h"
 #include "qwt_plot_item.h"
-#include "qwt_plot_curve.h"
-#include "qwt_plot_marker.h"
 #include "qwt_text.h"
 
 namespace DA
@@ -15,7 +13,8 @@ DAAgentToolSpec DAAgentToolRemoveChartItem::getToolSpec() const
     using Type = DAAgentToolParam::Type;
     DAAgentToolSpec spec{QStringLiteral("remove_chart_item"),
                          QStringLiteral("Remove a curve, annotation, or region from a chart. Identify the item by its "
-                                        "title or index. Use list_figures to discover item names.")};
+                                        "title (legend label) or index. Use list_chart_items to discover item names "
+                                        "and indices.")};
     spec.addParam({QStringLiteral("chart_id"),
                    QStringLiteral("Chart identifier (title or index). Empty or 'current' for active chart."),
                    {Type::String}});
@@ -23,7 +22,8 @@ DAAgentToolSpec DAAgentToolRemoveChartItem::getToolSpec() const
                    QStringLiteral("Figure name to target a specific figure. Empty for current active figure."),
                    {Type::String}});
     spec.addParam({QStringLiteral("item_name"),
-                   QStringLiteral("Item title or index (0-based). Use list_figures to find item names."),
+                   QStringLiteral("Item title (legend label) or index (0-based). Use list_chart_items to find item "
+                                  "names and indices."),
                    {Type::String},
                    true});
     spec.addParam({QStringLiteral("item_type"),
@@ -56,34 +56,8 @@ QJsonObject DAAgentToolRemoveChartItem::execute(const QJsonObject& params)
         return errorResponse(QString("Chart '%1' not found").arg(ref));
     }
 
-    // Get all plot items (QwtPlot::itemList returns items in z-order)
-    const QwtPlotItemList items = chart->itemList();
-
-    // Filter by item_type
-    QwtPlotItemList candidates;
-    for (QwtPlotItem* item : items) {
-        if (!item) continue;
-        int rtti = item->rtti();
-        if (itemType == "curve") {
-            if (rtti == QwtPlotItem::Rtti_PlotCurve) candidates.append(item);
-        } else if (itemType == "annotation") {
-            if (rtti == QwtPlotItem::Rtti_PlotMarker) candidates.append(item);
-        } else if (itemType == "region") {
-            // Regions are QwtPlotShapeItem — exclude known non-data items
-            if (rtti != QwtPlotItem::Rtti_PlotCurve
-                && rtti != QwtPlotItem::Rtti_PlotMarker
-                && rtti != QwtPlotItem::Rtti_PlotGrid
-                && rtti != QwtPlotItem::Rtti_PlotLegend) {
-                candidates.append(item);
-            }
-        } else {
-            // "any" — match all items except grid and legend
-            if (rtti != QwtPlotItem::Rtti_PlotGrid
-                && rtti != QwtPlotItem::Rtti_PlotLegend) {
-                candidates.append(item);
-            }
-        }
-    }
+    // 按 item_type 过滤（共享口径，与 list_chart_items 的索引一致）
+    const QwtPlotItemList candidates = filterChartItems(chart->itemList(), itemType);
 
     if (candidates.isEmpty()) {
         return errorResponse(QString("No items of type '%1' found in this chart").arg(itemType));
@@ -108,7 +82,7 @@ QJsonObject DAAgentToolRemoveChartItem::execute(const QJsonObject& params)
     }
 
     if (!target) {
-        return errorResponse(QString("Item '%1' not found. Use list_figures to see available items.").arg(itemName));
+        return errorResponse(QString("Item '%1' not found. Use list_chart_items to see available items.").arg(itemName));
     }
 
     QString removedName = target->title().text();

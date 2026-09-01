@@ -37,7 +37,7 @@
  * @def 编译的日期（字符串）
  */
 #ifndef DA_COMPILE_DATETIME
-#define DA_COMPILE_DATETIME "260831"
+#define DA_COMPILE_DATETIME "260901"
 #endif
 
 /**
@@ -51,14 +51,14 @@
  * @def 编译的月份（字符串）
  */
 #ifndef DA_COMPILE_DATETIME_MONTH
-#define DA_COMPILE_DATETIME_MONTH "08"
+#define DA_COMPILE_DATETIME_MONTH "09"
 #endif
 
 /**
  * @def 编译的日期（字符串）
  */
 #ifndef DA_COMPILE_DATETIME_DAY
-#define DA_COMPILE_DATETIME_DAY "31"
+#define DA_COMPILE_DATETIME_DAY "01"
 #endif
 
 /**

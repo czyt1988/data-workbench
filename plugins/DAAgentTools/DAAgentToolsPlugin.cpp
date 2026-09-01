@@ -2,14 +2,14 @@
 #include "DAAgentInterface.h"
 #include "DACoreInterface.h"
 #include "DAAbstractAgentTool.h"
-// 20 built-in tools (moved from src/DAAgent/tools/ by plan-03; add_region merged into add_annotation)
+// 21 built-in tools (moved from src/DAAgent/tools/ by plan-03; add_region merged into add_annotation)
 // Data tools (5) -- inherit DAAgentToolBase
 #include "tools/DAAgentToolListData.h"
 #include "tools/DAAgentToolDataInfo.h"
 #include "tools/DAAgentToolQueryData.h"
 #include "tools/DAAgentToolColumnStats.h"
 #include "tools/DAAgentToolExportData.h"
-// Chart tools (10) -- inherit DAAgentChartToolBase (add_region merged into add_annotation)
+// Chart tools (11) -- inherit DAAgentChartToolBase (add_region merged into add_annotation)
 #include "tools/DAAgentToolCreateChart.h"
 #include "tools/DAAgentToolAddCurve.h"
 #include "tools/DAAgentToolSetChartStyle.h"
@@ -20,6 +20,7 @@
 #include "tools/DAAgentToolCreateSubplots.h"
 #include "tools/DAAgentToolSaveChartImage.h"
 #include "tools/DAAgentToolListFigures.h"
+#include "tools/DAAgentToolListChartItems.h"
 // File/report tools (3) -- inherit DAAgentToolBase
 #include "tools/DAAgentToolReadFile.h"
 #include "tools/DAAgentToolWriteFile.h"
@@ -60,7 +61,7 @@ bool DAAgentToolsPlugin::initialize()
     agent->registerTool(new DAAgentToolQueryData(c, this));
     agent->registerTool(new DAAgentToolColumnStats(c, this));
     agent->registerTool(new DAAgentToolExportData(c, this));
-    // Chart tools (10) -- inherit DAAgentChartToolBase
+    // Chart tools (11) -- inherit DAAgentChartToolBase
     agent->registerTool(new DAAgentToolCreateChart(c, this));
     agent->registerTool(new DAAgentToolAddCurve(c, this));
     agent->registerTool(new DAAgentToolSetChartStyle(c, this));
@@ -71,6 +72,7 @@ bool DAAgentToolsPlugin::initialize()
     agent->registerTool(new DAAgentToolCreateSubplots(c, this));
     agent->registerTool(new DAAgentToolSaveChartImage(c, this));
     agent->registerTool(new DAAgentToolListFigures(c, this));
+    agent->registerTool(new DAAgentToolListChartItems(c, this));
     // File/report tools (3) -- inherit DAAgentToolBase
     agent->registerTool(new DAAgentToolReadFile(c, this));
     agent->registerTool(new DAAgentToolWriteFile(c, this));
@@ -91,7 +93,8 @@ bool DAAgentToolsPlugin::initialize()
         "- The link text should be a short human-readable name (use the chart title or figure_name).\n"
         "- Prefer the name form for brevity; use the id form when figure names may duplicate.\n"
         "- Only reference figures you have created in the current session (the user can click the link to raise and focus that figure).\n"
-        "- Use `list_figures` to discover existing figures and their names/ids.\n"
+        "- Use `list_figures` to discover existing figures and their names/ids, and `list_chart_items` to inspect "
+        "the items (curves, annotations, regions) inside a chart before modifying or removing them.\n"
     ));
     return DAAbstractPlugin::initialize();  // base default returns true
 }

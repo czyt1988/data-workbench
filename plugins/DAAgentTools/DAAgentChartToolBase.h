@@ -6,6 +6,7 @@
 #include "DAFigureWidget.h"
 #include "DAChartWidget.h"
 #include "Chart/DAChartOperateWidget.h"
+#include "qwt_plot_item.h"
 
 namespace DA
 {
@@ -17,7 +18,10 @@ namespace DA
  * / createFigure / findChart / enableAutoScale），实现体逐字照搬自旧
  * DAAgentToolBase.h，依赖 mCore->getUiInterface()->getDockingArea()->
  * getChartOperateWidget() 链路。本类无导出宏，方法为 protected 非虚，
- * 编译进插件 DLL，8 个图表工具（同 DLL）可见即可调用。
+ * 编译进插件 DLL，11 个图表工具（同 DLL）可见即可调用。
+ * 另提供 filterChartItems / chartItemTypeName 两个共享静态方法，统一
+ * item_type（curve/annotation/region/any）的过滤语义，供列出与删除类
+ * 工具复用，保证索引口径一致。
  */
 class DAAgentChartToolBase : public DAAgentToolBase
 {
@@ -40,5 +44,9 @@ protected:
     DAChartWidget* findChart(const QString& chartId, const QString& figureName = QString()) const;
     // 重新启用图表坐标轴自动缩放，确保数据可见
     void enableAutoScale(DAChartWidget* chart) const;
+    // 按 item_type（curve/annotation/region/any，空或未知按 any）过滤 item 列表，规则与 remove_chart_item 一致
+    static QwtPlotItemList filterChartItems(const QwtPlotItemList& items, const QString& itemType);
+    // rtti → 语义类型名（"curve"/"annotation"/"region"，grid/legend 等被过滤排除的类型返回 "other"）
+    static QString chartItemTypeName(const QwtPlotItem* item);
 };
 }  // namespace DA

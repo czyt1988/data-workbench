@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-# DAAgentTools：平台内置 agent 工具插件（16 工具）
+# DAAgentTools：平台内置 agent 工具插件（21 工具）
 # 顶层构建：由根 CMakeLists include 工具文件并设置环境
 # standalone 构建：da_plugin_bootstrap 完成 project/安装目录/工具文件引导
 
