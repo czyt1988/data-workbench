@@ -29,25 +29,6 @@
 
 namespace {
 
-// Qt5/Qt6 双兼容 helper：取值并兜底默认值（QJsonObject::value(key,default) Qt5 不存在）
-int jsonInt(const QJsonObject& o, const char* key, int def)
-{
-    QJsonValue v = o.value(QLatin1String(key));
-    return v.isDouble() ? v.toInt() : def;
-}
-
-bool jsonBool(const QJsonObject& o, const char* key, bool def)
-{
-    QJsonValue v = o.value(QLatin1String(key));
-    return v.isBool() ? v.toBool() : def;
-}
-
-QString jsonString(const QJsonObject& o, const char* key)
-{
-    QJsonValue v = o.value(QLatin1String(key));
-    return v.isString() ? v.toString() : QString();
-}
-
 /// 下拉列委托：单元格编辑时提供固定选项的 QComboBox
 class DAComboItemDelegate : public QStyledItemDelegate
 {
@@ -408,49 +389,33 @@ void DAAgentPermissionSettingsWidget::loadConfig()
         daDebug << "[DAAgentPermissionSettings] loadConfig skipped: no agent interface injected";
         return;
     }
-    const QJsonObject c = mAgentInterface->getPermissionConfig();
-    const QString mode = jsonString(c, "mode");
+    const DAAgentPermissionConfig c = mAgentInterface->getPermissionConfig();
+    const QString mode = c.mode();
     int idx = mModeCombo->findData(mode);
     if (idx < 0) {
         idx = mModeCombo->findData(QStringLiteral("yolo"));  // 未知/缺失回退 yolo（默认全自动）
     }
     mModeCombo->setCurrentIndex(qMax(0, idx));
-    mApprovalTimeoutSpin->setValue(jsonInt(c, "tool_approval_timeout_sec", 600));
-    mManualBlockInapp->setChecked(jsonBool(c, "manual_block_inapp_tools", false));
-    mJudgeModelEdit->setText(jsonString(c, "judge_model"));
-    mJudgeTimeoutSpin->setValue(jsonInt(c, "judge_timeout_sec", 30));
+    mApprovalTimeoutSpin->setValue(c.toolApprovalTimeoutSec());
+    mManualBlockInapp->setChecked(c.manualBlockInappTools());
+    mJudgeModelEdit->setText(c.judgeModel());
+    mJudgeTimeoutSpin->setValue(c.judgeTimeoutSec());
 
     // 路径规则表（load 侧已由引擎强制回填硬 deny 种子，此处仅渲染）
     {
         QSignalBlocker blocker(mRulesTable);
         mRulesTable->setRowCount(0);
     }
-    const QJsonArray rulesArr = c.value(QStringLiteral("rules")).toArray();
-    for (const QJsonValue& v : rulesArr) {
-        if (!v.isObject()) {
-            continue;
-        }
-        const QJsonObject r = v.toObject();
-        appendRuleRow(r.value(QStringLiteral("tool")).toString(),
-                      r.value(QStringLiteral("scope")).toString(),
-                      r.value(QStringLiteral("action")).toString());
+    for (const DAAgentPermissionRule& r : c.rules()) {
+        appendRuleRow(r.tool, r.scope, r.action);
     }
 
     // 危险模式清单（每行一条正则）
-    const QJsonObject patterns = c.value(QStringLiteral("code_patterns")).toObject();
-    QStringList denyLines;
-    for (const QJsonValue& v : patterns.value(QStringLiteral("deny")).toArray()) {
-        denyLines.append(v.toString());
-    }
-    QStringList escalateLines;
-    for (const QJsonValue& v : patterns.value(QStringLiteral("escalate")).toArray()) {
-        escalateLines.append(v.toString());
-    }
     {
         QSignalBlocker blockerDeny(mDenyPatternsEdit);
         QSignalBlocker blockerEscalate(mEscalatePatternsEdit);
-        mDenyPatternsEdit->setPlainText(denyLines.join(QLatin1Char('\n')));
-        mEscalatePatternsEdit->setPlainText(escalateLines.join(QLatin1Char('\n')));
+        mDenyPatternsEdit->setPlainText(c.codePatterns().deny.join(QLatin1Char('\n')));
+        mEscalatePatternsEdit->setPlainText(c.codePatterns().escalate.join(QLatin1Char('\n')));
     }
 
     // 分级覆盖表
@@ -458,28 +423,28 @@ void DAAgentPermissionSettingsWidget::loadConfig()
         QSignalBlocker blocker(mTierTable);
         mTierTable->setRowCount(0);
     }
-    const QJsonObject overrides = c.value(QStringLiteral("tier_overrides")).toObject();
+    const QHash< QString, QString > overrides = c.tierOverrides();
     for (auto it = overrides.constBegin(); it != overrides.constEnd(); ++it) {
-        appendTierRow(it.key(), it.value().toString());
+        appendTierRow(it.key(), it.value());
     }
 }
 
-/** @brief 将界面配置写回接口（contains 守卫，未携带的 key 不受影响） */
+/** @brief 将界面配置写回接口（标量稀疏守卫，未 engage 的标量不受影响） */
 void DAAgentPermissionSettingsWidget::saveConfig()
 {
     if (!mAgentInterface) {
         daDebug << "[DAAgentPermissionSettings] saveConfig skipped: no agent interface injected";
         return;
     }
-    QJsonObject c;
-    c[QStringLiteral("mode")]                      = mModeCombo->currentData().toString();
-    c[QStringLiteral("tool_approval_timeout_sec")] = mApprovalTimeoutSpin->value();
-    c[QStringLiteral("manual_block_inapp_tools")]  = mManualBlockInapp->isChecked();
-    c[QStringLiteral("judge_model")]               = mJudgeModelEdit->text().trimmed();
-    c[QStringLiteral("judge_timeout_sec")]         = mJudgeTimeoutSpin->value();
+    DAAgentPermissionConfig c;
+    c.setMode(mModeCombo->currentData().toString());
+    c.setToolApprovalTimeoutSec(mApprovalTimeoutSpin->value());
+    c.setManualBlockInappTools(mManualBlockInapp->isChecked());
+    c.setJudgeModel(mJudgeModelEdit->text().trimmed());
+    c.setJudgeTimeoutSec(mJudgeTimeoutSpin->value());
 
-    // 路径规则表 → rules 数组（引擎侧保存时仍会强制回填硬 deny 种子）
-    QJsonArray rulesArr;
+    // 路径规则表 → rules（引擎侧保存时仍会强制回填硬 deny 种子）
+    QList< DAAgentPermissionRule > rules;
     for (int row = 0; row < mRulesTable->rowCount(); ++row) {
         const QString tool = mRulesTable->item(row, 0) ? mRulesTable->item(row, 0)->text().trimmed() : QString();
         const QString scope = mRulesTable->item(row, 1) ? mRulesTable->item(row, 1)->text().trimmed() : QString();
@@ -487,39 +452,31 @@ void DAAgentPermissionSettingsWidget::saveConfig()
         if (tool.isEmpty() && scope.isEmpty()) {
             continue;  // 跳过空行
         }
-        QJsonObject r;
-        r[QStringLiteral("tool")]   = tool;
-        r[QStringLiteral("scope")]  = scope;
-        r[QStringLiteral("action")] = action;
-        rulesArr.append(r);
+        DAAgentPermissionRule r;
+        r.tool   = tool;
+        r.scope  = scope;
+        r.action = action;
+        rules.append(r);
     }
-    c[QStringLiteral("rules")] = rulesArr;
+    c.setRules(rules);
 
-    // 危险模式清单 → code_patterns
-    QJsonObject patterns;
-    QJsonArray denyArr;
-    for (const QString& p : linesToPatterns(mDenyPatternsEdit->toPlainText())) {
-        denyArr.append(p);
-    }
-    QJsonArray escalateArr;
-    for (const QString& p : linesToPatterns(mEscalatePatternsEdit->toPlainText())) {
-        escalateArr.append(p);
-    }
-    patterns[QStringLiteral("deny")]     = denyArr;
-    patterns[QStringLiteral("escalate")] = escalateArr;
-    c[QStringLiteral("code_patterns")] = patterns;
+    // 危险模式清单 → codePatterns
+    DAAgentCodePatterns patterns;
+    patterns.deny     = linesToPatterns(mDenyPatternsEdit->toPlainText());
+    patterns.escalate = linesToPatterns(mEscalatePatternsEdit->toPlainText());
+    c.setCodePatterns(patterns);
 
-    // 分级覆盖表 → tier_overrides（空工具名的行跳过）
-    QJsonObject overrides;
+    // 分级覆盖表 → tierOverrides（空工具名的行跳过）
+    QHash< QString, QString > overrides;
     for (int row = 0; row < mTierTable->rowCount(); ++row) {
         const QString tool = mTierTable->item(row, 0) ? mTierTable->item(row, 0)->text().trimmed() : QString();
         const QString tier = mTierTable->item(row, 1) ? mTierTable->item(row, 1)->text().trimmed() : QString();
         if (tool.isEmpty() || tier.isEmpty()) {
             continue;
         }
-        overrides[tool] = tier;
+        overrides.insert(tool, tier);
     }
-    c[QStringLiteral("tier_overrides")] = overrides;
+    c.setTierOverrides(overrides);
 
     mAgentInterface->setPermissionConfig(c);
 }

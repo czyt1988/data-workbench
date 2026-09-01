@@ -8,7 +8,11 @@
 #include <QVector>
 #include <QString>
 #include <QStringList>
+#include <QList>
 #include "DAAbstractAgentTool.h"
+#include "DAAgentProvider.h"
+#include "DAAgentConfig.h"
+#include "DAAgentPermissionConfig.h"
 
 namespace DA
 {
@@ -50,22 +54,25 @@ public:
     // 检查 agent 是否正在运行
     virtual bool isRunning() const = 0;
 
-    // 获取 LLM 配置
-    virtual QJsonObject getLLMConfig() const = 0;
-    // 设置 LLM 配置
-    virtual void setLLMConfig(const QJsonObject& config) = 0;
+    // ---- LLM 配置与供应商管理（配置结构体化，破坏性接口变更，插件需重编译；
+    //      为"子 agent 管理"之后的再一次 ABI 批处理：原 QJsonObject/QJsonArray/
+    //      QVariantList 载荷改为强类型结构体，JSON 仅保留在协议边界） ----
+    // 获取 LLM 配置（稀疏结构体：engaged 字段=显式设置过，getter 兜底默认值）
+    virtual DAAgentLLMConfig getLLMConfig() const = 0;
+    // 设置 LLM 配置（仅 engaged 字段生效，等价原 contains 守卫语义）
+    virtual void setLLMConfig(const DAAgentLLMConfig& config) = 0;
 
     // ---- 供应商与多模型管理（多供应商多模型） ----
-    // 每个供应商含 name / base_url / api_key / models(模型 id 字符串数组)。
+    // 每个供应商含 name / base_url / api_key / models。
     // 激活供应商 + 激活模型决定实际下发给子进程的 base_url/api_key/model。
-    /// 获取所有供应商配置（设置页 CRUD 用；api_key 已解密为明文返回）
-    virtual QJsonArray getProviders() const = 0;
-    /// 保存所有供应商配置（设置页 apply 用；api_key 明文传入，内部加密存储）
-    virtual void setProviders(const QJsonArray& providers) = 0;
+    /// 获取所有供应商配置（设置页 CRUD 用；api_key 为内存态明文）
+    virtual QList< DAAgentProvider > getProviders() const = 0;
+    /// 保存所有供应商配置（设置页 apply 用；api_key 明文传入，持久化时内部加密）
+    virtual void setProviders(const QList< DAAgentProvider >& providers) = 0;
     /// 获取当前激活供应商名称
     virtual QString getActiveProvider() const = 0;
-    /// 获取所有可选模型列表（Dock 下拉用，不含 api_key）：每元素 QVariantMap{provider,model}
-    virtual QVariantList getAvailableModels() const = 0;
+    /// 获取所有可选模型列表（Dock 下拉用，不含 api_key），每元素 DAAgentModelRef
+    virtual QList< DAAgentModelRef > getAvailableModels() const = 0;
     /// 获取当前激活模型 id
     virtual QString getActiveModel() const = 0;
     /// 设置激活供应商+模型（Dock 选择用）：同步 base_url/api_key/model，emit activeModelChanged；
@@ -104,11 +111,12 @@ public:
     // ---- 权限层（permission-layer P1 新增，一次性 ABI 批处理；同"会话管理"节惯例，
     //      破坏性接口变更，插件需重编译；权限层计划二未再破坏 ABI；
     //      其后的第二次破坏性变更见下方"子 agent 管理"节，顺序经
-    //      permission-layer.md §13 衔接契约确认） ----
+    //      permission-layer.md §13 衔接契约确认；
+    //      配置结构体化时 get/setPermissionConfig 载荷改为 DAAgentPermissionConfig） ----
     /// 获取权限配置（模式/审批超时/判官/规则/危险模式/分级覆盖，设置页读）
-    virtual QJsonObject getPermissionConfig() const = 0;
-    /// 写入权限配置（contains 守卫；运行中的子进程经 reconfigure 同步）
-    virtual void setPermissionConfig(const QJsonObject& config) = 0;
+    virtual DAAgentPermissionConfig getPermissionConfig() const = 0;
+    /// 写入权限配置（标量稀疏守卫：未 engage 的标量不受影响；运行中的子进程经 reconfigure 同步）
+    virtual void setPermissionConfig(const DAAgentPermissionConfig& config) = 0;
     /// 获取当前权限模式（yolo/auto/manual，未配置默认 yolo 全自动）
     virtual QString getPermissionMode() const = 0;
     /// 设置权限模式（写 ini + emit permissionModeChanged + 运行中经 reconfigure 同步）
@@ -158,6 +166,8 @@ Q_SIGNALS:
     void agentBusy(bool busy);
     /// agent 本轮处理完成时发射（生命周期事件，目前无 Dock 槽对接，纳入接口备扩展）
     void agentDone();
+    /// 回合疑似未完成时发射（模型"话说一半就停"，UI 提示用户可继续）
+    void agentTurnPossiblyIncomplete(int toolRounds);
     /// agent 完成会话历史重建时发射
     void agentSessionLoaded(const QString& sessionId);
     // ---- 以下 5 个由 DAAgentModule 自身 emit（从 Module 的 Q_SIGNALS 上移） ----
@@ -181,8 +191,8 @@ Q_SIGNALS:
 
     // ---- 供应商与多模型管理信号 ----
     /// 可用模型列表变化（供应商变更/设置页 apply 后），Dock 据此填充下拉
-    /// payload 每元素 QVariantMap{provider,model}
-    void availableModelsChanged(QVariantList models);
+    /// payload 每元素 DAAgentModelRef{provider,model,contextWindow,maxOutputTokens}
+    void availableModelsChanged(const QList< DAAgentModelRef >& models);
     /// 激活模型变化（Dock 选择 / 设置页 apply 触发），Dock 据此选中下拉项 + 刷新模型标签
     void activeModelChanged(const QString& provider, const QString& model);
 
@@ -205,5 +215,7 @@ Q_SIGNALS:
     void agentSubagentProgress(const QJsonObject& progress);
     /// 子 agent 定义列表变化（加载/保存/删除/插件注入后），供管理 UI 刷新
     void subagentListChanged();
+    /// 提示词库列表变化（保存/删除/插件注入内置 agent 后），供 Ribbon gallery 刷新
+    void agentListChanged();
 };
 } // namespace DA

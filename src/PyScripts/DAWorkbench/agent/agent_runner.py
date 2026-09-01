@@ -353,8 +353,20 @@ class StdioProtocol:
             "error_message": error_message,
         })
 
-    async def send_done(self):
-        await self.send({"type": "done"})
+    async def send_done(self, turn_summary: dict | None = None):
+        """发送 done 结束一轮对话。
+
+        turn_summary（可选）携带回合统计供 C++ 做 UI 提示：
+        - tool_rounds: 本回合执行的工具调用轮数
+        - possibly_incomplete: True 表示疑似"话说一半就停"——回合内
+          执行过工具调用，但最终回复极短（模型声称要继续做事却
+          未发起 tool_call，路由直接 END）。典型如"现在生成图表"
+          后戛然而止。C++ 据此提醒用户任务可能未完成。
+        """
+        obj = {"type": "done"}
+        if turn_summary is not None:
+            obj["turn_summary"] = turn_summary
+        await self.send(obj)
 
     def set_stop_event(self, event: asyncio.Event, loop: asyncio.AbstractEventLoop):
         """注册 stop_event，使 stdin 后台线程在收到 stop 消息时即时设置。
@@ -740,6 +752,10 @@ def build_agent_graph(ctx, *, system_prompt: str, stdio=None,
     async def tool_node(state: MessagesState):
         last_msg = state["messages"][-1]  # AIMessage with tool_calls
         results = []
+        # 回合统计：tool_node 每执行一轮自增（子图 ctx 无 _turn_tool_rounds
+        # 属性，hasattr 兜底跳过——子图静默，不参与主回合完成度检测）
+        if hasattr(ctx, "_turn_tool_rounds"):
+            ctx._turn_tool_rounds += 1
         # 主图持有编排器 → dispatch_subagents 本地编排；子图无此属性（深度 1，Q6）
         orchestrator = getattr(ctx, "subagent_orchestrator", None)
         for tool_call in last_msg.tool_calls:
@@ -987,6 +1003,12 @@ class AgentRunner:
         # （第 1 次正常执行，第 2 次软引导拦截，第 3 次硬终止）
         self._repeat_terminate_threshold: int = 3
 
+        # —— 回合统计（turn_end 检测"话说一半就停"）——
+        # run()/resume() 开头清零，tool_node 每执行一轮自增；done 前据此
+        # 判断 possibly_incomplete：执行过工具但最终回复极短（无实质结论），
+        # 典型如"现在生成图表"后未发 tool_call 直接 END。
+        self._turn_tool_rounds: int = 0
+
         # 上下文管理组件初始化
         # 从 config 读取参数（C++ 端 getLLMConfig 下发，带默认值兜底）
         self.context_window = config.get("context_window", 262144)
@@ -1025,11 +1047,33 @@ class AgentRunner:
         # 工具调用，满足数据分析频繁查数据的场景；C++ 端 getLLMConfig 下发此值，
         # 用户可在设置页调整。此外 tool_node 软引导 + agent_node 硬终止提供
         # 智能循环检测兜底，避免仅靠此粗暴上限。
-        self._recursion_limit = config.get("recursion_limit", 150)
+        # 步数预算按次计算（langgraph 内部 stop = step + limit + 1，每轮
+        # user_msg/resume 从当前 step 重新获得完整配额），即限制的是单回合内
+        # 的工具调用轮数，非会话累计。
+        # ≤0（如 ini 中 recursion_limit=-1）视为不限制：传 None 给 langgraph
+        #（实测 None/缺省 key 均为无限制；显式 -1/0 会被 langgraph 以
+        # ValueError 拒绝）。无限制时循环防护仅剩重复签名硬终止+软引导。
+        self._recursion_limit = self._sanitize_recursion_limit(
+            config.get("recursion_limit", 150)
+        )
         self.thread_config = {
             "configurable": {"thread_id": "agent_session_1"},
             "recursion_limit": self._recursion_limit,
         }
+
+    @staticmethod
+    def _sanitize_recursion_limit(value) -> int | None:
+        """recursion_limit 合法性守卫：≤0 → None（无限制）。
+
+        langgraph 校验 recursion_limit 必须 ≥1（-1/0 抛 ValueError），
+        而 None 表示不限制。C++ 配置层面用 -1 表达"用户要求不限制"，
+        此处转换为 langgraph 认可的 None。
+        """
+        try:
+            ivalue = int(value)
+        except (TypeError, ValueError):
+            return None
+        return ivalue if ivalue > 0 else None
 
     def stop(self):
         """用户请求停止——设置 stop_event 中断退避等待。"""
@@ -1114,7 +1158,9 @@ class AgentRunner:
         self.compaction_threshold = config.get("compaction_threshold", 0.85)
         self.max_recent_messages = config.get("max_recent_messages", 10)
         self._max_retries = config.get("max_retries", 7)
-        new_recursion = config.get("recursion_limit", 150)
+        new_recursion = self._sanitize_recursion_limit(
+            config.get("recursion_limit", 150)
+        )
         if new_recursion != self._recursion_limit:
             self._recursion_limit = new_recursion
             self.thread_config["recursion_limit"] = new_recursion
@@ -1361,6 +1407,53 @@ class AgentRunner:
                     return True  # 暂停中——调用方不应发送 done
         return False  # 图未暂停，调用方应发送 done
 
+    def _build_turn_summary(self) -> dict:
+        """构造回合摘要（done 消息附 turn_summary，供 C++ UI 提示）。
+
+        possibly_incomplete 检测"话说一半就停"：回合内执行过工具调用，
+        但最终回复极短（< 400 字符）且含意图性措辞（"接下来/先/然后"
+        等将然时态）却无任何产出标记。典型实锤：模型说"现在生成核心
+        图表。先创建 ROC 曲线对比图…"后未发 tool_call 直接 END——
+        对用户表现为"运行着运行着就停了"。
+
+        判定刻意保守（双条件 AND）：只执行了 0-1 轮工具的纯问答、或
+        结尾有明确产出物叙述的长回复都不触发；宁漏勿滥，避免每次正常
+        结束都弹提示。
+        """
+        summary = {"tool_rounds": self._turn_tool_rounds,
+                   "possibly_incomplete": False}
+        if self._turn_tool_rounds < 2:
+            return summary  # 工具轮数太少——纯问答或单步查询，不检测
+        state_vals = {}
+        try:
+            state = self.graph.aget_state_sync(self.thread_config)
+            state_vals = (state.values or {}) if state else {}
+        except Exception:
+            return summary  # 读状态失败（如 thread 已被清理）——不误报
+        msgs = state_vals.get("messages", []) or []
+        final_text = ""
+        for m in reversed(msgs):
+            if m.type == "ai" and not getattr(m, "tool_calls", None):
+                content = m.content if isinstance(m.content, str) else ""
+                final_text = content.strip()
+                break
+        if not final_text or len(final_text) >= 400:
+            return summary  # 无最终回复(异常路径有 error 兜底)或回复够长
+        # 意图性措辞（将然时态：说要继续做但没做）——中英双语
+        intent_markers = ("接下来", "然后", "先创建", "先生成", "先做", "现在生成",
+                          "现在创建", "现在开始", "继续", "即将", "下面",
+                          "next", "then", "first", "now ", "will ",
+                          "going to", "let's create", "let me create")
+        lowered = final_text.lower()
+        if any(mk in lowered for mk in intent_markers):
+            summary["possibly_incomplete"] = True
+            logger.warning(
+                "turn possibly incomplete: %d tool rounds executed but final "
+                "reply looks like an intent statement (%d chars): %.80s",
+                self._turn_tool_rounds, len(final_text), final_text,
+            )
+        return summary
+
     async def run(self, user_message: str):
         """执行一轮 agent 对话（带 thread_id 以支持 interrupt/resume）。
 
@@ -1375,6 +1468,7 @@ class AgentRunner:
         self._executed_call_sigs.clear()
         self._last_full_sig = None
         self._full_sig_repeat_count = 0
+        self._turn_tool_rounds = 0  # 回合统计清零（turn_summary 用）
         # 仅传入新增的 HumanMessage——MemorySaver checkpointer 会维护完整历史
         async for _event in self.graph.astream(
             {"messages": [HumanMessage(user_message)]},
@@ -1386,7 +1480,7 @@ class AgentRunner:
         # 检查图是否在 interrupt 处暂停；若暂停则发送一次 question 且不发 done
         if not await self._send_question_if_paused():
             # 图正常完成（agent_node 已在无 tool_calls 时发送 message_end）
-            await self.stdio.send_done()
+            await self.stdio.send_done(self._build_turn_summary())
 
     async def resume(self, answer: str):
         """从 interrupt 恢复图执行（收到 user_answer 后调用）。
@@ -1402,14 +1496,15 @@ class AgentRunner:
         self._executed_call_sigs.clear()
         self._last_full_sig = None
         self._full_sig_repeat_count = 0
+        self._turn_tool_rounds = 0  # 回合统计清零（turn_summary 用）
         async for _event in self.graph.astream(
             Command(resume=answer),
             config=self.thread_config
         ):
-            # agent_node 内部已流式输出 token，这里仅消费事件
+            # agent_node 内部已流式输出 token，这里仅消费事件以推进图
             pass
         if not await self._send_question_if_paused():
-            await self.stdio.send_done()
+            await self.stdio.send_done(self._build_turn_summary())
 
     async def load_session(self, session_id: str, messages_json: list):
         """切换会话：重建图 + 注入历史 state。

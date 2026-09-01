@@ -36,7 +36,7 @@ macOS:   ~/Library/Application Support/<AppName>/config/
 该目录下的核心配置文件为 `dawork-config.xml`，由 `DAAppConfig`（继承 `DAProperties` + `DAXMLFileInterface`）管理。`DAAppConfig::getAbsoluteConfigFilePath()` 返回其绝对路径，启动时 `loadConfig()` 读取，退出时 `saveConfig()` 写回。
 
 !!! note "全局 QSettings 重定向"
-    `main` 启动时调用 `QSettings::setDefaultFormat(QSettings::IniFormat)` 并通过 `QSettings::setPath(...)` 将 `UserScope` 重定向到上述 `config/` 目录。这只作为安全网，用于覆盖第三方库（如 DAWidgets 的最近文件管理器副本）内部默认/两参数构造的 `QSettings`。程序自身的配置不走此路径，而是显式读写 `dawork-config.xml` 或下文所述的 `agent-config.ini` / `recent-files.ini`。
+    `main` 启动时调用 `QSettings::setDefaultFormat(QSettings::IniFormat)` 并通过 `QSettings::setPath(...)` 将 `UserScope` 重定向到上述 `config/` 目录。这只作为安全网，用于覆盖第三方库（如 DAWidgets 的最近文件管理器副本）内部默认/两参数构造的 `QSettings`。程序自身的配置不走此路径，而是显式读写 `dawork-config.xml` 或下文所述的 `agent-config.json` / `recent-files.ini`。
 
 ### 配置内容示例
 
@@ -86,38 +86,43 @@ macOS:   ~/Library/Application Support/<AppName>/config/
 
 ## Agent 配置（AI 分析子系统）
 
-DAAgent 模块的配置独立于 `dawork-config.xml`，单独存放在配置目录下的 `agent-config.ini` 中（路径为 `DA::DADir::getConfigPath() + "/agent-config.ini"`，即上文 `config/` 子目录内）。原因是 DAAgent 库无法链接 APP 的 `DAAppConfig`，故采用显式路径的 `QSettings(IniFormat)` 持久化。
+DAAgent 模块的配置独立于 `dawork-config.xml`，单独存放在配置目录下的 `agent-config.json` 中（路径为 `DA::DADir::getConfigPath() + "/agent-config.json"`，即上文 `config/` 子目录内，与 `agent-permissions.json` 同目录）。原因是 DAAgent 库无法链接 APP 的 `DAAppConfig`，配置由独立的领域模型类 `DAAgentConfig`（`src/DAAgent/DAAgentConfig.h/.cpp`）读写：`load()`/`save()` 是唯一接触存储格式的代码，程序启动时加载一次，运行期所有配置读写均经此内存模型。
 
-### agent-config.ini
+### agent-config.json
 
-`[agent]` 段包含以下键：
+文件为**分组嵌套的稀疏 JSON**——只保存显式设置过的键，未设置的项由代码在读取时兜底默认值。四个分组：
 
-| 键 | 类型 | 说明 |
-|----|------|------|
-| `llm_base_url` | string | LLM 服务地址（兼容性单供应商字段） |
-| `llm_model` | string | 默认模型 id |
-| `llm_api_key` | QByteArray | API Key，**经 DPAPI 加密**存储（`encryptApiKey` 加解密，`IniFormat` 原生支持 `QByteArray`） |
-| `ready_timeout_sec` | int | 子进程就绪超时（秒） |
-| `stop_timeout_sec` | int | 子进程停止超时（秒） |
-| `providers` | string(JSON) | 多供应商配置数组（紧凑 JSON 字符串），每元素含 `name`/`base_url`/`api_key`/`models` |
+| 分组 | 键（节选） | 说明 |
+|------|-----------|------|
+| `llm` | `base_url` / `model` / `api_key` / `providers` / `active_provider` / `context_window` / `max_output_tokens` | LLM 连接与多供应商配置；`api_key` 为 **DPAPI 加密**的 base64 字符串；`providers` 为原生 JSON 数组 |
+| `execution` | `ready_timeout_sec` / `stop_timeout_sec` / `compaction_threshold` / `max_sessions` / `recursion_limit` / `auto_prestart` 等 | Agent 子进程运行参数 |
+| `subagent` | `timeout_sec` / `recursion_limit` / `max_concurrency` / `batch_limit` | 子 Agent 运行参数 |
+| `permission` | `mode` / `tool_approval_timeout_sec` / `judge_model` / `judge_timeout_sec` / `manual_block_inapp_tools` | 权限模式与判官配置（路径规则/危险模式在 `agent-permissions.json`） |
 
-```ini
-[agent]
-llm_base_url=https://api.example.com/v1
-llm_model=gpt-4o-mini
-llm_api_key=@ByteArray(...)      ; DPAPI 加密 blob，不可直接编辑
-ready_timeout_sec=60
-stop_timeout_sec=30
-providers=[{"name":"OpenAI","base_url":"...","api_key":"...","models":["gpt-4o-mini"]}]
+```json
+{
+    "version": 1,
+    "llm": {
+        "base_url": "https://api.deepseek.com",
+        "model": "deepseek-chat",
+        "api_key": "<DPAPI 加密 base64，不可直接编辑>",
+        "providers": [ { "name": "deepseek", "base_url": "...", "api_key": "<加密>", "models": [ { "id": "deepseek-chat", "context_window": 262144, "max_output_tokens": 8192 } ] } ],
+        "active_provider": "deepseek"
+    },
+    "execution": { "ready_timeout_sec": 60, "auto_prestart": true }
+}
 ```
+
+!!! info "旧版 agent-config.ini 自动迁移"
+    从旧版本升级时，程序首次启动会自动把 `agent-config.ini` 的全部配置迁移到 `agent-config.json`，迁移成功后原文件改名为 `agent-config.ini.bak`（保留备份）。若需回滚到旧版程序，需手动把 `.bak` 文件改回 `agent-config.ini`。JSON 配置损坏时程序会尝试从 `.bak` 恢复或重置为默认值。
 
 ### 多供应商 LLM 配置入口
 
-多供应商/多模型配置通过 `DAAgentInterface` 读写，**不要直接编辑 `agent-config.ini` 的 `providers`/`llm_api_key`**：
+多供应商/多模型配置通过 `DAAgentInterface` 读写，**不要直接编辑 `agent-config.json` 的 `providers`/`api_key`**：
 
 | 接口方法 | 用途 |
 |----------|------|
-| `getProviders()` / `setProviders()` | 读取/保存全部供应商配置（设置页 CRUD；`api_key` 在接口层明文传递，内部加密存储） |
+| `getProviders()` / `setProviders()` | 读取/保存全部供应商配置（设置页 CRUD；`api_key` 在接口层明文传递，持久化时加密） |
 | `getActiveProvider()` / `getActiveModel()` | 获取当前激活供应商与模型 |
 | `setActiveModel(provider, model)` | 热切换激活模型（运行中不重启子进程、不丢会话状态） |
 | `getAvailableModels()` | 获取可选模型列表（Dock 下拉用，不含 `api_key`） |
@@ -146,7 +151,7 @@ providers=[{"name":"OpenAI","base_url":"...","api_key":"...","models":["gpt-4o-m
 ![供应商编辑与获取可用模型](../../assets/screenshot/setting-page-agent-setting-set-baseurl-and-add-model.png)
 
 !!! note "API 密钥的存储"
-    API 密钥在设置页中以明文填写，保存时由接口层经 DPAPI 加密后写入 `agent-config.ini` 的 `providers` 字段；右侧详情面板仅显示「已设置(隐藏)」或「未设置」，不会回显密钥内容。请勿直接手改 ini 中的 `providers` / `llm_api_key` 字段。
+    API 密钥在设置页中以明文填写，保存时由配置层在持久化边界经 DPAPI 加密后写入 `agent-config.json` 的 `providers` 字段；右侧详情面板仅显示「已设置(隐藏)」或「未设置」，不会回显密钥内容。请勿直接手改 json 中的 `providers` / `api_key` 字段。
 
 #### Agent 设置标签页
 
@@ -178,7 +183,7 @@ providers=[{"name":"OpenAI","base_url":"...","api_key":"...","models":["gpt-4o-m
 配置目录下还存在 `recent-files.ini`，存储最近打开文件列表（`RecentFiles` 键），由 `DARecentFilesManager` 维护。
 
 !!! info "一次性注册表→INI 迁移"
-    `main.cpp` 中的 `migrateSettingsFromRegistry()`（main.cpp:55-92）在程序首次以 INI 模式启动时，若 `agent-config.ini` / `recent-files.ini` 不存在，则从旧注册表路径（`HKCU\Software\DA\DAWorkBench`，`QSettings::NativeFormat` 显式读取，绕过全局 `setDefaultFormat`）迁移上述 5 个 agent 键与最近文件列表。旧注册表值保留不删，作为备份。迁移完成后，所有配置均以 INI/XML 文件形式存放在 `config/` 目录。
+    `main.cpp` 中的 `migrateSettingsFromRegistry()`（main.cpp:55-92）在程序首次以 INI 模式启动时，若 `agent-config.ini` / `recent-files.ini` 不存在，则从旧注册表路径（`HKCU\Software\DA\DAWorkBench`，`QSettings::NativeFormat` 显式读取，绕过全局 `setDefaultFormat`）迁移上述 5 个 agent 键与最近文件列表。旧注册表值保留不删，作为备份。此后配置形成 注册表→ini→json 链式迁移（ini 再由 `DAAgentConfig::load()` 自动转为 `agent-config.json`），最终全部以 JSON/XML 文件形式存放在 `config/` 目录。
 
 ### UI 状态配置
 

@@ -10,6 +10,7 @@
 #include "DAAbstractAgentTool.h"
 #include "DAAgentToolSpecJson.h"
 #include "DAAgentInterface.h"
+#include "DAAgentConfig.h"
 #include "DACoreInterface.h"
 #include "DAPyInterpreter.h"
 #include "DADir.h"
@@ -17,7 +18,6 @@
 // Platform built-in tools moved to plugins/DAAgentTools plugin (plan-03)
 #include <QFile>
 #include <QFileInfo>
-#include <QSettings>
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QJsonDocument>
@@ -29,95 +29,9 @@
 #include <QVariantList>
 #include <QVariantMap>
 
-// DPAPI（CryptProtectData/CryptUnprotectData）——DAAgentModule 内化的 API Key 加解密。
-// 从 DAGui/DAAgentSettingsWidget.cpp 搬运而来（plan-01 加解密内化），解除对 DAGui 的依赖。
-#ifdef Q_OS_WIN
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif
-#include <windows.h>
-#include <wincrypt.h>
-#endif
-
-namespace {
-// DPAPI 加解密（从 DAGui/DAAgentSettingsWidget.cpp 内化而来，
-// 供 DAAgentModule::getLLMConfig/setLLMConfig 使用，解除对 DAGui 的依赖）。
-// Windows 走 DPAPI，非 Windows 走 base64 fallback（与 DAGui 原版逐字一致，
-// 已存的 agent-config.ini 加密 blob 可互解，两份并存期间无数据不兼容）。
-QByteArray encryptApiKey(const QString& apiKey)
-{
-#ifdef Q_OS_WIN
-    if (apiKey.isEmpty()) return {};
-    QByteArray utf8 = apiKey.toUtf8();
-    DATA_BLOB inBlob;
-    inBlob.pbData = reinterpret_cast<BYTE*>(utf8.data());
-    inBlob.cbData = static_cast<DWORD>(utf8.size());
-    DATA_BLOB outBlob;
-    if (!CryptProtectData(&inBlob, L"AgentApiKey", nullptr, nullptr, nullptr, 0, &outBlob)) {
-        return {};
-    }
-    QByteArray enc(reinterpret_cast<const char*>(outBlob.pbData), static_cast<int>(outBlob.cbData));
-    LocalFree(outBlob.pbData);
-    return enc.toBase64();
-#else
-    return apiKey.toUtf8().toBase64();
-#endif
-}
-
-QString decryptApiKey(const QByteArray& encrypted)
-{
-    if (encrypted.isEmpty()) return {};
-#ifdef Q_OS_WIN
-    QByteArray raw = QByteArray::fromBase64(encrypted);
-    DATA_BLOB inBlob;
-    inBlob.pbData = reinterpret_cast<BYTE*>(raw.data());
-    inBlob.cbData = static_cast<DWORD>(raw.size());
-    DATA_BLOB outBlob;
-    if (!CryptUnprotectData(&inBlob, nullptr, nullptr, nullptr, nullptr, 0, &outBlob)) {
-        qWarning("decryptApiKey: CryptUnprotectData failed, GetLastError=%lu", GetLastError());
-        return {};
-    }
-    QString result = QString::fromUtf8(reinterpret_cast<const char*>(outBlob.pbData), static_cast<int>(outBlob.cbData));
-    LocalFree(outBlob.pbData);
-    return result;
-#else
-    return QString::fromUtf8(QByteArray::fromBase64(encrypted));
-#endif
-}
-} // namespace
-
-// 模型条目既可能是对象 {id,context_window,max_output_tokens}，也可能是旧格式字符串。
-// 以下 helper 兼容两种读法，保证旧 providers JSON 也能解析。
-namespace {
-/// 取模型 id（兼容字符串与对象格式）
-QString modelIdOf(const QJsonValue& mv)
-{
-    if (mv.isString()) return mv.toString();
-    if (mv.isObject()) return mv.toObject().value("id").toString();
-    return {};
-}
-/// 取模型上下文窗口大小（对象格式，缺省/非正则回退 def）
-int modelContextWindowOf(const QJsonValue& mv, int def)
-{
-    if (mv.isObject()) {
-        int v = mv.toObject().value("context_window").toInt(def);
-        return v > 0 ? v : def;
-    }
-    return def;
-}
-/// 取模型最大输出 token（对象格式，缺省/非正则回退 def）
-int modelMaxOutputOf(const QJsonValue& mv, int def)
-{
-    if (mv.isObject()) {
-        int v = mv.toObject().value("max_output_tokens").toInt(def);
-        return v > 0 ? v : def;
-    }
-    return def;
-}
-} // namespace
+// availableModelsChanged 信号载荷跨线程安全（queued connection 时需要 metatype）
+DA_AUTO_REGISTER_META_TYPE(DA::DAAgentModelRef)
+DA_AUTO_REGISTER_META_TYPE(QList< DA::DAAgentModelRef >)
 
 namespace DA
 {
@@ -152,6 +66,11 @@ public:
     // ---- 权限层（permission-layer P1） ----
     DAAgentPermissionManager* mPermissionManager = nullptr;  ///< 权限引擎（非 QObject，析构显式 delete）
     QString mScriptWorkspaceDir;                   ///< 脚本工作区根（${workspace}），由 L5 注入
+
+    // ---- 配置（agent-config.json 领域模型） ----
+    // initialize() 最先 load()（含旧 ini→json 迁移），运行期所有配置读写均经此
+    // 内存模型（不再逐调用重读文件）；变更经接口方法同步并 save() 落盘。
+    DAAgentConfig mConfig;
 };
 
 DAAgentModule::PrivateData::PrivateData(DAAgentModule* p) : q_ptr(p)
@@ -196,6 +115,10 @@ void DAAgentModule::initialize(DACoreInterface* core)
     DA_D(d);
     d->mCore = core;
 
+    // 配置领域模型最先加载（agent-config.json + 旧 agent-config.ini 一次性迁移），
+    // 后续 Bridge/PermissionManager 均消费此内存模型
+    d->mConfig.load();
+
     // Module 不创建也不持有 DAAgentDockWidget——Dock 由 DAAppDockingArea::
     // buildDockingArea() 创建；Dock 信号链（接口信号↔Dock 槽/信号）由 DAAppController
     // 在 initialize() 经接口直接 connect（plan-02 决策 D3b）。本模块只负责 agent
@@ -229,10 +152,23 @@ void DAAgentModule::initialize(DACoreInterface* core)
     connect(d->mBridge, &DAAgentBridge::agentBusy, this, &DAAgentInterface::agentBusy);
     connect(d->mBridge, &DAAgentBridge::agentDone, this, &DAAgentInterface::agentDone);
     connect(d->mBridge, &DAAgentBridge::agentSessionLoaded, this, &DAAgentInterface::agentSessionLoaded);
+    // 回合疑似未完成（模型"话说一半就停"）：转发接口信号 + 经 systemMessage
+    // 在聊天界面显示提醒卡（不进 LLM 对话历史，纯 UI 提示）
+    connect(d->mBridge, &DAAgentBridge::agentTurnPossiblyIncomplete, this, [this](int toolRounds) {
+        emit agentTurnPossiblyIncomplete(toolRounds);
+        emit systemMessage(
+            tr("The agent ended this turn after %1 tool calls, but its last "
+               "message looks like an unfinished plan (e.g. announcing a next "
+               "step without executing it). Send a message such as "
+               "\"continue\" to let it finish.")  //cn:Agent 在执行 %1 轮工具调用后结束了本轮，但最后的回复疑似未完成的计划（如宣称下一步却未执行）。可发送"继续"等消息让它完成剩余工作。
+                .arg(toolRounds),
+            QStringLiteral("warning"));
+    });
 
     // ---- 权限层（permission-layer P1） ----
     // 创建权限引擎（非 QObject 无参构造，镜像 SessionStore）并加载/播种配置。
-    d->mPermissionManager = new DAAgentPermissionManager();
+    // 注入共享的配置模型（权限 5 标量存于 agent-config.json permission 分组）
+    d->mPermissionManager = new DAAgentPermissionManager(&d->mConfig);
     d->mPermissionManager->load();
     // 注入 Bridge：executeTool 前置门的唯一执法依据（C++ 唯一执法点，A1）
     d->mBridge->setPermissionManager(d->mPermissionManager);
@@ -263,6 +199,10 @@ void DAAgentModule::initialize(DACoreInterface* core)
     d->mAgentManager = new DAAgentManager(this);
     d->mAgentManager->ensureDefaultAgent();
     d->mAgentManager->loadAgents();
+    // 定义列表变化透传给接口，供插件 initialize() 注入内置 agent 后
+    // Ribbon gallery 兜底刷新（gallery 首次构建早于插件加载）
+    connect(d->mAgentManager, &DAAgentManager::agentListChanged,
+            this, &DAAgentInterface::agentListChanged);
 
     // 子 agent 定义库（子 agent 一期）：播种内置 explore（仅文件缺失时写入）、
     // 加载用户已有定义。mSubagentManager 为 QObject，parent=this，随 Module 释放。
@@ -486,8 +426,8 @@ void DAAgentModule::sendUserAnswer(const QString& answer)
 void DAAgentModule::startAgentInternal()
 {
     DA_D(d);
-    // 获取 LLM 配置（plan-06 提供真实实现）
-    QJsonObject config = getLLMConfig();
+    // 获取 LLM 配置协议投影（扁平 key，Python init 消息 config 字段）
+    QJsonObject config = d->mConfig.toRunnerConfigJson();
 
     // 检查 LLM 必填项是否就绪——防止空配置启动 agent 导致
     // agent_runner.py 报 "config missing" 后进程无法正常退出、
@@ -517,12 +457,12 @@ void DAAgentModule::startAgentInternal()
         return;
     }
 
-    // 读取可配超时(与 DAAgentSettingsWidget 共用 agent-config.ini,默认值一致)
+    // 读取可配超时(内存配置模型，默认值由 DAAgentLLMConfig 兜底)
     // 单位:秒→毫秒。ready 超时默认 60s 覆盖 langchain 冷启动导入(~17s)+余量;
     // stop 超时默认 5s 保持原有行为。
-    QSettings s(DA::DADir::getConfigPath() + "/agent-config.ini", QSettings::IniFormat);
-    int readyTimeoutMs = s.value("agent/ready_timeout_sec", 60).toInt() * 1000;
-    int stopTimeoutMs   = s.value("agent/stop_timeout_sec", 5).toInt() * 1000;
+    const DAAgentLLMConfig& c = d->mConfig.llm();
+    int readyTimeoutMs = c.readyTimeoutSec() * 1000;
+    int stopTimeoutMs   = c.stopTimeoutSec() * 1000;
 
     // 启动（子 agent 一期：init 附子 agent 定义数组，assembleSubagentDefs 协议载荷）
     d->mBridge->startAgent(config, assembleToolSpecs(), assembleSystemPrompt(),
@@ -543,16 +483,13 @@ void DAAgentModule::prestartAgent()
     if (d->mBridge && d->mBridge->isRunning()) {
         return;  // 已在运行，不重复启动
     }
-    QJsonObject config = getLLMConfig();
+    const DAAgentLLMConfig c = d->mConfig.llm();
     // 检查 auto_prestart 开关（默认 true）
-    if (!config.value("auto_prestart").toBool(true)) {
+    if (!c.autoPrestart()) {
         return;  // 用户关闭了自动预热
     }
     // 检查 LLM 必填项是否就绪
-    QString baseUrl = config.value("base_url").toString().trimmed();
-    QString apiKey  = config.value("api_key").toString().trimmed();
-    QString model   = config.value("model").toString().trimmed();
-    if (baseUrl.isEmpty() || apiKey.isEmpty() || model.isEmpty()) {
+    if (c.baseUrl().trimmed().isEmpty() || c.apiKey().trimmed().isEmpty() || c.model().trimmed().isEmpty()) {
         return;  // 未配置 LLM，不预启动（发消息时走懒启动 fallback 报错提示）
     }
     // 工具未注册时跳过预启动——init 消息会携带空工具列表发给 Python，
@@ -825,122 +762,23 @@ void DAAgentModule::hideDockWidget()
 
 /**
  * @brief 获取 LLM 配置
- * @return LLM 配置 JSON
+ * @return LLM 配置结构体（稀疏：engaged 字段=显式设置过，getter 兜底默认值）
  */
-QJsonObject DAAgentModule::getLLMConfig() const
+DAAgentLLMConfig DAAgentModule::getLLMConfig() const
 {
-    // 从 agent-config.ini 读取（与设置页 DAAgentSettingsWidget 同一存储源，保持一致）
-    // DAAgent 库不持有 DAAppConfig*（库无法链接 APP 可执行文件中的 DAAppConfig）
-    QSettings s(DA::DADir::getConfigPath() + "/agent-config.ini", QSettings::IniFormat);
-    QJsonObject config;
-    config["base_url"] = s.value("agent/llm_base_url").toString();
-    config["model"]    = s.value("agent/llm_model").toString();
-    // IniFormat 原生支持 QByteArray(@ByteArray 注解),api_key 直接读取
-    QByteArray encKey  = s.value("agent/llm_api_key").toByteArray();
-    if (!encKey.isEmpty()) {
-        config["api_key"] = decryptApiKey(encKey);
-    }
-    // 上下文管理配置（带默认值兜底，随 init 消息 config 字段下发给 Python）
-    // context_window / max_output_tokens 由激活模型派生（setActiveModel/syncActiveConnection 写入），
-    // 默认 262144(256K) / 8192。
-    config["context_window"]            = s.value("agent/context_window", 262144).toInt();
-    config["max_output_tokens"]         = s.value("agent/max_output_tokens", 8192).toInt();
-    config["compaction_threshold"]      = s.value("agent/compaction_threshold", 0.85).toDouble();
-    config["max_recent_messages"]       = s.value("agent/max_recent_messages", 10).toInt();
-    config["tool_result_max_chars"]     = s.value("agent/tool_result_max_chars", 20000).toInt();
-    config["tool_result_preview_chars"] = s.value("agent/tool_result_preview_chars", 2000).toInt();
-    // 启动/停止超时（默认 ready=60s 覆盖 langchain 冷启动导入、stop=5s），与 startAgentInternal 读法一致
-    config["ready_timeout_sec"]         = s.value("agent/ready_timeout_sec", 60).toInt();
-    config["stop_timeout_sec"]          = s.value("agent/stop_timeout_sec", 5).toInt();
-    // 会话清理配置（默认 20/30，须与 cleanupSessions 读这两个 key 的默认值一致）
-    config["max_sessions"]             = s.value("agent/max_sessions", 20).toInt();
-    config["session_retention_days"]    = s.value("agent/session_retention_days", 30).toInt();
-    // 重连与容错配置（plan-05：随 init 消息 config 字段下发给 Python/C++ 消费方）
-    config["max_retries"]              = s.value("agent/llm_max_retries", 7).toInt();
-    config["request_timeout_sec"]      = s.value("agent/llm_request_timeout_sec", 120).toInt();
-    config["inactivity_timeout_sec"]   = s.value("agent/inactivity_timeout_sec", 240).toInt();
-    config["max_subprocess_restarts"]  = s.value("agent/max_subprocess_restarts", 3).toInt();
-    // recursion_limit：LangGraph 图最大迭代步数（compact→agent→tools 循环），
-    // 防止 agent 陷入死循环时跑数千步。默认 150 步约支持 50 轮工具调用，
-    // 满足数据分析频繁查数据的场景；用户可在设置页调整。
-    config["recursion_limit"]          = s.value("agent/recursion_limit", 150).toInt();
-    // 预启动开关：程序启动时是否自动预热 agent 子进程（默认 true）
-    config["auto_prestart"]            = s.value("agent/auto_prestart", true).toBool();
-    // ---- 子 agent 配置（subagent-phase1 §4：随 init/reconfigure 下发 Python，全局统一） ----
-    // timeout_sec/recursion_limit 设置页可编辑；max_concurrency/batch_limit 为内部键，
-    // 钳在上限 2/4 内（可调低不可调高）
-    config["subagent_timeout_sec"]      = qMax(1, s.value("agent/subagent_timeout_sec", 600).toInt());
-    config["subagent_recursion_limit"]  = qMax(1, s.value("agent/subagent_recursion_limit", 60).toInt());
-    config["subagent_max_concurrency"]  = qBound(1, s.value("agent/subagent_max_concurrency", 2).toInt(), 2);
-    config["subagent_batch_limit"]      = qBound(1, s.value("agent/subagent_batch_limit", 4).toInt(), 4);
-    return config;
+    DA_DC(d);
+    return d->mConfig.llm();
 }
 
 /**
- * @brief 设置 LLM 配置
- * @param config LLM 配置 JSON
+ * @brief 设置 LLM 配置（仅 engaged 字段生效，等价原 contains 守卫语义）
+ * @param config LLM 配置结构体增量
  */
-void DAAgentModule::setLLMConfig(const QJsonObject& config)
+void DAAgentModule::setLLMConfig(const DAAgentLLMConfig& config)
 {
-    // 必须用显式 ini 路径（与 getLLMConfig/startAgentInternal/cleanupSessions 一致），
-    // 不可用默认构造 QSettings()——Windows 上后者写注册表，会与读 ini 的 getLLMConfig 错位致全部 key 丢失。
-    QSettings s(DA::DADir::getConfigPath() + "/agent-config.ini", QSettings::IniFormat);
-    // base_url / model：原已写，补 contains 守卫保持一致
-    if (config.contains("base_url"))
-        s.setValue("agent/llm_base_url", config.value("base_url").toString());
-    if (config.contains("model"))
-        s.setValue("agent/llm_model", config.value("model").toString());
-    // api_key：无条件写（移除原 if(!apiKey.isEmpty()) 守卫）。
-    //   空字符串 → encryptApiKey("") 返回空 QByteArray → 清空存储 blob，用户可清空 api_key。
-    //   getLLMConfig 侧的 if(!encKey.isEmpty()) 守卫保留（空时不 set api_key，页 loadConfig 得空，一致）。
-    if (config.contains("api_key"))
-        s.setValue("agent/llm_api_key", encryptApiKey(config.value("api_key").toString()));
-    // 5 个已读未写的 context-management key（CRITICAL #1 补写）：
-    // 注：context_window / max_output_tokens 通常由激活模型派生（setActiveModel/syncActiveConnection
-    // 写入），设置页不再直接编辑这两个 key；此处保留守卫以兼容外部直接 setLLMConfig 的场景。
-    if (config.contains("context_window"))
-        s.setValue("agent/context_window",            config.value("context_window").toInt());
-    if (config.contains("max_output_tokens"))
-        s.setValue("agent/max_output_tokens",         config.value("max_output_tokens").toInt());
-    if (config.contains("compaction_threshold"))
-        s.setValue("agent/compaction_threshold",      config.value("compaction_threshold").toDouble());
-    if (config.contains("max_recent_messages"))
-        s.setValue("agent/max_recent_messages",       config.value("max_recent_messages").toInt());
-    if (config.contains("tool_result_max_chars"))
-        s.setValue("agent/tool_result_max_chars",     config.value("tool_result_max_chars").toInt());
-    if (config.contains("tool_result_preview_chars"))
-        s.setValue("agent/tool_result_preview_chars", config.value("tool_result_preview_chars").toInt());
-    // 4 个新 key：
-    if (config.contains("ready_timeout_sec"))
-        s.setValue("agent/ready_timeout_sec",         config.value("ready_timeout_sec").toInt());
-    if (config.contains("stop_timeout_sec"))
-        s.setValue("agent/stop_timeout_sec",          config.value("stop_timeout_sec").toInt());
-    if (config.contains("max_sessions"))
-        s.setValue("agent/max_sessions",              config.value("max_sessions").toInt());
-    if (config.contains("session_retention_days"))
-        s.setValue("agent/session_retention_days",    config.value("session_retention_days").toInt());
-    // 重连与容错配置（plan-05）
-    if (config.contains("max_retries"))
-        s.setValue("agent/llm_max_retries",           config.value("max_retries").toInt());
-    if (config.contains("request_timeout_sec"))
-        s.setValue("agent/llm_request_timeout_sec",   config.value("request_timeout_sec").toInt());
-    if (config.contains("inactivity_timeout_sec"))
-        s.setValue("agent/inactivity_timeout_sec",    config.value("inactivity_timeout_sec").toInt());
-    if (config.contains("max_subprocess_restarts"))
-        s.setValue("agent/max_subprocess_restarts",   config.value("max_subprocess_restarts").toInt());
-    if (config.contains("recursion_limit"))
-        s.setValue("agent/recursion_limit",           config.value("recursion_limit").toInt());
-    if (config.contains("auto_prestart"))
-        s.setValue("agent/auto_prestart",              config.value("auto_prestart").toBool());
-    // 子 agent 配置（subagent-phase1 §4）；max_concurrency/batch_limit 钳上限 2/4
-    if (config.contains("subagent_timeout_sec"))
-        s.setValue("agent/subagent_timeout_sec",      qMax(1, config.value("subagent_timeout_sec").toInt()));
-    if (config.contains("subagent_recursion_limit"))
-        s.setValue("agent/subagent_recursion_limit",  qMax(1, config.value("subagent_recursion_limit").toInt()));
-    if (config.contains("subagent_max_concurrency"))
-        s.setValue("agent/subagent_max_concurrency",  qBound(1, config.value("subagent_max_concurrency").toInt(), 2));
-    if (config.contains("subagent_batch_limit"))
-        s.setValue("agent/subagent_batch_limit",      qBound(1, config.value("subagent_batch_limit").toInt(), 4));
+    DA_D(d);
+    d->mConfig.mergeLLM(config);
+    d->mConfig.save();
 }
 
 // ===========================================================================
@@ -948,87 +786,31 @@ void DAAgentModule::setLLMConfig(const QJsonObject& config)
 // ===========================================================================
 
 /**
- * @brief 获取所有供应商配置（api_key 已解密为明文返回）
- * @return 供应商 JSON 数组，每元素 {name, base_url, api_key, models:[{id,context_window,max_output_tokens}]}
+ * @brief 获取所有供应商配置（api_key 为内存态明文）
+ * @return 供应商结构体列表
  *
- * 若 agent/providers 未配置（旧版本仅有 flat key），自动迁移：以 llm_base_url /
- * llm_api_key(解密) / llm_model 合成单个 "Default" 供应商（模型带默认
- * context_window=262144 / max_output_tokens=8192），保证旧配置平滑升级。
- * 模型条目若为旧格式字符串也按对象规范化返回。
+ * 未显式配置 providers 而仅配置了 flat 连接键时（旧版本配置），由
+ * DAAgentConfig::providers() 读时合成单个 "Default" 供应商，保证旧配置平滑升级。
  */
-QJsonArray DAAgentModule::getProviders() const
+QList< DAAgentProvider > DAAgentModule::getProviders() const
 {
-    QSettings s(DA::DADir::getConfigPath() + "/agent-config.ini", QSettings::IniFormat);
-    QString raw = s.value("agent/providers").toString();
-    if (!raw.isEmpty()) {
-        const QJsonDocument doc = QJsonDocument::fromJson(raw.toUtf8());
-        const QJsonArray arr = doc.array();
-        QJsonArray out;
-        for (const QJsonValue& pv : arr) {
-            QJsonObject p = pv.toObject();
-            QString enc = p.value("api_key").toString();
-            p["api_key"] = enc.isEmpty() ? QString() : decryptApiKey(enc.toUtf8());
-            // 规范化 models：旧格式字符串 → 对象 {id,context_window,max_output_tokens}
-            QJsonArray normModels;
-            const QJsonArray models = p.value("models").toArray();
-            for (const QJsonValue& mv : models) {
-                if (mv.isObject()) {
-                    normModels.append(mv.toObject());
-                } else if (mv.isString()) {
-                    QJsonObject mo;
-                    mo["id"] = mv.toString();
-                    mo["context_window"] = 262144;
-                    mo["max_output_tokens"] = 8192;
-                    normModels.append(mo);
-                }
-            }
-            p["models"] = normModels;
-            out.append(p);
-        }
-        return out;
-    }
-    // 迁移：旧版本仅有 flat key，合成单个 "Default" 供应商
-    QJsonArray out;
-    QJsonObject p;
-    p["name"]     = QStringLiteral("Default");
-    p["base_url"] = s.value("agent/llm_base_url").toString();
-    QByteArray encKey = s.value("agent/llm_api_key").toByteArray();
-    p["api_key"] = encKey.isEmpty() ? QString() : decryptApiKey(encKey);
-    QString model = s.value("agent/llm_model").toString();
-    QJsonArray models;
-    if (!model.isEmpty()) {
-        QJsonObject mo;
-        mo["id"] = model;
-        mo["context_window"] = s.value("agent/context_window", 262144).toInt();
-        mo["max_output_tokens"] = 8192;
-        models.append(mo);
-    }
-    p["models"] = models;
-    out.append(p);
-    return out;
+    DA_DC(d);
+    return d->mConfig.providers();
 }
 
 /**
- * @brief 保存所有供应商配置（api_key 明文传入，内部加密存储）
- * @param providers 供应商 JSON 数组，每元素 {name, base_url, api_key, models:[id,...]}
+ * @brief 保存所有供应商配置（api_key 明文传入，持久化时由 DAAgentConfig 加密）
+ * @param providers 供应商结构体列表
  *
- * 存储为 agent/providers 单条 JSON 字符串（Compact），api_key 经 encryptApiKey
- * 加密为 base64。保存后重新同步激活连接（base_url/api_key/model）并刷新 Dock。
+ * 保存后重新同步激活连接（激活供应商的 base_url/api_key/model 写入 flat 字段）并刷新 Dock。
  */
-void DAAgentModule::setProviders(const QJsonArray& providers)
+void DAAgentModule::setProviders(const QList< DAAgentProvider >& providers)
 {
-    QJsonArray stored;
-    for (const QJsonValue& pv : providers) {
-        QJsonObject p = pv.toObject();
-        QString key = p.value("api_key").toString();
-        p["api_key"] = QString::fromUtf8(encryptApiKey(key));  // 加密 base64 字符串
-        stored.append(p);
-    }
-    QSettings s(DA::DADir::getConfigPath() + "/agent-config.ini", QSettings::IniFormat);
-    s.setValue("agent/providers", QString::fromUtf8(QJsonDocument(stored).toJson(QJsonDocument::Compact)));
-    s.sync();  // 确保 providers JSON 落盘，供下方 syncActiveConnection 的 getProviders 读到最新值
-    // 重新同步激活连接（激活供应商的 base_url/api_key/model 写入 flat key）
-    syncActiveConnection();
+    DA_D(d);
+    d->mConfig.setProviders(providers);
+    // 重新同步激活连接（激活供应商的 base_url/api_key/model 同步到 flat 字段）
+    d->mConfig.syncActiveConnection();
+    d->mConfig.save();
     emit availableModelsChanged(getAvailableModels());
     emit activeModelChanged(getActiveProvider(), getActiveModel());
 }
@@ -1039,29 +821,27 @@ void DAAgentModule::setProviders(const QJsonArray& providers)
  */
 QString DAAgentModule::getActiveProvider() const
 {
-    QSettings s(DA::DADir::getConfigPath() + "/agent-config.ini", QSettings::IniFormat);
-    return s.value("agent/active_provider").toString();
+    DA_DC(d);
+    return d->mConfig.activeProvider();
 }
 
 /**
  * @brief 获取所有可选模型列表（Dock 下拉用，不含 api_key）
- * @return QVariantList，每元素 QVariantMap{provider,model,context_window,max_output_tokens}
+ * @return 每元素 DAAgentModelRef{provider,model,contextWindow,maxOutputTokens}
  */
-QVariantList DAAgentModule::getAvailableModels() const
+QList< DAAgentModelRef > DAAgentModule::getAvailableModels() const
 {
-    QVariantList out;
-    const QJsonArray providers = getProviders();
-    for (const QJsonValue& pv : providers) {
-        QJsonObject p = pv.toObject();
-        QString pname = p.value("name").toString();
-        const QJsonArray models = p.value("models").toArray();
-        for (const QJsonValue& mv : models) {
-            QVariantMap item;
-            item["provider"] = pname;
-            item["model"]    = modelIdOf(mv);
-            item["context_window"]    = modelContextWindowOf(mv, 262144);
-            item["max_output_tokens"] = modelMaxOutputOf(mv, 8192);
-            out.append(item);
+    DA_DC(d);
+    QList< DAAgentModelRef > out;
+    const QList< DAAgentProvider > providers = d->mConfig.providers();
+    for (const DAAgentProvider& p : providers) {
+        for (const DAAgentModel& m : p.models) {
+            DAAgentModelRef ref;
+            ref.provider        = p.name;
+            ref.model           = m.id;
+            ref.contextWindow   = m.contextWindow;
+            ref.maxOutputTokens = m.maxOutputTokens;
+            out.append(ref);
         }
     }
     return out;
@@ -1069,12 +849,12 @@ QVariantList DAAgentModule::getAvailableModels() const
 
 /**
  * @brief 获取当前激活模型 id
- * @return 激活模型 id（即 agent/llm_model）
+ * @return 激活模型 id
  */
 QString DAAgentModule::getActiveModel() const
 {
-    QSettings s(DA::DADir::getConfigPath() + "/agent-config.ini", QSettings::IniFormat);
-    return s.value("agent/llm_model").toString();
+    DA_DC(d);
+    return d->mConfig.llm().model();
 }
 
 /**
@@ -1082,119 +862,24 @@ QString DAAgentModule::getActiveModel() const
  * @param provider 供应商名称
  * @param model 模型 id
  *
- * 校验 supplier+model 存在后，写入 agent/active_provider / llm_model，并从该供应商
- * 同步 base_url/api_key 到 flat key、从该模型同步 context_window/max_output_tokens
- * （供 getLLMConfig/startAgentInternal 读取）。emit activeModelChanged 通知 Dock 刷新。
- * 若子进程正在运行则热替换 LLM 配置（reconfigureAgent，不重启子进程、不丢
- * MemorySaver 会话状态）；未运行时仅写 ini，下次懒启动用新配置。
+ * 校验 supplier+model 存在后，同步 base_url/api_key/model/context_window/
+ * max_output_tokens（供 toRunnerConfigJson 读取）。emit activeModelChanged 通知
+ * Dock 刷新。若子进程正在运行则热替换 LLM 配置（reconfigureAgent，不重启
+ * 子进程、不丢 MemorySaver 会话状态）；未运行时仅写配置，下次懒启动用新配置。
  */
 void DAAgentModule::setActiveModel(const QString& provider, const QString& model)
 {
     DA_D(d);
-    const QJsonArray providers = getProviders();
-    QString baseUrl, apiKey;
-    int ctxWin = 262144, maxOut = 8192;
-    bool found = false;
-    for (const QJsonValue& pv : providers) {
-        QJsonObject p = pv.toObject();
-        if (p.value("name").toString() != provider) continue;
-        const QJsonArray models = p.value("models").toArray();
-        for (const QJsonValue& mv : models) {
-            if (modelIdOf(mv) == model) {
-                baseUrl = p.value("base_url").toString();
-                apiKey  = p.value("api_key").toString();
-                ctxWin  = modelContextWindowOf(mv, 262144);
-                maxOut  = modelMaxOutputOf(mv, 8192);
-                found   = true;
-                break;
-            }
-        }
-        break;
+    if (!d->mConfig.applyActiveModel(provider, model)) {
+        return;
     }
-    if (!found) return;
-    QSettings s(DA::DADir::getConfigPath() + "/agent-config.ini", QSettings::IniFormat);
-    s.setValue("agent/active_provider", provider);
-    s.setValue("agent/llm_model",        model);
-    s.setValue("agent/llm_base_url",     baseUrl);
-    // DPAPI 解密失败时 apiKey 为空，不覆盖 flat key（保留可能有效的旧值）
-    if (!apiKey.isEmpty()) {
-        s.setValue("agent/llm_api_key", encryptApiKey(apiKey));
-    }
-    s.setValue("agent/context_window",  ctxWin);
-    s.setValue("agent/max_output_tokens", maxOut);
-    s.sync();  // 确保 6 个 flat key 落盘，供下方 getLLMConfig() 读到最新配置
+    d->mConfig.save();
     emit activeModelChanged(provider, model);
     // 子进程运行中则热替换 LLM 配置（不重启子进程、不丢 MemorySaver 会话状态）；
     // reconfigure 在 stdin 排队，当前轮跑完后 Python 主循环处理，下一轮用新模型。
-    // 未运行时仅写 ini，下次懒启动用新 config。getLLMConfig() 在写完 6 个 flat
-    // key 后调用，读到的是最新配置（含 base_url/api_key/model/context_window 等）。
+    // 未运行时仅写配置，下次懒启动用新 config。
     if (d->mBridge && d->mBridge->isRunning()) {
-        d->mBridge->reconfigureAgent(getLLMConfig());
-    }
-}
-
-/**
- * @brief 从激活供应商同步 base_url/api_key/model/context_window/max_output_tokens 到 flat ini key
- *
- * setProviders 后调用：保存的供应商可能改了激活供应商的 base_url/api_key，需同步到
- * flat key 供 getLLMConfig 读取。激活模型保留原 llm_model（若仍属于激活供应商则保留，
- * 否则改用激活供应商第一个模型），并同步该模型的 context_window/max_output_tokens。
- * 激活供应商为空或已不存在（被删除）时兜底取第一个供应商，使配置始终可启动。
- */
-void DAAgentModule::syncActiveConnection()
-{
-    QSettings s(DA::DADir::getConfigPath() + "/agent-config.ini", QSettings::IniFormat);
-    const QJsonArray providers = getProviders();
-    if (providers.isEmpty()) {
-        return;  // 无供应商，无可同步
-    }
-    QString active = s.value("agent/active_provider").toString();
-    // 校验 active 是否仍存在于 providers；空或不存在则兜底取第一个
-    bool activeExists = false;
-    for (const QJsonValue& pv : providers) {
-        if (pv.toObject().value("name").toString() == active) {
-            activeExists = true;
-            break;
-        }
-    }
-    if (!activeExists) {
-        active = providers.first().toObject().value("name").toString();
-        s.setValue("agent/active_provider", active);
-    }
-    for (const QJsonValue& pv : providers) {
-        QJsonObject p = pv.toObject();
-        if (p.value("name").toString() != active) continue;
-        s.setValue("agent/llm_base_url", p.value("base_url").toString());
-        // DPAPI 解密失败时 getProviders 返回空 api_key，此时不覆盖 flat key
-        // （保留可能有效的旧值），避免每次启动 pushModelSelection→syncActiveConnection
-        // 把 flat key 清空导致 getLLMConfig 读不到 api_key（报 config missing）
-        QString decryptedKey = p.value("api_key").toString();
-        if (!decryptedKey.isEmpty()) {
-            s.setValue("agent/llm_api_key", encryptApiKey(decryptedKey));
-        } else {
-            qWarning("syncActiveConnection: provider api_key DPAPI decryption failed, "
-                     "keeping existing flat key to avoid destroying it");
-        }
-        // 激活模型：保留原 llm_model（若属于本供应商），否则取本供应商第一个模型
-        QString curModel = s.value("agent/llm_model").toString();
-        const QJsonArray models = p.value("models").toArray();
-        int matchedIdx = -1;
-        for (int i = 0; i < models.size(); ++i) {
-            if (modelIdOf(models.at(i)) == curModel) { matchedIdx = i; break; }
-        }
-        if (matchedIdx < 0 && !models.isEmpty()) {
-            matchedIdx = 0;
-            s.setValue("agent/llm_model", modelIdOf(models.at(0)));
-        } else if (models.isEmpty()) {
-            s.setValue("agent/llm_model", QString());  // 无模型则清空
-        }
-        // 同步激活模型的 context_window / max_output_tokens
-        if (matchedIdx >= 0) {
-            const QJsonValue mv = models.at(matchedIdx);
-            s.setValue("agent/context_window", modelContextWindowOf(mv, 262144));
-            s.setValue("agent/max_output_tokens", modelMaxOutputOf(mv, 8192));
-        }
-        break;
+        d->mBridge->reconfigureAgent(d->mConfig.toRunnerConfigJson());
     }
 }
 
@@ -1202,21 +887,18 @@ void DAAgentModule::syncActiveConnection()
  * @brief 推送当前供应商/模型选择到 Dock
  *
  * 由 DAAppController 在接口↔Dock 信号链 connect 完成后调用（与 restoreLastActiveSession
- * 同处）。首次运行/旧配置迁移时若 active_provider 为空，先 syncActiveConnection 兜底
- * 取首个供应商并持久化，再 emit availableModelsChanged + activeModelChanged。
+ * 同处）。首次运行/旧配置迁移时若 active_provider 为空或 flat api_key 为空（旧 bug
+ * 清空或解密失败遗留），先 syncActiveConnection 兜底恢复并持久化，再 emit
+ * availableModelsChanged + activeModelChanged。
  */
 void DAAgentModule::pushModelSelection()
 {
-    if (getActiveProvider().isEmpty()) {
-        syncActiveConnection();  // 兜底：取首个供应商为激活并同步 flat key
-    } else {
-        // active_provider 已有值，但 flat key 可能为空（旧 bug 清空或 DPAPI
-        // 解密失败遗留），需从 providers JSON 重新解密恢复 flat key，
-        // 否则 getLLMConfig 读到空 api_key → agent 报 config missing 崩溃
-        QSettings s(DA::DADir::getConfigPath() + "/agent-config.ini", QSettings::IniFormat);
-        if (s.value("agent/llm_api_key").toByteArray().isEmpty()) {
-            syncActiveConnection();
-        }
+    DA_D(d);
+    if (d->mConfig.activeProvider().isEmpty() || d->mConfig.llm().apiKey().isEmpty()) {
+        // 兜底：取首个供应商为激活并同步 flat 连接字段（api_key 为空时从
+        // providers 重新恢复，否则 agent 报 config missing 崩溃）
+        d->mConfig.syncActiveConnection();
+        d->mConfig.save();
     }
     emit availableModelsChanged(getAvailableModels());
     emit activeModelChanged(getActiveProvider(), getActiveModel());
@@ -1479,10 +1161,8 @@ bool DAAgentModule::runAgent(const QString& title)
         return false;
     }
     showDockWidget();
-    QJsonObject config = getLLMConfig();
-    if (config.value("base_url").toString().isEmpty() ||
-        config.value("api_key").toString().isEmpty() ||
-        config.value("model").toString().isEmpty()) {
+    const DAAgentLLMConfig c = d->mConfig.llm();
+    if (c.baseUrl().isEmpty() || c.apiKey().isEmpty() || c.model().isEmpty()) {
         daWarning << tr("LLM is not configured, skip agent analysis. "
                         "Please configure LLM in settings first.");  //cn:LLM 未配置，跳过 Agent 分析，请先在设置中配置 LLM
         emit systemMessage(tr("LLM is not configured. Please configure LLM in settings first."),  //cn:LLM 未配置，请先在设置中配置 LLM
@@ -1509,22 +1189,23 @@ DAAgentPromptOps* DAAgentModule::agentPromptOps()
 
 /**
  * @brief 获取权限配置（模式/审批超时/判官/规则/危险模式/分级覆盖）
- * @return 权限配置 JSON（权限引擎未就绪时返回空对象）
+ * @return 权限配置结构体（权限引擎未就绪时返回默认值）
  */
-QJsonObject DAAgentModule::getPermissionConfig() const
+DAAgentPermissionConfig DAAgentModule::getPermissionConfig() const
 {
     DA_DC(d);
+    DAAgentPermissionConfig c;
     if (!d->mPermissionManager) {
-        return QJsonObject();
+        return c;
     }
     return d->mPermissionManager->getConfig();
 }
 
 /**
- * @brief 写入权限配置（contains 守卫；模式变更经信号 + reconfigure 同步）
- * @param config 权限配置 JSON
+ * @brief 写入权限配置（标量稀疏守卫；模式变更经信号 + reconfigure 同步）
+ * @param config 权限配置结构体
  */
-void DAAgentModule::setPermissionConfig(const QJsonObject& config)
+void DAAgentModule::setPermissionConfig(const DAAgentPermissionConfig& config)
 {
     DA_D(d);
     if (!d->mPermissionManager) {
@@ -1536,11 +1217,11 @@ void DAAgentModule::setPermissionConfig(const QJsonObject& config)
     if (d->mPermissionManager->mode() != oldMode) {
         emit permissionModeChanged(d->mPermissionManager->mode());
         if (d->mBridge && d->mBridge->isRunning()) {
-            d->mBridge->reconfigureAgent(getLLMConfig());
+            d->mBridge->reconfigureAgent(d->mConfig.toRunnerConfigJson());
         }
     } else if (d->mBridge && d->mBridge->isRunning()) {
         // 非模式字段（判官/超时/危险模式等）变更也需同步运行中子进程
-        d->mBridge->reconfigureAgent(getLLMConfig());
+        d->mBridge->reconfigureAgent(d->mConfig.toRunnerConfigJson());
     }
 }
 
@@ -1555,7 +1236,7 @@ QString DAAgentModule::getPermissionMode() const
 }
 
 /**
- * @brief 设置权限模式（写 ini + emit + 运行中经 reconfigure 热同步，A2 即时生效）
+ * @brief 设置权限模式（写配置 + emit + 运行中经 reconfigure 热同步，A2 即时生效）
  * @param mode yolo / auto / manual（非法值忽略）
  */
 void DAAgentModule::setPermissionMode(const QString& mode)
@@ -1575,7 +1256,7 @@ void DAAgentModule::setPermissionMode(const QString& mode)
     d->mPermissionManager->setMode(mode);
     emit permissionModeChanged(mode);
     if (d->mBridge && d->mBridge->isRunning()) {
-        d->mBridge->reconfigureAgent(getLLMConfig());
+        d->mBridge->reconfigureAgent(d->mConfig.toRunnerConfigJson());
     }
 }
 
@@ -1609,7 +1290,7 @@ void DAAgentModule::setScriptWorkspaceDir(const QString& dir)
         d->mPermissionManager->setWorkspaceRoot(dir);
     }
     if (d->mBridge && d->mBridge->isRunning()) {
-        d->mBridge->reconfigureAgent(getLLMConfig());
+        d->mBridge->reconfigureAgent(d->mConfig.toRunnerConfigJson());
     }
 }
 
@@ -1752,17 +1433,14 @@ void DAAgentModule::setSessionProjectPathForCurrent(const QString& path)
 }
 
 /**
- * @brief 清理旧会话（读 ini 配置的 max_sessions/session_retention_days）
+ * @brief 清理旧会话（读配置的 maxSessions/sessionRetentionDays）
  */
 void DAAgentModule::cleanupSessions()
 {
     DA_D(d);
-    // 配置 key 由 plan-06 定义（agent/max_sessions 默认 20、agent/session_retention_days 默认 30）；
-    // 读法复用 startAgentInternal/getLLMConfig 现有的 agent-config.ini QSettings 访问模式
-    QSettings s(DA::DADir::getConfigPath() + "/agent-config.ini", QSettings::IniFormat);
-    int maxCount = s.value("agent/max_sessions", 20).toInt();
-    int retentionDays = s.value("agent/session_retention_days", 30).toInt();
-    d->mSessionStore->cleanupOldSessions(maxCount, retentionDays, d->mCurrentSessionId);  // 跳过当前活跃 + lastActive
+    // 默认值由 DAAgentLLMConfig 兜底（20/30，与旧 agent-config.ini 时代一致）
+    const DAAgentLLMConfig c = d->mConfig.llm();
+    d->mSessionStore->cleanupOldSessions(c.maxSessions(), c.sessionRetentionDays(), d->mCurrentSessionId);  // 跳过当前活跃 + lastActive
 }
 
 /**
@@ -1942,16 +1620,15 @@ QJsonObject DAAgentModule::makeUserRecord(const QString& text) const
 }
 
 /**
- * @brief 从 agent-config.ini 读 context_window
- * @return context_window 值（默认 128000）
+ * @brief 读取当前激活模型的上下文窗口
+ * @return context_window 值（默认 262144，与 DAAgentLLMConfig 一致）
  */
 int DAAgentModule::readContextWindow() const
 {
-    // 从 agent-config.ini 读 context_window（默认 128000，与 getLLMConfig 一致），
-    // 供 agentUsage lambda 与 emitTokenUsageForSession 复用，
-    // 避免重复 QSettings 构造与魔法数字散落
-    QSettings s(DA::DADir::getConfigPath() + "/agent-config.ini", QSettings::IniFormat);
-    return s.value("agent/context_window", 262144).toInt();
+    DA_DC(d);
+    // 读内存配置模型（默认值由 DAAgentLLMConfig 兜底），供 agentUsage lambda
+    // 与 emitTokenUsageForSession 复用，避免魔法数字散落
+    return d->mConfig.llm().contextWindow();
 }
 
 /**

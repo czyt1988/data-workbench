@@ -216,3 +216,10 @@ hr {
 .hljs-strong {
     font-weight: 700;
 }
+
+/* 独立数学公式块（$$...$$，KaTeX）：居中显示，上下留呼吸空间 */
+.math-block {
+    text-align: center;
+    margin: 12px 0;
+    overflow-x: auto;
+}

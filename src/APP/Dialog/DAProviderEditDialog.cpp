@@ -15,6 +15,7 @@
 #include <QNetworkRequest>
 #include <QNetworkReply>
 #include <QJsonDocument>
+#include <QJsonObject>
 #include <QJsonArray>
 #include <QTimer>
 #include <QUrl>
@@ -30,7 +31,7 @@ namespace DA
  * @param oldName 修改模式下的旧名称
  * @param parent 父窗口
  */
-DAProviderEditDialog::DAProviderEditDialog(const QJsonObject& provider, const QStringList& existingNames,
+DAProviderEditDialog::DAProviderEditDialog(const DAAgentProvider& provider, const QStringList& existingNames,
                                            const QString& oldName, QWidget* parent)
     : QDialog(parent)
     , m_existingNames(existingNames)
@@ -105,21 +106,14 @@ void DAProviderEditDialog::buildUi()
     connect(m_modelTable, &QTableWidget::itemSelectionChanged, this, &DAProviderEditDialog::onSelectionChanged);
 }
 
-/** @brief 从 provider 对象载入表单与模型表格 */
-void DAProviderEditDialog::loadProvider(const QJsonObject& provider)
+/** @brief 从 provider 结构体载入表单与模型表格 */
+void DAProviderEditDialog::loadProvider(const DAAgentProvider& provider)
 {
-    m_nameEdit->setText(provider.value("name").toString());
-    m_baseUrlEdit->setText(provider.value("base_url").toString());
-    m_apiKeyEdit->setText(provider.value("api_key").toString());
-    const QJsonArray models = provider.value("models").toArray();
-    for (const QJsonValue& mv : models) {
-        QJsonObject mo = mv.toObject();
-        if (mo.isEmpty() && mv.isString()) {
-            mo["id"] = mv.toString();
-        }
-        appendModelRow(mo.value("id").toString(),
-                       mo.value("context_window").toInt(262144),
-                       mo.value("max_output_tokens").toInt(8192));
+    m_nameEdit->setText(provider.name);
+    m_baseUrlEdit->setText(provider.baseUrl);
+    m_apiKeyEdit->setText(provider.apiKey);
+    for (const DAAgentModel& m : provider.models) {
+        appendModelRow(m.id, m.contextWindow, m.maxOutputTokens);
     }
 }
 
@@ -287,22 +281,20 @@ bool DAProviderEditDialog::validate()
     return true;
 }
 
-/** @brief 获取结果 provider 对象 */
-QJsonObject DAProviderEditDialog::getProvider() const
+/** @brief 获取结果 provider 结构体 */
+DAAgentProvider DAProviderEditDialog::getProvider() const
 {
-    QJsonObject p;
-    p["name"]     = m_nameEdit->text().trimmed();
-    p["base_url"] = m_baseUrlEdit->text().trimmed();
-    p["api_key"]  = m_apiKeyEdit->text();
-    QJsonArray models;
+    DAAgentProvider p;
+    p.name     = m_nameEdit->text().trimmed();
+    p.baseUrl  = m_baseUrlEdit->text().trimmed();
+    p.apiKey   = m_apiKeyEdit->text();
     for (int r = 0; r < m_modelTable->rowCount(); ++r) {
-        QJsonObject mo;
-        mo["id"] = m_modelTable->item(r, 0) ? m_modelTable->item(r, 0)->text() : QString();
-        mo["context_window"] = m_modelTable->item(r, 1) ? m_modelTable->item(r, 1)->text().toInt() : 262144;
-        mo["max_output_tokens"] = m_modelTable->item(r, 2) ? m_modelTable->item(r, 2)->text().toInt() : 8192;
-        models.append(mo);
+        DAAgentModel m;
+        m.id = m_modelTable->item(r, 0) ? m_modelTable->item(r, 0)->text() : QString();
+        m.contextWindow  = m_modelTable->item(r, 1) ? m_modelTable->item(r, 1)->text().toInt() : 262144;
+        m.maxOutputTokens = m_modelTable->item(r, 2) ? m_modelTable->item(r, 2)->text().toInt() : 8192;
+        p.models.append(m);
     }
-    p["models"] = models;
     return p;
 }
 

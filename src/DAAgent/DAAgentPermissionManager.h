@@ -2,6 +2,7 @@
 #pragma once
 #include "DAAgentAPI.h"
 #include "DAAgentPermissionRule.h"
+#include "DAAgentPermissionConfig.h"
 #include <QString>
 #include <QStringList>
 #include <QList>
@@ -11,13 +12,17 @@
 
 namespace DA
 {
+class DAAgentConfig;
+
 /**
  * @brief Agent 权限引擎：模式决策 / 工具分级 / 路径策略 / 会话记忆（母文档 §6.1）
  *
  * 非 QObject（镜像 DAAgentSessionStore 的 PIMPL 风格，无信号槽需求）。
  * 单一执法点：DAAgentBridge::executeTool 调用 decide() 产出 Allow/Deny/Ask，
  * 策略状态（模式/规则/变量）由此处统一维护，配置经 agent-permissions.json
- *（规则/危险模式/分级覆盖，原子写）与 agent-config.ini（模式/超时/判官/开关）持久化。
+ *（规则/危险模式/分级覆盖，原子写）与 DAAgentConfig（模式/超时/判官/开关，
+ * 存于 agent-config.json permission 分组）持久化。构造注入共享的
+ * DAAgentConfig 实例（由 DAAgentModule 创建并持有，权限标量单一数据源）。
  *
  * 三模式语义（母文档 §1）：
  *   - yolo：除硬 deny（系统目录，全模式生效）外全部放行
@@ -61,13 +66,12 @@ public:
     // 系统目录硬 deny 文本（与原 isPathSafe 工具侧文案一致，保基线）
     static QString systemPathDenyMessage();
 
-    DAAgentPermissionManager();
+    DAAgentPermissionManager(DAAgentConfig* config = nullptr);
     ~DAAgentPermissionManager();
-
     // ---- 持久化（agent-permissions.json，原子写 tmp+rename） ----
-    // 配置文件绝对路径（与 agent-config.ini 同目录）
+    // 配置文件绝对路径（与 agent-config.json 同目录）
     QString configFilePath() const;
-    // 读取配置；文件缺失时播种（ensureDefaultRules）并落盘；存在时解析 + 硬 deny 强制回填
+    // 读取规则配置；文件缺失时播种（ensureDefaultRules）并落盘；存在时解析 + 硬 deny 强制回填
     bool load();
     // 落盘当前规则/危险模式/分级覆盖
     bool save() const;
@@ -80,20 +84,20 @@ public:
     // 整体替换规则（load 回填与测试用）
     void setRules(const QList< DAAgentPermissionRule >& rules);
     // 代码危险模式 {deny:[...], escalate:[...]}（Python 侧计划二消费）
-    QJsonObject codePatterns() const;
+    DAAgentCodePatterns codePatterns() const;
     // 设置代码危险模式
-    void setCodePatterns(const QJsonObject& patterns);
+    void setCodePatterns(const DAAgentCodePatterns& patterns);
     // 分级覆盖表 {tool: tier}
-    QJsonObject tierOverrides() const;
+    QHash< QString, QString > tierOverrides() const;
     // 设置分级覆盖表
-    void setTierOverrides(const QJsonObject& overrides);
+    void setTierOverrides(const QHash< QString, QString >& overrides);
 
-    // ---- 模式（agent-config.ini agent/permission_mode） ----
+    // ---- 模式（agent-config.json permission.mode，经注入的 DAAgentConfig 读写） ----
     // 当前模式（未配置默认 yolo 全自动，非法值回退 yolo）
     QString mode() const;
-    // 写入模式（仅接受 yolo/auto/manual）
+    // 写入模式（仅接受 yolo/auto/manual，调用方负责 config->save() 落盘）
     void setMode(const QString& mode);
-    // 模式是否由用户显式写入过（ini 含键；A13 启动确认卡仅对显式 yolo 弹出）
+    // 模式是否由用户显式写入过（配置含该键；A13 启动确认卡仅对显式 yolo 弹出）
     bool modeExplicitlySet() const;
 
     // ---- 工具分级（内置表 → 参数约定回退 → unknown，tier_overrides 最高优先） ----
@@ -133,8 +137,8 @@ public:
     // 全部变量当前值（匹配时解析 ${var} 用）
     QHash< QString, QString > variables() const;
 
-    // ---- ini 派生配置 ----
-    // 判官是否已配置（agent/judge_model 非空；D1 兜底判据）
+    // ---- ini 派生配置（经注入的 DAAgentConfig，agent-config.json permission 分组） ----
+    // 判官是否已配置（judge_model 非空；D1 兜底判据）
     bool judgeConfigured() const;
     // 判官模型名（可空）
     QString judgeModel() const;
@@ -147,11 +151,15 @@ public:
 
     // ---- 设置页 round-trip ----
     // 汇总全部权限配置（模式/超时/开关/判官/规则/危险模式/分级覆盖）
-    QJsonObject getConfig() const;
-    // 按 contains 守卫写入（镜像 setLLMConfig 风格），含规则落盘
-    void setConfig(const QJsonObject& config);
+    DAAgentPermissionConfig getConfig() const;
+    // 按稀疏守卫写入（标量未 engage 不受影响；规则/危险模式/覆盖表整体替换），含规则落盘
+    void setConfig(const DAAgentPermissionConfig& config);
 
 private:
     DA_DECLARE_PRIVATE(DAAgentPermissionManager)
+
+    // 权限标量的共享配置模型（由 DAAgentModule 注入持有；可选——未注入时
+    // 标量取默认值，供独立测试构造）
+    DAAgentConfig* mConfig = nullptr;
 };
 } // namespace DA

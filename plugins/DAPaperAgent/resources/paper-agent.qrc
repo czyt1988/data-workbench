@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/da/paper">
+        <file>paper-agent.md</file>
+    </qresource>
+</RCC>

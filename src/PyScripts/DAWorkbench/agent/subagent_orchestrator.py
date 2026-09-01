@@ -355,6 +355,18 @@ class SubagentOrchestrator:
             return default
         return max(minimum, value)
 
+    def _cfg_opt_int(self, key: str, default: int) -> int | None:
+        """同 _cfg_int 但允许 ≤0 → None（无限制），用于 recursion_limit。
+
+        与 agent_runner._sanitize_recursion_limit 语义一致：C++ ini 层面用
+        -1 表达"用户要求不限制"，langgraph 只接受 ≥1 或 None。
+        """
+        try:
+            value = int(self._runner.config.get(key, default))
+        except (TypeError, ValueError):
+            return default
+        return value if value > 0 else None
+
     # —— 派发 ——
 
     async def dispatch(self, args: dict, call_id: str) -> dict:
@@ -370,7 +382,9 @@ class SubagentOrchestrator:
         batch_limit = self._cfg_int("subagent_batch_limit", 4)
         concurrency = self._cfg_int("subagent_max_concurrency", 2)
         timeout_sec = float(self._cfg_int("subagent_timeout_sec", 600))
-        recursion_limit = self._cfg_int("subagent_recursion_limit", 60)
+        # 子图步数上限：≤0（ini 配置 -1）视为无限制（None 传入 langgraph；
+        # 显式 -1/0 会被 langgraph ValueError 拒绝，见 agent_runner 的守卫）
+        recursion_limit = self._cfg_opt_int("subagent_recursion_limit", 60)
 
         tasks_arg = args.get("tasks") if isinstance(args, dict) else None
         if not isinstance(tasks_arg, list) or not tasks_arg:
@@ -495,8 +509,9 @@ class SubagentOrchestrator:
             return {"task_id": task_id, "subagent_type": stype,
                     "status": "timeout", "error": err}
         except GraphRecursionError:
-            err = f"Task reached the subagent recursion limit ({recursion_limit})"
-            logger.warning("subagent task %s hit recursion limit %d", task_id, recursion_limit)
+            err = (f"Task reached the subagent recursion limit "
+                   f"({recursion_limit if recursion_limit else 'unlimited'})")
+            logger.warning("subagent task %s hit recursion limit %s", task_id, recursion_limit)
             await self._progress(
                 call_id, task_id=task_id, subagent=stype,
                 state="error", message=err
@@ -570,7 +585,7 @@ class SubagentOrchestrator:
             "recursion_limit": recursion_limit,
         }
         logger.info(
-            "subagent task %s starting (type=%s, tools=%d, recursion_limit=%d)",
+            "subagent task %s starting (type=%s, tools=%d, recursion_limit=%s)",
             task_id, definition.name, len(sub_schemas), recursion_limit
         )
         async for _event in graph.astream(

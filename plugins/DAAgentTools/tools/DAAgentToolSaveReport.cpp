@@ -6,6 +6,7 @@
 #include <QPrinter>
 #include <QDateTime>
 #include <QDesktopServices>
+#include <QRegularExpression>
 #include <QUrl>
 #include "DAUIInterface.h"
 #include "DADockingAreaInterface.h"
@@ -17,6 +18,87 @@ namespace DA
 {
 // 路径安全策略已移交权限门（permission-layer P1）：工作区内放行、区外询问、
 // 系统目录硬 deny，统一由 DAAgentPermissionManager::decide() 执法。
+
+/**
+ * @brief 将 markdown 中的相对图片路径解析为基于输出目录的绝对路径
+ *
+ * pdf 分支：QTextDocument 默认 loadResource 只能加载绝对本地路径
+ * （相对路径基于未设置的 baseUrl 解析必失败）；
+ * docx 分支：toHtml() 的 img src 原样携带 markdown 路径，而临时 HTML
+ * 位于系统 temp 目录，相对路径相对 temp 解析必然失效。
+ * http(s)/data:/file: URL 与已是绝对路径的引用保持原样。
+ */
+static QString normalizeImagePaths(const QString& content, const QString& baseDir)
+{
+    static const QRegularExpression imgRegex(
+        QStringLiteral("!\\[[^\\]]*\\]\\(([^\\s)]+)(?:\\s+\"[^\"]*\")?\\)"));
+    // 自左向右收集匹配，自右向左按记录偏移替换（右侧替换不影响左侧偏移）
+    struct ImgReplacement
+    {
+        int start;      ///< 捕获组（路径）在原文中的起始偏移
+        int length;     ///< 捕获组（路径）长度
+        QString absPath;
+    };
+    QList< ImgReplacement > replacements;
+    QRegularExpressionMatchIterator it = imgRegex.globalMatch(content);
+    while (it.hasNext()) {
+        QRegularExpressionMatch m = it.next();
+        QString path = m.captured(1);
+        if (path.startsWith(QStringLiteral("http:"), Qt::CaseInsensitive)
+            || path.startsWith(QStringLiteral("https:"), Qt::CaseInsensitive)
+            || path.startsWith(QStringLiteral("data:"), Qt::CaseInsensitive)
+            || path.startsWith(QStringLiteral("file:"), Qt::CaseInsensitive)
+            || QFileInfo(path).isAbsolute()) {
+            continue;
+        }
+        ImgReplacement r;
+        r.start   = static_cast< int >(m.capturedStart(1));
+        r.length  = static_cast< int >(m.capturedLength(1));
+        r.absPath = QFileInfo(QDir(baseDir), path).absoluteFilePath();
+        replacements.append(r);
+    }
+    QString result = content;
+    for (int i = replacements.size() - 1; i >= 0; --i) {
+        const ImgReplacement& r = replacements.at(i);
+        result.replace(r.start, r.length, r.absPath);
+    }
+    return result;
+}
+
+#ifdef Q_OS_WIN
+/**
+ * @brief 将 HTML 中 img src 的绝对本地路径转换为 file:/// URL
+ *
+ * toHtml() 对绝对路径图片输出 src="C:/..."，Word 打开临时 HTML 时对
+ * 无 scheme 的路径解析不稳定；file:/// URL 是 Word HTML 导入的确定形态。
+ */
+static QString imgSrcToFileUrl(const QString& html)
+{
+    static const QRegularExpression srcRegex(QStringLiteral("src=\"([A-Za-z]:[/\\\\][^\"]*)\""));
+    struct SrcReplacement
+    {
+        int start;
+        int length;
+        QString url;
+    };
+    QList< SrcReplacement > replacements;
+    QRegularExpressionMatchIterator it = srcRegex.globalMatch(html);
+    while (it.hasNext()) {
+        QRegularExpressionMatch m = it.next();
+        SrcReplacement r;
+        r.start  = static_cast< int >(m.capturedStart(1));
+        r.length = static_cast< int >(m.capturedLength(1));
+        r.url    = QUrl::fromLocalFile(m.captured(1)).toString();
+        replacements.append(r);
+    }
+    QString result = html;
+    for (int i = replacements.size() - 1; i >= 0; --i) {
+        const SrcReplacement& r = replacements.at(i);
+        result.replace(r.start, r.length, r.url);
+    }
+    return result;
+}
+#endif
 
 /**
  * @copydoc DAAbstractAgentTool::getToolSpec
@@ -90,8 +172,10 @@ QJsonObject DAAgentToolSaveReport::execute(const QJsonObject& params)
     }
     else if (format == "pdf") {
         // Render markdown to PDF via QTextDocument + QPrinter
+        // 相对图片路径先解析为基于输出目录的绝对路径（QTextDocument 默认
+        // loadResource 仅能加载绝对本地路径）
         QTextDocument doc;
-        doc.setMarkdown(content);
+        doc.setMarkdown(normalizeImagePaths(content, fi.absolutePath()));
         QPrinter printer(QPrinter::HighResolution);
         printer.setOutputFormat(QPrinter::PdfFormat);
         printer.setOutputFileName(filePath);
@@ -103,9 +187,11 @@ QJsonObject DAAgentToolSaveReport::execute(const QJsonObject& params)
     else if (format == "docx") {
 #ifdef Q_OS_WIN
         // Convert markdown to HTML, open with Word COM, save as .docx
+        // 相对图片路径先解析为绝对路径，导出的 img src 再转 file:/// URL：
+        // 临时 HTML 位于系统 temp 目录，相对/无 scheme 路径在 Word 中无法解析
         QTextDocument doc;
-        doc.setMarkdown(content);
-        QString html = doc.toHtml();
+        doc.setMarkdown(normalizeImagePaths(content, fi.absolutePath()));
+        QString html = imgSrcToFileUrl(doc.toHtml());
 
         // Write HTML to a temporary file
         QString tempFile = QDir::tempPath() + "/agent_report_"
