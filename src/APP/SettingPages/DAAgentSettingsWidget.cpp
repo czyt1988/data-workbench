@@ -217,11 +217,26 @@ void DAAgentSettingsWidget::setupAgentSettingsTab()
     mSpinMaxRestarts->setValue(3);
 
     mSpinRecursionLimit = new QSpinBox(this);
-    // -1 = 不限制（Python 侧转换为 langgraph 的 None；每回合预算，非会话累计）
+    // 下限 -1 + 特殊文本：勾选"不限制"时 setValue(-1)，禁用态显示"无限制"。
+    // 用户正常交互下不会手动输入 -1（勾选即禁用），range 含 -1 仅为承载该值
     mSpinRecursionLimit->setRange(-1, 1000000);
     mSpinRecursionLimit->setSpecialValueText(tr("No limit"));  //cn:无限制
-    mSpinRecursionLimit->setToolTip(tr("Max graph reasoning steps per turn (each tool-call cycle consumes 3 steps). Set to -1 for no limit. Recommended: 150."));  //cn:单回合图最大推理步数（每轮工具调用耗 3 步）。设为 -1 表示不限制。建议 150。
+    mSpinRecursionLimit->setToolTip(tr("Max graph reasoning steps per turn (each tool-call cycle consumes 3 steps). Check 'No limit' to disable. Recommended: 150."));  //cn:单回合图最大推理步数（每轮工具调用耗 3 步）。勾选"不限制"可关闭该上限。建议 150。
     mSpinRecursionLimit->setValue(150);
+
+    // 不限制勾选框：勾选 → 禁用 SpinBox 并保存 -1（Python 侧转换为无限制），
+    // 用户无需知晓 -1 的含义
+    mCheckRecursionNoLimit = new QCheckBox(tr("No limit"), this);  //cn:不限制
+    mCheckRecursionNoLimit->setToolTip(tr("Unlimited reasoning steps per turn. Loop protection still applies: repeated identical tool calls are terminated automatically."));  //cn:单回合推理步数不设上限。循环防护仍然生效：连续重复相同的工具调用会被自动终止。
+    connect(mCheckRecursionNoLimit, &QCheckBox::toggled, this, [this](bool on) {
+        if (on) {
+            mSpinRecursionLimit->setValue(-1);  // -1 经 Python 守卫转为无限制
+            mSpinRecursionLimit->setEnabled(false);
+        } else {
+            mSpinRecursionLimit->setEnabled(true);
+            mSpinRecursionLimit->setValue(150);  // 恢复建议值
+        }
+    });
 
     // ---- 子 agent（subagent-phase1 C，Q16）：全局统一作用于所有子 agent ----
     mSpinSubagentTimeout = new QSpinBox(this);
@@ -252,7 +267,15 @@ void DAAgentSettingsWidget::setupAgentSettingsTab()
     form->addRow(tr("Request timeout"), mSpinRequestTimeout);  //cn:请求超时
     form->addRow(tr("Inactivity timeout"), mSpinInactivityTimeout);  //cn:无活动超时
     form->addRow(tr("Max process restarts"), mSpinMaxRestarts);  //cn:最大进程重启次数
-    form->addRow(tr("Reasoning iteration limit"), mSpinRecursionLimit);  //cn:推理迭代上限
+    {   // 推理上限行：SpinBox + "不限制"勾选框并排
+        QWidget* row = new QWidget(this);
+        QHBoxLayout* lay = new QHBoxLayout(row);
+        lay->setContentsMargins(0, 0, 0, 0);
+        lay->setSpacing(6);
+        lay->addWidget(mSpinRecursionLimit, 1);
+        lay->addWidget(mCheckRecursionNoLimit, 0);
+        form->addRow(tr("Reasoning iteration limit"), row);  //cn:推理迭代上限
+    }
     form->addRow(tr("Subagent Timeout"), mSpinSubagentTimeout);  //cn:子 Agent 超时
     form->addRow(tr("Subagent Reasoning Limit"), mSpinSubagentRecursionLimit);  //cn:子 Agent 推理上限
     form->addRow(tr("Auto prestart on launch"), mCheckAutoPrestart);  //cn:启动时自动预热
@@ -273,6 +296,7 @@ void DAAgentSettingsWidget::setupAgentSettingsTab()
     connect(mSpinInactivityTimeout, QOverload<int>::of(&QSpinBox::valueChanged), this, mark);
     connect(mSpinMaxRestarts, QOverload<int>::of(&QSpinBox::valueChanged), this, mark);
     connect(mSpinRecursionLimit, QOverload<int>::of(&QSpinBox::valueChanged), this, mark);
+    connect(mCheckRecursionNoLimit, &QCheckBox::toggled, this, mark);
     connect(mSpinSubagentTimeout, QOverload<int>::of(&QSpinBox::valueChanged), this, mark);
     connect(mSpinSubagentRecursionLimit, QOverload<int>::of(&QSpinBox::valueChanged), this, mark);
     connect(mCheckAutoPrestart, &QCheckBox::toggled, this, mark);
@@ -420,7 +444,14 @@ void DAAgentSettingsWidget::loadConfig()
     mSpinRequestTimeout->setValue(c.requestTimeoutSec());
     mSpinInactivityTimeout->setValue(c.inactivityTimeoutSec());
     mSpinMaxRestarts->setValue(c.maxSubprocessRestarts());
-    mSpinRecursionLimit->setValue(c.recursionLimit());
+    // 推理上限：≤0（-1=不限制）→ 勾选并禁用 SpinBox；>0 正常回显。
+    // blockSignals 防止勾选触发的 setValue 联动误发 settingChanged
+    const int recursionVal = c.recursionLimit();
+    mCheckRecursionNoLimit->blockSignals(true);
+    mCheckRecursionNoLimit->setChecked(recursionVal <= 0);
+    mCheckRecursionNoLimit->blockSignals(false);
+    mSpinRecursionLimit->setEnabled(recursionVal > 0);
+    mSpinRecursionLimit->setValue(recursionVal > 0 ? recursionVal : -1);
     mSpinSubagentTimeout->setValue(c.subagentTimeoutSec());
     mSpinSubagentRecursionLimit->setValue(c.subagentRecursionLimit());
     mCheckAutoPrestart->setChecked(c.autoPrestart());

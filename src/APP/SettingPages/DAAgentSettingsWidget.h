@@ -92,6 +92,7 @@ private:
     QSpinBox* mSpinInactivityTimeout;
     QSpinBox* mSpinMaxRestarts;
     QSpinBox* mSpinRecursionLimit;
+    QCheckBox* mCheckRecursionNoLimit;  ///< 勾选=不限制推理步数（隐藏 -1 语义，勾选时禁用 SpinBox）
     QSpinBox* mSpinSubagentTimeout;
     QSpinBox* mSpinSubagentRecursionLimit;
     QCheckBox* mCheckAutoPrestart;

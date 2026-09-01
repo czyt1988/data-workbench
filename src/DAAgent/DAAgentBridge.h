@@ -174,6 +174,14 @@ Q_SIGNALS:
      */
     void agentDone();
     /**
+     * @brief 回合疑似未完成时发射（done 消息 turn_summary.possibly_incomplete）
+     * @param toolRounds 本回合已执行的工具调用轮数
+     * @note 检测"话说一半就停"：执行过工具但最终回复是意图性短句（如
+     * "现在生成图表"后未发 tool_call 直接结束）。UI 据此提示用户任务
+     * 可能未完成，可发消息让模型继续。
+     */
+    void agentTurnPossiblyIncomplete(int toolRounds);
+    /**
      * @brief 子 agent 任务进度（subagent_progress 协议消息，子 agent 一期）
      * @param progress 进度 JSON（call_id/task_id?/subagent?/state/message?/results?）
      * @note state ∈ spawned|running|done|error|timeout|stopped；心跳为无 task_id 的 running 态。
