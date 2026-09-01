@@ -462,13 +462,19 @@ body {
 
 /* 单选/多选视觉提示：选项前加图标区分交互模式 */
 .message-bubble.question:not(.multi) .question-options button::before {
-    content: '\25C9';  /* ◉ 单选 */
+    content: '\25CB';  /* ○ 单选未选中：空心圆 */
     margin-right: 6px;
     font-size: 14px;
     color: #007bff;
 }
 
+/* hover 蓝底时圆点随文字变白，保持对比度 */
+.message-bubble.question:not(.multi) .question-options button:hover::before {
+    color: white;
+}
+
 .message-bubble.question:not(.multi) .question-options button.selected::before {
+    content: '\25CF';  /* ● 单选选中：实心圆 */
     color: white;
 }
 
