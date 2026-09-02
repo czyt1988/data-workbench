@@ -1,7 +1,8 @@
 // DAAgentConfigTest/main.cpp
-// 单元测试：DAAgentConfig 配置领域模型（agent-config.json 稀疏读写 / 旧 ini 一次性迁移 /
-// .bak 恢复 / 损坏自愈 / mergeFrom 稀疏合并 / providers 合成与旧格式规范化 /
-// toRunnerConfigJson 协议投影 / 权限标量与 modeExplicitlySet 语义）
+// 单元测试：DAAgentConfig 配置领域模型（agent-config.json 稀疏读写 / v2 派生键
+// 不落盘与重算 / v1 flat 快照升级 / 旧 ini 一次性迁移 / .bak 恢复 / 损坏自愈 /
+// mergeFrom 稀疏合并 / providers 合成固化与旧格式规范化 / toRunnerConfigJson
+// 协议投影 / 权限标量与 modeExplicitlySet 语义 / 供应商重命名跟进）
 //
 // 隔离策略（镜像 DAAgentPermissionManagerTest）：main() 起手调
 // QStandardPaths::setTestModeEnabled(true)，把 AppDataLocation 重定向到临时目录
@@ -35,6 +36,8 @@ private Q_SLOTS:
     void init();                        // 每用例前删除配置文件（用例间隔离）
     void testDefaultsAndEmptyLoad();    // 全新安装：默认值 + 不落盘
     void testSparseRoundTrip();         // 稀疏写：只落盘 engage 键，读回一致
+    void testDerivedKeysNotPersisted(); // v2：llm 派生 flat 键不落盘，load 后重算
+    void testV1JsonUpgrade();           // v1 json（flat 快照）→ load 重算 + save 升 v2
     void testIniMigration();            // 旧 ini 全类型 key 迁移 + ini 改名 .bak
     void testRollbackThenUpgrade();     // json+ini 并存（回滚旧版再升级）：ini 键覆盖合并
     void testCorruptJsonRecovery();     // json 损坏 + .bak 存在 → 恢复重建
@@ -47,6 +50,7 @@ private Q_SLOTS:
     void testPermissionScalars();       // 权限标量 + modeExplicitlySet 迁移/运行期两路径
     void testApplyActiveModel();        // 校验+派生 6 项 + api_key 空不覆盖
     void testSyncActiveConnection();    // 激活供应商兜底/模型保留/上下文同步
+    void testProviderRenameTracking();  // setProviders 重命名检测：active_provider 跟进
 
 private:
     static QString configDir();
@@ -158,7 +162,7 @@ void DAAgentConfigTest::testSparseRoundTrip()
         DAAgentLLMConfig c;
         c.setReadyTimeoutSec(120);
         c.setAutoPrestart(false);
-        c.setApiKey(QStringLiteral("sk-test"));
+        c.setMaxRetries(9);
         cfg.mergeLLM(c);
         cfg.setPermissionMode(QStringLiteral("manual"));
         QVERIFY(cfg.save());
@@ -171,8 +175,10 @@ void DAAgentConfigTest::testSparseRoundTrip()
     QCOMPARE(execG.value("auto_prestart").toBool(), false);
     QVERIFY(!execG.contains("stop_timeout_sec"));  // 未 engage 不落盘
     const QJsonObject llmG = root.value("llm").toObject();
-    QVERIFY(!llmG.value("api_key").toString().isEmpty());  // 加密非空
-    QVERIFY(llmG.value("api_key").toString() != QStringLiteral("sk-test"));  // 非明文
+    QVERIFY(!llmG.contains("api_key"));    // v2：flat 派生键不落盘
+    QVERIFY(!llmG.contains("base_url"));
+    QVERIFY(!llmG.contains("model"));
+    QVERIFY(llmG.contains("max_retries"));  // 非 derived 键正常落盘
     const QJsonObject permG = root.value("permission").toObject();
     QCOMPARE(permG.value("mode").toString(), QStringLiteral("manual"));
     QVERIFY(!root.contains("subagent"));  // 整组未 engage 不落盘
@@ -184,10 +190,108 @@ void DAAgentConfigTest::testSparseRoundTrip()
         QCOMPARE(c.readyTimeoutSec(), 120);
         QCOMPARE(c.stopTimeoutSec(), 5);   // 未设置 → 默认
         QCOMPARE(c.autoPrestart(), false);
-        QCOMPARE(c.apiKey(), QStringLiteral("sk-test"));  // 加解密 round-trip
+        QCOMPARE(c.maxRetries(), 9);
         QCOMPARE(cfg.permissionMode(), QStringLiteral("manual"));
         QVERIFY(cfg.permissionModeSet());
     }
+}
+
+// ---------------------------------------------------------------------------
+// v2 核心不变量：llm 派生 flat 键不落盘；load 后由 providers+active_provider 重算
+// ---------------------------------------------------------------------------
+
+void DAAgentConfigTest::testDerivedKeysNotPersisted()
+{
+    DAAgentProvider p;
+    p.name    = QStringLiteral("P1");
+    p.baseUrl = QStringLiteral("https://p1.example.com/v1");
+    p.apiKey  = QStringLiteral("sk-p1");
+    DAAgentModel m;
+    m.id              = QStringLiteral("m1");
+    m.contextWindow   = 131072;
+    m.maxOutputTokens = 4096;
+    p.models = { m };
+
+    {
+        DAAgentConfig cfg;
+        QVERIFY(cfg.load());
+        cfg.setProviders({ p });
+        QVERIFY(cfg.applyActiveModel(QStringLiteral("P1"), QStringLiteral("m1")));
+        QVERIFY(cfg.save());
+    }
+    // 落盘文件：llm 分组只有 v2 键
+    const QJsonObject root = readJsonFile(DAAgentConfig::configFilePath());
+    const QJsonObject llmG = root.value("llm").toObject();
+    QVERIFY(llmG.contains("providers"));
+    QCOMPARE(llmG.value("active_provider").toString(), QStringLiteral("P1"));
+    QCOMPARE(llmG.value("active_model").toString(), QStringLiteral("m1"));
+    for (const char* k : { "base_url", "api_key", "model", "context_window", "max_output_tokens" }) {
+        QVERIFY2(!llmG.contains(QLatin1String(k)), qPrintable(QStringLiteral("derived key persisted: %1").arg(k)));
+    }
+    // 内存态仍持有派生值（toRunnerConfigJson 消费）
+    DAAgentConfig cfg;
+    QVERIFY(cfg.load());
+    QCOMPARE(cfg.activeProvider(), QStringLiteral("P1"));
+    QCOMPARE(cfg.llm().baseUrl(), QStringLiteral("https://p1.example.com/v1"));
+    QCOMPARE(cfg.llm().apiKey(), QStringLiteral("sk-p1"));  // 由 providers 解密而来
+    QCOMPARE(cfg.llm().model(), QStringLiteral("m1"));
+    QCOMPARE(cfg.llm().contextWindow(), 131072);
+    QCOMPARE(cfg.llm().maxOutputTokens(), 4096);
+}
+
+// ---------------------------------------------------------------------------
+// v1 json（llm 含 flat 快照）升级：flat 键仅作数据源，load 重算 + save 后升 v2
+// ---------------------------------------------------------------------------
+
+void DAAgentConfigTest::testV1JsonUpgrade()
+{
+    // 构造 v1 格式：flat 快照与 providers 并存且快照已过时（模型 m-old 不在
+    // providers 中，provider api_key 为空走不覆盖守卫）
+    QJsonObject mo;
+    mo["id"]                = QStringLiteral("m1");
+    mo["context_window"]    = 131072;
+    mo["max_output_tokens"] = 4096;
+    QJsonObject p;
+    p["name"]     = QStringLiteral("P1");
+    p["base_url"] = QStringLiteral("https://p1.example.com/v1");
+    p["api_key"]  = QString();
+    p["models"]   = QJsonArray{ mo };
+    QJsonObject llmG;
+    llmG["base_url"]         = QStringLiteral("https://stale.example.com/v1");
+    llmG["model"]            = QStringLiteral("m-old");
+    llmG["api_key"]          = QStringLiteral("v1-blob");  // 任意非空（DPAPI 解密失败为空 → 不覆盖）
+    llmG["context_window"]   = 999;
+    llmG["max_output_tokens"] = 999;
+    llmG["providers"]        = QJsonArray{ p };
+    llmG["active_provider"]  = QStringLiteral("P1");
+    llmG["max_retries"]      = 5;
+    QJsonObject root;
+    root["version"] = 1;
+    root["llm"]     = llmG;
+    {
+        QFile f(DAAgentConfig::configFilePath());
+        QVERIFY(f.open(QIODevice::WriteOnly));
+        f.write(QJsonDocument(root).toJson(QJsonDocument::Indented));
+        f.close();
+    }
+
+    DAAgentConfig cfg;
+    QVERIFY(cfg.load());
+    // 派生键以 providers 为准重算；model 不属于 P1 → 兜底第一个模型
+    QCOMPARE(cfg.llm().baseUrl(), QStringLiteral("https://p1.example.com/v1"));
+    QCOMPARE(cfg.llm().model(), QStringLiteral("m1"));
+    QCOMPARE(cfg.llm().contextWindow(), 131072);
+    QCOMPARE(cfg.llm().maxOutputTokens(), 4096);
+    QCOMPARE(cfg.llm().maxRetries(), 5);  // 非 derived 键保留
+    // save 后升为 v2 格式（flat 键清除）
+    QVERIFY(cfg.save());
+    const QJsonObject root2 = readJsonFile(DAAgentConfig::configFilePath());
+    const QJsonObject llmG2 = root2.value("llm").toObject();
+    QVERIFY(!llmG2.contains("base_url"));
+    QVERIFY(!llmG2.contains("model"));
+    QVERIFY(!llmG2.contains("api_key"));
+    QCOMPARE(llmG2.value("active_model").toString(), QStringLiteral("m1"));
+    QCOMPARE(llmG2.value("active_provider").toString(), QStringLiteral("P1"));
 }
 
 // ---------------------------------------------------------------------------
@@ -251,10 +355,13 @@ void DAAgentConfigTest::testIniMigration()
     QVERIFY(QFile::exists(DAAgentConfig::configFilePath()));
 
     const DAAgentLLMConfig c = cfg.llm();
+    // llm_base_url/model/context_window/max_output_tokens 为 v1 flat 派生键：
+    // ini 携带 providers → load 后重算以 providers 为准（激活模型 gpt-4o 为旧
+    // 字符串条目 → 规范化默认 262144/8192，flat 的 131072/4096 被覆盖）
     QCOMPARE(c.baseUrl(), QStringLiteral("https://api.openai.com/v1"));
     QCOMPARE(c.model(), QStringLiteral("gpt-4o"));
-    QCOMPARE(c.contextWindow(), 131072);
-    QCOMPARE(c.maxOutputTokens(), 4096);
+    QCOMPARE(c.contextWindow(), 262144);
+    QCOMPARE(c.maxOutputTokens(), 8192);
     QCOMPARE(c.readyTimeoutSec(), 90);
     QCOMPARE(c.stopTimeoutSec(), 8);
     QCOMPARE(c.compactionThreshold(), 0.9);
@@ -292,9 +399,17 @@ void DAAgentConfigTest::testIniMigration()
     QCOMPARE(providers.first().models.at(1).id, QStringLiteral("gpt-4o-mini"));
     QCOMPARE(providers.first().models.at(1).contextWindow, 128000);
     QCOMPARE(providers.first().models.at(1).maxOutputTokens, 16384);
-    // json 落盘为分组嵌套（providers 原生数组）
+    // json 落盘为分组嵌套（providers 原生数组），v2 键集（无 flat 派生键）
     const QJsonObject root = readJsonFile(DAAgentConfig::configFilePath());
-    QVERIFY(root.value("llm").toObject().value("providers").isArray());
+    const QJsonObject llmG = root.value("llm").toObject();
+    QVERIFY(llmG.value("providers").isArray());
+    QVERIFY(!llmG.contains("base_url"));
+    QVERIFY(!llmG.contains("api_key"));
+    QVERIFY(!llmG.contains("model"));
+    QVERIFY(!llmG.contains("context_window"));
+    QVERIFY(!llmG.contains("max_output_tokens"));
+    QCOMPARE(llmG.value("active_provider").toString(), QStringLiteral("OpenAI"));
+    QCOMPARE(llmG.value("active_model").toString(), QStringLiteral("gpt-4o"));
 }
 
 // ---------------------------------------------------------------------------
@@ -323,7 +438,12 @@ void DAAgentConfigTest::testRollbackThenUpgrade()
     QVERIFY(cfg.load());
     QCOMPARE(cfg.llm().readyTimeoutSec(), 45);    // ini 键覆盖（旧版最新值）
     QCOMPARE(cfg.llm().recursionLimit(), 150);    // json 独有键保留
+    // ini 的 llm_model 为 v1 flat 派生键且 ini 无 providers → normalizeAfterLoad
+    // 合成 Default 供应商（base_url/api_key 空、模型 gpt-4o），sync 后保留
     QCOMPARE(cfg.llm().model(), QStringLiteral("gpt-4o"));
+    QCOMPARE(cfg.providers().size(), 1);
+    QCOMPARE(cfg.providers().first().name, QStringLiteral("Default"));
+    QCOMPARE(cfg.providers().first().models.first().id, QStringLiteral("gpt-4o"));
     // ini 消费完改名 .bak
     QVERIFY(!QFile::exists(DAAgentConfig::legacyIniPath()));
     QVERIFY(QFile::exists(DAAgentConfig::legacyBakPath()));
@@ -430,7 +550,8 @@ void DAAgentConfigTest::testMergeFrom()
 }
 
 // ---------------------------------------------------------------------------
-// toRunnerConfigJson：扁平 key 集与旧 getLLMConfig 逐键一致
+// toRunnerConfigJson：扁平 key 集与旧 getLLMConfig 逐键一致（协议不变量；
+// v2 下派生值来源由 load 重算改为 providers，投影本身零改动）
 // ---------------------------------------------------------------------------
 
 void DAAgentConfigTest::testRunnerConfigJson()
@@ -471,7 +592,8 @@ void DAAgentConfigTest::testRunnerConfigJson()
 }
 
 // ---------------------------------------------------------------------------
-// 无 providers 时 flat key 合成 Default 供应商（旧配置平滑升级）
+// flat-only 老配置：load 时合成 Default 供应商（v2 起在 normalizeAfterLoad 固化，
+// 非 providers() 读时合成）
 // ---------------------------------------------------------------------------
 
 void DAAgentConfigTest::testProvidersSynthesis()
@@ -491,7 +613,17 @@ void DAAgentConfigTest::testProvidersSynthesis()
     QCOMPARE(providers.first().models.size(), 1);
     QCOMPARE(providers.first().models.first().id, QStringLiteral("legacy-model"));
     QCOMPARE(providers.first().models.first().contextWindow, 65536);
-    QCOMPARE(providers.first().models.first().maxOutputTokens, 8192);
+    QCOMPARE(providers.first().models.first().maxOutputTokens, 8192);  // ini 无该键 → 默认
+    // 固化：save 后 Default 供应商入盘（api_key/base_url 不再随 flat 键丢失）
+    QVERIFY(cfg.save());
+    DAAgentConfig cfg2;
+    QVERIFY(cfg2.load());
+    QCOMPARE(cfg2.providers().size(), 1);
+    QCOMPARE(cfg2.providers().first().name, QStringLiteral("Default"));
+    QCOMPARE(cfg2.providers().first().models.first().id, QStringLiteral("legacy-model"));
+    QCOMPARE(cfg2.llm().baseUrl(), QStringLiteral("https://old.example.com/v1"));
+    QCOMPARE(cfg2.llm().model(), QStringLiteral("legacy-model"));
+    QCOMPARE(cfg2.llm().contextWindow(), 65536);
 }
 
 // ---------------------------------------------------------------------------
@@ -609,6 +741,77 @@ void DAAgentConfigTest::testSyncActiveConnection()
     cfg.syncActiveConnection();
     QCOMPARE(cfg.activeProvider(), QStringLiteral("P3"));
     QCOMPARE(cfg.llm().model(), QString());
+}
+
+// ---------------------------------------------------------------------------
+// setProviders 重命名检测：激活供应商改名 → active_provider 跟进（不兜底丢失）
+// ---------------------------------------------------------------------------
+
+void DAAgentConfigTest::testProviderRenameTracking()
+{
+    DAAgentConfig cfg;
+    QVERIFY(cfg.load());
+    DAAgentProvider p1;
+    p1.name    = QStringLiteral("P1");
+    p1.baseUrl = QStringLiteral("https://p1.example.com/v1");
+    p1.apiKey  = QStringLiteral("sk-1");
+    DAAgentModel a;
+    a.id = QStringLiteral("a");
+    p1.models = { a };
+    DAAgentProvider p2;
+    p2.name    = QStringLiteral("P2");
+    p2.baseUrl = QStringLiteral("https://p2.example.com/v1");
+    DAAgentModel b;
+    b.id = QStringLiteral("b");
+    p2.models = { b };
+    cfg.setProviders({ p1, p2 });
+    QVERIFY(cfg.applyActiveModel(QStringLiteral("P1"), QStringLiteral("a")));
+
+    // 重命名激活供应商 P1 → P1-renamed：active_provider 跟进，模型保留
+    DAAgentProvider p1r = p1;
+    p1r.name = QStringLiteral("P1-renamed");
+    cfg.setProviders({ p1r, p2 });
+    QCOMPARE(cfg.activeProvider(), QStringLiteral("P1-renamed"));
+    cfg.syncActiveConnection();
+    QCOMPARE(cfg.activeProvider(), QStringLiteral("P1-renamed"));
+    QCOMPARE(cfg.llm().model(), QStringLiteral("a"));       // 模型仍属于该供应商
+    QCOMPARE(cfg.llm().baseUrl(), QStringLiteral("https://p1.example.com/v1"));
+
+    // 重命名非激活供应商：active_provider 不变
+    DAAgentProvider p2r = p2;
+    p2r.name = QStringLiteral("P2-renamed");
+    cfg.setProviders({ p1r, p2r });
+    QCOMPARE(cfg.activeProvider(), QStringLiteral("P1-renamed"));
+
+    // 删除激活供应商（无新增名）→ 不视为重命名，sync 兜底第一个
+    cfg.setProviders({ p2r });
+    cfg.syncActiveConnection();
+    QCOMPARE(cfg.activeProvider(), QStringLiteral("P2-renamed"));
+
+    // 同时改两个名字（差集 2:2）→ 无法判定，兜底
+    DAAgentProvider q1;
+    q1.name = QStringLiteral("Q1");
+    DAAgentProvider q2;
+    q2.name = QStringLiteral("Q2");
+    {
+        DAAgentConfig cfg2;
+        QVERIFY(cfg2.load());
+        DAAgentProvider r1;
+        r1.name = QStringLiteral("R1");
+        DAAgentProvider r2;
+        r2.name = QStringLiteral("R2");
+        DAAgentModel m;
+        m.id = QStringLiteral("m");
+        r1.models = { m };
+        cfg2.setProviders({ r1, r2 });
+        cfg2.syncActiveConnection();
+        QCOMPARE(cfg2.activeProvider(), QStringLiteral("R1"));
+        // R1→Q1、R2→Q2 同改：差集 2:2 不判定重命名 → active R1 丢失 → 兜底 Q1
+        cfg2.setProviders({ q1, q2 });
+        QCOMPARE(cfg2.activeProvider(), QStringLiteral("R1"));  // setProviders 不改
+        cfg2.syncActiveConnection();
+        QCOMPARE(cfg2.activeProvider(), QStringLiteral("Q1"));  // sync 兜底
+    }
 }
 
 // ---------------------------------------------------------------------------

@@ -4,6 +4,7 @@
 #include <QFile>
 #include <QDir>
 #include <QFileInfo>
+#include <QSet>
 #include <QSettings>
 #include <QJsonDocument>
 #include <QJsonParseError>
@@ -207,6 +208,9 @@ public:
     void applyJson(const QJsonObject& root);
     // 从旧 ini 文件应用配置（存在的键覆盖 engage；用于迁移与 .bak 恢复）
     void applyIni(const QString& iniPath);
+    // load() 数据源应用后规范化：flat-only 老配置固化合成 Default 供应商 +
+    // syncActiveConnection 重算派生连接（v2 起派生 flat 键不持久化）
+    void normalizeAfterLoad();
 
     DAAgentLLMConfig mLlm;                     ///< LLM/运行参数（23 个稀疏字段）
     QList< DAAgentProvider > mProviders;       ///< 供应商列表（内存态明文 api_key）
@@ -237,10 +241,16 @@ DAAgentConfig::PrivateData::~PrivateData()
 void DAAgentConfig::PrivateData::applyJson(const QJsonObject& root)
 {
     // ---- llm 分组 ----
+    // v2 起 llm 分组仅持久化 active_provider/active_model/max_retries/
+    // request_timeout_sec/providers；下列 flat 派生键（base_url/api_key/model/
+    // context_window/max_output_tokens）仅作 v1/flat-only 老配置的兼容读取
+    //（normalizeAfterLoad 中合成 Default 供应商的数据源），随后被重算覆盖
     const QJsonObject llmG = root.value(QLatin1String(kGroupLlm)).toObject();
     if (llmG.contains("base_url"))
         mLlm.setBaseUrl(llmG.value("base_url").toString());
-    if (llmG.contains("model"))
+    if (llmG.contains("active_model"))
+        mLlm.setModel(llmG.value("active_model").toString());
+    else if (llmG.contains("model"))  // v1 键名兼容（flat 快照时代）
         mLlm.setModel(llmG.value("model").toString());
     if (llmG.contains("api_key")) {
         const QString enc = llmG.value("api_key").toString();
@@ -402,6 +412,42 @@ void DAAgentConfig::PrivateData::applyIni(const QString& iniPath)
         mManualBlockInappTools = s.value(p + "manual_block_inapp_tools", false).toBool();
 }
 
+/**
+ * @brief load() 数据源应用后的规范化（v2 格式核心不变量）
+ *
+ *  1. flat-only 老配置（无 providers 键，仅有 base_url/api_key/model 等 flat 键）：
+ *     固化合成 "Default" 供应商（engage providers）——v2 起派生 flat 键不再持久化，
+ *     不固化则下次 save() 后 api_key/base_url 将随 flat 键一并丢失
+ *  2. syncActiveConnection() 重算派生连接：base_url/api_key/model/context_window/
+ *     max_output_tokens 一律以 providers+active_provider 为准（v1 json 中的 flat
+ *     快照值被重算覆盖，仅充当 flat-only 合成的数据源）
+ */
+void DAAgentConfig::PrivateData::normalizeAfterLoad()
+{
+    if (!mProvidersSet) {
+        const QString baseUrl = mLlm.baseUrl();
+        const QString apiKey  = mLlm.apiKey();
+        const QString model   = mLlm.model();
+        if (!baseUrl.isEmpty() || !apiKey.isEmpty() || !model.isEmpty()) {
+            DAAgentProvider p;
+            p.name    = QStringLiteral("Default");
+            p.baseUrl = baseUrl;
+            p.apiKey  = apiKey;
+            if (!model.isEmpty()) {
+                DAAgentModel m;
+                m.id              = model;
+                m.contextWindow   = mLlm.contextWindow();
+                m.maxOutputTokens = mLlm.maxOutputTokens();
+                p.models.append(m);
+            }
+            mProviders    = { p };
+            mProvidersSet = true;
+            qInfo() << "DAAgentConfig: synthesized Default provider from legacy flat keys";
+        }
+    }
+    q_ptr->syncActiveConnection();
+}
+
 // ===========================================================================
 // ctor / dtor / copy（PIMPL 深拷贝）
 // ===========================================================================
@@ -464,6 +510,9 @@ QString DAAgentConfig::legacyBakPath()
  *  3. json 缺失/损坏且无 ini：.bak 存在 → 从 .bak 恢复并 save() 重建 json
  *  4. json 损坏且无任何恢复源 → 默认值自愈（save() 覆盖损坏文件）
  *  5. 全新安装（三者皆无）→ 稀疏空配置，不落盘（首次 save 才生成文件）
+ *
+ * 各数据源应用后统一 normalizeAfterLoad()（flat-only 合成 Default 供应商 +
+ * 重算派生连接），随后落盘的 save() 均写出 v2 格式（llm 下无派生 flat 键）。
  * @return 是否成功（全新安装/迁移成功均返回 true；仅落盘失败返回 false）
  */
 bool DAAgentConfig::load()
@@ -492,6 +541,7 @@ bool DAAgentConfig::load()
     // 旧 ini 存在（升级迁移 / 回滚后再升级合并）
     if (QFile::exists(legacyIniPath())) {
         d->applyIni(legacyIniPath());
+        d->normalizeAfterLoad();
         const bool saved = save();
         // 迁移完成后重命名 .bak（旧 .bak 先删除；回滚旧版需手动改回原名）
         if (QFile::exists(legacyBakPath())) {
@@ -506,12 +556,14 @@ bool DAAgentConfig::load()
         return saved;
     }
     if (jsonOk) {
+        d->normalizeAfterLoad();
         return true;  // 正常路径：json 已解析
     }
     // json 缺失/损坏且无 ini：从 .bak 恢复重建
     if (QFile::exists(legacyBakPath())) {
         qWarning() << "DAAgentConfig: restoring config from legacy backup:" << legacyBakPath();
         d->applyIni(legacyBakPath());
+        d->normalizeAfterLoad();
         return save();
     }
     // json 损坏且无恢复源 → 默认值自愈覆盖；全新安装 → 不落盘
@@ -525,7 +577,11 @@ bool DAAgentConfig::load()
 /**
  * @brief 稀疏原子写 agent-config.json（tmp + rename，镜像 PermissionManager::save）
  *
- * 只序列化显式设置过的字段；api_key 于此处加密（内存态明文 → base64）。
+ * 只序列化显式设置过的字段。v2 格式：llm 分组仅持久化 active_provider/
+ * active_model/max_retries/request_timeout_sec/providers，派生连接键（base_url/
+ * api_key/model/context_window/max_output_tokens）不落盘——它们由
+ * load()/syncActiveConnection() 从激活供应商重算，providers 为唯一事实来源。
+ * api_key 于此处加密（内存态明文 → base64）。
  * @return 是否成功
  */
 bool DAAgentConfig::save() const
@@ -536,20 +592,12 @@ bool DAAgentConfig::save() const
     root["version"] = 1;
 
     QJsonObject llmG;
-    if (c.baseUrlSet())
-        llmG["base_url"] = c.baseUrl();
-    if (c.modelSet())
-        llmG["model"] = c.model();
-    if (c.apiKeySet())
-        llmG["api_key"] = QString::fromUtf8(encryptApiKey(c.apiKey()));
     if (d->mProvidersSet)
         llmG["providers"] = providersToJsonArray(d->mProviders);
     if (!d->mActiveProvider.isEmpty())
         llmG["active_provider"] = d->mActiveProvider;
-    if (c.contextWindowSet())
-        llmG["context_window"] = c.contextWindow();
-    if (c.maxOutputTokensSet())
-        llmG["max_output_tokens"] = c.maxOutputTokens();
+    if (c.modelSet() && !c.model().isEmpty())
+        llmG["active_model"] = c.model();
     if (c.maxRetriesSet())
         llmG["max_retries"] = c.maxRetries();
     if (c.requestTimeoutSecSet())
@@ -672,9 +720,9 @@ void DAAgentConfig::mergeLLM(const DAAgentLLMConfig& c)
 /**
  * @brief 供应商列表（内存态明文 api_key）
  *
- * 列表为空且未显式配置（mProvidersSet=false）而 flat key 有值时，读时合成
- * 单个 "Default" 供应商（旧版仅有 flat key 的配置平滑升级；不 engage、不落盘，
- * 与旧 getProviders 迁移分支语义一致）。
+ * flat-only 老配置已在 normalizeAfterLoad() 中固化为 "Default" 供应商，正常
+ * 加载后本分支不再触达；保留合成逻辑兜底未经 load() 直接构造的场景（与旧
+ * getProviders 迁移分支语义一致，不 engage、不落盘）。
  * @return 供应商列表
  */
 QList< DAAgentProvider > DAAgentConfig::providers() const
@@ -700,11 +748,39 @@ QList< DAAgentProvider > DAAgentConfig::providers() const
 
 /**
  * @brief 整体替换供应商列表（内存态明文；持久化加密在 save()）
+ *
+ * 激活供应商被重命名时同步跟进：旧 active_provider 消失且新列表恰有一个
+ * 新名字（集合差集 1:1）视为重命名，active_provider 随之更新，避免激活项
+ * 被 syncActiveConnection 静默兜底到第一个供应商。
  * @param ps 供应商列表
  */
 void DAAgentConfig::setProviders(const QList< DAAgentProvider >& ps)
 {
     DA_D(d);
+    // 重命名检测（仅对已有显式配置的列表做差集）
+    const QString active = d->mActiveProvider;
+    if (d->mProvidersSet && !active.isEmpty()) {
+        QSet< QString > oldNames;
+        for (const DAAgentProvider& p : std::as_const(d->mProviders)) {
+            oldNames.insert(p.name);
+        }
+        QSet< QString > newNames;
+        for (const DAAgentProvider& p : std::as_const(ps)) {
+            newNames.insert(p.name);
+        }
+        // active 的旧名在旧列表存在、在新列表消失 → 可能被重命名（差集 1:1 判定）
+        if (oldNames.contains(active) && !newNames.contains(active)) {
+            QSet< QString > added   = newNames;
+            QSet< QString > removed = oldNames;
+            added.subtract(oldNames);
+            removed.subtract(newNames);
+            if (added.size() == 1 && removed.size() == 1) {
+                d->mActiveProvider = *added.constBegin();
+                qInfo() << "DAAgentConfig: active provider renamed:" << *removed.constBegin() << "->"
+                        << *added.constBegin();
+            }
+        }
+    }
     d->mProviders    = ps;
     d->mProvidersSet = true;
 }
@@ -737,7 +813,8 @@ void DAAgentConfig::setActiveProvider(const QString& name)
  * @brief 设置激活供应商+模型并同步派生 6 项（原 DAAgentModule::setActiveModel 纯逻辑）
  *
  * 校验 provider+model 存在于 providers() 后写入 active_provider/model/base_url/
- * api_key/context_window/max_output_tokens。供应商 api_key 为空（DPAPI 解密失败
+ * api_key/context_window/max_output_tokens（内存态派生；持久化仅 active_provider/
+ * active_model，其余由 load 重算）。供应商 api_key 为空（DPAPI 解密失败
  * 遗留）时不覆盖现有 api_key（保留可能有效的旧值）。
  * @param provider 供应商名称
  * @param model 模型 id
@@ -782,12 +859,14 @@ bool DAAgentConfig::applyActiveModel(const QString& provider, const QString& mod
 }
 
 /**
- * @brief 从激活供应商同步 flat 连接键（原 DAAgentModule::syncActiveConnection 纯逻辑）
+ * @brief 从激活供应商同步派生连接（原 DAAgentModule::syncActiveConnection 纯逻辑）
  *
- * 激活供应商为空或已不存在（被删除）时兜底取第一个供应商；激活模型保留原值
- *（若仍属于激活供应商），否则改用其第一个模型并同步 context_window/
- * max_output_tokens；无模型则清空 model。供应商 api_key 为空（解密失败遗留）
- * 时不覆盖现有值。
+ * v2 起为 load() 后派生重算的唯一入口：base_url/api_key/model/context_window/
+ * max_output_tokens 一律从 providers+active_provider 推导（flat 快照不再持久化，
+ * providers 是唯一事实来源）。激活供应商为空或已不存在（被删除）时兜底取第一个
+ * 供应商；激活模型保留原值（若仍属于激活供应商），否则改用其第一个模型并同步
+ * context_window/max_output_tokens；无模型则清空 model。供应商 api_key 为空
+ *（解密失败遗留）时不覆盖现有值。
  */
 void DAAgentConfig::syncActiveConnection()
 {

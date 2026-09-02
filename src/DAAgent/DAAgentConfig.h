@@ -20,6 +20,11 @@ namespace DA
  *
  * 字段按 agent-config.json 的三个存储分组组织：llm 连接（9）/ execution（12）/
  * subagent（4）（存储分组仅是序列化投影，结构体本身是扁平的）。
+ *
+ * v2 格式：base_url/model/api_key/context_window/max_output_tokens 为派生字段
+ *（由激活供应商+模型经 syncActiveConnection/applyActiveModel 重算，不持久化）；
+ * llm 分组仅落盘 active_provider/active_model/max_retries/request_timeout_sec/
+ * providers，结构体中的这些字段仅作内存态运行值。
  */
 class DAAgent_API DAAgentLLMConfig
 {
@@ -166,11 +171,16 @@ private:
  *
  * 三类职责分区：
  *  - 区 A 持久化：load()/save()（JSON 稀疏读写 + tmp/rename 原子写 +
- *    旧 agent-config.ini 一次性迁移，规则见 DAAgentConfig.cpp 头部注释）
+ *    旧 agent-config.ini 一次性迁移 + normalizeAfterLoad 规范化，规则见
+ *    DAAgentConfig.cpp 头部注释）
  *  - 区 B 业务逻辑：applyActiveModel()/syncActiveConnection()（激活连接派生）
  *  - 区 C 协议投影：toRunnerConfigJson()（init/reconfigure 消息的 config
  *    字段，扁平 key 与 Python agent_runner.py 协议逐键一致）
  *
+ * v2 存储格式：llm 分组仅持久化 active_provider/active_model/max_retries/
+ * request_timeout_sec/providers（providers 为唯一事实来源）；派生连接键
+ * base_url/model/api_key/context_window/max_output_tokens 由 load() 后
+ * syncActiveConnection() 重算（v1 json / 旧 ini 的同名 flat 键仅作兼容读取）。
  * 内存态 api_key 一律明文，DPAPI 加解密只发生在 save()/load() 边界。
  * 模块持有单一实例（DAAgentModule::PrivateData::mConfig），配置为
  * 「启动加载一次的内存模型」，运行期变更经接口方法同步内存并落盘。

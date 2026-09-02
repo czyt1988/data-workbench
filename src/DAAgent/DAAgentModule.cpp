@@ -773,6 +773,10 @@ DAAgentLLMConfig DAAgentModule::getLLMConfig() const
 /**
  * @brief 设置 LLM 配置（仅 engaged 字段生效，等价原 contains 守卫语义）
  * @param config LLM 配置结构体增量
+ *
+ * v2 起派生字段（base_url/model/api_key/context_window/max_output_tokens）
+ * 不持久化：增量携带这些字段仅影响内存态，落盘以 providers+active_provider
+ * 重算为准（设置页增量不含这些键，无实际影响）。
  */
 void DAAgentModule::setLLMConfig(const DAAgentLLMConfig& config)
 {
@@ -802,13 +806,14 @@ QList< DAAgentProvider > DAAgentModule::getProviders() const
  * @brief 保存所有供应商配置（api_key 明文传入，持久化时由 DAAgentConfig 加密）
  * @param providers 供应商结构体列表
  *
- * 保存后重新同步激活连接（激活供应商的 base_url/api_key/model 写入 flat 字段）并刷新 Dock。
+ * 保存后重新同步激活连接（含重命名跟进：激活供应商改名时 active_provider 随之
+ * 更新）并刷新 Dock。
  */
 void DAAgentModule::setProviders(const QList< DAAgentProvider >& providers)
 {
     DA_D(d);
     d->mConfig.setProviders(providers);
-    // 重新同步激活连接（激活供应商的 base_url/api_key/model 同步到 flat 字段）
+    // 重新同步激活连接（激活供应商的 base_url/api_key/model 重算内存派生值）
     d->mConfig.syncActiveConnection();
     d->mConfig.save();
     emit availableModelsChanged(getAvailableModels());
@@ -887,15 +892,15 @@ void DAAgentModule::setActiveModel(const QString& provider, const QString& model
  * @brief 推送当前供应商/模型选择到 Dock
  *
  * 由 DAAppController 在接口↔Dock 信号链 connect 完成后调用（与 restoreLastActiveSession
- * 同处）。首次运行/旧配置迁移时若 active_provider 为空或 flat api_key 为空（旧 bug
- * 清空或解密失败遗留），先 syncActiveConnection 兜底恢复并持久化，再 emit
- * availableModelsChanged + activeModelChanged。
+ * 同处）。防御性兜底：load() 已做 normalizeAfterLoad（派生连接重算），此处仅在
+ * active_provider 为空或 api_key 为空（运行期遗留）时再 syncActiveConnection
+ * 恢复并持久化，然后 emit availableModelsChanged + activeModelChanged。
  */
 void DAAgentModule::pushModelSelection()
 {
     DA_D(d);
     if (d->mConfig.activeProvider().isEmpty() || d->mConfig.llm().apiKey().isEmpty()) {
-        // 兜底：取首个供应商为激活并同步 flat 连接字段（api_key 为空时从
+        // 兜底：取首个供应商为激活并重算派生连接（api_key 为空时从
         // providers 重新恢复，否则 agent 报 config missing 崩溃）
         d->mConfig.syncActiveConnection();
         d->mConfig.save();

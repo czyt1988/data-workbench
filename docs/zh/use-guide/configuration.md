@@ -94,7 +94,7 @@ DAAgent 模块的配置独立于 `dawork-config.xml`，单独存放在配置目�
 
 | 分组 | 键（节选） | 说明 |
 |------|-----------|------|
-| `llm` | `base_url` / `model` / `api_key` / `providers` / `active_provider` / `context_window` / `max_output_tokens` | LLM 连接与多供应商配置；`api_key` 为 **DPAPI 加密**的 base64 字符串；`providers` 为原生 JSON 数组 |
+| `llm` | `providers` / `active_provider` / `active_model` / `max_retries` / `request_timeout_sec` | LLM 多供应商配置；`providers` 为原生 JSON 数组，其 `api_key` 为 **DPAPI 加密**的 base64 字符串 |
 | `execution` | `ready_timeout_sec` / `stop_timeout_sec` / `compaction_threshold` / `max_sessions` / `recursion_limit` / `auto_prestart` 等 | Agent 子进程运行参数 |
 | `subagent` | `timeout_sec` / `recursion_limit` / `max_concurrency` / `batch_limit` | 子 Agent 运行参数 |
 | `permission` | `mode` / `tool_approval_timeout_sec` / `judge_model` / `judge_timeout_sec` / `manual_block_inapp_tools` | 权限模式与判官配置（路径规则/危险模式在 `agent-permissions.json`） |
@@ -103,15 +103,16 @@ DAAgent 模块的配置独立于 `dawork-config.xml`，单独存放在配置目�
 {
     "version": 1,
     "llm": {
-        "base_url": "https://api.deepseek.com",
-        "model": "deepseek-chat",
-        "api_key": "<DPAPI 加密 base64，不可直接编辑>",
-        "providers": [ { "name": "deepseek", "base_url": "...", "api_key": "<加密>", "models": [ { "id": "deepseek-chat", "context_window": 262144, "max_output_tokens": 8192 } ] } ],
-        "active_provider": "deepseek"
+        "providers": [ { "name": "deepseek", "base_url": "...", "api_key": "<DPAPI 加密 base64，不可直接编辑>", "models": [ { "id": "deepseek-chat", "context_window": 262144, "max_output_tokens": 8192 } ] } ],
+        "active_provider": "deepseek",
+        "active_model": "deepseek-chat"
     },
     "execution": { "ready_timeout_sec": 60, "auto_prestart": true }
 }
 ```
+
+!!! info "providers 是唯一事实来源"
+    连接所需的 `base_url` / `api_key` / `model` / `context_window` / `max_output_tokens` 均**不落盘**——它们由程序启动时从激活供应商（`active_provider` + `active_model`）派生重算，`llm` 分组只持久化上表所列键。修改供应商信息请一律通过设置页或 `DAAgentInterface`，不要手改 json。历史版本写出的 `llm` 下同名 flat 键（v1 快照）在加载时仅作兼容数据源，随后被重算覆盖。
 
 !!! info "旧版 agent-config.ini 自动迁移"
     从旧版本升级时，程序首次启动会自动把 `agent-config.ini` 的全部配置迁移到 `agent-config.json`，迁移成功后原文件改名为 `agent-config.ini.bak`（保留备份）。若需回滚到旧版程序，需手动把 `.bak` 文件改回 `agent-config.ini`。JSON 配置损坏时程序会尝试从 `.bak` 恢复或重置为默认值。
