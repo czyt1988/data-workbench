@@ -39,7 +39,7 @@ C++ 主进程承担全部业务逻辑和资源管理：
 - **工具执行**：LLM 只拿到工具 schema（OpenAI function 格式），工具的实际执行由 `DAAgentBridge::executeTool()` 在主进程完成，结果经 stdin 回传
 - **会话持久化**：`DAAgentSessionStore` 以 JSONL 格式管理对话历史，支持多会话切换、工程导出导入
 - **LLM 配置管理**：`DAAgentConfig`（agent-config.json，含旧 ini 一次性迁移）读写配置，API Key 在序列化边界经 Windows DPAPI 加密存储；多供应商多模型 CRUD，激活供应商+模型热替换（`reconfigureAgent`）
-- **UI 通信**：通过 `DAAgentInterface` 的 19 个信号与 `DAAgentDockWidget` 通信
+- **UI 通信**：通过 `DAAgentInterface` 的 28 个信号与 `DAAgentDockWidget` 通信
 
 ### Python 侧职责
 
@@ -60,7 +60,7 @@ DAAgent 位于五层架构的接口层（Layer 4），是**纯 agent 框架库**
 
 | 文件 | 类 | 职责 |
 |------|-----|------|
-| `DAAgentInterface.h` | `DAAgentInterface` | 公共接口（抽象基类）：19 个信号 + 工具/提示词注册 + 多供应商多模型管理（CRUD、激活切换、热替换）+ 提示词库 API + 会话管理 |
+| `DAAgentInterface.h` | `DAAgentInterface` | 公共接口（抽象基类）：28 个信号 + 工具/提示词注册 + 多供应商多模型管理（CRUD、激活切换、热替换）+ 提示词库 API + 会话管理 |
 | `DAAgentModule.h/.cpp` | `DAAgentModule` | 接口实现：工具注册表、系统提示词组装、预启动/懒启动、配置读写（DAAgentConfig：agent-config.json + DPAPI 加密）、token 会话累计统计 |
 | `DAAgentBridge.h/.cpp` | `DAAgentBridge` | QProcess 生命周期管理、JSON Lines 协议解析、工具执行、`reconfigureAgent` 热替换、崩溃恢复、看门狗 |
 | `DAAgentSessionStore.h/.cpp` | `DAAgentSessionStore` | 会话持久化层（非 QObject，PIMPL）：JSONL 读写、索引、清理、标题 |
@@ -227,7 +227,7 @@ sequenceDiagram
 | D5 | **流式输出** | `llm.astream()` 逐 chunk 把 token 推给 UI 实时渲染 |
 | D6 | **Windows asyncio 兼容** | 强制 `WindowsSelectorEventLoopPolicy`，stdin 用后台线程 `read1()` 读取 |
 | D3b | **Dock 信号在 APP 层 connect** | DAGui 与 DAAgent 互不依赖，由 `DAAppController` 作为中介连接 |
-| C | **工具插件化** | 19 个内置工具放独立插件 `plugins/DAAgentTools/`，通过 `registerTool` 注册 |
+| C | **工具插件化** | 内置工具放独立插件（`plugins/DAAgentTools/` 21 个 + `plugins/DAPaperAgent/` 2 个文献工具），通过 `registerTool` 注册 |
 | E1 | **设置页在 APP 层** | 与其他设置页一致，经 `setAgentInterface` 注入接口持久化 |
 | G2 | **工具基类拆分** | 瘦 `DAAgentToolBase`（数据+响应）留 DAAgent，图表方法搬插件 |
 | M | **多供应商多模型 + 热替换** | 多供应商 CRUD + 激活切换，运行期 `reconfigure` 热替换 LLM 不重启子进程、不丢 MemorySaver |

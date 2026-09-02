@@ -55,7 +55,7 @@ classDiagram
 | `DAAbstractAgentTool` | DAAgent | `DAAgent_API` | 纯虚基类，定义三个必须实现的接口 |
 | `DAAgentToolBase` | DAAgent | `DAAgent_API` | 瘦工具基类，提供数据访问 + 响应构建方法 |
 | `DAAgentChartToolBase` | 插件 (DAAgentTools) | 无 | 图表工具基类，提供图表操作方法 |
-| 具体工具类 | 插件 (DAAgentTools) | 无 | 18 个内置工具的具体实现 |
+| 具体工具类 | 插件 (DAAgentTools) | 无 | 21 个内置工具的具体实现（另有 `DAPaperAgent` 插件 2 个文献工具，见[工具与内置 Agent 总览](./available-tools.md)） |
 
 !!! note "为什么 DAAgentToolBase 是"瘦"基类"
     在解耦重构前，`DAAgentToolBase` 同时包含数据访问方法和图表访问方法，导致 DAAgent 模块依赖 DAGui。重构后将图表方法搬到插件的 `DAAgentChartToolBase`，`DAAgentToolBase` 只保留只依赖 DAData/DAInterface 的方法。这样未来写数据工具插件只需继承瘦基类，无需拉 DAGui 依赖。
@@ -192,7 +192,7 @@ QJsonObject errorResponse(const QString& message);
 
 ### 内置工具注册
 
-18 个内置工具由 `DAAgentToolsPlugin` 在 `initialize()` 中注册：
+21 个内置工具由 `DAAgentToolsPlugin` 在 `initialize()` 中注册：
 
 ```cpp
 bool DAAgentToolsPlugin::initialize()
@@ -207,7 +207,7 @@ bool DAAgentToolsPlugin::initialize()
     agent->registerTool(new DAAgentToolColumnStats(c, this));
     agent->registerTool(new DAAgentToolExportData(c, this));
 
-    // 图表工具 (10 个)
+    // 图表工具 (11 个)
     agent->registerTool(new DAAgentToolCreateChart(c, this));
     agent->registerTool(new DAAgentToolAddCurve(c, this));
     agent->registerTool(new DAAgentToolSetChartStyle(c, this));
@@ -218,11 +218,16 @@ bool DAAgentToolsPlugin::initialize()
     agent->registerTool(new DAAgentToolCreateSubplots(c, this));
     agent->registerTool(new DAAgentToolSaveChartImage(c, this));
     agent->registerTool(new DAAgentToolListFigures(c, this));
+    agent->registerTool(new DAAgentToolListChartItems(c, this));
 
     // 文件/报告工具 (3 个)
     agent->registerTool(new DAAgentToolReadFile(c, this));
     agent->registerTool(new DAAgentToolWriteFile(c, this));
     agent->registerTool(new DAAgentToolSaveReport(c, this));
+
+    // 代码执行工具 (2 个)
+    agent->registerTool(new DAAgentToolRunScript(c, this));
+    agent->registerTool(new DAAgentToolRunCode(c, this));
 
     // 注册系统提示词片段
     agent->registerSystemPrompt("figure_reference",
@@ -274,11 +279,11 @@ bool DAAgentToolsPlugin::initialize()
 | `get_column_stats` | 获取列的统计信息（均值、标准差、分位数等） | `data_name`, `column` |
 | `export_data` | 导出数据到文件 | `data_name`, `file_path`, `format` |
 
-### 绘图工具（10 个）
+### 绘图工具（11 个）
 
 | 工具名 | 用途 | 关键参数 |
 |--------|------|---------|
-| `create_chart` | 创建新图表（每次调用创建新 figure） | `title`, `figure_name?` |
+| `create_chart` | 创建图表（同名 figure 已存在则在其中加 chart） | `type`, `data_name`, `x`, `y`(数组), `title?`, `figure_name?`, `x_label?`, `y_label?` |
 | `add_curve` | 向图表添加曲线 | `data_name`, `x_column`, `y_column`, `figure_name?`, `chart_id?` |
 | `set_chart_style` | 设置图表样式（线型、颜色、标记等） | `figure_name?`, `chart_id`, `style` |
 | `set_axis` | 配置坐标轴（刻度类型、范围、颜色、标签旋转） | `figure_name?`, `chart_id?`, `axis`(`x`/`y`), `scale_type?`(`normal`/`datetime`), `date_format?`, `min?`, `max?`, `color?`, `label_rotation?` |
@@ -288,6 +293,14 @@ bool DAAgentToolsPlugin::initialize()
 | `create_subplots` | 创建子图布局 | `rows`, `cols`, `figure_name?` |
 | `save_chart_image` | 保存图表为图片 | `figure_name?`, `file_path`, `format` |
 | `list_figures` | 列出所有 figure 及其 chart | 无 |
+| `list_chart_items` | 列出 chart 内曲线/标注/区域明细 | `figure_name?`, `chart_id?`, `item_type?`(`curve`/`annotation`/`region`/`any`) |
+
+### 代码执行工具（2 个）
+
+| 工具名 | 用途 | 关键参数 |
+|--------|------|---------|
+| `run_code` | 在共享持久命名空间执行内联 Python（预导入 `da_app` 等，变量跨调用持久） | `code`, `args?` |
+| `run_script` | 执行脚本工作区内 `.py`（`path` 为工作区相对路径），与 `run_code` 共享命名空间 | `path`, `args?` |
 
 !!! note "图表工具的 figure_name 参数"
     所有绘图工具都支持可选的 `figure_name` 参数，用于在指定 figure 中操作。`create_chart` 和 `create_subplots` 的 `figure_name` 用于命名新创建的 figure。
@@ -428,7 +441,9 @@ sequenceDiagram
 - [架构设计](./architecture.md) — 工具系统在整体架构中的位置
 - [通信协议](./protocol.md) — tool_call/tool_result 消息的协议规范
 - [上下文管理](./context-management.md) — 工具结果截断机制
-- `plugins/DAAgentTools/` — 18 个内置工具的完整实现
+- [工具与内置 Agent 总览](./available-tools.md) — 全部 25 个工具的完整参数表与内置 agent 说明
+- `plugins/DAAgentTools/` — 21 个内置工具的完整实现
+- `plugins/DAPaperAgent/` — 2 个文献工具 + 论文撰写 agent 的完整实现
 - `src/DAAgent/DAAbstractAgentTool.h` — 工具抽象基类定义
 - `src/DAAgent/DAAgentToolBase.h` — 瘦工具基类定义
 - `src/DAAgent/DAAgentToolSpec.h` — 结构化工具规格（`DAAgentToolSpec` / `DAAgentToolParam`）

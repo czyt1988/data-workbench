@@ -171,7 +171,7 @@ connect(agent, &DA::DAAgentInterface::agentListChanged, this, [this]() {
 
 ## 内置 agent 提示词的写法
 
-`resources/paper-agent.md` 是约 200 行的中文流程编排型提示词（对比 `src/DAAgent/default-agent.md` 的 25 行简短风格），包含：
+`resources/paper-agent.md` 是约 120 行的中文流程编排型提示词（对比 `src/DAAgent/default-agent.md` 的 24 行简短风格），包含：
 
 - **角色与核心原则**（数据的客观性绝不被叙事需求干扰）
 - **启动流程**（跨会话恢复：读 progress.md 续作）

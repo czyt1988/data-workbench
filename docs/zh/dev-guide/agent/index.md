@@ -8,7 +8,7 @@ DAWorkbench 的 AI Agent 助手模块为平台提供内嵌 LLM 聊天与数据�
 
 - ✅ **双进程架构**：C++ 主进程管理工具执行与会话持久化，Python 子进程运行 LLM 推理，两者通过 stdin/stdout 管道以 JSON Lines 协议通信，互不影响
 - ✅ **流式输出**：LLM 生成的 token 实时流式推送到聊天界面，用户无需等待完整回复即可看到推理过程
-- ✅ **工具调用**：内置 19 个工具（数据查询 5 个、绘图 11 个、文件/报告 3 个），覆盖数据分析全流程；支持插件扩展自定义工具
+- ✅ **工具调用**：内置 23 个 C++ 工具（`DAAgentTools` 插件 21 个：数据 5 + 绘图 11 + 文件/报告 3 + 代码执行 2；`DAPaperAgent` 插件 2 个文献工具）+ 平台注入的 `ask_user`（人机交互提问）与 `dispatch_subagents`（子 Agent 委派），覆盖数据分析全流程；支持插件扩展自定义工具。完整清单见[工具与内置 Agent 总览](./available-tools.md)
 - ✅ **多供应商多模型**：支持多个 LLM 供应商（每供应商含多模型）的 CRUD 管理，Dock 下拉切换激活供应商+模型；运行期可热替换 LLM 配置（`reconfigure` 消息）而不重启子进程、不丢 MemorySaver 会话状态
 - ✅ **提示词库管理**：内置 agent 提示词的注入 / 按标题执行 / CRUD，由 `DAAgentManager` + `DAAgentPromptOps` + `DAAgentPrompt` 承载，UI 经 `DAAgentManagerDialog` / `DAAgentEditorDialog` 维护
 - ✅ **上下文管理**：自动检测上下文窗口占用，超过阈值时智能压缩历史对话（保留头部任务描述 + 尾部近期消息 + 中间摘要），避免上下文溢出
@@ -44,11 +44,11 @@ Agent 采用 C++ + Python 双进程架构。C++ 主进程持有工具注册表�
 graph TB
     subgraph "C++ 主进程"
         UI["DAAgentDockWidget<br/>(聊天 UI, DAGui 模块)"]
-        IF["DAAgentInterface<br/>(公共接口, 19 信号)"]
+        IF["DAAgentInterface<br/>(公共接口, 28 信号)"]
         MOD["DAAgentModule<br/>(接口实现: 工具注册/会话/配置)"]
         BRIDGE["DAAgentBridge<br/>(QProcess 管理/协议解析)"]
         STORE["DAAgentSessionStore<br/>(JSONL 持久化)"]
-        TOOLS["DAAgentToolsPlugin<br/>(19 个内置工具)"]
+        TOOLS["DAAgentToolsPlugin<br/>(21 个内置工具)"]
     end
 
     subgraph "Python 子进程"
@@ -87,13 +87,14 @@ graph TB
 | `src/DAGui/Agent/` | DAGui (L3 界面层) | 聊天 UI：DockWidget、WebChannel、前端资源 |
 | `src/APP/SettingPages/` | APP (L5 应用层) | LLM 设置页 |
 | `src/PyScripts/DAWorkbench/agent/` | Python 脚本 | 子进程入口：LLM 推理、上下文管理、重试逻辑 |
-| `plugins/DAAgentTools/` | 插件 | 19 个内置工具实现 |
+| `plugins/DAAgentTools/` | 插件 | 21 个内置工具实现（数据/绘图/文件/代码执行） |
+| `plugins/DAPaperAgent/` | 插件 | 论文撰写 agent：内置「论文撰写助手」提示词 + 2 个文献工具 |
 
 ### 关键类
 
 | 类名 | 模块 | 职责 |
 |------|------|------|
-| `DAAgentInterface` | DAAgent | 公共接口：19 个信号 + 工具/提示词注册 + 多供应商多模型管理（CRUD、激活切换、热替换）+ 提示词库 API（`runAgent`/`registerBuiltinAgent`/`agentPromptOps`）+ 会话管理 |
+| `DAAgentInterface` | DAAgent | 公共接口：28 个信号 + 工具/提示词注册 + 多供应商多模型管理（CRUD、激活切换、热替换）+ 提示词库 API（`runAgent`/`registerBuiltinAgent`/`agentPromptOps`）+ 会话管理 |
 | `DAAgentModule` | DAAgent | 接口实现：工具注册表、系统提示词组装、预启动/懒启动、配置读写、DPAPI 加密、token 会话累计统计 |
 | `DAAgentBridge` | DAAgent | QProcess 生命周期管理、JSON Lines 协议解析、工具执行、`reconfigureAgent` 热替换、崩溃恢复、无活动看门狗 |
 | `DAAgentSessionStore` | DAAgent | JSONL 会话持久化：读写、索引、清理、标题、导出导入 |
@@ -106,7 +107,7 @@ graph TB
 | `DAAgentSettingsWidget` | APP | LLM 设置页（经 `setAgentInterface` 注入接口） |
 | `DAAgentManagerDialog` / `DAAgentEditorDialog` | APP | 提示词库管理对话框 / 提示词编辑对话框 |
 | `DAMarkdownView` | DAGui | 通用 Markdown 渲染器（`src/DAGui/MarkdownView/`），用于报告查看等 |
-| `DAAgentToolsPlugin` | 插件 | 注册 19 个内置工具 + `figure_reference` 系统提示词 |
+| `DAAgentToolsPlugin` | 插件 | 注册 21 个内置工具 + `figure_reference` 系统提示词 |
 | `DAAgentChartToolBase` | 插件 | 图表工具基类（继承瘦 `DAAgentToolBase`，提供图表访问方法） |
 | `StdioProtocol` | Python | JSON Lines 协议收发（后台线程读 stdin → asyncio.Queue） |
 | `AgentRunner` | Python | LangGraph 状态机：compact → agent → {ask_user \| tools \| END}；含 `reconfigure()` 热替换 |
@@ -123,6 +124,7 @@ graph TB
 | [通信协议](./protocol.md) | JSON Lines 协议规范、消息类型、启动握手、工具 RPC |
 | [上下文管理](./context-management.md) | Token 估算、上下文压缩、工具结果截断、溢出恢复 |
 | [崩溃恢复与重连](./crash-recovery.md) | 进程生命周期、自动重启、会话恢复、重试退避 |
+| [工具与内置 Agent 总览](./available-tools.md) | 全部 25 个工具的参数与作用、内置 Agent / 子 Agent、权限分级 |
 | [工具开发指南](./tool-development.md) | 工具基类、注册机制、内置工具、自定义工具开发 |
 | [通过插件注册内置 Agent](./register-builtin-agent-via-plugin.md) | 插件注入 agent 提示词/领域工具/系统提示词的完整模式（DAPaperAgent 参考实现） |
 | [会话持久化](./session-management.md) | JSONL 格式、会话索引、导出导入、自动清理 |
@@ -131,7 +133,7 @@ graph TB
 
 ## 参考资料
 
-- `src/DAAgent/AGENTS.md` — DAAgent 模块 AI 开发必读指南（619 行，含铁律约 10 条）
+- `src/DAAgent/AGENTS.md` — DAAgent 模块 AI 开发必读指南（700+ 行，含铁律 T1~T17）
 - `DAAgentDecouplePlan.md` — DAAgent 解耦重构方案（从 DAGui 依赖到纯框架库的演进）
 - `src/DAAgent/system_prompt.md` — 系统提示词（外部可编辑 markdown）
 - `src/PyScripts/DAWorkbench/agent/agent_runner.py` — Python 子进程入口脚本

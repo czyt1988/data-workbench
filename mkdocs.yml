@@ -123,7 +123,9 @@ nav:
               - 通信协议: zh/dev-guide/agent/protocol.md
               - 上下文管理: zh/dev-guide/agent/context-management.md
               - 崩溃恢复与重连: zh/dev-guide/agent/crash-recovery.md
+              - 工具与内置Agent总览: zh/dev-guide/agent/available-tools.md
               - 工具开发指南: zh/dev-guide/agent/tool-development.md
+              - 通过插件注册内置Agent: zh/dev-guide/agent/register-builtin-agent-via-plugin.md
               - 会话持久化: zh/dev-guide/agent/session-management.md
               - 运行期卡死诊断: zh/dev-guide/agent/agent-runtime-watchdog.md
       - 主程序开发:
