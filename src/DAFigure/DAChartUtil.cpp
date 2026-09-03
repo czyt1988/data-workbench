@@ -34,6 +34,7 @@
 #include "qwt_scale_engine.h"
 #include "qwt_text.h"
 #include "DADataProbeMarker.h"
+#include "DAChartTextMarker.h"
 #include "qwt_math.h"
 namespace DA
 {
@@ -143,6 +144,9 @@ QString DAChartUtil::plotItemName(const QwtPlotItem* item)
     //! For DADataProbeMarker
     case DADataProbeMarker::Rtti_DataProbeMarker:                    // data probe marker
         return (isEmpty ? QObject::tr("probe-%1").arg(str) : str);   // cn:探针-%1
+    //! For DAChartTextMarker
+    case DAChartTextMarker::Rtti_TextMarker:  // text marker
+        return (isEmpty ? QObject::tr("text-%1").arg(str) : str);  // cn:文本-%1
     default:
         break;
     }
@@ -266,6 +270,11 @@ QIcon DAChartUtil::plotItemIcon(const QwtPlotItem* item)
     //! For DADataProbeMarker
     case DADataProbeMarker::Rtti_DataProbeMarker: {
         static QIcon s_icon(":/DAFigure/icon/chart-dataprobe.svg");
+        return s_icon;
+    }
+    //! For DAChartTextMarker
+    case DAChartTextMarker::Rtti_TextMarker: {
+        static QIcon s_icon(":/DAFigure/icon/chart-textmarker.svg");
         return s_icon;
     }
     default:

@@ -30,6 +30,7 @@ class DAPropertyPanelContainerWidget;
  * - PID_MinScale: 最小刻度值
  * - PID_MaxScale: 最大刻度值
  * - PID_ScaleStyle: 刻度样式（普通/日期时间）
+ * - PID_TicksInside: 刻度线朝内绘制
 
  * @see DAPropertyPanelContainerWidget
  * @see QwtScaleWidget
@@ -51,7 +52,8 @@ public:
         PID_Margin,
         PID_MinScale,
         PID_MaxScale,
-        PID_ScaleStyle
+        PID_ScaleStyle,
+        PID_TicksInside
     };
 
     /**

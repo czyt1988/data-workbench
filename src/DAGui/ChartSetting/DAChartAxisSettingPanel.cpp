@@ -102,6 +102,7 @@ void DAChartAxisSettingPanel::updateUI()
         mPanel->setDoubleValue(PID_MaxScale, 0.0);
         mPanel->setIntValue(PID_Margin, 0);
         mPanel->setDoubleValue(PID_LabelRotation, 0.0);
+        mPanel->setBoolValue(PID_TicksInside, false);
         return;
     }
 
@@ -139,6 +140,9 @@ void DAChartAxisSettingPanel::updateUI()
         isDateTime = (dynamic_cast< QwtDateScaleDraw* >(scaleWidget->scaleDraw()) != nullptr);
     }
     setScaleStyleValue(isDateTime ? DateTimeScale : NormalScale);
+
+    // 刻度线朝内
+    mPanel->setBoolValue(PID_TicksInside, mPlot->axisTickDirection(mAxisId) == QwtPlot::TickInside);
 }
 
 /**
@@ -216,6 +220,8 @@ void DAChartAxisSettingPanel::buildPropertyPanel()
     panel->addDoubleProperty(PID_MaxScale, tr("Max Scale")  // cn:最大刻度
                              ,
                              0.0, -1e15, 1e15, 5);
+    panel->addBoolProperty(PID_TicksInside, tr("Ticks Inside")  // cn:刻度线朝内
+    );
     panel->endGroup();
 
     // 刻度样式: Normal/DateTime 两个RadioButton
@@ -355,6 +361,11 @@ void DAChartAxisSettingPanel::onPropertyValueChanged(int propertyId)
                 DAChartUtil::setAxisNormalScale(mPlot, mAxisId);
             }
         }
+        break;
+    }
+    case PID_TicksInside: {
+        bool inside = panel->getBoolValue(PID_TicksInside);
+        mPlot->setAxisTickDirection(mAxisId, inside ? QwtPlot::TickInside : QwtPlot::TickOutside);
         break;
     }
     default:

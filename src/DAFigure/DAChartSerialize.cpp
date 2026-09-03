@@ -47,6 +47,11 @@ namespace {
 /// v2: 在 isSD 后增加 scaleDrawType(0=normal,1=QwtTextScaleDraw)，
 ///     若为 QwtTextScaleDraw 额外持久化 labelMap 与显式 scaleDiv 的 bounds
 constexpr int gcScaleWidgetBlockVersion = 2;
+
+/// serialize_out/in_scale_widge 坐标轴外层块版本号
+/// v1(=gc_dachart_version): 无刻度方向字段
+/// v3: 在 magic_mark3 后增加 tickDirection(0=朝外,1=朝内)
+constexpr int gcScaleWidgetAxisBlockVersion = 3;
 }  // namespace
 
 #ifndef INITCHARTITEMSERIALIZE_MAKE_IN_OUT_PAIR
@@ -179,12 +184,14 @@ void serialize_out_scale_widge(QDataStream& out, const QwtPlot* chart, int axis)
 {
     const QwtScaleWidget* axisWid = chart->axisWidget(axis);
     bool isaxis                   = (nullptr != axisWid);
-    out << DA::gc_dachart_version << DA::gc_dachart_magic_mark;
+    out << gcScaleWidgetAxisBlockVersion << DA::gc_dachart_magic_mark;
     out << isaxis;
     out << DA::gc_dachart_magic_mark2;
     if (isaxis) {
         bool enable = chart->axisEnabled(axis);
         out << axisWid << enable << DA::gc_dachart_magic_mark3;
+        // v3 起记录刻度线方向（朝内/朝外）
+        out << static_cast< int >(chart->axisTickDirection(axis));
     }
 }
 
@@ -232,6 +239,13 @@ void serialize_in_scale_widge(QDataStream& in, QwtPlot* chart, int axis)
             return;
         }
         chart->enableAxis(axis, enable);
+        // v3 起存在刻度线方向（朝内/朝外），v3 前的旧文件默认朝外
+        if (version >= gcScaleWidgetAxisBlockVersion) {
+            int tickDirection = 0;
+            in >> tickDirection;
+            chart->setAxisTickDirection(axis,
+                                        static_cast< QwtPlot::TickDirection >(tickDirection));
+        }
         // 若安装的是 QwtTextScaleDraw，把其暂存的显式 scaleDiv 同步到 plot 并关闭自动缩放，
         // 避免 autoRefresh 用引擎重算覆盖类别刻度位置
         if (auto* td = dynamic_cast< QwtTextScaleDraw* >(chart->axisScaleDraw(axis))) {

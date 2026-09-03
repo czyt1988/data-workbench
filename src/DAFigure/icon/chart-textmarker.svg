@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 图元：文本标注（DAChartTextMarker）。锚点(主蓝)+引线(中灰)+多行文字(深蓝) -->
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px"
+	 width="64px" height="64px" viewBox="0 0 64 64" enable-background="new 0 0 64 64" xml:space="preserve">
+<line stroke="#727272" stroke-width="1.5" stroke-linecap="round" x1="13.5" y1="50.5" x2="17.5" y2="46.5"/>
+<circle cx="10" cy="54" r="4.5" fill="#5280C1"/>
+<rect x="17" y="9" fill="#497CAD" width="39" height="5.5" rx="2.75"/>
+<rect x="17" y="21" fill="#497CAD" width="30" height="5.5" rx="2.75"/>
+<rect x="17" y="33" fill="#497CAD" width="35" height="5.5" rx="2.75"/>
+</svg>

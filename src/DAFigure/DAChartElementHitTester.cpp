@@ -15,6 +15,7 @@
 #include "qwt_plot_legenditem.h"
 #include "qwt_scale_widget.h"
 #include "qwt_scale_map.h"
+#include "qwt_symbol.h"
 #include "qwt_text.h"
 #include "qwt_text_label.h"
 // DA
@@ -448,7 +449,7 @@ QRect DAChartElementHitTester::itemSelectionRect(QwtPlot* plot, const QwtPlotIte
             const QwtScaleMap& yMap = plot->canvasMap(marker->yAxis());
             const qreal px          = xMap.transform(marker->xValue());
             const qreal py          = yMap.transform(marker->yValue());
-            const QRectF canvasRect(plot->canvas()->rect());
+            const QRectF canvasRect(plot->canvas()->contentsRect());
             switch (marker->lineStyle()) {
             case QwtPlotMarker::HLine:
                 rect = QRectF(canvasRect.left(), py - 4, canvasRect.width(), 8);
@@ -511,7 +512,7 @@ QRect DAChartElementHitTester::itemSelectionRect(QwtPlot* plot, const QwtPlotIte
         return QRect();
     }
     // 夹紧到 canvas 范围（系列类包围盒常超出可视区）
-    const QRectF canvasRect = QRectF(plot->canvas()->rect());
+    const QRectF canvasRect = QRectF(plot->canvas()->contentsRect());
     rect                    = rect.intersected(canvasRect);
     if (rect.isEmpty()) {
         return QRect();
@@ -631,7 +632,11 @@ void DAChartElementHitTester::moveItemBy(QwtPlotItem* item, const QPointF& delta
 /**
  * @brief 计算 marker 的 label 文字矩形（canvas 像素坐标）
  *
- * 锚点换算到像素后，按 labelAlignment 的方向展开文字尺寸
+ * 完整复刻 QwtPlotMarker::drawLabel 的落位算法（qwt_plot_marker.cpp），
+ * 保证命中矩形与实际绘制位置一致：
+ * - 对齐语义与 Qt 控件相反：AlignLeft 文字在锚点左侧、AlignTop 文字在锚点上方
+ * - HLine/VLine 样式时对齐标志相对 canvas 边缘解释，锚点分量被替换
+ * - 偏移含 pen 半宽、symbol 尺寸与 spacing
  * @param plot 目标绘图
  * @param marker 目标 marker
  * @return label 文字矩形，无 label 返回空矩形
@@ -647,22 +652,99 @@ QRectF DAChartElementHitTester::markerLabelRect(QwtPlot* plot, const QwtPlotMark
     }
     const QwtScaleMap& xMap = plot->canvasMap(marker->xAxis());
     const QwtScaleMap& yMap = plot->canvasMap(marker->yAxis());
-    const QPointF anchor(xMap.transform(marker->xValue()), yMap.transform(marker->yValue()));
-    const QSizeF ts            = label.textSize(textRenderFont(label));
-    const Qt::Alignment align  = marker->labelAlignment();
-    // 对齐语义：锚点位于文字矩形在对齐方向上的边（Qwt 默认 AlignRight|AlignBottom）
-    qreal x = anchor.x(), y = anchor.y();
-    if (align & Qt::AlignHCenter) {
-        x -= ts.width() / 2;
+    const QPointF pos(xMap.transform(marker->xValue()), yMap.transform(marker->yValue()));
+    const QSizeF textSize = label.textSize(textRenderFont(label));
+
+    Qt::Alignment align  = marker->labelAlignment();
+    const Qt::Orientation orientation = marker->labelOrientation();
+    QPointF alignPos     = pos;
+
+    // HLine/VLine 时对齐标志相对 canvas 边缘，锚点分量被 canvas 几何替换（同步 drawLabel）
+    QSizeF symbolOff(0, 0);
+    switch (marker->lineStyle()) {
+    case QwtPlotMarker::VLine: {
+        if (align & Qt::AlignTop) {
+            alignPos.setY(plot->canvas()->contentsRect().top());
+            align &= ~Qt::AlignTop;
+            align |= Qt::AlignBottom;
+        } else if (align & Qt::AlignBottom) {
+            alignPos.setY(plot->canvas()->contentsRect().bottom() - 1);
+            align &= ~Qt::AlignBottom;
+            align |= Qt::AlignTop;
+        } else {
+            alignPos.setY(plot->canvas()->contentsRect().center().y());
+        }
+        break;
+    }
+    case QwtPlotMarker::HLine: {
+        if (align & Qt::AlignLeft) {
+            alignPos.setX(plot->canvas()->contentsRect().left());
+            align &= ~Qt::AlignLeft;
+            align |= Qt::AlignRight;
+        } else if (align & Qt::AlignRight) {
+            alignPos.setX(plot->canvas()->contentsRect().right() - 1);
+            align &= ~Qt::AlignRight;
+            align |= Qt::AlignLeft;
+        } else {
+            alignPos.setX(plot->canvas()->contentsRect().center().x());
+        }
+        break;
+    }
+    default: {
+        if (marker->symbol() && (marker->symbol()->style() != QwtSymbol::NoSymbol)) {
+            symbolOff = marker->symbol()->size() + QSizeF(1, 1);
+            symbolOff /= 2;
+        }
+        break;
+    }
+    }
+
+    qreal pw2 = marker->linePen().widthF() / 2.0;
+    if (pw2 == 0.0) {
+        pw2 = 0.5;
+    }
+    const qreal xOff = qMax< qreal >(pw2, symbolOff.width());
+    const qreal yOff = qMax< qreal >(pw2, symbolOff.height());
+    const qreal spacing = marker->spacing();
+
+    // 以下偏移逻辑与 QwtPlotMarker::drawLabel 逐分支一致
+    if (align & Qt::AlignLeft) {
+        alignPos.rx() -= xOff + spacing;
+        if (orientation == Qt::Vertical) {
+            alignPos.rx() -= textSize.height();
+        } else {
+            alignPos.rx() -= textSize.width();
+        }
     } else if (align & Qt::AlignRight) {
-        x -= ts.width();
+        alignPos.rx() += xOff + spacing;
+    } else {
+        if (orientation == Qt::Vertical) {
+            alignPos.rx() -= textSize.height() / 2;
+        } else {
+            alignPos.rx() -= textSize.width() / 2;
+        }
     }
-    if (align & Qt::AlignVCenter) {
-        y -= ts.height() / 2;
+
+    if (align & Qt::AlignTop) {
+        alignPos.ry() -= yOff + spacing;
+        if (orientation != Qt::Vertical) {
+            alignPos.ry() -= textSize.height();
+        }
     } else if (align & Qt::AlignBottom) {
-        y -= ts.height();
+        alignPos.ry() += yOff + spacing;
+        if (orientation == Qt::Vertical) {
+            alignPos.ry() += textSize.width();
+        }
+    } else {
+        if (orientation == Qt::Vertical) {
+            alignPos.ry() += textSize.width() / 2;
+        } else {
+            alignPos.ry() -= textSize.height() / 2;
+        }
     }
-    return QRectF(x, y, ts.width(), ts.height());
+
+    // drawLabel 在 alignPos 处 translate 后绘制 (0,0,textSize) 文字矩形
+    return QRectF(alignPos, textSize);
 }
 
 /**

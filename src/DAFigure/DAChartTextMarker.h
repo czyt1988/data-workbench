@@ -13,7 +13,9 @@ namespace DA
  *
  * 基于 QwtPlotMarker 的富文本标注，锚定在数据坐标上：
  * - setLineStyle(NoLine)：不绘制任何线条，仅渲染 label
- * - setLabelAlignment(AlignLeft|AlignTop)：文本从锚点向右下方向展开
+ * - setLabelAlignment(AlignLeft|AlignTop)：qwt 对齐语义下文本渲染在锚点左上方
+ *   （注意：QwtPlotMarker 的对齐语义与 Qt 控件相反，AlignLeft=文字在锚点左侧，
+ *   AlignTop=文字在锚点上方，见 QwtPlotMarker::drawLabel）
  * - label 使用 QwtText::RichText 格式（QTextDocument 渲染），支持
  *   加粗/斜体/下划线/删除线/上下标/字体/文字颜色/文字背景色等
  *

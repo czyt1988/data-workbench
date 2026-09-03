@@ -8,8 +8,8 @@ namespace DA
  * @brief 构造函数
  * @param title 标题（用于绘图操作树节点显示）
  *
- * 默认配置：无线条(NoLine)、文本从锚点向右下展开(AlignLeft|AlignTop)、
- * label为RichText格式
+ * 默认配置：无线条(NoLine)、文本渲染在锚点左上方(AlignLeft|AlignTop，
+ * qwt 对齐语义与 Qt 控件相反)、label为RichText格式
  */
 DAChartTextMarker::DAChartTextMarker(const QString& title) : QwtPlotMarker(title)
 {

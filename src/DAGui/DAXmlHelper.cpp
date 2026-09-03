@@ -2328,6 +2328,10 @@ DAXmlHelper::makeQwtPlotAxisElement(const DAChartWidget* chart, int axisID, cons
     QwtInterval axisInterval = chart->axisInterval(axisID);
     axisEle.setAttribute(QStringLiteral("min"), axisInterval.minValue());
     axisEle.setAttribute(QStringLiteral("max"), axisInterval.maxValue());
+    // 刻度线方向：inside=朝内(从 canvas 边缘向绘图区绘制)，缺省朝外
+    if (chart->axisTickDirection(axisID) == QwtPlot::TickInside) {
+        axisEle.setAttribute(QStringLiteral("tickDirection"), QStringLiteral("inside"));
+    }
 
     //!====================
     //! font
@@ -2598,6 +2602,11 @@ bool DAXmlHelper::loadQwtPlotAxisElement(DAChartWidget* chart, const QDomElement
     if (!scaleWidgetEle.isNull()) {
         QwtScaleWidget* scaleWidget = chart->axisWidget(axisID);
         loadElement(scaleWidget, &scaleWidgetEle);
+    }
+    // 刻度线方向：在 scaleDraw/scaleWidget 均就位后恢复，
+    // setAxisTickDirection 内部会同步 scaleDraw 的 Ticks 组件开关
+    if (qwtplotTag->attribute(QStringLiteral("tickDirection")).toLower() == QStringLiteral("inside")) {
+        chart->setAxisTickDirection(axisID, QwtPlot::TickInside);
     }
     return true;
 }
