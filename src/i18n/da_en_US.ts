@@ -184,7 +184,7 @@
         <translation>Failed to parse JSON line from agent stdout: %1, error: %2</translation>
     </message>
     <message>
-        <location line="+435"/>
+        <location line="+442"/>
         <source>Failed to parse trailing JSON line from agent stdout: %1, error: %2</source>
         <translation>Failed to parse trailing JSON line from agent stdout: %1, error: %2</translation>
     </message>
@@ -705,7 +705,12 @@
 <context>
     <name>DA::DAAgentModule</name>
     <message>
-        <location filename="../DAAgent/DAAgentModule.cpp" line="+354"/>
+        <location filename="../DAAgent/DAAgentModule.cpp" line="+160"/>
+        <source>The agent ended this turn after %1 tool calls, but its last message looks like an unfinished plan (e.g. announcing a next step without executing it). Send a message such as &quot;continue&quot; to let it finish.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+134"/>
         <source>Agent system prompt file is empty, fallback to built-in default: %1</source>
         <translation>Agent system prompt file is empty, fallback to built-in default: %1</translation>
     </message>
@@ -721,12 +726,12 @@
     </message>
     <message>
         <location line="+2"/>
-        <location line="+987"/>
+        <location line="+732"/>
         <source>LLM is not configured. Please configure LLM in settings first.</source>
         <translation>LLM is not configured. Please configure LLM in settings first.</translation>
     </message>
     <message>
-        <location line="-976"/>
+        <location line="-721"/>
         <source>Cannot find Python interpreter path, please configure it in settings</source>
         <translation>Cannot find Python interpreter path, please configure it in settings</translation>
     </message>
@@ -736,7 +741,7 @@
         <translation>Cannot find agent_runner.py path: %1</translation>
     </message>
     <message>
-        <location line="+970"/>
+        <location line="+715"/>
         <source>LLM is not configured, skip agent analysis. Please configure LLM in settings first.</source>
         <translation>LLM is not configured, skip agent analysis. Please configure LLM in settings first.</translation>
     </message>
@@ -744,7 +749,7 @@
 <context>
     <name>DA::DAAgentPermissionSettingsWidget</name>
     <message>
-        <location filename="../APP/SettingPages/DAAgentPermissionSettingsWidget.cpp" line="+135"/>
+        <location filename="../APP/SettingPages/DAAgentPermissionSettingsWidget.cpp" line="+116"/>
         <source>Default Permission Mode</source>
         <translation>Default Permission Mode</translation>
     </message>
@@ -910,7 +915,7 @@
 <context>
     <name>DA::DAAgentSettingsWidget</name>
     <message>
-        <location filename="../APP/SettingPages/DAAgentSettingsWidget.cpp" line="+181"/>
+        <location filename="../APP/SettingPages/DAAgentSettingsWidget.cpp" line="+152"/>
         <location line="+5"/>
         <source> s</source>
         <translation> s</translation>
@@ -929,12 +934,12 @@
     <message>
         <location line="-12"/>
         <location line="+6"/>
-        <location line="+18"/>
+        <location line="+35"/>
         <source> sec</source>
         <translation> sec</translation>
     </message>
     <message>
-        <location line="-117"/>
+        <location line="-134"/>
         <source>Base URL</source>
         <translation>Base URL</translation>
     </message>
@@ -944,7 +949,29 @@
         <translation>API Key</translation>
     </message>
     <message>
-        <location line="+128"/>
+        <location line="+112"/>
+        <location line="+6"/>
+        <location line="+21"/>
+        <source>No limit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-26"/>
+        <source>Max graph reasoning steps per turn (each tool-call cycle consumes 3 steps). Check &apos;No limit&apos; to disable. Recommended: 150.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Unlimited reasoning steps per turn. Loop protection still applies: repeated identical tool calls are terminated automatically.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+21"/>
+        <source>Max reasoning steps for each subagent task. Set to -1 for no limit. Recommended: 60.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
         <source>Ready Timeout</source>
         <translation>Ready Timeout</translation>
     </message>
@@ -954,7 +981,7 @@
         <translation>Stop Timeout</translation>
     </message>
     <message>
-        <location line="-166"/>
+        <location line="-185"/>
         <source>Add Provider</source>
         <translation>Add Provider</translation>
     </message>
@@ -1064,22 +1091,12 @@
         <translation>Max auto restarts after subprocess crash. 0 disables. Recommended: 3.</translation>
     </message>
     <message>
-        <location line="+5"/>
-        <source>Max graph reasoning steps. Each tool-call cycle consumes 3 steps. Recommended: 150.</source>
-        <translation>Max graph reasoning steps. Each tool-call cycle consumes 3 steps. Recommended: 150.</translation>
-    </message>
-    <message>
-        <location line="+7"/>
+        <location line="+29"/>
         <source>Wall-clock timeout (seconds) for each subagent task. Waiting for approval counts towards this limit. Recommended: 600.</source>
         <translation>Wall-clock timeout (seconds) for each subagent task. Waiting for approval counts towards this limit. Recommended: 600.</translation>
     </message>
     <message>
-        <location line="+4"/>
-        <source>Max reasoning steps for each subagent task. Recommended: 60.</source>
-        <translation>Max reasoning steps for each subagent task. Recommended: 60.</translation>
-    </message>
-    <message>
-        <location line="+4"/>
+        <location line="+10"/>
         <source>Prestart the agent subprocess on launch. Disable to save memory.</source>
         <translation>Prestart the agent subprocess on launch. Disable to save memory.</translation>
     </message>
@@ -1134,12 +1151,12 @@
         <translation>Max process restarts</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+8"/>
         <source>Reasoning iteration limit</source>
         <translation>Reasoning iteration limit</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Subagent Timeout</source>
         <translation>Subagent Timeout</translation>
     </message>
@@ -1164,7 +1181,7 @@
         <translation>(unnamed)</translation>
     </message>
     <message>
-        <location line="+21"/>
+        <location line="+20"/>
         <source>not set</source>
         <translation>not set</translation>
     </message>
@@ -1287,7 +1304,7 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="../APP/DAAppActions.cpp" line="+414"/>
+        <location filename="../APP/DAAppActions.cpp" line="+416"/>
         <source>Open</source>
         <translation>Open</translation>
     </message>
@@ -1749,7 +1766,7 @@ All</translation>
         <translation>Legend</translation>
     </message>
     <message>
-        <location line="+52"/>
+        <location line="+55"/>
         <source>To Numeric</source>
         <translation>To Numeric</translation>
     </message>
@@ -1784,7 +1801,7 @@ All</translation>
         <translation>Show Information Window</translation>
     </message>
     <message>
-        <location line="-134"/>
+        <location line="-137"/>
         <source>Enable or disable legend in the chart</source>
         <translation>Enable or disable legend in the chart</translation>
     </message>
@@ -2739,7 +2756,7 @@ Layouts</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+740"/>
+        <location filename="../APP/DAAppController.cpp" line="+739"/>
         <source>Save Project</source>
         <translation>Save Project</translation>
     </message>
@@ -2776,17 +2793,7 @@ Layouts</source>
         <translation>Failed to save image to %1</translation>
     </message>
     <message>
-        <location line="+129"/>
-        <source>Default</source>
-        <translation type="unfinished">Default</translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Focus Analysis</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+34"/>
+        <location line="+110"/>
         <source>Reset Layout</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2796,12 +2803,12 @@ Layouts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+325"/>
+        <location line="+383"/>
         <source>Please select a dataset to rename</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+55"/>
+        <location line="+59"/>
         <source>Please select a dataset to export</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2851,7 +2858,7 @@ Layouts</source>
         <translation>Before creating a new coordinate, you need to create a figure</translation>
     </message>
     <message>
-        <location line="-1559"/>
+        <location line="-1489"/>
         <source>Please select the data operation window</source>
         <translation>Please select the data operation window</translation>
     </message>
@@ -2961,17 +2968,22 @@ Layouts</source>
         <translation type="unfinished">Dark 2</translation>
     </message>
     <message>
-        <location line="+177"/>
+        <location line="+96"/>
         <source>No cells selected to copy</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+514"/>
+        <location line="+321"/>
+        <source>Cannot rename a series, please select a dataset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+204"/>
         <source>Figure &apos;%1&apos; not found, it may have been closed or renamed</source>
         <translation>Figure &apos;%1&apos; not found, it may have been closed or renamed</translation>
     </message>
     <message>
-        <location line="+870"/>
+        <location line="+731"/>
         <source>Rename Column</source>
         <translation>Rename Column</translation>
     </message>
@@ -3011,7 +3023,12 @@ Layouts</source>
         <translation>Column [%1] minimum value at row %2</translation>
     </message>
     <message>
-        <location line="+315"/>
+        <location line="+187"/>
+        <source>Export</source>
+        <translation type="unfinished">Export</translation>
+    </message>
+    <message>
+        <location line="+156"/>
         <source>New workflow name</source>
         <translation>New workflow name</translation>
     </message>
@@ -3048,7 +3065,7 @@ Layouts</source>
         <translation>The selected data source is empty</translation>
     </message>
     <message>
-        <location line="-2359"/>
+        <location line="-2178"/>
         <source>Before running the workflow, you need to save the project</source>
         <translation>Before running the workflow, you need to save the project</translation>
     </message>
@@ -3164,119 +3181,6 @@ Layouts</source>
     <message>
         <location line="+14"/>
         <source>Preset layout schemes cannot be removed</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>DA::DALayoutManagerDialog</name>
-    <message>
-        <location filename="../APP/Dialog/DALayoutManagerDialog.cpp" line="+17"/>
-        <source>Layout Manager</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+22"/>
-        <source>Double-click a scheme to apply it</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>Save Current</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Apply Selected</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Delete Selected</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Reset Default</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>Save the current window layout as a named scheme</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Apply the selected layout scheme</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Delete the selected custom layout scheme (presets cannot be deleted)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Restore the default window layout</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+11"/>
-        <source>Close</source>
-        <translation>Close</translation>
-    </message>
-    <message>
-        <location line="+41"/>
-        <source>Default</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Focus Analysis</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+33"/>
-        <source>Save Layout</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Layout scheme name:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+13"/>
-        <source>Cannot overwrite preset layout schemes, please use another name</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>Layout scheme &apos;%1&apos; saved</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+26"/>
-        <source>Remove Layout</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Remove layout scheme &apos;%1&apos;?</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+15"/>
-        <source>Reset Layout</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>This will restore the default window layout. Continue?</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+15"/>
-        <source>Layout scheme &apos;%1&apos; removed</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -3648,7 +3552,7 @@ Layouts</source>
 <context>
     <name>DA::DAAppRibbonArea</name>
     <message>
-        <location filename="../APP/DAAppRibbonArea.cpp" line="+184"/>
+        <location filename="../APP/DAAppRibbonArea.cpp" line="+190"/>
         <location line="+3"/>
         <source>File</source>
         <translation>File</translation>
@@ -3659,20 +3563,18 @@ Layouts</source>
         <translation>Main</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+4"/>
         <source>Config</source>
         <translation>Config</translation>
     </message>
     <message>
-        <location line="-1"/>
-        <location line="+27"/>
-        <location line="+106"/>
-        <location line="+257"/>
+        <location line="+25"/>
+        <location line="+346"/>
         <source>Workflow</source>
         <translation>Workflow</translation>
     </message>
     <message>
-        <location line="-387"/>
+        <location line="-369"/>
         <source>Data Operation</source>
         <translation>Data Operation</translation>
     </message>
@@ -3682,24 +3584,24 @@ Layouts</source>
         <translation>Data</translation>
     </message>
     <message>
-        <location line="-3"/>
+        <location line="-2"/>
         <source>Create</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+5"/>
         <source>Export Format</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+29"/>
-        <location line="+430"/>
+        <location line="+28"/>
+        <location line="+413"/>
         <source>View</source>
         <translation>View</translation>
     </message>
     <message>
-        <location line="-458"/>
+        <location line="-440"/>
         <source>Display</source>
         <translation>Display</translation>
     </message>
@@ -3710,128 +3612,99 @@ Layouts</source>
     </message>
     <message>
         <location line="+1"/>
-        <source>Scheme</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
         <source>Appearance</source>
         <translation type="unfinished">Appearance</translation>
     </message>
     <message>
         <location line="+3"/>
-        <location line="+248"/>
+        <location line="+231"/>
         <source>DataFrame</source>
         <translation>DataFrame</translation>
     </message>
     <message>
-        <location line="-247"/>
-        <location line="+249"/>
+        <location line="-230"/>
+        <location line="+232"/>
         <source>Operate</source>
         <translation>Operate</translation>
     </message>
     <message>
-        <location line="-248"/>
-        <location line="+251"/>
+        <location line="-231"/>
+        <location line="+234"/>
         <source>Axes</source>
         <translation>Axes</translation>
     </message>
     <message>
-        <location line="-250"/>
-        <location line="+263"/>
+        <location line="-233"/>
+        <location line="+246"/>
         <source>Column</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-262"/>
+        <location line="-245"/>
         <location line="+6"/>
-        <location line="+266"/>
+        <location line="+249"/>
         <location line="+5"/>
         <source>Type</source>
         <translation>Type</translation>
     </message>
     <message>
-        <location line="-276"/>
+        <location line="-259"/>
         <location line="+6"/>
-        <location line="+281"/>
+        <location line="+264"/>
         <location line="+4"/>
         <source>Format</source>
         <translation>Format</translation>
     </message>
     <message>
-        <location line="-290"/>
-        <location line="+296"/>
+        <location line="-273"/>
+        <location line="+279"/>
         <source>Table Style</source>
         <translation>Table Style</translation>
     </message>
     <message>
-        <location line="-295"/>
-        <location line="+299"/>
+        <location line="-278"/>
+        <location line="+282"/>
         <source>Fill</source>
         <translation>Fill</translation>
     </message>
     <message>
-        <location line="-298"/>
-        <location line="+29"/>
-        <location line="+277"/>
-        <location line="+317"/>
+        <location line="-281"/>
+        <location line="+289"/>
         <source>Font</source>
         <translation>Font</translation>
     </message>
     <message>
-        <location line="-622"/>
-        <location line="+311"/>
+        <location line="-288"/>
+        <location line="+294"/>
         <source>Clear</source>
         <translation>Clear</translation>
     </message>
     <message>
-        <location line="-305"/>
+        <location line="-288"/>
         <source>Fill Color</source>
         <translation>Fill Color</translation>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+373"/>
+        <location line="+356"/>
         <source>Workflow Edit</source>
         <translation>Workflow Edit</translation>
     </message>
     <message>
-        <location line="-406"/>
-        <location line="+34"/>
-        <location line="+377"/>
+        <location line="-387"/>
+        <location line="+32"/>
+        <location line="+360"/>
         <source>Clipboard</source>
         <translation>Clipboard</translation>
     </message>
     <message>
-        <location line="-363"/>
-        <location line="+481"/>
+        <location line="-346"/>
+        <location line="+465"/>
         <source>Chart Style</source>
         <translation>Chart Style</translation>
     </message>
     <message>
-        <location line="-479"/>
-        <location line="+575"/>
-        <source>Title</source>
-        <translation type="unfinished">Title</translation>
-    </message>
-    <message>
-        <location line="-574"/>
-        <source>X Axis</source>
-        <translation type="unfinished">X Axis</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Y Axis</source>
-        <translation type="unfinished">Y Axis</translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <location line="+599"/>
-        <source>Legend Position</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+326"/>
+        <location line="+376"/>
         <location line="+2"/>
         <source>AI Agent</source>
         <translation>AI Agent</translation>
@@ -3857,7 +3730,7 @@ Layouts</source>
         <translation>Run AI analysis with the selected agent prompt</translation>
     </message>
     <message>
-        <location line="+44"/>
+        <location line="+56"/>
         <source>Agent</source>
         <translation>Agent</translation>
     </message>
@@ -3878,54 +3751,48 @@ Layouts</source>
         <translation>Agent module is not ready</translation>
     </message>
     <message>
-        <location line="-1071"/>
-        <location line="+381"/>
+        <location line="-993"/>
+        <location line="+364"/>
         <source>Item</source>
         <translation>Item</translation>
     </message>
     <message>
-        <location line="-380"/>
-        <location line="+389"/>
+        <location line="-363"/>
+        <location line="+372"/>
         <source>Text</source>
         <translation>Text</translation>
     </message>
     <message>
-        <location line="-388"/>
-        <location line="+393"/>
+        <location line="-371"/>
+        <location line="+376"/>
         <source>Background</source>
         <translation>Background</translation>
     </message>
     <message>
-        <location line="-390"/>
-        <location line="+471"/>
+        <location line="-373"/>
+        <location line="+454"/>
         <source>Workflow Run</source>
         <translation>Workflow Run</translation>
     </message>
     <message>
-        <location line="-470"/>
-        <location line="+473"/>
+        <location line="-453"/>
+        <location line="+456"/>
         <source>Run</source>
         <translation>Run</translation>
     </message>
     <message>
-        <location line="-471"/>
-        <location line="+306"/>
+        <location line="-454"/>
+        <location line="+289"/>
         <source>Figure</source>
         <translation>Figure</translation>
     </message>
     <message>
-        <location line="-300"/>
-        <location line="+573"/>
-        <source>Chart Text</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-567"/>
+        <location line="-283"/>
         <source>Figure Setting</source>
         <translation>Figure Setting</translation>
     </message>
     <message>
-        <location line="-11"/>
+        <location line="-5"/>
         <source>Add Chart</source>
         <translation>Add Chart</translation>
     </message>
@@ -3935,13 +3802,13 @@ Layouts</source>
         <translation>Chart</translation>
     </message>
     <message>
-        <location line="+11"/>
-        <location line="+528"/>
+        <location line="+5"/>
+        <location line="+514"/>
         <source>Chart Edit</source>
         <translation>Chart Edit</translation>
     </message>
     <message>
-        <location line="-530"/>
+        <location line="-516"/>
         <source>Chart Setting</source>
         <translation>Chart Setting</translation>
     </message>
@@ -3952,12 +3819,12 @@ Layouts</source>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+537"/>
+        <location line="+523"/>
         <source>Select Tool</source>
         <translation>Select Tool</translation>
     </message>
     <message>
-        <location line="-536"/>
+        <location line="-522"/>
         <source>Chart Assist Tool</source>
         <translation>Chart Assist Tool</translation>
     </message>
@@ -3978,8 +3845,8 @@ Layouts</source>
         <translation>Export Workflow Graphics Scene To Image</translation>
     </message>
     <message>
-        <location line="-21"/>
-        <location line="+328"/>
+        <location line="-15"/>
+        <location line="+311"/>
         <source>Stats Plot</source>
         <translation>Stats Plot</translation>
     </message>
@@ -3994,29 +3861,29 @@ Layouts</source>
         <translation>Workflow View</translation>
     </message>
     <message>
-        <location line="-459"/>
-        <location line="+495"/>
+        <location line="-441"/>
+        <location line="+477"/>
         <source>Export</source>
         <translation>Export</translation>
     </message>
     <message>
-        <location line="+26"/>
+        <location line="+27"/>
         <source>Chart Operate</source>
         <translation>Chart Operate</translation>
     </message>
     <message>
-        <location line="-513"/>
-        <location line="+554"/>
+        <location line="-497"/>
+        <location line="+539"/>
         <source>Theme</source>
         <translation>Theme</translation>
     </message>
     <message>
-        <location line="+33"/>
+        <location line="+29"/>
         <source>Assist Tools</source>
         <translation>Assist Tools</translation>
     </message>
     <message>
-        <location line="+74"/>
+        <location line="+22"/>
         <source>Recent Files</source>
         <translation>Recent Files</translation>
     </message>
@@ -6096,7 +5963,7 @@ Layouts</source>
 <context>
     <name>DA::DAChartAxisSettingPanel</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartAxisSettingPanel.cpp" line="+187"/>
+        <location filename="../DAGui/ChartSetting/DAChartAxisSettingPanel.cpp" line="+191"/>
         <source>Enable</source>
         <translation>Enable</translation>
     </message>
@@ -6156,7 +6023,12 @@ Layouts</source>
         <translation>Max Scale</translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location line="+3"/>
+        <source>Ticks Inside</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
         <source>Normal</source>
         <translation>Normal</translation>
     </message>
@@ -8700,7 +8572,7 @@ Layouts</source>
 <context>
     <name>DA::DADataManagerTreeModel</name>
     <message>
-        <location filename="../DAGui/Models/DADataManagerTreeModel.cpp" line="+282"/>
+        <location filename="../DAGui/Models/DADataManagerTreeModel.cpp" line="+289"/>
         <location line="+2"/>
         <location line="+87"/>
         <location line="+3"/>
@@ -8716,11 +8588,21 @@ Layouts</source>
         <source>Properties</source>
         <translation>Properties</translation>
     </message>
+    <message>
+        <location line="+117"/>
+        <source>The dataset name cannot be empty</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>The dataset name &quot;%1&quot; already exists</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>DA::DADataManagerTreeWidget</name>
     <message>
-        <location filename="../DAGui/DADataManagerTreeWidget.cpp" line="+423"/>
+        <location filename="../DAGui/DADataManagerTreeWidget.cpp" line="+438"/>
         <source>Search...</source>
         <translation>Search...</translation>
     </message>
@@ -9213,12 +9095,12 @@ Layouts</source>
 <context>
     <name>DA::DAFigureWidget</name>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="+147"/>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="+148"/>
         <source>Unexpected plotting operation: a chart that does not belong to the DAChartWidget type was added to the figure</source>
         <translation>Unexpected plotting operation: a chart that does not belong to the DAChartWidget type was added to the figure</translation>
     </message>
     <message>
-        <location line="+1142"/>
+        <location line="+1188"/>
         <source>Unsupported chart editor type: %1</source>
         <translation>Unsupported chart editor type: %1</translation>
     </message>
@@ -9268,6 +9150,119 @@ Layouts</source>
         <location line="+11"/>
         <source>Text</source>
         <translation>Text</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DALayoutManagerDialog</name>
+    <message>
+        <location filename="../APP/Dialog/DALayoutManagerDialog.cpp" line="+24"/>
+        <source>Layout Manager</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+21"/>
+        <source>Double-click a scheme to apply it</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Save Current</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Apply Selected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Delete Selected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Reset Default</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Save the current window layout as a named scheme</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Apply the selected layout scheme</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Delete the selected custom layout scheme (presets cannot be deleted)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Restore the default window layout</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Close</source>
+        <translation>Close</translation>
+    </message>
+    <message>
+        <location line="+26"/>
+        <source>Default</source>
+        <translation type="unfinished">Default</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Focus Analysis</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+41"/>
+        <source>Save Layout</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Layout scheme name:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Cannot overwrite preset layout schemes, please use another name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Layout scheme &apos;%1&apos; saved</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+33"/>
+        <source>Remove Layout</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Remove layout scheme &apos;%1&apos;?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+21"/>
+        <source>Reset Layout</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>This will restore the default window layout. Continue?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-15"/>
+        <source>Layout scheme &apos;%1&apos; removed</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -9752,7 +9747,7 @@ Layouts</source>
 <context>
     <name>DA::DAProviderEditDialog</name>
     <message>
-        <location filename="../APP/Dialog/DAProviderEditDialog.cpp" line="+47"/>
+        <location filename="../APP/Dialog/DAProviderEditDialog.cpp" line="+48"/>
         <source>Provider</source>
         <translation>Provider</translation>
     </message>
@@ -9827,7 +9822,7 @@ Layouts</source>
         <translation>Cancel</translation>
     </message>
     <message>
-        <location line="+60"/>
+        <location line="+53"/>
         <source>Base URL is required to fetch models</source>
         <translation>Base URL is required to fetch models</translation>
     </message>
@@ -10950,7 +10945,7 @@ Layouts</source>
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-1489"/>
+        <location filename="../APP/DAAppController.cpp" line="-1487"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>
@@ -12976,7 +12971,7 @@ Layouts</source>
 <context>
     <name>DAFigureWidget</name>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="-1202"/>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="-1248"/>
         <source>Figure</source>
         <translation>Figure</translation>
     </message>
@@ -14918,7 +14913,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>unknown exception: get null figure widget at %1</translation>
     </message>
     <message>
-        <location line="+989"/>
+        <location line="+998"/>
         <source>The attribute %1=%2 under the tag %3 cannot be converted to double</source>
         <translation>The attribute %1=%2 under the tag %3 cannot be converted to double</translation>
     </message>
@@ -14983,7 +14978,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>cannot create archive at &quot;%1&quot;, because %2</translation>
     </message>
     <message>
-        <location filename="../DAGui/Models/DADataManagerTreeModel.cpp" line="-314"/>
+        <location filename="../DAGui/Models/DADataManagerTreeModel.cpp" line="-440"/>
         <source>%1.%2,size:%3</source>
         <translation>%1.%2,size:%3</translation>
     </message>
@@ -15314,7 +15309,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>Cross Line Marker</translation>
     </message>
     <message>
-        <location filename="../DAFigure/DAChartUtil.cpp" line="+47"/>
+        <location filename="../DAFigure/DAChartUtil.cpp" line="+48"/>
         <source>unknown chart</source>
         <translation>unknown chart</translation>
     </message>
@@ -15411,11 +15406,12 @@ If a column name contains spaces or special characters, enclose it in backticks 
     </message>
     <message>
         <location line="+3"/>
+        <location line="+18"/>
         <source>text-%1</source>
         <translation>text-%1</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="-15"/>
         <source>zone-%1</source>
         <translation>zone-%1</translation>
     </message>
@@ -15440,7 +15436,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>probe-%1</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+7"/>
         <source>unknown-%1</source>
         <translation>unknown-%1</translation>
     </message>
@@ -15733,7 +15729,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>Failed to initialize script runner: %1</translation>
     </message>
     <message>
-        <location filename="../DAFigure/DAChartTextEditorPopup.cpp" line="+78"/>
+        <location filename="../DAFigure/DAChartTextEditorPopup.cpp" line="+80"/>
         <source>Text Background Color</source>
         <translation type="unfinished"></translation>
     </message>

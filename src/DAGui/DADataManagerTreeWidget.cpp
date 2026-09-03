@@ -5,6 +5,7 @@
 #include <QCompleter>
 #include <QStringListModel>
 #include <QItemSelectionModel>
+#include <QHeaderView>
 // stl
 #include <algorithm>
 // DA
@@ -41,14 +42,20 @@ void DADataManagerTreeWidget::PrivateData::init()
     // 创建模型和代理模型
     model = new DADataManagerTreeModel(q_ptr);
     model->setExpandDataframeToSeries(true);
-    // 数据集重命名：启用模型编辑位 + 视图编辑触发（双击/选中回车）
+    // 数据集重命名：启用模型编辑位，编辑经 F2 / ribbon 重命名按钮 / 右键菜单触发
+    // （双击保留给"打开数据窗口"，避免双击同时触发编辑）
     model->setEnableEdit(true);
+    // 属性列：名称+属性两列，dataframe 显示尺寸（行x列），series 留空
+    model->setColumnStyle(DADataManagerTreeModel::ColumnWithNameProperty);
     proxyModel = new DADataManagerTreeFilterProxyModel(q_ptr);
     proxyModel->setSourceModel(model);
     ui->treeView->setModel(proxyModel);
-    ui->treeView->setEditTriggers(QAbstractItemView::DoubleClicked | QAbstractItemView::EditKeyPressed);
-    //  设置列宽
-    ui->treeView->header()->setStretchLastSection(true);
+    ui->treeView->setEditTriggers(QAbstractItemView::EditKeyPressed);
+    //  设置列宽：名称列伸展占满剩余空间，属性列随内容自适应（表头隐藏）
+    QHeaderView* header = ui->treeView->header();
+    header->setStretchLastSection(false);
+    header->setSectionResizeMode(0, QHeaderView::Stretch);
+    header->setSectionResizeMode(1, QHeaderView::ResizeToContents);
     ui->treeView->setDragEnabled(true);                          // 启用拖曳
     ui->treeView->setAcceptDrops(false);                         // 树本身不接收拖放
     ui->treeView->setDragDropMode(QAbstractItemView::DragOnly);  // 只允许拖曳，不允许放置
@@ -85,6 +92,10 @@ QStandardItem* DADataManagerTreeWidget::PrivateData::getCurrentSelectItem() cons
     auto index                      = ui->treeView->currentIndex();
     if (!index.isValid()) {
         return nullptr;
+    }
+    // 属性列（第二列）选中时映射回名称列
+    if (index.column() != 0) {
+        index = index.siblingAtColumn(0);
     }
     index = proxyModel->mapToSource(index);
     return model->itemFromIndex(index);
@@ -348,9 +359,11 @@ void DADataManagerTreeWidget::onTreeViewDoubleClicked(const QModelIndex& index)
 {
 
     DA_D(d);
-    if (index.parent().isValid()) {
+    // 属性列（第二列）双击等同于名称列双击
+    QModelIndex proxyIndex = (index.column() == 0) ? index : index.siblingAtColumn(0);
+    if (proxyIndex.parent().isValid()) {
         // 子节点双击
-        const QModelIndex srcIndex = d->proxyModel->mapToSource(index);
+        const QModelIndex srcIndex = d->proxyModel->mapToSource(proxyIndex);
         QStandardItem* item        = d->model->itemFromIndex(srcIndex);
         if (item) {
             DAData data = DADataManagerTreeModel::itemToData(item);
@@ -361,7 +374,7 @@ void DADataManagerTreeWidget::onTreeViewDoubleClicked(const QModelIndex& index)
         return;
     } else {
         // 根节点双击不处理
-        const QModelIndex srcIndex = d->proxyModel->mapToSource(index);
+        const QModelIndex srcIndex = d->proxyModel->mapToSource(proxyIndex);
         QStandardItem* item        = d->model->itemFromIndex(srcIndex);
         if (item) {
             DAData data = DADataManagerTreeModel::itemToData(item);
@@ -380,11 +393,13 @@ void DADataManagerTreeWidget::onTreeViewDoubleClicked(const QModelIndex& index)
  */
 void DADataManagerTreeWidget::onTreeViewClicked(const QModelIndex& index)
 {
-    if (!index.parent().isValid()) {
+    // 属性列（第二列）点击等同于名称列点击
+    QModelIndex proxyIndex = (index.column() == 0) ? index : index.siblingAtColumn(0);
+    if (!proxyIndex.parent().isValid()) {
         return;
     }
     DA_D(d);
-    const QModelIndex srcIndex = d->proxyModel->mapToSource(index);
+    const QModelIndex srcIndex = d->proxyModel->mapToSource(proxyIndex);
     QStandardItem* item        = d->model->itemFromIndex(srcIndex);
     if (!item) {
         return;

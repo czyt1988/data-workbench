@@ -103,8 +103,8 @@ public:
      */
     enum ColumnStyle
     {
-        ColumnWithNameOnly = 1,  ///< 只有一列名字，默认
-        ColumnWithNameProperty   ///< 名称和属性两列（TODO）
+        ColumnWithNameOnly     = 1,  ///< 只有一列名字，默认
+        ColumnWithNameProperty      ///< 名称和属性两列（属性列：dataframe显示尺寸，series留空）
     };
 
     /**

@@ -10,6 +10,8 @@
 #include "DACommandsDataManager.h"
 #include "MimeData/DAMimeDataForData.h"
 #include "MimeData/DAMimeDataFormats.h"
+// DAMessageHandler
+#include "DALogCategory.h"
 // Py
 #include "pandas/DAPyDataFrame.h"
 #include "DAPybind11QtCaster.hpp"
@@ -39,6 +41,11 @@ QVariant DAStandardItemDataDataframe::data(int role) const
     case DADataManagerTreeModel::RoleDataId: {
         return QVariant(static_cast< qulonglong >(mDataframe.id()));
     }
+    case Qt::EditRole: {
+        // 重命名编辑器预填当前名称：QStandardItem 的 EditRole 回退到 item 自身存储的
+        // DisplayRole 数据，而显示名是经 data() 动态计算的，这里需显式返回数据集名
+        return mDataframe.getName();
+    } break;
     default:
         break;
     }
@@ -480,6 +487,13 @@ Qt::ItemFlags DADataManagerTreeModel::flags(const QModelIndex& index) const
 
     if (!d_ptr->enableEdit) {
         flags &= ~Qt::ItemIsEditable;
+    } else if (index.isValid() && index.column() == 0 && !index.parent().isValid()) {
+        // 顶层数据集条目允许编辑（用于重命名）。
+        // 数据项构造时默认 setEditable(false)（见 DAStandardItemDataDataframe 构造），
+        // 因此必须在启用编辑时显式恢复 Qt::ItemIsEditable，否则
+        // QAbstractItemView::edit（ribbon 重命名按钮 / F2）会因 flags 缺少
+        // 编辑位而被 shouldEdit 拒绝，表现为点击无任何反应
+        flags |= Qt::ItemIsEditable;
     }
     // 只有第一列可编辑（用于重命名）
     if (index.column() != 0) {
@@ -512,28 +526,22 @@ QVariant DADataManagerTreeModel::data(const QModelIndex& index, int role) const
         return QStandardItemModel::data(index, role);
     }
 
-    // 第二列显示属性（只有显示角色）
+    // 属性列（第二列）：dataframe 显示尺寸（行x列），series 条目留空
     if (index.column() == 1 && role == Qt::DisplayRole) {
         QStandardItem* item = itemFromIndex(index.siblingAtColumn(0));
-        if (!item) {
+        if (!item || isDataframeSeriesItem(item)) {
+            // series 子项属性列留空
             return QVariant();
         }
 
         DAData data = itemToData(item);
-        if (data.isNull()) {
+        if (data.isNull() || !data.isDataFrame()) {
             return QVariant();
         }
-
-        if (data.isDataFrame()) {
-            DAPyDataFrame df = data.toDataFrame();
-            if (!df.isNone()) {
-                auto shape = df.shape();
-                return QString("[%1 × %2]").arg(shape.first).arg(shape.second);
-            }
-        } else if (data.isSeries()) {
-            DAPySeries series = data.toSeries();
-            DAPyDType dtype   = series.dtypeObject();
-            return dtype.name();
+        DAPyDataFrame df = data.toDataFrame();
+        if (!df.isNone()) {
+            auto shape = df.shape();
+            return QString("[%1 × %2]").arg(shape.first).arg(shape.second);
         }
     }
 
@@ -561,9 +569,8 @@ bool DADataManagerTreeModel::isEnableEdit() const
 /**
  * @brief 编辑提交（重命名数据集）
  *
- * 第一列 EditRole：取该 item 对应的 DAData 落 setName，同步 item 文本；
- * 重名冲突由 DADataManager 层约束（重名时 setName 后 itemToData 检索按名称可能失效，
- * 这里直接拒绝与现有名称重复的重命名，保证树检索一致性）
+ * 第一列 EditRole：取该 item 对应的 DAData 落 setName，同步刷新显示；
+ * 空名/重名拒绝并给出提示（daWarning 进 UI 消息队列）
  * @param index
  * @param value 新名称
  * @param role
@@ -586,17 +593,23 @@ bool DADataManagerTreeModel::setData(const QModelIndex& index, const QVariant& v
         return false;
     }
     QString newName = value.toString().trimmed();
-    if (newName.isEmpty() || newName == data.getName()) {
+    if (newName.isEmpty()) {
+        daWarning << tr("The dataset name cannot be empty");  // cn:数据集名称不能为空
         return false;
+    }
+    if (newName == data.getName()) {
+        // 名称未变化，视为成功（关闭编辑器）
+        return true;
     }
     // 拒绝与现有数据集重名（树/选择器按名称检索）
     if (getAllDataframeNames().contains(newName)) {
+        daWarning << tr("The dataset name \"%1\" already exists").arg(newName);  // cn:数据集名称"%1"已存在
         return false;
     }
     data.setName(newName);
-    // 同步 item 显示文本（QStandardItem::setText 会触发 dataChanged）
-    item->setText(newName);
-    Q_EMIT dataChanged(index, index, { role });
+    // DAData::setName 会经 DataManager 的 ChangeName 通知刷新第一列显示，
+    // 这里补发一次整行 DisplayRole 刷新，同时覆盖属性列
+    Q_EMIT dataChanged(index, index.siblingAtColumn(columnCount() - 1), { Qt::DisplayRole });
     return true;
 }
 
@@ -685,10 +698,15 @@ void DADataManagerTreeModel::updateDataItem(const DAData& data, DADataManager::C
         Q_EMIT dataChanged(item->index(), item->index(), { Qt::DisplayRole });
         break;
     case DADataManager::ChangeDataframeColumnName:
-        // 如果是DataFrame，更新展开状态
+        // 如果是DataFrame，更新展开状态；列数变化会影响属性列的尺寸显示，刷新整行
         if (data.isDataFrame()) {
             updateDataFrameItemExpansion(item, d_ptr->expandDataframeToSeries);
+            Q_EMIT dataChanged(item->index(), item->index().siblingAtColumn(columnCount() - 1), { Qt::DisplayRole });
         }
+        break;
+    case DADataManager::ChangeValue:
+        // 数据内容变化可能改变尺寸，刷新整行（含属性列）
+        Q_EMIT dataChanged(item->index(), item->index().siblingAtColumn(columnCount() - 1), { Qt::DisplayRole });
         break;
     case DADataManager::ChangeDescribe:
         // 更新工具提示

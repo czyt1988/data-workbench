@@ -501,8 +501,9 @@ private:
     void initPyWorkflowConnections();
     // 为 DataFrame 操作窗口的表头注入右键菜单
     void setupDataFrameHeaderContextMenu(DADataOperateOfDataFrameWidget* w);
-    // 为数据管理树的 series 节点注入右键菜单（与表头右键共用 action）
-    void setupDataManagerTreeSeriesContextMenu(DADataManagerTreeWidget* w);
+    // 为数据管理树注入右键菜单（series 节点=列操作菜单，共用表头右键 action；
+    // 数据集条目=重命名/移除/导出菜单，复用 ribbon 数据标签页 action）
+    void setupDataManagerTreeContextMenu(DADataManagerTreeWidget* w);
     // 填充共用的列右键菜单项（表头右键与树右键共用）
     void populateColumnContextMenu(QMenu& menu);
     // 在 DataFrame 操作窗口中选中指定列（replace 语义，供表头/树右键共用）

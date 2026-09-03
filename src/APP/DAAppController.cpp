@@ -330,10 +330,11 @@ void DAAppController::initialize()
     initConnection();
     initScripts();
     initPyWorkflowConnections();
-    // 数据管理树的 series 节点右键菜单（与 DataFrame 表头右键共用 action）
+    // 数据管理树右键菜单：series 节点=列操作菜单（与表头右键共用 action）；
+    // 数据集条目=重命名/移除/导出菜单（复用 ribbon 数据标签页 action）
     if (DADataManageWidget* dmw = getDataManageWidget()) {
         if (DADataManagerTreeWidget* tree = dmw->getTreeWidget()) {
-            setupDataManagerTreeSeriesContextMenu(tree);
+            setupDataManagerTreeContextMenu(tree);
         }
     }
 
@@ -2056,6 +2057,11 @@ void DAAppController::onActionRenameDataTriggered()
     if (!tree) {
         return;
     }
+    if (tree->isSelectDataframeSeries()) {
+        // series 子项不支持重命名（模型 flags 已限制其编辑位）
+        daWarning << tr("Cannot rename a series, please select a dataset");  // cn:无法重命名series，请选中数据集
+        return;
+    }
     QTreeView* tv = tree->getTreeView();
     if (!tv) {
         return;
@@ -2065,9 +2071,13 @@ void DAAppController::onActionRenameDataTriggered()
         daWarning << tr("Please select a dataset to rename");  // cn:请先选中要重命名的数据集
         return;
     }
-    // Series 子项不可编辑（模型 flags 已限制），非数据项编辑提交会被 setData 拒绝
-    tv->edit(cur);
+    // 属性列（第二列）选中时映射回名称列
+    if (cur.column() != 0) {
+        cur = cur.siblingAtColumn(0);
+    }
+    // 先确保数据管理窗口在前端，再进入编辑
     mDock->raiseDockByWidget((QWidget*)(dmw));
+    tv->edit(cur);
 }
 
 /**
@@ -3219,14 +3229,18 @@ void DAAppController::setupDataFrameHeaderContextMenu(DADataOperateOfDataFrameWi
 }
 
 /**
- * @brief 为数据管理树的 series 节点注入右键菜单（与表头右键共用 action）
+ * @brief 为数据管理树注入右键菜单
  *
- * 右键 series 节点时：取 DAData + seriesName → 列名转列索引 →
- * 找到（或打开）对应的 DataFrame 操作窗口 → 选中该列 → 弹出与表头右键相同的菜单。
- * 槽函数无需改动，依赖 getCurrentDataFrameOperateWidget + getSelectedOneDataframeColumn。
+ * - series 节点：取 DAData + seriesName → 列名转列索引 → 找到（或打开）对应的
+ *   DataFrame 操作窗口 → 选中该列 → 弹出与表头右键相同的菜单（共用列操作 action）。
+ * - 数据集（dataframe）条目：右键先选中该条目（rename 槽基于树 currentIndex，
+ *   remove/export 槽基于树选中集），再弹出「重命名 / 移除数据 / 导出」菜单，
+ *   菜单项全部复用 ribbon 数据标签页已有 action（重命名=actionRenameData，
+ *   移除=actionRemoveData，导出子菜单=actionExportData{Csv,Excel,Pickle,Parquet}）。
+ * - 属性列（第二列）上的点击统一映射回名称列。
  * @param w 数据管理树窗口
  */
-void DAAppController::setupDataManagerTreeSeriesContextMenu(DADataManagerTreeWidget* w)
+void DAAppController::setupDataManagerTreeContextMenu(DADataManagerTreeWidget* w)
 {
     if (!w) {
         return;
@@ -3241,42 +3255,66 @@ void DAAppController::setupDataManagerTreeSeriesContextMenu(DADataManagerTreeWid
         if (!proxyIndex.isValid()) {
             return;
         }
+        // 属性列（第二列）条目映射回名称列
+        if (proxyIndex.column() != 0) {
+            proxyIndex = proxyIndex.siblingAtColumn(0);
+        }
         // 映射到 source model
         DADataManagerTreeFilterProxyModel* proxy = w->getProxyModel();
         QModelIndex srcIndex                     = proxy ? proxy->mapToSource(proxyIndex) : proxyIndex;
         QStandardItem* item                      = w->getModel()->itemFromIndex(srcIndex);
-        if (!item || !DADataManagerTreeModel::isDataframeSeriesItem(item)) {
+        if (!item) {
             return;
         }
-        DAData data = DADataManagerTreeModel::itemToData(item);
-        if (!data.isDataFrame()) {
+        if (DADataManagerTreeModel::isDataframeSeriesItem(item)) {
+            // ---- series 节点：与表头右键一致的列操作菜单 ----
+            DAData data = DADataManagerTreeModel::itemToData(item);
+            if (!data.isDataFrame()) {
+                return;
+            }
+            QString seriesName = item->text();
+            DAPyDataFrame df   = data.toDataFrame();
+            if (df.isNone()) {
+                return;
+            }
+            // 列名 → 列索引
+            QList< QString > cols = df.columns();
+            int col               = cols.indexOf(seriesName);
+            if (col < 0) {
+                return;
+            }
+            // 查找已打开的 DataFrame 窗口，没有则打开
+            DADataOperateOfDataFrameWidget* dfopt = getDataOperateWidget()->findDataFrameWidget(data);
+            if (!dfopt) {
+                getDataOperateWidget()->showData(data);
+                dfopt = getDataOperateWidget()->findDataFrameWidget(data);
+            }
+            if (!dfopt) {
+                return;
+            }
+            // 选中该列，槽函数通过 getSelectedOneDataframeColumn 取列
+            selectColumnInDataFrameWidget(dfopt, col);
+            // 弹出共用菜单
+            QMenu menu(w);
+            populateColumnContextMenu(menu);
+            menu.exec(tv->viewport()->mapToGlobal(pos));
             return;
         }
-        QString seriesName = item->text();
-        DAPyDataFrame df   = data.toDataFrame();
-        if (df.isNone()) {
+        if (!DADataManagerTreeModel::isDataframeItem(item)) {
             return;
         }
-        // 列名 → 列索引
-        QList< QString > cols = df.columns();
-        int col               = cols.indexOf(seriesName);
-        if (col < 0) {
-            return;
-        }
-        // 查找已打开的 DataFrame 窗口，没有则打开
-        DADataOperateOfDataFrameWidget* dfopt = getDataOperateWidget()->findDataFrameWidget(data);
-        if (!dfopt) {
-            getDataOperateWidget()->showData(data);
-            dfopt = getDataOperateWidget()->findDataFrameWidget(data);
-        }
-        if (!dfopt) {
-            return;
-        }
-        // 选中该列，槽函数通过 getSelectedOneDataframeColumn 取列
-        selectColumnInDataFrameWidget(dfopt, col);
-        // 弹出共用菜单
+        // ---- 数据集（dataframe）条目：重命名 / 移除数据 / 导出（复用 ribbon action）----
+        // 右键先选中该条目，保证后续槽函数操作的就是此条目
+        tv->setCurrentIndex(proxyIndex);
         QMenu menu(w);
-        populateColumnContextMenu(menu);
+        menu.addAction(mActions->actionRenameData);
+        menu.addAction(mActions->actionRemoveData);
+        QMenu* exportMenu = menu.addMenu(tr("Export"));  // cn:导出
+        exportMenu->setIcon(mActions->actionExportData->icon());
+        exportMenu->addAction(mActions->actionExportDataCsv);
+        exportMenu->addAction(mActions->actionExportDataExcel);
+        exportMenu->addAction(mActions->actionExportDataPickle);
+        exportMenu->addAction(mActions->actionExportDataParquet);
         menu.exec(tv->viewport()->mapToGlobal(pos));
     });
 }

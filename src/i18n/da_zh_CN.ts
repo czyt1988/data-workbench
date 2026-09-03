@@ -184,7 +184,7 @@
         <translation>解析 agent 标准输出的 JSON 行失败：%1，错误：%2</translation>
     </message>
     <message>
-        <location line="+435"/>
+        <location line="+442"/>
         <source>Failed to parse trailing JSON line from agent stdout: %1, error: %2</source>
         <translation>解析 agent 标准输出的末尾 JSON 行失败：%1，错误：%2</translation>
     </message>
@@ -705,7 +705,12 @@
 <context>
     <name>DA::DAAgentModule</name>
     <message>
-        <location filename="../DAAgent/DAAgentModule.cpp" line="+354"/>
+        <location filename="../DAAgent/DAAgentModule.cpp" line="+160"/>
+        <source>The agent ended this turn after %1 tool calls, but its last message looks like an unfinished plan (e.g. announcing a next step without executing it). Send a message such as &quot;continue&quot; to let it finish.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+134"/>
         <source>Agent system prompt file is empty, fallback to built-in default: %1</source>
         <translation>Agent 系统提示词文件为空，回退到内置默认提示词：%1</translation>
     </message>
@@ -721,12 +726,12 @@
     </message>
     <message>
         <location line="+2"/>
-        <location line="+987"/>
+        <location line="+732"/>
         <source>LLM is not configured. Please configure LLM in settings first.</source>
         <translation>LLM 未配置，请先在设置中配置 LLM</translation>
     </message>
     <message>
-        <location line="-976"/>
+        <location line="-721"/>
         <source>Cannot find Python interpreter path, please configure it in settings</source>
         <translation>无法找到 Python 解释器路径，请在设置页配置 Python 解释器</translation>
     </message>
@@ -736,7 +741,7 @@
         <translation>无法找到 agent_runner.py 路径: %1</translation>
     </message>
     <message>
-        <location line="+970"/>
+        <location line="+715"/>
         <source>LLM is not configured, skip agent analysis. Please configure LLM in settings first.</source>
         <translation>LLM 未配置，跳过 Agent 分析，请先在设置中配置 LLM</translation>
     </message>
@@ -744,7 +749,7 @@
 <context>
     <name>DA::DAAgentPermissionSettingsWidget</name>
     <message>
-        <location filename="../APP/SettingPages/DAAgentPermissionSettingsWidget.cpp" line="+135"/>
+        <location filename="../APP/SettingPages/DAAgentPermissionSettingsWidget.cpp" line="+116"/>
         <source>Default Permission Mode</source>
         <translation>默认权限模式</translation>
     </message>
@@ -910,7 +915,7 @@
 <context>
     <name>DA::DAAgentSettingsWidget</name>
     <message>
-        <location filename="../APP/SettingPages/DAAgentSettingsWidget.cpp" line="+181"/>
+        <location filename="../APP/SettingPages/DAAgentSettingsWidget.cpp" line="+152"/>
         <location line="+5"/>
         <source> s</source>
         <translation>秒</translation>
@@ -929,12 +934,12 @@
     <message>
         <location line="-12"/>
         <location line="+6"/>
-        <location line="+18"/>
+        <location line="+35"/>
         <source> sec</source>
         <translation>秒</translation>
     </message>
     <message>
-        <location line="-117"/>
+        <location line="-134"/>
         <source>Base URL</source>
         <translation>基础地址</translation>
     </message>
@@ -944,7 +949,29 @@
         <translation>API 密钥</translation>
     </message>
     <message>
-        <location line="+128"/>
+        <location line="+112"/>
+        <location line="+6"/>
+        <location line="+21"/>
+        <source>No limit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-26"/>
+        <source>Max graph reasoning steps per turn (each tool-call cycle consumes 3 steps). Check &apos;No limit&apos; to disable. Recommended: 150.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Unlimited reasoning steps per turn. Loop protection still applies: repeated identical tool calls are terminated automatically.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+21"/>
+        <source>Max reasoning steps for each subagent task. Set to -1 for no limit. Recommended: 60.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
         <source>Ready Timeout</source>
         <translation>就绪超时</translation>
     </message>
@@ -954,7 +981,7 @@
         <translation>停止超时</translation>
     </message>
     <message>
-        <location line="-166"/>
+        <location line="-185"/>
         <source>Add Provider</source>
         <translation>新增供应商</translation>
     </message>
@@ -1064,22 +1091,12 @@
         <translation>子进程崩溃后自动重启最大次数。0 不重启。建议 3。</translation>
     </message>
     <message>
-        <location line="+5"/>
-        <source>Max graph reasoning steps. Each tool-call cycle consumes 3 steps. Recommended: 150.</source>
-        <translation>图最大推理步数。每轮工具调用耗 3 步。建议 150。</translation>
-    </message>
-    <message>
-        <location line="+7"/>
+        <location line="+29"/>
         <source>Wall-clock timeout (seconds) for each subagent task. Waiting for approval counts towards this limit. Recommended: 600.</source>
         <translation>单个子 Agent 任务的墙钟超时(秒)。等待用户批准也计入该时限。建议 600。</translation>
     </message>
     <message>
-        <location line="+4"/>
-        <source>Max reasoning steps for each subagent task. Recommended: 60.</source>
-        <translation>单个子 Agent 任务的最大推理步数。建议 60。</translation>
-    </message>
-    <message>
-        <location line="+4"/>
+        <location line="+10"/>
         <source>Prestart the agent subprocess on launch. Disable to save memory.</source>
         <translation>启动时预启动 agent 子进程。关闭可节省内存。</translation>
     </message>
@@ -1134,12 +1151,12 @@
         <translation>最大进程重启次数</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+8"/>
         <source>Reasoning iteration limit</source>
         <translation>推理迭代上限</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Subagent Timeout</source>
         <translation>子 Agent 超时</translation>
     </message>
@@ -1164,7 +1181,7 @@
         <translation>（未命名）</translation>
     </message>
     <message>
-        <location line="+21"/>
+        <location line="+20"/>
         <source>not set</source>
         <translation>未设置</translation>
     </message>
@@ -1287,7 +1304,7 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="../APP/DAAppActions.cpp" line="+414"/>
+        <location filename="../APP/DAAppActions.cpp" line="+416"/>
         <source>Open</source>
         <translation>打开</translation>
     </message>
@@ -1741,7 +1758,7 @@ All</source>
         <translation>图例</translation>
     </message>
     <message>
-        <location line="+52"/>
+        <location line="+55"/>
         <source>To Numeric</source>
         <translation>转换为数值类型</translation>
     </message>
@@ -1776,7 +1793,7 @@ All</source>
         <translation>信息窗口</translation>
     </message>
     <message>
-        <location line="-134"/>
+        <location line="-137"/>
         <source>Enable or disable legend in the chart</source>
         <translation>启用或禁用图表中的图例</translation>
     </message>
@@ -2729,7 +2746,7 @@ Layouts</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+740"/>
+        <location filename="../APP/DAAppController.cpp" line="+739"/>
         <source>Save Project</source>
         <translation>保存工程</translation>
     </message>
@@ -2766,17 +2783,7 @@ Layouts</source>
         <translation>图片保存失败：%1</translation>
     </message>
     <message>
-        <location line="+129"/>
-        <source>Default</source>
-        <translation>默认布局</translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Focus Analysis</source>
-        <translation>专注分析</translation>
-    </message>
-    <message>
-        <location line="+34"/>
+        <location line="+110"/>
         <source>Reset Layout</source>
         <translation>恢复默认布局</translation>
     </message>
@@ -2786,12 +2793,12 @@ Layouts</source>
         <translation>将恢复默认窗口布局，是否继续？</translation>
     </message>
     <message>
-        <location line="+325"/>
+        <location line="+383"/>
         <source>Please select a dataset to rename</source>
         <translation>请先选中要重命名的数据集</translation>
     </message>
     <message>
-        <location line="+55"/>
+        <location line="+59"/>
         <source>Please select a dataset to export</source>
         <translation>请先选中要导出的数据</translation>
     </message>
@@ -2841,7 +2848,7 @@ Layouts</source>
         <translation>在创建一个坐标系之前，需要先创建一个绘图窗口</translation>
     </message>
     <message>
-        <location line="-1559"/>
+        <location line="-1489"/>
         <source>Please select the data operation window</source>
         <translation>请选中数据操作窗口</translation>
     </message>
@@ -2951,17 +2958,22 @@ Layouts</source>
         <translation>深色2</translation>
     </message>
     <message>
-        <location line="+177"/>
+        <location line="+96"/>
         <source>No cells selected to copy</source>
         <translation>没有选中可复制的单元格</translation>
     </message>
     <message>
-        <location line="+514"/>
+        <location line="+321"/>
+        <source>Cannot rename a series, please select a dataset</source>
+        <translation>无法重命名series，请选中数据集</translation>
+    </message>
+    <message>
+        <location line="+204"/>
         <source>Figure &apos;%1&apos; not found, it may have been closed or renamed</source>
         <translation>未找到绘图&quot;%1&quot;，可能已关闭或被重命名</translation>
     </message>
     <message>
-        <location line="+870"/>
+        <location line="+731"/>
         <source>Rename Column</source>
         <translation>重命名此列</translation>
     </message>
@@ -3001,7 +3013,12 @@ Layouts</source>
         <translation>列[%1] 最小值位于第 %2 行</translation>
     </message>
     <message>
-        <location line="+315"/>
+        <location line="+187"/>
+        <source>Export</source>
+        <translation>导出</translation>
+    </message>
+    <message>
+        <location line="+156"/>
         <source>New workflow name</source>
         <translation>新工作流名称</translation>
     </message>
@@ -3038,7 +3055,7 @@ Layouts</source>
         <translation>选中的数据源为空</translation>
     </message>
     <message>
-        <location line="-2359"/>
+        <location line="-2178"/>
         <source>Before running the workflow, you need to save the project</source>
         <translation>在运行工作流之前，需要先保存工程</translation>
     </message>
@@ -3144,130 +3161,17 @@ Layouts</source>
     <message>
         <location filename="../APP/DAAppLayoutManager.cpp" line="+93"/>
         <source>Layout scheme &apos;%1&apos; not found</source>
-        <translation>未找到布局方案"%1"</translation>
+        <translation>未找到布局方案&quot;%1&quot;</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Failed to restore layout scheme &apos;%1&apos;, it may be saved by an incompatible version</source>
-        <translation>布局方案"%1"恢复失败，可能由不兼容的版本保存</translation>
+        <translation>布局方案&quot;%1&quot;恢复失败，可能由不兼容的版本保存</translation>
     </message>
     <message>
         <location line="+14"/>
         <source>Preset layout schemes cannot be removed</source>
         <translation>预置布局方案不可删除</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DALayoutManagerDialog</name>
-    <message>
-        <location filename="../APP/Dialog/DALayoutManagerDialog.cpp" line="+17"/>
-        <source>Layout Manager</source>
-        <translation>布局管理</translation>
-    </message>
-    <message>
-        <location line="+22"/>
-        <source>Double-click a scheme to apply it</source>
-        <translation>双击方案可直接应用</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>Save Current</source>
-        <translation>保存当前布局</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Apply Selected</source>
-        <translation>应用选中布局</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Delete Selected</source>
-        <translation>删除选中布局</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Reset Default</source>
-        <translation>恢复默认布局</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>Save the current window layout as a named scheme</source>
-        <translation>把当前窗口布局保存为命名方案</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Apply the selected layout scheme</source>
-        <translation>应用选中的布局方案</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Delete the selected custom layout scheme (presets cannot be deleted)</source>
-        <translation>删除选中的自定义布局方案（预置方案不可删除）</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Restore the default window layout</source>
-        <translation>恢复默认窗口布局</translation>
-    </message>
-    <message>
-        <location line="+11"/>
-        <source>Close</source>
-        <translation>关闭</translation>
-    </message>
-    <message>
-        <location line="+41"/>
-        <source>Default</source>
-        <translation>默认布局</translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Focus Analysis</source>
-        <translation>专注分析</translation>
-    </message>
-    <message>
-        <location line="+33"/>
-        <source>Save Layout</source>
-        <translation>保存布局方案</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Layout scheme name:</source>
-        <translation>布局方案名称：</translation>
-    </message>
-    <message>
-        <location line="+13"/>
-        <source>Cannot overwrite preset layout schemes, please use another name</source>
-        <translation>不能覆盖预置布局方案，请换一个名称</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>Layout scheme &apos;%1&apos; saved</source>
-        <translation>布局方案"%1"已保存</translation>
-    </message>
-    <message>
-        <location line="+26"/>
-        <source>Remove Layout</source>
-        <translation>删除布局方案</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Remove layout scheme &apos;%1&apos;?</source>
-        <translation>确定删除布局方案"%1"吗？</translation>
-    </message>
-    <message>
-        <location line="+15"/>
-        <source>Reset Layout</source>
-        <translation>恢复默认布局</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>This will restore the default window layout. Continue?</source>
-        <translation>将恢复默认窗口布局，是否继续？</translation>
-    </message>
-    <message>
-        <location line="+15"/>
-        <source>Layout scheme &apos;%1&apos; removed</source>
-        <translation>布局方案"%1"已删除</translation>
     </message>
 </context>
 <context>
@@ -3638,7 +3542,7 @@ Layouts</source>
 <context>
     <name>DA::DAAppRibbonArea</name>
     <message>
-        <location filename="../APP/DAAppRibbonArea.cpp" line="+184"/>
+        <location filename="../APP/DAAppRibbonArea.cpp" line="+190"/>
         <location line="+3"/>
         <source>File</source>
         <translation>文件</translation>
@@ -3649,20 +3553,18 @@ Layouts</source>
         <translation>主页</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+4"/>
         <source>Config</source>
         <translation>配置</translation>
     </message>
     <message>
-        <location line="-1"/>
-        <location line="+27"/>
-        <location line="+106"/>
-        <location line="+257"/>
+        <location line="+25"/>
+        <location line="+346"/>
         <source>Workflow</source>
         <translation>工作流</translation>
     </message>
     <message>
-        <location line="-387"/>
+        <location line="-369"/>
         <source>Data Operation</source>
         <translation>数据操作</translation>
     </message>
@@ -3672,24 +3574,24 @@ Layouts</source>
         <translation>数据</translation>
     </message>
     <message>
-        <location line="-3"/>
+        <location line="-2"/>
         <source>Create</source>
         <translation>创建</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+5"/>
         <source>Export Format</source>
         <translation>导出格式</translation>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+29"/>
-        <location line="+430"/>
+        <location line="+28"/>
+        <location line="+413"/>
         <source>View</source>
         <translation>视图</translation>
     </message>
     <message>
-        <location line="-458"/>
+        <location line="-440"/>
         <source>Display</source>
         <translation>视图显示</translation>
     </message>
@@ -3700,128 +3602,99 @@ Layouts</source>
     </message>
     <message>
         <location line="+1"/>
-        <source>Scheme</source>
-        <translation>方案</translation>
-    </message>
-    <message>
-        <location line="+1"/>
         <source>Appearance</source>
         <translation>外观</translation>
     </message>
     <message>
         <location line="+3"/>
-        <location line="+248"/>
+        <location line="+231"/>
         <source>DataFrame</source>
         <translation>DataFrame</translation>
     </message>
     <message>
-        <location line="-247"/>
-        <location line="+249"/>
+        <location line="-230"/>
+        <location line="+232"/>
         <source>Operate</source>
         <translation>操作</translation>
     </message>
     <message>
-        <location line="-248"/>
-        <location line="+251"/>
+        <location line="-231"/>
+        <location line="+234"/>
         <source>Axes</source>
         <translation>Axes</translation>
     </message>
     <message>
-        <location line="-250"/>
-        <location line="+263"/>
+        <location line="-233"/>
+        <location line="+246"/>
         <source>Column</source>
         <translation>列</translation>
     </message>
     <message>
-        <location line="-262"/>
+        <location line="-245"/>
         <location line="+6"/>
-        <location line="+266"/>
+        <location line="+249"/>
         <location line="+5"/>
         <source>Type</source>
         <translation>类型</translation>
     </message>
     <message>
-        <location line="-276"/>
+        <location line="-259"/>
         <location line="+6"/>
-        <location line="+281"/>
+        <location line="+264"/>
         <location line="+4"/>
         <source>Format</source>
         <translation>格式</translation>
     </message>
     <message>
-        <location line="-290"/>
-        <location line="+296"/>
+        <location line="-273"/>
+        <location line="+279"/>
         <source>Table Style</source>
         <translation>表格样式</translation>
     </message>
     <message>
-        <location line="-295"/>
-        <location line="+299"/>
+        <location line="-278"/>
+        <location line="+282"/>
         <source>Fill</source>
         <translation>底色</translation>
     </message>
     <message>
-        <location line="-298"/>
-        <location line="+29"/>
-        <location line="+277"/>
-        <location line="+317"/>
+        <location line="-281"/>
+        <location line="+289"/>
         <source>Font</source>
         <translation>字体</translation>
     </message>
     <message>
-        <location line="-622"/>
-        <location line="+311"/>
+        <location line="-288"/>
+        <location line="+294"/>
         <source>Clear</source>
         <translation>清除</translation>
     </message>
     <message>
-        <location line="-305"/>
+        <location line="-288"/>
         <source>Fill Color</source>
         <translation>填充颜色</translation>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+373"/>
+        <location line="+356"/>
         <source>Workflow Edit</source>
         <translation>编辑</translation>
     </message>
     <message>
-        <location line="-406"/>
-        <location line="+34"/>
-        <location line="+377"/>
+        <location line="-387"/>
+        <location line="+32"/>
+        <location line="+360"/>
         <source>Clipboard</source>
         <translation>剪切板</translation>
     </message>
     <message>
-        <location line="-363"/>
-        <location line="+481"/>
+        <location line="-346"/>
+        <location line="+465"/>
         <source>Chart Style</source>
         <translation>图表样式</translation>
     </message>
     <message>
-        <location line="-479"/>
-        <location line="+575"/>
-        <source>Title</source>
-        <translation>标题</translation>
-    </message>
-    <message>
-        <location line="-574"/>
-        <source>X Axis</source>
-        <translation>X轴</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Y Axis</source>
-        <translation>Y轴</translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <location line="+599"/>
-        <source>Legend Position</source>
-        <translation>图例位置</translation>
-    </message>
-    <message>
-        <location line="+326"/>
+        <location line="+376"/>
         <location line="+2"/>
         <source>AI Agent</source>
         <translation>AI智能体</translation>
@@ -3847,7 +3720,7 @@ Layouts</source>
         <translation>使用当前选中的 agent 提示词执行 AI 分析</translation>
     </message>
     <message>
-        <location line="+44"/>
+        <location line="+56"/>
         <source>Agent</source>
         <translation>Agent</translation>
     </message>
@@ -3868,54 +3741,48 @@ Layouts</source>
         <translation>Agent 模块未就绪</translation>
     </message>
     <message>
-        <location line="-1071"/>
-        <location line="+381"/>
+        <location line="-993"/>
+        <location line="+364"/>
         <source>Item</source>
         <translation>图元</translation>
     </message>
     <message>
-        <location line="-380"/>
-        <location line="+389"/>
+        <location line="-363"/>
+        <location line="+372"/>
         <source>Text</source>
         <translation>文本</translation>
     </message>
     <message>
-        <location line="-388"/>
-        <location line="+393"/>
+        <location line="-371"/>
+        <location line="+376"/>
         <source>Background</source>
         <translation>背景</translation>
     </message>
     <message>
-        <location line="-390"/>
-        <location line="+471"/>
+        <location line="-373"/>
+        <location line="+454"/>
         <source>Workflow Run</source>
         <translation>运行</translation>
     </message>
     <message>
-        <location line="-470"/>
-        <location line="+473"/>
+        <location line="-453"/>
+        <location line="+456"/>
         <source>Run</source>
         <translation>运行</translation>
     </message>
     <message>
-        <location line="-471"/>
-        <location line="+306"/>
+        <location line="-454"/>
+        <location line="+289"/>
         <source>Figure</source>
         <translation>绘图</translation>
     </message>
     <message>
-        <location line="-300"/>
-        <location line="+573"/>
-        <source>Chart Text</source>
-        <translation>图表文字</translation>
-    </message>
-    <message>
-        <location line="-567"/>
+        <location line="-283"/>
         <source>Figure Setting</source>
         <translation>绘图设置</translation>
     </message>
     <message>
-        <location line="-11"/>
+        <location line="-5"/>
         <source>Add Chart</source>
         <translation>添加绘图</translation>
     </message>
@@ -3925,13 +3792,13 @@ Layouts</source>
         <translation>绘图</translation>
     </message>
     <message>
-        <location line="+11"/>
-        <location line="+528"/>
+        <location line="+5"/>
+        <location line="+514"/>
         <source>Chart Edit</source>
         <translation>绘图编辑</translation>
     </message>
     <message>
-        <location line="-530"/>
+        <location line="-516"/>
         <source>Chart Setting</source>
         <translation>绘图设置</translation>
     </message>
@@ -3942,12 +3809,12 @@ Layouts</source>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+537"/>
+        <location line="+523"/>
         <source>Select Tool</source>
         <translation>选区工具</translation>
     </message>
     <message>
-        <location line="-536"/>
+        <location line="-522"/>
         <source>Chart Assist Tool</source>
         <translation>图表辅助工具</translation>
     </message>
@@ -3968,8 +3835,8 @@ Layouts</source>
         <translation>把工作流的场景导出为图片</translation>
     </message>
     <message>
-        <location line="-21"/>
-        <location line="+328"/>
+        <location line="-15"/>
+        <location line="+311"/>
         <source>Stats Plot</source>
         <translation>统计绘图</translation>
     </message>
@@ -3984,29 +3851,29 @@ Layouts</source>
         <translation>显示</translation>
     </message>
     <message>
-        <location line="-459"/>
-        <location line="+495"/>
+        <location line="-441"/>
+        <location line="+477"/>
         <source>Export</source>
         <translation>导出</translation>
     </message>
     <message>
-        <location line="+26"/>
+        <location line="+27"/>
         <source>Chart Operate</source>
         <translation>绘图操作</translation>
     </message>
     <message>
-        <location line="-513"/>
-        <location line="+554"/>
+        <location line="-497"/>
+        <location line="+539"/>
         <source>Theme</source>
         <translation>主题</translation>
     </message>
     <message>
-        <location line="+33"/>
+        <location line="+29"/>
         <source>Assist Tools</source>
         <translation>辅助工具</translation>
     </message>
     <message>
-        <location line="+74"/>
+        <location line="+22"/>
         <source>Recent Files</source>
         <translation>最近打开的文件</translation>
     </message>
@@ -6086,7 +5953,7 @@ Layouts</source>
 <context>
     <name>DA::DAChartAxisSettingPanel</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartAxisSettingPanel.cpp" line="+187"/>
+        <location filename="../DAGui/ChartSetting/DAChartAxisSettingPanel.cpp" line="+191"/>
         <source>Enable</source>
         <translation>启用</translation>
     </message>
@@ -6146,7 +6013,12 @@ Layouts</source>
         <translation>最大刻度</translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location line="+3"/>
+        <source>Ticks Inside</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
         <source>Normal</source>
         <translation>普通</translation>
     </message>
@@ -8690,7 +8562,7 @@ Layouts</source>
 <context>
     <name>DA::DADataManagerTreeModel</name>
     <message>
-        <location filename="../DAGui/Models/DADataManagerTreeModel.cpp" line="+282"/>
+        <location filename="../DAGui/Models/DADataManagerTreeModel.cpp" line="+289"/>
         <location line="+2"/>
         <location line="+87"/>
         <location line="+3"/>
@@ -8706,11 +8578,21 @@ Layouts</source>
         <source>Properties</source>
         <translation>属性</translation>
     </message>
+    <message>
+        <location line="+117"/>
+        <source>The dataset name cannot be empty</source>
+        <translation>数据集名称不能为空</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>The dataset name &quot;%1&quot; already exists</source>
+        <translation>数据集名称&quot;%1&quot;已存在</translation>
+    </message>
 </context>
 <context>
     <name>DA::DADataManagerTreeWidget</name>
     <message>
-        <location filename="../DAGui/DADataManagerTreeWidget.cpp" line="+423"/>
+        <location filename="../DAGui/DADataManagerTreeWidget.cpp" line="+438"/>
         <source>Search...</source>
         <translation>搜索</translation>
     </message>
@@ -9203,12 +9085,12 @@ Layouts</source>
 <context>
     <name>DA::DAFigureWidget</name>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="+147"/>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="+148"/>
         <source>Unexpected plotting operation: a chart that does not belong to the DAChartWidget type was added to the figure</source>
         <translation>意外的绘图操作：不属于 DAChartWidget 类型的图表被添加到了 figure 中</translation>
     </message>
     <message>
-        <location line="+1142"/>
+        <location line="+1188"/>
         <source>Unsupported chart editor type: %1</source>
         <translation>不支持的图表编辑器类型：%1</translation>
     </message>
@@ -9258,6 +9140,119 @@ Layouts</source>
         <location line="+11"/>
         <source>Text</source>
         <translation>文本</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DALayoutManagerDialog</name>
+    <message>
+        <location filename="../APP/Dialog/DALayoutManagerDialog.cpp" line="+24"/>
+        <source>Layout Manager</source>
+        <translation>布局管理</translation>
+    </message>
+    <message>
+        <location line="+21"/>
+        <source>Double-click a scheme to apply it</source>
+        <translation>双击方案可直接应用</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Save Current</source>
+        <translation>保存当前布局</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Apply Selected</source>
+        <translation>应用选中布局</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Delete Selected</source>
+        <translation>删除选中布局</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Reset Default</source>
+        <translation>恢复默认布局</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Save the current window layout as a named scheme</source>
+        <translation>把当前窗口布局保存为命名方案</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Apply the selected layout scheme</source>
+        <translation>应用选中的布局方案</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Delete the selected custom layout scheme (presets cannot be deleted)</source>
+        <translation>删除选中的自定义布局方案（预置方案不可删除）</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Restore the default window layout</source>
+        <translation>恢复默认窗口布局</translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Close</source>
+        <translation>关闭</translation>
+    </message>
+    <message>
+        <location line="+26"/>
+        <source>Default</source>
+        <translation>默认布局</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Focus Analysis</source>
+        <translation>专注分析</translation>
+    </message>
+    <message>
+        <location line="+41"/>
+        <source>Save Layout</source>
+        <translation>保存布局方案</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Layout scheme name:</source>
+        <translation>布局方案名称：</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Cannot overwrite preset layout schemes, please use another name</source>
+        <translation>不能覆盖预置布局方案，请换一个名称</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Layout scheme &apos;%1&apos; saved</source>
+        <translation>布局方案&quot;%1&quot;已保存</translation>
+    </message>
+    <message>
+        <location line="+33"/>
+        <source>Remove Layout</source>
+        <translation>删除布局方案</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Remove layout scheme &apos;%1&apos;?</source>
+        <translation>确定删除布局方案&quot;%1&quot;吗？</translation>
+    </message>
+    <message>
+        <location line="+21"/>
+        <source>Reset Layout</source>
+        <translation>恢复默认布局</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>This will restore the default window layout. Continue?</source>
+        <translation>将恢复默认窗口布局，是否继续？</translation>
+    </message>
+    <message>
+        <location line="-15"/>
+        <source>Layout scheme &apos;%1&apos; removed</source>
+        <translation>布局方案&quot;%1&quot;已删除</translation>
     </message>
 </context>
 <context>
@@ -9742,7 +9737,7 @@ Layouts</source>
 <context>
     <name>DA::DAProviderEditDialog</name>
     <message>
-        <location filename="../APP/Dialog/DAProviderEditDialog.cpp" line="+47"/>
+        <location filename="../APP/Dialog/DAProviderEditDialog.cpp" line="+48"/>
         <source>Provider</source>
         <translation>供应商</translation>
     </message>
@@ -9817,7 +9812,7 @@ Layouts</source>
         <translation>取消</translation>
     </message>
     <message>
-        <location line="+60"/>
+        <location line="+53"/>
         <source>Base URL is required to fetch models</source>
         <translation>获取模型需要先填写基础地址</translation>
     </message>
@@ -10940,7 +10935,7 @@ Layouts</source>
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-1489"/>
+        <location filename="../APP/DAAppController.cpp" line="-1487"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>
@@ -12966,7 +12961,7 @@ Layouts</source>
 <context>
     <name>DAFigureWidget</name>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="-1202"/>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="-1248"/>
         <source>Figure</source>
         <translation>绘图</translation>
     </message>
@@ -14914,7 +14909,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>未知异常：在第%1个位置获取到空的figure窗口</translation>
     </message>
     <message>
-        <location line="+989"/>
+        <location line="+998"/>
         <source>The attribute %1=%2 under the tag %3 cannot be converted to double</source>
         <translation>标签%3下的属性%1=%2无法转换为double</translation>
     </message>
@@ -14979,7 +14974,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>无法在&quot;%1&quot;创建归档，因为%2</translation>
     </message>
     <message>
-        <location filename="../DAGui/Models/DADataManagerTreeModel.cpp" line="-314"/>
+        <location filename="../DAGui/Models/DADataManagerTreeModel.cpp" line="-440"/>
         <source>%1.%2,size:%3</source>
         <translation>%1.%2,长度:%3</translation>
     </message>
@@ -15310,7 +15305,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>十字线标记</translation>
     </message>
     <message>
-        <location filename="../DAFigure/DAChartUtil.cpp" line="+47"/>
+        <location filename="../DAFigure/DAChartUtil.cpp" line="+48"/>
         <source>unknown chart</source>
         <translation>未知绘图</translation>
     </message>
@@ -15407,11 +15402,12 @@ If a column name contains spaces or special characters, enclose it in backticks 
     </message>
     <message>
         <location line="+3"/>
+        <location line="+18"/>
         <source>text-%1</source>
         <translation>文本-%1</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="-15"/>
         <source>zone-%1</source>
         <translation>区间-%1</translation>
     </message>
@@ -15436,7 +15432,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>探针-%1</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+7"/>
         <source>unknown-%1</source>
         <translation>未知-%1</translation>
     </message>
@@ -15729,7 +15725,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>初始化脚本执行引擎失败：%1</translation>
     </message>
     <message>
-        <location filename="../DAFigure/DAChartTextEditorPopup.cpp" line="+78"/>
+        <location filename="../DAFigure/DAChartTextEditorPopup.cpp" line="+80"/>
         <source>Text Background Color</source>
         <translation>文字背景色</translation>
     </message>
