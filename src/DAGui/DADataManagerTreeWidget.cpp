@@ -51,16 +51,16 @@ void DADataManagerTreeWidget::PrivateData::init()
     proxyModel->setSourceModel(model);
     ui->treeView->setModel(proxyModel);
     ui->treeView->setEditTriggers(QAbstractItemView::EditKeyPressed);
-    //  设置列宽：名称列伸展占满剩余空间，属性列随内容自适应（表头隐藏）
+    //  设置列宽：显示水平表头，拖动两列间分隔线可调节列宽；
+    //  名称列 Interactive 可交互拖拽，属性列（最后一列）填满剩余空间
     QHeaderView* header = ui->treeView->header();
-    header->setStretchLastSection(false);
-    header->setSectionResizeMode(0, QHeaderView::Stretch);
-    header->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+    header->setStretchLastSection(true);
+    header->setSectionResizeMode(0, QHeaderView::Interactive);
+    ui->treeView->setColumnWidth(0, 150);
     ui->treeView->setDragEnabled(true);                          // 启用拖曳
     ui->treeView->setAcceptDrops(false);                         // 树本身不接收拖放
     ui->treeView->setDragDropMode(QAbstractItemView::DragOnly);  // 只允许拖曳，不允许放置
     ui->treeView->setDefaultDropAction(Qt::CopyAction);
-    ui->treeView->setHeaderHidden(true);
 
     // 初始化补全器
     // 创建补全器
