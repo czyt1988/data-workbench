@@ -482,6 +482,11 @@
         <translation>stopped</translation>
     </message>
     <message>
+        <location line="+2"/>
+        <source>Load earlier messages</source>
+        <translation>Load earlier messages</translation>
+    </message>
+    <message>
         <location line="+19"/>
         <source>The permission mode is Full Auto from last session. Code execution and file writes will run without asking. Keep Full Auto mode?</source>
         <translation>The permission mode is Full Auto from last session. Code execution and file writes will run without asking. Keep Full Auto mode?</translation>

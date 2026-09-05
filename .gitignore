@@ -159,3 +159,8 @@ scripts/_remaining_unfinished.txt
 .zcode
 .superplan
 test_result.txt
+
+# tools/perf 运行生成物（会话事件数组与 dump 的 DOM）
+tools/perf/events.js
+tools/perf/dom.html
+

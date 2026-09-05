@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<!-- diagnostic harness (throwaway) — loads the REAL chat.js + libs from the
+     project resources dir, replays a captured session, and reports per-stage
+     timings so we can attribute the slow session-switch. -->
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="../../src/DAGui/Agent/resources/chat.css">
+    <link rel="stylesheet" href="../../src/DAGui/Agent/resources/katex/katex.min.css">
+    <script>
+        // mock the Qt environment before chat.js runs (init() executes on load)
+        window.qt = { webChannelTransport: {} };
+        window.QWebChannel = function (transport, cb) {
+            cb({ objects: { chatBridge: null } });
+        };
+    </script>
+    <script src="../../src/DAGui/Agent/resources/markdown-it.min.js"></script>
+    <script src="../../src/DAGui/Agent/resources/highlight.min.js"></script>
+    <script src="../../src/DAGui/Agent/resources/katex/katex.min.js"></script>
+</head>
+<body>
+    <div id="messages"></div>
+    <div id="status-bar">
+        <span id="status-text"></span>
+        <div id="model-selector">
+            <button id="model-trigger" type="button"><span id="model-trigger-text"></span></button>
+            <div id="model-dropdown" hidden></div>
+        </div>
+        <div id="mode-selector">
+            <button id="mode-trigger" type="button"><span id="mode-trigger-text"></span></button>
+            <div id="mode-dropdown" hidden></div>
+        </div>
+        <span id="token-label">tokens: -</span>
+        <div id="token-popover" hidden></div>
+    </div>
+    <div id="input-area">
+        <textarea id="input-edit" rows="2"></textarea>
+        <button id="send-btn" type="button">Send</button>
+    </div>
+
+    <script src="../../src/DAGui/Agent/resources/chat.js"></script>
+    <script src="events.js"></script>
+    <script>
+        (function () {
+            var S = {
+                loadHistoryMs: 0, mdMs: 0, katexMs: 0, hljsMs: 0, scrollMs: 0,
+                renderInlineMs: 0,
+                nMd: 0, nKatex: 0, nHljs: 0, nScroll: 0, nEvents: 0,
+                bubbles: 0, domNodes: 0
+            };
+            function now() { return performance.now(); }
+
+            // wrap md.render / md.renderInline
+            var origRender = md.render.bind(md);
+            md.render = function (src) {
+                var t0 = now(); var r = origRender(src);
+                S.mdMs += now() - t0; S.nMd++; return r;
+            };
+            var origRI = md.renderInline.bind(md);
+            md.renderInline = function (src) {
+                var t0 = now(); var r = origRI(src);
+                S.renderInlineMs += now() - t0; return r;
+            };
+            // wrap katex.renderToString
+            if (window.katex) {
+                var origKatex = katex.renderToString.bind(katex);
+                katex.renderToString = function (a, b) {
+                    var t0 = now(); var r = origKatex(a, b);
+                    S.katexMs += now() - t0; S.nKatex++; return r;
+                };
+            }
+            // wrap hljs.highlight
+            if (window.hljs) {
+                var origHljs = hljs.highlight.bind(hljs);
+                hljs.highlight = function (a, b) {
+                    var t0 = now(); var r = origHljs(a, b);
+                    S.hljsMs += now() - t0; S.nHljs++; return r;
+                };
+            }
+            // wrap scrollToBottom (force-reflow site)
+            var origScroll = scrollToBottom;
+            scrollToBottom = function () {
+                var t0 = now(); origScroll();
+                S.scrollMs += now() - t0; S.nScroll++;
+            };
+
+            function report(tag, S) {
+                S.nEvents = window.__EVENTS ? window.__EVENTS.length : 0;
+                var m = document.getElementById('messages');
+                S.bubbles = m ? m.children.length : 0;
+                S.domNodes = m ? m.getElementsByTagName('*').length : 0;
+                var el = document.getElementById('perf-result');
+                if (!el) {
+                    el = document.createElement('pre');
+                    el.id = 'perf-result';
+                    document.body.appendChild(el);
+                }
+                el.textContent = 'PERFRESULT ' + tag + ' ' + JSON.stringify(S);
+            }
+
+            function snapshot(S) {
+                return JSON.parse(JSON.stringify(S));
+            }
+
+            var results = {};
+            var m = document.getElementById('messages');
+
+            // Round A: initial (chunked) loadHistory — measures the fix
+            var tA = now();
+            loadHistory(window.__EVENTS);
+            results.initialLoadMs = now() - tA;
+            results.initialBubbles = m.children.length;
+            results.initialDomNodes = m.getElementsByTagName('*').length;
+            results.sentinelAfterInitial = !!document.querySelector('.load-earlier-sentinel');
+            results.pendingAfterInitial = pendingEarlierEvents.length;
+            var steady = snapshot(S);
+            results.initialScrollMs = steady.scrollMs;
+            results.initialScrollCalls = steady.nScroll;
+
+            // Round B: drain remaining chunks synchronously (bypass setTimeout)
+            var tB = now();
+            var guard = 0;
+            while (pendingEarlierEvents.length > 0 && guard < 50) {
+                loadEarlierChunk();
+                guard++;
+            }
+            results.drainMs = now() - tB;
+            results.chunksDrained = guard;
+            results.finalBubbles = m.children.length;
+            results.finalDomNodes = m.getElementsByTagName('*').length;
+            results.sentinelAfterDrain = !!document.querySelector('.load-earlier-sentinel');
+            results.pendingAfterDrain = pendingEarlierEvents.length;
+
+            // first user bubble must be the earliest user event (order check)
+            var firstUser = m.querySelector('.message-bubble.user');
+            var evFirstUser = null;
+            for (var i = 0; i < window.__EVENTS.length; i++) {
+                if (window.__EVENTS[i].type === 'user') { evFirstUser = window.__EVENTS[i]; break; }
+            }
+            results.userBubbleCount = m.querySelectorAll('.message-bubble.user').length;
+            results.questionBubbleCount = m.querySelectorAll('.message-bubble.question').length;
+            results.toolGroupCount = m.querySelectorAll('.tool-group').length;
+            results.firstUserMatches = !!(firstUser && evFirstUser &&
+                firstUser.dataset.rawText === evFirstUser.message.content);
+
+            // debug: DOM state right after chunked drain (BEFORE baseline render)
+            var allUsers = m.querySelectorAll('.message-bubble.user');
+            results.debugUserOrder = [];
+            for (var u = 0; u < allUsers.length; u++) {
+                results.debugUserOrder.push(String(allUsers[u].dataset.rawText).slice(0, 25));
+            }
+            results.debugTopChildren = [];
+            for (var c = 0; c < Math.min(6, m.children.length); c++) {
+                var ch = m.children[c];
+                var rt = ch.dataset && ch.dataset.rawText ? String(ch.dataset.rawText).slice(0, 18) : '';
+                results.debugTopChildren.push(c + ':' + ch.tagName + '.' + String(ch.className).split(' ').join('.') + (rt ? '=' + rt : ''));
+            }
+
+            // equivalence vs a dynamically computed unchunked full render:
+            // clears DOM and renders ALL events in one pass, then compares stats
+            m.innerHTML = '';
+            currentToolGroup = null; pendingToolCards = [];
+            suppressAutoScroll = true;
+            try { renderHistoryEvents(window.__EVENTS); closeToolGroup(); }
+            finally { suppressAutoScroll = false; }
+            var fullBubbles = m.children.length;
+            var fullDomNodes = m.getElementsByTagName('*').length;
+            var fullUsers = m.querySelectorAll('.message-bubble.user').length;
+            var fullQuestions = m.querySelectorAll('.message-bubble.question').length;
+            results.fullRenderBaseline = { bubbles: fullBubbles, domNodes: fullDomNodes,
+                                           users: fullUsers, questions: fullQuestions };
+            results.EQUIV_bubbles = (results.finalBubbles === fullBubbles);
+            results.EQUIV_domNodes = (results.finalDomNodes === fullDomNodes);
+            results.EQUIV_users = (results.userBubbleCount === fullUsers);
+            results.EQUIV_questions = (results.questionBubbleCount === fullQuestions);
+
+            // Round C: steady-state replay timing of a small slice (real repeat switch)
+            var tC = now();
+            loadHistory(window.__EVENTS);
+            results.steadyReplayMs = now() - tC;
+
+            var el = document.getElementById('perf-result');
+            if (!el) {
+                el = document.createElement('pre');
+                el.id = 'perf-result';
+                document.body.appendChild(el);
+            }
+            el.textContent = 'PERFRESULT ' + JSON.stringify(results);
+        })();
+    </script>
+</body>
+</html>

@@ -10,6 +10,20 @@ const RENDER_DEBOUNCE_MS = 50;  // 最多每 50ms 重新渲染一次
 let currentToolGroup = null;   // 当前工具分组容器（null 表示无活跃分组）
 let pendingToolCards = [];     // 等待结果的卡片列表 [{card, toolName}]
 
+// —— 历史重放性能（分段渲染 + 滚动抑制）——
+// 诊断结论（harness 实测）：重放 340 事件时逐事件 scrollToBottom() 强制同步
+// reflow 合计占渲染耗时 ~97%（O(n²)：每次 reflow 随 DOM 增大线性变贵）。
+// 两个对策：
+//   1) suppressAutoScroll：批量重放/分段加载期间跳过逐事件滚动，收尾统一滚一次；
+//   2) HISTORY_CHUNK_SIZE 分段渲染：超长会话只渲染尾部一段，滚动到顶部再
+//      prepend 更早一段（保持视口不跳动），首屏耗时与会话总长度解耦。
+const HISTORY_CHUNK_SIZE = 150;   // 每段渲染的 UI 事件数
+let suppressAutoScroll = false;   // true 时 scrollToBottom 早退（批量渲染窗口）
+let pendingEarlierEvents = [];    // 尚未渲染的更早事件（时间升序，尾部为更近）
+let renderTargetOverride = null;  // 非 null 时渲染函数追加到此容器（prepend 分段用）
+let loadEarlierSentinel = null;   // 顶部"加载更早"哨兵元素（null 表示无）
+let loadingEarlier = false;       // 分段加载进行中（防 scroll 事件重入）
+
 // —— 输入区/状态栏 web 化状态 ——
 // i18n 静态标签由 C++ 在握手(onReady)时经 setI18nLabels 注入（C++ 仍是唯一 i18n 拥有者，
 // 沿用 appendQuestion 推 tr("Submit") 的既有约定；JS 为哑显示）。
@@ -24,6 +38,8 @@ let i18n = {
     modelEmpty: 'No model', modelSelectTip: 'Select LLM model',
     modelProvidersTitle: 'Providers', modelBack: 'Back',
     errorDetails: 'Details', errorCopy: 'Copy', errorCopied: 'Copied', errorTruncated: '[truncated]',
+    // —— 历史分段懒加载 ——
+    loadEarlier: 'Load earlier messages',
     // —— 权限模式选择器（permission-layer P1）——
     modeSelectTip: 'Permission mode',
     modeYolo: 'Full Auto', modeAuto: 'Auto', modeManual: 'Ask Every Time',
@@ -180,9 +196,17 @@ function createMessageBubble(className) {
 }
 
 function scrollToBottom() {
+    // 批量重放/分段加载窗口内跳过：每事件强制 reflow 是 O(n²) 性能杀手
+    if (suppressAutoScroll) return;
     // #messages 是唯一滚动容器（body 已 overflow:hidden），滚它而非 window
     var m = document.getElementById('messages');
     if (m) { m.scrollTop = m.scrollHeight; }
+}
+
+// 历史渲染的追加目标：默认 #messages；分段 prepend 时由 loadEarlierChunk
+// 切到 detached 容器（渲染完整体 insertBefore 哨兵，保持时序）。
+function getRenderTarget() {
+    return renderTargetOverride || document.getElementById('messages');
 }
 
 function init() {
@@ -210,6 +234,15 @@ function init() {
             if (href === 'da-figure:' || href === 'da-figure:/') return;
             if (chatBridge && typeof chatBridge.onFigureLink === 'function') {
                 chatBridge.onFigureLink(href);
+            }
+        });
+        // 分段懒加载：滚动到顶部附近（<=60px）自动 prepend 更早一段。
+        // requestLoadEarlier 内有 loadingEarlier 防重入；scrollTop 只读不写，
+        // scroll 事件本身在布局之后派发，无强制 reflow 开销。
+        msgs.addEventListener('scroll', function() {
+            if (pendingEarlierEvents.length === 0) return;
+            if (msgs.scrollTop <= 60) {
+                requestLoadEarlier();
             }
         });
     }
@@ -375,7 +408,7 @@ function ensureToolGroup() {
     group.querySelector('.tool-group-head').addEventListener('click', function() {
         group.classList.toggle('open');
     });
-    document.getElementById('messages').appendChild(group);
+    getRenderTarget().appendChild(group);
     currentToolGroup = group;
 }
 
@@ -610,7 +643,7 @@ function appendUserMessage(text) {
     let bubble = createMessageBubble('user');
     bubble.dataset.rawText = text;
     bubble.innerHTML = md.render(text);
-    document.getElementById('messages').appendChild(bubble);
+    getRenderTarget().appendChild(bubble);
     scrollToBottom();
 }
 
@@ -764,8 +797,12 @@ function appendQuestion(text, options, submitLabel, customPlaceholder, multiSele
     };
     qBubble.appendChild(submitBtn);
 
-    document.getElementById('messages').appendChild(qBubble);
+    getRenderTarget().appendChild(qBubble);
     scrollToBottom();
+    // 返回气泡引用：历史重放的 question 分支直接持有节点做禁用/answered/答案
+    // 追加（替代旧的容器内 querySelector:last-of-type 查询——该查询在分段
+    // prepend 的 DocumentFragment 渲染目标上不可用，且存在兄弟节点误匹配风险）
+    return qBubble;
 }
 
 function clearChat() {
@@ -779,6 +816,10 @@ function clearChat() {
     currentToolGroup = null;
     pendingToolCards = [];
     subagentCards = {};
+    // 分段渲染状态一并复位：未渲染的更早事件与哨兵随会话清空而失效，
+    // 防止切换会话后"加载更早"把旧会话事件渲染进新聊天区
+    pendingEarlierEvents = [];
+    removeLoadEarlierSentinel();
 }
 
 // —— 输入区/状态栏 web 化（被 C++ 经 DAAgentWebChannel::callJS 调用）——
@@ -1400,13 +1441,18 @@ function fmtTmpl(tmpl, val) {
     return String(tmpl).replace('%1', val);
 }
 
-// plan-04 step6: 批量重放历史会话记录到聊天界面。
+// plan-04 step6: 批量重放历史会话记录到聊天界面（性能重构版）。
 // events 为 C++ DAAgentWebChannel::loadHistory 合并后的 UI 事件数组：
 //   {type:"user",message:{role,content}},
 //   {type:"assistant",message:{role,content}},
 //   {type:"tool",toolName,args,result,toolCallId},
 //   {type:"question",toolName,args,result:{answer},toolCallId},
 //   {type:"usage",...}/type:"summary" 跳过不渲染。
+// 性能设计（诊断结论见文件头注释）：
+//   1) 超过 HISTORY_CHUNK_SIZE 的事件只渲染尾部一段，更早的进 pendingEarlierEvents，
+//      由顶部哨兵 + 滚动到顶触发 loadEarlierChunk 分批 prepend；
+//   2) 重放窗口内 suppressAutoScroll 抑制逐事件 scrollToBottom（O(n²) reflow 根源），
+//      收尾统一滚动一次。
 // CRITICAL1: assistant 分支 createMessageBubble 不挂 DOM，必须 appendChild。
 // MAJOR2: 配对由 C++ 完成，JS 直接读 ev.toolName/args/result（不再读 _toolName/_toolArgs）。
 // MAJOR5 + 契约9: ask_user 历史用 appendQuestion 渲染问题气泡，然后内联 DOM 操作
@@ -1417,7 +1463,32 @@ function loadHistory(events) {
         scrollToBottom();
         return;
     }
-    for (const ev of events) {
+    let tail = events;
+    if (events.length > HISTORY_CHUNK_SIZE) {
+        pendingEarlierEvents = events.slice(0, events.length - HISTORY_CHUNK_SIZE);
+        tail = events.slice(events.length - HISTORY_CHUNK_SIZE);
+    } else {
+        pendingEarlierEvents = [];
+    }
+    suppressAutoScroll = true;
+    try {
+        renderHistoryEvents(tail);
+    } finally {
+        suppressAutoScroll = false;
+    }
+    if (pendingEarlierEvents.length > 0) {
+        insertLoadEarlierSentinel();
+    }
+    // concurrent-sessions 修复：收尾关闭最后的工具组（所有卡片已带 result，
+    // 标记 completed），避免重放后末组永远显示 running 状态。
+    closeToolGroup();
+    scrollToBottom();
+}
+
+// 渲染一批 UI 事件到 getRenderTarget()（#messages 或分段 prepend 的 detached 容器）。
+// 事件自包含（C++ 已完成 tool_call/tool_result 配对），任意 chunk 边界安全。
+function renderHistoryEvents(evs) {
+    for (const ev of evs) {
         const t = ev.type;
         if (t === 'user') {
             const content = (ev.message && ev.message.content) ? ev.message.content : '';
@@ -1437,7 +1508,7 @@ function loadHistory(events) {
             const bubble = createMessageBubble('agent');
             bubble.dataset.rawText = content;
             bubble.innerHTML = md.render(content);
-            document.getElementById('messages').appendChild(bubble);  // ← 必须挂到 DOM
+            getRenderTarget().appendChild(bubble);  // ← 必须挂到 DOM
         } else if (t === 'tool') {
             // MAJOR2: 读合并后字段 toolName/args/result（C++ 已配对）
             const toolName = ev.toolName || 'tool';
@@ -1451,17 +1522,16 @@ function loadHistory(events) {
             appendToolCall(toolName, args);
             appendToolResult(toolName, result);
         } else if (t === 'question') {
-            // MAJOR5 + 契约9: ask_user 历史用 appendQuestion 渲染问题气泡，然后 DOM 操作
+            // MAJOR5 + 契约9: ask_user 历史用 appendQuestion 渲染问题气泡（返回气泡
+            // 引用），然后 DOM 操作禁用按钮 + 加 answered class + 追加答案文本
             const a = (ev.args && typeof ev.args === 'object') ? ev.args : {};
-            appendQuestion(
+            const qBubble = appendQuestion(
                 a.question || '',
                 Array.isArray(a.options) ? a.options : [],
                 a.submit_label || 'Submit',
                 a.custom_placeholder || '',
                 !!a.multi_select
             );
-            // appendQuestion 把 qBubble 挂到 #messages 末尾（chat.js:334），取最后一个 .message-bubble.question
-            const qBubble = document.querySelector('#messages .message-bubble.question:last-of-type');
             if (qBubble) {
                 // 禁用所有按钮（.question-options 内的选项按钮 + .question-submit 提交按钮）
                 qBubble.querySelectorAll('button').forEach(function(b) { b.disabled = true; });
@@ -1483,10 +1553,78 @@ function loadHistory(events) {
             // 跳过（不渲染；token 由 C++ m_modelLabel/m_tokenLabel 显示，summary 一期不持久化渲染）
         }
     }
-    // concurrent-sessions 修复：收尾关闭最后的工具组（所有卡片已带 result，
-    // 标记 completed），避免重放后末组永远显示 running 状态。
-    closeToolGroup();
-    scrollToBottom();
+}
+
+// —— 分段懒加载：顶部哨兵 + 滚动到顶触发 ——
+
+// 在 #messages 顶部插入"加载更早"哨兵按钮（也可点击触发，滚动到顶自动触发）。
+function insertLoadEarlierSentinel() {
+    const s = document.createElement('button');
+    s.className = 'load-earlier-sentinel';
+    s.type = 'button';
+    s.textContent = i18n.loadEarlier || 'Load earlier messages';
+    s.addEventListener('click', requestLoadEarlier);
+    const m = document.getElementById('messages');
+    m.insertBefore(s, m.firstChild);
+    loadEarlierSentinel = s;
+}
+
+function removeLoadEarlierSentinel() {
+    if (loadEarlierSentinel && loadEarlierSentinel.parentNode) {
+        loadEarlierSentinel.parentNode.removeChild(loadEarlierSentinel);
+    }
+    loadEarlierSentinel = null;
+}
+
+// 触发加载更早一段（scroll 到顶 / 哨兵点击共用）。setTimeout(0) 让点击/滚动
+// 事件的交互反馈先渲染，长任务不阻塞在事件处理器内。
+function requestLoadEarlier() {
+    if (loadingEarlier || pendingEarlierEvents.length === 0) return;
+    loadingEarlier = true;
+    setTimeout(function() {
+        try {
+            loadEarlierChunk();
+        } finally {
+            loadingEarlier = false;
+        }
+    }, 0);
+}
+
+// prepend 更早一段事件到哨兵之前，并保持用户视口不跳动。
+// 滚动位置保持：记录渲染前 scrollHeight，渲染后 scrollTop 加上高度增量
+//（新内容插在上方，视觉锚点内容下移量 = 高度增量）。
+// 渲染目标用 DocumentFragment：insertBefore 时子节点自动展开插入，
+// 不引入包裹 div（避免破坏 #messages 的 flex 子项布局）。
+function loadEarlierChunk() {
+    if (pendingEarlierEvents.length === 0) return;
+    const m = document.getElementById('messages');
+    const prevHeight = m.scrollHeight;
+    const count = Math.min(HISTORY_CHUNK_SIZE, pendingEarlierEvents.length);
+    // 取 pending 尾部 count 条（时间上紧邻已渲染内容）
+    const chunk = pendingEarlierEvents.splice(pendingEarlierEvents.length - count, count);
+    // 渲染到 detached fragment 再整体插入：避免逐节点 insertBefore 引发多次 reflow
+    const holder = document.createDocumentFragment();
+    renderTargetOverride = holder;
+    suppressAutoScroll = true;
+    try {
+        renderHistoryEvents(chunk);
+        // chunk 末尾收尾工具组（对齐 loadHistory 收尾语义）
+        closeToolGroup();
+    } finally {
+        suppressAutoScroll = false;
+        renderTargetOverride = null;
+    }
+    // 插入位置：哨兵**之后**（哨兵与已渲染内容之间）。哨兵永远位于已渲染
+    // 内容的最顶部（它标记"上方还有更早内容"），每个更早的段插在哨兵下方，
+    // 时间序保持 [哨兵, 更早段, ..., 最新段]。若插到哨兵上方（insertBefore
+    // holder, sentinel），哨兵会被推到段后面，下一次 prepend 的锚点错位，
+    // 早段会插到晚段之后（顺序颠倒）。
+    m.insertBefore(holder, loadEarlierSentinel ? loadEarlierSentinel.nextSibling : m.firstChild);
+    // 保持视口锚定：内容整体下移了 (newHeight - prevHeight)
+    m.scrollTop += (m.scrollHeight - prevHeight);
+    if (pendingEarlierEvents.length === 0) {
+        removeLoadEarlierSentinel();
+    }
 }
 
 function escapeHtml(text) {

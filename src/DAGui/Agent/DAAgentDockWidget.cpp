@@ -290,7 +290,9 @@ void DAAgentDockWidget::onWebReady()
         {"subagentDone", tr("done")},                       // cn:完成
         {"subagentFailed", tr("failed")},                   // cn:失败
         {"subagentTimeout", tr("timeout")},                 // cn:超时
-        {"subagentStopped", tr("stopped")}                  // cn:已停止
+        {"subagentStopped", tr("stopped")},                 // cn:已停止
+        // —— 历史分段懒加载（超长会话只渲染尾部段，顶部哨兵加载更早）——
+        {"loadEarlier", tr("Load earlier messages")}        // cn:加载更早消息
     });
     // 启动中优先推 starting 态，缓解 JS-ready 竞态——agent 信号若在 chat.html 加载
     // 完成前触发，此处补推当前 starting/busy 态

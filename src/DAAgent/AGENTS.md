@@ -300,6 +300,8 @@ chat.js 选项按钮 → `chatBridge.onUserSelect(answer)` → `DAAgentWebChanne
 
 `chat.html` 引入 `qrc:///qtwebchannel/qwebchannel.js` + markdown-it + highlight.js；`chat.js` 维护 `currentAgentMsg` 与防抖渲染。改 UI 样式在 `chat.css`。
 
+**历史重放性能铁律**：`loadHistory` 批量重放/分段加载窗口内**禁止**逐事件 `scrollToBottom()`（每次读 `scrollHeight` 强制同步 reflow，N 事件 × DOM 增长 = O(n²)，曾致切换大会话冻结半分钟，97% 耗时在此）；必须走 `suppressAutoScroll` 窗口 + 收尾统一滚动。超长会话经 `HISTORY_CHUNK_SIZE` 分段：只渲染尾部段，顶部哨兵（`loadEarlier` i18n 标签）滚动到顶自动 prepend 更早段（`loadEarlierChunk`，新段插哨兵**之后**保时间序）。回归测试：`tools/perf/run.ps1 -SessionJsonl <会话jsonl>`（headless Chromium 加载真实 chat.js，断言性能阈值 + 分段/全量渲染 DOM 等价）。
+
 ---
 
 ## 九、配置持久化（agent-config.json，DAAgentConfig 领域模型）

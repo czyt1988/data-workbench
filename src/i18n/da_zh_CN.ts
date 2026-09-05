@@ -482,6 +482,11 @@
         <translation>已停止</translation>
     </message>
     <message>
+        <location line="+2"/>
+        <source>Load earlier messages</source>
+        <translation>加载更早消息</translation>
+    </message>
+    <message>
         <location line="+19"/>
         <source>The permission mode is Full Auto from last session. Code execution and file writes will run without asking. Keep Full Auto mode?</source>
         <translation>上次会话留在全自动权限模式。代码执行与文件写入将不再询问直接执行。是否保持全自动模式？</translation>

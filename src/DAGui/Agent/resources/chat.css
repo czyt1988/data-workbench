@@ -1311,3 +1311,25 @@ body {
     margin: 12px 0;
     overflow-x: auto;
 }
+
+/* —— 历史分段懒加载（性能优化：超长会话只渲染尾部，滚动到顶加载更早） —— */
+
+/* 顶部"加载更早"哨兵按钮：居中的低调次要按钮，滚动到顶自动触发也可点击 */
+.load-earlier-sentinel {
+    display: block;
+    margin: 10px auto;
+    padding: 6px 18px;
+    border: 1px solid #cfcfcf;
+    background: #fafafa;
+    color: #666;
+    border-radius: 14px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.load-earlier-sentinel:hover {
+    background: #f0f4f9;
+    border-color: #5280C1;
+    color: #5280C1;
+}
