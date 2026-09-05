@@ -460,6 +460,51 @@ class ToolFactory:
         return schemas
 
 
+# —— 截断自动续写（P1）——
+# LLM 输出撞 max_output_tokens（finish_reason="length"）时响应被硬截断：
+# 工具调用参数残缺无法解析 → AIMessage 无 tool_calls 无 content → 原实现
+# 按"最终回复"静默结束本轮（用户视角：运行着就停了，输入"继续"才能续上）。
+# agent_node 检测截断后把截断消息 + 引导 HumanMessage 喂回输入重试。
+_MAX_TRUNCATION_RETRIES = 2
+
+# 截断引导词：明确"从断点继续"与"大载荷拆小"，覆盖文本截断与
+# 工具参数截断两种形态（引导消息进 state，对后续轮次可见）
+_TRUNCATION_GUIDANCE = (
+    "[System Notice] Your previous response was cut off by the "
+    "max_output_tokens limit before it could be completed. Continue from "
+    "where you stopped and finish the task. If you were calling a tool "
+    "with a large payload (e.g. write_file with a long document), do NOT "
+    "retry the same oversized call: split the work into multiple smaller "
+    "calls (e.g. write one section per call) and proceed step by step."
+)
+
+
+def _finish_reason(msg) -> str:
+    """提取 OpenAI finish_reason（流式 chunk 累积后存于 response_metadata）。"""
+    meta = getattr(msg, "response_metadata", None) or {}
+    return str(meta.get("finish_reason") or "")
+
+
+def _response_truncated(ctx, msg, usage) -> bool:
+    """判断 LLM 响应是否被 max_output_tokens 硬截断。
+
+    信号（任一命中即判截断）：
+    1. finish_reason == "length"（OpenAI 系权威信号，多数兼容网关同样回传）；
+    2. output_tokens >= max_output_tokens（兜底：个别网关流式不回传
+       finish_reason，但 usage 计数恰好停在 max_tokens 上）。
+    误报无害：非截断响应被误判时重试只是让模型"继续"——它会给出最终
+    回复或工具调用，行为等价于多一轮推理（有 _MAX_TRUNCATION_RETRIES 上限）。
+    """
+    if _finish_reason(msg) == "length":
+        return True
+    cap = getattr(ctx, "_max_output_tokens", 0)
+    if cap and usage:
+        out = usage.get("output_tokens") or 0
+        if out and out >= cap:
+            return True
+    return False
+
+
 def build_agent_graph(ctx, *, system_prompt: str, stdio=None,
                       enable_ask_user: bool = True,
                       enable_compact: bool = True):
@@ -628,57 +673,105 @@ def build_agent_graph(ctx, *, system_prompt: str, stdio=None,
         # 与 final_message 一起返回，让 MessagesState reducer 删除中间消息、
         # 追加 summary，从而打断"400 → force_compact（局部）→ 400"循环。
         compaction_updates = []
+        # —— 截断自动续写（P1）：截断 AIMessage + 引导 HumanMessage 序列 ——
+        # 重试输入与 state 更新同构（都追加这两条消息），下一轮调用能看到
+        # "已输出到哪、被要求继续"，历史保持连贯。
+        truncation_updates: list = []
+        truncation_retries = 0
 
-        try:
-            # 正常路径：流式调用 LLM
-            final_message, usage = await _stream_llm(messages)  # 解构
-        except Exception as e:
-            # 记录异常完整信息（str(e) 对 BadRequestError 含 400 响应体 JSON），
-            # 便于在 da_log.log 中诊断 400 的确切原因（LiteLLM 返回的具体错误描述）。
-            logger.warning("LLM call failed: %s", e)
-            # 反应式溢出恢复（qwen-code 式安全网）：
-            # 当 token 估算不准导致实际请求超出上下文窗口时，
-            # API 返回 ContextWindowExceededError/BadRequestError。
-            # 此时强制压缩并重试一次。与原设计的区别：
-            # force_compact 的结果现在写回 state（RemoveMessage + summary），
-            # 使下一轮 agent_node 读到的是压缩后历史，不再 400 循环。
-            if ctx.compactor and is_context_overflow_error(e):
-                logger.warning("Context overflow detected, force-compacting and retrying")
-                # force_compact 返回 (compacted, summary_usage, removed_ids)
-                compacted, summary_usage, removed_ids = await ctx.compactor.force_compact(messages)
-                # force_compact 路径的 summary usage 也经独立
-                # send_usage(source="summary") 回传（与 compact_node 正常路径一致）
-                if summary_usage and stdio is not None:
-                    await stdio.send_usage(
-                        summary_usage.get("input_tokens", 0),
-                        summary_usage.get("output_tokens", 0),
-                        summary_usage.get("total_tokens", 0),
-                        source="summary",
+        while True:
+            try:
+                # 正常路径：流式调用 LLM
+                final_message, usage = await _stream_llm(messages)  # 解构
+            except Exception as e:
+                # 记录异常完整信息（str(e) 对 BadRequestError 含 400 响应体 JSON），
+                # 便于在 da_log.log 中诊断 400 的确切原因（LiteLLM 返回的具体错误描述）。
+                logger.warning("LLM call failed: %s", e)
+                # 反应式溢出恢复（qwen-code 式安全网）：
+                # 当 token 估算不准导致实际请求超出上下文窗口时，
+                # API 返回 ContextWindowExceededError/BadRequestError。
+                # 此时强制压缩并重试一次。与原设计的区别：
+                # force_compact 的结果现在写回 state（RemoveMessage + summary），
+                # 使下一轮 agent_node 读到的是压缩后历史，不再 400 循环。
+                if ctx.compactor and is_context_overflow_error(e):
+                    logger.warning("Context overflow detected, force-compacting and retrying")
+                    # force_compact 返回 (compacted, summary_usage, removed_ids)
+                    compacted, summary_usage, removed_ids = await ctx.compactor.force_compact(messages)
+                    # force_compact 路径的 summary usage 也经独立
+                    # send_usage(source="summary") 回传（与 compact_node 正常路径一致）
+                    if summary_usage and stdio is not None:
+                        await stdio.send_usage(
+                            summary_usage.get("input_tokens", 0),
+                            summary_usage.get("output_tokens", 0),
+                            summary_usage.get("total_tokens", 0),
+                            source="summary",
+                        )
+                    # 重新 prepend system prompt（force_compact 的 head 可能保留原有
+                    # SystemMessage，需检查避免重复 prepend——与上方正常路径同一防护）
+                    if system_prompt and not any(m.type == "system" for m in compacted):
+                        compacted = [SystemMessage(content=system_prompt)] + compacted
+                    final_message, usage = await _stream_llm(compacted)  # 解构
+
+                    # 构造 state 更新：删除被压缩的中间消息 + 追加 summary。
+                    # MessagesState 的 add_messages reducer 会：
+                    #   1. 按 RemoveMessage(id=...) 删除中间消息
+                    #   2. 追加 summary HumanMessage（da_type=summary）
+                    #   3. 追加 final_message（由下方 return 添加）
+                    # 结果：state 从 [head][middle...][tail] 变为
+                    #       [head][summary][tail][final_message]，大幅缩小。
+                    compaction_updates = [RemoveMessage(id=mid) for mid in removed_ids]
+                    # 从 compacted 中找到 summary 消息（HumanMessage 含 [Context Summary]）
+                    for m in compacted:
+                        if (isinstance(m, HumanMessage)
+                                and "[Context Summary]" in str(m.content)):
+                            compaction_updates.append(m)
+                            break
+                    # 熔断恢复——force_compact 成功说明压缩仍然有效
+                    ctx.compactor._consecutive_failures = 0
+                else:
+                    raise
+
+            # —— 截断检测 + 自动续写（P1）——
+            # 仅在"无 tool_calls"（即将按最终回复结束）时判定：有 tool_calls
+            # 的响应即使被截断也拿到了完整可执行的调用（参数在截断点前闭合）。
+            if (not final_message.tool_calls
+                    and _response_truncated(ctx, final_message, usage)):
+                if truncation_retries >= _MAX_TRUNCATION_RETRIES:
+                    logger.warning(
+                        "LLM output still truncated after %d continuation "
+                        "retries, ending turn (possibly incomplete)",
+                        truncation_retries,
                     )
-                # 重新 prepend system prompt（force_compact 的 head 可能保留原有
-                # SystemMessage，需检查避免重复 prepend——与上方正常路径同一防护）
-                if system_prompt and not any(m.type == "system" for m in compacted):
-                    compacted = [SystemMessage(content=system_prompt)] + compacted
-                final_message, usage = await _stream_llm(compacted)  # 解构
-
-                # 构造 state 更新：删除被压缩的中间消息 + 追加 summary。
-                # MessagesState 的 add_messages reducer 会：
-                #   1. 按 RemoveMessage(id=...) 删除中间消息
-                #   2. 追加 summary HumanMessage（da_type=summary）
-                #   3. 追加 final_message（由下方 return 添加）
-                # 结果：state 从 [head][middle...][tail] 变为
-                #       [head][summary][tail][final_message]，大幅缩小。
-                compaction_updates = [RemoveMessage(id=mid) for mid in removed_ids]
-                # 从 compacted 中找到 summary 消息（HumanMessage 含 [Context Summary]）
-                for m in compacted:
-                    if (isinstance(m, HumanMessage)
-                            and "[Context Summary]" in str(m.content)):
-                        compaction_updates.append(m)
-                        break
-                # 熔断恢复——force_compact 成功说明压缩仍然有效
-                ctx.compactor._consecutive_failures = 0
-            else:
-                raise
+                    break  # 续写耗尽——按最终回复结束（P2 会标记 possibly_incomplete）
+                truncation_retries += 1
+                logger.warning(
+                    "LLM output truncated by max_output_tokens "
+                    "(finish_reason=%s, output_tokens=%s, attempt %d/%d), "
+                    "requesting continuation",
+                    _finish_reason(final_message),
+                    (usage or {}).get("output_tokens"),
+                    truncation_retries, _MAX_TRUNCATION_RETRIES,
+                )
+                # 已流出的部分文本落盘 + 计费：usage 挂在本段 message_end 上
+                # （C++ 每个 message_end 恰计一次），最终尝试的 usage 挂它自己
+                # 的 message_end，无重复计数。空内容（工具参数被截）只补计费。
+                _partial = (final_message.content
+                            if isinstance(final_message.content, str) else "")
+                if stdio is not None:
+                    if _partial.strip():
+                        await stdio.send_message_end(_partial, usage)
+                    elif usage:
+                        await stdio.send_usage(
+                            usage.get("input_tokens", 0),
+                            usage.get("output_tokens", 0),
+                            usage.get("total_tokens", 0),
+                            source="agent",
+                        )
+                guidance = HumanMessage(content=_TRUNCATION_GUIDANCE)
+                truncation_updates.extend([final_message, guidance])
+                messages = messages + [final_message, guidance]
+                continue
+            break
 
         # 从累积后的完整消息上读取 tool_calls（不是逐 chunk 读）
         if final_message.tool_calls:
@@ -717,7 +810,7 @@ def build_agent_graph(ctx, *, system_prompt: str, stdio=None,
                 if stdio is not None:
                     await stdio.send_message_end(loop_msg.content, None)
                 # 无 tool_calls → 路由返回 "end" → END
-                return {"messages": [loop_msg]}
+                return {"messages": truncation_updates + [loop_msg]}
             # 持久化中间推理内容：AIMessage 伴随 tool_calls 产生的 content（思考过程）。
             # 此前该 content 仅以 token 流式输出到 UI（agentToken），从未落盘——
             # C++ 端 agentToken 不持久化，而 message_end 只在无 tool_calls 的最终
@@ -736,7 +829,7 @@ def build_agent_graph(ctx, *, system_prompt: str, stdio=None,
                 await stdio.send_message_end(_intermediate_content, None)
             # 有完整 tool_calls，交给 tool_node 执行
             # （tool_call 路径不发 usage——非最终回复，下一轮 agent 还会再发）
-            return {"messages": compaction_updates + [final_message]}
+            return {"messages": compaction_updates + truncation_updates + [final_message]}
         else:
             # 无 tool_calls——最终回复。agent usage 挂在 message_end 上回传
             # （MAJOR6：不单独发 send_usage(source="agent")，避免 C++ 双发
@@ -747,7 +840,7 @@ def build_agent_graph(ctx, *, system_prompt: str, stdio=None,
                     final_message.content if isinstance(final_message.content, str) else "",
                     usage,
                 )
-            return {"messages": compaction_updates + [final_message]}
+            return {"messages": compaction_updates + truncation_updates + [final_message]}
 
     async def tool_node(state: MessagesState):
         last_msg = state["messages"][-1]  # AIMessage with tool_calls
@@ -956,12 +1049,18 @@ class AgentRunner:
         self._apply_permission_config(config)
 
         # 配置 LLM
+        # max_output_tokens 默认 131072（128K）：长文档写作（论文全文/大文件）
+        # 在 8K 输出上限下会被硬截断——工具调用参数残缺无法解析，表现为
+        # "运行着就停了"（P1 截断续写 + P3 上调默认共同治理，详见
+        # agent_node 的截断检测块）。注意：个别严格网关会对超过模型真实
+        # 输出上限的 max_tokens 返回 400，遇到时在模型设置里调低即可。
+        self._max_output_tokens = config.get("max_output_tokens", 131072)
         self.llm = ChatOpenAI(
             base_url=config["base_url"],
             api_key=config["api_key"],
             model=config["model"],
             streaming=True,
-            max_tokens=config.get("max_output_tokens", 8192),   # 模型最大输出 token（由激活模型派生）
+            max_tokens=self._max_output_tokens,              # 模型最大输出 token（由激活模型派生）
             max_retries=0,                                        # 禁用 openai-python 内置重试，由 wrapper 控制
             timeout=config.get("request_timeout_sec", 120),       # HTTP 请求超时（连接+首字节）
         )
@@ -1135,7 +1234,7 @@ class AgentRunner:
                 api_key=config["api_key"],
                 model=config["model"],
                 streaming=True,
-                max_tokens=config.get("max_output_tokens", 8192),
+                max_tokens=config.get("max_output_tokens", 131072),
                 max_retries=0,                                        # 禁用 openai-python 内置重试，由 wrapper 控制
                 timeout=config.get("request_timeout_sec", 120),       # HTTP 请求超时（连接+首字节）
             )
@@ -1158,6 +1257,8 @@ class AgentRunner:
         self.compaction_threshold = config.get("compaction_threshold", 0.85)
         self.max_recent_messages = config.get("max_recent_messages", 10)
         self._max_retries = config.get("max_retries", 7)
+        # 截断检测的 cap 跟随热更新（P1：agent_node 经 ctx._max_output_tokens 读取）
+        self._max_output_tokens = config.get("max_output_tokens", 131072)
         new_recursion = self._sanitize_recursion_limit(
             config.get("recursion_limit", -1)
         )
@@ -1419,6 +1520,11 @@ class AgentRunner:
         判定刻意保守（双条件 AND）：只执行了 0-1 轮工具的纯问答、或
         结尾有明确产出物叙述的长回复都不触发；宁漏勿滥，避免每次正常
         结束都弹提示。
+
+        例外（P2）：最终回复完全为空——P1 截断续写耗尽后的典型残留
+        （max_output_tokens 截断的工具参数无法解析 → 空消息按最终回复
+        结束），旧行为直接放行（对用户=完全静默的半途结束），现一律
+        标记 possibly_incomplete 让 UI 明确提示。
         """
         summary = {"tool_rounds": self._turn_tool_rounds,
                    "possibly_incomplete": False}
@@ -1437,8 +1543,18 @@ class AgentRunner:
                 content = m.content if isinstance(m.content, str) else ""
                 final_text = content.strip()
                 break
-        if not final_text or len(final_text) >= 400:
-            return summary  # 无最终回复(异常路径有 error 兜底)或回复够长
+        if not final_text:
+            # P2：执行过工具但最终回复为空——大概率截断续写耗尽
+            # （P1 重试后仍空）或模型只回了空内容，必须让用户知情
+            summary["possibly_incomplete"] = True
+            logger.warning(
+                "turn ended with EMPTY final reply after %d tool rounds "
+                "(likely max_output_tokens truncation exhausted retries)",
+                self._turn_tool_rounds,
+            )
+            return summary
+        if len(final_text) >= 400:
+            return summary  # 回复够长
         # 意图性措辞（将然时态：说要继续做但没做）——中英双语
         intent_markers = ("接下来", "然后", "先创建", "先生成", "先做", "现在生成",
                           "现在创建", "现在开始", "继续", "即将", "下面",

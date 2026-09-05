@@ -119,7 +119,7 @@ DAWorkbench 的 AI Agent 助手模块：内嵌 LLM 聊天 + 数据分析工具�
 
 | 文件 | 职责 |
 |------|------|
-| `agent_runner.py` | 唯一入口脚本：协议收发、LLM 配置、langgraph 图构建、agent 循环；权限层（permission-layer）：存储 §8 权限字段、`tool_node` 发起 `tool_call` 前对代码执行工具调 `permission_judge` 产出 `safety` 裁决、gated_tools 长超时与审批挂起计时（approval_pending/tool_exec_start） |
+| `agent_runner.py` | 唯一入口脚本：协议收发、LLM 配置、langgraph 图构建、agent 循环；权限层（permission-layer）：存储 §8 权限字段、`tool_node` 发起 `tool_call` 前对代码执行工具调 `permission_judge` 产出 `safety` 裁决、gated_tools 长超时与审批挂起计时（approval_pending/tool_exec_start）；截断自动续写（P1）：`agent_node` 检测 `finish_reason=="length"` 或 output_tokens 撞满 max_output_tokens 时，把截断消息+引导 HumanMessage 喂回输入重试（上限 `_MAX_TRUNCATION_RETRIES=2` 次），续写耗尽则空最终回复也会被 `_build_turn_summary` 标记 `possibly_incomplete`（P2，C++ 发 `agentTurnPossiblyIncomplete` 提示 UI） |
 | `permission_judge.py` | 代码内容判定管线（咨询方）：静态危险模式（deny/escalate，清单由 `code_patterns` 配置注入）+ 可选判官模型（复用当前供应商凭据），产出 `{verdict, reason, source}`；`run_script` 按 `workspace_root` 解析入口文件后走同一管线（判定边界=入口文件，不递归） |
 | `subagent_orchestrator.py` | 子 agent 编排器（子 agent 一期）：`dispatch_subagents` 工具本地执行——定义解析/白名单求交、`Semaphore` 并发限流、单任务 `wait_for` 墙钟超时、停止级联（共享 stop_event）、`subagent_progress` 进度/心跳上报、usage 聚合；与主图共用 `build_agent_graph` 图构建器（`enable_ask_user=False` + 工具子集） |
 | `context_manager.py` / `error_classifier.py` / `retry_wrapper.py` | 上下文压缩/截断、错误分类、退避重试（agent_runner 的基础设施模块） |
@@ -316,7 +316,7 @@ chat.js 选项按钮 → `chatBridge.onUserSelect(answer)` → `DAAgentWebChanne
 | | `providers` | 供应商数组（原生 JSON，非字符串）：每元素 `{name, base_url, api_key(加密), models:[{id,context_window,max_output_tokens}]}` | — |
 | | `active_provider` | 当前激活供应商名称 | — |
 | | `context_window` | 模型上下文窗口（tokens），触发压缩判断 | 262144 |
-| | `max_output_tokens` | 激活模型最大输出 token（随 init 下发 `max_tokens`） | 8192 |
+| | `max_output_tokens` | 激活模型最大输出 token（随 init 下发 `max_tokens`；默认 128K 防长文档写作被截断） | 131072 |
 | | `max_retries` | LLM 临时错误自动重试次数 | 7 |
 | | `request_timeout_sec` | 单次 LLM 请求超时 | 120 |
 | `execution` | `ready_timeout_sec` | 子进程就绪超时（覆盖 langchain 冷启动 ~17s） | 60 |
@@ -546,7 +546,7 @@ connect(agent, &DAAgentInterface::agentSessionLoaded, dock, &DAAgentDockWidget::
 ### 15.3 多供应商多模型管理（6 个新纯虚 + 2 个新信号）
 
 > 支持配置多个供应商（每个供应商含 base_url/api_key/多个模型），Dock/web 两级选择器可选不同模型。
-> 模型为对象 `{id, context_window, max_output_tokens}`（默认 256K / 8192）。激活供应商+模型派生
+> 模型为对象 `{id, context_window, max_output_tokens}`（默认 256K / 128K）。激活供应商+模型派生
 > `agent/llm_base_url`/`llm_api_key`/`llm_model`/`agent/context_window`/`agent/max_output_tokens`
 > （经 `getLLMConfig` 下发子进程 init，Python 端 `ChatOpenAI(max_tokens=max_output_tokens)`），切换模型
 > 时经 `reconfigure` 消息热替换（不重启子进程、不丢 MemorySaver 会话状态，详见 §5.1）。
@@ -556,7 +556,7 @@ connect(agent, &DAAgentInterface::agentSessionLoaded, dock, &DAAgentDockWidget::
 
 | # | 签名 | 用途 | 实现处 |
 |---|------|------|--------|
-| 1 | `virtual QJsonArray getProviders() const = 0` | 取所有供应商（api_key 已解密明文）；旧 flat-key/字符串模型配置自动迁移为单 "Default" 供应商（模型对象化，默认 256K/8192） | `DAAgentModule::getProviders` |
+| 1 | `virtual QJsonArray getProviders() const = 0` | 取所有供应商（api_key 已解密明文）；旧 flat-key/字符串模型配置自动迁移为单 "Default" 供应商（模型对象化，默认 256K/128K） | `DAAgentModule::getProviders` |
 | 2 | `virtual void setProviders(const QJsonArray& providers) = 0` | 存所有供应商（api_key 明文传入，内部 DPAPI 加密）；保存后 syncActiveConnection + emit 可用模型/激活变化 | `DAAgentModule::setProviders` |
 | 3 | `virtual QString getActiveProvider() const = 0` | 当前激活供应商名 | `DAAgentModule::getActiveProvider` |
 | 4 | `virtual QVariantList getAvailableModels() const = 0` | 所有可选模型（Dock/web 选择器用，不含 api_key）：每元素 `{provider,model,context_window,max_output_tokens}` | `DAAgentModule::getAvailableModels` |

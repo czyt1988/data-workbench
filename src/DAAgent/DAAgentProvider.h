@@ -11,14 +11,14 @@ namespace DA
  * @brief LLM 模型条目（供应商下的一个模型）
  *
  * 纯数据值类型（镜像 DAAgentPermissionRule 的头文件内联风格）。
- * contextWindow/maxOutputTokens 默认 262144(256K)/8192，与
+ * contextWindow/maxOutputTokens 默认 262144(256K)/131072(128K)，与
  * DAAgentConfig 的默认值保持一致。
  */
 struct DAAgent_API DAAgentModel
 {
     QString id;                          ///< 模型 id（如 gpt-4o）
     int contextWindow  = 262144;         ///< 上下文窗口（token）
-    int maxOutputTokens = 8192;          ///< 单次最大输出 token
+    int maxOutputTokens = 131072;        ///< 单次最大输出 token（128K，防长文档写作被截断）
 
     bool operator==(const DAAgentModel& other) const
     {
@@ -58,7 +58,7 @@ struct DAAgent_API DAAgentModelRef
     QString provider;                    ///< 所属供应商名
     QString model;                       ///< 模型 id
     int contextWindow  = 262144;         ///< 上下文窗口（token）
-    int maxOutputTokens = 8192;          ///< 单次最大输出 token
+    int maxOutputTokens = 131072;        ///< 单次最大输出 token（128K）
 
     bool operator==(const DAAgentModelRef& other) const
     {

@@ -29,7 +29,7 @@ DAModelEditDialog::DAModelEditDialog(const QString& id, int contextWindow, int m
     buildUi();
     m_idEdit->setText(id);
     m_ctxSpin->setValue(contextWindow > 0 ? contextWindow : 262144);
-    m_maxOutSpin->setValue(maxOutputTokens > 0 ? maxOutputTokens : 8192);
+    m_maxOutSpin->setValue(maxOutputTokens > 0 ? maxOutputTokens : 131072);
 }
 
 /** @brief 构建界面 */

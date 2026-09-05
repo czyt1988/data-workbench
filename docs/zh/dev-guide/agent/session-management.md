@@ -328,7 +328,7 @@ setLastActive(sessionId, newPath)    // 更新指针的 projectPath
     3. `DAAgentModule::cleanupSessions` 的 QSettings 读取
 
 !!! note "`context_window` / `max_output_tokens` 已移出 Agent 设置页"
-    `context_window`（默认 262144）与 `max_output_tokens`（默认 8192）不再是 Agent 设置页的全局可编辑项，已移至**按模型派生**的属性：设置页的模型信息表只读展示每个模型的这两值，实际值由激活供应商 + 激活模型条目决定（`setActiveModel` / `syncActiveConnection` 写入），随 `init` / `reconfigure` 下发给子进程。`DAAgentSettingsWidget.cpp` 的保存逻辑显式跳过这两项（`不含 context_window/max_output_tokens，由激活模型派生`）。
+    `context_window`（默认 262144）与 `max_output_tokens`（默认 131072）不再是 Agent 设置页的全局可编辑项，已移至**按模型派生**的属性：设置页的模型信息表只读展示每个模型的这两值，实际值由激活供应商 + 激活模型条目决定（`setActiveModel` / `syncActiveConnection` 写入），随 `init` / `reconfigure` 下发给子进程。`DAAgentSettingsWidget.cpp` 的保存逻辑显式跳过这两项（`不含 context_window/max_output_tokens，由激活模型派生`）。
 
 ---
 

@@ -241,7 +241,7 @@ async def compact_node(state):
 | 参数 | 配置键 | 默认值 | 说明 |
 |------|--------|--------|------|
 | 上下文窗口 | `context_window` | 262144 | 模型上下文窗口大小（tokens）。**按激活模型派生**（`setActiveModel` / `syncActiveConnection` 写入），非全局固定值；C++ 侧经 `QSettings` 原值读取，不做范围钳制 |
-| 最大输出 token | `max_output_tokens` | 8192 | 模型单轮最大输出 token（按激活模型派生，随 `init` / `reconfigure` 下发） |
+| 最大输出 token | `max_output_tokens` | 131072 | 模型单轮最大输出 token（按激活模型派生，随 `init` / `reconfigure` 下发）；默认 128K 防长文档写作被截断，个别严格网关超模型真实上限会 400，可在模型设置调低 |
 | 压缩阈值 | `compaction_threshold` | 0.85 | 窗口占比达到此比例时触发压缩 |
 | 保留消息数 | `max_recent_messages` | 10 | 压缩后保留的最近消息条数 |
 | 工具结果截断阈值 | `tool_result_max_chars` | 20000 | 超此字符数的工具结果被截断 |

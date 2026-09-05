@@ -47,7 +47,10 @@ public:
     bool contextWindowSet() const { return mContextWindow.has_value(); }
     void setContextWindow(int v) { mContextWindow = v; }
 
-    int maxOutputTokens() const { return mMaxOutputTokens.value_or(8192); }
+    // 默认 131072(128K)：8K 输出上限会把长文档写作截断成不可解析的工具参数
+    // （表现为 agent 运行中途静默结束）；个别严格网关超出模型真实上限会 400，
+    // 用户可在模型设置里调低
+    int maxOutputTokens() const { return mMaxOutputTokens.value_or(131072); }
     bool maxOutputTokensSet() const { return mMaxOutputTokens.has_value(); }
     void setMaxOutputTokens(int v) { mMaxOutputTokens = v; }
 

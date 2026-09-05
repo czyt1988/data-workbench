@@ -193,6 +193,11 @@ class SubagentRunContext:
         return self._runner._max_retries
 
     @property
+    def _max_output_tokens(self):
+        # P1 截断检测的 cap 穿透读 runner（与 ChatOpenAI max_tokens 同源）
+        return self._runner._max_output_tokens
+
+    @property
     def token_estimator(self):
         return self._runner.token_estimator
 

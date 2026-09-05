@@ -119,7 +119,7 @@ void DAAgentConfigTest::testDefaultsAndEmptyLoad()
     QCOMPARE(c.model(), QString());
     QCOMPARE(c.apiKey(), QString());
     QCOMPARE(c.contextWindow(), 262144);
-    QCOMPARE(c.maxOutputTokens(), 8192);
+    QCOMPARE(c.maxOutputTokens(), 131072);  // 默认 128K（防长文档截断）
     QCOMPARE(c.compactionThreshold(), 0.85);
     QCOMPARE(c.maxRecentMessages(), 10);
     QCOMPARE(c.toolResultMaxChars(), 20000);
@@ -357,11 +357,11 @@ void DAAgentConfigTest::testIniMigration()
     const DAAgentLLMConfig c = cfg.llm();
     // llm_base_url/model/context_window/max_output_tokens 为 v1 flat 派生键：
     // ini 携带 providers → load 后重算以 providers 为准（激活模型 gpt-4o 为旧
-    // 字符串条目 → 规范化默认 262144/8192，flat 的 131072/4096 被覆盖）
+    // 字符串条目 → 规范化默认 262144/131072，flat 的 131072/4096 被覆盖）
     QCOMPARE(c.baseUrl(), QStringLiteral("https://api.openai.com/v1"));
     QCOMPARE(c.model(), QStringLiteral("gpt-4o"));
     QCOMPARE(c.contextWindow(), 262144);
-    QCOMPARE(c.maxOutputTokens(), 8192);
+    QCOMPARE(c.maxOutputTokens(), 131072);
     QCOMPARE(c.readyTimeoutSec(), 90);
     QCOMPARE(c.stopTimeoutSec(), 8);
     QCOMPARE(c.compactionThreshold(), 0.9);
@@ -395,7 +395,7 @@ void DAAgentConfigTest::testIniMigration()
     QCOMPARE(providers.first().models.size(), 2);
     QCOMPARE(providers.first().models.at(0).id, QStringLiteral("gpt-4o"));
     QCOMPARE(providers.first().models.at(0).contextWindow, 262144);   // 旧字符串 → 默认
-    QCOMPARE(providers.first().models.at(0).maxOutputTokens, 8192);
+    QCOMPARE(providers.first().models.at(0).maxOutputTokens, 131072);  // 旧字符串 → 默认
     QCOMPARE(providers.first().models.at(1).id, QStringLiteral("gpt-4o-mini"));
     QCOMPARE(providers.first().models.at(1).contextWindow, 128000);
     QCOMPARE(providers.first().models.at(1).maxOutputTokens, 16384);
@@ -613,7 +613,7 @@ void DAAgentConfigTest::testProvidersSynthesis()
     QCOMPARE(providers.first().models.size(), 1);
     QCOMPARE(providers.first().models.first().id, QStringLiteral("legacy-model"));
     QCOMPARE(providers.first().models.first().contextWindow, 65536);
-    QCOMPARE(providers.first().models.first().maxOutputTokens, 8192);  // ini 无该键 → 默认
+    QCOMPARE(providers.first().models.first().maxOutputTokens, 131072);  // ini 无该键 → 默认
     // 固化：save 后 Default 供应商入盘（api_key/base_url 不再随 flat 键丢失）
     QVERIFY(cfg.save());
     DAAgentConfig cfg2;
@@ -660,7 +660,7 @@ void DAAgentConfigTest::testApplyActiveModel()
     QCOMPARE(cfg.llm().baseUrl(), QStringLiteral("https://p1.example.com/v1"));
     QCOMPARE(cfg.llm().apiKey(), QStringLiteral("sk-p1"));
     QCOMPARE(cfg.llm().contextWindow(), 262144);   // m2 默认
-    QCOMPARE(cfg.llm().maxOutputTokens(), 8192);
+    QCOMPARE(cfg.llm().maxOutputTokens(), 131072);
 
     // api_key 为空的供应商 → 不覆盖现有值（解密失败守卫）
     DAAgentProvider p2;
@@ -889,7 +889,7 @@ void DAAgentConfigTest::testProvidersLegacyFormats()
     const QList< DAAgentProvider > providers = cfg.providers();
     QCOMPARE(providers.size(), 1);
     QCOMPARE(providers.first().models.size(), 2);
-    // 字符串条目 → 规范化为默认 262144/8192
+    // 字符串条目 → 规范化为默认 262144/131072
     QCOMPARE(providers.first().models.at(0).id, QStringLiteral("m-str"));
     QCOMPARE(providers.first().models.at(0).contextWindow, 262144);
     // 对象条目保持原值

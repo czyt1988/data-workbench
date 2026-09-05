@@ -103,7 +103,7 @@ DAAgent 模块的配置独立于 `dawork-config.xml`，单独存放在配置目�
 {
     "version": 1,
     "llm": {
-        "providers": [ { "name": "deepseek", "base_url": "...", "api_key": "<DPAPI 加密 base64，不可直接编辑>", "models": [ { "id": "deepseek-chat", "context_window": 262144, "max_output_tokens": 8192 } ] } ],
+        "providers": [ { "name": "deepseek", "base_url": "...", "api_key": "<DPAPI 加密 base64，不可直接编辑>", "models": [ { "id": "deepseek-chat", "context_window": 262144, "max_output_tokens": 131072 } ] } ],
         "active_provider": "deepseek",
         "active_model": "deepseek-chat"
     },

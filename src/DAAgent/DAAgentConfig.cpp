@@ -105,9 +105,9 @@ QList< DA::DAAgentProvider > providersFromJsonArray(const QJsonArray& arr)
                 const QJsonObject mo = mv.toObject();
                 m.id             = mo.value("id").toString();
                 m.contextWindow  = positiveOr(mo.value("context_window").toInt(262144), 262144);
-                m.maxOutputTokens = positiveOr(mo.value("max_output_tokens").toInt(8192), 8192);
+                m.maxOutputTokens = positiveOr(mo.value("max_output_tokens").toInt(131072), 131072);
             } else if (mv.isString()) {
-                m.id = mv.toString();  // 旧格式字符串 → 默认 262144/8192
+                m.id = mv.toString();  // 旧格式字符串 → 默认 262144/131072
             } else {
                 continue;
             }
@@ -265,7 +265,7 @@ void DAAgentConfig::PrivateData::applyJson(const QJsonObject& root)
     if (llmG.contains("context_window"))
         mLlm.setContextWindow(llmG.value("context_window").toInt(262144));
     if (llmG.contains("max_output_tokens"))
-        mLlm.setMaxOutputTokens(llmG.value("max_output_tokens").toInt(8192));
+        mLlm.setMaxOutputTokens(llmG.value("max_output_tokens").toInt(131072));
     if (llmG.contains("max_retries"))
         mLlm.setMaxRetries(llmG.value("max_retries").toInt(7));
     if (llmG.contains("request_timeout_sec"))
@@ -360,7 +360,7 @@ void DAAgentConfig::PrivateData::applyIni(const QString& iniPath)
     if (s.contains(p + "context_window"))
         mLlm.setContextWindow(s.value(p + "context_window", 262144).toInt());
     if (s.contains(p + "max_output_tokens"))
-        mLlm.setMaxOutputTokens(s.value(p + "max_output_tokens", 8192).toInt());
+        mLlm.setMaxOutputTokens(s.value(p + "max_output_tokens", 131072).toInt());
     if (s.contains(p + "llm_max_retries"))
         mLlm.setMaxRetries(s.value(p + "llm_max_retries", 7).toInt());
     if (s.contains(p + "llm_request_timeout_sec"))
@@ -740,7 +740,7 @@ QList< DAAgentProvider > DAAgentConfig::providers() const
         DAAgentModel m;
         m.id             = model;
         m.contextWindow  = d->mLlm.contextWindow();
-        m.maxOutputTokens = 8192;  // 旧实现此分支硬编码 8192（不读 ini）
+        m.maxOutputTokens = d->mLlm.maxOutputTokens();  // 派生：与 getter 默认值同源（旧实现硬编码 8192）
         p.models.append(m);
     }
     return { p };

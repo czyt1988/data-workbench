@@ -49,7 +49,7 @@ graph LR
         "api_key": "sk-...",
         "model": "deepseek-chat",
         "context_window": 262144,
-        "max_output_tokens": 8192,
+        "max_output_tokens": 131072,
         "compaction_threshold": 0.85,
         "max_recent_messages": 10,
         "tool_result_max_chars": 20000,
@@ -87,7 +87,7 @@ graph LR
     `config` 中 `base_url`/`api_key`/`model` 三项缺一不可，子进程会报错退出。上下文管理参数有默认值兜底。
 
 !!! note "context_window / max_output_tokens 按激活模型派生"
-    `context_window`（默认 262144）与 `max_output_tokens`（默认 8192）不再是一个全局固定值，而是由激活供应商 + 激活模型条目派生（见 `DAAgentModule.cpp` 的 `setActiveModel` / `syncActiveConnection`）。切换激活模型时，经 `reconfigure` 消息把新值热下发给运行中的子进程。
+    `context_window`（默认 262144）与 `max_output_tokens`（默认 131072）不再是一个全局固定值，而是由激活供应商 + 激活模型条目派生（见 `DAAgentModule.cpp` 的 `setActiveModel` / `syncActiveConnection`）。切换激活模型时，经 `reconfigure` 消息把新值热下发给运行中的子进程。
 
 ### user_msg — 用户消息
 
@@ -146,7 +146,7 @@ C++ 执行工具后，将结果回传给 Python（RPC 应答）。
         "base_url": "https://api.deepseek.com/v1",
         "api_key": "sk-...",
         "model": "deepseek-chat",
-        "max_output_tokens": 8192,
+        "max_output_tokens": 131072,
         "request_timeout_sec": 120,
         "context_window": 262144
     }

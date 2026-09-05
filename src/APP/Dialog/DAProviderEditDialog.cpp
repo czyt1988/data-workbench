@@ -292,7 +292,7 @@ DAAgentProvider DAProviderEditDialog::getProvider() const
         DAAgentModel m;
         m.id = m_modelTable->item(r, 0) ? m_modelTable->item(r, 0)->text() : QString();
         m.contextWindow  = m_modelTable->item(r, 1) ? m_modelTable->item(r, 1)->text().toInt() : 262144;
-        m.maxOutputTokens = m_modelTable->item(r, 2) ? m_modelTable->item(r, 2)->text().toInt() : 8192;
+        m.maxOutputTokens = m_modelTable->item(r, 2) ? m_modelTable->item(r, 2)->text().toInt() : 131072;
         p.models.append(m);
     }
     return p;
