@@ -625,13 +625,17 @@ void DAAgentDockWidget::onSessionSwitched(const QString& sessionId,
                                           const QVector<QJsonObject>& allRecords)
 {
     DA_D(d);
-    // MAJOR4: UI 侧切换守卫——先清空，进行中的 token 经 m_switching 丢弃
+    // concurrent-sessions：旧 MAJOR4 语义（等 session_loaded 解除守卫）已随纯重放
+    // 切换失效——Module 侧按会话过滤后，Dock 只会收到活跃会话的信号，无需跨切换
+    // 窗口守卫。重放窗口内保持守卫（clearChat/loadHistory 为同步调用，无信号穿插），
+    // 结束即同步解除，避免纯切换（无 load_session）时守卫永真冻结渲染。
     d->mSwitching = true;
     if (d->mChannel) {
         d->mChannel->clearChat();
         d->mChannel->loadHistory(allRecords);  // 重放新会话 UI（C++ 合并后事件，见 WebChannel::loadHistory）
     }
     d->mCurrentSessionId = sessionId;
+    d->mSwitching = false;  // 同步解除（发送路径懒启动 load_session 时 onAgentSessionLoaded 幂等兜底）
     updateTitleLabel();
 }
 
