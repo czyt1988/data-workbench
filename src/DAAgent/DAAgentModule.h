@@ -9,6 +9,7 @@
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QVariantList>
+#include <functional>
 #include "DAAbstractAgentTool.h"
 #include "DAGlobals.h"
 
@@ -152,8 +153,6 @@ public:
 
 private:
     // Helper methods
-    void connectSignals();
-    void startAgentInternal();
     QString assembleSystemPrompt() const;
     QJsonArray assembleToolSpecs() const;
     // 组装子 agent 定义协议数组（随 init/update_subagents 下发，协议载荷四字段）
@@ -171,6 +170,22 @@ private:
     void emitTokenUsageForSession(const QString& sid);
     // 会话累计 token 清零（新建/删除当前/恢复时调用）
     void resetCumulativeTokens();
+
+    // ---- 会话桥管理（concurrent-sessions：多子进程并发会话） ----
+    // 为会话冷启动新桥（含 LLM/路径配置校验，失败返回 nullptr 并报错）
+    DAAgentBridge* createBridgeForSession(const QString& sessionId);
+    // 绑定会话：注册映射 + 连接全部信号路由（持久化写桥所属会话、UI 仅活跃会话）
+    void attachBridge(DAAgentBridge* bridge, const QString& sessionId);
+    // 确保会话有桥：优先接管预热空闲桥，否则冷启动；历史非空时管道序下发 load_session
+    DAAgentBridge* adoptOrStartBridge(const QString& sessionId);
+    // 优雅退役：断开路由、清缓存、requestStop + processExited 后 deleteLater
+    void retireBridge(const QString& sessionId);
+    // 查会话桥（无返回 nullptr）
+    DAAgentBridge* bridgeForSession(const QString& sessionId) const;
+    // 会话运行态（供 UI 角标）："starting" / "running" / "waiting_input" / "error" / ""（空闲）
+    QString sessionRuntimeState(const QString& sessionId) const;
+    // 遍历全部存活桥（会话桥 + 预热桥），fn 内不得增删桥
+    void forEachLiveBridge(const std::function<void(DAAgentBridge*)>& fn);
 
     DA_DECLARE_PRIVATE(DAAgentModule)
 };
