@@ -1,4 +1,4 @@
-﻿#ifndef DADIALOGAGENTSESSIONMANAGER_H
+#ifndef DADIALOGAGENTSESSIONMANAGER_H
 #define DADIALOGAGENTSESSIONMANAGER_H
 
 #include <QDialog>
@@ -14,9 +14,13 @@ namespace DA
 /**
  * @brief Agent 会话管理对话框
  *
- * 用一个表格列举当前工程下的所有会话（标题 / 消息数 / 更新时间），
+ * 用一个表格列举当前工程下的所有会话（标题 / 状态 / 消息数 / 更新时间），
  * 提供会话切换、重命名、删除功能。操作通过信号上抛，由 DAAgentDockWidget
  * signal→signal 直连转发到 DAAgentInterface。
+ *
+ * 状态列（concurrent-sessions）：显示后台会话运行态角标——
+ * 启动中/运行中/等待输入/出错（数据来自 listSessionsForUI 的 state 字段，
+ * 空闲会话不显示）。
  *
  * 操作语义：
  * - 切换（双击行或 Switch 按钮）：emit switchRequested + 关闭对话框

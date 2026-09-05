@@ -1,4 +1,4 @@
-﻿// DADialogAgentSessionManager.cpp
+// DADialogAgentSessionManager.cpp
 #include "DADialogAgentSessionManager.h"
 #include <QTableWidget>
 #include <QTableWidgetItem>
@@ -11,6 +11,7 @@
 #include <QMessageBox>
 #include <QDateTime>
 #include <QFont>
+#include <QColor>
 
 namespace DA
 {
@@ -19,8 +20,9 @@ namespace DA
 enum SessionColumn
 {
     ColTitle    = 0,
-    ColMessages = 1,
-    ColUpdated  = 2,
+    ColState    = 1,
+    ColMessages = 2,
+    ColUpdated  = 3,
     ColumnCount
 };
 
@@ -63,11 +65,13 @@ DADialogAgentSessionManager::DADialogAgentSessionManager(const QVariantList& ses
     mTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
     mTable->setHorizontalHeaderLabels(QStringList()
                                        << tr("Title")     // cn:标题
+                                       << tr("State")     // cn:状态
                                        << tr("Messages")  // cn:消息数
                                        << tr("Updated"));  // cn:更新时间
     mTable->verticalHeader()->setVisible(false);
     mTable->horizontalHeader()->setStretchLastSection(false);
     mTable->horizontalHeader()->setSectionResizeMode(ColTitle, QHeaderView::Stretch);
+    mTable->horizontalHeader()->setSectionResizeMode(ColState, QHeaderView::ResizeToContents);
     mTable->horizontalHeader()->setSectionResizeMode(ColMessages, QHeaderView::ResizeToContents);
     mTable->horizontalHeader()->setSectionResizeMode(ColUpdated, QHeaderView::ResizeToContents);
     mainLayout->addWidget(mTable, 1);
@@ -129,6 +133,31 @@ void DADialogAgentSessionManager::populateSessions(const QVariantList& sessions)
         titleItem->setData(RoleSessionId, id);
         titleItem->setData(RoleRawTitle, title);
 
+        // State（concurrent-sessions）：后台运行/等待输入/出错角标。
+        // state 由 DAAgentModule::listSessionsForUI 附带：
+        // starting/running/waiting_input/error，空串=空闲不显示。
+        QString stateKey = vm.value("state").toString();
+        QString stateText;
+        if (stateKey == QLatin1String("starting")) {
+            stateText = tr("Starting");        //cn:启动中
+        } else if (stateKey == QLatin1String("running")) {
+            stateText = tr("Running");         //cn:运行中
+        } else if (stateKey == QLatin1String("waiting_input")) {
+            stateText = tr("Waiting for you"); //cn:等待输入
+        } else if (stateKey == QLatin1String("error")) {
+            stateText = tr("Error");           //cn:出错
+        }
+        auto* stateItem = new QTableWidgetItem(stateText);
+        // 语义配色对齐 icon-ui-design-guide 色板：绿=正常进行、金黄=需用户动作、橙红=错误
+        if (stateKey == QLatin1String("running") || stateKey == QLatin1String("starting")) {
+            stateItem->setForeground(QColor(0x66, 0x9E, 0x8B));
+        } else if (stateKey == QLatin1String("waiting_input")) {
+            stateItem->setForeground(QColor(0xE6, 0xC2, 0x7C));
+        } else if (stateKey == QLatin1String("error")) {
+            stateItem->setForeground(QColor(0xCE, 0x60, 0x43));
+        }
+        stateItem->setTextAlignment(Qt::AlignCenter);
+
         auto* msgItem = new QTableWidgetItem(QString::number(msgCount));
         msgItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
 
@@ -140,12 +169,14 @@ void DADialogAgentSessionManager::populateSessions(const QVariantList& sessions)
             QFont bold = titleItem->font();
             bold.setBold(true);
             titleItem->setFont(bold);
+            stateItem->setFont(bold);
             msgItem->setFont(bold);
             updatedItem->setFont(bold);
             selectRow = i;
         }
 
         mTable->setItem(i, ColTitle, titleItem);
+        mTable->setItem(i, ColState, stateItem);
         mTable->setItem(i, ColMessages, msgItem);
         mTable->setItem(i, ColUpdated, updatedItem);
     }
