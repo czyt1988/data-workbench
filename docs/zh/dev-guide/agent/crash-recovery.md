@@ -137,7 +137,7 @@ connect(m_bridge, &DAAgentBridge::sessionRestoreRequested,
 
 除无活动看门狗外，Python 侧还有两重防死循环机制，避免 agent 陷入工具调用循环最终拖垮子进程：
 
-- **`recursion_limit`**（默认 150 步）：限制 LangGraph 图最大迭代步数（`compact → agent → tools → ...`）。超出抛 `GraphRecursionError`，被 `main()` 捕获并报为 `error_type="recursion_limit"`，随后发 `done` 结束本轮。
+- **`recursion_limit`**（默认不限制，-1）：限制 LangGraph 图最大迭代步数（`compact → agent → tools → ...`，单回合内计数）。超出抛 `GraphRecursionError`，被 `main()` 捕获并报为 `error_type="recursion_limit"`，随后发 `done` 结束本轮。
 - **重复工具调用硬终止**：`AgentRunner` 用 `_last_full_sig` / `_full_sig_repeat_count` 跟踪连续相同的完整 `tool_calls` 签名，连续 3 次相同签名（阈值 `_repeat_terminate_threshold=3`）则 `agent_node` 强制剥离 `tool_calls` 并以最终回复结束（router → END）。配合 `tool_node` 的软引导（已执行签名重复时返回引导性 `ToolMessage` 而非重复执行），在撞到 `recursion_limit` 之前优雅终止死循环。
 
 ---
@@ -312,7 +312,7 @@ sequenceDiagram
 | 不活跃超时 | `inactivity_timeout_sec` | 240 | 子进程无响应的超时 |
 | 最大重试 | `max_retries` | 7 | LLM API 调用最大重试次数 |
 | 最大重启 | `max_subprocess_restarts` | 3 | 子进程崩溃最大重启次数 |
-| 图最大迭代步数 | `recursion_limit` | 150 | LangGraph 图最大迭代步数，防死循环；`GraphRecursionError` 报为 `error_type="recursion_limit"` |
+| 图最大迭代步数 | `recursion_limit` | -1（不限制） | LangGraph 图最大迭代步数（单回合内计数），防死循环；`GraphRecursionError` 报为 `error_type="recursion_limit"`；有限值建议 150 |
 | 预启动开关 | `auto_prestart` | true | 程序启动时是否自动预热 agent 子进程（关闭则回退到懒启动） |
 
 ---

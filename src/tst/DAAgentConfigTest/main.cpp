@@ -132,7 +132,7 @@ void DAAgentConfigTest::testDefaultsAndEmptyLoad()
     QCOMPARE(c.requestTimeoutSec(), 120);
     QCOMPARE(c.inactivityTimeoutSec(), 240);
     QCOMPARE(c.maxSubprocessRestarts(), 3);
-    QCOMPARE(c.recursionLimit(), 150);
+    QCOMPARE(c.recursionLimit(), -1);  // 默认不限制（Python 侧转 None）
     QCOMPARE(c.autoPrestart(), true);
     QCOMPARE(c.subagentTimeoutSec(), 600);
     QCOMPARE(c.subagentRecursionLimit(), 60);

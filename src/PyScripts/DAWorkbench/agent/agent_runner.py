@@ -1043,18 +1043,18 @@ class AgentRunner:
         # LangGraph 线程配置（固定 thread_id，配合 MemorySaver 支持
         # interrupt/resume；run 与 resume 共用同一 thread 以保持状态）
         # recursion_limit 限制图的最大迭代步数（compact→agent→tools→compact→...），
-        # 防止 agent 陷入工具调用死循环时跑数千步不终止。默认 150 步约支持 50 轮
-        # 工具调用，满足数据分析频繁查数据的场景；C++ 端 getLLMConfig 下发此值，
-        # 用户可在设置页调整。此外 tool_node 软引导 + agent_node 硬终止提供
+        # 防止 agent 陷入工具调用死循环时跑数千步不终止。默认不限制（-1 → None），
+        # C++ 端 getLLMConfig 下发此值，用户可在设置页调整；有限值时 150 步
+        # 约支持 50 轮工具调用。此外 tool_node 软引导 + agent_node 硬终止提供
         # 智能循环检测兜底，避免仅靠此粗暴上限。
         # 步数预算按次计算（langgraph 内部 stop = step + limit + 1，每轮
         # user_msg/resume 从当前 step 重新获得完整配额），即限制的是单回合内
         # 的工具调用轮数，非会话累计。
-        # ≤0（如 ini 中 recursion_limit=-1）视为不限制：传 None 给 langgraph
+        # ≤0（如配置中 recursion_limit=-1）视为不限制：传 None 给 langgraph
         #（实测 None/缺省 key 均为无限制；显式 -1/0 会被 langgraph 以
         # ValueError 拒绝）。无限制时循环防护仅剩重复签名硬终止+软引导。
         self._recursion_limit = self._sanitize_recursion_limit(
-            config.get("recursion_limit", 150)
+            config.get("recursion_limit", -1)
         )
         self.thread_config = {
             "configurable": {"thread_id": "agent_session_1"},
@@ -1159,7 +1159,7 @@ class AgentRunner:
         self.max_recent_messages = config.get("max_recent_messages", 10)
         self._max_retries = config.get("max_retries", 7)
         new_recursion = self._sanitize_recursion_limit(
-            config.get("recursion_limit", 150)
+            config.get("recursion_limit", -1)
         )
         if new_recursion != self._recursion_limit:
             self._recursion_limit = new_recursion

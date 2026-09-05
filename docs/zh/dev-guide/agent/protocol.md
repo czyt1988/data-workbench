@@ -56,7 +56,7 @@ graph LR
         "tool_result_preview_chars": 2000,
         "request_timeout_sec": 120,
         "max_retries": 7,
-        "recursion_limit": 150,
+        "recursion_limit": -1,
         "inactivity_timeout_sec": 240,
         "max_subprocess_restarts": 3,
         "auto_prestart": true,

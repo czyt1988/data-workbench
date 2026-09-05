@@ -78,11 +78,13 @@ connect(d->mInactivityTimer, &QTimer::timeout, this, &DAAgentBridge::onInactivit
 
 ### 缺口 C — 无 recursion_limit（已修复）
 
-**修复**：`AgentRunner.__init__` 从 config 读取 `recursion_limit`（默认 150），注入 `thread_config["recursion_limit"]`：
+**修复**：`AgentRunner.__init__` 从 config 读取 `recursion_limit`（默认 -1 = 不限制），经 `_sanitize_recursion_limit`（≤0 → None）注入 `thread_config["recursion_limit"]`：
 
 ```python
 # agent_runner.py
-self._recursion_limit = config.get("recursion_limit", 150)
+self._recursion_limit = self._sanitize_recursion_limit(
+    config.get("recursion_limit", -1)
+)
 self.thread_config = {
     "configurable": {"thread_id": "agent_session_1"},
     "recursion_limit": self._recursion_limit,
@@ -102,7 +104,7 @@ except GraphRecursionError:
     await stdio.send_done()
 ```
 
-配置键为 `agent/recursion_limit`（默认 150 步，约支持 50 轮工具调用），用户可在设置页调整。
+配置键为 `agent/recursion_limit`（默认 -1 = 不限制；有限值建议 150 步，约支持 50 轮工具调用），用户可在设置页调整。
 
 > 修复 commit：`644fe5c`。
 
@@ -161,7 +163,7 @@ except GraphRecursionError:
 
 ### 缺口 C
 
-给图传显式 `recursion_limit`，并在 `tool_node` 加重复调用检测。**已实现**：`recursion_limit=150`（可配置）+ 软引导 + 硬终止（阈值 3）。
+给图传显式 `recursion_limit`，并在 `tool_node` 加重复调用检测。**已实现**：`recursion_limit` 可配置（默认 -1 = 不限制，有限值建议 150）+ 软引导 + 硬终止（阈值 3）。
 
 ## 6. 验证方法
 

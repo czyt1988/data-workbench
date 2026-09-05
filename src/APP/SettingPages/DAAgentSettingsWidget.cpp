@@ -222,12 +222,15 @@ void DAAgentSettingsWidget::setupAgentSettingsTab()
     mSpinRecursionLimit->setRange(-1, 1000000);
     mSpinRecursionLimit->setSpecialValueText(tr("No limit"));  //cn:无限制
     mSpinRecursionLimit->setToolTip(tr("Max graph reasoning steps per turn (each tool-call cycle consumes 3 steps). Check 'No limit' to disable. Recommended: 150."));  //cn:单回合图最大推理步数（每轮工具调用耗 3 步）。勾选"不限制"可关闭该上限。建议 150。
-    mSpinRecursionLimit->setValue(150);
+    // 默认不限制（与 DAAgentLLMConfig::recursionLimit 默认 -1 一致）
+    mSpinRecursionLimit->setValue(-1);
 
     // 不限制勾选框：勾选 → 禁用 SpinBox 并保存 -1（Python 侧转换为无限制），
     // 用户无需知晓 -1 的含义
     mCheckRecursionNoLimit = new QCheckBox(tr("No limit"), this);  //cn:不限制
     mCheckRecursionNoLimit->setToolTip(tr("Unlimited reasoning steps per turn. Loop protection still applies: repeated identical tool calls are terminated automatically."));  //cn:单回合推理步数不设上限。循环防护仍然生效：连续重复相同的工具调用会被自动终止。
+    // 默认勾选（置于 connect 之前，避免触发 toggled 联动）
+    mCheckRecursionNoLimit->setChecked(true);
     connect(mCheckRecursionNoLimit, &QCheckBox::toggled, this, [this](bool on) {
         if (on) {
             mSpinRecursionLimit->setValue(-1);  // -1 经 Python 守卫转为无限制

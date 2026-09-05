@@ -287,7 +287,7 @@ graph LR
 | `ask_user_node` | 调用 LangGraph `interrupt()` 暂停图执行，等待用户回答后 `resume()` 继续 |
 
 !!! note "防死循环三重兜底"
-    - **`recursion_limit`**（默认 150 步，配置键 `agent/recursion_limit`）：限制图最大迭代步数，`GraphRecursionError` 被捕获并报为 `error_type="recursion_limit"`。
+    - **`recursion_limit`**（默认不限制，配置键 `agent/recursion_limit`，有限值建议 150）：限制单回合内图最大迭代步数，`GraphRecursionError` 被捕获并报为 `error_type="recursion_limit"`。
     - **软引导**：`tool_node` 用 `_executed_call_sigs`（`deque(maxlen=8)`）记录本轮已执行签名，重复时返回引导性 `ToolMessage` 而非重复执行（不同参数不受影响）。
     - **硬终止**：`agent_node` 跟踪 `_last_full_sig` / `_full_sig_repeat_count`，连续 3 次相同完整 tool_calls 签名（阈值 `_repeat_terminate_threshold=3`）则强制剥离 `tool_calls` 并以最终回复结束（router → END）。
 

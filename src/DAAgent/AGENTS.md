@@ -320,7 +320,7 @@ chat.js 选项按钮 → `chatBridge.onUserSelect(answer)` → `DAAgentWebChanne
 | | `stop_timeout_sec` | stopAgent 等待退出超时 | 5 |
 | | `inactivity_timeout_sec` | 看门狗无活动超时 | 240 |
 | | `max_subprocess_restarts` | 崩溃自动重启上限 | 3 |
-| | `recursion_limit` | LangGraph 图最大推理步数 | 150 |
+| | `recursion_limit` | LangGraph 图最大推理步数（单回合内计数；-1=不限制，Python 转 None） | -1 |
 | | `auto_prestart` | 启动时预热子进程开关 | true |
 | | `compaction_threshold` | 自动压缩触发比例 | 0.85 |
 | | `max_recent_messages` | 压缩后保留最近消息条数 | 10 |

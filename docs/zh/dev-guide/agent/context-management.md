@@ -246,7 +246,7 @@ async def compact_node(state):
 | 保留消息数 | `max_recent_messages` | 10 | 压缩后保留的最近消息条数 |
 | 工具结果截断阈值 | `tool_result_max_chars` | 20000 | 超此字符数的工具结果被截断 |
 | 工具结果预览长度 | `tool_result_preview_chars` | 2000 | 截断后保留的前缀长度 |
-| 图最大迭代步数 | `recursion_limit` | 150 | LangGraph 图最大迭代步数（compact→agent→tools 循环），防死循环；`GraphRecursionError` 报为 `error_type="recursion_limit"` |
+| 图最大迭代步数 | `recursion_limit` | -1（不限制） | LangGraph 图最大迭代步数（compact→agent→tools 循环，单回合内计数），防死循环；`GraphRecursionError` 报为 `error_type="recursion_limit"`；有限值建议 150 |
 | 预启动开关 | `auto_prestart` | true | 程序启动时是否自动预热 agent 子进程 |
 | 无活动看门狗 | `inactivity_timeout_sec` | 240 | 子进程无活动超时（秒），触发崩溃恢复 |
 | 最大重启次数 | `max_subprocess_restarts` | 3 | 崩溃恢复最大重启次数 |

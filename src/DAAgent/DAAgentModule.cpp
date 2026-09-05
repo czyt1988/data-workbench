@@ -777,12 +777,20 @@ DAAgentLLMConfig DAAgentModule::getLLMConfig() const
  * v2 起派生字段（base_url/model/api_key/context_window/max_output_tokens）
  * 不持久化：增量携带这些字段仅影响内存态，落盘以 providers+active_provider
  * 重算为准（设置页增量不含这些键，无实际影响）。
+ *
+ * 子进程运行中则经 reconfigure 热同步（与 setActiveModel 同管道）：reconfigure
+ * 消息在 stdin 排队，当前轮 run()/resume() 结束后 Python 主循环才处理——
+ * 即设置页保存的 recursion_limit/max_retries 等运行参数从下一轮对话生效，
+ * 无需重启程序或子进程。未运行时仅写配置，下次懒启动用新配置。
  */
 void DAAgentModule::setLLMConfig(const DAAgentLLMConfig& config)
 {
     DA_D(d);
     d->mConfig.mergeLLM(config);
     d->mConfig.save();
+    if (d->mBridge && d->mBridge->isRunning()) {
+        d->mBridge->reconfigureAgent(d->mConfig.toRunnerConfigJson());
+    }
 }
 
 // ===========================================================================

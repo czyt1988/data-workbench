@@ -76,7 +76,9 @@ public:
     bool maxSubprocessRestartsSet() const { return mMaxSubprocessRestarts.has_value(); }
     void setMaxSubprocessRestarts(int v) { mMaxSubprocessRestarts = v; }
 
-    int recursionLimit() const { return mRecursionLimit.value_or(150); }
+    // 默认 -1 = 不限制（Python 侧 _sanitize_recursion_limit 转为 langgraph 的 None）；
+    // 循环防护由重复工具调用硬终止（连续 3 次相同完整签名）+ 软引导兜底
+    int recursionLimit() const { return mRecursionLimit.value_or(-1); }
     bool recursionLimitSet() const { return mRecursionLimit.has_value(); }
     void setRecursionLimit(int v) { mRecursionLimit = v; }
 

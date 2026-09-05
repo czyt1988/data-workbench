@@ -282,7 +282,7 @@ void DAAgentConfig::PrivateData::applyJson(const QJsonObject& root)
     if (execG.contains("max_subprocess_restarts"))
         mLlm.setMaxSubprocessRestarts(execG.value("max_subprocess_restarts").toInt(3));
     if (execG.contains("recursion_limit"))
-        mLlm.setRecursionLimit(execG.value("recursion_limit").toInt(150));
+        mLlm.setRecursionLimit(execG.value("recursion_limit").toInt(-1));
     if (execG.contains("auto_prestart"))
         mLlm.setAutoPrestart(execG.value("auto_prestart").toBool(true));
     if (execG.contains("compaction_threshold"))
@@ -375,7 +375,7 @@ void DAAgentConfig::PrivateData::applyIni(const QString& iniPath)
     if (s.contains(p + "max_subprocess_restarts"))
         mLlm.setMaxSubprocessRestarts(s.value(p + "max_subprocess_restarts", 3).toInt());
     if (s.contains(p + "recursion_limit"))
-        mLlm.setRecursionLimit(s.value(p + "recursion_limit", 150).toInt());
+        mLlm.setRecursionLimit(s.value(p + "recursion_limit", -1).toInt());
     if (s.contains(p + "auto_prestart"))
         mLlm.setAutoPrestart(s.value(p + "auto_prestart", true).toBool());
     if (s.contains(p + "compaction_threshold"))
