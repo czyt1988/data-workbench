@@ -1429,6 +1429,11 @@ function loadHistory(events) {
                 // 空 content（纯 tool_calls 的 assistant 记录）跳过，不留白气泡
                 continue;
             }
+            // concurrent-sessions 修复：重放文本前关闭当前工具组，对齐实时渲染的时序语义
+            //（appendToken/finalizeAgentMessage 均会 closeToolGroup）。若不关闭，
+            // ensureToolGroup 会把本会话所有工具卡片持续追加进第一个工具组
+            //（其 DOM 位置在首条文本之前），导致"工具汇总在前、思考文本孤立在后"。
+            closeToolGroup();
             const bubble = createMessageBubble('agent');
             bubble.dataset.rawText = content;
             bubble.innerHTML = md.render(content);
@@ -1478,6 +1483,9 @@ function loadHistory(events) {
             // 跳过（不渲染；token 由 C++ m_modelLabel/m_tokenLabel 显示，summary 一期不持久化渲染）
         }
     }
+    // concurrent-sessions 修复：收尾关闭最后的工具组（所有卡片已带 result，
+    // 标记 completed），避免重放后末组永远显示 running 状态。
+    closeToolGroup();
     scrollToBottom();
 }
 
