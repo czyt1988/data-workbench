@@ -68,7 +68,8 @@ DAWorkbench 的 AI Agent 助手模块：内嵌 LLM 聊天 + 数据分析工具�
 ### 信号与依赖架构（重构后）
 
 - `DAAgentInterface` 暴露 **14 个 agent 生命周期/会话信号**：Bridge 转发的 10 个（`agentToken` / `agentMessageComplete` / `agentToolCall` / `agentToolResult` / `agentQuestion` / `agentError` / `agentReady` / `agentBusy` / `agentDone` / `agentSessionLoaded`）+ Module 上移的 4 个（`tokenUsageUpdated` / `sessionSwitched` / `sessionCreated` / `sessionListChanged`），以及 `sendUserAnswer` / `newSession` 两个纯虚方法。
-- `DAAgentModule` 转发 `DAAgentBridge` 的 10 个信号到接口（`connectSignals` 内 Bridge→接口信号连接），自身 emit 4 个会话/用量信号（如 `tokenUsageUpdated` 由 Bridge `agentUsage` 经 lambda 补 `context_window` 后发射）。
+- **并发会话（concurrent-sessions）**：`DAAgentModule` 持有 `mSessionBridges`（sessionId → Bridge）+ 至多 1 个预热未绑定桥（`mIdleBridge`，`auto_prestart`）。每个运行中会话独占一个 Python 子进程；`attachBridge(bridge, sessionId)` 按会话连接信号路由——持久化 lambda 捕获桥所属 sessionId **永远写该会话**（后台会话输出不污染当前会话），UI 接口信号仅当 `sessionId == mCurrentSessionId` 时 emit。后台会话的 ask_user/审批请求缓存于 Module（`mPendingQuestions` / `mPendingApprovalRequests` + `mApprovalSessionByCallId` callId 路由表），切回时重发可交互卡片。桥存在当且仅当：活跃会话 ∨ 后台忙碌 ∨ 等待用户输入；退役见 `retireBridge`（agentDone 非活跃 / 切离空闲会话 / 删除会话 / sendMessage 防御重建）。
+- `DAAgentModule` 转发 `DAAgentBridge` 的 10 个信号到接口（`attachBridge` 内按会话路由），自身 emit 4 个会话/用量信号（如 `tokenUsageUpdated` 由 Bridge `agentUsage` 经 lambda 补 `context_window` 后发射）。
 - **Dock 的信号↔槽由 `DAAppController`（APP 层）直接 connect**（决策 D3b）：接口 14 信号中 13 条 → Dock 槽、Dock 8 信号中 7 条 → 接口方法（信号→方法 PMF）。Module 不再持有 Dock，`setDockWidget` 已废弃删除，`showDockWidget`/`hideDockWidget` 为 no-op（仅留接口签名兼容）。
 - **DAGui 与 DAAgent 互不依赖**：DAGui 不 link DAAgent，DAAgent 不 link DAGui；二者由 APP 层 `connect` 协调（详见 § 六）。
 
@@ -78,7 +79,7 @@ DAWorkbench 的 AI Agent 助手模块：内嵌 LLM 聊天 + 数据分析工具�
 |---|------|------|
 | D1 | **子进程模型** | agent 推理在独立 Python 进程（QProcess），C++ 主进程崩溃/无响应不影响子进程；协议为 stdin/stdout JSON Lines |
 | D2 | **工具执行在 C++** | LLM 只拿到工具 schema（OpenAI function schema 字典，无 Pydantic 转换）；真实执行由 `DAAgentBridge::executeTool()` 在主进程完成，结果经 stdin 回传 |
-| D3 | **懒启动** | 首次 `sendMessage()` 才启动子进程（`startAgentInternal()`），启动时一次性下发 init（LLM 配置 + 工具规格 + 系统提示词） |
+| D3 | **懒启动** | 首次 `sendMessage()` 才启动子进程（`adoptOrStartBridge`：优先接管预热桥，否则 `createBridgeForSession` 冷启动），启动时一次性下发 init（LLM 配置 + 工具规格 + 系统提示词）；历史非空时紧随 `load_session` 重建 state |
 | D4 | **HITL 提问** | langgraph `interrupt()/resume()` + 注入的 `ask_user` 工具实现人机交互提问；resume 后继续同一 thread 的图执行 |
 | D5 | **流式输出** | `llm.astream()` 逐 chunk 把 token 发给 C++ → 经 WebChannel 推给 chat.js 实时渲染（防抖 50ms） |
 | D6 | **Windows asyncio 兼容** | 强制 `WindowsSelectorEventLoopPolicy`；stdin 用后台线程 `read1()` 阻塞读取（asyncio pipe transport 在 Windows/QProcess 下不可用） |
@@ -92,7 +93,7 @@ DAWorkbench 的 AI Agent 助手模块：内嵌 LLM 聊天 + 数据分析工具�
 | 文件 | 职责 |
 |------|------|
 | `DAAgentInterface.h` | 公共接口：14 个信号 + `registerTool` / `registerSystemPrompt` / `showDockWidget` / `hideDockWidget`（no-op）/ `sendMessage` / `stop` / `sendUserAnswer` / `newSession` / `isRunning` / `getLLMConfig` / `setLLMConfig` |
-| `DAAgentModule.h/.cpp` | 接口实现：工具注册表 `m_tools`、系统提示词 `m_systemPrompts`、懒启动、`connectSignals()`（仅 Bridge→Module 持久化/状态 lambda，**不连 Dock**）、LLM 配置读写（DAAgentConfig + api_key DPAPI 加解密）、Python/脚本路径探测 |
+| `DAAgentModule.h/.cpp` | 接口实现：工具注册表 `m_tools`、系统提示词 `m_systemPrompts`、会话桥管理（concurrent-sessions：`mSessionBridges` + 预热桥，`attachBridge` 按会话路由持久化与 UI 信号、`retireBridge` 优雅退役）、LLM 配置读写（DAAgentConfig + api_key DPAPI 加解密）、Python/脚本路径探测 |
 | `DAAgentBridge.h/.cpp` | QProcess 生命周期（start/stop/超时）、stdin/stdout 读写、JSON Lines 解析分发、工具执行兜底；`sendLoadSession` 下发历史 messages 重建 state |
 | `DAAgentSessionStore.h/.cpp` | 会话持久化层（非 QObject，PIMPL）：JSONL append-only 读写、全局索引（原子写 tmp+rename）、`cleanupOldSessions`（数量+时间双限）、`setLastActive`/`lastActiveSession`（按工程过滤的精确匹配）、自动标题、工程导入导出 |
 | `DAAbstractAgentTool.h` | 工具抽象基类（纯虚）：`getToolSpec`（返回结构化 `DAAgentToolSpec`）/ `execute` / `getOwnerModule` |
@@ -205,16 +206,18 @@ stdout 专用于协议，**绝对禁止在 stdout 打印日志**（污染协议�
 
 ## 六、信号链（C++ 内部）
 
-> 决策 D3b 落地后的结构（plan-01/02）：**DAAgentInterface 暴露 14 个信号**；`DAAgentModule::connectSignals` 只保留 Bridge→Module 的持久化/状态 lambda，**不再连接 Dock**；Dock 的信号↔槽由 `DAAppController::initialize()` 直接 connect。
+> 决策 D3b 落地后的结构（plan-01/02）：**DAAgentInterface 暴露 14 个信号**；`DAAgentModule::attachBridge(bridge, sessionId)` 按会话连接 Bridge→Module 的持久化/状态 lambda，**不连接 Dock**；Dock 的信号↔槽由 `DAAppController::initialize()` 直接 connect。
 
 ```
-DAAgentBridge（10 个信号转发 + agentUsage 内部消费）
+DAAgentBridge × N（每运行中会话一个 + 至多 1 个预热未绑定桥）
   ├─ agentToken / agentMessageComplete / agentToolCall / agentToolResult
   ├─ agentQuestion / agentError / agentReady / agentBusy / agentDone / agentSessionLoaded
-  └──► DAAgentModule::connectSignals()（只连 Bridge→Module 的持久化/状态 lambda：
-        agentMessageComplete 写会话、agentUsage→tokenUsageUpdated（补 context_window）、
-        agentQuestion/agentReady/agentBusy/agentDone/agentError 状态处理；不连 Dock）
-        └──► 转发/发射到 DAAgentInterface 的 14 个信号
+  └──► DAAgentModule::attachBridge(bridge, sessionId)（按会话路由：
+        持久化 lambda 捕获 sessionId 写桥所属会话 JSONL、
+        agentUsage→tokenUsageUpdated（补 context_window，仅活跃会话 emit）、
+        agentQuestion/agentReady/agentBusy/agentDone/agentError 状态处理
+        （busy/starting/error 按会话记账，UI 信号仅活跃会话转发）；不连 Dock）
+        └──► 转发/发射到 DAAgentInterface 的 14 个信号（仅活跃会话）
               └──► DAAppController::initialize() 直接 connect 到
                     DAAgentDockWidget::onAgent* 槽（13 条）
                           └─► DAAgentWebChannel::append* → callJS() → chat.js 渲染函数
@@ -364,8 +367,8 @@ chat.js 选项按钮 → `chatBridge.onUserSelect(answer)` → `DAAgentWebChanne
 1. `DAAppCore::initialize()` → `new DAAgentModule(this, this)` + `initialize()`（创建 Bridge、预连接 Bridge→Module 信号；**不注册工具、不创建 Dock**——20 个内置工具由插件 `DAAgentTools` 注册）。
 2. `DAAppDockingArea::buildDockingArea()` → `new DAAgentDockWidget` + `createDockWidgetAsTab`（左侧标签页）。
 3. `DAAppController::initialize()` → 用 `connect()` 把 Dock 的 8 个信号（其中 7 个连到接口方法）↔ 接口的 14 个信号（其中 13 个连到 Dock 槽）对接（决策 D3b，替代旧的 `setDockWidget` 注入）+ 绑定 `actionShowAgentArea` toggle action（详见 § 六）。
-4. **懒启动**：首次 `sendMessage()` → `startAgentInternal()` → 经 `DAAgentConfig::toRunnerConfigJson()` 取 LLM 配置 + 探测 Python/脚本路径 → `m_bridge->startAgent(...)`。
-5. **退出**：`DAAgentBridge` 析构自动 `stopAgent()`（写 `stop` 消息 → `waitForFinished(stopTimeout)` → 必要时 `kill()`）。
+4. **懒启动**：首次 `sendMessage()` → `adoptOrStartBridge(sessionId)`（优先接管预热桥 `mIdleBridge`，否则 `createBridgeForSession`）→ 经 `DAAgentConfig::toRunnerConfigJson()` 取 LLM 配置 + 探测 Python/脚本路径 → `bridge->startAgent(...)`；历史非空时紧随 `load_session` 重建 state（stdin 管道序，见 T15）。
+5. **退出**：`DAAgentModule::shutdown()` 阻塞停止全部桥（会话桥 + 预热桥）；未及 shutdown 时 `DAAgentBridge` 析构自动 `stopAgent()`（写 `stop` 消息 → `waitForFinished(stopTimeout)` → 必要时 `kill()`）。
 
 ---
 
@@ -427,10 +430,11 @@ Windows 文本模式行尾是 `\r\n`，`indexOf('\n')` 会留下 `'\r'` 导致 `
 - **摘要用 self.llm（不绑 tools）**：`ContextCompactor._generate_summary()` 用 `ChatOpenAI.ainvoke()`（无 `bind_tools`），摘要无需工具调用。
 - **token 估算只用于提前触发**：tiktoken/char-based 估算偏向早触发（宁可早压缩不要溢出），不用于"跳过"判断。反应式溢出恢复是安全网，覆盖估算不准的场景。
 
-### T15. 会话持久化（plan-03/05/06）
+### T15. 会话持久化（plan-03/05/06 + concurrent-sessions）
 - **JSONL 文件不含 api_key 明文**：会话记录只存对话消息（user/assistant/tool_result/usage），init 时下发的 LLM 配置（含 api_key）绝不下发到磁盘的 jsonl；工具结果截断沿用 `tool_result_max_chars`，避免敏感数据膨胀。
-- **切换会话不重启子进程**：`DAAgentModule::switchSession` 直接调 `m_bridge->sendLoadSession(sessionId, messages)` 下发历史重建 langgraph state，**不** `stopAgent()`/`startAgent()`（冷启动 ~16s 不可接受）。切换延迟须 <500ms。
-- **`load_session` 后须等 `session_loaded` 再对话**：C++ 发 `load_session` → Python `graph.aupdate_state` 注入历史 → 回 `session_loaded` 确认。在收到 `session_loaded` 之前**禁止**发 `user_msg`（state 未重建完毕会丢历史）。`DAAgentBridge` 收到 `session_loaded` 发 `agentSessionLoaded(sessionId)` 信号，调用方（UI/Module）据此恢复输入框可用态。
+- **切换会话不触碰任何子进程（concurrent-sessions）**：`DAAgentModule::switchSession` 仅做 UI 归属切换 + JSONL 重放 + 运行态/挂起交互恢复——旧会话忙碌时其桥**留在后台继续执行**（不再 requestStop 终止）；空闲且无挂起交互的旧会话桥优雅退役（`retireBridge`）。state 重建推迟到该会话下次 `sendMessage`（见下条）。切换延迟须 <500ms。
+- **state 重建时机 = stdin 管道序**：空闲会话下次发消息时按 `init → load_session（该会话全量历史）→ user_msg` 顺序写 stdin（`startAgent` 内 `waitForStarted` 后 `writeJson` 守卫即通过）；Python 主循环 `await` 逐条顺序消费，`user_msg` 必然在 `graph.aupdate_state` 重建完成后处理——旧「收到 `session_loaded` 前禁止发 user_msg」的 C++ 侧门控不再需要（结构性保证）。`agentSessionLoaded` 信号仍转发（UI 输入框恢复的兜底锚点）。
+- **桥存在当且仅当：活跃会话 ∨ 后台忙碌 ∨ 等待用户输入**：退役触发点——后台会话 `agentDone`（非活跃且无挂起交互）、切离空闲会话、删除会话、`sendMessage` 防御性重建（桥已死不再自愈）。**禁止在 `processExited` 中移除会话→桥映射**：崩溃自愈路径 `processExited`（`DAAgentBridge.cpp:1021`）先于 `recoverFromCrash`（1s 延迟）发射，提前移除会孤儿化自愈中的桥（`bridgeForSession` 查不到 → 再建一个桥 → 双进程写同一会话）。
 - **`cleanupOldSessions` 入口加 `qMax` 防护**：`maxCount = qMax(1, maxCount); retentionDays = qMax(0, retentionDays);`（plan-06 边界）——ini 被手改为 0/负时钳到合法下限，避免「保留 0 个」误删全部自由会话。
 - **`last_active` 精确匹配 projectPath**：空 filter 只返回自由会话（指针 projectPath 必须空），非空 filter 精确匹配工程路径——避免启动恢复把工程绑定会话当自由会话恢复（plan-05 MAJOR-4 回归保护，见 `testLastActive`）。
 - **崩溃安全**：JSONL append-only + 每条即写 flush，崩溃后最多丢最后一两行；`parseLineTolerant` 跳过损坏行不整体丢弃。
@@ -444,7 +448,7 @@ Windows 文本模式行尾是 `\r\n`，`indexOf('\n')` 会留下 `'\r'` 导致 `
 - **默认模式为全自动（yolo）+ A13 仅对显式设置弹卡**：ini 无 `agent/permission_mode` 键时 `mode()` 返回默认值 yolo；`modeExplicitlySet()`（ini 是否含键）区分「用户显式设置」与默认值。A13 启动确认卡仅对**显式设置**的 yolo 弹出（跨重启二次确认），默认值 yolo 静默进入全自动。`DAAgentModule::pushPermissionMode` 经 `permissionModeExplicitChanged(bool)` 下发显式标志，Dock 缓存后在 onWebReady 判定弹卡。
 
 ### T17. 子 agent（subagent-phase1）：消息过滤、同门执法、终态撤卡
-- **带 `subagent_id` 的 `tool_call`/`tool_result` 禁止持久化与渲染**：子 agent 的工具调用经同一 `DAAgentBridge::executeTool` 权限门执法（C++ 唯一执法点不变，子 agent 天然继承父当前激活模式与分级，Q5），但 `DAAgentModule::connectSignals` 的持久化 lambda 与 UI 信号转发**必须过滤**（不写会话 JSONL、不 emit `agentToolCall`/`agentToolResult`）——子转录不落盘、不进主聊天流（Q8），只执行。审批信号链不受过滤影响（审批走 C++ 内部信号、本就不落盘）。
+- **带 `subagent_id` 的 `tool_call`/`tool_result` 禁止持久化与渲染**：子 agent 的工具调用经同一 `DAAgentBridge::executeTool` 权限门执法（C++ 唯一执法点不变，子 agent 天然继承父当前激活模式与分级，Q5），但 `DAAgentModule::attachBridge` 的持久化 lambda 与 UI 信号转发**必须过滤**（不写会话 JSONL、不 emit `agentToolCall`/`agentToolResult`）——子转录不落盘、不进主聊天流（Q8），只执行。审批信号链不受过滤影响（审批走 C++ 内部信号、本就不落盘）。
 - **审批卡上下文与终态撤卡（Q18）**：Ask 路径 `PendingApproval` 记录 `subagentId`，审批卡经 `args._subagent` 携带子 agent 来源（同 `_tier`/`_rememberable` 先例，不改信号签名；Dock 剥离该键转正为 payload.subagent 供 JS 渲染「来自子 Agent」前缀）；任务进入终态（timeout/stopped/error）或派发聚合结束时，C++ 按 `subagentId` 主动 dismiss 挂起审批卡（emit `agentToolApprovalDismissed`），防"身后执行"——任务已死而用户事后批准导致无人消费的副作用落地。撤销前已批准的迟到结果由 Python 按 call_id 严格匹配丢弃，无害。
 - **进度心跳不产生 UI 噪音**：`subagent_progress` 的 30s 心跳是无 task_id 的 running 态（保活看门狗），Dock/JS 忽略不更新任务行；进度卡片以 `call_id` 为键、任务行以 `task_id` 为键幂等更新（乱序/迟到消息防御）。
 

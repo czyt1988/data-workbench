@@ -10,7 +10,7 @@ Agent 对话历史以 JSONL 格式持久化到磁盘，支持多会话管理、�
 |------|------|
 | **C++ 主导持久化** | C++ 负责全部 JSONL 读写 / 索引 / 清理，Python 子进程只负责推理与 state 重建 |
 | **双存储** | 自由会话存配置目录 `sessions/`；保存工程时活跃会话复制进 zip 的 `agent_sessions/` |
-| **不重启切换** | 切换会话通过 `load_session` 下发历史重建 LangGraph state，不重启子进程（避免 ~16s 冷启动） |
+| **并发会话（多子进程）** | 每个运行中会话独占一个 `DAAgentBridge`/Python 子进程；切换会话不触碰任何子进程（纯 UI 重放），state 重建推迟到该会话下次 `sendMessage`（`init → load_session → user_msg` stdin 管道序）。桥存在当且仅当：会话 == 活跃会话（任意状态）∨ 后台忙碌（turn 进行中）∨ 等待用户输入（ask_user/审批挂起） |
 | **崩溃安全** | JSONL append-only + 每条即写 flush，崩溃后最多丢最后一两行 |
 | **自动恢复** | 启动程序自动填充上次活跃会话下拉；打开工程自动加载工程内会话 |
 
@@ -118,38 +118,38 @@ sequenceDiagram
 
 ### 切换会话
 
-切换会话**不重启子进程**，通过 `load_session` 下发历史重建 LangGraph state：
+切换会话**不触碰任何子进程**（concurrent-sessions）：仅做 UI 重放与归属切换；旧会话忙碌时其桥留在后台继续执行，state 重建推迟到该会话下次 `sendMessage`：
 
 ```mermaid
 sequenceDiagram
     participant UI as DockWidget
     participant M as DAAgentModule
     participant S as SessionStore
-    participant B as DAAgentBridge
+    participant B as 会话桥(按需)
     participant Py as Python 子进程
 
     UI->>M: switchSession(id)
-    M->>S: readMessagesForLoad(id)
-    S-->>M: messages[] (过滤 usage, 只返回 user/assistant/tool_result)
-    M->>B: sendLoadSession(id, messages)
-    B->>Py: {"type":"load_session", "session_id":"...", "messages":[...]}
-
-    Note over Py: 重建 LangGraph (新 MemorySaver)
-    Note over Py: graph.aupdate_state() 注入历史
-
-    Py-->>B: {"type":"session_loaded", "session_id":"..."}
-    B-->>M: emit agentSessionLoaded(id)
-    M->>M: emit sessionSwitched(id, allRecords)
-    M->>UI: onSessionSwitched() → 重放历史到 UI
-    M->>M: emitTokenUsageForSession(id) → 从持久化 usage 记录重算累计
-    M->>UI: tokenUsageUpdated (累计输入/输出/总 token + context_window)
-
-    Note over UI: 恢复输入框可用态
-    Note over UI: 此后方可发下一轮 user_msg
+    M->>M: 旧会话忙碌？→ 桥留后台继续；空闲且无挂起交互 → retireBridge
+    M->>M: mCurrentSessionId = id（UI 归属切换）
+    M->>S: setLastActive(id, projectPath)
+    M-->>UI: sessionSwitched(id, allRecords) → clearChat + loadHistory 重放
+    M-->>UI: tokenUsageUpdated（usage 记录重算）+ agentBusy/agentStarting 恢复运行态
+    M-->>UI: 挂起交互重放（后台期间的 ask_user / 审批卡 → 重新弹可交互卡片）
+    opt 目标会话无桥 且 有预热空闲桥
+        M->>B: adoptOrStartBridge(id)（温暖化）
+        B->>Py: load_session（后台重建 state，下次发消息免冷启动）
+    end
+    Note over UI: 切换耗时 = UI 重放（<500ms），无子进程操作
 ```
 
-!!! danger "收到 session_loaded 前禁止发 user_msg"
-    在收到 `session_loaded` 之前发送 `user_msg` 会导致 state 未重建完毕，历史消息丢失。`DAAgentBridge` 收到 `session_loaded` 后发 `agentSessionLoaded` 信号，UI 据此恢复输入框。
+!!! note "state 重建时机（init → load_session → user_msg 管道序）"
+    空闲会话下次 `sendMessage` 时：`DAAgentBridge::startAgent` 内部 `waitForStarted` 后依次写 stdin——`init` → `load_session`（该会话全量历史）→ `user_msg`。Python 主循环 `await` 逐条顺序消费（`agent_runner.py` main loop），`user_msg` 必然在 state 重建完成后处理——铁律 T15 的时序约束由管道序结构性保证，C++ 侧无需额外门控。
+
+!!! note "桥生命周期与退役"
+    会话桥存在当且仅当：**活跃会话**（任意状态）∨ **后台忙碌**（turn 进行中）∨ **等待用户输入**（ask_user/审批挂起）。退役触发点：后台会话跑完（`agentDone` 且非活跃）、切离空闲会话、删除会话、`sendMessage` 防御性重建（桥已死不再自愈）。退役 = `disconnect` 全部路由 + `requestStop()`（非阻塞）+ `processExited → deleteLater`。另有至多 1 个**预热未绑定桥**（`auto_prestart`），首次 `sendMessage` 时被接管。
+
+!!! danger "崩溃自愈路径不可在 processExited 清理会话映射"
+    `DAAgentBridge::onProcessFinished` 中 `processExited` 信号**先于** `recoverFromCrash`（1s 延迟重启）发射。若 Module 在 `processExited` 中移除会话→桥映射，会孤儿化正在自愈的桥（其信号仍连接、持久化仍写盘，但 `bridgeForSession` 查不到 → `sendMessage` 会为同一会话再建一个桥，出现双进程写同一会话）。死亡且不再自愈的桥由 `sendMessage` 的 `isRunning()` 防御分支惰性清理。
 
 ### 删除会话
 
