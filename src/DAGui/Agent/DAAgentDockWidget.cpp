@@ -5,7 +5,6 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QWebEngineView>
-#include <QWebEngineSettings>
 #include <QWebChannel>
 #include <QPushButton>
 #include <QLabel>
@@ -151,12 +150,9 @@ void DAAgentDockWidget::setupUI()
     // QWebEngineView 占主要空间
     d->mWebView = new QWebEngineView(this);
     d->mWebView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    // 启用开发者工具（生产环境可设为 false）
-    // DeveloperToolsEnabled 自 Qt 6.2 起提供；Qt5 无此属性，
-    // Qt5 下检查器可通过 QTWEBENGINE_REMOTE_DEBUGGING 环境变量使用
-#if QT_VERSION >= QT_VERSION_CHECK(6, 2, 0)
-    d->mWebView->settings()->setAttribute(QWebEngineSettings::DeveloperToolsEnabled, true);
-#endif
+    // 说明：QWebEngineSettings 并不存在 DeveloperToolsEnabled 属性（Qt5/Qt6 均无，旧注释有误）。
+    // 开启开发者工具需在程序启动前设置环境变量 QTWEBENGINE_REMOTE_DEBUGGING=<端口>，
+    // 再用 Chrome 访问 http://localhost:<端口>；默认保持关闭
     mainLayout->addWidget(d->mWebView, 1);
 
     // 加载 chat.html（现在内含 聊天区+状态栏+输入区，一个连续 web 表面）
