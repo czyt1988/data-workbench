@@ -3,23 +3,23 @@
 # list_repo_hashes.sh - 列举主仓库与所有第三方子模块的当前 HEAD 哈希
 #
 # 用途:
-#   主要在内网机器上运行: 生成内网当前的基线 JSON 文件，把它拷贝到外网，
+#   主要在落后位置机器上运行: 生成落后位置当前的基线 JSON 文件，把它拷贝到外网，
 #   覆盖外网仓库的 scripts/bundle_baseline.json，然后在外网运行
-#   scripts/export_bundles.sh 即可导出内网所需的增量 bundle。
+#   scripts/export_bundles.sh 即可导出落后位置所需的增量 bundle。
 #
 # 用法:
 #   ./list_repo_hashes.sh [输出JSON路径]
 #       输出路径缺省为当前工作目录下的 bundle_baseline.json
 #
 # 输出:
-#   1. 终端打印各仓库哈希一览表（短哈希 + 分支 + 状态备注）
+#   1. 终端打印各仓库哈希一览表（短哈希 + 分支 + 最近tag + 状态备注）
 #   2. 生成与 scripts/bundle_baseline.json 同格式的 JSON（完整 40 位哈希），
 #      每行一个条目
 #
 # 说明:
 #   - 未初始化的子模块哈希记为 ""，外网导出时将对它全量导出。
 #   - 若子模块 HEAD 与主仓库记录的指针不一致，表格备注中会给出提示，
-#     应先把指针更新提交到主仓库，否则内网同步时子模块不会跟进。
+#     应先把指针更新提交到主仓库，否则落后位置同步时子模块不会跟进。
 # ============================================================================
 
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd) || exit 1
@@ -41,7 +41,7 @@ fi
 if [ "$OUT_FILE" = "$SCRIPT_DIR/bundle_baseline.json" ]; then
     warn "输出文件就是本仓库的 scripts/bundle_baseline.json"
     warn "若本机是外网（导出）机器，这样覆盖会导致下次导出看不到任何变更"
-    warn "若本机是内网（同步）机器，且刚应用完 bundle，则覆盖是正确的"
+    warn "若本机是落后位置（同步）机器，且刚应用完 bundle，则覆盖是正确的"
 fi
 
 REPO_LIST=$(mktemp) || exit 1
@@ -74,6 +74,7 @@ list_one() {
     _cur=$(git -C "$_repo" rev-parse HEAD 2>/dev/null)
     _short="N/A"
     _branch="-"
+    _tag="-"
     _note=""
     if [ -z "$_cur" ]; then
         _cur=""
@@ -84,6 +85,9 @@ list_one() {
         if [ "$_branch" = "HEAD" ]; then
             _branch="(detached)"
         fi
+        # HEAD 对应的 tag（精确命中 tag 时就是 tag 名，否则是 tag-距离-g哈希）
+        _tag=$(git -C "$_repo" describe --tags 2>/dev/null)
+        [ -n "$_tag" ] || _tag="-"
     fi
 
     # 子模块: 检查主仓库记录的指针与当前检出是否一致
@@ -98,7 +102,7 @@ list_one() {
         fi
     fi
 
-    printf '%-6s %-18s %-11s %-12s %s\n' "$_type" "$_name" "$_short" "$_branch" "$_note"
+    printf '%-6s %-18s %-11s %-12s %-22s %s\n' "$_type" "$_name" "$_short" "$_branch" "$_tag" "$_note"
     printf '  "%s": "%s",\n' "$_name" "$_cur" >> "$JSON_TMP"
 }
 
@@ -106,8 +110,8 @@ info "=================================================================="
 info " data-workbench 仓库基线信息一览"
 info " 根目录: $ROOT"
 info "=================================================================="
-printf '%-6s %-18s %-11s %-12s %s\n' "类型" "名称" "哈希" "分支" "备注"
-printf '%s\n' "------------------------------------------------------------------"
+printf '%-6s %-18s %-11s %-12s %-22s %s\n' "类型" "名称" "哈希" "分支" "tag" "备注"
+printf '%s\n' "--------------------------------------------------------------------------------"
 
 while IFS='|' read -r _name _rel; do
     [ -n "$_name" ] || continue
