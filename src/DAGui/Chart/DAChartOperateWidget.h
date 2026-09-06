@@ -78,6 +78,8 @@ public:
     QByteArray saveChartLayout() const;
     // 恢复嵌套停靠区布局（供工程反序列化），state 为空或失败返回 false
     bool restoreChartLayout(const QByteArray& state);
+    // 设置内部嵌套停靠区标签页方位（true=底部/false=顶部），对运行期新建的区域同样生效
+    void setInnerDockTabsAtBottom(bool atBottom);
 public Q_SLOTS:
     // 清除所有绘图
     void clear();

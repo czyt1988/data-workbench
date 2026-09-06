@@ -106,7 +106,7 @@
         <item>
          <widget class="QLabel" name="labelDockTabPosition">
           <property name="text">
-           <string>Dock tab position</string>
+           <string>Operation window tab position</string>
           </property>
          </widget>
         </item>
@@ -221,7 +221,7 @@
    <item>
     <widget class="QLabel" name="labelRestartHint">
      <property name="text">
-      <string>Note: language, font and dock tab position changes take effect after restarting the program</string>
+      <string>Note: language and font changes take effect after restarting the program</string>
      </property>
     </widget>
    </item>

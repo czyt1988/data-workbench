@@ -17,6 +17,10 @@
 #include "DAAbstractSettingPage.h"
 #include "DADumpCapture.h"
 #include "DAPyScriptRunner.h"
+#include "DAAppDockingArea.h"
+#include "DAPyWorkFlowOperateWidget.h"
+#include "Chart/DAChartOperateWidget.h"
+#include "DADataOperateWidget.h"
 namespace DA
 {
 
@@ -33,7 +37,7 @@ DAAppConfig::DAAppConfig()
     insert(DA_CONFIG_KEY_RIBBON_THEME, -1);                           // -1=不覆盖框架默认主题
     insert(DA_CONFIG_KEY_APP_FONT_FAMILY, QString());                 // 空=系统默认字体
     insert(DA_CONFIG_KEY_APP_FONT_POINT_SIZE, -1.0);                  // <=0=系统默认字号
-    insert(DA_CONFIG_KEY_DOCK_TAB_POSITION, QStringLiteral("bottom"));  // dock 标签页默认在下方
+    insert(DA_CONFIG_KEY_DOCK_TAB_POSITION, QStringLiteral("bottom"));  // 操作窗口内部标签页默认在下方
     // Python
     insert(DA_CONFIG_KEY_PYTHON_INTERPRETER_PATH, QString());         // 空=自动检测
     insert(DA_CONFIG_KEY_PYTHON_EXTRA_PATHS, QStringList());          // 额外 sys.path
@@ -264,6 +268,22 @@ bool DAAppConfig::apply()
     // 脚本执行引擎参数（立即生效；workspace-dir 在下次打开工程时生效）
     DAPyScriptRunner::setScriptTimeout(value(DA_CONFIG_KEY_SCRIPT_TIMEOUT).toInt());
     DAPyScriptRunner::setResultMaxChars(value(DA_CONFIG_KEY_SCRIPT_RESULT_MAX_CHARS).toInt());
+    // 操作窗口内部标签页（工作流页/图表/数据表）方位（立即生效，仅影响嵌套停靠区，外层 dock 区域保持默认）
+    if (mUI) {
+        DAAppDockingArea* dockArea = mUI->getAppDockingArea();
+        if (dockArea) {
+            const bool tabsAtBottom = value(DA_CONFIG_KEY_DOCK_TAB_POSITION).toString() != QLatin1String("top");
+            if (DAPyWorkFlowOperateWidget* wfo = dockArea->getWorkFlowOperateWidget()) {
+                wfo->setInnerDockTabsAtBottom(tabsAtBottom);
+            }
+            if (DAChartOperateWidget* chartOw = dockArea->getChartOperateWidget()) {
+                chartOw->setInnerDockTabsAtBottom(tabsAtBottom);
+            }
+            if (DADataOperateWidget* dataOw = dockArea->getDataOperateWidget()) {
+                dataOw->setInnerDockTabsAtBottom(tabsAtBottom);
+            }
+        }
+    }
     // 退出时是否保存ui的状态
     bool isSaveUIState = value(DA_CONFIG_KEY_SAVE_UI_STATE_ON_CLOSE).toBool();
     if (mMainWindow) {

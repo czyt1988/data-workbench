@@ -198,7 +198,7 @@ bool DASettingPageGeneral::setAppConfig(DAAppConfig* p)
     QString lang = cfg[ DA_CONFIG_KEY_LANGUAGE ].toString();
     int lidx    = ui->comboBoxLanguage->findData(lang);
     ui->comboBoxLanguage->setCurrentIndex(lidx >= 0 ? lidx : 0);
-    // dock 标签页方位（空值/非法值回落到默认"下方"）
+    // 操作窗口标签页方位（空值/非法值回落到默认"下方"）
     QString tabPos = cfg[ DA_CONFIG_KEY_DOCK_TAB_POSITION ].toString();
     int pidx      = ui->comboBoxDockTabPosition->findData(tabPos);
     if (pidx < 0) {

@@ -24,6 +24,7 @@ set(DA_LIB_HEADER_FILES
     DADataManageWidget.h
     DADataManagerTreeWidget.h
     DADataOperateWidget.h
+    DADockAreaTabPosition.h
     DAGuiEnumStringUtils.h
     DAMessageLogViewWidget.h
     DANodeItemSettingWidget.h
@@ -79,6 +80,7 @@ set(DA_LIB_SOURCE_FILES
     DADataOperatePageWidget.cpp
     DADataOperateWidget.cpp
     DADataTableView.cpp
+    DADockAreaTabPosition.cpp
     DAFigureFactory.cpp
     DAGraphicsPixmapItemSettingWidget.cpp
     DAGuiEnumStringUtils.cpp

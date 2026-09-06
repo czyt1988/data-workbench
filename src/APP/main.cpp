@@ -34,8 +34,6 @@
 #include "DAPyInterpreter.h"
 // SARibbon
 #include "SARibbonBar.h"
-// Qt-Advanced-Docking-System
-#include "DockManager.h"
 
 void setAppFont(const DA::DAAppConfig& cfg);
 QString appPreposeDump();
@@ -156,13 +154,6 @@ int main(int argc, char* argv[])
     cmdParser.process(app);
     // 字体设置（依据配置：字体族/字号）
     setAppFont(earlyConfig);
-
-    // dock 标签页方位（依据配置：bottom=下方/top=上方，默认下方）。
-    // TabsAtBottom 为全局静态 flag，在 CDockAreaWidget 构建时读取，
-    // 必须在任何 dock 区域创建（AppMainWindow 构造）之前设置，变更后重启生效。
-    ads::CDockManager::setConfigFlag(ads::CDockManager::TabsAtBottom,
-                                     earlyConfig.value(DA_CONFIG_KEY_DOCK_TAB_POSITION).toString()
-                                         != QLatin1String("top"));
 
     //  安装翻译（依据配置：语言代码，空表示跟随系统）
     DA::DATranslatorManeger datr;

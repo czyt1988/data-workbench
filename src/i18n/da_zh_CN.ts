@@ -13483,8 +13483,8 @@ Layouts</source>
     </message>
     <message>
         <location line="+8"/>
-        <source>Dock tab position</source>
-        <translation>停靠窗口标签页位置</translation>
+        <source>Operation window tab position</source>
+        <translation>操作窗口标签页位置</translation>
     </message>
     <message>
         <location line="+27"/>
@@ -13518,8 +13518,8 @@ Layouts</source>
     </message>
     <message>
         <location line="+28"/>
-        <source>Note: language, font and dock tab position changes take effect after restarting the program</source>
-        <translation>注意：语言、字体和停靠窗口标签页位置的更改在重启程序后生效</translation>
+        <source>Note: language and font changes take effect after restarting the program</source>
+        <translation>注意：语言和字体更改在重启程序后生效</translation>
     </message>
 </context>
 <context>

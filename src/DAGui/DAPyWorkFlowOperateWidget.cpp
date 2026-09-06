@@ -23,6 +23,7 @@
 //
 #include "DAPyWorkFlowEditWidget.h"
 #include "DAPyWorkFlowEditWidgetDockWidget.h"
+#include "DADockAreaTabPosition.h"
 #include "DAPyNodeGraphicsItem.h"
 #include "Commands/DACommandsForWorkFlow.h"
 
@@ -1315,6 +1316,18 @@ bool DAPyWorkFlowOperateWidget::restoreWorkFlowLayout(const QByteArray& state)
         return false;
     }
     return d_ptr->mDockManager->restoreState(state);
+}
+
+/**
+ * @brief 设置内部嵌套停靠区标签页方位
+ *
+ * 通过 DA::DADockAreaTabPosition 实现：重定位已有停靠区并绑定 dockAreaCreated
+ * 信号，运行期新建的工作流页停靠区（含拖拽拆分、布局恢复）自动应用该方位。
+ * @param atBottom true=底部，false=顶部
+ */
+void DAPyWorkFlowOperateWidget::setInnerDockTabsAtBottom(bool atBottom)
+{
+    DA::DADockAreaTabPosition::applyToDockManager(d_ptr->mDockManager, atBottom);
 }
 
 /**

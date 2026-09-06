@@ -109,7 +109,7 @@
  */
 #define DA_CONFIG_KEY_WORKSPACE_OVERWRITE_POLICY "workspace-overwrite-policy"
 /**
- *@def dock 窗口标签页方位："bottom"=下方(默认)，"top"=上方；启动早期读取，重启生效
+ *@def 操作窗口内部标签页(工作流页/图表/数据表)方位："bottom"=下方(默认)，"top"=上方；应用设置后立即生效
  */
 #define DA_CONFIG_KEY_DOCK_TAB_POSITION "dock-tab-position"
 

@@ -13493,8 +13493,8 @@ Layouts</source>
     </message>
     <message>
         <location line="+8"/>
-        <source>Dock tab position</source>
-        <translation>Dock tab position</translation>
+        <source>Operation window tab position</source>
+        <translation>Operation window tab position</translation>
     </message>
     <message>
         <location line="+27"/>
@@ -13528,8 +13528,8 @@ Layouts</source>
     </message>
     <message>
         <location line="+28"/>
-        <source>Note: language, font and dock tab position changes take effect after restarting the program</source>
-        <translation>Note: language, font and dock tab position changes take effect after restarting the program</translation>
+        <source>Note: language and font changes take effect after restarting the program</source>
+        <translation>Note: language and font changes take effect after restarting the program</translation>
     </message>
 </context>
 <context>
