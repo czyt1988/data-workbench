@@ -33,6 +33,7 @@ DAAppConfig::DAAppConfig()
     insert(DA_CONFIG_KEY_RIBBON_THEME, -1);                           // -1=不覆盖框架默认主题
     insert(DA_CONFIG_KEY_APP_FONT_FAMILY, QString());                 // 空=系统默认字体
     insert(DA_CONFIG_KEY_APP_FONT_POINT_SIZE, -1.0);                  // <=0=系统默认字号
+    insert(DA_CONFIG_KEY_DOCK_TAB_POSITION, QStringLiteral("bottom"));  // dock 标签页默认在下方
     // Python
     insert(DA_CONFIG_KEY_PYTHON_INTERPRETER_PATH, QString());         // 空=自动检测
     insert(DA_CONFIG_KEY_PYTHON_EXTRA_PATHS, QStringList());          // 额外 sys.path

@@ -48,6 +48,10 @@ DASettingPageGeneral::DASettingPageGeneral(QWidget* parent)
             QOverload< int >::of(&QComboBox::currentIndexChanged),
             this,
             &DASettingPageGeneral::onComboBoxLanguageCurrentIndexChanged);
+    connect(ui->comboBoxDockTabPosition,
+            QOverload< int >::of(&QComboBox::currentIndexChanged),
+            this,
+            &DASettingPageGeneral::onComboBoxDockTabPositionCurrentIndexChanged);
     connect(ui->fontComboBoxAppFont,
             &QFontComboBox::currentFontChanged,
             this,
@@ -61,6 +65,7 @@ DASettingPageGeneral::DASettingPageGeneral(QWidget* parent)
     // 填充下拉
     fillRibbonThemeCombo();
     fillLanguageCombo();
+    fillDockTabPositionCombo();
     // 字号默认
     ui->spinBoxFontSize->setRange(6, 72);
     ui->spinBoxFontSize->setValue(QApplication::font().pointSize() > 0 ? QApplication::font().pointSize() : 9);
@@ -110,6 +115,15 @@ void DASettingPageGeneral::fillLanguageCombo()
     ui->comboBoxLanguage->blockSignals(false);
 }
 
+void DASettingPageGeneral::fillDockTabPositionCombo()
+{
+    ui->comboBoxDockTabPosition->blockSignals(true);
+    ui->comboBoxDockTabPosition->clear();
+    ui->comboBoxDockTabPosition->addItem(tr("Top"), QStringLiteral("top"));       // cn:上方
+    ui->comboBoxDockTabPosition->addItem(tr("Bottom"), QStringLiteral("bottom"));  // cn:下方
+    ui->comboBoxDockTabPosition->blockSignals(false);
+}
+
 void DASettingPageGeneral::apply()
 {
     if (nullptr == mAppConfig) {
@@ -122,6 +136,7 @@ void DASettingPageGeneral::apply()
     cfg[ DA_CONFIG_KEY_RIBBON_STYLE ]           = static_cast< int >(mNewRibbonStyle);
     cfg[ DA_CONFIG_KEY_RIBBON_THEME ]            = ui->comboBoxRibbonTheme->currentData().toInt();
     cfg[ DA_CONFIG_KEY_LANGUAGE ]                = ui->comboBoxLanguage->currentData().toString();
+    cfg[ DA_CONFIG_KEY_DOCK_TAB_POSITION ]       = ui->comboBoxDockTabPosition->currentData().toString();
     QFont f                                       = ui->fontComboBoxAppFont->currentFont();
     cfg[ DA_CONFIG_KEY_APP_FONT_FAMILY ]        = f.family();
     cfg[ DA_CONFIG_KEY_APP_FONT_POINT_SIZE ]    = ui->spinBoxFontSize->value();
@@ -183,6 +198,13 @@ bool DASettingPageGeneral::setAppConfig(DAAppConfig* p)
     QString lang = cfg[ DA_CONFIG_KEY_LANGUAGE ].toString();
     int lidx    = ui->comboBoxLanguage->findData(lang);
     ui->comboBoxLanguage->setCurrentIndex(lidx >= 0 ? lidx : 0);
+    // dock 标签页方位（空值/非法值回落到默认"下方"）
+    QString tabPos = cfg[ DA_CONFIG_KEY_DOCK_TAB_POSITION ].toString();
+    int pidx      = ui->comboBoxDockTabPosition->findData(tabPos);
+    if (pidx < 0) {
+        pidx = ui->comboBoxDockTabPosition->findData(QStringLiteral("bottom"));
+    }
+    ui->comboBoxDockTabPosition->setCurrentIndex(pidx);
     // font
     QFont f;
     QString fam = cfg[ DA_CONFIG_KEY_APP_FONT_FAMILY ].toString();
@@ -232,6 +254,12 @@ void DASettingPageGeneral::onComboBoxRibbonThemeCurrentIndexChanged(int index)
 }
 
 void DASettingPageGeneral::onComboBoxLanguageCurrentIndexChanged(int index)
+{
+    Q_UNUSED(index);
+    emit settingChanged();
+}
+
+void DASettingPageGeneral::onComboBoxDockTabPositionCurrentIndexChanged(int index)
 {
     Q_UNUSED(index);
     emit settingChanged();

@@ -10469,6 +10469,16 @@ Layouts</source>
         <source>Successfully removed window state record file</source>
         <translation>Successfully removed window state record file</translation>
     </message>
+    <message>
+        <location line="+10"/>
+        <source>Top</source>
+        <translation>Top</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Bottom</source>
+        <translation>Bottom</translation>
+    </message>
 </context>
 <context>
     <name>DA::DASettingPageLog</name>
@@ -13482,6 +13492,11 @@ Layouts</source>
         <translation>Ribbon theme</translation>
     </message>
     <message>
+        <location line="+8"/>
+        <source>Dock tab position</source>
+        <translation>Dock tab position</translation>
+    </message>
+    <message>
         <location line="+27"/>
         <source>Application font</source>
         <translation>Application font</translation>
@@ -13513,8 +13528,8 @@ Layouts</source>
     </message>
     <message>
         <location line="+28"/>
-        <source>Note: language and font changes take effect after restarting the program</source>
-        <translation>Note: language and font changes take effect after restarting the program</translation>
+        <source>Note: language, font and dock tab position changes take effect after restarting the program</source>
+        <translation>Note: language, font and dock tab position changes take effect after restarting the program</translation>
     </message>
 </context>
 <context>

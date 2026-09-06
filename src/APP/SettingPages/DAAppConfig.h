@@ -108,6 +108,10 @@
  *@def 打开工程时本地工作区与工程内版本冲突的策略：ask/always-local/always-zip
  */
 #define DA_CONFIG_KEY_WORKSPACE_OVERWRITE_POLICY "workspace-overwrite-policy"
+/**
+ *@def dock 窗口标签页方位："bottom"=下方(默认)，"top"=上方；启动早期读取，重启生效
+ */
+#define DA_CONFIG_KEY_DOCK_TAB_POSITION "dock-tab-position"
 
 namespace DA
 {

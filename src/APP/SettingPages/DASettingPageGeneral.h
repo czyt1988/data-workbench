@@ -37,6 +37,7 @@ private Q_SLOTS:
     void onButtonGroupRibbonStyleClicked(int id);
     void onComboBoxRibbonThemeCurrentIndexChanged(int index);
     void onComboBoxLanguageCurrentIndexChanged(int index);
+    void onComboBoxDockTabPositionCurrentIndexChanged(int index);
     void onFontComboBoxAppFontCurrentFontChanged(const QFont& font);
     void onSpinBoxFontSizeValueChanged(int v);
     void onCheckBoxSaveUIStateChanged(int state);
@@ -47,6 +48,8 @@ private:
     void fillRibbonThemeCombo();
     // 填充语言下拉
     void fillLanguageCombo();
+    // 填充 dock 标签页方位下拉
+    void fillDockTabPositionCombo();
 
 private:
     Ui::DASettingPageGeneral* ui;

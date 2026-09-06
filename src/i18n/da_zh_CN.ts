@@ -10459,6 +10459,16 @@ Layouts</source>
         <source>Successfully removed window state record file</source>
         <translation>成功删除窗口状态记录文件</translation>
     </message>
+    <message>
+        <location line="+10"/>
+        <source>Top</source>
+        <translation>上方</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Bottom</source>
+        <translation>下方</translation>
+    </message>
 </context>
 <context>
     <name>DA::DASettingPageLog</name>
@@ -13472,6 +13482,11 @@ Layouts</source>
         <translation>Ribbon 主题</translation>
     </message>
     <message>
+        <location line="+8"/>
+        <source>Dock tab position</source>
+        <translation>停靠窗口标签页位置</translation>
+    </message>
+    <message>
         <location line="+27"/>
         <source>Application font</source>
         <translation>应用程序字体</translation>
@@ -13503,8 +13518,8 @@ Layouts</source>
     </message>
     <message>
         <location line="+28"/>
-        <source>Note: language and font changes take effect after restarting the program</source>
-        <translation>注意：语言和字体更改在重启程序后生效</translation>
+        <source>Note: language, font and dock tab position changes take effect after restarting the program</source>
+        <translation>注意：语言、字体和停靠窗口标签页位置的更改在重启程序后生效</translation>
     </message>
 </context>
 <context>

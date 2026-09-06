@@ -102,6 +102,33 @@
        </layout>
       </item>
       <item>
+       <layout class="QHBoxLayout" name="horizontalLayoutDockTabPosition">
+        <item>
+         <widget class="QLabel" name="labelDockTabPosition">
+          <property name="text">
+           <string>Dock tab position</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="comboBoxDockTabPosition"/>
+        </item>
+        <item>
+         <spacer name="horizontalSpacerDockTabPosition">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </item>
+      <item>
        <layout class="QHBoxLayout" name="horizontalLayoutFont">
         <item>
          <widget class="QLabel" name="labelAppFont">
@@ -194,7 +221,7 @@
    <item>
     <widget class="QLabel" name="labelRestartHint">
      <property name="text">
-      <string>Note: language and font changes take effect after restarting the program</string>
+      <string>Note: language, font and dock tab position changes take effect after restarting the program</string>
      </property>
     </widget>
    </item>
