@@ -1,18 +1,18 @@
 #!/bin/sh
 # ============================================================================
-# export_bundles.sh - 导出 git bundle 增量同步包（外网 -> 内网）
+# export_bundles.sh - 导出 git bundle 增量同步包
 #
 # 功能:
-#   读取基线文件 scripts/bundle_baseline.json（内网各仓库的基线哈希），
+#   读取基线文件 scripts/bundle_baseline.json（落后位置的各仓库的基线哈希），
 #   对主仓库(data-workbench)与 src/3rdparty 下所有子模块逐一比较当前 HEAD:
 #     - 与基线相同        -> 跳过，不导出（例如 qwt 无变更时不生成 qwt.bundle）
 #     - 与基线不同        -> 导出增量 bundle（基线..HEAD）
 #     - 无基线/基线无法解析 -> 全量导出
 #   导出位置: <输出根目录>/<日期YYYYMMDD>/<仓库名称>.bundle
 #   同时在该日期目录中生成:
-#     - baseline.json : 本次导出后各仓库的目标哈希（内网应用全部 bundle 后，
+#     - baseline.json : 本次导出后各仓库的目标哈希（落后位置应用全部 bundle 后，
 #                       可直接用它替换外网的 scripts/bundle_baseline.json）
-#     - README.txt    : 内网应用 bundle 的详细操作步骤
+#     - README.txt    : 落后位置应用 bundle 的详细操作步骤
 #
 # 用法:
 #   ./export_bundles.sh [输出根目录]
@@ -29,11 +29,11 @@
 #   留空 / "-" / "none" 表示该仓库全量导出。
 #
 # 工作机制:
-#   - 主仓库按当前分支名导出（内网用 git fetch <bundle> <分支> 应用）；
-#     子模块多为 detached HEAD，bundle 记录 HEAD 引用（内网用
+#   - 主仓库按当前分支名导出（落后位置用 git fetch <bundle> <分支> 应用）；
+#     子模块多为 detached HEAD，bundle 记录 HEAD 引用（落后位置用
 #     git fetch <bundle> HEAD 导入对象，再由 git submodule update 检出）。
 #   - 基线存在但与当前 HEAD 分叉时仍可导出增量（子模块按指针检出不受影响；
-#     主仓库在内网应用时需 merge 而非 fast-forward）。
+#     主仓库在落后位置应用时需 merge 而非 fast-forward）。
 # ============================================================================
 
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd) || exit 1
@@ -190,7 +190,7 @@ process_repo() {
                 note_stale_bundle "$_name"
                 return 0
             fi
-            warn "$_name: 基线与当前 HEAD 已分叉，继续导出增量（主仓库在内网应用时需 merge，子模块按指针检出不受影响）"
+            warn "$_name: 基线与当前 HEAD 已分叉，继续导出增量（主仓库在落后位置应用时需 merge，子模块按指针检出不受影响）"
         fi
     fi
 
@@ -274,7 +274,7 @@ MANIFEST="$OUT_DIR/baseline.json"
 } > "$MANIFEST"
 
 # ---------------------------------------------------------------------------
-# 生成 README.txt: 内网应用步骤
+# 生成 README.txt: 落后位置应用步骤
 # ---------------------------------------------------------------------------
 README="$OUT_DIR/README.txt"
 {
@@ -285,15 +285,15 @@ README="$OUT_DIR/README.txt"
     printf '导出目录 : %s\n' "$OUT_DIR"
     printf '\n【导出清单】\n'
     printf '%s\n' "$EXPORT_DETAIL"
-    printf '\n【内网应用步骤】\n'
-    printf '1. 把本目录整体拷贝到内网机器任意位置，下文用 $BUNDLE_DIR 表示\n'
+    printf '\n【落后位置应用步骤】\n'
+    printf '1. 把本目录整体拷贝到落后位置机器任意位置，下文用 $BUNDLE_DIR 表示\n'
     printf '   该目录的实际路径（例如 /home/user/sync/%s）。\n' "$DATE"
     printf '\n'
     if [ "$MAIN_STATUS" = "exported" ]; then
-        printf '2. 更新主仓库（在内网 %s 仓库根目录执行，本次导出分支: %s）:\n' "$MAIN_NAME" "$MAIN_REF"
+        printf '2. 更新主仓库（在落后位置 %s 仓库根目录执行，本次导出分支: %s）:\n' "$MAIN_NAME" "$MAIN_REF"
         printf '   git fetch "$BUNDLE_DIR/%s.bundle" %s\n' "$MAIN_NAME" "$MAIN_REF"
         printf '   git merge --ff-only FETCH_HEAD\n'
-        printf '   （若内网当前不在 %s 分支，先执行: git checkout %s）\n' "$MAIN_REF" "$MAIN_REF"
+        printf '   （若落后位置当前不在 %s 分支，先执行: git checkout %s）\n' "$MAIN_REF" "$MAIN_REF"
     elif [ "$MAIN_STATUS" = "skip" ]; then
         printf '2. 主仓库与基线一致，本次无需更新。\n'
     else
@@ -301,27 +301,27 @@ README="$OUT_DIR/README.txt"
     fi
     printf '\n'
     if [ -s "$SUBMODULE_TMP" ]; then
-        printf '3. 导入子模块新对象（在内网 %s 仓库根目录执行）:\n' "$MAIN_NAME"
+        printf '3. 导入子模块新对象（在落后位置 %s 仓库根目录执行）:\n' "$MAIN_NAME"
         cat "$SUBMODULE_TMP"
     else
         printf '3. 本次无子模块变更。\n'
     fi
     printf '\n'
-    printf '4. 检出子模块新版本（仍在内网主仓库根目录执行）:\n'
+    printf '4. 检出子模块新版本（仍在落后位置主仓库根目录执行）:\n'
     printf '   git submodule update --init --recursive\n'
     printf '\n'
     printf '5. 同步完成后:\n'
     printf '   - 本目录中的 baseline.json 记录了各仓库同步后的目标哈希，\n'
     printf '     可直接用它替换外网仓库的 scripts/bundle_baseline.json；\n'
-    printf '   - 也可在内网运行 scripts/list_repo_hashes.sh 重新生成基线 JSON\n'
+    printf '   - 也可在落后位置运行 scripts/list_repo_hashes.sh 重新生成基线 JSON\n'
     printf '     带回外网使用（两者结果应一致）。\n'
     printf '\n'
     printf '【注意事项】\n'
-    printf '%s\n' '- bundle 为增量导出，要求内网已存在对应基线提交；若 fetch 报'
-    printf '  "Repository lacks these prerequisite commits"，说明内网实际状态\n'
-    printf '  与导出基线不符，请在内网运行 scripts/list_repo_hashes.sh 重新生成\n'
+    printf '%s\n' '- bundle 为增量导出，要求落后位置已存在对应基线提交；若 fetch 报'
+    printf '  "Repository lacks these prerequisite commits"，说明落后位置实际状态\n'
+    printf '  与导出基线不符，请在落后位置运行 scripts/list_repo_hashes.sh 重新生成\n'
     printf '  基线 JSON 带回外网，替换 scripts/bundle_baseline.json 后重新导出。\n'
-    printf '%s\n' '- 主仓库若无法 fast-forward（内网存在本地提交），改用:'
+    printf '%s\n' '- 主仓库若无法 fast-forward（落后位置存在本地提交），改用:'
     printf '  git merge FETCH_HEAD\n'
     printf '%s\n' '- 同日重复运行导出脚本会覆盖同名 bundle 文件；被跳过的仓库若当日'
     printf '  早前导出过，旧 bundle 会保留在目录中，请结合 baseline.json 确认。'
@@ -334,7 +334,7 @@ info ""
 info "=================================================================="
 info "导出完成: 导出 $EXPORT_COUNT 个, 跳过 $SKIP_COUNT 个, 失败 $ERROR_COUNT 个"
 info "输出目录: $OUT_DIR"
-info "内网应用说明: $OUT_DIR/README.txt"
+info "落后位置应用说明: $OUT_DIR/README.txt"
 info "同步后基线:   $OUT_DIR/baseline.json"
 info "=================================================================="
 
