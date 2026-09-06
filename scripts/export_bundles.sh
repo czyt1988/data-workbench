@@ -26,12 +26,17 @@
 #     "qwt": "bb5f462"
 #   }
 #   哈希值写短哈希或完整 40 位哈希均可；
-#   留空 / "-" / "none" 表示该仓库全量导出。
+#   留空 / "-" / "none" 表示该仓库全量导出（完整历史 + 全部 tag）。
 #
 # 工作机制:
 #   - 主仓库按当前分支名导出（落后位置用 git fetch <bundle> <分支> 应用）；
-#     子模块多为 detached HEAD，bundle 记录 HEAD 引用（落后位置用
-#     git fetch <bundle> HEAD 导入对象，再由 git submodule update 检出）。
+#     子模块多为 detached HEAD（bundle 记录 HEAD 引用），若子模块检出在分支上
+#     则记录该分支（落后位置统一用 git fetch <bundle> <分支或HEAD> 导入对象，
+#     再由 git submodule update 检出）。
+#   - bundle 会显式携带仓库的全部 tag 引用，落后位置应用后可直接
+#     git checkout <tag>。注意 git bundle 只能记录"指向包内对象"的引用:
+#     增量包只能携带指向基线之后提交的 tag；指向基线之前提交的旧 tag
+#     需要把该仓库基线置空 "" 走全量导出（完整历史 + 全部 tag）才能同步。
 #   - 基线存在但与当前 HEAD 分叉时仍可导出增量（子模块按指针检出不受影响；
 #     主仓库在落后位置应用时需 merge 而非 fast-forward）。
 # ============================================================================
@@ -144,6 +149,11 @@ process_repo() {
     fi
     _cur_short=$(git -C "$_repo" rev-parse --short HEAD)
 
+    # 该仓库的全部 tag 引用（bundle 会显式携带，供落后位置 checkout tag；
+    # 含空格等异常字符的 tag 无法安全传参，直接过滤掉）
+    _tagrefs=$(git -C "$_repo" for-each-ref --format='%(refname)' refs/tags 2>/dev/null \
+        | grep -v '[[:space:]]')
+
     # 子模块: 检查主仓库记录的指针与当前检出是否一致
     if [ "$_rel" != "." ]; then
         _recorded=$(git -C "$ROOT" ls-tree HEAD -- "$_rel" 2>/dev/null | awk '{print $3}')
@@ -173,7 +183,11 @@ process_repo() {
     if [ "$_full" -eq 0 ]; then
         # 与基线完全一致 -> 不导出
         if [ "$_base" = "$_cur" ]; then
-            info "[跳过] $_name: $_cur_short 与基线一致，无变更"
+            if [ -n "$_tagrefs" ]; then
+                info "[跳过] $_name: $_cur_short 与基线一致，无变更（该仓库含 tag；如需向落后位置同步旧 tag，可将其基线置空走全量导出）"
+            else
+                info "[跳过] $_name: $_cur_short 与基线一致，无变更"
+            fi
             printf '  "%s": "%s",\n' "$_name" "$_cur" >> "$MANIFEST_TMP"
             SKIP_COUNT=$((SKIP_COUNT + 1))
             [ "$_name" = "$MAIN_NAME" ] && MAIN_STATUS="skip"
@@ -209,7 +223,13 @@ process_repo() {
         _desc="$(git -C "$_repo" rev-parse --short "$_base")..$_cur_short"
     fi
 
-    if ! _out=$(git -C "$_repo" bundle create "$_bundle" "$_range" 2>&1); then
+    # bundle 引用 = HEAD/分支 + 全部 tag 引用
+    set -- "$_range"
+    for _t in $_tagrefs; do
+        set -- "$@" "$_t"
+    done
+
+    if ! _out=$(git -C "$_repo" bundle create "$_bundle" "$@" 2>&1); then
         err "$_name: 创建 bundle 失败:"
         printf '%s\n' "$_out" >&2
         rm -f "$_bundle"
@@ -235,7 +255,8 @@ process_repo() {
     if [ "$_name" = "$MAIN_NAME" ]; then
         MAIN_STATUS="exported"
     else
-        printf '   (cd %s && git fetch "$BUNDLE_DIR/%s.bundle" HEAD)\n' "$_rel" "$_name" >> "$SUBMODULE_TMP"
+        # 引用名: detached 时为 HEAD，在分支上时为分支名（与 bundle 记录一致）
+        printf '   (cd %s && git fetch "$BUNDLE_DIR/%s.bundle" %s %s)\n' "$_rel" "$_name" "$_ref" "'+refs/tags/*:refs/tags/*'" >> "$SUBMODULE_TMP"
     fi
     EXPORT_COUNT=$((EXPORT_COUNT + 1))
     EXPORT_DETAIL="$EXPORT_DETAIL
@@ -291,6 +312,7 @@ README="$OUT_DIR/README.txt"
     printf '\n'
     if [ "$MAIN_STATUS" = "exported" ]; then
         printf '2. 更新主仓库（在落后位置 %s 仓库根目录执行，本次导出分支: %s）:\n' "$MAIN_NAME" "$MAIN_REF"
+        printf '   git fetch "$BUNDLE_DIR/%s.bundle" %s\n' "$MAIN_NAME" "'+refs/tags/*:refs/tags/*'"
         printf '   git fetch "$BUNDLE_DIR/%s.bundle" %s\n' "$MAIN_NAME" "$MAIN_REF"
         printf '   git merge --ff-only FETCH_HEAD\n'
         printf '   （若落后位置当前不在 %s 分支，先执行: git checkout %s）\n' "$MAIN_REF" "$MAIN_REF"
@@ -301,7 +323,7 @@ README="$OUT_DIR/README.txt"
     fi
     printf '\n'
     if [ -s "$SUBMODULE_TMP" ]; then
-        printf '3. 导入子模块新对象（在落后位置 %s 仓库根目录执行）:\n' "$MAIN_NAME"
+        printf '3. 导入子模块新对象与 tag（在落后位置 %s 仓库根目录执行）:\n' "$MAIN_NAME"
         cat "$SUBMODULE_TMP"
     else
         printf '3. 本次无子模块变更。\n'
@@ -321,6 +343,9 @@ README="$OUT_DIR/README.txt"
     printf '  "Repository lacks these prerequisite commits"，说明落后位置实际状态\n'
     printf '  与导出基线不符，请在落后位置运行 scripts/list_repo_hashes.sh 重新生成\n'
     printf '  基线 JSON 带回外网，替换 scripts/bundle_baseline.json 后重新导出。\n'
+    printf '%s\n' '- bundle 会携带 tag 引用，应用命令中的 +refs/tags/*:refs/tags/* 会'
+    printf '  把 tag 一并导入，之后可直接 git checkout <tag>；增量包仅含指向\n'
+    printf '  基线之后提交的 tag，全量包（基线置空导出）含全部 tag。\n'
     printf '%s\n' '- 主仓库若无法 fast-forward（落后位置存在本地提交），改用:'
     printf '  git merge FETCH_HEAD\n'
     printf '%s\n' '- 同日重复运行导出脚本会覆盖同名 bundle 文件；被跳过的仓库若当日'
