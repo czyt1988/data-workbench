@@ -2,6 +2,8 @@ bin_*
 build*
 Testing/
 log/
+# bundle 导出脚本(scripts/export_bundles.sh)的输出目录
+bundle_export/
 # 保留 scripts 目录下的构建脚本
 !scripts/
 !scripts/*.ps1

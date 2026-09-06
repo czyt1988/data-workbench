@@ -1,0 +1,13 @@
+{
+  "data-workbench": "9ff4918",
+  "spdlog": "6fa3601",
+  "ADS": "2583408",
+  "SARibbon": "b84ecab",
+  "pybind11": "d03662f",
+  "QtPropertyBrowser": "68a30cbd6fcbd461dbce8cdf28a6285d14a919d4",
+  "qwt": "bb5f462",
+  "ordered-map": "46adc0e4720e9d00b6d63f62168840a086ab26e0",
+  "quazip": "54f9d01",
+  "zlib": "51b7f2abdade71cd9bb0e7a373ef2610ec6f9daf",
+  "DAWidgets": "8ac31ce"
+}
