@@ -25,6 +25,14 @@ DADataAbstractUndoCommand* DAAppCommand::beginDataOperateCommand(
     const DAData& data, const QString& text, bool isObjectPersist, bool isSkipFirstRedo
 )
 {
+    if (!data.supportsUndoSnapshot()) {
+        // 引用式/惰性数据（如数据库惰性表）无法整表物化快照（pickle到临时文件），
+        // 不创建undo命令，返回nullptr；调用方（含python绑定侧）需判空
+        qInfo() << "DAAppCommand::beginDataOperateCommand: data" << data.getName()
+                << "does not support undo snapshot, command creation skipped";
+        mDataOperateCommand.reset();
+        return nullptr;
+    }
     if (isObjectPersist) {
         mDataOperateCommand = std::make_unique< DADataObjectPersistUndoCommand >();
     } else {
@@ -38,6 +46,10 @@ DADataAbstractUndoCommand* DAAppCommand::beginDataOperateCommand(
 
 bool DAAppCommand::endDataOperateCommand(const DAData& data)
 {
+    if (!mDataOperateCommand) {
+        // beginDataOperateCommand未创建命令（如不支持快照的数据），静默跳过
+        return false;
+    }
     // 先获取当前的命令栈
     DADockingAreaInterface* dock = ui()->getDockingArea();
     if (!dock) {

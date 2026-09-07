@@ -45,6 +45,8 @@
 #include "DATableStyleManager.h"
 #include "DATableStyleRegistry.h"
 #include "DADataEnumStringUtils.h"
+#include "DADataFactory.h"
+#include <QDataStream>
 #include "DAWaitCursorScoped.h"
 #include "Chart/DAChartItemsManager.h"
 #include "Chart/DAChartOperateWidget.h"
@@ -1397,8 +1399,37 @@ void DAAppProject::makeSaveDataManagerTask(DAZipArchiveThreadWrapper* archive)
         DAData data                   = dataMgr->getData(i);
         DAAbstractData::DataType type = data.getDataType();
         QString name                  = data.getName();
-        QString tempFilePath          = makeDataTemporaryFilePath(name);
-        QString dataZipPath           = makeDataArchiveFilePath(name);
+        // 创建ele
+        QDomElement dataEle = doc.createElement(QStringLiteral("d"));
+        dataEle.setAttribute(QStringLiteral("name"), name);
+        // 持久化 id 作为表格样式跨会话匹配键（table-styles.xml 以 data-id 引用）
+        dataEle.setAttribute(QStringLiteral("id"), QString::number(data.id()));
+
+        QDomElement describeEle = doc.createElement(QStringLiteral("describe"));
+        describeEle.appendChild(doc.createTextNode(data.getDescribe()));
+        dataEle.appendChild(describeEle);
+
+        if (data.isReferenceData()) {
+            // 引用式数据（如数据库惰性表）：只保存类型标识与引用payload（连接/查询/schema），
+            // 数据本体留在外部数据源，不进工程文件；加载侧经DADataFactory按typeIdentifier重建
+            dataEle.setAttribute(QStringLiteral("type"), data.typeIdentifier());
+            QByteArray payload;
+            {
+                QBuffer buf(&payload);
+                buf.open(QIODevice::WriteOnly);
+                QDataStream out(&buf);
+                data.rawPointer()->write(out);
+            }
+            QDomElement refEle = doc.createElement(QStringLiteral("ref"));
+            refEle.appendChild(doc.createTextNode(QString::fromLatin1(payload.toBase64())));
+            dataEle.appendChild(refEle);
+            dataListEle.appendChild(dataEle);
+            continue;
+        }
+
+        QString tempFilePath = makeDataTemporaryFilePath(name);
+        QString dataZipPath  = makeDataArchiveFilePath(name);
+        bool persisted       = false;
         switch (type) {
         case DAAbstractData::TypePythonDataFrame: {
             // 写文件，对于大文件，这里可能比较耗时，但python的gli机制，无法在线程里面写
@@ -1409,25 +1440,18 @@ void DAAppProject::makeSaveDataManagerTask(DAZipArchiveThreadWrapper* archive)
             }
             // 创建archive任务队列
             archive->appendFileSaveTask(dataZipPath, tempFilePath);
+            persisted = true;
         } break;
         default:
             break;
         }
-        // 创建ele
-        QDomElement dataEle = doc.createElement(QStringLiteral("d"));
-
-        dataEle.setAttribute(QStringLiteral("name"), name);
         dataEle.setAttribute(QStringLiteral("type"), enumToString(type));
-        // 持久化 id 作为表格样式跨会话匹配键（table-styles.xml 以 data-id 引用）
-        dataEle.setAttribute(QStringLiteral("id"), QString::number(data.id()));
-
-        QDomElement valueEle = doc.createElement(QStringLiteral("v"));
-        valueEle.appendChild(doc.createTextNode(dataZipPath));
-
-        QDomElement describeEle = doc.createElement(QStringLiteral("describe"));
-        describeEle.appendChild(doc.createTextNode(data.getDescribe()));
-
-        dataEle.appendChild(valueEle);
+        if (persisted) {
+            // 仅在真正生成了数据本体文件时写<v>，避免加载侧拿到悬空路径
+            QDomElement valueEle = doc.createElement(QStringLiteral("v"));
+            valueEle.appendChild(doc.createTextNode(dataZipPath));
+            dataEle.appendChild(valueEle);
+        }
         dataListEle.appendChild(dataEle);
     }
     root.appendChild(dataListEle);
@@ -1932,6 +1956,39 @@ void DAAppProject::loadedDataManager(const std::shared_ptr< DAAbstractArchiveTas
         QString valueText          = valueEle.text();
         QDomElement describeEle    = dEle.firstChildElement(QStringLiteral("describe"));
         QString describeText       = describeEle.text();
+        QDomElement refEle         = dEle.firstChildElement(QStringLiteral("ref"));
+        if (!refEle.isNull()) {
+            // 引用式数据（如数据库惰性表）：经DADataFactory按类型标识重建，read恢复引用内容，
+            // 数据本体不在工程内，由外部数据源惰性提供
+            DAAbstractData::Pointer pData = DADataFactory::create(type);
+            if (!pData) {
+                daWarning << tr("No data factory registered for type '%1', skipping data '%2' (plugin not loaded?)")
+                                 .arg(type, name);  // cn:类型'%1'没有注册数据工厂，跳过数据'%2'（插件未加载？）
+                continue;
+            }
+            QByteArray payload = QByteArray::fromBase64(refEle.text().toLatin1());
+            QBuffer buf(&payload);
+            buf.open(QIODevice::ReadOnly);
+            QDataStream in(&buf);
+            if (!pData->read(in)) {
+                daCritical << tr("Failed to restore reference content of data '%1'").arg(name);  // cn:恢复数据'%1'的引用内容失败
+                continue;
+            }
+            DAData refData(pData);
+            refData.setName(name);
+            refData.setDescribe(describeText);
+            // 恢复持久化的 id，作为 table-styles.xml 跨会话匹配键
+            if (dEle.hasAttribute(QStringLiteral("id"))) {
+                bool ok                            = false;
+                DAAbstractData::IdType savedId     = dEle.attribute(QStringLiteral("id")).toULongLong(&ok);
+                if (ok && savedId != 0) {
+                    refData.rawPointer()->setID(savedId);
+                }
+            }
+            // 不使用addData_()，因为这个是带回退的
+            dataMgr->dataManager()->addData(refData);
+            continue;
+        }
         DAAbstractData::DataType t = stringToEnum(type, DAAbstractData::TypeNone);
         switch (t) {
         case DAAbstractData::TypePythonDataFrame: {
