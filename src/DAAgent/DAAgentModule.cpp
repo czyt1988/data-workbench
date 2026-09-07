@@ -226,7 +226,7 @@ bool DAAgentModule::registerTool(DAAbstractAgentTool* tool)
                  qPrintable(name));
     }
     d->mToolProviders[name] = provider;
-    // concurrent-sessions：同步到全部存活桥（新桥创建时经 assembleToolSpecs 取最新）
+    // concurrent-sessions：同步到全部存活桥（后创建的桥在 attachBridge 时注入最新工具表）
     forEachLiveBridge([this](DAAgentBridge* b) { b->setTools(d_func()->mTools); });
     return true;
 }
@@ -710,6 +710,13 @@ void DAAgentModule::attachBridge(DAAgentBridge* bridge, const QString& sessionId
     DA_D(d);
     if (!bridge || sessionId.isEmpty()) return;
     d->mSessionBridges.insert(sessionId, bridge);
+
+    // ---- 工具实现表注入（冷启动新桥与接管预热桥的公共收口） ----
+    // 桥的创建时机晚于插件 registerTool，注册期的热更新（forEachLiveBridge）
+    // 覆盖不到"后出生"的桥；漏注入会导致 executeToolNow 对全部插件工具
+    // 返回 Unknown tool（工具规格已随 startAgent 下发 Python，LLM 可见可调用，
+    // 但 C++ 侧执行表为空——规格与实现两张表必须同步）
+    bridge->setTools(d->mTools);
 
     // ---- 持久化（写桥所属会话，无条件执行） ----
     // assistant 消息完成（纯文本回复，含伴随 tool_calls 的中间思考文本）
