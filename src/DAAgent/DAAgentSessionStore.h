@@ -47,6 +47,9 @@ public:
         QString updatedAt;   ///< ISO8601
         int messageCount = 0;
         QString projectPath; ///< 空=自由会话；非空=绑定工程
+        qint64 inputTokens  = -1; ///< 累计输入 token（-1=旧索引未统计，listSessions 懒迁移回填）
+        qint64 outputTokens = -1; ///< 累计输出 token
+        qint64 totalTokens  = -1; ///< 累计总 token（usage 记录之和，streaming_estimate 不落盘不计入）
     };
 
     DAAgentSessionStore();
@@ -59,7 +62,7 @@ public:
     void deleteSession(const QString& id);
     // 重命名会话（更新 index 的 title + updatedAt）
     void renameSession(const QString& id, const QString& title);
-    // 列出会话（按 projectPath 过滤，按 updatedAt 倒序）
+    // 列出会话（按 projectPath 过滤，按 updatedAt 倒序；对旧索引懒迁移回填 token 累计）
     QVector<SessionMeta> listSessions(const QString& projectPathFilter = QString()) const;
     // 判断 id 是否存在于 index
     bool hasSession(const QString& id) const;
@@ -67,7 +70,8 @@ public:
     int messageCount(const QString& id) const;
 
     // ---- 记录读写 ----
-    // 追加一条 JSONL 记录（崩溃安全：每条即写 flush），同时更新 index 的 updatedAt 与 messageCount
+    // 追加一条 JSONL 记录（崩溃安全：每条即写 flush），同时更新 index 的 updatedAt 与 messageCount；
+    // usage 记录同步累计 index 的 token 字段（已迁移即 ≥0 时）
     void appendRecord(const QString& sessionId, const QJsonObject& record);
     // 读取会话消息用于 load_session 重建 state
     QJsonArray readMessagesForLoad(const QString& sessionId) const;

@@ -5,13 +5,18 @@
 #include <QHeaderView>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
+#include <QFormLayout>
 #include <QLabel>
 #include <QPushButton>
 #include <QInputDialog>
 #include <QMessageBox>
+#include <QMenu>
+#include <QGroupBox>
+#include <QStackedWidget>
 #include <QDateTime>
 #include <QFont>
 #include <QColor>
+#include <QLocale>
 
 namespace DA
 {
@@ -29,10 +34,61 @@ enum SessionColumn
 // item data role
 static constexpr int RoleSessionId = Qt::UserRole;        // 会话 ID
 static constexpr int RoleRawTitle  = Qt::UserRole + 1;    // 原始标题（未做「(untitled)」替换）
+static constexpr int RolePayload   = Qt::UserRole + 2;    // 整份 payload QVariantMap（详情面板取数）
+static constexpr int RoleSortValue = Qt::UserRole + 3;    // 数值排序键（消息数/时间 epoch ms）
+
+/**
+ * @brief 数值感知排序项：优先按 RoleSortValue 数值比较，无数值时回退文本比较
+ */
+class SessionSortItem : public QTableWidgetItem
+{
+public:
+    explicit SessionSortItem(const QString& text) : QTableWidgetItem(text) {}
+    bool operator<(const QTableWidgetItem& other) const override
+    {
+        const QVariant a = data(RoleSortValue);
+        const QVariant b = other.data(RoleSortValue);
+        if (a.isValid() && b.isValid()) {
+            return a.toLongLong() < b.toLongLong();
+        }
+        return QTableWidgetItem::operator<(other);
+    }
+};
+
+// token 数格式化为人类可读串（<0 显示破折号，<1000 原值，其余 K/M）
+static QString formatTokenCount(qint64 n)
+{
+    if (n < 0) return QStringLiteral("—");
+    if (n < 1000) return QString::number(n);
+    if (n < 1000000) {
+        return QStringLiteral("%1K").arg(QString::number(static_cast<double>(n) / 1000.0, 'f', 1));
+    }
+    return QStringLiteral("%1M").arg(QString::number(static_cast<double>(n) / 1000000.0, 'f', 1));
+}
+
+// 详情面板 token 文本：人类可读 + 千分位精确值（小数值只显示原值）
+static QString formatTokenDetail(qint64 n)
+{
+    if (n < 0) return QStringLiteral("—");
+    const QString human = formatTokenCount(n);
+    const QString exact = QLocale().toString(n);
+    if (human == exact) return exact;
+    return QStringLiteral("%1 (%2)").arg(human, exact);
+}
+
+// ISO8601 → epoch 毫秒（排序键；无效值返回 0 排最前）
+static qint64 epochMsFromIso(const QString& iso)
+{
+    QDateTime dt = QDateTime::fromString(iso, Qt::ISODateWithMs);
+    if (!dt.isValid()) {
+        dt = QDateTime::fromString(iso, Qt::ISODate);
+    }
+    return dt.isValid() ? dt.toMSecsSinceEpoch() : 0;
+}
 
 /**
  * @brief 构造函数
- * @param sessions 会话列表 payload（每元素 QVariantMap{id,title,updatedAt,messageCount}）
+ * @param sessions 会话列表 payload（每元素 QVariantMap{id,title,createdAt,updatedAt,messageCount,state,inputTokens,outputTokens,totalTokens}）
  * @param currentSessionId 当前活跃会话 ID（用于高亮与默认选中）
  * @param parent 父窗口
  */
@@ -46,9 +102,19 @@ DADialogAgentSessionManager::DADialogAgentSessionManager(const QVariantList& ses
     , mDeleteBtn(nullptr)
     , mCloseBtn(nullptr)
     , mCurrentSessionId(currentSessionId)
+    , mDetailStack(nullptr)
+    , mDetailTitleLabel(nullptr)
+    , mDetailStateValue(nullptr)
+    , mDetailMsgValue(nullptr)
+    , mDetailInValue(nullptr)
+    , mDetailOutValue(nullptr)
+    , mDetailTotalValue(nullptr)
+    , mDetailCreatedValue(nullptr)
+    , mDetailUpdatedValue(nullptr)
+    , mSummaryLabel(nullptr)
 {
     setWindowTitle(tr("Session Manager"));  // cn:会话管理
-    setMinimumSize(520, 360);
+    setMinimumSize(760, 420);
 
     QVBoxLayout* mainLayout = new QVBoxLayout(this);
     mainLayout->setContentsMargins(8, 8, 8, 8);
@@ -57,8 +123,17 @@ DADialogAgentSessionManager::DADialogAgentSessionManager(const QVariantList& ses
     QLabel* hint = new QLabel(tr("Double-click a session to switch:"), this);  // cn:双击切换会话：
     mainLayout->addWidget(hint);
 
-    // ---- 会话表格 ----
-    mTable = new QTableWidget(this);
+    // ---- 内容区：左侧表格 + 右侧详情面板 ----
+    QHBoxLayout* contentLayout = new QHBoxLayout();
+    contentLayout->setSpacing(8);
+
+    // 左侧：会话表格 + 汇总栏
+    QWidget* leftWidget = new QWidget(this);
+    QVBoxLayout* leftLayout = new QVBoxLayout(leftWidget);
+    leftLayout->setContentsMargins(0, 0, 0, 0);
+    leftLayout->setSpacing(4);
+
+    mTable = new QTableWidget(leftWidget);
     mTable->setColumnCount(ColumnCount);
     mTable->setSelectionMode(QAbstractItemView::SingleSelection);
     mTable->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -67,14 +142,78 @@ DADialogAgentSessionManager::DADialogAgentSessionManager(const QVariantList& ses
                                        << tr("Title")     // cn:标题
                                        << tr("State")     // cn:状态
                                        << tr("Messages")  // cn:消息数
-                                       << tr("Updated"));  // cn:更新时间
+                                       << tr("Updated")); // cn:更新时间
     mTable->verticalHeader()->setVisible(false);
     mTable->horizontalHeader()->setStretchLastSection(false);
     mTable->horizontalHeader()->setSectionResizeMode(ColTitle, QHeaderView::Stretch);
     mTable->horizontalHeader()->setSectionResizeMode(ColState, QHeaderView::ResizeToContents);
     mTable->horizontalHeader()->setSectionResizeMode(ColMessages, QHeaderView::ResizeToContents);
     mTable->horizontalHeader()->setSectionResizeMode(ColUpdated, QHeaderView::ResizeToContents);
-    mainLayout->addWidget(mTable, 1);
+    mTable->setContextMenuPolicy(Qt::CustomContextMenu);
+    leftLayout->addWidget(mTable, 1);
+
+    // 汇总栏：会话总数 + 累计 token
+    mSummaryLabel = new QLabel(leftWidget);
+    leftLayout->addWidget(mSummaryLabel);
+
+    contentLayout->addWidget(leftWidget, 1);
+
+    // 右侧：详情面板（占位页 / 详情页两页切换）
+    QGroupBox* detailGroup = new QGroupBox(tr("Session Details"), this);  // cn:会话详情
+    detailGroup->setFixedWidth(250);
+    QVBoxLayout* detailLayout = new QVBoxLayout(detailGroup);
+    mDetailStack = new QStackedWidget(detailGroup);
+
+    QLabel* placeholder = new QLabel(tr("Select a session to view details"), mDetailStack);  // cn:选中会话查看详情
+    placeholder->setAlignment(Qt::AlignCenter);
+    placeholder->setWordWrap(true);
+    mDetailStack->addWidget(placeholder);
+
+    QWidget* detailPage = new QWidget(mDetailStack);
+    QVBoxLayout* pageLayout = new QVBoxLayout(detailPage);
+    pageLayout->setContentsMargins(0, 0, 0, 0);
+    pageLayout->setSpacing(6);
+
+    mDetailTitleLabel = new QLabel(detailPage);
+    QFont detailTitleFont = mDetailTitleLabel->font();
+    detailTitleFont.setBold(true);
+    mDetailTitleLabel->setFont(detailTitleFont);
+    mDetailTitleLabel->setWordWrap(true);
+    mDetailTitleLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
+    pageLayout->addWidget(mDetailTitleLabel);
+
+    QFormLayout* form = new QFormLayout();
+    form->setLabelAlignment(Qt::AlignRight);
+    form->setContentsMargins(0, 0, 0, 0);
+    mDetailStateValue   = new QLabel(detailPage);
+    mDetailMsgValue     = new QLabel(detailPage);
+    mDetailInValue      = new QLabel(detailPage);
+    mDetailOutValue     = new QLabel(detailPage);
+    mDetailTotalValue   = new QLabel(detailPage);
+    mDetailCreatedValue = new QLabel(detailPage);
+    mDetailUpdatedValue = new QLabel(detailPage);
+    const QVector<QLabel*> valueLabels = { mDetailStateValue, mDetailMsgValue, mDetailInValue,
+                                           mDetailOutValue, mDetailTotalValue,
+                                           mDetailCreatedValue, mDetailUpdatedValue };
+    for (QLabel* l : valueLabels) {
+        l->setTextInteractionFlags(Qt::TextSelectableByMouse);
+    }
+    form->addRow(tr("State"), mDetailStateValue);          // cn:状态
+    form->addRow(tr("Messages"), mDetailMsgValue);         // cn:消息数
+    form->addRow(tr("Input Tokens"), mDetailInValue);      // cn:输入 tokens
+    form->addRow(tr("Output Tokens"), mDetailOutValue);    // cn:输出 tokens
+    form->addRow(tr("Total Tokens"), mDetailTotalValue);   // cn:合计 tokens
+    form->addRow(tr("Created"), mDetailCreatedValue);      // cn:创建时间
+    form->addRow(tr("Updated"), mDetailUpdatedValue);      // cn:更新时间
+    pageLayout->addLayout(form);
+    pageLayout->addStretch(1);
+    mDetailStack->addWidget(detailPage);
+
+    detailLayout->addWidget(mDetailStack);
+    mDetailStateDefaultColor = mDetailStateValue->palette().color(QPalette::WindowText);
+    contentLayout->addWidget(detailGroup, 0);
+
+    mainLayout->addLayout(contentLayout, 1);
 
     // ---- 底部按钮行（右对齐） ----
     QWidget* btnBar = new QWidget(this);
@@ -103,8 +242,10 @@ DADialogAgentSessionManager::DADialogAgentSessionManager(const QVariantList& ses
     connect(mCloseBtn, &QPushButton::clicked, this, &QDialog::reject);
     // 双击行 = 切换
     connect(mTable, &QTableWidget::cellDoubleClicked, this, &DADialogAgentSessionManager::onItemDoubleClicked);
-    // 选中变化刷新按钮可用态
+    // 选中变化刷新按钮可用态与详情面板
     connect(mTable, &QTableWidget::itemSelectionChanged, this, &DADialogAgentSessionManager::onSelectionChanged);
+    // 右键上下文菜单（切换/重命名/删除）
+    connect(mTable, &QTableWidget::customContextMenuRequested, this, &DADialogAgentSessionManager::onTableContextMenu);
 
     updateButtonStates();
 }
@@ -112,56 +253,50 @@ DADialogAgentSessionManager::DADialogAgentSessionManager(const QVariantList& ses
 /**
  * @brief 填充会话表格
  * @param sessions 会话列表 payload
+ *
+ * 填充期间关闭排序避免逐项触发重排；填充完成后开启排序并按 id 定位选中当前会话。
+ * 每行标题项携带整份 payload（RolePayload）供详情面板/汇总栏取数。
  */
 void DADialogAgentSessionManager::populateSessions(const QVariantList& sessions)
 {
+    mTable->setSortingEnabled(false);
     mTable->setRowCount(0);  // 清空
     mTable->setRowCount(sessions.size());
-    int selectRow = -1;
     for (int i = 0; i < sessions.size(); ++i) {
         QVariantMap vm = sessions.at(i).toMap();
         QString id    = vm.value("id").toString();
         QString title = vm.value("title").toString();
         int msgCount  = vm.value("messageCount", 0).toInt();
-        QString updated = formatTimestamp(vm.value("updatedAt").toString());
+        QString updatedIso = vm.value("updatedAt").toString();
+        QString updated = formatTimestamp(updatedIso);
 
         // Title：空标题显示「(untitled)」
         QString displayTitle = title.isEmpty() ? tr("(untitled)")  // cn:（未命名）
                                                 : title;
 
-        auto* titleItem = new QTableWidgetItem(displayTitle);
+        auto* titleItem = new SessionSortItem(displayTitle);
         titleItem->setData(RoleSessionId, id);
         titleItem->setData(RoleRawTitle, title);
+        titleItem->setData(RolePayload, vm);
 
-        // State（concurrent-sessions）：后台运行/等待输入/出错角标。
+        // State（concurrent-sessions）：后台运行/等待输入/出错角标，空闲留空。
         // state 由 DAAgentModule::listSessionsForUI 附带：
         // starting/running/waiting_input/error，空串=空闲不显示。
-        QString stateKey = vm.value("state").toString();
+        auto* stateItem = new SessionSortItem(QString());
         QString stateText;
-        if (stateKey == QLatin1String("starting")) {
-            stateText = tr("Starting");        //cn:启动中
-        } else if (stateKey == QLatin1String("running")) {
-            stateText = tr("Running");         //cn:运行中
-        } else if (stateKey == QLatin1String("waiting_input")) {
-            stateText = tr("Waiting for you"); //cn:等待输入
-        } else if (stateKey == QLatin1String("error")) {
-            stateText = tr("Error");           //cn:出错
-        }
-        auto* stateItem = new QTableWidgetItem(stateText);
-        // 语义配色对齐 icon-ui-design-guide 色板：绿=正常进行、金黄=需用户动作、橙红=错误
-        if (stateKey == QLatin1String("running") || stateKey == QLatin1String("starting")) {
-            stateItem->setForeground(QColor(0x66, 0x9E, 0x8B));
-        } else if (stateKey == QLatin1String("waiting_input")) {
-            stateItem->setForeground(QColor(0xE6, 0xC2, 0x7C));
-        } else if (stateKey == QLatin1String("error")) {
-            stateItem->setForeground(QColor(0xCE, 0x60, 0x43));
+        QColor stateColor;
+        if (stateDisplay(vm.value("state").toString(), stateText, stateColor)) {
+            stateItem->setText(stateText);
+            stateItem->setForeground(stateColor);
         }
         stateItem->setTextAlignment(Qt::AlignCenter);
 
-        auto* msgItem = new QTableWidgetItem(QString::number(msgCount));
+        auto* msgItem = new SessionSortItem(QString::number(msgCount));
+        msgItem->setData(RoleSortValue, static_cast<qlonglong>(msgCount));
         msgItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
 
-        auto* updatedItem = new QTableWidgetItem(updated);
+        auto* updatedItem = new SessionSortItem(updated);
+        updatedItem->setData(RoleSortValue, epochMsFromIso(updatedIso));
         updatedItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
 
         // 当前会话行加粗
@@ -172,7 +307,6 @@ void DADialogAgentSessionManager::populateSessions(const QVariantList& sessions)
             stateItem->setFont(bold);
             msgItem->setFont(bold);
             updatedItem->setFont(bold);
-            selectRow = i;
         }
 
         mTable->setItem(i, ColTitle, titleItem);
@@ -181,13 +315,28 @@ void DADialogAgentSessionManager::populateSessions(const QVariantList& sessions)
         mTable->setItem(i, ColUpdated, updatedItem);
     }
 
-    // 选中当前会话行（屏蔽信号避免触发 onSelectionChanged 的副作用）
+    // 默认排序指示：更新时间倒序（与 store 返回顺序一致；关闭排序时设置只摆箭头不触发重排）
+    mTable->horizontalHeader()->setSortIndicator(ColUpdated, Qt::DescendingOrder);
+    mTable->setSortingEnabled(true);
+
+    // 选中当前会话行：按 id 遍历定位（排序后行号不可靠），屏蔽信号避免副作用
+    int selectRow = -1;
+    if (!mCurrentSessionId.isEmpty()) {
+        for (int r = 0; r < mTable->rowCount(); ++r) {
+            if (sessionIdAt(r) == mCurrentSessionId) {
+                selectRow = r;
+                break;
+            }
+        }
+    }
     if (selectRow >= 0) {
         mTable->blockSignals(true);
         mTable->selectRow(selectRow);
         mTable->blockSignals(false);
     }
     updateButtonStates();
+    updateSummaryLabel();
+    updateDetailPanel();
 }
 
 /**
@@ -206,6 +355,33 @@ QString DADialogAgentSessionManager::formatTimestamp(const QString& iso)
         return iso;  // 解析失败，回退原始串
     }
     return dt.toLocalTime().toString(QStringLiteral("yyyy-MM-dd HH:mm"));
+}
+
+/**
+ * @brief 状态键 → 显示文本与语义色
+ * @param stateKey listSessionsForUI 附带的运行态键
+ * @param text 输出：显示文本
+ * @param color 输出：语义色（对齐 icon-ui-design-guide 色板：绿=正常进行、金黄=需用户动作、橙红=错误）
+ * @return 是否为非空闲状态（空闲返回 false，text/color 不置值）
+ */
+bool DADialogAgentSessionManager::stateDisplay(const QString& stateKey, QString& text, QColor& color)
+{
+    if (stateKey == QLatin1String("starting")) {
+        text  = tr("Starting");         // cn:启动中
+        color = QColor(0x66, 0x9E, 0x8B);
+    } else if (stateKey == QLatin1String("running")) {
+        text  = tr("Running");          // cn:运行中
+        color = QColor(0x66, 0x9E, 0x8B);
+    } else if (stateKey == QLatin1String("waiting_input")) {
+        text  = tr("Waiting for you");  // cn:等待输入
+        color = QColor(0xE6, 0xC2, 0x7C);
+    } else if (stateKey == QLatin1String("error")) {
+        text  = tr("Error");            // cn:出错
+        color = QColor(0xCE, 0x60, 0x43);
+    } else {
+        return false;  // 空闲：表格列留空，详情面板由调用方显示「空闲」
+    }
+    return true;
 }
 
 /**
@@ -242,6 +418,68 @@ void DADialogAgentSessionManager::updateButtonStates()
     mSwitchBtn->setEnabled(hasSelection);
     mRenameBtn->setEnabled(hasSelection);
     mDeleteBtn->setEnabled(hasSelection);
+}
+
+/**
+ * @brief 根据当前选中刷新右侧详情面板
+ *
+ * 数据取自该行标题项携带的整份 payload（RolePayload）；
+ * token 为 -1（旧数据未统计）时显示破折号；无选中切回占位页。
+ */
+void DADialogAgentSessionManager::updateDetailPanel()
+{
+    int row = currentSelectedRow();
+    QTableWidgetItem* titleItem = (row >= 0) ? mTable->item(row, ColTitle) : nullptr;
+    if (!titleItem) {
+        mDetailStack->setCurrentIndex(0);  // 占位页
+        return;
+    }
+    const QVariantMap vm = titleItem->data(RolePayload).toMap();
+
+    // 标题（空标题显示「(untitled)」）
+    QString title = vm.value("title").toString();
+    mDetailTitleLabel->setText(title.isEmpty() ? tr("(untitled)")  // cn:（未命名）
+                                                : title);
+
+    // 状态（语义色；空闲显示「空闲」并恢复默认文字色）
+    QString stateText;
+    QColor stateColor;
+    QPalette pal = mDetailStateValue->palette();
+    if (stateDisplay(vm.value("state").toString(), stateText, stateColor)) {
+        mDetailStateValue->setText(stateText);
+        pal.setColor(QPalette::WindowText, stateColor);
+    } else {
+        mDetailStateValue->setText(tr("Idle"));  // cn:空闲
+        pal.setColor(QPalette::WindowText, mDetailStateDefaultColor);
+    }
+    mDetailStateValue->setPalette(pal);
+
+    mDetailMsgValue->setText(QString::number(vm.value("messageCount", 0).toInt()));
+    mDetailInValue->setText(formatTokenDetail(vm.value("inputTokens", -1).toLongLong()));
+    mDetailOutValue->setText(formatTokenDetail(vm.value("outputTokens", -1).toLongLong()));
+    mDetailTotalValue->setText(formatTokenDetail(vm.value("totalTokens", -1).toLongLong()));
+    mDetailCreatedValue->setText(formatTimestamp(vm.value("createdAt").toString()));
+    mDetailUpdatedValue->setText(formatTimestamp(vm.value("updatedAt").toString()));
+
+    mDetailStack->setCurrentIndex(1);  // 详情页
+}
+
+/**
+ * @brief 刷新底部汇总栏（会话数 + 全部会话累计 tokens）
+ */
+void DADialogAgentSessionManager::updateSummaryLabel()
+{
+    const int count = mTable->rowCount();
+    qint64 totalTokens = 0;
+    for (int r = 0; r < count; ++r) {
+        if (auto* it = mTable->item(r, ColTitle)) {
+            qint64 t = it->data(RolePayload).toMap().value("totalTokens", -1).toLongLong();
+            if (t > 0) totalTokens += t;  // -1（旧数据未统计）按 0 计
+        }
+    }
+    mSummaryLabel->setText(tr("%1 sessions · %2 tokens total")  // cn:共 %1 个会话 · 累计 tokens %2
+                              .arg(count)
+                              .arg(formatTokenCount(totalTokens)));
 }
 
 /**
@@ -286,10 +524,14 @@ void DADialogAgentSessionManager::onRenameClicked()
             &ok);
         if (!ok || newTitle.trimmed().isEmpty()) return;
         newTitle = newTitle.trimmed();
-        // 本地乐观更新该行
+        // 本地乐观更新该行（含 payload 副本，保证详情面板同步显示新标题）
         titleItem->setData(RoleRawTitle, newTitle);
-        titleItem->setText(newTitle.isEmpty() ? tr("(untitled)") : newTitle);
+        titleItem->setText(newTitle);
+        QVariantMap vm = titleItem->data(RolePayload).toMap();
+        vm["title"] = newTitle;
+        titleItem->setData(RolePayload, vm);
         emit renameRequested(sid, newTitle);
+        updateDetailPanel();
     }
 }
 
@@ -317,6 +559,8 @@ void DADialogAgentSessionManager::onDeleteClicked()
         }
         emit deleteRequested(sid);
         updateButtonStates();
+        updateSummaryLabel();
+        updateDetailPanel();
     }
 }
 
@@ -326,6 +570,31 @@ void DADialogAgentSessionManager::onDeleteClicked()
 void DADialogAgentSessionManager::onSelectionChanged()
 {
     updateButtonStates();
+    updateDetailPanel();
+}
+
+/**
+ * @brief 表格右键上下文菜单槽函数（切换/重命名/删除，复用底部按钮逻辑）
+ * @param pos 右键位置（viewport 坐标）
+ */
+void DADialogAgentSessionManager::onTableContextMenu(const QPoint& pos)
+{
+    QTableWidgetItem* it = mTable->itemAt(pos);
+    if (!it) return;
+    mTable->selectRow(it->row());  // 右键先选中该行
+    QMenu menu(this);
+    QAction* switchAct = menu.addAction(tr("Switch"));  // cn:切换
+    QAction* renameAct = menu.addAction(tr("Rename"));  // cn:重命名
+    menu.addSeparator();
+    QAction* deleteAct = menu.addAction(tr("Delete"));  // cn:删除
+    QAction* chosen = menu.exec(mTable->viewport()->mapToGlobal(pos));
+    if (chosen == switchAct) {
+        onSwitchClicked();
+    } else if (chosen == renameAct) {
+        onRenameClicked();
+    } else if (chosen == deleteAct) {
+        onDeleteClicked();
+    }
 }
 
 }  // namespace DA

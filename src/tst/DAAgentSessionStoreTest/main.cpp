@@ -44,9 +44,12 @@ private Q_SLOTS:
     void testProjectPathFiltering();  // Bug1 回归：listSessions(filter) 过滤 + 倒序
     void testEnsureTitle();
     void testMessageCount();  // 按会话 ID 查消息计数（newSession 空会话复用守卫依赖）
+    void testTokenAccumulate();     // usage 记录累计进索引 token 字段 + 持久化
+    void testTokenLazyMigration();  // 旧格式索引（无 token 字段）懒迁移回填
 
 private:
     static QJsonObject makeRecord(const QString& sessionId, const QString& type, const QString& content);
+    static QJsonObject makeUsageRecord(const QString& sessionId, int inT, int outT, int totalT, const QString& source);
     static void backdateUpdatedAt(const QString& sessionId, int daysAgo);
     static QString sessionsDir();
 };
@@ -91,6 +94,26 @@ QJsonObject DAAgentSessionStoreTest::makeRecord(const QString& sessionId, const 
     rec["timestamp"]   = QDateTime::currentDateTimeUtc().toString(Qt::ISODateWithMs);
     rec["type"]        = type;
     rec["message"]     = message;
+    return rec;
+}
+
+QJsonObject DAAgentSessionStoreTest::makeUsageRecord(const QString& sessionId, int inT, int outT, int totalT, const QString& source)
+{
+    // 构造一条带 usage_metadata 的 usage 记录（对齐 DAAgentModule::appendUsageRecord 的落盘格式）
+    QJsonObject um;
+    um["input_tokens"]  = inT;
+    um["output_tokens"] = outT;
+    um["total_tokens"]  = totalT;
+    um["source"]        = source;
+
+    QJsonObject rec;
+    rec["uuid"]           = QUuid::createUuid().toString(QUuid::WithoutBraces);
+    rec["parent_uuid"]    = QJsonValue(QJsonValue::Null);
+    rec["session_id"]     = sessionId;
+    rec["timestamp"]      = QDateTime::currentDateTimeUtc().toString(Qt::ISODateWithMs);
+    rec["type"]           = QStringLiteral("usage");
+    rec["message"]        = QJsonObject{};
+    rec["usage_metadata"] = um;
     return rec;
 }
 
@@ -304,14 +327,16 @@ void DAAgentSessionStoreTest::testImportSessionFiles()
     QString sidFree = store.createSession();  // projectPath 空
     store.setLastActive(sidFree, QString());
 
-    // 构造工程内嵌会话 sidP 的 jsonl 字节：一条 user + 一条 assistant
+    // 构造工程内嵌会话 sidP 的 jsonl 字节：一条 user + 一条 assistant + 一条 usage
     QString sidP = QStringLiteral("imported-proj-session-id");
     QByteArray jsonl;
     {
         QJsonObject u = makeRecord(sidP, "user", QStringLiteral("in project"));
         QJsonObject a = makeRecord(sidP, "assistant", QStringLiteral("reply in project"));
+        QJsonObject t = makeUsageRecord(sidP, 50, 10, 60, QStringLiteral("agent"));
         jsonl += QJsonDocument(u).toJson(QJsonDocument::Compact) + "\n";
         jsonl += QJsonDocument(a).toJson(QJsonDocument::Compact) + "\n";
+        jsonl += QJsonDocument(t).toJson(QJsonDocument::Compact) + "\n";
     }
 
     // 导入：标记 projectPath = C:/proj
@@ -331,9 +356,19 @@ void DAAgentSessionStoreTest::testImportSessionFiles()
     }
     QCOMPARE(pPath, QStringLiteral("C:/proj"));
 
-    // 导入会话的记录可读，readAllRecords 含两条
+    // 导入会话的 token 统计随索引落盘（导入时同一遍扫描 usage 记录累计）
+    for (const auto& m : std::as_const(all)) {
+        if (m.id == sidP) {
+            QCOMPARE(m.inputTokens, qint64(50));
+            QCOMPARE(m.outputTokens, qint64(10));
+            QCOMPARE(m.totalTokens, qint64(60));
+            break;
+        }
+    }
+
+    // 导入会话的记录可读，readAllRecords 含三条（user/assistant/usage）
     auto recs = store.readAllRecords(sidP);
-    QCOMPARE(recs.size(), 2);
+    QCOMPARE(recs.size(), 3);
 
     // 同 id 再次导入：合并覆盖（旧 jsonl 被新内容取代），不产生重复条目
     QByteArray jsonl2;
@@ -350,6 +385,15 @@ void DAAgentSessionStoreTest::testImportSessionFiles()
     QCOMPARE(recs2.size(), 1);  // 被覆盖为单条
     QCOMPARE(recs2.at(0).value("message").toObject().value("content").toString(),
              QStringLiteral("overwritten"));
+    // token 统计随覆盖重算（新内容无 usage 记录 → 归 0，不残留旧值）
+    for (const auto& m : std::as_const(all2)) {
+        if (m.id == sidP) {
+            QCOMPARE(m.inputTokens, qint64(0));
+            QCOMPARE(m.outputTokens, qint64(0));
+            QCOMPARE(m.totalTokens, qint64(0));
+            break;
+        }
+    }
 
     // 空 files 导入为 no-op：不写、不改 index（仅重写不变内容）
     QHash< QString, QByteArray > emptyFiles;
@@ -479,6 +523,101 @@ void DAAgentSessionStoreTest::testMessageCount()
 
     // 7e. 空 id → -1
     QCOMPARE(store.messageCount(QString()), -1);
+}
+
+// ---------------------------------------------------------------------------
+// 8. token 累计：usage 记录写入时索引同步累计 + 持久化（会话管理对话框数据源）
+// ---------------------------------------------------------------------------
+void DAAgentSessionStoreTest::testTokenAccumulate()
+{
+    DA::DAAgentSessionStore store;
+    QString sid = store.createSession();
+
+    // 8a. 新会话 token 三字段为 0（非 -1 哨兵）
+    {
+        auto metas = store.listSessions();
+        QCOMPARE(metas.size(), 1);
+        QCOMPARE(metas.at(0).inputTokens, qint64(0));
+        QCOMPARE(metas.at(0).outputTokens, qint64(0));
+        QCOMPARE(metas.at(0).totalTokens, qint64(0));
+    }
+
+    // 8b. 追加两条真实 usage 记录（含 summary 来源），索引同步累计
+    store.appendRecord(sid, makeUsageRecord(sid, 100, 20, 120, QStringLiteral("agent")));
+    store.appendRecord(sid, makeUsageRecord(sid, 300, 50, 350, QStringLiteral("summary")));
+    auto metas = store.listSessions();
+    QCOMPARE(metas.size(), 1);
+    QCOMPARE(metas.at(0).inputTokens, qint64(400));
+    QCOMPARE(metas.at(0).outputTokens, qint64(70));
+    QCOMPARE(metas.at(0).totalTokens, qint64(470));
+    // usage 记录不计入消息数（既有语义不回归）
+    QCOMPARE(metas.at(0).messageCount, 0);
+
+    // 8c. 已持久化进索引文件：新 store 实例重读应得到相同值
+    DA::DAAgentSessionStore store2;
+    auto metas2 = store2.listSessions();
+    QCOMPARE(metas2.size(), 1);
+    QCOMPARE(metas2.at(0).inputTokens, qint64(400));
+    QCOMPARE(metas2.at(0).outputTokens, qint64(70));
+    QCOMPARE(metas2.at(0).totalTokens, qint64(470));
+}
+
+// ---------------------------------------------------------------------------
+// 9. token 懒迁移：旧格式索引（无 token 字段）由 listSessions 扫 JSONL 回填并持久化
+// ---------------------------------------------------------------------------
+void DAAgentSessionStoreTest::testTokenLazyMigration()
+{
+    DA::DAAgentSessionStore store;
+    QString sid = store.createSession();
+    store.appendRecord(sid, makeUsageRecord(sid, 111, 22, 133, QStringLiteral("agent")));
+    store.appendRecord(sid, makeUsageRecord(sid, 9, 1, 10, QStringLiteral("agent")));
+
+    // 手工把索引降级为旧格式：移除 token 字段（模拟历史版本产生的 sessions_index.json）
+    QString idxPath = sessionsDir() + QStringLiteral("/sessions_index.json");
+    QJsonArray arr;
+    {
+        QFile f(idxPath);
+        QVERIFY(f.open(QIODevice::ReadOnly));
+        arr = QJsonDocument::fromJson(f.readAll()).array();
+        f.close();
+    }
+    for (QJsonValueRef v : arr) {
+        QJsonObject o = v.toObject();
+        o.remove(QStringLiteral("inputTokens"));
+        o.remove(QStringLiteral("outputTokens"));
+        o.remove(QStringLiteral("totalTokens"));
+        v = o;
+    }
+    {
+        QFile f(idxPath);
+        QVERIFY(f.open(QIODevice::WriteOnly | QIODevice::Truncate));
+        f.write(QJsonDocument(arr).toJson(QJsonDocument::Compact));
+        f.close();
+    }
+
+    // 9a. 懒迁移：listSessions 扫 JSONL usage 记录回填真实值（111+9 / 22+1 / 133+10）
+    auto metas = store.listSessions();
+    QCOMPARE(metas.size(), 1);
+    QCOMPARE(metas.at(0).inputTokens, qint64(120));
+    QCOMPARE(metas.at(0).outputTokens, qint64(23));
+    QCOMPARE(metas.at(0).totalTokens, qint64(143));
+
+    // 9b. 迁移结果已写回索引文件：字段重新存在，新实例直接可读
+    {
+        QFile f2(idxPath);
+        QVERIFY(f2.open(QIODevice::ReadOnly));
+        QJsonArray arr2 = QJsonDocument::fromJson(f2.readAll()).array();
+        f2.close();
+        QVERIFY(arr2.at(0).toObject().contains(QStringLiteral("totalTokens")));
+    }
+    DA::DAAgentSessionStore store2;
+    auto metas2 = store2.listSessions();
+    QCOMPARE(metas2.at(0).totalTokens, qint64(143));
+
+    // 9c. 迁移后继续 appendRecord 走增量累计，无双计：143 + 10 = 153
+    store2.appendRecord(sid, makeUsageRecord(sid, 5, 5, 10, QStringLiteral("agent")));
+    auto metas3 = store2.listSessions();
+    QCOMPARE(metas3.at(0).totalTokens, qint64(153));
 }
 
 // ---------------------------------------------------------------------------

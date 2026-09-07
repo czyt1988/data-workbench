@@ -43,6 +43,9 @@ public:
 
     // 跳过损坏行的 JSONL 行解析
     QJsonObject parseLineTolerant(const QByteArray& line, const QString& sessionId) const;
+
+    // 扫描 JSONL usage 记录求 token 累计（旧索引懒迁移/导入统计用）
+    void computeTokenStats(const QString& sessionId, qint64& in, qint64& out, qint64& total) const;
 };
 
 // ===========================================================================
@@ -82,6 +85,9 @@ QString DAAgentSessionStore::createSession(const QString& projectPath)
     m.updatedAt   = now;
     m.messageCount = 0;
     m.projectPath = projectPath;
+    m.inputTokens  = 0;
+    m.outputTokens = 0;
+    m.totalTokens  = 0;
     metas.append(m);
     d->writeIndex(metas);
 
@@ -131,6 +137,16 @@ QVector<DAAgentSessionStore::SessionMeta> DAAgentSessionStore::listSessions(cons
 {
     DA_DC(d);
     QVector<SessionMeta> metas = d->readIndexInternal();
+
+    // 旧索引懒迁移：token 字段缺失（-1 哨兵）时扫 JSONL usage 记录回填并持久化。
+    // 一次性成本（会话数受 max_sessions 约束），迁移后 sessionListChanged 高频调用不再触发扫描。
+    bool migrated = false;
+    for (auto& m : metas) {
+        if (m.totalTokens >= 0) continue;
+        d->computeTokenStats(m.id, m.inputTokens, m.outputTokens, m.totalTokens);
+        migrated = true;
+    }
+    if (migrated) d->writeIndex(metas);
 
     // 按 projectPath 过滤
     if (!projectPathFilter.isEmpty()) {
@@ -193,7 +209,7 @@ void DAAgentSessionStore::appendRecord(const QString& sessionId, const QJsonObje
     f.close();
 
     // 更新 index 的 updatedAt + messageCount（仅对 user/assistant/tool_result 计数，
-    // usage 记录不计入对话消息数）
+    // usage 记录不计入对话消息数）+ token 累计（仅 usage 记录）
     QVector<SessionMeta> metas = d->readIndexInternal();
     bool changed = false;
     for (auto& m : metas) {
@@ -202,6 +218,12 @@ void DAAgentSessionStore::appendRecord(const QString& sessionId, const QJsonObje
             QString type = record.value("type").toString();
             if (type == "user" || type == "assistant" || type == "tool_result") {
                 m.messageCount += 1;
+            } else if (type == "usage" && m.totalTokens >= 0) {
+                // 索引缓存已累计（≥0）才就地累加；-1（旧索引未迁移）留给 listSessions 懒迁移全量回填
+                QJsonObject um = record.value("usage_metadata").toObject();
+                m.inputTokens  += static_cast<qint64>(um.value("input_tokens").toDouble(0));
+                m.outputTokens += static_cast<qint64>(um.value("output_tokens").toDouble(0));
+                m.totalTokens  += static_cast<qint64>(um.value("total_tokens").toDouble(0));
             }
             changed = true;
             break;
@@ -394,8 +416,9 @@ void DAAgentSessionStore::importSessionFiles(const QHash<QString, QByteArray>& f
         f.write(it.value());
         f.close();
 
-        // 统计消息数（仅 user/assistant/tool_result）
+        // 统计消息数（仅 user/assistant/tool_result）与 token 消耗（usage 记录），同一遍扫描完成
         int msgCount = 0;
+        qint64 inTokens = 0, outTokens = 0, totTokens = 0;
         {
             QFile rf(d->sessionFilePath(id));
             if (rf.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -405,7 +428,14 @@ void DAAgentSessionStore::importSessionFiles(const QHash<QString, QByteArray>& f
                     QJsonObject obj = d->parseLineTolerant(line, id);
                     if (obj.isEmpty()) continue;
                     QString type = obj.value("type").toString();
-                    if (type == "user" || type == "assistant" || type == "tool_result") ++msgCount;
+                    if (type == "user" || type == "assistant" || type == "tool_result") {
+                        ++msgCount;
+                    } else if (type == "usage") {
+                        QJsonObject um = obj.value("usage_metadata").toObject();
+                        inTokens  += static_cast<qint64>(um.value("input_tokens").toDouble(0));
+                        outTokens += static_cast<qint64>(um.value("output_tokens").toDouble(0));
+                        totTokens += static_cast<qint64>(um.value("total_tokens").toDouble(0));
+                    }
                 }
                 rf.close();
             }
@@ -436,6 +466,9 @@ void DAAgentSessionStore::importSessionFiles(const QHash<QString, QByteArray>& f
             if (m.id == id) {
                 m.projectPath = projectPath;
                 m.messageCount = msgCount;
+                m.inputTokens  = inTokens;
+                m.outputTokens = outTokens;
+                m.totalTokens  = totTokens;
                 m.updatedAt = now;
                 found = true;
                 break;
@@ -449,6 +482,9 @@ void DAAgentSessionStore::importSessionFiles(const QHash<QString, QByteArray>& f
             m.updatedAt = now;
             m.messageCount = msgCount;
             m.projectPath = projectPath;
+            m.inputTokens  = inTokens;
+            m.outputTokens = outTokens;
+            m.totalTokens  = totTokens;
             metas.append(m);
         }
     }
@@ -551,6 +587,10 @@ QVector<DAAgentSessionStore::SessionMeta> DAAgentSessionStore::PrivateData::read
         m.updatedAt   = o.value("updatedAt").toString();
         m.messageCount = o.value("messageCount").toInt(0);
         m.projectPath = o.value("projectPath").toString();
+        // token 字段：旧索引缺失时读为 -1 哨兵（listSessions 懒迁移回填）
+        m.inputTokens  = static_cast<qint64>(o.value("inputTokens").toDouble(-1));
+        m.outputTokens = static_cast<qint64>(o.value("outputTokens").toDouble(-1));
+        m.totalTokens  = static_cast<qint64>(o.value("totalTokens").toDouble(-1));
         if (!m.id.isEmpty()) out.append(m);
     }
     return out;
@@ -567,6 +607,10 @@ bool DAAgentSessionStore::PrivateData::writeIndex(const QVector<SessionMeta>& me
         o["updatedAt"]   = m.updatedAt;
         o["messageCount"] = m.messageCount;
         o["projectPath"] = m.projectPath;
+        // JSON 数值以 double 存储（Qt5 QJsonValue 无 qint64 构造），token 量级下无精度问题
+        o["inputTokens"]  = static_cast<double>(m.inputTokens);
+        o["outputTokens"] = static_cast<double>(m.outputTokens);
+        o["totalTokens"]  = static_cast<double>(m.totalTokens);
         arr.append(o);
     }
     QJsonDocument doc(arr);
@@ -668,6 +712,29 @@ QJsonObject DAAgentSessionStore::PrivateData::parseLineTolerant(const QByteArray
         return QJsonObject();
     }
     return doc.object();
+}
+
+void DAAgentSessionStore::PrivateData::computeTokenStats(const QString& sessionId, qint64& in, qint64& out, qint64& total) const
+{
+    in = 0;
+    out = 0;
+    total = 0;
+    QFile f(sessionFilePath(sessionId));
+    if (!f.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        return;  // 文件不存在/不可读：视为 0 消耗（容错）
+    }
+    while (!f.atEnd()) {
+        QByteArray line = f.readLine();
+        if (line.isEmpty()) continue;
+        QJsonObject obj = parseLineTolerant(line, sessionId);
+        if (obj.isEmpty()) continue;  // 跳过损坏行
+        if (obj.value("type").toString() != QLatin1String("usage")) continue;
+        QJsonObject um = obj.value("usage_metadata").toObject();
+        in    += static_cast<qint64>(um.value("input_tokens").toDouble(0));
+        out   += static_cast<qint64>(um.value("output_tokens").toDouble(0));
+        total += static_cast<qint64>(um.value("total_tokens").toDouble(0));
+    }
+    f.close();
 }
 
 } // namespace DA

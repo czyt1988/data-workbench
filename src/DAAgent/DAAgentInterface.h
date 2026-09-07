@@ -193,7 +193,9 @@ Q_SIGNALS:
     void sessionSwitched(const QString& sessionId, const QVector<QJsonObject>& allRecords);
     /// 新会话创建时发射（仅 newSession 路径，触发 UI clearChat）
     void sessionCreated(const QString& sessionId);
-    /// 会话列表变化时发射，带 payload（每元素 QVariantMap{id,title,updatedAt,messageCount}）
+    /// 会话列表变化时发射，带 payload
+    /// （每元素 QVariantMap{id,title,createdAt,updatedAt,messageCount,state,inputTokens,outputTokens,totalTokens}；
+    /// token 为会话累计值，-1=旧数据未统计）
     void sessionListChanged(QVariantList sessions);
     /// 当前无活跃会话时发射（启动/打开工程后不自动恢复上次会话，始终全新开始）
     ///

@@ -1397,7 +1397,7 @@ QVariantList DAAgentModule::listSessions() const
 
 /**
  * @brief 生成 sessionListChanged 的 payload（按工程路径过滤）
- * @return QVariantList，每元素 QVariantMap{id,title,updatedAt,messageCount,state}
+ * @return QVariantList，每元素 QVariantMap{id,title,createdAt,updatedAt,messageCount,state,inputTokens,outputTokens,totalTokens}
  */
 QVariantList DAAgentModule::listSessionsForUI() const
 {
@@ -1407,14 +1407,19 @@ QVariantList DAAgentModule::listSessionsForUI() const
     // 会话管理对话框需要 updatedAt/messageCount 展示更多会话信息。
     // concurrent-sessions：附 state 运行态（starting/running/waiting_input/error/"")，
     // 供会话管理对话框渲染后台会话角标。
+    // 会话管理详情面板：附 createdAt 与 token 累计（-1=旧数据未统计，store 懒迁移后为真实值）。
     QVariantList out;
     for (const auto& m : d->mSessionStore->listSessions(d->mCurrentProjectPath)) {
         QVariantMap vm;
         vm["id"]           = m.id;
         vm["title"]        = m.title;
+        vm["createdAt"]    = m.createdAt;       // ISO8601WithMs, UTC
         vm["updatedAt"]    = m.updatedAt;       // ISO8601WithMs, UTC
         vm["messageCount"] = m.messageCount;
         vm["state"]        = sessionRuntimeState(m.id);
+        vm["inputTokens"]  = m.inputTokens;
+        vm["outputTokens"] = m.outputTokens;
+        vm["totalTokens"]  = m.totalTokens;
         out.append(vm);
     }
     return out;
