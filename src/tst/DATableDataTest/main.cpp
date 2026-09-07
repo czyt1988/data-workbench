@@ -25,6 +25,12 @@
 #include "Models/DADataTableModel.h"
 #include <QUndoStack>
 
+#include "DASqliteLazyTable.h"
+#include <QSqlDatabase>
+#include <QSqlQuery>
+#include <QSqlError>
+#include <QTemporaryDir>
+
 #include <algorithm>
 #ifdef Q_OS_WIN
 #include <windows.h>
@@ -248,6 +254,7 @@ class DATableDataTest : public QObject
     Q_OBJECT
 private Q_SLOTS:
     void initTestCase();
+    void cleanupTestCase();
     void testLazyTableSchema();
     void testLazyTableFetchBlock();
     void testBlockBounds();
@@ -258,10 +265,24 @@ private Q_SLOTS:
     void testModelLazyDisplay();
     void testModelBlockCacheAndScroll();
     void testModelPandasEditRegression();
+    void testSqliteLazyTable();
+    void testSqliteModelIntegration();
+    void testSqliteReferenceRoundTrip();
 
 private:
-    bool mPandasOk = false;
+    // 生成/复用sqlite测试库（百万行），失败返回false并置mSqliteErr
+    bool ensureSqliteReady();
+    // 创建绑定测试库的惰性表数据（SELECT带ORDER BY保证分页稳定）
+    DA::DAAbstractData::Pointer makeSqliteLazyData();
+
+private:
+    static constexpr qlonglong c_sqliteRows = 1000000;
+    bool mPandasOk                          = false;
     QUndoStack mUndoStack;
+    QTemporaryDir mTmpDir;
+    QString mSqliteConnName = QStringLiteral("databledata_sqlite_conn");
+    bool mSqliteReady       = false;
+    QString mSqliteErr;
 };
 
 void DATableDataTest::initTestCase()
@@ -293,6 +314,82 @@ void DATableDataTest::initTestCase()
         qWarning() << "pandas not available:" << e.what();
         mPandasOk = false;
     }
+}
+
+void DATableDataTest::cleanupTestCase()
+{
+    if (QSqlDatabase::contains(mSqliteConnName)) {
+        {
+            QSqlDatabase db = QSqlDatabase::database(mSqliteConnName, false);
+            if (db.isOpen()) {
+                db.close();
+            }
+        }  // 局部db副本先析构，避免removeDatabase告警
+        QSqlDatabase::removeDatabase(mSqliteConnName);
+    }
+}
+
+// 生成/复用sqlite测试库：bigtable(id INTEGER PRIMARY KEY, val REAL, label TEXT)
+bool DATableDataTest::ensureSqliteReady()
+{
+    if (mSqliteReady) {
+        return true;
+    }
+    if (!QSqlDatabase::isDriverAvailable(QStringLiteral("QSQLITE"))) {
+        mSqliteErr = QStringLiteral("QSQLITE driver not available");
+        return false;
+    }
+    QString dbPath = mTmpDir.isValid() ? mTmpDir.filePath(QStringLiteral("lazy.sqlite"))
+                                       : QDir::temp().filePath(QStringLiteral("databledata_lazy.sqlite"));
+    {
+        QSqlDatabase db = QSqlDatabase::contains(mSqliteConnName)
+                              ? QSqlDatabase::database(mSqliteConnName, false)
+                              : QSqlDatabase::addDatabase(QStringLiteral("QSQLITE"), mSqliteConnName);
+        db.setDatabaseName(dbPath);
+        if (!db.open()) {
+            mSqliteErr = db.lastError().text();
+            return false;
+        }
+        QSqlQuery q(db);
+        if (!q.exec(QStringLiteral("CREATE TABLE IF NOT EXISTS bigtable(id INTEGER PRIMARY KEY, val REAL, label TEXT)"))) {
+            mSqliteErr = q.lastError().text();
+            return false;
+        }
+        // 已生成过则直接复用
+        QSqlQuery cnt(db);
+        if (cnt.exec(QStringLiteral("SELECT COUNT(*) FROM bigtable")) && cnt.next()
+            && cnt.value(0).toLongLong() >= c_sqliteRows) {
+            mSqliteReady = true;
+            return true;
+        }
+        q.exec(QStringLiteral("DELETE FROM bigtable"));
+        db.transaction();
+        const qlonglong batch = 5000;
+        for (qlonglong start = 0; start < c_sqliteRows; start += batch) {
+            QStringList values;
+            values.reserve(static_cast< int >(batch));
+            for (qlonglong r = start; r < qMin(start + batch, c_sqliteRows); ++r) {
+                values << QStringLiteral("(%1,%2,'row%1')").arg(r).arg(r * 0.5);
+            }
+            QString sql = QStringLiteral("INSERT INTO bigtable(id,val,label) VALUES ") + values.join(QLatin1Char(','));
+            if (!q.exec(sql)) {
+                mSqliteErr = q.lastError().text();
+                db.rollback();
+                return false;
+            }
+        }
+        db.commit();
+    }
+    mSqliteReady = true;
+    return true;
+}
+
+DA::DAAbstractData::Pointer DATableDataTest::makeSqliteLazyData()
+{
+    std::shared_ptr< DASqliteLazyTable > p = std::make_shared< DASqliteLazyTable >();
+    p->setConnectionName(mSqliteConnName);
+    p->setSelectSql(QStringLiteral("SELECT id, val, label FROM bigtable ORDER BY id"));
+    return p;
 }
 
 // 合成惰性源经DAData句柄的schema与能力位
@@ -702,6 +799,159 @@ void DATableDataTest::testModelPandasEditRegression()
     mUndoStack.redo();
     QCOMPARE(model.data(model.index(0, 0), Qt::EditRole).toLongLong(), 42LL);
     mUndoStack.clear();
+}
+
+// SQLite惰性表：schema/COUNT/LIMIT-OFFSET分页/能力位——数据库插件数据层样板验证
+void DATableDataTest::testSqliteLazyTable()
+{
+    if (!ensureSqliteReady()) {
+        QSKIP(qPrintable(mSqliteErr));
+    }
+    DA::DAAbstractData::Pointer p = makeSqliteLazyData();
+    DASqliteLazyTable* tbl        = static_cast< DASqliteLazyTable* >(p.get());
+    DA::DAData d(p);
+    QVERIFY(d.isTable());
+    QVERIFY(d.isReferenceData());
+    QVERIFY(!d.supportsUndoSnapshot());
+    QCOMPARE(d.typeIdentifier(), QStringLiteral("DATableDataTest.SqliteLazyTable"));
+
+    // 百万行schema经COUNT(*)与LIMIT 0探针，全表不进内存
+    std::pair< std::size_t, std::size_t > sp = d.shape();
+    QCOMPARE(sp.first, static_cast< std::size_t >(c_sqliteRows));
+    QCOMPARE(sp.second, static_cast< std::size_t >(3));
+
+    DA::DATableDataSource* ts = d.tableSource();
+    QVERIFY(ts != nullptr);
+    QVERIFY(ts->isLazyLoaded());
+    QVERIFY(!ts->isTableEditable());
+    QCOMPARE(ts->tableColumnName(0), QStringLiteral("id"));
+    QCOMPARE(ts->tableColumnName(1), QStringLiteral("val"));
+    QCOMPARE(ts->tableColumnName(2), QStringLiteral("label"));
+    // REAL→Double、TEXT→QString；INTEGER经LIMIT 0探针在Qt5驱动下报Int（有值时为LongLong），
+    // 列类型是提示性信息，整数族即可
+    const int idType = ts->tableColumnType(0);
+    QVERIFY(idType == QMetaType::Int || idType == QMetaType::LongLong);
+    QCOMPARE(ts->tableColumnType(1), static_cast< int >(QMetaType::Double));
+    QCOMPARE(ts->tableColumnType(2), static_cast< int >(QMetaType::QString));
+
+    // 分页块取数：表中部一次查询取100行
+    const int fetchBefore          = tbl->fetchCount();
+    DA::DATableDataBlock block     = ts->fetchBlock(123456, 100);
+    QCOMPARE(tbl->fetchCount(), fetchBefore + 1);
+    QVERIFY(block.isValid());
+    QCOMPARE(block.startRow(), static_cast< std::size_t >(123456));
+    QCOMPARE(block.rowCount(), static_cast< std::size_t >(100));
+    QCOMPARE(block.cell(123456, 0).toLongLong(), 123456LL);
+    QCOMPARE(block.cell(123456, 1).toDouble(), 123456 * 0.5);
+    QCOMPARE(block.cell(123555, 2).toString(), QStringLiteral("row123555"));
+    // 未提供行头（模型将回退显示序号）
+    QVERIFY(!block.rowHeader(123456).isValid());
+
+    // 尾部截断与越界
+    DA::DATableDataBlock tail = ts->fetchBlock(static_cast< std::size_t >(c_sqliteRows) - 5, 100);
+    QVERIFY(tail.isValid());
+    QCOMPARE(tail.rowCount(), static_cast< std::size_t >(5));
+    QVERIFY(!ts->fetchBlock(static_cast< std::size_t >(c_sqliteRows), 1).isValid());
+
+    // cell级接口与只读语义
+    QCOMPARE(d.value(7, 2).toString(), QStringLiteral("row7"));
+    QVERIFY(!d.setValue(7, 2, QVariant(QStringLiteral("x"))));
+}
+
+// SQLite惰性表经DADataTableModel的窗口显示与滚动取数
+void DATableDataTest::testSqliteModelIntegration()
+{
+    if (!ensureSqliteReady()) {
+        QSKIP(qPrintable(mSqliteErr));
+    }
+    DA::DAAbstractData::Pointer p = makeSqliteLazyData();
+    DASqliteLazyTable* tbl        = static_cast< DASqliteLazyTable* >(p.get());
+    DA::DAData d(p);
+
+    DA::DADataTableModel model(&mUndoStack);
+    model.setData(d);
+    QCOMPARE(model.actualRowCount(), static_cast< int >(c_sqliteRows));
+    QVERIFY(model.rowCount() < model.actualRowCount());  // 滑动窗截断，视图不遍历百万行
+    QCOMPARE(model.columnCount(), 3 + model.getExtraColumnCount());
+    QCOMPARE(model.headerData(2, Qt::Horizontal, Qt::DisplayRole).toString(), QStringLiteral("label"));
+
+    // 只读门禁
+    QVERIFY(!(model.flags(model.index(0, 0)) & Qt::ItemIsEditable));
+    QAbstractItemModel* baseModel = &model;
+    QVERIFY(!baseModel->setData(baseModel->index(0, 0), QVariant(1), Qt::EditRole));
+
+    // 表头区数据与行头序号回退
+    QCOMPARE(model.data(model.index(7, 0), Qt::DisplayRole).toLongLong(), 7LL);
+    QCOMPARE(model.data(model.index(7, 2), Qt::DisplayRole).toString(), QStringLiteral("row7"));
+    QCOMPARE(model.headerData(7, Qt::Vertical, Qt::DisplayRole).toLongLong(), 7LL);
+
+    // 滚动到表尾区域：窗口起始行会被clamp到 总行数-窗口大小+扩展行，
+    // 取clamp后的最大起始行验证表尾显示
+    const int tailStart = model.actualRowCount() - model.rowCount() + model.getExtraRowCount();
+    model.setCacheWindowStartRow(tailStart);
+    QCOMPARE(model.getCacheWindowStartRow(), tailStart);
+    const int fetchAfterJump = tbl->fetchCount();
+    QVERIFY(fetchAfterJump >= 1);
+    // 预取一次后扫描可见区零额外查询
+    for (int r = 0; r < 40; ++r) {
+        QCOMPARE(model.data(model.index(r, 0), Qt::DisplayRole).toLongLong(), static_cast< qlonglong >(tailStart + r));
+        model.data(model.index(r, 1), Qt::DisplayRole);
+        model.data(model.index(r, 2), Qt::DisplayRole);
+        model.headerData(r, Qt::Vertical, Qt::DisplayRole);
+    }
+    QCOMPARE(tbl->fetchCount(), fetchAfterJump);
+    // 窗口最远数据行（表尾最后一行）触发一次新块查询后正确映射
+    const int lastViewRow = model.rowCount() - 1 - model.getExtraRowCount();
+    QCOMPARE(model.data(model.index(lastViewRow, 2), Qt::DisplayRole).toString(),
+             QStringLiteral("row%1").arg(c_sqliteRows - 1));
+    QVERIFY(tbl->fetchCount() <= fetchAfterJump + 2);
+}
+
+// SQLite惰性表引用式序列化：工厂注册→write→create→read→立即可取数（模拟工程保存/加载）
+void DATableDataTest::testSqliteReferenceRoundTrip()
+{
+    if (!ensureSqliteReady()) {
+        QSKIP(qPrintable(mSqliteErr));
+    }
+    const QString tid = QStringLiteral("DATableDataTest.SqliteLazyTable");
+    QVERIFY(DA::DADataFactory::registerCreator(tid, []() {
+        return DA::DAAbstractData::Pointer(new DASqliteLazyTable());
+    }));
+
+    // 原对象写出引用payload（连接名+SELECT）
+    DA::DAAbstractData::Pointer src = makeSqliteLazyData();
+    QByteArray payload;
+    {
+        QBuffer buf(&payload);
+        QVERIFY(buf.open(QIODevice::WriteOnly));
+        QDataStream out(&buf);
+        src->write(out);
+    }
+    QVERIFY(!payload.isEmpty());
+    QVERIFY(payload.size() < 1024);  // 引用payload是常量级，与表规模无关
+
+    // 工厂重建+read恢复（工程加载路径）
+    DA::DAAbstractData::Pointer rebuilt = DA::DADataFactory::create(tid);
+    QVERIFY(rebuilt != nullptr);
+    {
+        QBuffer buf(&payload);
+        QVERIFY(buf.open(QIODevice::ReadOnly));
+        QDataStream in(&buf);
+        QVERIFY(rebuilt->read(in));
+    }
+    DASqliteLazyTable* tbl = dynamic_cast< DASqliteLazyTable* >(rebuilt.get());
+    QVERIFY(tbl != nullptr);
+    QCOMPARE(tbl->connectionName(), mSqliteConnName);
+    QCOMPARE(tbl->selectSql(), QStringLiteral("SELECT id, val, label FROM bigtable ORDER BY id"));
+
+    // 重建后立即可取数（连接池仍在；真实插件场景由read/首次访问时重连）
+    QCOMPARE(tbl->tableRowCount(), static_cast< std::size_t >(c_sqliteRows));
+    DA::DATableDataBlock block = tbl->fetchBlock(0, 3);
+    QVERIFY(block.isValid());
+    QCOMPARE(block.rowCount(), static_cast< std::size_t >(3));
+    QCOMPARE(block.cell(2, 2).toString(), QStringLiteral("row2"));
+
+    DA::DADataFactory::unregisterCreator(tid);
 }
 
 // 不用QTEST_MAIN：嵌入式python的静态对象（DAPyBindQt.dll内的解释器句柄、QVariant caster

@@ -6,8 +6,8 @@ find_package(pybind11 PATHS ${DAWorkbench_INSTALL_DIR}/share/cmake)
 
 da_add_test(
     NAME DATableDataTest
-    SOURCES main.cpp
-    QT_COMPONENTS Test Widgets
+    SOURCES main.cpp DASqliteLazyTable.cpp
+    QT_COMPONENTS Test Widgets Sql
     LINK_PRIVATE
         DAWorkbench::DAData
         DAWorkbench::DAGui
@@ -15,6 +15,7 @@ da_add_test(
         DAWorkbench::DAPyScripts
         Qt${QT_VERSION_MAJOR}::Core
         Qt${QT_VERSION_MAJOR}::Widgets
+        Qt${QT_VERSION_MAJOR}::Sql
         Qt${QT_VERSION_MAJOR}::Test
         ${Python3_LIBRARIES}
         pybind11::headers
