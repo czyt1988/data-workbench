@@ -61,6 +61,26 @@ void DAToolBox::addItems(const QList< DAPyNodeMetaData >& datas)
 }
 
 /**
+ * @brief 清空所有分组页
+ *
+ * 收藏页保留不动，用于插件热插拔后重建节点分组
+ */
+void DAToolBox::clear()
+{
+    for (int i = mToolBox->count() - 1; i >= 0; --i) {
+        QWidget* w = mToolBox->widget(i);
+        if (w == mFavoriteList) {
+            continue;
+        }
+        mToolBox->removeItem(i);
+        if (w) {
+            w->deleteLater();
+        }
+    }
+    mToolBox->setMinimumHeight(0);
+}
+
+/**
  * @brief 获取收藏list，如果没有就创建
  * @return
  */

@@ -241,6 +241,12 @@ void AppMainWindow::initPlugins()
     if (appWFO) {
         appWFO->setPluginManager(mPluginMgr);
     }
+    // 插件热插拔后节点元数据变化，重建节点工具箱列表（收藏保留）
+    connect(mPluginMgr, &DAAppPluginManager::nodeMetaDatasChanged, this, [this]() {
+        if (mDockArea) {
+            mDockArea->getWorkflowNodeListWidget()->updateItems(mPluginMgr->getAllNodeMetaDatas());
+        }
+    });
 }
 
 void AppMainWindow::initWorkflowNodes()

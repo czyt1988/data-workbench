@@ -18,6 +18,8 @@ public:
 	virtual ~{{plugin-base-name}}UI() override;
 	// 初始化
 	bool initialize(DA::DACoreInterface* core);
+	// 清理initialize创建的全部UI资源（插件热卸载finalize时调用）
+	void finalize();
 	// 翻译
 	void retranslateUi();
 public:

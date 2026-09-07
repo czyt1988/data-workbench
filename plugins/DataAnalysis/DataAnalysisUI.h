@@ -29,6 +29,8 @@ public:
     virtual ~DataAnalysisUI() override;
     // 初始化
     bool initialize(DA::DACoreInterface* core);
+    // 清理initialize创建的全部ribbon资源（插件热卸载finalize时调用），调用后本对象不可再使用界面功能
+    void finalize();
     //
     void retranslateUi();
     // 绑定信号槽
@@ -71,8 +73,8 @@ public:
     QAction* actionDataFrameSort { nullptr };              ///< 数据排序
     // Statistic Panel 数据统计panel
     SARibbonPanel* panelDataStatistic { nullptr };
-    QAction* actionCreateDataDescribe;  ///< 数据描述
-    QAction* actionCreatePivotTable;    ///< 创建数据透视表
+    QAction* actionCreateDataDescribe { nullptr };  ///< 数据描述
+    QAction* actionCreatePivotTable { nullptr };    ///< 创建数据透视表
 private:
     DA::DACoreInterface* mCore { nullptr };
     DA::DAUIInterface* mUi { nullptr };

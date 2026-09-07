@@ -5,6 +5,7 @@
 #include <QDebug>
 #include <QDir>
 #include <QFile>
+#include <QFileInfo>
 #include <QLibrary>
 #include <QTextStream>
 namespace DA
@@ -20,6 +21,10 @@ public:
     void updateIgnoreSet();
     // 创建忽略文件，如果已经存在将跳过
     void ensureIgnoreFileExist();
+    // 将当前忽略set回写到.pluginignore文件，保留原文件中的注释行
+    bool saveIgnoreFile();
+    // 根据文件路径查找已加载的插件选项，未找到返回nullptr
+    const DAPluginOption* findOptionByFilePath(const QString& filePath) const;
     //
     static QString getIgnoreFilePath();
 
@@ -28,6 +33,8 @@ public:
     QList< DAPluginOption > mPluginOptions;
     bool mIsLoaded { false };               ///< 标记是否加载了，可以只加载一次
     QSet< QString > mIgnorePluginBaseName;  ///< 记录忽略插件的基本名字
+    QHash< QString, QString > mFailedPlugins;  ///< 加载失败的插件（小写baseName → 错误信息）
+    QSet< QString > mDegradedPlugins;          ///< 降级停用的插件（小写baseName），finalize已执行但库释放失败
 };
 
 //===================================================
@@ -109,6 +116,57 @@ QString DAPluginManager::PrivateData::getIgnoreFilePath()
     return QDir::toNativeSeparators(DAPluginManager::getPluginDirPath() + QDir::separator() + getPluginIgnoreFileName());
 }
 
+bool DAPluginManager::PrivateData::saveIgnoreFile()
+{
+    const QString filePath = getIgnoreFilePath();
+    // 先读出原文件的注释行，保留模板说明
+    QStringList commentLines;
+    QFile readFile(filePath);
+    if (readFile.open(QIODevice::ReadOnly)) {
+        QTextStream rss(&readFile);
+        while (!rss.atEnd()) {
+            QString line = rss.readLine();
+            if (line.trimmed().startsWith(QLatin1Char('#'))) {
+                commentLines.append(line);
+            }
+        }
+        readFile.close();
+    }
+    QFile writeFile(filePath);
+    if (!writeFile.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+        daWarning << DAPluginManager::tr("Failed to write plugin ignore file %1: %2")
+                         .arg(filePath, writeFile.errorString());  // cn:写入插件忽略文件%1失败：%2
+        return false;
+    }
+    QTextStream txt(&writeFile);
+#if QT_VERSION_MAJOR >= 6
+    txt.setEncoding(QStringConverter::Utf8);
+#else
+    txt.setCodec("utf-8");
+#endif
+    for (const QString& line : std::as_const(commentLines)) {
+        txt << line << Qt::endl;
+    }
+    QStringList names = mIgnorePluginBaseName.values();
+    names.sort(Qt::CaseInsensitive);
+    for (const QString& name : std::as_const(names)) {
+        txt << name << Qt::endl;
+    }
+    writeFile.close();
+    return true;
+}
+
+const DAPluginOption* DAPluginManager::PrivateData::findOptionByFilePath(const QString& filePath) const
+{
+    const QString nativePath = QDir::toNativeSeparators(filePath);
+    for (const DAPluginOption& opt : mPluginOptions) {
+        if (QDir::toNativeSeparators(opt.getFileName()).compare(nativePath, Qt::CaseInsensitive) == 0) {
+            return &opt;
+        }
+    }
+    return nullptr;
+}
+
 //===================================================
 // DAPluginManager
 //===================================================
@@ -131,6 +189,40 @@ void DAPluginManager::setIgnoreList(const QStringList& ignorePluginsName)
     for (const QString& name : ignorePluginsName) {
         d_ptr->mIgnorePluginBaseName.insert(name.toLower());
     }
+}
+
+/**
+ * @brief 获取当前忽略（禁用）列表
+ * @return 插件文件基本名列表（统一小写）
+ */
+QStringList DAPluginManager::ignoreList() const
+{
+    QStringList res = d_ptr->mIgnorePluginBaseName.values();
+    res.sort(Qt::CaseInsensitive);
+    return res;
+}
+
+/**
+ * @brief 设置插件启用状态并持久化到.pluginignore文件
+ *
+ * enable为false时将插件加入忽略列表（下次启动不加载），为true时移出忽略列表。
+ * 此函数只负责状态持久化，不会触发运行期的加载或卸载
+ * @param pluginBaseName 插件文件基本名（不含后缀）
+ * @param enable 是否启用
+ * @return 是否成功写入配置文件
+ */
+bool DAPluginManager::setPluginEnabled(const QString& pluginBaseName, bool enable)
+{
+    const QString key = pluginBaseName.trimmed().toLower();
+    if (key.isEmpty()) {
+        return false;
+    }
+    if (enable) {
+        d_ptr->mIgnorePluginBaseName.remove(key);
+    } else {
+        d_ptr->mIgnorePluginBaseName.insert(key);
+    }
+    return d_ptr->saveIgnoreFile();
 }
 
 /**
@@ -162,16 +254,7 @@ void DAPluginManager::loadAllPlugins(DACoreInterface* c)
         }
 
         // 跨平台的动态库后缀检查
-        QString suffix = fi.suffix().toLower();
-        bool isLibrary = false;
-#ifdef Q_OS_WIN
-        isLibrary = (suffix == "dll");
-#elif defined(Q_OS_MACOS)
-        isLibrary = (suffix == "dylib") || (suffix == "so");  // 有时macOS也用.so
-#else  // Unix/Linux
-        isLibrary = (suffix == "so");
-#endif
-        if (!isLibrary) {
+        if (!isPluginLibrarySuffix(fi.suffix())) {
             continue;
         }
         if (d_ptr->mIgnorePluginBaseName.contains(fi.baseName().toLower())) {
@@ -187,11 +270,57 @@ void DAPluginManager::loadAllPlugins(DACoreInterface* c)
         Q_EMIT beginLoadPlugin(fi.absoluteFilePath());
         if (!pluginopt.load(fi.absoluteFilePath(), c)) {
             daWarning << tr("cannot load plugin: %1").arg(fi.absoluteFilePath());  // cn:无法加载插件：%1
+            d_ptr->mFailedPlugins.insert(fi.baseName().toLower(), pluginopt.getErrorString());
             continue;
         }
+        d_ptr->mFailedPlugins.remove(fi.baseName().toLower());
         d_ptr->mPluginOptions.append(pluginopt);
     }
     d_ptr->mIsLoaded = true;
+}
+
+/**
+ * @brief 运行期加载单个插件（热加载）
+ *
+ * 与 loadAllPlugins 不同，此函数不受 mIsLoaded 标记限制，可在程序运行中随时调用。
+ * 若插件文件命中忽略列表、已加载或加载失败，将拒绝加载并返回false
+ * @param pluginFilePath 插件文件绝对路径
+ * @param c 核心接口
+ * @return 是否加载成功
+ */
+bool DAPluginManager::loadPlugin(const QString& pluginFilePath, DACoreInterface* c)
+{
+    QFileInfo fi(pluginFilePath);
+    if (!fi.exists() || fi.baseName().isEmpty() || !isPluginLibrarySuffix(fi.suffix())) {
+        daWarning << tr("%1 is not a valid plugin library file").arg(pluginFilePath);  // cn:%1不是有效的插件库文件
+        return false;
+    }
+    const QString key = fi.baseName().toLower();
+    if (d_ptr->findOptionByFilePath(fi.absoluteFilePath())) {
+        daWarning << tr("plugin %1 is already loaded").arg(fi.baseName());  // cn:插件%1已加载
+        return false;
+    }
+    if (d_ptr->mIgnorePluginBaseName.contains(key)) {
+        daWarning << tr("plugin %1 is disabled, remove it from the ignore list first").arg(fi.baseName());  // cn:插件%1已被禁用，请先将其移出忽略列表
+        return false;
+    }
+    if (!QLibrary::isLibrary(fi.absoluteFilePath())) {
+        daWarning << tr("ignoring invalid file: %1").arg(fi.absoluteFilePath());  // cn:忽略无效文件：%1
+        return false;
+    }
+    DAPluginOption pluginopt;
+    Q_EMIT beginLoadPlugin(fi.absoluteFilePath());
+    if (!pluginopt.load(fi.absoluteFilePath(), c)) {
+        daWarning << tr("cannot load plugin: %1").arg(fi.absoluteFilePath());  // cn:无法加载插件：%1
+        d_ptr->mFailedPlugins.insert(key, pluginopt.getErrorString());
+        return false;
+    }
+    d_ptr->mFailedPlugins.remove(key);
+    d_ptr->mDegradedPlugins.remove(key);
+    d_ptr->mPluginOptions.append(pluginopt);
+    daInfo << tr("plugin %1 loaded at runtime").arg(fi.baseName());  // cn:插件%1已在运行期加载
+    Q_EMIT pluginLoaded(fi.absoluteFilePath());
+    return true;
 }
 
 bool DAPluginManager::isLoaded() const
@@ -240,7 +369,66 @@ QList< DAPluginOption > DAPluginManager::getPluginOptions() const
     return (d_ptr->mPluginOptions);
 }
 
-bool DAPluginManager::unloadPlugin(const QString& pluginName)
+/**
+ * @brief 扫描插件目录，返回全部插件文件及其状态
+ *
+ * 合并已加载插件的运行时信息（名称/版本/描述）与目录中未加载的文件
+ * （禁用项、加载失败项、降级停用项、新发现项），供插件管理界面展示
+ * @return 插件文件信息列表
+ */
+QList< DAPluginFileInfo > DAPluginManager::scanPluginFiles() const
+{
+    QList< DAPluginFileInfo > res;
+    if (!d_ptr->mPluginDir.exists()) {
+        return res;
+    }
+    const QFileInfoList fileInfos = d_ptr->mPluginDir.entryInfoList(QDir::Files);
+    for (const QFileInfo& fi : fileInfos) {
+        if (fi.baseName().isEmpty()) {
+            continue;
+        }
+        if (!isPluginLibrarySuffix(fi.suffix())) {
+            continue;
+        }
+        DAPluginFileInfo info;
+        info.baseName = fi.baseName();
+        info.filePath = fi.absoluteFilePath();
+        info.name     = fi.baseName();
+        const QString key = fi.baseName().toLower();
+        const DAPluginOption* opt = d_ptr->findOptionByFilePath(fi.absoluteFilePath());
+        if (opt && opt->isValid()) {
+            info.state       = DAPluginFileInfo::Loaded;
+            info.name        = opt->getPluginName();
+            info.version     = opt->getPluginVersion();
+            info.description = opt->getPluginDescription();
+        } else if (d_ptr->mDegradedPlugins.contains(key)) {
+            // 降级停用优先于禁用判断：降级插件同时也在忽略列表中，但需展示"重启后释放库"状态
+            info.state = DAPluginFileInfo::InactivePendingRestart;
+        } else if (d_ptr->mIgnorePluginBaseName.contains(key)) {
+            info.state = DAPluginFileInfo::Disabled;
+        } else if (d_ptr->mFailedPlugins.contains(key)) {
+            info.state       = DAPluginFileInfo::LoadFailed;
+            info.errorString = d_ptr->mFailedPlugins.value(key);
+        } else {
+            info.state = DAPluginFileInfo::NotLoaded;
+        }
+        res.append(info);
+    }
+    return res;
+}
+
+/**
+ * @brief 卸载指定插件（热卸载）
+ *
+ * 流程：先调用插件finalize()让其清理自建资源（返回false则取消卸载），
+ * 再销毁插件实例并尝试释放动态库。调用方必须在调用本函数之前完成宿主侧
+ * 注册表的注销（如agent工具），否则插件实例销毁后会留下悬空指针。
+ * 若库释放失败（Windows下库被其他模块引用时常见），插件实例已被销毁、
+ * 功能已停止，转入降级停用状态，重启后完全释放
+ * @param pluginName 插件名（DAAbstractPlugin::getName）
+ * @return 卸载结果
+ */
+DAPluginManager::UnloadResult DAPluginManager::unloadPlugin(const QString& pluginName)
 {
     for (auto it = d_ptr->mPluginOptions.begin(); it != d_ptr->mPluginOptions.end(); ++it) {
         if (it->getPluginName() == pluginName) {
@@ -248,21 +436,28 @@ bool DAPluginManager::unloadPlugin(const QString& pluginName)
             DAAbstractPlugin* plugin = it->plugin();
             if (plugin && !plugin->finalize()) {
                 daWarning << tr("Plugin %1 refused to finalize, unload cancelled.").arg(pluginName);  // cn:插件 %1 拒绝完成清理，卸载已取消
-                return false;
+                return UnloadRefused;
             }
-            // 2. 卸载插件库
-            if (it->unload()) {
-                Q_EMIT pluginUnloaded(pluginName);  // 建议新增此信号
-                d_ptr->mPluginOptions.erase(it);
-                return true;
-            } else {
-                daWarning << tr("Failed to unload plugin library for %1.").arg(pluginName);  // cn:无法卸载插件 %1 的库
-                return false;
+            // 2. 卸载插件库（无论库是否释放成功，插件实例都已被销毁，必须从列表移除）
+            const QString baseKey = it->getBaseName().toLower();
+            const bool fullUnload = it->unload();
+            d_ptr->mPluginOptions.erase(it);
+            if (fullUnload) {
+                d_ptr->mDegradedPlugins.remove(baseKey);
+                Q_EMIT pluginUnloaded(pluginName, true);
+                return UnloadSucceed;
             }
+            // 库释放失败，转入降级停用状态
+            d_ptr->mDegradedPlugins.insert(baseKey);
+            daWarning << tr("Plugin %1 has been finalized and deactivated, but its library could not be released; "
+                            "it will be fully released after restart")
+                             .arg(pluginName);  // cn:插件%1已清理并停用，但其库无法释放，将在重启后完全释放
+            Q_EMIT pluginUnloaded(pluginName, false);
+            return UnloadDegraded;
         }
     }
     daWarning << tr("Plugin %1 not found for unloading.").arg(pluginName);  // cn:未找到要卸载的插件 %1
-    return false;
+    return UnloadNotFound;
 }
 
 bool DAPluginManager::unloadAllPlugins()
@@ -281,10 +476,11 @@ bool DAPluginManager::unloadAllPlugins()
         }
         // 2. 卸载插件库
         if (opt.unload()) {
-            Q_EMIT pluginUnloaded(name);
+            Q_EMIT pluginUnloaded(name, true);
         } else {
             daWarning << tr("Failed to unload plugin library for %1.").arg(name);  // cn:无法卸载插件 %1 的库
             allSuccess = false;
+            Q_EMIT pluginUnloaded(name, false);
         }
     }
     return allSuccess;
@@ -307,6 +503,23 @@ QString DAPluginManager::getPluginDirPath()
 QString DAPluginManager::getPluginIgnoreFileName()
 {
     return QString(".pluginignore");
+}
+
+/**
+ * @brief 判断文件后缀是否为当前平台的动态库后缀
+ * @param suffix 文件后缀（不区分大小写）
+ * @return
+ */
+bool DAPluginManager::isPluginLibrarySuffix(const QString& suffix)
+{
+    const QString s = suffix.toLower();
+#ifdef Q_OS_WIN
+    return (s == QLatin1String("dll"));
+#elif defined(Q_OS_MACOS)
+    return (s == QLatin1String("dylib")) || (s == QLatin1String("so"));  // 有时macOS也用.so
+#else  // Unix/Linux
+    return (s == QLatin1String("so"));
+#endif
 }
 
 QDebug operator<<(QDebug debug, const DAPluginManager& fmg)

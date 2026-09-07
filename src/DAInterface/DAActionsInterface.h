@@ -25,6 +25,9 @@ public:
     QAction* createAction(const char* objname, const char* iconpath, bool checkable, bool checked = false, QActionGroup* actGroup = nullptr);
     //记录action，action要保证有独立的object name
     void recordAction(QAction* act);
+    //移除并销毁action（插件热卸载清理用），调用前应先将action从其所在的ribbon panel/菜单等控件中移除
+    bool removeAction(const QString& objname);
+    bool removeAction(QAction* act);
     //发生语言变更时会调用此函数
     virtual void retranslateUi();
     //查找action

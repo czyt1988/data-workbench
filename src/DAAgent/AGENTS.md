@@ -92,7 +92,7 @@ DAWorkbench 的 AI Agent 助手模块：内嵌 LLM 聊天 + 数据分析工具�
 
 | 文件 | 职责 |
 |------|------|
-| `DAAgentInterface.h` | 公共接口：14 个信号 + `registerTool` / `registerSystemPrompt` / `showDockWidget` / `hideDockWidget`（no-op）/ `sendMessage` / `stop` / `sendUserAnswer` / `newSession` / `isRunning` / `getLLMConfig` / `setLLMConfig` |
+| `DAAgentInterface.h` | 公共接口：14 个信号 + `registerTool` / `registerSystemPrompt`（带 provider 参数，插件热插拔）/ `unregisterToolsByProvider` / `unregisterSystemPromptsByProvider`（plugin-hotswap 新增，卸载前按注册方注销防悬空）/ `showDockWidget` / `hideDockWidget`（no-op）/ `sendMessage` / `stop` / `sendUserAnswer` / `newSession` / `isRunning` / `getLLMConfig` / `setLLMConfig` |
 | `DAAgentModule.h/.cpp` | 接口实现：工具注册表 `m_tools`、系统提示词 `m_systemPrompts`、会话桥管理（concurrent-sessions：`mSessionBridges` + 预热桥，`attachBridge` 按会话路由持久化与 UI 信号、`retireBridge` 优雅退役）、LLM 配置读写（DAAgentConfig + api_key DPAPI 加解密）、Python/脚本路径探测 |
 | `DAAgentBridge.h/.cpp` | QProcess 生命周期（start/stop/超时）、stdin/stdout 读写、JSON Lines 解析分发、工具执行兜底；`sendLoadSession` 下发历史 messages 重建 state |
 | `DAAgentSessionStore.h/.cpp` | 会话持久化层（非 QObject，PIMPL）：JSONL append-only 读写、全局索引（原子写 tmp+rename）、`cleanupOldSessions`（数量+时间双限）、`setLastActive`/`lastActiveSession`（按工程过滤的精确匹配）、自动标题、工程导入导出 |
@@ -270,7 +270,7 @@ chat.js 选项按钮 → `chatBridge.onUserSelect(answer)` → `DAAgentWebChanne
 
 - **内置工具插件**：20 个工具由独立插件 `plugins/DAAgentTools/` 提供。插件入口 `DAAgentToolsPlugin`（继承 `DAAbstractPlugin`，IID `org.da.abstract.plugin`）在 `initialize()` 中经 `core()->getAgentInterface()->registerTool(...)` 依次注册 20 个工具。继承关系：`DAAbstractAgentTool` → `DAAgentToolBase`（瘦，`DAAgent_API` 导出，数据/响应方法）→ 10 个非图表工具（5 数据 + 3 文件/报告 + 2 代码执行）；`DAAgentToolBase` → `DAAgentChartToolBase`（7 个图表方法）→ 10 个图表工具。
 - **第三方扩展**：领域工具插件可继承瘦 `DAAgentToolBase`（数据工具）或 `DAAgentChartToolBase`（图表工具），经 `DAAgentInterface::registerTool` 注入，无需改 DAAgent。跨 DLL 派生需要 `DAAgent_API` 导出宏（`DAAGENT_BUILD` 只在编译 DAAgent 库时定义，`DAAgentToolBase` 已 `DAAgent_API` 导出）。
-- 注册：`DAAgentModule::registerTool` → `m_tools[name]` → `m_bridge->setTools(m_tools)`。
+- 注册：`DAAgentModule::registerTool` → `m_tools[name]` → `m_bridge->setTools(m_tools)`；同时记录 provider（`dynamic_cast<QObject*>` 横转取 `tool->parent()`，即插件对象）到 `mToolProviders`，系统提示词 provider 经 `registerSystemPrompt(name, content, provider)` 显式传入。插件热卸载前 APP 层调用 `unregisterToolsByProvider` / `unregisterSystemPromptsByProvider` 按 provider 注销（必须先于插件实例销毁，否则 `m_tools` 悬空），注销后经 `setTools` 热更新全部存活桥。
 - 执行：`DAAgentBridge::executeTool()` 查表 → **try/catch 兜底**（工具抛异常时返回 `{success:false, error:...}`，避免 Bridge 崩溃导致子进程永久挂起）→ 回传 `tool_result` → 同时 emit `agentToolResult` 供 UI 展示。工具未设置 `success` 字段时自动补 `true`。
 
 ---

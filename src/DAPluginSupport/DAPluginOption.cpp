@@ -1,6 +1,7 @@
 #include "DAPluginOption.h"
 #include <QObject>
 #include <memory>
+#include <QFileInfo>
 #include <QPluginLoader>
 #include "DALogCategory.h"
 
@@ -132,10 +133,11 @@ bool DAPluginOption::load(const QString& pluginPath, DACoreInterface* c)
 bool DAPluginOption::unload()
 {
     if (d_ptr->mLib) {
-        if (d_ptr->mLib->unload()) {
-            d_ptr->mPlugin = nullptr;
-            return true;
-        }
+        // 调用QPluginLoader::unload后插件实例即被Qt销毁（即使库释放失败），
+        // 因此无论返回值如何都必须置空mPlugin，防止悬空指针被继续使用
+        const bool fullUnload = d_ptr->mLib->unload();
+        d_ptr->mPlugin = nullptr;
+        return fullUnload;
     }
     return false;
 }
@@ -156,6 +158,18 @@ QString DAPluginOption::getFileName() const
 {
     if (d_ptr->mLib) {
         return (d_ptr->mLib->fileName());
+    }
+    return (QString());
+}
+
+/**
+ * @brief 获取插件文件基本名（不含后缀）
+ * @return
+ */
+QString DAPluginOption::getBaseName() const
+{
+    if (d_ptr->mLib && !d_ptr->mLib->fileName().isEmpty()) {
+        return (QFileInfo(d_ptr->mLib->fileName()).baseName());
     }
     return (QString());
 }

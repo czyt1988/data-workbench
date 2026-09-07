@@ -48,6 +48,37 @@ bool DataAnalysisPlugin::initialize()
 }
 
 /**
+ * @brief 卸载清理
+ *
+ * 插件热卸载前由插件管理器调用：
+ * 1. UI清理ribbon面板与action（action的parent是宿主，必须显式经宿主接口移除）
+ * 2. worker以插件为parent，deleteLater并置空（插件实例随后被销毁，
+ *    若库释放失败降级驻留，置空可防止重复析构与悬空访问）
+ * @return 返回true允许卸载，返回false将取消卸载
+ */
+bool DataAnalysisPlugin::finalize()
+{
+    if (mUi) {
+        mUi->finalize();
+        mUi->deleteLater();
+        mUi = nullptr;
+    }
+    if (mIoWorker) {
+        mIoWorker->deleteLater();
+        mIoWorker = nullptr;
+    }
+    if (mCleanerWorker) {
+        mCleanerWorker->deleteLater();
+        mCleanerWorker = nullptr;
+    }
+    if (mOperateWorker) {
+        mOperateWorker->deleteLater();
+        mOperateWorker = nullptr;
+    }
+    return true;
+}
+
+/**
  * @brief 获取插件IID
  * @return 插件IID字符串
  */
@@ -116,7 +147,9 @@ DA::DAAbstractSettingPage* DataAnalysisPlugin::createSettingPage()
  */
 void DataAnalysisPlugin::retranslate()
 {
-    mUi->retranslateUi();
+    if (mUi) {
+        mUi->retranslateUi();
+    }
 }
 
 /**

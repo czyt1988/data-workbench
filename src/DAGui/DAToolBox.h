@@ -20,6 +20,8 @@ public:
     DAToolBox(QWidget* parent = nullptr);
     void addItems(const QMap< QString, QList< DAPyNodeMetaData > >& datas);
     void addItems(const QList< DAPyNodeMetaData >& datas);
+    //清空所有分组页（收藏页保留），用于插件热插拔后重建节点列表
+    void clear();
     //获取收藏list，如果没有就返回nullptr
     DANodeListWidget* getFavoriteList();
     //创建收藏列

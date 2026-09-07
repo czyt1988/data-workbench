@@ -32,6 +32,8 @@ public:
     virtual ~DAAgentInterface() override = default;
 
     // 注册工具供 agent 使用；工具名为空或与已注册工具重复时拒绝注册并返回 false
+    // 注册时记录工具的 QObject parent 作为 provider（DAAbstractAgentTool 非 QObject，
+    // 实现类如 DAAgentToolBase 多继承 QObject），供插件热卸载时按 provider 注销
     virtual bool registerTool(DAAbstractAgentTool* tool) = 0;
     // 注册命名系统提示词片段
     virtual void registerSystemPrompt(const QString& name, const QString& content) = 0;
@@ -140,6 +142,20 @@ public:
     virtual bool deleteSubagent(const QString& name) = 0;
     /// 已注册工具名列表（子 agent 编辑器工具白名单复选框数据源）
     virtual QStringList registeredToolNames() const = 0;
+
+    // ---- 插件热插拔（plugin-hotswap 新增；⚠️ 为保持对外部已编译插件的 vtable 兼容，
+    //      本节虚函数必须追加在既有虚函数列表末尾，禁止在其后插入其他虚函数，
+    //      也禁止调整上方既有虚函数的声明顺序） ----
+    /// 注册命名系统提示词片段（带 provider 的重载，provider 为注册方插件对象，
+    /// 热卸载时经 unregisterSystemPromptsByProvider 按 provider 注销）
+    virtual void registerSystemPrompt(const QString& name, const QString& content, QObject* provider) = 0;
+    /// 注销指定 provider（插件对象）注册的全部工具，插件卸载前由 APP 层调用，
+    /// 防止插件实例销毁后工具注册表留下悬空指针；返回注销的工具数量。
+    /// 工具对象所有权仍归插件（parent 关系），本方法只移除宿主注册表指针，不 delete 工具
+    virtual int unregisterToolsByProvider(QObject* provider) = 0;
+    /// 注销指定 provider 注册的全部系统提示词片段，返回注销数量。
+    /// 注意：已启动的 agent 子进程持有旧系统提示词，注销后对新会话/重启的子进程生效
+    virtual int unregisterSystemPromptsByProvider(QObject* provider) = 0;
 
 Q_SIGNALS:
     // ---- 以下 10 个由 DAAgentModule 从 DAAgentBridge 转发 ----

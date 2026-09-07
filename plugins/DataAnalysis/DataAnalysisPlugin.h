@@ -26,6 +26,9 @@ public:
     // 初始化
     virtual bool initialize() override;
 
+    // 卸载清理（热卸载前移除ribbon面板/action并销毁worker）
+    virtual bool finalize() override;
+
     // 插件id
     virtual QString getIID() const override;
 

@@ -31,6 +31,26 @@ bool {{plugin-base-name}}Plugin::initialize()
 }
 
 /**
+ * @brief 卸载清理
+ *
+ * 插件热卸载前由插件管理器调用，必须清理initialize中向宿主注册/创建的全部资源：
+ * 1. 移除加入宿主ribbon的panel与action（action的parent是宿主DAActionsInterface，
+ *    不会随插件库卸载销毁，必须显式经DAActionsInterface::removeAction移除）
+ * 2. agent工具与系统提示词由宿主在卸载前按provider自动注销，工具需以插件对象为parent
+ * 3. 返回false可拒绝卸载（插件保持加载状态）
+ * @return 允许卸载返回true
+ */
+bool {{plugin-base-name}}Plugin::finalize()
+{
+	if (mUi) {
+		mUi->finalize();
+		mUi->deleteLater();
+		mUi = nullptr;
+	}
+	return true;
+}
+
+/**
  * @brief 获取插件的IID
  * @return 返回插件的IID字符串
  */

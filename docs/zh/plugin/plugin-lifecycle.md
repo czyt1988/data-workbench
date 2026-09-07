@@ -278,24 +278,18 @@ void MyPlugin::retranslate()
 
 ### 正常卸载
 
-程序关闭时，插件会被正常卸载：
+程序关闭时（`AppMainWindow` 析构），插件经 `DAPluginManager::unloadAllPlugins()` 逆序卸载：
 
 ```cpp
-// DAPluginManager 清理流程
-void DAPluginManager::cleanup()
-{
-    for (DAAbstractPlugin* plugin : m_plugins) {
-        // 调用 finalize() 释放资源（旧 aboutToUnload 概念的替代，默认返回 true）
-        plugin->finalize();
-
-        // 断开所有信号连接
-        disconnect(plugin, nullptr, nullptr, nullptr);
-
-        // 释放插件对象
-        plugin->deleteLater();
+// DAPluginManager::unloadAllPlugins 清理流程（实际代码见 src/DAPluginSupport/DAPluginManager.cpp）
+while (!d_ptr->mPluginOptions.isEmpty()) {
+    DAPluginOption opt = d_ptr->mPluginOptions.takeLast();
+    // 1. 调用 finalize() 释放资源，返回 false 则跳过该插件
+    if (opt.plugin() && !opt.plugin()->finalize()) {
+        continue;
     }
-
-    m_plugins.clear();
+    // 2. 卸载插件库（QPluginLoader::unload 会销毁插件实例对象）
+    opt.unload();
 }
 ```
 
@@ -340,11 +334,95 @@ public:
 | 资源类型 | 释放方式 | 注意事项 |
 |----------|----------|----------|
 | **Qt 控件** | `deleteLater()` 或由父控件管理 | Dock 控件由主程序管理 |
+| **Ribbon panel** | `SARibbonCategory::removePanel(panel)` | 仅移除插件自建的 panel，宿主 panel 不可移除 |
+| **Ribbon action** | 先从 panel 移除按钮，再 `DAActionsInterface::removeAction(act)` | action 的 parent 是宿主接口对象，**不会**随插件库卸载销毁，必须显式移除（参考 `DataAnalysisUI::finalize()`） |
+| **agent 工具** | 宿主自动注销（按 provider） | 工具必须以插件对象为 parent；卸载前宿主调用 `DAAgentInterface::unregisterToolsByProvider(plugin)` |
+| **agent 系统提示词** | 宿主自动注销（按 provider） | 注册时传 provider：`registerSystemPrompt(name, content, this)` |
 | **内存缓冲** | 直接释放或智能指针 | 使用 `QSharedPointer` 更安全 |
 | **文件句柄** | 关闭文件 | 先确保数据已保存 |
 | **网络连接** | 断开连接 | 处理未完成的请求 |
 | **线程** | 停止并等待结束 | 使用 `quit()` + `wait()` |
 | **定时器** | 停止定时器 | `QTimer::stop()` |
+
+---
+
+## 运行期热插拔（启用/禁用管理）
+
+### 功能概述
+
+插件管理对话框（Ribbon 主页 → 配置 → 插件设置，`DAPluginManagerDialog`）支持勾选启用/禁用插件，点「应用/确定」批量生效：
+
+- **C++ 插件（plugins 目录）**：运行期热加载/热卸载，立即生效，无需重启
+- **Python 节点包（pyplugins 目录）**：禁用记录持久化，**下次启动生效**（Python 模块无法在运行期安全卸载）
+
+启用状态分别持久化到 `plugins/.pluginignore` 与 `pyplugins/.pluginignore`（每行一个文件基本名/包目录名，`#` 开头为注释），下次启动时跳过禁用项。
+
+### 热加载流程
+
+```
+DAAppPluginManager::enablePlugin(baseName)
+ ├─ 定位插件文件（plugins 目录，按文件基本名匹配）
+ ├─ setPluginEnabled(baseName, true)      # 移出 .pluginignore 并回写
+ ├─ DAPluginManager::loadPlugin(path)     # QPluginLoader 加载 + setCore + initialize()
+ ├─ refreshAfterPluginChange()            # 重建插件列表与节点元数据（含去重）
+ ├─ 节点插件补调 afterLoadedNodes()
+ └─ emit nodeMetaDatasChanged()           # AppMainWindow 据此重建节点工具箱（收藏保留）
+```
+
+### 热卸载流程
+
+```
+DAAppPluginManager::disablePlugin(baseName)
+ ├─ 守卫：插件节点正被打开的工作流使用 → 拒绝卸载并提示
+ ├─ DAAgentInterface::unregisterToolsByProvider(plugin)          # 必须先于实例销毁
+ ├─ DAAgentInterface::unregisterSystemPromptsByProvider(plugin)
+ ├─ DAPluginManager::unloadPlugin(name)
+ │   ├─ plugin->finalize()                # 插件清理 ribbon panel/action、worker 等，返回 false 取消卸载
+ │   ├─ QPluginLoader::unload()           # 销毁插件实例并释放库
+ │   └─ 库释放失败 → 降级停用（见下）
+ ├─ setPluginEnabled(baseName, false)     # 写入 .pluginignore
+ ├─ refreshAfterPluginChange()
+ └─ emit nodeMetaDatasChanged()
+```
+
+!!! warning "宿主注销必须先于插件实例销毁"
+    `QPluginLoader::unload()` 会销毁插件实例及其全部 QObject 子对象（含 agent 工具）。
+    宿主注册表（如 `DAAgentModule::mTools`）若仍持有这些指针将成为悬空指针，因此
+    `disablePlugin` 在调用 `unloadPlugin` **之前**按 provider 注销 agent 工具与系统提示词。
+    这一顺序由 APP 层编排保证，不依赖插件自觉。
+
+### 降级停用状态
+
+Windows 下若插件库仍被其他模块引用，`QPluginLoader::unload()` 释放库会失败。此时插件实例已被销毁、
+`finalize()` 已执行、宿主注册表已清理，功能上完全停用，仅 DLL 驻留内存——管理界面状态显示
+「已停用（重启后释放库）」，重启后完全释放。降级停用同样会写入 `.pluginignore`，下次启动不再加载。
+
+### finalize() 热卸载契约
+
+支持热插拔的插件必须保证 `initialize()` / `finalize()` **可多次成对调用**（禁用后重新启用时，
+插件会经历 finalize → 实例销毁 → 新实例 initialize 循环）：
+
+1. `finalize()` 中移除加入宿主 ribbon 的全部 panel 与 action（见上方资源释放清单），并置空成员指针
+2. agent 工具必须以插件对象为 parent（`new MyTool(core, this)`），系统提示词注册时传 provider
+   （`registerSystemPrompt(name, content, this)`），宿主据此按 provider 自动注销
+3. 未实现 `finalize()` 清理的插件被热卸载后不会崩溃（action parent 在宿主、信号连接随实例销毁自动断开），
+   但 ribbon 上会残留失效按钮——外部插件应尽快补齐清理逻辑
+4. `registerBuiltinAgent` 写入 `<exe>/daAgent/` 的提示词文件**保留不删**（属提示词库资产，用户可能已编辑）
+
+### 相关 API
+
+| API | 所属类 | 说明 |
+|-----|--------|------|
+| `loadPlugin(path, core)` | `DAPluginManager` | 运行期加载单个插件，成功发 `pluginLoaded` 信号 |
+| `unloadPlugin(name)` | `DAPluginManager` | finalize + 卸载，返回 `UnloadResult`（Succeed/Degraded/Refused/NotFound） |
+| `setPluginEnabled(baseName, enable)` | `DAPluginManager` | 启用状态持久化到 `.pluginignore` |
+| `scanPluginFiles()` | `DAPluginManager` | 枚举插件目录全部文件及状态（管理界面数据源） |
+| `enablePlugin / disablePlugin` | `DAAppPluginManager` | 热插拔编排入口（守卫 + 注销 + 持久化 + 刷新） |
+| `nodeMetaDatasChanged` 信号 | `DAAppPluginManager` | 节点元数据变化，宿主刷新节点工具箱 |
+| `getPyPluginPackageInfos / setPyPluginEnabled` | `DAAppPluginManager` | Python 节点包管理（重启生效） |
+| `unregisterToolsByProvider` | `DAAgentInterface` | 按注册方批量注销 agent 工具 |
+| `unregisterSystemPromptsByProvider` | `DAAgentInterface` | 按注册方批量注销系统提示词片段 |
+| `removeAction` | `DAActionsInterface` | 从宿主注册表移除并销毁 action |
 
 ---
 

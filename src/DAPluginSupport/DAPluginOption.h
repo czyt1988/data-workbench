@@ -27,12 +27,16 @@ public:
 
     // 加载插件
     bool load(const QString& pluginPath, DACoreInterface* c);
+    // 卸载插件，返回true表示库也被成功释放，返回false表示插件实例已销毁但库释放失败（降级停用，重启后完全释放）
     bool unload();
     // 错误信息
     QString getErrorString() const;
 
     // 文件名
     QString getFileName() const;
+
+    // 文件基本名（不含后缀）
+    QString getBaseName() const;
 
     // 获取iid
     QString getIid() const;

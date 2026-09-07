@@ -81,6 +81,22 @@ void DANodeTreeWidget::addItems(const QList< DAPyNodeMetaData >& nodeMetaDatas)
 }
 
 /**
+ * @brief 清空所有节点分组
+ *
+ * 收藏节点保留不动，用于插件热插拔后重建节点分组
+ */
+void DANodeTreeWidget::clearNodes()
+{
+	for (int i = topLevelItemCount() - 1; i >= 0; --i) {
+		QTreeWidgetItem* item = topLevelItem(i);
+		if (item == mFavoriteItem) {
+			continue;
+		}
+		delete takeTopLevelItem(i);
+	}
+}
+
+/**
  * @brief 逐个添加
  *
  * @note 注意此效率非常低

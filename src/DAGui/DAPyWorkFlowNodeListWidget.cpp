@@ -59,6 +59,20 @@ void DAPyWorkFlowNodeListWidget::addItems(const QList< DAPyNodeMetaData >& datas
 }
 
 /**
+ * @brief 重建节点列表
+ *
+ * 先清空 toolbox 与树的节点分组（收藏保留），再按新数据重建。
+ * 插件热插拔导致节点元数据变化后由宿主调用刷新
+ * @param datas
+ */
+void DAPyWorkFlowNodeListWidget::updateItems(const QList< DAPyNodeMetaData >& datas)
+{
+	ui->workFlowToolBox->clear();
+	ui->workflowTreeWidget->clearNodes();
+	addItems(datas);
+}
+
+/**
  * @brief 设置显示模式
  * @param m
  */

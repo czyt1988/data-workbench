@@ -50,6 +50,9 @@ public:
     DAAgentSubagentManager* mSubagentManager = nullptr; ///< 子 agent 定义库（QObject，parent=this）
     QMap<QString, DAAbstractAgentTool*> mTools;        ///< tool name → impl
     QHash<QString, QString> mSystemPrompts;            ///< prompt name → content
+    // ---- 插件热插拔：注册方追踪（provider → 注销索引） ----
+    QHash<QString, QObject*> mToolProviders;           ///< tool name → 注册方（注册时记录 tool->parent()）
+    QHash<QString, QObject*> mSystemPromptProviders;   ///< prompt name → 注册方（registerSystemPrompt 传入，可为 nullptr）
     DAAgentSessionStore* mSessionStore = nullptr;  ///< 非 QObject 无参构造；initialize() 内 new、析构显式 delete
     QString mCurrentSessionId;                     ///< 当前活跃会话（UI 归属，唯一）
     QString mCurrentProjectPath;                   ///< 由 DAAppController::setCurrentProjectPath 注入
@@ -211,20 +214,111 @@ bool DAAgentModule::registerTool(DAAbstractAgentTool* tool)
                  qPrintable(name));
     }
     d->mTools[name] = tool;
+    // 插件热插拔：记录注册方 provider。DAAbstractAgentTool 本身不是 QObject，
+    // 需 dynamic_cast 横转到 QObject 面（实现类如 DAAgentToolBase 多继承两者）再取 parent。
+    // 约定：插件注册的工具必须以插件对象为 parent，否则无法按 provider 注销，
+    // 插件卸载后会留下悬空指针
+    QObject* toolObject = dynamic_cast< QObject* >(tool);
+    QObject* provider   = toolObject ? toolObject->parent() : nullptr;
+    if (nullptr == provider) {
+        qWarning("DAAgentModule::registerTool: tool '%s' has no QObject parent (provider), "
+                 "it cannot be unregistered by provider when its plugin is unloaded",
+                 qPrintable(name));
+    }
+    d->mToolProviders[name] = provider;
     // concurrent-sessions：同步到全部存活桥（新桥创建时经 assembleToolSpecs 取最新）
     forEachLiveBridge([this](DAAgentBridge* b) { b->setTools(d_func()->mTools); });
     return true;
 }
 
 /**
- * @brief 注册命名系统提示词片段
+ * @brief 注册命名系统提示词片段（无provider版本，委托到带provider重载）
  * @param name 提示词片段名称
  * @param content 提示词内容
  */
 void DAAgentModule::registerSystemPrompt(const QString& name, const QString& content)
 {
+    registerSystemPrompt(name, content, nullptr);
+}
+
+/**
+ * @brief 注册命名系统提示词片段
+ * @param name 提示词片段名称
+ * @param content 提示词内容
+ * @param provider 注册方对象（插件热卸载时按 provider 注销），可为 nullptr
+ */
+void DAAgentModule::registerSystemPrompt(const QString& name, const QString& content, QObject* provider)
+{
     DA_D(d);
     d->mSystemPrompts[name] = content;
+    d->mSystemPromptProviders[name] = provider;
+}
+
+/**
+ * @brief 注销指定 provider（插件对象）注册的全部工具
+ *
+ * 插件热卸载前由 APP 层调用，防止插件实例销毁后 mTools 留下悬空指针。
+ * 工具对象所有权归插件（parent 关系），此处只移除宿主注册表指针，不 delete 工具。
+ * 注销后同步到全部存活桥（与 registerTool 相同的 setTools 热更新路径）
+ * @param provider 注册方对象指针
+ * @return 注销的工具数量
+ */
+int DAAgentModule::unregisterToolsByProvider(QObject* provider)
+{
+    DA_D(d);
+    if (nullptr == provider) {
+        return 0;
+    }
+    QStringList removedNames;
+    for (auto it = d->mToolProviders.begin(); it != d->mToolProviders.end();) {
+        if (it.value() == provider) {
+            removedNames.append(it.key());
+            it = d->mToolProviders.erase(it);
+        } else {
+            ++it;
+        }
+    }
+    for (const QString& name : std::as_const(removedNames)) {
+        d->mTools.remove(name);
+    }
+    if (!removedNames.isEmpty()) {
+        qInfo("DAAgentModule::unregisterToolsByProvider: %d tool(s) unregistered for provider %p",
+              removedNames.size(),
+              static_cast<void*>(provider));
+        forEachLiveBridge([this](DAAgentBridge* b) { b->setTools(d_func()->mTools); });
+    }
+    return removedNames.size();
+}
+
+/**
+ * @brief 注销指定 provider 注册的全部系统提示词片段
+ *
+ * 已启动的 agent 子进程持有旧系统提示词，注销后对新会话/重启的子进程生效
+ * @param provider 注册方对象指针
+ * @return 注销的提示词片段数量
+ */
+int DAAgentModule::unregisterSystemPromptsByProvider(QObject* provider)
+{
+    DA_D(d);
+    if (nullptr == provider) {
+        return 0;
+    }
+    int removedCount = 0;
+    for (auto it = d->mSystemPromptProviders.begin(); it != d->mSystemPromptProviders.end();) {
+        if (it.value() == provider) {
+            d->mSystemPrompts.remove(it.key());
+            it = d->mSystemPromptProviders.erase(it);
+            ++removedCount;
+        } else {
+            ++it;
+        }
+    }
+    if (removedCount > 0) {
+        qInfo("DAAgentModule::unregisterSystemPromptsByProvider: %d prompt(s) unregistered for provider %p",
+              removedCount,
+              static_cast<void*>(provider));
+    }
+    return removedCount;
 }
 
 /**

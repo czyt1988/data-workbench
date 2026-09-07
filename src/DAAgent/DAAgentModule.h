@@ -45,6 +45,13 @@ public:
     bool registerTool(DAAbstractAgentTool* tool) override;
     /// @copydoc DAAgentInterface::registerSystemPrompt
     void registerSystemPrompt(const QString& name, const QString& content) override;
+    void registerSystemPrompt(const QString& name, const QString& content, QObject* provider) override;
+
+    // ---- 插件热插拔（plugin-hotswap，override DAAgentInterface 2 个新纯虚） ----
+    /// @copydoc DAAgentInterface::unregisterToolsByProvider
+    int unregisterToolsByProvider(QObject* provider) override;
+    /// @copydoc DAAgentInterface::unregisterSystemPromptsByProvider
+    int unregisterSystemPromptsByProvider(QObject* provider) override;
     /// @copydoc DAAgentInterface::showDockWidget
     void showDockWidget() override;
     /// @copydoc DAAgentInterface::hideDockWidget

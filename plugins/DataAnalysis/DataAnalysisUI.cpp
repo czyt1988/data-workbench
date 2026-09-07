@@ -2,10 +2,12 @@
 // Qt
 #include <QMainWindow>
 #include <QDebug>
+#include <QLayoutItem>
 // SARibbon
 #include "SARibbonBar.h"
 #include "SARibbonCategory.h"
 #include "SARibbonPanel.h"
+#include "SARibbonPanelLayout.h"
 #include "SARibbonQuickAccessBar.h"
 #include "SARibbonMainWindow.h"
 // ADS
@@ -51,6 +53,103 @@ bool DataAnalysisUI::initialize(DA::DACoreInterface* core)
     buildDataCategory();
     retranslateUi();
     return true;
+}
+
+/**
+ * @brief 从panel中移除action对应的按钮
+ * @param panel ribbon面板，可为nullptr
+ * @param act action，可为nullptr
+ */
+static void removeActionFromPanel(SARibbonPanel* panel, QAction* act)
+{
+    if (nullptr == panel || nullptr == act) {
+        return;
+    }
+    SARibbonPanelLayout* lay = panel->panelLayout();
+    if (nullptr == lay) {
+        return;
+    }
+    const int idx = lay->indexByAction(act);
+    if (idx >= 0) {
+        // takeAt内部已对按钮控件hide+deleteLater，item本身需手动释放
+        QLayoutItem* item = lay->takeAt(idx);
+        delete item;
+    }
+}
+
+/**
+ * @brief 清理initialize创建的全部ribbon资源
+ *
+ * 插件热卸载（finalize）前调用。清理顺序：
+ * 1. 把action从宿主panel中移除（移除对应按钮）
+ * 2. 把插件创建的panel从category中移除（SARibbon内部deleteLater）
+ * 3. 经宿主DAActionsInterface销毁action——action的parent是宿主接口对象，
+ *    不会随插件库卸载销毁，必须显式移除，否则注册表残留无效项
+ */
+void DataAnalysisUI::finalize()
+{
+    // 数据标签宿主panel中的导出action
+    removeActionFromPanel(panelDataOperate, actionExportIndividualData);
+    removeActionFromPanel(panelDataOperate, actionExportMultipleData);
+    removeActionFromPanel(panelDataOperate, actionExportToOneExcel);
+    // Dataframe上下文标签中插件自建的panel
+    SARibbonCategory* dataframeContextCategory = nullptr;
+    if (mUi && mUi->getRibbonArea()) {
+        dataframeContextCategory = mUi->getRibbonArea()->getCategoryByObjectName(
+            QString::fromUtf8(DA::UiNames::Ribbon::DataFrameOperateCategory));
+    }
+    if (dataframeContextCategory) {
+        if (panelDataCleaner) {
+            dataframeContextCategory->removePanel(panelDataCleaner);
+        }
+        if (pannelDataFiltering) {
+            dataframeContextCategory->removePanel(pannelDataFiltering);
+        }
+        if (panelDataStatistic) {
+            dataframeContextCategory->removePanel(panelDataStatistic);
+        }
+    }
+    // 经宿主接口销毁全部action
+    if (mActions) {
+        const QList< QAction* > allActions = {
+            actionExportIndividualData,       actionExportMultipleData,
+            actionExportToOneExcel,           actionDataFrameDropNone,
+            actionDropDuplicates,             actionDataFrameFillNone,
+            actionDataFrameFillInterpolate,   actionDataFrameRemoveOutlierIQR,
+            actionDataFrameRemoveOutliersZScore, actionDataFrameTransformSkewedData,
+            actionDataFrameEvalDatas,         actionDataFrameQueryDatas,
+            actionDataFrameDataRetrieval,     actionDataFrameDataFilterColumn,
+            actionDataFrameSort,              actionCreateDataDescribe,
+            actionCreatePivotTable
+        };
+        for (QAction* act : allActions) {
+            if (act) {
+                mActions->removeAction(act);
+            }
+        }
+    }
+    // 全部置空，防止悬空访问
+    panelDataOperate                 = nullptr;
+    actionExportIndividualData       = nullptr;
+    actionExportMultipleData         = nullptr;
+    actionExportToOneExcel           = nullptr;
+    panelDataCleaner                 = nullptr;
+    actionDataFrameDropNone          = nullptr;
+    actionDropDuplicates             = nullptr;
+    actionDataFrameFillNone          = nullptr;
+    actionDataFrameFillInterpolate   = nullptr;
+    actionDataFrameRemoveOutlierIQR  = nullptr;
+    actionDataFrameRemoveOutliersZScore = nullptr;
+    actionDataFrameTransformSkewedData  = nullptr;
+    pannelDataFiltering              = nullptr;
+    actionDataFrameEvalDatas         = nullptr;
+    actionDataFrameQueryDatas        = nullptr;
+    actionDataFrameDataRetrieval     = nullptr;
+    actionDataFrameDataFilterColumn  = nullptr;
+    actionDataFrameSort              = nullptr;
+    panelDataStatistic               = nullptr;
+    actionCreateDataDescribe         = nullptr;
+    actionCreatePivotTable           = nullptr;
 }
 
 /**

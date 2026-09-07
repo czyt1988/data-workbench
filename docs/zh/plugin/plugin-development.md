@@ -691,6 +691,17 @@ data-workbench/bin_Release_qtX.X_MSCV_x64/bin/plugins/MyPlugin.dll
 
 运行主程序，插件将自动加载。
 
+### 启用/禁用与热插拔
+
+主程序 Ribbon 主页 → 配置 → **插件设置** 打开插件管理对话框，可勾选启用/禁用插件：
+
+- C++ 插件（plugins 目录）勾选变更点「应用」后**立即热加载/热卸载**，状态持久化到 `plugins/.pluginignore`
+- Python 节点包（pyplugins 目录）禁用后**下次启动生效**，状态持久化到 `pyplugins/.pluginignore`
+
+热卸载前宿主会调用插件的 `finalize()` 钩子，插件必须在此清理加入宿主的 ribbon panel/action 等资源；
+agent 工具须以插件对象为 parent、系统提示词注册须传 provider，宿主才能在卸载前自动注销。
+完整流程、降级停用状态与 finalize 契约详见 [插件生命周期管理 · 运行期热插拔](./plugin-lifecycle.md#运行期热插拔启用禁用管理)。
+
 ---
 
 ## 现有插件参考

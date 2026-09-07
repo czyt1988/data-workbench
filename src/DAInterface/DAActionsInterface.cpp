@@ -138,6 +138,43 @@ void DAActionsInterface::retranslateUi()
 }
 
 /**
+ * @brief 按object name移除并销毁action
+ *
+ * 供插件热卸载时清理经createAction创建的action。action的parent是本接口对象，
+ * 插件库释放后不会随插件销毁，必须显式调用此函数移除，否则注册表中残留无效项。
+ * 调用前应先将action从其所在的ribbon panel/菜单等控件中移除
+ * @param objname action的object name
+ * @return 是否找到并移除
+ */
+bool DAActionsInterface::removeAction(const QString& objname)
+{
+    auto it = d_ptr->mObjectToAction.find(objname);
+    if (it == d_ptr->mObjectToAction.end()) {
+        qWarning() << "DAActionsInterface::removeAction: no action named" << objname;
+        return false;
+    }
+    QAction* act = it.value();
+    d_ptr->mObjectToAction.erase(it);
+    if (act) {
+        act->deleteLater();
+    }
+    return true;
+}
+
+/**
+ * @brief 移除并销毁action
+ * @param act action指针
+ * @return 是否找到并移除
+ */
+bool DAActionsInterface::removeAction(QAction* act)
+{
+    if (nullptr == act) {
+        return false;
+    }
+    return removeAction(act->objectName());
+}
+
+/**
  * @brief 查找action
  * @param objname
  * @return 如果没有返回nullptr

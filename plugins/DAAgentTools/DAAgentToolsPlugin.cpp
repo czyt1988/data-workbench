@@ -95,7 +95,7 @@ bool DAAgentToolsPlugin::initialize()
         "- Only reference figures you have created in the current session (the user can click the link to raise and focus that figure).\n"
         "- Use `list_figures` to discover existing figures and their names/ids, and `list_chart_items` to inspect "
         "the items (curves, annotations, regions) inside a chart before modifying or removing them.\n"
-    ));
+    ), this);
     return DAAbstractPlugin::initialize();  // base default returns true
 }
 }  // namespace DA

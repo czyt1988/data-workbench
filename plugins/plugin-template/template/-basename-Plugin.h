@@ -23,6 +23,9 @@ public:
 	// 初始化
 	virtual bool initialize() override;
 
+	// 卸载清理（插件热卸载前调用，移除本插件加入宿主的UI等资源）
+	virtual bool finalize() override;
+
 	// 插件id
 	virtual QString getIID() const override;
 

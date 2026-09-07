@@ -48,6 +48,24 @@ bool {{plugin-base-name}}UI::initialize(DA::DACoreInterface* core)
 }
 
 /**
+ * @brief 清理initialize创建的全部UI资源
+ *
+ * 插件热卸载（finalize）前调用。清理要点：
+ * 1. 把action从宿主ribbon panel中移除（移除对应按钮），插件自建的panel
+ *    经SARibbonCategory::removePanel移除
+ * 2. action的parent是宿主DAActionsInterface，不会随插件库卸载销毁，
+ *    必须显式调用mActions->removeAction移除，否则注册表残留无效项
+ * 3. 清理后将成员指针置空，防止悬空访问
+ */
+void {{plugin-base-name}}UI::finalize()
+{
+    //! 在此移除initialize中创建的panel/action，参考：
+    //! removeActionFromPanel(panel, action);           // 从panel移除按钮
+    //! category->removePanel(panel);                   // 移除插件自建panel
+    //! mActions->removeAction(action);                 // 经宿主接口销毁action
+}
+
+/**
  * @brief 重新翻译UI字符串
  */
 void {{plugin-base-name}}UI::retranslateUi()

@@ -67,7 +67,7 @@ bool DAPaperAgentPlugin::initialize()
         "- If both APIs are unreachable (network error), say so honestly and switch to offline mode:\n"
         "  build the reference list only from literature supplied by the user, clearly marked as\n"
         "  \"pending manual verification\".\n"
-    ));
+    ), this);
     return DAAbstractPlugin::initialize();  // base default returns true
 }
 }  // namespace DA

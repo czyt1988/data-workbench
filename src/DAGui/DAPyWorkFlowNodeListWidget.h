@@ -34,6 +34,8 @@ public:
 	~DAPyWorkFlowNodeListWidget();
 	// 添加节点
 	void addItems(const QList< DAPyNodeMetaData >& datas);
+	// 重建节点列表（先清空再添加，收藏保留），用于插件热插拔后刷新
+	void updateItems(const QList< DAPyNodeMetaData >& datas);
 	// 设置显示模式
 	void setDisplayMode(DisplayMode m);
 	DisplayMode getDisplayMode() const;

@@ -34,6 +34,9 @@ public:
     DANodeTreeWidget(QWidget* par = nullptr);
     //添加items
     void addItems(const QList< DAPyNodeMetaData >& nodeMetaDatas);
+    //清空所有节点分组（收藏节点保留），用于插件热插拔后重建节点列表；
+    //不命名为clear是为避免遮蔽QTreeWidget::clear
+    void clearNodes();
     //逐个添加 注意此效率非常低
     void addItem(const DAPyNodeMetaData& md);
     //添加到收藏
