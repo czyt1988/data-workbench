@@ -345,6 +345,59 @@ bool DAPySeries::setValue(size_t i, const QVariant& v)
 }
 
 /**
+ * @brief 按位置区间批量取元素值
+ *
+ * 等价于 list(s.iloc[start:start+count].to_numpy())，单次python调用。
+ * 注意不能直接迭代Series：pandas 3.0的Series迭代会把numpy标量转成python原生类型
+ * （int64变int、bool走caster的PyLong分支变int），与逐元素的value()/iat()类型不一致；
+ * to_numpy()后迭代产出numpy标量，经QVariant caster与iat()语义严格一致
+ * @param start 起始位置
+ * @param count 数量，超出实际长度时由python切片自动截断
+ * @return 元素值的QVariantList，count为0或转换失败返回空列表
+ */
+QVariantList DAPySeries::valuesToVariantList(std::size_t start, std::size_t count) const
+{
+    QVariantList res;
+    if (count == 0) {
+        return res;
+    }
+    try {
+        pybind11::object sub = attr("iloc")[ pybind11::slice(start, start + count, 1) ];
+        pybind11::list lst(sub.attr("to_numpy")());
+        res = lst.cast< QVariantList >();
+    } catch (const std::exception& e) {
+        qCritical().noquote() << e.what();
+        res.clear();
+    }
+    return res;
+}
+
+/**
+ * @brief 按位置区间批量取index值
+ *
+ * 等价于 list(s.index[start:start+count])，单次python调用
+ * @param start 起始位置
+ * @param count 数量，超出时由python切片自动截断
+ * @return index值的QVariantList，count为0或转换失败返回空列表
+ */
+QVariantList DAPySeries::indexToVariantList(std::size_t start, std::size_t count) const
+{
+    QVariantList res;
+    if (count == 0) {
+        return res;
+    }
+    try {
+        pybind11::object idx = attr("index")[ pybind11::slice(start, start + count, 1) ];
+        pybind11::list lst(idx);
+        res = lst.cast< QVariantList >();
+    } catch (const std::exception& e) {
+        qCritical().noquote() << e.what();
+        res.clear();
+    }
+    return res;
+}
+
+/**
  * @brief 判断是否为数值类型
  * @return 如果是数值类型返回true
  */

@@ -1,5 +1,8 @@
 #include "DADataPyDataFrame.h"
 #include <iterator>
+#include <algorithm>
+#include <QMetaType>
+#include "numpy/DAPyDType.h"
 // DAMessageHandler
 #include "DALogCategory.h"
 //===================================================
@@ -65,6 +68,99 @@ bool DADataPyDataFrame::setValue(std::size_t dim1, std::size_t dim2, const QVari
         qWarning() << QString("DADataPyDataFrame::setValue failed: %1").arg(e.what());
         return false;
     }
+}
+
+/**
+ * @brief 获取表格数据源接口
+ * @return 返回this
+ */
+DATableDataSource* DADataPyDataFrame::tableSource()
+{
+    return this;
+}
+
+/**
+ * @brief 获取表格数据源接口（const版本）
+ * @return 返回this
+ */
+const DATableDataSource* DADataPyDataFrame::tableSource() const
+{
+    return this;
+}
+
+/**
+ * @brief 总行数
+ * @return dataframe的行数
+ */
+std::size_t DADataPyDataFrame::tableRowCount() const
+{
+    return dataframe().shape().first;
+}
+
+/**
+ * @brief 总列数
+ * @return dataframe的列数
+ */
+std::size_t DADataPyDataFrame::tableColumnCount() const
+{
+    return dataframe().shape().second;
+}
+
+/**
+ * @brief 列名
+ * @param column 列号
+ * @return 对应列名
+ */
+QString DADataPyDataFrame::tableColumnName(std::size_t column) const
+{
+    return dataframe().columnName(column);
+}
+
+/**
+ * @brief 列类型（QMetaType类型id）
+ * @param column 列号
+ * @return 与QVariant caster转换语义对齐的类型id，无法确定返回QMetaType::UnknownType
+ */
+int DADataPyDataFrame::tableColumnType(std::size_t column) const
+{
+    try {
+        DAPyDType dt = dataframe().dtypeObject(column);
+        return dt.toMetaType();
+    } catch (const std::exception& e) {
+        qWarning() << QString("DADataPyDataFrame::tableColumnType failed for column %1: %2").arg(column).arg(e.what());
+    }
+    return QMetaType::UnknownType;
+}
+
+/**
+ * @brief 批量取数据块
+ *
+ * 单次python调用取[startRow, startRow+rowCount)区间的整块数据，
+ * 转换语义与逐cell的toVariant()一致，同时携带index作为行头
+ * @param startRow 起始绝对行号
+ * @param rowCount 期望行数，超出实际行数时自动截断
+ * @return 数据块，startRow越界或python异常时返回无效块
+ */
+DATableDataBlock DADataPyDataFrame::fetchBlock(std::size_t startRow, std::size_t rowCount)
+{
+    try {
+        DAPyDataFrame df                  = dataframe();
+        std::pair< std::size_t, std::size_t > sp = df.shape();
+        if (startRow >= sp.first) {
+            return DATableDataBlock();
+        }
+        std::size_t n = std::min(rowCount, sp.first - startRow);
+        DATableDataBlock block(startRow, sp.second);
+        const QVariantList rows = df.rowsToVariantList(startRow, n);
+        for (const QVariant& rowVar : rows) {
+            block.appendRow(rowVar.value< QVariantList >());
+        }
+        block.setRowHeaders(df.indexToVariantList(startRow, n));
+        return block;
+    } catch (const std::exception& e) {
+        qWarning() << QString("DADataPyDataFrame::fetchBlock failed at row %1: %2").arg(startRow).arg(e.what());
+    }
+    return DATableDataBlock();
 }
 
 /**

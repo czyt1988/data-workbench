@@ -398,6 +398,76 @@ bool DAPyDataFrame::iat(std::size_t r, std::size_t c, const pybind11::object& v)
     return false;
 }
 
+/**
+ * @brief 按行区间批量取数据块
+ *
+ * 等价于 tuple(zip(*[sub.iloc[:,k].to_numpy() for k in range(colCount)]))。
+ * 注意不能用itertuples/values.tolist()：pandas 3.0会把numpy标量转成python原生类型
+ * （bool会走caster的PyLong分支变成int、int64变成int），与逐cell的iat()类型不一致；
+ * 按列to_numpy()后zip迭代产出numpy标量，经QVariant caster的handle_numpy_object
+ * dtype分支转换，与iat()语义严格一致（datetime列为datetime64标量，与iat的Timestamp
+ * 经caster同样落到QDateTime）
+ * @param start 起始行号（绝对位置）
+ * @param count 行数，超出实际行数时由python切片自动截断
+ * @return 每个元素为一行的QVariantList，count为0或转换失败返回空列表
+ */
+QVariantList DAPyDataFrame::rowsToVariantList(std::size_t start, std::size_t count) const
+{
+    QVariantList res;
+    if (count == 0) {
+        return res;
+    }
+    try {
+        pybind11::object sub    = attr("iloc")[ pybind11::slice(start, start + count, 1) ];
+        pybind11::tuple subShape = sub.attr("shape");
+        std::size_t colCount     = subShape[ 1 ].cast< std::size_t >();
+        pybind11::tuple colArrays = pybind11::tuple(colCount);
+        for (std::size_t k = 0; k < colCount; ++k) {
+            colArrays[ k ] = sub.attr("iloc")[ pybind11::make_tuple(pybind11::ellipsis(), k) ].attr("to_numpy")();
+        }
+        pybind11::object zipFn = pybind11::module::import("builtins").attr("zip");
+        pybind11::tuple rows   = pybind11::tuple(zipFn(*colArrays));
+        res.reserve(static_cast< int >(rows.size()));
+        for (const auto& rowObj : rows) {
+            // QList caster只接受python list，tuple行需先转list再cast（迭代产出handle，需借为object）
+            pybind11::list rowList(pybind11::reinterpret_borrow< pybind11::object >(rowObj));
+            // 必须显式包成QVariant：QList::append(const QList<T>&)重载会把行列表拼接展平
+            res.append(QVariant(rowList.cast< QVariantList >()));
+        }
+    } catch (const std::exception& e) {
+        qCritical().noquote() << e.what();
+        res.clear();
+    }
+    return res;
+}
+
+/**
+ * @brief 按行区间批量取index值
+ *
+ * 等价于 list(df.index[start:start+count])，单次python调用，
+ * 元素经QVariant caster转换。刻意不用to_numpy()：Index迭代产出python原生标量，
+ * 与逐元素Index[i]（DAPyIndex::value的取数路径）的语义严格一致
+ * @param start 起始行号（绝对位置）
+ * @param count 数量，超出时由python切片自动截断
+ * @return index值的QVariantList，count为0或转换失败返回空列表
+ */
+QVariantList DAPyDataFrame::indexToVariantList(std::size_t start, std::size_t count) const
+{
+    QVariantList res;
+    if (count == 0) {
+        return res;
+    }
+    try {
+        pybind11::object idx = attr("index")[ pybind11::slice(start, start + count, 1) ];
+        pybind11::list lst(idx);
+        res = lst.cast< QVariantList >();
+    } catch (const std::exception& e) {
+        qCritical().noquote() << e.what();
+        res.clear();
+    }
+    return res;
+}
+
 DAPySeries DAPyDataFrame::iloc(std::size_t c) const
 {
     try {

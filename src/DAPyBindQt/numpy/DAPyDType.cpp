@@ -2,6 +2,7 @@
 #include "DAPyModuleNumpy.h"
 #include "DAPybind11QtCaster.hpp"
 #include <QCoreApplication>
+#include <QMetaType>
 //===================================================
 // using DA namespace -- 禁止在头文件using！！
 //===================================================
@@ -265,6 +266,60 @@ int DAPyDType::num() const
         qCritical() << e.what();
     }
     return -1;
+}
+
+/**
+ * @brief 映射为QMetaType类型id
+ *
+ * 映射规则与QVariant caster（DAPybind11QtCaster.hpp的handle_numpy_object）的
+ * 实际转换结果对齐：int8/uint8转QChar、timedelta/complex转QString等，
+ * 使schema声明的列类型与批量取数产出的QVariant类型一致。
+ * object等运行时才能确定元素类型的dtype返回UnknownType
+ * @return QMetaType类型id，无法确定返回QMetaType::UnknownType
+ */
+int DAPyDType::toMetaType() const
+{
+    if (isNone()) {
+        return QMetaType::UnknownType;
+    }
+    switch (char_()) {
+    case '?':  // bool（含BooleanDtype）
+        return QMetaType::Bool;
+    case 'b':  // int8
+    case 'B':  // uint8
+        return QMetaType::QChar;
+    case 'h':  // int16
+    case 'l':  // int32
+    case 'i':  // int（部分平台）
+        return QMetaType::Int;
+    case 'q':  // int64（含nullable Int64Dtype）
+        return QMetaType::LongLong;
+    case 'H':  // uint16
+    case 'L':  // uint32
+    case 'I':  // uint（部分平台）
+        return QMetaType::UInt;
+    case 'Q':  // uint64
+        return QMetaType::ULongLong;
+    case 'e':  // float16
+    case 'f':  // float32
+        return QMetaType::Float;
+    case 'd':  // float64
+        return QMetaType::Double;
+    case 'M':  // datetime64（含DatetimeTZDtype）
+        return QMetaType::QDateTime;
+    case 'U':  // unicode字符串（含StringDtype）
+        return QMetaType::QString;
+    case 'S':  // bytes
+        return QMetaType::QByteArray;
+    case 'm':  // timedelta64，caster转为QString
+    case 'F':  // complex64，caster转为QString
+    case 'D':  // complex128，caster转为QString
+        return QMetaType::QString;
+    default:
+        // 'O'(object)、'V'(void)等运行时确定，无法静态声明
+        break;
+    }
+    return QMetaType::UnknownType;
 }
 
 /**

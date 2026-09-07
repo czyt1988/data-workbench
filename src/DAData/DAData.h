@@ -8,6 +8,7 @@
 namespace DA
 {
 class DADataManager;
+class DATableDataSource;
 /**
  * @brief DAAbstractData的封装
  * 可以放入QMap，QHash中，DAData的等于操作相当于创建一个引用
@@ -76,6 +77,17 @@ public:  // DAAbstractData Wrapper
     bool isSeries() const;
     // 是否为datapackage
     bool isDataPackage() const;
+    // 表格数据源接口，非表格型数据返回nullptr
+    DATableDataSource* tableSource();
+    const DATableDataSource* tableSource() const;
+    // 是否为表格型数据（tableSource非空）
+    bool isTable() const;
+    // 是否为引用式数据（工程持久化只保存引用）
+    bool isReferenceData() const;
+    // 是否支持整表快照式undo
+    bool supportsUndoSnapshot() const;
+    // 类型唯一标识字符串（工程持久化经DADataFactory按此重建）
+    QString typeIdentifier() const;
     // 数据类型转换为文字
     QString typeToString() const;
     // 获取数据对应的datamanager

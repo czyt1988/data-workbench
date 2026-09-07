@@ -2,6 +2,8 @@
 #include <QObject>
 #include <QDateTime>
 #include "DAUniqueIDGenerater.h"
+#include "DADataEnumStringUtils.h"
+#include "DATableDataSource.h"
 namespace DA
 {
 
@@ -101,6 +103,64 @@ void DAAbstractData::setParent(Pointer& p)
 {
     DA_D(d);
     d->mParent = p;
+}
+
+/**
+ * @brief 获取表格数据源接口
+ *
+ * 表格型数据（dataframe、series、数据库惰性表等）重写此函数返回其
+ * DATableDataSource 接口指针，消费端据此走统一的 schema/块级取数路径
+ * @return 非表格型数据返回nullptr
+ */
+DATableDataSource* DAAbstractData::tableSource()
+{
+    return nullptr;
+}
+
+/**
+ * @brief 获取表格数据源接口（const版本）
+ * @return 非表格型数据返回nullptr
+ */
+const DATableDataSource* DAAbstractData::tableSource() const
+{
+    return nullptr;
+}
+
+/**
+ * @brief 是否为引用式数据
+ *
+ * 引用式数据（如数据库惰性表）在工程持久化时只保存引用（连接、查询、schema等，
+ * 经 @ref write 序列化），不保存数据本体
+ * @return 默认返回false（数据本体随工程保存）
+ */
+bool DAAbstractData::isReferenceData() const
+{
+    return false;
+}
+
+/**
+ * @brief 是否支持整表快照式undo
+ *
+ * 快照式undo（如 DADataObjectPersistUndoCommand 的整对象pickle）要求数据可全量物化，
+ * 惰性/引用式数据应返回false，消费端据此禁用依赖整表快照的命令
+ * @return 默认返回true
+ */
+bool DAAbstractData::supportsUndoSnapshot() const
+{
+    return true;
+}
+
+/**
+ * @brief 类型唯一标识字符串
+ *
+ * 默认返回DataType枚举文本（与工程文件既有的type属性兼容）；
+ * 枚举无法表达的扩展类型（如插件的数据库表）应重写此函数返回全局唯一字符串，
+ * 并在 DADataFactory 注册同名创建函数
+ * @return 类型标识
+ */
+QString DAAbstractData::typeIdentifier() const
+{
+    return enumToString(getDataType());
 }
 
 /**

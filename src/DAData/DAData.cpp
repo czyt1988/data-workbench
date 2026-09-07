@@ -7,6 +7,8 @@
 #include "DADataPyObject.h"
 #include "DADataPyDataFrame.h"
 #include "DADataPySeries.h"
+#include "DATableDataSource.h"
+#include "DADataEnumStringUtils.h"
 //===================================================
 // using DA namespace -- 禁止在头文件using！！
 //===================================================
@@ -378,6 +380,75 @@ bool DAData::isDataPackage() const
 }
 
 /**
+ * @brief 获取表格数据源接口
+ * @return 非表格型数据或空数据返回nullptr
+ */
+DATableDataSource* DAData::tableSource()
+{
+    if (!mData) {
+        return nullptr;
+    }
+    return mData->tableSource();
+}
+
+/**
+ * @brief 获取表格数据源接口（const版本）
+ * @return 非表格型数据或空数据返回nullptr
+ */
+const DATableDataSource* DAData::tableSource() const
+{
+    if (!mData) {
+        return nullptr;
+    }
+    return mData->tableSource();
+}
+
+/**
+ * @brief 是否为表格型数据
+ * @return tableSource非空返回true
+ */
+bool DAData::isTable() const
+{
+    return (tableSource() != nullptr);
+}
+
+/**
+ * @brief 是否为引用式数据
+ * @return 引用式数据返回true
+ */
+bool DAData::isReferenceData() const
+{
+    if (!mData) {
+        return false;
+    }
+    return mData->isReferenceData();
+}
+
+/**
+ * @brief 是否支持整表快照式undo
+ * @return 支持返回true
+ */
+bool DAData::supportsUndoSnapshot() const
+{
+    if (!mData) {
+        return false;
+    }
+    return mData->supportsUndoSnapshot();
+}
+
+/**
+ * @brief 类型唯一标识字符串
+ * @return 空数据返回TypeNone的类型标识
+ */
+QString DAData::typeIdentifier() const
+{
+    if (!mData) {
+        return enumToString(DAAbstractData::TypeNone);
+    }
+    return mData->typeIdentifier();
+}
+
+/**
  * @brief 转换为DAPyDataFrame
  * @return 如果内部维护的不是DAPyDataFrame，返回一个默认构造的DAPyDataFrame(isNone=true)
  */
@@ -509,21 +580,16 @@ bool DAData::isHaveDataManager() const
 
 /**
  * @brief 获取数据的尺寸
+ *
+ * 优先走表格数据源接口（DATableDataSource），任何实现了该接口的数据
+ * （dataframe、series、数据库惰性表等）都能正确返回尺寸；非表格型数据返回(0,0)
  * @return 返回行列数组成的pair
  */
 std::pair< size_t, size_t > DAData::shape() const
 {
-    switch (getDataType()) {
-    case DAAbstractData::TypePythonDataFrame: {
-        DADataPyDataFrame* df = static_cast< DADataPyDataFrame* >(mData.get());
-        return df->dataframe().shape();
-    } break;
-    case DAAbstractData::TypePythonSeries: {
-        DADataPySeries* ser = static_cast< DADataPySeries* >(mData.get());
-        return std::make_pair(ser->series().size(), 1);
-    } break;
-    default:
-        break;
+    const DATableDataSource* ts = tableSource();
+    if (ts) {
+        return std::make_pair(ts->tableRowCount(), ts->tableColumnCount());
     }
     return std::make_pair(0, 0);
 }

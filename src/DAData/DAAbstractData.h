@@ -7,6 +7,7 @@
 #include "DADataAPI.h"
 namespace DA
 {
+class DATableDataSource;
 /**
  * @brief DA 的数据基类
  *
@@ -38,6 +39,16 @@ public:
     // 变量值
     virtual QVariant toVariant(std::size_t dim1, std::size_t dim2) const         = 0;
     virtual bool setValue(std::size_t dim1, std::size_t dim2, const QVariant& v) = 0;
+
+    // 表格数据源接口，非表格型数据返回nullptr
+    virtual DATableDataSource* tableSource();
+    virtual const DATableDataSource* tableSource() const;
+    // 是否为引用式数据（工程持久化只保存引用，不保存数据本体）
+    virtual bool isReferenceData() const;
+    // 是否支持整表快照式undo（引用式/惰性数据通常不支持）
+    virtual bool supportsUndoSnapshot() const;
+    // 类型唯一标识字符串，默认返回DataType枚举文本，工程持久化经DADataFactory按此重建对象
+    virtual QString typeIdentifier() const;
 
     // 变量名
     QString getName() const;

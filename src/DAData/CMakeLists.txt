@@ -15,6 +15,10 @@ set(DA_LIB_HEADER_FILES
     DADataManager.h
     DACommandsDataManager.h
     DADataEnumStringUtils.h
+    # 表格数据源抽象（头文件不依赖Python）
+    DATableDataBlock.h
+    DATableDataSource.h
+    DADataFactory.h
 )
 set(DA_LIB_SOURCE_FILES
     DAAbstractData.cpp
@@ -22,6 +26,9 @@ set(DA_LIB_SOURCE_FILES
     DADataManager.cpp
     DACommandsDataManager.cpp
     DADataEnumStringUtils.cpp
+    DATableDataBlock.cpp
+    DATableDataSource.cpp
+    DADataFactory.cpp
 )
 list(APPEND DA_LIB_HEADER_FILES
     DADataPythonBinding.h

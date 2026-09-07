@@ -50,6 +50,10 @@ public:
     bool iat(std::size_t r, std::size_t c, const QVariant& v);
     bool iat(std::size_t r, std::size_t c, const QVariant& v, const pybind11::dtype& dt);
     bool iat(std::size_t r, std::size_t c, const pybind11::object& v);
+    // 按行区间批量取数据块（单次python调用），每个元素为一行的QVariantList，转换语义与iat()一致
+    QVariantList rowsToVariantList(std::size_t start, std::size_t count) const;
+    // 按行区间批量取index值（单次python调用）
+    QVariantList indexToVariantList(std::size_t start, std::size_t count) const;
     DAPySeries iloc(std::size_t c) const;
     DAPySeries loc(const QString& n) const;
     bool drop(std::size_t index, int axis = 0);

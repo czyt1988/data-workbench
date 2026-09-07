@@ -52,6 +52,10 @@ public:
     // 返回指定位置元素的字符串表示（通过 Python str() 转换，适用于所有类型）
     QString valueAsString(std::size_t i) const;
     bool setValue(std::size_t i, const QVariant& v);
+    // 按位置区间批量取元素值（单次python调用），转换语义与value()一致
+    QVariantList valuesToVariantList(std::size_t start, std::size_t count) const;
+    // 按位置区间批量取index值（单次python调用）
+    QVariantList indexToVariantList(std::size_t start, std::size_t count) const;
     bool isNumeric() const;
     bool isDateTime() const;
     bool isString() const;

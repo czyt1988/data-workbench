@@ -74,6 +74,8 @@ public:
     char kind() const;
     char char_() const;
     int num() const;
+    // 映射为QMetaType类型id（与QVariant caster的转换语义对齐），无法确定返回QMetaType::UnknownType
+    int toMetaType() const;
 
 public:
     bool isInt() const;
