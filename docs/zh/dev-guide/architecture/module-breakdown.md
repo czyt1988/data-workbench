@@ -256,26 +256,29 @@ flowchart TD
 
 ### 模块概述
 
-- **职责**：数据容器抽象、数据生命周期管理、Python DataFrame 的 C++ 封装
+- **职责**：数据容器抽象、数据生命周期管理、Python DataFrame 的 C++ 封装、表格数据源抽象（惰性/引用式数据接入）
 - **在系统中的位置**：L2 功能层，被 DAGui（L3）直接使用，依赖 DAPyBindQt（L1）
-- **关键文件**：21 个文件
+- **关键文件**：27 个文件
 
 ### 文件结构
 
 ```
 src/DAData/
-├── DAAbstractData.h/.cpp            # 数据抽象基类（6 种 DataType）
+├── DAAbstractData.h/.cpp            # 数据抽象基类（6 种 DataType + 能力位虚函数）
 ├── DAData.h/.cpp                    # 数据包装器（隐式共享，轻量值类型）
 ├── DADataManager.h/.cpp             # 数据管理器（QObject，含 QUndoStack）
+├── DATableDataSource.h/.cpp         # 表格数据源 mixin 接口（schema+fetchBlock 块级取数，不依赖 Python）
+├── DATableDataBlock.h/.cpp          # 块数据值类型（绝对行号寻址、越界安全）
+├── DADataFactory.h/.cpp             # 类型标识→创建函数注册表（引用式数据工程重建）
 ├── DADataPyObject.h/.cpp            # Python 对象通用包装
-├── DADataPyDataFrame.h/.cpp         # pandas DataFrame 包装
-├── DADataPySeries.h/.cpp            # pandas Series 包装
-├── DADataObjectSwapUndoCommand.h/.cpp  # 数据值替换撤销命令
-├── DADataObjectPersistUndoCommand.h/.cpp # 数据持久化撤销命令
-├── DACommandDataManagerAdd.h/.cpp   # 添加数据撤销命令
-├── DACommandDataManagerRemove.h/.cpp # 删除数据撤销命令
-└── DACommandDataManagerRename.h/.cpp # 重命名数据撤销命令
+├── DADataPyDataFrame.h/.cpp         # pandas DataFrame 包装（实现 DATableDataSource）
+├── DADataPySeries.h/.cpp            # pandas Series 包装（实现 DATableDataSource）
+├── DADataUndoCommand.h/.cpp         # 数据对象替换/整表 pickle 撤销命令
+├── DACommandsDataManager.h/.cpp     # 数据管理器增删改名撤销命令
+└── DADataEnumStringUtils.h/.cpp     # DataType 枚举字符串转换
 ```
+
+表格数据源抽象层的设计与惰性数据接入指南详见[表格数据源抽象层](table-data-source.md)。
 
 ### 核心类关系
 

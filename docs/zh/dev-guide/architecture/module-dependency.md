@@ -316,8 +316,9 @@ graph BT
 职责：数据抽象层，管理数据对象和操作。
 
 提供内容：
-- 抽象数据基类：`DAAbstractData`（6种 DataType 枚举）
-- 数据包装器：`DAData`（轻量值类型，引用语义），`DADataPyObject/DataFrame/Series`（Python数据封装）
+- 抽象数据基类：`DAAbstractData`（6种 DataType 枚举 + `tableSource/isReferenceData/supportsUndoSnapshot/typeIdentifier` 能力位虚函数）
+- 表格数据源抽象：`DATableDataSource`（schema+块级取数 mixin 接口，头文件不依赖 Python）、`DATableDataBlock`（块数据值类型）、`DADataFactory`（类型标识→创建函数注册表，引用式数据工程重建），详见[表格数据源抽象层](table-data-source.md)
+- 数据包装器：`DAData`（轻量值类型，引用语义），`DADataPyObject/DataFrame/Series`（Python数据封装，DataFrame/Series 同时实现 `DATableDataSource`）
 - 数据管理器：`DADataManager`（QObject，含 QUndoStack）
 - 撤销命令：`DACommandDataManagerAdd/Remove/Rename`、`DADataObjectSwapUndoCommand/PersistUndoCommand`
 

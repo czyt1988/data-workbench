@@ -92,6 +92,7 @@ nav:
           - 模块业务逻辑: zh/dev-guide/architecture/module-breakdown.md
           - 接口模块: zh/dev-guide/architecture/interface-module.md
           - 数据模块: zh/dev-guide/architecture/data-module.md
+          - 表格数据源抽象层: zh/dev-guide/architecture/table-data-source.md
           - 工程文件结构: zh/dev-guide/architecture/project-file-structure.md
           - 工程序列化架构: zh/dev-guide/architecture/project-serialization-architecture.md
       - Python/C++ 集成:

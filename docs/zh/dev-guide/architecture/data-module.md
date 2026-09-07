@@ -92,12 +92,17 @@ DADataPyObject <|-- DADataPySeries
 - `DADataPyDataFrame` 继承 `DADataPyObject`，封装 pandas DataFrame
 - `DADataPySeries` 继承 `DADataPyObject`，封装 pandas Series
 
+此外，`DADataPyDataFrame`/`DADataPySeries` 还多继承实现了 `DATableDataSource` 表格数据源接口（schema 与 `fetchBlock` 块级取数），数据库惰性表等非 pandas 的表格型数据经同一接口接入数据管理器与表格视图，详见[表格数据源抽象层](table-data-source.md)。
+
 | 类名 | 说明 |
 |------|------|
 | `DAAbstractData` | 所有数据类型的抽象基类，定义基本接口 |
 | `DADataPyObject` | 通用 Python 对象的包装类 |
 | `DADataPyDataFrame` | pandas DataFrame 的包装类，支持行列操作 |
 | `DADataPySeries` | pandas Series 的包装类 |
+| `DATableDataSource` | 表格数据源 mixin 接口（schema+块级取数+能力位），见[表格数据源抽象层](table-data-source.md) |
+| `DATableDataBlock` | `fetchBlock` 的块数据值类型（绝对行号寻址、越界安全） |
+| `DADataFactory` | 类型标识→创建函数注册表，工程加载时重建引用式数据 |
 
 ### DADataManager
 
@@ -254,6 +259,7 @@ connect(dataMgr, &DADataManagerInterface::dataAdded,
 
 ## 参考资料
 
+- [表格数据源抽象层](table-data-source.md)
 - [Python 集成指南](../python-binding/index.md)
 - [工作流系统概述](../workflow/workflow-overview.md)
 - [插件开发指南](../../plugin/plugin-development.md)
