@@ -1,9 +1,29 @@
 #include "DADataTableModel.h"
 #include "Commands/DACommandsDataFrame.h"
 #include "DATableStyleManager.h"
+#include "DATableDataSource.h"
+#include "DATableDataBlock.h"
 #include <QPointer>
 namespace DA
 {
+
+// 复合表头（QVariantList，如MultiIndex）转为"a | b"文本
+static QVariant joinCompositeIndex(const QVariant& res)
+{
+    if (res.canConvert< QVariantList >()) {
+        QVariantList ss = res.toList();
+        QString str;
+        for (int j = 0; j < ss.size(); ++j) {
+            if (j == 0) {
+                str += ss[ j ].toString();
+            } else {
+                str += " | " + ss[ j ].toString();
+            }
+        }
+        return str;
+    }
+    return res;
+}
 
 class DADataTableModel::PrivateData
 {
@@ -17,6 +37,16 @@ public:
     QString getDataframeColumnName(int i) const;
     QVariant getDataframeIndexName(int i) const;
     void clearCacheData();
+    // 是否走表格数据源路径（schema走缓存、cell走块缓存）
+    bool useTableSourcePath() const;
+    // 重新解析tableSource并清空块缓存（数据可能被替换）
+    void updateTableSource();
+    // 块缓存未命中时按对齐块取数（惰性数据源在此触发分页查询）
+    void ensureBlockCached(int actualRow) const;
+    // 取单元格：块缓存优先，失败回退逐cell路径
+    QVariant getTableCell(int actualRow, int actualColumn) const;
+    // 取行头：块缓存优先，失败回退逐行路径
+    QVariant getRowHeader(int actualRow) const;
 
 public:
     DAData data;
@@ -33,6 +63,10 @@ public:
     int currentPage { 0 };         // 当前页码
                                    // 滑动窗需要的参数
     bool useCacheMode { false };  ///< 是否使用缓存，使用缓存模式，在设置dataframe时，会把dataframe的关键数据直接缓存到内存
+    // 表格数据源路径：mutable允许const的data()/headerData()回调中懒加载块
+    mutable DATableDataSource* tableSource { nullptr };  ///< 非拥有，setData/refreshData时重新解析
+    mutable DATableDataBlock blockCache;                 ///< 当前窗口块缓存
+    int blockFetchRowCount { 512 };                      ///< fetchBlock单次取数行数
 };
 
 DADataTableModel::PrivateData::PrivateData(DADataTableModel* p) : q_ptr(p)
@@ -44,9 +78,69 @@ bool DADataTableModel::PrivateData::isNone() const
     return data.isNull();
 }
 
+bool DADataTableModel::PrivateData::useTableSourcePath() const
+{
+    return tableSource != nullptr;
+}
+
+void DADataTableModel::PrivateData::updateTableSource()
+{
+    tableSource = data.tableSource();
+    blockCache.clear();
+}
+
+void DADataTableModel::PrivateData::ensureBlockCached(int actualRow) const
+{
+    if (!tableSource || actualRow < 0) {
+        return;
+    }
+    std::size_t row = static_cast< std::size_t >(actualRow);
+    if (blockCache.containsRow(row)) {
+        return;
+    }
+    std::size_t fetchSize = static_cast< std::size_t >(qMax(1, blockFetchRowCount));
+    // 对齐到块边界，滚动时缓存命中可预期（每跨过一块边界触发一次取数）
+    std::size_t start = (row / fetchSize) * fetchSize;
+    blockCache = tableSource->fetchBlock(start, fetchSize);
+}
+
+QVariant DADataTableModel::PrivateData::getTableCell(int actualRow, int actualColumn) const
+{
+    if (tableSource) {
+        ensureBlockCached(actualRow);
+        if (blockCache.containsRow(static_cast< std::size_t >(actualRow))) {
+            return blockCache.cell(static_cast< std::size_t >(actualRow), static_cast< std::size_t >(actualColumn));
+        }
+        // 块取数失败，回退逐cell路径
+    }
+    if (data.isDataFrame()) {
+        return data.toDataFrame().iat(actualRow, actualColumn);
+    } else if (data.isSeries() && actualColumn == 0) {
+        return data.toSeries().value(actualRow);
+    }
+    return QVariant();
+}
+
+QVariant DADataTableModel::PrivateData::getRowHeader(int actualRow) const
+{
+    if (tableSource) {
+        ensureBlockCached(actualRow);
+        if (blockCache.containsRow(static_cast< std::size_t >(actualRow))) {
+            QVariant header = blockCache.rowHeader(static_cast< std::size_t >(actualRow));
+            if (header.isValid()) {
+                return joinCompositeIndex(header);
+            }
+            // 数据源未提供行头（如数据库惰性表），显示序号
+            return actualRow;
+        }
+        // 块取数失败，回退逐行路径
+    }
+    return getDataframeIndexName(actualRow);
+}
+
 int DADataTableModel::PrivateData::getDataRowCount() const
 {
-    if (useCacheMode) {
+    if (useCacheMode || useTableSourcePath()) {
         return dataframeRow;
     }
     return static_cast< int >(data.shape().first);
@@ -54,7 +148,7 @@ int DADataTableModel::PrivateData::getDataRowCount() const
 
 int DADataTableModel::PrivateData::getDataColumnCount() const
 {
-    if (useCacheMode) {
+    if (useCacheMode || useTableSourcePath()) {
         return dataframeColumn;
     }
     return static_cast< int >(data.shape().second);
@@ -62,8 +156,11 @@ int DADataTableModel::PrivateData::getDataColumnCount() const
 
 QString DADataTableModel::PrivateData::getDataframeColumnName(int i) const
 {
-    if (useCacheMode) {
-        return columnsName[ i ];
+    if (useCacheMode || useTableSourcePath()) {
+        if (i >= 0 && i < columnsName.size()) {
+            return columnsName[ i ];
+        }
+        return QString();
     } else {
         if (data.isDataFrame()) {
             return data.toDataFrame().columnName(i);
@@ -91,20 +188,7 @@ QVariant DADataTableModel::PrivateData::getDataframeIndexName(int i) const
         qCritical() << e.what();
         return res;
     }
-    if (res.canConvert< QVariantList >()) {
-        // 说明是复合表头
-        QVariantList ss = res.toList();
-        QString str;
-        for (int j = 0; j < ss.size(); ++j) {
-            if (j == 0) {
-                str += ss[ j ].toString();
-            } else {
-                str += " | " + ss[ j ].toString();
-            }
-        }
-        return str;
-    }
-    return res;
+    return joinCompositeIndex(res);
 }
 
 void DADataTableModel::PrivateData::clearCacheData()
@@ -112,6 +196,7 @@ void DADataTableModel::PrivateData::clearCacheData()
     dataframeRow    = 0;
     dataframeColumn = 0;
     columnsName.clear();
+    blockCache.clear();
 }
 
 //----------------------------------------------------
@@ -154,7 +239,8 @@ QVariant DADataTableModel::actualHeaderData(int actualSection, Qt::Orientation o
         if (actualSection >= d->getDataRowCount()) {
             return QVariant();
         }
-        return d->getDataframeIndexName(actualSection);
+        // 表格数据源路径行头来自块缓存，避免逐行调python取index
+        return d->getRowHeader(actualSection);
     }
     return QVariant();
 }
@@ -166,6 +252,17 @@ int DADataTableModel::actualRowCount() const
         return d->minShowRow;
     }
     return d->getDataRowCount();
+}
+
+Qt::ItemFlags DADataTableModel::actualFlags(int actualRow, int actualColumn) const
+{
+    Qt::ItemFlags flags = DAAbstractCacheWindowTableModel::actualFlags(actualRow, actualColumn);
+    DA_DC(d);
+    // 不可编辑的表格数据源（如数据库惰性表）去掉编辑标志，视图不会弹出编辑器
+    if (d->tableSource && !d->tableSource->isTableEditable()) {
+        flags &= ~Qt::ItemIsEditable;
+    }
+    return flags;
 }
 
 QVariant DADataTableModel::actualData(int actualRow, int actualColumn, int role) const
@@ -185,12 +282,8 @@ QVariant DADataTableModel::actualData(int actualRow, int actualColumn, int role)
     case Qt::DisplayRole:
     case Qt::EditRole: {
         // 取原始值（EditRole 必须返回原始值，使编辑器拿到原始类型而非格式化字符串）
-        QVariant raw;
-        if (d->data.isDataFrame()) {
-            raw = d->data.toDataFrame().iat(actualRow, actualColumn);
-        } else if (d->data.isSeries() && actualColumn == 0) {
-            raw = d->data.toSeries().value(actualRow);
-        }
+        // 表格数据源走块缓存批量取数，其余类型保留逐cell路径
+        QVariant raw = d->getTableCell(actualRow, actualColumn);
         if (role == Qt::EditRole) {
             return raw;
         }
@@ -216,6 +309,10 @@ bool DADataTableModel::setActualData(int actualRow, int actualColumn, const QVar
     if (d->isNone()) {
         return false;
     }
+    // 表格数据源声明不可编辑（如数据库惰性表）时拒绝编辑
+    if (d->tableSource && !d->tableSource->isTableEditable()) {
+        return false;
+    }
     // 如果启用虚拟化，要计算实际的行号
     if (actualRow >= d->getDataRowCount()) {
         // todo:这里实现一个dataframe追加行
@@ -228,13 +325,20 @@ bool DADataTableModel::setActualData(int actualRow, int actualColumn, const QVar
     if (d->data.isDataFrame()) {
         DAPyDataFrame df = d->data.toDataFrame();
         QVariant olddata = df.iat(actualRow, actualColumn);
-        if (value.isNull() == olddata.isNull()) {
+        if (value.isNull() && olddata.isNull()) {
             // 两次都为空就跳过
+            // 注意：历史上此处误写为 isNull()==isNull()，caster修复numpy标量转换后
+            // olddata不再为空，导致非空->非空的正常单元格编辑被静默拒绝
             return false;
         }
         if (!(d->undoStack)) {
             // 如果d->_undoStack设置为nullptr，将不使用redo/undo
-            return df.iat(actualRow, actualColumn, value);
+            // 无undo路径不会触发notify回调，需手动失效块缓存
+            bool r = df.iat(actualRow, actualColumn, value);
+            if (r) {
+                d->blockCache.clear();
+            }
+            return r;
         }
         std::unique_ptr< DACommandDataFrame_iat > cmd_iat(
             new DACommandDataFrame_iat(df, actualRow, actualColumn, olddata, value));
@@ -295,17 +399,57 @@ void DADataTableModel::setCacheWindowStartRow(int startRow)
         }
     }
     DAAbstractCacheWindowTableModel::setCacheWindowStartRow(startRow);
+    // 表格数据源路径：预取新窗口起始块，避免重绘时逐cell触发取数
+    if (d->tableSource && dr > 0) {
+        d->ensureBlockCached(startRow);
+    }
 }
 
 void DADataTableModel::refreshData()
 {
+    DA_D(d);
+    // 数据可能被替换（setPyObject等），重新解析表格数据源并失效块缓存
+    d->updateTableSource();
     beginResetModel();
-    if (d_ptr->useCacheMode) {
+    if (d->useCacheMode) {
         cacheShape();
     } else {
+        if (d->tableSource) {
+            // 表格数据源路径：缓存schema，避免rowCount/columnCount高频回调反复进python
+            cacheShape();
+        }
         setCacheWindowStartRow(0);  // 滑动窗口到第一行
     }
     endResetModel();
+}
+
+/**
+ * @brief cell级变更通知
+ *
+ * 基类此函数不调用cacheShape()，块缓存不会随之失效，
+ * 这里先清空块缓存再走基类通知，保证重绘读到新值
+ * @param row 变更的绝对行号
+ * @param col 变更的列号
+ */
+void DADataTableModel::notifyDataChanged(int row, int col)
+{
+    d_ptr->blockCache.clear();
+    DAAbstractCacheWindowTableModel::notifyDataChanged(row, col);
+}
+
+/**
+ * @brief 区间变更通知
+ *
+ * 同单cell版本，先失效块缓存再走基类通知
+ * @param rowStart 起始绝对行号
+ * @param colStart 起始列号
+ * @param rowEnd 结束绝对行号
+ * @param colEnd 结束列号
+ */
+void DADataTableModel::notifyDataChanged(int rowStart, int colStart, int rowEnd, int colEnd)
+{
+    d_ptr->blockCache.clear();
+    DAAbstractCacheWindowTableModel::notifyDataChanged(rowStart, colStart, rowEnd, colEnd);
 }
 
 /**
@@ -375,9 +519,43 @@ int DADataTableModel::getMinShowColumnCount() const
     return d_ptr->minShowColumn;
 }
 
+/**
+ * @brief 设置块级取数每次获取的行数
+ *
+ * 仅对DATableDataSource数据生效：滚动/重绘触发的fetchBlock单次取数行数，
+ * 越大取数次数越少但单次开销越大，惰性数据源（数据库分页）可按查询延迟调优
+ * @param n 行数，最小1
+ */
+void DADataTableModel::setBlockFetchRowCount(int n)
+{
+    d_ptr->blockFetchRowCount = qMax(1, n);
+}
+
+/**
+ * @brief 获取块级取数每次获取的行数
+ * @return 行数
+ */
+int DADataTableModel::getBlockFetchRowCount() const
+{
+    return d_ptr->blockFetchRowCount;
+}
+
 void DADataTableModel::cacheShape()
 {
     DA_D(d);
+    // notify*系列可能由基类直接调用，先刷新tableSource并失效块缓存，
+    // 保证数据内容变化（undo回调、python侧inplace修改通知）后不读到旧块
+    d->updateTableSource();
+    if (d->tableSource) {
+        d->dataframeRow    = static_cast< int >(d->tableSource->tableRowCount());
+        d->dataframeColumn = static_cast< int >(d->tableSource->tableColumnCount());
+        d->columnsName.clear();
+        d->columnsName.reserve(d->dataframeColumn);
+        for (int i = 0; i < d->dataframeColumn; ++i) {
+            d->columnsName.append(d->tableSource->tableColumnName(i));
+        }
+        return;
+    }
     auto shape         = d->data.shape();
     d->dataframeRow    = static_cast< int >(shape.first);
     d->dataframeColumn = static_cast< int >(shape.second);

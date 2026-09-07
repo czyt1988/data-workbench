@@ -122,7 +122,8 @@ DADataOperateOfDataFrameWidget::~DADataOperateOfDataFrameWidget()
  */
 bool DADataOperateOfDataFrameWidget::haveData() const
 {
-    return mData.isDataFrame();
+    // dataframe与通用表格数据（如数据库惰性表）都视为有数据；series维持原语义不开数据页
+    return mData.isDataFrame() || (mData.isTable() && !mData.isSeries());
 }
 
 /**
@@ -146,7 +147,8 @@ const DAData& DADataOperateOfDataFrameWidget::data() const
 void DADataOperateOfDataFrameWidget::setDAData(const DA::DAData& d)
 {
     mData = d;
-    if (d.isDataFrame()) {
+    // 通用表格数据（DATableDataSource，如数据库惰性表）也可显示；series维持原语义
+    if (d.isDataFrame() || (d.isTable() && !d.isSeries())) {
         ui->tableView->setData(d);
     }
 }
@@ -175,7 +177,12 @@ void DADataOperateOfDataFrameWidget::insertRowBelowBySelect()
  */
 void DADataOperateOfDataFrameWidget::insertRowAt(int row)
 {
-    std::unique_ptr< DACommandDataFrame_insertNanRow > cmd(new DACommandDataFrame_insertNanRow(mData.toDataFrame(), row));
+    DAPyDataFrame df = mData.toDataFrame();
+    if (df.isNone()) {
+        // 非dataframe数据（如只读的数据库惰性表）不支持插入行
+        return;
+    }
+    std::unique_ptr< DACommandDataFrame_insertNanRow > cmd(new DACommandDataFrame_insertNanRow(df, row));
     QPointer< DADataTableModel > modle = mModel;
     cmd->setCallBack([ modle, row ]() {
         if (modle) {
@@ -230,6 +237,10 @@ void DADataOperateOfDataFrameWidget::insertColumnLeftBySelect()
  */
 void DADataOperateOfDataFrameWidget::insertColumnAt(int col)
 {
+    if (mData.toDataFrame().isNone()) {
+        // 非dataframe数据（如只读的数据库惰性表）不支持插入列，弹窗前先拦截
+        return;
+    }
     DADialogInsertNewColumn dlg(this);
     if (QDialog::Accepted != dlg.exec()) {
         return;

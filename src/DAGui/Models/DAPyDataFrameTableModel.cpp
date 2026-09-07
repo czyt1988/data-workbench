@@ -241,8 +241,10 @@ bool DAPyDataFrameTableModel::setActualData(int actualRow, int actualColumn, con
     }
 
     QVariant olddata = d->dataframe.iat(actualRow, actualColumn);
-    if (value.isNull() == olddata.isNull()) {
+    if (value.isNull() && olddata.isNull()) {
         // 两次都为空就跳过
+        // 注意：历史上此处误写为 isNull()==isNull()，caster修复numpy标量转换后
+        // olddata不再为空，导致非空->非空的正常单元格编辑被静默拒绝
         return false;
     }
     if (!(d->undoStack)) {

@@ -164,6 +164,10 @@ QIcon DADataManagerTableModel::dataToIcon(const DAData& d)
     default:
         break;
     }
+    // 枚举未覆盖的通用表格数据（如数据库惰性表）复用dataframe图标
+    if (d.isTable()) {
+        return s_iconDataframe;
+    }
     return s_iconObject;
 }
 

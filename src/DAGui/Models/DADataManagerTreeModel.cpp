@@ -535,12 +535,18 @@ QVariant DADataManagerTreeModel::data(const QModelIndex& index, int role) const
         }
 
         DAData data = itemToData(item);
-        if (data.isNull() || !data.isDataFrame()) {
+        if (data.isNull()) {
             return QVariant();
         }
-        DAPyDataFrame df = data.toDataFrame();
-        if (!df.isNone()) {
-            auto shape = df.shape();
+        if (data.isDataFrame()) {
+            DAPyDataFrame df = data.toDataFrame();
+            if (!df.isNone()) {
+                auto shape = df.shape();
+                return QString("[%1 × %2]").arg(shape.first).arg(shape.second);
+            }
+        } else if (data.isTable()) {
+            // 通用表格数据（如数据库惰性表）经shape()的tableSource路由显示尺寸
+            auto shape = data.shape();
             return QString("[%1 × %2]").arg(shape.first).arg(shape.second);
         }
     }

@@ -1,6 +1,8 @@
 ﻿#include <QtTest/QtTest>
+#include <QApplication>
 #include <QCoreApplication>
 #include <QDebug>
+#include <cstdlib>
 #include <QDataStream>
 #include <QBuffer>
 #include <QDir>
@@ -20,7 +22,13 @@
 #include "DATableDataBlock.h"
 #include "DADataFactory.h"
 
+#include "Models/DADataTableModel.h"
+#include <QUndoStack>
+
 #include <algorithm>
+#ifdef Q_OS_WIN
+#include <windows.h>
+#endif
 
 //===================================================
 // 合成惰性数据源：千万行×5列，cell 按行列号实时生成，不驻留内存
@@ -247,9 +255,13 @@ private Q_SLOTS:
     void testPandasSeriesEquivalence();
     void testEmptyDataFrame();
     void testFactoryRoundTrip();
+    void testModelLazyDisplay();
+    void testModelBlockCacheAndScroll();
+    void testModelPandasEditRegression();
 
 private:
     bool mPandasOk = false;
+    QUndoStack mUndoStack;
 };
 
 void DATableDataTest::initTestCase()
@@ -591,5 +603,124 @@ void DATableDataTest::testFactoryRoundTrip()
     QVERIFY(DA::DADataFactory::create(tid) == nullptr);
 }
 
-QTEST_MAIN(DATableDataTest)
+// DADataTableModel接入惰性表：窗口映射、schema缓存、只读门禁
+void DATableDataTest::testModelLazyDisplay()
+{
+    DATestLazyTable* lazy = new DATestLazyTable();
+    DA::DAAbstractData::Pointer p(lazy);
+    DA::DAData d(p);
+
+    DA::DADataTableModel model(&mUndoStack);
+    model.setData(d);
+
+    // actualRowCount走schema缓存，千万行不被滑动窗截断
+    QCOMPARE(model.actualRowCount(), static_cast< int >(DATestLazyTable::c_totalRows));
+    // 视图行数=滑动窗上限，规避QTableView超大行数问题
+    QVERIFY(model.rowCount() < model.actualRowCount());
+    QCOMPARE(model.rowCount(), qMin(model.getCacheWindowSize(), model.actualRowCount()));
+    // 列数=5数据列+扩展列
+    QCOMPARE(model.columnCount(), static_cast< int >(DATestLazyTable::c_totalCols) + model.getExtraColumnCount());
+    // 水平表头来自tableColumnName
+    QCOMPARE(model.headerData(2, Qt::Horizontal, Qt::DisplayRole).toString(), QStringLiteral("col2"));
+    // 垂直表头来自块rowHeaders
+    QVERIFY(model.headerData(3, Qt::Vertical, Qt::DisplayRole) == QVariant(static_cast< qlonglong >(3)));
+    // 只读：无编辑标志，setData被拒绝
+    // （经基类指针调用，DADataTableModel::setData(DAData)会隐藏基类三参重载）
+    QVERIFY(!(model.flags(model.index(0, 0)) & Qt::ItemIsEditable));
+    QAbstractItemModel* baseModel = &model;
+    QVERIFY(!baseModel->setData(baseModel->index(0, 0), QVariant(123), Qt::EditRole));
+    // cell值经块缓存正确映射
+    QVERIFY(model.data(model.index(3, 0), Qt::DisplayRole) == DATestLazyTable::makeCell(3, 0));
+    QVERIFY(model.data(model.index(39, 4), Qt::DisplayRole) == DATestLazyTable::makeCell(39, 4));
+    // 超出数据范围的扩展列/行返回无效值
+    QVERIFY(!model.data(model.index(0, static_cast< int >(DATestLazyTable::c_totalCols)), Qt::DisplayRole).isValid());
+}
+
+// 块缓存命中与滚动窗口：扫描可见区不重复取数，滚动一次只预取一块
+void DATableDataTest::testModelBlockCacheAndScroll()
+{
+    DATestLazyTable* lazy = new DATestLazyTable();
+    DA::DAAbstractData::Pointer p(lazy);
+    DA::DAData d(p);
+
+    DA::DADataTableModel model(&mUndoStack);
+    model.setData(d);  // refreshData会预取窗口起始块
+    const int fetchAfterSet = lazy->mFetchCount;
+    QVERIFY(fetchAfterSet >= 1);
+
+    // 扫描可见区40行×5列+行头：全部命中同一缓存块，零额外取数
+    for (int r = 0; r < 40; ++r) {
+        for (int c = 0; c < 5; ++c) {
+            QVERIFY(model.data(model.index(r, c), Qt::DisplayRole) == DATestLazyTable::makeCell(r, c));
+            model.headerData(r, Qt::Vertical, Qt::DisplayRole);
+        }
+    }
+    QCOMPARE(lazy->mFetchCount, fetchAfterSet);
+
+    // 滚动窗口到表中段：预取一次
+    model.setCacheWindowStartRow(5000000);
+    const int fetchAfterScroll = lazy->mFetchCount;
+    QVERIFY(fetchAfterScroll > fetchAfterSet);
+    // 视图行r映射到绝对行5000000+r
+    for (int r = 0; r < 40; ++r) {
+        QVERIFY(model.data(model.index(r, 0), Qt::DisplayRole) == DATestLazyTable::makeCell(5000000 + r, 0));
+    }
+    // 预取块覆盖可见区，扫描不再触发取数
+    QCOMPARE(lazy->mFetchCount, fetchAfterScroll);
+}
+
+// pandas经统一块路径后的显示与编辑回归：cell编辑、undo、缓存失效
+void DATableDataTest::testModelPandasEditRegression()
+{
+    if (!mPandasOk) {
+        QSKIP("pandas not available");
+    }
+    pybind11::object obj = makeTestDataFrame();
+    QVERIFY(!obj.is_none());
+    DA::DAPyDataFrame df(obj);
+    DA::DAData d(df);
+
+    DA::DADataTableModel model(&mUndoStack);
+    model.setData(d);
+
+    // pandas表可编辑
+    QVERIFY(model.flags(model.index(0, 0)) & Qt::ItemIsEditable);
+    QCOMPARE(model.data(model.index(0, 0), Qt::EditRole).toLongLong(), 1LL);
+    QCOMPARE(model.data(model.index(9, 0), Qt::EditRole).toLongLong(), 10LL);
+
+    // 经undo栈的cell编辑（经基类指针调用三参setData）
+    QAbstractItemModel* baseModel = &model;
+    QVERIFY(baseModel->setData(baseModel->index(0, 0), QVariant(42), Qt::EditRole));
+    QCOMPARE(model.data(model.index(0, 0), Qt::EditRole).toLongLong(), 42LL);
+    // DisplayRole同步更新（块缓存已被notify回调失效）
+    QCOMPARE(model.data(model.index(0, 0), Qt::DisplayRole).toLongLong(), 42LL);
+
+    // undo还原
+    mUndoStack.undo();
+    QCOMPARE(model.data(model.index(0, 0), Qt::EditRole).toLongLong(), 1LL);
+    // redo再应用
+    mUndoStack.redo();
+    QCOMPARE(model.data(model.index(0, 0), Qt::EditRole).toLongLong(), 42LL);
+    mUndoStack.clear();
+}
+
+// 不用QTEST_MAIN：嵌入式python的静态对象（DAPyBindQt.dll内的解释器句柄、QVariant caster
+// 类型缓存等）在进程teardown阶段析构顺序不可控，会在测试结果完整输出后引发访问冲突。
+// qExec返回时断言结果与-o文件均已写完，直接终止进程跳过teardown，保证退出码可信
+int main(int argc, char* argv[])
+{
+    QApplication app(argc, argv);
+    QTEST_SET_MAIN_SOURCE_PATH
+    DATableDataTest tc;
+    int ret = QTest::qExec(&tc, argc, argv);
+    std::fflush(nullptr);
+#ifdef Q_OS_WIN
+    // Windows下_exit仍会走LdrShutdownProcess→DLL_PROCESS_DETACH触发各DLL静态析构，
+    // 必须TerminateProcess才能完全跳过
+    ::TerminateProcess(::GetCurrentProcess(), static_cast< UINT >(ret));
+#else
+    ::_exit(ret);
+#endif
+    return ret;
+}
 #include "main.moc"

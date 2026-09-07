@@ -355,6 +355,10 @@ void DADataOperateWidget::showData(const DA::DAData& d)
         showDataframeData(d);
         break;
     default:
+        // 枚举未覆盖的通用表格数据（如数据库惰性表）同样打开数据页；series维持原行为
+        if (d.isTable() && !d.isSeries()) {
+            showDataframeData(d);
+        }
         break;
     }
 }

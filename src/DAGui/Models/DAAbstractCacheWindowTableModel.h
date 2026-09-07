@@ -44,8 +44,10 @@ public:
     virtual bool setActualData(int actualRow, int actualColumn, const QVariant& value, int role = Qt::EditRole);
     void notifyRowChanged(int row);
     void notifyColumnChanged(int col);
-    void notifyDataChanged(int row, int col);
-    void notifyDataChanged(int rowStart, int colStart, int rowEnd, int colEnd);
+    // virtual：派生模型可能持有cell级缓存（如DADataTableModel的块缓存），
+    // 需在此类通知中先行失效；其余notify*已经过虚函数cacheShape()给派生类失效机会
+    virtual void notifyDataChanged(int row, int col);
+    virtual void notifyDataChanged(int rowStart, int colStart, int rowEnd, int colEnd);
     // 行将移除
     void notifyRowsRemoved(const QList< int >& r);
     // 行将插入

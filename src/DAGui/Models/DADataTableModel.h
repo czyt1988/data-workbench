@@ -27,6 +27,7 @@ public:
 public:
     virtual int columnCount(const QModelIndex& parent = QModelIndex()) const override;
 
+    virtual Qt::ItemFlags actualFlags(int actualRow, int actualColumn) const override;
     virtual QVariant actualHeaderData(int actualSection, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
     virtual int actualRowCount() const override;
     virtual QVariant actualData(int actualRow, int actualColumn, int role = Qt::DisplayRole) const override;
@@ -45,6 +46,9 @@ public:
     virtual void setCacheWindowStartRow(int startRow) override;
     // 刷新
     void refreshData();
+    // cell级变更通知：先失效块缓存再走基类通知（基类此二函数不调cacheShape）
+    void notifyDataChanged(int row, int col) override;
+    void notifyDataChanged(int rowStart, int colStart, int rowEnd, int colEnd) override;
     // 超出模型实际数据行数的额外空行数量
     void setExtraRowCount(int v);
     int getExtraRowCount() const;
@@ -57,6 +61,9 @@ public:
     // 最小显示的列数量
     void setMinShowColumnCount(int v);
     int getMinShowColumnCount() const;
+    // 块级取数每次获取的行数（仅DATableDataSource数据生效，默认512）
+    void setBlockFetchRowCount(int n);
+    int getBlockFetchRowCount() const;
 
 protected:
     // 缓存
