@@ -797,6 +797,28 @@ void DAAgentModule::attachBridge(DAAgentBridge* bridge, const QString& sessionId
     connect(bridge, &DAAgentBridge::agentToken, this, [this, sessionId](const QString& t) {
         if (sessionId == d_func()->mCurrentSessionId) emit agentToken(t);
     });
+    // assistant 消息完成：Dock 据此 finalizeAgentMessage 定稿流式气泡。
+    // e1053d1 会话化重构时本转发遗漏（只保留了持久化 lambda），导致 JS 侧
+    // currentAgentMsg 永不闭合——整轮回复（含多次工具调用间的叙述）全部
+    // 堆积进同一个气泡。
+    connect(bridge, &DAAgentBridge::agentMessageComplete, this, [this, sessionId](const QString& fullText) {
+        if (sessionId == d_func()->mCurrentSessionId) emit agentMessageComplete(fullText);
+    });
+    // 工具调用：Dock 据此渲染工具卡片。Bridge 已过滤子 agent 调用
+    //（带 subagent_id 的不 emit，子转录不进主聊天流，母文档 §7）。
+    // 同为 e1053d1 遗漏——缺失时聊天界面看不到任何工具调用卡片。
+    connect(bridge, &DAAgentBridge::agentToolCall, this,
+            [this, sessionId](const QString& toolName, const QJsonObject& args) {
+        if (sessionId == d_func()->mCurrentSessionId) emit agentToolCall(toolName, args);
+    });
+    // 工具结果：子 agent 一期过滤规则（母文档 §7）——带 subagent_id 的结果
+    // 不转发接口信号（不进主聊天流），执行照常（权限门同门执法）。
+    connect(bridge, &DAAgentBridge::agentToolResult, this,
+            [this, sessionId](const QString& toolName, const QJsonObject& result, const QString& subagentId) {
+        if (subagentId.isEmpty() && sessionId == d_func()->mCurrentSessionId) {
+            emit agentToolResult(toolName, result);
+        }
+    });
     // 转发 agentRetrying 信号到接口（plan-03 step6）
     connect(bridge, &DAAgentBridge::agentRetrying, this,
             [this, sessionId](int attempt, int maxAttempts, int delayMs, const QString& errorType, const QString& errorMessage) {
