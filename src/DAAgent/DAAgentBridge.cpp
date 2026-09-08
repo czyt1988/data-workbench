@@ -135,6 +135,8 @@ void DAAgentBridge::startAgent(const QJsonObject& llmConfig,
     d->mReadyTimeoutMs = readyTimeoutMs;
     d->mStopTimeoutMs  = stopTimeoutMs;
     d->mReadyReceived  = false;  // 新进程生命周期开始，重置 ready 接收标志
+    d->mStopped        = false;  // 审计 L7①：复位停止标志——桥对象经 stopAgent 后再
+                                 // startAgent 复用时，优雅停止逻辑不得被旧标志短路
     // 清理上一次的 ready 超时计时器(若存在)
     if (d->mReadyTimer) {
         d->mReadyTimer->stop();
@@ -260,6 +262,19 @@ void DAAgentBridge::startAgent(const QJsonObject& llmConfig,
  */
 void DAAgentBridge::stopAgent()
 {
+    beginStopAgent();
+    awaitStopAgent();
+}
+
+/**
+ * @brief 两阶段停止·第一阶段：写 stop + 关写通道（非阻塞）
+ *
+ * 审计 L7②：Module::shutdown 对 N 桥先全部执行本阶段（Python 端并行收到
+ * stop/EOF 开始优雅退出），再逐桥 awaitStopAgent——避免串行
+ * "写 stop → 各自等满 stopTimeout" 造成最坏 N×5s 的应用关闭冻结。
+ */
+void DAAgentBridge::beginStopAgent()
+{
     DA_D(d);
     if (d->mStopped) {
         return;
@@ -277,6 +292,20 @@ void DAAgentBridge::stopAgent()
         d->mUserRequestedStop = true;  // 标记主动停止，防止 onProcessFinished 误判为崩溃
         writeJson(QJsonObject{{"type", "stop"}});
         d->mProcess->closeWriteChannel();  // 关闭 stdin 写通道，使 Python 端 read1() 收到 EOF，reader 线程退出释放 BufferedReader 锁
+    }
+}
+
+/**
+ * @brief 两阶段停止·第二阶段：等待退出 + kill 兜底（阻塞至多 stopTimeoutMs）
+ *
+ * 注意（审计 L7③）：waitForFinished 可能在调用栈内同步触发 onProcessFinished
+ * → Module 的持久化/记账 lambda 重入（后台会话可能当场 retireBridge 改桥
+ * 映射）——调用方遍历桥集合时必须持快照，不得引用活映射。
+ */
+void DAAgentBridge::awaitStopAgent()
+{
+    DA_D(d);
+    if (d->mRunning && d->mProcess) {
         d->mProcess->waitForFinished(d->mStopTimeoutMs);  // 可配超时(默认 5s)
         if (d->mProcess->state() != QProcess::NotRunning) {
             d->mProcess->kill();

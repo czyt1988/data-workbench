@@ -44,6 +44,10 @@ public:
                     int stopTimeoutMs = 5000);
     // 停止 agent 子进程（阻塞，供析构/重启时调用）
     void stopAgent();
+    // 两阶段停止·第一阶段：写 stop + 关写通道（非阻塞）——多桥并行排空用
+    void beginStopAgent();
+    // 两阶段停止·第二阶段：等待退出 + kill 兜底（阻塞至多 stopTimeoutMs）
+    void awaitStopAgent();
     // 请求停止 agent 子进程（非阻塞，供用户主动终止时调用）
     void requestStop();
 

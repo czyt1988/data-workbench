@@ -462,14 +462,34 @@ void DAAgentModule::stop()
 void DAAgentModule::shutdown()
 {
     DA_D(d);
-    // concurrent-sessions：阻塞停止全部桥（会话桥 + 预热桥），确保在 Python
-    // 解释器关闭前子进程已干净退出。仅在 AppMainWindow::closeEvent 中调用
-    //（QApplication 事件循环尚在运行）。每桥至多等待 stop_timeout_sec。
-    for (DAAgentBridge* b : std::as_const(d->mSessionBridges)) {
-        b->stopAgent();
+    // concurrent-sessions：停止全部桥（会话桥 + 预热桥），确保在 Python 解释器
+    // 关闭前子进程已干净退出。仅在 AppMainWindow::closeEvent 中调用
+    //（QApplication 事件循环尚在运行）。
+    //
+    // 两阶段停止（审计 L7②）：先对全部桥写 stop + 关写通道（非阻塞，各 Python
+    // 端并行优雅退出），再逐个等待——避免此前串行 stopAgent 各自
+    // waitForFinished(stopTimeout) 造成最坏 N×5s 的关闭冻结。
+    //
+    // 重入防御（审计 L7③）：awaitStopAgent 的 waitForFinished 可能在栈内同步
+    // 触发 onProcessFinished → 本 Module 的持久化/记账 lambda 重入（后台会话
+    // done → retireBridge 当场改 mSessionBridges）。故先取桥指针快照，两阶段
+    // 均遍历快照而非活映射；retireBridge 的 deleteLater 在事件循环恢复前不会
+    // 销毁对象，快照指针在本函数栈内保持有效。
+    QList<DAAgentBridge*> bridges;
+    bridges.reserve(d->mSessionBridges.size() + 1);
+    for (auto it = d->mSessionBridges.constBegin(); it != d->mSessionBridges.constEnd(); ++it) {
+        if (it.value()) {
+            bridges.append(it.value());
+        }
     }
     if (d->mIdleBridge) {
-        d->mIdleBridge->stopAgent();
+        bridges.append(d->mIdleBridge);
+    }
+    for (DAAgentBridge* b : std::as_const(bridges)) {
+        b->beginStopAgent();
+    }
+    for (DAAgentBridge* b : std::as_const(bridges)) {
+        b->awaitStopAgent();
     }
 }
 
