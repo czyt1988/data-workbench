@@ -121,6 +121,9 @@ Q_SIGNALS:
     void sessionDeleteRequested(const QString& sessionId);
     /// 用户点击 Rename 重命名会话
     void sessionRenameRequested(const QString& sessionId, const QString& newTitle);
+    /// 会话管理对话框右键"停止"（审计 L14）：停止指定会话的后台运行
+    ///（→ DAAgentInterface::stopSession，不必先切换再 Stop）
+    void sessionStopRequested(const QString& sessionId);
     /// 会话切换开始时请求停止当前 agent 流式输出（MAJOR4 切换时请求停止）
     void agentStopRequested();
 

@@ -604,6 +604,9 @@ void DAAgentDockWidget::onSessionManagerClicked()
             this, &DAAgentDockWidget::sessionRenameRequested);
     connect(&dlg, &DADialogAgentSessionManager::deleteRequested,
             this, &DAAgentDockWidget::sessionDeleteRequested);
+    // 审计 L14：右键"停止"→ stopSession（后台运行会话不必先切换再 Stop）
+    connect(&dlg, &DADialogAgentSessionManager::stopRequested,
+            this, &DAAgentDockWidget::sessionStopRequested);
     dlg.exec();
     // 对话框关闭后 sessionListChanged 会从 Module 回灌权威状态刷新标题
 }

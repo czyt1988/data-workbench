@@ -253,6 +253,7 @@ private Q_SLOTS:
     void testToolExecutionViaGlobalQueue();            // 问题12：Module 全链（队列执行+落盘+排队信号）
     void testRegisterToolBroadcastsUpdateTools();      // 问题19：注册工具向存活桥广播 update_tools
     void testSubagentProgressReplayedOnSwitchBack();   // 问题28b：在途子 Agent 进度切回重放
+    void testStopSessionStopsBackgroundBridge();       // L14：stopSession 直达后台会话桥
 };
 
 QString DAAgentModuleTest::pythonConfigPath()
@@ -879,6 +880,39 @@ void DAAgentModuleTest::testSubagentProgressReplayedOnSwitchBack()
     const QJsonObject first = progressSpy.at(liveCount).at(0).toJsonObject();
     QCOMPARE(first.value(QStringLiteral("state")).toString(), QStringLiteral("spawned"));
     QCOMPARE(first.value(QStringLiteral("call_id")).toString(), QStringLiteral("d1"));
+
+    module->shutdown();
+}
+
+/**
+ * L14（决策点 5 联动）：失控后台会话的停止入口——修复前必须先切换过去
+ * 再按 Stop（结合问题 2 的切入冻结场景，starting 残留会话切过去也停不了）。
+ * stopSession 直达该会话的桥：requestStop + 清挂起缓存；后台会话不 emit
+ * agentQuestionDismissed（非活跃无卡可撤），仅刷角标。空闲/无桥/空 id
+ * 静默 no-op。
+ */
+void DAAgentModuleTest::testStopSessionStopsBackgroundBridge()
+{
+    QScopedPointer<DA::DAAgentModule> module(makeModule());
+    QSignalSpy questionSpy(module.data(), &DA::DAAgentInterface::agentQuestion);
+    QSignalSpy dismissSpy(module.data(), &DA::DAAgentInterface::agentQuestionDismissed);
+
+    // 会话 A 挂起在 ask_user（桥存活），随后 B 成为活跃会话（A 转后台）
+    const QString sidA = module->createSession();
+    module->sendMessage(QStringLiteral("#fake:question"));
+    QVERIFY(questionSpy.wait(30000));
+    const QString sidB = module->createSession();
+    QVERIFY(sidB != sidA);
+
+    // 停止后台会话 A：进程终止、挂起问题缓存清除、角标恢复空闲
+    module->stopSession(sidA);
+    QTRY_COMPARE_WITH_TIMEOUT(module->sessionRuntimeState(sidA), QString(), 15000);
+    // A 非活跃会话：无卡可撤，不发 dismiss（撤卡信号只服务活跃会话 UI）
+    QCOMPARE(dismissSpy.count(), 0);
+
+    // 防御 no-op：无桥会话 / 空 id 不崩溃、无副作用
+    module->stopSession(sidB);
+    module->stopSession(QString());
 
     module->shutdown();
 }

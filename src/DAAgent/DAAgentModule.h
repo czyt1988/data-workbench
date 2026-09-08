@@ -60,6 +60,8 @@ public:
     void sendMessage(const QString& text) override;
     /// @copydoc DAAgentInterface::stop
     void stop() override;
+    /// @copydoc DAAgentInterface::stopSession
+    void stopSession(const QString& sessionId) override;
     /// @copydoc DAAgentInterface::shutdown
     void shutdown() override;
     /// @copydoc DAAgentInterface::sendUserAnswer

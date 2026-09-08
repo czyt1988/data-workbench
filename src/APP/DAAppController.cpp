@@ -327,6 +327,8 @@ void DAAppController::initialize()
         connect(dock, &DAAgentDockWidget::sessionSwitchRequested, agent, &DAAgentInterface::switchSession);
         connect(dock, &DAAgentDockWidget::sessionDeleteRequested, agent, &DAAgentInterface::deleteSession);
         connect(dock, &DAAgentDockWidget::sessionRenameRequested, agent, &DAAgentInterface::renameSession);
+        // 审计 L14：会话管理对话框右键"停止"→ 停止指定会话的后台运行
+        connect(dock, &DAAgentDockWidget::sessionStopRequested, agent, &DAAgentInterface::stopSession);
         connect(dock, &DAAgentDockWidget::sessionCreateRequested, agent, &DAAgentInterface::newSession);
         // Agent 绘图引用超链接：da-figure: 协议链接点击 → raise 绘图区并定位 figure
         connect(dock, &DAAgentDockWidget::figureLinkRequested, this, &DAAppController::onFigureLinkRequested);

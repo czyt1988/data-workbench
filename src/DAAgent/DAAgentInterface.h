@@ -47,6 +47,9 @@ public:
     virtual void sendMessage(const QString& text) = 0;
     // 停止正在运行的 agent（用户主动终止，非阻塞）
     virtual void stop() = 0;
+    // 停止指定会话的后台运行（审计 L14/决策点 5：会话管理对话框"停止"入口，
+    // 失控后台会话不必先切换再 Stop；空闲/无桥会话静默 no-op）
+    virtual void stopSession(const QString& sessionId) = 0;
     // 停止 agent 子进程并等待退出（阻塞，仅在应用关闭时调用）
     virtual void shutdown() = 0;
     // 转发用户对 agent 提问的回答给子进程

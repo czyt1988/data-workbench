@@ -56,6 +56,8 @@ Q_SIGNALS:
     void renameRequested(const QString& sessionId, const QString& newTitle);
     /// 请求删除会话
     void deleteRequested(const QString& sessionId);
+    /// 请求停止指定会话的后台运行（审计 L14：失控后台会话不必先切换再 Stop）
+    void stopRequested(const QString& sessionId);
 
 private:
     // 填充表格（末尾刷新汇总栏与详情面板）

@@ -574,7 +574,7 @@ void DADialogAgentSessionManager::onSelectionChanged()
 }
 
 /**
- * @brief 表格右键上下文菜单槽函数（切换/重命名/删除，复用底部按钮逻辑）
+ * @brief 表格右键上下文菜单槽函数（切换/重命名/停止/删除，复用底部按钮逻辑）
  * @param pos 右键位置（viewport 坐标）
  */
 void DADialogAgentSessionManager::onTableContextMenu(const QPoint& pos)
@@ -585,6 +585,15 @@ void DADialogAgentSessionManager::onTableContextMenu(const QPoint& pos)
     QMenu menu(this);
     QAction* switchAct = menu.addAction(tr("Switch"));  // cn:切换
     QAction* renameAct = menu.addAction(tr("Rename"));  // cn:重命名
+    // 审计 L14：后台运行会话的停止入口——修复前失控后台会话必须先切换过去
+    // 再按 Stop（结合问题 2 的切入冻结场景，starting 残留会话切过去也停不了）。
+    // 按该行运行态启用（快照数据，对话框打开期间的新状态变化下次打开生效）
+    QAction* stopAct = menu.addAction(tr("Stop"));  // cn:停止
+    const QString state = mTable->item(it->row(), ColTitle)->data(RolePayload)
+                              .toMap().value(QStringLiteral("state")).toString();
+    stopAct->setEnabled(state == QLatin1String("running")
+                        || state == QLatin1String("starting")
+                        || state == QLatin1String("waiting_input"));
     menu.addSeparator();
     QAction* deleteAct = menu.addAction(tr("Delete"));  // cn:删除
     QAction* chosen = menu.exec(mTable->viewport()->mapToGlobal(pos));
@@ -592,6 +601,8 @@ void DADialogAgentSessionManager::onTableContextMenu(const QPoint& pos)
         onSwitchClicked();
     } else if (chosen == renameAct) {
         onRenameClicked();
+    } else if (chosen == stopAct) {
+        emit stopRequested(sessionIdAt(it->row()));
     } else if (chosen == deleteAct) {
         onDeleteClicked();
     }

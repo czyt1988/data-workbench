@@ -521,6 +521,36 @@ void DAAgentModule::stop()
 }
 
 /**
+ * @brief 停止指定会话的后台运行（审计 L14/决策点 5：会话管理对话框"停止"入口）
+ * @param sessionId 目标会话 ID
+ *
+ * 失控后台会话不必先切换过去再按 Stop（结合问题 2 的切入冻结场景，starting
+ * 残留会话切过去也停不了——本入口直达该会话的桥）。语义与 stop() 的活跃
+ * 会话路径一致（清挂起缓存/撤卡/清 FIFO），但 UI 信号仅目标会话为活跃会话
+ * 时发射；空闲/无桥会话静默 no-op。
+ */
+void DAAgentModule::stopSession(const QString& sessionId)
+{
+    DA_D(d);
+    if (sessionId.isEmpty()) {
+        return;
+    }
+    DAAgentBridge* bridge = d->mSessionBridges.value(sessionId);
+    if (!bridge || (!bridge->isRunning() && !bridge->isRecovering())) {
+        return;  // 空闲/无桥：no-op（对话框菜单已按运行态启用，此为防御）
+    }
+    const bool isActive = (sessionId == d->mCurrentSessionId);
+    if (d->mPendingQuestions.remove(sessionId) && isActive) {
+        emit agentQuestionDismissed();
+    }
+    d->mPendingToolCallUuids.remove(sessionId);
+    bridge->requestStop();
+    emit sessionListChanged(listSessionsForUI());  // 角标即时刷新
+    // 桥的 busy(false) 由 requestStop → onProcessFinished 用户停止分支发射，
+    // 经 attachBridge 路由记账/转发（后台会话不转发 UI，角标已刷新）
+}
+
+/**
  * @brief 停止全部 agent 子进程并等待退出（阻塞，仅在应用关闭时调用）
  */
 void DAAgentModule::shutdown()
