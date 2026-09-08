@@ -904,7 +904,11 @@ void DAAgentModule::attachBridge(DAAgentBridge* bridge, const QString& sessionId
             d->mSessionStarting.remove(sessionId);
         }
         if (sessionId == d->mCurrentSessionId) emit agentBusy(busy);
-        if (busy) emit sessionListChanged(listSessionsForUI());  // 进入运行 → 角标
+        // 角标刷新双向覆盖（审计问题 6）：Bridge 的错误路径（crash_exhausted/
+        // ready 超时/写失败回滚）只发 error+busy(false) 不发 agentDone——
+        // 若仅 busy(true) 刷新，"running"→"error" 的角标变化要等下一个事件
+        // 才更新，会话管理器显示过期状态
+        emit sessionListChanged(listSessionsForUI());
     });
     connect(bridge, &DAAgentBridge::agentDone, this, [this, sessionId]() {
         auto* d = d_func();

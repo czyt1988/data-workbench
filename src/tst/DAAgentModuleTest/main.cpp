@@ -154,6 +154,7 @@ private Q_SLOTS:
     void init();            // 每用例清配置与会话目录 + 清剧本环境变量
 
     void testStartingClearedOnBusyFalseWithoutReady(); // 问题2：崩溃耗尽终态不残留 starting
+    void testSessionListChangedOnBusyFalse();          // 问题6：busy(false) 也刷新角标 payload
 };
 
 QString DAAgentModuleTest::pythonConfigPath()
@@ -281,6 +282,38 @@ void DAAgentModuleTest::testStartingClearedOnBusyFalseWithoutReady()
 
     // 修复前：mSessionStarting 无人清除 → 状态永久 "starting"（本断言超时失败）
     QTRY_COMPARE_WITH_TIMEOUT(module->sessionRuntimeState(sid), QStringLiteral("error"), 60000);
+
+    module->shutdown();
+}
+
+/**
+ * 问题6：Bridge 错误路径（crash_exhausted 等）只发 error+busy(false) 不发
+ * agentDone——修复前 agentBusy lambda 仅 busy(true) 时 emit sessionListChanged，
+ * "running"→"error" 的角标变化不刷新，会话管理器要等下一个事件才更新。
+ * 修复后 busy(false) 同样刷新：错误终态的最后一帧 payload state=="error"。
+ */
+void DAAgentModuleTest::testSessionListChangedOnBusyFalse()
+{
+    qputenv("DA_FAKE_SCENARIO", "crash-at-init");
+    QScopedPointer<DA::DAAgentModule> module(makeModule());
+    QSignalSpy listSpy(module.data(), &DA::DAAgentInterface::sessionListChanged);
+    const QString sid = module->createSession();
+    module->sendMessage(QStringLiteral("hello"));
+
+    QTRY_COMPARE_WITH_TIMEOUT(module->sessionRuntimeState(sid), QStringLiteral("error"), 60000);
+
+    // 错误终态由 error+busy(false) 同步连发（同一栈），最后一帧 payload 必须
+    // 携带 "error" 角标（修复前停留在 busy(true) 时的 "starting"）
+    QVERIFY(!listSpy.isEmpty());
+    const QVariantList lastPayload = listSpy.last().at(0).toList();
+    QString state;
+    for (const QVariant& v : lastPayload) {
+        const QVariantMap vm = v.toMap();
+        if (vm.value(QStringLiteral("id")).toString() == sid) {
+            state = vm.value(QStringLiteral("state")).toString();
+        }
+    }
+    QCOMPARE(state, QStringLiteral("error"));
 
     module->shutdown();
 }
