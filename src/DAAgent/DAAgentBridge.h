@@ -23,6 +23,16 @@ class DAAgentPermissionManager;
  *
  * 子进程通过 stdin/stdout 管道与主进程通信，每条消息一行 JSON（JSON Lines 协议）。
  * 工具调用在 C++ 主进程执行，结果通过 stdin 回传子进程。
+ *
+ * 崩溃恢复宿主契约（审计 L19）：异常退出后的自愈状态机（1s 延迟重启，
+ * restartCount ≤ maxRestarts）内置于 Bridge，但恢复能否实际进行取决于宿主
+ * 如何消费 processExited——Bridge 自身对"谁消费"无防御：
+ * - 会话桥宿主（Module attachBridge）：processExited 仅做记账（清权限记忆等），
+ *   不销毁桥对象 → 自愈按内置状态机进行，恢复链由 Module 的 agentReady
+ *   lambda 驱动（load_session → resendLastMessage）；
+ * - 预热桥宿主（Module prestartAgent）：processExited → deleteLater 销毁桥
+ *   对象 → 待执行的恢复定时器随对象析构取消（预热桥可弃，不自愈；下次
+ *   prestart/懒启动兜底）。
  */
 class DAAgent_API DAAgentBridge : public QObject
 {
