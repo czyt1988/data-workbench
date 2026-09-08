@@ -139,6 +139,7 @@ private Q_SLOTS:
     void testInitErrorClosesChannelAndExits();  // 问题9：init 阶段错误 → 关写通道、正常退出、无崩溃自愈
     void testRuntimeErrorKeepsProcessAlive();   // 问题9：运行期错误 → 不关写通道、进程存活可继续对话
     void testReadyTimeoutNoCrashRecoveryLoop(); // 问题20：ready 超时 kill → 不进崩溃自愈循环
+    void testStartupFailureEmitsTerminalSignals(); // 问题21：waitForStarted 失败补终止语义（状态机黑洞）
 };
 
 void DAAgentBridgeTest::startWithScenario(DA::DAAgentBridge& bridge, const char* scenario, int readyTimeoutMs)
@@ -239,6 +240,35 @@ void DAAgentBridgeTest::testReadyTimeoutNoCrashRecoveryLoop()
     // 自愈循环会在 1s 后重启并再次超时报错——等 3s 确认全程只有 1 条错误
     QTest::qWait(3000);
     QCOMPARE(errSpy.count(), 1);
+}
+
+/**
+ * 问题21：进程无法启动（FailedToStart）时 Qt 不发 finished，
+ * onProcessFinished 不执行——修复前该路径是状态机黑洞（无 busy(false)/
+ * processExited，恢复路径无任何兜底，UI 永久"思考中/启动中"）。
+ * 修复后 startAgent 同步补齐终止语义：agentError + busy(false) +
+ * processExited + mRecovering/mRunning 复位。
+ */
+void DAAgentBridgeTest::testStartupFailureEmitsTerminalSignals()
+{
+    DA::DAAgentBridge bridge;
+    QSignalSpy errSpy(&bridge, &DA::DAAgentBridge::agentError);
+    QSignalSpy busySpy(&bridge, &DA::DAAgentBridge::agentBusy);
+    QSignalSpy exitSpy(&bridge, &DA::DAAgentBridge::processExited);
+
+    // 模拟崩溃恢复路径（黑洞场景）：mRecovering=true 时启动失败
+    bridge.setRecovering(true);
+    bridge.startAgent(fakeLlmConfig(), QJsonArray(), QStringLiteral("test prompt"), QJsonArray(),
+                      QStringLiteral("Z:/nonexistent-dir/fake-python-not-exists.exe"),
+                      QStringLiteral("fake_script.py"), 5000, 3000);
+
+    // waitForStarted 失败在 startAgent 栈内同步补齐全部终止语义
+    QCOMPARE(errSpy.count(), 1);
+    QCOMPARE(busySpy.count(), 1);
+    QCOMPARE(busySpy.at(0).at(0).toBool(), false);
+    QCOMPARE(exitSpy.count(), 1);
+    QVERIFY(!bridge.isRecovering());
+    QVERIFY(!bridge.isRunning());
 }
 
 int main(int argc, char* argv[])

@@ -180,7 +180,16 @@ void DAAgentBridge::startAgent(const QJsonObject& llmConfig,
     // state() 仍为 Starting（非 Running），writeJson 的 Running 守卫会拒绝
     // 写入，导致 init 永不发送、子进程在 stdin 读取上阻塞挂起。
     if (!d->mProcess->waitForStarted(5000)) {
+        // FailedToStart：Qt 只发 errorOccurred 不发 finished，onProcessFinished
+        // 不会执行——必须在此补齐终止语义（审计问题 21），否则恢复路径
+        // （recoverFromCrash → startAgent）成为状态机黑洞：无 processExited、
+        // 无 agentBusy(false)，Module 侧 mSessionBusy/mSessionStarting 永不复位，
+        // Dock 发送守卫拦截输入，用户连触发防御重建的消息都发不出。
         emit agentError(tr("Agent process startup timed out"));  //cn:Agent 进程启动超时
+        d->mRecovering = false;
+        d->mRunning = false;
+        emit agentBusy(false);
+        emit processExited();  // Module 据此记账清理（会话记忆/挂起状态）
         return;
     }
 
