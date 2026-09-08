@@ -249,7 +249,12 @@ bool DAAgentModule::registerTool(DAAbstractAgentTool* tool)
     }
     d->mToolProviders[name] = provider;
     // concurrent-sessions：同步到全部存活桥（后创建的桥在 attachBridge 时注入最新工具表）
-    forEachLiveBridge([this](DAAgentBridge* b) { b->setTools(d_func()->mTools); });
+    // 审计问题 19：setTools 只同步 C++ 执行表，sendUpdateTools 同步 Python/LLM
+    // 规格面（否则存活桥的 LLM 永远看不到新注册工具）
+    forEachLiveBridge([this](DAAgentBridge* b) {
+        b->setTools(d_func()->mTools);
+        b->sendUpdateTools(assembleToolSpecs());
+    });
     return true;
 }
 
@@ -307,7 +312,12 @@ int DAAgentModule::unregisterToolsByProvider(QObject* provider)
         qInfo("DAAgentModule::unregisterToolsByProvider: %d tool(s) unregistered for provider %p",
               removedNames.size(),
               static_cast<void*>(provider));
-        forEachLiveBridge([this](DAAgentBridge* b) { b->setTools(d_func()->mTools); });
+        // 审计问题 19：同步 Python/LLM 规格面——否则禁用插件后存活桥的 LLM
+        // 仍看到并调用已移除工具（C++ 执行表已删 → Unknown tool 浪费一轮推理）
+        forEachLiveBridge([this](DAAgentBridge* b) {
+            b->setTools(d_func()->mTools);
+            b->sendUpdateTools(assembleToolSpecs());
+        });
     }
     return removedNames.size();
 }

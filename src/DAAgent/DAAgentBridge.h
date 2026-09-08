@@ -78,6 +78,10 @@ public:
     // 热更新子 agent 定义（不重建图、不动会话状态，Q17）：
     // 下发 update_subagents 消息，定义增删改后由 Module 调用；未运行时静默返回。
     void sendUpdateSubagents(const QJsonArray& subagents);
+    // 热更新工具规格（审计问题 19，镜像 sendUpdateSubagents）：下发 update_tools
+    // 消息（全量规格数组），插件热插拔后由 Module 广播；Python 侧替换
+    // tool_specs 并重绑 llm_with_tools；未运行时静默返回。
+    void sendUpdateTools(const QJsonArray& toolSpecs);
 
     // 设置 C++ 侧工具映射表，供工具调用时查找执行
     void setTools(const QMap<QString, DAAbstractAgentTool*>& tools);

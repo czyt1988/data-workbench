@@ -579,6 +579,26 @@ void DAAgentBridge::sendUpdateSubagents(const QJsonArray& subagents)
 }
 
 /**
+ * @brief 热更新工具规格（审计问题 19，镜像 sendUpdateSubagents）
+ * @param toolSpecs 当前全量工具规格数组（OpenAI function schema）
+ *
+ * setTools 只同步 C++ 执行表——Python/LLM 看到的工具列表停留在 init 时刻：
+ * 插件热插拔（57c90f8 官方特性）后，禁用插件的存活桥 LLM 仍调用已移除工具
+ * （C++ 表已删 → Unknown tool 浪费一轮推理）；启用插件/新注册工具的存活桥
+ * LLM 永远看不到新工具。长寿命会话桥（活跃会话跑完不退役）使窗口无限延长。
+ * Python 侧收到后替换 tool_specs 并重绑 llm_with_tools（call-time 读取即生效）。
+ */
+void DAAgentBridge::sendUpdateTools(const QJsonArray& toolSpecs)
+{
+    DA_D(d);
+    d->mSavedToolSpecs = toolSpecs;  // 同步缓存（崩溃恢复时 init 复用，对齐 sendUpdateSubagents）
+    QJsonObject obj;
+    obj["type"]  = "update_tools";
+    obj["tools"] = toolSpecs;
+    writeJson(obj);
+}
+
+/**
  * @brief 组装权限层下发字段（母文档 §8）
  * @return JSON 对象，含 permission_mode/workspace_root/gated_tools/
  *         tool_approval_timeout_sec/code_patterns/judge；未设置权限引擎时为空对象

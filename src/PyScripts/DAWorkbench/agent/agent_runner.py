@@ -1855,6 +1855,22 @@ async def main():
                 )
             except Exception:
                 logger.exception("update_subagents failed")
+        elif msg_type == "update_tools":
+            # 工具规格热更新（审计问题 19，镜像 update_subagents）：插件热插拔
+            # registerTool/unregisterToolsByProvider 后 C++ 广播全量规格——替换
+            # tool_specs 并重绑 llm_with_tools（图节点闭包 call-time 读取
+            # self.llm_with_tools，重绑即生效，无需重建图）。修复前 Python/LLM
+            # 看到的工具列表停留在 init 时刻：禁用插件后存活桥仍调用已移除工具
+            # （Unknown tool 浪费一轮推理），启用插件后永远看不到新工具。
+            # dispatch_subagents schema 由 _rebuild_tool_bindings 按当前定义集
+            # 动态注入，不受本消息影响。无协议回复（与 update_subagents 一致）
+            new_specs = msg.get("tools")
+            try:
+                runner.tool_specs = new_specs if isinstance(new_specs, list) else []
+                runner._rebuild_tool_bindings()
+                logger.info("tool specs hot-updated: %d tools", len(runner.tool_specs))
+            except Exception:
+                logger.exception("update_tools failed")
         elif msg_type == "load_session":
             # C++ -> Python 下发历史 messages 重建 langgraph state（多会话切换）。
             # load_session 不发 done（重建 state 不是一轮对话）；session_loaded

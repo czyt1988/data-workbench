@@ -125,6 +125,31 @@ int fakeAgentMain(const QByteArray& scenario)
         }
         return 0;
     }
+    if (scenario == "tools-update-echo") {
+        // init 后 ready；收到 update_tools 回显 token("TOOLS_UPDATED:<规格数>")
+        // ——验证 sendUpdateTools 协议消息下发（审计问题 19）
+        fakeEmit(out, {{ "type", "ready" }, { "model", "fake-model" }});
+        while (true) {
+            const QByteArray line = in.readLine();
+            if (line.isEmpty()) {
+                break;
+            }
+            const QJsonDocument doc = QJsonDocument::fromJson(line.trimmed());
+            if (!doc.isObject()) {
+                continue;
+            }
+            const QJsonObject obj = doc.object();
+            const QString type = obj.value("type").toString();
+            if (type == QLatin1String("update_tools")) {
+                fakeEmit(out, {{ "type", "token" },
+                               { "content", QStringLiteral("TOOLS_UPDATED:%1")
+                                                 .arg(obj.value("tools").toArray().size()) }});
+            } else if (type == QLatin1String("stop")) {
+                break;
+            }
+        }
+        return 0;
+    }
     if (scenario == "tool-call-with-safety") {
         // user_msg → tool_call 携带 safety.content_hash（模拟 permission_judge
         // 对 run_script 的判定载荷，审计问题 26）——验证 Bridge 把哈希注入
@@ -366,6 +391,7 @@ private Q_SLOTS:
     void testQueuedToolExecuted();                    // 问题12：全局队列派发-执行-结果回传全链
     void testQueuedToolCancelledOnStop();             // 问题12：Stop 后已排队调用被取消（12b/12c）
     void testSafetyContentHashInjectedIntoExecArgs(); // 问题26：判定哈希注入执行参数（TOCTOU 校验）
+    void testSendUpdateToolsProtocol();               // 问题19：update_tools 协议消息下发
 };
 
 void DAAgentBridgeTest::startWithScenario(DA::DAAgentBridge& bridge, const char* scenario,
@@ -791,6 +817,32 @@ void DAAgentBridgeTest::testSafetyContentHashInjectedIntoExecArgs()
              QStringLiteral("abc123"));
     // 原始 args 不含内部键（注入只进执行副本）
     QVERIFY(!tool.lastParams().contains(QStringLiteral("path")));
+
+    bridge.requestStop();
+    QTest::qWait(500);
+}
+
+/**
+ * 问题19：Python 侧工具规格不热更新——setTools 只更新 C++ 执行表，无 stdin
+ * 下发，插件热插拔后存活桥的 LLM 工具列表停留在 init 时刻。修复后
+ * sendUpdateTools 镜像 sendUpdateSubagents：下发 update_tools{tools} 全量
+ * 规格数组并同步 mSavedToolSpecs 缓存（崩溃恢复 init 复用）。
+ */
+void DAAgentBridgeTest::testSendUpdateToolsProtocol()
+{
+    DA::DAAgentBridge bridge;
+    QSignalSpy readySpy(&bridge, &DA::DAAgentBridge::agentReady);
+    QSignalSpy tokenSpy(&bridge, &DA::DAAgentBridge::agentToken);
+    startWithScenario(bridge, "tools-update-echo");
+    QVERIFY(waitForCount(readySpy, 1));
+
+    // 热更新下发 2 条规格 → 假 agent 回显 TOOLS_UPDATED:2
+    QJsonArray specs;
+    specs.append(QJsonObject{{ "name", "fake_one" }});
+    specs.append(QJsonObject{{ "name", "fake_two" }});
+    bridge.sendUpdateTools(specs);
+    QVERIFY(waitForCount(tokenSpy, 1));
+    QCOMPARE(tokenSpy.at(0).at(0).toString(), QStringLiteral("TOOLS_UPDATED:2"));
 
     bridge.requestStop();
     QTest::qWait(500);

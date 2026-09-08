@@ -158,6 +158,11 @@ int fakeAgentMain(const QByteArray& scenario)
             // 工具结果到达（C++ 全局队列执行完毕回传）→ 完成本轮
             fakeEmit(out, {{ "type", "message_end" }, { "content", "tool done" }});
             fakeEmit(out, {{ "type", "done" }});
+        } else if (type == QLatin1String("update_tools")) {
+            // 工具规格热更新（问题 19）：回显规格数供 Module 广播链断言
+            fakeEmit(out, {{ "type", "token" },
+                           { "content", QStringLiteral("TOOLS_UPDATED:%1")
+                                             .arg(obj.value("tools").toArray().size()) }});
         } else if (type == QLatin1String("stop")) {
             break;
         }
@@ -234,6 +239,7 @@ private Q_SLOTS:
     void testBackgroundRetryingReplayedOnSwitchBack(); // 问题8：后台重试条缓存-切回重发
     void testBackgroundIncompleteReplayedOnSwitchBack(); // 问题8：后台"话说一半"提醒缓存-豁免退役-切回重发
     void testToolExecutionViaGlobalQueue();            // 问题12：Module 全链（队列执行+落盘+排队信号）
+    void testRegisterToolBroadcastsUpdateTools();      // 问题19：注册工具向存活桥广播 update_tools
 };
 
 QString DAAgentModuleTest::pythonConfigPath()
@@ -795,6 +801,39 @@ void DAAgentModuleTest::testToolExecutionViaGlobalQueue()
     // + 回合收尾 message_end（type=assistant）= assistant 2 条、tool_result 1 条
     QTRY_COMPARE(countRecords(sid, QStringLiteral("tool_result")), 1);
     QCOMPARE(countRecords(sid, QStringLiteral("assistant")), 2);
+
+    module->shutdown();
+}
+
+/**
+ * 问题19：registerTool/unregisterToolsByProvider 的 forEachLiveBridge 广播
+ * 此前只 setTools（C++ 执行表）——Python/LLM 规格面停留在 init 时刻，插件
+ * 热插拔后存活桥看不到新工具/仍调用已移除工具。修复后广播同时下发
+ * update_tools 全量规格（假 agent 回显 token "TOOLS_UPDATED:<n>"，经活跃
+ * 会话 agentToken 转发链路可观测）。
+ */
+void DAAgentModuleTest::testRegisterToolBroadcastsUpdateTools()
+{
+    QScopedPointer<DA::DAAgentModule> module(makeModule());
+    QSignalSpy tokenSpy(module.data(), &DA::DAAgentInterface::agentToken);
+    QSignalSpy doneSpy(module.data(), &DA::DAAgentInterface::agentDone);
+
+    // 先让会话桥存活（跑完一轮不退役）
+    const QString sid = module->createSession();
+    module->sendMessage(QStringLiteral("warm up"));
+    QVERIFY(doneSpy.wait(30000));
+
+    // 桥存活时注册工具 → 广播 update_tools（1 条规格）→ 假 agent 回显
+    FakeAgentTool fakeTool;
+    QVERIFY(module->registerTool(&fakeTool));
+    QVERIFY(tokenSpy.wait(30000));
+    bool seen = false;
+    for (const auto& args : std::as_const(tokenSpy)) {
+        if (args.at(0).toString() == QLatin1String("TOOLS_UPDATED:1")) {
+            seen = true;
+        }
+    }
+    QVERIFY(seen);
 
     module->shutdown();
 }
