@@ -15,8 +15,9 @@ DAAgentToolSpec DAAgentToolRunScript::getToolSpec() const
 {
     using Type = DAAgentToolParam::Type;
     DAAgentToolSpec spec{QStringLiteral("run_script"),
-                         QStringLiteral("Run a Python script from the current project's script workspace in a shared "
-                                        "persistent namespace (Jupyter-like). 'path' is relative to the workspace root "
+                         QStringLiteral("Run a Python script from the current project's script workspace in a "
+                                        "persistent namespace scoped to the current agent session (Jupyter-like; "
+                                        "isolated from other sessions). 'path' is relative to the workspace root "
                                         "(e.g. \"scripts/analyze.py\"); use write_file to create the script first. "
                                         "Inside the script, modules da_app/da_interface/da_data are pre-imported; "
                                         "access in-memory data via "

@@ -10,11 +10,13 @@ DAAgentToolSpec DAAgentToolRunCode::getToolSpec() const
 {
     using Type = DAAgentToolParam::Type;
     DAAgentToolSpec spec{QStringLiteral("run_code"),
-                         QStringLiteral("Execute inline Python code in a shared persistent namespace (Jupyter-like). "
+                         QStringLiteral("Execute inline Python code in a persistent namespace scoped to the current "
+                                        "agent session (Jupyter-like; variables persist across run_code/run_script "
+                                        "calls within this session and are isolated from other sessions). "
                                         "Modules da_app/da_interface/da_data are pre-imported; access in-memory data "
                                         "via da_app.getCore().getDataManagerInterface().getAllDataframes() (returns "
-                                        "{name: dataframe} dict). Variables persist across run_code/run_script calls — "
-                                        "use it for multi-step analysis: define a variable (e.g. df) in one call and "
+                                        "{name: dataframe} dict). "
+                                        "Use it for multi-step analysis: define a variable (e.g. df) in one call and "
                                         "reference it in later calls. The 'result' field is only a text summary for "
                                         "you to read (set the __result__ variable to return a value), NOT a Python "
                                         "object you can operate on. Optional 'args' is injected as a dict named "

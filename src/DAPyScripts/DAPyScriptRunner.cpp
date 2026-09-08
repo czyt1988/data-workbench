@@ -1,6 +1,7 @@
 #include "DAPyScriptRunner.h"
 #include <QDir>
 #include <QFileInfo>
+#include <QHash>
 #include <QJsonArray>
 #include <QJsonValue>
 #include <QObject>
@@ -31,6 +32,32 @@ std::atomic< int > s_resultMaxChars { 10000 };
 
 ///< 基线键集合（重置命名空间时保留）
 const char* const c_baselineKeys[] = { "__builtins__", "__name__", "da_app", "da_interface", "da_data" };
+
+///< 当前执行会话上下文（DAPyScriptSessionContext 守卫设置；空=默认命名空间。
+/// 仅主线程读写——工具执行按决策点 2 全局串行在主线程，无跨线程竞争）
+QString s_currentSessionId;
+
+/**
+ * @brief 构建基线命名空间（__name__/builtins/预导入基线模块/__result__/args）
+ *
+ * 默认表（init）与会话表（懒建）共用同一基线结构（决策点 3 方案 c：
+ * da_app/da_interface/da_data 预导入是模块级的，全会话共享一份模块对象，
+ * 按会话复制的只是变量表本身，无额外导入成本）。
+ * @note 调用前必须已持 GIL；基线模块导入失败抛 pybind11::error_already_set
+ */
+pybind11::dict makeBaselineNamespace()
+{
+    pybind11::dict ns;
+    ns["__name__"]     = "__main__";
+    ns["__builtins__"] = pybind11::module_::import("builtins");
+    static const char* baselineModules[] = { "da_app", "da_interface", "da_data" };
+    for (const char* m : baselineModules) {
+        ns[ m ] = pybind11::module_::import(m);
+    }
+    ns["__result__"] = pybind11::none();
+    ns["args"]       = pybind11::dict();
+    return ns;
+}
 
 /**
  * @brief 可取消的超时看门狗
@@ -243,9 +270,13 @@ public:
     }
 
 public:
-    pybind11::dict ns;  ///< 持久命名空间
+    pybind11::dict ns;  ///< 默认持久命名空间（无会话上下文的调用方使用）
+    /// 会话专属命名空间（决策点 3 方案 c，审计问题 13）：sessionId → 变量表。
+    /// 懒建（首次执行时按基线结构创建）；会话删除时经 removeSessionNamespace
+    /// 释放；桥退役不清（变量随会话生命周期，切走切回对用户无感）
+    QHash< QString, pybind11::dict > sessionNs;
     std::shared_ptr< pybind11::scoped_interpreter > interpreter;  ///< 解析器，增加引用计数，避免python环境析构了此类还存在
-    QString workspaceRoot;  ///< 当前工作区根目录
+    QString workspaceRoot;  ///< 当前工作区根目录（全进程共享——决策点 3：工作目录不按会话隔离）
 };
 
 std::unique_ptr< DAPyScriptRunner::InnerData > DAPyScriptRunner::s_data = nullptr;
@@ -272,24 +303,16 @@ bool DAPyScriptRunner::init()
     try {
         DAPyGILGuard gil;
         s_data = std::make_unique< InnerData >();
-        pybind11::dict ns;
-        ns["__name__"]     = "__main__";
-        ns["__builtins__"] = pybind11::module_::import("builtins");
-        // 预导入基线模块（链式数据访问需三个模块全部就绪）
-        static const char* baselineModules[] = { "da_app", "da_interface", "da_data" };
-        for (const char* m : baselineModules) {
-            try {
-                ns[ m ] = pybind11::module_::import(m);
-            } catch (const pybind11::error_already_set& e) {
-                daCritical << QObject::tr("Script runner failed to import baseline module %1: %2")
-                                      .arg(QString(m), QString::fromUtf8(e.what()));  // cn:脚本执行引擎导入基线模块 %1 失败：%2
-                s_data.reset();
-                return false;
-            }
+        // 预导入基线模块（链式数据访问需三个模块全部就绪）；导入失败时
+        // e.what() 含失败模块的 Python traceback
+        try {
+            s_data->ns = makeBaselineNamespace();
+        } catch (const pybind11::error_already_set& e) {
+            daCritical << QObject::tr("Script runner failed to import baseline modules: %1")
+                                  .arg(QString::fromUtf8(e.what()));  // cn:脚本执行引擎导入基线模块失败：%1
+            s_data.reset();
+            return false;
         }
-        ns["__result__"] = pybind11::none();
-        ns["args"]       = pybind11::dict();
-        s_data->ns       = ns;
     } catch (const std::exception& e) {
         daCritical << QObject::tr("Failed to initialize script runner: %1")
                               .arg(QString::fromUtf8(e.what()));  // cn:初始化脚本执行引擎失败：%1
@@ -297,6 +320,23 @@ bool DAPyScriptRunner::init()
         return false;
     }
     return true;
+}
+
+/**
+ * @brief 取（懒建）会话专属命名空间
+ * @param sessionId 会话 ID（非空）
+ * @return 该会话的变量表（首次调用按基线结构创建）
+ * @note 调用前必须已持 GIL；基线导入失败抛 pybind11::error_already_set
+ */
+pybind11::dict DAPyScriptRunner::sessionNamespaceLocked(const QString& sessionId)
+{
+    auto it = s_data->sessionNs.find(sessionId);
+    if (it != s_data->sessionNs.end()) {
+        return it.value();
+    }
+    pybind11::dict ns = makeBaselineNamespace();
+    s_data->sessionNs.insert(sessionId, ns);
+    return ns;
 }
 
 /**
@@ -452,7 +492,14 @@ QJsonObject DAPyScriptRunner::runInternal(bool isFile, const QString& codeOrPath
     QJsonObject resp;
     try {
         DAPyGILGuard gil;
-        pybind11::dict ns = s_data->ns;
+        // 决策点 3 方案 c（审计问题 13）：按当前会话上下文选表——并发会话
+        // 各自一张变量表，会话内 Jupyter 式体验不变（变量跨 run_code 持久），
+        // 跨会话互不可见（B 的 df 不再静默改写 A 正在使用的 df，杜绝"结果
+        // 看起来正常执行却是错的"）。无上下文（工作流节点等非 agent 调用方）
+        // 用默认表，既有行为零变化；会话表懒建，基线导入失败走下方 catch
+        pybind11::dict ns = s_currentSessionId.isEmpty()
+                                ? s_data->ns
+                                : sessionNamespaceLocked(s_currentSessionId);
         // 注入 args 全局变量（QJsonObject→py dict 经 DAPybind11QtCaster 的 QVariant 转换器）
         QVariant argsVariant = args.toVariantMap();
         ns[ "args" ]         = pybind11::cast(argsVariant);
@@ -546,7 +593,18 @@ void DAPyScriptRunner::resetNamespace()
         if (!s_data) {
             return;
         }
-        pybind11::dict ns = s_data->ns;
+        // 作用于当前会话上下文的表（决策点 3）：无上下文=默认表（工程清空/
+        // 切换的既有调用方行为不变）；会话表尚未创建则无符号可重置
+        pybind11::dict ns;
+        if (s_currentSessionId.isEmpty()) {
+            ns = s_data->ns;
+        } else {
+            const auto it = s_data->sessionNs.constFind(s_currentSessionId);
+            if (it == s_data->sessionNs.constEnd()) {
+                return;
+            }
+            ns = it.value();
+        }
         // 收集键后删除（不能边迭代边删）
         pybind11::list keys(ns.attr("keys")());
         for (auto k : keys) {
@@ -600,7 +658,7 @@ void DAPyScriptRunner::resetNamespace()
 }
 
 /**
- * @brief 获取命名空间 dict
+ * @brief 获取命名空间 dict（当前会话上下文的表，无上下文/未创建回退默认表）
  *
  * @warning 唯一不内部持 GIL 的方法：返回 Python 对象引用，要求调用方自行持 GIL
  * @return 命名空间 dict，未初始化时返回空 dict
@@ -610,7 +668,67 @@ pybind11::dict DAPyScriptRunner::getNamespace()
     if (!s_data) {
         return pybind11::dict();
     }
+    if (!s_currentSessionId.isEmpty()) {
+        const auto it = s_data->sessionNs.constFind(s_currentSessionId);
+        if (it != s_data->sessionNs.constEnd()) {
+            return it.value();
+        }
+    }
     return s_data->ns;
+}
+
+/**
+ * @brief 移除并释放指定会话的命名空间（会话删除时由 Module 调用）
+ * @param sessionId 会话 ID（空/未初始化/执行中均 no-op）
+ *
+ * 会话存续期间桥退役不清——变量随会话生命周期（决策点 3：同一会话内
+ * 跨 run_code 持久，切走切回/桥重建对用户无感）。析构 py::dict 必须持
+ * GIL（镜像 cleanup 契约）。
+ */
+void DAPyScriptRunner::removeSessionNamespace(const QString& sessionId)
+{
+    if (!s_data || sessionId.isEmpty()) {
+        return;
+    }
+    if (s_isRunning.load()) {
+        return;  // 执行期间不动命名空间状态（镜像 setWorkspaceRoot 守卫）
+    }
+    try {
+        DAPyGILGuard gil;
+        if (!s_data) {
+            return;
+        }
+        s_data->sessionNs.remove(sessionId);
+    } catch (const std::exception& e) {
+        qWarning() << "DAPyScriptRunner::removeSessionNamespace failed:" << e.what();
+    }
+}
+
+/**
+ * @brief 当前会话上下文 id（空=默认命名空间）
+ * @return 会话 ID
+ */
+QString DAPyScriptRunner::currentSessionId()
+{
+    return s_currentSessionId;
+}
+
+/**
+ * @brief 进入会话上下文（记录上一层 id，析构恢复——嵌套安全）
+ * @param sessionId 会话 ID（空=默认命名空间）
+ */
+DAPyScriptSessionContext::DAPyScriptSessionContext(const QString& sessionId)
+{
+    mPrevious          = s_currentSessionId;
+    s_currentSessionId = sessionId;
+}
+
+/**
+ * @brief 恢复上一层会话上下文
+ */
+DAPyScriptSessionContext::~DAPyScriptSessionContext()
+{
+    s_currentSessionId = mPrevious;
 }
 
 /**

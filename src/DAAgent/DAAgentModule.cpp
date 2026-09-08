@@ -14,6 +14,7 @@
 #include "DAAgentConfig.h"
 #include "DACoreInterface.h"
 #include "DAPyInterpreter.h"
+#include "DAPyScriptRunner.h"
 #include "DADir.h"
 #include "DALogCategory.h"
 // Platform built-in tools moved to plugins/DAAgentTools plugin (plan-03)
@@ -1667,6 +1668,10 @@ void DAAgentModule::deleteSession(const QString& sessionId)
         d->mPermissionManager->clearSessionMemory(sessionId);
         d->mPermissionManager->clearSessionContext(sessionId);
     }
+    // 释放该会话的 run_code/run_script 专属变量表（决策点 3，审计问题 13）：
+    // 命名空间随会话生命周期——桥退役不清（切走切回/桥重建变量持久，同一
+    // 会话内无感），会话删除才释放（否则含 dataframe 的大变量表滞留内存）
+    DAPyScriptRunner::removeSessionNamespace(sessionId);
     if (d->mCurrentSessionId == sessionId) {
         d->mCurrentSessionId.clear();  // 删当前会话后回归无活跃
         resetCumulativeTokens();       // 清零累计，避免残留被下一会话误用

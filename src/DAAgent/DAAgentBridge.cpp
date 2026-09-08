@@ -3,6 +3,7 @@
 #include "DAAbstractAgentTool.h"
 #include "DAAgentPermissionManager.h"
 #include "DAAgentToolExecutor.h"
+#include "DAPyScriptRunner.h"
 #include <QTimer>
 #include <QHash>
 #include <QSet>
@@ -1163,6 +1164,13 @@ void DAAgentBridge::executeToolNow(const QString& callId,
 {
     DA_D(d);
     ToolExecGuard guard(this);  // RAII：暂停看门狗，覆盖所有 return 路径
+    // 会话命名空间上下文（决策点 3 方案 c，审计问题 13）：run_code/run_script
+    // 经 DAPyScriptRunner 按会话查专属变量表——并发会话不再共享同一 Jupyter
+    // 式命名空间（会话 B 的 df 静默改写会话 A 正在使用的 df，产出错误分析
+    // 结果且无报错，是数据分析工作台最坏失败模式）。守卫覆盖整个执行期，
+    // 不改 DAAbstractAgentTool::execute 公开 API；其它工具不消费该上下文。
+    // mSessionId 为空（预热桥，理论上不执行工具）回退默认表
+    DAPyScriptSessionContext pySessionCtx(d->mSessionId);
 
     // 存活/停止守卫（审计 12b/12c）：tool_call 投递后进程可能立刻崩溃，或
     // 用户在排队窗口内 Stop——不再真实执行（副作用不为死进程/已终止回合
