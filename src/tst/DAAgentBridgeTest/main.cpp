@@ -12,6 +12,8 @@
 //   runtime-error : ready 后第一条 user_msg 回 error(quota_exhausted)+done 但进程
 //                   保持存活；第二条 user_msg 正常回 token+done（验证写通道未关）
 //   never-ready   : 永不发 ready/booting（模拟环境性失败，验证 ready 超时路径）
+//   echo-model-crash-on-msg : init.model 经 ready 回显；user_msg 即崩溃 exit(3)
+//                   （验证崩溃自愈重启所用配置缓存，问题 22）
 
 #include <QtTest/QtTest>
 #include <QCoreApplication>
@@ -49,6 +51,30 @@ int fakeAgentMain(const QByteArray& scenario)
     if (scenario == "init-error") {
         // init 阶段失败：发 error 后 main() 提前 return（进程 exit 0）
         fakeEmit(out, {{ "type", "error" }, { "message", "config missing" }, { "error_type", "init_failed" }});
+        return 0;
+    }
+    if (scenario == "echo-model-crash-on-msg") {
+        // init 时记录 config.model 并在 ready 中回显；收到 user_msg 即以退出码 3
+        // 崩溃。Bridge 崩溃自愈用 mSavedLlmConfig 重启——第二次 ready 的 model
+        // 反映 reconfigureAgent 是否同步了配置缓存（问题 22）。
+        while (true) {
+            const QByteArray line = in.readLine();
+            if (line.isEmpty()) {
+                break;
+            }
+            const QJsonDocument doc = QJsonDocument::fromJson(line.trimmed());
+            if (!doc.isObject()) {
+                continue;
+            }
+            const QJsonObject obj = doc.object();
+            const QString type = obj.value("type").toString();
+            if (type == QLatin1String("init")) {
+                const QString model = obj.value("config").toObject().value("model").toString();
+                fakeEmit(out, {{ "type", "ready" }, { "model", model }});
+            } else if (type == QLatin1String("user_msg")) {
+                return 3;  // 模拟原生崩溃（CrashExit）
+            }
+        }
         return 0;
     }
     if (scenario == "never-ready") {
@@ -140,6 +166,7 @@ private Q_SLOTS:
     void testRuntimeErrorKeepsProcessAlive();   // 问题9：运行期错误 → 不关写通道、进程存活可继续对话
     void testReadyTimeoutNoCrashRecoveryLoop(); // 问题20：ready 超时 kill → 不进崩溃自愈循环
     void testStartupFailureEmitsTerminalSignals(); // 问题21：waitForStarted 失败补终止语义（状态机黑洞）
+    void testReconfigureSyncsRecoveryConfig();     // 问题22：reconfigure 同步缓存，崩溃恢复用新配置
 };
 
 void DAAgentBridgeTest::startWithScenario(DA::DAAgentBridge& bridge, const char* scenario, int readyTimeoutMs)
@@ -269,6 +296,36 @@ void DAAgentBridgeTest::testStartupFailureEmitsTerminalSignals()
     QCOMPARE(exitSpy.count(), 1);
     QVERIFY(!bridge.isRecovering());
     QVERIFY(!bridge.isRunning());
+}
+
+/**
+ * 问题22：reconfigureAgent 不更新 mSavedLlmConfig → 崩溃恢复用陈旧配置
+ * 复活（用户换模型/密钥后恢复进程仍跑旧值；旧 key 失效时恢复必然再失败
+ * 进 ready 超时循环）。修复后 reconfigure 同步缓存，自愈重启的 init 携带
+ * 新 model——假 agent 在 ready 中回显 init.model，据此断言。
+ */
+void DAAgentBridgeTest::testReconfigureSyncsRecoveryConfig()
+{
+    DA::DAAgentBridge bridge;
+    QSignalSpy readySpy(&bridge, &DA::DAAgentBridge::agentReady);
+    startWithScenario(bridge, "echo-model-crash-on-msg");
+
+    QVERIFY(waitForCount(readySpy, 1));
+    QCOMPARE(readySpy.at(0).at(0).toString(), QStringLiteral("fake-model"));
+
+    // 热替换模型（不重启进程）
+    QJsonObject newCfg = fakeLlmConfig();
+    newCfg[QStringLiteral("model")] = QStringLiteral("new-model");
+    bridge.reconfigureAgent(newCfg);
+
+    // 触发崩溃：user_msg → exit(3) → 自愈 1s 后用 mSavedLlmConfig 重启
+    bridge.sendMessage(QStringLiteral("crash trigger"));
+
+    // 第二次 ready 的 model 应为 reconfigure 后的新值（修复前为陈旧 fake-model）
+    QVERIFY(waitForCount(readySpy, 2, 20000));
+    QCOMPARE(readySpy.at(1).at(0).toString(), QStringLiteral("new-model"));
+
+    bridge.requestStop();
 }
 
 int main(int argc, char* argv[])

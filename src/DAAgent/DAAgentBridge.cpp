@@ -462,6 +462,14 @@ void DAAgentBridge::sendLoadSession(const QString& sessionId, const QJsonArray& 
  */
 void DAAgentBridge::reconfigureAgent(const QJsonObject& config)
 {
+    DA_D(d);
+    // 同步启动参数缓存（审计问题 22）：崩溃恢复 recoverFromCrash 用
+    // mSavedLlmConfig 重启 init——不同步则用户换模型/密钥后复活的进程仍跑
+    // 旧配置，旧 key 已失效时恢复必然再失败进 ready 超时循环。
+    // 与 sendUpdateSubagents 同步 mSavedSubagents 的既定意图对齐。
+    // 权限字段无需缓存：buildPermissionConfig() 在恢复 init 时实时读取
+    // PermissionManager 当前状态。
+    d->mSavedLlmConfig = config;
     QJsonObject merged = config;
     const QJsonObject permFields = buildPermissionConfig();
     for (auto it = permFields.constBegin(); it != permFields.constEnd(); ++it) {
