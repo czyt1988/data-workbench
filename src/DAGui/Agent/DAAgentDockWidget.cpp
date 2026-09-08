@@ -275,7 +275,10 @@ void DAAgentDockWidget::onWebReady()
         {"approvalNeeds", tr("needs your approval")},  // cn:需要你的批准
         {"approvalApprove", tr("Approve")},          // cn:批准
         {"approvalDeny", tr("Deny")},                // cn:拒绝
-        {"approvalApproveRemember", tr("Approve && remember for this session")},  // cn:批准并本会话记住
+        // 审计 L10：该译文经 web textContent 设置，Qt 助记符 "&&" 会按字面
+        // 显示为双 and 符——推送前剥离为单 &（web 无助记符语义）
+        {"approvalApproveRemember", QString(tr("Approve && remember for this session"))
+                                        .replace(QLatin1String("&&"), QLatin1String("&"))},  // cn:批准并本会话记住
         {"approvalApproved", tr("Approved")},        // cn:已批准
         {"approvalDenied", tr("Denied")},            // cn:已拒绝
         {"approvalApprovedRemembered", tr("Approved (remembered for this session)")},  // cn:已批准（本会话已记住）
@@ -288,6 +291,10 @@ void DAAgentDockWidget::onWebReady()
         {"toolResultTruncated", tr("result truncated")},  // cn:结果已截断
         // —— 问题卡提交失败提示（审计 L9）——
         {"answerSendFailed", tr("Answer not sent, please retry")},  // cn:回答未发送，请重试
+        // —— 重放问题卡标签（审计 L10）：与实时路径 appendQuestion 的 tr 同源，
+        // 历史重放不再恒显英文 fallback（源文本一致，翻译条目复用）
+        {"questionSubmit", tr("Submit")},                          // cn:提交
+        {"questionCustomPlaceholder", tr("Type your own answer...")},  // cn:输入自定义回答...
         // —— 子 agent 进度卡片（subagent-phase1 C）——
         {"subagentTaskCount", tr("%1 subagent task(s)")},  // cn:%1 个子 Agent 任务
         {"subagentProgress", tr("%1/%2 done")},             // cn:%1/%2 已完成

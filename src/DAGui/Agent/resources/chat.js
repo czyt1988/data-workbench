@@ -51,7 +51,8 @@ let i18n = {
     // —— 工具审批卡（permission-layer P1）——
     approvalNeeds: 'needs your approval',
     approvalApprove: 'Approve', approvalDeny: 'Deny',
-    approvalApproveRemember: 'Approve && remember for this session',
+    // 审计 L10：web 端 textContent 无 Qt 助记符语义，默认值用单 &
+    approvalApproveRemember: 'Approve & remember for this session',
     approvalApproved: 'Approved', approvalDenied: 'Denied',
     approvalApprovedRemembered: 'Approved (remembered for this session)',
     approvalCodeMoreLines: '%1 more lines',
@@ -62,6 +63,9 @@ let i18n = {
     toolResultTruncated: 'result truncated',
     // —— 问题卡提交失败提示（审计 L9）——
     answerSendFailed: 'Answer not sent, please retry',
+    // —— 重放问题卡标签（审计 L10，C++ setI18nLabels 注入译文）——
+    questionSubmit: 'Submit',
+    questionCustomPlaceholder: 'Type your own answer...',
     // —— 子 agent 进度卡片（subagent-phase1 C）——
     subagentTaskCount: '%1 subagent task(s)',
     subagentProgress: '%1/%2 done',
@@ -1636,8 +1640,8 @@ function renderHistoryEvents(evs) {
             const qBubble = appendQuestion(
                 a.question || '',
                 Array.isArray(a.options) ? a.options : [],
-                a.submit_label || 'Submit',
-                a.custom_placeholder || '',
+                a.submit_label || i18n.questionSubmit || 'Submit',
+                a.custom_placeholder || i18n.questionCustomPlaceholder || '',
                 !!a.multi_select
             );
             if (qBubble) {
