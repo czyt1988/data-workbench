@@ -465,7 +465,7 @@ void DAAgentModule::shutdown()
     // concurrent-sessions：阻塞停止全部桥（会话桥 + 预热桥），确保在 Python
     // 解释器关闭前子进程已干净退出。仅在 AppMainWindow::closeEvent 中调用
     //（QApplication 事件循环尚在运行）。每桥至多等待 stop_timeout_sec。
-    for (DAAgentBridge* b : d->mSessionBridges) {
+    for (DAAgentBridge* b : std::as_const(d->mSessionBridges)) {
         b->stopAgent();
     }
     if (d->mIdleBridge) {
