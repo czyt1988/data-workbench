@@ -461,6 +461,10 @@ void DAAgentModule::stop()
         if (d->mPendingQuestions.remove(d->mCurrentSessionId)) {
             emit agentQuestionDismissed();
         }
+        // 审计问题 1：Stop 必然中断在途工具配对——清会话 FIFO。并发版 Stop
+        // 只作用活跃会话，按会话清理无副作用；不清则 ask_user 待答时按 Stop
+        // 再发"继续"，残留 uuid 使答案/结果配对错位落盘
+        d->mPendingToolCallUuids.remove(d->mCurrentSessionId);
         bridge->requestStop();
     }
 }
@@ -932,10 +936,22 @@ void DAAgentModule::attachBridge(DAAgentBridge* bridge, const QString& sessionId
             [this, sessionId](const QString& message, const QString& errorType, const QString& detail) {
         auto* d = d_func();
         d->mSessionError[sessionId] = true;
+        // 审计问题 1（恢复旧版语义，按会话作用域）：错误使在途工具调用配对
+        // 作废——不清 FIFO 则残留 uuid 与该会话下一轮的 tool_result 错配
+        // （JSONL 中 tool_result.tool_call_id 挂错，历史重放时旧工具卡挂新
+        // 结果、新工具卡因无结果被跳过，落盘数据永久污染）
+        d->mPendingToolCallUuids.remove(sessionId);
+        // 问题 1×17 联动：挂起问题随回合作用死——同批清缓存+撤卡。若只清
+        // FIFO 不清问题卡，用户对着幽灵卡作答会因 FIFO 已空跳过持久化，
+        // 产生"答案消失"的新症状（FIFO/问题缓存/UI 卡三处必须同批）
+        const bool hadQuestion = d->mPendingQuestions.remove(sessionId);
         if (sessionId == d->mCurrentSessionId) {
+            if (hadQuestion) {
+                emit agentQuestionDismissed();
+            }
             emit agentError(message, errorType, detail);
         } else {
-            emit sessionListChanged(listSessionsForUI());  // 后台出错 → 角标
+            emit sessionListChanged(listSessionsForUI());  // 后台出错 → 角标（含 waiting_input 解除）
         }
     });
     // 崩溃恢复：session_loaded 后重发最后消息（isRecovering 由 resendLastMessage 内部复位）

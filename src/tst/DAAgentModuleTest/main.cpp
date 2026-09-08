@@ -159,6 +159,8 @@ private Q_SLOTS:
     void testDeleteCurrentSessionEmitsCleared();       // 问题16：删除当前会话补发 sessionCleared + token 复位
     void testStopDismissesPendingQuestion();           // 问题17：Stop 清问题缓存 + 撤卡
     void testProcessExitDismissesPendingQuestion();    // 问题17：进程退出清问题缓存 + 撤卡
+    void testStopClearsToolCallFifo();                 // 问题1：Stop 清 FIFO，幽灵答案不落孤儿 tool_result
+    void testErrorClearsToolCallFifo();                // 问题1：错误清 FIFO + 联动撤问题卡
 };
 
 QString DAAgentModuleTest::pythonConfigPath()
@@ -435,6 +437,56 @@ void DAAgentModuleTest::testProcessExitDismissesPendingQuestion()
     module->sendMessage(QStringLiteral("#fake:crash"));
     QTRY_COMPARE_WITH_TIMEOUT(dismissSpy.count(), 1, 30000);
     QTRY_VERIFY_WITH_TIMEOUT(module->sessionRuntimeState(sid) != QStringLiteral("waiting_input"), 15000);
+
+    module->shutdown();
+}
+
+/**
+ * 问题1（Stop 路径）：ask_user 的 tool_call uuid 已入会话 FIFO，用户按 Stop
+ * 后 FIFO 必须清空——否则再发"继续"开启新一轮，下一轮的 tool_result 出队时
+ * 配到旧 uuid，JSONL 中 tool_result.tool_call_id 挂错（永久污染）。
+ * 联动断言（问题 17 撤卡后）：幽灵答案经 sendUserAnswer 不落盘孤儿记录。
+ */
+void DAAgentModuleTest::testStopClearsToolCallFifo()
+{
+    QScopedPointer<DA::DAAgentModule> module(makeModule());
+    QSignalSpy questionSpy(module.data(), &DA::DAAgentInterface::agentQuestion);
+    const QString sid = module->createSession();
+    module->sendMessage(QStringLiteral("#fake:question"));
+    QVERIFY(questionSpy.wait(30000));
+
+    module->stop();
+    // 幽灵答案：FIFO 已清 → sendUserAnswer 空队列跳过持久化（修复前出队
+    // 残留 uuid 落盘 1 条孤儿 tool_result，Python 从未收到）
+    module->sendUserAnswer(QStringLiteral("ghost answer"));
+    QCOMPARE(countRecords(sid, QStringLiteral("tool_result")), 0);
+
+    module->shutdown();
+}
+
+/**
+ * 问题1（错误路径）：回合中途出错（问题挂起后 error+done）——agentError
+ * lambda 清 FIFO + 联动清问题缓存/撤卡（三处同批：只清 FIFO 不清卡会因
+ * "答案消失"产生新症状）。幽灵答案不落盘孤儿 tool_result。
+ */
+void DAAgentModuleTest::testErrorClearsToolCallFifo()
+{
+    QScopedPointer<DA::DAAgentModule> module(makeModule());
+    QSignalSpy questionSpy(module.data(), &DA::DAAgentInterface::agentQuestion);
+    QSignalSpy errSpy(module.data(), &DA::DAAgentInterface::agentError);
+    QSignalSpy dismissSpy(module.data(), &DA::DAAgentInterface::agentQuestionDismissed);
+    const QString sid = module->createSession();
+    module->sendMessage(QStringLiteral("#fake:question_then_error"));
+    QVERIFY(questionSpy.wait(30000));
+    // question/error/done 由假 agent 连发，同一事件批次内到达——wait() 只等
+    // "将来"的发射，用 QTRY 断言计数避免经典 QSignalSpy 时序陷阱
+    QTRY_VERIFY_WITH_TIMEOUT(errSpy.count() >= 1, 30000);
+
+    // 错误联动：问题缓存清除 + 活跃会话撤卡
+    QCOMPARE(dismissSpy.count(), 1);
+    // 幽灵答案不落盘孤儿 tool_result（修复前 FIFO 残留 uuid 被出队配对）
+    module->sendUserAnswer(QStringLiteral("ghost answer"));
+    QCOMPARE(countRecords(sid, QStringLiteral("tool_result")), 0);
 
     module->shutdown();
 }
