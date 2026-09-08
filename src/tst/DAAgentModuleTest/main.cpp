@@ -155,6 +155,7 @@ private Q_SLOTS:
 
     void testStartingClearedOnBusyFalseWithoutReady(); // 问题2：崩溃耗尽终态不残留 starting
     void testSessionListChangedOnBusyFalse();          // 问题6：busy(false) 也刷新角标 payload
+    void testNewSessionReassertsBusyFalse();           // 问题14：后台运行中点「+」→ busy(false) 重断言
 };
 
 QString DAAgentModuleTest::pythonConfigPath()
@@ -314,6 +315,42 @@ void DAAgentModuleTest::testSessionListChangedOnBusyFalse()
         }
     }
     QCOMPARE(state, QStringLiteral("error"));
+
+    module->shutdown();
+}
+
+/**
+ * 问题14：后台会话 A 运行中点「+」新建会话 B——A 跑完时的 busy(false) 被
+ * 活跃会话过滤挡掉（A≠B），修复前 newSession 无任何状态重断言，Dock 的
+ * busy 守卫永不复位：新空会话显示 thinking、输入禁用、Stop 空转，用户被
+ * 永久卡住。修复后 newSession 复用 switchSession step4 的重断言语义
+ * （reassertActiveSessionState），Dock 侧 onSessionCreated/onSessionCleared
+ * 同步复位（防御对称）。
+ */
+void DAAgentModuleTest::testNewSessionReassertsBusyFalse()
+{
+    QScopedPointer<DA::DAAgentModule> module(makeModule());
+    QSignalSpy busySpy(module.data(), &DA::DAAgentInterface::agentBusy);
+    QSignalSpy questionSpy(module.data(), &DA::DAAgentInterface::agentQuestion);
+    const QString sidA = module->createSession();
+    QVERIFY(!sidA.isEmpty());
+
+    // 会话 A 进入运行并挂起在 ask_user（busy=true 且无 done；角标 running 优先
+    // 于 waiting_input——sessionRuntimeState 按 starting/running/等待输入排序）
+    module->sendMessage(QStringLiteral("#fake:question"));
+    QVERIFY(questionSpy.wait(30000));
+    QVERIFY(!module->sessionRuntimeState(sidA).isEmpty());
+
+    // 后台 A 挂起时点「+」新建会话 B（复用判断因 busy/pending 不成立 → 真新建）
+    module->newSession();
+    const QString sidB = module->currentSessionId();
+    QVERIFY(sidB != sidA);
+
+    // 修复核心断言：newSession 后重断言 busy(false)（修复前 busySpy 停留在 true）
+    QVERIFY(!busySpy.isEmpty());
+    QCOMPARE(busySpy.last().at(0).toBool(), false);
+    // 新会话 B 无运行态
+    QCOMPARE(module->sessionRuntimeState(sidB), QString());
 
     module->shutdown();
 }

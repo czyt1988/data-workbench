@@ -671,9 +671,16 @@ void DAAgentDockWidget::onSessionCreated(const QString& sessionId)
     d->mSwitching = false;
     d->mCurrentSessionId = sessionId;
     d->mHasTokenStats = false;  // 新会话无 usage，复位缓存
+    // 审计问题 14：复位 busy/starting 守卫——后台会话运行中点「+」时，
+    // 旧会话跑完的 busy(false) 被活跃会话过滤挡掉，不复位则新空会话永久
+    // 显示 thinking、输入禁用、Stop 空转（与 Module 侧 newSession 的
+    // 状态重断言互为防御对称）
+    d->mAgentBusy = false;
+    d->mAgentStarting = false;
     if (d->mChannel) {
         d->mChannel->clearChat();
         d->mChannel->resetTokenStats();  // 复位 web 侧 token 标签 + popover
+        d->mChannel->setBusy(false);     // 按钮 Send + 输入启用 + 状态 Ready
         d->mChannel->focusInput();       // 新会话聚焦输入框
     }
     updateTitleLabel();
@@ -692,9 +699,14 @@ void DAAgentDockWidget::onSessionCleared()
     d->mSwitching = false;
     d->mCurrentSessionId.clear();
     d->mHasTokenStats = false;
+    // 审计问题 14：同 onSessionCreated——复位 busy/starting 守卫
+    //（启动/开工程路径同样不得继承残留忙碌态）
+    d->mAgentBusy = false;
+    d->mAgentStarting = false;
     if (d->mChannel) {
         d->mChannel->clearChat();
         d->mChannel->resetTokenStats();
+        d->mChannel->setBusy(false);
         d->mChannel->focusInput();
     }
     updateTitleLabel();

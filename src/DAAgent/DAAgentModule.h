@@ -192,6 +192,8 @@ private:
     void retireBridge(const QString& sessionId);
     // 查会话桥（无返回 nullptr）
     DAAgentBridge* bridgeForSession(const QString& sessionId) const;
+    // 重断言活跃会话 UI 运行态（switchSession step4 / newSession 共用，问题14）
+    void reassertActiveSessionState();
     // 遍历全部存活桥（会话桥 + 预热桥），fn 内不得增删桥
     void forEachLiveBridge(const std::function<void(DAAgentBridge*)>& fn);
 

@@ -1327,10 +1327,33 @@ void DAAgentModule::newSession()
         && !d->mPendingQuestions.contains(d->mCurrentSessionId)
         && d->mSessionStore->messageCount(d->mCurrentSessionId) == 0) {
         emit sessionCreated(d->mCurrentSessionId);  // 复用：仅触发 UI 幂等刷新（clearChat 对已空聊天为 no-op），不落盘新会话
+        reassertActiveSessionState();
         return;
     }
     QString sid = createSession();
     emit sessionCreated(sid);  // 仅此路径触发 UI clearChat
+    // 状态重断言（审计问题 14）：后台会话 A 运行中点「+」→ B 成为活跃会话，
+    // A 跑完时的 busy(false) 被活跃会话过滤挡掉（A≠B），Dock 的 busy 守卫
+    // 若不复位则新空会话永久显示 thinking、输入禁用、Stop 空转——无任何自愈
+    // 路径。复用 switchSession step4 语义：新会话无运行态 → busy(false)。
+    reassertActiveSessionState();
+}
+
+/**
+ * @brief 重断言活跃会话的 UI 运行态（switchSession step4 / newSession 共用）
+ *
+ * 先 busy(false) 清残留，再按活跃会话实际状态置 starting/busy——
+ * Dock 的 busy/starting 守卫与 web 状态由此与会话真实状态对齐。
+ */
+void DAAgentModule::reassertActiveSessionState()
+{
+    DA_D(d);
+    emit agentBusy(false);
+    if (d->mSessionStarting.value(d->mCurrentSessionId, false)) {
+        emit agentStarting();
+    } else if (d->mSessionBusy.value(d->mCurrentSessionId, false)) {
+        emit agentBusy(true);
+    }
 }
 
 /**
@@ -1372,12 +1395,7 @@ bool DAAgentModule::switchSession(const QString& sessionId)
     //    避免 UI 拘留上一会话的 token 数值与进度条（Bug2 修复）；
     //    随后恢复目标会话 UI 运行态（顺序：先 busy(false) 清残留，再按需置 starting/busy）
     emitTokenUsageForSession(sessionId);
-    emit agentBusy(false);
-    if (d->mSessionStarting.value(sessionId, false)) {
-        emit agentStarting();
-    } else if (d->mSessionBusy.value(sessionId, false)) {
-        emit agentBusy(true);
-    }
+    reassertActiveSessionState();
     // 5. 挂起交互重放：切回时重新弹可交互卡片（缓存来自后台期间的 ask_user/审批）
     const auto qIt = d->mPendingQuestions.constFind(sessionId);
     if (qIt != d->mPendingQuestions.constEnd()) {
