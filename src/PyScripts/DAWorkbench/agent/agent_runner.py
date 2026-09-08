@@ -1304,6 +1304,14 @@ class AgentRunner:
             else:
                 timeout = 60.0
         call_id = tool_call["id"]
+        # 碰撞防御（审计问题 24）：call_id 是 LLM 生成的 tool_call id，部分
+        # OpenAI 兼容网关/本地模型用低熵或索引式 id（如 call_0）。RPC 多路
+        # 复用支持主图+并发子图同时挂起多个调用，同进程碰撞时后注册者覆盖
+        # 前者等待槽——前一等待方永不被唤醒（挂到超时）。告警便于排查。
+        if call_id in self._pending_rpcs:
+            logger.warning(
+                "call_id collision in _pending_rpcs: %s "
+                "(previous waiter will hang until timeout)", call_id)
         # 先注册等待槽位再发送：分发器可能在 send 返回后立即投递结果
         pending = _PendingRpc()
         self._pending_rpcs[call_id] = pending

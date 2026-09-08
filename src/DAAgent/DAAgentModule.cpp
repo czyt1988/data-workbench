@@ -975,6 +975,17 @@ void DAAgentModule::attachBridge(DAAgentBridge* bridge, const QString& sessionId
         }
         payload[QStringLiteral("_tier")]         = tier;
         payload[QStringLiteral("_rememberable")] = (tier == DAAgentPermissionManager::tierFileWrite());
+        // 碰撞防御（审计问题 24）：callId 是 LLM 生成的 tool_call id 而非本
+        // 项目 UUID——部分 OpenAI 兼容网关/本地模型用低熵或索引式 id（如
+        // call_0），并发多会话下碰撞概率不可忽略。后写覆盖前者会使会话 A 的
+        // "批准"被路由到会话 B 的桥执行 B 的挂起工具（批错会话）。未雨绸缪级
+        // 防御：检测告警（Python 侧 _pending_rpcs 有对称检测）。
+        const QString prevSid = d->mApprovalSessionByCallId.value(callId);
+        if (!prevSid.isEmpty() && prevSid != sessionId) {
+            qWarning() << "DAAgentModule: tool approval callId collision, callId=" << callId
+                       << "previously routed to session" << prevSid
+                       << "now rerouted to" << sessionId;
+        }
         d->mApprovalSessionByCallId[callId] = sessionId;
         QJsonObject cached;
         cached[QStringLiteral("callId")]   = callId;
