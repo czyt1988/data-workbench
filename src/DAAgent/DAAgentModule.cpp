@@ -451,7 +451,10 @@ void DAAgentModule::stop()
 {
     DA_D(d);
     DAAgentBridge* bridge = d->mSessionBridges.value(d->mCurrentSessionId);
-    if (bridge && bridge->isRunning()) {
+    // isRecovering 放行（审计 L4）：崩溃自愈 1s 恢复窗口内 isRunning()==false，
+    // 旧守卫使 Stop 静默 no-op，恢复计时器照常重启重放，违背用户终止意图。
+    // requestStop 内取消恢复定时器并回发 busy(false)。
+    if (bridge && (bridge->isRunning() || bridge->isRecovering())) {
         bridge->requestStop();
     }
 }

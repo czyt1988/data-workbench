@@ -43,6 +43,7 @@ public:
     int mStopTimeoutMs  = 5000;      ///< stopAgent 等待进程退出超时(毫秒)
     bool mUserRequestedStop = false;  ///< 用户主动终止标志
     QTimer* mStopTimer = nullptr;     ///< requestStop 的非阻塞 kill 计时器
+    QTimer* mRecoveryTimer = nullptr; ///< 崩溃自愈延迟重启计时器（持句柄：用户 Stop 可取消，L4）
     QTimer* mInactivityTimer = nullptr;  ///< 无活动超时计时器
     int mInactivityTimeoutMs = 240000;    ///< 默认 4 分钟
     bool mToolExecuting = false;           ///< 工具执行期间暂停看门狗
@@ -288,6 +289,13 @@ void DAAgentBridge::beginStopAgent()
         delete d->mReadyTimer;
         d->mReadyTimer = nullptr;
     }
+    // 取消待执行的崩溃自愈重启（析构/关闭期间不得再复活子进程，L4 同族）
+    if (d->mRecoveryTimer) {
+        d->mRecoveryTimer->stop();
+        d->mRecoveryTimer->deleteLater();
+        d->mRecoveryTimer = nullptr;
+        d->mRecovering = false;
+    }
     if (d->mRunning && d->mProcess) {
         d->mUserRequestedStop = true;  // 标记主动停止，防止 onProcessFinished 误判为崩溃
         writeJson(QJsonObject{{"type", "stop"}});
@@ -332,6 +340,16 @@ void DAAgentBridge::requestStop()
         d->mStopTimer->stop();
         d->mStopTimer->deleteLater();
         d->mStopTimer = nullptr;
+    }
+    // 审计 L4：崩溃恢复窗口（1s 延迟重启）内用户 Stop——取消重启、终结恢复
+    // 流程。旧实现 singleShot 无句柄不可取消，Stop 被静默忽略后照常重启重放。
+    if (d->mRecoveryTimer) {
+        d->mRecoveryTimer->stop();
+        d->mRecoveryTimer->deleteLater();
+        d->mRecoveryTimer = nullptr;
+        d->mRecovering = false;
+        d->mLastUserMessage.clear();  // 用户已终止，不再重发
+        emit agentBusy(false);        // 回合随 Stop 终结，解除 UI 忙碌/Stopping 态
     }
     // 审计 L3：kill 兜底按进程实际状态判断（而非 mRunning）——二次 requestStop
     // 时 mRunning 已为 false，若因此跳过定时器重建，则上方刚取消的 kill 兜底
@@ -1152,6 +1170,9 @@ void DAAgentBridge::onProcessFinished(int exitCode, QProcess::ExitStatus exitSta
 
     if (d->mRestartCount < d->mMaxRestarts) {
         d->mRestartCount++;
+        // 调度时即置恢复标志（审计 L4）：1s 恢复窗口内 isRunning()==false，
+        // Module stop() 与 UI 需经 isRecovering() 识别"正在自愈"的桥
+        d->mRecovering = true;
         emit agentError(
             tr("Agent process crashed (exit code %1), recovering... (%2/%3)")
                 //cn:Agent 进程异常退出（代码 %1），正在恢复... (%2/%3)
@@ -1161,10 +1182,19 @@ void DAAgentBridge::onProcessFinished(int exitCode, QProcess::ExitStatus exitSta
             "crash_recovery", ""
         );
 
-        // 延迟 1 秒后重启（避免崩溃循环过快）
-        QTimer::singleShot(1000, this, [this]() {
+        // 延迟 1 秒后重启（避免崩溃循环过快）——持句柄定时器（审计 L4）：
+        // 恢复窗口内用户 Stop 可经 requestStop 取消，不再"静默忽略、1s 后
+        // 照常重启重放"违背用户终止意图（旧 singleShot 无句柄不可取消）
+        if (d->mRecoveryTimer) {
+            d->mRecoveryTimer->stop();
+            d->mRecoveryTimer->deleteLater();
+        }
+        d->mRecoveryTimer = new QTimer(this);
+        d->mRecoveryTimer->setSingleShot(true);
+        connect(d->mRecoveryTimer, &QTimer::timeout, this, [this]() {
             recoverFromCrash();
         });
+        d->mRecoveryTimer->start(1000);
     } else {
         d->mRecovering = false;
         emit agentError(

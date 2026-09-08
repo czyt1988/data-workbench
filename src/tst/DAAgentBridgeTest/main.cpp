@@ -20,6 +20,8 @@
 //                   验证 ready 时回合进行中重断言 busy(true)，问题 15）
 //   ignore-stop   : ready 后忽略一切 stdin 消息（验证 requestStop 的 kill
 //                   定时器兜底在二次调用后仍生效，L3）
+//   crash-on-user-msg : ready 后 user_msg 即 exit(7) 崩溃（验证恢复窗口内
+//                   requestStop 取消延迟重启，L4）
 
 #include <QtTest/QtTest>
 #include <QCoreApplication>
@@ -79,6 +81,28 @@ int fakeAgentMain(const QByteArray& scenario)
                 fakeEmit(out, {{ "type", "ready" }, { "model", model }});
             } else if (type == QLatin1String("user_msg")) {
                 return 3;  // 模拟原生崩溃（CrashExit）
+            }
+        }
+        return 0;
+    }
+    if (scenario == "crash-on-user-msg") {
+        // ready 后收到 user_msg 即以退出码 7 崩溃（触发 crash_recovery 调度），
+        // 用于验证恢复窗口内 requestStop 取消延迟重启（L4）。
+        fakeEmit(out, {{ "type", "ready" }, { "model", "fake-model" }});
+        while (true) {
+            const QByteArray line = in.readLine();
+            if (line.isEmpty()) {
+                break;
+            }
+            const QJsonDocument doc = QJsonDocument::fromJson(line.trimmed());
+            if (!doc.isObject()) {
+                continue;
+            }
+            const QString type = doc.object().value("type").toString();
+            if (type == QLatin1String("user_msg")) {
+                return 7;  // 模拟原生崩溃
+            } else if (type == QLatin1String("stop")) {
+                break;
             }
         }
         return 0;
@@ -237,6 +261,7 @@ private Q_SLOTS:
     void testIdleCrashDoesNotResendAnsweredMessage(); // 问题11：done 清 mLastUserMessage，空闲期崩溃不自发重放
     void testReadyDuringActiveTurnReassertsBusy();    // 问题15：ready 到达时回合进行中 → 重断言 busy(true)
     void testSecondRequestStopRebuildsKillFallback(); // L3：stop 被忽略时二次 requestStop 仍重建 kill 兜底
+    void testStopDuringRecoveryWindowCancelsRestart(); // L4：恢复窗口内 Stop 取消延迟重启
 };
 
 void DAAgentBridgeTest::startWithScenario(DA::DAAgentBridge& bridge, const char* scenario,
@@ -522,6 +547,41 @@ void DAAgentBridgeTest::testSecondRequestStopRebuildsKillFallback()
     // kill 兜底必须生效：onProcessFinished 用户停止分支 → busy(false)
     QVERIFY(waitForCount(busySpy, 1, 10000));
     QCOMPARE(busySpy.last().at(0).toBool(), false);
+}
+
+/**
+ * L4：崩溃自愈 1s 恢复窗口内用户 Stop 被静默忽略——恢复 singleShot 无句柄
+ * 不可取消，1s 后照常重启重放，违背用户终止意图。修复后恢复定时器持句柄，
+ * requestStop 取消重启、清恢复标志与重发缓存、回发 busy(false)；
+ * Module::stop() 守卫同步放行 isRecovering 窗口。
+ */
+void DAAgentBridgeTest::testStopDuringRecoveryWindowCancelsRestart()
+{
+    DA::DAAgentBridge bridge;
+    QSignalSpy readySpy(&bridge, &DA::DAAgentBridge::agentReady);
+    QSignalSpy errSpy(&bridge, &DA::DAAgentBridge::agentError);
+    QSignalSpy busySpy(&bridge, &DA::DAAgentBridge::agentBusy);
+    startWithScenario(bridge, "crash-on-user-msg");
+
+    QVERIFY(waitForCount(readySpy, 1));
+    bridge.sendMessage(QStringLiteral("doomed"));  // → exit(7) 崩溃 → crash_recovery + 1s 恢复窗口
+
+    // crash_recovery 错误到达 = 恢复窗口已打开（调度时即置 mRecovering）
+    QVERIFY(waitForCount(errSpy, 1));
+    QCOMPARE(errSpy.at(0).at(1).toString(), QStringLiteral("crash_recovery"));
+    QVERIFY(bridge.isRecovering());
+
+    // 窗口内用户 Stop → 取消延迟重启
+    bridge.requestStop();
+    QVERIFY(!bridge.isRecovering());
+    // busy(false) 回发解除 UI 忙碌态
+    QVERIFY(waitForCount(busySpy, 2));  // [true(sendMessage), false(Stop 取消恢复)]
+    QCOMPARE(busySpy.last().at(0).toBool(), false);
+
+    // 修复前：1s 后照常重启 → 第二次 ready。等 3s 确认不再重启
+    QTest::qWait(3000);
+    QCOMPARE(readySpy.count(), 1);
+    QCOMPARE(errSpy.count(), 1);  // 无后续 crash_recovery/exhausted 错误
 }
 
 int main(int argc, char* argv[])
