@@ -14,6 +14,8 @@
 //   never-ready   : 永不发 ready/booting（模拟环境性失败，验证 ready 超时路径）
 //   echo-model-crash-on-msg : init.model 经 ready 回显；user_msg 即崩溃 exit(3)
 //                   （验证崩溃自愈重启所用配置缓存，问题 22）
+//   done-then-idle-crash : user_msg 回 done 后立即 exit(42)（模拟回合完成后
+//                   空闲期崩溃，验证自愈不重发已回答消息，问题 11）
 
 #include <QtTest/QtTest>
 #include <QCoreApplication>
@@ -73,6 +75,29 @@ int fakeAgentMain(const QByteArray& scenario)
                 fakeEmit(out, {{ "type", "ready" }, { "model", model }});
             } else if (type == QLatin1String("user_msg")) {
                 return 3;  // 模拟原生崩溃（CrashExit）
+            }
+        }
+        return 0;
+    }
+    if (scenario == "done-then-idle-crash") {
+        // ready 后收到 user_msg 回 done，随即以退出码 42 崩溃——模拟"回合正常
+        // 完成后空闲期进程死亡"（问题 11：自愈链不得重发已回答过的消息）。
+        fakeEmit(out, {{ "type", "ready" }, { "model", "fake-model" }});
+        while (true) {
+            const QByteArray line = in.readLine();
+            if (line.isEmpty()) {
+                break;
+            }
+            const QJsonDocument doc = QJsonDocument::fromJson(line.trimmed());
+            if (!doc.isObject()) {
+                continue;
+            }
+            const QString type = doc.object().value("type").toString();
+            if (type == QLatin1String("user_msg")) {
+                fakeEmit(out, {{ "type", "done" }});
+                return 42;  // 空闲期崩溃（CrashExit 触发 1s 后自愈重启）
+            } else if (type == QLatin1String("stop")) {
+                break;
             }
         }
         return 0;
@@ -168,6 +193,7 @@ private Q_SLOTS:
     void testStartupFailureEmitsTerminalSignals(); // 问题21：waitForStarted 失败补终止语义（状态机黑洞）
     void testReconfigureSyncsRecoveryConfig();     // 问题22：reconfigure 同步缓存，崩溃恢复用新配置
     void testSendWithoutProcessRollsBack();        // 问题23：writeJson 失败回滚 busy/看门狗 + 明确错误
+    void testIdleCrashDoesNotResendAnsweredMessage(); // 问题11：done 清 mLastUserMessage，空闲期崩溃不自发重放
 };
 
 void DAAgentBridgeTest::startWithScenario(DA::DAAgentBridge& bridge, const char* scenario, int readyTimeoutMs)
@@ -360,6 +386,39 @@ void DAAgentBridgeTest::testSendWithoutProcessRollsBack()
         QCOMPARE(errSpy.count(), 1);
         QVERIFY(errSpy.at(0).at(0).toString().contains(QStringLiteral("not running")));
     }
+}
+
+/**
+ * 问题11：回合正常完成（done）后 mLastUserMessage 必须清除——活跃会话的桥
+ * 跑完不退役，若进程在空闲期崩溃，自愈链 ready→load_session→
+ * resendLastMessage 会把已回答过的消息重新注入（UI 自发"思考中"、
+ * 重复答案写进 JSONL、白耗一轮 token）。修复后 resendLastMessage 走空
+ * 分支：busy(false)、不写 user_msg。
+ */
+void DAAgentBridgeTest::testIdleCrashDoesNotResendAnsweredMessage()
+{
+    DA::DAAgentBridge bridge;
+    QSignalSpy readySpy(&bridge, &DA::DAAgentBridge::agentReady);
+    QSignalSpy doneSpy(&bridge, &DA::DAAgentBridge::agentDone);
+    QSignalSpy busySpy(&bridge, &DA::DAAgentBridge::agentBusy);
+    startWithScenario(bridge, "done-then-idle-crash");
+
+    QVERIFY(waitForCount(readySpy, 1));
+    bridge.sendMessage(QStringLiteral("answered question"));
+    QVERIFY(waitForCount(doneSpy, 1));  // done → 修复后此处清 mLastUserMessage
+
+    // 空闲期崩溃（exit 42）→ crash_recovery → 1s 后自愈重启 → 第二次 ready
+    QVERIFY(waitForCount(readySpy, 2, 20000));
+
+    // Module 语义：session_loaded 后调 resendLastMessage。
+    // 断言走空分支：同步 emit busy(false)（修复前为 busy(true)+重发 user_msg）
+    const int busyBefore = busySpy.count();
+    bridge.resendLastMessage();
+    QCOMPARE(busySpy.count(), busyBefore + 1);
+    QCOMPARE(busySpy.last().at(0).toBool(), false);
+    QVERIFY(!bridge.isRecovering());
+
+    bridge.requestStop();
 }
 
 int main(int argc, char* argv[])

@@ -778,6 +778,12 @@ void DAAgentBridge::handleJsonLine(const QJsonObject& msg)
         d->mInactivityTimer->stop();
         d->mTurnActive = false;
         d->mWaitingUserAnswer = false;
+        // 回合正常完成——清除崩溃恢复重发缓存（审计问题 11）：活跃会话的桥
+        // 跑完不退役，若进程在空闲期异常崩溃，自愈链 ready→load_session→
+        // resendLastMessage 会把已回答过的用户消息重新注入：无人操作时 UI
+        // 自发进入"思考中"、LLM 对同一问题再生成一遍答案写进会话 JSONL
+        // （持久化污染）、白白消耗一轮 token。
+        d->mLastUserMessage.clear();
         emit agentBusy(false);
         // turn_summary（Python send_done 附带）：回合完成度统计。
         // possibly_incomplete=true 表示模型"话说一半就停"（执行过工具但
