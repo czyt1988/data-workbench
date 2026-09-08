@@ -135,6 +135,12 @@ int fakeAgentMain(const QByteArray& scenario)
                 fakeEmit(out, {{ "type", "done" }});
             } else if (content == QLatin1String("#fake:crash")) {
                 return 3;  // 模拟原生崩溃
+            } else if (content == QLatin1String("#fake:tool")) {
+                // 发起工具调用（全局执行队列全链用例，问题 12）——等 tool_result
+                fakeEmit(out, {{ "type", "tool_call" },
+                               { "call_id", "call-t1" },
+                               { "tool", "fake_tool" },
+                               { "arguments", QJsonObject{} }});
             } else if (content == QLatin1String("#fake:arm_retry")) {
                 armedRetry = true;  // 回合挂起，等 reconfigure 再发 retrying
             } else if (content == QLatin1String("#fake:arm_incomplete")) {
@@ -148,15 +154,21 @@ int fakeAgentMain(const QByteArray& scenario)
         } else if (type == QLatin1String("user_answer")) {
             fakeEmit(out, {{ "type", "message_end" }, { "content", "answered" }});
             fakeEmit(out, {{ "type", "done" }});
+        } else if (type == QLatin1String("tool_result")) {
+            // 工具结果到达（C++ 全局队列执行完毕回传）→ 完成本轮
+            fakeEmit(out, {{ "type", "message_end" }, { "content", "tool done" }});
+            fakeEmit(out, {{ "type", "done" }});
         } else if (type == QLatin1String("stop")) {
             break;
         }
-        // 其余类型（reconfigure/update_subagents/tool_result...）静默忽略
+        // 其余类型（reconfigure/update_subagents/tool_exec_queued...）静默忽略
+        //（reconfigure 例外见上方 arm 分支）
     }
     return 0;
 }
 
-/// 最小假工具：满足 prestartAgent 的"工具已注册"前置条件（L2 温暖化用例）。
+/// 最小假工具：满足 prestartAgent 的"工具已注册"前置条件（L2 温暖化用例），
+/// 并供全局执行队列全链用例计数断言（问题 12）。
 /// registerTool 不取得所有权（provider 缺失仅告警），测试栈对象即可。
 class FakeAgentTool : public DA::DAAbstractAgentTool
 {
@@ -170,12 +182,17 @@ public:
     }
     QJsonObject execute(const QJsonObject&) override
     {
-        return QJsonObject{{ "success", true }};
+        ++mExecCount;
+        return QJsonObject{{ "success", true }, { "echo", "fake-result" }};
     }
     QString getOwnerModule() const override
     {
         return QStringLiteral("DAAgentModuleTest");
     }
+    int execCount() const { return mExecCount; }
+
+private:
+    int mExecCount = 0;
 };
 
 } // namespace
@@ -216,6 +233,7 @@ private Q_SLOTS:
     void testErrorRecordPersisted();                   // 问题3/决策点4：error 记录经 Module 链路落盘 JSONL
     void testBackgroundRetryingReplayedOnSwitchBack(); // 问题8：后台重试条缓存-切回重发
     void testBackgroundIncompleteReplayedOnSwitchBack(); // 问题8：后台"话说一半"提醒缓存-豁免退役-切回重发
+    void testToolExecutionViaGlobalQueue();            // 问题12：Module 全链（队列执行+落盘+排队信号）
 };
 
 QString DAAgentModuleTest::pythonConfigPath()
@@ -741,6 +759,42 @@ void DAAgentModuleTest::testBackgroundIncompleteReplayedOnSwitchBack()
         }
     }
     QVERIFY(hasReminder);
+
+    module->shutdown();
+}
+
+/**
+ * 问题12（决策点 2 方案 c）Module 全链：attachBridge 注入全局执行队列后，
+ * tool_call 经"权限门 → 入队（排队信号 position≥1）→ 出队存活检查 →
+ * 执行（position=0）→ 结果回传 → agentToolResult 转发 + JSONL 落盘"。
+ */
+void DAAgentModuleTest::testToolExecutionViaGlobalQueue()
+{
+    QScopedPointer<DA::DAAgentModule> module(makeModule());
+    FakeAgentTool fakeTool;
+    QVERIFY(module->registerTool(&fakeTool));
+    QSignalSpy resultSpy(module.data(), &DA::DAAgentInterface::agentToolResult);
+    QSignalSpy queuedSpy(module.data(), &DA::DAAgentInterface::agentToolQueued);
+    QSignalSpy doneSpy(module.data(), &DA::DAAgentInterface::agentDone);
+
+    const QString sid = module->createSession();
+    module->sendMessage(QStringLiteral("#fake:tool"));
+
+    // 工具经全局队列真实执行，结果转发 + 回合完成
+    QVERIFY(resultSpy.wait(30000));
+    QCOMPARE(resultSpy.at(0).at(0).toString(), QStringLiteral("fake_tool"));
+    QCOMPARE(fakeTool.execCount(), 1);
+    QVERIFY(doneSpy.wait(30000));
+
+    // 排队态信号（活跃会话转发）：入队 position=1 + 出队 position=0
+    QVERIFY(queuedSpy.count() >= 2);
+    QCOMPARE(queuedSpy.at(0).at(1).toInt(), 1);
+    QCOMPARE(queuedSpy.at(1).at(1).toInt(), 0);
+
+    // JSONL 落盘：tool_call 记录（type=assistant 带 tool_calls）+ tool_result
+    // + 回合收尾 message_end（type=assistant）= assistant 2 条、tool_result 1 条
+    QTRY_COMPARE(countRecords(sid, QStringLiteral("tool_result")), 1);
+    QCOMPARE(countRecords(sid, QStringLiteral("assistant")), 2);
 
     module->shutdown();
 }

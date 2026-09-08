@@ -316,6 +316,11 @@ class StdioProtocol:
     async def send_session_loaded(self, session_id):
         await self.send({"type": "session_loaded", "session_id": session_id})
 
+    async def send_tool_result_rejected(self, call_id: str):
+        """回发迟到结果拒绝反馈（审计问题 12 ⑤ 观测增强）：等待槽已弹出
+        （超时/停止后终结）的 tool_result 被丢弃，C++ 侧记日志便于排查。"""
+        await self.send({"type": "tool_result_rejected", "call_id": call_id})
+
     async def send_tool_call(self, call_id: str, tool: str, arguments: dict,
                              safety: dict | None = None,
                              subagent_id: str | None = None):
@@ -1323,13 +1328,22 @@ class AgentRunner:
         except Exception:
             self._pending_rpcs.pop(call_id, None)
             raise
+        # 决策点 2 ④（审计问题 12a）：超时两段式——发送→tool_exec_start 段是
+        # 全局执行队列排队等待（C++ 主线程串行 + 跨会话队头），不是工具卡死，
+        # 用宽松排队预算（默认 600s）；收到 tool_exec_start 后才按工具本体
+        # timeout 计时。修复跨会话超时误报：会话 A 执行慢工具（run_code 300s）
+        # 占住主线程时，会话 B 的调用滞留管道，旧实现从发送时刻起算 60s 即误判
+        # 超时——向 LLM 回 "timed out" 并弹出等待槽，C++ 迟到执行的结果被丢弃，
+        # LLM 重试则同一副作用执行两遍。
+        queue_budget = getattr(self, "_tool_queue_budget_sec", 600.0)
         try:
-            result = await self._wait_for_result(call_id, timeout)
+            result = await self._wait_for_result(call_id, timeout, queue_budget=queue_budget)
             return result
         except asyncio.TimeoutError:
             return {"error": f"Tool '{name}' timed out after {timeout}s"}
 
-    async def _wait_for_result(self, expected_call_id: str, timeout: float) -> dict:
+    async def _wait_for_result(self, expected_call_id: str, timeout: float,
+                               queue_budget: float | None = None) -> dict:
         """等待分发器按 call_id 路由到本调用的 tool_result，并管理超时计时。
 
         RPC 多路复用（Q20）：唯一 stdin 流由 _dispatcher_loop 单一读取任务
@@ -1337,13 +1351,14 @@ class AgentRunner:
         调用（主图 + 并发子图）可同时挂起互不干扰。严格 call_id 匹配语义
         不变——迟到/错配的 tool_result 由分发器记日志忽略。
 
-        计时语义（权限层）：等待分为三段——
-        1) 收到 approval_pending 前：正常倒计时（权限门几乎即时裁决，此段
-           仅作安全网）；
+        计时语义（权限层 + 决策点 2 ④ 两段式）：等待分为三段——
+        1) 发送 → tool_exec_start（排队/审批段）：宽松排队预算 queue_budget
+           （默认 600s，覆盖全局执行队列的跨会话队头等待；权限门几乎即时
+           裁决，此段超时仅作安全网）；
         2) approval_pending → tool_exec_start：用户审批等待，**不计时**
            （用户不点击则永不超时）；
-        3) 收到 tool_exec_start（用户批准/直接放行、工具开始执行）后：
-           从执行起点重新计完整 timeout。
+        3) 收到 tool_exec_start（出队开始执行/用户批准）后：从执行起点
+           重新计工具本体完整 timeout。
         超时抛 asyncio.TimeoutError，错误文案由 _rpc_call 统一组装；
         等待期间收到 stop 由分发器以 AgentStoppedError 置入 pending.error。
         """
@@ -1354,7 +1369,9 @@ class AgentRunner:
                 f"no pending RPC registered for call_id={expected_call_id}"
             )
         loop = asyncio.get_running_loop()
-        deadline = loop.time() + timeout
+        # 排队段预算：不小于工具本体 timeout（gated 工具 600s 与预算同量级）
+        initial_budget = max(timeout, queue_budget) if queue_budget else timeout
+        deadline = loop.time() + initial_budget
         exec_start_applied = False
         try:
             while True:
@@ -1415,9 +1432,11 @@ class AgentRunner:
                 msg = await self.stdio.receive()
                 msg_type = msg.get("type")
                 if msg_type == "tool_result":
-                    self._route_call_event(msg, "tool_result")
-                elif msg_type in ("approval_pending", "tool_exec_start"):
-                    self._route_call_event(msg, msg_type)
+                    await self._route_call_event(msg, "tool_result")
+                elif msg_type in ("approval_pending", "tool_exec_start", "tool_exec_queued"):
+                    # tool_exec_queued：全局执行队列排队上报（决策点 2 ③），
+                    # 排队段计时本就宽松，仅记录日志不改计时
+                    await self._route_call_event(msg, msg_type)
                 elif msg_type == "stop":
                     # stdin 读取线程的扫描已即时 set stop_event，此处兜底再 set
                     self._stop_event.set()
@@ -1438,9 +1457,11 @@ class AgentRunner:
             ))
             await self._control_queue.put(None)
 
-    def _route_call_event(self, msg: dict, kind: str):
-        """把 tool_result / approval_pending / tool_exec_start 按 call_id
-        路由到对应等待槽位；无匹配（迟到/错配）记日志忽略。"""
+    async def _route_call_event(self, msg: dict, kind: str):
+        """把 tool_result / approval_pending / tool_exec_start / tool_exec_queued
+        按 call_id 路由到对应等待槽位；无匹配（迟到/错配）记日志忽略，迟到的
+        tool_result 另回发 tool_result_rejected 供 C++ 侧记录（审计问题 12 ⑤
+        观测增强）。"""
         call_id = msg.get("call_id")
         pending = self._pending_rpcs.get(call_id) if call_id else None
         if pending is None:
@@ -1448,6 +1469,9 @@ class AgentRunner:
                 "received %s with unmatched call_id=%s (late or mismatched), ignored",
                 kind, call_id
             )
+            if kind == "tool_result" and call_id:
+                # 拒绝反馈：C++ 侧据此记日志排查孤儿记录（结果已被丢弃）
+                await self.stdio.send_tool_result_rejected(call_id)
             return
         if kind == "tool_result":
             pending.result = msg.get("result", {})
@@ -1461,6 +1485,13 @@ class AgentRunner:
         elif kind == "tool_exec_start":
             pending.approval_pending = False
             pending.exec_started = True
+        elif kind == "tool_exec_queued":
+            # 排队位置上报（决策点 2 ③）：不改计时（排队段用宽松预算），仅日志
+            logger.info(
+                "tool call %s queued at position %s in global execution queue",
+                call_id, msg.get("position")
+            )
+            return
         pending.wake.set()
 
     def _fail_all_pending(self, exc: Exception):

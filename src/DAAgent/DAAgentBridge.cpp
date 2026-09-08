@@ -2,6 +2,7 @@
 #include "DAAgentBridge.h"
 #include "DAAbstractAgentTool.h"
 #include "DAAgentPermissionManager.h"
+#include "DAAgentToolExecutor.h"
 #include <QTimer>
 #include <QHash>
 #include <QSet>
@@ -64,6 +65,9 @@ public:
     DAAgentPermissionManager* mPermissionManager = nullptr;  ///< 权限引擎（Module 持有，非拥有）
     QHash< QString, PendingApproval > mPendingApprovals;     ///< callId → 挂起审批
     QString mSessionId;  ///< 所属会话（attachBridge 注入；权限记忆按会话隔离查询键，可空=预热桥）
+
+    // ---- 全局工具执行队列（决策点 2 方案 c，审计问题 12） ----
+    DAAgentToolExecutor* mToolExecutor = nullptr;  ///< Module 持有，非拥有；空=退化直执行
 };
 
 DAAgentBridge::PrivateData::PrivateData(DAAgentBridge* p) : q_ptr(p)
@@ -462,15 +466,17 @@ void DAAgentBridge::sendMessage(const QString& text)
  * @brief 发送工具执行结果回 agent 子进程
  * @param callId 工具调用 ID
  * @param result 工具执行结果 JSON
+ * @return 写入是否成功——失败=进程已死/管道已关，调用方据此不 emit
+ * agentToolResult（Module 持久化 lambda 挂该信号），孤儿结果不落盘 JSONL
+ *（审计问题 12 决策 ⑤"迟到结果不落盘"的核心闭环）
  */
-void DAAgentBridge::sendToolResult(const QString& callId, const QJsonObject& result)
+bool DAAgentBridge::sendToolResult(const QString& callId, const QJsonObject& result)
 {
-    DA_D(d);
     QJsonObject msg;
     msg["type"]    = "tool_result";
     msg["call_id"] = callId;
     msg["result"]  = result;
-    writeJson(msg);
+    return writeJson(msg);
 }
 
 /**
@@ -851,6 +857,12 @@ void DAAgentBridge::handleJsonLine(const QJsonObject& msg)
         // 本计划只透传 session_id，session_id 与请求是否相符由 plan-03 switchSession 校验。
         QString sid = msg.value("session_id").toString();
         emit agentSessionLoaded(sid);
+    } else if (type == "tool_result_rejected") {
+        // 迟到结果拒绝反馈（审计问题 12 ⑤ 观测增强）：Python 侧等待槽已弹出
+        //（回合超时/停止后终结），结果被丢弃——记日志便于排查孤儿记录。
+        // 超时两段式（本体超时从 exec_start 起算）落地后此场景已极罕见
+        qWarning() << "DAAgentBridge: tool result rejected by python side (late or mismatched), callId="
+                   << msg.value("call_id").toString();
     } else if (type == "done") {
         d->mInactivityTimer->stop();
         d->mTurnActive = false;
@@ -919,6 +931,42 @@ QString DAAgentBridge::sessionId() const
 }
 
 /**
+ * @brief 设置全局工具执行队列（Module attachBridge 注入，非拥有）
+ * @param executor 执行器指针（nullptr=退化直执行，独立使用/测试场景）
+ */
+void DAAgentBridge::setToolExecutor(DAAgentToolExecutor* executor)
+{
+    DA_D(d);
+    d->mToolExecutor = executor;
+}
+
+/**
+ * @brief 用户/系统是否已请求停止（执行队列出队存活检查用）
+ * @return requestStop/stopAgent/ready 超时置位后为 true（进程退出时复位）
+ */
+bool DAAgentBridge::isStopRequested() const
+{
+    DA_DC(d);
+    return d->mUserRequestedStop;
+}
+
+/**
+ * @brief 执行队列出队后的真实执行入口（DAAgentToolExecutor 泵调用）
+ * @param callId 工具调用 ID
+ * @param toolName 工具名
+ * @param args 工具参数
+ * @param subagentId 子 agent 任务 id
+ *
+ * executeToolNow 已含存活守卫（12b），此处直接委托——执行器出队检查与
+ * 本守卫双保险（队列等待窗口内桥状态可能变化）
+ */
+void DAAgentBridge::runQueuedTool(const QString& callId, const QString& toolName,
+                                  const QJsonObject& args, const QString& subagentId)
+{
+    executeToolNow(callId, toolName, args, subagentId);
+}
+
+/**
  * @brief 执行工具调用（前置权限门，两阶段，母文档 §4，继承 v1 暂停-恢复范式）
  *
  * decide() 产出 Allow → executeToolNow 真实执行；Deny → 合成拒绝结果回传；
@@ -947,12 +995,14 @@ void DAAgentBridge::executeTool(const QString& callId,
         const DAAgentPermissionManager::Decision dec =
             d->mPermissionManager->decide(d->mSessionId, toolName, args, safety);
         if (dec.action == DAAgentPermissionManager::Deny) {
-            // 合成拒绝结果（A11 按分级脱敏：reason 已由 decide 产出）
+            // 合成拒绝结果（A11 按分级脱敏：reason 已由 decide 产出）；
+            // 写入失败（进程已死）不 emit——孤儿结果不落盘（问题 12 决策 ⑤）
             QJsonObject result;
             result["success"] = false;
             result["error"]   = dec.reason;
-            sendToolResult(callId, result);
-            emit agentToolResult(toolName, result, subagentId);
+            if (sendToolResult(callId, result)) {
+                emit agentToolResult(toolName, result, subagentId);
+            }
             return;
         }
         if (dec.action == DAAgentPermissionManager::Ask) {
@@ -982,7 +1032,48 @@ void DAAgentBridge::executeTool(const QString& callId,
         }
     }
 
+    // 放行 → 经全局执行队列派发（决策点 2 方案 c；无执行器退化直执行）
+    dispatchToolExecution(callId, toolName, args, subagentId);
+}
+
+/**
+ * @brief 派发执行（决策点 2 方案 c）：入全局队列或退化直执行
+ * @param callId 工具调用 ID
+ * @param toolName 工具名
+ * @param args 工具参数
+ * @param subagentId 子 agent 任务 id
+ *
+ * executeTool 放行路径与 onToolApproval 批准路径共用。有执行器时入队并
+ * 上报排队位置（Python tool_exec_queued + UI agentToolQueued），出队时
+ * 执行器做存活/停止检查（12b/12c 取消语义）；无执行器（独立 Bridge/
+ * 协议级测试）保持旧直执行行为。
+ */
+void DAAgentBridge::dispatchToolExecution(const QString& callId, const QString& toolName,
+                                          const QJsonObject& args, const QString& subagentId)
+{
+    DA_D(d);
+    if (d->mToolExecutor) {
+        const int position = d->mToolExecutor->enqueue(this, callId, toolName, args, subagentId);
+        notifyToolQueued(callId, toolName, position);
+        return;
+    }
     executeToolNow(callId, toolName, args, subagentId);
+}
+
+/**
+ * @brief 排队态上报：tool_exec_queued 协议消息 + agentToolQueued 信号
+ * @param callId 工具调用 ID
+ * @param toolName 工具名
+ * @param position 队列位置（1-based）
+ */
+void DAAgentBridge::notifyToolQueued(const QString& callId, const QString& toolName, int position)
+{
+    QJsonObject msg;
+    msg["type"]     = "tool_exec_queued";
+    msg["call_id"]  = callId;
+    msg["position"] = position;
+    writeJson(msg);  // 排队上报失败无害（Python 侧排队段预算本就宽松）
+    emit agentToolQueued(toolName, position);
 }
 
 /**
@@ -1014,7 +1105,9 @@ void DAAgentBridge::onToolApproval(const QString& callId, bool approved, bool re
                 d->mPermissionManager->rememberSession(d->mSessionId, pa.toolName, key);
             }
         }
-        executeToolNow(callId, pa.toolName, pa.args, pa.subagentId);
+        // 批准后同样经全局执行队列派发（决策点 2 方案 c）：审批窗口内桥可能
+        // 已死/被 Stop，出队存活检查取消"为将死进程执行"（审计 12b）
+        dispatchToolExecution(callId, pa.toolName, pa.args, pa.subagentId);
     } else {
         QJsonObject result;
         result["success"] = false;
@@ -1024,8 +1117,10 @@ void DAAgentBridge::onToolApproval(const QString& callId, bool approved, bool re
         } else {
             result["error"] = QStringLiteral("Access denied: user rejected the operation");
         }
-        sendToolResult(callId, result);
-        emit agentToolResult(pa.toolName, result, pa.subagentId);
+        // 写入失败（进程已死）不 emit——孤儿结果不落盘（问题 12 决策 ⑤）
+        if (sendToolResult(callId, result)) {
+            emit agentToolResult(pa.toolName, result, pa.subagentId);
+        }
     }
 
     // 恢复看门狗（仍有其它挂起审批时由 startInactivityTimer 内部守卫拦截）
@@ -1050,6 +1145,19 @@ void DAAgentBridge::executeToolNow(const QString& callId,
     DA_D(d);
     ToolExecGuard guard(this);  // RAII：暂停看门狗，覆盖所有 return 路径
 
+    // 存活/停止守卫（审计 12b/12c）：tool_call 投递后进程可能立刻崩溃，或
+    // 用户在排队窗口内 Stop——不再真实执行（副作用不为死进程/已终止回合
+    // 发生）。执行器出队检查与本守卫双保险（直执行退化路径同样受保护）
+    if (!d->mRunning || d->mUserRequestedStop
+        || !d->mProcess || d->mProcess->state() != QProcess::Running) {
+        qInfo() << "DAAgentBridge::executeToolNow: skipped, subprocess not running or stop requested, tool="
+                << toolName << "callId=" << callId;
+        return;
+    }
+
+    // 出队开始执行（决策点 2 ③）：position=0 通知 UI 由"排队中"恢复"运行中"；
+    // tool_exec_start 是 Python 侧工具本体超时的计时起点（两段式第二段）
+    emit agentToolQueued(toolName, 0);
     QJsonObject execStart;
     execStart["type"]    = "tool_exec_start";
     execStart["call_id"] = callId;
@@ -1062,8 +1170,10 @@ void DAAgentBridge::executeToolNow(const QString& callId,
     if (it == d->mTools.end() || it.value() == nullptr) {
         result["error"]  = QString("Unknown tool: %1").arg(toolName);
         result["success"] = false;
-        sendToolResult(callId, result);
-        emit agentToolResult(toolName, result, subagentId);  // 同步推送到 UI 显示
+        // 写入成功才 emit（同步推送到 UI 显示 + Module 持久化）——孤儿不落盘
+        if (sendToolResult(callId, result)) {
+            emit agentToolResult(toolName, result, subagentId);
+        }
         return;
     }
 
@@ -1084,12 +1194,18 @@ void DAAgentBridge::executeToolNow(const QString& callId,
         result["error"]   = "Tool execution failed: unknown error";
     }
 
-    // 3. 把结果回传子进程（让 agent_runner 继续推理）
-    sendToolResult(callId, result);
-
-    // 4. 同时发射信号，让聊天 UI 在对话流中展示工具调用结果
-    // （带 subagentId 的子转录结果由 Module 过滤，不进主聊天流/不落盘，母文档 §7）
-    emit agentToolResult(toolName, result, subagentId);
+    // 3. 把结果回传子进程（让 agent_runner 继续推理）；4. 写入成功才发射
+    // 信号（聊天 UI 展示 + Module 持久化挂该信号）——工具执行期间进程死亡
+    // （崩溃/被杀）时结果无处送达，emit 会落盘孤儿 tool_result（Python 永远
+    // 没收到，重放/恢复配对错乱），审计问题 12 决策 ⑤"迟到结果不落盘"
+    const bool delivered = sendToolResult(callId, result);
+    if (delivered) {
+        //（带 subagentId 的子转录结果由 Module 过滤，不进主聊天流/不落盘，母文档 §7）
+        emit agentToolResult(toolName, result, subagentId);
+    } else {
+        qWarning() << "DAAgentBridge::executeToolNow: result not delivered (subprocess gone), dropped, tool="
+                   << toolName << "callId=" << callId;
+    }
 }
 
 /**

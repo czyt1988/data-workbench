@@ -157,6 +157,16 @@ void DAAgentWebChannel::appendToolCall(const QString& toolName, const QJsonObjec
 }
 
 /**
+ * @brief 推送工具排队状态（决策点 2 ③：全局执行队列排队可见）
+ * @param toolName 工具名称
+ * @param position 队列位置（1-based）；0=开始执行（卡片恢复"运行中"）
+ */
+void DAAgentWebChannel::markToolQueued(const QString& toolName, int position)
+{
+    callJS(QString("markToolQueued(\"%1\", %2)").arg(toJsString(toolName), QString::number(position)));
+}
+
+/**
  * @brief 追加工具执行结果到聊天界面
  * @param toolName 工具名称
  * @param result 工具执行结果

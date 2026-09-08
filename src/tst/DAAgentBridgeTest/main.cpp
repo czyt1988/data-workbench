@@ -22,6 +22,8 @@
 //                   定时器兜底在二次调用后仍生效，L3）
 //   crash-on-user-msg : ready 后 user_msg 即 exit(7) 崩溃（验证恢复窗口内
 //                   requestStop 取消延迟重启，L4）
+//   tool-call-then-idle : user_msg 回 tool_call(fake_tool)，收到 tool_result
+//                   回 message_end+done（验证全局执行队列执行/取消，问题 12）
 
 #include <QtTest/QtTest>
 #include <QCoreApplication>
@@ -32,6 +34,41 @@
 #include <QFile>
 
 #include "DAAgentBridge.h"
+#include "DAAgentToolExecutor.h"
+#include "DAAbstractAgentTool.h"
+
+// ===========================================================================
+// 假工具（全局执行队列用例，决策点 2 方案 c / 审计问题 12）
+// ===========================================================================
+namespace {
+
+/// 计数假工具：断言"排队调用是否真实执行"（取消语义验证的核心观察点）
+class FakeBridgeTool : public DA::DAAbstractAgentTool
+{
+public:
+    DA::DAAgentToolSpec getToolSpec() const override
+    {
+        DA::DAAgentToolSpec spec;
+        spec.name        = QStringLiteral("fake_tool");
+        spec.description = QStringLiteral("test fake tool");
+        return spec;
+    }
+    QJsonObject execute(const QJsonObject&) override
+    {
+        ++mExecCount;
+        return QJsonObject{{ "success", true }, { "echo", "fake-result" }};
+    }
+    QString getOwnerModule() const override
+    {
+        return QStringLiteral("DAAgentBridgeTest");
+    }
+    int execCount() const { return mExecCount; }
+
+private:
+    int mExecCount = 0;
+};
+
+} // namespace
 
 // ===========================================================================
 // 假 agent 子进程模式
@@ -82,6 +119,35 @@ int fakeAgentMain(const QByteArray& scenario)
             } else if (type == QLatin1String("user_msg")) {
                 return 3;  // 模拟原生崩溃（CrashExit）
             }
+        }
+        return 0;
+    }
+    if (scenario == "tool-call-then-idle") {
+        // ready 后收到 user_msg 发一条 tool_call（fake_tool）等结果；收到
+        // tool_result 回 message_end+done——验证全局执行队列的执行/取消语义
+        fakeEmit(out, {{ "type", "ready" }, { "model", "fake-model" }});
+        while (true) {
+            const QByteArray line = in.readLine();
+            if (line.isEmpty()) {
+                break;
+            }
+            const QJsonDocument doc = QJsonDocument::fromJson(line.trimmed());
+            if (!doc.isObject()) {
+                continue;
+            }
+            const QString type = doc.object().value("type").toString();
+            if (type == QLatin1String("user_msg")) {
+                fakeEmit(out, {{ "type", "tool_call" },
+                               { "call_id", "call-t1" },
+                               { "tool", "fake_tool" },
+                               { "arguments", QJsonObject{} }});
+            } else if (type == QLatin1String("tool_result")) {
+                fakeEmit(out, {{ "type", "message_end" }, { "content", "tool done" }});
+                fakeEmit(out, {{ "type", "done" }});
+            } else if (type == QLatin1String("stop")) {
+                break;
+            }
+            // init/tool_exec_queued/tool_exec_start 等静默忽略
         }
         return 0;
     }
@@ -262,6 +328,8 @@ private Q_SLOTS:
     void testReadyDuringActiveTurnReassertsBusy();    // 问题15：ready 到达时回合进行中 → 重断言 busy(true)
     void testSecondRequestStopRebuildsKillFallback(); // L3：stop 被忽略时二次 requestStop 仍重建 kill 兜底
     void testStopDuringRecoveryWindowCancelsRestart(); // L4：恢复窗口内 Stop 取消延迟重启
+    void testQueuedToolExecuted();                    // 问题12：全局队列派发-执行-结果回传全链
+    void testQueuedToolCancelledOnStop();             // 问题12：Stop 后已排队调用被取消（12b/12c）
 };
 
 void DAAgentBridgeTest::startWithScenario(DA::DAAgentBridge& bridge, const char* scenario,
@@ -582,6 +650,78 @@ void DAAgentBridgeTest::testStopDuringRecoveryWindowCancelsRestart()
     QTest::qWait(3000);
     QCOMPARE(readySpy.count(), 1);
     QCOMPARE(errSpy.count(), 1);  // 无后续 crash_recovery/exhausted 错误
+}
+
+/**
+ * 问题12（决策点 2 方案 c）：权限门放行后工具经全局执行队列派发——
+ * 入队上报排队位置（agentToolQueued position≥1）、出队执行（position=0 +
+ * tool_exec_start）、结果回传子进程并 emit agentToolResult。
+ */
+void DAAgentBridgeTest::testQueuedToolExecuted()
+{
+    DA::DAAgentBridge bridge;
+    DA::DAAgentToolExecutor executor;
+    FakeBridgeTool tool;
+    QMap<QString, DA::DAAbstractAgentTool*> tools;
+    tools.insert(QStringLiteral("fake_tool"), &tool);
+    bridge.setTools(tools);
+    bridge.setToolExecutor(&executor);
+
+    QSignalSpy readySpy(&bridge, &DA::DAAgentBridge::agentReady);
+    QSignalSpy queuedSpy(&bridge, &DA::DAAgentBridge::agentToolQueued);
+    QSignalSpy resultSpy(&bridge, &DA::DAAgentBridge::agentToolResult);
+    QSignalSpy doneSpy(&bridge, &DA::DAAgentBridge::agentDone);
+    startWithScenario(bridge, "tool-call-then-idle");
+    QVERIFY(waitForCount(readySpy, 1));
+
+    bridge.sendMessage(QStringLiteral("run tool"));
+    // 工具经队列真实执行，结果回传（假 agent 收到 tool_result 后发 done）
+    QVERIFY(waitForCount(resultSpy, 1));
+    QCOMPARE(tool.execCount(), 1);
+    QVERIFY(waitForCount(doneSpy, 1));
+
+    // 排队态上报：入队 position=1，出队执行 position=0
+    QVERIFY(queuedSpy.count() >= 2);
+    QCOMPARE(queuedSpy.at(0).at(0).toString(), QStringLiteral("fake_tool"));
+    QCOMPARE(queuedSpy.at(0).at(1).toInt(), 1);
+    QCOMPARE(queuedSpy.at(1).at(1).toInt(), 0);
+
+    bridge.requestStop();
+    QVERIFY(waitForCount(doneSpy, 1));  // done 已到达；进程由 stop 退出
+    QTest::qWait(500);
+}
+
+/**
+ * 问题12（12b/12c 取消语义）：tool_call 已入队但用户在执行前 Stop——
+ * 出队存活检查（isRunning/isStopRequested）取消调用，工具不真实执行
+ * （副作用不为将死进程发生）。修复前 singleShot 投递后无任何守卫，
+ * Stop/崩溃后已排队的工具照常执行。
+ */
+void DAAgentBridgeTest::testQueuedToolCancelledOnStop()
+{
+    DA::DAAgentBridge bridge;
+    DA::DAAgentToolExecutor executor;
+    FakeBridgeTool tool;
+    QMap<QString, DA::DAAbstractAgentTool*> tools;
+    tools.insert(QStringLiteral("fake_tool"), &tool);
+    bridge.setTools(tools);
+    bridge.setToolExecutor(&executor);
+
+    QSignalSpy readySpy(&bridge, &DA::DAAgentBridge::agentReady);
+    QSignalSpy toolCallSpy(&bridge, &DA::DAAgentBridge::agentToolCall);
+    startWithScenario(bridge, "tool-call-then-idle");
+    QVERIFY(waitForCount(readySpy, 1));
+
+    bridge.sendMessage(QStringLiteral("run tool"));
+    // agentToolCall 在 handleJsonLine 内同步发射（executeTool 尚经 singleShot
+    // 投递）——此刻立即 requestStop，同步置停止标志先于泵执行
+    QVERIFY(waitForCount(toolCallSpy, 1));
+    bridge.requestStop();
+
+    // 泵出队时存活检查取消调用：工具永不执行
+    QTest::qWait(1500);
+    QCOMPARE(tool.execCount(), 0);
+    QCOMPARE(executor.queueLength(), 0);
 }
 
 int main(int argc, char* argv[])

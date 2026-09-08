@@ -51,6 +51,8 @@ public Q_SLOTS:
     void onAgentToken(const QString& token);
     void onAgentMessageComplete(const QString& fullText);
     void onAgentToolCall(const QString& toolName, const QJsonObject& args);
+    /// 工具排队状态（决策点 2 ③）：position>0=排队中第 N 位，0=开始执行
+    void onAgentToolQueued(const QString& toolName, int position);
     void onAgentToolResult(const QString& toolName, const QJsonObject& result);
     void onAgentQuestion(const QString& text, const QStringList& options, bool multiSelect);
     /// 挂起问题卡作废（子进程退出/崩溃/用户 Stop/桥退役），通知 web 移除未回答问题卡

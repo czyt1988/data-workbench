@@ -17,6 +17,7 @@ namespace DA
 {
 class DAAbstractAgentTool;
 class DAAgentPermissionManager;
+class DAAgentToolExecutor;
 
 /**
  * @brief QProcess 桥接器：管理 agent 子进程的启停、stdin/stdout 读写、JSON Lines 协议解析
@@ -63,8 +64,9 @@ public:
 
     // 发送用户消息到 agent 子进程
     void sendMessage(const QString& text);
-    // 发送工具执行结果回 agent 子进程
-    void sendToolResult(const QString& callId, const QJsonObject& result);
+    // 发送工具执行结果回 agent 子进程；返回是否写入成功（失败=进程已死/管道
+    // 已关，调用方据此不落盘孤儿结果，审计问题 12 决策 ⑤）
+    bool sendToolResult(const QString& callId, const QJsonObject& result);
     // 发送用户对问题的回答回 agent 子进程
     void sendUserAnswer(const QString& answer);
     // 下发历史会话消息让 agent 子进程重建 state（不重启子进程切换会话）
@@ -88,6 +90,16 @@ public:
     void setSessionId(const QString& sessionId);
     // 所属会话 ID（可空）
     QString sessionId() const;
+
+    // 设置全局工具执行队列（Module attachBridge 注入，非拥有；未注入时工具
+    // 退化为直执行——独立使用 Bridge 的场景/协议级测试，决策点 2 方案 c）
+    void setToolExecutor(DAAgentToolExecutor* executor);
+    // 用户/系统是否已请求停止（执行队列出队存活检查用，审计 12b/12c）
+    bool isStopRequested() const;
+    // 执行队列出队后的真实执行入口（DAAgentToolExecutor 泵调用；内含存活
+    // 守卫，等价 executeToolNow 但先检查进程状态）
+    void runQueuedTool(const QString& callId, const QString& toolName,
+                       const QJsonObject& args, const QString& subagentId);
 
     // 用户对审批卡的裁决（callId 配对 pending 审批；approved→执行，否则合成拒绝）
     void onToolApproval(const QString& callId, bool approved, bool rememberSession);
@@ -120,6 +132,16 @@ Q_SIGNALS:
      * @param args 工具调用参数 JSON
      */
     void agentToolCall(const QString& toolName, const QJsonObject& args);
+    /**
+     * @brief 工具调用排队状态（决策点 2 ③，审计问题 12：排队可见）
+     * @param toolName 工具名称
+     * @param position 全局执行队列位置（1-based，入队时上报）；
+     *                 0 = 已开始执行（出队，UI 由"排队中"恢复"运行中"）
+     * @note 瞬态展示信息，Module 仅活跃会话转发、不持久化。跨会话队头等待
+     * 期间 UI 显示可解释的排队状态而非误判卡死；Python 侧对称消息为
+     * tool_exec_queued（超时预算两段式的排队段依据）
+     */
+    void agentToolQueued(const QString& toolName, int position);
     /**
      * @brief 工具执行结果返回时发射，用于 UI 展示
      * @param toolName 工具名称
@@ -249,6 +271,12 @@ private:
     // 权限门放行后的真实执行（原 executeTool 主体，含 try/catch 兜底与结果回传）
     void executeToolNow(const QString& callId, const QString& toolName, const QJsonObject& args,
                         const QString& subagentId = QString());
+    // 派发执行（决策点 2 方案 c）：有全局执行器则入队（排队态上报 Python/UI），
+    // 无则退化直执行；executeTool 放行路径与 onToolApproval 批准路径共用
+    void dispatchToolExecution(const QString& callId, const QString& toolName,
+                               const QJsonObject& args, const QString& subagentId);
+    // 排队态上报：写 tool_exec_queued 协议消息给 Python + emit agentToolQueued
+    void notifyToolQueued(const QString& callId, const QString& toolName, int position);
     // Q18 dismissal：按子 agent 任务 id 撤销对应挂起审批卡（仅撤 subagentId 非空的条目，
     // 主 agent 审批绝不受影响），逐条 emit agentToolApprovalDismissed
     void dismissSubagentApprovals(const QStringList& subagentIds);

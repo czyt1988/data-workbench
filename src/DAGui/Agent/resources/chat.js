@@ -56,6 +56,8 @@ let i18n = {
     approvalApprovedRemembered: 'Approved (remembered for this session)',
     approvalCodeMoreLines: '%1 more lines',
     approvalFromSubagent: 'From subagent: %1',
+    // —— 工具排队状态（决策点 2 ③，审计问题 12）——
+    toolQueued: 'queued', toolRunning: 'running',
     // —— 子 agent 进度卡片（subagent-phase1 C）——
     subagentTaskCount: '%1 subagent task(s)',
     subagentProgress: '%1/%2 done',
@@ -721,6 +723,24 @@ function appendToolResult(toolName, result) {
     updateToolCardResult(entry.card, result);
     updateToolGroupHeader();
     scrollToBottom();
+}
+
+// 工具排队状态（决策点 2 ③，审计问题 12）：全局执行队列的等待可解释——
+// position>0 卡片摘要显示"排队中 #N"（跨会话队头等待不再被误判为卡死），
+// position==0 表示出队开始执行，恢复"运行中"。从后向前找最近一张同名
+// 待结果卡（FIFO 语义与 appendToolResult 对齐）
+function markToolQueued(toolName, position) {
+    for (var i = pendingToolCards.length - 1; i >= 0; i--) {
+        if (pendingToolCards[i].toolName === toolName) {
+            var summary = pendingToolCards[i].card.querySelector('.card-summary');
+            if (summary) {
+                summary.textContent = (position > 0)
+                    ? (i18n.toolQueued || 'queued') + ' #' + position  // cn:排队中 #N
+                    : (i18n.toolRunning || 'running');                 // cn:运行中
+            }
+            break;
+        }
+    }
 }
 
 function appendQuestion(text, options, submitLabel, customPlaceholder, multiSelect) {

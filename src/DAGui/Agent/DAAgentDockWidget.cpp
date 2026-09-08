@@ -281,6 +281,9 @@ void DAAgentDockWidget::onWebReady()
         {"approvalApprovedRemembered", tr("Approved (remembered for this session)")},  // cn:已批准（本会话已记住）
         {"approvalCodeMoreLines", tr("%1 more lines")},  // cn:还有 %1 行
         {"approvalFromSubagent", tr("From subagent: %1")},  // cn:来自子 Agent：%1
+        // —— 工具排队状态（决策点 2 ③，审计问题 12）——
+        {"toolQueued", tr("queued")},     // cn:排队中
+        {"toolRunning", tr("running")},   // cn:运行中
         // —— 子 agent 进度卡片（subagent-phase1 C）——
         {"subagentTaskCount", tr("%1 subagent task(s)")},  // cn:%1 个子 Agent 任务
         {"subagentProgress", tr("%1/%2 done")},             // cn:%1/%2 已完成
@@ -402,6 +405,20 @@ void DAAgentDockWidget::onAgentToolCall(const QString& toolName, const QJsonObje
     if (d->mSwitching) return;  // MAJOR4
     if (d->mChannel) {
         d->mChannel->appendToolCall(toolName, args);
+    }
+}
+
+/**
+ * @brief 处理工具排队状态（决策点 2 ③：全局执行队列排队可见）
+ * @param toolName 工具名称
+ * @param position 队列位置（1-based）；0=开始执行（恢复"运行中"）
+ */
+void DAAgentDockWidget::onAgentToolQueued(const QString& toolName, int position)
+{
+    DA_D(d);
+    if (d->mSwitching) return;  // MAJOR4
+    if (d->mChannel) {
+        d->mChannel->markToolQueued(toolName, position);
     }
 }
 

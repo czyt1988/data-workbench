@@ -263,6 +263,8 @@ void DAAppController::initialize()
         connect(agent, &DAAgentInterface::agentToken, dock, &DAAgentDockWidget::onAgentToken);
         connect(agent, &DAAgentInterface::agentMessageComplete, dock, &DAAgentDockWidget::onAgentMessageComplete);
         connect(agent, &DAAgentInterface::agentToolCall, dock, &DAAgentDockWidget::onAgentToolCall);
+        // 工具排队状态（决策点 2 ③）：工具卡"排队中/运行中"标识
+        connect(agent, &DAAgentInterface::agentToolQueued, dock, &DAAgentDockWidget::onAgentToolQueued);
         connect(agent, &DAAgentInterface::agentToolResult, dock, &DAAgentDockWidget::onAgentToolResult);
         connect(agent, &DAAgentInterface::agentQuestion, dock, &DAAgentDockWidget::onAgentQuestion);
         // 挂起问题卡作废（审计问题 17，镜像审批 dismissed 契约）：撤未回答问题卡

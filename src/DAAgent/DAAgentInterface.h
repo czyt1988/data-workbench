@@ -165,6 +165,10 @@ Q_SIGNALS:
     void agentMessageComplete(const QString& fullText);
     /// agent 发起工具调用时发射
     void agentToolCall(const QString& toolName, const QJsonObject& args);
+    /// 工具调用排队状态（决策点 2 ③，审计问题 12）：position>0=全局执行队列
+    /// 排队中第 N 位（UI 工具卡显示"排队中"，可解释的等待）；0=开始执行
+    ///（恢复"运行中"）。瞬态展示信息，不持久化
+    void agentToolQueued(const QString& toolName, int position);
     /// 工具执行结果返回时发射
     void agentToolResult(const QString& toolName, const QJsonObject& result);
     /// agent 向用户提问时发射

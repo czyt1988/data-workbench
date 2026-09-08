@@ -42,6 +42,8 @@ public:
     void appendToken(const QString& token);
     void finalizeAgentMessage(const QString& fullText);
     void appendToolCall(const QString& toolName, const QJsonObject& args);
+    /// 推送工具排队状态（决策点 2 ③）：position>0=排队中第 N 位，0=开始执行
+    void markToolQueued(const QString& toolName, int position);
     void appendToolResult(const QString& toolName, const QJsonObject& result);
     void appendQuestion(const QString& text, const QStringList& options, bool multiSelect);
     /// 推送挂起问题卡作废（JS 移除未回答问题卡，镜像 dismissToolApproval，审计问题 17）

@@ -1,6 +1,7 @@
 // DAAgentModule.cpp
 #include "DAAgentModule.h"
 #include "DAAgentBridge.h"
+#include "DAAgentToolExecutor.h"
 #include "DAAgentSessionStore.h"
 #include "DAAgentPermissionManager.h"
 #include "DAAgentManager.h"
@@ -94,6 +95,9 @@ public:
     DAAgentPermissionManager* mPermissionManager = nullptr;  ///< 权限引擎（非 QObject，析构显式 delete）
     QString mScriptWorkspaceDir;                   ///< 脚本工作区根（${workspace}），由 L5 注入
 
+    // ---- 全局工具执行队列（决策点 2 方案 c，审计问题 12） ----
+    DAAgentToolExecutor* mToolExecutor = nullptr;  ///< QObject 子对象（parent=this），initialize 创建
+
     // ---- 配置（agent-config.json 领域模型） ----
     // initialize() 最先 load()（含旧 ini→json 迁移），运行期所有配置读写均经此
     // 内存模型（不再逐调用重读文件）；变更经接口方法同步并 save() 落盘。
@@ -167,6 +171,11 @@ void DAAgentModule::initialize(DACoreInterface* core)
     // CRITICAL1：创建会话持久化层（非 QObject 无参构造，不传 parent）。
     // 目录就绪由 store 内部 DADir::getAppDataPath("sessions") mkpath。
     d->mSessionStore = new DAAgentSessionStore();
+
+    // 全局工具执行队列（决策点 2 方案 c，审计问题 12）：所有桥的工具调用
+    // 汇入单队列主线程串行执行——排队状态可见、出队存活检查（取消语义）、
+    // run_code 类长任务跨会话天然限流。attachBridge 注入各桥
+    d->mToolExecutor = new DAAgentToolExecutor(this);
 
     // 提示词库管理器：播种通用默认 agent、加载用户已有提示词。
     // m_agentManager 为 QObject，parent=this，随 Module 释放。
@@ -514,6 +523,11 @@ void DAAgentModule::shutdown()
     // done → retireBridge 当场改 mSessionBridges）。故先取桥指针快照，两阶段
     // 均遍历快照而非活映射；retireBridge 的 deleteLater 在事件循环恢复前不会
     // 销毁对象，快照指针在本函数栈内保持有效。
+    // 清空工具执行队列（排队中的调用直接丢弃——桥即将停止，出队存活检查
+    // 也会取消，此处提前清避免关闭期间无谓的取消日志噪音）
+    if (d->mToolExecutor) {
+        d->mToolExecutor->clear();
+    }
     QList<DAAgentBridge*> bridges;
     bridges.reserve(d->mSessionBridges.size() + 1);
     for (auto it = d->mSessionBridges.constBegin(); it != d->mSessionBridges.constEnd(); ++it) {
@@ -827,6 +841,8 @@ void DAAgentModule::attachBridge(DAAgentBridge* bridge, const QString& sessionId
     // 返回 Unknown tool（工具规格已随 startAgent 下发 Python，LLM 可见可调用，
     // 但 C++ 侧执行表为空——规格与实现两张表必须同步）
     bridge->setTools(d->mTools);
+    // 全局工具执行队列注入（决策点 2 方案 c）：权限门放行后入队而非直执行
+    bridge->setToolExecutor(d->mToolExecutor);
 
     // ---- 持久化（写桥所属会话，无条件执行） ----
     // assistant 消息完成（纯文本回复，含伴随 tool_calls 的中间思考文本）
@@ -920,6 +936,12 @@ void DAAgentModule::attachBridge(DAAgentBridge* bridge, const QString& sessionId
     connect(bridge, &DAAgentBridge::agentToolCall, this,
             [this, sessionId](const QString& toolName, const QJsonObject& args) {
         if (sessionId == d_func()->mCurrentSessionId) emit agentToolCall(toolName, args);
+    });
+    // 工具排队状态（决策点 2 ③）：瞬态展示信息，仅活跃会话转发、不持久化
+    //（position>0=排队中第 N 位；0=开始执行，UI 恢复"运行中"）
+    connect(bridge, &DAAgentBridge::agentToolQueued, this,
+            [this, sessionId](const QString& toolName, int position) {
+        if (sessionId == d_func()->mCurrentSessionId) emit agentToolQueued(toolName, position);
     });
     // 工具结果：子 agent 一期过滤规则（母文档 §7）——带 subagent_id 的结果
     // 不转发接口信号（不进主聊天流），执行照常（权限门同门执法）。
