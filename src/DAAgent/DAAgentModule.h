@@ -157,6 +157,9 @@ public:
     // 与 pushModelSelection 同处，由 DAAppController 在接口↔Dock 信号链 connect 完成后调用；
     // A13 启动 yolo 确认由 Dock 侧触发（仅显式设置的 yolo 弹卡，默认值静默进入全自动）
     void pushPermissionMode();
+    // 会话运行态（供 UI 角标）："starting" / "running" / "waiting_input" / "error" / ""（空闲）
+    // 公开供测试断言状态机（DAAgentModuleTest）；UI 常规消费走 sessionListChanged payload
+    QString sessionRuntimeState(const QString& sessionId) const;
 
 private:
     // Helper methods
@@ -189,8 +192,6 @@ private:
     void retireBridge(const QString& sessionId);
     // 查会话桥（无返回 nullptr）
     DAAgentBridge* bridgeForSession(const QString& sessionId) const;
-    // 会话运行态（供 UI 角标）："starting" / "running" / "waiting_input" / "error" / ""（空闲）
-    QString sessionRuntimeState(const QString& sessionId) const;
     // 遍历全部存活桥（会话桥 + 预热桥），fn 内不得增删桥
     void forEachLiveBridge(const std::function<void(DAAgentBridge*)>& fn);
 

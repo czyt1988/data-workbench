@@ -892,6 +892,17 @@ void DAAgentModule::attachBridge(DAAgentBridge* bridge, const QString& sessionId
     connect(bridge, &DAAgentBridge::agentBusy, this, [this, sessionId](bool busy) {
         auto* d = d_func();
         d->mSessionBusy[sessionId] = busy;
+        if (!busy) {
+            // busy(false) 兜底清除启动态（审计问题 2）——启动失败/崩溃耗尽等终态
+            // 只发 error+busy(false) 不发 ready（crash_exhausted 见 Bridge
+            // onProcessFinished），mSessionStarting 无人清除则永久残留：角标卡
+            // "starting"、switchSession 切离守卫拒绝退役死桥、切入该会话时
+            // agentStarting 重断言使 Dock 输入永久冻结（发不出消息也就触发不了
+            // sendMessage 防御重建，死锁闭环）。与 Dock 侧 onAgentBusy 的
+            // busy(false) 兜底完全同构；崩溃重试窗口内 recoverFromCrash →
+            // startAgent → agentStarting 会重新置位，语义不受影响。
+            d->mSessionStarting.remove(sessionId);
+        }
         if (sessionId == d->mCurrentSessionId) emit agentBusy(busy);
         if (busy) emit sessionListChanged(listSessionsForUI());  // 进入运行 → 角标
     });
