@@ -468,6 +468,18 @@ void DAAgentModule::stop()
         // 再发"继续"，残留 uuid 使答案/结果配对错位落盘
         d->mPendingToolCallUuids.remove(d->mCurrentSessionId);
         bridge->requestStop();
+    } else {
+        // 审计 L8：Stop 空转（无桥/桥未运行且不在恢复中——完成竞态或死桥
+        // 场景）也必须回发 busy(false)：Dock 的 onStopClicked 已进入 Stopping
+        // 过渡态（按钮+输入禁用），旧实现不发任何信号，UI 冻结直到外部信号
+        // 拯救。顺带清残留挂起缓存与内部状态，保持记账一致。
+        if (d->mPendingQuestions.remove(d->mCurrentSessionId)) {
+            emit agentQuestionDismissed();
+        }
+        d->mPendingToolCallUuids.remove(d->mCurrentSessionId);
+        d->mSessionBusy.remove(d->mCurrentSessionId);
+        d->mSessionStarting.remove(d->mCurrentSessionId);
+        emit agentBusy(false);
     }
 }
 

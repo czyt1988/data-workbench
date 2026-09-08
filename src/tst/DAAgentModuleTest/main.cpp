@@ -185,6 +185,7 @@ private Q_SLOTS:
     void testErrorClearsToolCallFifo();                // 问题1：错误清 FIFO + 联动撤问题卡
     void testColdStartSnapshotExcludesTrailingUser();  // 问题10：load_session 快照剔除末尾待重发 user
     void testWarmTakeoverLoadsSingleMessageHistory();  // L2：温暖化接管历史恰好 1 条也发 load_session
+    void testStopNoopEmitsBusyFalse();                 // L8：stop() 空转回发 busy(false) 解除 Stopping 态
 };
 
 QString DAAgentModuleTest::pythonConfigPath()
@@ -577,6 +578,27 @@ void DAAgentModuleTest::testWarmTakeoverLoadsSingleMessageHistory()
     // 假 agent 回显快照统计：修复前 messageCount==1 不发 load_session（token 永不到达）
     QVERIFY(tokenSpy.wait(30000));
     QCOMPARE(tokenSpy.at(0).at(0).toString(), QStringLiteral("LOADED:1:human"));
+
+    module->shutdown();
+}
+
+/**
+ * L8：Stop 空转（无桥/桥未运行——完成竞态或死桥场景）时 Module::stop()
+ * 不发任何信号，而 Dock onStopClicked 已进入 Stopping 过渡态（按钮+输入
+ * 禁用）——UI 冻结直到外部信号拯救。修复后空转分支回发 busy(false)
+ * （Dock 侧同步加 busy/starting 守卫，双侧防御）。
+ */
+void DAAgentModuleTest::testStopNoopEmitsBusyFalse()
+{
+    QScopedPointer<DA::DAAgentModule> module(makeModule());
+    QSignalSpy busySpy(module.data(), &DA::DAAgentInterface::agentBusy);
+    const QString sid = module->createSession();
+    QVERIFY(!sid.isEmpty());
+
+    // 无桥空闲 Stop：no-op 但必须回发 busy(false) 解除 Dock Stopping 过渡态
+    module->stop();
+    QCOMPARE(busySpy.count(), 1);
+    QCOMPARE(busySpy.at(0).at(0).toBool(), false);
 
     module->shutdown();
 }

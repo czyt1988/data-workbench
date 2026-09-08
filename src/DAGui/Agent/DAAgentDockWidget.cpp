@@ -330,6 +330,13 @@ void DAAgentDockWidget::onWebReady()
 void DAAgentDockWidget::onStopClicked()
 {
     DA_D(d);
+    // 审计 L8：空闲（无 busy/starting）时不进 Stopping 过渡态——旧实现无条件
+    // setStopping（按钮+输入禁用），完成竞态/崩溃恢复窗口点 Stop 时若 Module
+    // 侧空转且无外部信号拯救，UI 永久冻结（空闲时按钮理论禁用，此为防御；
+    // Module::stop() 空转路径已同步补发 busy(false) 兜底）
+    if (!d->mAgentBusy && !d->mAgentStarting) {
+        return;
+    }
     // 定稿当前流式输出中的 agent 消息 + 关闭工具分组，避免半截消息悬挂
     if (d->mChannel) {
         d->mChannel->onAgentStopped();
