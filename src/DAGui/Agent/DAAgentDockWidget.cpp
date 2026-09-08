@@ -286,6 +286,8 @@ void DAAgentDockWidget::onWebReady()
         {"toolRunning", tr("running")},   // cn:运行中
         // —— 工具结果截断（审计问题 29）——
         {"toolResultTruncated", tr("result truncated")},  // cn:结果已截断
+        // —— 问题卡提交失败提示（审计 L9）——
+        {"answerSendFailed", tr("Answer not sent, please retry")},  // cn:回答未发送，请重试
         // —— 子 agent 进度卡片（subagent-phase1 C）——
         {"subagentTaskCount", tr("%1 subagent task(s)")},  // cn:%1 个子 Agent 任务
         {"subagentProgress", tr("%1/%2 done")},             // cn:%1/%2 已完成

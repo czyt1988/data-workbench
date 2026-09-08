@@ -60,6 +60,8 @@ let i18n = {
     toolQueued: 'queued', toolRunning: 'running',
     // —— 工具结果截断（审计问题 29）——
     toolResultTruncated: 'result truncated',
+    // —— 问题卡提交失败提示（审计 L9）——
+    answerSendFailed: 'Answer not sent, please retry',
     // —— 子 agent 进度卡片（subagent-phase1 C）——
     subagentTaskCount: '%1 subagent task(s)',
     subagentProgress: '%1/%2 done',
@@ -831,6 +833,20 @@ function appendQuestion(text, options, submitLabel, customPlaceholder, multiSele
         if (!answer) {
             // 未选择也未输入——聚焦输入框引导用户
             customInput.focus();
+            return;
+        }
+        if (!(chatBridge && typeof chatBridge.onUserSelect === 'function')) {
+            // 审计 L9：WebChannel 断开时裸调用抛 TypeError——卡片不进 answered
+            // 态、答案不发送、无任何提示（全文件其它 JS→C++ 调用点均有守卫）。
+            // 补守卫：卡片保持可交互（不标 answered/不禁用按钮），行内提示失败
+            let hint = qBubble.querySelector('.question-send-hint');
+            if (!hint) {
+                hint = document.createElement('div');
+                hint.className = 'question-send-hint';
+                hint.style.cssText = 'color:#CE6043;font-size:12px;margin-top:4px;';
+                qBubble.appendChild(hint);
+            }
+            hint.textContent = i18n.answerSendFailed || 'Answer not sent, please retry';
             return;
         }
         chatBridge.onUserSelect(answer);
