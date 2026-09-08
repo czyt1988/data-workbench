@@ -77,6 +77,18 @@ public:
     QHash<QString, PendingQuestion> mPendingQuestions;           ///< 会话 → 待回答 ask_user
     QHash<QString, QString> mApprovalSessionByCallId;            ///< callId → 会话（审批路由）
     QHash<QString, QJsonArray> mPendingApprovalRequests;         ///< 会话 → 待审批载荷[{callId,toolName,args}]
+    // ---- 后台瞬态通知缓存（审计问题 8：切回时重发，同 mPendingQuestions 范式） ----
+    struct PendingNotification {
+        bool isRetrying = false;      ///< 有 LLM 重试条缓存（回合进行中，最新一条覆盖）
+        int attempt = 0;
+        int maxAttempts = 0;
+        int delayMs = 0;
+        QString retryErrorType;
+        QString retryErrorMessage;
+        bool isIncomplete = false;    ///< 有"回合疑似未完成"提醒缓存（done 时刻产生，豁免退役）
+        int toolRounds = 0;
+    };
+    QHash<QString, PendingNotification> mPendingNotifications;   ///< 会话 → 瞬态通知
 
     // ---- 权限层（permission-layer P1） ----
     DAAgentPermissionManager* mPermissionManager = nullptr;  ///< 权限引擎（非 QObject，析构显式 delete）
@@ -907,8 +919,19 @@ void DAAgentModule::attachBridge(DAAgentBridge* bridge, const QString& sessionId
     // 转发 agentRetrying 信号到接口（plan-03 step6）
     connect(bridge, &DAAgentBridge::agentRetrying, this,
             [this, sessionId](int attempt, int maxAttempts, int delayMs, const QString& errorType, const QString& errorMessage) {
-        if (sessionId == d_func()->mCurrentSessionId) {
+        auto* d = d_func();
+        if (sessionId == d->mCurrentSessionId) {
             emit agentRetrying(attempt, maxAttempts, delayMs, errorType, errorMessage);
+        } else {
+            // 审计问题 8：后台会话重试条缓存（最新一条覆盖——重试条只显示最新
+            // 进度），切回时重发；回合结束（agentDone）即清
+            PrivateData::PendingNotification& n = d->mPendingNotifications[sessionId];
+            n.isRetrying        = true;
+            n.attempt           = attempt;
+            n.maxAttempts       = maxAttempts;
+            n.delayMs           = delayMs;
+            n.retryErrorType    = errorType;
+            n.retryErrorMessage = errorMessage;
         }
     });
     // 子 agent 任务进度：原样转发（终态撤卡语义由 Bridge 消化）
@@ -917,15 +940,17 @@ void DAAgentModule::attachBridge(DAAgentBridge* bridge, const QString& sessionId
     });
     // 回合疑似未完成（模型"话说一半就停"）：转发 + systemMessage 提醒卡
     connect(bridge, &DAAgentBridge::agentTurnPossiblyIncomplete, this, [this, sessionId](int toolRounds) {
-        if (sessionId != d_func()->mCurrentSessionId) return;
+        auto* d = d_func();
+        if (sessionId != d->mCurrentSessionId) {
+            // 审计问题 8：后台会话的"话说一半"提醒缓存（有实际指导价值——
+            // 提示用户发"继续"），切回时重发；agentDone 豁免退役保住该缓存
+            PrivateData::PendingNotification& n = d->mPendingNotifications[sessionId];
+            n.isIncomplete = true;
+            n.toolRounds   = toolRounds;
+            return;
+        }
         emit agentTurnPossiblyIncomplete(toolRounds);
-        emit systemMessage(
-            tr("The agent ended this turn after %1 tool calls, but its last "
-               "message looks like an unfinished plan (e.g. announcing a next "
-               "step without executing it). Send a message such as "
-               "\"continue\" to let it finish.")  //cn:Agent 在执行 %1 轮工具调用后结束了本轮，但最后的回复疑似未完成的计划（如宣称下一步却未执行）。可发送"继续"等消息让它完成剩余工作。
-                .arg(toolRounds),
-            QStringLiteral("warning"));
+        emit systemMessage(turnIncompleteMessage(toolRounds), QStringLiteral("warning"));
     });
 
     // ---- 状态信号：内部记账 + 活跃转发 ----
@@ -980,10 +1005,22 @@ void DAAgentModule::attachBridge(DAAgentBridge* bridge, const QString& sessionId
         auto* d = d_func();
         d->mSessionBusy[sessionId] = false;
         if (sessionId == d->mCurrentSessionId) emit agentDone();
+        // 回合结束：重试条缓存失去意义即清（问题 8）；incomplete 提醒恰在
+        // done 时刻缓存（Bridge 先发 turnPossiblyIncomplete 再发 done），保留
+        auto nIt = d->mPendingNotifications.find(sessionId);
+        if (nIt != d->mPendingNotifications.end()) {
+            nIt->isRetrying = false;
+            if (!nIt->isIncomplete) {
+                d->mPendingNotifications.erase(nIt);
+            }
+        }
         // concurrent-sessions：后台会话跑完且无需等待输入 → 优雅退役
         //（对话状态已全量落盘 JSONL，下次发消息时经 load_session 重建）
+        // incomplete 提醒豁免退役（问题 8）：否则提醒随桥退役永远丢失，
+        // 切回重发落空；切回重发后缓存清除，下次切离即可正常退役
         if (sessionId != d->mCurrentSessionId && !d->mPendingQuestions.contains(sessionId)
-            && d->mPendingApprovalRequests.value(sessionId).isEmpty()) {
+            && d->mPendingApprovalRequests.value(sessionId).isEmpty()
+            && !d->mPendingNotifications.value(sessionId).isIncomplete) {
             retireBridge(sessionId);
         }
         emit sessionListChanged(listSessionsForUI());
@@ -1120,6 +1157,7 @@ void DAAgentModule::retireBridge(const QString& sessionId)
     d->mCumulativeOutTokens.remove(sessionId);
     d->mCumulativeTotalTokens.remove(sessionId);
     d->mPendingToolCallUuids.remove(sessionId);
+    d->mPendingNotifications.remove(sessionId);
     // 审计问题 17：任何清问题缓存的退役路径（删除会话/sendMessage 防御重建等）
     // 都须同步撤活跃会话屏幕上的问题卡——契约完整性兜底（常规路径进程退出时
     // processExited lambda 已先清缓存并撤卡，此处缓存多已为空）
@@ -1492,10 +1530,13 @@ bool DAAgentModule::switchSession(const QString& sessionId)
     const QString oldSid = d->mCurrentSessionId;
     if (!oldSid.isEmpty()) {
         DAAgentBridge* oldBridge = d->mSessionBridges.value(oldSid);
+        // incomplete 提醒豁免切离退役（问题 8）：与 agentDone 退役守卫同语义，
+        // 保住待重发提醒（切回重发后缓存清除，再切离即可正常退役）
         if (oldBridge && !d->mSessionBusy.value(oldSid, false)
             && !d->mSessionStarting.value(oldSid, false)
             && !d->mPendingQuestions.contains(oldSid)
-            && d->mPendingApprovalRequests.value(oldSid).isEmpty()) {
+            && d->mPendingApprovalRequests.value(oldSid).isEmpty()
+            && !d->mPendingNotifications.value(oldSid).isIncomplete) {
             retireBridge(oldSid);
         }
     }
@@ -1528,6 +1569,21 @@ bool DAAgentModule::switchSession(const QString& sessionId)
         emit agentToolApprovalRequest(o.value("callId").toString(),
                                       o.value("toolName").toString(),
                                       o.value("args").toObject());
+    }
+    // 瞬态通知重发（审计问题 8）：后台期间的重试条/话说一半提醒一次性重发，
+    // 重发即清——重试中的会话后续 retrying 信号会重新缓存；incomplete 提醒
+    // 清除后该会话恢复可退役语义
+    auto nIt = d->mPendingNotifications.find(sessionId);
+    if (nIt != d->mPendingNotifications.end()) {
+        const PrivateData::PendingNotification n = nIt.value();
+        d->mPendingNotifications.erase(nIt);
+        if (n.isRetrying) {
+            emit agentRetrying(n.attempt, n.maxAttempts, n.delayMs, n.retryErrorType, n.retryErrorMessage);
+        }
+        if (n.isIncomplete) {
+            emit agentTurnPossiblyIncomplete(n.toolRounds);
+            emit systemMessage(turnIncompleteMessage(n.toolRounds), QStringLiteral("warning"));
+        }
     }
     // 6. 温暖化：目标会话无桥且有预热空闲桥 → 接管并后台 load_session
     //    （下次发消息免冷启动；sendMessage 的 user_msg 在 stdin 管道中排在
@@ -2268,6 +2324,20 @@ int DAAgentModule::readContextWindow() const
     // 读内存配置模型（默认值由 DAAgentLLMConfig 兜底），供 agentUsage lambda
     // 与 emitTokenUsageForSession 复用，避免魔法数字散落
     return d->mConfig.llm().contextWindow();
+}
+
+/**
+ * @brief "回合疑似未完成"提醒文案（实时转发与问题 8 切回重发共用同一文本）
+ * @param toolRounds 本回合已执行的工具调用轮数
+ * @return 翻译后的用户提醒文案
+ */
+QString DAAgentModule::turnIncompleteMessage(int toolRounds) const
+{
+    return tr("The agent ended this turn after %1 tool calls, but its last "
+              "message looks like an unfinished plan (e.g. announcing a next "
+              "step without executing it). Send a message such as "
+              "\"continue\" to let it finish.")  //cn:Agent 在执行 %1 轮工具调用后结束了本轮，但最后的回复疑似未完成的计划（如宣称下一步却未执行）。可发送"继续"等消息让它完成剩余工作。
+        .arg(toolRounds);
 }
 
 /**

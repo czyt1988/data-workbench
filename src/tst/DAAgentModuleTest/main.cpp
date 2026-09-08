@@ -65,6 +65,11 @@ int fakeAgentMain(const QByteArray& scenario)
     }
 
     // module-echo（默认剧本）
+    // arm 指令（问题 8 测试用）：user_msg 武装后不发/半发回合消息，待 reconfigure
+    // 到达时再发 retrying / done(incomplete)——此时测试已切走会话，事件以后台
+    // 身份到达 Module，驱动"缓存-切回重发"链路（本地进程时序经 qWait 兜底）
+    bool armedRetry = false;
+    bool armedIncomplete = false;
     while (true) {
         const QByteArray line = in.readLine();
         if (line.isEmpty()) {
@@ -76,6 +81,22 @@ int fakeAgentMain(const QByteArray& scenario)
         }
         const QJsonObject obj = doc.object();
         const QString type = obj.value("type").toString();
+        if (type == QLatin1String("reconfigure")) {
+            if (armedRetry) {
+                armedRetry = false;
+                fakeEmit(out, {{ "type", "retrying" },
+                               { "attempt", 2 }, { "max_attempts", 5 }, { "delay_ms", 500 },
+                               { "error_type", "rate_limit_exhausted" },
+                               { "error_message", "slow down" }});
+            }
+            if (armedIncomplete) {
+                armedIncomplete = false;
+                fakeEmit(out, {{ "type", "done" },
+                               { "turn_summary", QJsonObject{
+                                     { "possibly_incomplete", true }, { "tool_rounds", 2 } } }});
+            }
+            continue;
+        }
         if (type == QLatin1String("init")) {
             const QString model = obj.value("config").toObject().value("model").toString();
             fakeEmit(out, {{ "type", "ready" }, { "model", model }});
@@ -114,6 +135,12 @@ int fakeAgentMain(const QByteArray& scenario)
                 fakeEmit(out, {{ "type", "done" }});
             } else if (content == QLatin1String("#fake:crash")) {
                 return 3;  // 模拟原生崩溃
+            } else if (content == QLatin1String("#fake:arm_retry")) {
+                armedRetry = true;  // 回合挂起，等 reconfigure 再发 retrying
+            } else if (content == QLatin1String("#fake:arm_incomplete")) {
+                // 半截计划文本后挂起，等 reconfigure 再发 done(incomplete)
+                fakeEmit(out, {{ "type", "message_end" }, { "content", "I will now generate a chart" }});
+                armedIncomplete = true;
             } else {
                 fakeEmit(out, {{ "type", "message_end" }, { "content", "echo:" + content }});
                 fakeEmit(out, {{ "type", "done" }});
@@ -187,6 +214,8 @@ private Q_SLOTS:
     void testWarmTakeoverLoadsSingleMessageHistory();  // L2：温暖化接管历史恰好 1 条也发 load_session
     void testStopNoopEmitsBusyFalse();                 // L8：stop() 空转回发 busy(false) 解除 Stopping 态
     void testErrorRecordPersisted();                   // 问题3/决策点4：error 记录经 Module 链路落盘 JSONL
+    void testBackgroundRetryingReplayedOnSwitchBack(); // 问题8：后台重试条缓存-切回重发
+    void testBackgroundIncompleteReplayedOnSwitchBack(); // 问题8：后台"话说一半"提醒缓存-豁免退役-切回重发
 };
 
 QString DAAgentModuleTest::pythonConfigPath()
@@ -641,6 +670,77 @@ void DAAgentModuleTest::testErrorRecordPersisted()
     const QJsonArray msgs = store.readMessagesForLoad(sid);
     QCOMPARE(msgs.size(), 1);
     QCOMPARE(msgs.at(0).toObject().value("role").toString(), QStringLiteral("human"));
+
+    module->shutdown();
+}
+
+/**
+ * 问题8（重试条）：后台会话经历 LLM 重试时，修复前 agentRetrying 被活跃
+ * 会话过滤后直接丢弃——切回看不到重试条。修复后缓存最新一条，切回重发。
+ * 构造：A 发 arm 指令挂起回合 → 切到 B → setLLMConfig 广播 reconfigure →
+ * A 的假 agent 发 retrying（后台身份到达）→ 切回 A 断言重发。
+ */
+void DAAgentModuleTest::testBackgroundRetryingReplayedOnSwitchBack()
+{
+    QScopedPointer<DA::DAAgentModule> module(makeModule());
+    QSignalSpy retrySpy(module.data(), &DA::DAAgentInterface::agentRetrying);
+    const QString sidA = module->createSession();
+    module->sendMessage(QStringLiteral("#fake:arm_retry"));  // 回合挂起（busy=true）
+    const QString sidB = module->createSession();            // current=B，A 转后台
+    QVERIFY(sidB != sidA);
+
+    // reconfigure 广播 → A 的假 agent 发 retrying → 后台缓存（不转发）
+    DA::DAAgentLLMConfig cfg;
+    cfg.setMaxRetries(6);
+    module->setLLMConfig(cfg);
+    QTest::qWait(2000);  // 等待本地子进程往返（retrying 到达并被缓存）
+    QCOMPARE(retrySpy.count(), 0);  // 后台期间不转发
+
+    // 切回 A：重发缓存的重试条（一次性，重发即清）
+    QVERIFY(module->switchSession(sidA));
+    QCOMPARE(retrySpy.count(), 1);
+    QCOMPARE(retrySpy.at(0).at(0).toInt(), 2);   // attempt
+    QCOMPARE(retrySpy.at(0).at(1).toInt(), 5);   // maxAttempts
+    QCOMPARE(retrySpy.at(0).at(3).toString(), QStringLiteral("rate_limit_exhausted"));
+
+    module->shutdown();
+}
+
+/**
+ * 问题8（话说一半提醒）：后台会话回合疑似未完成时，修复前提醒被丢弃且
+ * 会话随 agentDone 立即退役。修复后：incomplete 提醒缓存 + 退役豁免
+ * （agentDone/切离守卫都检查），切回重发 agentTurnPossiblyIncomplete +
+ * systemMessage 提醒卡（提示用户发"继续"）。
+ */
+void DAAgentModuleTest::testBackgroundIncompleteReplayedOnSwitchBack()
+{
+    QScopedPointer<DA::DAAgentModule> module(makeModule());
+    QSignalSpy incompleteSpy(module.data(), &DA::DAAgentInterface::agentTurnPossiblyIncomplete);
+    QSignalSpy sysMsgSpy(module.data(), &DA::DAAgentInterface::systemMessage);
+    const QString sidA = module->createSession();
+    module->sendMessage(QStringLiteral("#fake:arm_incomplete"));  // 半截计划后挂起
+    const QString sidB = module->createSession();                 // current=B，A 转后台
+    QVERIFY(sidB != sidA);
+
+    // reconfigure 广播 → A 的假 agent 发 done(incomplete) → 后台：提醒缓存 +
+    // agentDone 豁免退役（桥保活，等切回重发）
+    DA::DAAgentLLMConfig cfg;
+    cfg.setMaxRetries(6);
+    module->setLLMConfig(cfg);
+    QTest::qWait(2000);
+    QCOMPARE(incompleteSpy.count(), 0);  // 后台期间不转发
+
+    // 切回 A：重发提醒（信号 + systemMessage 文案）
+    QVERIFY(module->switchSession(sidA));
+    QCOMPARE(incompleteSpy.count(), 1);
+    QCOMPARE(incompleteSpy.at(0).at(0).toInt(), 2);  // toolRounds
+    bool hasReminder = false;
+    for (const auto& args : std::as_const(sysMsgSpy)) {
+        if (args.at(0).toString().contains(QStringLiteral("unfinished"))) {
+            hasReminder = true;
+        }
+    }
+    QVERIFY(hasReminder);
 
     module->shutdown();
 }

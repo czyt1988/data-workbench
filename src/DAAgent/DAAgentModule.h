@@ -179,6 +179,8 @@ private:
     QJsonObject makeUserRecord(const QString& text) const;
     QVariantList listSessionsForUI() const;
     int readContextWindow() const;
+    // "回合疑似未完成"提醒文案（实时转发与问题 8 切回重发共用）
+    QString turnIncompleteMessage(int toolRounds) const;
     void emitTokenUsageForSession(const QString& sid);
     // 会话累计 token 清零（新建/删除当前/恢复时调用）
     void resetCumulativeTokens();
