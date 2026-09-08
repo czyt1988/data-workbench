@@ -36,6 +36,7 @@ public:
     QString mCurrentSessionId;        ///< 当前活跃会话 ID
     QString mCurrentSessionFullTitle; ///< 当前会话完整标题（供省略渲染与 tooltip）
     QVariantList mSessions;           ///< 缓存 sessionListChanged payload（含元信息）
+    QVariantList mForeignSessions;    ///< 缓存 foreignAgentSessionsRunning payload（跨工程存活会话，决策点 5）
     QString mCurrentModel;            ///< 当前模型名称（由 onAgentReady/onActiveModelChanged 回填，onWebReady 推给 web）
     // ---- token 统计缓存：web 未就绪时丢失的推送，onWebReady 重推 ----
     int mLastInTokens;
@@ -206,6 +207,10 @@ void DAAgentDockWidget::setupWebChannel()
     // 启动 yolo 确认卡响应（A13）→ startupModeConfirmResponse
     connect(d->mChannel, &DAAgentWebChannel::startupModeConfirmResponse,
             this, &DAAgentDockWidget::onStartupModeConfirmResponse);
+    // 决策点 5 方案 c：跨工程会话提示条点击 → 打开会话管理对话框
+    //（对话框经 setForeignSessions 提供"全部工程"视图与一键停止）
+    connect(d->mChannel, &DAAgentWebChannel::foreignBannerClicked,
+            this, &DAAgentDockWidget::onSessionManagerClicked);
 }
 
 /**
@@ -295,6 +300,9 @@ void DAAgentDockWidget::onWebReady()
         // 历史重放不再恒显英文 fallback（源文本一致，翻译条目复用）
         {"questionSubmit", tr("Submit")},                          // cn:提交
         {"questionCustomPlaceholder", tr("Type your own answer...")},  // cn:输入自定义回答...
+        // —— 跨工程会话提示条（决策点 5 方案 c，审计问题 18）——
+        {"foreignBannerText", tr("%1 session(s) from the previous project are still running in the background")},  // cn:%1 个上一工程的会话仍在后台运行
+        {"foreignBannerTip", tr("Click to view and stop these sessions")},  // cn:点击查看并停止这些会话
         // —— 子 agent 进度卡片（subagent-phase1 C）——
         {"subagentTaskCount", tr("%1 subagent task(s)")},  // cn:%1 个子 Agent 任务
         {"subagentProgress", tr("%1/%2 done")},             // cn:%1/%2 已完成
@@ -598,6 +606,9 @@ void DAAgentDockWidget::onSessionManagerClicked()
     DA_D(d);
     // 弹出会话管理对话框，操作经 signal→signal 直连转发到 DAAgentInterface
     DADialogAgentSessionManager dlg(d->mSessions, d->mCurrentSessionId, this);
+    // 决策点 5 方案 c：跨工程存活会话注入"全部工程"视图（提示条点击/手动
+    // 勾选均可查看并停止旧工程后台会话）
+    dlg.setForeignSessions(d->mForeignSessions);
     connect(&dlg, &DADialogAgentSessionManager::switchRequested,
             this, &DAAgentDockWidget::sessionSwitchRequested);
     connect(&dlg, &DADialogAgentSessionManager::renameRequested,
@@ -776,6 +787,22 @@ void DAAgentDockWidget::onSessionCleared()
         d->mChannel->focusInput();
     }
     updateTitleLabel();
+}
+
+/**
+ * @brief 跨工程存活会话变化（决策点 5 方案 c，审计问题 18）
+ * @param sessions 绑定其它工程的存活桥会话 payload（空列表=无，隐藏提示条）
+ *
+ * 缓存列表供会话管理对话框"全部工程"视图取数；聊天区顶部显示/更新/隐藏
+ * 提示条（"N 个上一工程的会话仍在后台运行"，点击打开对话框）。
+ */
+void DAAgentDockWidget::onForeignAgentSessionsRunning(QVariantList sessions)
+{
+    DA_D(d);
+    d->mForeignSessions = sessions;
+    if (d->mChannel) {
+        d->mChannel->showForeignSessionsBanner(sessions.size());
+    }
 }
 
 /**

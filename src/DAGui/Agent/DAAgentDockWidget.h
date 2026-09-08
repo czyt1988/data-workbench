@@ -68,6 +68,10 @@ public Q_SLOTS:
     void onSessionListChanged(QVariantList sessions);
     void onSessionCreated(const QString& sessionId);
     void onSessionCleared();
+    /// 跨工程存活会话变化（决策点 5 方案 c，审计问题 18）：缓存列表 +
+    /// 聊天区顶部提示条（"N 个上一工程的会话仍在后台运行"，点击打开
+    /// 会话管理对话框的"全部工程"视图）；空列表隐藏提示条
+    void onForeignAgentSessionsRunning(QVariantList sessions);
     void onSystemMessage(const QString& text, const QString& level = QStringLiteral("info"));
 
     // ---- 供应商/多模型选择（web 两级选择器） ----

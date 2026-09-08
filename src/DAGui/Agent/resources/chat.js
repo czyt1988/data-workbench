@@ -63,6 +63,9 @@ let i18n = {
     toolResultTruncated: 'result truncated',
     // —— 问题卡提交失败提示（审计 L9）——
     answerSendFailed: 'Answer not sent, please retry',
+    // —— 跨工程会话提示条（决策点 5 方案 c，审计问题 18）——
+    foreignBannerText: '%1 session(s) from the previous project are still running in the background',
+    foreignBannerTip: 'Click to view and stop these sessions',
     // —— 重放问题卡标签（审计 L10，C++ setI18nLabels 注入译文）——
     questionSubmit: 'Submit',
     questionCustomPlaceholder: 'Type your own answer...',
@@ -1344,6 +1347,33 @@ function dismissToolApproval(callId) {
             break;
         }
     }
+}
+
+// 跨工程会话提示条（决策点 5 方案 c，审计问题 18）：count>0 显示"N 个上一
+// 工程的会话仍在后台运行"（点击打开会话管理对话框——全部工程视图+一键停止），
+// count==0 隐藏。挂在 body 顶部（#messages 之前），不随 clearChat 清除
+function showForeignBanner(count) {
+    let bar = document.getElementById('foreign-banner');
+    if (!bar) {
+        if (!(count > 0)) return;
+        bar = document.createElement('div');
+        bar.id = 'foreign-banner';
+        bar.className = 'foreign-banner';
+        bar.title = i18n.foreignBannerTip || 'Click to view and stop these sessions';
+        bar.onclick = function() {
+            if (chatBridge && typeof chatBridge.onForeignBannerClicked === 'function') {
+                chatBridge.onForeignBannerClicked();
+            }
+        };
+        document.body.insertBefore(bar, document.getElementById('messages'));
+    }
+    if (!(count > 0)) {
+        bar.classList.remove('visible');
+        return;
+    }
+    bar.textContent = (i18n.foreignBannerText || '%1 session(s) from the previous project are still running in the background')
+        .replace('%1', String(count));
+    bar.classList.add('visible');
 }
 
 // C++ 推送挂起问题卡作废（子进程退出/崩溃/用户 Stop/桥退役）：移除未回答的

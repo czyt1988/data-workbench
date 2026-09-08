@@ -533,6 +533,14 @@ void DAAgentWebChannel::onModeConfirmResponse(bool keepYolo)
 }
 
 /**
+ * @brief JS 调用：跨工程会话提示条点击（决策点 5 方案 c，审计问题 18）
+ */
+void DAAgentWebChannel::onForeignBannerClicked()
+{
+    emit foreignBannerClicked();
+}
+
+/**
  * @brief 推送可用模型列表到 web（flat 数组，JS 据供应商分组渲染两级选择器）
  * @param models 每元素 QVariantMap{provider,model,context_window,max_output_tokens}
  */
@@ -645,6 +653,18 @@ void DAAgentWebChannel::setTokenStats(const QString& label, int inputTokens, int
 void DAAgentWebChannel::resetTokenStats()
 {
     callJS(QStringLiteral("resetTokenStats()"));
+}
+
+/**
+ * @brief 推送跨工程存活会话提示条（决策点 5 方案 c，审计问题 18）
+ * @param count 绑定其它工程的存活会话数（0=隐藏提示条）
+ *
+ * 打开/新建工程不退役旧工程会话桥（不腰斩长任务）——提示条给用户知情权
+ * 与入口（点击打开会话管理对话框的"全部工程"视图，可一键停止）。
+ */
+void DAAgentWebChannel::showForeignSessionsBanner(int count)
+{
+    callJS(QStringLiteral("showForeignBanner(%1)").arg(count));
 }
 
 /**

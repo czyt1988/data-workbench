@@ -199,6 +199,13 @@ private:
     QJsonArray readSessionSnapshotForLoad(const QString& sessionId, bool excludeTrailingUser) const;
     // 优雅退役：断开路由、清缓存、requestStop + processExited 后 deleteLater
     void retireBridge(const QString& sessionId);
+    // 切离退役判定（switchSession step1 / newSession 共用，问题 18）：空闲且
+    // 无挂起交互才退役，忙碌/挂起留后台
+    bool retireIdleSessionBridge(const QString& sid);
+    // 绑定其它工程的存活桥会话列表（决策点 5 方案 c 跨工程可见性）
+    QVariantList listForeignLiveSessions() const;
+    // 广播跨工程存活会话变化（emit foreignAgentSessionsRunning）
+    void notifyForeignRunningSessions();
     // 查会话桥（无返回 nullptr）
     DAAgentBridge* bridgeForSession(const QString& sessionId) const;
     // 重断言活跃会话 UI 运行态（switchSession step4 / newSession 共用，问题14）

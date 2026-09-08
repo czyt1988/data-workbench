@@ -1333,3 +1333,27 @@ body {
     border-color: #5280C1;
     color: #5280C1;
 }
+
+/* —— 跨工程会话提示条（决策点 5 方案 c，审计问题 18）——
+   聊天区顶部的信息条：主蓝 #5280C1 语义（信息/可点击入口），浅底不抢焦点 */
+.foreign-banner {
+    flex: 0 0 auto;
+    display: none;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background: rgba(82, 128, 193, 0.10);
+    color: #5280C1;
+    border-bottom: 1px solid rgba(82, 128, 193, 0.35);
+    font-size: 13px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.foreign-banner.visible {
+    display: flex;
+}
+
+.foreign-banner:hover {
+    background: rgba(82, 128, 193, 0.20);
+}

@@ -38,6 +38,8 @@ public:
     Q_INVOKABLE void onToolApproval(const QString& callId, bool approved, bool rememberSession);
     /// JS 调用：启动 yolo 确认卡（A13）的用户响应（true=保持 yolo）
     Q_INVOKABLE void onModeConfirmResponse(bool keepYolo);
+    /// JS 调用：跨工程会话提示条点击（决策点 5 方案 c，审计问题 18）
+    Q_INVOKABLE void onForeignBannerClicked();
     void appendUserMessage(const QString& text);
     void appendToken(const QString& token);
     void finalizeAgentMessage(const QString& fullText);
@@ -74,6 +76,9 @@ public:
     void setTokenStats(const QString& label, int inputTokens, int outputTokens,
                        int totalTokens, int contextWindow, const QString& source);
     void resetTokenStats();
+    /// 推送跨工程存活会话提示条（决策点 5 方案 c）：count>0 显示"N 个上一工程
+    /// 的会话仍在后台运行"（点击打开会话管理对话框），0 隐藏
+    void showForeignSessionsBanner(int count);
     void setI18nLabels(const QVariantMap& labels);
     void focusInput();
     void onAgentStopped();
@@ -106,6 +111,13 @@ Q_SIGNALS:
      * @brief 用户在 web 输入区点 Stop 按钮信号（直达 C++ 终止流程）
      */
     void stopRequested();
+
+    /**
+     * @brief 跨工程会话提示条点击信号（决策点 5 方案 c，审计问题 18）
+     *
+     * Dock 收到后打开会话管理对话框（含"全部工程"视图与一键停止）
+     */
+    void foreignBannerClicked();
 
     /**
      * @brief 用户在 web 两级模型选择器选定供应商+模型信号

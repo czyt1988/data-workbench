@@ -546,6 +546,7 @@ void DAAgentModule::stopSession(const QString& sessionId)
     d->mPendingToolCallUuids.remove(sessionId);
     bridge->requestStop();
     emit sessionListChanged(listSessionsForUI());  // 角标即时刷新
+    notifyForeignRunningSessions();  // 跨工程视图一键停止后提示条即时刷新（决策点 5）
     // 桥的 busy(false) 由 requestStop → onProcessFinished 用户停止分支发射，
     // 经 attachBridge 路由记账/转发（后台会话不转发 UI，角标已刷新）
 }
@@ -1228,6 +1229,8 @@ void DAAgentModule::attachBridge(DAAgentBridge* bridge, const QString& sessionId
                 emit sessionListChanged(listSessionsForUI());  // 后台角标解除
             }
         }
+        // 跨工程存活桥集合变化（进程死亡/自愈窗口开启，决策点 5 提示条刷新）
+        notifyForeignRunningSessions();
     });
 }
 
@@ -1284,6 +1287,7 @@ void DAAgentModule::retireBridge(const QString& sessionId)
     } else {
         bridge->deleteLater();  // 已死进程直接回收（析构 stopAgent 为 no-op）
     }
+    notifyForeignRunningSessions();  // 跨工程存活桥集合变化（决策点 5 提示条刷新）
 }
 
 /**
@@ -1587,6 +1591,13 @@ void DAAgentModule::newSession()
         reassertActiveSessionState();
         return;
     }
+    // 审计问题 18：真新建路径先做切离退役判定（与 switchSession step1 同语义，
+    // 共用 retireIdleSessionBridge）——旧会话空闲且无挂起则退役其桥。修复前
+    // newSession 不走 switchSession，反复"聊一轮 → 点+ → 聊一轮"会累积 N 个
+    // 空闲 Python 子进程（每个含 langchain/openai 导入，数百 MB 级）直到应用
+    // 关闭。旧会话忙碌/挂起则桥留后台继续（并发语义不变）。
+    // 复用路径（上方 return）不退役：空会话即将被复用，保桥免除首条消息冷启动
+    retireIdleSessionBridge(d->mCurrentSessionId);
     QString sid = createSession();
     emit sessionCreated(sid);  // 仅此路径触发 UI clearChat
     // 状态重断言（审计问题 14）：后台会话 A 运行中点「+」→ B 成为活跃会话，
@@ -1630,20 +1641,9 @@ bool DAAgentModule::switchSession(const QString& sessionId)
     // 1. 切离旧会话（concurrent-sessions 核心变化）：忙碌/启动中/等待输入 → 桥留在
     //    后台继续执行（不再 requestStop 终止，旧会话尾巴由 attachBridge 的会话化
     //    持久化 lambda 写回原会话，无污染）；空闲且无挂起交互 → 优雅退役其桥
-    //    （内存收窄，状态已全量落盘 JSONL）。
-    const QString oldSid = d->mCurrentSessionId;
-    if (!oldSid.isEmpty()) {
-        DAAgentBridge* oldBridge = d->mSessionBridges.value(oldSid);
-        // incomplete 提醒豁免切离退役（问题 8）：与 agentDone 退役守卫同语义，
-        // 保住待重发提醒（切回重发后缓存清除，再切离即可正常退役）
-        if (oldBridge && !d->mSessionBusy.value(oldSid, false)
-            && !d->mSessionStarting.value(oldSid, false)
-            && !d->mPendingQuestions.contains(oldSid)
-            && d->mPendingApprovalRequests.value(oldSid).isEmpty()
-            && !d->mPendingNotifications.value(oldSid).isIncomplete) {
-            retireBridge(oldSid);
-        }
-    }
+    //    （内存收窄，状态已全量落盘 JSONL）。判定收口 retireIdleSessionBridge
+    //    （与 newSession 共用，问题 18）
+    retireIdleSessionBridge(d->mCurrentSessionId);
     // 2. 切换 UI 归属 + last_active 指针（无任何子进程操作，切换耗时 = UI 重放）
     d->mCurrentSessionId = sessionId;
     d->mSessionStore->setLastActive(sessionId, d->mCurrentProjectPath);  // 带工程路径
@@ -1791,6 +1791,80 @@ QVariantList DAAgentModule::listSessions() const
 }
 
 /**
+ * @brief 切离退役判定（switchSession step1 / newSession 共用，审计问题 18）
+ * @param sid 待判定会话 ID
+ * @return 是否执行了退役
+ *
+ * 空闲且无挂起交互（问题/审批/incomplete 提醒豁免）→ 优雅退役其桥
+ * （内存收窄，状态已全量落盘 JSONL，下次发消息经 load_session 重建）；
+ * 忙碌/启动中/挂起 → 桥留后台继续执行（并发会话核心语义）。
+ */
+bool DAAgentModule::retireIdleSessionBridge(const QString& sid)
+{
+    DA_D(d);
+    if (sid.isEmpty()) {
+        return false;
+    }
+    DAAgentBridge* bridge = d->mSessionBridges.value(sid);
+    if (bridge && !d->mSessionBusy.value(sid, false)
+        && !d->mSessionStarting.value(sid, false)
+        && !d->mPendingQuestions.contains(sid)
+        && d->mPendingApprovalRequests.value(sid).isEmpty()
+        && !d->mPendingNotifications.value(sid).isIncomplete) {
+        retireBridge(sid);
+        return true;
+    }
+    return false;
+}
+
+/**
+ * @brief 绑定其它工程的存活桥会话列表（决策点 5 方案 c：跨工程可见性）
+ * @return QVariantList，每元素 QVariantMap{id,title,projectPath,state}
+ *
+ * 打开/新建工程后旧工程会话桥保持运行（不腰斩长任务），但会话列表按
+ * 工程过滤使其不可见、角标不可达——本列表供 UI 提示条与"全部工程"视图。
+ */
+QVariantList DAAgentModule::listForeignLiveSessions() const
+{
+    DA_DC(d);
+    // store 无按 id 查 meta 的 API，全量列表查找（会话数受 maxSessions 上限
+    // 约束，默认 20，O(n) 可接受）
+    const QVector<DAAgentSessionStore::SessionMeta> all = d->mSessionStore->listSessions();
+    QVariantList out;
+    for (auto it = d->mSessionBridges.constBegin(); it != d->mSessionBridges.constEnd(); ++it) {
+        DAAgentBridge* b = it.value();
+        if (!b || (!b->isRunning() && !b->isRecovering())) {
+            continue;
+        }
+        for (const DAAgentSessionStore::SessionMeta& meta : all) {
+            if (meta.id != it.key()) {
+                continue;
+            }
+            if (meta.projectPath != d->mCurrentProjectPath) {
+                // 绑定其它工程的会话（或当前已开工程时的无归属自由会话）——
+                // 工程视图不可见、角标不可达，外报供提示条/全部工程视图
+                QVariantMap vm;
+                vm[QStringLiteral("id")]          = it.key();
+                vm[QStringLiteral("title")]       = meta.title;
+                vm[QStringLiteral("projectPath")] = meta.projectPath;
+                vm[QStringLiteral("state")]       = sessionRuntimeState(it.key());
+                out.append(vm);
+            }
+            break;
+        }
+    }
+    return out;
+}
+
+/**
+ * @brief 广播跨工程存活会话变化（提示条/全部工程视图数据源刷新）
+ */
+void DAAgentModule::notifyForeignRunningSessions()
+{
+    emit foreignAgentSessionsRunning(listForeignLiveSessions());
+}
+
+/**
  * @brief 生成 sessionListChanged 的 payload（按工程路径过滤）
  * @return QVariantList，每元素 QVariantMap{id,title,createdAt,updatedAt,messageCount,state,inputTokens,outputTokens,totalTokens}
  */
@@ -1896,6 +1970,9 @@ void DAAgentModule::setCurrentProjectPath(const QString& path)
     if (d->mPermissionManager) {
         d->mPermissionManager->setProjectDir(path.isEmpty() ? QString() : QFileInfo(path).absolutePath());
     }
+    // 决策点 5 方案 c（审计问题 18）：打开/新建工程不退役任何桥（不腰斩长
+    // 任务）——检测绑定其它工程的存活桥并通知 UI（提示条 + 全部工程视图）
+    notifyForeignRunningSessions();
 }
 
 /**
@@ -2241,6 +2318,7 @@ void DAAgentModule::restoreLastActiveSession()
     d->mCurrentSessionId.clear();
     resetCumulativeTokens();  // 清零累计，始终以全新对话开始
     emit sessionCleared();  // 清空聊天区、复位 token 统计、清空标题
+    notifyForeignRunningSessions();  // 决策点 5：启动/开工程后的跨工程存活会话提示
 }
 
 // ===========================================================================

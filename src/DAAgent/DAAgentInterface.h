@@ -218,6 +218,13 @@ Q_SIGNALS:
     /// 系统消息（用户可见但不作为 LLM 对话内容），如 LLM 未配置提示
     /// level: "info" / "warning" / "error"
     void systemMessage(const QString& text, const QString& level);
+    /// 跨工程存活会话变化（决策点 5 方案 c，审计问题 18）：打开/新建工程不
+    /// 退役旧工程会话桥（不腰斩长任务），此信号报告绑定其它工程的存活桥
+    /// 会话——UI 显示提示条（"N 个上一工程的会话仍在后台运行"）并提供
+    /// 跨工程视图/一键停止。payload 每元素 QVariantMap{id,title,projectPath,
+    /// state}；空列表=无跨工程存活会话（隐藏提示条）。发射时机：工程路径
+    /// 变更/恢复会话/桥退役/桥进程退出/stopSession
+    void foreignAgentSessionsRunning(const QVariantList& sessions);
 
     // ---- 供应商与多模型管理信号 ----
     /// 可用模型列表变化（供应商变更/设置页 apply 后），Dock 据此填充下拉

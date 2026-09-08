@@ -11,6 +11,7 @@ class QTableWidget;
 class QPushButton;
 class QLabel;
 class QStackedWidget;
+class QCheckBox;
 
 namespace DA
 {
@@ -40,6 +41,11 @@ class DAGUI_API DADialogAgentSessionManager : public QDialog
 public:
     // 构造函数
     DADialogAgentSessionManager(const QVariantList& sessions, const QString& currentSessionId, QWidget* parent = nullptr);
+
+    // 注入跨工程存活会话（决策点 5 方案 c，审计问题 18）：非空时启用"全部
+    // 工程"复选框，勾选后合并显示（foreign 行禁止切换——工程过滤列表不含它，
+    // 切入即"消失"；停止/删除/重命名照常可用）。exec() 前调用
+    void setForeignSessions(const QVariantList& sessions);
 
 private Q_SLOTS:
     void onSwitchClicked();
@@ -72,6 +78,10 @@ private:
     QString sessionIdAt(int row) const;
     // 当前选中行（无选中返回 -1）
     int currentSelectedRow() const;
+    // 合并列表：当前工程会话 +（勾选"全部工程"时）跨工程存活会话（标 foreign）
+    QVariantList combinedSessions() const;
+    // 指定行是否跨工程会话（payload foreign 标记；非法行 false）
+    bool isForeignRow(int row) const;
     // 把 ISO8601 时间串格式化为本地显示串
     static QString formatTimestamp(const QString& iso);
     // 状态键 → 显示文本与语义色（空闲返回 false，text/color 不置值）
@@ -79,6 +89,11 @@ private:
 
 private:
     QTableWidget* mTable;
+    // ---- 跨工程会话视图（决策点 5 方案 c，审计问题 18） ----
+    QVariantList mBaseSessions;        ///< 构造时的当前工程会话快照
+    QVariantList mForeignSessions;     ///< setForeignSessions 注入的跨工程存活会话
+    QCheckBox* mAllProjectsCheck = nullptr;  ///< "全部工程"复选框（foreign 非空才启用）
+    bool mShowAllProjects = false;     ///< 复选框状态（合并填充开关）
     QPushButton* mSwitchBtn;
     QPushButton* mRenameBtn;
     QPushButton* mDeleteBtn;

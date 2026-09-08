@@ -281,6 +281,8 @@ void DAAppController::initialize()
         connect(agent, &DAAgentInterface::sessionCreated, dock, &DAAgentDockWidget::onSessionCreated);
         connect(agent, &DAAgentInterface::sessionCleared, dock, &DAAgentDockWidget::onSessionCleared);
         connect(agent, &DAAgentInterface::systemMessage, dock, &DAAgentDockWidget::onSystemMessage);
+        // 决策点 5 方案 c（审计问题 18）：跨工程存活会话 → 提示条 + 全部工程视图
+        connect(agent, &DAAgentInterface::foreignAgentSessionsRunning, dock, &DAAgentDockWidget::onForeignAgentSessionsRunning);
         // 供应商/多模型选择：接口信号 → Dock 槽（2 条），Dock 信号 → 接口方法（1 条）
         // availableModelsChanged 载荷为 DAAgentModelRef 结构体列表（DAGui 不依赖 DAAgent，
         // 经 APP 桥接层转换为 QVariantMap{provider,model,context_window,max_output_tokens}）

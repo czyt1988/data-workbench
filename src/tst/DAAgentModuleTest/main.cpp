@@ -254,6 +254,8 @@ private Q_SLOTS:
     void testRegisterToolBroadcastsUpdateTools();      // 问题19：注册工具向存活桥广播 update_tools
     void testSubagentProgressReplayedOnSwitchBack();   // 问题28b：在途子 Agent 进度切回重放
     void testStopSessionStopsBackgroundBridge();       // L14：stopSession 直达后台会话桥
+    void testNewSessionRetiresIdleBridge();            // 问题18：newSession 切离退役空闲桥
+    void testForeignRunningSessionsNotified();         // 问题18/决策点5：跨工程存活会话通知
 };
 
 QString DAAgentModuleTest::pythonConfigPath()
@@ -913,6 +915,64 @@ void DAAgentModuleTest::testStopSessionStopsBackgroundBridge()
     // 防御 no-op：无桥会话 / 空 id 不崩溃、无副作用
     module->stopSession(sidB);
     module->stopSession(QString());
+
+    module->shutdown();
+}
+
+/**
+ * 问题18（资源累积面）：活跃会话跑完后桥不退役（免下轮冷启动），此时点「+」
+ * 新建会话不走 switchSession——修复前旧会话空闲桥永久滞留，反复"聊一轮→
+ * 点+→聊一轮"累积 N 个空闲 Python 子进程（每个数百 MB 级）直到应用关闭。
+ * 修复后 newSession 真新建路径复用切离退役判定（空闲无挂起→retire）。
+ */
+void DAAgentModuleTest::testNewSessionRetiresIdleBridge()
+{
+    QScopedPointer<DA::DAAgentModule> module(makeModule());
+    QSignalSpy doneSpy(module.data(), &DA::DAAgentInterface::agentDone);
+    const QString sidA = module->createSession();
+    module->sendMessage(QStringLiteral("one round"));
+    QVERIFY(doneSpy.wait(30000));
+    QVERIFY(module->isRunning());  // A 的空闲桥存活（活跃会话跑完不退役）
+
+    // 点「+」：A 非空（messageCount=1）不复用 → 真新建 + 切离退役 A 的空闲桥
+    module->newSession();
+    QVERIFY(module->currentSessionId() != sidA);
+    // A 桥已退役（映射移除）——无任何存活子进程
+    QTRY_VERIFY_WITH_TIMEOUT(!module->isRunning(), 15000);
+
+    module->shutdown();
+}
+
+/**
+ * 问题18/决策点 5 方案 c（可见性面）：打开工程 P2 时绑定 P1 的存活桥保持
+ * 运行（不腰斩长任务），但工程过滤列表使其不可见/角标不可达/无法切入停止。
+ * 修复后经 foreignAgentSessionsRunning 通知 UI（提示条 + 全部工程视图 +
+ * 一键停止）；桥死亡/停止后通知空列表（提示条隐藏）。
+ */
+void DAAgentModuleTest::testForeignRunningSessionsNotified()
+{
+    QScopedPointer<DA::DAAgentModule> module(makeModule());
+    QSignalSpy foreignSpy(module.data(), &DA::DAAgentInterface::foreignAgentSessionsRunning);
+    QSignalSpy questionSpy(module.data(), &DA::DAAgentInterface::agentQuestion);
+
+    // 工程 P1 下的会话挂起在 ask_user（桥长期存活）
+    module->setCurrentProjectPath(QStringLiteral("C:/fake-proj/P1.daProject"));
+    const QString sidA = module->createSession();
+    module->sendMessage(QStringLiteral("#fake:question"));
+    QVERIFY(questionSpy.wait(30000));
+
+    // 打开工程 P2：不退役任何桥，通知跨工程存活会话（含 sidA）
+    module->setCurrentProjectPath(QStringLiteral("C:/fake-proj/P2.daProject"));
+    QVERIFY(!foreignSpy.isEmpty());
+    QVariantList last = foreignSpy.last().at(0).toList();
+    QCOMPARE(last.size(), 1);
+    QCOMPARE(last.at(0).toMap().value(QStringLiteral("id")).toString(), sidA);
+    QCOMPARE(last.at(0).toMap().value(QStringLiteral("projectPath")).toString(),
+             QStringLiteral("C:/fake-proj/P1.daProject"));
+
+    // 一键停止（跨工程视图入口，L14 stopSession）→ 通知空列表（提示条隐藏）
+    module->stopSession(sidA);
+    QTRY_VERIFY_WITH_TIMEOUT(foreignSpy.last().at(0).toList().isEmpty(), 15000);
 
     module->shutdown();
 }
