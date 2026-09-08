@@ -330,13 +330,16 @@ void DAAgentBridge::requestStop()
     // 停止已有的 stop 计时器(防止重复调用)
     if (d->mStopTimer) {
         d->mStopTimer->stop();
-        delete d->mStopTimer;
+        d->mStopTimer->deleteLater();
         d->mStopTimer = nullptr;
     }
-    if (d->mRunning && d->mProcess) {
+    // 审计 L3：kill 兜底按进程实际状态判断（而非 mRunning）——二次 requestStop
+    // 时 mRunning 已为 false，若因此跳过定时器重建，则上方刚取消的 kill 兜底
+    // 无人重建：Python 忽略 stop 时进程永不退出。
+    if (d->mProcess && d->mProcess->state() != QProcess::NotRunning) {
         // 标记为用户主动终止——onProcessFinished 据此抑制异常退出错误
         d->mUserRequestedStop = true;
-        writeJson(QJsonObject{{"type", "stop"}});
+        writeJson(QJsonObject{{"type", "stop"}});  // 重复写入无害（Python 忽略第二条 stop）
         // 非阻塞: 不调用 waitForFinished(会冻结 UI 最多 m_stopTimeoutMs),
         // 改用 QTimer 在超时后 kill。进程退出后由 onProcessFinished
         // 发射 agentBusy(false) 恢复 UI。
@@ -347,7 +350,9 @@ void DAAgentBridge::requestStop()
             if (d->mProcess && d->mProcess->state() != QProcess::NotRunning) {
                 d->mProcess->kill();
             }
-            delete d->mStopTimer;
+            // 审计 L3：自身 timeout 槽内不得裸 delete 发送者（QTimer 在
+            // timeout 发射栈内被销毁属未定义行为边界），改 deleteLater
+            d->mStopTimer->deleteLater();
             d->mStopTimer = nullptr;
         });
         d->mStopTimer->start(d->mStopTimeoutMs);

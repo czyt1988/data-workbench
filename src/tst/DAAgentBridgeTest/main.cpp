@@ -18,6 +18,8 @@
 //                   空闲期崩溃，验证自愈不重发已回答消息，问题 11）
 //   ready-after-first-msg : 收到第一条 user_msg 才发 ready（复现冷启动时序，
 //                   验证 ready 时回合进行中重断言 busy(true)，问题 15）
+//   ignore-stop   : ready 后忽略一切 stdin 消息（验证 requestStop 的 kill
+//                   定时器兜底在二次调用后仍生效，L3）
 
 #include <QtTest/QtTest>
 #include <QCoreApplication>
@@ -78,6 +80,19 @@ int fakeAgentMain(const QByteArray& scenario)
             } else if (type == QLatin1String("user_msg")) {
                 return 3;  // 模拟原生崩溃（CrashExit）
             }
+        }
+        return 0;
+    }
+    if (scenario == "ignore-stop") {
+        // ready 后忽略一切 stdin 消息（含 stop）——模拟 Python 端无视停止请求，
+        // 验证 requestStop 的 kill 定时器兜底（L3：二次调用也须重建）。
+        fakeEmit(out, {{ "type", "ready" }, { "model", "fake-model" }});
+        while (true) {
+            const QByteArray line = in.readLine();
+            if (line.isEmpty()) {
+                break;
+            }
+            // 故意不处理任何消息（直到被 kill）
         }
         return 0;
     }
@@ -209,7 +224,8 @@ class DAAgentBridgeTest : public QObject
     Q_OBJECT
 private:
     // 以假 agent 剧本启动桥（pythonExePath=测试 exe 自身）
-    static void startWithScenario(DA::DAAgentBridge& bridge, const char* scenario, int readyTimeoutMs = 10000);
+    static void startWithScenario(DA::DAAgentBridge& bridge, const char* scenario,
+                                  int readyTimeoutMs = 10000, int stopTimeoutMs = 3000);
 
 private Q_SLOTS:
     void testInitErrorClosesChannelAndExits();  // 问题9：init 阶段错误 → 关写通道、正常退出、无崩溃自愈
@@ -220,14 +236,16 @@ private Q_SLOTS:
     void testSendWithoutProcessRollsBack();        // 问题23：writeJson 失败回滚 busy/看门狗 + 明确错误
     void testIdleCrashDoesNotResendAnsweredMessage(); // 问题11：done 清 mLastUserMessage，空闲期崩溃不自发重放
     void testReadyDuringActiveTurnReassertsBusy();    // 问题15：ready 到达时回合进行中 → 重断言 busy(true)
+    void testSecondRequestStopRebuildsKillFallback(); // L3：stop 被忽略时二次 requestStop 仍重建 kill 兜底
 };
 
-void DAAgentBridgeTest::startWithScenario(DA::DAAgentBridge& bridge, const char* scenario, int readyTimeoutMs)
+void DAAgentBridgeTest::startWithScenario(DA::DAAgentBridge& bridge, const char* scenario,
+                                          int readyTimeoutMs, int stopTimeoutMs)
 {
     const QString exe = QCoreApplication::applicationFilePath();
     bridge.startAgent(fakeLlmConfig(), QJsonArray(), QStringLiteral("test prompt"), QJsonArray(),
                       exe, QStringLiteral("--fake-agent=%1").arg(QLatin1String(scenario)),
-                      readyTimeoutMs, 3000);
+                      readyTimeoutMs, stopTimeoutMs);
 }
 
 /**
@@ -480,6 +498,30 @@ void DAAgentBridgeTest::testReadyDuringActiveTurnReassertsBusy()
     // 停止并等待进程真实退出（避免析构时 QProcess 仍在运行）
     bridge.requestStop();
     QVERIFY(waitForCount(busySpy, 4));
+}
+
+/**
+ * L3：requestStop 的 kill 兜底缺陷——① 定时器在自身 timeout 槽内裸 delete
+ * 发送者；② 二次 requestStop 因 mRunning 已 false 跳过定时器重建，而入口处
+ * 刚取消了上一个 kill 定时器：Python 忽略 stop 时进程永不退出、无人兜底。
+ * 修复后按进程实际状态重建 kill 定时器 + deleteLater。
+ */
+void DAAgentBridgeTest::testSecondRequestStopRebuildsKillFallback()
+{
+    DA::DAAgentBridge bridge;
+    QSignalSpy readySpy(&bridge, &DA::DAAgentBridge::agentReady);
+    QSignalSpy busySpy(&bridge, &DA::DAAgentBridge::agentBusy);
+    // kill 兜底超时压到 1s，加速验证
+    startWithScenario(bridge, "ignore-stop", 10000, 1000);
+
+    QVERIFY(waitForCount(readySpy, 1));
+
+    bridge.requestStop();  // 第一次：stop 被假 agent 忽略，1s kill 兜底启动
+    bridge.requestStop();  // 第二次（修复前：取消旧定时器且不重建 → 无人兜底）
+
+    // kill 兜底必须生效：onProcessFinished 用户停止分支 → busy(false)
+    QVERIFY(waitForCount(busySpy, 1, 10000));
+    QCOMPARE(busySpy.last().at(0).toBool(), false);
 }
 
 int main(int argc, char* argv[])
