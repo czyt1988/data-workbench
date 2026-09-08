@@ -742,6 +742,15 @@ void DAAgentModule::prestartAgent()
                                assembleSubagentDefs(),
                                pythonExe, scriptPath,
                                c.readyTimeoutSec() * 1000, c.stopTimeoutSec() * 1000);
+    // 启动失败兜底（审计 L1，对照 createBridgeForSession 的退役兜底）：
+    // waitForStarted 失败路径已同步 emit processExited（问题 21）→ 上方清理
+    // lambda 通常已置空 mIdleBridge；此处显式检查覆盖其余"启动后未运行"
+    // 形态，避免死预热桥滞留（切换会话时误判可接管）
+    if (d->mIdleBridge && !d->mIdleBridge->isRunning()) {
+        d->mIdleBridge->deleteLater();
+        d->mIdleBridge = nullptr;
+        d->mIdleBridgeReady = false;
+    }
 }
 
 /**
@@ -1503,7 +1512,11 @@ bool DAAgentModule::switchSession(const QString& sessionId)
     // 6. 温暖化：目标会话无桥且有预热空闲桥 → 接管并后台 load_session
     //    （下次发消息免冷启动；sendMessage 的 user_msg 在 stdin 管道中排在
     //     load_session 之后，时序安全）
-    if (!d->mSessionBridges.contains(sessionId) && d->mIdleBridge) {
+    //    isRunning 守卫（审计 L1）：预热桥已死（异常退出尚未被 processExited
+    //    清理的竞态窗口）时不得进入 adoptOrStartBridge——它会丢弃死桥并冷启动
+    //    新桥（spawn 子进程 ~16s），违背 switchSession"纯 UI 重放"语义；
+    //    跳过接管，留给下次 sendMessage 懒启动
+    if (!d->mSessionBridges.contains(sessionId) && d->mIdleBridge && d->mIdleBridge->isRunning()) {
         adoptOrStartBridge(sessionId);
     }
     d->mSessionError.remove(sessionId);
