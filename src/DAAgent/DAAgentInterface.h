@@ -192,9 +192,16 @@ Q_SIGNALS:
     void agentStarting();
     /// agent 忙碌状态变化时发射
     void agentBusy(bool busy);
-    /// agent 本轮处理完成时发射（生命周期事件，目前无 Dock 槽对接，纳入接口备扩展）
+    /// agent 本轮处理完成时发射（生命周期事件）。
+    /// 审计 L16 决定（文档化）：Dock **有意不消费**本信号——UI 恢复由
+    /// agentBusy(false) 统一驱动（Bridge 正常完成/错误/退出全路径都发
+    /// busy(false)，done 只在正常完成发射，接 done 会漏错误路径）；保留
+    /// 接口信号供 Module 内部退役守卫与外部扩展消费
     void agentDone();
-    /// 回合疑似未完成时发射（模型"话说一半就停"，UI 提示用户可继续）
+    /// 回合疑似未完成时发射（模型"话说一半就停"，UI 提示用户可继续）。
+    /// 审计 L16 决定（文档化）：Dock **有意不消费**本信号——用户提醒由
+    /// Module 同刻发射的 systemMessage（warning 提醒卡）承载，本信号保留
+    /// 作结构化事件供外部扩展（如自动化续发"继续"）消费
     void agentTurnPossiblyIncomplete(int toolRounds);
     /// agent 完成会话历史重建时发射
     void agentSessionLoaded(const QString& sessionId);

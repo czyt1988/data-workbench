@@ -260,6 +260,11 @@ void DAAppController::initialize()
     auto* agent = mCore->getAgentInterface();
     auto* dock  = mDock->getAgentDockWidget();
     if (agent && dock) {
+        // 接线约定（审计 L16 文档化）：凡 Dock 设有槽的接口信号均已接线；
+        // agentDone 与 agentTurnPossiblyIncomplete 为**有意不接**——前者由
+        // agentBusy(false) 统一驱动 UI 恢复（done 只覆盖正常完成路径），
+        // 后者的用户提醒由 Module 同刻发射的 systemMessage 承载。详见
+        // DAAgentInterface.h 两个信号的注释
         connect(agent, &DAAgentInterface::agentToken, dock, &DAAgentDockWidget::onAgentToken);
         connect(agent, &DAAgentInterface::agentMessageComplete, dock, &DAAgentDockWidget::onAgentMessageComplete);
         connect(agent, &DAAgentInterface::agentToolCall, dock, &DAAgentDockWidget::onAgentToolCall);
