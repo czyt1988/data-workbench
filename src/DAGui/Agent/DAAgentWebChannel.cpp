@@ -212,12 +212,11 @@ void DAAgentWebChannel::dismissQuestion()
 void DAAgentWebChannel::showRetryStatus(int attempt, int maxAttempts, int delayMs,
                                          const QString& errorType, const QString& errorMessage)
 {
+    // 审计 L13：多参 arg 单次扫描替换——链式 arg 时 errorMessage 原文含
+    // "%N" 字样（URL 编码 %2F、traceback 百分号）会被后续实参二次替换错乱
     callJS(QString("showRetryStatus(%1, %2, %3, \"%4\", \"%5\")")
-        .arg(attempt)
-        .arg(maxAttempts)
-        .arg(delayMs)
-        .arg(toJsString(errorType))
-        .arg(toJsString(errorMessage)));
+        .arg(QString::number(attempt), QString::number(maxAttempts), QString::number(delayMs),
+             toJsString(errorType), toJsString(errorMessage)));
 }
 
 /**
@@ -229,10 +228,9 @@ void DAAgentWebChannel::showRetryStatus(int attempt, int maxAttempts, int delayM
  */
 void DAAgentWebChannel::appendError(const QString& message, const QString& errorType, const QString& detail)
 {
+    // 审计 L13：多参 arg 单次扫描替换（detail 常含 traceback 百分号）
     callJS(QString("appendError(\"%1\", \"%2\", \"%3\")")
-        .arg(toJsString(message))
-        .arg(toJsString(errorType))
-        .arg(toJsString(detail)));
+        .arg(toJsString(message), toJsString(errorType), toJsString(detail)));
 }
 
 /**
@@ -242,9 +240,9 @@ void DAAgentWebChannel::appendError(const QString& message, const QString& error
  */
 void DAAgentWebChannel::appendSystemMessage(const QString& text, const QString& level)
 {
+    // 审计 L13：多参 arg 单次扫描替换（text 原文可能含 %N 字样）
     callJS(QString("appendSystemMessage(\"%1\", \"%2\")")
-        .arg(toJsString(text))
-        .arg(toJsString(level)));
+        .arg(toJsString(text), toJsString(level)));
 }
 
 /**
