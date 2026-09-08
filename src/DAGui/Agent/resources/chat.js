@@ -491,7 +491,16 @@ var subagentCards = {};  // call_id → {group, tasks: {task_id: {el, terminal}}
 // 派发卡片创建（spawned 首条触发；折叠态，复用工具分组样式）。
 function createSubagentGroup(callId) {
     flushAgentMessage();
+    // 审计问题 28a：dispatch_subagents 的工具卡已建卡入 pendingToolCards，
+    // 其结果要等派发结束才到达——直接 closeToolGroup 会因 pending 非空走
+    // "异常路径"（红点 incomplete + 清空 pending），后到的 tool_result 被
+    // appendToolResult findIndex 落空静默丢弃，dispatch 卡永远误标未完成。
+    // 修复：暂存待决卡片跨过关组（卡片 DOM 留在上一组、继续等结果），
+    // 关组按 completed 收尾，结果到达时依 FIFO 自然补全
+    let carriedCards = pendingToolCards;
+    pendingToolCards = [];
     closeToolGroup();  // 前序工具分组收尾，进度卡片独立成卡
+    pendingToolCards = carriedCards;
     let group = document.createElement('div');
     group.className = 'tool-group subagent-group active';
     group.dataset.callId = callId;
@@ -532,7 +541,9 @@ function createSubagentTaskRow(taskId, message) {
 function updateSubagentTaskRow(entry, taskId, state, message) {
     let t = entry.tasks[taskId];
     if (!t) {
-        if (state !== 'spawned') return;  // 未知任务（乱序/迟到）——忽略
+        // 审计问题 28b：非 spawned 态也惰性建行（乱序/迟到/重放丢头部事件时
+        // 任务进度不再整体不可见）；spawned 之外的态没有提示词摘要，行 meta
+        // 由下方状态分支填充
         let el = createSubagentTaskRow(taskId, message);
         entry.group.querySelector('.tool-group-body').appendChild(el);
         t = entry.tasks[taskId] = { el: el, terminal: false };
@@ -602,7 +613,10 @@ function updateSubagentProgress(payload) {
 
     let entry = subagentCards[callId];
     if (!entry) {
-        if (state !== 'spawned') return;  // 未知派发的迟到消息——忽略
+        // 审计问题 28b（双保险）：非 spawned 态也惰性重建进度卡——切回运行中
+        // 会话时 clearChat 已复位 subagentCards，Module 侧缓存重发若丢失头部
+        // spawned 事件（或重放窗口竞态），后续进度不再被整体忽略；行级幂等
+        // 由 updateSubagentTaskRow 的 terminal 守卫保障
         entry = subagentCards[callId] = { group: createSubagentGroup(callId), tasks: {} };
     }
 

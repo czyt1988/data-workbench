@@ -147,6 +147,18 @@ int fakeAgentMain(const QByteArray& scenario)
                 // 半截计划文本后挂起，等 reconfigure 再发 done(incomplete)
                 fakeEmit(out, {{ "type", "message_end" }, { "content", "I will now generate a chart" }});
                 armedIncomplete = true;
+            } else if (content == QLatin1String("#fake:dispatch")) {
+                // 在途子 Agent 派发（问题 28b）：spawned + 任务 running + 心跳，
+                // 不发 done（回合挂起，模拟派发进行中切走/切回）
+                fakeEmit(out, {{ "type", "subagent_progress" },
+                               { "call_id", "d1" }, { "task_id", "explore #1" },
+                               { "subagent", "explore" }, { "state", "spawned" },
+                               { "message", "survey task" }});
+                fakeEmit(out, {{ "type", "subagent_progress" },
+                               { "call_id", "d1" }, { "task_id", "explore #1" },
+                               { "state", "running" }, { "message", "working" }});
+                fakeEmit(out, {{ "type", "subagent_progress" },
+                               { "call_id", "d1" }, { "state", "running" }});  // 心跳：不入缓存
             } else {
                 fakeEmit(out, {{ "type", "message_end" }, { "content", "echo:" + content }});
                 fakeEmit(out, {{ "type", "done" }});
@@ -240,6 +252,7 @@ private Q_SLOTS:
     void testBackgroundIncompleteReplayedOnSwitchBack(); // 问题8：后台"话说一半"提醒缓存-豁免退役-切回重发
     void testToolExecutionViaGlobalQueue();            // 问题12：Module 全链（队列执行+落盘+排队信号）
     void testRegisterToolBroadcastsUpdateTools();      // 问题19：注册工具向存活桥广播 update_tools
+    void testSubagentProgressReplayedOnSwitchBack();   // 问题28b：在途子 Agent 进度切回重放
 };
 
 QString DAAgentModuleTest::pythonConfigPath()
@@ -834,6 +847,38 @@ void DAAgentModuleTest::testRegisterToolBroadcastsUpdateTools()
         }
     }
     QVERIFY(seen);
+
+    module->shutdown();
+}
+
+/**
+ * 问题28b：切回运行中会话时 clearChat 已复位前端 subagentCards，而 Module
+ * 此前只缓存/重发 questions 与 approvals——在途派发的 running/终态进度全部
+ * 因"无 entry 且非 spawned"被忽略，进度卡永不重建，整个派发过程切回后完全
+ * 不可见。修复后 Module 按会话缓存本轮进度事件（心跳除外），switchSession
+ * 切回逐条重放（chat.js 幂等重建 + 惰性建行双保险）；done/error/退役即清。
+ */
+void DAAgentModuleTest::testSubagentProgressReplayedOnSwitchBack()
+{
+    QScopedPointer<DA::DAAgentModule> module(makeModule());
+    QSignalSpy progressSpy(module.data(), &DA::DAAgentInterface::agentSubagentProgress);
+    const QString sidA = module->createSession();
+    module->sendMessage(QStringLiteral("#fake:dispatch"));
+
+    // 活跃期间转发 3 条（spawned + 任务 running + 心跳），回合挂起不 done
+    QTRY_VERIFY_WITH_TIMEOUT(progressSpy.count() >= 3, 30000);
+    const int liveCount = progressSpy.count();
+
+    // 切走（A busy → 桥保留后台）再切回：重放缓存的 2 条（心跳不入缓存）
+    const QString sidB = module->createSession();
+    QVERIFY(!sidB.isEmpty());
+    QVERIFY(module->switchSession(sidA));
+    QTRY_VERIFY_WITH_TIMEOUT(progressSpy.count() >= liveCount + 2, 15000);
+
+    // 重放首条为 spawned 事件（完整载荷供前端重建进度卡）
+    const QJsonObject first = progressSpy.at(liveCount).at(0).toJsonObject();
+    QCOMPARE(first.value(QStringLiteral("state")).toString(), QStringLiteral("spawned"));
+    QCOMPARE(first.value(QStringLiteral("call_id")).toString(), QStringLiteral("d1"));
 
     module->shutdown();
 }

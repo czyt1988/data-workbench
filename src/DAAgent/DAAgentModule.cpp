@@ -91,6 +91,11 @@ public:
         int toolRounds = 0;
     };
     QHash<QString, PendingNotification> mPendingNotifications;   ///< 会话 → 瞬态通知
+    // 本轮子 Agent 进度事件日志（审计问题 28b）：切走/后台期间的进度缓存，
+    // 切回重放重建进度卡（chat.js 按 call_id/task_id 幂等）。心跳（无 task_id
+    // 的 running 态）不入缓存（UI 本就忽略，不参与卡片重建）；回合结束
+    // （done/error）与退役即清——历史重放不含进度事件，终轮产出以工具卡呈现
+    QHash<QString, QJsonArray> mSubagentProgressLog;
 
     // ---- 权限层（permission-layer P1） ----
     DAAgentPermissionManager* mPermissionManager = nullptr;  ///< 权限引擎（非 QObject，析构显式 delete）
@@ -980,9 +985,18 @@ void DAAgentModule::attachBridge(DAAgentBridge* bridge, const QString& sessionId
             n.retryErrorMessage = errorMessage;
         }
     });
-    // 子 agent 任务进度：原样转发（终态撤卡语义由 Bridge 消化）
+    // 子 agent 任务进度：缓存 + 原样转发（终态撤卡语义由 Bridge 消化）。
+    // 审计问题 28b：切走/后台期间到达的进度事件缓存于本轮日志，切回重放
+    // 重建进度卡——修复前 clearChat 复位 subagentCards 后，未知 call_id 的
+    // 后续进度全部被忽略，在途派发切回后完全不可见直到最终 assistant 文本
     connect(bridge, &DAAgentBridge::agentSubagentProgress, this, [this, sessionId](const QJsonObject& p) {
-        if (sessionId == d_func()->mCurrentSessionId) emit agentSubagentProgress(p);
+        auto* d = d_func();
+        const bool isHeartbeat = !p.contains(QStringLiteral("task_id"))
+                                 && p.value(QStringLiteral("state")).toString() == QLatin1String("running");
+        if (!isHeartbeat) {
+            d->mSubagentProgressLog[sessionId].append(p);
+        }
+        if (sessionId == d->mCurrentSessionId) emit agentSubagentProgress(p);
     });
     // 回合疑似未完成（模型"话说一半就停"）：转发 + systemMessage 提醒卡
     connect(bridge, &DAAgentBridge::agentTurnPossiblyIncomplete, this, [this, sessionId](int toolRounds) {
@@ -1060,6 +1074,9 @@ void DAAgentModule::attachBridge(DAAgentBridge* bridge, const QString& sessionId
                 d->mPendingNotifications.erase(nIt);
             }
         }
+        // 回合结束：子 Agent 进度日志即清（问题 28b）——派发产出已以工具卡
+        // 落盘（dispatch tool_call/tool_result），历史重放自会呈现
+        d->mSubagentProgressLog.remove(sessionId);
         // concurrent-sessions：后台会话跑完且无需等待输入 → 优雅退役
         //（对话状态已全量落盘 JSONL，下次发消息时经 load_session 重建）
         // incomplete 提醒豁免退役（问题 8）：否则提醒随桥退役永远丢失，
@@ -1085,6 +1102,7 @@ void DAAgentModule::attachBridge(DAAgentBridge* bridge, const QString& sessionId
         // （JSONL 中 tool_result.tool_call_id 挂错，历史重放时旧工具卡挂新
         // 结果、新工具卡因无结果被跳过，落盘数据永久污染）
         d->mPendingToolCallUuids.remove(sessionId);
+        d->mSubagentProgressLog.remove(sessionId);  // 回合随错误终结，进度日志即清（28b）
         // 问题 1×17 联动：挂起问题随回合作用死——同批清缓存+撤卡。若只清
         // FIFO 不清问题卡，用户对着幽灵卡作答会因 FIFO 已空跳过持久化，
         // 产生"答案消失"的新症状（FIFO/问题缓存/UI 卡三处必须同批）
@@ -1206,6 +1224,7 @@ void DAAgentModule::retireBridge(const QString& sessionId)
     d->mCumulativeTotalTokens.remove(sessionId);
     d->mPendingToolCallUuids.remove(sessionId);
     d->mPendingNotifications.remove(sessionId);
+    d->mSubagentProgressLog.remove(sessionId);
     // 桥退役即销毁该会话的权限记忆与上下文（决策点 1 拍板：会话删除/桥退役
     // 时销毁；恢复旧版"切离即清"语义且不误伤其它会话——修复前退役路径因先
     // disconnect 完全不清记忆，"本会话记住"事实上全局跨会话存活，A5 承诺落空）
@@ -1638,6 +1657,16 @@ bool DAAgentModule::switchSession(const QString& sessionId)
         if (n.isIncomplete) {
             emit agentTurnPossiblyIncomplete(n.toolRounds);
             emit systemMessage(turnIncompleteMessage(n.toolRounds), QStringLiteral("warning"));
+        }
+    }
+    // 子 Agent 进度重放（审计问题 28b）：本轮缓存的进度事件逐条重发，
+    // chat.js 按 call_id/task_id 幂等重建进度卡（含惰性重建双保险）——
+    // 切回运行中会话时在途派发进度不再整体不可见。与 sessionSwitched 的
+    // 历史重放同栈同步执行（直连），时序上先重放历史再叠加进度卡
+    const auto progressIt = d->mSubagentProgressLog.constFind(sessionId);
+    if (progressIt != d->mSubagentProgressLog.constEnd()) {
+        for (const QJsonValue& v : progressIt.value()) {
+            emit agentSubagentProgress(v.toObject());
         }
     }
     // 6. 温暖化：目标会话无桥且有预热空闲桥 → 接管并后台 load_session
