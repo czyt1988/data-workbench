@@ -193,11 +193,6 @@ Q_SIGNALS:
      * 由 Bridge 在 handleJsonLine 内部消化，不经本信号。
      */
     void agentSubagentProgress(const QJsonObject& progress);
-    /**
-     * @brief 崩溃恢复时请求 Module 从 SessionStore 读取会话历史并下发 load_session
-     * @param sessionId 需要恢复的会话 ID
-     */
-    void sessionRestoreRequested(const QString& sessionId);
 
     /**
      * @brief 工具调用需要用户审批时发射（ask 决策，executeTool 前置门）

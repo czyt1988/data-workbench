@@ -1292,8 +1292,10 @@ void DAAgentBridge::recoverFromCrash()
                d->mPythonExePath, d->mAgentScriptPath,
                d->mReadyTimeoutMs, d->mStopTimeoutMs);
 
-    // ready 消息到达后，现有 agentReady 处理逻辑检查 m_recovering 标志，
-    // 触发会话恢复 + 重发最后消息（见步骤 3.5），无需一次性连接
+    // 恢复链路由 Module 侧驱动（审计 L5 注释纠偏，Bridge 无 agentReady 消费逻辑）：
+    // ready 到达 → Bridge emit agentReady → Module attachBridge 挂接的 agentReady
+    // lambda 检查 isRecovering() → sendLoadSession（JSONL 历史重建）→
+    // session_loaded → Module 调 resendLastMessage() 重发末条用户消息。
 }
 
 /**

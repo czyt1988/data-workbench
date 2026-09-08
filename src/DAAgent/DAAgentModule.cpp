@@ -965,13 +965,6 @@ void DAAgentModule::attachBridge(DAAgentBridge* bridge, const QString& sessionId
         if (sessionId == d->mCurrentSessionId) emit agentToolApprovalDismissed(callId);
     });
 
-    // ---- 崩溃恢复：桥请求重发会话历史（仅当桥仍绑定该会话） ----
-    connect(bridge, &DAAgentBridge::sessionRestoreRequested, this, [this, bridge](const QString& sid) {
-        auto* d = d_func();
-        if (d->mSessionBridges.value(sid) != bridge) return;  // 已解绑/退役的桥不恢复
-        bridge->sendLoadSession(sid, d->mSessionStore->readMessagesForLoad(sid));
-    });
-
     // ---- 桥退出：清权限会话记忆（T16 A5：不跨重启存活；V1 保持全局语义，
     //      并发下可能过度清除——安全方向，宁可多问一次不漏清） ----
     // 注意：不在此处移除会话映射——崩溃自愈路径 processExited（DAAgentBridge.cpp:1021）
