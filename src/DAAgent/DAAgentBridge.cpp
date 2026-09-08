@@ -634,6 +634,16 @@ void DAAgentBridge::onReadyReadStandardOutput()
     // 累积数据到缓冲区
     d->mStdoutBuffer += d->mProcess->readAllStandardOutput();
 
+    // 缓冲上限（审计 L6）：异常超长无换行输出（如子进程崩溃倾泻二进制垃圾）
+    // 可无限吃内存。合法协议单行远小于此上限（最大的 message_end/
+    // subagent_progress 聚合通常数百 KB 级），超限视为协议流损坏，整段丢弃。
+    static constexpr int kMaxStdoutBufferBytes = 10 * 1024 * 1024;  // 10MB
+    if (d->mStdoutBuffer.size() > kMaxStdoutBufferBytes) {
+        qWarning() << "DAAgentBridge: stdout buffer exceeded" << kMaxStdoutBufferBytes
+                   << "bytes without a complete line, dropping buffer content";
+        d->mStdoutBuffer.clear();
+    }
+
     // 按行解析 JSON Lines
     while (true) {
         int idx = d->mStdoutBuffer.indexOf('\n');
@@ -652,9 +662,11 @@ void DAAgentBridge::onReadyReadStandardOutput()
         QJsonParseError parseError;
         QJsonDocument doc = QJsonDocument::fromJson(lineData, &parseError);
         if (parseError.error != QJsonParseError::NoError) {
-            // 不可解析的行不能静默丢弃——记录到日志便于排查协议问题
-            daWarning << tr("Failed to parse JSON line from agent stdout: %1, error: %2")  //cn:解析 agent 标准输出的 JSON 行失败：%1，错误：%2
-                             .arg(QString::fromUtf8(lineData), parseError.errorString());
+            // 不可解析的行不能静默丢弃——记录到日志便于排查协议问题。
+            // 审计 L6：开发诊断日志用 qWarning 纯英文（da* 宏会把原始协议垃圾
+            // 刷进 UI 消息队列，违反 AGENTS.md"开发诊断禁用 da* 宏"规约）
+            qWarning() << "DAAgentBridge: failed to parse JSON line from agent stdout:"
+                       << lineData << "error:" << parseError.errorString();
             continue;  // 跳过此行，继续处理后续
         }
         if (doc.isObject()) {
@@ -1117,8 +1129,9 @@ void DAAgentBridge::onProcessFinished(int exitCode, QProcess::ExitStatus exitSta
         if (parseError.error == QJsonParseError::NoError && doc.isObject()) {
             handleJsonLine(doc.object());
         } else {
-            daWarning << tr("Failed to parse trailing JSON line from agent stdout: %1, error: %2")  //cn:解析 agent 标准输出的末尾 JSON 行失败：%1，错误：%2
-                             .arg(QString::fromUtf8(lastLine), parseError.errorString());
+            // 审计 L6：开发诊断日志用 qWarning 纯英文（不进 UI 消息队列）
+            qWarning() << "DAAgentBridge: failed to parse trailing JSON line from agent stdout:"
+                       << lastLine << "error:" << parseError.errorString();
         }
     }
 
