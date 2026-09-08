@@ -492,9 +492,14 @@ void DAAgentDockWidget::onAgentReady(const QString& model)
     DA_D(d);
     d->mAgentStarting = false;  // 启动完成，清除启动态
     d->mCurrentModel = model;
-    d->mAgentBusy = false;
+    // 审计问题 15：不再无条件清 busy——冷启动时序中 sendMessage 的 busy(true)
+    // 被 onAgentBusy 的 starting 守卫吞掉 web 推送（内部 mAgentBusy 已记 true），
+    // ready 到达时本轮对话才真正开始。若此处强制复位，整轮回复期间 UI 显示
+    // Ready、按钮 Send、输入可用：无法 Stop 运行中的回合，且发送守卫放行第二条
+    // 消息插进流式输出中间（转写时序错乱）。改为按内部状态补推 web（恢复被吞
+    // 掉的推送）：mAgentBusy=true → thinking+Stop；false（预热/空闲就绪）→ Ready。
     if (d->mChannel) {
-        d->mChannel->setBusy(false);             // 复位为 ready：按钮 Send + 输入启用 + 状态 Ready
+        d->mChannel->setBusy(d->mAgentBusy);
         // 推送激活供应商+模型给 web 选择器（触发按钮文案 + 选中高亮）
         d->mChannel->setActiveModel(d->mCurrentProvider, d->mCurrentModel);
     }

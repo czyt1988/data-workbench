@@ -16,6 +16,8 @@
 //                   （验证崩溃自愈重启所用配置缓存，问题 22）
 //   done-then-idle-crash : user_msg 回 done 后立即 exit(42)（模拟回合完成后
 //                   空闲期崩溃，验证自愈不重发已回答消息，问题 11）
+//   ready-after-first-msg : 收到第一条 user_msg 才发 ready（复现冷启动时序，
+//                   验证 ready 时回合进行中重断言 busy(true)，问题 15）
 
 #include <QtTest/QtTest>
 #include <QCoreApplication>
@@ -75,6 +77,29 @@ int fakeAgentMain(const QByteArray& scenario)
                 fakeEmit(out, {{ "type", "ready" }, { "model", model }});
             } else if (type == QLatin1String("user_msg")) {
                 return 3;  // 模拟原生崩溃（CrashExit）
+            }
+        }
+        return 0;
+    }
+    if (scenario == "ready-after-first-msg") {
+        // init 后不立即发 ready——收到第一条 user_msg 才发 ready（复现冷启动时序：
+        // sendMessage 的 busy(true) 先于 ready 到达），随后正常回 token+done。
+        while (true) {
+            const QByteArray line = in.readLine();
+            if (line.isEmpty()) {
+                break;
+            }
+            const QJsonDocument doc = QJsonDocument::fromJson(line.trimmed());
+            if (!doc.isObject()) {
+                continue;
+            }
+            const QString type = doc.object().value("type").toString();
+            if (type == QLatin1String("user_msg")) {
+                fakeEmit(out, {{ "type", "ready" }, { "model", "fake-model" }});
+                fakeEmit(out, {{ "type", "token" }, { "content", "answer" }});
+                fakeEmit(out, {{ "type", "done" }});
+            } else if (type == QLatin1String("stop")) {
+                break;
             }
         }
         return 0;
@@ -194,6 +219,7 @@ private Q_SLOTS:
     void testReconfigureSyncsRecoveryConfig();     // 问题22：reconfigure 同步缓存，崩溃恢复用新配置
     void testSendWithoutProcessRollsBack();        // 问题23：writeJson 失败回滚 busy/看门狗 + 明确错误
     void testIdleCrashDoesNotResendAnsweredMessage(); // 问题11：done 清 mLastUserMessage，空闲期崩溃不自发重放
+    void testReadyDuringActiveTurnReassertsBusy();    // 问题15：ready 到达时回合进行中 → 重断言 busy(true)
 };
 
 void DAAgentBridgeTest::startWithScenario(DA::DAAgentBridge& bridge, const char* scenario, int readyTimeoutMs)
@@ -419,6 +445,41 @@ void DAAgentBridgeTest::testIdleCrashDoesNotResendAnsweredMessage()
     QVERIFY(!bridge.isRecovering());
 
     bridge.requestStop();
+}
+
+/**
+ * 问题15：冷启动时序——sendMessage 的 busy(true) 在启动期被 Dock 的 starting
+ * 守卫吞掉 web 推送，~16s 后 ready 到达时本轮对话才真正开始。修复前 Dock
+ * onAgentReady 强制清 busy → 整轮纯文本回复期间 UI 显示 Ready、无 Stop、
+ * 可双发。修复后 Bridge 在 ready 时若 mTurnActive 仍为 true 则重发 busy(true)
+ * （Dock 侧 onAgentReady 同步改为按内部状态补推，不再强制复位）。
+ */
+void DAAgentBridgeTest::testReadyDuringActiveTurnReassertsBusy()
+{
+    DA::DAAgentBridge bridge;
+    QSignalSpy readySpy(&bridge, &DA::DAAgentBridge::agentReady);
+    QSignalSpy busySpy(&bridge, &DA::DAAgentBridge::agentBusy);
+    QSignalSpy doneSpy(&bridge, &DA::DAAgentBridge::agentDone);
+    startWithScenario(bridge, "ready-after-first-msg");
+
+    // ready 未到达即发消息（复现冷启动：busy(true) 先于 ready）
+    bridge.sendMessage(QStringLiteral("question"));
+    QCOMPARE(busySpy.count(), 1);
+    QCOMPARE(busySpy.at(0).at(0).toBool(), true);
+
+    // ready 到达 → Bridge 重断言 busy(true)（mTurnActive 仍为 true）
+    QVERIFY(waitForCount(readySpy, 1));
+    QVERIFY(waitForCount(busySpy, 2));
+    QCOMPARE(busySpy.at(1).at(0).toBool(), true);
+
+    // 本轮结束 done → busy(false)
+    QVERIFY(waitForCount(doneSpy, 1));
+    QVERIFY(waitForCount(busySpy, 3));
+    QCOMPARE(busySpy.at(2).at(0).toBool(), false);
+
+    // 停止并等待进程真实退出（避免析构时 QProcess 仍在运行）
+    bridge.requestStop();
+    QVERIFY(waitForCount(busySpy, 4));
 }
 
 int main(int argc, char* argv[])

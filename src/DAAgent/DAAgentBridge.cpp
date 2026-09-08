@@ -642,6 +642,15 @@ void DAAgentBridge::handleJsonLine(const QJsonObject& msg)
         }
         d->mReadyReceived = true;  // 此后 error 视为运行期错误（进程设计为存活）
         emit agentReady(msg["model"].toString());
+        // 审计问题 15（Bridge 侧重断言）：冷启动时序下 sendMessage 的 busy(true)
+        // 先于 ready 到达、被 Dock 的 starting 守卫吞掉 web 推送；ready 在 ~16s 后
+        // 到达时本轮对话才真正开始。若回合仍在进行则重发 busy(true)，避免整轮
+        // 纯文本回复期间 UI 显示 Ready、无 Stop 按钮、发送守卫放行第二条消息。
+        // reconfigure 确认 ready 不受影响：Python 在两轮之间处理 reconfigure，
+        // done（清 mTurnActive）必先于该 ready 到达。
+        if (d->mTurnActive) {
+            emit agentBusy(true);
+        }
     } else if (type == "token") {
         emit agentToken(msg["content"].toString());
     } else if (type == "message_end") {
