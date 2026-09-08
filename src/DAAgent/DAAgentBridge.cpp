@@ -391,7 +391,17 @@ void DAAgentBridge::sendMessage(const QString& text)
     QJsonObject msg;
     msg["type"]    = "user_msg";
     msg["content"] = text;
-    writeJson(msg);
+    if (!writeJson(msg)) {
+        // 写入失败（进程未运行/管道已关闭）：消息从未到达 Python——回滚本轮
+        // 状态，避免 busy 挂到 4 分钟看门狗超时才报错（审计问题 23）。
+        // mLastUserMessage 一并清除：崩溃恢复不应重发从未送达的消息。
+        d->mTurnActive = false;
+        d->mLastUserMessage.clear();
+        d->mInactivityTimer->stop();
+        emit agentError(tr("Message not sent: agent subprocess is not running"));  //cn:消息未发送：agent 子进程未在运行
+        emit agentBusy(false);
+        return;
+    }
     startInactivityTimer();     // 启动看门狗
 }
 
@@ -423,7 +433,15 @@ void DAAgentBridge::sendUserAnswer(const QString& answer)
     QJsonObject msg;
     msg["type"]   = "user_answer";
     msg["answer"] = answer;
-    writeJson(msg);
+    if (!writeJson(msg)) {
+        // 写入失败：答案从未到达 Python（死桥场景，审计问题 17/23）——
+        // 回滚忙碌态并发明确错误，避免用户以为已回答而 UI 挂到看门狗超时
+        d->mTurnActive = false;
+        d->mInactivityTimer->stop();
+        emit agentError(tr("Answer not sent: agent subprocess is not running"));  //cn:回答未发送：agent 子进程未在运行
+        emit agentBusy(false);
+        return;
+    }
     startInactivityTimer();
 }
 
@@ -543,8 +561,13 @@ bool DAAgentBridge::writeJson(const QJsonObject& obj)
     QByteArray data = doc.toJson(QJsonDocument::Compact) + "\n";
     qint64 written  = d->mProcess->write(data);
     if (written != data.size()) {
-        // stdin 写入失败——管道可能已关闭
-        emit agentError(tr("Failed to write to agent subprocess stdin"));  //cn:写入 agent 子进程 stdin 失败
+        // stdin 写入失败——管道可能已关闭。不在此处 emit 用户错误：writeJson
+        // 服务于多种消息（init/stop/load_session/tool_result/...），"失败意味着
+        // 什么"因调用方而异——由关键调用方（sendMessage/sendUserAnswer 等）
+        // 检查返回值、回滚本轮状态并发明确错误（审计问题 23）。此处仅记诊断日志。
+        qWarning() << "DAAgentBridge::writeJson: stdin write failed, written"
+                   << written << "of" << data.size() << "bytes, type="
+                   << obj.value("type").toString();
         return false;
     }
     return true;
@@ -1204,7 +1227,15 @@ void DAAgentBridge::resendLastMessage()
     if (!d->mLastUserMessage.isEmpty()) {
         d->mTurnActive = true;
         emit agentBusy(true);
-        writeJson(QJsonObject{{"type", "user_msg"}, {"content", d->mLastUserMessage}});
+        if (!writeJson(QJsonObject{{"type", "user_msg"}, {"content", d->mLastUserMessage}})) {
+            // 重发失败（进程恢复后又死亡）：回滚忙碌态（审计问题 23）。
+            // mLastUserMessage 保留——消息从未送达，若后续再走恢复链应继续重试
+            d->mTurnActive = false;
+            d->mInactivityTimer->stop();
+            emit agentError(tr("Message not sent: agent subprocess is not running"));  //cn:消息未发送：agent 子进程未在运行
+            emit agentBusy(false);
+            return;
+        }
         startInactivityTimer();
     } else {
         d->mTurnActive = false;

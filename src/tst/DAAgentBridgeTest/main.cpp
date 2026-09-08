@@ -167,6 +167,7 @@ private Q_SLOTS:
     void testReadyTimeoutNoCrashRecoveryLoop(); // 问题20：ready 超时 kill → 不进崩溃自愈循环
     void testStartupFailureEmitsTerminalSignals(); // 问题21：waitForStarted 失败补终止语义（状态机黑洞）
     void testReconfigureSyncsRecoveryConfig();     // 问题22：reconfigure 同步缓存，崩溃恢复用新配置
+    void testSendWithoutProcessRollsBack();        // 问题23：writeJson 失败回滚 busy/看门狗 + 明确错误
 };
 
 void DAAgentBridgeTest::startWithScenario(DA::DAAgentBridge& bridge, const char* scenario, int readyTimeoutMs)
@@ -326,6 +327,39 @@ void DAAgentBridgeTest::testReconfigureSyncsRecoveryConfig()
     QCOMPARE(readySpy.at(1).at(0).toString(), QStringLiteral("new-model"));
 
     bridge.requestStop();
+}
+
+/**
+ * 问题23：writeJson 失败（进程未运行/管道已关闭）时消息静默丢失——
+ * 修复前 busy(true) 挂到 4 分钟看门狗超时才报错。修复后 sendMessage/
+ * sendUserAnswer 检查返回值并同步回滚：busy(false) + 明确错误 + 不启动看门狗。
+ */
+void DAAgentBridgeTest::testSendWithoutProcessRollsBack()
+{
+    // 未 startAgent 的桥：mProcess=nullptr → writeJson 必失败
+    {
+        DA::DAAgentBridge bridge;
+        QSignalSpy busySpy(&bridge, &DA::DAAgentBridge::agentBusy);
+        QSignalSpy errSpy(&bridge, &DA::DAAgentBridge::agentError);
+        bridge.sendMessage(QStringLiteral("hello"));
+        // busy(true) 后立即回滚 busy(false)，错误明确（非通用 stdin 错误）
+        QCOMPARE(busySpy.count(), 2);
+        QCOMPARE(busySpy.at(0).at(0).toBool(), true);
+        QCOMPARE(busySpy.at(1).at(0).toBool(), false);
+        QCOMPARE(errSpy.count(), 1);
+        QVERIFY(errSpy.at(0).at(0).toString().contains(QStringLiteral("not running")));
+    }
+    // sendUserAnswer 同样回滚（死桥答 ask_user 卡场景：答案蒸发须显式报错）
+    {
+        DA::DAAgentBridge bridge;
+        QSignalSpy busySpy(&bridge, &DA::DAAgentBridge::agentBusy);
+        QSignalSpy errSpy(&bridge, &DA::DAAgentBridge::agentError);
+        bridge.sendUserAnswer(QStringLiteral("answer"));
+        QCOMPARE(busySpy.count(), 1);
+        QCOMPARE(busySpy.at(0).at(0).toBool(), false);
+        QCOMPARE(errSpy.count(), 1);
+        QVERIFY(errSpy.at(0).at(0).toString().contains(QStringLiteral("not running")));
+    }
 }
 
 int main(int argc, char* argv[])
