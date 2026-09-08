@@ -660,7 +660,21 @@ void DAAgentDockWidget::onSessionSwitched(const QString& sessionId,
     d->mSwitching = true;
     if (d->mChannel) {
         d->mChannel->clearChat();
-        d->mChannel->loadHistory(allRecords);  // 重放新会话 UI（C++ 合并后事件，见 WebChannel::loadHistory）
+        // 决策点 4（审计问题 3）：落盘 error 记录的 message 是原始文案，重放前
+        // 经 mapErrorMessage 预映射为用户文案——与实时路径（onAgentError 映射后
+        // 才调 appendError）保持同一展示语义。C++ 侧源发的 tr 文案映射为幂等
+        QVector<QJsonObject> records = allRecords;
+        for (int i = 0; i < records.size(); ++i) {
+            QJsonObject& rec = records[i];
+            if (rec.value("type").toString() != QLatin1String("error")) {
+                continue;
+            }
+            QJsonObject msg = rec.value("message").toObject();
+            msg["message"] = mapErrorMessage(msg.value("message").toString(),
+                                             msg.value("error_type").toString());
+            rec["message"] = msg;
+        }
+        d->mChannel->loadHistory(records);  // 重放新会话 UI（C++ 合并后事件，见 WebChannel::loadHistory）
     }
     d->mCurrentSessionId = sessionId;
     d->mSwitching = false;  // 同步解除（发送路径懒启动 load_session 时 onAgentSessionLoaded 幂等兜底）

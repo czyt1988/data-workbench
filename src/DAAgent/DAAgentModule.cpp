@@ -992,6 +992,11 @@ void DAAgentModule::attachBridge(DAAgentBridge* bridge, const QString& sessionId
             [this, sessionId](const QString& message, const QString& errorType, const QString& detail) {
         auto* d = d_func();
         d->mSessionError[sessionId] = true;
+        // 决策点 4（审计问题 3）：error 记录无条件落盘（与其它记录同范式，写桥
+        // 所属会话）——后台会话错误切回不再丢失（重放渲染错误卡）、重启后可追溯。
+        // readMessagesForLoad 只认 user/assistant/tool_result，error 天然不进
+        // Python state；索引 messageCount 同样不计 error，快照/token 逻辑不受影响
+        appendErrorRecord(sessionId, message, errorType, detail);
         // 审计问题 1（恢复旧版语义，按会话作用域）：错误使在途工具调用配对
         // 作废——不清 FIFO 则残留 uuid 与该会话下一轮的 tool_result 错配
         // （JSONL 中 tool_result.tool_call_id 挂错，历史重放时旧工具卡挂新
@@ -1107,7 +1112,10 @@ void DAAgentModule::retireBridge(const QString& sessionId)
     if (!bridge) return;
     d->mSessionBusy.remove(sessionId);
     d->mSessionStarting.remove(sessionId);
-    d->mSessionError.remove(sessionId);
+    // mSessionError 有意保留（决策点 4 / 审计问题 3）：错误已落盘 JSONL，角标
+    // "error" 态跨退役存活（修复前后台出错会话的角标在用户切离瞬间即被抹掉，
+    // 连"出过错"的痕迹都没有）；切入会话（switchSession）或新一轮发消息
+    // （sendMessage）时清除。会话删除路径由 deleteSession 显式清理防残留
     d->mCumulativeInTokens.remove(sessionId);
     d->mCumulativeOutTokens.remove(sessionId);
     d->mCumulativeTotalTokens.remove(sessionId);
@@ -1550,6 +1558,9 @@ void DAAgentModule::deleteSession(const QString& sessionId)
         retireBridge(sessionId);
     }
     d->mSessionStore->deleteSession(sessionId);
+    // 会话已不存在——显式清 error 角标残留（retireBridge 有意保留 error 态，
+    // 删除路径必须回收，防状态哈希滞留已删会话键）
+    d->mSessionError.remove(sessionId);
     if (d->mCurrentSessionId == sessionId) {
         d->mCurrentSessionId.clear();  // 删当前会话后回归无活跃
         resetCumulativeTokens();       // 清零累计，避免残留被下一会话误用
@@ -2184,6 +2195,40 @@ void DAAgentModule::appendUsageRecord(const QString& sid, int inT, int outT, int
     record["type"]         = "usage";
     record["message"]      = QJsonObject{};  // usage 记录 message 为空
     record["usage_metadata"] = usageMeta;
+
+    d->mSessionStore->appendRecord(sid, record);
+}
+
+/**
+ * @brief 构造 error 记录并追加写盘（决策点 4：错误落盘 JSONL，审计问题 3）
+ * @param sid 会话 ID（桥所属会话，与活跃会话解耦）
+ * @param message 错误信息（原始文案；重放时 Dock 侧经 mapErrorMessage 映射用户文案）
+ * @param errorType 错误类型（quota_exhausted/crash_recovery/timeout/...，空=未知）
+ * @param detail 详细描述（原始异常信息等，可空）
+ *
+ * JSONL 是唯一事实源（重放/恢复/导出全依赖它）——错误此前游离在事实源之外
+ * 正是问题 3 的病根：后台会话错误切回丢失、活跃错误切离切回后从重放消失、
+ * 重启后全无痕迹。readMessagesForLoad 只认 user/assistant/tool_result 三类，
+ * error 记录天然不进 Python state；索引 messageCount 同样不计，无兼容负担。
+ */
+void DAAgentModule::appendErrorRecord(const QString& sid, const QString& message, const QString& errorType, const QString& detail)
+{
+    DA_D(d);
+    QString uuid = QUuid::createUuid().toString(QUuid::WithoutBraces);
+    QString now = QDateTime::currentDateTimeUtc().toString(Qt::ISODateWithMs);
+
+    QJsonObject msg;
+    msg["message"]    = message;
+    msg["error_type"] = errorType;
+    msg["detail"]     = detail;
+
+    QJsonObject record;
+    record["uuid"]        = uuid;
+    record["parent_uuid"] = QJsonValue::Null;
+    record["session_id"]  = sid;
+    record["timestamp"]   = now;
+    record["type"]        = "error";
+    record["message"]     = msg;
 
     d->mSessionStore->appendRecord(sid, record);
 }

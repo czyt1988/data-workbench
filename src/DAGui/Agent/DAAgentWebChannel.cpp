@@ -277,8 +277,10 @@ void DAAgentWebChannel::loadHistory(const QVector<QJsonObject>& records)
         const QString t = rec.value("type").toString();
         const QJsonObject msg = rec.value("message").toObject();
 
-        if (t == "user" || t == "usage" || t == "summary") {
-            // 原样透传（usage/summary JS 端不再渲染，仅 user 渲染）
+        if (t == "user" || t == "usage" || t == "summary" || t == "error") {
+            // 原样透传（usage/summary JS 端不再渲染，仅 user/error 渲染；
+            // error 为决策点 4 落盘记录，message 载荷 {message,error_type,detail}，
+            // JS 重放分支复用实时 appendError 渲染错误卡）
             uiEvents.append(rec);
         } else if (t == "assistant") {
             const QJsonArray tcs = msg.value("tool_calls").toArray();

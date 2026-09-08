@@ -174,6 +174,8 @@ private:
     void appendToolResultRecord(const QString& sid, const QString& toolCallId, const QString& content);
     void appendAssistantRecord(const QString& sid, const QString& text, const QJsonArray& toolCalls);
     void appendUsageRecord(const QString& sid, int inT, int outT, int tot, const QString& src);
+    // 构造 error 记录并追加写盘（决策点 4：错误落盘 JSONL，审计问题 3）
+    void appendErrorRecord(const QString& sid, const QString& message, const QString& errorType, const QString& detail);
     QJsonObject makeUserRecord(const QString& text) const;
     QVariantList listSessionsForUI() const;
     int readContextWindow() const;

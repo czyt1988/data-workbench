@@ -186,6 +186,7 @@ private Q_SLOTS:
     void testColdStartSnapshotExcludesTrailingUser();  // 问题10：load_session 快照剔除末尾待重发 user
     void testWarmTakeoverLoadsSingleMessageHistory();  // L2：温暖化接管历史恰好 1 条也发 load_session
     void testStopNoopEmitsBusyFalse();                 // L8：stop() 空转回发 busy(false) 解除 Stopping 态
+    void testErrorRecordPersisted();                   // 问题3/决策点4：error 记录经 Module 链路落盘 JSONL
 };
 
 QString DAAgentModuleTest::pythonConfigPath()
@@ -599,6 +600,47 @@ void DAAgentModuleTest::testStopNoopEmitsBusyFalse()
     module->stop();
     QCOMPARE(busySpy.count(), 1);
     QCOMPARE(busySpy.at(0).at(0).toBool(), false);
+
+    module->shutdown();
+}
+
+/**
+ * 问题3/决策点4：错误此前从不持久化（JSONL 无 error 记录类型）——后台会话
+ * 错误切回丢失、活跃错误切离切回后从重放消失、重启后全无痕迹。修复后
+ * agentError 持久化按桥所属会话无条件写盘 type="error" 记录（载荷
+ * message/error_type/detail），readMessagesForLoad 过滤不进 Python state，
+ * 重放经 WebChannel/chat.js 渲染错误卡。
+ */
+void DAAgentModuleTest::testErrorRecordPersisted()
+{
+    QScopedPointer<DA::DAAgentModule> module(makeModule());
+    QSignalSpy errSpy(module.data(), &DA::DAAgentInterface::agentError);
+    const QString sid = module->createSession();
+    module->sendMessage(QStringLiteral("#fake:error"));
+    QTRY_VERIFY_WITH_TIMEOUT(errSpy.count() >= 1, 30000);
+
+    // error 记录已落盘（修复前 JSONL 无任何痕迹）
+    QCOMPARE(countRecords(sid, QStringLiteral("error")), 1);
+
+    // 载荷完整 + 不进 Python state + messageCount 不计
+    DA::DAAgentSessionStore store;
+    const QVector<QJsonObject> records = store.readAllRecords(sid);
+    bool found = false;
+    for (const QJsonObject& r : records) {
+        if (r.value("type").toString() != QLatin1String("error")) {
+            continue;
+        }
+        found = true;
+        const QJsonObject msg = r.value("message").toObject();
+        QCOMPARE(msg.value("message").toString(), QStringLiteral("fake runtime error"));
+        QCOMPARE(msg.value("error_type").toString(), QStringLiteral("quota_exhausted"));
+        QCOMPARE(r.value("session_id").toString(), sid);
+    }
+    QVERIFY(found);
+    QCOMPARE(store.messageCount(sid), 1);  // 仅 user 1 条（error 轮无 assistant）
+    const QJsonArray msgs = store.readMessagesForLoad(sid);
+    QCOMPARE(msgs.size(), 1);
+    QCOMPARE(msgs.at(0).toObject().value("role").toString(), QStringLiteral("human"));
 
     module->shutdown();
 }

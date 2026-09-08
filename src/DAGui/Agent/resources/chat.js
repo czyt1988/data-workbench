@@ -1562,6 +1562,13 @@ function renderHistoryEvents(evs) {
                 ansDiv.textContent = '\u2192 ' + answer;  // → answer
                 qBubble.appendChild(ansDiv);
             }
+        } else if (t === 'error') {
+            // 决策点 4（审计问题 3）：落盘 error 记录重放——复用实时 appendError
+            // 渲染错误卡（图标/配色按 error_type，detail 折叠面板）。message 为
+            // 落盘原始文案，Dock 侧 onSessionSwitched 已经 mapErrorMessage 预映射
+            // 为用户文案（与实时路径一致）
+            const m = (ev.message && typeof ev.message === 'object') ? ev.message : {};
+            appendError(m.message || '', m.error_type || '', m.detail || '');
         } else if (t === 'usage' || t === 'summary') {
             // 跳过（不渲染；token 由 C++ m_modelLabel/m_tokenLabel 显示，summary 一期不持久化渲染）
         }
