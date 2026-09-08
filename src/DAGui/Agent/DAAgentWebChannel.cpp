@@ -5,6 +5,7 @@
 #include <QJsonValue>
 #include <QJsonParseError>
 #include <QWebEngineView>
+#include <utility>  // std::as_const（非 const 容器范围迭代防 COW）
 
 namespace DA
 {
@@ -280,6 +281,7 @@ void DAAgentWebChannel::loadHistory(const QVector<QJsonObject>& records)
     // tool_calls 用简化格式（call.value("name")/("args") 顶层，对齐 plan-01/03 事件映射表）。
     QJsonArray uiEvents;
     QHash<QString, QJsonObject> pendingToolCalls;  // toolCallId → {toolName,args}
+    QStringList pendingOrder;  // toolCallId 插入序（QHash 不保序，flush 在途卡片需时序，问题 7）
 
     for (const QJsonObject& rec : records) {
         const QString t = rec.value("type").toString();
@@ -318,6 +320,7 @@ void DAAgentWebChannel::loadHistory(const QVector<QJsonObject>& records)
                     meta.insert("toolName", name);
                     meta.insert("args", args);
                     pendingToolCalls.insert(id, meta);  // 缓存等 result
+                    pendingOrder.append(id);
                 }
             } else {
                 // 纯文本 assistant
@@ -332,6 +335,7 @@ void DAAgentWebChannel::loadHistory(const QVector<QJsonObject>& records)
                 continue;
             }
             const QJsonObject meta = pendingToolCalls.take(id);
+            pendingOrder.removeOne(id);
             if (meta.isEmpty()) {
                 // 边界：无配对 tool_call（中断），一期跳过不入 uiEvents
                 continue;
@@ -357,6 +361,30 @@ void DAAgentWebChannel::loadHistory(const QVector<QJsonObject>& records)
             uiEvents.append(ev);
         }
         // 其他类型（answer 等）一期不入 uiEvents
+    }
+
+    // 审计问题 7：循环结束后仍未配对的 tool_call = 在途调用（切回运行中会话
+    // 场景）——透传为 running 态事件（无 result），前端只建卡入 pendingToolCards，
+    // 实时 tool_result 到达时依 FIFO 自然补全。修复前在途 tool_call 整个被跳过，
+    // 实时结果到达时无卡可配被忽略——该工具调用本轮 UI 完全不可见，下轮重放
+    // 才出现。ask_user 除外：挂起问题卡由 Module switchSession step5 重发为
+    // 可交互卡（此处渲染静态卡会双卡）。
+    // 边界（分段懒加载）：在途卡位于历史末尾，恒落首屏渲染的尾部段；若被
+    // 150+ 条后续事件挤入更早段（极端长回合），实时结果可能先于建卡到达而
+    // 被忽略——已知边界，接受
+    for (const QString& id : std::as_const(pendingOrder)) {
+        const QJsonObject meta = pendingToolCalls.value(id);
+        const QString name = meta.value("toolName").toString();
+        if (name == QStringLiteral("ask_user")) {
+            continue;
+        }
+        QJsonObject ev;
+        ev.insert("type", QStringLiteral("tool"));
+        ev.insert("toolName", name);
+        ev.insert("args", meta.value("args").toObject());
+        ev.insert("toolCallId", id);
+        ev.insert("running", true);  // 在途标记：前端只建卡不补结果
+        uiEvents.append(ev);
     }
 
     QByteArray json = QJsonDocument(uiEvents).toJson(QJsonDocument::Compact);

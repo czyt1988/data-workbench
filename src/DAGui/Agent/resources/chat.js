@@ -1528,7 +1528,12 @@ function loadHistory(events) {
     }
     // concurrent-sessions 修复：收尾关闭最后的工具组（所有卡片已带 result，
     // 标记 completed），避免重放后末组永远显示 running 状态。
-    closeToolGroup();
+    // 例外（审计问题 7）：存在在途卡片（C++ 未配对 tool_call flush 的 running
+    // 事件）时保持分组 active——实时 tool_result 稍后到达依 FIFO 补全，
+    // 不得提前关组走 incomplete 误标路径（问题 28a 同款机制）
+    if (pendingToolCards.length === 0) {
+        closeToolGroup();
+    }
     scrollToBottom();
 }
 
@@ -1560,14 +1565,21 @@ function renderHistoryEvents(evs) {
             // MAJOR2: 读合并后字段 toolName/args/result（C++ 已配对）
             const toolName = ev.toolName || 'tool';
             const args = (ev.args && typeof ev.args === 'object') ? ev.args : {};
-            let result = ev.result;
-            // result 来自 C++ parseJsonStr（已 object）；防御性兼容历史 string 形态
-            if (typeof result === 'string') {
-                try { result = JSON.parse(result || '{}'); } catch (e) { result = {}; }
+            if (ev.running === true) {
+                // 在途工具调用（审计问题 7：切回运行中会话，C++ 把末尾未配对
+                // tool_call 透传为 running 态事件）：只建卡不补结果——卡片入
+                // pendingToolCards 等待，实时 tool_result 到达依 FIFO 自然补全
+                appendToolCall(toolName, args);
+            } else {
+                let result = ev.result;
+                // result 来自 C++ parseJsonStr（已 object）；防御性兼容历史 string 形态
+                if (typeof result === 'string') {
+                    try { result = JSON.parse(result || '{}'); } catch (e) { result = {}; }
+                }
+                if (!result || typeof result !== 'object') { result = {}; }
+                appendToolCall(toolName, args);
+                appendToolResult(toolName, result);
             }
-            if (!result || typeof result !== 'object') { result = {}; }
-            appendToolCall(toolName, args);
-            appendToolResult(toolName, result);
         } else if (t === 'question') {
             // MAJOR5 + 契约9: ask_user 历史用 appendQuestion 渲染问题气泡（返回气泡
             // 引用），然后 DOM 操作禁用按钮 + 加 answered class + 追加答案文本
