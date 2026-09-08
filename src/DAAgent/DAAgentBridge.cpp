@@ -63,6 +63,7 @@ public:
     // ---- 权限层（permission-layer P1） ----
     DAAgentPermissionManager* mPermissionManager = nullptr;  ///< 权限引擎（Module 持有，非拥有）
     QHash< QString, PendingApproval > mPendingApprovals;     ///< callId → 挂起审批
+    QString mSessionId;  ///< 所属会话（attachBridge 注入；权限记忆按会话隔离查询键，可空=预热桥）
 };
 
 DAAgentBridge::PrivateData::PrivateData(DAAgentBridge* p) : q_ptr(p)
@@ -895,6 +896,26 @@ void DAAgentBridge::setPermissionManager(DAAgentPermissionManager* manager)
 }
 
 /**
+ * @brief 设置所属会话标识（Module attachBridge 注入）
+ * @param sessionId 会话 ID（权限记忆按会话隔离的查询键，决策点 1 方案 b）
+ */
+void DAAgentBridge::setSessionId(const QString& sessionId)
+{
+    DA_D(d);
+    d->mSessionId = sessionId;
+}
+
+/**
+ * @brief 所属会话 ID（可空：预热桥未被接管时无会话归属）
+ * @return 会话 ID
+ */
+QString DAAgentBridge::sessionId() const
+{
+    DA_DC(d);
+    return d->mSessionId;
+}
+
+/**
  * @brief 执行工具调用（前置权限门，两阶段，母文档 §4，继承 v1 暂停-恢复范式）
  *
  * decide() 产出 Allow → executeToolNow 真实执行；Deny → 合成拒绝结果回传；
@@ -919,8 +940,9 @@ void DAAgentBridge::executeTool(const QString& callId,
 
     // ---- 权限门（C++ 唯一执法点，A1） ----
     if (d->mPermissionManager) {
+        // decide 携带桥所属会话（决策点 1 方案 b）：会话记忆按会话查询
         const DAAgentPermissionManager::Decision dec =
-            d->mPermissionManager->decide(toolName, args, safety);
+            d->mPermissionManager->decide(d->mSessionId, toolName, args, safety);
         if (dec.action == DAAgentPermissionManager::Deny) {
             // 合成拒绝结果（A11 按分级脱敏：reason 已由 decide 产出）
             QJsonObject result;
@@ -981,11 +1003,12 @@ void DAAgentBridge::onToolApproval(const QString& callId, bool approved, bool re
     d->mPendingApprovals.erase(it);
 
     if (approved) {
-        // A5 [v2.1]：会话记忆仅 file_write；code_exec 一律不记忆
+        // A5 [v2.1]：会话记忆仅 file_write；code_exec 一律不记忆。
+        // 按桥所属会话分桶写入（决策点 1 方案 b）——"本会话记住"仅本会话可见
         if (rememberSession && d->mPermissionManager && pa.tier == DAAgentPermissionManager::tierFileWrite()) {
             const QString key = d->mPermissionManager->sessionScopeKey(pa.toolName, pa.args);
             if (!key.isEmpty()) {
-                d->mPermissionManager->rememberSession(pa.toolName, key);
+                d->mPermissionManager->rememberSession(d->mSessionId, pa.toolName, key);
             }
         }
         executeToolNow(callId, pa.toolName, pa.args, pa.subagentId);

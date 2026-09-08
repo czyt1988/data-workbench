@@ -107,21 +107,26 @@ public:
     static QStringList gatedTools();
 
     // ---- 核心决策（母文档 §4 矩阵 [v2.1]） ----
-    // 按模式×分级×安全裁决产出 Allow/Deny/Ask
-    Decision decide(const QString& tool, const QJsonObject& params, const QJsonObject& safety) const;
+    // 按模式×分级×安全裁决产出 Allow/Deny/Ask。sessionId 为桥所属会话
+    //（决策点 1 方案 b）：会话记忆按会话查询，空 sessionId 无记忆（保守 Ask，
+    // 仅限预热桥等无会话归属的防御回退）
+    Decision decide(const QString& sessionId, const QString& tool, const QJsonObject& params, const QJsonObject& safety) const;
     // 路径策略评估：按规则顺序首条命中返回其动作，无命中返回 Ask
     Action evaluatePath(const QString& tool, const QString& normalizedAbsPath, QString* reason = nullptr) const;
     // 提取并规范化工具参数中的路径（file_path 优先，回退 path/output_path/report_path；
     // run_script 相对路径按工作区根解析）；无路径参数返回空串
     QString resolveToolPath(const QString& tool, const QJsonObject& params) const;
 
-    // ---- 会话记忆（A5 [v2.1]：仅 file_write，code_exec 永不记忆） ----
+    // ---- 会话记忆（A5 [v2.1] + 决策点 1 方案 b：按会话隔离，仅 file_write，code_exec 永不记忆） ----
+    // 记忆键空间 sessionId → (tool → 已批准路径前缀集)："批准并本会话记住"
+    // 仅同会话可见——并发多会话下欠清理（跨会话存活）与过度清除（任一桥退出
+    // 全局清）两面同时根治；会话删除/桥退役时经 clearSessionMemory 销毁
     // 记录批准的路径前缀（scopeKey 为规范化目录前缀）
-    void rememberSession(const QString& tool, const QString& scopeKey);
-    // 判断路径是否命中本会话已批准的前缀
-    bool isRemembered(const QString& tool, const QString& normalizedAbsPath) const;
-    // 清空会话记忆（切换会话/进程退出/崩溃恢复）
-    void clearSessionMemory();
+    void rememberSession(const QString& sessionId, const QString& tool, const QString& scopeKey);
+    // 判断路径是否命中该会话已批准的前缀
+    bool isRemembered(const QString& sessionId, const QString& tool, const QString& normalizedAbsPath) const;
+    // 销毁指定会话的记忆（会话删除/桥退役/该会话进程退出）
+    void clearSessionMemory(const QString& sessionId);
     // 从工具参数推导记忆前缀（规范化父目录）；无路径返回空串
     QString sessionScopeKey(const QString& tool, const QJsonObject& params) const;
 

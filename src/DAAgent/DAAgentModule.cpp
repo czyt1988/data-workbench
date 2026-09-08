@@ -807,6 +807,9 @@ void DAAgentModule::attachBridge(DAAgentBridge* bridge, const QString& sessionId
     DA_D(d);
     if (!bridge || sessionId.isEmpty()) return;
     d->mSessionBridges.insert(sessionId, bridge);
+    // 会话标识注入（决策点 1 方案 b）：权限记忆/会话上下文按会话隔离的查询键。
+    // 冷启动新桥与接管预热桥都经此收口，接管时由空转为本会话
+    bridge->setSessionId(sessionId);
 
     // ---- 工具实现表注入（冷启动新桥与接管预热桥的公共收口） ----
     // 桥的创建时机晚于插件 registerTool，注册期的热更新（forEachLiveBridge）
@@ -1119,7 +1122,9 @@ void DAAgentModule::attachBridge(DAAgentBridge* bridge, const QString& sessionId
     connect(bridge, &DAAgentBridge::processExited, this, [this, sessionId]() {
         auto* d = d_func();
         if (d->mPermissionManager) {
-            d->mPermissionManager->clearSessionMemory();
+            // 按会话销毁（决策点 1 方案 b）：A5"不跨重启存活"精确到该会话——
+            // 旧全局清除会误伤其它并发会话正在使用的记忆（过度清除面）
+            d->mPermissionManager->clearSessionMemory(sessionId);
         }
         // 审计问题 17：进程死亡（用户 Stop/崩溃/错误终止）使挂起的 ask_user
         // 作废——清缓存 + 撤卡（镜像审批 dismissed 契约）。不清则：角标永久
@@ -1158,6 +1163,12 @@ void DAAgentModule::retireBridge(const QString& sessionId)
     d->mCumulativeTotalTokens.remove(sessionId);
     d->mPendingToolCallUuids.remove(sessionId);
     d->mPendingNotifications.remove(sessionId);
+    // 桥退役即销毁该会话的权限记忆（决策点 1 拍板：会话删除/桥退役时销毁；
+    // 恢复旧版"切离即清"语义且不误伤其它会话——修复前退役路径因先 disconnect
+    // 完全不清记忆，"本会话记住"事实上全局跨会话存活，A5 承诺落空）
+    if (d->mPermissionManager) {
+        d->mPermissionManager->clearSessionMemory(sessionId);
+    }
     // 审计问题 17：任何清问题缓存的退役路径（删除会话/sendMessage 防御重建等）
     // 都须同步撤活跃会话屏幕上的问题卡——契约完整性兜底（常规路径进程退出时
     // processExited lambda 已先清缓存并撤卡，此处缓存多已为空）
@@ -1617,6 +1628,11 @@ void DAAgentModule::deleteSession(const QString& sessionId)
     // 会话已不存在——显式清 error 角标残留（retireBridge 有意保留 error 态，
     // 删除路径必须回收，防状态哈希滞留已删会话键）
     d->mSessionError.remove(sessionId);
+    // 会话删除即销毁权限记忆（决策点 1 拍板；无桥会话不经 retireBridge，
+    // 此处兜底，已清时幂等）
+    if (d->mPermissionManager) {
+        d->mPermissionManager->clearSessionMemory(sessionId);
+    }
     if (d->mCurrentSessionId == sessionId) {
         d->mCurrentSessionId.clear();  // 删当前会话后回归无活跃
         resetCumulativeTokens();       // 清零累计，避免残留被下一会话误用

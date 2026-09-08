@@ -27,6 +27,10 @@ using DA::DAAgentPermissionManager;
 using DA::DAAgentPermissionRule;
 using DA::DAAgentConfig;
 
+// 决策点 1 方案 b：decide/记忆 API 按会话分桶——测试通用会话标识
+static const QString kS  = QStringLiteral("test-session");
+static const QString kS2 = QStringLiteral("other-session");
+
 class DAAgentPermissionManagerTest : public QObject
 {
     Q_OBJECT
@@ -97,35 +101,35 @@ void DAAgentPermissionManagerTest::testDecisionMatrix()
 
     // ---- yolo：除硬 deny 外全部放行 ----
     mgr.setMode("yolo");
-    QCOMPARE(mgr.decide("read_file", inWs, {}).action, DAAgentPermissionManager::Allow);
-    QCOMPARE(mgr.decide("create_chart", noPath, {}).action, DAAgentPermissionManager::Allow);
-    QCOMPARE(mgr.decide("write_file", outWs, {}).action, DAAgentPermissionManager::Allow);
-    QCOMPARE(mgr.decide("run_code", code, {}).action, DAAgentPermissionManager::Allow);
-    QCOMPARE(mgr.decide("some_plugin_tool", noPath, {}).action, DAAgentPermissionManager::Allow);
+    QCOMPARE(mgr.decide(kS, "read_file", inWs, {}).action, DAAgentPermissionManager::Allow);
+    QCOMPARE(mgr.decide(kS, "create_chart", noPath, {}).action, DAAgentPermissionManager::Allow);
+    QCOMPARE(mgr.decide(kS, "write_file", outWs, {}).action, DAAgentPermissionManager::Allow);
+    QCOMPARE(mgr.decide(kS, "run_code", code, {}).action, DAAgentPermissionManager::Allow);
+    QCOMPARE(mgr.decide(kS, "some_plugin_tool", noPath, {}).action, DAAgentPermissionManager::Allow);
 
     // ---- auto：read/inapp 放行，写走路径策略，代码判官未配置一律 ask，unknown ask ----
     mgr.setMode("auto");
-    QCOMPARE(mgr.decide("read_file", inWs, {}).action, DAAgentPermissionManager::Allow);
-    QCOMPARE(mgr.decide("create_chart", noPath, {}).action, DAAgentPermissionManager::Allow);
-    QCOMPARE(mgr.decide("write_file", inWs, {}).action, DAAgentPermissionManager::Allow);
-    QCOMPARE(mgr.decide("write_file", outWs, {}).action, DAAgentPermissionManager::Ask);  // 区外询问（D3）
-    QCOMPARE(mgr.decide("run_code", code, {}).action, DAAgentPermissionManager::Ask);     // 判官未配置（D1）
-    QCOMPARE(mgr.decide("some_plugin_tool", noPath, {}).action, DAAgentPermissionManager::Ask);  // unknown（A3）
+    QCOMPARE(mgr.decide(kS, "read_file", inWs, {}).action, DAAgentPermissionManager::Allow);
+    QCOMPARE(mgr.decide(kS, "create_chart", noPath, {}).action, DAAgentPermissionManager::Allow);
+    QCOMPARE(mgr.decide(kS, "write_file", inWs, {}).action, DAAgentPermissionManager::Allow);
+    QCOMPARE(mgr.decide(kS, "write_file", outWs, {}).action, DAAgentPermissionManager::Ask);  // 区外询问（D3）
+    QCOMPARE(mgr.decide(kS, "run_code", code, {}).action, DAAgentPermissionManager::Ask);     // 判官未配置（D1）
+    QCOMPARE(mgr.decide(kS, "some_plugin_tool", noPath, {}).action, DAAgentPermissionManager::Ask);  // unknown（A3）
 
     // ---- manual：read 放行，inapp 默认放行，写/代码/unknown 一律 ask ----
     mgr.setMode("manual");
-    QCOMPARE(mgr.decide("read_file", inWs, {}).action, DAAgentPermissionManager::Allow);
-    QCOMPARE(mgr.decide("create_chart", noPath, {}).action, DAAgentPermissionManager::Allow);
-    QCOMPARE(mgr.decide("write_file", inWs, {}).action, DAAgentPermissionManager::Ask);
-    QCOMPARE(mgr.decide("run_code", code, {}).action, DAAgentPermissionManager::Ask);
-    QCOMPARE(mgr.decide("some_plugin_tool", noPath, {}).action, DAAgentPermissionManager::Ask);
+    QCOMPARE(mgr.decide(kS, "read_file", inWs, {}).action, DAAgentPermissionManager::Allow);
+    QCOMPARE(mgr.decide(kS, "create_chart", noPath, {}).action, DAAgentPermissionManager::Allow);
+    QCOMPARE(mgr.decide(kS, "write_file", inWs, {}).action, DAAgentPermissionManager::Ask);
+    QCOMPARE(mgr.decide(kS, "run_code", code, {}).action, DAAgentPermissionManager::Ask);
+    QCOMPARE(mgr.decide(kS, "some_plugin_tool", noPath, {}).action, DAAgentPermissionManager::Ask);
 
     // manual_block_inapp_tools=true → inapp_mutate 也 ask（D2）
     cfg.setManualBlockInappTools(true);
-    QCOMPARE(mgr.decide("create_chart", noPath, {}).action, DAAgentPermissionManager::Ask);
+    QCOMPARE(mgr.decide(kS, "create_chart", noPath, {}).action, DAAgentPermissionManager::Ask);
 
     // Decision.tier 回填正确
-    const auto dec = mgr.decide("write_file", inWs, {});
+    const auto dec = mgr.decide(kS, "write_file", inWs, {});
     QCOMPARE(dec.tier, DAAgentPermissionManager::tierFileWrite());
 }
 
@@ -144,23 +148,24 @@ void DAAgentPermissionManagerTest::testHardDenyPriority()
 
     // yolo 下系统目录仍拒绝
     mgr.setMode("yolo");
-    auto dec = mgr.decide("write_file", sysPath, {});
+    auto dec = mgr.decide(kS, "write_file", sysPath, {});
     QCOMPARE(dec.action, DAAgentPermissionManager::Deny);
     QCOMPARE(dec.reason, DAAgentPermissionManager::systemPathDenyMessage());
-    QCOMPARE(mgr.decide("read_file", pfPath, {}).action, DAAgentPermissionManager::Deny);
+    QCOMPARE(mgr.decide(kS, "read_file", pfPath, {}).action, DAAgentPermissionManager::Deny);
 
     // auto 下同样拒绝（先于路径策略）
     mgr.setMode("auto");
-    QCOMPARE(mgr.decide("write_file", sysPath, {}).action, DAAgentPermissionManager::Deny);
+    QCOMPARE(mgr.decide(kS, "write_file", sysPath, {}).action, DAAgentPermissionManager::Deny);
 
     // 会话记忆无法豁免硬 deny（记忆检查在硬 deny 之后）
-    mgr.rememberSession("write_file", "c:/windows/");
-    QVERIFY(mgr.isRemembered("write_file", "C:/Windows/System32/evil.dll"));
-    QCOMPARE(mgr.decide("write_file", sysPath, {}).action, DAAgentPermissionManager::Deny);
+    mgr.rememberSession(kS, "write_file", "c:/windows/");
+    QVERIFY(mgr.isRemembered(kS, "write_file", "C:/Windows/System32/evil.dll"));
+    QCOMPARE(mgr.decide(kS, "write_file", sysPath, {}).action, DAAgentPermissionManager::Deny);
 }
 
 // ---------------------------------------------------------------------------
-// 会话记忆：仅 file_write、先于 ask、clearSessionMemory、code_exec 永不记忆（A5）
+// 会话记忆（A5 + 决策点 1 方案 b 按会话隔离）：仅 file_write、先于 ask、
+// 跨会话不可见、按会话销毁不误伤其它会话、code_exec 永不记忆
 // ---------------------------------------------------------------------------
 
 void DAAgentPermissionManagerTest::testSessionMemory()
@@ -177,21 +182,38 @@ void DAAgentPermissionManagerTest::testSessionMemory()
     // 工作区外路径：默认 ask
     const QString outsideDir = DA::DADir::getTempPath(QStringLiteral("perm-outside"));
     const QJsonObject outParams = writeParams("file_path", outsideDir + "/report.docx");
-    QCOMPARE(mgr.decide("write_file", outParams, {}).action, DAAgentPermissionManager::Ask);
+    QCOMPARE(mgr.decide(kS, "write_file", outParams, {}).action, DAAgentPermissionManager::Ask);
 
-    // 模拟"批准并记住"：sessionScopeKey 取规范化父目录前缀
+    // 模拟"批准并记住"：sessionScopeKey 取规范化父目录前缀，按会话 kS 写入
     const QString key = mgr.sessionScopeKey("write_file", outParams);
     QVERIFY(!key.isEmpty());
-    mgr.rememberSession("write_file", key);
-    QCOMPARE(mgr.decide("write_file", outParams, {}).action, DAAgentPermissionManager::Allow);
+    mgr.rememberSession(kS, "write_file", key);
+    QCOMPARE(mgr.decide(kS, "write_file", outParams, {}).action, DAAgentPermissionManager::Allow);
+
+    // 跨会话不可见（欠清理面根治）：修复前全局键空间使任何会话都命中 Allow，
+    // "本会话记住"事实上全局跨会话存活，违背 A5 承诺
+    QCOMPARE(mgr.isRemembered(kS, "write_file",
+                              DAAgentPermissionRule::normalizePath(outsideDir + "/report.docx")), true);
+    QCOMPARE(mgr.isRemembered(kS2, "write_file",
+                              DAAgentPermissionRule::normalizePath(outsideDir + "/report.docx")), false);
+    QCOMPARE(mgr.decide(kS2, "write_file", outParams, {}).action, DAAgentPermissionManager::Ask);
 
     // manual 模式下记忆同样生效（先于 ask）
     mgr.setMode("manual");
-    QCOMPARE(mgr.decide("write_file", outParams, {}).action, DAAgentPermissionManager::Allow);
+    QCOMPARE(mgr.decide(kS, "write_file", outParams, {}).action, DAAgentPermissionManager::Allow);
+    mgr.setMode("auto");
 
-    // clearSessionMemory 后回到 ask
-    mgr.clearSessionMemory();
-    QCOMPARE(mgr.decide("write_file", outParams, {}).action, DAAgentPermissionManager::Ask);
+    // 按会话销毁不误伤其它会话（过度清除面根治）：修复前任一桥退出全局清空，
+    // 其它并发会话正在使用的记忆被连带清掉、用户被重复弹审批卡
+    mgr.rememberSession(kS2, "write_file", key);
+    QCOMPARE(mgr.decide(kS2, "write_file", outParams, {}).action, DAAgentPermissionManager::Allow);
+    mgr.clearSessionMemory(kS);
+    QCOMPARE(mgr.decide(kS, "write_file", outParams, {}).action, DAAgentPermissionManager::Ask);
+    QCOMPARE(mgr.decide(kS2, "write_file", outParams, {}).action, DAAgentPermissionManager::Allow);
+
+    // 空会话标识无记忆（预热桥等无归属场景保守 Ask）
+    mgr.rememberSession(QString(), "write_file", key);
+    QCOMPARE(mgr.decide(QString(), "write_file", outParams, {}).action, DAAgentPermissionManager::Ask);
 
     // sessionScopeKey：无路径参数返回空
     QCOMPARE(mgr.sessionScopeKey("run_code", QJsonObject{{"code", "x"}}), QString());
@@ -212,24 +234,24 @@ void DAAgentPermissionManagerTest::testCodeExecJudge()
 
     // 判官未配置
     QVERIFY(!mgr.judgeConfigured());
-    QCOMPARE(mgr.decide("run_code", code, QJsonObject{{"verdict", "allow"}}).action,
+    QCOMPARE(mgr.decide(kS, "run_code", code, QJsonObject{{"verdict", "allow"}}).action,
              DAAgentPermissionManager::Ask);  // D1 [v2.1]：无判官不静默放行
-    QCOMPARE(mgr.decide("run_code", code, QJsonObject{{"verdict", "uncertain"}}).action,
+    QCOMPARE(mgr.decide(kS, "run_code", code, QJsonObject{{"verdict", "uncertain"}}).action,
              DAAgentPermissionManager::Ask);
-    QCOMPARE(mgr.decide("run_code", code, {}).action, DAAgentPermissionManager::Ask);
+    QCOMPARE(mgr.decide(kS, "run_code", code, {}).action, DAAgentPermissionManager::Ask);
     // deny 裁决无需判官也消费（静态规则产出，契约 2），且脱敏
-    auto dec = mgr.decide("run_code", code, QJsonObject{{"verdict", "deny"}, {"reason", "os.system"}});
+    auto dec = mgr.decide(kS, "run_code", code, QJsonObject{{"verdict", "deny"}, {"reason", "os.system"}});
     QCOMPARE(dec.action, DAAgentPermissionManager::Deny);
     QCOMPARE(dec.reason, DAAgentPermissionManager::codeDenyMessage());
     QVERIFY(!dec.reason.contains("os.system"));  // A11：不回显命中规则
 
     // yolo 下 deny 裁决同样生效（硬拦截先于模式放行——代码内容风险不受 yolo 豁免）
     mgr.setMode("yolo");
-    QCOMPARE(mgr.decide("run_code", code, QJsonObject{{"verdict", "deny"}}).action,
+    QCOMPARE(mgr.decide(kS, "run_code", code, QJsonObject{{"verdict", "deny"}}).action,
              DAAgentPermissionManager::Allow);
     // 说明：yolo 语义为"除系统目录硬 deny 外全放行"，安全裁决消费属 auto 路径；
     // 此处验证 yolo 不误拦截（allow 与缺失均放行）
-    QCOMPARE(mgr.decide("run_code", code, QJsonObject{{"verdict", "allow"}}).action,
+    QCOMPARE(mgr.decide(kS, "run_code", code, QJsonObject{{"verdict", "allow"}}).action,
              DAAgentPermissionManager::Allow);
 
     // 判官已配置：allow 放行，uncertain/缺失 ask，deny 拒绝
@@ -237,12 +259,12 @@ void DAAgentPermissionManagerTest::testCodeExecJudge()
     cfg.setJudgeModel(QStringLiteral("gpt-4o-mini"));
     QVERIFY(mgr.judgeConfigured());
     QCOMPARE(mgr.judgeModel(), QStringLiteral("gpt-4o-mini"));
-    QCOMPARE(mgr.decide("run_code", code, QJsonObject{{"verdict", "allow"}}).action,
+    QCOMPARE(mgr.decide(kS, "run_code", code, QJsonObject{{"verdict", "allow"}}).action,
              DAAgentPermissionManager::Allow);
-    QCOMPARE(mgr.decide("run_code", code, QJsonObject{{"verdict", "uncertain"}}).action,
+    QCOMPARE(mgr.decide(kS, "run_code", code, QJsonObject{{"verdict", "uncertain"}}).action,
              DAAgentPermissionManager::Ask);
-    QCOMPARE(mgr.decide("run_code", code, {}).action, DAAgentPermissionManager::Ask);
-    QCOMPARE(mgr.decide("run_code", code, QJsonObject{{"verdict", "deny"}}).action,
+    QCOMPARE(mgr.decide(kS, "run_code", code, {}).action, DAAgentPermissionManager::Ask);
+    QCOMPARE(mgr.decide(kS, "run_code", code, QJsonObject{{"verdict", "deny"}}).action,
              DAAgentPermissionManager::Deny);
 }
 
@@ -264,10 +286,10 @@ void DAAgentPermissionManagerTest::testWorkspaceVariable()
     QCOMPARE(mgr.workspaceRoot(), DAAgentPermissionRule::normalizePath(ws));
 
     // 工作区内写文件 → allow（${workspace}/** 种子）
-    QCOMPARE(mgr.decide("write_file", writeParams("file_path", ws + "/a.txt"), {}).action,
+    QCOMPARE(mgr.decide(kS, "write_file", writeParams("file_path", ws + "/a.txt"), {}).action,
              DAAgentPermissionManager::Allow);
     // 子目录同样命中（** 跨分隔符）
-    QCOMPARE(mgr.decide("export_data", writeParams("output_path", ws + "/out/deep/b.csv"), {}).action,
+    QCOMPARE(mgr.decide(kS, "export_data", writeParams("output_path", ws + "/out/deep/b.csv"), {}).action,
              DAAgentPermissionManager::Allow);
 
     // run_script 相对路径按工作区根解析（A8）——resolveToolPath 负责解析
@@ -276,11 +298,11 @@ void DAAgentPermissionManagerTest::testWorkspaceVariable()
              DAAgentPermissionRule::normalizePath(ws + "/scripts/analyze.py"));
     // 但 run_script 是 code_exec 分级（§5）：auto 模式走判官路径而非路径策略，
     // 判官未配置 → ask（即使路径在工作区内；P1 代码执行一律询问）
-    QCOMPARE(mgr.decide("run_script", relIn, {}).action, DAAgentPermissionManager::Ask);
+    QCOMPARE(mgr.decide(kS, "run_script", relIn, {}).action, DAAgentPermissionManager::Ask);
 
     // 绝对路径越狱到工作区外 → 路径策略区外询问
     const QJsonObject absOut = QJsonObject{{"path", DA::DADir::getTempPath("perm-other3") + "/s.py"}};
-    QCOMPARE(mgr.decide("run_script", absOut, {}).action, DAAgentPermissionManager::Ask);
+    QCOMPARE(mgr.decide(kS, "run_script", absOut, {}).action, DAAgentPermissionManager::Ask);
 
     // 未注入工作区时 ${workspace} 规则不命中（变量空=不匹配），区外询问
     DAAgentConfig cfg2;
@@ -288,7 +310,7 @@ void DAAgentPermissionManagerTest::testWorkspaceVariable()
     DAAgentPermissionManager mgr2(&cfg2);
     QVERIFY(mgr2.load());
     mgr2.setMode("auto");
-    QCOMPARE(mgr2.decide("write_file", writeParams("file_path", ws + "/a.txt"), {}).action,
+    QCOMPARE(mgr2.decide(kS, "write_file", writeParams("file_path", ws + "/a.txt"), {}).action,
              DAAgentPermissionManager::Ask);
 }
 
@@ -342,7 +364,7 @@ void DAAgentPermissionManagerTest::testSeedingAndBackfill()
         QCOMPARE(mgr.rules().size(), 8);  // 回填到 8
         // 且系统目录仍被拦截
         mgr.setMode("yolo");
-        QCOMPARE(mgr.decide("write_file", writeParams("file_path", "C:/Windows/x.dll"), {}).action,
+        QCOMPARE(mgr.decide(kS, "write_file", writeParams("file_path", "C:/Windows/x.dll"), {}).action,
                  DAAgentPermissionManager::Deny);
     }
 }

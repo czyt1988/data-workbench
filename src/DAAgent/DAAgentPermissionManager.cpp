@@ -135,7 +135,10 @@ public:
     QHash< QString, QString > mTierOverrides;            ///< {tool: tier}
     QString mWorkspaceRoot;                  ///< 脚本工作区根（${workspace}），规范化
     QString mProjectDir;                     ///< 工程文件所在目录（${project}），规范化
-    QHash< QString, QStringList > mSessionMemory;  ///< tool → 已批准路径前缀（规范化）
+    // 会话记忆两级分桶（决策点 1 方案 b）：sessionId → (tool → 已批准路径前缀集)。
+    // 全局单一键空间曾使"本会话记住"事实上跨会话存活（欠清理），且任一桥退出
+    // 全局清空又误伤其它会话（过度清除）——按会话分桶两面同时根治
+    QHash< QString, QHash< QString, QStringList > > mSessionMemory;
 };
 
 DAAgentPermissionManager::PrivateData::PrivateData(DAAgentPermissionManager* p) : q_ptr(p)
@@ -703,33 +706,42 @@ QString DAAgentPermissionManager::resolveToolPath(const QString& tool, const QJs
 // ===========================================================================
 
 /**
- * @brief 记录批准的路径前缀（A5：调用方保证仅 file_write 生效）
+ * @brief 记录批准的路径前缀（A5：调用方保证仅 file_write 生效；按会话分桶）
+ * @param sessionId 桥所属会话（空则拒绝——无归属的批准不记忆，保守方向）
  * @param tool 工具名
  * @param scopeKey 规范化目录前缀
  */
-void DAAgentPermissionManager::rememberSession(const QString& tool, const QString& scopeKey)
+void DAAgentPermissionManager::rememberSession(const QString& sessionId, const QString& tool, const QString& scopeKey)
 {
     DA_D(d);
-    if (tool.isEmpty() || scopeKey.isEmpty()) {
+    if (sessionId.isEmpty() || tool.isEmpty() || scopeKey.isEmpty()) {
         return;
     }
-    QStringList& prefixes = d->mSessionMemory[tool];
+    QStringList& prefixes = d->mSessionMemory[sessionId][tool];
     if (!prefixes.contains(scopeKey)) {
         prefixes.append(scopeKey);
     }
 }
 
 /**
- * @brief 判断路径是否命中本会话已批准的前缀
+ * @brief 判断路径是否命中该会话已批准的前缀
+ * @param sessionId 桥所属会话
  * @param tool 工具名
  * @param normalizedAbsPath 规范化绝对路径
  * @return 是否已批准
  */
-bool DAAgentPermissionManager::isRemembered(const QString& tool, const QString& normalizedAbsPath) const
+bool DAAgentPermissionManager::isRemembered(const QString& sessionId, const QString& tool, const QString& normalizedAbsPath) const
 {
     DA_DC(d);
-    const auto it = d->mSessionMemory.constFind(tool);
-    if (it == d->mSessionMemory.constEnd() || normalizedAbsPath.isEmpty()) {
+    if (sessionId.isEmpty() || normalizedAbsPath.isEmpty()) {
+        return false;
+    }
+    const auto sessionIt = d->mSessionMemory.constFind(sessionId);
+    if (sessionIt == d->mSessionMemory.constEnd()) {
+        return false;
+    }
+    const auto it = sessionIt->constFind(tool);
+    if (it == sessionIt->constEnd()) {
         return false;
     }
     for (const QString& prefix : it.value()) {
@@ -741,12 +753,16 @@ bool DAAgentPermissionManager::isRemembered(const QString& tool, const QString& 
 }
 
 /**
- * @brief 清空会话记忆（切换会话/进程退出/崩溃恢复时调用）
+ * @brief 销毁指定会话的记忆（会话删除/桥退役/该会话进程退出时调用）
+ * @param sessionId 会话 ID（空则忽略）
  */
-void DAAgentPermissionManager::clearSessionMemory()
+void DAAgentPermissionManager::clearSessionMemory(const QString& sessionId)
 {
     DA_D(d);
-    d->mSessionMemory.clear();
+    if (sessionId.isEmpty()) {
+        return;
+    }
+    d->mSessionMemory.remove(sessionId);
 }
 
 /**
@@ -867,13 +883,14 @@ DAAgentPermissionManager::evaluatePath(const QString& tool, const QString& norma
  * 顺序：硬 deny（全模式）→ yolo 放行 → 会话记忆（仅 file_write，优先于 ask）
  * → auto 分级处理（code_exec 判官未配置时 allow/uncertain/缺失一律 ask，D1）
  * → manual 分级处理（unknown 一律 ask，A3）。
+ * @param sessionId 桥所属会话（决策点 1 方案 b：记忆按会话查询；空则无记忆）
  * @param tool 工具名
  * @param params 工具参数
  * @param safety Python 侧安全裁决 {verdict, reason, source}（可空，计划二生产）
  * @return 决策结果
  */
 DAAgentPermissionManager::Decision
-DAAgentPermissionManager::decide(const QString& tool, const QJsonObject& params, const QJsonObject& safety) const
+DAAgentPermissionManager::decide(const QString& sessionId, const QString& tool, const QJsonObject& params, const QJsonObject& safety) const
 {
     const QString tier = tierOf(tool, params);
     const QString m    = mode();
@@ -917,8 +934,9 @@ DAAgentPermissionManager::decide(const QString& tool, const QJsonObject& params,
         return dec;
     }
 
-    // 2. 会话记忆：仅 file_write 生效，等价于用户已批准，优先于 ask（A5 [v2.1]）
-    if (tier == QLatin1String(kTierFileWrite) && !path.isEmpty() && isRemembered(tool, path)) {
+    // 2. 会话记忆：仅 file_write 生效，等价于用户已批准，优先于 ask（A5 [v2.1]）；
+    //    按桥所属会话查询（决策点 1 方案 b），跨会话不可见
+    if (tier == QLatin1String(kTierFileWrite) && !path.isEmpty() && isRemembered(sessionId, tool, path)) {
         Decision dec;
         dec.action = Allow;
         dec.tier   = tier;

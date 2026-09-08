@@ -83,6 +83,12 @@ public:
     // 设置权限引擎（executeTool 前置门用；Module 持有，非拥有指针）
     void setPermissionManager(DAAgentPermissionManager* manager);
 
+    // 设置所属会话标识（Module attachBridge 注入；权限记忆按会话隔离的查询键，
+    // 决策点 1 方案 b。预热桥未接管时为空——decide 无记忆保守 Ask）
+    void setSessionId(const QString& sessionId);
+    // 所属会话 ID（可空）
+    QString sessionId() const;
+
     // 用户对审批卡的裁决（callId 配对 pending 审批；approved→执行，否则合成拒绝）
     void onToolApproval(const QString& callId, bool approved, bool rememberSession);
 
