@@ -1435,6 +1435,14 @@ void DAAgentModule::deleteSession(const QString& sessionId)
     if (d->mCurrentSessionId == sessionId) {
         d->mCurrentSessionId.clear();  // 删当前会话后回归无活跃
         resetCumulativeTokens();       // 清零累计，避免残留被下一会话误用
+        // 审计问题 16：补发 sessionCleared——修复前删除当前会话只发
+        // sessionListChanged（Dock 仅缓存 payload+刷标题），聊天区保留已删
+        // 会话全部气泡；下一条消息经 createSession 新建（有意不发
+        // sessionCreated，MAJOR3 约定）→ 新会话气泡渲染在已删会话转写下方，
+        // 两个会话内容视觉混合，token 标签残留旧值。Dock 已有完整
+        // onSessionCleared 处理槽（清聊天区+复位 token+解除守卫），补发即恢复。
+        emit sessionCleared();
+        emitTokenUsageForSession(QString());  // 复位 token UI（全 0）
     }
     emit sessionListChanged(listSessionsForUI());  // 契约3：带 payload
 }

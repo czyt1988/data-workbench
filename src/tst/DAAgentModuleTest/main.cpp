@@ -156,6 +156,7 @@ private Q_SLOTS:
     void testStartingClearedOnBusyFalseWithoutReady(); // 问题2：崩溃耗尽终态不残留 starting
     void testSessionListChangedOnBusyFalse();          // 问题6：busy(false) 也刷新角标 payload
     void testNewSessionReassertsBusyFalse();           // 问题14：后台运行中点「+」→ busy(false) 重断言
+    void testDeleteCurrentSessionEmitsCleared();       // 问题16：删除当前会话补发 sessionCleared + token 复位
 };
 
 QString DAAgentModuleTest::pythonConfigPath()
@@ -351,6 +352,39 @@ void DAAgentModuleTest::testNewSessionReassertsBusyFalse()
     QCOMPARE(busySpy.last().at(0).toBool(), false);
     // 新会话 B 无运行态
     QCOMPARE(module->sessionRuntimeState(sidB), QString());
+
+    module->shutdown();
+}
+
+/**
+ * 问题16：删除当前会话后 Dock 状态孤儿化——修复前 deleteSession 只发
+ * sessionListChanged（Dock 仅缓存 payload+刷标题，不校验当前会话仍在列表），
+ * 聊天区保留已删会话全部气泡；下一条消息新建会话（createSession 有意不发
+ * sessionCreated）后新旧两个会话内容视觉混合，token 标签残留旧值。
+ * 修复后补发 sessionCleared（Dock 已有完整处理槽）+ token UI 复位。
+ */
+void DAAgentModuleTest::testDeleteCurrentSessionEmitsCleared()
+{
+    QScopedPointer<DA::DAAgentModule> module(makeModule());
+    QSignalSpy clearedSpy(module.data(), &DA::DAAgentInterface::sessionCleared);
+    QSignalSpy tokenSpy(module.data(), &DA::DAAgentInterface::tokenUsageUpdated);
+
+    // 删除当前会话：sessionCleared 必发、current 清空、token 复位全 0
+    const QString sidA = module->createSession();
+    module->deleteSession(sidA);
+    QCOMPARE(clearedSpy.count(), 1);
+    QVERIFY(module->currentSessionId().isEmpty());
+    QVERIFY(!tokenSpy.isEmpty());
+    QCOMPARE(tokenSpy.last().at(0).toInt(), 0);
+    QCOMPARE(tokenSpy.last().at(1).toInt(), 0);
+    QCOMPARE(tokenSpy.last().at(2).toInt(), 0);
+
+    // 删除非当前会话：不触发 sessionCleared（聊天区不受影响）
+    const QString sidB = module->createSession();
+    const QString sidC = module->createSession();  // sidC 为当前
+    module->deleteSession(sidB);
+    QCOMPARE(clearedSpy.count(), 1);
+    QCOMPARE(module->currentSessionId(), sidC);
 
     module->shutdown();
 }
