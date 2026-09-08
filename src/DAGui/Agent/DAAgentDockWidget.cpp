@@ -1039,14 +1039,17 @@ QString DAAgentDockWidget::mapErrorMessage(const QString& original, const QStrin
     if (errorType == "auth_error") {
         return tr("API key invalid or expired, please check settings"); //cn:API Key 无效或已过期，请在设置中检查配置
     }
+    // 审计 L11：exhausted 族不再硬编码重试次数（旧 .arg(7) 在用户改
+    // max_retries 后显示错误值）——真实进度已由重试条（agentRetrying 实时
+    // 推送 attempt/max_attempts）展示，终态文案不断言具体次数
     if (errorType == "rate_limit_exhausted") {
-        return tr("Failed after %1 retries: rate limited").arg(7); //cn:重试 %1 次后仍失败：服务限流
+        return tr("Failed after repeated retries: rate limited"); //cn:多次重试后仍失败：服务限流
     }
     if (errorType == "network_exhausted") {
-        return tr("Failed after %1 retries: network error").arg(7); //cn:重试 %1 次后仍失败：网络错误
+        return tr("Failed after repeated retries: network error"); //cn:多次重试后仍失败：网络错误
     }
     if (errorType == "server_error_exhausted") {
-        return tr("Failed after %1 retries: server error").arg(7); //cn:重试 %1 次后仍失败：服务器错误
+        return tr("Failed after repeated retries: server error"); //cn:多次重试后仍失败：服务器错误
     }
     if (errorType == "bad_request") {
         return tr("Request format error: %1").arg(original); //cn:请求格式错误：%1
@@ -1055,10 +1058,16 @@ QString DAAgentDockWidget::mapErrorMessage(const QString& original, const QStrin
         return tr("Context window exceeded and compaction failed"); //cn:上下文窗口超限且压缩失败
     }
     if (errorType == "timeout") {
-        return tr("Agent response timeout (no activity for %1 minutes)").arg(4); //cn:Agent 响应超时（%1 分钟无活动）
+        // 审计 L11：透传 Bridge 原文（其 tr 文案已含真实分钟数——旧 .arg(4)
+        // 硬编码在用户改 inactivity_timeout_sec 后显示错误值）
+        return original.isEmpty() ? tr("Agent response timeout") //cn:Agent 响应超时
+                                  : original;
     }
     if (errorType == "crash_recovery") {
-        return tr("Agent process crashed, recovering... (%1/3)").arg(1); //cn:Agent 进程异常退出，正在恢复... (%1/3)
+        // 审计 L11：透传 Bridge 原文（其 tr 文案已含真实进度 "(%2/%3)"——旧
+        // 硬编码 "(1/3)" 使第 2、3 次恢复也永远显示 (1/3)）
+        return original.isEmpty() ? tr("Agent process crashed, recovering...") //cn:Agent 进程异常退出，正在恢复...
+                                  : original;
     }
     if (errorType == "crash_exhausted") {
         return tr("Agent process crashed repeatedly, unable to recover"); //cn:Agent 进程多次崩溃，无法恢复
