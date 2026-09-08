@@ -295,6 +295,15 @@ void DAAgentWebChannel::loadHistory(const QVector<QJsonObject>& records)
                 for (const QJsonValue& tc : tcs) {
                     const QJsonObject call = tc.toObject();
                     const QString id = call.value("id").toString();
+                    if (id.isEmpty()) {
+                        // 审计 L12 防御：缺 id 时多个 tool_call 全落
+                        // pendingToolCalls[""] 互相覆盖，空 tool_call_id 的
+                        // result 会与最后一个错配——跳过配对并告警（依赖上游
+                        // schema 恒有 id，此为损坏数据防御）
+                        qWarning() << "DAAgentWebChannel::loadHistory: tool_call without id, pairing skipped, tool="
+                                   << call.value("name").toString();
+                        continue;
+                    }
                     const QString name = call.value("name").toString();  // 简化格式顶层 name
                     const QJsonObject args = call.value("args").toObject();  // 简化格式顶层 args（已 object）
                     QJsonObject meta;
@@ -308,6 +317,12 @@ void DAAgentWebChannel::loadHistory(const QVector<QJsonObject>& records)
             }
         } else if (t == "tool_result") {
             const QString id = msg.value("tool_call_id").toString();
+            if (id.isEmpty()) {
+                // 审计 L12 防御：空 tool_call_id 不参与配对（与空 id tool_call
+                // 跳过对称），避免与缓存中 "" 键错配
+                qWarning() << "DAAgentWebChannel::loadHistory: tool_result without tool_call_id, skipped";
+                continue;
+            }
             const QJsonObject meta = pendingToolCalls.take(id);
             if (meta.isEmpty()) {
                 // 边界：无配对 tool_call（中断），一期跳过不入 uiEvents
