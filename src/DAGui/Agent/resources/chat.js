@@ -58,6 +58,8 @@ let i18n = {
     approvalFromSubagent: 'From subagent: %1',
     // —— 工具排队状态（决策点 2 ③，审计问题 12）——
     toolQueued: 'queued', toolRunning: 'running',
+    // —— 工具结果截断（审计问题 29）——
+    toolResultTruncated: 'result truncated',
     // —— 子 agent 进度卡片（subagent-phase1 C）——
     subagentTaskCount: '%1 subagent task(s)',
     subagentProgress: '%1/%2 done',
@@ -446,7 +448,10 @@ function createToolCard(toolName, args) {
 // 工具结果到达：更新卡片状态、摘要、结果区。
 function updateToolCardResult(card, result) {
     let success = result.success !== false;
-    let summary = result.message || result.error || (success ? 'done' : 'failed');  // cn:完成/失败
+    let truncated = (result && result.__truncated__ === true);
+    let summary = truncated
+        ? ((i18n.toolResultTruncated || 'result truncated') + ' · ' + result.total_chars + ' chars')  // cn:结果已截断
+        : (result.message || result.error || (success ? 'done' : 'failed'));  // cn:完成/失败
     card.classList.remove('running');
     card.classList.add(success ? 'ok' : 'err');
     let dot = card.querySelector('.status-dot');
@@ -457,7 +462,14 @@ function updateToolCardResult(card, result) {
     if (resultSection) {
         resultSection.style.display = '';
         let pre = resultSection.querySelector('.tool-json');
-        if (pre) pre.textContent = JSON.stringify(result, null, 2);
+        // 审计问题 29：超限结果 C++ 侧已截断为 {__truncated__, total_chars,
+        // preview}——展示 preview + 截断标记，不再全量 stringify 进 DOM
+        //（完整内容仍在会话 JSONL）
+        if (pre) {
+            pre.textContent = truncated
+                ? (String(result.preview || '') + '\n… ' + (i18n.errorTruncated || '[truncated]'))
+                : JSON.stringify(result, null, 2);
+        }
     }
 }
 
@@ -854,6 +866,8 @@ function clearChat() {
     // 防止切换会话后"加载更早"把旧会话事件渲染进新聊天区
     pendingEarlierEvents = [];
     removeLoadEarlierSentinel();
+    // 分片传输缓冲复位（审计问题 29）：中断的传输残片不串进新会话
+    historyTransferBuf = null;
 }
 
 // —— 输入区/状态栏 web 化（被 C++ 经 DAAgentWebChannel::callJS 调用）——
@@ -1504,6 +1518,25 @@ function fmtTmpl(tmpl, val) {
 // MAJOR2: 配对由 C++ 完成，JS 直接读 ev.toolName/args/result（不再读 _toolName/_toolArgs）。
 // MAJOR5 + 契约9: ask_user 历史用 appendQuestion 渲染问题气泡，然后内联 DOM 操作
 //                 禁用按钮 + 加 answered class + 追加答案文本（chat.js 无 markQuestionAnswered）。
+// 分片传输累积缓冲（审计问题 29）：C++ 侧 loadHistory 按体积切片经
+// loadHistoryPart 多次下发（防单次巨型 eval 超 Chromium IPC 上限静默失败），
+// 累积到末片后整体交给 loadHistory——渲染层的分段懒加载语义不变。
+// callJS 同页 FIFO 保证分片次序；clearChat 时复位（中断传输的残片不串场）
+let historyTransferBuf = null;
+
+function loadHistoryPart(events, isLast) {
+    if (!Array.isArray(events)) { events = []; }
+    if (historyTransferBuf === null) { historyTransferBuf = []; }
+    for (let i = 0; i < events.length; i++) {
+        historyTransferBuf.push(events[i]);
+    }
+    if (isLast) {
+        const all = historyTransferBuf;
+        historyTransferBuf = null;
+        loadHistory(all);
+    }
+}
+
 function loadHistory(events) {
     clearChat();
     if (!events || !events.length) {

@@ -36,6 +36,27 @@ static QString toJsString(const QString& str)
 }
 
 // 把 JSON 字符串解析为 QJsonObject；解析失败返回空对象（plan-04 loadHistory 用）
+/// 工具结果展示内容截断上限（审计问题 29）：本项目是数据分析工作台，工具
+/// 结果常含大表格 JSON——全量进单次 eval/DOM 轻则卡死数秒，重则超限静默
+/// 失败。超限结果替换为 {__truncated__, total_chars, preview, success}
+/// 包装对象（完整内容仍在会话 JSONL；chat.js 按标记显示截断提示）
+static constexpr int kMaxToolResultDisplayChars = 50000;
+
+static QJsonObject truncateResultForDisplay(const QJsonObject& result)
+{
+    const QByteArray serialized = QJsonDocument(result).toJson(QJsonDocument::Compact);
+    if (serialized.size() <= kMaxToolResultDisplayChars) {
+        return result;
+    }
+    QJsonObject trunc;
+    trunc[QStringLiteral("__truncated__")] = true;
+    trunc[QStringLiteral("total_chars")]   = serialized.size();
+    trunc[QStringLiteral("preview")]       = QString::fromUtf8(serialized.left(kMaxToolResultDisplayChars));
+    // 保留 success 语义（卡片成败配色/摘要判断不受截断影响）
+    trunc[QStringLiteral("success")]       = result.value(QStringLiteral("success"));
+    return trunc;
+}
+
 static QJsonObject parseJsonStr(const QString& str)
 {
     if (str.isEmpty()) return QJsonObject();
@@ -63,9 +84,28 @@ DAAgentWebChannel::DAAgentWebChannel(QWebEngineView* view, QObject* parent)
  */
 void DAAgentWebChannel::callJS(const QString& funcCall)
 {
-    if (mView && mView->page()) {
-        mView->page()->runJavaScript(funcCall);
+    if (!mView || !mView->page()) {
+        return;
     }
+    // 审计问题 29：try/catch 包装 + 带回调的 runJavaScript——此前无回调无
+    // 错误处理，eval 失败（目标函数未就绪/JS 异常）静默丢失，大会话切换
+    // 表现为"聊天区全白且无任何错误"无从排查。现在 JS 异常经 console.error
+    // 落 Chromium 控制台（远程调试可见），并经返回值标记回传 C++ 记日志
+    const QString wrapped =
+        QStringLiteral("(function(){try{%1}catch(e){console.error('callJS failed:',e);"
+                       "return 'CALLJS_ERROR:'+e.message;}return 'CALLJS_OK';})();")
+            .arg(funcCall);
+    const QString head = funcCall.left(60);  // 诊断用调用头（如 "loadHistoryPart([..."）
+    mView->page()->runJavaScript(wrapped, [head](const QVariant& result) {
+        const QString r = result.toString();
+        if (r.startsWith(QLatin1String("CALLJS_ERROR:"))) {
+            qWarning() << "DAAgentWebChannel::callJS: JS evaluation failed, call=" << head
+                       << "error=" << r.mid(qstrlen("CALLJS_ERROR:"));
+        } else if (r.isEmpty()) {
+            // 回调收到空串：页面已销毁/导航中等，eval 未执行
+            qWarning() << "DAAgentWebChannel::callJS: no evaluation result (page gone?), call=" << head;
+        }
+    });
 }
 
 /**
@@ -174,7 +214,8 @@ void DAAgentWebChannel::markToolQueued(const QString& toolName, int position)
  */
 void DAAgentWebChannel::appendToolResult(const QString& toolName, const QJsonObject& result)
 {
-    QJsonDocument doc(result);
+    // 审计问题 29：实时路径同样截断（大表格结果不全量进 eval/DOM）
+    QJsonDocument doc(truncateResultForDisplay(result));
     QString resultJson = QString::fromUtf8(doc.toJson(QJsonDocument::Compact));
     callJS(QString("appendToolResult(\"%1\",%2)").arg(toJsString(toolName), resultJson));
 }
@@ -355,8 +396,9 @@ void DAAgentWebChannel::loadHistory(const QVector<QJsonObject>& records)
                 ansObj.insert("answer", msg.value("content").toString());
                 ev.insert("result", ansObj);
             } else {
-                // 普通工具结果 content 是 json.dumps(result) 字符串，解析为 object
-                ev.insert("result", parseJsonStr(msg.value("content").toString()));
+                // 普通工具结果 content 是 json.dumps(result) 字符串，解析为
+                // object；展示内容超限截断（审计问题 29）
+                ev.insert("result", truncateResultForDisplay(parseJsonStr(msg.value("content").toString())));
             }
             uiEvents.append(ev);
         }
@@ -387,8 +429,35 @@ void DAAgentWebChannel::loadHistory(const QVector<QJsonObject>& records)
         uiEvents.append(ev);
     }
 
-    QByteArray json = QJsonDocument(uiEvents).toJson(QJsonDocument::Compact);
-    callJS(QStringLiteral("loadHistory(") + QString::fromUtf8(json) + QStringLiteral(")"));
+    // 审计问题 29：分片传输——整段会话 JSON 塞单次 runJavaScript 可达数十 MB，
+    // 轻则主进程-渲染进程 IPC + JS 解析卡死数秒，重则超 Chromium IPC 消息上限
+    // 静默失败（聊天区全白无错误）。按序列化体积切片（≤2MB/片）经
+    // loadHistoryPart(events, isLast) 逐片下发，JS 侧累积到末片后整体走
+    // loadHistory（渲染层的 HISTORY_CHUNK_SIZE 分段懒加载语义不变）。
+    // callJS 同页 FIFO（runJavaScript 顺序执行）保证分片到达次序
+    static constexpr int kTransferChunkBytes = 2 * 1024 * 1024;
+    QJsonArray chunk;
+    int chunkBytes   = 0;
+    int chunksSent   = 0;
+    const int total  = uiEvents.size();
+    for (int i = 0; i < total; ++i) {
+        const QJsonValue ev = uiEvents.at(i);
+        chunkBytes += QJsonDocument(ev.toObject()).toJson(QJsonDocument::Compact).size();
+        chunk.append(ev);
+        const bool isLastEvent = (i == total - 1);
+        if (chunkBytes >= kTransferChunkBytes || isLastEvent) {
+            const QString chunkJson = QString::fromUtf8(QJsonDocument(chunk).toJson(QJsonDocument::Compact));
+            callJS(QStringLiteral("loadHistoryPart(") + chunkJson
+                   + (isLastEvent ? QStringLiteral(",true)") : QStringLiteral(",false)")));
+            chunk      = QJsonArray();
+            chunkBytes = 0;
+            ++chunksSent;
+        }
+    }
+    if (chunksSent == 0) {
+        // 空历史也要触发末片（保持原 loadHistory([]) 的清空后收尾语义）
+        callJS(QStringLiteral("loadHistoryPart([],true)"));
+    }
 }
 
 /**

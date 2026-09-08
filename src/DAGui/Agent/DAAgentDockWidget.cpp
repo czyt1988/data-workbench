@@ -284,6 +284,8 @@ void DAAgentDockWidget::onWebReady()
         // —— 工具排队状态（决策点 2 ③，审计问题 12）——
         {"toolQueued", tr("queued")},     // cn:排队中
         {"toolRunning", tr("running")},   // cn:运行中
+        // —— 工具结果截断（审计问题 29）——
+        {"toolResultTruncated", tr("result truncated")},  // cn:结果已截断
         // —— 子 agent 进度卡片（subagent-phase1 C）——
         {"subagentTaskCount", tr("%1 subagent task(s)")},  // cn:%1 个子 Agent 任务
         {"subagentProgress", tr("%1/%2 done")},             // cn:%1/%2 已完成
