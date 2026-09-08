@@ -11,6 +11,7 @@
 #include <QJsonParseError>
 #include <QCoreApplication>
 #include <QStandardPaths>
+#include <QUuid>
 #include <utility>  // std::as_const（非 const 容器范围迭代防 COW）
 
 namespace DA
@@ -21,6 +22,15 @@ namespace DA
 // ===========================================================================
 
 namespace {
+
+/// 原子写 tmp 文件后缀（审计 L17）：进程号 + 随机短码——固定 ".tmp" 名在
+/// 同机多开 data-workbench 共享 appData 时会互相截断/丢更新
+QString uniqueTmpSuffix()
+{
+    return QStringLiteral(".%1.%2.tmp")
+        .arg(QCoreApplication::applicationPid())
+        .arg(QString::fromLatin1(QUuid::createUuid().toString(QUuid::Id128).left(8).toLatin1()));
+}
 
 const char* kModeYolo   = "yolo";
 const char* kModeAuto   = "auto";
@@ -403,7 +413,8 @@ bool DAAgentPermissionManager::save() const
 
     const QString path = configFilePath();
     QDir().mkpath(QFileInfo(path).absolutePath());
-    const QString tmpPath = path + ".tmp";
+    // L17：tmp 名带进程号+随机短码，同机多实例共享 appData 不互相截断
+    const QString tmpPath = path + uniqueTmpSuffix();
     QFile tf(tmpPath);
     if (!tf.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
         qWarning() << "DAAgentPermissionManager: failed to open tmp file for write:" << tmpPath

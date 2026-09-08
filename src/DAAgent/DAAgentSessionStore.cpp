@@ -12,7 +12,20 @@
 #include <QJsonArray>
 #include <QVariant>
 #include <QSet>
+#include <QCoreApplication>
 #include <algorithm>
+
+namespace {
+/// 原子写 tmp 文件后缀（审计 L17）：进程号 + 随机短码——固定 ".tmp" 名在
+/// 同机多开 data-workbench 共享 appData 时会互相截断/丢更新（单实例主线程
+/// 串行下安全，多实例才触发）
+QString uniqueTmpSuffix()
+{
+    return QStringLiteral(".%1.%2.tmp")
+        .arg(QCoreApplication::applicationPid())
+        .arg(QString::fromLatin1(QUuid::createUuid().toString(QUuid::Id128).left(8).toLatin1()));
+}
+} // namespace
 
 namespace DA
 {
@@ -615,8 +628,8 @@ bool DAAgentSessionStore::PrivateData::writeIndex(const QVector<SessionMeta>& me
     }
     QJsonDocument doc(arr);
 
-    // 原子写：tmp + rename
-    QString tmpPath = indexFilePath() + ".tmp";
+    // 原子写：tmp + rename（L17：tmp 名带进程号+随机短码，多实例不互相截断）
+    QString tmpPath = indexFilePath() + uniqueTmpSuffix();
     QFile tf(tmpPath);
     if (!tf.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
         qWarning() << "DAAgentSessionStore: failed to open index tmp file for write:" << tmpPath
@@ -680,7 +693,7 @@ bool DAAgentSessionStore::PrivateData::writeLastActive(const QString& sessionId,
     o["projectPath"] = projectPath;
     QJsonDocument doc(o);
 
-    QString tmpPath = lastActiveFilePath() + ".tmp";
+    QString tmpPath = lastActiveFilePath() + uniqueTmpSuffix();
     QFile tf(tmpPath);
     if (!tf.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
         qWarning() << "DAAgentSessionStore: failed to open last_active tmp file:" << tmpPath
