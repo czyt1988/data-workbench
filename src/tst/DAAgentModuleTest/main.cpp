@@ -129,6 +129,28 @@ int fakeAgentMain(const QByteArray& scenario)
     return 0;
 }
 
+/// 最小假工具：满足 prestartAgent 的"工具已注册"前置条件（L2 温暖化用例）。
+/// registerTool 不取得所有权（provider 缺失仅告警），测试栈对象即可。
+class FakeAgentTool : public DA::DAAbstractAgentTool
+{
+public:
+    DA::DAAgentToolSpec getToolSpec() const override
+    {
+        DA::DAAgentToolSpec spec;
+        spec.name        = QStringLiteral("fake_tool");
+        spec.description = QStringLiteral("test fake tool");
+        return spec;
+    }
+    QJsonObject execute(const QJsonObject&) override
+    {
+        return QJsonObject{{ "success", true }};
+    }
+    QString getOwnerModule() const override
+    {
+        return QStringLiteral("DAAgentModuleTest");
+    }
+};
+
 } // namespace
 
 // ===========================================================================
@@ -162,6 +184,7 @@ private Q_SLOTS:
     void testStopClearsToolCallFifo();                 // 问题1：Stop 清 FIFO，幽灵答案不落孤儿 tool_result
     void testErrorClearsToolCallFifo();                // 问题1：错误清 FIFO + 联动撤问题卡
     void testColdStartSnapshotExcludesTrailingUser();  // 问题10：load_session 快照剔除末尾待重发 user
+    void testWarmTakeoverLoadsSingleMessageHistory();  // L2：温暖化接管历史恰好 1 条也发 load_session
 };
 
 QString DAAgentModuleTest::pythonConfigPath()
@@ -520,6 +543,40 @@ void DAAgentModuleTest::testColdStartSnapshotExcludesTrailingUser()
     QVERIFY(tokenSpy.wait(30000));
     // 修复前为 "LOADED:3:human"（快照含 m2，user_msg 再注入一遍 → 上下文重复提问）
     QCOMPARE(tokenSpy.at(0).at(0).toString(), QStringLiteral("LOADED:2:ai"));
+
+    module->shutdown();
+}
+
+/**
+ * L2：温暖化接管（switchSession step6 接管预热空闲桥）时历史恰好 1 条——
+ * 修复前判定 messageCount > 1 不发 load_session，该条历史丢失出上下文
+ * （如"发消息后进程崩溃、无应答"的会话仅剩 1 条 user 记录）。问题 10 的
+ * 统一快照逻辑已把判定改为"快照非空"，本用例锁定该行为。
+ */
+void DAAgentModuleTest::testWarmTakeoverLoadsSingleMessageHistory()
+{
+    QScopedPointer<DA::DAAgentModule> module(makeModule());
+    FakeAgentTool fakeTool;
+    QVERIFY(module->registerTool(&fakeTool));  // prestartAgent 前置：工具已注册
+    QSignalSpy tokenSpy(module.data(), &DA::DAAgentInterface::agentToken);
+
+    // 会话 A 仅 1 条 user 记录：发消息后进程崩溃、无 assistant 应答
+    const QString sidA = module->createSession();
+    module->sendMessage(QStringLiteral("#fake:crash"));
+    QTRY_COMPARE_WITH_TIMEOUT(module->sessionRuntimeState(sidA), QStringLiteral("error"), 30000);
+
+    // 换到 B 再切回，使 A 的死桥经 switchSession step1 退役（映射清空）
+    const QString sidB = module->createSession();  // current=B（A 死桥仍在映射）
+    QVERIFY(module->switchSession(sidA));          // current=A（死桥保留，step6 不接管）
+    QVERIFY(module->switchSession(sidB));          // step1 退役 A 死桥，current=B
+
+    // 预热空闲桥 → 切回 A 触发 step6 温暖化接管 → load_session 下发 1 条历史
+    module->prestartAgent();
+    QVERIFY(module->switchSession(sidA));
+
+    // 假 agent 回显快照统计：修复前 messageCount==1 不发 load_session（token 永不到达）
+    QVERIFY(tokenSpy.wait(30000));
+    QCOMPARE(tokenSpy.at(0).at(0).toString(), QStringLiteral("LOADED:1:human"));
 
     module->shutdown();
 }
