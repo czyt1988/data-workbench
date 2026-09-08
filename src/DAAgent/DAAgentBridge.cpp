@@ -1268,7 +1268,11 @@ void DAAgentBridge::onReadyReadStandardError()
     //   2. qInfo 为 info 级别，即使用户把日志级别调到 Info（daDebug 是 debug 级会被滤掉），
     //      Python 侧的 stderr 日志/traceback 仍能落 da_log.log，保证后续调试 agent 可见。
     //   （默认 Trace 级别下 daDebug 也能落盘，此处升级为 qInfo 是为应对用户调高级别的场景。）
-    qInfo() << "Agent stderr:" << QString::fromUtf8(data);
+    // 会话归属短码（审计 L18）：多子进程并发时区分 traceback 属于哪个会话
+    //（预热桥无会话归属显示 [idle]）
+    qInfo() << "Agent stderr:"
+            << (d->mSessionId.isEmpty() ? QStringLiteral("[idle]") : d->mSessionId.left(8))
+            << QString::fromUtf8(data);
 }
 
 /**
