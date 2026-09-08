@@ -53,6 +53,7 @@ public:
     int mMaxRestarts = 3;                   ///< 最大重启次数
     QString mLastSessionId;                 ///< 当前会话 ID
     bool mRecovering = false;               ///< 是否处于崩溃恢复流程中
+    bool mReadyReceived = false;            ///< 本次进程生命周期内是否收到过 ready（startAgent 重置；区分 init 阶段/运行期错误）
     QJsonObject mSavedLlmConfig;            ///< 启动参数缓存（崩溃恢复时复用）
     QJsonArray mSavedToolSpecs;
     QString mSavedSystemPrompt;
@@ -133,6 +134,7 @@ void DAAgentBridge::startAgent(const QJsonObject& llmConfig,
 
     d->mReadyTimeoutMs = readyTimeoutMs;
     d->mStopTimeoutMs  = stopTimeoutMs;
+    d->mReadyReceived  = false;  // 新进程生命周期开始，重置 ready 接收标志
     // 清理上一次的 ready 超时计时器(若存在)
     if (d->mReadyTimer) {
         d->mReadyTimer->stop();
@@ -593,6 +595,7 @@ void DAAgentBridge::handleJsonLine(const QJsonObject& msg)
             d->mReadyTimer->deleteLater();
             d->mReadyTimer = nullptr;
         }
+        d->mReadyReceived = true;  // 此后 error 视为运行期错误（进程设计为存活）
         emit agentReady(msg["model"].toString());
     } else if (type == "token") {
         emit agentToken(msg["content"].toString());
@@ -684,16 +687,22 @@ void DAAgentBridge::handleJsonLine(const QJsonObject& msg)
             msg["error_message"].toString()
         );
     } else if (type == "error") {
-        // error 消息（如 "config missing"）意味着 agent 初始化失败，main() 会提前退出。
-        // 停止 ready 超时计时器避免无谓等待 60s；关闭 stdin 写通道使 Python 端
-        // stdin reader daemon 线程的 read1() 收到 EOF 解除阻塞，进程能正常退出
-        // 而非被 TerminateProcess kill（exitCode=62097 CrashExit）
+        // error 消息按阶段区分处置（审计问题 9）：
+        // - init 阶段错误（未收到过 ready，如 "config missing"）：Python main() 发完
+        //   error 即提前 return 退出。停止 ready 超时计时器避免无谓等待；关闭 stdin
+        //   写通道使 Python 端 stdin reader daemon 线程的 read1() 收到 EOF 解除阻塞，
+        //   进程能正常退出而非被 TerminateProcess kill（exitCode=62097 CrashExit）。
+        // - 运行期错误（已收到过 ready，如 quota_exhausted/auth_error/recursion_limit/
+        //   session_load_failed）：Python 发完 error+done 后主循环继续、进程设计为存活。
+        //   此时绝不能关闭写通道——否则 Python reader 收到 EOF → 主循环 break →
+        //   进程以 exit 0 静默终止，下一条消息被迫再付一次冷启动，且退役路径写 stop
+        //   到已关闭通道会触发二次假错误。
         if (d->mReadyTimer) {
             d->mReadyTimer->stop();
             d->mReadyTimer->deleteLater();
             d->mReadyTimer = nullptr;
         }
-        if (d->mProcess && d->mProcess->state() != QProcess::NotRunning) {
+        if (!d->mReadyReceived && d->mProcess && d->mProcess->state() != QProcess::NotRunning) {
             d->mProcess->closeWriteChannel();
         }
         // D9: error 消息增强为携带 error_type，用于 C++ 端选择用户文案

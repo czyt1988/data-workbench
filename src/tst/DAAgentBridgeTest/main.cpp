@@ -1,0 +1,217 @@
+// DAAgentBridgeTest/main.cpp
+// 单元测试：DAAgentBridge 子进程协议级行为（agent-concurrent-refactor-audit 整改验证）
+//
+// 测试基建（假 agent）：DAAgentBridge::startAgent 以 QProcess 启动
+// "pythonExePath agentScriptPath"，本测试把 pythonExePath 指向测试 exe 自身、
+// agentScriptPath 设为 "--fake-agent=<scenario>"。子进程模式在 main() 最前端
+// 拦截（不创建 QTest 对象），用同步 stdio 循环按剧本收发 JSON Lines 协议消息，
+// 模拟 ready/error/done/崩溃等序列——不依赖真实 Python 环境，协议级可复现。
+//
+// 剧本清单（随整改批次逐个补充）：
+//   init-error    : 发 error(init_failed) 后立即退出（模拟 init 失败 main() return）
+//   runtime-error : ready 后第一条 user_msg 回 error(quota_exhausted)+done 但进程
+//                   保持存活；第二条 user_msg 正常回 token+done（验证写通道未关）
+
+#include <QtTest/QtTest>
+#include <QCoreApplication>
+#include <QSignalSpy>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
+#include <QFile>
+
+#include "DAAgentBridge.h"
+
+// ===========================================================================
+// 假 agent 子进程模式
+// ===========================================================================
+namespace {
+
+void fakeEmit(QFile& out, const QJsonObject& msg)
+{
+    out.write(QJsonDocument(msg).toJson(QJsonDocument::Compact) + "\n");
+    out.flush();
+}
+
+/// 假 agent 主循环：同步读 stdin 行、按剧本回 stdout 协议消息，EOF/stop 退出
+int fakeAgentMain(const QByteArray& scenario)
+{
+    QFile in;
+    QFile out;
+    if (!in.open(stdin, QIODevice::ReadOnly | QIODevice::Text)) {
+        return 1;
+    }
+    if (!out.open(stdout, QIODevice::WriteOnly | QIODevice::Text)) {
+        return 1;
+    }
+
+    if (scenario == "init-error") {
+        // init 阶段失败：发 error 后 main() 提前 return（进程 exit 0）
+        fakeEmit(out, {{ "type", "error" }, { "message", "config missing" }, { "error_type", "init_failed" }});
+        return 0;
+    }
+    if (scenario == "runtime-error") {
+        // 运行期错误（agent_runner 语义）：error+done 后主循环继续、进程存活。
+        // 若 C++ 侧错误地关闭了 stdin 写通道，readLine 会收到 EOF → break → exit 0，
+        // 第二条 user_msg 的 token 应答将永不到达（测试据此断言）。
+        fakeEmit(out, {{ "type", "ready" }, { "model", "fake-model" }});
+        bool errored = false;
+        while (true) {
+            const QByteArray line = in.readLine();
+            if (line.isEmpty()) {
+                break;  // stdin EOF / 关闭
+            }
+            const QJsonDocument doc = QJsonDocument::fromJson(line.trimmed());
+            if (!doc.isObject()) {
+                continue;
+            }
+            const QString type = doc.object().value("type").toString();
+            if (type == QLatin1String("user_msg")) {
+                if (!errored) {
+                    errored = true;
+                    fakeEmit(out, {{ "type", "error" }, { "message", "quota exhausted" }, { "error_type", "quota_exhausted" }});
+                    fakeEmit(out, {{ "type", "done" }});
+                } else {
+                    fakeEmit(out, {{ "type", "token" }, { "content", "alive-after-error" }});
+                    fakeEmit(out, {{ "type", "done" }});
+                }
+            } else if (type == QLatin1String("stop")) {
+                break;
+            }
+        }
+        return 0;
+    }
+    return 2;  // 未知剧本
+}
+
+QJsonObject fakeLlmConfig()
+{
+    return QJsonObject{
+        { QStringLiteral("base_url"), QStringLiteral("http://fake.local") },
+        { QStringLiteral("api_key"), QStringLiteral("fake-key") },
+        { QStringLiteral("model"), QStringLiteral("fake-model") },
+    };
+}
+
+/// 等待信号 spy 收到第 n 条（含）以上信号，超时返回 false
+bool waitForCount(QSignalSpy& spy, int n, int timeoutMs = 15000)
+{
+    const qint64 deadline = QDateTime::currentMSecsSinceEpoch() + timeoutMs;
+    while (spy.count() < n) {
+        const int remain = static_cast<int>(deadline - QDateTime::currentMSecsSinceEpoch());
+        if (remain <= 0 || !spy.wait(remain)) {
+            if (spy.count() < n) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+} // namespace
+
+// ===========================================================================
+// 测试类
+// ===========================================================================
+class DAAgentBridgeTest : public QObject
+{
+    Q_OBJECT
+private:
+    // 以假 agent 剧本启动桥（pythonExePath=测试 exe 自身）
+    static void startWithScenario(DA::DAAgentBridge& bridge, const char* scenario, int readyTimeoutMs = 10000);
+
+private Q_SLOTS:
+    void testInitErrorClosesChannelAndExits();  // 问题9：init 阶段错误 → 关写通道、正常退出、无崩溃自愈
+    void testRuntimeErrorKeepsProcessAlive();   // 问题9：运行期错误 → 不关写通道、进程存活可继续对话
+};
+
+void DAAgentBridgeTest::startWithScenario(DA::DAAgentBridge& bridge, const char* scenario, int readyTimeoutMs)
+{
+    const QString exe = QCoreApplication::applicationFilePath();
+    bridge.startAgent(fakeLlmConfig(), QJsonArray(), QStringLiteral("test prompt"), QJsonArray(),
+                      exe, QStringLiteral("--fake-agent=%1").arg(QLatin1String(scenario)),
+                      readyTimeoutMs, 3000);
+}
+
+/**
+ * 问题9（init 阶段）：未收到 ready 即 error → 关闭写通道让进程正常退出，
+ * 且退出码 0 不触发崩溃自愈（全程只有一条 error）。
+ */
+void DAAgentBridgeTest::testInitErrorClosesChannelAndExits()
+{
+    DA::DAAgentBridge bridge;
+    QSignalSpy errSpy(&bridge, &DA::DAAgentBridge::agentError);
+    QSignalSpy busySpy(&bridge, &DA::DAAgentBridge::agentBusy);
+    startWithScenario(bridge, "init-error");
+
+    QVERIFY(waitForCount(errSpy, 1));
+    QCOMPARE(errSpy.at(0).at(1).toString(), QStringLiteral("init_failed"));
+
+    // 进程自行退出（exit 0）→ isRunning 复位、busy(false) 兜底
+    QTRY_VERIFY_WITH_TIMEOUT(!bridge.isRunning(), 15000);
+    QVERIFY(waitForCount(busySpy, 1));
+    QCOMPARE(busySpy.last().at(0).toBool(), false);
+
+    // 无 crash_recovery/crash_exhausted 二次错误（NormalExit 0 不进自愈循环）
+    QTest::qWait(500);
+    QCOMPARE(errSpy.count(), 1);
+}
+
+/**
+ * 问题9（运行期）：收到过 ready 后的 error（quota_exhausted 等）不得关闭
+ * stdin 写通道——Python 侧 error+done 后主循环继续、进程设计为存活；
+ * 修复前：EOF → 进程 exit 0 → 第二条消息无应答。
+ */
+void DAAgentBridgeTest::testRuntimeErrorKeepsProcessAlive()
+{
+    DA::DAAgentBridge bridge;
+    QSignalSpy readySpy(&bridge, &DA::DAAgentBridge::agentReady);
+    QSignalSpy errSpy(&bridge, &DA::DAAgentBridge::agentError);
+    QSignalSpy doneSpy(&bridge, &DA::DAAgentBridge::agentDone);
+    QSignalSpy tokenSpy(&bridge, &DA::DAAgentBridge::agentToken);
+    QSignalSpy busySpy(&bridge, &DA::DAAgentBridge::agentBusy);
+    startWithScenario(bridge, "runtime-error");
+
+    QVERIFY(waitForCount(readySpy, 1));
+
+    // 第一轮：触发运行期错误
+    bridge.sendMessage(QStringLiteral("first"));
+    QVERIFY(waitForCount(errSpy, 1));
+    QCOMPARE(errSpy.at(0).at(1).toString(), QStringLiteral("quota_exhausted"));
+    QVERIFY(waitForCount(doneSpy, 1));
+
+    // 运行期错误后进程必须保持存活（修复前：写通道被关 → EOF → exit 0）
+    QVERIFY(bridge.isRunning());
+
+    // 第二轮：写通道仍开放，进程正常应答 token
+    bridge.sendMessage(QStringLiteral("second"));
+    QVERIFY(waitForCount(tokenSpy, 1));
+    QCOMPARE(tokenSpy.at(0).at(0).toString(), QStringLiteral("alive-after-error"));
+    QVERIFY(bridge.isRunning());
+    // 运行期错误不应触发写 stdin 失败类二次错误（仅 quota_exhausted 一条）
+    QCOMPARE(errSpy.count(), 1);
+
+    // 等待进程真实退出（onProcessFinished 用户停止分支补发 busy(false)），
+    // 避免析构时 QProcess 仍在运行
+    bridge.requestStop();
+    const int busyCountBefore = busySpy.count();
+    QTRY_VERIFY_WITH_TIMEOUT(busySpy.count() > busyCountBefore, 15000);
+    QCOMPARE(busySpy.last().at(0).toBool(), false);
+}
+
+int main(int argc, char* argv[])
+{
+    // 假 agent 子进程模式：在创建测试对象前拦截（同步 stdio 循环，无需事件循环）
+    for (int i = 1; i < argc; ++i) {
+        const QByteArray arg(argv[i]);
+        if (arg.startsWith("--fake-agent=")) {
+            return fakeAgentMain(arg.mid(qstrlen("--fake-agent=")));
+        }
+    }
+
+    QCoreApplication app(argc, argv);
+    DAAgentBridgeTest tc;
+    return QTest::qExec(&tc, argc, argv);
+}
+
+#include "main.moc"
