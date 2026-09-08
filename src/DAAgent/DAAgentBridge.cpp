@@ -21,6 +21,7 @@ struct PendingApproval {
     QJsonObject args;   ///< 工具参数（批准后原样执行，不含 _subagent 卡上下文）
     QString tier;       ///< 工具分级（用户拒绝时合成脱敏结果用）
     QString subagentId; ///< 子 agent 任务 id（子 agent 一期；主 agent 调用为空，Q18 撤卡依据）
+    QString contentHash; ///< 判定时内容哈希（审计问题 26；批准后派发时注入执行参数校验）
 };
 
 // ===========================================================================
@@ -989,6 +990,11 @@ void DAAgentBridge::executeTool(const QString& callId,
 {
     DA_D(d);
 
+    // 判定时内容哈希（审计问题 26）：Python permission_judge 对 run_script
+    // 判定读文件产出 sha256，随 safety 透传——注入执行参数供工具执行前校验
+    //（TOCTOU 闭环），其它工具/无判定时为空不注入
+    const QString contentHash = safety.value(QStringLiteral("content_hash")).toString();
+
     // ---- 权限门（C++ 唯一执法点，A1） ----
     if (d->mPermissionManager) {
         // decide 携带桥所属会话（决策点 1 方案 b）：会话记忆按会话查询
@@ -1008,10 +1014,11 @@ void DAAgentBridge::executeTool(const QString& callId,
         if (dec.action == DAAgentPermissionManager::Ask) {
             // 挂起等待用户裁决：登记 pending、停看门狗（用户思考时间不计无活动）
             PendingApproval pa;
-            pa.toolName   = toolName;
-            pa.args       = args;
-            pa.tier       = dec.tier;
-            pa.subagentId = subagentId;
+            pa.toolName    = toolName;
+            pa.args        = args;
+            pa.tier        = dec.tier;
+            pa.subagentId  = subagentId;
+            pa.contentHash = contentHash;  // 批准后派发校验用（问题 26）
             d->mPendingApprovals.insert(callId, pa);
             d->mInactivityTimer->stop();
             // 通知 Python 侧暂停工具 RPC 计时——用户审批等待不设时限，
@@ -1033,7 +1040,7 @@ void DAAgentBridge::executeTool(const QString& callId,
     }
 
     // 放行 → 经全局执行队列派发（决策点 2 方案 c；无执行器退化直执行）
-    dispatchToolExecution(callId, toolName, args, subagentId);
+    dispatchToolExecution(callId, toolName, args, subagentId, contentHash);
 }
 
 /**
@@ -1042,6 +1049,7 @@ void DAAgentBridge::executeTool(const QString& callId,
  * @param toolName 工具名
  * @param args 工具参数
  * @param subagentId 子 agent 任务 id
+ * @param expectedContentHash 判定时内容哈希（审计问题 26，可空）
  *
  * executeTool 放行路径与 onToolApproval 批准路径共用。有执行器时入队并
  * 上报排队位置（Python tool_exec_queued + UI agentToolQueued），出队时
@@ -1049,15 +1057,25 @@ void DAAgentBridge::executeTool(const QString& callId,
  * 协议级测试）保持旧直执行行为。
  */
 void DAAgentBridge::dispatchToolExecution(const QString& callId, const QString& toolName,
-                                          const QJsonObject& args, const QString& subagentId)
+                                          const QJsonObject& args, const QString& subagentId,
+                                          const QString& expectedContentHash)
 {
     DA_D(d);
+    // 判定时内容哈希注入执行参数（审计问题 26）：内部键 _expected_content_hash
+    // 同 _tier/_subagent 先例——只进执行副本，不进 tool_call 持久化/UI 卡
+    //（agentToolCall 已先以原始 args 发射）。run_script 工具执行前重读文件
+    // 校验哈希，不一致拒绝执行（TOCTOU：判定→执行窗口含全局队列排队段，
+    // 共享工作区脚本可能被 write_file/其它会话改写）
+    QJsonObject execArgs = args;
+    if (!expectedContentHash.isEmpty()) {
+        execArgs[QStringLiteral("_expected_content_hash")] = expectedContentHash;
+    }
     if (d->mToolExecutor) {
-        const int position = d->mToolExecutor->enqueue(this, callId, toolName, args, subagentId);
+        const int position = d->mToolExecutor->enqueue(this, callId, toolName, execArgs, subagentId);
         notifyToolQueued(callId, toolName, position);
         return;
     }
-    executeToolNow(callId, toolName, args, subagentId);
+    executeToolNow(callId, toolName, execArgs, subagentId);
 }
 
 /**
@@ -1106,8 +1124,9 @@ void DAAgentBridge::onToolApproval(const QString& callId, bool approved, bool re
             }
         }
         // 批准后同样经全局执行队列派发（决策点 2 方案 c）：审批窗口内桥可能
-        // 已死/被 Stop，出队存活检查取消"为将死进程执行"（审计 12b）
-        dispatchToolExecution(callId, pa.toolName, pa.args, pa.subagentId);
+        // 已死/被 Stop，出队存活检查取消"为将死进程执行"（审计 12b）；
+        // 判定时内容哈希随挂起条目保留，派发时注入校验（问题 26）
+        dispatchToolExecution(callId, pa.toolName, pa.args, pa.subagentId, pa.contentHash);
     } else {
         QJsonObject result;
         result["success"] = false;

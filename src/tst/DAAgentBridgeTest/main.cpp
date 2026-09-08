@@ -53,9 +53,10 @@ public:
         spec.description = QStringLiteral("test fake tool");
         return spec;
     }
-    QJsonObject execute(const QJsonObject&) override
+    QJsonObject execute(const QJsonObject& params) override
     {
         ++mExecCount;
+        mLastParams = params;
         return QJsonObject{{ "success", true }, { "echo", "fake-result" }};
     }
     QString getOwnerModule() const override
@@ -63,9 +64,11 @@ public:
         return QStringLiteral("DAAgentBridgeTest");
     }
     int execCount() const { return mExecCount; }
+    QJsonObject lastParams() const { return mLastParams; }
 
 private:
     int mExecCount = 0;
+    QJsonObject mLastParams;
 };
 
 } // namespace
@@ -118,6 +121,38 @@ int fakeAgentMain(const QByteArray& scenario)
                 fakeEmit(out, {{ "type", "ready" }, { "model", model }});
             } else if (type == QLatin1String("user_msg")) {
                 return 3;  // 模拟原生崩溃（CrashExit）
+            }
+        }
+        return 0;
+    }
+    if (scenario == "tool-call-with-safety") {
+        // user_msg → tool_call 携带 safety.content_hash（模拟 permission_judge
+        // 对 run_script 的判定载荷，审计问题 26）——验证 Bridge 把哈希注入
+        // 执行参数 _expected_content_hash 供工具执行前 TOCTOU 校验
+        fakeEmit(out, {{ "type", "ready" }, { "model", "fake-model" }});
+        while (true) {
+            const QByteArray line = in.readLine();
+            if (line.isEmpty()) {
+                break;
+            }
+            const QJsonDocument doc = QJsonDocument::fromJson(line.trimmed());
+            if (!doc.isObject()) {
+                continue;
+            }
+            const QString type = doc.object().value("type").toString();
+            if (type == QLatin1String("user_msg")) {
+                fakeEmit(out, {{ "type", "tool_call" },
+                               { "call_id", "call-s1" },
+                               { "tool", "fake_tool" },
+                               { "arguments", QJsonObject{} },
+                               { "safety", QJsonObject{
+                                     { "verdict", "allow" },
+                                     { "content_hash", "abc123" } } }});
+            } else if (type == QLatin1String("tool_result")) {
+                fakeEmit(out, {{ "type", "message_end" }, { "content", "tool done" }});
+                fakeEmit(out, {{ "type", "done" }});
+            } else if (type == QLatin1String("stop")) {
+                break;
             }
         }
         return 0;
@@ -330,6 +365,7 @@ private Q_SLOTS:
     void testStopDuringRecoveryWindowCancelsRestart(); // L4：恢复窗口内 Stop 取消延迟重启
     void testQueuedToolExecuted();                    // 问题12：全局队列派发-执行-结果回传全链
     void testQueuedToolCancelledOnStop();             // 问题12：Stop 后已排队调用被取消（12b/12c）
+    void testSafetyContentHashInjectedIntoExecArgs(); // 问题26：判定哈希注入执行参数（TOCTOU 校验）
 };
 
 void DAAgentBridgeTest::startWithScenario(DA::DAAgentBridge& bridge, const char* scenario,
@@ -722,6 +758,42 @@ void DAAgentBridgeTest::testQueuedToolCancelledOnStop()
     QTest::qWait(1500);
     QCOMPARE(tool.execCount(), 0);
     QCOMPARE(executor.queueLength(), 0);
+}
+
+/**
+ * 问题26（TOCTOU）：permission_judge 判定 run_script 时读文件内容产出
+ * sha256 随 safety 透传——Bridge 派发执行时须把哈希注入执行参数
+ * _expected_content_hash（内部键，不进 tool_call 持久化/UI 卡），
+ * run_script 工具执行前重读文件比对，不一致拒绝执行（实际执行代码 ≠
+ * 被判定代码的绕过窗口闭环）。本用例验证 Bridge 侧注入半环；工具侧
+ * 哈希比对依赖工程接口（DAProjectInterface），由集成场景人工验证。
+ */
+void DAAgentBridgeTest::testSafetyContentHashInjectedIntoExecArgs()
+{
+    DA::DAAgentBridge bridge;
+    DA::DAAgentToolExecutor executor;
+    FakeBridgeTool tool;
+    QMap<QString, DA::DAAbstractAgentTool*> tools;
+    tools.insert(QStringLiteral("fake_tool"), &tool);
+    bridge.setTools(tools);
+    bridge.setToolExecutor(&executor);
+
+    QSignalSpy readySpy(&bridge, &DA::DAAgentBridge::agentReady);
+    QSignalSpy resultSpy(&bridge, &DA::DAAgentBridge::agentToolResult);
+    startWithScenario(bridge, "tool-call-with-safety");
+    QVERIFY(waitForCount(readySpy, 1));
+
+    bridge.sendMessage(QStringLiteral("run script"));
+    QVERIFY(waitForCount(resultSpy, 1));
+    QCOMPARE(tool.execCount(), 1);
+    // safety.content_hash 已注入执行参数（工具执行前 TOCTOU 校验依据）
+    QCOMPARE(tool.lastParams().value(QStringLiteral("_expected_content_hash")).toString(),
+             QStringLiteral("abc123"));
+    // 原始 args 不含内部键（注入只进执行副本）
+    QVERIFY(!tool.lastParams().contains(QStringLiteral("path")));
+
+    bridge.requestStop();
+    QTest::qWait(500);
 }
 
 int main(int argc, char* argv[])

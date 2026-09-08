@@ -1,6 +1,8 @@
 #include "DAAgentToolRunScript.h"
 #include <QDir>
+#include <QFile>
 #include <QFileInfo>
+#include <QCryptographicHash>
 #include "DAProjectInterface.h"
 #include "DAPyScriptRunner.h"
 
@@ -63,6 +65,23 @@ QJsonObject DAAgentToolRunScript::execute(const QJsonObject& params)
     }
     if (!QFileInfo::exists(absPath)) {
         return errorResponse(QString("script not found: %1").arg(relPath));
+    }
+    // TOCTOU 校验（审计问题 26）：Python 侧 safety 判定读取判定时刻文件内容
+    // 产出 sha256（Bridge 经 _expected_content_hash 内部键注入执行参数）。
+    // 判定→执行窗口（含全局执行队列排队段）内共享工作区的脚本可能被
+    // write_file/其它会话改写——执行前重读原始字节比对哈希，不一致拒绝执行，
+    // 杜绝"实际执行代码 ≠ 被判定代码"绕过 deny/escalate 规则
+    const QString expectedHash = params.value(QStringLiteral("_expected_content_hash")).toString();
+    if (!expectedHash.isEmpty()) {
+        QFile f(absPath);
+        if (!f.open(QIODevice::ReadOnly)) {
+            return errorResponse(QString("cannot re-read script for safety verification: %1").arg(relPath));
+        }
+        const QByteArray actualHash = QCryptographicHash::hash(f.readAll(), QCryptographicHash::Sha256).toHex();
+        if (actualHash != expectedHash.toLatin1()) {
+            return errorResponse("script content changed after the safety judgment (possible concurrent "
+                                 "modification); execution refused - re-read the file and retry");
+        }
     }
     return DAPyScriptRunner::runScript(absPath, params["args"].toObject());
 }

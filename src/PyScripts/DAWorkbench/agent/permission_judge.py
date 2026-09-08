@@ -32,6 +32,7 @@
 """
 
 import asyncio
+import hashlib
 import json
 import logging
 import os
@@ -371,8 +372,8 @@ async def judge_tool_call(tool, args, ctx):
                 "source": SOURCE_NONE,
             }
         try:
-            with open(abs_path, "r", encoding="utf-8", errors="replace") as f:
-                content = f.read()
+            with open(abs_path, "rb") as f:
+                raw = f.read()
         except OSError as e:
             logger.warning("permission_judge: failed to read script %s: %s", abs_path, e)
             return {
@@ -380,9 +381,17 @@ async def judge_tool_call(tool, args, ctx):
                 "reason": "failed to read script %r: %s" % (rel_path, e),
                 "source": SOURCE_NONE,
             }
+        content = raw.decode("utf-8", errors="replace")
         # 入口文件内容走同一管线（判定边界=入口文件，不递归，A8）
         verdict = await judge_code(content, ctx)
         verdict["reason"] = "run_script entry file %r: %s" % (rel_path, verdict["reason"])
+        # 审计问题 26（TOCTOU 闭环）：判定载荷携带判定时刻原始字节的 sha256——
+        # C++ 执行侧（DAAgentToolRunScript）执行前重读同一文件校验哈希一致，
+        # 不一致拒绝执行。判定与执行之间的窗口（现含全局队列排队段）内，共享
+        # 工作区的脚本可能被 write_file/其它会话改写，使实际执行代码≠被判定
+        # 代码，绕过 deny/escalate 规则。哈希对象为文件原始字节（与 C++ 侧
+        # QFile::readAll + Sha256 一致），不经 decode 再编码
+        verdict["content_hash"] = hashlib.sha256(raw).hexdigest()
         return verdict
 
     # 非代码执行工具不应进入本模块（调用方已过滤）；防御性回退

@@ -272,9 +272,12 @@ private:
     void executeToolNow(const QString& callId, const QString& toolName, const QJsonObject& args,
                         const QString& subagentId = QString());
     // 派发执行（决策点 2 方案 c）：有全局执行器则入队（排队态上报 Python/UI），
-    // 无则退化直执行；executeTool 放行路径与 onToolApproval 批准路径共用
+    // 无则退化直执行；executeTool 放行路径与 onToolApproval 批准路径共用。
+    // expectedContentHash 非空时注入执行参数 _expected_content_hash（问题 26
+    // TOCTOU 校验，run_script 工具执行前消费）
     void dispatchToolExecution(const QString& callId, const QString& toolName,
-                               const QJsonObject& args, const QString& subagentId);
+                               const QJsonObject& args, const QString& subagentId,
+                               const QString& expectedContentHash = QString());
     // 排队态上报：写 tool_exec_queued 协议消息给 Python + emit agentToolQueued
     void notifyToolQueued(const QString& callId, const QString& toolName, int position);
     // Q18 dismissal：按子 agent 任务 id 撤销对应挂起审批卡（仅撤 subagentId 非空的条目，
