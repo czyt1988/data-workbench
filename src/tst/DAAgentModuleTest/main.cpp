@@ -256,6 +256,7 @@ private Q_SLOTS:
     void testStopSessionStopsBackgroundBridge();       // L14：stopSession 直达后台会话桥
     void testNewSessionRetiresIdleBridge();            // 问题18：newSession 切离退役空闲桥
     void testForeignRunningSessionsNotified();         // 问题18/决策点5：跨工程存活会话通知
+    void testExportAllProjectBoundSessions();          // L15/决策点6：导出全部工程绑定会话
 };
 
 QString DAAgentModuleTest::pythonConfigPath()
@@ -973,6 +974,42 @@ void DAAgentModuleTest::testForeignRunningSessionsNotified()
     // 一键停止（跨工程视图入口，L14 stopSession）→ 通知空列表（提示条隐藏）
     module->stopSession(sidA);
     QTRY_VERIFY_WITH_TIMEOUT(foreignSpy.last().at(0).toList().isEmpty(), 15000);
+
+    module->shutdown();
+}
+
+/**
+ * L15/决策点 6：工程保存的会话导出范围——旧实现只导"当前 + 运行中桥"，
+ * 绑定工程的空闲已退役会话不进工程 zip（异机打开丢历史）。修复后按
+ * projectPath 导出全部绑定会话（数量上限 maxSessions、总体积上限 256MB，
+ * 超限取最近，当前会话置顶强制保留）。
+ */
+void DAAgentModuleTest::testExportAllProjectBoundSessions()
+{
+    QScopedPointer<DA::DAAgentModule> module(makeModule());
+    QSignalSpy doneSpy(module.data(), &DA::DAAgentInterface::agentDone);
+    module->setCurrentProjectPath(QStringLiteral("C:/fake-proj/P1.daProject"));
+
+    // 两个绑定 P1 的会话各留一条历史
+    const QString sidA = module->createSession();
+    module->sendMessage(QStringLiteral("history A"));
+    QVERIFY(doneSpy.wait(30000));
+    const QString sidB = module->createSession();
+    module->sendMessage(QStringLiteral("history B"));
+    QVERIFY(doneSpy.wait(30000));
+
+    // 相互切换使两桥都退役（空闲切离退役）——导出时已无运行中桥，
+    // 修复前只能导出当前会话 B
+    QVERIFY(module->switchSession(sidA));
+    QVERIFY(module->switchSession(sidB));
+    QTRY_VERIFY_WITH_TIMEOUT(!module->isRunning(), 15000);
+
+    // 决策点 6：全部工程绑定会话进 zip（含空闲已退役的 A）
+    const QHash<QString, QByteArray> files = module->exportActiveSessions();
+    QVERIFY(files.contains(sidA));
+    QVERIFY(files.contains(sidB));
+    QVERIFY(files.value(sidA).contains("history A"));
+    QVERIFY(files.value(sidB).contains("history B"));
 
     module->shutdown();
 }

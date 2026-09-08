@@ -1905,26 +1905,61 @@ QString DAAgentModule::currentSessionId() const
 }
 
 /**
- * @brief 导出活跃会话字节（plan-05 工程保存调用）
+ * @brief 导出工程绑定会话字节（plan-05 工程保存调用）
  * @return id -> jsonl 字节
  *
- * concurrent-sessions：导出当前会话 + 后台运行中的会话（对话内容实时落盘
- * JSONL，此处取字节即最新态；总纲 D3：保存工程时复制活跃会话进 zip）。
+ * 决策点 6（审计 L15）：导出全部绑定该工程的会话——旧实现只导"当前 +
+ * 运行中桥"，绑定工程的空闲已退役会话不进工程 zip（本机 store 仍保留），
+ * 异机打开工程时这些会话丢失。工程文件自包含（对话内容实时落盘 JSONL，
+ * 此处取字节即最新态）。
+ *
+ * 上限/裁剪策略（zip 体积随会话数增长，JSONL 含全部工具结果，数据分析
+ * 场景可能很大）：数量上限复用 maxSessions 配置（默认 20，与 store 清理
+ * 上限一致）；总体积上限 256MB（常量，超限从最旧剔起）；两级裁剪均
+ * "取最近"（listSessions 按 updatedAt 倒序），当前会话置顶强制保留。
+ * 无工程上下文（防御路径）保持旧语义：当前 + 运行中桥。
  */
 QHash<QString, QByteArray> DAAgentModule::exportActiveSessions() const
 {
     DA_DC(d);
     QStringList ids;
-    if (!d->mCurrentSessionId.isEmpty()) {
-        ids.append(d->mCurrentSessionId);
-    }
-    for (auto it = d->mSessionBridges.constBegin(); it != d->mSessionBridges.constEnd(); ++it) {
-        if (it.key() != d->mCurrentSessionId && it.value() && it.value()->isRunning()) {
-            ids.append(it.key());
+    if (!d->mCurrentProjectPath.isEmpty()) {
+        // 全部工程绑定会话（updatedAt 倒序），数量上限取最近 maxSessions 个
+        const int cap = qMax(1, d->mConfig.llm().maxSessions());
+        const QVector<DAAgentSessionStore::SessionMeta> bound =
+            d->mSessionStore->listSessions(d->mCurrentProjectPath);
+        for (int i = 0; i < bound.size() && ids.size() < cap; ++i) {
+            ids.append(bound.at(i).id);
+        }
+    } else {
+        if (!d->mCurrentSessionId.isEmpty()) {
+            ids.append(d->mCurrentSessionId);
+        }
+        for (auto it = d->mSessionBridges.constBegin(); it != d->mSessionBridges.constEnd(); ++it) {
+            if (it.key() != d->mCurrentSessionId && it.value() && it.value()->isRunning()) {
+                ids.append(it.key());
+            }
         }
     }
+    // 当前会话置顶：数量/体积裁剪都从列表尾（最旧）剔除，当前会话强制保留
+    //（长期不活跃被挤出 cap 窗口时也补入）
+    if (!d->mCurrentSessionId.isEmpty()) {
+        ids.removeAll(d->mCurrentSessionId);
+        ids.prepend(d->mCurrentSessionId);
+    }
     if (ids.isEmpty()) return {};
-    return d->mSessionStore->exportSessionFiles(ids);
+    QHash<QString, QByteArray> files = d->mSessionStore->exportSessionFiles(ids);
+    // 总体积上限裁剪：ids 为最近优先序，从尾（最旧）剔除直到达标
+    static constexpr qint64 kExportTotalBytesCap = 256LL * 1024 * 1024;
+    qint64 total = 0;
+    for (auto it = files.constBegin(); it != files.constEnd(); ++it) {
+        total += it.value().size();
+    }
+    while (total > kExportTotalBytesCap && ids.size() > 1) {
+        const QString oldest = ids.takeLast();
+        total -= files.take(oldest).size();
+    }
+    return files;
 }
 
 /**
