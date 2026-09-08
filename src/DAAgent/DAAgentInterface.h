@@ -169,6 +169,11 @@ Q_SIGNALS:
     void agentToolResult(const QString& toolName, const QJsonObject& result);
     /// agent 向用户提问时发射
     void agentQuestion(const QString& text, const QStringList& options, bool multiSelect);
+    /// 挂起的 ask_user 问题卡作废时发射（子进程退出/崩溃/用户 Stop/桥退役），
+    /// UI 据此移除未回答的问题卡——镜像 agentToolApprovalDismissed 契约（审计
+    /// 问题 17）：不清则角标卡 waiting_input、死桥拒绝退役、切回重发幽灵卡、
+    /// 用户对幽灵卡作答落盘孤儿 tool_result
+    void agentQuestionDismissed();
     /// agent 发生错误时发射
     void agentError(const QString& message, const QString& errorType = QString(), const QString& detail = QString());
     /// agent 正在重试 LLM 调用时发射（Python 端指数退避期间每次重试发一次）

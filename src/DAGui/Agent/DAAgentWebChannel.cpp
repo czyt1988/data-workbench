@@ -191,6 +191,17 @@ void DAAgentWebChannel::appendQuestion(const QString& text, const QStringList& o
 }
 
 /**
+ * @brief 推送挂起问题卡作废（子进程退出/崩溃/用户 Stop/桥退役）
+ *
+ * 镜像 dismissToolApproval（审计问题 17）：JS 移除未回答的问题卡，
+ * 已回答的历史卡（.answered）不受影响。
+ */
+void DAAgentWebChannel::dismissQuestion()
+{
+    callJS(QStringLiteral("dismissQuestion()"));
+}
+
+/**
  * @brief 显示重试状态条（LLM 调用重试期间）
  * @param attempt 当前重试次数（1-based）
  * @param maxAttempts 最大重试次数

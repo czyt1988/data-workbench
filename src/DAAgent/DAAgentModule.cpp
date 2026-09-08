@@ -452,9 +452,15 @@ void DAAgentModule::stop()
     DA_D(d);
     DAAgentBridge* bridge = d->mSessionBridges.value(d->mCurrentSessionId);
     // isRecovering 放行（审计 L4）：崩溃自愈 1s 恢复窗口内 isRunning()==false，
-    // 旧守卫使 Stop 静默 no-op，恢复计时器照常重启重放，违背用户终止意图。
+    // 旧守卫使 Stop 被静默 no-op，恢复计时器照常重启重放，违背用户终止意图。
     // requestStop 内取消恢复定时器并回发 busy(false)。
     if (bridge && (bridge->isRunning() || bridge->isRecovering())) {
+        // 审计问题 17：Stop 必然中断挂起的 ask_user——同步清缓存 + 撤卡，
+        // 否则用户对着幽灵卡作答，sendUserAnswer 落盘孤儿 tool_result 且
+        // 答案蒸发（死桥 writeJson 静默失败）
+        if (d->mPendingQuestions.remove(d->mCurrentSessionId)) {
+            emit agentQuestionDismissed();
+        }
         bridge->requestStop();
     }
 }
@@ -985,10 +991,21 @@ void DAAgentModule::attachBridge(DAAgentBridge* bridge, const QString& sessionId
     // 注意：不在此处移除会话映射——崩溃自愈路径 processExited（DAAgentBridge.cpp:1021）
     // 先于 recoverFromCrash（:1062 1s 延迟）发射，此处移除会孤儿化正在自愈的桥；
     // 死亡且不再自愈的桥由 sendMessage 的 isRunning 防御分支 / 切离退役路径惰性清理。
-    connect(bridge, &DAAgentBridge::processExited, this, [this]() {
+    connect(bridge, &DAAgentBridge::processExited, this, [this, sessionId]() {
         auto* d = d_func();
         if (d->mPermissionManager) {
             d->mPermissionManager->clearSessionMemory();
+        }
+        // 审计问题 17：进程死亡（用户 Stop/崩溃/错误终止）使挂起的 ask_user
+        // 作废——清缓存 + 撤卡（镜像审批 dismissed 契约）。不清则：角标永久
+        // waiting_input、切离/退役守卫拒绝处理死桥、切回重发幽灵问题卡、
+        // 用户对幽灵卡作答经 sendUserAnswer 落盘孤儿 tool_result（答案蒸发）。
+        if (d->mPendingQuestions.remove(sessionId)) {
+            if (sessionId == d->mCurrentSessionId) {
+                emit agentQuestionDismissed();
+            } else {
+                emit sessionListChanged(listSessionsForUI());  // 后台角标解除
+            }
         }
     });
 }
@@ -1012,7 +1029,14 @@ void DAAgentModule::retireBridge(const QString& sessionId)
     d->mCumulativeOutTokens.remove(sessionId);
     d->mCumulativeTotalTokens.remove(sessionId);
     d->mPendingToolCallUuids.remove(sessionId);
-    d->mPendingQuestions.remove(sessionId);
+    // 审计问题 17：任何清问题缓存的退役路径（删除会话/sendMessage 防御重建等）
+    // 都须同步撤活跃会话屏幕上的问题卡——契约完整性兜底（常规路径进程退出时
+    // processExited lambda 已先清缓存并撤卡，此处缓存多已为空）
+    if (sessionId == d->mCurrentSessionId && d->mPendingQuestions.remove(sessionId)) {
+        emit agentQuestionDismissed();
+    } else {
+        d->mPendingQuestions.remove(sessionId);
+    }
     d->mPendingApprovalRequests.remove(sessionId);
     for (auto it = d->mApprovalSessionByCallId.begin(); it != d->mApprovalSessionByCallId.end();) {
         if (it.value() == sessionId) it = d->mApprovalSessionByCallId.erase(it);
@@ -1399,7 +1423,14 @@ bool DAAgentModule::switchSession(const QString& sessionId)
     // 5. 挂起交互重放：切回时重新弹可交互卡片（缓存来自后台期间的 ask_user/审批）
     const auto qIt = d->mPendingQuestions.constFind(sessionId);
     if (qIt != d->mPendingQuestions.constEnd()) {
-        emit agentQuestion(qIt->text, qIt->options, qIt->multiSelect);
+        // 审计问题 17：重发前校验桥存活——挂起问题蕴含进程存活（Python 处于
+        // interrupt 等待），竞态残留的死桥缓存不重发幽灵卡，直接作废
+        DAAgentBridge* qb = d->mSessionBridges.value(sessionId);
+        if (qb && qb->isRunning()) {
+            emit agentQuestion(qIt->text, qIt->options, qIt->multiSelect);
+        } else {
+            d->mPendingQuestions.remove(sessionId);
+        }
     }
     for (const QJsonValue& v : d->mPendingApprovalRequests.value(sessionId)) {
         const QJsonObject o = v.toObject();

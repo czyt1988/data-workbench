@@ -265,6 +265,8 @@ void DAAppController::initialize()
         connect(agent, &DAAgentInterface::agentToolCall, dock, &DAAgentDockWidget::onAgentToolCall);
         connect(agent, &DAAgentInterface::agentToolResult, dock, &DAAgentDockWidget::onAgentToolResult);
         connect(agent, &DAAgentInterface::agentQuestion, dock, &DAAgentDockWidget::onAgentQuestion);
+        // 挂起问题卡作废（审计问题 17，镜像审批 dismissed 契约）：撤未回答问题卡
+        connect(agent, &DAAgentInterface::agentQuestionDismissed, dock, &DAAgentDockWidget::onQuestionDismissed);
         connect(agent, &DAAgentInterface::agentError, dock, &DAAgentDockWidget::onAgentError);
         connect(agent, &DAAgentInterface::agentRetrying, dock, &DAAgentDockWidget::onAgentRetrying);
         connect(agent, &DAAgentInterface::agentReady, dock, &DAAgentDockWidget::onAgentReady);

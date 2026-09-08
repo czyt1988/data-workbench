@@ -44,6 +44,8 @@ public:
     void appendToolCall(const QString& toolName, const QJsonObject& args);
     void appendToolResult(const QString& toolName, const QJsonObject& result);
     void appendQuestion(const QString& text, const QStringList& options, bool multiSelect);
+    /// 推送挂起问题卡作废（JS 移除未回答问题卡，镜像 dismissToolApproval，审计问题 17）
+    void dismissQuestion();
     void showRetryStatus(int attempt, int maxAttempts, int delayMs,
                          const QString& errorType, const QString& errorMessage);
     void appendError(const QString& message, const QString& errorType, const QString& detail = QString());

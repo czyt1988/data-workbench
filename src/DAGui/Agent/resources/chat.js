@@ -1278,6 +1278,19 @@ function dismissToolApproval(callId) {
     }
 }
 
+// C++ 推送挂起问题卡作废（子进程退出/崩溃/用户 Stop/桥退役）：移除未回答的
+// 问题卡。已回答的历史卡（.answered，含重放渲染的静态卡）不受影响。
+function dismissQuestion() {
+    var container = document.getElementById('messages');
+    if (!container) return;
+    var cards = container.querySelectorAll('.message-bubble.question');
+    for (var i = 0; i < cards.length; i++) {
+        if (!cards[i].classList.contains('answered')) {
+            cards[i].remove();
+        }
+    }
+}
+
 // 渲染下拉面板（按 modelDropdownView 分发）。
 function renderModelDropdown() {
     var dd = document.getElementById('model-dropdown');

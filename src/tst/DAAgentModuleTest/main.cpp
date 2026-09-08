@@ -157,6 +157,8 @@ private Q_SLOTS:
     void testSessionListChangedOnBusyFalse();          // 问题6：busy(false) 也刷新角标 payload
     void testNewSessionReassertsBusyFalse();           // 问题14：后台运行中点「+」→ busy(false) 重断言
     void testDeleteCurrentSessionEmitsCleared();       // 问题16：删除当前会话补发 sessionCleared + token 复位
+    void testStopDismissesPendingQuestion();           // 问题17：Stop 清问题缓存 + 撤卡
+    void testProcessExitDismissesPendingQuestion();    // 问题17：进程退出清问题缓存 + 撤卡
 };
 
 QString DAAgentModuleTest::pythonConfigPath()
@@ -181,6 +183,9 @@ DA::DAAgentModule* DAAgentModuleTest::makeModule()
     cfg.setReadyTimeoutSec(15);
     cfg.setStopTimeoutSec(2);
     cfg.setInactivityTimeoutSec(120);
+    // 崩溃自愈重启压到 0：崩溃即直达 crash_exhausted 终态（恢复链本身由
+    // DAAgentBridgeTest 覆盖，Module 级测试只关心终态记账，且免于 1s×N 等待）
+    cfg.setMaxSubprocessRestarts(0);
     m->setLLMConfig(cfg);
     return m;
 }
@@ -385,6 +390,51 @@ void DAAgentModuleTest::testDeleteCurrentSessionEmitsCleared()
     module->deleteSession(sidB);
     QCOMPARE(clearedSpy.count(), 1);
     QCOMPARE(module->currentSessionId(), sidC);
+
+    module->shutdown();
+}
+
+/**
+ * 问题17（Stop 路径）：ask_user 挂起时用户 Stop——修复前 mPendingQuestions
+ * 只在 sendUserAnswer/retireBridge 清除，Stop 后缓存残留：角标卡死
+ * waiting_input、切回重发幽灵问题卡、用户作答落盘孤儿 tool_result。
+ * 修复后 stop() 同步清缓存并 emit agentQuestionDismissed（UI 撤卡）。
+ */
+void DAAgentModuleTest::testStopDismissesPendingQuestion()
+{
+    QScopedPointer<DA::DAAgentModule> module(makeModule());
+    QSignalSpy questionSpy(module.data(), &DA::DAAgentInterface::agentQuestion);
+    QSignalSpy dismissSpy(module.data(), &DA::DAAgentInterface::agentQuestionDismissed);
+    const QString sid = module->createSession();
+    module->sendMessage(QStringLiteral("#fake:question"));
+    QVERIFY(questionSpy.wait(30000));
+
+    module->stop();
+    // 撤卡信号必发（镜像审批 dismissed 契约），缓存清除后角标不再 waiting_input
+    QCOMPARE(dismissSpy.count(), 1);
+    QTRY_VERIFY_WITH_TIMEOUT(module->sessionRuntimeState(sid) != QStringLiteral("waiting_input"), 15000);
+
+    module->shutdown();
+}
+
+/**
+ * 问题17（进程退出路径）：ask_user 挂起时子进程死亡（崩溃/被杀）——
+ * processExited lambda（补捕获 sessionId）清缓存 + 撤卡。修复前该 lambda
+ * 只清权限记忆，问题缓存无人作废。
+ */
+void DAAgentModuleTest::testProcessExitDismissesPendingQuestion()
+{
+    QScopedPointer<DA::DAAgentModule> module(makeModule());
+    QSignalSpy questionSpy(module.data(), &DA::DAAgentInterface::agentQuestion);
+    QSignalSpy dismissSpy(module.data(), &DA::DAAgentInterface::agentQuestionDismissed);
+    const QString sid = module->createSession();
+    module->sendMessage(QStringLiteral("#fake:question"));
+    QVERIFY(questionSpy.wait(30000));
+
+    // 问题挂起时进程崩溃（maxSubprocessRestarts=0 → 直达 exhausted 终态）
+    module->sendMessage(QStringLiteral("#fake:crash"));
+    QTRY_COMPARE_WITH_TIMEOUT(dismissSpy.count(), 1, 30000);
+    QTRY_VERIFY_WITH_TIMEOUT(module->sessionRuntimeState(sid) != QStringLiteral("waiting_input"), 15000);
 
     module->shutdown();
 }

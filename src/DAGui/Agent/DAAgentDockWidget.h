@@ -53,6 +53,8 @@ public Q_SLOTS:
     void onAgentToolCall(const QString& toolName, const QJsonObject& args);
     void onAgentToolResult(const QString& toolName, const QJsonObject& result);
     void onAgentQuestion(const QString& text, const QStringList& options, bool multiSelect);
+    /// 挂起问题卡作废（子进程退出/崩溃/用户 Stop/桥退役），通知 web 移除未回答问题卡
+    void onQuestionDismissed();
     void onAgentError(const QString& message, const QString& errorType = QString(), const QString& detail = QString());
     void onAgentRetrying(int attempt, int maxAttempts, int delayMs, const QString& errorType, const QString& errorMessage);
     void onAgentStarting();

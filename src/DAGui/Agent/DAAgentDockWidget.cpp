@@ -428,6 +428,20 @@ void DAAgentDockWidget::onAgentQuestion(const QString& text, const QStringList& 
 }
 
 /**
+ * @brief 处理挂起问题卡作废（子进程退出/崩溃/用户 Stop/桥退役）
+ *
+ * 镜像 onToolApprovalDismissed 契约（审计问题 17）：通知 web 移除未回答的
+ * 问题卡，防止用户对幽灵卡作答（答案经死桥发送必然蒸发）。
+ */
+void DAAgentDockWidget::onQuestionDismissed()
+{
+    DA_D(d);
+    if (d->mChannel) {
+        d->mChannel->dismissQuestion();
+    }
+}
+
+/**
  * @brief 处理 Agent 错误信号
  * @param message 错误信息
  * @param errorType 错误类型（quota_exhausted/auth_error/...），空表示未知
