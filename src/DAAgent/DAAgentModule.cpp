@@ -810,6 +810,16 @@ void DAAgentModule::attachBridge(DAAgentBridge* bridge, const QString& sessionId
     // 会话标识注入（决策点 1 方案 b）：权限记忆/会话上下文按会话隔离的查询键。
     // 冷启动新桥与接管预热桥都经此收口，接管时由空转为本会话
     bridge->setSessionId(sessionId);
+    // 会话上下文捕获（审计问题 25，capture-at-attach 语义）：以 attach 时刻的
+    // 全局 workspace/project 为该会话的路径判定上下文快照——此后工程切换改写
+    // 全局值并广播 reconfigure，后台会话的 ${workspace}/${project} 解析与
+    // Python 判官的 workspace_root 均不漂移（各桥 buildPermissionConfig 按
+    // 自己的会话上下文组装载荷）
+    if (d->mPermissionManager) {
+        d->mPermissionManager->setSessionContext(sessionId,
+                                                 d->mPermissionManager->workspaceRoot(),
+                                                 d->mPermissionManager->projectDir());
+    }
 
     // ---- 工具实现表注入（冷启动新桥与接管预热桥的公共收口） ----
     // 桥的创建时机晚于插件 registerTool，注册期的热更新（forEachLiveBridge）
@@ -1163,11 +1173,12 @@ void DAAgentModule::retireBridge(const QString& sessionId)
     d->mCumulativeTotalTokens.remove(sessionId);
     d->mPendingToolCallUuids.remove(sessionId);
     d->mPendingNotifications.remove(sessionId);
-    // 桥退役即销毁该会话的权限记忆（决策点 1 拍板：会话删除/桥退役时销毁；
-    // 恢复旧版"切离即清"语义且不误伤其它会话——修复前退役路径因先 disconnect
-    // 完全不清记忆，"本会话记住"事实上全局跨会话存活，A5 承诺落空）
+    // 桥退役即销毁该会话的权限记忆与上下文（决策点 1 拍板：会话删除/桥退役
+    // 时销毁；恢复旧版"切离即清"语义且不误伤其它会话——修复前退役路径因先
+    // disconnect 完全不清记忆，"本会话记住"事实上全局跨会话存活，A5 承诺落空）
     if (d->mPermissionManager) {
         d->mPermissionManager->clearSessionMemory(sessionId);
+        d->mPermissionManager->clearSessionContext(sessionId);
     }
     // 审计问题 17：任何清问题缓存的退役路径（删除会话/sendMessage 防御重建等）
     // 都须同步撤活跃会话屏幕上的问题卡——契约完整性兜底（常规路径进程退出时
@@ -1628,10 +1639,11 @@ void DAAgentModule::deleteSession(const QString& sessionId)
     // 会话已不存在——显式清 error 角标残留（retireBridge 有意保留 error 态，
     // 删除路径必须回收，防状态哈希滞留已删会话键）
     d->mSessionError.remove(sessionId);
-    // 会话删除即销毁权限记忆（决策点 1 拍板；无桥会话不经 retireBridge，
-    // 此处兜底，已清时幂等）
+    // 会话删除即销毁权限记忆与上下文（决策点 1 拍板；无桥会话不经
+    // retireBridge，此处兜底，已清时幂等）
     if (d->mPermissionManager) {
         d->mPermissionManager->clearSessionMemory(sessionId);
+        d->mPermissionManager->clearSessionContext(sessionId);
     }
     if (d->mCurrentSessionId == sessionId) {
         d->mCurrentSessionId.clear();  // 删当前会话后回归无活跃

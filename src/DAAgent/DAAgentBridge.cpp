@@ -584,7 +584,10 @@ QJsonObject DAAgentBridge::buildPermissionConfig() const
     }
     const DAAgentPermissionManager* mgr = d->mPermissionManager;
     p["permission_mode"]            = mgr->mode();
-    p["workspace_root"]             = mgr->workspaceRoot();
+    // 按会话上下文下发（审计问题 25）：Python 判官（permission_judge）的
+    // run_script 相对路径解析用该会话绑定的工作区——工程切换后 reconfigure
+    // 广播不再把后台会话的 workspace_root 改写成新工程
+    p["workspace_root"]             = mgr->workspaceRootForSession(d->mSessionId);
     p["gated_tools"]                = QJsonArray::fromStringList(DAAgentPermissionManager::gatedTools());
     p["tool_approval_timeout_sec"]  = mgr->toolApprovalTimeoutSec();
     p["code_patterns"]              = mgr->codePatterns().toJson();
@@ -1006,7 +1009,7 @@ void DAAgentBridge::onToolApproval(const QString& callId, bool approved, bool re
         // A5 [v2.1]：会话记忆仅 file_write；code_exec 一律不记忆。
         // 按桥所属会话分桶写入（决策点 1 方案 b）——"本会话记住"仅本会话可见
         if (rememberSession && d->mPermissionManager && pa.tier == DAAgentPermissionManager::tierFileWrite()) {
-            const QString key = d->mPermissionManager->sessionScopeKey(pa.toolName, pa.args);
+            const QString key = d->mPermissionManager->sessionScopeKey(d->mSessionId, pa.toolName, pa.args);
             if (!key.isEmpty()) {
                 d->mPermissionManager->rememberSession(d->mSessionId, pa.toolName, key);
             }

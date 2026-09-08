@@ -139,6 +139,14 @@ public:
     // 全局单一键空间曾使"本会话记住"事实上跨会话存活（欠清理），且任一桥退出
     // 全局清空又误伤其它会话（过度清除）——按会话分桶两面同时根治
     QHash< QString, QHash< QString, QStringList > > mSessionMemory;
+
+    // 会话上下文（审计问题 25）：attachBridge 时捕获的 workspace/project，
+    // ${workspace}/${project} 变量按会话解析，工程切换不使后台会话判定漂移
+    struct SessionContext {
+        QString workspaceRoot;  ///< 该会话绑定的脚本工作区根（空=回退全局）
+        QString projectDir;     ///< 该会话绑定的工程目录（空=回退全局）
+    };
+    QHash< QString, SessionContext > mSessionContexts;
 };
 
 DAAgentPermissionManager::PrivateData::PrivateData(DAAgentPermissionManager* p) : q_ptr(p)
@@ -664,15 +672,86 @@ QHash< QString, QString > DAAgentPermissionManager::variables() const
 }
 
 /**
+ * @brief 注入会话上下文（attachBridge 时以当时全局值捕获，审计问题 25）
+ * @param sessionId 会话 ID（空则忽略）
+ * @param workspaceRoot 该会话绑定的脚本工作区根（规范化；空=回退全局）
+ * @param projectDir 该会话绑定的工程目录（规范化；空=回退全局）
+ */
+void DAAgentPermissionManager::setSessionContext(const QString& sessionId, const QString& workspaceRoot, const QString& projectDir)
+{
+    DA_D(d);
+    if (sessionId.isEmpty()) {
+        return;
+    }
+    PrivateData::SessionContext ctx;
+    ctx.workspaceRoot = DAAgentPermissionRule::normalizePath(workspaceRoot);
+    ctx.projectDir    = DAAgentPermissionRule::normalizePath(projectDir);
+    d->mSessionContexts.insert(sessionId, ctx);
+}
+
+/**
+ * @brief 清除会话上下文（桥退役/会话删除）
+ * @param sessionId 会话 ID
+ */
+void DAAgentPermissionManager::clearSessionContext(const QString& sessionId)
+{
+    DA_D(d);
+    d->mSessionContexts.remove(sessionId);
+}
+
+/**
+ * @brief 该会话视角的全部变量值（会话上下文覆盖全局默认）
+ * @param sessionId 会话 ID（空或无上下文时等价全局 variables()）
+ * @return 变量名→值
+ */
+QHash< QString, QString > DAAgentPermissionManager::variables(const QString& sessionId) const
+{
+    DA_DC(d);
+    QHash< QString, QString > vars = variables();
+    if (sessionId.isEmpty()) {
+        return vars;
+    }
+    const auto it = d->mSessionContexts.constFind(sessionId);
+    if (it == d->mSessionContexts.constEnd()) {
+        return vars;
+    }
+    if (!it->workspaceRoot.isEmpty()) {
+        vars[QStringLiteral("workspace")] = it->workspaceRoot;
+    }
+    if (!it->projectDir.isEmpty()) {
+        vars[QStringLiteral("project")] = it->projectDir;
+    }
+    return vars;
+}
+
+/**
+ * @brief 该会话视角的工作区根（Bridge buildPermissionConfig 下发 Python 判官用）
+ * @param sessionId 会话 ID（空或无上下文时回退全局）
+ * @return 规范化工作区根
+ */
+QString DAAgentPermissionManager::workspaceRootForSession(const QString& sessionId) const
+{
+    DA_DC(d);
+    if (!sessionId.isEmpty()) {
+        const auto it = d->mSessionContexts.constFind(sessionId);
+        if (it != d->mSessionContexts.constEnd() && !it->workspaceRoot.isEmpty()) {
+            return it->workspaceRoot;
+        }
+    }
+    return d->mWorkspaceRoot;
+}
+
+/**
  * @brief 提取并规范化工具参数中的路径（母文档 §6.1 约定）
  *
  * file_path 优先，回退 path/output_path/report_path；run_script 的相对 path
  * 先按工作区根解析（A8）；相对路径按当前目录绝对化；无法解析返回空串。
+ * @param sessionId 会话 ID（run_script 相对路径按该会话工作区解析，问题 25）
  * @param tool 工具名
  * @param params 工具参数
  * @return 规范化绝对路径，无路径参数返回空串
  */
-QString DAAgentPermissionManager::resolveToolPath(const QString& tool, const QJsonObject& params) const
+QString DAAgentPermissionManager::resolveToolPath(const QString& sessionId, const QString& tool, const QJsonObject& params) const
 {
     DA_DC(d);
     QString raw;
@@ -686,9 +765,12 @@ QString DAAgentPermissionManager::resolveToolPath(const QString& tool, const QJs
     if (raw.isEmpty()) {
         return QString();
     }
-    // run_script 的 path 是工作区相对路径（工具侧约定），先按 ${workspace} 解析
-    if (tool == QLatin1String("run_script") && QDir::isRelativePath(raw) && !d->mWorkspaceRoot.isEmpty()) {
-        raw = d->mWorkspaceRoot + QLatin1Char('/') + raw;
+    // run_script 的 path 是工作区相对路径（工具侧约定），先按该会话的
+    // ${workspace} 解析（无会话上下文回退全局，审计问题 25：工程切换不使
+    // 后台会话的相对路径判定漂移到新工程）
+    const QString ws = workspaceRootForSession(sessionId);
+    if (tool == QLatin1String("run_script") && QDir::isRelativePath(raw) && !ws.isEmpty()) {
+        raw = ws + QLatin1Char('/') + raw;
     }
     QString p = DAAgentPermissionRule::normalizePath(raw);
     if (p.isEmpty()) {
@@ -767,13 +849,14 @@ void DAAgentPermissionManager::clearSessionMemory(const QString& sessionId)
 
 /**
  * @brief 从工具参数推导记忆前缀（规范化父目录 + '/'）
+ * @param sessionId 会话 ID（run_script 相对路径按会话工作区解析）
  * @param tool 工具名
  * @param params 工具参数
  * @return 前缀，无路径参数返回空串
  */
-QString DAAgentPermissionManager::sessionScopeKey(const QString& tool, const QJsonObject& params) const
+QString DAAgentPermissionManager::sessionScopeKey(const QString& sessionId, const QString& tool, const QJsonObject& params) const
 {
-    const QString p = resolveToolPath(tool, params);
+    const QString p = resolveToolPath(sessionId, tool, params);
     if (p.isEmpty()) {
         return QString();
     }
@@ -845,16 +928,17 @@ bool DAAgentPermissionManager::manualBlockInappTools() const
 
 /**
  * @brief 路径策略评估：按规则顺序首条命中返回其动作，无命中返回 Ask（D3 区外询问兜底）
+ * @param sessionId 会话 ID（${workspace}/${project} 按会话上下文解析，问题 25）
  * @param tool 工具名
  * @param normalizedAbsPath 规范化绝对路径
  * @param reason 输出参数：deny 时的 error 文本（可空）
  * @return Allow / Deny / Ask
  */
 DAAgentPermissionManager::Action
-DAAgentPermissionManager::evaluatePath(const QString& tool, const QString& normalizedAbsPath, QString* reason) const
+DAAgentPermissionManager::evaluatePath(const QString& sessionId, const QString& tool, const QString& normalizedAbsPath, QString* reason) const
 {
     DA_DC(d);
-    const QHash< QString, QString > vars = variables();
+    const QHash< QString, QString > vars = variables(sessionId);
     for (const DAAgentPermissionRule& r : d->mRules) {
         if (!r.matchesTool(tool)) {
             continue;
@@ -894,13 +978,13 @@ DAAgentPermissionManager::decide(const QString& sessionId, const QString& tool, 
 {
     const QString tier = tierOf(tool, params);
     const QString m    = mode();
-    const QString path = resolveToolPath(tool, params);
+    const QString path = resolveToolPath(sessionId, tool, params);
 
     // 0. 硬 deny：全模式、全分级之前先行求值（母文档 §4 [v2.1]）——
     //    a) 系统目录种子（A4：即使被配置篡改也由 load 强制回填，此处按种子直查兜底）
     //    b) tool=="*" 且 action==deny 的用户规则（通配工具=用户显式全局封禁）
     if (!path.isEmpty()) {
-        const QHash< QString, QString > vars = variables();
+        const QHash< QString, QString > vars = variables(sessionId);
         const QList< DAAgentPermissionRule > hardSeeds = PrivateData::hardDenySeeds();
         for (const DAAgentPermissionRule& seed : hardSeeds) {
             if (seed.matchesPath(path, vars)) {
@@ -957,7 +1041,7 @@ DAAgentPermissionManager::decide(const QString& sessionId, const QString& tool, 
                 return dec;
             }
             QString reason;
-            const Action a = evaluatePath(tool, path, &reason);
+            const Action a = evaluatePath(sessionId, tool, path, &reason);
             dec.action     = a;
             if (a == Deny) {
                 dec.reason = reason;

@@ -42,6 +42,7 @@ private Q_SLOTS:
     void testSessionMemory();       // 会话记忆仅 file_write + clearSessionMemory
     void testCodeExecJudge();       // 判官未配置降级 ask（D1）/ 已配置消费 verdict
     void testWorkspaceVariable();   // ${workspace} 解析 + run_script 相对路径
+    void testSessionContextNoDrift(); // 问题25：会话上下文不随工程切换漂移
     void testSeedingAndBackfill();  // 缺失播种 + 硬 deny 强制回填（A4）
     void testTierOfFallback();      // tier_overrides → 内置表 → 参数约定 → unknown
     void testConfigRoundTrip();     // getConfig/setConfig 稀疏守卫
@@ -185,7 +186,7 @@ void DAAgentPermissionManagerTest::testSessionMemory()
     QCOMPARE(mgr.decide(kS, "write_file", outParams, {}).action, DAAgentPermissionManager::Ask);
 
     // 模拟"批准并记住"：sessionScopeKey 取规范化父目录前缀，按会话 kS 写入
-    const QString key = mgr.sessionScopeKey("write_file", outParams);
+    const QString key = mgr.sessionScopeKey(kS, "write_file", outParams);
     QVERIFY(!key.isEmpty());
     mgr.rememberSession(kS, "write_file", key);
     QCOMPARE(mgr.decide(kS, "write_file", outParams, {}).action, DAAgentPermissionManager::Allow);
@@ -216,7 +217,7 @@ void DAAgentPermissionManagerTest::testSessionMemory()
     QCOMPARE(mgr.decide(QString(), "write_file", outParams, {}).action, DAAgentPermissionManager::Ask);
 
     // sessionScopeKey：无路径参数返回空
-    QCOMPARE(mgr.sessionScopeKey("run_code", QJsonObject{{"code", "x"}}), QString());
+    QCOMPARE(mgr.sessionScopeKey(kS, "run_code", QJsonObject{{"code", "x"}}), QString());
 }
 
 // ---------------------------------------------------------------------------
@@ -294,7 +295,7 @@ void DAAgentPermissionManagerTest::testWorkspaceVariable()
 
     // run_script 相对路径按工作区根解析（A8）——resolveToolPath 负责解析
     const QJsonObject relIn = QJsonObject{{"path", "scripts/analyze.py"}};
-    QCOMPARE(mgr.resolveToolPath("run_script", relIn),
+    QCOMPARE(mgr.resolveToolPath(kS, "run_script", relIn),
              DAAgentPermissionRule::normalizePath(ws + "/scripts/analyze.py"));
     // 但 run_script 是 code_exec 分级（§5）：auto 模式走判官路径而非路径策略，
     // 判官未配置 → ask（即使路径在工作区内；P1 代码执行一律询问）
@@ -312,6 +313,59 @@ void DAAgentPermissionManagerTest::testWorkspaceVariable()
     mgr2.setMode("auto");
     QCOMPARE(mgr2.decide(kS, "write_file", writeParams("file_path", ws + "/a.txt"), {}).action,
              DAAgentPermissionManager::Ask);
+}
+
+// ---------------------------------------------------------------------------
+// 会话上下文（审计问题 25）：工程切换不使后台会话路径判定漂移
+// ---------------------------------------------------------------------------
+
+void DAAgentPermissionManagerTest::testSessionContextNoDrift()
+{
+    DAAgentConfig cfg;
+    QVERIFY(cfg.load());
+    DAAgentPermissionManager mgr(&cfg);
+    QVERIFY(mgr.load());
+    mgr.setMode("auto");
+
+    // 工程 P1：全局注入 workspace1，会话 kS attach 时捕获上下文
+    const QString ws1 = DA::DADir::getTempPath(QStringLiteral("perm-p1-ws"));
+    QDir().mkpath(ws1 + "/scripts");
+    mgr.setWorkspaceRoot(ws1);
+    mgr.setSessionContext(kS, mgr.workspaceRoot(), mgr.projectDir());
+
+    // kS 写 P1 工作区 → allow（${workspace}/** 种子按会话上下文命中）
+    QCOMPARE(mgr.decide(kS, "write_file", writeParams("file_path", ws1 + "/out.csv"), {}).action,
+             DAAgentPermissionManager::Allow);
+    // run_script 相对路径按 kS 的工作区解析
+    QCOMPARE(mgr.resolveToolPath(kS, "run_script", QJsonObject{{"path", "scripts/a.py"}}),
+             DAAgentPermissionRule::normalizePath(ws1 + "/scripts/a.py"));
+
+    // 用户打开工程 P2：全局 workspace 改写为 ws2（并会 reconfigure 广播）
+    const QString ws2 = DA::DADir::getTempPath(QStringLiteral("perm-p2-ws"));
+    QDir().mkpath(ws2);
+    mgr.setWorkspaceRoot(ws2);
+
+    // 修复前：kS 的路径判定跟随全局漂移到 P2——写 P1 工作区不再命中
+    // ${workspace}/** allow（频繁弹审批）、相对路径按 P2 解析（读到错误文件）。
+    // 修复后：会话上下文不漂移
+    QCOMPARE(mgr.decide(kS, "write_file", writeParams("file_path", ws1 + "/out.csv"), {}).action,
+             DAAgentPermissionManager::Allow);
+    QCOMPARE(mgr.resolveToolPath(kS, "run_script", QJsonObject{{"path", "scripts/a.py"}}),
+             DAAgentPermissionRule::normalizePath(ws1 + "/scripts/a.py"));
+    // Bridge 下发 Python 判官的 workspace_root 同样按会话（buildPermissionConfig 消费）
+    QCOMPARE(mgr.workspaceRootForSession(kS), DAAgentPermissionRule::normalizePath(ws1));
+
+    // 无上下文的新会话回退全局（P2）——写 P2 工作区 allow、写 P1 工作区 ask
+    QCOMPARE(mgr.decide(kS2, "write_file", writeParams("file_path", ws2 + "/n.csv"), {}).action,
+             DAAgentPermissionManager::Allow);
+    QCOMPARE(mgr.decide(kS2, "write_file", writeParams("file_path", ws1 + "/out.csv"), {}).action,
+             DAAgentPermissionManager::Ask);
+
+    // 上下文清除（桥退役/会话删除）后同样回退全局
+    mgr.clearSessionContext(kS);
+    QCOMPARE(mgr.decide(kS, "write_file", writeParams("file_path", ws1 + "/out.csv"), {}).action,
+             DAAgentPermissionManager::Ask);
+    QCOMPARE(mgr.workspaceRootForSession(kS), DAAgentPermissionRule::normalizePath(ws2));
 }
 
 // ---------------------------------------------------------------------------
