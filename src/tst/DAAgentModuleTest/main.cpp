@@ -161,6 +161,7 @@ private Q_SLOTS:
     void testProcessExitDismissesPendingQuestion();    // 问题17：进程退出清问题缓存 + 撤卡
     void testStopClearsToolCallFifo();                 // 问题1：Stop 清 FIFO，幽灵答案不落孤儿 tool_result
     void testErrorClearsToolCallFifo();                // 问题1：错误清 FIFO + 联动撤问题卡
+    void testColdStartSnapshotExcludesTrailingUser();  // 问题10：load_session 快照剔除末尾待重发 user
 };
 
 QString DAAgentModuleTest::pythonConfigPath()
@@ -487,6 +488,38 @@ void DAAgentModuleTest::testErrorClearsToolCallFifo()
     // 幽灵答案不落盘孤儿 tool_result（修复前 FIFO 残留 uuid 被出队配对）
     module->sendUserAnswer(QStringLiteral("ghost answer"));
     QCOMPARE(countRecords(sid, QStringLiteral("tool_result")), 0);
+
+    module->shutdown();
+}
+
+/**
+ * 问题10：冷启动 sendMessage 的持久化先于桥启动（有意设计），load_session
+ * 快照末尾必然是刚落盘的本轮 user 记录，随后 user_msg 又注入同一文本——
+ * LLM 上下文中当前提问出现两遍（必然触发，非概率性）。统一约定修复：
+ * 快照永不含将被重发的末尾 user 记录。假 agent 在 load_session 时回显
+ * token("LOADED:<消息数>:<末尾role>")，据此断言。
+ */
+void DAAgentModuleTest::testColdStartSnapshotExcludesTrailingUser()
+{
+    QScopedPointer<DA::DAAgentModule> module(makeModule());
+    QSignalSpy doneSpy(module.data(), &DA::DAAgentInterface::agentDone);
+    QSignalSpy tokenSpy(module.data(), &DA::DAAgentInterface::agentToken);
+
+    // 第一轮：user(m1) + assistant(echo:m1) 落盘
+    const QString sidA = module->createSession();
+    QVERIFY(!sidA.isEmpty());
+    module->sendMessage(QStringLiteral("m1"));
+    QVERIFY(doneSpy.wait(30000));
+
+    // 停掉进程再发消息：sendMessage 防御分支退役死桥并冷启动新桥
+    //（与"切离桥退役后切回再发"“Stop/崩溃后重建再发"同为必然触发场景）
+    module->stop();
+
+    // 冷启动发 m2：快照 = [user(m1), ai(echo)]（剔除刚落盘的 user(m2)）
+    module->sendMessage(QStringLiteral("m2"));
+    QVERIFY(tokenSpy.wait(30000));
+    // 修复前为 "LOADED:3:human"（快照含 m2，user_msg 再注入一遍 → 上下文重复提问）
+    QCOMPARE(tokenSpy.at(0).at(0).toString(), QStringLiteral("LOADED:2:ai"));
 
     module->shutdown();
 }

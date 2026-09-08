@@ -187,7 +187,10 @@ private:
     // 绑定会话：注册映射 + 连接全部信号路由（持久化写桥所属会话、UI 仅活跃会话）
     void attachBridge(DAAgentBridge* bridge, const QString& sessionId);
     // 确保会话有桥：优先接管预热空闲桥，否则冷启动；历史非空时管道序下发 load_session
-    DAAgentBridge* adoptOrStartBridge(const QString& sessionId);
+    //（excludeTrailingUser：快照剔除末尾待重发 user 记录，问题10 统一约定）
+    DAAgentBridge* adoptOrStartBridge(const QString& sessionId, bool excludeTrailingUser = false);
+    // 读取 load_session 历史快照（统一约定：永不含将被重发的末尾 user 记录）
+    QJsonArray readSessionSnapshotForLoad(const QString& sessionId, bool excludeTrailingUser) const;
     // 优雅退役：断开路由、清缓存、requestStop + processExited 后 deleteLater
     void retireBridge(const QString& sessionId);
     // 查会话桥（无返回 nullptr）

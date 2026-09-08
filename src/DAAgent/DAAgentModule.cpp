@@ -435,7 +435,9 @@ void DAAgentModule::sendMessage(const QString& text)
         bridge = nullptr;
     }
     if (!bridge) {
-        bridge = adoptOrStartBridge(sid);  // 失败时已报错并返回 nullptr
+        // excludeTrailingUser=true（审计问题 10）：上方已先落盘本轮 user 记录，
+        // 快照剔除它，由随后的 bridge->sendMessage 唯一注入（防重复提问）
+        bridge = adoptOrStartBridge(sid, /*excludeTrailingUser=*/true);  // 失败时已报错并返回 nullptr
         if (!bridge) return;
     }
     bridge->sendMessage(text);
@@ -600,14 +602,40 @@ DAAgentBridge* DAAgentModule::createBridgeForSession(const QString& sessionId)
 }
 
 /**
+ * @brief 读取会话历史快照供 load_session 重建 state（统一约定入口，审计问题 10）
+ * @param sessionId 会话 ID
+ * @param excludeTrailingUser 是否剔除末尾未回答的 user 记录
+ * @return 消息数组（readMessagesForLoad 三类：user/assistant/tool_result）
+ *
+ * 统一约定：**load_session 快照永不含将被 user_msg/resendLastMessage 重发的
+ * 那条末尾 user 记录**——发送方已先落盘 user 记录（桥启动失败时记录保留的
+ * 有意设计），快照若含它则 LLM 上下文中当前提问出现两遍（每轮冷启动多耗
+ * 一份 token、模型可能产生"如前所述"类混乱回复、压缩与 token 统计被污染）。
+ * 崩溃恢复路径同理：turn 中崩溃时 JSONL 末尾正是待重发的 user 记录。
+ */
+QJsonArray DAAgentModule::readSessionSnapshotForLoad(const QString& sessionId, bool excludeTrailingUser) const
+{
+    DA_DC(d);
+    QJsonArray msgs = d->mSessionStore->readMessagesForLoad(sessionId);
+    if (excludeTrailingUser && !msgs.isEmpty()
+        && msgs.last().toObject().value("role").toString() == QLatin1String("human")) {
+        msgs.removeLast();
+    }
+    return msgs;
+}
+
+/**
  * @brief 确保会话有桥：优先接管预热空闲桥，否则冷启动新桥；历史非空时管道序下发 load_session
  *
  * stdin 管道序保证 init → load_session → user_msg 依序被 Python 主循环消费
  * （agent_runner.py 主循环 await 逐条处理，结构性满足铁律 T15 时序）。
  * @param sessionId 目标会话 ID
+ * @param excludeTrailingUser 快照剔除末尾待重发 user 记录（sendMessage 冷启动
+ * 路径传 true；switchSession 温暖化接管不重发，传 false 保留完整历史，L2：
+ * 判定随快照非空自然覆盖"历史恰好 1 条"场景）
  * @return 会话桥；启动失败返回 nullptr（已报错）
  */
-DAAgentBridge* DAAgentModule::adoptOrStartBridge(const QString& sessionId)
+DAAgentBridge* DAAgentModule::adoptOrStartBridge(const QString& sessionId, bool excludeTrailingUser)
 {
     DA_D(d);
     if (DAAgentBridge* existing = d->mSessionBridges.value(sessionId)) {
@@ -641,10 +669,13 @@ DAAgentBridge* DAAgentModule::adoptOrStartBridge(const QString& sessionId)
         bridge = createBridgeForSession(sessionId);
         if (!bridge) return nullptr;
     }
-    // 历史非空（本轮 user 记录已计入 messageCount > 1）→ 先下发历史重建 state，
-    // 随后调用方的 user_msg 在 stdin 管道中排在 load_session 之后
-    if (d->mSessionStore->messageCount(sessionId) > 1) {
-        bridge->sendLoadSession(sessionId, d->mSessionStore->readMessagesForLoad(sessionId));
+    // 快照非空 → 先下发历史重建 state，随后调用方的 user_msg 在 stdin 管道中
+    // 排在 load_session 之后。判定用快照本身而非 messageCount > 1（审计 L2：
+    // 旧判定在温暖化接管历史恰好 1 条时不发 load_session，该条历史丢失出
+    // 上下文；快照非空判定与问题 10 的剔除逻辑统一后自然消除）
+    const QJsonArray snapshot = readSessionSnapshotForLoad(sessionId, excludeTrailingUser);
+    if (!snapshot.isEmpty()) {
+        bridge->sendLoadSession(sessionId, snapshot);
     }
     return bridge;
 }
@@ -891,8 +922,12 @@ void DAAgentModule::attachBridge(DAAgentBridge* bridge, const QString& sessionId
             const QString lastSid = bridge->lastSessionId();
             if (!lastSid.isEmpty()) {
                 // 有会话——下发 load_session 重建 state（session_loaded 到达后
-                // agentSessionLoaded lambda 判 isRecovering 重发最后消息）
-                bridge->sendLoadSession(lastSid, d->mSessionStore->readMessagesForLoad(lastSid));
+                // agentSessionLoaded lambda 判 isRecovering 重发最后消息）。
+                // excludeTrailingUser=true（审计问题 10 统一约定）：turn 中崩溃时
+                // JSONL 末尾正是将被 resendLastMessage 重发的 user 记录，快照含它
+                // 则恢复后的上下文重复注入；turn 完成后崩溃时 mLastUserMessage
+                // 已被 done 清除（问题 11），末尾非 user，剔除为 no-op
+                bridge->sendLoadSession(lastSid, readSessionSnapshotForLoad(lastSid, /*excludeTrailingUser=*/true));
             } else {
                 // 无会话——直接重发最后消息（内部复位 m_recovering）
                 bridge->resendLastMessage();
