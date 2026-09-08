@@ -227,6 +227,11 @@ void DAAgentBridge::startAgent(const QJsonObject& llmConfig,
         if (d->mRunning) {
             emit agentError(tr("Agent subprocess not ready within %1 ms, initialization may have failed, check logs")
                                 .arg(d->mReadyTimeoutMs));  //cn:Agent 子进程启动后 %1 毫秒内未就绪，初始化可能失败，请查看日志排查
+            // ready 超时的典型原因是环境性失败（Python 依赖损坏/langchain 导入
+            // 失败），重启必然再次超时——置用户停止标志使 onProcessFinished 走
+            // wasUserStop 分支（审计问题 20）：不进 3 轮崩溃自愈循环（最长
+            // 4×readyTimeout 无意义等待 + 5 条错误轰炸），直接终态报错。
+            d->mUserRequestedStop = true;
             if (d->mProcess && d->mProcess->state() != QProcess::NotRunning) {
                 d->mProcess->kill();
             }

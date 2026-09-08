@@ -11,6 +11,7 @@
 //   init-error    : 发 error(init_failed) 后立即退出（模拟 init 失败 main() return）
 //   runtime-error : ready 后第一条 user_msg 回 error(quota_exhausted)+done 但进程
 //                   保持存活；第二条 user_msg 正常回 token+done（验证写通道未关）
+//   never-ready   : 永不发 ready/booting（模拟环境性失败，验证 ready 超时路径）
 
 #include <QtTest/QtTest>
 #include <QCoreApplication>
@@ -48,6 +49,20 @@ int fakeAgentMain(const QByteArray& scenario)
     if (scenario == "init-error") {
         // init 阶段失败：发 error 后 main() 提前 return（进程 exit 0）
         fakeEmit(out, {{ "type", "error" }, { "message", "config missing" }, { "error_type", "init_failed" }});
+        return 0;
+    }
+    if (scenario == "never-ready") {
+        // 环境性失败：永不发 ready/booting 心跳，只读 stdin 直到被 kill / EOF / stop
+        while (true) {
+            const QByteArray line = in.readLine();
+            if (line.isEmpty()) {
+                break;
+            }
+            const QJsonDocument doc = QJsonDocument::fromJson(line.trimmed());
+            if (doc.isObject() && doc.object().value("type").toString() == QLatin1String("stop")) {
+                break;
+            }
+        }
         return 0;
     }
     if (scenario == "runtime-error") {
@@ -123,6 +138,7 @@ private:
 private Q_SLOTS:
     void testInitErrorClosesChannelAndExits();  // 问题9：init 阶段错误 → 关写通道、正常退出、无崩溃自愈
     void testRuntimeErrorKeepsProcessAlive();   // 问题9：运行期错误 → 不关写通道、进程存活可继续对话
+    void testReadyTimeoutNoCrashRecoveryLoop(); // 问题20：ready 超时 kill → 不进崩溃自愈循环
 };
 
 void DAAgentBridgeTest::startWithScenario(DA::DAAgentBridge& bridge, const char* scenario, int readyTimeoutMs)
@@ -197,6 +213,32 @@ void DAAgentBridgeTest::testRuntimeErrorKeepsProcessAlive()
     const int busyCountBefore = busySpy.count();
     QTRY_VERIFY_WITH_TIMEOUT(busySpy.count() > busyCountBefore, 15000);
     QCOMPARE(busySpy.last().at(0).toBool(), false);
+}
+
+/**
+ * 问题20：ready 超时属环境性失败（重启必然再次超时），kill 前置用户停止
+ * 标志走"非崩溃"退出分支——只报 1 条错误直接终态，不进 3 轮自愈循环
+ * （修复前：最长 4×readyTimeout 等待 + not-ready/crash_recovery/exhausted
+ * 共 5 条错误轰炸，且终态落入 starting 残留）。
+ */
+void DAAgentBridgeTest::testReadyTimeoutNoCrashRecoveryLoop()
+{
+    DA::DAAgentBridge bridge;
+    QSignalSpy errSpy(&bridge, &DA::DAAgentBridge::agentError);
+    QSignalSpy busySpy(&bridge, &DA::DAAgentBridge::agentBusy);
+    // ready 超时压到 1s，快速触发超时路径
+    startWithScenario(bridge, "never-ready", 1000);
+
+    QVERIFY(waitForCount(errSpy, 1));
+    QVERIFY(errSpy.at(0).at(0).toString().contains(QStringLiteral("not ready")));
+
+    // kill → onProcessFinished 走用户停止分支 → busy(false) 兜底复位 UI
+    QVERIFY(waitForCount(busySpy, 1));
+    QCOMPARE(busySpy.last().at(0).toBool(), false);
+
+    // 自愈循环会在 1s 后重启并再次超时报错——等 3s 确认全程只有 1 条错误
+    QTest::qWait(3000);
+    QCOMPARE(errSpy.count(), 1);
 }
 
 int main(int argc, char* argv[])
