@@ -384,8 +384,11 @@ class SubagentOrchestrator:
         agent 自行纠错；单任务失败映射为对应状态（失败不传染，Q11）。
         """
         runner = self._runner
-        batch_limit = self._cfg_int("subagent_batch_limit", 4)
-        concurrency = self._cfg_int("subagent_max_concurrency", 2)
+        # 缺省保守 2/1（审计问题 27 短期动作，与 C++ DAAgentLLMConfig 默认对齐）：
+        # 并发会话下 N 进程 × M 子 agent 对同一 LLM 供应商无跨进程配额协调，
+        # 缺省收敛降低放大效应；配置显式下发时以配置为准（上限 4/2）
+        batch_limit = self._cfg_int("subagent_batch_limit", 2)
+        concurrency = self._cfg_int("subagent_max_concurrency", 1)
         timeout_sec = float(self._cfg_int("subagent_timeout_sec", 600))
         # 子图步数上限：≤0（ini 配置 -1）视为无限制（None 传入 langgraph；
         # 显式 -1/0 会被 langgraph ValueError 拒绝，见 agent_runner 的守卫）

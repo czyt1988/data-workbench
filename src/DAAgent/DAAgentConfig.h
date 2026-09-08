@@ -122,15 +122,18 @@ public:
     bool subagentRecursionLimitSet() const { return mSubagentRecursionLimit.has_value(); }
     void setSubagentRecursionLimit(int v) { mSubagentRecursionLimit = std::max(1, v); }
 
-    // 内部键：可调低不可调高（上限 2/4）
+    // 内部键：可调低不可调高（上限 2/4）。默认保守 1/2（审计问题 27 短期动作）：
+    // 并发会话下 N 进程 × 每进程 M 子 agent = 同一 LLM 供应商 N×M 路并发请求，
+    // 无跨进程配额协调（仅 retry_wrapper 退避兜底 429）——默认收敛到每进程
+    // 1 并发/单批 2 任务，用户可显式调回上限
     int subagentMaxConcurrency() const
     {
-        return std::min(2, std::max(1, mSubagentMaxConcurrency.value_or(2)));
+        return std::min(2, std::max(1, mSubagentMaxConcurrency.value_or(1)));
     }
     bool subagentMaxConcurrencySet() const { return mSubagentMaxConcurrency.has_value(); }
     void setSubagentMaxConcurrency(int v) { mSubagentMaxConcurrency = std::min(2, std::max(1, v)); }
 
-    int subagentBatchLimit() const { return std::min(4, std::max(1, mSubagentBatchLimit.value_or(4))); }
+    int subagentBatchLimit() const { return std::min(4, std::max(1, mSubagentBatchLimit.value_or(2))); }
     bool subagentBatchLimitSet() const { return mSubagentBatchLimit.has_value(); }
     void setSubagentBatchLimit(int v) { mSubagentBatchLimit = std::min(4, std::max(1, v)); }
 

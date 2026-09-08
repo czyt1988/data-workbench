@@ -136,8 +136,8 @@ void DAAgentConfigTest::testDefaultsAndEmptyLoad()
     QCOMPARE(c.autoPrestart(), true);
     QCOMPARE(c.subagentTimeoutSec(), 600);
     QCOMPARE(c.subagentRecursionLimit(), 60);
-    QCOMPARE(c.subagentMaxConcurrency(), 2);
-    QCOMPARE(c.subagentBatchLimit(), 4);
+    QCOMPARE(c.subagentMaxConcurrency(), 1);  // 问题27：默认保守（上限仍 2，可显式调高）
+    QCOMPARE(c.subagentBatchLimit(), 2);      // 问题27：默认保守（上限仍 4）
     QVERIFY(c.isEmpty());
     // 稀疏空配置不落盘（首次 save 才生成文件）
     QVERIFY(!QFile::exists(DAAgentConfig::configFilePath()));

@@ -396,9 +396,9 @@ void DAAgentConfig::PrivateData::applyIni(const QString& iniPath)
     if (s.contains(p + "subagent_recursion_limit"))
         mLlm.setSubagentRecursionLimit(s.value(p + "subagent_recursion_limit", 60).toInt());
     if (s.contains(p + "subagent_max_concurrency"))
-        mLlm.setSubagentMaxConcurrency(s.value(p + "subagent_max_concurrency", 2).toInt());
+        mLlm.setSubagentMaxConcurrency(s.value(p + "subagent_max_concurrency", 1).toInt());
     if (s.contains(p + "subagent_batch_limit"))
-        mLlm.setSubagentBatchLimit(s.value(p + "subagent_batch_limit", 4).toInt());
+        mLlm.setSubagentBatchLimit(s.value(p + "subagent_batch_limit", 2).toInt());
     // ---- permission ----
     if (s.contains(p + "permission_mode"))
         mPermissionMode = s.value(p + "permission_mode").toString();
