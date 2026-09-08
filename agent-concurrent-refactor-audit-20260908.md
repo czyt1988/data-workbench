@@ -4,10 +4,10 @@
 - **审计对象**：commit `e1053d1`（refactor(agent): DAAgentModule 会话化桥管理，支持多子进程并发会话，2026-09-05），并扩展至 **agent 功能全链路**（Bridge 协议/生命周期、Module 编排、Dock/WebChannel/chat.js UI 层、Python agent_runner、权限层、会话存储）
 - **审计范围**：`src/DAAgent/DAAgentModule.cpp/.h` 重构前后全量对照（旧版 1693 行 → 新版 2104 行）；`DAAgentBridge.cpp/.h`（1184 行）；`DAAgentDockWidget.cpp`（993 行）；`DAAgentWebChannel.cpp`（555 行）；`chat.js`（1904 行）；`agent_runner.py` 及 agent Python 包；`DAAgentPermissionManager`；`DAAgentSessionStore`；`DAAppController` 接线；`plugins/DAAgentTools` 工具执行层
 - **状态标记**：✅ 已修复 ｜ 🔴 待修复 ｜ 🟡 待拍板（设计决策） ｜ ⚪ 次要缺口（可不修）
-- **整改状态**：2026-09-08 全部 6 项决策点已拍板完毕；用户决定**暂不启动整改**，本报告存档，作为后续整改排期的依据
+- **整改状态**：2026-09-08 全部 6 项决策点拍板完毕；**同日启动并完成全量整改**——编号问题 1–29（按拍板方案）+ L1–L19 全部低严重度项 + 测试补齐，共 49 个 commit（一个问题一提交），问题→commit 映射见附录 C。仅两项审计明示的中长期方向未实施（问题 27 全局配额协调器、问题 12 方案 b 工具异步化），均已文档化记录
 - **来源标记**（深度复核新增）：【e1053d1 回归】重构直接引入 ｜【并发放大】历史缺陷被多会话并发新暴露 ｜【历史缺陷】重构前即存在 ｜【修复引入】修复旧缺陷时引入的新缺陷
 
-> **复核结论速览**：初版报告的 8 个问题经逐条对照代码**全部属实**（问题 1/2/3/5 另有影响面补充）。深度复核另发现 **8 个高严重度**（问题 9–16）、**13 个中严重度**（问题 17–29）新缺陷与一批低严重度缺口（§ 七），并整理出 **6 个决策点**（§ 九）——**已于 2026-09-08 全部经用户拍板**（权限记忆=方案 b 按会话隔离、工具执行模型=方案 c 队列+取消语义、run_code 隔离=方案 c 只隔离变量表、错误持久化=方案 b 落盘 JSONL、开工程处置=方案 c 保持运行+提示条、导出范围=全部工程绑定会话）。**整改暂不启动，本报告存档备查**。其中问题 9（运行期错误即杀死子进程）、10（冷启动重复注入用户消息）、12（工具执行无取消语义 + 跨会话超时误报）、13（run_code 跨会话共享命名空间）、14/15（Dock busy 守卫漏洞）为最高优先级。
+> **复核结论速览**：初版报告的 8 个问题经逐条对照代码**全部属实**（问题 1/2/3/5 另有影响面补充）。深度复核另发现 **8 个高严重度**（问题 9–16）、**13 个中严重度**（问题 17–29）新缺陷与一批低严重度缺口（§ 七），并整理出 **6 个决策点**（§ 九）——**已于 2026-09-08 全部经用户拍板**（权限记忆=方案 b 按会话隔离、工具执行模型=方案 c 队列+取消语义、run_code 隔离=方案 c 只隔离变量表、错误持久化=方案 b 落盘 JSONL、开工程处置=方案 c 保持运行+提示条、导出范围=全部工程绑定会话）。**同日全量整改完成**（见附录 C 问题→commit 映射）：全部 🔴 编号问题按拍板方案落地、L1–L19 全部修复、按审计 §十 建议补齐测试（新建 DAAgentBridgeTest 假 Python 协议级基建 16 用例 + DAAgentModuleTest 假 agent 编排级基建 23 用例，改造 PermissionManagerTest 按会话断言，harness 转换器同步镜像），每 commit 可编译、每批次全量构建 + 全部测试通过（整改后 103 个 agent 测试全绿）。其中问题 9（运行期错误即杀死子进程）、10（冷启动重复注入用户消息）、12（工具执行无取消语义 + 跨会话超时误报）、13（run_code 跨会话共享命名空间）、14/15（Dock busy 守卫漏洞）为最高优先级，均已修复。
 
 ---
 
@@ -536,3 +536,69 @@ flowchart LR
 - **e1053d1 直接引入/遗漏**（重构验收范围）：0✅、1、2、3、4、5、6、8、10、14、17、18、24(路由表)、28b、L1、L2、L14、L19
 - **并发放大**（历史缺陷被多会话新暴露）：12、13、25、26、27、L7②、L18
 - **纯历史缺陷**（重构前即存在，借本次深扫暴露）：9、11、15、16、19、20、21、22、23、28a、29、L3–L6、L8–L13、L15–L17
+
+## 附录 C：整改完成记录（2026-09-08，全量整改）
+
+> 正文各表"状态"列为存档时点状态（🔴 待修复）；**整改结果以本附录为准**——全部编号问题与 L 项已于 2026-09-08 修复完毕，一个问题一个 commit（dev 分支，基线 `8bfaebf` 之后）。仅两项审计明示的中长期方向未实施：问题 27 的全局配额协调器（已做短期动作并文档化）、问题 12 的方案 b 工具异步化（按拍板只落方案 c）。
+
+### C.1 问题 → commit 映射
+
+| 问题 | Commit | 说明 |
+|------|--------|------|
+| 问题9 | `112097d` | error 分支区分 init/运行期，仅 init 关写通道；新建 DAAgentBridgeTest 假 Python 协议级测试基建 |
+| 问题20 | `339b6c8` | ready 超时 kill 前置用户停止标志，不进自愈循环 |
+| 问题21 | `387f214` | waitForStarted 失败补终止语义（busy(false)+processExited+复位） |
+| 问题22 | `0ab1f82` | reconfigureAgent 同步 mSavedLlmConfig |
+| 问题23 | `e324733` | writeJson 失败回滚 busy/看门狗 + 明确错误；调用方检查返回值 |
+| 问题11 | `6fa744e` | done 分支清 mLastUserMessage |
+| 问题15 | `b4159b9` | Bridge ready 后按 mTurnActive 重断言 busy(true)；Dock onAgentReady 不再强制清 busy |
+| 问题4 | `eccb647` | shutdown 范围迭代 std::as_const |
+| L7 | `6fd834a` | stopAgent 拆两阶段（begin/await）并行排空；startAgent 复位 mStopped；快照迭代防重入 |
+| L3 | `95c67fd` | kill 定时器 deleteLater + 二次 requestStop 重建兜底 |
+| L4 | `b7ca706` | 恢复定时器持句柄，requestStop 可取消；Module stop 守卫放行 isRecovering |
+| L5 | `7f04767` | 删除死信号 sessionRestoreRequested 与死连接 |
+| L6 | `006a6f5` | 协议解析日志改 qWarning 英文；stdout 缓冲 10MB 上限 |
+| L19 | `464bdcb` | Bridge.h 契约化崩溃恢复宿主职责 |
+| 问题2 | `7ee4da2` | busy(false) 兜底清 mSessionStarting；新建 DAAgentModuleTest 假 agent 编排级基建 |
+| 问题6 | `8451940` | busy(false) 同样刷新角标 |
+| 问题14 | `545a1b3` | newSession 状态重断言（reassertActiveSessionState 提取共用）+ Dock onSessionCreated/Cleared 复位 busy |
+| 问题16 | `3fe0511` | deleteSession 补发 sessionCleared + token 复位 |
+| 问题17 | `99a0c22` | 新增 agentQuestionDismissed 全链契约；processExited/stop/retire 清问题缓存；切回重发校验桥存活 |
+| 问题1 | `58407fc` | agentError/stop 清配对 FIFO（与 17 撤卡联动，三处同批） |
+| 问题24 | `6ac9d5d` | callId 碰撞检测告警（C++ 路由表 + Python _pending_rpcs） |
+| 问题10 | `2f06520` | load_session 快照统一约定（readSessionSnapshotForLoad 剔除末尾待重发 user）；判定改快照非空（L2 同批消除） |
+| L2 | `fb35e4c` | 温暖化接管历史恰好 1 条的验证用例（代码修复随问题10） |
+| L1 | `1d641fb` | step6 预热桥 isRunning 守卫 + prestart 失败清理兜底 |
+| L8 | `6112cfd` | stop() 空转回发 busy(false)；Dock onStopClicked 加守卫 |
+| 问题3 | `8093067` | 决策点 4 方案 b：error 记录落盘 JSONL + 重放渲染 + retireBridge 不清 error 角标 |
+| 问题8 | `5a00394` | 后台重试条/话说一半提醒缓存-切回重发；incomplete 豁免退役 |
+| L12 | `0725c5b` | loadHistory 空 id 跳过配对并告警 |
+| L13 | `afb91d5` | WebChannel 链式 arg 改多参重载 |
+| L17 | `afba285` | 原子写 tmp 名加进程号+随机短码 |
+| 问题5 | `839683d` | 决策点 1 方案 b：会话记忆 sessionId 分桶；Bridge mSessionId；PermissionManagerTest 改造 |
+| 问题25 | `90a8050` | 会话上下文 setSessionContext；变量/路径按会话解析；判官 workspace_root 按会话下发 |
+| L18 | `acd39a4` | stderr 日志加会话短码 |
+| 问题12 | `7e51463` | 决策点 2 方案 c：DAAgentToolExecutor 全局队列 + 取消语义 + tool_exec_queued 上报 + Python 超时两段式 + 迟到结果不落盘（tool_result_rejected 观测） |
+| 问题26 | `d0bb6e2` | 判定载荷 content_hash + RunScript 执行前校验（TOCTOU 闭环） |
+| 问题27 | `e2be9dd` | 短期动作：默认并发 1/2 + AGENTS.md 记录放大效应与中期方向 |
+| 问题13 | `aec8df4` | 决策点 3 方案 c：DAPyScriptRunner 变量表按会话分桶 + RAII 上下文守卫；默认表兼容工作流调用方 |
+| 问题19 | `e835a59` | update_tools 协议消息（镜像 update_subagents），规格热更新到 Python/LLM |
+| 问题28 | `f5c84dd` | 28a dispatch 卡暂存跨关组不再误标 incomplete；28b Module 进度缓存-切回重发 + chat.js 惰性重建 |
+| 问题7 | `2de7172` | loadHistory 末尾未配对 tool_call flush 为 running 卡；重放收尾条件关组；harness 转换器同步 |
+| 问题29 | `8d091a1` | tool_result 展示截断（50K）+ loadHistoryPart 分片传输（≤2MB/片）+ callJS try/catch 回调可观测 |
+| L9 | `8399566` | 问题卡提交 chatBridge 守卫 + 行内失败提示 |
+| L10 | `9d49da7` | 重放问题卡标签走 i18n（questionSubmit 等）；&& 助记符剥离 |
+| L11 | `2d588a0` | mapErrorMessage 透传 Bridge 原文真实进度；exhausted 族去虚假计数 |
+| L14 | `d96a59a` | 接口 stopSession + 对话框右键"停止"全链 |
+| 问题18 | `d5570cc` | newSession 切离退役（retireIdleSessionBridge 共用）；决策点 5 方案 c：开工程保持运行 + 提示条 + 全部工程视图 |
+| L15 | `20facd5` | 决策点 6：导出全部工程绑定会话 + 数量/体积上限裁剪 |
+| L16 | `22ce667` | 文档化 Dock 不消费 agentDone/agentTurnPossiblyIncomplete 的决定 |
+| 文档收尾 | （本 commit） | AGENTS.md 协议/T16/T17/§六/§十六 同步整改后语义；审计报告状态更新 |
+
+### C.2 验证记录
+
+- 每 commit：受影响模块编译通过（scripts/build.ps1，VS 生成器）；
+- 每批次收尾：全量构建 + 全部 DAAgent 测试套件通过；
+- 整改后测试规模：DAAgentBridgeTest 16 用例（新建，假 Python 剧本 12 个）、DAAgentModuleTest 23 用例（新建，假 agent 剧本 + arm 指令时序构造）、DAAgentPermissionManagerTest 12 用例（按会话隔离改造 + 新增跨会话/工程切换用例）、DAAgentSessionStoreTest 14 用例（新增 error 记录 round-trip）、DAAgentConfigTest 19、DAAgentSubagentManagerTest 10、DAAgentToolSpecTest 9——共 103 用例全绿；
+- tools/perf harness 转换器与 C++ 合并逻辑同步镜像（error 透传/L12 防御/running flush），node 冒烟验证；
+- 未自动化覆盖项（依赖 GUI/嵌入式解释器/工程接口，列入手测清单）：问题 15/28a/29 的 web 渲染表现、问题 13 的两会话并发 run_code 变量隔离端到端、问题 26 的工具侧哈希比对（Bridge 注入半环已自动化）、决策点 5 提示条/全部工程视图交互。
