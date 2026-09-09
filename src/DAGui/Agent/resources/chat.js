@@ -113,6 +113,29 @@ function initMarkdown() {
     setupMathRules(md);
 }
 
+// da-figure: 链接修复（预处理）：Markdown 链接语法 (da-figure:Chart - col1)
+// 在目标含空格时解析失败，整条链接退化为纯文本（agent 未用尖括号包裹时）。
+// 渲染前把含空格的目标补上尖括号使其可解析；代码块/行内代码先占位保护，
+// 其中的伪链接文本不受影响。
+function fixDaFigureLinks(text) {
+    var saved = [];
+    var t = text.replace(/(```[\s\S]*?```|`[^`\n]*`)/g, function(m) {
+        saved.push(m);
+        return '\x00DAFIX' + (saved.length - 1) + '\x00';
+    });
+    t = t.replace(/\]\((da-figure:[^)\n]*[ \t][^)\n]*)\)/gi, function(_, url) {
+        return '](<' + url + '>)';
+    });
+    return t.replace(/\x00DAFIX(\d+)\x00/g, function(_, i) {
+        return saved[+i];
+    });
+}
+
+// 统一渲染入口：先修复 da-figure: 链接再渲染
+function renderMarkdown(text) {
+    return md.render(fixDaFigureLinks(text));
+}
+
 // —— KaTeX 数学公式渲染（与 MarkdownView/resources/markdown.js 保持一致）——
 // 识别 $...$（行内）与 $$...$$（独立成行）两类 LaTeX 公式，经 katex.renderToString
 // 输出 HTML。$ 内侧紧邻非空白字符，避免 "$10 与 $20" 之类的货币误判。
@@ -372,7 +395,7 @@ function flushAgentMessage() {
     }
     if (!currentAgentMsg) return;
     if (currentAgentMsg.dataset.rawText) {
-        currentAgentMsg.innerHTML = md.render(currentAgentMsg.dataset.rawText);
+        currentAgentMsg.innerHTML = renderMarkdown(currentAgentMsg.dataset.rawText);
     } else {
         // 空气泡（agent 在工具调用前未输出任何文本）——移除避免留白
         currentAgentMsg.remove();
@@ -679,7 +702,7 @@ function appendUserMessage(text) {
     closeToolGroup();
     let bubble = createMessageBubble('user');
     bubble.dataset.rawText = text;
-    bubble.innerHTML = md.render(text);
+    bubble.innerHTML = renderMarkdown(text);
     getRenderTarget().appendChild(bubble);
     scrollToBottom();
 }
@@ -702,7 +725,7 @@ function appendToken(text) {
     if (renderTimer) clearTimeout(renderTimer);
     renderTimer = setTimeout(function() {
         if (currentAgentMsg) {
-            currentAgentMsg.innerHTML = md.render(currentAgentMsg.dataset.rawText);
+            currentAgentMsg.innerHTML = renderMarkdown(currentAgentMsg.dataset.rawText);
             scrollToBottom();
         }
         renderTimer = null;
@@ -724,7 +747,7 @@ function finalizeAgentMessage(fullText) {
     if (currentAgentMsg) {
         if (trimmed) {
             currentAgentMsg.dataset.rawText = fullText;
-            currentAgentMsg.innerHTML = md.render(fullText);
+            currentAgentMsg.innerHTML = renderMarkdown(fullText);
         } else {
             // 空回复——移除遗留的空气泡，避免留白
             currentAgentMsg.remove();
@@ -733,7 +756,7 @@ function finalizeAgentMessage(fullText) {
     } else if (trimmed) {
         // 防御：无打开的气泡但有内容时创建一个（正常路径不会走到，token 已先行创建）
         let bubble = createMessageBubble('agent');
-        bubble.innerHTML = md.render(fullText);
+        bubble.innerHTML = renderMarkdown(fullText);
         document.getElementById('messages').appendChild(bubble);
     }
     scrollToBottom();
@@ -1642,7 +1665,7 @@ function renderHistoryEvents(evs) {
             closeToolGroup();
             const bubble = createMessageBubble('agent');
             bubble.dataset.rawText = content;
-            bubble.innerHTML = md.render(content);
+            bubble.innerHTML = renderMarkdown(content);
             getRenderTarget().appendChild(bubble);  // ← 必须挂到 DOM
         } else if (t === 'tool') {
             // MAJOR2: 读合并后字段 toolName/args/result（C++ 已配对）

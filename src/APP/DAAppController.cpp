@@ -17,6 +17,7 @@
 #include <QItemSelectionModel>
 #include <QAbstractItemModel>
 #include <QClipboard>
+#include <QUrl>
 // qwt
 #include "qwt_figure.h"
 #include "qwt_plot_series_data_picker.h"
@@ -2252,6 +2253,10 @@ void DAAppController::onActionAddFigureTriggered()
  * 支持两种格式：
  *   - da-figure:&lt;figure_name&gt;  按 tab 文本定位（agent 默认，简单）
  *   - da-figure:id=&lt;uuid&gt;       按 figure_id 精确定位（抗重名/改名）
+ *
+ * href 来自浏览器 DOM：markdown-it 渲染时会对非 ASCII 与特殊字符做百分号
+ * 编码（中文/空格名 → %E5%9B%BE1，UUID 花括号 → %7B...%7D），且 figure_id
+ * 本身带 QUuid 花括号，这里先解码再归一化花括号，保证与原始名称可匹配。
  * @param href 超链接 href
  */
 void DAAppController::onFigureLinkRequested(const QString& href)
@@ -2262,27 +2267,39 @@ void DAAppController::onFigureLinkRequested(const QString& href)
         return;
     }
     QString payload = href.mid(kPrefix.length());
+    // markdown-it normalizeLink 的百分号编码还原（中文/空格 figure 名等）
+    payload = QUrl::fromPercentEncoding(payload.toUtf8());
+    const bool isIdForm = payload.startsWith(QStringLiteral("id="), Qt::CaseInsensitive);
+    QString idOrName = isIdForm ? payload.mid(3) : payload;
+    // QUuid::toString() 生成带花括号的 {xxx}，agent 引用时可能写裸 UUID：
+    // id 形式双向归一化（先试裸形式再试花括号形式）
+    if (isIdForm && idOrName.startsWith('{') && idOrName.endsWith('}')) {
+        idOrName = idOrName.mid(1, idOrName.length() - 2);
+    }
     DAAppChartOperateWidget* chartopt = getChartOperateWidget();
     if (!chartopt) {
         qWarning() << "[FigureLink] chart operate widget is null";
         return;
     }
     DAFigureWidget* fig = nullptr;
-    if (payload.startsWith(QStringLiteral("id="), Qt::CaseInsensitive)) {
-        // 精确格式：da-figure:id=<uuid>
-        fig = chartopt->findFigure(payload.mid(3));
-    } else if (!payload.isEmpty()) {
+    if (isIdForm) {
+        // 精确格式：da-figure:id=<uuid>（先裸 UUID，再带花括号兜底）
+        fig = chartopt->findFigure(idOrName);
+        if (!fig && !idOrName.isEmpty()) {
+            fig = chartopt->findFigure(QStringLiteral("{%1}").arg(idOrName));
+        }
+    } else if (!idOrName.isEmpty()) {
         // 简单格式：da-figure:<figure_name>，按 tab 文本遍历匹配
         const QList< DAFigureWidget* > figs = chartopt->getFigureList();
         for (DAFigureWidget* f : figs) {
-            if (chartopt->getFigureName(f) == payload) {
+            if (chartopt->getFigureName(f) == idOrName) {
                 fig = f;
                 break;
             }
         }
     }
     if (!fig) {
-        daWarning << tr("Figure '%1' not found, it may have been closed or renamed").arg(payload);  // cn:未找到绘图"%1"，可能已关闭或被重命名
+        daWarning << tr("Figure '%1' not found, it may have been closed or renamed").arg(idOrName);  // cn:未找到绘图"%1"，可能已关闭或被重命名
         return;
     }
     mDock->raiseDockingArea(DAAppDockingArea::DockingAreaChartOperate);

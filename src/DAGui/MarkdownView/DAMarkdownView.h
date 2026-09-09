@@ -8,6 +8,7 @@
 
 class QMenu;
 class QAction;
+class QContextMenuEvent;
 
 namespace DA
 {
@@ -26,6 +27,8 @@ Q_SIGNALS:
 
 protected:
     bool acceptNavigationRequest(const QUrl& url, NavigationType type, bool isMainFrame) override;
+    // 新窗口导航（target=_blank/中键）中转为系统浏览器打开
+    QWebEnginePage* createWindow(WebWindowType type) override;
 };
 
 // 通用 Markdown 渲染显示控件，基于 QWebEngineView + markdown-it + highlight.js
@@ -59,8 +62,10 @@ Q_SIGNALS:
     void linkClicked(const QUrl& url);
 
 protected:
-    // 拦截 QWebEngineView 默认右键菜单，改用自定义菜单
-    bool eventFilter(QObject* watched, QEvent* event) override;
+    // webview 设为 NoContextMenu 后，右键事件传播到本容器，此处弹出自定义菜单
+    //（WebEngine 的默认菜单由 Chromium 异步回调直接触发 contextMenuEvent，
+    // 事件过滤器拦不到，必须经 contextMenuPolicy(NoContextMenu) 关闭）
+    void contextMenuEvent(QContextMenuEvent* event) override;
 
 private:
     void setupUI();

@@ -1,6 +1,7 @@
 #include "DAMarkdownView.h"
 #include "DAMarkdownJsUtils.h"
 #include "DAMarkdownExporter.h"
+#include "DAWebExternalOpenPage.h"
 #include <QVBoxLayout>
 #include <QFile>
 #include <QFileDialog>
@@ -32,9 +33,9 @@ DAMarkdownWebPage::~DAMarkdownWebPage()
 /**
  * @brief 拦截页面导航请求
  *
- * - qrc:/data: 协议 → 放行（内部资源加载）
- * - 无 scheme 的相对 URL（含锚点 #section）→ 放行（页内导航）
- * - 其余 scheme（http/https/da-figure:/mailto: 等）→ 主框架时发射 linkClicked 并拒绝导航
+ * - 内部导航（qrc:/data:/about: 与相对锚点）→ 放行（详见 daIsInternalWebNavigation）
+ * - 其余 scheme（http/https/da-figure:/mailto: 等）→ 主框架时交给系统浏览器打开、
+ *   发射 linkClicked 并拒绝导航，防止外部页面覆盖当前渲染内容
  *
  * @param url 目标 URL
  * @param type 导航类型
@@ -44,20 +45,33 @@ DAMarkdownWebPage::~DAMarkdownWebPage()
 bool DAMarkdownWebPage::acceptNavigationRequest(const QUrl& url, NavigationType type, bool isMainFrame)
 {
     Q_UNUSED(type)
-    // 内部资源加载放行
-    if (url.scheme() == "qrc" || url.scheme() == "data" || url.scheme() == "about") {
+    // 内部资源/页内锚点导航放行
+    if (daIsInternalWebNavigation(url)) {
         return true;
     }
-    // 相对 URL（含纯锚点 #section）放行，允许页内跳转
-    if (url.scheme().isEmpty()) {
-        return true;
-    }
-    // 外部/自定义协议链接：主框架拦截并通知
+    // 外部/自定义协议链接：主框架一律拒绝页内导航（页内导航会覆盖渲染内容
+    // 且无法返回）；标准 web 协议交给系统浏览器打开，自定义协议（da-figure:
+    // 等）仅发信号由宿主处理（交给系统会弹"选择打开方式"对话框）
     if (isMainFrame) {
+        daOpenUrlExternally(url);
         emit linkClicked(url);
         return false;
     }
     return true;
+}
+
+/**
+ * @brief 新窗口导航（target=_blank / 中键点击）中转
+ *
+ * 返回中转页把目标 URL 交给系统浏览器打开后自毁；返回 nullptr 会导致
+ * 此类导航被静默丢弃（点击无反应）。
+ * @param type 窗口类型
+ * @return 一次性中转页
+ */
+QWebEnginePage* DAMarkdownWebPage::createWindow(WebWindowType type)
+{
+    Q_UNUSED(type)
+    return new DAWebExternalOpenPage(this);
 }
 
 // ================================================================
@@ -86,8 +100,11 @@ void DAMarkdownView::setupUI()
 
     mWebView = new QWebEngineView(this);
     mWebView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    // 拦截 QWebEngineView 默认右键菜单，改用自定义菜单
-    mWebView->installEventFilter(this);
+    // 关闭 WebEngine 默认右键菜单。Chromium 收到右键后异步回调 contextMenuRequested，
+    // 直接虚调用 view->contextMenuEvent() 弹默认菜单，事件过滤器拦截不到该路径；
+    // NoContextMenu 策略使回调直接返回，同时原生右键事件向父窗口（本类）传播，
+    // 由 contextMenuEvent 弹出自定义菜单（此前 eventFilter 方案会两个菜单同时弹出）
+    mWebView->setContextMenuPolicy(Qt::NoContextMenu);
 
     // 自定义 Page，父对象设为 mWebView，随 mWebView 析构释放
     mPage = new DAMarkdownWebPage(mWebView);
@@ -281,23 +298,16 @@ void DAMarkdownView::renderMarkdown()
 }
 
 /**
- * @brief 拦截 QWebEngineView 的右键事件，改用自定义菜单
+ * @brief webview 右键事件处理：弹出自定义菜单
  *
- * 默认菜单的“Save page”/“View page source”针对 qrc:// HTML 壳无法工作，
- * 且菜单文本来自 Qt WebEngine 自身翻译（项目未随附，显示为英文）。
- * 这里在事件过滤器层拦截并替换为项目自定义、可翻译的菜单。
- * @param watched 被监听的对象（mWebView）
- * @param event 事件
- * @return 已处理返回 true，否则交给基类
+ * webview 的 contextMenuPolicy 为 NoContextMenu（见 setupUI），原生右键
+ * 事件传播到本容器在此处理；Chromium 异步回调路径已被该策略关闭，
+ * 不会再弹出 WebEngine 默认菜单（Back/Forward/Reload 等）。
+ * @param event 右键事件
  */
-bool DAMarkdownView::eventFilter(QObject* watched, QEvent* event)
+void DAMarkdownView::contextMenuEvent(QContextMenuEvent* event)
 {
-    if (watched == mWebView && event->type() == QEvent::ContextMenu) {
-        auto* ctxEvent = static_cast< QContextMenuEvent* >(event);
-        showContextMenu(ctxEvent->globalPos());
-        return true;  // 阻止 QWebEngineView 弹出默认菜单
-    }
-    return QWidget::eventFilter(watched, event);
+    showContextMenu(event->globalPos());
 }
 
 /**

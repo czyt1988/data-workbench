@@ -1,10 +1,14 @@
 // DAAgentSessionChatWidget.cpp
 #include "DAAgentSessionChatWidget.h"
 #include "DAAgentWebChannel.h"
+#include "DAAgentChatWebPage.h"
 #include <QVBoxLayout>
 #include <QWebEngineView>
 #include <QWebChannel>
 #include <QQueue>
+#include <QMenu>
+#include <QAction>
+#include <QContextMenuEvent>
 
 namespace DA
 {
@@ -16,6 +20,7 @@ public:
     explicit PrivateData(DAAgentSessionChatWidget* p);
 
     QWebEngineView* mWebView = nullptr;
+    DAAgentChatWebPage* mPage = nullptr;  ///< 自定义页面（外部链接拦截），父对象为 mWebView
     DAAgentWebChannel* mChannel = nullptr;
     QString mSessionId;  ///< 本视图归属会话（空 = unbound 新会话草稿区）
     bool mAgentBusy = false;
@@ -44,6 +49,9 @@ public:
     bool mStartupYoloConfirmPending = false;  ///< A13 启动确认卡待弹（宿主保证仅一次）
     // ---- 跨工程会话提示条（决策点 5）：web 未就绪时缓存，onWebReady flush ----
     int mForeignSessionCount = 0;
+    // ---- 右键菜单（仅 Copy/Paste/Select All，构建一次复用） ----
+    QMenu* mContextMenu = nullptr;
+    QAction* mCopyAction = nullptr;
 };
 
 DAAgentSessionChatWidget::PrivateData::PrivateData(DAAgentSessionChatWidget* p) : q_ptr(p)
@@ -244,11 +252,80 @@ void DAAgentSessionChatWidget::setupUI()
     // QWebEngineView 占满（chat.html 内含 聊天区+状态栏+输入区，一个连续 web 表面）
     d->mWebView = new QWebEngineView(this);
     d->mWebView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    // 自定义 Page：外部超链接交系统浏览器打开（禁止覆盖聊天内容）+ 新窗口中转
+    d->mPage = new DAAgentChatWebPage(d->mWebView);
+    d->mWebView->setPage(d->mPage);
+    // 关闭 WebEngine 默认右键菜单（Back/Forward/Reload 等）：Chromium 异步回调
+    // contextMenuRequested 会直接虚调用 view->contextMenuEvent() 弹默认菜单，
+    // NoContextMenu 使回调直接返回（聊天视图无需右键菜单）
+    d->mWebView->setContextMenuPolicy(Qt::NoContextMenu);
     // 说明：QWebEngineSettings 并不存在 DeveloperToolsEnabled 属性（Qt5/Qt6 均无，旧注释有误）。
     // 开启开发者工具需在程序启动前设置环境变量 QTWEBENGINE_REMOTE_DEBUGGING=<端口>，
     // 再用 Chrome 访问 http://localhost:<端口>；默认保持关闭
     mainLayout->addWidget(d->mWebView, 1);
     d->mWebView->setUrl(QUrl(QStringLiteral("qrc:///DAAgent/chat.html")));
+
+    // 构建右键菜单（仅一次，后续右键复用）
+    buildContextMenu();
+}
+
+/**
+ * @brief 构建右键菜单（仅 Copy/Paste/Select All）
+ *
+ * webview 的 WebEngine 默认菜单（Back/Forward/Reload 等）已由
+ * NoContextMenu 策略关闭；聊天视图保留最小编辑能力，输入框需要 Paste、
+ * 消息文本需要 Copy/Select All。
+ */
+void DAAgentSessionChatWidget::buildContextMenu()
+{
+    DA_D(d);
+    d->mContextMenu = new QMenu(this);
+
+    // 复制
+    d->mCopyAction = d->mContextMenu->addAction(tr("Copy"));  // cn:复制
+    connect(d->mCopyAction, &QAction::triggered, this, [this]() {
+        DA_D(d);
+        if (d->mPage) {
+            d->mPage->triggerAction(QWebEnginePage::Copy);
+        }
+    });
+
+    // 粘贴（聊天输入框）
+    QAction* pasteAct = d->mContextMenu->addAction(tr("Paste"));  // cn:粘贴
+    connect(pasteAct, &QAction::triggered, this, [this]() {
+        DA_D(d);
+        if (d->mPage) {
+            d->mPage->triggerAction(QWebEnginePage::Paste);
+        }
+    });
+
+    // 全选
+    QAction* selectAllAct = d->mContextMenu->addAction(tr("Select All"));  // cn:全选
+    connect(selectAllAct, &QAction::triggered, this, [this]() {
+        DA_D(d);
+        if (d->mPage) {
+            d->mPage->triggerAction(QWebEnginePage::SelectAll);
+        }
+    });
+}
+
+/**
+ * @brief webview 右键事件处理：弹最小编辑菜单
+ *
+ * webview 的 contextMenuPolicy 为 NoContextMenu（见 setupUI），原生右键
+ * 事件传播到本容器在此处理；Chromium 异步回调路径已被该策略关闭，
+ * 不会再弹出 WebEngine 默认菜单（Back/Forward/Reload 等）。
+ * @param event 右键事件
+ */
+void DAAgentSessionChatWidget::contextMenuEvent(QContextMenuEvent* event)
+{
+    DA_D(d);
+    if (!d->mContextMenu) {
+        return;
+    }
+    // Copy 仅在 web 侧有选中内容时可用
+    d->mCopyAction->setEnabled(d->mPage && d->mPage->action(QWebEnginePage::Copy)->isEnabled());
+    d->mContextMenu->exec(event->globalPos());
 }
 
 /**

@@ -8,9 +8,13 @@
 #include "DAGuiAPI.h"
 #include "DAGlobals.h"
 
+class QMenu;
+class QContextMenuEvent;
+
 namespace DA
 {
 class DAAgentWebChannel;
+class DAAgentChatWebPage;
 
 /**
  * @brief 单个 Agent 会话的聊天视图（session-tabs）
@@ -110,9 +114,17 @@ Q_SIGNALS:
     /// 跨工程会话提示条点击（宿主打开会话管理对话框的"全部工程"视图）
     void foreignBannerClicked();
 
+protected:
+    // webview 设为 NoContextMenu 后，右键事件传播到本容器，弹出最小编辑菜单
+    //（Copy/Paste/Select All；WebEngine 默认菜单的 Back/Forward/Reload 已去除）
+    void contextMenuEvent(QContextMenuEvent* event) override;
+
 private:
     void setupUI();
     void setupWebChannel();
+    /// 构建右键菜单（仅 Copy/Paste/Select All，webview 默认菜单已由
+    /// NoContextMenu 策略关闭，见 setupUI）
+    void buildContextMenu();
     /// web 就绪前的事件缓存执行：就绪立即执行渲染，未就绪入队（onWebReady 后按序 flush）。
     /// 覆盖内容型事件（流式 token/工具卡/问题卡/审批卡等）——视图创建于会话运行中时，
     /// setSessionViewAttached 重发的挂起卡与创建后的流式增量在 chat.html 加载完成前

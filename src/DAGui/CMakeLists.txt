@@ -30,6 +30,7 @@ set(DA_LIB_HEADER_FILES
     DANodeItemSettingWidget.h
     DANodeLinkItemSettingWidget.h
     DANodeMimeData.h
+    DAWebExternalOpenPage.h
     DANodeSettingWidget.h
     DANodeTreeWidget.h
     DARecentFilesManager.h
