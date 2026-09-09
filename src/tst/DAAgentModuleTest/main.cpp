@@ -450,9 +450,10 @@ void DAAgentModuleTest::testNewSessionReassertsBusyFalse()
     const QString sidB = module->currentSessionId();
     QVERIFY(sidB != sidA);
 
-    // 修复核心断言：newSession 后重断言 busy(false)（修复前 busySpy 停留在 true）
+    // 修复核心断言：newSession 后重断言 busy(false)（修复前 busySpy 停留在 true）。
+    // session-tabs：agentBusy 首参为 sessionId，取参 1 为 busy 值
     QVERIFY(!busySpy.isEmpty());
-    QCOMPARE(busySpy.last().at(0).toBool(), false);
+    QCOMPARE(busySpy.last().at(1).toBool(), false);
     // 新会话 B 无运行态
     QCOMPARE(module->sessionRuntimeState(sidB), QString());
 
@@ -478,9 +479,10 @@ void DAAgentModuleTest::testDeleteCurrentSessionEmitsCleared()
     QCOMPARE(clearedSpy.count(), 1);
     QVERIFY(module->currentSessionId().isEmpty());
     QVERIFY(!tokenSpy.isEmpty());
-    QCOMPARE(tokenSpy.last().at(0).toInt(), 0);
+    // session-tabs：tokenUsageUpdated 首参为 sessionId，token 值在参 1-3
     QCOMPARE(tokenSpy.last().at(1).toInt(), 0);
     QCOMPARE(tokenSpy.last().at(2).toInt(), 0);
+    QCOMPARE(tokenSpy.last().at(3).toInt(), 0);
 
     // 删除非当前会话：不触发 sessionCleared（聊天区不受影响）
     const QString sidB = module->createSession();
@@ -613,8 +615,9 @@ void DAAgentModuleTest::testColdStartSnapshotExcludesTrailingUser()
     // 冷启动发 m2：快照 = [user(m1), ai(echo)]（剔除刚落盘的 user(m2)）
     module->sendMessage(QStringLiteral("m2"));
     QVERIFY(tokenSpy.wait(30000));
-    // 修复前为 "LOADED:3:human"（快照含 m2，user_msg 再注入一遍 → 上下文重复提问）
-    QCOMPARE(tokenSpy.at(0).at(0).toString(), QStringLiteral("LOADED:2:ai"));
+    // 修复前为 "LOADED:3:human"（快照含 m2，user_msg 再注入一遍 → 上下文重复提问）。
+    // session-tabs：agentToken 首参为 sessionId，token 文本在参 1
+    QCOMPARE(tokenSpy.at(0).at(1).toString(), QStringLiteral("LOADED:2:ai"));
 
     module->shutdown();
 }
@@ -646,9 +649,10 @@ void DAAgentModuleTest::testWarmTakeoverLoadsSingleMessageHistory()
     module->prestartAgent();
     QVERIFY(module->switchSession(sidA));
 
-    // 假 agent 回显快照统计：修复前 messageCount==1 不发 load_session（token 永不到达）
+    // 假 agent 回显快照统计：修复前 messageCount==1 不发 load_session（token 永不到达）。
+    // session-tabs：agentToken 首参为 sessionId，token 文本在参 1
     QVERIFY(tokenSpy.wait(30000));
-    QCOMPARE(tokenSpy.at(0).at(0).toString(), QStringLiteral("LOADED:1:human"));
+    QCOMPARE(tokenSpy.at(0).at(1).toString(), QStringLiteral("LOADED:1:human"));
 
     module->shutdown();
 }
@@ -666,10 +670,11 @@ void DAAgentModuleTest::testStopNoopEmitsBusyFalse()
     const QString sid = module->createSession();
     QVERIFY(!sid.isEmpty());
 
-    // 无桥空闲 Stop：no-op 但必须回发 busy(false) 解除 Dock Stopping 过渡态
+    // 无桥空闲 Stop：no-op 但必须回发 busy(false) 解除 Dock Stopping 过渡态。
+    // session-tabs：agentBusy 首参为 sessionId，取参 1 为 busy 值
     module->stop();
     QCOMPARE(busySpy.count(), 1);
-    QCOMPARE(busySpy.at(0).at(0).toBool(), false);
+    QCOMPARE(busySpy.at(0).at(1).toBool(), false);
 
     module->shutdown();
 }
@@ -716,10 +721,11 @@ void DAAgentModuleTest::testErrorRecordPersisted()
 }
 
 /**
- * 问题8（重试条）：后台会话经历 LLM 重试时，修复前 agentRetrying 被活跃
- * 会话过滤后直接丢弃——切回看不到重试条。修复后缓存最新一条，切回重发。
- * 构造：A 发 arm 指令挂起回合 → 切到 B → setLLMConfig 广播 reconfigure →
- * A 的假 agent 发 retrying（后台身份到达）→ 切回 A 断言重发。
+ * 问题8（重试条）：后台会话经历 LLM 重试时的可见性——修复前 agentRetrying
+ * 被活跃会话过滤后直接丢弃，切回看不到重试条。session-tabs 语义：重试信号
+ * 带 sessionId 无条件广播（后台视图实时渲染）+ 通知缓存（视图重开时经
+ * setSessionViewAttached 重发）。构造：A 发 arm 指令挂起回合 → 切到 B →
+ * setLLMConfig 广播 reconfigure → A 的假 agent 发 retrying（后台身份到达）。
  */
 void DAAgentModuleTest::testBackgroundRetryingReplayedOnSwitchBack()
 {
@@ -730,28 +736,32 @@ void DAAgentModuleTest::testBackgroundRetryingReplayedOnSwitchBack()
     const QString sidB = module->createSession();            // current=B，A 转后台
     QVERIFY(sidB != sidA);
 
-    // reconfigure 广播 → A 的假 agent 发 retrying → 后台缓存（不转发）
+    // reconfigure 广播 → A 的假 agent 发 retrying → 带 sessionId 广播（后台可
+    // 见）+ 缓存最新一条（视图关闭/未开时 attach 重发）
     DA::DAAgentLLMConfig cfg;
     cfg.setMaxRetries(6);
     module->setLLMConfig(cfg);
-    QTest::qWait(2000);  // 等待本地子进程往返（retrying 到达并被缓存）
-    QCOMPARE(retrySpy.count(), 0);  // 后台期间不转发
+    QTRY_COMPARE_WITH_TIMEOUT(retrySpy.count(), 1, 15000);  // 后台期间即广播（会话归属 sidA）
+    QCOMPARE(retrySpy.at(0).at(0).toString(), sidA);
+    QCOMPARE(retrySpy.at(0).at(1).toInt(), 2);    // attempt
+    QCOMPARE(retrySpy.at(0).at(2).toInt(), 5);    // maxAttempts
+    QCOMPARE(retrySpy.at(0).at(4).toString(), QStringLiteral("rate_limit_exhausted"));
 
-    // 切回 A：重发缓存的重试条（一次性，重发即清）
-    QVERIFY(module->switchSession(sidA));
+    // 视图 attach 重发缓存（一次性，重发即清）：带 sessionId 广播
+    retrySpy.clear();
+    module->setSessionViewAttached(sidA, true);
     QCOMPARE(retrySpy.count(), 1);
-    QCOMPARE(retrySpy.at(0).at(0).toInt(), 2);   // attempt
-    QCOMPARE(retrySpy.at(0).at(1).toInt(), 5);   // maxAttempts
-    QCOMPARE(retrySpy.at(0).at(3).toString(), QStringLiteral("rate_limit_exhausted"));
+    QCOMPARE(retrySpy.at(0).at(1).toInt(), 2);    // attempt
+    QCOMPARE(retrySpy.at(0).at(4).toString(), QStringLiteral("rate_limit_exhausted"));
 
     module->shutdown();
 }
 
 /**
- * 问题8（话说一半提醒）：后台会话回合疑似未完成时，修复前提醒被丢弃且
- * 会话随 agentDone 立即退役。修复后：incomplete 提醒缓存 + 退役豁免
- * （agentDone/切离守卫都检查），切回重发 agentTurnPossiblyIncomplete +
- * systemMessage 提醒卡（提示用户发"继续"）。
+ * 问题8（话说一半提醒）：后台会话回合疑似未完成时的可见性——修复前提醒被
+ * 丢弃且会话随 agentDone 立即退役。session-tabs 语义：提醒实时广播 +
+ * 缓存 + 退役豁免（agentDone/切离守卫都检查），视图重开（attach）重发
+ * agentTurnPossiblyIncomplete + systemMessage 提醒卡（提示用户发"继续"）。
  */
 void DAAgentModuleTest::testBackgroundIncompleteReplayedOnSwitchBack()
 {
@@ -763,16 +773,18 @@ void DAAgentModuleTest::testBackgroundIncompleteReplayedOnSwitchBack()
     const QString sidB = module->createSession();                 // current=B，A 转后台
     QVERIFY(sidB != sidA);
 
-    // reconfigure 广播 → A 的假 agent 发 done(incomplete) → 后台：提醒缓存 +
-    // agentDone 豁免退役（桥保活，等切回重发）
+    // reconfigure 广播 → A 的假 agent 发 done(incomplete) → 提醒实时广播 +
+    // 缓存 + agentDone 豁免退役（桥保活，等视图重开重发）
     DA::DAAgentLLMConfig cfg;
     cfg.setMaxRetries(6);
     module->setLLMConfig(cfg);
-    QTest::qWait(2000);
-    QCOMPARE(incompleteSpy.count(), 0);  // 后台期间不转发
+    QTRY_COMPARE_WITH_TIMEOUT(incompleteSpy.count(), 1, 15000);
+    QCOMPARE(incompleteSpy.at(0).at(0).toInt(), 2);  // toolRounds
 
-    // 切回 A：重发提醒（信号 + systemMessage 文案）
-    QVERIFY(module->switchSession(sidA));
+    // 视图 attach：重发提醒（信号 + systemMessage 文案，一次性重发即清）
+    incompleteSpy.clear();
+    sysMsgSpy.clear();
+    module->setSessionViewAttached(sidA, true);
     QCOMPARE(incompleteSpy.count(), 1);
     QCOMPARE(incompleteSpy.at(0).at(0).toInt(), 2);  // toolRounds
     bool hasReminder = false;
@@ -803,16 +815,18 @@ void DAAgentModuleTest::testToolExecutionViaGlobalQueue()
     const QString sid = module->createSession();
     module->sendMessage(QStringLiteral("#fake:tool"));
 
-    // 工具经全局队列真实执行，结果转发 + 回合完成
+    // 工具经全局队列真实执行，结果转发 + 回合完成。
+    // session-tabs：agentToolResult 首参为 sessionId，toolName 在参 1
     QVERIFY(resultSpy.wait(30000));
-    QCOMPARE(resultSpy.at(0).at(0).toString(), QStringLiteral("fake_tool"));
+    QCOMPARE(resultSpy.at(0).at(1).toString(), QStringLiteral("fake_tool"));
     QCOMPARE(fakeTool.execCount(), 1);
     QVERIFY(doneSpy.wait(30000));
 
-    // 排队态信号（活跃会话转发）：入队 position=1 + 出队 position=0
+    // 排队态信号：入队 position=1 + 出队 position=0。
+    // session-tabs：agentToolQueued 首参为 sessionId，toolName 在参 1，position 在参 2
     QVERIFY(queuedSpy.count() >= 2);
-    QCOMPARE(queuedSpy.at(0).at(1).toInt(), 1);
-    QCOMPARE(queuedSpy.at(1).at(1).toInt(), 0);
+    QCOMPARE(queuedSpy.at(0).at(2).toInt(), 1);
+    QCOMPARE(queuedSpy.at(1).at(2).toInt(), 0);
 
     // JSONL 落盘：tool_call 记录（type=assistant 带 tool_calls）+ tool_result
     // + 回合收尾 message_end（type=assistant）= assistant 2 条、tool_result 1 条
@@ -835,18 +849,20 @@ void DAAgentModuleTest::testRegisterToolBroadcastsUpdateTools()
     QSignalSpy tokenSpy(module.data(), &DA::DAAgentInterface::agentToken);
     QSignalSpy doneSpy(module.data(), &DA::DAAgentInterface::agentDone);
 
-    // 先让会话桥存活（跑完一轮不退役）
+    // 先让会话桥存活（跑完一轮不退役——session-tabs：有视图的会话桥保活）
     const QString sid = module->createSession();
+    module->setSessionViewAttached(sid, true);
     module->sendMessage(QStringLiteral("warm up"));
     QVERIFY(doneSpy.wait(30000));
 
-    // 桥存活时注册工具 → 广播 update_tools（1 条规格）→ 假 agent 回显
+    // 桥存活时注册工具 → 广播 update_tools（1 条规格）→ 假 agent 回显。
+    // session-tabs：agentToken 首参为 sessionId，token 文本在参 1
     FakeAgentTool fakeTool;
     QVERIFY(module->registerTool(&fakeTool));
     QVERIFY(tokenSpy.wait(30000));
     bool seen = false;
     for (const auto& args : std::as_const(tokenSpy)) {
-        if (args.at(0).toString() == QLatin1String("TOOLS_UPDATED:1")) {
+        if (args.at(1).toString() == QLatin1String("TOOLS_UPDATED:1")) {
             seen = true;
         }
     }
@@ -859,8 +875,8 @@ void DAAgentModuleTest::testRegisterToolBroadcastsUpdateTools()
  * 问题28b：切回运行中会话时 clearChat 已复位前端 subagentCards，而 Module
  * 此前只缓存/重发 questions 与 approvals——在途派发的 running/终态进度全部
  * 因"无 entry 且非 spawned"被忽略，进度卡永不重建，整个派发过程切回后完全
- * 不可见。修复后 Module 按会话缓存本轮进度事件（心跳除外），switchSession
- * 切回逐条重放（chat.js 幂等重建 + 惰性建行双保险）；done/error/退役即清。
+ * 不可见。修复后 Module 按会话缓存本轮进度事件（心跳除外），视图 attach 时
+ * 逐条重放（chat.js 幂等重建 + 惰性建行双保险）；done/error/退役即清。
  */
 void DAAgentModuleTest::testSubagentProgressReplayedOnSwitchBack()
 {
@@ -869,18 +885,19 @@ void DAAgentModuleTest::testSubagentProgressReplayedOnSwitchBack()
     const QString sidA = module->createSession();
     module->sendMessage(QStringLiteral("#fake:dispatch"));
 
-    // 活跃期间转发 3 条（spawned + 任务 running + 心跳），回合挂起不 done
+    // 实时广播 3 条（spawned + 任务 running + 心跳），回合挂起不 done
     QTRY_VERIFY_WITH_TIMEOUT(progressSpy.count() >= 3, 30000);
     const int liveCount = progressSpy.count();
 
-    // 切走（A busy → 桥保留后台）再切回：重放缓存的 2 条（心跳不入缓存）
-    const QString sidB = module->createSession();
-    QVERIFY(!sidB.isEmpty());
-    QVERIFY(module->switchSession(sidA));
-    QTRY_VERIFY_WITH_TIMEOUT(progressSpy.count() >= liveCount + 2, 15000);
+    // 视图重开（detach → attach）：重放缓存的 2 条（心跳不入缓存）。
+    // session-tabs：agentSubagentProgress 首参为 sessionId，进度载荷在参 1
+    module->setSessionViewAttached(sidA, false);
+    progressSpy.clear();
+    module->setSessionViewAttached(sidA, true);
+    QTRY_VERIFY_WITH_TIMEOUT(progressSpy.count() >= 2, 15000);
 
     // 重放首条为 spawned 事件（完整载荷供前端重建进度卡）
-    const QJsonObject first = progressSpy.at(liveCount).at(0).toJsonObject();
+    const QJsonObject first = progressSpy.at(0).at(1).toJsonObject();
     QCOMPARE(first.value(QStringLiteral("state")).toString(), QStringLiteral("spawned"));
     QCOMPARE(first.value(QStringLiteral("call_id")).toString(), QStringLiteral("d1"));
 
@@ -890,9 +907,9 @@ void DAAgentModuleTest::testSubagentProgressReplayedOnSwitchBack()
 /**
  * L14（决策点 5 联动）：失控后台会话的停止入口——修复前必须先切换过去
  * 再按 Stop（结合问题 2 的切入冻结场景，starting 残留会话切过去也停不了）。
- * stopSession 直达该会话的桥：requestStop + 清挂起缓存；后台会话不 emit
- * agentQuestionDismissed（非活跃无卡可撤），仅刷角标。空闲/无桥/空 id
- * 静默 no-op。
+ * stopSession 直达该会话的桥：requestStop + 清挂起缓存 + 撤卡。
+ * session-tabs：撤卡信号带 sessionId 广播（后台会话的视图同样需要撤卡，
+ * 无论是否活跃），角标同步刷新。空闲/无桥/空 id 静默 no-op。
  */
 void DAAgentModuleTest::testStopSessionStopsBackgroundBridge()
 {
@@ -910,8 +927,9 @@ void DAAgentModuleTest::testStopSessionStopsBackgroundBridge()
     // 停止后台会话 A：进程终止、挂起问题缓存清除、角标恢复空闲
     module->stopSession(sidA);
     QTRY_COMPARE_WITH_TIMEOUT(module->sessionRuntimeState(sidA), QString(), 15000);
-    // A 非活跃会话：无卡可撤，不发 dismiss（撤卡信号只服务活跃会话 UI）
-    QCOMPARE(dismissSpy.count(), 0);
+    // 撤卡信号带 sessionId 广播（session-tabs：后台视图同样撤卡）
+    QTRY_COMPARE_WITH_TIMEOUT(dismissSpy.count(), 1, 15000);
+    QCOMPARE(dismissSpy.at(0).at(0).toString(), sidA);
 
     // 防御 no-op：无桥会话 / 空 id 不崩溃、无副作用
     module->stopSession(sidB);
@@ -921,21 +939,26 @@ void DAAgentModuleTest::testStopSessionStopsBackgroundBridge()
 }
 
 /**
- * 问题18（资源累积面）：活跃会话跑完后桥不退役（免下轮冷启动），此时点「+」
- * 新建会话不走 switchSession——修复前旧会话空闲桥永久滞留，反复"聊一轮→
- * 点+→聊一轮"累积 N 个空闲 Python 子进程（每个数百 MB 级）直到应用关闭。
- * 修复后 newSession 真新建路径复用切离退役判定（空闲无挂起→retire）。
+ * 问题18（资源累积面）：会话跑完后桥的存活与退役判定——session-tabs 语义：
+ * 有视图的会话跑完不退役（视图常驻，用户可能继续对话，免下轮冷启动）；
+ * 无视图/切离后无视图的空闲桥在 newSession 真新建路径退役（内存收窄）。
+ * 修复前旧会话空闲桥永久滞留，反复"聊一轮→点+→聊一轮"累积 N 个空闲
+ * Python 子进程（每个数百 MB 级）直到应用关闭。
  */
 void DAAgentModuleTest::testNewSessionRetiresIdleBridge()
 {
     QScopedPointer<DA::DAAgentModule> module(makeModule());
     QSignalSpy doneSpy(module.data(), &DA::DAAgentInterface::agentDone);
     const QString sidA = module->createSession();
+    // 会话有视图（session-tabs）：跑完后桥保活
+    module->setSessionViewAttached(sidA, true);
     module->sendMessage(QStringLiteral("one round"));
     QVERIFY(doneSpy.wait(30000));
-    QVERIFY(module->isRunning());  // A 的空闲桥存活（活跃会话跑完不退役）
+    QVERIFY(module->isRunning());  // A 的空闲桥存活（有视图不退役）
 
     // 点「+」：A 非空（messageCount=1）不复用 → 真新建 + 切离退役 A 的空闲桥
+    //（A 无视图——attach 已随视图关闭移除，此处先 detach 模拟）
+    module->setSessionViewAttached(sidA, false);
     module->newSession();
     QVERIFY(module->currentSessionId() != sidA);
     // A 桥已退役（映射移除）——无任何存活子进程

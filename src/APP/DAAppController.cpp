@@ -257,6 +257,8 @@ void DAAppController::initialize()
     // Agent 信号链：DAGui(Dock) 与 DAAgent 互不依赖，由 APP 层 connect（决策 D3b）。
     // 接口信号 → Dock 槽（13 条）—— DAAgentModule 不再持有 Dock，亦不再在 connectSignals
     // 中连 Bridge→Dock / this→Dock，唯一渲染路径经接口信号。
+    // session-tabs：会话级事件信号首参为 sessionId，Dock 宿主按会话路由到对应视图
+    //（后台会话视图实时渲染）。
     auto* agent = mCore->getAgentInterface();
     auto* dock  = mDock->getAgentDockWidget();
     if (agent && dock) {
@@ -323,20 +325,22 @@ void DAAppController::initialize()
                         agent->setPermissionMode(QStringLiteral("auto"));
                     }
                 });
-        // Dock 信号 → 接口方法（7 条；均为信号→方法 PMF 连接，emit 源信号即调用方法体，
-        // 含各自持久化/启动逻辑，无需 lambda。agentStopRequested 暂无对接，略）。
-        // 注意 sessionCreateRequested 连 &DAAgentInterface::newSession（非 createSession）：
-        // newSession emit sessionCreated → onSessionCreated → clearChat；createSession 不 emit
-        // sessionCreated，连错会导致点"+"后聊天区不清空。
+        // Dock 信号 → 接口方法（均为信号→方法 PMF 连接，emit 源信号即调用方法体，
+        // 含各自持久化/启动逻辑，无需 lambda）。
+        // session-tabs：「+」走 Dock 宿主的 unbound 视图懒创建路径（首条消息才落盘
+        // 建会话），不再连接 newSession；发消息/回答前宿主已"交互即激活"确保
+        // 来源视图会话为模块当前会话。
         connect(dock, &DAAgentDockWidget::sendMessageRequested, agent, &DAAgentInterface::sendMessage);
         connect(dock, &DAAgentDockWidget::stopRequested, agent, &DAAgentInterface::stop);
         connect(dock, &DAAgentDockWidget::userAnswerSelected, agent, &DAAgentInterface::sendUserAnswer);
         connect(dock, &DAAgentDockWidget::sessionSwitchRequested, agent, &DAAgentInterface::switchSession);
         connect(dock, &DAAgentDockWidget::sessionDeleteRequested, agent, &DAAgentInterface::deleteSession);
         connect(dock, &DAAgentDockWidget::sessionRenameRequested, agent, &DAAgentInterface::renameSession);
-        // 审计 L14：会话管理对话框右键"停止"→ 停止指定会话的后台运行
-        connect(dock, &DAAgentDockWidget::sessionStopRequested, agent, &DAAgentInterface::stopSession);
-        connect(dock, &DAAgentDockWidget::sessionCreateRequested, agent, &DAAgentInterface::newSession);
+        // session-tabs 新增桥接：视图生命周期 / unbound 激活 / 按会话停止
+        //（会话管理对话框/标签右键"停止"亦走 stopSessionRequested——审计 L14）
+        connect(dock, &DAAgentDockWidget::sessionViewAttachedChanged, agent, &DAAgentInterface::setSessionViewAttached);
+        connect(dock, &DAAgentDockWidget::currentSessionClearedRequested, agent, &DAAgentInterface::clearCurrentSession);
+        connect(dock, &DAAgentDockWidget::stopSessionRequested, agent, &DAAgentInterface::stopSession);
         // Agent 绘图引用超链接：da-figure: 协议链接点击 → raise 绘图区并定位 figure
         connect(dock, &DAAgentDockWidget::figureLinkRequested, this, &DAAppController::onFigureLinkRequested);
     }
@@ -443,6 +447,8 @@ void DAAppController::initConnection()
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartZoomOut, onActionChartZoomOutTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartZoomAll, onActionChartZoomAllTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnablePan, onActionChartEnablePanTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartDisableZoomX, onActionChartDisableZoomXTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartDisableZoomY, onActionChartDisableZoomYTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnablePickerCross, onActionChartEnablePickerCrossTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnablePickerY, onActionChartEnablePickerYTriggered);
     connect(mActions->actionGroupChartPickerTextRegion,
@@ -2704,6 +2710,30 @@ void DAAppController::onActionChartEnablePanTriggered(bool on)
     if (res) {
         mRibbon->updateChartZoomPanAboutRibbon(getCurrentChart());
     }
+}
+
+/**
+ * @brief 禁止水平缩放
+ * @param on 选中时禁止x轴参与缩放
+ */
+void DAAppController::onActionChartDisableZoomXTriggered(bool on)
+{
+    applyToCharts([ on ](DAChartWidget* w) -> bool {
+        w->enableXAxisZoom(!on);
+        return true;
+    });
+}
+
+/**
+ * @brief 禁止垂直缩放
+ * @param on 选中时禁止y轴参与缩放
+ */
+void DAAppController::onActionChartDisableZoomYTriggered(bool on)
+{
+    applyToCharts([ on ](DAChartWidget* w) -> bool {
+        w->enableYAxisZoom(!on);
+        return true;
+    });
 }
 
 /**

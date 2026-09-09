@@ -158,6 +158,10 @@ void DAAppActions::buildChartAction()
     actionChartZoomOut    = createAction(UiNames::Action::ChartZoomOut, ":/app/bright/Icon/zoomOut.svg");
     actionChartZoomAll    = createAction(UiNames::Action::ChartZoomAll, ":/app/bright/Icon/viewAll.svg");
     actionChartEnablePan  = createAction(UiNames::Action::ChartEnablePan, ":/app/bright/Icon/chart-pan.svg", true, false);
+    actionChartDisableZoomX =
+        createAction(UiNames::Action::ChartDisableZoomX, ":/app/bright/Icon/chart-zoom-lock-x.svg", true, false);
+    actionChartDisableZoomY =
+        createAction(UiNames::Action::ChartDisableZoomY, ":/app/bright/Icon/chart-zoom-lock-y.svg", true, false);
 
     actionGroupChartPickers = new QActionGroup(this);
     actionGroupChartPickers->setObjectName(QString::fromUtf8(UiNames::Action::GroupChartPickers));
@@ -527,6 +531,12 @@ void DAAppActions::retranslateUi()
     actionChartZoomAll->setToolTip(tr("Zoom to show all data in the chart"));               // cn:缩放以显示所有数据
     actionChartEnablePan->setText(tr("Pan"));                                               // cn:拖动
     actionChartEnablePan->setToolTip(tr("Enable or disable pan in the chart"));             // cn:启用或禁用图表中的拖动
+    actionChartDisableZoomX->setText(tr("Disable X Zoom"));                                 // cn:禁止水平缩放
+    actionChartDisableZoomX->setToolTip(
+        tr("Disable zoom on the X axis"));  // cn:禁止水平缩放，滚轮和放大/缩小按钮将仅作用于垂直方向
+    actionChartDisableZoomY->setText(tr("Disable Y Zoom"));                                 // cn:禁止垂直缩放
+    actionChartDisableZoomY->setToolTip(
+        tr("Disable zoom on the Y axis"));  // cn:禁止垂直缩放，滚轮和放大/缩小按钮将仅作用于水平方向
     actionChartEnablePickerCross->setText(tr("Cross"));                                     // cn:十字标记
     actionChartEnablePickerCross->setToolTip(tr("Enable or disable cross picker in the chart"));  // cn:启用或禁用图表中的十字标记
     actionChartEnablePickerY->setText(tr("Y Picker"));                                            // cn:y值拾取

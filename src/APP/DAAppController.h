@@ -257,6 +257,10 @@ private Q_SLOTS:
     void onActionChartZoomAllTriggered();
     // 允许绘图拖动
     void onActionChartEnablePanTriggered(bool on);
+    // 禁止水平缩放
+    void onActionChartDisableZoomXTriggered(bool on);
+    // 禁止垂直缩放
+    void onActionChartDisableZoomYTriggered(bool on);
     // 允许绘图拾取
     void onActionChartEnablePickerCrossTriggered(bool on);
     // 允许绘图拾取Y

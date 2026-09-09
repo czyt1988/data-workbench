@@ -83,6 +83,8 @@ public:
         DataPickingStateChanged =
             0x800000,  ///< 代表picking开启或关闭，@ref isYValuePickingEnabled 和 @ref isXYValuePickingEnabled
         MouseWheelZoomStateChanged = 0x1000000,  ///< 代表magnifier开启或关闭，@ref isMouseWheelZoomEnabled
+        XAxisZoomStateChanged      = 0x2000000,  ///< 代表x轴是否参与缩放发生变化，@ref isXAxisZoomEnabled
+        YAxisZoomStateChanged      = 0x4000000,  ///< 代表y轴是否参与缩放发生变化，@ref isYAxisZoomEnabled
     };
     Q_ENUM(ChartPropertyChangeFlag)
     Q_DECLARE_FLAGS(ChartPropertyChangeFlags, ChartPropertyChangeFlag)
@@ -243,6 +245,13 @@ public:
     bool isMouseWheelZoomEnabled() const override;
 
     QwtPlotMagnifier* getMagnifier() const override;
+
+    // 单轴缩放控制
+    void enableXAxisZoom(bool enable = true) override;
+    bool isXAxisZoomEnabled() const override;
+
+    void enableYAxisZoom(bool enable = true) override;
+    bool isYAxisZoomEnabled() const override;
 
     // 图例面板控制
     void enableLegendPanel(bool enable = true) override;

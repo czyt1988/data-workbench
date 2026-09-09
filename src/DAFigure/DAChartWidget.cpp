@@ -5,6 +5,7 @@
 #include "DAFigureWidget.h"
 #include "DAChartCanvas.h"
 #include "DAChartCrossTracker.h"
+#include "DAChartPanPanner.h"
 // QWT 相关头文件
 #include "qwt_plot_canvas.h"
 #include "qwt_plot_layout.h"
@@ -12,6 +13,7 @@
 #include "qwt_plot_legenditem.h"
 #include "qwt_plot_panner.h"
 #include "qwt_plot_magnifier.h"
+#include "qwt_axis.h"
 #include "qwt_plot_canvas_zoomer.h"
 #include "qwt_plot_series_data_picker.h"
 #include "qwt_plot_picker.h"
@@ -1107,6 +1109,9 @@ void DAChartWidget::enablePan(bool enable)
         if (enable) {
             // 平移启用时禁用缩放
             enableZoom(false);
+            canvas()->setCursor(Qt::OpenHandCursor);
+        } else {
+            canvas()->setCursor(Qt::ArrowCursor);
         }
         notifyPropertiesChanged(PanStateChanged);
     }
@@ -1279,6 +1284,78 @@ QwtPlotMagnifier* DAChartWidget::getMagnifier() const
 }
 
 /**
+ * @brief 启用或禁用x轴参与缩放
+ * @param enable 是否启用
+ * @details 影响滚轮缩放以及放大/缩小按钮（共用magnifier），禁用后仅y轴缩放
+ */
+void DAChartWidget::enableXAxisZoom(bool enable)
+{
+    if (!d_ptr->magnifier) {
+        if (!enable) {
+            setupMagnifier();
+        } else {
+            // magnifier未创建时默认所有轴都参与缩放，无需处理
+            return;
+        }
+    }
+
+    if (d_ptr->magnifier) {
+        d_ptr->magnifier->setAxisEnabled(QwtAxis::XBottom, enable);
+        d_ptr->magnifier->setAxisEnabled(QwtAxis::XTop, enable);
+        notifyPropertiesChanged(XAxisZoomStateChanged);
+    }
+}
+
+/**
+ * @brief 判断x轴是否参与缩放
+ * @return 如果x轴参与缩放返回true，否则返回false
+ */
+bool DAChartWidget::isXAxisZoomEnabled() const
+{
+    if (d_ptr->magnifier) {
+        return d_ptr->magnifier->isAxisEnabled(QwtAxis::XBottom);
+    }
+    // magnifier未创建时默认所有轴都参与缩放
+    return true;
+}
+
+/**
+ * @brief 启用或禁用y轴参与缩放
+ * @param enable 是否启用
+ * @details 影响滚轮缩放以及放大/缩小按钮（共用magnifier），禁用后仅x轴缩放
+ */
+void DAChartWidget::enableYAxisZoom(bool enable)
+{
+    if (!d_ptr->magnifier) {
+        if (!enable) {
+            setupMagnifier();
+        } else {
+            // magnifier未创建时默认所有轴都参与缩放，无需处理
+            return;
+        }
+    }
+
+    if (d_ptr->magnifier) {
+        d_ptr->magnifier->setAxisEnabled(QwtAxis::YLeft, enable);
+        d_ptr->magnifier->setAxisEnabled(QwtAxis::YRight, enable);
+        notifyPropertiesChanged(YAxisZoomStateChanged);
+    }
+}
+
+/**
+ * @brief 判断y轴是否参与缩放
+ * @return 如果y轴参与缩放返回true，否则返回false
+ */
+bool DAChartWidget::isYAxisZoomEnabled() const
+{
+    if (d_ptr->magnifier) {
+        return d_ptr->magnifier->isAxisEnabled(QwtAxis::YLeft);
+    }
+    // magnifier未创建时默认所有轴都参与缩放
+    return true;
+}
+
+/**
  * @brief 启用或禁用图例面板
  * @param enable 是否启用
  */
@@ -1432,10 +1509,13 @@ void DAChartWidget::setupPanner()
     if (d_ptr->pannerFactory) {
         d_ptr->panner = d_ptr->pannerFactory(canvas());
     } else {
-        d_ptr->panner = new QwtPlotPanner(canvas());
+        d_ptr->panner = new DAChartPanPanner(canvas());
     }
 
-    d_ptr->panner->setMouseButton(Qt::MiddleButton);
+    // 拖动按下时光标切换为握紧手形，松开恢复张开手形
+    connect(d_ptr->panner, &QwtPicker::activated, this, [ this ](bool on) {
+        canvas()->setCursor(on ? Qt::ClosedHandCursor : Qt::OpenHandCursor);
+    });
 }
 
 /**

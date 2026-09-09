@@ -30,6 +30,7 @@
 #include <QDateTime>
 #include <QVariantList>
 #include <QVariantMap>
+#include <QSet>
 
 // availableModelsChanged 信号载荷跨线程安全（queued connection 时需要 metatype）
 DA_AUTO_REGISTER_META_TYPE(DA::DAAgentModelRef)
@@ -67,6 +68,7 @@ public:
     QHash<QString, bool> mSessionBusy;                 ///< 会话 → 本轮是否进行中
     QHash<QString, bool> mSessionStarting;             ///< 会话 → 子进程启动中
     QHash<QString, bool> mSessionError;                ///< 会话 → 最近一次 agentError 未消化
+    QSet<QString> mSessionViewAttached;                ///< 有视图的会话集合（session-tabs，宿主经 setSessionViewAttached 维护）
     QHash<QString, int> mCumulativeInTokens;           ///< 会话累计输入 token（压缩不重置）
     QHash<QString, int> mCumulativeOutTokens;          ///< 会话累计输出 token
     QHash<QString, int> mCumulativeTotalTokens;        ///< 会话累计总 token
@@ -449,11 +451,14 @@ void DAAgentModule::sendMessage(const QString& text)
 {
     DA_D(d);
     // 契约7 + MAJOR3（round-3）：经 Module::createSession（内部 store.createSession +
-    // 设 mCurrentSessionId + setLastActive + emit sessionListChanged，不 emit
-    // sessionCreated——避免触发 onSessionCreated 的 clearChat 擦除刚显示的用户消息）。
-    // UI "+" 走 newSession()（有 sessionCreated）。
+    // 设 mCurrentSessionId + setLastActive + emit sessionListChanged）。
+    // session-tabs：懒建路径也 emit sessionCreated——宿主据此把 unbound 视图绑定到
+    // 该会话（更新 dock objectName/标题）；旧语义"避免触发 onSessionCreated 的
+    // clearChat 擦除刚显示的用户消息"已不适用（宿主 onSessionCreated 对已有视图
+    // 只做绑定不做 clearChat）。
     if (d->mCurrentSessionId.isEmpty()) {
         d->mCurrentSessionId = createSession();
+        emit sessionCreated(d->mCurrentSessionId);
     }
     const QString sid = d->mCurrentSessionId;
     // 发送前持久化 user 消息（桥启动失败时记录保留，会话不丢，下次重试）
@@ -498,7 +503,7 @@ void DAAgentModule::stop()
         // 否则用户对着幽灵卡作答，sendUserAnswer 落盘孤儿 tool_result 且
         // 答案蒸发（死桥 writeJson 静默失败）
         if (d->mPendingQuestions.remove(d->mCurrentSessionId)) {
-            emit agentQuestionDismissed();
+            emit agentQuestionDismissed(d->mCurrentSessionId);
         }
         // 审计问题 1：Stop 必然中断在途工具配对——清会话 FIFO。并发版 Stop
         // 只作用活跃会话，按会话清理无副作用；不清则 ask_user 待答时按 Stop
@@ -511,23 +516,24 @@ void DAAgentModule::stop()
         // 过渡态（按钮+输入禁用），旧实现不发任何信号，UI 冻结直到外部信号
         // 拯救。顺带清残留挂起缓存与内部状态，保持记账一致。
         if (d->mPendingQuestions.remove(d->mCurrentSessionId)) {
-            emit agentQuestionDismissed();
+            emit agentQuestionDismissed(d->mCurrentSessionId);
         }
         d->mPendingToolCallUuids.remove(d->mCurrentSessionId);
         d->mSessionBusy.remove(d->mCurrentSessionId);
         d->mSessionStarting.remove(d->mCurrentSessionId);
-        emit agentBusy(false);
+        emit agentBusy(d->mCurrentSessionId, false);
     }
 }
 
 /**
- * @brief 停止指定会话的后台运行（审计 L14/决策点 5：会话管理对话框"停止"入口）
+ * @brief 停止指定会话的后台运行（审计 L14/决策点 5：会话管理对话框/标签右键
+ *        "停止"/关闭运行中标签"停止会话并关闭"共用入口）
  * @param sessionId 目标会话 ID
  *
  * 失控后台会话不必先切换过去再按 Stop（结合问题 2 的切入冻结场景，starting
- * 残留会话切过去也停不了——本入口直达该会话的桥）。语义与 stop() 的活跃
- * 会话路径一致（清挂起缓存/撤卡/清 FIFO），但 UI 信号仅目标会话为活跃会话
- * 时发射；空闲/无桥会话静默 no-op。
+ * 残留会话切过去也停不了——本入口直达该会话的桥）。语义与 stop() 一致
+ * （清挂起缓存/撤卡/清 FIFO）；session-tabs：撤卡信号带 sessionId 广播，
+ * 宿主路由到该会话视图（无论是否活跃）。
  */
 void DAAgentModule::stopSession(const QString& sessionId)
 {
@@ -539,9 +545,8 @@ void DAAgentModule::stopSession(const QString& sessionId)
     if (!bridge || (!bridge->isRunning() && !bridge->isRecovering())) {
         return;  // 空闲/无桥：no-op（对话框菜单已按运行态启用，此为防御）
     }
-    const bool isActive = (sessionId == d->mCurrentSessionId);
-    if (d->mPendingQuestions.remove(sessionId) && isActive) {
-        emit agentQuestionDismissed();
+    if (d->mPendingQuestions.remove(sessionId)) {
+        emit agentQuestionDismissed(sessionId);
     }
     d->mPendingToolCallUuids.remove(sessionId);
     bridge->requestStop();
@@ -549,6 +554,99 @@ void DAAgentModule::stopSession(const QString& sessionId)
     notifyForeignRunningSessions();  // 跨工程视图一键停止后提示条即时刷新（决策点 5）
     // 桥的 busy(false) 由 requestStop → onProcessFinished 用户停止分支发射，
     // 经 attachBridge 路由记账/转发（后台会话不转发 UI，角标已刷新）
+}
+
+/**
+ * @brief 清除当前会话指针（session-tabs，unbound 视图激活时调用）
+ *
+ * 切离逻辑与 switchSession 一致：旧会话空闲且无挂起交互且无视图 → 优雅退役其桥；
+ * 忙碌/等待输入 → 桥留后台继续。区别于 switchSession：不 emit 任何信号
+ * （unbound 视图自身已由宿主清空，无需重放）。
+ */
+void DAAgentModule::clearCurrentSession()
+{
+    DA_D(d);
+    const QString oldSid = d->mCurrentSessionId;
+    if (oldSid.isEmpty()) {
+        return;
+    }
+    DAAgentBridge* oldBridge = d->mSessionBridges.value(oldSid);
+    if (oldBridge && !d->mSessionBusy.value(oldSid, false)
+        && !d->mSessionStarting.value(oldSid, false)
+        && !d->mPendingQuestions.contains(oldSid)
+        && d->mPendingApprovalRequests.value(oldSid).isEmpty()
+        && !d->mSessionViewAttached.contains(oldSid)) {
+        retireBridge(oldSid);
+    }
+    d->mCurrentSessionId.clear();
+    resetCumulativeTokens();
+}
+
+/**
+ * @brief 会话视图 attach/detach 通知（session-tabs）
+ * @param sessionId 会话 ID
+ * @param attached true=视图已创建（宿主将路由该会话信号），false=视图已关闭
+ *
+ * attach=true 时向该视图重发挂起的 ask_user 问题卡、工具审批卡、瞬态通知
+ * （重试条/话说一半提醒）与子 Agent 进度日志（缓存来自视图关闭期间的后台
+ * 运行）。detach 不停止任何子进程（关闭视图 ≠ 停止会话），仅影响 agentDone
+ * 时的桥退役判定与 switchSession 的切离退役判定。
+ */
+void DAAgentModule::setSessionViewAttached(const QString& sessionId, bool attached)
+{
+    DA_D(d);
+    if (sessionId.isEmpty()) {
+        return;
+    }
+    if (attached) {
+        d->mSessionViewAttached.insert(sessionId);
+        // 视图重开：重发挂起的可交互卡片（带 sessionId 广播，宿主路由到该视图）
+        // 审计问题 17：重发前校验桥存活——挂起问题蕴含进程存活（Python 处于
+        // interrupt 等待），竞态残留的死桥缓存不重发幽灵卡，直接作废
+        const auto qIt = d->mPendingQuestions.constFind(sessionId);
+        if (qIt != d->mPendingQuestions.constEnd()) {
+            DAAgentBridge* qb = d->mSessionBridges.value(sessionId);
+            if (qb && qb->isRunning()) {
+                emit agentQuestion(sessionId, qIt->text, qIt->options, qIt->multiSelect);
+            } else {
+                d->mPendingQuestions.erase(qIt);
+            }
+        }
+        for (const QJsonValue& v : d->mPendingApprovalRequests.value(sessionId)) {
+            const QJsonObject o = v.toObject();
+            emit agentToolApprovalRequest(sessionId, o.value("callId").toString(),
+                                          o.value("toolName").toString(),
+                                          o.value("args").toObject());
+        }
+        // 瞬态通知重发（审计问题 8）：视图关闭期间的重试条/话说一半提醒一次性
+        // 重发，重发即清——重试中的会话后续 retrying 信号会重新缓存；incomplete
+        // 提醒清除后该会话恢复可退役语义
+        auto nIt = d->mPendingNotifications.find(sessionId);
+        if (nIt != d->mPendingNotifications.end()) {
+            const PrivateData::PendingNotification n = nIt.value();
+            d->mPendingNotifications.erase(nIt);
+            if (n.isRetrying) {
+                emit agentRetrying(sessionId, n.attempt, n.maxAttempts, n.delayMs,
+                                   n.retryErrorType, n.retryErrorMessage);
+            }
+            if (n.isIncomplete) {
+                emit agentTurnPossiblyIncomplete(n.toolRounds);
+                emit systemMessage(turnIncompleteMessage(n.toolRounds), QStringLiteral("warning"));
+            }
+        }
+        // 子 Agent 进度重放（审计问题 28b）：本轮缓存的进度事件逐条重发，
+        // chat.js 按 call_id/task_id 幂等重建进度卡（含惰性重建双保险）——
+        // 视图重开时在途派发进度不再整体不可见。与 loadHistory 的历史重放
+        // 同栈同步执行（直连），时序上先重放历史再叠加进度卡
+        const auto progressIt = d->mSubagentProgressLog.constFind(sessionId);
+        if (progressIt != d->mSubagentProgressLog.constEnd()) {
+            for (const QJsonValue& v : progressIt.value()) {
+                emit agentSubagentProgress(sessionId, v.toObject());
+            }
+        }
+    } else {
+        d->mSessionViewAttached.remove(sessionId);
+    }
 }
 
 /**
@@ -746,7 +844,7 @@ DAAgentBridge* DAAgentModule::adoptOrStartBridge(const QString& sessionId, bool 
                 // 预热桥仍在冷启动中：agentStarting 未路由过（预热线未连），
                 // 手动补会话启动态（后续 ready 到达时经路由 lambda 清除）
                 d->mSessionStarting[sessionId] = true;
-                if (sessionId == d->mCurrentSessionId) emit agentStarting();
+                emit agentStarting(sessionId);
             }
         }
     }
@@ -931,19 +1029,17 @@ void DAAgentModule::attachBridge(DAAgentBridge* bridge, const QString& sessionId
             d->mCumulativeInTokens[sessionId] += inT;
             d->mCumulativeOutTokens[sessionId] += outT;
             d->mCumulativeTotalTokens[sessionId] += tot;
-            if (sessionId == d->mCurrentSessionId) {
-                // 契约2：emit 5 参信号（context_window 经 readContextWindow 复用）
-                emit tokenUsageUpdated(d->mCumulativeInTokens[sessionId], d->mCumulativeOutTokens[sessionId],
-                                       d->mCumulativeTotalTokens[sessionId], readContextWindow(), src);
-            }
-        } else if (sessionId == d->mCurrentSessionId) {
-            // 流式估算不累加：emit"累计 + 本轮估算"的临时值（仅活跃会话刷新 UI）
-            emit tokenUsageUpdated(d->mCumulativeInTokens[sessionId] + inT,
+            // session-tabs：带 sessionId 对所有视图广播（含后台会话）
+            emit tokenUsageUpdated(sessionId, d->mCumulativeInTokens[sessionId], d->mCumulativeOutTokens[sessionId],
+                                    d->mCumulativeTotalTokens[sessionId], readContextWindow(), src);
+        } else {
+            // 流式估算不累加：emit"累计 + 本轮估算"的临时值
+            emit tokenUsageUpdated(sessionId, d->mCumulativeInTokens[sessionId] + inT,
                                    d->mCumulativeOutTokens[sessionId] + outT,
                                    d->mCumulativeTotalTokens[sessionId] + tot, readContextWindow(), src);
         }
     });
-    // agent 提问（ask_user）——落盘 + 缓存（切回重发交互卡）
+    // agent 提问（ask_user）——落盘 + 缓存（视图重开/attach 时重发交互卡）
     connect(bridge, &DAAgentBridge::agentQuestion, this,
             [this, sessionId](const QString& text, const QStringList& options, bool multiSelect) {
         auto* d = d_func();
@@ -953,73 +1049,71 @@ void DAAgentModule::attachBridge(DAAgentBridge* bridge, const QString& sessionId
         args["multi_select"] = multiSelect;
         // 契约6：入会话 FIFO 供下一条 answer 按 FIFO 配对
         d->mPendingToolCallUuids[sessionId].enqueue(appendToolCallRecord(sessionId, "ask_user", args));
-        // concurrent-sessions：缓存问题载荷，切回该会话时重发可交互问题卡
+        // concurrent-sessions：缓存问题载荷，视图重新 attach 该会话时重发可交互问题卡
         PrivateData::PendingQuestion pq;
         pq.text       = text;
         pq.options    = options;
         pq.multiSelect = multiSelect;
         d->mPendingQuestions[sessionId] = pq;
-        if (sessionId == d->mCurrentSessionId) {
-            emit agentQuestion(text, options, multiSelect);
-        } else {
-            emit sessionListChanged(listSessionsForUI());  // 后台等待输入 → 角标
-        }
+        // session-tabs：带 sessionId 无条件广播——宿主路由到该会话视图；
+        // 无视图时宿主忽略（缓存仍在，attach 时经 setSessionViewAttached 重发）
+        emit agentQuestion(sessionId, text, options, multiSelect);
+        emit sessionListChanged(listSessionsForUI());  // 刷新角标
     });
 
-    // ---- UI 信号（仅活跃会话转发） ----
+    // ---- UI 信号（session-tabs：带 sessionId 无条件转发，宿主按会话路由） ----
     connect(bridge, &DAAgentBridge::agentToken, this, [this, sessionId](const QString& t) {
-        if (sessionId == d_func()->mCurrentSessionId) emit agentToken(t);
+        emit agentToken(sessionId, t);
     });
-    // assistant 消息完成：Dock 据此 finalizeAgentMessage 定稿流式气泡。
+    // assistant 消息完成：视图据此 finalizeAgentMessage 定稿流式气泡。
     // e1053d1 会话化重构时本转发遗漏（只保留了持久化 lambda），导致 JS 侧
     // currentAgentMsg 永不闭合——整轮回复（含多次工具调用间的叙述）全部
     // 堆积进同一个气泡。
     connect(bridge, &DAAgentBridge::agentMessageComplete, this, [this, sessionId](const QString& fullText) {
-        if (sessionId == d_func()->mCurrentSessionId) emit agentMessageComplete(fullText);
+        emit agentMessageComplete(sessionId, fullText);
     });
-    // 工具调用：Dock 据此渲染工具卡片。Bridge 已过滤子 agent 调用
+    // 工具调用：视图据此渲染工具卡片。Bridge 已过滤子 agent 调用
     //（带 subagent_id 的不 emit，子转录不进主聊天流，母文档 §7）。
-    // 同为 e1053d1 遗漏——缺失时聊天界面看不到任何工具调用卡片。
     connect(bridge, &DAAgentBridge::agentToolCall, this,
             [this, sessionId](const QString& toolName, const QJsonObject& args) {
-        if (sessionId == d_func()->mCurrentSessionId) emit agentToolCall(toolName, args);
+        emit agentToolCall(sessionId, toolName, args);
     });
-    // 工具排队状态（决策点 2 ③）：瞬态展示信息，仅活跃会话转发、不持久化
+    // 工具排队状态（决策点 2 ③）：瞬态展示信息，不持久化
     //（position>0=排队中第 N 位；0=开始执行，UI 恢复"运行中"）
+    // session-tabs：带 sessionId 无条件广播——宿主路由到该会话视图（含后台）
     connect(bridge, &DAAgentBridge::agentToolQueued, this,
             [this, sessionId](const QString& toolName, int position) {
-        if (sessionId == d_func()->mCurrentSessionId) emit agentToolQueued(toolName, position);
+        emit agentToolQueued(sessionId, toolName, position);
     });
     // 工具结果：子 agent 一期过滤规则（母文档 §7）——带 subagent_id 的结果
     // 不转发接口信号（不进主聊天流），执行照常（权限门同门执法）。
     connect(bridge, &DAAgentBridge::agentToolResult, this,
             [this, sessionId](const QString& toolName, const QJsonObject& result, const QString& subagentId) {
-        if (subagentId.isEmpty() && sessionId == d_func()->mCurrentSessionId) {
-            emit agentToolResult(toolName, result);
+        if (subagentId.isEmpty()) {
+            emit agentToolResult(sessionId, toolName, result);
         }
     });
     // 转发 agentRetrying 信号到接口（plan-03 step6）
     connect(bridge, &DAAgentBridge::agentRetrying, this,
             [this, sessionId](int attempt, int maxAttempts, int delayMs, const QString& errorType, const QString& errorMessage) {
         auto* d = d_func();
-        if (sessionId == d->mCurrentSessionId) {
-            emit agentRetrying(attempt, maxAttempts, delayMs, errorType, errorMessage);
-        } else {
-            // 审计问题 8：后台会话重试条缓存（最新一条覆盖——重试条只显示最新
-            // 进度），切回时重发；回合结束（agentDone）即清
-            PrivateData::PendingNotification& n = d->mPendingNotifications[sessionId];
-            n.isRetrying        = true;
-            n.attempt           = attempt;
-            n.maxAttempts       = maxAttempts;
-            n.delayMs           = delayMs;
-            n.retryErrorType    = errorType;
-            n.retryErrorMessage = errorMessage;
-        }
+        // session-tabs：带 sessionId 无条件广播——宿主路由到该会话视图
+        emit agentRetrying(sessionId, attempt, maxAttempts, delayMs, errorType, errorMessage);
+        // 审计问题 8：后台会话重试条缓存（最新一条覆盖——重试条只显示最新
+        // 进度），视图关闭期间/无视图时到达的事件切回（attach）时重发；
+        // 回合结束（agentDone）即清
+        PrivateData::PendingNotification& n = d->mPendingNotifications[sessionId];
+        n.isRetrying        = true;
+        n.attempt           = attempt;
+        n.maxAttempts       = maxAttempts;
+        n.delayMs           = delayMs;
+        n.retryErrorType    = errorType;
+        n.retryErrorMessage = errorMessage;
     });
     // 子 agent 任务进度：缓存 + 原样转发（终态撤卡语义由 Bridge 消化）。
-    // 审计问题 28b：切走/后台期间到达的进度事件缓存于本轮日志，切回重放
-    // 重建进度卡——修复前 clearChat 复位 subagentCards 后，未知 call_id 的
-    // 后续进度全部被忽略，在途派发切回后完全不可见直到最终 assistant 文本
+    // 审计问题 28b：切走/后台/无视图期间到达的进度事件缓存于本轮日志，切回
+    // （attach）重放重建进度卡——修复前 clearChat 复位 subagentCards 后，未知
+    // call_id 的后续进度全部被忽略，在途派发切回后完全不可见直到最终 assistant 文本
     connect(bridge, &DAAgentBridge::agentSubagentProgress, this, [this, sessionId](const QJsonObject& p) {
         auto* d = d_func();
         const bool isHeartbeat = !p.contains(QStringLiteral("task_id"))
@@ -1027,34 +1121,35 @@ void DAAgentModule::attachBridge(DAAgentBridge* bridge, const QString& sessionId
         if (!isHeartbeat) {
             d->mSubagentProgressLog[sessionId].append(p);
         }
-        if (sessionId == d->mCurrentSessionId) emit agentSubagentProgress(p);
+        // session-tabs：带 sessionId 无条件广播——宿主路由到该会话视图
+        emit agentSubagentProgress(sessionId, p);
     });
     // 回合疑似未完成（模型"话说一半就停"）：转发 + systemMessage 提醒卡
     connect(bridge, &DAAgentBridge::agentTurnPossiblyIncomplete, this, [this, sessionId](int toolRounds) {
         auto* d = d_func();
-        if (sessionId != d->mCurrentSessionId) {
-            // 审计问题 8：后台会话的"话说一半"提醒缓存（有实际指导价值——
-            // 提示用户发"继续"），切回时重发；agentDone 豁免退役保住该缓存
-            PrivateData::PendingNotification& n = d->mPendingNotifications[sessionId];
-            n.isIncomplete = true;
-            n.toolRounds   = toolRounds;
-            return;
-        }
+        // 审计问题 8：后台会话的"话说一半"提醒缓存（有实际指导价值——提示
+        // 用户发"继续"），视图关闭期间/无视图时缓存，切回（attach）时重发；
+        // agentDone 豁免退役保住该缓存
+        PrivateData::PendingNotification& n = d->mPendingNotifications[sessionId];
+        n.isIncomplete = true;
+        n.toolRounds   = toolRounds;
+        // session-tabs：带 sessionId 无条件广播——宿主路由到该会话视图重发提醒；
+        // 无视图时宿主忽略（缓存仍在，attach 时经 setSessionViewAttached 重发）
         emit agentTurnPossiblyIncomplete(toolRounds);
         emit systemMessage(turnIncompleteMessage(toolRounds), QStringLiteral("warning"));
     });
 
-    // ---- 状态信号：内部记账 + 活跃转发 ----
+    // ---- 状态信号：内部记账 + 广播 ----
     connect(bridge, &DAAgentBridge::agentStarting, this, [this, sessionId]() {
         auto* d = d_func();
         d->mSessionStarting[sessionId] = true;
-        if (sessionId == d->mCurrentSessionId) emit agentStarting();
+        emit agentStarting(sessionId);
     });
     // 崩溃恢复：ready 恢复路径重发会话历史或最后消息（原 connectSignals 逻辑会话化）
     connect(bridge, &DAAgentBridge::agentReady, this, [this, bridge, sessionId](const QString& model) {
         auto* d = d_func();
         d->mSessionStarting[sessionId] = false;
-        if (sessionId == d->mCurrentSessionId) emit agentReady(model);
+        emit agentReady(sessionId, model);
         if (bridge->isRecovering()) {
             const QString lastSid = bridge->lastSessionId();
             if (!lastSid.isEmpty()) {
@@ -1085,7 +1180,8 @@ void DAAgentModule::attachBridge(DAAgentBridge* bridge, const QString& sessionId
             // startAgent → agentStarting 会重新置位，语义不受影响。
             d->mSessionStarting.remove(sessionId);
         }
-        if (sessionId == d->mCurrentSessionId) emit agentBusy(busy);
+        // session-tabs：带 sessionId 无条件广播——宿主路由到该会话视图
+        emit agentBusy(sessionId, busy);
         // 角标刷新双向覆盖（审计问题 6）：Bridge 的错误路径（crash_exhausted/
         // ready 超时/写失败回滚）只发 error+busy(false) 不发 agentDone——
         // 若仅 busy(true) 刷新，"running"→"error" 的角标变化要等下一个事件
@@ -1095,7 +1191,8 @@ void DAAgentModule::attachBridge(DAAgentBridge* bridge, const QString& sessionId
     connect(bridge, &DAAgentBridge::agentDone, this, [this, sessionId]() {
         auto* d = d_func();
         d->mSessionBusy[sessionId] = false;
-        if (sessionId == d->mCurrentSessionId) emit agentDone();
+        // session-tabs：带 sessionId 无条件广播——宿主路由到该会话视图
+        emit agentDone();
         // 回合结束：重试条缓存失去意义即清（问题 8）；incomplete 提醒恰在
         // done 时刻缓存（Bridge 先发 turnPossiblyIncomplete 再发 done），保留
         auto nIt = d->mPendingNotifications.find(sessionId);
@@ -1108,11 +1205,12 @@ void DAAgentModule::attachBridge(DAAgentBridge* bridge, const QString& sessionId
         // 回合结束：子 Agent 进度日志即清（问题 28b）——派发产出已以工具卡
         // 落盘（dispatch tool_call/tool_result），历史重放自会呈现
         d->mSubagentProgressLog.remove(sessionId);
-        // concurrent-sessions：后台会话跑完且无需等待输入 → 优雅退役
-        //（对话状态已全量落盘 JSONL，下次发消息时经 load_session 重建）
+        // concurrent-sessions：会话跑完且无需等待输入 → 优雅退役
+        //（对话状态已全量落盘 JSONL，下次发消息时经 load_session 重建）。
         // incomplete 提醒豁免退役（问题 8）：否则提醒随桥退役永远丢失，
-        // 切回重发落空；切回重发后缓存清除，下次切离即可正常退役
-        if (sessionId != d->mCurrentSessionId && !d->mPendingQuestions.contains(sessionId)
+        // 切回重发落空；切回重发后缓存清除，下次切离即可正常退役。
+        // session-tabs：有视图的会话不退役——视图常驻，用户随时可能继续对话
+        if (!d->mSessionViewAttached.contains(sessionId) && !d->mPendingQuestions.contains(sessionId)
             && d->mPendingApprovalRequests.value(sessionId).isEmpty()
             && !d->mPendingNotifications.value(sessionId).isIncomplete) {
             retireBridge(sessionId);
@@ -1138,21 +1236,21 @@ void DAAgentModule::attachBridge(DAAgentBridge* bridge, const QString& sessionId
         // FIFO 不清问题卡，用户对着幽灵卡作答会因 FIFO 已空跳过持久化，
         // 产生"答案消失"的新症状（FIFO/问题缓存/UI 卡三处必须同批）
         const bool hadQuestion = d->mPendingQuestions.remove(sessionId);
-        if (sessionId == d->mCurrentSessionId) {
-            if (hadQuestion) {
-                emit agentQuestionDismissed();
-            }
-            emit agentError(message, errorType, detail);
-        } else {
-            emit sessionListChanged(listSessionsForUI());  // 后台出错 → 角标（含 waiting_input 解除）
+        if (hadQuestion) {
+            // session-tabs：带 sessionId 广播撤卡——宿主路由到该会话视图
+            emit agentQuestionDismissed(sessionId);
         }
+        // session-tabs：带 sessionId 无条件广播——宿主路由到该会话视图
+        emit agentError(sessionId, message, errorType, detail);
+        // 刷新角标（含 waiting_input 解除，审计问题 6 双向覆盖语义）
+        emit sessionListChanged(listSessionsForUI());
     });
     // 崩溃恢复：session_loaded 后重发最后消息（isRecovering 由 resendLastMessage 内部复位）
     connect(bridge, &DAAgentBridge::agentSessionLoaded, this, [this, bridge, sessionId](const QString& sid) {
         if (bridge->isRecovering()) {
             bridge->resendLastMessage();
         }
-        if (sessionId == d_func()->mCurrentSessionId) emit agentSessionLoaded(sid);
+        emit agentSessionLoaded(sid);
     });
 
     // ---- 审批：_tier/_rememberable 补齐 + callId→会话路由表 + 挂起缓存 ----
@@ -1185,11 +1283,9 @@ void DAAgentModule::attachBridge(DAAgentBridge* bridge, const QString& sessionId
         cached[QStringLiteral("toolName")] = toolName;
         cached[QStringLiteral("args")]     = payload;
         d->mPendingApprovalRequests[sessionId].append(cached);
-        if (sessionId == d->mCurrentSessionId) {
-            emit agentToolApprovalRequest(callId, toolName, payload);
-        } else {
-            emit sessionListChanged(listSessionsForUI());  // 后台等待审批 → 角标
-        }
+        // session-tabs：带 sessionId 无条件广播——宿主路由到该会话视图
+        emit agentToolApprovalRequest(sessionId, callId, toolName, payload);
+        emit sessionListChanged(listSessionsForUI());  // 刷新角标
     });
     // 审批作废（子进程退出/崩溃/子 agent 终态撤卡）：清路由表与缓存
     connect(bridge, &DAAgentBridge::agentToolApprovalDismissed, this,
@@ -1203,7 +1299,7 @@ void DAAgentModule::attachBridge(DAAgentBridge* bridge, const QString& sessionId
                 break;
             }
         }
-        if (sessionId == d->mCurrentSessionId) emit agentToolApprovalDismissed(callId);
+        emit agentToolApprovalDismissed(sessionId, callId);
     });
 
     // ---- 桥退出：清权限会话记忆（T16 A5：不跨重启存活；V1 保持全局语义，
@@ -1222,12 +1318,10 @@ void DAAgentModule::attachBridge(DAAgentBridge* bridge, const QString& sessionId
         // 作废——清缓存 + 撤卡（镜像审批 dismissed 契约）。不清则：角标永久
         // waiting_input、切离/退役守卫拒绝处理死桥、切回重发幽灵问题卡、
         // 用户对幽灵卡作答经 sendUserAnswer 落盘孤儿 tool_result（答案蒸发）。
+        // session-tabs：带 sessionId 广播撤卡——宿主路由到该会话视图（后台亦撤）
         if (d->mPendingQuestions.remove(sessionId)) {
-            if (sessionId == d->mCurrentSessionId) {
-                emit agentQuestionDismissed();
-            } else {
-                emit sessionListChanged(listSessionsForUI());  // 后台角标解除
-            }
+            emit agentQuestionDismissed(sessionId);
+            emit sessionListChanged(listSessionsForUI());  // 角标解除（waiting_input → 空闲）
         }
         // 跨工程存活桥集合变化（进程死亡/自愈窗口开启，决策点 5 提示条刷新）
         notifyForeignRunningSessions();
@@ -1266,12 +1360,11 @@ void DAAgentModule::retireBridge(const QString& sessionId)
         d->mPermissionManager->clearSessionContext(sessionId);
     }
     // 审计问题 17：任何清问题缓存的退役路径（删除会话/sendMessage 防御重建等）
-    // 都须同步撤活跃会话屏幕上的问题卡——契约完整性兜底（常规路径进程退出时
-    // processExited lambda 已先清缓存并撤卡，此处缓存多已为空）
-    if (sessionId == d->mCurrentSessionId && d->mPendingQuestions.remove(sessionId)) {
-        emit agentQuestionDismissed();
-    } else {
-        d->mPendingQuestions.remove(sessionId);
+    // 都须同步撤视图上的问题卡——契约完整性兜底（常规路径进程退出时
+    // processExited lambda 已先清缓存并撤卡，此处缓存多已为空）。
+    // session-tabs：带 sessionId 广播，无论是否当前会话（视图可能在后台）
+    if (d->mPendingQuestions.remove(sessionId)) {
+        emit agentQuestionDismissed(sessionId);
     }
     d->mPendingApprovalRequests.remove(sessionId);
     for (auto it = d->mApprovalSessionByCallId.begin(); it != d->mApprovalSessionByCallId.end();) {
@@ -1571,6 +1664,10 @@ QString DAAgentModule::createSession()
 
 /**
  * @brief 新建会话（UI "+" 按钮入口）—— createSession + emit sessionCreated
+ *
+ * session-tabs：UI "+" 按钮不再直接调本方法——宿主走 unbound 视图懒创建路径
+ *（点"+"仅创建/raise 未绑定会话的空聊天视图，首条消息才落盘建会话）。
+ * 本方法保留供既有调用方（如 runAgent 之外的程序化路径），行为不变。
  */
 void DAAgentModule::newSession()
 {
@@ -1608,19 +1705,21 @@ void DAAgentModule::newSession()
 }
 
 /**
- * @brief 重断言活跃会话的 UI 运行态（switchSession step4 / newSession 共用）
+ * @brief 重断言活跃会话的 UI 运行态（newSession 共用，审计问题 14）
  *
  * 先 busy(false) 清残留，再按活跃会话实际状态置 starting/busy——
  * Dock 的 busy/starting 守卫与 web 状态由此与会话真实状态对齐。
+ * session-tabs：带 sessionId 广播，宿主路由到该会话视图。
  */
 void DAAgentModule::reassertActiveSessionState()
 {
     DA_D(d);
-    emit agentBusy(false);
-    if (d->mSessionStarting.value(d->mCurrentSessionId, false)) {
-        emit agentStarting();
-    } else if (d->mSessionBusy.value(d->mCurrentSessionId, false)) {
-        emit agentBusy(true);
+    const QString& sid = d->mCurrentSessionId;
+    emit agentBusy(sid, false);
+    if (d->mSessionStarting.value(sid, false)) {
+        emit agentStarting(sid);
+    } else if (d->mSessionBusy.value(sid, false)) {
+        emit agentBusy(sid, true);
     }
 }
 
@@ -1640,65 +1739,41 @@ bool DAAgentModule::switchSession(const QString& sessionId)
     if (!d->mSessionStore->hasSession(sessionId)) return false;
     // 1. 切离旧会话（concurrent-sessions 核心变化）：忙碌/启动中/等待输入 → 桥留在
     //    后台继续执行（不再 requestStop 终止，旧会话尾巴由 attachBridge 的会话化
-    //    持久化 lambda 写回原会话，无污染）；空闲且无挂起交互 → 优雅退役其桥
+    //    持久化 lambda 写回原会话，无污染）；空闲且无挂起交互且无视图 → 优雅退役其桥
     //    （内存收窄，状态已全量落盘 JSONL）。判定收口 retireIdleSessionBridge
-    //    （与 newSession 共用，问题 18）
+    //    （与 newSession 共用，问题 18）；session-tabs：有视图的会话不退役——
+    //    视图常驻，用户随时可能切回继续对话
     retireIdleSessionBridge(d->mCurrentSessionId);
     // 2. 切换 UI 归属 + last_active 指针（无任何子进程操作，切换耗时 = UI 重放）
     d->mCurrentSessionId = sessionId;
     d->mSessionStore->setLastActive(sessionId, d->mCurrentProjectPath);  // 带工程路径
-    // 3. UI 历史重放由 sessionSwitched 信号触发（clearChat + loadHistory 在 Dock 处理；
-    //    未配对的末尾 ask_user 在 C++ 合并器中被跳过，不渲染为已答静态问题——
-    //    随后由第 5 步重发可交互卡片）
-    emit sessionSwitched(sessionId, d->mSessionStore->readAllRecords(sessionId));
+    // 3. session-tabs：目标会话已有视图（宿主内 raise 即完成切换）→ 不重放历史、
+    //    不回放 token、不重发挂起卡（视图实时渲染，内容已最新）；仅 emit 空记录
+    //    sessionSwitched 供宿主同步状态。无视图（会话管理对话框切换到未打开会话）
+    //    → 携全量 records，宿主据此创建视图并 loadHistory。
+    if (d->mSessionViewAttached.contains(sessionId)) {
+        emit sessionSwitched(sessionId, {});
+    } else {
+        // UI 历史重放由 sessionSwitched 信号触发（clearChat + loadHistory 在宿主处理；
+        // 未配对的末尾 ask_user 在 C++ 合并器中被跳过，不渲染为已答静态问题——
+        // 随后由 setSessionViewAttached 的 attach 重发可交互卡片）
+        emit sessionSwitched(sessionId, d->mSessionStore->readAllRecords(sessionId));
+    }
     // 4. 切换后回放 token 统计：从持久化 usage 记录求和重算会话累计值（无则全 0），
     //    避免 UI 拘留上一会话的 token 数值与进度条（Bug2 修复）；
     //    随后恢复目标会话 UI 运行态（顺序：先 busy(false) 清残留，再按需置 starting/busy）
     emitTokenUsageForSession(sessionId);
-    reassertActiveSessionState();
-    // 5. 挂起交互重放：切回时重新弹可交互卡片（缓存来自后台期间的 ask_user/审批）
-    const auto qIt = d->mPendingQuestions.constFind(sessionId);
-    if (qIt != d->mPendingQuestions.constEnd()) {
-        // 审计问题 17：重发前校验桥存活——挂起问题蕴含进程存活（Python 处于
-        // interrupt 等待），竞态残留的死桥缓存不重发幽灵卡，直接作废
-        DAAgentBridge* qb = d->mSessionBridges.value(sessionId);
-        if (qb && qb->isRunning()) {
-            emit agentQuestion(qIt->text, qIt->options, qIt->multiSelect);
-        } else {
-            d->mPendingQuestions.remove(sessionId);
-        }
+    // 状态重断言（审计问题 14）：先 busy(false) 清残留，再按会话实际状态置
+    // starting/busy——带 sessionId 广播，宿主路由到该会话视图
+    emit agentBusy(sessionId, false);
+    if (d->mSessionStarting.value(sessionId, false)) {
+        emit agentStarting(sessionId);
+    } else if (d->mSessionBusy.value(sessionId, false)) {
+        emit agentBusy(sessionId, true);
     }
-    for (const QJsonValue& v : d->mPendingApprovalRequests.value(sessionId)) {
-        const QJsonObject o = v.toObject();
-        emit agentToolApprovalRequest(o.value("callId").toString(),
-                                      o.value("toolName").toString(),
-                                      o.value("args").toObject());
-    }
-    // 瞬态通知重发（审计问题 8）：后台期间的重试条/话说一半提醒一次性重发，
-    // 重发即清——重试中的会话后续 retrying 信号会重新缓存；incomplete 提醒
-    // 清除后该会话恢复可退役语义
-    auto nIt = d->mPendingNotifications.find(sessionId);
-    if (nIt != d->mPendingNotifications.end()) {
-        const PrivateData::PendingNotification n = nIt.value();
-        d->mPendingNotifications.erase(nIt);
-        if (n.isRetrying) {
-            emit agentRetrying(n.attempt, n.maxAttempts, n.delayMs, n.retryErrorType, n.retryErrorMessage);
-        }
-        if (n.isIncomplete) {
-            emit agentTurnPossiblyIncomplete(n.toolRounds);
-            emit systemMessage(turnIncompleteMessage(n.toolRounds), QStringLiteral("warning"));
-        }
-    }
-    // 子 Agent 进度重放（审计问题 28b）：本轮缓存的进度事件逐条重发，
-    // chat.js 按 call_id/task_id 幂等重建进度卡（含惰性重建双保险）——
-    // 切回运行中会话时在途派发进度不再整体不可见。与 sessionSwitched 的
-    // 历史重放同栈同步执行（直连），时序上先重放历史再叠加进度卡
-    const auto progressIt = d->mSubagentProgressLog.constFind(sessionId);
-    if (progressIt != d->mSubagentProgressLog.constEnd()) {
-        for (const QJsonValue& v : progressIt.value()) {
-            emit agentSubagentProgress(v.toObject());
-        }
-    }
+    // 5. 挂起交互重放：无视图分支由 setSessionViewAttached（宿主创建视图后回调）
+    //    重发问题卡/审批卡/瞬态通知/子 Agent 进度；有视图分支视图已在渲染
+    //    （会话级信号本就实时广播），无需重发
     // 6. 温暖化：目标会话无桥且有预热空闲桥 → 接管并后台 load_session
     //    （下次发消息免冷启动；sendMessage 的 user_msg 在 stdin 管道中排在
     //     load_session 之后，时序安全）
@@ -1731,6 +1806,9 @@ void DAAgentModule::deleteSession(const QString& sessionId)
     // 会话已不存在——显式清 error 角标残留（retireBridge 有意保留 error 态，
     // 删除路径必须回收，防状态哈希滞留已删会话键）
     d->mSessionError.remove(sessionId);
+    d->mSessionViewAttached.remove(sessionId);  // session-tabs：会话已删，视图集合同步清除
+    d->mPendingNotifications.remove(sessionId);   // 瞬态通知缓存同步回收
+    d->mSubagentProgressLog.remove(sessionId);    // 子 Agent 进度日志同步回收
     // 会话删除即销毁权限记忆与上下文（决策点 1 拍板；无桥会话不经
     // retireBridge，此处兜底，已清时幂等）
     if (d->mPermissionManager) {
@@ -1795,9 +1873,9 @@ QVariantList DAAgentModule::listSessions() const
  * @param sid 待判定会话 ID
  * @return 是否执行了退役
  *
- * 空闲且无挂起交互（问题/审批/incomplete 提醒豁免）→ 优雅退役其桥
+ * 空闲且无挂起交互（问题/审批/incomplete 提醒豁免）且无视图 → 优雅退役其桥
  * （内存收窄，状态已全量落盘 JSONL，下次发消息经 load_session 重建）；
- * 忙碌/启动中/挂起 → 桥留后台继续执行（并发会话核心语义）。
+ * 忙碌/启动中/挂起/有视图（session-tabs：视图常驻可继续对话）→ 桥留后台继续。
  */
 bool DAAgentModule::retireIdleSessionBridge(const QString& sid)
 {
@@ -1810,7 +1888,8 @@ bool DAAgentModule::retireIdleSessionBridge(const QString& sid)
         && !d->mSessionStarting.value(sid, false)
         && !d->mPendingQuestions.contains(sid)
         && d->mPendingApprovalRequests.value(sid).isEmpty()
-        && !d->mPendingNotifications.value(sid).isIncomplete) {
+        && !d->mPendingNotifications.value(sid).isIncomplete
+        && !d->mSessionViewAttached.contains(sid)) {
         retireBridge(sid);
         return true;
     }
@@ -2606,7 +2685,7 @@ void DAAgentModule::emitTokenUsageForSession(const QString& sid)
             src = meta.value("source").toString();  // 取最后一条 source 作展示
         }
     }
-    emit tokenUsageUpdated(d->mCumulativeInTokens[sid], d->mCumulativeOutTokens[sid],
+    emit tokenUsageUpdated(sid, d->mCumulativeInTokens[sid], d->mCumulativeOutTokens[sid],
                            d->mCumulativeTotalTokens[sid], readContextWindow(), src);
 }
 

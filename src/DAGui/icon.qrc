@@ -56,6 +56,10 @@
         <file>icon/data-picker-setting.svg</file>
         <file>icon/node.svg</file>
         <file>icon/session-new.svg</file>
+        <file>icon/session.svg</file>
+        <file>icon/session-running.svg</file>
+        <file>icon/session-waiting.svg</file>
+        <file>icon/session-error.svg</file>
         <file>icon/session-manager.svg</file>
     </qresource>
     <qresource prefix="/DAGui/MessageType">
