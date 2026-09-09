@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Session (idle): chat bubble (gray outline + white interior) with three gray dots.
+     Base icon of the session-* status set; idle sessions show no status accent.
+     Flat design, palette-only colors, fill-only (no stroke). -->
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px"
+     width="200px" height="200px" viewBox="0 0 200 200">
+    <!-- Bubble outline (with tail at bottom-left), primary gray -->
+    <path fill="#727272" d="M36,20 H144 A16,16 0 0 1 160,36 V124 A16,16 0 0 1 144,140 H70 L50,175 L40,140 H36 A16,16 0 0 1 20,124 V36 A16,16 0 0 1 36,20 Z"/>
+    <!-- Bubble interior (white), inset 5px -->
+    <path fill="#FFFFFF" d="M41,25 H139 A11,11 0 0 1 150,36 V119 A11,11 0 0 1 139,130 H68 L52,168 L47,130 H41 A11,11 0 0 1 30,119 V36 A11,11 0 0 1 41,25 Z"/>
+    <!-- Three idle dots, light gray -->
+    <circle cx="60" cy="78" r="9" fill="#B2B2B2"/>
+    <circle cx="90" cy="78" r="9" fill="#B2B2B2"/>
+    <circle cx="120" cy="78" r="9" fill="#B2B2B2"/>
+</svg>

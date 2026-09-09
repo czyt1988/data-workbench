@@ -52,6 +52,14 @@ public:
     int unregisterToolsByProvider(QObject* provider) override;
     /// @copydoc DAAgentInterface::unregisterSystemPromptsByProvider
     int unregisterSystemPromptsByProvider(QObject* provider) override;
+
+    // ---- 会话视图管理（session-tabs，override DAAgentInterface 3 个新纯虚） ----
+    /// @copydoc DAAgentInterface::setSessionViewAttached
+    void setSessionViewAttached(const QString& sessionId, bool attached) override;
+    /// @copydoc DAAgentInterface::clearCurrentSession
+    void clearCurrentSession() override;
+    /// @copydoc DAAgentInterface::stopSession
+    void stopSession(const QString& sessionId) override;
     /// @copydoc DAAgentInterface::showDockWidget
     void showDockWidget() override;
     /// @copydoc DAAgentInterface::hideDockWidget
