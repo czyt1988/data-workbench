@@ -721,6 +721,8 @@ void DAAppRibbonArea::buildContextCategoryChartEdit()
     mPannelChartSetting->addSmallWidget(mChartGridMinActionsButtonGroup);
     // pan
     mPannelChartSetting->addLargeAction(mActions->actionChartEnablePan);
+    mPannelChartSetting->addMediumAction(mActions->actionChartDisableZoomX);
+    mPannelChartSetting->addMediumAction(mActions->actionChartDisableZoomY);
     // 缩放
     mPannelChartSetting->addLargeAction(mActions->actionChartEnableZoom);
     mPannelChartSetting->addMediumAction(mActions->actionChartZoomIn);
@@ -934,6 +936,8 @@ void DAAppRibbonArea::updateChartZoomPanAboutRibbon(DAChartWidget* chart)
     }
     mActions->actionChartEnableZoom->setChecked(chart->isZoomEnabled());
     mActions->actionChartEnablePan->setChecked(chart->isPanEnabled());
+    mActions->actionChartDisableZoomX->setChecked(!chart->isXAxisZoomEnabled());
+    mActions->actionChartDisableZoomY->setChecked(!chart->isYAxisZoomEnabled());
 }
 
 /**

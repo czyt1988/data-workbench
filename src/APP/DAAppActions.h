@@ -168,6 +168,8 @@ public:
     QAction* actionChartZoomOut;                ///< 绘图缩小
     QAction* actionChartZoomAll;                ///< 显示全部
     QAction* actionChartEnablePan;              ///< 绘图拖动
+    QAction* actionChartDisableZoomX;           ///< 禁止水平缩放
+    QAction* actionChartDisableZoomY;           ///< 禁止垂直缩放
     QActionGroup* actionGroupChartPickers;      ///< Chart Picker的actiongroup
     QAction* actionChartEnablePickerCross;      ///< 十字标记
     QAction* actionChartEnablePickerY;          ///< y拾取器

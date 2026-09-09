@@ -430,6 +430,8 @@ void DAAppController::initConnection()
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartZoomOut, onActionChartZoomOutTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartZoomAll, onActionChartZoomAllTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnablePan, onActionChartEnablePanTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartDisableZoomX, onActionChartDisableZoomXTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartDisableZoomY, onActionChartDisableZoomYTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnablePickerCross, onActionChartEnablePickerCrossTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnablePickerY, onActionChartEnablePickerYTriggered);
     connect(mActions->actionGroupChartPickerTextRegion,
@@ -2691,6 +2693,30 @@ void DAAppController::onActionChartEnablePanTriggered(bool on)
     if (res) {
         mRibbon->updateChartZoomPanAboutRibbon(getCurrentChart());
     }
+}
+
+/**
+ * @brief 禁止水平缩放
+ * @param on 选中时禁止x轴参与缩放
+ */
+void DAAppController::onActionChartDisableZoomXTriggered(bool on)
+{
+    applyToCharts([ on ](DAChartWidget* w) -> bool {
+        w->enableXAxisZoom(!on);
+        return true;
+    });
+}
+
+/**
+ * @brief 禁止垂直缩放
+ * @param on 选中时禁止y轴参与缩放
+ */
+void DAAppController::onActionChartDisableZoomYTriggered(bool on)
+{
+    applyToCharts([ on ](DAChartWidget* w) -> bool {
+        w->enableYAxisZoom(!on);
+        return true;
+    });
 }
 
 /**

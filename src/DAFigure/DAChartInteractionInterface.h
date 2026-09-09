@@ -59,9 +59,16 @@ public:
 
     // ==================== 鼠标滚轮控制 ====================
     virtual void enableMouseWheelZoom(bool enable = true) = 0;
-    virtual bool isMouseWheelZoomEnabled() const          = 0;
+    virtual bool isMouseWheelZoomEnabled() const = 0;
 
     virtual QwtPlotMagnifier* getMagnifier() const = 0;
+
+    // ==================== 单轴缩放控制 ====================
+    virtual void enableXAxisZoom(bool enable = true) = 0;
+    virtual bool isXAxisZoomEnabled() const         = 0;
+
+    virtual void enableYAxisZoom(bool enable = true) = 0;
+    virtual bool isYAxisZoomEnabled() const          = 0;
 
     // ==================== 图例面板控制 ====================
     virtual void enableLegendPanel(bool enable = true) = 0;
