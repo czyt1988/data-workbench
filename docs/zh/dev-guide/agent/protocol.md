@@ -55,7 +55,9 @@ graph LR
         "tool_result_max_chars": 20000,
         "tool_result_preview_chars": 2000,
         "request_timeout_sec": 120,
-        "max_retries": 7,
+        "max_retries": 5,
+        "retry_interval_sec": 5,
+        "retry_interval_increment_sec": 1,
         "recursion_limit": -1,
         "inactivity_timeout_sec": 240,
         "max_subprocess_restarts": 3,
@@ -292,14 +294,14 @@ LLM 生成的 token 逐个推送。
 
 ### retrying — 重试通知
 
-指数退避重试期间的通知。
+线性退避重试期间的通知（第 k 次重试前等待 `retry_interval_sec + (k-1)*retry_interval_increment_sec` 秒）。
 
 ```json
 {
     "type": "retrying",
     "attempt": 2,
-    "max_attempts": 7,
-    "delay_ms": 4000,
+    "max_attempts": 5,
+    "delay_ms": 6000,
     "error_type": "network_exhausted",
     "error_message": "Connection timeout"
 }
@@ -456,7 +458,7 @@ Python 侧使用 `sys.stdin.buffer.read1(4096)` 而非 `read(n)`：
 
 ### stop 消息的内联扫描
 
-stdin 读取线程在将数据推入 asyncio.Queue 之前，先扫描完整行中的 `{"type":"stop"}`，立即设置 `stop_event`。这确保在指数退避 sleep 期间（`main()` 阻塞在 `runner.run()` 中）也能立即响应停止请求。
+stdin 读取线程在将数据推入 asyncio.Queue 之前，先扫描完整行中的 `{"type":"stop"}`，立即设置 `stop_event`。这确保在线性退避 sleep 期间（`main()` 阻塞在 `runner.run()` 中）也能立即响应停止请求。
 
 ### ToolMessage.content 必须是字符串
 

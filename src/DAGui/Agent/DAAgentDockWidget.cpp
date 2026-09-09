@@ -508,7 +508,7 @@ void DAAgentDockWidget::onAgentError(const QString& message, const QString& erro
 }
 
 /**
- * @brief 处理 Agent 重试信号（LLM 调用指数退避期间）
+ * @brief 处理 Agent 重试信号（LLM 调用线性退避期间）
  * @param attempt 当前重试次数
  * @param maxAttempts 最大重试次数
  * @param delayMs 本次退避延迟毫秒数
@@ -1082,7 +1082,9 @@ QString DAAgentDockWidget::mapErrorMessage(const QString& original, const QStrin
         return tr("Failed after repeated retries: server error"); //cn:多次重试后仍失败：服务器错误
     }
     if (errorType == "bad_request") {
-        return tr("Request format error: %1").arg(original); //cn:请求格式错误：%1
+        // 标题不拼接原始报文（litellm 等网关包装的 400 原文可达数千字符且
+        // 多为英文技术细节）；原文经 detail 折叠面板展示，可一键复制
+        return tr("Request was rejected by the LLM service, see details for the original error"); //cn:请求被 LLM 服务拒绝，原始错误见详情
     }
     if (errorType == "context_overflow") {
         return tr("Context window exceeded and compaction failed"); //cn:上下文窗口超限且压缩失败
@@ -1105,8 +1107,14 @@ QString DAAgentDockWidget::mapErrorMessage(const QString& original, const QStrin
     if (errorType == "reconfigure_failed") {
         return tr("Failed to switch model, keeping current model"); //cn:模型切换失败，已保留当前模型
     }
-    // unknown 或空
-    return tr("Agent error: %1").arg(original); //cn:Agent 错误：%1
+    if (errorType == "unknown" || errorType.isEmpty()) {
+        // 不清楚具体原因——给通用文案，原始错误经 detail 折叠面板查看
+        return tr("Agent request failed, see details for the original error"); //cn:Agent 请求失败，原始错误见详情
+    }
+    // 其它未映射类型：透传原文（Python 端下发的 user_message，
+    // 如 recursion_limit 的友好提示本身就是完整句子）
+    return original.isEmpty() ? tr("Agent request failed, see details for the original error") //cn:Agent 请求失败，原始错误见详情
+                              : tr("Agent error: %1").arg(original); //cn:Agent 错误：%1
 }
 
 } // namespace DA

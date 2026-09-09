@@ -37,13 +37,17 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 # Context-overflow keywords — must match context_manager.is_context_overflow_error
+# NOTE: do NOT add litellm's generic wrapper phrases (e.g. "request is invalid")
+# here — they prefix *every* upstream 400 and would misclassify unrelated
+# BadRequestErrors (dangling tool_calls, malformed fields...) as overflow.
+# Real overflow messages from all major providers contain the specific phrases
+# below ("maximum context length", "context window", ...).
 _CONTEXT_OVERFLOW_KEYWORDS = [
     "context length",
     "maximum context",
     "contextwindowexceedederror",
     "context window",
     "too many tokens",
-    "request is invalid",  # litellm wrapped message
 ]
 
 
@@ -108,12 +112,31 @@ def _is_auth_error(exc: Exception, exc_str: str) -> bool:
 
 
 def _is_bad_request(exc: Exception, exc_str: str) -> bool:
-    """Bad-request format error, excluding context overflow (non-retryable)."""
+    """Bad-request format error, excluding context overflow (retryable).
+
+    Retried because (a) upstream gateways (litellm et al.) occasionally emit
+    transient 400s, and (b) the dominant structural cause — dangling
+    tool_calls left by an interrupted tool round — is repaired proactively by
+    agent_node before the call, so a surviving 400 is worth a few attempts.
+    """
     if _HAS_OPENAI:
         return isinstance(exc, openai.BadRequestError)
     # Degraded path
     bad_request_keywords = ("400", "bad request")
     return any(kw in exc_str for kw in bad_request_keywords)
+
+
+def _is_api_related(exc: Exception) -> bool:
+    """Whether *exc* looks like it came from the LLM API / HTTP transport.
+
+    Used for the unknown-error fallback: API-shaped unknowns are treated as
+    retryable (server flakiness), purely local exceptions (bugs, TypeErrors)
+    fail fast instead of burning the retry budget.
+    """
+    if _HAS_OPENAI and isinstance(exc, openai.APIError):
+        return True
+    status = getattr(exc, "status_code", None)
+    return isinstance(status, int)
 
 
 def _is_rate_limit(exc: Exception, exc_str: str) -> bool:
@@ -221,10 +244,12 @@ def classify_error(exc: Exception) -> ErrorClassification:
             detail=str(exc),
         )
 
-    # 5. Bad request format (non-retryable, excluding overflow already caught)
+    # 5. Bad request format (retryable, excluding overflow already caught) —
+    #    transient gateway 400s recover on retry; structural causes (dangling
+    #    tool_calls) are repaired proactively by agent_node before the call.
     if _is_bad_request(exc, exc_str):
         return ErrorClassification(
-            retryable=False,
+            retryable=True,
             error_type=ErrorType.BAD_REQUEST,
             user_message="Bad request",
             detail=str(exc),
@@ -267,9 +292,10 @@ def classify_error(exc: Exception) -> ErrorClassification:
             detail=str(exc),
         )
 
-    # 10. Unknown (non-retryable)
+    # 10. Unknown — retry only when API/HTTP-shaped (server flakiness);
+    #     purely local exceptions fail fast (retrying a bug wastes time)
     return ErrorClassification(
-        retryable=False,
+        retryable=_is_api_related(exc),
         error_type=ErrorType.UNKNOWN,
         user_message="Unknown error",
         detail=str(exc),

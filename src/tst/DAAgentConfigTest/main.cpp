@@ -128,7 +128,9 @@ void DAAgentConfigTest::testDefaultsAndEmptyLoad()
     QCOMPARE(c.stopTimeoutSec(), 5);
     QCOMPARE(c.maxSessions(), 20);
     QCOMPARE(c.sessionRetentionDays(), 30);
-    QCOMPARE(c.maxRetries(), 7);
+    QCOMPARE(c.maxRetries(), 5);               // 线性退避 m（默认 5 次）
+    QCOMPARE(c.retryIntervalSec(), 5);         // 线性退避 n（首次重试前等 5s）
+    QCOMPARE(c.retryIntervalIncrementSec(), 1);// 线性退避 p（每次失败递增 1s）
     QCOMPARE(c.requestTimeoutSec(), 120);
     QCOMPARE(c.inactivityTimeoutSec(), 240);
     QCOMPARE(c.maxSubprocessRestarts(), 3);
@@ -163,6 +165,8 @@ void DAAgentConfigTest::testSparseRoundTrip()
         c.setReadyTimeoutSec(120);
         c.setAutoPrestart(false);
         c.setMaxRetries(9);
+        c.setRetryIntervalSec(8);
+        c.setRetryIntervalIncrementSec(2);
         cfg.mergeLLM(c);
         cfg.setPermissionMode(QStringLiteral("manual"));
         QVERIFY(cfg.save());
@@ -179,6 +183,8 @@ void DAAgentConfigTest::testSparseRoundTrip()
     QVERIFY(!llmG.contains("base_url"));
     QVERIFY(!llmG.contains("model"));
     QVERIFY(llmG.contains("max_retries"));  // 非 derived 键正常落盘
+    QCOMPARE(llmG.value("retry_interval_sec").toInt(), 8);
+    QCOMPARE(llmG.value("retry_interval_increment_sec").toInt(), 2);
     const QJsonObject permG = root.value("permission").toObject();
     QCOMPARE(permG.value("mode").toString(), QStringLiteral("manual"));
     QVERIFY(!root.contains("subagent"));  // 整组未 engage 不落盘
@@ -191,6 +197,8 @@ void DAAgentConfigTest::testSparseRoundTrip()
         QCOMPARE(c.stopTimeoutSec(), 5);   // 未设置 → 默认
         QCOMPARE(c.autoPrestart(), false);
         QCOMPARE(c.maxRetries(), 9);
+        QCOMPARE(c.retryIntervalSec(), 8);
+        QCOMPARE(c.retryIntervalIncrementSec(), 2);
         QCOMPARE(cfg.permissionMode(), QStringLiteral("manual"));
         QVERIFY(cfg.permissionModeSet());
     }
@@ -571,7 +579,8 @@ void DAAgentConfigTest::testRunnerConfigJson()
         "base_url",           "model",             "context_window",      "max_output_tokens",
         "compaction_threshold", "max_recent_messages", "tool_result_max_chars", "tool_result_preview_chars",
         "ready_timeout_sec",  "stop_timeout_sec",  "max_sessions",        "session_retention_days",
-        "max_retries",        "request_timeout_sec", "inactivity_timeout_sec", "max_subprocess_restarts",
+        "max_retries",        "retry_interval_sec",  "retry_interval_increment_sec",
+        "request_timeout_sec", "inactivity_timeout_sec", "max_subprocess_restarts",
         "recursion_limit",    "auto_prestart",     "subagent_timeout_sec", "subagent_recursion_limit",
         "subagent_max_concurrency", "subagent_batch_limit",
     };
@@ -584,6 +593,9 @@ void DAAgentConfigTest::testRunnerConfigJson()
     QCOMPARE(j.value("api_key").toString(), QStringLiteral("sk-xyz"));
     QCOMPARE(j.value("ready_timeout_sec").toInt(), 88);
     QCOMPARE(j.value("context_window").toInt(), 262144);  // 默认兜底
+    QCOMPARE(j.value("max_retries").toInt(), 5);          // 线性退避默认兜底
+    QCOMPARE(j.value("retry_interval_sec").toInt(), 5);
+    QCOMPARE(j.value("retry_interval_increment_sec").toInt(), 1);
     QCOMPARE(j.value("auto_prestart").toBool(), true);
     // api_key 为空时不携带该键（与旧实现一致）
     DAAgentConfig cfg2;

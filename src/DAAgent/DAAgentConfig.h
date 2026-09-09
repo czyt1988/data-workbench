@@ -14,17 +14,18 @@ namespace DA
 /**
  * @brief LLM/运行参数配置（原 getLLMConfig QJsonObject 键集的结构体化）
  *
- * 23 个配置项全部为 std::optional 稀疏字段：engaged = 显式设置过
+ * 25 个配置项全部为 std::optional 稀疏字段：engaged = 显式设置过
  *（未设置的键不落盘、读取时 getter 兜底默认值）。默认值唯一定义于
  * 各 getter 处，与旧 agent-config.ini 时代的语义一致。
  *
- * 字段按 agent-config.json 的三个存储分组组织：llm 连接（9）/ execution（12）/
+ * 字段按 agent-config.json 的三个存储分组组织：llm 连接（11）/ execution（12）/
  * subagent（4）（存储分组仅是序列化投影，结构体本身是扁平的）。
  *
  * v2 格式：base_url/model/api_key/context_window/max_output_tokens 为派生字段
  *（由激活供应商+模型经 syncActiveConnection/applyActiveModel 重算，不持久化）；
- * llm 分组仅落盘 active_provider/active_model/max_retries/request_timeout_sec/
- * providers，结构体中的这些字段仅作内存态运行值。
+ * llm 分组仅落盘 active_provider/active_model/max_retries/retry_interval_sec/
+ * retry_interval_increment_sec/request_timeout_sec/providers，
+ * 结构体中的这些字段仅作内存态运行值。
  */
 class DAAgent_API DAAgentLLMConfig
 {
@@ -54,9 +55,21 @@ public:
     bool maxOutputTokensSet() const { return mMaxOutputTokens.has_value(); }
     void setMaxOutputTokens(int v) { mMaxOutputTokens = v; }
 
-    int maxRetries() const { return mMaxRetries.value_or(7); }
+    // 重试策略（线性退避 m/n/p，设置页可配）：LLM 请求失败后第 k 次重试前
+    // 等待 retryIntervalSec + (k-1)*retryIntervalIncrementSec 秒，最多 maxRetries 次。
+    // 覆盖所有服务器返回的波动类错误（400/429/5xx/网络），认证失败与配额耗尽
+    // 快速失败不重试；默认 5/5/1 即等待 5,6,7,8,9s
+    int maxRetries() const { return mMaxRetries.value_or(5); }
     bool maxRetriesSet() const { return mMaxRetries.has_value(); }
     void setMaxRetries(int v) { mMaxRetries = v; }
+
+    int retryIntervalSec() const { return mRetryIntervalSec.value_or(5); }
+    bool retryIntervalSecSet() const { return mRetryIntervalSec.has_value(); }
+    void setRetryIntervalSec(int v) { mRetryIntervalSec = v; }
+
+    int retryIntervalIncrementSec() const { return mRetryIntervalIncrementSec.value_or(1); }
+    bool retryIntervalIncrementSecSet() const { return mRetryIntervalIncrementSec.has_value(); }
+    void setRetryIntervalIncrementSec(int v) { mRetryIntervalIncrementSec = v; }
 
     int requestTimeoutSec() const { return mRequestTimeoutSec.value_or(120); }
     bool requestTimeoutSecSet() const { return mRequestTimeoutSec.has_value(); }
@@ -151,6 +164,8 @@ private:
     std::optional< int > mContextWindow;
     std::optional< int > mMaxOutputTokens;
     std::optional< int > mMaxRetries;
+    std::optional< int > mRetryIntervalSec;
+    std::optional< int > mRetryIntervalIncrementSec;
     std::optional< int > mRequestTimeoutSec;
     std::optional< int > mReadyTimeoutSec;
     std::optional< int > mStopTimeoutSec;
@@ -186,7 +201,8 @@ private:
  *    字段，扁平 key 与 Python agent_runner.py 协议逐键一致）
  *
  * v2 存储格式：llm 分组仅持久化 active_provider/active_model/max_retries/
- * request_timeout_sec/providers（providers 为唯一事实来源）；派生连接键
+ * retry_interval_sec/retry_interval_increment_sec/request_timeout_sec/
+ * providers（providers 为唯一事实来源）；派生连接键
  * base_url/model/api_key/context_window/max_output_tokens 由 load() 后
  * syncActiveConnection() 重算（v1 json / 旧 ini 的同名 flat 键仅作兼容读取）。
  * 内存态 api_key 一律明文，DPAPI 加解密只发生在 save()/load() 边界。

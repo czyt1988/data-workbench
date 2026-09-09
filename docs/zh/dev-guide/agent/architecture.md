@@ -48,7 +48,7 @@ Python 子进程专注于 LLM 推理：
 - **LLM 交互**：通过 `langchain-openai` 的 `ChatOpenAI` 客户端调用 LLM API（兼容 OpenAI 接口的任意模型）
 - **LangGraph 状态机**：驱动 agent 循环（compact → agent → tools/ask_user），管理对话状态
 - **上下文管理**：Token 估算、上下文压缩、工具结果截断
-- **重试逻辑**：指数退避重试，支持用户中断
+- **重试逻辑**：线性退避重试（间隔/次数/递增可配置），支持用户中断
 
 ---
 
@@ -90,7 +90,7 @@ DAAgent 位于五层架构的接口层（Layer 4），是**纯 agent 框架库**
 | `agent_runner.py` | 唯一入口脚本（1236 行）：协议收发、LLM 配置、LangGraph 图构建、agent 循环、`reconfigure()` 热替换 |
 | `context_manager.py` | Token 估算（tiktoken/char-based）、工具结果截断、上下文压缩（head/tail + 中间摘要） |
 | `error_classifier.py` | LLM API 异常分类（可重试/不可重试），提取 Retry-After 头 |
-| `retry_wrapper.py` | 指数退避重试，支持 stop_event 中断、retryable_check 回调 |
+| `retry_wrapper.py` | 线性退避重试，支持 stop_event 中断、retryable_check 回调 |
 
 ---
 

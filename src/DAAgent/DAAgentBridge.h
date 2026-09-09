@@ -175,7 +175,7 @@ Q_SIGNALS:
      */
     void agentError(const QString& message, const QString& errorType = QString(), const QString& detail = QString());
     /**
-     * @brief agent 正在重试 LLM 调用时发射（Python 端指数退避期间每次重试发一次）
+     * @brief agent 正在重试 LLM 调用时发射（Python 端线性退避期间每次重试发一次）
      * @param attempt 当前重试次数（1-based）
      * @param maxAttempts 最大重试次数
      * @param delayMs 本次退避延迟毫秒数

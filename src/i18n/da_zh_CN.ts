@@ -528,8 +528,8 @@
     </message>
     <message>
         <location line="+3"/>
-        <source>Request format error: %1</source>
-        <translation>请求格式错误：%1</translation>
+        <source>Request was rejected by the LLM service, see details for the original error</source>
+        <translation>请求被 LLM 服务拒绝，原始错误见详情</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -555,6 +555,11 @@
         <location line="+3"/>
         <source>Failed to switch model, keeping current model</source>
         <translation>模型切换失败，已保留当前模型</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Agent request failed, see details for the original error</source>
+        <translation>Agent 请求失败，原始错误见详情</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -1077,8 +1082,18 @@
     </message>
     <message>
         <location line="+5"/>
-        <source>Max automatic retries on transient LLM errors. 0 disables. Recommended: 7.</source>
-        <translation>临时错误自动重试次数。0 不重试。建议 7。</translation>
+        <source>Max automatic retries when the LLM service returns an error (rate limit, server error, bad request, network). 0 disables. Recommended: 5.</source>
+        <translation>LLM 服务返回错误（限流、服务器错误、请求被拒、网络）时的自动重试次数。0 不重试。建议 5。</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Seconds to wait before the first retry. Recommended: 5.</source>
+        <translation>首次重试前的等待秒数。建议 5。</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Extra seconds added to the wait after each failed retry (e.g. interval 5, increment 1 waits 5, 6, 7...). Recommended: 1.</source>
+        <translation>每次重试失败后等待时间递增的秒数（如间隔 5、递增 1 则依次等待 5、6、7...秒）。建议 1。</translation>
     </message>
     <message>
         <location line="+6"/>
@@ -1139,6 +1154,16 @@
         <location line="+1"/>
         <source>Max retries</source>
         <translation>最大重试次数</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Retry interval</source>
+        <translation>重试间隔</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Retry interval increment</source>
+        <translation>重试间隔递增</translation>
     </message>
     <message>
         <location line="+1"/>

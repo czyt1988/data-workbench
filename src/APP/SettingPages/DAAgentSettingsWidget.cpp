@@ -192,11 +192,25 @@ void DAAgentSettingsWidget::setupAgentSettingsTab()
     mSessionRetentionDaysSpin->setSuffix(tr(" d"));  //cn:天
     mSessionRetentionDaysSpin->setToolTip(tr("Free sessions older than this are deleted on startup. Recommended: 30."));  //cn:早于此天数的自由会话启动时删除。建议 30。
 
+    // 重试策略（线性退避 m/n/p）：覆盖所有服务器波动类错误（400/429/5xx/网络），
+    // 认证失败与配额耗尽快速失败不重试
     mSpinMaxRetries = new QSpinBox(this);
     mSpinMaxRetries->setRange(0, 20);
     mSpinMaxRetries->setSuffix(tr(" times"));  //cn:次
-    mSpinMaxRetries->setToolTip(tr("Max automatic retries on transient LLM errors. 0 disables. Recommended: 7."));  //cn:临时错误自动重试次数。0 不重试。建议 7。
-    mSpinMaxRetries->setValue(7);
+    mSpinMaxRetries->setToolTip(tr("Max automatic retries when the LLM service returns an error (rate limit, server error, bad request, network). 0 disables. Recommended: 5."));  //cn:LLM 服务返回错误（限流、服务器错误、请求被拒、网络）时的自动重试次数。0 不重试。建议 5。
+    mSpinMaxRetries->setValue(5);
+
+    mSpinRetryInterval = new QSpinBox(this);
+    mSpinRetryInterval->setRange(0, 300);
+    mSpinRetryInterval->setSuffix(tr(" sec"));  //cn:秒
+    mSpinRetryInterval->setToolTip(tr("Seconds to wait before the first retry. Recommended: 5."));  //cn:首次重试前的等待秒数。建议 5。
+    mSpinRetryInterval->setValue(5);
+
+    mSpinRetryIncrement = new QSpinBox(this);
+    mSpinRetryIncrement->setRange(0, 60);
+    mSpinRetryIncrement->setSuffix(tr(" sec"));  //cn:秒
+    mSpinRetryIncrement->setToolTip(tr("Extra seconds added to the wait after each failed retry (e.g. interval 5, increment 1 waits 5, 6, 7...). Recommended: 1."));  //cn:每次重试失败后等待时间递增的秒数（如间隔 5、递增 1 则依次等待 5、6、7...秒）。建议 1。
+    mSpinRetryIncrement->setValue(1);
 
     mSpinRequestTimeout = new QSpinBox(this);
     mSpinRequestTimeout->setRange(10, 600);
@@ -267,6 +281,8 @@ void DAAgentSettingsWidget::setupAgentSettingsTab()
     form->addRow(tr("Max Sessions"), mMaxSessionsSpin);  //cn:最大会话数
     form->addRow(tr("Session Retention Days"), mSessionRetentionDaysSpin);  //cn:会话保留天数
     form->addRow(tr("Max retries"), mSpinMaxRetries);  //cn:最大重试次数
+    form->addRow(tr("Retry interval"), mSpinRetryInterval);  //cn:重试间隔
+    form->addRow(tr("Retry interval increment"), mSpinRetryIncrement);  //cn:重试间隔递增
     form->addRow(tr("Request timeout"), mSpinRequestTimeout);  //cn:请求超时
     form->addRow(tr("Inactivity timeout"), mSpinInactivityTimeout);  //cn:无活动超时
     form->addRow(tr("Max process restarts"), mSpinMaxRestarts);  //cn:最大进程重启次数
@@ -295,6 +311,8 @@ void DAAgentSettingsWidget::setupAgentSettingsTab()
     connect(mMaxSessionsSpin, QOverload<int>::of(&QSpinBox::valueChanged), this, mark);
     connect(mSessionRetentionDaysSpin, QOverload<int>::of(&QSpinBox::valueChanged), this, mark);
     connect(mSpinMaxRetries, QOverload<int>::of(&QSpinBox::valueChanged), this, mark);
+    connect(mSpinRetryInterval, QOverload<int>::of(&QSpinBox::valueChanged), this, mark);
+    connect(mSpinRetryIncrement, QOverload<int>::of(&QSpinBox::valueChanged), this, mark);
     connect(mSpinRequestTimeout, QOverload<int>::of(&QSpinBox::valueChanged), this, mark);
     connect(mSpinInactivityTimeout, QOverload<int>::of(&QSpinBox::valueChanged), this, mark);
     connect(mSpinMaxRestarts, QOverload<int>::of(&QSpinBox::valueChanged), this, mark);
@@ -444,6 +462,8 @@ void DAAgentSettingsWidget::loadConfig()
     mMaxSessionsSpin->setValue(c.maxSessions());
     mSessionRetentionDaysSpin->setValue(c.sessionRetentionDays());
     mSpinMaxRetries->setValue(c.maxRetries());
+    mSpinRetryInterval->setValue(c.retryIntervalSec());
+    mSpinRetryIncrement->setValue(c.retryIntervalIncrementSec());
     mSpinRequestTimeout->setValue(c.requestTimeoutSec());
     mSpinInactivityTimeout->setValue(c.inactivityTimeoutSec());
     mSpinMaxRestarts->setValue(c.maxSubprocessRestarts());
@@ -480,6 +500,8 @@ void DAAgentSettingsWidget::saveConfig()
     c.setMaxSessions(mMaxSessionsSpin->value());
     c.setSessionRetentionDays(mSessionRetentionDaysSpin->value());
     c.setMaxRetries(mSpinMaxRetries->value());
+    c.setRetryIntervalSec(mSpinRetryInterval->value());
+    c.setRetryIntervalIncrementSec(mSpinRetryIncrement->value());
     c.setRequestTimeoutSec(mSpinRequestTimeout->value());
     c.setInactivityTimeoutSec(mSpinInactivityTimeout->value());
     c.setMaxSubprocessRestarts(mSpinMaxRestarts->value());

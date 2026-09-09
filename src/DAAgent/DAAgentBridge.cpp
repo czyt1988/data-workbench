@@ -827,7 +827,7 @@ void DAAgentBridge::handleJsonLine(const QJsonObject& msg)
                            msg["options"].toVariant().toStringList(),
                            msg.value("multi_select").toBool(false));
     } else if (type == "retrying") {
-        // Python 端指数退避重试期间每次重试发一次 retrying 消息，不触发 agentBusy
+        // Python 端线性退避重试期间每次重试发一次 retrying 消息，不触发 agentBusy
         // 状态变化——busy 状态已在 sendMessage 时设为 true，重试期间保持 true
         emit agentRetrying(
             msg["attempt"].toInt(),

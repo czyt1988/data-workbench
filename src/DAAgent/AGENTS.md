@@ -327,7 +327,9 @@ chat.js 选项按钮 → `chatBridge.onUserSelect(answer)` → `DAAgentWebChanne
 | | `active_provider` | 当前激活供应商名称 | — |
 | | `context_window` | 模型上下文窗口（tokens），触发压缩判断 | 262144 |
 | | `max_output_tokens` | 激活模型最大输出 token（随 init 下发 `max_tokens`；默认 128K 防长文档写作被截断） | 131072 |
-| | `max_retries` | LLM 临时错误自动重试次数 | 7 |
+| | `max_retries` | LLM 错误自动重试次数 m（覆盖 400/429/5xx/网络等服务器波动类错误；认证失败/配额耗尽快速失败不重试） | 5 |
+| | `retry_interval_sec` | 首次重试前等待秒数 n（线性退避：第 k 次重试前等 n+(k-1)*p 秒） | 5 |
+| | `retry_interval_increment_sec` | 每次重试失败后等待递增秒数 p | 1 |
 | | `request_timeout_sec` | 单次 LLM 请求超时 | 120 |
 | `execution` | `ready_timeout_sec` | 子进程就绪超时（覆盖 langchain 冷启动 ~17s） | 60 |
 | | `stop_timeout_sec` | stopAgent 等待退出超时 | 5 |
@@ -463,7 +465,7 @@ Windows 文本模式行尾是 `\r\n`，`indexOf('\n')` 会留下 `'\r'` 导致 `
 - **带 `subagent_id` 的 `tool_call`/`tool_result` 禁止持久化与渲染**：子 agent 的工具调用经同一 `DAAgentBridge::executeTool` 权限门执法（C++ 唯一执法点不变，子 agent 天然继承父当前激活模式与分级，Q5），但 `DAAgentModule::attachBridge` 的持久化 lambda 与 UI 信号转发**必须过滤**（不写会话 JSONL、不 emit `agentToolCall`/`agentToolResult`）——子转录不落盘、不进主聊天流（Q8），只执行。审批信号链不受过滤影响（审批走 C++ 内部信号、本就不落盘）。
 - **审批卡上下文与终态撤卡（Q18）**：Ask 路径 `PendingApproval` 记录 `subagentId`，审批卡经 `args._subagent` 携带子 agent 来源（同 `_tier`/`_rememberable` 先例，不改信号签名；Dock 剥离该键转正为 payload.subagent 供 JS 渲染「来自子 Agent」前缀）；任务进入终态（timeout/stopped/error）或派发聚合结束时，C++ 按 `subagentId` 主动 dismiss 挂起审批卡（emit `agentToolApprovalDismissed`），防"身后执行"——任务已死而用户事后批准导致无人消费的副作用落地。撤销前已批准的迟到结果由 Python 按 call_id 严格匹配丢弃，无害。
 - **进度心跳不产生 UI 噪音**：`subagent_progress` 的 30s 心跳是无 task_id 的 running 态（保活看门狗），Dock/JS 忽略不更新任务行；进度卡片以 `call_id` 为键、任务行以 `task_id` 为键幂等更新（乱序/迟到消息防御）。
-- **跨进程 LLM 并发放大效应（审计问题 27，已知设计约束）**：每会话一个子进程、每进程内子 agent 并发编排（`subagent_max_concurrency`/`subagent_batch_limit`）相互独立——N 个并发会话 × 每进程 M 路子 agent = 同一 LLM 供应商 N×M 路并发请求，**无跨进程全局配额协调**（仅 retry_wrapper 指数退避兜底 429）。短期缓解：默认并发保守（concurrency=1、batch=2，上限 2/4 可显式调高），工具执行已由全局队列（决策点 2 方案 c）串行化。中期方向：主进程侧全局并发预算协调器（PermissionManager 同级的全局单例，经 reconfigure 按存活桥数下发每进程配额）——未实施前新增子 agent 类特性时必须重新评估该放大面。
+- **跨进程 LLM 并发放大效应（审计问题 27，已知设计约束）**：每会话一个子进程、每进程内子 agent 并发编排（`subagent_max_concurrency`/`subagent_batch_limit`）相互独立——N 个并发会话 × 每进程 M 路子 agent = 同一 LLM 供应商 N×M 路并发请求，**无跨进程全局配额协调**（仅 retry_wrapper 线性退避兜底 429）。短期缓解：默认并发保守（concurrency=1、batch=2，上限 2/4 可显式调高），工具执行已由全局队列（决策点 2 方案 c）串行化。中期方向：主进程侧全局并发预算协调器（PermissionManager 同级的全局单例，经 reconfigure 按存活桥数下发每进程配额）——未实施前新增子 agent 类特性时必须重新评估该放大面。
 
 ---
 
