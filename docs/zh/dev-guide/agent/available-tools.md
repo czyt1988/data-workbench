@@ -290,17 +290,19 @@ Agent 的标准开场动作：先 `list_data` 了解有哪些数据，再用 `ge
 
 ### save_report
 
-把 Markdown 内容保存为报告文件并（默认）在查看器中打开：md 用内置 Markdown 查看器（`DAMarkdownView`），pdf/docx 用系统默认程序打开。
+把 Markdown 内容保存为报告文件并（默认）在查看器中打开：md 用内置 Markdown 查看器（`DAMarkdownView`），html/pdf/docx 用系统默认程序打开。
 
 | 参数 | 类型 | 必填 | 说明 |
 |------|------|------|------|
 | `content` | string | ✅ | Markdown 格式的报告内容 |
 | `file_path` | string | ✅ | 输出文件路径 |
-| `format` | string | | `md` / `pdf` / `docx`，默认 `md` |
+| `format` | string | | `md` / `html` / `pdf` / `docx`，默认 `md` |
 | `open_after_save` | boolean | | 保存后是否打开，默认 `true` |
 
+html/pdf/docx 三种格式经 `DAMarkdownExporter`（`src/DAGui/MarkdownView/`）导出，与内置 Markdown 查看器同一渲染管线（markdown-it + highlight.js + KaTeX），公式（`$...$`/`$$...$$`）、代码高亮、表格均正常渲染；本地图片以 data URI 内嵌进 HTML/PDF（单一离线文件），docx 中图片由 Word 按文件路径抓取后内嵌。docx 公式以 MathML（Word 原生公式格式）输出。
+
 !!! note "docx 仅 Windows"
-    docx 导出走 `DAAxOfficeWrapper`（Word COM），仅 Windows 可用；pdf 走 `QPrinter`+`QTextDocument`。打开失败不影响保存结果——返回消息附带说明。
+    docx 导出走 `DAAxOfficeWrapper`（Word COM），仅 Windows 可用；pdf 走 `QWebEnginePage::printToPdf`（与查看器渲染一致）。打开失败不影响保存结果——返回消息附带说明。
 
 ---
 

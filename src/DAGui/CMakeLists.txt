@@ -493,3 +493,10 @@ da_add_library(
 if(${QT_VERSION_MAJOR} EQUAL 6)
     target_link_libraries(DAGui PRIVATE Qt6::Core5Compat)
 endif()
+
+if(WIN32)
+    # DAMarkdownExporter 的 docx 分支经 Word COM（DAAxOfficeWrapper）转换，
+    # L3→L1 依赖方向合法；仅 Windows 存在（AxContainer 技术），PRIVATE 足够
+    # （DAMarkdownExporter.h 不暴露该库头文件）
+    target_link_libraries(DAGui PRIVATE DAAxOfficeWrapper)
+endif()
