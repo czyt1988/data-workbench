@@ -201,8 +201,7 @@ public:
     QAction* actionChartEditorAddArrowMarker;   ///< 添加箭头标记
     QAction* actionChartEditorAddTextMarker;    ///< 添加文本标注
     QActionGroup* actionGroupChartEditor;  ///< charteditor的action group，注意，这个actiongroup包含了actionChartEditorResizeSubChart
-    QAction* actionAddVerticalPlotProbeMarker;    ///< 添加垂直数据探针标记
-    QAction* actionAddHorizontalPlotProbeMarker;  ///< 添加水平数据探针标记
+    QAction* actionChartEditorDataProbe;  ///< 数据探针（多子图联动拾取+点击建探针+数据联动表）
     QAction* actionChartDataPickerSetting;       ///< 数据拾取设置
     //===================================================
     // 视图标签 View Category

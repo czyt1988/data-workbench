@@ -240,10 +240,8 @@ void DAAppActions::buildChartAction()
         UiNames::Action::ChartEditorAddArrowMarker, ":/app/bright/Icon/arrow.svg", true, false, actionGroupChartEditor);
     actionChartEditorAddTextMarker = createAction(
         UiNames::Action::ChartEditorAddTextMarker, ":/app/bright/Icon/chart-text-marker.svg", true, false, actionGroupChartEditor);
-    actionAddHorizontalPlotProbeMarker = createAction(
-        UiNames::Action::AddHorizontalPlotProbeMarker, ":/app/bright/Icon/arrow.svg", true, false, actionGroupChartEditor);
-    actionAddVerticalPlotProbeMarker = createAction(
-        UiNames::Action::AddVerticalPlotProbeMarker, ":/app/bright/Icon/plot-probe.svg", true, false, actionGroupChartEditor);
+    actionChartEditorDataProbe = createAction(
+        UiNames::Action::ChartEditorDataProbe, ":/app/bright/Icon/plot-probe.svg", true, false, actionGroupChartEditor);
     actionChartDataPickerSetting   = createAction(UiNames::Action::ChartDataPickerSetting, ":/DAGui/icon/data-picker-setting.svg");
     actionChartEditorResizeSubChart->setData(static_cast< int >(DAFigureWidget::SubChartEditor));
     actionChartEditorPointerSelector->setData(static_cast< int >(DAFigureWidget::PointerSelector));
@@ -255,8 +253,7 @@ void DAAppActions::buildChartAction()
     actionChartEditorAddCrossMarker->setData(static_cast< int >(DAFigureWidget::CrossMarker));
     actionChartEditorAddArrowMarker->setData(static_cast< int >(DAFigureWidget::ArrowMarker));
     actionChartEditorAddTextMarker->setData(static_cast< int >(DAFigureWidget::TextMarker));
-    actionAddHorizontalPlotProbeMarker->setData(static_cast< int >(DAFigureWidget::VerticalDataProbe));
-    actionAddVerticalPlotProbeMarker->setData(static_cast< int >(DAFigureWidget::HorizontalDataProbe));
+    actionChartEditorDataProbe->setData(static_cast< int >(DAFigureWidget::DataProbeEditor));
 }
 
 void DAAppActions::buildViewAction()
@@ -588,10 +585,9 @@ void DAAppActions::retranslateUi()
     actionChartEditorAddArrowMarker->setToolTip(tr("Add an arrow marker to the chart"));   // cn:添加箭头标记
     actionChartEditorAddTextMarker->setText(tr("Add Text"));                               // cn:添加文本
     actionChartEditorAddTextMarker->setToolTip(tr("Add a text marker to the chart"));      // cn:添加文本标注
-    actionAddHorizontalPlotProbeMarker->setText(tr("Add Horizontal Probe"));               // cn:添加水平数据探针标记
-    actionAddHorizontalPlotProbeMarker->setToolTip(tr("Add a horizontal plot probe marker to the chart"));  // cn:水平数据探针
-    actionAddVerticalPlotProbeMarker->setText(tr("Add Vertical Probe"));  // cn:垂直数据探针
-    actionAddVerticalPlotProbeMarker->setToolTip(tr("Add a vertical plot probe marker to the chart"));  // cn:添加垂直数据探针标记
+    actionChartEditorDataProbe->setText(tr("Data Probe"));                                 // cn:数据探针
+    actionChartEditorDataProbe->setToolTip(
+        tr("Data probe: click to create probes on all charts, values are listed in the data link table"));  // cn:数据探针：点击在各子图上创建探针，数值汇总到数据联动表
     actionChartDataPickerSetting->setText(tr("Data Picker Setting"));                     // cn:数据拾取设置
     actionChartDataPickerSetting->setToolTip(tr("Configure data picker properties"));     // cn:配置数据拾取器属性
     //-----------------------------------------------------

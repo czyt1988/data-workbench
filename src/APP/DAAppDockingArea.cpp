@@ -38,6 +38,8 @@
 #include "DAAgentDockWidget.h"
 // Markdown 查看相关
 #include "DAMarkdownView.h"
+// 数据联动表
+#include "Chart/DADataLinkTableWidget.h"
 
 //===================================================
 // using DA namespace -- 禁止在头文件using！！
@@ -76,6 +78,7 @@ void DAAppDockingArea::resetText()
     mSettingContainerDock->setWindowTitle(tr("Setting"));          // cn:设置
     mMessageLogDock->setWindowTitle(tr("Log"));                    // cn:消息
     mAgentDock->setWindowTitle(tr("Agent Assistant"));  // cn:Agent 助手
+    mDataLinkTableDock->setWindowTitle(tr("Data Link Table"));  // cn:数据联动表
 }
 
 /**
@@ -231,6 +234,20 @@ void DAAppDockingArea::buildDockingArea()
         QString::fromUtf8(UiNames::Dock::AgentDockWidgetDock),
         mSettingContainerDock->dockAreaWidget());
     mAgentDock->setIcon(QIcon(":/app/bright/Icon/showAgent.svg"));
+
+    // 数据联动表 Dock —— 作为右侧附属区的标签页，与"设置"/"Agent"同组
+    mDataLinkTableWidget = new DADataLinkTableWidget(mApp);
+    mDataLinkTableWidget->setObjectName(QString::fromUtf8(UiNames::Dock::DataLinkTableWidget));
+    mDataLinkTableWidget->setChartOperateWidget(mChartOperateWidget);
+    mDataLinkTableDock = createDockWidgetAsTab(
+        mDataLinkTableWidget,
+        QString::fromUtf8(UiNames::Dock::DataLinkTableWidgetDock),
+        mSettingContainerDock->dockAreaWidget());
+    mDataLinkTableDock->setIcon(QIcon(":/app/bright/Icon/plot-probe.svg"));
+    // 探针创建（探针模式点击）-> 联动表 dock 提到前台
+    connect(mDataLinkTableWidget, &DADataLinkTableWidget::requestRaise, this, [this]() {
+        raiseDockByWidget(mDataLinkTableWidget);
+    });
 
     // 日志窗口 —— pin to right，auto-hide 到右侧边栏
     mMessageLogDock = new ads::CDockWidget(dockManager(), QString::fromUtf8(UiNames::Dock::MessageLogViewWidgetDock));
@@ -509,6 +526,24 @@ ads::CDockWidget* DAAppDockingArea::getAgentDock() const
 DAAgentDockWidget* DAAppDockingArea::getAgentDockWidget() const
 {
     return mAgentDockWidget;
+}
+
+/**
+ * @brief 获取数据联动表 dock
+ * @return
+ */
+ads::CDockWidget* DAAppDockingArea::getDataLinkTableDock() const
+{
+    return mDataLinkTableDock;
+}
+
+/**
+ * @brief 获取数据联动表窗口
+ * @return
+ */
+DADataLinkTableWidget* DAAppDockingArea::getDataLinkTableWidget() const
+{
+    return mDataLinkTableWidget;
 }
 
 /**

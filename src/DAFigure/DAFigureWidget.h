@@ -56,8 +56,7 @@ public:
         VLineMarker,             ///< 垂直线标记
         CrossMarker,             ///< 交叉标记
         ArrowMarker,             ///< 箭头标记
-        VerticalDataProbe,       ///< 垂直数据探针
-        HorizontalDataProbe,     ///< 水平数据探针
+        DataProbeEditor,         ///< 数据探针（多子图联动拾取+点击建探针+联动表，持久会话）
         TextMarker,              ///< 文本标注
         PointerSelector,         ///< 指针选择工具（选择/拖动/删除绘图元素）
         BuilinEditorCount,       ///< 内置编辑器数量
@@ -201,10 +200,13 @@ public:
     DADataProbeMarker* getProbeByName(const QString& name) const;
     // Rename a data probe
     bool renameProbe(DADataProbeMarker* probe, const QString& newName);
-    // Start vertical probe creation interaction mode
-    void beginVerticalProbeEditor();
-    // Start horizontal probe creation interaction mode
-    void beginHorizontalProbeEditor();
+    // 按当前各子图 X 轴可见性重算所有探针的徽章位置/可见性
+    // 规则：xbottom 可见->徽章在底部；仅 xtop 可见->顶部；两轴均不可见->隐藏徽章
+    void refreshAllProbeLabels();
+
+public Q_SLOTS:
+    // 开始数据探针编辑会话（持久模式，可连续点击创建探针）
+    void beginDataProbeEditor();
 
 public:
     // figure的接口转接
@@ -314,6 +316,14 @@ Q_SIGNALS:
      */
     void figureElementClicked(const DA::DAFigureElementSelection& sel);
 
+    /**
+     * @brief 数据探针编辑会话中创建了探针
+     *
+     * 每次在探针模式下点击画布创建一组（跨子图同名）探针后发射，
+     * 由上层联动"数据联动表"新增列并前置显示
+     */
+    void dataProbeCreated(DA::DADataProbeMarker* firstProbe, double xValue);
+
 protected:
     bool eventFilter(QObject* obj, QEvent* event) override;
     void keyPressEvent(QKeyEvent* e) override;
@@ -328,6 +338,8 @@ private Q_SLOTS:
     void onCurrentAxesChanged(QwtPlot* plot);
     void onChartPropertyChanged(DA::DAChartWidget* chart, DAChartWidget::ChartPropertyChangeFlags flag);
     void onFigureChartEditorFinished(bool isCancel);
+    // 数据探针会话中，联动拾取组收到点击
+    void onDataProbePickerGroupClicked(QwtPlotSeriesDataPicker* picker, const QPoint& pos);
 
 private:
     void init();
@@ -336,6 +348,11 @@ private:
     // 编辑器开始
     void emitChartEditorBeginEdit();
     void emitChartEditorFinishEdit();
+    // 探针模式：进入/退出的内部处理（返回进入前各子图交互状态无需恢复，退出后保持关闭）
+    void enterDataProbeMode();
+    void exitDataProbeMode();
+    // 探针模式激活期间新加入的子图（onAxesAdded 时补开拾取并关左键交互）
+    void applyDataProbeModeToChart(DAChartWidget* chart);
     // Probe name generation (internal use)
     QString generateProbeName();
     bool isProbeNameExists(const QString& name) const;

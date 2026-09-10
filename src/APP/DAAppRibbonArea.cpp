@@ -782,9 +782,8 @@ void DAAppRibbonArea::buildContextCategoryChartEdit()
     mPannelChartAssistTool->addLargeAction(mActions->actionChartEditorAddArrowMarker);
     mPannelChartAssistTool->addMediumAction(mActions->actionChartEditorAddTextMarker);
     mPannelChartAssistTool->addSeparator();
-    // 数据探针（原死 action，从未上过 Ribbon）
-    mPannelChartAssistTool->addMediumAction(mActions->actionAddVerticalPlotProbeMarker);
-    mPannelChartAssistTool->addMediumAction(mActions->actionAddHorizontalPlotProbeMarker);
+    // 数据探针（多子图联动拾取+点击建探针+数据联动表）
+    mPannelChartAssistTool->addLargeAction(mActions->actionChartEditorDataProbe);
 }
 
 /**

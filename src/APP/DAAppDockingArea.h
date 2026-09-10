@@ -33,6 +33,8 @@ class DASettingContainerWidget;
 class DAMessageLogViewWidget;
 // Agent 窗口
 class DAAgentDockWidget;
+// 数据联动表窗口
+class DADataLinkTableWidget;
 // Markdown 查看窗口
 class DAMarkdownView;
 
@@ -108,6 +110,12 @@ public:
     // 获取 Agent 助手 Dock Widget（原始 QWidget）
     DAAgentDockWidget* getAgentDockWidget() const;
 
+    // 数据联动表 dock
+    ads::CDockWidget* getDataLinkTableDock() const;
+
+    // 获取数据联动表窗口
+    DADataLinkTableWidget* getDataLinkTableWidget() const;
+
     /**
      * @brief 在中央区按需创建 Markdown 查看 dock 并加载文件
      *
@@ -174,6 +182,10 @@ private:
     // Agent 窗口
     DAAgentDockWidget* mAgentDockWidget { nullptr };  ///< Agent 助手窗口
     ads::CDockWidget* mAgentDock { nullptr };         ///< m_agentDockWidget 对应的 dock
+
+    // 数据联动表窗口
+    DADataLinkTableWidget* mDataLinkTableWidget { nullptr };  ///< 数据联动表窗口
+    ads::CDockWidget* mDataLinkTableDock { nullptr };         ///< mDataLinkTableWidget 对应的 dock
 
     // Markdown 查看窗口（按需创建）
     DAMarkdownView* mMarkdownView { nullptr };  ///< Markdown 查看窗口

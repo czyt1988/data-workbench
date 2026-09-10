@@ -85,6 +85,7 @@ public:
         MouseWheelZoomStateChanged = 0x1000000,  ///< 代表magnifier开启或关闭，@ref isMouseWheelZoomEnabled
         XAxisZoomStateChanged      = 0x2000000,  ///< 代表x轴是否参与缩放发生变化，@ref isXAxisZoomEnabled
         YAxisZoomStateChanged      = 0x4000000,  ///< 代表y轴是否参与缩放发生变化，@ref isYAxisZoomEnabled
+        AxisVisibilityChanged      = 0x8000000,  ///< 代表坐标轴可见性发生变化，@ref setAxisVisible
     };
     Q_ENUM(ChartPropertyChangeFlag)
     Q_DECLARE_FLAGS(ChartPropertyChangeFlags, ChartPropertyChangeFlag)
@@ -169,6 +170,9 @@ public:
 
     void setAxisColor(int axisId, const QColor& color) override;
     QColor getAxisColor(int axisId) const override;
+
+    // 坐标轴可见性（QwtPlot::setAxisVisible 非 virtual，此为覆盖式封装，经 DAChartStyleInterface 调用可收到属性通知）
+    void setAxisVisible(int axisId, bool on = true) override;
 
     // 网格样式
     void enableGrid(bool enable = true) override;
