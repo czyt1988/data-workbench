@@ -2269,23 +2269,13 @@ Line 3D</source>
     </message>
     <message>
         <location line="+1"/>
-        <source>Add Horizontal Probe</source>
-        <translation>添加水平数据探针标记</translation>
+        <source>Data Probe</source>
+        <translation>数据探针</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Add a horizontal plot probe marker to the chart</source>
-        <translation>水平数据探针</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Add Vertical Probe</source>
-        <translation>垂直数据探针</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Add a vertical plot probe marker to the chart</source>
-        <translation>添加垂直数据探针标记</translation>
+        <source>Data probe: click to create probes on all charts, values are listed in the data link table</source>
+        <translation>数据探针：点击在各子图上创建探针，数值汇总到数据联动表</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -3278,6 +3268,11 @@ Layouts</source>
         <translation>Agent 助手</translation>
     </message>
     <message>
+        <location line="+1"/>
+        <source>Data Link Table</source>
+        <translation>数据联动表</translation>
+    </message>
+    <message>
         <location line="+453"/>
         <source>Markdown Viewer</source>
         <translation>Markdown 查看器</translation>
@@ -3286,6 +3281,115 @@ Layouts</source>
         <location line="+4"/>
         <source>Failed to open markdown file: %1</source>
         <translation>打开 Markdown 文件失败:%1</translation>
+    </message>
+</context>
+<context>
+    <name>DADataLinkTableModel</name>
+    <message>
+        <location filename="../DAGui/Chart/DADataLinkTableModel.cpp" line="+13"/>
+        <source>Curve</source>
+        <translation>曲线</translation>
+    </message>
+</context>
+<context>
+    <name>DADataLinkTableTab</name>
+    <message>
+        <location filename="../DAGui/Chart/DADataLinkTableTab.cpp" line="+57"/>
+        <source>Rename</source>
+        <translation>重命名</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Refresh</source>
+        <translation>刷新</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Refresh All</source>
+        <translation>刷新全部</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Hide</source>
+        <translation>隐藏</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Show</source>
+        <translation>显示</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Hide All</source>
+        <translation>全部隐藏</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Show All</source>
+        <translation>全部显示</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Delete</source>
+        <translation>删除</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Delete All</source>
+        <translation>全部删除</translation>
+    </message>
+    <message>
+        <location line="+30"/>
+        <source>Chart %1</source>
+        <translation>绘图 %1</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Curve</source>
+        <translation>曲线</translation>
+    </message>
+    <message>
+        <location line="+150"/>
+        <source>Column %1</source>
+        <translation>列 %1</translation>
+    </message>
+    <message>
+        <location line="+30"/>
+        <source>Rename</source>
+        <translation>重命名</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>New name:</source>
+        <translation>新名称:</translation>
+    </message>
+    <message>
+        <location line="+30"/>
+        <source>Delete</source>
+        <translation>删除</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Are you sure to delete this column?</source>
+        <translation>确定删除这一列吗？</translation>
+    </message>
+    <message>
+        <location line="+30"/>
+        <source>Delete All</source>
+        <translation>全部删除</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Are you sure to delete all columns? This cannot be undone.</source>
+        <translation>确定删除所有列吗？此操作不可撤销。</translation>
+    </message>
+</context>
+<context>
+    <name>DADataLinkTableWidget</name>
+    <message>
+        <location filename="../DAGui/Chart/DADataLinkTableWidget.cpp" line="+90"/>
+        <source>Figure</source>
+        <translation>绘图</translation>
     </message>
 </context>
 <context>

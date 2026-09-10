@@ -712,6 +712,24 @@ QColor DAChartWidget::getAxisColor(int axisId) const
 }
 
 /**
+ * @brief 设置坐标轴可见性（覆盖 QwtPlot::setAxisVisible 的通知版本）
+ * @param axisId 坐标轴ID
+ * @param on 是否可见
+ *
+ * QwtPlot::setAxisVisible 非 virtual，此处为同名隐藏；
+ * 通过 DAChartStyleInterface 指针或 DAChartWidget 指针调用均可触发属性通知，
+ * 直接经 QwtPlot 指针调用则走 qwt 原生实现（无通知）
+ */
+void DAChartWidget::setAxisVisible(int axisId, bool on)
+{
+    if (isAxisVisible(axisId) == on) {
+        return;
+    }
+    QwtPlot::setAxisVisible(axisId, on);
+    notifyPropertiesChanged(AxisVisibilityChanged);
+}
+
+/**
  * @brief 启用或禁用网格
  * @param enable 是否启用
  */

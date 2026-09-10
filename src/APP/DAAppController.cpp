@@ -56,6 +56,7 @@
 #include "DASettingContainerWidget.h"
 #include "DARecentFilesManager.h"
 #include "Chart/DAChartSettingWidget.h"
+#include "Chart/DADataLinkTableWidget.h"
 #include "DAColorTheme.h"
 #include "DAGui/ChartSetting/DAFigureWidgetSettingPanel.h"
 #include "DAGui/Chart3DSetting/DAChart3DSettingWidget.h"
@@ -629,6 +630,12 @@ void DAAppController::initConnection()
     DAChartOperateWidget* cow = mDock->getChartOperateWidget();
     connect(cow, &DAChartOperateWidget::figureCreated, this, &DAAppController::onFigureCreated);
     connect(cow, &DAChartOperateWidget::currentFigureChanged, this, &DAAppController::onCurrentFigureChanged);
+    // 工程加载图表恢复完成 -> 数据联动表按探针重建（纯视图架构：探针已由图表序列化恢复）
+    connect(cow, &DAChartOperateWidget::figureCreated, this, [this](DAFigureWidget* fig) {
+        if (DADataLinkTableWidget* dlt = mDock->getDataLinkTableWidget()) {
+            dlt->refreshFigure(fig);
+        }
+    });
     // 绘图项创建完成时提升绘图 dock，让用户能看到新绘图
     if (DAAppChartOperateWidget* appCow = qobject_cast< DAAppChartOperateWidget* >(cow)) {
         connect(appCow, &DAAppChartOperateWidget::plotItemCreated, this, &DAAppController::onPlotItemCreated);
@@ -1103,7 +1110,12 @@ void DAAppController::onFigureElementDbClicked(const DAFigureElementSelection& s
             }
         } else if (selection.isSelectedScaleWidget()) {
             bool isAxisVisible = selection.plot->isAxisVisible(selection.axisId);
-            selection.plot->setAxisVisible(selection.axisId, !isAxisVisible);
+            // 优先走 DAChartWidget::setAxisVisible 以触发 AxisVisibilityChanged 通知（联动探针徽章重算）
+            if (DAChartWidget* dacw = qobject_cast< DAChartWidget* >(selection.plot)) {
+                dacw->setAxisVisible(selection.axisId, !isAxisVisible);
+            } else {
+                selection.plot->setAxisVisible(selection.axisId, !isAxisVisible);
+            }
             // 对于设置窗口要进行更新
             if (setting) {
                 if (DAChartSettingWidget* chartSetting = setting->getChartSettingWidget()) {
