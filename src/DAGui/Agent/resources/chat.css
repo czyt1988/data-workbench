@@ -728,23 +728,28 @@ body {
     white-space: pre;
 }
 
-/* 绘图引用超链接（da-figure: 协议）：点击后由程序打开对应绘图 */
-.message-bubble a[href^="da-figure:"],
-.message-bubble a[href^="da-figure:" i] {
+/* da-*: 本地跳转超链接（da-figure:/da-data: 等协议）：点击后由程序打开对应资源。
+   da-link class 由 chat.js 的 setupDaLinkRules 渲染规则添加（协议无关），
+   各协议图标按 da-<kind>-link 追加即可，新增协议无需改其它选择器 */
+.message-bubble a.da-link {
     color: var(--link-color);
     text-decoration: underline;
     cursor: pointer;
 }
 
-.message-bubble a[href^="da-figure:"]:hover,
-.message-bubble a[href^="da-figure:" i]:hover {
+.message-bubble a.da-link:hover {
     opacity: 0.8;
 }
 
-/* 在绘图引用链接前加图表图标，提升可识别性 */
-.message-bubble a[href^="da-figure:"]::before,
-.message-bubble a[href^="da-figure:" i]::before {
+/* 绘图引用链接（da-figure:）：图表图标 */
+.message-bubble a.da-link.da-figure-link::before {
     content: '\1F4C8';  /* 📈 图表 */
+    margin-right: 3px;
+}
+
+/* 数据集引用链接（da-data:）：数据表图标 */
+.message-bubble a.da-link.da-data-link::before {
+    content: '\1F4CA';  /* 📊 数据表 */
     margin-right: 3px;
 }
 

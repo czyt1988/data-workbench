@@ -13,8 +13,8 @@ namespace DA
  * 这里统一拦截：内部导航放行，外部链接交给系统浏览器打开；
  * 新窗口导航（target=_blank/中键）经 createWindow 中转页同样外部打开。
  *
- * da-figure: 自定义协议链接由 chat.js 在 DOM 层拦截（preventDefault +
- * chatBridge.onFigureLink），不会进入导航流程，不受本类影响。
+ * da-figure: 等自定义协议链接（da-<kind>:）由 chat.js 在 DOM 层拦截（preventDefault +
+ * chatBridge.onLinkActivated），不会进入导航流程，不受本类影响。
  */
 class DAGUI_API DAAgentChatWebPage : public QWebEnginePage
 {

@@ -14,7 +14,7 @@ namespace DA
 {
 
 /**
- * @brief WebChannel 桥接对象，由 DAAgentDockWidget 通过 QWebChannel::registerObject 暴露给 JS
+ * @brief WebChannel 桥接对象，由 DAAgentSessionChatWidget 通过 QWebChannel::registerObject 暴露给 JS
  *
  * 本类是 QObject（不是 QWebChannel）。QWebChannel 实例本身由 setupWebChannel() 中
  * `new QWebChannel(this)` 单独创建，并通过 registerObject("chatBridge", m_channel) 注册本对象。
@@ -27,7 +27,7 @@ public:
     explicit DAAgentWebChannel(QWebEngineView* view, QObject* parent = nullptr);
     Q_INVOKABLE void onUserSelect(const QString& answer);
     Q_INVOKABLE void onUserMessage(const QString& text);
-    Q_INVOKABLE void onFigureLink(const QString& href);
+    Q_INVOKABLE void onLinkActivated(const QString& href);
     Q_INVOKABLE void onReady();
     Q_INVOKABLE void onStopRequested();
     /// JS 调用：用户在 web 两级模型选择器选定供应商+模型
@@ -97,10 +97,13 @@ Q_SIGNALS:
     void userMessageSent(const QString& text);
 
     /**
-     * @brief 用户点击绘图引用超链接信号
-     * @param href 超链接 href，形如 da-figure:&lt;figure_name&gt; 或 da-figure:id=&lt;uuid&gt;
+     * @brief 用户点击本地跳转超链接信号（da-<kind>: 协议）
+     *
+     * href 为原始字符串（可能含百分号编码），协议解析与分发由上层
+     * （DAAgentLinkDispatcher）完成，本类不感知具体协议。
+     * @param href 超链接 href，形如 da-figure:&lt;figure_name&gt;、da-data:id=&lt;id&gt;
      */
-    void figureLinkRequested(const QString& href);
+    void linkActivated(const QString& href);
 
     /**
      * @brief web 侧就绪信号（chat.js init() 握手，C++ 收到后 flush 当前态）

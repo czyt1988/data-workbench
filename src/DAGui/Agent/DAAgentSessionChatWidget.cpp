@@ -343,9 +343,9 @@ void DAAgentSessionChatWidget::setupWebChannel()
     // 用户答案 → 本视图信号转发（宿主负责"交互即激活"后转接口层）
     connect(d->mChannel, &DAAgentWebChannel::userAnswerSelected,
             this, &DAAgentSessionChatWidget::onUserAnswer);
-    // 绘图引用超链接点击：chat.js 拦截 da-figure: 链接 → onFigureLink → 信号转发
-    connect(d->mChannel, &DAAgentWebChannel::figureLinkRequested,
-            this, &DAAgentSessionChatWidget::onFigureLink);
+    // 本地跳转超链接点击：chat.js 拦截 da-<kind>: 链接 → onLinkActivated → 信号转发
+    connect(d->mChannel, &DAAgentWebChannel::linkActivated,
+            this, &DAAgentSessionChatWidget::onLinkActivated);
     // web 输入区发送：chat.js onUserMessage → userMessageSent → C++ 编排（appendUserMessage + emit）
     connect(d->mChannel, &DAAgentWebChannel::userMessageSent,
             this, &DAAgentSessionChatWidget::onUserMessageReceived);
@@ -559,12 +559,12 @@ void DAAgentSessionChatWidget::onUserAnswer(const QString& answer)
 }
 
 /**
- * @brief 绘图引用超链接点击转发
+ * @brief 本地跳转超链接点击转发（协议无关，分发由上层 DAAgentLinkDispatcher 完成）
  * @param href 超链接 href
  */
-void DAAgentSessionChatWidget::onFigureLink(const QString& href)
+void DAAgentSessionChatWidget::onLinkActivated(const QString& href)
 {
-    emit figureLinkRequested(href);
+    emit linkActivated(href);
 }
 
 // ===========================================================================

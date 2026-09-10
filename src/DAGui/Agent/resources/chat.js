@@ -111,19 +111,21 @@ function initMarkdown() {
         }
     });
     setupMathRules(md);
+    setupDaLinkRules(md);
 }
 
-// da-figure: 链接修复（预处理）：Markdown 链接语法 (da-figure:Chart - col1)
+// da-*: 本地跳转链接修复（预处理）：Markdown 链接语法 (da-figure:Chart - col1)
 // 在目标含空格时解析失败，整条链接退化为纯文本（agent 未用尖括号包裹时）。
 // 渲染前把含空格的目标补上尖括号使其可解析；代码块/行内代码先占位保护，
-// 其中的伪链接文本不受影响。
-function fixDaFigureLinks(text) {
+// 其中的伪链接文本不受影响。对任意 da-<kind>: 协议生效（协议处理在 C++ 侧
+// DAAgentLinkDispatcher 注册，JS 层无需感知协议清单）。
+function fixDaLinks(text) {
     var saved = [];
     var t = text.replace(/(```[\s\S]*?```|`[^`\n]*`)/g, function(m) {
         saved.push(m);
         return '\x00DAFIX' + (saved.length - 1) + '\x00';
     });
-    t = t.replace(/\]\((da-figure:[^)\n]*[ \t][^)\n]*)\)/gi, function(_, url) {
+    t = t.replace(/\]\((da-[a-z][a-z0-9-]*:[^)\n]*[ \t][^)\n]*)\)/gi, function(_, url) {
         return '](<' + url + '>)';
     });
     return t.replace(/\x00DAFIX(\d+)\x00/g, function(_, i) {
@@ -131,9 +133,29 @@ function fixDaFigureLinks(text) {
     });
 }
 
-// 统一渲染入口：先修复 da-figure: 链接再渲染
+// 统一渲染入口：先修复 da-*: 链接再渲染
 function renderMarkdown(text) {
-    return md.render(fixDaFigureLinks(text));
+    return md.render(fixDaLinks(text));
+}
+
+// da-*: 本地跳转链接渲染规则：给链接元素附加 da-link（通用）+ da-<kind>-link
+//（协议专属）class，CSS 据此统一样式与图标（替代逐协议写 [href^="da-xxx:"] 属性
+// 选择器及其大小写变体兜底——class 由本规则统一写入，天然不受大小写影响）。
+// 协议处理在 C++ 侧 DAAgentLinkDispatcher 注册，JS 层只认 da-<kind>: 前缀。
+function setupDaLinkRules(markdown) {
+    var defaultLinkOpen = markdown.renderer.rules.link_open;
+    markdown.renderer.rules.link_open = function(tokens, idx, options, env, self) {
+        var href = tokens[idx].attrGet('href') || '';
+        var m = /^da-([a-z][a-z0-9-]*):/i.exec(href);
+        if (m) {
+            tokens[idx].attrJoin('class', 'da-link');
+            tokens[idx].attrJoin('class', 'da-' + m[1].toLowerCase() + '-link');
+        }
+        if (defaultLinkOpen) {
+            return defaultLinkOpen(tokens, idx, options, env, self);
+        }
+        return self.renderToken(tokens, idx, options);
+    };
 }
 
 // —— KaTeX 数学公式渲染（与 MarkdownView/resources/markdown.js 保持一致）——
@@ -255,7 +277,8 @@ function init() {
             chatBridge.onReady();
         }
     });
-    // 拦截 da-figure: 超链接点击，交给 C++ 端打开对应绘图。
+    // 拦截 da-*: 本地跳转超链接点击，交给 C++ 端按协议分发处理（协议清单由
+    // DAAgentLinkDispatcher 注册，JS 层只认 da-<kind>: 前缀，无需感知具体协议）。
     // 事件委托挂在稳定的 #messages 上：流式防抖会重建气泡 innerHTML，
     // 绑在气泡节点上的监听器会丢失，挂在 #messages 始终有效（clearChat 只清 innerHTML）。
     var msgs = document.getElementById('messages');
@@ -264,12 +287,12 @@ function init() {
             var link = e.target.closest('a');
             if (!link) return;
             var href = link.getAttribute('href') || '';
-            if (href.toLowerCase().indexOf('da-figure:') !== 0) return;  // 仅匹配 da-figure: 前缀，放行普通链接
+            if (!/^da-[a-z0-9-]+:/i.test(href)) return;  // 仅匹配 da-<kind>: 前缀，放行普通链接
             e.preventDefault();  // 阻止 WebEngine 内部导航（自定义 scheme 无目标页）
-            // 流式未完成时 href 可能只是 "da-figure:"，跳过避免无效调用
-            if (href === 'da-figure:' || href === 'da-figure:/') return;
-            if (chatBridge && typeof chatBridge.onFigureLink === 'function') {
-                chatBridge.onFigureLink(href);
+            // 流式未完成时 href 可能只是 "da-xxx:"，跳过避免无效调用
+            if (/^da-[a-z0-9-]+:\/?$/i.test(href)) return;
+            if (chatBridge && typeof chatBridge.onLinkActivated === 'function') {
+                chatBridge.onLinkActivated(href);
             }
         });
         // 分段懒加载：滚动到顶部附近（<=60px）自动 prepend 更早一段。

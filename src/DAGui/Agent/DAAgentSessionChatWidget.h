@@ -99,8 +99,8 @@ Q_SIGNALS:
     void stopRequested();
     /// 用户选择问题答案
     void userAnswerSelected(const QString& answer);
-    /// 用户点击绘图引用超链接（da-figure: 协议）
-    void figureLinkRequested(const QString& href);
+    /// 用户点击本地跳转超链接（da-<kind>: 协议，协议无关转发）
+    void linkActivated(const QString& href);
     /// 用户在 web 两级模型选择器选定供应商+模型
     void activeModelChangeRequested(const QString& provider, const QString& model);
     /// 用户在 web 权限模式选择器选定模式
@@ -138,7 +138,7 @@ private Q_SLOTS:
     void onWebReady();
     void onStopClicked();
     void onUserAnswer(const QString& answer);
-    void onFigureLink(const QString& href);
+    void onLinkActivated(const QString& href);
     void onModelSelect(const QString& provider, const QString& model);
     void onPermissionModeSelect(const QString& mode);
     void onToolApprovalDecision(const QString& callId, bool approved, bool rememberSession);

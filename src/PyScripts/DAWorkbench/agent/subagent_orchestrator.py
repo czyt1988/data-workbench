@@ -55,6 +55,13 @@ CHART_TOOLS = frozenset({
     "create_subplots", "save_chart_image", "list_figures",
 })
 
+#: 数据类工具集（与 plugins/DAAgentTools 的 5 个数据工具一致）：
+#: 白名单与之相交时子图系统提示词附加 data_reference 约定（镜像图表引用）
+DATA_TOOLS = frozenset({
+    "list_data", "get_data_info", "query_data", "column_stats",
+    "export_data",
+})
+
 #: 单任务 summary 截断上限（字符）
 _SUMMARY_MAX_CHARS = 4000
 
@@ -89,6 +96,14 @@ _FIGURE_REFERENCE_SECTION = (
     "- `create_chart` / `create_subplots` return `figure_name` and `figure_id`.\n"
     "- When mentioning a figure in your summary, insert a "
     "`[name](da-figure:<figure_name>)` hyperlink so the user can jump to it."
+)
+
+#: 白名单含数据工具时附加（镜像主提示词"在回复中引用数据集"节）
+_DATA_REFERENCE_SECTION = (
+    "## Referring to datasets\n"
+    "- When mentioning a dataset in your summary, insert a "
+    "`[dataset name](<da-data:dataset_name>)` hyperlink so the user can open "
+    "it directly; use `list_data` to discover loaded datasets and their names."
 )
 
 #: 白名单含 gated 工具（文件写入/代码执行）时附加（镜像主提示词"权限与安全"节，
@@ -643,7 +658,7 @@ class SubagentOrchestrator:
         return subset
 
     def _compose_system_prompt(self, definition: SubagentDefinition) -> str:
-        """组装子图系统提示词（Q10）：固定前导 + md 正文 ± 图表引用 ± 权限约定。"""
+        """组装子图系统提示词（Q10）：固定前导 + md 正文 ± 图表引用 ± 数据集引用 ± 权限约定。"""
         parts = [_SUBAGENT_PREAMBLE]
         body = definition.system_prompt.strip()
         if body:
@@ -651,6 +666,8 @@ class SubagentOrchestrator:
         toolset = set(definition.tools)
         if toolset & CHART_TOOLS:
             parts.append(_FIGURE_REFERENCE_SECTION)
+        if toolset & DATA_TOOLS:
+            parts.append(_DATA_REFERENCE_SECTION)
         # gated 工具（file_write + code_exec 全集，经 init 下发）→ 权限约定
         gated = getattr(self._runner, "_gated_tools", set()) or set()
         if toolset & gated:

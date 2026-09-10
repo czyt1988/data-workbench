@@ -600,8 +600,8 @@ void DAAgentDockWidget::setupViewConnections(DAAgentSessionChatWidget* view)
                 emit userAnswerSelected(answer);
             });
     // 其余用户操作：直接转发（审批经 callId 路由，无需激活来源会话）
-    connect(view, &DAAgentSessionChatWidget::figureLinkRequested,
-            this, &DAAgentDockWidget::figureLinkRequested);
+    connect(view, &DAAgentSessionChatWidget::linkActivated,
+            this, &DAAgentDockWidget::linkActivated);
     connect(view, &DAAgentSessionChatWidget::activeModelChangeRequested,
             this, &DAAgentDockWidget::activeModelChangeRequested);
     connect(view, &DAAgentSessionChatWidget::permissionModeChangeRequested,

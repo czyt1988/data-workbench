@@ -122,8 +122,8 @@ Q_SIGNALS:
     void stopRequested();
     /// 用户选择答案（宿主已确保来源视图会话为模块当前会话）
     void userAnswerSelected(const QString& answer);
-    /// 用户点击绘图引用超链接（da-figure: 协议），转发给 DAAppController 处理
-    void figureLinkRequested(const QString& href);
+    /// 用户点击本地跳转超链接（da-<kind>: 协议，协议无关），转发给 DAAppController 分发处理
+    void linkActivated(const QString& href);
     /// 用户激活某会话标签（≠ 模块当前会话时发射）
     void sessionSwitchRequested(const QString& sessionId);
     /// 用户删除会话（标签右键菜单，带确认后发射）

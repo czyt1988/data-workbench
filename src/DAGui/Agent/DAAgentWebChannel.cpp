@@ -127,12 +127,14 @@ void DAAgentWebChannel::onUserMessage(const QString& text)
 }
 
 /**
- * @brief JS 调用：用户点击了绘图引用超链接（da-figure: 协议）
- * @param href 超链接 href，形如 da-figure:&lt;figure_name&gt; 或 da-figure:id=&lt;uuid&gt;
+ * @brief JS 调用：用户点击了本地跳转超链接（da-<kind>: 协议）
+ *
+ * 协议无关转发：本类不解析协议，由上层（DAAgentLinkDispatcher）分发处理。
+ * @param href 超链接 href 原始字符串
  */
-void DAAgentWebChannel::onFigureLink(const QString& href)
+void DAAgentWebChannel::onLinkActivated(const QString& href)
 {
-    emit figureLinkRequested(href);
+    emit linkActivated(href);
 }
 
 /**
