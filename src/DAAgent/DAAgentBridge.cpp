@@ -2,6 +2,8 @@
 #include "DAAgentBridge.h"
 #include "DAAbstractAgentTool.h"
 #include "DAAgentPermissionManager.h"
+#include "DAAgentToolExecutor.h"
+#include "DAPyScriptRunner.h"
 #include <QTimer>
 #include <QHash>
 #include <QSet>
@@ -20,6 +22,7 @@ struct PendingApproval {
     QJsonObject args;   ///< 工具参数（批准后原样执行，不含 _subagent 卡上下文）
     QString tier;       ///< 工具分级（用户拒绝时合成脱敏结果用）
     QString subagentId; ///< 子 agent 任务 id（子 agent 一期；主 agent 调用为空，Q18 撤卡依据）
+    QString contentHash; ///< 判定时内容哈希（审计问题 26；批准后派发时注入执行参数校验）
 };
 
 // ===========================================================================
@@ -43,6 +46,7 @@ public:
     int mStopTimeoutMs  = 5000;      ///< stopAgent 等待进程退出超时(毫秒)
     bool mUserRequestedStop = false;  ///< 用户主动终止标志
     QTimer* mStopTimer = nullptr;     ///< requestStop 的非阻塞 kill 计时器
+    QTimer* mRecoveryTimer = nullptr; ///< 崩溃自愈延迟重启计时器（持句柄：用户 Stop 可取消，L4）
     QTimer* mInactivityTimer = nullptr;  ///< 无活动超时计时器
     int mInactivityTimeoutMs = 240000;    ///< 默认 4 分钟
     bool mToolExecuting = false;           ///< 工具执行期间暂停看门狗
@@ -53,6 +57,7 @@ public:
     int mMaxRestarts = 3;                   ///< 最大重启次数
     QString mLastSessionId;                 ///< 当前会话 ID
     bool mRecovering = false;               ///< 是否处于崩溃恢复流程中
+    bool mReadyReceived = false;            ///< 本次进程生命周期内是否收到过 ready（startAgent 重置；区分 init 阶段/运行期错误）
     QJsonObject mSavedLlmConfig;            ///< 启动参数缓存（崩溃恢复时复用）
     QJsonArray mSavedToolSpecs;
     QString mSavedSystemPrompt;
@@ -61,6 +66,10 @@ public:
     // ---- 权限层（permission-layer P1） ----
     DAAgentPermissionManager* mPermissionManager = nullptr;  ///< 权限引擎（Module 持有，非拥有）
     QHash< QString, PendingApproval > mPendingApprovals;     ///< callId → 挂起审批
+    QString mSessionId;  ///< 所属会话（attachBridge 注入；权限记忆按会话隔离查询键，可空=预热桥）
+
+    // ---- 全局工具执行队列（决策点 2 方案 c，审计问题 12） ----
+    DAAgentToolExecutor* mToolExecutor = nullptr;  ///< Module 持有，非拥有；空=退化直执行
 };
 
 DAAgentBridge::PrivateData::PrivateData(DAAgentBridge* p) : q_ptr(p)
@@ -133,6 +142,9 @@ void DAAgentBridge::startAgent(const QJsonObject& llmConfig,
 
     d->mReadyTimeoutMs = readyTimeoutMs;
     d->mStopTimeoutMs  = stopTimeoutMs;
+    d->mReadyReceived  = false;  // 新进程生命周期开始，重置 ready 接收标志
+    d->mStopped        = false;  // 审计 L7①：复位停止标志——桥对象经 stopAgent 后再
+                                 // startAgent 复用时，优雅停止逻辑不得被旧标志短路
     // 清理上一次的 ready 超时计时器(若存在)
     if (d->mReadyTimer) {
         d->mReadyTimer->stop();
@@ -178,7 +190,16 @@ void DAAgentBridge::startAgent(const QJsonObject& llmConfig,
     // state() 仍为 Starting（非 Running），writeJson 的 Running 守卫会拒绝
     // 写入，导致 init 永不发送、子进程在 stdin 读取上阻塞挂起。
     if (!d->mProcess->waitForStarted(5000)) {
+        // FailedToStart：Qt 只发 errorOccurred 不发 finished，onProcessFinished
+        // 不会执行——必须在此补齐终止语义（审计问题 21），否则恢复路径
+        // （recoverFromCrash → startAgent）成为状态机黑洞：无 processExited、
+        // 无 agentBusy(false)，Module 侧 mSessionBusy/mSessionStarting 永不复位，
+        // Dock 发送守卫拦截输入，用户连触发防御重建的消息都发不出。
         emit agentError(tr("Agent process startup timed out"));  //cn:Agent 进程启动超时
+        d->mRecovering = false;
+        d->mRunning = false;
+        emit agentBusy(false);
+        emit processExited();  // Module 据此记账清理（会话记忆/挂起状态）
         return;
     }
 
@@ -225,6 +246,11 @@ void DAAgentBridge::startAgent(const QJsonObject& llmConfig,
         if (d->mRunning) {
             emit agentError(tr("Agent subprocess not ready within %1 ms, initialization may have failed, check logs")
                                 .arg(d->mReadyTimeoutMs));  //cn:Agent 子进程启动后 %1 毫秒内未就绪，初始化可能失败，请查看日志排查
+            // ready 超时的典型原因是环境性失败（Python 依赖损坏/langchain 导入
+            // 失败），重启必然再次超时——置用户停止标志使 onProcessFinished 走
+            // wasUserStop 分支（审计问题 20）：不进 3 轮崩溃自愈循环（最长
+            // 4×readyTimeout 无意义等待 + 5 条错误轰炸），直接终态报错。
+            d->mUserRequestedStop = true;
             if (d->mProcess && d->mProcess->state() != QProcess::NotRunning) {
                 d->mProcess->kill();
             }
@@ -244,6 +270,19 @@ void DAAgentBridge::startAgent(const QJsonObject& llmConfig,
  */
 void DAAgentBridge::stopAgent()
 {
+    beginStopAgent();
+    awaitStopAgent();
+}
+
+/**
+ * @brief 两阶段停止·第一阶段：写 stop + 关写通道（非阻塞）
+ *
+ * 审计 L7②：Module::shutdown 对 N 桥先全部执行本阶段（Python 端并行收到
+ * stop/EOF 开始优雅退出），再逐桥 awaitStopAgent——避免串行
+ * "写 stop → 各自等满 stopTimeout" 造成最坏 N×5s 的应用关闭冻结。
+ */
+void DAAgentBridge::beginStopAgent()
+{
     DA_D(d);
     if (d->mStopped) {
         return;
@@ -257,10 +296,31 @@ void DAAgentBridge::stopAgent()
         delete d->mReadyTimer;
         d->mReadyTimer = nullptr;
     }
+    // 取消待执行的崩溃自愈重启（析构/关闭期间不得再复活子进程，L4 同族）
+    if (d->mRecoveryTimer) {
+        d->mRecoveryTimer->stop();
+        d->mRecoveryTimer->deleteLater();
+        d->mRecoveryTimer = nullptr;
+        d->mRecovering = false;
+    }
     if (d->mRunning && d->mProcess) {
         d->mUserRequestedStop = true;  // 标记主动停止，防止 onProcessFinished 误判为崩溃
         writeJson(QJsonObject{{"type", "stop"}});
         d->mProcess->closeWriteChannel();  // 关闭 stdin 写通道，使 Python 端 read1() 收到 EOF，reader 线程退出释放 BufferedReader 锁
+    }
+}
+
+/**
+ * @brief 两阶段停止·第二阶段：等待退出 + kill 兜底（阻塞至多 stopTimeoutMs）
+ *
+ * 注意（审计 L7③）：waitForFinished 可能在调用栈内同步触发 onProcessFinished
+ * → Module 的持久化/记账 lambda 重入（后台会话可能当场 retireBridge 改桥
+ * 映射）——调用方遍历桥集合时必须持快照，不得引用活映射。
+ */
+void DAAgentBridge::awaitStopAgent()
+{
+    DA_D(d);
+    if (d->mRunning && d->mProcess) {
         d->mProcess->waitForFinished(d->mStopTimeoutMs);  // 可配超时(默认 5s)
         if (d->mProcess->state() != QProcess::NotRunning) {
             d->mProcess->kill();
@@ -285,13 +345,26 @@ void DAAgentBridge::requestStop()
     // 停止已有的 stop 计时器(防止重复调用)
     if (d->mStopTimer) {
         d->mStopTimer->stop();
-        delete d->mStopTimer;
+        d->mStopTimer->deleteLater();
         d->mStopTimer = nullptr;
     }
-    if (d->mRunning && d->mProcess) {
+    // 审计 L4：崩溃恢复窗口（1s 延迟重启）内用户 Stop——取消重启、终结恢复
+    // 流程。旧实现 singleShot 无句柄不可取消，Stop 被静默忽略后照常重启重放。
+    if (d->mRecoveryTimer) {
+        d->mRecoveryTimer->stop();
+        d->mRecoveryTimer->deleteLater();
+        d->mRecoveryTimer = nullptr;
+        d->mRecovering = false;
+        d->mLastUserMessage.clear();  // 用户已终止，不再重发
+        emit agentBusy(false);        // 回合随 Stop 终结，解除 UI 忙碌/Stopping 态
+    }
+    // 审计 L3：kill 兜底按进程实际状态判断（而非 mRunning）——二次 requestStop
+    // 时 mRunning 已为 false，若因此跳过定时器重建，则上方刚取消的 kill 兜底
+    // 无人重建：Python 忽略 stop 时进程永不退出。
+    if (d->mProcess && d->mProcess->state() != QProcess::NotRunning) {
         // 标记为用户主动终止——onProcessFinished 据此抑制异常退出错误
         d->mUserRequestedStop = true;
-        writeJson(QJsonObject{{"type", "stop"}});
+        writeJson(QJsonObject{{"type", "stop"}});  // 重复写入无害（Python 忽略第二条 stop）
         // 非阻塞: 不调用 waitForFinished(会冻结 UI 最多 m_stopTimeoutMs),
         // 改用 QTimer 在超时后 kill。进程退出后由 onProcessFinished
         // 发射 agentBusy(false) 恢复 UI。
@@ -302,7 +375,9 @@ void DAAgentBridge::requestStop()
             if (d->mProcess && d->mProcess->state() != QProcess::NotRunning) {
                 d->mProcess->kill();
             }
-            delete d->mStopTimer;
+            // 审计 L3：自身 timeout 槽内不得裸 delete 发送者（QTimer 在
+            // timeout 发射栈内被销毁属未定义行为边界），改 deleteLater
+            d->mStopTimer->deleteLater();
             d->mStopTimer = nullptr;
         });
         d->mStopTimer->start(d->mStopTimeoutMs);
@@ -375,7 +450,17 @@ void DAAgentBridge::sendMessage(const QString& text)
     QJsonObject msg;
     msg["type"]    = "user_msg";
     msg["content"] = text;
-    writeJson(msg);
+    if (!writeJson(msg)) {
+        // 写入失败（进程未运行/管道已关闭）：消息从未到达 Python——回滚本轮
+        // 状态，避免 busy 挂到 4 分钟看门狗超时才报错（审计问题 23）。
+        // mLastUserMessage 一并清除：崩溃恢复不应重发从未送达的消息。
+        d->mTurnActive = false;
+        d->mLastUserMessage.clear();
+        d->mInactivityTimer->stop();
+        emit agentError(tr("Message not sent: agent subprocess is not running"));  //cn:消息未发送：agent 子进程未在运行
+        emit agentBusy(false);
+        return;
+    }
     startInactivityTimer();     // 启动看门狗
 }
 
@@ -383,15 +468,17 @@ void DAAgentBridge::sendMessage(const QString& text)
  * @brief 发送工具执行结果回 agent 子进程
  * @param callId 工具调用 ID
  * @param result 工具执行结果 JSON
+ * @return 写入是否成功——失败=进程已死/管道已关，调用方据此不 emit
+ * agentToolResult（Module 持久化 lambda 挂该信号），孤儿结果不落盘 JSONL
+ *（审计问题 12 决策 ⑤"迟到结果不落盘"的核心闭环）
  */
-void DAAgentBridge::sendToolResult(const QString& callId, const QJsonObject& result)
+bool DAAgentBridge::sendToolResult(const QString& callId, const QJsonObject& result)
 {
-    DA_D(d);
     QJsonObject msg;
     msg["type"]    = "tool_result";
     msg["call_id"] = callId;
     msg["result"]  = result;
-    writeJson(msg);
+    return writeJson(msg);
 }
 
 /**
@@ -407,7 +494,15 @@ void DAAgentBridge::sendUserAnswer(const QString& answer)
     QJsonObject msg;
     msg["type"]   = "user_answer";
     msg["answer"] = answer;
-    writeJson(msg);
+    if (!writeJson(msg)) {
+        // 写入失败：答案从未到达 Python（死桥场景，审计问题 17/23）——
+        // 回滚忙碌态并发明确错误，避免用户以为已回答而 UI 挂到看门狗超时
+        d->mTurnActive = false;
+        d->mInactivityTimer->stop();
+        emit agentError(tr("Answer not sent: agent subprocess is not running"));  //cn:回答未发送：agent 子进程未在运行
+        emit agentBusy(false);
+        return;
+    }
     startInactivityTimer();
 }
 
@@ -446,6 +541,14 @@ void DAAgentBridge::sendLoadSession(const QString& sessionId, const QJsonArray& 
  */
 void DAAgentBridge::reconfigureAgent(const QJsonObject& config)
 {
+    DA_D(d);
+    // 同步启动参数缓存（审计问题 22）：崩溃恢复 recoverFromCrash 用
+    // mSavedLlmConfig 重启 init——不同步则用户换模型/密钥后复活的进程仍跑
+    // 旧配置，旧 key 已失效时恢复必然再失败进 ready 超时循环。
+    // 与 sendUpdateSubagents 同步 mSavedSubagents 的既定意图对齐。
+    // 权限字段无需缓存：buildPermissionConfig() 在恢复 init 时实时读取
+    // PermissionManager 当前状态。
+    d->mSavedLlmConfig = config;
     QJsonObject merged = config;
     const QJsonObject permFields = buildPermissionConfig();
     for (auto it = permFields.constBegin(); it != permFields.constEnd(); ++it) {
@@ -476,6 +579,26 @@ void DAAgentBridge::sendUpdateSubagents(const QJsonArray& subagents)
 }
 
 /**
+ * @brief 热更新工具规格（审计问题 19，镜像 sendUpdateSubagents）
+ * @param toolSpecs 当前全量工具规格数组（OpenAI function schema）
+ *
+ * setTools 只同步 C++ 执行表——Python/LLM 看到的工具列表停留在 init 时刻：
+ * 插件热插拔（57c90f8 官方特性）后，禁用插件的存活桥 LLM 仍调用已移除工具
+ * （C++ 表已删 → Unknown tool 浪费一轮推理）；启用插件/新注册工具的存活桥
+ * LLM 永远看不到新工具。长寿命会话桥（活跃会话跑完不退役）使窗口无限延长。
+ * Python 侧收到后替换 tool_specs 并重绑 llm_with_tools（call-time 读取即生效）。
+ */
+void DAAgentBridge::sendUpdateTools(const QJsonArray& toolSpecs)
+{
+    DA_D(d);
+    d->mSavedToolSpecs = toolSpecs;  // 同步缓存（崩溃恢复时 init 复用，对齐 sendUpdateSubagents）
+    QJsonObject obj;
+    obj["type"]  = "update_tools";
+    obj["tools"] = toolSpecs;
+    writeJson(obj);
+}
+
+/**
  * @brief 组装权限层下发字段（母文档 §8）
  * @return JSON 对象，含 permission_mode/workspace_root/gated_tools/
  *         tool_approval_timeout_sec/code_patterns/judge；未设置权限引擎时为空对象
@@ -489,7 +612,10 @@ QJsonObject DAAgentBridge::buildPermissionConfig() const
     }
     const DAAgentPermissionManager* mgr = d->mPermissionManager;
     p["permission_mode"]            = mgr->mode();
-    p["workspace_root"]             = mgr->workspaceRoot();
+    // 按会话上下文下发（审计问题 25）：Python 判官（permission_judge）的
+    // run_script 相对路径解析用该会话绑定的工作区——工程切换后 reconfigure
+    // 广播不再把后台会话的 workspace_root 改写成新工程
+    p["workspace_root"]             = mgr->workspaceRootForSession(d->mSessionId);
     p["gated_tools"]                = QJsonArray::fromStringList(DAAgentPermissionManager::gatedTools());
     p["tool_approval_timeout_sec"]  = mgr->toolApprovalTimeoutSec();
     p["code_patterns"]              = mgr->codePatterns().toJson();
@@ -519,8 +645,13 @@ bool DAAgentBridge::writeJson(const QJsonObject& obj)
     QByteArray data = doc.toJson(QJsonDocument::Compact) + "\n";
     qint64 written  = d->mProcess->write(data);
     if (written != data.size()) {
-        // stdin 写入失败——管道可能已关闭
-        emit agentError(tr("Failed to write to agent subprocess stdin"));  //cn:写入 agent 子进程 stdin 失败
+        // stdin 写入失败——管道可能已关闭。不在此处 emit 用户错误：writeJson
+        // 服务于多种消息（init/stop/load_session/tool_result/...），"失败意味着
+        // 什么"因调用方而异——由关键调用方（sendMessage/sendUserAnswer 等）
+        // 检查返回值、回滚本轮状态并发明确错误（审计问题 23）。此处仅记诊断日志。
+        qWarning() << "DAAgentBridge::writeJson: stdin write failed, written"
+                   << written << "of" << data.size() << "bytes, type="
+                   << obj.value("type").toString();
         return false;
     }
     return true;
@@ -534,6 +665,16 @@ void DAAgentBridge::onReadyReadStandardOutput()
     DA_D(d);
     // 累积数据到缓冲区
     d->mStdoutBuffer += d->mProcess->readAllStandardOutput();
+
+    // 缓冲上限（审计 L6）：异常超长无换行输出（如子进程崩溃倾泻二进制垃圾）
+    // 可无限吃内存。合法协议单行远小于此上限（最大的 message_end/
+    // subagent_progress 聚合通常数百 KB 级），超限视为协议流损坏，整段丢弃。
+    static constexpr int kMaxStdoutBufferBytes = 10 * 1024 * 1024;  // 10MB
+    if (d->mStdoutBuffer.size() > kMaxStdoutBufferBytes) {
+        qWarning() << "DAAgentBridge: stdout buffer exceeded" << kMaxStdoutBufferBytes
+                   << "bytes without a complete line, dropping buffer content";
+        d->mStdoutBuffer.clear();
+    }
 
     // 按行解析 JSON Lines
     while (true) {
@@ -553,9 +694,11 @@ void DAAgentBridge::onReadyReadStandardOutput()
         QJsonParseError parseError;
         QJsonDocument doc = QJsonDocument::fromJson(lineData, &parseError);
         if (parseError.error != QJsonParseError::NoError) {
-            // 不可解析的行不能静默丢弃——记录到日志便于排查协议问题
-            daWarning << tr("Failed to parse JSON line from agent stdout: %1, error: %2")  //cn:解析 agent 标准输出的 JSON 行失败：%1，错误：%2
-                             .arg(QString::fromUtf8(lineData), parseError.errorString());
+            // 不可解析的行不能静默丢弃——记录到日志便于排查协议问题。
+            // 审计 L6：开发诊断日志用 qWarning 纯英文（da* 宏会把原始协议垃圾
+            // 刷进 UI 消息队列，违反 AGENTS.md"开发诊断禁用 da* 宏"规约）
+            qWarning() << "DAAgentBridge: failed to parse JSON line from agent stdout:"
+                       << lineData << "error:" << parseError.errorString();
             continue;  // 跳过此行，继续处理后续
         }
         if (doc.isObject()) {
@@ -593,7 +736,17 @@ void DAAgentBridge::handleJsonLine(const QJsonObject& msg)
             d->mReadyTimer->deleteLater();
             d->mReadyTimer = nullptr;
         }
+        d->mReadyReceived = true;  // 此后 error 视为运行期错误（进程设计为存活）
         emit agentReady(msg["model"].toString());
+        // 审计问题 15（Bridge 侧重断言）：冷启动时序下 sendMessage 的 busy(true)
+        // 先于 ready 到达、被 Dock 的 starting 守卫吞掉 web 推送；ready 在 ~16s 后
+        // 到达时本轮对话才真正开始。若回合仍在进行则重发 busy(true)，避免整轮
+        // 纯文本回复期间 UI 显示 Ready、无 Stop 按钮、发送守卫放行第二条消息。
+        // reconfigure 确认 ready 不受影响：Python 在两轮之间处理 reconfigure，
+        // done（清 mTurnActive）必先于该 ready 到达。
+        if (d->mTurnActive) {
+            emit agentBusy(true);
+        }
     } else if (type == "token") {
         emit agentToken(msg["content"].toString());
     } else if (type == "message_end") {
@@ -674,7 +827,7 @@ void DAAgentBridge::handleJsonLine(const QJsonObject& msg)
                            msg["options"].toVariant().toStringList(),
                            msg.value("multi_select").toBool(false));
     } else if (type == "retrying") {
-        // Python 端指数退避重试期间每次重试发一次 retrying 消息，不触发 agentBusy
+        // Python 端线性退避重试期间每次重试发一次 retrying 消息，不触发 agentBusy
         // 状态变化——busy 状态已在 sendMessage 时设为 true，重试期间保持 true
         emit agentRetrying(
             msg["attempt"].toInt(),
@@ -684,16 +837,22 @@ void DAAgentBridge::handleJsonLine(const QJsonObject& msg)
             msg["error_message"].toString()
         );
     } else if (type == "error") {
-        // error 消息（如 "config missing"）意味着 agent 初始化失败，main() 会提前退出。
-        // 停止 ready 超时计时器避免无谓等待 60s；关闭 stdin 写通道使 Python 端
-        // stdin reader daemon 线程的 read1() 收到 EOF 解除阻塞，进程能正常退出
-        // 而非被 TerminateProcess kill（exitCode=62097 CrashExit）
+        // error 消息按阶段区分处置（审计问题 9）：
+        // - init 阶段错误（未收到过 ready，如 "config missing"）：Python main() 发完
+        //   error 即提前 return 退出。停止 ready 超时计时器避免无谓等待；关闭 stdin
+        //   写通道使 Python 端 stdin reader daemon 线程的 read1() 收到 EOF 解除阻塞，
+        //   进程能正常退出而非被 TerminateProcess kill（exitCode=62097 CrashExit）。
+        // - 运行期错误（已收到过 ready，如 quota_exhausted/auth_error/recursion_limit/
+        //   session_load_failed）：Python 发完 error+done 后主循环继续、进程设计为存活。
+        //   此时绝不能关闭写通道——否则 Python reader 收到 EOF → 主循环 break →
+        //   进程以 exit 0 静默终止，下一条消息被迫再付一次冷启动，且退役路径写 stop
+        //   到已关闭通道会触发二次假错误。
         if (d->mReadyTimer) {
             d->mReadyTimer->stop();
             d->mReadyTimer->deleteLater();
             d->mReadyTimer = nullptr;
         }
-        if (d->mProcess && d->mProcess->state() != QProcess::NotRunning) {
+        if (!d->mReadyReceived && d->mProcess && d->mProcess->state() != QProcess::NotRunning) {
             d->mProcess->closeWriteChannel();
         }
         // D9: error 消息增强为携带 error_type，用于 C++ 端选择用户文案
@@ -720,10 +879,22 @@ void DAAgentBridge::handleJsonLine(const QJsonObject& msg)
         // 本计划只透传 session_id，session_id 与请求是否相符由 plan-03 switchSession 校验。
         QString sid = msg.value("session_id").toString();
         emit agentSessionLoaded(sid);
+    } else if (type == "tool_result_rejected") {
+        // 迟到结果拒绝反馈（审计问题 12 ⑤ 观测增强）：Python 侧等待槽已弹出
+        //（回合超时/停止后终结），结果被丢弃——记日志便于排查孤儿记录。
+        // 超时两段式（本体超时从 exec_start 起算）落地后此场景已极罕见
+        qWarning() << "DAAgentBridge: tool result rejected by python side (late or mismatched), callId="
+                   << msg.value("call_id").toString();
     } else if (type == "done") {
         d->mInactivityTimer->stop();
         d->mTurnActive = false;
         d->mWaitingUserAnswer = false;
+        // 回合正常完成——清除崩溃恢复重发缓存（审计问题 11）：活跃会话的桥
+        // 跑完不退役，若进程在空闲期异常崩溃，自愈链 ready→load_session→
+        // resendLastMessage 会把已回答过的用户消息重新注入：无人操作时 UI
+        // 自发进入"思考中"、LLM 对同一问题再生成一遍答案写进会话 JSONL
+        // （持久化污染）、白白消耗一轮 token。
+        d->mLastUserMessage.clear();
         emit agentBusy(false);
         // turn_summary（Python send_done 附带）：回合完成度统计。
         // possibly_incomplete=true 表示模型"话说一半就停"（执行过工具但
@@ -762,6 +933,62 @@ void DAAgentBridge::setPermissionManager(DAAgentPermissionManager* manager)
 }
 
 /**
+ * @brief 设置所属会话标识（Module attachBridge 注入）
+ * @param sessionId 会话 ID（权限记忆按会话隔离的查询键，决策点 1 方案 b）
+ */
+void DAAgentBridge::setSessionId(const QString& sessionId)
+{
+    DA_D(d);
+    d->mSessionId = sessionId;
+}
+
+/**
+ * @brief 所属会话 ID（可空：预热桥未被接管时无会话归属）
+ * @return 会话 ID
+ */
+QString DAAgentBridge::sessionId() const
+{
+    DA_DC(d);
+    return d->mSessionId;
+}
+
+/**
+ * @brief 设置全局工具执行队列（Module attachBridge 注入，非拥有）
+ * @param executor 执行器指针（nullptr=退化直执行，独立使用/测试场景）
+ */
+void DAAgentBridge::setToolExecutor(DAAgentToolExecutor* executor)
+{
+    DA_D(d);
+    d->mToolExecutor = executor;
+}
+
+/**
+ * @brief 用户/系统是否已请求停止（执行队列出队存活检查用）
+ * @return requestStop/stopAgent/ready 超时置位后为 true（进程退出时复位）
+ */
+bool DAAgentBridge::isStopRequested() const
+{
+    DA_DC(d);
+    return d->mUserRequestedStop;
+}
+
+/**
+ * @brief 执行队列出队后的真实执行入口（DAAgentToolExecutor 泵调用）
+ * @param callId 工具调用 ID
+ * @param toolName 工具名
+ * @param args 工具参数
+ * @param subagentId 子 agent 任务 id
+ *
+ * executeToolNow 已含存活守卫（12b），此处直接委托——执行器出队检查与
+ * 本守卫双保险（队列等待窗口内桥状态可能变化）
+ */
+void DAAgentBridge::runQueuedTool(const QString& callId, const QString& toolName,
+                                  const QJsonObject& args, const QString& subagentId)
+{
+    executeToolNow(callId, toolName, args, subagentId);
+}
+
+/**
  * @brief 执行工具调用（前置权限门，两阶段，母文档 §4，继承 v1 暂停-恢复范式）
  *
  * decide() 产出 Allow → executeToolNow 真实执行；Deny → 合成拒绝结果回传；
@@ -784,26 +1011,35 @@ void DAAgentBridge::executeTool(const QString& callId,
 {
     DA_D(d);
 
+    // 判定时内容哈希（审计问题 26）：Python permission_judge 对 run_script
+    // 判定读文件产出 sha256，随 safety 透传——注入执行参数供工具执行前校验
+    //（TOCTOU 闭环），其它工具/无判定时为空不注入
+    const QString contentHash = safety.value(QStringLiteral("content_hash")).toString();
+
     // ---- 权限门（C++ 唯一执法点，A1） ----
     if (d->mPermissionManager) {
+        // decide 携带桥所属会话（决策点 1 方案 b）：会话记忆按会话查询
         const DAAgentPermissionManager::Decision dec =
-            d->mPermissionManager->decide(toolName, args, safety);
+            d->mPermissionManager->decide(d->mSessionId, toolName, args, safety);
         if (dec.action == DAAgentPermissionManager::Deny) {
-            // 合成拒绝结果（A11 按分级脱敏：reason 已由 decide 产出）
+            // 合成拒绝结果（A11 按分级脱敏：reason 已由 decide 产出）；
+            // 写入失败（进程已死）不 emit——孤儿结果不落盘（问题 12 决策 ⑤）
             QJsonObject result;
             result["success"] = false;
             result["error"]   = dec.reason;
-            sendToolResult(callId, result);
-            emit agentToolResult(toolName, result, subagentId);
+            if (sendToolResult(callId, result)) {
+                emit agentToolResult(toolName, result, subagentId);
+            }
             return;
         }
         if (dec.action == DAAgentPermissionManager::Ask) {
             // 挂起等待用户裁决：登记 pending、停看门狗（用户思考时间不计无活动）
             PendingApproval pa;
-            pa.toolName   = toolName;
-            pa.args       = args;
-            pa.tier       = dec.tier;
-            pa.subagentId = subagentId;
+            pa.toolName    = toolName;
+            pa.args        = args;
+            pa.tier        = dec.tier;
+            pa.subagentId  = subagentId;
+            pa.contentHash = contentHash;  // 批准后派发校验用（问题 26）
             d->mPendingApprovals.insert(callId, pa);
             d->mInactivityTimer->stop();
             // 通知 Python 侧暂停工具 RPC 计时——用户审批等待不设时限，
@@ -824,7 +1060,59 @@ void DAAgentBridge::executeTool(const QString& callId,
         }
     }
 
-    executeToolNow(callId, toolName, args, subagentId);
+    // 放行 → 经全局执行队列派发（决策点 2 方案 c；无执行器退化直执行）
+    dispatchToolExecution(callId, toolName, args, subagentId, contentHash);
+}
+
+/**
+ * @brief 派发执行（决策点 2 方案 c）：入全局队列或退化直执行
+ * @param callId 工具调用 ID
+ * @param toolName 工具名
+ * @param args 工具参数
+ * @param subagentId 子 agent 任务 id
+ * @param expectedContentHash 判定时内容哈希（审计问题 26，可空）
+ *
+ * executeTool 放行路径与 onToolApproval 批准路径共用。有执行器时入队并
+ * 上报排队位置（Python tool_exec_queued + UI agentToolQueued），出队时
+ * 执行器做存活/停止检查（12b/12c 取消语义）；无执行器（独立 Bridge/
+ * 协议级测试）保持旧直执行行为。
+ */
+void DAAgentBridge::dispatchToolExecution(const QString& callId, const QString& toolName,
+                                          const QJsonObject& args, const QString& subagentId,
+                                          const QString& expectedContentHash)
+{
+    DA_D(d);
+    // 判定时内容哈希注入执行参数（审计问题 26）：内部键 _expected_content_hash
+    // 同 _tier/_subagent 先例——只进执行副本，不进 tool_call 持久化/UI 卡
+    //（agentToolCall 已先以原始 args 发射）。run_script 工具执行前重读文件
+    // 校验哈希，不一致拒绝执行（TOCTOU：判定→执行窗口含全局队列排队段，
+    // 共享工作区脚本可能被 write_file/其它会话改写）
+    QJsonObject execArgs = args;
+    if (!expectedContentHash.isEmpty()) {
+        execArgs[QStringLiteral("_expected_content_hash")] = expectedContentHash;
+    }
+    if (d->mToolExecutor) {
+        const int position = d->mToolExecutor->enqueue(this, callId, toolName, execArgs, subagentId);
+        notifyToolQueued(callId, toolName, position);
+        return;
+    }
+    executeToolNow(callId, toolName, execArgs, subagentId);
+}
+
+/**
+ * @brief 排队态上报：tool_exec_queued 协议消息 + agentToolQueued 信号
+ * @param callId 工具调用 ID
+ * @param toolName 工具名
+ * @param position 队列位置（1-based）
+ */
+void DAAgentBridge::notifyToolQueued(const QString& callId, const QString& toolName, int position)
+{
+    QJsonObject msg;
+    msg["type"]     = "tool_exec_queued";
+    msg["call_id"]  = callId;
+    msg["position"] = position;
+    writeJson(msg);  // 排队上报失败无害（Python 侧排队段预算本就宽松）
+    emit agentToolQueued(toolName, position);
 }
 
 /**
@@ -848,14 +1136,18 @@ void DAAgentBridge::onToolApproval(const QString& callId, bool approved, bool re
     d->mPendingApprovals.erase(it);
 
     if (approved) {
-        // A5 [v2.1]：会话记忆仅 file_write；code_exec 一律不记忆
+        // A5 [v2.1]：会话记忆仅 file_write；code_exec 一律不记忆。
+        // 按桥所属会话分桶写入（决策点 1 方案 b）——"本会话记住"仅本会话可见
         if (rememberSession && d->mPermissionManager && pa.tier == DAAgentPermissionManager::tierFileWrite()) {
-            const QString key = d->mPermissionManager->sessionScopeKey(pa.toolName, pa.args);
+            const QString key = d->mPermissionManager->sessionScopeKey(d->mSessionId, pa.toolName, pa.args);
             if (!key.isEmpty()) {
-                d->mPermissionManager->rememberSession(pa.toolName, key);
+                d->mPermissionManager->rememberSession(d->mSessionId, pa.toolName, key);
             }
         }
-        executeToolNow(callId, pa.toolName, pa.args, pa.subagentId);
+        // 批准后同样经全局执行队列派发（决策点 2 方案 c）：审批窗口内桥可能
+        // 已死/被 Stop，出队存活检查取消"为将死进程执行"（审计 12b）；
+        // 判定时内容哈希随挂起条目保留，派发时注入校验（问题 26）
+        dispatchToolExecution(callId, pa.toolName, pa.args, pa.subagentId, pa.contentHash);
     } else {
         QJsonObject result;
         result["success"] = false;
@@ -865,8 +1157,10 @@ void DAAgentBridge::onToolApproval(const QString& callId, bool approved, bool re
         } else {
             result["error"] = QStringLiteral("Access denied: user rejected the operation");
         }
-        sendToolResult(callId, result);
-        emit agentToolResult(pa.toolName, result, pa.subagentId);
+        // 写入失败（进程已死）不 emit——孤儿结果不落盘（问题 12 决策 ⑤）
+        if (sendToolResult(callId, result)) {
+            emit agentToolResult(pa.toolName, result, pa.subagentId);
+        }
     }
 
     // 恢复看门狗（仍有其它挂起审批时由 startInactivityTimer 内部守卫拦截）
@@ -890,7 +1184,27 @@ void DAAgentBridge::executeToolNow(const QString& callId,
 {
     DA_D(d);
     ToolExecGuard guard(this);  // RAII：暂停看门狗，覆盖所有 return 路径
+    // 会话命名空间上下文（决策点 3 方案 c，审计问题 13）：run_code/run_script
+    // 经 DAPyScriptRunner 按会话查专属变量表——并发会话不再共享同一 Jupyter
+    // 式命名空间（会话 B 的 df 静默改写会话 A 正在使用的 df，产出错误分析
+    // 结果且无报错，是数据分析工作台最坏失败模式）。守卫覆盖整个执行期，
+    // 不改 DAAbstractAgentTool::execute 公开 API；其它工具不消费该上下文。
+    // mSessionId 为空（预热桥，理论上不执行工具）回退默认表
+    DAPyScriptSessionContext pySessionCtx(d->mSessionId);
 
+    // 存活/停止守卫（审计 12b/12c）：tool_call 投递后进程可能立刻崩溃，或
+    // 用户在排队窗口内 Stop——不再真实执行（副作用不为死进程/已终止回合
+    // 发生）。执行器出队检查与本守卫双保险（直执行退化路径同样受保护）
+    if (!d->mRunning || d->mUserRequestedStop
+        || !d->mProcess || d->mProcess->state() != QProcess::Running) {
+        qInfo() << "DAAgentBridge::executeToolNow: skipped, subprocess not running or stop requested, tool="
+                << toolName << "callId=" << callId;
+        return;
+    }
+
+    // 出队开始执行（决策点 2 ③）：position=0 通知 UI 由"排队中"恢复"运行中"；
+    // tool_exec_start 是 Python 侧工具本体超时的计时起点（两段式第二段）
+    emit agentToolQueued(toolName, 0);
     QJsonObject execStart;
     execStart["type"]    = "tool_exec_start";
     execStart["call_id"] = callId;
@@ -903,8 +1217,10 @@ void DAAgentBridge::executeToolNow(const QString& callId,
     if (it == d->mTools.end() || it.value() == nullptr) {
         result["error"]  = QString("Unknown tool: %1").arg(toolName);
         result["success"] = false;
-        sendToolResult(callId, result);
-        emit agentToolResult(toolName, result, subagentId);  // 同步推送到 UI 显示
+        // 写入成功才 emit（同步推送到 UI 显示 + Module 持久化）——孤儿不落盘
+        if (sendToolResult(callId, result)) {
+            emit agentToolResult(toolName, result, subagentId);
+        }
         return;
     }
 
@@ -925,12 +1241,18 @@ void DAAgentBridge::executeToolNow(const QString& callId,
         result["error"]   = "Tool execution failed: unknown error";
     }
 
-    // 3. 把结果回传子进程（让 agent_runner 继续推理）
-    sendToolResult(callId, result);
-
-    // 4. 同时发射信号，让聊天 UI 在对话流中展示工具调用结果
-    // （带 subagentId 的子转录结果由 Module 过滤，不进主聊天流/不落盘，母文档 §7）
-    emit agentToolResult(toolName, result, subagentId);
+    // 3. 把结果回传子进程（让 agent_runner 继续推理）；4. 写入成功才发射
+    // 信号（聊天 UI 展示 + Module 持久化挂该信号）——工具执行期间进程死亡
+    // （崩溃/被杀）时结果无处送达，emit 会落盘孤儿 tool_result（Python 永远
+    // 没收到，重放/恢复配对错乱），审计问题 12 决策 ⑤"迟到结果不落盘"
+    const bool delivered = sendToolResult(callId, result);
+    if (delivered) {
+        //（带 subagentId 的子转录结果由 Module 过滤，不进主聊天流/不落盘，母文档 §7）
+        emit agentToolResult(toolName, result, subagentId);
+    } else {
+        qWarning() << "DAAgentBridge::executeToolNow: result not delivered (subprocess gone), dropped, tool="
+                   << toolName << "callId=" << callId;
+    }
 }
 
 /**
@@ -996,8 +1318,9 @@ void DAAgentBridge::onProcessFinished(int exitCode, QProcess::ExitStatus exitSta
         if (parseError.error == QJsonParseError::NoError && doc.isObject()) {
             handleJsonLine(doc.object());
         } else {
-            daWarning << tr("Failed to parse trailing JSON line from agent stdout: %1, error: %2")  //cn:解析 agent 标准输出的末尾 JSON 行失败：%1，错误：%2
-                             .arg(QString::fromUtf8(lastLine), parseError.errorString());
+            // 审计 L6：开发诊断日志用 qWarning 纯英文（不进 UI 消息队列）
+            qWarning() << "DAAgentBridge: failed to parse trailing JSON line from agent stdout:"
+                       << lastLine << "error:" << parseError.errorString();
         }
     }
 
@@ -1049,6 +1372,9 @@ void DAAgentBridge::onProcessFinished(int exitCode, QProcess::ExitStatus exitSta
 
     if (d->mRestartCount < d->mMaxRestarts) {
         d->mRestartCount++;
+        // 调度时即置恢复标志（审计 L4）：1s 恢复窗口内 isRunning()==false，
+        // Module stop() 与 UI 需经 isRecovering() 识别"正在自愈"的桥
+        d->mRecovering = true;
         emit agentError(
             tr("Agent process crashed (exit code %1), recovering... (%2/%3)")
                 //cn:Agent 进程异常退出（代码 %1），正在恢复... (%2/%3)
@@ -1058,10 +1384,19 @@ void DAAgentBridge::onProcessFinished(int exitCode, QProcess::ExitStatus exitSta
             "crash_recovery", ""
         );
 
-        // 延迟 1 秒后重启（避免崩溃循环过快）
-        QTimer::singleShot(1000, this, [this]() {
+        // 延迟 1 秒后重启（避免崩溃循环过快）——持句柄定时器（审计 L4）：
+        // 恢复窗口内用户 Stop 可经 requestStop 取消，不再"静默忽略、1s 后
+        // 照常重启重放"违背用户终止意图（旧 singleShot 无句柄不可取消）
+        if (d->mRecoveryTimer) {
+            d->mRecoveryTimer->stop();
+            d->mRecoveryTimer->deleteLater();
+        }
+        d->mRecoveryTimer = new QTimer(this);
+        d->mRecoveryTimer->setSingleShot(true);
+        connect(d->mRecoveryTimer, &QTimer::timeout, this, [this]() {
             recoverFromCrash();
         });
+        d->mRecoveryTimer->start(1000);
     } else {
         d->mRecovering = false;
         emit agentError(
@@ -1096,7 +1431,11 @@ void DAAgentBridge::onReadyReadStandardError()
     //   2. qInfo 为 info 级别，即使用户把日志级别调到 Info（daDebug 是 debug 级会被滤掉），
     //      Python 侧的 stderr 日志/traceback 仍能落 da_log.log，保证后续调试 agent 可见。
     //   （默认 Trace 级别下 daDebug 也能落盘，此处升级为 qInfo 是为应对用户调高级别的场景。）
-    qInfo() << "Agent stderr:" << QString::fromUtf8(data);
+    // 会话归属短码（审计 L18）：多子进程并发时区分 traceback 属于哪个会话
+    //（预热桥无会话归属显示 [idle]）
+    qInfo() << "Agent stderr:"
+            << (d->mSessionId.isEmpty() ? QStringLiteral("[idle]") : d->mSessionId.left(8))
+            << QString::fromUtf8(data);
 }
 
 /**
@@ -1159,8 +1498,10 @@ void DAAgentBridge::recoverFromCrash()
                d->mPythonExePath, d->mAgentScriptPath,
                d->mReadyTimeoutMs, d->mStopTimeoutMs);
 
-    // ready 消息到达后，现有 agentReady 处理逻辑检查 m_recovering 标志，
-    // 触发会话恢复 + 重发最后消息（见步骤 3.5），无需一次性连接
+    // 恢复链路由 Module 侧驱动（审计 L5 注释纠偏，Bridge 无 agentReady 消费逻辑）：
+    // ready 到达 → Bridge emit agentReady → Module attachBridge 挂接的 agentReady
+    // lambda 检查 isRecovering() → sendLoadSession（JSONL 历史重建）→
+    // session_loaded → Module 调 resendLastMessage() 重发末条用户消息。
 }
 
 /**
@@ -1173,7 +1514,15 @@ void DAAgentBridge::resendLastMessage()
     if (!d->mLastUserMessage.isEmpty()) {
         d->mTurnActive = true;
         emit agentBusy(true);
-        writeJson(QJsonObject{{"type", "user_msg"}, {"content", d->mLastUserMessage}});
+        if (!writeJson(QJsonObject{{"type", "user_msg"}, {"content", d->mLastUserMessage}})) {
+            // 重发失败（进程恢复后又死亡）：回滚忙碌态（审计问题 23）。
+            // mLastUserMessage 保留——消息从未送达，若后续再走恢复链应继续重试
+            d->mTurnActive = false;
+            d->mInactivityTimer->stop();
+            emit agentError(tr("Message not sent: agent subprocess is not running"));  //cn:消息未发送：agent 子进程未在运行
+            emit agentBusy(false);
+            return;
+        }
         startInactivityTimer();
     } else {
         d->mTurnActive = false;

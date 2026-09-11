@@ -51,11 +51,24 @@ let i18n = {
     // —— 工具审批卡（permission-layer P1）——
     approvalNeeds: 'needs your approval',
     approvalApprove: 'Approve', approvalDeny: 'Deny',
-    approvalApproveRemember: 'Approve && remember for this session',
+    // 审计 L10：web 端 textContent 无 Qt 助记符语义，默认值用单 &
+    approvalApproveRemember: 'Approve & remember for this session',
     approvalApproved: 'Approved', approvalDenied: 'Denied',
     approvalApprovedRemembered: 'Approved (remembered for this session)',
     approvalCodeMoreLines: '%1 more lines',
     approvalFromSubagent: 'From subagent: %1',
+    // —— 工具排队状态（决策点 2 ③，审计问题 12）——
+    toolQueued: 'queued', toolRunning: 'running',
+    // —— 工具结果截断（审计问题 29）——
+    toolResultTruncated: 'result truncated',
+    // —— 问题卡提交失败提示（审计 L9）——
+    answerSendFailed: 'Answer not sent, please retry',
+    // —— 跨工程会话提示条（决策点 5 方案 c，审计问题 18）——
+    foreignBannerText: '%1 session(s) from the previous project are still running in the background',
+    foreignBannerTip: 'Click to view and stop these sessions',
+    // —— 重放问题卡标签（审计 L10，C++ setI18nLabels 注入译文）——
+    questionSubmit: 'Submit',
+    questionCustomPlaceholder: 'Type your own answer...',
     // —— 子 agent 进度卡片（subagent-phase1 C）——
     subagentTaskCount: '%1 subagent task(s)',
     subagentProgress: '%1/%2 done',
@@ -98,6 +111,51 @@ function initMarkdown() {
         }
     });
     setupMathRules(md);
+    setupDaLinkRules(md);
+}
+
+// da-*: 本地跳转链接修复（预处理）：Markdown 链接语法 (da-figure:Chart - col1)
+// 在目标含空格时解析失败，整条链接退化为纯文本（agent 未用尖括号包裹时）。
+// 渲染前把含空格的目标补上尖括号使其可解析；代码块/行内代码先占位保护，
+// 其中的伪链接文本不受影响。对任意 da-<kind>: 协议生效（协议处理在 C++ 侧
+// DAAgentLinkDispatcher 注册，JS 层无需感知协议清单）。
+function fixDaLinks(text) {
+    var saved = [];
+    var t = text.replace(/(```[\s\S]*?```|`[^`\n]*`)/g, function(m) {
+        saved.push(m);
+        return '\x00DAFIX' + (saved.length - 1) + '\x00';
+    });
+    t = t.replace(/\]\((da-[a-z][a-z0-9-]*:[^)\n]*[ \t][^)\n]*)\)/gi, function(_, url) {
+        return '](<' + url + '>)';
+    });
+    return t.replace(/\x00DAFIX(\d+)\x00/g, function(_, i) {
+        return saved[+i];
+    });
+}
+
+// 统一渲染入口：先修复 da-*: 链接再渲染
+function renderMarkdown(text) {
+    return md.render(fixDaLinks(text));
+}
+
+// da-*: 本地跳转链接渲染规则：给链接元素附加 da-link（通用）+ da-<kind>-link
+//（协议专属）class，CSS 据此统一样式与图标（替代逐协议写 [href^="da-xxx:"] 属性
+// 选择器及其大小写变体兜底——class 由本规则统一写入，天然不受大小写影响）。
+// 协议处理在 C++ 侧 DAAgentLinkDispatcher 注册，JS 层只认 da-<kind>: 前缀。
+function setupDaLinkRules(markdown) {
+    var defaultLinkOpen = markdown.renderer.rules.link_open;
+    markdown.renderer.rules.link_open = function(tokens, idx, options, env, self) {
+        var href = tokens[idx].attrGet('href') || '';
+        var m = /^da-([a-z][a-z0-9-]*):/i.exec(href);
+        if (m) {
+            tokens[idx].attrJoin('class', 'da-link');
+            tokens[idx].attrJoin('class', 'da-' + m[1].toLowerCase() + '-link');
+        }
+        if (defaultLinkOpen) {
+            return defaultLinkOpen(tokens, idx, options, env, self);
+        }
+        return self.renderToken(tokens, idx, options);
+    };
 }
 
 // —— KaTeX 数学公式渲染（与 MarkdownView/resources/markdown.js 保持一致）——
@@ -219,7 +277,8 @@ function init() {
             chatBridge.onReady();
         }
     });
-    // 拦截 da-figure: 超链接点击，交给 C++ 端打开对应绘图。
+    // 拦截 da-*: 本地跳转超链接点击，交给 C++ 端按协议分发处理（协议清单由
+    // DAAgentLinkDispatcher 注册，JS 层只认 da-<kind>: 前缀，无需感知具体协议）。
     // 事件委托挂在稳定的 #messages 上：流式防抖会重建气泡 innerHTML，
     // 绑在气泡节点上的监听器会丢失，挂在 #messages 始终有效（clearChat 只清 innerHTML）。
     var msgs = document.getElementById('messages');
@@ -228,12 +287,12 @@ function init() {
             var link = e.target.closest('a');
             if (!link) return;
             var href = link.getAttribute('href') || '';
-            if (href.toLowerCase().indexOf('da-figure:') !== 0) return;  // 仅匹配 da-figure: 前缀，放行普通链接
+            if (!/^da-[a-z0-9-]+:/i.test(href)) return;  // 仅匹配 da-<kind>: 前缀，放行普通链接
             e.preventDefault();  // 阻止 WebEngine 内部导航（自定义 scheme 无目标页）
-            // 流式未完成时 href 可能只是 "da-figure:"，跳过避免无效调用
-            if (href === 'da-figure:' || href === 'da-figure:/') return;
-            if (chatBridge && typeof chatBridge.onFigureLink === 'function') {
-                chatBridge.onFigureLink(href);
+            // 流式未完成时 href 可能只是 "da-xxx:"，跳过避免无效调用
+            if (/^da-[a-z0-9-]+:\/?$/i.test(href)) return;
+            if (chatBridge && typeof chatBridge.onLinkActivated === 'function') {
+                chatBridge.onLinkActivated(href);
             }
         });
         // 分段懒加载：滚动到顶部附近（<=60px）自动 prepend 更早一段。
@@ -359,7 +418,7 @@ function flushAgentMessage() {
     }
     if (!currentAgentMsg) return;
     if (currentAgentMsg.dataset.rawText) {
-        currentAgentMsg.innerHTML = md.render(currentAgentMsg.dataset.rawText);
+        currentAgentMsg.innerHTML = renderMarkdown(currentAgentMsg.dataset.rawText);
     } else {
         // 空气泡（agent 在工具调用前未输出任何文本）——移除避免留白
         currentAgentMsg.remove();
@@ -444,7 +503,10 @@ function createToolCard(toolName, args) {
 // 工具结果到达：更新卡片状态、摘要、结果区。
 function updateToolCardResult(card, result) {
     let success = result.success !== false;
-    let summary = result.message || result.error || (success ? 'done' : 'failed');  // cn:完成/失败
+    let truncated = (result && result.__truncated__ === true);
+    let summary = truncated
+        ? ((i18n.toolResultTruncated || 'result truncated') + ' · ' + result.total_chars + ' chars')  // cn:结果已截断
+        : (result.message || result.error || (success ? 'done' : 'failed'));  // cn:完成/失败
     card.classList.remove('running');
     card.classList.add(success ? 'ok' : 'err');
     let dot = card.querySelector('.status-dot');
@@ -455,7 +517,14 @@ function updateToolCardResult(card, result) {
     if (resultSection) {
         resultSection.style.display = '';
         let pre = resultSection.querySelector('.tool-json');
-        if (pre) pre.textContent = JSON.stringify(result, null, 2);
+        // 审计问题 29：超限结果 C++ 侧已截断为 {__truncated__, total_chars,
+        // preview}——展示 preview + 截断标记，不再全量 stringify 进 DOM
+        //（完整内容仍在会话 JSONL）
+        if (pre) {
+            pre.textContent = truncated
+                ? (String(result.preview || '') + '\n… ' + (i18n.errorTruncated || '[truncated]'))
+                : JSON.stringify(result, null, 2);
+        }
     }
 }
 
@@ -489,7 +558,16 @@ var subagentCards = {};  // call_id → {group, tasks: {task_id: {el, terminal}}
 // 派发卡片创建（spawned 首条触发；折叠态，复用工具分组样式）。
 function createSubagentGroup(callId) {
     flushAgentMessage();
+    // 审计问题 28a：dispatch_subagents 的工具卡已建卡入 pendingToolCards，
+    // 其结果要等派发结束才到达——直接 closeToolGroup 会因 pending 非空走
+    // "异常路径"（红点 incomplete + 清空 pending），后到的 tool_result 被
+    // appendToolResult findIndex 落空静默丢弃，dispatch 卡永远误标未完成。
+    // 修复：暂存待决卡片跨过关组（卡片 DOM 留在上一组、继续等结果），
+    // 关组按 completed 收尾，结果到达时依 FIFO 自然补全
+    let carriedCards = pendingToolCards;
+    pendingToolCards = [];
     closeToolGroup();  // 前序工具分组收尾，进度卡片独立成卡
+    pendingToolCards = carriedCards;
     let group = document.createElement('div');
     group.className = 'tool-group subagent-group active';
     group.dataset.callId = callId;
@@ -530,7 +608,9 @@ function createSubagentTaskRow(taskId, message) {
 function updateSubagentTaskRow(entry, taskId, state, message) {
     let t = entry.tasks[taskId];
     if (!t) {
-        if (state !== 'spawned') return;  // 未知任务（乱序/迟到）——忽略
+        // 审计问题 28b：非 spawned 态也惰性建行（乱序/迟到/重放丢头部事件时
+        // 任务进度不再整体不可见）；spawned 之外的态没有提示词摘要，行 meta
+        // 由下方状态分支填充
         let el = createSubagentTaskRow(taskId, message);
         entry.group.querySelector('.tool-group-body').appendChild(el);
         t = entry.tasks[taskId] = { el: el, terminal: false };
@@ -600,7 +680,10 @@ function updateSubagentProgress(payload) {
 
     let entry = subagentCards[callId];
     if (!entry) {
-        if (state !== 'spawned') return;  // 未知派发的迟到消息——忽略
+        // 审计问题 28b（双保险）：非 spawned 态也惰性重建进度卡——切回运行中
+        // 会话时 clearChat 已复位 subagentCards，Module 侧缓存重发若丢失头部
+        // spawned 事件（或重放窗口竞态），后续进度不再被整体忽略；行级幂等
+        // 由 updateSubagentTaskRow 的 terminal 守卫保障
         entry = subagentCards[callId] = { group: createSubagentGroup(callId), tasks: {} };
     }
 
@@ -642,7 +725,7 @@ function appendUserMessage(text) {
     closeToolGroup();
     let bubble = createMessageBubble('user');
     bubble.dataset.rawText = text;
-    bubble.innerHTML = md.render(text);
+    bubble.innerHTML = renderMarkdown(text);
     getRenderTarget().appendChild(bubble);
     scrollToBottom();
 }
@@ -665,7 +748,7 @@ function appendToken(text) {
     if (renderTimer) clearTimeout(renderTimer);
     renderTimer = setTimeout(function() {
         if (currentAgentMsg) {
-            currentAgentMsg.innerHTML = md.render(currentAgentMsg.dataset.rawText);
+            currentAgentMsg.innerHTML = renderMarkdown(currentAgentMsg.dataset.rawText);
             scrollToBottom();
         }
         renderTimer = null;
@@ -687,7 +770,7 @@ function finalizeAgentMessage(fullText) {
     if (currentAgentMsg) {
         if (trimmed) {
             currentAgentMsg.dataset.rawText = fullText;
-            currentAgentMsg.innerHTML = md.render(fullText);
+            currentAgentMsg.innerHTML = renderMarkdown(fullText);
         } else {
             // 空回复——移除遗留的空气泡，避免留白
             currentAgentMsg.remove();
@@ -696,7 +779,7 @@ function finalizeAgentMessage(fullText) {
     } else if (trimmed) {
         // 防御：无打开的气泡但有内容时创建一个（正常路径不会走到，token 已先行创建）
         let bubble = createMessageBubble('agent');
-        bubble.innerHTML = md.render(fullText);
+        bubble.innerHTML = renderMarkdown(fullText);
         document.getElementById('messages').appendChild(bubble);
     }
     scrollToBottom();
@@ -721,6 +804,24 @@ function appendToolResult(toolName, result) {
     updateToolCardResult(entry.card, result);
     updateToolGroupHeader();
     scrollToBottom();
+}
+
+// 工具排队状态（决策点 2 ③，审计问题 12）：全局执行队列的等待可解释——
+// position>0 卡片摘要显示"排队中 #N"（跨会话队头等待不再被误判为卡死），
+// position==0 表示出队开始执行，恢复"运行中"。从后向前找最近一张同名
+// 待结果卡（FIFO 语义与 appendToolResult 对齐）
+function markToolQueued(toolName, position) {
+    for (var i = pendingToolCards.length - 1; i >= 0; i--) {
+        if (pendingToolCards[i].toolName === toolName) {
+            var summary = pendingToolCards[i].card.querySelector('.card-summary');
+            if (summary) {
+                summary.textContent = (position > 0)
+                    ? (i18n.toolQueued || 'queued') + ' #' + position  // cn:排队中 #N
+                    : (i18n.toolRunning || 'running');                 // cn:运行中
+            }
+            break;
+        }
+    }
 }
 
 function appendQuestion(text, options, submitLabel, customPlaceholder, multiSelect) {
@@ -787,6 +888,20 @@ function appendQuestion(text, options, submitLabel, customPlaceholder, multiSele
             customInput.focus();
             return;
         }
+        if (!(chatBridge && typeof chatBridge.onUserSelect === 'function')) {
+            // 审计 L9：WebChannel 断开时裸调用抛 TypeError——卡片不进 answered
+            // 态、答案不发送、无任何提示（全文件其它 JS→C++ 调用点均有守卫）。
+            // 补守卫：卡片保持可交互（不标 answered/不禁用按钮），行内提示失败
+            let hint = qBubble.querySelector('.question-send-hint');
+            if (!hint) {
+                hint = document.createElement('div');
+                hint.className = 'question-send-hint';
+                hint.style.cssText = 'color:#CE6043;font-size:12px;margin-top:4px;';
+                qBubble.appendChild(hint);
+            }
+            hint.textContent = i18n.answerSendFailed || 'Answer not sent, please retry';
+            return;
+        }
         chatBridge.onUserSelect(answer);
         qBubble.classList.add('answered');
         // 提交后禁用所有交互元素
@@ -820,6 +935,8 @@ function clearChat() {
     // 防止切换会话后"加载更早"把旧会话事件渲染进新聊天区
     pendingEarlierEvents = [];
     removeLoadEarlierSentinel();
+    // 分片传输缓冲复位（审计问题 29）：中断的传输残片不串进新会话
+    historyTransferBuf = null;
 }
 
 // —— 输入区/状态栏 web 化（被 C++ 经 DAAgentWebChannel::callJS 调用）——
@@ -1278,6 +1395,46 @@ function dismissToolApproval(callId) {
     }
 }
 
+// 跨工程会话提示条（决策点 5 方案 c，审计问题 18）：count>0 显示"N 个上一
+// 工程的会话仍在后台运行"（点击打开会话管理对话框——全部工程视图+一键停止），
+// count==0 隐藏。挂在 body 顶部（#messages 之前），不随 clearChat 清除
+function showForeignBanner(count) {
+    let bar = document.getElementById('foreign-banner');
+    if (!bar) {
+        if (!(count > 0)) return;
+        bar = document.createElement('div');
+        bar.id = 'foreign-banner';
+        bar.className = 'foreign-banner';
+        bar.title = i18n.foreignBannerTip || 'Click to view and stop these sessions';
+        bar.onclick = function() {
+            if (chatBridge && typeof chatBridge.onForeignBannerClicked === 'function') {
+                chatBridge.onForeignBannerClicked();
+            }
+        };
+        document.body.insertBefore(bar, document.getElementById('messages'));
+    }
+    if (!(count > 0)) {
+        bar.classList.remove('visible');
+        return;
+    }
+    bar.textContent = (i18n.foreignBannerText || '%1 session(s) from the previous project are still running in the background')
+        .replace('%1', String(count));
+    bar.classList.add('visible');
+}
+
+// C++ 推送挂起问题卡作废（子进程退出/崩溃/用户 Stop/桥退役）：移除未回答的
+// 问题卡。已回答的历史卡（.answered，含重放渲染的静态卡）不受影响。
+function dismissQuestion() {
+    var container = document.getElementById('messages');
+    if (!container) return;
+    var cards = container.querySelectorAll('.message-bubble.question');
+    for (var i = 0; i < cards.length; i++) {
+        if (!cards[i].classList.contains('answered')) {
+            cards[i].remove();
+        }
+    }
+}
+
 // 渲染下拉面板（按 modelDropdownView 分发）。
 function renderModelDropdown() {
     var dd = document.getElementById('model-dropdown');
@@ -1457,6 +1614,25 @@ function fmtTmpl(tmpl, val) {
 // MAJOR2: 配对由 C++ 完成，JS 直接读 ev.toolName/args/result（不再读 _toolName/_toolArgs）。
 // MAJOR5 + 契约9: ask_user 历史用 appendQuestion 渲染问题气泡，然后内联 DOM 操作
 //                 禁用按钮 + 加 answered class + 追加答案文本（chat.js 无 markQuestionAnswered）。
+// 分片传输累积缓冲（审计问题 29）：C++ 侧 loadHistory 按体积切片经
+// loadHistoryPart 多次下发（防单次巨型 eval 超 Chromium IPC 上限静默失败），
+// 累积到末片后整体交给 loadHistory——渲染层的分段懒加载语义不变。
+// callJS 同页 FIFO 保证分片次序；clearChat 时复位（中断传输的残片不串场）
+let historyTransferBuf = null;
+
+function loadHistoryPart(events, isLast) {
+    if (!Array.isArray(events)) { events = []; }
+    if (historyTransferBuf === null) { historyTransferBuf = []; }
+    for (let i = 0; i < events.length; i++) {
+        historyTransferBuf.push(events[i]);
+    }
+    if (isLast) {
+        const all = historyTransferBuf;
+        historyTransferBuf = null;
+        loadHistory(all);
+    }
+}
+
 function loadHistory(events) {
     clearChat();
     if (!events || !events.length) {
@@ -1481,7 +1657,12 @@ function loadHistory(events) {
     }
     // concurrent-sessions 修复：收尾关闭最后的工具组（所有卡片已带 result，
     // 标记 completed），避免重放后末组永远显示 running 状态。
-    closeToolGroup();
+    // 例外（审计问题 7）：存在在途卡片（C++ 未配对 tool_call flush 的 running
+    // 事件）时保持分组 active——实时 tool_result 稍后到达依 FIFO 补全，
+    // 不得提前关组走 incomplete 误标路径（问题 28a 同款机制）
+    if (pendingToolCards.length === 0) {
+        closeToolGroup();
+    }
     scrollToBottom();
 }
 
@@ -1507,20 +1688,27 @@ function renderHistoryEvents(evs) {
             closeToolGroup();
             const bubble = createMessageBubble('agent');
             bubble.dataset.rawText = content;
-            bubble.innerHTML = md.render(content);
+            bubble.innerHTML = renderMarkdown(content);
             getRenderTarget().appendChild(bubble);  // ← 必须挂到 DOM
         } else if (t === 'tool') {
             // MAJOR2: 读合并后字段 toolName/args/result（C++ 已配对）
             const toolName = ev.toolName || 'tool';
             const args = (ev.args && typeof ev.args === 'object') ? ev.args : {};
-            let result = ev.result;
-            // result 来自 C++ parseJsonStr（已 object）；防御性兼容历史 string 形态
-            if (typeof result === 'string') {
-                try { result = JSON.parse(result || '{}'); } catch (e) { result = {}; }
+            if (ev.running === true) {
+                // 在途工具调用（审计问题 7：切回运行中会话，C++ 把末尾未配对
+                // tool_call 透传为 running 态事件）：只建卡不补结果——卡片入
+                // pendingToolCards 等待，实时 tool_result 到达依 FIFO 自然补全
+                appendToolCall(toolName, args);
+            } else {
+                let result = ev.result;
+                // result 来自 C++ parseJsonStr（已 object）；防御性兼容历史 string 形态
+                if (typeof result === 'string') {
+                    try { result = JSON.parse(result || '{}'); } catch (e) { result = {}; }
+                }
+                if (!result || typeof result !== 'object') { result = {}; }
+                appendToolCall(toolName, args);
+                appendToolResult(toolName, result);
             }
-            if (!result || typeof result !== 'object') { result = {}; }
-            appendToolCall(toolName, args);
-            appendToolResult(toolName, result);
         } else if (t === 'question') {
             // MAJOR5 + 契约9: ask_user 历史用 appendQuestion 渲染问题气泡（返回气泡
             // 引用），然后 DOM 操作禁用按钮 + 加 answered class + 追加答案文本
@@ -1528,8 +1716,8 @@ function renderHistoryEvents(evs) {
             const qBubble = appendQuestion(
                 a.question || '',
                 Array.isArray(a.options) ? a.options : [],
-                a.submit_label || 'Submit',
-                a.custom_placeholder || '',
+                a.submit_label || i18n.questionSubmit || 'Submit',
+                a.custom_placeholder || i18n.questionCustomPlaceholder || '',
                 !!a.multi_select
             );
             if (qBubble) {
@@ -1549,6 +1737,13 @@ function renderHistoryEvents(evs) {
                 ansDiv.textContent = '\u2192 ' + answer;  // → answer
                 qBubble.appendChild(ansDiv);
             }
+        } else if (t === 'error') {
+            // 决策点 4（审计问题 3）：落盘 error 记录重放——复用实时 appendError
+            // 渲染错误卡（图标/配色按 error_type，detail 折叠面板）。message 为
+            // 落盘原始文案，Dock 侧 onSessionSwitched 已经 mapErrorMessage 预映射
+            // 为用户文案（与实时路径一致）
+            const m = (ev.message && typeof ev.message === 'object') ? ev.message : {};
+            appendError(m.message || '', m.error_type || '', m.detail || '');
         } else if (t === 'usage' || t === 'summary') {
             // 跳过（不渲染；token 由 C++ m_modelLabel/m_tokenLabel 显示，summary 一期不持久化渲染）
         }

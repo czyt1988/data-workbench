@@ -55,6 +55,13 @@ CHART_TOOLS = frozenset({
     "create_subplots", "save_chart_image", "list_figures",
 })
 
+#: 数据类工具集（与 plugins/DAAgentTools 的 5 个数据工具一致）：
+#: 白名单与之相交时子图系统提示词附加 data_reference 约定（镜像图表引用）
+DATA_TOOLS = frozenset({
+    "list_data", "get_data_info", "query_data", "column_stats",
+    "export_data",
+})
+
 #: 单任务 summary 截断上限（字符）
 _SUMMARY_MAX_CHARS = 4000
 
@@ -89,6 +96,14 @@ _FIGURE_REFERENCE_SECTION = (
     "- `create_chart` / `create_subplots` return `figure_name` and `figure_id`.\n"
     "- When mentioning a figure in your summary, insert a "
     "`[name](da-figure:<figure_name>)` hyperlink so the user can jump to it."
+)
+
+#: 白名单含数据工具时附加（镜像主提示词"在回复中引用数据集"节）
+_DATA_REFERENCE_SECTION = (
+    "## Referring to datasets\n"
+    "- When mentioning a dataset in your summary, insert a "
+    "`[dataset name](<da-data:dataset_name>)` hyperlink so the user can open "
+    "it directly; use `list_data` to discover loaded datasets and their names."
 )
 
 #: 白名单含 gated 工具（文件写入/代码执行）时附加（镜像主提示词"权限与安全"节，
@@ -191,6 +206,14 @@ class SubagentRunContext:
     @property
     def _max_retries(self):
         return self._runner._max_retries
+
+    @property
+    def _retry_interval_sec(self):
+        return self._runner._retry_interval_sec
+
+    @property
+    def _retry_increment_sec(self):
+        return self._runner._retry_increment_sec
 
     @property
     def _max_output_tokens(self):
@@ -384,8 +407,11 @@ class SubagentOrchestrator:
         agent 自行纠错；单任务失败映射为对应状态（失败不传染，Q11）。
         """
         runner = self._runner
-        batch_limit = self._cfg_int("subagent_batch_limit", 4)
-        concurrency = self._cfg_int("subagent_max_concurrency", 2)
+        # 缺省保守 2/1（审计问题 27 短期动作，与 C++ DAAgentLLMConfig 默认对齐）：
+        # 并发会话下 N 进程 × M 子 agent 对同一 LLM 供应商无跨进程配额协调，
+        # 缺省收敛降低放大效应；配置显式下发时以配置为准（上限 4/2）
+        batch_limit = self._cfg_int("subagent_batch_limit", 2)
+        concurrency = self._cfg_int("subagent_max_concurrency", 1)
         timeout_sec = float(self._cfg_int("subagent_timeout_sec", 600))
         # 子图步数上限：≤0（ini 配置 -1）视为无限制（None 传入 langgraph；
         # 显式 -1/0 会被 langgraph ValueError 拒绝，见 agent_runner 的守卫）
@@ -632,7 +658,7 @@ class SubagentOrchestrator:
         return subset
 
     def _compose_system_prompt(self, definition: SubagentDefinition) -> str:
-        """组装子图系统提示词（Q10）：固定前导 + md 正文 ± 图表引用 ± 权限约定。"""
+        """组装子图系统提示词（Q10）：固定前导 + md 正文 ± 图表引用 ± 数据集引用 ± 权限约定。"""
         parts = [_SUBAGENT_PREAMBLE]
         body = definition.system_prompt.strip()
         if body:
@@ -640,6 +666,8 @@ class SubagentOrchestrator:
         toolset = set(definition.tools)
         if toolset & CHART_TOOLS:
             parts.append(_FIGURE_REFERENCE_SECTION)
+        if toolset & DATA_TOOLS:
+            parts.append(_DATA_REFERENCE_SECTION)
         # gated 工具（file_write + code_exec 全集，经 init 下发）→ 权限约定
         gated = getattr(self._runner, "_gated_tools", set()) or set()
         if toolset & gated:

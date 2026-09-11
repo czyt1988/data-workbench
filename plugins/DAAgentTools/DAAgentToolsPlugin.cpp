@@ -86,15 +86,36 @@ bool DAAgentToolsPlugin::initialize()
         "## Referencing Figures in Your Reply\n"
         "When you create a chart with `create_chart` / `create_subplots`, the tool returns `figure_name` and `figure_id`.\n"
         "To let the user open a figure directly from your reply, insert a Markdown hyperlink using the `da-figure:` scheme:\n\n"
-        "  [human-readable chart name](da-figure:<figure_name>)\n"
+        "  [human-readable chart name](<da-figure:figure_name>)\n"
         "  # precise form (use when names may duplicate):\n"
         "  [human-readable chart name](da-figure:id=<figure_id>)\n\n"
         "Rules:\n"
+        "- ALWAYS wrap the da-figure: target in angle brackets `<da-figure:...>` — Markdown link syntax fails "
+        "when the target contains spaces or special characters (e.g. the default name `Chart - col1`), "
+        "and the link would render as plain text.\n"
         "- The link text should be a short human-readable name (use the chart title or figure_name).\n"
         "- Prefer the name form for brevity; use the id form when figure names may duplicate.\n"
         "- Only reference figures you have created in the current session (the user can click the link to raise and focus that figure).\n"
         "- Use `list_figures` to discover existing figures and their names/ids, and `list_chart_items` to inspect "
         "the items (curves, annotations, regions) inside a chart before modifying or removing them.\n"
+    ), this);
+    // 数据集引用提示词：教 agent 用 da-data: 超链接在回复中引用数据集，
+    // 用户点击后由程序打开对应数据表并 raise 数据操作区。
+    agent->registerSystemPrompt(QStringLiteral("data_reference"), QStringLiteral(
+        "## Referencing Datasets in Your Reply\n"
+        "To let the user open a dataset directly from your reply, insert a Markdown hyperlink "
+        "using the `da-data:` scheme:\n\n"
+        "  [dataset name](<da-data:dataset_name>)\n"
+        "  # precise form (use when names may duplicate, id is the numeric dataset id):\n"
+        "  [dataset name](da-data:id=<id>)\n\n"
+        "Rules:\n"
+        "- ALWAYS wrap the da-data: target in angle brackets `<da-data:...>` — Markdown link syntax fails "
+        "when the target contains spaces or special characters, and the link would render as plain text.\n"
+        "- The link text should be the dataset name (or a short human-readable description of it).\n"
+        "- Prefer the name form; use the id form only when dataset names may duplicate.\n"
+        "- Use `list_data` to discover loaded datasets and their names before referencing them.\n"
+        "- Only reference datasets that currently exist in the data manager "
+        "(the user can click the link to open the corresponding data table)."
     ), this);
     return DAAbstractPlugin::initialize();  // base default returns true
 }

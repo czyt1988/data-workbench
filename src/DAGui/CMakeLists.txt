@@ -30,6 +30,7 @@ set(DA_LIB_HEADER_FILES
     DANodeItemSettingWidget.h
     DANodeLinkItemSettingWidget.h
     DANodeMimeData.h
+    DAWebExternalOpenPage.h
     DANodeSettingWidget.h
     DANodeTreeWidget.h
     DARecentFilesManager.h
@@ -275,6 +276,10 @@ set(DA_LIB_HEADER_FILES_Chart
     ${DA_LIB_SUBDIR_Chart}/DAFigureDockWidget.h
     ${DA_LIB_SUBDIR_Chart}/DAFigureDockWidgetTab.h
     ${DA_LIB_SUBDIR_Chart}/DAFigureComponentsFactory.h
+    ${DA_LIB_SUBDIR_Chart}/DADataLinkTableWidget.h
+    ${DA_LIB_SUBDIR_Chart}/DADataLinkTableTab.h
+    ${DA_LIB_SUBDIR_Chart}/DADataLinkTableModel.h
+    ${DA_LIB_SUBDIR_Chart}/DADataLinkTableDelegate.h
 )
 set(DA_LIB_SOURCE_FILES_Chart
     ${DA_LIB_SUBDIR_Chart}/DAChartOperateWidget.cpp
@@ -284,6 +289,10 @@ set(DA_LIB_SOURCE_FILES_Chart
     ${DA_LIB_SUBDIR_Chart}/DAFigureDockWidget.cpp
     ${DA_LIB_SUBDIR_Chart}/DAFigureDockWidgetTab.cpp
     ${DA_LIB_SUBDIR_Chart}/DAFigureComponentsFactory.cpp
+    ${DA_LIB_SUBDIR_Chart}/DADataLinkTableWidget.cpp
+    ${DA_LIB_SUBDIR_Chart}/DADataLinkTableTab.cpp
+    ${DA_LIB_SUBDIR_Chart}/DADataLinkTableModel.cpp
+    ${DA_LIB_SUBDIR_Chart}/DADataLinkTableDelegate.cpp
 )
 set(DA_LIB_QT_UI_FILES_Chart
     ${DA_LIB_SUBDIR_Chart}/DAChartManageWidget.ui
@@ -492,4 +501,11 @@ da_add_library(
 
 if(${QT_VERSION_MAJOR} EQUAL 6)
     target_link_libraries(DAGui PRIVATE Qt6::Core5Compat)
+endif()
+
+if(WIN32)
+    # DAMarkdownExporter 的 docx 分支经 Word COM（DAAxOfficeWrapper）转换，
+    # L3→L1 依赖方向合法；仅 Windows 存在（AxContainer 技术），PRIVATE 足够
+    # （DAMarkdownExporter.h 不暴露该库头文件）
+    target_link_libraries(DAGui PRIVATE DAAxOfficeWrapper)
 endif()

@@ -329,7 +329,7 @@ chart->replot();          // 触发重绘
 
 - 路径安全：**工具内不做路径检查**（permission-layer P1 起 `isPathSafe` 已从三个文件工具删除）。路径策略统一由权限门执法：`DAAgentBridge::executeTool` 前置调用 `DAAgentPermissionManager::decide()`——系统目录硬 deny 全模式生效、工作区外写入按模式 ask/deny。新增文件类工具**不要**在工具内重新实现路径检查（见陷阱 P11）。
 - 写文件：`QFile` + `QIODevice::WriteOnly | QIODevice::Text`。
-- 报告导出：`save_report` 的 `pdf` 走 `QPrinter`+`QTextDocument`（需 `Qt::PrintSupport`）；`docx` 走 `DAAxObjectWordWrapper` Word COM（仅 Windows，`.cpp` 已有 `#ifdef Q_OS_WIN` 守卫，CMakeLists.txt 里 `if(WIN32)` 才 link `DAAxOfficeWrapper`）。
+- 报告导出：`save_report` 的 `html`/`pdf`/`docx` 统一经 `DAMarkdownExporter`（`src/DAGui/MarkdownView/`，DAGui 库）导出——与内置 Markdown 查看器同一渲染管线（markdown-it + highlight.js + KaTeX），公式/高亮/图片正常渲染。插件经 `LINK_PUBLIC DAGui` 直接 `#include "DAMarkdownExporter.h"`；`docx` 分支的 Word COM（`DAAxOfficeWrapper`）已内聚在 exporter 内（`.cpp` 有 `#ifdef Q_OS_WIN` 守卫），插件侧无需再管。
 
 ### 5.4 注册系统提示词
 

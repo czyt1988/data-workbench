@@ -1,77 +1,257 @@
 // DAAgentDockWidget.cpp
 #include "DAAgentDockWidget.h"
+#include "DAAgentSessionChatWidget.h"
+#include "DAAgentSessionComponentsFactory.h"
 #include "DAAgentWebChannel.h"
 #include "Dialog/DADialogAgentSessionManager.h"
+// ADS
+#include "DockManager.h"
+#include "DockWidget.h"
+#include "DockAreaWidget.h"
+// Qt
+#include <QStackedWidget>
 #include <QVBoxLayout>
-#include <QHBoxLayout>
-#include <QWebEngineView>
-#include <QWebChannel>
 #include <QPushButton>
 #include <QLabel>
+#include <QMessageBox>
+#include <QInputDialog>
+#include <QLineEdit>
 #include <QIcon>
-#include <QEvent>
-#include <QResizeEvent>
+#include <QPointer>
 
 namespace DA
 {
+
+/**
+ * @brief unbound 视图（新会话草稿区）dock 的固定 objectName
+ *
+ * 与 UiNames::Dock 的 AgentDockWidget("da_agentDockWidget") 区分；
+ * bound 会话 dock 的 objectName 直接使用会话 ID（figureId 模式，稳定唯一）。
+ */
+static const char* kUnboundSessionDockObjectName = "da_agentUnboundSessionDock";
 
 class DAAgentDockWidget::PrivateData
 {
     DA_DECLARE_PUBLIC(DAAgentDockWidget)
 public:
-    PrivateData(DAAgentDockWidget* p);
+    explicit PrivateData(DAAgentDockWidget* p);
 
-    QWebEngineView* mWebView;
-    DAAgentWebChannel* mChannel;
-    bool mAgentBusy;
-    bool mAgentStarting;  ///< agent 子进程启动中，UI 显示"启动中"
+    QStackedWidget* mStack = nullptr;             ///< 占位页(0) / 嵌套停靠区(1)
+    QWidget* mPlaceholder = nullptr;              ///< 无任何视图时的占位页（新建会话入口）
+    ads::CDockManager* mDockManager = nullptr;    ///< 嵌套停靠管理器（会话 dock 宇宙）
 
-    // ---- 顶部会话栏：标题（省略）+ 会话管理 + 新建会话 ----
-    QLabel* mTitleLabel;
-    QPushButton* mSessionManagerBtn;
-    QPushButton* mNewSessionBtn;
-    // ---- 模型选择：已迁 web 两级选择器，此处仅缓存供 onWebReady flush ----
-    QVariantList mAvailableModels;     ///< 缓存 availableModelsChanged payload（flat {provider,model,...}）
-    QString mCurrentProvider;          ///< 当前激活供应商（由 onActiveModelChanged 回填，onWebReady 推给 web）
-    QString mCurrentSessionId;        ///< 当前活跃会话 ID
-    QString mCurrentSessionFullTitle; ///< 当前会话完整标题（供省略渲染与 tooltip）
-    QVariantList mSessions;           ///< 缓存 sessionListChanged payload（含元信息）
-    QString mCurrentModel;            ///< 当前模型名称（由 onAgentReady/onActiveModelChanged 回填，onWebReady 推给 web）
-    // ---- token 统计缓存：web 未就绪时丢失的推送，onWebReady 重推 ----
-    int mLastInTokens;
-    int mLastOutTokens;
-    int mLastTotalTokens;
-    int mLastContextWindow;
-    QString mLastTokenSource;
-    bool mHasTokenStats;
-    // ---- MAJOR4 UI 侧切换守卫：true 时渲染槽跳过，避免旧会话残余 token 渲染到新聊天区 ----
-    bool mSwitching;
-    // ---- 权限层（permission-layer P1）：web 未就绪时缓存，onWebReady flush ----
-    QString mCurrentPermissionMode;    ///< 当前权限模式（yolo/auto/manual，默认 yolo 全自动）
-    bool mPermissionModeExplicit;      ///< 模式是否由用户显式设置过（A13 确认卡仅对显式 yolo 弹出）
-    bool mStartupYoloConfirmShown;     ///< A13 启动 yolo 确认卡是否已弹过（每次启动仅一次）
+    // ---- 会话视图映射（bound） ----
+    QHash< QString, DAAgentSessionChatWidget* > mSessionViews;  ///< 会话 ID → 视图
+    QHash< QString, ads::CDockWidget* > mSessionDocks;          ///< 会话 ID → dock
+    // ---- unbound 视图（至多一个，懒建会话草稿区） ----
+    DAAgentSessionChatWidget* mUnboundView = nullptr;
+    ads::CDockWidget* mUnboundDock = nullptr;
+
+    QString mCurrentSessionId;   ///< 模块当前会话缓存（sessionSwitched/Created/Cleared 信号驱动）
+    QVariantList mSessions;      ///< sessionListChanged payload 缓存（标题/状态/元信息）
+    QVariantList mForeignSessions;  ///< foreignAgentSessionsRunning payload 缓存（跨工程存活会话，决策点 5）
+
+    bool mSuppressCurrentChanged = false;  ///< 程序性 add/raise/remove 期间抑制聚焦回调
+
+    // ---- 全局状态缓存（创建新视图时注入初始值） ----
+    QVariantList mAvailableModels;
+    QString mCurrentProvider;
+    QString mCurrentModel;
+    QString mCurrentPermissionMode = QStringLiteral("yolo");
+    bool mPermissionModeExplicit = false;
+    bool mStartupYoloConfirmShown = false;  ///< A13 启动确认卡每次启动仅弹一次
+
+    // ---- 辅助 ----
+    ads::CDockAreaWidget* targetAreaForNewDock() const;
+    DAAgentSessionChatWidget* viewOfSession(const QString& sessionId) const;
+    QVariantMap sessionMeta(const QString& sessionId) const;
+    QString sessionState(const QString& sessionId) const;
+    QString sessionTitle(const QString& sessionId) const;
+    QIcon stateIcon(const QString& state) const;
+    QString stateDisplayText(const QString& state) const;
+    void injectGlobalState(DAAgentSessionChatWidget* view) const;
+    void syncSessionDockAppearance(const QString& sessionId);
+    void updateStartupYoloConfirmPending();
+    void updatePlaceholder();
+    void ensureViewActive(DAAgentSessionChatWidget* view);
+    QList< ads::CDockWidget* > allDocks() const;
 };
 
-DAAgentDockWidget::PrivateData::PrivateData(DAAgentDockWidget* p)
-    : q_ptr(p)
-    , mWebView(nullptr)
-    , mChannel(nullptr)
-    , mAgentBusy(false)
-    , mAgentStarting(false)
-    , mTitleLabel(nullptr)
-    , mSessionManagerBtn(nullptr)
-    , mNewSessionBtn(nullptr)
-    , mLastInTokens(0)
-    , mLastOutTokens(0)
-    , mLastTotalTokens(0)
-    , mLastContextWindow(0)
-    , mHasTokenStats(false)
-    , mSwitching(false)
-    , mCurrentPermissionMode(QStringLiteral("yolo"))
-    , mPermissionModeExplicit(false)
-    , mStartupYoloConfirmShown(false)
+DAAgentDockWidget::PrivateData::PrivateData(DAAgentDockWidget* p) : q_ptr(p)
 {
 }
+
+/**
+ * @brief 新 dock 的目标停靠区：从自身视图 dock 列表倒序取第一个可用 area
+ *
+ * 不使用 focusedDockWidget()——FocusHighlighting 下嵌套管理器的焦点控制器
+ * 与顶层管理器共享 window 属性，可能返回顶层 dock（chart-dock-nesting.md 陷阱）。
+ */
+ads::CDockAreaWidget* DAAgentDockWidget::PrivateData::targetAreaForNewDock() const
+{
+    QList< ads::CDockWidget* > docks = allDocks();
+    for (int i = docks.size() - 1; i >= 0; --i) {
+        if (docks.at(i) && docks.at(i)->dockAreaWidget()) {
+            return docks.at(i)->dockAreaWidget();
+        }
+    }
+    return nullptr;  // 首个视图：在容器根创建 area
+}
+
+DAAgentSessionChatWidget* DAAgentDockWidget::PrivateData::viewOfSession(const QString& sessionId) const
+{
+    return mSessionViews.value(sessionId, nullptr);
+}
+
+QVariantMap DAAgentDockWidget::PrivateData::sessionMeta(const QString& sessionId) const
+{
+    for (const QVariant& v : mSessions) {
+        const QVariantMap vm = v.toMap();
+        if (vm.value("id").toString() == sessionId) {
+            return vm;
+        }
+    }
+    return QVariantMap();
+}
+
+QString DAAgentDockWidget::PrivateData::sessionState(const QString& sessionId) const
+{
+    return sessionMeta(sessionId).value("state").toString();
+}
+
+QString DAAgentDockWidget::PrivateData::sessionTitle(const QString& sessionId) const
+{
+    const QString t = sessionMeta(sessionId).value("title").toString();
+    return t.isEmpty() ? QObject::tr("(untitled)") : t;  // cn:（未命名）
+}
+
+QIcon DAAgentDockWidget::PrivateData::stateIcon(const QString& state) const
+{
+    if (state == QLatin1String("starting") || state == QLatin1String("running")) {
+        return QIcon(QStringLiteral(":/DAGui/icon/session-running.svg"));
+    }
+    if (state == QLatin1String("waiting_input")) {
+        return QIcon(QStringLiteral(":/DAGui/icon/session-waiting.svg"));
+    }
+    if (state == QLatin1String("error")) {
+        return QIcon(QStringLiteral(":/DAGui/icon/session-error.svg"));
+    }
+    return QIcon(QStringLiteral(":/DAGui/icon/session.svg"));
+}
+
+QString DAAgentDockWidget::PrivateData::stateDisplayText(const QString& state) const
+{
+    if (state == QLatin1String("starting")) {
+        return QObject::tr("Starting");  // cn:启动中
+    }
+    if (state == QLatin1String("running")) {
+        return QObject::tr("Running");  // cn:运行中
+    }
+    if (state == QLatin1String("waiting_input")) {
+        return QObject::tr("Waiting for you");  // cn:等待输入
+    }
+    if (state == QLatin1String("error")) {
+        return QObject::tr("Error");  // cn:出错
+    }
+    return QString();
+}
+
+/**
+ * @brief 向新视图注入宿主缓存的全局状态（模型列表/激活模型/权限模式/A13 待弹标志）
+ */
+void DAAgentDockWidget::PrivateData::injectGlobalState(DAAgentSessionChatWidget* view) const
+{
+    view->setAvailableModels(mAvailableModels);
+    view->setActiveModel(mCurrentProvider, mCurrentModel);
+    view->setPermissionMode(mCurrentPermissionMode);
+    const bool pending = (mCurrentPermissionMode == QLatin1String("yolo") && mPermissionModeExplicit
+                          && !mStartupYoloConfirmShown);
+    view->setStartupYoloConfirmPending(pending);
+}
+
+/**
+ * @brief 同步会话 dock 的标签标题/图标/tooltip（sessionListChanged payload 驱动）
+ */
+void DAAgentDockWidget::PrivateData::syncSessionDockAppearance(const QString& sessionId)
+{
+    const auto it = mSessionDocks.constFind(sessionId);
+    if (it == mSessionDocks.constEnd()) {
+        return;
+    }
+    const QString title = sessionTitle(sessionId);
+    const QString state = sessionState(sessionId);
+    const QString stateText = stateDisplayText(state);
+    it.value()->setWindowTitle(title);
+    it.value()->setIcon(stateIcon(state));
+    it.value()->setToolTip(stateText.isEmpty() ? title
+                                               : QStringLiteral("%1 — %2").arg(title, stateText));
+}
+
+/**
+ * @brief 刷新全部视图的 A13 启动确认卡待弹标志（每次启动仅首个就绪视图弹出）
+ */
+void DAAgentDockWidget::PrivateData::updateStartupYoloConfirmPending()
+{
+    const bool pending = (mCurrentPermissionMode == QLatin1String("yolo") && mPermissionModeExplicit
+                          && !mStartupYoloConfirmShown);
+    const auto setPending = [ this, pending ](DAAgentSessionChatWidget* v) { v->setStartupYoloConfirmPending(pending); };
+    for (auto it = mSessionViews.cbegin(); it != mSessionViews.cend(); ++it) {
+        setPending(it.value());
+    }
+    if (mUnboundView) {
+        setPending(mUnboundView);
+    }
+}
+
+void DAAgentDockWidget::PrivateData::updatePlaceholder()
+{
+    if (!mStack) {
+        return;
+    }
+    const bool empty = mSessionDocks.isEmpty() && nullptr == mUnboundDock;
+    mStack->setCurrentIndex(empty ? 0 : 1);
+}
+
+/**
+ * @brief "交互即激活"：确保来源视图会话为模块当前会话
+ *
+ * Module 下行调用（sendMessage/sendUserAnswer）按"当前会话"路由，用户在后台
+ * 视图（分屏可见）交互时先同步切换再转发。unbound 视图 → 清模块当前会话
+ * （首条消息由 sendMessage 懒建会话）。
+ */
+void DAAgentDockWidget::PrivateData::ensureViewActive(DAAgentSessionChatWidget* view)
+{
+    const QString sid = view ? view->sessionId() : QString();
+    if (sid.isEmpty()) {
+        if (!mCurrentSessionId.isEmpty()) {
+            mCurrentSessionId.clear();
+            emit q_ptr->currentSessionClearedRequested();
+        }
+        return;
+    }
+    if (sid != mCurrentSessionId) {
+        // 乐观更新缓存（switchSession 对已当前会话返回 false 不回发 sessionSwitched）
+        mCurrentSessionId = sid;
+        emit q_ptr->sessionSwitchRequested(sid);
+    }
+}
+
+QList< ads::CDockWidget* > DAAgentDockWidget::PrivateData::allDocks() const
+{
+    QList< ads::CDockWidget* > docks;
+    docks.reserve(mSessionDocks.size() + 1);
+    for (auto it = mSessionDocks.cbegin(); it != mSessionDocks.cend(); ++it) {
+        docks.append(it.value());
+    }
+    if (mUnboundDock) {
+        docks.append(mUnboundDock);
+    }
+    return docks;
+}
+
+//===================================================
+// DAAgentDockWidget
+//===================================================
 
 /**
  * @brief 构造函数
@@ -82,28 +262,22 @@ DAAgentDockWidget::DAAgentDockWidget(QWidget* parent)
     , DA_PIMPL_CONSTRUCT
 {
     setupUI();
-    setupWebChannel();
+    // 启动即备一个 unbound 视图（等价旧版"空聊天区待输入"）
+    createUnboundView();
 }
 
 /**
  * @brief 析构函数
+ *
+ * 嵌套 CDockManager 为本部件子对象，由 Qt 自动销毁（连带全部视图 dock）；
+ * 视图禁止浮动，无浮动窗口需额外清理（DAChartOperateWidget 同款析构语义）。
  */
 DAAgentDockWidget::~DAAgentDockWidget()
 {
 }
 
 /**
- * @brief 获取关联的 WebChannel 对象
- * @return WebChannel 指针
- */
-DAAgentWebChannel* DAAgentDockWidget::webChannel() const
-{
-    DA_DC(d);
-    return d->mChannel;
-}
-
-/**
- * @brief 初始化 UI 界面
+ * @brief 初始化 UI：占位页 + 嵌套停靠管理器
  */
 void DAAgentDockWidget::setupUI()
 {
@@ -112,882 +286,888 @@ void DAAgentDockWidget::setupUI()
     mainLayout->setContentsMargins(0, 0, 0, 0);
     mainLayout->setSpacing(0);
 
-    // ---- 顶部会话栏：标题（左，过长右端省略）+ 会话管理 + 新建会话（右） ----
-    QWidget* sessionBar = new QWidget(this);
-    sessionBar->setObjectName(QStringLiteral("da_agentSessionBar"));
-    sessionBar->setStyleSheet(QStringLiteral(
-        "QWidget#da_agentSessionBar { background: #f5f5f5; border-bottom: 1px solid #ddd; }"));
-    QHBoxLayout* sbLayout = new QHBoxLayout(sessionBar);
-    sbLayout->setContentsMargins(8, 4, 4, 4);
-    sbLayout->setSpacing(4);
-    d->mTitleLabel = new QLabel(sessionBar);
-    d->mTitleLabel->setObjectName(QStringLiteral("da_agentTitleLabel"));
-    d->mTitleLabel->setStyleSheet(QStringLiteral(
-        "QLabel { color: #333; padding: 0 4px; }"));
-    d->mTitleLabel->setToolTip(QString());  // 由 updateTitleLabel 设置
-    d->mTitleLabel->installEventFilter(this);  // resize 时重新计算省略文本
-    sbLayout->addWidget(d->mTitleLabel, 1);
-    // 会话管理 / 新建会话：图标按钮（svg），tooltip 承载翻译文案
-    d->mSessionManagerBtn = new QPushButton(sessionBar);
-    d->mSessionManagerBtn->setObjectName(QStringLiteral("da_agentSessionManagerBtn"));
-    d->mSessionManagerBtn->setIcon(QIcon(QStringLiteral(":/DAGui/icon/session-manager.svg")));
-    d->mSessionManagerBtn->setIconSize(QSize(18, 18));
-    d->mSessionManagerBtn->setFixedSize(28, 28);
-    d->mSessionManagerBtn->setToolTip(tr("Session Manager"));  // cn:会话管理
-    d->mSessionManagerBtn->setCursor(Qt::PointingHandCursor);
-    d->mNewSessionBtn = new QPushButton(sessionBar);
-    d->mNewSessionBtn->setObjectName(QStringLiteral("da_agentNewSessionBtn"));
-    d->mNewSessionBtn->setIcon(QIcon(QStringLiteral(":/DAGui/icon/session-new.svg")));
-    d->mNewSessionBtn->setIconSize(QSize(18, 18));
-    d->mNewSessionBtn->setFixedSize(28, 28);
-    d->mNewSessionBtn->setToolTip(tr("New Session"));  // cn:新建会话
-    d->mNewSessionBtn->setCursor(Qt::PointingHandCursor);
-    // 模型选择已迁 web 状态栏两级选择器（供应商→模型），此处不再放 Qt 下拉
-    sbLayout->addWidget(d->mSessionManagerBtn);
-    sbLayout->addWidget(d->mNewSessionBtn);
-    mainLayout->insertWidget(0, sessionBar);
+    d->mStack = new QStackedWidget(this);
+    mainLayout->addWidget(d->mStack);
 
-    // QWebEngineView 占主要空间
-    d->mWebView = new QWebEngineView(this);
-    d->mWebView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    // 说明：QWebEngineSettings 并不存在 DeveloperToolsEnabled 属性（Qt5/Qt6 均无，旧注释有误）。
-    // 开启开发者工具需在程序启动前设置环境变量 QTWEBENGINE_REMOTE_DEBUGGING=<端口>，
-    // 再用 Chrome 访问 http://localhost:<端口>；默认保持关闭
-    mainLayout->addWidget(d->mWebView, 1);
+    // ---- 占位页：全部视图关闭后显示（新建会话入口） ----
+    d->mPlaceholder = new QWidget(d->mStack);
+    QVBoxLayout* phLayout = new QVBoxLayout(d->mPlaceholder);
+    phLayout->setContentsMargins(0, 0, 0, 0);
+    phLayout->setSpacing(8);
+    phLayout->addStretch(1);
+    QLabel* phIcon = new QLabel(d->mPlaceholder);
+    phIcon->setPixmap(QIcon(QStringLiteral(":/DAGui/icon/session-new.svg")).pixmap(48, 48));
+    phIcon->setAlignment(Qt::AlignCenter);
+    phLayout->addWidget(phIcon);
+    QLabel* phText = new QLabel(tr("No agent session is open"), d->mPlaceholder);  // cn:没有打开的 Agent 会话
+    phText->setAlignment(Qt::AlignCenter);
+    phLayout->addWidget(phText);
+    QPushButton* phNewBtn = new QPushButton(tr("New Session"), d->mPlaceholder);  // cn:新建会话
+    phNewBtn->setIcon(QIcon(QStringLiteral(":/DAGui/icon/session-new.svg")));
+    phLayout->addWidget(phNewBtn, 0, Qt::AlignHCenter);
+    phLayout->addStretch(1);
+    connect(phNewBtn, &QPushButton::clicked, this, &DAAgentDockWidget::onPlaceholderNewSessionClicked);
+    d->mStack->addWidget(d->mPlaceholder);
 
-    // 加载 chat.html（现在内含 聊天区+状态栏+输入区，一个连续 web 表面）
-    d->mWebView->setUrl(QUrl(QStringLiteral("qrc:///DAAgent/chat.html")));
+    // ---- 嵌套停靠管理器（会话 dock 停靠宇宙，仿 DAChartOperateWidget） ----
+    d->mDockManager = new ads::CDockManager(this);
+    d->mStack->addWidget(d->mDockManager);
+    // 注入自定义组件工厂：标题栏「+/会话管理」按钮 + 标签右键菜单（重命名/删除/停止），
+    // 仅影响本嵌套管理器内的会话 dock，不影响顶层停靠区
+    d->mDockManager->setComponentsFactory(new DAAgentSessionComponentsFactory(this));
+    // 禁止会话 dock 浮动为独立窗口（全局锁，对所有当前及后续 dock 生效），保留分屏/并栏/拖拽
+    d->mDockManager->lockDockWidgetFeaturesGlobally(ads::CDockWidget::DockWidgetFloatable);
+    // 嵌套停靠区聚焦改变：onFocusedDockChanged 内部过滤非本管理器的 dock，
+    // 规避 FocusHighlighting 下嵌套焦点控制器跨管理器回调顶层 dock 的问题
+    connect(d->mDockManager, &ads::CDockManager::focusedDockWidgetChanged,
+            this, &DAAgentDockWidget::onFocusedDockChanged);
 
-    // ---- 会话栏按钮信号 ----
-    connect(d->mNewSessionBtn, &QPushButton::clicked, this, &DAAgentDockWidget::onNewSessionClicked);
-    connect(d->mSessionManagerBtn, &QPushButton::clicked, this, &DAAgentDockWidget::onSessionManagerClicked);
-    // 模型切换由 web 两级选择器发起：chat.js onModelSelect → chatBridge.onModelSelect
-    // → 此处 onModelSelect（见 setupWebChannel 连接）→ activeModelChangeRequested
+    d->updatePlaceholder();
 }
 
 /**
- * @brief 初始化 WebChannel
- */
-void DAAgentDockWidget::setupWebChannel()
-{
-    DA_D(d);
-    d->mChannel = new DAAgentWebChannel(d->mWebView, this);
-    QWebChannel* webChannel = new QWebChannel(this);
-    // JS 侧通过 channel.objects.chatBridge 访问，名字必须与 chat.js 一致
-    webChannel->registerObject(QStringLiteral("chatBridge"), d->mChannel);
-    d->mWebView->page()->setWebChannel(webChannel);
-
-    // Connect the web channel's userAnswerSelected signal to this dock widget's signal
-    // so the Bridge can receive user answers to agent questions.
-    connect(d->mChannel, &DAAgentWebChannel::userAnswerSelected,
-            this, &DAAgentDockWidget::onUserAnswer);
-    // 绘图引用超链接点击：chat.js 拦截 da-figure: 链接 → onFigureLink → 此信号转发
-    connect(d->mChannel, &DAAgentWebChannel::figureLinkRequested,
-            this, &DAAgentDockWidget::onFigureLink);
-    // web 输入区发送：chat.js onUserMessage → userMessageSent → C++ 编排（appendUserMessage + emit）
-    connect(d->mChannel, &DAAgentWebChannel::userMessageSent,
-            this, &DAAgentDockWidget::onUserMessageReceived);
-    // web 就绪握手：flush 当前态（i18n/busy/model/tokenStats）
-    connect(d->mChannel, &DAAgentWebChannel::webReady,
-            this, &DAAgentDockWidget::onWebReady);
-    // web 输入区 Stop 按钮：直达 C++ 终止流程（替代旧原生 m_sendButton 分流）
-    connect(d->mChannel, &DAAgentWebChannel::stopRequested,
-            this, &DAAgentDockWidget::onStopClicked);
-    // web 两级模型选择器：用户选定供应商+模型 → onModelSelect → activeModelChangeRequested
-    connect(d->mChannel, &DAAgentWebChannel::modelChangeRequested,
-            this, &DAAgentDockWidget::onModelSelect);
-    // ---- 权限层（permission-layer P1）：web 用户操作 → 接口 ----
-    // 权限模式选择器选定 → permissionModeChangeRequested（→ DAAgentInterface::setPermissionMode）
-    connect(d->mChannel, &DAAgentWebChannel::permissionModeChangeRequested,
-            this, &DAAgentDockWidget::onPermissionModeSelect);
-    // 审批卡裁决 → toolApprovalDecision（→ DAAgentInterface::sendToolApproval）
-    connect(d->mChannel, &DAAgentWebChannel::toolApprovalDecision,
-            this, &DAAgentDockWidget::onToolApprovalDecision);
-    // 启动 yolo 确认卡响应（A13）→ startupModeConfirmResponse
-    connect(d->mChannel, &DAAgentWebChannel::startupModeConfirmResponse,
-            this, &DAAgentDockWidget::onStartupModeConfirmResponse);
-}
-
-/**
- * @brief web 输入区发送消息（C++ 编排：渲染用户气泡 + 向外发消息）
- * @param text 用户输入的消息文本
- */
-void DAAgentDockWidget::onUserMessageReceived(const QString& text)
-{
-    DA_D(d);
-    // C++ 仍是编排者：JS 已清框并调 chatBridge.onUserMessage(text)，此槽负责
-    // 渲染用户气泡 + 向外发消息。与旧 onSendClicked 同构（文本来源从 QTextEdit 改为 JS）。
-    if (d->mAgentBusy || d->mAgentStarting) {
-        return;  // 忙碌/启动中时不发送（按钮此时禁用，理论不会触发；防御）
-    }
-    QString trimmed = text.trimmed();
-    if (trimmed.isEmpty()) {
-        return;
-    }
-    d->mChannel->appendUserMessage(trimmed);  // C++ 渲染用户气泡（单一权威）
-    emit sendMessageRequested(trimmed);
-}
-
-/**
- * @brief web 侧就绪握手：注入静态 i18n 标签 + flush 当前态
- */
-void DAAgentDockWidget::onWebReady()
-{
-    DA_D(d);
-    // web 侧就绪：注入静态 i18n 标签 + flush 当前态，缓解 JS-ready 竞态
-    // （agent 信号若在 chat.html 加载完成前触发，此处补推当前 busy/model/token）
-    if (!d->mChannel) return;
-    d->mChannel->setI18nLabels(QVariantMap{
-        {"send", tr("Send")},                       // cn:发送
-        {"stop", tr("Stop")},                        // cn:终止
-        {"ready", tr("Ready")},                      // cn:就绪
-        {"starting", tr("Agent starting...")},       // cn:Agent 启动中...
-        {"thinking", tr("Agent thinking...")},       // cn:Agent 思考中...
-        {"stopping", tr("Stopping...")},             // cn:终止中...
-        {"inputPlaceholder", tr("Type a message...")},  // cn:输入消息...
-        {"tokenEmpty", tr("tokens: -")},             // cn:token: -
-        {"popoverInput", tr("input: %1")},           // cn:输入：%1
-        {"popoverOutput", tr("output: %1")},         // cn:输出：%1
-        {"popoverTotal", tr("total: %1")},           // cn:总计：%1
-        {"popoverWindow", tr("window: %1")},         // cn:窗口：%1
-        {"popoverSource", tr("source: %1")},          // cn:来源：%1
-        {"popoverSourceUnknown", tr("unknown")},      // cn:未知
-        {"modelEmpty", tr("No model")},               // cn:无模型
-        {"modelSelectTip", tr("Select LLM model")},   // cn:选择 LLM 模型
-        {"modelProvidersTitle", tr("Providers")},     // cn:供应商
-        {"modelBack", tr("Back")},                    // cn:返回
-        {"errorDetails", tr("Details")},             // cn:详细信息
-        {"errorCopy", tr("Copy")},                   // cn:复制
-        {"errorCopied", tr("Copied")},               // cn:已复制
-        {"errorTruncated", tr("[truncated]")},       // cn:[已截断]
-        // —— 权限模式选择器（permission-layer P1）——
-        {"modeSelectTip", tr("Permission mode")},    // cn:权限模式
-        {"modeYolo", tr("Full Auto")},               // cn:全自动
-        {"modeAuto", tr("Auto")},                    // cn:自动
-        {"modeManual", tr("Ask Every Time")},        // cn:每次询问
-        {"modeYoloTip", tr("Run everything without asking (system directories still blocked)")},  // cn:全部直接执行不再询问（系统目录仍拦截）
-        {"modeAutoTip", tr("Reads and chart edits pass; file writes and code execution judged by rules")},  // cn:读取与图表编辑放行；文件写入与代码执行按规则判定
-        {"modeManualTip", tr("File writes and code execution need approval every time")},  // cn:文件写入与代码执行每次都需批准
-        {"modeYoloConfirm", tr("Switch to Full Auto mode? Code execution and file writes will no longer ask for confirmation.")},  // cn:切换到全自动模式？代码执行与文件写入将不再请求确认。
-        {"modeYoloConfirmOk", tr("Switch")},         // cn:切换
-        {"modeYoloConfirmCancel", tr("Cancel")},     // cn:取消
-        // —— 工具审批卡（permission-layer P1）——
-        {"approvalNeeds", tr("needs your approval")},  // cn:需要你的批准
-        {"approvalApprove", tr("Approve")},          // cn:批准
-        {"approvalDeny", tr("Deny")},                // cn:拒绝
-        {"approvalApproveRemember", tr("Approve && remember for this session")},  // cn:批准并本会话记住
-        {"approvalApproved", tr("Approved")},        // cn:已批准
-        {"approvalDenied", tr("Denied")},            // cn:已拒绝
-        {"approvalApprovedRemembered", tr("Approved (remembered for this session)")},  // cn:已批准（本会话已记住）
-        {"approvalCodeMoreLines", tr("%1 more lines")},  // cn:还有 %1 行
-        {"approvalFromSubagent", tr("From subagent: %1")},  // cn:来自子 Agent：%1
-        // —— 子 agent 进度卡片（subagent-phase1 C）——
-        {"subagentTaskCount", tr("%1 subagent task(s)")},  // cn:%1 个子 Agent 任务
-        {"subagentProgress", tr("%1/%2 done")},             // cn:%1/%2 已完成
-        {"subagentCompleted", tr("completed")},             // cn:已完成
-        {"subagentQueued", tr("queued")},                   // cn:排队中
-        {"subagentRunning", tr("running")},                 // cn:运行中
-        {"subagentDone", tr("done")},                       // cn:完成
-        {"subagentFailed", tr("failed")},                   // cn:失败
-        {"subagentTimeout", tr("timeout")},                 // cn:超时
-        {"subagentStopped", tr("stopped")},                 // cn:已停止
-        // —— 历史分段懒加载（超长会话只渲染尾部段，顶部哨兵加载更早）——
-        {"loadEarlier", tr("Load earlier messages")}        // cn:加载更早消息
-    });
-    // 启动中优先推 starting 态，缓解 JS-ready 竞态——agent 信号若在 chat.html 加载
-    // 完成前触发，此处补推当前 starting/busy 态
-    if (d->mAgentStarting) {
-        d->mChannel->setStarting();
-    } else {
-        d->mChannel->setBusy(d->mAgentBusy);
-    }
-    // 推送可用模型列表 + 激活供应商/模型给 web 两级选择器
-    d->mChannel->setAvailableModels(d->mAvailableModels);
-    d->mChannel->setActiveModel(d->mCurrentProvider, d->mCurrentModel);
-    // 权限层：推送当前权限模式给 web 模式选择器；显式设置的 yolo 启动弹一次确认卡（A13），
-    // 默认值（未显式设置）静默进入全自动不弹卡
-    d->mChannel->setPermissionMode(d->mCurrentPermissionMode);
-    if (d->mCurrentPermissionMode == QLatin1String("yolo") && d->mPermissionModeExplicit
-        && !d->mStartupYoloConfirmShown) {
-        d->mStartupYoloConfirmShown = true;
-        d->mChannel->appendStartupYoloConfirm(
-            tr("The permission mode is Full Auto from last session. Code execution and file writes will run without asking. Keep Full Auto mode?"),
-            //cn:上次会话留在全自动权限模式。代码执行与文件写入将不再询问直接执行。是否保持全自动模式？
-            tr("Keep Full Auto"),    //cn:保持全自动
-            tr("Switch to Auto"));   //cn:切换为自动
-    }
-    if (d->mHasTokenStats) {
-        d->mChannel->setTokenStats(formatTokenLabel(d->mLastTotalTokens, d->mLastContextWindow, d->mLastTokenSource),
-                                  d->mLastInTokens, d->mLastOutTokens, d->mLastTotalTokens,
-                                  d->mLastContextWindow, d->mLastTokenSource);
-    }
-    d->mChannel->focusInput();
-}
-
-/**
- * @brief Stop 按钮点击：定稿当前流式输出 + 发送 stopRequested 信号
- */
-void DAAgentDockWidget::onStopClicked()
-{
-    DA_D(d);
-    // 定稿当前流式输出中的 agent 消息 + 关闭工具分组，避免半截消息悬挂
-    if (d->mChannel) {
-        d->mChannel->onAgentStopped();
-        // 停止过渡态：web 按钮禁用防重复点 + 状态 Stopping...，持续到 onAgentBusy(false)/Ready 恢复
-        d->mChannel->setStopping();
-    }
-    emit stopRequested();
-}
-
-/**
- * @brief 用户选择答案后转发信号
- * @param answer 用户选择的答案
- */
-void DAAgentDockWidget::onUserAnswer(const QString& answer)
-{
-    emit userAnswerSelected(answer);
-}
-
-/**
- * @brief 绘图引用超链接点击转发
- * @param href 超链接 href
- */
-void DAAgentDockWidget::onFigureLink(const QString& href)
-{
-    emit figureLinkRequested(href);
-}
-
-/**
- * @brief 处理 Agent 流式 token 信号
- * @param token 当前 token 文本
- */
-void DAAgentDockWidget::onAgentToken(const QString& token)
-{
-    DA_D(d);
-    // MAJOR4: UI 侧切换守卫——切换期间丢弃旧会话残余 token，避免污染新聊天区
-    if (d->mSwitching) return;
-    if (d->mChannel) {
-        d->mChannel->appendToken(token);
-    }
-}
-
-/**
- * @brief 处理 Agent 消息完成信号
- * @param fullText 完整消息文本
- */
-void DAAgentDockWidget::onAgentMessageComplete(const QString& fullText)
-{
-    DA_D(d);
-    if (d->mSwitching) return;  // MAJOR4
-    if (d->mChannel) {
-        d->mChannel->finalizeAgentMessage(fullText);
-    }
-}
-
-/**
- * @brief 处理 Agent 工具调用信号
- * @param toolName 工具名称
- * @param args 工具参数
- */
-void DAAgentDockWidget::onAgentToolCall(const QString& toolName, const QJsonObject& args)
-{
-    DA_D(d);
-    if (d->mSwitching) return;  // MAJOR4
-    if (d->mChannel) {
-        d->mChannel->appendToolCall(toolName, args);
-    }
-}
-
-/**
- * @brief 处理 Agent 工具结果信号
- * @param toolName 工具名称
- * @param result 工具执行结果
- */
-void DAAgentDockWidget::onAgentToolResult(const QString& toolName, const QJsonObject& result)
-{
-    DA_D(d);
-    if (d->mSwitching) return;  // MAJOR4
-    if (d->mChannel) {
-        d->mChannel->appendToolResult(toolName, result);
-    }
-}
-
-/**
- * @brief 处理 Agent 提问信号
- * @param text 问题文本
- * @param options 选项列表
- * @param multiSelect 是否允许多选
- */
-void DAAgentDockWidget::onAgentQuestion(const QString& text, const QStringList& options, bool multiSelect)
-{
-    DA_D(d);
-    if (d->mSwitching) return;  // MAJOR4
-    if (d->mChannel) {
-        d->mChannel->appendQuestion(text, options, multiSelect);
-    }
-}
-
-/**
- * @brief 处理 Agent 错误信号
- * @param message 错误信息
- * @param errorType 错误类型（quota_exhausted/auth_error/...），空表示未知
- * @param detail 详细错误描述（如原始异常信息），可为空
- */
-void DAAgentDockWidget::onAgentError(const QString& message, const QString& errorType, const QString& detail)
-{
-    DA_D(d);
-    // switchSession 后若 load_session 失败走 agentError 而非 session_loaded，
-    // 不复位 m_switching 会冻结后续渲染（守卫永真）——沿用现有逻辑
-    d->mSwitching = false;
-    // 根据 errorType 选择用户文案
-    QString displayMessage = mapErrorMessage(message, errorType);
-    // 调用 chat.js 渲染错误卡片：主文案为映射后的用户文案，detail（原始异常文本）
-    // 经可折叠面板展示（默认折叠 + 截断，避免长 traceback 占满对话界面），并提供
-    // 复制按钮一键复制完整异常信息。此前 detail 被 Q_UNUSED 丢弃，用户只看到通用
-    // "Agent 错误：Unknown error" 却查不到具体异常出处。
-    if (d->mChannel) {
-        d->mChannel->appendError(displayMessage, errorType, detail);
-    }
-}
-
-/**
- * @brief 处理 Agent 重试信号（LLM 调用指数退避期间）
- * @param attempt 当前重试次数
- * @param maxAttempts 最大重试次数
- * @param delayMs 本次退避延迟毫秒数
- * @param errorType 触发重试的错误类型
- * @param errorMessage 触发重试的错误消息
- */
-void DAAgentDockWidget::onAgentRetrying(int attempt, int maxAttempts, int delayMs,
-                                         const QString& errorType, const QString& errorMessage)
-{
-    DA_D(d);
-    // 通过 WebChannel 调用 chat.js 的 showRetryStatus
-    if (d->mChannel) {
-        d->mChannel->showRetryStatus(attempt, maxAttempts, delayMs, errorType, errorMessage);
-    }
-}
-
-/**
- * @brief 处理 Agent 启动信号（预启动/懒启动/崩溃重启均触发）
+ * @brief 「+」入口：已有 unbound 视图则 raise，否则创建
  *
- * UI 进入"启动中"过渡态：按钮+输入禁用、状态"启动中"。
- * 与 onAgentBusy(thinking) 区分——启动中并非思考中。ready/error 后清除。
+ * 懒创建语义：不落盘建会话，首条消息发出后才由 Module::sendMessage 建会话并
+ * 经 sessionCreated 信号绑定本视图。标题栏「+」按钮、占位页按钮与 Ribbon
+ * 「新建会话」共用本入口。
  */
-void DAAgentDockWidget::onAgentStarting()
+void DAAgentDockWidget::requestNewSession()
 {
     DA_D(d);
-    d->mAgentStarting = true;
-    if (d->mChannel) {
-        d->mChannel->setStarting();
-    }
-}
-
-/**
- * @brief 处理 Agent 就绪信号
- * @param model 模型名称
- */
-void DAAgentDockWidget::onAgentReady(const QString& model)
-{
-    DA_D(d);
-    d->mAgentStarting = false;  // 启动完成，清除启动态
-    d->mCurrentModel = model;
-    d->mAgentBusy = false;
-    if (d->mChannel) {
-        d->mChannel->setBusy(false);             // 复位为 ready：按钮 Send + 输入启用 + 状态 Ready
-        // 推送激活供应商+模型给 web 选择器（触发按钮文案 + 选中高亮）
-        d->mChannel->setActiveModel(d->mCurrentProvider, d->mCurrentModel);
-    }
-}
-
-/**
- * @brief 处理 Agent 忙碌状态信号
- * @param busy 是否忙碌
- */
-void DAAgentDockWidget::onAgentBusy(bool busy)
-{
-    DA_D(d);
-    d->mAgentBusy = busy;
-    // busy(false) 兜底清除启动态——崩溃恢复最终失败/正常退出/用户停止均 emit agentBusy(false)
-    if (!busy && d->mAgentStarting) {
-        d->mAgentStarting = false;
-    }
-    // 启动中优先于思考中：懒启动 fallback 时 startAgent 的 agentStarting 与
-    // sendMessage 的 agentBusy(true) 几乎同时到达，但子进程实际在启动而非思考。
-    // 保持"启动中"显示直到 ready，避免误导用户为"思考中"。
-    if (d->mAgentStarting) {
+    if (d->mUnboundDock) {
+        d->mSuppressCurrentChanged = true;
+        d->mUnboundDock->raise();
+        d->mSuppressCurrentChanged = false;
+        // raise 不一定触发聚焦回调（已是当前标签），主动同步当前会话语义
+        handleCurrentViewChanged(d->mUnboundDock);
         return;
     }
-    // busy 打包：JS 解释按钮 Send/Stop 切换 + 输入禁用 + 状态文案（thinking/ready）
-    if (d->mChannel) {
-        d->mChannel->setBusy(busy);
-    }
-}
-
-// ===========================================================================
-// plan-04: 会话栏按钮槽 + token UI 槽 + 辅助方法
-// ===========================================================================
-
-/**
- * @brief 新建会话按钮点击
- */
-void DAAgentDockWidget::onNewSessionClicked()
-{
-    emit sessionCreateRequested();
+    createUnboundView();
 }
 
 /**
- * @brief 会话管理按钮点击，弹出管理对话框
+ * @brief 弹出会话管理对话框
+ *
+ * 操作经 signal→signal 直连转发到 DAAgentInterface（switch/rename/delete）。
+ * 标题栏「会话管理」按钮与 Ribbon「会话管理」共用本入口。
  */
-void DAAgentDockWidget::onSessionManagerClicked()
+void DAAgentDockWidget::requestShowSessionManager()
 {
     DA_D(d);
-    // 弹出会话管理对话框，操作经 signal→signal 直连转发到 DAAgentInterface
     DADialogAgentSessionManager dlg(d->mSessions, d->mCurrentSessionId, this);
+    // 决策点 5 方案 c：跨工程存活会话注入"全部工程"视图（提示条点击/手动
+    // 勾选均可查看并停止旧工程后台会话）
+    dlg.setForeignSessions(d->mForeignSessions);
     connect(&dlg, &DADialogAgentSessionManager::switchRequested,
             this, &DAAgentDockWidget::sessionSwitchRequested);
     connect(&dlg, &DADialogAgentSessionManager::renameRequested,
             this, &DAAgentDockWidget::sessionRenameRequested);
     connect(&dlg, &DADialogAgentSessionManager::deleteRequested,
             this, &DAAgentDockWidget::sessionDeleteRequested);
+    // 审计 L14：右键"停止"→ stopSessionRequested（后台运行会话不必先切换再 Stop）
+    connect(&dlg, &DADialogAgentSessionManager::stopRequested,
+            this, &DAAgentDockWidget::stopSessionRequested);
     dlg.exec();
-    // 对话框关闭后 sessionListChanged 会从 Module 回灌权威状态刷新标题
+    // 对话框关闭后 sessionListChanged 会从 Module 回灌权威状态刷新标签
 }
 
 /**
- * @brief 事件过滤器：m_titleLabel 尺寸变化时重新计算省略文本
- * @param obj 监听对象
- * @param ev 事件
- * @return 是否过滤事件
+ * @brief 标签右键菜单入口：重命名会话（输入框确认后发射 sessionRenameRequested）
  */
-bool DAAgentDockWidget::eventFilter(QObject* obj, QEvent* ev)
+void DAAgentDockWidget::requestRenameSession(const QString& sessionId)
 {
     DA_D(d);
-    // m_titleLabel 尺寸变化 → 重新计算省略文本（标题过长右端 …）
-    // （输入区/状态栏/token 明细已迁 web，eventFilter 只剩会话栏标题省略）
-    if (obj == d->mTitleLabel && ev->type() == QEvent::Resize) {
-        updateTitleLabel();
-        return false;
+    if (sessionId.isEmpty() || !d->mSessionDocks.contains(sessionId)) {
+        return;
     }
-    return QWidget::eventFilter(obj, ev);
-}
-
-/**
- * @brief 处理 token 使用量更新（契约2：5 参含 contextWindow 与 source）
- * @param inputTokens 输入 token
- * @param outputTokens 输出 token
- * @param totalTokens 总 token
- * @param contextWindow 上下文窗口大小
- * @param source 来源（tiktoken / usage_metadata）
- */
-void DAAgentDockWidget::onAgentUsage(int inputTokens, int outputTokens,
-                                     int totalTokens, int contextWindow,
-                                     const QString& source)
-{
-    DA_D(d);
-    // 契约2: 5 参含 contextWindow 与 source。一期不做 system/tools/history/current 四分类估算。
-    // 缓存最近一次 usage：web 未就绪时丢失的推送，onWebReady 重推。
-    d->mLastInTokens = inputTokens;
-    d->mLastOutTokens = outputTokens;
-    d->mLastTotalTokens = totalTokens;
-    d->mLastContextWindow = contextWindow;
-    d->mLastTokenSource = source;
-    d->mHasTokenStats = true;
-    // streaming_estimate 期间显示 ~ 前缀，表示是流式估算值而非权威统计；
-    // 真实 usage 到达后（source 为 agent/summary）前缀消失。
-    if (d->mChannel) {
-        d->mChannel->setTokenStats(formatTokenLabel(totalTokens, contextWindow, source),
-                                  inputTokens, outputTokens, totalTokens,
-                                  contextWindow, source);
+    bool ok = false;
+    const QString name = QInputDialog::getText(this,
+                                               tr("Rename Session"),  // cn:重命名会话
+                                               tr("Session name:"),   // cn:会话名称：
+                                               QLineEdit::Normal,
+                                               d->sessionTitle(sessionId),
+                                               &ok);
+    if (ok && !name.trimmed().isEmpty()) {
+        emit sessionRenameRequested(sessionId, name.trimmed());
     }
 }
 
 /**
- * @brief Python load_session 重建完成，解除 UI 切换守卫
+ * @brief 标签右键菜单入口：删除会话（确认后发射 sessionDeleteRequested）
+ */
+void DAAgentDockWidget::requestDeleteSession(const QString& sessionId)
+{
+    DA_D(d);
+    if (sessionId.isEmpty() || !d->mSessionDocks.contains(sessionId)) {
+        return;
+    }
+    const QMessageBox::StandardButton btn = QMessageBox::question(
+        this,
+        tr("Delete Session"),                                          // cn:删除会话
+        tr("Delete session \"%1\"? Its chat history will be removed.")  // cn:删除会话"%1"？其聊天记录将被移除。
+            .arg(d->sessionTitle(sessionId)));
+    if (QMessageBox::Yes == btn) {
+        emit sessionDeleteRequested(sessionId);
+    }
+}
+
+/**
+ * @brief 会话是否处于运行/启动/等待输入态（决定右键菜单"停止会话"项与关闭弹窗）
+ */
+bool DAAgentDockWidget::isSessionActive(const QString& sessionId) const
+{
+    DA_DC(d);
+    const QString state = d->sessionState(sessionId);
+    return state == QLatin1String("starting") || state == QLatin1String("running")
+           || state == QLatin1String("waiting_input");
+}
+
+/**
+ * @brief 标签右键菜单入口：停止会话生成
+ */
+void DAAgentDockWidget::requestStopSession(const QString& sessionId)
+{
+    if (!sessionId.isEmpty()) {
+        emit stopSessionRequested(sessionId);
+    }
+}
+
+// ===========================================================================
+// 视图创建 / 移除
+// ===========================================================================
+
+/**
+ * @brief 创建会话视图 dock（objectName=会话 ID），加载历史并 raise
  * @param sessionId 会话 ID
+ * @param records 会话完整 JSONL 记录（来自 sessionSwitched，视图内部缓存至 web 就绪后重放）
+ */
+void DAAgentDockWidget::createSessionView(const QString& sessionId, const QVector<QJsonObject>& records)
+{
+    DA_D(d);
+    if (sessionId.isEmpty() || d->mSessionDocks.contains(sessionId)) {
+        return;
+    }
+    DAAgentSessionChatWidget* view = new DAAgentSessionChatWidget();
+    view->setSessionId(sessionId);
+    d->injectGlobalState(view);
+    if (!records.isEmpty()) {
+        view->loadHistory(records);
+    }
+    ads::CDockWidget* dock = new ads::CDockWidget(d->mDockManager, d->sessionTitle(sessionId));
+    dock->setObjectName(sessionId);  // 会话 ID = 稳定持久 id（figureId 模式）
+    dock->setWidget(view, ads::CDockWidget::ForceNoScrollArea);
+    // 关闭按钮触发 closeRequested 而非自动隐藏，便于运行中会话弹三选确认
+    dock->setFeature(ads::CDockWidget::CustomCloseHandling, true);
+    dock->setIcon(d->stateIcon(d->sessionState(sessionId)));
+    connect(dock, &ads::CDockWidget::closeRequested, this, [ this, dock ]() {
+        onDockCloseRequested(dock);
+    });
+    d->mSessionDocks[ sessionId ] = dock;
+    d->mSessionViews[ sessionId ] = view;
+    setupViewConnections(view);
+    // 抑制聚焦改变：add/raise 触发的聚焦回调不产生额外切换
+    //（模块当前会话已由 switchSession 设为目标会话）
+    d->mSuppressCurrentChanged = true;
+    ads::CDockAreaWidget* area = d->targetAreaForNewDock();
+    if (area) {
+        d->mDockManager->addDockWidgetTabToArea(dock, area);  // 已有视图：作为标签加入
+    } else {
+        d->mDockManager->addDockWidget(ads::CenterDockWidgetArea, dock);  // 首个：容器根
+    }
+    dock->raise();
+    d->mSuppressCurrentChanged = false;
+    d->updatePlaceholder();
+    // attach 通知：模块记录"有视图"并重发挂起的 ask_user 问题卡/审批卡
+    emit sessionViewAttachedChanged(sessionId, true);
+}
+
+/**
+ * @brief 创建 unbound 视图 dock（懒创建草稿区，不落盘）
+ */
+void DAAgentDockWidget::createUnboundView()
+{
+    DA_D(d);
+    if (d->mUnboundDock) {
+        return;
+    }
+    DAAgentSessionChatWidget* view = new DAAgentSessionChatWidget();
+    d->injectGlobalState(view);
+    ads::CDockWidget* dock = new ads::CDockWidget(d->mDockManager, tr("New Session"));  // cn:新建会话
+    dock->setObjectName(QString::fromLatin1(kUnboundSessionDockObjectName));
+    dock->setWidget(view, ads::CDockWidget::ForceNoScrollArea);
+    dock->setFeature(ads::CDockWidget::CustomCloseHandling, true);
+    dock->setIcon(QIcon(QStringLiteral(":/DAGui/icon/session-new.svg")));
+    dock->setToolTip(tr("New Session"));  // cn:新建会话
+    connect(dock, &ads::CDockWidget::closeRequested, this, [ this, dock ]() {
+        onDockCloseRequested(dock);
+    });
+    d->mUnboundDock = dock;
+    d->mUnboundView = view;
+    setupViewConnections(view);
+    d->mSuppressCurrentChanged = true;
+    ads::CDockAreaWidget* area = d->targetAreaForNewDock();
+    if (area) {
+        d->mDockManager->addDockWidgetTabToArea(dock, area);
+    } else {
+        d->mDockManager->addDockWidget(ads::CenterDockWidgetArea, dock);
+    }
+    dock->raise();
+    d->mSuppressCurrentChanged = false;
+    d->updatePlaceholder();
+    // 激活 unbound 视图 = 无当前会话（首条消息懒建）
+    handleCurrentViewChanged(dock);
+}
+
+/**
+ * @brief 移除视图 dock（关闭标签/删除会话对账/工程切换清理）
+ * @param dock 目标 dock
+ * @param notifyDetach true=发射 sessionViewAttachedChanged(sid,false)（模块更新视图集合）
+ */
+void DAAgentDockWidget::removeViewDock(ads::CDockWidget* dock, bool notifyDetach)
+{
+    DA_D(d);
+    if (!dock) {
+        return;
+    }
+    // QPointer 防 area 悬空：removeDockWidget 可能连带销毁空 area
+    QPointer< ads::CDockAreaWidget > area = dock->dockAreaWidget();
+    if (dock == d->mUnboundDock) {
+        d->mUnboundDock = nullptr;
+        d->mUnboundView = nullptr;
+    } else {
+        const QString sid = dock->objectName();
+        if (!d->mSessionDocks.contains(sid)) {
+            return;  // 非本宿主管理（防御）
+        }
+        d->mSessionDocks.remove(sid);
+        d->mSessionViews.remove(sid);
+        if (notifyDetach) {
+            emit sessionViewAttachedChanged(sid, false);
+        }
+        // 关闭的是当前会话视图：模块当前会话指针同步清除
+        //（空闲桥随 clearCurrentSession 退役，忙碌桥留后台继续）
+        if (sid == d->mCurrentSessionId) {
+            d->mCurrentSessionId.clear();
+            emit currentSessionClearedRequested();
+        }
+    }
+    d->mSuppressCurrentChanged = true;
+    d->mDockManager->removeDockWidget(dock);
+    dock->deleteLater();  // 级联删除视图（含 WebView），延迟到事件循环
+    d->mSuppressCurrentChanged = false;
+    d->updatePlaceholder();
+    // 主动同步新当前视图的会话语义（removeDockWidget 期间的聚焦事件已被抑制窗口丢弃）：
+    // ADS 移除标签后同 area 当前标签自动前移，此处按移除后的实际状态取值
+    if (area) {
+        if (ads::CDockWidget* cur = area->currentDockWidget()) {
+            handleCurrentViewChanged(cur);
+        } else if (ads::CDockAreaWidget* aliveArea = d->targetAreaForNewDock()) {
+            // 原 area 已空：聚焦转移到其他 area，按任一存活 area 的当前标签兜底
+            if (ads::CDockWidget* cur = aliveArea->currentDockWidget()) {
+                handleCurrentViewChanged(cur);
+            }
+        }
+    }
+}
+
+/**
+ * @brief 连接视图的用户操作信号（"交互即激活"后转发）
+ * @param view 目标视图
+ */
+void DAAgentDockWidget::setupViewConnections(DAAgentSessionChatWidget* view)
+{
+    DA_D(d);
+    // 发消息：先确保来源视图会话为模块当前会话（后台分屏视图发消息的场景）
+    connect(view, &DAAgentSessionChatWidget::sendMessageRequested, this,
+            [ this, d, view ](const QString& text) {
+                d->ensureViewActive(view);
+                emit sendMessageRequested(text);
+            });
+    // Stop：绑定会话 → 按会话停止（后台视图可直接停自己的会话）；unbound → 常规 stop
+    connect(view, &DAAgentSessionChatWidget::stopRequested, this, [ this, view ]() {
+        const QString sid = view->sessionId();
+        if (!sid.isEmpty()) {
+            emit stopSessionRequested(sid);
+        } else {
+            emit stopRequested();
+        }
+    });
+    // 回答问题：先激活来源会话（sendUserAnswer 按当前会话路由 + FIFO 配对）
+    connect(view, &DAAgentSessionChatWidget::userAnswerSelected, this,
+            [ this, d, view ](const QString& answer) {
+                d->ensureViewActive(view);
+                emit userAnswerSelected(answer);
+            });
+    // 其余用户操作：直接转发（审批经 callId 路由，无需激活来源会话）
+    connect(view, &DAAgentSessionChatWidget::linkActivated,
+            this, &DAAgentDockWidget::linkActivated);
+    connect(view, &DAAgentSessionChatWidget::activeModelChangeRequested,
+            this, &DAAgentDockWidget::activeModelChangeRequested);
+    connect(view, &DAAgentSessionChatWidget::permissionModeChangeRequested,
+            this, &DAAgentDockWidget::permissionModeChangeRequested);
+    connect(view, &DAAgentSessionChatWidget::toolApprovalDecision,
+            this, &DAAgentDockWidget::toolApprovalDecision);
+    connect(view, &DAAgentSessionChatWidget::startupModeConfirmResponse,
+            this, &DAAgentDockWidget::startupModeConfirmResponse);
+    connect(view, &DAAgentSessionChatWidget::startupYoloConfirmShown,
+            this, &DAAgentDockWidget::onViewStartupYoloConfirmShown);
+    // 跨工程会话提示条点击（决策点 5 方案 c）：打开会话管理对话框
+    //（对话框经 setForeignSessions 提供"全部工程"视图与一键停止）
+    connect(view, &DAAgentSessionChatWidget::foreignBannerClicked,
+            this, &DAAgentDockWidget::requestShowSessionManager);
+}
+
+// ===========================================================================
+// 聚焦路由（标签切换 = 会话切换）
+// ===========================================================================
+
+/**
+ * @brief 嵌套停靠区聚焦 dock 改变（标签点击/拖拽并栏后的当前标签变化）
+ *
+ * FocusHighlighting 下嵌套管理器的 CDockFocusController 与顶层管理器共享
+ * window 属性，用户聚焦顶层 dock（如工作流操作）时本信号也会被回调——
+ * 按 dockManager() 过滤，只处理属于本嵌套管理器的会话 dock。
+ */
+void DAAgentDockWidget::onFocusedDockChanged(ads::CDockWidget* oldDock, ads::CDockWidget* nowDock)
+{
+    Q_UNUSED(oldDock);
+    DA_D(d);
+    if (d->mSuppressCurrentChanged) {
+        return;
+    }
+    if (nowDock && nowDock->dockManager() != d->mDockManager) {
+        return;  // 过滤跨管理器回调
+    }
+    if (nowDock) {
+        handleCurrentViewChanged(nowDock);
+    }
+}
+
+/**
+ * @brief 当前会话视图变化：绑定会话 → 发射切换请求；unbound → 清当前会话
+ * @param dock 变为当前的 dock
+ */
+void DAAgentDockWidget::handleCurrentViewChanged(ads::CDockWidget* dock)
+{
+    DA_D(d);
+    if (!dock) {
+        return;
+    }
+    if (dock == d->mUnboundDock) {
+        // unbound 视图激活 = 无当前会话（首条消息懒建）
+        if (!d->mCurrentSessionId.isEmpty()) {
+            d->mCurrentSessionId.clear();
+            emit currentSessionClearedRequested();
+        }
+        return;
+    }
+    const QString sid = dock->objectName();
+    if (sid.isEmpty() || !d->mSessionViews.contains(sid)) {
+        return;  // 非会话视图（防御）
+    }
+    if (sid == d->mCurrentSessionId) {
+        return;  // 未变化
+    }
+    // 乐观更新缓存（switchSession 对已当前会话返回 false 不回发 sessionSwitched；
+    // 有视图时模块走快速路径：不重放历史，仅同步状态）
+    d->mCurrentSessionId = sid;
+    emit sessionSwitchRequested(sid);
+}
+
+/**
+ * @brief dock 关闭请求（CustomCloseHandling）：运行中/等待输入会话弹三选确认
+ * @param dock 目标 dock
+ *
+ * 关闭视图 ≠ 删除会话：会话记录始终保留在磁盘，可随时从会话管理重新打开。
+ * unbound / 空闲 / 出错会话直接关闭；启动中/运行中/等待输入弹窗：
+ * 后台继续运行（默认）/ 停止会话并关闭 / 取消。
+ */
+void DAAgentDockWidget::onDockCloseRequested(ads::CDockWidget* dock)
+{
+    DA_D(d);
+    if (!dock) {
+        return;
+    }
+    if (dock == d->mUnboundDock) {
+        removeViewDock(dock, false);
+        return;
+    }
+    const QString sid = dock->objectName();
+    if (sid.isEmpty() || !d->mSessionDocks.contains(sid)) {
+        return;
+    }
+    if (!isSessionActive(sid)) {
+        // 空闲/出错：直接关闭（会话记录保留，可从会话管理重新打开）
+        removeViewDock(dock, true);
+        return;
+    }
+    const QString state = d->sessionState(sid);
+    QString text;
+    if (state == QLatin1String("waiting_input")) {
+        text = tr("Session \"%1\" is waiting for your input. What do you want to do?");  // cn:会话"%1"正在等待你的输入。要如何处理？
+    } else {
+        text = tr("Session \"%1\" is still running. What do you want to do?");  // cn:会话"%1"仍在运行中。要如何处理？
+    }
+    QMessageBox box(QMessageBox::Question,
+                    tr("Close Session"),  // cn:关闭会话
+                    text.arg(d->sessionTitle(sid)),
+                    QMessageBox::Cancel,
+                    this);
+    QPushButton* backgroundBtn =
+        box.addButton(tr("Keep Running in Background"), QMessageBox::AcceptRole);  // cn:后台继续运行
+    QPushButton* stopCloseBtn =
+        box.addButton(tr("Stop Session and Close"), QMessageBox::DestructiveRole);  // cn:停止会话并关闭
+    box.setDefaultButton(backgroundBtn);
+    box.exec();
+    if (box.clickedButton() == box.button(QMessageBox::Cancel)) {
+        return;  // 取消：不关闭
+    }
+    if (box.clickedButton() == stopCloseBtn) {
+        emit stopSessionRequested(sid);
+    }
+    removeViewDock(dock, true);
+}
+
+// ===========================================================================
+// 会话级信号槽（路由到对应视图）
+// ===========================================================================
+
+/**
+ * @brief 处理 Agent 流式 token 信号（路由到会话视图）
+ */
+void DAAgentDockWidget::onAgentToken(const QString& sessionId, const QString& token)
+{
+    DA_D(d);
+    if (DAAgentSessionChatWidget* v = d->viewOfSession(sessionId)) {
+        v->onAgentToken(sessionId, token);
+    }
+}
+
+/**
+ * @brief 处理 Agent 消息完成信号（路由到会话视图）
+ */
+void DAAgentDockWidget::onAgentMessageComplete(const QString& sessionId, const QString& fullText)
+{
+    DA_D(d);
+    if (DAAgentSessionChatWidget* v = d->viewOfSession(sessionId)) {
+        v->onAgentMessageComplete(sessionId, fullText);
+    }
+}
+
+/**
+ * @brief 处理 Agent 工具调用信号（路由到会话视图）
+ */
+void DAAgentDockWidget::onAgentToolCall(const QString& sessionId, const QString& toolName, const QJsonObject& args)
+{
+    DA_D(d);
+    if (DAAgentSessionChatWidget* v = d->viewOfSession(sessionId)) {
+        v->onAgentToolCall(sessionId, toolName, args);
+    }
+}
+
+/**
+ * @brief 处理工具排队状态（决策点 2 ③：全局执行队列排队可见，路由到会话视图）
+ * @param toolName 工具名称
+ * @param position 队列位置（1-based）；0=开始执行（恢复"运行中"）
+ */
+void DAAgentDockWidget::onAgentToolQueued(const QString& sessionId, const QString& toolName, int position)
+{
+    DA_D(d);
+    if (DAAgentSessionChatWidget* v = d->viewOfSession(sessionId)) {
+        v->onAgentToolQueued(sessionId, toolName, position);
+    }
+}
+
+/**
+ * @brief 处理 Agent 工具结果信号（路由到会话视图）
+ */
+void DAAgentDockWidget::onAgentToolResult(const QString& sessionId, const QString& toolName, const QJsonObject& result)
+{
+    DA_D(d);
+    if (DAAgentSessionChatWidget* v = d->viewOfSession(sessionId)) {
+        v->onAgentToolResult(sessionId, toolName, result);
+    }
+}
+
+/**
+ * @brief 处理挂起问题卡作废（子进程退出/崩溃/用户 Stop/桥退役，路由到会话视图）
+ *
+ * 镜像 onToolApprovalDismissed 契约（审计问题 17）：通知 web 移除未回答的
+ * 问题卡，防止用户对幽灵卡作答（答案经死桥发送必然蒸发）。
+ */
+void DAAgentDockWidget::onQuestionDismissed(const QString& sessionId)
+{
+    DA_D(d);
+    if (DAAgentSessionChatWidget* v = d->viewOfSession(sessionId)) {
+        v->onQuestionDismissed(sessionId);
+    }
+}
+
+/**
+ * @brief 处理 Agent 提问信号（路由到会话视图）
+ */
+void DAAgentDockWidget::onAgentQuestion(const QString& sessionId, const QString& text, const QStringList& options,
+                                        bool multiSelect)
+{
+    DA_D(d);
+    if (DAAgentSessionChatWidget* v = d->viewOfSession(sessionId)) {
+        v->onAgentQuestion(sessionId, text, options, multiSelect);
+    }
+}
+
+/**
+ * @brief 处理 Agent 错误信号（路由到会话视图）
+ */
+void DAAgentDockWidget::onAgentError(const QString& sessionId, const QString& message, const QString& errorType,
+                                     const QString& detail)
+{
+    DA_D(d);
+    if (DAAgentSessionChatWidget* v = d->viewOfSession(sessionId)) {
+        v->onAgentError(sessionId, message, errorType, detail);
+    }
+}
+
+/**
+ * @brief 处理 Agent 重试信号（路由到会话视图）
+ */
+void DAAgentDockWidget::onAgentRetrying(const QString& sessionId, int attempt, int maxAttempts, int delayMs,
+                                         const QString& errorType, const QString& errorMessage)
+{
+    DA_D(d);
+    if (DAAgentSessionChatWidget* v = d->viewOfSession(sessionId)) {
+        v->onAgentRetrying(sessionId, attempt, maxAttempts, delayMs, errorType, errorMessage);
+    }
+}
+
+/**
+ * @brief 处理 Agent 启动信号（路由到会话视图）
+ */
+void DAAgentDockWidget::onAgentStarting(const QString& sessionId)
+{
+    DA_D(d);
+    if (DAAgentSessionChatWidget* v = d->viewOfSession(sessionId)) {
+        v->onAgentStarting(sessionId);
+    }
+}
+
+/**
+ * @brief 处理 Agent 就绪信号（路由到会话视图）
+ */
+void DAAgentDockWidget::onAgentReady(const QString& sessionId, const QString& model)
+{
+    DA_D(d);
+    if (DAAgentSessionChatWidget* v = d->viewOfSession(sessionId)) {
+        v->onAgentReady(sessionId, model);
+    }
+}
+
+/**
+ * @brief 处理 Agent 忙碌状态信号（路由到会话视图）
+ */
+void DAAgentDockWidget::onAgentBusy(const QString& sessionId, bool busy)
+{
+    DA_D(d);
+    if (DAAgentSessionChatWidget* v = d->viewOfSession(sessionId)) {
+        v->onAgentBusy(sessionId, busy);
+    }
+}
+
+/**
+ * @brief 处理 token 使用量更新（路由到会话视图）
+ */
+void DAAgentDockWidget::onAgentUsage(const QString& sessionId, int inputTokens, int outputTokens, int totalTokens,
+                                     int contextWindow, const QString& source)
+{
+    DA_D(d);
+    if (DAAgentSessionChatWidget* v = d->viewOfSession(sessionId)) {
+        v->onAgentUsage(sessionId, inputTokens, outputTokens, totalTokens, contextWindow, source);
+    }
+}
+
+/**
+ * @brief 处理 load_session 重建完成信号（路由到会话视图）
  */
 void DAAgentDockWidget::onAgentSessionLoaded(const QString& sessionId)
 {
     DA_D(d);
-    Q_UNUSED(sessionId);
-    // Python load_session 重建完成，解除 UI 切换守卫（MAJOR4）
-    d->mSwitching = false;
-    // 重新断言当前 busy 态（若非忙则状态文案置 Ready），消除可能的 Stopping 残留
-    if (d->mChannel) {
-        d->mChannel->setBusy(d->mAgentBusy);
+    if (DAAgentSessionChatWidget* v = d->viewOfSession(sessionId)) {
+        v->onAgentSessionLoaded(sessionId);
     }
 }
 
 /**
- * @brief 会话切换完成（Module::sessionSwitched），UI 侧守卫 + clearChat + loadHistory
- * @param sessionId 新会话 ID
- * @param allRecords 新会话完整 JSONL 记录
+ * @brief 处理工具审批请求（路由到会话视图）
  */
-void DAAgentDockWidget::onSessionSwitched(const QString& sessionId,
-                                          const QVector<QJsonObject>& allRecords)
+void DAAgentDockWidget::onToolApprovalRequest(const QString& sessionId, const QString& callId, const QString& toolName,
+                                              const QJsonObject& args)
 {
     DA_D(d);
-    // concurrent-sessions：旧 MAJOR4 语义（等 session_loaded 解除守卫）已随纯重放
-    // 切换失效——Module 侧按会话过滤后，Dock 只会收到活跃会话的信号，无需跨切换
-    // 窗口守卫。重放窗口内保持守卫（clearChat/loadHistory 为同步调用，无信号穿插），
-    // 结束即同步解除，避免纯切换（无 load_session）时守卫永真冻结渲染。
-    d->mSwitching = true;
-    if (d->mChannel) {
-        d->mChannel->clearChat();
-        d->mChannel->loadHistory(allRecords);  // 重放新会话 UI（C++ 合并后事件，见 WebChannel::loadHistory）
+    if (DAAgentSessionChatWidget* v = d->viewOfSession(sessionId)) {
+        v->onToolApprovalRequest(sessionId, callId, toolName, args);
     }
-    d->mCurrentSessionId = sessionId;
-    d->mSwitching = false;  // 同步解除（发送路径懒启动 load_session 时 onAgentSessionLoaded 幂等兜底）
-    updateTitleLabel();
 }
 
 /**
- * @brief 会话列表变化（契约3：payload 每元素 QVariantMap{id,title}），直接填充下拉
- * @param sessions 会话列表 payload
+ * @brief 处理审批作废（路由到会话视图撤卡）
+ */
+void DAAgentDockWidget::onToolApprovalDismissed(const QString& sessionId, const QString& callId)
+{
+    DA_D(d);
+    if (DAAgentSessionChatWidget* v = d->viewOfSession(sessionId)) {
+        v->onToolApprovalDismissed(sessionId, callId);
+    }
+}
+
+/**
+ * @brief 处理子 agent 任务进度（路由到会话视图）
+ */
+void DAAgentDockWidget::onAgentSubagentProgress(const QString& sessionId, const QJsonObject& progress)
+{
+    DA_D(d);
+    if (DAAgentSessionChatWidget* v = d->viewOfSession(sessionId)) {
+        v->onAgentSubagentProgress(sessionId, progress);
+    }
+}
+
+// ===========================================================================
+// 会话生命周期
+// ===========================================================================
+
+/**
+ * @brief 会话切换完成
+ * @param sessionId 新会话 ID
+ * @param allRecords 新会话完整记录（有视图快速路径为空数组）
+ *
+ * 有视图（用户点标签切换）：模块走快速路径（不重放历史），此处仅同步缓存；
+ * 无视图（会话管理对话框切换到未打开会话）：创建视图并重放历史。
+ */
+void DAAgentDockWidget::onSessionSwitched(const QString& sessionId, const QVector<QJsonObject>& allRecords)
+{
+    DA_D(d);
+    d->mCurrentSessionId = sessionId;
+    if (d->mSessionDocks.contains(sessionId)) {
+        return;  // 视图已存在（标签切换快速路径），内容实时最新
+    }
+    createSessionView(sessionId, allRecords);
+}
+
+/**
+ * @brief 会话列表变化：同步标签外观 + 对账移除已删除会话的视图
+ * @param sessions sessionListChanged payload（每元素含 id/title/state/...）
  */
 void DAAgentDockWidget::onSessionListChanged(QVariantList sessions)
 {
     DA_D(d);
-    // 契约3: 缓存 payload（含 updatedAt/messageCount 元信息），刷新标题
     d->mSessions = sessions;
-    updateTitleLabel();
+    // 对账：视图存在但会话已不在列表（被删除）→ 移除视图
+    //（工程切换场景由 onSessionCleared 统一清理，此处兜底删除对账）
+    QList< ads::CDockWidget* > staleDocks;
+    for (auto it = d->mSessionDocks.cbegin(); it != d->mSessionDocks.cend(); ++it) {
+        if (d->sessionMeta(it.key()).isEmpty()) {
+            staleDocks.append(it.value());
+        }
+    }
+    for (ads::CDockWidget* dock : std::as_const(staleDocks)) {
+        removeViewDock(dock, true);
+    }
+    // 同步标题/状态徽标
+    for (auto it = d->mSessionDocks.cbegin(); it != d->mSessionDocks.cend(); ++it) {
+        d->syncSessionDockAppearance(it.key());
+    }
 }
 
 /**
- * @brief 新会话创建（newSession 路径），清空聊天 + 复位守卫 + 复位 token 控件
+ * @brief 新会话创建：把 unbound 视图绑定到该会话
  * @param sessionId 新会话 ID
+ *
+ * 触发路径：①首条消息懒建（sendMessage → createSession + sessionCreated）——
+ * unbound 视图已渲染用户气泡，绑定不清空内容；②newSession()（程序化路径）。
+ * 无 unbound 视图且无该会话视图时（如全部标签关闭后 runAgent），创建空视图。
  */
 void DAAgentDockWidget::onSessionCreated(const QString& sessionId)
 {
     DA_D(d);
-    // MAJOR7: 仅 newSession 路径触发本槽——新会话清空聊天 + 复位守卫。
-    // 标题刷新由 sessionListChanged(payload) 信号驱动。
-    // Bug2 修复：新会话无 usage，复位 token 控件避免抛留上一会话数值。
-    d->mSwitching = false;
-    d->mCurrentSessionId = sessionId;
-    d->mHasTokenStats = false;  // 新会话无 usage，复位缓存
-    if (d->mChannel) {
-        d->mChannel->clearChat();
-        d->mChannel->resetTokenStats();  // 复位 web 侧 token 标签 + popover
-        d->mChannel->focusInput();       // 新会话聚焦输入框
+    if (sessionId.isEmpty() || d->mSessionDocks.contains(sessionId)) {
+        return;
     }
-    updateTitleLabel();
+    if (d->mUnboundDock) {
+        // unbound → bound：objectName 换为会话 ID（稳定持久 id），标题/图标同步
+        ads::CDockWidget* dock = d->mUnboundDock;
+        DAAgentSessionChatWidget* view = d->mUnboundView;
+        d->mUnboundDock = nullptr;
+        d->mUnboundView = nullptr;
+        dock->setObjectName(sessionId);
+        d->mSessionDocks[ sessionId ] = dock;
+        d->mSessionViews[ sessionId ] = view;
+        if (view) {
+            view->setSessionId(sessionId);  // 仅记录归属，不清空（用户气泡已渲染）
+        }
+        d->syncSessionDockAppearance(sessionId);
+        d->updatePlaceholder();
+        emit sessionViewAttachedChanged(sessionId, true);
+        return;
+    }
+    createSessionView(sessionId, {});
 }
 
 /**
- * @brief 当前无活跃会话（启动/打开工程后始终全新对话，不自动恢复上次会话）
+ * @brief 当前无活跃会话（启动/打开工程）：关闭全部绑定视图，保留一个 unbound 视图
  *
- * 清空残留聊天区、复位 token 控件、下拉不选中、解除切换守卫。
+ * 始终以全新对话开始（不自动恢复上次会话）——历史会话仍保留在磁盘与会话管理
+ * 列表中，用户可随时重新打开。运行中会话的桥留后台继续（视图关闭仅 detach）。
  */
 void DAAgentDockWidget::onSessionCleared()
 {
     DA_D(d);
-    // 启动/打开工程后始终全新对话，不自动恢复上次会话。
-    // 清空残留聊天区、复位 token 控件、清空标题、解除切换守卫。
-    d->mSwitching = false;
-    d->mCurrentSessionId.clear();
-    d->mHasTokenStats = false;
-    if (d->mChannel) {
-        d->mChannel->clearChat();
-        d->mChannel->resetTokenStats();
-        d->mChannel->focusInput();
+    d->mSuppressCurrentChanged = true;
+    // 关闭全部绑定视图（会话可能仍在后台运行：仅 detach，不停止）
+    const QList< ads::CDockWidget* > docks = d->allDocks();
+    for (ads::CDockWidget* dock : docks) {
+        if (dock != d->mUnboundDock) {
+            const QString sid = dock->objectName();
+            d->mSessionDocks.remove(sid);
+            d->mSessionViews.remove(sid);
+            d->mDockManager->removeDockWidget(dock);
+            dock->deleteLater();
+            emit sessionViewAttachedChanged(sid, false);
+        }
     }
-    updateTitleLabel();
+    d->mCurrentSessionId.clear();
+    d->mSuppressCurrentChanged = false;
+    d->updatePlaceholder();
+    // 保证恰好一个 unbound 视图（等价"空聊天区待输入"）
+    if (!d->mUnboundDock) {
+        createUnboundView();  // 内部处理激活语义
+    } else {
+        d->mSuppressCurrentChanged = true;
+        d->mUnboundDock->raise();
+        d->mSuppressCurrentChanged = false;
+        handleCurrentViewChanged(d->mUnboundDock);
+    }
+}
+
+// ===========================================================================
+// 全局信号槽（广播到全部视图）
+// ===========================================================================
+
+/**
+ * @brief 跨工程存活会话变化（决策点 5 方案 c，审计问题 18）
+ * @param sessions 绑定其它工程的存活桥会话 payload（空列表=无，隐藏提示条）
+ *
+ * 缓存列表供会话管理对话框"全部工程"视图取数；各视图聊天区顶部显示/更新/
+ * 隐藏提示条（"N 个上一工程的会话仍在后台运行"，点击打开对话框）。
+ */
+void DAAgentDockWidget::onForeignAgentSessionsRunning(QVariantList sessions)
+{
+    DA_D(d);
+    d->mForeignSessions = sessions;
+    for (auto it = d->mSessionViews.cbegin(); it != d->mSessionViews.cend(); ++it) {
+        it.value()->setForeignSessionsBanner(sessions.size());
+    }
+    if (d->mUnboundView) {
+        d->mUnboundView->setForeignSessionsBanner(sessions.size());
+    }
 }
 
 /**
- * @brief 处理系统消息信号（用户可见但不作为 LLM 对话内容的通知）
- * @param text 消息文本
- * @param level 级别："info" / "warning" / "error"
+ * @brief 系统消息：广播到全部视图（LLM 未配置等全局性提示）
  */
 void DAAgentDockWidget::onSystemMessage(const QString& text, const QString& level)
 {
     DA_D(d);
-    if (d->mChannel) {
-        d->mChannel->appendSystemMessage(text, level);
+    for (auto it = d->mSessionViews.cbegin(); it != d->mSessionViews.cend(); ++it) {
+        it.value()->onSystemMessage(text, level);
+    }
+    if (d->mUnboundView) {
+        d->mUnboundView->onSystemMessage(text, level);
     }
 }
 
-// ===========================================================================
-// 供应商/多模型选择（web 两级选择器：供应商→模型）
-// ===========================================================================
-
 /**
- * @brief 可用模型列表变化，推送 flat 列表到 web 两级选择器
- * @param models 每元素 QVariantMap{provider,model,context_window,max_output_tokens}
- *
- * web 侧按 provider 分组渲染两级选择器（第一层供应商、第二层模型）。
+ * @brief 可用模型列表变化：缓存 + 广播到全部视图
  */
 void DAAgentDockWidget::onAvailableModelsChanged(QVariantList models)
 {
     DA_D(d);
     d->mAvailableModels = models;
-    if (d->mChannel) {
-        d->mChannel->setAvailableModels(models);
+    for (auto it = d->mSessionViews.cbegin(); it != d->mSessionViews.cend(); ++it) {
+        it.value()->setAvailableModels(models);
+    }
+    if (d->mUnboundView) {
+        d->mUnboundView->setAvailableModels(models);
     }
 }
 
 /**
- * @brief 激活模型变化，缓存供应商/模型并推送激活态到 web 选择器
- * @param provider 激活供应商
- * @param model 激活模型 id
+ * @brief 激活模型变化：缓存 + 广播到全部视图
  */
 void DAAgentDockWidget::onActiveModelChanged(const QString& provider, const QString& model)
 {
     DA_D(d);
     d->mCurrentProvider = provider;
-    d->mCurrentModel = model;
-    // 推送激活供应商+模型给 web 选择器（触发按钮文案 + 选中高亮）
-    if (d->mChannel) {
-        d->mChannel->setActiveModel(provider, model);
+    d->mCurrentModel    = model;
+    for (auto it = d->mSessionViews.cbegin(); it != d->mSessionViews.cend(); ++it) {
+        it.value()->setActiveModel(provider, model);
+    }
+    if (d->mUnboundView) {
+        d->mUnboundView->setActiveModel(provider, model);
     }
 }
 
 /**
- * @brief web 两级选择器选定供应商+模型：定稿当前流式 + emit activeModelChangeRequested
- *
- * 仅由 web 用户手动选择触发（chat.js onModelSelect → chatBridge.onModelSelect）。
- * 已是当前激活模型则不重复触发（避免重选相同项导致无谓停止运行中的 agent）。
- * 定稿当前流式输出中的 agent 消息（若有），避免切换模型时半截消息悬挂。
- */
-void DAAgentDockWidget::onModelSelect(const QString& provider, const QString& model)
-{
-    DA_D(d);
-    if (model.isEmpty()) {
-        return;
-    }
-    // 已是当前激活供应商+模型则不重复触发
-    if (provider == d->mCurrentProvider && model == d->mCurrentModel) {
-        return;
-    }
-    // 不再终止当前生成：reconfigure 在 stdin 排队，当前轮用旧模型跑完，下一轮用新模型。
-    // 选择器高亮经 onActiveModelChanged 立即更新；ready 到达后模型标签确认。
-    // 忙碌中切换时当前回复正常完成（message_end/done 自然到达），不截断不丢失。
-    emit activeModelChangeRequested(provider, model);
-}
-
-// ===========================================================================
-// 权限层（permission-layer P1）
-// ===========================================================================
-
-/**
- * @brief web 权限模式选择器选定模式：透传 permissionModeChangeRequested
- *
- * JS 侧已对切 yolo 做二次确认，到达此处即为已确认的用户意图。
- * 已是当前模式时 JS 已拦截，此处不再重复判定。
- * @param mode yolo / auto / manual
- */
-void DAAgentDockWidget::onPermissionModeSelect(const QString& mode)
-{
-    emit permissionModeChangeRequested(mode);
-}
-
-/**
- * @brief web 审批卡裁决：透传 toolApprovalDecision（→ DAAgentInterface::sendToolApproval）
- * @param callId 工具调用 ID
- * @param approved 是否批准
- * @param rememberSession 是否本会话记住（仅 file_write 生效）
- */
-void DAAgentDockWidget::onToolApprovalDecision(const QString& callId, bool approved, bool rememberSession)
-{
-    emit toolApprovalDecision(callId, approved, rememberSession);
-}
-
-/**
- * @brief web 启动 yolo 确认卡（A13）响应：透传 startupModeConfirmResponse
- * @param keepYolo true=保持 yolo，false=降级 auto
- */
-void DAAgentDockWidget::onStartupModeConfirmResponse(bool keepYolo)
-{
-    emit startupModeConfirmResponse(keepYolo);
-}
-
-/**
- * @brief 权限模式变化（启动推送/热切换）：缓存并推送到 web 模式选择器
- * @param mode yolo / auto / manual
+ * @brief 权限模式变化：缓存 + 广播到全部视图
  */
 void DAAgentDockWidget::onPermissionModeChanged(const QString& mode)
 {
     DA_D(d);
     d->mCurrentPermissionMode = mode;
-    if (d->mChannel) {
-        d->mChannel->setPermissionMode(mode);
+    for (auto it = d->mSessionViews.cbegin(); it != d->mSessionViews.cend(); ++it) {
+        it.value()->setPermissionMode(mode);
     }
+    if (d->mUnboundView) {
+        d->mUnboundView->setPermissionMode(mode);
+    }
+    d->updateStartupYoloConfirmPending();
 }
 
 /**
- * @brief 权限模式"显式设置"状态（启动推送）：缓存供 onWebReady 判定 A13 确认卡
- *
- * 热切换（模式选择器/设置页）必然写 ini，无需更新本标志；
- * 仅启动推送时 Module 经接口下发一次。
- * @param explicitSet true=用户曾显式写入模式；false=当前模式为默认值
+ * @brief 权限模式"显式设置"状态（启动推送）：缓存并刷新 A13 待弹标志
  */
 void DAAgentDockWidget::onPermissionModeExplicitChanged(bool explicitSet)
 {
     DA_D(d);
     d->mPermissionModeExplicit = explicitSet;
+    d->updateStartupYoloConfirmPending();
 }
 
+// ===========================================================================
+// 视图用户操作槽
+// ===========================================================================
+
 /**
- * @brief 工具调用需审批（ask 决策）：推送审批卡到 web
+ * @brief 视图用户操作槽说明
  *
- * args 已由 Module 补齐 _tier/_rememberable/_subagent；此处组装 payload 转发。
- * @param callId 工具调用 ID
- * @param toolName 工具名称
- * @param args 工具参数（含 _tier/_rememberable/_subagent）
+ * 发消息/Stop/回答的"交互即激活"转发逻辑在 setupViewConnections 的 lambda 中
+ * 完成（需要捕获来源视图指针），不经过独立槽。
  */
-void DAAgentDockWidget::onToolApprovalRequest(const QString& callId, const QString& toolName, const QJsonObject& args)
+
+/**
+ * @brief A13 启动确认卡已在某视图弹出：置全局 shown 标志，其余视图不再弹
+ */
+void DAAgentDockWidget::onViewStartupYoloConfirmShown()
 {
     DA_D(d);
-    if (!d->mChannel) return;
-    QJsonObject payload;
-    payload[QStringLiteral("tool")] = toolName;
-    // 剥离内部字段 _tier/_rememberable/_subagent 后作为展示参数，避免用户看到实现细节；
-    // _subagent（子 agent 来源上下文，如 "explore #1"）转正为 payload.subagent 供 JS 渲染
-    QJsonObject shownArgs = args;
-    const QString tier       = shownArgs.take(QStringLiteral("_tier")).toString();
-    const bool rememberable  = shownArgs.take(QStringLiteral("_rememberable")).toBool();
-    const QString subagent   = shownArgs.take(QStringLiteral("_subagent")).toString();
-    payload[QStringLiteral("args")]         = shownArgs;
-    payload[QStringLiteral("tier")]         = tier;
-    payload[QStringLiteral("rememberable")] = rememberable;
-    payload[QStringLiteral("subagent")]     = subagent;
-    d->mChannel->appendToolApproval(callId, payload);
+    d->mStartupYoloConfirmShown = true;
+    d->updateStartupYoloConfirmPending();
 }
 
 /**
- * @brief 审批作废（子进程退出/崩溃/切换会话）：通知 web 撤卡
- * @param callId 作废的审批对应工具调用 ID
+ * @brief 占位页「新建会话」按钮
  */
-void DAAgentDockWidget::onToolApprovalDismissed(const QString& callId)
+void DAAgentDockWidget::onPlaceholderNewSessionClicked()
 {
-    DA_D(d);
-    if (d->mChannel) {
-        d->mChannel->dismissToolApproval(callId);
-    }
+    requestNewSession();
 }
 
-/**
- * @brief 子 agent 任务进度：推送 subagent_progress 协议消息原文到 web
- *
- * 载荷含 call_id/task_id?/subagent?/state/message?/results?（母文档 §7）；
- * JS 端以 call_id 为键建进度卡片、按 task_id 幂等更新任务行，心跳（无
- * task_id 的 running 态）由 JS 忽略。
- * @param progress subagent_progress 协议消息原文
- */
-void DAAgentDockWidget::onAgentSubagentProgress(const QJsonObject& progress)
-{
-    DA_D(d);
-    if (d->mChannel) {
-        d->mChannel->updateSubagentProgress(progress);
-    }
-}
-
-// ---- 辅助方法 ----
-
-/**
- * @brief 用 sessionListChanged payload 刷新会话缓存并更新标题
- *
- * 按当前会话 ID 在缓存中查标题并更新标题标签（过长右端省略 + tooltip 全文）
- */
-void DAAgentDockWidget::updateTitleLabel()
-{
-    DA_D(d);
-    // 按 m_currentSessionId 在缓存中查标题；空标题显示「(untitled)」
-    if (!d->mTitleLabel) return;
-    QString fullTitle;
-    if (!d->mCurrentSessionId.isEmpty()) {
-        for (int i = 0; i < d->mSessions.size(); ++i) {
-            QVariantMap vm = d->mSessions.at(i).toMap();
-            if (vm.value("id").toString() == d->mCurrentSessionId) {
-                fullTitle = vm.value("title").toString();
-                break;
-            }
-        }
-        if (fullTitle.isEmpty()) {
-            fullTitle = tr("(untitled)");  // cn:（未命名）
-        }
-    }
-    d->mCurrentSessionFullTitle = fullTitle;
-    // tooltip 显示完整标题（空标题不弹 tooltip）
-    d->mTitleLabel->setToolTip(fullTitle);
-    // 按当前可用宽度省略渲染（右端 …）
-    int w = d->mTitleLabel->width();
-    if (w <= 0) {
-        // 尚未布局完成，直接放全文，resize 事件触发时会重新省略
-        d->mTitleLabel->setText(fullTitle);
-        return;
-    }
-    // 减去内边距避免 … 紧贴右边缘
-    const int pad = 12;
-    QString shown = d->mTitleLabel->fontMetrics().elidedText(
-        fullTitle, Qt::ElideRight, qMax(0, w - pad));
-    d->mTitleLabel->setText(shown);
-}
-
-/**
- * @brief 格式化 token 计量串：streaming_estimate 带 ~ 前缀，否则 "tokens: N / window"
- * @param totalTokens 总 token
- * @param contextWindow 上下文窗口大小
- * @param source 来源（tiktoken / usage_metadata / streaming_estimate）
- * @return 格式化后的 token 计量串
- */
-QString DAAgentDockWidget::formatTokenLabel(int totalTokens, int contextWindow, const QString& source) const
-{
-    // 返回 token 计量串：streaming_estimate 带 ~ 前缀，否则 "tokens: N / window"（已 tr 翻译）。
-    // window<=0 显示 -1。popover 五项明细由 web 侧 JS 用注入的模板串渲染
-    // （C++ 只推这 5 原始值，标签复用 tr("input: %1") 等既有翻译，JS 做 %1→值 替换）。
-    int win = contextWindow > 0 ? contextWindow : -1;
-    if (source == QStringLiteral("streaming_estimate")) {
-        return tr("tokens: ~%1 / %2").arg(totalTokens).arg(win);  // cn:token: ~%1 / %2
-    }
-    return tr("tokens: %1 / %2").arg(totalTokens).arg(win);  // cn:token: %1 / %2
-}
-
-/**
- * @brief 根据 errorType 映射错误消息为翻译后的用户文案（plan-03 step8）
- * @param original 原始错误消息
- * @param errorType 错误类型
- * @return 翻译后的用户文案
- */
-QString DAAgentDockWidget::mapErrorMessage(const QString& original, const QString& errorType) const
-{
-    // 按 error_type 选择翻译后的用户文案
-    if (errorType == "quota_exhausted") {
-        return tr("API quota exhausted, please check account balance or change API key"); //cn:API 配额已耗尽，请检查账户余额或更换 API Key
-    }
-    if (errorType == "auth_error") {
-        return tr("API key invalid or expired, please check settings"); //cn:API Key 无效或已过期，请在设置中检查配置
-    }
-    if (errorType == "rate_limit_exhausted") {
-        return tr("Failed after %1 retries: rate limited").arg(7); //cn:重试 %1 次后仍失败：服务限流
-    }
-    if (errorType == "network_exhausted") {
-        return tr("Failed after %1 retries: network error").arg(7); //cn:重试 %1 次后仍失败：网络错误
-    }
-    if (errorType == "server_error_exhausted") {
-        return tr("Failed after %1 retries: server error").arg(7); //cn:重试 %1 次后仍失败：服务器错误
-    }
-    if (errorType == "bad_request") {
-        return tr("Request format error: %1").arg(original); //cn:请求格式错误：%1
-    }
-    if (errorType == "context_overflow") {
-        return tr("Context window exceeded and compaction failed"); //cn:上下文窗口超限且压缩失败
-    }
-    if (errorType == "timeout") {
-        return tr("Agent response timeout (no activity for %1 minutes)").arg(4); //cn:Agent 响应超时（%1 分钟无活动）
-    }
-    if (errorType == "crash_recovery") {
-        return tr("Agent process crashed, recovering... (%1/3)").arg(1); //cn:Agent 进程异常退出，正在恢复... (%1/3)
-    }
-    if (errorType == "crash_exhausted") {
-        return tr("Agent process crashed repeatedly, unable to recover"); //cn:Agent 进程多次崩溃，无法恢复
-    }
-    if (errorType == "reconfigure_failed") {
-        return tr("Failed to switch model, keeping current model"); //cn:模型切换失败，已保留当前模型
-    }
-    // unknown 或空
-    return tr("Agent error: %1").arg(original); //cn:Agent 错误：%1
-}
-
-} // namespace DA
+}  // namespace DA

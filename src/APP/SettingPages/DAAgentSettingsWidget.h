@@ -88,6 +88,8 @@ private:
     QSpinBox* mMaxSessionsSpin;
     QSpinBox* mSessionRetentionDaysSpin;
     QSpinBox* mSpinMaxRetries;
+    QSpinBox* mSpinRetryInterval;   ///< 首次重试前等待秒数（n）
+    QSpinBox* mSpinRetryIncrement;  ///< 每次重试失败后等待递增秒数（p）
     QSpinBox* mSpinRequestTimeout;
     QSpinBox* mSpinInactivityTimeout;
     QSpinBox* mSpinMaxRestarts;

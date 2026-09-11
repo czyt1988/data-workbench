@@ -171,6 +171,8 @@ constexpr char ChartZoomIn[]                   = "actionChartZoomIn";
 constexpr char ChartZoomOut[]                  = "actionChartZoomOut";
 constexpr char ChartZoomAll[]                  = "actionChartZoomAll";
 constexpr char ChartEnablePan[]                = "actionChartEnablePan";
+constexpr char ChartDisableZoomX[]             = "actionChartDisableZoomX";
+constexpr char ChartDisableZoomY[]             = "actionChartDisableZoomY";
 constexpr char ChartEnablePickerCross[]        = "actionChartEnablePickerCross";
 constexpr char ChartEnablePickerXY[]           = "actionChartEnablePickerXY";
 constexpr char ChartEnablePickerY[]            = "actionChartEnablePickerY";
@@ -198,8 +200,7 @@ constexpr char ChartEditorAddHLineMarker[]     = "actionChartEditorAddHLineMarke
 constexpr char ChartEditorAddVLineMarker[]     = "actionChartEditorAddVLineMarker";
 constexpr char ChartEditorAddArrowMarker[]     = "actionChartEditorAddArrowMarker";
 constexpr char ChartEditorAddTextMarker[]      = "actionChartEditorAddTextMarker";
-constexpr char AddHorizontalPlotProbeMarker[]  = "actionAddHorizontalPlotProbeMarker";
-constexpr char AddVerticalPlotProbeMarker[]    = "actionAddVerticalPlotProbeMarker";
+constexpr char ChartEditorDataProbe[]          = "actionChartEditorDataProbe";
 constexpr char ChartDataPickerSetting[]        = "actionChartDataPickerSetting";
 // ---- 视图 ----
 constexpr char ShowWorkFlowArea[]        = "actionShowWorkFlowArea";
@@ -257,6 +258,7 @@ constexpr char SettingContainerWidget[] = "da_settingContainerWidget";
 constexpr char MessageLogViewWidget[]   = "da_messageLogViewWidget";
 constexpr char AgentDockWidget[]        = "da_agentDockWidget";
 constexpr char MarkdownView[]           = "da_markdownView";
+constexpr char DataLinkTableWidget[]    = "da_dataLinkTableWidget";
 // ---- dock 窗口 ----
 constexpr char WorkFlowOperateWidgetDock[]  = "da_workFlowOperateWidgetDock";
 constexpr char ChartOperateWidgetDock[]     = "da_chartOperateWidgetDock";
@@ -268,6 +270,7 @@ constexpr char SettingDock[]                = "da_settingDock";
 constexpr char AgentDockWidgetDock[]        = "da_agentDockWidgetDock";
 constexpr char MessageLogViewWidgetDock[]   = "da_messageLogViewWidgetDock";
 constexpr char MarkdownViewDock[]           = "da_markdownViewDock";
+constexpr char DataLinkTableWidgetDock[]    = "da_dataLinkTableWidgetDock";
 }  // namespace Dock
 
 /**

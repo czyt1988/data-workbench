@@ -14,7 +14,7 @@ namespace DA
 {
 
 /**
- * @brief WebChannel 桥接对象，由 DAAgentDockWidget 通过 QWebChannel::registerObject 暴露给 JS
+ * @brief WebChannel 桥接对象，由 DAAgentSessionChatWidget 通过 QWebChannel::registerObject 暴露给 JS
  *
  * 本类是 QObject（不是 QWebChannel）。QWebChannel 实例本身由 setupWebChannel() 中
  * `new QWebChannel(this)` 单独创建，并通过 registerObject("chatBridge", m_channel) 注册本对象。
@@ -27,7 +27,7 @@ public:
     explicit DAAgentWebChannel(QWebEngineView* view, QObject* parent = nullptr);
     Q_INVOKABLE void onUserSelect(const QString& answer);
     Q_INVOKABLE void onUserMessage(const QString& text);
-    Q_INVOKABLE void onFigureLink(const QString& href);
+    Q_INVOKABLE void onLinkActivated(const QString& href);
     Q_INVOKABLE void onReady();
     Q_INVOKABLE void onStopRequested();
     /// JS 调用：用户在 web 两级模型选择器选定供应商+模型
@@ -38,12 +38,18 @@ public:
     Q_INVOKABLE void onToolApproval(const QString& callId, bool approved, bool rememberSession);
     /// JS 调用：启动 yolo 确认卡（A13）的用户响应（true=保持 yolo）
     Q_INVOKABLE void onModeConfirmResponse(bool keepYolo);
+    /// JS 调用：跨工程会话提示条点击（决策点 5 方案 c，审计问题 18）
+    Q_INVOKABLE void onForeignBannerClicked();
     void appendUserMessage(const QString& text);
     void appendToken(const QString& token);
     void finalizeAgentMessage(const QString& fullText);
     void appendToolCall(const QString& toolName, const QJsonObject& args);
+    /// 推送工具排队状态（决策点 2 ③）：position>0=排队中第 N 位，0=开始执行
+    void markToolQueued(const QString& toolName, int position);
     void appendToolResult(const QString& toolName, const QJsonObject& result);
     void appendQuestion(const QString& text, const QStringList& options, bool multiSelect);
+    /// 推送挂起问题卡作废（JS 移除未回答问题卡，镜像 dismissToolApproval，审计问题 17）
+    void dismissQuestion();
     void showRetryStatus(int attempt, int maxAttempts, int delayMs,
                          const QString& errorType, const QString& errorMessage);
     void appendError(const QString& message, const QString& errorType, const QString& detail = QString());
@@ -70,6 +76,9 @@ public:
     void setTokenStats(const QString& label, int inputTokens, int outputTokens,
                        int totalTokens, int contextWindow, const QString& source);
     void resetTokenStats();
+    /// 推送跨工程存活会话提示条（决策点 5 方案 c）：count>0 显示"N 个上一工程
+    /// 的会话仍在后台运行"（点击打开会话管理对话框），0 隐藏
+    void showForeignSessionsBanner(int count);
     void setI18nLabels(const QVariantMap& labels);
     void focusInput();
     void onAgentStopped();
@@ -88,10 +97,13 @@ Q_SIGNALS:
     void userMessageSent(const QString& text);
 
     /**
-     * @brief 用户点击绘图引用超链接信号
-     * @param href 超链接 href，形如 da-figure:&lt;figure_name&gt; 或 da-figure:id=&lt;uuid&gt;
+     * @brief 用户点击本地跳转超链接信号（da-<kind>: 协议）
+     *
+     * href 为原始字符串（可能含百分号编码），协议解析与分发由上层
+     * （DAAgentLinkDispatcher）完成，本类不感知具体协议。
+     * @param href 超链接 href，形如 da-figure:&lt;figure_name&gt;、da-data:id=&lt;id&gt;
      */
-    void figureLinkRequested(const QString& href);
+    void linkActivated(const QString& href);
 
     /**
      * @brief web 侧就绪信号（chat.js init() 握手，C++ 收到后 flush 当前态）
@@ -102,6 +114,13 @@ Q_SIGNALS:
      * @brief 用户在 web 输入区点 Stop 按钮信号（直达 C++ 终止流程）
      */
     void stopRequested();
+
+    /**
+     * @brief 跨工程会话提示条点击信号（决策点 5 方案 c，审计问题 18）
+     *
+     * Dock 收到后打开会话管理对话框（含"全部工程"视图与一键停止）
+     */
+    void foreignBannerClicked();
 
     /**
      * @brief 用户在 web 两级模型选择器选定供应商+模型信号

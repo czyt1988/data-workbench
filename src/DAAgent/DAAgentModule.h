@@ -52,6 +52,14 @@ public:
     int unregisterToolsByProvider(QObject* provider) override;
     /// @copydoc DAAgentInterface::unregisterSystemPromptsByProvider
     int unregisterSystemPromptsByProvider(QObject* provider) override;
+
+    // ---- 会话视图管理（session-tabs，override DAAgentInterface 3 个新纯虚） ----
+    /// @copydoc DAAgentInterface::setSessionViewAttached
+    void setSessionViewAttached(const QString& sessionId, bool attached) override;
+    /// @copydoc DAAgentInterface::clearCurrentSession
+    void clearCurrentSession() override;
+    /// @copydoc DAAgentInterface::stopSession
+    void stopSession(const QString& sessionId) override;
     /// @copydoc DAAgentInterface::showDockWidget
     void showDockWidget() override;
     /// @copydoc DAAgentInterface::hideDockWidget
@@ -157,6 +165,9 @@ public:
     // 与 pushModelSelection 同处，由 DAAppController 在接口↔Dock 信号链 connect 完成后调用；
     // A13 启动 yolo 确认由 Dock 侧触发（仅显式设置的 yolo 弹卡，默认值静默进入全自动）
     void pushPermissionMode();
+    // 会话运行态（供 UI 角标）："starting" / "running" / "waiting_input" / "error" / ""（空闲）
+    // 公开供测试断言状态机（DAAgentModuleTest）；UI 常规消费走 sessionListChanged payload
+    QString sessionRuntimeState(const QString& sessionId) const;
 
 private:
     // Helper methods
@@ -171,9 +182,13 @@ private:
     void appendToolResultRecord(const QString& sid, const QString& toolCallId, const QString& content);
     void appendAssistantRecord(const QString& sid, const QString& text, const QJsonArray& toolCalls);
     void appendUsageRecord(const QString& sid, int inT, int outT, int tot, const QString& src);
+    // 构造 error 记录并追加写盘（决策点 4：错误落盘 JSONL，审计问题 3）
+    void appendErrorRecord(const QString& sid, const QString& message, const QString& errorType, const QString& detail);
     QJsonObject makeUserRecord(const QString& text) const;
     QVariantList listSessionsForUI() const;
     int readContextWindow() const;
+    // "回合疑似未完成"提醒文案（实时转发与问题 8 切回重发共用）
+    QString turnIncompleteMessage(int toolRounds) const;
     void emitTokenUsageForSession(const QString& sid);
     // 会话累计 token 清零（新建/删除当前/恢复时调用）
     void resetCumulativeTokens();
@@ -184,13 +199,23 @@ private:
     // 绑定会话：注册映射 + 连接全部信号路由（持久化写桥所属会话、UI 仅活跃会话）
     void attachBridge(DAAgentBridge* bridge, const QString& sessionId);
     // 确保会话有桥：优先接管预热空闲桥，否则冷启动；历史非空时管道序下发 load_session
-    DAAgentBridge* adoptOrStartBridge(const QString& sessionId);
+    //（excludeTrailingUser：快照剔除末尾待重发 user 记录，问题10 统一约定）
+    DAAgentBridge* adoptOrStartBridge(const QString& sessionId, bool excludeTrailingUser = false);
+    // 读取 load_session 历史快照（统一约定：永不含将被重发的末尾 user 记录）
+    QJsonArray readSessionSnapshotForLoad(const QString& sessionId, bool excludeTrailingUser) const;
     // 优雅退役：断开路由、清缓存、requestStop + processExited 后 deleteLater
     void retireBridge(const QString& sessionId);
+    // 切离退役判定（switchSession step1 / newSession 共用，问题 18）：空闲且
+    // 无挂起交互才退役，忙碌/挂起留后台
+    bool retireIdleSessionBridge(const QString& sid);
+    // 绑定其它工程的存活桥会话列表（决策点 5 方案 c 跨工程可见性）
+    QVariantList listForeignLiveSessions() const;
+    // 广播跨工程存活会话变化（emit foreignAgentSessionsRunning）
+    void notifyForeignRunningSessions();
     // 查会话桥（无返回 nullptr）
     DAAgentBridge* bridgeForSession(const QString& sessionId) const;
-    // 会话运行态（供 UI 角标）："starting" / "running" / "waiting_input" / "error" / ""（空闲）
-    QString sessionRuntimeState(const QString& sessionId) const;
+    // 重断言活跃会话 UI 运行态（switchSession step4 / newSession 共用，问题14）
+    void reassertActiveSessionState();
     // 遍历全部存活桥（会话桥 + 预热桥），fn 内不得增删桥
     void forEachLiveBridge(const std::function<void(DAAgentBridge*)>& fn);
 

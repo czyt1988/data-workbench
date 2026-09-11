@@ -1,28 +1,36 @@
 #!/usr/bin/env python3
-"""Exponential-backoff retry wrapper for LLM API calls.
+"""Linear-backoff retry wrapper for LLM API calls.
 
-Pure standard-library implementation (asyncio + random). Does **not** import
+Pure standard-library implementation (asyncio). Does **not** import
 ``tenacity`` or ``backoff``. Does **not** import ``AgentStoppedError`` from
 ``agent_runner`` (would create a circular import); instead defines
 ``RetryAbortedError`` for the case where the user stops the agent during
 backoff sleep.
+
+Backoff policy (user-configurable via Settings → Agent, persisted in
+agent-config.json llm group, pushed down as flat config keys):
+
+* ``max_retries`` (m)             — retry budget after the first attempt.
+* ``retry_interval_sec`` (n)      — wait before the first retry.
+* ``retry_interval_increment_sec`` (p) — extra wait added after each failure.
+
+Delay for attempt k (1-indexed) = ``n + (k - 1) * p`` seconds; with the
+defaults n=5, m=5, p=1 the waits are 5, 6, 7, 8, 9 s. A server-provided
+``Retry-After`` header always takes precedence over the computed delay.
 """
 
 import asyncio
 import logging
-import random
 from typing import Any, Callable
 
 from error_classifier import classify_error, extract_retry_after_ms, ErrorClassification
 
 logger = logging.getLogger(__name__)
 
-# --- hardcoded constants (D8 decision) ------------------------------------
-RETRY_BASE_DELAY_MS = 1000
-RETRY_MAX_DELAY_MS = 30000
-RETRY_BACKOFF_FACTOR = 2.0
-RETRY_JITTER_RATIO = 0.25
-DEFAULT_MAX_RETRIES = 7
+# --- defaults (overridable per-run via config keys, see module docstring) ----
+DEFAULT_MAX_RETRIES = 5
+DEFAULT_RETRY_INTERVAL_SEC = 5
+DEFAULT_RETRY_INCREMENT_SEC = 1
 
 
 class RetryAbortedError(Exception):
@@ -30,27 +38,21 @@ class RetryAbortedError(Exception):
     pass
 
 
-def compute_backoff_delay(
+def compute_retry_delay_sec(
     attempt: int,
-    base_delay: float = RETRY_BASE_DELAY_MS,
-    max_delay: float = RETRY_MAX_DELAY_MS,
-    factor: float = RETRY_BACKOFF_FACTOR,
-    jitter: float = RETRY_JITTER_RATIO,
+    interval_sec: float = DEFAULT_RETRY_INTERVAL_SEC,
+    increment_sec: float = DEFAULT_RETRY_INCREMENT_SEC,
 ) -> float:
-    """Compute the backoff delay for *attempt* (1-indexed).
+    """Compute the pre-retry wait for *attempt* (1-indexed) in **seconds**.
 
-    Formula::
+    Linear formula::
 
-        delay = min(base_delay * factor ** (attempt - 1), max_delay)
-        delay *= (1 + random.uniform(-jitter, jitter))   # symmetric jitter
+        delay = interval_sec + (attempt - 1) * increment_sec
 
-    Returns delay in **milliseconds** (float). Callers convert to seconds
-    via ``delay_ms / 1000`` when passing to :func:`sleep_with_abort`.
+    No jitter: the schedule is deterministic so the UI retry progress bar
+    (``retrying`` protocol message) shows exactly the wait the user configured.
     """
-    delay = min(base_delay * factor ** (attempt - 1), max_delay)
-    # Symmetric jitter: interval [delay*(1-jitter), delay*(1+jitter)]
-    delay *= (1 + random.uniform(-jitter, jitter))
-    return delay
+    return max(0.0, interval_sec + (attempt - 1) * increment_sec)
 
 
 async def sleep_with_abort(
@@ -82,11 +84,13 @@ async def retry_with_backoff(
     func: Callable[..., Any],
     *,
     max_retries: int = DEFAULT_MAX_RETRIES,
+    retry_interval_sec: float = DEFAULT_RETRY_INTERVAL_SEC,
+    retry_increment_sec: float = DEFAULT_RETRY_INCREMENT_SEC,
     on_retry: Callable[[int, int, float, ErrorClassification], Any] | None = None,
     stop_event: asyncio.Event | None = None,
     retryable_check: Callable[[Exception], bool] | None = None,
 ) -> Any:
-    """Call *func* with exponential-backoff retry.
+    """Call *func* with linear-backoff retry.
 
     Parameters
     ----------
@@ -94,7 +98,12 @@ async def retry_with_backoff(
         Zero-argument async callable. The caller is responsible for closing
         over any arguments (messages, LLM instance, etc.).
     max_retries
-        Maximum number of retries after the first attempt.
+        Maximum number of retries after the first attempt (m).
+    retry_interval_sec
+        Wait in seconds before the first retry (n).
+    retry_increment_sec
+        Extra seconds added to the wait after each failed attempt (p);
+        attempt k waits ``n + (k - 1) * p`` seconds.
     on_retry
         Optional async callback invoked before each retry's backoff sleep::
 
@@ -115,7 +124,10 @@ async def retry_with_backoff(
 
     Behaviour
     ---------
-    * Non-retryable errors are re-raised immediately.
+    * Non-retryable errors are re-raised immediately. Note that since the
+      "retry all server errors" policy, this covers only auth/quota errors,
+      context overflow (recovered via compaction in ``agent_node`` instead),
+      user cancels and purely local exceptions.
     * If ``retryable_check`` returns ``False`` for a retryable-classified
       error, it is re-raised immediately.
     * After ``max_retries`` retries are exhausted, the original exception is
@@ -146,7 +158,9 @@ async def retry_with_backoff(
             # Compute delay: server-provided Retry-After takes precedence
             delay_ms = extract_retry_after_ms(e)
             if delay_ms is None:
-                delay_ms = compute_backoff_delay(attempt)
+                delay_ms = compute_retry_delay_sec(
+                    attempt, retry_interval_sec, retry_increment_sec
+                ) * 1000
 
             # Notify caller before sleeping
             if on_retry is not None:

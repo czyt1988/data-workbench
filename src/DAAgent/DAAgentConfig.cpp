@@ -161,6 +161,8 @@ void DAAgentLLMConfig::mergeFrom(const DAAgentLLMConfig& other)
     if (other.mContextWindow) mContextWindow = other.mContextWindow;
     if (other.mMaxOutputTokens) mMaxOutputTokens = other.mMaxOutputTokens;
     if (other.mMaxRetries) mMaxRetries = other.mMaxRetries;
+    if (other.mRetryIntervalSec) mRetryIntervalSec = other.mRetryIntervalSec;
+    if (other.mRetryIntervalIncrementSec) mRetryIntervalIncrementSec = other.mRetryIntervalIncrementSec;
     if (other.mRequestTimeoutSec) mRequestTimeoutSec = other.mRequestTimeoutSec;
     if (other.mReadyTimeoutSec) mReadyTimeoutSec = other.mReadyTimeoutSec;
     if (other.mStopTimeoutSec) mStopTimeoutSec = other.mStopTimeoutSec;
@@ -187,6 +189,7 @@ void DAAgentLLMConfig::mergeFrom(const DAAgentLLMConfig& other)
 bool DAAgentLLMConfig::isEmpty() const
 {
     return !mBaseUrl && !mModel && !mApiKey && !mContextWindow && !mMaxOutputTokens && !mMaxRetries
+           && !mRetryIntervalSec && !mRetryIntervalIncrementSec
            && !mRequestTimeoutSec && !mReadyTimeoutSec && !mStopTimeoutSec && !mInactivityTimeoutSec
            && !mMaxSubprocessRestarts && !mRecursionLimit && !mAutoPrestart && !mCompactionThreshold
            && !mMaxRecentMessages && !mToolResultMaxChars && !mToolResultPreviewChars && !mMaxSessions
@@ -212,7 +215,7 @@ public:
     // syncActiveConnection 重算派生连接（v2 起派生 flat 键不持久化）
     void normalizeAfterLoad();
 
-    DAAgentLLMConfig mLlm;                     ///< LLM/运行参数（23 个稀疏字段）
+    DAAgentLLMConfig mLlm;                     ///< LLM/运行参数（25 个稀疏字段）
     QList< DAAgentProvider > mProviders;       ///< 供应商列表（内存态明文 api_key）
     bool mProvidersSet = false;                ///< providers 是否显式配置过（区分"未配置"与"配置为空"）
     QString mActiveProvider;                   ///< 激活供应商名（空=未配置）
@@ -242,7 +245,8 @@ void DAAgentConfig::PrivateData::applyJson(const QJsonObject& root)
 {
     // ---- llm 分组 ----
     // v2 起 llm 分组仅持久化 active_provider/active_model/max_retries/
-    // request_timeout_sec/providers；下列 flat 派生键（base_url/api_key/model/
+    // retry_interval_sec/retry_interval_increment_sec/request_timeout_sec/
+    // providers；下列 flat 派生键（base_url/api_key/model/
     // context_window/max_output_tokens）仅作 v1/flat-only 老配置的兼容读取
     //（normalizeAfterLoad 中合成 Default 供应商的数据源），随后被重算覆盖
     const QJsonObject llmG = root.value(QLatin1String(kGroupLlm)).toObject();
@@ -267,7 +271,11 @@ void DAAgentConfig::PrivateData::applyJson(const QJsonObject& root)
     if (llmG.contains("max_output_tokens"))
         mLlm.setMaxOutputTokens(llmG.value("max_output_tokens").toInt(131072));
     if (llmG.contains("max_retries"))
-        mLlm.setMaxRetries(llmG.value("max_retries").toInt(7));
+        mLlm.setMaxRetries(llmG.value("max_retries").toInt(5));
+    if (llmG.contains("retry_interval_sec"))
+        mLlm.setRetryIntervalSec(llmG.value("retry_interval_sec").toInt(5));
+    if (llmG.contains("retry_interval_increment_sec"))
+        mLlm.setRetryIntervalIncrementSec(llmG.value("retry_interval_increment_sec").toInt(1));
     if (llmG.contains("request_timeout_sec"))
         mLlm.setRequestTimeoutSec(llmG.value("request_timeout_sec").toInt(120));
 
@@ -362,7 +370,7 @@ void DAAgentConfig::PrivateData::applyIni(const QString& iniPath)
     if (s.contains(p + "max_output_tokens"))
         mLlm.setMaxOutputTokens(s.value(p + "max_output_tokens", 131072).toInt());
     if (s.contains(p + "llm_max_retries"))
-        mLlm.setMaxRetries(s.value(p + "llm_max_retries", 7).toInt());
+        mLlm.setMaxRetries(s.value(p + "llm_max_retries", 5).toInt());
     if (s.contains(p + "llm_request_timeout_sec"))
         mLlm.setRequestTimeoutSec(s.value(p + "llm_request_timeout_sec", 120).toInt());
     // ---- execution ----
@@ -396,9 +404,9 @@ void DAAgentConfig::PrivateData::applyIni(const QString& iniPath)
     if (s.contains(p + "subagent_recursion_limit"))
         mLlm.setSubagentRecursionLimit(s.value(p + "subagent_recursion_limit", 60).toInt());
     if (s.contains(p + "subagent_max_concurrency"))
-        mLlm.setSubagentMaxConcurrency(s.value(p + "subagent_max_concurrency", 2).toInt());
+        mLlm.setSubagentMaxConcurrency(s.value(p + "subagent_max_concurrency", 1).toInt());
     if (s.contains(p + "subagent_batch_limit"))
-        mLlm.setSubagentBatchLimit(s.value(p + "subagent_batch_limit", 4).toInt());
+        mLlm.setSubagentBatchLimit(s.value(p + "subagent_batch_limit", 2).toInt());
     // ---- permission ----
     if (s.contains(p + "permission_mode"))
         mPermissionMode = s.value(p + "permission_mode").toString();
@@ -578,7 +586,8 @@ bool DAAgentConfig::load()
  * @brief 稀疏原子写 agent-config.json（tmp + rename，镜像 PermissionManager::save）
  *
  * 只序列化显式设置过的字段。v2 格式：llm 分组仅持久化 active_provider/
- * active_model/max_retries/request_timeout_sec/providers，派生连接键（base_url/
+ * active_model/max_retries/retry_interval_sec/retry_interval_increment_sec/
+ * request_timeout_sec/providers，派生连接键（base_url/
  * api_key/model/context_window/max_output_tokens）不落盘——它们由
  * load()/syncActiveConnection() 从激活供应商重算，providers 为唯一事实来源。
  * api_key 于此处加密（内存态明文 → base64）。
@@ -600,6 +609,10 @@ bool DAAgentConfig::save() const
         llmG["active_model"] = c.model();
     if (c.maxRetriesSet())
         llmG["max_retries"] = c.maxRetries();
+    if (c.retryIntervalSecSet())
+        llmG["retry_interval_sec"] = c.retryIntervalSec();
+    if (c.retryIntervalIncrementSecSet())
+        llmG["retry_interval_increment_sec"] = c.retryIntervalIncrementSec();
     if (c.requestTimeoutSecSet())
         llmG["request_timeout_sec"] = c.requestTimeoutSec();
     if (!llmG.isEmpty())
@@ -1081,6 +1094,8 @@ QJsonObject DAAgentConfig::toRunnerConfigJson() const
     config["max_sessions"]              = c.maxSessions();
     config["session_retention_days"]    = c.sessionRetentionDays();
     config["max_retries"]              = c.maxRetries();
+    config["retry_interval_sec"]       = c.retryIntervalSec();
+    config["retry_interval_increment_sec"] = c.retryIntervalIncrementSec();
     config["request_timeout_sec"]      = c.requestTimeoutSec();
     config["inactivity_timeout_sec"]   = c.inactivityTimeoutSec();
     config["max_subprocess_restarts"]  = c.maxSubprocessRestarts();

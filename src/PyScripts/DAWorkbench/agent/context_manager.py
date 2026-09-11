@@ -446,9 +446,19 @@ class ContextCompactor:
         while head_end > 1 and self._token_estimator.count_messages_tokens(messages[:head_end]) > self.HEAD_TOKEN_BUDGET:
             head_end -= 1
 
-        # 确保不以 ToolMessage 结尾（避免配对断裂）
-        while head_end > 0 and messages[head_end - 1].type == "tool":
-            head_end -= 1
+        # 确保 head 以"完整轮次"结尾：回退尾部 ToolMessage **以及**带 tool_calls
+        # 的 AIMessage。只剥 ToolMessage 会露出其配对 tool_calls 落在 middle 的
+        # AIMessage——head+summary 序列违反 API 配对约束（assistant 的 tool_calls
+        # 必须后随对应 tool 消息），下次请求直接 400。
+        while head_end > 0:
+            last = messages[head_end - 1]
+            if last.type == "tool":
+                head_end -= 1
+                continue
+            if last.type == "ai" and getattr(last, "tool_calls", None):
+                head_end -= 1
+                continue
+            break
 
         return max(head_end, 0)
 
@@ -548,6 +558,10 @@ def is_context_overflow_error(exc: Exception) -> bool:
     """检测异常是否为上下文窗口超限。
 
     覆盖 OpenAI BadRequestError 和 litellm ContextWindowExceededError。
+    关键词表必须与 error_classifier._CONTEXT_OVERFLOW_KEYWORDS 保持同步。
+    注意：禁止加入 litellm 的通用包装词（如 "request is invalid"）——它出现在
+    所有上游 400 的外层文案中，会把悬空 tool_calls 等无关的 BadRequestError
+    误判为溢出；真实溢出消息均含下列特异性短语。
     """
     exc_str = str(exc).lower()
     keywords = [
@@ -556,6 +570,5 @@ def is_context_overflow_error(exc: Exception) -> bool:
         "contextwindowexceedederror",
         "context window",
         "too many tokens",
-        "request is invalid",  # litellm 包装的消息
     ]
     return any(kw in exc_str for kw in keywords)

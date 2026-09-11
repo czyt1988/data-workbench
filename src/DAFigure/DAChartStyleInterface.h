@@ -37,6 +37,9 @@ public:
     virtual void setAxisColor(int axisId, const QColor& color) = 0;
     virtual QColor getAxisColor(int axisId) const              = 0;
 
+    // 坐标轴可见性（DAChartWidget 覆盖 QwtPlot::setAxisVisible 的通知版本，触发 AxisVisibilityChanged）
+    virtual void setAxisVisible(int axisId, bool on = true) = 0;
+
     // ==================== 网格样式 ====================
     virtual void enableGrid(bool enable = true) = 0;
     virtual bool isGridEnabled() const          = 0;

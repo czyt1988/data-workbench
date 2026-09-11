@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Session error: chat bubble (gray outline + white interior) with a danger-red
+     badge at top-right (error state). The exclamation mark is drawn as paths,
+     no <text> element.
+     Flat design, palette-only colors, fill-only (no stroke). -->
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px"
+     width="200px" height="200px" viewBox="0 0 200 200">
+    <!-- Bubble outline (with tail at bottom-left), primary gray -->
+    <path fill="#727272" d="M36,20 H144 A16,16 0 0 1 160,36 V124 A16,16 0 0 1 144,140 H70 L50,175 L40,140 H36 A16,16 0 0 1 20,124 V36 A16,16 0 0 1 36,20 Z"/>
+    <!-- Bubble interior (white), inset 5px -->
+    <path fill="#FFFFFF" d="M41,25 H139 A11,11 0 0 1 150,36 V119 A11,11 0 0 1 139,130 H68 L52,168 L47,130 H41 A11,11 0 0 1 30,119 V36 A11,11 0 0 1 41,25 Z"/>
+    <!-- Three activity dots, light gray -->
+    <circle cx="60" cy="78" r="9" fill="#B2B2B2"/>
+    <circle cx="90" cy="78" r="9" fill="#B2B2B2"/>
+    <circle cx="120" cy="78" r="9" fill="#B2B2B2"/>
+    <!-- Status badge (top-right): white ring + danger red dot -->
+    <circle cx="150" cy="42" r="30" fill="#FFFFFF"/>
+    <circle cx="150" cy="42" r="24" fill="#CE6043"/>
+    <!-- Exclamation mark (bar + dot), white on red -->
+    <rect x="147" y="28" width="6" height="16" rx="2" fill="#FFFFFF"/>
+    <rect x="147" y="48" width="6" height="6" rx="2" fill="#FFFFFF"/>
+</svg>

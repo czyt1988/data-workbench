@@ -17,6 +17,7 @@
 #include <QItemSelectionModel>
 #include <QAbstractItemModel>
 #include <QClipboard>
+#include <QUrl>
 // qwt
 #include "qwt_figure.h"
 #include "qwt_plot_series_data_picker.h"
@@ -56,6 +57,7 @@
 #include "DASettingContainerWidget.h"
 #include "DARecentFilesManager.h"
 #include "Chart/DAChartSettingWidget.h"
+#include "Chart/DADataLinkTableWidget.h"
 #include "DAColorTheme.h"
 #include "DAGui/ChartSetting/DAFigureWidgetSettingPanel.h"
 #include "DAGui/Chart3DSetting/DAChart3DSettingWidget.h"
@@ -110,6 +112,8 @@
 #include "DAAgentModule.h"
 #include "DAAgentInterface.h"        // PMF connect 到接口信号/方法需完整类型
 #include "DAAgentDockWidget.h"       // DAAppDockingArea 仅前向声明；PMF connect 需完整类型（plan-02）
+#include "DAAgentLinkDispatcher.h"   // Agent 本地跳转链接分发（da-<kind>: 协议注册表）
+#include "DADataManagerInterface.h"  // da-data: 链接按名字/id 查找数据集
 //
 #include "SettingPages/DAAppConfig.h"
 #include "DAAppLayoutManager.h"
@@ -257,14 +261,25 @@ void DAAppController::initialize()
     // Agent 信号链：DAGui(Dock) 与 DAAgent 互不依赖，由 APP 层 connect（决策 D3b）。
     // 接口信号 → Dock 槽（13 条）—— DAAgentModule 不再持有 Dock，亦不再在 connectSignals
     // 中连 Bridge→Dock / this→Dock，唯一渲染路径经接口信号。
+    // session-tabs：会话级事件信号首参为 sessionId，Dock 宿主按会话路由到对应视图
+    //（后台会话视图实时渲染）。
     auto* agent = mCore->getAgentInterface();
     auto* dock  = mDock->getAgentDockWidget();
     if (agent && dock) {
+        // 接线约定（审计 L16 文档化）：凡 Dock 设有槽的接口信号均已接线；
+        // agentDone 与 agentTurnPossiblyIncomplete 为**有意不接**——前者由
+        // agentBusy(false) 统一驱动 UI 恢复（done 只覆盖正常完成路径），
+        // 后者的用户提醒由 Module 同刻发射的 systemMessage 承载。详见
+        // DAAgentInterface.h 两个信号的注释
         connect(agent, &DAAgentInterface::agentToken, dock, &DAAgentDockWidget::onAgentToken);
         connect(agent, &DAAgentInterface::agentMessageComplete, dock, &DAAgentDockWidget::onAgentMessageComplete);
         connect(agent, &DAAgentInterface::agentToolCall, dock, &DAAgentDockWidget::onAgentToolCall);
+        // 工具排队状态（决策点 2 ③）：工具卡"排队中/运行中"标识
+        connect(agent, &DAAgentInterface::agentToolQueued, dock, &DAAgentDockWidget::onAgentToolQueued);
         connect(agent, &DAAgentInterface::agentToolResult, dock, &DAAgentDockWidget::onAgentToolResult);
         connect(agent, &DAAgentInterface::agentQuestion, dock, &DAAgentDockWidget::onAgentQuestion);
+        // 挂起问题卡作废（审计问题 17，镜像审批 dismissed 契约）：撤未回答问题卡
+        connect(agent, &DAAgentInterface::agentQuestionDismissed, dock, &DAAgentDockWidget::onQuestionDismissed);
         connect(agent, &DAAgentInterface::agentError, dock, &DAAgentDockWidget::onAgentError);
         connect(agent, &DAAgentInterface::agentRetrying, dock, &DAAgentDockWidget::onAgentRetrying);
         connect(agent, &DAAgentInterface::agentReady, dock, &DAAgentDockWidget::onAgentReady);
@@ -277,6 +292,8 @@ void DAAppController::initialize()
         connect(agent, &DAAgentInterface::sessionCreated, dock, &DAAgentDockWidget::onSessionCreated);
         connect(agent, &DAAgentInterface::sessionCleared, dock, &DAAgentDockWidget::onSessionCleared);
         connect(agent, &DAAgentInterface::systemMessage, dock, &DAAgentDockWidget::onSystemMessage);
+        // 决策点 5 方案 c（审计问题 18）：跨工程存活会话 → 提示条 + 全部工程视图
+        connect(agent, &DAAgentInterface::foreignAgentSessionsRunning, dock, &DAAgentDockWidget::onForeignAgentSessionsRunning);
         // 供应商/多模型选择：接口信号 → Dock 槽（2 条），Dock 信号 → 接口方法（1 条）
         // availableModelsChanged 载荷为 DAAgentModelRef 结构体列表（DAGui 不依赖 DAAgent，
         // 经 APP 桥接层转换为 QVariantMap{provider,model,context_window,max_output_tokens}）
@@ -312,21 +329,27 @@ void DAAppController::initialize()
                         agent->setPermissionMode(QStringLiteral("auto"));
                     }
                 });
-        // Dock 信号 → 接口方法（7 条；均为信号→方法 PMF 连接，emit 源信号即调用方法体，
-        // 含各自持久化/启动逻辑，无需 lambda。agentStopRequested 暂无对接，略）。
-        // 注意 sessionCreateRequested 连 &DAAgentInterface::newSession（非 createSession）：
-        // newSession emit sessionCreated → onSessionCreated → clearChat；createSession 不 emit
-        // sessionCreated，连错会导致点"+"后聊天区不清空。
+        // Dock 信号 → 接口方法（均为信号→方法 PMF 连接，emit 源信号即调用方法体，
+        // 含各自持久化/启动逻辑，无需 lambda）。
+        // session-tabs：「+」走 Dock 宿主的 unbound 视图懒创建路径（首条消息才落盘
+        // 建会话），不再连接 newSession；发消息/回答前宿主已"交互即激活"确保
+        // 来源视图会话为模块当前会话。
         connect(dock, &DAAgentDockWidget::sendMessageRequested, agent, &DAAgentInterface::sendMessage);
         connect(dock, &DAAgentDockWidget::stopRequested, agent, &DAAgentInterface::stop);
         connect(dock, &DAAgentDockWidget::userAnswerSelected, agent, &DAAgentInterface::sendUserAnswer);
         connect(dock, &DAAgentDockWidget::sessionSwitchRequested, agent, &DAAgentInterface::switchSession);
         connect(dock, &DAAgentDockWidget::sessionDeleteRequested, agent, &DAAgentInterface::deleteSession);
         connect(dock, &DAAgentDockWidget::sessionRenameRequested, agent, &DAAgentInterface::renameSession);
-        connect(dock, &DAAgentDockWidget::sessionCreateRequested, agent, &DAAgentInterface::newSession);
-        // Agent 绘图引用超链接：da-figure: 协议链接点击 → raise 绘图区并定位 figure
-        connect(dock, &DAAgentDockWidget::figureLinkRequested, this, &DAAppController::onFigureLinkRequested);
+        // session-tabs 新增桥接：视图生命周期 / unbound 激活 / 按会话停止
+        //（会话管理对话框/标签右键"停止"亦走 stopSessionRequested——审计 L14）
+        connect(dock, &DAAgentDockWidget::sessionViewAttachedChanged, agent, &DAAgentInterface::setSessionViewAttached);
+        connect(dock, &DAAgentDockWidget::currentSessionClearedRequested, agent, &DAAgentInterface::clearCurrentSession);
+        connect(dock, &DAAgentDockWidget::stopSessionRequested, agent, &DAAgentInterface::stopSession);
+        // Agent 本地跳转超链接：da-<kind>: 协议链接点击 → 分发器按协议处理
+        connect(dock, &DAAgentDockWidget::linkActivated, this, &DAAppController::onLinkActivated);
     }
+    // Agent 本地跳转链接处理器注册（da-figure:/da-data: 等协议）
+    setupAgentLinkHandlers();
     initConnection();
     initScripts();
     initPyWorkflowConnections();
@@ -430,6 +453,8 @@ void DAAppController::initConnection()
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartZoomOut, onActionChartZoomOutTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartZoomAll, onActionChartZoomAllTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnablePan, onActionChartEnablePanTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartDisableZoomX, onActionChartDisableZoomXTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartDisableZoomY, onActionChartDisableZoomYTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnablePickerCross, onActionChartEnablePickerCrossTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnablePickerY, onActionChartEnablePickerYTriggered);
     connect(mActions->actionGroupChartPickerTextRegion,
@@ -610,6 +635,12 @@ void DAAppController::initConnection()
     DAChartOperateWidget* cow = mDock->getChartOperateWidget();
     connect(cow, &DAChartOperateWidget::figureCreated, this, &DAAppController::onFigureCreated);
     connect(cow, &DAChartOperateWidget::currentFigureChanged, this, &DAAppController::onCurrentFigureChanged);
+    // 工程加载图表恢复完成 -> 数据联动表按探针重建（纯视图架构：探针已由图表序列化恢复）
+    connect(cow, &DAChartOperateWidget::figureCreated, this, [this](DAFigureWidget* fig) {
+        if (DADataLinkTableWidget* dlt = mDock->getDataLinkTableWidget()) {
+            dlt->refreshFigure(fig);
+        }
+    });
     // 绘图项创建完成时提升绘图 dock，让用户能看到新绘图
     if (DAAppChartOperateWidget* appCow = qobject_cast< DAAppChartOperateWidget* >(cow)) {
         connect(appCow, &DAAppChartOperateWidget::plotItemCreated, this, &DAAppController::onPlotItemCreated);
@@ -1084,7 +1115,12 @@ void DAAppController::onFigureElementDbClicked(const DAFigureElementSelection& s
             }
         } else if (selection.isSelectedScaleWidget()) {
             bool isAxisVisible = selection.plot->isAxisVisible(selection.axisId);
-            selection.plot->setAxisVisible(selection.axisId, !isAxisVisible);
+            // 优先走 DAChartWidget::setAxisVisible 以触发 AxisVisibilityChanged 通知（联动探针徽章重算）
+            if (DAChartWidget* dacw = qobject_cast< DAChartWidget* >(selection.plot)) {
+                dacw->setAxisVisible(selection.axisId, !isAxisVisible);
+            } else {
+                selection.plot->setAxisVisible(selection.axisId, !isAxisVisible);
+            }
             // 对于设置窗口要进行更新
             if (setting) {
                 if (DAChartSettingWidget* chartSetting = setting->getChartSettingWidget()) {
@@ -2227,15 +2263,47 @@ void DAAppController::onActionAddFigureTriggered()
 }
 
 /**
- * @brief Agent 绘图引用超链接点击处理
+ * @brief 注册 Agent 聊天窗口本地跳转链接处理器
  *
- * 解析 da-figure: 协议超链接，定位目标 figure 并 raise 绘图区域。
+ * 所有 da-<kind>: 协议在此集中注册到 DAAgentLinkDispatcher，新增协议只需
+ * 在此追加一行 registerHandler + 对应 handle 函数，传输链路（chat.js 拦截、
+ * WebChannel、信号转发）无需改动。
+ */
+void DAAppController::setupAgentLinkHandlers()
+{
+    mAgentLinkDispatcher.registerHandler(QStringLiteral("da-figure"),
+                                         [ this ](const QString& href) { handleFigureLink(href); });
+    mAgentLinkDispatcher.registerHandler(QStringLiteral("da-data"),
+                                         [ this ](const QString& href) { handleDataLink(href); });
+}
+
+/**
+ * @brief Agent 本地跳转超链接点击处理（协议无关入口）
+ *
+ * 把 href 交给 DAAgentLinkDispatcher 按协议前缀分发到已注册的 handler；
+ * 未注册的协议提示用户（agent 输出了程序不支持的链接类型）。
+ * @param href 超链接 href，形如 da-figure:&lt;name&gt;、da-data:id=&lt;id&gt;
+ */
+void DAAppController::onLinkActivated(const QString& href)
+{
+    if (!mAgentLinkDispatcher.dispatch(href)) {
+        daWarning << tr("Unsupported link type: %1").arg(href);  // cn:不支持的链接类型：%1
+    }
+}
+
+/**
+ * @brief da-figure: 协议处理：定位目标 figure 并 raise 绘图区
+ *
  * 支持两种格式：
  *   - da-figure:&lt;figure_name&gt;  按 tab 文本定位（agent 默认，简单）
  *   - da-figure:id=&lt;uuid&gt;       按 figure_id 精确定位（抗重名/改名）
+ *
+ * href 来自浏览器 DOM：markdown-it 渲染时会对非 ASCII 与特殊字符做百分号
+ * 编码（中文/空格名 → %E5%9B%BE1，UUID 花括号 → %7B...%7D），且 figure_id
+ * 本身带 QUuid 花括号，这里先解码再归一化花括号，保证与原始名称可匹配。
  * @param href 超链接 href
  */
-void DAAppController::onFigureLinkRequested(const QString& href)
+void DAAppController::handleFigureLink(const QString& href)
 {
     static const QString kPrefix = QStringLiteral("da-figure:");
     if (!href.startsWith(kPrefix, Qt::CaseInsensitive)) {
@@ -2243,31 +2311,97 @@ void DAAppController::onFigureLinkRequested(const QString& href)
         return;
     }
     QString payload = href.mid(kPrefix.length());
+    // markdown-it normalizeLink 的百分号编码还原（中文/空格 figure 名等）
+    payload = QUrl::fromPercentEncoding(payload.toUtf8());
+    const bool isIdForm = payload.startsWith(QStringLiteral("id="), Qt::CaseInsensitive);
+    QString idOrName = isIdForm ? payload.mid(3) : payload;
+    // QUuid::toString() 生成带花括号的 {xxx}，agent 引用时可能写裸 UUID：
+    // id 形式双向归一化（先试裸形式再试花括号形式）
+    if (isIdForm && idOrName.startsWith('{') && idOrName.endsWith('}')) {
+        idOrName = idOrName.mid(1, idOrName.length() - 2);
+    }
     DAAppChartOperateWidget* chartopt = getChartOperateWidget();
     if (!chartopt) {
         qWarning() << "[FigureLink] chart operate widget is null";
         return;
     }
     DAFigureWidget* fig = nullptr;
-    if (payload.startsWith(QStringLiteral("id="), Qt::CaseInsensitive)) {
-        // 精确格式：da-figure:id=<uuid>
-        fig = chartopt->findFigure(payload.mid(3));
-    } else if (!payload.isEmpty()) {
+    if (isIdForm) {
+        // 精确格式：da-figure:id=<uuid>（先裸 UUID，再带花括号兜底）
+        fig = chartopt->findFigure(idOrName);
+        if (!fig && !idOrName.isEmpty()) {
+            fig = chartopt->findFigure(QStringLiteral("{%1}").arg(idOrName));
+        }
+    } else if (!idOrName.isEmpty()) {
         // 简单格式：da-figure:<figure_name>，按 tab 文本遍历匹配
         const QList< DAFigureWidget* > figs = chartopt->getFigureList();
         for (DAFigureWidget* f : figs) {
-            if (chartopt->getFigureName(f) == payload) {
+            if (chartopt->getFigureName(f) == idOrName) {
                 fig = f;
                 break;
             }
         }
     }
     if (!fig) {
-        daWarning << tr("Figure '%1' not found, it may have been closed or renamed").arg(payload);  // cn:未找到绘图"%1"，可能已关闭或被重命名
+        daWarning << tr("Figure '%1' not found, it may have been closed or renamed").arg(idOrName);  // cn:未找到绘图"%1"，可能已关闭或被重命名
         return;
     }
     mDock->raiseDockingArea(DAAppDockingArea::DockingAreaChartOperate);
     chartopt->setCurrentFigure(fig);
+}
+
+/**
+ * @brief da-data: 协议处理：定位目标数据集并打开对应数据表
+ *
+ * 支持两种格式：
+ *   - da-data:&lt;data_name&gt;    按数据集名定位（findData，大小写敏感）
+ *   - da-data:id=&lt;id&gt;         按数据集 id 精确定位（getDataById，抗重名/改名）
+ *
+ * 与 da-figure: 相同的百分号解码处理（中文/空格名）。
+ * @param href 超链接 href
+ */
+void DAAppController::handleDataLink(const QString& href)
+{
+    static const QString kPrefix = QStringLiteral("da-data:");
+    if (!href.startsWith(kPrefix, Qt::CaseInsensitive)) {
+        qWarning() << "[DataLink] invalid href:" << href;
+        return;
+    }
+    QString payload = href.mid(kPrefix.length());
+    payload = QUrl::fromPercentEncoding(payload.toUtf8());
+    const bool isIdForm = payload.startsWith(QStringLiteral("id="), Qt::CaseInsensitive);
+    const QString idOrName = isIdForm ? payload.mid(3) : payload;
+
+    DADataManagerInterface* di = mCore->getDataManagerInterface();
+    if (!di) {
+        qWarning() << "[DataLink] data manager interface is null";
+        return;
+    }
+    DAData data;
+    if (isIdForm) {
+        // 精确格式：da-data:id=<id>（DAAbstractData::IdType 为 uint64_t）
+        bool ok = false;
+        const DAData::IdType id = idOrName.toULongLong(&ok);
+        if (!ok) {
+            daWarning << tr("Invalid dataset link: '%1'").arg(href);  // cn:无效的数据集链接："%1"
+            return;
+        }
+        data = di->getDataById(id);
+    } else if (!idOrName.isEmpty()) {
+        // 简单格式：da-data:<data_name>，按名字查找
+        data = di->findData(idOrName);
+    }
+    if (data.isNull()) {
+        daWarning << tr("Dataset '%1' not found, it may have been removed").arg(idOrName);  // cn:未找到数据集"%1"，可能已被移除
+        return;
+    }
+    DADataOperateWidget* dataopt = getDataOperateWidget();
+    if (!dataopt) {
+        qWarning() << "[DataLink] data operate widget is null";
+        return;
+    }
+    mDock->raiseDockingArea(DAAppDockingArea::DockingAreaDataOperate);
+    dataopt->showData(data);
 }
 
 /**
@@ -2691,6 +2825,30 @@ void DAAppController::onActionChartEnablePanTriggered(bool on)
     if (res) {
         mRibbon->updateChartZoomPanAboutRibbon(getCurrentChart());
     }
+}
+
+/**
+ * @brief 禁止水平缩放
+ * @param on 选中时禁止x轴参与缩放
+ */
+void DAAppController::onActionChartDisableZoomXTriggered(bool on)
+{
+    applyToCharts([ on ](DAChartWidget* w) -> bool {
+        w->enableXAxisZoom(!on);
+        return true;
+    });
+}
+
+/**
+ * @brief 禁止垂直缩放
+ * @param on 选中时禁止y轴参与缩放
+ */
+void DAAppController::onActionChartDisableZoomYTriggered(bool on)
+{
+    applyToCharts([ on ](DAChartWidget* w) -> bool {
+        w->enableYAxisZoom(!on);
+        return true;
+    });
 }
 
 /**

@@ -153,42 +153,77 @@ public:
     /// 防止插件实例销毁后工具注册表留下悬空指针；返回注销的工具数量。
     /// 工具对象所有权仍归插件（parent 关系），本方法只移除宿主注册表指针，不 delete 工具
     virtual int unregisterToolsByProvider(QObject* provider) = 0;
-    /// 注销指定 provider 注册的全部系统提示词片段，返回注销数量。
+    /// 注销指定 provider（插件对象）注册的全部系统提示词片段，返回注销数量。
     /// 注意：已启动的 agent 子进程持有旧系统提示词，注销后对新会话/重启的子进程生效
     virtual int unregisterSystemPromptsByProvider(QObject* provider) = 0;
 
+    // ---- 会话视图管理（session-tabs 新增，破坏性接口变更，插件需重编译；
+    //      ⚠️ 追加在既有虚函数列表（含插件热插拔节）末尾，不改变任何既有虚函数的
+    //      vtable 槽位，已编译插件经接口指针调用既有方法不受影响） ----
+    /// 会话视图 attach/detach 通知：宿主（Agent 会话标签页）视图创建/销毁时调用，
+    /// 模块记录「有视图的会话」集合；attach 时向该视图重发挂起的 ask_user 问题卡
+    /// 与工具审批卡（缓存来自后台运行或视图关闭期间）
+    virtual void setSessionViewAttached(const QString& sessionId, bool attached) = 0;
+    /// 清除当前会话指针（unbound 视图激活时调用）：空闲会话桥优雅退役，
+    /// 忙碌桥留后台继续；不 emit 任何信号（区别于 switchSession）
+    virtual void clearCurrentSession() = 0;
+    /// 停止指定会话正在进行的生成（关闭运行中会话视图时"停止会话并关闭"路径；
+    /// 无参 stop() 仅停止当前会话）
+    virtual void stopSession(const QString& sessionId) = 0;
+
 Q_SIGNALS:
-    // ---- 以下 10 个由 DAAgentModule 从 DAAgentBridge 转发 ----
+    // ---- 以下会话级事件由 DAAgentModule 从 DAAgentBridge 转发（session-tabs：
+    //      信号首参为 sessionId，对所有运行中会话发射，宿主按会话路由到对应视图） ----
     /// agent 生成 token 时发射（流式渲染）
-    void agentToken(const QString& token);
+    void agentToken(const QString& sessionId, const QString& token);
     /// agent 消息生成完成时发射
-    void agentMessageComplete(const QString& fullText);
+    void agentMessageComplete(const QString& sessionId, const QString& fullText);
     /// agent 发起工具调用时发射
-    void agentToolCall(const QString& toolName, const QJsonObject& args);
+    void agentToolCall(const QString& sessionId, const QString& toolName, const QJsonObject& args);
+    /// 工具调用排队状态（决策点 2 ③，审计问题 12）：position>0=全局执行队列
+    /// 排队中第 N 位（UI 工具卡显示"排队中"，可解释的等待）；0=开始执行
+    ///（恢复"运行中"）。瞬态展示信息，不持久化（session-tabs：首参 sessionId，
+    /// 按会话广播）
+    void agentToolQueued(const QString& sessionId, const QString& toolName, int position);
     /// 工具执行结果返回时发射
-    void agentToolResult(const QString& toolName, const QJsonObject& result);
+    void agentToolResult(const QString& sessionId, const QString& toolName, const QJsonObject& result);
     /// agent 向用户提问时发射
-    void agentQuestion(const QString& text, const QStringList& options, bool multiSelect);
+    void agentQuestion(const QString& sessionId, const QString& text, const QStringList& options, bool multiSelect);
+    /// 挂起的 ask_user 问题卡作废时发射（子进程退出/崩溃/用户 Stop/桥退役），
+    /// UI 据此移除未回答的问题卡——镜像 agentToolApprovalDismissed 契约（审计
+    /// 问题 17）：不清则角标卡 waiting_input、死桥拒绝退役、切回重发幽灵卡、
+    /// 用户对幽灵卡作答落盘孤儿 tool_result（session-tabs：首参 sessionId，
+    /// 按会话广播）
+    void agentQuestionDismissed(const QString& sessionId);
     /// agent 发生错误时发射
-    void agentError(const QString& message, const QString& errorType = QString(), const QString& detail = QString());
-    /// agent 正在重试 LLM 调用时发射（Python 端指数退避期间每次重试发一次）
-    void agentRetrying(int attempt, int maxAttempts, int delayMs,
+    void agentError(const QString& sessionId, const QString& message, const QString& errorType = QString(),
+                    const QString& detail = QString());
+    /// agent 正在重试 LLM 调用时发射（Python 端线性退避期间每次重试发一次）
+    void agentRetrying(const QString& sessionId, int attempt, int maxAttempts, int delayMs,
                        const QString& errorType, const QString& errorMessage);
     /// agent 就绪时发射
-    void agentReady(const QString& model);
+    void agentReady(const QString& sessionId, const QString& model);
     /// agent 子进程开始启动时发射（预启动/懒启动/崩溃重启均触发），UI 进入"启动中"过渡态
-    void agentStarting();
+    void agentStarting(const QString& sessionId);
     /// agent 忙碌状态变化时发射
-    void agentBusy(bool busy);
-    /// agent 本轮处理完成时发射（生命周期事件，目前无 Dock 槽对接，纳入接口备扩展）
+    void agentBusy(const QString& sessionId, bool busy);
+    /// agent 本轮处理完成时发射（生命周期事件）。
+    /// 审计 L16 决定（文档化）：Dock **有意不消费**本信号——UI 恢复由
+    /// agentBusy(false) 统一驱动（Bridge 正常完成/错误/退出全路径都发
+    /// busy(false)，done 只在正常完成发射，接 done 会漏错误路径）；保留
+    /// 接口信号供 Module 内部退役守卫与外部扩展消费
     void agentDone();
-    /// 回合疑似未完成时发射（模型"话说一半就停"，UI 提示用户可继续）
+    /// 回合疑似未完成时发射（模型"话说一半就停"，UI 提示用户可继续）。
+    /// 审计 L16 决定（文档化）：Dock **有意不消费**本信号——用户提醒由
+    /// Module 同刻发射的 systemMessage（warning 提醒卡）承载，本信号保留
+    /// 作结构化事件供外部扩展（如自动化续发"继续"）消费
     void agentTurnPossiblyIncomplete(int toolRounds);
     /// agent 完成会话历史重建时发射
     void agentSessionLoaded(const QString& sessionId);
     // ---- 以下 5 个由 DAAgentModule 自身 emit（从 Module 的 Q_SIGNALS 上移） ----
     /// token 使用量更新（agentUsage lambda 内补 context_window 后 emit；switchSession 也会从持久化 usage 记录 emit）
-    void tokenUsageUpdated(int inputTokens, int outputTokens, int totalTokens, int contextWindow, const QString& source);
+    void tokenUsageUpdated(const QString& sessionId, int inputTokens, int outputTokens, int totalTokens,
+                           int contextWindow, const QString& source);
     /// 切换会话完成时发射，供 UI 重放历史
     void sessionSwitched(const QString& sessionId, const QVector<QJsonObject>& allRecords);
     /// 新会话创建时发射（仅 newSession 路径，触发 UI clearChat）
@@ -206,6 +241,13 @@ Q_SIGNALS:
     /// 系统消息（用户可见但不作为 LLM 对话内容），如 LLM 未配置提示
     /// level: "info" / "warning" / "error"
     void systemMessage(const QString& text, const QString& level);
+    /// 跨工程存活会话变化（决策点 5 方案 c，审计问题 18）：打开/新建工程不
+    /// 退役旧工程会话桥（不腰斩长任务），此信号报告绑定其它工程的存活桥
+    /// 会话——UI 显示提示条（"N 个上一工程的会话仍在后台运行"）并提供
+    /// 跨工程视图/一键停止。payload 每元素 QVariantMap{id,title,projectPath,
+    /// state}；空列表=无跨工程存活会话（隐藏提示条）。发射时机：工程路径
+    /// 变更/恢复会话/桥退役/桥进程退出/stopSession
+    void foreignAgentSessionsRunning(const QVariantList& sessions);
 
     // ---- 供应商与多模型管理信号 ----
     /// 可用模型列表变化（供应商变更/设置页 apply 后），Dock 据此填充下拉
@@ -214,12 +256,14 @@ Q_SIGNALS:
     /// 激活模型变化（Dock 选择 / 设置页 apply 触发），Dock 据此选中下拉项 + 刷新模型标签
     void activeModelChanged(const QString& provider, const QString& model);
 
-    // ---- 权限层信号（permission-layer P1，契约 1 一次性批处理） ----
+    // ---- 权限层信号（permission-layer P1，契约 1 一次性批处理；session-tabs：
+    //      审批信号加 sessionId 首参，按会话广播） ----
     /// 工具调用需要用户审批时发射（ask 决策）；args 含 _tier（分级）与
     /// _rememberable（是否渲染"本会话记住"，仅 file_write，A5）
-    void agentToolApprovalRequest(const QString& callId, const QString& toolName, const QJsonObject& args);
+    void agentToolApprovalRequest(const QString& sessionId, const QString& callId, const QString& toolName,
+                                  const QJsonObject& args);
     /// 审批卡作废（子进程退出/崩溃/切换会话清理），UI 据此撤卡
-    void agentToolApprovalDismissed(const QString& callId);
+    void agentToolApprovalDismissed(const QString& sessionId, const QString& callId);
     /// 权限模式变化（设置/热切换/启动推送），Dock 据此刷新模式选择器
     void permissionModeChanged(const QString& mode);
     /// 权限模式"显式设置"状态（启动推送）：true=用户曾显式写入模式（ini 有键），
@@ -230,7 +274,7 @@ Q_SIGNALS:
     // ---- 子 agent 信号（subagent-phase1） ----
     /// 子 agent 任务进度（subagent_progress 协议消息原样转发；载荷含
     /// call_id/task_id?/subagent?/state/message?/results?，见母文档 §7）
-    void agentSubagentProgress(const QJsonObject& progress);
+    void agentSubagentProgress(const QString& sessionId, const QJsonObject& progress);
     /// 子 agent 定义列表变化（加载/保存/删除/插件注入后），供管理 UI 刷新
     void subagentListChanged();
     /// 提示词库列表变化（保存/删除/插件注入内置 agent 后），供 Ribbon gallery 刷新

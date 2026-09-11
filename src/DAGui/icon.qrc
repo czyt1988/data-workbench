@@ -56,7 +56,20 @@
         <file>icon/data-picker-setting.svg</file>
         <file>icon/node.svg</file>
         <file>icon/session-new.svg</file>
+        <file>icon/session.svg</file>
+        <file>icon/session-running.svg</file>
+        <file>icon/session-waiting.svg</file>
+        <file>icon/session-error.svg</file>
         <file>icon/session-manager.svg</file>
+        <file>icon/rename-column.svg</file>
+        <file>icon/refresh.svg</file>
+        <file>icon/refresh-all.svg</file>
+        <file>icon/hide-column.svg</file>
+        <file>icon/show-column.svg</file>
+        <file>icon/hide-all-columns.svg</file>
+        <file>icon/show-all-columns.svg</file>
+        <file>icon/delete-column.svg</file>
+        <file>icon/delete-all-columns.svg</file>
     </qresource>
     <qresource prefix="/DAGui/MessageType">
         <file>icon/messageType/messageTypeDebug.svg</file>

@@ -44,6 +44,8 @@
 #include "Dialog/DAAgentManagerDialog.h"
 #include "DAAgentPrompt.h"
 #include "DAAgentPromptOps.h"
+// Agent 助手会话标签页宿主（session-tabs：新建会话/会话管理按钮入口）
+#include "Agent/DAAgentDockWidget.h"
 
 // api
 #include "DAAppUI.h"
@@ -721,6 +723,8 @@ void DAAppRibbonArea::buildContextCategoryChartEdit()
     mPannelChartSetting->addSmallWidget(mChartGridMinActionsButtonGroup);
     // pan
     mPannelChartSetting->addLargeAction(mActions->actionChartEnablePan);
+    mPannelChartSetting->addMediumAction(mActions->actionChartDisableZoomX);
+    mPannelChartSetting->addMediumAction(mActions->actionChartDisableZoomY);
     // 缩放
     mPannelChartSetting->addLargeAction(mActions->actionChartEnableZoom);
     mPannelChartSetting->addMediumAction(mActions->actionChartZoomIn);
@@ -778,9 +782,8 @@ void DAAppRibbonArea::buildContextCategoryChartEdit()
     mPannelChartAssistTool->addLargeAction(mActions->actionChartEditorAddArrowMarker);
     mPannelChartAssistTool->addMediumAction(mActions->actionChartEditorAddTextMarker);
     mPannelChartAssistTool->addSeparator();
-    // 数据探针（原死 action，从未上过 Ribbon）
-    mPannelChartAssistTool->addMediumAction(mActions->actionAddVerticalPlotProbeMarker);
-    mPannelChartAssistTool->addMediumAction(mActions->actionAddHorizontalPlotProbeMarker);
+    // 数据探针（多子图联动拾取+点击建探针+数据联动表）
+    mPannelChartAssistTool->addLargeAction(mActions->actionChartEditorDataProbe);
 }
 
 /**
@@ -934,6 +937,8 @@ void DAAppRibbonArea::updateChartZoomPanAboutRibbon(DAChartWidget* chart)
     }
     mActions->actionChartEnableZoom->setChecked(chart->isZoomEnabled());
     mActions->actionChartEnablePan->setChecked(chart->isPanEnabled());
+    mActions->actionChartDisableZoomX->setChecked(!chart->isXAxisZoomEnabled());
+    mActions->actionChartDisableZoomY->setChecked(!chart->isYAxisZoomEnabled());
 }
 
 /**
@@ -1097,10 +1102,22 @@ void DAAppRibbonArea::buildRibbonAgentCategory()
         tr("Run AI analysis with the selected agent prompt"));  // cn:使用当前选中的 agent 提示词执行 AI 分析
     mPanelAgent->addLargeAction(mActionRunAgent);
 
+    // 会话操作（session-tabs，large button）：与 Agent 助手标题栏「+/会话管理」同一入口
+    mActionAgentNewSession = new QAction(QIcon(":/DAGui/icon/session-new.svg"), tr("New Session"), this);  // cn:新建会话
+    mActionAgentNewSession->setToolTip(
+        tr("Open a new agent chat session"));  // cn:打开一个新的 Agent 会话标签页
+    mPanelAgent->addLargeAction(mActionAgentNewSession);
+    mActionAgentSessionManager = new QAction(QIcon(":/DAGui/icon/session-manager.svg"), tr("Session Manager"), this);  // cn:会话管理
+    mActionAgentSessionManager->setToolTip(
+        tr("Manage agent sessions: switch, rename, delete"));  // cn:管理 Agent 会话：切换、重命名、删除
+    mPanelAgent->addLargeAction(mActionAgentSessionManager);
+
     populateAgentGallery();
 
     connect(mActionAgentManage, &QAction::triggered, this, &DAAppRibbonArea::onActionAgentManage);
     connect(mActionRunAgent, &QAction::triggered, this, &DAAppRibbonArea::onActionRunAgent);
+    connect(mActionAgentNewSession, &QAction::triggered, this, &DAAppRibbonArea::onActionAgentNewSession);
+    connect(mActionAgentSessionManager, &QAction::triggered, this, &DAAppRibbonArea::onActionAgentSessionManager);
     // gallery 首次构建早于插件加载（createUi 先于 initPlugins），插件注入的内置
     // agent 依赖此信号兜底刷新（保存/删除/插件 registerBuiltinAgent 均触发）；
     // 保留当前选中项，与管理对话框关闭后的刷新行为一致
@@ -1222,4 +1239,38 @@ void DAAppRibbonArea::onActionRunAgent()
     }
     mActions->actionShowAgentArea->trigger();  // 确保 Agent dock 可见（ActionModeShow，不会 toggle 隐藏）
     agent->runAgent(mSelectedAgentTitle);
+}
+
+/**
+ * @brief 新建会话按钮：确保 Agent dock 可见后走宿主「+」统一入口
+ *
+ * 与 Agent 助手标题栏「+」按钮同一入口（requestNewSession：已有 unbound 视图
+ * 则 raise，否则创建懒建会话草稿区——首条消息发出后才落盘建会话）。
+ */
+void DAAppRibbonArea::onActionAgentNewSession()
+{
+    if (!mDockArea) {
+        return;
+    }
+    mActions->actionShowAgentArea->trigger();  // 确保 Agent dock 可见
+    if (DA::DAAgentDockWidget* dock = mDockArea->getAgentDockWidget()) {
+        dock->requestNewSession();
+    }
+}
+
+/**
+ * @brief 会话管理按钮：确保 Agent dock 可见后走宿主「会话管理」统一入口
+ *
+ * 与 Agent 助手标题栏「会话管理」按钮同一入口（requestShowSessionManager：
+ * 弹出 DADialogAgentSessionManager，操作经 Dock 信号链转发到接口层）。
+ */
+void DAAppRibbonArea::onActionAgentSessionManager()
+{
+    if (!mDockArea) {
+        return;
+    }
+    mActions->actionShowAgentArea->trigger();  // 确保 Agent dock 可见
+    if (DA::DAAgentDockWidget* dock = mDockArea->getAgentDockWidget()) {
+        dock->requestShowSessionManager();
+    }
 }

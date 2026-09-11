@@ -14,6 +14,7 @@
 #include "DATableDisplayFormat.h"
 #include "DAChart3DWidget.h"
 #include "qwt3d_plotitem.h"
+#include "DAAgentLinkDispatcher.h"
 // Qt
 class QComboBox;
 class QToolBar;
@@ -257,6 +258,10 @@ private Q_SLOTS:
     void onActionChartZoomAllTriggered();
     // 允许绘图拖动
     void onActionChartEnablePanTriggered(bool on);
+    // 禁止水平缩放
+    void onActionChartDisableZoomXTriggered(bool on);
+    // 禁止垂直缩放
+    void onActionChartDisableZoomYTriggered(bool on);
     // 允许绘图拾取
     void onActionChartEnablePickerCrossTriggered(bool on);
     // 允许绘图拾取Y
@@ -489,8 +494,8 @@ private Q_SLOTS:
     // 绘图元素选中，信号由DAChartManageWidget发出
     void onFigureElementClicked(const DAFigureElementSelection& selection);
     void onFigureElementDbClicked(const DAFigureElementSelection& selection);
-    // Agent 绘图引用超链接点击：da-figure: 协议链接 → 解析定位 → raise 绘图区
-    void onFigureLinkRequested(const QString& href);
+    // Agent 本地跳转超链接点击：da-<kind>: 协议链接 → DAAgentLinkDispatcher 按协议分发
+    void onLinkActivated(const QString& href);
 
 private:
     // 初始化信号槽
@@ -523,6 +528,12 @@ private:
     void activateUndoStackForWidget(DAAbstractOperateWidget* w);
     // 视图页-外观面板：填充主题下拉（10款完整枚举，与设置页一致）并同步当前值
     void setupRibbonThemeCombo();
+    // 注册 Agent 聊天窗口本地跳转链接处理器（da-figure:/da-data: 等协议，见 DAAgentLinkDispatcher）
+    void setupAgentLinkHandlers();
+    // da-figure: 协议处理：定位目标 figure 并 raise 绘图区（由 setupAgentLinkHandlers 注册）
+    void handleFigureLink(const QString& href);
+    // da-data: 协议处理：定位目标数据集并打开对应数据表（由 setupAgentLinkHandlers 注册）
+    void handleDataLink(const QString& href);
 
 private:
     AppMainWindow* mMainWindow { nullptr };
@@ -542,6 +553,7 @@ private:
     DAAppConfig* mConfig { nullptr };                                   ///< 设置类
     DADialogStatsChartGuide* mStatsChartGuideDlg { nullptr };  ///< 统计绘图引导对话框
     DADialogTableDisplayFormat* mDialogTableDisplayFormat { nullptr };  ///< 表格显示格式对话框（堆分配复用）
+    DAAgentLinkDispatcher mAgentLinkDispatcher;  ///< Agent 本地跳转链接分发器（da-<kind>: 协议注册表）
 };
 }
 

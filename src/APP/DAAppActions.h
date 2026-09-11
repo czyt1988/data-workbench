@@ -168,6 +168,8 @@ public:
     QAction* actionChartZoomOut;                ///< 绘图缩小
     QAction* actionChartZoomAll;                ///< 显示全部
     QAction* actionChartEnablePan;              ///< 绘图拖动
+    QAction* actionChartDisableZoomX;           ///< 禁止水平缩放
+    QAction* actionChartDisableZoomY;           ///< 禁止垂直缩放
     QActionGroup* actionGroupChartPickers;      ///< Chart Picker的actiongroup
     QAction* actionChartEnablePickerCross;      ///< 十字标记
     QAction* actionChartEnablePickerY;          ///< y拾取器
@@ -199,8 +201,7 @@ public:
     QAction* actionChartEditorAddArrowMarker;   ///< 添加箭头标记
     QAction* actionChartEditorAddTextMarker;    ///< 添加文本标注
     QActionGroup* actionGroupChartEditor;  ///< charteditor的action group，注意，这个actiongroup包含了actionChartEditorResizeSubChart
-    QAction* actionAddVerticalPlotProbeMarker;    ///< 添加垂直数据探针标记
-    QAction* actionAddHorizontalPlotProbeMarker;  ///< 添加水平数据探针标记
+    QAction* actionChartEditorDataProbe;  ///< 数据探针（多子图联动拾取+点击建探针+数据联动表）
     QAction* actionChartDataPickerSetting;       ///< 数据拾取设置
     //===================================================
     // 视图标签 View Category

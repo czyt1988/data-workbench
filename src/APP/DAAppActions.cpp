@@ -158,6 +158,10 @@ void DAAppActions::buildChartAction()
     actionChartZoomOut    = createAction(UiNames::Action::ChartZoomOut, ":/app/bright/Icon/zoomOut.svg");
     actionChartZoomAll    = createAction(UiNames::Action::ChartZoomAll, ":/app/bright/Icon/viewAll.svg");
     actionChartEnablePan  = createAction(UiNames::Action::ChartEnablePan, ":/app/bright/Icon/chart-pan.svg", true, false);
+    actionChartDisableZoomX =
+        createAction(UiNames::Action::ChartDisableZoomX, ":/app/bright/Icon/chart-zoom-lock-x.svg", true, false);
+    actionChartDisableZoomY =
+        createAction(UiNames::Action::ChartDisableZoomY, ":/app/bright/Icon/chart-zoom-lock-y.svg", true, false);
 
     actionGroupChartPickers = new QActionGroup(this);
     actionGroupChartPickers->setObjectName(QString::fromUtf8(UiNames::Action::GroupChartPickers));
@@ -236,10 +240,8 @@ void DAAppActions::buildChartAction()
         UiNames::Action::ChartEditorAddArrowMarker, ":/app/bright/Icon/arrow.svg", true, false, actionGroupChartEditor);
     actionChartEditorAddTextMarker = createAction(
         UiNames::Action::ChartEditorAddTextMarker, ":/app/bright/Icon/chart-text-marker.svg", true, false, actionGroupChartEditor);
-    actionAddHorizontalPlotProbeMarker = createAction(
-        UiNames::Action::AddHorizontalPlotProbeMarker, ":/app/bright/Icon/arrow.svg", true, false, actionGroupChartEditor);
-    actionAddVerticalPlotProbeMarker = createAction(
-        UiNames::Action::AddVerticalPlotProbeMarker, ":/app/bright/Icon/plot-probe.svg", true, false, actionGroupChartEditor);
+    actionChartEditorDataProbe = createAction(
+        UiNames::Action::ChartEditorDataProbe, ":/app/bright/Icon/plot-probe.svg", true, false, actionGroupChartEditor);
     actionChartDataPickerSetting   = createAction(UiNames::Action::ChartDataPickerSetting, ":/DAGui/icon/data-picker-setting.svg");
     actionChartEditorResizeSubChart->setData(static_cast< int >(DAFigureWidget::SubChartEditor));
     actionChartEditorPointerSelector->setData(static_cast< int >(DAFigureWidget::PointerSelector));
@@ -251,8 +253,7 @@ void DAAppActions::buildChartAction()
     actionChartEditorAddCrossMarker->setData(static_cast< int >(DAFigureWidget::CrossMarker));
     actionChartEditorAddArrowMarker->setData(static_cast< int >(DAFigureWidget::ArrowMarker));
     actionChartEditorAddTextMarker->setData(static_cast< int >(DAFigureWidget::TextMarker));
-    actionAddHorizontalPlotProbeMarker->setData(static_cast< int >(DAFigureWidget::VerticalDataProbe));
-    actionAddVerticalPlotProbeMarker->setData(static_cast< int >(DAFigureWidget::HorizontalDataProbe));
+    actionChartEditorDataProbe->setData(static_cast< int >(DAFigureWidget::DataProbeEditor));
 }
 
 void DAAppActions::buildViewAction()
@@ -527,6 +528,12 @@ void DAAppActions::retranslateUi()
     actionChartZoomAll->setToolTip(tr("Zoom to show all data in the chart"));               // cn:缩放以显示所有数据
     actionChartEnablePan->setText(tr("Pan"));                                               // cn:拖动
     actionChartEnablePan->setToolTip(tr("Enable or disable pan in the chart"));             // cn:启用或禁用图表中的拖动
+    actionChartDisableZoomX->setText(tr("Disable X Zoom"));                                 // cn:禁止水平缩放
+    actionChartDisableZoomX->setToolTip(
+        tr("Disable zoom on the X axis"));  // cn:禁止水平缩放，滚轮和放大/缩小按钮将仅作用于垂直方向
+    actionChartDisableZoomY->setText(tr("Disable Y Zoom"));                                 // cn:禁止垂直缩放
+    actionChartDisableZoomY->setToolTip(
+        tr("Disable zoom on the Y axis"));  // cn:禁止垂直缩放，滚轮和放大/缩小按钮将仅作用于水平方向
     actionChartEnablePickerCross->setText(tr("Cross"));                                     // cn:十字标记
     actionChartEnablePickerCross->setToolTip(tr("Enable or disable cross picker in the chart"));  // cn:启用或禁用图表中的十字标记
     actionChartEnablePickerY->setText(tr("Y Picker"));                                            // cn:y值拾取
@@ -578,10 +585,9 @@ void DAAppActions::retranslateUi()
     actionChartEditorAddArrowMarker->setToolTip(tr("Add an arrow marker to the chart"));   // cn:添加箭头标记
     actionChartEditorAddTextMarker->setText(tr("Add Text"));                               // cn:添加文本
     actionChartEditorAddTextMarker->setToolTip(tr("Add a text marker to the chart"));      // cn:添加文本标注
-    actionAddHorizontalPlotProbeMarker->setText(tr("Add Horizontal Probe"));               // cn:添加水平数据探针标记
-    actionAddHorizontalPlotProbeMarker->setToolTip(tr("Add a horizontal plot probe marker to the chart"));  // cn:水平数据探针
-    actionAddVerticalPlotProbeMarker->setText(tr("Add Vertical Probe"));  // cn:垂直数据探针
-    actionAddVerticalPlotProbeMarker->setToolTip(tr("Add a vertical plot probe marker to the chart"));  // cn:添加垂直数据探针标记
+    actionChartEditorDataProbe->setText(tr("Data Probe"));                                 // cn:数据探针
+    actionChartEditorDataProbe->setToolTip(
+        tr("Data probe: click to create probes on all charts, values are listed in the data link table"));  // cn:数据探针：点击在各子图上创建探针，数值汇总到数据联动表
     actionChartDataPickerSetting->setText(tr("Data Picker Setting"));                     // cn:数据拾取设置
     actionChartDataPickerSetting->setToolTip(tr("Configure data picker properties"));     // cn:配置数据拾取器属性
     //-----------------------------------------------------

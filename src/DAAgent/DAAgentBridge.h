@@ -17,12 +17,23 @@ namespace DA
 {
 class DAAbstractAgentTool;
 class DAAgentPermissionManager;
+class DAAgentToolExecutor;
 
 /**
  * @brief QProcess 桥接器：管理 agent 子进程的启停、stdin/stdout 读写、JSON Lines 协议解析
  *
  * 子进程通过 stdin/stdout 管道与主进程通信，每条消息一行 JSON（JSON Lines 协议）。
  * 工具调用在 C++ 主进程执行，结果通过 stdin 回传子进程。
+ *
+ * 崩溃恢复宿主契约（审计 L19）：异常退出后的自愈状态机（1s 延迟重启，
+ * restartCount ≤ maxRestarts）内置于 Bridge，但恢复能否实际进行取决于宿主
+ * 如何消费 processExited——Bridge 自身对"谁消费"无防御：
+ * - 会话桥宿主（Module attachBridge）：processExited 仅做记账（清权限记忆等），
+ *   不销毁桥对象 → 自愈按内置状态机进行，恢复链由 Module 的 agentReady
+ *   lambda 驱动（load_session → resendLastMessage）；
+ * - 预热桥宿主（Module prestartAgent）：processExited → deleteLater 销毁桥
+ *   对象 → 待执行的恢复定时器随对象析构取消（预热桥可弃，不自愈；下次
+ *   prestart/懒启动兜底）。
  */
 class DAAgent_API DAAgentBridge : public QObject
 {
@@ -44,13 +55,18 @@ public:
                     int stopTimeoutMs = 5000);
     // 停止 agent 子进程（阻塞，供析构/重启时调用）
     void stopAgent();
+    // 两阶段停止·第一阶段：写 stop + 关写通道（非阻塞）——多桥并行排空用
+    void beginStopAgent();
+    // 两阶段停止·第二阶段：等待退出 + kill 兜底（阻塞至多 stopTimeoutMs）
+    void awaitStopAgent();
     // 请求停止 agent 子进程（非阻塞，供用户主动终止时调用）
     void requestStop();
 
     // 发送用户消息到 agent 子进程
     void sendMessage(const QString& text);
-    // 发送工具执行结果回 agent 子进程
-    void sendToolResult(const QString& callId, const QJsonObject& result);
+    // 发送工具执行结果回 agent 子进程；返回是否写入成功（失败=进程已死/管道
+    // 已关，调用方据此不落盘孤儿结果，审计问题 12 决策 ⑤）
+    bool sendToolResult(const QString& callId, const QJsonObject& result);
     // 发送用户对问题的回答回 agent 子进程
     void sendUserAnswer(const QString& answer);
     // 下发历史会话消息让 agent 子进程重建 state（不重启子进程切换会话）
@@ -62,12 +78,32 @@ public:
     // 热更新子 agent 定义（不重建图、不动会话状态，Q17）：
     // 下发 update_subagents 消息，定义增删改后由 Module 调用；未运行时静默返回。
     void sendUpdateSubagents(const QJsonArray& subagents);
+    // 热更新工具规格（审计问题 19，镜像 sendUpdateSubagents）：下发 update_tools
+    // 消息（全量规格数组），插件热插拔后由 Module 广播；Python 侧替换
+    // tool_specs 并重绑 llm_with_tools；未运行时静默返回。
+    void sendUpdateTools(const QJsonArray& toolSpecs);
 
     // 设置 C++ 侧工具映射表，供工具调用时查找执行
     void setTools(const QMap<QString, DAAbstractAgentTool*>& tools);
 
     // 设置权限引擎（executeTool 前置门用；Module 持有，非拥有指针）
     void setPermissionManager(DAAgentPermissionManager* manager);
+
+    // 设置所属会话标识（Module attachBridge 注入；权限记忆按会话隔离的查询键，
+    // 决策点 1 方案 b。预热桥未接管时为空——decide 无记忆保守 Ask）
+    void setSessionId(const QString& sessionId);
+    // 所属会话 ID（可空）
+    QString sessionId() const;
+
+    // 设置全局工具执行队列（Module attachBridge 注入，非拥有；未注入时工具
+    // 退化为直执行——独立使用 Bridge 的场景/协议级测试，决策点 2 方案 c）
+    void setToolExecutor(DAAgentToolExecutor* executor);
+    // 用户/系统是否已请求停止（执行队列出队存活检查用，审计 12b/12c）
+    bool isStopRequested() const;
+    // 执行队列出队后的真实执行入口（DAAgentToolExecutor 泵调用；内含存活
+    // 守卫，等价 executeToolNow 但先检查进程状态）
+    void runQueuedTool(const QString& callId, const QString& toolName,
+                       const QJsonObject& args, const QString& subagentId);
 
     // 用户对审批卡的裁决（callId 配对 pending 审批；approved→执行，否则合成拒绝）
     void onToolApproval(const QString& callId, bool approved, bool rememberSession);
@@ -101,6 +137,16 @@ Q_SIGNALS:
      */
     void agentToolCall(const QString& toolName, const QJsonObject& args);
     /**
+     * @brief 工具调用排队状态（决策点 2 ③，审计问题 12：排队可见）
+     * @param toolName 工具名称
+     * @param position 全局执行队列位置（1-based，入队时上报）；
+     *                 0 = 已开始执行（出队，UI 由"排队中"恢复"运行中"）
+     * @note 瞬态展示信息，Module 仅活跃会话转发、不持久化。跨会话队头等待
+     * 期间 UI 显示可解释的排队状态而非误判卡死；Python 侧对称消息为
+     * tool_exec_queued（超时预算两段式的排队段依据）
+     */
+    void agentToolQueued(const QString& toolName, int position);
+    /**
      * @brief 工具执行结果返回时发射，用于 UI 展示
      * @param toolName 工具名称
      * @param result 工具执行结果 JSON
@@ -129,7 +175,7 @@ Q_SIGNALS:
      */
     void agentError(const QString& message, const QString& errorType = QString(), const QString& detail = QString());
     /**
-     * @brief agent 正在重试 LLM 调用时发射（Python 端指数退避期间每次重试发一次）
+     * @brief agent 正在重试 LLM 调用时发射（Python 端线性退避期间每次重试发一次）
      * @param attempt 当前重试次数（1-based）
      * @param maxAttempts 最大重试次数
      * @param delayMs 本次退避延迟毫秒数
@@ -189,11 +235,6 @@ Q_SIGNALS:
      * 由 Bridge 在 handleJsonLine 内部消化，不经本信号。
      */
     void agentSubagentProgress(const QJsonObject& progress);
-    /**
-     * @brief 崩溃恢复时请求 Module 从 SessionStore 读取会话历史并下发 load_session
-     * @param sessionId 需要恢复的会话 ID
-     */
-    void sessionRestoreRequested(const QString& sessionId);
 
     /**
      * @brief 工具调用需要用户审批时发射（ask 决策，executeTool 前置门）
@@ -234,6 +275,15 @@ private:
     // 权限门放行后的真实执行（原 executeTool 主体，含 try/catch 兜底与结果回传）
     void executeToolNow(const QString& callId, const QString& toolName, const QJsonObject& args,
                         const QString& subagentId = QString());
+    // 派发执行（决策点 2 方案 c）：有全局执行器则入队（排队态上报 Python/UI），
+    // 无则退化直执行；executeTool 放行路径与 onToolApproval 批准路径共用。
+    // expectedContentHash 非空时注入执行参数 _expected_content_hash（问题 26
+    // TOCTOU 校验，run_script 工具执行前消费）
+    void dispatchToolExecution(const QString& callId, const QString& toolName,
+                               const QJsonObject& args, const QString& subagentId,
+                               const QString& expectedContentHash = QString());
+    // 排队态上报：写 tool_exec_queued 协议消息给 Python + emit agentToolQueued
+    void notifyToolQueued(const QString& callId, const QString& toolName, int position);
     // Q18 dismissal：按子 agent 任务 id 撤销对应挂起审批卡（仅撤 subagentId 非空的条目，
     // 主 agent 审批绝不受影响），逐条 emit agentToolApprovalDismissed
     void dismissSubagentApprovals(const QStringList& subagentIds);

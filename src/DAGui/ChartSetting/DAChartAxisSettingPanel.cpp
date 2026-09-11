@@ -1,6 +1,7 @@
 #include "DAChartAxisSettingPanel.h"
 #include "DAPropertyPanelContainerWidget.h"
 #include "DAChartUtil.h"
+#include "DAChartWidget.h"
 #include "qwt_plot.h"
 #include "qwt_scale_widget.h"
 #include "qwt_scale_draw.h"
@@ -289,7 +290,12 @@ void DAChartAxisSettingPanel::onPropertyValueChanged(int propertyId)
     switch (propertyId) {
     case PID_EnableAxis: {
         bool enabled = panel->getBoolValue(PID_EnableAxis);
-        mPlot->enableAxis(mAxisId, enabled);
+        // 优先走 DAChartWidget::setAxisVisible（发 AxisVisibilityChanged 通知），非 DAChartWidget 的 plot 回退原生接口
+        if (DAChartWidget* dacw = qobject_cast< DAChartWidget* >(mPlot)) {
+            dacw->setAxisVisible(mAxisId, enabled);
+        } else {
+            mPlot->enableAxis(mAxisId, enabled);
+        }
         // 通知外部刷新树形控件的可见性列
         Q_EMIT axisVisibilityChanged(mAxisId, enabled);
         break;

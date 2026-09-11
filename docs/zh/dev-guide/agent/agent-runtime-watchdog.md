@@ -49,7 +49,7 @@ self.llm = ChatOpenAI(
 )
 ```
 
-热替换路径（`AgentRunner.reconfigure()`）构造新 `ChatOpenAI` 时同样设置 `max_retries=0` + `timeout=config.get("request_timeout_sec", 120)`，确保切换模型后不回退到无超时状态。配置键为 `agent/llm_request_timeout_sec`（默认 120 秒）与 `agent/llm_max_retries`（默认 7，由 `RetryWrapper` 而非 SDK 消费）。
+热替换路径（`AgentRunner.reconfigure()`）构造新 `ChatOpenAI` 时同样设置 `max_retries=0` + `timeout=config.get("request_timeout_sec", 120)`，确保切换模型后不回退到无超时状态。配置键为 `agent/llm_request_timeout_sec`（默认 120 秒）与 `agent/llm_max_retries`（默认 5，由 `RetryWrapper` 而非 SDK 消费；退避间隔 `retry_interval_sec` 默认 5 秒、每次失败递增 `retry_interval_increment_sec` 默认 1 秒）。
 
 > 修复 commit：`6a7a31e`。
 

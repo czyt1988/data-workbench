@@ -105,10 +105,72 @@ function renderKatex(tex, displayMode) {
         return '<code>' + (displayMode ? '$$' + tex + '$$' : '$' + tex + '$') + '</code>';
     }
     try {
-        return katex.renderToString(tex, {throwOnError: false, displayMode: !!displayMode});
+        // output：'html'（查看器/HTML/PDF 导出）或 'mathml'（Word 导出，原生公式）
+        var opts = {throwOnError: false, displayMode: !!displayMode};
+        if (gKatexOutput === 'mathml') {
+            opts.output = 'mathml';
+        }
+        return katex.renderToString(tex, opts);
     } catch (e) {
         return '<code>' + (displayMode ? '$$' + tex + '$$' : '$' + tex + '$') + '</code>';
     }
+}
+
+// —— 导出与图片内嵌支持（DAMarkdownView / DAMarkdownExporter 调用）——
+// KaTeX 输出模式：'html'（默认，与查看器一致）/ 'mathml'（Word 导出，原生公式）
+var gKatexOutput = 'html';
+
+// 分片渲染缓冲：大体积内容（含内嵌 base64 图片）单次 runJavaScript 会超
+// Chromium IPC 上限静默失败，C++ 侧分片累积后整体渲染（同页 FIFO 保序，
+// 同 DAAgentWebChannel 的 loadHistoryPart 分片先例）
+var gRenderBuffer = '';
+
+function renderMarkdownBegin() {
+    gRenderBuffer = '';
+}
+
+function renderMarkdownAppend(text) {
+    gRenderBuffer += text;
+}
+
+function renderMarkdownEnd() {
+    renderMarkdown(gRenderBuffer);
+    gRenderBuffer = '';
+}
+
+// 导出渲染：结果暂存 gExportHtml（不写 DOM），返回总长度供 C++ 分片取回
+var gExportHtml = '';
+
+function exportRenderBegin(katexOutput) {
+    gRenderBuffer = '';
+    gKatexOutput = (katexOutput === 'mathml') ? 'mathml' : 'html';
+}
+
+function exportRenderEnd() {
+    if (!md) {
+        initMarkdown();
+    }
+    gExportHtml = md.render(gRenderBuffer);
+    gRenderBuffer = '';
+    gKatexOutput = 'html';  // 恢复默认，避免影响查看器后续渲染
+    return gExportHtml.length;
+}
+
+function getExportHtmlChunk(offset, size) {
+    // 分片边界避开 UTF-16 代理对（切口落在代理对中间会产生孤立代理项，
+    // 经 IPC 序列化时字符损坏），C++ 侧按实际返回长度推进 offset
+    var end = offset + size;
+    if (end < gExportHtml.length) {
+        var c = gExportHtml.charCodeAt(end - 1);
+        if (c >= 0xD800 && c <= 0xDBFF) {
+            end -= 1;
+        }
+    }
+    return gExportHtml.substr(offset, end - offset);
+}
+
+function clearExportHtml() {
+    gExportHtml = '';
 }
 
 function renderMarkdown(text) {

@@ -64,6 +64,8 @@
         <file>Icon/chart-grid-ymin.svg</file>
         <file>Icon/chart-zoomer.svg</file>
         <file>Icon/chart-pan.svg</file>
+        <file>Icon/chart-zoom-lock-x.svg</file>
+        <file>Icon/chart-zoom-lock-y.svg</file>
         <file>Icon/chart-picker.svg</file>
         <file>Icon/chart-picker-y.svg</file>
         <file>Icon/chart-picker-xy.svg</file>

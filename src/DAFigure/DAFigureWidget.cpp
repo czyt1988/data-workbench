@@ -24,6 +24,7 @@
 #include <QHash>
 #include <QUuid>
 #include <QTimer>
+#include <QShortcut>
 // chart
 #include "DAChartUtil.h"
 #include "DAChartWidget.h"
@@ -74,6 +75,10 @@ public:
     QwtPlotSeriesDataPickerGroup* mPickerGroup { nullptr };
     DAFigureWidgetOverlay* mChartEditor { nullptr };  ///< 绘图编辑器
     int mProbeNameCounter { 0 };                      ///< 探针命名计数器
+    bool mDataProbeModeActive { false };              ///< 数据探针会话激活标志（持久会话，非overlay）
+    bool mSuppressInteractionNotify { false };        ///< 探针模式主动关闭子图交互时抑制onChartPropertyChanged的互斥判定
+    QShortcut* mDataProbeEscapeShortcut { nullptr };  ///< 探针模式的 Esc 退出快捷键（会话期间存在）
+    QList< DAChartWidget* > m_2dCharts;                ///< 2D chart 列表（由onAxesAdded/onAxesRemoved维护）
     QList< DAChart3DWidget* > m_3dCharts;            ///< 3D chart 列表
     QPointer< DAChart3DWidget > mCurrent3DChart;    ///< 当前选中的 3D chart
 public:
@@ -194,8 +199,6 @@ public:
     void beginVLineMarkerEditor();
     void beginCrossLineMarkerEditor();
     void beginArrowMarkerEditor();
-    void beginVerticalProbeEditor();
-    void beginHorizontalProbeEditor();
     void beginTextMarkerEditor();
     void beginPointerSelectorEditor();
 };
@@ -272,22 +275,6 @@ void DAFigureWidget::PrivateData::beginCrossLineMarkerEditor()
 void DAFigureWidget::PrivateData::beginArrowMarkerEditor()
 {
     mChartEditor = beginSelectEditor< DAChartArrowEditor >();
-}
-
-/**
- * @brief 开始垂直探针编辑器
- */
-void DAFigureWidget::PrivateData::beginVerticalProbeEditor()
-{
-    mChartEditor = beginSelectEditor< DAChartItemCreatInteractor >(createVerticalDataProbePlotItem);
-}
-
-/**
- * @brief 开始水平探针编辑器
- */
-void DAFigureWidget::PrivateData::beginHorizontalProbeEditor()
-{
-    mChartEditor = beginSelectEditor< DAChartItemCreatInteractor >(createHorizontalDataProbePlotItem);
 }
 
 /**
@@ -1282,7 +1269,8 @@ void DAFigureWidget::copyToClipboard()
  */
 bool DAFigureWidget::isChartEditorActive() const
 {
-    return (d_ptr->mChartEditor != nullptr);
+    DA_DC(d);
+    return (d->mChartEditor != nullptr) || d->mDataProbeModeActive;
 }
 
 /**
@@ -1320,11 +1308,8 @@ void DAFigureWidget::beginChartEditor(ChartEditorType type)
     case ArrowMarker:
         d->beginArrowMarkerEditor();
         break;
-    case VerticalDataProbe:
-        d->beginVerticalProbeEditor();
-        break;
-    case HorizontalDataProbe:
-        d->beginHorizontalProbeEditor();
+    case DataProbeEditor:
+        beginDataProbeEditor();
         break;
     case TextMarker:
         d->beginTextMarkerEditor();
@@ -1344,6 +1329,10 @@ void DAFigureWidget::beginChartEditor(ChartEditorType type)
 void DAFigureWidget::endChartEditor()
 {
     DA_D(d);
+    if (d->mDataProbeModeActive) {
+        exitDataProbeMode();
+        return;
+    }
     if (d->mChartEditor) {
         d->mChartEditor->hide();
         d->mChartEditor->deleteLater();
@@ -1624,6 +1613,13 @@ void DAFigureWidget::keyPressEvent(QKeyEvent* e)
         e->accept();
         return;
     }
+    if (e->key() == Qt::Key_Escape) {
+        if (isChartEditorActive()) {
+            endChartEditor();
+            e->accept();
+            return;
+        }
+    }
     QScrollArea::keyPressEvent(e);
 }
 
@@ -1708,6 +1704,10 @@ void DAFigureWidget::onOverlayActiveWidgetChanged(QWidget* oldActive, QWidget* n
 void DAFigureWidget::onAxesAdded(QwtPlot* newAxes)
 {
     if (DAChartWidget* c = qobject_cast< DAChartWidget* >(newAxes)) {
+        // 探针模式激活期间新加入的子图同样应用探针交互（关左键交互、入联动拾取组）
+        if (d_ptr->mDataProbeModeActive) {
+            applyDataProbeModeToChart(c);
+        }
         Q_EMIT chartAdded(c);
     }
 }
@@ -1757,6 +1757,16 @@ void DAFigureWidget::onChartPropertyChanged(DAChartWidget* chart, DA::DAChartWid
                 group->addPicker(picker);
             }
         }
+    }
+    if (flag.testFlag(DAChartWidget::AxisVisibilityChanged)) {
+        // X 轴可见性变化 -> 全 figure 探针徽章按规则重算（动态跟随，常驻逻辑）
+        refreshAllProbeLabels();
+    }
+    if (!d_ptr->mSuppressInteractionNotify && d_ptr->mDataProbeModeActive
+        && (flag.testFlag(DAChartWidget::ZoomStateChanged) || flag.testFlag(DAChartWidget::PanStateChanged)
+            || flag.testFlag(DAChartWidget::CrosshairStateChanged))) {
+        // 用户开启了缩放/平移/十字线等左键交互 -> 双向互斥，自动退出探针模式
+        exitDataProbeMode();
     }
 }
 
@@ -1905,7 +1915,9 @@ QDataStream& operator>>(QDataStream& in, DAFigureWidget* p)
     } catch (const DABadSerializeExpection& exp) {
         throw exp;
     }
-    return (in);
+    // 恢复完成后的兜底：探针徽章按当前各子图 X 轴可见性重算（恢复时序未知，统一刷新一次）
+    p->refreshAllProbeLabels();
+    return in;
 }
 
 /**
@@ -2161,30 +2173,218 @@ bool DAFigureWidget::renameProbe(DADataProbeMarker* probe, const QString& newNam
 
 /**
  * \if ENGLISH
- * @brief Start vertical probe creation interaction mode
+ * @brief Start the data probe editing session (persistent mode)
+ *
+ * Unlike one-shot item editors, the data probe session stays active so the
+ * user can click repeatedly to create probe groups. While active:
+ * - zoom/pan/crosshair (left-button interactions) are turned off for all charts
+ * - y-value picking and the cross-chart picker group are turned on, giving
+ *   synchronized cursor readouts on every subplot
+ * - each canvas click creates a same-named vertical probe on every 2D subplot
+ *   at the clicked x value (single undo command)
+ * The session ends via endChartEditor() (button toggle, Esc, or switching to
+ * another editor tool). Interaction states are not restored afterwards.
  * \endif
  *
  * \if CHINESE
- * @brief 开始垂直探针创建交互模式
+ * @brief 开始数据探针编辑会话（持久模式）
+ *
+ * 与一次性图元编辑器不同，数据探针会话持续保持激活，可连续点击创建探针组。
+ * 会话期间：
+ * - 关闭所有子图的缩放/平移/十字线（左键交互）
+ * - 开启所有子图的 Y 值拾取与跨子图联动拾取组，鼠标移动时所有子图联动显示数值
+ * - 画布点击时在所有 2D 子图上以点击处 x 值创建同名垂直探针（单条 undo 命令）
+ * 会话经 endChartEditor() 结束（按钮再点、Esc 或切换其它编辑工具），
+ * 结束后交互状态保持关闭不恢复。
  * \endif
  */
-void DAFigureWidget::beginVerticalProbeEditor()
+void DAFigureWidget::beginDataProbeEditor()
 {
-    beginChartEditor(VerticalDataProbe);
+    enterDataProbeMode();
+}
+
+/**
+ * @brief 进入数据探针模式的内部处理
+ */
+void DAFigureWidget::enterDataProbeMode()
+{
+    DA_D(d);
+    if (d->mDataProbeModeActive) {
+        return;
+    }
+    d->mDataProbeModeActive = true;
+    // 探针依赖联动拾取组
+    setDataPickerGroupEnabled(true);
+    // 对所有已有 2D 子图应用探针模式交互（关左键交互、开 Y 拾取）
+    const QList< DAChartWidget* > charts = getCharts();
+    for (DAChartWidget* chart : charts) {
+        applyDataProbeModeToChart(chart);
+    }
+    // 联动拾取组的点击 -> 创建探针组
+    if (QwtPlotSeriesDataPickerGroup* group = getDataPickerGroup()) {
+        connect(group, &QwtPlotSeriesDataPickerGroup::clicked, this, &DAFigureWidget::onDataProbePickerGroupClicked);
+    }
+    // Esc 退出：持久会话无 overlay 事件过滤器，用窗口级快捷键保证 Esc 在主窗口任意位置可退出
+    d->mDataProbeEscapeShortcut = new QShortcut(QKeySequence(Qt::Key_Escape), this);
+    connect(d->mDataProbeEscapeShortcut, &QShortcut::activated, this, [ this ]() { endChartEditor(); });
+    emitChartEditorBeginEdit();
+}
+
+/**
+ * @brief 退出数据探针模式的内部处理
+ *
+ * 按既定交互决策：退出后缩放/平移/十字线保持关闭，不做恢复
+ */
+void DAFigureWidget::exitDataProbeMode()
+{
+    DA_D(d);
+    if (!d->mDataProbeModeActive) {
+        return;
+    }
+    d->mDataProbeModeActive = false;
+    if (d->mDataProbeEscapeShortcut) {
+        d->mDataProbeEscapeShortcut->deleteLater();
+        d->mDataProbeEscapeShortcut = nullptr;
+    }
+    if (QwtPlotSeriesDataPickerGroup* group = getDataPickerGroup()) {
+        disconnect(group, &QwtPlotSeriesDataPickerGroup::clicked, this, &DAFigureWidget::onDataProbePickerGroupClicked);
+    }
+    emitChartEditorFinishEdit();
+}
+
+/**
+ * @brief 探针模式激活期间对子图应用交互设置
+ *
+ * 关闭左键交互（缩放/平移/十字线），开启 Y 值拾取；
+ * 关闭动作经 mSuppressInteractionNotify 抑制互斥判定，避免触发"用户开启交互->退出探针"的反向逻辑
+ */
+void DAFigureWidget::applyDataProbeModeToChart(DAChartWidget* chart)
+{
+    if (!chart) {
+        return;
+    }
+    DA_D(d);
+    d->mSuppressInteractionNotify = true;
+    chart->enableZoom(false);
+    chart->enablePan(false);
+    chart->enableCrosshair(false);
+    d->mSuppressInteractionNotify = false;
+    chart->enableYValuePicking(true);
+    if (QwtPlotSeriesDataPickerGroup* group = getDataPickerGroup()) {
+        if (QwtPlotSeriesDataPicker* picker = chart->getDataPicker()) {
+            group->addPicker(picker);
+        }
+    }
+}
+
+/**
+ * @brief 探针会话中联动拾取组收到点击的槽函数
+ *
+ * 以拾取组第一个 picker 的特征点 x 值为探针位置（与插件行为一致），
+ * 在所有 2D 子图上创建同名垂直探针（字母徽章），批量附加进一条 undo 命令
+ */
+void DAFigureWidget::onDataProbePickerGroupClicked(QwtPlotSeriesDataPicker* picker, const QPoint& pos)
+{
+    Q_UNUSED(pos);
+    DA_D(d);
+    if (!d->mDataProbeModeActive || !picker) {
+        return;
+    }
+    QwtPlotSeriesDataPickerGroup* group = getDataPickerGroup();
+    if (!group) {
+        return;
+    }
+    // 取点击位置的数据坐标 x（优先特征点，回退画布坐标反算）
+    double xValue = 0.0;
+    bool hasX = false;
+    const QList< QwtPlotSeriesDataPicker* > pickers = group->pickers();
+    for (QwtPlotSeriesDataPicker* p : pickers) {
+        const QList< QwtPlotSeriesDataPicker::FeaturePoint > fps = p->featurePoints();
+        if (!fps.isEmpty()) {
+            xValue = fps.first().feature.x();
+            hasX   = true;
+            break;
+        }
+    }
+    if (!hasX && picker->plot()) {
+        // 无特征点（如子图无曲线）时用 invTransform 从画布坐标推 x
+        xValue = picker->plot()->invTransform(QwtAxis::XBottom, pos.x());
+        hasX   = true;
+    }
+    if (!hasX) {
+        return;
+    }
+
+    const QString probeName = generateProbeName();
+    QwtText nameText(probeName);
+    // 批量创建走单一 undo 复合命令：所有子图的探针一次撤销
+    QUndoCommand* batchCmd = new QUndoCommand(tr("add data probes"));  // cn:添加数据探针
+    DADataProbeMarker* firstProbe = nullptr;
+    const QList< DAChartWidget* > charts = getCharts();
+    for (DAChartWidget* chart : charts) {
+        DADataProbeMarker* probe = new DADataProbeMarker(DADataProbeMarker::VerticalProbe, nameText);
+        probe->setXValue(xValue);
+        // 徽章规则：xbottom 可见->底部；仅 xtop 可见->顶部；两轴均不可见->隐藏徽章
+        bool labelVisible = chart->isAxisVisible(QwtAxis::XBottom);
+        bool labelAtTop   = !labelVisible && chart->isAxisVisible(QwtAxis::XTop);
+        probe->setLabelPosition(labelAtTop ? DADataProbeMarker::LabelAtTop : DADataProbeMarker::LabelAtBottom);
+        probe->setLabelVisible(labelVisible || labelAtTop);
+        probe->setLabelStyle(DADataProbeMarker::RoundedRectBadge);
+        probe->attach(chart);
+        probe->captureData(true);
+        if (!firstProbe) {
+            firstProbe = probe;
+        }
+        // skipFirst=true：item 已经 attach，命令仅入栈不再重复 attach
+        new DAFigureWidgetCommandAttachItem(this, chart, probe, true, batchCmd);
+        chart->replot();
+    }
+    if (nullptr == firstProbe) {
+        delete batchCmd;
+        return;
+    }
+    push(batchCmd);
+    Q_EMIT dataProbeCreated(firstProbe, xValue);
 }
 
 /**
  * \if ENGLISH
- * @brief Start horizontal probe creation interaction mode
+ * @brief Refresh label position/visibility of all probes according to x-axis visibility
  * \endif
  *
  * \if CHINESE
- * @brief 开始水平探针创建交互模式
+ * @brief 按当前各子图 X 轴可见性重算所有探针的徽章位置/可见性
  * \endif
  */
-void DAFigureWidget::beginHorizontalProbeEditor()
+void DAFigureWidget::refreshAllProbeLabels()
 {
-    beginChartEditor(HorizontalDataProbe);
+    const QList< DAChartWidget* > charts = getCharts();
+    bool changed = false;
+    for (DAChartWidget* chart : charts) {
+        const bool xBottomVisible = chart->isAxisVisible(QwtAxis::XBottom);
+        const bool xTopVisible    = chart->isAxisVisible(QwtAxis::XTop);
+        const QwtPlotItemList& items = chart->itemList();
+        for (QwtPlotItem* item : items) {
+            if (item->rtti() != DADataProbeMarker::Rtti_DataProbeMarker) {
+                continue;
+            }
+            DADataProbeMarker* probe = static_cast< DADataProbeMarker* >(item);
+            if (probe->probeType() != DADataProbeMarker::VerticalProbe) {
+                continue;
+            }
+            const bool newVisible = xBottomVisible || xTopVisible;
+            const bool newAtTop   = !xBottomVisible && xTopVisible;
+            if (probe->isLabelVisible() != newVisible
+                || (newVisible && (probe->labelPosition() == DADataProbeMarker::LabelAtTop) != newAtTop)) {
+                probe->setLabelPosition(newAtTop ? DADataProbeMarker::LabelAtTop : DADataProbeMarker::LabelAtBottom);
+                probe->setLabelVisible(newVisible);
+                changed = true;
+            }
+        }
+        if (changed) {
+            chart->replot();
+        }
+    }
 }
 
-}
+}  // end DA namespace

@@ -13,7 +13,9 @@
 #include <QMenu>
 #include <QGroupBox>
 #include <QStackedWidget>
+#include <QCheckBox>
 #include <QDateTime>
+#include <QFileInfo>
 #include <QFont>
 #include <QColor>
 #include <QLocale>
@@ -115,6 +117,7 @@ DADialogAgentSessionManager::DADialogAgentSessionManager(const QVariantList& ses
 {
     setWindowTitle(tr("Session Manager"));  // cn:会话管理
     setMinimumSize(760, 420);
+    mBaseSessions = sessions;
 
     QVBoxLayout* mainLayout = new QVBoxLayout(this);
     mainLayout->setContentsMargins(8, 8, 8, 8);
@@ -122,6 +125,16 @@ DADialogAgentSessionManager::DADialogAgentSessionManager(const QVariantList& ses
 
     QLabel* hint = new QLabel(tr("Double-click a session to switch:"), this);  // cn:双击切换会话：
     mainLayout->addWidget(hint);
+
+    // "全部工程"复选框（决策点 5 方案 c，审计问题 18）：setForeignSessions
+    // 注入跨工程存活会话后启用，勾选合并显示（foreign 行禁止切换）
+    mAllProjectsCheck = new QCheckBox(tr("Show sessions from all projects"), this);  // cn:显示全部工程的会话
+    mAllProjectsCheck->setEnabled(false);
+    connect(mAllProjectsCheck, &QCheckBox::toggled, this, [this](bool on) {
+        mShowAllProjects = on;
+        populateSessions(combinedSessions());
+    });
+    mainLayout->addWidget(mAllProjectsCheck);
 
     // ---- 内容区：左侧表格 + 右侧详情面板 ----
     QHBoxLayout* contentLayout = new QHBoxLayout();
@@ -273,6 +286,12 @@ void DADialogAgentSessionManager::populateSessions(const QVariantList& sessions)
         // Title：空标题显示「(untitled)」
         QString displayTitle = title.isEmpty() ? tr("(untitled)")  // cn:（未命名）
                                                 : title;
+        // 跨工程会话（决策点 5）：标题附工程名后缀，明示"来自其它工程"
+        if (vm.value(QStringLiteral("foreign")).toBool()) {
+            const QString projName = QFileInfo(vm.value(QStringLiteral("projectPath")).toString()).fileName();
+            displayTitle += QStringLiteral("  [%1]").arg(projName.isEmpty() ? tr("no project")  // cn:无工程
+                                                                            : projName);
+        }
 
         auto* titleItem = new SessionSortItem(displayTitle);
         titleItem->setData(RoleSessionId, id);
@@ -410,12 +429,62 @@ QString DADialogAgentSessionManager::sessionIdAt(int row) const
 }
 
 /**
+ * @brief 注入跨工程存活会话（决策点 5 方案 c，审计问题 18；exec() 前调用）
+ * @param sessions 每元素 QVariantMap{id,title,projectPath,state}
+ */
+void DADialogAgentSessionManager::setForeignSessions(const QVariantList& sessions)
+{
+    mForeignSessions = sessions;
+    mAllProjectsCheck->setEnabled(!mForeignSessions.isEmpty());
+    mAllProjectsCheck->setText(mForeignSessions.isEmpty()
+        ? tr("Show sessions from all projects")  // cn:显示全部工程的会话
+        : tr("Show sessions from all projects (%1 running in background)")  // cn:显示全部工程的会话（%1 个后台运行中）
+              .arg(mForeignSessions.size()));
+    if (mShowAllProjects) {
+        populateSessions(combinedSessions());
+    }
+}
+
+/**
+ * @brief 合并列表：当前工程会话 +（勾选"全部工程"时）跨工程存活会话
+ * @return 合并后的 payload 列表（foreign 条目附加 foreign=true 标记）
+ */
+QVariantList DADialogAgentSessionManager::combinedSessions() const
+{
+    QVariantList out = mBaseSessions;
+    if (mShowAllProjects) {
+        for (const QVariant& v : mForeignSessions) {
+            QVariantMap vm = v.toMap();
+            vm.insert(QStringLiteral("foreign"), true);
+            out.append(vm);
+        }
+    }
+    return out;
+}
+
+/**
+ * @brief 指定行是否跨工程会话（payload foreign 标记）
+ * @param row 行号
+ * @return foreign 行返回 true（非法行 false）
+ */
+bool DADialogAgentSessionManager::isForeignRow(int row) const
+{
+    if (row < 0 || row >= mTable->rowCount()) return false;
+    if (auto* it = mTable->item(row, ColTitle)) {
+        return it->data(RolePayload).toMap().value(QStringLiteral("foreign")).toBool();
+    }
+    return false;
+}
+
+/**
  * @brief 根据当前选中刷新按钮可用态
  */
 void DADialogAgentSessionManager::updateButtonStates()
 {
-    bool hasSelection = (currentSelectedRow() >= 0);
-    mSwitchBtn->setEnabled(hasSelection);
+    const int row = currentSelectedRow();
+    bool hasSelection = (row >= 0);
+    // 跨工程会话禁止切换（决策点 5，onSwitchClicked 同规）——按钮置灰
+    mSwitchBtn->setEnabled(hasSelection && !isForeignRow(row));
     mRenameBtn->setEnabled(hasSelection);
     mDeleteBtn->setEnabled(hasSelection);
 }
@@ -491,6 +560,10 @@ void DADialogAgentSessionManager::onSwitchClicked()
     if (row < 0) return;
     QString sid = sessionIdAt(row);
     if (sid.isEmpty()) return;
+    // 跨工程会话禁止切换（决策点 5）：会话列表按工程过滤，切入后该会话在
+    // UI 立即"消失"（下拉/管理器均不可见）且工程边界语义混乱——只提供
+    // 停止/删除/重命名
+    if (isForeignRow(row)) return;
     emit switchRequested(sid);
     accept();  // 关闭对话框，便于查看聊天切换效果
 }
@@ -574,7 +647,7 @@ void DADialogAgentSessionManager::onSelectionChanged()
 }
 
 /**
- * @brief 表格右键上下文菜单槽函数（切换/重命名/删除，复用底部按钮逻辑）
+ * @brief 表格右键上下文菜单槽函数（切换/重命名/停止/删除，复用底部按钮逻辑）
  * @param pos 右键位置（viewport 坐标）
  */
 void DADialogAgentSessionManager::onTableContextMenu(const QPoint& pos)
@@ -584,7 +657,17 @@ void DADialogAgentSessionManager::onTableContextMenu(const QPoint& pos)
     mTable->selectRow(it->row());  // 右键先选中该行
     QMenu menu(this);
     QAction* switchAct = menu.addAction(tr("Switch"));  // cn:切换
+    switchAct->setEnabled(!isForeignRow(it->row()));  // 跨工程会话禁止切换（决策点 5）
     QAction* renameAct = menu.addAction(tr("Rename"));  // cn:重命名
+    // 审计 L14：后台运行会话的停止入口——修复前失控后台会话必须先切换过去
+    // 再按 Stop（结合问题 2 的切入冻结场景，starting 残留会话切过去也停不了）。
+    // 按该行运行态启用（快照数据，对话框打开期间的新状态变化下次打开生效）
+    QAction* stopAct = menu.addAction(tr("Stop"));  // cn:停止
+    const QString state = mTable->item(it->row(), ColTitle)->data(RolePayload)
+                              .toMap().value(QStringLiteral("state")).toString();
+    stopAct->setEnabled(state == QLatin1String("running")
+                        || state == QLatin1String("starting")
+                        || state == QLatin1String("waiting_input"));
     menu.addSeparator();
     QAction* deleteAct = menu.addAction(tr("Delete"));  // cn:删除
     QAction* chosen = menu.exec(mTable->viewport()->mapToGlobal(pos));
@@ -592,6 +675,8 @@ void DADialogAgentSessionManager::onTableContextMenu(const QPoint& pos)
         onSwitchClicked();
     } else if (chosen == renameAct) {
         onRenameClicked();
+    } else if (chosen == stopAct) {
+        emit stopRequested(sessionIdAt(it->row()));
     } else if (chosen == deleteAct) {
         onDeleteClicked();
     }

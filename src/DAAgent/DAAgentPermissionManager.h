@@ -107,35 +107,57 @@ public:
     static QStringList gatedTools();
 
     // ---- 核心决策（母文档 §4 矩阵 [v2.1]） ----
-    // 按模式×分级×安全裁决产出 Allow/Deny/Ask
-    Decision decide(const QString& tool, const QJsonObject& params, const QJsonObject& safety) const;
-    // 路径策略评估：按规则顺序首条命中返回其动作，无命中返回 Ask
-    Action evaluatePath(const QString& tool, const QString& normalizedAbsPath, QString* reason = nullptr) const;
+    // 按模式×分级×安全裁决产出 Allow/Deny/Ask。sessionId 为桥所属会话
+    //（决策点 1 方案 b）：会话记忆按会话查询，空 sessionId 无记忆（保守 Ask，
+    // 仅限预热桥等无会话归属的防御回退）
+    Decision decide(const QString& sessionId, const QString& tool, const QJsonObject& params, const QJsonObject& safety) const;
+    // 路径策略评估：按规则顺序首条命中返回其动作，无命中返回 Ask。
+    // sessionId 用于 ${workspace}/${project} 变量按会话上下文解析（审计问题 25）
+    Action evaluatePath(const QString& sessionId, const QString& tool, const QString& normalizedAbsPath, QString* reason = nullptr) const;
     // 提取并规范化工具参数中的路径（file_path 优先，回退 path/output_path/report_path；
-    // run_script 相对路径按工作区根解析）；无路径参数返回空串
-    QString resolveToolPath(const QString& tool, const QJsonObject& params) const;
+    // run_script 相对路径按该会话工作区根解析）；无路径参数返回空串
+    QString resolveToolPath(const QString& sessionId, const QString& tool, const QJsonObject& params) const;
 
-    // ---- 会话记忆（A5 [v2.1]：仅 file_write，code_exec 永不记忆） ----
+    // ---- 会话记忆（A5 [v2.1] + 决策点 1 方案 b：按会话隔离，仅 file_write，code_exec 永不记忆） ----
+    // 记忆键空间 sessionId → (tool → 已批准路径前缀集)："批准并本会话记住"
+    // 仅同会话可见——并发多会话下欠清理（跨会话存活）与过度清除（任一桥退出
+    // 全局清）两面同时根治；会话删除/桥退役时经 clearSessionMemory 销毁
     // 记录批准的路径前缀（scopeKey 为规范化目录前缀）
-    void rememberSession(const QString& tool, const QString& scopeKey);
-    // 判断路径是否命中本会话已批准的前缀
-    bool isRemembered(const QString& tool, const QString& normalizedAbsPath) const;
-    // 清空会话记忆（切换会话/进程退出/崩溃恢复）
-    void clearSessionMemory();
+    void rememberSession(const QString& sessionId, const QString& tool, const QString& scopeKey);
+    // 判断路径是否命中该会话已批准的前缀
+    bool isRemembered(const QString& sessionId, const QString& tool, const QString& normalizedAbsPath) const;
+    // 销毁指定会话的记忆（会话删除/桥退役/该会话进程退出）
+    void clearSessionMemory(const QString& sessionId);
     // 从工具参数推导记忆前缀（规范化父目录）；无路径返回空串
-    QString sessionScopeKey(const QString& tool, const QJsonObject& params) const;
+    QString sessionScopeKey(const QString& sessionId, const QString& tool, const QJsonObject& params) const;
 
     // ---- 变量解析（${workspace}/${project}/${data}/${exe}/${home}） ----
-    // 设置脚本工作区根目录（DAAppProject::getScriptWorkspaceDir 注入）
+    // 设置脚本工作区根目录（DAAppProject::getScriptWorkspaceDir 注入）。
+    // 全局值仅作为"新会话默认"与无会话上下文时的回退（审计问题 25）
     void setWorkspaceRoot(const QString& dir);
     // 当前脚本工作区根目录（规范化，未注入为空）
     QString workspaceRoot() const;
-    // 设置工程文件所在目录（${project} 变量）
+    // 设置工程文件所在目录（${project} 变量，全局默认，语义同 setWorkspaceRoot）
     void setProjectDir(const QString& dir);
     // 当前工程目录（规范化，无工程为空）
     QString projectDir() const;
-    // 全部变量当前值（匹配时解析 ${var} 用）
+    // 全部变量当前值（匹配时解析 ${var} 用，全局默认）
     QHash< QString, QString > variables() const;
+
+    // ---- 会话上下文（审计问题 25：工程切换不使后台会话路径判定漂移） ----
+    // 后台会话绑定工程 P1 运行中，用户打开工程 P2 改写全局 ${workspace} 并
+    // reconfigure 广播——P1 会话的 write_file 不再命中 ${workspace}/** allow
+    // 规则（频繁弹审批）、run_script 相对路径按 P2 解析（判定读到错误文件）。
+    // 修复：每会话在 attachBridge 时捕获自己的 workspace/project 上下文，
+    // decide/evaluatePath/resolveToolPath 按会话解析变量（无上下文回退全局）
+    // 注入会话上下文（attachBridge 时以当时全局值捕获；空串字段回退全局）
+    void setSessionContext(const QString& sessionId, const QString& workspaceRoot, const QString& projectDir);
+    // 清除会话上下文（桥退役/会话删除）
+    void clearSessionContext(const QString& sessionId);
+    // 该会话视角的全部变量值（会话上下文覆盖全局默认）
+    QHash< QString, QString > variables(const QString& sessionId) const;
+    // 该会话视角的工作区根（Bridge buildPermissionConfig 下发 Python 判官用）
+    QString workspaceRootForSession(const QString& sessionId) const;
 
     // ---- ini 派生配置（经注入的 DAAgentConfig，agent-config.json permission 分组） ----
     // 判官是否已配置（judge_model 非空；D1 兜底判据）

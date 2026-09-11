@@ -765,7 +765,12 @@ void DAChartManageWidget::onContextMenuVisibleTriggered(bool on)
         QwtPlot* plot = model->plotFromItem(item);
         QwtAxisId axisId = model->axisIdFromItem(item);
         if (plot && axisId != QwtAxis::AxisPositions) {
-            plot->setAxisVisible(axisId, on);
+            // 优先走 DAChartWidget::setAxisVisible 以触发 AxisVisibilityChanged 通知（联动探针徽章重算）
+            if (DAChartWidget* dacw = qobject_cast< DAChartWidget* >(plot)) {
+                dacw->setAxisVisible(axisId, on);
+            } else {
+                plot->setAxisVisible(axisId, on);
+            }
             tree->refreshAxisVisibility(plot, axisId);
             plot->replot();
             // 通知设置面板刷新——使用 ColumnProperty 而非 ColumnVisible，

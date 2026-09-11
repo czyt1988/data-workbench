@@ -5,6 +5,7 @@
 #include <QJsonValue>
 #include <QJsonParseError>
 #include <QWebEngineView>
+#include <utility>  // std::as_const（非 const 容器范围迭代防 COW）
 
 namespace DA
 {
@@ -35,6 +36,27 @@ static QString toJsString(const QString& str)
 }
 
 // 把 JSON 字符串解析为 QJsonObject；解析失败返回空对象（plan-04 loadHistory 用）
+/// 工具结果展示内容截断上限（审计问题 29）：本项目是数据分析工作台，工具
+/// 结果常含大表格 JSON——全量进单次 eval/DOM 轻则卡死数秒，重则超限静默
+/// 失败。超限结果替换为 {__truncated__, total_chars, preview, success}
+/// 包装对象（完整内容仍在会话 JSONL；chat.js 按标记显示截断提示）
+static constexpr int kMaxToolResultDisplayChars = 50000;
+
+static QJsonObject truncateResultForDisplay(const QJsonObject& result)
+{
+    const QByteArray serialized = QJsonDocument(result).toJson(QJsonDocument::Compact);
+    if (serialized.size() <= kMaxToolResultDisplayChars) {
+        return result;
+    }
+    QJsonObject trunc;
+    trunc[QStringLiteral("__truncated__")] = true;
+    trunc[QStringLiteral("total_chars")]   = serialized.size();
+    trunc[QStringLiteral("preview")]       = QString::fromUtf8(serialized.left(kMaxToolResultDisplayChars));
+    // 保留 success 语义（卡片成败配色/摘要判断不受截断影响）
+    trunc[QStringLiteral("success")]       = result.value(QStringLiteral("success"));
+    return trunc;
+}
+
 static QJsonObject parseJsonStr(const QString& str)
 {
     if (str.isEmpty()) return QJsonObject();
@@ -62,9 +84,28 @@ DAAgentWebChannel::DAAgentWebChannel(QWebEngineView* view, QObject* parent)
  */
 void DAAgentWebChannel::callJS(const QString& funcCall)
 {
-    if (mView && mView->page()) {
-        mView->page()->runJavaScript(funcCall);
+    if (!mView || !mView->page()) {
+        return;
     }
+    // 审计问题 29：try/catch 包装 + 带回调的 runJavaScript——此前无回调无
+    // 错误处理，eval 失败（目标函数未就绪/JS 异常）静默丢失，大会话切换
+    // 表现为"聊天区全白且无任何错误"无从排查。现在 JS 异常经 console.error
+    // 落 Chromium 控制台（远程调试可见），并经返回值标记回传 C++ 记日志
+    const QString wrapped =
+        QStringLiteral("(function(){try{%1}catch(e){console.error('callJS failed:',e);"
+                       "return 'CALLJS_ERROR:'+e.message;}return 'CALLJS_OK';})();")
+            .arg(funcCall);
+    const QString head = funcCall.left(60);  // 诊断用调用头（如 "loadHistoryPart([..."）
+    mView->page()->runJavaScript(wrapped, [head](const QVariant& result) {
+        const QString r = result.toString();
+        if (r.startsWith(QLatin1String("CALLJS_ERROR:"))) {
+            qWarning() << "DAAgentWebChannel::callJS: JS evaluation failed, call=" << head
+                       << "error=" << r.mid(qstrlen("CALLJS_ERROR:"));
+        } else if (r.isEmpty()) {
+            // 回调收到空串：页面已销毁/导航中等，eval 未执行
+            qWarning() << "DAAgentWebChannel::callJS: no evaluation result (page gone?), call=" << head;
+        }
+    });
 }
 
 /**
@@ -86,12 +127,14 @@ void DAAgentWebChannel::onUserMessage(const QString& text)
 }
 
 /**
- * @brief JS 调用：用户点击了绘图引用超链接（da-figure: 协议）
- * @param href 超链接 href，形如 da-figure:&lt;figure_name&gt; 或 da-figure:id=&lt;uuid&gt;
+ * @brief JS 调用：用户点击了本地跳转超链接（da-<kind>: 协议）
+ *
+ * 协议无关转发：本类不解析协议，由上层（DAAgentLinkDispatcher）分发处理。
+ * @param href 超链接 href 原始字符串
  */
-void DAAgentWebChannel::onFigureLink(const QString& href)
+void DAAgentWebChannel::onLinkActivated(const QString& href)
 {
-    emit figureLinkRequested(href);
+    emit linkActivated(href);
 }
 
 /**
@@ -157,13 +200,24 @@ void DAAgentWebChannel::appendToolCall(const QString& toolName, const QJsonObjec
 }
 
 /**
+ * @brief 推送工具排队状态（决策点 2 ③：全局执行队列排队可见）
+ * @param toolName 工具名称
+ * @param position 队列位置（1-based）；0=开始执行（卡片恢复"运行中"）
+ */
+void DAAgentWebChannel::markToolQueued(const QString& toolName, int position)
+{
+    callJS(QString("markToolQueued(\"%1\", %2)").arg(toJsString(toolName), QString::number(position)));
+}
+
+/**
  * @brief 追加工具执行结果到聊天界面
  * @param toolName 工具名称
  * @param result 工具执行结果
  */
 void DAAgentWebChannel::appendToolResult(const QString& toolName, const QJsonObject& result)
 {
-    QJsonDocument doc(result);
+    // 审计问题 29：实时路径同样截断（大表格结果不全量进 eval/DOM）
+    QJsonDocument doc(truncateResultForDisplay(result));
     QString resultJson = QString::fromUtf8(doc.toJson(QJsonDocument::Compact));
     callJS(QString("appendToolResult(\"%1\",%2)").arg(toJsString(toolName), resultJson));
 }
@@ -191,6 +245,17 @@ void DAAgentWebChannel::appendQuestion(const QString& text, const QStringList& o
 }
 
 /**
+ * @brief 推送挂起问题卡作废（子进程退出/崩溃/用户 Stop/桥退役）
+ *
+ * 镜像 dismissToolApproval（审计问题 17）：JS 移除未回答的问题卡，
+ * 已回答的历史卡（.answered）不受影响。
+ */
+void DAAgentWebChannel::dismissQuestion()
+{
+    callJS(QStringLiteral("dismissQuestion()"));
+}
+
+/**
  * @brief 显示重试状态条（LLM 调用重试期间）
  * @param attempt 当前重试次数（1-based）
  * @param maxAttempts 最大重试次数
@@ -201,12 +266,11 @@ void DAAgentWebChannel::appendQuestion(const QString& text, const QStringList& o
 void DAAgentWebChannel::showRetryStatus(int attempt, int maxAttempts, int delayMs,
                                          const QString& errorType, const QString& errorMessage)
 {
+    // 审计 L13：多参 arg 单次扫描替换——链式 arg 时 errorMessage 原文含
+    // "%N" 字样（URL 编码 %2F、traceback 百分号）会被后续实参二次替换错乱
     callJS(QString("showRetryStatus(%1, %2, %3, \"%4\", \"%5\")")
-        .arg(attempt)
-        .arg(maxAttempts)
-        .arg(delayMs)
-        .arg(toJsString(errorType))
-        .arg(toJsString(errorMessage)));
+        .arg(QString::number(attempt), QString::number(maxAttempts), QString::number(delayMs),
+             toJsString(errorType), toJsString(errorMessage)));
 }
 
 /**
@@ -218,10 +282,9 @@ void DAAgentWebChannel::showRetryStatus(int attempt, int maxAttempts, int delayM
  */
 void DAAgentWebChannel::appendError(const QString& message, const QString& errorType, const QString& detail)
 {
+    // 审计 L13：多参 arg 单次扫描替换（detail 常含 traceback 百分号）
     callJS(QString("appendError(\"%1\", \"%2\", \"%3\")")
-        .arg(toJsString(message))
-        .arg(toJsString(errorType))
-        .arg(toJsString(detail)));
+        .arg(toJsString(message), toJsString(errorType), toJsString(detail)));
 }
 
 /**
@@ -231,9 +294,9 @@ void DAAgentWebChannel::appendError(const QString& message, const QString& error
  */
 void DAAgentWebChannel::appendSystemMessage(const QString& text, const QString& level)
 {
+    // 审计 L13：多参 arg 单次扫描替换（text 原文可能含 %N 字样）
     callJS(QString("appendSystemMessage(\"%1\", \"%2\")")
-        .arg(toJsString(text))
-        .arg(toJsString(level)));
+        .arg(toJsString(text), toJsString(level)));
 }
 
 /**
@@ -261,13 +324,16 @@ void DAAgentWebChannel::loadHistory(const QVector<QJsonObject>& records)
     // tool_calls 用简化格式（call.value("name")/("args") 顶层，对齐 plan-01/03 事件映射表）。
     QJsonArray uiEvents;
     QHash<QString, QJsonObject> pendingToolCalls;  // toolCallId → {toolName,args}
+    QStringList pendingOrder;  // toolCallId 插入序（QHash 不保序，flush 在途卡片需时序，问题 7）
 
     for (const QJsonObject& rec : records) {
         const QString t = rec.value("type").toString();
         const QJsonObject msg = rec.value("message").toObject();
 
-        if (t == "user" || t == "usage" || t == "summary") {
-            // 原样透传（usage/summary JS 端不再渲染，仅 user 渲染）
+        if (t == "user" || t == "usage" || t == "summary" || t == "error") {
+            // 原样透传（usage/summary JS 端不再渲染，仅 user/error 渲染；
+            // error 为决策点 4 落盘记录，message 载荷 {message,error_type,detail}，
+            // JS 重放分支复用实时 appendError 渲染错误卡）
             uiEvents.append(rec);
         } else if (t == "assistant") {
             const QJsonArray tcs = msg.value("tool_calls").toArray();
@@ -282,12 +348,22 @@ void DAAgentWebChannel::loadHistory(const QVector<QJsonObject>& records)
                 for (const QJsonValue& tc : tcs) {
                     const QJsonObject call = tc.toObject();
                     const QString id = call.value("id").toString();
+                    if (id.isEmpty()) {
+                        // 审计 L12 防御：缺 id 时多个 tool_call 全落
+                        // pendingToolCalls[""] 互相覆盖，空 tool_call_id 的
+                        // result 会与最后一个错配——跳过配对并告警（依赖上游
+                        // schema 恒有 id，此为损坏数据防御）
+                        qWarning() << "DAAgentWebChannel::loadHistory: tool_call without id, pairing skipped, tool="
+                                   << call.value("name").toString();
+                        continue;
+                    }
                     const QString name = call.value("name").toString();  // 简化格式顶层 name
                     const QJsonObject args = call.value("args").toObject();  // 简化格式顶层 args（已 object）
                     QJsonObject meta;
                     meta.insert("toolName", name);
                     meta.insert("args", args);
                     pendingToolCalls.insert(id, meta);  // 缓存等 result
+                    pendingOrder.append(id);
                 }
             } else {
                 // 纯文本 assistant
@@ -295,7 +371,14 @@ void DAAgentWebChannel::loadHistory(const QVector<QJsonObject>& records)
             }
         } else if (t == "tool_result") {
             const QString id = msg.value("tool_call_id").toString();
+            if (id.isEmpty()) {
+                // 审计 L12 防御：空 tool_call_id 不参与配对（与空 id tool_call
+                // 跳过对称），避免与缓存中 "" 键错配
+                qWarning() << "DAAgentWebChannel::loadHistory: tool_result without tool_call_id, skipped";
+                continue;
+            }
             const QJsonObject meta = pendingToolCalls.take(id);
+            pendingOrder.removeOne(id);
             if (meta.isEmpty()) {
                 // 边界：无配对 tool_call（中断），一期跳过不入 uiEvents
                 continue;
@@ -315,16 +398,68 @@ void DAAgentWebChannel::loadHistory(const QVector<QJsonObject>& records)
                 ansObj.insert("answer", msg.value("content").toString());
                 ev.insert("result", ansObj);
             } else {
-                // 普通工具结果 content 是 json.dumps(result) 字符串，解析为 object
-                ev.insert("result", parseJsonStr(msg.value("content").toString()));
+                // 普通工具结果 content 是 json.dumps(result) 字符串，解析为
+                // object；展示内容超限截断（审计问题 29）
+                ev.insert("result", truncateResultForDisplay(parseJsonStr(msg.value("content").toString())));
             }
             uiEvents.append(ev);
         }
         // 其他类型（answer 等）一期不入 uiEvents
     }
 
-    QByteArray json = QJsonDocument(uiEvents).toJson(QJsonDocument::Compact);
-    callJS(QStringLiteral("loadHistory(") + QString::fromUtf8(json) + QStringLiteral(")"));
+    // 审计问题 7：循环结束后仍未配对的 tool_call = 在途调用（切回运行中会话
+    // 场景）——透传为 running 态事件（无 result），前端只建卡入 pendingToolCards，
+    // 实时 tool_result 到达时依 FIFO 自然补全。修复前在途 tool_call 整个被跳过，
+    // 实时结果到达时无卡可配被忽略——该工具调用本轮 UI 完全不可见，下轮重放
+    // 才出现。ask_user 除外：挂起问题卡由 Module switchSession step5 重发为
+    // 可交互卡（此处渲染静态卡会双卡）。
+    // 边界（分段懒加载）：在途卡位于历史末尾，恒落首屏渲染的尾部段；若被
+    // 150+ 条后续事件挤入更早段（极端长回合），实时结果可能先于建卡到达而
+    // 被忽略——已知边界，接受
+    for (const QString& id : std::as_const(pendingOrder)) {
+        const QJsonObject meta = pendingToolCalls.value(id);
+        const QString name = meta.value("toolName").toString();
+        if (name == QStringLiteral("ask_user")) {
+            continue;
+        }
+        QJsonObject ev;
+        ev.insert("type", QStringLiteral("tool"));
+        ev.insert("toolName", name);
+        ev.insert("args", meta.value("args").toObject());
+        ev.insert("toolCallId", id);
+        ev.insert("running", true);  // 在途标记：前端只建卡不补结果
+        uiEvents.append(ev);
+    }
+
+    // 审计问题 29：分片传输——整段会话 JSON 塞单次 runJavaScript 可达数十 MB，
+    // 轻则主进程-渲染进程 IPC + JS 解析卡死数秒，重则超 Chromium IPC 消息上限
+    // 静默失败（聊天区全白无错误）。按序列化体积切片（≤2MB/片）经
+    // loadHistoryPart(events, isLast) 逐片下发，JS 侧累积到末片后整体走
+    // loadHistory（渲染层的 HISTORY_CHUNK_SIZE 分段懒加载语义不变）。
+    // callJS 同页 FIFO（runJavaScript 顺序执行）保证分片到达次序
+    static constexpr int kTransferChunkBytes = 2 * 1024 * 1024;
+    QJsonArray chunk;
+    int chunkBytes   = 0;
+    int chunksSent   = 0;
+    const int total  = uiEvents.size();
+    for (int i = 0; i < total; ++i) {
+        const QJsonValue ev = uiEvents.at(i);
+        chunkBytes += QJsonDocument(ev.toObject()).toJson(QJsonDocument::Compact).size();
+        chunk.append(ev);
+        const bool isLastEvent = (i == total - 1);
+        if (chunkBytes >= kTransferChunkBytes || isLastEvent) {
+            const QString chunkJson = QString::fromUtf8(QJsonDocument(chunk).toJson(QJsonDocument::Compact));
+            callJS(QStringLiteral("loadHistoryPart(") + chunkJson
+                   + (isLastEvent ? QStringLiteral(",true)") : QStringLiteral(",false)")));
+            chunk      = QJsonArray();
+            chunkBytes = 0;
+            ++chunksSent;
+        }
+    }
+    if (chunksSent == 0) {
+        // 空历史也要触发末片（保持原 loadHistory([]) 的清空后收尾语义）
+        callJS(QStringLiteral("loadHistoryPart([],true)"));
+    }
 }
 
 /**
@@ -397,6 +532,14 @@ void DAAgentWebChannel::onToolApproval(const QString& callId, bool approved, boo
 void DAAgentWebChannel::onModeConfirmResponse(bool keepYolo)
 {
     emit startupModeConfirmResponse(keepYolo);
+}
+
+/**
+ * @brief JS 调用：跨工程会话提示条点击（决策点 5 方案 c，审计问题 18）
+ */
+void DAAgentWebChannel::onForeignBannerClicked()
+{
+    emit foreignBannerClicked();
 }
 
 /**
@@ -512,6 +655,18 @@ void DAAgentWebChannel::setTokenStats(const QString& label, int inputTokens, int
 void DAAgentWebChannel::resetTokenStats()
 {
     callJS(QStringLiteral("resetTokenStats()"));
+}
+
+/**
+ * @brief 推送跨工程存活会话提示条（决策点 5 方案 c，审计问题 18）
+ * @param count 绑定其它工程的存活会话数（0=隐藏提示条）
+ *
+ * 打开/新建工程不退役旧工程会话桥（不腰斩长任务）——提示条给用户知情权
+ * 与入口（点击打开会话管理对话框的"全部工程"视图，可一键停止）。
+ */
+void DAAgentWebChannel::showForeignSessionsBanner(int count)
+{
+    callJS(QStringLiteral("showForeignBanner(%1)").arg(count));
 }
 
 /**

@@ -46,6 +46,7 @@ private Q_SLOTS:
     void testMessageCount();  // 按会话 ID 查消息计数（newSession 空会话复用守卫依赖）
     void testTokenAccumulate();     // usage 记录累计进索引 token 字段 + 持久化
     void testTokenLazyMigration();  // 旧格式索引（无 token 字段）懒迁移回填
+    void testErrorRecordRoundTrip();  // 决策点4：type=error 记录落盘/读回/过滤/索引兼容
 
 private:
     static QJsonObject makeRecord(const QString& sessionId, const QString& type, const QString& content);
@@ -618,6 +619,45 @@ void DAAgentSessionStoreTest::testTokenLazyMigration()
     store2.appendRecord(sid, makeUsageRecord(sid, 5, 5, 10, QStringLiteral("agent")));
     auto metas3 = store2.listSessions();
     QCOMPARE(metas3.at(0).totalTokens, qint64(153));
+}
+
+// 决策点 4（审计问题 3）：error 记录落盘 JSONL——appendRecord 通用写盘、
+// readAllRecords 读回载荷完整、readMessagesForLoad 过滤（不进 Python state）、
+// messageCount 不计（快照判定/空会话复用守卫等索引消费方零兼容负担）
+void DAAgentSessionStoreTest::testErrorRecordRoundTrip()
+{
+    DA::DAAgentSessionStore store;
+    const QString sid = store.createSession(QString());
+
+    store.appendRecord(sid, makeRecord(sid, QStringLiteral("user"), QStringLiteral("hello")));
+    QJsonObject errMsg;
+    errMsg[QStringLiteral("message")]    = QStringLiteral("quota exhausted");
+    errMsg[QStringLiteral("error_type")] = QStringLiteral("quota_exhausted");
+    errMsg[QStringLiteral("detail")]     = QStringLiteral("raw detail");
+    QJsonObject errRec;
+    errRec[QStringLiteral("uuid")]        = QUuid::createUuid().toString(QUuid::WithoutBraces);
+    errRec[QStringLiteral("parent_uuid")] = QJsonValue::Null;
+    errRec[QStringLiteral("session_id")]  = sid;
+    errRec[QStringLiteral("timestamp")]   = QDateTime::currentDateTimeUtc().toString(Qt::ISODateWithMs);
+    errRec[QStringLiteral("type")]        = QStringLiteral("error");
+    errRec[QStringLiteral("message")]     = errMsg;
+    store.appendRecord(sid, errRec);
+
+    // readAllRecords 读回 2 条（含 error，载荷完整——重放渲染错误卡的数据源）
+    const QVector<QJsonObject> all = store.readAllRecords(sid);
+    QCOMPARE(all.size(), 2);
+    QCOMPARE(all.at(1).value("type").toString(), QStringLiteral("error"));
+    QCOMPARE(all.at(1).value("message").toObject().value("error_type").toString(),
+             QStringLiteral("quota_exhausted"));
+    QCOMPARE(all.at(1).value("message").toObject().value("detail").toString(),
+             QStringLiteral("raw detail"));
+
+    // messageCount 不计 error（仅 user 1 条）
+    QCOMPARE(store.messageCount(sid), 1);
+    // readMessagesForLoad 过滤 error（load_session 快照不进 Python state）
+    const QJsonArray msgs = store.readMessagesForLoad(sid);
+    QCOMPARE(msgs.size(), 1);
+    QCOMPARE(msgs.at(0).toObject().value("role").toString(), QStringLiteral("human"));
 }
 
 // ---------------------------------------------------------------------------

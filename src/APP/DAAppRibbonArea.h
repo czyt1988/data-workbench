@@ -177,6 +177,8 @@ private Q_SLOTS:
     void onActionAgentManage();
     void onActionRunAgent();
     void onAgentGalleryTriggered(QAction* act);
+    void onActionAgentNewSession();
+    void onActionAgentSessionManager();
 
 private:
     void populateAgentGallery();
@@ -337,6 +339,8 @@ private:
     QList< QAction* > mAgentActions;                       ///< gallery 临时 action
     QAction* mActionAgentManage { nullptr };               ///< agent 管理
     QAction* mActionRunAgent { nullptr };                  ///< 执行 agent
+    QAction* mActionAgentNewSession { nullptr };           ///< 新建会话（session-tabs）
+    QAction* mActionAgentSessionManager { nullptr };       ///< 会话管理（session-tabs）
     QString mSelectedAgentTitle;                           ///< 当前选中的 agent 标题
     //----------------------------------------------------
     //

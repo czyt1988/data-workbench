@@ -183,8 +183,8 @@ graph TD
     G --> H
 ```
 
-!!! note "溢出恢复是局部的"
-    `force_compact()` 生成的压缩消息列表**仅用于本次 LLM 重试**，不写回 LangGraph state。下一轮 `compact_node` 会执行持久化压缩（`RemoveMessage` 写回 state），确保状态一致性。
+!!! note "溢出恢复会写回 state"
+    `agent_node` 捕获溢出错误后调用 `force_compact()`，压缩产物既用于本次 LLM 重试，其 `RemoveMessage` + summary 更新也随 final_message 一起写回 LangGraph state，打断「400 → force_compact → 400」循环。
 
 ### 溢出错误检测
 
@@ -192,6 +192,15 @@ graph TD
 
 - OpenAI `BadRequestError`（含 "context length" / "maximum context" 等关键词）
 - litellm `ContextWindowExceededError`
+
+!!! warning "关键词表禁止加入通用包装词"
+    关键词表在 `error_classifier.py`（`_CONTEXT_OVERFLOW_KEYWORDS`）与 `context_manager.py`（`is_context_overflow_error`）两处同步维护，只允许**特异性**短语。litellm 对所有上游 400 都包装 "The request is invalid" 前缀——此类通用词一旦加入，悬空 tool_calls 等无关的 `BadRequestError` 会被误判为溢出，UI 显示误导性的「上下文窗口超限且压缩失败」。
+
+### head/tail 分割的配对完整性
+
+`_find_head_end()` 保证 head 以完整轮次结尾：尾部回退不仅剥离 `ToolMessage`，还会剥离带 `tool_calls` 的 `AIMessage`——否则其配对 ToolMessage 落入 middle 被摘要替换后，head + summary 序列违反 API 配对约束（assistant 的 tool_calls 必须后随对应 tool 消息），下次请求直接 400。
+
+此外 `agent_node` 在每次调用 LLM 前会执行 `repair_dangling_tool_calls()`：为检查点中悬空的 tool_call（工具执行被 Stop/异常中断的残留）按位置插入占位 ToolMessage，从源头避免配对类 400。
 
 ---
 

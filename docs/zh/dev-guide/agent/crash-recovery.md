@@ -144,7 +144,7 @@ connect(m_bridge, &DAAgentBridge::sessionRestoreRequested,
 
 ## 重试与退避
 
-LLM API 调用可能因网络波动、服务端过载等原因失败。Agent 子进程实现了完善的错误分类与指数退避重试机制。
+LLM API 调用可能因网络波动、服务端过载等原因失败。Agent 子进程实现了完善的错误分类与线性退避重试机制，覆盖所有服务器波动类错误（400/429/5xx/网络），避免长任务因瞬时故障中断。
 
 ### 错误分类
 
@@ -152,40 +152,43 @@ LLM API 调用可能因网络波动、服务端过载等原因失败。Agent 子
 
 | ErrorType | 可重试 | 触发条件 |
 |-----------|--------|---------|
-| `CONTEXT_OVERFLOW` | ❌ | 上下文长度超限 |
+| `CONTEXT_OVERFLOW` | ❌ | 上下文长度超限（由 `agent_node` 的 force_compact 专用恢复，盲目重试超大请求无意义） |
 | `USER_CANCEL` | ❌ | 用户主动取消 / `asyncio.CancelledError` |
-| `QUOTA_EXHAUSTED` | ❌ | `RateLimitError` 含 `insufficient_quota` |
-| `AUTH_ERROR` | ❌ | `AuthenticationError` 或 HTTP 401/403 |
-| `BAD_REQUEST` | ❌ | `BadRequestError`（非溢出类） |
+| `QUOTA_EXHAUSTED` | ❌ | `RateLimitError` 含 `insufficient_quota`（配置类错误，快速失败） |
+| `AUTH_ERROR` | ❌ | `AuthenticationError` 或 HTTP 401/403（配置类错误，快速失败） |
+| `BAD_REQUEST` | ✅ | `BadRequestError`（非溢出类；网关瞬时 400 可自愈，悬空 tool_calls 类结构性 400 已由 `agent_node` 请求前主动修复） |
 | `RATE_LIMIT_EXHAUSTED` | ✅ | `RateLimitError`（非配额类） |
 | `SERVER_ERROR_EXHAUSTED` | ✅ | 服务端 5xx 错误 |
 | `NETWORK_EXHAUSTED` | ✅ | 网络超时 / 连接中断 |
 | `STREAM_INTERRUPTED` | ✅ | 流式输出中断（`httpx.ReadError` 等） |
-| `UNKNOWN` | ❌ | 未分类错误 |
+| `UNKNOWN` | 视情况 | 带 API/HTTP 特征（`openai.APIError` 实例或含 `status_code`）时可重试；纯本地异常（代码 bug 等）快速失败 |
 
-### 指数退避算法
+!!! warning "溢出关键词表禁止加入通用包装词"
+    `is_context_overflow_error` 的关键词表（`error_classifier.py` 与 `context_manager.py` 两处同步维护）只允许特异性短语（"context length"、"maximum context" 等）。litellm 对**所有**上游 400 都包装 "The request is invalid" 前缀——把这类通用词加入关键词表会把悬空 tool_calls 等无关的 `BadRequestError` 误判为上下文溢出，UI 显示误导性的「上下文窗口超限且压缩失败」标题。
 
-`retry_wrapper.py` 实现纯标准库的指数退避（无 `tenacity`/`backoff` 依赖）：
+### 线性退避算法
+
+`retry_wrapper.py` 实现纯标准库的线性退避（无 `tenacity`/`backoff` 依赖），三个参数均可在「设置 → Agent 设置」页配置（持久化于 `agent-config.json` llm 分组，经 init/reconfigure 协议下发）：
 
 ```
-delay = min(base * factor^(attempt-1), max_delay) * (1 ± jitter)
+delay(k) = retry_interval_sec + (k - 1) * retry_interval_increment_sec
 
-base = 1000ms
-factor = 2.0
-max_delay = 30000ms
-jitter = ±25%
-max_retries = 7 (默认)
+max_retries (m) = 5 (默认)
+retry_interval_sec (n) = 5 (默认)
+retry_interval_increment_sec (p) = 1 (默认)
 ```
 
-| 重试次数 | 基础延迟 | 含 ±25% 抖动后范围 |
-|---------|---------|-------------------|
-| 1 | 1000ms | 750-1250ms |
-| 2 | 2000ms | 1500-2500ms |
-| 3 | 4000ms | 3000-5000ms |
-| 4 | 8000ms | 6000-10000ms |
-| 5 | 16000ms | 12000-20000ms |
-| 6 | 30000ms (封顶) | 22500-30000ms |
-| 7 | 30000ms | 22500-30000ms |
+默认参数下各次重试前的等待：
+
+| 重试次数 k | 等待 |
+|---------|------|
+| 1 | 5s |
+| 2 | 6s |
+| 3 | 7s |
+| 4 | 8s |
+| 5 | 9s |
+
+无抖动——进度条（`retrying` 消息）显示的等待与用户配置完全一致。最坏总等待 35s，远小于看门狗无活动超时（默认 240s），且每次重试前的 `retrying` 消息会刷新看门狗。
 
 !!! note "服务端 Retry-After 优先"
     如果 LLM API 返回了 `Retry-After` HTTP 头（整数秒或 HTTP-date 格式），退避延迟使用服务端指定值，不使用计算值。
@@ -236,8 +239,8 @@ async def _stream_llm(self, messages):
 {
     "type": "retrying",
     "attempt": 2,
-    "max_attempts": 7,
-    "delay_ms": 4000,
+    "max_attempts": 5,
+    "delay_ms": 6000,
     "error_type": "network_exhausted",
     "error_message": "Connection timeout"
 }
@@ -291,7 +294,7 @@ sequenceDiagram
     P->>B: {"type": "retrying", "attempt": 1, ...}
     B->>U: UI 显示 "重试中..."
 
-    P->>P: sleep_with_abort(1000ms, stop_event)
+    P->>P: sleep_with_abort(5000ms, stop_event)
     Note over P: 用户可随时 stop 中断
 
     P->>LLM: astream(messages) (重试)
@@ -310,7 +313,9 @@ sequenceDiagram
 | 停止超时 | `stop_timeout_sec` | 5 | stop 后等待退出的超时 |
 | 请求超时 | `request_timeout_sec` | 120 | LLM API 单次请求超时 |
 | 不活跃超时 | `inactivity_timeout_sec` | 240 | 子进程无响应的超时 |
-| 最大重试 | `max_retries` | 7 | LLM API 调用最大重试次数 |
+| 最大重试 | `max_retries` | 5 | LLM API 调用最大重试次数（m） |
+| 重试间隔 | `retry_interval_sec` | 5 | 首次重试前等待秒数（n） |
+| 重试间隔递增 | `retry_interval_increment_sec` | 1 | 每次重试失败后等待递增秒数（p） |
 | 最大重启 | `max_subprocess_restarts` | 3 | 子进程崩溃最大重启次数 |
 | 图最大迭代步数 | `recursion_limit` | -1（不限制） | LangGraph 图最大迭代步数（单回合内计数），防死循环；`GraphRecursionError` 报为 `error_type="recursion_limit"`；有限值建议 150 |
 | 预启动开关 | `auto_prestart` | true | 程序启动时是否自动预热 agent 子进程（关闭则回退到懒启动） |
@@ -323,5 +328,5 @@ sequenceDiagram
 - [上下文管理](./context-management.md) — 溢出恢复与 force_compact 机制
 - [会话持久化](./session-management.md) — 崩溃后恢复会话历史的机制
 - `src/DAAgent/DAAgentBridge.cpp` — 进程管理与崩溃恢复实现
-- `src/PyScripts/DAWorkbench/agent/retry_wrapper.py` — 指数退避重试实现
+- `src/PyScripts/DAWorkbench/agent/retry_wrapper.py` — 线性退避重试实现
 - `src/PyScripts/DAWorkbench/agent/error_classifier.py` — 错误分类实现
