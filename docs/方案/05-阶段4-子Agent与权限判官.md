@@ -66,7 +66,8 @@ flowchart TB
     DS -->|"agentSubagentProgress(QJsonObject)"| M
 ```
 
-- `dispatch_subagents` 是**本地执行工具**：`DAAgentToolBridge::deliverToolRequest` 按工具名识别，转给 Dispatcher（池线程执行，同一等待/超时/stop 机制复用）——不进主线程 `executeTool` 队列（对齐现状"编排器本地执行"）。
+- `dispatch_subagents` 是**本地执行工具**：**`da_tools` 节点在投递前按工具名识别**——命中 `dispatch_subagents` 直接转 `DAAgentSubagentDispatcher` 本地执行（复用等待/超时/stop 机制），**不经 `deliverToolRequest`、不进主线程 `executeTool` 队列**（对齐现状"编排器本地执行"；`deliverToolRequest` 只服务走权限门的常规工具）。
+- **子任务不得与父任务争 R6 池槽**：父任务本身占一个池线程阻塞等待子任务汇总，若子任务再投同一 `QThreadPool`（容量 2-8），两个会话同时派发即池饥饿 → 600s 假超时。子任务必须使用**独立嵌套池**（Dispatcher 自持小池，容量=concurrency）或 `run_async` + 独立 io_context。
 - 子任务 = 共享 `GraphEngine` 的**不同 `thread_id`**（`"<sessionId>::sub-<n>"`，官方并发安全边界内），跑同一 JSON 图定义的**变体**。
 
 ### 2.2 子 agent 图变体（对照 Python `build_agent_graph(enable_ask_user=False, tools=子集)`）
@@ -99,7 +100,7 @@ flowchart TB
 
 ### 2.4 全局 LLM 并发预算（可选优化，审计问题 27 的"中期方向"）
 
-新模型下 N 会话 × M 子任务都在单进程内——现状"无跨进程全局配额"问题**反而更好解决**。本阶段默认不做（保持现状保守默认 concurrency=**1**/batch=**2**，上限 2/4，见 `subagent_orchestrator.py:413-414`），但预留：`DAAgentEngine` 级 `QSemaphore llmBudget`（容量可配），`da_agent` 节点请求前 acquire。若实施顺利，作为加分项落地；不阻塞验收。
+新模型下 N 会话 × M 子任务都在单进程内——现状"无跨进程全局配额"问题**反而更好解决**。本阶段默认不做（保持现状保守默认 concurrency=**1**/batch=**2**，上限 concurrency≤2、batch≤4，见 `subagent_orchestrator.py:413-414`），但预留：`DAAgentEngine` 级 `QSemaphore llmBudget`（容量可配），`da_agent` 节点请求前 acquire。若实施顺利，作为加分项落地；不阻塞验收。
 
 ## 三、实施步骤
 
