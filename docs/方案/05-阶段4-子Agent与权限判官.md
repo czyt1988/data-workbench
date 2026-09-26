@@ -1,6 +1,6 @@
 # 阶段 4：子 Agent 编排与权限判官（permission_judge）C++ 化
 
-本阶段目标：把 `subagent_orchestrator.py`（736 行）与 `permission_judge.py`（402 行）移植为 C++，完成 Python 推理侧最后一块能力。铁律 T16（权限 C++ 唯一执法、判定前置、不落盘）与 T17（子 agent tool_call 不落盘不渲染、终态撤卡 Q18）**行为完全不变**，仅执行载体迁移。
+本阶段目标：把 `subagent_orchestrator.py`（735 行）与 `permission_judge.py`（402 行）移植为 C++，完成 Python 推理侧最后一块能力。铁律 T16（权限 C++ 唯一执法、判定前置、不落盘）与 T17（子 agent tool_call 不落盘不渲染、终态撤卡 Q18）**行为完全不变**，仅执行载体迁移。
 
 ## 一、权限判官 `DAAgentJudge`（permission_judge.py 移植）
 
@@ -114,7 +114,7 @@ flowchart TB
 
 ## 四、原 Python 测试的 C++ 等价覆盖（行为回归清单）
 
-`src/PyScripts/tests/test_subagent_orchestrator.py`（8 类 34 用例）逐类迁移为 `DAAgentSubagentTest` + `DAAgentJudgeTest`：
+`src/PyScripts/tests/test_subagent_orchestrator.py`（8 类 37 用例）逐类迁移为 `DAAgentSubagentTest` + `DAAgentJudgeTest`：
 
 | 原 Python 用例类 | C++ 对应 | 备注 |
 |------------------|---------|------|
@@ -131,7 +131,7 @@ flowchart TB
 
 ## 五、验收标准
 
-- [ ] `DAAgentJudgeTest`/`DAAgentSubagentTest` ≥ 34 用例（对齐原 Python 用例数）全绿
+- [ ] `DAAgentJudgeTest`/`DAAgentSubagentTest` ≥ 37 用例（对齐原 Python 用例数）全绿
 - [ ] 铁律回归：T16（判定前置/唯一执法/不落盘）、T17（子 agent 消息不进 JSONL 不渲染、终态撤卡 Q18）在 C++ 测试中有显式断言
 - [ ] 手测：`dispatch_subagents` 派发 2 个 explore 子任务 → 进度卡片渲染、父对话不出现子转录、超时任务撤卡
 - [ ] `yolo/auto/manual` 三模式下 run_code 判定行为与现状一致

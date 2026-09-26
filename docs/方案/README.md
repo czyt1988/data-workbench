@@ -15,7 +15,7 @@
 |----|------|------|--------|
 | 0 | `00-总览与可行性分析.md` | 可行性深度分析、能力映射表、架构决策 D1-D5、阶段导航、通用约定、风险清单 | **必读，最先** |
 | 1 | `01-阶段0-技术验证与构建集成.md` | NeoGraph CMake 集成（含必须关闭的选项）、C++20 仅 DAAgent 策略与污染检查、6 项 spike 验证（V1-V6）、双轨开关 `DA_AGENT_NATIVE` | 执行阶段 0 |
-| 2 | `02-阶段1-运行时内核.md` | `DAAgentEngine`/`DAAgentSessionRunner`/`DAAgentToolBridge`、线程池模型（线程规则 R1-R7）、19 信号契约、Bridge 27 方法映射表、状态机 | 执行阶段 1 |
+| 2 | `02-阶段1-运行时内核.md` | `DAAgentEngine`/`DAAgentSessionRunner`/`DAAgentToolBridge`、线程池模型（线程规则 R1-R7）、19 信号契约、Bridge 27 项公开成员映射表、状态机 | 执行阶段 1 |
 | 3 | `03-阶段2-图与节点移植.md` | JSON 图定义、4 个自定义节点（compact/agent/ask_user/tools）、条件路由、interrupt/resume、状态注入与递归限制、行为移植 Checklist | 执行阶段 2 |
 | 4 | `04-阶段3-LLM流式与上下文管理.md` | Provider 封装与热替换、token/usage 信号链、错误分类与线性退避重试、上下文压缩/截断/溢出恢复/截断续写 | 执行阶段 3 |
 | 5 | `05-阶段4-子Agent与权限判官.md` | `permission_judge` C++ 化（safety 裁决/TOCTOU hash）、`dispatch_subagents` 编排（限流/超时/级联/心跳）、原 34 个 Python 用例的 C++ 迁移表 | 执行阶段 4 |
