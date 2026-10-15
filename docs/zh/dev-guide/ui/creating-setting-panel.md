@@ -546,21 +546,21 @@ pp->endGroup();
     
     **正确模式（必须严格遵循）**：
     ```cpp
-    // ✅ 正确：创建分组 → 添加属性 → 立即 endGroup
+    // 正确：创建分组 → 添加属性 → 立即 endGroup
     pp->addCollapsibleGroup(tr("Group 1"));
     pp->addStringProperty(...);
     pp->addIntProperty(...);
     pp->endGroup();  // 立即结束
     
-    // ✅ 正确：下一个分组重新开始，与上一个同级
+    // 正确：下一个分组重新开始，与上一个同级
     pp->addCollapsibleGroup(tr("Group 2"));
     pp->addPenProperty(...);
     pp->endGroup();  // 立即结束
     
-    // ❌ 错误：只 addCollapsibleGroup，不 endGroup
+    // 错误：只 addCollapsibleGroup，不 endGroup
     pp->addCollapsibleGroup(tr("Group 1"));
     pp->addStringProperty(...);
-    pp->addCollapsibleGroup(tr("Group 2"));  // ❌ 这会变成 Group 1 的子分组！
+    pp->addCollapsibleGroup(tr("Group 2"));  // 这会变成 Group 1 的子分组！
     ```
     建议采用「创建分组 → 添加属性 → 立即 endGroup」的紧凑写法，避免遗漏。
 
