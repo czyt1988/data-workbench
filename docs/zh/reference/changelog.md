@@ -120,6 +120,6 @@
 
 - [配置文件说明](../dev-guide/general/config-files.md)：配置文件格式详解
 - [术语表](./glossary.md)：项目核心术语
-- [CMake 辅助宏](../build/large-cmake-project-guide.md#工程封装的-cmake-辅助宏)：插件构建宏说明
+- [CMake 辅助宏](../build/large-cmake-project-guide.md#工程封装的-cmake-声明式构建-api)：插件构建宏说明
 - [贡献指南](./contribution-guide.md)：代码贡献流程
 - [开发指引](../dev-guide/developer-guide.md)：开发者入门指南

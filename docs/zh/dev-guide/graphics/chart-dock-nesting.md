@@ -3,7 +3,7 @@
 本文档说明 `DAChartOperateWidget` 的多绘图窗口管理机制：基于 Qt-Advanced-Docking-System（ADS）的 **dockindock 嵌套停靠区**，让每个 `DAFigureWidget` 以独立停靠窗口的形式自由分屏/并栏，同时**严格隔离在 DAChartOperateWidget 内部**。
 
 !!! warning "修改前必读"
-    本模块踩过一个隐蔽的 ADS 陷阱（`FocusHighlighting` + 嵌套 `CDockManager` 的焦点控制器跨管理器混淆），曾导致新绘图逃逸到 app 顶层中心区。**修改停靠相关逻辑前务必先阅读 [关键陷阱](#关键陷阱focushighlighting-嵌套管理器的焦点跨管理器混淆) 一节**。
+    本模块踩过一个隐蔽的 ADS 陷阱（`FocusHighlighting` + 嵌套 `CDockManager` 的焦点控制器跨管理器混淆），曾导致新绘图逃逸到 app 顶层中心区。**修改停靠相关逻辑前务必先阅读 [关键陷阱](#关键陷阱focushighlighting--嵌套管理器的焦点跨管理器混淆) 一节**。
 
 ## 设计目标
 

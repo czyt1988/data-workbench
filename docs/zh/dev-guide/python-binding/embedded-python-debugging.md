@@ -361,9 +361,9 @@ flowchart TD
 
 | 模块 | stub 文件 | 主要类/函数 |
 |------|-----------|-------------|
-| `da_interface` | [`stubs/da_interface/__init__.pyi`](../../../../stubs/da_interface/__init__.pyi) | DAPythonSignalHandler、DADataManagerInterface、DAStatusBarInterface、DACommandInterface、DAUIInterface、DACoreInterface |
-| `da_data` | [`stubs/da_data/__init__.pyi`](../../../../stubs/da_data/__init__.pyi) | DAData、DataChangeType 枚举、DADataManager |
-| `da_app` | [`stubs/da_app/__init__.pyi`](../../../../stubs/da_app/__init__.pyi) | getCore()、addInfoLogMessage()、addWarningLogMessage()、addCriticalLogMessage() |
+| `da_interface` | `stubs/da_interface/__init__.pyi` | DAPythonSignalHandler、DADataManagerInterface、DAStatusBarInterface、DACommandInterface、DAUIInterface、DACoreInterface |
+| `da_data` | `stubs/da_data/__init__.pyi` | DAData、DataChangeType 枚举、DADataManager |
+| `da_app` | `stubs/da_app/__init__.pyi` | getCore()、addInfoLogMessage()、addWarningLogMessage()、addCriticalLogMessage() |
 
 ---
 

@@ -66,7 +66,7 @@ graph TB
 
 ### 2.1 DAChartItemSerialize - 序列化管理器
 
-[DAChartSerialize.h](../../../../src/DAFigure/DAChartSerialize.h) 定义了 QwtPlotItem 的序列化管理器。以下代码展示了核心接口定义：
+`src/DAFigure/DAChartSerialize.h` 定义了 QwtPlotItem 的序列化管理器。以下代码展示了核心接口定义：
 
 ```cpp title="DAChartItemSerialize 类定义"
 class DAFIGURE_API DAChartItemSerialize
@@ -155,7 +155,7 @@ int DAChartItemSerialize::getRtti(const QByteArray& byte) const noexcept
 
 ### 2.2 DAChartPlotItemFactory - 工厂模式
 
-[DAChartPlotItemFactory.h](../../../../src/DAFigure/DAChartPlotItemFactory.h) 实现了 QwtPlotItem 的工厂模式。
+`src/DAFigure/DAChartPlotItemFactory.h` 实现了 QwtPlotItem 的工厂模式。
 
 ```cpp title="DAChartPlotItemFactory 类定义"
 class DAChartPlotItemFactory
@@ -200,7 +200,7 @@ static QHash<int, DAChartPlotItemFactory::FpItemCreate> initDAChartPlotItemFacto
 
 ### 2.3 DAChartItemsManager - 图表项管理器
 
-[DAChartItemsManager.h](./../../../src/DAGui/DAChartItemsManager.h) 用于管理图表项与唯一标识符的映射关系。
+`src/DAGui/Chart/DAChartItemsManager.h` 用于管理图表项与唯一标识符的映射关系。
 
 ```cpp title="DAChartItemsManager 类定义"
 class DAGUI_API DAChartItemsManager
@@ -919,7 +919,7 @@ void initializeMyPlugin()
 
 ### 6.1 DAGuiEnumStringUtils 机制
 
-[DAGuiEnumStringUtils.h](../../../../src/DAGui/DAGuiEnumStringUtils.h) 提供了枚举与字符串之间的转换功能，用于 XML 配置文件的读写。
+`src/DAGui/DAGuiEnumStringUtils.h` 提供了枚举与字符串之间的转换功能，用于 XML 配置文件的读写。
 
 ```cpp title="枚举转换使用"
 // 使用宏声明枚举转换
@@ -1040,11 +1040,11 @@ in >> item;  // 如果后续不使用，会泄漏
 
 | 文件 | 说明 |
 |------|------|
-| [DAChartSerialize.h](../../../../src/DAFigure/DAChartSerialize.h) | 序列化管理器头文件 |
-| [DAChartSerialize.cpp](../../../../src/DAFigure/DAChartSerialize.cpp) | 序列化管理器实现 |
-| [DAChartPlotItemFactory.h](../../../../src/DAFigure/DAChartPlotItemFactory.h) | 工厂模式头文件 |
-| [DAChartPlotItemFactory.cpp](../../../../src/DAFigure/DAChartPlotItemFactory.cpp) | 工厂模式实现 |
-| [DAChartItemsManager.h](./../../../src/DAGui/DAChartItemsManager.h) | 图表项管理器 |
-| [DAGuiEnumStringUtils.h](../../../../src/DAGui/DAGuiEnumStringUtils.h) | 枚举字符串转换 |
-| [DAZipArchiveTask_ChartItem.h](../../../../src/DAGui/DAZipArchiveTask_ChartItem.h) | 图表项归档任务 |
-| [DAZipArchiveTask_ChartItem.cpp](../../../../src/DAGui/DAZipArchiveTask_ChartItem.cpp) | 图表项归档任务实现 |
+| `src/DAFigure/DAChartSerialize.h` | 序列化管理器头文件 |
+| `src/DAFigure/DAChartSerialize.cpp` | 序列化管理器实现 |
+| `src/DAFigure/DAChartPlotItemFactory.h` | 工厂模式头文件 |
+| `src/DAFigure/DAChartPlotItemFactory.cpp` | 工厂模式实现 |
+| `src/DAGui/Chart/DAChartItemsManager.h` | 图表项管理器 |
+| `src/DAGui/DAGuiEnumStringUtils.h` | 枚举字符串转换 |
+| `src/DAGui/DAZipArchiveTask_ChartItem.h` | 图表项归档任务 |
+| `src/DAGui/DAZipArchiveTask_ChartItem.cpp` | 图表项归档任务实现 |

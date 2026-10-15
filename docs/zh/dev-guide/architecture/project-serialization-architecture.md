@@ -115,7 +115,7 @@ classDiagram
 
 ### 2.1 DAAbstractArchive - 抽象归档基类
 
-[DAAbstractArchive.h](../../../../src/DAGui/DAAbstractArchive.h) 定义了归档操作的抽象接口。
+`src/DAGui/DAAbstractArchive.h` 定义了归档操作的抽象接口。
 
 ```cpp title="DAAbstractArchive 核心接口"
 class DAAbstractArchive : public QObject
@@ -157,7 +157,7 @@ Q_SIGNALS:
 
 ### 2.2 DAAbstractArchiveTask - 抽象任务基类
 
-[DAAbstractArchiveTask.h](../../../../src/DAGui/DAAbstractArchiveTask.h) 定义了任务的抽象接口。
+`src/DAGui/DAAbstractArchiveTask.h` 定义了任务的抽象接口。
 
 ```cpp title="DAAbstractArchiveTask 核心接口"
 class DAAbstractArchiveTask : std::enable_shared_from_this<DAAbstractArchiveTask>
@@ -224,7 +224,7 @@ bool DAZipArchiveTask_ByteArray::exec(DAAbstractArchive* archive, DAAbstractArch
 
 ### 2.3 DAZipArchive - ZIP归档实现
 
-[DAZipArchive.h](../../../../src/DAGui/DAZipArchive.h) 和 [DAZipArchive.cpp](../../../../src/DAGui/DAZipArchive.cpp) 实现了基于 QuaZip 的 ZIP 归档功能。
+`src/DAGui/DAZipArchive.h` 和 `src/DAGui/DAZipArchive.cpp` 实现了基于 QuaZip 的 ZIP 归档功能。
 
 **核心功能**：
 
@@ -301,7 +301,7 @@ void DAZipArchive::saveAll(const QString& filePath)
 
 ### 2.4 DAZipArchiveThreadWrapper - 多线程封装
 
-[DAZipArchiveThreadWrapper.h](../../../../src/DAGui/DAZipArchiveThreadWrapper.h) 和 [DAZipArchiveThreadWrapper.cpp](../../../../src/DAGui/DAZipArchiveThreadWrapper.cpp) 提供了多线程操作封装。
+`src/DAGui/DAZipArchiveThreadWrapper.h` 和 `src/DAGui/DAZipArchiveThreadWrapper.cpp` 提供了多线程操作封装。
 
 **初始化流程**：
 
@@ -374,10 +374,10 @@ std::shared_ptr<DAAbstractArchiveTask> DAAbstractArchive::takeTask()
 
 | 任务类型 | 头文件 | 用途 |
 |---------|--------|------|
-| `DAZipArchiveTask_ByteArray` | [DAZipArchiveTask_ByteArray.h](../../../../src/DAGui/DAZipArchiveTask_ByteArray.h) | 保存/加载字节数组 |
-| `DAZipArchiveTask_Xml` | [DAZipArchiveTask_Xml.h](../../../../src/DAGui/DAZipArchiveTask_Xml.h) | 保存/加载 XML 文档 |
-| `DAZipArchiveTask_ArchiveFile` | [DAZipArchiveTask_ArchiveFile.h](../../../../src/DAGui/DAZipArchiveTask_ArchiveFile.h) | 压缩/解压本地文件 |
-| `DAZipArchiveTask_ChartItem` | [DAZipArchiveTask_ChartItem.h](../../../../src/DAGui/DAZipArchiveTask_ChartItem.h) | 保存/加载图表项 |
+| `DAZipArchiveTask_ByteArray` | `src/DAGui/DAZipArchiveTask_ByteArray.h` | 保存/加载字节数组 |
+| `DAZipArchiveTask_Xml` | `src/DAGui/DAZipArchiveTask_Xml.h` | 保存/加载 XML 文档 |
+| `DAZipArchiveTask_ArchiveFile` | `src/DAGui/DAZipArchiveTask_ArchiveFile.h` | 压缩/解压本地文件 |
+| `DAZipArchiveTask_ChartItem` | `src/DAGui/DAZipArchiveTask_ChartItem.h` | 保存/加载图表项 |
 
 ### 3.3 自定义任务开发
 
@@ -410,7 +410,7 @@ private:
 
 ### 4.1 DAAppProject::save() 完整流程
 
-[DAAppProject.cpp](../../../../src/APP/DAAppProject.cpp) 中的保存流程：
+`src/APP/DAAppProject.cpp` 中的保存流程：
 
 ```cpp title="DAAppProject::save 实现"
 bool DAAppProject::save(const QString& path)
@@ -1003,18 +1003,18 @@ void DAZipArchive::saveAll(const QString& filePath)
 
 | 文件 | 说明 |
 |------|------|
-| [DAAppProject.h](../../../../src/APP/DAAppProject.h) | 项目管理核心类 |
-| [DAAppProject.cpp](../../../../src/APP/DAAppProject.cpp) | 项目管理实现 |
-| [DAAbstractArchive.h](../../../../src/DAGui/DAAbstractArchive.h) | 抽象归档基类 |
-| [DAAbstractArchiveTask.h](../../../../src/DAGui/DAAbstractArchiveTask.h) | 抽象任务基类 |
-| [DAZipArchive.h](../../../../src/DAGui/DAZipArchive.h) | ZIP 归档实现 |
-| [DAZipArchive.cpp](../../../../src/DAGui/DAZipArchive.cpp) | ZIP 归档实现 |
-| [DAZipArchiveThreadWrapper.h](../../../../src/DAGui/DAZipArchiveThreadWrapper.h) | 多线程封装 |
-| [DAZipArchiveThreadWrapper.cpp](../../../../src/DAGui/DAZipArchiveThreadWrapper.cpp) | 多线程封装实现 |
-| [DAZipArchiveTask_ByteArray.h](../../../../src/DAGui/DAZipArchiveTask_ByteArray.h) | 字节数组任务 |
-| [DAZipArchiveTask_Xml.h](../../../../src/DAGui/DAZipArchiveTask_Xml.h) | XML 文档任务 |
-| [DAZipArchiveTask_ArchiveFile.h](../../../../src/DAGui/DAZipArchiveTask_ArchiveFile.h) | 文件任务 |
-| [DAZipArchiveTask_ChartItem.h](../../../../src/DAGui/DAZipArchiveTask_ChartItem.h) | 图表项任务 |
-| [DAChartItemsManager.h](./../../../src/DAGui/DAChartItemsManager.h) | 图表项管理器 |
-| [DAWorkflowSerializer](../../../../src/PyScripts/DAWorkbench/DAWorkFlowPy/serializer.py) | Python 工作流序列化器（含运行时状态钩子调用） |
-| [DAWorkflowNode](../../../../src/PyScripts/DAWorkbench/DAWorkFlowPy/node_def.py) | 节点基类（`serialize_runtime_state` / `deserialize_runtime_state` 钩子定义） |
+| `src/APP/DAAppProject.h` | 项目管理核心类 |
+| `src/APP/DAAppProject.cpp` | 项目管理实现 |
+| `src/DAGui/DAAbstractArchive.h` | 抽象归档基类 |
+| `src/DAGui/DAAbstractArchiveTask.h` | 抽象任务基类 |
+| `src/DAGui/DAZipArchive.h` | ZIP 归档实现 |
+| `src/DAGui/DAZipArchive.cpp` | ZIP 归档实现 |
+| `src/DAGui/DAZipArchiveThreadWrapper.h` | 多线程封装 |
+| `src/DAGui/DAZipArchiveThreadWrapper.cpp` | 多线程封装实现 |
+| `src/DAGui/DAZipArchiveTask_ByteArray.h` | 字节数组任务 |
+| `src/DAGui/DAZipArchiveTask_Xml.h` | XML 文档任务 |
+| `src/DAGui/DAZipArchiveTask_ArchiveFile.h` | 文件任务 |
+| `src/DAGui/DAZipArchiveTask_ChartItem.h` | 图表项任务 |
+| `src/DAGui/Chart/DAChartItemsManager.h` | 图表项管理器 |
+| `src/PyScripts/DAWorkbench/DAWorkFlowPy/serializer.py` | Python 工作流序列化器（含运行时状态钩子调用） |
+| `src/PyScripts/DAWorkbench/DAWorkFlowPy/node_def.py` | 节点基类（`serialize_runtime_state` / `deserialize_runtime_state` 钩子定义） |

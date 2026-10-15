@@ -209,6 +209,11 @@ markdown_extensions:
   - md_in_html
   - toc:
       permalink: true
+      # 默认的 slug 生成规则只保留 ASCII，中文标题会退化成 _1、_57 这样的锚点，
+      # 文档里指向中文标题的链接会全部失效。改用保留 Unicode 的规则。
+      slugify: !!python/object/apply:pymdownx.slugs.slugify
+        kwds:
+          case: lower
   - fenced_code
   - nl2br
   - admonition

@@ -115,11 +115,11 @@ except GraphRecursionError:
 - 软引导：`tool_node` 用 `_executed_call_sigs`（`deque(maxlen=8)`）记录本轮已执行的工具调用签名（`name`, `args_canonical`），重复时不再执行，改返回引导性 `ToolMessage`（不同参数不受影响）。
 - 硬终止：`agent_node` 跟踪 `_last_full_sig` / `_full_sig_repeat_count`，连续 3 次相同完整 `tool_calls` 签名（阈值 `_repeat_terminate_threshold=3`）则强制剥离 `tool_calls` 并以最终回复结束（router → END）。
 
-详见 [架构设计 - LangGraph 状态机](../architecture/architecture.md#langgraph-状态机) 与 [崩溃恢复 - 死循环防护](./crash-recovery.md#死循环防护)。
+详见 [架构设计 - LangGraph 状态机](./architecture.md#langgraph-状态机) 与 [崩溃恢复 - 死循环防护](./crash-recovery.md#死循环防护)。
 
 ### 补充能力：模型热替换（不重启子进程）
 
-切换 LLM 配置不再需要杀子进程重启。`DAAgentBridge::reconfigureAgent()` 下发 `reconfigure` 消息，Python 端 `AgentRunner.reconfigure()` 在两轮之间热替换 `ChatOpenAI` 实例，不丢 `MemorySaver` 会话状态，作为崩溃恢复路径之外的容错替代。详见 [通信协议 - reconfigure](./protocol.md#reconfigure--模型热替换)。
+切换 LLM 配置不再需要杀子进程重启。`DAAgentBridge::reconfigureAgent()` 下发 `reconfigure` 消息，Python 端 `AgentRunner.reconfigure()` 在两轮之间热替换 `ChatOpenAI` 实例，不丢 `MemorySaver` 会话状态，作为崩溃恢复路径之外的容错替代。详见 [通信协议 - reconfigure](./protocol.md#reconfigure模型热替换)。
 
 > 修复 commit：`bae7567`。
 

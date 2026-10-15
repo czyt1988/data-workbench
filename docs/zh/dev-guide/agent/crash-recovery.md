@@ -131,7 +131,7 @@ connect(m_bridge, &DAAgentBridge::sessionRestoreRequested,
 
 ### 模型热替换：不重启的容错替代路径
 
-当需要切换 LLM 配置（供应商 / 模型 / API Key）时，不必走「杀子进程 → 重启 → 恢复会话」的崩溃恢复路径。`DAAgentModule::setActiveModel()` → `DAAgentBridge::reconfigureAgent()` 下发 `reconfigure` 消息，Python 端 `AgentRunner.reconfigure()` 在两轮之间热替换 `ChatOpenAI` 实例，不重启子进程，`MemorySaver` 会话状态也不丢。失败安全：先构造新 LLM，成功后才更新，构造失败发 `error` 不破坏旧模型。详见 [通信协议 - reconfigure](./protocol.md#reconfigure--模型热替换)。
+当需要切换 LLM 配置（供应商 / 模型 / API Key）时，不必走「杀子进程 → 重启 → 恢复会话」的崩溃恢复路径。`DAAgentModule::setActiveModel()` → `DAAgentBridge::reconfigureAgent()` 下发 `reconfigure` 消息，Python 端 `AgentRunner.reconfigure()` 在两轮之间热替换 `ChatOpenAI` 实例，不重启子进程，`MemorySaver` 会话状态也不丢。失败安全：先构造新 LLM，成功后才更新，构造失败发 `error` 不破坏旧模型。详见 [通信协议 - reconfigure](./protocol.md#reconfigure模型热替换)。
 
 ### 死循环防护
 

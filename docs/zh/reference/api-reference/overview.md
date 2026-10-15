@@ -223,9 +223,9 @@ daCritical << "Failed to load plugin";         // 严重级别，进 UI 窗口
 
 完整的 API 文档由 Doxygen 自动生成，包含所有类、函数、枚举的详细说明：
 
-- [Doxygen API 首页](../../doxygen/index.html)
-- [类索引](../../doxygen/classes.html)
-- [文件列表](../../doxygen/files.html)
+- [Doxygen API 首页](../../../doxygen/index.html)
+- [类索引](../../../doxygen/classes.html)
+- [文件列表](../../../doxygen/files.html)
 
 !!! tip "Markdown vs Doxygen"
     本 Markdown API 总览提供导航和关键 API 速查，完整的成员函数文档请参考 Doxygen 生成的内容。

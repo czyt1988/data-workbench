@@ -14,7 +14,7 @@
         return True
     ```
 
-    详见 [DASystemNodes 插件开发指南](../../../plugins/DASystemNodes/AGENTS.md) 与 [Python 节点开发](../dev-guide/workflow/workflow-python-node-dev.md)。数据包装类为 `DA::DAData`（提供 `toDataFrame()` / `toSeries()` / `isNull()`），**不存在** `DADataPackage`。
+    详见 `plugins/DASystemNodes/AGENTS.md` 与 [Python 节点开发](../dev-guide/workflow/workflow-python-node-dev.md)。数据包装类为 `DA::DAData`（提供 `toDataFrame()` / `toSeries()` / `isNull()`），**不存在** `DADataPackage`。
 
 ### 1. 架构设计原则
 
