@@ -315,8 +315,16 @@ cmd_remove() {
     if [ "$(canon_path "$wt")" = "$(canon_path "$MAIN_WT")" ]; then
         die "拒绝删除主工作树: $wt"
     fi
-    is_registered_worktree "$wt" \
-        || die "$wt 不是已注册的工作树（只删除已注册的工作树，避免误删普通目录）"
+    if ! is_registered_worktree "$wt"; then
+        # 上一次删除时目录被占用（Windows 常见），git 已摘除注册、只留下空壳目录；
+        # 这里直接补删，否则再跑一次 --remove 只会得到「不是已注册的工作树」而无从下手。
+        if [ -z "$(ls -A "$wt" 2>/dev/null)" ]; then
+            rm -rf "$wt" || die "删除空壳目录失败: $wt（可能有进程占用它的当前目录）"
+            note "  已清理上次遗留的空壳目录: $wt"
+            return 0
+        fi
+        die "$wt 不是已注册的工作树（只删除已注册的工作树，避免误删普通目录）"
+    fi
 
     note "=== 删除工作树 ==="
     unlink_install_dirs "$wt"
@@ -332,8 +340,22 @@ cmd_remove() {
         if [ -n "$leftover" ]; then
             die "目录 $wt 里仍有联接/软链接（$leftover），拒绝递归删除；请手工确认后处理"
         fi
-        warn "git worktree remove 失败，但工作树已注销，改为删除残留目录"
-        rm -rf "$wt" || die "删除残留目录失败: $wt"
+        warn "git worktree remove 未能删掉目录（多为被占用），改为删除残留目录"
+        local attempt
+        for attempt in 1 2 3; do
+            rm -rf "$wt" 2>/dev/null && break
+            warn "  第 $attempt 次删除失败（目录被占用），1 秒后重试"
+            sleep 1
+        done
+        if [ -e "$wt" ]; then
+            warn "  残留目录仍未删除: $wt"
+            warn "  工作树已从 git 注册表摘除，剩下的是空壳目录，不影响分支与其它工作树；"
+            warn "  常见原因是终端/编辑器的当前目录还停在里面——退出该进程后执行: rm -rf '$wt'"
+            note ""
+            note "  已删除（git 侧已注销）: $wt"
+            note "  分支保留；合并到 dev 后可用 git branch -d <分支> 删除"
+            return 0
+        fi
     fi
     git worktree prune
     note "  已删除: $wt"
