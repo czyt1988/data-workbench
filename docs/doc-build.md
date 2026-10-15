@@ -1,9 +1,9 @@
 # 文档构建指南
 
-- ✅ **本地预览**：一键启动文档站点本地预览
-- ✅ **构建部署**：生成静态站点并部署到 GitHub Pages
-- ✅ **框架配置**：完整的 MkDocs Material 配置说明
-- ✅ **内网支持**：mermaid 图表和 KaTeX 公式使用本地静态资源，无需外网访问
+- **本地预览**：在本机启动文档站点预览
+- **构建部署**：生成静态站点并部署到 GitHub Pages
+- **框架配置**：MkDocs Material 配置说明
+- **内网支持**：mermaid 图表和 KaTeX 公式使用本地静态资源，无需外网访问
 
 本文档说明如何本地预览、构建和部署 data-workbench 项目文档站点。
 
@@ -26,7 +26,7 @@ mkdocs --version
 
 !!! note "内网环境说明"
     本文档站点使用本地静态资源渲染 mermaid 图表和 KaTeX 数学公式，**无需外网 CDN 访问**。
-    相关 JS/CSS 文件已放置在 `docs/js/` 和 `docs/css/` 目录中，请勿删除。
+    相关 JS/CSS 文件已放置在 `docs/js/` 和 `docs/css/` 目录中，不要删除。
 
 ---
 
@@ -68,7 +68,7 @@ mkdocs build --clean
 
 项目已配置 GitHub Actions（`.github/workflows/page.yml`），推送到指定分支后自动部署。
 
-也可以手动一键部署：
+也可以手动部署：
 
 ```bash
 # 一键部署到 GitHub Pages
@@ -258,7 +258,7 @@ pip install mkdocs-static-i18n
 项目文档遵循 `docs/doc-writing-guide.md` 中的撰写规范。关键要点：
 
 - **语言**：中文（简体），UTF-8 编码
-- **Admonition 语法**：使用 MkDocs Material 的 `!!!` 语法
+- **Admonition 语法**：用 MkDocs Material 的 `!!!` 语法
   ```markdown
   !!! note "标题"
       内容
@@ -270,7 +270,7 @@ pip install mkdocs-static-i18n
       警告内容
   ```
 - **代码块**：必须指定语言标识，关键行添加中文注释
-- **图表**：使用 mermaid 语法，每个图表前后添加文字说明
-- **交叉引用**：使用相对路径 `[文本](./other-doc.md)`
+- **图表**：用 mermaid 语法，每个图表前后添加文字说明
+- **交叉引用**：用相对路径 `[文本](./other-doc.md)`
 
 详细规范参见 [文档撰写指南](./doc-writing-guide.md)。

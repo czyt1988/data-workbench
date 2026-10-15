@@ -1,8 +1,8 @@
 # DAWorkBench 文档撰写规范手册
 
-本规范用于指导 DAWorkBench 项目中文文档的撰写，确保文档风格统一、内容完整、易于理解。
+本规范用于 DAWorkBench 项目中文文档的撰写，统一文档风格。
 
-项目文档使用 mkdocs 组织，采用 [mkdocs-material](https://squidfunk.github.io/mkdocs-material/getting-started/) 主题。文档绘图优先考虑 `mermaid`。
+项目文档使用 mkdocs 组织，采用 [mkdocs-material](https://squidfunk.github.io/mkdocs-material/getting-started/) 主题。文档绘图优先用 `mermaid`。
 
 ## 文档结构规范
 
@@ -30,7 +30,7 @@
 | 主要功能特性 | 必备 | 列举核心功能，使用 ✅ 标记 |
 | 使用方法 | 必备 | 详细使用步骤和代码示例 |
 | API 参考 | 推荐 | 核心类、方法、属性的表格说明 |
-| 注意事项 | 推荐 | 使用 `!!!` 格式标注重要信息 |
+| 注意事项 | 推荐 | 用 `!!!` 格式标注重要信息 |
 | 参考资料 | 可选 | 相关文档、示例路径链接 |
 
 ## 内容撰写原则
@@ -39,7 +39,7 @@
 
 - **每个代码块前后必须有文字说明**：解释代码作用、关键步骤、输出效果
 - **避免纯代码堆砌**：文字说明应占文档主体 60% 以上
-- **逐步引导**：按照"是什么 → 为什么 → 怎么用"的逻辑顺序组织
+- **逐步引导**：按照「是什么 → 为什么 → 怎么用」的逻辑顺序组织
 
 ### 2. 功能介绍格式
 
@@ -74,16 +74,16 @@ node->addOutputPort("data_out", "输出数据");
 
 ### 4. 概念解释要求
 
-对于复杂概念，使用以下方式辅助说明：
+对于复杂概念，可以用以下方式辅助说明：
 
-- **mermaid UML图**：展示类关系、继承结构
+- **mermaid UML 图**：展示类关系、继承结构
 - **mermaid 流程图**：展示工作流程、数据流
 - **mermaid 时序图**：展示交互过程
 - **配图**：实际效果截图
 
 ### 5. 注意事项格式
 
-使用 mkdocs-material 扩展语法标注重要信息：
+用 mkdocs-material 扩展语法标注重要信息：
 
 ```markdown
 !!! warning "重要警告"
@@ -188,7 +188,7 @@ sequenceDiagram
 效果截图前应说明对应的示例位置：
 
 ```markdown
-工作流的使用说明位于 `docs/zh/use-guide/workflow-usage.md`，效果截图如下：
+工作流的使用说明位于 `docs/zh/use-guide/workflow/basics.md`，效果截图如下：
 
 ![workflow-demo](../assets/screenshot/workflow-demo.png)
 ```
@@ -299,7 +299,7 @@ classDiagram
 
 ### 2. Qt 信号槽描述规范
 
-描述信号槽时使用以下格式：
+描述信号槽时用以下格式：
 
 ```markdown
 ### 信号
@@ -542,7 +542,3 @@ if (node->execute()) {
 - [插件开发指南](plugin-development.md)
 - 示例代码：`examples/workflow/basic`
 ```
-
----
-
-本规范适用于 DAWorkBench 项目所有中文文档的撰写。

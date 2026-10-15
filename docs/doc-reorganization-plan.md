@@ -1,7 +1,8 @@
 # 文档整理方案与资源审计报告（2026-08）
 
 > 本文档记录 `docs/zh/` 文档重组的执行结果，以及 `docs/assets/` 资源审计结论。
-> 第二节 🔴 "建议删除"清单已执行删除（2026-08-24）；🟡 清单已全部挂接到对应文档。
+> 之后使用指南又重组过一次，当前目录结构以 `mkdocs.yml` 为准。
+> 第二节 🔴 「建议删除」清单已执行删除（2026-08-24）；🟡 清单已全部挂接到对应文档。
 
 ---
 
@@ -44,7 +45,7 @@ docs/
 | `zh/appendix.md` | 拆解 | CMake 辅助宏 → `build/large-cmake-project-guide.md`；术语表/更新日志/社区/许可证与现有 `glossary.md`、`changelog.md`、`contribution-guide.md` 重复，直接舍弃 |
 | `zh/appendix-config.md` | `use-guide/configuration.md` | 仅 UI 状态配置、工作流序列化双轨表两段独有内容并入；`.dawproj` 章节在代码中不存在（虚构格式），弃掉 |
 | `dev-guide/plugin-project-create.md` | `plugin/plugin-development.md` | git submodule 细节、更完整的 CMake 示例（含 WIN32/MSVC 处理）、Python-first 插件结构、template.json 字段说明并入 |
-| `dev-guide/plugins-interfaces.md` | `plugin/plugin-system.md` | 两张 UML 图与"注意事项"并入；基类详解等重复且过时的内容舍弃 |
+| `dev-guide/plugins-interfaces.md` | `plugin/plugin-system.md` | 两张 UML 图与「注意事项」并入；基类详解等重复且过时的内容舍弃 |
 
 ### 导航与引用同步（已执行）
 
@@ -108,6 +109,6 @@ docs/
 
 ## 五、待确认事项
 
-1. ~~第二节 🔴 的 24 个文件是否全部删除~~ — 用户已核实，删除已执行（2026-08-24）。
+1. ~~第二节 🔴 的 24 个文件是否全部删除~~：用户已核实，删除已执行（2026-08-24）。
 2. 第三节 3 处断链定为补图：截图内容已描述，待用户截图后放入 `assets/screenshot/screenshot1.gif`、`assets/PIC/plugin-list.png`、`assets/screenshot/workflow-demo.png`。
-3. ~~`screenshot1.png` 是否就是 `screenshot1.gif` 的替代图~~ — 确认不作替代图，文件已删除。
+3. ~~`screenshot1.png` 是否就是 `screenshot1.gif` 的替代图~~：确认不作替代图，文件已删除。
