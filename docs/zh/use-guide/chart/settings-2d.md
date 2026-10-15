@@ -4,7 +4,7 @@
 
 ## 设置面板怎么组织
 
-「Setting / 设置」和「Agent / 智能体」、「Data Link Table / 数据联动表」共用主窗口右侧的同一个停靠区，三者以标签页排列。绘图设置占据其中一个标签页，具体编辑哪个对象由面板顶部的下拉框决定。
+「Setting / 设置」和「Agent Assistant / Agent 助手」、「Data Link Table / 数据联动表」共用主窗口右侧的同一个停靠区，三者以标签页排列。绘图设置占据其中一个标签页，具体编辑哪个对象由面板顶部的下拉框决定。
 
 面板被别的标签页盖住时，用 Ribbon 上的「Show Setting Window / 设置窗口」把设置页提到最前。停靠面板本身可以拖动和浮动，位置随界面布局一起保存，见[主界面](../getting-started/main-window.md)。
 
@@ -36,7 +36,7 @@
 
 有的字段会随着别的字段变灰。比如曲线样式选了 `Sticks`，填充相关的两个字段就不能改；误差棒关掉后，样式和画笔两个字段变灰。字段是灰的时候，改它不会有任何效果，先把控制它的开关打开。
 
-切换编辑对象有两条路。一条是在绘图上直接点选，另一条是在「Charts Manager / 绘图管理」停靠面板的树里点条目。树的列是「element / 绘图元素」、「visible / 可见性」、「property / 属性」，层级从绘图到坐标系，再到 `Axis` 树节点和 `plot item` 树节点。点坐标轴条目会切到对应的轴页面，点图元条目会切到该图元的那一行；图元不在当前坐标系时，面板会先把目标坐标系切过去。双击 `visible` 列只切换可见性，不改变当前打开的是哪一页。
+切换编辑对象有两条路。一条是在绘图上直接点选，另一条是在「Charts Manager / 绘图管理」停靠面板的树里点条目。树的列是「element / 绘图元素」、「visible / 可见性」、「property / 属性」，层级从绘图到坐标系，再到 `Axis` 树节点和 `plot item` 树节点。点坐标轴条目会切到对应的轴页面，点图元条目会切到该图元的那一行；图元不在当前坐标系时，面板会先把目标坐标系切过去。双击 `visible` 列会在单击的基础上多切换一次可见性，面板照样跟着这一行切换。
 
 绘图本身的尺寸和背景不在这个下拉框里，它有单独的页面，入口是「Charts Manager / 绘图管理」标题栏上那个齿轮按钮，见本章的「绘图自身的设置」一节。
 
@@ -61,7 +61,7 @@
 
 字体大小按点数给定，坐标系放大缩小时文字大小不变，缩放数据范围也不影响它们。图注比较多的时候，把说明放进脚注比塞进标题更容易读。
 
-这一页没有对数刻度、图例开关和网格开关。网格和图例在 Ribbon 的「Chart Style / 绘图样式」页上，对数刻度目前没有界面入口，见本章「坐标轴」一节的说明。
+这一页没有对数刻度、图例开关和网格开关。网格和图例在 Ribbon 的「Chart Style / 图表样式」页上，对数刻度目前没有界面入口，见本章「坐标轴」一节的说明。
 
 ## 绘图区（Canvas Area / 绘图区）
 
@@ -99,9 +99,9 @@
 
 `Enable Axis` 关掉后整条轴消失，包括轴线、刻度数字和轴标题。轴对应的数据图元不会跟着消失，只是没有了参照。这一页是开关轴的主要入口，绘图管理树里 `visible` 列也能达到同样效果。X 轴的可见性还会影响数据探针的徽标位置，两条 X 轴都关掉时徽标随之隐藏，见[数据探针与数据联动表](./data-probe.md)。
 
-`Label Text` 是轴的标题文字，和刻度数字无关。字号、颜色、对齐和旋转都作用在这行标题上。`Label Font` 按 Qwt 的接口说明改的是刻度数字的字体，源码注释里明确写了它不改轴标题的字体。`Label Font Color` 写入尺度控件的调色板文本色，刻度数字和轴标题都用它。
+`Label Text` 是轴的标题文字，和刻度数字无关。`Label Font` 改的是刻度数字的字体，源码注释里明确写了它不改轴标题的字体。`Label Font Color` 写入尺度控件的调色板文本色，刻度数字和轴标题都用它。`Label Alignment` 和 `Label Rotation` 也只作用在刻度数字上。
 
-`Label Rotation` 让标题绕自身旋转，填 90 得到竖排文字，取值范围是 −360 到 360 度。文字较长时旋转能省下横向空间，四个方向的轴都支持。`Label Alignment` 是标题沿轴线方向的摆放位置，九宫格里的选项决定标题是靠左、居中还是靠右。
+`Label Rotation` 让刻度数字绕自身旋转，填 90 得到竖排数字，取值范围是 −360 到 360 度。刻度数字较长时旋转能省下横向空间，四个方向的轴都支持。`Label Alignment` 是刻度数字沿轴线方向的摆放位置，九宫格里的选项决定数字靠左、居中还是靠右。
 
 刻度部分：
 
@@ -141,10 +141,10 @@
 
 | 分组 | 设置 | 默认值 | 可选值 |
 |------|------|--------|--------|
-| `Basic` / 基础 | `Picker Mode` | `Off` / 关闭 | `Off` / 关闭、`Y Value` / Y值拾取、`XY Value` / XY值拾取 |
+| `Basic` / 基础 | `Picker Mode` | `Off` / 关闭 | `Off` / 关闭、`Y Value` / Y值、`XY Value` / XY值拾取 |
 | `Basic` / 基础 | `Show X Value` | 开 | 开或关 |
 | `Basic` / 基础 | `Text Placement` | `Follow Top` / 跟随顶部 | 见下方列表，共十项 |
-| `Basic` / 基础 | `Interpolation` | `None` / 无插值 | `None` / 无插值、`Linear` / 线性插值 |
+| `Basic` / 基础 | `Interpolation` | `None` / 无 | `None` / 无、`Linear` / 线性 |
 
 `Picker Mode` 的三个取值对应 Ribbon 上 `Y Picker` 和 `XY Picker` 两个动作，二者互斥。选 `Y Value` 时鼠标在一组曲线上移动，读数框显示最近曲线在横坐标上的数值；选 `XY Value` 时同时给出横纵坐标；选 `Off` 时读数框不再出现。
 
@@ -185,7 +185,7 @@
 
 数据探针会话会改写这一页的设置：进入探针模式后，每个坐标系的 `Picker Mode` 变成 `Y Value`，`Picker Group Enabled` 跟着打开，退出模式后这两项保持当时的状态不回退，见[数据探针与数据联动表](./data-probe.md)。
 
-Ribbon 上的 `Y Picker` 按钮带一个下拉菜单，菜单里也能改文字位置和是否显示 X 值，菜单项的写法是 `At Canvas Left Top`、`Left Bottom`、`Right Top`、`Right Bottom`、`Follow Mouse` 以及 `Y Picker Show X Value`。这些菜单项和本节字段改的是同一批底层参数，两处显示的选项名不完全一致，改哪一处都会立即反映到读数框上。菜单底部的「Data Picker Setting / 数据拾取设置」直接把设置面板切到这一页并提到最前，是打开本页最快的一条路。
+Ribbon 上的 `Y Picker` 按钮带一个下拉菜单，菜单里也能改文字位置和是否显示 X 值，菜单项的写法是 `At Canvas Left Top`、`At Canvas Left Bottom`、`At Canvas Right Top`、`At Canvas Right Bottom`、`Follow Mouse` 以及 `Y Picker Show X Value`。这些菜单项和本节字段改的是同一批底层参数，两处显示的选项名不完全一致，改哪一处都会立即反映到读数框上。菜单底部的「Data Picker Setting / 数据拾取设置」直接把设置面板切到这一页并提到最前，是打开本页最快的一条路。
 
 ## 绘图自身的设置
 
@@ -195,8 +195,8 @@ Ribbon 上的 `Y Picker` 按钮带一个下拉菜单，菜单里也能改文字�
 |------|------|--------|------|
 | `Size` / 尺寸 | `Min Width` | 0 | 绘图的最小宽度，0 表示不设下限 |
 | `Size` / 尺寸 | `Min Height` | 0 | 绘图的最小高度，0 表示不设下限 |
-| `Size` / 尺寸 | `Max Width` | 0 | 绘图的最大宽度，0 表示不限制 |
-| `Size` / 尺寸 | `Max Height` | 0 | 绘图的最大高度，0 表示不限制 |
+| `Size` / 尺寸 | `Max Width` | 16777215 | 绘图的最大宽度，不主动改就是 Qt 的像素上限 |
+| `Size` / 尺寸 | `Max Height` | 16777215 | 绘图的最大高度，不主动改就是 Qt 的像素上限 |
 | `Background` / 背景 | `Background Brush` | 空画刷 | 绘图底色 |
 
 四个尺寸字段的单位是像素，取值范围是 0 到 999999999，控制的是绘图画布本身能缩到多小、能放大到多大，不影响坐标系在绘图里的位置。绘图停靠区被拉宽时，画布会跟着变宽，给绘图设一个最大宽度就能让它停在上限处，超出的部分留白。
@@ -209,9 +209,9 @@ Ribbon 上的 `Y Picker` 按钮带一个下拉菜单，菜单里也能改文字�
 
 ### 应用到所有绘图
 
-Ribbon 的「Chart Style / 绘图样式」页上有一个开关「Apply All Charts / 应用到所有绘图」，提示文字是「When this feature is selected, operations on the figure will apply to all plots, not just the currently selected one」。
+Ribbon 的「Chart Style / 图表样式」页、「Chart Setting / 绘图设置」面板上有一个开关「Apply All Charts / 应用到所有绘图」，提示文字是「When this feature is selected, operations on the figure will apply to all plots, not just the currently selected one」。
 
-这个开关是带勾选状态的按钮，勾选之后状态留在当前运行期间。到目前为止，读这个状态的接口在代码里没有调用者，也就是说勾上它之后，绘图设置依然只作用于当前选中的对象，不会自动套用到同一个绘图里的其他坐标系。要多改几个坐标系，需要逐个选中再改，见[绘图与坐标系](./figure.md)。
+这个开关是带勾选状态的按钮，勾选之后状态留在当前运行期间。它管的是 Ribbon 上的图表动作：勾上之后再点 `Enable Grid`、缩放、平移、拾取、图例这些动作，会对同一个绘图里的所有坐标系生效；不勾时只作用于当前选中的那一个。设置面板里的各项设置不受它影响，改参数始终只写给面板当前编辑的对象，要多改几个坐标系只能逐个选中再改，见[绘图与坐标系](./figure.md)。
 
 需要留意的是，这项勾选状态不在界面布局保存的内容里，重新打开软件后开关回到默认状态。
 
@@ -239,7 +239,7 @@ Ribbon 的「Chart Style / 绘图样式」页上有一个开关「Apply All Char
 | `Marker` / 标记 | `Enable Marker`、`Symbol` |
 | `Attributes` / 属性 | `Fitted` / 拟合、`Inverted` / 反转 |
 | `Legend` / 图例 | `Show Line`、`Show Symbol`、`Show Brush` |
-| `Fill` / 填充 | `Enable Fill`、`Fill Brush` |
+| `Fill` / 底色 | `Enable Fill`、`Fill Brush` |
 | `Baseline` / 基线 | `Baseline` |
 | `Orientation` / 方向 | `Orientation`：`Horizontal` / 水平、`Vertical` / 垂直 |
 
@@ -247,7 +247,7 @@ Ribbon 的「Chart Style / 绘图样式」页上有一个开关「Apply All Char
 
 `Baseline` 是一个文本框，填数字，作为填充的下边界。填的不是数字时输入会被忽略，曲线维持原样。`Orientation` 影响两件事：`Sticks` 样式的棒是竖着还是横着画，填充区域以哪条方向的基线为界。数据本身还是照 X 和 Y 两组序列摆放，这个选项不交换坐标轴。
 
-`Marker` 分组里的 `Symbol` 是一个符号编辑器，可以挑符号形状、尺寸、颜色和轮廓画笔，形状有 `No Symbol` / 无符号、`Ellipse` / 椭圆、`Rectangle` / 矩形、`Diamond` / 菱形、`Triangle` / 三角形 以及各种方向的三角形、`Cross` / 十字、`Diagonal Cross` / 斜十字、`Horizontal Line` / 水平线、`Vertical Line` / 垂直线等。关闭 `Enable Marker` 后不画符号。
+`Marker` 分组里的 `Symbol` 是一个符号编辑器，可以挑符号形状、尺寸、颜色和轮廓画笔，形状有 `No Symbol` / 无符号、`Ellipse` / 椭圆、`Rectangle` / 矩形、`Diamond` / 菱形、`Triangle` / 三角形 以及各种方向的三角形、`Cross` / 十字标记、`Diagonal Cross` / 斜十字、`Horizontal Line` / 水平线、`Vertical Line` / 垂直线等。关闭 `Enable Marker` 后不画符号。
 
 `Legend` 分组的三个开关决定图例条目里画哪些部分，`Show Line` 画线，`Show Symbol` 画符号，`Show Brush` 画填充，三个都关掉时图例里只留文字。三个开关只影响图例，不影响曲线本身的外观。
 
@@ -258,12 +258,12 @@ Ribbon 的「Chart Style / 绘图样式」页上有一个开关「Apply All Char
 | `Basic` / 基础 | `Title`、`Z Value` |
 | `Axis` / 坐标轴 | `X Axis`、`Y Axis` |
 | `Legend` / 图例 | `Legend Mode` / 图例模式：`Chart Mode` / 图表模式、`Bar Mode` / 柱状模式 |
-| `Fill` / 填充 | `Enable Fill`、`Fill Brush` |
+| `Fill` / 底色 | `Enable Fill`、`Fill Brush` |
 | `Edge` / 边框 | `Enable Edge`、`Edge Pen` |
 | `Baseline` / 基线 | `Baseline` |
 | `Layout` / 布局 | `Layout Policy` / 布局策略、`Layout Hint` / 布局提示、`Spacing` / 间距、`Margin` / 边距 |
 
-`Legend Mode` 决定图例里出现一项还是按柱子出现两项。`Chart Mode` / 图表模式 只给整个图表一项，用图元的标题当文字；`Bar Mode` / 柱状模式 给每根柱子各一项，用柱子的名字当文字。新建的柱状图默认用 `Chart Mode`。
+`Legend Mode` 决定图例里出现一项还是多项。`Chart Mode` / 图表模式 只给整个图表一项，用图元的标题当文字；`Bar Mode` / 柱状模式 给每根柱子各一项，用柱子的名字当文字。新建的柱状图默认用 `Chart Mode`。
 
 `Layout Policy` 的四个取值是 `Auto Adjust Samples` / 自动调整采样、`Scale Samples To Axes` / 采样缩放至坐标轴、`Scale Sample To Canvas` / 采样缩放至画布、`Fixed Sample Size` / 固定采样尺寸。自动调整让柱宽随数据点数量变，缩放到坐标轴让柱宽按数据单位算，缩放到画布让柱宽按像素算，固定尺寸则始终用 `Layout Hint` 指定的宽度。布局策略和布局提示两个值一起决定柱宽，新建的柱状图默认是自动调整采样，布局提示 0.5。`Spacing` 的取值是 0 到 1000，默认 10；`Margin` 的取值是 0 到 1000，默认 5，两者分别控制柱与柱之间、柱与轴之间的留白。
 
@@ -276,7 +276,7 @@ Ribbon 的「Chart Style / 绘图样式」页上有一个开关「Apply All Char
 | `Basic` / 基础 | `Title`、`Z Value` |
 | `Axis` / 坐标轴 | `X Axis`、`Y Axis` |
 | `Error Bar` / 误差棒 | `Enable Error Bar`、`Error Bar Style` / 误差棒样式、`Error Bar Pen` |
-| `Fill` / 填充 | `Enable Fill`、`Fill Brush` |
+| `Fill` / 底色 | `Enable Fill`、`Fill Brush` |
 | `Curve` / 曲线 | `Orientation`、`Curve Pen` |
 
 `Error Bar Style` 有两个取值，`Bar` / 柱状 把误差画成一根带端帽的竖线，`Box` / 方框 画成一个矩形框。`Curve Pen` 是穿过各点的连线画笔，`Error Bar Pen` 是误差线的画笔，两者可以设成不同颜色。区间是数据点加减误差列给出的值，误差列在建图时选定。
@@ -287,7 +287,7 @@ Ribbon 的「Chart Style / 绘图样式」页上有一个开关「Apply All Char
 
 | 分组 | 设置 |
 |------|------|
-| `Basic` / 基础 | `Title`、`Z Value` |
+| `Basic` / 基础 | `Title`、`Z Value`、`X Axis`、`Y Axis` |
 | `Drawing` / 绘制 | `Orientation`、`Pen Width` / 笔宽、`Clip Points` / 裁剪点 |
 | `Color Map` / 颜色映射 | `Color Range Min` / 颜色范围最小值、`Color Range Max` / 颜色范围最大值 |
 
@@ -302,17 +302,17 @@ Ribbon 的「Chart Style / 绘图样式」页上有一个开关「Apply All Char
 | `Magnitude` / 幅值 | `Magnitude As Color` / 幅值映射颜色、`Magnitude As Length` / 幅值映射长度、`Min Arrow Length` / 最小箭头长度、`Max Arrow Length` / 最大箭头长度、`Magnitude Scale Factor` / 幅值缩放因子 |
 | `Filter` / 过滤 | `Filter Vectors` / 过滤矢量、`Raster Width` / 栅格宽度、`Raster Height` / 栅格高度 |
 
-`Indicator Origin` 决定箭头以哪一端对准数据点，可选 `Head` / 头部、`Tail` / 尾部、`Center` / 中心。幅值相关的两个开关决定箭头的大小和颜色是否随数值变化，打开长度映射后箭头长度被限制在最小和最大值之间，缩放因子把原始幅值整体乘一个系数。`Filter Vectors` 打开后按栅格抽稀，只保留栅格点上的箭头，`Raster Width` 和 `Raster Height` 是栅格在横纵方向上的像素间距。
+`Indicator Origin` 决定箭头以哪一端对准数据点，可选 `Head` / 头部、`Tail` / 尾部、`Center` / 居中。幅值相关的两个开关决定箭头的大小和颜色是否随数值变化，打开长度映射后箭头长度被限制在最小和最大值之间，缩放因子把原始幅值整体乘一个系数。`Filter Vectors` 打开后按栅格抽稀，只保留栅格点上的箭头，`Raster Width` 和 `Raster Height` 是栅格在横纵方向上的像素间距。
 
 **多重柱状 / Multi Bar** 页在一个横坐标上并排或堆叠多组柱体，图元用一列 X 和多列 Y 创建，每个 Y 序列是一组柱。
 
 | 分组 | 设置 |
 |------|------|
-| `Basic` / 基础 | `Title`、`Z Value` |
+| `Basic` / 基础 | `Title`、`Z Value`、`X Axis`、`Y Axis` |
 | `Style` / 样式 | `Orientation`、`Chart Style` / 图表样式、`Baseline` |
 | `Layout` / 布局 | `Layout Policy` / 布局策略、`Layout Hint` / 布局提示、`Spacing` / 间距、`Margin` / 边距 |
 
-`Chart Style` 只有两个取值，`Grouped` / 分组 把多组柱体并排摆放，`Stacked` / 堆叠 把它们摞成一根，新建的多重柱状默认用分组。用堆叠时同一组里的数值需要同号，正负混在一起摞出来的高度没有意义。`Layout Policy` 的四个取值和柱状页一致，但用的是 `Auto Adjust` / 自动调整、`Scale To Axes` / 缩放到坐标轴、`Scale To Canvas` / 缩放到画布、`Fixed Sample Size` / 固定采样尺寸。`Spacing` 和 `Margin` 的取值都是 0 到 1000。
+`Chart Style` 只有两个取值，`Grouped` / 分组 把多组柱体并排摆放，`Stacked` / 堆叠 把它们摞成一根，新建的多重柱状默认用分组。用堆叠时同一组里的数值需要同号，正负混在一起摞出来的高度没有意义。`Layout Policy` 的四个取值和柱状页一致，但用的是 `Auto Adjust` / 自动调整、`Scale To Axes` / 缩放到坐标轴、`Scale To Canvas` / 缩放到画布、`Fixed Sample Size` / 固定采样尺寸。`Spacing` 的取值是 0 到 1000，默认 10；`Margin` 的取值是 0 到 1000，默认 5。
 
 **直方图 / Histogram** 页把一组数值画成分布。图元由建图向导用一列数据和分箱数创建，箱子里的计数在创建时就定下来。
 
@@ -321,7 +321,7 @@ Ribbon 的「Chart Style / 绘图样式」页上有一个开关「Apply All Char
 | `Basic` / 基础 | `Title`、`Z Value`、`X Axis`、`Y Axis` |
 | `Style` / 样式 | `Orientation`、`Histogram Style` / 直方图样式、`Pen`、`Brush`、`Baseline` |
 
-`Orientation` 选 `Vertical` 时柱子朝上长，选 `Horizontal` 时朝右长。`Histogram Style` 的三个取值是 `Outline` / 轮廓、`Columns` / 柱状、`Lines` / 线条，分别对应只勾轮廓、画实心柱、只画竖向线，新建的直方图默认画实心柱。`Baseline` 是数值输入，范围 −1e15 到 1e15，默认 0，决定柱体的起点高度。`Pen` 是轮廓画笔，`Brush` 是填充画刷，选 `Outline` 时只看画笔颜色，选 `Columns` 时两者都起作用。
+`Orientation` 选 `Vertical` 时柱子朝上长，选 `Horizontal` 时朝右长。`Histogram Style` 的三个取值是 `Outline` / 轮廓、`Columns` / 柱状、`Lines` / 线条，分别对应画轮廓多边形、画实心柱、只画竖向线，新建的直方图默认画实心柱。`Baseline` 是数值输入，范围 −1e15 到 1e15，默认 0，决定柱体的起点高度。`Pen` 是轮廓画笔，`Brush` 是填充画刷：`Outline` 样式下画笔勾出多边形轮廓、画刷铺多边形内部，`Columns` 样式下两者分别管柱体的边和底色，`Lines` 样式只用画笔。
 
 直方图的分箱数在创建时确定，设置页里改不了。Y 轴显示计数还是密度同样在建图时选定。
 
@@ -331,7 +331,7 @@ Ribbon 的「Chart Style / 绘图样式」页上有一个开关「Apply All Char
 |------|------|
 | `Basic` / 基础 | `Title`、`Z Value` |
 | `Axis` / 坐标轴 | `X Axis`、`Y Axis` |
-| `Display` / 显示 | `Display Mode` / 显示模式：`Image Mode` / 图像模式、`Contour Mode` / 等值线模式 |
+| `Display` / 视图显示 | `Display Mode` / 显示模式：`Image Mode` / 图像模式、`Contour Mode` / 等值线模式 |
 | `Color` / 颜色 | `From Color` / 起始颜色、`To Color` / 终止颜色 |
 | `Contour` / 等值线 | `Contour Pen` |
 
@@ -339,7 +339,7 @@ Ribbon 的「Chart Style / 绘图样式」页上有一个开关「Apply All Char
 
 ### 标注与装饰图元
 
-这一组图元本身不含数据序列，用来在图上加说明和参照。添加它们的入口在 Ribbon 的「Chart Edit / 图表编辑」页，「Select Tool / 选区工具」面板里有 `Add Rect`、`Add Ellipse`、`Add Polygon`，「Assist Tools / 辅助工具」面板里有 `Add Cross Marker`、`Add H Line Marker`、`Add V Line Marker`、`Add Arrow Marker`、`Add Text`。网格和图例不在那里的入口上，网格由「Chart Style / 绘图样式」页的 `Enable Grid` 打开，图例由同页的 `Legend` 打开。按钮和设置页的对应关系如下。
+这一组图元本身不含数据序列，用来在图上加说明和参照。添加它们的入口在 Ribbon 的「Chart Edit / 绘图编辑」页，「Select Tool / 选区工具」面板里有 `Add Rect`、`Add Ellipse`、`Add Polygon`，「Chart Assist Tool / 图表辅助工具」面板里有 `Add Cross Marker`、`Add H Line Marker`、`Add V Line Marker`、`Add Arrow Marker`、`Add Text`。网格和图例不在那里的入口上，网格由「Chart Style / 图表样式」页的 `Enable Grid` 打开，图例由同页的 `Legend` 打开。按钮和设置页的对应关系如下。
 
 | Ribbon 动作 | 生成的图元 | 设置页 |
 |-------------|------------|--------|
@@ -361,7 +361,7 @@ Ribbon 的「Chart Style / 绘图样式」页上有一个开关「Apply All Char
 | 分组 | 设置 |
 |------|------|
 | `Basic` / 基础 | `Title`、`Z Value`、`X Axis`、`Y Axis` |
-| `Text` / 文本 | `Text Content` / 文本内容、`Font`、`Text Color` / 文字颜色、`Alignment` / 对齐方式、`Margin` / 外边距 |
+| `Text` / 文本 | `Text Content` / 文本内容、`Font`、`Text Color` / 文字颜色、`Alignment` / 对齐、`Margin` / 边距 |
 | `Background` / 背景 | `Border Radius` / 边框圆角、`Background Brush` |
 
 文本内容支持多行，外边距的取值是 0 到 1000 像素，边框圆角的取值是 0 到 50。
@@ -372,8 +372,8 @@ Ribbon 的「Chart Style / 绘图样式」页上有一个开关「Apply All Char
 
 | 分组 | 设置 |
 |------|------|
-| `Basic` / 基础 | `Title`、`Z Value`、`X Axis`、`Y Axis`、`Anchor X` / 锚点X、`Anchor Y` / 锚点Y |
-| `Text` / 文本 | `Content` / 内容、`Font`、`Text Color` / 文字颜色 |
+| `Basic` / 基础 | `Title`、`Z Value`、`X Axis`、`Y Axis`、`Anchor X` / 锚点 X、`Anchor Y` / 锚点 Y |
+| `Text` / 文本 | `Content` / 内容、`Font`、`Text Color` / 文字颜色、`Alignment` / 对齐 |
 | `Background` / 背景 | `Border Radius` / 边框圆角、`Background Brush` |
 | `Layout` / 布局 | `Spacing` / 间距 |
 
@@ -389,10 +389,10 @@ Ribbon 的「Chart Style / 绘图样式」页上有一个开关「Apply All Char
 |------|------|
 | `Basic` / 基础 | `Title`、`Z Value`、`X Axis`、`Y Axis` |
 | `Position` / 位置 | `X Value` / X值、`Y Value` / Y值 |
-| `Line` / 线条 | `Line Style` / 线条样式、`Line Pen` / 线条画笔 |
-| `Label` / 标签 | `Label` / 标签文本、`Label Alignment` / 标签对齐、`Label Orientation` / 标签方向、`Spacing` / 间距 |
+| `Line` / 线 | `Line Style` / 线样式、`Line Pen` / 线条画笔 |
+| `Label` / 标签 | `Label` / 标签、`Label Alignment` / 标签对齐、`Label Orientation` / 标签方向、`Spacing` / 间距 |
 
-`Line Style` 的四个取值是 `No Line` / 无线、`Horizontal` / 水平、`Vertical` / 垂直、`Cross` / 十字，画横线时只有 `Y Value` 有意义，画竖线时只有 `X Value` 有意义，`Cross` 两处都用。标签文本显示在线的旁边，`Label Orientation` 可选 `Horizontal` / 水平 或 `Vertical` / 垂直，`Spacing` 是标签离线的距离，取值 0 到 1000。
+`Line Style` 的四个取值是 `No Line` / 无线、`Horizontal` / 水平、`Vertical` / 垂直、`Cross` / 十字标记，画横线时只有 `Y Value` 有意义，画竖线时只有 `X Value` 有意义，`Cross` 两处都用。标签文本显示在线的旁边，`Label Orientation` 可选 `Horizontal` / 水平 或 `Vertical` / 垂直，`Spacing` 是标签离线的距离，取值 0 到 1000。
 
 标记线常用来标参考值，比如把 `Y Value` 填成阈值、线型选 `Horizontal`，再在标签里写上这个阈值的名字。三条 Ribbon 动作分别对应十字、水平和垂直三种线型，添加后不需要再改线型。新建的标记线是一条红色虚线，用 `Line Pen` 换成别的颜色或线型。标记线可以用鼠标拖动，拖动把新的位置写回图元；设置页里的数值要重新选中这个图元才会刷新。
 
@@ -400,9 +400,9 @@ Ribbon 的「Chart Style / 绘图样式」页上有一个开关「Apply All Char
 
 | 分组 | 设置 |
 |------|------|
-| `Basic` / 基础 | `Title`、`Z Value` |
-| `Position` / 位置 | `Position Mode` / 位置模式、`Start X` / 起点X、`Start Y` / 起点Y、`End X` / 终点X、`End Y` / 终点Y、`Length` / 长度、`Angle` / 角度 |
-| `Line` / 线条 | `Line Pen` / 线条画笔 |
+| `Basic` / 基础 | `Title`、`Z Value`、`X Axis`、`Y Axis` |
+| `Position` / 位置 | `Position Mode` / 定位模式、`Start X` / 起点X、`Start Y` / 起点Y、`End X` / 终点X、`End Y` / 终点Y、`Length` / 长度、`Angle` / 角度 |
+| `Line` / 线 | `Line Pen` / 线条画笔 |
 | `Head` / 头部 | `Head Style` / 头部样式、`Head Size` / 头部尺寸、`Head Pen` / 头部画笔、`Head Brush` / 头部画刷 |
 | `Tail` / 尾部 | `Tail Style` / 尾部样式、`Tail Size` / 尾部尺寸、`Tail Pen` / 尾部画笔、`Tail Brush` / 尾部画刷 |
 
@@ -414,7 +414,7 @@ Ribbon 的「Chart Style / 绘图样式」页上有一个开关「Apply All Char
 
 | 分组 | 设置 |
 |------|------|
-| `Basic` / 基础 | `Title`、`Z Value` |
+| `Basic` / 基础 | `Title`、`Z Value`、`X Axis`、`Y Axis` |
 | `Appearance` / 外观 | `Pen`、`Brush`、`Legend Mode` / 图例模式 |
 | `Render` / 渲染 | `Render Tolerance` / 渲染容差、`Clip Polygons` / 裁剪多边形 |
 
@@ -426,7 +426,7 @@ Ribbon 的「Chart Style / 绘图样式」页上有一个开关「Apply All Char
 
 | 分组 | 设置 |
 |------|------|
-| `Basic` / 基础 | `Title`、`Z Value` |
+| `Basic` / 基础 | `Title`、`Z Value`、`X Axis`、`Y Axis` |
 | `Zone` / 区间 | `Orientation`、`Interval Min` / 区间最小值、`Interval Max` / 区间最大值 |
 | `Appearance` / 外观 | `Pen`、`Brush` |
 
@@ -447,10 +447,10 @@ Ribbon 的「Chart Style / 绘图样式」页上有一个开关「Apply All Char
 | 分组 | 设置 |
 |------|------|
 | `Basic` / 基础 | `Title`、`Z Value`、`X Axis`、`Y Axis` |
-| `Scale` / 刻度 | `Alignment` / 对齐方式、`Position` / 位置、`Border Distance` / 边框距离、`Sync Scale From Axis` / 同步坐标轴刻度 |
+| `Scale` / 刻度 | `Alignment` / 对齐、`Position` / 位置、`Border Distance` / 边框距离、`Sync Scale From Axis` / 同步坐标轴刻度 |
 | `Font` / 字体 | `Font` / 字体 |
 
-`Alignment` 可选 `Bottom` / 底部、`Top` / 顶部、`Left` / 左侧、`Right` / 右侧，决定刻度数字画在哪一侧。`Position` 是刻度尺在轴上的归一化位置，0 到 1。`Border Distance` 是刻度尺离画布边界的距离，默认 −1 表示自动，范围 −1 到 9999。
+`Alignment` 可选 `Bottom` / 底部、`Top` / 顶部、`Left` / 左侧、`Right` / 右侧，决定刻度数字画在哪一侧，也决定刻度尺是横放还是竖放。`Position` 是刻度尺在另一条轴上的数据坐标位置，横放的刻度尺填 Y 值，竖放的填 X 值，输入框允许 0 到 100。`Border Distance` 是刻度尺离画布边界的距离，默认 −1 表示自动，范围 −1 到 9999。
 
 刻度尺画在画布内部，和坐标轴的区别就是位置更靠里，方便把数字摆在离曲线近的地方。对齐方式决定它贴在哪条边，挂靠的轴由 `X Axis` 和 `Y Axis` 两个下拉框决定。`Font` 分组改的是刻度尺自己的数字字体，和坐标轴页的字体设置各管一处。
 
@@ -469,7 +469,7 @@ Ribbon 的「Chart Style / 绘图样式」页上有一个开关「Apply All Char
 
 图例条目的内容来自各个图元：曲线页的 `Legend` 分组决定曲线在条目里画线、画符号还是画填充，柱状页的 `Legend Mode` 决定按图表给一项还是按柱子给多项，形状页的 `Legend Mode` 决定用图形还是色块表示。图例条目左侧的色块颜色取图元的颜色，曲线取画笔颜色，柱状取填充颜色。
 
-图例位置还有一条更快的路：Ribbon「Chart Style / 绘图样式」页的 `Legend` 按钮带一个下拉菜单，里面有 `Legend Top`、`Legend Bottom`、`Legend Left`、`Legend Right`。
+图例位置还有一条更快的路：Ribbon「Chart Style / 图表样式」页的 `Legend` 按钮带一个下拉菜单，里面有 `Legend Top`、`Legend Bottom`、`Legend Left`、`Legend Right`。
 
 ### 箱体图
 
@@ -478,7 +478,7 @@ Ribbon 的「Chart Style / 绘图样式」页上有一个开关「Apply All Char
 | 分组 | 设置 |
 |------|------|
 | `Basic` / 基础 | `Title`、`Z Value`、`X Axis`、`Y Axis` |
-| `Box` / 箱体 | `Orientation`、`Box Style` / 箱体样式、`Box Extent` / 箱体宽度、`Min Box Width` / 最小宽度、`Max Box Width` / 最大宽度、`Pen` / 轮廓画笔、`Brush` / 填充画刷 |
+| `Box` / 盒形 | `Orientation`、`Box Style` / 箱体样式、`Box Extent` / 箱体宽度、`Min Box Width` / 最小宽度、`Max Box Width` / 最大宽度、`Pen` / 轮廓画笔、`Brush` / 填充画刷 |
 | `Whisker` / 须线 | `Whisker Style` / 须线样式 |
 | `Median` / 中位数线 | `Median Visible` / 中位数线可见、`Median Pen` / 中位数线画笔 |
 | `Mean` / 均值 | `Mean Visible` / 均值标记可见 |
@@ -502,7 +502,7 @@ Ribbon 的「Chart Style / 绘图样式」页上有一个开关「Apply All Char
 
 **两根曲线对照读数。** 让两个待比较的曲线各占一个坐标系，分别写上标题。在数据拾取页把 `Picker Mode` 设成 `Y Value`，打开 `Picker Group Enabled`，再把 `Text Placement` 设成 `Follow Mouse` 或某个画布角。鼠标在任一坐标系上移动时，两个坐标系同时给出读数，读数框位置固定后不会遮住曲线。两个坐标系共用同一段横坐标时读数才能直接对比，纵轴范围不一致时以各自轴上的数值为准。
 
-**在图上标出阈值。** 在「Assist Tools / 辅助工具」里点 `Add H Line Marker`，在标记线页把 `Y Value` 填成阈值。`Line Style` 保持 `Horizontal`，在 `Label` 里写阈值的名字，`Line Pen` 换成灰色或浅色虚线，避开曲线的主色。横线的纵坐标是固定值，缩放横轴不会挪动它。
+**在图上标出阈值。** 在「Chart Assist Tool / 图表辅助工具」里点 `Add H Line Marker`，在标记线页把 `Y Value` 填成阈值。`Line Style` 保持 `Horizontal`，在 `Label` 里写阈值的名字，`Line Pen` 换成灰色或浅色虚线，避开曲线的主色。横线的纵坐标是固定值，缩放横轴不会挪动它。
 
 ## 面板里没有的设置
 
@@ -511,9 +511,9 @@ Ribbon 的「Chart Style / 绘图样式」页上有一个开关「Apply All Char
 | 想要的效果 | 实际入口 |
 |------------|----------|
 | 对数坐标 | 界面里没有，只能用 `da_pyplot` 的 `setXScale`、`setYScale` |
-| 网格开关 | Ribbon「Chart Style / 绘图样式」页的 `Enable Grid` 及其子项 |
-| 图例开关和位置 | Ribbon「Chart Style / 绘图样式」页的 `Legend` 按钮及下拉菜单 |
-| 缩放、平移、十字光标、读数开关 | Ribbon「Chart Style / 绘图样式」页，或数据拾取页里的 `Picker Mode` |
+| 网格开关 | Ribbon「Chart Style / 图表样式」页的 `Enable Grid` 及其子项 |
+| 图例开关和位置 | Ribbon「Chart Style / 图表样式」页的 `Legend` 按钮及下拉菜单 |
+| 缩放、平移、十字光标、读数开关 | Ribbon「Chart Style / 图表样式」页，或数据拾取页里的 `Picker Mode` |
 | 绘图宽高的上下限和背景 | 「Charts Manager / 绘图管理」标题栏的齿轮按钮 |
 | 坐标系在绘图里的位置和大小 | 不在设置面板，用「Resize Chart / 绘图尺寸」浮层拖动调整 |
 | 两个坐标系共用同一段坐标轴范围 | 界面里没有入口，目前只能由代码绑定 |
@@ -531,7 +531,7 @@ Ribbon 的「Chart Style / 绘图样式」页上有一个开关「Apply All Char
 
 **怎么知道现在选中的是哪个对象。** 面板顶部下拉框里显示的名字就是当前编辑的对象。名字来自图元的 `Title`，`Title` 为空或没有名字的图元会显示占位名字，不容易分辨，建议在下拉框或图表管理树里给图元改个名。图表管理树里被点中的条目会高亮，面板同时切到对应页面，两边可以互相印证。
 
-**`Apply All Charts` 打开了却没有生效。** 这个开关目前只记录勾选状态，界面上的绘图设置仍然只作用于当前选中的对象。要给同一个绘图里的多个坐标系套用同样的设置，逐个选中改一遍。
+**`Apply All Charts` 打开了却没有生效。** 这个开关只接管 Ribbon 上的图表动作，界面上设置面板里的参数仍然只写给当前选中的对象。要给同一个绘图里的多个坐标系套用同样的设置，逐个选中改一遍。
 
 **下拉框里找不到刚加的图元。** 图元行只列当前坐标系的图元，图元如果加在同一个绘图里的另一个坐标系上，就要先在绘图上点一下那个坐标系，或者在绘图管理树里展开它的 `plot item` 节点，面板才会列出对应条目。三维图元不出现在这个下拉框里，它们归三维设置面板管。
 

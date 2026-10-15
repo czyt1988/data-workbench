@@ -35,9 +35,9 @@ Ribbon 左上角是应用按钮 `File` / 文件，点开是应用菜单；右上
 | | `Stats Plot` / 统计绘图 | `Histplot`、`KDE 1D`、`KDE 2D`、`Boxplot`、`Heatmap`、`Scatter`、`Barplot`、`Regplot`、`ECDF` |
 | `AI Agent` / AI智能体 | 同名面板 | `Agent Manager` / agent 管理、提示词画廊、`Run Agent` / 执行 agent、`New Session` / 新建会话、`Session Manager` / 会话管理 |
 
-`Clipboard` / 剪贴板 面板里的七个动作按当前获得焦点的窗口分派：焦点在画布上就作用于画布上的图元，焦点在表格上就作用于选中的单元格，焦点在绘图上就作用于选中的图元。撤销和重做在三个操作区之间共享同一个动作，作用对象随焦点切换。
+`Clipboard` / 剪贴板 面板里的动作按当前获得焦点的窗口分派：焦点在画布上就作用于画布上的图元，焦点在表格上就作用于选中的单元格。绘图获得焦点时 `Copy` / 复制 把当前绘图整体复制到剪贴板，`Cut` / 剪切、`Paste` / 粘贴、`Delete` / 删除、`Select All` / 全选 不响应。撤销和重做在三个操作区之间共享同一个动作，作用对象随焦点切换。
 
-`Figure` / 绘图 标签页的两组动作都是「往当前绘图里加图表」，选中一项之后会弹出建图向导，向导里选数据列和参数，见[创建图表](../chart/create.md)。`Stats Plot` / 统计绘图 组按列自动成图，不需要逐个选参数。
+`Figure` / 绘图 标签页的两组动作都是往绘图里加图表。选中一项之后会弹出建图向导，向导里选数据列和参数；当前没有绘图时，向导会先新建一个，见[创建图表](../chart/create.md)。`Stats Plot` / 统计绘图 组按列自动成图，不需要逐个选参数。
 
 ### 上下文标签页
 
@@ -46,8 +46,8 @@ Ribbon 左上角是应用按钮 `File` / 文件，点开是应用菜单；右上
 | 上下文标签 | 出现时机 | 页与面板 |
 |------------|----------|----------|
 | `DataFrame` | 数据操作区获得焦点 | 页 `Operate` / 操作：面板 `Axes` / 坐标、`Column` / 列、`Type` / 类型、`Format` / 格式；页 `Table Style` / 表格样式：面板 `Fill` / 底色、`Font` / 字体、`Clear` / 清除 |
-| `Workflow` / 工作流 | 工作流操作区获得焦点 | 页 `Workflow Edit` / 工作流编辑：面板 `Clipboard` / 剪切板、`Item` / 图元、`Text` / 文本、`Background` / 背景、`Group` / 分组；页 `Workflow View` / 工作流视图：面板 `View` / 视图，以及导出图片的动作；页 `Workflow Run` / 工作流运行：面板 `Run` / 运行 |
-| `Chart` / 绘图 | 绘图操作区获得焦点 | 页 `Chart Style` / 绘图样式：面板 `Figure Setting` / 绘图窗口设置、`Chart Setting` / 图表设置、`Figure Theme` / 绘图主题；页 `Chart Edit` / 图表编辑：面板 `Select Tool` / 选区工具、`Chart Assist Tool` / 图表辅助工具 |
+| `Workflow` / 工作流 | 工作流操作区获得焦点 | 页 `Workflow Edit` / 工作流编辑：面板 `Clipboard` / 剪切板、`Item` / 图元、`Text` / 文本、`Background` / 背景、`Group` / 分组；页 `Workflow View` / 工作流视图：面板 `View` / 视图、`Export` / 导出（面板里是导出图片的菜单）；页 `Workflow Run` / 工作流运行：面板 `Run` / 运行 |
+| `Chart` / 绘图 | 绘图操作区获得焦点 | 页 `Chart Style` / 绘图样式：面板 `Chart Setting` / 图表设置、`Figure Theme` / 绘图主题；页 `Chart Edit` / 图表编辑：面板 `Figure Setting` / 绘图窗口设置、`Select Tool` / 选区工具、`Chart Assist Tool` / 图表辅助工具 |
 
 `Axes` / 坐标 面板管行列的增删和列名，`Column` / 列 面板里有定位到最大值、最小值这些按列的操作，`Type` / 类型 面板改列的数据类型，`Format` / 格式 面板管单元格里数字和日期的显示样子。
 
@@ -55,7 +55,7 @@ Ribbon 左上角是应用按钮 `File` / 文件，点开是应用菜单；右上
 
 ## 应用菜单与快速访问栏
 
-应用按钮 `File` / 文件 点开之后依次是 `Open` / 打开、`Open Markdown` / 打开 Markdown、`Save` / 保存、`Save As` / 另存为，下面一组是 `Recent Files` / 最近打开的文件，列出最近打开过的工程和文件，条目数上限在设置的高级页里改，默认 10 条。`Open Markdown` / 打开 Markdown 打开的 Markdown 文件显示在中间区域的一个标签页里，便于一边看说明一边操作。
+应用按钮 `File` / 文件 点开之后依次是 `Open` / 打开、`Open Markdown` / 打开 Markdown、`Save` / 保存、`Save As` / 另存为，下面一组是 `Recent Files` / 最近打开的文件，列出最近打开过的工程，条目数上限在设置的高级页里改，默认 10 条。`Open Markdown` / 打开 Markdown 打开的 Markdown 文件显示在中间区域的一个标签页里，便于一边看说明一边操作。
 
 快速访问栏里只有两个动作：撤销和重做。它们和主页 `Clipboard` / 剪贴板 面板里的两个按钮是同一对动作。
 
@@ -89,7 +89,7 @@ Ribbon 左上角是应用按钮 `File` / 文件，点开是应用菜单；右上
 
 右侧边栏由 `Setting` / 设置、`Agent Assistant` / Agent 助手、`Data Link Table` / 数据联动表 三个面板组成，同样共用一个停靠区。`Log` / 消息 是右侧的自动隐藏面板，鼠标移到它露出的标签上不会自动展开，点击才展开。
 
-侧边栏的显示与隐藏有两个入口，效果一样：视图标签页 `Display` / 视图显示 面板里的 `Show Left Side Bar` / 显示左侧边栏 和 `Show Right Side Bar` / 显示右侧边栏；状态栏最左边和最右边的两个按钮。右侧边栏的开关会同时收起 `Setting` / 设置 和 `Log` / 消息。
+侧边栏的显示与隐藏有两个入口，效果一样：视图标签页 `Display` / 视图显示 面板里的 `Show Left Side Bar` / 左侧边栏 和 `Show Right Side Bar` / 右侧边栏；状态栏最左边和最右边的两个按钮。右侧边栏的开关会同时收起 `Setting` / 设置 和 `Log` / 消息。
 
 ## 状态栏
 
@@ -104,10 +104,10 @@ Ribbon 左上角是应用按钮 `File` / 文件，点开是应用菜单；右上
 
 视图标签页 `Layout` / 布局 面板里的 `Manage Layouts` / 布局管理 打开布局管理对话框，窗口标题是 `Layout Manager` / 布局管理。列表里默认有两套预置方案，预置方案不能删除也不能覆盖：
 
-- `Default` / 默认，程序启动时的布局。
+- `Default` / 默认布局，程序启动时的布局。
 - `Focus Analysis` / 专注分析，在默认布局的基础上收起两侧边栏。
 
-对话框下方四个按钮各有明确用途。
+对话框右侧四个按钮各有明确用途。
 
 | 按钮 | 作用 | 相关提示 |
 |------|------|----------|
@@ -116,7 +116,7 @@ Ribbon 左上角是应用按钮 `File` / 文件，点开是应用菜单；右上
 | `Delete Selected` / 删除选中布局 | 删除选中的自定义方案 | 删除前确认一次，提示里带上方案名字，确认后从磁盘删除 |
 | `Reset Default` / 恢复默认布局 | 恢复默认窗口布局，需确认 | 确认语 `This will restore the default window layout. Continue?` / 将恢复默认窗口布局，是否继续？ |
 
-自定义方案保存在配置保存路径下的 `dawork-layouts.json` 里，程序退出不丢。`Layout` / 布局 面板里的 `Reset Layout` / 恢复默认布局 是同一件事的快捷入口，它在当前会话里直接恢复默认快照，成功后提示 `Default layout restored` / 已恢复默认布局。
+自定义方案保存在配置保存路径下的 `dawork-layouts.json` 里，程序退出不丢。`Layout` / 布局 面板里的 `Reset Layout` / 恢复默认布局 与对话框里的 `Reset Default` / 恢复默认布局 是同一件事：先确认一次，再在当前会话里直接恢复默认快照，成功后提示 `Default layout restored` / 已恢复默认布局。
 
 ## 主题与 Ribbon 样式
 
@@ -128,9 +128,9 @@ Ribbon 样式控制标签和面板的行数与紧凑程度，共四种，在设�
 
 ## 界面语言
 
-设置对话框通用页里的 `Interface language` / 界面语言 下拉框决定界面文字用哪种语言。第一项是 `System` / 跟随系统，表示跟随操作系统语言；其余每一项对应一个已安装的翻译文件。翻译文件的名字是 `da_<语言代码>.qm`，程序在程序目录的 `translations/` 和 `translations_user/` 两个目录里查找，随程序发布的翻译有 `da_en_US` 和 `da_zh_CN`。
+设置对话框通用页里的 `Interface language` / 界面语言 下拉框决定界面文字用哪种语言。第一项是 `System` / 跟随系统，表示跟随操作系统语言。翻译文件的名字是 `da_<语言代码>.qm`，程序在程序目录的 `translations/` 和 `translations_user/` 两个目录里查找，随程序发布的翻译有 `da_en_US`（英文）和 `da_zh_CN`（简体中文）；语言代码也可以直接写进配置文件 `dawork-config.xml` 的 `language` 项。
 
-页面上注明语言和字体的改动在重启程序后生效，改完需要关闭并重新启动程序。Ribbon 和插件页面接有语言切换的处理，重启之后整界面一起切换。
+页面上注明语言和字体的改动在重启程序后生效，改完需要关闭并重新启动程序。Ribbon 和插件页面上的文字也会跟着一起切换。
 
 ## 界面状态的保存与恢复
 

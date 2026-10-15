@@ -26,7 +26,7 @@ class EmptyNode:
 
 `from DAWorkbench.DAWorkFlowPy import NodeDef` 把装饰器引进来，这个包的位置由软件在启动时加进 Python 的模块搜索路径，节点文件不用自己改 `sys.path`。
 
-`@NodeDef(name="Empty Node", category="My Nodes")` 里的 `name` 是节点在列表和画布上显示的名字，写英文并写定，理由见后面的翻译一节。`category` 是节点列表的分组名，软件按这个字符串原样分组，这里会出现一个名为 `My Nodes` 的分组。两个参数之外，装饰器还接受 `icon`（图标路径）、`description`（节点说明）和 `style`（外观）。
+`@NodeDef(name="Empty Node", category="My Nodes")` 里的 `name` 是节点在列表和画布上显示的名字，写英文并写定，理由见后面的翻译一节。`category` 是节点列表的分组名，软件按这个字符串原样分组，这里会出现一个名为 `My Nodes` 的分组。两个参数之外，装饰器还接受 `render_template`（渲染方式）、`icon`（图标路径）、`description`（节点说明）和 `style`（外观）。
 
 类的文档字符串也提供说明文字，鼠标停在节点列表的条目上时，提示气泡里显示的就是它；另写了 `@NodeDef(description=...)` 时以后者为准，文档字符串这段文字不参与翻译。
 
@@ -68,7 +68,7 @@ class PassThroughNode:
 
 `__init__(self)` 里第一行固定写 `super().__init__()`。装饰器会新建一个类，继承顺序是「新类 → 框架基类 `DAWorkflowNode` → 节点类」；实例化时先跑框架基类的 `__init__`，它建好 `node_id`、`_input_data`、`_output_data`、`is_global`、`_node_state`，再把每个参数的默认值写成实例属性，然后调用 `super().__init__()` 把控制权交给节点类自己的 `__init__`。节点类里再写一行 `super().__init__()`，控制权顺着继承顺序继续往下传，链上排在节点类后面的类才会被初始化。这一行省掉时，框架负责的那部分照样会建好，但节点类一旦改成继承别的基类，那一层的初始化会被静默跳过。
 
-`execute(self, inputs=None, params=None)` 是约定的两个参数写法，框架检测到参数个数不小于 2 就按 `execute(inputs, params)` 调用。两个入参都可能是 `None`，节点没有输入端口时 `inputs` 就是空字典或 `None`，所以每个节点都以 `if inputs is None: inputs = {}` 开头防住这种情况。`params` 同样要防 `None`，它在第三步出现。
+`execute(self, inputs=None, params=None)` 是约定的两个参数写法，框架检测到参数个数不小于 2 就按 `execute(inputs, params)` 调用。两个入参都是字典：端口没接到数据时 `inputs.get(端口名)` 取到 `None`，参数没有默认值时 `params` 里对应值也是 `None`，示例开头的 `if inputs is None: inputs = {}` 是一层防御写法。`params` 的防御写法在第三步出现。
 
 `inputs.get("data")` 按端口名取上游数据，取不到时返回 `None`。输出通过 `self._output_data["result"] = ...` 写进字典，键是输出端口名。写成 `return inputs.get("data")` 不会有任何效果，框架不收集返回值。
 
@@ -120,7 +120,7 @@ class ScaleColumnNode:
 
 `factor = Parameter(float, default=1.0, ...)` 写在类属性上，第一个参数是 Python 的类型对象。`default=1.0` 是参数初始值，也是工程里没有存过这个参数时的取值。`min`、`max` 给属性面板上的数值框定出上下限，不写时范围是 -9999 到 9999。`step=0.1` 是上下箭头每次加减的幅度，`decimals=3` 是小数位数，不写时默认保留 2 位。`description` 是这一项在面板里的说明文字。
 
-`params` 里装着所有参数名到当前值的映射。`params.get("factor", 1.0)` 的第二个参数是字面量默认值，不能写成 `self.factor.default`。参数声明是类级别的描述符，加载工程时序列化器会把存下来的值用 `setattr` 写到实例上，把这个描述符整个覆盖掉；覆盖之后 `self.factor` 已经是普通浮点数，再访问 `.default` 会抛 `AttributeError: 'float' object has no attribute 'default'`，而且只在加载过工程之后才出现，很难当场看出原因。字面量要和 `Parameter` 里的 `default` 保持一致，两处都改。
+`params` 里装着所有参数名到当前值的映射。`params.get("factor", 1.0)` 的第二个参数是字面量默认值，不能写成 `self.factor.default`。参数声明是类属性，框架在实例化时就把非 `None` 的默认值写成实例属性，加载工程时再用存下来的值覆盖一遍；两种情况下 `self.factor` 都已经是普通浮点数，再访问 `.default` 会抛 `AttributeError: 'float' object has no attribute 'default'`。字面量要和 `Parameter` 里的 `default` 保持一致，两处都改。
 
 `df * factor` 会把整个表都乘一遍，字符串列参与乘法会变成重复拼接或者直接抛异常。这一步先用它过渡，第四步把范围收窄到指定的一列，并把改动行数一并写成第二个输出。
 
@@ -201,7 +201,7 @@ class ScaleColumnNode:
 
 `column` 是字符串参数，`factor` 是带上下限的浮点参数，`count_changes` 是布尔参数，`show_on_node=False` 表示这一项不画在节点主体上。三个参数的默认值都写成了字面量形式，`execute()` 里的 `params.get(...)` 默认值与之对应。
 
-`df.copy()` 先复制一份再改，输入数据本身不被修改。`scaled[column] * factor` 是 pandas 的列运算，`!` 比较得到布尔序列，`sum()` 数出 `True` 的个数，`int(...)` 把 pandas 的整数转成 Python 的整数，写进输出端口时更干净。
+`df.copy()` 先复制一份再改，输入数据本身不被修改。`scaled[column] * factor` 是 pandas 的列运算，`!` 比较得到布尔序列，`sum()` 数出 `True` 的个数，`int(...)` 把 pandas 的整数转成 Python 的整数再写进输出端口。
 
 `changed_count` 端口在参数关闭时不写值。输出端口没有写值（或者写成 `None`）就不会往下游发送，下游节点的就绪判断按「收到的数据条数等于上游连线数」来做，所以关掉计数时，接到这个端口上的下游节点不会被触发。条件分支节点用的也是同一个机制。
 
@@ -228,9 +228,9 @@ class ScaleColumnNode:
 
 `dict` 这一行要留意：属性面板只认识上表里注册过的类型，遇到 `dict` 找不到控件就跳过这一项，界面上看不见也改不了，值只能靠默认值带进去。需要存一组有结构的设置，用 `font` 类型，它的值本来就是字典。
 
-除 `default` 和 `description` 之外的关键字按顺序解释。`default=None` 表示没有默认值，实例上不会建对应属性，面板里是空的。`min`、`max`、`step`、`decimals` 只对 `int` 和 `float` 生效，其中 `step` 不写时每次加减 1。`enum` 给出 `enum` 类型参数的可选项，写成字符串列表。`filter` 只对 `file` 生效，内容是文件对话框的过滤字符串，用两个分号分隔不同分组，写法与 Qt 一致。
+除 `default` 和 `description` 之外的关键字按顺序解释。`default=None` 表示没有默认值，实例上不会建对应属性，面板上按控件的初始状态显示。`min`、`max`、`step`、`decimals` 只对 `int` 和 `float` 生效，其中 `step` 不写时每次加减 1。`enum` 给出 `enum` 类型参数的可选项，写成字符串列表。`filter` 只对 `file` 生效，内容是文件对话框的过滤字符串，用两个分号分隔不同分组，写法与 Qt 一致。
 
-`layout` 只接受 `"inline"` 和 `"below"` 两个值，写别的值在声明时就抛 `ValueError`。默认的 `"inline"` 让参数名在左、控件在右排在同一行；`"below"` 让控件占满参数名下方整行，适合放长表达式，此时 `str` 类型会从单行输入框换成多行框。`height` 是控件高度，单位为像素，只在 `"below"` 下有效；不写时 `str` 按 80、`code` 按 100 处理。
+`layout` 只接受 `"inline"` 和 `"below"` 两个值，写别的值在声明时就抛 `ValueError`。默认的 `"inline"` 让参数名在左、控件在右排在同一行；`"below"` 让控件占满参数名下方整行，适合放长表达式，此时 `str` 类型会从单行输入框换成多行框。`height` 是控件高度，单位为像素，`str` 在 `"below"` 布局下、`code` 在任何布局下都按它设置高度；不写时 `str` 按 80、`code` 按 100 处理。
 
 `show_on_node` 控制这个参数要不要画在节点主体上。打开时节点上多出一行 `名称: 值`，最多画 10 行，参数更多的部分折成一行省略号；参数多而值长的节点可以把常用的几项打开，其余关掉。`show_on_node=False` 只影响画布上的显示，属性面板里照样能改。
 
@@ -296,7 +296,7 @@ class SaveTableNode:
 
 `data_type` 是描述性标签，取值习惯用 `"DataFrame"`、`"int"`、`"str"`、`"bool"`、`"any"` 这几种，写在端口旁边给读的人看。软件不按它做任何检查：连线时不比较两端的标签，执行时也不检查送进来的对象是不是这个类型。一个数值输出接到声明为 `DataFrame` 的输入上，照样能连上、能跑，错在节点自己的运算里才会暴露。`required` 同样不参与拦截，它只写进端口的描述信息。
 
-一个输入端口可以接多条线，输出端口也可以接多条线。唯一被拒绝的操作是把同一对端口连两次。端口名就是属性名，它既是 `execute()` 里取数据的键，也是工程文件里记录连线的名字。
+一个输入端口可以接多条线，输出端口也可以接多条线。被拒绝的操作是把同一对端口连两次。端口名就是属性名，它既是 `execute()` 里取数据的键，也是工程文件里记录连线的名字。
 
 ## 执行约定
 
@@ -312,11 +312,11 @@ class SaveTableNode:
 
 | 字段 | 含义与取值 |
 |---|---|
-| `icon` | 图标路径，节点列表和节点主体共用 |
-| `render_template` | 渲染方式，`"nodestyle"` 或 `"widget"` |
+| `icon` | 图标路径，用在节点列表和节点树的条目图标上 |
+| `render_template` | 渲染方式，Python 节点统一用默认的 `"nodestyle"` |
 | `body_shape` | 主体形状，`"RoundedRect"`、`"Ellipse"`、`"Diamond"` |
 | `name_position` | 名字位置，`"Inside"` 或 `"Below"` |
-| `icon_position` | 图标位置，`"LeftOfText"` 或 `"AboveText"` |
+| `icon_position` | 图标位置，`"left_of_text"` 或 `"above_text"` |
 | `background_color` | 背景色，`"#rrggbb"` 字符串或者 `(r, g, b)` 元组 |
 | `border_color` | 边框色，写法同上 |
 | `border_width` | 边框宽度 |
@@ -325,7 +325,7 @@ class SaveTableNode:
 | `input_port_side` / `output_port_side` | 端口方位，`"West"`、`"East"`、`"North"`、`"South"` |
 | `input_port_style` / `output_port_style` | 端口样式，取一个 `LinkPointStyle` |
 | `layout_strategy` | 端口排布方式，`"Auto"` 或 `"Manual"` |
-| `body_icon_type` / `body_icon_source` / `body_icon_scale` | 主体里再放一张图，类型取 `"None"`、`"Pixmap"`、`"Svg"` |
+| `body_icon_type` / `body_icon_source` / `body_icon_scale` | 主体里再放一张图，类型取 `"None"`、`"Pixmap"`、`"Svg"`；目前只有 `"Svg"` 会画出来，`body_icon_scale` 还没有生效 |
 | `min_body_width` / `min_body_height` | 主体最小尺寸，自己画图的节点用它预留空间 |
 
 `LinkPointStyle(shape=None, fill_color=None, border_color=None, border_width=None)` 描述端口的方块、圆点或菱形。`shape` 取 `"Rect"`、`"Circle"`、`"Diamond"`，两个颜色字段接受 `"#rrggbb"` 字符串或 `(r, g, b)` 元组。
@@ -408,7 +408,7 @@ class BranchNode:
         self._changed_summary = state.get("changed_summary", "")
 ```
 
-`serialize_runtime_state()` 在保存工程时被调用，返回的字典原样写进工程文件，这里放的是 `execute()` 算出的摘要。`deserialize_runtime_state(state)` 在加载工程时被调用，把存下来的字典读回实例属性，用 `state.get(键, 默认值)` 取值，旧工程里没有这一段时会拿到空字典。两个方法都不需要调用 `super()`，基类已经把调用转了过来。DataFrame、numpy 数组这类对象不能放进返回值，只能放字符串、数字、布尔、列表、字典和 `None`。用户能改的设置仍然用 `Parameter` 声明，这两个钩子只留给执行过程中衍生的缓存。
+`serialize_runtime_state()` 在保存工程时被调用，返回的字典原样写进工程文件，这里放的是 `execute()` 算出的摘要。`deserialize_runtime_state(state)` 在加载工程时被调用，把存下来的字典读回实例属性，用 `state.get(键, 默认值)` 取值；工程里没有存过这段状态时这个方法不会被调用，实例属性保持 `__init__` 里的初始值。两个方法都不需要调用 `super()`，基类已经把调用转了过来。DataFrame、numpy 数组这类对象不能放进返回值，只能放字符串、数字、布尔、列表、字典和 `None`。用户能改的设置仍然用 `Parameter` 声明，这两个钩子只留给执行过程中衍生的缓存。
 
 ### 自己画节点主体
 
@@ -451,13 +451,13 @@ class BranchNode:
         painter.drawText(x + 8, y + 18, column)
 ```
 
-`body_rect` 在方法第一行拆成四个数。`getattr(self, "column", "value")` 取属性时留一手：重绘可能发生在节点刚拖进画布、还没执行过的时刻，也可能发生在 `__init__` 里建的缓存属性缺失的时刻，直接写 `self.column` 在这类时刻会抛异常。接下来三个调用画底色、描边和线宽，再换字体和文字颜色，最后在左上角写出一行列名。方法里不要用 `_` 当局部变量名，它被文字翻译的 `_()` 函数占用，赋值之后同一个方法里的 `_("...")` 会报未定义。
+`body_rect` 在方法第一行拆成四个数。`getattr(self, "column", "value")` 取属性时给了默认值：重绘可能发生在节点刚拖进画布、还没执行过的时刻，从 `execute()` 里算出来的缓存属性这时还不存在，用带默认值的 `getattr` 取才不会抛异常。接下来三个调用画底色、描边和线宽，再换字体和文字颜色，最后在左上角写出一行列名。方法里不要用 `_` 当局部变量名，它被文字翻译的 `_()` 函数占用，赋值之后同一个方法里的 `_("...")` 会报未定义。
 
 绘制方法会被频繁调用，每次重绘都要跑一遍，一次绘制的时间要控制在 50 毫秒内。`paint()` 里抛异常时，节点不在空闲状态下会画上一圈 2 像素的红边，并在主体左上角显示粗体红字 `Error`。需要长时间计算的绘制结果适合在 `execute()` 里算好、存成实例属性，绘制时直接取。
 
 ### 全局节点
 
-把 `is_global = True` 写成节点类的普通类属性，这个节点就变成全局节点，没有对应的装饰器选项。全局节点在整条工作流开始时先执行一遍，执行完不马上把输出送往下游；它同时是起始节点（没有输入端口、有输出端口）时，写出的数据会在随后进入正常流程时传下去。适合不依赖上游输入、但要抢在其它节点之前做准备的节点。
+全局节点没有对应的装饰器选项，判定依据是实例属性 `is_global`。框架基类的 `__init__` 会先把它设成 `False`，所以要在节点类的 `__init__` 里、`super().__init__()` 之后写 `self.is_global = True`；只在类属性上写 `is_global = True` 会被基类那一步覆盖，节点不会按全局节点处理。全局节点在整条工作流开始时先执行一遍，执行完不马上把输出送往下游；它同时是起始节点（没有连线连进来、有连线连出去）时，写出的数据会在随后进入正常流程时传下去。适合不依赖上游输入、但要抢在其它节点之前做准备的节点。
 
 ## 从节点里访问软件本身
 
@@ -580,7 +580,7 @@ class ScaleColumnNode:
 
 `_("My Nodes")` 在模块导入时求值，把英文原文交给翻译系统；装着中文的 `.po` 编成 `.mo` 之后放在包内的 `i18n/locale/<语言>/LC_MESSAGES` 目录里，域名取包名。`name="Scale Column"` 没有包 `_()`，三个参数的说明和三个端口的说明都包了，`execute()` 里的代码没有显示到界面上的文字，保持英文。
 
-`_()` 由包自己的初始化代码装进 Python 内置命名空间，所以包的 `__init__.py` 顶部必须先把翻译装好，再去导入各个节点模块。顺序反了的话，节点模块里 `@NodeDef(category=_(...))` 在导入时执行，`_()` 还没有来源，整个文件导入失败，这个文件里定义的节点一个都不会出现在列表里；失败不会弹窗，只在日志里留一条记录。`__init__.py` 的样子见[把节点打包成插件](./node-plugin.md)，那里也说明了 `i18n` 目录和 `setup.py` 怎么摆。
+`_()` 由包自己的初始化代码装进 Python 内置命名空间，所以包的 `__init__.py` 顶部必须先把翻译装好，再去导入各个节点模块。顺序反了的话，节点模块里 `@NodeDef(category=_(...))` 在导入时执行，取到的还是软件工作流模块先前装好的那一份翻译，包里的中文用不上，分组和说明留在英文源文本；`_()` 完全没有来源时（比如脱离软件单独导入节点文件），整个文件导入失败，这个文件里定义的节点一个都不会出现在列表里。失败不会弹窗，只在日志里留一条记录。`__init__.py` 的样子见[把节点打包成插件](./node-plugin.md)，那里也说明了 `i18n` 目录和 `setup.py` 怎么摆。
 
 ## 写完之后
 
@@ -590,7 +590,7 @@ class ScaleColumnNode:
 
 参数在属性面板里看不到。先看类型标签，`dict` 这类没有对应控件的类型会被面板跳过；再看参数声明是否写成了类属性，写在 `execute()` 里的局部变量不会被收集。
 
-加载工程后执行报 `AttributeError: 'str' object has no attribute 'default'`。参数默认值写成了 `self.参数名.default`，加载工程时描述符被存下来的值覆盖了，改用 `params.get("参数名", 字面量)`。
+执行时报 `AttributeError: 'str' object has no attribute 'default'`。参数取值写成了 `self.参数名.default`，框架已经把默认值（加载过工程时是工程里存的值）写在实例属性上，改用 `params.get("参数名", 字面量)`。
 
 节点执行后画布上变成红色。`execute()` 返回了 `False` 或者抛了异常。在 `execute()` 里用 `print()` 打出关键中间值，内容写进 Python 日志文件 `%APPDATA%\DAWorkBench\log\da_pyscript.log`，也可以先把检查条件放宽，确认输入数据本身对不对。
 
@@ -602,5 +602,5 @@ class ScaleColumnNode:
 
 - [工作流基础](./basics.md)：放节点、连接口、设参数、运行。
 - [把节点打包成插件](./node-plugin.md)：让节点出现在软件里，并随软件分发。
-- [数据分析节点手册](./nodes-analysis.md)：二十一个现成节点的参数，可以对照里面的实现。
+- [数据分析节点手册](./nodes-analysis.md)：二十一个现成节点的参数表，可以对照它们的端口和参数声明。
 - [脚本工作区](../script/workspace.md)：在软件里直接跑 Python，试 `da_app`、`da_data` 这些模块。

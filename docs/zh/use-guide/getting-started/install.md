@@ -12,7 +12,7 @@ Data Workbench 把数据处理的过程画成一张图，每个处理步骤是�
 
 单次的数据检查不想搭流程。打开数据集后，表格视图和「DataFrame」上下文标签提供插入行列、改列类型、补缺失值、按条件筛选这些操作，结果直接写回数据集，见[数据清洗](../analysis/cleaning.md)。
 
-绘图方面，一个绘图标签页里可以放多个坐标系，每条曲线、每处标注都能单独选中和单独设置，图可以导出成矢量图，见[创建图表](../chart/create.md)。
+绘图方面，一个绘图标签页里可以放多个坐标系，每条曲线、每处标注都能单独选中和单独设置，见[创建图表](../chart/create.md)。
 
 内置智能体把上述功能包装成一组它可以调用的工具，用自然语言描述任务，由它决定调用哪几个，见[内置工具](../agent/tools.md)。
 
@@ -26,8 +26,8 @@ Windows 是主要平台。各部分的要求见下表。
 |------|------|
 | 操作系统 | Windows，64 位 |
 | Qt | Qt 5.14 或更高，或者 Qt 6.x |
-| C++ 编译器（自行编译时） | MSVC 2019 或更新，支持 C++17 |
-| CMake（自行编译时） | 3.15 或更高 |
+| C++ 编译器（自行编译时） | MSVC 2019 或更新（MSVC 是 Visual Studio 自带的 C++ 编译器），支持 C++17 |
+| CMake（自行编译时） | 3.16 或更高 |
 | Python | 3.7 或更高；要用智能体功能，建议 3.11 或更高 |
 
 程序运行时需要 Qt 的动态库。使用预编译包时这些库应当与可执行文件在同一目录；自行构建之后如果提示缺少动态库，用 Qt 自带的 `windeployqt` 把它们复制到可执行文件所在目录。
@@ -43,13 +43,13 @@ sudo apt install qt6-base-dev qt6-base-dev-tools qt6-svg-dev \
     zlib1g-dev ninja-build python3-dev libpython3-dev
 ```
 
-`qt6-base-dev` 提供 Qt 的核心模块，`qt6-svg-dev` 用于显示 SVG 图标，`qt6-tools-dev` 提供生成翻译文件用的 Linguist 工具，`qt6-5compat-dev` 提供 Qt 5 兼容模块。`qt6-base-private-dev` 是 Qt-Advanced-Docking-System 在 Linux 上编译时需要的私有头文件，不能省。其余几个包分别是 OpenGL、字符编码和 Python 开发头文件，编译主程序时都会用到。
+`qt6-base-dev` 提供 Qt 的核心模块，`qt6-svg-dev` 用于显示 SVG 图标，`qt6-tools-dev` 提供生成翻译文件用的 Linguist 工具，`qt6-5compat-dev` 提供 Qt 5 兼容模块。`qt6-base-private-dev` 是 Qt-Advanced-Docking-System 在 Linux 上编译时需要的私有头文件，不能省。其余几个包分别是 OpenGL（`libgl-dev`、`libglu1-mesa-dev`）、键盘映射（`libxkbcommon-dev`）、压缩库（`zlib1g-dev`）、Ninja 构建工具（`ninja-build`）、编译参数查询工具（`pkg-config`），以及 Python 开发头文件（`python3-dev`、`libpython3-dev`），编译主程序时都会用到。
 
 依赖装好后按[构建说明](../../build/build-instructions.md)配置和编译。第三方库的编译顺序、构建选项和常见错误都在那份文档里。
 
 ## 第三方库是编译好的
 
-仓库里自带编译安装完毕的第三方库，放在按构建配置命名的目录下，比如 `bin_Release_qt6.7.3_MSVC_x64`。目录名的格式是 `bin_{构建类型}_qt{Qt 版本}_{编译器}_{架构}`，同一个仓库里可能有多个这样的目录，对应不同的 Qt 版本和构建类型。
+仓库不自带第三方库的编译产物，第三方库编译安装到一个按构建配置命名的目录里，比如 `bin_Release_qt6.7.3_MSVC_x64`。目录名的格式是 `bin_{构建类型}_qt{Qt 版本}_{编译器}_{架构}`，同一个工作副本里可能有多个这样的目录，对应不同的 Qt 版本和构建类型。
 
 这些目录里有 `include`、`lib`、`share` 等子目录，SARibbon、qwt、Qt-Advanced-Docking-System、quazip 这些第三方库已经安装好，编译主程序时直接链接，不需要重新下载或编译。主程序自己的产物（`DAWorkBench.exe` 和各模块的动态库）也会装进同一个目录，运行时需要的文件都在一处。
 
@@ -106,11 +106,11 @@ pip install -r requirements.txt
 | `Interpreter path` / 解释器路径 | 解释器可执行文件的完整路径 |
 | `Extra module search paths (sys.path)` / 额外模块搜索路径 | 追加到 Python 模块搜索路径的目录，可以加多条 |
 
-旁边的三个按钮是 `Browse` / 浏览、`Auto Detect` / 自动检测、`Test` / 测试。Test 的结果提示有 `OK` / 确定、`Please specify a Python interpreter path`、`File does not exist: %1` / 文件不存在：%1、`Failed to run: %1` / 运行失败：%1；自动检测失败时提示 `No Python interpreter found in system PATH` / 系统 PATH 中未找到 Python 解释器。页面下方注明，解释器和模块路径的改动在重启程序后生效。
+旁边的三个按钮是 `Browse` / 浏览、`Auto Detect` / 自动检测、`Test` / 测试。Test 的结果提示有 `OK` / 正常、`Please specify a Python interpreter path`、`File does not exist: %1` / 文件不存在：%1、`Failed to run: %1` / 运行失败：%1；自动检测失败时提示 `No Python interpreter found in system PATH` / 系统 PATH 中未找到 Python 解释器。页面下方注明，解释器和模块路径的改动在重启程序后生效。
 
 ## 第一次启动
 
-双击 `DAWorkBench.exe` 启动。启动过程里屏幕上有一张启动画面，底部逐行显示当前阶段：`Initializing...` / 正在初始化、`Initializing core components...` / 正在初始化核心组件、`Loading user interface...` / 正在加载用户界面、`Ready` / 就绪。画面上还显示程序名和版本号。
+双击 `DAWorkBench.exe` 启动。启动过程里屏幕上有一张启动画面，底部逐行显示当前阶段：`Initializing...` / 正在初始化、`Initializing core components...` / 正在初始化核心组件、`Loading user interface...` / 正在加载用户界面、`Ready` / 启动完成。画面上还显示程序名和版本号。
 
 启动画面有三种处理方式：
 
@@ -126,8 +126,8 @@ pip install -r requirements.txt
 
 按顺序做完下面三件事，后面各章的操作就都能照着做。
 
-1. 指定 Python 解释器。打开设置对话框的 Python 页，点 `Auto Detect` / 自动检测，或者手动填路径，再点 `Test` / 测试 确认解释器可以启动，提示为 `OK` / 确定。解释器没配好时，导入数据、运行工作流和智能体都会失败。这一页的每一项见[设置项说明](../reference/settings.md)。
-2. 需要中文界面就改语言。设置对话框的通用页里有 `Interface language` / 界面语言 下拉框，选择中文后重启程序生效，细节见[主界面](main-window.md)的语言一节。
+1. 指定 Python 解释器。打开设置对话框的 Python 页，点 `Auto Detect` / 自动检测，或者手动填路径，再点 `Test` / 测试 确认解释器可以启动，提示为 `OK` / 正常。解释器没配好时，导入数据、运行工作流和智能体都会失败。这一页的每一项见[设置项说明](../reference/settings.md)。
+2. 需要中文界面就改语言。设置对话框的通用页里有 `Interface language` / 界面语言 下拉框，选好之后重启程序生效；下拉框里没有要用的语言时，把语言代码（中文是 `zh_CN`）写进配置文件 `dawork-config.xml` 的 `language` 项也能达到同样效果。细节见[主界面](main-window.md)的语言一节。
 3. 导入一份数据。主页标签页的 `Create` / 创建 面板里有 `Add Data` / 添加数据，选一个 CSV 文件或 Excel 文件即可；支持的文件格式和导入参数见[导入数据](../data/import.md)。
 
 想用智能体，还需要在设置里添加模型供应商并填入接口地址与密钥，否则它收不到回复，步骤见[配置模型](../agent/model-config.md)。
@@ -142,7 +142,7 @@ pip install -r requirements.txt
 
 启动时弹窗提示缺少某个动态库。Qt 的运行库不在可执行文件所在目录，也不在系统 `PATH` 里。在程序目录下执行 Qt 自带的 `windeployqt DAWorkBench.exe`，它会把缺的动态库复制过来。
 
-工作流节点一运行就报 pandas 相关错误。选中的解释器里没有 pandas，或者程序找的不是所设想的那一个解释器。用设置页的 Test 按钮确认路径，再检查 `where python` 输出的第一项。
+工作流节点一运行就报 pandas 相关错误。选中的解释器里没有 pandas，或者程序找的不是所设想的那一个解释器。用设置页的 Test 按钮确认路径，再对照 `where python` 的输出确认程序实际取用的是哪一个：程序取的是这份输出里最后一项能执行的路径。
 
 ## 相关章节
 

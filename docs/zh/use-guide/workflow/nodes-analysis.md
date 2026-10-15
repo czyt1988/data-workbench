@@ -18,7 +18,7 @@
 | 按条件筛行 | Data Filter、Query |
 | 按一列的取值区间筛行 | Filter By Column、Threshold Filter |
 | 在文本列里找出含特定文字的行 | Search |
-| 删掉含空缺的行或列 | Drop NA |
+| 删掉含空缺的行 | Drop NA |
 | 把空缺补出来 | Fill NA、Interpolate |
 | 删重复行 | Drop Duplicates |
 | 处理异常值 | Remove Outliers IQR、Remove Outliers Z-Score |
@@ -34,9 +34,9 @@
 
 ### 输入与输出约定
 
-除 Data Source 之外，本章每个节点都只有一路输入，端口名叫 `data`，数据类型标为 `DataFrame`，都是必需端口。接进一个整数或者一段文本时，节点在用到表结构的那一步会失败，画布上变红。输出端口的名字各不相同，接下游时要看清是哪一个：处理结果一般叫 `cleaned`、`filtered`、`filled`、`transformed`、`result`、`sorted` 这种带含义的名字，计数结果单独占一个端口。
+除 Data Source 之外，本章每个节点都只有一路输入，端口名叫 `data`，都是必需端口，送进来的数据按 `DataFrame` 使用。接进一个整数或者一段文本时，节点在用到表结构的那一步会失败，画布上变红。输出端口的名字各不相同，接下游时要看清是哪一个：处理结果一般叫 `cleaned`、`filtered`、`filled`、`transformed`、`result`、`sorted` 这种带含义的名字，计数结果单独占一个端口。
 
-计数类的输出和数据处理结果是两条并行的通道。`removed_count`、`replaced_count`、`match_count`、`row_count` 给出的都是整数，可以接到 Text Viewer 上在画布上读，也可以接到 If / Else 的 `data` 端口上参与分支，但拿它们当表格继续处理没有意义。
+计数类的输出和数据处理结果是两条并行的通道。`removed_count`、`replaced_count`、`match_count`、`row_count` 给出的都是整数，可以接到 Text Viewer 上在画布上读，也可以接给 If / Else 的 `data` 端口随分支传下去（走哪条路由 `condition` 决定，和这个数无关）。拿它们当表继续处理时，下游节点会在用到表结构的那一步失败。
 
 ### 计数结果数的是什么
 
@@ -44,7 +44,7 @@
 |------|------------|------------|
 | `row_count` | Data Source | 读进来的行数 |
 | `row_count` | Query | 查询结果的行数 |
-| `removed_count` | Data Filter、Drop NA、Remove Outliers IQR、Remove Outliers Z-Score、Threshold Filter、Filter By Column | 处理前后行数的差；Drop NA 在删列模式下是删掉的列数 |
+| `removed_count` | Data Filter、Drop Duplicates、Drop NA、Remove Outliers IQR、Remove Outliers Z-Score、Threshold Filter、Filter By Column | 处理前后行数的差；Drop NA 数的是删掉的行数 |
 | `replaced_count` | Replace Values | 被替换掉的单元格数量 |
 | `match_count` | Search | 命中的行数 |
 
@@ -86,7 +86,7 @@ Remove Outliers IQR --cleaned--> Data Export
 
 ## 数据分析（Data Analysis）
 
-这一组负责流程的两头：把文件读成表，把表写成文件，中间夹一个筛选和一个画图的节点。
+这一组负责流程的两头：把文件读成表，把表写成文件，中间夹上变换、筛选和画图的节点。
 
 ### Data Source
 
@@ -209,11 +209,11 @@ Data Plot（数据绘图）用 matplotlib 出一张柱状图、折线图或散�
 |------|----------|-----------|
 | `figure_path` | str | 图片文件的完整路径 |
 
-三种图型的画法不同。`bar` 统计 `column` 这一列各取值的出现次数，画成柱状图；`column` 留空或者不在表里时，把整张表的所有数值列各画一组柱子。`line` 把 `column` 这一列按行号连成折线；`column` 留空时画整张表。`scatter` 需要至少两个数值列，`column` 决定横轴，它不在数值列里时改用第一个数值列，纵轴取第二个数值列；数值列少于两个时图上只会出现一行提示文字。
+三种图型的画法不同。`bar` 统计 `column` 这一列各取值的出现次数，画成柱状图；`column` 留空或者不在表里时，把整张表的所有数值列各画一组柱子。`line` 把 `column` 这一列按行号连成折线；`column` 留空时画整张表。`scatter` 需要至少两个数值列，`column` 决定横轴，它不在数值列里时改用第一个数值列，纵轴取另一个数值列；数值列少于两个时图上不画数据点，只有标题和一行提示文字。
 
 图片固定写到系统临时目录，文件名按图型命名，分别是 `data_plot_bar.png`、`data_plot_line.png`、`data_plot_scatter.png`，分辨率是每英寸 150 点。同一种图型每次运行覆盖同一个文件，文件名里没有列名，换一列重画会覆盖上一次的图。图不显示在软件里，只写文件，看图的路径由 `figure_path` 带出来。
 
-这个节点只在 matplotlib 能成功导入时存在。装不上 matplotlib 的环境里，节点面板中看不到它，这两个参数和这个输出端口也就不存在。
+matplotlib 由随软件使用的 Python 环境提供，能不能导入是在软件启动时检查的。装不上 matplotlib 时，节点仍然列在面板里，参数和输出端口也照常显示，但每次运行都会直接失败，节点变红，没有图写出来；装好这个库之后重开软件才能画图。
 
 工作流跑完想立刻看一眼分布时，把绘图节点挂在流程末端，再把 `figure_path` 接到 Text Viewer 上，画布上就会显示图片的位置。下面这条流程把筛选后的数据画成柱状图，并在画布上给出文件路径。
 
@@ -225,7 +225,7 @@ Data Source --> Data Filter --> Data Plot --> Text Viewer
 
 ## 数据清洗（Data Cleaning）
 
-这一组处理表里的重复、缺失和异常，共九个节点。它们都不改列的结构，除了删列的情形，行数和单元格内容会变。
+这一组处理表里的重复、缺失和异常，共九个节点。它们都不改列的结构，改的是行数和单元格内容。
 
 ### Drop Duplicates
 
@@ -244,20 +244,22 @@ Drop Duplicates（删除重复行）去掉表里重复的行，按整行比较�
 
 ### Drop NA
 
-Drop NA（删除缺失值）删掉含空缺的行，也可以删含空缺的列。
+Drop NA（删除缺失值）删掉含空缺的行；参数里还有一个删列的模式，当前版本里执行会失败。
 
 | 参数 | 类型 | 默认值 | 取值 | 作用 |
 |------|------|--------|------|------|
-| `how` | str | `any` | `any`、`all` | `any` 表示有任何空缺就删，`all` 表示整行或整列都是空缺才删 |
-| `axis` | int | `0` | `0`、`1` | `0` 删行，`1` 删列 |
+| `how` | str | `any` | `any`、`all` | `any` 表示有任何空缺就删，`all` 表示一行全是空缺才删 |
+| `axis` | int | `0` | `0`、`1` | `0` 删行；`1` 是删列模式，当前版本里执行会失败 |
 | `subset` | str | 空 | 列名，逗号分隔 | 只检查这些列；留空表示检查所有列 |
 | `thresh` | int | `0` | 非负整数 | 一行里至少要有这么多非空值，否则删掉；`0` 表示不用这个规则 |
 
-`how` 和 `thresh` 会互相盖过：`thresh` 填了大于 0 的数时，判断改成「非空值够不够」，`how` 不再起作用。`axis` 填 1 时删的是列，此时 `thresh` 数的是列里的非空值个数。`subset` 留空表示检查所有列，只想按关键列判断时在这里写列名；`subset` 里的列名写错时节点执行失败。
+`how` 和 `thresh` 会互相盖过：`thresh` 填了大于 0 的数时，判断改成「非空值够不够」，`how` 不再起作用。`subset` 留空表示检查所有列，只想按关键列判断时在这里写列名；`subset` 里的列名写错时节点执行失败。
 
-输入端口是 `data`，输出端口有 `cleaned` 和 `removed_count`。`removed_count` 的含义跟着 `axis` 走：`axis` 为 0 时是删掉的行数，为 1 时是删掉的列数。
+`axis` 填 1 的删列模式在当前版本里执行会失败：这条路径要把 `how` 和 `thresh` 一起交给 pandas，而 pandas 不接受这两个参数同时出现。删列改用 Data Transform 的 `drop`，或者在表格视图里删。
 
-关键字段为空的记录后续用不上，而描述性字段的空缺可以后面补，这时把 `subset` 填成关键字段那一列，`how` 用 `any`，先把不可用的行去掉，再对剩下的数据补空缺。整列都空的情况用 `axis` 填 1 一次清掉。
+输入端口是 `data`，输出端口有 `cleaned` 和 `removed_count`，`removed_count` 是删掉的行数。
+
+关键字段为空的记录后续用不上，而描述性字段的空缺可以后面补，这时把 `subset` 填成关键字段那一列，`how` 用 `any`，先把不可用的行去掉，再对剩下的数据补空缺。整列都是空缺的列，用 Data Transform 的 `drop` 删掉。
 
 ### Interpolate
 
@@ -341,9 +343,11 @@ Replace Values（替换值）把某一列里的一个取值换成另一个取值
 | `old_value` | str | 空 | 任意值 | 要被换掉的值 |
 | `new_value` | str | 空 | 任意值 | 换成什么 |
 
-比较是整个单元格的值相等才算命中，单元格里含有一段相同文字不触发替换。区分大小写，`abc` 和 `ABC` 是两个不同的值。列是数值列时，`old_value` 会先当数字试着比较，比如填 `25` 能匹配到数值 25。`column` 留空或者列名写错时节点执行失败。
+比较是整个单元格的值相等才算命中，单元格里含有一段相同文字不触发替换。区分大小写，`abc` 和 `ABC` 是两个不同的值。`column` 留空或者列名写错时节点执行失败。
 
-输入端口是 `data`，输出端口有 `replaced` 和 `replaced_count`。`replaced_count` 统计的是替换前与 `old_value` 相等的行数，字符串列上这个数字准确；数值列上界面里输入的 `old_value` 是文本，统计用的是文本和数字的比较，得到的结果可能是 0，这时看 `replaced` 端口里的内容更可靠。
+输入端口是 `data`，输出端口有 `replaced` 和 `replaced_count`。`replaced_count` 统计的是替换前与 `old_value` 相等的行数，字符串列上这个数字准确。
+
+数值列上的替换当前不生效。节点匹配时会先把 `old_value` 转成数字比较（填 `25` 能匹配到数值 25），但写回时文本形式的 `new_value` 不能被 pandas 赋给数值列，这次赋值被丢弃，整列保持原样，`replaced_count` 读到 0。要在数值列上换值，用 Eval Expression 算出新的一列。
 
 导入的数据里用 `-`、`N/A`、`未知` 这类标记表示没填，统一换成空值或者统一的标记，后面按分类字段处理时就不会分裂成好几类。换完之后看 `replaced` 端口里的内容，确认这些标记都变成了统一的写法。
 
@@ -405,7 +409,7 @@ Describe（描述统计）给出每个数值列的统计摘要。
 |------|------|--------|------|------|
 | `percentiles` | str | `0.25,0.5,0.75` | 0 到 1 之间的小数，逗号分隔 | 除了固定的统计量之外，额外算哪些百分位 |
 
-结果是一张统计表：每一行是一个统计量，每一列是要统计的那个数值列。行依次是计数、均值、标准差、最小值、填入的各百分位、最大值。默认给出 0.25、0.5、0.75 三个百分位，也就是第一四分位数、中位数和第三四分位数。填入的百分位会和这三个一起出现在结果里，想多要几档就多写几个数，比如 `0.1,0.5,0.9`。数字要落在 0 到 1 之间，写到这个范围之外时节点执行失败。
+结果是一张统计表：每一行是一个统计量，每一列是要统计的那个数值列。行依次是计数、均值、标准差、最小值、填入的各百分位、最大值。默认给出 0.25、0.5、0.75 三个百分位，也就是第一四分位数、中位数和第三四分位数。`percentiles` 里填什么就出什么，默认的三个不会自动保留：填 `0.1,0.5,0.9`，结果里的百分位行换成这三档。数字要落在 0 到 1 之间，写到这个范围之外、或者不是数字时节点执行失败。
 
 这个节点只统计数值列，文本列不出现在结果里。
 
@@ -421,7 +425,7 @@ Eval Expression（表达式计算）用 pandas 的表达式在表上算出一个
 |------|------|--------|------|------|
 | `expression` | str | 空 | pandas 表达式 | 按「新列名 = 算式」的写法填写，输入框占一整行 |
 
-表达式写成 `新列名 = 算式` 的形式，比如 `C = A + B`、`total = price * qty`、`ratio = a / b`。旧列名直接写在算式里，已有的列都参与运算。列名里带空格时，pandas 的表达式语法要求用反引号把列名包起来。表达式留空、或者数据本身是空的时，节点执行失败。
+表达式写成 `新列名 = 算式` 的形式，比如 `C = A + B`、`total = price * qty`、`ratio = a / b`。旧列名直接写在算式里，已有的列都参与运算。列名里带空格时，pandas 的表达式语法要求用反引号把列名包起来。表达式留空、或者输入端口没有数据时，节点执行失败；有列但没有行的空表照常执行。
 
 输入端口是 `data`，输出端口是 `result`，送出带上新列的表。
 
@@ -454,7 +458,7 @@ Pivot Table（透视表）把明细表汇总成交叉表，行是一个字段的
 | `values` | str | 空 | 列名，逗号分隔 | 参与汇总的数值列，至少填一列 |
 | `aggfunc` | str | `mean` | `mean`、`sum`、`count`、`min`、`max` | 聚合函数 |
 
-`index` 和 `values` 都至少要有一个列名，缺一个节点就执行失败，这是这个节点最容易踩的一处。`columns` 可以留空，也可以填一列看更细的分组。三个参数都支持逗号分隔的多列，行索引填两列时会得到两层行标题。`aggfunc` 是文本框，要手打上面列出的五个词之一。`values` 里填了文本列时，均值、求和这类聚合算不出来，节点执行失败，参与汇总的列要先改成数值列。
+`index` 和 `values` 都至少要有一个列名，缺一个节点就执行失败。`columns` 可以留空，也可以填一列看更细的分组。三个参数都支持逗号分隔的多列，行索引填两列时会得到两层行标题。`aggfunc` 是文本框，要手打上面列出的五个词之一。`values` 里填了文本列时，均值、求和这类聚合算不出来，节点执行失败，参与汇总的列要先改成数值列。
 
 输入端口是 `data`，输出端口是 `pivot`，送出汇总好的交叉表。
 
@@ -532,7 +536,7 @@ Data Source --> Sort --> Data Export
 
 ## 参数没填全会怎样
 
-这二十一个节点的执行方式一致。需要的参数是空的时候，执行方法直接返回失败，不往下走。界面上看到的现象是节点变成红色，这一次运行里它的下游节点不会执行，日志文件里留下一条记录。常见的触发情形是 Data Source 的 `file_path` 没填、Remove Outliers IQR 的 `column` 写错、Pivot Table 只填了 `values` 没填 `index`、Sort 的列名和表里对不上。
+这二十一个节点的执行方式一致。需要的参数是空的时候，执行方法直接返回失败，不往下走。界面上看到的现象是节点变成红色，这一次运行里它的下游节点不会执行。这类直接返回失败、不抛异常的节点，日志里能不能查到记录，看这一节末尾的说明。常见的触发情形是 Data Source 的 `file_path` 没填、Remove Outliers IQR 的 `column` 写错、Pivot Table 只填了 `values` 没填 `index`、Sort 的列名和表里对不上。
 
 需要填全的参数在每个节点的表里能看出来：是否必需由实现决定，判断标准是空值会让这个节点做不了事。比如 Drop Duplicates 的 `subset` 留空是合法用法，表示按整行比较，节点照样成功；Data Source 的 `file_path` 留空就无事可做，节点直接失败。
 
@@ -541,27 +545,27 @@ Data Source --> Sort --> Data Export
 | 节点 | 失败的情形 |
 |------|------------|
 | Data Source | `file_path` 留空、文件不存在、读取过程出错 |
-| Data Filter | 表达式里的列名不存在或者语法不合法 |
-| Data Transform | 不会失败；`operation` 写别的词时数据原样通过 |
+| Data Filter | 表达式里的列名不存在或者语法不合法；表达式留空时 `column` 的列名写错 |
+| Data Transform | `drop`、`fillna` 的列名写错；`operation` 写别的词、`rename` 的列名写错都不失败，数据原样通过 |
 | Data Export | `file_path` 留空、写出过程出错 |
 | Drop Duplicates | `keep` 写了 `first`、`last`、`none` 之外的值，或者 `subset` 列名写错 |
-| Drop NA | `subset` 列名写错 |
+| Drop NA | `subset` 列名写错，或者 `axis` 填了 1 |
 | Interpolate | 不会失败；某一列插不出来时这一列保持原样 |
 | Fill NA | 不会失败；`method` 写别的词时退回填固定值 |
 | Remove Outliers IQR、Remove Outliers Z-Score | `column` 留空或者列名写错 |
 | Replace Values | `column` 留空或者列名写错 |
 | Threshold Filter | `column` 留空或者列名写错 |
 | Transform Skewed | `column` 留空或者列名写错 |
-| Describe | `percentiles` 里出现 0 到 1 之外的值 |
+| Describe | `percentiles` 里出现 0 到 1 之外的值，或者不是数字 |
 | Eval Expression | `expression` 留空 |
 | Filter By Column | `column` 留空或者列名写错 |
 | Pivot Table | `index` 或 `values` 没填，或者 `values` 里是文本列 |
 | Query | `query_string` 留空或者表达式不合法 |
 | Search | `column`、`pattern` 留空，列名写错，或者这一列不是文本列 |
 | Sort | `columns` 留空或者列名写错 |
-| Data Plot | 收到空数据或者绘图过程出错；matplotlib 装不上时整个节点都不存在 |
+| Data Plot | 输入端口没有数据或者绘图过程出错；matplotlib 装不上时每次执行都直接失败 |
 
-日志里每条失败记录的形式是「Node '<节点 id>' execution exception: ...」，节点 id 就是画布上这个节点的存盘名字，据此可以定位到具体是哪一个节点出的问题。运行日志的查看方法见[常见故障](../reference/troubleshooting.md)。
+节点抛出异常时，日志文件里留下一行「Node '<节点 id>' execution exception: ...」，节点 id 就是画布上这个节点的存盘名字，据此可以定位到具体是哪一个节点出的问题；只返回失败、没有抛出异常的节点不写这一行，只能按节点颜色判断。运行日志的查看方法见[常见故障](../reference/troubleshooting.md)。
 
 ## 常见问题
 
@@ -575,7 +579,7 @@ Data Source --> Sort --> Data Export
 
 ### 数值列上的替换没生效
 
-Replace Values 比较的是整个单元格的值，区分大小写，数值列上还要按数字比较。填的 `old_value` 和表里的写法差一个空格、差一个全角字符都会匹配不上，`replaced_count` 为 0 就是没有命中的信号。
+分两种情形。文本列上，Replace Values 比较的是整个单元格的值，区分大小写，填的 `old_value` 和表里的写法差一个空格、差一个全角字符都会匹配不上，`replaced_count` 为 0 就是没有命中的信号。数值列上，替换在当前版本里不生效：文本形式的 `new_value` 写不进数值列，这一列不会变，`replaced_count` 也是 0；要在数值列上换值，用 Eval Expression 算出新列。
 
 ### 输出到数据管理面板的数据看起来没更新
 
@@ -583,7 +587,7 @@ Replace Values 比较的是整个单元格的值，区分大小写，数值列�
 
 ### 节点面板里找不到 Data Plot
 
-这个节点只在 matplotlib 能成功导入时存在。检查随软件安装的 Python 环境里有没有 matplotlib，装好之后重启软件，节点会出现在数据分析分组里。
+这个节点和本章其它节点一样列在「数据分析」分组里，装不上 matplotlib 时它仍然出现在面板中，只是每次运行都会失败（见 Data Plot 一节）。面板里确实看不到它时，检查数据分析节点包是否在插件管理器里被停用；matplotlib 能不能导入是在软件启动时检查的，装好这个库之后要重开软件，节点才能画图。
 
 ### 导出的 CSV 用别的软件打开是乱码
 
