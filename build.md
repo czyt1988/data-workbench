@@ -47,7 +47,7 @@ sudo apt install qt6-base-dev qt6-base-dev-tools qt6-svg-dev \
     zlib1g-dev ninja-build python3-dev libpython3-dev
 ```
 
-> **⚠️ `qt6-base-private-dev` 不可省略**：ADS (Qt-Advanced-Docking-System) 在 Linux 上使用了 Qt private headers，缺少此包会导致编译失败。
+> **`qt6-base-private-dev` 不可省略**：ADS (Qt-Advanced-Docking-System) 在 Linux 上使用了 Qt private headers，缺少此包会导致编译失败。
 
 ---
 

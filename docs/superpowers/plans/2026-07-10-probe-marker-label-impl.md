@@ -19,14 +19,14 @@
 
 ## 文件结构
 
-### 修改文件（DAFigure 模块 — data-workbench 仓库）
+### 修改文件（DAFigure 模块，data-workbench 仓库）
 
 | 文件 | 责任 | 改动 |
 |------|------|------|
 | `data-workbench/src/DAFigure/DADataProbeMarker.h` | 探针标记类声明 | 新增 `LabelStyle` 枚举、`setLabelStyle`/`labelStyle` 声明 |
 | `data-workbench/src/DAFigure/DADataProbeMarker.cpp` | 探针标记实现 | PrivateData 增 `labelStyle`、实现 setter/getter、`drawProbeName` 按样式分支绘制、`updateLabel` 不设内置 label |
 
-### 修改文件（GDataLink — 父级 gree-data-workbench 仓库）
+### 修改文件（GDataLink，父级 gree-data-workbench 仓库）
 
 | 文件 | 责任 | 改动 |
 |------|------|------|
@@ -486,14 +486,14 @@ void GDataLinkTableTab::onPickerClicked(QwtPlotSeriesDataPicker* picker, const Q
 Run: 编译 `GreeDataWorkbench` 项目
 Expected: 编译通过
 
-- [ ] **Step 3: 手动验证 — 字母分配与徽章显示**
+- [ ] **Step 3: 手动验证，字母分配与徽章显示**
 
 1. 运行主程序，打开一个含多条曲线的 figure
 2. 在数据连接窗口激活状态下，在绘图上点击 3 次不同 x 位置
 3. 验证：每次点击在对应 plot 上出现红色虚线探针 + 圆角矩形徽章（字母 A、B、C）
 4. 验证：表格列头显示 A、B、C，鼠标悬停列头显示 x 值 tooltip
 
-- [ ] **Step 4: 手动验证 — x 轴可见性定位**
+- [ ] **Step 4: 手动验证，x 轴可见性定位**
 
 1. 使用含寄生轴的 figure（部分 plot 只显示 xtop 不显示 xbottom，或都不显示）
 2. 点击探针
@@ -560,7 +560,7 @@ void GDataLinkTableTab::onRenameColumn()
 Run: 编译 `GreeDataWorkbench` 项目
 Expected: 编译通过
 
-- [ ] **Step 3: 手动验证 — 重命名同步**
+- [ ] **Step 3: 手动验证，重命名同步**
 
 1. 点击产生探针 A
 2. 右键列头 A → 重命名 → 输入 "X"
@@ -583,7 +583,7 @@ onRenameColumn 改表头后同步更新对应 record.label 和所有 probes
 **Files:**
 - 无文件修改（验证现有删除逻辑 + 计数器不回退已天然满足）
 
-- [ ] **Step 1: 手动验证 — 删除列后字母保持**
+- [ ] **Step 1: 手动验证，删除列后字母保持**
 
 1. 点击 3 次产生探针 A、B、C
 2. 右键列头 B → 删除
@@ -592,14 +592,14 @@ onRenameColumn 改表头后同步更新对应 record.label 和所有 probes
 5. 再次点击产生新探针
 6. 验证：新探针字母为 D（计数器不回退，不复用 B）
 
-- [ ] **Step 2: 手动验证 — 字母超 Z**
+- [ ] **Step 2: 手动验证，字母超 Z**
 
 1. 连续点击 27 次（或模拟高频点击）
 2. 验证：第 27 个探针字母为 AA（`indexToLetter(26)` = "AA"）
 
 > 若手动点击 27 次不现实，可临时在 `onPickerClicked` 开头加 `qDebug() << indexToLetter(m_probeLabelCounter);` 观察输出，或信任 `indexToLetter` 算法的正确性（标准 Excel 列名算法）。
 
-- [ ] **Step 3: 手动验证 — 四种 LabelStyle**
+- [ ] **Step 3: 手动验证，四种 LabelStyle**
 
 1. 临时修改 `onPickerClicked` 中 `probe->setLabelStyle(...)` 为各样式，分别编译运行验证：
    - `PlainTextBadge`：纯文字无背景框

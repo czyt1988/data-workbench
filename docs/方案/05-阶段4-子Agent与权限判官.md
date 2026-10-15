@@ -8,7 +8,7 @@
 
 现状：Python 在 `tool_node` 发起 `tool_call` **之前**跑判定，把 `safety{verdict, reason, source}` 附在协议消息上，C++ 权限门消费（T16：Python 是咨询方）。
 
-新架构：**判定仍在"发起工具请求之前"，但整体在 C++ 池线程内完成**——不再有协议字段，`safety` 直接进 `DAAgentToolBridge::ToolRequest` 结构体，主线程 `DAAgentPermissionManager::decide(sessionId, tool, params, safety)` 签名不变。
+新架构：**判定仍在"发起工具请求之前"，但整体在 C++ 池线程内完成**，不再有协议字段，`safety` 直接进 `DAAgentToolBridge::ToolRequest` 结构体，主线程 `DAAgentPermissionManager::decide(sessionId, tool, params, safety)` 签名不变。
 
 ```mermaid
 flowchart LR
@@ -27,17 +27,17 @@ flowchart LR
 | 现状组件 | C++ 落点 | 说明 |
 |---------|---------|------|
 | 静态危险模式匹配（deny/escalate 清单由 `init.config.code_patterns` 注入） | `DAAgentJudge::staticCheck(code, DAAgentCodePatterns)` | 纯正则/子串匹配，`DAAgentPermissionConfig.codePatterns` 已在 C++ 配置模型中（不再需要协议下发） |
-| 判官模型调用（复用当前供应商凭据） | `judgeModel->complete(prompt, params)`（阶段 3 的 provider 快照 + 独立判官配置——**`permission` 分组**的 `judge_model`/`judge_timeout_sec=30`，非 llm 分组） | 提示词模板直译 Python（输入代码片段 + 分类指引，输出 verdict JSON）；**结果解析要容错**（JSON 提取失败 → `uncertain`） |
+| 判官模型调用（复用当前供应商凭据） | `judgeModel->complete(prompt, params)`（阶段 3 的 provider 快照 + 独立判官配置：**`permission` 分组**的 `judge_model`/`judge_timeout_sec=30`，非 llm 分组） | 提示词模板直译 Python（输入代码片段 + 分类指引，输出 verdict JSON）；**结果解析要容错**（JSON 提取失败 → `uncertain`） |
 | 产出 `{verdict, reason, source}` | `DAAgentSafetyVerdict{Allow, Deny, Uncertain; reason; source(rules/model/none); contentHash}` | `source` 取值与现状一致（`rules`/`model`/`none`） |
 | run_script 判定时读文件原始字节产 sha256（审计问题 26 TOCTOU） | `QCryptographicHash` 读入口文件字节 → `safety.contentHash`，`ToolRequest` 注入内部键 `_expected_content_hash`（内部键不进持久化/UI，同 `_tier`/`_subagent` 先例） | 执行前校验逻辑在 RunScript 工具内**已存在**，零改动 |
 | `workspace_root` 解析入口文件 | 判定边界=入口文件不递归（语义保持），路径取 `setSessionContext` 的会话级 workspace | T16 会话上下文隔离不变 |
 
 !!! warning "禁止反向 RPC"
-    现状铁律：禁止实现成"C++→Python 判定 RPC"。新架构判定天然在 C++——但要保持**判定时机**：必须在 `ToolRequest` 构造前（工具排队/审批之前）完成，这样权限门拿到的 `safety` 与现状时序语义一致，auto 模式的 allow 降级 ask 逻辑（判官未配置时）不受影响。
+    现状铁律：禁止实现成"C++→Python 判定 RPC"。新架构判定天然在 C++，但要保持**判定时机**：必须在 `ToolRequest` 构造前（工具排队/审批之前）完成，这样权限门拿到的 `safety` 与现状时序语义一致，auto 模式的 allow 降级 ask 逻辑（判官未配置时）不受影响。
 
 ### 1.3 判定成本控制
 
-- 仅 `code_exec` 分级工具（`run_code`/`run_script`）触发——与现状一致（`agent_runner.py:967-988` 的调用条件）。
+- 仅 `code_exec` 分级工具（`run_code`/`run_script`）触发，与现状一致（`agent_runner.py:967-988` 的调用条件）。
 - 静态 deny 命中**不调模型**直接出 `Deny`；`yolo` 模式跳过判定（Python 侧"按模式决定是否判定"→ C++ 判定器读权限模式，`reconfigure`/`pushPermissionMode` 后即时生效）。
 
 ## 二、子 Agent 编排 `DAAgentSubagentDispatcher`（subagent_orchestrator.py 移植）
@@ -66,8 +66,8 @@ flowchart TB
     DS -->|"agentSubagentProgress(QJsonObject)"| M
 ```
 
-- `dispatch_subagents` 是**本地执行工具**：**`da_tools` 节点在投递前按工具名识别**——命中 `dispatch_subagents` 直接转 `DAAgentSubagentDispatcher` 本地执行（复用等待/超时/stop 机制），**不经 `deliverToolRequest`、不进主线程 `executeTool` 队列**（对齐现状"编排器本地执行"；`deliverToolRequest` 只服务走权限门的常规工具）。
-- **子任务不得与父任务争 R6 池槽**：父任务本身占一个池线程阻塞等待子任务汇总，若子任务再投同一 `QThreadPool`（容量 2-8），两个会话同时派发即池饥饿 → 600s 假超时。子任务必须使用**独立嵌套池**（Dispatcher 自持小池，容量=concurrency）或 `run_async` + 独立 io_context。
+- `dispatch_subagents` 是**本地执行工具**：**`da_tools` 节点在投递前按工具名识别**：命中 `dispatch_subagents` 直接转 `DAAgentSubagentDispatcher` 本地执行（复用等待/超时/stop 机制），**不经 `deliverToolRequest`、不进主线程 `executeTool` 队列**（与现状"编排器本地执行"一致；`deliverToolRequest` 只服务走权限门的常规工具）。
+- **子任务不得与父任务争 R6 池槽**：父任务本身占一个池线程阻塞等待子任务汇总，若子任务再投同一 `QThreadPool`（容量 2-8），两个会话同时派发即池饥饿 → 600s 假超时。子任务必须用**独立嵌套池**（Dispatcher 自持小池，容量=concurrency）或 `run_async` + 独立 io_context。
 - 子任务 = 共享 `GraphEngine` 的**不同 `thread_id`**（`"<sessionId>::sub-<n>"`，官方并发安全边界内），跑同一 JSON 图定义的**变体**。
 
 ### 2.2 子 agent 图变体（对照 Python `build_agent_graph(enable_ask_user=False, tools=子集)`）
@@ -80,8 +80,8 @@ flowchart TB
 | recursion_limit | 配置默认 -1 | `subagent.recursion_limit=60` |
 | 权限 | 当前激活模式+分级 | **继承父当前模式与分级**（Q5 现状，权限门在主线程天然继承，无需特殊处理） |
 | 进度上报 | 无 | 每任务状态 → `agentSubagentProgress`（`call_id`=dispatch 工具调用 id、`task_id`、state=spawned/running/done/error/timeout/stopped、30s 心跳） |
-| 落盘/渲染 | 正常 | `subagent_id` 标记 → Module 现有过滤 lambda（T17）自动生效——**信号面复刻保证零改动** |
-| **子图静默（Q8）** | — | 子 agent 运行**不发** token/message_end/usage/retrying（现由任务级静默实现，`subagent_orchestrator.py:609`）——C++ 落点：子 runner 的流式/收尾事件**不转发**到主会话信号（按 role=sub 过滤），仅 `subagent_progress` 与聚合 usage 出栈，否则子 agent 流式 token 会污染主聊天流 |
+| 落盘/渲染 | 正常 | `subagent_id` 标记 → Module 现有过滤 lambda（T17）自动生效，**信号面复刻保证零改动** |
+| **子图静默（Q8）** | 无 | 子 agent 运行**不发** token/message_end/usage/retrying（现由任务级静默实现，`subagent_orchestrator.py:609`），C++ 落点：子 runner 的流式/收尾事件**不转发**到主会话信号（按 role=sub 过滤），仅 `subagent_progress` 与聚合 usage 出栈，否则子 agent 流式 token 会污染主聊天流 |
 
 ### 2.3 编排语义逐条对照（orchestrator 行为移植表）
 
@@ -100,7 +100,7 @@ flowchart TB
 
 ### 2.4 全局 LLM 并发预算（可选优化，审计问题 27 的"中期方向"）
 
-新模型下 N 会话 × M 子任务都在单进程内——现状"无跨进程全局配额"问题**反而更好解决**。本阶段默认不做（保持现状保守默认 concurrency=**1**/batch=**2**，上限 concurrency≤2、batch≤4，见 `subagent_orchestrator.py:413-414`），但预留：`DAAgentEngine` 级 `QSemaphore llmBudget`（容量可配），`da_agent` 节点请求前 acquire。若实施顺利，作为加分项落地；不阻塞验收。
+新模型下 N 会话 × M 子任务都在单进程内，现状"无跨进程全局配额"问题**反而更好解决**。本阶段默认不做（保持现状保守默认 concurrency=**1**/batch=**2**，上限 concurrency≤2、batch≤4，见 `subagent_orchestrator.py:413-414`），但预留：`DAAgentEngine` 级 `QSemaphore llmBudget`（容量可配），`da_agent` 节点请求前 acquire。若实施顺利，作为加分项落地；不阻塞验收。
 
 ## 三、实施步骤
 
@@ -120,20 +120,20 @@ flowchart TB
 
 | 原 Python 用例类 | C++ 对应 | 备注 |
 |------------------|---------|------|
-| 定义解析/白名单/schema 注入 | ✅ 必迁 | frontmatter 解析已有 `DAAgentSubagentManagerTest`，补白名单交集与 schema 生成 |
-| 派发校验（批上限/非法定义） | ✅ 必迁 | Dispatcher 入口 |
-| 执行状态映射+停止级联+并发限流 | ✅ 必迁 | QSemaphore + stop 级联单测 |
-| 截断与 usage 聚合 | ✅ 必迁 | 阶段 3 Truncator 复用 |
-| 系统提示词组装（子 agent） | ✅ 必迁 | |
-| RPC 分发器（乱序/迟到/stop/审批计时/EOF） | ⚠️ 部分消解 | EOF/分发器概念消失；保留：迟到结果拒绝、审批计时挂起、stop 中断（进 ToolBridge 测试） |
-| 权限集成（judge→safety→decide） | ✅ 必迁 | `DAAgentJudgeTest` + 权限门既有用例串联 |
-| 主图回归（对话/单工具/ask_user/停止/reconfigure） | ✅ 必迁 | 阶段 2/3 已覆盖，此处汇总为端到端用例 |
+| 定义解析/白名单/schema 注入 | 必迁 | frontmatter 解析已有 `DAAgentSubagentManagerTest`，补白名单交集与 schema 生成 |
+| 派发校验（批上限/非法定义） | 必迁 | Dispatcher 入口 |
+| 执行状态映射+停止级联+并发限流 | 必迁 | QSemaphore + stop 级联单测 |
+| 截断与 usage 聚合 | 必迁 | 阶段 3 Truncator 复用 |
+| 系统提示词组装（子 agent） | 必迁 | |
+| RPC 分发器（乱序/迟到/stop/审批计时/EOF） | 部分消解 | EOF/分发器概念消失；保留：迟到结果拒绝、审批计时挂起、stop 中断（进 ToolBridge 测试） |
+| 权限集成（judge→safety→decide） | 必迁 | `DAAgentJudgeTest` + 权限门既有用例串联 |
+| 主图回归（对话/单工具/ask_user/停止/reconfigure） | 必迁 | 阶段 2/3 已覆盖，此处汇总为端到端用例 |
 
 `test_permission_judge.py`（7 类）→ `DAAgentJudgeTest` 逐类迁移（静态规则表、判官提示词解析、run_script 边界）。
 
 ## 五、验收标准
 
-- [ ] `DAAgentJudgeTest`/`DAAgentSubagentTest` ≥ 37 用例（对齐原 Python 用例数）全绿（测试按 `02-阶段1` §七步骤 7 的登记方式建立，需 cxx_std_20 + link neograph::core）
+- [ ] `DAAgentJudgeTest`/`DAAgentSubagentTest` ≥ 37 用例（与原 Python 用例数一致）全绿（测试按 `02-阶段1` §七步骤 7 的登记方式建立，需 cxx_std_20 + link neograph::core）
 - [ ] 铁律回归：T16（判定前置/唯一执法/不落盘）、T17（子 agent 消息不进 JSONL 不渲染、终态撤卡 Q18）在 C++ 测试中有显式断言
 - [ ] 手测：`dispatch_subagents` 派发 2 个 explore 子任务 → 进度卡片渲染、父对话不出现子转录、超时任务撤卡
 - [ ] `yolo/auto/manual` 三模式下 run_code 判定行为与现状一致

@@ -285,7 +285,7 @@ void MyPlugin::destroyNodeFactory(DA::DAPyNodeFactory* p)
 
 ## 实现节点工厂（旧 C++ 架构，仅参考）
 
-!!! warning "遗留架构 —— 当前推荐 Python-first `@NodeDef`"
+!!! warning "遗留架构：当前推荐 Python-first `@NodeDef`"
     下面 `MyNodeFactory` 继承 `DA::DAPyNodeFactory` 并重写 `create` / `getNodeMetaDataList` / `getFactoryName` 的写法属于**已废弃的 C++ 节点工厂架构**，当前 `DAPyNodeFactory`（`src/DAPyWorkFlow/DAPyNodeFactory.h`）不再暴露这些虚函数，上述代码无法编译。
 
     **新插件应采用 Python-first 模型**：节点用 `@NodeDef` 装饰器声明，C++ 插件入口只负责注册 Python 脚本路径，`DAPyNodeFactory::discoverNodes()` 启动时扫描 Python 包自动发现节点，无需手写 C++ 工厂。参考 `plugins/DASystemNodes/`（纯 Python 节点插件，C++ 入口 `DASystemNodesPlugin` 仅注册 Python 路径，不定义任何节点）。本节仅作历史背景保留。
@@ -389,7 +389,7 @@ DA::DAAbstractNode* MyNodeFactory::create(const DA::DANodeMetaData& meta)
 
 ## 实现工作节点（旧 C++ 节点，仅参考）
 
-!!! warning "遗留架构 —— 当前推荐 Python-first `@NodeDef`"
+!!! warning "遗留架构：当前推荐 Python-first `@NodeDef`"
     下面 `MyWorker` 继承 `DA::DAAbstractNode` 并重写 `exec()` 的写法属于**已废弃的 C++ 节点架构**。当前工作流节点统一用 Python `@NodeDef` 装饰器声明，执行入口为 `execute(self, inputs, params)`，输出通过 `self._output_data` 写入，数据包装类为 `DAData`（`src/DAData/DAData.h`，**不是** `DADataPackage`）。本节仅作历史背景保留。
 
 ### MyWorker.h

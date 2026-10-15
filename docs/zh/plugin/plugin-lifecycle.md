@@ -422,7 +422,7 @@ Windows 下若插件库仍被其他模块引用，`QPluginLoader::unload()` 释�
 
 ### 节点工厂层钩子（旧 C++ 架构，仅参考）
 
-!!! warning "遗留架构 —— 当前推荐 Python-first `@NodeDef`"
+!!! warning "遗留架构：当前推荐 Python-first `@NodeDef`"
     下面 `nodeAddedToWorkflow()` / `nodeStartRemove()` 等**钩子属于已废弃的 C++ `DAAbstractNodeFactory` 架构**，当前 `DAPyNodeFactory`（`src/DAPyWorkFlow/DAPyNodeFactory.h`）不再暴露这些虚函数。当前工作流节点统一用 Python `@NodeDef` 装饰器声明，节点加入/移除工作流的生命周期由 C++ 渲染代理层（`DAPyNodeGraphicsItem`）和 Python 基类 `DAWorkflowNode` 管理，参考 `plugins/DASystemNodes/AGENTS.md`。本节仅作历史背景保留。
 
 | 钩子函数 | 调用时机 | 用途 |
@@ -458,7 +458,7 @@ public:
 
 ### 节点层钩子（旧 C++ 架构，仅参考）
 
-!!! warning "遗留架构 —— 当前推荐 Python-first `@NodeDef`"
+!!! warning "遗留架构：当前推荐 Python-first `@NodeDef`"
     下面 `prepareLinkOutput()` / `prepareLinkInput()` / `finishLink()` 等**钩子属于已废弃的 C++ `DAAbstractNode` 架构**。当前工作流节点用 Python `@NodeDef` 声明，连接点（Input/Output）由 `Input` / `Output` 描述符静态声明，运行时由 C++ 渲染代理层处理连接生命周期，无需重写这些虚函数。参考 `plugins/DASystemNodes/AGENTS.md`。本节仅作历史背景保留。
 
 | 钩子函数 | 调用时机 | 用途 |

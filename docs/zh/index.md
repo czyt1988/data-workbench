@@ -1,5 +1,5 @@
 ---
-title: DAWorkBench — 基于工作流的数据分析平台
+title: DAWorkBench · 基于工作流的数据分析平台
 description: C++/Qt 工作流引擎 + 内嵌 Python (pandas) + 交互式图表 + AI 智能体，面向科研与工程数据处理。
 hide:
   - navigation

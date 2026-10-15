@@ -190,7 +190,7 @@ pip install -r requirements.txt
 
 项目文档见：[https://czyt1988.github.io/data-workbench](https://czyt1988.github.io/data-workbench)
 
-### 📖 文档导航
+### 文档导航
 
 | 文档 | 说明 | 路径 |
 |------|------|------|

@@ -301,8 +301,8 @@ DAUIInterface --> DACommandInterface : getCommandInterface
 !!! warning "mainWindow() 与 getMainWindow() 是两个不同方法"
     `src/DAInterface/DAUIInterface.h` 同时声明了两个获取主窗口的方法，二者**并非同一方法的别名**：
 
-    - `SARibbonMainWindow* mainWindow() const;` — **具体方法**，返回具体的 `SARibbonMainWindow*`（绑定 Ribbon 框架）。
-    - `virtual QMainWindow* getMainWindow() const = 0;` — **纯虚方法**，返回抽象的 `QMainWindow*`，供不希望依赖 SARibbon 类型的插件实现使用。
+    - `SARibbonMainWindow* mainWindow() const;`：**具体方法**，返回具体的 `SARibbonMainWindow*`（绑定 Ribbon 框架）。
+    - `virtual QMainWindow* getMainWindow() const = 0;`：**纯虚方法**，返回抽象的 `QMainWindow*`，供不希望依赖 SARibbon 类型的插件实现使用。
 
     插件按需选择：需要 Ribbon 能力时用 `mainWindow()`，仅需通用窗口父对象（如对话框父窗口）时用 `getMainWindow()`。
 

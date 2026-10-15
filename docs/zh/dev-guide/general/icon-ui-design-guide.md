@@ -131,7 +131,7 @@ data-workbench 的视觉语言围绕「**科研工程工具**」的定位展开�
 
 **典型用途**：
 
-- `accept.svg`：对勾 ✓
+- `accept.svg`：对勾
 - `zoomIn.svg`：放大镜中的「+」
 - `right-add.svg`：右下角的「+」
 - `copy.svg`：复制出的「+」标记

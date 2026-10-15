@@ -297,7 +297,7 @@ bool MyPlugin::initialize()
 
 ## 自定义节点类型（旧 C++ 架构，仅参考）
 
-!!! warning "遗留架构 —— 当前推荐 Python-first `@NodeDef`"
+!!! warning "遗留架构：当前推荐 Python-first `@NodeDef`"
     下面 `registerNodePrototypes()` 用 `DANodeMetaData` 注册节点、`MyWorker` 继承 `DAAbstractNode` 重写 `createGraphicsItem()` 的写法属于**已废弃的 C++ 节点架构**。当前工作流节点统一用 Python `@NodeDef` 装饰器声明，节点外观通过 `NodeDisplay` 或 Python `paint()` 自定义，参考 `plugins/DASystemNodes/AGENTS.md`。本节仅作历史背景保留。
 
 ### 注册节点元数据（旧 C++）

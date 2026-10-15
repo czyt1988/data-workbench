@@ -2,7 +2,7 @@
 
 > 本文档记录 `docs/zh/` 文档重组的执行结果，以及 `docs/assets/` 资源审计结论。
 > 之后使用指南又重组过一次，当前目录结构以 `mkdocs.yml` 为准。
-> 第二节 🔴 「建议删除」清单已执行删除（2026-08-24）；🟡 清单已全部挂接到对应文档。
+> 第二节标记为「建议删除」的清单已执行删除（2026-08-24）；标记为「建议保留」的清单已全部挂接到对应文档。
 
 ---
 
@@ -57,17 +57,17 @@ docs/
 
 ## 二、资源审计总表
 
-合并后 `docs/assets/` 共 **62 个文件**。状态说明：✅ 被文档/站点引用；🟡 未引用但建议保留；🔴 建议删除。
+合并后 `docs/assets/` 共 **62 个文件**。状态说明：被文档或站点引用的、未引用但建议保留的、建议删除的，三类分别列出。
 
-### 未引用，建议保留（已全部挂接）🟡
+### 未引用，建议保留（已全部挂接）
 
 | 文件 | 保留理由 | 挂接情况 |
 |---|---|---|
-| `PIC/build-3rdparty-cmake-qtc-01~04.png`（4 张） | 第三方库构建步骤截图 | ✅ 已挂接 `build/third-party-build.md`「使用 Qt Creator 构建」一节 |
-| `PIC/cmake-qt-dir.png`、`standard-source-dir.png`（2 张） | 构建配置插图素材 | ✅ 已挂接 `build/build-instructions.md`（Qt 安装目录结构、标准源码目录结构） |
-| `PIC/copy-pyscripts.jpg`、`move-py-to-bin-dir.png`（2 张） | Python 环境配置插图素材 | ✅ 已挂接 `build/python-environment.md`「运行目录布局示例」一节 |
+| `PIC/build-3rdparty-cmake-qtc-01~04.png`（4 张） | 第三方库构建步骤截图 | 已挂接 `build/third-party-build.md`「使用 Qt Creator 构建」一节 |
+| `PIC/cmake-qt-dir.png`、`standard-source-dir.png`（2 张） | 构建配置插图素材 | 已挂接 `build/build-instructions.md`（Qt 安装目录结构、标准源码目录结构） |
+| `PIC/copy-pyscripts.jpg`、`move-py-to-bin-dir.png`（2 张） | Python 环境配置插图素材 | 已挂接 `build/python-environment.md`「运行目录布局示例」一节 |
 
-### 未引用，建议删除（24 个）🔴
+### 未引用，建议删除（24 个）
 
 | 文件 | 删除理由 |
 |---|---|
@@ -109,6 +109,6 @@ docs/
 
 ## 五、待确认事项
 
-1. ~~第二节 🔴 的 24 个文件是否全部删除~~：用户已核实，删除已执行（2026-08-24）。
+1. ~~第二节 的 24 个文件是否全部删除~~：用户已核实，删除已执行（2026-08-24）。
 2. 第三节 3 处断链定为补图：截图内容已描述，待用户截图后放入 `assets/screenshot/screenshot1.gif`、`assets/PIC/plugin-list.png`、`assets/screenshot/workflow-demo.png`。
 3. ~~`screenshot1.png` 是否就是 `screenshot1.gif` 的替代图~~：确认不作替代图，文件已删除。

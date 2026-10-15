@@ -57,7 +57,7 @@
 
 **理由**：字母永远唯一不重复，避免与已删但可能仍存在于撤销栈/缓存中的记录混淆。会出现跳号（如 A、C、D），但可接受。
 
-**否决项**：复用空缺字母——尽量连续但可能产生与已删记录同名的字母，虽不冲突却有歧义隐患。
+**否决项**：复用空缺字母，尽量连续但可能产生与已删记录同名的字母，虽不冲突却有歧义隐患。
 
 ### 3.3 决策三：字母固定到 ClickRecord，删除不重排
 
@@ -69,7 +69,7 @@
 
 **选择**：`DADataProbeMarker` 新增 `LabelStyle` 枚举（四种样式）+ `setLabelStyle`/`labelStyle` API，默认 `RoundedRectBadge`。调用方在创建探针时选定样式。
 
-**理由**：用户要求"让用户有选择权力"，但确认选择权给开发者/API 层而非最终用户，故只需枚举 + setter，无需 UI 入口。默认圆角矩形契合数据连接窗口需求。
+**理由**：用户要求"让用户有选择权力"，但确认选择权给开发者/API 层，不给最终用户，故只需枚举 + setter，无需 UI 入口。默认圆角矩形契合数据连接窗口需求。
 
 ---
 
@@ -177,14 +177,14 @@ struct ClickRecord {
 
 #### 4.2.4 x 轴可见性 → label 定位规则
 
-对每个 probe，根据其 `probe->plot()` 的 x 轴可见性判断（使用定制 QwtPlot 的 `isAxisVisible(QwtAxis::XBottom)` / `isAxisVisible(QwtAxis::XTop)`）：
+对每个 probe，根据其 `probe->plot()` 的 x 轴可见性判断（用定制 QwtPlot 的 `isAxisVisible(QwtAxis::XBottom)` / `isAxisVisible(QwtAxis::XTop)`）：
 
 | XBottom 可见 | XTop 可见 | 结果 |
 |:---:|:---:|---|
-| ✓ | ✓ | `setLabelPosition(LabelAtBottom)` + `setLabelVisible(true)` |
-| ✓ | ✗ | `setLabelPosition(LabelAtBottom)` + `setLabelVisible(true)` |
-| ✗ | ✓ | `setLabelPosition(LabelAtTop)` + `setLabelVisible(true)` |
-| ✗ | ✗ | `setLabelVisible(false)`（不显示徽章，探针线仍画） |
+| 是 | 是 | `setLabelPosition(LabelAtBottom)` + `setLabelVisible(true)` |
+| 是 | 否 | `setLabelPosition(LabelAtBottom)` + `setLabelVisible(true)` |
+| 否 | 是 | `setLabelPosition(LabelAtTop)` + `setLabelVisible(true)` |
+| 否 | 否 | `setLabelVisible(false)`（不显示徽章，探针线仍画） |
 
 设置顺序：`setProbeName` → `setLabelPosition` → `setLabelVisible` → `setLabelStyle`。
 
