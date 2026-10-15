@@ -294,9 +294,64 @@ Doxygen 注释使用中文
 - [插件开发创建 UI](./docs/zh/plugin/plugin-dev-create-ui.md)
 - 参考现有插件结构（如 `plugins/DataAnalysis/`），确保与主程序接口兼容
 
+## 分支与并行开发（多工作树）
+
+> **🔴 强制规则：任务一律在 `.worktree/` 下的工作分支上进行，不在主工作树的分支上直接开发/提交。**
+
+本机经常有多个 Agent 会话并行开发本项目。多个任务挤在同一个工作区里，切分支、暂存区、未提交改动会互相污染，所以每个任务开一个独立的 git 工作树，任务完成后合并回集成分支 `dev`。
+
+### 分支模型
+
+- `dev` 是唯一集成分支，一切工作的终点；`master` 只用于对外发布，不在其上开发。
+- 功能用 `feat/<域>-<主题>`，修复用 `fix/<主题>`；合并回 `dev` 后删除工作分支。
+- 主工作树里可能已经有用户自己的在途改动（例如 `src/DAConfigs.h`、`src/DAGui/Chart/*.cpp`）——不要动它们，也不要替用户提交或回滚。
+
+### 开工作树
+
+```bash
+bash scripts/worktree-add.sh feat/chart-xyz       # 从最新 dev 切出（分支已存在则直接检出）
+bash scripts/worktree-add.sh fix/table-crash dev  # 指定基线分支
+bash scripts/worktree-add.sh --list               # 列出工作树
+bash scripts/worktree-add.sh --remove feat-chart-xyz   # 删除工作树（保留分支）
+```
+
+工作树落在 `<仓库根>/.worktree/<分支名把 / 换成 ->`（已 gitignore）。**不要用裸 `git worktree add`**，`scripts/worktree-add.sh` 额外做了三件在本项目里缺一不可的事：
+
+1. **子模块离线初始化**：新工作树里裸跑 `git submodule update --init` 不会复用主工作树已有的检出，git 会按 `.gitmodules` 的 URL（本项目全部在 gitee）重新 clone，**内网必然失败**。脚本用 `git -c submodule.<名>.url=<本地已有检出> -c protocol.file.allow=always submodule update --init` 从本地克隆（对象硬链接，秒级完成、不联网、不写任何 git config），并逐层递归 SARibbon → qwindowkit → qmsetup → syscmdline 整条嵌套链。
+2. **复用预编译的第三方库**：把主工作树的 `bin_<Config>_qt<版本>_<编译器>_<架构>` 以目录联接（junction/软链接）挂进工作树，第三方库不用重编也不用重新下载。由此产生两条纪律：
+   - **不要在工作树里执行 `cmake --install`**：安装目录是共享的 `bin_*`，写入会踩到其它并行会话（日常构建、测试都不需要 install，不需要就别装）。
+   - 要改 SARibbon/qwt/DAWidgets 并重编第三方库时，在主工作树做完并 install——这是唯一必须串行的步骤。
+3. **预配置构建目录**：沿用主工作树 `build/CMakeCache.txt` 的生成器 / Qt 路径 / `DA_ENABLE_TESTING` 等选项预配置 `build/`，保证两边配置一致（测试目标只有 `DA_ENABLE_TESTING=ON` 才会编译）。
+
+### 在工作树里干活
+
+- 构建、测试与主工作树完全一致：`.\scripts\build.ps1 -Target <模块>`、`.\scripts\build.ps1 -Target <模块> -Test`（`-Test` 已能在构建目录里正确跑到 ctest，并会把「一个测试都没跑到」视为失败）。
+- 新工作树第一次构建是**全量**（没有可复用的构建目录），只构建需要的模块目标（`-Target`）比 `-Full` 快得多。
+- 未合并的构建目录、`bin_*` 联接、子模块检出都是工作树私有的，删除工作树不影响主工作树。
+- 新工作树里 `git status` 固定会显示两个「噪声」文件，**不要提交、也不要 checkout 掉**：
+  - `src/DAConfigs.h`——配置期由 `DAConfigs.h.in` 无条件重新生成到源码树（含编译日期），见 `src/CMakeLists.txt`；
+  - `src/i18n/backup-da_zh_CN.ts`——仓库既有的换行符噪声（`.gitattributes` 声明 `*.ts eol=lf`，提交的 blob 里却是 CRLF）。
+- **不要手工 `rm -rf` 工作树目录**：目录联接也是目录，递归删除会跟着清空主工作树的 `bin_*`。删工作树一律用 `--remove`（它先拆联接再删目录）。
+
+### 合并回 `dev`
+
+- 动手前先把 `dev` 的最新改动合进工作分支，收尾前再合一次——让冲突提前暴露，而不是攒到合并那一刻。
+- 合并前以**实时状态**为准（`git -C <工作树> branch --show-current`、`git -C <工作树> status --porcelain`），不要相信之前的快照：并行会话可能在你任务中途切走分支、产生在途改动。
+- 合并路径按实时状态选：
+  1. `dev` 检出在某个工作树且该树干净 → `git -C <该工作树> merge <工作分支>`；
+  2. 该树有在途改动或已切走 → **不要动它**（在那里切分支/检出会毁掉对方的在途改动）；只要 `dev` 此刻没被检出，就用临时工作树合并：
+     `git worktree add .worktree/_merge-dev dev && git -C .worktree/_merge-dev merge --ff-only <工作分支>`，完成后 `bash scripts/worktree-add.sh --remove _merge-dev`；
+  3. `dev` 被占且无法走上述路径 → 与用户协调，不要抢别人正在用的工作树。
+- 合并后重跑构建 + 测试全绿再收尾；然后 `git branch -d <工作分支>`、`bash scripts/worktree-add.sh --remove <名字>`。
+- **「任务完成」包含「已合并回 `dev` 并清理工作树」**，不要把冲突、分叉或"没合并回 dev"的状态留给下一个任务。
+
 ## Git 提交规范
 
 在完成当前任务后，需提交所有更改到 Git 仓库，按照 conventional commits 格式用中文生成 commit messages。
+
+- **只提交本次任务相关的文件，不要用 `git add -A`**——工作树里固定存在生成物/换行符噪声（见上节），且主工作树可能有其它会话的在途改动。
+- 提交尽量原子化：每个提交尽量能独立构建、测试、审查和回滚，避免把一个大任务全部攒到最后一次性提交；这样也能缩小合并冲突的范围。
+- 合并回 `dev`、删除工作树与分支是「任务完成」的一部分（见上节）。
 
 ## COMMANDS
 

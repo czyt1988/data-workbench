@@ -389,20 +389,45 @@ Write-Host "[OK] Build succeeded" -ForegroundColor Green
 if ($Test) {
     Write-Host "[TEST] Running tests ($Config)..." -ForegroundColor Cyan
 
+    # ctest 必须在构建目录里运行：在别处运行它找不到 CTestTestfile.cmake，
+    # 会以「没有找到测试」退出且退出码为 0，表现为假绿。
+    # $cmakeExe 可能是 PATH 里的裸命令名（不是文件路径），此时交给 PATH 找 ctest；
+    # 注意用 -PathType Leaf 判断：裸名会和当前目录下的同名目录（如仓库根的 cmake/）混淆。
+    $ctestExe = 'ctest'
+    if (Test-Path -PathType Leaf -LiteralPath $cmakeExe -ErrorAction SilentlyContinue) {
+        $ctestDir = Split-Path -LiteralPath $cmakeExe -Parent
+        foreach ($candidate in @('ctest.exe', 'ctest')) {
+            $ctestPath = Join-Path $ctestDir $candidate
+            if (Test-Path -PathType Leaf -LiteralPath $ctestPath) {
+                $ctestExe = $ctestPath
+                break
+            }
+        }
+    }
+
     $testArgs = @(
         '-C', $Config,
-        '--output-on-failure'
+        '--output-on-failure',
+        # 过滤后一个测试都没有时按失败处理，避免「零测试」被当成通过
+        '--no-tests=error'
     )
     if ($Target) {
         # Map a target to a CTest regex when possible; otherwise run all
         $testArgs += @('-R', $Target)
     }
 
-    Write-Host "  Command: ctest $($testArgs -join ' ')" -ForegroundColor Gray
-    & ctest $testArgs
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "[ERROR] Tests failed (exit code $LASTEXITCODE)" -ForegroundColor Red
-        exit $LASTEXITCODE
+    Write-Host "  Command: $ctestExe $($testArgs -join ' ') (in $buildDir)" -ForegroundColor Gray
+    Push-Location $buildDir
+    try {
+        & $ctestExe $testArgs
+        $testExitCode = $LASTEXITCODE
+    }
+    finally {
+        Pop-Location
+    }
+    if ($testExitCode -ne 0) {
+        Write-Host "[ERROR] Tests failed (exit code $testExitCode)" -ForegroundColor Red
+        exit $testExitCode
     }
     Write-Host "[OK] Tests passed" -ForegroundColor Green
 }
