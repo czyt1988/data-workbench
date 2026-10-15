@@ -1,6 +1,6 @@
 # 插件与节点发现机制
 
-本文档详细说明 data-workbench 中插件和节点的发现机制。系统采用**双通道发现架构**，分别管理 C++ DLL 插件和 Python 节点的发现与加载，最终在应用层统一合并，供工作流编辑器的节点面板使用。
+本文档说明 data-workbench 中插件和节点的发现机制。C++ DLL 插件和 Python 节点各有独立的发现通道，最后在应用层合并，供工作流编辑器的节点面板使用。
 
 ## 导航
 
@@ -86,9 +86,9 @@ DLL 插件的发现由 `DAPluginManager::loadAllPlugins()` 驱动，包含以下
 
 一个 C++ DLL 插件要能够被发现和加载，必须满足以下条件：
 
-**1. 放置位置正确** — `.dll` 文件必须位于 `<app-dir>/plugins/` 目录下。
+**1. 放置位置正确**：`.dll` 文件必须位于 `<app-dir>/plugins/` 目录下。
 
-**2. 声明 Qt 插件元数据** — 插件类必须使用 `Q_PLUGIN_METADATA` 和 `Q_INTERFACES` 宏：
+**2. 声明 Qt 插件元数据**：插件类必须用 `Q_PLUGIN_METADATA` 和 `Q_INTERFACES` 宏：
 
 ```cpp
 #include <QObject>
@@ -104,7 +104,7 @@ public:
 };
 ```
 
-**3. 导出符号** — DLL 必须导出符号，通过自定义宏实现：
+**3. 导出符号**：DLL 必须导出符号，通过自定义宏实现：
 
 ```cpp
 // DataAnalysisGlobal.h
@@ -165,8 +165,8 @@ DebugTool
 |------|----------|-----------|
 | `initialize()` | 插件加载完成、核心接口注入后 | `true` 表示初始化成功，`false` 表示拒绝加载 |
 | `finalize()` | 插件卸载前 | `true` 允许卸载，`false` 取消卸载 |
-| `retranslate()` | 语言切换时 | — |
-| `afterLoadedNodes()` | 所有节点加载完成后 | — |
+| `retranslate()` | 语言切换时 | 无 |
+| `afterLoadedNodes()` | 所有节点加载完成后 | 无 |
 | `createSettingPage()` | 用户打开设置界面时 | 返回设置页面指针，或 `nullptr` |
 
 ### 卸载流程
@@ -175,7 +175,7 @@ DebugTool
 bool DAPluginManager::unloadPlugin(const QString& pluginName)
 ```
 
-1. 调用 `plugin->finalize()` — 如果返回 `false`，取消卸载
+1. 调用 `plugin->finalize()`，如果返回 `false`，取消卸载
 2. 调用 `QPluginLoader::unload()` 卸载共享库
 3. 从 `mPluginOptions` 列表中移除
 
@@ -437,7 +437,7 @@ static QStringList scanPyPluginsDir(const QString& pyPluginsDir)
 
 ### 元数据去重
 
-来自 C++ 插件和 Python 发现的元数据可能包含相同 `qualifiedName` 的节点。`DAAppPluginManager` 使用 `QMap<DAPyNodeMetaData, int>` 进行去重，保留首次出现的顺序。
+来自 C++ 插件和 Python 发现的元数据可能包含相同 `qualifiedName` 的节点。`DAAppPluginManager` 用 `QMap<DAPyNodeMetaData, int>` 去重，保留首次出现的顺序。
 
 ### 初始化时序
 
@@ -601,9 +601,9 @@ DAAppCore 构造函数
 | **缺少依赖** | 缺少运行时 DLL（如 Qt 库） | Python 包未安装（如 pandas） |
 | **接口不匹配** | 未使用 `Q_PLUGIN_METADATA` 或 `Q_INTERFACES` | 类未使用 `@NodeDef` 装饰器 |
 | **初始化失败** | `initialize()` 返回 `false` | Python 解释器未初始化 |
-| **符号未导出** | 未定义 `Q_DECL_EXPORT` 宏 | — |
-| **忽略列表** | 插件名在 `.pluginignore` 中 | — |
-| **Python 错误** | — | 模块导入异常，节点定义语法错误 |
+| **符号未导出** | 未定义 `Q_DECL_EXPORT` 宏 | 无 |
+| **忽略列表** | 插件名在 `.pluginignore` 中 | 无 |
+| **Python 错误** | 无 | 模块导入异常，节点定义语法错误 |
 
 ### 日志定位
 
@@ -616,33 +616,33 @@ DAAppCore 构造函数
 
 ### 源码参考
 
-- `src/APP/DAAppPluginManager.cpp` — 应用级插件整合（DLL + Python）
-- `src/DAPluginSupport/DAPluginManager.cpp` — DLL 插件发现与加载
-- `src/DAPluginSupport/DAPluginOption.cpp` — QPluginLoader 包装
-- `src/DAPluginSupport/DAAbstractPlugin.h` — 插件基类接口
-- `src/DAPluginSupport/DAAbstractNodePlugin.h` — 节点插件接口
-- `src/DAPyWorkFlow/DAPyNodeFactory.cpp` — Python 节点发现编排
-- `src/PyScripts/DAWorkbench/DAWorkFlowPy/node_registry.py` — Python 侧发现引擎
-- `src/PyScripts/DAWorkbench/DAWorkFlowPy/node_def.py` — `@NodeDef` 装饰器
-- `src/PyScripts/DAWorkbench/DAWorkFlowPy/node_factory.py` — `DANodeFactory` 节点工厂（C++ 调用入口）
-- `src/PyScripts/DAWorkbench/DAWorkFlowPy/serializer.py` — `DAWorkflowSerializer` 序列化/反序列化
-- `src/PyScripts/DAWorkbench/DAWorkFlowPy/syntax.py` — `NodeProxy`/`NodeOutputProxy`/`NodeInputProxy` 连接语法糖
-- `src/DAPyWorkFlow/DAPyNode.h` — Python 节点 C++ 代理类
-- `src/DAPyWorkFlow/DAPyNodeMetaData.h` — 节点元数据结构
-- `src/DAPyWorkFlow/DAPyWorkFlowManager.h` — 工作流管理器
-- `src/DAPyWorkFlow/DAPyModuleWorkflow.cpp` — Python 模块导入
+- `src/APP/DAAppPluginManager.cpp`：应用级插件整合（DLL + Python）
+- `src/DAPluginSupport/DAPluginManager.cpp`：DLL 插件发现与加载
+- `src/DAPluginSupport/DAPluginOption.cpp`：QPluginLoader 包装
+- `src/DAPluginSupport/DAAbstractPlugin.h`：插件基类接口
+- `src/DAPluginSupport/DAAbstractNodePlugin.h`：节点插件接口
+- `src/DAPyWorkFlow/DAPyNodeFactory.cpp`：Python 节点发现编排
+- `src/PyScripts/DAWorkbench/DAWorkFlowPy/node_registry.py`：Python 侧发现引擎
+- `src/PyScripts/DAWorkbench/DAWorkFlowPy/node_def.py`：`@NodeDef` 装饰器
+- `src/PyScripts/DAWorkbench/DAWorkFlowPy/node_factory.py`：`DANodeFactory` 节点工厂（C++ 调用入口）
+- `src/PyScripts/DAWorkbench/DAWorkFlowPy/serializer.py`：`DAWorkflowSerializer` 序列化/反序列化
+- `src/PyScripts/DAWorkbench/DAWorkFlowPy/syntax.py`：`NodeProxy`/`NodeOutputProxy`/`NodeInputProxy` 连接语法糖
+- `src/DAPyWorkFlow/DAPyNode.h`：Python 节点 C++ 代理类
+- `src/DAPyWorkFlow/DAPyNodeMetaData.h`：节点元数据结构
+- `src/DAPyWorkFlow/DAPyWorkFlowManager.h`：工作流管理器
+- `src/DAPyWorkFlow/DAPyModuleWorkflow.cpp`：Python 模块导入
 
 ### 插件示例
 
-- `plugins/DataAnalysis/` — 完整的 C++ DLL 插件示例（含界面、节点工厂、Python 脚本）
-- `plugins/DASystemNodes/` — Python-first 插件（仅含 PyScripts，通过 entry_points 发现，提供流程控制/数据展示节点）
-- `plugins/DAAgentTools/` — Agent 工具插件（向 `DAAgentInterface` 注册 19 个内置 LLM 工具）
-- `plugins/plugin-template/` — 插件脚手架生成工具
+- `plugins/DataAnalysis/`：完整的 C++ DLL 插件示例（含界面、节点工厂、Python 脚本）
+- `plugins/DASystemNodes/`：Python-first 插件（仅含 PyScripts，通过 entry_points 发现，提供流程控制/数据展示节点）
+- `plugins/DAAgentTools/`：Agent 工具插件（向 `DAAgentInterface` 注册 21 个内置工具）
+- `plugins/plugin-template/`：插件脚手架生成工具
 
 ### 相关文档
 
-- [Python 节点开发指南](./workflow-python-node-dev.md) — `@NodeDef` 装饰器和节点定义
-- [工作流生命周期](./workflow-lifecycle.md) — 从发现到执行完成的完整流程
-- [C++ 集成指南](./workflow-cpp-integration.md) — C++ 与 Python 绑定层
-- [DAPluginSupport 模块](../../plugin/plugin-module.md) — 插件框架核心模块
-- [插件接口关系](../../plugin/plugin-system.md) — 插件接口层次与依赖
+- [Python 节点开发指南](./workflow-python-node-dev.md)：`@NodeDef` 装饰器和节点定义
+- [工作流生命周期](./workflow-lifecycle.md)：从发现到执行完成的完整流程
+- [C++ 集成指南](./workflow-cpp-integration.md)：C++ 与 Python 绑定层
+- [DAPluginSupport 模块](../../plugin/plugin-module.md)：插件框架核心模块
+- [插件接口关系](../../plugin/plugin-system.md)：插件接口层次与依赖

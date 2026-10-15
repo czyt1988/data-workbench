@@ -15,7 +15,7 @@
 
 ## 概述
 
-DAPyWorkFlow 采用 Python-first 架构设计，节点逻辑完全由 Python 定义，C++ 层仅作为桥接层负责以下职责：
+DAPyWorkFlow 的节点逻辑全部由 Python 定义，C++ 层只做桥接，职责如下：
 
 - **可视化渲染**：通过 `DAPyNodeGraphicsItem` 将 Python 节点渲染到 Qt 场景
 - **交互编辑**：处理用户拖拽、连接、属性编辑等 GUI 操作
@@ -414,7 +414,7 @@ class CustomNode:
 
 1. **不要直接继承旧 DAWorkFlow 类**：`DAAbstractNode`、`DAAbstractNodeGraphicsItem` 等旧模块类已不再使用
 
-2. **GIL 管理优先使用 RAII**：优先使用 `DAPyGILGuard` 和 `DAPyGILRelease`，避免手动调用 `PyGILState_Ensure/Release`
+2. **GIL 管理优先使用 RAII**：用 `DAPyGILGuard` 和 `DAPyGILRelease`，避免手动调用 `PyGILState_Ensure/Release`
 
 3. **异常处理必须在 GIL 作用域内**：`error_already_set.what()` 必须在持有 GIL 时调用
 
@@ -427,41 +427,41 @@ class CustomNode:
 ## 参考资料
 
 - Python 模块源码：`src/PyScripts/DAWorkbench/DAWorkFlowPy/`
-  - `workflow.py` — `DAWorkflow` 图数据管理
-  - `node_def.py` — `@NodeDef` 装饰器
-  - `node_registry.py` — `DANodeRegistry` 节点发现
-  - `node_factory.py` — `DANodeFactory` 节点工厂
-  - `executor.py` — `DAWorkflowExecutor` 执行引擎
-  - `signal_manager.py` — `DASignalManager` 数据传播
-  - `serializer.py` — `DAWorkflowSerializer` 序列化
-  - `syntax.py` — `NodeProxy`、`NodeOutputProxy`、`NodeInputProxy` 语法糖
-  - `__init__.py` — `DAWorkflowNode`、`NodeDisplay`、`LinkPointStyle` 等导出
+  - `workflow.py`：`DAWorkflow` 图数据管理
+  - `node_def.py`：`@NodeDef` 装饰器
+  - `node_registry.py`：`DANodeRegistry` 节点发现
+  - `node_factory.py`：`DANodeFactory` 节点工厂
+  - `executor.py`：`DAWorkflowExecutor` 执行引擎
+  - `signal_manager.py`：`DASignalManager` 数据传播
+  - `serializer.py`：`DAWorkflowSerializer` 序列化
+  - `syntax.py`：`NodeProxy`、`NodeOutputProxy`、`NodeInputProxy` 语法糖
+  - `__init__.py`：`DAWorkflowNode`、`NodeDisplay`、`LinkPointStyle` 等导出
 - C++ 桥接源码：
-  - `src/DAPyWorkFlow/DAPyNode.h` — 节点代理（继承 `DAPyObjectWrapper`）
-  - `src/DAPyWorkFlow/DAPyNodeFactory.h` — 节点工厂（继承 `DAPyObjectWrapper`）
-  - `src/DAPyWorkFlow/DAPyWorkFlowManager.h` — 工作流管理器（QObject 编排器）
-  - `src/DAPyWorkFlow/DAPyWorkFlowExecutor.h` — 执行器代理
-  - `src/DAPyWorkFlow/DAPySignalManager.h` — 信号管理器代理
-  - `src/DAPyWorkFlow/DAPyExecutorState.h` — `DAPyExecutorState` 枚举
-  - `src/DAPyWorkFlow/DAPyNodeStyle.h` — 节点样式配置
-  - `src/DAPyWorkFlow/DAPyModuleWorkflow.h` — Python 模块封装
-  - `src/DAPyWorkFlow/DAPyPainterProxy.h` — 绘制代理
-  - `src/DAPyWorkFlow/DAPyWorkFlowSerializer.h` — 工作流逻辑序列化
-  - `src/DAPyWorkFlow/DAPyNodeParameter.h` — 参数描述符代理
-  - `src/DAPyWorkFlow/DAPyNodeConnection.h` — 连接描述符代理
-  - `src/DAPyWorkFlow/DAPyWorkFlowCommandsFactory.h` — undo/redo 命令工厂
-  - `src/DAPyWorkFlow/DAPyWorkFlowUndoCommands.h` — undo/redo 命令实现
-  - `src/DAPyWorkFlow/DAPyWorkFlowEnumStringUtils.h` — 枚举↔字符串映射
-  - `src/DAPyWorkFlow/DAPyWorkFlowState.h` — 工作流运行状态枚举
-  - `src/DAPyWorkFlow/DAPyWorkFlowAPI.h` — DLL 导出/导入宏
-  - `src/DAPyWorkFlow/DAPyLinkPointStyle.h` — 连接点样式配置
-  - `src/DAPyWorkFlow/PythonBinding/DAPyWorkFlowPythonBinding.h` — pybind11 绑定
-  - `src/DAPyBindQt/DAPyGILGuard.h` — GIL RAII 守卫
-  - `src/DAPyBindQt/DAPythonSignalHandler.h` — 跨线程回调
-  - `src/DAPyBindQt/DAPyJsonCast.h` — JSON 转换
+  - `src/DAPyWorkFlow/DAPyNode.h`：节点代理（继承 `DAPyObjectWrapper`）
+  - `src/DAPyWorkFlow/DAPyNodeFactory.h`：节点工厂（继承 `DAPyObjectWrapper`）
+  - `src/DAPyWorkFlow/DAPyWorkFlowManager.h`：工作流管理器（QObject 编排器）
+  - `src/DAPyWorkFlow/DAPyWorkFlowExecutor.h`：执行器代理
+  - `src/DAPyWorkFlow/DAPySignalManager.h`：信号管理器代理
+  - `src/DAPyWorkFlow/DAPyExecutorState.h`：`DAPyExecutorState` 枚举
+  - `src/DAPyWorkFlow/DAPyNodeStyle.h`：节点样式配置
+  - `src/DAPyWorkFlow/DAPyModuleWorkflow.h`：Python 模块封装
+  - `src/DAPyWorkFlow/DAPyPainterProxy.h`：绘制代理
+  - `src/DAPyWorkFlow/DAPyWorkFlowSerializer.h`：工作流逻辑序列化
+  - `src/DAPyWorkFlow/DAPyNodeParameter.h`：参数描述符代理
+  - `src/DAPyWorkFlow/DAPyNodeConnection.h`：连接描述符代理
+  - `src/DAPyWorkFlow/DAPyWorkFlowCommandsFactory.h`：undo/redo 命令工厂
+  - `src/DAPyWorkFlow/DAPyWorkFlowUndoCommands.h`：undo/redo 命令实现
+  - `src/DAPyWorkFlow/DAPyWorkFlowEnumStringUtils.h`：枚举↔字符串映射
+  - `src/DAPyWorkFlow/DAPyWorkFlowState.h`：工作流运行状态枚举
+  - `src/DAPyWorkFlow/DAPyWorkFlowAPI.h`：DLL 导出/导入宏
+  - `src/DAPyWorkFlow/DAPyLinkPointStyle.h`：连接点样式配置
+  - `src/DAPyWorkFlow/PythonBinding/DAPyWorkFlowPythonBinding.h`：pybind11 绑定
+  - `src/DAPyBindQt/DAPyGILGuard.h`：GIL RAII 守卫
+  - `src/DAPyBindQt/DAPythonSignalHandler.h`：跨线程回调
+  - `src/DAPyBindQt/DAPyJsonCast.h`：JSON 转换
 - 相关文档：
-  - [模块概述](./workflow-overview.md) — 架构总览
-  - [Python 节点开发指南](./workflow-python-node-dev.md) — Python 节点开发
-  - [工作流生命周期](./workflow-lifecycle.md) — 生命周期管理
-  - [场景操作指南](./workflow-scene-operation.md) — 可视化场景操作
-  - [C++ 调用 Python](../python-binding/cpp-calling-python.md) — pybind11 使用指南
+  - [模块概述](./workflow-overview.md)：架构总览
+  - [Python 节点开发指南](./workflow-python-node-dev.md)：Python 节点开发
+  - [工作流生命周期](./workflow-lifecycle.md)：生命周期管理
+  - [场景操作指南](./workflow-scene-operation.md)：可视化场景操作
+  - [C++ 调用 Python](../python-binding/cpp-calling-python.md)：pybind11 使用指南

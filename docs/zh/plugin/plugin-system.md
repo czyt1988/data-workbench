@@ -1,26 +1,14 @@
 # 插件系统深度解析
 
-DAWorkBench 采用**插件化架构**作为核心设计理念，这一设计将业务逻辑与框架基础分离，实现高度模块化和可扩展性。在这种架构下，所有数据处理、可视化、算法等具体功能均通过插件实现，而主程序仅提供基础框架、UI界面和接口管理。
+DAWorkBench 采用插件化架构，业务逻辑与框架基础分离：数据处理、可视化、算法等功能都由插件实现，主程序只提供基础框架、UI 界面和接口管理。
 
 ## 主要功能特性
 
-**特性**
-
-- ✅ **核心优势**：功能独立性、系统稳定性、生态扩展性、维护便捷性
-- ✅ **架构设计思想**：松耦合、可扩展、热插拔、标准化四大设计原则
-- ✅ **模块依赖关系**：主程序层、接口层、插件层的清晰分层架构
-- ✅ **插件目录规范**：标准插件结构详解、命名规则与约定
-- ✅ **插件基类定义**：DAAbstractPlugin、DAAbstractNodePlugin、DAPyNodeFactory
-- ✅ **类继承关系**：插件类型分类和选择指南
-- ✅ **接口契约**：DACoreInterface 核心接口、UI 接口层次
-- ✅ **插件注册机制**：Qt 插件声明、自动发现流程、DAPluginManager 单例
-- ✅ **插件加载顺序**：接口创建顺序、初始化时机
-
 这种设计的核心优势在于：
-1. **功能独立性**：每个插件可以独立开发、测试和部署
-2. **系统稳定性**：插件故障不会导致主程序崩溃
-3. **生态扩展性**：开发者可以基于公开接口开发新插件，形成丰富生态
-4. **维护便捷性**：插件可以单独更新，无需重新编译整个系统
+1. 功能独立性：每个插件可以独立开发、测试和部署
+2. 系统稳定性：插件故障不会导致主程序崩溃
+3. 生态扩展性：开发者可以基于公开接口开发新插件
+4. 维护便捷性：插件可以单独更新，无需重新编译整个系统
 
 ---
 
@@ -28,20 +16,18 @@ DAWorkBench 采用**插件化架构**作为核心设计理念，这一设计将�
 
 ### 可扩展性设计原则
 
-DAWorkBench 的插件系统在设计时遵循了四个核心原则，确保系统的长期可维护性和扩展性：
+DAWorkBench 插件系统遵循四个核心设计原则：
 
 | 设计原则 | 详细说明 | 实现方式 | 优势 |
 |----------|----------|----------|------|
-| **松耦合** | 插件与主程序通过接口通信，避免直接依赖具体类。接口作为契约，定义交互规范，插件只需实现接口而不关心内部实现细节。 | `DAInterface` 模块定义了一组抽象接口，插件通过 `DACoreInterface` 访问主程序功能。 | 插件开发不依赖主程序内部代码，实现真正的模块解耦；主程序升级时，只要接口保持不变，插件无需修改。 |
-| **可扩展** | 新功能通过插件添加，无需修改主程序源代码。插件可以扩展工作流节点、UI界面、数据处理算法等各方面功能。 | 利用 Qt 的插件机制（`QPluginLoader` + 接口声明），支持动态加载 `.dll`（Windows）或 `.so`（Linux）文件。 | 功能扩展无需重新编译主程序；第三方开发者可以轻松贡献新功能；功能模块化，便于管理。 |
+| **松耦合** | 插件通过接口与主程序通信，不直接依赖具体类，插件只需实现接口，不用关心内部实现细节。 | `DAInterface` 模块定义了一组抽象接口，插件通过 `DACoreInterface` 访问主程序功能。 | 插件开发不依赖主程序内部代码，主程序升级时只要接口不变，插件无需修改。 |
+| **可扩展** | 新功能通过插件添加，无需修改主程序源代码。插件可以扩展工作流节点、UI界面、数据处理算法等各方面功能。 | 利用 Qt 的插件机制（`QPluginLoader` + 接口声明），支持动态加载 `.dll`（Windows）或 `.so`（Linux）文件。 | 功能扩展无需重新编译主程序；第三方开发者可以贡献新功能；功能模块化，便于管理。 |
 | **热插拔** | 插件可以在程序运行时动态加载和卸载，支持插件的独立编译、安装和更新。 | 独立的 CMake 构建系统，插件编译后直接放置在指定目录即可被检测加载；`DAPluginManager` 负责插件的生命周期管理。 | 无需重启程序即可安装新插件；插件更新只需替换文件；支持按需加载，减少启动时间。 |
 | **标准化** | 提供统一的插件基类、接口规范和生命周期管理，确保所有插件遵循相同标准。 | `DAAbstractPlugin` 基类定义了插件的基本结构和生命周期方法；配套的 CMake 宏简化构建配置。 | 降低插件开发门槛；统一的管理界面；便于自动化测试和集成。 |
 
-这些原则共同构成了 DAWorkBench 插件系统的基石，确保系统既稳定可靠，又具备强大的扩展能力。
-
 ### 模块依赖关系
 
-DAWorkBench 插件系统的模块采用清晰的分层架构，各层职责明确，依赖关系如下图所示：
+DAWorkBench 插件系统的模块分三层，依赖关系如下图所示：
 
 ```mermaid
 graph TB
@@ -80,11 +66,11 @@ graph TB
 **各层详细说明：**
 
 #### 1. 主程序层
-- **APP**：主应用程序入口，负责初始化Qt环境、加载配置、启动主窗口等基础工作。
-- **DAGui**：用户界面模块，包含Ribbon工具栏、Dock窗口、图表视图等UI组件。
+- **APP**：主应用程序入口，负责初始化 Qt 环境、加载配置、启动主窗口等基础工作。
+- **DAGui**：用户界面模块，包含 Ribbon 工具栏、Dock 窗口、图表视图等 UI 组件。
 
 #### 2. 接口层
-- **DAInterface**：接口定义模块，包含 `DACoreInterface`、`DAUIInterface`、`DADataManagerInterface` 等抽象接口。这些接口定义了插件与主程序交互的契约，是实现松耦合的关键。
+- **DAInterface**：接口定义模块，包含 `DACoreInterface`、`DAUIInterface`、`DADataManagerInterface` 等抽象接口。这些接口定义了插件与主程序交互的契约。
 - **DAPluginSupport**：插件支持模块，提供插件基类 `DAAbstractPlugin` 和节点相关基类。
 - **DAPluginManager**：插件管理器单例，负责扫描插件目录、加载插件、管理插件生命周期。
 
@@ -95,9 +81,9 @@ graph TB
 - **自上而下**：主程序通过 `DAPluginManager` 加载和管理插件，通过 `DAPluginSupport` 与插件交互。
 - **自下而上**：插件通过 `DAInterface` 访问主程序功能，但不能直接访问主程序的具体实现类。
 
-这种分层设计确保了系统的可维护性和扩展性，新插件只需关注接口实现，无需了解主程序内部细节。
+新插件只需实现接口，不用了解主程序内部细节。
 
-工程完整的模块依赖关系 UML 图：
+整个工程的模块依赖关系 UML 图：
 
 ![模块依赖关系](../../assets/PIC/uml-module-relation.png)
 
@@ -112,17 +98,17 @@ graph TB
 
 ![插件与接口关系](../../assets/PIC/uml-module-last3.png)
 
-通过接口可调用到整个程序的所有其他模块，业务逻辑通过插件实现，保证了模块间的解耦。
+接口可以调到整个程序的其他模块，业务逻辑由插件实现，两者不直接依赖。
 
 ---
 
 ## 插件目录规范
 
-良好的目录结构是插件可维护性的基础。DAWorkBench 制定了标准的插件目录规范，确保所有插件具有一致的组织方式，便于开发、测试和部署。
+插件按同一目录结构组织，便于开发、测试和部署。
 
 ### 标准插件结构详解
 
-每个插件项目应遵循以下目录结构，这种结构经过多个插件项目的实践验证，兼顾了灵活性和规范性：
+每个插件项目应遵循以下目录结构：
 
 ```text
 [插件名称]/
@@ -151,12 +137,12 @@ graph TB
 3. **节点工厂**：旧架构中工作流插件需要实现 C++ 节点工厂。新的 Python-first 架构使用 `@NodeDef` 装饰器自动发现节点，无需手动编写 C++ NodeFactory。
 4. **工作节点**：具体的数据处理单元，每个节点对应工作流中的一个处理步骤。复杂的插件可能包含多个工作节点类。
 5. **UI组件**：如果插件需要提供用户界面（如配置面板、数据查看器等），应在此目录组织相关代码。
-6. **资源文件**：图标、翻译文件等资源统一通过Qt资源系统管理，确保跨平台兼容性。
-7. **Python脚本**：对于涉及复杂算法或数据处理的任务，可以使用Python脚本实现，通过pybind11与C++代码交互。
+6. **资源文件**：图标、翻译文件等资源统一通过 Qt 资源系统管理，确保跨平台兼容性。
+7. **Python脚本**：对于涉及复杂算法或数据处理的任务，可以用 Python 脚本实现，通过 pybind11 与 C++ 代码交互。
 
 ### 命名规则与约定
 
-一致的命名规范有助于提高代码可读性和维护性。DAWorkBench 插件开发采用以下命名约定：
+DAWorkBench 插件开发采用以下命名约定：
 
 | 类型 | 命名规范 | 示例 | 说明 |
 |------|----------|------|------|
@@ -168,8 +154,8 @@ graph TB
 | **节点原型** | `[Plugin].[Factory].[Node]` | `DataAnalysis.IO.CSVReader` | 节点原型的命名采用三级结构，确保全局唯一 |
 
 **命名注意事项：**
-- 避免使用缩写，除非是广泛接受的缩写（如CSV、XML）
-- 类名使用PascalCase，变量和函数使用camelCase
+- 避免使用缩写，除非是广泛接受的缩写（如 CSV、XML）
+- 类名使用 PascalCase，变量和函数使用 camelCase
 - 资源文件名使用小写字母和下划线分隔
 - 确保所有命名在插件内部保持一致性
 
@@ -183,7 +169,7 @@ graph TB
 
 ## 插件基类定义
 
-插件基类是 DAWorkBench 插件系统的核心抽象层，定义了所有插件必须遵循的接口契约。通过统一的基类设计，系统能够以一致的方式管理各种类型的插件。
+插件基类定义了所有插件必须遵循的接口契约，系统用统一的方式管理各种类型的插件。
 
 ### DAAbstractPlugin - 插件抽象基类
 
@@ -226,7 +212,7 @@ IID 宏定义为 `DAABSTRACTPLUGIN_IID`（值为 `"org.da.abstract.plugin"`，�
 
 **关键方法详解：**
 
-1. **`core()`**：插件通过此方法获取 `DACoreInterface` 实例，这是插件访问主程序所有功能的唯一入口。插件不应直接访问主程序的其他类，而应通过此接口进行交互，确保松耦合设计。
+1. **`core()`**：插件通过此方法获取 `DACoreInterface` 实例，这是插件访问主程序所有功能的唯一入口。插件通过此接口与主程序交互，不直接访问主程序的其他类，以保持松耦合。
 
 2. **`initialize()`**：插件的初始化入口，**非纯虚，默认返回 `true`**。主程序加载插件后立即调用此方法。插件应在此方法中完成：
    - 资源初始化（加载图标、翻译文件等）
@@ -241,7 +227,7 @@ IID 宏定义为 `DAABSTRACTPLUGIN_IID`（值为 `"org.da.abstract.plugin"`，�
 
 5. **`createArchiveTask(bool isSave)`**：参与工程存档/恢复流程，`isSave` 为 `true` 时返回保存任务，为 `false` 时返回加载任务，默认返回 `nullptr`（不参与存档）。
 
-6. **`retranslate()`**：当应用程序语言发生变更时调用。插件应在此方法中重新加载翻译文件，并更新所有用户界面元素的文本。这为插件提供了完整的国际化支持。
+6. **`retranslate()`**：当应用程序语言发生变更时调用。插件应在此方法中重新加载翻译文件，并更新所有用户界面元素的文本。
 
 7. **插件元信息方法**：`getIID()`、`getName()`、`getVersion()`、`getDescription()` 返回插件的基本信息，这些信息将显示在插件管理界面中，帮助用户了解插件功能和版本。
 
@@ -273,7 +259,7 @@ IID 宏定义为 `DAABSTRACTNODEPLUGIN_IID`（值为 `"org.da.abstract.nodePlugi
 
 1. **`createNodeFactory()`**：创建并返回一个 `DAPyNodeFactory*`，由插件负责构造。这是旧架构中 `getFactories()` 的替代：一个插件只返回一个工厂指针。
 
-2. **`destroyNodeFactory(DAPyNodeFactory* p)`**：销毁 `createNodeFactory()` 创建的工厂，遵循"谁创建谁删除"原则。
+2. **`destroyNodeFactory(DAPyNodeFactory* p)`**：销毁 `createNodeFactory()` 创建的工厂，遵循「谁创建谁删除」原则。
 
 3. **`afterLoadedNodes()`**：节点生成完成并加入 APP 后的回调，默认不做任何动作，插件可重载以做收尾工作（如刷新节点列表 UI）。
 
@@ -282,7 +268,7 @@ IID 宏定义为 `DAABSTRACTNODEPLUGIN_IID`（值为 `"org.da.abstract.nodePlugi
 ### DAPyNodeFactory - 节点工厂代理（旧 C++ 架构）
 
 !!! warning "遗留架构"
-    下面展示的 `create` / `getNodeMetaDataList` / `getFactoryName` / `nodeAddedToWorkflow` / `nodeStartRemove` 等**虚函数钩子属于已废弃的 C++ 节点工厂架构**。当前 `DAPyNodeFactory`（见 `src/DAPyWorkFlow/DAPyNodeFactory.h`）已不再暴露这些虚函数，而是作为 Python 侧 `DANodeRegistry` 的代理：通过 `discoverNodes()` 发现节点、`createNode()` 创建实例、`getNodeMetadataList()` 取元数据列表。
+    下面展示的 `create` / `getNodeMetaDataList` / `getFactoryName` / `nodeAddedToWorkflow` / `nodeStartRemove` 等**虚函数钩子属于已废弃的 C++ 节点工厂架构**。当前 `DAPyNodeFactory`（见 `src/DAPyWorkFlow/DAPyNodeFactory.h`）不再暴露这些虚函数，它的角色是 Python 侧 `DANodeRegistry` 的代理：通过 `discoverNodes()` 发现节点、`createNode()` 创建实例、`getNodeMetadataList()` 取元数据列表。
 
     **新插件应采用 Python-first 的 `@NodeDef` 自动发现模型**：节点用 `@NodeDef` 装饰器声明，`__init__.py` 通过 `entry_points` 注册，`DAPyNodeFactory` 在启动时扫描 Python 包自动发现，无需手写 C++ 工厂。参考 `plugins/DASystemNodes/`（纯 Python 节点插件）。旧 C++ 工厂钩子仅作历史背景保留：
 
@@ -319,7 +305,7 @@ public:
 
 ### 类继承关系与插件类型
 
-DAWorkBench 支持多种类型的插件，形成清晰的继承层次：
+DAWorkBench 支持多种插件类型，继承层次如下：
 
 ```mermaid
 classDiagram
@@ -380,8 +366,6 @@ classDiagram
    - 数据分析和统计算法节点
    - 图表生成和可视化节点
    - 数据导入导出节点
-
-选择正确的基类可以简化开发过程，并确保插件与系统的其他部分正确集成。
 
 ---
 
@@ -475,7 +459,7 @@ bool MyPlugin::initialize()
 
 ### Qt 插件声明
 
-使用 Qt 插件机制进行注册：
+插件通过 Qt 插件机制注册：
 
 ```cpp
 // 在插件头文件中声明接口（IID 宏定义在 DAAbstractNodePlugin.h 中）
@@ -660,7 +644,7 @@ void DAPluginManager::loadAllPlugins(DACoreInterface* c)
     ```
 
 !!! tip "谁创建谁删除"
-    `createNodeFactory()` 创建的工厂对象由插件管理，需要在 `destroyNodeFactory()` 中正确释放，遵循"谁创建谁删除"原则。
+    `createNodeFactory()` 创建的工厂对象由插件管理，需要在 `destroyNodeFactory()` 中正确释放，遵循「谁创建谁删除」原则。
 
 !!! note "Qt 版本兼容性"
     插件系统在 Qt5 和 Qt6 中使用方式相同，但编译后的插件不兼容，需要针对不同 Qt 版本分别编译。

@@ -1,16 +1,14 @@
 # 开发规范
 
-本文档定义了 data-workbench 项目的代码编写规范，包括命名规则、注释规范、调试开关和 Qt 编程注意事项，确保代码风格统一、易于维护。
+本文档定义 data-workbench 项目的代码编写规范，包括命名规则、注释规范、调试开关和 Qt 编程注意事项。
 
 ## 主要功能特性
 
-**特性**
-
-- ✅ **统一命名风格**：驼峰命名法用于类和函数，下划线命名用于全局变量
-- ✅ **IDE 搜索优化**：命名遵循 IDE 最优搜索原则，便于快速定位符号
-- ✅ **Doxygen 注释**：头文件简短注释，源文件完整 Doxygen 注释
-- ✅ **宏开关控制**：使用宏而非注释控制调试功能和代码开关
-- ✅ **Qt 兼容性**：涵盖 Qt5/Qt6 差异处理和多线程 UI 操作规范
+- **统一命名风格**：驼峰命名法用于类和函数，下划线命名用于全局变量
+- **IDE 搜索优化**：命名遵循 IDE 最优搜索原则，便于快速定位符号
+- **Doxygen 注释**：头文件简短注释，源文件完整 Doxygen 注释
+- **宏开关控制**：调试功能和代码开关一律用宏控制，不用注释屏蔽
+- **Qt 兼容性**：涵盖 Qt5/Qt6 差异处理和多线程 UI 操作规范
 
 ## 命名规则
 
@@ -36,13 +34,13 @@
 | 命名空间 | 简洁、全大写缩写（避免过长） | `DA`（而非 `DataAnalysis`） |
 
 !!! tips "说明"
-    谷歌规范推荐私有成员变量使用后缀下划线（如 `value_`），虽可避免与局部变量混淆，但不利于 IDE 搜索。而传统 `m_` 前缀在 Pimpl 模式下显得冗余（如 `d_ptr->m_value`）
-    本规范采用 **`m` 前缀 + 驼峰**（如 `mValue`），兼顾简洁性与 IDE 提示体验：在 Pimpl 中写作 `d_ptr->mValue` 更美观，且输入 `d_ptr->m` 即可触发 IDE 自动补全
+    谷歌规范推荐私有成员变量使用后缀下划线（如 `value_`），虽可避免与局部变量混淆，但不利于 IDE 搜索。而传统 `m_` 前缀在 Pimpl 模式下显得冗余（如 `d_ptr->m_value`）。
+    本规范采用 **`m` 前缀 + 驼峰**（如 `mValue`），兼顾简洁性与 IDE 提示体验：在 Pimpl 中写作 `d_ptr->mValue` 更美观，且输入 `d_ptr->m` 即可触发 IDE 自动补全。
 
 
 示例代码：
 
-以下代码展示了各类标识符的正确命名方式，涵盖全局变量、类、函数、成员变量和枚举：
+以下代码展示各类标识符的命名方式：
 
 ```cpp
 int g_total_count;//全局变量以g开头，下划线命名
@@ -87,14 +85,8 @@ enum DockingArea
 };
 ```
 
-上述代码展示了命名规范的应用：
-- 全局变量 `g_total_count` 使用 `g_` 前缀和下划线命名
-- 类名 `ExampleClass` 使用首字母大写的驼峰命名
-- 公有成员 `publicMemberValue` 无前缀，私有成员 `mResultValue` 使用 `m` 前缀
-- 枚举值 `DockingAreaWorkFlowOperate` 使用统一前缀便于 IDE 搜索
-
 !!! tips "说明"
-    `QStyleOption*`系列就是比较好的例子，所有相似功能的类都是以`QStyleOption`打头，例如`QStyleOptionToolButton`，而不是命名为`QToolButtonStyleOption`
+    `QStyleOption*` 系列就是比较好的例子：相似功能的类都以 `QStyleOption` 打头，比如 `QStyleOptionToolButton`，而 `QToolButtonStyleOption` 这样的命名不利于在 IDE 里列举
 
 ## 函数命名规范
 
@@ -108,9 +100,9 @@ enum DockingArea
   - 读取函数统一以 `is` 开头。
 - **统一使用 `set` 前缀**，使 IDE 能通过输入 `set` 联想所有可配置项。
 
-总之尽量使用`set`，让编译器能通过`set`联想出所有可设置属性，用`get`和`is`能联想出所有可读属性
+尽量使用 `set`，让编译器能通过 `set` 联想出所有可设置属性，用 `get` 和 `is` 能联想出所有可读属性
 
-以下代码展示了属性命名规范的应用，包括普通属性、引用属性和布尔属性：
+以下代码展示普通属性、引用属性和布尔属性的命名：
 
 ```cpp
 class ExampleClass{
@@ -130,17 +122,12 @@ public:
 }
 ```
 
-上述代码展示了属性命名规范：
-- 普通属性使用 `setText()` / `getText()` 配对
-- 返回引用的属性不加 `get`，直接命名 `text()`
-- 布尔属性使用 `setSelectable()` 设置能力，`isSelected()` 查询状态
-
 ### 虚函数重写
 
 - 重写虚函数时，**必须**使用 `override`；
 - **建议保留 `virtual` 关键字**，以增强可读性，明确其为虚函数。
 
-以下代码展示了虚函数重写的正确方式：
+以下代码展示虚函数重写的正确方式：
 
 ```cpp
 class ChildClass : public ExampleClass{
@@ -150,10 +137,6 @@ public:
 };
 ```
 
-上述代码展示了虚函数重写规范：
-- 使用 `override` 关键字确保正确重写基类虚函数
-- 保留 `virtual` 关键字增强可读性，明确这是一个虚函数
-
 ## 注释规范
 
 遵循 **Doxygen** 注释风格
@@ -162,16 +145,16 @@ public:
   - 类成员函数**不写完整 Doxygen 注释**（避免因文档变更触发全量构建）；
   - 但需保留**简短普通注释**，内容等同于 `@brief`；
   - `get`/`set` 配对函数可共用一条注释；
-  - 针对Qt的**信号（signals）** 没有 `.cpp` 实现，可以在头文件中写详细的 Doxygen 注释。
+  - 针对 Qt 的**信号（signals）** 没有 `.cpp` 实现，可以在头文件中写详细的 Doxygen 注释。
 - **源文件（.cpp）中**：
   - 所有函数实现前写完整 Doxygen 注释；
   - 注释前**空一行**；
   - 使用 `/** ... */` 格式；
   - 成员变量注释使用 `///<`。
 
-示例：（`//!`为示例的说明）
+示例：（`//!` 为示例的说明）
 
-h文件注释示范，展示头文件中应保留简短注释而非完整 Doxygen 注释：
+头文件注释示范，只写简短注释：
 
 ```cpp
 class DAAbstractNode{
@@ -217,12 +200,7 @@ signals:
 };
 ```
 
-上述头文件注释规范：
-- 成员函数只保留简短普通注释，不写完整 Doxygen 注释
-- get/set 配对函数可共用一条注释
-- 信号（signals）没有 cpp 实现，可以在头文件中写详细 Doxygen 注释
-
-cpp文件注释示范，展示源文件中应写完整 Doxygen 注释：
+cpp 文件注释示范，源文件里写完整 Doxygen 注释：
 
 ```cpp
 
@@ -247,20 +225,14 @@ void DAAbstractNode::setNodeTooltip(const QString& tp)
 }
 ```
 
-上述源文件注释规范：
-- 函数实现前写完整 Doxygen 注释，使用 `/** ... */` 格式
-- 注释前空一行，与代码分隔
-- 使用 `@brief`、`@param`、`@return`、`@sa` 等标签
-- Doxygen 注释应包含中文说明，便于理解
+Doxygen 注释里用 `@brief`、`@param`、`@return`、`@sa` 等标签，正文写中文。
 
 ## 调试与功能开关
 
 - 对于大段功能的开关，**禁止使用注释屏蔽代码**
 - 应使用 **宏开关** 控制调试输出或功能启用。
 
-示例：
-
-以下代码展示了如何使用宏开关控制调试输出，而非使用注释屏蔽代码：
+宏开关控制调试输出的示例：
 
 ```cpp
 /**
@@ -291,39 +263,36 @@ int DAAbstractNode::getInputNodesCount() const
 }
 ```
 
-上述代码展示了宏开关的正确使用方式：
-- 定义宏 `DA_DAABSTRACTNODE_DEBUG_PRINT` 控制调试输出开关
-- 使用 `#if` 宏包裹调试代码，而非注释屏蔽
-- 宏值为 0 时关闭调试输出，为 1 时开启
+`DA_DAABSTRACTNODE_DEBUG_PRINT` 为 0 时关闭调试输出，为 1 时开启。
 
-包括功能的调整，禁止使用注释而应该使用宏
+功能的启用和调整同样用宏控制，不要用注释屏蔽代码。
 
 ## 编码禁止列表
 
-- ❌ 禁止头文件中使用`using namespace`
-- ❌ 基类若用于继承，**析构函数必须为 `virtual`**
-- ❌ **库导出类禁止继承非模板的 STL 或 Qt 模板类**（如 `class DLLEXPORT X : public QList<QColor>`），因可能导致符号冲突或析构不完整。若需继承模板类，自身也应为模板类。
+- 禁止头文件中使用 `using namespace`
+- 基类若用于继承，**析构函数必须为 `virtual`**
+- **库导出类禁止继承非模板的 STL 或 Qt 模板类**（如 `class DLLEXPORT X : public QList<QColor>`），因可能导致符号冲突或析构不完整。若需继承模板类，自身也应为模板类。
 
 
 ## 语法规范性条例
 
-下面这些内容是涉及一些语法相关的规范和条例，通用规范条例常见effective cpp和effective modern cpp
+下面这些内容涉及一些语法相关的规范和条例，通用条例常见于 effective cpp 和 effective modern cpp
 
 ### 用异常而不是用std::optional
 
-早期c++规范都不推荐使用异常，例如谷歌的条款，而是推荐使用错误码，现代C++中，更为推荐使用异常，主要有如下原因：
+早期 C++ 规范不推荐使用异常，比如谷歌的条款推荐用错误码；现代 C++ 更推荐异常，原因如下：
 
-- 异常可携带更多的信息，甚至结合Qt的多语言框架，能直接进行多语言的异常信息携带
-- `std::optional`在某些场合能替代异常，但是有很大的缺陷，首先无法携带信息，除非用一个类似`getLastErrorString`的函数来获取，实际工程上大规模使用并不友好
-- 宁愿用错误码也不应该用`std::optional`，在和界面相关的编程中，错误码至少能进行更详细的错误信息描述
-- 如果使用了异常，开发过程要注意处理，尤其和一些不使用异常的库混用的时候，例如Qt
-- 一些科学计算类、io操作类的库建议使用异常
+- 异常能携带更多信息，结合 Qt 的多语言框架还能带上多语言的异常文本
+- `std::optional` 在某些场合能替代异常，但缺陷明显：它无法携带信息，除非再用一个类似 `getLastErrorString` 的函数去取，实际工程里大规模用并不友好
+- 在错误码和 `std::optional` 之间宁可选错误码，和界面相关的编程中，错误码至少能描述更详细的错误信息
+- 用了异常就要注意处理流程，尤其在和一些不使用异常的库（比如 Qt）混用的时候
+- 科学计算类、io 操作类的库建议使用异常
 
 ### 操作符重载
 
 操作符重载函数**必须定义在所属类的命名空间内**，以支持 ADL（Argument-Dependent Lookup）。
 
-✅ 如下是**正确**的做法，操作符定义在命名空间内：
+如下是**正确**的做法，操作符定义在命名空间内：
 
 ```cpp
 namespace DA
@@ -336,7 +305,7 @@ bool operator==(const DANodeLinkPoint& a, const DANodeLinkPoint& b);
 }// end namespace DA
 ```
 
-❌ 如下是**错误**的做法，操作符定义在命名空间外会导致 ADL 失效：
+如下是**错误**的做法，操作符定义在命名空间外会导致 ADL 失效：
 
 ```cpp
 namespace DA
@@ -367,9 +336,9 @@ QIcon mIcon;
 mPixmap = mIcon.pixmap(getBodySize().toSize());
 ```
 
-在paintEvent里绘制,这里演示是要把pixmap绘制到bodyRect的中心，下面是错误的绘制方法
+在 paintEvent 里绘制时，本例要把 pixmap 画到 bodyRect 的中心，下面是错误的做法
 
-❌ 如下是**错误**的做法，未考虑 devicePixelRatio 导致位置偏移：
+如下是**错误**的做法，未考虑 devicePixelRatio 导致位置偏移：
 
 ```cpp
 void xxx::paintBody(QPainter* painter,
@@ -389,9 +358,9 @@ void xxx::paintBody(QPainter* painter,
 }
 ```
 
-上面方法之所以错误，是因为没有考虑devicePixelRatio，在缩放比例为100%时，上面代码绘制的图片没有问题，但缩放比例不是100%，上面的代码绘制出来是不正确的位置，主要异常在xoffset和yoffset，因为pixmapRect.width()/height()并非QPixmap在当前绘图坐标系下的宽高，这时两个坐标系是不一致的，你要获取当前绘图坐标系下的宽高，需要除以devicePixelRatio
+上面这段代码的问题在于没考虑 devicePixelRatio：缩放比例为 100% 时看不出异常，缩放比例不是 100% 时就会画到错误的位置，问题主要出在 xoffset 和 yoffset 上。pixmapRect.width()/height() 不是 QPixmap 在当前绘图坐标系下的宽高，两个坐标系并不一致，要拿到当前绘图坐标系下的宽高，需要除以 devicePixelRatio。
 
-✅ 如下是**正确**的做法，使用 devicePixelRatio 正确计算绘制位置：
+如下是**正确**的做法，用 devicePixelRatio 计算绘制位置：
 
 ```cpp
 void xxx::paintBody(QPainter* painter,
@@ -417,7 +386,7 @@ void xxx::paintBody(QPainter* painter,
 - **严禁在线程中直接操作 GUI 控件**；
 - 必须通过 **信号槽** 或 `QMetaObject::invokeMethod()` 切回主线程执行。
 
-例如一个窗口，用QtConcurrent来执行一个耗时操作，操作结束后要进行界面刷新，那么可以如下执行（QtConcurrent::run就在当前界面的函数中）
+比如一个窗口用 QtConcurrent 执行耗时操作，操作结束后要刷新界面，可以这样写（QtConcurrent::run 就在当前界面的函数中）
 
 以下代码展示了如何在后台线程中安全地更新 UI，使用 `QMetaObject::invokeMethod` 切回主线程：
 
@@ -435,15 +404,15 @@ QtConcurrent::run([this] {//this是当前窗口的指正，为了最后进行刷
 
 ### 继承QObject的类，不要忘记加上Q_OBJECT宏
 
-如果你的类继承了QObject，不要忘记加上Q_OBJECT宏，即使你没有使用信号和槽，你也要加上这个宏，否则你会遇到一些奇怪的问题
+继承了 QObject 的类一定要加上 Q_OBJECT 宏，即使没有用到信号和槽，否则会遇到一些奇怪的问题
 
-例如你需要进行多语言翻译，在需要翻译的文字使用了tr，但如果你所在的类没加上Q_OBJECT宏，你的翻译是不会生效的
+比如要做多语言翻译，文字上写了 tr，但类里没加 Q_OBJECT 宏，翻译就不会生效
 
 ### 自定义数据类型的信号和槽要写全命名空间
 
-自定义数据类型，例如`MyClass`要作为参数在信号和槽中使用，那么必须写全命名空间，否则信号和槽无法识别
+自定义数据类型（比如 `MyClass`）作为参数在信号和槽中使用时，必须写全命名空间，否则信号和槽无法识别
 
-例如：
+比如：
 
 以下代码展示了自定义类型在信号槽中使用的正确声明方式，必须写全命名空间：
 
@@ -466,19 +435,19 @@ namespace DA{
 }
 ```
 
-上面代码中，由于`Q_DECLARE_METATYPE`必须在命名空间外定义，所以`std::shared_ptr< DA::MyClass >`必须写全命名空间
+上面代码中，`Q_DECLARE_METATYPE` 必须在命名空间外定义，所以 `std::shared_ptr< DA::MyClass >` 必须写全命名空间
 
-而作为使用这个参数的类，信号定义时，虽然在命名空间内，但信号/槽的参数**必须写全命名空间**，否则Qt会识别不了
+信号定义虽然写在命名空间内，但信号/槽的参数**必须写全命名空间**，否则 Qt 会识别不了
 
 !!! tips "注意"
-    qRegisterMetaType建议不要传入参数，让qt自动识别
-    建议使用自动注册机制，参考`DAGlobals.h`的`DA_AUTO_REGISTER_META_TYPE`宏
+    qRegisterMetaType 建议不要传入参数，让 Qt 自动识别
+    建议使用自动注册机制，参考 `DAGlobals.h` 的 `DA_AUTO_REGISTER_META_TYPE` 宏
 
 ### 信号和槽的参数要匹配
 
-所谓匹配是不要信号定义值传递，槽定义了一个常引用来接收，例如
+所谓匹配，是指信号和槽的参数形式一致。
 
-以下代码展示了信号槽参数不匹配的错误示例，信号值传递而槽使用常引用会导致识别失败：
+以下代码是参数不匹配的示例，信号按值传递、槽用常引用接收：
 
 ```cpp hl_lines="11 19"
 namespace DA{
@@ -504,11 +473,11 @@ namespace DA{
 }
 ```
 
-上面代码中，信号和槽的参数就没有匹配，一个值传递，一个常引接收，这是**不匹配**的，Qt在某些情况会识别不了，这个调试起来非常困难
+上面代码里信号和槽的参数不匹配：一个值传递，一个常引接收。Qt 在某些情况下会识别不了，这类问题调试起来非常困难
 
 ## 相关规范
 
 !!! info "图标与 UI 设计规范"
-    本规范约束**代码**的命名、注释与风格；项目同时有 [图标与 UI 设计规范](./icon-ui-design-guide.md) 约束**视觉表现**——SVG 图标画布规格、语义化色板、色彩组合规则以及 UI 控件（按钮/面板/状态指示）配色映射。
+    本规范约束**代码**的命名、注释与风格；项目同时有 [图标与 UI 设计规范](./icon-ui-design-guide.md) 约束**视觉表现**，包括 SVG 图标画布规格、语义化色板、色彩组合规则以及 UI 控件（按钮/面板/状态指示）配色映射。
 
     **涉及 SVG 图标设计（新增、替换、修改 `src/DAGui/icon/` 或 `src/APP/Icon/` 下任意 `.svg` 文件）时，必须先阅读 [图标与 UI 设计规范](./icon-ui-design-guide.md)** 并按其 Checklist 逐项核对，确保图标与界面控件配色同源、语义一致。

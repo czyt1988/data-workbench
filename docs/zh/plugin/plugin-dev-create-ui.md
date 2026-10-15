@@ -1,22 +1,12 @@
 # 插件界面开发
 
-插件的入口函数是`Plugin::initialize`，在调用此函数时，主程序的界面已经创建完成，此时可以进行插件界面的初始化。
-
-## 主要功能特性
-
-**特性**
-
-- ✅ **界面组件访问**：通过核心接口获取Ribbon、DockingArea等界面组件
-- ✅ **界面扩展**：添加自定义Dock窗口、Ribbon按钮、菜单项
-- ✅ **界面隐藏**：隐藏不需要的系统界面组件
-- ✅ **Action管理**：统一管理界面中的所有Action
-- ✅ **命令接口**：通过命令接口执行系统命令
+插件的入口函数是 `Plugin::initialize`。调用它时主程序的界面已经创建完成，插件界面在这里初始化。
 
 ## 获取界面的主要组件
 
-插件的核心函数是`core()`函数，此函数返回核心对象，`data-workbench`的所有可开放对象都可以通过`core()`获取。
+插件的核心函数是 `core()`，它返回核心对象；`data-workbench` 的所有可开放对象都可以通过 `core()` 获取。
 
-其中ui相关的接口对象通过`DACoreInterface::getUiInterface`函数获取，此函数返回`DAUIInterface`对象。
+UI 相关的接口对象通过 `DACoreInterface::getUiInterface` 获取，返回 `DAUIInterface` 对象。
 
 ### DAUIInterface 关键函数
 
@@ -35,14 +25,14 @@ DACommandInterface* getCommandInterface() const;
 
 | 接口 | 获取函数 | 功能说明 |
 |------|----------|----------|
-| DockingArea | `getDockingArea()` | Dock窗口区域，可添加/隐藏Dock控件 |
-| RibbonArea | `getRibbonArea()` | Ribbon界面区域，可添加Ribbon控件 |
-| Actions | `getActionInterface()` | Action管理器，管理所有界面Action |
+| DockingArea | `getDockingArea()` | Dock 窗口区域，可添加/隐藏 Dock 控件 |
+| RibbonArea | `getRibbonArea()` | Ribbon 界面区域，可添加 Ribbon 控件 |
+| Actions | `getActionInterface()` | Action 管理器，管理所有界面 Action |
 | Command | `getCommandInterface()` | 命令接口，执行系统命令 |
 
 ## 界面架构图
 
-插件界面开发涉及主程序的多个 UI 组件，下图展示了主程序界面结构与插件操作的关系：
+插件界面开发涉及主程序的多个 UI 组件，下图是主程序界面结构与插件操作的关系：
 
 ```mermaid
 flowchart TD
@@ -70,15 +60,15 @@ flowchart TD
     end
 ```
 
-上图说明了插件界面开发的两个层面：
-- **主程序界面**：展示了 UI 接口管理的 Ribbon、DockingArea、Actions、Command 四大组件及其子结构
-- **插件操作流程**：展示了插件初始化时获取 UI 接口，然后进行 Ribbon 按钮、Dock 窗口、隐藏组件等操作的流程
+上图对应两个层面：
+- 主程序界面：UI 接口管理的 Ribbon、DockingArea、Actions、Command 四大组件及其子结构
+- 插件操作：插件初始化时获取 UI 接口，再添加 Ribbon 按钮、Dock 窗口或隐藏组件
 
 ## 插件操作界面
 
 ### 隐藏系统窗口
 
-插件可以隐藏主程序中不需要的功能模块，实现定制化界面。推荐使用 `DAUIInterface::setFeatureVisible`，一次调用即可隐藏该功能关联的全部 Dock 窗口、Ribbon 面板、上下文标签和 action：
+隐藏主程序中不需要的功能模块用 `DAUIInterface::setFeatureVisible`，一次调用即可隐藏该功能关联的全部 Dock 窗口、Ribbon 面板、上下文标签和 action：
 
 ```cpp
 void MyPlugin::initialize()
@@ -91,7 +81,7 @@ void MyPlugin::initialize()
 }
 ```
 
-执行上述代码后，工作流相关的 Dock 窗口和 Ribbon 入口被隐藏，用户界面更加简洁。当前仅支持 `Workflow`，未支持的功能会打印警告并直接返回。
+执行后工作流相关的 Dock 窗口和 Ribbon 入口被隐藏。当前仅支持 `Workflow`，未支持的功能会打印警告并直接返回。
 
 如需隐藏单个 Dock 窗口，也可以通过 DockingArea 接口单独操作：
 
@@ -103,7 +93,7 @@ dockArea->hideDockWidget(dockArea->getWorkflowNodeListWidget());
 
 ### 添加自定义Dock窗口
 
-创建并添加自定义 Dock 窗口是插件扩展界面的常用方式。Dock 窗口可以停靠在主窗口的任意边缘区域。以下示例展示创建和添加 Dock 窗口的流程：
+Dock 窗口可以停靠在主窗口的任意边缘区域，创建和添加的流程如下：
 
 ```cpp
 #include "ads_globals.h"  // ads::DockWidgetArea
@@ -124,11 +114,11 @@ bool MyPlugin::initialize()
 }
 ```
 
-执行上述代码后，右侧 Dock 区域出现"数据分析"窗口，用户可拖动到其他位置或隐藏。
+执行后，右侧 Dock 区域出现「数据分析」窗口，用户可拖动到其他位置或隐藏。
 
 ### 添加Ribbon按钮
 
-添加自定义 Ribbon 按钮和面板是插件扩展 Ribbon 界面的常用方式。Ribbon 面板按 Category（标签页）和 Panel（功能组）组织。以下示例展示添加 Ribbon 按钮的完整流程：
+Ribbon 面板按 Category（标签页）和 Panel（功能组）组织，添加按钮的流程如下：
 
 ```cpp
 bool MyPlugin::initialize()
@@ -163,11 +153,11 @@ bool MyPlugin::initialize()
 }
 ```
 
-执行上述代码后，主页 Ribbon 标签页出现"自定义工具"面板，包含大号"数据导入"按钮和小号"数据导出"按钮。
+执行后，主页 Ribbon 标签页出现「自定义工具」面板，包含大号「数据导入」按钮和小号「数据导出」按钮。
 
 ### 完整界面开发示例
 
-以下是一个完整的插件界面开发示例，包含 Dock 窗口、Ribbon 按钮和菜单项的创建。该示例展示了插件界面开发的典型结构：
+下面这个完整示例包含 Dock 窗口、Ribbon 按钮和菜单项的创建：
 
 **头文件声明**（定义插件类和成员变量）：
 
@@ -316,9 +306,9 @@ void MyPlugin::onSettings()
 }
 ```
 
-执行上述完整代码后，插件界面包含：
-- 右侧 Dock 区域的"数据分析工具"窗口
-- Ribbon 的"数据分析"标签页和"导入导出"面板
+执行后，插件界面包含：
+- 右侧 Dock 区域的「数据分析工具」窗口
+- Ribbon 的「数据分析」标签页和「导入导出」面板
 - 导入/导出 Action 已通过 `createAction(objname)` 注册到 Action 管理器，可通过 `findAction()` 在自定义菜单中复用
 
 ## Dock窗口布局策略
@@ -373,7 +363,7 @@ private:
 };
 ```
 
-执行上述代码后，创建了一个包含数据选择、结果显示和分析按钮的 Dock 窗口控件，可添加到 Dock 区域中使用。
+执行后创建一个包含数据选择、结果显示和分析按钮的 Dock 窗口控件，可以添加到 Dock 区域中使用。
 
 ## API 参考
 
@@ -381,9 +371,9 @@ private:
 
 | 方法 | 参数 | 返回值 | 说明 |
 |------|------|--------|------|
-| `getDockingArea()` | 无 | DADockingAreaInterface* | 获取Dock区域接口 |
-| `getRibbonArea()` | 无 | DARibbonAreaInterface* | 获取Ribbon区域接口 |
-| `getActionInterface()` | 无 | DAActionsInterface* | 获取Action管理器 |
+| `getDockingArea()` | 无 | DADockingAreaInterface* | 获取 Dock 区域接口 |
+| `getRibbonArea()` | 无 | DARibbonAreaInterface* | 获取 Ribbon 区域接口 |
+| `getActionInterface()` | 无 | DAActionsInterface* | 获取 Action 管理器 |
 | `getCommandInterface()` | 无 | DACommandInterface* | 获取命令接口 |
 
 ### DADockingAreaInterface 核心方法
@@ -414,13 +404,13 @@ private:
 ## 注意事项
 
 !!! warning "界面操作时机"
-    所有界面操作必须在`initialize()`函数中进行，在构造函数中界面尚未创建完成。
+    所有界面操作必须在 `initialize()` 中进行，构造函数执行时界面尚未创建完成。
 
 !!! tip "Dock窗口命名"
-    为Dock窗口设置唯一的objectName，便于后续管理和查找。
+    为 Dock 窗口设置唯一的 objectName，便于后续管理和查找。
 
 !!! note "Qt版本兼容性"
-    SARibbonBar和QtAdvancedDocking在Qt5和Qt6中的API基本一致，但库文件名不同。
+    SARibbonBar 和 QtAdvancedDocking 在 Qt5 和 Qt6 中的 API 基本一致，但库文件名不同。
 
 ## 参考资料
 

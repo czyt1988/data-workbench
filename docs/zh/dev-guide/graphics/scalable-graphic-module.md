@@ -1,23 +1,21 @@
 # 可缩放图元模块
 
-可缩放图元编辑模块（DAGraphicsView）基于 Qt 的 Graphics View 框架，提供类似 Microsoft Visio 的图元缩放编辑功能，是工作流可视化编辑的核心基础模块。
+可缩放图元编辑模块（DAGraphicsView）基于 Qt 的 Graphics View 框架，提供类似 Microsoft Visio 的图元缩放编辑功能，是工作流可视化编辑的基础模块。
 
 ## 主要功能特性
 
-**特性**
-
-- ✅ **8控制点缩放**：提供8个可视控制点，用户可通过拖拽控制点调整图元尺寸
-- ✅ **鼠标事件集成**：自动处理鼠标悬停、点击、拖拽事件，实现流畅的缩放交互
-- ✅ **尺寸限制**：支持设置最小/最大尺寸，防止图元过小或过大
-- ✅ **网格对齐**：支持网格对齐功能，便于精确定位
-- ✅ **redo/undo 支持**：图元缩放操作支持撤销重做
-- ✅ **XML 序列化**：支持图元状态保存和加载
+- 提供 8 个可视控制点，拖拽控制点即可调整图元尺寸
+- 自动处理鼠标悬停、点击、拖拽事件，缩放交互流畅
+- 支持设置最小/最大尺寸，防止图元过小或过大
+- 支持网格对齐，便于精确定位
+- 图元缩放操作支持撤销重做
+- 支持图元状态的保存和加载（XML 序列化）
 
 ## 模块架构
 
 ### 核心类关系图
 
-绘图模块的核心类通过继承关系组织，`DAGraphicsResizeableItem` 提供缩放控制功能，派生出矩形、图片等具体图元类型。下图展示了类的继承和依赖关系：
+绘图模块的核心类通过继承关系组织，`DAGraphicsResizeableItem` 提供缩放控制功能，派生出矩形、图片等具体图元类型。下图是类的继承和依赖关系：
 
 ```mermaid
 classDiagram
@@ -130,7 +128,7 @@ flowchart LR
 
 #### 控制点类型
 
-图元提供8个控制点和4条控制线，用于精确调整尺寸：
+图元提供 8 个控制点和 4 条控制线，用于精确调整尺寸：
 
 ```cpp
 enum ControlType {
@@ -293,7 +291,7 @@ scene->setGridLinePen(QPen(QColor(200, 200, 200), 1, Qt::DotLine));
 
 ## 与工作流模块的关系
 
-可缩放图元模块是工作流可视化编辑的基础，工作流节点图元继承可缩放图元获得完整的编辑能力。下图展示了两个模块的关系：
+工作流节点图元继承可缩放图元，获得完整的编辑能力。下图是两个模块的关系：
 
 ```mermaid
 flowchart TD
@@ -310,9 +308,9 @@ flowchart TD
 上图展示了可缩放图元模块如何支撑工作流可视化编辑：
 - `DAAbstractNodeGraphicsItem` 继承 `DAGraphicsResizeableItem`，获得 8 控制点缩放能力
 - 缩放控制点支持节点尺寸调整，鼠标事件处理支持节点交互
-- redo/undo 支持操作历史，实现完整的编辑体验
+- redo/undo 记录操作历史
 
-工作流模块中的 `DAAbstractNodeGraphicsItem` 继承 `DAGraphicsResizeableItem`，通过可缩放图元的能力实现工作流节点的可视化编辑。
+工作流模块中的 `DAAbstractNodeGraphicsItem` 继承 `DAGraphicsResizeableItem`，因此具备缩放编辑能力。
 
 !!! tip "继承关系"
     自定义工作流节点图元时，继承 `DAAbstractNodeGraphicsItem` 即可获得完整的缩放编辑能力。
@@ -370,7 +368,7 @@ flowchart TD
     在尺寸变化后（如 `prepareGeometryChange` 之后）必须调用 `prepareControlInfoChange()` 刷新控制点信息，否则控制点位置可能不正确。
 
 !!! tip "paintBody 绘制范围"
-    `paintBody` 的 `bodyRect` 参数限定绘制区域，请勿在此区域外绘制，否则可能导致显示异常。
+    `paintBody` 的 `bodyRect` 参数限定绘制区域，不要在此区域外绘制，否则可能导致显示异常。
 
 !!! note "Qt版本兼容性"
     Qt5 和 Qt6 的 Graphics View 框架接口基本一致，无需特殊兼容处理。

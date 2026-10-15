@@ -1,16 +1,6 @@
 # 第三方库构建
 
-本文档介绍 data-workbench 依赖的第三方库构建方法，第三方库是项目的基础组件，必须按正确顺序构建。
-
-本文档介绍 data-workbench 项目依赖的第三方库构建方法。第三方库使用 CMake 构建，需要按照特定顺序进行。
-
-## 主要功能特性
-
-**特性**
-
-- ✅ **统一构建**：除 zlib 外，其他库统一构建
-- ✅ **自动安装**：构建后自动安装到项目目录
-- ✅ **Qt 版本兼容**：支持 Qt5 和 Qt6
+本文档介绍 data-workbench 依赖的第三方库构建方法。第三方库使用 CMake 构建，需要按特定顺序进行。
 
 ## 第三方库列表
 
@@ -96,7 +86,7 @@ cmake --build build --config Release --target install
 ```
 
 !!! tip "Qt 工具链文件路径"
-    请根据实际 Qt 安装路径修改 `qt.toolchain.cmake` 的路径。如果不使用管理员权限，可指定 `CMAKE_INSTALL_PREFIX`：
+    根据实际 Qt 安装路径修改 `qt.toolchain.cmake` 的路径。如果不使用管理员权限，可指定 `CMAKE_INSTALL_PREFIX`：
     
     ```powershell
     # 指定自定义安装路径
@@ -130,7 +120,7 @@ cmake --build build --config Release --target install
 ```
 
 !!! note "自动查找 zlib"
-    CMake 会自动通过 `find_package(ZLIB)` 查找已安装的 zlib。如果找不到，请设置环境变量：
+    CMake 会自动通过 `find_package(ZLIB)` 查找已安装的 zlib。如果找不到，设置环境变量：
     
     ```powershell
     # 设置 zlib 安装路径环境变量
@@ -153,7 +143,7 @@ ls ..\bin_Release_qt*
 | 子目录 | 内容 |
 |--------|------|
 | `bin/` | 动态库 DLL/SO 文件 |
-| `lib/` | 铙入库和 CMake 配置文件 |
+| `lib/` | 静态库和 CMake 配置文件 |
 | `include/` | 头文件 |
 | `cmake/` | CMake 查找模块 |
 

@@ -1,12 +1,12 @@
 # Qwt库序列化实现指南
 
-Qwt 库序列化实现指南提供 QwtPlotItem 图表项的完整序列化方案，采用工厂模式和注册机制实现类型扩展。
+本文给出 QwtPlotItem 图表项的完整序列化方案，用工厂模式和注册机制支持类型扩展。
 
 ## 1. 概述
 
 ### 1.1 Qwt序列化的挑战
 
-Qwt（Qt Widgets for Technical Applications）是一个用于绘制二维图表的 Qt 扩展库。在 Data Workbench 项目中，我们需要将 Qwt 的图表项（QwtPlotItem）序列化到项目文件中，这面临以下挑战：
+Qwt（Qt Widgets for Technical Applications）是一个用于绘制二维图表的 Qt 扩展库。在 Data Workbench 项目中，Qwt 的图表项（QwtPlotItem）需要序列化到项目文件中，这面临以下挑战：
 
 1. **类型多样性**：Qwt 提供了多种图表项类型（曲线、网格、标记、柱状图等）
 2. **无内置序列化**：Qwt 类本身不提供序列化支持
@@ -15,7 +15,7 @@ Qwt（Qt Widgets for Technical Applications）是一个用于绘制二维图表�
 
 ### 1.2 整体设计思路
 
-Data Workbench 采用以下架构实现 Qwt 序列化，通过分层设计将调用、管理、工厂、操作分离。下图展示了各层的职责关系：
+Data Workbench 的 Qwt 序列化分为四层，把调用、管理、工厂和操作分开。下图是各层的职责关系：
 
 ```mermaid
 graph TB
@@ -49,7 +49,7 @@ graph TB
     Factory --> Operators
 ```
 
-上图展示了四层架构设计：
+上图展示了四层架构：
 - **序列化调用层**：通过 `DAZipArchiveTask_ChartItem` 触发序列化操作
 - **序列化管理器**：`DAChartItemSerialize` 提供序列化入口和类型注册
 - **工厂模式**：`DAChartPlotItemFactory` 根据 RTTI 创建对应类型的对象
@@ -932,7 +932,7 @@ QwtPlotItem::RttiValues rtti = stringToEnum(str, QwtPlotItem::Rtti_PlotItem);
 
 ### 6.2 添加新枚举支持
 
-如果自定义 PlotItem 需要在 XML 中使用 RTTI 值，需要添加枚举转换支持：
+如果自定义 PlotItem 需要在 XML 中使用 RTTI 值，要添加枚举转换支持：
 
 ```cpp title="添加枚举转换支持"
 // 在 DAGuiEnumStringUtils.h 中添加

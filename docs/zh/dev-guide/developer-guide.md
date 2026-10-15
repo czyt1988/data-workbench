@@ -7,9 +7,9 @@
 
 ## 项目概述
 
-**data-workbench** 是一个 AI Agent 驱动的下一代数据分析工作平台，基于 C++17 和 Qt 框架构建。它的核心价值在于将「智能体编排 + 数据处理 + 可视化」三大能力整合到一个统一的桌面应用中。
+**data-workbench** 是一个 AI Agent 驱动的数据分析工作平台，基于 C++17 和 Qt 框架构建，把「智能体编排 + 数据处理 + 可视化」三部分放在同一个桌面应用里。
 
-项目解决的核心问题是：科研和工程领域中大量重复性数据处理工作需要编程能力（尤其是 pandas/numpy），但许多领域专家并不具备编程背景。data-workbench 通过 GUI 封装 pandas 核心功能、可视化工作流引擎和交互式图表编辑，让用户无需编程即可完成复杂的数据分析流程。同时，内嵌的 Python 环境和 AI Agent 支持使得高级用户可以无缝对接 crewAI、LangChain 等主流 AI 框架。
+项目面向的需求是：科研和工程领域中大量重复性数据处理工作需要编程能力（尤其是 pandas/numpy），但许多领域专家并不具备编程背景。data-workbench 通过 GUI 封装 pandas 核心功能、可视化工作流引擎和交互式图表编辑，让用户无需编程即可完成复杂的数据分析流程。同时，内嵌的 Python 环境和 AI Agent 支持让高级用户可以直接对接 crewAI、LangChain 等主流 AI 框架。
 
 技术栈选型理由：Qt 提供跨平台 GUI 和成熟的信号槽机制；C++17 保证了图形渲染和大规模数据操作的性能；pybind11 实现了 C++/Python 双向调用的零开销桥接；Qwt 提供了论文级别的图表绘制能力。
 
@@ -97,7 +97,7 @@ cat test_result.txt
 
 ### 编译指定模块
 
-日常开发中通常只需要编译特定模块：
+日常开发只需要编译特定模块：
 
 ```powershell
 # Windows
@@ -129,7 +129,7 @@ data-workbench/
 ├── plugins/               # 插件目录
 │   ├── DataAnalysis/      # 数据分析插件（最完整的参考）
 │   ├── DASystemNodes/     # 系统内置节点（流程控制/数据展示，Python-first）
-│   ├── DAAgentTools/      # Agent 内置工具插件（19 个 LLM 工具）
+│   ├── DAAgentTools/      # Agent 内置工具插件（21 个内置工具）
 │   └── plugin-template/   # 插件脚手架
 ├── scripts/               # 构建脚本
 │   └── build.ps1          # Windows 构建脚本
@@ -171,14 +171,14 @@ data-workbench/
 | `src/APP/` | 主程序入口和接口实现 | 新增全局功能、修改主窗口 |
 | `plugins/` | 插件扩展 | 开发新插件或节点包 |
 | `src/tst/` | 测试 | 新增/修改功能后 |
-| `src/3rdparty/` | 第三方库 | ⚠️ 仅 submodule 更新时 |
+| `src/3rdparty/` | 第三方库 | 仅 submodule 更新时 |
 
 ### 禁止修改的文件/目录
 
 !!! danger "禁止触碰"
-    - `src/3rdparty/` — 第三方库通过 git submodule 管理，直接修改会在更新时丢失
-    - `src/3rdparty/qwt/` — Qwt 有自己的 AGENTS.md 和修改规范
-    - 自动生成的 moc 文件 — 由 Qt MOC 编译器自动生成
+    - `src/3rdparty/`：第三方库通过 git submodule 管理，直接修改会在更新时丢失
+    - `src/3rdparty/qwt/`：Qwt 有自己的 AGENTS.md 和修改规范
+    - 自动生成的 moc 文件，由 Qt MOC 编译器自动生成
     - 原因：这些目录的内容由外部管理，本地修改会被覆盖或导致合并冲突
 
 ---
@@ -276,7 +276,7 @@ flowchart TD
 **具体步骤**：
 
 1. **创建 Python 文件**：在节点包目录（如 `plugins/DASystemNodes/PyScripts/`）中创建 `.py` 文件
-2. **使用 `@NodeDef` 装饰器**：声明节点名称（不翻译！参与序列化）、分类（可翻译）
+2. **使用 `@NodeDef` 装饰器**：声明节点名称（不翻译，参与序列化）、分类（可翻译）
 3. **定义 Inputs/Outputs 内部类**：声明输入输出端口及其数据类型
 4. **实现 `execute(self, inputs, params)` 方法**：编写节点逻辑，使用 pandas/numpy
 5. **注册节点**：在包的 `__init__.py` 中导入节点模块
@@ -328,7 +328,7 @@ flowchart TD
 3. **实现插件类**：继承 `DAAbstractPlugin`，重写 `initialize()` 方法
 4. **实现功能**：注册节点、添加工具栏按钮、提供数据处理器等
 5. **编译部署**：编译为动态库，输出到插件目录
-6. **测试**：启动程序，在"插件管理"中确认插件已加载
+6. **测试**：启动程序，在「插件管理」中确认插件已加载
 
 详细规范参见 [插件项目创建指南](../plugin/plugin-development.md)。
 
@@ -568,9 +568,9 @@ data_mgr = core.getDataManagerInterface()
 
 ## 延伸阅读
 
-- [架构设计详解](./architecture/architecture.md) — 5 层架构、设计决策、扩展点
-- [模块业务逻辑详解](./architecture/module-breakdown.md) — 各模块内部工作原理
-- [模块依赖关系](./architecture/module-dependency.md) — 详细的依赖矩阵和职责边界
-- [编码规范](./general/coding-standard.md) — 命名、注释、代码风格规范
-- [图标与 UI 设计规范](./general/icon-ui-design-guide.md) — SVG 图标画布/色板、UI 控件配色映射（涉及图标设计必读）
-- [贡献指南](../reference/contribution-guide.md) — 代码评审和协作流程
+- [架构设计详解](./architecture/architecture.md)：5 层架构、设计决策、扩展点
+- [模块业务逻辑详解](./architecture/module-breakdown.md)：各模块内部工作原理
+- [模块依赖关系](./architecture/module-dependency.md)：详细的依赖矩阵和职责边界
+- [编码规范](./general/coding-standard.md)：命名、注释、代码风格规范
+- [图标与 UI 设计规范](./general/icon-ui-design-guide.md)：SVG 图标画布/色板、UI 控件配色映射（涉及图标设计必读）
+- [贡献指南](../reference/contribution-guide.md)：代码评审和协作流程

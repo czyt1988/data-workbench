@@ -90,7 +90,7 @@ handler = core.getPythonSignalHandler()    # 跨线程信号处理器
 
 ### Step 2：获取数据
 
-脚本通常需要获取用户当前选中的数据对象。标准模式是获取选中数据列表并提取第一个：
+脚本先取用户当前选中的数据对象：拿到选中数据列表后取第一项：
 
 ```python title="Step 2: 获取选中的数据"
 # 获取用户选中的数据列表
@@ -216,7 +216,7 @@ core.setProjectDirty(True)
 
 ## getConfigValues JSON 对话框模式
 
-`getConfigValues` 是 Python 脚本与 C++ 界面交互的核心桥梁。它的工作原理是：
+`getConfigValues` 负责 Python 脚本与 C++ 界面之间的参数交互，流程是：
 
 1. Python 端通过 `FormBuilder` 生成 v2 FormSpec
 2. 将 FormSpec 传给 C++ 的 `getConfigValues()` 方法，绑定层自动将其归一化为 JSON
@@ -534,7 +534,7 @@ status_bar.hideProgressBar()
 | `showMarkdownFile(filePath)` | 用内置 Markdown 查看器显示文件，成功返回 `True` |
 
 !!! warning "主线程约束"
-    上述方法均须在 Qt 主线程调用；后台线程请通过 `core.getPythonSignalHandler().callInMainThread(func)` 派发。
+    上述方法均须在 Qt 主线程调用；后台线程通过 `core.getPythonSignalHandler().callInMainThread(func)` 派发。
 
 ### DAChartOperateWidget
 

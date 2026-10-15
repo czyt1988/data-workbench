@@ -1,17 +1,6 @@
 # 构建说明
 
-本文档提供 DAWorkBench 项目的完整构建指南，涵盖从环境准备到最终验证的全流程。
-
-本文档详细说明 DAWorkBench 项目的构建流程，帮助开发者快速搭建开发环境并成功编译项目。
-
-## 主要功能特性
-
-**特性**
-
-- ✅ **跨平台支持**：支持 Windows、Linux 平台构建
-- ✅ **多Qt版本兼容**：同时支持 Qt 5.14+ 和 Qt 6.x
-- ✅ **模块化构建**：支持独立构建第三方库、主程序和插件
-- ✅ **自动依赖管理**：通过 git submodule 管理第三方依赖
+本文档说明 DAWorkBench 项目的构建流程，涵盖从环境准备到最终验证。
 
 ## 构建前置要求
 
@@ -30,9 +19,9 @@
 
 | Qt 版本 | 支持状态 | 说明 |
 |---------|----------|------|
-| Qt 5.14+ | ✅ 支持 | 需手动处理部分兼容性问题 |
-| Qt 5.15 | ✅ 推荐 | Qt5 系列最稳定版本 |
-| Qt 6.x | ✅ 推荐 | 原生支持，推荐使用最新版本 |
+| Qt 5.14+ | 支持 | 需手动处理部分兼容性问题 |
+| Qt 5.15 | 推荐 | Qt5 系列最稳定版本 |
+| Qt 6.x | 推荐 | 原生支持，推荐使用最新版本 |
 
 !!! warning "Qt 路径指定方式因生成器而异"
     Qt 路径的指定方式取决于 CMake 生成器：
@@ -88,7 +77,7 @@ flowchart TD
     style J fill:#2196f3
 ```
 
-上图展示了构建的整体流程：首先克隆仓库并拉取子模块获取依赖，然后根据是否首次构建决定是否需要编译 zlib，接着编译第三方库和主项目，最后安装并验证结果。图中各节点含义如下：
+上图展示了构建的整体流程。图中各节点含义如下：
 
 - **克隆仓库**：获取项目源码
 - **拉取子模块**：获取第三方库源码（zlib、SARibbon、ADS 等）
@@ -108,7 +97,7 @@ flowchart TD
 ## 第三方库拉取
 
 !!! warning "重要：必须先拉取子模块"
-    编译前请确保已经拉取所有第三方库，否则构建将失败。
+    编译前必须已拉取所有第三方库，否则构建将失败。
 
 项目使用 git submodule 管理第三方库，克隆仓库后需执行：
 
@@ -141,14 +130,14 @@ Windows 平台支持两种 CMake 生成器。**推荐使用 Visual Studio 生成
 
 | 生成器 | 是否可用 | 条件 |
 |--------|:------:|------|
-| **Visual Studio** | ✅ 推荐 | 任何环境均可用，自动检测 MSVC 编译器 |
-| **Ninja** | ⚠️ 有限制 | **必须**在 Developer Command Prompt (CMD) 中运行；PowerShell 中 MSVC 环境变量无法通过 `vcvars64.bat` 注入 |
+| **Visual Studio** | 推荐 | 任何环境均可用，自动检测 MSVC 编译器 |
+| **Ninja** | 有限制 | **必须**在 Developer Command Prompt (CMD) 中运行；PowerShell 中 MSVC 环境变量无法通过 `vcvars64.bat` 注入 |
 
 详细说明见项目根目录 `build.md`。
 
 ### Visual Studio 生成器（推荐）
 
-以下代码展示了 Windows 平台下使用 PowerShell 从配置到安装的完整构建流程。每个步骤都有详细的中文注释说明其作用。
+以下代码展示了 Windows 平台下使用 PowerShell 从配置到安装的完整构建流程。
 
 ```powershell
 # 步骤1：进入项目根目录
@@ -186,7 +175,7 @@ copy build\src\3rdparty\zlib\Release\zlib.dll bin_Release_qt6.7.3_MSVC_x64\
 如果已安装 Ninja 且**在 Developer Command Prompt (CMD) 中**运行，可以使用 Ninja 获得更快的构建速度：
 
 ```powershell
-# ⚠️ 必须先在 Developer Command Prompt 中运行 vcvars64.bat
+# 必须先在 Developer Command Prompt 中运行 vcvars64.bat
 cmake -S . -B build -G Ninja `
     -DCMAKE_BUILD_TYPE:STRING=Release `
     -DCMAKE_TOOLCHAIN_FILE:FILEPATH="D:\Qt\6.7.3\msvc2019_64\lib\cmake\Qt6\qt.toolchain.cmake"
@@ -194,22 +183,22 @@ cmake --build build --config Release --parallel
 ```
 
 !!! warning "PowerShell 中 Ninja 的限制"
-    在 PowerShell 中通过 `& vcvars64.bat` 调用后，环境变量不会传递给 PowerShell 后续命令，这是 PowerShell 与 bat 脚本交互的已知限制。如果遇到 `fatal error C1083: 无法打开包括文件`，请改用 Visual Studio 生成器。
+    在 PowerShell 中通过 `& vcvars64.bat` 调用后，环境变量不会传递给 PowerShell 后续命令，这是 PowerShell 与 bat 脚本交互的已知限制。如果遇到 `fatal error C1083: 无法打开包括文件`，改用 Visual Studio 生成器。
 
 ### CMake 参数说明
 
 | 参数 | 必需 | 说明 |
 |------|:----:|------|
-| `-G "Visual Studio 16 2019"` | ✅ | VS 2019 生成器（VS 方案）；或 `-G Ninja`（Ninja 方案） |
-| `-A x64` | ✅ (VS) | 64 位架构，仅 VS 生成器需要 |
-| `-DCMAKE_PREFIX_PATH` | ✅ (VS) | Qt 安装路径，VS 生成器用此参数（如 `C:/Qt/6.7.3/msvc2019_64`） |
-| `-DCMAKE_TOOLCHAIN_FILE` | ✅ (Ninja) | Qt 工具链文件路径，Ninja 生成器用此参数 |
-| `-DCMAKE_BUILD_TYPE` | ✅ (Ninja) | 构建类型：`Debug` 或 `Release`（VS 生成器用 `--config` 代替） |
+| `-G "Visual Studio 16 2019"` | 是 | VS 2019 生成器（VS 方案）；或 `-G Ninja`（Ninja 方案） |
+| `-A x64` | 是 (VS) | 64 位架构，仅 VS 生成器需要 |
+| `-DCMAKE_PREFIX_PATH` | 是 (VS) | Qt 安装路径，VS 生成器用此参数（如 `C:/Qt/6.7.3/msvc2019_64`） |
+| `-DCMAKE_TOOLCHAIN_FILE` | 是 (Ninja) | Qt 工具链文件路径，Ninja 生成器用此参数 |
+| `-DCMAKE_BUILD_TYPE` | 是 (Ninja) | 构建类型：`Debug` 或 `Release`（VS 生成器用 `--config` 代替） |
 | `-DCMAKE_EXPORT_COMPILE_COMMANDS` | 可选 | 生成 LSP 配置文件 |
 
 ### 分步构建
 
-如果需要分步构建（例如调试特定库的问题），可按以下顺序执行。分步构建有助于排查编译问题，每个步骤独立执行便于定位错误。
+如果需要分步构建（比如调试特定库的问题），可按以下顺序执行。
 
 ```powershell
 # VS 生成器分步构建
@@ -319,7 +308,7 @@ bin_{BuildType}_qt{QtVersion}_{Compiler}_{Arch}
 
 ## 验证构建结果
 
-构建完成后，需要验证输出文件是否正确生成。以下命令用于检查关键文件是否存在。
+构建完成后，检查关键文件是否正确生成：
 
 ### 检查输出文件
 
@@ -340,7 +329,7 @@ ls bin_Release_qt6.7.3_GCC_x64/
 
 ### 运行程序
 
-验证程序能否正常启动是最终确认步骤。运行程序并检查主窗口是否正确显示。
+运行程序并检查主窗口是否正确显示。
 
 ```powershell
 # Windows - 启动程序

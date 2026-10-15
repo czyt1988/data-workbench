@@ -1,15 +1,6 @@
 # 第三方库管理
 
-第三方库管理模块提供基于 Git Submodule 的依赖管理方案，支持 GitHub 和 Gitee 双源配置，统一构建入口简化开发流程。
-
-## 主要功能特性
-
-**特性**
-
-- ✅ **Git Submodule 管理**：使用 Git submodule 机制管理第三方库版本
-- ✅ **统一构建入口**：所有第三方库通过 `src/3rdparty/CMakeLists.txt` 统一构建
-- ✅ **多源支持**：支持 GitHub 和 Gitee 双源配置，解决访问限制问题
-- ✅ **版本更新机制**：提供标准的 submodule 更新命令
+第三方库管理模块提供基于 Git Submodule 的依赖管理方案，支持 GitHub 和 Gitee 双源配置，所有第三方库通过统一入口构建。
 
 ## 当前项目的第三方依赖
 
@@ -23,9 +14,9 @@
 | `src/3rdparty/ADS` | https://github.com/githubuser0xFFFF/Qt-Advanced-Docking-System | Qt 高级停靠/浮动窗口框架 | IDE 式灵活布局、工具窗口拖拽停靠 | BSD-3-Clause |
 | `src/3rdparty/SARibbon` | https://github.com/czyt1988/SARibbon | Qt Ribbon 风格菜单栏（Office 样式） | 提升大型桌面软件的外观与操作效率 | MIT |
 | `src/3rdparty/pybind11` | https://github.com/pybind/pybind11 | 把 C++ 代码无痛暴露给 Python 的轻量级绑定库 | 脚本化扩展、自动化测试、算法快速验证 | BSD-3-Clause |
-| `src/3rdparty/QtPropertyBrowser` | https://github.com/czyt1988/QtPropertyBrowser | Qt 属性表/属性编辑器控件 | ⚠️ 已停用，源码保留但不参与构建（统一表单系统已替代） | MIT |
+| `src/3rdparty/QtPropertyBrowser` | https://github.com/czyt1988/QtPropertyBrowser | Qt 属性表/属性编辑器控件 | 已停用，源码保留但不参与构建（统一表单系统已替代） | MIT |
 | `src/3rdparty/qwt` | https://github.com/czyt1988/QWT | 基于 Qt 的科学/工程图表与仪表盘库 | 实时曲线、频谱图、示波器、工业监控界面 | Qwt License (LGPL-like) |
-| `src/3rdparty/ordered-map` | https://github.com/Tessil/ordered-map | 保留插入顺序的哈希表 & 树形映射 | 需要"键值+顺序"双重语义的数据结构，如 JSON 编辑器、配置树 | MIT |
+| `src/3rdparty/ordered-map` | https://github.com/Tessil/ordered-map | 保留插入顺序的哈希表 & 树形映射 | 需要「键值+顺序」双重语义的数据结构，如 JSON 编辑器、配置树 | MIT |
 | `src/3rdparty/DAWidgets` | https://gitee.com/czyt1988/DAWidgets | Qt QWidget 界面补充控件库（灵感源自 Element UI，类以 `DA` 前缀、`namespace DA`，支持 Qt5/Qt6） | 补齐 Qt Widgets 原生控件缺失的常见交互形态（多标签下拉选择、折叠面板、流式布局等） | MIT |
 | `src/3rdparty/ctk` | vendored（本地源码，非 submodule） | 医疗影像工具包 Common Toolkit 精简版（仅用到部分组件） | 属性/设置面板等底层组件支撑 | Apache-2.0（CTK 上游） |
 
@@ -35,7 +26,7 @@
 
 ## 添加第三方库
 
-如果开发时想添加一个第三方库，以 `pybind11` 举例，可以执行下面语句进行添加。Git submodule 会自动更新 `.gitmodules` 文件：
+如果开发时想添加一个第三方库，以 `pybind11` 为例，可以执行下面的命令。Git submodule 会自动更新 `.gitmodules` 文件：
 
 ```bash
 git submodule add https://github.com/pybind/pybind11 ./src/3rdparty/pybind11
@@ -87,7 +78,7 @@ git submodule update --remote --merge
 
 ### 修改 `.gitmodules` 文件
 
-打开 `.gitmodules` 文件，此文件包含了第三方库的地址，你可以对此地址进行调整。
+打开 `.gitmodules` 文件，里面是各第三方库的地址，可以按需调整。
 
 GitHub 地址配置示例：
 

@@ -6,17 +6,17 @@ Action 添加方法文档介绍如何在 DAWorkBench 主程序中添加新的菜
 
 **特性**
 
-- ✅ **集中管理**：所有内置 action 位于 `DAAppActions` 类统一管理
-- ✅ **界面分离**：界面构建位于 `DAAppRibbonArea`，逻辑绑定位于 `DAAppController`
-- ✅ **国际化支持**：所有文本通过 `retranslateUi()` 方法支持多语言
-- ✅ **标准化流程**：三步完成 action 添加：定义、构建、绑定
+- **集中管理**：所有内置 action 位于 `DAAppActions` 类统一管理
+- **界面分离**：界面构建位于 `DAAppRibbonArea`，逻辑绑定位于 `DAAppController`
+- **国际化支持**：所有文本通过 `retranslateUi()` 方法支持多语言
+- **标准化流程**：三步完成 action 添加：定义、构建、绑定
 
 !!! warning "适用范围"
-    此文档针对主程序的 action 添加，非插件开发。如需开发插件，请参考[插件开发指南](../../plugin/plugin-development.md)。
+    此文档针对主程序的 action 添加，非插件开发。如需开发插件，参考[插件开发指南](../../plugin/plugin-development.md)。
 
 ## 添加流程概述
 
-一个 action 的添加需要在三个类中操作，形成清晰的职责分离。下图展示了 action 从定义到可用的完整流程：
+添加一个 action 需要在三个类中操作。下图展示了 action 从定义到可用的完整流程：
 
 ```mermaid
 flowchart LR
@@ -160,7 +160,6 @@ QAction* DAAppActions::createAction(const QString& objName, const QString& iconP
 ```
 
 执行上述代码后，返回一个配置好 objectName 和图标的 QAction 对象，可直接添加到界面中。
-```
 
 | 参数 | 说明 |
 |------|------|
@@ -196,11 +195,11 @@ pannel->addSmallAction(actionCopy);
 pannel->addSmallAction(actionPaste);
 ```
 
-执行上述代码后，Ribbon 面板将按不同大小排列按钮，形成清晰的视觉层次。
+执行上述代码后，Ribbon 面板将按不同大小排列按钮。
 
 ## 添加分隔符
 
-在 Ribbon 面板中添加分隔符可以组织按钮分组，提升界面可读性。以下示例展示如何添加分隔符和带下拉菜单的按钮：
+在 Ribbon 面板中添加分隔符可以组织按钮分组。以下示例展示如何添加分隔符和带下拉菜单的按钮：
 
 ```cpp
 // 在按钮之间添加水平分隔符，分隔不同功能组

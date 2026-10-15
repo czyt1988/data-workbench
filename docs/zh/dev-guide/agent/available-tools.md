@@ -1,16 +1,12 @@
 # 工具与内置 Agent 总览
 
-本文完整列举 DAWorkbench 平台向 Agent（LLM）提供的**全部工具**与**内置 Agent / 内置子 Agent**，说明每个工具的作用与参数。工具清单是 Agent 能力的权威参考——写提示词、排查"agent 为什么做不了某事"、规划新工具时都应先对照本文。
+DAWorkbench 平台向 Agent（LLM）提供的全部工具、内置 Agent 与内置子 Agent 都在这里列出，每个工具的作用与参数逐一给出。工具清单是 Agent 能力的权威参考，写提示词、排查「agent 为什么做不了某事」、规划新工具时都应先对照。
 
 ---
 
 ## 主要功能特性
 
-- ✅ **23 个 C++ 工具**：`DAAgentTools` 插件 21 个（数据 5 + 绘图 11 + 文件/报告 3 + 代码执行 2）+ `DAPaperAgent` 插件 2 个（文献检索/DOI 验证）
-- ✅ **2 个平台注入工具**：`ask_user`（人机交互提问）与 `dispatch_subagents`（子 Agent 委派），由 Python 子进程动态注入，不经过插件注册
-- ✅ **2 个内置 Agent**：「数据分析助手」（平台默认）与「论文撰写助手」（DAPaperAgent 插件注入）
-- ✅ **1 个内置子 Agent**：`explore`（只读数据探索），主 Agent 经 `dispatch_subagents` 委派
-- ✅ **每个工具标注权限分级**：read / inapp_mutate / file_write / code_exec，权限门按分级 + 模式执法
+`DAAgentTools` 插件提供 21 个工具（数据 5 + 绘图 11 + 文件/报告 3 + 代码执行 2），`DAPaperAgent` 插件提供 2 个（文献检索 / DOI 验证），合计 23 个 C++ 工具；`ask_user`（人机交互提问）与 `dispatch_subagents`（子 Agent 委派）由 Python 子进程动态注入，不经过插件注册。内置 Agent 有 2 个：「数据分析助手」（平台默认）与「论文撰写助手」（DAPaperAgent 插件注入）；内置子 Agent 有 1 个：`explore`（只读数据探索），由主 Agent 经 `dispatch_subagents` 委派。每个工具都标注权限分级（read / inapp_mutate / file_write / code_exec），权限门按分级 + 模式执法。
 
 ---
 
@@ -34,7 +30,7 @@ flowchart LR
 ```
 
 !!! note "工具名即协议"
-    工具 `name`（snake_case）参与 LLM 工具调用匹配与已存对话引用，**不可翻译、不可改名**。本文列出的参数表与各工具 `getToolSpec()` 的实现一一对应，改动 schema 时同步更新本文。
+    工具 `name`（snake_case）参与 LLM 工具调用匹配与已存对话引用，**不可翻译、不可改名**。下面列出的参数表与各工具 `getToolSpec()` 的实现一一对应，改动 schema 时同步更新参数表。
 
 ---
 
@@ -65,8 +61,8 @@ flowchart LR
 | 21 | `run_script` | DAAgentTools | code_exec | 执行脚本工作区内的 .py |
 | 22 | `search_literature` | DAPaperAgent | unknown | CrossRef/OpenAlex 学术文献检索 |
 | 23 | `verify_doi` | DAPaperAgent | unknown | 验证 DOI 真伪并取回元数据 |
-| 24 | `ask_user` | 平台注入 | —（人机交互） | 向用户提问获取澄清/确认 |
-| 25 | `dispatch_subagents` | 平台注入 | —（本地编排） | 批量委派子 Agent 并行调研 |
+| 24 | `ask_user` | 平台注入 | 无（人机交互） | 向用户提问获取澄清/确认 |
+| 25 | `dispatch_subagents` | 平台注入 | 无（本地编排） | 批量委派子 Agent 并行调研 |
 
 !!! note "unknown 分级的含义"
     `list_chart_items` / `search_literature` / `verify_doi` 未列入权限引擎的内置分级表（`DAAgentPermissionManager` 的 `builtinTierTable` 收录 20 个工具），按参数约定回退推导：参数含 `file_path`/`path`/`output_path`/`report_path` → `file_write`，否则 → `unknown`。三者均无路径参数，故为 `unknown`。
@@ -89,7 +85,7 @@ Agent 的标准开场动作：先 `list_data` 了解有哪些数据，再用 `ge
 
 | 参数 | 类型 | 必填 | 说明 |
 |------|------|------|------|
-| `data_name` | string | ✅ | 数据集名称 |
+| `data_name` | string | 是 | 数据集名称 |
 | `preview_rows` | integer | | 预览行数，默认 10 |
 
 ### query_data
@@ -98,8 +94,8 @@ Agent 的标准开场动作：先 `list_data` 了解有哪些数据，再用 `ge
 
 | 参数 | 类型 | 必填 | 说明 |
 |------|------|------|------|
-| `data_name` | string | ✅ | 数据集名称 |
-| `expr` | string | ✅ | pandas query 表达式，如 `'col > 100'` |
+| `data_name` | string | 是 | 数据集名称 |
+| `expr` | string | 是 | pandas query 表达式，如 `'col > 100'` |
 | `preview_rows` | integer | | 预览行数，默认 10 |
 
 ### get_column_stats
@@ -108,8 +104,8 @@ Agent 的标准开场动作：先 `list_data` 了解有哪些数据，再用 `ge
 
 | 参数 | 类型 | 必填 | 说明 |
 |------|------|------|------|
-| `data_name` | string | ✅ | 数据集名称 |
-| `column` | string | ✅ | 列名 |
+| `data_name` | string | 是 | 数据集名称 |
+| `column` | string | 是 | 列名 |
 
 ### export_data
 
@@ -117,8 +113,8 @@ Agent 的标准开场动作：先 `list_data` 了解有哪些数据，再用 `ge
 
 | 参数 | 类型 | 必填 | 说明 |
 |------|------|------|------|
-| `data_name` | string | ✅ | 数据集名称 |
-| `file_path` | string | ✅ | 输出文件路径 |
+| `data_name` | string | 是 | 数据集名称 |
+| `file_path` | string | 是 | 输出文件路径 |
 | `format` | string | | `csv` 或 `excel`，默认 `csv` |
 
 ---
@@ -137,10 +133,10 @@ Agent 的标准开场动作：先 `list_data` 了解有哪些数据，再用 `ge
 
 | 参数 | 类型 | 必填 | 说明 |
 |------|------|------|------|
-| `type` | string | ✅ | 图表类型：`line` / `scatter` / `bar` / `hist` / `box` |
-| `data_name` | string | ✅ | 数据集名称 |
-| `x` | string | ✅ | X 轴列名 |
-| `y` | array of string | ✅ | Y 轴列名数组；单元素画一条曲线，多元素画多条 |
+| `type` | string | 是 | 图表类型：`line` / `scatter` / `bar` / `hist` / `box` |
+| `data_name` | string | 是 | 数据集名称 |
+| `x` | string | 是 | X 轴列名 |
+| `y` | array of string | 是 | Y 轴列名数组；单元素画一条曲线，多元素画多条 |
 | `title` | string | | 图表标题（`figure_name` 为空时兼作 figure 名） |
 | `figure_name` | string | | figure 名；同名已存在则在其中加 chart，否则新建 |
 | `x_label` / `y_label` | string | | 坐标轴标签 |
@@ -151,9 +147,9 @@ Agent 的标准开场动作：先 `list_data` 了解有哪些数据，再用 `ge
 
 | 参数 | 类型 | 必填 | 说明 |
 |------|------|------|------|
-| `data_name` | string | ✅ | 数据集名称 |
-| `x_column` | string | ✅ | X 轴列名 |
-| `y_column` | string | ✅ | Y 轴列名 |
+| `data_name` | string | 是 | 数据集名称 |
+| `x_column` | string | 是 | X 轴列名 |
+| `y_column` | string | 是 | Y 轴列名 |
 | `chart_id` | string | | 图表标识（标题或索引），空/`'current'` 为当前 chart |
 | `figure_name` | string | | 目标 figure 名，空为当前 figure |
 | `name` | string | | 曲线显示名 |
@@ -184,7 +180,7 @@ Agent 的标准开场动作：先 `list_data` 了解有哪些数据，再用 `ge
 
 | 参数 | 类型 | 必填 | 说明 |
 |------|------|------|------|
-| `axis` | string | ✅ | `'x'` 或 `'y'` |
+| `axis` | string | 是 | `'x'` 或 `'y'` |
 | `chart_id` / `figure_name` | string | | 定位目标图表 |
 | `scale_type` | string | | `'normal'`（线性）或 `'datetime'`；省略不变 |
 | `date_format` | string | | 时间轴日期格式（`scale_type` 为 `datetime` 时生效） |
@@ -198,7 +194,7 @@ Agent 的标准开场动作：先 `list_data` 了解有哪些数据，再用 `ge
 
 | 参数 | 类型 | 必填 | 说明 |
 |------|------|------|------|
-| `curve_name` | string | ✅ | 曲线图例名或 0 基索引 |
+| `curve_name` | string | 是 | 曲线图例名或 0 基索引 |
 | `chart_id` / `figure_name` | string | | 定位目标图表 |
 | `color` | string | | 线颜色 |
 | `width` | number | | 线宽 |
@@ -213,7 +209,7 @@ Agent 的标准开场动作：先 `list_data` 了解有哪些数据，再用 `ge
 
 | 参数 | 类型 | 必填 | 说明 |
 |------|------|------|------|
-| `item_name` | string | ✅ | 元素图例名或 0 基索引 |
+| `item_name` | string | 是 | 元素图例名或 0 基索引 |
 | `chart_id` / `figure_name` | string | | 定位目标图表 |
 | `item_type` | string | | 过滤类型：`curve` / `annotation` / `region` / `any`（默认） |
 
@@ -223,7 +219,7 @@ Agent 的标准开场动作：先 `list_data` 了解有哪些数据，再用 `ge
 
 | 参数 | 类型 | 必填 | 说明 |
 |------|------|------|------|
-| `type` | string | ✅ | 标注类型：`text` / `arrow` / `point` / `region` |
+| `type` | string | 是 | 标注类型：`text` / `arrow` / `point` / `region` |
 | `chart_id` / `figure_name` | string | | 定位目标图表 |
 | `position` | array | | `[x, y]` 数据坐标（text/point 用） |
 | `start` / `end` | array | | 箭头起止点 `[x, y]`（arrow 用） |
@@ -237,7 +233,7 @@ Agent 的标准开场动作：先 `list_data` 了解有哪些数据，再用 `ge
 
 | 参数 | 类型 | 必填 | 说明 |
 |------|------|------|------|
-| `layout` | string | ✅ | 网格布局，如 `'2x2'`（2 行 2 列） |
+| `layout` | string | 是 | 网格布局，如 `'2x2'`（2 行 2 列） |
 | `figure_name` | string | | figure 名（tab 标题），空则自动生成 |
 
 ### save_chart_image
@@ -246,7 +242,7 @@ Agent 的标准开场动作：先 `list_data` 了解有哪些数据，再用 `ge
 
 | 参数 | 类型 | 必填 | 说明 |
 |------|------|------|------|
-| `file_path` | string | ✅ | 输出文件路径 |
+| `file_path` | string | 是 | 输出文件路径 |
 | `chart_id` / `figure_name` | string | | 定位目标图表 |
 | `format` | string | | `png` / `pdf` / `svg`，默认 `png` |
 | `width` / `height` | integer | | 输出尺寸：PNG 为像素，PDF/SVG 为点 |
@@ -277,7 +273,7 @@ Agent 的标准开场动作：先 `list_data` 了解有哪些数据，再用 `ge
 
 | 参数 | 类型 | 必填 | 说明 |
 |------|------|------|------|
-| `file_path` | string | ✅ | 文件路径 |
+| `file_path` | string | 是 | 文件路径 |
 
 ### write_file
 
@@ -285,8 +281,8 @@ Agent 的标准开场动作：先 `list_data` 了解有哪些数据，再用 `ge
 
 | 参数 | 类型 | 必填 | 说明 |
 |------|------|------|------|
-| `file_path` | string | ✅ | 文件路径 |
-| `content` | string | ✅ | 文本内容 |
+| `file_path` | string | 是 | 文件路径 |
+| `content` | string | 是 | 文本内容 |
 
 ### save_report
 
@@ -294,15 +290,15 @@ Agent 的标准开场动作：先 `list_data` 了解有哪些数据，再用 `ge
 
 | 参数 | 类型 | 必填 | 说明 |
 |------|------|------|------|
-| `content` | string | ✅ | Markdown 格式的报告内容 |
-| `file_path` | string | ✅ | 输出文件路径 |
+| `content` | string | 是 | Markdown 格式的报告内容 |
+| `file_path` | string | 是 | 输出文件路径 |
 | `format` | string | | `md` / `html` / `pdf` / `docx`，默认 `md` |
 | `open_after_save` | boolean | | 保存后是否打开，默认 `true` |
 
 html/pdf/docx 三种格式经 `DAMarkdownExporter`（`src/DAGui/MarkdownView/`）导出，与内置 Markdown 查看器同一渲染管线（markdown-it + highlight.js + KaTeX），公式（`$...$`/`$$...$$`）、代码高亮、表格均正常渲染；本地图片以 data URI 内嵌进 HTML/PDF（单一离线文件），docx 中图片由 Word 按文件路径抓取后内嵌。docx 公式以 MathML（Word 原生公式格式）输出。
 
 !!! note "docx 仅 Windows"
-    docx 导出走 `DAAxOfficeWrapper`（Word COM），仅 Windows 可用；pdf 走 `QWebEnginePage::printToPdf`（与查看器渲染一致）。打开失败不影响保存结果——返回消息附带说明。
+    docx 导出走 `DAAxOfficeWrapper`（Word COM），仅 Windows 可用；pdf 走 `QWebEnginePage::printToPdf`（与查看器渲染一致）。打开失败不影响保存结果，返回消息会附带说明。
 
 ---
 
@@ -314,7 +310,7 @@ html/pdf/docx 三种格式经 `DAMarkdownExporter`（`src/DAGui/MarkdownView/`�
 
 | 参数 | 类型 | 必填 | 说明 |
 |------|------|------|------|
-| `code` | string | ✅ | Python 代码 |
+| `code` | string | 是 | Python 代码 |
 | `args` | object | | 可选参数，注入为命名空间中的 `args` 字典 |
 
 关键行为：
@@ -327,11 +323,11 @@ html/pdf/docx 三种格式经 `DAMarkdownExporter`（`src/DAGui/MarkdownView/`�
 
 ### run_script
 
-执行当前工程脚本工作区内的 `.py` 脚本，与 `run_code` 共享同一持久命名空间。典型链路：先用 `write_file` 把脚本写入工作区，再 `run_script` 执行。
+执行当前工程脚本工作区内的 `.py` 脚本，与 `run_code` 共享同一持久命名空间。典型用法：先用 `write_file` 把脚本写入工作区，再 `run_script` 执行。
 
 | 参数 | 类型 | 必填 | 说明 |
 |------|------|------|------|
-| `path` | string | ✅ | 相对脚本工作区根的路径，如 `"scripts/analyze.py"` |
+| `path` | string | 是 | 相对脚本工作区根的路径，如 `"scripts/analyze.py"` |
 | `args` | object | | 注入为脚本内的 `args` 字典 |
 
 行为约定与 `run_code` 相同（预导入模块、`__result__`、stdout 捕获、主线程、300s 超时）；脚本必须 UTF-8 编码，工具内有工作区越界防护。
@@ -349,7 +345,7 @@ html/pdf/docx 三种格式经 `DAMarkdownExporter`（`src/DAGui/MarkdownView/`�
 
 | 参数 | 类型 | 必填 | 说明 |
 |------|------|------|------|
-| `query` | string | ✅ | 检索关键词，如 `"linear regression air quality"` |
+| `query` | string | 是 | 检索关键词，如 `"linear regression air quality"` |
 | `max_results` | integer | | 最大返回数，默认 8，上限 20 |
 | `source` | string | | `auto`（默认，先 CrossRef 失败回退 OpenAlex）/ `crossref` / `openalex` |
 
@@ -361,7 +357,7 @@ html/pdf/docx 三种格式经 `DAMarkdownExporter`（`src/DAGui/MarkdownView/`�
 
 | 参数 | 类型 | 必填 | 说明 |
 |------|------|------|------|
-| `doi` | string | ✅ | 待验证 DOI，如 `"10.1038/s41586-020-2649-2"`；接受 `https://doi.org/` 前缀（自动剥离） |
+| `doi` | string | 是 | 待验证 DOI，如 `"10.1038/s41586-020-2649-2"`；接受 `https://doi.org/` 前缀（自动剥离） |
 
 ---
 
@@ -375,12 +371,12 @@ html/pdf/docx 三种格式经 `DAMarkdownExporter`（`src/DAGui/MarkdownView/`�
 
 | 参数 | 类型 | 必填 | 说明 |
 |------|------|------|------|
-| `question` | string | ✅ | 问题文本 |
+| `question` | string | 是 | 问题文本 |
 | `options` | array of string | | 可选项列表 |
 | `multi_select` | boolean | | 是否允许多选，默认 `false` |
 
 !!! note "子 Agent 没有 ask_user"
-    `ask_user` 仅注入主图；子 Agent 子图（`include_ask_user=False`）不注入——子 Agent 幻觉出的 `ask_user` 调用会得到未知工具错误。
+    `ask_user` 仅注入主图；子 Agent 子图（`include_ask_user=False`）不注入，子 Agent 幻觉出的 `ask_user` 调用会得到未知工具错误。
 
 ### dispatch_subagents
 
@@ -388,13 +384,13 @@ html/pdf/docx 三种格式经 `DAMarkdownExporter`（`src/DAGui/MarkdownView/`�
 
 | 参数 | 类型 | 必填 | 说明 |
 |------|------|------|------|
-| `tasks` | array | ✅ | 任务数组，每项含 `subagent_type`（string，必填——子 Agent 类型名）与 `prompt`（string，必填——自包含的完整任务指令，子 Agent 看不到其它上下文）。批次保持小（建议数个以内），各任务独立运行 |
+| `tasks` | array | 是 | 任务数组，每项含 `subagent_type`（string，必填，子 Agent 类型名）与 `prompt`（string，必填，自包含的完整任务指令，子 Agent 看不到其它上下文）。批次保持小（建议数个以内），各任务独立运行 |
 
 ---
 
 ## 内置 Agent
 
-内置 Agent 以 Markdown 提示词文件形式落在 `<exe>/daAgent/` 目录，用户可在「AI 分析」→ Agent 管理对话框中运行、编辑、删除；播种均为"仅文件不存在时写入"，用户的编辑/删除永远被尊重。
+内置 Agent 以 Markdown 提示词文件形式落在 `<exe>/daAgent/` 目录，用户可在「AI 分析」→ Agent 管理对话框中运行、编辑、删除；播种一律遵循「仅文件不存在时写入」，用户已有的编辑/删除会被保留。
 
 | Agent | 提供者 | 提示词源 | 定位 |
 |-------|--------|---------|------|
@@ -403,9 +399,9 @@ html/pdf/docx 三种格式经 `DAMarkdownExporter`（`src/DAGui/MarkdownView/`�
 
 ### 数据分析助手（平台默认）
 
-**注入方式**：`DAAgentManager::ensureDefaultAgent()` 在程序启动时检查 `<exe>/daAgent/` 目录——**目录内没有任何 `.md` 时**才从 qrc 播种 `数据分析助手.md`（用户已有内容则不播种）。
+**注入方式**：`DAAgentManager::ensureDefaultAgent()` 在程序启动时检查 `<exe>/daAgent/` 目录，**目录内没有任何 `.md` 时**才从 qrc 播种 `数据分析助手.md`（用户已有内容则不播种）。
 
-**作用**：通用数据分析助手，覆盖"查询 → 统计 → 可视化 → 标注 → 报告"的标准流程：
+**作用**：通用数据分析助手，覆盖「查询 → 统计 → 可视化 → 标注 → 报告」的标准流程：
 
 1. 先用 `list_data` 了解已加载数据集，用 `get_data_info` 查看字段与类型
 2. 用 `query_data` 取数、`get_column_stats` 做统计，必要时 `create_chart`/`add_curve` 可视化
@@ -419,11 +415,11 @@ html/pdf/docx 三种格式经 `DAMarkdownExporter`（`src/DAGui/MarkdownView/`�
 
 **作用**：基于用户加载的数据，端到端协助完成一篇结构完整（IMRaD）、统计严谨、引用真实的学术论文。核心特色：
 
-- **六阶段门禁流程**：数据理解 → 统计建模与结果锁定 → 图表规划与生成 → 文献与大纲 → 分节写作 → 评审定稿；每阶段以 `ask_user` 确认为门禁，审批标记（`.approved/P1.md` ~ `P6.md`）落盘
-- **结果包锁定机制**：阶段 2 产出 `results.json`/`results.md`，用户确认"锁定"后只读；阶段 4-6 禁止重算统计、禁止修改任何统计量——**数据的客观性绝不被论文叙事需求干扰**
-- **引用保真**：任何引用必须来自 `search_literature` 结果、用户材料或 `verify_doi` 验证，绝不编造 DOI/作者/期刊
-- **跨会话恢复**：`daPaper/<论文名>/progress.md` 记录进度与配置，重启会话后从第一个未完成阶段续作
-- **降级路径**：statsmodels 缺失降级 scipy/手工实现；文献 API 不可达切离线模式（只用用户文献并标注"待人工验证"）
+- 六阶段门禁流程：数据理解 → 统计建模与结果锁定 → 图表规划与生成 → 文献与大纲 → 分节写作 → 评审定稿；每阶段以 `ask_user` 确认为门禁，审批标记（`.approved/P1.md` ~ `P6.md`）落盘
+- 结果包锁定机制：阶段 2 产出 `results.json`/`results.md`，用户确认「锁定」后只读；阶段 4-6 禁止重算统计、禁止修改任何统计量，避免论文叙事需求干扰数据的客观性
+- 引用保真：任何引用必须来自 `search_literature` 结果、用户材料或 `verify_doi` 验证，绝不编造 DOI/作者/期刊
+- 跨会话恢复：`daPaper/<论文名>/progress.md` 记录进度与配置，重启会话后从第一个未完成阶段续作
+- 降级路径：statsmodels 缺失降级 scipy/手工实现；文献 API 不可达切离线模式（只用用户文献并标注「待人工验证」）
 
 ---
 
@@ -437,7 +433,7 @@ html/pdf/docx 三种格式经 `DAMarkdownExporter`（`src/DAGui/MarkdownView/`�
 
 **作用**：受主 Agent 委派对工作区数据做**只读探索**并输出结构化总结。特点：
 
-- 工具白名单 6 个只读工具：`list_data`、`get_data_info`、`query_data`、`get_column_stats`、`read_file`、`list_figures`——不写文件、不改图表、不执行代码
+- 工具白名单 6 个只读工具：`list_data`、`get_data_info`、`query_data`、`get_column_stats`、`read_file`、`list_figures`，不写文件、不改图表、不执行代码
 - 控制查询次数（单任务工具调用一般不超过 15 次）
 - 所有数值必须来自工具返回，注明数据集名与列名，不编造
 - 输出四段式总结：数据集概览 / 字段说明 / 数据质量发现（缺失值、重复行、异常值）/ 建议后续分析方向
@@ -478,10 +474,10 @@ html/pdf/docx 三种格式经 `DAMarkdownExporter`（`src/DAGui/MarkdownView/`�
 ## 注意事项
 
 !!! warning "本文与代码同步"
-    工具数量（C++ 23 + 平台注入 2）、参数表、权限分级必须与实现保持一致：新增/修改工具时，同步更新本文与 `plugins/DAAgentTools/AGENTS.md` § 三的速查表。
+    工具数量（C++ 23 + 平台注入 2）、参数表、权限分级必须与实现保持一致：新增/修改工具时，同步更新这里的工具清单与 `plugins/DAAgentTools/AGENTS.md` § 三的速查表。
 
 !!! tip "给提示词写作者的参考"
-    编写 agent 提示词（如 `paper-agent.md` 这类领域提示词）时，可用工具清单直接从本文抄录；`ask_user` 是平台内置能力无需声明即可使用。
+    编写 agent 提示词（如 `paper-agent.md` 这类领域提示词）时，工具清单可直接从上面的工具总览抄录；`ask_user` 是平台内置能力，无需声明即可使用。
 
 !!! info "扩展入口"
     新增 C++ 工具见[工具开发指南](./tool-development.md)；通过插件注入 agent/工具/提示词的整体模式见[通过插件注册内置 Agent](./register-builtin-agent-via-plugin.md)。
@@ -490,9 +486,9 @@ html/pdf/docx 三种格式经 `DAMarkdownExporter`（`src/DAGui/MarkdownView/`�
 
 ## 参考资料
 
-- [工具开发指南](./tool-development.md) — 工具基类、注册机制、自定义工具开发
-- [通过插件注册内置 Agent](./register-builtin-agent-via-plugin.md) — DAPaperAgent 参考实现
-- [Agent 模块概述](./index.md) — 双进程架构与核心概念
-- `plugins/DAAgentTools/` — 21 个内置工具实现源码
-- `plugins/DAPaperAgent/` — 论文 agent 与文献工具实现源码
-- `src/DAAgent/AGENTS.md` — DAAgent 模块开发铁律（含权限层 T16、子 Agent T17）
+- [工具开发指南](./tool-development.md)：工具基类、注册机制、自定义工具开发
+- [通过插件注册内置 Agent](./register-builtin-agent-via-plugin.md)：DAPaperAgent 参考实现
+- [Agent 模块概述](./index.md)：双进程架构与核心概念
+- `plugins/DAAgentTools/`：21 个内置工具实现源码
+- `plugins/DAPaperAgent/`：论文 agent 与文献工具实现源码
+- `src/DAAgent/AGENTS.md`：DAAgent 模块开发铁律（含权限层 T16、子 Agent T17）

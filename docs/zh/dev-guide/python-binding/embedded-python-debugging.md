@@ -4,12 +4,10 @@ data-workbench 通过 pybind11 将 C++ 功能导出为 Python 模块，使脚本
 
 本文档介绍如何利用 `stubs/` 目录下的 `.pyi` 文件实现 IDE 代码提示，以及三种调试方案。
 
-**特性**
-
-- ✅ **IDE 代码提示**：通过 `.pyi` stub 文件，在 VS Code / PyCharm 中获得完整的类型提示和参数信息
-- ✅ **Mock 逻辑验证**：通过 mock 模块，在标准 Python 环境中验证脚本逻辑
-- ✅ **debugpy 远程调试**：在真实嵌入式环境中实现断点调试
-- ✅ **日志调试**：利用已导出的日志函数快速定位问题
+- 通过 `.pyi` stub 文件，在 VS Code / PyCharm 中获得完整的类型提示和参数信息
+- 通过 mock 模块，在标准 Python 环境中验证脚本逻辑
+- 通过 debugpy 在真实嵌入式环境中实现断点调试
+- 利用已导出的日志函数快速定位问题
 
 ---
 
@@ -17,9 +15,9 @@ data-workbench 通过 pybind11 将 C++ 功能导出为 Python 模块，使脚本
 
 data-workbench 的 Python 模块只能在程序内部运行，这意味着：
 
-- **无法使用标准 Python 调试器**：pdb、VS Code 调试器等无法直接附加到嵌入式环境
-- **无法获得 IDE 代码提示**：PyCharm、VS Code 等 IDE 无法分析这些模块的 API
-- **脚本开发体验差**：只能"盲写"代码，运行时才能发现错误
+- 标准 Python 调试器（pdb、VS Code 调试器等）无法直接附加到嵌入式环境
+- PyCharm、VS Code 等 IDE 无法分析这些模块的 API，拿不到代码提示
+- 脚本只能「盲写」，运行时才能发现错误
 
 !!! info "什么是嵌入式 Python 模块？"
     pybind11 的 `PYBIND11_EMBEDDED_MODULE` 宏在 C++ 程序内部创建 Python 模块，这些模块只在程序运行时存在。与 `PYBIND11_MODULE`（创建可被外部 Python `import` 的扩展模块）不同，嵌入式模块无法脱离宿主程序独立使用。详见 [Python/C++ 集成](./cpp-calling-python.md)。
@@ -118,7 +116,7 @@ stubs/
 每个 `.pyi` 文件对应一个 pybind11 导出模块，只包含该模块导出的类型定义，跨模块引用通过 `import` 解决。例如 `da_interface/__init__.pyi` 中引用 `DAData` 类型时，使用 `from da_data import DAData`。
 
 !!! tip "为什么使用包结构而不是单文件？"
-    使用包结构（每个模块一个目录 + `__init__.pyi`）而非单个 `.pyi` 文件，可以让跨模块引用通过 `import` 正确关联，避免类型重复定义。IDE 在分析 `from da_data import DAData` 时能正确定位到 `da_data/__init__.pyi` 中的定义，从而提供精确的类型提示。
+    采用包结构（每个模块一个目录 + `__init__.pyi`），跨模块引用就能通过 `import` 正确关联，避免类型重复定义。IDE 在分析 `from da_data import DAData` 时能正确定位到 `da_data/__init__.pyi` 中的定义，从而提供精确的类型提示。
 
 ### 3.2 配置 IDE 代码提示
 
@@ -146,7 +144,7 @@ stubs/
 
 ### 3.3 stub 文件的使用示例
 
-配置完成后，在 IDE 中编写脚本时将获得完整的代码提示：
+配置完成后，在 IDE 中编写脚本时就有完整的代码提示：
 
 ```python title="代码提示效果演示"
 import da_app
@@ -349,17 +347,17 @@ flowchart TD
 ### 5.3 调试技巧
 
 !!! tip "调试技巧清单"
-    - [ ] **先 Mock 验证逻辑，再真实环境验证行为**：大部分数据处理逻辑可以在 Mock 中验证
-    - [ ] **使用 `da_app.addInfoLogMessage` 增加关键节点日志**：在真实环境中快速定位问题范围
-    - [ ] **debugpy 的 `wait_for_client()` 模式**：确保调试器连接后再执行，不会错过启动阶段的断点
-    - [ ] **在脚本入口处设置断点**：远程调试时，脚本入口是最可靠的断点位置
-    - [ ] **Mock 中使用 `assert` 语句**：在 Mock 环境中用断言验证关键逻辑，相当于轻量级单元测试
+    - [ ] 先 Mock 验证逻辑，再真实环境验证行为：大部分数据处理逻辑可以在 Mock 中验证
+    - [ ] 用 `da_app.addInfoLogMessage` 增加关键节点日志：在真实环境中快速定位问题范围
+    - [ ] debugpy 的 `wait_for_client()` 模式：确保调试器连接后再执行，不会错过启动阶段的断点
+    - [ ] 在脚本入口处设置断点：远程调试时，脚本入口是最可靠的断点位置
+    - [ ] Mock 中使用 `assert` 语句：在 Mock 环境中用断言验证关键逻辑，相当于轻量级单元测试
 
 ---
 
 ## 第六部分：各模块 API 参考
 
-详细的 API 签名请参阅各 stub 文件（每个文件包含完整的中文 docstring）：
+详细的 API 签名见各 stub 文件（每个文件包含完整的中文 docstring）：
 
 | 模块 | stub 文件 | 主要类/函数 |
 |------|-----------|-------------|

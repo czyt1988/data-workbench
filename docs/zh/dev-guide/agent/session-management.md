@@ -1,6 +1,6 @@
 # 会话持久化
 
-Agent 对话历史以 JSONL 格式持久化到磁盘，支持多会话管理、工程内会话导出/导入、自动清理过期会话。本文档描述会话持久化的设计要点、文件格式、生命周期管理和崩溃安全机制。
+Agent 对话历史以 JSONL 格式持久化到磁盘，支持多会话管理、工程内会话导出/导入、自动清理过期会话。读写、索引与清理全部由 C++ 侧完成，Python 子进程只负责推理与 state 重建。
 
 ---
 
@@ -49,13 +49,13 @@ Agent 对话历史以 JSONL 格式持久化到磁盘，支持多会话管理、�
 
 | type | message.role | 说明 | 含 tool_calls | 含 tool_call_id |
 |------|-------------|------|:---:|:---:|
-| `user` | `human` | 用户消息 | — | — |
-| `assistant` | `ai` | LLM 回复 | 可能 | — |
-| `tool_result` | `tool` | 工具执行结果 | — | 是 |
-| `usage` | — | Token 用量记录（每轮 `message_end.usage` 与独立 `usage` 消息均落盘） | — | — |
+| `user` | `human` | 用户消息 | 无 | 无 |
+| `assistant` | `ai` | LLM 回复 | 可能 | 无 |
+| `tool_result` | `tool` | 工具执行结果 | 无 | 是 |
+| `usage` | 无 | Token 用量记录（每轮 `message_end.usage` 与独立 `usage` 消息均落盘） | 无 | 无 |
 
 !!! note "usage 记录的累计重放"
-    `usage` 记录用于会话级 token 累计统计的持久化。切换会话时 `DAAgentModule::emitTokenUsageForSession()` 读取目标会话的全部 `usage` 记录，先清零 `mCumulativeIn/Out/TotalTokens` 再逐条累加，重新 emit `tokenUsageUpdated`——UI 立即显示该会话的累计用量与进度条，不会拘留上一会话的数值。上下文压缩不再重置这些累计值。
+    `usage` 记录用于会话级 token 累计统计的持久化。切换会话时 `DAAgentModule::emitTokenUsageForSession()` 读取目标会话的全部 `usage` 记录，先清零 `mCumulativeIn/Out/TotalTokens` 再逐条累加，重新 emit `tokenUsageUpdated`，UI 立即显示该会话的累计用量与进度条，不会残留上一会话的数值。上下文压缩不再重置这些累计值。
 
 !!! note "question/answer 复用 tool_call/tool_result 语义"
     HITL 提问（`ask_user` 工具）在 JSONL 中存储为 `assistant` 类型（含 `tool_calls`），用户回答存储为 `tool_result` 类型。一期不单独区分 question/answer 记录类型。
@@ -114,7 +114,7 @@ sequenceDiagram
 ```
 
 !!! note "newSession() vs createSession()"
-    `newSession()` 会 emit `sessionCreated` 信号触发 UI clearChat，用于用户点击"+"按钮。`createSession()` 不 emit 信号，用于 `sendMessage()` 自动创建会话——避免清除刚显示的用户消息。
+    `newSession()` 会 emit `sessionCreated` 信号触发 UI clearChat，用于用户点击「+」按钮。`createSession()` 不 emit 信号，用于 `sendMessage()` 自动创建会话，避免清除刚显示的用户消息。
 
 ### 切换会话
 
@@ -143,7 +143,7 @@ sequenceDiagram
 ```
 
 !!! note "state 重建时机（init → load_session → user_msg 管道序）"
-    空闲会话下次 `sendMessage` 时：`DAAgentBridge::startAgent` 内部 `waitForStarted` 后依次写 stdin——`init` → `load_session`（该会话全量历史）→ `user_msg`。Python 主循环 `await` 逐条顺序消费（`agent_runner.py` main loop），`user_msg` 必然在 state 重建完成后处理——铁律 T15 的时序约束由管道序结构性保证，C++ 侧无需额外门控。
+    空闲会话下次 `sendMessage` 时：`DAAgentBridge::startAgent` 内部 `waitForStarted` 后依次写 stdin：`init` → `load_session`（该会话全量历史）→ `user_msg`。Python 主循环 `await` 逐条顺序消费（`agent_runner.py` main loop），`user_msg` 必然在 state 重建完成后处理；铁律 T15 的时序约束由管道序结构性保证，C++ 侧无需额外门控。
 
 !!! note "桥生命周期与退役"
     会话桥存在当且仅当：**活跃会话**（任意状态）∨ **后台忙碌**（turn 进行中）∨ **等待用户输入**（ask_user/审批挂起）。退役触发点：后台会话跑完（`agentDone` 且非活跃）、切离空闲会话、删除会话、`sendMessage` 防御性重建（桥已死不再自愈）。退役 = `disconnect` 全部路由 + `requestStop()`（非阻塞）+ `processExited → deleteLater`。另有至多 1 个**预热未绑定桥**（`auto_prestart`），首次 `sendMessage` 时被接管。
@@ -187,7 +187,7 @@ graph LR
     D --> E["写入 zip 的 agent_sessions/<id>.jsonl"]
 ```
 
-`exportActiveSessions()` 返回 `QHash<QString, QByteArray>`——每个活跃会话的 ID 到 JSONL 字节内容的映射。在主线程收集（不碰 UI），子线程写入 zip。
+`exportActiveSessions()` 返回 `QHash<QString, QByteArray>`，即每个活跃会话的 ID 到 JSONL 字节内容的映射。在主线程收集（不碰 UI），子线程写入 zip。
 
 ### 打开工程时导入
 
@@ -291,7 +291,7 @@ DAAppProject 加载任务
 ```
 
 !!! note "sessionCleared 清空游离会话残留"
-    `restoreLastActiveSession()` 始终 emit `sessionCleared()`（`DAAgentInterface.h`），用于在启动 / 打开工程后清空上一会话残留的聊天区、复位 token 统计控件、清空标题，并清空 `m_currentSessionId`——之后用户发消息由 `sendMessage` 懒创建绑定当前工程的新会话。打开一个无内嵌会话的工程时，此信号尤为重要（清掉此前自由会话的游离残留）。
+    `restoreLastActiveSession()` 始终 emit `sessionCleared()`（`DAAgentInterface.h`），用于在启动 / 打开工程后清空上一会话残留的聊天区、复位 token 统计控件、清空标题，并清空 `m_currentSessionId`；之后用户发消息由 `sendMessage` 懒创建绑定当前工程的新会话。打开一个无内嵌会话的工程时，这个信号负责清掉此前自由会话的游离残留。
 
 ### 保存工程
 
@@ -359,8 +359,8 @@ cmake --build build --target DAAgentSessionStoreTest --config Release
 
 ## 参见
 
-- [崩溃恢复与重连](./crash-recovery.md) — 崩溃后通过 SessionStore 恢复会话
-- [通信协议](./protocol.md) — load_session / session_loaded 协议消息
-- [架构设计](./architecture.md) — DAAgentSessionStore 在架构中的位置
-- `src/DAAgent/DAAgentSessionStore.h/.cpp` — 持久化层实现
-- `src/tst/DAAgentSessionStoreTest/main.cpp` — 单元测试
+- [崩溃恢复与重连](./crash-recovery.md)：崩溃后通过 SessionStore 恢复会话
+- [通信协议](./protocol.md)：load_session / session_loaded 协议消息
+- [架构设计](./architecture.md)：DAAgentSessionStore 在架构中的位置
+- `src/DAAgent/DAAgentSessionStore.h/.cpp`：持久化层实现
+- `src/tst/DAAgentSessionStoreTest/main.cpp`：单元测试

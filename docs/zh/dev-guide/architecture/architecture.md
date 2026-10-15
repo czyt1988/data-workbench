@@ -1,7 +1,7 @@
 # 架构设计与模块划分
 
-- **分层架构**：5 层架构设计，基础层→功能层→界面层→接口层→应用层，职责清晰
-- **模块关系图**：一目了然的 15+ 模块依赖关系和数据流
+- **分层架构**：5 层架构，基础层→功能层→界面层→接口层→应用层
+- **模块关系图**：15+ 模块的依赖关系和数据流
 - **设计决策记录**：PIMPL、Python-first 工作流、DAG 模型、插件架构等关键选择的原因和权衡
 - **扩展点设计**：节点、插件、图表类型等预留扩展点说明
 
@@ -66,7 +66,7 @@ graph TB
     DAMH --> DAU
 ```
 
-data-workbench 采用严格的 5 层架构，**上层可以依赖下层，下层绝不能依赖上层**。这条铁律确保了模块间的依赖方向清晰可控，避免了循环依赖和架构腐化。
+data-workbench 采用严格的 5 层架构，**上层可以依赖下层，下层绝不能依赖上层**。这条铁律保证依赖方向可控，避免循环依赖。
 
 ### Layer 5：应用层（APP）
 
@@ -84,9 +84,9 @@ data-workbench 采用严格的 5 层架构，**上层可以依赖下层，下层
 - **核心类**：`DACoreInterface`、`DAUIInterface`、`DADataManagerInterface`、`DAProjectInterface`、`DAAbstractPlugin`、`DAPluginManager`、`DAAbstractNodePlugin`、`DAAgentInterface`、`DAAgentModule`、`DAAgentBridge`、`DAAgentSessionStore`
 - **向下依赖**：DAInterface → DAGui（PUBLIC 依赖，传递所有 DAGui 依赖给消费者）；DAAgent → DAInterface/DAData/DAPyBindQt/DAPyScripts（**不依赖 GUI**，与 DAGui 为兄弟模块）
 
-接口层的关键设计是 **DAInterface 以 PUBLIC 方式依赖 DAGui**，这意味着所有消费 DAInterface 的模块（如插件）都自动获得了 DAGui 及其下层的全部能力。这是有意为之的设计——插件需要访问完整的 UI 和数据能力。
+接口层的关键设计是 **DAInterface 以 PUBLIC 方式依赖 DAGui**，所有消费 DAInterface 的模块（如插件）都自动获得了 DAGui 及其下层的全部能力。这样设计是为了让插件能访问完整的 UI 和数据能力。
 
-DAAgent 是 L4 中的纯 Agent 框架库，暴露 `DAAgentInterface` 契约（工具注册 / 系统提示词 / 生命周期信号 / LLM 配置读写 / 会话管理）。它**刻意不依赖任何 GUI 模块**：聊天 UI（`DAAgentDockWidget`）位于 DAGui/Agent，16 个内置工具位于 `plugins/DAAgentTools/`，LLM 设置页位于 `src/APP/SettingPages/`，由 APP 的 `DAAppController` 负责信号链接线。详见 [Agent 开发指南](../agent/index.md)。
+DAAgent 是 L4 中的纯 Agent 框架库，暴露 `DAAgentInterface` 契约（工具注册 / 系统提示词 / 生命周期信号 / LLM 配置读写 / 会话管理）。它**刻意不依赖任何 GUI 模块**：聊天 UI（`DAAgentDockWidget`）位于 DAGui/Agent，21 个内置工具位于 `plugins/DAAgentTools/`，LLM 设置页位于 `src/APP/SettingPages/`，由 APP 的 `DAAppController` 负责信号链接线。详见 [Agent 开发指南](../agent/index.md)。
 
 ### Layer 3：界面层（DAGui）
 
@@ -99,19 +99,19 @@ DAGui 是项目中最庞大的模块，承担了工作流 UI、图表设置、�
 
 ### Layer 2：功能层
 
-- **职责**：核心业务功能实现——数据管理、图表、工作流、图形视图
+- **职责**：核心业务功能实现：数据管理、图表、工作流、图形视图
 - **包含模块**：DAData、DAFigure、DAPyWorkFlow、DAGraphicsView、DAPyScripts、DAPyCommonWidgets
 - **关键特点**：Python 相关模块（DAPyWorkFlow、DAPyScripts、DAPyCommonWidgets）为强制依赖，始终参与编译
 
-功能层是系统的核心引擎。DAPyWorkFlow 采用 **Python-first** 设计——Python 定义节点逻辑，C++ 负责可视化渲染和执行调度。DAFigure 基于 Qwt 提供论文级图表能力。DAData 提供抽象数据基类和 Python DataFrame 封装。
+DAPyWorkFlow 采用 **Python-first** 设计：Python 定义节点逻辑，C++ 负责可视化渲染和执行调度。DAFigure 基于 Qwt 提供论文级图表能力。DAData 提供抽象数据基类和 Python DataFrame 封装。
 
 ### Layer 1：基础层
 
-- **职责**：纯基础能力——数据结构、工具类、日志、Python 绑定
+- **职责**：纯基础能力：数据结构、工具类、日志、Python 绑定
 - **包含模块**：DAShared（纯头文件）、DAUtils、DAMessageHandler、DAPyBindQt
 - **特殊说明**：DAShared 是纯头文件库（19 文件），无需显式 CMake 链接，提供 Table/Vector 数据结构、枚举↔字符串映射宏、Qt5/Qt6 兼容宏、并发容器
 
-基础层是所有上层模块的基石。DAPyBindQt 是 Python↔Qt 的胶水层，提供 pybind11 类型转换器（`DAPybind11QtCaster.hpp`）、Python 解释器生命周期管理、GIL RAII 守卫等关键能力。
+DAPyBindQt 是 Python↔Qt 的胶水层，提供 pybind11 类型转换器（`DAPybind11QtCaster.hpp`）、Python 解释器生命周期管理、GIL RAII 守卫等关键能力。
 
 ---
 
@@ -122,23 +122,23 @@ DAGui 是项目中最庞大的模块，承担了工作流 UI、图表设置、�
 | 模块 | 层 | 核心职责 | 关键类 | 文件数 |
 |------|-----|----------|--------|:------:|
 | DAShared | L1 | 纯头文件模板库 | 宏定义、模板 | 19 |
-| DAUtils | L1 | 通用工具类 | XML序列化、CSV读写、目录管理 | 48 |
+| DAUtils | L1 | 通用工具类 | XML 序列化、CSV 读写、目录管理 | 48 |
 | DAMessageHandler | L1 | 日志基础设施 | DALogger、spdlog | 12 |
-| DAPyBindQt | L1 | Python↔Qt 绑定 | 类型转换器、GIL守卫 | 30 |
+| DAPyBindQt | L1 | Python↔Qt 绑定 | 类型转换器、GIL 守卫 | 30 |
 | DAPyScripts | L2 | Python 脚本包装 | I/O、DataFrame 操作 | 13 |
-| DAPyCommonWidgets | L2 | Python 通用控件 | 列选择器、dtype选择器 | 5 |
+| DAPyCommonWidgets | L2 | Python 通用控件 | 列选择器、dtype 选择器 | 5 |
 | DAPyWorkFlow | L2 | 工作流引擎 | DAPyNode、DAPyWorkFlowManager | 52 |
 | DAData | L2 | 数据管理 | DAAbstractData、DADataManager | 21 |
 | DAGraphicsView | L2 | 图形视图框架 | DAGraphicsView、DAGraphicsScene | 51 |
 | DAFigure | L2 | 图表容器 | QwtFigure、DAChartWidget | 85 |
-| DAGui | L3 | GUI 整合层 | 工作流UI、图表设置、Model/View（含已并入的 DACommonWidgets 控件） | 405 |
+| DAGui | L3 | GUI 整合层 | 工作流 UI、图表设置、Model/View（含已并入的 DACommonWidgets 控件） | 405 |
 | DAInterface | L4 | 抽象接口定义 | DACoreInterface、DAUIInterface | 29 |
 | DAPluginSupport | L4 | 插件框架 | DAAbstractPlugin、DAPluginManager | 9 |
 | DAAgent | L4 | AI Agent 框架（无 GUI 依赖） | DAAgentInterface、DAAgentModule、DAAgentBridge、DAAgentSessionStore | 17 |
 | APP | L5 | 可执行程序 | DAAppCore、AppMainWindow | 92 |
 
 !!! note "文件计数口径"
-    “文件数”统计各模块目录下的 `.h` / `.hpp` / `.cpp` / `.ui` 源文件数。历史 `DACommonWidgets` 已并入 `DAGui`，不再作为独立模块列出。
+    「文件数」统计各模块目录下的 `.h` / `.hpp` / `.cpp` / `.ui` 源文件数。历史 `DACommonWidgets` 已并入 `DAGui`，不再作为独立模块列出。
 
 ### 模块依赖关系图
 
@@ -208,7 +208,7 @@ graph LR
 
 **依赖方向规则（铁律）**：
 
-1. **上层可以依赖下层，下层绝不能依赖上层**（✅ DAGui → DAUtils；❌ DAUtils → DAGui）
+1. **上层可以依赖下层，下层绝不能依赖上层**（DAGui → DAUtils 可以，DAUtils → DAGui 不行）
 2. **同层模块尽量减少直接依赖**，通过上层整合模块（DAGui）协调
 3. **Python 相关模块**为强制依赖，始终参与编译
 4. **DAShared 是纯头文件库**，无需显式 CMake 链接
@@ -219,7 +219,7 @@ graph LR
 
 ### 工作流执行流程
 
-这是系统最核心的数据流——用户点击"执行工作流"后的完整调用链：
+这是系统最核心的数据流，从用户点击「执行工作流」到界面状态更新：
 
 ```mermaid
 sequenceDiagram
@@ -279,7 +279,7 @@ sequenceDiagram
     MW-->>U: 数据出现在数据面板中
 ```
 
-数据导入流程展示了 Python 与 C++ 的深度集成。导入操作通过 `DADataManager` 发起，实际的数据读取由 Python 的 pandas 完成（支持 CSV、Excel、HDF5 等格式），返回的 DataFrame 被 `DAData` 包装器封装为 C++ 可操作的对象，注册到数据管理器后通过信号通知 UI 更新。
+导入操作通过 `DADataManager` 发起，实际的数据读取由 Python 的 pandas 完成（支持 CSV、Excel、HDF5 等格式），返回的 DataFrame 被 `DAData` 包装器封装为 C++ 可操作的对象，注册到数据管理器后通过信号通知 UI 更新。
 
 ### 图表创建流程
 
@@ -303,7 +303,7 @@ sequenceDiagram
 
 图表创建流程涉及 DAGui 的 `ChartSetting/` 子模块和 DAFigure 模块的协作。用户在 ChartSetting 面板中选择数据和图表类型后，DAFigure 模块创建 `QwtFigure` 容器（类似 matplotlib 的 Figure），内部使用 Qwt 的 `QwtPlot`、`QwtPlotCurve` 等组件绘制图表，最终包装为 `DAChartWidget` 嵌入到 Docking 面板中。
 
-图表窗口在 `DAChartOperateWidget` 中以 ADS 嵌套停靠区管理（多窗口自由分屏、隔离在绘图区内），其设计与一个 `FocusHighlighting` 焦点跨管理器陷阱详见 [绘图窗口停靠布局](../graphics/chart-dock-nesting.md)。
+图表窗口在 `DAChartOperateWidget` 中以 ADS 嵌套停靠区管理（多窗口自由分屏、隔离在绘图区内），相关设计和 `FocusHighlighting` 焦点跨管理器陷阱详见 [绘图窗口停靠布局](../graphics/chart-dock-nesting.md)。
 
 ---
 
@@ -316,10 +316,10 @@ sequenceDiagram
 - **最终选择**：所有核心类统一使用 PIMPL 模式
 - **原因**：减少头文件依赖、加速编译、保持二进制兼容
 - **实现**：通过 `src/DAGlobals.h` 中定义的宏简化 PIMPL 使用：
-  - `DA_DECLARE_PRIVATE` — 在公共类中声明
-  - `DA_DECLARE_PUBLIC` — 在 PrivateData 中声明
-  - `DA_PIMPL_CONSTRUCT` — 在构造函数中初始化
-  - `DA_D()` / `DA_DC()` — 获取私有数据指针
+  - `DA_DECLARE_PRIVATE`：在公共类中声明
+  - `DA_DECLARE_PUBLIC`：在 PrivateData 中声明
+  - `DA_PIMPL_CONSTRUCT`：在构造函数中初始化
+  - `DA_D()` / `DA_DC()`：获取私有数据指针
 
 ```cpp
 // MyClass.h
@@ -457,7 +457,7 @@ data-workbench/
 ├── plugins/
 │   ├── DataAnalysis/CMakeLists.txt   # 数据分析插件构建
 │   ├── DASystemNodes/CMakeLists.txt # 系统节点插件构建（内置工作流节点）
-│   ├── DAAgentTools/CMakeLists.txt  # Agent 工具插件构建（16 个内置工具）
+│   ├── DAAgentTools/CMakeLists.txt  # Agent 工具插件构建（21 个内置工具）
 │   └── plugin-template/             # 插件模板生成工具
 └── scripts/
     └── build.ps1                   # Windows 构建脚本
@@ -497,7 +497,7 @@ data-workbench/
 
 ## 参见
 
-- [开发指引](../developer-guide.md) — 开发者入门完整指南
-- [模块业务逻辑详解](./module-breakdown.md) — 各模块内部工作原理
-- [模块依赖关系](./module-dependency.md) — 详细的依赖矩阵和职责边界
-- [编码规范](../general/coding-standard.md) — 命名、注释、代码风格规范
+- [开发指引](../developer-guide.md)：开发者入门完整指南
+- [模块业务逻辑详解](./module-breakdown.md)：各模块内部工作原理
+- [模块依赖关系](./module-dependency.md)：详细的依赖矩阵和职责边界
+- [编码规范](../general/coding-standard.md)：命名、注释、代码风格规范

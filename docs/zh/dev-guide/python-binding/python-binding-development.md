@@ -217,7 +217,7 @@ PYBIND11_EMBEDDED_MODULE(da_interface, m)
 ## 所有权策略详解
 
 !!! tip "所有权策略选择指南"
-    正确的所有权策略是避免内存泄漏和崩溃的关键。
+    所有权策略选错会造成内存泄漏或崩溃。
 
 | 策略 | 适用场景 | 说明 |
 |------|----------|------|
@@ -577,7 +577,7 @@ void DAPythonSignalHandler::onExecuteRequested(int funcWrapperId)
 ```
 
 !!! note "PIMPL 模式说明"
-    `DAPythonSignalHandler` 采用 PIMPL（`d` 指针）模式：头文件中只有 `DA_DECLARE_PRIVATE(DAPythonSignalHandler)` 宏，真正的成员变量 `mFunctionMap / mMutex / mNextFuncId / mDestroying`（camelCase）都定义在 `.cpp` 的 `DAPythonSignalHandler::PrivateData` 中。实现里通过 `DA_D(d)` 取到 `d` 指针，再用 `d->mFunctionMap` 等方式访问。这与某些文档示例里直接把 `m_functionMap`（snake_case）写在头文件中的写法不同——以源码为准。
+    `DAPythonSignalHandler` 采用 PIMPL（`d` 指针）模式：头文件中只有 `DA_DECLARE_PRIVATE(DAPythonSignalHandler)` 宏，真正的成员变量 `mFunctionMap / mMutex / mNextFuncId / mDestroying`（camelCase）都定义在 `.cpp` 的 `DAPythonSignalHandler::PrivateData` 中。实现里通过 `DA_D(d)` 取到 `d` 指针，再用 `d->mFunctionMap` 等方式访问。有些文档示例把 `m_functionMap`（snake_case）直接写在头文件中，写法与此不同，以源码为准。
 
 ## Qt 类型转换器
 
@@ -735,11 +735,11 @@ struct type_caster<QVariant>
 
 ## 绑定开发实操流程
 
-本部分详细说明从零开始开发一个 pybind11 绑定模块的完整流程，涵盖从识别绑定目标到构建验证的全过程。
+本部分说明开发一个 pybind11 绑定模块的流程，从识别绑定目标到构建验证。
 
 ### 绑定开发总览
 
-下图展示了绑定开发的完整流程，每个步骤环环相扣：
+绑定开发的流程如下：
 
 ```mermaid
 flowchart TD
@@ -763,7 +763,7 @@ flowchart TD
 
 上图展示了绑定开发的关键步骤和分支路径：
 
-- **主线流程**（A→H）：从识别目标到最终验证的完整链路
+- **主线流程**（A→H）：从识别目标到最终验证的完整流程
 - **slots 冲突分支**（C1）：Qt 的 `slots` 宏与 Python 头文件冲突，需特殊处理
 - **Qt 类型处理分支**（D1/D2）：自动转换与手动 Lambda 包装两条路径
 - **所有权策略分支**（E1）：根据对象生命周期选择正确的 `return_value_policy`
@@ -782,8 +782,8 @@ flowchart TD
 
 1. 查看该模块对外提供的接口类（如 `DAFigureInterface`）
 2. 确认 Python 脚本需要直接操作的功能（如创建图表、设置坐标轴属性）
-3. 检查是否存在 `QwtPlotItem` 子类——这类类不能使用信号槽，绑定时只能暴露方法
-4. 列出需要 `QString` 参数的方法——这些需要 Lambda 包装转换
+3. 检查是否存在 `QwtPlotItem` 子类：这类类不能使用信号槽，绑定时只能暴露方法
+4. 列出需要 `QString` 参数的方法：这些需要 Lambda 包装转换
 
 ### 绑定步骤二：创建绑定文件
 
@@ -855,7 +855,7 @@ PYBIND11_EMBEDDED_MODULE(da_xxx, m)
 }
 ```
 
-!!! danger "slots 宏冲突 —— 必须使用 DAPybind11InQt.h"
+!!! danger "slots 宏冲突：必须使用 DAPybind11InQt.h"
     Qt 的 `slots` 关键字与 Python 头文件中的 `slots` 宏存在**严重冲突**。如果直接在绑定文件中 `#include <pybind11/pybind11.h>`，编译时会因为 `slots` 被 Qt 预定义为空而导致 Python 头文件解析错误。
 
     **必须**使用 `DAPybind11InQt.h` 替代直接引入 pybind11 头文件。此头文件的处理方式如下：
@@ -1177,12 +1177,12 @@ ui.addInfoLogMessage("测试消息")  # std::string → QString 自动转换
     **原因**：非 Python 线程调用 Python API 时未获取 GIL
     
     ```cpp
-    // ❌ 错误：后台线程直接调用 Python
+    // 错误：后台线程直接调用 Python
     void backgroundThread() {
         py::object result = py::module::import("pandas");  // 崩溃！
     }
     
-    // ✅ 正确：获取 GIL 后再调用
+    // 正确：获取 GIL 后再调用
     void backgroundThread() {
         pybind11::gil_scoped_acquire acquire;
         py::object result = py::module::import("pandas");  // OK
@@ -1196,10 +1196,10 @@ ui.addInfoLogMessage("测试消息")  # std::string → QString 自动转换
     **原因**：未对单例和内部引用指定 `return_value_policy::reference` 或 `reference_internal`
     
     ```cpp
-    // ❌ 错误：单例默认策略可能导致 Python 尝试 delete
+    // 错误：单例默认策略可能导致 Python 尝试 delete
     m.def("getCore", &DA::getAppCorePtr);
     
-    // ✅ 正确：显式指定 reference
+    // 正确：显式指定 reference
     m.def("getCore", &DA::getAppCorePtr,
           pybind11::return_value_policy::reference);
     ```
@@ -1211,11 +1211,11 @@ ui.addInfoLogMessage("测试消息")  # std::string → QString 自动转换
     **原因**：尝试绑定 PIMPL 类的 `PrivateData` 成员
     
     ```cpp
-    // ❌ 错误：绑定私有实现
+    // 错误：绑定私有实现
     py::class_<DA::DAPyModuleNumpy>(m, "DAPyModuleNumpy")
         .def_readwrite("m_ptr", &DA::DAPyModuleNumpy::m_ptr);  // 私有成员！
     
-    // ✅ 正确：只绑定公共方法
+    // 正确：只绑定公共方法
     py::class_<DA::DAPyModuleNumpy>(m, "DAPyModuleNumpy")
         .def("isInstanceNumber", &DA::DAPyModuleNumpy::isInstanceNumber);
     ```
@@ -1227,12 +1227,12 @@ ui.addInfoLogMessage("测试消息")  # std::string → QString 自动转换
     **原因**：`QwtPlotItem` 不继承 `QObject`，其子类不能使用 `Q_OBJECT` 宏和信号槽
     
     ```cpp
-    // ❌ 错误：QwtPlotItem 子类加 Q_OBJECT
+    // 错误：QwtPlotItem 子类加 Q_OBJECT
     class DAChartItem : public QwtPlotItem {
         Q_OBJECT  // 编译错误！QwtPlotItem 不是 QObject
     };
     
-    // ✅ 正确：QwtPlotItem 子类不加 Q_OBJECT，绑定只暴露方法
+    // 正确：QwtPlotItem 子类不加 Q_OBJECT，绑定只暴露方法
     class DAChartItem : public QwtPlotItem {
         // 不加 Q_OBJECT，不能使用信号槽
     };
@@ -1249,14 +1249,14 @@ ui.addInfoLogMessage("测试消息")  # std::string → QString 自动转换
     **原因**：直接 `#include <pybind11/pybind11.h>` 导致 Qt `slots` 宏冲突
     
     ```cpp
-    // ❌ 错误：直接引入 pybind11 头文件
+    // 错误：直接引入 pybind11 头文件
     #include <pybind11/pybind11.h>  // slots 宏冲突！
     
-    // ✅ 正确：使用 DAPybind11InQt.h
+    // 正确：使用 DAPybind11InQt.h
     #include "DAPybind11InQt.h"  // 安全引入，已处理 slots 冲突
     ```
 
-更多常见问题与解决方案请参阅 [故障排除与最佳实践](./troubleshooting-and-best-practices.md)。
+更多常见问题与解决方案见 [故障排除与最佳实践](./troubleshooting-and-best-practices.md)。
 
 ## 模块绑定路线图
 

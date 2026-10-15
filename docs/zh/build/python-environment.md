@@ -1,15 +1,6 @@
 # Python 环境配置
 
-本文档介绍 Python 环境的配置方法，Python 是数据处理模块的后端引擎，正确配置对软件功能至关重要。
-
-本文档说明 DAWorkBench 的 Python 环境配置方法，包括构建时和运行时的 Python 环境设置。
-
-## 主要功能特性
-
-**特性**
-
-- ✅ **嵌入式 Python**：支持 embeddable package，便于打包发布
-- ✅ **灵活配置**：支持配置文件和系统环境两种查找方式
+本文档介绍 DAWorkBench 的 Python 环境配置方法，包括构建时和运行时的设置。
 
 ---
 
@@ -66,7 +57,7 @@ DAWorkBench 强制依赖 Python，Python 相关模块始终参与编译：
 
 安装依赖：
 
-以下命令安装项目所需的 Python 依赖库。建议使用 requirements.txt 批量安装：
+安装项目所需的 Python 依赖库，建议用 requirements.txt 批量安装：
 
 ```shell
 # 使用 pip 批量安装依赖
@@ -107,7 +98,7 @@ pip install langgraph langchain-openai "langgraph-cli[inmem]" "pydantic>=2.0" ti
 
 ### 步骤三：安装 pip
 
-以下命令下载并安装 pip 到嵌入式 Python 环境中。pip 是 Python 的包管理工具，必需安装：
+以下命令下载并安装 pip 到嵌入式 Python 环境中：
 
 ```powershell
 # 下载 get-pip.py
@@ -247,7 +238,7 @@ cmake -DPython_ROOT_DIR="C:\Python311" ...
 
 ### 放置 Python 环境
 
-将 Python 环境（如 embeddable package）放入程序目录（例如命名为 `Python` 的目录），再通过 `python-config.json` 指向它（见上文"运行时 Python 配置"一节）：
+将 Python 环境（如 embeddable package）放入程序目录（比如命名为 `Python` 的目录），再通过 `python-config.json` 指向它（见上文「运行时 Python 配置」一节）：
 
 ![Python 环境放入程序目录](../../assets/PIC/move-py-to-bin-dir.png)
 

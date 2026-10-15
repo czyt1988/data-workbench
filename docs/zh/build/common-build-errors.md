@@ -1,26 +1,15 @@
 # 构建过程常见错误
 
-本文档汇总 data-workbench 构建过程中的常见错误及解决方案，帮助开发者快速定位并解决构建问题。
-
-本文档汇总data-workbench构建过程中的常见错误及解决方案，按错误类型分类便于快速定位。
-
-## 主要功能特性
-
-**特性**
-
-- ✅ **错误分类索引**：按错误类型分类，便于快速定位问题
-- ✅ **详细原因分析**：每个错误提供完整的原因分析表格
-- ✅ **多种解决方案**：提供多种解决方案，适应不同场景
-- ✅ **诊断流程图**：通过流程图引导错误排查步骤
+本文档汇总 data-workbench 构建过程中的常见错误及解决方案，按错误类型分类便于快速定位。
 
 ## 错误分类概览
 
 | 错误类型 | 常见原因 | 解决难度 |
 |----------|----------|----------|
-| 编译器错误 | VS路径问题、路径长度限制、Ninja 在 PowerShell 中的环境变量缺失 | 中等 |
-| MOC错误 | 批量MOC操作异常 | 低 |
-| MinGW错误 | 线程数据空间不足 | 低 |
-| 运行时错误 | DLL缺失、Python环境 | 中等 |
+| 编译器错误 | VS 路径问题、路径长度限制、Ninja 在 PowerShell 中的环境变量缺失 | 中等 |
+| MOC 错误 | 批量 MOC 操作异常 | 低 |
+| MinGW 错误 | 线程数据空间不足 | 低 |
+| 运行时错误 | DLL 缺失、Python 环境 | 中等 |
 
 ## VS2017编译器错误
 
@@ -33,13 +22,13 @@
 | 原因 | 说明 |
 |------|------|
 | 构建目录中文路径 | 用户名为中文或构建目录含中文 |
-| 操作系统路径长度限制 | 默认最大255字符限制 |
+| 操作系统路径长度限制 | 默认最大 255 字符限制 |
 
 ### 解决方案
 
 #### 方案一：指定构建目录
 
-避免中文路径，在项目根目录下的`CMakeSettings.json`中指定构建目录：
+避免中文路径，在项目根目录下的 `CMakeSettings.json` 中指定构建目录：
 
 下面的代码展示了 CMakeSettings.json 的典型配置，用于指定构建目录并避免中文路径问题。关键参数说明见代码注释。
 
@@ -81,7 +70,7 @@
 ```
 
 !!! tip "替代方案"
-    如果以上方法都不生效，可以将项目移动到更短的路径下（如D盘或C盘根目录）。
+    如果以上方法都不生效，可以将项目移动到更短的路径下（如 D 盘或 C 盘根目录）。
 
 ## Ninja 在 PowerShell 中的 MSVC 环境变量错误
 
@@ -143,17 +132,17 @@ Error while building/deploying project DAWorkbench
 
 ### 错误原因
 
-批量MOC操作时，编译器可能出现临时异常，尤其在第一次构建时更容易发生。
+批量 MOC 操作时，编译器可能出现临时异常，尤其在第一次构建时更容易发生。
 
 ### 解决方案
 
 | 解决方法 | 操作 |
 |----------|------|
 | 再次构建 | 直接重新运行构建命令 |
-| 保留build目录 | 不要删除build目录，继续构建 |
+| 保留 build 目录 | 不要删除 build 目录，继续构建 |
 
 !!! tip "解决方案"
-    此类MOC错误只需**多次重新构建**即可解决，无需删除build目录。保留build目录可避免重新生成所有MOC文件。
+    此类 MOC 错误只需**多次重新构建**即可解决，无需删除 build 目录。保留 build 目录可避免重新生成所有 MOC 文件。
 
 ## MinGW编译错误
 
@@ -169,73 +158,73 @@ runtime error R6016
 
 ### 错误原因
 
-MinGW编译器线程数据空间不足，属于编译器自身问题。
+MinGW 编译器线程数据空间不足，属于编译器自身问题。
 
 ### 解决方案
 
-处理方式与MOC错误一致：**多次构建**直到成功。
+处理方式与 MOC 错误一致：**多次构建**直到成功。
 
 !!! note "说明"
-    这是MinGW编译器的已知问题，不影响最终构建结果。
+    这是 MinGW 编译器的已知问题，不影响最终构建结果。
 
 ## 运行时DLL缺失错误
 
 ### 错误现象
 
-编译成功但运行时立即报错，提示找不到DLL。
+编译成功但运行时立即报错，提示找不到 DLL。
 
 ### 错误原因
 
-编译完成后运行程序是在build目录下运行，第一次构建的build目录下没有第三方库DLL。
+编译完成后直接运行程序时，第一次构建的 build 目录下没有第三方库 DLL。
 
 ### 解决方案
 
-需要复制以下DLL到build目录：
+需要复制以下 DLL 到 build 目录：
 
-| DLL名称 | 来源 | 说明 |
+| DLL 名称 | 来源 | 说明 |
 |---------|------|------|
-| `SARibbonBar.dll` | SARibbonBar | Ribbon界面库 |
+| `SARibbonBar.dll` | SARibbonBar | Ribbon 界面库 |
 | `DAWidgets.dll` | DAWidgets | 通用 QWidget 补充库 |
-| `DALiteCtk.dll` | DALiteCtk库 | CTK扩展库 |
+| `DALiteCtk.dll` | DALiteCtk 库 | CTK 扩展库 |
 | `qwtcore.dll` | Qwt | Qwt 核心库 |
 | `qwtplot.dll` | Qwt | Qwt 绘图库 |
 | `qwtplot3d.dll` | Qwt | Qwt 3D 绘图库 |
-| `qtadvanceddocking-qt6.dll` | QtAdvancedDocking | Dock窗口库（Qt6） |
-| `qtadvanceddocking-qt5.dll` | QtAdvancedDocking | Dock窗口库（Qt5） |
-| `quazip1-qt6.dll` | QuaZip | ZIP压缩库（Qt6） |
-| `quazip1-qt5.dll` | QuaZip | ZIP压缩库（Qt5） |
-| `zlib.dll` | zlib | QuaZip依赖库 |
+| `qtadvanceddocking-qt6.dll` | QtAdvancedDocking | Dock 窗口库（Qt6） |
+| `qtadvanceddocking-qt5.dll` | QtAdvancedDocking | Dock 窗口库（Qt5） |
+| `quazip1-qt6.dll` | QuaZip | ZIP 压缩库（Qt6） |
+| `quazip1-qt5.dll` | QuaZip | ZIP 压缩库（Qt5） |
+| `zlib.dll` | zlib | QuaZip 依赖库 |
 | `python311.dll` | Python 运行时 | 脚本后端解释器 |
 
 !!! warning "注意"
     1. 带 Qt 版本号的库采用后缀形式：ADS 4.x 起上游将包名从 `qt6advanceddocking` 重命名为 `qtadvanceddocking-qt6`，故 DLL 为 `qtadvanceddocking-qt6.dll`（Qt5 对应 `qtadvanceddocking-qt5.dll`）；QuaZip 同理为 `quazip1-qt6.dll`
     2. Qwt 已拆分为 `qwtcore.dll`/`qwtplot.dll`/`qwtplot3d.dll` 三个组件
     3. `spdlog`、`pybind11`、`ordered-map` 为静态库或头文件库，不产生 DLL，无需复制
-    4. `zlib.dll`是QuaZip的依赖，必须同时复制
-    5. Debug模式下DLL名称会添加`d`后缀，如`SARibbonBard.dll`
+    4. `zlib.dll` 是 QuaZip 的依赖，必须同时复制
+    5. Debug 模式下 DLL 名称会添加 `d` 后缀，如 `SARibbonBard.dll`
 
 !!! tip "自动化方案"
-    可以编写脚本自动复制DLL，或使用CMake的install命令在构建后自动部署。
+    可以编写脚本自动复制 DLL，或用 CMake 的 install 命令在构建后自动部署。
 
 ## Python环境错误
 
 ### 错误现象
 
-软件启动时Python相关报错，无法加载Python库。
+软件启动时 Python 相关报错，无法加载 Python 库。
 
 ### 错误原因
 
 | 原因 | 说明 |
 |------|------|
-| 未找到Python | `where python`找不到Python环境 |
-| Python环境不匹配 | 找到了错误的Python环境 |
-| 缺少Python包 | 未安装必需的Python依赖 |
+| 未找到 Python | `where python` 找不到 Python 环境 |
+| Python 环境不匹配 | 找到了错误的 Python 环境 |
+| 缺少 Python 包 | 未安装必需的 Python 依赖 |
 
 ### 解决方案
 
 #### 方案一：配置python-config.json
 
-通过配置文件指定Python环境：
+通过配置文件指定 Python 环境：
 
 下面的代码展示了 python-config.json 的配置格式，用于指定 Python 解释器路径。`${current-app-dir}` 变量代表程序安装目录，使配置文件可移植。
 
@@ -259,12 +248,12 @@ MinGW编译器线程数据空间不足，属于编译器自身问题。
 
 #### 方案二：正确配置Python环境
 
-详见[Python环境配置](./python-environment.md)，确保：
+详见 [Python 环境配置](./python-environment.md)，确保：
 
-- 安装正确版本的Python（推荐Python 3.9+）
-- 安装必需的Python包：见项目根目录 `requirements.txt`（共 16 个包，含 pandas/numpy/scipy 及 DAAgent 子系统所需的 langgraph/langchain-openai 等 AI 栈）
+- 安装正确版本的 Python（推荐 Python 3.9+）
+- 安装必需的 Python 包：见项目根目录 `requirements.txt`（共 16 个包，含 pandas/numpy/scipy 及 DAAgent 子系统所需的 langgraph/langchain-openai 等 AI 栈）
 
-!!! info "Python依赖"
+!!! info "Python 依赖"
     data-workbench 运行时依赖以下 Python 包（完整列表见项目根目录 `requirements.txt`）：
 
     ```shell
@@ -275,9 +264,7 @@ MinGW编译器线程数据空间不足，属于编译器自身问题。
 
 ## 错误诊断流程
 
-遇到构建错误时，按以下流程诊断。流程图展示了从错误类型判断到最终解决方案的完整排查路径。
-
-下图展示了构建错误的诊断决策树，根据错误类型分支到相应的处理步骤：
+遇到构建错误时，按以下流程诊断。下图展示了构建错误的诊断决策树，根据错误类型分支到相应的处理步骤：
 
 ```mermaid
 flowchart TD
@@ -308,28 +295,26 @@ flowchart TD
 | B-错误类型 | 根据错误信息判断所属类型 |
 | C-检查路径 | VS 编译器错误首先排查路径问题 |
 | C1-含中文? | 判断路径是否包含中文字符 |
-| C2-配置build目录 | 通过 CMakeSettings.json 指定纯英文路径 |
+| C2-配置 build 目录 | 通过 CMakeSettings.json 指定纯英文路径 |
 | C3-启用长路径 | 通过组策略启用 Windows 长路径支持 |
 | D/E-多次构建 | MOC/MinGW 错误通过重复构建解决 |
-| F-检查DLL | 运行时错误检查动态库依赖 |
-| G-检查Python环境 | Python 相关错误检查环境配置 |
-
-按照流程图指引，可以快速定位问题并执行相应的解决步骤。
+| F-检查 DLL | 运行时错误检查动态库依赖 |
+| G-检查 Python 环境 | Python 相关错误检查环境配置 |
 
 ## 构建检查清单
 
-构建前请确认以下事项：
+构建前确认以下事项：
 
 | 检查项 | 要求 |
 |--------|------|
-| Qt版本 | Qt 5.14+ 或 Qt 6.x |
-| CMake版本 | CMake 3.16+ |
+| Qt 版本 | Qt 5.14+ 或 Qt 6.x |
+| CMake 版本 | CMake 3.16+ |
 | 路径要求 | 无中文、无超长路径 |
-| Python环境 | Python 3.7+，已安装pandas等 |
-| Qt工具链 | 使用Qt官方工具链文件 |
+| Python 环境 | Python 3.7+，已安装 pandas 等 |
+| Qt 工具链 | 使用 Qt 官方工具链文件 |
 
 !!! warning "工具链文件"
-    构建**必须**使用Qt工具链文件，否则会出现Windows SDK头文件找不到的问题。以下是正确的 CMake 配置命令示例：
+    构建**必须**使用 Qt 工具链文件，否则会出现 Windows SDK 头文件找不到的问题。以下是正确的 CMake 配置命令示例：
     
     ```powershell
     # 正确的配置命令示例
@@ -341,4 +326,4 @@ flowchart TD
 
 - [构建说明](./build-instructions.md)
 - [构建选项参考](./build-options.md)
-- [Python环境配置](./python-environment.md)
+- [Python 环境配置](./python-environment.md)

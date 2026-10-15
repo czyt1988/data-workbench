@@ -99,10 +99,10 @@ daCritical << tr("Failed to save project! Path: %1").arg(path);  // cn:工程保
 
 | 宏 | 展开为 | category | 进 UI 窗口 | 级别 |
 |----|--------|----------|-----------|------|
-| `daDebug` | `qCDebug(DA_USER)` | da.user | ❌（sink level=info） | Debug |
-| `daInfo` | `qCInfo(DA_USER)` | da.user | ✅ | Info |
-| `daWarning` | `qCWarning(DA_USER)` | da.user | ✅ | Warning |
-| `daCritical` | `qCCritical(DA_USER)` | da.user | ✅ | Critical |
+| `daDebug` | `qCDebug(DA_USER)` | da.user | 否（sink level=info） | Debug |
+| `daInfo` | `qCInfo(DA_USER)` | da.user | 是 | Info |
+| `daWarning` | `qCWarning(DA_USER)` | da.user | 是 | Warning |
+| `daCritical` | `qCCritical(DA_USER)` | da.user | 是 | Critical |
 
 用法与 `qDebug()` / `qInfo()` 完全一致，支持 `<<` 链式输出和 `.noquote()` 修饰：
 
@@ -219,7 +219,7 @@ void DALogger::dispatchMessage(QtMsgType type, const QMessageLogContext& context
 
 ### 扩展自定义 Category
 
-如果某模块需要独立的 category 过滤（例如在 `QLoggingCategory::setFilterRules` 中单独控制），可以声明自己的 category：
+如果某模块需要独立的 category 过滤（比如在 `QLoggingCategory::setFilterRules` 中单独控制），可以声明自己的 category：
 
 ```cpp
 // 在模块的 .h 文件中
@@ -267,7 +267,7 @@ UI 日志窗口（`DAMessageLogViewWidget`）位于主窗口的 Dock 停靠面�
 
 ## 日志读取与故障排查
 
-当用户报告运行异常、崩溃、行为不符合预期，或提到"日志"/"报错"/"看不到效果"时，应主动读取程序运行日志分析根因，不要凭猜测下结论。
+当用户报告运行异常、崩溃、行为不符合预期，或提到「日志」「报错」「看不到效果」时，应主动读取程序运行日志分析根因，不要凭猜测下结论。
 
 ### 日志文件位置
 
@@ -303,7 +303,7 @@ UI 日志窗口（`DAMessageLogViewWidget`）位于主窗口的 Dock 停靠面�
    - 崩溃类：`crash|dump|SIGSEGV|abnormal|terminate`
    - 模块类：`DAAgent|DAPyWorkFlow|DAAppConfig|DAAgentBridge|DAPluginManager`
    - 自定义诊断日志前缀（开发者临时加的 `[模块名]` 标记，如 `[DAAgentSettings]`）
-3. **跨多次运行对照**：当前 `da_log.log` 是最新一次运行，`da_log.1.log` 是上一次。用户描述"之前能用现在不能"时，对比两个文件。
+3. **跨多次运行对照**：当前 `da_log.log` 是最新一次运行，`da_log.1.log` 是上一次。用户描述「之前能用现在不能」时，对比两个文件。
 4. **Python 侧问题**：工作流节点执行异常、agent 子进程报错，先看 `da_pyscript.log`；C++ 主程序行为看 `da_log.log`。
 5. **Agent 子进程 stderr**：`DAAgentBridge` 把子进程 stderr 转发到 `da_log.log`，标记为 `[DAAgentBridge.cpp:268] Agent stderr:`，Python traceback 在这里可见（注意 `\r\n` 被字面转义成字符串内容，不是真换行）。
 
@@ -320,26 +320,26 @@ UI 日志窗口（`DAMessageLogViewWidget`）位于主窗口的 Dock 停靠面�
 
 ### 注意事项
 
-- 日志文件可能含敏感信息（API key 除外——业务代码应避免打印密钥明文，但第三方库或 Qt 自身可能意外泄露）。分析时不要把日志原文完整贴到对外渠道，只摘录与问题相关的行；遇到疑似密钥/token 的字符串要打码。
-- `da_log.log` 是 rotating 的，如果用户报告"几天前"的问题，可能已被轮转覆盖，只能从 `da_log.N.log` 找。
-- 程序退出时日志会 flush，但非正常退出（崩溃/强杀）最后几行可能未写入文件——这种场景看 `dumps/` 下的 dump 文件。
+- 日志文件可能含敏感信息（API key 除外，业务代码应避免打印密钥明文，但第三方库或 Qt 自身可能意外泄露）。分析时不要把日志原文完整贴到对外渠道，只摘录与问题相关的行；遇到疑似密钥/token 的字符串要打码。
+- `da_log.log` 是 rotating 的，如果用户报告「几天前」的问题，可能已被轮转覆盖，只能从 `da_log.N.log` 找。
+- 程序退出时日志会 flush，但非正常退出（崩溃/强杀）最后几行可能未写入文件，这种场景看 `dumps/` 下的 dump 文件。
 - 读日志前先确认修改时间（`dir /t:w`），避免读到陈旧日志误导判断。如果用户刚遇到问题但日志时间戳很旧，说明问题没触发到日志系统（可能是 UI 层死锁或日志系统本身没初始化）。
 
 ---
 
 ## 最佳实践
 
-### ✅ 应该做的
+### 应该做的
 
 1. **业务日志用便捷宏**：`daInfo`/`daWarning`/`daCritical`，日志自动进 UI 窗口
 2. **tr() + 中文注释**：每个面向用户的日志用 `tr()` 包裹，后跟 `// cn:中文`
 3. **带上下文信息**：日志应包含足够的诊断信息
 
 ```cpp
-// ✅ 好
+// 好
 daWarning << tr("Failed to load plugin %1: %2").arg(name, error);  // cn:加载插件%1失败：%2
 
-// ❌ 不好（缺少上下文）
+// 不好（缺少上下文）
 daWarning << "error";
 ```
 
@@ -351,12 +351,12 @@ daWarning << "error";
 }
 ```
 
-### ❌ 不应该做的
+### 不应该做的
 
 1. **不要用 `qInfo()`/`qWarning()`/`qCritical()` 打印业务日志**
 
 ```cpp
-// ❌ 不会进入 UI 窗口（无 category，被判定为系统日志）
+// 不会进入 UI 窗口（无 category，被判定为系统日志）
 qWarning() << tr("something went wrong");
 ```
 

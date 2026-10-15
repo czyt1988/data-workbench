@@ -1,26 +1,12 @@
 # 插件生命周期管理
 
-本文档详细说明插件从加载到卸载的完整生命周期，以及各阶段的钩子函数和最佳实践。
-
-## 主要功能特性
-
-**特性**
-
-- ✅ **生命周期阶段**：加载阶段、运行阶段、卸载阶段的完整流程
-- ✅ **加载阶段详解**：扫描插件目录、加载动态库、实例化对象、设置接口、调用初始化
-- ✅ **运行阶段详解**：事件监听、状态维护、节点执行、语言变更响应
-- ✅ **卸载阶段详解**：正常卸载、finalize() 钩子、资源释放清单
-- ✅ **生命周期钩子**：插件层、节点工厂层、节点层的各类钩子函数
-- ✅ **工作流节点生命周期**：节点创建流程、连接流程、执行流程
-- ✅ **最佳实践**：资源管理、异步操作、错误处理、状态持久化
+这篇文档覆盖插件从加载到卸载的完整生命周期，以及各阶段的钩子函数和最佳实践。
 
 ---
 
 ## 生命周期阶段概览
 
-下面的 mermaid 图表展示了插件从加载到卸载的三个主要阶段：
-
-图表展示了插件生命周期的三个阶段及其内部流程，绿色标注初始化完成，蓝色标注运行状态，红色标注卸载状态：
+下面的 mermaid 图表展示了插件从加载到卸载的三个主要阶段，绿色标注初始化完成，蓝色标注运行状态，红色标注卸载状态：
 
 ```mermaid
 graph TB
@@ -55,8 +41,6 @@ graph TB
     style B4 fill:#e1f5fe    # 蓝色：运行状态
     style C4 fill:#ffcdd2    # 红色：卸载完成
 ```
-
-插件生命周期分为加载、运行、卸载三个阶段，每个阶段有特定的流程和钩子函数。
 
 ---
 
@@ -338,7 +322,7 @@ public:
 | **Ribbon action** | 先从 panel 移除按钮，再 `DAActionsInterface::removeAction(act)` | action 的 parent 是宿主接口对象，**不会**随插件库卸载销毁，必须显式移除（参考 `DataAnalysisUI::finalize()`） |
 | **agent 工具** | 宿主自动注销（按 provider） | 工具必须以插件对象为 parent；卸载前宿主调用 `DAAgentInterface::unregisterToolsByProvider(plugin)` |
 | **agent 系统提示词** | 宿主自动注销（按 provider） | 注册时传 provider：`registerSystemPrompt(name, content, this)` |
-| **内存缓冲** | 直接释放或智能指针 | 使用 `QSharedPointer` 更安全 |
+| **内存缓冲** | 直接释放或智能指针 | 用 `QSharedPointer` 更安全 |
 | **文件句柄** | 关闭文件 | 先确保数据已保存 |
 | **网络连接** | 断开连接 | 处理未完成的请求 |
 | **线程** | 停止并等待结束 | 使用 `quit()` + `wait()` |
@@ -394,7 +378,7 @@ DAAppPluginManager::disablePlugin(baseName)
 ### 降级停用状态
 
 Windows 下若插件库仍被其他模块引用，`QPluginLoader::unload()` 释放库会失败。此时插件实例已被销毁、
-`finalize()` 已执行、宿主注册表已清理，功能上完全停用，仅 DLL 驻留内存——管理界面状态显示
+`finalize()` 已执行、宿主注册表已清理，功能上完全停用，仅 DLL 驻留内存；管理界面状态显示
 「已停用（重启后释放库）」，重启后完全释放。降级停用同样会写入 `.pluginignore`，下次启动不再加载。
 
 ### finalize() 热卸载契约
@@ -406,7 +390,7 @@ Windows 下若插件库仍被其他模块引用，`QPluginLoader::unload()` 释�
 2. agent 工具必须以插件对象为 parent（`new MyTool(core, this)`），系统提示词注册时传 provider
    （`registerSystemPrompt(name, content, this)`），宿主据此按 provider 自动注销
 3. 未实现 `finalize()` 清理的插件被热卸载后不会崩溃（action parent 在宿主、信号连接随实例销毁自动断开），
-   但 ribbon 上会残留失效按钮——外部插件应尽快补齐清理逻辑
+   但 ribbon 上会残留失效按钮，外部插件应尽快补齐清理逻辑
 4. `registerBuiltinAgent` 写入 `<exe>/daAgent/` 的提示词文件**保留不删**（属提示词库资产，用户可能已编辑）
 
 ### 相关 API

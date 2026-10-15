@@ -1,18 +1,6 @@
 # 插件开发全流程
 
-本指南详细说明从创建插件项目到实现完整功能的全部流程，帮助开发者快速开发高质量的 DAWorkBench 插件。
-
-## 主要功能特性
-
-**特性**
-
-- ✅ **创建新插件**：模板生成工具和手动创建两种方式
-- ✅ **CMake 配置**：根目录和 src 目录的完整 CMakeLists.txt 配置
-- ✅ **插件主类实现**：MyPlugin 类的头文件和实现文件详解
-- ✅ **节点工厂实现**：MyNodeFactory 类的节点创建和元数据注册
-- ✅ **工作节点实现**：MyWorker 类的执行逻辑和图元创建
-- ✅ **内置服务使用**：日志、配置、数据管理等服务的调用方法
-- ✅ **构建和安装**：完整的构建流程和验证方法
+这篇文档覆盖从创建插件项目到实现完整功能的全部流程。
 
 ---
 
@@ -39,7 +27,7 @@
 }
 ```
 
-上述配置定义了插件的基本信息，脚本将根据此配置生成完整的插件项目。各字段说明：
+各字段说明：
 
 - `plugin-base-name`：插件基础名称，用于生成类名和文件名
 - `plugin-display-name`：插件显示名称，用于界面展示
@@ -82,17 +70,15 @@ MyPlugin/
 └── data-workbench/           # 主项目子模块引用 - 确保版本兼容
 ```
 
-上述结构将插件功能按职责分离，便于代码维护和团队协作。
-
 #### 添加 data-workbench 子模块
 
-如果你用 `git` 来管理插件项目，`data-workbench` 应该作为插件项目的子模块，这是最推荐的依赖管理方式。在插件项目根目录执行：
+用 `git` 管理插件项目时，`data-workbench` 应作为插件项目的子模块，这是推荐的依赖管理方式。在插件项目根目录执行：
 
 ```bash
 git submodule add https://gitee.com/czyt1988/data-workbench.git ./data-workbench
 ```
 
-上述命令的效果：
+命令的效果：
 
 - 在当前项目根目录下创建 `data-workbench` 子目录
 - 将 data-workbench 仓库作为子模块添加到项目中
@@ -579,7 +565,7 @@ bool MyPlugin::initialize()
 }
 ```
 
-> 插件自有的设置页应通过重载 `DAAbstractPlugin::createSettingPage()` 返回 `DAAbstractSettingPage*`，而不是直接读写全局配置。
+> 插件自有的设置页通过重载 `DAAbstractPlugin::createSettingPage()` 返回 `DAAbstractSettingPage*`，不要直接读写全局配置。
 
 ### 数据管理服务
 
@@ -706,13 +692,13 @@ agent 工具须以插件对象为 parent、系统提示词注册须传 provider�
 
 ## 现有插件参考
 
-DAWorkBench 自带的三个插件（`plugins/CMakeLists.txt` 构建）是开发新插件的最佳参考：
+DAWorkBench 自带的三个插件（由 `plugins/CMakeLists.txt` 构建）可以直接拿来参考：
 
 | 插件 | 路径 | 类型 | 说明 |
 |------|------|------|------|
 | **DataAnalysis** | `plugins/DataAnalysis/` | C++ + Python | 数据分析节点插件，三层 Python 包架构（Core/Gui/Nodes）参考实现 |
-| **DASystemNodes** | `plugins/DASystemNodes/` | 纯 Python | 系统级工作流节点（Start/End/If/Else/Delay/Print/TextViewer/DataToManager 等），C++ 入口仅注册 Python 路径，是 **Python-first `@NodeDef` 节点插件的最佳模板** |
-| **DAAgentTools** | `plugins/DAAgentTools/` | C++ | 平台内置 agent 工具插件（19 个工具，通过 `DAAgentInterface::registerTool()` 注册），供 LLM agent 调用 |
+| **DASystemNodes** | `plugins/DASystemNodes/` | 纯 Python | 系统级工作流节点（Start/End/If/Else/Delay/Print/TextViewer/DataToManager 等），C++ 入口仅注册 Python 路径，是 Python-first `@NodeDef` 节点插件的模板 |
+| **DAAgentTools** | `plugins/DAAgentTools/` | C++ | 平台内置 agent 工具插件（21 个工具，通过 `DAAgentInterface::registerTool()` 注册），供 LLM agent 调用 |
 
 > 新增 Python-first 节点插件优先参考 `plugins/DASystemNodes/`，无需编写 C++ NodeFactory。详见 `plugins/DASystemNodes/AGENTS.md`。
 

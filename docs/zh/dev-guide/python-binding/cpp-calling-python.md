@@ -14,7 +14,7 @@
 
 ## Python 解释器初始化
 
-!!! warning "初始化顺序至关重要"
+!!! warning "初始化顺序"
     Python 解释器必须在任何 Python 操作之前初始化，且在整个程序生命周期中只能初始化一次。
 
 ```cpp title="main.cpp - Python 环境初始化（initializePythonInterpreter）"
@@ -64,7 +64,7 @@ void initializePythonInterpreter(const DA::DAAppConfig& cfg)
     - `DAPyScripts`（`src/DAPyScripts/DAPyScripts.h:26-34`）：`initScripts()`、`isInitScripts()`、`getIO()`、`getDataFrame()`、`getDataProcess()`、`getStatistics()`、`cleanup()`。
 
 !!! warning "setPythonHomePath 在 Python 3.11+ 已弃用"
-    `DAPyInterpreter::setPythonHomePath(const QString&)` 在 Python 3.11 及以上版本中不再生效——`Py_SetPythonHome` 自 3.11 起被弃用。源码（`src/DAPyBindQt/DAPyInterpreter.cpp:157-159`）在该版本下直接打印告警并 `Q_UNUSED(path)`。正确做法是使用带 `QString` 参数的 `initializePythonInterpreter(pythonHomePath)` 重载（`src/DAPyBindQt/DAPyInterpreter.h:39`），它在内部一并完成 Python Home 的设置。
+    `DAPyInterpreter::setPythonHomePath(const QString&)` 在 Python 3.11 及以上版本中不再生效：`Py_SetPythonHome` 自 3.11 起被弃用。源码（`src/DAPyBindQt/DAPyInterpreter.cpp:157-159`）在该版本下直接打印告警并 `Q_UNUSED(path)`。正确做法是用带 `QString` 参数的 `initializePythonInterpreter(pythonHomePath)` 重载（`src/DAPyBindQt/DAPyInterpreter.h:39`），它在内部一并完成 Python Home 的设置。
 
     ```cpp
     // src/DAPyBindQt/DAPyInterpreter.cpp:152-170
@@ -88,7 +88,7 @@ void initializePythonInterpreter(const DA::DAAppConfig& cfg)
 !!! danger "线程安全警告"
     在多线程环境下调用 Python 代码时，必须正确管理 GIL，否则会导致程序崩溃或死锁。
 
-下图展示了 GIL 管理的两种典型场景，帮助理解 C++ 和 Python 之间的锁获取机制：
+下图是 GIL 管理的两种典型场景，对应 C++ 和 Python 两侧的锁获取：
 
 ```mermaid
 sequenceDiagram
@@ -186,7 +186,7 @@ Cpp->>Py: 如需调用其他 Python 代码<br/>GIL 已被持有，无需再次�
 
 ## 调用 Python 脚本示例
 
-`DAPyScriptsIO` 是对 Python 端 `da_io.py` 的薄封装，读取方法由 `FUNCTION_STR_DICT` 宏生成，实际调用的是 `DAWorkbench.io` 模块里的 `da_read` 函数，而非在 C++ 端直接 `import pandas`。
+`DAPyScriptsIO` 是对 Python 端 `da_io.py` 的薄封装，读取方法由 `FUNCTION_STR_DICT` 宏生成，最终调用 `DAWorkbench.io` 模块里的 `da_read` 函数，C++ 端不直接 `import pandas`。
 
 ```cpp title="DAPyScriptsIO - read 接口与实现"
 // src/DAPyScripts/DAPyScriptsIO.h:15-35

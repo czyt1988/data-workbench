@@ -3,11 +3,11 @@
 !!! note "文档定位"
     本文档逐模块拆解 data-workbench 的内部业务逻辑，覆盖核心类关系、关键流程、API 速查和修改指南。适合需要深入理解某个模块内部运作的开发者。
 
-- ✅ **逐模块解析**：覆盖 7 个核心模块的完整业务逻辑分析
-- ✅ **类关系图**：每个模块包含 mermaid 类关系图
-- ✅ **业务流程图**：关键操作的详细流程图
-- ✅ **API 速查表**：核心方法签名和调用时机
-- ✅ **修改指南**：明确标注可修改与不可修改的边界
+- **逐模块解析**：覆盖 7 个核心模块的完整业务逻辑分析
+- **类关系图**：每个模块包含 mermaid 类关系图
+- **业务流程图**：关键操作的详细流程图
+- **API 速查表**：核心方法签名和调用时机
+- **修改指南**：明确标注可修改与不可修改的边界
 
 ---
 
@@ -25,11 +25,11 @@
 
 ---
 
-## DAPyWorkFlow — Python 工作流核心
+## DAPyWorkFlow：Python 工作流核心
 
 ### 模块概述
 
-- **职责**：Python-first 工作流引擎核心——节点代理、工厂、场景管理、执行调度、信号传播、图形渲染、序列化
+- **职责**：Python-first 工作流引擎核心：节点代理、工厂、场景管理、执行调度、信号传播、图形渲染、序列化
 - **在系统中的位置**：L2 功能层，被 DAGui（L3）、DAPluginSupport（L4）、APP（L5）直接依赖
 - **关键文件**：52 个文件，是功能层中最大的模块
 
@@ -252,7 +252,7 @@ flowchart TD
 
 ---
 
-## DAData — 数据管理
+## DAData：数据管理
 
 ### 模块概述
 
@@ -331,7 +331,7 @@ classDiagram
     DADataManager --> DAData : 管理多个
 ```
 
-`DAData` 使用隐式共享设计，可安全地进行值传递。`DADataManager` 是 QObject 子类，持有所有数据对象并提供撤销/重做支持。
+`DAData` 使用隐式共享设计，可安全地按值传递。`DADataManager` 是 QObject 子类，持有所有数据对象并提供撤销/重做支持。
 
 ### 业务逻辑流程
 
@@ -351,7 +351,7 @@ flowchart TD
 
 #### 数据在工作流中的流动
 
-在工作流执行过程中，节点间的数据流动**不经过** DADataManager，而是通过 `DASignalManager` 的信号队列直接传递 Python 对象。DADataManager 主要用于用户手动管理的数据（导入、导出、查看），工作流节点间的数据传递由执行器内部完成。
+在工作流执行过程中，节点间的数据流动由 `DASignalManager` 的信号队列直接传递 Python 对象，不经过 DADataManager。DADataManager 主要用于用户手动管理的数据（导入、导出、查看），工作流节点间的数据传递由执行器内部完成。
 
 ### 核心 API
 
@@ -373,7 +373,7 @@ flowchart TD
 
 ---
 
-## DAFigure — 图表容器
+## DAFigure：图表容器
 
 ### 模块概述
 
@@ -506,11 +506,11 @@ DAFigure 提供两套接口：
 
 ---
 
-## DAGui — GUI 整合层
+## DAGui：GUI 整合层
 
 ### 模块概述
 
-- **职责**：整合所有 UI 功能——工作流 UI、图表设置面板、节点设置面板、数据管理 UI、Model/View、对话框、撤销命令
+- **职责**：整合所有 UI 功能：工作流 UI、图表设置面板、节点设置面板、数据管理 UI、Model/View、对话框、撤销命令
 - **在系统中的位置**：L3 界面层，被 DAInterface（L4）以 PUBLIC 方式依赖
 - **关键文件**：405 个文件（项目最大模块）
 
@@ -700,7 +700,7 @@ flowchart TD
 
 ---
 
-## DAInterface — 抽象接口层
+## DAInterface：抽象接口层
 
 ### 模块概述
 
@@ -819,7 +819,7 @@ sequenceDiagram
 ```
 
 !!! warning "接口创建顺序铁律"
-    在接口构造过程中，必须严格遵循创建顺序。例如在 `DADataManagerInterface` 的构造函数中不能调用 `DAUIInterface` 的方法，因为 UI 接口此时尚未创建。
+    在接口构造过程中，必须严格遵循创建顺序。比如在 `DADataManagerInterface` 的构造函数中不能调用 `DAUIInterface` 的方法，因为 UI 接口此时尚未创建。
 
 ### 核心 API
 
@@ -840,7 +840,7 @@ sequenceDiagram
 
 ---
 
-## DAPluginSupport — 插件框架
+## DAPluginSupport：插件框架
 
 ### 模块概述
 
@@ -948,16 +948,16 @@ flowchart TD
 
 !!! tip "修改此模块时"
     - **可以修改**：新增 `DAAbstractPlugin` 的子类；在 `DAPluginManager` 中添加插件优先级或依赖解析逻辑
-    - **不可修改**：`DAAbstractPlugin` 的 IID 字符串 `"org.da.abstract.plugin"`（影响所有已有插件兼容性）；`createNodeFactory()`/`destroyNodeFactory()` 的"谁创建谁删除"原则
+    - **不可修改**：`DAAbstractPlugin` 的 IID 字符串 `"org.da.abstract.plugin"`（影响所有已有插件兼容性）；`createNodeFactory()`/`destroyNodeFactory()` 的「谁创建谁删除」原则
     - **修改后需同步更新**：所有插件重新编译
 
 ---
 
-## DAAgent — AI Agent 框架
+## DAAgent：AI Agent 框架
 
 ### 模块概述
 
-- **职责**：纯 agent 框架库——多供应商 LLM 调用、提示词库、工具注册机制、agent 生命周期信号链、会话持久化。**不依赖任何 GUI 模块**（无 DAGui/DAFigure/qwt/ADS）：工具注册、聊天 UI 接线、LLM 设置页持久化全部由插件 / APP 层决定，DAGui 与 DAAgent 为兄弟模块互不依赖
+- **职责**：纯 agent 框架库：多供应商 LLM 调用、提示词库、工具注册机制、agent 生命周期信号链、会话持久化。**不依赖任何 GUI 模块**（无 DAGui/DAFigure/qwt/ADS）：工具注册、聊天 UI 接线、LLM 设置页持久化全部由插件 / APP 层决定，DAGui 与 DAAgent 为兄弟模块互不依赖
 - **在系统中的位置**：L4 接口层，被 APP（L5）与 `plugins/DAAgentTools/` 消费，依赖 DAInterface/DAData/DAPyBindQt/DAPyScripts
 - **关键文件**：17 个文件
 
@@ -1073,7 +1073,7 @@ flowchart TD
 
 ---
 
-## APP — 主程序
+## APP：主程序
 
 ### 模块概述
 
@@ -1243,13 +1243,13 @@ flowchart TD
 
 | 消费者 \ 提供者 | DAPyWorkFlow | DAData | DAFigure | DAGui | DAInterface | DAPluginSupport | APP |
 |:---|:---|:---|:---|:---|:---|:---|:---|
-| **DAPyWorkFlow** | - | 读取数据 | — | — | — | — | — |
-| **DAData** | — | - | — | — | — | — | — |
-| **DAFigure** | — | 读取数据 | - | — | — | — | — |
-| **DAGui** | 场景管理、节点创建、工作流编辑 | 数据管理、数据面板 | 图表容器、设置面板 | - | — | — | — |
-| **DAInterface** | 通过 DAGui 传递 | 通过 DAGui 传递 | 通过 DAGui 传递 | PUBLIC 链接 | - | — | — |
-| **DAPluginSupport** | DAPyNodeFactory | 通过 DAInterface | 通过 DAInterface | 通过 DAInterface | PUBLIC 链接 | - | — |
-| **DAAgent** | — | 读取数据（DADataPyObject） | — | —（兄弟模块，不依赖 GUI） | PUBLIC 链接（DAAgentInterface） | — | — |
+| **DAPyWorkFlow** | - | 读取数据 | 无 | 无 | 无 | 无 | 无 |
+| **DAData** | 无 | - | 无 | 无 | 无 | 无 | 无 |
+| **DAFigure** | 无 | 读取数据 | - | 无 | 无 | 无 | 无 |
+| **DAGui** | 场景管理、节点创建、工作流编辑 | 数据管理、数据面板 | 图表容器、设置面板 | - | 无 | 无 | 无 |
+| **DAInterface** | 通过 DAGui 传递 | 通过 DAGui 传递 | 通过 DAGui 传递 | PUBLIC 链接 | - | 无 | 无 |
+| **DAPluginSupport** | DAPyNodeFactory | 通过 DAInterface | 通过 DAInterface | 通过 DAInterface | PUBLIC 链接 | - | 无 |
+| **DAAgent** | 无 | 读取数据（DADataPyObject） | 无 | 无（兄弟模块，不依赖 GUI） | PUBLIC 链接（DAAgentInterface） | 无 | 无 |
 | **APP** | DAPyWorkFlowScene、执行控制 | DAAppDataManager 实现 | DAAppProject 图表存档 | DAAppUI/DAAppController | 实现所有接口 | DAAppPluginManager | - |
 
 ### 关键交互路径说明
@@ -1265,7 +1265,7 @@ flowchart TD
 
 ## 参见
 
-- [开发指引](../developer-guide.md) — 开发者入门完整指南
-- [架构设计](./architecture.md) — 5 层架构和设计决策
-- [模块依赖关系](./module-dependency.md) — 详细的 CMake 依赖矩阵
-- [编码规范](../general/coding-standard.md) — 命名、注释、代码风格规范
+- [开发指引](../developer-guide.md)：开发者入门完整指南
+- [架构设计](./architecture.md)：5 层架构和设计决策
+- [模块依赖关系](./module-dependency.md)：详细的 CMake 依赖矩阵
+- [编码规范](../general/coding-standard.md)：命名、注释、代码风格规范

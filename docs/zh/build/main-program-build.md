@@ -1,17 +1,6 @@
 # 构建主程序
 
-本文档介绍 DAWorkBench 主程序的构建方法，涵盖命令行和 Qt Creator 两种构建方式。
-
-本文档介绍如何构建 DAWorkBench 主程序。构建前请确认已完成第三方库的构建，详见 [构建第三方库](./third-party-build.md)。
-
-## 主要功能特性
-
-**特性**
-
-- ✅ **跨平台构建**：支持 Windows、Linux 平台
-- ✅ **多 Qt 版本**：同时支持 Qt 5.14+ 和 Qt 6.x
-- ✅ **命令行构建**：支持 CMake 命令行构建
-- ✅ **IDE 构建**：支持 Qt Creator 图形化构建
+本文档介绍 DAWorkBench 主程序的构建方法，涵盖命令行和 Qt Creator 两种构建方式。构建前需先完成第三方库的构建，详见 [构建第三方库](./third-party-build.md)。
 
 ---
 
@@ -22,7 +11,7 @@
 
 ### Windows PowerShell（Visual Studio 生成器，推荐）
 
-以下命令展示了 Windows 平台使用 PowerShell 构建主程序的完整流程。命令中包含详细的中文注释说明各参数的作用。
+以下命令展示了 Windows 平台使用 PowerShell 构建主程序的完整流程。
 
 ```powershell
 # 进入项目根目录
@@ -56,7 +45,7 @@ cmake --build build --config Release --target install
 如果已安装 Ninja 且**在 Developer Command Prompt (CMD) 中**运行，可以使用 Ninja：
 
 ```powershell
-# ⚠️ 必须先在 Developer Command Prompt 中运行 vcvars64.bat
+# 必须先在 Developer Command Prompt 中运行 vcvars64.bat
 cmake -S . -B build -G Ninja `
     -DCMAKE_BUILD_TYPE:STRING=Release `
     -DCMAKE_TOOLCHAIN_FILE:FILEPATH="D:\Qt\6.7.3\msvc2019_64\lib\cmake\Qt6\qt.toolchain.cmake"
@@ -64,7 +53,7 @@ cmake --build build --config Release --parallel
 ```
 
 !!! warning "PowerShell 中 Ninja 的限制"
-    在 PowerShell 中通过 `& vcvars64.bat` 调用后，环境变量不会传递给 PowerShell 后续命令。如果遇到 `fatal error C1083: 无法打开包括文件`，请改用 Visual Studio 生成器。
+    在 PowerShell 中通过 `& vcvars64.bat` 调用后，环境变量不会传递给 PowerShell 后续命令。如果遇到 `fatal error C1083: 无法打开包括文件`，改用 Visual Studio 生成器。
 
 ### Linux Bash
 
@@ -94,11 +83,11 @@ cmake --build build --config Release --target install
 
 | 参数 | 必需 | 说明 |
 |------|:----:|------|
-| `-G "Visual Studio 16 2019"` | ✅ (VS) | VS 2019 生成器；VS 2022 用 `"Visual Studio 17 2022"` |
-| `-A x64` | ✅ (VS) | 64 位架构，仅 VS 生成器需要 |
-| `-DCMAKE_PREFIX_PATH` | ✅ (VS) | Qt 安装路径，VS 生成器用此参数指定 Qt 位置 |
-| `-DCMAKE_TOOLCHAIN_FILE` | ✅ (Ninja) | Qt 工具链文件路径，Ninja 生成器用此参数 |
-| `-DCMAKE_BUILD_TYPE` | ✅ (Ninja) | 构建类型：`Debug` 或 `Release`（VS 生成器用 `--config` 代替） |
+| `-G "Visual Studio 16 2019"` | 是 (VS) | VS 2019 生成器；VS 2022 用 `"Visual Studio 17 2022"` |
+| `-A x64` | 是 (VS) | 64 位架构，仅 VS 生成器需要 |
+| `-DCMAKE_PREFIX_PATH` | 是 (VS) | Qt 安装路径，VS 生成器用此参数指定 Qt 位置 |
+| `-DCMAKE_TOOLCHAIN_FILE` | 是 (Ninja) | Qt 工具链文件路径，Ninja 生成器用此参数 |
+| `-DCMAKE_BUILD_TYPE` | 是 (Ninja) | 构建类型：`Debug` 或 `Release`（VS 生成器用 `--config` 代替） |
 | `-G Ninja` | 可选 | Ninja 生成器（必须在 Developer Command Prompt 中运行） |
 | `-DCMAKE_EXPORT_COMPILE_COMMANDS` | 可选 | 生成 LSP 配置文件 |
 
@@ -185,7 +174,7 @@ bin_{BuildType}_qt{QtVersion}_{Compiler}_{Arch}
 
 ## 验证构建
 
-以下命令用于检查构建产物是否正确生成。首先检查可执行文件和动态库是否存在，然后启动程序验证功能是否正常。
+以下命令用于检查构建产物是否正确生成：
 
 ```powershell
 # Windows - 检查输出文件
@@ -201,7 +190,7 @@ dir bin_Release_qt6.7.3_MSVC_x64\*.dll
 .\bin_Release_qt6.7.3_MSVC_x64\DAWorkBench.exe
 ```
 
-程序启动后显示主窗口界面，表示构建成功。如果出现 DLL 缺失错误，请参考下一节解决。
+程序启动后显示主窗口界面，表示构建成功。如果出现 DLL 缺失错误，参考下一节解决。
 
 ---
 

@@ -1,6 +1,6 @@
 # 工作流场景操作指南
 
-本文档详细介绍 DAPyWorkFlow 的场景可视化系统，帮助插件开发者理解如何使用 Qt Graphics View 场景来渲染和交互 Python 工作流节点。
+本文档介绍 DAPyWorkFlow 的场景可视化系统：如何用 Qt Graphics View 场景渲染和交互 Python 工作流节点。
 
 ## 导航
 
@@ -15,9 +15,9 @@
 
 ## 概述
 
-DAPyWorkFlowScene 是 Python 工作流可视化的核心场景管理类，继承自 DAGraphicsScene，负责在 Qt Graphics View 框架中渲染 Python 工作流节点及其连接关系。与旧版 DAWorkFlowGraphicsScene 不同，新场景专为 Python-first 架构设计，通过 DAPyNode 代理对象与 Python 层的节点实例进行双向通信。
+DAPyWorkFlowScene 是 Python 工作流可视化的核心场景管理类，继承自 DAGraphicsScene，负责在 Qt Graphics View 框架中渲染 Python 工作流节点及其连接关系。与旧版 DAWorkFlowGraphicsScene 不同，新场景专为 Python-first 架构设计，通过 DAPyNode 代理对象与 Python 层的节点实例双向通信。
 
-场景系统采用分层设计：
+场景系统分三层：
 
 - **场景层（DAPyWorkFlowScene）**：管理节点和连接线的生命周期，处理用户交互
 - **节点层（DAPyNodeGraphicsItem）**：渲染单个 Python 节点，支持多种可视化模板
@@ -46,7 +46,7 @@ flowchart TB
 
 ### DAPyWorkFlowScene 核心功能
 
-DAPyWorkFlowScene 继承自 DAGraphicsScene，提供完整的 Python 工作流场景管理能力。场景负责协调节点图元和连接线图元的创建、删除、选中状态管理，以及序列化操作。
+DAPyWorkFlowScene 继承自 DAGraphicsScene，负责协调节点图元和连接线图元的创建、删除、选中状态管理，以及序列化操作。
 
 #### 继承关系
 
@@ -123,7 +123,7 @@ QList<DAPyLinkGraphicsItem*> links = scene->getPyNodeLinkItems();
 
 ### DAPyNodeGraphicsItem 渲染系统
 
-DAPyNodeGraphicsItem 继承自 DAGraphicsResizeableItem，提供 Python 工作流节点的可视化渲染。支持两种渲染模板模式，可根据节点类型和用途选择最合适的展示方式。
+DAPyNodeGraphicsItem 继承自 DAGraphicsResizeableItem，负责 Python 工作流节点的可视化渲染。支持两种渲染模板模式，可按节点类型和用途选择。
 
 #### 继承关系
 
@@ -255,7 +255,7 @@ connect(item, &DA::DAPyNodeGraphicsItem::nodeDoubleClicked,
 
 ### DAPyLinkGraphicsItem 连接系统
 
-DAPyLinkGraphicsItem 继承自 DAGraphicsLinkItem，负责绘制 Python 节点间的数据流向。支持数据流动画效果和连接验证功能。
+DAPyLinkGraphicsItem 继承自 DAGraphicsLinkItem，负责绘制 Python 节点间的数据流向。支持数据流动画和连接验证。
 
 #### 继承关系
 
@@ -291,7 +291,7 @@ classDiagram
 
 #### 数据流动画
 
-连接线支持数据流动画效果，直观展示数据传递过程：
+连接线支持数据流动画，用于展示数据传递过程：
 
 ```cpp
 // 启用数据流动画
@@ -308,7 +308,7 @@ bool isFlowing = linkItem->isDataFlowing();
 
 #### 连接验证
 
-`willCompleteLink()` 方法在连接完成前进行数据类型兼容性验证：
+`willCompleteLink()` 方法在连接完成前做数据类型兼容性验证：
 
 ```cpp
 // 重写验证方法检查数据类型

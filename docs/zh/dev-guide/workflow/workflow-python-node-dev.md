@@ -15,9 +15,9 @@
 
 ## 概述
 
-Python 节点开发是 DAPyWorkFlow 的核心开发方式。通过 Python 定义节点逻辑，无需编写 C++ 代码即可创建功能完整的工作流节点。
+Python 节点开发是 DAPyWorkFlow 的主要开发方式：节点逻辑用 Python 定义，不需要编写 C++ 代码。
 
-DAPyWorkFlow 采用 Python-first 设计理念：
+DAPyWorkFlow 的节点开发涉及以下几部分：
 
 - **节点定义**：使用 `@NodeDef` 装饰器在 Python 中声明节点类型
 - **端口声明**：通过嵌套类 `Inputs` 和 `Outputs` 声明输入输出端口
@@ -188,7 +188,7 @@ class Outputs:
 ### 嵌套类声明模式
 
 !!! warning "必须使用嵌套类模式"
-    DAPyWorkFlow 要求使用 `class Inputs:` 和 `class Outputs:` 嵌套类声明端口。这种模式下，端口通过类属性声明，代码结构清晰，便于 IDE 自动补全。
+    DAPyWorkFlow 要求使用 `class Inputs:` 和 `class Outputs:` 嵌套类声明端口。端口通过类属性声明，便于 IDE 自动补全。
 
 ```python
 @NodeDef(name="示例节点", category="示例")
@@ -311,7 +311,7 @@ def execute(self, inputs=None, params=None):
 ```
 
 !!! tip "参数访问建议"
-    建议优先使用 `params` 字典获取参数值，因为 `params` 包含用户在工作流界面中设置的实时值。`self.column.default` 仅作为回退值使用。
+    优先从 `params` 字典取参数值，`params` 里是用户在工作流界面中设置的实时值。`self.column.default` 只作回退值。
 
 ## 节点执行
 
@@ -403,7 +403,7 @@ def __init__(self):
 
 ## 实战示例
 
-### DataSourceNode — 数据源节点
+### DataSourceNode：数据源节点
 
 从 CSV 文件读取数据，无输入端口，有输出端口。
 
@@ -454,7 +454,7 @@ class DataSourceNode:
             return False
 ```
 
-### DataFilterNode — 数据筛选节点
+### DataFilterNode：数据筛选节点
 
 按条件筛选 DataFrame 行，展示输入端口和条件执行。
 
@@ -520,9 +520,9 @@ class DataFilterNode:
             return False
 ```
 
-### DataTransformNode — 数据变换节点
+### DataTransformNode：数据变换节点
 
-对 DataFrame 列进行变换操作，展示多参数和多操作类型。
+对 DataFrame 列做变换，涉及多个参数和操作类型。
 
 ```python
 # -*- coding: utf-8 -*-
@@ -600,7 +600,7 @@ class DataTransformNode:
             return False
 ```
 
-### AgentNode — AI Agent 节点
+### AgentNode：AI Agent 节点
 
 展示与外部库集成和状态推送机制。
 
@@ -810,7 +810,7 @@ setup(
 qualified_name = f"{cls.__module__}.{cls.__name__}"
 ```
 
-例如：
+比如：
 - 模块 `DADataAnalysisPy.data_filter_node` 中的类 `DataFilterNode`
 - qualifiedName: `DADataAnalysisPy.data_filter_node.DataFilterNode`
 
@@ -886,11 +886,11 @@ def _push_state(self, state):
 ```
 
 !!! warning "线程安全"
-    `callInMainThread` 在 C++ 绑定层已正确处理 GIL 管理，Python 脚本无需额外处理 GIL。但需注意回调函数不要在后台线程直接操作 UI。传入的 `func` 必须是**无参**可调用对象（lambda 或函数）；如需携带参数，请通过 lambda 闭包捕获（如上例 `qn`/`state`），不要试图向 `callInMainThread` 传额外位置参数。
+    `callInMainThread` 在 C++ 绑定层已正确处理 GIL 管理，Python 脚本无需额外处理 GIL。但回调函数不要在后台线程直接操作 UI。传入的 `func` 必须是**无参**可调用对象（lambda 或函数）；需要携带参数时，用 lambda 闭包捕获（如上例 `qn`/`state`），不要向 `callInMainThread` 传额外位置参数。
 
 ### 运行时状态持久化（serialize_runtime_state / deserialize_runtime_state）
 
-`execute()` 阶段产生的衍生状态（如缓存文本、中间摘要），默认在工程保存/加载时丢失——重新打开工程后节点画面会变回空白，必须再次执行才能看到内容。
+`execute()` 阶段产生的衍生状态（如缓存文本、中间摘要），默认在工程保存/加载时丢失：重新打开工程后节点画面会变回空白，必须再次执行才能看到内容。
 
 `DAWorkflowNode` 基类提供一对钩子解决这个问题：
 
@@ -905,11 +905,11 @@ def _push_state(self, state):
 
 | 场景 | 是否需要钩子 |
 |------|--------------|
-| 用户可配置的参数 | ❌ 用 `Parameter` 声明 |
-| 节点执行后缓存的显示文本、摘要 | ✅ 用 `serialize_runtime_state` |
-| 最近一次执行的日志/错误信息 | ✅ 用 `serialize_runtime_state` |
-| DataFrame 本身 | ❌ 应存入 `_output_data` 或 DataManager |
-| Python 对象引用、文件句柄 | ❌ 不可序列化 |
+| 用户可配置的参数 | 不需要，用 `Parameter` 声明 |
+| 节点执行后缓存的显示文本、摘要 | 需要，用 `serialize_runtime_state` |
+| 最近一次执行的日志/错误信息 | 需要，用 `serialize_runtime_state` |
+| DataFrame 本身 | 不需要，应存入 `_output_data` 或 DataManager |
+| Python 对象引用、文件句柄 | 不需要，不可序列化 |
 
 #### 实现示例
 
@@ -963,7 +963,7 @@ class TextViewerNode:
 
 详见 [项目序列化架构 - 运行时状态持久化](../architecture/project-serialization-architecture.md#8-运行时状态持久化)。
 
-#### ⚠️ @NodeDef 的 MRO 遮盖陷阱
+#### @NodeDef 的 MRO 遮盖陷阱
 
 `@NodeDef` 装饰器通过 `type(cls.__name__, (DAWorkflowNode, cls), {})` 创建新类，MRO 为：
 
@@ -971,7 +971,7 @@ class TextViewerNode:
 new_cls → DAWorkflowNode → 用户类 cls → object
 ```
 
-这意味着 **`DAWorkflowNode` 基类的方法会遮盖用户类的同名方法**。例如，如果 `DAWorkflowNode` 定义了 `def foo(self): return "base"`，而用户类也定义了 `def foo(self): return "user"`，调用 `node.foo()` 会返回 `"base"` 而不是 `"user"`。
+这意味着 **`DAWorkflowNode` 基类的方法会遮盖用户类的同名方法**。比如，如果 `DAWorkflowNode` 定义了 `def foo(self): return "base"`，而用户类也定义了 `def foo(self): return "user"`，调用 `node.foo()` 会返回 `"base"` 而不是 `"user"`。
 
 `DAWorkflowNode` 中需要被子类覆写的方法（如 `serialize_runtime_state` / `deserialize_runtime_state`）通过 `super()` 转发到用户类的实现：
 
@@ -1036,20 +1036,20 @@ def execute(self, inputs=None, params=None):
 ## 参考资料
 
 - Python 模块源码：`src/PyScripts/DAWorkbench/DAWorkFlowPy/`
-  - `__init__.py` — 模块导出：`DAWorkflowNode`、`NodeDisplay`、`LinkPointStyle` 等
-  - `workflow.py` — `DAWorkflow` 工作流编排与节点拓扑管理
-  - `executor.py` — `DAWorkflowExecutor` 执行引擎（节点调度、数据流转）
-  - `connection.py` — 节点连接管理（端口连接关系建模）
-  - `signal_manager.py` — 信号管理器（节点状态变更等信号协调）
-  - `node_def.py` — `@NodeDef` 装饰器实现、`DAWorkflowNode` 基类、`NodeDisplay`、`LinkPointStyle`
-  - `types.py` — `Input`、`Output`、`Parameter` 类定义
-  - `node_registry.py` — `DANodeRegistry` 类定义
-  - `node_factory.py` — `DANodeFactory` 节点工厂（C++ 调用入口）
-  - `serializer.py` — `DAWorkflowSerializer` 工作流序列化/反序列化
-  - `syntax.py` — `NodeProxy`、`NodeOutputProxy`、`NodeInputProxy`（链式连接语法糖）
+  - `__init__.py`：模块导出 `DAWorkflowNode`、`NodeDisplay`、`LinkPointStyle` 等
+  - `workflow.py`：`DAWorkflow` 工作流编排与节点拓扑管理
+  - `executor.py`：`DAWorkflowExecutor` 执行引擎（节点调度、数据流转）
+  - `connection.py`：节点连接管理（端口连接关系建模）
+  - `signal_manager.py`：信号管理器（节点状态变更等信号协调）
+  - `node_def.py`：`@NodeDef` 装饰器实现、`DAWorkflowNode` 基类、`NodeDisplay`、`LinkPointStyle`
+  - `types.py`：`Input`、`Output`、`Parameter` 类定义
+  - `node_registry.py`：`DANodeRegistry` 类定义
+  - `node_factory.py`：`DANodeFactory` 节点工厂（C++ 调用入口）
+  - `serializer.py`：`DAWorkflowSerializer` 工作流序列化/反序列化
+  - `syntax.py`：`NodeProxy`、`NodeOutputProxy`、`NodeInputProxy`（链式连接语法糖）
 - 节点示例：`plugins/` 目录下的 Python 插件
-  - `plugins/DataAnalysis/PyScripts/DADataAnalysisNodes/` — 数据分析节点
-  - `plugins/DASystemNodes/PyScripts/DASystemNodes/` — 系统内置节点（流程控制/数据展示）
+  - `plugins/DataAnalysis/PyScripts/DADataAnalysisNodes/`：数据分析节点
+  - `plugins/DASystemNodes/PyScripts/DASystemNodes/`：系统内置节点（流程控制/数据展示）
 - 相关文档
   - [DAPyWorkFlow 模块概述](./workflow-overview.md)
   - [工作流生命周期](./workflow-lifecycle.md)

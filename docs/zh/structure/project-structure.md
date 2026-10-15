@@ -1,19 +1,6 @@
 # 项目结构详解
 
-本文档详细说明 DAWorkBench 的目录结构、模块职责和关键文件，帮助开发者快速理解项目组织方式和各模块的功能。
-
-## 主要功能特性
-
-**特性**
-
-- ✅ **目录结构总览**：src、plugins、docs、cmake 等顶层目录说明
-- ✅ **核心模块架构**：应用层、插件层、界面层、业务层、基础层的分层架构
-- ✅ **模块详细说明**：各模块职责和依赖关系的完整表格
-- ✅ **关键文件说明**：根目录、src 目录、cmake 目录的关键文件列表
-- ✅ **模块设计原则**：分层架构、插件化设计、命名约定、Qt 信号槽机制
-- ✅ **插件目录结构**：标准插件结构和模板生成方法
-- ✅ **第三方库目录**：src/3rdparty 结构和构建顺序
-- ✅ **输出目录结构**：构建输出的 bin 目录组织方式
+本文档说明 DAWorkBench 的目录结构、模块职责和关键文件。
 
 ---
 
@@ -69,9 +56,7 @@ data-workbench/
 ```
 
 !!! note "DACommonWidgets 已并入 DAGui"
-    历史 `DACommonWidgets/` 通用控件模块已整体迁移进 `DAGui/`（见 `src/DAGui/CMakeLists.txt` 中“迁移自 DACommonWidgets”说明），`src/` 下不再保留独立的 `DACommonWidgets/` 目录。
-
-上述目录结构遵循标准的大型 C++ 项目组织方式，便于维护和扩展。
+    历史 `DACommonWidgets/` 通用控件模块已整体迁移进 `DAGui/`（见 `src/DAGui/CMakeLists.txt` 中「迁移自 DACommonWidgets」说明），`src/` 下不再保留独立的 `DACommonWidgets/` 目录。
 
 ---
 
@@ -79,9 +64,7 @@ data-workbench/
 
 ### 核心模块架构
 
-下面的 mermaid 图表展示了项目的分层架构和模块依赖关系：
-
-图表展示了应用层、插件层、界面层、业务层、基础层、Python 层六个层次及其依赖关系：
+下面的 mermaid 图表展示了应用层、插件层、界面层、业务层、基础层、Python 层六个层次及其依赖关系：
 
 ```mermaid
 graph TB
@@ -144,8 +127,6 @@ graph TB
     style FIG fill:#f3e5f5   # 紫色：业务层
 ```
 
-项目采用清晰的分层架构，上层依赖下层，下层不依赖上层，确保模块职责明确。
-
 ### 模块详细说明
 
 | 模块名 | 职责说明 | 依赖关系 |
@@ -158,12 +139,12 @@ graph TB
 | **DAPyCommonWidgets** | Python 相关 Qt 控件 | DAPyBindQt |
 | **DAData** | 数据对象管理、DataFrame 操作 | DAUtils, DAPyBindQt |
 | **DAGraphicsView** | 可缩放图形视图、redo/undo | DAUtils |
-| **DAPyWorkFlow** | Python 工作流核心 — 节点代理、工厂、场景、执行引擎、图形项、序列化 | DAUtils, DAGraphicsView, DAPyBindQt |
+| **DAPyWorkFlow** | Python 工作流核心：节点代理、工厂、场景、执行引擎、图形项、序列化 | DAUtils, DAGraphicsView, DAPyBindQt |
 | **DAFigure** | 科学图表绘制（基于 qwt） | DAUtils, qwt |
 | **DAGui** | 界面整合、Ribbon、Dock 管理（含 `ChartSetting/` 图表属性面板和 `NodeSetting/` 工作流节点通用设置面板） | 所有业务模块 |
 | **DAInterface** | 插件接口定义 | DAGui |
 | **DAPluginSupport** | 插件加载、管理 | DAInterface |
-| **DAAgent** | L4 接口层 Agent 框架 — 多供应商 LLM 调用、提示词库、工具注册与持久化会话（无 GUI 依赖，暴露 `DAAgentInterface`） | DAInterface, DAData, DAPyBindQt, DAPyScripts |
+| **DAAgent** | L4 接口层 Agent 框架：多供应商 LLM 调用、提示词库、工具注册与持久化会话（无 GUI 依赖，暴露 `DAAgentInterface`） | DAInterface, DAData, DAPyBindQt, DAPyScripts |
 | **DAAxOfficeWrapper** | Office 自动化（仅 Windows） | DAUtils |
 | **APP** | 主程序入口 | DAPluginSupport |
 
@@ -207,7 +188,7 @@ graph TB
 
 ### 1. 分层架构
 
-项目采用清晰的分层架构：
+分层结构如下：
 
 ```
 应用层 → 插件层 → 界面层 → 业务层 → 基础层

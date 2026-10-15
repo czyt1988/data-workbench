@@ -2,13 +2,6 @@
 
 本页面提供 DAWorkBench API 文档的总览导航，展示模块关系图和各模块核心 API 入口。
 
-## 主要功能特性
-
-- ✅ **模块关系图**：一张图看清 15+ 模块的依赖关系和层次
-- ✅ **核心 API 导航**：按功能域组织的 API 入口表
-- ✅ **Doxygen 集成**：链接到完整的自动生成 API 文档
-- ✅ **接口体系**：从 DACoreInterface 出发的完整接口树
-
 ---
 
 ## 模块关系图
@@ -66,7 +59,7 @@ graph TD
     style L1 fill:#e8f5e9
 ```
 
-上图展示了 DAWorkBench 的五层架构和模块依赖关系。箭头方向表示"依赖于"，依赖始终从上层指向下层。
+上图展示了 DAWorkBench 的五层架构和模块依赖关系。箭头方向表示「依赖于」，依赖始终从上层指向下层。
 
 ---
 
@@ -244,7 +237,7 @@ daCritical << "Failed to load plugin";         // 严重级别，进 UI 窗口
 | 模块 | 层 | 说明 | 核心类 |
 |------|-----|------|--------|
 | DAShared | L1 | 纯头文件模板库 | 数据结构、宏定义 |
-| DAUtils | L1 | 通用工具类 | XML序列化、CSV、目录管理 |
+| DAUtils | L1 | 通用工具类 | XML 序列化、CSV、目录管理 |
 | DAMessageHandler | L1 | 日志基础设施 | DALogger、spdlog |
 | DAPyBindQt | L1 | Python↔Qt 绑定 | 类型转换器、GIL 守卫 |
 | DAPyScripts | L2 | Python 脚本包装 | I/O、DataFrame 操作 |
@@ -263,7 +256,7 @@ daCritical << "Failed to load plugin";         // 严重级别，进 UI 窗口
 
 ## 相关文档
 
-- [API 文档索引](../api-reference.md) — 核心 API 速查（含代码示例）
-- [架构设计](../../dev-guide/architecture/architecture.md) — 五层架构和设计决策
-- [模块业务逻辑](../../dev-guide/architecture/module-breakdown.md) — 各模块内部工作原理
-- [插件开发指南](../../plugin/plugin-development.md) — 插件和节点开发
+- [API 文档索引](../api-reference.md)：核心 API 速查（含代码示例）
+- [架构设计](../../dev-guide/architecture/architecture.md)：五层架构和设计决策
+- [模块业务逻辑](../../dev-guide/architecture/module-breakdown.md)：各模块内部工作原理
+- [插件开发指南](../../plugin/plugin-development.md)：插件和节点开发

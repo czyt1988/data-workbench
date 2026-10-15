@@ -1,21 +1,21 @@
 # 表格数据源抽象层（DATableDataSource）
 
-表格数据源抽象层是 DAData 模块中位于 `DAAbstractData` 与消费者（表格模型、工程持久化、undo 体系）之间的统一取数接口，它把"数据 = 内存中的 pandas 对象"这一隐含假设解开，使**不全量驻留内存的惰性数据**（如数据库超大表）能够注册进 `DADataManager`、在数据页中分页显示、并以"引用"形式随工程持久化。
+表格数据源抽象层是 DAData 模块中位于 `DAAbstractData` 与消费者（表格模型、工程持久化、undo 体系）之间的统一取数接口，它解除了「数据 = 内存中的 pandas 对象」这一隐含假设，使**不全量驻留内存的惰性数据**（如数据库超大表）能够注册进 `DADataManager`、在数据页中分页显示，并以「引用」形式随工程持久化。
 
 ## 主要功能特性
 
-- ✅ **schema 与数据分离**：行列数、列名、列类型是低开销元信息，取数据本体走独立的块级接口
-- ✅ **块级批量取数（fetchBlock）**：一次调用取一段连续行区间；pandas 实现为单次 python 调用取整块（不再逐 cell 进解释器），数据库实现为 `LIMIT/OFFSET` 分页查询
-- ✅ **能力位虚函数**：`isLazyLoaded` / `isTableEditable` / `isReferenceData` / `supportsUndoSnapshot` / `typeIdentifier`，消费端按能力分派而非按 DataType 枚举 switch，**新增数据类型不需要修改 DAData/DAGui 核心代码**
-- ✅ **视图侧统一块缓存**：`DADataTableModel` 对任何表格数据源做滑动窗+块缓存（默认 512 行/块），滚动条驱动的动态取数由既有 `DACacheWindowTableView` 比例映射机制承接
-- ✅ **引用式工程持久化**：`DADataFactory` 类型注册表 + `write/read(QDataStream)`，工程文件只存连接/查询/schema 等引用 payload，不存数据本体
-- ✅ **undo 分级**：不支持整表物化的数据源可声明 `supportsUndoSnapshot()==false`，快照式 undo 命令自动跳过
+- **schema 与数据分离**：行列数、列名、列类型是低开销元信息，取数据本体走独立的块级接口
+- **块级批量取数（fetchBlock）**：一次调用取一段连续行区间；pandas 实现为单次 python 调用取整块（不再逐 cell 进解释器），数据库实现为 `LIMIT/OFFSET` 分页查询
+- **能力位虚函数**：`isLazyLoaded` / `isTableEditable` / `isReferenceData` / `supportsUndoSnapshot` / `typeIdentifier`，消费端按能力分派，不做 DataType 枚举 switch，**新增数据类型不需要修改 DAData/DAGui 核心代码**
+- **视图侧统一块缓存**：`DADataTableModel` 对任何表格数据源做滑动窗+块缓存（默认 512 行/块），滚动条驱动的动态取数由既有 `DACacheWindowTableView` 比例映射机制承接
+- **引用式工程持久化**：`DADataFactory` 类型注册表 + `write/read(QDataStream)`，工程文件只存连接/查询/schema 等引用 payload，不存数据本体
+- **undo 分级**：不支持整表物化的数据源可声明 `supportsUndoSnapshot()==false`，快照式 undo 命令自动跳过
 
 ## 基本概念
 
 ### 类关系
 
-`DATableDataSource` 是刻意**不继承** `DAAbstractData` 的 mixin 接口：数据类通过多继承同时获得"受管理数据"与"表格数据源"两种身份，避免与 `DADataPyObject` 等中间基类形成菱形继承。消费者统一经 `DAAbstractData::tableSource()` 取得接口指针，返回非空即代表表格型数据（`DAData::isTable()`）。
+`DATableDataSource` 是刻意**不继承** `DAAbstractData` 的 mixin 接口：数据类通过多继承同时获得「受管理数据」与「表格数据源」两种身份，避免与 `DADataPyObject` 等中间基类形成菱形继承。消费者统一经 `DAAbstractData::tableSource()` 取得接口指针，返回非空即代表表格型数据（`DAData::isTable()`）。
 
 ```mermaid
 classDiagram
@@ -127,7 +127,7 @@ dataManagerInterface->addData_(d);   // 走既有undo/信号体系
 
 ### 引用式持久化与工厂注册
 
-实现 `write/read(QDataStream)` 序列化"重建所需的最小引用"（连接配置、SQL、schema 缓存等），并在插件 `initialize()` 中注册工厂，工程加载时按 `typeIdentifier` 重建：
+实现 `write/read(QDataStream)` 序列化「重建所需的最小引用」（连接配置、SQL、schema 缓存等），并在插件 `initialize()` 中注册工厂，工程加载时按 `typeIdentifier` 重建：
 
 ```cpp
 // 插件initialize()
@@ -216,7 +216,7 @@ if (!d.supportsUndoSnapshot()) { /* 跳过整表快照命令 */ }
     `DAPyDataFrame::rowsToVariantList` 按列 `to_numpy()` 后 zip 迭代，保持 numpy 标量形态，与逐 cell `iat()` 的 QVariant caster 转换结果**类型严格一致**（pandas 3.0 的 `itertuples`/Series 迭代会退化为 python 原生类型，bool 会变 int，不可使用）。等价性由 `src/tst/DATableDataTest` 逐 cell 断言。
 
 !!! tip "只读惰性表的第一阶段边界"
-    当前惰性数据源约定只读（`isTableEditable()==false`、`supportsUndoSnapshot()==false`）：数据页自动去掉编辑标志，结构性操作（插删行列等）被 dataframe 门卫拦截，`beginDataOperateCommand` 对其返回 `nullptr`（调用方需判空）。后续如需编辑，应实现 cell 级 `setValue` + 数据库端事务，而非快照式 undo。
+    当前惰性数据源约定只读（`isTableEditable()==false`、`supportsUndoSnapshot()==false`）：数据页自动去掉编辑标志，结构性操作（插删行列等）被 dataframe 门卫拦截，`beginDataOperateCommand` 对其返回 `nullptr`（调用方需判空）。后续如需编辑，应实现 cell 级 `setValue` + 数据库端事务，快照式 undo 不适用。
 
 ## 参考资料
 

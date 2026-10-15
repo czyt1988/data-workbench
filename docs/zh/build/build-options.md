@@ -2,13 +2,6 @@
 
 本页面列出 DAWorkBench 项目的所有 CMake 构建选项，说明其作用、默认值和影响范围。
 
-## 主要功能特性
-
-- ✅ **完整选项列表**：6 个 CMake 选项的详细说明
-- ✅ **影响范围**：每个选项影响的模块和构建行为
-- ✅ **使用示例**：常见构建场景的选项组合
-- ✅ **选项交互**：选项间的依赖和冲突关系
-
 ---
 
 ## 选项总览
@@ -27,7 +20,7 @@
 ## 选项详解
 
 !!! info "Python 为强制依赖"
-    Python 不再是可选构建选项，而是强制依赖，始终参与编译，无法禁用。相关模块包括 DAPyBindQt、DAPyScripts、DAPyCommonWidgets、DAPyWorkFlow、DAData。如需配置 Python 环境，参见 [Python 环境配置](./python-environment.md)。
+    Python 是强制依赖，始终参与编译，无法禁用。相关模块包括 DAPyBindQt、DAPyScripts、DAPyCommonWidgets、DAPyWorkFlow、DAData。如需配置 Python 环境，参见 [Python 环境配置](./python-environment.md)。
 
 ### DA_ENABLE_AUTO_INSTALL_PYTHON_ENV
 
@@ -195,9 +188,9 @@ cmake --build build --config Release --parallel
 
 ## 相关文档
 
-- [构建说明](./build-instructions.md) — 完整构建流程
-- [第三方库构建](./third-party-build.md) — 第三方库编译
-- [主程序构建](./main-program-build.md) — 主程序构建详解
-- [Python 环境配置](./python-environment.md) — Python 环境说明
-- [构建常见错误](./common-build-errors.md) — 构建问题排查
-- [工程组织](./large-cmake-project-guide.md) — CMake 工程组织指南
+- [构建说明](./build-instructions.md)：完整构建流程
+- [第三方库构建](./third-party-build.md)：第三方库编译
+- [主程序构建](./main-program-build.md)：主程序构建详解
+- [Python 环境配置](./python-environment.md)：Python 环境说明
+- [构建常见错误](./common-build-errors.md)：构建问题排查
+- [工程组织](./large-cmake-project-guide.md)：CMake 工程组织指南

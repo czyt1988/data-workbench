@@ -1,18 +1,6 @@
 # 常见问题解答 (FAQ)
 
-本页面汇总 DAWorkBench 开发和使用中的常见问题及解决方案，帮助用户快速定位和解决问题。
-
-## 主要功能特性
-
-**特性**
-
-- ✅ **构建相关问题**：Qt 路径、第三方库、Python 环境等常见构建问题
-- ✅ **插件开发问题**：插件加载、节点显示、工作流执行等开发问题
-- ✅ **运行时问题**：节点显示、插件调试等运行相关问题
-- ✅ **数据处理问题**：大型文件、DataFrame 传递等数据相关问题
-- ✅ **界面扩展问题**：Ribbon 按钮、Dock 窗口等界面扩展问题
-- ✅ **配置管理问题**：插件配置、配置文件位置等配置问题
-- ✅ **跨平台问题**：Windows/Linux 差异、Qt5/Qt6 兼容性
+本页面汇总 DAWorkBench 开发和使用中的常见问题及解决方案。
 
 ## 构建相关问题
 
@@ -103,10 +91,10 @@ QList<DA::DANodeMetaData> MyNodeFactory::getNodeMetaDataList() const  // 无法�
 ```cpp
 bool MyWorker::exec()
 {
-    // ❌ 错误：直接操作 UI
+    // 错误：直接操作 UI
     QMessageBox::show(...);  // 会崩溃！
     
-    // ✅ 正确：使用信号通知主线程
+    // 正确：使用信号通知主线程
     emit notifyUI("Processing complete");
     
     return true;

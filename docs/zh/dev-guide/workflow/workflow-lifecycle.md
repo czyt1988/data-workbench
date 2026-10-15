@@ -1,6 +1,6 @@
 # 工作流生命周期
 
-本文档详细描述 DAPyWorkFlow 工作流的完整生命周期，从节点发现、创建、连接到执行的各个阶段，帮助开发者理解工作流引擎的内部机制。
+本文档描述 DAPyWorkFlow 工作流的完整生命周期：节点发现、创建、连接、执行各阶段。
 
 ## 导航
 
@@ -15,7 +15,7 @@
 
 ## 概述
 
-DAPyWorkFlow 的生命周期设计与旧的 DAWorkFlow 模块有本质区别。旧模块采用纯 C++ 实现，节点通过继承 `DAAbstractNode` 定义，使用回调方法（如 `nodeAddedToWorkflow`、`nodeStartRemove` 等）处理生命周期事件。新模块采用 Python-first 架构，节点在 Python 中定义，C++ 仅负责可视化渲染和执行调度。
+DAPyWorkFlow 的生命周期管理不同于旧的 DAWorkFlow 模块。旧模块采用纯 C++ 实现，节点通过继承 `DAAbstractNode` 定义，用回调方法（如 `nodeAddedToWorkflow`、`nodeStartRemove` 等）处理生命周期事件。新模块节点在 Python 中定义，C++ 只负责可视化渲染和执行调度。
 
 新旧模块的核心差异：
 
@@ -272,7 +272,7 @@ DAPyLinkGraphicsItem* link = scene->addPyNodeLink(
 
 ## 工作流执行生命周期
 
-执行生命周期是工作流的核心阶段，涉及拓扑排序、节点分类、信号传播等复杂机制。
+执行阶段涉及拓扑排序、节点分类和信号传播。
 
 ### 执行器状态枚举
 
@@ -299,7 +299,7 @@ enum DAPyExecutorState {
 
 ### 节点分类算法
 
-执行前，`DAWorkflowExecutor` 对节点进行分类：
+执行前，`DAWorkflowExecutor` 对节点分类：
 
 ```python
 def _classify_nodes(self) -> tuple:
@@ -326,7 +326,7 @@ def _classify_nodes(self) -> tuple:
 
 ### 拓扑排序执行
 
-DAWorkflowExecutor 使用 Kahn 算法进行拓扑排序执行：
+DAWorkflowExecutor 用 Kahn 算法做拓扑排序执行：
 
 ```python
 def _run_workflow(self) -> bool:
@@ -450,7 +450,7 @@ Qt 信号通知（由 `DAPyWorkFlowManager` 发射）：
 | `nodeRemoved` | `QString nodeId` | 节点移除 |
 | `connectionAdded` | `QString connId, QString srcNodeId, ...` | 连接添加 |
 | `connectionRemoved` | `QString connId` | 连接移除 |
-| `executionStarted` | — | 工作流开始执行 |
+| `executionStarted` | 无 | 工作流开始执行 |
 | `executionFinished` | `bool success` | 工作流执行完成 |
 | `nodeExecuted` | `QString nodeId, bool success` | 节点执行完成 |
 | `executorStateChanged` | `QString oldState, QString newState` | 执行器状态变更 |
@@ -530,7 +530,7 @@ void DAPyWorkFlowScene::onPyNodeStateNotification(
 
 ## GIL 与线程安全
 
-DAPyWorkFlow 涉及 Python GIL（全局解释器锁）的精细管理。
+DAPyWorkFlow 涉及 Python GIL（全局解释器锁）的管理。
 
 ### DAPyGILGuard RAII 模式
 
@@ -592,8 +592,6 @@ void DAPythonSignalHandler::callInMainThread(
 }
 ```
 
-此机制确保 Python 后台线程可以安全地更新 UI。
-
 ## 注意事项
 
 ### 工作流设计约束
@@ -604,7 +602,7 @@ void DAPythonSignalHandler::callInMainThread(
 
 ### 执行控制
 
-1. **终止请求**：`terminate()` 不会中断正在执行的节点，而是等待其完成后停止后续节点
+1. **终止请求**：`terminate()` 不中断正在执行的节点，等当前节点执行完再停止后续节点
 2. **暂停/恢复**：`pause()` 在当前节点完成后暂停，`resume()` 恢复执行
 3. **异步执行**：`execute_async()` 在后台线程执行，通过 `wait_completion()` 等待完成
 
@@ -648,7 +646,7 @@ void DAPythonSignalHandler::callInMainThread(
 
 ### 相关文档
 
-- [DAPyWorkFlow 模块概述](./workflow-overview.md) — 架构概览和快速上手
-- [Python 节点开发指南](./workflow-python-node-dev.md) — 节点定义和开发细节
-- [C++ 集成指南](./workflow-cpp-integration.md) — C++ 层集成和 pybind11 桥接
-- [场景操作指南](./workflow-scene-operation.md) — 可视化场景操作方法
+- [DAPyWorkFlow 模块概述](./workflow-overview.md)：架构概览和快速上手
+- [Python 节点开发指南](./workflow-python-node-dev.md)：节点定义和开发细节
+- [C++ 集成指南](./workflow-cpp-integration.md)：C++ 层集成和 pybind11 桥接
+- [场景操作指南](./workflow-scene-operation.md)：可视化场景操作方法

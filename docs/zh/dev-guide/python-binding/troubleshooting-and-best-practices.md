@@ -14,7 +14,7 @@
 
 ## 问题诊断流程
 
-下图展示了 Python 调用失败时的诊断流程，帮助快速定位问题类型和解决方案：
+下图是 Python 调用失败时的诊断流程，用来快速定位问题类型和解决方案：
 
 ```mermaid
 flowchart TD
@@ -87,7 +87,7 @@ F1 --> F2[检查模块是否正确编译]
     ```
 
     !!! caveat "inc_ref/dec_ref 并非项目内 callInMainThread 的真实写法"
-        上面的 `inc_ref()/dec_ref()` 模式是通用的最佳实践示例。但 DAWorkBench 实际的 `callInMainThread` 绑定（`src/DAInterface/DAInterfacePythonBinding.cpp:57-79`）把 `//pyFunc.inc_ref();` 与 `//pyFunc.dec_ref();` 都注释掉了，改为依赖 lambda 捕获持有的引用来保证 `pyFunc` 生命周期，并额外 `catch` 了 `std::exception`。在参照本条编写新绑定时，可根据场景二选一，但不要误以为项目源码当前启用了显式 `inc_ref/dec_ref`。
+        上面的 `inc_ref()/dec_ref()` 模式是通用的最佳实践示例。但 DAWorkBench 实际的 `callInMainThread` 绑定（`src/DAInterface/DAInterfacePythonBinding.cpp:57-79`）把 `//pyFunc.inc_ref();` 与 `//pyFunc.dec_ref();` 都注释掉了，改为依赖 lambda 捕获持有的引用来保证 `pyFunc` 生命周期，并额外 `catch` 了 `std::exception`。参照本条编写新绑定时，可按场景二选一；项目源码当前并没有启用显式 `inc_ref/dec_ref`。
 
 !!! failure "错误3：单例对象被 Python 删除"
 
@@ -130,7 +130,7 @@ F1 --> F2[检查模块是否正确编译]
     }
     ```
 
-    同一思路也出现在脚本包装层：`DAPyScriptsDataFrame::queryDatas`（`src/DAPyScripts/DAPyScriptsDataFrame.cpp:663-676`）不直接调 `df.query`，而是调 `da_query_datas` 这一 Python 函数，由后者在 Python 栈内完成对 `df.query` 的调用。
+    同一思路也出现在脚本包装层：`DAPyScriptsDataFrame::queryDatas`（`src/DAPyScripts/DAPyScriptsDataFrame.cpp:663-676`）调用的是 `da_query_datas` 这一 Python 函数，由后者在 Python 栈内完成对 `df.query` 的调用。
 
     !!! tip "通用规律"
         凡是 Python 库内部依赖 `sys._getframe` / `inspect` 回溯调用栈的接口（pandas `query/eval` 的 `@` 变量、某些 `exec`/`eval` 场景等），从 C++ 绑定直接调用都会遇到此问题。解法统一为：用 `pybind11::eval` 构造一个 Python 层的可调用对象（lambda 或函数）包一层，让真实调用发生在 Python 栈帧内。
@@ -207,7 +207,7 @@ F1 --> F2[检查模块是否正确编译]
     - Python 创建的对象使用 `take_ownership`
     - 内部引用使用 `reference_internal`
 
-2. **线程安全第一**
+2. **线程安全**
     - 所有跨语言调用都要考虑 [GIL 管理](./cpp-calling-python.md#gil安全全局解释器锁管理)
     - UI 操作必须在主线程执行
     - 使用 `DAPythonSignalHandler` 进行跨线程通信

@@ -1,24 +1,22 @@
 # DAPyWorkFlow 模块概述
 
-DAPyWorkFlow 是 Data Workbench 的新一代工作流引擎模块，采用 Python-first 设计理念，通过 Python 定义节点逻辑，C++ 负责可视化渲染和执行调度，实现高效的工作流编排和数据处理。
+DAPyWorkFlow 是 Data Workbench 的新一代工作流引擎模块。节点逻辑用 Python 定义，可视化渲染和执行调度由 C++ 负责，两层通过 pybind11 桥接。
 
 ## 主要功能特性
 
-**特性**
-
-- ✅ **Python-first 节点定义**：使用 `@NodeDef` 装饰器在 Python 中声明节点类型，无需编写 C++ 代码
-- ✅ **DAG 工作流模型**：基于有向无环图（DAG）描述工作流，自动拓扑排序和依赖解析
-- ✅ **双层架构**：Python 层负责节点逻辑，C++ 层负责可视化，通过 pybind11 无缝桥接
-- ✅ **信号驱动执行**：基于 `DASignalManager` 的事件驱动数据传播机制
-- ✅ **节点自动发现**：支持目录扫描和 entry_points 双模式自动发现插件节点
-- ✅ **可视化编辑**：完整的拖拽式节点编辑，支持连接、断开、undo/redo 操作
-- ✅ **插件扩展**：通过 `data_workbench.plugin` entry point 注册第三方节点
+- Python-first 节点定义：用 `@NodeDef` 装饰器在 Python 中声明节点类型，不需要写 C++ 代码
+- DAG 工作流模型：基于有向无环图（DAG）描述工作流，自动拓扑排序和依赖解析
+- 双层架构：Python 层负责节点逻辑，C++ 层负责可视化，通过 pybind11 无缝桥接
+- 信号驱动执行：基于 `DASignalManager` 的事件驱动数据传播机制
+- 节点自动发现：支持目录扫描和 entry_points 双模式自动发现插件节点
+- 可视化编辑：完整的拖拽式节点编辑，支持连接、断开、undo/redo 操作
+- 插件扩展：通过 `data_workbench.plugin` entry point 注册第三方节点
 
 ## 核心概念
 
 ### 双层架构
 
-DAPyWorkFlow 采用 Python/C++ 双层架构设计：
+DAPyWorkFlow 的架构分 Python 和 C++ 两层，中间是桥接层：
 
 | 层级 | 职责 | 主要组件 |
 |------|------|----------|
@@ -225,7 +223,7 @@ DAPyWorkFlow 是原 `DAWorkFlow` 模块的完全重构版本，主要区别如�
 
 ### 定义一个简单的节点
 
-以下示例展示如何使用 `@NodeDef` 装饰器定义一个数据过滤节点：
+下面的示例用 `@NodeDef` 装饰器定义一个数据过滤节点：
 
 ```python
 from DAWorkFlowPy import NodeDef, Input, Output, Parameter
@@ -269,7 +267,7 @@ class DataFilter:
 ```
 
 !!! tip "嵌套类模式"
-    使用 `class Inputs` 和 `class Outputs` 嵌套类声明端口是推荐的标准做法。这种模式下，端口通过类属性声明，代码结构清晰，便于 IDE 自动补全。
+    用 `class Inputs` 和 `class Outputs` 嵌套类声明端口是推荐的标准做法：端口通过类属性声明，便于 IDE 自动补全。
 
 ### 注册和使用节点
 

@@ -6,14 +6,14 @@
 
 **特性**
 
-- ✅ **ZIP 压缩包格式**：项目文件使用 `.dapro` 扩展名，采用 ZIP 压缩便于传输
-- ✅ **XML 结构化存储**：配置信息使用 XML 格式，便于解析和扩展
-- ✅ **分层保存机制**：各模块按顺序保存，确保依赖关系正确
-- ✅ **版本兼容支持**：通过版本号标识支持新旧版本兼容
+- **ZIP 压缩包格式**：项目文件使用 `.dapro` 扩展名，采用 ZIP 压缩便于传输
+- **XML 结构化存储**：配置信息使用 XML 格式，便于解析和扩展
+- **分层保存机制**：各模块按顺序保存，确保依赖关系正确
+- **版本兼容支持**：通过版本号标识支持新旧版本兼容
 
 ## 概述
 
-DAWorkBench 的工程文件采用 **ZIP 压缩包** 格式，文件扩展名为 `.dapro`。打开工程文件时，程序会在临时目录解压该压缩包；保存文件时，将临时文件压缩并移动到指定位置。
+DAWorkBench 的工程文件采用 **ZIP 压缩包**格式，文件扩展名为 `.dapro`。打开工程文件时，程序会在临时目录解压该压缩包；保存文件时，将临时文件压缩并移动到指定位置。
 
 ZIP 压缩包的管理基于开源库 `QuaZip` 实现，具体实现类为 `DAZipArchive`。
 
@@ -42,11 +42,11 @@ project.dapro (ZIP Archive)
     `agent_sessions/` 目录存放 Agent 聊天会话的 JSON Lines 持久化文件，每个文件对应一个会话（`<id>.jsonl`）。工程保存时由主线程收集活跃会话字节、子线程写入该目录；加载时由 `DAZipArchiveTask_LoadAgentSessions`（`src/APP/DAAppProject.cpp`）在 worker 线程解压 `agent_sessions/*.jsonl` 后回调导入。目录不存在或为空视为合法（空工程）。详见 [Agent 开发指南](../agent/index.md)。
 
 !!! note "脚本工作区（workspace/）"
-    `workspace/` 目录（工程版本 1.4.0 引入）存放脚本执行的脚本文件与产物，由 `DAZipArchiveTask_Workspace`（`src/APP/DAAppProject.cpp` 内 file-local 类，参照 `LoadDataManager`/`LoadAgentSessions` 先例）在保存/加载时打包/解压。工程数据**不进入** `workspace/`——脚本通过内存对象访问数据（见下文"脚本运行模型"），因此不存在数据同步问题。目录缺失视为空工作区（旧版本工程兼容）。该任务失败为非致命：单个损坏文件不会阻止工程打开/保存（内部记 `qWarning` 后降级）。
+    `workspace/` 目录（工程版本 1.4.0 引入）存放脚本执行的脚本文件与产物，由 `DAZipArchiveTask_Workspace`（`src/APP/DAAppProject.cpp` 内 file-local 类，参照 `LoadDataManager`/`LoadAgentSessions` 先例）在保存/加载时打包/解压。工程数据**不进入** `workspace/`，脚本通过内存对象访问数据（见下文「脚本运行模型」），因此不存在数据同步问题。目录缺失视为空工作区（旧版本工程兼容）。该任务失败为非致命：单个损坏文件不会阻止工程打开/保存（内部记 `qWarning` 后降级）。
 
 ### 脚本工作区本地缓存与冲突检测
 
-`workspace/` 加载时解压到**本地缓存目录**（而非临时目录），保存时把本地目录打包回 zip：
+`workspace/` 加载时解压到**本地缓存目录**，保存时把本地目录打包回 zip：
 
 ```txt
 <workspaceRoot>/<工程基名>_<路径sha1前8位>/
@@ -56,15 +56,15 @@ project.dapro (ZIP Archive)
 
 - `workspaceRoot` 取设置项 `workspace-dir`（空=系统临时目录）
 - 缓存目录以**工程文件路径哈希**为键：工程改名/移动/另存为会改变目录（旧目录成为孤儿缓存不回收；改名/移动前未保存的本地改动留在旧目录；另存为后到重新打开前新目录不存在）
-- **加载前预检**（`DAAppProject::precheckWorkspaceOnLoad`，主线程同步、在任务队列启动前执行）：本地缓存存在且与工程内 `workspace/` 的**内容指纹**（相对路径 + MD5；解压不回写时间戳，故不能用 mtime 判定）不一致时，弹窗让用户选择"保留本地 / 用工程内版本覆盖 / 取消加载"；指纹一致时静默覆盖解压；策略可由设置项 `workspace-overwrite-policy`（`ask`/`always-local`/`always-zip`，默认 `ask`）控制。选择"保留本地"时工程延迟置脏（`onLoadFinish` 的 `setModified(false)` 之后），下次保存把本地内容打包回 zip
+- **加载前预检**（`DAAppProject::precheckWorkspaceOnLoad`，主线程同步、在任务队列启动前执行）：本地缓存存在且与工程内 `workspace/` 的**内容指纹**（相对路径 + MD5；解压不回写时间戳，故不能用 mtime 判定）不一致时，弹窗让用户选择「保留本地 / 用工程内版本覆盖 / 取消加载」；指纹一致时静默覆盖解压；策略可由设置项 `workspace-overwrite-policy`（`ask`/`always-local`/`always-zip`，默认 `ask`）控制。选择「保留本地」时工程延迟置脏（`onLoadFinish` 的 `setModified(false)` 之后），下次保存把本地内容打包回 zip
 
 ### 脚本运行模型（共享命名空间）
 
-- **共享持久命名空间**：全应用唯一（类 Jupyter kernel），由 `DAPyScriptRunner`（`src/DAPyScripts/`）管理，预导入基线模块 `{da_app, da_interface, da_data}`；脚本执行期间 UI 冻结（主线程执行），由可配置超时兜底
+- **共享持久命名空间**：全应用唯一（类 Jupyter kernel），由 `DAPyScriptRunner`（`src/DAPyScripts/`）管理，预导入基线模块 `{da_app, da_interface, da_data}`；脚本执行期间 UI 冻结（主线程执行），由可配置的超时保障
 - **执行期间 CWD = 工作区根目录**，工作区根追加到 `sys.path` 末尾（跨脚本 `import` 可用且不易 shadow 标准库）
-- **数据访问走内存对象**：`da_app.getCore().getDataManagerInterface().getAllDataframes()` 返回 `{name: dataframe}` 字典
+- **数据访问通过内存对象**：`da_app.getCore().getDataManagerInterface().getAllDataframes()` 返回 `{name: dataframe}` 字典
 - **工程切换清理**：`clear()` 重置用户符号回基线并清除工作区根（含从 `sys.modules` 移除来源于工作区的自定义模块）
-- 使用注意事项（UI 冻结/超时/编码等）详见使用指南"脚本工作区"章节
+- 使用注意事项（UI 冻结/超时/编码等）详见使用指南「脚本工作区」章节
 
 ### XML 顶层节点 `<root>`
 

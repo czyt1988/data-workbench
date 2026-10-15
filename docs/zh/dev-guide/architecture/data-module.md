@@ -1,15 +1,15 @@
 # 数据模块 DAData
 
-数据模块 `DAData` 负责管理 DAWorkBench 中所有数据对象的创建、存储、查询和操作，是连接 Python 数据处理能力和 C++ GUI 框架的核心桥梁。
+数据模块 `DAData` 负责 DAWorkBench 中数据对象的创建、存储、查询和操作，连接 Python 数据处理能力与 C++ GUI 框架。
 
 ## 主要功能特性
 
 **特性**
 
-- ✅ **隐式共享设计**：`DAData` 使用隐式共享，可安全地进行值传递
-- ✅ **Python 对象包装**：完整封装 pandas DataFrame 和 Series
-- ✅ **统一数据管理**：`DADataManager` 提供数据的增删改查和信号通知
-- ✅ **多格式支持**：通过 pandas 支持 CSV、Excel、Pickle 等格式读写
+- **隐式共享设计**：`DAData` 使用隐式共享，可安全地按值传递
+- **Python 对象包装**：完整封装 pandas DataFrame 和 Series
+- **统一数据管理**：`DADataManager` 提供数据的增删改查和信号通知
+- **多格式支持**：通过 pandas 支持 CSV、Excel、Pickle 等格式读写
 
 ## 模块依赖
 
@@ -46,7 +46,7 @@ data.setDescribe("传感器原始数据");
 
 **核心特性**
 
-- 使用隐式共享（Implicit Sharing），可安全地进行值传递
+- 使用隐式共享（Implicit Sharing），可安全地按值传递
 - 可放入 `QMap`、`QHash` 等容器中
 - 支持与 Python 对象的互相转换
 
@@ -116,7 +116,7 @@ DADataPyObject <|-- DADataPySeries
 - 脏标记管理（标识数据是否已修改）
 - 信号通知机制
 
-以下代码展示了如何通过接口获取数据管理器并进行数据操作：
+以下代码通过接口获取数据管理器并操作数据：
 
 ```cpp
 // 通过接口获取数据管理器
@@ -191,9 +191,9 @@ D --> I2
     ```
 
 上图展示了数据在工作流节点间传递的方式：
-- 节点1的输出端口将数据发送到数据管理器
+- 节点 1 的输出端口将数据发送到数据管理器
 - 数据管理器存储 DAData 对象
-- 节点2的输入端口从数据管理器获取数据
+- 节点 2 的输入端口从数据管理器获取数据
 - 数据管理器作为中间协调者，解耦了节点间的直接依赖
 
 ### 与绘图模块
@@ -204,7 +204,7 @@ D --> I2
 
 插件通过 `DADataManagerInterface` 接口访问数据管理器，可以添加、修改、删除数据，也可以监听数据变化信号进行响应。
 
-以下代码展示了插件如何获取数据管理器并监听数据变化信号：
+以下代码展示插件如何获取数据管理器并监听数据变化信号：
 
 ```cpp
 // 在插件中获取数据管理器
@@ -255,7 +255,7 @@ connect(dataMgr, &DADataManagerInterface::dataAdded,
     `DAData` 使用隐式共享，复制操作不会深拷贝数据，修改会影响所有引用。
 
 !!! note "数据类型检查"
-    在使用 `toDataFrame()` 或 `toSeries()` 前，应先使用 `isDataFrame()` 或 `isSeries()` 检查类型。
+    在调用 `toDataFrame()` 或 `toSeries()` 前，先用 `isDataFrame()` 或 `isSeries()` 检查类型。
 
 ## 参考资料
 

@@ -1,6 +1,6 @@
 # 在Qt/C++应用中集成Python实现插件化架构
 
-本文档详细说明如何在 **DAWorkBench** 中实现 C++ 与 Python 的双向调用，构建完整的插件化架构。通过 `pybind11` 库，我们能够实现跨语言的对象生命周期管理和线程安全的通信机制。
+本文档说明如何在 **DAWorkBench** 中实现 C++ 与 Python 的双向调用，构建插件化架构。绑定层基于 `pybind11`，跨语言的对象生命周期管理和线程安全通信都由它支撑。
 
 ## 导航
 
@@ -18,7 +18,7 @@
 
 ## 概述
 
-本文档详细说明如何在 **DAWorkBench** 中实现 C++ 与 Python 的双向调用，构建完整的插件化架构。通过 `pybind11` 库，我们能够：
+双向调用覆盖以下能力：
 
 - 从 C++ 调用 Python 脚本和库函数
 - 从 Python 脚本操作 C++ 界面组件和数据管理器
@@ -33,7 +33,7 @@
 
 ## 架构总览
 
-下图展示了 C++ 与 Python 集成的完整架构，包括主框架、绑定层和 Python 插件层：
+下图展示了 C++ 与 Python 集成的三层架构，包括主框架、绑定层和 Python 插件层：
 
 ```mermaid
 flowchart TB
@@ -246,7 +246,7 @@ src/PyScripts/DAWorkbench/
 ```
 
 !!! tip "旧路径兼容"
-    `__init__.py` 通过 `sys.modules` 别名机制保持 `DAWorkbench.form_builder` 等旧导入路径可用，但推荐使用新路径 `DAWorkbench.DAPyBase.form_builder`。
+    `__init__.py` 通过 `sys.modules` 别名机制保持 `DAWorkbench.form_builder` 等旧导入路径可用，但推荐用新路径 `DAWorkbench.DAPyBase.form_builder`。
 
 ### 插件 Python 包目录结构（plugins/DataAnalysis/PyScripts）
 

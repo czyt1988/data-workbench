@@ -1,6 +1,6 @@
 # 工具开发指南
 
-Agent 工具是 LLM 可以调用的函数，用于执行数据分析、绘图、文件操作等任务。本文档描述工具的抽象基类、注册机制、内置工具清单，以及如何开发自定义工具。
+Agent 工具是 LLM 可以调用的函数，用于执行数据分析、绘图、文件操作等任务。工具类都以 `DAAbstractAgentTool` 为基类，经 `DAAgentInterface::registerTool` 注册；内置工具与自定义插件工具共用这套接口。
 
 ---
 
@@ -64,7 +64,7 @@ classDiagram
 
 ## 工具接口
 
-### getToolSpec() — 工具规格
+### getToolSpec()：工具规格
 
 返回结构化的 `DAAgentToolSpec`（`src/DAAgent/DAAgentToolSpec.h`），描述工具的名称、用途和参数。
 平台在组装时经 `DA::toJson(spec)`（`src/DAAgent/DAAgentToolSpecJson.h`）统一序列化为
@@ -96,7 +96,7 @@ DAAgentToolSpec DAAgentToolQueryData::getToolSpec() const
 - `enumValues` / `defaultValue`：可选值列表 / 默认值，空 / invalid 时序列化自动省略。
 - free-form 对象参数（如 `run_code` 的 `args`）：`types` 填 `{Type::Object}` 即可。
 
-### execute() — 工具执行
+### execute()：工具执行
 
 接收 LLM 传来的参数，执行工具逻辑，返回结果 JSON：
 
@@ -130,9 +130,9 @@ QJsonObject DAAgentToolQueryData::execute(const QJsonObject& params)
 ```
 
 !!! warning "execute() 必须内部 try/catch"
-    工具抛出未捕获异常会导致 `DAAgentBridge` 崩溃，子进程收不到 `tool_result` 永久挂起。`executeTool()` 有外层兜底，但工具内部应自行捕获并返回 `errorResponse`。
+    工具抛出未捕获异常会导致 `DAAgentBridge` 崩溃，子进程收不到 `tool_result` 永久挂起。`executeTool()` 外层还有一层防护，但工具内部应自行捕获并返回 `errorResponse`。
 
-### getOwnerModule() — 归属模块
+### getOwnerModule()：归属模块
 
 返回工具所属的模块名（用于日志和诊断）：
 
@@ -317,7 +317,7 @@ bool DAAgentToolsPlugin::initialize()
 | `save_report` | 保存分析报告（md/pdf/docx），保存后默认在查看器中打开 | `content`, `file_path`, `format?`(md/pdf/docx, 默认 md), `open_after_save?`(默认 true) |
 
 !!! note "save_report 的 open_after_save 行为"
-    `open_after_save` 默认 `true`。md 报告用应用内置 Markdown 查看器（`DAMarkdownView`）打开；pdf/docx 用系统默认程序（`QDesktopServices`）打开。打开失败不影响保存成功状态——返回消息附加说明，不抛异常。
+    `open_after_save` 默认 `true`。md 报告用应用内置 Markdown 查看器（`DAMarkdownView`）打开；pdf/docx 用系统默认程序（`QDesktopServices`）打开。打开失败不影响保存成功状态，返回消息附加说明，不抛异常。
 
 ---
 
@@ -327,8 +327,8 @@ bool DAAgentToolsPlugin::initialize()
 
 | 工具类型 | 继承基类 | 所在位置 |
 |---------|---------|---------|
-| 数据工具（只访问数据管理器） | `DAAgentToolBase` | 你的插件 `tools/` 目录 |
-| 图表工具（需要操作图表） | `DAAgentChartToolBase` | 你的插件 `tools/` 目录 |
+| 数据工具（只访问数据管理器） | `DAAgentToolBase` | 插件的 `tools/` 目录 |
+| 图表工具（需要操作图表） | `DAAgentChartToolBase` | 插件的 `tools/` 目录 |
 
 ### 步骤 2：实现工具类
 
@@ -438,13 +438,13 @@ sequenceDiagram
 
 ## 参见
 
-- [架构设计](./architecture.md) — 工具系统在整体架构中的位置
-- [通信协议](./protocol.md) — tool_call/tool_result 消息的协议规范
-- [上下文管理](./context-management.md) — 工具结果截断机制
-- [工具与内置 Agent 总览](./available-tools.md) — 全部 25 个工具的完整参数表与内置 agent 说明
-- `plugins/DAAgentTools/` — 21 个内置工具的完整实现
-- `plugins/DAPaperAgent/` — 2 个文献工具 + 论文撰写 agent 的完整实现
-- `src/DAAgent/DAAbstractAgentTool.h` — 工具抽象基类定义
-- `src/DAAgent/DAAgentToolBase.h` — 瘦工具基类定义
-- `src/DAAgent/DAAgentToolSpec.h` — 结构化工具规格（`DAAgentToolSpec` / `DAAgentToolParam`）
-- `src/DAAgent/DAAgentToolSpecJson.h` — 工具规格 → OpenAI function schema 序列化（`DA::toJson`）
+- [架构设计](./architecture.md)：工具系统在整体架构中的位置
+- [通信协议](./protocol.md)：tool_call/tool_result 消息的协议规范
+- [上下文管理](./context-management.md)：工具结果截断机制
+- [工具与内置 Agent 总览](./available-tools.md)：全部 25 个工具的完整参数表与内置 agent 说明
+- `plugins/DAAgentTools/`：21 个内置工具的完整实现
+- `plugins/DAPaperAgent/`：2 个文献工具 + 论文撰写 agent 的完整实现
+- `src/DAAgent/DAAbstractAgentTool.h`：工具抽象基类定义
+- `src/DAAgent/DAAgentToolBase.h`：瘦工具基类定义
+- `src/DAAgent/DAAgentToolSpec.h`：结构化工具规格（`DAAgentToolSpec` / `DAAgentToolParam`）
+- `src/DAAgent/DAAgentToolSpecJson.h`：工具规格 → OpenAI function schema 序列化（`DA::toJson`）
