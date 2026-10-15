@@ -204,12 +204,14 @@ void paintBody(QPainter* painter,
 
 | 状态 | DAPyNodeState | 默认颜色 | 视觉含义 |
 |------|---------------|----------|----------|
-| 空闲 | `Idle` | 灰色 | 节点等待执行 |
-| 等待 | `Waiting` | 黄色 | 节点等待上游数据 |
-| 运行中 | `Running` | 蓝色 | 节点正在执行 |
-| 成功 | `Success` | 绿色 | 节点执行成功 |
-| 错误 | `Error` | 红色 | 节点执行出错 |
-| 跳过 | `Skipped` | 橙色 | 节点被跳过执行 |
+| 空闲 | `Idle` | 无（`QColor()` 为无效颜色，不绘制装饰） | 节点等待执行 |
+| 等待 | `Waiting` | 黄色 `QColor(255, 255, 0, 100)` | 节点等待上游数据 |
+| 运行中 | `Running` | 绿色 `QColor(0, 255, 0, 100)` | 节点正在执行 |
+| 成功 | `Success` | 绿色 `QColor(0, 255, 0, 200)` | 节点执行成功 |
+| 错误 | `Error` | 红色 `QColor(255, 0, 0, 200)` | 节点执行出错 |
+| 跳过 | `Skipped` | 灰色 `QColor(128, 128, 128, 200)` | 节点被跳过执行 |
+
+颜色取自 `DAPyNodePalette::PrivateData` 构造函数里的默认值。运行中和成功都是绿色，靠 alpha 区分：运行中 alpha 为 100，成功为 200。这些颜色在 `DAPyNodeGraphicsItem::paintStateDecoration()` 中作为节点主体的 1 像素描边使用（画笔用状态颜色，画刷为 `Qt::NoBrush`），节点内部不填充；`Idle` 的颜色无效，该方法直接返回。
 
 状态颜色可通过 DAPyNodePalette 自定义：
 
@@ -308,17 +310,26 @@ bool isFlowing = linkItem->isDataFlowing();
 
 #### 连接验证
 
-`willCompleteLink()` 方法在连接完成前做数据类型兼容性验证：
+`willCompleteLink()` 在连接完成前做校验，由 `DAGraphicsScene::endLink()` 调用。返回 `false` 时结束连线动作被跳过，临时连线不落地，连线模式保持，可以重新点击有效端口或右键取消。
 
 ```cpp
-// 重写验证方法检查数据类型
-virtual bool willCompleteLink() override {
-    // 检查源输出类型和目标输入类型是否兼容
-    QString outputType = getFromOutputType();
-    QString inputType = getToInputType();
-    return checkDataTypeCompatibility(outputType, inputType);
+// DAPyLinkGraphicsItem::willCompleteLink() 的校验内容
+bool DAPyLinkGraphicsItem::willCompleteLink()
+{
+    // 源节点或目标节点缺失时拒绝，避免产生孤立连接线
+    if (!d_ptr->mFromNode || !d_ptr->mToNode) {
+        return false;
+    }
+    // 输出端口名须存在于源节点的连接点列表，输入端口名须存在于目标节点的连接点列表
+    if (!outputFound || !inputFound) {
+        return false;
+    }
+    // 两端齐备即允许连接完成
+    return true;
 }
 ```
+
+这一步不比对端口的数据类型。`DAPyLinkGraphicsItem::checkDataTypeCompatibility()` 虽然实现了简化版类型兼容判断，但目前没有调用方，类型是否兼容由节点自身在执行阶段决定。
 
 #### 节点关联
 

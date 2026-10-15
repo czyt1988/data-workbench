@@ -77,7 +77,7 @@ cmake --build build --config Release --parallel
 cmake --build build --config Release --target install
 ```
 
-构建输出目录为 `bin_Release_qt6.7.3_GCC_x64`。
+构建输出目录为 `bin_Release_qt6.7.3_GNU_x64`。
 
 ### CMake 参数说明
 
@@ -168,7 +168,7 @@ bin_{BuildType}_qt{QtVersion}_{Compiler}_{Arch}
 |----------|-------------|
 | Qt 6.7.3, Release, MSVC, x64 | `bin_Release_qt6.7.3_MSVC_x64` |
 | Qt 5.15.2, Debug, MSVC, x64 | `bin_Debug_qt5.15.2_MSVC_x64` |
-| Qt 6.7.3, Release, GCC, x64 | `bin_Release_qt6.7.3_GCC_x64` |
+| Qt 6.7.3, Release, GCC, x64 | `bin_Release_qt6.7.3_GNU_x64` |
 
 ---
 

@@ -1,6 +1,6 @@
 # 工具与内置 Agent 总览
 
-DAWorkbench 平台向 Agent（LLM）提供的全部工具、内置 Agent 与内置子 Agent 都在这里列出，每个工具的作用与参数逐一给出。工具清单是 Agent 能力的权威参考，写提示词、排查「agent 为什么做不了某事」、规划新工具时都应先对照。
+DAWorkbench 平台向 Agent（LLM，大语言模型）提供的全部工具、内置 Agent 与内置子 Agent 都在这里列出，每个工具的作用与参数逐一给出。工具清单是 Agent 能力的权威参考，写提示词、排查「agent 为什么做不了某事」、规划新工具时都应先对照。
 
 ---
 
@@ -413,7 +413,7 @@ html/pdf/docx 三种格式经 `DAMarkdownExporter`（`src/DAGui/MarkdownView/`�
 
 **注入方式**：插件 `initialize()` 调用 `agent->registerBuiltinAgent("论文撰写助手", <qrc 内容>)`，仅当 `daAgent/论文撰写助手.md` 不存在时写入。详见[通过插件注册内置 Agent](./register-builtin-agent-via-plugin.md)。
 
-**作用**：基于用户加载的数据，端到端协助完成一篇结构完整（IMRaD）、统计严谨、引用真实的学术论文。核心特色：
+**作用**：基于用户加载的数据，端到端协助完成一篇结构完整（IMRaD，即引言-方法-结果-讨论）、统计严谨、引用真实的学术论文。核心特色：
 
 - 六阶段门禁流程：数据理解 → 统计建模与结果锁定 → 图表规划与生成 → 文献与大纲 → 分节写作 → 评审定稿；每阶段以 `ask_user` 确认为门禁，审批标记（`.approved/P1.md` ~ `P6.md`）落盘
 - 结果包锁定机制：阶段 2 产出 `results.json`/`results.md`，用户确认「锁定」后只读；阶段 4-6 禁止重算统计、禁止修改任何统计量，避免论文叙事需求干扰数据的客观性
@@ -449,6 +449,7 @@ html/pdf/docx 三种格式经 `DAMarkdownExporter`（`src/DAGui/MarkdownView/`�
 | 片段名 | 提供者 | 内容 |
 |--------|--------|------|
 | `figure_reference` | DAAgentTools | 教 agent 在回复中用 `da-figure:<figure_name>` / `da-figure:id=<figure_id>` 超链接引用创建的绘图（用户点击可 raise 定位 figure）；用 `list_figures`/`list_chart_items` 先发现再修改 |
+| `data_reference` | DAAgentTools | 教 agent 用 `da-data:<dataset_name>` / `da-data:id=<id>` 超链接引用数据集（用户点击可打开对应数据表） |
 | `literature_tools` | DAPaperAgent | 文献工具用法铁律：绝不编造引用，引用必须来自 `search_literature`/用户输入；DOI 进参考文献前必经 `verify_doi`；双 API 不可达时诚实说明并切离线模式 |
 
 ---

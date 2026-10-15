@@ -50,7 +50,7 @@ classDiagram
 
 上图展示了插件支持模块的类结构：
 
-- **DAAbstractPlugin**：抽象插件基类，定义基本接口（IID、名称、版本等）
+- **DAAbstractPlugin**：抽象插件基类，定义基本接口（接口标识符 IID、名称、版本等）
 - **DAAbstractNodePlugin**：节点插件基类，继承 DAAbstractPlugin，提供节点工厂
 - **DAPluginOption**：插件选项封装，管理单个插件实例的元数据和状态
 - **DAPluginManager**：插件管理器单例，负责多个插件的加载和管理
@@ -78,7 +78,7 @@ DACoreInterface* core() const;
 
 这个函数的作用：
 - 返回 `DACoreInterface*` 指针，是访问主程序所有功能的入口
-- 通过此接口可以获取 UI 接口、数据管理接口、项目接口等
+- 通过此接口可以获取界面接口、数据管理接口、项目接口等
 - 插件实现和界面以及核心逻辑的交互都通过此函数获取的接口进行
 
 `data-workbench` 的所有接口都可以从 `DACoreInterface` 获取，插件与界面、核心逻辑的交互就建立在这个接口上。
@@ -214,7 +214,7 @@ void MyNodePlugin::destroyNodeFactory(DA::DAPyNodeFactory* p)
 
 上述源文件的关键点：
 - `initialize()` 中获取核心接口并检查有效性
-- 通过 UI 接口可以添加 Ribbon 按钮、Dock 窗口等界面元素
+- 通过界面接口可以添加 Ribbon 按钮、Dock 窗口等界面元素
 - `createNodeFactory()` 创建节点工厂实例，遵循「谁创建谁删除」原则
 - `destroyNodeFactory()` 在插件卸载时销毁工厂实例
 
@@ -311,11 +311,11 @@ DAWorkBench 自带的三个插件（由 `plugins/CMakeLists.txt` 构建）可以
 !!! tip "界面操作时机"
     所有针对界面的操作都应该在 `initialize()` 里调用，这样能保证系统的基本界面框架都已经建立完成。
 
-!!! note "Qt版本兼容性"
+!!! note "Qt 版本兼容性"
     插件系统在 Qt5 和 Qt6 中使用方式相同，但插件库名称可能不同（如 `qt5advanceddocking.dll` vs `qt6advanceddocking.dll`）。
 
 ## 参考资料
 
 - [创建插件项目](./plugin-development.md)
 - [插件与接口](./plugin-system.md)
-- [插件开发创建UI](./plugin-dev-create-ui.md)
+- [插件开发创建界面](./plugin-dev-create-ui.md)

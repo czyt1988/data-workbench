@@ -148,8 +148,8 @@ for (int i = 0; i < mgr->getDataCount(); ++i) {
 | 信号 | 参数 | 触发时机 |
 |------|------|----------|
 | `dataAdded(const DAData&)` | DAData | 数据添加时触发 |
-| `dataRemoved(const DAData&)` | DAData | 数据删除时触发 |
-| `dataChanged(const DAData&)` | DAData | 数据内容变化时触发 |
+| `dataRemoved(const DAData&, int)` | DAData, int | 数据删除时触发（第二个参数是删除前的索引） |
+| `dataChanged(const DAData&, ChangeType)` | DAData, DADataManager::ChangeType | 数据内容变化时触发 |
 | `datasCleared()` | 无 | 所有数据被清空时触发 |
 
 ## 支持的文件格式
@@ -168,33 +168,33 @@ for (int i = 0; i < mgr->getDataCount(); ++i) {
 
 ### 与工作流模块
 
-工作流节点可以通过输入/输出端口传递 `DAData` 对象，节点之间的数据流动通过数据管理器统一协调。
+工作流节点之间的数据由执行器的信号队列直接传递 Python 对象，不经过 `DADataManager`。工作流结果要出现在数据管理面板中，需要在图中放置 `Output to DataManager` 节点，由它把输入数据发布给数据管理器。
 
-下图展示了工作流节点通过数据管理器传递数据的流程：
+下图展示了节点间的直接传递和结果发布两条路径：
 
 ```mermaid
 flowchart LR
     subgraph Node1["节点1"]
         O1["输出端口"]
     end
-    
-    subgraph DM["数据管理器"]
-        D["DAData"]
-    end
-    
+
     subgraph Node2["节点2"]
         I2["输入端口"]
     end
-    
-    O1 --> D
-D --> I2
-    ```
 
-上图展示了数据在工作流节点间传递的方式：
-- 节点 1 的输出端口将数据发送到数据管理器
-- 数据管理器存储 DAData 对象
-- 节点 2 的输入端口从数据管理器获取数据
-- 数据管理器作为中间协调者，解耦了节点间的直接依赖
+    subgraph DM["数据管理器"]
+        D["DAData"]
+    end
+
+    O1 -->|"信号队列直接传递"| I2
+    O1 --> P["Output to DataManager 节点"]
+    P -->|"同名数据原地更新，否则 addData_() 新建"| D
+```
+
+上图展示了数据在工作流中的传递方式：
+- 节点 1 的输出端口将数据直接传给下游节点的输入端口
+- `Output to DataManager` 节点把数据发布到数据管理器，同名数据已存在时原地更新，否则新建条目
+- 数据管理器持有发布后的 DAData 对象，表格视图通过 `dataChanged`/`dataAdded` 信号刷新
 
 ### 与绘图模块
 

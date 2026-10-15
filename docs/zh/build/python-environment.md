@@ -31,13 +31,14 @@ DAWorkBench 强制依赖 Python，Python 相关模块始终参与编译：
 
 ### Python 依赖库
 
-项目根目录的 `requirements.txt` 列出了运行时所需的全部 Python 包（共 16 个）。下表按用途分组说明：
+项目根目录的 `requirements.txt` 列出了运行时所需的全部 Python 包（共 17 个）。下表按用途分组说明：
 
 | 库名 | 用途 |
 |------|------|
 | pandas | 数据处理核心 |
 | numpy | 数值计算 |
 | scipy | 科学计算 |
+| statsmodels | 统计建模与回归 |
 | loguru | Python 脚本日志 |
 | openpyxl | Excel 文件导入依赖 |
 | chardet | 字符编码检测 |

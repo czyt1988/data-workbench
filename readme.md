@@ -9,7 +9,7 @@
 </p>
 </div>
 
-本项目通过 CI 进行构建
+本项目通过 CI 构建
 
 <div align="center">
 <p>
@@ -23,7 +23,7 @@
 
 `DAWorkbench` 是一款由 AI Agent 驱动的数据分析工作平台，采用插件化设计，界面层基于 C++ 实现，能流畅绘制亿级曲线图并展示亿行级数据表格。平台内嵌 `Python` 环境（`pandas` / `numpy`），封装自研的有向图工作流引擎，实现了 `Python` 层与 C++ 层的双向对接：既可基于 `Python` 快速完成业务封装，也支持 `C++` 插件与 `Python` 插件扩展。
 
-平台内置可直接操作软件的 AI Agent，工具层通过插件注入，默认提供 19 个工具。用户可用自然语言对话驱动 Agent 直接操作 GUI，完成数据读取、统计计算、绘图、标注添加和分析报告生成等任务。同时支持通过 Markdown 自定义 Agent，实现固定流程的数据分析与报告自动生成。AI Agent 基于 `LangGraph` 构建，通过进程间通信（每个 agent 会话单独一个 python 进程）与界面（C++/Qt）交换数据。
+平台内置可直接操作软件的 AI Agent，工具层通过插件注入，默认提供 21 个工具。用户可用自然语言对话驱动 Agent 直接操作图形界面，完成数据读取、统计计算、绘图、标注添加和分析报告生成等任务。同时支持通过 Markdown 自定义 Agent，实现固定流程的数据分析与报告自动生成。AI Agent 基于 `LangGraph` 构建，通过进程间通信（每个 agent 会话单独一个 python 进程）与界面（C++/Qt）交换数据。
 
 软件核心由五大模块组成：`Agent 模块`、`Workflow 引擎`、`Data 数据处理`、`Chart 可视化`及`插件接口模块`。各模块能力互通，支持 Python 双向操作。`插件接口模块`同时支持纯 Python 插件与 C++ 插件，降低了插件开发门槛；平台内置 pandas 库，让操作 pandas 像操作 Excel 一样便捷。
 
@@ -35,7 +35,7 @@
 
 在数据处理过程中往往有很多重复性的工作，尤其针对科研实验数据，可能要面对 n 组数据，每组数据的清洗抽取方式基本一样，因此一个数据处理软件应该带有工作流功能。用 python 实现上述功能很容易，但要求有一定的开发基础，还要熟悉一些库才能得心应手
 
-python 的 `pandas`、`numpy`、`scipy` 是数据处理的三大利器，数据清洗方法如此多，除非把整个文档浏览一遍，否则很难想起它们，因此一个交互式的数据清洗工具很有必要：把功能通过 GUI 明确地展现出来，数据处理过程就不需要长时间翻阅文档。AI 的出现解决了这个问题，AI 能探索数据，也能写论文
+python 的 `pandas`、`numpy`、`scipy` 是数据处理的三大利器，数据清洗方法如此多，除非把整个文档浏览一遍，否则很难想起它们，因此一个交互式的数据清洗工具很有必要：把功能通过图形界面明确地展现出来，数据处理过程就不需要长时间翻阅文档。AI 的出现解决了这个问题，AI 能探索数据，也能写论文
 
 另一点头疼的是数据可视化。matlab 和 python 的 matplotlib 能做出很漂亮的图，但细微的调节很令人抓狂，比如调整一个文本的位置，交互式的设计只需要拖动一下鼠标，在脚本语言里却要指定它的坐标；图片非常大、渲染时间比较久的时候，把一个文本移到想要的位置是件很麻烦的事情。ai 绘图虽然简单方便，但 agent 通过 matplotlib 画出的图要做细微调整同样麻烦，因此一个带有 ai 能力且可交互的数据可视化工具是必须的。
 
@@ -55,15 +55,15 @@ python 的 `pandas`、`numpy`、`scipy` 是数据处理的三大利器，数据�
 agent 以对话面板的形式嵌在主界面里，它操作的是软件里的真实对象：查询的数据是工作区已加载的数据集，画出的图实时出现在绘图区，写好的报告在内置查看器里打开，agent 做完之后使用者还能接手继续手动调整。
 
 - 使用 DAWorkbench 的 agent 分析数据，自动出具报告
-    ![使用DAWorkbench的agent分析数据，出具报告](./docs/assets/screenshot/agent-analysis.gif)
+    ![使用 DAWorkbench 的 agent 分析数据，出具报告](./docs/assets/screenshot/agent-analysis.gif)
 - 使用 DAWorkbench 的 agent 自动绘图
-    ![使用DAWorkbench的agent自动绘图](./docs/assets/screenshot/agent-auto-create-chart.gif)
+    ![使用 DAWorkbench 的 agent 自动绘图](./docs/assets/screenshot/agent-auto-create-chart.gif)
 
 和通用 Agent（如 Codex、OpenClaw、deepseek harness 等）不一样，DAWorkbench 提供了很多内置工具，AI 基于这些工具可以快速完成数据处理、绘图、数据可视化、报告生成等任务。所有绘图操作都基于 DAWorkbench，AI 绘制的图用户可以直接修改样式，也可以在绘图上标记，并不是一个简单的 png 绘图，人工可以很轻松地介入 AI 创建的绘图
 
 ### agent 能做什么
 
-默认插件注册了 19 个工具，覆盖数据分析的完整流程：
+默认插件注册了 21 个工具，覆盖数据分析的完整流程（`ask_user` 由平台在运行时注入，不经过插件注册）：
 
 | 类别 | 工具 | 功能 |
 |------|------|------|
@@ -82,8 +82,11 @@ agent 以对话面板的形式嵌在主界面里，它操作的是软件里的�
 | | add_annotation | 添加文本、箭头、点标记、区间高亮 |
 | | save_chart_image | 图表导出为 PNG、PDF、SVG |
 | | list_figures | 列出所有图表，修改前先定位 |
+| | list_chart_items | 列出某个图表里的曲线、标注和区间，给出序号和颜色 |
 | 文件与报告 | read_file / write_file | 读写文本文件 |
 | | save_report | 把 markdown 报告保存为 md、pdf、docx，md 直接在内置查看器打开 |
+| 代码执行 | run_script | 执行工程脚本工作区里的脚本文件 |
+| | run_code | 直接执行传入的 Python 代码片段 |
 | 提问 | ask_user | 信息不够时 agent 主动向使用者提问，支持选项选择和自由输入 |
 
 数据类工具在进程内真实调用 pandas，查询的就是工作区里的数据；绘图类工具直接操作真实的图表部件，agent 画完的图在绘图区里可以继续手动调整。agent 还会在回复里插入图表链接，点击后跳转到对应的图。
@@ -130,7 +133,7 @@ DAWorkbench 的智能体功能支持配置多个供应商，每个供应商有�
 
 图表基于扩展过的 qwt，增加了类似 matplotlib Figure 的 QwtFigure 容器，一个 figure 里可以放多个子图，按网格布局排布。
 
-支持的图表类型：曲线、散点、柱状、多序列柱状、箱线、直方、间隔曲线、谱图、谱曲线、交易曲线、向量场、误差棒，核密度估计、ECDF、回归、热力图、等值线等统计图，以及 3D 柱状、折线、曲面。
+支持的图表类型：曲线、散点、柱状、多序列柱状、箱线、直方、间隔曲线、谱图、谱曲线、交易曲线、向量场、误差棒，核密度估计、经验累积分布图、回归、热力图、等值线等统计图，以及 3D 柱状、折线、曲面。
 
 交互式编辑是这块的重点：图元可以拖动、缩放，文本原地编辑，十字光标和数据探针读数，区域选择、标记、箭头都能在画布上直接加，所有操作可撤销重做。每个元素有对应的属性面板，坐标轴、网格、图例、曲线、标记都能逐项调整。
 
@@ -212,9 +215,9 @@ pip install -r requirements.txt
 
 - 数据表格
     ![01](./docs/assets/screenshot/01.png)
-- agent绘图
+- agent 绘图
     ![02](./docs/assets/screenshot/02.png)
-- 统计绘图（类似seaborn的各种快速统计功能）
+- 统计绘图（类似 seaborn 的各种快速统计功能）
     ![02](./docs/assets/screenshot/03.png)
 - 工作流
     ![04](./docs/assets/screenshot/04.png)

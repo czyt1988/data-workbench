@@ -144,7 +144,7 @@ graph TB
 | **DAGui** | 界面整合、Ribbon、Dock 管理（含 `ChartSetting/` 图表属性面板和 `NodeSetting/` 工作流节点通用设置面板） | 所有业务模块 |
 | **DAInterface** | 插件接口定义 | DAGui |
 | **DAPluginSupport** | 插件加载、管理 | DAInterface |
-| **DAAgent** | L4 接口层 Agent 框架：多供应商 LLM 调用、提示词库、工具注册与持久化会话（无 GUI 依赖，暴露 `DAAgentInterface`） | DAInterface, DAData, DAPyBindQt, DAPyScripts |
+| **DAAgent** | L4 接口层 Agent 框架：多供应商大语言模型（LLM）调用、提示词库、工具注册与持久化会话（无图形界面依赖，暴露 `DAAgentInterface`） | DAInterface, DAData, DAPyBindQt, DAPyScripts |
 | **DAAxOfficeWrapper** | Office 自动化（仅 Windows） | DAUtils |
 | **APP** | 主程序入口 | DAPluginSupport |
 
@@ -210,7 +210,7 @@ graph TB
 | 模块 | DA | DAPyWorkFlow |
 | 类 | DA | DAAbstractNode |
 | 接口 | DA...Interface | DACoreInterface |
-| 宏 | DA_ | DA_PLUGIN_NAME |
+| 宏 | DA_ | DA_DECLARE_PRIVATE |
 | 枚举 | DA...Enum | DANodeLinkPoint::Way |
 
 ### 4. Qt 信号槽机制

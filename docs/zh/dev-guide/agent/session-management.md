@@ -25,7 +25,7 @@ Agent 对话历史以 JSONL 格式持久化到磁盘，支持多会话管理、�
 └── last_active.json           # 上次活跃会话指针 (sessionId + projectPath)
 ```
 
-> Windows 路径展开为 `%APPDATA%/DAWorkBench/DAWorkBench/sessions/`。路径由 `DADir::getAppDataPath("sessions")` 决定。
+> Windows 上展开为 `%APPDATA%/DAWorkBench/sessions/`。路径由 `DADir::getAppDataPath("sessions")` 决定。
 
 ### 会话文件（JSONL）
 
@@ -50,7 +50,7 @@ Agent 对话历史以 JSONL 格式持久化到磁盘，支持多会话管理、�
 | type | message.role | 说明 | 含 tool_calls | 含 tool_call_id |
 |------|-------------|------|:---:|:---:|
 | `user` | `human` | 用户消息 | 无 | 无 |
-| `assistant` | `ai` | LLM 回复 | 可能 | 无 |
+| `assistant` | `ai` | 大语言模型（LLM）回复 | 可能 | 无 |
 | `tool_result` | `tool` | 工具执行结果 | 无 | 是 |
 | `usage` | 无 | Token 用量记录（每轮 `message_end.usage` 与独立 `usage` 消息均落盘） | 无 | 无 |
 
@@ -101,8 +101,10 @@ sequenceDiagram
     participant M as DAAgentModule
     participant S as SessionStore
 
-    UI->>IF: sessionCreateRequested()
-    IF->>M: newSession()
+    UI->>UI: 标题栏「+」/ Ribbon 新建会话 → requestNewSession()：创建或 raise 未绑定视图（不落盘）
+    Note over UI: 用户发送首条消息
+    UI->>IF: sendMessage(text)
+    IF->>M: sendMessage(text)
     M->>S: createSession()
     S->>S: 生成 UUID4
     S->>S: 创建空 .jsonl 文件
@@ -110,11 +112,11 @@ sequenceDiagram
     S-->>M: 返回 sessionId
     M->>M: emit sessionCreated(sessionId)
     M->>IF: emit sessionCreated(sessionId)
-    IF->>UI: onSessionCreated() → clearChat()
+    IF->>UI: 宿主把未绑定视图绑定到该会话（更新标题/objectName）
 ```
 
 !!! note "newSession() vs createSession()"
-    `newSession()` 会 emit `sessionCreated` 信号触发 UI clearChat，用于用户点击「+」按钮。`createSession()` 不 emit 信号，用于 `sendMessage()` 自动创建会话，避免清除刚显示的用户消息。
+    `newSession()` 会 emit `sessionCreated`，供程序化路径使用（如测试、插件调用）；UI 的「+」按钮自 session-tabs 起不再走它，而是由 Dock 宿主创建未绑定视图，首条消息才落盘建会话。`createSession()` 本身不 emit 信号，只创建文件、更新索引并切换当前会话；`sendMessage()` 在没有活跃会话时调用它懒建，随后 emit `sessionCreated` 供宿主完成视图绑定。
 
 ### 切换会话
 
@@ -171,7 +173,7 @@ renameSession(id, title)
 
 ### 自动标题
 
-`ensureTitle(sessionId)` 在用户首次发送消息后，取消息内容前 30 个字符作为会话标题。如果会话已有非空标题则不覆盖。
+`ensureTitle(sessionId)` 在用户首次发送消息后取消息内容的首行（trim 后），字符数超过 20 则截断到 20 个字符并追加省略号，作为会话标题。如果会话已有非空标题则不覆盖。
 
 ---
 
@@ -334,7 +336,7 @@ setLastActive(sessionId, newPath)    // 更新指针的 projectPath
 
 ## 单元测试
 
-`src/tst/DAAgentSessionStoreTest/` 提供 5 个 C++ 测试用例（不链接 Python）：
+`src/tst/DAAgentSessionStoreTest/` 提供 12 个 C++ 测试用例（不链接 Python）：
 
 | 用例 | 覆盖内容 |
 |------|---------|
@@ -343,6 +345,13 @@ setLastActive(sessionId, newPath)    // 更新指针的 projectPath
 | `testIndexAtomicWrite` | listSessions 倒序，renameSession 更新 index + title |
 | `testCleanup` | 数量上限删最旧、时间上限删超期、skipSessionId 保护活跃、qMax 边界防护 |
 | `testLastActive` | last_active 往返 + projectPath 精确匹配 |
+| `testImportSessionFiles` | 导入会话标记 projectPath + 索引合并 |
+| `testProjectPathFiltering` | `listSessions(filter)` 按工程路径过滤 + 倒序 |
+| `testEnsureTitle` | 自动标题生成与已有标题不覆盖 |
+| `testMessageCount` | 按会话 ID 查消息计数（空会话复用守卫依赖） |
+| `testTokenAccumulate` | usage 记录累计进索引 token 字段 + 持久化 |
+| `testTokenLazyMigration` | 旧格式索引（无 token 字段）懒迁移回填 |
+| `testErrorRecordRoundTrip` | `type=error` 记录落盘、读回、过滤与索引兼容 |
 
 测试隔离：`main()` 起手 `QStandardPaths::setTestModeEnabled(true)` 重定向 AppData 到临时目录，不污染真实 `%APPDATA%`。
 
@@ -352,7 +361,7 @@ cmake -S . -B build -D DA_ENABLE_TESTING=ON
 cmake --build build --target DAAgentSessionStoreTest --config Release
 
 # 运行 (Windows Qt Test stdout 不可见，须用 -o)
-.\build\bin\DAAgentSessionStoreTest.exe -o result.txt
+.\build\bin\Release\DAAgentSessionStoreTest.exe -o result.txt
 ```
 
 ---

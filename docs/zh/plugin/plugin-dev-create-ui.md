@@ -6,7 +6,7 @@
 
 插件的核心函数是 `core()`，它返回核心对象；`data-workbench` 的所有可开放对象都可以通过 `core()` 获取。
 
-UI 相关的接口对象通过 `DACoreInterface::getUiInterface` 获取，返回 `DAUIInterface` 对象。
+界面相关的接口对象通过 `DACoreInterface::getUiInterface` 获取，返回 `DAUIInterface` 对象。
 
 ### DAUIInterface 关键函数
 
@@ -32,7 +32,7 @@ DACommandInterface* getCommandInterface() const;
 
 ## 界面架构图
 
-插件界面开发涉及主程序的多个 UI 组件，下图是主程序界面结构与插件操作的关系：
+插件界面开发涉及主程序的多个界面组件，下图是主程序界面结构与插件操作的关系：
 
 ```mermaid
 flowchart TD
@@ -61,8 +61,8 @@ flowchart TD
 ```
 
 上图对应两个层面：
-- 主程序界面：UI 接口管理的 Ribbon、DockingArea、Actions、Command 四大组件及其子结构
-- 插件操作：插件初始化时获取 UI 接口，再添加 Ribbon 按钮、Dock 窗口或隐藏组件
+- 主程序界面：界面接口管理的 Ribbon、DockingArea、Actions、Command 四大组件及其子结构
+- 插件操作：插件初始化时获取界面接口，再添加 Ribbon 按钮、Dock 窗口或隐藏组件
 
 ## 插件操作界面
 
@@ -406,14 +406,14 @@ private:
 !!! warning "界面操作时机"
     所有界面操作必须在 `initialize()` 中进行，构造函数执行时界面尚未创建完成。
 
-!!! tip "Dock窗口命名"
+!!! tip "Dock 窗口命名"
     为 Dock 窗口设置唯一的 objectName，便于后续管理和查找。
 
-!!! note "Qt版本兼容性"
+!!! note "Qt 版本兼容性"
     SARibbonBar 和 QtAdvancedDocking 在 Qt5 和 Qt6 中的 API 基本一致，但库文件名不同。
 
 ## 参考资料
 
-- [插件模块DAPluginSupport](./plugin-module.md)
+- [插件模块 DAPluginSupport](./plugin-module.md)
 - [插件与接口](./plugin-system.md)
 - [创建插件项目](./plugin-development.md)

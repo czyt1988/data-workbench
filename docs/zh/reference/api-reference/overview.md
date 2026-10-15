@@ -141,14 +141,14 @@ classDiagram
 | 接口 | 文件 | 说明 |
 |------|------|------|
 | `DACoreInterface` | `src/DAInterface/DACoreInterface.h` | 顶层核心接口，获取所有其他接口（含 `getAgentInterface()`） |
-| `DAUIInterface` | `src/DAInterface/DAUIInterface.h` | UI 管理接口（Ribbon/Docking/StatusBar/主题/表单配置） |
+| `DAUIInterface` | `src/DAInterface/DAUIInterface.h` | 界面管理接口（Ribbon/Docking/StatusBar/主题/表单配置） |
 | `DARibbonAreaInterface` | `src/DAInterface/DARibbonAreaInterface.h` | Ribbon 区域扩展接口 |
 | `DADockingAreaInterface` | `src/DAInterface/DADockingAreaInterface.h` | Dock 停靠区域扩展接口 |
 | `DAStatusBarInterface` | `src/DAInterface/DAStatusBarInterface.h` | 状态栏扩展接口 |
-| `DAUIExtendInterface` | `src/DAInterface/DAUIExtendInterface.h` | UI 扩展接口（注册自定义扩展模块） |
+| `DAUIExtendInterface` | `src/DAInterface/DAUIExtendInterface.h` | 界面扩展接口（注册自定义扩展模块） |
 | `DAProjectInterface` | `src/DAInterface/DAProjectInterface.h` | 工程文件管理接口 |
 | `DADataManagerInterface` | `src/DAInterface/DADataManagerInterface.h` | 数据管理接口 |
-| `DAAgentInterface` | `src/DAAgent/DAAgentInterface.h` | AI 分析子系统接口（LLM 配置/会话/提示词库/工具注册） |
+| `DAAgentInterface` | `src/DAAgent/DAAgentInterface.h` | AI 分析子系统接口（大语言模型配置、会话、提示词库、工具注册） |
 | `DAActionsInterface` | `src/DAInterface/DAActionsInterface.h` | QAction 注册和查找接口 |
 | `DACommandInterface` | `src/DAInterface/DACommandInterface.h` | 撤销/重做命令管理接口 |
 
@@ -246,7 +246,7 @@ daCritical << "Failed to load plugin";         // 严重级别，进 UI 窗口
 | DAData | L2 | 数据管理 | DAData, DADataManager |
 | DAGraphicsView | L2 | 图形视图框架 | DAGraphicsScene, DAGraphicsView |
 | DAFigure | L2 | 图表容器 | DAFigureWidget, DAChartWidget |
-| DAGui | L3 | GUI 整合层 | 工作流 UI、图表设置 |
+| DAGui | L3 | 图形界面整合层 | 工作流界面、图表设置 |
 | DAInterface | L4 | 抽象接口定义 | DACoreInterface, DAUIInterface |
 | DAAgent | L4 | AI 分析子系统 | DAAgentInterface, DAAgentModule, DAAbstractAgentTool |
 | DAPluginSupport | L4 | 插件框架 | DAAbstractPlugin, DAPluginManager |

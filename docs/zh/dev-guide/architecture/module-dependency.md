@@ -296,7 +296,7 @@ graph BT
 
 职责：Python 工作流核心：节点代理、工厂、场景、执行引擎、图形项、序列化。
 
-**注意：此模块由 AI 编写，存在类放置错误（见下方§反模式警告）。**
+**注意：此模块由 AI 编写，存在类放置错误（见下文「历史重构记录」）。**
 
 提供内容：
 - 节点核心：`DAPyNode`（C++↔Python 节点代理）、`DAPyNodeFactory`（Python 节点发现）、`DAPyNodeParameter`（参数代理）、`DAPyNodeConnection`（连接代理）
@@ -345,13 +345,13 @@ graph BT
 
 #### DAFigure：图表容器
 
-职责：基于 Qwt 的纯 C++ 图表系统（无 Python 依赖）。
+职责：基于 Qwt 的图表系统；绘图路径本身不依赖 Python（`DAChartPlotRenderer` 只接收 Qwt 原生类型与 `DAPlotDataTypes` 结构），模块同时通过 `DAPyBindQt` 提供 Python 绑定（`DAFigurePythonBinding`）。
 
 提供内容：
 - 容器：`DAFigureWidget`（QScrollArea，QwtFigure 布局）、`DAChartWidget`（QwtPlot + 3 个接口 Mixin）
 - 编辑器：`DAAbstractChartEditor`→`DAAbstractTwoPointEditor`（→`DAChartArrowEditor`）、`DAAbstractRegionSelectEditor`（→三个区域选择子类）
 - 探针：`DADataProbeMarker`（数据点探针）
-- 序列化：`DAChartSerialize`（15+ QwtPlotItem 类型二进制序列化）
+- 序列化：`DAChartSerialize`（13 种 QwtPlotItem 类型二进制序列化）
 - 树视图：`DAFigureTreeView` + Models（图/子图/图元/轴 层级导航）
 - 撤销命令：`DAFigureWidgetCommands`（创建/删除/调整大小/附加图元）
 
@@ -413,12 +413,12 @@ graph BT
 - `DAUIInterface`：UI 聚合接口
   - `DAActionsInterface`：QAction 注册/查找
   - `DACommandInterface`：QUndoGroup 管理
-  - `DADockingAreaInterface`：停靠区域管理（8 个 dock 区域）
+  - `DADockingAreaInterface`：停靠区域管理（8 个停靠区域）
   - `DARibbonAreaInterface`：Ribbon 栏管理
   - `DAStatusBarInterface`：状态栏管理
   - `DADataManagerInterface`：数据管理器包装
 - `DAProjectInterface`：项目文件读写
-- `DAInterfaceHelper`：所有接口的一站式便捷访问
+- `DAInterfaceHelper`：所有接口的便捷访问入口
 
 外部依赖：**DAGui** (PUBLIC → 传递所有 DAGui 依赖给消费者)
 

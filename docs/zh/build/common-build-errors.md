@@ -7,7 +7,7 @@
 | 错误类型 | 常见原因 | 解决难度 |
 |----------|----------|----------|
 | 编译器错误 | VS 路径问题、路径长度限制、Ninja 在 PowerShell 中的环境变量缺失 | 中等 |
-| MOC 错误 | 批量 MOC 操作异常 | 低 |
+| MOC 错误（元对象编译器） | 批量 MOC 操作异常 | 低 |
 | MinGW 错误 | 线程数据空间不足 | 低 |
 | 运行时错误 | DLL 缺失、Python 环境 | 中等 |
 
@@ -250,8 +250,8 @@ MinGW 编译器线程数据空间不足，属于编译器自身问题。
 
 详见 [Python 环境配置](./python-environment.md)，确保：
 
-- 安装正确版本的 Python（推荐 Python 3.9+）
-- 安装必需的 Python 包：见项目根目录 `requirements.txt`（共 16 个包，含 pandas/numpy/scipy 及 DAAgent 子系统所需的 langgraph/langchain-openai 等 AI 栈）
+- 安装正确版本的 Python（推荐 Python 3.11+，AI 功能需要）
+- 安装必需的 Python 包：见项目根目录 `requirements.txt`（共 17 个包，含 pandas/numpy/scipy 及 DAAgent 子系统所需的 langgraph/langchain-openai 等 AI 栈）
 
 !!! info "Python 依赖"
     data-workbench 运行时依赖以下 Python 包（完整列表见项目根目录 `requirements.txt`）：

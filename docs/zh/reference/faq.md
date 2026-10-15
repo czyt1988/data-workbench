@@ -86,7 +86,7 @@ QList<DA::DANodeMetaData> MyNodeFactory::getNodeMetaDataList() const  // 无法�
 
 ### Q: 工作流执行时崩溃？
 
-**A:** 最常见的原因是在 exec() 中操作 UI：
+**A:** 最常见的原因是在 exec() 中操作界面：
 
 ```cpp
 bool MyWorker::exec()
@@ -274,7 +274,7 @@ file.write(doc.toJson());
 | 方面 | Windows | Linux |
 |------|---------|-------|
 | 动态库 | .dll | .so |
-| Office 支持 | 支持（COM） | 不支持 |
+| Office 支持 | 支持（通过 COM 接口调用） | 不支持 |
 | 路径分隔符 | `\` | `/` |
 | 配置目录 | AppData | .config |
 
@@ -301,7 +301,7 @@ endif()
 1. 减少节点间数据拷贝
 2. 使用缓存避免重复计算
 3. 合理设置线程数
-4. 避免频繁的 UI 更新
+4. 避免频繁的界面更新
 
 ### Q: 内存占用过高？
 

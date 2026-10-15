@@ -6,7 +6,7 @@ Agent 模块采用 C++ + Python 双进程架构，通过 stdin/stdout 管道的 
 
 ## 双进程模型
 
-Agent 的核心设计是进程隔离：LLM 推理运行在独立 Python 子进程中，C++ 主进程管理工具执行与会话持久化。这样划分带来三点好处：
+Agent 的核心设计是进程隔离：大语言模型（LLM）推理运行在独立 Python 子进程中，C++ 主进程管理工具执行与会话持久化。这样划分带来三点好处：
 
 1. Python 子进程崩溃或 LLM API 超时不会影响 C++ 主程序的稳定性。
 2. LLM 生态（LangChain/LangGraph）在 Python 侧原生运行，无需 C++ 封装。
@@ -39,7 +39,7 @@ C++ 主进程承担全部业务逻辑和资源管理：
 - LLM 只拿到工具 schema（OpenAI function 格式），工具的实际执行由 `DAAgentBridge::executeTool()` 在主进程完成，结果经 stdin 回传。
 - 对话历史由 `DAAgentSessionStore` 以 JSONL 格式管理，支持多会话切换、工程导出导入。
 - 配置由 `DAAgentConfig`（agent-config.json，含旧 ini 一次性迁移）读写，API Key 在序列化边界经 Windows DPAPI 加密存储；多供应商多模型 CRUD，激活供应商+模型热替换（`reconfigureAgent`）。
-- 经 `DAAgentInterface` 的 28 个信号与 `DAAgentDockWidget` 通信。
+- 经 `DAAgentInterface` 的 31 个信号与 `DAAgentDockWidget` 通信。
 
 ### Python 侧职责
 
@@ -60,7 +60,7 @@ DAAgent 位于五层架构的接口层（Layer 4），是**纯 agent 框架库**
 
 | 文件 | 类 | 职责 |
 |------|-----|------|
-| `DAAgentInterface.h` | `DAAgentInterface` | 公共接口（抽象基类）：28 个信号 + 工具/提示词注册 + 多供应商多模型管理（CRUD、激活切换、热替换）+ 提示词库 API + 会话管理 |
+| `DAAgentInterface.h` | `DAAgentInterface` | 公共接口（抽象基类）：31 个信号 + 工具/提示词注册 + 多供应商多模型管理（CRUD、激活切换、热替换）+ 提示词库 API + 会话管理 |
 | `DAAgentModule.h/.cpp` | `DAAgentModule` | 接口实现：工具注册表、系统提示词组装、预启动/懒启动、配置读写（DAAgentConfig：agent-config.json + DPAPI 加密）、token 会话累计统计 |
 | `DAAgentBridge.h/.cpp` | `DAAgentBridge` | QProcess 生命周期管理、JSON Lines 协议解析、工具执行、`reconfigureAgent` 热替换、崩溃恢复、看门狗 |
 | `DAAgentSessionStore.h/.cpp` | `DAAgentSessionStore` | 会话持久化层（非 QObject，PIMPL）：JSONL 读写、索引、清理、标题 |
@@ -68,7 +68,7 @@ DAAgent 位于五层架构的接口层（Layer 4），是**纯 agent 框架库**
 | `DAAgentPromptOps.h/.cpp` | `DAAgentPromptOps` | 提示词库操作回调接口（供 DAGui 对话框执行 CRUD） |
 | `DAAgentPrompt.h/.cpp` | `DAAgentPrompt` | 单条提示词模型（标题、内容、元数据） |
 | `DAAbstractAgentTool.h` | `DAAbstractAgentTool` | 工具抽象基类（纯虚）：`getToolSpec` / `execute` / `getOwnerModule` |
-| `DAAgentToolBase.h/.cpp` | `DAAgentToolBase` | 瘦工具基类（`DAAgent_API` 导出）：数据访问 + 响应方法，供插件跨 DLL 继承 |
+| `DAAgentToolBase.h/.cpp` | `DAAgentToolBase` | 瘦工具基类（`DAAgent_API` 导出）：数据访问 + 响应方法，供插件跨动态链接库（DLL）继承 |
 | `system_prompt.md` | 无 | 外部可编辑的系统提示词（运行时由 `assembleSystemPrompt()` 读取） |
 | `default-agent.md` | 无 | 内置 agent 提示词模板（`registerBuiltinAgent` 仅在用户无同名文件时写入） |
 | `da_agent.qrc` | 无 | Qt 资源文件，将 `system_prompt.md` / `default-agent.md` 等嵌入二进制 |
@@ -87,7 +87,7 @@ DAAgent 位于五层架构的接口层（Layer 4），是**纯 agent 框架库**
 
 | 文件 | 职责 |
 |------|------|
-| `agent_runner.py` | 唯一入口脚本（1236 行）：协议收发、LLM 配置、LangGraph 图构建、agent 循环、`reconfigure()` 热替换 |
+| `agent_runner.py` | 唯一入口脚本（约 2000 行）：协议收发、LLM 配置、LangGraph 图构建、agent 循环、`reconfigure()` 热替换 |
 | `context_manager.py` | Token 估算（tiktoken/char-based）、工具结果截断、上下文压缩（head/tail + 中间摘要） |
 | `error_classifier.py` | LLM API 异常分类（可重试/不可重试），提取 Retry-After 头 |
 | `retry_wrapper.py` | 线性退避重试，支持 stop_event 中断、retryable_check 回调 |
@@ -178,15 +178,17 @@ sequenceDiagram
 
 ### 接口↔Dock 连接清单
 
-**接口信号 → Dock 槽（18 条）**：在 `DAAppController::initialize()` 中 connect（见 `DAAppController.cpp:252-270`）。
+**接口信号 → Dock 槽（27 条）**：在 `DAAppController::initialize()` 中 connect。
 
 | 接口信号 | Dock 槽 | 用途 |
 |---------|---------|------|
 | `agentToken` | `onAgentToken` | 流式 token 渲染 |
 | `agentMessageComplete` | `onAgentMessageComplete` | 消息完成 |
 | `agentToolCall` | `onAgentToolCall` | 工具调用显示 |
+| `agentToolQueued` | `onAgentToolQueued` | 工具卡「排队中/运行中」标识 |
 | `agentToolResult` | `onAgentToolResult` | 工具结果显示 |
 | `agentQuestion` | `onAgentQuestion` | HITL 提问渲染 |
+| `agentQuestionDismissed` | `onQuestionDismissed` | 撤未回答的问题卡 |
 | `agentError` | `onAgentError` | 错误显示 |
 | `agentRetrying` | `onAgentRetrying` | 退避重试进度 |
 | `agentReady` | `onAgentReady` | 就绪状态 |
@@ -198,10 +200,17 @@ sequenceDiagram
 | `sessionListChanged` | `onSessionListChanged` | 会话列表刷新 |
 | `sessionCreated` | `onSessionCreated` | 新建会话 |
 | `sessionCleared` | `onSessionCleared` | 清空游离会话聊天区 + 复位 token 统计 |
+| `systemMessage` | `onSystemMessage` | 系统消息提示 |
+| `foreignAgentSessionsRunning` | `onForeignAgentSessionsRunning` | 跨工程存活会话提示条 |
 | `availableModelsChanged` | `onAvailableModelsChanged` | 可用模型列表变化（填充下拉） |
 | `activeModelChanged` | `onActiveModelChanged` | 激活模型变化（选中下拉项） |
+| `agentToolApprovalRequest` | `onToolApprovalRequest` | 审批卡弹出 |
+| `agentToolApprovalDismissed` | `onToolApprovalDismissed` | 审批卡作废 |
+| `agentSubagentProgress` | `onAgentSubagentProgress` | 子 Agent 进度卡片渲染 |
+| `permissionModeChanged` | `onPermissionModeChanged` | 权限模式选择器刷新 |
+| `permissionModeExplicitChanged` | `onPermissionModeExplicitChanged` | 判断启动提示卡是否弹出 |
 
-**Dock 信号 → 接口方法（8 条）**（见 `DAAppController.cpp:271,277-283`）：
+**Dock 信号 → 接口方法（12 条）**：
 
 | Dock 信号 | 接口方法 | 用途 |
 |-----------|---------|------|
@@ -211,8 +220,16 @@ sequenceDiagram
 | `sessionSwitchRequested` | `switchSession` | 切换会话 |
 | `sessionDeleteRequested` | `deleteSession` | 删除会话 |
 | `sessionRenameRequested` | `renameSession` | 重命名会话 |
-| `sessionCreateRequested` | `newSession` | 新建会话（emit `sessionCreated` 触发 UI clearChat） |
+| `sessionViewAttachedChanged` | `setSessionViewAttached` | 会话视图挂载/卸载 |
+| `currentSessionClearedRequested` | `clearCurrentSession` | 清空当前会话聊天区 |
+| `stopSessionRequested` | `stopSession` | 停止指定会话的生成 |
 | `activeModelChangeRequested` | `setActiveModel` | 切换激活供应商+模型（运行期热替换） |
+| `permissionModeChangeRequested` | `setPermissionMode` | 切换权限模式 |
+| `toolApprovalDecision` | `sendToolApproval` | 回传审批结果 |
+
+另有两条 Dock 信号连到 `DAAppController` 自身：`startupModeConfirmResponse`（启动全自动确认卡的答复，拒绝时降级为 `auto`）与 `linkActivated`（`da-<kind>:` 本地跳转链接）。
+
+`agentDone` 与 `agentTurnPossiblyIncomplete` 有意不接：前者由 `agentBusy(false)` 统一驱动 UI 恢复，后者的提醒由同刻发射的 `systemMessage` 承载。会话「+」按钮走 Dock 宿主的 unbound 视图懒创建路径（首条消息才落盘建会话），不再连接 `newSession`。
 
 ---
 

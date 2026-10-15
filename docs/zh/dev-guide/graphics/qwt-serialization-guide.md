@@ -328,23 +328,26 @@ if (DA::gc_dachart_magic_mark3 != tmp1) {
 | RTTI 值 | 类型 | 说明 |
 |---------|------|------|
 | 5 | QwtPlotCurve | 曲线图 |
-| 6 | QwtPlotGrid | 网格 |
-| 7 | QwtPlotScaleItem | 刻度项 |
-| 8 | QwtPlotLegendItem | 图例项 |
-| 9 | QwtPlotMarker | 标记 |
-| 10 | QwtPlotSpectroCurve | 光谱曲线 |
-| 11 | QwtPlotIntervalCurve | 区间曲线 |
-| 12 | QwtPlotHistogram | 直方图 |
-| 13 | QwtPlotSpectrogram | 光谱图 |
-| 14 | QwtPlotGraphicItem | 图形项 |
-| 15 | QwtPlotTradingCurve | 交易曲线 |
-| 16 | QwtPlotBarChart | 柱状图 |
-| 17 | QwtPlotMultiBarChart | 多柱状图 |
-| 18 | QwtPlotShapeItem | 形状项 |
-| 19 | QwtPlotTextLabel | 文本标签 |
-| 20 | QwtPlotZoneItem | 区域项 |
-| 21 | QwtPlotVectorField | 向量场 |
-| 自定义 | QwtPlotArrowMarker | 箭头标记 |
+| 1 | QwtPlotGrid | 网格 |
+| 2 | QwtPlotScaleItem | 刻度项 |
+| 3 | QwtPlotLegendItem | 图例项 |
+| 4 | QwtPlotMarker | 标记 |
+| 6 | QwtPlotSpectroCurve | 光谱曲线 |
+| 7 | QwtPlotIntervalCurve | 区间曲线 |
+| 8 | QwtPlotHistogram | 直方图 |
+| 9 | QwtPlotSpectrogram | 光谱图 |
+| 10 | QwtPlotGraphicItem | 图形项 |
+| 11 | QwtPlotTradingCurve | 交易曲线 |
+| 12 | QwtPlotBarChart | 柱状图 |
+| 13 | QwtPlotMultiBarChart | 多柱状图 |
+| 14 | QwtPlotShapeItem | 形状项 |
+| 15 | QwtPlotTextLabel | 文本标签 |
+| 16 | QwtPlotZoneItem | 区域项 |
+| 17 | QwtPlotVectorField | 向量场 |
+| 18 | QwtPlotArrowMarker | 箭头标记 |
+| 19 | QwtPlotBoxChart | 箱体图 |
+| 1100 | DADataProbeMarker | 数据探针标记（项目自定义） |
+| 1101 | DAChartTextMarker | 文本标记（项目自定义） |
 
 ### 4.2 序列化函数注册机制
 
@@ -601,7 +604,7 @@ DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtIntervalSample& item);
 class MyCustomPlotItem : public QwtPlotItem
 {
 public:
-    // 定义自定义 RTTI 值（建议使用 10000 以上的值避免冲突）
+    // 定义自定义 RTTI 值（从 QwtPlotItem::Rtti_PlotUserItem（1000）起分配，避免与 Qwt 内置值冲突）
     enum { Rtti_MyCustomPlotItem = 10001 };
 
     virtual int rtti() const override
@@ -1026,14 +1029,13 @@ in >> item;  // 如果后续不使用，会泄漏
     自定义 RTTI 值与现有值冲突。
 
 !!! tip "解决方案"
-    1. 使用 10000 以上的值作为自定义 RTTI
+    1. 从 `QwtPlotItem::Rtti_PlotUserItem`（1000）起分配自定义 RTTI，项目的 `DADataProbeMarker`/`DAChartTextMarker` 分别取 +100 和 +101
     2. 在项目中统一管理 RTTI 分配
 
 ```cpp title="RTTI 分配建议"
 // RTTI 分配建议范围
-// 1-99:    Qwt 内置类型
-// 100-999: DA 项目扩展类型
-// 1000+:   插件自定义类型
+// 0-19:    Qwt 内置类型（见 QwtPlotItem::RttiValues）
+// 1000+:   项目与插件自定义类型（QwtPlotItem::Rtti_PlotUserItem 起）
 ```
 
 ## 8. 相关文件索引

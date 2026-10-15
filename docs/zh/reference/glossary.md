@@ -131,7 +131,7 @@
 
 **层次**：
 - **DACoreInterface**：顶层接口
-- **DAUIInterface**：UI 接口
+- **DAUIInterface**：界面接口
 - **DADataManagerInterface**：数据接口
 
 ### 核心接口 (Core Interface)
@@ -172,7 +172,7 @@
 
 ### Agent
 
-**定义**：DAWorkBench 的 AI 分析助手，由 DAAgent 模块（`src/DAAgent/`）承载，通过独立 Python 子进程（LangGraph）驱动 LLM 推理与工具调用循环。
+**定义**：DAWorkBench 的 AI 分析助手，由 DAAgent 模块（`src/DAAgent/`）承载，通过独立 Python 子进程（LangGraph）驱动大语言模型（LLM）推理与工具调用循环。
 
 **访问**：插件通过 `DACoreInterface::getAgentInterface()` 获取 `DAAgentInterface`，注册工具、配置 LLM、管理会话与提示词库。
 

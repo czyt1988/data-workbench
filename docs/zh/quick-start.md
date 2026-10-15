@@ -7,7 +7,7 @@
 | 要求 | 版本 | 说明 |
 |------|------|------|
 | Qt | 5.14+ 或 6.x | 界面框架 |
-| Python | 3.8+，推荐 3.11 | 数据处理，以嵌入式方式集成 |
+| Python | 3.7+，推荐 3.11 | 数据处理，以嵌入式方式集成 |
 | CMake | 3.16+ | 构建系统 |
 | Ninja | 推荐 | 构建速度快 |
 | 编译器 | 支持 C++17 | MSVC、GCC 或 Clang |
@@ -64,7 +64,7 @@ Windows 上：
 Linux 上：
 
 ```bash
-./bin_Release_qt6.7.3_GCC_x64/DAWorkbench
+./bin_Release_qt6.7.3_GNU_x64/DAWorkbench
 ```
 
 ## 验证安装

@@ -135,10 +135,12 @@ DAFigureWidget (画布容器)
 |---------|------|
 | XY曲线 | 基础的二维数据曲线 |
 | XYE系列 | 带误差条的数据曲线 |
-| OHLC系列 | K线图（开高低收） |
+| OHLC系列 | K线图（开高低收），对应 `QwtPlotTradingCurve` |
 | 柱状图 | 柱状数据可视化 |
 | 区间曲线 | 带上下界的区间显示 |
 | 网格栅格数据 | 热力图等二维分布 |
+
+OHLC 系列在代码中有完整实现（`QwtPlotTradingCurve` 与 `QwtOHLCSample` 支持，添加面板类为 `DAChartAddTradingCurveWidget`），但图表向导的类型列表里没有它的入口，目前只能通过代码添加。
 
 ## 使用方法
 
@@ -262,7 +264,7 @@ figure->getUndoStack()->redo();
 - 依赖 `DAUtils` 模块提供的基础工具类
 - 依赖第三方库 `Qwt` 提供绑图基础
 - 依赖 `Qt::Concurrent` 实现异步绑图
-- 依赖 `Qt::PrintSupport` 实现图表打印和导出
+- 链接 `Qt::PrintSupport`（`src/DAFigure/CMakeLists.txt` 中的链接项），但模块本身没有打印或导出图表的接口，输出图片文件目前由 Agent 工具 `save_chart_image` 完成（另有 `DAFigureWidget::copyToClipboard()` 把画布截图放进剪贴板）
 - 绘图模块的属性设置窗口（如轴设置、曲线样式等）位于 `DAGui` 模块中
 - `DAFigureWidget` 实例由 `DAGui` 的 `DAChartOperateWidget` 以 ADS 嵌套停靠区管理（多窗口自由分屏/并栏、隔离在绘图区内），详见 [绘图窗口停靠布局](./chart-dock-nesting.md)
 

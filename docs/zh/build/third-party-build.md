@@ -1,6 +1,6 @@
 # 第三方库构建
 
-本文档介绍 data-workbench 依赖的第三方库构建方法。第三方库使用 CMake 构建，需要按特定顺序进行。
+本文档介绍 data-workbench 依赖的第三方库构建方法。第三方库使用 CMake 构建，需要按特定顺序构建。
 
 ## 第三方库列表
 
@@ -165,7 +165,7 @@ ls ..\bin_Release_qt*
 
 ### 3. 编译和安装
 
-点击左侧工具栏的运行按钮（绿色三角形，`Ctrl+R`）进行编译和安装：
+点击左侧工具栏的运行按钮（绿色三角形，`Ctrl+R`）完成编译和安装：
 
 ![build-3rdparty-cmake-qtc](../../assets/PIC/build-3rdparty-cmake-qtc-03.png)
 

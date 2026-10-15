@@ -147,7 +147,7 @@ loop.exec(QEventLoop::ExcludeUserInputEvents);  // 防用户输入重入
 
 该模式来自 `DAAppProject::waitArchiveSave` 的同步等待先例；`ExcludeUserInputEvents` 保证等待期间不处理用户输入（避免重入 `executeTool`），QProcess 协议读写仍可进行。**超时必须设置**（10s），否则断网时工具永久卡死。
 
-工具的 `getToolSpec` 应在 description 中写明已知限制（如「需直连网络，不走代理」），LLM 会据此降级。
+工具的 `getToolSpec` 应在 description 中写明已知限制（如「需直连网络，不走代理」），大语言模型（LLM）会据此降级。
 
 ---
 

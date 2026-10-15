@@ -8,7 +8,7 @@
 
 -   **第三方库**：如 `OCCT`、`VTK`、`Qt` 等。
 -   **自定义库**：项目自身抽象出的功能模块。
--   **可执行程序**：如 GUI 程序、命令行工具等。
+-   **可执行程序**：如图形界面程序、命令行工具等。
 -   **静态资源**：脚本、图片、配置文件等。
 
 大型工程用简单的构建工具很难做到一键编译一键安装，比如 `qmake` 缺少安装和依赖管理功能，Qt6 因此弃用它转向 `cmake`。在 C++ 领域，`cmake` 虽然缺点很多，仍是构建管理的事实标准。
@@ -119,7 +119,7 @@ git submodule add https://github.com/czyt1988/SARibbon.git ./src/3rdparty/SARibb
 
 ### 规范的安装路径
 
-规范的安装路径让工程的库以及第三方库安装在同一个目录下，工程很容易被第三方使用者集成起来进行二次开发，因此安装路径尽量规范化，不要过于自由地定制。常见的规范化安装路径如下：
+规范的安装路径让工程的库以及第三方库安装在同一个目录下，工程很容易被第三方使用者拿去做二次开发，因此安装路径尽量规范化，不要过于自由地定制。常见的规范化安装路径如下：
 
 -   `bin/`: 存放可执行文件和 Windows 下的 DLL 文件。
 -   `lib/`: 存放静态库（.a, .lib）和动态库的导入库（.lib）。
@@ -417,7 +417,7 @@ MY_PACKAGE_TARGET_NAME 是在顶层 cmake 定义的总的导出集，子模块�
 
 [github:https://github.com/czyt1988/data-workbench](https://github.com/czyt1988/data-workbench)
 
-[gitee镜像:https://gitee.com/czyt1988/data-workbench](https://gitee.com/czyt1988/data-workbench)
+[gitee 镜像:https://gitee.com/czyt1988/data-workbench](https://gitee.com/czyt1988/data-workbench)
 
 源码目录结构（为便于显示，文件夹用 `[]` 括起）：
 

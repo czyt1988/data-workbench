@@ -40,7 +40,7 @@ public:
 
 ### DAUIInterface
 
-UI 相关接口，提供主程序界面组件的访问能力。插件通过它扩展 Ribbon 工具栏、添加 Dock 窗口、注册 Action 等。
+界面相关接口，提供主程序界面组件的访问能力。插件通过它扩展 Ribbon 工具栏、添加 Dock 窗口、注册 Action 等。
 
 下面的代码展示了 DAUIInterface 的核心方法定义：
 
@@ -349,7 +349,7 @@ Q_SIGNALS:
 
 ### 日志宏
 
-DAWorkBench 使用基于 spdlog 的日志系统，通过便捷宏输出日志。业务日志（`da.*` category）会自动进入 UI 日志窗口。
+DAWorkBench 使用基于 spdlog 的日志系统，通过便捷宏输出日志。业务日志（`da.*` category）会自动进入界面日志窗口。
 
 ```cpp
 #include "DALogCategory.h"

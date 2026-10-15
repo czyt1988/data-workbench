@@ -80,7 +80,7 @@ hide:
 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
 </div>
 <h3>Python 数据处理</h3>
-<p>GUI 封装 pandas / numpy / scipy 核心功能，无需编写代码即可操作 DataFrame，并支持自定义 Python 脚本节点灵活扩展。</p>
+<p>图形界面封装 pandas / numpy / scipy 核心功能，无需编写代码即可操作 DataFrame，并支持自定义 Python 脚本节点灵活扩展。</p>
 </div>
 
 <div class="da-card">

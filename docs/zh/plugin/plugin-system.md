@@ -1,6 +1,6 @@
 # 插件系统深度解析
 
-DAWorkBench 采用插件化架构，业务逻辑与框架基础分离：数据处理、可视化、算法等功能都由插件实现，主程序只提供基础框架、UI 界面和接口管理。
+DAWorkBench 采用插件化架构，业务逻辑与框架基础分离：数据处理、可视化、算法等功能都由插件实现，主程序只提供基础框架、界面和接口管理。
 
 ## 主要功能特性
 
@@ -21,7 +21,7 @@ DAWorkBench 插件系统遵循四个核心设计原则：
 | 设计原则 | 详细说明 | 实现方式 | 优势 |
 |----------|----------|----------|------|
 | **松耦合** | 插件通过接口与主程序通信，不直接依赖具体类，插件只需实现接口，不用关心内部实现细节。 | `DAInterface` 模块定义了一组抽象接口，插件通过 `DACoreInterface` 访问主程序功能。 | 插件开发不依赖主程序内部代码，主程序升级时只要接口不变，插件无需修改。 |
-| **可扩展** | 新功能通过插件添加，无需修改主程序源代码。插件可以扩展工作流节点、UI界面、数据处理算法等各方面功能。 | 利用 Qt 的插件机制（`QPluginLoader` + 接口声明），支持动态加载 `.dll`（Windows）或 `.so`（Linux）文件。 | 功能扩展无需重新编译主程序；第三方开发者可以贡献新功能；功能模块化，便于管理。 |
+| **可扩展** | 新功能通过插件添加，无需修改主程序源代码。插件可以扩展工作流节点、界面、数据处理算法等各方面功能。 | 利用 Qt 的插件机制（`QPluginLoader` + 接口声明），支持动态加载 `.dll`（Windows）或 `.so`（Linux）文件。 | 功能扩展无需重新编译主程序；第三方开发者可以贡献新功能；功能模块化，便于管理。 |
 | **热插拔** | 插件可以在程序运行时动态加载和卸载，支持插件的独立编译、安装和更新。 | 独立的 CMake 构建系统，插件编译后直接放置在指定目录即可被检测加载；`DAPluginManager` 负责插件的生命周期管理。 | 无需重启程序即可安装新插件；插件更新只需替换文件；支持按需加载，减少启动时间。 |
 | **标准化** | 提供统一的插件基类、接口规范和生命周期管理，确保所有插件遵循相同标准。 | `DAAbstractPlugin` 基类定义了插件的基本结构和生命周期方法；配套的 CMake 宏简化构建配置。 | 降低插件开发门槛；统一的管理界面；便于自动化测试和集成。 |
 
@@ -67,7 +67,7 @@ graph TB
 
 #### 1. 主程序层
 - **APP**：主应用程序入口，负责初始化 Qt 环境、加载配置、启动主窗口等基础工作。
-- **DAGui**：用户界面模块，包含 Ribbon 工具栏、Dock 窗口、图表视图等 UI 组件。
+- **DAGui**：用户界面模块，包含 Ribbon 工具栏、Dock 窗口、图表视图等界面组件。
 
 #### 2. 接口层
 - **DAInterface**：接口定义模块，包含 `DACoreInterface`、`DAUIInterface`、`DADataManagerInterface` 等抽象接口。这些接口定义了插件与主程序交互的契约。
@@ -136,9 +136,9 @@ graph TB
 2. **插件主类文件**：每个插件必须有一个继承自 `DAAbstractPlugin` 或 `DAAbstractNodePlugin` 的主类，负责插件初始化、资源管理和生命周期控制。
 3. **节点工厂**：旧架构中工作流插件需要实现 C++ 节点工厂。新的 Python-first 架构使用 `@NodeDef` 装饰器自动发现节点，无需手动编写 C++ NodeFactory。
 4. **工作节点**：具体的数据处理单元，每个节点对应工作流中的一个处理步骤。复杂的插件可能包含多个工作节点类。
-5. **UI组件**：如果插件需要提供用户界面（如配置面板、数据查看器等），应在此目录组织相关代码。
+5. **界面组件**：如果插件需要提供用户界面（如配置面板、数据查看器等），应在此目录组织相关代码。
 6. **资源文件**：图标、翻译文件等资源统一通过 Qt 资源系统管理，确保跨平台兼容性。
-7. **Python脚本**：对于涉及复杂算法或数据处理的任务，可以用 Python 脚本实现，通过 pybind11 与 C++ 代码交互。
+7. **Python 脚本**：对于涉及复杂算法或数据处理的任务，可以用 Python 脚本实现，通过 pybind11 与 C++ 代码交互。
 
 ### 命名规则与约定
 
@@ -150,7 +150,7 @@ DAWorkBench 插件开发采用以下命名约定：
 | **插件主类** | `[Name]Plugin` | `DataAnalysisPlugin` | 类名与目录名一致，方便识别对应关系 |
 | **节点工厂** | `[Name]NodeFactory` | `DataAnalysisNodeFactory` | 旧架构遗留，新插件使用 Python `@NodeDef` 自动发现节点，无需 NodeFactory |
 | **工作节点** | `[Name]Worker` | `DataframeCleanerWorker` | 使用"Worker"后缀，表示这是具体的工作单元 |
-| **插件IID** | `DAABSTRACTNODEPLUGIN_IID` | `DAABSTRACTNODEPLUGIN_IID`（节点插件）/ `DAABSTRACTPLUGIN_IID`（通用插件） | IID 宏在 `DAAbstractNodePlugin.h` / `DAAbstractPlugin.h` 中定义，`Q_PLUGIN_METADATA` 引用宏而非自造字符串 |
+| **插件 IID（接口标识符）** | `DAABSTRACTNODEPLUGIN_IID` | `DAABSTRACTNODEPLUGIN_IID`（节点插件）/ `DAABSTRACTPLUGIN_IID`（通用插件） | IID 宏在 `DAAbstractNodePlugin.h` / `DAAbstractPlugin.h` 中定义，`Q_PLUGIN_METADATA` 引用宏而非自造字符串 |
 | **节点原型** | `[Plugin].[Factory].[Node]` | `DataAnalysis.IO.CSVReader` | 节点原型的命名采用三级结构，确保全局唯一 |
 
 **命名注意事项：**
@@ -261,7 +261,7 @@ IID 宏定义为 `DAABSTRACTNODEPLUGIN_IID`（值为 `"org.da.abstract.nodePlugi
 
 2. **`destroyNodeFactory(DAPyNodeFactory* p)`**：销毁 `createNodeFactory()` 创建的工厂，遵循「谁创建谁删除」原则。
 
-3. **`afterLoadedNodes()`**：节点生成完成并加入 APP 后的回调，默认不做任何动作，插件可重载以做收尾工作（如刷新节点列表 UI）。
+3. **`afterLoadedNodes()`**：节点生成完成并加入 APP 后的回调，默认不做任何动作，插件可重载以做收尾工作（如刷新节点列表界面）。
 
 4. **`getCurrentActiveWorkflowOperateWidget()`**：获取当前激活的工作流编辑窗口指针，供插件与活动工作流交互。
 

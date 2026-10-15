@@ -41,7 +41,7 @@ C++ 层通过 pybind11 导出 `da_py_workflow` Python 模块，暴露以下类�
 
 ### DAPyModuleWorkflow 模块封装
 
-`DAPyModuleWorkflow` 是 `DAWorkFlowPy` Python 包的 C++ 封装，继承 `DAPyModule`（→ `DAPyObjectWrapper`），通过构造时导入 Python 模块来使用，**不是单例模式**：
+`DAPyModuleWorkflow` 是 `DAWorkbench.DAWorkFlowPy` Python 包的 C++ 封装，继承 `DAPyModule`（→ `DAPyObjectWrapper`），通过构造时导入 Python 模块来使用，**不是单例模式**：
 
 ```cpp
 // 构造并导入 Python 模块
@@ -172,7 +172,7 @@ public:
 
 1. `discoverNodes()` 调用 Python 层的 `DANodeRegistry.discover()`
 2. 扫描指定目录和 entry_points 中的节点类
-3. `@NodeDef` 装饰器将节点元信息写入类的 `_node_descriptor` 属性 dict，C++ 侧读取并转换为 `DAPyNodeMetaData`
+3. `@NodeDef` 装饰器把元信息写成节点类的类属性（`qualified_name`、`name`、`category`、`icon`、`__node_description`），C++ 侧逐个读取并填入 `DAPyNodeMetaData`
 4. 调用方通过 `getNodeMetadataList()` 获取结果，通知 UI 更新节点面板
 
 ## GIL 线程安全（重点）
@@ -282,10 +282,10 @@ void pythonCallback() {
 
 当 Python 节点执行完成后，输出数据通过以下路径传递到 C++ 层：
 
-1. Python `execute()` 返回 `dict` 包含输出数据
-2. C++ `DAPyWorkFlowExecutor` 代理获取执行结果
-3. `DAPyNode::getPyOutputData()` 提取特定 key 的数据
-4. 数据通过 `DAPySignalManager` 传播到下游节点
+1. 节点在 `execute()` 里把结果写进 `self._output_data`（`execute()` 的返回值只表示成功与否，不携带数据）
+2. `DAWorkflowExecutor` 把 `_output_data` 中各端口的数据交给 `DASignalManager.send_output()` 传递
+3. `DAPyNode::getPyOutputData()` 按端口 key 读取同一个 `_output_data` 字典
+4. `DAPySignalManager` 把数据送到下游节点的输入端口
 
 ### C++→Python 数据路径
 
@@ -321,7 +321,7 @@ C++ 层的 `DAPyWorkFlowManager`（QObject 编排器）协调 Python 层的执�
 | 组件 | 类型 | 职责 |
 |------|------|------|
 | `DAPyWorkFlowManager` | QObject 编排器 | 管理节点/连接操作，发射 Qt 信号通知 UI |
-| `DAPyWorkFlowExecutor` | `DAPyObjectWrapper` 代理 | 代理 Python `DAWorkflowExecutor`，拓扑排序，节点执行 |
+| `DAPyWorkFlowExecutor` | `DAPyObjectWrapper` 代理 | 代理 Python `DAWorkflowExecutor`，按入度分类节点并触发执行 |
 | `DAPySignalManager` | `DAPyObjectWrapper` 代理 | 代理 Python `DASignalManager`，事件驱动下游节点触发 |
 
 ### 执行状态信号
@@ -391,7 +391,7 @@ public:
 
 ### Python 节点自定义绘制
 
-Python 节点可通过 `@NodeDef` 装饰器标记的类上的 `paint` 方法提供绘制函数（`_node_descriptor` dict 中记录 `paint_callback` 字段）：
+Python 节点可通过 `@NodeDef` 装饰器标记的类上的 `paint` 方法提供绘制函数（C++ 侧读取节点实例的 `paint` 属性，作为绘制回调保存）：
 
 ```python
 @NodeDef(name="自定义节点")
@@ -408,7 +408,7 @@ class CustomNode:
     当前仅支持基本绘制操作（`drawRect`、`drawText`、`drawLine`、`fillRect` 等）。复杂绘制（如 SVG、图片）待后续实现。
 
 !!! warning "性能提示"
-    `paint_callback` 应在 50ms 内完成绘制，避免阻塞 GUI 线程。如果回调抛出异常，节点会回退到默认矩形模板渲染。
+    `paint_callback` 应在 50ms 内完成绘制，避免阻塞 GUI 线程。回调抛出异常时，节点改用自身的渲染模板绘制（`RenderDefaultTemplate` 或 `RenderWidgetTemplate`），并在节点状态不是 `Idle` 时显示错误覆盖层。
 
 ## 注意事项
 

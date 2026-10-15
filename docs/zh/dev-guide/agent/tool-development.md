@@ -1,6 +1,6 @@
 # 工具开发指南
 
-Agent 工具是 LLM 可以调用的函数，用于执行数据分析、绘图、文件操作等任务。工具类都以 `DAAbstractAgentTool` 为基类，经 `DAAgentInterface::registerTool` 注册；内置工具与自定义插件工具共用这套接口。
+Agent 工具是大语言模型（LLM）可以调用的函数，用于执行数据分析、绘图、文件操作等任务。工具类都以 `DAAbstractAgentTool` 为基类，经 `DAAgentInterface::registerTool` 注册；内置工具与自定义插件工具共用这套接口。
 
 ---
 
@@ -105,7 +105,7 @@ QJsonObject DAAgentToolQueryData::execute(const QJsonObject& params)
 {
     try {
         QString dataName = params["data_name"].toString();
-        QString query    = params["query"].toString();
+        QString query    = params["expr"].toString();
 
         auto* data = findData(dataName);
         if (!data) {
@@ -275,7 +275,7 @@ bool DAAgentToolsPlugin::initialize()
 |--------|------|---------|
 | `list_data` | 列出所有已加载的数据集 | 无 |
 | `get_data_info` | 获取数据集的详细信息（行列数、数据类型、统计摘要） | `data_name` |
-| `query_data` | 使用 pandas 语法查询数据 | `data_name`, `query` |
+| `query_data` | 使用 pandas 语法查询数据 | `data_name`, `expr` |
 | `get_column_stats` | 获取列的统计信息（均值、标准差、分位数等） | `data_name`, `column` |
 | `export_data` | 导出数据到文件 | `data_name`, `file_path`, `format` |
 
@@ -285,12 +285,12 @@ bool DAAgentToolsPlugin::initialize()
 |--------|------|---------|
 | `create_chart` | 创建图表（同名 figure 已存在则在其中加 chart） | `type`, `data_name`, `x`, `y`(数组), `title?`, `figure_name?`, `x_label?`, `y_label?` |
 | `add_curve` | 向图表添加曲线 | `data_name`, `x_column`, `y_column`, `figure_name?`, `chart_id?` |
-| `set_chart_style` | 设置图表样式（线型、颜色、标记等） | `figure_name?`, `chart_id`, `style` |
+| `set_chart_style` | 设置图表样式（标题、轴标签、图例、网格、背景等） | `figure_name?`, `chart_id?`, `title?`, `x_label?`, `y_label?`, `legend?`, `grid?`, `x_axis_type?`, `x_date_format?`, `background_color?`, `border_color?` |
 | `set_axis` | 配置坐标轴（刻度类型、范围、颜色、标签旋转） | `figure_name?`, `chart_id?`, `axis`(`x`/`y`), `scale_type?`(`normal`/`datetime`), `date_format?`, `min?`, `max?`, `color?`, `label_rotation?` |
 | `update_curve_style` | 修改已有曲线外观（颜色、线型、线宽、标记、填充） | `figure_name?`, `chart_id?`, `curve_name`, `color?`, `width?`, `style?`, `symbol?`, `symbol_size?`, `fill_color?` |
 | `remove_chart_item` | 删除曲线 / 注释 / 区域 | `figure_name?`, `chart_id?`, `item_name`, `item_type?`(`curve`/`annotation`/`region`/`any`) |
 | `add_annotation` | 添加文本/箭头/点/区域标注 | `figure_name?`, `chart_id?`, `type`(`text`/`arrow`/`point`/`region`), `position?`/`start?`+`end?`/`start_x?`+`end_x?`, `text?`, `color?` |
-| `create_subplots` | 创建子图布局 | `rows`, `cols`, `figure_name?` |
+| `create_subplots` | 创建子图布局 | `layout`, `figure_name?` |
 | `save_chart_image` | 保存图表为图片 | `figure_name?`, `file_path`, `format` |
 | `list_figures` | 列出所有 figure 及其 chart | 无 |
 | `list_chart_items` | 列出 chart 内曲线/标注/区域明细 | `figure_name?`, `chart_id?`, `item_type?`(`curve`/`annotation`/`region`/`any`) |
@@ -312,8 +312,8 @@ bool DAAgentToolsPlugin::initialize()
 
 | 工具名 | 用途 | 关键参数 |
 |--------|------|---------|
-| `read_file` | 读取文本文件内容 | `file_path`, `encoding?` |
-| `write_file` | 写入文本文件 | `file_path`, `content`, `encoding?` |
+| `read_file` | 读取文本文件内容 | `file_path` |
+| `write_file` | 写入文本文件 | `file_path`, `content` |
 | `save_report` | 保存分析报告（md/pdf/docx），保存后默认在查看器中打开 | `content`, `file_path`, `format?`(md/pdf/docx, 默认 md), `open_after_save?`(默认 true) |
 
 !!! note "save_report 的 open_after_save 行为"

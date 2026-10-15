@@ -351,7 +351,7 @@ flowchart TD
 
 #### 数据在工作流中的流动
 
-在工作流执行过程中，节点间的数据流动由 `DASignalManager` 的信号队列直接传递 Python 对象，不经过 DADataManager。DADataManager 主要用于用户手动管理的数据（导入、导出、查看），工作流节点间的数据传递由执行器内部完成。
+在工作流执行过程中，节点间的数据流动由 `DASignalManager` 的信号队列直接传递 Python 对象，不经过 DADataManager；DADataManager 管理的是数据管理面板里的数据集（导入、查看、导出）。工作流结果要进入数据面板，需要在图中放置 `Output to DataManager` 节点（`plugins/DASystemNodes/PyScripts/DASystemNodes/nodes/data_to_manager.py`）：它用 `findData` 按名称查找同名数据，命中就原地替换底层对象并发出 `dataChanged`，否则用 `addData_()` 新建条目；已打开的表格视图据此刷新。
 
 ### 核心 API
 
@@ -359,7 +359,7 @@ flowchart TD
 |-----|------|------|----------|
 | `addData_` | `DADataManager::addData_(DAData&) -> void` | 添加数据（支持 undo） | 用户导入数据 |
 | `removeData_` | `DADataManager::removeData_(DAData&) -> void` | 移除数据（支持 undo） | 用户删除数据 |
-| `findData` | `DADataManager::findData(QString name) -> DAData` | 按名称精确查找 | 节点获取输入数据 |
+| `findData` | `DADataManager::findData(QString name) -> DAData` | 按名称精确查找 | `Output to DataManager` 节点查重 |
 | `findDatas` | `DADataManager::findDatas(QString pattern) -> QList<DAData>` | 按通配符查找 | 批量数据操作 |
 | `isDataFrame` | `DAData::isDataFrame() -> bool` | 检查是否为 DataFrame | 类型判断前置检查 |
 | `toDataFrame` | `DAData::toDataFrame() -> DAPyDataFrame` | 转换为 DataFrame | 数据操作前获取实际对象 |
@@ -390,7 +390,7 @@ src/DAFigure/
 ├── DAChartDataInterface.h          # 数据操作接口
 ├── DAChartStyleInterface.h         # 样式设置接口
 ├── DAChartInteractionInterface.h   # 交互控制接口
-├── DAChartSerialize.h/.cpp         # 15+ QwtPlotItem 类型序列化
+├── DAChartSerialize.h/.cpp         # 13 种 QwtPlotItem 类型序列化
 ├── DAChartAxisRangeBinder.h/.cpp   # 多图表轴范围同步绑定
 ├── DAChartFactory.h/.cpp           # 图表工厂
 ├── DAChartUtil.h/.cpp                # 图表工具函数
@@ -719,11 +719,11 @@ src/DAInterface/
 ├── DADataManagerInterface.h/.cpp    # 数据管理接口
 ├── DAActionsInterface.h/.cpp     # Action 管理接口
 ├── DACommandInterface.h/.cpp        # QUndoGroup 管理接口
-├── DADockingAreaInterface.h/.cpp    # 停靠区域管理接口（8 个 dock 区域）
+├── DADockingAreaInterface.h/.cpp    # 停靠区域管理接口（8 个停靠区域）
 ├── DARibbonAreaInterface.h/.cpp     # Ribbon 栏管理接口
 ├── DAStatusBarInterface.h/.cpp      # 状态栏管理接口
 ├── DABaseInterface.h                # 所有接口的基类
-├── DAInterfaceHelper.h/.cpp         # 一站式便捷访问
+├── DAInterfaceHelper.h/.cpp         # 所有接口的便捷访问入口
 └── DAInterfacePythonBinding.h       # Python 绑定
 ```
 

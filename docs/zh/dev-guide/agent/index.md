@@ -1,6 +1,6 @@
 # Agent 模块概述
 
-DAWorkbench 的 AI Agent 助手模块为平台提供内嵌 LLM 聊天与数据分析工具调用能力。Agent 能够理解用户的自然语言指令，自动调用平台的数据查询、绘图、文件操作等工具完成任务，并通过流式输出实时展示推理过程。
+DAWorkbench 的 AI Agent 助手模块为平台提供内嵌大语言模型（LLM）聊天与数据分析工具调用能力。Agent 能够理解用户的自然语言指令，自动调用平台的数据查询、绘图、文件操作等工具完成任务，并通过流式输出实时展示推理过程。
 
 ---
 
@@ -44,7 +44,7 @@ Agent 采用 C++ + Python 双进程架构。C++ 主进程持有工具注册表�
 graph TB
     subgraph "C++ 主进程"
         UI["DAAgentDockWidget<br/>(聊天 UI, DAGui 模块)"]
-        IF["DAAgentInterface<br/>(公共接口, 28 信号)"]
+        IF["DAAgentInterface<br/>(公共接口, 31 信号)"]
         MOD["DAAgentModule<br/>(接口实现: 工具注册/会话/配置)"]
         BRIDGE["DAAgentBridge<br/>(QProcess 管理/协议解析)"]
         STORE["DAAgentSessionStore<br/>(JSONL 持久化)"]
@@ -58,8 +58,8 @@ graph TB
         RETRY["RetryWrapper<br/>(重试/退避)"]
     end
 
-    UI -->|"8 信号→方法"| IF
-    IF -->|"18 信号→槽"| UI
+    UI -->|"12 信号→方法"| IF
+    IF -->|"27 信号→槽"| UI
     IF --> MOD
     MOD --> BRIDGE
     MOD --> STORE
@@ -94,7 +94,7 @@ graph TB
 
 | 类名 | 模块 | 职责 |
 |------|------|------|
-| `DAAgentInterface` | DAAgent | 公共接口：28 个信号 + 工具/提示词注册 + 多供应商多模型管理（CRUD、激活切换、热替换）+ 提示词库 API（`runAgent`/`registerBuiltinAgent`/`agentPromptOps`）+ 会话管理 |
+| `DAAgentInterface` | DAAgent | 公共接口：31 个信号 + 工具/提示词注册 + 多供应商多模型管理（CRUD、激活切换、热替换）+ 提示词库 API（`runAgent`/`registerBuiltinAgent`/`agentPromptOps`）+ 会话管理 |
 | `DAAgentModule` | DAAgent | 接口实现：工具注册表、系统提示词组装、预启动/懒启动、配置读写、DPAPI 加密、token 会话累计统计 |
 | `DAAgentBridge` | DAAgent | QProcess 生命周期管理、JSON Lines 协议解析、工具执行、`reconfigureAgent` 热替换、崩溃恢复、无活动看门狗 |
 | `DAAgentSessionStore` | DAAgent | JSONL 会话持久化：读写、索引、清理、标题、导出导入 |

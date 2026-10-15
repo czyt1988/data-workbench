@@ -10,7 +10,7 @@
 |------|----------|------|
 | CMake | ≥ 3.16 | 构建系统生成器 |
 | C++ 编译器 | C++17 兼容 | MSVC 2019+ / GCC 9+ / Clang 10+ |
-| Qt | 5.14+ 或 Qt 6 | 跨平台 UI 框架 |
+| Qt | 5.14+ 或 Qt 6 | 跨平台界面框架 |
 | Python | ≥ 3.7 | 数据处理后端 |
 | Ninja | 推荐 | 快速构建工具 |
 | Git | 最新版 | 版本控制和子模块管理 |
@@ -37,7 +37,7 @@ CMake 通过 `<Qt 安装路径>/<版本>/<编译器>/lib/cmake/` 下的 CMake �
 
 ### Python 依赖
 
-项目运行时依赖的 Python 包见项目根目录 `requirements.txt`（共 16 个）。下表列出主要分组：
+项目运行时依赖的 Python 包见项目根目录 `requirements.txt`（共 17 个）。下表列出主要分组：
 
 | 库 | 用途 |
 |------|------|
@@ -80,7 +80,7 @@ flowchart TD
 上图展示了构建的整体流程。图中各节点含义如下：
 
 - **克隆仓库**：获取项目源码
-- **拉取子模块**：获取第三方库源码（zlib、SARibbon、ADS 等）
+- **拉取子模块**：获取第三方库源码（zlib、SARibbon、Qt-Advanced-Docking-System 等）
 - **编译 zlib**：zlib 是 quazip 的依赖，必须独立编译（黄色标注表示首次必需）
 - **编译第三方库**：统一构建除 zlib 外的所有第三方库
 - **编译主项目**：构建核心模块和插件
@@ -245,7 +245,7 @@ cmake --build build --config Release --parallel
 cmake --build build --config Release --target install
 ```
 
-构建完成后，输出目录为 `bin_Release_qt6.7.3_GCC_x64`，包含可执行文件 `DAWorkBench` 和相关动态库。
+构建完成后，输出目录为 `bin_Release_qt6.7.3_GNU_x64`，包含可执行文件 `DAWorkBench` 和相关动态库。
 
 ## Qt Creator 构建步骤
 
@@ -294,7 +294,7 @@ bin_{BuildType}_qt{QtVersion}_{Compiler}_{Arch}
 |----------|----------|
 | Qt 5.15.2, Release, MSVC, x64 | `bin_Release_qt5.15.2_MSVC_x64` |
 | Qt 6.7.3, Debug, MSVC, x64 | `bin_Debug_qt6.7.3_MSVC_x64` |
-| Qt 6.7.3, Release, GCC, x64 | `bin_Release_qt6.7.3_GCC_x64` |
+| Qt 6.7.3, Release, GCC, x64 | `bin_Release_qt6.7.3_GNU_x64` |
 
 ### 输出文件说明
 
@@ -303,7 +303,7 @@ bin_{BuildType}_qt{QtVersion}_{Compiler}_{Arch}
 | `DAWorkBench.exe` | 主程序可执行文件 |
 | `DAFigure.dll` | 图表模块动态库 |
 | `DAData.dll` | 数据处理模块动态库 |
-| `DAGui.dll` | GUI 模块动态库 |
+| `DAGui.dll` | 图形界面模块动态库 |
 | `DACommonWidgets.dll` | 通用组件动态库 |
 
 ## 验证构建结果
@@ -322,7 +322,7 @@ dir bin_Release_qt6.7.3_MSVC_x64\*.exe
 dir bin_Release_qt6.7.3_MSVC_x64\*.dll
 
 # Linux - 检查输出目录内容
-ls bin_Release_qt6.7.3_GCC_x64/
+ls bin_Release_qt6.7.3_GNU_x64/
 ```
 
 如果文件列表正常显示，说明编译过程成功。
@@ -337,7 +337,7 @@ ls bin_Release_qt6.7.3_GCC_x64/
 .\bin_Release_qt6.7.3_MSVC_x64\DAWorkBench.exe
 
 # Linux - 启动程序
-./bin_Release_qt6.7.3_GCC_x64/DAWorkBench
+./bin_Release_qt6.7.3_GNU_x64/DAWorkBench
 ```
 
 程序启动后应显示主窗口界面，表示构建成功。

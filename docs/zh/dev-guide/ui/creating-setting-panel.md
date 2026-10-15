@@ -731,7 +731,7 @@ void DAChartCurveSettingPanel::buildPropertyPanel()
 | `src/DAGui/NodeSetting/DANodeParamSettingPanel.h` | 工作流节点参数面板完整示例（基于 DAPropertyFormWidget、PIMPL） |
 | `src/DAGui/NodeSetting/DANodeParamSettingPanelFactory.h` | 工厂类，qualifiedName 路由与创建 |
 | `src/DAGui/NodeSetting/DANodeParameterFormAdapter.h` | DAPyNodeParameter → DAFormSpec 适配器 |
-| `src/DACommonWidgets/DAFormEditorRegistry.h` | 11 种字段类型编辑器注册表 |
+| `src/DAGui/DAFormEditorRegistry.h` | 11 种字段类型编辑器注册表 |
 | `src/DACommonWidgets/DAPropertyFormWidget.h` | 统一表单渲染容器 |
 | `src/DAGui/DAAbstractNodeSettingWidget.h` | 节点设置基类，持有 DAPyNode* |
 | `src/DAGui/DAPyWorkFlowNodeItemSettingWidget.h` | 工作流节点设置容器，嵌入参数面板作为主标签页 |

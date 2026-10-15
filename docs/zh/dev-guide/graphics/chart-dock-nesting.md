@@ -36,7 +36,7 @@ flowchart TD
 
 - 顶层 `CDockManager` 与嵌套 `CDockManager` 是**两个独立的停靠容器**（两个 `CDockContainerWidget`），各自管理自己的 dock widget
 - `DAFigureDockWidget` 是**纯 `QWidget`**（不继承 `ads::CDockWidget` / `QDockWidget`），由 `ads::CDockWidget` 包装后加入嵌套管理器，遵循 `DAAgentDockWidget` 的项目约定（继承 `QDockWidget`/`ads::CDockWidget` 再交给停靠管理器会出现双标题栏、拖拽冲突）
-- 嵌套管理器在构造时调用 `lockDockWidgetFeaturesGlobally(DockWidgetFloatable)`，**全局禁止所有 figure dock 浮动**（`CDockManager.cpp:564` 的 `features()` 会按全局锁掩码，对所有当前及后续 dock 生效），保留 `DockWidgetMovable` 实现分屏/并栏/拖拽
+- 嵌套管理器在构造时调用 `lockDockWidgetFeaturesGlobally(DockWidgetFloatable)`，**全局禁止所有 figure dock 浮动**（`CDockManager::features()` 会按全局锁掩码，对所有当前及后续 dock 生效），保留 `DockWidgetMovable` 实现分屏/并栏/拖拽
 
 ## 关键实现要点
 
@@ -47,7 +47,7 @@ ads::CDockWidget* dock = new ads::CDockWidget(d_ptr->mDockManager, t);  // 走�
 dock->setObjectName(fig->getFigureId());   // 稳定唯一，restoreState 按此匹配
 ```
 
-`objectName` 用于 `restoreState` 按 objectName 重新挂接布局。`figureId` 是 `DAFigureWidget` 构造时生成的 UUID（`DAFigureWidget.cpp:80`），稳定且唯一，是布局持久化匹配的依据。**不要**用可变的绘图名称作 objectName（重名会破坏 `dockWidgetsMap`）。
+`objectName` 用于 `restoreState` 按 objectName 重新挂接布局。`figureId` 是 `DAFigureWidget` 构造时生成的 UUID，稳定且唯一，是布局持久化匹配的依据。**不要**用可变的绘图名称作 objectName（重名会破坏 `dockWidgetsMap`）。
 
 ### 2. 默认以标签加入当前 area
 
@@ -71,7 +71,7 @@ connect(dock, &ads::CDockWidget::closeRequested, this, [this, fig]() {
 });
 ```
 
-`CustomCloseHandling`（`DockWidget.h:159`）让关闭按钮触发 `closeRequested()` 信号而非自动隐藏，便于弹确认框后再删除，避免遗留隐藏的 dock。
+`CustomCloseHandling` 让关闭按钮触发 `closeRequested()` 信号而非自动隐藏，便于弹确认框后再删除，避免遗留隐藏的 dock。
 
 ### 4. 序列化（布局持久化）
 
@@ -84,7 +84,7 @@ connect(dock, &ads::CDockWidget::closeRequested, this, [this, fig]() {
     ADS 的 `CDockManager::saveState()` 只序列化自身容器，**不递归嵌套管理器**。所以 figure 布局必须由 DAChartOperateWidget 单独保存，不能依赖 app 顶层的 `saveState`。详见 ADS 的 `dockindock` 示例（`examples/dockindock/`）的 `savePerspectivesRec` 递归封装。
 
 !!! warning "加载前必须 clear"
-    `DAAppProject::load()` 在加载前调用 `clear()`（`DAAppProject.cpp:612`）。`clear()` 逐个 `removeFigure`（同步从 `dockWidgetsMap` 移除），保证加载时 objectName 从干净状态开始，`restoreState` 才能按 objectName 正确匹配。**改动加载流程时不要省略 clear**。
+    `DAAppProject::load()` 在加载前调用 `clear()`。`clear()` 逐个 `removeFigure`（同步从 `dockWidgetsMap` 移除），保证加载时 objectName 从干净状态开始，`restoreState` 才能按 objectName 正确匹配。**改动加载流程时不要省略 clear**。
 
 ## 关键陷阱：FocusHighlighting + 嵌套管理器的焦点跨管理器混淆
 
@@ -97,7 +97,7 @@ connect(dock, &ads::CDockWidget::closeRequested, this, [this, fig]() {
 
 ### 根因（ADS 源码级）
 
-ADS 的 `CDockFocusController` 把「当前聚焦 dock」存为**窗口级属性** `FocusedDockWidgetProperty`（`DockFocusController.cpp:36/133`），且 `onApplicationFocusChanged`（`DockFocusController.cpp:268-305`）从焦点控件找到所属 `CDockWidget` 后直接 `updateDockWidgetFocus`，**不校验该 dock 是否属于本管理器**：
+ADS 的 `CDockFocusController` 把「当前聚焦 dock」存为**窗口级属性** `FocusedDockWidgetProperty`，且 `onApplicationFocusChanged` 从焦点控件找到所属 `CDockWidget` 后直接 `updateDockWidgetFocus`，**不校验该 dock 是否属于本管理器**：
 
 ```cpp
 // DockFocusController.cpp:286-304（节选）

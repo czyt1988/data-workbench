@@ -470,7 +470,7 @@ data-workbench/
 | `DA_ENABLE_AUTO_INSTALL_PYTHON_ENV` | `ON` | 顶层 install（复制 Python DLL 到 bin/） | Windows 下自动搜索 Python 环境并复制 DLL |
 | `DA_ENABLE_AUTO_TRANSLATE` | `ON` | i18n | 自动调用 Linguist 编译翻译文件（.ts → .qm） |
 | `DA_AUTO_INSTALL_PREFIX` | `ON` | 顶层 install 路径 | 自动把构建结果安装到本地目录 |
-| `DA_AUTO_GENERATE_CONFIG_INFO` | `OFF` | `src/DAConfigs.h` 生成 | 自动生成 DAConfig.h，仅库开发者需 ON，库使用者默认 OFF |
+| `DA_AUTO_GENERATE_CONFIG_INFO` | `OFF` | `src/DAConfigs.h` 生成 | 自动生成 DAConfigs.h，仅库开发者需 ON，库使用者默认 OFF |
 | `DA_BUILD_PLUGINS` | `ON` | plugins/ 目录 | 是否构建插件 |
 | `DA_ENABLE_TESTING` | `OFF` | tst/ 测试 | 是否启用测试 |
 

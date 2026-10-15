@@ -174,9 +174,9 @@ markdown_extensions:
 
 ### src/DAAgent/
 
-**用途**：L4 接口层 Agent 框架模块（无 GUI 依赖）。
+**用途**：L4 接口层 Agent 框架模块（无图形界面依赖）。
 
-`src/DAAgent/` 是平台内置的 Agent 框架源码目录，承载多供应商 LLM 调用、提示词库、工具注册与持久化会话等能力。主要类包括 `DAAgentInterface`（对外接口契约）、`DAAgentBridge`、`DAAgentModule`、`DAAgentManager`、`DAAgentPrompt`、`DAAgentSessionStore`、`DAAgentToolBase`。Agent 工具的具体实现以插件形式存在于 `plugins/DAAgentTools/`。
+`src/DAAgent/` 是平台内置的 Agent 框架源码目录，承载多供应商大语言模型（LLM）调用、提示词库、工具注册与持久化会话等能力。主要类包括 `DAAgentInterface`（对外接口契约）、`DAAgentBridge`、`DAAgentModule`、`DAAgentManager`、`DAAgentPrompt`、`DAAgentSessionStore`、`DAAgentToolBase`。Agent 工具的具体实现以插件形式存在于 `plugins/DAAgentTools/`。
 
 !!! info "更多细节"
     Agent 框架的架构、生命周期与扩展方式见 [:octicons-copilot-24: Agent 开发指南](../dev-guide/agent/index.md)。
@@ -334,7 +334,7 @@ python make-plugin.py
 - `build/` - 构建与环境搭建
 - `dev-guide/` - 开发指南（`general/` 规范、`architecture/` 架构、`workflow/` 工作流、`python-binding/` Python 集成、`graphics/` 图形绘图、`agent/` Agent、`ui/` 界面开发）
 - `plugin/` - 插件开发
-- `use-guide/` - 使用指南（按功能分目录的完整手册）
+- `use-guide/` - 使用指南（按功能分目录的完整手册：`getting-started/` 入门、`data/` 数据、`workflow/` 工作流、`analysis/` 数据分析、`chart/` 绘图、`agent/` 智能体、`script/` 脚本、`plugin/` 插件、`reference/` 参考）
 - `reference/` - 最佳实践、FAQ、术语表、更新日志
 
 ---

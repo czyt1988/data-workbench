@@ -205,4 +205,4 @@ cat ~/.config/DAWorkbench/logs/latest.log
 
 - [创建插件项目](../plugin/plugin-development.md)：了解插件项目结构和 CMake 配置
 - [插件与接口](../plugin/plugin-system.md)：了解插件开发接口
-- [插件开发创建 UI](../plugin/plugin-dev-create-ui.md)：了解如何为插件创建用户界面
+- [插件开发创建界面](../plugin/plugin-dev-create-ui.md)：了解如何为插件创建用户界面

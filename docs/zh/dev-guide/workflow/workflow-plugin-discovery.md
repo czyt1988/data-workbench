@@ -1,6 +1,6 @@
 # 插件与节点发现机制
 
-本文档说明 data-workbench 中插件和节点的发现机制。C++ DLL 插件和 Python 节点各有独立的发现通道，最后在应用层合并，供工作流编辑器的节点面板使用。
+本文档说明 data-workbench 中插件和节点的发现机制。C++ 动态链接库（DLL）插件和 Python 节点各有独立的发现通道，最后在应用层合并，供工作流编辑器的节点面板使用。
 
 ## 导航
 
@@ -62,16 +62,16 @@ DLL 插件的发现由 `DAPluginManager::loadAllPlugins()` 驱动，包含以下
 
 | 步骤 | 操作 | 实现位置 |
 |------|------|----------|
-| 1 | 扫描插件目录，获取所有文件列表 | `DAPluginManager.cpp:142` |
-| 2 | 按扩展名过滤（Windows: `.dll`，macOS: `.dylib`/`.so`，Linux: `.so`） | `DAPluginManager.cpp:152-163` |
-| 3 | 跳过忽略列表中的插件（读取 `.pluginignore` 文件） | `DAPluginManager.cpp:164-167` |
-| 4 | 使用 `QLibrary::isLibrary()` 验证文件是否为有效库 | `DAPluginManager.cpp:169-172` |
-| 5 | 通过 `DAPluginOption::load()` 加载每个插件 | `DAPluginManager.cpp:173-179` |
-| 6 | `QPluginLoader::load()` 执行操作系统级加载（`dlopen`/`LoadLibrary`） | `DAPluginOption.cpp:88` |
-| 7 | `QPluginLoader::instance()` 创建 Qt 插件实例 | `DAPluginOption.cpp:102` |
-| 8 | `dynamic_cast<DAAbstractPlugin*>` 验证插件接口 | `DAPluginOption.cpp:112` |
-| 9 | 注入核心接口：`plugin->setCore(c)` | `DAPluginOption.cpp:144` |
-| 10 | 调用初始化：`plugin->initialize()`，失败则卸载 | `DAPluginOption.cpp:147-153` |
+| 1 | 扫描插件目录，获取所有文件列表 | `DAPluginManager` |
+| 2 | 按扩展名过滤（Windows: `.dll`，macOS: `.dylib`/`.so`，Linux: `.so`） | `DAPluginManager` |
+| 3 | 跳过忽略列表中的插件（读取 `.pluginignore` 文件） | `DAPluginManager` |
+| 4 | 使用 `QLibrary::isLibrary()` 验证文件是否为有效库 | `DAPluginManager` |
+| 5 | 通过 `DAPluginOption::load()` 加载每个插件 | `DAPluginManager` |
+| 6 | `QPluginLoader::load()` 执行操作系统级加载（`dlopen`/`LoadLibrary`） | `DAPluginOption::load()` |
+| 7 | `QPluginLoader::instance()` 创建 Qt 插件实例 | `DAPluginOption::load()` |
+| 8 | `dynamic_cast<DAAbstractPlugin*>` 验证插件接口 | `DAPluginOption::load()` |
+| 9 | 注入核心接口：`plugin->setCore(c)` | `DAPluginOption::load()` |
+| 10 | 调用初始化：`plugin->initialize()`，失败则卸载 | `DAPluginOption::load()` |
 
 #### 插件加载验证链（9 步校验）
 
@@ -144,8 +144,8 @@ IID 常量定义：
 
 | 常量 | 值 | 定义位置 |
 |------|-----|----------|
-| `DAABSTRACTPLUGIN_IID` | `"org.da.abstract.plugin"` | `DAAbstractPlugin.h:97` |
-| `DAABSTRACTNODEPLUGIN_IID` | `"org.da.abstract.nodePlugin"` | `DAAbstractNodePlugin.h:80` |
+| `DAABSTRACTPLUGIN_IID` | `"org.da.abstract.plugin"` | `DAAbstractPlugin.h` |
+| `DAABSTRACTNODEPLUGIN_IID` | `"org.da.abstract.nodePlugin"` | `DAAbstractNodePlugin.h` |
 
 ### .pluginignore 忽略文件
 
@@ -157,7 +157,7 @@ OldPlugin
 DebugTool
 ```
 
-读取位置：`DAPluginManager.cpp:281-284`
+读取位置：`DAPluginManager` 的忽略文件读取分支。
 
 ### 生命周期回调
 
@@ -231,7 +231,7 @@ Python 插件包（pyplugins）目录结构：
 
 ### 节点声明方式（@NodeDef）
 
-Python 节点通过 `@NodeDef` 装饰器声明，该装饰器在被装饰的类上设置 `_node_descriptor` 属性，作为发现标记：
+Python 节点通过 `@NodeDef` 装饰器声明，该装饰器在被装饰的类上写入 `qualified_name`、`name`、`category` 等类属性，发现流程据此识别节点类：
 
 ```python
 from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
@@ -255,7 +255,7 @@ class DataSourceNode:
         return True
 ```
 
-`@NodeDef` 装饰器在类上设置的 `_node_descriptor` 字典包含以下字段：
+`@NodeDef` 装饰器写在类上的属性包含以下字段：
 
 | 字段 | 类型 | 说明 |
 |------|------|------|
@@ -266,7 +266,7 @@ class DataSourceNode:
 | `inputs` | list | 输入端口描述列表 |
 | `outputs` | list | 输出端口描述列表 |
 | `parameters` | list | 参数描述列表 |
-| `render_template` | str | 渲染模板类型（`rect`/`svg`/`widget`） |
+| `is_global` | bool | 是否为全局节点（实例属性，见 [Python 节点开发指南](./workflow-python-node-dev.md)） |
 
 ### Python 发现引擎（DANodeRegistry）
 
@@ -276,7 +276,7 @@ class DataSourceNode:
 
 1. 遍历指定路径下的所有 `.py` 文件（排除 `__pycache__/` 和 `__init__.py`）
 2. 使用 `importlib.util.spec_from_file_location` 动态导入每个模块
-3. 扫描模块中的所有类属性，查找带有 `_node_descriptor` 属性的类
+3. 扫描模块中的所有类属性，查找带有 `qualified_name` 属性的类
 4. 调用 `register_node()` 注册发现的节点
 
 ```python
@@ -312,7 +312,7 @@ def discover(self, scan_paths=None, use_entry_points=False):
 
     :param scan_paths: 扫描路径列表
     :param use_entry_points: 是否启用 entry_points 发现
-    :return: 节点描述符字典列表（每个字典由 @NodeDef 的 _node_descriptor 属性提供）
+    :return: 注册的节点类列表（每个元素为 @NodeDef 装饰后的类对象）
     """
 ```
 
@@ -333,12 +333,12 @@ bool DAPyNodeFactory::discoverNodes(
 
 | 步骤 | 操作 | 代码位置 |
 |------|------|----------|
-| 1 | 将 `scanPaths` 添加到 Python `sys.path` | `DAPyNodeFactory.cpp:344-346` |
-| 2 | 导入 Python 模块 `DAWorkbench.DAWorkFlowPy` | `DAPyNodeFactory.cpp:349-356` |
-| 3 | 获取 `DANodeRegistry` 类并创建实例 | `DAPyNodeFactory.cpp:359-366` |
-| 4 | 调用 `registry.discover(pyScanPaths, useEntryPoints)` | `DAPyNodeFactory.cpp:375` |
-| 5 | 将返回的节点描述符字典（`_node_descriptor`）转换为 `DAPyNodeMetaData` | `DAPyNodeFactory.cpp:379-411` |
-| 6 | 构建 `qualifiedName` 映射表 | `DAPyNodeFactory.cpp:409` |
+| 1 | 将 `scanPaths` 添加到 Python `sys.path` | `DAPyNodeFactory::discoverNodes()` |
+| 2 | 导入 Python 模块 `DAWorkbench.DAWorkFlowPy` | `DAPyNodeFactory::discoverNodes()` |
+| 3 | 获取 `DANodeRegistry` 类并创建实例 | `DAPyNodeFactory::discoverNodes()` |
+| 4 | 调用 `registry.discover(pyScanPaths, useEntryPoints)` | `DAPyNodeFactory::discoverNodes()` |
+| 5 | 从返回的节点类读取类属性，转换为 `DAPyNodeMetaData` | `DAPyNodeFactory` |
+| 6 | 构建 `qualifiedName` 映射表 | `DAPyNodeFactory` |
 
 ### DAPyNodeMetaData 结构
 
@@ -362,12 +362,11 @@ public:
 
 ### 节点创建
 
-当用户在编辑器中拖入一个 Python 节点时，`DAPyNodeFactory::createNode()` 根据 `qualifiedName` 创建节点实例：
+当用户在编辑器中拖入一个 Python 节点时，`DAPyNodeFactory::createNode()` 按 `qualifiedName` 拿到节点实例：
 
-1. 将 `qualifiedName` 拆分为 `module.ClassName`
-2. 导入对应 Python 模块
-3. 获取类引用，创建实例
-4. 将 Python 实例包装为 `DAPyNode`（C++ 代理对象，继承 `DAPyObjectWrapper`，按值返回）
+1. C++ 侧经 `attr("create_node")(qualifiedName)` 调用 Python 的 `DANodeFactory.create_node()`
+2. Python 侧从注册表取回该 `qualified_name` 对应的节点类并实例化（类必须在 `discover()` 阶段已注册）
+3. C++ 侧把返回的 Python 实例包装为 `DAPyNode`（C++ 代理对象，继承 `DAPyObjectWrapper`，按值返回）
 
 ```cpp
 DAPyNode DAPyNodeFactory::createNode(const QString& qualifiedName);
@@ -556,21 +555,21 @@ DAAppCore 构造函数
 | `DAPyNodeMetaData` | `DAPyWorkFlow/DAPyNodeMetaData.h` | 节点元数据结构 |
 | `DAPyNode` | `DAPyWorkFlow/DAPyNode.h` | Python 节点 C++ 代理（继承 `DAPyObjectWrapper`） |
 | `DAPyWorkFlowManager` | `DAPyWorkFlow/DAPyWorkFlowManager.h` | 工作流管理器（QObject），桥接 Python 代理层与 Qt UI 层 |
-| `DAPyModuleWorkflow` | `DAPyWorkFlow/DAPyModuleWorkflow.h` | Python 模块导入单例 |
+| `DAPyModuleWorkflow` | `DAPyWorkFlow/DAPyModuleWorkflow.h` | Python 模块导入封装（继承 `DAPyModule`，每次构造时导入，非单例） |
 
 ### Python 核心类
 
 | 类名/装饰器 | 模块路径 | 作用 |
 |-------------|----------|------|
-| `@NodeDef` | `DAWorkbench.DAWorkFlowPy.node_def` | 节点声明装饰器，在类上设置 `_node_descriptor` 属性字典 |
+| `@NodeDef` | `DAWorkbench.DAWorkFlowPy.node_def` | 节点声明装饰器，把 `qualified_name`/`name`/`category` 等元数据写成类属性 |
 | `DAWorkflowNode` | `DAWorkbench.DAWorkFlowPy.node_def` | 工作流节点基类，提供 `set_input_data`/`get_output_data` 等方法 |
 | `NodeDisplay` | `DAWorkbench.DAWorkFlowPy.node_def` | 节点渲染/显示属性 dataclass（icon、render_template、body_shape 等样式字段） |
 | `LinkPointStyle` | `DAWorkbench.DAWorkFlowPy.node_def` | 连接点（端口）样式配置 dataclass |
 | `DANodeRegistry` | `DAWorkbench.DAWorkFlowPy.node_registry` | 节点发现引擎（目录扫描 + entry_points） |
 | `DANodeFactory` | `DAWorkbench.DAWorkFlowPy.node_factory` | 节点工厂，封装发现和实例化功能（C++ 调用入口） |
 | `DAWorkflow` | `DAWorkbench.DAWorkFlowPy.workflow` | 工作流 DAG 模型，管理节点和连接的拓扑关系 |
-| `DAWorkflowExecutor` | `DAWorkbench.DAWorkFlowPy.executor` | 工作流执行编排引擎，基于拓扑排序执行节点 |
-| `DAWorkflowSerializer` | `DAWorkbench.DAWorkFlowPy.serializer` | 工作流序列化器，提供 JSON 序列化/反序列化 |
+| `DAWorkflowExecutor` | `DAWorkbench.DAWorkFlowPy.executor` | 工作流执行编排引擎，按入度分类节点并在数据到齐时触发下游 |
+| `DAWorkflowSerializer` | `DAWorkbench.DAWorkFlowPy.serializer` | 工作流序列化器，提供 dict / JSON / XML 元素的序列化与反序列化 |
 | `DASignalManager` | `DAWorkbench.DAWorkFlowPy.signal_manager` | 信号管理器，基于事件驱动实现节点间数据传播 |
 | `NodeProxy` | `DAWorkbench.DAWorkFlowPy.syntax` | 节点代理（语法糖），支持 `A >> B` 链式连接语法 |
 | `NodeOutputProxy` | `DAWorkbench.DAWorkFlowPy.syntax` | 输出端口代理，支持 `A.out >> B.in` 端口级连接 |
@@ -609,7 +608,7 @@ DAAppCore 构造函数
 
 - **DLL 插件加载日志**：带 `qWarning` 级别，包含文件路径和具体失败原因
 - **DAPluginOption** 加载失败时可通过 `getErrorString()` 获取详细的 QPluginLoader 错误信息
-- **Python 节点发现日志**：`DAPyNodeFactory::discoverNodes()` 中的异常会通过 `qWarning` 输出，可通过 `getLastErrorString()` 获取
+- **Python 节点发现日志**：`DAPyNodeFactory::discoverNodes()` 中的异常会通过 `qWarning` 输出
 - **Python 解释器状态**：`DAPyInterpreter::isPythonInitialized()` 检查 Python 是否可用
 
 ## 参考资料

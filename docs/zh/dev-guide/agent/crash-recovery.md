@@ -1,6 +1,6 @@
 # 崩溃恢复与重连机制
 
-Agent 子进程可能因 LLM API 超时、Python 异常、内存不足等原因崩溃。子进程的生命周期管理、自动重启、会话恢复与重试退避都以自动恢复为目标，尽量不影响用户操作。
+Agent 子进程可能因大语言模型（LLM）API 超时、Python 异常、内存不足等原因崩溃。子进程的生命周期管理、自动重启、会话恢复与重试退避都以自动恢复为目标，尽量不影响用户操作。
 
 ---
 
@@ -68,7 +68,7 @@ sequenceDiagram
 | 暂停条件 | 工具执行中 | `ToolExecGuard` RAII 暂停/恢复 |
 | 暂停条件 | 等待用户回答 | 收到 `question` 时暂停，收到 `user_answer` 恢复 |
 
-看门狗超时后，C++ 侧会主动 `kill()` 子进程，触发崩溃恢复流程。
+看门狗超时后，`onInactivityTimeout()` 先发射 `agentError`（提示响应超时），再调用 `requestStop()` 让 Python 优雅退出；`requestStop()` 的 5 秒计时器到期后仍未退出才 `kill()`。子进程退出后走崩溃恢复流程。
 
 ```cpp
 // ToolExecGuard RAII 模式暂停/恢复看门狗
@@ -153,15 +153,15 @@ LLM API 调用可能因网络波动、服务端过载等原因失败。Agent 子
 | ErrorType | 可重试 | 触发条件 |
 |-----------|--------|---------|
 | `CONTEXT_OVERFLOW` | 否 | 上下文长度超限（由 `agent_node` 的 force_compact 专用恢复，盲目重试超大请求无意义） |
-| `USER_CANCEL` | 否 | 用户主动取消 / `asyncio.CancelledError` |
 | `QUOTA_EXHAUSTED` | 否 | `RateLimitError` 含 `insufficient_quota`（配置类错误，快速失败） |
 | `AUTH_ERROR` | 否 | `AuthenticationError` 或 HTTP 401/403（配置类错误，快速失败） |
 | `BAD_REQUEST` | 是 | `BadRequestError`（非溢出类；网关瞬时 400 可自愈，悬空 tool_calls 类结构性 400 已由 `agent_node` 请求前主动修复） |
 | `RATE_LIMIT_EXHAUSTED` | 是 | `RateLimitError`（非配额类） |
 | `SERVER_ERROR_EXHAUSTED` | 是 | 服务端 5xx 错误 |
-| `NETWORK_EXHAUSTED` | 是 | 网络超时 / 连接中断 |
-| `STREAM_INTERRUPTED` | 是 | 流式输出中断（`httpx.ReadError` 等） |
+| `NETWORK_EXHAUSTED` | 是 | 网络超时 / 连接中断；流式输出中途中断（`httpx.ReadError`、空的流式响应）也归入此类 |
 | `UNKNOWN` | 视情况 | 带 API/HTTP 特征（`openai.APIError` 实例或含 `status_code`）时可重试；纯本地异常（代码 bug 等）快速失败 |
+
+用户取消（`asyncio.CancelledError`）不重试，分类结果同样是 `UNKNOWN`，`detail` 记为 "Agent stopped by user"。
 
 !!! warning "溢出关键词表禁止加入通用包装词"
     `is_context_overflow_error` 的关键词表（`error_classifier.py` 与 `context_manager.py` 两处同步维护）只允许特异性短语（"context length"、"maximum context" 等）。litellm 对**所有**上游 400 都包装 "The request is invalid" 前缀，把这类通用词加入关键词表会把悬空 tool_calls 等无关的 `BadRequestError` 误判为上下文溢出，UI 显示误导性的「上下文窗口超限且压缩失败」标题。

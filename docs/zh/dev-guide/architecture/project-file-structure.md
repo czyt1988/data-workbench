@@ -23,7 +23,7 @@ ZIP 压缩包的管理基于开源库 `QuaZip` 实现，具体实现类为 `DAZi
 
 ```txt
 project.dapro (ZIP Archive)
-├── system-info.xml           # 本地系统信息
+├── system.xml                # 本地系统信息
 ├── workflow.xml              # 工作流信息（节点、连接、图元等）
 ├── charts.xml                # 绘图信息（图表配置、数据绑定等）
 ├── data-manager.xml          # 数据管理器配置
@@ -87,7 +87,7 @@ project.dapro (ZIP Archive)
 
 ```mermaid
 flowchart TD
-    A["开始保存"] --> B["保存系统信息<br/>system-info.xml"]
+    A["开始保存"] --> B["保存系统信息<br/>system.xml"]
     B --> C["保存工作流<br/>workflow.xml"]
     C --> D["保存数据管理器<br/>data-manager.xml + datas/"]
     D --> E["保存图表<br/>charts.xml + chart-data/"]
@@ -97,7 +97,7 @@ flowchart TD
 ```
 
 上图展示了工程保存的六个阶段：
-- **第一阶段**：保存系统信息到 `system-info.xml`，记录创建环境
+- **第一阶段**：保存系统信息到 `system.xml`，记录创建环境
 - **第二阶段**：保存工作流到 `workflow.xml`，包含节点、连接、图元
 - **第三阶段**：保存数据管理器配置和实际数据文件
 - **第四阶段**：保存图表配置和图表数据
@@ -106,7 +106,7 @@ flowchart TD
 
 **保存顺序详解**
 
-1. 保存系统信息（`system-info.xml`）
+1. 保存系统信息（`system.xml`）
 2. 保存工作流（`workflow.xml`）
 3. 保存数据管理器（`data-manager.xml` 及 `datas/` 目录）
 4. 保存图表（`charts.xml` 及 `chart-data/` 目录）
@@ -260,16 +260,18 @@ flowchart TD
 
 ## 本地信息记录 `<local-info>`
 
-`<local-info>` 位于 `<root>` 节点下，用于记录保存文件时的本地计算机环境信息。这些信息有助于追踪文件的创建来源。以下示例展示了本地信息的数据结构：
+本地计算机环境信息保存在 `system.xml` 根节点 `<root type="system-info">` 下的 `<system>` 元素中，用于追踪文件的创建来源（本节标题沿用旧称 `local-info`，文件中的实际元素名为 `system`）。以下示例展示了本地信息的数据结构：
 
 ```xml
-<local-info>
-    <machineHostName>计算机名</machineHostName>
-    <cpuArch>CPU 架构</cpuArch>
-    <kernelType>操作系统类型</kernelType>
-    <kernelVersion>操作系统版本</kernelVersion>
-    <prettyProductName>操作系统全称</prettyProductName>
-</local-info>
+<root type="system-info">
+    <system>
+        <machineHostName>计算机名</machineHostName>
+        <cpuArch>CPU 架构</cpuArch>
+        <kernelType>操作系统类型</kernelType>
+        <kernelVersion>操作系统版本</kernelVersion>
+        <prettyProductName>操作系统全称</prettyProductName>
+    </system>
+</root>
 ```
 
 | 元素 | 说明 |

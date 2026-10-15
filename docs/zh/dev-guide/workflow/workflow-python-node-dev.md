@@ -52,7 +52,7 @@ class MyNode:
 | `description` | str | 否 | 节点说明文本，显示在 tooltip 中。推荐用 `_("English") # cn:中文` 翻译。若为 `None` 则自动回退读取类 docstring（不翻译） |
 
 !!! tip "render_template 参数"
-    `render_template` 控制节点在工作流场景中的视觉呈现方式（`node_def.py:179-183` 的 `_normalize_render_template` 会把旧值归一化）：
+    `render_template` 控制节点在工作流场景中的视觉呈现方式（`node_def.py` 的 `_normalize_render_template` 会把旧值归一化）：
     
     - `"nodestyle"`（默认）：使用 `NodeDisplay`/`DAPyNodeStyle` 配置绘制节点样式（支持 `body_shape`、`background_color` 等字段）
     - `"rect"` / `"svg"`：旧值，规范化后等价于 `"nodestyle"`
@@ -251,7 +251,7 @@ class Parameter:
 
 #### 支持的参数类型
 
-`_TYPE_LABELS`（`types.py:121-135`）支持的类型标签：
+`_TYPE_LABELS`（`types.py`）支持的类型标签：
 
 | 类型 | 标签 | 说明 |
 |------|------|------|
@@ -269,7 +269,7 @@ class Parameter:
 | `"code"` | `"code"` | 多行代码编辑（`QPlainTextEdit`） |
 
 !!! info "C++ 端扩展类型支持"
-    Python `Parameter` 通过 `param_type` 传 Python 内置类型（6 种）或字符串标签（再 6 种扩展类型）。扩展类型由 C++ 端的 `DAFormEditorRegistry` 渲染对应控件：`str→QLineEdit, int→QSpinBox, float→QDoubleSpinBox, bool→QCheckBox, enum→QComboBox, list→QListWidget, file→DAFilePathEditWidget, folder→DAFilePathEditWidget(dir), color→DAColorPickerButton, font→DAFontEditPannelWidget, code→QPlainTextEdit`。当 Python 节点的参数通过 `DANodeParameterFormAdapter` 转换为 `DAFormSpec` 后，`DAFormEditorRegistry` 根据 `type` 字段创建对应的编辑器控件。参见 [创建属性设置面板](../ui/creating-setting-panel.md) 和 `src/DACommonWidgets/DAFormEditorRegistry.h`。
+    Python `Parameter` 通过 `param_type` 传 Python 内置类型（6 种）或字符串标签（再 6 种扩展类型）。扩展类型由 C++ 端的 `DAFormEditorRegistry` 渲染对应控件：`str→QLineEdit, int→QSpinBox, float→QDoubleSpinBox, bool→QCheckBox, enum→QComboBox, list→QListWidget, file→DAFilePathEditWidget, folder→DAFilePathEditWidget(dir), color→DAColorPickerButton, font→DAFontEditPannelWidget, code→QPlainTextEdit`。当 Python 节点的参数通过 `DANodeParameterFormAdapter` 转换为 `DAFormSpec` 后，`DAFormEditorRegistry` 根据 `type` 字段创建对应的编辑器控件。参见 [创建属性设置面板](../ui/creating-setting-panel.md) 和 `src/DAGui/DAFormEditorRegistry.h`。
 
 #### 使用示例
 
@@ -818,24 +818,30 @@ qualified_name = f"{cls.__module__}.{cls.__name__}"
 
 ### is_global 属性
 
-全局节点是一种特殊节点，执行后不向下游传播数据，常用于配置节点或副作用节点。
+全局节点在整条工作流开始执行时先执行一遍，执行结果不向下游传播，常用于配置节点或副作用节点。
+
+判定依据是**实例属性** `is_global`。`DAWorkflowNode.__init__` 先把 `self.is_global` 设为 `False`，执行器的节点分类用 `getattr(node_instance, "is_global", False)` 读取实例属性。写在类体里的 `is_global = True` 是类属性，会被基类赋的实例属性遮盖，节点仍按普通节点处理。要在节点类的 `__init__` 里、`super().__init__()` 之后写 `self.is_global = True`。
 
 ```python
 @NodeDef(name="全局配置", category="配置")
 class GlobalConfigNode:
     """全局配置节点"""
-    
-    # 标记为全局节点
-    is_global = True
-    
+
     config_path = Parameter(str, default="", description="配置文件路径")
-    
+
+    def __init__(self):
+        super().__init__()
+        # 必须在 super().__init__() 之后设置实例属性，覆盖基类的 is_global = False
+        self.is_global = True
+
     def execute(self, inputs=None, params=None):
         """执行全局配置加载"""
         # 全局节点执行后不传播数据
         # 但可以通过其他机制（如全局变量）影响工作流
         return True
 ```
+
+上例会先把 `GlobalConfigNode` 归入全局节点，在孤立节点和开始节点之前执行，执行时以 `transmit=False` 调用，不触发 `_propagate_and_transmit()`。全局节点如果同时是开始节点（无入边、有出边），执行器在随后的开始节点阶段会调用 `_propagate_and_transmit()` 把它此前写出的输出传给下游。
 
 ### render_template 和 style 参数
 

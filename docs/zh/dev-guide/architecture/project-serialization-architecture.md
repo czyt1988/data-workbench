@@ -296,8 +296,8 @@ void DAZipArchive::saveAll(const QString& filePath)
 
 | 类型 | 文件名 |
 |------|--------|
-| 原文件 | `project.da` |
-| 临时文件 | `.~project.da` |
+| 原文件 | `project.dapro` |
+| 临时文件 | `.~project.dapro` |
 
 ### 2.4 DAZipArchiveThreadWrapper - 多线程封装
 
@@ -545,7 +545,7 @@ void DAAppProject::makeSaveChartTask(DAZipArchiveThreadWrapper* archive)
 
 ```mermaid
 flowchart TD
-    A["原文件存在<br/>project.da"] --> B["创建临时文件<br/>.~project.da"]
+    A["原文件存在<br/>project.dapro"] --> B["创建临时文件<br/>.~project.dapro"]
     B --> C["写入所有数据<br/>到临时文件"]
     C --> D{成功？}
     D -->|Yes| E["替换原文件"]
@@ -802,7 +802,7 @@ void DAZipArchiveThreadWrapper::onTaskProgress(std::shared_ptr<DAAbstractArchive
 
 ### 7.1 项目文件后缀
 
-项目文件使用 `.da` 后缀。
+项目文件使用 `.dapro` 后缀。
 
 ### 7.2 ZIP 内部结构
 
@@ -810,7 +810,7 @@ ZIP 文件内部按模块组织，各模块数据存放在独立文件或目录�
 
 ```mermaid
 graph LR
-    subgraph project.da
+    subgraph project.dapro
         A["system.xml<br/><small>系统信息</small>"]
         B["workflow.xml<br/><small>工作流配置</small>"]
         C["data-manager.xml<br/><small>数据管理器索引</small>"]
@@ -843,10 +843,13 @@ graph LR
 ```xml title="system.xml 示例"
 <?xml version="1.0" encoding="UTF-8"?>
 <root type="system-info">
-    <system version="1.0" 
-            os="Windows" 
-            qt_version="6.7.3"
-            create_time="2024-01-01T12:00:00"/>
+    <system>
+        <machineHostName>计算机名</machineHostName>
+        <cpuArch>CPU 架构</cpuArch>
+        <kernelType>操作系统类型</kernelType>
+        <kernelVersion>操作系统版本</kernelVersion>
+        <prettyProductName>操作系统全称</prettyProductName>
+    </system>
 </root>
 ```
 
@@ -893,7 +896,7 @@ graph LR
 
 ### 8.1 动机
 
-部分节点在 `execute()` 阶段会派生需要在 UI 上呈现的状态，比如：
+部分节点在 `execute()` 阶段会派生需要在 UI 上显示的衍生状态，比如：
 
 - `TextViewer` / `Print` 节点把输入数据字符串化后缓存在实例属性中，供 `paint()` 直接绘制
 - 表格预览节点缓存最近一次的 DataFrame 摘要

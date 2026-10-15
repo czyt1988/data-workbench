@@ -9,7 +9,7 @@
 | 选项 | 默认值 | 简述 | 影响范围 |
 |------|:------:|------|---------|
 | `DA_ENABLE_AUTO_INSTALL_PYTHON_ENV` | `ON` | 自动搜索并部署 Python DLL | APP（仅 Windows） |
-| `DA_ENABLE_AUTO_TRANSLATE` | `ON` | 自动编译翻译文件（.ts → .qm） | i18n |
+| `DA_ENABLE_AUTO_TRANSLATE` | `ON` | 自动编译翻译文件（.ts → .qm） | 国际化翻译 |
 | `DA_AUTO_INSTALL_PREFIX` | `ON` | 自动安装到本地目录 | 所有模块的 install 行为 |
 | `DA_AUTO_GENERATE_CONFIG_INFO` | `OFF` | 自动生成 DAConfigs.h（已改为无条件生成） | 库开发者专用 |
 | `DA_BUILD_PLUGINS` | `ON` | 构建 plugins/ 目录下的插件 | plugins/ 子目录 |
@@ -45,7 +45,7 @@ cmake -DDA_ENABLE_AUTO_INSTALL_PYTHON_ENV=OFF ...
 - **默认值**：`ON`
 - **作用**：构建时自动调用 Qt Linguist 工具，将 `.ts` 翻译源文件编译为 `.qm` 二进制翻译文件
 - **依赖**：需要安装 Qt Linguist 工具（`lrelease`）
-- **影响范围**：i18n 翻译文件
+- **影响范围**：国际化翻译文件
 
 ```bash
 # 启用自动翻译（默认）

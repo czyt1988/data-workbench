@@ -166,7 +166,7 @@ da_add_plugin(
 上述 src 目录 CMake 配置的关键点：
 
 - standalone 构建时在顶部调用 `da_plugin_bootstrap` 完成 project/安装目录/工具文件引导
-- 使用 `file(GLOB)` 收集源文件、头文件、UI 文件和资源文件
+- 使用 `file(GLOB)` 收集源文件、头文件、界面文件和资源文件
 - `da_add_plugin` 一次完成 target 创建、`_PLUGIN_BUILD` 宏定义、Qt/DA 模块/第三方库链接、
   属性设置与安装（VERSION 缺省继承根 `DA_VERSION`）
 - Windows 平台的 `AxContainer` / `DAAxOfficeWrapper` 依赖用 `QT_WIN32_PUBLIC` /
@@ -624,8 +624,8 @@ PyScripts/
 
 | 层 | 职责 | 依赖限制 |
 |----|------|----------|
-| **Core** | 纯算法（pandas/numpy），不含任何 Qt 或 UI 代码 | 仅 pandas, numpy 等科学计算库 |
-| **Gui** | UI 交互逻辑，调用 Core 层算法并与主程序接口交互 | Core 层 + da_app, da_interface, da_data |
+| **Core** | 纯算法（pandas/numpy），不含任何 Qt 或界面代码 | 仅 pandas, numpy 等科学计算库 |
+| **Gui** | 界面交互逻辑，调用 Core 层算法并与主程序接口交互 | Core 层 + da_app, da_interface, da_data |
 | **Nodes** | 工作流节点定义（使用 `@NodeDef` 装饰器），自动被主程序发现 | Core 层 + DAWorkbench.DAWorkFlowPy |
 
 ### CMake 安装 Python 脚本
@@ -698,7 +698,7 @@ DAWorkBench 自带的三个插件（由 `plugins/CMakeLists.txt` 构建）可以
 |------|------|------|------|
 | **DataAnalysis** | `plugins/DataAnalysis/` | C++ + Python | 数据分析节点插件，三层 Python 包架构（Core/Gui/Nodes）参考实现 |
 | **DASystemNodes** | `plugins/DASystemNodes/` | 纯 Python | 系统级工作流节点（Start/End/If/Else/Delay/Print/TextViewer/DataToManager 等），C++ 入口仅注册 Python 路径，是 Python-first `@NodeDef` 节点插件的模板 |
-| **DAAgentTools** | `plugins/DAAgentTools/` | C++ | 平台内置 agent 工具插件（21 个工具，通过 `DAAgentInterface::registerTool()` 注册），供 LLM agent 调用 |
+| **DAAgentTools** | `plugins/DAAgentTools/` | C++ | 平台内置 agent 工具插件（21 个工具，通过 `DAAgentInterface::registerTool()` 注册），供大语言模型（LLM）agent 调用 |
 
 > 新增 Python-first 节点插件优先参考 `plugins/DASystemNodes/`，无需编写 C++ NodeFactory。详见 `plugins/DASystemNodes/AGENTS.md`。
 
