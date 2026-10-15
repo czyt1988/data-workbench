@@ -1,18 +1,6 @@
 # 关键文件说明
 
-本文档详细说明 DAWorkBench 项目中的关键文件及其用途，帮助开发者快速定位重要的配置和源文件。
-
-## 主要功能特性
-
-**特性**
-
-- ✅ **根目录关键文件**：CMakeLists.txt、DAWorkbenchConfig.cmake.in、readme.md 等顶层文件
-- ✅ **src 目录关键文件**：DAConfigs.h.in、DAGlobals.h 等源码核心文件
-- ✅ **cmake 目录关键脚本**：daworkbench_utils.cmake 等构建辅助脚本
-- ✅ **plugins 目录文件**：插件模板生成工具和配置文件
-- ✅ **docs 目录文件**：文档首页、资源文件、样式文件
-- ✅ **构建输出目录**：bin 目录结构和配置文件优先级
-- ✅ **文件编辑注意事项**：可编辑和自动生成文件的区分
+本文档说明 DAWorkBench 项目中的关键文件及其用途。
 
 ---
 
@@ -45,7 +33,7 @@ option(DA_ENABLE_TESTING "...运行测试" OFF)                             # �
 set(DA_MIN_QT_VERSION 5.14)
 ```
 
-上述配置项决定了项目的基本构建行为，可根据需求调整各选项。默认值汇总：`DA_ENABLE_AUTO_INSTALL_PYTHON_ENV=ON`、`DA_ENABLE_AUTO_TRANSLATE=ON`、`DA_AUTO_INSTALL_PREFIX=ON`、`DA_AUTO_GENERATE_CONFIG_INFO=OFF`、`DA_BUILD_PLUGINS=ON`、`DA_ENABLE_TESTING=OFF`。
+上述配置项的默认值汇总：`DA_ENABLE_AUTO_INSTALL_PYTHON_ENV=ON`、`DA_ENABLE_AUTO_TRANSLATE=ON`、`DA_AUTO_INSTALL_PREFIX=ON`、`DA_AUTO_GENERATE_CONFIG_INFO=OFF`、`DA_BUILD_PLUGINS=ON`、`DA_ENABLE_TESTING=OFF`。
 
 **构建流程**：
 
@@ -346,7 +334,7 @@ python make-plugin.py
 - `build/` - 构建与环境搭建
 - `dev-guide/` - 开发指南（`general/` 规范、`architecture/` 架构、`workflow/` 工作流、`python-binding/` Python 集成、`graphics/` 图形绘图、`agent/` Agent、`ui/` 界面开发）
 - `plugin/` - 插件开发
-- `use-guide/` - 使用指南
+- `use-guide/` - 使用指南（按功能分目录的完整手册）
 - `reference/` - 最佳实践、FAQ、术语表、更新日志
 
 ---
@@ -448,4 +436,4 @@ bin_Release_qt5.15_MSVC_x64/
 
 - [:material-folder: 项目结构详解](./project-structure.md) - 目录结构说明
 - [:material-tools: 构建说明](../build/build-instructions.md) - 构建流程
-- [:material-file-cog: 配置说明](../use-guide/configuration.md) - 配置文件详解
+- [:material-file-cog: 配置说明](../dev-guide/general/config-files.md) - 配置文件详解

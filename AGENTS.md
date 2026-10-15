@@ -203,10 +203,14 @@ AI 编写代码时，日志宏的选择直接影响日志是否进入 UI 消息�
 | **构建** | [build-instructions.md](docs/zh/build/build-instructions.md) | 完整构建指南 |
 | | [build-options.md](docs/zh/build/build-options.md) | CMake 构建选项参考 |
 | | [common-build-errors.md](docs/zh/build/common-build-errors.md) | 常见构建错误 |
-| **使用指南** | [use-guide/index.md](docs/zh/use-guide/index.md) | 用户指南入口 |
-| | [workflow-usage.md](docs/zh/use-guide/workflow-usage.md) | 工作流使用 |
-| | [data-management.md](docs/zh/use-guide/data-management.md) | 数据管理使用 |
-| | [chart-usage.md](docs/zh/use-guide/chart-usage.md) | 图表使用 |
+| **使用指南** | [use-guide/index.md](docs/zh/use-guide/index.md) | 用户指南入口（按功能分八个部分） |
+| | [workflow/basics.md](docs/zh/use-guide/workflow/basics.md) | 工作流使用（入门） |
+| | [workflow/nodes-system.md](docs/zh/use-guide/workflow/nodes-system.md) / [nodes-analysis.md](docs/zh/use-guide/workflow/nodes-analysis.md) | 节点参数手册 |
+| | [data/import.md](docs/zh/use-guide/data/import.md) | 数据导入与管理 |
+| | [chart/create.md](docs/zh/use-guide/chart/create.md) | 绘图入口 |
+| | [agent/model-config.md](docs/zh/use-guide/agent/model-config.md) | 智能体配置入口 |
+| | [reference/settings.md](docs/zh/use-guide/reference/settings.md) | 设置项与默认值 |
+| | [config-files.md](docs/zh/dev-guide/general/config-files.md) | 配置文件位置与内容 |
 | **顶层** | [overview.md](docs/zh/index.md) | 项目概览 |
 | | [plugin-development.md](docs/zh/plugin/plugin-development.md) | 插件开发总览 |
 | | [api-reference.md](docs/zh/reference/api-reference.md) / [overview.md](docs/zh/reference/api-reference/overview.md) | API 参考 |
