@@ -38,10 +38,12 @@
 #   DA_ENABLE_TESTING 等选项预配置新工作树的 build/ 目录，保证两边构建配置一致
 #   （测试目标只有 DA_ENABLE_TESTING=ON 才会编译）。
 #
-#   提示: 配置期会把 src/DAConfigs.h 重新生成到源码树（src/CMakeLists.txt 无条件
-#   configure_file，写入编译日期），而 src/i18n/backup-da_zh_CN.ts 有仓库既有的
-#   换行符噪声（.gitattributes 声明 eol=lf，提交的 blob 却是 CRLF）。这两个文件在
-#   新工作树里固定显示为已修改，不要提交、也不要 checkout 掉。
+#   提示: 新工作树里固定会有「噪声」文件，不要提交、也不要 checkout 掉:
+#     * 检出即已修改的——仓库里有文件提交成了 CRLF，而 .gitattributes 要求 eol=lf
+#       （如 src/i18n/backup-da_zh_CN.ts），每次新检出都与索引不一致，checkout 也修不好；
+#     * src/DAConfigs.h——配置期由 src/CMakeLists.txt 无条件 configure_file 重新生成到
+#       源码树（写入编译日期）。
+#   创建时脚本会把第一类实测列出来，两者都不计入「非预期改动」。
 #
 # 用法:
 #   bash scripts/worktree-add.sh <分支> [基线分支]   创建工作树（基线缺省 dev）
@@ -262,6 +264,13 @@ cmd_add() {
         git worktree add -b "$branch" "$wt" "$base"
     fi
 
+    # 仓库里有文件提交成 CRLF、而 .gitattributes 要求 eol=lf（如 src/i18n/backup-da_zh_CN.ts）:
+    # 这类文件在新检出里必然与索引不一致，git checkout 也修不好。用 `git ls-files --eol` 的
+    # 静态信息识别（i/crlf + attr 里带 eol=lf），比「创建后 git status 报了什么」可靠——
+    # stat 缓存会让同一批文件时隐时现。
+    local eol_noise=""
+    eol_noise=$(git -C "$wt" ls-files --eol | awk -F'\t' '$1 ~ /i\/crlf/ && $1 ~ /eol=lf/ {print $2}' || true)
+
     note "=== 初始化子模块（本地离线，不联网） ==="
     init_submodules "$wt"
 
@@ -285,18 +294,25 @@ cmd_add() {
     note ""
     note "  提醒: 1) bin_* 是指向主工作树的联接（共享预编译第三方库），不要在工作树里执行 cmake --install"
     note "        2) 不要手工 rm -rf 工作树目录（会跟着联接清空主工作树的 bin_*），用 --remove"
-    note "        3) git status 里固定会有两个「噪声」文件，不要提交:"
-    note "           src/DAConfigs.h            配置期由 DAConfigs.h.in 重新生成（写入源码树，含编译日期）"
-    note "           src/i18n/backup-da_zh_CN.ts 仓库既有的换行符噪声（.gitattributes 声明 eol=lf，blob 里却是 CRLF）"
+    note "        3) 下面的「噪声」文件不要提交、也不要 checkout（checkout 也修不好）:"
+    note "           src/DAConfigs.h（配置期由 DAConfigs.h.in 重新生成到源码树，含编译日期）"
+    if [ -n "$eol_noise" ]; then
+        printf '%s\n' "$eol_noise" | sed 's|^|           |; s|$|（仓库里提交成了 CRLF，换行符噪声）|'
+    fi
 
-    local dirty
-    dirty=$(git -C "$wt" status --porcelain \
-        | grep -v 'src/DAConfigs\.h$' \
-        | grep -v 'src/i18n/backup-da_zh_CN\.ts$' || true)
+    # 非预期改动 = git status 报告的文件里剔除上面两类固定噪声
+    local noise_file dirty
+    noise_file=$(mktemp)
+    printf '%s\n' 'src/DAConfigs.h' > "$noise_file"
+    if [ -n "$eol_noise" ]; then
+        printf '%s\n' "$eol_noise" >> "$noise_file"
+    fi
+    dirty=$(git -C "$wt" status --porcelain | sed 's/^...//' | grep -vxF -f "$noise_file" || true)
+    rm -f "$noise_file"
     if [ -n "$dirty" ]; then
         note ""
         note "  注意: 新工作树里存在非预期改动，请确认:"
-        printf '%s\n' "$dirty"
+        printf '%s\n' "$dirty" | sed 's/^/    /'
     fi
 }
 

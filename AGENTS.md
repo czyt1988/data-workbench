@@ -328,9 +328,9 @@ bash scripts/worktree-add.sh --remove feat-chart-xyz   # 删除工作树（保�
 - 构建、测试与主工作树完全一致：`.\scripts\build.ps1 -Target <模块>`、`.\scripts\build.ps1 -Target <模块> -Test`（`-Test` 已能在构建目录里正确跑到 ctest，并会把「一个测试都没跑到」视为失败）。
 - 新工作树第一次构建是**全量**（没有可复用的构建目录），只构建需要的模块目标（`-Target`）比 `-Full` 快得多。
 - 未合并的构建目录、`bin_*` 联接、子模块检出都是工作树私有的，删除工作树不影响主工作树。
-- 新工作树里 `git status` 固定会显示两个「噪声」文件，**不要提交、也不要 checkout 掉**：
-  - `src/DAConfigs.h`——配置期由 `DAConfigs.h.in` 无条件重新生成到源码树（含编译日期），见 `src/CMakeLists.txt`；
-  - `src/i18n/backup-da_zh_CN.ts`——仓库既有的换行符噪声（`.gitattributes` 声明 `*.ts eol=lf`，提交的 blob 里却是 CRLF）。
+- 新工作树里 `git status` 会固定显示一些「噪声」文件（创建时脚本会实测列出来），**不要提交、也不要 checkout 掉**：
+  - 仓库里少数提交成 CRLF、而 `.gitattributes` 要求 `eol=lf` 的文件（如 `src/i18n/backup-da_zh_CN.ts`、`plugins/DataAnalysis/PyScripts/DADataAnalysisGui/update-i18n.sh`）——新检出必然与索引不一致，`git checkout` 也修不好；根治办法是单独开任务 `git add --renormalize <文件>` 后提交；
+  - `src/DAConfigs.h`——配置期由 `DAConfigs.h.in` 无条件重新生成到源码树（含编译日期），见 `src/CMakeLists.txt`。
 - **不要手工 `rm -rf` 工作树目录**：目录联接也是目录，递归删除会跟着清空主工作树的 `bin_*`。删工作树一律用 `--remove`（它先拆联接再删目录）。
 
 ### 合并回 `dev`
