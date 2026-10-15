@@ -347,11 +347,14 @@ bash scripts/worktree-add.sh --remove feat-chart-xyz   # 删除工作树（保�
 
 ## Git 提交规范
 
-在完成当前任务后，需提交所有更改到 Git 仓库，按照 conventional commits 格式用中文生成 commit messages。
+**每完成一个完整任务就提交一次，不要只改不提交**；提交信息用 **Conventional Commits**，描述用中文。
 
+- 类型取自 `feat` / `fix` / `docs` / `style` / `refactor` / `perf` / `test` / `build` / `ci` / `chore` / `revert`，格式 `type(scope): 中文描述`（`(scope)` 可省略）。
 - **只提交本次任务相关的文件，不要用 `git add -A`**——工作树里固定存在生成物/换行符噪声（见上节），且主工作树可能有其它会话的在途改动。
 - 提交尽量原子化：每个提交尽量能独立构建、测试、审查和回滚，避免把一个大任务全部攒到最后一次性提交；这样也能缩小合并冲突的范围。
+- 版本遵循 **SemVer**，版本号在顶层 `CMakeLists.txt` 的 `DA_VERSION_MAJOR` / `DA_VERSION_MINOR` / `DA_VERSION_PATCH`。
 - 合并回 `dev`、删除工作树与分支是「任务完成」的一部分（见上节）。
+- **除非用户明确要求，不要执行 `git push`**。本仓库配了多个远端：`origin`（gitee，`dev` 的跟踪远端）、`github`、`ali`；需要推时默认推当前分支的跟踪远端，不要顺手推其它远端。
 
 ## COMMANDS
 
