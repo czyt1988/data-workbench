@@ -596,5 +596,6 @@ def serialize_runtime_state(self) -> dict:
     return {"display_text": self._display_text}
 ```
 
-!!! warning "新增 DAWorkflowNode 基类方法"
-    如果在 `DAWorkflowNode` 基类中新增需要被子类覆写的方法，**必须**使用 `super()` 转发模式。详见 [Python 节点开发指南 - MRO 遮盖陷阱](../../docs/zh/dev-guide/workflow/workflow-python-node-dev.md#nodef-的-mro-遮盖陷阱)。
+> **⚠️ 新增 DAWorkflowNode 基类方法**
+>
+> 如果在 `DAWorkflowNode` 基类中新增需要被子类覆写的方法，**必须**使用 `super()` 转发模式。详见 [Python 节点开发指南 - MRO 遮盖陷阱](../../docs/zh/dev-guide/workflow/workflow-python-node-dev.md#nodef-的-mro-遮盖陷阱)。

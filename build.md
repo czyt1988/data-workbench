@@ -101,8 +101,9 @@ sudo apt install qt6-base-dev qt6-base-dev-tools qt6-svg-dev \
 
 第三方库位于 `src/3rdparty/`，包含 SARibbon、qwt、ADS 等依赖。
 
-!!! warning "zlib 需预先安装"
-    `src/3rdparty/CMakeLists.txt` 通过 `find_package(ZLIB QUIET)` 查找 zlib，并未 `add_subdirectory(zlib)`（虽然 zlib 是 submodule，但不在此处统一构建）。因此执行下面的单命令构建前，**必须先独立编译并安装 zlib**，否则 `quazip` 会因找不到 zlib 而配置失败。zlib 的独立构建见 [构建说明 - 分步构建](docs/zh/build/build-instructions.md#分步构建)。
+> **⚠️ zlib 需预先安装**
+>
+> `src/3rdparty/CMakeLists.txt` 通过 `find_package(ZLIB QUIET)` 查找 zlib，并未 `add_subdirectory(zlib)`（虽然 zlib 是 submodule，但不在此处统一构建）。因此执行下面的单命令构建前，**必须先独立编译并安装 zlib**，否则 `quazip` 会因找不到 zlib 而配置失败。zlib 的独立构建见 [构建说明 - 分步构建](docs/zh/build/build-instructions.md#分步构建)。
 
 ### Windows (Visual Studio 生成器)
 

@@ -46,9 +46,10 @@ description: 使用当需要在data-workbench Qt/C++项目中创建属性设置�
 - `addSubPanel(id, groupName)` 创建嵌套的 `DAPropertyPanelWidget`，拥有独立属性 ID 空间
 - 子面板信号自动冒泡：子面板的 `propertyValueChanged` 自动转发到父面板，无需手动连接
 
-!!! danger "强制约定：addCollapsibleGroup 后必须立即调用 endGroup"
-    不调用 endGroup 会导致后续所有 addXxxProperty 和 addCollapsibleGroup 都归入当前分组，形成错误的嵌套层次，严重破坏面板布局。
-    必须严格遵循：`addCollapsibleGroup(title)` → 添加属性 → `endGroup()`
+> **🚫 强制约定：addCollapsibleGroup 后必须立即调用 endGroup**
+>
+> 不调用 endGroup 会导致后续所有 addXxxProperty 和 addCollapsibleGroup 都归入当前分组，形成错误的嵌套层次，严重破坏面板布局。
+> 必须严格遵循：`addCollapsibleGroup(title)` → 添加属性 → `endGroup()`
 
 ### 信号链规范
 
