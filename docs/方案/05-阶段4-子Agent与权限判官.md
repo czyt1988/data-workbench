@@ -32,8 +32,9 @@ flowchart LR
 | run_script 判定时读文件原始字节产 sha256（审计问题 26 TOCTOU） | `QCryptographicHash` 读入口文件字节 → `safety.contentHash`，`ToolRequest` 注入内部键 `_expected_content_hash`（内部键不进持久化/UI，同 `_tier`/`_subagent` 先例） | 执行前校验逻辑在 RunScript 工具内**已存在**，零改动 |
 | `workspace_root` 解析入口文件 | 判定边界=入口文件不递归（语义保持），路径取 `setSessionContext` 的会话级 workspace | T16 会话上下文隔离不变 |
 
-!!! warning "禁止反向 RPC"
-    现状铁律：禁止实现成"C++→Python 判定 RPC"。新架构判定天然在 C++，但要保持**判定时机**：必须在 `ToolRequest` 构造前（工具排队/审批之前）完成，这样权限门拿到的 `safety` 与现状时序语义一致，auto 模式的 allow 降级 ask 逻辑（判官未配置时）不受影响。
+> **⚠️ 禁止反向 RPC**
+>
+> 现状铁律：禁止实现成"C++→Python 判定 RPC"。新架构判定天然在 C++，但要保持**判定时机**：必须在 `ToolRequest` 构造前（工具排队/审批之前）完成，这样权限门拿到的 `safety` 与现状时序语义一致，auto 模式的 allow 降级 ask 逻辑（判官未配置时）不受影响。
 
 ### 1.3 判定成本控制
 

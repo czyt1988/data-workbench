@@ -84,7 +84,7 @@ classDiagram
     DAAbstractData <|-- DADataPyObject
     DADataPyObject <|-- DADataPyDataFrame
 DADataPyObject <|-- DADataPySeries
-    ```
+```
 
 上图展示了数据类型的继承层次：
 - `DAAbstractData` 是抽象基类，定义基本接口（名称、描述、数据类型）
@@ -248,14 +248,17 @@ connect(dataMgr, &DADataManagerInterface::dataAdded,
 
 ## 注意事项
 
-!!! warning "Python GIL 管理"
-    操作 Python 数据对象时，需要正确管理 GIL，避免多线程问题。
+> **⚠️ Python GIL 管理**
+>
+> 操作 Python 数据对象时，需要正确管理 GIL，避免多线程问题。
 
-!!! tip "数据生命周期"
-    `DAData` 使用隐式共享，复制操作不会深拷贝数据，修改会影响所有引用。
+> **💡 数据生命周期**
+>
+> `DAData` 使用隐式共享，复制操作不会深拷贝数据，修改会影响所有引用。
 
-!!! note "数据类型检查"
-    在调用 `toDataFrame()` 或 `toSeries()` 前，先用 `isDataFrame()` 或 `isSeries()` 检查类型。
+> **📝 数据类型检查**
+>
+> 在调用 `toDataFrame()` 或 `toSeries()` 前，先用 `isDataFrame()` 或 `isSeries()` 检查类型。
 
 ## 参考资料
 

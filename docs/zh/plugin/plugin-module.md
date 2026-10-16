@@ -250,8 +250,9 @@ set_target_properties(MyNodePlugin PROPERTIES
 - 链接 `Qt6::Core` 获取 Qt 元对象系统支持
 - 设置 `LIBRARY_OUTPUT_DIRECTORY` 将插件输出到 plugins 目录
 
-!!! tip "插件继承顺序"
-    创建插件类时，`QObject`必须是第一个继承类，然后继承插件基类。这是因为 Qt 的元对象系统要求。
+> **💡 插件继承顺序**
+>
+> 创建插件类时，`QObject`必须是第一个继承类，然后继承插件基类。这是因为 Qt 的元对象系统要求。
 
 ## 通用插件类型
 
@@ -305,14 +306,17 @@ DAWorkBench 自带的三个插件（由 `plugins/CMakeLists.txt` 构建）可以
 
 ## 注意事项
 
-!!! warning "插件导出宏"
-    必须使用 `Q_PLUGIN_METADATA` 和 `Q_INTERFACES` 宏声明插件，否则插件无法被系统识别。
+> **⚠️ 插件导出宏**
+>
+> 必须使用 `Q_PLUGIN_METADATA` 和 `Q_INTERFACES` 宏声明插件，否则插件无法被系统识别。
 
-!!! tip "界面操作时机"
-    所有针对界面的操作都应该在 `initialize()` 里调用，这样能保证系统的基本界面框架都已经建立完成。
+> **💡 界面操作时机**
+>
+> 所有针对界面的操作都应该在 `initialize()` 里调用，这样能保证系统的基本界面框架都已经建立完成。
 
-!!! note "Qt 版本兼容性"
-    插件系统在 Qt5 和 Qt6 中使用方式相同，但插件库名称可能不同（如 `qt5advanceddocking.dll` vs `qt6advanceddocking.dll`）。
+> **📝 Qt 版本兼容性**
+>
+> 插件系统在 Qt5 和 Qt6 中使用方式相同，但插件库名称可能不同（如 `qt5advanceddocking.dll` vs `qt6advanceddocking.dll`）。
 
 ## 参考资料
 

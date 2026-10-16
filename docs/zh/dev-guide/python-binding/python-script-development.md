@@ -111,19 +111,20 @@ if not dadata.isDataFrame():
 df = dadata.toDataFrame()
 ```
 
-!!! tip "数据获取辅助函数"
-    项目提供了 `DADataAnalysisGui.utils` 模块中的辅助函数，可一步完成"获取选中 DataFrame + 子集索引"：
-
-    ```python
-    from DADataAnalysisGui import utils
-    result = utils.get_select_dataframe_and_subset_index()
-    # 返回三元组 (dadata, df, subset) 或 None（用户取消时）
-    if result is None:
-        return None
-    dadata, df, subset = result
-    ```
-
-    此函数接受可选参数 `data: da_data.DAData = None`（指定数据对象），封装了获取数据 + 类型检查 + 提取子集索引的完整流程。返回值包含 `DAData` 对象、pandas DataFrame 和列子集索引列表。
+> **💡 数据获取辅助函数**
+>
+> 项目提供了 `DADataAnalysisGui.utils` 模块中的辅助函数，可一步完成"获取选中 DataFrame + 子集索引"：
+>
+> ```python
+> from DADataAnalysisGui import utils
+> result = utils.get_select_dataframe_and_subset_index()
+> # 返回三元组 (dadata, df, subset) 或 None（用户取消时）
+> if result is None:
+>     return None
+> dadata, df, subset = result
+> ```
+>
+> 此函数接受可选参数 `data: da_data.DAData = None`（指定数据对象），封装了获取数据 + 类型检查 + 提取子集索引的完整流程。返回值包含 `DAData` 对象、pandas DataFrame 和列子集索引列表。
 
 ### Step 3：构建参数设置对话框
 
@@ -148,10 +149,11 @@ if not config:
     return None  # 用户取消了对话框
 ```
 
-!!! info "FormBuilder 详细文档"
-    `FormBuilder` 支持的属性类型包括：`str`, `int`, `float`, `bool`, `enum`, `color`, `font`, `file`, `folder`, `code`, `list`，还支持 `.group()`/`.end_group()` 分组以及链式调用风格构建 FormSpec。
-
-    完整源码参见：`src/PyScripts/DAWorkbench/DAPyBase/form_builder.py`（`FormSpec` 类型定义于 `form_spec.py`）
+> **ℹ️ FormBuilder 详细文档**
+>
+> `FormBuilder` 支持的属性类型包括：`str`, `int`, `float`, `bool`, `enum`, `color`, `font`, `file`, `folder`, `code`, `list`，还支持 `.group()`/`.end_group()` 分组以及链式调用风格构建 FormSpec。
+>
+> 完整源码参见：`src/PyScripts/DAWorkbench/DAPyBase/form_builder.py`（`FormSpec` 类型定义于 `form_spec.py`）
 
 ### Step 4：执行操作并封装撤销/重做
 
@@ -180,13 +182,14 @@ dadata.setPyObject(df)
 command.endDataOperateCommand(dadata)
 ```
 
-!!! warning "beginDataOperateCommand 参数说明"
-    - `data`：操作的 `DAData` 对象
-    - `text`：撤销/重做列表中显示的操作描述（`std::string`）
-    - `isObjectPersist`：是否保留对象引用（默认 `False`）
-    - `isSkipFirstRedo`：是否跳过首次重做（默认 `True`，因为操作已执行）
-
-    上述默认值以源码为准：`src/DAInterface/DAInterfacePythonBinding.cpp:259-273` 中 `isObjectPersist = false`、`isSkipFirstRedo = true`。**务必**在操作完成后调用 `endDataOperateCommand`，否则撤销栈会处于不一致状态。
+> **⚠️ beginDataOperateCommand 参数说明**
+>
+> - `data`：操作的 `DAData` 对象
+> - `text`：撤销/重做列表中显示的操作描述（`std::string`）
+> - `isObjectPersist`：是否保留对象引用（默认 `False`）
+> - `isSkipFirstRedo`：是否跳过首次重做（默认 `True`，因为操作已执行）
+>
+> 上述默认值以源码为准：`src/DAInterface/DAInterfacePythonBinding.cpp:259-273` 中 `isObjectPersist = false`、`isSkipFirstRedo = true`。**务必**在操作完成后调用 `endDataOperateCommand`，否则撤销栈会处于不一致状态。
 
 ### Step 5：通知界面刷新与日志
 
@@ -204,15 +207,16 @@ ui.addInfoLogMessage(f"已删除 {removed} 行包含缺失值的数据")
 core.setProjectDirty(True)
 ```
 
-!!! tip "notifyDataChangedSignal 的枚举参数"
-    `notifyDataChangedSignal` 的第二个参数为 `DataChangeType` 枚举，决定界面刷新的范围：
-
-    | 枚举值 | 说明 | 刷新范围 |
-    |--------|------|----------|
-    | `da_data.DataChangeType.Name` | 数据名称变更 | 刷新数据列表标题 |
-    | `da_data.DataChangeType.Describe` | 数据描述变更 | 刷新数据描述信息 |
-    | `da_data.DataChangeType.Value` | 数据值变更 | 刷新数据表格和图表 |
-    | `da_data.DataChangeType.ColumnName` | 列名变更 | 刷新列标题 |
+> **💡 notifyDataChangedSignal 的枚举参数**
+>
+> `notifyDataChangedSignal` 的第二个参数为 `DataChangeType` 枚举，决定界面刷新的范围：
+>
+> | 枚举值 | 说明 | 刷新范围 |
+> |--------|------|----------|
+> | `da_data.DataChangeType.Name` | 数据名称变更 | 刷新数据列表标题 |
+> | `da_data.DataChangeType.Describe` | 数据描述变更 | 刷新数据描述信息 |
+> | `da_data.DataChangeType.Value` | 数据值变更 | 刷新数据表格和图表 |
+> | `da_data.DataChangeType.ColumnName` | 列名变更 | 刷新列标题 |
 
 ## getConfigValues JSON 对话框模式
 
@@ -261,10 +265,11 @@ preview = config.get("preview", False)        # bool
 print(f"阈值: {threshold}, 比例: {ratio}, 方法: {method}")
 ```
 
-!!! warning "getConfigValues 的 cacheKey 参数"
-    `cacheKey` 参数用于记住用户上次设置的参数，下次打开对话框时自动恢复。建议使用 `"模块名.函数名"` 格式作为 cacheKey，如 `"dataframecleaner.dropna"`。
-
-    如果 cacheKey 为空字符串，对话框每次都使用默认值。
+> **⚠️ getConfigValues 的 cacheKey 参数**
+>
+> `cacheKey` 参数用于记住用户上次设置的参数，下次打开对话框时自动恢复。建议使用 `"模块名.函数名"` 格式作为 cacheKey，如 `"dataframecleaner.dropna"`。
+>
+> 如果 cacheKey 为空字符串，对话框每次都使用默认值。
 
 ## 撤销/重做操作模式
 
@@ -304,8 +309,9 @@ except Exception as e:
     ui.addCriticalLogMessage(f"操作失败: {str(e)}")
 ```
 
-!!! info "撤销/重做的工作原理"
-    `beginDataOperateCommand` 在调用时会序列化当前数据状态作为撤销点，`endDataOperateCommand` 会序列化修改后的状态作为重做点。用户执行撤销（Ctrl+Z）时恢复到 begin 时的状态，执行重做（Ctrl+Y）时恢复到 end 时的状态。
+> **ℹ️ 撤销/重做的工作原理**
+>
+> `beginDataOperateCommand` 在调用时会序列化当前数据状态作为撤销点，`endDataOperateCommand` 会序列化修改后的状态作为重做点。用户执行撤销（Ctrl+Z）时恢复到 begin 时的状态，执行重做（Ctrl+Y）时恢复到 end 时的状态。
 
 ## 跨线程操作模式
 
@@ -340,31 +346,32 @@ def background_task():
 background_task()
 ```
 
-!!! warning "callInMainThread 的 GIL 管理"
-    `callInMainThread` 在 C++ 绑定中已正确处理了 GIL 管理：
-
-    ```cpp title="DAInterfacePythonBinding.cpp - callInMainThread 绑定实现"
-    // src/DAInterface/DAInterfacePythonBinding.cpp:57-79
-    .def("callInMainThread",
-        [](DA::DAPythonSignalHandler& self, pybind11::function pyFunc) {
-            //pyFunc.inc_ref();
-            self.callInMainThread([pyFunc]() {
-                try {
-                    pybind11::gil_scoped_acquire acquire;  // 在主线程执行时获取 GIL
-                    pyFunc();
-                    //pyFunc.dec_ref();
-                } catch (const pybind11::error_already_set& e) {
-                    qCritical() << "Python error in main thread callback:" << e.what();
-                    //pyFunc.dec_ref();
-                } catch (const std::exception& e) {
-                    qCritical() << "C++ error in main thread callback:" << e.what();
-                    //pyFunc.dec_ref();
-                }
-            });
-        })
-    ```
-    
-    绑定层已在回调执行前自动获取 GIL，Python 脚本无需额外处理 GIL。回调函数 `pyFunc` 的引用计数通过 lambda 捕获持有（`inc_ref/dec_ref` 在源码中已注释掉），且同时捕获 `pybind11::error_already_set` 与 `std::exception` 两类异常。
+> **⚠️ callInMainThread 的 GIL 管理**
+>
+> `callInMainThread` 在 C++ 绑定中已正确处理了 GIL 管理：
+>
+> ```cpp title="DAInterfacePythonBinding.cpp - callInMainThread 绑定实现"
+> // src/DAInterface/DAInterfacePythonBinding.cpp:57-79
+> .def("callInMainThread",
+>     [](DA::DAPythonSignalHandler& self, pybind11::function pyFunc) {
+>         //pyFunc.inc_ref();
+>         self.callInMainThread([pyFunc]() {
+>             try {
+>                 pybind11::gil_scoped_acquire acquire;  // 在主线程执行时获取 GIL
+>                 pyFunc();
+>                 //pyFunc.dec_ref();
+>             } catch (const pybind11::error_already_set& e) {
+>                 qCritical() << "Python error in main thread callback:" << e.what();
+>                 //pyFunc.dec_ref();
+>             } catch (const std::exception& e) {
+>                 qCritical() << "C++ error in main thread callback:" << e.what();
+>                 //pyFunc.dec_ref();
+>             }
+>         });
+>     })
+> ```
+>
+> 绑定层已在回调执行前自动获取 GIL，Python 脚本无需额外处理 GIL。回调函数 `pyFunc` 的引用计数通过 lambda 捕获持有（`inc_ref/dec_ref` 在源码中已注释掉），且同时捕获 `pybind11::error_already_set` 与 `std::exception` 两类异常。
 
 ## Thread Status Manager 使用指南
 
@@ -395,90 +402,91 @@ for i, item in enumerate(data_list):
 status_bar.hideProgressBar()
 ```
 
-!!! info "Thread Status Manager"
-    更复杂的后台任务进度报告可通过 `DAWorkbench.DAPyBase.thread_status_manager` 模块实现，支持线程状态查询、进度回调等功能。
-
-    完整源码参见：`src/PyScripts/DAWorkbench/DAPyBase/` 目录下的线程状态管理相关文件。
+> **ℹ️ Thread Status Manager**
+>
+> 更复杂的后台任务进度报告可通过 `DAWorkbench.DAPyBase.thread_status_manager` 模块实现，支持线程状态查询、进度回调等功能。
+>
+> 完整源码参见：`src/PyScripts/DAWorkbench/DAPyBase/` 目录下的线程状态管理相关文件。
 
 ## 实战建议
 
-!!! tip "Python 脚本开发最佳实践"
-
-    1. **先用 Mock 测试逻辑**
-    
-        在没有 C++ 界面时，使用 Mock 对象验证脚本逻辑：
-        
-        ```python title="Mock 测试示例"
-        # test_dataframe_cleaner.py
-        from unittest.mock import MagicMock
-        
-        # Mock C++ 绑定对象
-        mock_core = MagicMock()
-        mock_ui = MagicMock()
-        mock_data_mgr = MagicMock()
-        
-        mock_core.getUiInterface.return_value = mock_ui
-        mock_core.getDataManagerInterface.return_value = mock_data_mgr
-        
-        # Mock 数据对象
-        mock_data = MagicMock()
-        mock_data.isDataFrame.return_value = True
-        import pandas as pd
-        test_df = pd.DataFrame({"A": [1, None, 3], "B": [4, 5, None]})
-        mock_data.toDataFrame.return_value = test_df
-        
-        mock_data_mgr.getSelectDatas.return_value = [mock_data]
-        
-        # 测试逻辑
-        # ... 使用 mock 对象执行脚本逻辑 ...
-        
-        # 验证调用
-        mock_data.setPyObject.assert_called_once()
-        mock_ui.addInfoLogMessage.assert_called_once()
-        ```
-    
-    2. **使用 assert 在 Mock 中验证关键行为**
-    
-        ```python
-        # 验证数据确实被更新
-        assert mock_data.setPyObject.called
-        
-        # 验证日志消息包含关键信息
-        call_args = mock_ui.addInfoLogMessage.call_args
-        assert "删除" in call_args[0][0]
-        ```
-    
-    3. **始终检查用户取消**
-    
-        ```python
-        config = ui.getConfigValues(builder.build(), cache_key)
-        if not config:
-            return None  # 用户取消是正常流程，不是异常
-        ```
-    
-    4. **异常处理要完整**
-    
-        ```python
-        try:
-            # 数据操作
-            command.beginDataOperateCommand(dadata, "操作描述", True, True)
-            # ... 处理逻辑 ...
-            command.endDataOperateCommand(dadata)
-        except Exception as e:
-            command.endDataOperateCommand(dadata)  # 异常时也要结束命令
-            ui.addCriticalLogMessage(f"操作失败: {str(e)}")
-            return None
-        ```
-    
-    5. **跨线程操作务必使用 callInMainThread**
-    
-        ```python
-        # 后台线程中操作 UI 的唯一正确方式
-        handler.callInMainThread(lambda: ui.addInfoLogMessage("消息"))
-        
-        # 绝对不要在后台线程直接操作 UI！
-        # ui.addInfoLogMessage("消息")  ← 崩溃风险
-        ```
+> **💡 Python 脚本开发最佳实践**
+>
+> 1. **先用 Mock 测试逻辑**
+>
+>     在没有 C++ 界面时，使用 Mock 对象验证脚本逻辑：
+>
+>     ```python title="Mock 测试示例"
+>     # test_dataframe_cleaner.py
+>     from unittest.mock import MagicMock
+>
+>     # Mock C++ 绑定对象
+>     mock_core = MagicMock()
+>     mock_ui = MagicMock()
+>     mock_data_mgr = MagicMock()
+>
+>     mock_core.getUiInterface.return_value = mock_ui
+>     mock_core.getDataManagerInterface.return_value = mock_data_mgr
+>
+>     # Mock 数据对象
+>     mock_data = MagicMock()
+>     mock_data.isDataFrame.return_value = True
+>     import pandas as pd
+>     test_df = pd.DataFrame({"A": [1, None, 3], "B": [4, 5, None]})
+>     mock_data.toDataFrame.return_value = test_df
+>
+>     mock_data_mgr.getSelectDatas.return_value = [mock_data]
+>
+>     # 测试逻辑
+>     # ... 使用 mock 对象执行脚本逻辑 ...
+>
+>     # 验证调用
+>     mock_data.setPyObject.assert_called_once()
+>     mock_ui.addInfoLogMessage.assert_called_once()
+>     ```
+>
+> 2. **使用 assert 在 Mock 中验证关键行为**
+>
+>     ```python
+>     # 验证数据确实被更新
+>     assert mock_data.setPyObject.called
+>
+>     # 验证日志消息包含关键信息
+>     call_args = mock_ui.addInfoLogMessage.call_args
+>     assert "删除" in call_args[0][0]
+>     ```
+>
+> 3. **始终检查用户取消**
+>
+>     ```python
+>     config = ui.getConfigValues(builder.build(), cache_key)
+>     if not config:
+>         return None  # 用户取消是正常流程，不是异常
+>     ```
+>
+> 4. **异常处理要完整**
+>
+>     ```python
+>     try:
+>         # 数据操作
+>         command.beginDataOperateCommand(dadata, "操作描述", True, True)
+>         # ... 处理逻辑 ...
+>         command.endDataOperateCommand(dadata)
+>     except Exception as e:
+>         command.endDataOperateCommand(dadata)  # 异常时也要结束命令
+>         ui.addCriticalLogMessage(f"操作失败: {str(e)}")
+>         return None
+>     ```
+>
+> 5. **跨线程操作务必使用 callInMainThread**
+>
+>     ```python
+>     # 后台线程中操作 UI 的唯一正确方式
+>     handler.callInMainThread(lambda: ui.addInfoLogMessage("消息"))
+>
+>     # 绝对不要在后台线程直接操作 UI！
+>     # ui.addInfoLogMessage("消息")  ← 崩溃风险
+>     ```
 
 ## 绑定接口速查
 
@@ -504,8 +512,9 @@ status_bar.hideProgressBar()
 | `setSuppressSignals(on)` / `isSuppressSignals()` | bool | 批量插入时抑制 `dataAdded` 信号（`:85-87`） |
 | `emitDatasBatchAdded()` | 无参 | 批量插入后触发一次刷新（`:88-89`） |
 
-!!! tip "批量插入数据"
-    大量数据一次性 `addData` 会触发大量界面刷新。先 `setSuppressSignals(True)`，循环 `addData`，最后 `emitDatasBatchAdded()` 并 `setSuppressSignals(False)`，可显著提升性能。
+> **💡 批量插入数据**
+>
+> 大量数据一次性 `addData` 会触发大量界面刷新。先 `setSuppressSignals(True)`，循环 `addData`，最后 `emitDatasBatchAdded()` 并 `setSuppressSignals(False)`，可显著提升性能。
 
 ### DAStatusBarInterface
 
@@ -533,8 +542,9 @@ status_bar.hideProgressBar()
 | `getChartOperateWidget()` | 返回管理所有 figure/chart 的 `DAChartOperateWidget` |
 | `showMarkdownFile(filePath)` | 用内置 Markdown 查看器显示文件，成功返回 `True` |
 
-!!! warning "主线程约束"
-    上述方法均须在 Qt 主线程调用；后台线程通过 `core.getPythonSignalHandler().callInMainThread(func)` 派发。
+> **⚠️ 主线程约束**
+>
+> 上述方法均须在 Qt 主线程调用；后台线程通过 `core.getPythonSignalHandler().callInMainThread(func)` 派发。
 
 ### DAChartOperateWidget
 

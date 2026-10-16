@@ -6,9 +6,9 @@
 
 完整的 API 文档由 Doxygen 生成，包含所有类、函数、枚举的详细说明。
 
-- [:material-file-document: API 文档首页](../../doxygen/index.html)
-- [:material-format-list-bulleted: 类索引](../../doxygen/classes.html)
-- [:material-folder: 文件列表](../../doxygen/files.html)
+- [📄 API 文档首页](../../doxygen/index.html)
+- [📋 类索引](../../doxygen/classes.html)
+- [📁 文件列表](../../doxygen/files.html)
 
 ## 核心接口速览
 
@@ -381,6 +381,6 @@ daCritical << "critical message" << arg;  // 严重级别 - 致命错误，进 U
 
 ## 下一步
 
-- [:material-file-document: Doxygen 文档](../../doxygen/index.html) - 完整 API 文档
-- [:material-book: 开发指南](../dev-guide/general/coding-standard.md) - 编码规范
-- [:material-puzzle: 插件开发](../plugin/plugin-development.md) - 插件开发指南
+- [📄 Doxygen 文档](../../doxygen/index.html) - 完整 API 文档
+- [📖 开发指南](../dev-guide/general/coding-standard.md) - 编码规范
+- [🧩 插件开发](../plugin/plugin-development.md) - 插件开发指南

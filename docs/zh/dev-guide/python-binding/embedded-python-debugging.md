@@ -19,8 +19,9 @@ data-workbench 的 Python 模块只能在程序内部运行，这意味着：
 - PyCharm、VS Code 等 IDE 无法分析这些模块的 API，拿不到代码提示
 - 脚本只能「盲写」，运行时才能发现错误
 
-!!! info "什么是嵌入式 Python 模块？"
-    pybind11 的 `PYBIND11_EMBEDDED_MODULE` 宏在 C++ 程序内部创建 Python 模块，这些模块只在程序运行时存在。与 `PYBIND11_MODULE`（创建可被外部 Python `import` 的扩展模块）不同，嵌入式模块无法脱离宿主程序独立使用。详见 [Python/C++ 集成](./cpp-calling-python.md)。
+> **ℹ️ 什么是嵌入式 Python 模块？**
+>
+> pybind11 的 `PYBIND11_EMBEDDED_MODULE` 宏在 C++ 程序内部创建 Python 模块，这些模块只在程序运行时存在。与 `PYBIND11_MODULE`（创建可被外部 Python `import` 的扩展模块）不同，嵌入式模块无法脱离宿主程序独立使用。详见 [Python/C++ 集成](./cpp-calling-python.md)。
 
 下图展示了嵌入式环境中脚本开发的困境：
 
@@ -54,8 +55,9 @@ data-workbench 通过 `PYBIND11_EMBEDDED_MODULE` 在进程内注册了六个 Pyt
 | `da_pyplot` | `src/DAInterface/DAQwtPyPlotPythonBinding.cpp:166` | matplotlib pyplot 风格的 Qwt API：PyPlot、QwtPlot |
 | `da_py_workflow` | `src/DAPyWorkFlow/PythonBinding/DAPyWorkFlowPythonBinding.cpp:172` | 工作流场景/节点项：DAPyPainterProxy、DAPyNodeGraphicsItem、DAPyWorkFlowScene |
 
-!!! note "调试时可能需要补 stub"
-    上述六个模块均为嵌入式进程内模块（随主程序解释器初始化注册）。在标准 Python 环境或 IDE 中做代码提示/单元测试时，`da_figure`/`da_pyplot`/`da_py_workflow` 同样需要在 `stubs/` 下补 `.pyi`，或通过 `mock/` 提供 Mock 实现，否则导入会失败。
+> **📝 调试时可能需要补 stub**
+>
+> 上述六个模块均为嵌入式进程内模块（随主程序解释器初始化注册）。在标准 Python 环境或 IDE 中做代码提示/单元测试时，`da_figure`/`da_pyplot`/`da_py_workflow` 同样需要在 `stubs/` 下补 `.pyi`，或通过 `mock/` 提供 Mock 实现，否则导入会失败。
 
 ### 模块之间的关系
 
@@ -115,32 +117,33 @@ stubs/
 
 每个 `.pyi` 文件对应一个 pybind11 导出模块，只包含该模块导出的类型定义，跨模块引用通过 `import` 解决。例如 `da_interface/__init__.pyi` 中引用 `DAData` 类型时，使用 `from da_data import DAData`。
 
-!!! tip "为什么使用包结构而不是单文件？"
-    采用包结构（每个模块一个目录 + `__init__.pyi`），跨模块引用就能通过 `import` 正确关联，避免类型重复定义。IDE 在分析 `from da_data import DAData` 时能正确定位到 `da_data/__init__.pyi` 中的定义，从而提供精确的类型提示。
+> **💡 为什么使用包结构而不是单文件？**
+>
+> 采用包结构（每个模块一个目录 + `__init__.pyi`），跨模块引用就能通过 `import` 正确关联，避免类型重复定义。IDE 在分析 `from da_data import DAData` 时能正确定位到 `da_data/__init__.pyi` 中的定义，从而提供精确的类型提示。
 
 ### 3.2 配置 IDE 代码提示
 
-=== "VS Code"
+**VS Code**
 
-    在 `.vscode/settings.json` 中添加：
+在 `.vscode/settings.json` 中添加：
 
-    ```json
-    {
-      "python.analysis.extraPaths": ["./stubs"]
-    }
-    ```
+```json
+{
+  "python.analysis.extraPaths": ["./stubs"]
+}
+```
 
-    配置后，Pylance/Pyright 会将 `stubs/` 目录作为额外的类型定义搜索路径，在编写脚本时提供完整的代码提示。
+配置后，Pylance/Pyright 会将 `stubs/` 目录作为额外的类型定义搜索路径，在编写脚本时提供完整的代码提示。
 
-=== "PyCharm"
+**PyCharm**
 
-    将 `stubs/` 目录标记为 Sources Root：
+将 `stubs/` 目录标记为 Sources Root：
 
-    1. 在项目视图中右键 `stubs/` 目录
-    2. 选择 **Mark Directory As** → **Sources Root**
-    3. 目录图标变为蓝色源码根标记
+1. 在项目视图中右键 `stubs/` 目录
+2. 选择 **Mark Directory As** → **Sources Root**
+3. 目录图标变为蓝色源码根标记
 
-    PyCharm 会自动识别 `.pyi` 文件并提供类型提示。
+PyCharm 会自动识别 `.pyi` 文件并提供类型提示。
 
 ### 3.3 stub 文件的使用示例
 
@@ -186,8 +189,9 @@ all_data = data_mgr.getAllDatas()    # 返回类型提示：List[DAData]
 
 在 `stubs/mock/` 中提供 mock 实现，让脚本可以在标准 Python 中运行，验证逻辑正确性。
 
-!!! info "Mock 模块的工作原理"
-    Mock 模块用纯 Python 实现了与嵌入式模块相同的 API 接口。`DAData` 真实包装 pandas 对象，`DADataManager` 用 Python list 模拟数据存储，UI 接口类则只打印日志不执行 Qt 操作。这样脚本的数据处理逻辑可以在标准 Python 中验证。
+> **ℹ️ Mock 模块的工作原理**
+>
+> Mock 模块用纯 Python 实现了与嵌入式模块相同的 API 接口。`DAData` 真实包装 pandas 对象，`DADataManager` 用 Python list 模拟数据存储，UI 接口类则只打印日志不执行 Qt 操作。这样脚本的数据处理逻辑可以在标准 Python 中验证。
 
 ```python title="Mock 环境使用示例"
 # 方式一：通过 PYTHONPATH 环境变量
@@ -221,10 +225,11 @@ assert data_mgr.getData(0).getName() == "测试数据"
 - 单元测试
 - 不依赖 Qt UI 的纯数据操作
 
-!!! warning "Mock 的限制"
-    - Mock **无法模拟 Qt UI 交互**（对话框、进度条等），UI 接口类的方法仅打印日志
-    - Mock 的 DADataManager **不具备撤销/重做功能**（`addData_`、`removeData_` 等方法等同于无撤销版本）
-    - Mock **不会触发真实的数据变更信号**，`notifyDataChangedSignal` 仅打印日志
+> **⚠️ Mock 的限制**
+>
+> - Mock **无法模拟 Qt UI 交互**（对话框、进度条等），UI 接口类的方法仅打印日志
+> - Mock 的 DADataManager **不具备撤销/重做功能**（`addData_`、`removeData_` 等方法等同于无撤销版本）
+> - Mock **不会触发真实的数据变更信号**，`notifyDataChangedSignal` 仅打印日志
 
 ### 4.2 方案二：debugpy 远程调试（真实环境断点调试）
 
@@ -249,8 +254,9 @@ debugpy.listen(5678)                  # 监听调试端口
 # debugpy.wait_for_client()           # 可选：等待调试器连接后再继续执行
 ```
 
-!!! tip "建议将 debugpy 设为可选功能"
-    通过配置文件或命令行参数控制是否启用 debugpy，避免影响正常性能。未启用时不应加载 debugpy 模块。
+> **💡 建议将 debugpy 设为可选功能**
+>
+> 通过配置文件或命令行参数控制是否启用 debugpy，避免影响正常性能。未启用时不应加载 debugpy 模块。
 
 #### VS Code 配置
 
@@ -288,10 +294,11 @@ debugpy.listen(5678)                  # 监听调试端口
 - 调试线程相关问题
 - 定位只有真实环境才出现的 bug
 
-!!! warning "debugpy 远程调试注意事项"
-    - 调试器连接后，脚本执行速度会明显降低，断点处尤其明显
-    - `wait_for_client()` 模式下程序会阻塞等待调试器连接，适合调试启动阶段的脚本
-    - 如果断点不在脚本文件中（如第三方库），需要在 `pathMappings` 中正确映射路径
+> **⚠️ debugpy 远程调试注意事项**
+>
+> - 调试器连接后，脚本执行速度会明显降低，断点处尤其明显
+> - `wait_for_client()` 模式下程序会阻塞等待调试器连接，适合调试启动阶段的脚本
+> - 如果断点不在脚本文件中（如第三方库），需要在 `pathMappings` 中正确映射路径
 
 ### 4.3 方案三：日志调试（最简单）
 
@@ -338,20 +345,22 @@ flowchart TD
 
 当 pybind11 绑定代码有新增/修改时，需要同步更新对应的 `.pyi` 文件：
 
-!!! warning "stubs 必须与绑定源码同步"
-    - 在修改绑定代码的 PR 中，**同时更新 stub 文件**
-    - stub 文件的函数签名必须与绑定源码**完全一致**（参数名、类型、默认值）
-    - 如果绑定源码使用 lambda 包装（如 `std::string` → `QString` 转换），stub 文件应标注 Python 侧的类型（`str`），而非 C++ 侧的类型
-    - 使用包结构（每个模块一个目录 + `__init__.pyi`），跨模块引用通过 `import` 解决
+> **⚠️ stubs 必须与绑定源码同步**
+>
+> - 在修改绑定代码的 PR 中，**同时更新 stub 文件**
+> - stub 文件的函数签名必须与绑定源码**完全一致**（参数名、类型、默认值）
+> - 如果绑定源码使用 lambda 包装（如 `std::string` → `QString` 转换），stub 文件应标注 Python 侧的类型（`str`），而非 C++ 侧的类型
+> - 使用包结构（每个模块一个目录 + `__init__.pyi`），跨模块引用通过 `import` 解决
 
 ### 5.3 调试技巧
 
-!!! tip "调试技巧清单"
-    - [ ] 先 Mock 验证逻辑，再真实环境验证行为：大部分数据处理逻辑可以在 Mock 中验证
-    - [ ] 用 `da_app.addInfoLogMessage` 增加关键节点日志：在真实环境中快速定位问题范围
-    - [ ] debugpy 的 `wait_for_client()` 模式：确保调试器连接后再执行，不会错过启动阶段的断点
-    - [ ] 在脚本入口处设置断点：远程调试时，脚本入口是最可靠的断点位置
-    - [ ] Mock 中使用 `assert` 语句：在 Mock 环境中用断言验证关键逻辑，相当于轻量级单元测试
+> **💡 调试技巧清单**
+>
+> - [ ] 先 Mock 验证逻辑，再真实环境验证行为：大部分数据处理逻辑可以在 Mock 中验证
+> - [ ] 用 `da_app.addInfoLogMessage` 增加关键节点日志：在真实环境中快速定位问题范围
+> - [ ] debugpy 的 `wait_for_client()` 模式：确保调试器连接后再执行，不会错过启动阶段的断点
+> - [ ] 在脚本入口处设置断点：远程调试时，脚本入口是最可靠的断点位置
+> - [ ] Mock 中使用 `assert` 语句：在 Mock 环境中用断言验证关键逻辑，相当于轻量级单元测试
 
 ---
 

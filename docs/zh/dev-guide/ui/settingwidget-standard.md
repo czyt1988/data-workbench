@@ -301,14 +301,17 @@ void MyChartSettingWidget::onChartPropertyChanged()
 
 ## 注意事项
 
-!!! warning "QPointer 的使用"
-    管理目标对象必须使用 `QPointer`，不要用裸指针。当目标对象被删除时，`QPointer` 会自动变为 `nullptr`，避免野指针问题。
+> **⚠️ QPointer 的使用**
+>
+> 管理目标对象必须使用 `QPointer`，不要用裸指针。当目标对象被删除时，`QPointer` 会自动变为 `nullptr`，避免野指针问题。
 
-!!! tip "信号槽连接"
-    `bindTarget` 中建立的信号槽连接必须在 `unbindTarget` 中完全断开，否则可能导致内存泄漏或重复响应。
+> **💡 信号槽连接**
+>
+> `bindTarget` 中建立的信号槽连接必须在 `unbindTarget` 中完全断开，否则可能导致内存泄漏或重复响应。
 
-!!! note "界面刷新时机"
-    `updateUI` 只负责读取目标属性显示到界面，不应修改目标状态。修改目标状态应在 `applySetting` 中进行。
+> **📝 界面刷新时机**
+>
+> `updateUI` 只负责读取目标属性显示到界面，不应修改目标状态。修改目标状态应在 `applySetting` 中进行。
 
 ## 参考资料
 

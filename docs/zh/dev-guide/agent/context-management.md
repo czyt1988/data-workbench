@@ -54,8 +54,9 @@ graph TD
 - 每条消息额外加约 4 token（角色开销）
 - tool_call 参数额外加开销
 
-!!! note "估算只用于提前触发"
-    Token 估算故意偏向早触发（宁可早压缩不要晚溢出），不用于「跳过压缩」判断。精确的 token 用量由 LLM 返回的 `usage_metadata` 提供，通过 `usage` 协议消息回传。
+> **📝 估算只用于提前触发**
+>
+> Token 估算故意偏向早触发（宁可早压缩不要晚溢出），不用于「跳过压缩」判断。精确的 token 用量由 LLM 返回的 `usage_metadata` 提供，通过 `usage` 协议消息回传。
 
 ---
 
@@ -183,8 +184,9 @@ graph TD
     G --> H
 ```
 
-!!! note "溢出恢复会写回 state"
-    `agent_node` 捕获溢出错误后调用 `force_compact()`，压缩产物既用于本次 LLM 重试，其 `RemoveMessage` + summary 更新也随 final_message 一起写回 LangGraph state，打断「400 → force_compact → 400」循环。
+> **📝 溢出恢复会写回 state**
+>
+> `agent_node` 捕获溢出错误后调用 `force_compact()`，压缩产物既用于本次 LLM 重试，其 `RemoveMessage` + summary 更新也随 final_message 一起写回 LangGraph state，打断「400 → force_compact → 400」循环。
 
 ### 溢出错误检测
 
@@ -193,8 +195,9 @@ graph TD
 - OpenAI `BadRequestError`（含 "context length" / "maximum context" 等关键词）
 - litellm `ContextWindowExceededError`
 
-!!! warning "关键词表禁止加入通用包装词"
-    关键词表在 `error_classifier.py`（`_CONTEXT_OVERFLOW_KEYWORDS`）与 `context_manager.py`（`is_context_overflow_error`）两处同步维护，只允许**特异性**短语。litellm 对所有上游 400 都包装 "The request is invalid" 前缀，此类通用词一旦加入，悬空 tool_calls 等无关的 `BadRequestError` 会被误判为溢出，UI 显示误导性的「上下文窗口超限且压缩失败」。
+> **⚠️ 关键词表禁止加入通用包装词**
+>
+> 关键词表在 `error_classifier.py`（`_CONTEXT_OVERFLOW_KEYWORDS`）与 `context_manager.py`（`is_context_overflow_error`）两处同步维护，只允许**特异性**短语。litellm 对所有上游 400 都包装 "The request is invalid" 前缀，此类通用词一旦加入，悬空 tool_calls 等无关的 `BadRequestError` 会被误判为溢出，UI 显示误导性的「上下文窗口超限且压缩失败」。
 
 ### head/tail 分割的配对完整性
 
@@ -260,8 +263,9 @@ async def compact_node(state):
 | 无活动看门狗 | `inactivity_timeout_sec` | 240 | 子进程无活动超时（秒），触发崩溃恢复 |
 | 最大重启次数 | `max_subprocess_restarts` | 3 | 崩溃恢复最大重启次数 |
 
-!!! note "上下文压缩不重置会话累计 token"
-    自 commit `44e11eb` 起，token 统计改为会话累计（`mCumulativeIn/Out/TotalTokens`），上下文压缩（`compact`）不再清零这些累计值。UI 展示的是会话级累计用量。
+> **📝 上下文压缩不重置会话累计 token**
+>
+> 自 commit `44e11eb` 起，token 统计改为会话累计（`mCumulativeIn/Out/TotalTokens`），上下文压缩（`compact`）不再清零这些累计值。UI 展示的是会话级累计用量。
 
 ---
 

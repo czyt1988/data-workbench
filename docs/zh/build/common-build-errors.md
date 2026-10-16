@@ -69,8 +69,9 @@
 4. 重启系统
 ```
 
-!!! tip "替代方案"
-    如果以上方法都不生效，可以将项目移动到更短的路径下（如 D 盘或 C 盘根目录）。
+> **💡 替代方案**
+>
+> 如果以上方法都不生效，可以将项目移动到更短的路径下（如 D 盘或 C 盘根目录）。
 
 ## Ninja 在 PowerShell 中的 MSVC 环境变量错误
 
@@ -113,8 +114,9 @@ cmake -S . -B build -G Ninja -DCMAKE_TOOLCHAIN_FILE="D:\Qt\6.7.3\msvc2019_64\lib
 cmake --build build
 ```
 
-!!! warning "注意"
-    不要在 PowerShell 中运行 Ninja 构建，**必须**使用 Developer Command Prompt (CMD)。
+> **⚠️ 注意**
+>
+> 不要在 PowerShell 中运行 Ninja 构建，**必须**使用 Developer Command Prompt (CMD)。
 
 ## MOC相关错误
 
@@ -141,8 +143,9 @@ Error while building/deploying project DAWorkbench
 | 再次构建 | 直接重新运行构建命令 |
 | 保留 build 目录 | 不要删除 build 目录，继续构建 |
 
-!!! tip "解决方案"
-    此类 MOC 错误只需**多次重新构建**即可解决，无需删除 build 目录。保留 build 目录可避免重新生成所有 MOC 文件。
+> **💡 解决方案**
+>
+> 此类 MOC 错误只需**多次重新构建**即可解决，无需删除 build 目录。保留 build 目录可避免重新生成所有 MOC 文件。
 
 ## MinGW编译错误
 
@@ -164,8 +167,9 @@ MinGW 编译器线程数据空间不足，属于编译器自身问题。
 
 处理方式与 MOC 错误一致：**多次构建**直到成功。
 
-!!! note "说明"
-    这是 MinGW 编译器的已知问题，不影响最终构建结果。
+> **📝 说明**
+>
+> 这是 MinGW 编译器的已知问题，不影响最终构建结果。
 
 ## 运行时DLL缺失错误
 
@@ -196,15 +200,17 @@ MinGW 编译器线程数据空间不足，属于编译器自身问题。
 | `zlib.dll` | zlib | QuaZip 依赖库 |
 | `python311.dll` | Python 运行时 | 脚本后端解释器 |
 
-!!! warning "注意"
-    1. 带 Qt 版本号的库采用后缀形式：ADS 4.x 起上游将包名从 `qt6advanceddocking` 重命名为 `qtadvanceddocking-qt6`，故 DLL 为 `qtadvanceddocking-qt6.dll`（Qt5 对应 `qtadvanceddocking-qt5.dll`）；QuaZip 同理为 `quazip1-qt6.dll`
-    2. Qwt 已拆分为 `qwtcore.dll`/`qwtplot.dll`/`qwtplot3d.dll` 三个组件
-    3. `spdlog`、`pybind11`、`ordered-map` 为静态库或头文件库，不产生 DLL，无需复制
-    4. `zlib.dll` 是 QuaZip 的依赖，必须同时复制
-    5. Debug 模式下 DLL 名称会添加 `d` 后缀，如 `SARibbonBard.dll`
+> **⚠️ 注意**
+>
+> 1. 带 Qt 版本号的库采用后缀形式：ADS 4.x 起上游将包名从 `qt6advanceddocking` 重命名为 `qtadvanceddocking-qt6`，故 DLL 为 `qtadvanceddocking-qt6.dll`（Qt5 对应 `qtadvanceddocking-qt5.dll`）；QuaZip 同理为 `quazip1-qt6.dll`
+> 2. Qwt 已拆分为 `qwtcore.dll`/`qwtplot.dll`/`qwtplot3d.dll` 三个组件
+> 3. `spdlog`、`pybind11`、`ordered-map` 为静态库或头文件库，不产生 DLL，无需复制
+> 4. `zlib.dll` 是 QuaZip 的依赖，必须同时复制
+> 5. Debug 模式下 DLL 名称会添加 `d` 后缀，如 `SARibbonBard.dll`
 
-!!! tip "自动化方案"
-    可以编写脚本自动复制 DLL，或用 CMake 的 install 命令在构建后自动部署。
+> **💡 自动化方案**
+>
+> 可以编写脚本自动复制 DLL，或用 CMake 的 install 命令在构建后自动部署。
 
 ## Python环境错误
 
@@ -253,14 +259,15 @@ MinGW 编译器线程数据空间不足，属于编译器自身问题。
 - 安装正确版本的 Python（推荐 Python 3.11+，AI 功能需要）
 - 安装必需的 Python 包：见项目根目录 `requirements.txt`（共 17 个包，含 pandas/numpy/scipy 及 DAAgent 子系统所需的 langgraph/langchain-openai 等 AI 栈）
 
-!!! info "Python 依赖"
-    data-workbench 运行时依赖以下 Python 包（完整列表见项目根目录 `requirements.txt`）：
-
-    ```shell
-    pip install -r requirements.txt
-    ```
-
-    除 pandas（数据处理）、numpy（数值计算）、scipy（科学计算）等数据处理库外，还包含 DAAgent 子系统必需的 AI/Agent 栈：langgraph、langchain-openai、langgraph-cli[inmem]、pydantic、tiktoken。仅安装 pandas/numpy/scipy 会导致 Agent 相关功能无法加载。
+> **ℹ️ Python 依赖**
+>
+> data-workbench 运行时依赖以下 Python 包（完整列表见项目根目录 `requirements.txt`）：
+>
+> ```shell
+> pip install -r requirements.txt
+> ```
+>
+> 除 pandas（数据处理）、numpy（数值计算）、scipy（科学计算）等数据处理库外，还包含 DAAgent 子系统必需的 AI/Agent 栈：langgraph、langchain-openai、langgraph-cli[inmem]、pydantic、tiktoken。仅安装 pandas/numpy/scipy 会导致 Agent 相关功能无法加载。
 
 ## 错误诊断流程
 
@@ -313,14 +320,15 @@ flowchart TD
 | Python 环境 | Python 3.7+，已安装 pandas 等 |
 | Qt 工具链 | 使用 Qt 官方工具链文件 |
 
-!!! warning "工具链文件"
-    构建**必须**使用 Qt 工具链文件，否则会出现 Windows SDK 头文件找不到的问题。以下是正确的 CMake 配置命令示例：
-    
-    ```powershell
-    # 正确的配置命令示例
-    cmake -S . -B build -G Ninja `
-        -DCMAKE_TOOLCHAIN_FILE:FILEPATH="D:\Qt\6.7.3\msvc2019_64\lib\cmake\Qt6\qt.toolchain.cmake"
-    ```
+> **⚠️ 工具链文件**
+>
+> 构建**必须**使用 Qt 工具链文件，否则会出现 Windows SDK 头文件找不到的问题。以下是正确的 CMake 配置命令示例：
+>
+> ```powershell
+> # 正确的配置命令示例
+> cmake -S . -B build -G Ninja `
+>     -DCMAKE_TOOLCHAIN_FILE:FILEPATH="D:\Qt\6.7.3\msvc2019_64\lib\cmake\Qt6\qt.toolchain.cmake"
+> ```
 
 ## 参考资料
 

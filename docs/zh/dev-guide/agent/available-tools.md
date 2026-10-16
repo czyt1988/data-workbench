@@ -29,8 +29,9 @@ flowchart LR
     P -->|有子 Agent 定义时注入<br/>dispatch_subagents| L
 ```
 
-!!! note "工具名即协议"
-    工具 `name`（snake_case）参与 LLM 工具调用匹配与已存对话引用，**不可翻译、不可改名**。下面列出的参数表与各工具 `getToolSpec()` 的实现一一对应，改动 schema 时同步更新参数表。
+> **📝 工具名即协议**
+>
+> 工具 `name`（snake_case）参与 LLM 工具调用匹配与已存对话引用，**不可翻译、不可改名**。下面列出的参数表与各工具 `getToolSpec()` 的实现一一对应，改动 schema 时同步更新参数表。
 
 ---
 
@@ -64,8 +65,9 @@ flowchart LR
 | 24 | `ask_user` | 平台注入 | 无（人机交互） | 向用户提问获取澄清/确认 |
 | 25 | `dispatch_subagents` | 平台注入 | 无（本地编排） | 批量委派子 Agent 并行调研 |
 
-!!! note "unknown 分级的含义"
-    `list_chart_items` / `search_literature` / `verify_doi` 未列入权限引擎的内置分级表（`DAAgentPermissionManager` 的 `builtinTierTable` 收录 20 个工具），按参数约定回退推导：参数含 `file_path`/`path`/`output_path`/`report_path` → `file_write`，否则 → `unknown`。三者均无路径参数，故为 `unknown`。
+> **📝 unknown 分级的含义**
+>
+> `list_chart_items` / `search_literature` / `verify_doi` 未列入权限引擎的内置分级表（`DAAgentPermissionManager` 的 `builtinTierTable` 收录 20 个工具），按参数约定回退推导：参数含 `file_path`/`path`/`output_path`/`report_path` → `file_write`，否则 → `unknown`。三者均无路径参数，故为 `unknown`。
 
 ---
 
@@ -264,8 +266,9 @@ Agent 的标准开场动作：先 `list_data` 了解有哪些数据，再用 `ge
 
 ## 文件与报告工具（DAAgentTools，3 个）
 
-!!! warning "路径安全由权限门统一执法"
-    工具内部不做路径检查。系统目录（如 `C:\Windows`）硬 deny 在所有权限模式下生效；工作区外的写入按权限模式（yolo/auto/manual）决策。详见 `src/DAAgent/AGENTS.md` 铁律 T16。
+> **⚠️ 路径安全由权限门统一执法**
+>
+> 工具内部不做路径检查。系统目录（如 `C:\Windows`）硬 deny 在所有权限模式下生效；工作区外的写入按权限模式（yolo/auto/manual）决策。详见 `src/DAAgent/AGENTS.md` 铁律 T16。
 
 ### read_file
 
@@ -297,8 +300,9 @@ Agent 的标准开场动作：先 `list_data` 了解有哪些数据，再用 `ge
 
 html/pdf/docx 三种格式经 `DAMarkdownExporter`（`src/DAGui/MarkdownView/`）导出，与内置 Markdown 查看器同一渲染管线（markdown-it + highlight.js + KaTeX），公式（`$...$`/`$$...$$`）、代码高亮、表格均正常渲染；本地图片以 data URI 内嵌进 HTML/PDF（单一离线文件），docx 中图片由 Word 按文件路径抓取后内嵌。docx 公式以 MathML（Word 原生公式格式）输出。
 
-!!! note "docx 仅 Windows"
-    docx 导出走 `DAAxOfficeWrapper`（Word COM），仅 Windows 可用；pdf 走 `QWebEnginePage::printToPdf`（与查看器渲染一致）。打开失败不影响保存结果，返回消息会附带说明。
+> **📝 docx 仅 Windows**
+>
+> docx 导出走 `DAAxOfficeWrapper`（Word COM），仅 Windows 可用；pdf 走 `QWebEnginePage::printToPdf`（与查看器渲染一致）。打开失败不影响保存结果，返回消息会附带说明。
 
 ---
 
@@ -332,8 +336,9 @@ html/pdf/docx 三种格式经 `DAMarkdownExporter`（`src/DAGui/MarkdownView/`�
 
 行为约定与 `run_code` 相同（预导入模块、`__result__`、stdout 捕获、主线程、300s 超时）；脚本必须 UTF-8 编码，工具内有工作区越界防护。
 
-!!! note "代码内容判定"
-    `run_code`/`run_script` 属 `code_exec` 分级，代码内容在 Python 侧（`permission_judge.py`）静态规则+判官先判定，裁决附 `safety` 字段下发，由 C++ 权限门在 `DAAgentBridge::executeTool` 前置消费（唯一执法点）。
+> **📝 代码内容判定**
+>
+> `run_code`/`run_script` 属 `code_exec` 分级，代码内容在 Python 侧（`permission_judge.py`）静态规则+判官先判定，裁决附 `safety` 字段下发，由 C++ 权限门在 `DAAgentBridge::executeTool` 前置消费（唯一执法点）。
 
 ---
 
@@ -375,8 +380,9 @@ html/pdf/docx 三种格式经 `DAMarkdownExporter`（`src/DAGui/MarkdownView/`�
 | `options` | array of string | | 可选项列表 |
 | `multi_select` | boolean | | 是否允许多选，默认 `false` |
 
-!!! note "子 Agent 没有 ask_user"
-    `ask_user` 仅注入主图；子 Agent 子图（`include_ask_user=False`）不注入，子 Agent 幻觉出的 `ask_user` 调用会得到未知工具错误。
+> **📝 子 Agent 没有 ask_user**
+>
+> `ask_user` 仅注入主图；子 Agent 子图（`include_ask_user=False`）不注入，子 Agent 幻觉出的 `ask_user` 调用会得到未知工具错误。
 
 ### dispatch_subagents
 
@@ -467,21 +473,25 @@ html/pdf/docx 三种格式经 `DAMarkdownExporter`（`src/DAGui/MarkdownView/`�
 
 未入表工具（含 `list_chart_items`、`search_literature`、`verify_doi` 及未来插件工具）按参数约定推导：含 `file_path`/`path`/`output_path`/`report_path` 参数 → `file_write`，否则 → `unknown`。用户可在权限设置页用 `tier_overrides` 覆盖任意工具的分级。
 
-!!! note "默认模式为全自动"
-    权限默认模式为 yolo（全自动），未配置即静默放行；系统目录硬 deny 在**所有**模式生效。详见 `src/DAAgent/AGENTS.md` 铁律 T16。
+> **📝 默认模式为全自动**
+>
+> 权限默认模式为 yolo（全自动），未配置即静默放行；系统目录硬 deny 在**所有**模式生效。详见 `src/DAAgent/AGENTS.md` 铁律 T16。
 
 ---
 
 ## 注意事项
 
-!!! warning "本文与代码同步"
-    工具数量（C++ 23 + 平台注入 2）、参数表、权限分级必须与实现保持一致：新增/修改工具时，同步更新这里的工具清单与 `plugins/DAAgentTools/AGENTS.md` § 三的速查表。
+> **⚠️ 本文与代码同步**
+>
+> 工具数量（C++ 23 + 平台注入 2）、参数表、权限分级必须与实现保持一致：新增/修改工具时，同步更新这里的工具清单与 `plugins/DAAgentTools/AGENTS.md` § 三的速查表。
 
-!!! tip "给提示词写作者的参考"
-    编写 agent 提示词（如 `paper-agent.md` 这类领域提示词）时，工具清单可直接从上面的工具总览抄录；`ask_user` 是平台内置能力，无需声明即可使用。
+> **💡 给提示词写作者的参考**
+>
+> 编写 agent 提示词（如 `paper-agent.md` 这类领域提示词）时，工具清单可直接从上面的工具总览抄录；`ask_user` 是平台内置能力，无需声明即可使用。
 
-!!! info "扩展入口"
-    新增 C++ 工具见[工具开发指南](./tool-development.md)；通过插件注入 agent/工具/提示词的整体模式见[通过插件注册内置 Agent](./register-builtin-agent-via-plugin.md)。
+> **ℹ️ 扩展入口**
+>
+> 新增 C++ 工具见[工具开发指南](./tool-development.md)；通过插件注入 agent/工具/提示词的整体模式见[通过插件注册内置 Agent](./register-builtin-agent-via-plugin.md)。
 
 ---
 

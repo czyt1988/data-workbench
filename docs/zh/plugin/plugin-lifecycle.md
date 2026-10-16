@@ -97,8 +97,9 @@ if (!plugin) {
 
 ### 4. 设置核心接口
 
-!!! important "关键步骤"
-    在调用 `initialize()` 之前，必须设置核心接口，否则插件无法访问主程序功能。
+> **❗ 关键步骤**
+>
+> 在调用 `initialize()` 之前，必须设置核心接口，否则插件无法访问主程序功能。
 
 ```cpp
 // DAAbstractPlugin 内部实现
@@ -369,11 +370,12 @@ DAAppPluginManager::disablePlugin(baseName)
  └─ emit nodeMetaDatasChanged()
 ```
 
-!!! warning "宿主注销必须先于插件实例销毁"
-    `QPluginLoader::unload()` 会销毁插件实例及其全部 QObject 子对象（含 agent 工具）。
-    宿主注册表（如 `DAAgentModule::mTools`）若仍持有这些指针将成为悬空指针，因此
-    `disablePlugin` 在调用 `unloadPlugin` **之前**按 provider 注销 agent 工具与系统提示词。
-    这一顺序由 APP 层编排保证，不依赖插件自觉。
+> **⚠️ 宿主注销必须先于插件实例销毁**
+>
+> `QPluginLoader::unload()` 会销毁插件实例及其全部 QObject 子对象（含 agent 工具）。
+> 宿主注册表（如 `DAAgentModule::mTools`）若仍持有这些指针将成为悬空指针，因此
+> `disablePlugin` 在调用 `unloadPlugin` **之前**按 provider 注销 agent 工具与系统提示词。
+> 这一顺序由 APP 层编排保证，不依赖插件自觉。
 
 ### 降级停用状态
 
@@ -422,8 +424,9 @@ Windows 下若插件库仍被其他模块引用，`QPluginLoader::unload()` 释�
 
 ### 节点工厂层钩子（旧 C++ 架构，仅参考）
 
-!!! warning "遗留架构：当前推荐 Python-first `@NodeDef`"
-    下面 `nodeAddedToWorkflow()` / `nodeStartRemove()` 等**钩子属于已废弃的 C++ `DAAbstractNodeFactory` 架构**，当前 `DAPyNodeFactory`（`src/DAPyWorkFlow/DAPyNodeFactory.h`）不再暴露这些虚函数。当前工作流节点统一用 Python `@NodeDef` 装饰器声明，节点加入/移除工作流的生命周期由 C++ 渲染代理层（`DAPyNodeGraphicsItem`）和 Python 基类 `DAWorkflowNode` 管理，参考 `plugins/DASystemNodes/AGENTS.md`。本节仅作历史背景保留。
+> **⚠️ 遗留架构：当前推荐 Python-first `@NodeDef`**
+>
+> 下面 `nodeAddedToWorkflow()` / `nodeStartRemove()` 等**钩子属于已废弃的 C++ `DAAbstractNodeFactory` 架构**，当前 `DAPyNodeFactory`（`src/DAPyWorkFlow/DAPyNodeFactory.h`）不再暴露这些虚函数。当前工作流节点统一用 Python `@NodeDef` 装饰器声明，节点加入/移除工作流的生命周期由 C++ 渲染代理层（`DAPyNodeGraphicsItem`）和 Python 基类 `DAWorkflowNode` 管理，参考 `plugins/DASystemNodes/AGENTS.md`。本节仅作历史背景保留。
 
 | 钩子函数 | 调用时机 | 用途 |
 |----------|----------|------|
@@ -458,8 +461,9 @@ public:
 
 ### 节点层钩子（旧 C++ 架构，仅参考）
 
-!!! warning "遗留架构：当前推荐 Python-first `@NodeDef`"
-    下面 `prepareLinkOutput()` / `prepareLinkInput()` / `finishLink()` 等**钩子属于已废弃的 C++ `DAAbstractNode` 架构**。当前工作流节点用 Python `@NodeDef` 声明，连接点（Input/Output）由 `Input` / `Output` 描述符静态声明，运行时由 C++ 渲染代理层处理连接生命周期，无需重写这些虚函数。参考 `plugins/DASystemNodes/AGENTS.md`。本节仅作历史背景保留。
+> **⚠️ 遗留架构：当前推荐 Python-first `@NodeDef`**
+>
+> 下面 `prepareLinkOutput()` / `prepareLinkInput()` / `finishLink()` 等**钩子属于已废弃的 C++ `DAAbstractNode` 架构**。当前工作流节点用 Python `@NodeDef` 声明，连接点（Input/Output）由 `Input` / `Output` 描述符静态声明，运行时由 C++ 渲染代理层处理连接生命周期，无需重写这些虚函数。参考 `plugins/DASystemNodes/AGENTS.md`。本节仅作历史背景保留。
 
 | 钩子函数 | 调用时机 | 用途 |
 |----------|----------|------|
@@ -540,8 +544,9 @@ bool MyWorker::exec()
 
 ### 1. 资源管理
 
-!!! tip "推荐使用智能指针"
-    使用 `QSharedPointer` 或 `std::shared_ptr` 管理动态分配的资源。
+> **💡 推荐使用智能指针**
+>
+> 使用 `QSharedPointer` 或 `std::shared_ptr` 管理动态分配的资源。
 
 ```cpp
 class MyPlugin : public DA::DAAbstractNodePlugin
@@ -618,8 +623,8 @@ void MyPlugin::finalize()  // cn:旧 aboutToUnload 的替代
 
 ## 下一步
 
-- [:material-database: 数据持久化](./plugin-persistence.md) - 详细数据存储方案
-- [:material-puzzle: 功能扩展](./plugin-extension.md) - 界面和功能扩展
-- [:material-book: 最佳实践](../reference/best-practices.md) - 更多开发建议
+- [🗄️ 数据持久化](./plugin-persistence.md) - 详细数据存储方案
+- [🧩 功能扩展](./plugin-extension.md) - 界面和功能扩展
+- [📖 最佳实践](../reference/best-practices.md) - 更多开发建议
 
 > 详见 [日志系统文档](../dev-guide/general/logging.md)。

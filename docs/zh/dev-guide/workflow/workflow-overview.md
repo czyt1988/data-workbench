@@ -148,8 +148,9 @@ DAPyWorkFlow 是原 `DAWorkFlow` 模块的完全重构版本，主要区别如�
 | **可视化** | `DAWorkFlowGraphicsScene` | `DAPyWorkFlowScene` |
 | **数据传递** | `DANodeLinkPoint` 连接点 | `DAConnection` + `DASignalManager` |
 
-!!! note "迁移说明"
-    旧模块的 `DAAbstractNode`、`DAWorkFlowGraphicsScene`、`DANodeLinkPoint` 等类已不再使用。新模块采用完全独立的类体系，不继承旧模块的任何基类。
+> **📝 迁移说明**
+>
+> 旧模块的 `DAAbstractNode`、`DAWorkFlowGraphicsScene`、`DANodeLinkPoint` 等类已不再使用。新模块采用完全独立的类体系，不继承旧模块的任何基类。
 
 ## 模块组成
 
@@ -210,14 +211,15 @@ DAPyWorkFlow 是原 `DAWorkFlow` 模块的完全重构版本，主要区别如�
 | `DANodeParamSettingPanelWidget` | QStackedWidget 调度器 | `DAGui/NodeSetting/DANodeParamSettingPanelWidget.h` |
 | `DAFormEditorRegistry` | 11 种字段类型编辑器注册表 | `DAGui/DAFormEditorRegistry.h` |
 
-!!! note "桥接层基础设施（位于 DAPyBindQt 模块）"
-    以下类虽然在工作流模块中广泛使用，但实际定义在 `src/DAPyBindQt/` 模块中：
-
-    | 类名 | 职责 | 所在文件 |
-    |------|------|----------|
-    | `DAPyGILGuard` | Python GIL RAII 管理（获取/释放） | `src/DAPyBindQt/DAPyGILGuard.h` |
-    | `DAPyJsonCast` | Python 对象 ↔ JSON 双向转换 | `src/DAPyBindQt/` |
-    | `DAPythonSignalHandler` | Python 信号 ↔ Qt 跨线程桥接 | `src/DAPyBindQt/` |
+> **📝 桥接层基础设施（位于 DAPyBindQt 模块）**
+>
+> 以下类虽然在工作流模块中广泛使用，但实际定义在 `src/DAPyBindQt/` 模块中：
+>
+> | 类名 | 职责 | 所在文件 |
+> |------|------|----------|
+> | `DAPyGILGuard` | Python GIL RAII 管理（获取/释放） | `src/DAPyBindQt/DAPyGILGuard.h` |
+> | `DAPyJsonCast` | Python 对象 ↔ JSON 双向转换 | `src/DAPyBindQt/` |
+> | `DAPythonSignalHandler` | Python 信号 ↔ Qt 跨线程桥接 | `src/DAPyBindQt/` |
 
 ## 快速上手
 
@@ -270,8 +272,9 @@ class DataFilter:
         return True
 ```
 
-!!! tip "嵌套类模式"
-    用 `class Inputs` 和 `class Outputs` 嵌套类声明端口是推荐的标准做法：端口通过类属性声明，便于 IDE 自动补全。
+> **💡 嵌套类模式**
+>
+> 用 `class Inputs` 和 `class Outputs` 嵌套类声明端口是推荐的标准做法：端口通过类属性声明，便于 IDE 自动补全。
 
 ### 注册和使用节点
 

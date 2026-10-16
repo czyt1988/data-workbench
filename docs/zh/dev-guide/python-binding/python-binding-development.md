@@ -216,8 +216,9 @@ PYBIND11_EMBEDDED_MODULE(da_interface, m)
 
 ## 所有权策略详解
 
-!!! tip "所有权策略选择指南"
-    所有权策略选错会造成内存泄漏或崩溃。
+> **💡 所有权策略选择指南**
+>
+> 所有权策略选错会造成内存泄漏或崩溃。
 
 | 策略 | 适用场景 | 说明 |
 |------|----------|------|
@@ -342,8 +343,9 @@ def execute_in_main_thread():
 
 ### 问题背景
 
-!!! warning "Qt 线程限制"
-    Qt 的 UI 操作必须在主线程执行。Python 脚本可能在后台线程运行，直接操作 UI 会导致崩溃。
+> **⚠️ Qt 线程限制**
+>
+> Qt 的 UI 操作必须在主线程执行。Python 脚本可能在后台线程运行，直接操作 UI 会导致崩溃。
 
 ### DAPythonSignalHandler 类
 
@@ -576,8 +578,9 @@ void DAPythonSignalHandler::onExecuteRequested(int funcWrapperId)
 }  // end DA
 ```
 
-!!! note "PIMPL 模式说明"
-    `DAPythonSignalHandler` 采用 PIMPL（`d` 指针）模式：头文件中只有 `DA_DECLARE_PRIVATE(DAPythonSignalHandler)` 宏，真正的成员变量 `mFunctionMap / mMutex / mNextFuncId / mDestroying`（camelCase）都定义在 `.cpp` 的 `DAPythonSignalHandler::PrivateData` 中。实现里通过 `DA_D(d)` 取到 `d` 指针，再用 `d->mFunctionMap` 等方式访问。有些文档示例把 `m_functionMap`（snake_case）直接写在头文件中，写法与此不同，以源码为准。
+> **📝 PIMPL 模式说明**
+>
+> `DAPythonSignalHandler` 采用 PIMPL（`d` 指针）模式：头文件中只有 `DA_DECLARE_PRIVATE(DAPythonSignalHandler)` 宏，真正的成员变量 `mFunctionMap / mMutex / mNextFuncId / mDestroying`（camelCase）都定义在 `.cpp` 的 `DAPythonSignalHandler::PrivateData` 中。实现里通过 `DA_D(d)` 取到 `d` 指针，再用 `d->mFunctionMap` 等方式访问。有些文档示例把 `m_functionMap`（snake_case）直接写在头文件中，写法与此不同，以源码为准。
 
 ## Qt 类型转换器
 
@@ -772,11 +775,12 @@ flowchart TD
 
 在开发新绑定模块之前，需要明确哪些类和函数需要暴露给 Python。识别原则如下：
 
-!!! tip "绑定目标识别原则"
-    1. **优先绑定接口层**：暴露 `XXXInterface` 而非内部实现类，保持与 C++ 架构一致的抽象层次
-    2. **只绑定 public API**：PIMPL 类只绑定其公共接口，不暴露 `PrivateData` 内部成员
-    3. **避免绑定非 QObject 的 Qt 子类**：`QwtPlotItem` 等非 QObject 类不能使用 `Q_OBJECT` 宏，绑定需特别注意
-    4. **评估使用频率**：Python 脚本高频调用的类优先绑定，低频使用的可通过已有接口间接访问
+> **💡 绑定目标识别原则**
+>
+> 1. **优先绑定接口层**：暴露 `XXXInterface` 而非内部实现类，保持与 C++ 架构一致的抽象层次
+> 2. **只绑定 public API**：PIMPL 类只绑定其公共接口，不暴露 `PrivateData` 内部成员
+> 3. **避免绑定非 QObject 的 Qt 子类**：`QwtPlotItem` 等非 QObject 类不能使用 `Q_OBJECT` 宏，绑定需特别注意
+> 4. **评估使用频率**：Python 脚本高频调用的类优先绑定，低频使用的可通过已有接口间接访问
 
 **识别流程示例**：假设需要为 `DAFigure` 模块创建绑定，识别步骤如下：
 
@@ -795,8 +799,9 @@ flowchart TD
 | 文件位置 | 与被绑定模块同目录 | `src/DAData/DADataPythonBinding.cpp` |
 | 模块名 | `PYBIND11_EMBEDDED_MODULE` 中的名称应简短明确 | `da_app`, `da_data`, `da_interface` |
 
-!!! warning "文件命名一致性"
-    头文件和源文件必须同名，且 `.h` 中声明初始化函数，`.cpp` 中实现绑定逻辑。模块名（如 `da_data`）需与 Python 端 `import da_data` 一致。
+> **⚠️ 文件命名一致性**
+>
+> 头文件和源文件必须同名，且 `.h` 中声明初始化函数，`.cpp` 中实现绑定逻辑。模块名（如 `da_data`）需与 Python 端 `import da_data` 一致。
 
 **头文件模板**：
 
@@ -855,27 +860,28 @@ PYBIND11_EMBEDDED_MODULE(da_xxx, m)
 }
 ```
 
-!!! danger "slots 宏冲突：必须使用 DAPybind11InQt.h"
-    Qt 的 `slots` 关键字与 Python 头文件中的 `slots` 宏存在**严重冲突**。如果直接在绑定文件中 `#include <pybind11/pybind11.h>`，编译时会因为 `slots` 被 Qt 预定义为空而导致 Python 头文件解析错误。
-
-    **必须**使用 `DAPybind11InQt.h` 替代直接引入 pybind11 头文件。此头文件的处理方式如下：
-    
-    ```cpp title="DAPybind11InQt.h - slots 冲突解决方案（源码）"
-    #undef slots                       // 1. 先取消 Qt 的 slots 宏定义
-    #ifndef PY_SSIZE_T_CLEAN
-    #define PY_SSIZE_T_CLEAN           // 2. Python 要求的定义
-    #endif
-    #include "pybind11/pybind11.h"     // 3. 安全引入 pybind11
-    #include "pybind11/numpy.h"
-    #include "pybind11/cast.h"
-    #include "pybind11/embed.h"
-    #include "pybind11/stl.h"
-    #include "pybind11/chrono.h"
-    #include "pybind11/operators.h"
-    #define slots Q_SLOTS              // 4. 恢复为 Qt 正确的宏定义
-    ```
-    
-    **所有绑定 `.cpp` 文件**的第一行 include 应为 `#include "DAPybind11InQt.h"`，**不要**直接 `#include <pybind11/...>`。
+> **🚫 slots 宏冲突：必须使用 DAPybind11InQt.h**
+>
+> Qt 的 `slots` 关键字与 Python 头文件中的 `slots` 宏存在**严重冲突**。如果直接在绑定文件中 `#include <pybind11/pybind11.h>`，编译时会因为 `slots` 被 Qt 预定义为空而导致 Python 头文件解析错误。
+>
+> **必须**使用 `DAPybind11InQt.h` 替代直接引入 pybind11 头文件。此头文件的处理方式如下：
+>
+> ```cpp title="DAPybind11InQt.h - slots 冲突解决方案（源码）"
+> #undef slots                       // 1. 先取消 Qt 的 slots 宏定义
+> #ifndef PY_SSIZE_T_CLEAN
+> #define PY_SSIZE_T_CLEAN           // 2. Python 要求的定义
+> #endif
+> #include "pybind11/pybind11.h"     // 3. 安全引入 pybind11
+> #include "pybind11/numpy.h"
+> #include "pybind11/cast.h"
+> #include "pybind11/embed.h"
+> #include "pybind11/stl.h"
+> #include "pybind11/chrono.h"
+> #include "pybind11/operators.h"
+> #define slots Q_SLOTS              // 4. 恢复为 Qt 正确的宏定义
+> ```
+>
+> **所有绑定 `.cpp` 文件**的第一行 include 应为 `#include "DAPybind11InQt.h"`，**不要**直接 `#include <pybind11/...>`。
 
 ### 绑定步骤三：编写绑定代码
 
@@ -883,43 +889,44 @@ PYBIND11_EMBEDDED_MODULE(da_xxx, m)
 
 C++ 方法通常接受 `QString` 参数，但 pybind11 的 `DAPybind11QtCaster` 自动转换仅在直接类型匹配时生效。对于需要 `QString` 参数的方法，如果 caster 已注册则可自动转换，但很多场景下为了保持接口简洁，会使用 Lambda 将 `std::string` 转为 `QString`：
 
-=== "直接绑定（caster 自动转换）"
+**直接绑定（caster 自动转换）**
 
-    当 `DAPybind11QtCaster.hpp` 已注册 `QString` 的 `type_caster` 时，Python `str` 可自动转换为 `QString`：
-    
-    ```cpp
-    // 如果 QString caster 已生效，可直接绑定
-    pybind11::class_<DA::DAClass>(m, "DAClass")
-        .def("setName", &DA::DAClass::setName,
-             pybind11::arg("name"));
-    // Python: obj.setName("hello") → QString("hello") 自动转换
-    ```
+当 `DAPybind11QtCaster.hpp` 已注册 `QString` 的 `type_caster` 时，Python `str` 可自动转换为 `QString`：
 
-=== "Lambda 包装（显式转换）"
+```cpp
+// 如果 QString caster 已生效，可直接绑定
+pybind11::class_<DA::DAClass>(m, "DAClass")
+    .def("setName", &DA::DAClass::setName,
+         pybind11::arg("name"));
+// Python: obj.setName("hello") → QString("hello") 自动转换
+```
 
-    为确保兼容性和明确性，实际项目中大量使用 Lambda 包装模式：
-    
-    ```cpp title="Lambda 包装 std::string→QString"
-    pybind11::class_<DA::DAUIInterface>(m, "DAUIInterface")
-        .def("addInfoLogMessage",
-             [](DA::DAUIInterface& self, const std::string& msg, bool showInStatusBar) {
-                 self.addInfoLogMessage(
-                     QString::fromStdString(msg), showInStatusBar);
-             },
-             pybind11::arg("msg"),
-             pybind11::arg("showInStatusBar") = true)
-    ```
-    
-    Lambda 包装的优势：
-    - 参数类型明确为 `std::string`，Python 端传入 `str` 无歧义
-    - 可添加默认参数值（如 `showInStatusBar = true`）
-    - 可组合多个转换步骤
+**Lambda 包装（显式转换）**
 
-!!! info "何时使用 Lambda 包装？"
-    - 方法参数为 `QString` 且需要设置默认值 → **Lambda 包装**
-    - 方法返回值为 `QString` → **Lambda 包装**（返回 `std::string`）
-    - 方法参数为 `QJsonObject` → **Lambda 包装**（使用 `DAPyJsonCast` 辅助）
-    - 参数为简单 `int`/`double`/`bool` → **直接绑定**
+为确保兼容性和明确性，实际项目中大量使用 Lambda 包装模式：
+
+```cpp title="Lambda 包装 std::string→QString"
+pybind11::class_<DA::DAUIInterface>(m, "DAUIInterface")
+    .def("addInfoLogMessage",
+         [](DA::DAUIInterface& self, const std::string& msg, bool showInStatusBar) {
+             self.addInfoLogMessage(
+                 QString::fromStdString(msg), showInStatusBar);
+         },
+         pybind11::arg("msg"),
+         pybind11::arg("showInStatusBar") = true)
+```
+
+Lambda 包装的优势：
+- 参数类型明确为 `std::string`，Python 端传入 `str` 无歧义
+- 可添加默认参数值（如 `showInStatusBar = true`）
+- 可组合多个转换步骤
+
+> **ℹ️ 何时使用 Lambda 包装？**
+>
+> - 方法参数为 `QString` 且需要设置默认值 → **Lambda 包装**
+> - 方法返回值为 `QString` → **Lambda 包装**（返回 `std::string`）
+> - 方法参数为 `QJsonObject` → **Lambda 包装**（使用 `DAPyJsonCast` 辅助）
+> - 参数为简单 `int`/`double`/`bool` → **直接绑定**
 
 #### QList<绑定类型> 手动转换模式
 
@@ -945,20 +952,21 @@ C++ 方法通常接受 `QString` 参数，但 pybind11 的 `DAPybind11QtCaster` 
 | 自动转换（caster） | `.def("getXxx", &Class::getXxx)` | `QList<int>`、`QList<QString>` 等基本类型 |
 | 手动转换（Lambda） | Lambda 遍历 append | `QList<DAData>` 等绑定类型，需确保元素类型正确 |
 
-!!! tip "QList<int> 也建议手动转换"
-    虽然 `QList<int>` 有自动 caster，但在 `DAInterfacePythonBinding.cpp` 中 `getOperateDataSeries()` 仍使用了手动转换，以保持风格统一并避免隐式依赖：
-
-    ```cpp
-    .def("getOperateDataSeries",
-        [](DA::DADataManagerInterface& self) {
-            QList<int> colindex = self.getOperateDataSeries();
-            pybind11::list list;
-            for (int v : colindex) {
-                list.append(v);
-            }
-            return list;
-        })
-    ```
+> **💡 QList<int> 也建议手动转换**
+>
+> 虽然 `QList<int>` 有自动 caster，但在 `DAInterfacePythonBinding.cpp` 中 `getOperateDataSeries()` 仍使用了手动转换，以保持风格统一并避免隐式依赖：
+>
+> ```cpp
+> .def("getOperateDataSeries",
+>     [](DA::DADataManagerInterface& self) {
+>         QList<int> colindex = self.getOperateDataSeries();
+>         pybind11::list list;
+>         for (int v : colindex) {
+>             list.append(v);
+>         }
+>         return list;
+>     })
+> ```
 
 #### return_value_policy 决策树
 
@@ -1005,8 +1013,9 @@ pybind11::class_<DA::DAData>(m, "DAData")
     .def(pybind11::init<>());  // Python 创建，Python 管理
 ```
 
-!!! danger "单例务必指定 reference"
-    `PYBIND11_EMBEDDED_MODULE(da_app, m)` 中 `getCore()` 如果不指定 `return_value_policy::reference`，pybind11 默认使用 `automatic`，会在 Python 端对象析构时尝试 `delete` C++ 单例，导致程序崩溃。
+> **🚫 单例务必指定 reference**
+>
+> `PYBIND11_EMBEDDED_MODULE(da_app, m)` 中 `getCore()` 如果不指定 `return_value_policy::reference`，pybind11 默认使用 `automatic`，会在 Python 端对象析构时尝试 `delete` C++ 单例，导致程序崩溃。
 
 #### 枚举导出模式
 
@@ -1027,10 +1036,11 @@ pybind11::enum_<DA::DADataManager::ChangeType>(m, "DataChangeType")
 // da_data.DataChangeType.Value     # 不需要通过类实例
 ```
 
-!!! tip "枚举命名规范"
-    - pybind11 模块名中的枚举类型名应与 C++ 枚举名一致
-    - `.value()` 的第一个参数是 Python 端可见的名称，建议与 C++ 枚举值名一致（去掉前缀）
-    - **务必调用 `.export_values()`**，否则枚举值只能在 `da_data.DataChangeType.Name` 方式访问，不能在模块级别直接访问
+> **💡 枚举命名规范**
+>
+> - pybind11 模块名中的枚举类型名应与 C++ 枚举名一致
+> - `.value()` 的第一个参数是 Python 端可见的名称，建议与 C++ 枚举值名一致（去掉前缀）
+> - **务必调用 `.export_values()`**，否则枚举值只能在 `da_data.DataChangeType.Name` 方式访问，不能在模块级别直接访问
 
 #### 重载函数的处理
 
@@ -1048,9 +1058,10 @@ pybind11::class_<DA::DADataManager>(m, "DADataManager")
          "Add data with undo/redo support");
 ```
 
-!!! warning "重载消歧的两个要点"
-    1. 使用 `static_cast<返回类型(类名::*)(参数类型)>(&函数名)` 精确指定重载版本
-    2. 不同重载建议使用不同 Python 方法名（如 `addData` vs `addData_`），避免 Python 端混淆
+> **⚠️ 重载消歧的两个要点**
+>
+> 1. 使用 `static_cast<返回类型(类名::*)(参数类型)>(&函数名)` 精确指定重载版本
+> 2. 不同重载建议使用不同 Python 方法名（如 `addData` vs `addData_`），避免 Python 端混淆
 
 ### 绑定步骤四：处理 Qt 类型
 
@@ -1086,15 +1097,16 @@ Qt 类型与 Python 类型之间的转换是绑定的核心难点。`DAPybind11Q
 | `QRegularExpression` 参数 | caster 未覆盖 | `findDatasReg()` Lambda 构造 |
 | 函数重载消歧 | caster 无法区分重载版本 | `static_cast` + Lambda |
 
-!!! info "DAPyJsonCast 辅助工具"
-    对于 `QJsonObject` ↔ Python `dict` 的转换，项目提供了 `DAPyJsonCast.h` 中的辅助函数：
-
-    ```cpp
-    // QJsonObject → Python dict
-    return DA::PY::qjsonObjectToPyDict(jsonObj);
-    ```
-    
-    此函数处理了 `QJsonObject` 中各种值类型（字符串、数字、数组、嵌套对象）到 Python 对象的完整转换。
+> **ℹ️ DAPyJsonCast 辅助工具**
+>
+> 对于 `QJsonObject` ↔ Python `dict` 的转换，项目提供了 `DAPyJsonCast.h` 中的辅助函数：
+>
+> ```cpp
+> // QJsonObject → Python dict
+> return DA::PY::qjsonObjectToPyDict(jsonObj);
+> ```
+>
+> 此函数处理了 `QJsonObject` 中各种值类型（字符串、数字、数组、嵌套对象）到 Python 对象的完整转换。
 
 ### 绑定步骤五：CMake 配置
 
@@ -1120,10 +1132,11 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 )
 ```
 
-!!! info "无条件编译"
-    - Python 为强制依赖，绑定代码始终参与编译，无需任何条件编译块或 `#ifdef` 宏保护
-    - 绑定文件中直接 `#include "DAPybind11InQt.h"` 等依赖即可
-    - 头文件中的 `initXXXPythonBinding()` 声明也无需条件编译守卫
+> **ℹ️ 无条件编译**
+>
+> - Python 为强制依赖，绑定代码始终参与编译，无需任何条件编译块或 `#ifdef` 宏保护
+> - 绑定文件中直接 `#include "DAPybind11InQt.h"` 等依赖即可
+> - 头文件中的 `initXXXPythonBinding()` 声明也无需条件编译守卫
 
 ### 绑定步骤六：构建与测试
 
@@ -1162,99 +1175,100 @@ assert da_data.DataChangeType.Value is not None
 ui.addInfoLogMessage("测试消息")  # std::string → QString 自动转换
 ```
 
-!!! tip "逐步验证策略"
-    - 先验证最简绑定（如 `da_app` 的 `getCore()`）能否正常返回
-    - 再验证 Lambda 包装的 QString 转换是否生效
-    - 最后验证 QList 手动转换和 return_value_policy 是否正确
-    - **每添加一个绑定类就测试一次**，不要积攒到最后
+> **💡 逐步验证策略**
+>
+> - 先验证最简绑定（如 `da_app` 的 `getCore()`）能否正常返回
+> - 再验证 Lambda 包装的 QString 转换是否生效
+> - 最后验证 QList 手动转换和 return_value_policy 是否正确
+> - **每添加一个绑定类就测试一次**，不要积攒到最后
 
 ### 常见陷阱清单
 
-!!! failure "陷阱1：忘记 GIL 管理"
+> **❌ 陷阱1：忘记 GIL 管理**
+>
+> **症状**：在后台线程调用 Python 代码时程序崩溃（段错误）
+>
+> **原因**：非 Python 线程调用 Python API 时未获取 GIL
+>
+> ```cpp
+> // 错误：后台线程直接调用 Python
+> void backgroundThread() {
+>     py::object result = py::module::import("pandas");  // 崩溃！
+> }
+>
+> // 正确：获取 GIL 后再调用
+> void backgroundThread() {
+>     pybind11::gil_scoped_acquire acquire;
+>     py::object result = py::module::import("pandas");  // OK
+> }
+> ```
 
-    **症状**：在后台线程调用 Python 代码时程序崩溃（段错误）
-    
-    **原因**：非 Python 线程调用 Python API 时未获取 GIL
-    
-    ```cpp
-    // 错误：后台线程直接调用 Python
-    void backgroundThread() {
-        py::object result = py::module::import("pandas");  // 崩溃！
-    }
-    
-    // 正确：获取 GIL 后再调用
-    void backgroundThread() {
-        pybind11::gil_scoped_acquire acquire;
-        py::object result = py::module::import("pandas");  // OK
-    }
-    ```
+> **❌ 陷阱2：错误的所有权策略**
+>
+> **症状**：程序退出时崩溃，或 Python 对象被意外释放
+>
+> **原因**：未对单例和内部引用指定 `return_value_policy::reference` 或 `reference_internal`
+>
+> ```cpp
+> // 错误：单例默认策略可能导致 Python 尝试 delete
+> m.def("getCore", &DA::getAppCorePtr);
+>
+> // 正确：显式指定 reference
+> m.def("getCore", &DA::getAppCorePtr,
+>       pybind11::return_value_policy::reference);
+> ```
 
-!!! failure "陷阱2：错误的所有权策略"
+> **❌ 陷阱3：PIMPL 类只绑定 public 接口**
+>
+> **症状**：编译错误或运行时访问非法内存
+>
+> **原因**：尝试绑定 PIMPL 类的 `PrivateData` 成员
+>
+> ```cpp
+> // 错误：绑定私有实现
+> py::class_<DA::DAPyModuleNumpy>(m, "DAPyModuleNumpy")
+>     .def_readwrite("m_ptr", &DA::DAPyModuleNumpy::m_ptr);  // 私有成员！
+>
+> // 正确：只绑定公共方法
+> py::class_<DA::DAPyModuleNumpy>(m, "DAPyModuleNumpy")
+>     .def("isInstanceNumber", &DA::DAPyModuleNumpy::isInstanceNumber);
+> ```
 
-    **症状**：程序退出时崩溃，或 Python 对象被意外释放
-    
-    **原因**：未对单例和内部引用指定 `return_value_policy::reference` 或 `reference_internal`
-    
-    ```cpp
-    // 错误：单例默认策略可能导致 Python 尝试 delete
-    m.def("getCore", &DA::getAppCorePtr);
-    
-    // 正确：显式指定 reference
-    m.def("getCore", &DA::getAppCorePtr,
-          pybind11::return_value_policy::reference);
-    ```
+> **❌ 陷阱4：QwtPlotItem 子类不能使用 Q_OBJECT**
+>
+> **症状**：编译报错 `meta-object compiler cannot process this class`
+>
+> **原因**：`QwtPlotItem` 不继承 `QObject`，其子类不能使用 `Q_OBJECT` 宏和信号槽
+>
+> ```cpp
+> // 错误：QwtPlotItem 子类加 Q_OBJECT
+> class DAChartItem : public QwtPlotItem {
+>     Q_OBJECT  // 编译错误！QwtPlotItem 不是 QObject
+> };
+>
+> // 正确：QwtPlotItem 子类不加 Q_OBJECT，绑定只暴露方法
+> class DAChartItem : public QwtPlotItem {
+>     // 不加 Q_OBJECT，不能使用信号槽
+> };
+>
+> // 绑定时只能绑定普通方法
+> py::class_<DAChartItem>(m, "DAChartItem")
+>     .def("setItemAttribute", &DAChartItem::setItemAttribute);
+> ```
 
-!!! failure "陷阱3：PIMPL 类只绑定 public 接口"
-
-    **症状**：编译错误或运行时访问非法内存
-    
-    **原因**：尝试绑定 PIMPL 类的 `PrivateData` 成员
-    
-    ```cpp
-    // 错误：绑定私有实现
-    py::class_<DA::DAPyModuleNumpy>(m, "DAPyModuleNumpy")
-        .def_readwrite("m_ptr", &DA::DAPyModuleNumpy::m_ptr);  // 私有成员！
-    
-    // 正确：只绑定公共方法
-    py::class_<DA::DAPyModuleNumpy>(m, "DAPyModuleNumpy")
-        .def("isInstanceNumber", &DA::DAPyModuleNumpy::isInstanceNumber);
-    ```
-
-!!! failure "陷阱4：QwtPlotItem 子类不能使用 Q_OBJECT"
-
-    **症状**：编译报错 `meta-object compiler cannot process this class`
-    
-    **原因**：`QwtPlotItem` 不继承 `QObject`，其子类不能使用 `Q_OBJECT` 宏和信号槽
-    
-    ```cpp
-    // 错误：QwtPlotItem 子类加 Q_OBJECT
-    class DAChartItem : public QwtPlotItem {
-        Q_OBJECT  // 编译错误！QwtPlotItem 不是 QObject
-    };
-    
-    // 正确：QwtPlotItem 子类不加 Q_OBJECT，绑定只暴露方法
-    class DAChartItem : public QwtPlotItem {
-        // 不加 Q_OBJECT，不能使用信号槽
-    };
-    
-    // 绑定时只能绑定普通方法
-    py::class_<DAChartItem>(m, "DAChartItem")
-        .def("setItemAttribute", &DAChartItem::setItemAttribute);
-    ```
-
-!!! failure "陷阱5：忘记 #include DAPybind11InQt.h"
-
-    **症状**：编译报错 `slots` 相关的语法错误
-    
-    **原因**：直接 `#include <pybind11/pybind11.h>` 导致 Qt `slots` 宏冲突
-    
-    ```cpp
-    // 错误：直接引入 pybind11 头文件
-    #include <pybind11/pybind11.h>  // slots 宏冲突！
-    
-    // 正确：使用 DAPybind11InQt.h
-    #include "DAPybind11InQt.h"  // 安全引入，已处理 slots 冲突
-    ```
+> **❌ 陷阱5：忘记 #include DAPybind11InQt.h**
+>
+> **症状**：编译报错 `slots` 相关的语法错误
+>
+> **原因**：直接 `#include <pybind11/pybind11.h>` 导致 Qt `slots` 宏冲突
+>
+> ```cpp
+> // 错误：直接引入 pybind11 头文件
+> #include <pybind11/pybind11.h>  // slots 宏冲突！
+>
+> // 正确：使用 DAPybind11InQt.h
+> #include "DAPybind11InQt.h"  // 安全引入，已处理 slots 冲突
+> ```
 
 更多常见问题与解决方案见 [故障排除与最佳实践](./troubleshooting-and-best-practices.md)。
 
@@ -1271,8 +1285,9 @@ ui.addInfoLogMessage("测试消息")  # std::string → QString 自动转换
 | PyPlot | `src/DAInterface/DAQwtPyPlotPythonBinding.cpp` | `da_pyplot` | `PyPlot`、`QwtPlot` | 已完成。`DAQwtPyPlotPythonBinding.cpp:166` 定义 `PYBIND11_EMBEDDED_MODULE(da_pyplot, m)`，提供 matplotlib pyplot 风格的 Qwt API |
 | PyWorkFlow | `src/DAPyWorkFlow/PythonBinding/DAPyWorkFlowPythonBinding.cpp` | `da_py_workflow` | `DAPyPainterProxy`, `DAPyNodeGraphicsItem`, `DAPyWorkFlowScene` 及相关枚举 | 已完成。`DAPyWorkFlowPythonBinding.cpp:172` 定义 `PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)`，暴露工作流场景/节点项，所有操作须在 Qt 主线程调用 |
 
-!!! note "六个嵌入式模块"
-    当前共有六个通过 `PYBIND11_EMBEDDED_MODULE` 注册的进程内模块：`da_app`、`da_interface`、`da_data`（三个核心接口模块）以及 `da_figure`、`da_pyplot`、`da_py_workflow`（面向图表/工作流脚本）。这些模块均随主程序解释器初始化一并注册，Python 端直接 `import` 即可。
+> **📝 六个嵌入式模块**
+>
+> 当前共有六个通过 `PYBIND11_EMBEDDED_MODULE` 注册的进程内模块：`da_app`、`da_interface`、`da_data`（三个核心接口模块）以及 `da_figure`、`da_pyplot`、`da_py_workflow`（面向图表/工作流脚本）。这些模块均随主程序解释器初始化一并注册，Python 端直接 `import` 即可。
 
 ### 规划中模块
 
@@ -1289,5 +1304,6 @@ ui.addInfoLogMessage("测试消息")  # std::string → QString 自动转换
 1. **Project > Workflow**：项目持久化是工作流执行的前提，保存/加载项目比操作工作流节点更基础
 2. **Workflow > Gui**：工作流节点的 Python 操作需求较少，多数 GUI 功能已通过 `DAUIInterface` 间接暴露
 
-!!! info "路线图说明"
-    上述路线图为当前规划，实际优先级可能根据功能需求和用户反馈调整。图表（`da_figure`/`da_pyplot`）与工作流（`da_py_workflow`）相关绑定已完成，建议在开始新模块绑定前，先在 `da_interface` 中检查是否已有相关接口可以间接满足需求。
+> **ℹ️ 路线图说明**
+>
+> 上述路线图为当前规划，实际优先级可能根据功能需求和用户反馈调整。图表（`da_figure`/`da_pyplot`）与工作流（`da_py_workflow`）相关绑定已完成，建议在开始新模块绑定前，先在 `da_interface` 中检查是否已有相关接口可以间接满足需求。

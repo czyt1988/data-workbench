@@ -33,9 +33,10 @@
 | 成员函数 / 局部变量 / 参数 | 小写开头的驼峰命名 | `functionOne`, `argOne`, `loopCount` |
 | 命名空间 | 简洁、全大写缩写（避免过长） | `DA`（而非 `DataAnalysis`） |
 
-!!! tips "说明"
-    谷歌规范推荐私有成员变量使用后缀下划线（如 `value_`），虽可避免与局部变量混淆，但不利于 IDE 搜索。而传统 `m_` 前缀在 Pimpl 模式下显得冗余（如 `d_ptr->m_value`）。
-    本规范采用 **`m` 前缀 + 驼峰**（如 `mValue`），兼顾简洁性与 IDE 提示体验：在 Pimpl 中写作 `d_ptr->mValue` 更美观，且输入 `d_ptr->m` 即可触发 IDE 自动补全。
+> **💡 说明**
+>
+> 谷歌规范推荐私有成员变量使用后缀下划线（如 `value_`），虽可避免与局部变量混淆，但不利于 IDE 搜索。而传统 `m_` 前缀在 Pimpl 模式下显得冗余（如 `d_ptr->m_value`）。
+> 本规范采用 **`m` 前缀 + 驼峰**（如 `mValue`），兼顾简洁性与 IDE 提示体验：在 Pimpl 中写作 `d_ptr->mValue` 更美观，且输入 `d_ptr->m` 即可触发 IDE 自动补全。
 
 
 示例代码：
@@ -85,8 +86,9 @@ enum DockingArea
 };
 ```
 
-!!! tips "说明"
-    `QStyleOption*` 系列就是比较好的例子：相似功能的类都以 `QStyleOption` 打头，比如 `QStyleOptionToolButton`，而 `QToolButtonStyleOption` 这样的命名不利于在 IDE 里列举
+> **💡 说明**
+>
+> `QStyleOption*` 系列就是比较好的例子：相似功能的类都以 `QStyleOption` 打头，比如 `QStyleOptionToolButton`，而 `QToolButtonStyleOption` 这样的命名不利于在 IDE 里列举
 
 ## 函数命名规范
 
@@ -439,9 +441,10 @@ namespace DA{
 
 信号定义虽然写在命名空间内，但信号/槽的参数**必须写全命名空间**，否则 Qt 会识别不了
 
-!!! tips "注意"
-    qRegisterMetaType 建议不要传入参数，让 Qt 自动识别
-    建议使用自动注册机制，参考 `DAGlobals.h` 的 `DA_AUTO_REGISTER_META_TYPE` 宏
+> **💡 注意**
+>
+> qRegisterMetaType 建议不要传入参数，让 Qt 自动识别
+> 建议使用自动注册机制，参考 `DAGlobals.h` 的 `DA_AUTO_REGISTER_META_TYPE` 宏
 
 ### 信号和槽的参数要匹配
 
@@ -477,7 +480,8 @@ namespace DA{
 
 ## 相关规范
 
-!!! info "图标与 UI 设计规范"
-    本规范约束**代码**的命名、注释与风格；项目同时有 [图标与 UI 设计规范](./icon-ui-design-guide.md) 约束**视觉表现**，包括 SVG 图标画布规格、语义化色板、色彩组合规则以及 UI 控件（按钮/面板/状态指示）配色映射。
-
-    **涉及 SVG 图标设计（新增、替换、修改 `src/DAGui/icon/` 或 `src/APP/Icon/` 下任意 `.svg` 文件）时，必须先阅读 [图标与 UI 设计规范](./icon-ui-design-guide.md)** 并按其 Checklist 逐项核对，确保图标与界面控件配色同源、语义一致。
+> **ℹ️ 图标与 UI 设计规范**
+>
+> 本规范约束**代码**的命名、注释与风格；项目同时有 [图标与 UI 设计规范](./icon-ui-design-guide.md) 约束**视觉表现**，包括 SVG 图标画布规格、语义化色板、色彩组合规则以及 UI 控件（按钮/面板/状态指示）配色映射。
+>
+> **涉及 SVG 图标设计（新增、替换、修改 `src/DAGui/icon/` 或 `src/APP/Icon/` 下任意 `.svg` 文件）时，必须先阅读 [图标与 UI 设计规范](./icon-ui-design-guide.md)** 并按其 Checklist 逐项核对，确保图标与界面控件配色同源、语义一致。

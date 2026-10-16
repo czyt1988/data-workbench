@@ -267,10 +267,11 @@ IID 宏定义为 `DAABSTRACTNODEPLUGIN_IID`（值为 `"org.da.abstract.nodePlugi
 
 ### DAPyNodeFactory - 节点工厂代理（旧 C++ 架构）
 
-!!! warning "遗留架构"
-    下面展示的 `create` / `getNodeMetaDataList` / `getFactoryName` / `nodeAddedToWorkflow` / `nodeStartRemove` 等**虚函数钩子属于已废弃的 C++ 节点工厂架构**。当前 `DAPyNodeFactory`（见 `src/DAPyWorkFlow/DAPyNodeFactory.h`）不再暴露这些虚函数，它的角色是 Python 侧 `DANodeRegistry` 的代理：通过 `discoverNodes()` 发现节点、`createNode()` 创建实例、`getNodeMetadataList()` 取元数据列表。
-
-    **新插件应采用 Python-first 的 `@NodeDef` 自动发现模型**：节点用 `@NodeDef` 装饰器声明，`__init__.py` 通过 `entry_points` 注册，`DAPyNodeFactory` 在启动时扫描 Python 包自动发现，无需手写 C++ 工厂。参考 `plugins/DASystemNodes/`（纯 Python 节点插件）。旧 C++ 工厂钩子仅作历史背景保留：
+> **⚠️ 遗留架构**
+>
+> 下面展示的 `create` / `getNodeMetaDataList` / `getFactoryName` / `nodeAddedToWorkflow` / `nodeStartRemove` 等**虚函数钩子属于已废弃的 C++ 节点工厂架构**。当前 `DAPyNodeFactory`（见 `src/DAPyWorkFlow/DAPyNodeFactory.h`）不再暴露这些虚函数，它的角色是 Python 侧 `DANodeRegistry` 的代理：通过 `discoverNodes()` 发现节点、`createNode()` 创建实例、`getNodeMetadataList()` 取元数据列表。
+>
+> **新插件应采用 Python-first 的 `@NodeDef` 自动发现模型**：节点用 `@NodeDef` 装饰器声明，`__init__.py` 通过 `entry_points` 注册，`DAPyNodeFactory` 在启动时扫描 Python 包自动发现，无需手写 C++ 工厂。参考 `plugins/DASystemNodes/`（纯 Python 节点插件）。旧 C++ 工厂钩子仅作历史背景保留：
 
 ```cpp
 // 旧 C++ 节点工厂架构（已废弃，仅供参考）
@@ -540,8 +541,9 @@ Q_SIGNALS:
 };
 ```
 
-!!! note "`getAllPlugins()` / `getNodePlugins()` 仅在派生类 `DAAppPluginManager` 上"
-    `getAllPlugins()`（返回 `QList<DAAbstractPlugin*>`）和 `getNodePlugins()`（返回 `QList<DAAbstractNodePlugin*>`）只在 APP 层的 `DAAppPluginManager`（`src/APP/DAAppPluginManager.h`）中提供，基类 `DAPluginManager` 只暴露 `getPluginOptions()`。
+> **📝 `getAllPlugins()` / `getNodePlugins()` 仅在派生类 `DAAppPluginManager` 上**
+>
+> `getAllPlugins()`（返回 `QList<DAAbstractPlugin*>`）和 `getNodePlugins()`（返回 `QList<DAAbstractNodePlugin*>`）只在 APP 层的 `DAAppPluginManager`（`src/APP/DAAppPluginManager.h`）中提供，基类 `DAPluginManager` 只暴露 `getPluginOptions()`。
 
 ---
 
@@ -549,8 +551,9 @@ Q_SIGNALS:
 
 ### 接口创建顺序
 
-!!! important "关键顺序"
-    插件加载前，接口必须按以下顺序创建完成：
+> **❗ 关键顺序**
+>
+> 插件加载前，接口必须按以下顺序创建完成：
 
 1. `DACoreInterface` 首先创建，调用 `initialized()`
 2. 初始化 Python 环境 `initializePythonEnv()`
@@ -631,31 +634,36 @@ void DAPluginManager::loadAllPlugins(DACoreInterface* c)
 
 ## 注意事项
 
-!!! warning "初始化时机"
-    所有针对界面的操作都必须在 `initialize()` 方法中执行，此时主程序界面框架已完全建立。在构造函数中操作界面会导致崩溃。
+> **⚠️ 初始化时机**
+>
+> 所有针对界面的操作都必须在 `initialize()` 方法中执行，此时主程序界面框架已完全建立。在构造函数中操作界面会导致崩溃。
 
-!!! warning "接口空指针检查"
-    获取接口实例后应检查指针有效性：
-    ```cpp
-    DACoreInterface* core = this->core();
-    if (!core) {
-        return false;
-    }
-    ```
+> **⚠️ 接口空指针检查**
+>
+> 获取接口实例后应检查指针有效性：
+> ```cpp
+> DACoreInterface* core = this->core();
+> if (!core) {
+>     return false;
+> }
+> ```
 
-!!! tip "谁创建谁删除"
-    `createNodeFactory()` 创建的工厂对象由插件管理，需要在 `destroyNodeFactory()` 中正确释放，遵循「谁创建谁删除」原则。
+> **💡 谁创建谁删除**
+>
+> `createNodeFactory()` 创建的工厂对象由插件管理，需要在 `destroyNodeFactory()` 中正确释放，遵循「谁创建谁删除」原则。
 
-!!! note "Qt 版本兼容性"
-    插件系统在 Qt5 和 Qt6 中使用方式相同，但编译后的插件不兼容，需要针对不同 Qt 版本分别编译。
+> **📝 Qt 版本兼容性**
+>
+> 插件系统在 Qt5 和 Qt6 中使用方式相同，但编译后的插件不兼容，需要针对不同 Qt 版本分别编译。
 
-!!! info "多语言支持"
-    插件需要支持多语言时，应在 `initialize()` 中加载翻译文件，在 `retranslate()` 中更新界面文本。
+> **ℹ️ 多语言支持**
+>
+> 插件需要支持多语言时，应在 `initialize()` 中加载翻译文件，在 `retranslate()` 中更新界面文本。
 
 ---
 
 ## 下一步
 
-- [:material-code-block: 插件开发全流程](./plugin-development.md) - 从创建项目到完整实现
-- [:material-sync: 插件生命周期](./plugin-lifecycle.md) - 生命周期管理详解
-- [:material-folder: 插件模块详解](./plugin-module.md) - DAPluginSupport 模块
+- [💻 插件开发全流程](./plugin-development.md) - 从创建项目到完整实现
+- [🔄 插件生命周期](./plugin-lifecycle.md) - 生命周期管理详解
+- [📁 插件模块详解](./plugin-module.md) - DAPluginSupport 模块

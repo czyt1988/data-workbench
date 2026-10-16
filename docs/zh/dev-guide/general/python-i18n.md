@@ -2,8 +2,9 @@
 
 Python 脚本国际化模块基于 GNU gettext 标准提供多语言支持，覆盖脚本文本的翻译和本地化。
 
-!!! example "示例"
-    脚本的国际化可参考插件 `plugins/DataAnalysis/PyScripts/DADataAnalysisGui/i18n/`
+> **📌 示例**
+>
+> 脚本的国际化可参考插件 `plugins/DataAnalysis/PyScripts/DADataAnalysisGui/i18n/`
 
 ## 概述
 
@@ -46,8 +47,9 @@ DAWorkBench 的 Python 脚本使用 GNU gettext 标准实现国际化（i18n）�
 └── xxx.py                 # 库的其他业务逻辑（使用_()翻译文本）
 ```
 
-!!! note "文件名约定"
-    `.po` 和 `.mo` 文件名应与 `DOMAIN` 保持一致。比如 `DADataAnalysisGui` 插件使用 `DADataAnalysisGui.po` / `DADataAnalysisGui.mo`。
+> **📝 文件名约定**
+>
+> `.po` 和 `.mo` 文件名应与 `DOMAIN` 保持一致。比如 `DADataAnalysisGui` 插件使用 `DADataAnalysisGui.po` / `DADataAnalysisGui.mo`。
 
 1. 在插件脚本目录下创建 `i18n` 文件夹和 `__init__.py` 文件，表示这是一个国际化目录，`__init__.py` 可以为空
 
@@ -227,8 +229,9 @@ print(_("Data is not DataFrame type"))  # cn:数据不是DataFrame类型
 
 执行上述代码后，文本会根据系统语言自动翻译，如果翻译不存在则显示原文本（英文）。
 
-!!! warning "源文本方向"
-    **禁止**在 `_()` 中直接写中文：`_("没有选中数据")` 是错误写法。源文本必须是英文，中文翻译通过 `.po` 文件提供，`# cn:` 注释仅用于辅助 `update_po.py` 工具自动填充 `.po` 翻译。
+> **⚠️ 源文本方向**
+>
+> **禁止**在 `_()` 中直接写中文：`_("没有选中数据")` 是错误写法。源文本必须是英文，中文翻译通过 `.po` 文件提供，`# cn:` 注释仅用于辅助 `update_po.py` 工具自动填充 `.po` 翻译。
 
 ## 节点包（@NodeDef）i18n
 
@@ -444,11 +447,13 @@ msgstr ""
 - `msgstr`：空值，供后续生成 `.po` 文件时填写翻译；
 - 头部的编码、生成工具等信息自动填充，无需手动修改。
 
-!!! warning "注意"
-    中文如果乱码，说明没有加 `--from-code=utf-8` 参数，因为 xgettext 默认可能用系统编码（如 GBK），导致中文原文本乱码。
+> **⚠️ 注意**
+>
+> 中文如果乱码，说明没有加 `--from-code=utf-8` 参数，因为 xgettext 默认可能用系统编码（如 GBK），导致中文原文本乱码。
 
-!!! tip "Tip"
-    `.pot` 是翻译的模板文件，`.po` 是翻译文件，`.mo` 是编译文件。`.pot` 收集从代码中提取的全部待翻译文本，**不关联任何具体语言**，仅记录需要翻译哪些文本。
+> **💡 Tip**
+>
+> `.pot` 是翻译的模板文件，`.po` 是翻译文件，`.mo` 是编译文件。`.pot` 收集从代码中提取的全部待翻译文本，**不关联任何具体语言**，仅记录需要翻译哪些文本。
 
 ### 批量更新.pot文件
 
@@ -487,8 +492,9 @@ msgstr "是否重建索引"
 
 `po` 文件记录「英文源文本 -> 目标语言文本」的映射关系，是人工维护翻译的核心文件，最终会被 `msgfmt` 编译为 `.mo` 二进制文件供程序加载。
 
-!!! tip "update_po.py 自动填充工具"
-    项目提供 `update_po.py` 脚本，可从代码中的 `_("English")  # cn:中文` 注释自动填充 `.po` 文件中空 `msgstr`。详见 `plugins/DataAnalysis/PyScripts/DADataAnalysisGui/i18n/update_po.py`。
+> **💡 update_po.py 自动填充工具**
+>
+> 项目提供 `update_po.py` 脚本，可从代码中的 `_("English")  # cn:中文` 注释自动填充 `.po` 文件中空 `msgstr`。详见 `plugins/DataAnalysis/PyScripts/DADataAnalysisGui/i18n/update_po.py`。
 
 生成 po 文件后需要手动翻译并保存
 
@@ -795,8 +801,9 @@ read -n 1 -s -r
 
 修改脚本开头的配置项，即可一键生成国际化文件
 
-!!! tip "注意"
-    用 Git Bash 打开脚本，不要用 Windows 自带的 cmd：Git Bash 默认已带 xgettext 和 msgfmt 这些工具
+> **💡 注意**
+>
+> 用 Git Bash 打开脚本，不要用 Windows 自带的 cmd：Git Bash 默认已带 xgettext 和 msgfmt 这些工具
 
 ## 快速参考
 

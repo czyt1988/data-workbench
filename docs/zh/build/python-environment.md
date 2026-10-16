@@ -53,8 +53,9 @@ DAWorkBench 强制依赖 Python，Python 相关模块始终参与编译：
 | pydantic>=2.0 | Agent 数据模型校验（DAAgent 子系统） |
 | tiktoken | LLM 分词计数（DAAgent 子系统） |
 
-!!! info "AI/Agent 栈为必需依赖"
-    `langgraph`、`langchain-openai`、`langgraph-cli[inmem]`、`pydantic`、`tiktoken` 五个包为 DAAgent 子系统所必需，不可省略。仅安装 pandas/numpy/scipy 会导致 Agent 相关功能无法运行。
+> **ℹ️ AI/Agent 栈为必需依赖**
+>
+> `langgraph`、`langchain-openai`、`langgraph-cli[inmem]`、`pydantic`、`tiktoken` 五个包为 DAAgent 子系统所必需，不可省略。仅安装 pandas/numpy/scipy 会导致 Agent 相关功能无法运行。
 
 安装依赖：
 
@@ -80,8 +81,9 @@ pip install langgraph langchain-openai "langgraph-cli[inmem]" "pydantic>=2.0" ti
 
 ## 嵌入式 Python 配置（推荐发布）
 
-!!! tip "embeddable package"
-    使用 Python embeddable package 可获得干净的 Python 环境，便于打包发布，不影响系统 Python。
+> **💡 embeddable package**
+>
+> 使用 Python embeddable package 可获得干净的 Python 环境，便于打包发布，不影响系统 Python。
 
 ### 步骤一：下载 embeddable package
 
@@ -132,8 +134,9 @@ del get-pip.py
 .\python.exe -m pip install --target="./Lib/site-packages" -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 
-!!! warning "Windows 包安装位置"
-    Windows 下 pip 默认安装到用户目录 `%APPDATA%\Python\Pythonxx\site-packages`，不利于打包。使用 `--target` 参数指定安装位置。
+> **⚠️ Windows 包安装位置**
+>
+> Windows 下 pip 默认安装到用户目录 `%APPDATA%\Python\Pythonxx\site-packages`，不利于打包。使用 `--target` 参数指定安装位置。
 
 ### 步骤五：完善库路径
 
@@ -155,12 +158,13 @@ del get-pip.py
 }
 ```
 
-!!! info "路径变量"
-    `${current-app-dir}` 代表程序安装目录。例如 Python 安装在程序目录下：
-    ```
-    ${current-app-dir}/python311/python.exe
-    ```
-    此路径变量使配置文件可移植，无需修改即可在不同安装位置使用。
+> **ℹ️ 路径变量**
+>
+> `${current-app-dir}` 代表程序安装目录。例如 Python 安装在程序目录下：
+> ```
+> ${current-app-dir}/python311/python.exe
+> ```
+> 此路径变量使配置文件可移植，无需修改即可在不同安装位置使用。
 
 ### 系统环境方式
 
@@ -175,8 +179,9 @@ del get-pip.py
 | `DA_ENABLE_AUTO_INSTALL_PYTHON_ENV` | ON | 构建完成后自动搜索 Python 环境并把必要 DLL 复制到 `bin/` 目录 |
 | `Python_ROOT_DIR` | - | 指定 Python 安装路径 |
 
-!!! info "Python 为强制依赖"
-    Python 不可禁用，始终参与编译。`DA_ENABLE_AUTO_INSTALL_PYTHON_ENV` 仅控制是否自动部署 Python DLL，不影响 Python 模块本身的编译。
+> **ℹ️ Python 为强制依赖**
+>
+> Python 不可禁用，始终参与编译。`DA_ENABLE_AUTO_INSTALL_PYTHON_ENV` 仅控制是否自动部署 Python DLL，不影响 Python 模块本身的编译。
 
 ---
 
@@ -191,8 +196,9 @@ del get-pip.py
 | 系统 Python | 开发构建 | 提供头文件和库文件 |
 | 嵌入式 Python | 打包发布 | 干净的运行环境 |
 
-!!! warning "版本必须匹配"
-    两个 Python 环境版本必须完全相同（版本号、架构）。
+> **⚠️ 版本必须匹配**
+>
+> 两个 Python 环境版本必须完全相同（版本号、架构）。
 
 ---
 

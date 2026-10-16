@@ -211,8 +211,9 @@ public:
 
 ### 关键安全规则
 
-!!! danger "死锁风险警告"
-    以下规则必须严格遵守，否则会导致程序死锁。
+> **🚫 死锁风险警告**
+>
+> 以下规则必须严格遵守，否则会导致程序死锁。
 
 **规则 1：禁止在持有 GIL 时调用 QThread::wait()**
 
@@ -404,11 +405,13 @@ class CustomNode:
         painter.drawText(x + 5, y + 20, "Custom Node")
 ```
 
-!!! note "绘制限制"
-    当前仅支持基本绘制操作（`drawRect`、`drawText`、`drawLine`、`fillRect` 等）。复杂绘制（如 SVG、图片）待后续实现。
+> **📝 绘制限制**
+>
+> 当前仅支持基本绘制操作（`drawRect`、`drawText`、`drawLine`、`fillRect` 等）。复杂绘制（如 SVG、图片）待后续实现。
 
-!!! warning "性能提示"
-    `paint_callback` 应在 50ms 内完成绘制，避免阻塞 GUI 线程。回调抛出异常时，节点改用自身的渲染模板绘制（`RenderDefaultTemplate` 或 `RenderWidgetTemplate`），并在节点状态不是 `Idle` 时显示错误覆盖层。
+> **⚠️ 性能提示**
+>
+> `paint_callback` 应在 50ms 内完成绘制，避免阻塞 GUI 线程。回调抛出异常时，节点改用自身的渲染模板绘制（`RenderDefaultTemplate` 或 `RenderWidgetTemplate`），并在节点状态不是 `Idle` 时显示错误覆盖层。
 
 ## 注意事项
 

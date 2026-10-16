@@ -62,10 +62,11 @@ cmake -S . -B build-linux -G Ninja -DCMAKE_BUILD_TYPE=Release
 cmake --build build-linux --parallel
 ```
 
-!!! warning "Windows 构建注意事项"
-    - **禁止使用 Ninja 生成器**，必须使用 Visual Studio 生成器
-    - 如果 `build/` 目录已存在且是用 Ninja 配置的，使用 `.\scripts\build.ps1 -Clean` 清理后重新配置
-    - 本指南推荐使用 `build.ps1` 或 `-DCMAKE_PREFIX_PATH` 方式；`qt.toolchain.cmake` 仅在使用 Ninja + `CMAKE_TOOLCHAIN_FILE` 方式构建时需要
+> **⚠️ Windows 构建注意事项**
+>
+> - **禁止使用 Ninja 生成器**，必须使用 Visual Studio 生成器
+> - 如果 `build/` 目录已存在且是用 Ninja 配置的，使用 `.\scripts\build.ps1 -Clean` 清理后重新配置
+> - 本指南推荐使用 `build.ps1` 或 `-DCMAKE_PREFIX_PATH` 方式；`qt.toolchain.cmake` 仅在使用 Ninja + `CMAKE_TOOLCHAIN_FILE` 方式构建时需要
 
 **安装 Python 依赖**：
 
@@ -175,11 +176,12 @@ data-workbench/
 
 ### 禁止修改的文件/目录
 
-!!! danger "禁止触碰"
-    - `src/3rdparty/`：第三方库通过 git submodule 管理，直接修改会在更新时丢失
-    - `src/3rdparty/qwt/`：Qwt 有自己的 AGENTS.md 和修改规范
-    - 自动生成的 moc 文件，由 Qt MOC 编译器自动生成
-    - 原因：这些目录的内容由外部管理，本地修改会被覆盖或导致合并冲突
+> **🚫 禁止触碰**
+>
+> - `src/3rdparty/`：第三方库通过 git submodule 管理，直接修改会在更新时丢失
+> - `src/3rdparty/qwt/`：Qwt 有自己的 AGENTS.md 和修改规范
+> - 自动生成的 moc 文件，由 Qt MOC 编译器自动生成
+> - 原因：这些目录的内容由外部管理，本地修改会被覆盖或导致合并冲突
 
 ---
 
@@ -282,9 +284,10 @@ flowchart TD
 5. **注册节点**：在包的 `__init__.py` 中导入节点模块
 6. **测试**：在工作流中拖入节点，连接数据，验证执行结果
 
-!!! warning "@NodeDef(name=...) 禁止翻译"
-    `name` 参与 `qualified_name` 序列化（如 `DASystemNodes.Delay`），翻译会破坏已存工程的节点匹配。
-    `category` 和 `description` 可以翻译。
+> **⚠️ @NodeDef(name=...) 禁止翻译**
+>
+> `name` 参与 `qualified_name` 序列化（如 `DASystemNodes.Delay`），翻译会破坏已存工程的节点匹配。
+> `category` 和 `description` 可以翻译。
 
 详细规范参见 [Python 节点开发指南](./workflow/workflow-python-node-dev.md)。
 
@@ -493,14 +496,16 @@ DA_LOG_CATEGORY(MyCategory);
 daInfoC(MyCategory, "Detailed message for my module");
 ```
 
-!!! warning "日志消息不翻译"
-    所有日志消息保持纯英文，便于跨语言环境检索。不要对日志字符串使用 `tr()`。
+> **⚠️ 日志消息不翻译**
+>
+> 所有日志消息保持纯英文，便于跨语言环境检索。不要对日志字符串使用 `tr()`。
 
 ### pybind11 类型转换陷阱
 
-!!! danger "必须包含 DAPybind11QtCaster.hpp"
-    每个 `.cpp` 文件只要出现 Qt↔Python 类型转换（`attr(...)(QString)`, `cast<QString>()` 等），
-    **必须**在文件顶部 `#include "DAPybind11QtCaster.hpp"`。遗漏不会编译报错，但运行时会静默失败。
+> **🚫 必须包含 DAPybind11QtCaster.hpp**
+>
+> 每个 `.cpp` 文件只要出现 Qt↔Python 类型转换（`attr(...)(QString)`, `cast<QString>()` 等），
+> **必须**在文件顶部 `#include "DAPybind11QtCaster.hpp"`。遗漏不会编译报错，但运行时会静默失败。
 
 ---
 

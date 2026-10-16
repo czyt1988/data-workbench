@@ -214,8 +214,9 @@ daWarning << "Data size exceeds threshold";    // 警告级别，进 UI 窗口
 daCritical << "Failed to load plugin";         // 严重级别，进 UI 窗口
 ```
 
-!!! warning "日志消息不翻译"
-    所有日志消息保持纯英文，不使用 `tr()`。详见 [日志系统文档](../../dev-guide/general/logging.md)。
+> **⚠️ 日志消息不翻译**
+>
+> 所有日志消息保持纯英文，不使用 `tr()`。详见 [日志系统文档](../../dev-guide/general/logging.md)。
 
 ---
 
@@ -227,8 +228,9 @@ daCritical << "Failed to load plugin";         // 严重级别，进 UI 窗口
 - [类索引](../../../doxygen/classes.html)
 - [文件列表](../../../doxygen/files.html)
 
-!!! tip "Markdown vs Doxygen"
-    本 Markdown API 总览提供导航和关键 API 速查，完整的成员函数文档请参考 Doxygen 生成的内容。
+> **💡 Markdown vs Doxygen**
+>
+> 本 Markdown API 总览提供导航和关键 API 速查，完整的成员函数文档请参考 Doxygen 生成的内容。
 
 ---
 

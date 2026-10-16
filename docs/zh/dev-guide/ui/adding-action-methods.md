@@ -11,8 +11,9 @@ Action 添加方法文档介绍如何在 DAWorkBench 主程序中添加新的菜
 - **国际化支持**：所有文本通过 `retranslateUi()` 方法支持多语言
 - **标准化流程**：三步完成 action 添加：定义、构建、绑定
 
-!!! warning "适用范围"
-    此文档针对主程序的 action 添加，非插件开发。如需开发插件，参考[插件开发指南](../../plugin/plugin-development.md)。
+> **⚠️ 适用范围**
+>
+> 此文档针对主程序的 action 添加，非插件开发。如需开发插件，参考[插件开发指南](../../plugin/plugin-development.md)。
 
 ## 添加流程概述
 
@@ -69,8 +70,9 @@ void DAAppActions::retranslateUi()
 }
 ```
 
-!!! tip "文本国际化"
-    所有文本相关的操作都放在 `retranslateUi()` 函数中，这样可以根据语言进行翻译。
+> **💡 文本国际化**
+>
+> 所有文本相关的操作都放在 `retranslateUi()` 函数中，这样可以根据语言进行翻译。
 
 ### 步骤 2：在 `DAAppRibbonArea` 中构建界面
 
@@ -218,17 +220,20 @@ pannel->addLargeActionButton(actionRecent, menu);
 
 ## 注意事项
 
-!!! warning "初始化顺序"
-    - action 创建在 `DAAppActions::buildMainAction()` 中
-    - 界面构建在 `DAAppRibbonArea` 中
-    - 信号绑定在 `DAAppController::initConnection()` 中
-    必须按正确顺序执行，否则可能出现空指针问题。
+> **⚠️ 初始化顺序**
+>
+> - action 创建在 `DAAppActions::buildMainAction()` 中
+> - 界面构建在 `DAAppRibbonArea` 中
+> - 信号绑定在 `DAAppController::initConnection()` 中
+> 必须按正确顺序执行，否则可能出现空指针问题。
 
-!!! tip "资源管理"
-    action 由 `DAAppActions` 管理，无需手动删除。使用 `setObjectName` 设置唯一标识，便于调试。
+> **💡 资源管理**
+>
+> action 由 `DAAppActions` 管理，无需手动删除。使用 `setObjectName` 设置唯一标识，便于调试。
 
-!!! note "图标路径"
-    图标路径使用 Qt 资源系统格式：`:/prefix/path/icon.svg`
+> **📝 图标路径**
+>
+> 图标路径使用 Qt 资源系统格式：`:/prefix/path/icon.svg`
 
 ## 参考资料
 

@@ -1,7 +1,8 @@
 # 各模块业务逻辑详解
 
-!!! note "文档定位"
-    本文档逐模块拆解 data-workbench 的内部业务逻辑，覆盖核心类关系、关键流程、API 速查和修改指南。适合需要深入理解某个模块内部运作的开发者。
+> **📝 文档定位**
+>
+> 本文档逐模块拆解 data-workbench 的内部业务逻辑，覆盖核心类关系、关键流程、API 速查和修改指南。适合需要深入理解某个模块内部运作的开发者。
 
 - **逐模块解析**：覆盖 7 个核心模块的完整业务逻辑分析
 - **类关系图**：每个模块包含 mermaid 类关系图
@@ -227,8 +228,9 @@ flowchart TD
 - **逻辑数据**（`DAPyWorkFlowSerializer`）：保存节点拓扑、参数值、连接关系到 `workflow-data.xml`
 - **视图数据**（`DAPyWorkFlowSceneSerializer`）：保存节点位置、图元属性、连接线布局到场景 XML
 
-!!! warning "持久化铁律"
-    Python 逻辑数据必须先于 C++ 视图数据加载。加载时先通过 `DAWorkflowSerializer` 恢复节点实例和参数，再通过 `DAPyWorkFlowScene` 创建视图图元。
+> **⚠️ 持久化铁律**
+>
+> Python 逻辑数据必须先于 C++ 视图数据加载。加载时先通过 `DAWorkflowSerializer` 恢复节点实例和参数，再通过 `DAPyWorkFlowScene` 创建视图图元。
 
 ### 核心 API
 
@@ -245,10 +247,11 @@ flowchart TD
 
 ### 修改指南
 
-!!! tip "修改此模块时"
-    - **可以修改**：新增 `DAPyNodeStyle` 的 `NodeRenderTemplate` 枚举值；在 `DAPyWorkFlowScene` 中新增自定义 `createLinkItem()` 工厂方法；修改 `DAPyWorkFlowCommandsFactory` 添加新的撤销命令类型；在 `DAPyNodeGraphicsItem` 中调整节点绘制逻辑
-    - **不可修改**：`DAPyWorkFlowManager` 的信号签名（`nodeAdded`、`nodeRemoved` 等，被 DAGui/APP 大量连接）；`DAPyNode` 的 `DAPyObjectWrapper` 继承关系；Python 侧 `DAWorkflowExecutor` 的拓扑排序算法核心逻辑
-    - **修改后需同步更新**：`plugins/DASystemNodes/` 中受影响的节点、相关测试
+> **💡 修改此模块时**
+>
+> - **可以修改**：新增 `DAPyNodeStyle` 的 `NodeRenderTemplate` 枚举值；在 `DAPyWorkFlowScene` 中新增自定义 `createLinkItem()` 工厂方法；修改 `DAPyWorkFlowCommandsFactory` 添加新的撤销命令类型；在 `DAPyNodeGraphicsItem` 中调整节点绘制逻辑
+> - **不可修改**：`DAPyWorkFlowManager` 的信号签名（`nodeAdded`、`nodeRemoved` 等，被 DAGui/APP 大量连接）；`DAPyNode` 的 `DAPyObjectWrapper` 继承关系；Python 侧 `DAWorkflowExecutor` 的拓扑排序算法核心逻辑
+> - **修改后需同步更新**：`plugins/DASystemNodes/` 中受影响的节点、相关测试
 
 ---
 
@@ -366,10 +369,11 @@ flowchart TD
 
 ### 修改指南
 
-!!! tip "修改此模块时"
-    - **可以修改**：在 `DAAbstractData` 的 `DataType` 枚举中新增数据类型；添加新的撤销命令类
-    - **不可修改**：`DAData` 的隐式共享机制（值语义核心）；`DADataManager` 的信号签名（`dataAdded`、`dataRemoved`、`dataChanged`、`datasCleared`，被 40+ 文件连接）
-    - **修改后需同步更新**：DAGui 中的数据管理 UI、工作流节点中的数据处理
+> **💡 修改此模块时**
+>
+> - **可以修改**：在 `DAAbstractData` 的 `DataType` 枚举中新增数据类型；添加新的撤销命令类
+> - **不可修改**：`DAData` 的隐式共享机制（值语义核心）；`DADataManager` 的信号签名（`dataAdded`、`dataRemoved`、`dataChanged`、`datasCleared`，被 40+ 文件连接）
+> - **修改后需同步更新**：DAGui 中的数据管理 UI、工作流节点中的数据处理
 
 ---
 
@@ -484,8 +488,9 @@ DAFigure 提供两套接口：
 - **直接操作**：`addCurve()`、`addItem()` 等不带下划线后缀的方法，直接修改图表，不记录到撤销栈
 - **撤销操作**：`addCurve_()`、`addItem_()` 等带下划线后缀的方法，自动将操作记录到 `QUndoStack`
 
-!!! warning "接口选择"
-    用户交互操作必须使用带 `_` 后缀的方法以支持撤销。程序内部初始化或批量操作可使用不带后缀的方法以提高性能。
+> **⚠️ 接口选择**
+>
+> 用户交互操作必须使用带 `_` 后缀的方法以支持撤销。程序内部初始化或批量操作可使用不带后缀的方法以提高性能。
 
 ### 核心 API
 
@@ -499,10 +504,11 @@ DAFigure 提供两套接口：
 
 ### 修改指南
 
-!!! tip "修改此模块时"
-    - **可以修改**：新增 `DAAbstractChartEditor` 的子类；在 `DAChartSerialize` 中注册新的 `QwtPlotItem` 类型序列化支持；扩展 `DAFigureWidget::ChartEditorType` 枚举（`UserDefineEditor = 1000` 起步）
-    - **不可修改**：`DAChartWidget` 对 `QwtPlot` 的继承关系；`QwtPlotItem` 相关类不能继承 QObject；三个接口（Data/Style/Interaction）的方法签名
-    - **修改后需同步更新**：`DAGui/ChartSetting/` 中对应的属性面板
+> **💡 修改此模块时**
+>
+> - **可以修改**：新增 `DAAbstractChartEditor` 的子类；在 `DAChartSerialize` 中注册新的 `QwtPlotItem` 类型序列化支持；扩展 `DAFigureWidget::ChartEditorType` 枚举（`UserDefineEditor = 1000` 起步）
+> - **不可修改**：`DAChartWidget` 对 `QwtPlot` 的继承关系；`QwtPlotItem` 相关类不能继承 QObject；三个接口（Data/Style/Interaction）的方法签名
+> - **修改后需同步更新**：`DAGui/ChartSetting/` 中对应的属性面板
 
 ---
 
@@ -635,8 +641,9 @@ classDiagram
     DADataOperateWidget --> DADataOperatePageWidget : 管理
 ```
 
-!!! info "DAChartOperateWidget 的停靠实现"
-    `DAChartOperateWidget` 基于 ADS 的 dockindock 嵌套停靠区管理多个 `DAFigureWidget`（隔离在绘图区内、自由分屏、布局随工程持久化）。该机制有一个隐蔽的 `FocusHighlighting` 焦点跨管理器陷阱，修改停靠相关逻辑前必读 [绘图窗口停靠布局](../graphics/chart-dock-nesting.md)。
+> **ℹ️ DAChartOperateWidget 的停靠实现**
+>
+> `DAChartOperateWidget` 基于 ADS 的 dockindock 嵌套停靠区管理多个 `DAFigureWidget`（隔离在绘图区内、自由分屏、布局随工程持久化）。该机制有一个隐蔽的 `FocusHighlighting` 焦点跨管理器陷阱，修改停靠相关逻辑前必读 [绘图窗口停靠布局](../graphics/chart-dock-nesting.md)。
 
 ### 业务逻辑流程
 
@@ -690,13 +697,15 @@ flowchart TD
 
 ### 修改指南
 
-!!! tip "修改此模块时"
-    - **可以修改**：在 `ChartSetting/` 中新增面板类；在 `NodeSetting/` 中注册自定义节点参数面板；在 `Models/` 中新增 Model/View 模型；在 `Dialog/` 中新增对话框
-    - **不可修改**：`DAChartItemSettingPanel` 的 `buildPropertyPanel()` 纯虚函数签名；`DAAbstractChartItemSettingWidget` 的 `d_cast()`/`s_cast()`/`checkItemRTTI()` 机制
-    - **修改后需同步更新**：翻译文件（`.ts`）中的新增 tr() 字符串
+> **💡 修改此模块时**
+>
+> - **可以修改**：在 `ChartSetting/` 中新增面板类；在 `NodeSetting/` 中注册自定义节点参数面板；在 `Models/` 中新增 Model/View 模型；在 `Dialog/` 中新增对话框
+> - **不可修改**：`DAChartItemSettingPanel` 的 `buildPropertyPanel()` 纯虚函数签名；`DAAbstractChartItemSettingWidget` 的 `d_cast()`/`s_cast()`/`checkItemRTTI()` 机制
+> - **修改后需同步更新**：翻译文件（`.ts`）中的新增 tr() 字符串
 
-!!! danger "endGroup 遗漏 (P0 级 Bug)"
-    每个 `addCollapsibleGroup()` 必须立即配对一个 `endGroup()`。遗漏会导致后续所有分组变成前一分组的子嵌套分组，面板布局完全破坏。
+> **🚫 endGroup 遗漏 (P0 级 Bug)**
+>
+> 每个 `addCollapsibleGroup()` 必须立即配对一个 `endGroup()`。遗漏会导致后续所有分组变成前一分组的子嵌套分组，面板布局完全破坏。
 
 ---
 
@@ -818,8 +827,9 @@ sequenceDiagram
     App->>Ribbon: 13. 创建 DARibbonAreaInterface
 ```
 
-!!! warning "接口创建顺序铁律"
-    在接口构造过程中，必须严格遵循创建顺序。比如在 `DADataManagerInterface` 的构造函数中不能调用 `DAUIInterface` 的方法，因为 UI 接口此时尚未创建。
+> **⚠️ 接口创建顺序铁律**
+>
+> 在接口构造过程中，必须严格遵循创建顺序。比如在 `DADataManagerInterface` 的构造函数中不能调用 `DAUIInterface` 的方法，因为 UI 接口此时尚未创建。
 
 ### 核心 API
 
@@ -833,10 +843,11 @@ sequenceDiagram
 
 ### 修改指南
 
-!!! tip "修改此模块时"
-    - **可以修改**：在 `DAUIInterface` 中新增虚方法；添加新的 `DAUIExtendInterface` 子类
-    - **不可修改**：`DACoreInterface` 的纯虚方法签名（所有实现类和消费方都需要同步修改）；`DABaseInterface::core()` 方法；接口创建顺序（步骤 1-13 不可变更）
-    - **修改后需同步更新**：`src/APP/` 中对应的实现类、所有插件
+> **💡 修改此模块时**
+>
+> - **可以修改**：在 `DAUIInterface` 中新增虚方法；添加新的 `DAUIExtendInterface` 子类
+> - **不可修改**：`DACoreInterface` 的纯虚方法签名（所有实现类和消费方都需要同步修改）；`DABaseInterface::core()` 方法；接口创建顺序（步骤 1-13 不可变更）
+> - **修改后需同步更新**：`src/APP/` 中对应的实现类、所有插件
 
 ---
 
@@ -946,10 +957,11 @@ flowchart TD
 
 ### 修改指南
 
-!!! tip "修改此模块时"
-    - **可以修改**：新增 `DAAbstractPlugin` 的子类；在 `DAPluginManager` 中添加插件优先级或依赖解析逻辑
-    - **不可修改**：`DAAbstractPlugin` 的 IID 字符串 `"org.da.abstract.plugin"`（影响所有已有插件兼容性）；`createNodeFactory()`/`destroyNodeFactory()` 的「谁创建谁删除」原则
-    - **修改后需同步更新**：所有插件重新编译
+> **💡 修改此模块时**
+>
+> - **可以修改**：新增 `DAAbstractPlugin` 的子类；在 `DAPluginManager` 中添加插件优先级或依赖解析逻辑
+> - **不可修改**：`DAAbstractPlugin` 的 IID 字符串 `"org.da.abstract.plugin"`（影响所有已有插件兼容性）；`createNodeFactory()`/`destroyNodeFactory()` 的「谁创建谁删除」原则
+> - **修改后需同步更新**：所有插件重新编译
 
 ---
 
@@ -1063,13 +1075,15 @@ flowchart TD
 
 ### 修改指南
 
-!!! tip "修改此模块时"
-    - **可以修改**：在 `DAAgentPrompt` 中扩展提示词模板；新增 agent 生命周期信号（接口侧需同步）
-    - **不可修改**：`DAAgentInterface` 的纯虚方法签名（被 APP 与所有 agent 工具插件依赖）；`DAAgentBridge` 的 JSON Lines 协议格式（与子进程端契约绑定）
-    - **修改后需同步更新**：`plugins/DAAgentTools/` 中受影响的工具、APP 的 Dock↔接口信号链接线
+> **💡 修改此模块时**
+>
+> - **可以修改**：在 `DAAgentPrompt` 中扩展提示词模板；新增 agent 生命周期信号（接口侧需同步）
+> - **不可修改**：`DAAgentInterface` 的纯虚方法签名（被 APP 与所有 agent 工具插件依赖）；`DAAgentBridge` 的 JSON Lines 协议格式（与子进程端契约绑定）
+> - **修改后需同步更新**：`plugins/DAAgentTools/` 中受影响的工具、APP 的 Dock↔接口信号链接线
 
-!!! info "更深入的 Agent 文档"
-    本节为模块级摘要。Agent 框架的完整架构、生命周期、工具开发与协议细节见 [:octicons-copilot-24: Agent 开发指南](../agent/index.md)。
+> **ℹ️ 更深入的 Agent 文档**
+>
+> 本节为模块级摘要。Agent 框架的完整架构、生命周期、工具开发与协议细节见 [🤖 Agent 开发指南](../agent/index.md)。
 
 ---
 
@@ -1213,8 +1227,9 @@ flowchart TD
     L --> M["发射 projectSaved 信号"]
 ```
 
-!!! note "存档任务扩展"
-    插件可以通过 `DAAbstractPlugin::createArchiveTask(isSave)` 创建自定义存档任务，在工程保存/加载时执行自定义的序列化/反序列化逻辑。
+> **📝 存档任务扩展**
+>
+> 插件可以通过 `DAAbstractPlugin::createArchiveTask(isSave)` 创建自定义存档任务，在工程保存/加载时执行自定义的序列化/反序列化逻辑。
 
 ### 核心 API
 
@@ -1230,10 +1245,11 @@ flowchart TD
 
 ### 修改指南
 
-!!! tip "修改此模块时"
-    - **可以修改**：在 `SettingPages/` 中新增应用级设置页面；在 `Dialog/` 中新增应用级对话框；在 `DAAppController` 中添加新的槽函数处理新 Action；在 `DAAppRibbonArea` 中添加新的 Ribbon 按钮和上下文标签
-    - **不可修改**：`DAAppCore` 的单例模式和 `getInstance()` 静态方法；`DAAppCore::initialized()` 中 DataManager 和 Project 的创建顺序；`DAAppUI` 中五个子组件的创建顺序；`DAAppProject` 的 ZIP 存档格式
-    - **修改后需同步更新**：命令行参数文档、设置页面翻译
+> **💡 修改此模块时**
+>
+> - **可以修改**：在 `SettingPages/` 中新增应用级设置页面；在 `Dialog/` 中新增应用级对话框；在 `DAAppController` 中添加新的槽函数处理新 Action；在 `DAAppRibbonArea` 中添加新的 Ribbon 按钮和上下文标签
+> - **不可修改**：`DAAppCore` 的单例模式和 `getInstance()` 静态方法；`DAAppCore::initialized()` 中 DataManager 和 Project 的创建顺序；`DAAppUI` 中五个子组件的创建顺序；`DAAppProject` 的 ZIP 存档格式
+> - **修改后需同步更新**：命令行参数文档、设置页面翻译
 
 ---
 

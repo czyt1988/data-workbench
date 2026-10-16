@@ -200,23 +200,29 @@ if (!d.supportsUndoSnapshot()) { /* 跳过整表快照命令 */ }
 
 ## 注意事项
 
-!!! warning "缓存新鲜度依赖通知通道"
-    `DADataTableModel` 对表格数据源缓存 schema 与数据块。python 侧对 DataFrame 做 inplace 修改后**必须**调用 `notifyDataChangedSignal(data, DataChangeType.Value)`（或经 undo 命令回调触发 `notify*`），否则界面读到旧缓存。`plugins/DASystemNodes` 的 `data_to_manager.py` 是正确示范。
+> **⚠️ 缓存新鲜度依赖通知通道**
+>
+> `DADataTableModel` 对表格数据源缓存 schema 与数据块。python 侧对 DataFrame 做 inplace 修改后**必须**调用 `notifyDataChangedSignal(data, DataChangeType.Value)`（或经 undo 命令回调触发 `notify*`），否则界面读到旧缓存。`plugins/DASystemNodes` 的 `data_to_manager.py` 是正确示范。
 
-!!! warning "fetchBlock 在 GUI 线程同步调用"
-    与既有逐 cell 取数一致，块取数仍发生在模型 `data()` 回调（GUI 线程）。惰性源需保证单次查询延迟可接受（本地/局域网数据库的分页查询通常为毫秒级）；块大小可经 `DADataTableModel::setBlockFetchRowCount` 调优。异步化留作后续扩展。
+> **⚠️ fetchBlock 在 GUI 线程同步调用**
+>
+> 与既有逐 cell 取数一致，块取数仍发生在模型 `data()` 回调（GUI 线程）。惰性源需保证单次查询延迟可接受（本地/局域网数据库的分页查询通常为毫秒级）；块大小可经 `DADataTableModel::setBlockFetchRowCount` 调优。异步化留作后续扩展。
 
-!!! warning "分页 SELECT 必须带确定性排序"
-    数据库实现的 SELECT 语句必须包含稳定的 `ORDER BY`（如主键），否则 `OFFSET` 分页在并发写入下结果不稳定，块缓存与滚动映射会出现跳变。
+> **⚠️ 分页 SELECT 必须带确定性排序**
+>
+> 数据库实现的 SELECT 语句必须包含稳定的 `ORDER BY`（如主键），否则 `OFFSET` 分页在并发写入下结果不稳定，块缓存与滚动映射会出现跳变。
 
-!!! info "新类型不要扩展 DataType 枚举"
-    `DataType` 保持既有 6 个值以兼容工程文件；新数据类型统一使用 `TypeInnerData`（或不关心的值）+ 重写的 `typeIdentifier()` + 能力位虚函数表达。消费端新增分派逻辑一律基于 `isTable()/isReferenceData()` 等能力查询，不要再增加对枚举的 switch。
+> **ℹ️ 新类型不要扩展 DataType 枚举**
+>
+> `DataType` 保持既有 6 个值以兼容工程文件；新数据类型统一使用 `TypeInnerData`（或不关心的值）+ 重写的 `typeIdentifier()` + 能力位虚函数表达。消费端新增分派逻辑一律基于 `isTable()/isReferenceData()` 等能力查询，不要再增加对枚举的 switch。
 
-!!! info "pandas 块取数的类型语义"
-    `DAPyDataFrame::rowsToVariantList` 按列 `to_numpy()` 后 zip 迭代，保持 numpy 标量形态，与逐 cell `iat()` 的 QVariant caster 转换结果**类型严格一致**（pandas 3.0 的 `itertuples`/Series 迭代会退化为 python 原生类型，bool 会变 int，不可使用）。等价性由 `src/tst/DATableDataTest` 逐 cell 断言。
+> **ℹ️ pandas 块取数的类型语义**
+>
+> `DAPyDataFrame::rowsToVariantList` 按列 `to_numpy()` 后 zip 迭代，保持 numpy 标量形态，与逐 cell `iat()` 的 QVariant caster 转换结果**类型严格一致**（pandas 3.0 的 `itertuples`/Series 迭代会退化为 python 原生类型，bool 会变 int，不可使用）。等价性由 `src/tst/DATableDataTest` 逐 cell 断言。
 
-!!! tip "只读惰性表的第一阶段边界"
-    当前惰性数据源约定只读（`isTableEditable()==false`、`supportsUndoSnapshot()==false`）：数据页自动去掉编辑标志，结构性操作（插删行列等）被 dataframe 门卫拦截，`beginDataOperateCommand` 对其返回 `nullptr`（调用方需判空）。后续如需编辑，应实现 cell 级 `setValue` + 数据库端事务，快照式 undo 不适用。
+> **💡 只读惰性表的第一阶段边界**
+>
+> 当前惰性数据源约定只读（`isTableEditable()==false`、`supportsUndoSnapshot()==false`）：数据页自动去掉编辑标志，结构性操作（插删行列等）被 dataframe 门卫拦截，`beginDataOperateCommand` 对其返回 `nullptr`（调用方需判空）。后续如需编辑，应实现 cell 级 `setValue` + 数据库端事务，快照式 undo 不适用。
 
 ## 参考资料
 

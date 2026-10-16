@@ -14,8 +14,9 @@
 
 本文聚焦**如何创建面板子类**，不涉及 [设置类窗口规范](./settingwidget-standard.md) 中的 6 函数生命周期（setTarget/getTarget/bindTarget/unbindTarget/updateUI/applySetting），那套规范适用于按需应用模式。属性面板采用的是**即时应用模式**，每次属性变化立即写回并刷新目标对象。
 
-!!! info "超出范围"
-    `DAPropertyFormDialog` / `DAPropertyFormWidget` 是基于 JSON schema（v2 `DAFormSpec`）驱动的统一属性表单机制，用于通用配置对话框和工作流节点参数面板，不在本文讨论范围内。该系统由 `DAFormEditorRegistry`（11 种编辑器适配器）+ `DAPropertyFormWidget`（渲染容器）+ `DAFormRuleEvaluator`（声明式联动）组成。
+> **ℹ️ 超出范围**
+>
+> `DAPropertyFormDialog` / `DAPropertyFormWidget` 是基于 JSON schema（v2 `DAFormSpec`）驱动的统一属性表单机制，用于通用配置对话框和工作流节点参数面板，不在本文讨论范围内。该系统由 `DAFormEditorRegistry`（11 种编辑器适配器）+ `DAPropertyFormWidget`（渲染容器）+ `DAFormRuleEvaluator`（声明式联动）组成。
 
 ## 类体系
 
@@ -80,291 +81,297 @@ classDiagram
 
 上图中，`DAChartItemSettingPanel` 持有一个 `DAPropertyPanelContainerWidget`（它内部封装了 `DAPropertyPanelWidget` 和 `QScrollArea`），在此基础上叠加了 Qwt 类型专有的 add/get/set 方法。独立属性面板（如 `DAChartAxisSettingPanel`，以及建议新增的 `DANodePropertyPanel`）直接继承 QWidget，自行持有 `DAPropertyPanelWidget` 或 `DAPropertyPanelContainerWidget` 并管理信号链。`DACollapsiblePanel` 是轻量级折叠容器，由 `DAPropertyPanelWidget` 的 `addCollapsibleGroup()` 内部创建。应用级设置页面继承 `DAAbstractSettingPage`，用于全局偏好配置。
 
-!!! note "DANodeParamSettingPanel 是工作流节点参数面板的实际实现"
-    `DANodeParamSettingPanel` 位于 `src/DAGui/NodeSetting/`，继承自 `DAAbstractNodeSettingWidget`（持有 `DAPyNode*`），内部使用 `DAPropertyFormWidget` 构建通用参数编辑界面。通过 `DANodeParameterFormAdapter` 将 `DAPyNodeParameter` 转换为 `DAFormSpec`，由 `DAFormEditorRegistry` 注册的 11 种编辑器适配器自动渲染（str/int/float/bool/enum/list/file/folder/color/font/code），字段变化通过 `fieldValueChanged` 信号实时写入代理配置。配合 `DANodeParamSettingPanelFactory`（单例工厂）和 `DANodeParamSettingPanelWidget`（QStackedWidget 调度器 + 惰性缓存），构成完整的三层架构。
+> **📝 DANodeParamSettingPanel 是工作流节点参数面板的实际实现**
+>
+> `DANodeParamSettingPanel` 位于 `src/DAGui/NodeSetting/`，继承自 `DAAbstractNodeSettingWidget`（持有 `DAPyNode*`），内部使用 `DAPropertyFormWidget` 构建通用参数编辑界面。通过 `DANodeParameterFormAdapter` 将 `DAPyNodeParameter` 转换为 `DAFormSpec`，由 `DAFormEditorRegistry` 注册的 11 种编辑器适配器自动渲染（str/int/float/bool/enum/list/file/folder/color/font/code），字段变化通过 `fieldValueChanged` 信号实时写入代理配置。配合 `DANodeParamSettingPanelFactory`（单例工厂）和 `DANodeParamSettingPanelWidget`（QStackedWidget 调度器 + 惰性缓存），构成完整的三层架构。
 
 ## 三类面板创建指南
 
-=== "ChartItem面板（绘图示例）"
+**ChartItem面板（绘图示例）**
 
-    #### 适用场景
+#### 适用场景
 
-    为 `QwtPlotItem` 的某种具体类型（如曲线、柱状图、网格）创建属性编辑面板时，继承 `DAChartItemSettingPanel`。基类已经持有 `DAPropertyPanelWidget` 并管理 `propertyValueChanged` 信号转发，子类只需实现 `buildPropertyPanel()` 和业务逻辑。
+为 `QwtPlotItem` 的某种具体类型（如曲线、柱状图、网格）创建属性编辑面板时，继承 `DAChartItemSettingPanel`。基类已经持有 `DAPropertyPanelWidget` 并管理 `propertyValueChanged` 信号转发，子类只需实现 `buildPropertyPanel()` 和业务逻辑。
 
-    !!! note "绘图域示例"
-        以下骨架代码是图表域的典型用法。同样的模式适用于任何 `QwtPlotItem` 目标类型，不限于曲线。
+> **📝 绘图域示例**
+>
+> 以下骨架代码是图表域的典型用法。同样的模式适用于任何 `QwtPlotItem` 目标类型，不限于曲线。
 
-    #### 骨架代码
+#### 骨架代码
 
-    ```cpp
-    // MyItemSettingPanel.h
-    #pragma once
-    #include "DAChartItemSettingPanel.h"
+```cpp
+// MyItemSettingPanel.h
+#pragma once
+#include "DAChartItemSettingPanel.h"
 
-    namespace DA {
-    class DAGUI_API MyItemSettingPanel : public DAChartItemSettingPanel
-    {
-        Q_OBJECT
-    public:
-        enum PropertyID {
-            PID_Title = 1,
-            PID_ZValue = 2,
-            PID_CustomStyle = 3
-        };
-        explicit MyItemSettingPanel(QWidget* parent = nullptr);
-        ~MyItemSettingPanel() override;
-        void updateUI(QwtPlotItem* item) override;
-    private:
-        void buildPropertyPanel() override;
-    private Q_SLOTS:
-        void onMyPropertyValueChanged(int propertyId);
+namespace DA {
+class DAGUI_API MyItemSettingPanel : public DAChartItemSettingPanel
+{
+    Q_OBJECT
+public:
+    enum PropertyID {
+        PID_Title = 1,
+        PID_ZValue = 2,
+        PID_CustomStyle = 3
     };
-    } // namespace DA
-    ```
+    explicit MyItemSettingPanel(QWidget* parent = nullptr);
+    ~MyItemSettingPanel() override;
+    void updateUI(QwtPlotItem* item) override;
+private:
+    void buildPropertyPanel() override;
+private Q_SLOTS:
+    void onMyPropertyValueChanged(int propertyId);
+};
+} // namespace DA
+```
 
-    ```cpp
-    // MyItemSettingPanel.cpp
-    #include "MyItemSettingPanel.h"
-    #include "DAPropertyPanelWidget.h"
-    #include <QSignalBlocker>
+```cpp
+// MyItemSettingPanel.cpp
+#include "MyItemSettingPanel.h"
+#include "DAPropertyPanelWidget.h"
+#include <QSignalBlocker>
 
-    namespace DA {
-    MyItemSettingPanel::MyItemSettingPanel(QWidget* parent)
-        : DAChartItemSettingPanel(parent)
-    {
-        connect(this, &DAChartItemSettingPanel::propertyValueChanged,
-                this, &MyItemSettingPanel::onMyPropertyValueChanged);
-        buildPropertyPanel();  // 纯虚函数，子类构造函数末尾自行调用
+namespace DA {
+MyItemSettingPanel::MyItemSettingPanel(QWidget* parent)
+    : DAChartItemSettingPanel(parent)
+{
+    connect(this, &DAChartItemSettingPanel::propertyValueChanged,
+            this, &MyItemSettingPanel::onMyPropertyValueChanged);
+    buildPropertyPanel();  // 纯虚函数，子类构造函数末尾自行调用
+}
+
+void MyItemSettingPanel::buildPropertyPanel()
+{
+    DAPropertyPanelContainerWidget* pp = propertyPanel();
+    pp->addCollapsibleGroup(tr("General"));
+    pp->addStringProperty(PID_Title, tr("Title"));
+    pp->addDoubleProperty(PID_ZValue, tr("Z Value"), 0.0, -9999.0, 9999.0, 1);
+    pp->endGroup();
+    pp->addCollapsibleGroup(tr("Custom"));
+    addCurveStyleProperty(PID_CustomStyle, tr("Style"));
+    pp->endGroup();
+}
+
+void MyItemSettingPanel::updateUI(QwtPlotItem* item)
+{
+    DAAbstractChartItemSettingWidget_ReturnWhenItemNull;
+    if (!checkItemRTTI(QwtPlotItem::Rtti_PlotCurve)) return;
+    auto* obj = d_cast<QwtPlotCurve*>();
+    if (!obj) return;
+    DAChartItemSettingPanel::updateUI(item);  // 先调基类
+    QSignalBlocker blocker(propertyPanel());
+    propertyPanel()->setStringValue(PID_Title, obj->title().text());
+    propertyPanel()->setDoubleValue(PID_ZValue, obj->z());
+    setCurveStyleValue(PID_CustomStyle, obj->style());
+}
+
+void MyItemSettingPanel::onMyPropertyValueChanged(int propertyId)
+{
+    DAAbstractChartItemSettingWidget_ReturnWhenItemNull;
+    if (!checkItemRTTI(QwtPlotItem::Rtti_PlotCurve)) return;
+    auto* obj = d_cast<QwtPlotCurve*>();
+    if (!obj) return;
+    switch (propertyId) {
+    case PID_Title: obj->setTitle(propertyPanel()->getStringValue(PID_Title)); break;
+    case PID_ZValue: obj->setZ(propertyPanel()->getDoubleValue(PID_ZValue)); break;
+    case PID_CustomStyle: obj->setStyle(getCurveStyleValue(PID_CustomStyle)); break;
+    default: break;
     }
+    replot();
+}
+} // namespace DA
+```
 
-    void MyItemSettingPanel::buildPropertyPanel()
-    {
-        DAPropertyPanelContainerWidget* pp = propertyPanel();
-        pp->addCollapsibleGroup(tr("General"));
-        pp->addStringProperty(PID_Title, tr("Title"));
-        pp->addDoubleProperty(PID_ZValue, tr("Z Value"), 0.0, -9999.0, 9999.0, 1);
-        pp->endGroup();
-        pp->addCollapsibleGroup(tr("Custom"));
-        addCurveStyleProperty(PID_CustomStyle, tr("Style"));
-        pp->endGroup();
-    }
+> **⚠️ buildPropertyPanel() 调用约定**
+>
+> `DAChartItemSettingPanel::buildPropertyPanel()` 是**纯虚函数**，基类构造函数不会调用它。子类必须在构造函数末尾自行调用 `buildPropertyPanel()`，否则面板为空。
 
-    void MyItemSettingPanel::updateUI(QwtPlotItem* item)
-    {
-        DAAbstractChartItemSettingWidget_ReturnWhenItemNull;
-        if (!checkItemRTTI(QwtPlotItem::Rtti_PlotCurve)) return;
-        auto* obj = d_cast<QwtPlotCurve*>();
-        if (!obj) return;
-        DAChartItemSettingPanel::updateUI(item);  // 先调基类
-        QSignalBlocker blocker(propertyPanel());
-        propertyPanel()->setStringValue(PID_Title, obj->title().text());
-        propertyPanel()->setDoubleValue(PID_ZValue, obj->z());
-        setCurveStyleValue(PID_CustomStyle, obj->style());
-    }
+#### 关键模式
 
-    void MyItemSettingPanel::onMyPropertyValueChanged(int propertyId)
-    {
-        DAAbstractChartItemSettingWidget_ReturnWhenItemNull;
-        if (!checkItemRTTI(QwtPlotItem::Rtti_PlotCurve)) return;
-        auto* obj = d_cast<QwtPlotCurve*>();
-        if (!obj) return;
-        switch (propertyId) {
-        case PID_Title: obj->setTitle(propertyPanel()->getStringValue(PID_Title)); break;
-        case PID_ZValue: obj->setZ(propertyPanel()->getDoubleValue(PID_ZValue)); break;
-        case PID_CustomStyle: obj->setStyle(getCurveStyleValue(PID_CustomStyle)); break;
-        default: break;
-        }
-        replot();
-    }
-    } // namespace DA
-    ```
+**buildPropertyPanel 模式**：获取 `propertyPanel()` 指针，按分区调用 `addCollapsibleGroup()` → `addXxxProperty()` → `endGroup()` → 基类 Qwt 专有方法。每个可折叠分组形成一个独立的 `DACollapsiblePanel`，后续属性自动归入当前分组。
 
-    !!! warning "buildPropertyPanel() 调用约定"
-        `DAChartItemSettingPanel::buildPropertyPanel()` 是**纯虚函数**，基类构造函数不会调用它。子类必须在构造函数末尾自行调用 `buildPropertyPanel()`，否则面板为空。
+**updateUI 模式**：`QSignalBlocker` 全局 block → `checkItemRTTI` 类型检查 → `d_cast` 安全转换 → 逐项 `setXxxValue`。
 
-    #### 关键模式
+**onPropertyValueChanged 模式**：`ReturnWhenItemNull` 宏 → `checkItemRTTI` → `d_cast` → `switch(propertyId)` 逐项写回 → `replot()`。
 
-    **buildPropertyPanel 模式**：获取 `propertyPanel()` 指针，按分区调用 `addCollapsibleGroup()` → `addXxxProperty()` → `endGroup()` → 基类 Qwt 专有方法。每个可折叠分组形成一个独立的 `DACollapsiblePanel`，后续属性自动归入当前分组。
+#### 工厂注册
 
-    **updateUI 模式**：`QSignalBlocker` 全局 block → `checkItemRTTI` 类型检查 → `d_cast` 安全转换 → 逐项 `setXxxValue`。
+新面板需要在 `DAChartItemSettingPanelFactory` 中注册，才能通过 RTTI 自动创建：
 
-    **onPropertyValueChanged 模式**：`ReturnWhenItemNull` 宏 → `checkItemRTTI` → `d_cast` → `switch(propertyId)` 逐项写回 → `replot()`。
+```cpp
+DAChartItemSettingPanelFactory::instance().registerPanel(
+    QwtPlotItem::Rtti_PlotCurve,
+    []() { return new DAChartCurveSettingPanel(); }
+);
+```
 
-    #### 工厂注册
+内置面板在 `registerAllKnownPanels()` 中集中注册。自定义面板可在插件初始化时单独调用 `registerPanel()`。
 
-    新面板需要在 `DAChartItemSettingPanelFactory` 中注册，才能通过 RTTI 自动创建：
+**独立属性面板（Standalone Panel）**
 
-    ```cpp
-    DAChartItemSettingPanelFactory::instance().registerPanel(
-        QwtPlotItem::Rtti_PlotCurve,
-        []() { return new DAChartCurveSettingPanel(); }
-    );
-    ```
+#### 适用场景
 
-    内置面板在 `registerAllKnownPanels()` 中集中注册。自定义面板可在插件初始化时单独调用 `registerPanel()`。
+适用于任何非 `QwtPlotItem` 目标对象（工作流节点、数据过滤器、一维仿真参数等）。工作流节点参数面板的实际实现为 `DANodeParamSettingPanel`（`src/DAGui/NodeSetting/`），继承 `DAAbstractNodeSettingWidget`，持有 `DAPyNodeProxy*`。以下为其架构的简化示意。
 
-=== "独立属性面板（Standalone Panel）"
+#### 骨架代码
 
-    #### 适用场景
+```cpp
+// DANodeParamSettingPanel.h
+#pragma once
+#include "DAAbstractNodeSettingWidget.h"
+#include "DAPropertyFormWidget.h"
+#include "DAGlobals.h"
 
-    适用于任何非 `QwtPlotItem` 目标对象（工作流节点、数据过滤器、一维仿真参数等）。工作流节点参数面板的实际实现为 `DANodeParamSettingPanel`（`src/DAGui/NodeSetting/`），继承 `DAAbstractNodeSettingWidget`，持有 `DAPyNodeProxy*`。以下为其架构的简化示意。
+namespace DA {
+class DAGUI_API DANodeParamSettingPanel : public DAAbstractNodeSettingWidget
+{
+    Q_OBJECT
+    DA_DECLARE_PRIVATE(DANodeParamSettingPanel)
+public:
+    explicit DANodeParamSettingPanel(QWidget* parent = nullptr);
+    ~DANodeParamSettingPanel() override;
 
-    #### 骨架代码
+    void updateUI() override;
 
-    ```cpp
-    // DANodeParamSettingPanel.h
-    #pragma once
-    #include "DAAbstractNodeSettingWidget.h"
-    #include "DAPropertyFormWidget.h"
-    #include "DAGlobals.h"
+Q_SIGNALS:
+    void fieldValueChanged(const QString& fieldName, const QVariant& value);
 
-    namespace DA {
-    class DAGUI_API DANodeParamSettingPanel : public DAAbstractNodeSettingWidget
-    {
-        Q_OBJECT
-        DA_DECLARE_PRIVATE(DANodeParamSettingPanel)
-    public:
-        explicit DANodeParamSettingPanel(QWidget* parent = nullptr);
-        ~DANodeParamSettingPanel() override;
+protected:
+    QJsonObject collectConfig() const;
+};
+} // namespace DA
+```
 
-        void updateUI() override;
+```cpp
+// DANodeParamSettingPanel.cpp（简化示意，完整实现见 src/DAGui/NodeSetting/）
+#include "DANodeParamSettingPanel.h"
+#include "DANodeParameterFormAdapter.h"
+#include "DAPyNode.h"
+#include <QVBoxLayout>
 
-    Q_SIGNALS:
-        void fieldValueChanged(const QString& fieldName, const QVariant& value);
+namespace DA {
+DANodeParamSettingPanel::DANodeParamSettingPanel(QWidget* parent)
+    : DAAbstractNodeSettingWidget(parent), DA_PIMPL_CONSTRUCT
+{
+    auto* formWidget = new DAPropertyFormWidget(this);
+    auto* layout = new QVBoxLayout(this);
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->addWidget(formWidget);
 
-    protected:
-        QJsonObject collectConfig() const;
-    };
-    } // namespace DA
-    ```
+    // 字段变化 → 转发信号 + 写回代理
+    connect(formWidget, &DAPropertyFormWidget::fieldValueChanged,
+            this, &DANodeParamSettingPanel::fieldValueChanged);
+    connect(formWidget, &DAPropertyFormWidget::fieldValueChanged,
+            this, [this](const QString& name, const QVariant& value) {
+                if (!getNode().isNone()) {
+                    getNode().setParameterValue(name, value);
+                }
+            });
+}
 
-    ```cpp
-    // DANodeParamSettingPanel.cpp（简化示意，完整实现见 src/DAGui/NodeSetting/）
-    #include "DANodeParamSettingPanel.h"
-    #include "DANodeParameterFormAdapter.h"
-    #include "DAPyNode.h"
-    #include <QVBoxLayout>
+void DANodeParamSettingPanel::setNode(const DAPyNode& proxy)
+{
+    DAAbstractNodeSettingWidget::setNode(proxy);
+    // 将 DAPyNodeParameter 列表转换为 DAFormSpec，交由 DAPropertyFormWidget 渲染
+    DAFormSpec spec = DANodeParameterFormAdapter::toFormSpec(getParameters(), proxy.getNodeName());
+    auto* formWidget = findChild< DAPropertyFormWidget* >();
+    formWidget->setFormSpec(spec);
+    updateUI();
+}
+} // namespace DA
+```
 
-    namespace DA {
-    DANodeParamSettingPanel::DANodeParamSettingPanel(QWidget* parent)
-        : DAAbstractNodeSettingWidget(parent), DA_PIMPL_CONSTRUCT
-    {
-        auto* formWidget = new DAPropertyFormWidget(this);
-        auto* layout = new QVBoxLayout(this);
-        layout->setContentsMargins(0, 0, 0, 0);
-        layout->addWidget(formWidget);
+完整实现包含：PIMPL 模式、`DAPyNode::setParameterValue()` 实时写入、`QSignalBlocker` 阻断回写（`DAPropertyFormWidget::setValues` 内部已封装）、`testCollectConfig()` 测试辅助方法。参见 `src/DAGui/NodeSetting/DANodeParamSettingPanel.h/.cpp`。
 
-        // 字段变化 → 转发信号 + 写回代理
-        connect(formWidget, &DAPropertyFormWidget::fieldValueChanged,
-                this, &DANodeParamSettingPanel::fieldValueChanged);
-        connect(formWidget, &DAPropertyFormWidget::fieldValueChanged,
-                this, [this](const QString& name, const QVariant& value) {
-                    if (!getNode().isNone()) {
-                        getNode().setParameterValue(name, value);
-                    }
-                });
-    }
+> **ℹ️ 信号冒泡转发机制**
+>
+> 当使用 `addSubPanel()` 创建嵌套子面板时，子面板的 `propertyValueChanged` 信号会自动转发（冒泡）到父面板。无论属性项位于根面板还是嵌套子面板中，`propertyValueChanged` 信号始终从根面板发出，外部监听者无需关心属性的嵌套层级。这条规则同样适用于 `addCollapsibleGroup()` 创建的分组面板：分组内的属性变化通过分组面板冒泡到根面板，再从根面板发出。
 
-    void DANodeParamSettingPanel::setNode(const DAPyNode& proxy)
-    {
-        DAAbstractNodeSettingWidget::setNode(proxy);
-        // 将 DAPyNodeParameter 列表转换为 DAFormSpec，交由 DAPropertyFormWidget 渲染
-        DAFormSpec spec = DANodeParameterFormAdapter::toFormSpec(getParameters(), proxy.getNodeName());
-        auto* formWidget = findChild< DAPropertyFormWidget* >();
-        formWidget->setFormSpec(spec);
-        updateUI();
-    }
-    } // namespace DA
-    ```
+> **🚫 信号链必连（P0 级 Bug）**
+>
+> 构造函数中必须连接 `this->propertyValueChanged → this->onPropertyValueChanged`。漏掉这条连接会导致属性变化不写回目标，这是已确认的 P0 级 Bug。
 
-    完整实现包含：PIMPL 模式、`DAPyNode::setParameterValue()` 实时写入、`QSignalBlocker` 阻断回写（`DAPropertyFormWidget::setValues` 内部已封装）、`testCollectConfig()` 测试辅助方法。参见 `src/DAGui/NodeSetting/DANodeParamSettingPanel.h/.cpp`。
+> **ℹ️ 非绘图目标的刷新方式**
+>
+>     非 `QwtPlotItem` 目标不调用 `replot()`。属性写回后，通过自己的刷新或通知机制触发更新，比如 `emit nodeChanged()` 通知外部监听者，或 `target->refresh()` 让目标对象自行刷新。具体方式取决于目标对象的接口设计。
+>
+> #### 3-hop 信号链
+>
+> 独立属性面板的属性变化经过三步传递：
+>
+> ```
+> mPanel→propertyValueChanged  ──①──→  onPanelPropertyValueChanged  ──emit──→
+> this→propertyValueChanged    ──②──→  onPropertyValueChanged  ──③──→  写回目标 + emit nodeChanged()
+> ```
+>
+> ① `DAPropertyPanelWidget` 发出原始信号 → ② `onPanelPropertyValueChanged` 转发为 `this->propertyValueChanged` → ③ `onPropertyValueChanged` 执行业务逻辑（写回 + 通知刷新）。
+>
+> 为什么需要两段？`mPanel` 的信号是内部机制信号，`this` 的信号是外部接口信号。中间转发让外层容器也能监听 `propertyValueChanged`，而内部处理逻辑在 `onPropertyValueChanged` 中统一管理。
+>
+> #### 构造函数参数
+>
+> 某些独立面板需要构造参数。比如 `DAChartAxisSettingPanel` 需要 `QwtAxis::Position axisId` 来标识编辑哪条坐标轴。这个参数在构造时固定，不可后续更改。
 
-!!! info "信号冒泡转发机制"
-    当使用 `addSubPanel()` 创建嵌套子面板时，子面板的 `propertyValueChanged` 信号会自动转发（冒泡）到父面板。无论属性项位于根面板还是嵌套子面板中，`propertyValueChanged` 信号始终从根面板发出，外部监听者无需关心属性的嵌套层级。这条规则同样适用于 `addCollapsibleGroup()` 创建的分组面板：分组内的属性变化通过分组面板冒泡到根面板，再从根面板发出。
+**应用级设置页面**
 
-!!! danger "信号链必连（P0 级 Bug）"
-    构造函数中必须连接 `this->propertyValueChanged → this->onPropertyValueChanged`。漏掉这条连接会导致属性变化不写回目标，这是已确认的 P0 级 Bug。
+#### 适用场景
 
-!!! info "非绘图目标的刷新方式"
-        非 `QwtPlotItem` 目标不调用 `replot()`。属性写回后，通过自己的刷新或通知机制触发更新，比如 `emit nodeChanged()` 通知外部监听者，或 `target->refresh()` 让目标对象自行刷新。具体方式取决于目标对象的接口设计。
+全局偏好配置（如语言、主题、默认路径）使用 `DAAbstractSettingPage`。这些页面被 `DASettingWidget` 管理，用户点击「应用」或「确定」时统一调用 `apply()`。
 
-    #### 3-hop 信号链
+#### 骨架代码
 
-    独立属性面板的属性变化经过三步传递：
+```cpp
+// MySettingPage.h
+#pragma once
+#include "DAAbstractSettingPage.h"
+#include "DAPropertyPanelWidget.h"
 
-    ```
-    mPanel→propertyValueChanged  ──①──→  onPanelPropertyValueChanged  ──emit──→
-    this→propertyValueChanged    ──②──→  onPropertyValueChanged  ──③──→  写回目标 + emit nodeChanged()
-    ```
+namespace DA {
+class MySettingPage : public DAAbstractSettingPage
+{
+    Q_OBJECT
+public:
+    explicit MySettingPage(QWidget* parent = nullptr);
+    void apply() override;
+    QString getSettingPageTitle() const override;
+    QIcon getSettingPageIcon() const override;
+private Q_SLOTS:
+    void onPanelValueChanged(int propertyId);
+private:
+    DAPropertyPanelWidget* mPanel;
+};
+} // namespace DA
+```
 
-    ① `DAPropertyPanelWidget` 发出原始信号 → ② `onPanelPropertyValueChanged` 转发为 `this->propertyValueChanged` → ③ `onPropertyValueChanged` 执行业务逻辑（写回 + 通知刷新）。
+```cpp
+// MySettingPage.cpp
+#include "MySettingPage.h"
+#include <QVBoxLayout>
 
-    为什么需要两段？`mPanel` 的信号是内部机制信号，`this` 的信号是外部接口信号。中间转发让外层容器也能监听 `propertyValueChanged`，而内部处理逻辑在 `onPropertyValueChanged` 中统一管理。
+namespace DA {
+MySettingPage::MySettingPage(QWidget* parent)
+    : DAAbstractSettingPage(parent)
+{
+    mPanel = new DAPropertyPanelWidget(this);
+    auto* layout = new QVBoxLayout(this);
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->addWidget(mPanel);
+    // UI变化时通知外层标记dirty
+    connect(mPanel, &DAPropertyPanelWidget::propertyValueChanged,
+            this, [this]() { emit settingChanged(); });
+}
 
-    #### 构造函数参数
+QString MySettingPage::getSettingPageTitle() const { return tr("My Config"); }
+QIcon MySettingPage::getSettingPageIcon() const { return QIcon(); }
 
-    某些独立面板需要构造参数。比如 `DAChartAxisSettingPanel` 需要 `QwtAxis::Position axisId` 来标识编辑哪条坐标轴。这个参数在构造时固定，不可后续更改。
+void MySettingPage::apply()
+{
+    // 将面板值持久化到配置文件或全局状态
+}
+} // namespace DA
+```
 
-=== "应用级设置页面"
-
-    #### 适用场景
-
-    全局偏好配置（如语言、主题、默认路径）使用 `DAAbstractSettingPage`。这些页面被 `DASettingWidget` 管理，用户点击「应用」或「确定」时统一调用 `apply()`。
-
-    #### 骨架代码
-
-    ```cpp
-    // MySettingPage.h
-    #pragma once
-    #include "DAAbstractSettingPage.h"
-    #include "DAPropertyPanelWidget.h"
-
-    namespace DA {
-    class MySettingPage : public DAAbstractSettingPage
-    {
-        Q_OBJECT
-    public:
-        explicit MySettingPage(QWidget* parent = nullptr);
-        void apply() override;
-        QString getSettingPageTitle() const override;
-        QIcon getSettingPageIcon() const override;
-    private Q_SLOTS:
-        void onPanelValueChanged(int propertyId);
-    private:
-        DAPropertyPanelWidget* mPanel;
-    };
-    } // namespace DA
-    ```
-
-    ```cpp
-    // MySettingPage.cpp
-    #include "MySettingPage.h"
-    #include <QVBoxLayout>
-
-    namespace DA {
-    MySettingPage::MySettingPage(QWidget* parent)
-        : DAAbstractSettingPage(parent)
-    {
-        mPanel = new DAPropertyPanelWidget(this);
-        auto* layout = new QVBoxLayout(this);
-        layout->setContentsMargins(0, 0, 0, 0);
-        layout->addWidget(mPanel);
-        // UI变化时通知外层标记dirty
-        connect(mPanel, &DAPropertyPanelWidget::propertyValueChanged,
-                this, [this]() { emit settingChanged(); });
-    }
-
-    QString MySettingPage::getSettingPageTitle() const { return tr("My Config"); }
-    QIcon MySettingPage::getSettingPageIcon() const { return QIcon(); }
-
-    void MySettingPage::apply()
-    {
-        // 将面板值持久化到配置文件或全局状态
-    }
-    } // namespace DA
-    ```
-
-    应用级页面通过 `emit settingChanged()` 标记自己为 dirty。只有在 dirty 状态下，`DASettingWidget` 才会在用户点击「确定」或「应用」时调用 `apply()`。如果页面从未发出 `settingChanged`，`apply()` 不会被调用。
+应用级页面通过 `emit settingChanged()` 标记自己为 dirty。只有在 dirty 状态下，`DASettingWidget` 才会在用户点击「确定」或「应用」时调用 `apply()`。如果页面从未发出 `settingChanged`，`apply()` 不会被调用。
 
 ## 关键差异对比表
 
@@ -400,8 +407,9 @@ enum PropertyID {
 1. `addXxxProperty(PID_Xxx, ...)` 注册属性项
 2. `onPropertyValueChanged(int propertyId)` 的 `switch` 分支分发
 
-!!! warning "不要用裸 int"
-    propertyId 应使用枚举值。裸 int 缺乏语义，容易在 switch 中写错分支，且无法利用编译器检查重复值。
+> **⚠️ 不要用裸 int**
+>
+> propertyId 应使用枚举值。裸 int 缺乏语义，容易在 switch 中写错分支，且无法利用编译器检查重复值。
 
 ## DAPropertyPanelWidget 便捷方法速查
 
@@ -443,8 +451,9 @@ enum PropertyID {
 
 ### DAChartItemSettingPanel Qwt 专有方法
 
-!!! note "仅 ChartItem 面板可用"
-    以下方法仅存在于 `DAChartItemSettingPanel`，独立属性面板和应用级页面不可使用。
+> **📝 仅 ChartItem 面板可用**
+>
+> 以下方法仅存在于 `DAChartItemSettingPanel`，独立属性面板和应用级页面不可使用。
 
 | 方法 | 说明 |
 |------|------|
@@ -505,8 +514,9 @@ panel->setExpanded(false);  // 收起
 panel->setExpanded(true);   // 展开
 ```
 
-!!! note "通常无需手动创建"
-    `DACollapsiblePanel` 由 `DAPropertyPanelWidget::addCollapsibleGroup()` 内部自动创建和管理。大多数场景下只需调用 `addCollapsibleGroup()`，不必手动实例化 `DACollapsiblePanel`。
+> **📝 通常无需手动创建**
+>
+> `DACollapsiblePanel` 由 `DAPropertyPanelWidget::addCollapsibleGroup()` 内部自动创建和管理。大多数场景下只需调用 `addCollapsibleGroup()`，不必手动实例化 `DACollapsiblePanel`。
 
 ## 可折叠分组使用指南
 
@@ -538,31 +548,32 @@ addSymbolProperty(PID_Symbol, tr("Symbol"));
 pp->endGroup();
 ```
 
-!!! danger "endGroup() 强制调用约定（P0 级 Bug 防范）"
-    每个 `addCollapsibleGroup()` 必须**立即配对**一个 `endGroup()`。忘记调用 `endGroup()` 会导致严重后果：
-    - 后续所有分组都将变成前一个分组的**子嵌套分组**，不再与它同级
-    - 面板布局完全破坏，分组嵌套层次混乱
-    - 属性归类错误，用户体验极差
-    
-    **正确模式（必须严格遵循）**：
-    ```cpp
-    // 正确：创建分组 → 添加属性 → 立即 endGroup
-    pp->addCollapsibleGroup(tr("Group 1"));
-    pp->addStringProperty(...);
-    pp->addIntProperty(...);
-    pp->endGroup();  // 立即结束
-    
-    // 正确：下一个分组重新开始，与上一个同级
-    pp->addCollapsibleGroup(tr("Group 2"));
-    pp->addPenProperty(...);
-    pp->endGroup();  // 立即结束
-    
-    // 错误：只 addCollapsibleGroup，不 endGroup
-    pp->addCollapsibleGroup(tr("Group 1"));
-    pp->addStringProperty(...);
-    pp->addCollapsibleGroup(tr("Group 2"));  // 这会变成 Group 1 的子分组！
-    ```
-    建议采用「创建分组 → 添加属性 → 立即 endGroup」的紧凑写法，避免遗漏。
+> **🚫 endGroup() 强制调用约定（P0 级 Bug 防范）**
+>
+> 每个 `addCollapsibleGroup()` 必须**立即配对**一个 `endGroup()`。忘记调用 `endGroup()` 会导致严重后果：
+> - 后续所有分组都将变成前一个分组的**子嵌套分组**，不再与它同级
+> - 面板布局完全破坏，分组嵌套层次混乱
+> - 属性归类错误，用户体验极差
+>
+> **正确模式（必须严格遵循）**：
+> ```cpp
+> // 正确：创建分组 → 添加属性 → 立即 endGroup
+> pp->addCollapsibleGroup(tr("Group 1"));
+> pp->addStringProperty(...);
+> pp->addIntProperty(...);
+> pp->endGroup();  // 立即结束
+>
+> // 正确：下一个分组重新开始，与上一个同级
+> pp->addCollapsibleGroup(tr("Group 2"));
+> pp->addPenProperty(...);
+> pp->endGroup();  // 立即结束
+>
+> // 错误：只 addCollapsibleGroup，不 endGroup
+> pp->addCollapsibleGroup(tr("Group 1"));
+> pp->addStringProperty(...);
+> pp->addCollapsibleGroup(tr("Group 2"));  // 这会变成 Group 1 的子分组！
+> ```
+> 建议采用「创建分组 → 添加属性 → 立即 endGroup」的紧凑写法，避免遗漏。
 
 ### 分组ID与状态控制
 
@@ -623,8 +634,9 @@ DAPropertyPanelWidget* retrieved = pp->getSubPanel(100);
 int subId = pp->getSubPanelId(subPanel);  // 返回 100
 ```
 
-!!! info "子面板的 ID 映射"
-    `addSubPanel(id, groupName)` 的 `id` 参数是子面板的映射 ID，与属性项的 PropertyID 是不同的概念。子面板 ID 用于 `getSubPanel(id)` 和 `getSubPanelId(subPanel)` 的查找，而属性项 ID 用于 `getXxxValue(id)` / `setXxxValue(id, ...)` 的读写。
+> **ℹ️ 子面板的 ID 映射**
+>
+> `addSubPanel(id, groupName)` 的 `id` 参数是子面板的映射 ID，与属性项的 PropertyID 是不同的概念。子面板 ID 用于 `getSubPanel(id)` 和 `getSubPanelId(subPanel)` 的查找，而属性项 ID 用于 `getXxxValue(id)` / `setXxxValue(id, ...)` 的读写。
 
 ### 信号冒泡转发
 
@@ -636,8 +648,9 @@ int subId = pp->getSubPanelId(subPanel);  // 返回 100
 
 这意味着外部监听者只需连接根面板的信号，无需关心属性的嵌套层级。
 
-!!! warning "冒泡转发不可关闭"
-    信号冒泡是内部自动连接的，没有开关。要阻止某个子面板的信号冒泡，需要用 `QSignalBlocker` 在特定场景下临时阻断。
+> **⚠️ 冒泡转发不可关闭**
+>
+> 信号冒泡是内部自动连接的，没有开关。要阻止某个子面板的信号冒泡，需要用 `QSignalBlocker` 在特定场景下临时阻断。
 
 ## DAPropertyPanelContainerWidget 介绍
 
@@ -687,8 +700,9 @@ void DAChartCurveSettingPanel::buildPropertyPanel()
 }
 ```
 
-!!! note "独立面板选择"
-    独立属性面板可以选择直接使用 `DAPropertyPanelWidget`（无滚动区域，适合少量属性），或者使用 `DAPropertyPanelContainerWidget`（有滚动区域，适合多分组场景）。ChartItem 面板统一使用容器版本。
+> **📝 独立面板选择**
+>
+> 独立属性面板可以选择直接使用 `DAPropertyPanelWidget`（无滚动区域，适合少量属性），或者使用 `DAPropertyPanelContainerWidget`（有滚动区域，适合多分组场景）。ChartItem 面板统一使用容器版本。
 
 ## 即时应用 vs 按需应用
 
@@ -711,8 +725,9 @@ void DAChartCurveSettingPanel::buildPropertyPanel()
 | 即时应用 | 对象属性（颜色、线宽、名称等） | 实时预览效果 | onPropertyValueChanged + 通知刷新 |
 | 按需应用 | 全局偏好、不可逆操作 | 有"确认"缓冲 | settingChanged → apply() |
 
-!!! tip "何时用哪种模式"
-    对象的可视属性用即时应用（用户需要实时看到效果变化），全局配置用按需应用（需要确认后才生效）。`DAAbstractSettingPage` 的 `apply()` 就是按需应用的入口。
+> **💡 何时用哪种模式**
+>
+> 对象的可视属性用即时应用（用户需要实时看到效果变化），全局配置用按需应用（需要确认后才生效）。`DAAbstractSettingPage` 的 `apply()` 就是按需应用的入口。
 
 ## 参考文件索引
 

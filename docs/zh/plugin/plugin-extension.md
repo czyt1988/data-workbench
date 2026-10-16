@@ -297,8 +297,9 @@ bool MyPlugin::initialize()
 
 ## 自定义节点类型（旧 C++ 架构，仅参考）
 
-!!! warning "遗留架构：当前推荐 Python-first `@NodeDef`"
-    下面 `registerNodePrototypes()` 用 `DANodeMetaData` 注册节点、`MyWorker` 继承 `DAAbstractNode` 重写 `createGraphicsItem()` 的写法属于**已废弃的 C++ 节点架构**。当前工作流节点统一用 Python `@NodeDef` 装饰器声明，节点外观通过 `NodeDisplay` 或 Python `paint()` 自定义，参考 `plugins/DASystemNodes/AGENTS.md`。本节仅作历史背景保留。
+> **⚠️ 遗留架构：当前推荐 Python-first `@NodeDef`**
+>
+> 下面 `registerNodePrototypes()` 用 `DANodeMetaData` 注册节点、`MyWorker` 继承 `DAAbstractNode` 重写 `createGraphicsItem()` 的写法属于**已废弃的 C++ 节点架构**。当前工作流节点统一用 Python `@NodeDef` 装饰器声明，节点外观通过 `NodeDisplay` 或 Python `paint()` 自定义，参考 `plugins/DASystemNodes/AGENTS.md`。本节仅作历史背景保留。
 
 ### 注册节点元数据（旧 C++）
 
@@ -460,10 +461,11 @@ bool MyPlugin::initialize()
 
 ### 监听工作流事件
 
-!!! note "工作流事件"
-    新的 Python-first 工作流架构中，工作流事件由 `DAPyWorkFlowManager` 通过信号驱动。
-    插件可通过 `DAPyWorkFlowManager` 的 `executionStarted()`、`executionFinished(bool)`、`nodeExecuted(QString, bool)` 等信号监听工作流执行状态。
-    具体用法参见 [工作流生命周期](../dev-guide/workflow/workflow-lifecycle.md)。
+> **📝 工作流事件**
+>
+> 新的 Python-first 工作流架构中，工作流事件由 `DAPyWorkFlowManager` 通过信号驱动。
+> 插件可通过 `DAPyWorkFlowManager` 的 `executionStarted()`、`executionFinished(bool)`、`nodeExecuted(QString, bool)` 等信号监听工作流执行状态。
+> 具体用法参见 [工作流生命周期](../dev-guide/workflow/workflow-lifecycle.md)。
 
 ---
 
@@ -556,6 +558,6 @@ bool MyPlugin::initialize()
 
 ## 下一步
 
-- [:material-book: 最佳实践](../reference/best-practices.md) - 开发最佳实践
-- [:material-help-circle: 常见问题](../reference/faq.md) - 常见问题解答
-- [:material-file-document: 贡献指南](../reference/contribution-guide.md) - 参与贡献
+- [📖 最佳实践](../reference/best-practices.md) - 开发最佳实践
+- [❓ 常见问题](../reference/faq.md) - 常见问题解答
+- [📄 贡献指南](../reference/contribution-guide.md) - 参与贡献

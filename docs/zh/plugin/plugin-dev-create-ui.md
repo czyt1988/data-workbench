@@ -403,14 +403,17 @@ private:
 
 ## 注意事项
 
-!!! warning "界面操作时机"
-    所有界面操作必须在 `initialize()` 中进行，构造函数执行时界面尚未创建完成。
+> **⚠️ 界面操作时机**
+>
+> 所有界面操作必须在 `initialize()` 中进行，构造函数执行时界面尚未创建完成。
 
-!!! tip "Dock 窗口命名"
-    为 Dock 窗口设置唯一的 objectName，便于后续管理和查找。
+> **💡 Dock 窗口命名**
+>
+> 为 Dock 窗口设置唯一的 objectName，便于后续管理和查找。
 
-!!! note "Qt 版本兼容性"
-    SARibbonBar 和 QtAdvancedDocking 在 Qt5 和 Qt6 中的 API 基本一致，但库文件名不同。
+> **📝 Qt 版本兼容性**
+>
+> SARibbonBar 和 QtAdvancedDocking 在 Qt5 和 Qt6 中的 API 基本一致，但库文件名不同。
 
 ## 参考资料
 

@@ -57,8 +57,9 @@ classDiagram
 | `DAAgentChartToolBase` | 插件 (DAAgentTools) | 无 | 图表工具基类，提供图表操作方法 |
 | 具体工具类 | 插件 (DAAgentTools) | 无 | 21 个内置工具的具体实现（另有 `DAPaperAgent` 插件 2 个文献工具，见[工具与内置 Agent 总览](./available-tools.md)） |
 
-!!! note "为什么 DAAgentToolBase 是"瘦"基类"
-    在解耦重构前，`DAAgentToolBase` 同时包含数据访问方法和图表访问方法，导致 DAAgent 模块依赖 DAGui。重构后将图表方法搬到插件的 `DAAgentChartToolBase`，`DAAgentToolBase` 只保留只依赖 DAData/DAInterface 的方法。这样未来写数据工具插件只需继承瘦基类，无需拉 DAGui 依赖。
+> **📝 为什么 DAAgentToolBase 是"瘦"基类**
+>
+> 在解耦重构前，`DAAgentToolBase` 同时包含数据访问方法和图表访问方法，导致 DAAgent 模块依赖 DAGui。重构后将图表方法搬到插件的 `DAAgentChartToolBase`，`DAAgentToolBase` 只保留只依赖 DAData/DAInterface 的方法。这样未来写数据工具插件只需继承瘦基类，无需拉 DAGui 依赖。
 
 ---
 
@@ -129,8 +130,9 @@ QJsonObject DAAgentToolQueryData::execute(const QJsonObject& params)
 }
 ```
 
-!!! warning "execute() 必须内部 try/catch"
-    工具抛出未捕获异常会导致 `DAAgentBridge` 崩溃，子进程收不到 `tool_result` 永久挂起。`executeTool()` 外层还有一层防护，但工具内部应自行捕获并返回 `errorResponse`。
+> **⚠️ execute() 必须内部 try/catch**
+>
+> 工具抛出未捕获异常会导致 `DAAgentBridge` 崩溃，子进程收不到 `tool_result` 永久挂起。`executeTool()` 外层还有一层防护，但工具内部应自行捕获并返回 `errorResponse`。
 
 ### getOwnerModule()：归属模块
 
@@ -183,8 +185,9 @@ QJsonObject errorResponse(const QString& message);
 }
 ```
 
-!!! note "未设置 success 字段时自动补 true"
-    `DAAgentBridge::executeTool()` 在工具返回结果中检测 `success` 字段，不存在时自动补 `true`。
+> **📝 未设置 success 字段时自动补 true**
+>
+> `DAAgentBridge::executeTool()` 在工具返回结果中检测 `success` 字段，不存在时自动补 `true`。
 
 ---
 
@@ -302,11 +305,13 @@ bool DAAgentToolsPlugin::initialize()
 | `run_code` | 在共享持久命名空间执行内联 Python（预导入 `da_app` 等，变量跨调用持久） | `code`, `args?` |
 | `run_script` | 执行脚本工作区内 `.py`（`path` 为工作区相对路径），与 `run_code` 共享命名空间 | `path`, `args?` |
 
-!!! note "图表工具的 figure_name 参数"
-    所有绘图工具都支持可选的 `figure_name` 参数，用于在指定 figure 中操作。`create_chart` 和 `create_subplots` 的 `figure_name` 用于命名新创建的 figure。
+> **📝 图表工具的 figure_name 参数**
+>
+> 所有绘图工具都支持可选的 `figure_name` 参数，用于在指定 figure 中操作。`create_chart` 和 `create_subplots` 的 `figure_name` 用于命名新创建的 figure。
 
-!!! warning "坐标轴自动缩放"
-    `DAAgentChartToolBase::enableAutoScale(chart)` 在添加数据后必须调用，因为 `DAFigureWidget::createChart()` 会锁定坐标轴范围。不恢复 auto-scale 会导致数据显示在可见范围外而显示空白。
+> **⚠️ 坐标轴自动缩放**
+>
+> `DAAgentChartToolBase::enableAutoScale(chart)` 在添加数据后必须调用，因为 `DAFigureWidget::createChart()` 会锁定坐标轴范围。不恢复 auto-scale 会导致数据显示在可见范围外而显示空白。
 
 ### 文件/报告工具（3 个）
 
@@ -316,8 +321,9 @@ bool DAAgentToolsPlugin::initialize()
 | `write_file` | 写入文本文件 | `file_path`, `content` |
 | `save_report` | 保存分析报告（md/pdf/docx），保存后默认在查看器中打开 | `content`, `file_path`, `format?`(md/pdf/docx, 默认 md), `open_after_save?`(默认 true) |
 
-!!! note "save_report 的 open_after_save 行为"
-    `open_after_save` 默认 `true`。md 报告用应用内置 Markdown 查看器（`DAMarkdownView`）打开；pdf/docx 用系统默认程序（`QDesktopServices`）打开。打开失败不影响保存成功状态，返回消息附加说明，不抛异常。
+> **📝 save_report 的 open_after_save 行为**
+>
+> `open_after_save` 默认 `true`。md 报告用应用内置 Markdown 查看器（`DAMarkdownView`）打开；pdf/docx 用系统默认程序（`QDesktopServices`）打开。打开失败不影响保存成功状态，返回消息附加说明，不抛异常。
 
 ---
 

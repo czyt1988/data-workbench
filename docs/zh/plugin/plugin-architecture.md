@@ -6,11 +6,12 @@ DAWorkBench 采用插件化架构，核心功能与扩展功能分离，模块�
 
 这篇文档覆盖 **DAWorkBench** 的插件化架构设计，包括设计原则、接口规范、Python 脚本调用机制、界面操作方式以及模块间通信协议。
 
-!!! info "为什么选择插件化架构？"
-    - **可扩展性**：新增功能无需修改主程序，降低维护成本
-    - **模块化**：功能独立封装，便于团队协作开发
-    - **灵活性**：用户可按需加载插件，定制化工作环境
-    - **稳定性**：插件崩溃不影响主程序运行
+> **ℹ️ 为什么选择插件化架构？**
+>
+> - **可扩展性**：新增功能无需修改主程序，降低维护成本
+> - **模块化**：功能独立封装，便于团队协作开发
+> - **灵活性**：用户可按需加载插件，定制化工作环境
+> - **稳定性**：插件崩溃不影响主程序运行
 
 DAWorkBench 是数据工作流设计器，要支持数据处理、分析和可视化功能的扩展。把所有功能内置到主程序中会让主程序体积变大、启动变慢，维护也更麻烦。核心功能与扩展功能分离后，主程序只负责基础框架，具体的数据处理逻辑交给插件实现。
 
@@ -43,7 +44,7 @@ mindmap
       接口职责单一
       不强迫实现不需要的方法
 细粒度接口设计
-    ```
+```
 
 上图展示了四大设计原则：
 
@@ -56,67 +57,67 @@ mindmap
 
 在插件化架构中，设计理念的选择直接影响到系统的灵活性和可维护性，以下是 DAWorkBench 遵循的核心设计理念。
 
-=== "开闭原则 (OCP)"
+**开闭原则 (OCP)**
 
-    **开闭原则（Open-Closed Principle）**：软件实体应该对扩展开放，对修改关闭，添加新功能时扩展现有代码，不修改已有代码。
-    
-    在 DAWorkBench 中，这一原则体现在以下几个方面：
-    
-    - **主程序稳定性**：主程序的核心逻辑一旦稳定，就不应该因为新功能的添加而频繁修改。所有新功能都通过插件的形式引入。
-    - **接口稳定性**：定义良好的接口一旦发布，就应该保持向后兼容。新功能通过扩展接口实现，现有接口不需要修改。
-    - **版本兼容性**：旧版本的插件应该能够在新版本的主程序中运行，这要求主程序的接口保持稳定。
-    
-    ```cpp
-    // 主程序不依赖具体插件实现
-    // 主程序只知道 DACoreInterface 接口，不知道具体的插件类
-    DACoreInterface* core = getCore();
-    core->getDataManagerInterface()->addData(data);
-    ```
-    
-    每次添加新功能时只需要开发新的插件，无需担心影响现有的功能。
+**开闭原则（Open-Closed Principle）**：软件实体应该对扩展开放，对修改关闭，添加新功能时扩展现有代码，不修改已有代码。
 
-=== "依赖倒置原则 (DIP)"
+在 DAWorkBench 中，这一原则体现在以下几个方面：
 
-    **依赖倒置原则（Dependency Inversion Principle）** 要求：
-    
-    1. 高层模块不应该依赖低层模块，两者都应该依赖其抽象
-    2. 抽象不应该依赖细节，细节应该依赖抽象
-    
-    在 DAWorkBench 中，主程序是高层模块，插件是低层模块。主程序依赖一组抽象接口（如 `DACoreInterface`、`DAUIInterface` 等），不直接依赖具体的插件实现。插件同样依赖这些接口来访问主程序的功能。
-    
-    ```cpp
-    // 插件依赖接口，而非主程序实现
-    // 这样插件可以在不同版本的主程序中运行
-    class DataAnalysisPlugin : public DAAbstractNodePlugin {
-        DACoreInterface* m_core;  // 依赖接口，而非具体实现
-    };
-    ```
-    
-    这种设计带来的好处是：
-    - **解耦合**：主程序和插件之间通过接口解耦，可以独立开发和测试
-    - **可替换性**：可以轻松替换插件的实现，只要遵循相同的接口规范
-    - **可测试性**：可以创建模拟对象来测试主程序或插件的逻辑
+- **主程序稳定性**：主程序的核心逻辑一旦稳定，就不应该因为新功能的添加而频繁修改。所有新功能都通过插件的形式引入。
+- **接口稳定性**：定义良好的接口一旦发布，就应该保持向后兼容。新功能通过扩展接口实现，现有接口不需要修改。
+- **版本兼容性**：旧版本的插件应该能够在新版本的主程序中运行，这要求主程序的接口保持稳定。
 
-=== "单一职责原则 (SRP)"
+```cpp
+// 主程序不依赖具体插件实现
+// 主程序只知道 DACoreInterface 接口，不知道具体的插件类
+DACoreInterface* core = getCore();
+core->getDataManagerInterface()->addData(data);
+```
 
-    **单一职责原则（Single Responsibility Principle）** 要求每个类或模块只负责一个功能领域，在插件化架构中体现在：
-    
-    - **插件职责单一**：每个插件应该专注于一个特定的功能领域。比如 `DataAnalysis` 插件专注于数据分析功能，`DataIO` 插件专注于数据导入导出功能。
-    - **接口职责单一**：每个接口应该只定义一类相关的方法。比如 `DADataManagerInterface` 只定义数据管理相关的方法，不包含界面操作方法。
-    - **类职责单一**：每个类应该只有一个引起它变化的原因。
-    
-    遵循单一职责原则的好处是：
-    - **降低复杂度**：每个模块只关注一件事，代码更容易理解和维护
-    - **提高内聚性**：相关功能集中在一起，模块内部联系紧密
-    - **减少耦合**：不同职责的代码分离，修改一个不会影响另一个
+每次添加新功能时只需要开发新的插件，无需担心影响现有的功能。
 
-=== "接口隔离原则 (ISP)"
+**依赖倒置原则 (DIP)**
 
-    **接口隔离原则（Interface Segregation Principle）** 要求接口粒度尽量细，不让使用者依赖它们用不到的方法。在 DAWorkBench 中：
-    
-    - 核心功能拆分为多个专门的接口，如 `DAUIInterface`（界面操作）、`DADataManagerInterface`（数据管理）、`DAProjectInterface`（项目管理）等。
-    - 插件只需要依赖它实际使用的接口，而不需要依赖所有接口。
-    - 当接口需要扩展时，定义新的接口来扩展，不需要修改现有接口。
+**依赖倒置原则（Dependency Inversion Principle）** 要求：
+
+1. 高层模块不应该依赖低层模块，两者都应该依赖其抽象
+2. 抽象不应该依赖细节，细节应该依赖抽象
+
+在 DAWorkBench 中，主程序是高层模块，插件是低层模块。主程序依赖一组抽象接口（如 `DACoreInterface`、`DAUIInterface` 等），不直接依赖具体的插件实现。插件同样依赖这些接口来访问主程序的功能。
+
+```cpp
+// 插件依赖接口，而非主程序实现
+// 这样插件可以在不同版本的主程序中运行
+class DataAnalysisPlugin : public DAAbstractNodePlugin {
+    DACoreInterface* m_core;  // 依赖接口，而非具体实现
+};
+```
+
+这种设计带来的好处是：
+- **解耦合**：主程序和插件之间通过接口解耦，可以独立开发和测试
+- **可替换性**：可以轻松替换插件的实现，只要遵循相同的接口规范
+- **可测试性**：可以创建模拟对象来测试主程序或插件的逻辑
+
+**单一职责原则 (SRP)**
+
+**单一职责原则（Single Responsibility Principle）** 要求每个类或模块只负责一个功能领域，在插件化架构中体现在：
+
+- **插件职责单一**：每个插件应该专注于一个特定的功能领域。比如 `DataAnalysis` 插件专注于数据分析功能，`DataIO` 插件专注于数据导入导出功能。
+- **接口职责单一**：每个接口应该只定义一类相关的方法。比如 `DADataManagerInterface` 只定义数据管理相关的方法，不包含界面操作方法。
+- **类职责单一**：每个类应该只有一个引起它变化的原因。
+
+遵循单一职责原则的好处是：
+- **降低复杂度**：每个模块只关注一件事，代码更容易理解和维护
+- **提高内聚性**：相关功能集中在一起，模块内部联系紧密
+- **减少耦合**：不同职责的代码分离，修改一个不会影响另一个
+
+**接口隔离原则 (ISP)**
+
+**接口隔离原则（Interface Segregation Principle）** 要求接口粒度尽量细，不让使用者依赖它们用不到的方法。在 DAWorkBench 中：
+
+- 核心功能拆分为多个专门的接口，如 `DAUIInterface`（界面操作）、`DADataManagerInterface`（数据管理）、`DAProjectInterface`（项目管理）等。
+- 插件只需要依赖它实际使用的接口，而不需要依赖所有接口。
+- 当接口需要扩展时，定义新的接口来扩展，不需要修改现有接口。
 
 ### 1.3 模块依赖关系
 
@@ -168,13 +169,15 @@ flowchart LR
     Interface --> PA
 
 APP --> PA
-    ```
+```
 
-!!! note "DACommonWidgets 已并入 DAGui"
-    历史 `DACommonWidgets` 通用控件库已整体并入 `DAGui`，不再作为独立模块出现在核心库层；上图已移除该节点。
+> **📝 DACommonWidgets 已并入 DAGui**
+>
+> 历史 `DACommonWidgets` 通用控件库已整体并入 `DAGui`，不再作为独立模块出现在核心库层；上图已移除该节点。
 
-!!! note "Agent 工具注册插件模式"
-    `DAAgent` 模块暴露 `DAAgentInterface` 契约，内置 agent 工具以插件形式注册：`plugins/DAAgentTools/` 在插件 `initialize()` 中调用 `DAAgentInterface::registerTool(DAAgentToolBase*)` 把 21 个内置工具注册进 `DAAgentModule` 的工具表。这与工作流节点插件（`DAAbstractNodePlugin` → `createNodeFactory()`）是两套并行的插件扩展点，前者面向 Agent 工具，后者面向工作流节点。详见 [Agent 开发指南](../dev-guide/agent/index.md)。
+> **📝 Agent 工具注册插件模式**
+>
+> `DAAgent` 模块暴露 `DAAgentInterface` 契约，内置 agent 工具以插件形式注册：`plugins/DAAgentTools/` 在插件 `initialize()` 中调用 `DAAgentInterface::registerTool(DAAgentToolBase*)` 把 21 个内置工具注册进 `DAAgentModule` 的工具表。这与工作流节点插件（`DAAbstractNodePlugin` → `createNodeFactory()`）是两套并行的插件扩展点，前者面向 Agent 工具，后者面向工作流节点。详见 [Agent 开发指南](../dev-guide/agent/index.md)。
 
 上图展示了模块依赖关系的层次结构：
 
@@ -196,8 +199,9 @@ APP --> PA
 
 5. **插件层**：插件依赖于 `DAInterface` 定义的接口，通过接口访问主程序的功能。插件之间不应该有直接依赖关系。
 
-!!! warning "依赖方向原则"
-    依赖关系应该始终从高层指向低层，从具体指向抽象。避免循环依赖，否则会导致代码难以理解和维护。
+> **⚠️ 依赖方向原则**
+>
+> 依赖关系应该始终从高层指向低层，从具体指向抽象。避免循环依赖，否则会导致代码难以理解和维护。
 
 ---
 
@@ -296,15 +300,16 @@ classDiagram
     DACoreInterface --> DAProjectInterface : getProjectInterface
     DAUIInterface --> DAStatusBarInterface : getStatusBar
 DAUIInterface --> DACommandInterface : getCommandInterface
-    ```
+```
 
-!!! warning "mainWindow() 与 getMainWindow() 是两个不同方法"
-    `src/DAInterface/DAUIInterface.h` 同时声明了两个获取主窗口的方法，二者**并非同一方法的别名**：
-
-    - `SARibbonMainWindow* mainWindow() const;`：**具体方法**，返回具体的 `SARibbonMainWindow*`（绑定 Ribbon 框架）。
-    - `virtual QMainWindow* getMainWindow() const = 0;`：**纯虚方法**，返回抽象的 `QMainWindow*`，供不希望依赖 SARibbon 类型的插件实现使用。
-
-    插件按需选择：需要 Ribbon 能力时用 `mainWindow()`，仅需通用窗口父对象（如对话框父窗口）时用 `getMainWindow()`。
+> **⚠️ mainWindow() 与 getMainWindow() 是两个不同方法**
+>
+> `src/DAInterface/DAUIInterface.h` 同时声明了两个获取主窗口的方法，二者**并非同一方法的别名**：
+>
+> - `SARibbonMainWindow* mainWindow() const;`：**具体方法**，返回具体的 `SARibbonMainWindow*`（绑定 Ribbon 框架）。
+> - `virtual QMainWindow* getMainWindow() const = 0;`：**纯虚方法**，返回抽象的 `QMainWindow*`，供不希望依赖 SARibbon 类型的插件实现使用。
+>
+> 插件按需选择：需要 Ribbon 能力时用 `mainWindow()`，仅需通用窗口父对象（如对话框父窗口）时用 `getMainWindow()`。
 
 上图展示了接口的层次结构：
 
@@ -328,8 +333,9 @@ DAUIInterface --> DACommandInterface : getCommandInterface
 
 ### 2.2 接口创建顺序
 
-!!! warning "创建顺序"
-    接口之间存在依赖关系，必须按照正确顺序创建，否则会导致空指针异常。
+> **⚠️ 创建顺序**
+>
+> 接口之间存在依赖关系，必须按照正确顺序创建，否则会导致空指针异常。
 
 在应用程序启动过程中，各个接口的创建顺序必须严格遵循依赖关系。下图是正确的初始化顺序和各组件的创建时机：
 
@@ -375,7 +381,7 @@ sequenceDiagram
     Note over App: 8. 完成
 Core-->>App: 初始化完成
     deactivate Core
-    ```
+```
 
 上图展示了接口初始化的完整流程：
 
@@ -408,106 +414,106 @@ Core-->>App: 初始化完成
 
 以下是 C++ 插件和 Python 脚本访问主程序接口的方式：
 
-=== "C++ 插件中访问"
+**C++ 插件中访问**
 
-    在 C++ 插件中，接口通过插件基类的 `core()` 方法获取。
-    
-    ```cpp
-    // 通过插件基类获取核心接口
-    class MyPlugin : public DAAbstractPlugin
+在 C++ 插件中，接口通过插件基类的 `core()` 方法获取。
+
+```cpp
+// 通过插件基类获取核心接口
+class MyPlugin : public DAAbstractPlugin
+{
+public:
+    bool initialize() override
     {
-    public:
-        bool initialize() override
-        {
-            // 1. 获取核心接口
-            // core() 方法由 DAAbstractPlugin 基类提供
-            // 返回指向 DACoreInterface 的指针
-            DACoreInterface* core = this->core();
-            
-            // 2. 获取子接口
-            // 通过核心接口获取其他专用接口
-            DAUIInterface* ui = core->getUiInterface();
-            DADataManagerInterface* dm = core->getDataManagerInterface();
-            DAProjectInterface* proj = core->getProjectInterface();
-            
-            // 3. 使用接口
-            // 在使用接口前，应该检查指针是否有效
-            if (ui) {
-                ui->addInfoLogMessage("插件初始化成功");
-            }
-            
-            // 4. 保存接口引用
-            // 通常会将常用的接口保存为成员变量，避免重复获取
-            m_ui = ui;
-            m_dataManager = dm;
-            
-            return true;
+        // 1. 获取核心接口
+        // core() 方法由 DAAbstractPlugin 基类提供
+        // 返回指向 DACoreInterface 的指针
+        DACoreInterface* core = this->core();
+
+        // 2. 获取子接口
+        // 通过核心接口获取其他专用接口
+        DAUIInterface* ui = core->getUiInterface();
+        DADataManagerInterface* dm = core->getDataManagerInterface();
+        DAProjectInterface* proj = core->getProjectInterface();
+
+        // 3. 使用接口
+        // 在使用接口前，应该检查指针是否有效
+        if (ui) {
+            ui->addInfoLogMessage("插件初始化成功");
         }
-        
-    private:
-        DA::DAUIInterface* m_ui;
-        DA::DADataManagerInterface* m_dataManager;
-    };
-    ```
-    
-    **注意事项：**
-    - 接口指针由主程序管理，插件不应该删除这些指针
-    - 在使用接口前，始终检查指针是否为空
-    - 避免在构造函数中访问接口，此时接口可能尚未初始化
 
-=== "Python 脚本中访问"
+        // 4. 保存接口引用
+        // 通常会将常用的接口保存为成员变量，避免重复获取
+        m_ui = ui;
+        m_dataManager = dm;
 
-    在 Python 脚本中，接口通过导入的模块获取。DAWorkBench 导出了三个主要模块供 Python 脚本使用：
-    
-    - `da_app`：应用级别的功能，如获取核心接口
-    - `da_interface`：接口相关的类型定义
-    - `da_data`：数据相关的类型定义
-    
-    ```python
-    # 导入主程序导出的模块
-    import da_app, da_interface, da_data
-    
-    def get_interfaces():
-        """
-        获取所有主要接口的辅助函数
-        
-        这是一个常用的模式，将接口获取逻辑封装在函数中，
-        方便在脚本的多个地方复用。
-        """
-        # 1. 获取核心接口
-        # da_app.getCore() 返回 DACoreInterface 的 Python 包装
-        core = da_app.getCore()
-        
-        # 2. 获取子接口
-        # 通过核心接口获取其他专用接口
-        ui = core.getUiInterface()
-        data_mgr = core.getDataManagerInterface()
-        project = core.getProjectInterface()
-        
-        # 3. 使用接口
-        # Python 中的接口调用会自动处理类型转换
-        if ui:
-            ui.addInfoLogMessage("Python 脚本加载成功")
-        
-        return core, ui, data_mgr, project
-    
-    # 使用示例
-    def example_usage():
-        core, ui, data_mgr, _ = get_interfaces()
-        
-        # 获取选中的数据
-        selected = data_mgr.getSelectDatas()
-        if selected:
-            print(f"选中了 {len(selected)} 个数据")
-        
-        # 显示消息
-        ui.addInfoLogMessage("操作完成", True)
-    ```
-    
-    **Python 接口访问的特点：**
-    - 自动类型转换：Qt 类型会自动转换为 Python 类型
-    - 异常处理：Python 异常会被转换为 C++ 异常，反之亦然
-    - 引用管理：Python 端的引用计数会自动管理对象生命周期
+        return true;
+    }
+
+private:
+    DA::DAUIInterface* m_ui;
+    DA::DADataManagerInterface* m_dataManager;
+};
+```
+
+**注意事项：**
+- 接口指针由主程序管理，插件不应该删除这些指针
+- 在使用接口前，始终检查指针是否为空
+- 避免在构造函数中访问接口，此时接口可能尚未初始化
+
+**Python 脚本中访问**
+
+在 Python 脚本中，接口通过导入的模块获取。DAWorkBench 导出了三个主要模块供 Python 脚本使用：
+
+- `da_app`：应用级别的功能，如获取核心接口
+- `da_interface`：接口相关的类型定义
+- `da_data`：数据相关的类型定义
+
+```python
+# 导入主程序导出的模块
+import da_app, da_interface, da_data
+
+def get_interfaces():
+    """
+    获取所有主要接口的辅助函数
+
+    这是一个常用的模式，将接口获取逻辑封装在函数中，
+    方便在脚本的多个地方复用。
+    """
+    # 1. 获取核心接口
+    # da_app.getCore() 返回 DACoreInterface 的 Python 包装
+    core = da_app.getCore()
+
+    # 2. 获取子接口
+    # 通过核心接口获取其他专用接口
+    ui = core.getUiInterface()
+    data_mgr = core.getDataManagerInterface()
+    project = core.getProjectInterface()
+
+    # 3. 使用接口
+    # Python 中的接口调用会自动处理类型转换
+    if ui:
+        ui.addInfoLogMessage("Python 脚本加载成功")
+
+    return core, ui, data_mgr, project
+
+# 使用示例
+def example_usage():
+    core, ui, data_mgr, _ = get_interfaces()
+
+    # 获取选中的数据
+    selected = data_mgr.getSelectDatas()
+    if selected:
+        print(f"选中了 {len(selected)} 个数据")
+
+    # 显示消息
+    ui.addInfoLogMessage("操作完成", True)
+```
+
+**Python 接口访问的特点：**
+- 自动类型转换：Qt 类型会自动转换为 Python 类型
+- 异常处理：Python 异常会被转换为 C++ 异常，反之亦然
+- 引用管理：Python 端的引用计数会自动管理对象生命周期
 
 ---
 
@@ -558,7 +564,7 @@ classDiagram
     DAAbstractPlugin <|-- DAAbstractNodePlugin
     DAAbstractNodePlugin <|-- DataAnalysisPlugin
 DAPluginManager --> DAAbstractPlugin : manages
-    ```
+```
 
 上图展示了插件系统的类设计：
 
@@ -604,7 +610,7 @@ stateDiagram-v2
     
     Active --> Retranslating: 语言变更
 Retranslating --> Active: retranslate() 完成
-    ```
+```
 
 上图展示了插件生命周期状态机：
 
@@ -644,44 +650,44 @@ Retranslating --> Active: retranslate() 完成
 
 ### 3.3 插件开发规范
 
-!!! example "插件项目结构"
-
-    一个典型的 DAWorkBench 插件项目应该遵循以下目录结构：
-    
-    ```
-    plugins/DataAnalysis/
-    ├── CMakeLists.txt              # 构建配置
-    ├── DataAnalysisPlugin.h        # 插件主类头文件
-    ├── DataAnalysisPlugin.cpp      # 插件主类实现
-    ├── DataAnalysisBaseWorker.h    # 工作类基类头文件
-    ├── DataAnalysisBaseWorker.cpp  # 工作类基类实现
-    ├── DataframeCleanerWorker.h    # 数据清洗工作类
-    ├── DataframeIOWorker.h         # 数据导入导出工作类
-    ├── DataframeOperateWorker.h    # 数据操作工作类
-    ├── Dialogs/                    # 对话框目录
-    │   ├── SomeDialog.h
-    │   ├── SomeDialog.cpp
-    │   └── SomeDialog.ui
-    ├── PyScripts/                  # Python 脚本目录（三层架构）
-    │   ├── DADataAnalysisCore/     # 纯算法层
-    │   │   ├── __init__.py
-    │   │   ├── cleaning.py         # 数据清洗算法
-    │   │   ├── io.py               # 文件读写算法
-    │   │   └── operations.py       # DataFrame 操作算法
-    │   ├── DADataAnalysisGui/      # GUI 交互层
-    │   │   ├── __init__.py
-    │   │   ├── dataframe_cleaner.py # 数据清洗 UI 交互
-    │   │   ├── dataframe_io.py     # 数据导入导出 UI 交互
-    │   │   ├── utils.py            # 工具函数
-    │   │   └── i18n/               # 国际化翻译
-    │   └── DADataAnalysisNodes/    # 工作流节点层
-    │       ├── __init__.py
-    │       ├── *_node.py           # 各节点定义（20+ 节点）
-    │       └── setup.py            # entry_points 注册
-    └── icon/                       # 图标资源目录
-        ├── icon1.svg
-        └── icon2.png
-    ```
+> **📌 插件项目结构**
+>
+> 一个典型的 DAWorkBench 插件项目应该遵循以下目录结构：
+>
+> ```
+> plugins/DataAnalysis/
+> ├── CMakeLists.txt              # 构建配置
+> ├── DataAnalysisPlugin.h        # 插件主类头文件
+> ├── DataAnalysisPlugin.cpp      # 插件主类实现
+> ├── DataAnalysisBaseWorker.h    # 工作类基类头文件
+> ├── DataAnalysisBaseWorker.cpp  # 工作类基类实现
+> ├── DataframeCleanerWorker.h    # 数据清洗工作类
+> ├── DataframeIOWorker.h         # 数据导入导出工作类
+> ├── DataframeOperateWorker.h    # 数据操作工作类
+> ├── Dialogs/                    # 对话框目录
+> │   ├── SomeDialog.h
+> │   ├── SomeDialog.cpp
+> │   └── SomeDialog.ui
+> ├── PyScripts/                  # Python 脚本目录（三层架构）
+> │   ├── DADataAnalysisCore/     # 纯算法层
+> │   │   ├── __init__.py
+> │   │   ├── cleaning.py         # 数据清洗算法
+> │   │   ├── io.py               # 文件读写算法
+> │   │   └── operations.py       # DataFrame 操作算法
+> │   ├── DADataAnalysisGui/      # GUI 交互层
+> │   │   ├── __init__.py
+> │   │   ├── dataframe_cleaner.py # 数据清洗 UI 交互
+> │   │   ├── dataframe_io.py     # 数据导入导出 UI 交互
+> │   │   ├── utils.py            # 工具函数
+> │   │   └── i18n/               # 国际化翻译
+> │   └── DADataAnalysisNodes/    # 工作流节点层
+> │       ├── __init__.py
+> │       ├── *_node.py           # 各节点定义（20+ 节点）
+> │       └── setup.py            # entry_points 注册
+> └── icon/                       # 图标资源目录
+>     ├── icon1.svg
+>     └── icon2.png
+> ```
 
 **目录结构说明：**
 
@@ -693,141 +699,141 @@ Retranslating --> Active: retranslate() 完成
 - **Python 脚本**：采用三层架构，`DADataAnalysisCore`（纯算法层，无界面依赖）、`DADataAnalysisGui`（图形界面交互逻辑）、`DADataAnalysisNodes`（工作流节点定义，通过 `@NodeDef` 自动发现）。
 - **图标资源**：插件使用的图标文件。
 
-=== "插件头文件"
+**插件头文件**
 
-    插件头文件定义了插件的主类。以下是 `DataAnalysisPlugin` 的头文件示例：
-    
-    ```cpp title="DataAnalysisPlugin.h"
-    #ifndef DATAANALYSISPLUGIN_H
-    #define DATAANALYSISPLUGIN_H
-    
-    #include "DAAbstractNodePlugin.h"
-    #include "DataAnalysisGlobal.h"
+插件头文件定义了插件的主类。以下是 `DataAnalysisPlugin` 的头文件示例：
 
-    class DataAnalysisBaseWorker;
+```cpp title="DataAnalysisPlugin.h"
+#ifndef DATAANALYSISPLUGIN_H
+#define DATAANALYSISPLUGIN_H
 
-    /**
-     * @brief 数据分析插件主类
-     *
-     * 此插件提供数据清洗、转换和分析功能。
-     * 继承自 DAAbstractNodePlugin，提供工作流节点和数据处理功能。
-     */
-    class DATAANALYSIS_API DataAnalysisPlugin : public DA::DAAbstractNodePlugin
-    {
-        Q_OBJECT
-        // Qt 插件元数据，定义插件 ID 和配置文件
-        Q_PLUGIN_METADATA(IID DAABSTRACTNODEPLUGIN_IID FILE "DataAnalysis.json")
-        // 声明实现的接口
-        Q_INTERFACES(DA::DAAbstractNodePlugin)
-        
-    public:
-        DataAnalysisPlugin();
-        ~DataAnalysisPlugin();
-        
-        // 插件信息方法
-        QString getName() const override;
-        QString getDescription() const override;
-        QString getVersion() const override;
-        
-        // 生命周期方法
-        bool initialize() override;
-        void retranslate() override;
-        
-    private:
-        DataAnalysisBaseWorker* m_worker;  // 工作对象
-    };
-    
-    #endif
-    ```
-    
-    **关键点说明：**
-    - `Q_PLUGIN_METADATA` 宏定义了插件的元数据，包括接口 ID 和配置文件
-    - `Q_INTERFACES` 宏声明了插件实现的接口
-    - 插件类应该导出符号（使用 `DATAANALYSIS_API` 宏）
+#include "DAAbstractNodePlugin.h"
+#include "DataAnalysisGlobal.h"
 
-=== "插件实现文件"
+class DataAnalysisBaseWorker;
 
-    插件实现文件包含了插件的具体逻辑。以下是 `DataAnalysisPlugin` 的实现示例：
-    
-    ```cpp title="DataAnalysisPlugin.cpp"
-    #include "DataAnalysisPlugin.h"
-    #include "DataAnalysisBaseWorker.h"
-    #include <QDebug>
-    
-    DataAnalysisPlugin::DataAnalysisPlugin()
-        : m_worker(nullptr)
-    {
-        // 构造函数中不应该访问主程序接口
-        // 因为此时主程序可能尚未完全初始化
+/**
+ * @brief 数据分析插件主类
+ *
+ * 此插件提供数据清洗、转换和分析功能。
+ * 继承自 DAAbstractNodePlugin，提供工作流节点和数据处理功能。
+ */
+class DATAANALYSIS_API DataAnalysisPlugin : public DA::DAAbstractNodePlugin
+{
+    Q_OBJECT
+    // Qt 插件元数据，定义插件 ID 和配置文件
+    Q_PLUGIN_METADATA(IID DAABSTRACTNODEPLUGIN_IID FILE "DataAnalysis.json")
+    // 声明实现的接口
+    Q_INTERFACES(DA::DAAbstractNodePlugin)
+
+public:
+    DataAnalysisPlugin();
+    ~DataAnalysisPlugin();
+
+    // 插件信息方法
+    QString getName() const override;
+    QString getDescription() const override;
+    QString getVersion() const override;
+
+    // 生命周期方法
+    bool initialize() override;
+    void retranslate() override;
+
+private:
+    DataAnalysisBaseWorker* m_worker;  // 工作对象
+};
+
+#endif
+```
+
+**关键点说明：**
+- `Q_PLUGIN_METADATA` 宏定义了插件的元数据，包括接口 ID 和配置文件
+- `Q_INTERFACES` 宏声明了插件实现的接口
+- 插件类应该导出符号（使用 `DATAANALYSIS_API` 宏）
+
+**插件实现文件**
+
+插件实现文件包含了插件的具体逻辑。以下是 `DataAnalysisPlugin` 的实现示例：
+
+```cpp title="DataAnalysisPlugin.cpp"
+#include "DataAnalysisPlugin.h"
+#include "DataAnalysisBaseWorker.h"
+#include <QDebug>
+
+DataAnalysisPlugin::DataAnalysisPlugin()
+    : m_worker(nullptr)
+{
+    // 构造函数中不应该访问主程序接口
+    // 因为此时主程序可能尚未完全初始化
+}
+
+DataAnalysisPlugin::~DataAnalysisPlugin()
+{
+    // 析构函数中清理资源
+    if (m_worker) {
+        delete m_worker;
+        m_worker = nullptr;
     }
-    
-    DataAnalysisPlugin::~DataAnalysisPlugin()
-    {
-        // 析构函数中清理资源
-        if (m_worker) {
-            delete m_worker;
-            m_worker = nullptr;
-        }
+}
+
+QString DataAnalysisPlugin::getName() const
+{
+    return tr("Data Analysis");
+}
+
+QString DataAnalysisPlugin::getDescription() const
+{
+    return tr("Provides data cleaning, transformation and analysis functions");
+}
+
+QString DataAnalysisPlugin::getVersion() const
+{
+    return "1.0.0";
+}
+
+bool DataAnalysisPlugin::initialize()
+{
+    // 1. 获取核心接口
+    DA::DACoreInterface* core = this->core();
+    if (!core) {
+        qCritical() << "Failed to get core interface";
+        return false;
     }
-    
-    QString DataAnalysisPlugin::getName() const
-    {
-        return tr("Data Analysis");
+
+    // 2. 创建工作对象
+    m_worker = new DataAnalysisBaseWorker(this);
+    if (!m_worker->initialize(core)) {
+        qCritical() << "Failed to initialize worker";
+        delete m_worker;
+        m_worker = nullptr;
+        return false;
     }
-    
-    QString DataAnalysisPlugin::getDescription() const
-    {
-        return tr("Provides data cleaning, transformation and analysis functions");
+
+    // 3. 注册菜单项和工具栏按钮
+    // ... 具体实现 ...
+
+    // 4. 连接信号槽
+    // ... 具体实现 ...
+
+    qDebug() << "DataAnalysis plugin initialized successfully";
+    return true;
+}
+
+void DataAnalysisPlugin::retranslate()
+{
+    // 处理语言变更
+    // 更新所有用户可见的文本
+    if (m_worker) {
+        m_worker->retranslate();
     }
-    
-    QString DataAnalysisPlugin::getVersion() const
-    {
-        return "1.0.0";
-    }
-    
-    bool DataAnalysisPlugin::initialize()
-    {
-        // 1. 获取核心接口
-        DA::DACoreInterface* core = this->core();
-        if (!core) {
-            qCritical() << "Failed to get core interface";
-            return false;
-        }
-        
-        // 2. 创建工作对象
-        m_worker = new DataAnalysisBaseWorker(this);
-        if (!m_worker->initialize(core)) {
-            qCritical() << "Failed to initialize worker";
-            delete m_worker;
-            m_worker = nullptr;
-            return false;
-        }
-        
-        // 3. 注册菜单项和工具栏按钮
-        // ... 具体实现 ...
-        
-        // 4. 连接信号槽
-        // ... 具体实现 ...
-        
-        qDebug() << "DataAnalysis plugin initialized successfully";
-        return true;
-    }
-    
-    void DataAnalysisPlugin::retranslate()
-    {
-        // 处理语言变更
-        // 更新所有用户可见的文本
-        if (m_worker) {
-            m_worker->retranslate();
-        }
-    }
-    ```
-    
-    **实现要点：**
-    - 构造函数中不要访问主程序接口
-    - `initialize()` 方法返回 `true` 表示初始化成功，`false` 表示失败
-    - 失败时应该清理已分配的资源
-    - 使用 `qDebug()`/`qCritical()` 输出日志信息
+}
+```
+
+**实现要点：**
+- 构造函数中不要访问主程序接口
+- `initialize()` 方法返回 `true` 表示初始化成功，`false` 表示失败
+- 失败时应该清理已分配的资源
+- 使用 `qDebug()`/`qCritical()` 输出日志信息
 
 ---
 
@@ -873,7 +879,7 @@ flowchart TB
     Init --> Cleaner
     Init --> IO
 Init --> Utils
-    ```
+```
 
 上图展示了脚本调用的三层架构：
 
@@ -897,9 +903,9 @@ Init --> Utils
 
 ### 4.2 主程序调用 Python 脚本
 
-!!! tip "标准调用模式"
-
-    从 C++ 调用 Python 脚本需要遵循一定的模式，确保线程安全和正确性。
+> **💡 标准调用模式**
+>
+> 从 C++ 调用 Python 脚本需要遵循一定的模式，确保线程安全和正确性。
 
 下图展示了 C++ 调用 Python 函数的完整时序过程，包括全局解释器锁（GIL）管理和用户交互：
 
@@ -930,7 +936,7 @@ sequenceDiagram
     Worker->>Py: gil_scoped_release
     deactivate Py
 Worker-->>Cpp: 返回结果
-    ```
+```
 
 上图展示了 Python 调用的标准流程：
 
@@ -954,147 +960,148 @@ Worker-->>Cpp: 返回结果
 
 6. **释放 GIL**：当 `gil_scoped_acquire` 对象析构时，GIL 会自动释放。
 
-=== "C++ 调用 Python 函数"
+**C++ 调用 Python 函数**
 
-    以下代码展示了如何在 C++ 中调用 Python 函数：
-    
-    ```cpp title="DataAnalysisBaseWorker.cpp"
-    #include <pybind11/pybind11.h>
-    #include <pybind11/functional.h>
-    
-    namespace py = pybind11;
-    
-    bool DataAnalysisBaseWorker::callPythonFunction(
-        const QString& moduleName,
-        const QString& functionName,
-        const py::dict& args)
-    {
-        // 1. 获取 GIL
-        // gil_scoped_acquire 在构造时获取 GIL，析构时释放
-        // 这是 RAII 模式，确保异常安全
-        py::gil_scoped_acquire acquire;
-        
-        try {
-            // 2. 导入模块
-            // 如果模块已经导入，会返回缓存的模块对象
-            py::module module = py::module::import(
-                moduleName.toStdString().c_str());
-            
-            // 3. 获取函数
-            // attr() 返回模块中的属性，这里获取的是函数
-            py::function func = module.attr(
-                functionName.toStdString().c_str());
-            
-            // 4. 调用函数
-            // 使用 **args 语法传递关键字参数
-            py::object result = func(**args);
-            
-            // 5. 处理结果
-            // 检查返回值是否为 None
-            if (result.is_none()) {
-                return false;
-            }
-            
-            // 将 Python 对象转换为 C++ 类型
-            return result.cast<bool>();
-            
-        } catch (const py::error_already_set& e) {
-            // Python 异常会被转换为 error_already_set
-            QString err = QString::fromStdString(e.what());
-            m_ui->addCriticalLogMessage(err);
-            return false;
-        } catch (const std::exception& e) {
-            // 其他 C++ 异常
-            m_ui->addCriticalLogMessage(QString::fromStdString(e.what()));
+以下代码展示了如何在 C++ 中调用 Python 函数：
+
+```cpp title="DataAnalysisBaseWorker.cpp"
+#include <pybind11/pybind11.h>
+#include <pybind11/functional.h>
+
+namespace py = pybind11;
+
+bool DataAnalysisBaseWorker::callPythonFunction(
+    const QString& moduleName,
+    const QString& functionName,
+    const py::dict& args)
+{
+    // 1. 获取 GIL
+    // gil_scoped_acquire 在构造时获取 GIL，析构时释放
+    // 这是 RAII 模式，确保异常安全
+    py::gil_scoped_acquire acquire;
+
+    try {
+        // 2. 导入模块
+        // 如果模块已经导入，会返回缓存的模块对象
+        py::module module = py::module::import(
+            moduleName.toStdString().c_str());
+
+        // 3. 获取函数
+        // attr() 返回模块中的属性，这里获取的是函数
+        py::function func = module.attr(
+            functionName.toStdString().c_str());
+
+        // 4. 调用函数
+        // 使用 **args 语法传递关键字参数
+        py::object result = func(**args);
+
+        // 5. 处理结果
+        // 检查返回值是否为 None
+        if (result.is_none()) {
             return false;
         }
+
+        // 将 Python 对象转换为 C++ 类型
+        return result.cast<bool>();
+
+    } catch (const py::error_already_set& e) {
+        // Python 异常会被转换为 error_already_set
+        QString err = QString::fromStdString(e.what());
+        m_ui->addCriticalLogMessage(err);
+        return false;
+    } catch (const std::exception& e) {
+        // 其他 C++ 异常
+        m_ui->addCriticalLogMessage(QString::fromStdString(e.what()));
+        return false;
     }
-    ```
-    
-    **异常处理说明：**
-    - `py::error_already_set`：Python 异常被捕获后抛出的 C++ 异常
-    - 应该捕获所有异常，避免异常传播到 Python 端
-    - 使用 `e.what()` 获取异常信息
+}
+```
 
-=== "Python 脚本实现"
+**异常处理说明：**
+- `py::error_already_set`：Python 异常被捕获后抛出的 C++ 异常
+- 应该捕获所有异常，避免异常传播到 Python 端
+- 使用 `e.what()` 获取异常信息
 
-    以下是 Python 脚本的典型实现模式：
-    
-    ```python title="dataframe_cleaner.py"
-    import da_app, da_interface, da_data
-    import pandas as pd
-    from typing import Optional
-    
-    def dropna() -> Optional[int]:
-        """
-        删除缺失值
-        
-        这是典型的 Python 脚本函数模式：
-        1. 获取接口
-        2. 获取数据
-        3. 获取用户配置
-        4. 执行操作
-        5. 更新数据
-        6. 返回结果
-        
-        Returns:
-            删除的行数，失败返回 None
-        """
-        # 1. 获取接口
-        # 通过 da_app 模块获取核心接口
-        core = da_app.getCore()
-        ui = core.getUiInterface()
-        data_mgr = core.getDataManagerInterface()
-        
-        # 2. 获取选中数据
-        # 从数据管理器获取用户选中的数据
-        select_datas = data_mgr.getSelectDatas()
-        if not select_datas:
-            ui.addWarningLogMessage("请先选择数据")
-            return None
-        
-        # 获取第一个选中的数据
-        dadata = select_datas[0]
-        
-        # 3. 获取用户配置
-        # 使用配置构建器创建配置对话框
-        from DAWorkbench.DAPyBase.form_builder import FormBuilder, option
+**Python 脚本实现**
 
-        # 链式调用构建 FormSpec
-        cfg = (
-            FormBuilder("删除缺失值")
-            .enum("how", label="删除条件", default="any",
-                  options=[option("any", "任意值为空"),
-                           option("all", "所有值为空")])
-            .build()
-        )
+以下是 Python 脚本的典型实现模式：
 
-        # 显示对话框并获取用户输入
-        config = ui.getConfigValues(cfg, "dropna")
-        if not config:
-            return None  # 用户取消
-        
-        # 4. 执行操作
-        # 使用 pandas 处理数据
-        df = dadata.toDataFrame()
-        old_len = len(df)
-        df = df.dropna(how=config.get("how", "any"))
-        
-        # 5. 更新数据
-        # 将处理后的数据写回
-        dadata.setPyObject(df)
-        
-        # 6. 返回结果
-        removed = old_len - len(df)
-        ui.addInfoLogMessage(f"删除了 {removed} 行")
-        
-        return removed
-    ```
+```python title="dataframe_cleaner.py"
+import da_app, da_interface, da_data
+import pandas as pd
+from typing import Optional
+
+def dropna() -> Optional[int]:
+    """
+    删除缺失值
+
+    这是典型的 Python 脚本函数模式：
+    1. 获取接口
+    2. 获取数据
+    3. 获取用户配置
+    4. 执行操作
+    5. 更新数据
+    6. 返回结果
+
+    Returns:
+        删除的行数，失败返回 None
+    """
+    # 1. 获取接口
+    # 通过 da_app 模块获取核心接口
+    core = da_app.getCore()
+    ui = core.getUiInterface()
+    data_mgr = core.getDataManagerInterface()
+
+    # 2. 获取选中数据
+    # 从数据管理器获取用户选中的数据
+    select_datas = data_mgr.getSelectDatas()
+    if not select_datas:
+        ui.addWarningLogMessage("请先选择数据")
+        return None
+
+    # 获取第一个选中的数据
+    dadata = select_datas[0]
+
+    # 3. 获取用户配置
+    # 使用配置构建器创建配置对话框
+    from DAWorkbench.DAPyBase.form_builder import FormBuilder, option
+
+    # 链式调用构建 FormSpec
+    cfg = (
+        FormBuilder("删除缺失值")
+        .enum("how", label="删除条件", default="any",
+              options=[option("any", "任意值为空"),
+                       option("all", "所有值为空")])
+        .build()
+    )
+
+    # 显示对话框并获取用户输入
+    config = ui.getConfigValues(cfg, "dropna")
+    if not config:
+        return None  # 用户取消
+
+    # 4. 执行操作
+    # 使用 pandas 处理数据
+    df = dadata.toDataFrame()
+    old_len = len(df)
+    df = df.dropna(how=config.get("how", "any"))
+
+    # 5. 更新数据
+    # 将处理后的数据写回
+    dadata.setPyObject(df)
+
+    # 6. 返回结果
+    removed = old_len - len(df)
+    ui.addInfoLogMessage(f"删除了 {removed} 行")
+
+    return removed
+```
 
 ### 4.3 Python 脚本发起 UI 操作
 
-!!! warning "线程安全要求"
-    Python 脚本可能在后台线程执行，界面操作必须通过 `DAPythonSignalHandler` 投递到主线程。
+> **⚠️ 线程安全要求**
+>
+> Python 脚本可能在后台线程执行，界面操作必须通过 `DAPythonSignalHandler` 投递到主线程。
 
 Qt 框架要求所有界面操作必须在主线程中执行。如果 Python 脚本在后台线程中运行，直接调用界面方法会导致未定义行为，甚至程序崩溃。DAWorkBench 提供了 `DAPythonSignalHandler` 来解决这个问题。
 
@@ -1124,7 +1131,7 @@ sequenceDiagram
     end
     
 UI-->>BG: 操作完成
-    ```
+```
 
 上图展示了线程安全的界面操作机制：
 
@@ -1144,127 +1151,127 @@ UI-->>BG: 操作完成
 
 4. **异步执行**：回调函数在主线程的事件循环中被执行，不会阻塞调用线程。
 
-=== "安全的界面操作"
+**安全的界面操作**
 
-    以下代码展示了如何在后台线程中安全地更新界面：
-    
-    ```python title="安全的 UI 操作示例"
-    import da_app
-    
-    def background_task():
-        """
-        后台线程中的任务
-        
-        演示如何在后台线程中执行耗时操作，
-        并安全地更新 UI。
-        """
-        import threading
-        import time
-        
-        def worker():
-            # 执行耗时计算
-            # 这部分代码在后台线程中运行
-            # 不会阻塞 UI
-            time.sleep(5)
-            result = "计算完成"
-            
-            # 安全地更新 UI
-            # 必须通过 callInMainThread 投递到主线程
-            update_ui_safely(result)
-        
-        # 启动后台线程
-        thread = threading.Thread(target=worker, daemon=True)
-        thread.start()
-    
-    def update_ui_safely(message: str):
-        """
-        安全地更新 UI（自动处理线程问题）
-        
-        此函数会自动检测当前线程，
-        如果不在主线程，会将操作投递到主线程。
-        """
-        core = da_app.getCore()
-        handler = core.getPythonSignalHandler()
-        
-        def update():
-            """此函数将在主线程执行"""
-            # 在这里可以安全地操作 UI 组件
-            ui = core.getUiInterface()
-            ui.addInfoLogMessage(message)
-            
-            # 可以安全地操作状态栏
-            status_bar = ui.getStatusBar()
-            if status_bar:
-                status_bar.showMessage(message, 5000)
-        
-        # 投递到主线程
-        # 如果已在主线程，会直接执行
-        # 如果不在主线程，会通过信号槽投递
-        handler.callInMainThread(update)
-    ```
+以下代码展示了如何在后台线程中安全地更新界面：
 
-=== "显示对话框"
+```python title="安全的 UI 操作示例"
+import da_app
 
-    配置对话框是用户输入参数的主要方式。以下代码展示了如何构建和显示配置对话框：
-    
-    ```python title="显示配置对话框"
-    def show_config_dialog():
-        """
-        显示配置对话框并获取用户输入
-        
-        注意：此函数必须在主线程调用，
-        因为对话框是 UI 组件。
-        """
-        from DAWorkbench.DAPyBase.form_builder import FormBuilder, option
+def background_task():
+    """
+    后台线程中的任务
 
-        core = da_app.getCore()
+    演示如何在后台线程中执行耗时操作，
+    并安全地更新 UI。
+    """
+    import threading
+    import time
+
+    def worker():
+        # 执行耗时计算
+        # 这部分代码在后台线程中运行
+        # 不会阻塞 UI
+        time.sleep(5)
+        result = "计算完成"
+
+        # 安全地更新 UI
+        # 必须通过 callInMainThread 投递到主线程
+        update_ui_safely(result)
+
+    # 启动后台线程
+    thread = threading.Thread(target=worker, daemon=True)
+    thread.start()
+
+def update_ui_safely(message: str):
+    """
+    安全地更新 UI（自动处理线程问题）
+
+    此函数会自动检测当前线程，
+    如果不在主线程，会将操作投递到主线程。
+    """
+    core = da_app.getCore()
+    handler = core.getPythonSignalHandler()
+
+    def update():
+        """此函数将在主线程执行"""
+        # 在这里可以安全地操作 UI 组件
         ui = core.getUiInterface()
+        ui.addInfoLogMessage(message)
 
-        # 构建配置
-        # FormBuilder 提供了链式声明式的配置构建方式
-        cfg = (
-            FormBuilder("参数设置")
+        # 可以安全地操作状态栏
+        status_bar = ui.getStatusBar()
+        if status_bar:
+            status_bar.showMessage(message, 5000)
 
-            # 添加分组（group 第一个参数是唯一 key）
-            .group("basic", "基本设置")
-            # 添加字符串输入
-            .string("name", label="名称", default="", description="输入名称")
-            # 添加整数输入
-            .int("count", label="数量", default=10, min=1, max=100)
-            .end_group()
+    # 投递到主线程
+    # 如果已在主线程，会直接执行
+    # 如果不在主线程，会通过信号槽投递
+    handler.callInMainThread(update)
+```
 
-            # 添加另一个分组
-            .group("advanced", "高级设置")
-            # 添加布尔值
-            .bool("advanced", label="启用高级模式", default=False)
-            .end_group()
-            .build()
-        )
+**显示对话框**
 
-        # 显示对话框
-        # 第二个参数是缓存键，用于记住上次设置
-        config = ui.getConfigValues(
-            cfg,
-            "my_plugin.config"  # 缓存键
-        )
-        
-        if config:
-            # 用户点击确定
-            name = config.get("name", "")
-            count = config.get("count", 10)
-            advanced = config.get("advanced", False)
-            
-            return config
-        else:
-            # 用户取消
-            return None
-    ```
-    
-    **配置对话框的特点：**
-    - 支持多种输入类型：字符串、整数、浮点数、布尔值、枚举等
-    - 支持分组组织
-    - 自动记住上次设置（通过缓存键）
-    - 支持输入验证
+配置对话框是用户输入参数的主要方式。以下代码展示了如何构建和显示配置对话框：
+
+```python title="显示配置对话框"
+def show_config_dialog():
+    """
+    显示配置对话框并获取用户输入
+
+    注意：此函数必须在主线程调用，
+    因为对话框是 UI 组件。
+    """
+    from DAWorkbench.DAPyBase.form_builder import FormBuilder, option
+
+    core = da_app.getCore()
+    ui = core.getUiInterface()
+
+    # 构建配置
+    # FormBuilder 提供了链式声明式的配置构建方式
+    cfg = (
+        FormBuilder("参数设置")
+
+        # 添加分组（group 第一个参数是唯一 key）
+        .group("basic", "基本设置")
+        # 添加字符串输入
+        .string("name", label="名称", default="", description="输入名称")
+        # 添加整数输入
+        .int("count", label="数量", default=10, min=1, max=100)
+        .end_group()
+
+        # 添加另一个分组
+        .group("advanced", "高级设置")
+        # 添加布尔值
+        .bool("advanced", label="启用高级模式", default=False)
+        .end_group()
+        .build()
+    )
+
+    # 显示对话框
+    # 第二个参数是缓存键，用于记住上次设置
+    config = ui.getConfigValues(
+        cfg,
+        "my_plugin.config"  # 缓存键
+    )
+
+    if config:
+        # 用户点击确定
+        name = config.get("name", "")
+        count = config.get("count", 10)
+        advanced = config.get("advanced", False)
+
+        return config
+    else:
+        # 用户取消
+        return None
+```
+
+**配置对话框的特点：**
+- 支持多种输入类型：字符串、整数、浮点数、布尔值、枚举等
+- 支持分组组织
+- 自动记住上次设置（通过缓存键）
+- 支持输入验证
 
 ---
 
@@ -1327,7 +1334,7 @@ flowchart LR
     C1 -->|getSelectDatas| DM
     C2 -->|getData| DM
 C3 -->|getAllDatas| DM
-    ```
+```
 
 上图展示了数据传递的三层结构：
 
@@ -1345,68 +1352,68 @@ C3 -->|getAllDatas| DM
 
 生产者不需要知道谁会使用数据，消费者也不需要知道数据来自哪里。
 
-=== "Python 添加数据"
+**Python 添加数据**
 
-    Python 脚本可以通过数据管理器添加数据：
-    
-    ```python
-    def add_dataframe_to_manager(df, name: str):
-        """
-        将 DataFrame 添加到数据管理器
-        
-        这是 Python 脚本向主程序传递数据的标准方式。
-        
-        Args:
-            df: pandas DataFrame
-            name: 数据名称
-        """
-        core = da_app.getCore()
-        data_mgr = core.getDataManagerInterface()
-        
-        # 方式1：使用便捷方法
-        # addDataframe 方法会自动创建 DAData 对象并设置名称
-        data_mgr.addDataframe(df, name)
-        
-        # 方式2：创建 DAData 对象
-        # 这种方式更灵活，可以设置更多属性
-        # data = da_data.DAData(df)
-        # data.setName(name)
-        # data_mgr.addData(data)
-        
-        # 标记项目为已修改
-        # 这会触发主窗口标题更新，显示未保存状态
-        core.setProjectDirty(True)
-    ```
+Python 脚本可以通过数据管理器添加数据：
 
-=== "C++ 获取数据"
+```python
+def add_dataframe_to_manager(df, name: str):
+    """
+    将 DataFrame 添加到数据管理器
 
-    C++ 代码可以从数据管理器获取数据：
-    
-    ```cpp
-    void processData(DACoreInterface* core)
-    {
-        DADataManagerInterface* dm = core->getDataManagerInterface();
-        
-        // 获取所有数据
-        // 返回数据列表，可能为空
-        QList<DAData> allData = dm->getAllDatas();
-        
-        // 获取选中数据
-        // 返回用户在界面中选中的数据
-        QList<DAData> selectData = dm->getSelectDatas();
-        
-        // 获取当前操作数据
-        // 返回当前正在编辑的数据
-        DAData operateData = dm->getOperateData();
-        
-        // 检查数据类型并处理
-        if (operateData.isDataFrame()) {
-            DAPyDataFrame df = operateData.toDataFrame();
-            // 处理 DataFrame
-            // ...
-        }
+    这是 Python 脚本向主程序传递数据的标准方式。
+
+    Args:
+        df: pandas DataFrame
+        name: 数据名称
+    """
+    core = da_app.getCore()
+    data_mgr = core.getDataManagerInterface()
+
+    # 方式1：使用便捷方法
+    # addDataframe 方法会自动创建 DAData 对象并设置名称
+    data_mgr.addDataframe(df, name)
+
+    # 方式2：创建 DAData 对象
+    # 这种方式更灵活，可以设置更多属性
+    # data = da_data.DAData(df)
+    # data.setName(name)
+    # data_mgr.addData(data)
+
+    # 标记项目为已修改
+    # 这会触发主窗口标题更新，显示未保存状态
+    core.setProjectDirty(True)
+```
+
+**C++ 获取数据**
+
+C++ 代码可以从数据管理器获取数据：
+
+```cpp
+void processData(DACoreInterface* core)
+{
+    DADataManagerInterface* dm = core->getDataManagerInterface();
+
+    // 获取所有数据
+    // 返回数据列表，可能为空
+    QList<DAData> allData = dm->getAllDatas();
+
+    // 获取选中数据
+    // 返回用户在界面中选中的数据
+    QList<DAData> selectData = dm->getSelectDatas();
+
+    // 获取当前操作数据
+    // 返回当前正在编辑的数据
+    DAData operateData = dm->getOperateData();
+
+    // 检查数据类型并处理
+    if (operateData.isDataFrame()) {
+        DAPyDataFrame df = operateData.toDataFrame();
+        // 处理 DataFrame
+        // ...
     }
-    ```
+}
+```
 
 ### 5.3 事件通知机制
 
@@ -1438,7 +1445,7 @@ sequenceDiagram
         end
 Plugin->>UI: hideProgressBar()
     end
-    ```
+```
 
 上图展示了事件通知的典型场景：
 
@@ -1458,50 +1465,50 @@ Plugin->>UI: hideProgressBar()
 
 4. **事件处理**：通过 `processEvents()` 处理待处理的界面事件，保持界面响应。
 
-=== "进度报告"
+**进度报告**
 
-    长时间运行的任务应该向用户报告进度：
-    
-    ```python
-    def long_running_task():
-        """
-        长时间任务，带进度报告
-        
-        演示如何在长时间任务中保持 UI 响应，
-        并向用户报告进度。
-        """
-        core = da_app.getCore()
-        ui = core.getUiInterface()
-        status = ui.getStatusBar()
-        
-        # 显示进度条
-        status.showProgressBar()
-        status.setProgressText("处理中...")
-        
-        total = 100
-        for i in range(total):
-            # 执行工作
-            do_work(i)
-            
-            # 更新进度
-            progress = int((i + 1) / total * 100)
-            status.setProgress(progress)
-            
-            # 处理 UI 事件
-            # 这很重要，否则界面会无响应
-            ui.processEvents()
-        
-        # 隐藏进度条
-        status.hideProgressBar()
-        status.clearProgressText()
-        
-        ui.addInfoLogMessage("任务完成")
-    ```
-    
-    **进度报告的注意事项：**
-    - 在循环中定期调用 `processEvents()` 保持界面响应
-    - 进度更新不要太频繁，避免性能问题
-    - 任务完成后隐藏进度条
+长时间运行的任务应该向用户报告进度：
+
+```python
+def long_running_task():
+    """
+    长时间任务，带进度报告
+
+    演示如何在长时间任务中保持 UI 响应，
+    并向用户报告进度。
+    """
+    core = da_app.getCore()
+    ui = core.getUiInterface()
+    status = ui.getStatusBar()
+
+    # 显示进度条
+    status.showProgressBar()
+    status.setProgressText("处理中...")
+
+    total = 100
+    for i in range(total):
+        # 执行工作
+        do_work(i)
+
+        # 更新进度
+        progress = int((i + 1) / total * 100)
+        status.setProgress(progress)
+
+        # 处理 UI 事件
+        # 这很重要，否则界面会无响应
+        ui.processEvents()
+
+    # 隐藏进度条
+    status.hideProgressBar()
+    status.clearProgressText()
+
+    ui.addInfoLogMessage("任务完成")
+```
+
+**进度报告的注意事项：**
+- 在循环中定期调用 `processEvents()` 保持界面响应
+- 进度更新不要太频繁，避免性能问题
+- 任务完成后隐藏进度条
 
 ---
 
@@ -1547,7 +1554,7 @@ sequenceDiagram
     
     Worker->>UI: addInfoLogMessage("完成")
 UI->>User: 显示结果
-    ```
+```
 
 上图展示了数据分析插件的完整工作流程：
 
@@ -1583,219 +1590,219 @@ UI->>User: 显示结果
 
 以下是实现上述流程的完整代码：
 
-=== "C++ Worker 类"
+**C++ Worker 类**
 
-    Worker 类是插件的核心，负责协调 C++ 和 Python 代码：
-    
-    ```cpp title="DataframeCleanerWorker.h"
-    #ifndef DATAFRAMECLEANERWORKER_H
-    #define DATAFRAMECLEANERWORKER_H
-    
-    #include <QObject>
-    #include "DAInterfaceHelper.h"
-    
+Worker 类是插件的核心，负责协调 C++ 和 Python 代码：
+
+```cpp title="DataframeCleanerWorker.h"
+#ifndef DATAFRAMECLEANERWORKER_H
+#define DATAFRAMECLEANERWORKER_H
+
+#include <QObject>
+#include "DAInterfaceHelper.h"
+
+/**
+ * @brief 数据清洗工作类
+ * 
+ * 封装数据清洗相关的业务逻辑，
+ * 负责调用 Python 脚本执行具体操作。
+ */
+class DataframeCleanerWorker : public QObject
+{
+    Q_OBJECT
+
+public:
+    explicit DataframeCleanerWorker(QObject* parent = nullptr);
+
     /**
-     * @brief 数据清洗工作类
-     * 
-     * 封装数据清洗相关的业务逻辑，
-     * 负责调用 Python 脚本执行具体操作。
+     * @brief 初始化工作类
+     * @param core 核心接口指针
      */
-    class DataframeCleanerWorker : public QObject
-    {
-        Q_OBJECT
-        
-    public:
-        explicit DataframeCleanerWorker(QObject* parent = nullptr);
-        
-        /**
-         * @brief 初始化工作类
-         * @param core 核心接口指针
-         */
-        void initialize(DA::DACoreInterface* core);
-        
-    public Q_SLOTS:
-        /**
-         * @brief 删除缺失值
-         * 调用 Python 的 dropna 函数
-         */
-        void dropna();
-        
-        /**
-         * @brief 删除重复值
-         * 调用 Python 的 drop_duplicates 函数
-         */
-        void dropDuplicates();
-        
-        /**
-         * @brief 填充缺失值
-         * 调用 Python 的 fillna 函数
-         */
-        void fillna();
-        
-    private:
-        DA::DACoreInterface* m_core;
-        DA::DAUIInterface* m_ui;
-        DA::DADataManagerInterface* m_dataManager;
-    };
-    
-    #endif
-    ```
+    void initialize(DA::DACoreInterface* core);
 
-=== "Python 脚本"
+public Q_SLOTS:
+    /**
+     * @brief 删除缺失值
+     * 调用 Python 的 dropna 函数
+     */
+    void dropna();
 
-    Python 脚本实现具体的业务逻辑：
-    
-    ```python title="dataframe_cleaner.py"
-    # -*- coding: utf-8 -*-
+    /**
+     * @brief 删除重复值
+     * 调用 Python 的 drop_duplicates 函数
+     */
+    void dropDuplicates();
+
+    /**
+     * @brief 填充缺失值
+     * 调用 Python 的 fillna 函数
+     */
+    void fillna();
+
+private:
+    DA::DACoreInterface* m_core;
+    DA::DAUIInterface* m_ui;
+    DA::DADataManagerInterface* m_dataManager;
+};
+
+#endif
+```
+
+**Python 脚本**
+
+Python 脚本实现具体的业务逻辑：
+
+```python title="dataframe_cleaner.py"
+# -*- coding: utf-8 -*-
+"""
+DataFrame 数据清洗工具集
+
+此模块提供数据清洗相关的功能，
+包括删除缺失值、删除重复值、填充缺失值等。
+"""
+import da_app, da_interface, da_data
+import pandas as pd
+from typing import Optional, List, Dict, Any
+
+def _get_interfaces():
     """
-    DataFrame 数据清洗工具集
-    
-    此模块提供数据清洗相关的功能，
-    包括删除缺失值、删除重复值、填充缺失值等。
+    获取所有接口的辅助函数
+
+    将接口获取逻辑封装在函数中，
+    方便在脚本的多个地方复用。
+
+    Returns:
+        tuple: (core, ui, data_manager)
     """
-    import da_app, da_interface, da_data
-    import pandas as pd
-    from typing import Optional, List, Dict, Any
-    
-    def _get_interfaces():
-        """
-        获取所有接口的辅助函数
-        
-        将接口获取逻辑封装在函数中，
-        方便在脚本的多个地方复用。
-        
-        Returns:
-            tuple: (core, ui, data_manager)
-        """
-        core = da_app.getCore()
-        return (
-            core,
-            core.getUiInterface(),
-            core.getDataManagerInterface()
-        )
-    
-    def _get_selected_dataframe():
-        """
-        获取选中的 DataFrame
-        
-        从数据管理器获取用户选中的数据，
-        并转换为 pandas DataFrame。
-        
-        Returns:
-            tuple: (dadata, df) 或 (None, None) 如果没有选中数据
-        """
-        core, ui, data_mgr = _get_interfaces()
-        
-        select_datas = data_mgr.getSelectDatas()
-        if not select_datas:
-            ui.addWarningLogMessage("请先选择数据")
-            return None, None
-        
-        dadata = select_datas[0]
-        df = dadata.toDataFrame()
-        
-        return dadata, df
-    
-    def dropna() -> Optional[int]:
-        """
-        删除包含缺失值的行
-        
-        显示配置对话框让用户选择删除条件，
-        然后执行删除操作。
-        
-        Returns:
-            删除的行数，失败返回 None
-        """
-        dadata, df = _get_selected_dataframe()
-        if dadata is None:
-            return None
-        
-        core, ui, data_mgr = _get_interfaces()
-        
-        # 构建配置对话框
-        from DAWorkbench.DAPyBase.form_builder import FormBuilder, option
+    core = da_app.getCore()
+    return (
+        core,
+        core.getUiInterface(),
+        core.getDataManagerInterface()
+    )
 
-        # 链式调用构建 FormSpec
-        cfg = (
-            FormBuilder("删除缺失值设置")
-            .enum("how", label="删除条件", default="any",
-                  options=[option("any", "行中任意值为空时删除"),
-                           option("all", "行中所有值为空时删除")])
-            .bool("reindex", label="重置行号", default=True)
-            .build()
-        )
+def _get_selected_dataframe():
+    """
+    获取选中的 DataFrame
 
-        # 获取用户配置
-        config = ui.getConfigValues(cfg, "cleaner.dropna")
-        if not config:
-            return None
-        
-        # 执行操作
-        how = config.get("how", "any")
-        reindex = config.get("reindex", True)
-        
-        old_len = len(df)
-        df = df.dropna(how=how)
-        
-        if reindex:
-            df = df.reset_index(drop=True)
-        
-        # 更新数据
-        dadata.setPyObject(df)
-        
-        # 报告结果
-        removed = old_len - len(df)
-        ui.addInfoLogMessage(f"已删除 {removed} 行包含缺失值的数据")
-        
-        return removed
-    
-    def drop_duplicates() -> Optional[int]:
-        """
-        删除重复行
-        
-        显示配置对话框让用户选择保留策略，
-        然后执行删除操作。
-        
-        Returns:
-            删除的行数，失败返回 None
-        """
-        dadata, df = _get_selected_dataframe()
-        if dadata is None:
-            return None
-        
-        core, ui, data_mgr = _get_interfaces()
-        
-        # 构建配置对话框
-        from DAWorkbench.DAPyBase.form_builder import FormBuilder, option
+    从数据管理器获取用户选中的数据，
+    并转换为 pandas DataFrame。
 
-        # 链式调用构建 FormSpec
-        cfg = (
-            FormBuilder("删除重复行设置")
-            .enum("keep", label="保留策略", default="first",
-                  options=[option("first", "保留首次出现"),
-                           option("last", "保留最后出现"),
-                           option("none", "删除所有重复项")])
-            .build()
-        )
+    Returns:
+        tuple: (dadata, df) 或 (None, None) 如果没有选中数据
+    """
+    core, ui, data_mgr = _get_interfaces()
 
-        config = ui.getConfigValues(cfg, "cleaner.drop_duplicates")
-        if not config:
-            return None
-        
-        keep = config.get("keep", "first")
-        if keep == "none":
-            keep = False
-        
-        old_len = len(df)
-        df = df.drop_duplicates(keep=keep)
-        
-        dadata.setPyObject(df)
-        
-        removed = old_len - len(df)
-        ui.addInfoLogMessage(f"已删除 {removed} 个重复行")
-        
-        return removed
-    ```
+    select_datas = data_mgr.getSelectDatas()
+    if not select_datas:
+        ui.addWarningLogMessage("请先选择数据")
+        return None, None
+
+    dadata = select_datas[0]
+    df = dadata.toDataFrame()
+
+    return dadata, df
+
+def dropna() -> Optional[int]:
+    """
+    删除包含缺失值的行
+
+    显示配置对话框让用户选择删除条件，
+    然后执行删除操作。
+
+    Returns:
+        删除的行数，失败返回 None
+    """
+    dadata, df = _get_selected_dataframe()
+    if dadata is None:
+        return None
+
+    core, ui, data_mgr = _get_interfaces()
+
+    # 构建配置对话框
+    from DAWorkbench.DAPyBase.form_builder import FormBuilder, option
+
+    # 链式调用构建 FormSpec
+    cfg = (
+        FormBuilder("删除缺失值设置")
+        .enum("how", label="删除条件", default="any",
+              options=[option("any", "行中任意值为空时删除"),
+                       option("all", "行中所有值为空时删除")])
+        .bool("reindex", label="重置行号", default=True)
+        .build()
+    )
+
+    # 获取用户配置
+    config = ui.getConfigValues(cfg, "cleaner.dropna")
+    if not config:
+        return None
+
+    # 执行操作
+    how = config.get("how", "any")
+    reindex = config.get("reindex", True)
+
+    old_len = len(df)
+    df = df.dropna(how=how)
+
+    if reindex:
+        df = df.reset_index(drop=True)
+
+    # 更新数据
+    dadata.setPyObject(df)
+
+    # 报告结果
+    removed = old_len - len(df)
+    ui.addInfoLogMessage(f"已删除 {removed} 行包含缺失值的数据")
+
+    return removed
+
+def drop_duplicates() -> Optional[int]:
+    """
+    删除重复行
+
+    显示配置对话框让用户选择保留策略，
+    然后执行删除操作。
+
+    Returns:
+        删除的行数，失败返回 None
+    """
+    dadata, df = _get_selected_dataframe()
+    if dadata is None:
+        return None
+
+    core, ui, data_mgr = _get_interfaces()
+
+    # 构建配置对话框
+    from DAWorkbench.DAPyBase.form_builder import FormBuilder, option
+
+    # 链式调用构建 FormSpec
+    cfg = (
+        FormBuilder("删除重复行设置")
+        .enum("keep", label="保留策略", default="first",
+              options=[option("first", "保留首次出现"),
+                       option("last", "保留最后出现"),
+                       option("none", "删除所有重复项")])
+        .build()
+    )
+
+    config = ui.getConfigValues(cfg, "cleaner.drop_duplicates")
+    if not config:
+        return None
+
+    keep = config.get("keep", "first")
+    if keep == "none":
+        keep = False
+
+    old_len = len(df)
+    df = df.drop_duplicates(keep=keep)
+
+    dadata.setPyObject(df)
+
+    removed = old_len - len(df)
+    ui.addInfoLogMessage(f"已删除 {removed} 个重复行")
+
+    return removed
+```
 
 ---
 
@@ -1803,34 +1810,38 @@ UI->>User: 显示结果
 
 ### 7.1 插件开发检查清单
 
-!!! tip "开发检查清单"
-    
-    开发插件时逐项确认以下检查项：
-    
-    === "架构设计"
-        - [ ] 插件职责单一，功能边界清晰
-        - [ ] 通过接口访问主程序功能，不直接依赖实现
-        - [ ] Python 脚本与 C++ 代码职责分离
-        - [ ] 遵循项目目录结构规范
-    
-    === "线程安全"
-        - [ ] 所有 Python 调用都有 GIL 管理
-        - [ ] 界面操作通过 `DAPythonSignalHandler` 投递
-        - [ ] 共享数据访问有适当的锁保护
-        - [ ] 避免在后台线程直接操作界面
-    
-    === "错误处理"
-        - [ ] 捕获并处理所有可能的异常
-        - [ ] 向用户提供有意义的错误信息
-        - [ ] 记录详细的调试日志
-        - [ ] 错误时正确清理资源
-    
-    === "用户体验"
-        - [ ] 长时间操作显示进度
-        - [ ] 操作可撤销（使用 Command 接口）
-        - [ ] 配置有合理的默认值
-        - [ ] 提供操作成功的反馈
+> **💡 开发检查清单**
+>
+> 开发插件时逐项确认以下检查项：
+>
+> **架构设计**
 
+- [ ] 插件职责单一，功能边界清晰
+- [ ] 通过接口访问主程序功能，不直接依赖实现
+- [ ] Python 脚本与 C++ 代码职责分离
+- [ ] 遵循项目目录结构规范
+    
+    **线程安全**
+
+- [ ] 所有 Python 调用都有 GIL 管理
+- [ ] 界面操作通过 `DAPythonSignalHandler` 投递
+- [ ] 共享数据访问有适当的锁保护
+- [ ] 避免在后台线程直接操作界面
+    
+    **错误处理**
+
+- [ ] 捕获并处理所有可能的异常
+- [ ] 向用户提供有意义的错误信息
+- [ ] 记录详细的调试日志
+- [ ] 错误时正确清理资源
+    
+    **用户体验**
+
+- [ ] 长时间操作显示进度
+- [ ] 操作可撤销（使用 Command 接口）
+- [ ] 配置有合理的默认值
+- [ ] 提供操作成功的反馈
+    
 ### 7.2 性能优化建议
 
 以下是几条性能优化建议：
@@ -1880,69 +1891,69 @@ UI->>User: 显示结果
 
 调试插件和 Python 脚本时，以下技巧可以帮助快速定位问题：
 
-=== "Python 调试"
+**Python 调试**
 
-    ```python
-    # 启用详细日志
-    import logging
-    logging.basicConfig(level=logging.DEBUG)
-    
-    # 使用调试器
-    import pdb
-    
-    def problematic_function():
-        pdb.set_trace()  # 断点
-        # ...
-    
-    # 打印调用栈
+```python
+# 启用详细日志
+import logging
+logging.basicConfig(level=logging.DEBUG)
+
+# 使用调试器
+import pdb
+
+def problematic_function():
+    pdb.set_trace()  # 断点
+    # ...
+
+# 打印调用栈
+import traceback
+traceback.print_stack()
+
+# 打印详细异常信息
+try:
+    # ...
+except Exception as e:
     import traceback
-    traceback.print_stack()
-    
-    # 打印详细异常信息
-    try:
-        # ...
-    except Exception as e:
-        import traceback
-        traceback.print_exc()
-    ```
+    traceback.print_exc()
+```
 
-=== "C++ 调试"
+**C++ 调试**
 
-    ```cpp
-    // 启用 Python 调试输出
-    void enablePythonDebug() {
-        PyGILState_STATE gil = PyGILState_Ensure();
-        
-        PyRun_SimpleString(
-            "import sys\n"
-            "sys.stdout = sys.stderr\n"
-        );
-        
-        PyGILState_Release(gil);
+```cpp
+// 启用 Python 调试输出
+void enablePythonDebug() {
+    PyGILState_STATE gil = PyGILState_Ensure();
+
+    PyRun_SimpleString(
+        "import sys\n"
+        "sys.stdout = sys.stderr\n"
+    );
+
+    PyGILState_Release(gil);
+}
+
+// 打印 Python 异常
+void printPythonError() {
+    PyObject *type, *value, *traceback;
+    PyErr_Fetch(&type, &value, &traceback);
+
+    if (value) {
+        PyObject* str = PyObject_Str(value);
+        qDebug() << "Python error:" << PyUnicode_AsUTF8(str);
+        Py_XDECREF(str);
     }
-    
-    // 打印 Python 异常
-    void printPythonError() {
-        PyObject *type, *value, *traceback;
-        PyErr_Fetch(&type, &value, &traceback);
-        
-        if (value) {
-            PyObject* str = PyObject_Str(value);
-            qDebug() << "Python error:" << PyUnicode_AsUTF8(str);
-            Py_XDECREF(str);
-        }
-        
-        Py_XDECREF(type);
-        Py_XDECREF(value);
-        Py_XDECREF(traceback);
-    }
-    
-    // 使用 Qt 日志
-    qDebug() << "Debug message";
-    qInfo() << "Info message";
-    qWarning() << "Warning message";
-    qCritical() << "Critical message";
-    ```
+
+    Py_XDECREF(type);
+    Py_XDECREF(value);
+    Py_XDECREF(traceback);
+}
+
+// 使用 Qt 日志
+qDebug() << "Debug message";
+qInfo() << "Info message";
+qWarning() << "Warning message";
+qCritical() << "Critical message";
+```
 
 ---
 

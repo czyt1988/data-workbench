@@ -21,8 +21,9 @@
 
 绘图模块 `DAFigure` 的类以 `DAChart*` 或 `DAFigure*` 开头。
 
-!!! tip "说明"
-    绘图模块的属性设置窗口位于 `DAGui` 模块，大多也以 `DAChart*` 开头。
+> **💡 说明**
+>
+> 绘图模块的属性设置窗口位于 `DAGui` 模块，大多也以 `DAChart*` 开头。
 
 ## 模块架构
 
@@ -241,8 +242,9 @@ figure->getUndoStack()->redo();
 
 `addCurve_` 添加的曲线可以通过 undo 撤销，或通过 redo 恢复。
 
-!!! note "Undo/Redo 说明"
-    带 `_` 后缀的函数（如 `addCurve_`、`addItem_`）会自动记录到 undo 栈，支持撤销。不带 `_` 的函数为直接操作，无法撤销。
+> **📝 Undo/Redo 说明**
+>
+> 带 `_` 后缀的函数（如 `addCurve_`、`addItem_`）会自动记录到 undo 栈，支持撤销。不带 `_` 的函数为直接操作，无法撤销。
 
 ## 关键文件说明
 
@@ -292,11 +294,14 @@ figure->getUndoStack()->redo();
 
 ## 注意事项
 
-!!! warning "QwtPlotItem 继承限制"
-    QwtPlotItem 相关的类不继承 QObject，不要使用 Qt 的信号槽机制。继承 Qwt 非 QObject 类时**不能使用 Q_OBJECT 宏**。
+> **⚠️ QwtPlotItem 继承限制**
+>
+> QwtPlotItem 相关的类不继承 QObject，不要使用 Qt 的信号槽机制。继承 Qwt 非 QObject 类时**不能使用 Q_OBJECT 宏**。
 
-!!! tip "归一化坐标"
-    图表布局用归一化坐标（0-1 范围），方便多图表布局和响应式调整。
+> **💡 归一化坐标**
+>
+> 图表布局用归一化坐标（0-1 范围），方便多图表布局和响应式调整。
 
-!!! note "Qt版本兼容性"
-    DAFigureWidget 使用 Qt 的 QScrollArea，在 Qt5 和 Qt6 中行为一致。
+> **📝 Qt版本兼容性**
+>
+> DAFigureWidget 使用 Qt 的 QScrollArea，在 Qt5 和 Qt6 中行为一致。

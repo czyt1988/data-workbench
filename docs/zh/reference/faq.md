@@ -334,6 +334,6 @@ endif()
 
 ## 下一步
 
-- [:material-book: 最佳实践](./best-practices.md) - 开发最佳实践
-- [:material-lightning-bolt: 性能优化](./performance-tips.md) - 性能优化建议
-- [:material-puzzle: 插件开发](../plugin/plugin-development.md) - 插件开发指南
+- [📖 最佳实践](./best-practices.md) - 开发最佳实践
+- [⚡ 性能优化](./performance-tips.md) - 性能优化建议
+- [🧩 插件开发](../plugin/plugin-development.md) - 插件开发指南

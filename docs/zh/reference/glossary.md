@@ -252,6 +252,6 @@
 
 ## 下一步
 
-- [:material-book: 开发指南](../dev-guide/general/coding-standard.md) - 编码规范
-- [:material-api: API 文档](./api-reference.md) - API 参考
-- [:material-puzzle: 插件开发](../plugin/plugin-development.md) - 插件开发指南
+- [📖 开发指南](../dev-guide/general/coding-standard.md) - 编码规范
+- [📘 API 文档](./api-reference.md) - API 参考
+- [🧩 插件开发](../plugin/plugin-development.md) - 插件开发指南

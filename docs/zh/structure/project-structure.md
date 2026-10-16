@@ -55,8 +55,9 @@ data-workbench/
 └── requirements-docs.txt     # 文档生成依赖
 ```
 
-!!! note "DACommonWidgets 已并入 DAGui"
-    历史 `DACommonWidgets/` 通用控件模块已整体迁移进 `DAGui/`（见 `src/DAGui/CMakeLists.txt` 中「迁移自 DACommonWidgets」说明），`src/` 下不再保留独立的 `DACommonWidgets/` 目录。
+> **📝 DACommonWidgets 已并入 DAGui**
+>
+> 历史 `DACommonWidgets/` 通用控件模块已整体迁移进 `DAGui/`（见 `src/DAGui/CMakeLists.txt` 中「迁移自 DACommonWidgets」说明），`src/` 下不再保留独立的 `DACommonWidgets/` 目录。
 
 ---
 
@@ -245,8 +246,9 @@ MyPlugin/
 └── template.json            # 插件模板配置
 ```
 
-!!! note "节点工厂"
-    新的 Python-first 工作流架构使用 `@NodeDef` 装饰器自动发现节点，无需手动编写 C++ NodeFactory。
+> **📝 节点工厂**
+>
+> 新的 Python-first 工作流架构使用 `@NodeDef` 装饰器自动发现节点，无需手动编写 C++ NodeFactory。
 
 ### 插件模板生成
 
@@ -304,8 +306,9 @@ graph LR
     style D fill:#c8e6c9
 ```
 
-!!! warning "注意"
-    quazip 依赖 zlib，必须先构建并安装 zlib，并将 zlib.dll 复制到 bin 目录。
+> **⚠️ 注意**
+>
+> quazip 依赖 zlib，必须先构建并安装 zlib，并将 zlib.dll 复制到 bin 目录。
 
 ---
 
@@ -336,6 +339,6 @@ bin_Debug_qt5.14.2_MSVC_x64/
 
 ## 下一步
 
-- [:material-tools: 开发环境搭建](../build/build-instructions.md) - 详细构建指南
-- [:material-puzzle: 插件系统概述](../plugin/plugin-system.md) - 了解插件架构
-- [:material-book-open: 开发规范](../dev-guide/general/coding-standard.md) - 编码规范
+- [🛠️ 开发环境搭建](../build/build-instructions.md) - 详细构建指南
+- [🧩 插件系统概述](../plugin/plugin-system.md) - 了解插件架构
+- [📖 开发规范](../dev-guide/general/coding-standard.md) - 编码规范

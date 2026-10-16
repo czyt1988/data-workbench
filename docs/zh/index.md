@@ -160,42 +160,42 @@ hide:
 <p>几分钟内完成环境搭建并运行 DAWorkBench。</p>
 </div>
 
-=== "克隆与第三方库"
+**克隆与第三方库**
 
-    ```bash
-    # 克隆仓库（必须使用 git clone，第三方库以 submodule 管理）
-    git clone https://github.com/czyt1988/data-workbench.git
-    cd data-workbench
+```bash
+# 克隆仓库（必须使用 git clone，第三方库以 submodule 管理）
+git clone https://github.com/czyt1988/data-workbench.git
+cd data-workbench
 
-    # 拉取第三方库
-    git submodule update --init --recursive
-    ```
+# 拉取第三方库
+git submodule update --init --recursive
+```
 
-=== "Windows 构建"
+**Windows 构建**
 
-    ```powershell
-    # 配置项目（必须指定 Qt 工具链文件）
-    cmake -S . -B build -G Ninja `
-        -DCMAKE_BUILD_TYPE=Release `
-        -DCMAKE_TOOLCHAIN_FILE="D:\Qt\6.7.3\msvc2019_64\lib\cmake\Qt6\qt.toolchain.cmake"
+```powershell
+# 配置项目（必须指定 Qt 工具链文件）
+cmake -S . -B build -G Ninja `
+    -DCMAKE_BUILD_TYPE=Release `
+    -DCMAKE_TOOLCHAIN_FILE="D:\Qt\6.7.3\msvc2019_64\lib\cmake\Qt6\qt.toolchain.cmake"
 
-    # 构建并安装
-    cmake --build build --config Release --parallel
-    cmake --build build --config Release --target install
-    ```
+# 构建并安装
+cmake --build build --config Release --parallel
+cmake --build build --config Release --target install
+```
 
-=== "Linux 构建"
+**Linux 构建**
 
-    ```bash
-    # 配置项目（按实际 Qt 安装路径修改工具链文件）
-    cmake -S . -B build -G Ninja \
-        -DCMAKE_BUILD_TYPE=Release \
-        -DCMAKE_TOOLCHAIN_FILE=/opt/Qt/6.7.3/gcc_64/lib/cmake/Qt6/qt.toolchain.cmake
+```bash
+# 配置项目（按实际 Qt 安装路径修改工具链文件）
+cmake -S . -B build -G Ninja \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_TOOLCHAIN_FILE=/opt/Qt/6.7.3/gcc_64/lib/cmake/Qt6/qt.toolchain.cmake
 
-    # 构建并安装
-    cmake --build build --config Release --parallel
-    cmake --build build --config Release --target install
-    ```
+# 构建并安装
+cmake --build build --config Release --parallel
+cmake --build build --config Release --target install
+```
 
 </div>
 </div>

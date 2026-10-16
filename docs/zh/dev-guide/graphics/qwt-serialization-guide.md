@@ -954,13 +954,15 @@ DA_ENUM_STRING_IMPLEMENT(MyCustomPlotItem::MyCustomEnum)
 
 ### 7.1 序列化后数据丢失
 
-!!! warning "问题"
-    反序列化后某些属性为默认值。
+> **⚠️ 问题**
+>
+> 反序列化后某些属性为默认值。
 
-!!! tip "解决方案"
-    1. 检查是否正确调用了基类的序列化操作符
-    2. 确保所有属性都被写入和读取
-    3. 验证魔数标记是否正确
+> **💡 解决方案**
+>
+> 1. 检查是否正确调用了基类的序列化操作符
+> 2. 确保所有属性都被写入和读取
+> 3. 验证魔数标记是否正确
 
 ```cpp title="正确做法"
 // 正确做法：先序列化基类
@@ -970,11 +972,13 @@ out << item->getCustomProperty();               // 派生类属性
 
 ### 7.2 版本兼容性问题
 
-!!! warning "问题"
-    旧版本文件无法在新版本中加载。
+> **⚠️ 问题**
+>
+> 旧版本文件无法在新版本中加载。
 
-!!! tip "解决方案"
-    使用版本号进行条件处理：
+> **💡 解决方案**
+>
+> 使用版本号进行条件处理：
 
 ```cpp title="版本兼容处理"
 QDataStream& operator>>(QDataStream& in, MyPlotItem* item)
@@ -1005,12 +1009,14 @@ QDataStream& operator>>(QDataStream& in, MyPlotItem* item)
 
 ### 7.3 内存泄漏问题
 
-!!! warning "问题"
-    反序列化时创建的对象没有被正确释放。
+> **⚠️ 问题**
+>
+> 反序列化时创建的对象没有被正确释放。
 
-!!! tip "解决方案"
-    1. 序列化框架会接管对象的所有权
-    2. 如果手动创建对象，确保正确管理生命周期
+> **💡 解决方案**
+>
+> 1. 序列化框架会接管对象的所有权
+> 2. 如果手动创建对象，确保正确管理生命周期
 
 ```cpp title="内存管理"
 // 正确：让框架管理
@@ -1025,12 +1031,14 @@ in >> item;  // 如果后续不使用，会泄漏
 
 ### 7.4 RTTI 冲突问题
 
-!!! warning "问题"
-    自定义 RTTI 值与现有值冲突。
+> **⚠️ 问题**
+>
+> 自定义 RTTI 值与现有值冲突。
 
-!!! tip "解决方案"
-    1. 从 `QwtPlotItem::Rtti_PlotUserItem`（1000）起分配自定义 RTTI，项目的 `DADataProbeMarker`/`DAChartTextMarker` 分别取 +100 和 +101
-    2. 在项目中统一管理 RTTI 分配
+> **💡 解决方案**
+>
+> 1. 从 `QwtPlotItem::Rtti_PlotUserItem`（1000）起分配自定义 RTTI，项目的 `DADataProbeMarker`/`DAChartTextMarker` 分别取 +100 和 +101
+> 2. 在项目中统一管理 RTTI 分配
 
 ```cpp title="RTTI 分配建议"
 // RTTI 分配建议范围

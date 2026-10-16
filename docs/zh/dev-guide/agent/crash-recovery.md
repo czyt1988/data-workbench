@@ -37,8 +37,9 @@ sequenceDiagram
     Note over M: 后续步骤同预启动, 但无独立"启动中"过渡
 ```
 
-!!! note "agentStarting 与 agentBusy 区分"
-    `agentStarting` 信号在子进程启动时立即发射，令 UI 进入「启动中」过渡态，与 `agentBusy(thinking)`（推理中）区分，避免冷启动期间（约 16 秒 langchain 导入）被误显示为「思考中」。`agentReady` / `agentBusy(false)` / 进程退出后清除该状态。预启动、懒启动、崩溃重启三条路径均触发 `agentStarting`。
+> **📝 agentStarting 与 agentBusy 区分**
+>
+> `agentStarting` 信号在子进程启动时立即发射，令 UI 进入「启动中」过渡态，与 `agentBusy(thinking)`（推理中）区分，避免冷启动期间（约 16 秒 langchain 导入）被误显示为「思考中」。`agentReady` / `agentBusy(false)` / 进程退出后清除该状态。预启动、懒启动、崩溃重启三条路径均触发 `agentStarting`。
 
 ### 停止流程
 
@@ -163,8 +164,9 @@ LLM API 调用可能因网络波动、服务端过载等原因失败。Agent 子
 
 用户取消（`asyncio.CancelledError`）不重试，分类结果同样是 `UNKNOWN`，`detail` 记为 "Agent stopped by user"。
 
-!!! warning "溢出关键词表禁止加入通用包装词"
-    `is_context_overflow_error` 的关键词表（`error_classifier.py` 与 `context_manager.py` 两处同步维护）只允许特异性短语（"context length"、"maximum context" 等）。litellm 对**所有**上游 400 都包装 "The request is invalid" 前缀，把这类通用词加入关键词表会把悬空 tool_calls 等无关的 `BadRequestError` 误判为上下文溢出，UI 显示误导性的「上下文窗口超限且压缩失败」标题。
+> **⚠️ 溢出关键词表禁止加入通用包装词**
+>
+> `is_context_overflow_error` 的关键词表（`error_classifier.py` 与 `context_manager.py` 两处同步维护）只允许特异性短语（"context length"、"maximum context" 等）。litellm 对**所有**上游 400 都包装 "The request is invalid" 前缀，把这类通用词加入关键词表会把悬空 tool_calls 等无关的 `BadRequestError` 误判为上下文溢出，UI 显示误导性的「上下文窗口超限且压缩失败」标题。
 
 ### 线性退避算法
 
@@ -190,8 +192,9 @@ retry_interval_increment_sec (p) = 1 (默认)
 
 无抖动，进度条（`retrying` 消息）显示的等待与用户配置完全一致。最坏总等待 35s，远小于看门狗无活动超时（默认 240s），且每次重试前的 `retrying` 消息会刷新看门狗。
 
-!!! note "服务端 Retry-After 优先"
-    如果 LLM API 返回了 `Retry-After` HTTP 头（整数秒或 HTTP-date 格式），退避延迟使用服务端指定值，不使用计算值。
+> **📝 服务端 Retry-After 优先**
+>
+> 如果 LLM API 返回了 `Retry-After` HTTP 头（整数秒或 HTTP-date 格式），退避延迟使用服务端指定值，不使用计算值。
 
 ### 重试中断
 
@@ -209,10 +212,11 @@ async def sleep_with_abort(seconds, stop_event):
 
 ### 首 token 前重试规则
 
-!!! warning "首 token 后不重试"
-    流式输出开始后（已向 UI 推送 token），不再重试。这是为了避免部分输出重复：用户已经看到了部分回复，重试会产生重复内容。
-
-    只有在**首 token 之前**发生错误才重试。首 token 之后的错误直接抛出，由用户决定是否重新发送。
+> **⚠️ 首 token 后不重试**
+>
+> 流式输出开始后（已向 UI 推送 token），不再重试。这是为了避免部分输出重复：用户已经看到了部分回复，重试会产生重复内容。
+>
+> 只有在**首 token 之前**发生错误才重试。首 token 之后的错误直接抛出，由用户决定是否重新发送。
 
 ```python
 async def _stream_llm(self, messages):

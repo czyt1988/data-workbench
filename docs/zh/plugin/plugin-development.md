@@ -8,8 +8,9 @@
 
 ### 方式一：使用模板生成工具
 
-!!! tip "推荐方式"
-    使用 `plugins/plugin-template/make-plugin.py` 自动生成插件项目，无需手动创建文件结构。
+> **💡 推荐方式**
+>
+> 使用 `plugins/plugin-template/make-plugin.py` 自动生成插件项目，无需手动创建文件结构。
 
 1. 配置 `template.json`：
 
@@ -94,8 +95,9 @@ git submodule update --init --recursive
 
 ### 方式三：Python-first 节点插件（纯 Python，无需 C++ NodeFactory）
 
-!!! tip "新节点插件推荐此模式"
-    新增工作流节点插件时，**无需编写 C++ NodeFactory**。参考 `plugins/DASystemNodes/`：C++ 插件入口只负责注册 Python 脚本路径，节点用 `@NodeDef` 装饰器声明，`DAPyNodeFactory::discoverNodes()` 启动时扫描 Python 包自动发现节点。详见 `plugins/DASystemNodes/AGENTS.md`。
+> **💡 新节点插件推荐此模式**
+>
+> 新增工作流节点插件时，**无需编写 C++ NodeFactory**。参考 `plugins/DASystemNodes/`：C++ 插件入口只负责注册 Python 脚本路径，节点用 `@NodeDef` 装饰器声明，`DAPyNodeFactory::discoverNodes()` 启动时扫描 Python 包自动发现节点。详见 `plugins/DASystemNodes/AGENTS.md`。
 
 DASystemNodes 风格的纯 Python 节点插件结构（作为 src/ C++ 布局的替代方案）：
 
@@ -285,10 +287,11 @@ void MyPlugin::destroyNodeFactory(DA::DAPyNodeFactory* p)
 
 ## 实现节点工厂（旧 C++ 架构，仅参考）
 
-!!! warning "遗留架构：当前推荐 Python-first `@NodeDef`"
-    下面 `MyNodeFactory` 继承 `DA::DAPyNodeFactory` 并重写 `create` / `getNodeMetaDataList` / `getFactoryName` 的写法属于**已废弃的 C++ 节点工厂架构**，当前 `DAPyNodeFactory`（`src/DAPyWorkFlow/DAPyNodeFactory.h`）不再暴露这些虚函数，上述代码无法编译。
-
-    **新插件应采用 Python-first 模型**：节点用 `@NodeDef` 装饰器声明，C++ 插件入口只负责注册 Python 脚本路径，`DAPyNodeFactory::discoverNodes()` 启动时扫描 Python 包自动发现节点，无需手写 C++ 工厂。参考 `plugins/DASystemNodes/`（纯 Python 节点插件，C++ 入口 `DASystemNodesPlugin` 仅注册 Python 路径，不定义任何节点）。本节仅作历史背景保留。
+> **⚠️ 遗留架构：当前推荐 Python-first `@NodeDef`**
+>
+> 下面 `MyNodeFactory` 继承 `DA::DAPyNodeFactory` 并重写 `create` / `getNodeMetaDataList` / `getFactoryName` 的写法属于**已废弃的 C++ 节点工厂架构**，当前 `DAPyNodeFactory`（`src/DAPyWorkFlow/DAPyNodeFactory.h`）不再暴露这些虚函数，上述代码无法编译。
+>
+> **新插件应采用 Python-first 模型**：节点用 `@NodeDef` 装饰器声明，C++ 插件入口只负责注册 Python 脚本路径，`DAPyNodeFactory::discoverNodes()` 启动时扫描 Python 包自动发现节点，无需手写 C++ 工厂。参考 `plugins/DASystemNodes/`（纯 Python 节点插件，C++ 入口 `DASystemNodesPlugin` 仅注册 Python 路径，不定义任何节点）。本节仅作历史背景保留。
 
 ### MyNodeFactory.h
 
@@ -389,8 +392,9 @@ DA::DAAbstractNode* MyNodeFactory::create(const DA::DANodeMetaData& meta)
 
 ## 实现工作节点（旧 C++ 节点，仅参考）
 
-!!! warning "遗留架构：当前推荐 Python-first `@NodeDef`"
-    下面 `MyWorker` 继承 `DA::DAAbstractNode` 并重写 `exec()` 的写法属于**已废弃的 C++ 节点架构**。当前工作流节点统一用 Python `@NodeDef` 装饰器声明，执行入口为 `execute(self, inputs, params)`，输出通过 `self._output_data` 写入，数据包装类为 `DAData`（`src/DAData/DAData.h`，**不是** `DADataPackage`）。本节仅作历史背景保留。
+> **⚠️ 遗留架构：当前推荐 Python-first `@NodeDef`**
+>
+> 下面 `MyWorker` 继承 `DA::DAAbstractNode` 并重写 `exec()` 的写法属于**已废弃的 C++ 节点架构**。当前工作流节点统一用 Python `@NodeDef` 装饰器声明，执行入口为 `execute(self, inputs, params)`，输出通过 `self._output_data` 写入，数据包装类为 `DAData`（`src/DAData/DAData.h`，**不是** `DADataPackage`）。本节仅作历史背景保留。
 
 ### MyWorker.h
 
@@ -706,6 +710,6 @@ DAWorkBench 自带的三个插件（由 `plugins/CMakeLists.txt` 构建）可以
 
 ## 下一步
 
-- [:material-sync: 插件生命周期](./plugin-lifecycle.md) - 生命周期管理详解
-- [:material-database: 数据持久化](./plugin-persistence.md) - 数据存储方案
-- [:material-puzzle: 功能扩展](./plugin-extension.md) - 界面和功能扩展
+- [🔄 插件生命周期](./plugin-lifecycle.md) - 生命周期管理详解
+- [🗄️ 数据持久化](./plugin-persistence.md) - 数据存储方案
+- [🧩 功能扩展](./plugin-extension.md) - 界面和功能扩展

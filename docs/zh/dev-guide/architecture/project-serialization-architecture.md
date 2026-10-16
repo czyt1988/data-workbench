@@ -962,12 +962,12 @@ class TextViewerNode:
 
 ### 8.5 设计约束
 
-!!! warning "运行时状态使用约束"
-
-    1. **仅存 JSON 可序列化类型**：`str/int/float/bool/list/dict/None`。DataFrame、numpy 数组、Python 对象引用等**不可**直接放入 `serialize_runtime_state()` 返回值。
-    2. **不替代 Parameter**：用户可配置的参数必须通过 `Parameter` 声明，运行时状态仅用于 `execute()` 的衍生缓存。
-    3. **防御性读取**：`deserialize_runtime_state()` 收到的 dict 可能为空（旧工程文件无此字段），必须用 `state.get(key, default)` 安全访问。
-    4. **异常隔离**：`DAWorkflowSerializer` 在调用钩子时用 `try/except` 包裹，单个节点的序列化失败不会中断整体保存/加载流程，但会丢失该节点的运行时状态。
+> **⚠️ 运行时状态使用约束**
+>
+> 1. **仅存 JSON 可序列化类型**：`str/int/float/bool/list/dict/None`。DataFrame、numpy 数组、Python 对象引用等**不可**直接放入 `serialize_runtime_state()` 返回值。
+> 2. **不替代 Parameter**：用户可配置的参数必须通过 `Parameter` 声明，运行时状态仅用于 `execute()` 的衍生缓存。
+> 3. **防御性读取**：`deserialize_runtime_state()` 收到的 dict 可能为空（旧工程文件无此字段），必须用 `state.get(key, default)` 安全访问。
+> 4. **异常隔离**：`DAWorkflowSerializer` 在调用钩子时用 `try/except` 包裹，单个节点的序列化失败不会中断整体保存/加载流程，但会丢失该节点的运行时状态。
 
 ### 8.6 向后兼容
 

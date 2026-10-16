@@ -26,8 +26,9 @@ DAPyWorkFlow 的生命周期管理不同于旧的 DAWorkFlow 模块。旧模块�
 | 数据传递 | `DANodeLinkPoint` 连接点 | `DAConnection` + `DASignalManager` |
 | 执行引擎 | C++ 拓扑排序 | Python `DAWorkflowExecutor` |
 
-!!! note "架构转变"
-    DAPyWorkFlow 不再使用回调方法管理生命周期。节点状态通过 `DAPyNodeState` 枚举管理，数据传递通过 `DASignalManager` 的信号机制完成，执行流程由 `DAWorkflowExecutor` 按节点入度分类后逐个触发下游控制。
+> **📝 架构转变**
+>
+> DAPyWorkFlow 不再使用回调方法管理生命周期。节点状态通过 `DAPyNodeState` 枚举管理，数据传递通过 `DASignalManager` 的信号机制完成，执行流程由 `DAWorkflowExecutor` 按节点入度分类后逐个触发下游控制。
 
 ## 基本概念
 
@@ -210,8 +211,9 @@ DAPyNodeGraphicsItem* item = scene->createPyNode(metaData, position);
 
 `deserialize_runtime_state()` 钩子由 `DAWorkflowNode` 基类定义，默认空实现。节点覆写后可在工程加载后立即恢复 `paint()` 所需的缓存数据，无需重新执行工作流。详见 [Python 节点开发指南 - 运行时状态持久化](./workflow-python-node-dev.md#运行时状态持久化serialize_runtime_state--deserialize_runtime_state)。
 
-!!! note "加载顺序与 Python 优先"
-    Python 逻辑数据（含 `runtime_state`）必须先于 C++ 视图数据加载，这是不可违反的铁律。详见 `src/DAPyWorkFlow/AGENTS.md` § 持久化架构。
+> **📝 加载顺序与 Python 优先**
+>
+> Python 逻辑数据（含 `runtime_state`）必须先于 C++ 视图数据加载，这是不可违反的铁律。详见 `src/DAPyWorkFlow/AGENTS.md` § 持久化架构。
 
 ## 节点连接生命周期
 
@@ -574,10 +576,11 @@ DAPyWorkFlow 涉及 Python GIL（全局解释器锁）的管理。
 
 ### GIL 安全规则
 
-!!! warning "关键规则"
-    1. **error_already_set 必须在 GIL 作用域内消费**：异常析构时尝试获取 GIL 会导致死锁
-    2. **禁止在持有 GIL 时调用 QThread::wait()**：阻塞等待会导致死锁
-    3. **禁止在静态初始化阶段调用 Python API**：GIL 尚未就绪
+> **⚠️ 关键规则**
+>
+> 1. **error_already_set 必须在 GIL 作用域内消费**：异常析构时尝试获取 GIL 会导致死锁
+> 2. **禁止在持有 GIL 时调用 QThread::wait()**：阻塞等待会导致死锁
+> 3. **禁止在静态初始化阶段调用 Python API**：GIL 尚未就绪
 
 ### 主线程回调
 

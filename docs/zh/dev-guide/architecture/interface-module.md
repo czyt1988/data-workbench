@@ -2,8 +2,9 @@
 
 接口模块 `DAInterface` 是插件系统的核心，提供一组抽象接口类，插件通过接口访问主程序功能，与具体实现解耦。
 
-!!! info "L4 接口层的另一契约：DAAgentInterface"
-    L4 接口层还有另一个接口契约。`DAAgent` 模块单独暴露 `DAAgentInterface`，覆盖 Agent 生命周期信号、工具注册（`registerTool`）、系统提示词库与 LLM 配置读写，供 `plugins/DAAgentTools/` 等 Agent 工具插件跨 DLL 调用。两者并列于 L4，`DAAgent` 不依赖 `DAGui`。详见 [:octicons-copilot-24: Agent 开发指南](../agent/index.md)。
+> **ℹ️ L4 接口层的另一契约：DAAgentInterface**
+>
+> L4 接口层还有另一个接口契约。`DAAgent` 模块单独暴露 `DAAgentInterface`，覆盖 Agent 生命周期信号、工具注册（`registerTool`）、系统提示词库与 LLM 配置读写，供 `plugins/DAAgentTools/` 等 Agent 工具插件跨 DLL 调用。两者并列于 L4，`DAAgent` 不依赖 `DAGui`。详见 [🤖 Agent 开发指南](../agent/index.md)。
 
 ## 主要功能特性
 
@@ -435,17 +436,21 @@ sequenceDiagram
 
 ## 注意事项
 
-!!! warning "接口创建顺序"
-    在接口构造过程中，必须严格遵循创建顺序。在早期创建的接口中不能调用尚未创建的接口，否则会导致空指针异常。
+> **⚠️ 接口创建顺序**
+>
+> 在接口构造过程中，必须严格遵循创建顺序。在早期创建的接口中不能调用尚未创建的接口，否则会导致空指针异常。
 
-!!! warning "线程安全"
-    所有接口方法应在主线程中调用。如需在后台线程操作数据，应使用信号槽机制将操作转发到主线程执行。
+> **⚠️ 线程安全**
+>
+> 所有接口方法应在主线程中调用。如需在后台线程操作数据，应使用信号槽机制将操作转发到主线程执行。
 
-!!! info "Python 支持"
-    接口模块支持 Python 绑定，可以在 Python 脚本中使用这些接口。Python 绑定定义在 `DAInterfacePythonBinding.h` 中。
+> **ℹ️ Python 支持**
+>
+> 接口模块支持 Python 绑定，可以在 Python 脚本中使用这些接口。Python 绑定定义在 `DAInterfacePythonBinding.h` 中。
 
-!!! tip "获取接口"
-    推荐在插件初始化时保存接口指针，避免重复获取。所有继承自 `DABaseInterface` 的接口都可以通过 `core()` 方法获取核心接口。
+> **💡 获取接口**
+>
+> 推荐在插件初始化时保存接口指针，避免重复获取。所有继承自 `DABaseInterface` 的接口都可以通过 `core()` 方法获取核心接口。
 
 ## 参考资料
 

@@ -85,11 +85,13 @@ graph LR
 }
 ```
 
-!!! warning "config 必填字段"
-    `config` 中 `base_url`/`api_key`/`model` 三项缺一不可，子进程会报错退出。上下文管理参数都有默认值。
+> **⚠️ config 必填字段**
+>
+> `config` 中 `base_url`/`api_key`/`model` 三项缺一不可，子进程会报错退出。上下文管理参数都有默认值。
 
-!!! note "context_window / max_output_tokens 按激活模型派生"
-    `context_window`（默认 262144）与 `max_output_tokens`（默认 131072）由激活供应商 + 激活模型条目派生，不再是一个全局固定值（见 `DAAgentModule.cpp` 的 `setActiveModel` / `syncActiveConnection`）。切换激活模型时，经 `reconfigure` 消息把新值热下发给运行中的子进程。
+> **📝 context_window / max_output_tokens 按激活模型派生**
+>
+> `context_window`（默认 262144）与 `max_output_tokens`（默认 131072）由激活供应商 + 激活模型条目派生，不再是一个全局固定值（见 `DAAgentModule.cpp` 的 `setActiveModel` / `syncActiveConnection`）。切换激活模型时，经 `reconfigure` 消息把新值热下发给运行中的子进程。
 
 ### user_msg：用户消息
 
@@ -155,8 +157,9 @@ C++ 执行工具后，将结果回传给 Python，作为对应 tool_call 的应�
 }
 ```
 
-!!! note "reconfigure 不发 done"
-    `reconfigure` 与 `load_session` 同构，不是一轮对话：消息在 stdin 缓冲区排队，当前轮 `run()`/`resume()` 返回（`done` 已发）后主循环才处理它，当前轮仍用旧模型跑完，下一轮用新模型。成功由 Python 端 `AgentRunner.reconfigure()` 内部发 `ready` 确认（不发 `done`）。失败安全：先构造新 `ChatOpenAI`，成功后才更新 `self.*`，构造失败发 `error` 不破坏旧 LLM。
+> **📝 reconfigure 不发 done**
+>
+> `reconfigure` 与 `load_session` 同构，不是一轮对话：消息在 stdin 缓冲区排队，当前轮 `run()`/`resume()` 返回（`done` 已发）后主循环才处理它，当前轮仍用旧模型跑完，下一轮用新模型。成功由 Python 端 `AgentRunner.reconfigure()` 内部发 `ready` 确认（不发 `done`）。失败安全：先构造新 `ChatOpenAI`，成功后才更新 `self.*`，构造失败发 `error` 不破坏旧 LLM。
 
 ```mermaid
 sequenceDiagram
@@ -195,8 +198,9 @@ sequenceDiagram
 {"type": "booting"}
 ```
 
-!!! danger "省略 booting 会导致静默崩溃"
-    LangChain 冷启动导入约 16 秒。若不发送 booting 心跳，C++ 的 60 秒 ready 超时计时器会在导入期间 `kill()` 子进程。`TerminateProcess` 不会 flush Python 的块缓冲 stderr，导致**静默崩溃**（exitCode=62097，无任何 stderr 输出）。
+> **🚫 省略 booting 会导致静默崩溃**
+>
+> LangChain 冷启动导入约 16 秒。若不发送 booting 心跳，C++ 的 60 秒 ready 超时计时器会在导入期间 `kill()` 子进程。`TerminateProcess` 不会 flush Python 的块缓冲 stderr，导致**静默崩溃**（exitCode=62097，无任何 stderr 输出）。
 
 ### ready：就绪
 
@@ -230,8 +234,9 @@ LLM 生成的 token 逐个推送。
 }
 ```
 
-!!! note "message_end.usage 是每轮权威锚点"
-    `message_end` 附带的 `usage` 是本轮 LLM 返回的真实 token 用量，作为权威锚点（与独立的 `usage` 消息互补）。C++ 侧将其**累加进会话累计统计**（`mCumulativeIn/Out/TotalTokens`），上下文压缩不会重置这些累计值，UI 展示的是会话级累计用量，切换会话时从持久化 `usage` 记录重放累计。
+> **📝 message_end.usage 是每轮权威锚点**
+>
+> `message_end` 附带的 `usage` 是本轮 LLM 返回的真实 token 用量，作为权威锚点（与独立的 `usage` 消息互补）。C++ 侧将其**累加进会话累计统计**（`mCumulativeIn/Out/TotalTokens`），上下文压缩不会重置这些累计值，UI 展示的是会话级累计用量，切换会话时从持久化 `usage` 记录重放累计。
 
 ### tool_call：工具调用
 
@@ -289,8 +294,9 @@ LLM 生成的 token 逐个推送。
 {"type": "session_loaded", "session_id": "uuid-xxxx"}
 ```
 
-!!! warning "收到 session_loaded 前禁止发 user_msg"
-    在收到 `session_loaded` 之前发送 `user_msg` 会导致 state 未重建完毕，历史消息丢失。
+> **⚠️ 收到 session_loaded 前禁止发 user_msg**
+>
+> 在收到 `session_loaded` 之前发送 `user_msg` 会导致 state 未重建完毕，历史消息丢失。
 
 ### retrying：重试通知
 
@@ -372,8 +378,9 @@ sequenceDiagram
     Note over P: 构造 ToolMessage, 进入下一轮
 ```
 
-!!! note "工具执行通过 QTimer::singleShot(0) 投递"
-    工具执行通过 `QTimer::singleShot(0)` 投递回主线程事件循环，避免在 stdout 读取回调中长时间阻塞管道（管道阻塞会死锁子进程）。
+> **📝 工具执行通过 QTimer::singleShot(0) 投递**
+>
+> 工具执行通过 `QTimer::singleShot(0)` 投递回主线程事件循环，避免在 stdout 读取回调中长时间阻塞管道（管道阻塞会死锁子进程）。
 
 ---
 

@@ -1,12 +1,13 @@
 # Agent 运行期卡死问题诊断与修复
 
-!!! success "STATUS: 三个结构性缺口均已修复"
-    原记录的三个导致 agent 静默卡死的结构性缺口（缺口 A / B / C）**已全部修复**，并补充了重复工具调用硬终止守卫。当前运行时看门狗的权威规范已迁至 [崩溃恢复与重连](./crash-recovery.md)，本页保留为历史诊断记录与修复证据索引。
-
-    - **缺口 A：大语言模型（LLM）流式客户端无超时**，已修复（commit `6a7a31e`）
-    - **缺口 B：运行期无看门狗**，已修复（commit `6a7a31e`，暂停于用户回答见 `5c690cc`）
-    - **缺口 C：无 recursion_limit**，已修复（commit `644fe5c`）
-    - **补充守卫：模型热替换不重启**（commit `bae7567`）、**token 统计会话累计**（commit `44e11eb`）
+> **✅ STATUS: 三个结构性缺口均已修复**
+>
+> 原记录的三个导致 agent 静默卡死的结构性缺口（缺口 A / B / C）**已全部修复**，并补充了重复工具调用硬终止守卫。当前运行时看门狗的权威规范已迁至 [崩溃恢复与重连](./crash-recovery.md)，本页保留为历史诊断记录与修复证据索引。
+>
+> - **缺口 A：大语言模型（LLM）流式客户端无超时**，已修复（commit `6a7a31e`）
+> - **缺口 B：运行期无看门狗**，已修复（commit `6a7a31e`，暂停于用户回答见 `5c690cc`）
+> - **缺口 C：无 recursion_limit**，已修复（commit `644fe5c`）
+> - **补充守卫：模型热替换不重启**（commit `bae7567`）、**token 统计会话累计**（commit `44e11eb`）
 
 > **范围说明**：已修复的 `DAPyDataFrame::query` ValueError 不在这里（该问题已另行修复，见 `src/DAPyBindQt/pandas/DAPyDataFrame.cpp` 的 `query` 方法，根因是从 C++ 绑定裸调 `df.query` 致使 `pandas` 的 `sys._getframe(level)` 取不到调用者栈帧）。这里只记录曾导致 agent **静默卡死、无日志、无恢复**的三个独立结构性缺口及其修复现状。
 
@@ -125,8 +126,9 @@ except GraphRecursionError:
 
 ## 4. 当前实现摘录
 
-!!! tip "权威规范已迁出"
-    运行时看门狗、崩溃恢复、重试退避的**当前权威规范**位于 [崩溃恢复与重连](./crash-recovery.md)。以下仅作历史诊断与代码定位参考。注意 `agent_runner.py` 与 `DAAgentBridge.cpp` 的规模此后都已变化，下述行号为诊断当时值，定位时以函数名为准。
+> **💡 权威规范已迁出**
+>
+> 运行时看门狗、崩溃恢复、重试退避的**当前权威规范**位于 [崩溃恢复与重连](./crash-recovery.md)。以下仅作历史诊断与代码定位参考。注意 `agent_runner.py` 与 `DAAgentBridge.cpp` 的规模此后都已变化，下述行号为诊断当时值，定位时以函数名为准。
 
 ### agent_runner.py 关键路径（函数名定位）
 

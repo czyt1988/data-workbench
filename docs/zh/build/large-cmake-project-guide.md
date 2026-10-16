@@ -73,18 +73,19 @@ git submodule add https://github.com/czyt1988/SARibbon.git ./src/3rdparty/SARibb
 
 上述命令会将 SARibbon 库作为子模块添加到项目的 3rdparty 目录下。
 
-!!! note "首次拉取项目"
-    对于使用 `submodule` 管理第三方库的方式，首次拉取项目之后，需要执行：
-    
-    ```shell
-    git submodule update --init --recursive
-    ```
-    
-    把所有库拉取下来。也可以 clone 的时候使用 `--recursive` 参数：
-    
-    ```shell
-    git clone --recursive
-    ```
+> **📝 首次拉取项目**
+>
+> 对于使用 `submodule` 管理第三方库的方式，首次拉取项目之后，需要执行：
+>
+> ```shell
+> git submodule update --init --recursive
+> ```
+>
+> 把所有库拉取下来。也可以 clone 的时候使用 `--recursive` 参数：
+>
+> ```shell
+> git clone --recursive
+> ```
 
 大部分第三方库都提供了 `cmake`；没有提供时会 fork 一份并补上 `cmake` 版本，比如 [qwt 库](https://github.com/czyt1988/QWT) 和 [QtPropertyBroswer 库](https://github.com/czyt1988/QtPropertyBrowser)。`3rdparty` 文件夹下的 `cmake` 文件用来集中编译所有第三方库，其中指定安装目录与主程序的安装目录一致。这样程序交给其他人二次开发时，程序自身的库和第三方库处在同一个安装环境里，第三方库与程序库之间的依赖问题随之解决；使用者不需要在编译程序之前先逐个编译第三方库，一次统一编译就能把所有第三方库安装到固定目录下，install 后形成一个完整的开发环境。
 
@@ -221,8 +222,9 @@ install(TARGETS ${LIB_NAME}
 )
 ```
 
-!!! note "cmake install 功能"
-    install 命令功能较多，包含复制文件、导出目标等，理解需要一定的学习成本。
+> **📝 cmake install 功能**
+>
+> install 命令功能较多，包含复制文件、导出目标等，理解需要一定的学习成本。
 
 #### 5. 生成 `Config.cmake` 文件
 
@@ -463,8 +465,9 @@ set(my_install_dir_name bin_qt${QT_VERSION}_${CMAKE_BUILD_TYPE}_${my_platform_na
 set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_LIST_DIR}/${my_install_dir_name}")
 ```
 
-!!! tips "提示"
-    这样操作对库开发还有个好处，可以有效区分不同版本 Qt、不同编译器的结果
+> **💡 提示**
+>
+> 这样操作对库开发还有个好处，可以有效区分不同版本 Qt、不同编译器的结果
 
 2. 第三方库
 

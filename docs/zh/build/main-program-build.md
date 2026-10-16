@@ -6,8 +6,9 @@
 
 ## 命令行构建（推荐）
 
-!!! warning "生成器选择"
-    Windows 平台**推荐使用 Visual Studio 生成器**。Ninja 生成器在本地 PowerShell 中存在 MSVC 编译器环境变量无法传递的问题，会导致 `fatal error C1083`。详见项目根目录 `build.md`。
+> **⚠️ 生成器选择**
+>
+> Windows 平台**推荐使用 Visual Studio 生成器**。Ninja 生成器在本地 PowerShell 中存在 MSVC 编译器环境变量无法传递的问题，会导致 `fatal error C1083`。详见项目根目录 `build.md`。
 
 ### Windows PowerShell（Visual Studio 生成器，推荐）
 
@@ -35,10 +36,11 @@ cmake --build build --config Release --target install
 
 构建完成后，输出目录为 `bin_Release_qt6.7.3_MSVC_x64`，包含主程序可执行文件和所有依赖库。
 
-!!! tip "VS 版本选择"
-    - VS 2019 使用 `-G "Visual Studio 16 2019"`
-    - VS 2022 使用 `-G "Visual Studio 17 2022"`
-    - Qt 版本必须与 Visual Studio 编译器版本匹配（如 Qt 6.7.3 msvc2019_64 配 VS 2019）
+> **💡 VS 版本选择**
+>
+> - VS 2019 使用 `-G "Visual Studio 16 2019"`
+> - VS 2022 使用 `-G "Visual Studio 17 2022"`
+> - Qt 版本必须与 Visual Studio 编译器版本匹配（如 Qt 6.7.3 msvc2019_64 配 VS 2019）
 
 ### Windows PowerShell（Ninja 生成器，需 Developer Command Prompt）
 
@@ -52,8 +54,9 @@ cmake -S . -B build -G Ninja `
 cmake --build build --config Release --parallel
 ```
 
-!!! warning "PowerShell 中 Ninja 的限制"
-    在 PowerShell 中通过 `& vcvars64.bat` 调用后，环境变量不会传递给 PowerShell 后续命令。如果遇到 `fatal error C1083: 无法打开包括文件`，改用 Visual Studio 生成器。
+> **⚠️ PowerShell 中 Ninja 的限制**
+>
+> 在 PowerShell 中通过 `& vcvars64.bat` 调用后，环境变量不会传递给 PowerShell 后续命令。如果遇到 `fatal error C1083: 无法打开包括文件`，改用 Visual Studio 生成器。
 
 ### Linux Bash
 
@@ -109,28 +112,31 @@ cmake --build build --config Release --target install
 
 ### 3. 配置工具链文件
 
-!!! warning "手动指定工具链文件"
-    如果 Qt Creator 无法正确检测 Windows SDK，需要手动配置 CMake 参数：
-    
-    1. 打开 **项目** → **构建设置**
-    2. 在 **CMake** 配置中添加参数：
-       ```
-       -DCMAKE_TOOLCHAIN_FILE:FILEPATH=D:/Qt/6.7.3/msvc2019_64/lib/cmake/Qt6/qt.toolchain.cmake
-       ```
+> **⚠️ 手动指定工具链文件**
+>
+> 如果 Qt Creator 无法正确检测 Windows SDK，需要手动配置 CMake 参数：
+>
+> 1. 打开 **项目** → **构建设置**
+> 2. 在 **CMake** 配置中添加参数：
+>    ```
+>    -DCMAKE_TOOLCHAIN_FILE:FILEPATH=D:/Qt/6.7.3/msvc2019_64/lib/cmake/Qt6/qt.toolchain.cmake
+>    ```
 
 ### 4. 编译和运行
 
 点击运行（`Ctrl+R`）进行编译和安装。
 
-!!! tip "首次运行提示"
-    编译完的首次运行可能报错，因为第三方库的 DLL 未复制到构建目录。需要手动把第三方库的 DLL 复制到构建目录下的 bin 文件夹中，包括 `zlib.dll`（quazip 的依赖）。
+> **💡 首次运行提示**
+>
+> 编译完的首次运行可能报错，因为第三方库的 DLL 未复制到构建目录。需要手动把第三方库的 DLL 复制到构建目录下的 bin 文件夹中，包括 `zlib.dll`（quazip 的依赖）。
 
 ---
 
 ## 第三方库路径设置
 
-!!! info "默认配置"
-    如果未修改第三方库安装路径，此步骤可省略。
+> **ℹ️ 默认配置**
+>
+> 如果未修改第三方库安装路径，此步骤可省略。
 
 主项目的 `CMakeLists.txt` 已预配置第三方库查找路径。当前做法是把安装目录加入 `CMAKE_PREFIX_PATH`，让 `find_package(xxx CONFIG)` 自动在 `${CMAKE_INSTALL_PREFIX}/lib/cmake/<package>` 下查找，无需为每个第三方库硬编码 `xxx_DIR`：
 
@@ -149,8 +155,9 @@ list(APPEND CMAKE_PREFIX_PATH ${CMAKE_INSTALL_PREFIX})
 set(tsl-ordered-map_DIR ${DA_INSTALL_LIB_SHARE_PATH}/tsl-ordered-map)
 ```
 
-!!! info "ADS 4.x 包名变更"
-    Qt-Advanced-Docking-System 从 4.x 起将包名由 `qt6advanceddocking`（`qt5advanceddocking`）重命名为 `qtadvanceddocking-qt6`（`qtadvanceddocking-qt5`）。项目的 `da_link_3rdparty`（LIBS 中的 `ads`）会先 `find_package(qtadvanceddocking-qt${QT_VERSION_MAJOR})` 尝试新名，失败再回退到旧名 `qt${QT_VERSION_MAJOR}advanceddocking`，因此无需手动设置 `xxx_DIR`。
+> **ℹ️ ADS 4.x 包名变更**
+>
+> Qt-Advanced-Docking-System 从 4.x 起将包名由 `qt6advanceddocking`（`qt5advanceddocking`）重命名为 `qtadvanceddocking-qt6`（`qtadvanceddocking-qt5`）。项目的 `da_link_3rdparty`（LIBS 中的 `ads`）会先 `find_package(qtadvanceddocking-qt${QT_VERSION_MAJOR})` 尝试新名，失败再回退到旧名 `qt${QT_VERSION_MAJOR}advanceddocking`，因此无需手动设置 `xxx_DIR`。
 
 如修改了安装路径（非默认 `CMAKE_INSTALL_PREFIX`），需在构建时通过 `-DCMAKE_PREFIX_PATH` 或对应 `xxx_DIR` 指定正确位置。
 

@@ -25,8 +25,9 @@ data-workbench 采用分层模块化架构，各模块之间有明确的依赖�
 | **APP** | L5 应用层 | 可执行程序 | 主程序、接口具体实现、项目文件管理、插件管理 | 92 |
 | **DAAxOfficeWrapper** | L1 基础层 | 共享库 | Windows Office 自动化封装（仅 Win） | 9 |
 
-!!! note "文件计数口径"
-    上表「源文件数」统计各模块目录下的 `.h` / `.hpp` / `.cpp` / `.ui` 文件数（不含资源、构建产物与子模块），由 `find src/<模块> -type f \( -name '*.h' -o -name '*.hpp' -o -name '*.cpp' -o -name '*.ui' \) | wc -l` 得到。历史 `DACommonWidgets` 模块已并入 `DAGui`（其控件现位于 `DAGui/` 根级），不再作为独立模块列出。
+> **📝 文件计数口径**
+>
+> 上表「源文件数」统计各模块目录下的 `.h` / `.hpp` / `.cpp` / `.ui` 文件数（不含资源、构建产物与子模块），由 `find src/<模块> -type f \( -name '*.h' -o -name '*.hpp' -o -name '*.cpp' -o -name '*.ui' \) | wc -l` 得到。历史 `DACommonWidgets` 模块已并入 `DAGui`（其控件现位于 `DAGui/` 根级），不再作为独立模块列出。
 
 ---
 
@@ -363,15 +364,16 @@ graph BT
 
 ### 界面层 (L3)
 
-!!! info "DACommonWidgets 已并入 DAGui"
-    历史 `DACommonWidgets` 通用控件模块已整体并入 `DAGui/`（控件现位于 `DAGui/` 根级，如 `DAPropertyPanelWidget`、`DASettingDialog`、`DAAbstractSettingPage`、`DAFormEditorRegistry` 等；见 `src/DAGui/CMakeLists.txt`“迁移自 DACommonWidgets”注释）。`src/` 下不再有独立的 `DACommonWidgets/` 目录，也不再作为独立 CMake target 存在。原模块承载的控件清单见下方 DAGui 根级说明：
-
-    - 属性面板：`DAPropertyPanelWidget/ContainerWidget/ItemWidget`、`DACollapsiblePanel/GroupBox`
-    - 样式编辑器：`DAColorPickerButton`、`DABrushEditWidget/StyleComboBox`、`DAPenEditWidget/StyleComboBox`、`DAFontEditPannelWidget`、`DAShapeEditPannelWidget`
-    - 对齐/位置：`DAAligmentEditWidget`、`DAAligmentPositionEditWidget`（9 宫格定位）
-    - 文件/路径：`DAFilePathEditWidget`、`DAPathLineEdit`
-    - 设置对话框：`DASettingDialog/Widget`、`DAAbstractSettingPage`、`DAPropertyFormDialog`/`DAPropertyFormWidget`（统一表单）
-    - 工具：`DAWaitCursorScoped`、`DACursorScoped`、`DAScrollArea`
+> **ℹ️ DACommonWidgets 已并入 DAGui**
+>
+> 历史 `DACommonWidgets` 通用控件模块已整体并入 `DAGui/`（控件现位于 `DAGui/` 根级，如 `DAPropertyPanelWidget`、`DASettingDialog`、`DAAbstractSettingPage`、`DAFormEditorRegistry` 等；见 `src/DAGui/CMakeLists.txt`“迁移自 DACommonWidgets”注释）。`src/` 下不再有独立的 `DACommonWidgets/` 目录，也不再作为独立 CMake target 存在。原模块承载的控件清单见下方 DAGui 根级说明：
+>
+> - 属性面板：`DAPropertyPanelWidget/ContainerWidget/ItemWidget`、`DACollapsiblePanel/GroupBox`
+> - 样式编辑器：`DAColorPickerButton`、`DABrushEditWidget/StyleComboBox`、`DAPenEditWidget/StyleComboBox`、`DAFontEditPannelWidget`、`DAShapeEditPannelWidget`
+> - 对齐/位置：`DAAligmentEditWidget`、`DAAligmentPositionEditWidget`（9 宫格定位）
+> - 文件/路径：`DAFilePathEditWidget`、`DAPathLineEdit`
+> - 设置对话框：`DASettingDialog/Widget`、`DAAbstractSettingPage`、`DAPropertyFormDialog`/`DAPropertyFormWidget`（统一表单）
+> - 工具：`DAWaitCursorScoped`、`DACursorScoped`、`DAScrollArea`
 
 #### DAGui：GUI 整合层（最大模块，405 文件）
 
@@ -523,20 +525,25 @@ graph BT
 
 ## 注意事项
 
-!!! warning "依赖顺序"
-    模块链接顺序很重要，上层模块必须在下层模块之后链接。错误的链接顺序会导致编译失败。
+> **⚠️ 依赖顺序**
+>
+> 模块链接顺序很重要，上层模块必须在下层模块之后链接。错误的链接顺序会导致编译失败。
 
-!!! warning "模块隔离"
-    功能层模块之间尽量减少直接依赖，通过接口层（DAInterface）通信。
+> **⚠️ 模块隔离**
+>
+> 功能层模块之间尽量减少直接依赖，通过接口层（DAInterface）通信。
 
-!!! note "DAPyWorkFlow 重构记录"
-    DAPyWorkFlow 模块历史上存在类放置错误，大部分已在之前的重构中迁移（见上方§历史重构记录）。创建新类前仍需判断是否属于 DAPyBindQt 或 DAShared。
+> **📝 DAPyWorkFlow 重构记录**
+>
+> DAPyWorkFlow 模块历史上存在类放置错误，大部分已在之前的重构中迁移（见上方§历史重构记录）。创建新类前仍需判断是否属于 DAPyBindQt 或 DAShared。
 
-!!! note "Python模块"
-    Python 相关模块需要 Python 环境和 pybind11 支持。Python 为强制依赖，DAPyBindQt/DAPyScripts/DAPyCommonWidgets/DAPyWorkFlow 始终参与构建，DAData/DAGui/DAInterface/DAPluginSupport/APP 中的 Python 相关代码也始终参与编译。
+> **📝 Python模块**
+>
+> Python 相关模块需要 Python 环境和 pybind11 支持。Python 为强制依赖，DAPyBindQt/DAPyScripts/DAPyCommonWidgets/DAPyWorkFlow 始终参与构建，DAData/DAGui/DAInterface/DAPluginSupport/APP 中的 Python 相关代码也始终参与编译。
 
-!!! note "平台差异"
-    DAAxOfficeWrapper 仅在 Windows 平台构建，使用 Qt::AxContainer 组件。
+> **📝 平台差异**
+>
+> DAAxOfficeWrapper 仅在 Windows 平台构建，使用 Qt::AxContainer 组件。
 
 ---
 

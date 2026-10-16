@@ -306,8 +306,9 @@ flowchart TD
 
 工作流模块中的 `DAAbstractNodeGraphicsItem` 继承 `DAGraphicsResizeableItem`，因此具备缩放编辑能力。
 
-!!! tip "继承关系"
-    自定义工作流节点图元时，继承 `DAAbstractNodeGraphicsItem` 即可获得完整的缩放编辑能力。
+> **💡 继承关系**
+>
+> 自定义工作流节点图元时，继承 `DAAbstractNodeGraphicsItem` 即可获得完整的缩放编辑能力。
 
 ## API 参考
 
@@ -351,22 +352,27 @@ flowchart TD
 
 ## 注意事项
 
-!!! warning "PIMPL 模式"
-    `DAGraphicsResizeableItem` 使用 PIMPL 模式实现，相关宏定义见 `DAGlobals.h`：
-    - `DA_DECLARE_PRIVATE` - 声明私有数据指针
-    - `DA_D` - 获取私有数据指针
+> **⚠️ PIMPL 模式**
+>
+> `DAGraphicsResizeableItem` 使用 PIMPL 模式实现，相关宏定义见 `DAGlobals.h`：
+> - `DA_DECLARE_PRIVATE` - 声明私有数据指针
+> - `DA_D` - 获取私有数据指针
 
-!!! warning "控制点刷新"
-    `prepareControlInfoChange()` 已随 Overlay 改造移除。控制点由场景创建的 `DAGraphicsResizeOverlayItem` 绘制，它通过 `syncToTarget()` 跟随目标图元的位置和尺寸，不需要在尺寸变化后手动刷新控制点信息。
+> **⚠️ 控制点刷新**
+>
+> `prepareControlInfoChange()` 已随 Overlay 改造移除。控制点由场景创建的 `DAGraphicsResizeOverlayItem` 绘制，它通过 `syncToTarget()` 跟随目标图元的位置和尺寸，不需要在尺寸变化后手动刷新控制点信息。
 
-!!! tip "paintBody 绘制范围"
-    `paintBody` 的 `bodyRect` 参数限定绘制区域，不要在此区域外绘制，否则可能导致显示异常。
+> **💡 paintBody 绘制范围**
+>
+> `paintBody` 的 `bodyRect` 参数限定绘制区域，不要在此区域外绘制，否则可能导致显示异常。
 
-!!! note "Qt版本兼容性"
-    Qt5 和 Qt6 的 Graphics View 框架接口基本一致，无需特殊兼容处理。
+> **📝 Qt版本兼容性**
+>
+> Qt5 和 Qt6 的 Graphics View 框架接口基本一致，无需特殊兼容处理。
 
-!!! info "样式配置"
-    控制点尺寸记录在图元自身（`controlPointSize()`，随图元序列化到 XML 的 `controler` 节点），选中边框由图元用固定的虚线画笔绘制，覆盖层的控制点外观在 `DAGraphicsResizeOverlayItem` 内部绘制。
+> **ℹ️ 样式配置**
+>
+> 控制点尺寸记录在图元自身（`controlPointSize()`，随图元序列化到 XML 的 `controler` 节点），选中边框由图元用固定的虚线画笔绘制，覆盖层的控制点外观在 `DAGraphicsResizeOverlayItem` 内部绘制。
 
 ## 参考资料
 

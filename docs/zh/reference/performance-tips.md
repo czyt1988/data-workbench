@@ -2,15 +2,17 @@
 
 本文档给出 DAWorkBench 插件和节点开发的性能优化建议。
 
-!!! warning "工作流节点 API：C++ 接口为遗留接口"
-    下文部分代码示例使用 C++ 节点接口的 `exec()` / `getInputData()` / `setOutputData()` / `getInputDataFrame()` 模式，这是**遗留 C++ 节点接口**，仅作历史参考。当前工作流节点推荐 **Python 优先**写法（`@NodeDef` + `execute(self, inputs, params)` + `self._output_data`），详见 [Python 节点开发](../dev-guide/workflow/workflow-python-node-dev.md)。数据包装类为 `DA::DAData`（`toDataFrame()` / `toSeries()` / `isNull()`），**不存在** `DADataPackage`；取行数用 `DAPyDataFrame::shape().first`。
+> **⚠️ 工作流节点 API：C++ 接口为遗留接口**
+>
+> 下文部分代码示例使用 C++ 节点接口的 `exec()` / `getInputData()` / `setOutputData()` / `getInputDataFrame()` 模式，这是**遗留 C++ 节点接口**，仅作历史参考。当前工作流节点推荐 **Python 优先**写法（`@NodeDef` + `execute(self, inputs, params)` + `self._output_data`），详见 [Python 节点开发](../dev-guide/workflow/workflow-python-node-dev.md)。数据包装类为 `DA::DAData`（`toDataFrame()` / `toSeries()` / `isNull()`），**不存在** `DADataPackage`；取行数用 `DAPyDataFrame::shape().first`。
 
 ## 数据处理优化
 
 ### 1. 避免深拷贝
 
-!!! tip "核心原则"
-    大数据操作应尽量使用引用或浅拷贝，避免不必要的深拷贝，减少内存占用和拷贝时间。
+> **💡 核心原则**
+>
+> 大数据操作应尽量使用引用或浅拷贝，避免不必要的深拷贝，减少内存占用和拷贝时间。
 
 下面的代码展示了正确的数据处理方式：
 
@@ -436,6 +438,6 @@ void MyPlugin::checkMemoryUsage()
 
 ## 下一步
 
-- [:material-book: 最佳实践](./best-practices.md) - 综合最佳实践
-- [:material-help-circle: FAQ](./faq.md) - 常见问题解答
-- [:material-api: API 文档](./api-reference.md) - API 参考
+- [📖 最佳实践](./best-practices.md) - 综合最佳实践
+- [❓ FAQ](./faq.md) - 常见问题解答
+- [📘 API 文档](./api-reference.md) - API 参考

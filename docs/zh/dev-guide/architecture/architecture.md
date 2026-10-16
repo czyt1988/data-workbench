@@ -137,8 +137,9 @@ DAPyBindQt 是 Python↔Qt 的胶水层，提供 pybind11 类型转换器（`DAP
 | DAAgent | L4 | AI Agent 框架（无 GUI 依赖） | DAAgentInterface、DAAgentModule、DAAgentBridge、DAAgentSessionStore | 17 |
 | APP | L5 | 可执行程序 | DAAppCore、AppMainWindow | 92 |
 
-!!! note "文件计数口径"
-    「文件数」统计各模块目录下的 `.h` / `.hpp` / `.cpp` / `.ui` 源文件数。历史 `DACommonWidgets` 已并入 `DAGui`，不再作为独立模块列出。
+> **📝 文件计数口径**
+>
+> 「文件数」统计各模块目录下的 `.h` / `.hpp` / `.cpp` / `.ui` 源文件数。历史 `DACommonWidgets` 已并入 `DAGui`，不再作为独立模块列出。
 
 ### 模块依赖关系图
 
@@ -489,9 +490,10 @@ data-workbench/
   plugins/*/CMakeLists.txt
 ```
 
-!!! tip "Windows 构建提示"
-    Windows 上推荐使用 `scripts/build.ps1` 脚本，它会自动探测 Qt 和 Visual Studio 路径。
-    **禁止使用 Ninja 生成器**，必须使用 Visual Studio 生成器。
+> **💡 Windows 构建提示**
+>
+> Windows 上推荐使用 `scripts/build.ps1` 脚本，它会自动探测 Qt 和 Visual Studio 路径。
+> **禁止使用 Ninja 生成器**，必须使用 Visual Studio 生成器。
 
 ---
 

@@ -51,12 +51,13 @@ class MyNode:
 | `style` | NodeDisplay/dict | 否 | 节点样式配置，支持 `NodeDisplay` 实例或 dict（自动转换为 `NodeDisplay`），默认为 `None` |
 | `description` | str | 否 | 节点说明文本，显示在 tooltip 中。推荐用 `_("English") # cn:中文` 翻译。若为 `None` 则自动回退读取类 docstring（不翻译） |
 
-!!! tip "render_template 参数"
-    `render_template` 控制节点在工作流场景中的视觉呈现方式（`node_def.py` 的 `_normalize_render_template` 会把旧值归一化）：
-    
-    - `"nodestyle"`（默认）：使用 `NodeDisplay`/`DAPyNodeStyle` 配置绘制节点样式（支持 `body_shape`、`background_color` 等字段）
-    - `"rect"` / `"svg"`：旧值，规范化后等价于 `"nodestyle"`
-    - `"widget"`：自定义 QWidget 节点
+> **💡 render_template 参数**
+>
+> `render_template` 控制节点在工作流场景中的视觉呈现方式（`node_def.py` 的 `_normalize_render_template` 会把旧值归一化）：
+>
+> - `"nodestyle"`（默认）：使用 `NodeDisplay`/`DAPyNodeStyle` 配置绘制节点样式（支持 `body_shape`、`background_color` 等字段）
+> - `"rect"` / `"svg"`：旧值，规范化后等价于 `"nodestyle"`
+> - `"widget"`：自定义 QWidget 节点
 
 ### 完整节点类结构
 
@@ -112,14 +113,15 @@ class DataFilterNode:
         return True
 ```
 
-!!! note "节点类结构说明"
-    节点类必须包含：
-    
-    1. `@NodeDef` 装饰器
-    2. `Inputs` 嵌套类（如有输入端口）
-    3. `Outputs` 嵌套类（如有输出端口）
-    4. `__init__` 方法（初始化 `_input_data` 和 `_output_data`）
-    5. `execute` 方法（节点执行逻辑）
+> **📝 节点类结构说明**
+>
+> 节点类必须包含：
+>
+> 1. `@NodeDef` 装饰器
+> 2. `Inputs` 嵌套类（如有输入端口）
+> 3. `Outputs` 嵌套类（如有输出端口）
+> 4. `__init__` 方法（初始化 `_input_data` 和 `_output_data`）
+> 5. `execute` 方法（节点执行逻辑）
 
 ## 输入与输出
 
@@ -187,8 +189,9 @@ class Outputs:
 
 ### 嵌套类声明模式
 
-!!! warning "必须使用嵌套类模式"
-    DAPyWorkFlow 要求使用 `class Inputs:` 和 `class Outputs:` 嵌套类声明端口。端口通过类属性声明，便于 IDE 自动补全。
+> **⚠️ 必须使用嵌套类模式**
+>
+> DAPyWorkFlow 要求使用 `class Inputs:` 和 `class Outputs:` 嵌套类声明端口。端口通过类属性声明，便于 IDE 自动补全。
 
 ```python
 @NodeDef(name="示例节点", category="示例")
@@ -268,8 +271,9 @@ class Parameter:
 | `"font"` | `"font"` | 字体选择 |
 | `"code"` | `"code"` | 多行代码编辑（`QPlainTextEdit`） |
 
-!!! info "C++ 端扩展类型支持"
-    Python `Parameter` 通过 `param_type` 传 Python 内置类型（6 种）或字符串标签（再 6 种扩展类型）。扩展类型由 C++ 端的 `DAFormEditorRegistry` 渲染对应控件：`str→QLineEdit, int→QSpinBox, float→QDoubleSpinBox, bool→QCheckBox, enum→QComboBox, list→QListWidget, file→DAFilePathEditWidget, folder→DAFilePathEditWidget(dir), color→DAColorPickerButton, font→DAFontEditPannelWidget, code→QPlainTextEdit`。当 Python 节点的参数通过 `DANodeParameterFormAdapter` 转换为 `DAFormSpec` 后，`DAFormEditorRegistry` 根据 `type` 字段创建对应的编辑器控件。参见 [创建属性设置面板](../ui/creating-setting-panel.md) 和 `src/DAGui/DAFormEditorRegistry.h`。
+> **ℹ️ C++ 端扩展类型支持**
+>
+> Python `Parameter` 通过 `param_type` 传 Python 内置类型（6 种）或字符串标签（再 6 种扩展类型）。扩展类型由 C++ 端的 `DAFormEditorRegistry` 渲染对应控件：`str→QLineEdit, int→QSpinBox, float→QDoubleSpinBox, bool→QCheckBox, enum→QComboBox, list→QListWidget, file→DAFilePathEditWidget, folder→DAFilePathEditWidget(dir), color→DAColorPickerButton, font→DAFontEditPannelWidget, code→QPlainTextEdit`。当 Python 节点的参数通过 `DANodeParameterFormAdapter` 转换为 `DAFormSpec` 后，`DAFormEditorRegistry` 根据 `type` 字段创建对应的编辑器控件。参见 [创建属性设置面板](../ui/creating-setting-panel.md) 和 `src/DAGui/DAFormEditorRegistry.h`。
 
 #### 使用示例
 
@@ -310,8 +314,9 @@ def execute(self, inputs=None, params=None):
     threshold = self.threshold.default
 ```
 
-!!! tip "参数访问建议"
-    优先从 `params` 字典取参数值，`params` 里是用户在工作流界面中设置的实时值。`self.column.default` 只作回退值。
+> **💡 参数访问建议**
+>
+> 优先从 `params` 字典取参数值，`params` 里是用户在工作流界面中设置的实时值。`self.column.default` 只作回退值。
 
 ## 节点执行
 
@@ -383,8 +388,9 @@ def set_input_data(self, channel, data):
     self._input_data[channel] = data
 ```
 
-!!! note "set_input_data 调用时机"
-    `set_input_data()` 由工作流引擎在执行节点前自动调用。上游节点的输出数据通过此方法传递到当前节点的 `_input_data` 字典中。
+> **📝 set_input_data 调用时机**
+>
+> `set_input_data()` 由工作流引擎在执行节点前自动调用。上游节点的输出数据通过此方法传递到当前节点的 `_input_data` 字典中。
 
 ### _input_data 和 _output_data
 
@@ -762,10 +768,11 @@ descriptors = registry.discover(scan_paths=[
 ])
 ```
 
-!!! note "目录扫描规则"
-    - 扫描路径下的所有 `.py` 文件（排除 `__pycache__` 和 `__init__.py`）
-    - 动态导入模块并检查类是否带有 `qualified_name` 属性（由 `@NodeDef` 装饰器设置）
-    - 相同 `qualified_name` 的节点只注册一次（自动去重）
+> **📝 目录扫描规则**
+>
+> - 扫描路径下的所有 `.py` 文件（排除 `__pycache__` 和 `__init__.py`）
+> - 动态导入模块并检查类是否带有 `qualified_name` 属性（由 `@NodeDef` 装饰器设置）
+> - 相同 `qualified_name` 的节点只注册一次（自动去重）
 
 ### entry_points 注册
 
@@ -799,8 +806,9 @@ setup(
 )
 ```
 
-!!! tip "entry_points 分组"
-    必须使用 `data_workbench.plugin` 作为分组名称，DANodeRegistry 通过此分组查找已安装的插件包。
+> **💡 entry_points 分组**
+>
+> 必须使用 `data_workbench.plugin` 作为分组名称，DANodeRegistry 通过此分组查找已安装的插件包。
 
 #### qualified_name 生成规则
 
@@ -891,8 +899,9 @@ def _push_state(self, state):
         pass
 ```
 
-!!! warning "线程安全"
-    `callInMainThread` 在 C++ 绑定层已正确处理 GIL 管理，Python 脚本无需额外处理 GIL。但回调函数不要在后台线程直接操作 UI。传入的 `func` 必须是**无参**可调用对象（lambda 或函数）；需要携带参数时，用 lambda 闭包捕获（如上例 `qn`/`state`），不要向 `callInMainThread` 传额外位置参数。
+> **⚠️ 线程安全**
+>
+> `callInMainThread` 在 C++ 绑定层已正确处理 GIL 管理，Python 脚本无需额外处理 GIL。但回调函数不要在后台线程直接操作 UI。传入的 `func` 必须是**无参**可调用对象（lambda 或函数）；需要携带参数时，用 lambda 闭包捕获（如上例 `qn`/`state`），不要向 `callInMainThread` 传额外位置参数。
 
 ### 运行时状态持久化（serialize_runtime_state / deserialize_runtime_state）
 
@@ -956,12 +965,12 @@ class TextViewerNode:
 
 类型标签复用 `Parameter` 序列化的 type 标签（`str/int/float/bool/json/none`），`None` 值会被跳过不写入。
 
-!!! warning "使用约束"
-
-    1. **仅存 JSON 可序列化类型**：`str/int/float/bool/list/dict/None`。DataFrame、numpy 数组、Python 对象引用等**不可**直接放入返回值。
-    2. **不替代 Parameter**：用户可配置的参数必须通过 `Parameter` 声明。
-    3. **防御性读取**：`deserialize_runtime_state()` 收到的 dict 可能为空（旧工程文件无此字段），必须用 `state.get(key, default)` 安全访问。
-    4. **异常隔离**：序列化器在调用钩子时用 `try/except` 包裹，单个节点的钩子失败不会中断整体保存/加载流程，但会丢失该节点的运行时状态。
+> **⚠️ 使用约束**
+>
+> 1. **仅存 JSON 可序列化类型**：`str/int/float/bool/list/dict/None`。DataFrame、numpy 数组、Python 对象引用等**不可**直接放入返回值。
+> 2. **不替代 Parameter**：用户可配置的参数必须通过 `Parameter` 声明。
+> 3. **防御性读取**：`deserialize_runtime_state()` 收到的 dict 可能为空（旧工程文件无此字段），必须用 `state.get(key, default)` 安全访问。
+> 4. **异常隔离**：序列化器在调用钩子时用 `try/except` 包裹，单个节点的钩子失败不会中断整体保存/加载流程，但会丢失该节点的运行时状态。
 
 #### 向后兼容
 
@@ -998,9 +1007,9 @@ def serialize_runtime_state(self) -> dict:
     return {"display_text": self._display_text}
 ```
 
-!!! warning "新增 DAWorkflowNode 基类方法的注意事项"
-
-    如果在 `DAWorkflowNode` 基类中新增需要被子类覆写的方法，**必须**使用 `super()` 转发模式，否则用户类的覆写会被基类遮盖。`__init__` 方法不受此影响，因为它通过 `super().__init__()` 链式调用。
+> **⚠️ 新增 DAWorkflowNode 基类方法的注意事项**
+>
+> 如果在 `DAWorkflowNode` 基类中新增需要被子类覆写的方法，**必须**使用 `super()` 转发模式，否则用户类的覆写会被基类遮盖。`__init__` 方法不受此影响，因为它通过 `super().__init__()` 链式调用。
 
 ## 注意事项
 
@@ -1034,10 +1043,11 @@ def execute(self, inputs=None, params=None):
         return False
 ```
 
-!!! tip "异常处理建议"
-    - 始终捕获异常并返回 `False` 表示执行失败
-    - 在 `_output_data` 中设置错误信息便于调试
-    - 避免抛出未捕获的异常导致工作流引擎崩溃
+> **💡 异常处理建议**
+>
+> - 始终捕获异常并返回 `False` 表示执行失败
+> - 在 `_output_data` 中设置错误信息便于调试
+> - 避免抛出未捕获的异常导致工作流引擎崩溃
 
 ## 参考资料
 

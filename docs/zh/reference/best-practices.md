@@ -4,17 +4,18 @@
 
 ## 插件开发最佳实践
 
-!!! warning "工作流节点 API：C++ 接口为遗留接口"
-    下文部分代码示例使用 C++ 节点接口的 `exec()` / `getInputData()` / `setOutputData()` 模式，这是**遗留 C++ 节点接口**，仅作历史参考。当前工作流节点推荐使用 **Python 优先**的 `@NodeDef` 装饰器写法：
-
-    ```python
-    def execute(self, inputs=None, params=None):
-        df = (inputs or {}).get("data")
-        self._output_data["result"] = processed_df
-        return True
-    ```
-
-    详见 `plugins/DASystemNodes/AGENTS.md` 与 [Python 节点开发](../dev-guide/workflow/workflow-python-node-dev.md)。数据包装类为 `DA::DAData`（提供 `toDataFrame()` / `toSeries()` / `isNull()`），**不存在** `DADataPackage`。
+> **⚠️ 工作流节点 API：C++ 接口为遗留接口**
+>
+> 下文部分代码示例使用 C++ 节点接口的 `exec()` / `getInputData()` / `setOutputData()` 模式，这是**遗留 C++ 节点接口**，仅作历史参考。当前工作流节点推荐使用 **Python 优先**的 `@NodeDef` 装饰器写法：
+>
+> ```python
+> def execute(self, inputs=None, params=None):
+>     df = (inputs or {}).get("data")
+>     self._output_data["result"] = processed_df
+>     return True
+> ```
+>
+> 详见 `plugins/DASystemNodes/AGENTS.md` 与 [Python 节点开发](../dev-guide/workflow/workflow-python-node-dev.md)。数据包装类为 `DA::DAData`（提供 `toDataFrame()` / `toSeries()` / `isNull()`），**不存在** `DADataPackage`。
 
 ### 1. 架构设计原则
 
@@ -56,8 +57,9 @@ MyPlugin/
 
 ### 3. 资源管理最佳实践
 
-!!! tip "使用智能指针"
-    优先使用 Qt 智能指针管理动态对象，避免手动内存管理导致的泄漏和错误。
+> **💡 使用智能指针**
+>
+> 优先使用 Qt 智能指针管理动态对象，避免手动内存管理导致的泄漏和错误。
 
 下面的代码展示了智能指针的正确使用方式：
 
@@ -81,8 +83,9 @@ MyDataCache* m_cache;  // 需要手动 delete，易出错
 
 ### 4. 线程安全设计
 
-!!! warning "工作流执行线程"
-    工作流执行在独立线程，节点 `exec()` 方法不要直接操作界面，否则会导致崩溃。
+> **⚠️ 工作流执行线程**
+>
+> 工作流执行在独立线程，节点 `exec()` 方法不要直接操作界面，否则会导致崩溃。
 
 下面的代码展示了正确的线程安全处理方式：
 
@@ -539,6 +542,6 @@ int m_memberVariable;   // m_ prefix + camelCase
 
 ## 下一步
 
-- [:material-book-open: 编码规范](../dev-guide/general/coding-standard.md) - 详细编码规范
-- [:material-api: API 文档](./api-reference.md) - API 参考手册
-- [:material-github: 贡献指南](./contribution-guide.md) - 参与开源贡献
+- [📖 编码规范](../dev-guide/general/coding-standard.md) - 详细编码规范
+- [📘 API 文档](./api-reference.md) - API 参考手册
+- [🐙 贡献指南](./contribution-guide.md) - 参与开源贡献

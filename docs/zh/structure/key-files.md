@@ -132,8 +132,9 @@ markdown_extensions:
 
 **用途**：全局定义和宏（PIMPL 模式宏、Qt5/6 兼容宏）。
 
-!!! warning "版本宏不在 DAGlobals.h"
-    `DAGlobals.h` **不**定义任何版本字符串（无 `DA_VERSION_STRING`）。项目版本宏（`DA_VERSION_MAJOR/MINOR/PATCH`、字符串形式的 `DA_VERSION`，当前 `"0.1.1"`）统一定义在下方**编译生成**的 `DAConfigs.h` 中。`DAGlobals.h` 在文件开头 `#include "DAConfigs.h"`，因此版本信息经此头文件传递可用。
+> **⚠️ 版本宏不在 DAGlobals.h**
+>
+> `DAGlobals.h` **不**定义任何版本字符串（无 `DA_VERSION_STRING`）。项目版本宏（`DA_VERSION_MAJOR/MINOR/PATCH`、字符串形式的 `DA_VERSION`，当前 `"0.1.1"`）统一定义在下方**编译生成**的 `DAConfigs.h` 中。`DAGlobals.h` 在文件开头 `#include "DAConfigs.h"`，因此版本信息经此头文件传递可用。
 
 **关键内容**：
 
@@ -167,8 +168,9 @@ markdown_extensions:
 #define DA_PROJECT_NAME "DAWorkbench"
 ```
 
-!!! note "不要手动编辑"
-    `src/DAConfigs.h` 在每次 CMake 配置时由 `configure_file()` 重新生成，任何手工改动都会被覆盖；如需调整版本号，请修改根 `CMakeLists.txt` 中的 `DA_VERSION_MAJOR/MINOR/PATCH`。
+> **📝 不要手动编辑**
+>
+> `src/DAConfigs.h` 在每次 CMake 配置时由 `configure_file()` 重新生成，任何手工改动都会被覆盖；如需调整版本号，请修改根 `CMakeLists.txt` 中的 `DA_VERSION_MAJOR/MINOR/PATCH`。
 
 ---
 
@@ -178,8 +180,9 @@ markdown_extensions:
 
 `src/DAAgent/` 是平台内置的 Agent 框架源码目录，承载多供应商大语言模型（LLM）调用、提示词库、工具注册与持久化会话等能力。主要类包括 `DAAgentInterface`（对外接口契约）、`DAAgentBridge`、`DAAgentModule`、`DAAgentManager`、`DAAgentPrompt`、`DAAgentSessionStore`、`DAAgentToolBase`。Agent 工具的具体实现以插件形式存在于 `plugins/DAAgentTools/`。
 
-!!! info "更多细节"
-    Agent 框架的架构、生命周期与扩展方式见 [:octicons-copilot-24: Agent 开发指南](../dev-guide/agent/index.md)。
+> **ℹ️ 更多细节**
+>
+> Agent 框架的架构、生命周期与扩展方式见 [🤖 Agent 开发指南](../dev-guide/agent/index.md)。
 
 ---
 
@@ -434,6 +437,6 @@ bin_Release_qt5.15_MSVC_x64/
 
 ## 下一步
 
-- [:material-folder: 项目结构详解](./project-structure.md) - 目录结构说明
-- [:material-tools: 构建说明](../build/build-instructions.md) - 构建流程
-- [:material-file-cog: 配置说明](../dev-guide/general/config-files.md) - 配置文件详解
+- [📁 项目结构详解](./project-structure.md) - 目录结构说明
+- [🛠️ 构建说明](../build/build-instructions.md) - 构建流程
+- [⚙️ 配置说明](../dev-guide/general/config-files.md) - 配置文件详解

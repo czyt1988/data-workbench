@@ -38,11 +38,13 @@ project.dapro (ZIP Archive)
     └── output/               # 建议（非强制）：产物分区
 ```
 
-!!! note "Agent 会话持久化"
-    `agent_sessions/` 目录存放 Agent 聊天会话的 JSON Lines 持久化文件，每个文件对应一个会话（`<id>.jsonl`）。工程保存时由主线程收集活跃会话字节、子线程写入该目录；加载时由 `DAZipArchiveTask_LoadAgentSessions`（`src/APP/DAAppProject.cpp`）在 worker 线程解压 `agent_sessions/*.jsonl` 后回调导入。目录不存在或为空视为合法（空工程）。详见 [Agent 开发指南](../agent/index.md)。
+> **📝 Agent 会话持久化**
+>
+> `agent_sessions/` 目录存放 Agent 聊天会话的 JSON Lines 持久化文件，每个文件对应一个会话（`<id>.jsonl`）。工程保存时由主线程收集活跃会话字节、子线程写入该目录；加载时由 `DAZipArchiveTask_LoadAgentSessions`（`src/APP/DAAppProject.cpp`）在 worker 线程解压 `agent_sessions/*.jsonl` 后回调导入。目录不存在或为空视为合法（空工程）。详见 [Agent 开发指南](../agent/index.md)。
 
-!!! note "脚本工作区（workspace/）"
-    `workspace/` 目录（工程版本 1.4.0 引入）存放脚本执行的脚本文件与产物，由 `DAZipArchiveTask_Workspace`（`src/APP/DAAppProject.cpp` 内 file-local 类，参照 `LoadDataManager`/`LoadAgentSessions` 先例）在保存/加载时打包/解压。工程数据**不进入** `workspace/`，脚本通过内存对象访问数据（见下文「脚本运行模型」），因此不存在数据同步问题。目录缺失视为空工作区（旧版本工程兼容）。该任务失败为非致命：单个损坏文件不会阻止工程打开/保存（内部记 `qWarning` 后降级）。
+> **📝 脚本工作区（workspace/）**
+>
+> `workspace/` 目录（工程版本 1.4.0 引入）存放脚本执行的脚本文件与产物，由 `DAZipArchiveTask_Workspace`（`src/APP/DAAppProject.cpp` 内 file-local 类，参照 `LoadDataManager`/`LoadAgentSessions` 先例）在保存/加载时打包/解压。工程数据**不进入** `workspace/`，脚本通过内存对象访问数据（见下文「脚本运行模型」），因此不存在数据同步问题。目录缺失视为空工作区（旧版本工程兼容）。该任务失败为非致命：单个损坏文件不会阻止工程打开/保存（内部记 `qWarning` 后降级）。
 
 ### 脚本工作区本地缓存与冲突检测
 
@@ -155,8 +157,9 @@ flowchart TD
 | 6 | `DAPyNodeFactory::loadExternInfoFromXml` | 工厂信息 |
 | 7 | 场景信息 | 视图场景配置 |
 
-!!! tip "工厂信息加载时机"
-    工厂的额外信息加载是在节点之后，可以把节点的全局性信息存入工厂的额外信息中。加载时已加载完所有节点，可以对节点进一步操作。加载完成后会调用 `DAPyNodeFactory::workflowReady` 回调函数。
+> **💡 工厂信息加载时机**
+>
+> 工厂的额外信息加载是在节点之后，可以把节点的全局性信息存入工厂的额外信息中。加载时已加载完所有节点，可以对节点进一步操作。加载完成后会调用 `DAPyNodeFactory::workflowReady` 回调函数。
 
 ## Workflow XML 结构示例
 
@@ -326,8 +329,9 @@ DA 在进行复制粘贴时，通过 XML 传递复制粘贴内容。
 
 - `type`：区分 `copy`（复制）和 `cut`（剪切）
 
-!!! note "ID 处理"
-    复制过程需要重新生成节点 ID，旧的节点 ID 和新的节点 ID 的对应关系要记录，这样链接就知道要从哪个节点链接向哪个节点。
+> **📝 ID 处理**
+>
+> 复制过程需要重新生成节点 ID，旧的节点 ID 和新的节点 ID 的对应关系要记录，这样链接就知道要从哪个节点链接向哪个节点。
 
 ### mime-data 类型
 

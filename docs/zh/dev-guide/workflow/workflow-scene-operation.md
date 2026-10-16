@@ -424,8 +424,9 @@ DAPyWorkFlowSceneSerializer 负责 Python 工作流场景的 XML 序列化和反
 - **图元属性**：节点的可视化样式配置（`DAPyNodeStyle` 字段）
 - **连接线布局**：连接线的可视化路径和样式
 
-!!! note "工作流逻辑数据"
-    节点拓扑关系、参数值配置、连接关系等**工作流逻辑数据**由 `DAPyWorkFlowSerializer` 序列化到独立的 workflow-data.xml 中，与场景布局数据分开存储。
+> **📝 工作流逻辑数据**
+>
+> 节点拓扑关系、参数值配置、连接关系等**工作流逻辑数据**由 `DAPyWorkFlowSerializer` 序列化到独立的 workflow-data.xml 中，与场景布局数据分开存储。
 
 #### 使用示例
 
@@ -562,31 +563,36 @@ item->clearPaintCallback();
 
 ## 注意事项
 
-!!! warning "PIMPL 模式"
-    DAPyWorkFlowScene 及相关类使用 PIMPL 模式实现，相关宏定义见 DAGlobals.h：
-    - `DA_DECLARE_PRIVATE` - 声明私有数据指针
-    - `DA_D` - 获取私有数据指针
-    - `DA_DC` - 获取私有数据 const 指针
+> **⚠️ PIMPL 模式**
+>
+> DAPyWorkFlowScene 及相关类使用 PIMPL 模式实现，相关宏定义见 DAGlobals.h：
+> - `DA_DECLARE_PRIVATE` - 声明私有数据指针
+> - `DA_D` - 获取私有数据指针
+> - `DA_DC` - 获取私有数据 const 指针
 
-!!! warning "GIL 管理"
-    与 Python 层交互时需注意 GIL（全局解释器锁）管理。使用 DAPyGILGuard 确保线程安全：
-    ```cpp
-    {
-        DA::DAPyGILGuard gil;  // 获取 GIL
-        // 执行 Python 调用
-    }  // 自动释放 GIL
-    ```
+> **⚠️ GIL 管理**
+>
+> 与 Python 层交互时需注意 GIL（全局解释器锁）管理。使用 DAPyGILGuard 确保线程安全：
+> ```cpp
+> {
+>     DA::DAPyGILGuard gil;  // 获取 GIL
+>     // 执行 Python 调用
+> }  // 自动释放 GIL
+> ```
 
-!!! tip "状态同步"
-    Python 节点状态变更通过 DAPythonSignalHandler 异步通知 C++ 层。C++ 层通过 `pyNodeStateChanged` 信号接收状态更新，避免直接轮询。
+> **💡 状态同步**
+>
+> Python 节点状态变更通过 DAPythonSignalHandler 异步通知 C++ 层。C++ 层通过 `pyNodeStateChanged` 信号接收状态更新，避免直接轮询。
 
-!!! note "渲染模板选择"
-    选择渲染模板时需考虑节点用途：
-    - 通用数据处理节点推荐使用 `RenderDefaultTemplate`（通过 `DAPyNodeStyle` 自定义形状、图标和颜色）
-    - 需要复杂 UI 交互的节点使用 `RenderWidgetTemplate`
+> **📝 渲染模板选择**
+>
+> 选择渲染模板时需考虑节点用途：
+> - 通用数据处理节点推荐使用 `RenderDefaultTemplate`（通过 `DAPyNodeStyle` 自定义形状、图标和颜色）
+> - 需要复杂 UI 交互的节点使用 `RenderWidgetTemplate`
 
-!!! info "undo/redo 支持"
-    场景的添加/删除操作自动支持 undo/redo。使用带下划线后缀的方法（如 `createPyNode_`）可在 QUndoStack 中记录操作。
+> **ℹ️ undo/redo 支持**
+>
+> 场景的添加/删除操作自动支持 undo/redo。使用带下划线后缀的方法（如 `createPyNode_`）可在 QUndoStack 中记录操作。
 
 ## 参考资料
 

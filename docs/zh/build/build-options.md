@@ -19,8 +19,9 @@
 
 ## 选项详解
 
-!!! info "Python 为强制依赖"
-    Python 是强制依赖，始终参与编译，无法禁用。相关模块包括 DAPyBindQt、DAPyScripts、DAPyCommonWidgets、DAPyWorkFlow、DAData。如需配置 Python 环境，参见 [Python 环境配置](./python-environment.md)。
+> **ℹ️ Python 为强制依赖**
+>
+> Python 是强制依赖，始终参与编译，无法禁用。相关模块包括 DAPyBindQt、DAPyScripts、DAPyCommonWidgets、DAPyWorkFlow、DAData。如需配置 Python 环境，参见 [Python 环境配置](./python-environment.md)。
 
 ### DA_ENABLE_AUTO_INSTALL_PYTHON_ENV
 
@@ -37,8 +38,9 @@ cmake -DDA_ENABLE_AUTO_INSTALL_PYTHON_ENV=ON ...
 cmake -DDA_ENABLE_AUTO_INSTALL_PYTHON_ENV=OFF ...
 ```
 
-!!! tip "Linux 用户"
-    此选项在 Linux 上无效。Linux 通过系统包管理器或 virtualenv 管理 Python 环境。
+> **💡 Linux 用户**
+>
+> 此选项在 Linux 上无效。Linux 通过系统包管理器或 virtualenv 管理 Python 环境。
 
 ### DA_ENABLE_AUTO_TRANSLATE
 
@@ -82,13 +84,14 @@ cmake -DCMAKE_INSTALL_PREFIX=/custom/path -DDA_AUTO_INSTALL_PREFIX=OFF ...
 cmake -DDA_AUTO_GENERATE_CONFIG_INFO=ON ...
 ```
 
-!!! info "翻译源文件更新"
-    若需提取新增的 `tr()` 字符串到 `.ts` 翻译源文件，不再通过 CMake 选项触发，而是构建 `update_translations` 自定义目标：
-
-    ```bash
-    # 手动更新 .ts 翻译源文件（不加入 ALL，避免每次构建重写 .ts）
-    cmake --build <build-dir> --target update_translations
-    ```
+> **ℹ️ 翻译源文件更新**
+>
+> 若需提取新增的 `tr()` 字符串到 `.ts` 翻译源文件，不再通过 CMake 选项触发，而是构建 `update_translations` 自定义目标：
+>
+> ```bash
+> # 手动更新 .ts 翻译源文件（不加入 ALL，避免每次构建重写 .ts）
+> cmake --build <build-dir> --target update_translations
+> ```
 
 ### DA_BUILD_PLUGINS
 
@@ -119,8 +122,9 @@ cmake -DDA_ENABLE_TESTING=ON ...
 .\scripts\build.ps1 -Target DAPyWorkFlow -Test
 ```
 
-!!! warning "默认关闭"
-    测试工程不参与日常构建。仅当需要运行/开发测试时，在配置阶段显式设为 `ON`，否则 `src/tst` 不会被加入构建。
+> **⚠️ 默认关闭**
+>
+> 测试工程不参与日常构建。仅当需要运行/开发测试时，在配置阶段显式设为 `ON`，否则 `src/tst` 不会被加入构建。
 
 ---
 
@@ -134,8 +138,9 @@ flowchart TD
     U["update_translations 目标"] -->|手动触发需要| G["Qt Linguist (lupdate)"]
 ```
 
-!!! info "update_translations 是 CMake 目标而非选项"
-    `lupdate` 的触发已从 CMake 选项改为自定义目标 `update_translations`，不加入 `ALL`，避免每次构建重写 `.ts` 文件。仅在新增 `tr()` 字符串后手动构建该目标。
+> **ℹ️ update_translations 是 CMake 目标而非选项**
+>
+> `lupdate` 的触发已从 CMake 选项改为自定义目标 `update_translations`，不加入 `ALL`，避免每次构建重写 `.ts` 文件。仅在新增 `tr()` 字符串后手动构建该目标。
 
 ### 冲突与约束
 

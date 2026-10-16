@@ -164,8 +164,9 @@ sequenceDiagram
     IF->>UI: onAgentReady + onActiveModelChanged
 ```
 
-!!! note "reconfigure 不发 done"
-    `reconfigure` 与 `load_session` 同构，不是一轮对话：不发 `done`，仅发 `ready` 确认。下一轮节点执行自动用新模型。失败安全：先构造新 `ChatOpenAI`，成功后才更新 `self.*`，构造失败发 `error` 不破坏旧 LLM。
+> **📝 reconfigure 不发 done**
+>
+> `reconfigure` 与 `load_session` 同构，不是一轮对话：不发 `done`，仅发 `ready` 确认。下一轮节点执行自动用新模型。失败安全：先构造新 `ChatOpenAI`，成功后才更新 `self.*`，构造失败发 `error` 不破坏旧 LLM。
 
 ### 预启动 vs 懒启动
 
@@ -276,8 +277,9 @@ DAAgent 位于五层架构的接口层（Layer 4）：
 └─────────────────────────────────────────┘
 ```
 
-!!! note "DAGui 与 DAAgent 互不依赖"
-    DAGui 不 link DAAgent，DAAgent 不 link DAGui。两者由 APP 层 `DAAppController::initialize()` 通过 `connect()` 协调。这使得 agent 框架可以独立于 UI 使用（如未来支持命令行 agent 模式）。
+> **📝 DAGui 与 DAAgent 互不依赖**
+>
+> DAGui 不 link DAAgent，DAAgent 不 link DAGui。两者由 APP 层 `DAAppController::initialize()` 通过 `connect()` 协调。这使得 agent 框架可以独立于 UI 使用（如未来支持命令行 agent 模式）。
 
 ---
 
@@ -303,10 +305,11 @@ graph LR
 | `tool_node` | 对每个 tool_call，通过 JSON Lines RPC 回调 C++ 执行工具，构造 `ToolMessage` 入状态；本轮已执行过的相同签名走软引导，不重复执行 |
 | `ask_user_node` | 调用 LangGraph `interrupt()` 暂停图执行，等待用户回答后 `resume()` 继续 |
 
-!!! note "防死循环三重保护"
-    - `recursion_limit`（默认不限制，配置键 `agent/recursion_limit`，有限值建议 150）：限制单回合内图最大迭代步数，`GraphRecursionError` 被捕获并报为 `error_type="recursion_limit"`。
-    - 软引导：`tool_node` 用 `_executed_call_sigs`（`deque(maxlen=8)`）记录本轮已执行签名，重复时不再执行工具，改返回引导性 `ToolMessage`（不同参数不受影响）。
-    - 硬终止：`agent_node` 跟踪 `_last_full_sig` / `_full_sig_repeat_count`，连续 3 次相同完整 tool_calls 签名（阈值 `_repeat_terminate_threshold=3`）则强制剥离 `tool_calls` 并以最终回复结束（router → END）。
+> **📝 防死循环三重保护**
+>
+> - `recursion_limit`（默认不限制，配置键 `agent/recursion_limit`，有限值建议 150）：限制单回合内图最大迭代步数，`GraphRecursionError` 被捕获并报为 `error_type="recursion_limit"`。
+> - 软引导：`tool_node` 用 `_executed_call_sigs`（`deque(maxlen=8)`）记录本轮已执行签名，重复时不再执行工具，改返回引导性 `ToolMessage`（不同参数不受影响）。
+> - 硬终止：`agent_node` 跟踪 `_last_full_sig` / `_full_sig_repeat_count`，连续 3 次相同完整 tool_calls 签名（阈值 `_repeat_terminate_threshold=3`）则强制剥离 `tool_calls` 并以最终回复结束（router → END）。
 
 ---
 

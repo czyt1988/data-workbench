@@ -20,9 +20,10 @@
 | `src/3rdparty/DAWidgets` | https://gitee.com/czyt1988/DAWidgets | Qt QWidget 界面补充控件库（灵感源自 Element UI，类以 `DA` 前缀、`namespace DA`，支持 Qt5/Qt6） | 补齐 Qt Widgets 原生控件缺失的常见交互形态（多标签下拉选择、折叠面板、流式布局等） | MIT |
 | `src/3rdparty/ctk` | vendored（本地源码，非 submodule） | 医疗影像工具包 Common Toolkit 精简版（仅用到部分组件） | 属性/设置面板等底层组件支撑 | Apache-2.0（CTK 上游） |
 
-!!! note "DAWidgets 与 ctk 的管理方式不同"
-    - `DAWidgets` 是 **git submodule**（见 `.gitmodules` 中 `[submodule "src/3rdparty/DAWidgets"]`，url 指向 Gitee），随 `git submodule update --init` 拉取。
-    - `ctk` 是 **vendored（本地直接放入源码）**，不在 `.gitmodules` 中登记，由 `src/3rdparty/CMakeLists.txt` 直接 `add_subdirectory(ctk)` 构建。
+> **📝 DAWidgets 与 ctk 的管理方式不同**
+>
+> - `DAWidgets` 是 **git submodule**（见 `.gitmodules` 中 `[submodule "src/3rdparty/DAWidgets"]`，url 指向 Gitee），随 `git submodule update --init` 拉取。
+> - `ctk` 是 **vendored（本地直接放入源码）**，不在 `.gitmodules` 中登记，由 `src/3rdparty/CMakeLists.txt` 直接 `add_subdirectory(ctk)` 构建。
 
 ## 添加第三方库
 
@@ -34,8 +35,9 @@ git submodule add https://github.com/pybind/pybind11 ./src/3rdparty/pybind11
 
 执行上述命令后，`pybind11` 仓库被克隆到 `src/3rdparty/pybind11` 目录，`.gitmodules` 文件自动添加对应配置。
 
-!!! tip "注意"
-    最后路径是 `./src/3rdparty/pybind11`，库名称文件夹要指定。
+> **💡 注意**
+>
+> 最后路径是 `./src/3rdparty/pybind11`，库名称文件夹要指定。
 
 添加后的目录结构：
 
@@ -159,29 +161,32 @@ Gitee 地址配置示例：
 git submodule sync
 ```
 
-!!! warning "重要"
-    修改 `.gitmodules` 后必须执行 `git submodule sync` 同步配置，否则更改不会生效。
+> **⚠️ 重要**
+>
+> 修改 `.gitmodules` 后必须执行 `git submodule sync` 同步配置，否则更改不会生效。
 
 ## 常见问题
 
-!!! bug "Submodule 目录为空"
-    克隆项目后 submodule 目录为空，需要执行初始化：
-    ```bash
-    git submodule init
-    git submodule update
-    ```
-    
-    或者克隆时直接初始化：
-    ```bash
-    git clone --recurse-submodules https://github.com/xxx/data-workbench.git
-    ```
+> **🐛 Submodule 目录为空**
+>
+> 克隆项目后 submodule 目录为空，需要执行初始化：
+> ```bash
+> git submodule init
+> git submodule update
+> ```
+>
+> 或者克隆时直接初始化：
+> ```bash
+> git clone --recurse-submodules https://github.com/xxx/data-workbench.git
+> ```
 
-!!! tip "批量操作"
-    执行涉及 submodule 的批量操作时，可以使用 `--recursive` 参数：
-    ```bash
-    git status --recursive
-    git fetch --recursive
-    ```
+> **💡 批量操作**
+>
+> 执行涉及 submodule 的批量操作时，可以使用 `--recursive` 参数：
+> ```bash
+> git status --recursive
+> git fetch --recursive
+> ```
 
 ## 参考资料
 

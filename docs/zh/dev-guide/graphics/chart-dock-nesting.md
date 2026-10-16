@@ -2,8 +2,9 @@
 
 本文档说明 `DAChartOperateWidget` 的多绘图窗口管理机制：基于 Qt-Advanced-Docking-System（ADS）的 **dockindock 嵌套停靠区**，让每个 `DAFigureWidget` 以独立停靠窗口的形式自由分屏/并栏，同时**严格隔离在 DAChartOperateWidget 内部**。
 
-!!! warning "修改前必读"
-    本模块踩过一个隐蔽的 ADS 陷阱（`FocusHighlighting` + 嵌套 `CDockManager` 的焦点控制器跨管理器混淆），曾导致新绘图逃逸到 app 顶层中心区。**修改停靠相关逻辑前务必先阅读 [关键陷阱](#关键陷阱focushighlighting--嵌套管理器的焦点跨管理器混淆) 一节**。
+> **⚠️ 修改前必读**
+>
+> 本模块踩过一个隐蔽的 ADS 陷阱（`FocusHighlighting` + 嵌套 `CDockManager` 的焦点控制器跨管理器混淆），曾导致新绘图逃逸到 app 顶层中心区。**修改停靠相关逻辑前务必先阅读 [关键陷阱](#关键陷阱focushighlighting--嵌套管理器的焦点跨管理器混淆) 一节**。
 
 ## 设计目标
 
@@ -80,16 +81,19 @@ connect(dock, &ads::CDockWidget::closeRequested, this, [this, fig]() {
 - `makeElement`：遍历 `getFigureList()` 写每个 figure 内容，附加 `<chart-layout>` 子元素（`saveChartLayout()` 的 base64）
 - `loadElement`：用 figure 的 `id` 属性调 `createFigure(name, id)` 重建（objectName=figureId），全部创建后 `restoreChartLayout()`
 
-!!! note "顶层 saveState 不捕获嵌套管理器"
-    ADS 的 `CDockManager::saveState()` 只序列化自身容器，**不递归嵌套管理器**。所以 figure 布局必须由 DAChartOperateWidget 单独保存，不能依赖 app 顶层的 `saveState`。详见 ADS 的 `dockindock` 示例（`examples/dockindock/`）的 `savePerspectivesRec` 递归封装。
+> **📝 顶层 saveState 不捕获嵌套管理器**
+>
+> ADS 的 `CDockManager::saveState()` 只序列化自身容器，**不递归嵌套管理器**。所以 figure 布局必须由 DAChartOperateWidget 单独保存，不能依赖 app 顶层的 `saveState`。详见 ADS 的 `dockindock` 示例（`examples/dockindock/`）的 `savePerspectivesRec` 递归封装。
 
-!!! warning "加载前必须 clear"
-    `DAAppProject::load()` 在加载前调用 `clear()`。`clear()` 逐个 `removeFigure`（同步从 `dockWidgetsMap` 移除），保证加载时 objectName 从干净状态开始，`restoreState` 才能按 objectName 正确匹配。**改动加载流程时不要省略 clear**。
+> **⚠️ 加载前必须 clear**
+>
+> `DAAppProject::load()` 在加载前调用 `clear()`。`clear()` 逐个 `removeFigure`（同步从 `dockWidgetsMap` 移除），保证加载时 objectName 从干净状态开始，`restoreState` 才能按 objectName 正确匹配。**改动加载流程时不要省略 clear**。
 
 ## 关键陷阱：FocusHighlighting + 嵌套管理器的焦点跨管理器混淆
 
-!!! danger "曾导致绘图逃逸到顶层中心区"
-    这是最容易踩的坑。修改 `DAChartOperateWidget` 停靠逻辑前，务必理解本节。
+> **🚫 曾导致绘图逃逸到顶层中心区**
+>
+> 这是最容易踩的坑。修改 `DAChartOperateWidget` 停靠逻辑前，务必理解本节。
 
 ### 现象
 
