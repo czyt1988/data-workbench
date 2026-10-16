@@ -14,6 +14,7 @@
 #include "DALogCategory.h"
 // Agent
 #include "DAAgentModule.h"
+#include "DAShortcutManager.h"
 
 //===================================================
 // using DA namespace -- 禁止在头文件using！！
@@ -49,6 +50,8 @@ bool DAAppCore::initialized()
     auto* agentModule = new DAAgentModule(this, this);
     agentModule->initialize(this);
     mAgentInterface = agentModule;
+    // 初始化快捷键管理器（命令注册与配置加载在 AppMainWindow::init 中完成）
+    mShortcutManager = new DAShortcutManager(this);
     return true;
 }
 
@@ -83,6 +86,15 @@ DADataManagerInterface* DAAppCore::getDataManagerInterface() const
 DAAgentInterface* DAAppCore::getAgentInterface() const
 {
     return mAgentInterface;
+}
+
+/**
+ * @brief 获取快捷键管理器
+ * @return 快捷键管理器（initialized 之后非空）
+ */
+DAShortcutManager* DAAppCore::getShortcutManager() const
+{
+    return mShortcutManager;
 }
 
 /**

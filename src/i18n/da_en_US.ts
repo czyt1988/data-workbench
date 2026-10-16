@@ -16163,4 +16163,91 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>Disable the splash screen during startup, useful for debugging to avoid the splash window blocking the IDE</translation>
     </message>
 </context>
+<context>
+    <name>DA::DASettingPageShortcuts</name>
+    <message>
+        <source>Shortcuts</source>
+        <translation>Shortcuts</translation>
+    </message>
+    <message>
+        <source>Search:</source>
+        <translation>Search:</translation>
+    </message>
+    <message>
+        <source>Filter by command or shortcut</source>
+        <translation>Filter by command or shortcut</translation>
+    </message>
+    <message>
+        <source>Reset All to Defaults</source>
+        <translation>Reset All to Defaults</translation>
+    </message>
+    <message>
+        <source>Command</source>
+        <translation>Command</translation>
+    </message>
+    <message>
+        <source>Shortcut</source>
+        <translation>Shortcut</translation>
+    </message>
+    <message>
+        <source>Shortcut %1 is already assigned to: %2</source>
+        <translation>Shortcut %1 is already assigned to: %2</translation>
+    </message>
+    <message>
+        <source>Shortcut for "%1" changed, click OK or Apply to take effect</source>
+        <translation>Shortcut for "%1" changed, click OK or Apply to take effect</translation>
+    </message>
+    <message>
+        <source>Default: %1</source>
+        <translation>Default: %1</translation>
+    </message>
+    <message>
+        <source>(none)</source>
+        <translation>(none)</translation>
+    </message>
+    <message>
+        <source>Main</source>
+        <translation>Main</translation>
+    </message>
+    <message>
+        <source>Data</source>
+        <translation>Data</translation>
+    </message>
+    <message>
+        <source>Figure</source>
+        <translation>Figure</translation>
+    </message>
+    <message>
+        <source>Chart</source>
+        <translation>Chart</translation>
+    </message>
+    <message>
+        <source>View</source>
+        <translation>View</translation>
+    </message>
+    <message>
+        <source>Workflow</source>
+        <translation>Workflow</translation>
+    </message>
+    <message>
+        <source>Workflow Editor</source>
+        <translation>Workflow Editor</translation>
+    </message>
+    <message>
+        <source>Other</source>
+        <translation>Other</translation>
+    </message>
+    <message>
+        <source>Reset to Default</source>
+        <translation>Reset to Default</translation>
+    </message>
+    <message>
+        <source>Clear Shortcut</source>
+        <translation>Clear Shortcut</translation>
+    </message>
+    <message>
+        <source>Failed to save shortcut settings</source>
+        <translation>Failed to save shortcut settings</translation>
+    </message>
+</context>
 </TS>

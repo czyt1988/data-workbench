@@ -201,3 +201,14 @@ QAction* DAActionsInterface::findAction(const QString& objname)
     }
     return act;
 }
+
+/**
+ * @brief 获取所有已注册的action
+ *
+ * 供快捷键管理器等需要遍历全部命令的场景使用，返回顺序为注册表内部哈希顺序
+ * @return 注册表中的全部action
+ */
+QList< QAction* > DAActionsInterface::actions() const
+{
+    return d_ptr->mObjectToAction.values();
+}

@@ -89,6 +89,12 @@
 
 历史上这两项配置存在 `agent-config.ini` 里，加载时会自动迁移，迁移后留下 `.bak` 文件。
 
+## shortcuts.json
+
+快捷键的用户覆盖单独放一个文件，不走 `dawork-config.xml`。命令的默认按键写在代码里，也就是各 action 创建处就地设置的快捷键；文件里只记用户改过的那些，键是命令的 objectName，值是按键序列的文本，空字符串表示用户把这个命令的按键清掉了。没出现在文件里的命令一律用默认按键，所以版本升级新增的默认按键不会被旧文件盖掉。
+
+读写都经 `DAShortcutManager`：启动时 `load()` 读覆盖表，设置页点应用时 `save()` 落盘，保存用临时文件加改名的方式原子写入。文件在配置目录下，删掉它等于把全部按键恢复成出厂值。命令的注册与分类见 `DAAppShortcutSetup`，设置页是 `DASettingPageShortcuts`。
+
 ## 其余文件
 
 | 文件 | 位置 | 内容 |
@@ -107,6 +113,6 @@
 
 ## 关于 QSettings
 
-`main` 启动时调用 `QSettings::setDefaultFormat(QSettings::IniFormat)`，并用 `QSettings::setPath` 把用户作用域重定向到配置目录。这是给第三方库默认构造的 `QSettings` 用的，比如随项目维护的部件库里那份最近文件管理器的副本。程序自身不用 `QSettings` 读写设置，它显式读写 `dawork-config.xml`、`agent-config.json` 和 `recent-files.ini`。
+`main` 启动时调用 `QSettings::setDefaultFormat(QSettings::IniFormat)`，并用 `QSettings::setPath` 把用户作用域重定向到配置目录。这是给第三方库默认构造的 `QSettings` 用的，比如随项目维护的部件库里那份最近文件管理器的副本。程序自身不用 `QSettings` 读写设置，它显式读写 `dawork-config.xml`、`agent-config.json`、`recent-files.ini` 和 `shortcuts.json`。
 
 早先版本把一部分设置写在 Windows 注册表里，启动时会做一次迁移：智能体相关的键迁到 `agent-config.ini`，最近文件迁到 `recent-files.ini`。迁移函数是 `migrateSettingsFromRegistry`。

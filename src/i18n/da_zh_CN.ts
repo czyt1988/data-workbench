@@ -16298,4 +16298,91 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>禁用启动画面，适用于调试时避免启动窗口遮挡IDE</translation>
     </message>
 </context>
+<context>
+    <name>DA::DASettingPageShortcuts</name>
+    <message>
+        <source>Shortcuts</source>
+        <translation>快捷键</translation>
+    </message>
+    <message>
+        <source>Search:</source>
+        <translation>搜索：</translation>
+    </message>
+    <message>
+        <source>Filter by command or shortcut</source>
+        <translation>按命令或快捷键过滤</translation>
+    </message>
+    <message>
+        <source>Reset All to Defaults</source>
+        <translation>全部重置为默认</translation>
+    </message>
+    <message>
+        <source>Command</source>
+        <translation>命令</translation>
+    </message>
+    <message>
+        <source>Shortcut</source>
+        <translation>快捷键</translation>
+    </message>
+    <message>
+        <source>Shortcut %1 is already assigned to: %2</source>
+        <translation>快捷键 %1 已被命令占用：%2</translation>
+    </message>
+    <message>
+        <source>Shortcut for "%1" changed, click OK or Apply to take effect</source>
+        <translation>命令"%1"的快捷键已修改，点击确定或应用后生效</translation>
+    </message>
+    <message>
+        <source>Default: %1</source>
+        <translation>默认：%1</translation>
+    </message>
+    <message>
+        <source>(none)</source>
+        <translation>（无）</translation>
+    </message>
+    <message>
+        <source>Main</source>
+        <translation>主页</translation>
+    </message>
+    <message>
+        <source>Data</source>
+        <translation>数据</translation>
+    </message>
+    <message>
+        <source>Figure</source>
+        <translation>绘图</translation>
+    </message>
+    <message>
+        <source>Chart</source>
+        <translation>图表操作</translation>
+    </message>
+    <message>
+        <source>View</source>
+        <translation>视图</translation>
+    </message>
+    <message>
+        <source>Workflow</source>
+        <translation>工作流</translation>
+    </message>
+    <message>
+        <source>Workflow Editor</source>
+        <translation>工作流编辑器</translation>
+    </message>
+    <message>
+        <source>Other</source>
+        <translation>其它</translation>
+    </message>
+    <message>
+        <source>Reset to Default</source>
+        <translation>重置为默认</translation>
+    </message>
+    <message>
+        <source>Clear Shortcut</source>
+        <translation>清除快捷键</translation>
+    </message>
+    <message>
+        <source>Failed to save shortcut settings</source>
+        <translation>保存快捷键设置失败</translation>
+    </message>
+</context>
 </TS>

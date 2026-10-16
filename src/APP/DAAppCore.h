@@ -10,6 +10,7 @@ class DAAppRibbonArea;
 class DAAppDataManager;
 class DAAppProject;
 class DAAgentInterface;
+class DAShortcutManager;
 /**
  * @brief DA的核心接口,作为单例存在
  */
@@ -32,6 +33,8 @@ public:
     DADataManagerInterface* getDataManagerInterface() const override;
     // 获取Agent接口（initialized 时 new DAAgentModule 赋给 mAgentInterface，返回 DAAgentModule 实例）
     virtual DAAgentInterface* getAgentInterface() const override;
+    // 获取快捷键管理器（initialized 时创建）
+    DAShortcutManager* getShortcutManager() const;
 
 public:
     // 获取DAAppUI，省去qobject_cast
@@ -50,6 +53,7 @@ private:
     bool mIsPythonInterpreterInitialized { false };
     DAAppProject* mProject { nullptr };
     DAAgentInterface* mAgentInterface { nullptr };  ///< Agent 接口（initialized 时创建）
+    DAShortcutManager* mShortcutManager { nullptr };  ///< 快捷键管理器（initialized 时创建）
 };
 
 DACoreInterface* getAppCorePtr();

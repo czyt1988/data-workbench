@@ -1,6 +1,7 @@
 #include "DAAppActions.h"
 #include "DAUiObjectNames.h"
 #include <QActionGroup>
+#include <QKeySequence>
 #include <QPainter>
 #include <QVector>
 #include <cmath>
@@ -66,6 +67,13 @@ void DAAppActions::buildMainAction()
     actionPaste     = createAction(UiNames::Action::Paste, ":/DAGui/icon/paste.svg");
     actionDelete    = createAction(UiNames::Action::Delete, ":/DAGui/icon/delete.svg");
     actionSelectAll = createAction(UiNames::Action::SelectAll, ":/DAGui/icon/select-all.svg");
+    // 默认快捷键就地定义（DAShortcutManager 注册时收集为默认值，用户覆盖见 shortcuts.json）；
+    // 剪贴板组默认不设键：工作流编辑器内部同功能 action 已占用 Ctrl+C/X/V 等标准键，
+    // 两者同属主窗口会真冲突，该组命令在「设置-快捷键」页可见并由用户自行分配
+    actionOpen->setShortcut(QKeySequence::Open);
+    actionSave->setShortcut(QKeySequence::Save);
+    actionSaveAs->setShortcut(QKeySequence(QStringLiteral("Ctrl+Shift+S")));
+    actionSetting->setShortcut(QKeySequence(QStringLiteral("Ctrl+,")));
 }
 
 void DAAppActions::buildDataAction()
@@ -309,6 +317,10 @@ void DAAppActions::buildWorkflowAction()
     // 导出
     actionExportWorkflowSceneToImage = createAction(UiNames::Action::ExportWorkflowSceneToImage, ":/app/bright/Icon/exportToPic.svg");
     actionExportWorkflowSceneToPNG = createAction(UiNames::Action::ExportWorkflowSceneToPNG, ":/app/bright/Icon/exportToPng.svg");
+    // 默认快捷键（IDE 习惯：F5 运行 / Shift+F5 停止）
+    actionWorkflowNew->setShortcut(QKeySequence(QStringLiteral("Ctrl+Shift+N")));
+    actionWorkflowRun->setShortcut(QKeySequence(Qt::Key_F5));
+    actionWorkflowTerminate->setShortcut(QKeySequence(QStringLiteral("Shift+F5")));
 }
 
 void DAAppActions::buildOtherActions()
