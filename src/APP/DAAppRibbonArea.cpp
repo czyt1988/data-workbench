@@ -862,10 +862,12 @@ void DAAppRibbonArea::buildRedoUndo()
     mActions->actionRedo->setObjectName(QString::fromUtf8(UiNames::Action::Redo));
     mActions->actionRedo->setIcon(QIcon(":/app/bright/Icon/redo.svg"));
     mActions->actionRedo->setShortcut(QKeySequence::Redo);
+    mActions->recordAction(mActions->actionRedo);
     mActions->actionUndo = undoGroup.createUndoAction(this);
     mActions->actionUndo->setObjectName(QString::fromUtf8(UiNames::Action::Undo));
     mActions->actionUndo->setIcon(QIcon(":/app/bright/Icon/undo.svg"));
     mActions->actionUndo->setShortcut(QKeySequence::Undo);
+    mActions->recordAction(mActions->actionUndo);
     SARibbonQuickAccessBar* bar = ribbonBar()->quickAccessBar();
     if (!bar) {
         return;
