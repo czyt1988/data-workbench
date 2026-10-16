@@ -483,6 +483,7 @@ Linux GCC 下 `uint64_t` 是 `unsigned long`，MSVC 下是 `unsigned long long`�
 - **禁止翻译开发诊断日志** — `qInfo`/`qWarning`/`qCritical`/`qDebug`/`logger.*`/`print` 只写日志文件不进 UI 队列，保持纯英文便于跨语言检索
 - **禁止用 `da*` 宏输出开发诊断信息** — `daInfo`/`daWarning`/`daCritical` 会进 UI 消息队列（用户可见）且必须翻译；带 `ClassName::method:` 前缀的技术诊断、异常 `what()` 转储等开发诊断应改用 `q*` 宏保持英文。详见 § 国际化规范
 - **禁止在 Python 节点包中遗漏 `setup_i18n()` 调用** — 必须在包 `__init__.py` 顶部、节点模块导入之前调用 `setup_i18n()`，否则 `_()` 未定义会导致节点注册失败
+- **禁止在 `docs/` 里使用 MkDocs Material / pymdownx 专有 Markdown 语法** — `!!!` 提示框、`=== "标签"` 标签页、`:material-xxx:` 图标只在 MkDocs 站点上渲染，粘到 GitHub、CSDN 等平台会原样显示成文字。提示框改用「引用块 + 加粗 emoji 标签」（`> **⚠️ 标题**`，正文逐行带 `>` 前缀），多选一的并列内容改用加粗小标题。站点侧由 `docs/css/extra.css` 把这些引用块渲染回提示框外观。写法与 emoji 对照表见 [docs/doc-writing-guide.md](docs/doc-writing-guide.md) § Markdown 语法约定
 
 
 ## 相关文件
