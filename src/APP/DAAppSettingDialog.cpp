@@ -5,6 +5,7 @@
 #include "SettingPages/DASettingPageAdvanced.h"
 #include "SettingPages/DAAgentSettingsWidget.h"
 #include "SettingPages/DAAgentPermissionSettingsWidget.h"
+#include "SettingPages/DASettingPageShortcuts.h"
 #include "DAConfigs.h"
 #include <QIcon>
 #include "AppMainWindow.h"
@@ -36,6 +37,11 @@ void DAAppSettingDialog::buildUI(DAAppConfig* config)
     DASettingPageAdvanced* advanced = new DASettingPageAdvanced();
     advanced->setAppConfig(config);
     settingWidget()->addPage(advanced);
+
+    // 快捷键设置页（数据源为 DAShortcutManager，独立于 DAAppConfig 持久化到 shortcuts.json）
+    DASettingPageShortcuts* shortcutsPage = new DASettingPageShortcuts();
+    shortcutsPage->setShortcutManager(config->getCore()->getShortcutManager());
+    settingWidget()->addPage(shortcutsPage);
 
     // Agent LLM 设置页（与其它设置页统一经 config-> 取接口；本页注入 setAgentInterface 而非 setAppConfig，
     // 取接口路径 config->getCore()->getAgentInterface() 与其它页 page->setAppConfig(config) 同样经 config-> 取数据）
