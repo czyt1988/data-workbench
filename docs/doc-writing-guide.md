@@ -30,7 +30,7 @@
 | 主要功能特性 | 可选 | 只在概述里放不下的并列功能才单列一节 |
 | 使用方法 | 必备 | 详细使用步骤和代码示例 |
 | API 参考 | 推荐 | 核心类、方法、属性的表格说明 |
-| 注意事项 | 推荐 | 用 `!!!` 格式标注重要信息 |
+| 注意事项 | 推荐 | 用「> **⚠️ 标题**」引用块标注重要信息 |
 | 参考资料 | 可选 | 相关文档、示例路径链接 |
 
 ## 内容撰写原则
@@ -130,26 +130,32 @@ node->addOutputPort("data_out", "输出数据");
 
 ### 6. 注意事项格式
 
-用 mkdocs-material 扩展语法标注重要信息：
+用引用块加粗标签标注重要信息（写法详见「Markdown 语法约定」一节）：
 
 ```markdown
-!!! warning "重要警告"
-    可能导致严重问题的注意事项
+> **⚠️ 重要警告**
+>
+> 可能导致严重问题的注意事项
 
-!!! info "说明"
-    补充说明信息
+> **ℹ️ 说明**
+>
+> 补充说明信息
 
-!!! tip "技巧"
-    使用技巧和建议
+> **💡 技巧**
+>
+> 使用技巧和建议
 
-!!! example "示例"
-    示例代码路径：`examples/xxx`
+> **📌 示例**
+>
+> 示例代码路径：`examples/xxx`
 
-!!! bug "已知问题"
-    已知缺陷和规避方法
+> **🐛 已知问题**
+>
+> 已知缺陷和规避方法
 
-!!! note "Qt版本兼容性"
-    Qt5 和 Qt6 的差异说明
+> **📝 Qt 版本兼容性**
+>
+> Qt5 和 Qt6 的差异说明
 ```
 
 ### 7. 属性/方法说明格式
@@ -240,28 +246,72 @@ sequenceDiagram
 ![workflow-demo](../assets/screenshot/workflow-demo.png)
 ```
 
-## mkdocs-material 语法
+## Markdown 语法约定
 
-### 1. Admonition 格式
+> **📝 只写通用 Markdown**
+>
+> 全站文档只用通用 Markdown（CommonMark + GFM 表格/任务列表/围栏代码块）。MkDocs Material 与 pymdownx 的专有写法（`!!!` 提示框、`=== "标签"` 标签页、`` 图标）一律不用——它们只在 MkDocs 站点上渲染，粘到 GitHub、CSDN 等平台会原样显示成文字。
 
-```markdown
-!!! type "标题"
-    内容内容内容
+### 1. 提示框格式
+
+提示框写成「引用块 + 加粗标签」，首行是 `> **emoji 标题**`，正文逐行带 `>` 前缀（代码块、表格也一样）：
+
+````markdown
+> **⚠️ 警告**
+>
+> 可能导致严重问题的注意事项
+
+> **💡 提示**
+>
+> 提示内容
+>
+> ```cpp
+> // 引用块里的代码块，每行同样要带 > 前缀
+> ```
+````
+
+标题前的 emoji 表示提示类型：
+
+| emoji | 语义 |
+|-------|------|
+| 📝 | 备注、定位说明 |
+| ℹ️ | 信息、补充说明 |
+| 💡 | 技巧、建议 |
+| ⚠️ | 警告 |
+| 🚫 | 危险、禁止操作 |
+| ❌ | 失败、错误示例 |
+| 📋 | 摘要、本期范围 |
+| ❗ | 重要、关键步骤 |
+| 📌 | 示例 |
+| 🐛 | 已知问题 |
+| ✅ | 已完成、通过 |
+| 📄 | 结构、格式说明 |
+
+正文行漏掉 `>` 前缀会被解读成引用块外的新段落，提示框就断开了；提示框前后各留一个空行。
+
+### 2. 并列内容替代标签页
+
+多选一的并列内容（如 Windows / Linux 命令、VS Code / PyCharm 配置）不再用 `=== "标签"` 写法，改成加粗小标题后跟正文：
+
+````markdown
+**Windows 构建**
+
+```powershell
+cmake --build build --config Release
 ```
 
-支持的类型：
-- `note` - 备注
-- `info` - 信息
-- `tip` - 技巧
-- `warning` - 警告
-- `danger` - 危险
-- `bug` - 已知问题
-- `example` - 示例
-- `quote` - 引用
+**Linux 构建**
 
-### 2. 代码高亮
+```bash
+cmake --build build
+```
+````
 
-```markdown
+### 3. 代码高亮
+
+代码块必须指定语言标识（`cpp` / `python` / `bash` / `cmake` / `yaml` / `json` …），缺了就只按纯文本显示。
+
+````markdown
 ```cpp
 // C++ 代码
 ```
@@ -273,9 +323,11 @@ sequenceDiagram
 ```cmake
 # CMake 代码
 ```
-```
+````
 
-### 3. 脚注
+示例里要展示围栏本身时（比如写模板），外层围栏用 4 个反引号包住，别用反斜杠转义——反斜杠会原样显示出来。
+
+### 4. 脚注
 
 ```markdown
 这是一个脚注引用[^1]。
@@ -283,7 +335,7 @@ sequenceDiagram
 [^1]: 这是脚注内容。
 ```
 
-### 4. 任务列表
+### 5. 任务列表
 
 ```markdown
 - [x] 已完成
@@ -296,7 +348,7 @@ sequenceDiagram
 
 每个模块文档应包含以下结构：
 
-```markdown
+````markdown
 # 模块名称
 
 模块功能简要说明。
@@ -335,12 +387,14 @@ classDiagram
 
 ## 注意事项
 
-!!! warning "重要"
-    重要提示信息
+> **⚠️ 重要**
+>
+> 重要提示信息
 
-!!! note "Qt版本兼容性"
-    Qt5/Qt6 差异说明
-```
+> **📝 Qt 版本兼容性**
+>
+> Qt5/Qt6 差异说明
+````
 
 ### 2. Qt 信号槽描述规范
 
@@ -397,11 +451,12 @@ target_link_libraries(DAWorkflow
 版本兼容性说明框：
 
 ```markdown
-!!! note "Qt版本兼容性"
-    此功能在 Qt5 和 Qt6 中实现方式不同：
-    
-    - **Qt5**: 使用 QRegExp
-    - **Qt6**: 使用 QRegularExpression
+> **📝 Qt 版本兼容性**
+>
+> 此功能在 Qt5 和 Qt6 中实现方式不同：
+>
+> - **Qt5**：使用 QRegExp
+> - **Qt6**：使用 QRegularExpression
 ```
 
 ### 5. PIMPL 模式说明格式
@@ -455,7 +510,7 @@ target_link_libraries(DAWorkflow
 
 ## 文档模板示例
 
-```markdown
+````markdown
 # DAWorkflowNode 使用指南
 
 DAWorkflowNode 是工作流中的核心节点类，用于封装数据处理逻辑。
@@ -531,8 +586,9 @@ node->setProperty("method", "linear");
 double threshold = node->property("threshold").toDouble();
 \`\`\`
 
-!!! note "Qt版本兼容性"
-    属性系统在 Qt5 和 Qt6 中使用方式相同。
+> **📝 Qt 版本兼容性**
+>
+> 属性系统在 Qt5 和 Qt6 中使用方式相同。
 
 ### 3. 执行节点
 
@@ -573,15 +629,17 @@ if (node->execute()) {
 
 ## 注意事项
 
-!!! warning "线程安全"
-    DAWorkflowNode 不是线程安全的，请在主线程中使用。
+> **⚠️ 线程安全**
+>
+> DAWorkflowNode 不是线程安全的，请在主线程中使用。
 
-!!! tip "性能优化"
-    大量数据处理时，建议使用批量处理接口。
+> **💡 性能优化**
+>
+> 大量数据处理时，建议使用批量处理接口。
 
 ## 参考资料
 
 - [工作流系统概述](workflow.md)
 - [插件开发指南](plugin-development.md)
 - 示例代码：`examples/workflow/basic`
-```
+````
