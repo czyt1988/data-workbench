@@ -14,6 +14,7 @@ set(DA_LIB_HEADER_FILES
     DAAbstractNodeSettingWidget.h
     DAAbstractOperateWidget.h
     DACacheWindowTableView.h
+    DAVirtualScrollBar.h
     DADataManagerComboBox.h
     DADataOperatePageWidget.h
     DADataTableView.h
@@ -73,6 +74,7 @@ set(DA_LIB_SOURCE_FILES
     DAAbstractNodeSettingWidget.cpp
     DAAbstractOperateWidget.cpp
     DACacheWindowTableView.cpp
+    DAVirtualScrollBar.cpp
     DADataListView.cpp
     DADataManageTableView.cpp
     DADataManagerTreeWidget.cpp

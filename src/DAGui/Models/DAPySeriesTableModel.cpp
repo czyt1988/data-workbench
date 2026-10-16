@@ -133,22 +133,6 @@ QList< DAPySeries > DAPySeriesTableModel::getSeries() const
     return d_ptr->seriesMap.values();
 }
 
-void DAPySeriesTableModel::setCacheWindowStartRow(int startRow)
-{
-    DA_D(d);
-    const int rc        = d->rowCount();
-    const int cacheSize = getCacheWindowSize();
-    if (rc < cacheSize) {
-        DAAbstractCacheWindowTableModel::setCacheWindowStartRow(0);
-        return;
-    }
-    startRow = qBound(0, startRow, rc - cacheSize);
-    if (startRow >= rc) {
-        startRow = rc - 1;
-    }
-    DAAbstractCacheWindowTableModel::setCacheWindowStartRow(startRow);
-}
-
 QVariant DAPySeriesTableModel::actualHeaderData(int actualSection, Qt::Orientation orientation, int role) const
 {
     DA_DC(d);

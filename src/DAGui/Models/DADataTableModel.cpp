@@ -383,25 +383,19 @@ void DADataTableModel::setUseCacheMode(bool on)
     refreshData();
 }
 
+/**
+ * @brief 设置滑动窗起始行
+ *
+ * 夹取范围由基类按 maxCacheWindowStartRow() 统一处理，这里只负责预取数据块。
+ * @param startRow 期望的窗口起始行（数据源绝对行）
+ */
 void DADataTableModel::setCacheWindowStartRow(int startRow)
 {
     DA_D(d);
-
-    // startRow限制在指定的最小值和最大值之间。它能够确保startRow不会超出给定的范围
-    const int dr        = d->getDataRowCount();
-    const int cacheSize = getCacheWindowSize();
-    if (dr <= cacheSize) {
-        startRow = 0;
-    } else {
-        startRow = qBound(0, startRow, dr - cacheSize + d->extraRow);
-        if (startRow >= dr) {
-            startRow = dr - 1;
-        }
-    }
     DAAbstractCacheWindowTableModel::setCacheWindowStartRow(startRow);
     // 表格数据源路径：预取新窗口起始块，避免重绘时逐cell触发取数
-    if (d->tableSource && dr > 0) {
-        d->ensureBlockCached(startRow);
+    if (d->tableSource && d->getDataRowCount() > 0) {
+        d->ensureBlockCached(getCacheWindowStartRow());
     }
 }
 
