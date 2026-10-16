@@ -52,12 +52,15 @@ public:
     bool isDataframeTableHaveSelection() const;
     // 返回选中的列数，列数不会重复
     QList< int > getSelectedDataframeCoumns(bool ensureInDataframe = true) const;
+    // 返回选中的行数（数据源绝对行号），行数不会重复
     QList< int > getSelectedDataframeRows(bool ensureInDataframe = true) const;
-    // 返回选中的列/行
+    // 返回选中的列/行（行号为数据源绝对行号）
     QList< int > getFullySelectedDataframeColumns(bool ensureInDataframe = true) const;
     QList< int > getFullySelectedDataframeRows(bool ensureInDataframe = true) const;
 
+    // 返回选中的单元格，QPoint(数据源绝对行号, 列号)
     QList< QPoint > getSelectedDataframeCells(bool ensureInDataframe = true) const;
+    // 返回选中的某一行的绝对行号
     int getSelectedOneDataframeRow(bool ensureInDataframe = true) const;
     int getSelectedOneDataframeColumn(bool ensureInDataframe = true) const;
     // 获取tableview
@@ -152,6 +155,12 @@ protected:
     void changeEvent(QEvent* e) override;
 
 private:
+    // 视图行号（滑动窗内逻辑行）转数据源绝对行号：数据操作唯一换算点
+    int toActualRow(int viewRow) const;
+    // 数据源真实数据行数/列数（不含尾部预留的空白行列）
+    int dataRowCount() const;
+    int dataColumnCount() const;
+
     Ui::DADataOperateOfDataFrameWidget* ui;
     DAData mData;
     DADataTableModel* mModel { nullptr };

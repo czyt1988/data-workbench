@@ -154,9 +154,9 @@ int DAVirtualScrollBar::actualRowForPosition(int pos) const
 }
 
 /**
- * @brief 整数行号换算为滑块中心位置
+ * @brief 整数行号换算为滑块顶边位置
  * @param actualRow 绝对行号
- * @return 控件内 y 坐标
+ * @return 控件内 y 坐标（与 actualRowForPosition 互为逆运算）
  */
 int DAVirtualScrollBar::positionForActualRow(int actualRow) const
 {
@@ -164,9 +164,9 @@ int DAVirtualScrollBar::positionForActualRow(int actualRow) const
     const QRect gr               = grooveRect(opt);
     const QRect sr = style()->subControlRect(QStyle::CC_ScrollBar, &opt, QStyle::SC_ScrollBarSlider, this);
     const int sliderLength = qMax(0, sr.height());
-    const int span         = qMax(0, gr.height() - sliderLength);
+    const int span         = qMax(0, gr.bottom() - sliderLength + 1 - gr.top());
     const int offset       = QStyle::sliderPositionFromValue(opt.minimum, opt.maximum, actualRow, span, opt.upsideDown);
-    return gr.top() + offset + sliderLength / 2;
+    return gr.top() + offset;
 }
 
 /**
@@ -205,13 +205,17 @@ void DAVirtualScrollBar::mousePressEvent(QMouseEvent* e)
     const QStyleOptionSlider opt = datasetStyleOption();
     const QStyle::SubControl sc  = style()->hitTestComplexControl(QStyle::CC_ScrollBar, &opt, e->pos(), this);
     switch (sc) {
-    case QStyle::SC_ScrollBarSlider:
-        mSeeking = true;
+    case QStyle::SC_ScrollBarSlider: {
+        // 记录抓取点相对滑块顶边的偏移，拖动时保持抓取点吸附，避免滑块「跳一下」
+        const QRect sr = style()->subControlRect(QStyle::CC_ScrollBar, &opt, QStyle::SC_ScrollBarSlider, this);
+        mDragClickOffset = e->pos().y() - sr.top();
+        mSeeking         = true;
         update();
-        Q_EMIT seekRequested(actualRowForPosition(e->pos().y()));
+        Q_EMIT seekRequested(actualRowForPosition(e->pos().y() - mDragClickOffset));
         showDragHud(e->pos());
         e->accept();
         break;
+    }
     case QStyle::SC_ScrollBarAddLine:
         Q_EMIT stepRowsRequested(1);
         startRepeatTimer(sc);
@@ -241,7 +245,7 @@ void DAVirtualScrollBar::mousePressEvent(QMouseEvent* e)
 void DAVirtualScrollBar::mouseMoveEvent(QMouseEvent* e)
 {
     if (mSeeking) {
-        Q_EMIT seekRequested(actualRowForPosition(e->pos().y()));
+        Q_EMIT seekRequested(actualRowForPosition(e->pos().y() - mDragClickOffset));
         showDragHud(e->pos());
         e->accept();
         return;

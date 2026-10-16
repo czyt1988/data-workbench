@@ -1,4 +1,4 @@
-#include "DADataOperateOfDataFrameWidget.h"
+﻿#include "DADataOperateOfDataFrameWidget.h"
 #include "ui_DADataOperateOfDataFrameWidget.h"
 #include "Models/DADataTableModel.h"
 #include "DADataPyObject.h"
@@ -70,31 +70,23 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
         if (!mModel) {
             return;
         }
-        int logicalRow = actualRow - mModel->getCacheWindowStartRow();
-        if (logicalRow >= 0 && logicalRow < mModel->rowCount()) {
-            mModel->notifyDataChanged(logicalRow, actualCol);
-        }
+        mModel->notifyDataChanged(actualRow, actualCol);
     });
     connect(mStyleManager, &DATableStyleManager::styleRangeChanged, this, [ this ](int rowStart, int colStart, int rowEnd, int colEnd) {
         if (!mModel) {
             return;
         }
-        int offset = mModel->getCacheWindowStartRow();
-        // -1 表示整个维度
-        int lrStart = (rowStart < 0) ? 0 : rowStart - offset;
-        int lrEnd   = (rowEnd < 0) ? mModel->rowCount() - 1 : rowEnd - offset;
-        int lcStart = (colStart < 0) ? 0 : colStart;
-        int lcEnd   = (colEnd < 0) ? mModel->columnCount() - 1 : colEnd;
-        if (lrStart >= 0 && lrStart < mModel->rowCount() && lcStart >= 0 && lcStart < mModel->columnCount()) {
-            lrEnd   = qMin(lrEnd, mModel->rowCount() - 1);
-            lcEnd   = qMin(lcEnd, mModel->columnCount() - 1);
-            mModel->notifyDataChanged(lrStart, lcStart, lrEnd, lcEnd);
-        }
+        // -1 表示整个维度；行号统一用数据源绝对行，由 model 换算到窗口内
+        const int rStart = (rowStart < 0) ? 0 : rowStart;
+        const int rEnd   = (rowEnd < 0) ? qMax(0, mModel->actualRowCount() - 1) : rowEnd;
+        const int cStart = (colStart < 0) ? 0 : colStart;
+        const int cEnd   = (colEnd < 0) ? mModel->columnCount() - 1 : colEnd;
+        mModel->notifyDataChanged(rStart, cStart, rEnd, cEnd);
     });
     connect(mStyleManager, &DATableStyleManager::styleReset, this, [ this ]() {
         if (mModel) {
             // 全表刷新
-            mModel->notifyDataChanged(0, 0, mModel->rowCount() - 1, mModel->columnCount() - 1);
+            mModel->notifyDataChanged(0, 0, qMax(0, mModel->actualRowCount() - 1), mModel->columnCount() - 1);
         }
     });
     // 关闭不必要的绘制特性
@@ -450,7 +442,8 @@ int DADataOperateOfDataFrameWidget::pasteFromClipboard()
     auto shape  = df.shape();
     const int dfRows = static_cast< int >(shape.first);
     const int dfCols = static_cast< int >(shape.second);
-    const int startRow = anchor.row();
+    // 视图行号是滑动窗内逻辑行，写 dataframe 前必须换成绝对行
+    const int startRow = toActualRow(anchor.row());
     const int startCol = anchor.column();
     if (startRow >= dfRows || startCol >= dfCols) {
         return 0;
@@ -903,25 +896,48 @@ QList< int > DADataOperateOfDataFrameWidget::getSelectedDataframeRows(bool ensur
     }
     QSet< int > res;
     const QModelIndexList selindexs = selModel->selectedIndexes();
-    if (ensureInDataframe) {
-        // 确保返回的列数都在dataframe里
-        DAPyDataFrame df = getDataframe();
-        if (df.isNone()) {
-            return QList< int >();
+    const int rowCount              = dataRowCount();
+    for (const QModelIndex& i : selindexs) {
+        // 视图行号是滑动窗内的逻辑行，数据操作一律用数据源绝对行
+        const int actualRow = toActualRow(i.row());
+        if (ensureInDataframe && actualRow >= rowCount) {
+            continue;
         }
-        auto shape = df.shape();
-        for (const QModelIndex& i : selindexs) {
-            if (i.row() < (int)shape.first) {
-                res.insert(i.row());
-            }
-        }
-    } else {
-        // 不确保返回的列数都在dataframe里
-        for (const QModelIndex& i : selindexs) {
-            res.insert(i.row());
-        }
+        res.insert(actualRow);
     }
     return res.values();
+}
+
+/**
+ * @brief 视图行号转换为数据源绝对行号
+ *
+ * 表格视图带滑动窗，选中项的行号是窗口内行号；凡是拿行号去读写 dataframe、
+ * 样式表、undo 命令的地方都必须先经过这里，否则滚动之后就会操作到别的行。
+ * @param viewRow 视图行号（滑动窗内逻辑行）
+ * @return 数据源绝对行号
+ */
+int DADataOperateOfDataFrameWidget::toActualRow(int viewRow) const
+{
+    if (!ui->tableView) {
+        return viewRow;
+    }
+    return ui->tableView->toActualRow(viewRow);
+}
+
+/**
+ * @brief 数据源真实数据行数（不含尾部预留的空白行）
+ * @return 行数
+ */
+int DADataOperateOfDataFrameWidget::dataRowCount() const
+{
+    if (mModel) {
+        return qMax(0, mModel->actualRowCount() - mModel->getExtraRowCount());
+    }
+    DAPyDataFrame df = getDataframe();
+    if (df.isNone()) {
+        return 0;
+    }
+    return static_cast< int >(df.shape().first);
 }
 
 /**
@@ -969,23 +985,13 @@ QList< int > DADataOperateOfDataFrameWidget::getFullySelectedDataframeRows(bool 
     }
     QSet< int > res;
     const QModelIndexList selindexs = selModel->selectedRows();
-    if (ensureInDataframe) {
-        // 确保返回的列数都在dataframe里
-        DAPyDataFrame df = getDataframe();
-        if (df.isNone()) {
-            return QList< int >();
+    const int rowCount              = dataRowCount();
+    for (const QModelIndex& i : selindexs) {
+        const int actualRow = toActualRow(i.row());
+        if (ensureInDataframe && actualRow >= rowCount) {
+            continue;
         }
-        auto shape = df.shape();
-        for (const QModelIndex& i : selindexs) {
-            if (i.row() < (int)shape.first) {
-                res.insert(i.row());
-            }
-        }
-    } else {
-        // 不确保返回的列数都在dataframe里
-        for (const QModelIndex& i : selindexs) {
-            res.insert(i.row());
-        }
+        res.insert(actualRow);
     }
     return res.values();
 }
@@ -1000,21 +1006,12 @@ int DADataOperateOfDataFrameWidget::getSelectedOneDataframeRow(bool ensureInData
     if (selindexs.isEmpty()) {
         return -1;
     }
-    if (ensureInDataframe) {
-        // 确保返回的列数都在dataframe里
-        DAPyDataFrame df = getDataframe();
-        if (df.isNone()) {
-            return -1;
+    const int rowCount = dataRowCount();
+    for (const QModelIndex& i : selindexs) {
+        const int actualRow = toActualRow(i.row());
+        if (!ensureInDataframe || actualRow < rowCount) {
+            return actualRow;
         }
-        auto shape = df.shape();
-        for (const QModelIndex& i : selindexs) {
-            if (i.row() < (int)shape.first) {
-                return i.row();
-            }
-        }
-    } else {
-        // 不确保返回的列数都在dataframe里
-        return selindexs.first().row();
     }
     return -1;
 }
@@ -1134,28 +1131,33 @@ QList< QPoint > DADataOperateOfDataFrameWidget::getSelectedDataframeCells(bool e
     if (!selModel) {
         return res;
     }
-    QList< int > rows;
-    QList< int > cols;
+    const int rowCount    = dataRowCount();
+    const int columnCount = dataColumnCount();
     const QModelIndexList selindexs = selModel->selectedIndexes();
-    if (ensureInDataframe) {
-        // 确保返回的列数都在dataframe里
-        DAPyDataFrame df = getDataframe();
-        if (df.isNone()) {
-            return res;
+    for (const QModelIndex& index : selindexs) {
+        const int actualRow = toActualRow(index.row());
+        if (ensureInDataframe && (actualRow >= rowCount || index.column() >= columnCount)) {
+            continue;
         }
-        auto shape = df.shape();
-        for (const QModelIndex& index : selindexs) {
-            if (index.row() < (int)shape.first && index.column() < (int)shape.second) {
-                res.append(QPoint(index.row(), index.column()));
-            }
-        }
-    } else {
-        // 不确保返回的列数都在dataframe里
-        for (const QModelIndex& index : selindexs) {
-            res.append(QPoint(index.row(), index.column()));
-        }
+        res.append(QPoint(actualRow, index.column()));
     }
     return res;
+}
+
+/**
+ * @brief 数据源真实数据列数（不含尾部预留的空白列）
+ * @return 列数
+ */
+int DADataOperateOfDataFrameWidget::dataColumnCount() const
+{
+    if (mModel) {
+        return qMax(0, mModel->columnCount() - mModel->getExtraColumnCount());
+    }
+    DAPyDataFrame df = getDataframe();
+    if (df.isNone()) {
+        return 0;
+    }
+    return static_cast< int >(df.shape().second);
 }
 
 /**
@@ -1216,10 +1218,6 @@ void DADataOperateOfDataFrameWidget::mergeStyleToSelection(const DATableCellStyl
 
     std::unique_ptr< DACommandTableStyle > cmd(new DACommandTableStyle(mStyleManager));
 
-    // getSelectedDataframeCells 返回 QPoint(index.row(), index.column())，row 是 logical row
-    // 需转换为 actualRow（加 getCacheWindowStartRow）
-    int cacheOffset = mModel ? mModel->getCacheWindowStartRow() : 0;
-
     if (!fullCols.isEmpty()) {
         // 列级：合并 fragment 到已有列样式
         for (int col : std::as_const(fullCols)) {
@@ -1231,7 +1229,7 @@ void DADataOperateOfDataFrameWidget::mergeStyleToSelection(const DATableCellStyl
     } else if (!fullRows.isEmpty()) {
         // 行级：合并 fragment 到已有行样式
         for (int row : std::as_const(fullRows)) {
-            int actualRow             = row + cacheOffset;
+            const int actualRow       = row;
             DATableCellStyle oldStyle = mStyleManager->getRowStyle(actualRow);
             DATableCellStyle newStyle = oldStyle;
             newStyle.mergeFrom(fragment);
@@ -1240,9 +1238,9 @@ void DADataOperateOfDataFrameWidget::mergeStyleToSelection(const DATableCellStyl
     } else {
         // 单元格级：合并 fragment 到已有单元格样式
         for (const QPoint& p : cells) {
-            // QPoint(index.row(), index.column()) → p.x()=row(logical), p.y()=col
-            int actualRow             = p.x() + cacheOffset;
-            int col                   = p.y();
+            // QPoint(actualRow, column)
+            const int actualRow       = p.x();
+            const int col             = p.y();
             DATableCellStyle oldStyle = mStyleManager->getCellStyle(actualRow, col);
             DATableCellStyle newStyle = oldStyle;
             newStyle.mergeFrom(fragment);
@@ -1276,7 +1274,6 @@ void DADataOperateOfDataFrameWidget::applyStyleToSelection(const DATableCellStyl
     }
 
     std::unique_ptr< DACommandTableStyle > cmd(new DACommandTableStyle(mStyleManager));
-    int cacheOffset = mModel ? mModel->getCacheWindowStartRow() : 0;
 
     if (!fullCols.isEmpty()) {
         // 列级：直接替换
@@ -1287,15 +1284,15 @@ void DADataOperateOfDataFrameWidget::applyStyleToSelection(const DATableCellStyl
     } else if (!fullRows.isEmpty()) {
         // 行级：直接替换
         for (int row : std::as_const(fullRows)) {
-            int actualRow             = row + cacheOffset;
+            const int actualRow       = row;
             DATableCellStyle oldStyle = mStyleManager->getRowStyle(actualRow);
             cmd->addChange(DACommandTableStyle::Row, actualRow, 0, oldStyle, style, false);
         }
     } else {
         // 单元格级：直接替换
         for (const QPoint& p : cells) {
-            int actualRow             = p.x() + cacheOffset;
-            int col                   = p.y();
+            const int actualRow       = p.x();
+            const int col             = p.y();
             DATableCellStyle oldStyle = mStyleManager->getCellStyle(actualRow, col);
             cmd->addChange(DACommandTableStyle::Cell, actualRow, col, oldStyle, style, false);
         }
@@ -1324,7 +1321,6 @@ void DADataOperateOfDataFrameWidget::clearStyleSelection()
     }
 
     std::unique_ptr< DACommandTableStyle > cmd(new DACommandTableStyle(mStyleManager));
-    int cacheOffset = mModel ? mModel->getCacheWindowStartRow() : 0;
 
     if (!fullCols.isEmpty()) {
         for (int col : std::as_const(fullCols)) {
@@ -1335,7 +1331,7 @@ void DADataOperateOfDataFrameWidget::clearStyleSelection()
         }
     } else if (!fullRows.isEmpty()) {
         for (int row : std::as_const(fullRows)) {
-            int actualRow = row + cacheOffset;
+            const int actualRow = row;
             if (mStyleManager->hasRowStyle(actualRow)) {
                 DATableCellStyle oldStyle = mStyleManager->getRowStyle(actualRow);
                 cmd->addChange(DACommandTableStyle::Row, actualRow, 0, oldStyle, DATableCellStyle(), false);
@@ -1343,8 +1339,8 @@ void DADataOperateOfDataFrameWidget::clearStyleSelection()
         }
     } else {
         for (const QPoint& p : cells) {
-            int actualRow = p.x() + cacheOffset;
-            int col       = p.y();
+            const int actualRow = p.x();
+            const int col       = p.y();
             if (mStyleManager->hasCellStyle(actualRow, col)) {
                 DATableCellStyle oldStyle = mStyleManager->getCellStyle(actualRow, col);
                 cmd->addChange(DACommandTableStyle::Cell, actualRow, col, oldStyle, DATableCellStyle(), false);
@@ -1412,14 +1408,13 @@ DATableCellStyle DADataOperateOfDataFrameWidget::getCurrentCellStyle() const
     QList< int > fullCols = getFullySelectedDataframeColumns(false);
     QList< int > fullRows = getFullySelectedDataframeRows(false);
     const QList< QPoint > cells = getSelectedDataframeCells(false);
-    int cacheOffset = mModel->getCacheWindowStartRow();
 
     if (!fullCols.isEmpty()) {
         // 整列选中：取列级 resolveCellStyle（用 actualRow=0 采样）
         // 但要检查所有选中列的一致性，且需考虑行级/单元格级叠加
         // 简化：用所有选中单元格的 resolveCellStyle 判断一致性
         for (const QPoint& p : cells) {
-            styles.append(mStyleManager->resolveCellStyle(p.x() + cacheOffset, p.y()));
+            styles.append(mStyleManager->resolveCellStyle(p.x(), p.y()));
         }
         if (styles.isEmpty()) {
             // cells 为空但 fullCols 非空（极端情况），用列级样式
@@ -1429,16 +1424,16 @@ DATableCellStyle DADataOperateOfDataFrameWidget::getCurrentCellStyle() const
         }
     } else if (!fullRows.isEmpty()) {
         for (const QPoint& p : cells) {
-            styles.append(mStyleManager->resolveCellStyle(p.x() + cacheOffset, p.y()));
+            styles.append(mStyleManager->resolveCellStyle(p.x(), p.y()));
         }
         if (styles.isEmpty()) {
             for (int row : std::as_const(fullRows)) {
-                styles.append(mStyleManager->resolveCellStyle(row + cacheOffset, 0));
+                styles.append(mStyleManager->resolveCellStyle(row, 0));
             }
         }
     } else {
         for (const QPoint& p : cells) {
-            styles.append(mStyleManager->resolveCellStyle(p.x() + cacheOffset, p.y()));
+            styles.append(mStyleManager->resolveCellStyle(p.x(), p.y()));
         }
     }
 

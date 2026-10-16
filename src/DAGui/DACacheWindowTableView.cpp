@@ -114,19 +114,26 @@ void DACacheWindowTableView::placeViewportAt(int actualRow)
 	if (vbar->maximum() != qMax(0, rows - rowGap)) {
 		updateGeometries();
 	}
-	// 窗口摆位：目标行上方留 1/4 窗口余量，保证上下都还能继续滚
-	const int newW = qBound(0, target - rows / 4, qMax(0, cacheModel->maxCacheWindowStartRow()));
-	const int oldW = cacheModel->getCacheWindowStartRow();
+	// 窗口摆位：目标行上方留 1/4 窗口余量；若当前项只是滚出视口，顺手把它留在窗口里
+	const int preferW = qBound(0, target - rows / 4, qMax(0, cacheModel->maxCacheWindowStartRow()));
+	const int newW    = adjustWindowStartForCurrent(preferW, target);
+	const int oldW    = cacheModel->getCacheWindowStartRow();
 	// 期望的窗口内行号；贴到数据尾部时会被滚动条上界收紧（此时展示最后一屏）
 	const int newV = qBound(0, target - newW, qMax(0, vbar->maximum()));
 	if (newW == oldW && newV == vbar->value()) {
 		return;
 	}
+	// 先改滚动条 value 再改窗口：保证搬动过程中 (W, v) 任何时刻都自洽。
+	// 期间必须关掉 Qt 的「当前项变化自动滚动」（QAbstractItemView::currentChanged
+	// 会 scrollTo 当前项），否则我们重映射当前项时它会把视口拽到旧位置上去。
+	const bool autoScroll = hasAutoScroll();
+	setAutoScroll(false);
 	mAdjustingScrollBar = true;
+	vbar->setValue(newV);
 	cacheModel->setCacheWindowStartRow(newW);
 	syncViewStateAfterWindowShift(oldW - newW);
-	vbar->setValue(newV);
 	mAdjustingScrollBar = false;
+	setAutoScroll(autoScroll);
 	syncScrollBarState();
 }
 
@@ -277,6 +284,43 @@ QString DACacheWindowTableView::actualColumnName(int actualCol) const
 		return model() ? model()->headerData(actualCol, Qt::Horizontal).toString() : QString();
 	}
 	return cacheModel->headerData(actualCol, Qt::Horizontal).toString();
+}
+
+/**
+ * @brief 在「视口首行仍为 topRow」的前提下，尽量把当前项也留在窗口缓冲区内
+ *
+ * 当前项只是滚出视口时（很常见），不应因为缓冲区搬家而丢光标；只有它离视口
+ * 超过一个缓冲区时才会被放弃。
+ * @param preferW 期望的窗口起始行
+ * @param topRow 期望的视口首行
+ * @return 修正后的窗口起始行
+ */
+int DACacheWindowTableView::adjustWindowStartForCurrent(int preferW, int topRow) const
+{
+	DAAbstractCacheWindowTableModel* cacheModel = getCacheModel();
+	if (!cacheModel) {
+		return preferW;
+	}
+	const QModelIndex current = currentIndex();
+	if (!current.isValid()) {
+		return preferW;
+	}
+	const int rows   = qMax(1, cacheModel->rowCount());
+	const int curAbs = toActualRow(current.row());
+	if (curAbs >= preferW && curAbs < preferW + rows) {
+		return preferW;  // 当前项本来就在窗口里
+	}
+	// 让当前项落在窗口内所需的起始行范围
+	const int curLo = qMax(0, curAbs - rows + 1);
+	const int curHi = qMin(curAbs, qMax(0, cacheModel->maxCacheWindowStartRow()));
+	// 同时要求窗口内行号 v = topRow - W 落在滚动条范围内
+	const int maxV = qMax(0, rows - getViewportRowCount());
+	const int lo   = qMax(curLo, topRow - maxV);
+	const int hi   = qMin(curHi, topRow);
+	if (lo > hi) {
+		return preferW;  // 视口与当前项一个窗口装不下，只能放弃当前项
+	}
+	return qBound(lo, preferW, hi);
 }
 
 /**
@@ -514,8 +558,12 @@ bool DACacheWindowTableView::shiftWindow(int deltaRows)
 	if (!cacheModel || deltaRows == 0) {
 		return false;
 	}
-	const int oldW = cacheModel->getCacheWindowStartRow();
-	const int newW = qBound(0, oldW + deltaRows, qMax(0, cacheModel->maxCacheWindowStartRow()));
+	const int oldW  = cacheModel->getCacheWindowStartRow();
+	const int maxW  = qMax(0, cacheModel->maxCacheWindowStartRow());
+	const int topRow = getTopActualRow();
+	// 平移要保持视口首行不变：顺手把「只是滚出视口」的当前项也留在窗口里
+	const int desireW = qBound(0, oldW + deltaRows, maxW);
+	const int newW    = adjustWindowStartForCurrent(desireW, topRow);
 	if (newW == oldW) {
 		return false;
 	}
@@ -524,12 +572,16 @@ bool DACacheWindowTableView::shiftWindow(int deltaRows)
 		mPendingRecenter = true;
 		return false;
 	}
-	QScrollBar* vbar    = verticalScrollBar();
+	QScrollBar* vbar = verticalScrollBar();
+	// 先改 value 再改窗口（见 placeViewportAt 的说明），期间关闭当前项自动滚动
+	const bool autoScroll = hasAutoScroll();
+	setAutoScroll(false);
 	mAdjustingScrollBar = true;
+	vbar->setValue(qBound(0, topRow - newW, vbar->maximum()));
 	cacheModel->setCacheWindowStartRow(newW);
 	syncViewStateAfterWindowShift(oldW - newW);
-	vbar->setValue(qBound(0, vbar->value() - (newW - oldW), vbar->maximum()));
 	mAdjustingScrollBar = false;
+	setAutoScroll(autoScroll);
 	syncScrollBarState();
 	return true;
 }
@@ -604,13 +656,16 @@ void DACacheWindowTableView::ensureWindowCoversViewport()
 	const int oldW = cacheModel->getCacheWindowStartRow();
 	const int maxW = qMax(0, cacheModel->maxCacheWindowStartRow());
 	if (oldW > maxW) {
-		const int topRow    = getTopActualRow();
+		const int topRow      = getTopActualRow();
+		const bool autoScroll = hasAutoScroll();
+		setAutoScroll(false);
 		mAdjustingScrollBar = true;
+		vbar->setValue(qBound(0, topRow - maxW, vbar->maximum()));
 		cacheModel->setCacheWindowStartRow(maxW);
 		const int newW = cacheModel->getCacheWindowStartRow();
 		syncViewStateAfterWindowShift(oldW - newW);
-		vbar->setValue(qBound(0, topRow - newW, vbar->maximum()));
 		mAdjustingScrollBar = false;
+		setAutoScroll(autoScroll);
 	}
 	// 3) 视口首行越过数据末尾 → 贴到最后一屏
 	const int totalRows = cacheModel->actualRowCount();

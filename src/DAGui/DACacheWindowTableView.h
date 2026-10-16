@@ -87,6 +87,8 @@ private:
 	bool shiftWindow(int deltaRows);
 	// 窗口平移后同步当前项与选区，使它们仍指向同一批绝对行
 	void syncViewStateAfterWindowShift(int deltaRows);
+	// 在保持视口首行为topRow的前提下，尽量把当前项也留在窗口内
+	int adjustWindowStartForCurrent(int preferW, int topRow) const;
 	// 同步滚动条的整表坐标信息
 	void syncScrollBarState();
 	// 关闭正在编辑的编辑器（搬窗前必须先提交，否则会写到错行）

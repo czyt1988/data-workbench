@@ -33,7 +33,7 @@ public:
     int getDatasetViewportRows() const;
     // 位置（控件内 y 坐标）换算为整数行号
     int actualRowForPosition(int pos) const;
-    // 整数行号换算为滑块中心所在的位置（控件内 y 坐标）
+    // 整数行号换算为滑块顶边所在的控件内 y 坐标
     int positionForActualRow(int actualRow) const;
     // 是否正在拖动滑块
     bool isSeeking() const;
@@ -79,6 +79,7 @@ private:
     int mTotalRows { 0 };           ///< 数据总行数
     int mViewportRows { 1 };        ///< 一屏可见行数
     bool mSeeking { false };        ///< 是否正在拖动滑块
+    int mDragClickOffset { 0 };     ///< 按下点相对滑块顶边的偏移（拖动时保持抓取点不变）
     QStyle::SubControl mHoverSub { QStyle::SC_None };  ///< 当前悬停的子控件
     QStyle::SubControl mRepeatSub { QStyle::SC_None };  ///< 按住不放的子控件
     QTimer* mRepeatTimer { nullptr };                   ///< 按住不放的连续滚动定时器
