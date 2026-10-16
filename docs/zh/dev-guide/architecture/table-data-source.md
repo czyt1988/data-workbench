@@ -7,7 +7,7 @@
 - **schema 与数据分离**：行列数、列名、列类型是低开销元信息，取数据本体走独立的块级接口
 - **块级批量取数（fetchBlock）**：一次调用取一段连续行区间；pandas 实现为单次 python 调用取整块（不再逐 cell 进解释器），数据库实现为 `LIMIT/OFFSET` 分页查询
 - **能力位虚函数**：`isLazyLoaded` / `isTableEditable` / `isReferenceData` / `supportsUndoSnapshot` / `typeIdentifier`，消费端按能力分派，不做 DataType 枚举 switch，**新增数据类型不需要修改 DAData/DAGui 核心代码**
-- **视图侧统一块缓存**：`DADataTableModel` 对任何表格数据源做滑动窗+块缓存（默认 512 行/块），滚动条驱动的动态取数由既有 `DACacheWindowTableView` 比例映射机制承接
+- **视图侧统一块缓存**：`DADataTableModel` 对任何表格数据源做滑动窗+块缓存（默认 512 行/块），滚动驱动的动态取数与导航由既有 `DACacheWindowTableView` 承接（窗口只是数据缓冲，导航协议见 [滑动窗表格的导航协议](virtual-table-navigation.md)）
 - **引用式工程持久化**：`DADataFactory` 类型注册表 + `write/read(QDataStream)`，工程文件只存连接/查询/schema 等引用 payload，不存数据本体
 - **undo 分级**：不支持整表物化的数据源可声明 `supportsUndoSnapshot()==false`，快照式 undo 命令自动跳过
 
@@ -64,14 +64,17 @@ classDiagram
 
 ### 取数时序（滚动驱动）
 
-视图侧不需要为新数据源写任何滚动逻辑，既有滑动窗机制自动生效：
+视图侧不需要为新数据源写任何滚动逻辑，既有滑动窗机制自动生效。
+窗口起始行只在两种情况下变化：用户定位到窗口外的行，或滚动位置逼近缓冲区边缘（缓冲区整体平移）：
 
 ```mermaid
 sequenceDiagram
     participant V as DACacheWindowTableView
     participant M as DADataTableModel
     participant S as DATableDataSource实现
-    V->>M: 滚动条valueChanged→setCacheWindowStartRow(比例×总行数)
+    V->>M: 滚动/定位 → 视口首行 T 变化
+    Note over V,M: T 在缓冲区内的滚动只改滚动条 value，不搬窗口
+    V->>M: 逼近缓冲区边缘 → setCacheWindowStartRow(新起始行)
     M->>S: fetchBlock(对齐块起始行, 512)  ← 窗口预取
     S-->>M: DATableDataBlock(一次SQL查询/一次python调用)
     V->>M: 重绘可见区 data()/headerData()
