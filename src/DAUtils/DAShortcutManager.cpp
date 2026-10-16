@@ -211,11 +211,12 @@ QHash< QString, QKeySequence > DAShortcutManager::overrides() const
 bool DAShortcutManager::resetToDefault(const QString& objName)
 {
     DA_D(d);
-    if (d->mOverrides.remove(objName) > 0) {
-        Q_EMIT shortcutChanged(objName);
-        return true;
+    if (!d->mOverrides.contains(objName)) {
+        return false;
     }
-    return false;
+    d->mOverrides.remove(objName);
+    Q_EMIT shortcutChanged(objName);
+    return true;
 }
 
 /**
@@ -390,19 +391,35 @@ QStringList DAShortcutManager::conflictingCommands(const QString& excludeObjName
         if (objName == excludeObjName) {
             continue;
         }
-        const QKeySequence other = effectiveKeysOf(objName);
-        if (other.isEmpty()) {
-            continue;
-        }
-        const QStringList otherBindings = portableBindings(other);
-        for (const QString& b : otherBindings) {
-            if (inputBindings.contains(b)) {
-                conflicts.append(objName);
-                break;
-            }
+        if (keySequencesConflict(keys, effectiveKeysOf(objName))) {
+            conflicts.append(objName);
         }
     }
     return conflicts;
+}
+
+/**
+ * @brief 判断两个键序列是否冲突
+ *
+ * 任一单绑定相同即视为冲突（多绑定序列取交集判断）；空序列不与任何序列冲突。
+ * 比较基于单绑定 PortableText 文本，与平台无关
+ * @param a 键序列a
+ * @param b 键序列b
+ * @return 是否冲突
+ */
+bool DAShortcutManager::keySequencesConflict(const QKeySequence& a, const QKeySequence& b)
+{
+    if (a.isEmpty() || b.isEmpty()) {
+        return false;
+    }
+    const QStringList aBindings = portableBindings(a);
+    const QStringList bBindings = portableBindings(b);
+    for (const QString& binding : aBindings) {
+        if (bBindings.contains(binding)) {
+            return true;
+        }
+    }
+    return false;
 }
 
 /**

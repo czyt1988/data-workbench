@@ -65,6 +65,8 @@ public:
     QString displayNameOf(const QString& objName) const;
     // 冲突检测：返回除 excludeObjName 外占用了相同按键序列的命令 ID
     QStringList conflictingCommands(const QString& excludeObjName, const QKeySequence& keys) const;
+    // 判断两个键序列是否冲突（存在相同的单绑定；空序列不与任何序列冲突）
+    static bool keySequencesConflict(const QKeySequence& a, const QKeySequence& b);
     // 把生效快捷键写回全部已注册 action
     void applyAll();
     // 把单个命令的生效快捷键写回其 action
