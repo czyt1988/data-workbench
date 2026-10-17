@@ -128,6 +128,7 @@ nav:
           - 日志系统: zh/dev-guide/general/logging.md
           - 枚举字符串工具: zh/dev-guide/general/da-enum-string-utils.md
           - 配置文件: zh/dev-guide/general/config-files.md
+          - 撤销成本基准报告: zh/dev-guide/general/undo-cost-benchmark.md
           - 第三方库管理: zh/dev-guide/general/third-party-manage.md
           - 设置类窗体规范: zh/dev-guide/ui/settingwidget-standard.md
           - 创建设置面板: zh/dev-guide/ui/creating-setting-panel.md
