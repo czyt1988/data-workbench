@@ -318,6 +318,9 @@ private Q_SLOTS:
     void onActionGotoMinTriggered();
     // 显示列统计信息（表头右键）
     void onActionShowColumnDescribeTriggered();
+    // 表内查找/替换（002 T1.4，Ribbon「编辑」面板；唤出当前数据页浮动条）
+    void onActionFindTriggered();
+    void onActionReplaceTriggered();
     // 列数据类型改变
     void onComboxColumnTypesCurrentDTypeChanged(const DA::DAPyDType& dt);
     void onDataOperateDataFrameWidgetSelectTypeChanged(const QList< int >& column, DA::DAPyDType dt);

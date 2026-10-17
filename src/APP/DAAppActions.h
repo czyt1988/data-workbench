@@ -97,6 +97,8 @@ public:
     QAction* actionClearStyleSelected { nullptr };  ///< 清除选中区表格样式
     QAction* actionClearStyleAll { nullptr };       ///< 清除整表所有样式
     QAction* actionTableFormatCells { nullptr };    ///< 设置选中列的显示格式
+    QAction* actionFind { nullptr };                ///< 表内查找（002 T1.4；快捷键在 DADataTableView，此处不设 shortcut 红线5）
+    QAction* actionReplace { nullptr };             ///< 表内替换（002 T1.4）
 
     //===================================================
     // workflow的上下文标签

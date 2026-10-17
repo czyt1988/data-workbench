@@ -114,6 +114,9 @@ void DAAppActions::buildDataAction()
     actionClearStyleAll      = createAction(UiNames::Action::ClearStyleAll, ":/app/bright/Icon/removeData.svg");
     // 表格列显示格式 action
     actionTableFormatCells   = createAction(UiNames::Action::TableFormatCells, ":/app/bright/Icon/tableFormat.svg");
+    // 表内查找/替换 action（002 T1.4；图标取 DAGui 图标库，快捷键在 DADataTableView，此处不设 shortcut 红线5）
+    actionFind               = createAction(UiNames::Action::Find, ":/DAGui/icon/find.svg");
+    actionReplace            = createAction(UiNames::Action::Replace, ":/DAGui/icon/replace.svg");
 }
 
 void DAAppActions::buildChartAction()
@@ -644,6 +647,10 @@ void DAAppActions::retranslateUi()
     actionClearStyleAll->setToolTip(tr("Clear all styles in current table"));    // cn:清除当前表格所有样式
     actionTableFormatCells->setText(tr("Format Cells..."));           // cn:设置单元格格式...
     actionTableFormatCells->setToolTip(tr("Set number/date display format of the selected column"));  // cn:设置选中列的数值/日期显示格式
+    actionFind->setText(tr("Find"));                                  // cn:查找
+    actionFind->setToolTip(tr("Find cells matching the keyword (Ctrl+F)"));  // cn:查找匹配关键字的单元格（Ctrl+F）
+    actionReplace->setText(tr("Replace"));                            // cn:替换
+    actionReplace->setToolTip(tr("Find and replace cells (Ctrl+H)"));  // cn:查找并替换单元格（Ctrl+H）
     //-----------------------------------------------------
     // workflow 编辑
     //-----------------------------------------------------

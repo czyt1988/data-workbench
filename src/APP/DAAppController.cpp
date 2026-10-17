@@ -524,6 +524,9 @@ void DAAppController::initConnection()
             &DATableDisplayFormatComboBox::currentFormatCategoryChanged,
             this,
             &DAAppController::onTableDisplayFormatCategoryChanged);
+    // 表内查找/替换（002 T1.4，Ribbon「编辑」面板；快捷键在 DADataTableView::keyPressEvent，action 不设 shortcut 红线5）
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionFind, onActionFindTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionReplace, onActionReplaceTriggered);
     // View Category
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowWorkFlowArea, onActionShowWorkFlowAreaTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowWorkFlowManagerArea, onActionShowWorkFlowManagerAreaTriggered);
@@ -1469,6 +1472,12 @@ void DAAppController::onDataOperatePageCreated(DADataOperatePageWidget* page)
         connect(w, &DADataOperateOfDataFrameWidget::currentStyleChanged, this, &DAAppController::onTableStyleCurrentChanged);
         // 选中列变化时反向同步 ribbon 显示格式下拉框
         connect(w, &DADataOperateOfDataFrameWidget::currentDisplayFormatChanged, this, &DAAppController::onTableDisplayFormatCurrentChanged);
+        // 替换生效后置工程未保存标记（002 T1.4；含超阈值不可撤销降级路径，与剪切/粘贴同口径）
+        connect(w, &DADataOperateOfDataFrameWidget::replaceApplied, this, [ this ](int changedCells) {
+            if (changedCells > 0) {
+                setDirty();
+            }
+        });
         // 列头右键菜单已迁入 DADataHeaderView（R12，菜单内容单点定义在 DAGui）：
         // 这里只做信号接线——收到菜单表意信号后先选中该列（复用 selectColumnInDataFrameWidget，
         // 槽函数经 getSelectedOneDataframeColumn 取列），再执行既有槽逻辑，行为与迁移前一致
@@ -3352,6 +3361,35 @@ void DAAppController::onActionShowColumnDescribeTriggered()
         return;
     }
     dfopt->showColumnDescribe(col);
+}
+
+/**
+ * @brief 表内查找（002 T1.4，Ribbon「编辑」面板）
+ *
+ * 唤出当前数据页的非模态浮动查找条（仅查找行）。快捷键 Ctrl+F 在 DADataTableView
+ * 处理（红线5：action 不设 shortcut，避免双触发），此处仅 Ribbon 入口。
+ */
+void DAAppController::onActionFindTriggered()
+{
+    DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false);
+    if (!dfopt) {
+        return;
+    }
+    dfopt->showFindReplace(false);
+}
+
+/**
+ * @brief 表内替换（002 T1.4，Ribbon「编辑」面板）
+ *
+ * 唤出当前数据页浮动条并展开替换行。快捷键 Ctrl+H 在 DADataTableView 处理。
+ */
+void DAAppController::onActionReplaceTriggered()
+{
+    DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false);
+    if (!dfopt) {
+        return;
+    }
+    dfopt->showFindReplace(true);
 }
 
 /**

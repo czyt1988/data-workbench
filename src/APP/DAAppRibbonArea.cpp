@@ -491,6 +491,12 @@ void DAAppRibbonArea::buildContextCategoryDataFrame()
     mPannelDataframeOperateFormat->addWidget(mComboxDisplayFormatContainer, SARibbonPanelItem::Medium);
     mPannelDataframeOperateFormat->addMediumAction(mActions->actionTableFormatCells);
 
+    // Edit pannel - 编辑（002 T1.4：查找/替换；005 的填充也进这个面板，D6）
+    mPannelDataframeOperateEdit = mCategoryDataframeOperate->addPanel(tr("Edit"));  // cn:编辑
+    mPannelDataframeOperateEdit->setObjectName(QString::fromUtf8(UiNames::Ribbon::DataFrameOperateEditPanel));
+    mPannelDataframeOperateEdit->addLargeAction(mActions->actionFind);
+    mPannelDataframeOperateEdit->addLargeAction(mActions->actionReplace);
+
     // ===== 表格样式 category =====
     mCategoryDataframeStyle = mContextDataFrame->addCategoryPage(tr("Table Style"));  // cn:表格样式
     mCategoryDataframeStyle->setObjectName(QString::fromUtf8(UiNames::Ribbon::DataFrameStyleCategory));

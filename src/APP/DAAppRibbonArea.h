@@ -279,6 +279,8 @@ private:
     SARibbonPanel* mPannelDataframeOperateFormat { nullptr };                ///< 显示格式面板
     SARibbonLineWidgetContainer* mComboxDisplayFormatContainer { nullptr };  ///< 显示格式选择器container
     DATableDisplayFormatComboBox* mComboxDisplayFormat { nullptr };          ///< 列显示格式选择器
+    // 编辑 panel（002 T1.4：查找/替换；005 填充也进此面板）
+    SARibbonPanel* mPannelDataframeOperateEdit { nullptr };                  ///< 编辑面板
     // 表格样式 category
     SARibbonCategory* mCategoryDataframeStyle { nullptr };    ///< dataframe表格样式category
     SARibbonPanel* mPannelDataframeStyleFill { nullptr };     ///< 底色面板
