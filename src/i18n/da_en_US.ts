@@ -2864,7 +2864,15 @@ Layouts</source>
     <message>
         <source>Find and replace cells (Ctrl+H)</source>
         <translation>Find and replace cells (Ctrl+H)</translation>
+    </message>    <message>
+        <source>Conditional Formatting</source>
+        <translation>Conditional Formatting</translation>
+    </message>    <message>
+        <source>Manage conditional formatting rules (cell rules / color scale / data bar) of the selected columns</source>
+        <translation>Manage conditional formatting rules (cell rules / color scale / data bar) of the selected columns</translation>
     </message>
+
+
 </context>
 <context>
     <name>DA::DAAppController</name>
@@ -4070,7 +4078,11 @@ Layouts</source>
     <message>
         <source>Edit</source>
         <translation>Edit</translation>
+    </message>    <message>
+        <source>Conditional</source>
+        <translation>Conditional</translation>
     </message>
+
 </context>
 <context>
     <name>DA::DAAxObjectExcelWrapper</name>
@@ -8901,7 +8913,23 @@ Layouts</source>
     <message>
         <source>Too many cells will be changed (%1). This operation cannot be undone. Continue?</source>
         <translation>Too many cells will be changed (%1). This operation cannot be undone. Continue?</translation>
+    </message>    <message>
+        <source>Please select a column first</source>
+        <translation>Please select a column first</translation>
+    </message>    <message>
+        <source>Clear Conditional Format Rules</source>
+        <translation>Clear Conditional Format Rules</translation>
+    </message>    <message>
+        <source>The selected columns have no conditional format rules</source>
+        <translation>The selected columns have no conditional format rules</translation>
+    </message>    <message>
+        <source>Change Conditional Format Rules</source>
+        <translation>Change Conditional Format Rules</translation>
     </message>
+
+
+
+
 </context>
 <context>
     <name>DA::DADataOperateWidget</name>
@@ -8952,7 +8980,11 @@ Layouts</source>
     <message>
         <source>Replace...</source>
         <translation>Replace...</translation>
+    </message>    <message>
+        <source>Conditional Format...</source>
+        <translation>Conditional Format...</translation>
     </message>
+
 </context>
 <context>
     <name>DA::DADataframeToVectorPointWidget</name>
@@ -16210,7 +16242,27 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <source>Replace all</source>
         <translation>Replace all</translation>
+    </message>    <message>
+        <source>Add Conditional Format Rule</source>
+        <translation>Add Conditional Format Rule</translation>
+    </message>    <message>
+        <source>Remove Conditional Format Rule</source>
+        <translation>Remove Conditional Format Rule</translation>
+    </message>    <message>
+        <source>Modify Conditional Format Rule</source>
+        <translation>Modify Conditional Format Rule</translation>
+    </message>    <message>
+        <source>Move Conditional Format Rule</source>
+        <translation>Move Conditional Format Rule</translation>
+    </message>    <message>
+        <source>Clear Conditional Format Rules of Column</source>
+        <translation>Clear Conditional Format Rules of Column</translation>
     </message>
+
+
+
+
+
 </context>
 <context>
     <name>main</name>
@@ -16425,6 +16477,204 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <source>Close</source>
         <translation>Close</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADialogConditionalFormat</name>
+    <message>
+        <source>Cell Rule</source>
+        <translation>Cell Rule</translation>
+    </message>
+    <message>
+        <source>Color Scale</source>
+        <translation>Color Scale</translation>
+    </message>
+    <message>
+        <source>Data Bar</source>
+        <translation>Data Bar</translation>
+    </message>
+    <message>
+        <source>greater than</source>
+        <translation>greater than</translation>
+    </message>
+    <message>
+        <source>less than</source>
+        <translation>less than</translation>
+    </message>
+    <message>
+        <source>between</source>
+        <translation>between</translation>
+    </message>
+    <message>
+        <source>equal to</source>
+        <translation>equal to</translation>
+    </message>
+    <message>
+        <source>contains</source>
+        <translation>contains</translation>
+    </message>
+    <message>
+        <source>is empty</source>
+        <translation>is empty</translation>
+    </message>
+    <message>
+        <source>is not empty</source>
+        <translation>is not empty</translation>
+    </message>
+    <message>
+        <source>Select Font</source>
+        <translation>Select Font</translation>
+    </message>
+    <message>
+        <source>Select Color</source>
+        <translation>Select Color</translation>
+    </message>
+    <message>
+        <source>Column %1</source>
+        <translation>Column %1</translation>
+    </message>
+    <message>
+        <source>Color scale and data bar need full-column statistics, which are unavailable for lazy-loaded or read-only data sources. Cell rules are still available.</source>
+        <translation>Color scale and data bar need full-column statistics, which are unavailable for lazy-loaded or read-only data sources. Cell rules are still available.</translation>
+    </message>
+    <message>
+        <source>greater than %1</source>
+        <translation>greater than %1</translation>
+    </message>
+    <message>
+        <source>less than %1</source>
+        <translation>less than %1</translation>
+    </message>
+    <message>
+        <source>between %1 and %2</source>
+        <translation>between %1 and %2</translation>
+    </message>
+    <message>
+        <source>equal to %1</source>
+        <translation>equal to %1</translation>
+    </message>
+    <message>
+        <source>contains &quot;%1&quot;</source>
+        <translation>contains &quot;%1&quot;</translation>
+    </message>
+    <message>
+        <source>3-color scale</source>
+        <translation>3-color scale</translation>
+    </message>
+    <message>
+        <source>2-color scale</source>
+        <translation>2-color scale</translation>
+    </message>
+    <message>
+        <source>data bar</source>
+        <translation>data bar</translation>
+    </message>
+    <message>
+        <source>[Off] </source>
+        <translation>[Off] </translation>
+    </message>
+    <message>
+        <source>Font...</source>
+        <translation>Font...</translation>
+    </message>
+</context>
+<context>
+    <name>DADialogConditionalFormat</name>
+    <message>
+        <source>Conditional Formatting</source>
+        <translation>Conditional Formatting</translation>
+    </message>
+    <message>
+        <source>Rules (top to bottom = evaluation order, later rules override earlier ones):</source>
+        <translation>Rules (top to bottom = evaluation order, later rules override earlier ones):</translation>
+    </message>
+    <message>
+        <source>Add</source>
+        <translation>Add</translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation>Remove</translation>
+    </message>
+    <message>
+        <source>Move Up</source>
+        <translation>Move Up</translation>
+    </message>
+    <message>
+        <source>Move Down</source>
+        <translation>Move Down</translation>
+    </message>
+    <message>
+        <source>Clear Rules of Selected Column</source>
+        <translation>Clear Rules of Selected Column</translation>
+    </message>
+    <message>
+        <source>Rule Type:</source>
+        <translation>Rule Type:</translation>
+    </message>
+    <message>
+        <source>Column:</source>
+        <translation>Column:</translation>
+    </message>
+    <message>
+        <source>Enabled</source>
+        <translation>Enabled</translation>
+    </message>
+    <message>
+        <source>Condition:</source>
+        <translation>Condition:</translation>
+    </message>
+    <message>
+        <source>Value:</source>
+        <translation>Value:</translation>
+    </message>
+    <message>
+        <source>And (upper bound):</source>
+        <translation>And (upper bound):</translation>
+    </message>
+    <message>
+        <source>Style:</source>
+        <translation>Style:</translation>
+    </message>
+    <message>
+        <source>Background</source>
+        <translation>Background</translation>
+    </message>
+    <message>
+        <source>Foreground</source>
+        <translation>Foreground</translation>
+    </message>
+    <message>
+        <source>Font</source>
+        <translation>Font</translation>
+    </message>
+    <message>
+        <source>Font...</source>
+        <translation>Font...</translation>
+    </message>
+    <message>
+        <source>2-Color Scale</source>
+        <translation>2-Color Scale</translation>
+    </message>
+    <message>
+        <source>3-Color Scale</source>
+        <translation>3-Color Scale</translation>
+    </message>
+    <message>
+        <source>Low:</source>
+        <translation>Low:</translation>
+    </message>
+    <message>
+        <source>Middle:</source>
+        <translation>Middle:</translation>
+    </message>
+    <message>
+        <source>High:</source>
+        <translation>High:</translation>
+    </message>
+    <message>
+        <source>Bar Color:</source>
+        <translation>Bar Color:</translation>
     </message>
 </context>
 </TS>

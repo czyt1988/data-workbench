@@ -2879,7 +2879,15 @@ Layouts</source>
     <message>
         <source>Find and replace cells (Ctrl+H)</source>
         <translation>查找并替换单元格（Ctrl+H）</translation>
+    </message>    <message>
+        <source>Conditional Formatting</source>
+        <translation>条件格式</translation>
+    </message>    <message>
+        <source>Manage conditional formatting rules (cell rules / color scale / data bar) of the selected columns</source>
+        <translation>管理选中列的条件格式规则（单元格规则/色阶/数据条）</translation>
     </message>
+
+
 </context>
 <context>
     <name>DA::DAAppController</name>
@@ -4184,7 +4192,11 @@ Layouts</source>
     <message>
         <source>Edit</source>
         <translation>编辑</translation>
+    </message>    <message>
+        <source>Conditional</source>
+        <translation>条件格式</translation>
     </message>
+
 </context>
 <context>
     <name>DA::DAAxObjectExcelWrapper</name>
@@ -9015,7 +9027,23 @@ Layouts</source>
     <message>
         <source>Too many cells will be changed (%1). This operation cannot be undone. Continue?</source>
         <translation>改动量过大（%1 格），本次替换将不可撤销，是否继续？</translation>
+    </message>    <message>
+        <source>Please select a column first</source>
+        <translation>请先选择列</translation>
+    </message>    <message>
+        <source>Clear Conditional Format Rules</source>
+        <translation>清除条件格式规则</translation>
+    </message>    <message>
+        <source>The selected columns have no conditional format rules</source>
+        <translation>所选列没有条件格式规则</translation>
+    </message>    <message>
+        <source>Change Conditional Format Rules</source>
+        <translation>更改条件格式规则</translation>
     </message>
+
+
+
+
 </context>
 <context>
     <name>DA::DADataOperateWidget</name>
@@ -9066,7 +9094,11 @@ Layouts</source>
     <message>
         <source>Replace...</source>
         <translation>替换...</translation>
+    </message>    <message>
+        <source>Conditional Format...</source>
+        <translation>条件格式...</translation>
     </message>
+
 </context>
 <context>
     <name>DA::DADataframeToVectorPointWidget</name>
@@ -16330,7 +16362,27 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <source>Replace all</source>
         <translation>全部替换</translation>
+    </message>    <message>
+        <source>Add Conditional Format Rule</source>
+        <translation>添加条件格式规则</translation>
+    </message>    <message>
+        <source>Remove Conditional Format Rule</source>
+        <translation>删除条件格式规则</translation>
+    </message>    <message>
+        <source>Modify Conditional Format Rule</source>
+        <translation>修改条件格式规则</translation>
+    </message>    <message>
+        <source>Move Conditional Format Rule</source>
+        <translation>移动条件格式规则</translation>
+    </message>    <message>
+        <source>Clear Conditional Format Rules of Column</source>
+        <translation>清除列条件格式规则</translation>
     </message>
+
+
+
+
+
 </context>
 <context>
     <name>main</name>
@@ -16545,6 +16597,204 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <source>Close</source>
         <translation>关闭</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADialogConditionalFormat</name>
+    <message>
+        <source>Cell Rule</source>
+        <translation>单元格规则</translation>
+    </message>
+    <message>
+        <source>Color Scale</source>
+        <translation>色阶</translation>
+    </message>
+    <message>
+        <source>Data Bar</source>
+        <translation>数据条</translation>
+    </message>
+    <message>
+        <source>greater than</source>
+        <translation>大于</translation>
+    </message>
+    <message>
+        <source>less than</source>
+        <translation>小于</translation>
+    </message>
+    <message>
+        <source>between</source>
+        <translation>介于</translation>
+    </message>
+    <message>
+        <source>equal to</source>
+        <translation>等于</translation>
+    </message>
+    <message>
+        <source>contains</source>
+        <translation>包含</translation>
+    </message>
+    <message>
+        <source>is empty</source>
+        <translation>为空</translation>
+    </message>
+    <message>
+        <source>is not empty</source>
+        <translation>非空</translation>
+    </message>
+    <message>
+        <source>Select Font</source>
+        <translation>选择字体</translation>
+    </message>
+    <message>
+        <source>Select Color</source>
+        <translation>选择颜色</translation>
+    </message>
+    <message>
+        <source>Column %1</source>
+        <translation>列 %1</translation>
+    </message>
+    <message>
+        <source>Color scale and data bar need full-column statistics, which are unavailable for lazy-loaded or read-only data sources. Cell rules are still available.</source>
+        <translation>色阶与数据条需要全列统计，惰性加载或只读数据源不可用；单元格规则仍可正常使用</translation>
+    </message>
+    <message>
+        <source>greater than %1</source>
+        <translation>大于 %1</translation>
+    </message>
+    <message>
+        <source>less than %1</source>
+        <translation>小于 %1</translation>
+    </message>
+    <message>
+        <source>between %1 and %2</source>
+        <translation>介于 %1 和 %2 之间</translation>
+    </message>
+    <message>
+        <source>equal to %1</source>
+        <translation>等于 %1</translation>
+    </message>
+    <message>
+        <source>contains &quot;%1&quot;</source>
+        <translation>包含 &quot;%1&quot;</translation>
+    </message>
+    <message>
+        <source>3-color scale</source>
+        <translation>三色色阶</translation>
+    </message>
+    <message>
+        <source>2-color scale</source>
+        <translation>双色色阶</translation>
+    </message>
+    <message>
+        <source>data bar</source>
+        <translation>数据条</translation>
+    </message>
+    <message>
+        <source>[Off] </source>
+        <translation>[停用] </translation>
+    </message>
+    <message>
+        <source>Font...</source>
+        <translation>字体...</translation>
+    </message>
+</context>
+<context>
+    <name>DADialogConditionalFormat</name>
+    <message>
+        <source>Conditional Formatting</source>
+        <translation>条件格式</translation>
+    </message>
+    <message>
+        <source>Rules (top to bottom = evaluation order, later rules override earlier ones):</source>
+        <translation>规则（自上而下 = 求值顺序，靠后的规则覆盖靠前的）：</translation>
+    </message>
+    <message>
+        <source>Add</source>
+        <translation>添加</translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation>删除</translation>
+    </message>
+    <message>
+        <source>Move Up</source>
+        <translation>上移</translation>
+    </message>
+    <message>
+        <source>Move Down</source>
+        <translation>下移</translation>
+    </message>
+    <message>
+        <source>Clear Rules of Selected Column</source>
+        <translation>清除所选列规则</translation>
+    </message>
+    <message>
+        <source>Rule Type:</source>
+        <translation>规则类型：</translation>
+    </message>
+    <message>
+        <source>Column:</source>
+        <translation>列：</translation>
+    </message>
+    <message>
+        <source>Enabled</source>
+        <translation>启用</translation>
+    </message>
+    <message>
+        <source>Condition:</source>
+        <translation>条件：</translation>
+    </message>
+    <message>
+        <source>Value:</source>
+        <translation>值：</translation>
+    </message>
+    <message>
+        <source>And (upper bound):</source>
+        <translation>且（上界）：</translation>
+    </message>
+    <message>
+        <source>Style:</source>
+        <translation>样式：</translation>
+    </message>
+    <message>
+        <source>Background</source>
+        <translation>背景</translation>
+    </message>
+    <message>
+        <source>Foreground</source>
+        <translation>前景</translation>
+    </message>
+    <message>
+        <source>Font</source>
+        <translation>字体</translation>
+    </message>
+    <message>
+        <source>Font...</source>
+        <translation>字体...</translation>
+    </message>
+    <message>
+        <source>2-Color Scale</source>
+        <translation>双色色阶</translation>
+    </message>
+    <message>
+        <source>3-Color Scale</source>
+        <translation>三色色阶</translation>
+    </message>
+    <message>
+        <source>Low:</source>
+        <translation>低端：</translation>
+    </message>
+    <message>
+        <source>Middle:</source>
+        <translation>中间：</translation>
+    </message>
+    <message>
+        <source>High:</source>
+        <translation>高端：</translation>
+    </message>
+    <message>
+        <source>Bar Color:</source>
+        <translation>数据条颜色：</translation>
     </message>
 </context>
 </TS>
