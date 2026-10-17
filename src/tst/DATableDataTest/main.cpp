@@ -4412,6 +4412,34 @@ df = pd.DataFrame({"k":[None,"a",None,"a"],"v":[1.0,2.0,3.0,4.0]})
         QCOMPARE(out.shape().first, static_cast< std::size_t >(2));  // "a" 组 + NaN 组
         QCOMPARE(py.groupCount(df, QStringList({ QStringLiteral("k") })), static_cast< qint64 >(2));
     }
+    // —— 大表（100 万行）分组耗时可接受（验收 §5.4；界面侧对话框全表聚合带忙等待光标）——
+    {
+        pybind11::dict scope;
+        pybind11::exec(R"(
+import numpy as np
+import pandas as pd
+n = 1000000
+df = pd.DataFrame({
+    "g": np.random.randint(0, 1000, n),
+    "v": np.random.rand(n),
+})
+)",
+                       pybind11::globals(),
+                       scope);
+        DA::DAPyDataFrame df(scope[ "df" ]);
+        QElapsedTimer timer;
+        timer.start();
+        DA::DAPyDataFrame out = py.groupbyAggregate(df,
+                                                    QStringList({ QStringLiteral("g") }),
+                                                    QStringList({ QStringLiteral("v") }),
+                                                    QStringList({ QStringLiteral("mean") }));
+        const qint64 elapsed = timer.elapsed();
+        QVERIFY(!out.isNone());
+        QCOMPARE(out.shape().first, static_cast< std::size_t >(1000));  // 1000 组
+        // 验收口径：耗时可接受（100 万行 × 1000 组 < 5s；pandas groupby 实测远低于此）
+        QVERIFY2(elapsed < 5000, qPrintable(QStringLiteral("1M-row groupby took %1 ms (>= 5000 ms)").arg(elapsed)));
+        qDebug().noquote() << QStringLiteral("DATableDataTest::testGroupbyOperator: groupby rows=1000000 groups=1000 elapsed_ms=%1").arg(elapsed);
+    }
 }
 
 // 004 §5.4 验收（程序化）：新数据集注册（xxx_GroupBy 命名、addData_ 可撤销、原表无损、信号发射）
