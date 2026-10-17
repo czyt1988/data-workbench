@@ -27,6 +27,7 @@
 #include "DATableMetadataRegistry.h"
 #include "DATableMetadata.h"
 #include "DATableViewStateStore.h"
+#include "DATableHighlightOverlay.h"
 // Dialog
 #include "Dialog/DARenameColumnsNameDialog.h"
 #include "Dialog/DADialogDataframeColumnCastToNumeric.h"
@@ -65,7 +66,10 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
     DATableMetadata* metadata = registry ? registry->getOrCreate(d) : nullptr;
     mStyleManager             = metadata ? metadata->styleManager() : nullptr;
     mViewStateStore           = metadata ? metadata->viewState() : nullptr;
-    mStyleDelegate            = new DATableStyleItemDelegate(mStyleManager, this);
+    // 瞬态高亮层：页级持有（查找/校验两个来源共用），不序列化、不进撤销栈；
+    // WP3 起注入 delegate 的绘制管线③
+    mHighlightOverlay = new DATableHighlightOverlay(this);
+    mStyleDelegate    = new DATableStyleItemDelegate(mStyleManager, this);
     ui->tableView->setItemDelegate(mStyleDelegate);
     // 模型读取列显示格式（actualData 的 DisplayRole 分支）
     mModel->setStyleManager(mStyleManager);
@@ -1205,6 +1209,15 @@ DATableStyleManager* DADataOperateOfDataFrameWidget::styleManager() const
 DATableViewStateStore* DADataOperateOfDataFrameWidget::viewStateStore() const
 {
     return mViewStateStore;
+}
+
+/**
+ * @brief 获取瞬态高亮层
+ * @return 高亮层指针（页级持有，非空）
+ */
+DATableHighlightOverlay* DADataOperateOfDataFrameWidget::highlightOverlay() const
+{
+    return mHighlightOverlay;
 }
 
 /**

@@ -72,6 +72,8 @@ public:
     DATableStyleManager* styleManager() const;
     // 获取视图状态子存储（列宽/行头宽，借自元数据束，可能为 nullptr）
     DATableViewStateStore* viewStateStore() const;
+    // 获取瞬态高亮层（查找/校验高亮，页级持有，非空）
+    DATableHighlightOverlay* highlightOverlay() const;
     // 合并样式片段到选中区（fragment 只设部分属性，merge 到目标已有样式）
     // 自动判定层级：整列→列级，整行→行级，否则单元格级
     void mergeStyleToSelection(const DATableCellStyle& fragment);
@@ -170,6 +172,7 @@ private:
     DADataTableModel* mModel { nullptr };
     DATableStyleManager* mStyleManager { nullptr };  ///< 借自 DATableMetadata 束，非拥有（随数据存在，widget 关闭不销毁）
     DATableViewStateStore* mViewStateStore { nullptr };  ///< 借自 DATableMetadata 束，非拥有（视图状态：列宽/行头宽）
+    DATableHighlightOverlay* mHighlightOverlay { nullptr };  ///< 瞬态高亮层（页级持有，不序列化、不进撤销栈）
     DATableStyleItemDelegate* mStyleDelegate { nullptr };
 
     DADialogDataframeColumnCastToNumeric* mDialogCastNumArgs { nullptr };

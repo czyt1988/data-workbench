@@ -70,6 +70,7 @@ set(DA_LIB_HEADER_FILES
     DATableMetadata.h
     DATableMetadataRegistry.h
     DATableViewStateStore.h
+    DATableHighlightOverlay.h
     DATableStyleItemDelegate.h
 )
 set(DA_LIB_SOURCE_FILES
@@ -132,6 +133,7 @@ set(DA_LIB_SOURCE_FILES
     DATableMetadata.cpp
     DATableMetadataRegistry.cpp
     DATableViewStateStore.cpp
+    DATableHighlightOverlay.cpp
     DATableStyleItemDelegate.cpp
 )
 set(DA_LIB_QT_UI_FILES
