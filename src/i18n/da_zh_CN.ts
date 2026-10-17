@@ -9003,6 +9003,18 @@ Layouts</source>
         <source>DADataTableView requires a model to be set first</source>
         <translation>你需要先设置模型</translation>
     </message>
+    <message>
+        <source>Cut</source>
+        <translation>剪切</translation>
+    </message>
+    <message>
+        <source>Copy</source>
+        <translation>复制</translation>
+    </message>
+    <message>
+        <source>Paste</source>
+        <translation>粘贴</translation>
+    </message>
 </context>
 <context>
     <name>DA::DADataframeToVectorPointWidget</name>

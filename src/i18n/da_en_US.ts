@@ -8889,6 +8889,18 @@ Layouts</source>
         <source>DADataTableView requires a model to be set first</source>
         <translation>DADataTableView requires a model to be set first</translation>
     </message>
+    <message>
+        <source>Cut</source>
+        <translation>Cut</translation>
+    </message>
+    <message>
+        <source>Copy</source>
+        <translation>Copy</translation>
+    </message>
+    <message>
+        <source>Paste</source>
+        <translation>Paste</translation>
+    </message>
 </context>
 <context>
     <name>DA::DADataframeToVectorPointWidget</name>

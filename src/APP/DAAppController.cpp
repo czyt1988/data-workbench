@@ -1501,6 +1501,25 @@ void DAAppController::onDataOperatePageCreated(DADataOperatePageWidget* page)
                             }
                         });
             }
+            // 表体右键菜单（v1 骨架：剪切/复制/粘贴）信号接线：路由到既有槽逻辑
+            // （与 onActionCut/Copy/PasteTriggered 的数据页分支一致），不新增执行逻辑
+            connect(tv, &DADataTableView::contextMenuCutRequested, this, [ this, w ]() {
+                if (w->cutSelection() > 0) {
+                    setDirty();
+                }
+            });
+            connect(tv, &DADataTableView::contextMenuCopyRequested, this, [ this, w ]() {
+                if (DADataTableView* t = w->getDataTableView()) {
+                    if (!t->copySelectionToClipboard()) {
+                        daWarning << tr("No cells selected to copy");  // cn:没有选中可复制的单元格
+                    }
+                }
+            });
+            connect(tv, &DADataTableView::contextMenuPasteRequested, this, [ this, w ]() {
+                if (w->pasteFromClipboard() > 0) {
+                    setDirty();
+                }
+            });
         }
     } break;
     default:

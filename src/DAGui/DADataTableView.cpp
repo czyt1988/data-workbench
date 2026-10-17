@@ -1,9 +1,14 @@
 #include "DADataTableView.h"
 #include "DALogCategory.h"
+#include "DATableDataSource.h"
 #include <QKeyEvent>
 #include <QGuiApplication>
 #include <QClipboard>
 #include <QItemSelectionModel>
+#include <QMenu>
+#include <QAction>
+#include <QIcon>
+#include <QContextMenuEvent>
 #include <QSet>
 #include <QPair>
 #include <climits>
@@ -43,6 +48,9 @@ DAData DADataTableView::getData() const
 
 /**
  * @brief 按键事件：Ctrl+C / Ctrl+Insert 复制选中单元格
+ *
+ * 表格快捷键的集中挂点：一律在本函数处理（002 起在此追加查找/替换等键位，
+ * 本页保持现状 Ctrl+C，不预设空分支）。
  * @param event 按键事件
  */
 void DADataTableView::keyPressEvent(QKeyEvent* event)
@@ -54,6 +62,77 @@ void DADataTableView::keyPressEvent(QKeyEvent* event)
         }
     }
     QTableView::keyPressEvent(event);
+}
+
+/**
+ * @brief 数据源是否可编辑
+ *
+ * 判定路径同 DADataTableModel::actualFlags 的只读源分支：tableSource 非空且
+ * isTableEditable() 为假（如数据库惰性表）→ 只读。无模型/无数据按只读处理。
+ * @return 可编辑返回 true
+ */
+bool DADataTableView::isDataSourceEditable() const
+{
+    DADataTableModel* m = getDataModel();
+    if (!m) {
+        return false;
+    }
+    DAData d = m->getData();
+    if (d.isNull()) {
+        return false;
+    }
+    const DATableDataSource* ts = d.tableSource();
+    return !(ts && !ts->isTableEditable());
+}
+
+/**
+ * @brief 构建表体右键菜单
+ *
+ * v1 只放剪切 / 复制 / 粘贴三项（剪贴板组）。启用规则：无有效选区 → 全部置灰；
+ * 数据源只读（isTableEditable() 为假）→ 粘贴置灰。三项均发表意信号交 APP 接线到
+ * 既有槽逻辑（剪切/复制/粘贴路由），视图内不新增执行逻辑。
+ *
+ * 后续计划的分组按序追加在本菜单底部（组间用分隔符）：
+ * - 002：查找 / 替换
+ * - 003：条件格式
+ * - 004：分列 / 合并 / 转置
+ * - 005：填充 / 批注
+ * @param at 右键命中的模型索引（v1 菜单项与命中位置无关，启用规则按选区/数据源）
+ * @return 菜单（parent = this，调用方负责弹出与 deleteLater）
+ */
+QMenu* DADataTableView::buildContextMenu(const QModelIndex& at)
+{
+    Q_UNUSED(at);
+    QMenu* menu           = new QMenu(this);
+    const bool hasSel     = selectionModel() && selectionModel()->hasSelection();
+    const bool editable   = isDataSourceEditable();
+    QAction* actCut       = menu->addAction(QIcon(QStringLiteral(":/DAGui/icon/cut.svg")), tr("Cut"));     // cn:剪切
+    QAction* actCopy      = menu->addAction(QIcon(QStringLiteral(":/DAGui/icon/copy.svg")), tr("Copy"));   // cn:复制
+    QAction* actPaste     = menu->addAction(QIcon(QStringLiteral(":/DAGui/icon/paste.svg")), tr("Paste")); // cn:粘贴
+    actCut->setEnabled(hasSel);
+    actCopy->setEnabled(hasSel);
+    actPaste->setEnabled(hasSel && editable);
+    connect(actCut, &QAction::triggered, this, &DADataTableView::contextMenuCutRequested);
+    connect(actCopy, &QAction::triggered, this, &DADataTableView::contextMenuCopyRequested);
+    connect(actPaste, &QAction::triggered, this, &DADataTableView::contextMenuPasteRequested);
+    // —— 后续计划的分组插入点在菜单底部（见函数注释），插入时组间加分隔符 ——
+    return menu;
+}
+
+/**
+ * @brief 表体右键菜单事件
+ * @param event 上下文菜单事件
+ */
+void DADataTableView::contextMenuEvent(QContextMenuEvent* event)
+{
+    const QModelIndex at = indexAt(event->pos());
+    QMenu* menu          = buildContextMenu(at);
+    if (!menu) {
+        return;
+    }
+    // 弹出后菜单独立生命周期，关闭即销毁
+    connect(menu, &QMenu::aboutToHide, menu, &QMenu::deleteLater);
+    menu->popup(event->globalPos());
 }
 
 /**
