@@ -28,24 +28,6 @@ private:
 
 
 /**
- * @brief 数据排序
- *
- * 对DataFrame中的数据进行排序
- */
-class CommandDataFrame_sort : public DA::DACommandWithTemporaryData, public DA::DACallBackInterface
-{
-public:
-    CommandDataFrame_sort(const DA::DAPyDataFrame& df, const QString& by, const bool ascending, QUndoCommand* par = nullptr);
-    virtual void undo() override;
-    virtual bool exec() override;
-
-private:
-    QString mBy;
-    bool mAscending;
-};
-
-
-/**
  * @brief 数据查询
  *
  * 对DataFrame中的数据进行查询，根据表达式exper进行查询

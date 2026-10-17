@@ -85,8 +85,6 @@ public:
 	bool clipoutlier(DAPyDataFrame& df, double lowervalue, double uppervalue, int axis) noexcept;
 	// querydatas()
 	bool queryDatas(DAPyDataFrame& df, const QString& expr) noexcept;
-	// searchdata()（旧数值等值入口，仅为插件旧检索对话框保留，插件收口后移除）
-	QList< QPair< int, int > > searchData(const DAPyDataFrame& df, const QString& value) noexcept;
 	// 查找结果（紧凑命中数组 + 真实总数，§4.2 硬约束③：超上限截断时 totalHits > rows.size()）
 	struct SearchDataResult
 	{
@@ -128,8 +126,6 @@ public:
 	bool writeCells(DAPyDataFrame& df, const QVector< int >& rows, const QVector< int >& cols, const pybind11::list& values) noexcept;
 	// eval
 	bool evalDatas(DAPyDataFrame& df, const QString& expr) noexcept;
-	// 排序sort()（旧单键入口，仅为插件旧排序命令保留，插件收口后移除）
-	bool sort(DAPyDataFrame& df, const QString& by, bool ascending) noexcept;
 	// 多键稳定排序，对应da_dataframe.da_sort：keys为(列位置,是否升序)列表（顺序即优先级），
 	// 成功返回true；perm非空时输出置换（perm[i]=新表第i行在旧表中的行号，与DATableKeyRemap语义一致）
 	bool sort(DAPyDataFrame& df, const QVector< QPair< int, bool > >& keys, QVector< int >* perm = nullptr) noexcept;

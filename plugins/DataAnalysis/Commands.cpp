@@ -50,50 +50,6 @@ bool CommandDataFrame_filterByColumn::exec()
 }
 
 //===================================================
-// CommandDataFrame_sort
-//===================================================
-
-/**
- * @brief 数据排序
- *
- * 对DataFrame中的数据进行排序
- *
- * @param df  要排序的DataFrame
- * @param by  排序的列名
- * @param ascending 是否升序
- * @param par
- */
-CommandDataFrame_sort::CommandDataFrame_sort(const DA::DAPyDataFrame& df, const QString& by, const bool ascending, QUndoCommand* par)
-    : DA::DACommandWithTemporaryData(df, par), DA::DACallBackInterface(), mBy(by), mAscending(ascending)
-{
-    setText(QObject::tr("Data Sort"));  // cn:数据排序
-}
-
-/**
- * @brief 撤销操作
- */
-void CommandDataFrame_sort::undo()
-{
-    load();
-    callback();
-}
-
-/**
- * @brief 执行排序操作
- *
- * @return 执行是否成功
- */
-bool CommandDataFrame_sort::exec()
-{
-    DA::DAPyScriptsDataFrame& pydf = DA::DAPyScripts::getDataFrame();
-    if (!pydf.sort(dataframe(), mBy, mAscending)) {
-        return false;
-    }
-    callback();
-    return true;
-}
-
-//===================================================
 // CommandDataFrame_querydatas
 //===================================================
 /**

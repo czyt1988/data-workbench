@@ -118,8 +118,7 @@ void DataAnalysisUI::finalize()
             actionDataFrameFillInterpolate,   actionDataFrameRemoveOutlierIQR,
             actionDataFrameRemoveOutliersZScore, actionDataFrameTransformSkewedData,
             actionDataFrameEvalDatas,         actionDataFrameQueryDatas,
-            actionDataFrameDataRetrieval,     actionDataFrameDataFilterColumn,
-            actionDataFrameSort,              actionCreateDataDescribe,
+            actionDataFrameDataFilterColumn,  actionCreateDataDescribe,
             actionCreatePivotTable
         };
         for (QAction* act : allActions) {
@@ -144,9 +143,7 @@ void DataAnalysisUI::finalize()
     pannelDataFiltering              = nullptr;
     actionDataFrameEvalDatas         = nullptr;
     actionDataFrameQueryDatas        = nullptr;
-    actionDataFrameDataRetrieval     = nullptr;
     actionDataFrameDataFilterColumn  = nullptr;
-    actionDataFrameSort              = nullptr;
     panelDataStatistic               = nullptr;
     actionCreateDataDescribe         = nullptr;
     actionCreatePivotTable           = nullptr;
@@ -222,17 +219,11 @@ void DataAnalysisUI::buildDataCategory()
             mActions->createAction("actionDataFrameEvalDatas", ":/DataAnalysisPluginIcon/icon/dataframe-eval-datas.svg");
         actionDataFrameQueryDatas =
             mActions->createAction("actionDataFrameQueryDatas", ":/DataAnalysisPluginIcon/icon/dataframe-query-datas.svg");
-        actionDataFrameDataRetrieval =
-            mActions->createAction("actionDataFrameDataRetrieval", ":/DataAnalysisPluginIcon/icon/dataframe-data-retrieval.svg");
         actionDataFrameDataFilterColumn =
             mActions->createAction("actionDataFrameDataSelect", ":/DataAnalysisPluginIcon/icon/dataframe-data-select.svg");
-        actionDataFrameSort =
-            mActions->createAction("actionDataFrameSort", ":/DataAnalysisPluginIcon/icon/dataframe-sort.svg");
         pannelDataFiltering->addLargeAction(actionDataFrameEvalDatas);
         pannelDataFiltering->addLargeAction(actionDataFrameQueryDatas);
-        pannelDataFiltering->addMediumAction(actionDataFrameDataRetrieval);
         pannelDataFiltering->addMediumAction(actionDataFrameDataFilterColumn);
-        pannelDataFiltering->addLargeAction(actionDataFrameSort);
         //----------------------------------------------------
         // Statistic Panel 数据统计panel
         //----------------------------------------------------
@@ -305,11 +296,7 @@ void DataAnalysisUI::retranslateUi()
         );  // cn:输入关于列操作的表达式字符串并执行计算
         actionDataFrameQueryDatas->setText(tr("Query Data"));                                   // cn:条件筛选
         actionDataFrameQueryDatas->setToolTip(tr("Filter data outside of the given criteria"));  // cn:过滤给定条件外的数据
-        actionDataFrameDataRetrieval->setText(tr("Data Retrieval"));                             // cn:数据检索
-        actionDataFrameDataRetrieval->setToolTip(tr("Retrieve data for a certain condition"));  // cn:检索某条件的数据
         actionDataFrameDataFilterColumn->setText(tr("Filter by Column"));                       // cn:列数据过滤
-        actionDataFrameSort->setText(tr("Sort"));                                               // cn:数据排序
-        actionDataFrameSort->setToolTip(tr("Sort Data"));  // cn:对数据进行排序
 
         //----------------------------------------------------
         // Statistic Panel 数据统计panel
@@ -356,7 +343,5 @@ void DataAnalysisUI::bind(DataframeOperateWorker* worker)
     connect(actionCreateDataDescribe, &QAction::triggered, worker, &DataframeOperateWorker::createDataframeDescribe);
     connect(actionDataFrameEvalDatas, &QAction::triggered, worker, QOverload<>::of(&DataframeOperateWorker::evalDatas));
     connect(actionDataFrameQueryDatas, &QAction::triggered, worker, QOverload<>::of(&DataframeOperateWorker::queryDatas));
-    connect(actionDataFrameDataRetrieval, &QAction::triggered, worker, &DataframeOperateWorker::searchData);
     connect(actionDataFrameDataFilterColumn, &QAction::triggered, worker, QOverload<>::of(&DataframeOperateWorker::filterByColumn));
-    connect(actionDataFrameSort, &QAction::triggered, worker, QOverload<>::of(&DataframeOperateWorker::sortDatas));
 }

@@ -709,27 +709,6 @@ pybind11::object rangeToPyTuple(const std::optional< QPair< int, int > >& range)
 }
 
 /**
- * @brief search方法的wrapper（旧数值等值入口，插件收口后移除）
- *
- * 旧实现把关键字 value.toDouble() 后传给算子——文本永远搜不到（002 计划 §WP2 步骤 2
- * 要求同批改掉）。现委托给扩展版 searchData（文本/数值统一语义），仅保留旧返回形态。
- * @param df
- * @param value 要搜索的值
- * @return 命中位置列表（行主序）
- */
-QList< QPair< int, int > > DAPyScriptsDataFrame::searchData(const DAPyDataFrame& df, const QString& value) noexcept
-{
-    QList< QPair< int, int > > matches;
-    const SearchDataResult res = searchData(df, value, false, false, false);
-    const int n                = qMin(res.rows.size(), res.cols.size());
-    matches.reserve(n);
-    for (int i = 0; i < n; ++i) {
-        matches.append(qMakePair(res.rows.at(i), res.cols.at(i)));
-    }
-    return matches;
-}
-
-/**
  * @brief search方法的wrapper（扩展选项，§4.2）
  *
  * 对应 da_dataframe.da_search_data：大小写/正则/整格匹配 + 行/列范围闭区间；
@@ -871,33 +850,6 @@ bool DAPyScriptsDataFrame::evalDatas(DAPyDataFrame& df, const QString& expr) noe
         }
         pybind11::object da_eval_datas = attr("da_eval_datas");
         da_eval_datas(df.object(), DA::PY::toPyObject(expr));
-        return true;
-    } catch (const std::exception& e) {
-        dealException(e);
-    }
-    return false;
-}
-
-/**
- * @brief sort方法的wrapper
- * @param df
- * @param by
- * @param ascending
- * @return
- */
-bool DAPyScriptsDataFrame::sort(DAPyDataFrame& df, const QString& by, bool ascending) noexcept
-{
-    try {
-        pybind11::object da_sort = attr("da_sort");
-        pybind11::dict args;
-
-        if (by.isEmpty()) {
-            return false;
-        }
-
-        args[ "by" ]        = DA::PY::toPyObject(by);
-        args[ "ascending" ] = ascending;
-        da_sort(df.object(), **args);
         return true;
     } catch (const std::exception& e) {
         dealException(e);
