@@ -11,6 +11,7 @@
 #include <QTableView>
 #include <QHeaderView>
 #include <QSet>
+#include <QHash>
 #include <QMessageBox>
 #include <QPointer>
 #include <QClipboard>
@@ -109,8 +110,34 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
             mModel->notifyDataChanged(0, 0, qMax(0, mModel->actualRowCount() - 1), mModel->columnCount() - 1);
         }
     });
+    // 视图状态（列宽按列名 + 行头宽，R6）：
+    // 结构变化（模型重置/插删列）后按列名重新应用，保证列宽不随位置错位；
+    // 采集只认用户拖拽（sectionResized + 左键按住在表头上），程序化改动不写 store
+    connect(mModel, &QAbstractItemModel::modelReset, this, [ this ]() {
+        applyViewStateFromStore();
+    });
+    connect(mModel, &QAbstractItemModel::columnsInserted, this, [ this ]() {
+        applyViewStateFromStore();
+    });
+    connect(mModel, &QAbstractItemModel::columnsRemoved, this, [ this ]() {
+        applyViewStateFromStore();
+    });
+    connect(ui->tableView->horizontalHeader(), &QHeaderView::sectionResized, this, [ this ](int logicalIndex, int oldSize, int newSize) {
+        Q_UNUSED(oldSize);
+        onHeaderSectionResized(logicalIndex, newSize);
+    });
+    // 行头宽拖拽（DADataHeaderView vertical 实例）→ 写视图状态
+    if (DADataHeaderView* vh = qobject_cast< DADataHeaderView* >(ui->tableView->verticalHeader())) {
+        connect(vh, &DADataHeaderView::rowHeaderWidthChanged, this, [ this ](int width) {
+            if (mViewStateStore) {
+                mViewStateStore->setRowHeaderWidth(width);
+            }
+        });
+    }
     // 关闭不必要的绘制特性
     setDAData(d);
+    // 构造完成后应用一次视图状态（工程加载的宽度回填在注册表里，此时已可借用）
+    applyViewStateFromStore();
     connect(ui->tableView, &QTableView::clicked, this, &DADataOperateOfDataFrameWidget::onTableViewClicked);
     // 表头点击信号转发，用于"选择序列"窗口拾取列
     connect(ui->tableView->horizontalHeader(), &QHeaderView::sectionClicked, this, &DADataOperateOfDataFrameWidget::columnHeaderClicked);
@@ -581,6 +608,15 @@ void DADataOperateOfDataFrameWidget::renameColumns()
     if (!cmd->exec()) {
         return;
     }
+    // 列改名迁移：视图状态按列名引用（R20），宽度记录随改名同步迁移
+    if (mViewStateStore) {
+        const int n = qMin(cols.size(), oldcols.size());
+        for (int i = 0; i < n; ++i) {
+            if (cols[ i ] != oldcols[ i ]) {
+                mViewStateStore->renameColumn(oldcols[ i ], cols[ i ]);
+            }
+        }
+    }
     //! 通知datamanager
     if (DADataManager* mgr = mData.getDataManager()) {
         mgr->notifyDataChangedSignal(mData, DADataManager::ChangeDataframeColumnName);
@@ -622,6 +658,11 @@ bool DADataOperateOfDataFrameWidget::renameColumn(int col, const QString& newNam
         new DACommandDataFrame_renameColumns(df, newcols, oldcols, mModel));
     if (!cmd->exec()) {
         return false;
+    }
+    // 列改名迁移：视图状态按列名引用（R20），宽度记录随改名同步迁移；
+    // 放在 refreshData 之前，保证 modelReset 触发 applyViewStateFromStore 时按新列名命中
+    if (mViewStateStore) {
+        mViewStateStore->renameColumn(oldcols[ col ], newName);
     }
     if (DADataManager* mgr = mData.getDataManager()) {
         mgr->notifyDataChangedSignal(mData, DADataManager::ChangeDataframeColumnName);
@@ -1228,6 +1269,81 @@ DATableViewStateStore* DADataOperateOfDataFrameWidget::viewStateStore() const
 DATableHighlightOverlay* DADataOperateOfDataFrameWidget::highlightOverlay() const
 {
     return mHighlightOverlay;
+}
+
+/**
+ * @brief 从视图状态子存储应用列宽与行头宽
+ *
+ * 列宽按「列名 + 第几次出现（occurrence）」匹配逻辑列号后 resizeSection——
+ * 按列名匹配保证插列/删列后宽度不错位（R6/R20）。应用期间置守卫标志，
+ * 屏蔽 sectionResized 采集，避免把「应用」当「用户改动」写回 store。
+ * 行头宽用 setFixedWidth 落地（Qt 纵向表头宽度=clamp(qMax(min,sizeHint),max)，
+ * min=max=w 恒为 w，不会被视图布局覆盖）。
+ */
+void DADataOperateOfDataFrameWidget::applyViewStateFromStore()
+{
+    if (!mViewStateStore || !mModel) {
+        return;
+    }
+    mApplyingViewState = true;
+    QHeaderView* hh = ui->tableView->horizontalHeader();
+    if (hh) {
+        const int totalCols = mModel->columnCount();
+        QHash< QString, int > seen;  // 列名 -> 已出现次数（即下一列的 occurrence）
+        for (int c = 0; c < totalCols; ++c) {
+            const QString name = mModel->headerData(c, Qt::Horizontal).toString();
+            const int occ      = seen.value(name, 0);
+            seen[ name ]       = occ + 1;
+            if (name.isEmpty()) {
+                continue;  // 尾部预留空白列无列名，不应用
+            }
+            const int w = mViewStateStore->columnWidth(name, occ);
+            if (w > 0) {
+                hh->resizeSection(c, w);
+            }
+        }
+    }
+    const int rhw = mViewStateStore->rowHeaderWidth();
+    if (rhw > 0) {
+        if (QHeaderView* vh = ui->tableView->verticalHeader()) {
+            vh->setFixedWidth(rhw);
+        }
+    }
+    mApplyingViewState = false;
+}
+
+/**
+ * @brief 采集列宽改动写入视图状态子存储
+ *
+ * 只记录用户拖拽：左键按住且鼠标在表头上；应用守卫期间、程序化/布局触发的
+ * sectionResized（模型重置、窗口缩放拉伸末列等）一律不记录。尾部预留空白列
+ * 与空列名不记录。occurrence = 该列之前同名列的个数（重名列消歧，R20）。
+ * @param logicalIndex 逻辑列号
+ * @param newSize 新宽度（像素）
+ */
+void DADataOperateOfDataFrameWidget::onHeaderSectionResized(int logicalIndex, int newSize)
+{
+    if (mApplyingViewState || !mViewStateStore || !mModel) {
+        return;
+    }
+    QHeaderView* hh = ui->tableView->horizontalHeader();
+    if (!hh || !(QGuiApplication::mouseButtons() & Qt::LeftButton) || !hh->underMouse()) {
+        return;  // 非用户拖拽
+    }
+    if (logicalIndex < 0 || logicalIndex >= dataColumnCount()) {
+        return;  // 尾部预留空白列不记录
+    }
+    const QString name = mModel->headerData(logicalIndex, Qt::Horizontal).toString();
+    if (name.isEmpty()) {
+        return;
+    }
+    int occ = 0;
+    for (int c = 0; c < logicalIndex; ++c) {
+        if (mModel->headerData(c, Qt::Horizontal).toString() == name) {
+            ++occ;
+        }
+    }
+    mViewStateStore->setColumnWidth(name, occ, newSize);
 }
 
 /**

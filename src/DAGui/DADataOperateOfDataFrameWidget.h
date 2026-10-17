@@ -166,6 +166,11 @@ private:
     // 数据源真实数据行数/列数（不含尾部预留的空白行列）
     int dataRowCount() const;
     int dataColumnCount() const;
+    // 按列名（+重名消歧 occurrence）从视图状态子存储应用列宽与行头宽；
+    // 应用期间置守卫标志屏蔽采集，避免把「应用」当「用户改动」
+    void applyViewStateFromStore();
+    // 采集用户拖拽的列宽写入视图状态子存储（程序化/布局触发的 sectionResized 不记录）
+    void onHeaderSectionResized(int logicalIndex, int newSize);
 
     Ui::DADataOperateOfDataFrameWidget* ui;
     DAData mData;
@@ -174,6 +179,7 @@ private:
     DATableViewStateStore* mViewStateStore { nullptr };  ///< 借自 DATableMetadata 束，非拥有（视图状态：列宽/行头宽）
     DATableHighlightOverlay* mHighlightOverlay { nullptr };  ///< 瞬态高亮层（页级持有，不序列化、不进撤销栈）
     DATableStyleItemDelegate* mStyleDelegate { nullptr };
+    bool mApplyingViewState { false };  ///< 正在应用视图状态（屏蔽 sectionResized 采集）
 
     DADialogDataframeColumnCastToNumeric* mDialogCastNumArgs { nullptr };
     DADialogDataframeColumnCastToDatetime* mDialogCastDatetimeArgs { nullptr };
