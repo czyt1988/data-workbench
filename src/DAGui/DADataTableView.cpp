@@ -187,6 +187,11 @@ QMenu* DADataTableView::buildContextMenu(const QModelIndex& at)
                                                tr("Merge Columns..."));  // cn:合并列...
     actMergeColumns->setEnabled(editable && selColCount >= 2);
     connect(actMergeColumns, &QAction::triggered, this, &DADataTableView::mergeColumnsRequested);
+    // 分组聚合（004 T1.22）：产出新数据集（非破坏），有 dataframe 数据体即可用（只读源也可）
+    QAction* actGroupBy = menu->addAction(QIcon(QStringLiteral(":/DAGui/icon/group-by.svg")),
+                                          tr("Group By..."));  // cn:分组聚合...
+    actGroupBy->setEnabled(getData().isDataFrame());
+    connect(actGroupBy, &QAction::triggered, this, &DADataTableView::groupByRequested);
     // —— 后续计划的分组插入点在菜单底部（见函数注释），插入时组间加分隔符 ——
     return menu;
 }

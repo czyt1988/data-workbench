@@ -48,6 +48,7 @@
 #include "Dialog/DADialogComputedColumn.h"
 #include "Dialog/DADialogSplitColumn.h"
 #include "Dialog/DADialogMergeColumns.h"
+#include "Dialog/DADialogGroupBy.h"
 // python operator wrapper（查找/替换）
 #include "DAPyScripts.h"
 #include "DAPyScriptsDataFrame.h"
@@ -279,6 +280,8 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
         showSplitColumnDialog(-1);
     });
     connect(ui->tableView, &DADataTableView::mergeColumnsRequested, this, &DADataOperateOfDataFrameWidget::showMergeColumnsDialog);
+    // 分组聚合入口（004 T1.22）：表体右键菜单与 Ribbon「Data Tools」面板共用同一打开逻辑
+    connect(ui->tableView, &DADataTableView::groupByRequested, this, &DADataOperateOfDataFrameWidget::showGroupByDialog);
     // 选中变化时反向同步 ribbon 控件
     if (auto sm = ui->tableView->selectionModel()) {
         connect(sm, &QItemSelectionModel::selectionChanged, this, [ this ]() {
@@ -3484,4 +3487,46 @@ void DADataOperateOfDataFrameWidget::showMergeColumnsDialog()
         daWarning << tr("Computed column(s) %1 became invalid because their dependency column(s) were merged")
                          .arg(invalidatedTargets.join(QStringLiteral(", ")));  // cn:计算列 %1 因依赖列被合并已失效
     }
+}
+
+//===================================================
+// 分组聚合（004 T1.22）
+//===================================================
+
+/**
+ * @brief 打开分组聚合对话框并产出新数据集（004 T1.22，v1 只出长格式结果表）
+ *
+ * 产出流程照透视表的真实流程（DataframeOperateWorker::createPivotTable）：
+ * 聚合结果封装为 DAData → 命名 xxx_GroupBy（重名由 addData_ 的既有唯一化策略处理）→
+ * DADataManager::addData_ 注册（可撤销：注册命令进 DADataManager 自己的撤销栈，
+ * 该栈已由 APP 接入统一撤销组）→ 发 newDataCreated 交 APP 抬起数据区并激活新页面。
+ * 原表与其元数据完全不动（非破坏，R14 同款口径）；不做折叠视图（R15）。
+ */
+void DADataOperateOfDataFrameWidget::showGroupByDialog()
+{
+    DAPyDataFrame df = getDataframe();
+    if (df.isNone()) {
+        // 开发诊断：非 dataframe（只读惰性表无 python 数据体）
+        qWarning() << "DADataOperateOfDataFrameWidget::showGroupByDialog: dataframe unavailable";
+        return;
+    }
+    DADialogGroupBy dlg(df, this);
+    if (QDialog::Accepted != dlg.exec()) {
+        return;
+    }
+    DAPyDataFrame result = dlg.result();
+    if (result.isNone()) {
+        return;
+    }
+    DAData newData(result);
+    newData.setName(tr("%1_GroupBy").arg(mData.getName()));                       // cn:%1_分组聚合
+    newData.setDescribe(tr("Group-by aggregation of %1").arg(mData.getName()));  // cn:生成%1的分组聚合结果
+    DADataManager* mgr = mData.getDataManager();
+    if (!mgr) {
+        // 开发诊断：无数据管理器（正常 APP 链路数据都来自管理器）
+        qWarning() << "DADataOperateOfDataFrameWidget::showGroupByDialog: no data manager, result not registered";
+        return;
+    }
+    mgr->addData_(newData);  // 可撤销注册（别用不带下划线的 addData，D4/计划 §5.3-2）
+    Q_EMIT newDataCreated(newData);
 }

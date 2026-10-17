@@ -151,6 +151,12 @@ public:
     // 接受后执行合并并入栈（结果列替换被合并列的位置）
     void showMergeColumnsDialog();
 
+    // ===== 分组聚合（004 T1.22）=====
+    // 打开分组聚合对话框：产出长格式聚合结果表注册为**新数据集**（命名 xxx_GroupBy，
+    // 走 DADataManager::addData_ 可撤销；照透视表 createPivotTable 的真实产出流程），
+    // 原表与其元数据完全不动。成功后发 newDataCreated 交 APP 激活新页面
+    void showGroupByDialog();
+
 Q_SIGNALS:
     // 选中区变化时发射当前代表样式，供 ribbon 控件反向同步
     void currentStyleChanged(const DA::DATableCellStyle& style);
@@ -166,6 +172,9 @@ Q_SIGNALS:
     void replaceApplied(int changedCells);
     // 表格工具改动了数据（计算列重算等，004）；APP 接线 setDirty
     void dataModified();
+    // 产出了新数据集（分组聚合等，004 T1.22；已经 addData_ 注册、可撤销）；
+    // APP 接线：setDirty + 抬起数据操作区 + showData 激活新页面（照透视表流程）
+    void newDataCreated(const DA::DAData& data);
 public Q_SLOTS:
     void setDAData(const DA::DAData& d);
     // 在选中行后面插入行
