@@ -1596,43 +1596,69 @@ void DAAppController::onDataOperatePageCreated(DADataOperatePageWidget* page)
                     setDirty();
                 });
         // 列头右键菜单已迁入 DADataHeaderView（R12，菜单内容单点定义在 DAGui）：
-        // 这里只做信号接线——收到菜单表意信号后先选中该列（复用 selectColumnInDataFrameWidget，
-        // 槽函数经 getSelectedOneDataframeColumn 取列），再执行既有槽逻辑，行为与迁移前一致
+        // 这里只做信号接线——排序类动作直接执行（**不预选列**：整列选择会产生上万个
+        // 选区 range，拖慢排序的选区重映射且对排序无意义）；其余动作先选中该列
+        // （复用 selectColumnInDataFrameWidget，槽函数经 getSelectedOneDataframeColumn 取列），
+        // 再执行既有槽逻辑，行为与迁移前一致
         if (DADataTableView* tv = w->getDataTableView()) {
             if (DADataHeaderView* hv = qobject_cast< DADataHeaderView* >(tv->horizontalHeader())) {
                 connect(hv,
                         &DADataHeaderView::columnActionRequested,
                         this,
                         [ this, w ](int col, DA::DADataHeaderView::ColumnAction action) {
+                            using ColumnAction = DA::DADataHeaderView::ColumnAction;
+                            // 排序类（2026-10-18 交互修订：排序入口=列头右键菜单，点击表头不排序）
+                            if (action == ColumnAction::SortAscending || action == ColumnAction::SortDescending
+                                || action == ColumnAction::AddSecondarySortAscending
+                                || action == ColumnAction::AddSecondarySortDescending) {
+                                const Qt::SortOrder order = (action == ColumnAction::SortAscending
+                                                             || action == ColumnAction::AddSecondarySortAscending)
+                                                                ? Qt::AscendingOrder
+                                                                : Qt::DescendingOrder;
+                                if (action == ColumnAction::AddSecondarySortAscending
+                                    || action == ColumnAction::AddSecondarySortDescending) {
+                                    w->addSecondarySortColumn(col, order);
+                                } else {
+                                    w->sortColumn(col, order);
+                                }
+                                // 置脏由页面 dataModified 信号驱动（排序命令回调里发，exec/undo 全覆盖）
+                                return;
+                            }
                             selectColumnInDataFrameWidget(w, col);
                             switch (action) {
-                            case DA::DADataHeaderView::ColumnAction::RenameColumn:
+                            case ColumnAction::RenameColumn:
                                 onActionRenameColumnTriggered();
                                 break;
-                            case DA::DADataHeaderView::ColumnAction::RemoveColumn:
+                            case ColumnAction::RemoveColumn:
                                 onActionRemoveColumnTriggered();
                                 break;
-                            case DA::DADataHeaderView::ColumnAction::CopyColumnName:
+                            case ColumnAction::CopyColumnName:
                                 onActionCopyColumnNameTriggered();
                                 break;
-                            case DA::DADataHeaderView::ColumnAction::GotoMax:
+                            case ColumnAction::GotoMax:
                                 onActionGotoMaxTriggered();
                                 break;
-                            case DA::DADataHeaderView::ColumnAction::GotoMin:
+                            case ColumnAction::GotoMin:
                                 onActionGotoMinTriggered();
                                 break;
-                            case DA::DADataHeaderView::ColumnAction::ShowColumnDescribe:
+                            case ColumnAction::ShowColumnDescribe:
                                 onActionShowColumnDescribeTriggered();
                                 break;
                             // 计算列三项（004 T1.23）：页面方法按列位置解析列名后执行
-                            case DA::DADataHeaderView::ColumnAction::EditComputedFormula:
+                            case ColumnAction::EditComputedFormula:
                                 w->showComputedColumnDialog(col);
                                 break;
-                            case DA::DADataHeaderView::ColumnAction::RecomputeComputedColumn:
+                            case ColumnAction::RecomputeComputedColumn:
                                 w->recomputeComputedColumn(col);
                                 break;
-                            case DA::DADataHeaderView::ColumnAction::RemoveComputedFormula:
+                            case ColumnAction::RemoveComputedFormula:
                                 w->removeComputedColumnFormula(col);
+                                break;
+                            // 排序类已在上面前置分支处理（保留 case 保证枚举全覆盖）
+                            case ColumnAction::SortAscending:
+                            case ColumnAction::SortDescending:
+                            case ColumnAction::AddSecondarySortAscending:
+                            case ColumnAction::AddSecondarySortDescending:
                                 break;
                             }
                         });

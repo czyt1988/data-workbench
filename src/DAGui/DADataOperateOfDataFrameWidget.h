@@ -123,6 +123,11 @@ public:
     bool isHeaderPickMode() const;
     // 当前多列排序规格（列逻辑索引+方向，顺序即优先级；不持久化 R13）
     QVector< QPair< int, Qt::SortOrder > > sortSpec() const;
+    // 按列排序（2026-10-18 交互修订：排序入口=列头右键菜单，点击表头不再排序）：
+    // sortColumn 重置规格为「仅该列」；addSecondarySortColumn 保留既有规格追加/切换该列。
+    // 只读/惰性源与拾取模式下不执行（只读源 daWarning 提示一次）
+    void sortColumn(int logicalIndex, Qt::SortOrder order);
+    void addSecondarySortColumn(int logicalIndex, Qt::SortOrder order);
 
     // 打开条件格式规则编辑对话框（003 T1.5）：作用于当前选区所在列；
     // 编辑期预览叠加，确定后按差异生成增/删/改/移命令入页撤销栈（D4）
@@ -298,7 +303,8 @@ private Q_SLOTS:
     // 表格点击
     void onTableViewClicked(const QModelIndex& index);
     // 表头带修饰键点击（DADataHeaderView::clickedWithModifiers）：
-    // 拾取模式只转发 columnHeaderClicked；否则更新排序规格并排序
+    // 仅拾取模式下转发 columnHeaderClicked；**点击不排序**（2026-10-18 交互修订，
+    // 排序入口=列头右键菜单 sortColumn/addSecondarySortColumn）
     void onHeaderClickedWithModifiers(int logicalIndex, Qt::KeyboardModifiers modifiers);
     // 查找条：扫描请求（去抖到期）、上一个/下一个导航、替换当前、全部替换、关闭清高亮
     void onFindSearchRequested();
@@ -322,6 +328,9 @@ private:
     // 应用排序规格：构造 DACommandDataFrame_sortRows、接线样式/模型/选区/视口回调并 push；
     // 算子失败（如混合类型不可比较）提示并保持原规格，返回 false
     bool applySortSpec(const QVector< QPair< int, Qt::SortOrder > >& newSpec);
+    // 排序动作统一入口（菜单驱动）：守卫（拾取模式/边界/只读/空表）→ 构造规格 → applySortSpec；
+    // addKey=false 重置为「仅该列」，true 保留既有规格追加/切换该列
+    bool applySortAction(int logicalIndex, Qt::SortOrder order, bool addKey);
     // 按最近应用的置换修正选区（选中行随排序跟随）：appliedPerm 为新→旧置换，
     // 旧行号经逆置换映射到新位置（滑动窗未平移，选中位置号即重排前的数据行号）
     void remapSelectionByPermutation(const QVector< int >& appliedPerm);

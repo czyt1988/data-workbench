@@ -255,17 +255,30 @@ bool DADataHeaderView::isColumnMenuAvailable(int logicalIndex) const
 /**
  * @brief 构建列头右键菜单
  *
- * 项与顺序照迁移前现状 **6 项 4 组**（DAAppController::populateColumnContextMenu）：
- * 重命名列 / 删除列 ‖ 复制列名 ‖ 定位最大 / 定位最小 ‖ 描述统计。
+ * 排序组在最前（2026-10-18 交互修订：**点击表头不再排序**，排序入口收敛到本菜单）：
+ * 升序 / 降序 / 追加次级升 / 追加次级降；其后为迁移前现状 **6 项 4 组**
+ * （DAAppController::populateColumnContextMenu）：重命名列 / 删除列 ‖ 复制列名 ‖
+ * 定位最大 / 定位最小 ‖ 描述统计。
  * QAction 由 DAGui 自建（不共享 APP 的 action 对象，避免 Ribbon 与右键的 enabled
  * 互相污染），文案沿用同一英文源串，图标取 :/DAGui/icon/；点击后发
- * columnActionRequested 表意信号，APP 侧接线：先选中该列再执行既有槽逻辑。
+ * columnActionRequested 表意信号，APP 侧接线：排序类直接执行（不预选列，避免
+ * 整列大选区），其余先选中该列再执行既有槽逻辑。
  * @param logicalIndex 目标列逻辑索引
  * @return 菜单（parent = this，调用方负责弹出与 deleteLater）
  */
 QMenu* DADataHeaderView::buildColumnContextMenu(int logicalIndex)
 {
     QMenu* menu = new QMenu(this);
+    // 组0：排序（升/降 = 重置规格为仅该列；追加次级 = 保留既有规格追加/切换该列）
+    QAction* actSortAsc = menu->addAction(QIcon(QStringLiteral(":/DAGui/icon/sort-ascending.svg")),
+                                          tr("Sort Ascending"));  // cn:升序排序
+    QAction* actSortDesc = menu->addAction(QIcon(QStringLiteral(":/DAGui/icon/sort-descending.svg")),
+                                           tr("Sort Descending"));  // cn:降序排序
+    QAction* actAddSortAsc = menu->addAction(QIcon(QStringLiteral(":/DAGui/icon/sort-ascending.svg")),
+                                             tr("Add Secondary Sort (Ascending)"));  // cn:追加为次级排序（升序）
+    QAction* actAddSortDesc = menu->addAction(QIcon(QStringLiteral(":/DAGui/icon/sort-descending.svg")),
+                                              tr("Add Secondary Sort (Descending)"));  // cn:追加为次级排序（降序）
+    menu->addSeparator();
     // 组1：重命名列 / 删除列
     QAction* actRename = menu->addAction(QIcon(QStringLiteral(":/DAGui/icon/rename-column.svg")),
                                          tr("Rename Column"));  // cn:重命名此列
@@ -285,6 +298,19 @@ QMenu* DADataHeaderView::buildColumnContextMenu(int logicalIndex)
     // 组4：描述统计
     QAction* actDescribe = menu->addAction(QIcon(QStringLiteral(":/DAGui/icon/showDataInList.svg")),
                                            tr("Show Statistics"));  // cn:显示统计信息
+
+    connect(actSortAsc, &QAction::triggered, this, [ this, logicalIndex ]() {
+        Q_EMIT columnActionRequested(logicalIndex, ColumnAction::SortAscending);
+    });
+    connect(actSortDesc, &QAction::triggered, this, [ this, logicalIndex ]() {
+        Q_EMIT columnActionRequested(logicalIndex, ColumnAction::SortDescending);
+    });
+    connect(actAddSortAsc, &QAction::triggered, this, [ this, logicalIndex ]() {
+        Q_EMIT columnActionRequested(logicalIndex, ColumnAction::AddSecondarySortAscending);
+    });
+    connect(actAddSortDesc, &QAction::triggered, this, [ this, logicalIndex ]() {
+        Q_EMIT columnActionRequested(logicalIndex, ColumnAction::AddSecondarySortDescending);
+    });
 
     connect(actRename, &QAction::triggered, this, [ this, logicalIndex ]() {
         Q_EMIT columnActionRequested(logicalIndex, ColumnAction::RenameColumn);
