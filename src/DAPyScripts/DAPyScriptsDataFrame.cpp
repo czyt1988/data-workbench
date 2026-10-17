@@ -1160,6 +1160,68 @@ qint64 DAPyScriptsDataFrame::groupCount(const DAPyDataFrame& df, const QStringLi
     return -1;
 }
 
+/**
+ * @brief 转置的wrapper（004 T1.27）
+ *
+ * 对应 da_dataframe.da_transpose：产出新 DataFrame（不改原表，R14 非破坏默认）。
+ * @param df 数据（只读）
+ * @param errorMessage 非空时输出失败诊断
+ * @return 转置结果（失败返回显式 none 的 DAPyDataFrame）
+ */
+DAPyDataFrame DAPyScriptsDataFrame::transpose(const DAPyDataFrame& df, QString* errorMessage) noexcept
+{
+    if (df.isNone()) {
+        return DAPyDataFrame(pybind11::none());
+    }
+    try {
+        pybind11::object da_transpose = attr("da_transpose");
+        return DAPyDataFrame(da_transpose(df.object()));
+    } catch (const std::exception& e) {
+        if (errorMessage) {
+            *errorMessage = QString::fromUtf8(e.what());
+        }
+        dealException(e);
+    }
+    return DAPyDataFrame(pybind11::none());
+}
+
+/**
+ * @brief 宽转长 melt 的wrapper（004 T1.27）
+ *
+ * 对应 da_dataframe.da_melt：产出新 DataFrame（不改原表）。valueVars 空 = 除 idVars
+ * 外全部列（pandas 语义）。规模守卫（行数×展开列数）由调用侧对话框预估，见计划 §6.3-4。
+ * @param df 数据（只读）
+ * @param idVars 保留列名
+ * @param valueVars 展开列名（空=全部非保留列）
+ * @param varName 变量名列名
+ * @param valueName 值列名
+ * @param errorMessage 非空时输出失败诊断
+ * @return melt 结果（失败返回显式 none 的 DAPyDataFrame）
+ */
+DAPyDataFrame DAPyScriptsDataFrame::melt(const DAPyDataFrame& df,
+                                         const QStringList& idVars,
+                                         const QStringList& valueVars,
+                                         const QString& varName,
+                                         const QString& valueName,
+                                         QString* errorMessage) noexcept
+{
+    if (df.isNone()) {
+        return DAPyDataFrame(pybind11::none());
+    }
+    try {
+        pybind11::object da_melt = attr("da_melt");
+        pybind11::object pyId    = idVars.isEmpty() ? pybind11::none() : pybind11::object(DA::PY::toPyObject(idVars));
+        pybind11::object pyValue = valueVars.isEmpty() ? pybind11::none() : pybind11::object(DA::PY::toPyObject(valueVars));
+        return DAPyDataFrame(da_melt(df.object(), pyId, pyValue, DA::PY::toPyObject(varName), DA::PY::toPyObject(valueName)));
+    } catch (const std::exception& e) {
+        if (errorMessage) {
+            *errorMessage = QString::fromUtf8(e.what());
+        }
+        dealException(e);
+    }
+    return DAPyDataFrame(pybind11::none());
+}
+
 
 /**
  * @brief 多键稳定排序的wrapper

@@ -179,6 +179,18 @@ public:
 	                               QString* errorMessage = nullptr) noexcept;
 	// 分组数（对话框「预估结果行数」，对应 da_dataframe.da_group_count）；失败返回 -1
 	qint64 groupCount(const DAPyDataFrame& df, const QStringList& keys) noexcept;
+	// ===== 形状变换（004 T1.27）=====
+	// 转置（对应 da_dataframe.da_transpose）：产出新 DataFrame（不改原表，R14）；
+	// 失败返回显式 none 的 DAPyDataFrame
+	DAPyDataFrame transpose(const DAPyDataFrame& df, QString* errorMessage = nullptr) noexcept;
+	// 宽转长 melt（对应 da_dataframe.da_melt）：产出新 DataFrame（不改原表）；
+	// valueVars 空 = 除 idVars 外全部列（pandas 语义）；失败返回显式 none
+	DAPyDataFrame melt(const DAPyDataFrame& df,
+	                   const QStringList& idVars,
+	                   const QStringList& valueVars,
+	                   const QString& varName,
+	                   const QString& valueName,
+	                   QString* errorMessage = nullptr) noexcept;
 	// 多键稳定排序，对应da_dataframe.da_sort：keys为(列位置,是否升序)列表（顺序即优先级），
 	// 成功返回true；perm非空时输出置换（perm[i]=新表第i行在旧表中的行号，与DATableKeyRemap语义一致）
 	bool sort(DAPyDataFrame& df, const QVector< QPair< int, bool > >& keys, QVector< int >* perm = nullptr) noexcept;

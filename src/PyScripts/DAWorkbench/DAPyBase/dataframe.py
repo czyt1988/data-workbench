@@ -549,6 +549,40 @@ def da_group_count(df: pd.DataFrame, keys) -> int:
 
 
 @log_function_call
+def da_transpose(df: pd.DataFrame) -> pd.DataFrame:
+    '''
+    转置（004 T1.27）：行列互换，产出**新** DataFrame（不改原表，R14 非破坏默认）
+
+    结果第一列名为 "index"、内容是原列名（Excel 转置语义：表头变第一列）；
+    其余列名 = 原行索引值（统一转字符串，避免非字符串列名进入表格模型）。
+    混合 dtype 转置后为 object 列（pandas 语义），进图表/工作流前可再转类型。
+    '''
+    out = df.T.reset_index(drop=False)
+    out.columns = [str(c) for c in out.columns]
+    return out
+
+
+@log_function_call
+def da_melt(df: pd.DataFrame, id_vars, value_vars, var_name: str = 'variable', value_name: str = 'value') -> pd.DataFrame:
+    '''
+    宽转长 melt（004 T1.27）：产出**新** DataFrame（不改原表，R14 非破坏默认）
+
+    :param id_vars: 保留列名列表（可空 = 无保留列）
+    :param value_vars: 展开列名列表（空/None = 除保留列外全部列，pandas 语义）
+    :param var_name: 变量名列名（默认 "variable"）
+    :param value_name: 值列名（默认 "value"）
+    :return: 长格式结果，行数 = 原行数 × 展开列数（规模守卫由调用侧预估）
+    '''
+    idl = [str(c) for c in id_vars] if id_vars is not None and len(list(id_vars)) > 0 else None
+    vvl = [str(c) for c in value_vars] if value_vars is not None and len(list(value_vars)) > 0 else None
+    out = pd.melt(df, id_vars=idl, value_vars=vvl,
+                  var_name=str(var_name) if var_name else 'variable',
+                  value_name=str(value_name) if value_name else 'value')
+    out.columns = [str(c) for c in out.columns]
+    return out
+
+
+@log_function_call
 def da_merge_columns(df: pd.DataFrame, cols, sep: str = '', skip_na: bool = True, name: str = 'merged'):
     '''
     就地合并列（004 T1.9）：按 cols 给定顺序把各列值拼接为新列，
