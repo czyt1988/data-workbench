@@ -36,7 +36,7 @@ DataAnalysis/
     └── DADataAnalysisNodes/     # 工作流节点定义（21 节点）
         ├── __init__.py
         ├── setup.py
-        ├── icon/               # 节点图标（21 个 SVG，200×200，配色遵循 icon-ui-design-guide.md）
+        ├── icon/               # 节点图标（21 个 SVG，200×200，配色遵循仓库根目录 DESIGN.md）
         └── *_node.py           # 节点定义文件
 ```
 
@@ -87,7 +87,7 @@ DataAnalysis/
 
 `@NodeDef(icon=...)` 经 C++ 侧 `QIcon(iconPath)` 直接加载，**裸短名会静默回退默认图标**（详见 `plugins/DASystemNodes/AGENTS.md`）。本包做法与 DASystemNodes 一致：
 
-- 图标放包内 `icon/` 目录（200×200 SVG，配色遵循 [icon-ui-design-guide.md](../../docs/zh/dev-guide/general/icon-ui-design-guide.md)）
+- 图标放包内 `icon/` 目录（200×200 SVG，配色遵循 [DESIGN.md](../../DESIGN.md)）
 - 节点文件用 `_ICON_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "icon")` 计算绝对路径，`icon=os.path.join(_ICON_DIR, "xxx.svg")`
 - CMake `install(DIRECTORY ...)` 与 `file(COPY ...)` 已含整个包，`icon/` 随包复制，无需额外安装规则
 

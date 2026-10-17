@@ -4,7 +4,7 @@
 	<!-- 合并列：左侧三个浅蓝源列 → 主蓝箭头 → 右侧结果列（白底灰框 + 浅灰数据行）。
 	     与 split-column.svg 镜像对称。官方色板：轮廓 #727272（中灰）、结果列底 #FFFFFF、
 	     数据行 #B2B2B2（浅灰）、箭头 #5280C1（主蓝，主操作）、源列 #BDCDE8（浅蓝）；
-	     禁渐变/阴影/<text>（icon-ui-design-guide §4.2/§10） -->
+	     禁渐变/阴影/<text>（DESIGN.md §4） -->
 	<rect x="14" y="30" width="14" height="140" fill="#BDCDE8" stroke="#727272" stroke-width="5"/>
 	<rect x="34" y="30" width="14" height="140" fill="#BDCDE8" stroke="#727272" stroke-width="5"/>
 	<rect x="54" y="30" width="14" height="140" fill="#BDCDE8" stroke="#727272" stroke-width="5"/>

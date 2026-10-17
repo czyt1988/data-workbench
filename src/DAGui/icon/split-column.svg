@@ -3,7 +3,7 @@
 	 width="200px" height="200px" viewBox="0 0 200 200" xml:space="preserve">
 	<!-- 分列：左侧源列（白底灰框 + 浅灰数据行）→ 主蓝箭头 → 右侧三个浅蓝结果列。
 	     官方色板：轮廓 #727272（中灰）、源列底 #FFFFFF、数据行 #B2B2B2（浅灰）、
-	     箭头 #5280C1（主蓝，主操作）、结果列 #BDCDE8（浅蓝）；禁渐变/阴影/<text>（icon-ui-design-guide §4.2/§10） -->
+	     箭头 #5280C1（主蓝，主操作）、结果列 #BDCDE8（浅蓝）；禁渐变/阴影/<text>（DESIGN.md §4） -->
 	<rect x="20" y="30" width="46" height="140" fill="#FFFFFF"/>
 	<rect x="31" y="52" width="24" height="10" fill="#B2B2B2"/>
 	<rect x="31" y="78" width="24" height="10" fill="#B2B2B2"/>

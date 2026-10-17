@@ -3,7 +3,7 @@
 	 width="200px" height="200px" viewBox="0 0 200 200" xml:space="preserve">
 	<!-- 宽转长（melt）：左侧宽表（三列网格）→ 主蓝箭头 → 右侧窄长表（浅蓝填充，多行）。
 	     官方色板：轮廓 #727272（中灰）、宽表底 #FFFFFF、长表填充 #BDCDE8（浅蓝）、
-	     箭头 #5280C1（主蓝，主操作）；禁渐变/阴影/<text>（icon-ui-design-guide §4.2/§10） -->
+	     箭头 #5280C1（主蓝，主操作）；禁渐变/阴影/<text>（DESIGN.md §4） -->
 	<rect x="14" y="55" width="84" height="90" fill="#FFFFFF"/>
 	<g fill="none" stroke="#727272" stroke-width="7" stroke-linecap="butt">
 		<rect x="14" y="55" width="84" height="90"/>

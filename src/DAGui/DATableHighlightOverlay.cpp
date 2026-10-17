@@ -161,7 +161,7 @@ bool DATableHighlightOverlay::isEmpty() const
 /**
  * @brief 级别 → 语义色
  *
- * 色值取自官方色板（icon-ui-design-guide.md）：命中/警告 = 金黄 #E6C27C、
+ * 色值取自官方色板（仓库根目录 DESIGN.md）：命中/警告 = 金黄 #E6C27C、
  * 当前命中 = 主蓝 #5280C1、错误 = 橙红 #CE6043。不透明度与背景混合规则在
  * delegate 层③实现（本类只给不透明语义色）。
  * @param level 级别

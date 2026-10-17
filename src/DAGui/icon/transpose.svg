@@ -4,7 +4,7 @@
 	<!-- 转置：方阵沿主对角线翻转——右上三角浅蓝（被翻转区域）、主对角线中灰、
 	     垂直对角线的双向箭头主蓝（翻转动势）。
 	     官方色板：轮廓 #727272（中灰）、底 #FFFFFF、三角 #BDCDE8（浅蓝）、
-	     箭头 #5280C1（主蓝，主操作）；禁渐变/阴影/<text>（icon-ui-design-guide §4.2/§10） -->
+	     箭头 #5280C1（主蓝，主操作）；禁渐变/阴影/<text>（DESIGN.md §4） -->
 	<rect x="24" y="24" width="152" height="152" fill="#FFFFFF"/>
 	<polygon points="30,30 170,30 170,170" fill="#BDCDE8"/>
 	<g fill="none" stroke="#727272" stroke-width="8" stroke-linecap="butt">

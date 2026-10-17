@@ -162,7 +162,7 @@ Python层: DAUtils → DAPyBindQt → DAPyScripts → DAPyCommonWidgets → DAPy
 | 论文撰写 Agent | `plugins/DAPaperAgent/`（内置「论文撰写助手」agent + `search_literature`/`verify_doi` 文献工具） | `registerBuiltinAgent` 机制的参考实现：插件 initialize() 三连调用（提示词 qrc 内嵌 + 工具注册 + 系统提示词片段）；提示词为六阶段论文流程（数据理解→建模锁定→图表→文献大纲→写作→评审定稿，结果包锁定+ask_user 门禁）；开发指南见 `docs/zh/dev-guide/agent/register-builtin-agent-via-plugin.md` |
 | 子 Agent | `src/DAAgent/DAAgentSubagentManager`（定义库：`<exe>/daAgent/subagents/*.md`，frontmatter + md 正文）/ `src/DAAgent/DAAgentSubagentDef`（定义数据结构）/ `src/PyScripts/DAWorkbench/agent/subagent_orchestrator.py`（Python 编排器：并发限流/超时/停止级联/进度上报）/ `src/APP/Dialog/DAAgentManagerDialog`（管理 UI「子 Agent」Tab）+ `DAAgentSubagentEditDialog`（结构化编辑器） | 主 AI 经 `dispatch_subagents` 工具委派子 agent 并行调研并汇总结论；插件经 `registerBuiltinSubagent` 注入领域子 agent；子 agent 调用经同一权限门执法（审批卡带「来自子 Agent」上下文，任务终态自动撤卡）；进度卡片渲染在 `src/DAGui/Agent/resources/chat.js` 的 `updateSubagentProgress`；协议/铁律详见 `src/DAAgent/AGENTS.md` § 五 + T17 |
 | Agent 会话标签页 | `src/DAGui/Agent/DAAgentDockWidget`（宿主：嵌套 `ads::CDockManager` + 会话路由/生命周期，session-tabs）/ `src/DAGui/Agent/DAAgentSessionChatWidget`（单会话聊天视图：独立 QWebEngineView+WebChannel）/ `src/DAGui/Agent/DAAgentDockAreaTitleBar` + `DAAgentSessionComponentsFactory` + `DAAgentSessionDockWidgetTab`（标题栏「+/会话管理」按钮、标签右键菜单） | 每会话一个 dock 标签页（嵌套停靠模式，同 DAChartOperateWidget，不可逃逸区域/不可浮动）；接口事件信号（`agentToken` 等）首参 sessionId 对全部运行会话广播，宿主路由到对应视图（后台会话实时渲染）；用户交互遵循「交互即激活」；会话视图 attach 经 `DAAgentInterface::setSessionViewAttached` 触发模块重发挂起问题卡/审批卡；关闭运行中标签弹「后台继续/停止并关闭」三选；Ribbon「AI智能体」的「新建会话/会话管理」与标题栏按钮共用 `requestNewSession`/`requestShowSessionManager` 入口 |
-| **图标 / UI 设计** | `src/DAGui/icon/`、`src/APP/Icon/` | **🔴 涉及 SVG 图标设计必须先阅读** [docs/zh/dev-guide/general/icon-ui-design-guide.md](docs/zh/dev-guide/general/icon-ui-design-guide.md)：画布规格、语义色板、色彩组合规则、UI 配色映射、AI Checklist |
+| **图标 / UI 设计** | `src/DAGui/icon/`、`src/APP/Icon/` | **🔴 涉及界面或 SVG 图标设计必须先阅读** [DESIGN.md](DESIGN.md)：统一视觉设计规范（UI 配色映射、图标画布/语义色板/色彩组合规则、AI Checklist） |
 | Python 工作流节点开发 | `plugins/DASystemNodes/AGENTS.md` | @NodeDef 节点开发规范、**init**/paint() 等核心陷阱 |
 | 插件模板 | `plugins/plugin-template/` | 新插件脚手架 |
 | 文档源码 | `docs/zh/` | Doxygen Wiki 中文 |
@@ -200,7 +200,7 @@ AI 编写代码时，日志宏的选择直接影响日志是否进入 UI 消息�
 | | [chart-dock-nesting.md](docs/zh/dev-guide/graphics/chart-dock-nesting.md) | 绘图窗口 ADS 嵌套停靠区、FocusHighlighting 焦点陷阱 |
 | | [logging.md](docs/zh/dev-guide/general/logging.md) | 日志系统、故障排查 |
 | | [creating-setting-panel.md](docs/zh/dev-guide/ui/creating-setting-panel.md) | 创建设置面板 |
-| | [icon-ui-design-guide.md](docs/zh/dev-guide/general/icon-ui-design-guide.md) | 图标与 UI 设计规范（SVG 图标设计必读） |
+| | [DESIGN.md](DESIGN.md) | 统一视觉设计规范：UI 设计 + 图标设计 + 色系（界面/图标设计必读） |
 | **构建** | [build-instructions.md](docs/zh/build/build-instructions.md) | 完整构建指南 |
 | | [build-options.md](docs/zh/build/build-options.md) | CMake 构建选项参考 |
 | | [common-build-errors.md](docs/zh/build/common-build-errors.md) | 常见构建错误 |
@@ -254,18 +254,13 @@ AI 编写代码时，日志宏的选择直接影响日志是否进入 UI 消息�
 - Qt6 不再通过 `QDataStream` 隐式包含 `<QIODevice>`。如编译报 `QIODevice` 不完整类型，手动添加 `#include <QIODevice>`。
 - Qt 信号槽中传递自定义类指针（如 `DAPyNodeGraphicsItem*`），若头文件仅有前向声明，`connect` 会导致不完整类型错误。**解决方案**：在 .cpp 文件中 `#include` 完整头文件，而非仅依赖前向声明
 
-### 图标与 UI 设计规范
+### 视觉设计规范（UI 与图标）
 
-> 📖 **详细规范见** [docs/zh/dev-guide/general/icon-ui-design-guide.md](docs/zh/dev-guide/general/icon-ui-design-guide.md)
+> 📖 **详细规范见** [DESIGN.md](DESIGN.md)（仓库根目录，与本文同级）
 
-**强制规则**：**如果涉及 SVG 图标的设计（新增、替换、修改 `src/DAGui/icon/` 或 `src/APP/Icon/` 下任意 `.svg` 文件），必须先阅读上述文档**，并按其 §10 Checklist 逐项核对。该文档是项目图标与 UI 设计的唯一权威规范，涵盖：
+**强制规则**：**凡涉及界面设计或 SVG 图标设计（新增、替换、修改 `src/DAGui/icon/`、`src/APP/Icon/` 或插件 `icon/` 下的任意 `.svg`），必须先阅读 [DESIGN.md](DESIGN.md)**，并按其中 §6 的 Checklist 逐项核对。
 
-- 画布规格（viewBox：200×200 / 64×64 / 32×32 / 1024×1024）
-- 语义化色板（主蓝 `#5280C1`、中灰 `#727272`、绿 `#669E8B`、橙红 `#CE6043`、金黄 `#E6C27C` 等，不要随便引入新色值）
-- 色彩组合规则（容器型 / 功能操作 / 图表类型 / 数据类型 / 消息类型）
-- UI 控件配色映射（按钮、面板、状态指示与图标语义色同源）
-- 命名规范（`camelCase` 文件名、`kebab-case` 子目录）
-- 禁止事项（禁渐变/阴影、禁 `<text>`、禁动画、禁 UI 控件配色与配套图标语义色不一致）
+[DESIGN.md](DESIGN.md) 是项目视觉表现的唯一权威规范，覆盖：设计定位与原则；官方色板（唯一权威源 `docs/assets/PIC/palette.svg`）与遗留色黑名单；UI 配色映射与控件风格；图标画布规格、色彩组合规则、命名与 SVG 结构；现有图标资源清单；AI 工作流、自检 Checklist 与禁止事项。文档站的对应入口页为 `docs/zh/dev-guide/general/icon-ui-design-guide.md`（仅做指引，正文在 DESIGN.md）。
 
 ## 国际化（i18n）规范
 
@@ -493,7 +488,7 @@ Linux GCC 下 `uint64_t` 是 `unsigned long`，MSVC 下是 `unsigned long long`�
 |------|------|
 | [README.md](README.md) | 项目简介和第三方库说明 |
 | [docs/doc-writing-guide.md](docs/doc-writing-guide.md) | 文档撰写规范手册，涉及文档撰写时阅读 |
-| [docs/zh/dev-guide/general/icon-ui-design-guide.md](docs/zh/dev-guide/general/icon-ui-design-guide.md) | 图标与 UI 设计规范，涉及 SVG 图标设计时阅读 |
+| [DESIGN.md](DESIGN.md) | 统一视觉设计规范（UI 设计 + 图标设计 + 色系），涉及界面或 SVG 图标设计时阅读 |
 | [docs/zh/index.md](docs/zh/index.md) | 中文文档入口 |
 
 ## NOTES
