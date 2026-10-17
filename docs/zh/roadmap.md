@@ -1481,7 +1481,7 @@ flowchart LR
 | T1.2 | 分支与汇聚语义修复 | 未开始 | | | |
 | T1.3 | 表格：表头多列排序 | 已完成 | feat/table-sort-find-replace | 7e2deda0…03af698a | 列头点击排序（破坏式重排 + 置换撤销，无快照）、Shift/Ctrl 多列序号角标、拾取模式互斥、只读源守卫；样式键随 onRowsReordered 跟随、选区跟随、视口回顶；10 万行排序实测 ~15ms（≤300ms）；DATableDataTest 覆盖 |
 | T1.4 | 表格：查找替换对话框 | 已完成 | feat/table-sort-find-replace | 65c20801…b0454f6e + cbb962f4 | 非模态浮动查找条（Ctrl+F/Ctrl+H/右键/Ribbon「编辑」面板）、三硬约束（去抖 350ms/请求序号丢弃过期/上限 10 万截断）、命中高亮 + 当前命中级 + 上下导航、全部替换=一个撤销单元（值记录，>100 万格降级为不可撤销 + 确认）、数值列保 dtype；同批收口删除插件 DataFrameSortDialog/DataFrameDataSearchDialog（refactor d8f2219b + docs cf457aea）；DATableDataTest 覆盖 |
-| T1.5 | 表格：条件格式 | 已完成 | feat/table-conditional-format | 03574e4b…07933723 | 三类规则均按列绑定（单元格规则 7 操作符 / 双色三色色阶 / 数据条），列引用为位置键（R20，插删列重映射）；delegate 五层管线补齐②持久装饰+④数据条（求值只在 delegate 层、Qt::EditRole 取值、按列规则桶缓存、列统计走 da_column_stats 全表归约+惰性缓存、cellValueChanged 精确失效、排序不失效）；两栏编辑对话框（预览规则集实时叠加、确定按差异生成增/删/改/移/清命令入页栈、惰性/只读源色阶与数据条置灰）；<conditional-format> 段随元数据束进 table-metadata.xml（保存重开规则仍在）；入口 Ribbon Table Style「Conditional」面板 + 表体右键菜单（列头不放，R16）；5000 行 50 次跳滚+重绘实测 185ms 且统计零重算；DATableDataTest 13 用例覆盖（含像素级绘制断言） |
+| T1.5 | 表格：条件格式 | 已完成 | feat/table-conditional-format | 03574e4b…de252adb | 三类规则均按列绑定（单元格规则 7 操作符 / 双色三色色阶 / 数据条），列引用为位置键（R20，插删列重映射）；delegate 五层管线补齐②持久装饰+④数据条（求值只在 delegate 层、Qt::EditRole 取值、按列规则桶缓存、列统计走 da_column_stats 全表归约+惰性缓存、cellValueChanged 精确失效、排序不失效）；两栏编辑对话框（预览规则集实时叠加、确定按差异生成增/删/改/移/清命令入页栈、惰性/只读源色阶与数据条置灰）；<conditional-format> 段随元数据束进 table-metadata.xml（保存重开规则仍在）；入口 Ribbon Table Style「Conditional」面板 + 表体右键菜单（列头不放，R16）；5000 行 50 次跳滚+全视口重绘实测 ≤300ms 且统计零重算；DATableDataTest 新增 11 用例（另更新菜单构成等既有用例，含像素级绘制断言） |
 | T1.22 | 表格：分组聚合（长表） | 未开始 | | | |
 | T1.23 | 表格：计算列 / 列公式 | 未开始 | | | |
 | T1.24 | 表格：填充 | 未开始 | | | |
