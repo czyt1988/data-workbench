@@ -418,6 +418,21 @@ void DADataTableModel::refreshData()
 }
 
 /**
+ * @brief 表头数据变更通知入口
+ *
+ * 发 headerDataChanged 信号让表头视图重取表头数据。列改名等命令在 exec/undo 后
+ * 调用本函数，替代旧的「命令持有 QHeaderView* 并直接调其 headerDataChanged 槽」写法，
+ * 使命令不再耦合具体表头部件（表头可被 DADataHeaderView 等子类替换）。
+ * @param orientation 方向
+ * @param first 起始段号
+ * @param last 结束段号
+ */
+void DADataTableModel::notifyHeaderDataChanged(Qt::Orientation orientation, int first, int last)
+{
+    Q_EMIT headerDataChanged(orientation, first, last);
+}
+
+/**
  * @brief cell级变更通知
  *
  * 基类此函数不调用cacheShape()，块缓存不会随之失效，

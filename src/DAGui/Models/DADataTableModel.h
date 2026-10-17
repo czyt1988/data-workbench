@@ -46,6 +46,9 @@ public:
     virtual void setCacheWindowStartRow(int startRow) override;
     // 刷新
     void refreshData();
+    // 表头数据变更通知入口：发 headerDataChanged（供 renameColumns 等命令调用，
+    // 替代命令直接持有 QHeaderView* 调其槽的旧写法，解除表头替换的外部耦合）
+    void notifyHeaderDataChanged(Qt::Orientation orientation, int first, int last);
     // cell级变更通知：先失效块缓存再走基类通知（基类此二函数不调cacheShape）
     void notifyDataChanged(int row, int col) override;
     void notifyDataChanged(int rowStart, int colStart, int rowEnd, int colEnd) override;

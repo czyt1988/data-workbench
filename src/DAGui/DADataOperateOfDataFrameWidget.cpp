@@ -28,6 +28,7 @@
 #include "DATableMetadata.h"
 #include "DATableViewStateStore.h"
 #include "DATableHighlightOverlay.h"
+#include "DADataHeaderView.h"
 // Dialog
 #include "Dialog/DARenameColumnsNameDialog.h"
 #include "Dialog/DADialogDataframeColumnCastToNumeric.h"
@@ -56,6 +57,13 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
     , mDialogCastDatetimeArgs(nullptr)
 {
     ui->setupUi(this);
+
+    // 用 DADataHeaderView 替换默认表头（列头右键菜单/带修饰键点击信号/行头宽拖拽）。
+    // 必须在 setModel 之前替换：QTableView::setModel 会把模型接到当前表头上。
+    // 行高/Interactive 设置在 DADataHeaderView(Vertical) 构造内重建
+    // （参照 DACacheWindowTableView 构造对默认行头的同款设置）。
+    ui->tableView->setHorizontalHeader(new DADataHeaderView(Qt::Horizontal, ui->tableView));
+    ui->tableView->setVerticalHeader(new DADataHeaderView(Qt::Vertical, ui->tableView));
 
     mModel = new DADataTableModel(getUndoStack(), this);
 
@@ -568,9 +576,8 @@ void DADataOperateOfDataFrameWidget::renameColumns()
     }
     QList< QString > cols = dlg.getColumnsName();
     // 唯一判断在DARenameColumnsNameDialog里进行
-    //  header提前获取
-    QHeaderView* hv                       = ui->tableView->horizontalHeader();
-    DACommandDataFrame_renameColumns* cmd = new DACommandDataFrame_renameColumns(df, cols, oldcols, hv);
+    // 表头刷新走模型通知入口（命令不再持有 QHeaderView*）
+    DACommandDataFrame_renameColumns* cmd = new DACommandDataFrame_renameColumns(df, cols, oldcols, mModel);
     if (!cmd->exec()) {
         return;
     }
@@ -611,9 +618,8 @@ bool DADataOperateOfDataFrameWidget::renameColumn(int col, const QString& newNam
     }
     QList< QString > newcols = oldcols;
     newcols[ col ]           = newName;
-    QHeaderView* hv          = ui->tableView->horizontalHeader();
     std::unique_ptr< DACommandDataFrame_renameColumns > cmd(
-        new DACommandDataFrame_renameColumns(df, newcols, oldcols, hv));
+        new DACommandDataFrame_renameColumns(df, newcols, oldcols, mModel));
     if (!cmd->exec()) {
         return false;
     }

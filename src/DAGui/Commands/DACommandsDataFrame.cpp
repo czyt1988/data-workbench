@@ -1,6 +1,6 @@
 #include "DACommandsDataFrame.h"
 #include "DAPyScripts.h"
-#include <QHeaderView>
+#include "Models/DADataTableModel.h"
 
 //===================================================
 // using DA namespace -- 禁止在头文件using！！
@@ -209,25 +209,25 @@ bool DACommandDataFrame_dropIColumn::exec()
 ////////////////////
 
 DACommandDataFrame_renameColumns::DACommandDataFrame_renameColumns(
-    const DAPyDataFrame& df, const QList< QString >& cols, QHeaderView* hv, QUndoCommand* par
+    const DAPyDataFrame& df, const QList< QString >& cols, DADataTableModel* model, QUndoCommand* par
 )
-    : DACommandWithRedoCount(par), DACallBackInterface(), mDataframe(df), mCols(cols), mHeaderView(hv)
+    : DACommandWithRedoCount(par), DACallBackInterface(), mDataframe(df), mCols(cols), mModel(model)
 {
     mOldcols = df.columns();
 }
 
 DACommandDataFrame_renameColumns::DACommandDataFrame_renameColumns(
-    const DAPyDataFrame& df, const QList< QString >& cols, const QList< QString >& oldcols, QHeaderView* hv, QUndoCommand* par
+    const DAPyDataFrame& df, const QList< QString >& cols, const QList< QString >& oldcols, DADataTableModel* model, QUndoCommand* par
 )
-    : DACommandWithRedoCount(par), DACallBackInterface(), mDataframe(df), mCols(cols), mHeaderView(hv), mOldcols(oldcols)
+    : DACommandWithRedoCount(par), DACallBackInterface(), mDataframe(df), mCols(cols), mModel(model), mOldcols(oldcols)
 {
 }
 
 void DACommandDataFrame_renameColumns::undo()
 {
     mDataframe.columns(mOldcols);
-    if (mHeaderView) {
-        mHeaderView->headerDataChanged(Qt::Horizontal, 0, mCols.size() - 1);
+    if (mModel) {
+        mModel->notifyHeaderDataChanged(Qt::Horizontal, 0, mCols.size() - 1);
     }
     callback();
 }
@@ -237,8 +237,8 @@ bool DACommandDataFrame_renameColumns::exec()
     if (!mDataframe.columns(mCols)) {
         return false;
     }
-    if (mHeaderView) {
-        mHeaderView->headerDataChanged(Qt::Horizontal, 0, mCols.size() - 1);
+    if (mModel) {
+        mModel->notifyHeaderDataChanged(Qt::Horizontal, 0, mCols.size() - 1);
     }
     callback();
     return true;

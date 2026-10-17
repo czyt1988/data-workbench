@@ -13,7 +13,6 @@
 #include <QMenu>
 #include <QApplication>
 #include <QActionGroup>
-#include <QHeaderView>
 #include <QItemSelectionModel>
 #include <QAbstractItemModel>
 #include <QClipboard>
@@ -89,6 +88,7 @@
 #include "numpy/DAPyDType.h"
 // Widget
 #include "DADataOperateOfDataFrameWidget.h"
+#include "DADataHeaderView.h"
 #include "DATableDisplayFormatComboBox.h"
 #include "Dialog/DADialogTableDisplayFormat.h"
 #include "DADataTableView.h"
@@ -1469,8 +1469,39 @@ void DAAppController::onDataOperatePageCreated(DADataOperatePageWidget* page)
         connect(w, &DADataOperateOfDataFrameWidget::currentStyleChanged, this, &DAAppController::onTableStyleCurrentChanged);
         // 选中列变化时反向同步 ribbon 显示格式下拉框
         connect(w, &DADataOperateOfDataFrameWidget::currentDisplayFormatChanged, this, &DAAppController::onTableDisplayFormatCurrentChanged);
-        // 表头右键菜单注入
-        setupDataFrameHeaderContextMenu(w);
+        // 列头右键菜单已迁入 DADataHeaderView（R12，菜单内容单点定义在 DAGui）：
+        // 这里只做信号接线——收到菜单表意信号后先选中该列（复用 selectColumnInDataFrameWidget，
+        // 槽函数经 getSelectedOneDataframeColumn 取列），再执行既有槽逻辑，行为与迁移前一致
+        if (DADataTableView* tv = w->getDataTableView()) {
+            if (DADataHeaderView* hv = qobject_cast< DADataHeaderView* >(tv->horizontalHeader())) {
+                connect(hv,
+                        &DADataHeaderView::columnActionRequested,
+                        this,
+                        [ this, w ](int col, DA::DADataHeaderView::ColumnAction action) {
+                            selectColumnInDataFrameWidget(w, col);
+                            switch (action) {
+                            case DA::DADataHeaderView::ColumnAction::RenameColumn:
+                                onActionRenameColumnTriggered();
+                                break;
+                            case DA::DADataHeaderView::ColumnAction::RemoveColumn:
+                                onActionRemoveColumnTriggered();
+                                break;
+                            case DA::DADataHeaderView::ColumnAction::CopyColumnName:
+                                onActionCopyColumnNameTriggered();
+                                break;
+                            case DA::DADataHeaderView::ColumnAction::GotoMax:
+                                onActionGotoMaxTriggered();
+                                break;
+                            case DA::DADataHeaderView::ColumnAction::GotoMin:
+                                onActionGotoMinTriggered();
+                                break;
+                            case DA::DADataHeaderView::ColumnAction::ShowColumnDescribe:
+                                onActionShowColumnDescribeTriggered();
+                                break;
+                            }
+                        });
+            }
+        }
     } break;
     default:
         break;
@@ -3305,13 +3336,12 @@ void DAAppController::onActionShowColumnDescribeTriggered()
 }
 
 /**
- * @brief 为 DataFrame 操作窗口的表头注入右键菜单
+ * @brief 填充共用的列操作右键菜单项
  *
- * 方案 B-2：controller 直接操作 widget 的 horizontalHeader。
- * 右键时先选中该列（replace 语义），再弹出菜单。
- * 菜单项 enable 按 Q9-A 统一判定：走到这里 col 已有效，全部 enable。
- * 生命周期依赖 Qt 自动断连（header 是 widget 子对象，widget 销毁即断连）。
- * @param w 目标 DataFrame 操作窗口
+ * 供数据管理树 series 节点右键复用（表头右键菜单已迁入 DADataHeaderView，R12）。
+ * 6 项 4 组：重命名列 / 删除列 ‖ 复制列名 ‖ 定位最大 / 定位最小 ‖ 描述统计。
+ * 走到这里 col 已由调用方选中，菜单项全部 enable。
+ * @param menu 目标菜单
  */
 void DAAppController::populateColumnContextMenu(QMenu& menu)
 {
@@ -3343,47 +3373,6 @@ void DAAppController::selectColumnInDataFrameWidget(DADataOperateOfDataFrameWidg
     sel->clearSelection();
     QItemSelection selRange(m->index(0, col), m->index(m->rowCount() - 1, col));
     sel->select(selRange, QItemSelectionModel::Select | QItemSelectionModel::Columns);
-}
-
-/**
- * @brief 为 DataFrame 操作窗口的表头注入右键菜单
- *
- * 方案 B-2：controller 直接操作 widget 的 horizontalHeader。
- * 右键时先选中该列（replace 语义），再弹出菜单。
- * 菜单项 enable 按 Q9-A 统一判定：走到这里 col 已有效，全部 enable。
- * 生命周期依赖 Qt 自动断连（header 是 widget 子对象，widget 销毁即断连）。
- * @param w 目标 DataFrame 操作窗口
- */
-void DAAppController::setupDataFrameHeaderContextMenu(DADataOperateOfDataFrameWidget* w)
-{
-    if (!w || !w->getDataTableView()) {
-        return;
-    }
-    QHeaderView* hv = w->getDataTableView()->horizontalHeader();
-    if (!hv) {
-        return;
-    }
-    hv->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(hv, &QWidget::customContextMenuRequested, this, [ this, w, hv ](const QPoint& pos) {
-        int col = hv->logicalIndexAt(pos);
-        if (col < 0) {
-            return;
-        }
-        DAPyDataFrame df = w->getDataframe();
-        if (df.isNone()) {
-            return;
-        }
-        auto shape = df.shape();
-        if (col >= (int)shape.second) {
-            return;
-        }
-        // 先选中该列（replace 语义），槽函数通过 getSelectedOneDataframeColumn 取列
-        selectColumnInDataFrameWidget(w, col);
-        // 弹出共用菜单
-        QMenu menu(w);
-        populateColumnContextMenu(menu);
-        menu.exec(hv->mapToGlobal(pos));
-    });
 }
 
 /**

@@ -16370,4 +16370,31 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>保存快捷键设置失败</translation>
     </message>
 </context>
+<context>
+        <name>DA::DADataHeaderView</name>
+        <message>
+            <source>Rename Column</source>
+            <translation>重命名此列</translation>
+        </message>
+        <message>
+            <source>Remove Column</source>
+            <translation>删除列</translation>
+        </message>
+        <message>
+            <source>Copy Column Name</source>
+            <translation>复制列名</translation>
+        </message>
+        <message>
+            <source>Goto Max</source>
+            <translation>跳转到最大值</translation>
+        </message>
+        <message>
+            <source>Goto Min</source>
+            <translation>跳转到最小值</translation>
+        </message>
+        <message>
+            <source>Show Statistics</source>
+            <translation>显示统计信息</translation>
+        </message>
+    </context>
 </TS>

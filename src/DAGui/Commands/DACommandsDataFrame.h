@@ -11,12 +11,12 @@
 #include "DAData.h"
 #include "numpy/DAPyDType.h"
 #include "pandas/DAPySeries.h"
-class QHeaderView;
 
 namespace DA
 {
 
 class DAPyDataFrameTableModel;
+class DADataTableModel;
 /**
  * @file DataManager相关的命令
  *
@@ -140,19 +140,22 @@ private:
 
 /**
  * @brief 更改列名
+ *
+ * 表头刷新经模型的 notifyHeaderDataChanged 通知入口（exec/undo 后调用），
+ * 不再持有 QHeaderView*（解除表头替换的外部耦合，R12）。
  */
 class DAGUI_API DACommandDataFrame_renameColumns : public DACommandWithRedoCount, public DACallBackInterface
 {
 public:
     DACommandDataFrame_renameColumns(
-        const DAPyDataFrame& df, const QList< QString >& cols, QHeaderView* hv = nullptr, QUndoCommand* par = nullptr
+        const DAPyDataFrame& df, const QList< QString >& cols, DADataTableModel* model = nullptr, QUndoCommand* par = nullptr
     );
     DACommandDataFrame_renameColumns(
         const DAPyDataFrame& df,
         const QList< QString >& cols,
         const QList< QString >& oldcols,
-        QHeaderView* hv   = nullptr,
-        QUndoCommand* par = nullptr
+        DADataTableModel* model = nullptr,
+        QUndoCommand* par       = nullptr
     );
     virtual void undo() override;
     virtual bool exec() override;
@@ -160,7 +163,7 @@ public:
 private:
     DAPyDataFrame mDataframe;
     QList< QString > mCols;
-    QHeaderView* mHeaderView;
+    DADataTableModel* mModel;  ///< 非拥有：exec/undo 后发 headerDataChanged 通知（替代旧 QHeaderView* 持有）
     QList< QString > mOldcols;
 };
 

@@ -504,14 +504,14 @@ private:
     void initScripts();
     // 初始化Python工作流信号槽
     void initPyWorkflowConnections();
-    // 为 DataFrame 操作窗口的表头注入右键菜单
-    void setupDataFrameHeaderContextMenu(DADataOperateOfDataFrameWidget* w);
-    // 为数据管理树注入右键菜单（series 节点=列操作菜单，共用表头右键 action；
+    // 为数据管理树注入右键菜单（series 节点=列操作菜单，共用列操作 action；
     // 数据集条目=重命名/移除/导出菜单，复用 ribbon 数据标签页 action）
+    // 注：DataFrame 列头右键菜单已迁入 DAGui 的 DADataHeaderView（R12），
+    // controller 只保留 columnActionRequested 信号接线（见 onDataOperatePageCreated）
     void setupDataManagerTreeContextMenu(DADataManagerTreeWidget* w);
-    // 填充共用的列右键菜单项（表头右键与树右键共用）
+    // 填充共用的列右键菜单项（数据管理树 series 节点右键用）
     void populateColumnContextMenu(QMenu& menu);
-    // 在 DataFrame 操作窗口中选中指定列（replace 语义，供表头/树右键共用）
+    // 在 DataFrame 操作窗口中选中指定列（replace 语义，供树右键与列头菜单信号接线共用）
     void selectColumnInDataFrameWidget(DADataOperateOfDataFrameWidget* w, int col);
     // 显示统计绘图引导对话框并预选指定类型
     void showStatsChartGuide(DA::DAChartTypes type);

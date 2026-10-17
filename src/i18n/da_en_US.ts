@@ -16250,4 +16250,31 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>Failed to save shortcut settings</translation>
     </message>
 </context>
+<context>
+        <name>DA::DADataHeaderView</name>
+        <message>
+            <source>Rename Column</source>
+            <translation>Rename Column</translation>
+        </message>
+        <message>
+            <source>Remove Column</source>
+            <translation>Remove Column</translation>
+        </message>
+        <message>
+            <source>Copy Column Name</source>
+            <translation>Copy Column Name</translation>
+        </message>
+        <message>
+            <source>Goto Max</source>
+            <translation>Goto Max</translation>
+        </message>
+        <message>
+            <source>Goto Min</source>
+            <translation>Goto Min</translation>
+        </message>
+        <message>
+            <source>Show Statistics</source>
+            <translation>Show Statistics</translation>
+        </message>
+    </context>
 </TS>
