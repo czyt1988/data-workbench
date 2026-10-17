@@ -19,6 +19,8 @@ set(DA_LIB_HEADER_FILES
     DATableDataBlock.h
     DATableDataSource.h
     DADataFactory.h
+    # 计算列定义（纯数据类，无 GUI/Python 依赖，004 T1.23）
+    DAComputedColumn.h
 )
 set(DA_LIB_SOURCE_FILES
     DAAbstractData.cpp
@@ -29,6 +31,7 @@ set(DA_LIB_SOURCE_FILES
     DATableDataBlock.cpp
     DATableDataSource.cpp
     DADataFactory.cpp
+    DAComputedColumn.cpp
 )
 list(APPEND DA_LIB_HEADER_FILES
     DADataPythonBinding.h

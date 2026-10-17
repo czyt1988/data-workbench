@@ -126,6 +126,29 @@ public:
 	bool writeCells(DAPyDataFrame& df, const QVector< int >& rows, const QVector< int >& cols, const pybind11::list& values) noexcept;
 	// eval
 	bool evalDatas(DAPyDataFrame& df, const QString& expr) noexcept;
+	// ===== 计算列（004 T1.23）=====
+	// 计算列求值结果（对应 da_dataframe.da_eval_column）
+	struct EvalColumnResult
+	{
+		bool ok { false };         ///< 求值是否成功（语法错误/引用不存在列等抛错为 false，df 不变）
+		bool hadColumn { false };  ///< 求值前目标列是否已存在（false=新建列，undo 应删除该列）
+		DAPySeries oldColumn;      ///< hadColumn=true 时为求值前旧列快照（列级撤销记录，D4）
+		QString errorMessage;      ///< 失败时的异常信息（英文诊断，对话框提示用）
+	};
+	// 计算列求值：把 body（RHS 表达式，列引用可含反引号）求值结果写入 targetColumn 列，
+	// 返回旧列快照（对应 da_dataframe.da_eval_column；目标列名可含空格，健壮路径见算子注释）
+	EvalColumnResult evalColumn(DAPyDataFrame& df, const QString& targetColumn, const QString& body) noexcept;
+	// 提取表达式体引用的列名（与 df 实际列的交集，按列序返回，对应 da_dataframe.da_expr_depends）；
+	// 表达式无法解析（语法错误）返回空列表且 *ok=false（errorMessage 输出异常诊断）
+	QStringList exprDepends(const DAPyDataFrame& df, const QString& body, bool* ok = nullptr, QString* errorMessage = nullptr) noexcept;
+	// 列名在 eval 表达式里是否需要反引号包裹（对应 da_dataframe.da_needs_backtick，R20）
+	bool needsBacktick(const QString& name) noexcept;
+	// 取头部前 n 行的独立副本（对话框预览与执行同一算子，对应 da_dataframe.da_head_copy）
+	DAPyDataFrame headCopy(const DAPyDataFrame& df, int n) noexcept;
+	// 取某列的独立副本（分列/合列命令列级快照，对应 da_dataframe.da_get_column_copy）；越界返回 none
+	DAPySeries getColumnCopy(const DAPyDataFrame& df, int col) noexcept;
+	// 按列名把 series 写回列（计算列重算命令 undo 还原，对应 da_dataframe.da_set_column）
+	bool setColumn(DAPyDataFrame& df, const QString& name, const DAPySeries& series) noexcept;
 	// 多键稳定排序，对应da_dataframe.da_sort：keys为(列位置,是否升序)列表（顺序即优先级），
 	// 成功返回true；perm非空时输出置换（perm[i]=新表第i行在旧表中的行号，与DATableKeyRemap语义一致）
 	bool sort(DAPyDataFrame& df, const QVector< QPair< int, bool > >& keys, QVector< int >* perm = nullptr) noexcept;

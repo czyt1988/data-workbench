@@ -858,6 +858,148 @@ bool DAPyScriptsDataFrame::evalDatas(DAPyDataFrame& df, const QString& expr) noe
 }
 
 /**
+ * @brief 计算列求值的wrapper（004 T1.23）
+ *
+ * 对应 da_dataframe.da_eval_column(df, target_column, body)：把 RHS 表达式 body
+ * 求值结果写入 target_column 列（目标列名可含空格，走 df[col]=result 赋值路径），
+ * 返回求值前的旧列快照 (had_column, old_series)，供列级撤销记录（D4）。
+ * @param df 数据（就地写入目标列）
+ * @param targetColumn 目标列名
+ * @param body RHS 表达式体（列引用可含反引号）
+ * @return ok=false 表示求值抛错（语法错误/引用不存在列），df 不变；
+ *         ok=true 时 hadColumn/oldColumn 描述旧列快照（新建列 hadColumn=false）
+ */
+DAPyScriptsDataFrame::EvalColumnResult DAPyScriptsDataFrame::evalColumn(DAPyDataFrame& df, const QString& targetColumn, const QString& body) noexcept
+{
+    EvalColumnResult result;
+    if (df.isNone() || targetColumn.isEmpty() || body.isEmpty()) {
+        return result;
+    }
+    try {
+        pybind11::object da_eval_column = attr("da_eval_column");
+        pybind11::object ret            = da_eval_column(df.object(), DA::PY::toPyObject(targetColumn), DA::PY::toPyObject(body));
+        pybind11::tuple t               = ret.cast< pybind11::tuple >();
+        result.ok                       = true;
+        result.hadColumn                = t[ 0 ].cast< bool >();
+        if (result.hadColumn && !t[ 1 ].is_none()) {
+            result.oldColumn = DAPySeries(t[ 1 ]);
+        }
+    } catch (const std::exception& e) {
+        result.errorMessage = QString::fromUtf8(e.what());
+        dealException(e);
+    }
+    return result;
+}
+
+/**
+ * @brief 提取表达式引用列名的wrapper（004 T1.23 依赖追踪）
+ *
+ * 对应 da_dataframe.da_expr_depends(body, columns)：反引号段替换为合成标识符后用
+ * ast 提取 Name 节点，与实际列求交集（按列序返回）。语法错误抛 SyntaxError → ok=false。
+ * @param df 数据（提供实际列名）
+ * @param body RHS 表达式体
+ * @param ok 非空时输出解析是否成功
+ * @param errorMessage 非空时输出失败诊断（英文异常信息）
+ * @return 被引用的列名列表（解析失败返回空）
+ */
+QStringList DAPyScriptsDataFrame::exprDepends(const DAPyDataFrame& df, const QString& body, bool* ok, QString* errorMessage) noexcept
+{
+    QStringList depends;
+    if (ok) {
+        *ok = false;
+    }
+    if (df.isNone() || body.isEmpty()) {
+        return depends;
+    }
+    try {
+        pybind11::object da_expr_depends = attr("da_expr_depends");
+        pybind11::object columns         = df.object().attr("columns");
+        pybind11::object ret             = da_expr_depends(DA::PY::toPyObject(body), columns);
+        for (auto item : ret) {
+            depends.append(item.cast< std::string >().c_str());
+        }
+        if (ok) {
+            *ok = true;
+        }
+    } catch (const std::exception& e) {
+        if (errorMessage) {
+            *errorMessage = QString::fromUtf8(e.what());
+        }
+        dealException(e);
+    }
+    return depends;
+}
+
+/**
+ * @brief 列名是否需要反引号的wrapper（004 T1.23 R20）
+ * @param name 列名
+ * @return 含空格/特殊字符/以数字开头/关键字返回 true
+ */
+bool DAPyScriptsDataFrame::needsBacktick(const QString& name) noexcept
+{
+    try {
+        pybind11::object da_needs_backtick = attr("da_needs_backtick");
+        return da_needs_backtick(DA::PY::toPyObject(name)).cast< bool >();
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return false;
+}
+
+/**
+ * @brief 取头部副本的wrapper（004：对话框预览与执行同一算子）
+ * @param df 数据（只读）
+ * @param n 行数
+ * @return 前 n 行的独立副本（失败返回 none 的 DAPyDataFrame）
+ */
+DAPyDataFrame DAPyScriptsDataFrame::headCopy(const DAPyDataFrame& df, int n) noexcept
+{
+    try {
+        pybind11::object da_head_copy = attr("da_head_copy");
+        return DAPyDataFrame(da_head_copy(df.object(), pybind11::int_(n)));
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return DAPyDataFrame();
+}
+
+/**
+ * @brief 取某列副本的wrapper（004 T1.9 分列/合列列级快照）
+ * @param df 数据（只读）
+ * @param col 列位置
+ * @return 该列的独立副本（越界/失败返回 none 的 DAPySeries）
+ */
+DAPySeries DAPyScriptsDataFrame::getColumnCopy(const DAPyDataFrame& df, int col) noexcept
+{
+    try {
+        pybind11::object da_get_column_copy = attr("da_get_column_copy");
+        return DAPySeries(da_get_column_copy(df.object(), pybind11::int_(col)));
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return DAPySeries();
+}
+
+/**
+ * @brief 按列名写回列的wrapper（004 T1.23 计算列重算 undo 还原）
+ * @param df 数据（就地修改）
+ * @param name 列名
+ * @param series 要写回的列数据
+ * @return 成功返回 true
+ */
+bool DAPyScriptsDataFrame::setColumn(DAPyDataFrame& df, const QString& name, const DAPySeries& series) noexcept
+{
+    try {
+        pybind11::object da_set_column = attr("da_set_column");
+        da_set_column(df.object(), DA::PY::toPyObject(name), series.object());
+        return true;
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return false;
+}
+
+/**
  * @brief 多键稳定排序的wrapper
  *
  * 对应 da_dataframe.da_sort(df, keys)：keys 为 (列位置, 是否升序) 列表，

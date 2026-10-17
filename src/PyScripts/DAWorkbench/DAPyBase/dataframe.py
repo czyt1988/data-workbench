@@ -227,11 +227,143 @@ def da_create_pivot_table(df: pd.DataFrame, values=None, index=None, columns=Non
 @log_function_call
 def da_eval_datas(df: pd.DataFrame, expr: str, parser: str = "pandas", engine: Optional[str] = None, local_dict=None, global_dict=None, resolvers=(), level: int = 0, target=None):
     '''
-    pandas.DataFrame.eval的wrapper
+    pandas.DataFrame.eval的wrapper（expr 为完整赋值表达式，如 "C = A + B"）
+
+    注意：target=None 时不能显式传给 df.eval——DataFrame.eval 内部
+    kwargs["target"] = kwargs.pop("target", self)，显式 None 会顶掉默认 self，
+    赋值表达式将抛 "cannot assign without a target object"。计算列求值请用
+    @ref da_eval_column（RHS 求值 + 按列名赋值，健壮支持含空格目标列名）。
     '''
-    df.eval(expr, inplace=True, parser=parser, engine=engine,
-            local_dict=local_dict, global_dict=global_dict,
-            resolvers=resolvers, level=level, target=target)
+    if target is None:
+        df.eval(expr, inplace=True, parser=parser, engine=engine,
+                local_dict=local_dict, global_dict=global_dict,
+                resolvers=resolvers, level=level)
+    else:
+        df.eval(expr, inplace=True, parser=parser, engine=engine,
+                local_dict=local_dict, global_dict=global_dict,
+                resolvers=resolvers, level=level, target=target)
+
+
+@log_function_call
+def da_eval_column(df: pd.DataFrame, target_column: str, body: str, parser: str = "pandas", engine: Optional[str] = None):
+    '''
+    计算列求值（004 T1.23）：把 RHS 表达式 body 求值后写入 target_column 列
+
+    与 da_eval_datas 的赋值语法不同——本函数用 df.eval(body) 只求值 RHS（不做
+    赋值），再按列名 df[target_column] = 结果 赋值。这样目标列名可含空格/特殊字符
+    （pandas 3.x 下 df.eval 的反引号赋值 LHS 会产出 BACKTICK_QUOTED_STRING_* 损坏列名，
+    故不走赋值语法）。body 里对含空格列的引用仍用反引号（读取路径正常）。
+
+    求值前对目标列做旧值快照，返回 (had_column, old_series)，供 C++ 侧构建列级撤销
+    记录（D4 值记录）：
+    - had_column=True: old_series 为求值前的列数据副本（重算场景，undo 还原旧列）
+    - had_column=False: old_series 为 None（新建列场景，undo 删除该列）
+    求值失败（语法错误/引用不存在的列）抛异常，快照不返回，数据不变（不静默清空）。
+
+    :param target_column: 目标列名（重名时快照/赋值第一个同名列位置）
+    :param body: RHS 表达式体（不含 "目标列 ="）
+    :return: (had_column, old_series)
+    '''
+    locs = [i for i, c in enumerate(df.columns) if str(c) == str(target_column)]
+    if locs:
+        snapshot = (True, df.iloc[:, locs[0]].copy())
+    else:
+        snapshot = (False, None)
+    # 只求值 RHS（inplace=False 返回 Series/标量），再按列名赋值
+    result = df.eval(body, inplace=False, parser=parser, engine=engine)
+    if locs:
+        df.iloc[:, locs[0]] = result
+    else:
+        df[target_column] = result
+    return snapshot
+
+
+def da_needs_backtick(name: str) -> bool:
+    '''
+    列名在 pandas eval 表达式里是否需要反引号包裹（004 T1.23 R20）
+
+    合法 Python 标识符且非关键字可直接裸写；含空格/特殊字符/以数字开头/关键字
+    （如 "my col"、"a-b"、"2024"、"in"）必须用反引号，否则 eval 解析失败或语义错误
+    '''
+    import keyword
+    s = str(name)
+    return not (s.isidentifier() and not keyword.iskeyword(s))
+
+
+@log_function_call
+def da_make_eval_expr(target: str, body: str) -> str:
+    '''
+    构建 pandas eval 完整赋值表达式："目标列 = 表达式体"（004 T1.23）
+
+    目标列名含空格/特殊字符时自动加反引号（R20）；表达式体里的列名引用由
+    调用方（对话框列名点选插入）负责反引号包裹。预览与执行共用本函数（同一算子）。
+    '''
+    t = '`%s`' % target if da_needs_backtick(target) else str(target)
+    return '%s = %s' % (t, body)
+
+
+@log_function_call
+def da_expr_depends(expr: str, columns):
+    '''
+    提取表达式引用的列名（与实际列的交集，按 columns 顺序返回，004 T1.23 依赖追踪）
+
+    实现：反引号段先替换为合成标识符，再用 ast 提取 Name 节点（字符串字面量、
+    数字常量不会误报），合成标识符映射回原列名后与 columns 求交集。
+    函数名（如 abs、sin）不在 columns 里，天然被交集过滤。
+    表达式无法解析（ast SyntaxError）时抛 SyntaxError，C++ 侧转校验失败提示。
+
+    :param expr: 表达式体（赋值右侧，不含 "目标列 ="）
+    :param columns: 实际列名序列
+    :return: 被引用的列名列表（按 columns 顺序，去重）
+    '''
+    import re
+    import ast
+    mapping = {}
+
+    def _repl(m):
+        key = '_dabt%d_' % len(mapping)
+        mapping[key] = m.group(1)
+        return key
+
+    sanitized = re.sub(r'`([^`]*)`', _repl, str(expr))
+    tree = ast.parse(sanitized, mode='eval')  # SyntaxError 由调用方捕获
+    names = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Name):
+            names.add(mapping.get(node.id, node.id))
+    return [str(c) for c in columns if str(c) in names]
+
+
+@log_function_call
+def da_head_copy(df: pd.DataFrame, n: int) -> pd.DataFrame:
+    '''
+    取头部前 n 行的独立副本（对话框实时预览用，004：预览与执行同一算子，
+    在副本上调用同一算子函数，不触碰原表）
+    '''
+    return df.head(max(0, int(n))).copy()
+
+
+@log_function_call
+def da_get_column_copy(df: pd.DataFrame, col: int) -> pd.Series:
+    '''
+    按列位置取一列的独立副本（分列/合列命令的列级撤销快照，004 T1.9 D4）
+
+    :raises IndexError: col 越界
+    '''
+    if col < 0 or col >= df.shape[1]:
+        raise IndexError("column index %d out of range [0, %d)" % (col, df.shape[1]))
+    return df.iloc[:, col].copy()
+
+
+@log_function_call
+def da_set_column(df: pd.DataFrame, name: str, series: pd.Series):
+    '''
+    按列名把 series 写回列（计算列重算命令的 undo 还原旧列，004 T1.23）
+
+    列必须已存在（重算场景目标列恒存在）；按 index 对齐写回。
+    重名列时 pandas 会写全部同名列——计算列禁止重名目标（对话框校验），不触发此分支。
+    '''
+    df[name] = series
 
 
 @log_function_call
