@@ -71,6 +71,7 @@ nav:
           - 导入数据: zh/use-guide/data/import.md
           - 数据管理面板: zh/use-guide/data/manager.md
           - 表格视图: zh/use-guide/data/table.md
+          - 表格编辑功能总览: zh/use-guide/data/table-editing.md
           - 表格样式: zh/use-guide/data/style.md
           - 导出数据: zh/use-guide/data/export.md
       - 第三部分 · 工作流:
