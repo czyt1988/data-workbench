@@ -1,6 +1,6 @@
 # 表格元数据架构（DATableMetadataRegistry）
 
-表格元数据是「按数据集存在、随工程保存、不属于数据本体」的一切附加信息的统称：静态样式、视图状态（列宽/行头宽）、条件格式规则（T1.5），以及后续的批注、校验规则、计算列定义。它们统一由 `src/DAGui` 的会话级注册表 `DATableMetadataRegistry` 治理，序列化进工程文件 `table-metadata.xml`。本页是这套基础设施（T1.3–T1.5）的架构说明。
+表格元数据是「按数据集存在、随工程保存、不属于数据本体」的一切附加信息的统称：静态样式、视图状态（列宽/行头宽）、条件格式规则（T1.5）、计算列定义（T1.23），以及后续的批注、校验规则。它们统一由 `src/DAGui` 的会话级注册表 `DATableMetadataRegistry` 治理，序列化进工程文件 `table-metadata.xml`。本页是这套基础设施（T1.3–T1.5、T1.23）的架构说明。
 
 ## 注册表 / 元数据束 / 子存储
 
@@ -17,8 +17,12 @@ classDiagram
         +styleManager()
         +viewState()
         +conditionalFormat()
+        +computedColumns()
         +toXml / fromXml
         +isEmpty()
+        +clearAll()
+        +snapshotToString / restoreFromString
+        +entryCountsByCategory()
     }
     class DATableViewStateStore {
         +columnWidth(name, occurrence)
@@ -36,17 +40,24 @@ classDiagram
         +columnStats(col) 惰性缓存
         +setPreviewRules / clearPreview
     }
+    class DATableComputedColumnStore {
+        +addDefinition / removeDefinition / setState
+        +markStaleForChangedColumns / markAllStale
+        +renameColumnReferences / onColumnsRemoved
+        +snapshot / restore
+    }
     DATableMetadataRegistry "1" --> "*" DATableMetadata : 每个 DAData 一份
     DATableMetadata --> DATableStyleManager : 样式子存储
     DATableMetadata --> DATableViewStateStore : 视图状态子存储
     DATableMetadata --> DATableConditionalFormatStore : 条件格式子存储
+    DATableMetadata --> DATableComputedColumnStore : 计算列子存储
 ```
 
 - **注册表**（`DATableMetadataRegistry`，由 `DATableStyleRegistry` 泛化而来）：会话级、按 `DAData` 键控，挂在 `DADataOperateWidget` 上（`metadataRegistry()`）。数据移除时**保留**条目以支持撤销，`datasCleared` 时统一清空。
-- **元数据束**（`DATableMetadata`）：一个数据集一份，聚合各子存储并提供 `toXml/fromXml` 聚合序列化。当前含样式、视图状态与条件格式（T1.5，003）三个子存储；批注/校验/计算列由后续任务各自往束里加成员与 XML 段，**不提前加空成员**。
+- **元数据束**（`DATableMetadata`）：一个数据集一份，聚合各子存储并提供 `toXml/fromXml` 聚合序列化。当前含样式、视图状态、条件格式（T1.5，003）与计算列（T1.23，004）四个子存储；批注/校验由后续任务各自往束里加成员与 XML 段，**不提前加空成员**。束另提供三个整束级入口（004 T1.27 就地形状变换用）：`clearAll`（整束清除）、`snapshotToString/restoreFromString`（XML 快照，与数据替换同一撤销单元）、`entryCountsByCategory`（就地替换确认框的「将被清除类别与条目数」统计）。
 - **子存储**：只负责自己那类数据的增删查改 + XML 段读写。
 
-**渲染类 vs 语义类**（归属分层，D3）：渲染类子存储（样式、条件格式，后续批注）只服务界面，留在 DAGui；语义类（后续校验规则、计算列定义）的**定义类**放 `src/DAData/`（纯数据、无 GUI 依赖，将来可被工作流节点/agent 直接复用），v1 的存储与序列化仍走本注册表。
+**渲染类 vs 语义类**（归属分层，D3）：渲染类子存储（样式、条件格式，后续批注）只服务界面，留在 DAGui；语义类（计算列已落地，后续校验规则）的**定义类**放 `src/DAData/`（纯数据、无 GUI 依赖，将来可被工作流节点/agent 直接复用），v1 的存储与序列化仍走本注册表——`DAComputedColumn`（定义）在 DAData、`DATableComputedColumnStore`（集合+三态+调度）在 DAGui 即此分层的第一个实例。
 
 ## table-metadata.xml 与旧文件兼容
 
@@ -72,6 +83,13 @@ classDiagram
           <rule type="data-bar" color="#ffbdcde8"/>
         </column>
       </conditional-format>
+      <computed-column>                    <!-- 计算列兄弟段（004 T1.23，磁盘契约 R10：expr+engine+version+state） -->
+        <column target="C" engine="pandas.eval" version="1" state="valid" enabled="1">
+          <expr><![CDATA[A + `my col`]]></expr>
+          <dep name="A"/>
+          <dep name="my col"/>
+        </column>
+      </computed-column>
     </table>
   </project>
 </table-metadata>
@@ -84,7 +102,7 @@ classDiagram
 所有表元数据按语义分两类引用列，**混用会产出两种最难排查的 bug**（插一列样式全错位、改个名公式全失效）：
 
 - **装饰类**（静态样式、条件格式，后续批注）：用**位置键（列索引）**，随列插删走 `onColumnsInserted/onColumnsRemoved` 重映射，列改名不需要迁移。
-- **语义类**（列宽、后续计算列/校验规则）：用**列名**引用，重名时以「第 n 个同名列」（occurrence，从 0 计）消歧——pandas 允许重名列且 `da_insert_column` 不做重名检查，键必须是 `(列名, occurrence)` 二元组；列改名命令负责调用 `renameColumn` 迁移。
+- **语义类**（列宽、计算列已落地，后续校验规则）：用**列名**引用，重名时以「第 n 个同名列」（occurrence，从 0 计）消歧——pandas 允许重名列且 `da_insert_column` 不做重名检查，列宽键必须是 `(列名, occurrence)` 二元组；列改名命令负责调用 `renameColumn` 迁移。计算列的目标列名由对话框强制唯一（禁止自覆盖天然排除与现有列重名），依赖列按纯列名引用，改名经 `renameColumnReferences` 批量迁移（与改名命令同一撤销单元）。
 
 ## 位置键重映射与置换语义
 
@@ -126,9 +144,21 @@ classDiagram
 - **惰性/只读源限制**：`isLazyLoaded()` 或 `!isTableEditable()` 的数据源无法全量列统计 → 对话框内色阶/数据条置灰并给出说明文案，单元格规则正常。
 - 入口：Ribbon「Table Style」的「Conditional」面板 + 表体右键菜单「Conditional Format...」（列头菜单不放，R16），作用于当前选区覆盖的列集合。
 
+## 计算列子存储（DATableComputedColumnStore，004 T1.23）
+
+语义类子存储：定义集合（`DAComputedColumn`，定义类在 `src/DAData`，无 GUI 依赖）+ **三态状态机**（`Valid` 有效 / `Stale` 待重算 / `Invalid` 失效）+ 重算调度。要点：
+
+- **物化列 + 手动重算**（R7/R8）：求值结果写进真实 DataFrame 列（`da_eval_column`：RHS 求值 + 按列名赋值，规避 pandas 3.x 反引号赋值 LHS 的损坏列名缺陷），公式只是元数据。数据变更只**标状态**不求值——单元格编辑走模型 `cellValueChanged` 精确挂点按变更列比对依赖集合，整表操作（插删行/列转索引）保守全标，**排序不标**（R13 行序不影响列值）；用户点「重新计算」（单列）/「全部重算」（宏命令=一个撤销单元）才求值。
+- **一切写操作入栈**（D4）：创建/重算走 `DACommandDataFrame_evalColumn`（列级记录：首次 exec 捕获旧列快照，undo 还原旧列或删除新建列，内存=一列）；定义与状态的增删改**不入栈**，由命令的 directional 回调联动（创建 undo 移除定义、重算 undo 回原状态），与数据同一撤销单元；「移除公式（保留数据）」是纯元数据命令 `DACommandComputedColumn_removeDefinition`。
+- **禁止自覆盖**（R7）：目标列必须是新列名且表达式不得引用目标列（对话框 + 存储双重校验）；「删公式、留数据」的退路永远成立。
+- **打开工程不重算**（R7）：`<computed-column>` 段持久化 expr+engine+version+state（磁盘契约 R10），加载只恢复定义与状态、零求值；引擎/语法不兼容的最坏结果 = 普通列 + 标失效 + 提示，不损坏数据。
+- **列联动**（R20 列名引用）：改名 → `renameColumnReferences` 批量迁移（依赖与目标自身，改名前提示「有 N 个计算列引用它」）；删列 → `onColumnsRemoved`（目标被删=定义移除、依赖被删=置失效不静默清空）；`snapshot/restore` 整店快照供删列/合并命令的 undo 恢复。
+- **表头三态标识**（R9）：浅蓝 `#BDCDE8` 底色经**模型** `actualHeaderData(BackgroundRole)` 提供（`QHeaderView::paintSection` 原生消费）、公式+状态 tooltip 经 `ToolTipRole`；`DADataHeaderView::paintSection` 只叠加左侧前导 `ƒx` 角标（状态色：主蓝/金黄/橙红，有多列排序序号角标时移到左下避让）。**单元格区域不染色**（D2 管线没有"公式列底纹"层）。
+- 入口：Ribbon「Data Tools」面板（计算列/全部重算）+ 表体右键「Computed Column...」+ 计算列列头右键三项（编辑公式/重新计算/移除公式）。
+
 ## 右键菜单与快捷键的落位约定
 
-- **菜单内容单点定义在 DAGui，执行在 APP**：列头菜单在 `DADataHeaderView::buildColumnContextMenu`（6 项 4 组），表体菜单在 `DADataTableView::buildContextMenu`（剪切/复制/粘贴 ‖ 查找/替换 ‖ 条件格式）。QAction 由 DAGui 自建，**不共享 APP 的 `QAction` 对象**（右键项按列/选区上下文启用、Ribbon 按钮按页能力启用，共享会互相污染 enabled）；点击后发表意信号（`columnActionRequested` / `contextMenu*Requested`），APP 侧只做接线（先选中列/复用既有槽）。图标一律取 `:/DAGui/icon/...`，禁止依赖 APP 的 qrc（插件链 `DAInterface → DAGui`，插件运行时没有 APP 资源）。
+- **菜单内容单点定义在 DAGui，执行在 APP**：列头菜单在 `DADataHeaderView::buildColumnContextMenu`（6 项 4 组；计算列追加第 5 组「编辑公式/重新计算/移除公式（保留数据）」），表体菜单在 `DADataTableView::buildContextMenu`（剪切/复制/粘贴 ‖ 查找/替换 ‖ 条件格式 ‖ 004 数据工具组：计算列/分列/合并列/分组聚合/转置/宽转长，启用规则按选区列数与数据源能力）。QAction 由 DAGui 自建，**不共享 APP 的 `QAction` 对象**（右键项按列/选区上下文启用、Ribbon 按钮按页能力启用，共享会互相污染 enabled）；点击后发表意信号（`columnActionRequested` / `contextMenu*Requested` / `*Requested`），APP 侧只做接线（先选中列/复用既有槽）。图标一律取 `:/DAGui/icon/...`，禁止依赖 APP 的 qrc（插件链 `DAInterface → DAGui`，插件运行时没有 APP 资源）。
 - **快捷键集中挂点**：表格快捷键一律在 `DADataTableView::keyPressEvent` 处理（后续查找 Ctrl+F、填充 Ctrl+D 等在此追加），不散落各处。
 - **表头**：`DADataHeaderView` 水平/垂直共用一个类；`clickedWithModifiers`（带修饰键点击）供排序交互（002）消费，图表「选择序列」拾取仍走既有 `sectionClicked` 链路；行头宽在 vertical 实例右缘 8px 热区拖拽，`setFixedWidth` 落地（Qt 纵向表头宽度 = `clamp(qMax(minimumWidth, sizeHint), maximumWidth)`，min=max=w 恒为 w），释放后经 `rowHeaderWidthChanged` 写入视图状态。
 - **列宽持久化纪律**（R6）：按列名 + occurrence 存 `<view-state>`，**禁止 `QHeaderView::saveState()`**——滑动窗下段号=窗口行号，状态会随滚动互相污染。
@@ -142,12 +172,19 @@ classDiagram
 | `src/DAGui/DATableViewStateStore.h/.cpp` | 视图状态子存储（列宽/行头宽） |
 | `src/DAGui/DATableConditionalFormatRule.h/.cpp` | 条件格式规则（纯数据类 + 求值/插值/归一化纯函数） |
 | `src/DAGui/DATableConditionalFormatStore.h/.cpp` | 条件格式子存储（列桶/统计缓存/预览/`<conditional-format>` 段） |
+| `src/DAData/DAComputedColumn.h/.cpp` | 计算列定义（纯数据类，无 GUI 依赖，004 T1.23） |
+| `src/DAGui/DATableComputedColumnStore.h/.cpp` | 计算列子存储（三态状态机/依赖联动/`<computed-column>` 段） |
+| `src/DAGui/Dialog/DADialogComputedColumn.h/.cpp` | 计算列对话框（表达式编辑 + 列名点选 + 头部实时预览） |
+| `src/DAGui/Dialog/DADialogSplitColumn.h/.cpp`、`DADialogMergeColumns.h/.cpp` | 分列/合并列对话框（预览与执行同一算子，004 T1.9） |
+| `src/DAGui/Dialog/DADialogGroupBy.h/.cpp` | 分组聚合对话框（全表预览 + 分组数，004 T1.22） |
+| `src/DAGui/Dialog/DADialogReshape.h/.cpp` | 转置/宽转长对话框（melt 规模守卫 + 就地勾选，004 T1.27） |
 | `src/DAGui/DATableKeyRemap.h` | 位置键重映射模板工具（置换 + 列插删位移） |
 | `src/DAGui/DATableHighlightOverlay.h/.cpp` | 瞬态高亮层 |
 | `src/DAGui/DATableStyleItemDelegate.h/.cpp` | 五层绘制管线 delegate |
 | `src/DAGui/Dialog/DADialogConditionalFormat.h/.cpp/.ui` | 条件格式规则编辑对话框（两栏 + 实时预览） |
 | `src/DAGui/Commands/DACommandsConditionalFormat.h/.cpp` | 规则增/删/改/移/清列撤销命令 |
+| `src/DAGui/Commands/DACommandsDataFrame.h/.cpp` | 计算列求值/移除公式、分列/合并列命令（列级记录撤销，004） |
 | `src/DAGui/DADataHeaderView.h/.cpp` | 数据表格头（列头菜单/修饰键点击/行头宽拖拽） |
 | `src/DAGui/DADataTableView.h/.cpp` | 表体右键菜单与快捷键挂点 |
-| `src/PyScripts/DAWorkbench/DAPyBase/dataframe.py` | `da_column_stats` 列统计算子（`DAPyScriptsDataFrame::columnStats` 封装） |
+| `src/PyScripts/DAWorkbench/DAPyBase/dataframe.py` | `da_column_stats` 列统计、`da_eval_column`/`da_expr_depends`/`da_needs_backtick` 计算列、`da_split_column`/`da_merge_columns` 分列合列、`da_groupby_aggregate`/`da_group_count` 分组聚合、`da_transpose`/`da_melt` 形状变换、`da_head_copy`/`da_get_column_copy`/`da_set_column` 辅助算子（`DAPyScriptsDataFrame` 封装） |
 | `src/APP/DAAppProject.cpp` | `table-metadata.xml` 保存/加载（含旧文件回退） |
