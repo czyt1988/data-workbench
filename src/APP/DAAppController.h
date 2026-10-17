@@ -358,6 +358,9 @@ private Q_SLOTS:
     void onActionFillForwardTriggered();
     void onActionFillBackwardTriggered();
     void onActionFillSeriesTriggered();
+    // 数据校验（005 T1.25，Ribbon「Data Tools」面板；与表体右键菜单共用页面入口）
+    void onActionValidationRulesTriggered();
+    void onActionRunValidationTriggered();
     // 选中区样式反向同步 ribbon 控件
     void onTableStyleCurrentChanged(const DATableCellStyle& style);
     // 表格列显示格式

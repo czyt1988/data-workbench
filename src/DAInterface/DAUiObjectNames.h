@@ -154,6 +154,9 @@ constexpr char FillUp[]                     = "actionFillUp";                   
 constexpr char FillForward[]                = "actionFillForward";                ///< 向下填充空值 ffill（005 T1.24）
 constexpr char FillBackward[]               = "actionFillBackward";               ///< 向上填充空值 bfill（005 T1.24）
 constexpr char FillSeries[]                 = "actionFillSeries";                 ///< 序列填充（005 T1.24）
+// ---- 数据校验（005 T1.25，Ribbon「Data Tools」面板 + 表体右键同入口）----
+constexpr char ValidationRules[]            = "actionValidationRules";            ///< 校验规则（005 T1.25）
+constexpr char RunValidation[]              = "actionRunValidation";              ///< 执行校验（005 T1.25）
 // ---- 绘图 ----
 constexpr char AddFigure[]                  = "actionAddFigure";
 constexpr char FigureNewXYAxis[]            = "actionFigureNewXYAxis";

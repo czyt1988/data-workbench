@@ -520,6 +520,10 @@ void DAAppRibbonArea::buildContextCategoryDataFrame()
     mPannelDataframeOperateDataTools->addLargeAction(mActions->actionGroupBy);
     mPannelDataframeOperateDataTools->addMediumAction(mActions->actionTranspose);
     mPannelDataframeOperateDataTools->addMediumAction(mActions->actionMelt);
+    // 数据校验（005 T1.25）：规则管理 + 一键校验（只读，不入撤销栈）
+    mPannelDataframeOperateDataTools->addSeparator();
+    mPannelDataframeOperateDataTools->addLargeAction(mActions->actionValidationRules);
+    mPannelDataframeOperateDataTools->addMediumAction(mActions->actionRunValidation);
 
     // ===== 表格样式 category =====
     mCategoryDataframeStyle = mContextDataFrame->addCategoryPage(tr("Table Style"));  // cn:表格样式

@@ -548,6 +548,9 @@ void DAAppController::initConnection()
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionFillForward, onActionFillForwardTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionFillBackward, onActionFillBackwardTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionFillSeries, onActionFillSeriesTriggered);
+    // 数据校验（005 T1.25，Ribbon「Data Tools」面板；与表体右键菜单共用页面入口）
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionValidationRules, onActionValidationRulesTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionRunValidation, onActionRunValidationTriggered);
     // View Category
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowWorkFlowArea, onActionShowWorkFlowAreaTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowWorkFlowManagerArea, onActionShowWorkFlowManagerAreaTriggered);
@@ -3666,6 +3669,35 @@ void DAAppController::onActionFillSeriesTriggered()
         return;
     }
     dfopt->showFillSeriesDialog();
+}
+
+/**
+ * @brief 校验规则管理（005 T1.25，Ribbon「Data Tools」面板）
+ *
+ * 与表体右键菜单「校验规则...」共用页面 showValidationRulesDialog 入口；
+ * 规则增删改经 setRules 命令入页撤销栈（D4）。
+ */
+void DAAppController::onActionValidationRulesTriggered()
+{
+    DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false);
+    if (!dfopt) {
+        return;
+    }
+    dfopt->showValidationRulesDialog();
+}
+
+/**
+ * @brief 执行校验（005 T1.25，Ribbon「Data Tools」面板）
+ *
+ * 只读操作（红线2：不改数据、不入撤销栈）；违规装载 Source::Validation 高亮并弹报告。
+ */
+void DAAppController::onActionRunValidationTriggered()
+{
+    DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false);
+    if (!dfopt) {
+        return;
+    }
+    dfopt->runValidationAndShowReport();
 }
 
 /**

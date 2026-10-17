@@ -113,6 +113,8 @@ public:
     QAction* actionFillForward { nullptr };                 ///< 向下填充空值 ffill（005 T1.24）
     QAction* actionFillBackward { nullptr };                ///< 向上填充空值 bfill（005 T1.24）
     QAction* actionFillSeries { nullptr };                  ///< 序列填充（005 T1.24）
+    QAction* actionValidationRules { nullptr };             ///< 校验规则（005 T1.25，Data Tools 面板 + 表体右键同入口）
+    QAction* actionRunValidation { nullptr };               ///< 执行校验（005 T1.25）
 
     //===================================================
     // workflow的上下文标签

@@ -134,6 +134,9 @@ void DAAppActions::buildDataAction()
     actionFillForward                 = createAction(UiNames::Action::FillForward, ":/DAGui/icon/fill-forward.svg");
     actionFillBackward                = createAction(UiNames::Action::FillBackward, ":/DAGui/icon/fill-backward.svg");
     actionFillSeries                  = createAction(UiNames::Action::FillSeries, ":/DAGui/icon/fill-series.svg");
+    // 数据校验 action（005 T1.25；图标取 DAGui 图标库，不引用 APP 资源）
+    actionValidationRules             = createAction(UiNames::Action::ValidationRules, ":/DAGui/icon/validation.svg");
+    actionRunValidation               = createAction(UiNames::Action::RunValidation, ":/DAGui/icon/validation-run.svg");
 }
 
 void DAAppActions::buildChartAction()
@@ -696,6 +699,10 @@ void DAAppActions::retranslateUi()
     actionFillBackward->setToolTip(tr("Propagate the next valid value up within the selection"));  // cn:选区内向上传递下一个非空值
     actionFillSeries->setText(tr("Fill Series..."));                // cn:序列填充...
     actionFillSeries->setToolTip(tr("Generate a linear or date series into the selected columns"));  // cn:对选中列生成数值等差或日期步进序列
+    actionValidationRules->setText(tr("Validation Rules"));         // cn:校验规则
+    actionValidationRules->setToolTip(tr("Manage data validation rules (range / enum / not-empty / unique / regex) of the current table"));  // cn:管理当前表的数据校验规则（区间/枚举/非空/唯一/正则）
+    actionRunValidation->setText(tr("Run Validation"));             // cn:执行校验
+    actionRunValidation->setToolTip(tr("Validate the table against enabled rules, highlight violations and show the report (read-only)"));  // cn:按启用规则校验全表，高亮违规并出报告（只读）
     //-----------------------------------------------------
     // workflow 编辑
     //-----------------------------------------------------
