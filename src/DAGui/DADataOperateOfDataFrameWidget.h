@@ -4,6 +4,7 @@
 #include <QUndoStack>
 #include <QHash>
 #include <QPair>
+#include <QPointer>
 #include <QVector>
 #include <optional>
 #include "DAGuiAPI.h"
@@ -13,6 +14,7 @@
 #include "DATableDisplayFormat.h"
 #include "DATableConditionalFormatRule.h"
 #include "DATableComputedColumnStore.h"
+#include "DATableValidationRule.h"
 #include "DADataOperatePageWidget.h"
 #include "Dialog/DADialogFindReplace.h"
 namespace Ui
@@ -36,6 +38,8 @@ class DATableHighlightOverlay;
 class DATableConditionalFormatStore;
 class DATableCellStyle;
 class DAComputedColumn;
+class DATableValidationStore;
+class DADialogValidationReport;
 
 
 /**
@@ -173,6 +177,30 @@ public:
     // 打开序列填充对话框（数值等差/日期步进，Python 求值+预览）；接受后对选区
     // 每一列各生成一个序列，一条 paste 命令入栈；返回写入单元格数（取消返回 0）
     int showFillSeriesDialog();
+
+    // ===== 数据校验（005 T1.25）=====
+    // 单条规则的校验结果（evaluateValidationRules 输出，报告对话框消费）
+    struct ValidationRuleOutcome
+    {
+        DATableValidationRule rule;   ///< 规则定义
+        int columnPosition { -1 };    ///< 解析出的列位置（-1 = 列不存在）
+        bool columnMissing { false }; ///< 规则引用的列不存在（跳过求值）
+        QVector< int > rows;          ///< 违规行（数据源绝对行号，升序）
+    };
+    // 获取校验规则子存储（借自元数据束，可能为 nullptr）
+    DATableValidationStore* validationStore() const;
+    // 打开校验规则编辑对话框；确定后按差异生成 setRules 命令入页撤销栈（D4）
+    void showValidationRulesDialog();
+    // 执行校验（只读，红线2：不改数据、不入撤销栈）：求值全部启用规则、违规装载
+    // Source::Validation 高亮（Error/Warning 两级），返回逐规则结果；elapsedMs 非空
+    // 时输出求值耗时。唯一性规则命中缓存不重算（§4.9）
+    QList< ValidationRuleOutcome > evaluateValidationRules(int* elapsedMs = nullptr);
+    // 执行校验并弹出报告对话框（非模态，点击样例行定位）
+    void runValidationAndShowReport();
+    // 清除违规高亮（只清 Source::Validation，不动查找命中——来源隔离）
+    void clearValidationHighlights();
+    // 规则显示文本（级别 + 列（第 n 个）+ 类型 + 参数 + 名称；报告与列表共用）
+    QString validationRuleDisplayText(const DATableValidationRule& rule) const;
 
     // ===== 转置 / melt 形状变换（004 T1.27）=====
     // 打开形状变换对话框（meltMode=false 转置 / true 宽转长，模式可在对话框内切换）。
@@ -345,6 +373,12 @@ private:
                              const QList< int >& cols,
                              const QList< QVariant >& values,
                              const QString& text);
+    // ===== 校验私有辅助（005 T1.25）=====
+    // 列改名确认：提示「有 N 条校验规则引用它」，返回是否继续（无引用直接 true）
+    bool confirmValidationRuleRename(const QList< QPair< QString, QString > >& renames) const;
+    // 把校验规则引用迁移挂进改名命令的 directional 回调（与改名同一撤销单元，R20）
+    void wireValidationRuleRenameMigration(class DACommandDataFrame_renameColumns* cmd,
+                                           const QList< QPair< QString, QString > >& renames) const;
 
     Ui::DADataOperateOfDataFrameWidget* ui;
     DAData mData;
@@ -354,6 +388,7 @@ private:
     DATableHighlightOverlay* mHighlightOverlay { nullptr };  ///< 瞬态高亮层（页级持有，不序列化、不进撤销栈）
     DATableConditionalFormatStore* mConditionalFormatStore { nullptr };  ///< 借自 DATableMetadata 束，非拥有（条件格式规则，003）
     DATableComputedColumnStore* mComputedColumnStore { nullptr };        ///< 借自 DATableMetadata 束，非拥有（计算列定义，004 T1.23）
+    DATableValidationStore* mValidationStore { nullptr };                ///< 借自 DATableMetadata 束，非拥有（校验规则，005 T1.25）
     DATableMetadata* mMetadata { nullptr };                              ///< 元数据束（借自注册表，非拥有；就地形状变换整束快照/清理用，004 T1.27）
     DATableStyleItemDelegate* mStyleDelegate { nullptr };
     bool mApplyingViewState { false };  ///< 正在应用视图状态（屏蔽 sectionResized 采集）
@@ -364,6 +399,7 @@ private:
     DADialogDataframeColumnCastToDatetime* mDialogCastDatetimeArgs { nullptr };
     DADialogDataframeColumnDescribe* mDialogColumnDescribe { nullptr };
     DADialogFindReplace* mFindReplaceDialog { nullptr };  ///< 非模态浮动查找/替换条（懒建，页级持有）
+    QPointer< DADialogValidationReport > mValidationReport;  ///< 非模态校验报告窗（005 T1.25，重跑前先关旧的）
 
     // ===== 查找状态（002 T1.4）=====
     QVector< QPair< int, int > > mFindHits;  ///< 当前命中集（数据源绝对行列，行主序，≤上限）

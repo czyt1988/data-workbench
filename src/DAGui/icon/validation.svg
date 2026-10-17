@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px"
+	 width="200px" height="200px" viewBox="0 0 200 200" xml:space="preserve">
+	<!-- 校验规则：左侧表格网格（中灰框白底）+ 右侧绿色对勾（确认/合格语义）。
+	     官方色板：网格 #727272（中灰）、底 #FFFFFF、对勾 #669E8B（绿，确认）；
+	     禁渐变/阴影/<text>（DESIGN.md §4） -->
+	<rect x="18" y="34" width="96" height="132" fill="#FFFFFF"/>
+	<g fill="none" stroke="#727272" stroke-width="8" stroke-linecap="butt">
+		<rect x="18" y="34" width="96" height="132"/>
+		<line x1="18" y1="78" x2="114" y2="78"/>
+		<line x1="18" y1="122" x2="114" y2="122"/>
+	</g>
+	<path d="M 132 100 L 152 122 L 186 66"
+	      fill="none" stroke="#669E8B" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

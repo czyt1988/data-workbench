@@ -65,6 +65,9 @@ Q_SIGNALS:
     void fillForwardRequested();
     void fillBackwardRequested();
     void fillSeriesRequested();
+    // 数据校验入口（005 T1.25）：表体右键菜单与 Ribbon「Data Tools」面板同入口
+    void validationRulesRequested();
+    void runValidationRequested();
 
 protected:
     // Ctrl+C / Ctrl+Insert 复制；Ctrl+F 查找；Ctrl+H 替换；Ctrl+D 向下填充（005）；

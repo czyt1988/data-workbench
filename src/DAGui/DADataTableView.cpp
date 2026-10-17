@@ -266,6 +266,17 @@ QMenu* DADataTableView::buildContextMenu(const QModelIndex& at)
     connect(actFillFwd, &QAction::triggered, this, &DADataTableView::fillForwardRequested);
     connect(actFillBwd, &QAction::triggered, this, &DADataTableView::fillBackwardRequested);
     connect(actFillSeries, &QAction::triggered, this, &DADataTableView::fillSeriesRequested);
+    // —— 005：数据校验（规则管理 / 执行校验，T1.25；与 Ribbon「Data Tools」面板同入口）——
+    // 校验是只读操作：pandas dataframe 数据体即可用（只读源也可校验）；惰性源无 df 置灰
+    menu->addSeparator();
+    QAction* actValidationRules = menu->addAction(QIcon(QStringLiteral(":/DAGui/icon/validation.svg")),
+                                                  tr("Validation Rules..."));  // cn:校验规则...
+    actValidationRules->setEnabled(getData().isDataFrame());
+    connect(actValidationRules, &QAction::triggered, this, &DADataTableView::validationRulesRequested);
+    QAction* actRunValidation = menu->addAction(QIcon(QStringLiteral(":/DAGui/icon/validation-run.svg")),
+                                                tr("Run Validation"));  // cn:执行校验
+    actRunValidation->setEnabled(getData().isDataFrame());
+    connect(actRunValidation, &QAction::triggered, this, &DADataTableView::runValidationRequested);
     // —— 后续计划的分组插入点在菜单底部（见函数注释），插入时组间加分隔符 ——
     return menu;
 }

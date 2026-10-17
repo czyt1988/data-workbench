@@ -8,6 +8,7 @@ namespace DA
 class DATableStyleManager;
 class DATableHighlightOverlay;
 class DATableConditionalFormatStore;
+class DATableValidationStore;
 
 /**
  * @brief 表格样式自定义 delegate（五层绘制管线）
@@ -32,14 +33,22 @@ public:
 
     // 注入条件格式子存储（②持久装饰 + ④数据条；非拥有，可空）
     void setConditionalFormatStore(DATableConditionalFormatStore* store);
+    // 注入校验规则子存储（枚举列下拉编辑器，005 T1.25；非拥有，可空）
+    void setValidationStore(DATableValidationStore* store);
 
     void paint(QPainter* painter, const QStyleOptionViewItem& option,
                const QModelIndex& index) const override;
+    // 创建编辑器（005 T1.25）：所在列有启用的枚举规则 → QComboBox（editable=
+    // 「允许其他值」开关）；否则走基类默认。只读门禁沿用模型 flags（视图对不可编辑
+    // 索引根本不进 createEditor，红线4：不另造一套可编辑判定）
+    QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option,
+                          const QModelIndex& index) const override;
 
 private:
     DATableStyleManager* mStyleManager;              // 非拥有
     DATableHighlightOverlay* mOverlay;               // 非拥有（瞬态高亮层，可空）
     DATableConditionalFormatStore* mCfStore { nullptr };  // 非拥有（条件格式子存储，可空）
+    DATableValidationStore* mValidationStore { nullptr };  // 非拥有（校验规则子存储，可空，005）
 };
 }  // end of namespace DA
 #endif  // DATABLESTYLEITEMDELEGATE_H

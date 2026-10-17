@@ -3,6 +3,7 @@
 #include "DATableViewStateStore.h"
 #include "DATableConditionalFormatStore.h"
 #include "DATableComputedColumnStore.h"
+#include "DATableValidationStore.h"
 #include <QDomDocument>
 #include <QDomElement>
 
@@ -19,6 +20,7 @@ DATableMetadata::DATableMetadata(QObject* parent) : QObject(parent)
     mViewState         = new DATableViewStateStore(this);
     mConditionalFormat = new DATableConditionalFormatStore(this);
     mComputedColumns   = new DATableComputedColumnStore(this);
+    mValidations       = new DATableValidationStore(this);
 }
 
 DATableMetadata::~DATableMetadata()
@@ -63,6 +65,15 @@ DATableComputedColumnStore* DATableMetadata::computedColumns() const
 }
 
 /**
+ * @brief 数据校验规则子存储（005 T1.25）
+ * @return 非空
+ */
+DATableValidationStore* DATableMetadata::validations() const
+{
+    return mValidations;
+}
+
+/**
  * @brief 聚合序列化
  *
  * 样式段（column-style/row-style/cell/col-format）与 <view-state> 段均作为 tableEle 的子节点。
@@ -82,6 +93,9 @@ void DATableMetadata::toXml(QDomDocument& doc, QDomElement& tableEle) const
     }
     if (mComputedColumns) {
         mComputedColumns->toXml(doc, tableEle);
+    }
+    if (mValidations) {
+        mValidations->toXml(doc, tableEle);
     }
 }
 
@@ -118,6 +132,12 @@ bool DATableMetadata::fromXml(const QDomElement& tableEle)
             mComputedColumns->fromXml(cc);
         }
     }
+    if (mValidations) {
+        QDomElement va = tableEle.firstChildElement(QStringLiteral("validation"));
+        if (!va.isNull()) {
+            mValidations->fromXml(va);
+        }
+    }
     return true;
 }
 
@@ -140,6 +160,9 @@ void DATableMetadata::clearAll()
     }
     if (mComputedColumns) {
         mComputedColumns->clear();
+    }
+    if (mValidations) {
+        mValidations->clearAll();
     }
 }
 
@@ -204,6 +227,9 @@ QList< QPair< QString, int > > DATableMetadata::entryCountsByCategory() const
     if (mComputedColumns && !mComputedColumns->isEmpty()) {
         res.append(qMakePair(tr("Computed columns"), mComputedColumns->count()));  // cn:计算列
     }
+    if (mValidations && !mValidations->isEmpty()) {
+        res.append(qMakePair(tr("Validation rules"), mValidations->count()));  // cn:校验规则
+    }
     return res;
 }
 
@@ -217,7 +243,8 @@ bool DATableMetadata::isEmpty() const
     const bool viewEmpty  = !mViewState || mViewState->isEmpty();
     const bool cfEmpty    = !mConditionalFormat || mConditionalFormat->isEmpty();
     const bool ccEmpty    = !mComputedColumns || mComputedColumns->isEmpty();
-    return styleEmpty && viewEmpty && cfEmpty && ccEmpty;
+    const bool vaEmpty    = !mValidations || mValidations->isEmpty();
+    return styleEmpty && viewEmpty && cfEmpty && ccEmpty && vaEmpty;
 }
 
 }  // end of namespace DA

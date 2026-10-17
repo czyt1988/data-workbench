@@ -54,6 +54,8 @@
         <file>icon/fill-forward.svg</file>
         <file>icon/fill-backward.svg</file>
         <file>icon/fill-series.svg</file>
+        <file>icon/validation.svg</file>
+        <file>icon/validation-run.svg</file>
         <file>icon/zoomIn.svg</file>
         <file>icon/zoomOut.svg</file>
         <file>icon/select-all.svg</file>

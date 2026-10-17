@@ -76,6 +76,7 @@ set(DA_LIB_HEADER_FILES
     DATableConditionalFormatRule.h
     DATableConditionalFormatStore.h
     DATableComputedColumnStore.h
+    DATableValidationStore.h
     DATableStyleItemDelegate.h
 )
 set(DA_LIB_SOURCE_FILES
@@ -143,6 +144,7 @@ set(DA_LIB_SOURCE_FILES
     DATableConditionalFormatRule.cpp
     DATableConditionalFormatStore.cpp
     DATableComputedColumnStore.cpp
+    DATableValidationStore.cpp
     DATableStyleItemDelegate.cpp
 )
 set(DA_LIB_QT_UI_FILES
@@ -228,6 +230,8 @@ list(APPEND DA_LIB_HEADER_FILES_Dialog
     ${DA_LIB_SUBDIR_Dialog}/DADialogGroupBy.h
     ${DA_LIB_SUBDIR_Dialog}/DADialogReshape.h
     ${DA_LIB_SUBDIR_Dialog}/DADialogFillSeries.h
+    ${DA_LIB_SUBDIR_Dialog}/DADialogValidationRules.h
+    ${DA_LIB_SUBDIR_Dialog}/DADialogValidationReport.h
 )
 list(APPEND DA_LIB_SOURCE_FILES_Dialog
     ${DA_LIB_SUBDIR_Dialog}/DATxtFileImportDialog.cpp
@@ -249,6 +253,8 @@ list(APPEND DA_LIB_SOURCE_FILES_Dialog
     ${DA_LIB_SUBDIR_Dialog}/DADialogGroupBy.cpp
     ${DA_LIB_SUBDIR_Dialog}/DADialogReshape.cpp
     ${DA_LIB_SUBDIR_Dialog}/DADialogFillSeries.cpp
+    ${DA_LIB_SUBDIR_Dialog}/DADialogValidationRules.cpp
+    ${DA_LIB_SUBDIR_Dialog}/DADialogValidationReport.cpp
 )
 list(APPEND DA_LIB_QT_UI_FILES_Dialog
     ${DA_LIB_SUBDIR_Dialog}/DATxtFileImportDialog.ui
@@ -273,6 +279,7 @@ set(DA_LIB_HEADER_FILES_Commands
     ${DA_LIB_SUBDIR_Commands}/DACommandsTableStyle.h
     ${DA_LIB_SUBDIR_Commands}/DACommandsTableColumnFormat.h
     ${DA_LIB_SUBDIR_Commands}/DACommandsConditionalFormat.h
+    ${DA_LIB_SUBDIR_Commands}/DACommandsTableValidation.h
 )
 set(DA_LIB_SOURCE_FILES_Commands
     ${DA_LIB_SUBDIR_Commands}/DACommandWithRedoCount.cpp
@@ -280,6 +287,7 @@ set(DA_LIB_SOURCE_FILES_Commands
     ${DA_LIB_SUBDIR_Commands}/DACommandsTableStyle.cpp
     ${DA_LIB_SUBDIR_Commands}/DACommandsTableColumnFormat.cpp
     ${DA_LIB_SUBDIR_Commands}/DACommandsConditionalFormat.cpp
+    ${DA_LIB_SUBDIR_Commands}/DACommandsTableValidation.cpp
 )
 list(APPEND DA_LIB_HEADER_FILES_Commands
     ${DA_LIB_SUBDIR_Commands}/DACommandWithTemporaryData.h

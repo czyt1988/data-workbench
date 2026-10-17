@@ -2,9 +2,12 @@
 #include "DATableStyleManager.h"
 #include "DATableHighlightOverlay.h"
 #include "DATableConditionalFormatStore.h"
+#include "DATableValidationStore.h"
 #include "Models/DAAbstractCacheWindowTableModel.h"
 #include <QPainter>
 #include <QPalette>
+#include <QComboBox>
+#include <QStringList>
 
 namespace DA
 {
@@ -36,6 +39,54 @@ DATableStyleItemDelegate::DATableStyleItemDelegate(DATableStyleManager* mgr, DAT
 void DATableStyleItemDelegate::setConditionalFormatStore(DATableConditionalFormatStore* store)
 {
     mCfStore = store;
+}
+
+/**
+ * @brief 注入校验规则子存储（枚举列下拉编辑器，005 T1.25）
+ * @param store 校验规则子存储（非拥有，可空；空则枚举列走基类默认编辑器）
+ */
+void DATableStyleItemDelegate::setValidationStore(DATableValidationStore* store)
+{
+    mValidationStore = store;
+}
+
+/**
+ * @brief 创建编辑器：枚举规则列 → QComboBox（005 T1.25 §4.3-6）
+ *
+ * 列名经模型表头 DisplayRole 取（位置索引即逻辑列，本表无列重排），occurrence 由
+ * store 按「第 n 个同名列」消歧（R20）。editable = 规则的「允许其他值」开关；关闭时
+ * 只能从列表取值。只读门禁在模型 flags（视图不会为不可编辑索引调用本函数，红线4：
+ * 此处不另造判定）。无枚举规则/无 store 走基类默认编辑器。
+ * @param parent 编辑器父对象
+ * @param option 样式选项
+ * @param index 模型索引（窗口行；枚举查询只用列维，无需行换算）
+ * @return 编辑器 widget
+ */
+QWidget* DATableStyleItemDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const
+{
+    if (mValidationStore && index.isValid()) {
+        const QAbstractItemModel* m = index.model();
+        const int col               = index.column();
+        if (m && col >= 0 && col < m->columnCount()) {
+            QStringList names;
+            names.reserve(col + 1);
+            for (int c = 0; c <= col; ++c) {
+                names.append(m->headerData(c, Qt::Horizontal, Qt::DisplayRole).toString());
+            }
+            QStringList values;
+            bool allowOther = true;
+            if (mValidationStore->enumOptionsForColumn(names, col, &values, &allowOther)) {
+                QComboBox* combo = new QComboBox(parent);
+                combo->setEditable(allowOther);
+                combo->addItems(values);
+                // 当前格值预填（editable 时保留原文；非 editable 且值不在列表则保持首项，
+                // 随后视图的 setEditorData 走 USER 属性同口径覆盖）
+                combo->setCurrentText(index.data(Qt::EditRole).toString());
+                return combo;
+            }
+        }
+    }
+    return QStyledItemDelegate::createEditor(parent, option, index);
 }
 
 /**
