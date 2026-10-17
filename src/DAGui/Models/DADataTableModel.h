@@ -68,6 +68,12 @@ public:
     void setBlockFetchRowCount(int n);
     int getBlockFetchRowCount() const;
 
+Q_SIGNALS:
+    // 单元格值经编辑命令实际改变（exec/undo 都发，参数为数据源绝对行列）。
+    // 与 dataChanged 区分：滑动窗滚动/样式刷新也会发 dataChanged（整窗范围），
+    // 本信号只在「值变更」时发——003 条件格式列统计失效的精确挂点
+    void cellValueChanged(int actualRow, int actualColumn);
+
 protected:
     // 缓存
     void cacheShape() override;

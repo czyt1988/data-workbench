@@ -1,6 +1,7 @@
 ﻿#include "DATableStyleItemDelegate.h"
 #include "DATableStyleManager.h"
 #include "DATableHighlightOverlay.h"
+#include "DATableConditionalFormatStore.h"
 #include "Models/DAAbstractCacheWindowTableModel.h"
 #include <QPainter>
 #include <QPalette>
@@ -13,6 +14,8 @@ namespace
 // 瞬态高亮覆盖背景的不透明度：语义色以半透明叠在①层静态样式之上，
 // 保证黑/白前景文字仍可读（混合规则集中在 delegate 层③，overlay 只给不透明语义色）
 constexpr int c_highlightAlpha = 160;
+// 数据条与单元格内容区边缘的内边距（§1.4-1：条与文字之间留 2px）
+constexpr int c_dataBarPadding = 2;
 }
 
 /**
@@ -24,6 +27,15 @@ constexpr int c_highlightAlpha = 160;
 DATableStyleItemDelegate::DATableStyleItemDelegate(DATableStyleManager* mgr, DATableHighlightOverlay* overlay, QObject* parent)
     : QStyledItemDelegate(parent), mStyleManager(mgr), mOverlay(overlay)
 {
+}
+
+/**
+ * @brief 注入条件格式子存储（②持久装饰 + ④数据条）
+ * @param store 条件格式子存储（非拥有，可空；空则跳过②④层）
+ */
+void DATableStyleItemDelegate::setConditionalFormatStore(DATableConditionalFormatStore* store)
+{
+    mCfStore = store;
 }
 
 /**
@@ -47,7 +59,8 @@ void DATableStyleItemDelegate::paint(QPainter* painter, const QStyleOptionViewIt
 {
     const bool noStyle   = (!mStyleManager || mStyleManager->isEmpty());
     const bool noOverlay = (!mOverlay || mOverlay->isEmpty());
-    if (noStyle && noOverlay) {
+    const bool noCf      = (!mCfStore || mCfStore->isEmpty());
+    if (noStyle && noOverlay && noCf) {
         // 快速路径：无任何装饰走默认
         QStyledItemDelegate::paint(painter, option, index);
         return;
@@ -83,10 +96,38 @@ void DATableStyleItemDelegate::paint(QPainter* painter, const QStyleOptionViewIt
         }
     }
 
-    // ② 持久装饰（条件格式）插入点：003 在此按列缓存的规则列表求值，
-    //    命中后叠加背景/前景（在①之后、③之前），不保留独立虚钩子（D2）
+    // ② 持久装饰（条件格式，003）：按列缓存的规则桶求值（红线1：只在 delegate 层，
+    //    取值 Qt::EditRole 原始值；红线2：只查本列桶，统计走 store 惰性缓存），
+    //    命中后在①结果之上叠加背景/前景/字体（复用 DATableCellStyle 叠加语义，
+    //    与①同一代码路径，不另造颜色合并逻辑），列表顺序=优先级、后者覆盖前者
+    DATableConditionalFormatStore::EvaluateResult cfResult;
+    if (mCfStore) {
+        const QVector< DATableConditionalFormatRule >* cfRules = mCfStore->rulesForColumn(actualCol);
+        if (cfRules && !cfRules->isEmpty()) {
+            DATableConditionalFormatStore::ColumnStats stats;
+            bool statsValid = false;
+            if (mCfStore->needsColumnStats(actualCol)) {
+                // 色阶/数据条才触发统计（惰性计算 + 缓存；纯单元格规则的列不打 Python）
+                statsValid = mCfStore->columnStats(actualCol, stats);
+            }
+            cfResult = DATableConditionalFormatStore::evaluate(*cfRules, index.data(Qt::EditRole), statsValid, stats);
+            const DATableCellStyle& cfStyle = cfResult.style;
+            if (!cfStyle.isNull()) {
+                if (cfStyle.backgroundValid()) {
+                    painter->fillRect(opt.rect, cfStyle.background());
+                }
+                if (cfStyle.foregroundValid()) {
+                    opt.palette.setColor(QPalette::Text, cfStyle.foreground());
+                }
+                if (cfStyle.fontValid()) {
+                    opt.font        = cfStyle.font();
+                    opt.fontMetrics = QFontMetrics(cfStyle.font());
+                }
+            }
+        }
+    }
 
-    // ③ 瞬态装饰：查找命中/校验违规，语义色半透明覆盖背景
+    // ③ 瞬态装饰：查找命中/校验违规，语义色半透明覆盖背景（③覆盖②，层序钉死）
     if (mOverlay) {
         const DATableHighlightOverlay::Level level = mOverlay->levelAt(actualRow, actualCol);
         if (level != DATableHighlightOverlay::Level::None) {
@@ -96,11 +137,21 @@ void DATableStyleItemDelegate::paint(QPainter* painter, const QStyleOptionViewIt
         }
     }
 
-    // ④ 数据条插入点：003 在背景之上、文字之下绘制（按列 min/max 归一化条长，
-    //    文字层用去掉背景的方式复用基类绘制，避免重写文字绘制）
+    // ④ 数据条（003）：背景之上、文字之下（§1.4-1：条长=(v-min)/(max-min) 归一化占
+    //    内容区宽度，max==min 退化半格，2px 内边距，不改文字排布）。
+    //    选用 painter->fillRect 而非 QStyleOptionProgressBar：progressBar 会带 groove/chunk
+    //    样式皮肤且几何不可控，fillRect 与①③层的背景画法一致、几何精确可控
+    if (cfResult.hasDataBar) {
+        QColor barColor = cfResult.barColor.isValid() ? cfResult.barColor : QColor(0xBD, 0xCD, 0xE8);
+        const QRect barArea = opt.rect.adjusted(c_dataBarPadding, c_dataBarPadding, -c_dataBarPadding, -c_dataBarPadding);
+        const int barWidth  = qRound(barArea.width() * qBound(0.0, cfResult.barRatio, 1.0));
+        if (barWidth > 0 && barArea.width() > 0 && barArea.height() > 0) {
+            painter->fillRect(QRect(barArea.left(), barArea.top(), barWidth, barArea.height()), barColor);
+        }
+    }
 
-    // ⑤ 绘制文字（基类 CE_ItemViewItem 路径）；批注角标插入点：005 在本行之后
-    //    对有批注的单元格画右上角小三角（与数据条/命中色互不影响）
+    // ⑤ 绘制文字（基类 CE_ItemViewItem 路径，数据条在文字之下不遮字）；
+    //    批注角标插入点：005 在本行之后对有批注的单元格画右上角小三角（与数据条/命中色互不影响）
     QStyledItemDelegate::paint(painter, opt, index);
 }
 

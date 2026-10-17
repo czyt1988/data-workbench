@@ -337,6 +337,8 @@ bool DADataTableModel::setActualData(int actualRow, int actualColumn, const QVar
             bool r = df.iat(actualRow, actualColumn, value);
             if (r) {
                 d->blockCache.clear();
+                // 值变更精确通知（003：条件格式列统计失效挂点，与 dataChanged 区分）
+                Q_EMIT cellValueChanged(actualRow, actualColumn);
             }
             return r;
         }
@@ -346,6 +348,8 @@ bool DADataTableModel::setActualData(int actualRow, int actualColumn, const QVar
         cmd_iat->setCallBack([ modle, actualRow, actualColumn ]() {
             if (modle) {
                 modle->notifyDataChanged(actualRow, actualColumn);
+                // exec/undo 都触发：值变更精确通知（003 列统计失效挂点）
+                Q_EMIT modle->cellValueChanged(actualRow, actualColumn);
             }
         });
         if (!cmd_iat->exec()) {
