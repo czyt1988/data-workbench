@@ -245,47 +245,302 @@ def da_query_datas(df: pd.DataFrame, expr: Optional[str]):
     df.query(expr, inplace=True)
 
 
-@log_function_call
-def da_search_data(df: pd.DataFrame, data, start_row=None, start_col=None):
-    """
-    在DataFrame中查找匹配数据的单元格位置，返回整数索引
+def _da_resolve_bound(rng, n: int):
+    '''
+    解析范围闭区间：None → 全范围 [0, n-1]；(lo, hi) 端点可为 None（表示该端不限），越界截断
+    :return: (lo, hi)；lo > hi 表示空范围
+    '''
+    if n <= 0:
+        return 0, -1
+    if rng is None:
+        return 0, n - 1
+    lo = 0 if rng[0] is None else max(0, int(rng[0]))
+    hi = (n - 1) if rng[1] is None else min(n - 1, int(rng[1]))
+    return lo, hi
 
-    参数:
-        df: 目标DataFrame
-        data: 要匹配的数据（任意类型）
-        start_row: 起始行号(整数索引，None表示从0开始)
-        start_col: 起始列号(整数索引，None表示从0开始)
 
-    返回:
-        list: 匹配位置的列表，每个元素为元组 (行索引, 列索引)
-    """
-    # 处理起始位置
-    start_row = start_row or 0
-    start_col = start_col or 0
+def _da_is_text_column(values) -> bool:
+    '''是否文本类列（object/str/string dtype），文本匹配与正则只作用于这类列（§4.2 v1）'''
+    dt = values.dtype
+    if dt == np.dtype('O'):
+        return True
+    try:
+        return bool(pd.api.types.is_string_dtype(dt))
+    except TypeError:
+        return False
 
-    # 确保起始位置在有效范围内
-    start_row = max(0, min(start_row, len(df) - 1))
-    start_col = max(0, min(start_col, len(df.columns) - 1))
 
-    # 截取搜索范围
-    sub = df.iloc[start_row:, start_col:]
+def _da_parse_numeric_keyword(find):
+    '''关键字解析为数值；不可解析返回 None'''
+    try:
+        return float(find)
+    except (TypeError, ValueError):
+        return None
 
+
+def _da_column_find_mask(values, find: str, case_sensitive: bool, use_regex: bool, whole_cell: bool):
+    '''
+    单列查找命中掩码（布尔 ndarray，与 values 等长）。
+
+    匹配语义（§4.2 v1，在原始值上匹配）：
+    - 文本列（object/str）：正则 → str.contains(regex=True)/str.fullmatch；
+      非正则 → 子串包含（字面量）或整格相等（whole_cell）；大小写开关生效；NaN 不命中
+    - 数值列（非正则时）：关键字可解析为数值则整格相等命中（与旧 da_search_data 的
+      数值等值语义一致）；正则模式跳过数值列（正则只作用文本列，避免 dtype 破坏）
+    - 日期/布尔等其它类型列：v1 不命中
+    '''
+    n = len(values)
+    if use_regex:
+        if not _da_is_text_column(values):
+            return np.zeros(n, dtype=bool)
+        if whole_cell:
+            mask = values.str.fullmatch(find, case=case_sensitive, na=False)
+        else:
+            mask = values.str.contains(find, case=case_sensitive, regex=True, na=False)
+        return np.asarray(mask, dtype=bool)
+    if _da_is_text_column(values):
+        if whole_cell:
+            if case_sensitive:
+                mask = values.eq(find)
+            else:
+                mask = values.str.lower().eq(str(find).lower())
+        else:
+            mask = values.str.contains(find, case=case_sensitive, regex=False, na=False)
+        return np.asarray(mask, dtype=bool)
+    dt = values.dtype
+    if pd.api.types.is_numeric_dtype(dt) and dt.kind != 'b':
+        num = _da_parse_numeric_keyword(find)
+        if num is None:
+            return np.zeros(n, dtype=bool)
+        return np.asarray(values.to_numpy() == num, dtype=bool)
+    return np.zeros(n, dtype=bool)
+
+
+def _da_find_hits(df: pd.DataFrame, find: str, case_sensitive: bool, use_regex: bool, whole_cell: bool, row_range, col_range):
+    '''
+    范围内扫描命中（全表扫描必须走 Python：命中可能落在滑动窗外，C++ 侧拿不到，§4.2）
+    :return: (rows, cols) int64 数组，行主序（先按行再按列，与 Excel 查找顺序一致）
+    '''
+    r_lo, r_hi = _da_resolve_bound(row_range, len(df))
+    c_lo, c_hi = _da_resolve_bound(col_range, df.shape[1])
+    rows_list = []
+    cols_list = []
+    for c in range(c_lo, c_hi + 1):
+        values = df.iloc[r_lo:r_hi + 1, c]
+        mask = _da_column_find_mask(values, find, case_sensitive, use_regex, whole_cell)
+        idx = np.flatnonzero(mask)
+        if idx.size:
+            rows_list.append(idx + r_lo)
+            cols_list.append(np.full(idx.size, c, dtype=np.int64))
+    if not rows_list:
+        return np.empty(0, dtype=np.int64), np.empty(0, dtype=np.int64)
+    rows = np.concatenate(rows_list)
+    cols = np.concatenate(cols_list)
+    order = np.lexsort((cols, rows))  # 行主序
+    return rows[order], cols[order]
+
+
+def _da_find_hits_equality(df: pd.DataFrame, data, row_range, col_range):
+    '''
+    旧等值比较路径（data 为非字符串：数值/NaN 等），保持旧 da_search_data 语义：
+    NaN 用 pd.isna 向量化、普通值用 ==
+    '''
+    r_lo, r_hi = _da_resolve_bound(row_range, len(df))
+    c_lo, c_hi = _da_resolve_bound(col_range, df.shape[1])
+    if r_hi < r_lo or c_hi < c_lo:
+        return np.empty(0, dtype=np.int64), np.empty(0, dtype=np.int64)
+    sub = df.iloc[r_lo:r_hi + 1, c_lo:c_hi + 1]
     if pd.isna(data):
-        # NaN 比较：使用 pd.isna 向量化
         mask = sub.isna()
     else:
-        # 普通值比较：向量化 ==
         try:
             mask = (sub == data)
         except Exception:
-            # 类型不兼容时的降级处理
-            mask = sub.applymap(lambda x: x == data)
+            # 类型不兼容时的降级处理（pandas>=2.1 用 map，旧版用 applymap）
+            if hasattr(sub, 'map'):
+                mask = sub.map(lambda x: x == data)
+            else:
+                mask = sub.applymap(lambda x: x == data)
+    rr, cc = np.asarray(mask).nonzero()  # nonzero 即行主序
+    return rr + r_lo, cc + c_lo
 
-    # np.where 返回 (row_indices, col_indices)
-    rows, cols = mask.values.nonzero()
-    # 转换为全局坐标
-    matches = [(start_row + r, start_col + c) for r, c in zip(rows, cols)]
-    return matches
+
+@log_function_call
+def da_search_data(df: pd.DataFrame, data, start_row=None, start_col=None,
+                   case_sensitive: bool = False, use_regex: bool = False, whole_cell: bool = False,
+                   row_range=None, col_range=None, max_hits: int = 100000):
+    """
+    在DataFrame中查找匹配数据的单元格位置（002 T1.4 扩展：文本/正则/整格/范围/上限截断）
+
+    新参数一律追加在 start_row/start_col 之后，旧位置参数调用组合行为保持不变。
+    匹配语义见 _da_column_find_mask（data 为字符串时）；data 为非字符串（数值/NaN）
+    时走旧等值比较路径。
+
+    参数:
+        df: 目标DataFrame
+        data: 关键字（字符串走文本匹配；其它类型走旧等值语义）
+        start_row: 旧参数：起始行号（等价 row_range=(start_row, None)，row_range 优先）
+        start_col: 旧参数：起始列号（等价 col_range=(start_col, None)，col_range 优先）
+        case_sensitive: 区分大小写
+        use_regex: 正则表达式（只作用于文本类列；无效正则抛 re.error）
+        whole_cell: 整格匹配
+        row_range: 行范围闭区间 (lo, hi)，None 表示全表
+        col_range: 列范围闭区间 (lo, hi)，None 表示全表
+        max_hits: 命中上限（默认 100000，§4.2 硬约束③），超出截断返回数组
+
+    返回:
+        tuple: (rows, cols, total)
+            rows/cols: numpy int32 数组（行主序，最多 max_hits 条）
+            total: 真实命中总数（> len(rows) 时说明发生了截断，调用方据此提示）
+    """
+    if row_range is None and start_row:
+        row_range = (int(start_row), None)
+    if col_range is None and start_col:
+        col_range = (int(start_col), None)
+    if isinstance(data, str):
+        if not data:
+            return (np.empty(0, dtype=np.int32), np.empty(0, dtype=np.int32), 0)
+        if use_regex:
+            import re
+            re.compile(data)  # 无效正则尽早抛 re.error（C++ 侧转用户提示，不静默）
+        rows, cols = _da_find_hits(df, data, case_sensitive, use_regex, whole_cell, row_range, col_range)
+    else:
+        rows, cols = _da_find_hits_equality(df, data, row_range, col_range)
+    total = int(rows.size)
+    if max_hits is not None and max_hits >= 0 and total > max_hits:
+        rows = rows[:max_hits]
+        cols = cols[:max_hits]
+    return (rows.astype(np.int32), cols.astype(np.int32), total)
+
+
+def _da_coerce_to_dtype(dtype, text: str):
+    '''
+    把替换文本按列 dtype 转换（数值列整格替换保持 dtype，§4.2）；
+    无法无损转换（非数值文本 / 整型列遇小数）返回 None，该列不参与替换
+    '''
+    num = _da_parse_numeric_keyword(text)
+    if num is None:
+        return None
+    if dtype.kind == 'f':
+        return dtype.type(num)
+    if dtype.kind in ('i', 'u'):
+        if not float(num).is_integer():
+            return None
+        return dtype.type(int(num))
+    return None
+
+
+@log_function_call
+def da_find_and_replace(df: pd.DataFrame, find: str, replace: str,
+                        case_sensitive: bool = False, use_regex: bool = False, whole_cell: bool = False,
+                        row_range=None, col_range=None):
+    """
+    按 da_search_data 同一匹配语义就地替换，返回变更清单（供值记录撤销，D4）
+
+    替换规则（§4.2 v1）：
+    - 文本列：正则 → pandas str.replace(regex=True)（re.sub 语义，replace 可引用捕获组）；
+      非正则 → 字面子串替换；整格匹配 → 整格替换为 replace 字面量
+    - 数值列：仅整格精确替换——关键字解析为数值且整格相等时，写回按列 dtype 转换的
+      同类型值（保持 dtype）；replace 无法转换到该列 dtype 时该列不替换
+    - 正则模式不作用于数值列；日期/布尔等其它列 v1 不参与替换
+
+    返回:
+        tuple: (rows, cols, old_values, new_values)
+            rows/cols: numpy int32 数组（行主序）
+            old_values/new_values: Python list（与 rows/cols 一一对应，撤销/重做写回用）
+    """
+    if not isinstance(find, str) or not find:
+        return (np.empty(0, dtype=np.int32), np.empty(0, dtype=np.int32), [], [])
+    if use_regex:
+        import re
+        re.compile(find)  # 无效正则尽早抛 re.error
+    r_lo, r_hi = _da_resolve_bound(row_range, len(df))
+    c_lo, c_hi = _da_resolve_bound(col_range, df.shape[1])
+    all_rows = []
+    all_cols = []
+    all_old = []
+    all_new = []
+    for c in range(c_lo, c_hi + 1):
+        values = df.iloc[r_lo:r_hi + 1, c]
+        dt = values.dtype
+        if _da_is_text_column(values):
+            mask = _da_column_find_mask(values, find, case_sensitive, use_regex, whole_cell)
+            idx = np.flatnonzero(mask)
+            if idx.size == 0:
+                continue
+            arr = values.to_numpy()
+            if whole_cell and not use_regex:
+                new_vals = [replace] * idx.size
+            elif use_regex:
+                replaced = values.str.replace(find, replace, case=case_sensitive, regex=True)
+                new_vals = np.asarray(replaced.to_numpy(), dtype=object)[idx].tolist()
+            else:
+                replaced = values.str.replace(find, replace, case=case_sensitive, regex=False)
+                new_vals = np.asarray(replaced.to_numpy(), dtype=object)[idx].tolist()
+            old_vals = np.asarray(arr, dtype=object)[idx].tolist()
+        elif pd.api.types.is_numeric_dtype(dt) and dt.kind != 'b' and not use_regex:
+            # 数值列：仅整格精确替换（关键字等值命中 → 写回同类型值，保持 dtype）
+            num = _da_parse_numeric_keyword(find)
+            if num is None:
+                continue
+            new_num = _da_coerce_to_dtype(dt, replace)
+            if new_num is None:
+                continue  # replace 无法保持 dtype，该列不替换
+            arr = values.to_numpy()
+            idx = np.flatnonzero(np.asarray(arr == num, dtype=bool))
+            if idx.size == 0:
+                continue
+            old_vals = arr[idx].tolist()
+            new_vals = [new_num] * idx.size
+        else:
+            continue  # 日期/布尔等其它类型列 v1 不参与替换
+        # 就地写回（位置赋值，避免 index 对齐；dtype 保持）
+        df.iloc[idx + r_lo, c] = new_vals
+        all_rows.append(idx + r_lo)
+        all_cols.append(np.full(idx.size, c, dtype=np.int64))
+        all_old.extend(old_vals)
+        all_new.extend(new_vals)
+    if not all_rows:
+        return (np.empty(0, dtype=np.int32), np.empty(0, dtype=np.int32), [], [])
+    rows = np.concatenate(all_rows)
+    cols = np.concatenate(all_cols)
+    order = np.lexsort((cols, rows))  # 行主序
+    rows = rows[order]
+    cols = cols[order]
+    old_sorted = [all_old[i] for i in order]
+    new_sorted = [all_new[i] for i in order]
+    return (rows.astype(np.int32), cols.astype(np.int32), old_sorted, new_sorted)
+
+
+@log_function_call
+def da_write_cells(df: pd.DataFrame, rows, cols, values):
+    """
+    按 (行, 列) 位置批量写回单元格值（替换命令的撤销/重做用，D4 值记录）
+
+    按列分组做位置赋值（df.iloc[行数组, 列号] = 值列表），避免逐格 Python 循环，
+    大变更清单下也保持可用；不做 index 对齐，dtype 由 pandas 按列写回保持。
+
+    :param df: pd.DataFrame，就地修改
+    :param rows: 行位置序列
+    :param cols: 列位置序列
+    :param values: 值序列（与 rows/cols 一一对应）
+    :return: 此函数不返回值，直接改变df
+    """
+    rows_arr = np.asarray(rows, dtype=np.int64)
+    cols_arr = np.asarray(cols, dtype=np.int64)
+    if rows_arr.size == 0:
+        return
+    if rows_arr.size != cols_arr.size or rows_arr.size != len(values):
+        raise ValueError("rows/cols/values size mismatch")
+    values = list(values)
+    order = np.argsort(cols_arr, kind='stable')
+    sorted_cols = cols_arr[order]
+    boundaries = np.flatnonzero(np.r_[True, sorted_cols[1:] != sorted_cols[:-1]])
+    ends = np.r_[boundaries[1:], rows_arr.size]
+    for s, e in zip(boundaries, ends):
+        idx = order[s:e]
+        c = int(sorted_cols[s])
+        df.iloc[rows_arr[idx], c] = [values[i] for i in idx]
 
 
 @log_function_call
