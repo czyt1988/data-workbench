@@ -27,9 +27,9 @@ class DATableNoteStore;
  * - conditionalFormat：条件格式规则集（003 T1.5，渲染类，位置键列引用 R20）
  * - computedColumns：计算列定义集合（004 T1.23，语义类，定义类在 src/DAData，列名引用 R20）
  * - validations：数据校验规则集（005 T1.25，语义类，定义类在 src/DAData，列名引用 R20）
+ * - notes：单元格批注（005 T1.26，渲染类，(row,col) 位置键，不进 DataFrame）
  *
- * 批注由后续计划（005 WP3）往束里加子存储与
- * XML 段，本类只提供聚合与统一序列化入口 toXml/fromXml。
+ * 本类只提供聚合与统一序列化入口 toXml/fromXml。
  *
  * 归属分层（D3）：渲染类子存储（样式，后续含条件格式/批注）与语义类子存储
  * （视图状态按列名引用；后续校验/计算列的定义类放 src/DAData）都挂在本束下，
@@ -54,6 +54,8 @@ public:
     DATableComputedColumnStore* computedColumns() const;
     // 数据校验规则子存储（随束创建，parent = this，非空，005 T1.25）
     DATableValidationStore* validations() const;
+    // 单元格批注子存储（随束创建，parent = this，非空，005 T1.26）
+    DATableNoteStore* notes() const;
 
     // 聚合序列化：把各子存储的 XML 段写入 table 元素
     void toXml(QDomDocument& doc, QDomElement& tableEle) const;
@@ -79,6 +81,7 @@ private:
     DATableConditionalFormatStore* mConditionalFormat { nullptr };  ///< 条件格式子存储（拥有，parent=this）
     DATableComputedColumnStore* mComputedColumns { nullptr };       ///< 计算列子存储（拥有，parent=this，004 T1.23）
     DATableValidationStore* mValidations { nullptr };               ///< 校验规则子存储（拥有，parent=this，005 T1.25）
+    DATableNoteStore* mNotes { nullptr };                           ///< 批注子存储（拥有，parent=this，005 T1.26）
 };
 }  // end of namespace DA
 #endif  // DATABLEMETADATA_H

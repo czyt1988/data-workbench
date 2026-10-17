@@ -191,6 +191,81 @@ public:
             }
         }
     }
+
+    /**
+     * @brief 二维键哈希（单元格键）按「一批插入索引」位移（005 批注行/列维度扩展）
+     *
+     * 与一维版同一语义，只位移指定维度：Dimension::Row 位移键的第一维（行），
+     * Dimension::Column 位移第二维（列）；每个插入索引 idx，该维 >= idx 的键 +1
+     * （降序逐个处理避免连锁覆盖），另一维不变。空列表视为无操作。
+     * @param hash 待位移的哈希（就地修改）
+     * @param insertedIndexes 插入的索引列表（一批）
+     * @param dim 位移维度
+     */
+    template < typename T >
+    static void shiftKeysOnInserted(QHash< QPair< int, int >, T >& hash, const QList< int >& insertedIndexes, Dimension dim)
+    {
+        if (insertedIndexes.isEmpty() || hash.isEmpty()) {
+            return;
+        }
+        QList< int > sorted = insertedIndexes;
+        std::sort(sorted.begin(), sorted.end(), std::greater< int >());
+        for (int idx : std::as_const(sorted)) {
+            QHash< QPair< int, int >, T > shifted;
+            for (auto it = hash.begin(); it != hash.end();) {
+                const int keyOnDim = (dim == Dimension::Row) ? it.key().first : it.key().second;
+                if (keyOnDim >= idx) {
+                    const QPair< int, int > newKey = (dim == Dimension::Row) ? qMakePair(it.key().first + 1, it.key().second)
+                                                                             : qMakePair(it.key().first, it.key().second + 1);
+                    shifted.insert(newKey, it.value());
+                    it = hash.erase(it);
+                } else {
+                    ++it;
+                }
+            }
+            for (auto sit = shifted.constBegin(); sit != shifted.constEnd(); ++sit) {
+                hash.insert(sit.key(), sit.value());
+            }
+        }
+    }
+
+    /**
+     * @brief 二维键哈希（单元格键）按「一批删除索引」删除并位移（005 批注行/列维度扩展）
+     *
+     * 与一维版同一语义，只处理指定维度：每个删除索引 idx，该维 == idx 的条目删除，
+     * 该维 > idx 的条目 -1（降序逐个处理），另一维不变。空列表视为无操作。
+     * @param hash 待位移的哈希（就地修改）
+     * @param removedIndexes 删除的索引列表（一批）
+     * @param dim 位移维度
+     */
+    template < typename T >
+    static void shiftKeysOnRemoved(QHash< QPair< int, int >, T >& hash, const QList< int >& removedIndexes, Dimension dim)
+    {
+        if (removedIndexes.isEmpty() || hash.isEmpty()) {
+            return;
+        }
+        QList< int > sorted = removedIndexes;
+        std::sort(sorted.begin(), sorted.end(), std::greater< int >());
+        for (int idx : std::as_const(sorted)) {
+            QHash< QPair< int, int >, T > shifted;
+            for (auto it = hash.begin(); it != hash.end();) {
+                const int keyOnDim = (dim == Dimension::Row) ? it.key().first : it.key().second;
+                if (keyOnDim == idx) {
+                    it = hash.erase(it);
+                } else if (keyOnDim > idx) {
+                    const QPair< int, int > newKey = (dim == Dimension::Row) ? qMakePair(it.key().first - 1, it.key().second)
+                                                                             : qMakePair(it.key().first, it.key().second - 1);
+                    shifted.insert(newKey, it.value());
+                    it = hash.erase(it);
+                } else {
+                    ++it;
+                }
+            }
+            for (auto sit = shifted.constBegin(); sit != shifted.constEnd(); ++sit) {
+                hash.insert(sit.key(), sit.value());
+            }
+        }
+    }
 };
 }  // end of namespace DA
 #endif  // DATABLEKEYREMAP_H

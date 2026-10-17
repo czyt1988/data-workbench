@@ -4,6 +4,7 @@
 #include "DATableConditionalFormatStore.h"
 #include "DATableComputedColumnStore.h"
 #include "DATableValidationStore.h"
+#include "DATableNoteStore.h"
 #include <QDomDocument>
 #include <QDomElement>
 
@@ -21,6 +22,7 @@ DATableMetadata::DATableMetadata(QObject* parent) : QObject(parent)
     mConditionalFormat = new DATableConditionalFormatStore(this);
     mComputedColumns   = new DATableComputedColumnStore(this);
     mValidations       = new DATableValidationStore(this);
+    mNotes             = new DATableNoteStore(this);
 }
 
 DATableMetadata::~DATableMetadata()
@@ -74,6 +76,15 @@ DATableValidationStore* DATableMetadata::validations() const
 }
 
 /**
+ * @brief 单元格批注子存储（005 T1.26）
+ * @return 非空
+ */
+DATableNoteStore* DATableMetadata::notes() const
+{
+    return mNotes;
+}
+
+/**
  * @brief 聚合序列化
  *
  * 样式段（column-style/row-style/cell/col-format）与 <view-state> 段均作为 tableEle 的子节点。
@@ -96,6 +107,9 @@ void DATableMetadata::toXml(QDomDocument& doc, QDomElement& tableEle) const
     }
     if (mValidations) {
         mValidations->toXml(doc, tableEle);
+    }
+    if (mNotes) {
+        mNotes->toXml(doc, tableEle);
     }
 }
 
@@ -138,6 +152,12 @@ bool DATableMetadata::fromXml(const QDomElement& tableEle)
             mValidations->fromXml(va);
         }
     }
+    if (mNotes) {
+        QDomElement nt = tableEle.firstChildElement(QStringLiteral("note"));
+        if (!nt.isNull()) {
+            mNotes->fromXml(nt);
+        }
+    }
     return true;
 }
 
@@ -163,6 +183,9 @@ void DATableMetadata::clearAll()
     }
     if (mValidations) {
         mValidations->clearAll();
+    }
+    if (mNotes) {
+        mNotes->clearAll();
     }
 }
 
@@ -230,6 +253,9 @@ QList< QPair< QString, int > > DATableMetadata::entryCountsByCategory() const
     if (mValidations && !mValidations->isEmpty()) {
         res.append(qMakePair(tr("Validation rules"), mValidations->count()));  // cn:校验规则
     }
+    if (mNotes && !mNotes->isEmpty()) {
+        res.append(qMakePair(tr("Cell notes"), mNotes->count()));  // cn:批注
+    }
     return res;
 }
 
@@ -244,7 +270,8 @@ bool DATableMetadata::isEmpty() const
     const bool cfEmpty    = !mConditionalFormat || mConditionalFormat->isEmpty();
     const bool ccEmpty    = !mComputedColumns || mComputedColumns->isEmpty();
     const bool vaEmpty    = !mValidations || mValidations->isEmpty();
-    return styleEmpty && viewEmpty && cfEmpty && ccEmpty && vaEmpty;
+    const bool noteEmpty  = !mNotes || mNotes->isEmpty();
+    return styleEmpty && viewEmpty && cfEmpty && ccEmpty && vaEmpty && noteEmpty;
 }
 
 }  // end of namespace DA
