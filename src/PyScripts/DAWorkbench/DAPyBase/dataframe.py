@@ -494,6 +494,61 @@ def da_split_column(df: pd.DataFrame, col: int, mode: str = 'char', delimiter: s
 
 
 @log_function_call
+def da_groupby_aggregate(df: pd.DataFrame, keys, values, funcs) -> pd.DataFrame:
+    '''
+    分组聚合（004 T1.22）：产出长格式聚合结果表（新 DataFrame，不改原表）
+
+    聚合函数集合与透视表（da_create_pivot_table）对齐：'mean' / 'sum' / 'size'
+    （要扩展须两处同扩）。多键多列：keys 为分组键列名列表，values/funcs 一一对应
+    （同一列可用不同函数出现多次）。结果 reset_index 成普通列（长格式），聚合列
+    命名 "{值列}_{函数}"；size 只计组内行数（对应 values 项仅作命名占位）。
+    分组键含 NaN 时保留 NaN 组（dropna=False，SQL GROUP BY 语义）。
+
+    :param keys: 分组键列名列表（非空）
+    :param values: 聚合列名列表（与 funcs 等长）
+    :param funcs: 聚合函数列表（'mean'/'sum'/'size'）
+    :return: 聚合结果 DataFrame（行数 = 分组数）
+    :raises ValueError: 参数为空/长度不一致/函数不支持/列名不存在
+    '''
+    keys = [str(k) for k in keys]
+    values = [str(v) for v in values]
+    funcs = [str(f) for f in funcs]
+    if not keys:
+        raise ValueError("keys must not be empty")
+    if not values or len(values) != len(funcs):
+        raise ValueError("values/funcs must be non-empty and of the same length")
+    allowed = ('mean', 'sum', 'size')
+    columns = [str(c) for c in df.columns]
+    for k in keys:
+        if k not in columns:
+            raise ValueError("key column not found: %s" % k)
+    for f in funcs:
+        if f not in allowed:
+            raise ValueError("unsupported agg func: %s (allowed: %s)" % (f, '/'.join(allowed)))
+    for v in values:
+        if v not in columns:
+            raise ValueError("value column not found: %s" % v)
+    g = df.groupby(keys, dropna=False, sort=True)
+    parts = []
+    for v, f in zip(values, funcs):
+        if f == 'size':
+            s = g.size().rename('%s_size' % v)
+        else:
+            s = g[v].agg(f).rename('%s_%s' % (v, f))
+        parts.append(s)
+    return pd.concat(parts, axis=1).reset_index()
+
+
+@log_function_call
+def da_group_count(df: pd.DataFrame, keys) -> int:
+    '''
+    分组数（004 T1.22 对话框「预估结果行数」）：与 da_groupby_aggregate 同口径
+    （dropna=False 保留 NaN 组）。
+    '''
+    return int(df.groupby([str(k) for k in keys], dropna=False).ngroups)
+
+
+@log_function_call
 def da_merge_columns(df: pd.DataFrame, cols, sep: str = '', skip_na: bool = True, name: str = 'merged'):
     '''
     就地合并列（004 T1.9）：按 cols 给定顺序把各列值拼接为新列，

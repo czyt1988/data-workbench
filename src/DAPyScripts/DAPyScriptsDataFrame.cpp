@@ -960,7 +960,8 @@ DAPyDataFrame DAPyScriptsDataFrame::headCopy(const DAPyDataFrame& df, int n) noe
     } catch (const std::exception& e) {
         dealException(e);
     }
-    return DAPyDataFrame();
+    // 失败哨兵：显式包装 none（DAPyDataFrame() 默认构造创建的是空 DataFrame，isNone()==false）
+    return DAPyDataFrame(pybind11::none());
 }
 
 /**
@@ -1100,6 +1101,60 @@ int DAPyScriptsDataFrame::mergeColumns(
         if (errorMessage) {
             *errorMessage = QString::fromUtf8(e.what());
         }
+        dealException(e);
+    }
+    return -1;
+}
+
+/**
+ * @brief 分组聚合的wrapper（004 T1.22）
+ *
+ * 对应 da_dataframe.da_groupby_aggregate(df, keys, values, funcs)：产出长格式聚合
+ * 结果表（新 DataFrame，不改原表）。聚合函数集合与透视表对齐（mean/sum/size）。
+ * @param df 数据（只读）
+ * @param keys 分组键列名
+ * @param values 聚合列名（与 funcs 一一对应）
+ * @param funcs 聚合函数（'mean'/'sum'/'size'）
+ * @param errorMessage 非空时输出失败诊断
+ * @return 聚合结果（失败返回 none 的 DAPyDataFrame）
+ */
+DAPyDataFrame DAPyScriptsDataFrame::groupbyAggregate(
+    const DAPyDataFrame& df, const QStringList& keys, const QStringList& values, const QStringList& funcs, QString* errorMessage) noexcept
+{
+    // 失败哨兵：DAPyDataFrame() 默认构造创建的是空 DataFrame（isNone()==false），
+    // 失败路径必须显式包装 none，调用方的 isNone() 判定才成立
+    if (df.isNone() || keys.isEmpty() || values.isEmpty() || values.size() != funcs.size()) {
+        return DAPyDataFrame(pybind11::none());
+    }
+    try {
+        pybind11::object da_groupby_aggregate = attr("da_groupby_aggregate");
+        pybind11::object ret =
+            da_groupby_aggregate(df.object(), DA::PY::toPyObject(keys), DA::PY::toPyObject(values), DA::PY::toPyObject(funcs));
+        return DAPyDataFrame(ret);
+    } catch (const std::exception& e) {
+        if (errorMessage) {
+            *errorMessage = QString::fromUtf8(e.what());
+        }
+        dealException(e);
+    }
+    return DAPyDataFrame(pybind11::none());
+}
+
+/**
+ * @brief 分组数的wrapper（004 T1.22 对话框预估结果行数）
+ * @param df 数据（只读）
+ * @param keys 分组键列名
+ * @return 分组数；失败返回 -1
+ */
+qint64 DAPyScriptsDataFrame::groupCount(const DAPyDataFrame& df, const QStringList& keys) noexcept
+{
+    if (df.isNone() || keys.isEmpty()) {
+        return -1;
+    }
+    try {
+        pybind11::object da_group_count = attr("da_group_count");
+        return da_group_count(df.object(), DA::PY::toPyObject(keys)).cast< qint64 >();
+    } catch (const std::exception& e) {
         dealException(e);
     }
     return -1;
