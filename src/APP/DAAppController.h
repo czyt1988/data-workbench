@@ -349,6 +349,9 @@ private Q_SLOTS:
     void onActionMergeColumnsTriggered();
     // 分组聚合（004 T1.22，Ribbon「Data Tools」面板；与表体右键菜单共用页面入口）
     void onActionGroupByTriggered();
+    // 转置 / 宽转长（004 T1.27，Ribbon「Data Tools」面板；与表体右键菜单共用页面入口）
+    void onActionTransposeTriggered();
+    void onActionMeltTriggered();
     // 选中区样式反向同步 ribbon 控件
     void onTableStyleCurrentChanged(const DATableCellStyle& style);
     // 表格列显示格式

@@ -71,6 +71,10 @@
 #include "DAShapeEditPannelWidget.h"
 // Table style
 #include "DATableCellStyle.h"
+// 表格元数据与数据撤销命令（004 T1.27 就地形状变换：Swap 命令 + 元数据束快照/清理）
+#include "DATableMetadata.h"
+#include "DATableMetadataRegistry.h"
+#include "DADataUndoCommand.h"
 // Workflow
 #include "DAPyWorkFlowOperateWidget.h"
 #include "DAPyWorkFlowGraphicsView.h"
@@ -535,6 +539,8 @@ void DAAppController::initConnection()
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionSplitColumn, onActionSplitColumnTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionMergeColumns, onActionMergeColumnsTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionGroupBy, onActionGroupByTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionTranspose, onActionTransposeTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionMelt, onActionMeltTriggered);
     // View Category
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowWorkFlowArea, onActionShowWorkFlowAreaTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowWorkFlowManagerArea, onActionShowWorkFlowManagerAreaTriggered);
@@ -1501,6 +1507,52 @@ void DAAppController::onDataOperatePageCreated(DADataOperatePageWidget* page)
                 dow->showData(newData);
             }
         });
+        // 就地数据替换（004 T1.27 转置/melt 就地路径）：Swap 命令必须经 DAAppCommand
+        // begin/end 建（统一撤销链，DAGui 侧不 new）；元数据清理与数据替换同一撤销
+        // 单元——directional 回调 redo 清束 / undo 还原页面捕获的整束 XML 快照
+        connect(w,
+                &DADataOperateOfDataFrameWidget::inplaceDataReplaceRequested,
+                this,
+                [ this, w ](const DAData& data, const DAData& source, const QString& text, const QString& metadataSnapshot) {
+                    if (!mCommand) {
+                        return;
+                    }
+                    DADataAbstractUndoCommand* cmd = mCommand->beginDataOperateCommand(data, text, false /*isObjectPersist=false → Swap 内存驻留*/);
+                    DATableMetadata* bundle        = nullptr;
+                    if (DADataOperateWidget* dow = getDataOperateWidget()) {
+                        if (DATableMetadataRegistry* reg = dow->metadataRegistry()) {
+                            bundle = reg->get(data);
+                        }
+                    }
+                    QPointer< DADataOperateOfDataFrameWidget > wp(w);
+                    if (cmd) {
+                        cmd->setDirectionalCallBack([ wp, bundle, metadataSnapshot ](bool isUndo) {
+                            if (bundle) {
+                                if (isUndo) {
+                                    bundle->restoreFromString(metadataSnapshot);
+                                } else {
+                                    bundle->clearAll();
+                                }
+                            }
+                            if (wp) {
+                                wp->refreshAfterInplaceReplace();
+                            }
+                        });
+                    }
+                    DAData mutableData = data;  // DAData 共享底层对象，副本上 setPyObject 即生效
+                    mutableData.setPyObject(source.toPyObject());  // 执行替换
+                    if (cmd) {
+                        // push → 首次 redo：Swap 重设新对象（幂等）+ directional 清元数据
+                        mCommand->endDataOperateCommand(data);
+                    } else if (bundle) {
+                        // 惰性源不支持快照（begin 返回 nullptr）：不可撤销兜底执行
+                        bundle->clearAll();
+                    }
+                    if (wp) {
+                        wp->refreshAfterInplaceReplace();
+                    }
+                    setDirty();
+                });
         // 列头右键菜单已迁入 DADataHeaderView（R12，菜单内容单点定义在 DAGui）：
         // 这里只做信号接线——收到菜单表意信号后先选中该列（复用 selectColumnInDataFrameWidget，
         // 槽函数经 getSelectedOneDataframeColumn 取列），再执行既有槽逻辑，行为与迁移前一致
@@ -3512,6 +3564,36 @@ void DAAppController::onActionGroupByTriggered()
         return;
     }
     dfopt->showGroupByDialog();
+}
+
+/**
+ * @brief 转置（004 T1.27，Ribbon「Data Tools」面板）
+ *
+ * 与表体右键菜单「转置...」共用页面 showReshapeDialog(false) 入口；
+ * 默认产出新数据集，就地替换为对话框勾选项（R14）。
+ */
+void DAAppController::onActionTransposeTriggered()
+{
+    DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false);
+    if (!dfopt) {
+        return;
+    }
+    dfopt->showReshapeDialog(false);
+}
+
+/**
+ * @brief 宽转长 melt（004 T1.27，Ribbon「Data Tools」面板）
+ *
+ * 与表体右键菜单「宽转长（melt）...」共用页面 showReshapeDialog(true) 入口；
+ * melt 规模守卫在对话框 OK 确认点（行数×展开列数 > 5000 万默认拒绝，可强制继续）。
+ */
+void DAAppController::onActionMeltTriggered()
+{
+    DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false);
+    if (!dfopt) {
+        return;
+    }
+    dfopt->showReshapeDialog(true);
 }
 
 /**

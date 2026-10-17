@@ -125,6 +125,8 @@ void DAAppActions::buildDataAction()
     actionSplitColumn                 = createAction(UiNames::Action::SplitColumn, ":/DAGui/icon/split-column.svg");
     actionMergeColumns                = createAction(UiNames::Action::MergeColumns, ":/DAGui/icon/merge-columns.svg");
     actionGroupBy                     = createAction(UiNames::Action::GroupBy, ":/DAGui/icon/group-by.svg");
+    actionTranspose                   = createAction(UiNames::Action::Transpose, ":/DAGui/icon/transpose.svg");
+    actionMelt                        = createAction(UiNames::Action::Melt, ":/DAGui/icon/melt.svg");
 }
 
 void DAAppActions::buildChartAction()
@@ -671,6 +673,10 @@ void DAAppActions::retranslateUi()
     actionMergeColumns->setToolTip(tr("Merge the selected columns into one column in the given order"));  // cn:把选中的多列按给定顺序合并为一列
     actionGroupBy->setText(tr("Group By"));                         // cn:分组聚合
     actionGroupBy->setToolTip(tr("Aggregate rows by group keys into a new long-format result dataset"));  // cn:按分组键聚合为新数据集（长格式结果表）
+    actionTranspose->setText(tr("Transpose"));                      // cn:转置
+    actionTranspose->setToolTip(tr("Swap rows and columns into a new dataset (in-place optional)"));  // cn:行列互换产出新数据集（可选就地替换）
+    actionMelt->setText(tr("Unpivot (Melt)"));                      // cn:宽转长（melt）
+    actionMelt->setToolTip(tr("Unpivot wide columns into a long-format new dataset (in-place optional)"));  // cn:把宽表展开为长格式新数据集（可选就地替换）
     //-----------------------------------------------------
     // workflow 编辑
     //-----------------------------------------------------

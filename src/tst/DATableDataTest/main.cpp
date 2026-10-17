@@ -81,6 +81,11 @@
 #include <QItemSelectionModel>
 #include <QItemSelection>
 
+// 转置/melt 形状变换（004 计划 §6，T1.27）
+#include "Dialog/DADialogReshape.h"
+#include "DADataUndoCommand.h"
+#include <QCheckBox>
+
 #include "DASqliteLazyTable.h"
 #include <QSqlDatabase>
 #include <QSqlQuery>
@@ -390,6 +395,14 @@ private Q_SLOTS:
     // NaN 键组保留、全 NaN 值列、函数守卫、新数据集注册（xxx_GroupBy 命名 + addData_ 可撤销）
     void testGroupbyOperator();
     void testGroupByWidgetFlow();
+
+    // 004 WP4 转置/melt（T1.27 §6.4/§7.1）：算子形状/列名/dtype、melt 行数=行×展开列、
+    // 规模守卫预估与阈值、就地替换的元数据类别条目数统计与快照清理还原、
+    // 默认产新数据集（原表无损+注册可撤销）与就地路径（数据+元数据同一撤销单元）
+    void testTransposeMeltOperator();
+    void testMeltGuardEstimate();
+    void testInplaceReshapeMetadataClear();
+    void testReshapeWidgetFlow();
 
 private:
     // 生成/复用sqlite测试库（百万行），失败返回false并置mSqliteErr
@@ -1552,7 +1565,9 @@ void DATableDataTest::testContextMenuComposition()
                                      QStringLiteral("Computed Column..."),
                                      QStringLiteral("Split Column..."),
                                      QStringLiteral("Merge Columns..."),
-                                     QStringLiteral("Group By...") };
+                                     QStringLiteral("Group By..."),
+                                     QStringLiteral("Transpose..."),
+                                     QStringLiteral("Unpivot (Melt)...") };
     QCOMPARE(bodySeq, expectedBody);
     // 剪贴板组无选区置灰
     QVERIFY(!byText.value(QStringLiteral("Cut"))->isEnabled());
@@ -1570,6 +1585,9 @@ void DATableDataTest::testContextMenuComposition()
     QVERIFY(!byText.value(QStringLiteral("Merge Columns..."))->isEnabled());
     // 分组聚合（004 T1.22）：无模型=无 dataframe 数据体，置灰
     QVERIFY(!byText.value(QStringLiteral("Group By..."))->isEnabled());
+    // 转置/宽转长（004 T1.27）：无模型置灰
+    QVERIFY(!byText.value(QStringLiteral("Transpose..."))->isEnabled());
+    QVERIFY(!byText.value(QStringLiteral("Unpivot (Melt)..."))->isEnabled());
     delete body;
 }
 
@@ -4486,6 +4504,303 @@ df = pd.DataFrame({"g1":["a","a","b"],"v":[10.0,20.0,30.0]})
     // redo 恢复注册
     mgrStack->redo();
     QVERIFY(!mgr.findData(QStringLiteral("src_GroupBy")).isNull());
+    w.hide();
+}
+
+
+//===================================================
+// 004 WP4 转置 / melt（T1.27）
+//===================================================
+
+// 004 §7.1：melt/transpose 算子——形状、列名、dtype；melt 行数 = 原行数 × 展开列数
+void DATableDataTest::testTransposeMeltOperator()
+{
+    if (!mPandasOk || !mPyScriptsOk) {
+        QSKIP("pandas/DAPyScripts not available");
+    }
+    DA::DAPyScriptsDataFrame& py = DA::DAPyScripts::getDataFrame();
+    // —— transpose：行列互换，第一列 "index" = 原列名，其余列名 = 原行索引字符串 ——
+    {
+        pybind11::dict scope;
+        pybind11::exec(R"(
+import pandas as pd
+df = pd.DataFrame({"A":[1,2],"B":[3.5,4.5],"C":["x","y"]})
+)",
+                       pybind11::globals(),
+                       scope);
+        DA::DAPyDataFrame df(scope[ "df" ]);
+        QString err;
+        DA::DAPyDataFrame out = py.transpose(df, &err);
+        QVERIFY2(!out.isNone(), qPrintable(err));
+        QCOMPARE(out.shape().first, static_cast< std::size_t >(3));   // 行 = 原列数
+        QCOMPARE(out.shape().second, static_cast< std::size_t >(3));  // 列 = index + 原行数
+        QCOMPARE(out.columns(), QList< QString >({ QStringLiteral("index"), QStringLiteral("0"), QStringLiteral("1") }));
+        QCOMPARE(out.iat(0, 0).toString(), QStringLiteral("A"));
+        QCOMPARE(out.iat(1, 0).toString(), QStringLiteral("B"));
+        // 列 1/2 = 原行索引 "0"/"1"：C 行在 "0" 列为 x、"1" 列为 y；B 行在 "1" 列为 4.5
+        QCOMPARE(out.iat(2, 1).toString(), QStringLiteral("x"));
+        QCOMPARE(out.iat(2, 2).toString(), QStringLiteral("y"));
+        QCOMPARE(out.iat(1, 1).toDouble(), 3.5);
+        QCOMPARE(out.iat(1, 2).toDouble(), 4.5);
+        // 原表无损（R14 非破坏）
+        QCOMPARE(df.shape().first, static_cast< std::size_t >(2));
+        QCOMPARE(df.shape().second, static_cast< std::size_t >(3));
+    }
+    // —— melt：行数 = 原行数 × 展开列数；保留列/变量名/值列名；dtype ——
+    {
+        pybind11::dict scope;
+        pybind11::exec(R"(
+import pandas as pd
+df = pd.DataFrame({"C":["x","y"],"A":[1.5,2.5],"B":[3.5,4.5]})
+)",
+                       pybind11::globals(),
+                       scope);
+        DA::DAPyDataFrame df(scope[ "df" ]);
+        DA::DAPyDataFrame out = py.melt(df,
+                                        QStringList({ QStringLiteral("C") }),
+                                        QStringList({ QStringLiteral("A"), QStringLiteral("B") }),
+                                        QStringLiteral("var"),
+                                        QStringLiteral("val"));
+        QVERIFY(!out.isNone());
+        QCOMPARE(out.shape().first, static_cast< std::size_t >(4));  // 2 行 × 2 展开列
+        QCOMPARE(out.shape().second, static_cast< std::size_t >(3));
+        QCOMPARE(out.columns(), QList< QString >({ QStringLiteral("C"), QStringLiteral("var"), QStringLiteral("val") }));
+        QCOMPARE(out.iat(0, 0).toString(), QStringLiteral("x"));
+        QCOMPARE(out.iat(0, 1).toString(), QStringLiteral("A"));
+        QCOMPARE(out.iat(0, 2).toDouble(), 1.5);
+        QCOMPARE(out.iat(3, 1).toString(), QStringLiteral("B"));
+        QCOMPARE(out.iat(3, 2).toDouble(), 4.5);
+        // value_vars 空 = 全部列（pandas 语义）
+        DA::DAPyDataFrame out2 = py.melt(df, QStringList(), QStringList(), QStringLiteral("variable"), QStringLiteral("value"));
+        QVERIFY(!out2.isNone());
+        QCOMPARE(out2.shape().first, static_cast< std::size_t >(6));  // 2 行 × 3 列全展开
+        // 失败哨兵：df none → 显式 none（isNone()==true，空 DataFrame 哨兵陷阱已修）
+        DA::DAPyDataFrame noneDf { pybind11::none() };
+        QVERIFY(py.transpose(noneDf).isNone());
+        QVERIFY(py.melt(noneDf, QStringList(), QStringList(), QString(), QString()).isNone());
+    }
+}
+
+// 004 §6.4 验收：melt 规模守卫预估（行数×展开列数、阈值、强制继续判定）+ 就地撤销内存阈值
+void DATableDataTest::testMeltGuardEstimate()
+{
+    using DA::DADialogReshape;
+    using DA::DADataOperateOfDataFrameWidget;
+    // 预估纯函数：行数 × 展开列数
+    QCOMPARE(DADialogReshape::estimateMeltOutputRows(1000, 5), static_cast< qint64 >(5000));
+    QCOMPARE(DADialogReshape::estimateMeltOutputRows(0, 5), static_cast< qint64 >(0));
+    QCOMPARE(DADialogReshape::estimateMeltOutputRows(100, 0), static_cast< qint64 >(0));
+    // 阈值：5000 万（超过默认拒绝，可强制继续——确认点在对话框 onOkClicked）
+    QCOMPARE(DADialogReshape::c_meltRowLimit, static_cast< qint64 >(50000000));
+    QVERIFY(DADialogReshape::estimateMeltOutputRows(10000000, 5) == DADialogReshape::c_meltRowLimit);   // 恰好等于阈值：不超
+    QVERIFY(DADialogReshape::estimateMeltOutputRows(10000001, 5) > DADialogReshape::c_meltRowLimit);    // 超阈值
+    // 就地替换撤销内存阈值（超大表降级为不可撤销，§4.11 策略表）
+    QVERIFY(!DADataOperateOfDataFrameWidget::isInplaceUndoTooLarge(1000, 100));
+    QVERIFY(DADataOperateOfDataFrameWidget::isInplaceUndoTooLarge(10000, 10000));  // 1 亿格 > 5000 万
+    QVERIFY(!DADataOperateOfDataFrameWidget::isInplaceUndoTooLarge(0, 0));
+}
+
+// 004 §7.1：就地替换的元数据清理——按类别统计条目数（与确认框一致）、快照清理还原 round-trip
+void DATableDataTest::testInplaceReshapeMetadataClear()
+{
+    DA::DATableMetadataRegistry registry(nullptr);
+    pybind11::object obj = makeTestDataFrame();
+    QVERIFY(!obj.is_none());
+    DA::DAPyDataFrame df(obj);
+    DA::DAData d(df);
+    DA::DATableMetadata* bundle = registry.getOrCreate(d);
+    QVERIFY(bundle != nullptr);
+    QVERIFY(bundle->isEmpty());
+    // 填充四类元数据：样式 / 列宽 / 条件格式 / 计算列
+    DA::DATableCellStyle st;
+    st.setBackground(QBrush(QColor(Qt::red)));
+    bundle->styleManager()->setCellStyle(0, 0, st);
+    bundle->styleManager()->setCellStyle(1, 1, st);
+    bundle->styleManager()->setRowStyle(2, st);
+    bundle->viewState()->setColumnWidth(QStringLiteral("i"), 0, 120);
+    bundle->viewState()->setRowHeaderWidth(66);
+    DA::DATableConditionalFormatRule rule;
+    rule.type      = DA::DATableConditionalFormatRule::Type::CellRule;
+    rule.condition = DA::DATableConditionalFormatRule::Condition::Greater;
+    rule.value1    = 3.0;
+    bundle->conditionalFormat()->addRule(1, rule);
+    DA::DAComputedColumn cc(QStringLiteral("Z"), QStringLiteral("i + 1"));
+    cc.dependsOn = QStringList { QStringLiteral("i") };
+    bundle->computedColumns()->addDefinition(cc, DA::DATableComputedColumnStore::State::Stale);
+    // 类别条目数统计（确认框「列出将被清除的元数据类别与条目数」的数据源）
+    const QList< QPair< QString, int > > counts = bundle->entryCountsByCategory();
+    QCOMPARE(counts.size(), 4);
+    int styleCount = 0, widthCount = 0, cfCount = 0, ccCount = 0;
+    for (const auto& p : counts) {
+        if (p.first == DA::DATableMetadata::tr("Cell styles")) {
+            styleCount = p.second;
+        } else if (p.first == DA::DATableMetadata::tr("Column widths")) {
+            widthCount = p.second;
+        } else if (p.first == DA::DATableMetadata::tr("Conditional format rules")) {
+            cfCount = p.second;
+        } else if (p.first == DA::DATableMetadata::tr("Computed columns")) {
+            ccCount = p.second;
+        }
+    }
+    QCOMPARE(styleCount, 3);  // 2 单元格 + 1 行
+    QCOMPARE(widthCount, 1);
+    QCOMPARE(cfCount, 1);
+    QCOMPARE(ccCount, 1);
+    // 快照 → 清空 → 还原（就地替换撤销单元的元数据侧语义）
+    const QString snapshot = bundle->snapshotToString();
+    QVERIFY(!snapshot.isEmpty());
+    bundle->clearAll();
+    QVERIFY(bundle->isEmpty());
+    QVERIFY(bundle->restoreFromString(snapshot));
+    QVERIFY(!bundle->isEmpty());
+    const QList< QPair< QString, int > > counts2 = bundle->entryCountsByCategory();
+    QCOMPARE(counts2.size(), 4);
+    QCOMPARE(bundle->computedColumns()->count(), 1);
+    QCOMPARE(bundle->computedColumns()->stateOf(QStringLiteral("Z")), DA::DATableComputedColumnStore::State::Stale);  // 状态随快照还原
+    QCOMPARE(bundle->computedColumns()->definition(QStringLiteral("Z")).expr, QStringLiteral("i + 1"));
+    QCOMPARE(bundle->viewState()->columnWidth(QStringLiteral("i"), 0), 120);
+    QCOMPARE(bundle->conditionalFormat()->ruleCount(), 1);
+    QVERIFY(bundle->styleManager()->hasCellStyle(0, 0));
+    // 空快照还原 = 整束清空
+    QVERIFY(bundle->restoreFromString(QString()));
+    QVERIFY(bundle->isEmpty());
+}
+
+// 004 §6.4 验收（程序化）：默认产新数据集（原表无损+注册可撤销）；就地替换（Swap+元数据同一撤销单元）
+void DATableDataTest::testReshapeWidgetFlow()
+{
+    if (!mPandasOk || !mPyScriptsOk) {
+        QSKIP("pandas/DAPyScripts not available");
+    }
+    qRegisterMetaType< DA::DAData >("DA::DAData");
+    pybind11::dict scope;
+    pybind11::exec(R"(
+import pandas as pd
+df = pd.DataFrame({"A":[1,2],"B":[3.5,4.5]})
+)",
+                   pybind11::globals(),
+                   scope);
+    DA::DAPyDataFrame df(scope[ "df" ]);
+    DA::DADataManager mgr;
+    DA::DAData d(df);
+    d.setName(QStringLiteral("src"));
+    mgr.addData(d);
+    DA::DATableMetadataRegistry registry(nullptr);
+    // 预置元数据（就地替换确认框条目与清理验证用）
+    DA::DATableMetadata* bundle = registry.getOrCreate(d);
+    DA::DATableCellStyle st;
+    st.setBackground(QBrush(QColor(Qt::red)));
+    bundle->styleManager()->setCellStyle(0, 0, st);
+    DA::DAComputedColumn cc(QStringLiteral("B"), QStringLiteral("A * 2"));
+    cc.dependsOn = QStringList { QStringLiteral("A") };
+    bundle->computedColumns()->addDefinition(cc, DA::DATableComputedColumnStore::State::Valid);
+    DA::DADataOperateOfDataFrameWidget w(d, &registry);
+    w.resize(700, 400);
+    w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+    // —— 默认路径：转置产出新数据集，原表与元数据完全无损 ——
+    QTimer::singleShot(0, []() {
+        auto* dlg = qobject_cast< DA::DADialogReshape* >(QApplication::activeModalWidget());
+        if (!dlg) {
+            return;
+        }
+        QVERIFY(dlg->findChild< QCheckBox* >(QStringLiteral("checkInplace")) != nullptr);
+        QTimer::singleShot(500, [ dlg ]() {
+            QPushButton* ok = dlg->findChild< QPushButton* >(QStringLiteral("buttonOk"));
+            if (ok && ok->isEnabled()) {
+                ok->click();  // 走 onOkClicked（守卫确认点）→ accept
+            }
+        });
+    });
+    QSignalSpy createdSpy(&w, &DA::DADataOperateOfDataFrameWidget::newDataCreated);
+    w.showReshapeDialog(false);  // 转置模式
+    QCOMPARE(createdSpy.count(), 1);
+    DA::DAData td = mgr.findData(QStringLiteral("src_Transposed"));
+    QVERIFY(!td.isNull());  // 命名 xxx_Transposed
+    DA::DAPyDataFrame tdf = td.toDataFrame();
+    QCOMPARE(tdf.shape().first, static_cast< std::size_t >(2));   // 行 = 原列数
+    QCOMPARE(tdf.shape().second, static_cast< std::size_t >(3));  // 列 = index + 原行数
+    // 原表与元数据完全无损（R14）
+    QCOMPARE(df.shape().first, static_cast< std::size_t >(2));
+    QVERIFY(bundle->styleManager()->hasCellStyle(0, 0));
+    QVERIFY(bundle->computedColumns()->hasDefinition(QStringLiteral("B")));
+    // Ctrl+Z 撤销注册（数据集从管理器消失）
+    mgr.getUndoStack()->undo();
+    QVERIFY(mgr.findData(QStringLiteral("src_Transposed")).isNull());
+    mgr.getUndoStack()->redo();
+    QVERIFY(!mgr.findData(QStringLiteral("src_Transposed")).isNull());
+    // —— 就地路径（melt）：模拟 APP 接线（Swap 命令 + directional 元数据清理/还原同一撤销单元）——
+    QUndoStack& pageStack = *w.getUndoStack();
+    QString confirmText;
+    QObject::connect(&w,
+                     &DA::DADataOperateOfDataFrameWidget::inplaceDataReplaceRequested,
+                     [ &w, bundle, &pageStack, &confirmText ](const DA::DAData& data, const DA::DAData& source, const QString& text, const QString& snapshot) {
+                         Q_UNUSED(confirmText);
+                         auto* cmd = new DA::DADataObjectSwapUndoCommand();
+                         cmd->setText(text);
+                         QPointer< DA::DADataOperateOfDataFrameWidget > wp(&w);
+                         cmd->setDirectionalCallBack([ wp, bundle, snapshot ](bool isUndo) {
+                             if (isUndo) {
+                                 bundle->restoreFromString(snapshot);
+                             } else {
+                                 bundle->clearAll();
+                             }
+                             if (wp) {
+                                 wp->refreshAfterInplaceReplace();
+                             }
+                         });
+                         cmd->setOldData(data);
+                         DA::DAData mutableData = data;  // DAData 共享底层对象，副本上 setPyObject 即生效
+                         mutableData.setPyObject(source.toPyObject());
+                         cmd->setNewData(data);
+                         pageStack.push(cmd);
+                     });
+    // 驱动对话框：melt 模式 + 勾选就地替换；随后确认框（记录文本）点 Yes
+    QTimer::singleShot(0, [ &confirmText ]() {
+        auto* dlg = qobject_cast< DA::DADialogReshape* >(QApplication::activeModalWidget());
+        if (!dlg) {
+            return;
+        }
+        QCheckBox* inplace = dlg->findChild< QCheckBox* >(QStringLiteral("checkInplace"));
+        if (inplace) {
+            inplace->setChecked(true);
+        }
+        QTimer::singleShot(500, [ dlg, &confirmText ]() {
+            QPushButton* ok = dlg->findChild< QPushButton* >(QStringLiteral("buttonOk"));
+            if (ok && ok->isEnabled()) {
+                ok->click();
+            }
+            // melt 计算后就地确认框弹出：记录文本并点 Yes
+            QTimer::singleShot(400, [ &confirmText ]() {
+                if (QMessageBox* mb = qobject_cast< QMessageBox* >(QApplication::activeModalWidget())) {
+                    confirmText = mb->text();
+                    mb->button(QMessageBox::Yes)->click();
+                }
+            });
+        });
+    });
+    const int stackBefore = pageStack.count();
+    w.showReshapeDialog(true);  // melt 模式
+    // 就地替换已生效：数据变为 melt 结果（2 行 × 2 列全展开 = 4 行）
+    DA::DAPyDataFrame cur = w.getDataframe();
+    QCOMPARE(cur.shape().first, static_cast< std::size_t >(4));
+    QCOMPARE(pageStack.count(), stackBefore + 1);
+    // 确认框列出的清除项与实际一致：文本包含样式与计算列类别，且束已被清空
+    QVERIFY2(confirmText.contains(DA::DATableMetadata::tr("Cell styles")), qPrintable(confirmText));
+    QVERIFY2(confirmText.contains(DA::DATableMetadata::tr("Computed columns")), qPrintable(confirmText));
+    QVERIFY(bundle->isEmpty());
+    // Ctrl+Z：数据与元数据一起还原（同一撤销单元）
+    pageStack.undo();
+    DA::DAPyDataFrame back = w.getDataframe();
+    QCOMPARE(back.shape().first, static_cast< std::size_t >(2));
+    QCOMPARE(back.shape().second, static_cast< std::size_t >(2));
+    QVERIFY(bundle->styleManager()->hasCellStyle(0, 0));
+    QVERIFY(bundle->computedColumns()->hasDefinition(QStringLiteral("B")));
+    QCOMPARE(bundle->computedColumns()->stateOf(QStringLiteral("B")), DA::DATableComputedColumnStore::State::Valid);
+    // redo：再次替换 + 清空
+    pageStack.redo();
+    QCOMPARE(w.getDataframe().shape().first, static_cast< std::size_t >(4));
+    QVERIFY(bundle->isEmpty());
     w.hide();
 }
 
