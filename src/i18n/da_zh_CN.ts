@@ -1923,8 +1923,8 @@ All</source>
         <location line="+13"/>
         <source>Rename 
 Data</source>
-        <translation>重命名
-            数据</translation>
+        <translation type="unfinished">重命名
+数据</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -3354,32 +3354,17 @@ Layouts</source>
         <translation>列 %1</translation>
     </message>
     <message>
-        <location line="+30"/>
-        <source>Rename</source>
-        <translation>重命名</translation>
-    </message>
-    <message>
-        <location line="+1"/>
+        <location line="+31"/>
         <source>New name:</source>
         <translation>新名称:</translation>
     </message>
     <message>
-        <location line="+30"/>
-        <source>Delete</source>
-        <translation>删除</translation>
-    </message>
-    <message>
-        <location line="+1"/>
+        <location line="+31"/>
         <source>Are you sure to delete this column?</source>
         <translation>确定删除这一列吗？</translation>
     </message>
     <message>
-        <location line="+30"/>
-        <source>Delete All</source>
-        <translation>全部删除</translation>
-    </message>
-    <message>
-        <location line="+1"/>
+        <location line="+31"/>
         <source>Are you sure to delete all columns? This cannot be undone.</source>
         <translation>确定删除所有列吗？此操作不可撤销。</translation>
     </message>
@@ -16329,8 +16314,8 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>快捷键 %1 已被命令占用：%2</translation>
     </message>
     <message>
-        <source>Shortcut for "%1" changed, click OK or Apply to take effect</source>
-        <translation>命令"%1"的快捷键已修改，点击确定或应用后生效</translation>
+        <source>Shortcut for &quot;%1&quot; changed, click OK or Apply to take effect</source>
+        <translation>命令&quot;%1&quot;的快捷键已修改，点击确定或应用后生效</translation>
     </message>
     <message>
         <source>Default: %1</source>
