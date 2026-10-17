@@ -316,16 +316,165 @@ def da_data_select(df: pd.DataFrame, index: str, lower: Optional[float] = None, 
     df.drop(index=df[~mask].index, inplace=True)
 
 
-@log_function_call
-def da_sort(df: pd.DataFrame, by: str, ascending: bool):
+def _column_position(df: pd.DataFrame, col):
     '''
-    替换dataframe的异常值
-    :param df: pd.DataFrame。
-    :param by:数据排序依据。
-    :param ascending:数据排序方式。
+    列位置或列名 → 列位置。重名列取第一个匹配（与视图状态存储的消歧约定一致）
+    :param df: pd.DataFrame
+    :param col: 列位置(int)或列名(str)
+    :return: 列位置(int)
+    :raises ValueError: 越界或列不存在
+    '''
+    if isinstance(col, (int, np.integer)):
+        pos = int(col)
+        if pos < 0 or pos >= df.shape[1]:
+            raise ValueError("column position %d out of range" % pos)
+        return pos
+    matches = [i for i, c in enumerate(df.columns) if c == col or str(c) == str(col)]
+    if not matches:
+        raise ValueError("column %r not found" % (col,))
+    return matches[0]
+
+
+def _resolve_sort_keys(df: pd.DataFrame, keys, by, ascending: bool):
+    '''
+    归一化排序键为 [(列位置, 升序bool)]；keys 优先于 by/ascending
+    '''
+    resolved = []
+    if keys is not None:
+        for item in keys:
+            col, asc = item[0], bool(item[1])
+            resolved.append((_column_position(df, col), asc))
+    elif by is not None:
+        resolved.append((_column_position(df, by), bool(ascending)))
+    else:
+        raise ValueError("da_sort requires either keys or by")
+    if not resolved:
+        raise ValueError("da_sort requires at least one sort key")
+    return resolved
+
+
+def _stable_descending_argsort(values: np.ndarray) -> np.ndarray:
+    '''
+    降序稳定排序：等值元素保持原相对顺序（升序稳定排序 + 整表反转 + 等值段内再反转）。
+    不能直接用 argsort 反转：那会把等值元素的相对顺序也颠倒，破坏多键排序的次键结果
+    :param values: 一维数组（调用方保证无 NaN/NaT）
+    :return: 置换数组 order（new[i] = old[order[i]]）
+    :raises TypeError: 值不可比较（混合类型 object 列）
+    '''
+    if values.dtype.kind == 'f':
+        # 浮点快速路径：取负后升序稳定排序（调用方已剔除 NaN）
+        return np.argsort(-values, kind='stable')
+    asc_order = np.argsort(values, kind='stable')
+    rev = asc_order[::-1]
+    n = rev.shape[0]
+    if n <= 1:
+        return rev
+    sorted_vals = values[rev]
+    equal = np.zeros(n, dtype=bool)
+    try:
+        equal[1:] = (sorted_vals[1:] == sorted_vals[:-1])
+    except TypeError:
+        # object 数组逐元素比较（混合类型在此抛 TypeError，由调用方包装为 ValueError）
+        for i in range(1, n):
+            equal[i] = bool(sorted_vals[i] == sorted_vals[i - 1])
+    # 整表反转后，等值段内部再反转一次，恢复等值元素的原始相对顺序
+    result = rev.copy()
+    i = 0
+    while i < n:
+        j = i + 1
+        while j < n and equal[j]:
+            j += 1
+        if j - i > 1:
+            result[i:j] = rev[i:j][::-1]
+        i = j
+    return result
+
+
+def _single_key_permutation(values: np.ndarray, ascending: bool) -> np.ndarray:
+    '''
+    单键稳定排序置换；NaN/NaT 恒排最后（与 pandas na_position='last' 一致，
+    也与既有 sort_values 行为的用户文档口径一致）
+    :param values: 一维数组（当前排列下的键值）
+    :param ascending: 是否升序
+    :return: 置换数组（作用于传入的 values 序列）
+    :raises ValueError: 值类型混合不可比较（消息含 "not comparable"）
+    '''
+    n = values.shape[0]
+    mask = pd.isna(values)
+    try:
+        if mask.all():
+            return np.arange(n)
+        if mask.any():
+            valid_idx = np.flatnonzero(~mask)
+            na_idx = np.flatnonzero(mask)
+            valid_values = values[valid_idx]
+            order = np.argsort(valid_values, kind='stable') if ascending else _stable_descending_argsort(valid_values)
+            return np.concatenate([valid_idx[order], na_idx])
+        return np.argsort(values, kind='stable') if ascending else _stable_descending_argsort(values)
+    except TypeError as e:
+        raise ValueError("column values are not comparable: %s" % (e,))
+
+
+def _apply_row_permutation(df: pd.DataFrame, perm):
+    '''
+    按置换就地重排行：new[i] = old[perm[i]]，index 随行一起移动，各列 dtype 保持不变。
+    逐列位置写回（df.iloc[:, i] = ...），重名列也不受影响
+    :param df: pd.DataFrame，就地修改
+    :param perm: 置换序列（长度必须等于行数；空置换视为无操作）
+    '''
+    perm_arr = np.asarray(perm, dtype=np.int64)
+    if perm_arr.size == 0:
+        return
+    if perm_arr.size != len(df):
+        raise ValueError("permutation size %d does not match row count %d" % (perm_arr.size, len(df)))
+    sorted_df = df.iloc[perm_arr]
+    for i in range(df.shape[1]):
+        df.iloc[:, i] = sorted_df.iloc[:, i].to_numpy()
+    df.index = sorted_df.index
+
+
+@log_function_call
+def da_sort(df: pd.DataFrame, keys=None, by=None, ascending: bool = True):
+    '''
+    多键稳定排序，就地重排 df 并返回置换 perm
+
+    perm[i] = 新表第 i 行在旧表中的行号（新→旧，与 df.iloc[perm] 语义一致，
+    同 C++ DATableKeyRemap / DATableStyleManager::onRowsReordered 的置换约定）。
+    多键按 keys 列表顺序为优先级（第一个是主键），通过"从次键到主键逐键稳定排序"
+    实现；NaN/NaT 恒排最后。
+
+    :param df: pd.DataFrame，就地重排（行数据与 index 一起移动）
+    :param keys: [(列位置int或列名str, ascending bool)] 列表，优先于 by/ascending
+    :param by: 单键兼容入口：列位置或列名
+    :param ascending: 单键兼容入口：是否升序
+    :return: perm（Python int 列表）；空表返回空列表
+    :raises ValueError: 键列不存在/越界，或列值类型混合不可比较（消息含 "not comparable"）
+    '''
+    resolved = _resolve_sort_keys(df, keys, by, ascending)
+    n = len(df)
+    if n == 0:
+        return []
+    perm = np.arange(n)
+    # 从最后一个键（最低优先级）到第一个键（主键）逐键稳定排序
+    for pos, asc in reversed(resolved):
+        col_values = df.iloc[:, pos].to_numpy()
+        order = _single_key_permutation(col_values[perm], asc)
+        perm = perm[order]
+    _apply_row_permutation(df, perm)
+    return perm.tolist()
+
+
+@log_function_call
+def da_reorder_rows(df: pd.DataFrame, perm):
+    '''
+    按给定置换就地重排行：new[i] = old[perm[i]]（与 da_sort 返回的 perm 同语义）。
+    排序命令的 redo/undo 用它施加正置换/逆置换，不重新计算排序
+
+    :param df: pd.DataFrame，就地重排
+    :param perm: 置换序列（长度必须等于行数）
     :return: 此函数不返回值，直接改变df
     '''
-    df.sort_values(by=by, ascending=ascending, inplace=True)
+    _apply_row_permutation(df, perm)
 
 
 @log_function_call
