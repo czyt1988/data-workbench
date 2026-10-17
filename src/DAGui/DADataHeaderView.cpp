@@ -39,7 +39,14 @@ QPoint globalPosOf(const QMouseEvent* event)
  */
 DADataHeaderView::DADataHeaderView(Qt::Orientation orientation, QWidget* parent) : QHeaderView(orientation, parent)
 {
+    // 与 QTableView 构造里创建的默认表头属性对齐：QTableView::setHorizontal/VerticalHeader
+    // 只补 sortIndicatorShown 与 stretchLastSection，**不会**重设 sectionsClickable/
+    // highlightSections——不在这里恢复，sectionClicked 不再发射，图表「选择序列」拾取链会断
+    setSectionsClickable(true);
+    setHighlightSections(true);
     if (orientation == Qt::Vertical) {
+        // 行高/Interactive 设置沿用 DACacheWindowTableView 构造对默认行头的同款设置
+        // （替换默认表头后这些设置不会自动带过来，必须在此重建）
         QFontMetrics fm = fontMetrics();
         setDefaultSectionSize(fm.lineSpacing() * 1.2);
         setSectionResizeMode(QHeaderView::Interactive);
