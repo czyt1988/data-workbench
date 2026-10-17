@@ -69,6 +69,7 @@ set(DA_LIB_HEADER_FILES
     DATableStyleManager.h
     DATableMetadata.h
     DATableMetadataRegistry.h
+    DATableKeyRemap.h
     DATableViewStateStore.h
     DATableHighlightOverlay.h
     DATableStyleItemDelegate.h

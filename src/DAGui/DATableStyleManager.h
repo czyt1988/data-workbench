@@ -7,6 +7,7 @@
 #include <QHash>
 #include <QPair>
 #include <QList>
+#include <QVector>
 #include <QDomDocument>
 #include <QDomElement>
 
@@ -66,6 +67,10 @@ public:
     void onRowsRemoved(const QList< int >& actualRows);
     void onColumnsInserted(const QList< int >& actualCols);
     void onColumnsRemoved(const QList< int >& actualCols);
+    // 行重排同步（表头排序 D1）：perm[i] = 新表第 i 行在旧表中的行号（新→旧，
+    // 与 df.iloc[perm] 一致），把单元格键的行维与行键按置换重映射，O(存储条目数)，
+    // 完成后发 styleReset()。perm 为空视为无操作（与 on*Inserted/Removed 一致）。
+    void onRowsReordered(const QVector< int >& perm);
 
     // 序列化
     void toXml(QDomDocument& doc, QDomElement& e) const;

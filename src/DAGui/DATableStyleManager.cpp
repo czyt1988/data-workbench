@@ -1,4 +1,5 @@
 #include "DATableStyleManager.h"
+#include "DATableKeyRemap.h"
 #include <algorithm>
 
 namespace DA
@@ -486,6 +487,24 @@ void DATableStyleManager::onColumnsRemoved(const QList< int >& actualCols)
         shiftHashKeys(mColumnStyles, removedCol + 1, -1);
         shiftHashKeys(mColumnFormats, removedCol + 1, -1);
     }
+    Q_EMIT styleReset();
+}
+
+/**
+ * @brief 行重排同步：单元格键的行维与行键按置换重映射
+ *
+ * 置换语义以 DATableKeyRemap 为准：perm[i] = 新表第 i 行在旧表中的行号（新→旧）。
+ * 重映射 O(存储条目数)，不扫全表；列级样式与列显示格式不受行重排影响。
+ * 完成后发 styleReset()（触发一次范围重绘），与 onRowsInserted/onRowsRemoved 并列。
+ * @param perm 正置换（新→旧）；为空视为无操作
+ */
+void DATableStyleManager::onRowsReordered(const QVector< int >& perm)
+{
+    if (perm.isEmpty()) {
+        return;
+    }
+    DATableKeyRemap::remapKeys(mCellStyles, perm, DATableKeyRemap::Dimension::Row);
+    DATableKeyRemap::remapKeys(mRowStyles, perm);
     Q_EMIT styleReset();
 }
 
