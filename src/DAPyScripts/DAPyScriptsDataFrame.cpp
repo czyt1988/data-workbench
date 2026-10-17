@@ -1000,6 +1000,113 @@ bool DAPyScriptsDataFrame::setColumn(DAPyDataFrame& df, const QString& name, con
 }
 
 /**
+ * @brief 分列的wrapper（004 T1.9）
+ *
+ * 对应 da_dataframe.da_split_column：就地把第 col 列拆分，结果列插入原列右侧。
+ * 预览与执行共用本封装（对话框对 da_head_copy 副本调用，同一算子红线5）。
+ * @param df 数据（就地修改）
+ * @param col 源列位置
+ * @param mode "char"/"regex"/"width"
+ * @param delimiter char 模式分隔符
+ * @param pattern regex 模式正则（含捕获组）
+ * @param widths width 模式宽度列表
+ * @param maxColumns 结果列数上限（<=0 表示不限）
+ * @param overflow "discard"/"keep"/"error"
+ * @param inferNumeric 结果列尝试数值解析
+ * @param newNames 结果列名（空=自动 "{源列名}_{i}"）
+ * @param errorMessage 非空时输出失败诊断
+ * @return 实际插入的结果列名（失败返回空列表）
+ */
+QStringList DAPyScriptsDataFrame::splitColumn(DAPyDataFrame& df,
+                                              int col,
+                                              const QString& mode,
+                                              const QString& delimiter,
+                                              const QString& pattern,
+                                              const QList< int >& widths,
+                                              int maxColumns,
+                                              const QString& overflow,
+                                              bool inferNumeric,
+                                              const QStringList& newNames,
+                                              QString* errorMessage) noexcept
+{
+    QStringList result;
+    if (df.isNone()) {
+        return result;
+    }
+    try {
+        pybind11::object da_split_column = attr("da_split_column");
+        pybind11::dict args;
+        args[ "mode" ]      = DA::PY::toPyObject(mode);
+        args[ "delimiter" ] = DA::PY::toPyObject(delimiter);
+        args[ "pattern" ]   = DA::PY::toPyObject(pattern);
+        if (widths.isEmpty()) {
+            args[ "widths" ] = pybind11::none();
+        } else {
+            pybind11::list wl;
+            for (int w : widths) {
+                wl.append(pybind11::int_(w));
+            }
+            args[ "widths" ] = wl;
+        }
+        args[ "max_columns" ] = (maxColumns <= 0) ? pybind11::object(pybind11::none()) : pybind11::object(pybind11::int_(maxColumns));
+        args[ "overflow" ]      = DA::PY::toPyObject(overflow);
+        args[ "infer_numeric" ] = inferNumeric;
+        if (newNames.isEmpty()) {
+            args[ "new_names" ] = pybind11::none();
+        } else {
+            args[ "new_names" ] = DA::PY::toPyObject(newNames);
+        }
+        pybind11::object ret = da_split_column(df.object(), pybind11::int_(col), **args);
+        for (auto item : ret) {
+            result.append(QString::fromStdString(item.cast< std::string >()));
+        }
+    } catch (const std::exception& e) {
+        if (errorMessage) {
+            *errorMessage = QString::fromUtf8(e.what());
+        }
+        dealException(e);
+    }
+    return result;
+}
+
+/**
+ * @brief 合并列的wrapper（004 T1.9）
+ *
+ * 对应 da_dataframe.da_merge_columns：按 cols 顺序拼接为新列，插到最左源列位置并删除源列。
+ * @param df 数据（就地修改）
+ * @param cols 源列位置（顺序=拼接顺序，>=2 列）
+ * @param sep 分隔符（可空）
+ * @param skipNa 跳过缺失值（不留多余分隔符）
+ * @param name 结果列名
+ * @param errorMessage 非空时输出失败诊断
+ * @return 成功返回插入位置（>=0），失败返回 -1
+ */
+int DAPyScriptsDataFrame::mergeColumns(
+    DAPyDataFrame& df, const QList< int >& cols, const QString& sep, bool skipNa, const QString& name, QString* errorMessage) noexcept
+{
+    if (df.isNone() || cols.size() < 2) {
+        return -1;
+    }
+    try {
+        pybind11::object da_merge_columns = attr("da_merge_columns");
+        pybind11::list pycols;
+        for (int c : cols) {
+            pycols.append(pybind11::int_(c));
+        }
+        pybind11::object ret = da_merge_columns(df.object(), pycols, DA::PY::toPyObject(sep), skipNa, DA::PY::toPyObject(name));
+        pybind11::tuple t    = ret.cast< pybind11::tuple >();
+        return t[ 0 ].cast< int >();
+    } catch (const std::exception& e) {
+        if (errorMessage) {
+            *errorMessage = QString::fromUtf8(e.what());
+        }
+        dealException(e);
+    }
+    return -1;
+}
+
+
+/**
  * @brief 多键稳定排序的wrapper
  *
  * 对应 da_dataframe.da_sort(df, keys)：keys 为 (列位置, 是否升序) 列表，

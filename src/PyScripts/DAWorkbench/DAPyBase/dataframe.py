@@ -366,6 +366,181 @@ def da_set_column(df: pd.DataFrame, name: str, series: pd.Series):
     df[name] = series
 
 
+def _da_try_numeric(values: pd.Series) -> pd.Series:
+    '''
+    尝试把 object 列解析为数值列（004 T1.9 类型推断）：
+    空串先按缺失处理；全部非空值都能解析才转数值，否则原样返回字符串列。
+    '''
+    work = values.replace('', np.nan)
+    converted = pd.to_numeric(work, errors='coerce')
+    # 非空值全部解析成功（NaN 位置一致）才采用数值列
+    if converted.isna().equals(work.isna()):
+        return converted
+    return values
+
+
+@log_function_call
+def da_split_column(df: pd.DataFrame, col: int, mode: str = 'char', delimiter: str = ',',
+                    pattern: Optional[str] = None, widths=None,
+                    max_columns: Optional[int] = None, overflow: str = 'discard',
+                    infer_numeric: bool = True, new_names=None) -> List[str]:
+    '''
+    就地分列（004 T1.9）：把第 col 列拆分，结果列插入原列右侧；原列保留。
+    预览与执行共用本函数（对话框对 da_head_copy 副本调用，所见即所得）。
+
+    落位规则：结果列依次插在 col+1 .. col+n（原列右侧，原列不动）。
+
+    :param col: 源列位置
+    :param mode: 'char'=分隔符（单字符/字符串）| 'regex'=正则捕获组 | 'width'=固定宽度
+    :param delimiter: char 模式分隔符（非空）
+    :param pattern: regex 模式正则（必须含捕获组，列数=组数）
+    :param widths: width 模式宽度列表（正整数，如 [3,5,8]，自串首按累计宽度切片）
+    :param max_columns: 结果列数上限（None=不限：char 取最多拆分行、regex 取组数、width 取 len(widths)）
+    :param overflow: 超出 max_columns（或 width 模式串长超总宽）时的策略：
+        'discard'=丢弃超出部分；
+        'keep'=保留原文——char/width 把该行剩余未拆文本并入最后一个结果列，regex 把整格原文放入最后一列；
+        'error'=抛 ValueError（数据不变）
+    :param infer_numeric: 结果列尝试数值解析（整列非空值全可解析才转数值；空串按缺失）
+    :param new_names: 结果列名（长度必须与实际结果列数一致；None 自动 "{源列名}_{i}"，i 从 1）
+    :return: 实际插入的结果列名列表（按插入顺序）
+    :raises ValueError: 参数/溢出策略错误；IndexError: col 越界；re.error: 正则无效
+    '''
+    import re as _re
+    if col < 0 or col >= df.shape[1]:
+        raise IndexError("column index %d out of range [0, %d)" % (col, df.shape[1]))
+    src = df.iloc[:, col]
+    src_name = str(df.columns[col])
+    # 统一转字符串视图（NaN 行保持 None → 结果各列为 NaN）
+    s = src.astype('object').where(src.notna(), None)
+    s = s.map(lambda v: None if v is None else str(v))
+    n_max = None if (max_columns is None or int(max_columns) <= 0) else int(max_columns)
+
+    if mode == 'char':
+        if not delimiter:
+            raise ValueError("delimiter must not be empty in char mode")
+        split_df = s.str.split(delimiter, expand=True)
+        natural = split_df.shape[1]
+        n = natural if n_max is None else min(natural, n_max)
+        if n <= 0:
+            raise ValueError("nothing to split")
+        if n_max is not None and natural > n_max:
+            if overflow == 'error':
+                raise ValueError("split produces %d columns, exceeding max_columns=%d" % (natural, n_max))
+            if overflow == 'keep':
+                # 限制拆分次数：剩余部分并入最后一列
+                split_df = s.str.split(delimiter, n=n - 1, expand=True)
+        split_df = split_df.reindex(columns=range(n))
+        parts = split_df
+    elif mode == 'regex':
+        if not pattern:
+            raise ValueError("pattern must not be empty in regex mode")
+        _re.compile(pattern)  # 无效正则尽早抛 re.error
+        extracted = s.str.extract(pattern)
+        groups = extracted.shape[1]
+        if groups == 0:
+            raise ValueError("regex pattern has no capture groups")
+        n = groups if n_max is None else min(groups, n_max)
+        if n_max is not None and groups > n_max:
+            if overflow == 'error':
+                raise ValueError("regex has %d capture groups, exceeding max_columns=%d" % (groups, n_max))
+            if overflow == 'keep':
+                extracted = extracted.iloc[:, :n].astype(object)
+                extracted.iloc[:, n - 1] = s  # 整格原文放入最后一列
+            else:
+                extracted = extracted.iloc[:, :n]
+        parts = extracted.reindex(columns=range(n))
+    elif mode == 'width':
+        ws = [int(w) for w in (widths if widths is not None else [])]
+        if not ws or any(w <= 0 for w in ws):
+            raise ValueError("widths must be a non-empty list of positive ints")
+        if n_max is not None and len(ws) > n_max:
+            if overflow == 'error':
+                raise ValueError("widths define %d columns, exceeding max_columns=%d" % (len(ws), n_max))
+            ws = ws[:n_max]
+        n = len(ws)
+        total = sum(ws)
+        slen = s.str.len()
+        if overflow == 'error' and bool((slen > total).any()):
+            raise ValueError("some values are longer than total width %d" % total)
+        parts = {}
+        start = 0
+        for i, w in enumerate(ws):
+            if overflow == 'keep' and i == n - 1:
+                parts[i] = s.str.slice(start)  # 最后一列吃到串尾（保留剩余原文）
+            else:
+                parts[i] = s.str.slice(start, start + w)
+            start += w
+        parts = pd.DataFrame(parts, index=df.index).reindex(columns=range(n))
+        # 空串（越界切片）按缺失处理
+        parts = parts.replace('', np.nan)
+    else:
+        raise ValueError("unknown split mode: %s" % mode)
+
+    # 结果列名
+    if new_names is None:
+        names = ['%s_%d' % (src_name, i + 1) for i in range(n)]
+    else:
+        names = [str(x) for x in new_names]
+        if len(names) != n:
+            raise ValueError("new_names length %d != result column count %d" % (len(names), n))
+    # 类型推断（可关）：逐列尝试数值解析后重建结果帧（保持 int64/float64 真实 dtype；
+    # pandas 3.x 的 str dtype 列不接受数值回填，不能 iloc 原地赋值）
+    if infer_numeric:
+        parts = pd.DataFrame({i: _da_try_numeric(parts.iloc[:, i]) for i in range(n)}, index=df.index)
+    # 就地插入原列右侧（col+1 .. col+n）
+    for i in range(n):
+        df.insert(col + 1 + i, names[i], parts.iloc[:, i])
+    return names
+
+
+@log_function_call
+def da_merge_columns(df: pd.DataFrame, cols, sep: str = '', skip_na: bool = True, name: str = 'merged'):
+    '''
+    就地合并列（004 T1.9）：按 cols 给定顺序把各列值拼接为新列，
+    插入到最左侧源列的位置，并删除全部源列（落位规则：替换被合并列的位置）。
+    预览与执行共用本函数。
+
+    :param cols: 源列位置列表（顺序=拼接顺序，须 >= 2 列）
+    :param sep: 分隔符（可空串）
+    :param skip_na: True 跳过缺失值（NaN/NaT/None）且不留多余分隔符；False 缺失按空串参与拼接
+    :param name: 结果列名
+    :return: (插入位置 pos, 结果列名 name)
+    :raises ValueError: cols 不足两列/重名结果列由调用方校验；IndexError: 位置越界
+    '''
+    cols = [int(c) for c in cols]
+    if len(cols) < 2:
+        raise ValueError("merge requires at least 2 columns")
+    ncols = df.shape[1]
+    if any(c < 0 or c >= ncols for c in cols):
+        raise IndexError("merge column index out of range [0, %d)" % ncols)
+    pos = min(cols)
+    strs = []
+    for c in cols:
+        sv = df.iloc[:, c]
+        strs.append(sv.astype(str).where(sv.notna(), None))  # 缺失 → None
+    if skip_na:
+        acc = strs[0].fillna('')
+        has = strs[0].notna()
+        for s in strs[1:]:
+            notna = s.notna()
+            both = has & notna
+            acc = pd.Series(np.where(both, acc + sep + s.fillna(''),
+                                     np.where(has, acc, s.fillna(''))),
+                            index=df.index, dtype=object)
+            has = has | notna
+        merged = acc.where(has, np.nan)  # 全缺失行 → NaN
+    else:
+        acc = strs[0].fillna('')
+        for s in strs[1:]:
+            acc = acc + sep + s.fillna('')
+        merged = acc
+    # 删除源列（按位置降序，避免位移；与 da_drop_icolumn 同一路径）
+    for c in sorted(cols, reverse=True):
+        da_drop_icolumn(df, [c])
+    df.insert(pos, name, merged)
+    return (pos, name)
+
+
 @log_function_call
 def da_query_datas(df: pd.DataFrame, expr: Optional[str]):
     '''

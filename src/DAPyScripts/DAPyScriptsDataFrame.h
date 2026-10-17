@@ -149,6 +149,25 @@ public:
 	DAPySeries getColumnCopy(const DAPyDataFrame& df, int col) noexcept;
 	// 按列名把 series 写回列（计算列重算命令 undo 还原，对应 da_dataframe.da_set_column）
 	bool setColumn(DAPyDataFrame& df, const QString& name, const DAPySeries& series) noexcept;
+	// ===== 分列 / 合并列（004 T1.9）=====
+	// 分列（对应 da_dataframe.da_split_column，就地：结果列插入原列右侧，原列保留）：
+	// mode = "char"/"regex"/"width"；maxColumns<=0 表示不限；overflow = "discard"/"keep"/"error"；
+	// newNames 空 = 自动命名 "{源列名}_{i}"。成功返回实际插入的结果列名（按顺序）；
+	// 失败（参数/正则/溢出策略抛错）返回空列表且 errorMessage 输出诊断
+	QStringList splitColumn(DAPyDataFrame& df,
+	                        int col,
+	                        const QString& mode,
+	                        const QString& delimiter,
+	                        const QString& pattern,
+	                        const QList< int >& widths,
+	                        int maxColumns,
+	                        const QString& overflow,
+	                        bool inferNumeric,
+	                        const QStringList& newNames,
+	                        QString* errorMessage = nullptr) noexcept;
+	// 合并列（对应 da_dataframe.da_merge_columns，就地：结果列插到最左源列位置并删除源列）；
+	// 成功返回插入位置（>=0），失败返回 -1 且 errorMessage 输出诊断
+	int mergeColumns(DAPyDataFrame& df, const QList< int >& cols, const QString& sep, bool skipNa, const QString& name, QString* errorMessage = nullptr) noexcept;
 	// 多键稳定排序，对应da_dataframe.da_sort：keys为(列位置,是否升序)列表（顺序即优先级），
 	// 成功返回true；perm非空时输出置换（perm[i]=新表第i行在旧表中的行号，与DATableKeyRemap语义一致）
 	bool sort(DAPyDataFrame& df, const QVector< QPair< int, bool > >& keys, QVector< int >* perm = nullptr) noexcept;
