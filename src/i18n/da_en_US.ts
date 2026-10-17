@@ -2929,6 +2929,126 @@ Layouts</source>
         <source>Unpivot wide columns into a long-format new dataset (in-place optional)</source>
         <translation>Unpivot wide columns into a long-format new dataset (in-place optional)</translation>
     </message>
+    <message>
+        <source>Data Probe</source>
+        <translation>Data Probe</translation>
+    </message>
+    <message>
+        <source>Data probe: click to create probes on all charts, values are listed in the data link table</source>
+        <translation>Data probe: click to create probes on all charts, values are listed in the data link table</translation>
+    </message>
+    <message>
+        <source>Fill</source>
+        <translation>Fill</translation>
+    </message>
+    <message>
+        <source>Fill the selection (down / up / ffill / bfill / series)</source>
+        <translation>Fill the selection (down / up / ffill / bfill / series)</translation>
+    </message>
+    <message>
+        <source>Fill Down</source>
+        <translation>Fill Down</translation>
+    </message>
+    <message>
+        <source>Fill the selection down with the value of the first row (Ctrl+D)</source>
+        <translation>Fill the selection down with the value of the first row (Ctrl+D)</translation>
+    </message>
+    <message>
+        <source>Fill Up</source>
+        <translation>Fill Up</translation>
+    </message>
+    <message>
+        <source>Fill the selection up with the value of the last row</source>
+        <translation>Fill the selection up with the value of the last row</translation>
+    </message>
+    <message>
+        <source>Fill Forward (ffill)</source>
+        <translation>Fill Forward (ffill)</translation>
+    </message>
+    <message>
+        <source>Propagate the last valid value down within the selection</source>
+        <translation>Propagate the last valid value down within the selection</translation>
+    </message>
+    <message>
+        <source>Fill Backward (bfill)</source>
+        <translation>Fill Backward (bfill)</translation>
+    </message>
+    <message>
+        <source>Propagate the next valid value up within the selection</source>
+        <translation>Propagate the next valid value up within the selection</translation>
+    </message>
+    <message>
+        <source>Fill Series...</source>
+        <translation>Fill Series...</translation>
+    </message>
+    <message>
+        <source>Generate a linear or date series into the selected columns</source>
+        <translation>Generate a linear or date series into the selected columns</translation>
+    </message>
+    <message>
+        <source>Validation Rules</source>
+        <translation>Validation Rules</translation>
+    </message>
+    <message>
+        <source>Manage data validation rules (range / enum / not-empty / unique / regex) of the current table</source>
+        <translation>Manage data validation rules (range / enum / not-empty / unique / regex) of the current table</translation>
+    </message>
+    <message>
+        <source>Run Validation</source>
+        <translation>Run Validation</translation>
+    </message>
+    <message>
+        <source>Validate the table against enabled rules, highlight violations and show the report (read-only)</source>
+        <translation>Validate the table against enabled rules, highlight violations and show the report (read-only)</translation>
+    </message>
+    <message>
+        <source>Note</source>
+        <translation>Note</translation>
+    </message>
+    <message>
+        <source>Insert or edit a note on the current cell</source>
+        <translation>Insert or edit a note on the current cell</translation>
+    </message>
+    <message>
+        <source>Insert Note</source>
+        <translation>Insert Note</translation>
+    </message>
+    <message>
+        <source>Insert a note on the current cell</source>
+        <translation>Insert a note on the current cell</translation>
+    </message>
+    <message>
+        <source>Edit Note</source>
+        <translation>Edit Note</translation>
+    </message>
+    <message>
+        <source>Edit the note of the current cell</source>
+        <translation>Edit the note of the current cell</translation>
+    </message>
+    <message>
+        <source>Delete Note</source>
+        <translation>Delete Note</translation>
+    </message>
+    <message>
+        <source>Delete the note of the current cell</source>
+        <translation>Delete the note of the current cell</translation>
+    </message>
+    <message>
+        <source>Clear All Notes</source>
+        <translation>Clear All Notes</translation>
+    </message>
+    <message>
+        <source>Remove all notes of the current table (undoable)</source>
+        <translation>Remove all notes of the current table (undoable)</translation>
+    </message>
+    <message>
+        <source>Undo History</source>
+        <translation>Undo History</translation>
+    </message>
+    <message>
+        <source>Show the undo history panel (follows the active page, click an entry to undo/redo to it)</source>
+        <translation>Show the undo history panel (follows the active page, click an entry to undo/redo to it)</translation>
+    </message>
 </context>
 <context>
     <name>DA::DAAppController</name>
@@ -3341,6 +3461,14 @@ Layouts</source>
         <location line="+4"/>
         <source>Failed to open markdown file: %1</source>
         <translation>Failed to open markdown file: %1</translation>
+    </message>
+    <message>
+        <source>Undo History</source>
+        <translation>Undo History</translation>
+    </message>
+    <message>
+        <source>Data Link Table</source>
+        <translation>Data Link Table</translation>
     </message>
 </context>
 <context>
@@ -9116,6 +9244,106 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <source>The table is very large (%1 cells). Keeping the old data for undo would double memory usage, so this in-place replacement will NOT be undoable. Continue?</source>
         <translation>The table is very large (%1 cells). Keeping the old data for undo would double memory usage, so this in-place replacement will NOT be undoable. Continue?</translation>
     </message>
+    <message>
+        <source>Column name "%1" already exists, please use another name</source>
+        <translation>Column name "%1" already exists, please use another name</translation>
+    </message>
+    <message>
+        <source>Fill failed: the content does not match the column data type</source>
+        <translation>Fill failed: the content does not match the column data type</translation>
+    </message>
+    <message>
+        <source>Cannot fill a read-only data source</source>
+        <translation>Cannot fill a read-only data source</translation>
+    </message>
+    <message>
+        <source>Fill down</source>
+        <translation>Fill down</translation>
+    </message>
+    <message>
+        <source>Fill up</source>
+        <translation>Fill up</translation>
+    </message>
+    <message>
+        <source>Fill forward (ffill)</source>
+        <translation>Fill forward (ffill)</translation>
+    </message>
+    <message>
+        <source>Fill backward (bfill)</source>
+        <translation>Fill backward (bfill)</translation>
+    </message>
+    <message>
+        <source>Please select cells to fill</source>
+        <translation>Please select cells to fill</translation>
+    </message>
+    <message>
+        <source>Failed to generate the fill series</source>
+        <translation>Failed to generate the fill series</translation>
+    </message>
+    <message>
+        <source>Fill series</source>
+        <translation>Fill series</translation>
+    </message>
+    <message>
+        <source>Numeric range</source>
+        <translation>Numeric range</translation>
+    </message>
+    <message>
+        <source>Date range</source>
+        <translation>Date range</translation>
+    </message>
+    <message>
+        <source>Allowed values (enum)</source>
+        <translation>Allowed values (enum)</translation>
+    </message>
+    <message>
+        <source>Not empty</source>
+        <translation>Not empty</translation>
+    </message>
+    <message>
+        <source>Unique</source>
+        <translation>Unique</translation>
+    </message>
+    <message>
+        <source>Regex (full match)</source>
+        <translation>Regex (full match)</translation>
+    </message>
+    <message>
+        <source>%1 (occurrence %2)</source>
+        <translation>%1 (occurrence %2)</translation>
+    </message>
+    <message>
+        <source>Validation failed: %1</source>
+        <translation>Validation failed: %1</translation>
+    </message>
+    <message>
+        <source>No enabled validation rules yet — add rules first</source>
+        <translation>No enabled validation rules yet — add rules first</translation>
+    </message>
+    <message>
+        <source>Row %1: %2</source>
+        <translation>Row %1: %2</translation>
+    </message>
+    <message>
+        <source>%1 validation rule(s) reference the renamed column(s): %2. Their references will be updated automatically. Continue?</source>
+        <translation>%1 validation rule(s) reference the renamed column(s): %2. Their references will be updated automatically. Continue?</translation>
+    </message>
+    <message>
+        <source>Please select a cell to annotate</source>
+        <translation>Please select a cell to annotate</translation>
+    </message>
+    <message>
+        <source>Please select a cell whose note is to be deleted</source>
+        <translation>Please select a cell whose note is to be deleted</translation>
+    </message>
+    <message>
+        <source>The selected cell has no note</source>
+        <translation>The selected cell has no note</translation>
+    </message>
+    <message>
+        <source>This table has no notes</source>
+        <translation>This table has no notes</translation>
+    </message>
 </context>
 <context>
     <name>DA::DADataOperateWidget</name>
@@ -9194,6 +9422,54 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     <message>
         <source>Unpivot (Melt)...</source>
         <translation>Unpivot (Melt)...</translation>
+    </message>
+    <message>
+        <source>Fill</source>
+        <translation>Fill</translation>
+    </message>
+    <message>
+        <source>Fill Down</source>
+        <translation>Fill Down</translation>
+    </message>
+    <message>
+        <source>Fill Up</source>
+        <translation>Fill Up</translation>
+    </message>
+    <message>
+        <source>Fill Forward (ffill)</source>
+        <translation>Fill Forward (ffill)</translation>
+    </message>
+    <message>
+        <source>Fill Backward (bfill)</source>
+        <translation>Fill Backward (bfill)</translation>
+    </message>
+    <message>
+        <source>Fill Series...</source>
+        <translation>Fill Series...</translation>
+    </message>
+    <message>
+        <source>Validation Rules...</source>
+        <translation>Validation Rules...</translation>
+    </message>
+    <message>
+        <source>Run Validation</source>
+        <translation>Run Validation</translation>
+    </message>
+    <message>
+        <source>Insert Note</source>
+        <translation>Insert Note</translation>
+    </message>
+    <message>
+        <source>Edit Note</source>
+        <translation>Edit Note</translation>
+    </message>
+    <message>
+        <source>Delete Note</source>
+        <translation>Delete Note</translation>
+    </message>
+    <message>
+        <source>Clear All Notes</source>
+        <translation>Clear All Notes</translation>
     </message>
 </context>
 <context>
@@ -16489,6 +16765,58 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <source>merge %1 columns into "%2"</source>
         <translation>merge %1 columns into "%2"</translation>
     </message>
+    <message>
+        <source>edit validation rules</source>
+        <translation>edit validation rules</translation>
+    </message>
+    <message>
+        <source>add note</source>
+        <translation>add note</translation>
+    </message>
+    <message>
+        <source>delete note</source>
+        <translation>delete note</translation>
+    </message>
+    <message>
+        <source>edit note</source>
+        <translation>edit note</translation>
+    </message>
+    <message>
+        <source>clear all notes</source>
+        <translation>clear all notes</translation>
+    </message>
+    <message>
+        <source>Set workflow background image</source>
+        <translation>Set workflow background image</translation>
+    </message>
+    <message>
+        <source>Change shape border</source>
+        <translation>Change shape border</translation>
+    </message>
+    <message>
+        <source>Change shape background</source>
+        <translation>Change shape background</translation>
+    </message>
+    <message>
+        <source>Change text font</source>
+        <translation>Change text font</translation>
+    </message>
+    <message>
+        <source>Change text color</source>
+        <translation>Change text color</translation>
+    </message>
+    <message>
+        <source>Edit text content</source>
+        <translation>Edit text content</translation>
+    </message>
+    <message>
+        <source>Replace data object</source>
+        <translation>Replace data object</translation>
+    </message>
+    <message>
+        <source>Modify data (persisted snapshot)</source>
+        <translation>Modify data (persisted snapshot)</translation>
+    </message>
 </context>
 <context>
     <name>main</name>
@@ -16959,6 +17287,14 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <source>Computed columns</source>
         <translation>Computed columns</translation>
     </message>
+    <message>
+        <source>Validation rules</source>
+        <translation>Validation rules</translation>
+    </message>
+    <message>
+        <source>Cell notes</source>
+        <translation>Cell notes</translation>
+    </message>
 </context>
 <context>
     <name>DA::DADialogComputedColumn</name>
@@ -17397,6 +17733,317 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <source>The melt operation is estimated to produce %1 rows (limit %2), which may consume a large amount of memory. Force continue?</source>
         <translation>The melt operation is estimated to produce %1 rows (limit %2), which may consume a large amount of memory. Force continue?</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADialogFillSeries</name>
+    <message>
+        <source>Fill Series</source>
+        <translation>Fill Series</translation>
+    </message>
+    <message>
+        <source>Linear series (start / step / stop)</source>
+        <translation>Linear series (start / step / stop)</translation>
+    </message>
+    <message>
+        <source>Date series (start / step / unit)</source>
+        <translation>Date series (start / step / unit)</translation>
+    </message>
+    <message>
+        <source>Start value (empty = default)</source>
+        <translation>Start value (empty = default)</translation>
+    </message>
+    <message>
+        <source>Step (empty = 1)</source>
+        <translation>Step (empty = 1)</translation>
+    </message>
+    <message>
+        <source>Stop value (optional)</source>
+        <translation>Stop value (optional)</translation>
+    </message>
+    <message>
+        <source>Stop value (empty = no limit)</source>
+        <translation>Stop value (empty = no limit)</translation>
+    </message>
+    <message>
+        <source>Day</source>
+        <translation>Day</translation>
+    </message>
+    <message>
+        <source>Week</source>
+        <translation>Week</translation>
+    </message>
+    <message>
+        <source>Month</source>
+        <translation>Month</translation>
+    </message>
+    <message>
+        <source>Year</source>
+        <translation>Year</translation>
+    </message>
+    <message>
+        <source>Start date, e.g. 2020-01-01 (empty = today)</source>
+        <translation>Start date, e.g. 2020-01-01 (empty = today)</translation>
+    </message>
+    <message>
+        <source>Invalid parameters: unable to generate the series</source>
+        <translation>Invalid parameters: unable to generate the series</translation>
+    </message>
+    <message>
+        <source>Preview: (empty)</source>
+        <translation>Preview: (empty)</translation>
+    </message>
+    <message>
+        <source>Preview: %1</source>
+        <translation>Preview: %1</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADialogValidationRules</name>
+    <message>
+        <source>Validation Rules</source>
+        <translation>Validation Rules</translation>
+    </message>
+    <message>
+        <source>Add</source>
+        <translation>Add</translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation>Remove</translation>
+    </message>
+    <message>
+        <source>Up</source>
+        <translation>Up</translation>
+    </message>
+    <message>
+        <source>Down</source>
+        <translation>Down</translation>
+    </message>
+    <message>
+        <source>%1 (occurrence %2)</source>
+        <translation>%1 (occurrence %2)</translation>
+    </message>
+    <message>
+        <source>Numeric range</source>
+        <translation>Numeric range</translation>
+    </message>
+    <message>
+        <source>Date range</source>
+        <translation>Date range</translation>
+    </message>
+    <message>
+        <source>Allowed values (enum)</source>
+        <translation>Allowed values (enum)</translation>
+    </message>
+    <message>
+        <source>Not empty</source>
+        <translation>Not empty</translation>
+    </message>
+    <message>
+        <source>Unique</source>
+        <translation>Unique</translation>
+    </message>
+    <message>
+        <source>Regex (full match)</source>
+        <translation>Regex (full match)</translation>
+    </message>
+    <message>
+        <source>Error</source>
+        <translation>Error</translation>
+    </message>
+    <message>
+        <source>Warning</source>
+        <translation>Warning</translation>
+    </message>
+    <message>
+        <source>Enabled</source>
+        <translation>Enabled</translation>
+    </message>
+    <message>
+        <source>Display name in report (optional)</source>
+        <translation>Display name in report (optional)</translation>
+    </message>
+    <message>
+        <source>Column</source>
+        <translation>Column</translation>
+    </message>
+    <message>
+        <source>Type</source>
+        <translation>Type</translation>
+    </message>
+    <message>
+        <source>Level</source>
+        <translation>Level</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation>Name</translation>
+    </message>
+    <message>
+        <source>Empty = no lower bound</source>
+        <translation>Empty = no lower bound</translation>
+    </message>
+    <message>
+        <source>Empty = no upper bound</source>
+        <translation>Empty = no upper bound</translation>
+    </message>
+    <message>
+        <source>Minimum</source>
+        <translation>Minimum</translation>
+    </message>
+    <message>
+        <source>Maximum</source>
+        <translation>Maximum</translation>
+    </message>
+    <message>
+        <source>From</source>
+        <translation>From</translation>
+    </message>
+    <message>
+        <source>To</source>
+        <translation>To</translation>
+    </message>
+    <message>
+        <source>One allowed value per line</source>
+        <translation>One allowed value per line</translation>
+    </message>
+    <message>
+        <source>Allow other values when editing (dropdown)</source>
+        <translation>Allow other values when editing (dropdown)</translation>
+    </message>
+    <message>
+        <source>No parameters</source>
+        <translation>No parameters</translation>
+    </message>
+    <message>
+        <source>Full-match pattern, e.g. [A-Z]{3}\d+</source>
+        <translation>Full-match pattern, e.g. [A-Z]{3}\d+</translation>
+    </message>
+    <message>
+        <source>Pattern</source>
+        <translation>Pattern</translation>
+    </message>
+    <message>
+        <source>Parameters</source>
+        <translation>Parameters</translation>
+    </message>
+    <message>
+        <source> (disabled)</source>
+        <translation> (disabled)</translation>
+    </message>
+    <message>
+        <source>Minimum is not a valid number</source>
+        <translation>Minimum is not a valid number</translation>
+    </message>
+    <message>
+        <source>Maximum is not a valid number</source>
+        <translation>Maximum is not a valid number</translation>
+    </message>
+    <message>
+        <source>From-date is invalid (use yyyy-MM-dd)</source>
+        <translation>From-date is invalid (use yyyy-MM-dd)</translation>
+    </message>
+    <message>
+        <source>To-date is invalid (use yyyy-MM-dd)</source>
+        <translation>To-date is invalid (use yyyy-MM-dd)</translation>
+    </message>
+    <message>
+        <source>Rule parameters are incomplete (both bounds empty / no allowed values / empty pattern)</source>
+        <translation>Rule parameters are incomplete (both bounds empty / no allowed values / empty pattern)</translation>
+    </message>
+    <message>
+        <source>Invalid rule parameters</source>
+        <translation>Invalid rule parameters</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADialogValidationReport</name>
+    <message>
+        <source>Validation Report</source>
+        <translation>Validation Report</translation>
+    </message>
+    <message>
+        <source>Export...</source>
+        <translation>Export...</translation>
+    </message>
+    <message>
+        <source>Clear Highlights</source>
+        <translation>Clear Highlights</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Close</translation>
+    </message>
+    <message>
+        <source>  [column missing]</source>
+        <translation>  [column missing]</translation>
+    </message>
+    <message>
+        <source>  —  %1 violation(s)</source>
+        <translation>  —  %1 violation(s)</translation>
+    </message>
+    <message>
+        <source> (showing first %1)</source>
+        <translation> (showing first %1)</translation>
+    </message>
+    <message>
+        <source>Evaluated %1 rule(s), found %2 violation(s), took %3 ms</source>
+        <translation>Evaluated %1 rule(s), found %2 violation(s), took %3 ms</translation>
+    </message>
+    <message>
+        <source>Error</source>
+        <translation>Error</translation>
+    </message>
+    <message>
+        <source>Warning</source>
+        <translation>Warning</translation>
+    </message>
+    <message>
+        <source>Column missing (rule skipped)</source>
+        <translation>Column missing (rule skipped)</translation>
+    </message>
+    <message>
+        <source>%1 violation(s)</source>
+        <translation>%1 violation(s)</translation>
+    </message>
+    <message>
+        <source>Export Validation Report</source>
+        <translation>Export Validation Report</translation>
+    </message>
+    <message>
+        <source>HTML (*.html);;PDF (*.pdf);;Word (*.docx)</source>
+        <translation>HTML (*.html);;PDF (*.pdf);;Word (*.docx)</translation>
+    </message>
+    <message>
+        <source>Export failed: %1</source>
+        <translation>Export failed: %1</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DATableNoteEditDialog</name>
+    <message>
+        <source>Cell Note</source>
+        <translation>Cell Note</translation>
+    </message>
+    <message>
+        <source>Enter note text...</source>
+        <translation>Enter note text...</translation>
+    </message>
+    <message>
+        <source>Delete</source>
+        <translation>Delete</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAUndoHistoryWidget</name>
+    <message>
+        <source>Undo depth:</source>
+        <translation>Undo depth:</translation>
+    </message>
+    <message>
+        <source>Maximum number of undo steps kept per table page (larger uses more memory for swap-type commands)</source>
+        <translation>Maximum number of undo steps kept per table page (larger uses more memory for swap-type commands)</translation>
     </message>
 </context>
 </TS>

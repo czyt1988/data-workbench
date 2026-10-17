@@ -2944,6 +2944,118 @@ Layouts</source>
         <source>Unpivot wide columns into a long-format new dataset (in-place optional)</source>
         <translation>把宽表展开为长格式新数据集（可选就地替换）</translation>
     </message>
+    <message>
+        <source>Fill</source>
+        <translation>填充</translation>
+    </message>
+    <message>
+        <source>Fill the selection (down / up / ffill / bfill / series)</source>
+        <translation>填充选区（向下/向上/ffill/bfill/序列）</translation>
+    </message>
+    <message>
+        <source>Fill Down</source>
+        <translation>向下填充</translation>
+    </message>
+    <message>
+        <source>Fill the selection down with the value of the first row (Ctrl+D)</source>
+        <translation>用选区首行值向下填充（Ctrl+D）</translation>
+    </message>
+    <message>
+        <source>Fill Up</source>
+        <translation>向上填充</translation>
+    </message>
+    <message>
+        <source>Fill the selection up with the value of the last row</source>
+        <translation>用选区末行值向上填充</translation>
+    </message>
+    <message>
+        <source>Fill Forward (ffill)</source>
+        <translation>向下填充空值(ffill)</translation>
+    </message>
+    <message>
+        <source>Propagate the last valid value down within the selection</source>
+        <translation>选区内向下传递最后一个非空值</translation>
+    </message>
+    <message>
+        <source>Fill Backward (bfill)</source>
+        <translation>向上填充空值(bfill)</translation>
+    </message>
+    <message>
+        <source>Propagate the next valid value up within the selection</source>
+        <translation>选区内向上传递下一个非空值</translation>
+    </message>
+    <message>
+        <source>Fill Series...</source>
+        <translation>序列填充...</translation>
+    </message>
+    <message>
+        <source>Generate a linear or date series into the selected columns</source>
+        <translation>对选中列生成数值等差或日期步进序列</translation>
+    </message>
+    <message>
+        <source>Validation Rules</source>
+        <translation>校验规则</translation>
+    </message>
+    <message>
+        <source>Manage data validation rules (range / enum / not-empty / unique / regex) of the current table</source>
+        <translation>管理当前表的数据校验规则（区间/枚举/非空/唯一/正则）</translation>
+    </message>
+    <message>
+        <source>Run Validation</source>
+        <translation>执行校验</translation>
+    </message>
+    <message>
+        <source>Validate the table against enabled rules, highlight violations and show the report (read-only)</source>
+        <translation>按启用规则校验全表，高亮违规并出报告（只读）</translation>
+    </message>
+    <message>
+        <source>Note</source>
+        <translation>批注</translation>
+    </message>
+    <message>
+        <source>Insert or edit a note on the current cell</source>
+        <translation>在当前单元格插入或编辑批注</translation>
+    </message>
+    <message>
+        <source>Insert Note</source>
+        <translation>插入批注</translation>
+    </message>
+    <message>
+        <source>Insert a note on the current cell</source>
+        <translation>在当前单元格插入批注</translation>
+    </message>
+    <message>
+        <source>Edit Note</source>
+        <translation>编辑批注</translation>
+    </message>
+    <message>
+        <source>Edit the note of the current cell</source>
+        <translation>编辑当前单元格的批注</translation>
+    </message>
+    <message>
+        <source>Delete Note</source>
+        <translation>删除批注</translation>
+    </message>
+    <message>
+        <source>Delete the note of the current cell</source>
+        <translation>删除当前单元格的批注</translation>
+    </message>
+    <message>
+        <source>Clear All Notes</source>
+        <translation>清除本表批注</translation>
+    </message>
+    <message>
+        <source>Remove all notes of the current table (undoable)</source>
+        <translation>清除本表全部批注（可撤销）</translation>
+    </message>
+    <message>
+        <source>Undo History</source>
+        <translation>撤销历史</translation>
+    </message>
+    <message>
+        <source>Show the undo history panel (follows the active page, click an entry to undo/redo to it)</source>
+        <translation>显示撤销历史面板（跟随当前激活页面，点击条目可回退/前进）</translation>
+    </message>
 </context>
 <context>
     <name>DA::DAAppController</name>
@@ -3361,6 +3473,10 @@ Layouts</source>
         <location line="+4"/>
         <source>Failed to open markdown file: %1</source>
         <translation>打开 Markdown 文件失败:%1</translation>
+    </message>
+    <message>
+        <source>Undo History</source>
+        <translation>撤销历史</translation>
     </message>
 </context>
 <context>
@@ -9230,6 +9346,106 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <source>The table is very large (%1 cells). Keeping the old data for undo would double memory usage, so this in-place replacement will NOT be undoable. Continue?</source>
         <translation>表格过大（%1 单元格）。保留旧数据用于撤销将使内存翻倍，本次就地替换将不可撤销。是否继续？</translation>
     </message>
+    <message>
+        <source>Column name "%1" already exists, please use another name</source>
+        <translation>列名"%1"已存在，请使用其他名称</translation>
+    </message>
+    <message>
+        <source>Fill failed: the content does not match the column data type</source>
+        <translation>填充失败：内容与列数据类型不匹配</translation>
+    </message>
+    <message>
+        <source>Cannot fill a read-only data source</source>
+        <translation>只读数据源不能填充</translation>
+    </message>
+    <message>
+        <source>Fill down</source>
+        <translation>向下填充</translation>
+    </message>
+    <message>
+        <source>Fill up</source>
+        <translation>向上填充</translation>
+    </message>
+    <message>
+        <source>Fill forward (ffill)</source>
+        <translation>向下填充空值(ffill)</translation>
+    </message>
+    <message>
+        <source>Fill backward (bfill)</source>
+        <translation>向上填充空值(bfill)</translation>
+    </message>
+    <message>
+        <source>Please select cells to fill</source>
+        <translation>请先选中要填充的单元格</translation>
+    </message>
+    <message>
+        <source>Failed to generate the fill series</source>
+        <translation>生成填充序列失败</translation>
+    </message>
+    <message>
+        <source>Fill series</source>
+        <translation>序列填充</translation>
+    </message>
+    <message>
+        <source>Numeric range</source>
+        <translation>数值区间</translation>
+    </message>
+    <message>
+        <source>Date range</source>
+        <translation>日期区间</translation>
+    </message>
+    <message>
+        <source>Allowed values (enum)</source>
+        <translation>枚举集合</translation>
+    </message>
+    <message>
+        <source>Not empty</source>
+        <translation>非空</translation>
+    </message>
+    <message>
+        <source>Unique</source>
+        <translation>唯一</translation>
+    </message>
+    <message>
+        <source>Regex (full match)</source>
+        <translation>正则（整格匹配）</translation>
+    </message>
+    <message>
+        <source>%1 (occurrence %2)</source>
+        <translation>%1（第 %2 个同名列）</translation>
+    </message>
+    <message>
+        <source>Validation failed: %1</source>
+        <translation>数据校验失败：%1</translation>
+    </message>
+    <message>
+        <source>No enabled validation rules yet — add rules first</source>
+        <translation>暂无启用的校验规则——请先添加规则</translation>
+    </message>
+    <message>
+        <source>Row %1: %2</source>
+        <translation>行 %1：%2</translation>
+    </message>
+    <message>
+        <source>%1 validation rule(s) reference the renamed column(s): %2. Their references will be updated automatically. Continue?</source>
+        <translation>有 %1 条校验规则引用被改名的列：%2。其引用将自动批量更新，是否继续？</translation>
+    </message>
+    <message>
+        <source>Please select a cell to annotate</source>
+        <translation>请先选中要批注的单元格</translation>
+    </message>
+    <message>
+        <source>Please select a cell whose note is to be deleted</source>
+        <translation>请先选中要删除批注的单元格</translation>
+    </message>
+    <message>
+        <source>The selected cell has no note</source>
+        <translation>选中单元格没有批注</translation>
+    </message>
+    <message>
+        <source>This table has no notes</source>
+        <translation>本表没有批注</translation>
+    </message>
 </context>
 <context>
     <name>DA::DADataOperateWidget</name>
@@ -9308,6 +9524,54 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     <message>
         <source>Unpivot (Melt)...</source>
         <translation>宽转长（melt）...</translation>
+    </message>
+    <message>
+        <source>Fill</source>
+        <translation>填充</translation>
+    </message>
+    <message>
+        <source>Fill Down</source>
+        <translation>向下填充</translation>
+    </message>
+    <message>
+        <source>Fill Up</source>
+        <translation>向上填充</translation>
+    </message>
+    <message>
+        <source>Fill Forward (ffill)</source>
+        <translation>向下填充空值(ffill)</translation>
+    </message>
+    <message>
+        <source>Fill Backward (bfill)</source>
+        <translation>向上填充空值(bfill)</translation>
+    </message>
+    <message>
+        <source>Fill Series...</source>
+        <translation>序列填充...</translation>
+    </message>
+    <message>
+        <source>Validation Rules...</source>
+        <translation>校验规则...</translation>
+    </message>
+    <message>
+        <source>Run Validation</source>
+        <translation>执行校验</translation>
+    </message>
+    <message>
+        <source>Insert Note</source>
+        <translation>插入批注</translation>
+    </message>
+    <message>
+        <source>Edit Note</source>
+        <translation>编辑批注</translation>
+    </message>
+    <message>
+        <source>Delete Note</source>
+        <translation>删除批注</translation>
+    </message>
+    <message>
+        <source>Clear All Notes</source>
+        <translation>清除本表批注</translation>
     </message>
 </context>
 <context>
@@ -16609,6 +16873,58 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <source>merge %1 columns into "%2"</source>
         <translation>合并 %1 列为“%2”</translation>
     </message>
+    <message>
+        <source>edit validation rules</source>
+        <translation>编辑校验规则</translation>
+    </message>
+    <message>
+        <source>add note</source>
+        <translation>添加批注</translation>
+    </message>
+    <message>
+        <source>delete note</source>
+        <translation>删除批注</translation>
+    </message>
+    <message>
+        <source>edit note</source>
+        <translation>编辑批注</translation>
+    </message>
+    <message>
+        <source>clear all notes</source>
+        <translation>清除本表批注</translation>
+    </message>
+    <message>
+        <source>Set workflow background image</source>
+        <translation>设置工作流背景图</translation>
+    </message>
+    <message>
+        <source>Change shape border</source>
+        <translation>修改图元边框</translation>
+    </message>
+    <message>
+        <source>Change shape background</source>
+        <translation>修改图元背景</translation>
+    </message>
+    <message>
+        <source>Change text font</source>
+        <translation>修改文本字体</translation>
+    </message>
+    <message>
+        <source>Change text color</source>
+        <translation>修改文本颜色</translation>
+    </message>
+    <message>
+        <source>Edit text content</source>
+        <translation>编辑文本内容</translation>
+    </message>
+    <message>
+        <source>Replace data object</source>
+        <translation>替换数据对象</translation>
+    </message>
+    <message>
+        <source>Modify data (persisted snapshot)</source>
+        <translation>修改数据（持久化快照）</translation>
+    </message>
 </context>
 <context>
     <name>main</name>
@@ -17079,6 +17395,14 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <source>Computed columns</source>
         <translation>计算列</translation>
     </message>
+    <message>
+        <source>Validation rules</source>
+        <translation>校验规则</translation>
+    </message>
+    <message>
+        <source>Cell notes</source>
+        <translation>批注</translation>
+    </message>
 </context>
 <context>
     <name>DA::DADialogComputedColumn</name>
@@ -17517,6 +17841,317 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <source>The melt operation is estimated to produce %1 rows (limit %2), which may consume a large amount of memory. Force continue?</source>
         <translation>melt 预估产出 %1 行（上限 %2），可能占用大量内存。强制继续？</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADialogFillSeries</name>
+    <message>
+        <source>Fill Series</source>
+        <translation>序列填充</translation>
+    </message>
+    <message>
+        <source>Linear series (start / step / stop)</source>
+        <translation>数值等差（起始值/步长/终止值）</translation>
+    </message>
+    <message>
+        <source>Date series (start / step / unit)</source>
+        <translation>日期步进（起始日期/步长/单位）</translation>
+    </message>
+    <message>
+        <source>Start value (empty = default)</source>
+        <translation>起始值（留空用默认）</translation>
+    </message>
+    <message>
+        <source>Step (empty = 1)</source>
+        <translation>步长（留空为 1）</translation>
+    </message>
+    <message>
+        <source>Stop value (optional)</source>
+        <translation>终止值（可选）</translation>
+    </message>
+    <message>
+        <source>Stop value (empty = no limit)</source>
+        <translation>终止值（留空不限）</translation>
+    </message>
+    <message>
+        <source>Day</source>
+        <translation>天</translation>
+    </message>
+    <message>
+        <source>Week</source>
+        <translation>周</translation>
+    </message>
+    <message>
+        <source>Month</source>
+        <translation>月</translation>
+    </message>
+    <message>
+        <source>Year</source>
+        <translation>年</translation>
+    </message>
+    <message>
+        <source>Start date, e.g. 2020-01-01 (empty = today)</source>
+        <translation>起始日期，如 2020-01-01（留空为今天）</translation>
+    </message>
+    <message>
+        <source>Invalid parameters: unable to generate the series</source>
+        <translation>参数无效：无法生成序列</translation>
+    </message>
+    <message>
+        <source>Preview: (empty)</source>
+        <translation>预览：（空）</translation>
+    </message>
+    <message>
+        <source>Preview: %1</source>
+        <translation>预览：%1</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADialogValidationRules</name>
+    <message>
+        <source>Validation Rules</source>
+        <translation>数据校验规则</translation>
+    </message>
+    <message>
+        <source>Add</source>
+        <translation>添加</translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation>删除</translation>
+    </message>
+    <message>
+        <source>Up</source>
+        <translation>上移</translation>
+    </message>
+    <message>
+        <source>Down</source>
+        <translation>下移</translation>
+    </message>
+    <message>
+        <source>%1 (occurrence %2)</source>
+        <translation>%1（第 %2 个同名列）</translation>
+    </message>
+    <message>
+        <source>Numeric range</source>
+        <translation>数值区间</translation>
+    </message>
+    <message>
+        <source>Date range</source>
+        <translation>日期区间</translation>
+    </message>
+    <message>
+        <source>Allowed values (enum)</source>
+        <translation>枚举集合</translation>
+    </message>
+    <message>
+        <source>Not empty</source>
+        <translation>非空</translation>
+    </message>
+    <message>
+        <source>Unique</source>
+        <translation>唯一</translation>
+    </message>
+    <message>
+        <source>Regex (full match)</source>
+        <translation>正则（整格匹配）</translation>
+    </message>
+    <message>
+        <source>Error</source>
+        <translation>错误</translation>
+    </message>
+    <message>
+        <source>Warning</source>
+        <translation>警告</translation>
+    </message>
+    <message>
+        <source>Enabled</source>
+        <translation>启用</translation>
+    </message>
+    <message>
+        <source>Display name in report (optional)</source>
+        <translation>报告显示名（可选）</translation>
+    </message>
+    <message>
+        <source>Column</source>
+        <translation>列</translation>
+    </message>
+    <message>
+        <source>Type</source>
+        <translation>类型</translation>
+    </message>
+    <message>
+        <source>Level</source>
+        <translation>级别</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation>名称</translation>
+    </message>
+    <message>
+        <source>Empty = no lower bound</source>
+        <translation>留空 = 不限下界</translation>
+    </message>
+    <message>
+        <source>Empty = no upper bound</source>
+        <translation>留空 = 不限上界</translation>
+    </message>
+    <message>
+        <source>Minimum</source>
+        <translation>下界</translation>
+    </message>
+    <message>
+        <source>Maximum</source>
+        <translation>上界</translation>
+    </message>
+    <message>
+        <source>From</source>
+        <translation>起始</translation>
+    </message>
+    <message>
+        <source>To</source>
+        <translation>截止</translation>
+    </message>
+    <message>
+        <source>One allowed value per line</source>
+        <translation>每行一个允许值</translation>
+    </message>
+    <message>
+        <source>Allow other values when editing (dropdown)</source>
+        <translation>编辑时允许其他值（下拉）</translation>
+    </message>
+    <message>
+        <source>No parameters</source>
+        <translation>无参数</translation>
+    </message>
+    <message>
+        <source>Full-match pattern, e.g. [A-Z]{3}\d+</source>
+        <translation>整格匹配正则，如 [A-Z]{3}\d+</translation>
+    </message>
+    <message>
+        <source>Pattern</source>
+        <translation>正则</translation>
+    </message>
+    <message>
+        <source>Parameters</source>
+        <translation>参数</translation>
+    </message>
+    <message>
+        <source> (disabled)</source>
+        <translation>（已停用）</translation>
+    </message>
+    <message>
+        <source>Minimum is not a valid number</source>
+        <translation>下界不是有效数值</translation>
+    </message>
+    <message>
+        <source>Maximum is not a valid number</source>
+        <translation>上界不是有效数值</translation>
+    </message>
+    <message>
+        <source>From-date is invalid (use yyyy-MM-dd)</source>
+        <translation>起始日期无效（用 yyyy-MM-dd）</translation>
+    </message>
+    <message>
+        <source>To-date is invalid (use yyyy-MM-dd)</source>
+        <translation>截止日期无效（用 yyyy-MM-dd）</translation>
+    </message>
+    <message>
+        <source>Rule parameters are incomplete (both bounds empty / no allowed values / empty pattern)</source>
+        <translation>规则参数不完整（上下界全空/无允许值/正则为空）</translation>
+    </message>
+    <message>
+        <source>Invalid rule parameters</source>
+        <translation>规则参数无效</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADialogValidationReport</name>
+    <message>
+        <source>Validation Report</source>
+        <translation>数据校验报告</translation>
+    </message>
+    <message>
+        <source>Export...</source>
+        <translation>导出...</translation>
+    </message>
+    <message>
+        <source>Clear Highlights</source>
+        <translation>清除高亮</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>关闭</translation>
+    </message>
+    <message>
+        <source>  [column missing]</source>
+        <translation>[列不存在]</translation>
+    </message>
+    <message>
+        <source>  —  %1 violation(s)</source>
+        <translation>—  %1 处违规</translation>
+    </message>
+    <message>
+        <source> (showing first %1)</source>
+        <translation>（显示前 %1 条）</translation>
+    </message>
+    <message>
+        <source>Evaluated %1 rule(s), found %2 violation(s), took %3 ms</source>
+        <translation>校验 %1 条规则，发现 %2 处违规，耗时 %3 毫秒</translation>
+    </message>
+    <message>
+        <source>Error</source>
+        <translation>错误 / 警告</translation>
+    </message>
+    <message>
+        <source>Warning</source>
+        <translation>错误 / 警告</translation>
+    </message>
+    <message>
+        <source>Column missing (rule skipped)</source>
+        <translation>列不存在（规则被跳过）</translation>
+    </message>
+    <message>
+        <source>%1 violation(s)</source>
+        <translation>%1 处违规</translation>
+    </message>
+    <message>
+        <source>Export Validation Report</source>
+        <translation>导出校验报告</translation>
+    </message>
+    <message>
+        <source>HTML (*.html);;PDF (*.pdf);;Word (*.docx)</source>
+        <translation>HTML (*.html);;PDF (*.pdf);;Word (*.docx)</translation>
+    </message>
+    <message>
+        <source>Export failed: %1</source>
+        <translation>导出失败：%1</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DATableNoteEditDialog</name>
+    <message>
+        <source>Cell Note</source>
+        <translation>单元格批注</translation>
+    </message>
+    <message>
+        <source>Enter note text...</source>
+        <translation>输入批注文本...</translation>
+    </message>
+    <message>
+        <source>Delete</source>
+        <translation>删除</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAUndoHistoryWidget</name>
+    <message>
+        <source>Undo depth:</source>
+        <translation>撤销深度：</translation>
+    </message>
+    <message>
+        <source>Maximum number of undo steps kept per table page (larger uses more memory for swap-type commands)</source>
+        <translation>每个表格页保留的最大撤销步数（调大对转置类命令会增加内存占用）</translation>
     </message>
 </context>
 </TS>
