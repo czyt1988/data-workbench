@@ -47,6 +47,8 @@ Q_SIGNALS:
     void findBarCloseRequested();
     // 条件格式入口（003 T1.5）：表体右键菜单唤出规则编辑对话框（列头菜单不放，R16）
     void conditionalFormatRequested();
+    // 计算列入口（004 T1.23）：表体右键菜单与 Ribbon「Data Tools」面板同入口
+    void computedColumnRequested();
 
 protected:
     // Ctrl+C / Ctrl+Insert 复制；Ctrl+F 查找；Ctrl+H 替换；Esc 关查找条（快捷键唯一挂点，红线5）

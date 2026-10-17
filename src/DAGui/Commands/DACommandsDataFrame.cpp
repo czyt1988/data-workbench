@@ -231,6 +231,7 @@ void DACommandDataFrame_renameColumns::undo()
         mModel->notifyHeaderDataChanged(Qt::Horizontal, 0, mCols.size() - 1);
     }
     callback();
+    directionalCallback(true);  // 004 T1.23：列名引用的计算列定义随撤销反向迁移
 }
 
 bool DACommandDataFrame_renameColumns::exec()
@@ -242,6 +243,7 @@ bool DACommandDataFrame_renameColumns::exec()
         mModel->notifyHeaderDataChanged(Qt::Horizontal, 0, mCols.size() - 1);
     }
     callback();
+    directionalCallback(false);  // 004 T1.23：列名引用的计算列定义随改名迁移
     return true;
 }
 
@@ -342,28 +344,113 @@ bool DACommandDataFrame_paste::exec()
 ///////////////////
 
 //----------------------------------------------------
-//
+// DACommandDataFrame_evalColumn（004 T1.23 计算列，列级记录撤销）
+// 注：旧 DACommandDataFrame_evalDatas（DACommandWithTemporaryData 整表快照基类、
+// 无任何调用方的死代码）已按 004 计划删除——D4 停用快照范式，新命令走列级记录
 //----------------------------------------------------
-DACommandDataFrame_evalDatas::DACommandDataFrame_evalDatas(const DAPyDataFrame& df, const QString& exper, QUndoCommand* par)
-    : DACommandWithTemporaryData(df, par), DACallBackInterface(), mExper(exper)
+
+/**
+ * @brief 构造（首次 exec 时才求值并捕获旧列快照）
+ * @param df 数据
+ * @param targetColumn 目标列名
+ * @param body 表达式体（RHS）
+ * @param par 父命令
+ */
+DACommandDataFrame_evalColumn::DACommandDataFrame_evalColumn(const DAPyDataFrame& df, const QString& targetColumn, const QString& body, QUndoCommand* par)
+    : DACommandWithRedoCount(par), DACallBackInterface(), mDataframe(df), mTargetColumn(targetColumn), mBody(body)
 {
-    setText(QObject::tr("eval data"));  // cn:列运算
+    setText(QObject::tr("compute column \"%1\"").arg(targetColumn));  // cn:计算列“%1”
 }
 
-void DACommandDataFrame_evalDatas::undo()
+QString DACommandDataFrame_evalColumn::lastErrorMessage() const
 {
-    load();
-    callback();
+    return mLastError;
 }
 
-bool DACommandDataFrame_evalDatas::exec()
+/**
+ * @brief 撤销：hadColumn 时按列名还原旧列快照，否则删除新建的目标列
+ *
+ * 列位置在 undo 时按列名解析（R20 列名引用；undo 前其上叠加的命令均已回退，
+ * 表结构即本命令 exec 后的状态，按名定位稳定）。
+ */
+void DACommandDataFrame_evalColumn::undo()
 {
     DAPyScriptsDataFrame& pydf = DAPyScripts::getDataFrame();
-    if (!pydf.evalDatas(dataframe(), mExper)) {
-        return false;
+    if (mHadColumn) {
+        pydf.setColumn(mDataframe, mTargetColumn, mOldColumn);
+    } else {
+        const QList< QString > cols = mDataframe.columns();
+        const int pos               = cols.indexOf(mTargetColumn);
+        if (pos >= 0) {
+            pydf.drop_icolumn(mDataframe, { pos });
+        }
     }
     callback();
+    directionalCallback(true);
+}
+
+/**
+ * @brief 执行（含首次与 redo）：求值表达式写入目标列；首次成功时捕获旧列快照
+ * @return 求值成功返回 true
+ */
+bool DACommandDataFrame_evalColumn::exec()
+{
+    DAPyScriptsDataFrame& pydf = DAPyScripts::getDataFrame();
+    const DAPyScriptsDataFrame::EvalColumnResult r = pydf.evalColumn(mDataframe, mTargetColumn, mBody);
+    if (!r.ok) {
+        mLastError = r.errorMessage;
+        return false;
+    }
+    if (!mSnapshotTaken) {
+        mHadColumn     = r.hadColumn;
+        mOldColumn     = r.oldColumn;
+        mSnapshotTaken = true;
+    }
+    callback();
+    directionalCallback(false);
     return true;
+}
+
+//----------------------------------------------------
+// DACommandComputedColumn_removeDefinition（004 T1.23 移除公式保留数据）
+//----------------------------------------------------
+
+/**
+ * @brief 构造：从 store 捕获整条目（定义+状态）
+ * @param store 计算列子存储（会话级，QPointer 防悬挂）
+ * @param target 目标列名
+ * @param par 父命令
+ */
+DACommandComputedColumn_removeDefinition::DACommandComputedColumn_removeDefinition(
+    DATableComputedColumnStore* store, const QString& target, QUndoCommand* par
+)
+    : QUndoCommand(par), DACallBackInterface(), mStore(store)
+{
+    if (mStore) {
+        mCaptured = mStore->entryOf(target, mEntry);
+    }
+    setText(QObject::tr("remove formula of column \"%1\" (keep data)").arg(target));  // cn:移除列“%1”的公式（保留数据）
+}
+
+void DACommandComputedColumn_removeDefinition::undo()
+{
+    if (mStore && mCaptured) {
+        mStore->addDefinition(mEntry.def, mEntry.state);
+    }
+    callback();
+}
+
+void DACommandComputedColumn_removeDefinition::redo()
+{
+    if (mStore && mCaptured) {
+        mStore->removeDefinition(mEntry.def.targetColumnName);
+    }
+    callback();
+}
+
+bool DACommandComputedColumn_removeDefinition::isCaptured() const
+{
+    return mCaptured;
 }
 
 

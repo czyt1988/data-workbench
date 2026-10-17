@@ -12,6 +12,7 @@ class QPainter;
 
 namespace DA
 {
+class DATableComputedColumnStore;
 /**
  * @brief 数据表格头（水平/垂直共用，按 orientation 分支）
  *
@@ -38,18 +39,26 @@ public:
     // 列头右键菜单动作表意（点击后发信号，执行逻辑由 APP 接线到既有槽）
     enum class ColumnAction
     {
-        RenameColumn,        ///< 重命名列
-        RemoveColumn,        ///< 删除列
-        CopyColumnName,      ///< 复制列名
-        GotoMax,             ///< 定位最大
-        GotoMin,             ///< 定位最小
-        ShowColumnDescribe   ///< 描述统计
+        RenameColumn,          ///< 重命名列
+        RemoveColumn,          ///< 删除列
+        CopyColumnName,        ///< 复制列名
+        GotoMax,               ///< 定位最大
+        GotoMin,               ///< 定位最小
+        ShowColumnDescribe,    ///< 描述统计
+        EditComputedFormula,   ///< 编辑公式（计算列，004 T1.23）
+        RecomputeComputedColumn,  ///< 重新计算（计算列，004 T1.23）
+        RemoveComputedFormula  ///< 移除公式保留数据（计算列，004 T1.23）
     };
     Q_ENUM(ColumnAction)
 
     explicit DADataHeaderView(Qt::Orientation orientation, QWidget* parent = nullptr);
 
-    // 构建列头右键菜单（6 项 4 组，与迁移前 APP 注入版逐项一致；调用方负责弹出与销毁）
+    // 设置计算列子存储（ƒx 角标三态绘制与列头菜单计算列组，非拥有，004 T1.23；
+    // 浅蓝底色与公式 tooltip 走模型 BackgroundRole/ToolTipRole，本类只画角标）
+    void setComputedColumnStore(DATableComputedColumnStore* store);
+
+    // 构建列头右键菜单（6 项 4 组，与迁移前 APP 注入版逐项一致；计算列追加第 5 组
+    // 「编辑公式/重新计算/移除公式（保留数据）」，004 T1.23；调用方负责弹出与销毁）
     QMenu* buildColumnContextMenu(int logicalIndex);
 
     // 行头宽拖拽的最小宽度（像素）
@@ -86,6 +95,10 @@ private:
     // 该列是否允许弹出列头菜单（数据边界判定，保持迁移前行为）
     bool isColumnMenuAvailable(int logicalIndex) const;
 
+    // 计算列 ƒx 角标状态查询（logicalIndex → 状态色）；非计算列返回无效 QColor
+    QColor computedColumnBadgeColor(int logicalIndex) const;
+
+    DATableComputedColumnStore* mComputedStore { nullptr };  ///< 计算列子存储（非拥有，004 T1.23）
     int mPressedLogicalIndex { -1 };   ///< 左键按下的 section（释放时同段才发 clickedWithModifiers）
     bool mRowHeaderResizing { false }; ///< 正在拖拽行头宽
     int mResizeStartX { 0 };           ///< 拖拽起点 x

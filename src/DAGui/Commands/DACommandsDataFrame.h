@@ -3,6 +3,7 @@
 #include <QUndoCommand>
 #include <QPoint>
 #include <QPair>
+#include <QPointer>
 #include <QVector>
 #include <optional>
 #include <functional>
@@ -11,6 +12,7 @@
 #include "DACommandWithRedoCount.h"
 #include "DACommandWithTemporaryData.h"
 #include "DAData.h"
+#include "DATableComputedColumnStore.h"
 #include "numpy/DAPyDType.h"
 #include "pandas/DAPySeries.h"
 
@@ -230,17 +232,58 @@ private:
 };
 
 /**
- * @brief evaldatas
+ * @brief 计算列求值命令（列级记录撤销，004 T1.23；D4 铁律：重算必须入栈，禁快照基类）
+ *
+ * 调用范式与 iat/paste 一致：构造 → cmd->exec()（首次求值 + 捕获旧列快照）→
+ * push（首次 redo 被 DACommandWithRedoCount 跳过，不重复求值）。exec()（含后续
+ * redo）= 求值表达式写入目标列，首次成功 exec 时捕获 (hadColumn, oldColumn)
+ * 快照；undo() = hadColumn 时按列名还原旧列（da_set_column），否则删除目标列
+ * （da_drop_icolumn，列位置在 undo 时按列名解析，R20）。
+ *
+ * 定义/状态的联动（addDefinition/setState 等元数据操作）由调用方经 directional
+ * 回调完成（与 sortRows 命令的样式重映射同范式），命令本体只做数据操作：
+ * 创建场景 undo 移除定义、redo 恢复定义；重算场景 undo 回原状态、redo 回 Valid。
+ * 内存代价 = 一列数据（§4.11 策略表「计算列重算：列级记录」）。
  */
-class DAGUI_API DACommandDataFrame_evalDatas : public DACommandWithTemporaryData, public DACallBackInterface
+class DAGUI_API DACommandDataFrame_evalColumn : public DACommandWithRedoCount, public DACallBackInterface
 {
 public:
-    DACommandDataFrame_evalDatas(const DAPyDataFrame& df, const QString& exper, QUndoCommand* par = nullptr);
+    DACommandDataFrame_evalColumn(const DAPyDataFrame& df, const QString& targetColumn, const QString& body, QUndoCommand* par = nullptr);
     virtual void undo() override;
     virtual bool exec() override;
+    // 最近一次 exec 失败的诊断信息（英文异常文本，调用方拼用户提示）
+    QString lastErrorMessage() const;
 
 private:
-    QString mExper;
+    DAPyDataFrame mDataframe;
+    QString mTargetColumn;         ///< 目标列名（R20 列名引用）
+    QString mBody;                 ///< 表达式体（RHS）
+    bool mHadColumn { false };     ///< 首次求值前目标列是否已存在（false=创建，undo 删列；true=重算，undo 还原旧列）
+    bool mSnapshotTaken { false }; ///< 旧列快照是否已捕获（只在首次成功 exec 捕获）
+    DAPySeries mOldColumn;         ///< 首次求值前旧列快照（mHadColumn=true 时有效）
+    QString mLastError;            ///< 最近一次求值失败的异常信息
+};
+
+/**
+ * @brief 移除计算列定义命令（保留列数据，004 T1.23 列头右键「移除公式」）
+ *
+ * 纯元数据命令（不写 DataFrame）：redo 移除定义，undo 恢复定义与其状态。
+ * 构造时从 store 捕获整条目（定义+状态）；store 为会话级（比页撤销栈长寿），
+ * 用 QPointer 防悬挂。
+ */
+class DAGUI_API DACommandComputedColumn_removeDefinition : public QUndoCommand, public DACallBackInterface
+{
+public:
+    DACommandComputedColumn_removeDefinition(DATableComputedColumnStore* store, const QString& target, QUndoCommand* par = nullptr);
+    void undo() override;
+    void redo() override;
+    // 构造时是否捕获到定义（false 时命令无效果，调用方不应 push）
+    bool isCaptured() const;
+
+private:
+    QPointer< DATableComputedColumnStore > mStore;
+    DATableComputedColumnStore::Entry mEntry;  ///< 构造时捕获的整条目（定义+状态）
+    bool mCaptured { false };
 };
 
 

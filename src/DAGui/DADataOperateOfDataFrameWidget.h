@@ -11,6 +11,7 @@
 #include "numpy/DAPyDType.h"
 #include "DATableDisplayFormat.h"
 #include "DATableConditionalFormatRule.h"
+#include "DATableComputedColumnStore.h"
 #include "DADataOperatePageWidget.h"
 #include "Dialog/DADialogFindReplace.h"
 namespace Ui
@@ -28,10 +29,12 @@ class DADialogDataframeColumnDescribe;
 class DATableStyleManager;
 class DATableStyleItemDelegate;
 class DATableMetadataRegistry;
+class DATableMetadata;
 class DATableViewStateStore;
 class DATableHighlightOverlay;
 class DATableConditionalFormatStore;
 class DATableCellStyle;
+class DAComputedColumn;
 
 
 /**
@@ -127,6 +130,19 @@ public:
     // 当前查找命中数（已装载高亮，≤上限）与当前命中序号（-1=无），供测试与外部查询
     int findHitCount() const;
     int currentFindHitIndex() const;
+
+    // ===== 计算列（004 T1.23）=====
+    // 获取计算列子存储（借自元数据束，可能为 nullptr）
+    DATableComputedColumnStore* computedColumnStore() const;
+    // 打开计算列对话框：col<0 为新建，col>=0 为编辑该列既有公式（列头右键「编辑公式」）
+    void showComputedColumnDialog(int col = -1);
+    // 重算单个计算列（列头右键「重新计算」），col 为列位置索引；成功入栈返回 true
+    bool recomputeComputedColumn(int col);
+    // 重算全部待重算/失效的计算列（Ribbon「全部重算」），返回成功重算的列数
+    int recomputeAllStaleComputedColumns();
+    // 移除某列的公式定义（保留列数据，列头右键「移除公式」），可撤销；成功返回 true
+    bool removeComputedColumnFormula(int col);
+
 Q_SIGNALS:
     // 选中区变化时发射当前代表样式，供 ribbon 控件反向同步
     void currentStyleChanged(const DA::DATableCellStyle& style);
@@ -140,6 +156,8 @@ Q_SIGNALS:
     void columnHeaderClicked(int logicalIndex);
     // 替换已生效（含超阈值不可撤销降级路径），changedCells=变更格数；APP 接线 setDirty
     void replaceApplied(int changedCells);
+    // 表格工具改动了数据（计算列重算等，004）；APP 接线 setDirty
+    void dataModified();
 public Q_SLOTS:
     void setDAData(const DA::DAData& d);
     // 在选中行后面插入行
@@ -239,6 +257,25 @@ private:
     void applyViewStateFromStore();
     // 采集用户拖拽的列宽写入视图状态子存储（程序化/布局触发的 sectionResized 不记录）
     void onHeaderSectionResized(int logicalIndex, int newSize);
+    // ===== 计算列私有辅助（004 T1.23）=====
+    // 求值 def 并入栈重算命令：isNewColumn=true 走创建路径（undo 删列），
+    // false 走重算路径（undo 还原旧列）；成功返回 true（求值失败标失效并提示）
+    bool applyComputedColumnEval(const DAComputedColumn& def, bool isNewColumn);
+    // 列改名确认：提示「有 N 个计算列引用它」，返回是否继续（无引用直接 true）
+    bool confirmComputedColumnRename(const QList< QPair< QString, QString > >& renames) const;
+    // 把计算列定义迁移挂进改名命令的 directional 回调（exec 旧→新 / undo 新→旧，
+    // 与改名同一撤销单元，R20）
+    void wireComputedColumnRenameMigration(class DACommandDataFrame_renameColumns* cmd,
+                                           const QList< QPair< QString, QString > >& renames) const;
+    // 数据变更后把依赖这些列（或目标列自身被改）的计算列标待重算（actualCols 为变更
+    // 列位置；空列表 = 无操作）
+    void markComputedColumnsStaleForColumns(const QList< int >& actualCols);
+    // 拿不到列信息的整表操作（插删行/列转索引等）保守把全部计算列标待重算（R8）
+    void markAllComputedColumnsStale();
+    // store 变更后刷新表头（底色/角标/tooltip 重绘）
+    void refreshComputedColumnHeaders();
+    // 列位置索引 → 列名（越界返回空串）
+    QString columnNameAt(int actualCol) const;
 
     Ui::DADataOperateOfDataFrameWidget* ui;
     DAData mData;
@@ -247,6 +284,8 @@ private:
     DATableViewStateStore* mViewStateStore { nullptr };  ///< 借自 DATableMetadata 束，非拥有（视图状态：列宽/行头宽）
     DATableHighlightOverlay* mHighlightOverlay { nullptr };  ///< 瞬态高亮层（页级持有，不序列化、不进撤销栈）
     DATableConditionalFormatStore* mConditionalFormatStore { nullptr };  ///< 借自 DATableMetadata 束，非拥有（条件格式规则，003）
+    DATableComputedColumnStore* mComputedColumnStore { nullptr };        ///< 借自 DATableMetadata 束，非拥有（计算列定义，004 T1.23）
+    DATableMetadata* mMetadata { nullptr };                              ///< 元数据束（借自注册表，非拥有；就地形状变换整束快照/清理用，004 T1.27）
     DATableStyleItemDelegate* mStyleDelegate { nullptr };
     bool mApplyingViewState { false };  ///< 正在应用视图状态（屏蔽 sectionResized 采集）
     bool mHeaderPickMode { false };     ///< 表头拾取模式（图表「选择序列」会话期间：表头点击只转发不排序）

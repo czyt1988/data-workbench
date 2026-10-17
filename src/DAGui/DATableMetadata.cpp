@@ -2,6 +2,9 @@
 #include "DATableStyleManager.h"
 #include "DATableViewStateStore.h"
 #include "DATableConditionalFormatStore.h"
+#include "DATableComputedColumnStore.h"
+#include <QDomDocument>
+#include <QDomElement>
 
 namespace DA
 {
@@ -12,9 +15,10 @@ namespace DA
  */
 DATableMetadata::DATableMetadata(QObject* parent) : QObject(parent)
 {
-    mStyleManager     = new DATableStyleManager(this);
-    mViewState        = new DATableViewStateStore(this);
+    mStyleManager      = new DATableStyleManager(this);
+    mViewState         = new DATableViewStateStore(this);
     mConditionalFormat = new DATableConditionalFormatStore(this);
+    mComputedColumns   = new DATableComputedColumnStore(this);
 }
 
 DATableMetadata::~DATableMetadata()
@@ -50,6 +54,15 @@ DATableConditionalFormatStore* DATableMetadata::conditionalFormat() const
 }
 
 /**
+ * @brief 计算列子存储（004 T1.23）
+ * @return 非空
+ */
+DATableComputedColumnStore* DATableMetadata::computedColumns() const
+{
+    return mComputedColumns;
+}
+
+/**
  * @brief 聚合序列化
  *
  * 样式段（column-style/row-style/cell/col-format）与 <view-state> 段均作为 tableEle 的子节点。
@@ -66,6 +79,9 @@ void DATableMetadata::toXml(QDomDocument& doc, QDomElement& tableEle) const
     }
     if (mConditionalFormat) {
         mConditionalFormat->toXml(doc, tableEle);
+    }
+    if (mComputedColumns) {
+        mComputedColumns->toXml(doc, tableEle);
     }
 }
 
@@ -95,7 +111,100 @@ bool DATableMetadata::fromXml(const QDomElement& tableEle)
             mConditionalFormat->fromXml(cf);
         }
     }
+    if (mComputedColumns) {
+        QDomElement cc = tableEle.firstChildElement(QStringLiteral("computed-column"));
+        if (!cc.isNull()) {
+            // 打开工程不重算（R7）：只恢复定义与状态，不触发求值
+            mComputedColumns->fromXml(cc);
+        }
+    }
     return true;
+}
+
+/**
+ * @brief 清空全部子存储（004 T1.27 就地形状变换用）
+ *
+ * 转置/melt 就地替换后行位置键（样式）与列名引用（列宽/计算列）全部失去意义，
+ * 整束清除；调用方负责先做快照（snapshotToString）以便撤销还原。
+ */
+void DATableMetadata::clearAll()
+{
+    if (mStyleManager) {
+        mStyleManager->clearAll();
+    }
+    if (mViewState) {
+        mViewState->clear();
+    }
+    if (mConditionalFormat) {
+        mConditionalFormat->clearAll();
+    }
+    if (mComputedColumns) {
+        mComputedColumns->clear();
+    }
+}
+
+/**
+ * @brief 整束快照为 XML 文本（就地形状变换与元数据清理同一撤销单元用，004 T1.27）
+ * @return <table> 元素的 XML 字符串；空束返回空串
+ */
+QString DATableMetadata::snapshotToString() const
+{
+    QDomDocument doc;
+    QDomElement tableEle = doc.createElement(QStringLiteral("table"));
+    doc.appendChild(tableEle);
+    toXml(doc, tableEle);
+    return doc.toString();
+}
+
+/**
+ * @brief 从快照 XML 文本整束恢复
+ *
+ * 各子存储 fromXml 先自清空再读入，因此缺失的段等价清空——快照为空串时整束清空。
+ * @param snapshot snapshotToString 的输出
+ * @return 解析成功返回 true
+ */
+bool DATableMetadata::restoreFromString(const QString& snapshot)
+{
+    if (snapshot.isEmpty()) {
+        clearAll();
+        return true;
+    }
+    QDomDocument doc;
+    if (!doc.setContent(snapshot)) {
+        return false;
+    }
+    QDomElement tableEle = doc.documentElement();
+    if (tableEle.isNull()) {
+        return false;
+    }
+    // 先整束清空再读入：快照里没有的段（如无条件格式）也要清掉
+    clearAll();
+    return fromXml(tableEle);
+}
+
+/**
+ * @brief 各类别条目数统计（就地替换确认框列出将被清除的类别与条目数，004 T1.27）
+ * @return (类别显示名, 条目数) 列表，只含非空类别，顺序：样式/列宽/条件格式/计算列
+ */
+QList< QPair< QString, int > > DATableMetadata::entryCountsByCategory() const
+{
+    QList< QPair< QString, int > > res;
+    if (mStyleManager && !mStyleManager->isEmpty()) {
+        const int n = mStyleManager->styledCells().size() + mStyleManager->styledRows().size()
+                      + mStyleManager->styledColumns().size() + mStyleManager->styledFormatColumns().size();
+        res.append(qMakePair(tr("Cell styles"), n));  // cn:样式
+    }
+    if (mViewState && !mViewState->isEmpty()) {
+        const int n = mViewState->columnWidthEntries().size();
+        res.append(qMakePair(tr("Column widths"), n));  // cn:列宽
+    }
+    if (mConditionalFormat && !mConditionalFormat->isEmpty()) {
+        res.append(qMakePair(tr("Conditional format rules"), mConditionalFormat->ruleCount()));  // cn:条件格式规则
+    }
+    if (mComputedColumns && !mComputedColumns->isEmpty()) {
+        res.append(qMakePair(tr("Computed columns"), mComputedColumns->count()));  // cn:计算列
+    }
+    return res;
 }
 
 /**
@@ -107,7 +216,8 @@ bool DATableMetadata::isEmpty() const
     const bool styleEmpty = !mStyleManager || mStyleManager->isEmpty();
     const bool viewEmpty  = !mViewState || mViewState->isEmpty();
     const bool cfEmpty    = !mConditionalFormat || mConditionalFormat->isEmpty();
-    return styleEmpty && viewEmpty && cfEmpty;
+    const bool ccEmpty    = !mComputedColumns || mComputedColumns->isEmpty();
+    return styleEmpty && viewEmpty && cfEmpty && ccEmpty;
 }
 
 }  // end of namespace DA

@@ -145,6 +145,13 @@ QMenu* DADataTableView::buildContextMenu(const QModelIndex& at)
                                                     tr("Conditional Format..."));  // cn:条件格式...
     actConditionalFormat->setEnabled(hasSel);
     connect(actConditionalFormat, &QAction::triggered, this, &DADataTableView::conditionalFormatRequested);
+    // —— 004：数据工具（计算列；分列/合并/分组/重塑随各自 WP 追加在本组）——
+    // 计算列写数据，只读/惰性源置灰（isTableEditable 为假）
+    menu->addSeparator();
+    QAction* actComputedColumn = menu->addAction(QIcon(QStringLiteral(":/DAGui/icon/computed-column.svg")),
+                                                 tr("Computed Column..."));  // cn:计算列...
+    actComputedColumn->setEnabled(editable);
+    connect(actComputedColumn, &QAction::triggered, this, &DADataTableView::computedColumnRequested);
     // —— 后续计划的分组插入点在菜单底部（见函数注释），插入时组间加分隔符 ——
     return menu;
 }

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px"
+	 width="200px" height="200px" viewBox="0 0 200 200" xml:space="preserve">
+	<!-- 计算列：3x3 表格网格，右列浅蓝底（非原始数据）+ 主蓝 Σ 求值符号（公式列语义）。
+	     官方色板：网格 #727272（中灰）、底色 #FFFFFF、计算列填充 #BDCDE8（浅蓝）、
+	     Σ 符号 #5280C1（主蓝）；禁渐变/阴影/<text>（icon-ui-design-guide §4.2/§10） -->
+	<rect x="20" y="20" width="160" height="160" fill="#FFFFFF"/>
+	<rect x="127" y="20" width="53" height="160" fill="#BDCDE8"/>
+	<g fill="none" stroke="#727272" stroke-width="8" stroke-linecap="butt">
+		<rect x="20" y="20" width="160" height="160"/>
+		<line x1="73" y1="20" x2="73" y2="180"/>
+		<line x1="127" y1="20" x2="127" y2="180"/>
+		<line x1="20" y1="73" x2="180" y2="73"/>
+		<line x1="20" y1="127" x2="180" y2="127"/>
+	</g>
+	<path d="M 170 78 H 142 L 156 100 L 142 122 H 170"
+	      fill="none" stroke="#5280C1" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

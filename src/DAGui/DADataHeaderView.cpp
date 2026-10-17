@@ -1,5 +1,6 @@
 ﻿#include "DADataHeaderView.h"
 #include "Models/DADataTableModel.h"
+#include "DATableComputedColumnStore.h"
 #include "DAData.h"
 #include <QMenu>
 #include <QAction>
@@ -91,13 +92,67 @@ QVector< QPair< int, Qt::SortOrder > > DADataHeaderView::sortSpec() const
 }
 
 /**
- * @brief 排序角标绘制（仅水平实例）
+ * @brief 设置计算列子存储（004 T1.23）
  *
- * 在默认绘制之上叠加两类角标（色值取官方色板，见 icon-ui-design-guide.md）：
+ * 非拥有；浅蓝底色与公式 tooltip 由模型的 BackgroundRole/ToolTipRole 提供，
+ * 本类只负责 ƒx 角标绘制与列头菜单的计算列组。设置后重绘视口。
+ * @param store 计算列子存储（可空 = 关闭计算列标识）
+ */
+void DADataHeaderView::setComputedColumnStore(DATableComputedColumnStore* store)
+{
+    if (mComputedStore == store) {
+        return;
+    }
+    mComputedStore = store;
+    viewport()->update();
+}
+
+/**
+ * @brief 计算列 ƒx 角标的状态色（R9 官方色板）
+ *
+ * 有效 = 主蓝 #5280C1、待重算 = 金黄 #E6C27C、失效 = 橙红 #CE6043。
+ * @param logicalIndex 列逻辑索引
+ * @return 非计算列返回无效 QColor
+ */
+QColor DADataHeaderView::computedColumnBadgeColor(int logicalIndex) const
+{
+    if (!mComputedStore || orientation() != Qt::Horizontal || logicalIndex < 0) {
+        return QColor();
+    }
+    QAbstractItemModel* m = model();
+    if (!m) {
+        return QColor();
+    }
+    const QString colName = m->headerData(logicalIndex, Qt::Horizontal, Qt::DisplayRole).toString();
+    if (colName.isEmpty()) {
+        return QColor();
+    }
+    DATableComputedColumnStore::Entry entry;
+    if (!mComputedStore->entryOf(colName, entry)) {
+        return QColor();
+    }
+    switch (entry.state) {
+    case DATableComputedColumnStore::State::Valid:
+        return QColor(0x52, 0x80, 0xC1);  // 主蓝
+    case DATableComputedColumnStore::State::Stale:
+        return QColor(0xE6, 0xC2, 0x7C);  // 金黄
+    case DATableComputedColumnStore::State::Invalid:
+        return QColor(0xCE, 0x60, 0x43);  // 橙红
+    }
+    return QColor();
+}
+
+/**
+ * @brief 排序角标与计算列 ƒx 角标绘制（仅水平实例）
+ *
+ * 在默认绘制之上叠加角标（色值取官方色板，见 icon-ui-design-guide.md）：
  * - 方向箭头：段右端垂直居中，升序向上/降序向下，深蓝灰 #5D6D7E；
  * - 多列序号角标：仅规格多于 1 列时绘制，段左上角，主蓝 #5280C1 圆底 + 白色数字，
- *   显示该列在规格中的优先级（1 起）。
- * 左侧前导（垂直居中靠左）留给 004 计算列 ƒx 角标，本函数不占用。
+ *   显示该列在规格中的优先级（1 起）；
+ * - 计算列 ƒx 角标（004 T1.23 R9）：左侧前导垂直居中，状态色（有效=主蓝 #5280C1 /
+ *   待重算=金黄 #E6C27C / 失效=橙红 #CE6043）；浅蓝 #BDCDE8 底色经模型 BackgroundRole
+ *   由基类绘制。该列同时带多列排序序号角标（左上）时 ƒx 移到左下，三者共存不重叠
+ *   （排序箭头恒在右端）。单元格区域不染色（R9）。
  * @param painter 绘制器
  * @param rect 段矩形
  * @param logicalIndex 列逻辑索引
@@ -105,7 +160,7 @@ QVector< QPair< int, Qt::SortOrder > > DADataHeaderView::sortSpec() const
 void DADataHeaderView::paintSection(QPainter* painter, const QRect& rect, int logicalIndex) const
 {
     QHeaderView::paintSection(painter, rect, logicalIndex);
-    if (orientation() != Qt::Horizontal || mSortSpec.isEmpty() || !painter || rect.isEmpty()) {
+    if (orientation() != Qt::Horizontal || !painter || rect.isEmpty()) {
         return;
     }
     int order            = -1;
@@ -116,6 +171,24 @@ void DADataHeaderView::paintSection(QPainter* painter, const QRect& rect, int lo
             dir   = mSortSpec.at(i).second;
             break;
         }
+    }
+    // 计算列 ƒx 角标（左侧前导；有左上序号角标时移到左下避让）
+    const QColor badgeColor = computedColumnBadgeColor(logicalIndex);
+    if (badgeColor.isValid()) {
+        painter->save();
+        painter->setRenderHint(QPainter::Antialiasing, true);
+        QFont f = painter->font();
+        f.setBold(true);
+        f.setItalic(true);
+        f.setPixelSize(qBound(9, rect.height() * 2 / 3, 14));
+        painter->setFont(f);
+        painter->setPen(badgeColor);
+        const bool hasOrderBadge = (order >= 0 && mSortSpec.size() > 1);
+        const QRect badgeRect    = hasOrderBadge
+                                       ? QRect(rect.left() + 3, rect.center().y() + 1, rect.width() / 2, rect.height() / 2)
+                                       : QRect(rect.left() + 3, rect.top(), rect.width() / 2, rect.height());
+        painter->drawText(badgeRect, Qt::AlignLeft | Qt::AlignVCenter, QStringLiteral("\u0192x"));  // ƒx
+        painter->restore();
     }
     if (order < 0) {
         return;
@@ -231,6 +304,28 @@ QMenu* DADataHeaderView::buildColumnContextMenu(int logicalIndex)
     connect(actDescribe, &QAction::triggered, this, [ this, logicalIndex ]() {
         Q_EMIT columnActionRequested(logicalIndex, ColumnAction::ShowColumnDescribe);
     });
+    // 组5（004 T1.23）：计算列——仅当该列是计算列时追加「编辑公式 / 重新计算 / 移除公式（保留数据）」
+    if (mComputedStore && orientation() == Qt::Horizontal && model()) {
+        const QString colName = model()->headerData(logicalIndex, Qt::Horizontal, Qt::DisplayRole).toString();
+        if (!colName.isEmpty() && mComputedStore->hasDefinition(colName)) {
+            menu->addSeparator();
+            QAction* actEdit = menu->addAction(QIcon(QStringLiteral(":/DAGui/icon/rename-column.svg")),
+                                               tr("Edit Formula"));  // cn:编辑公式
+            QAction* actRecompute = menu->addAction(QIcon(QStringLiteral(":/DAGui/icon/computed-column.svg")),
+                                                    tr("Recompute"));  // cn:重新计算
+            QAction* actRemoveFormula = menu->addAction(QIcon(QStringLiteral(":/DAGui/icon/delete-column.svg")),
+                                                        tr("Remove Formula (Keep Data)"));  // cn:移除公式（保留数据）
+            connect(actEdit, &QAction::triggered, this, [ this, logicalIndex ]() {
+                Q_EMIT columnActionRequested(logicalIndex, ColumnAction::EditComputedFormula);
+            });
+            connect(actRecompute, &QAction::triggered, this, [ this, logicalIndex ]() {
+                Q_EMIT columnActionRequested(logicalIndex, ColumnAction::RecomputeComputedColumn);
+            });
+            connect(actRemoveFormula, &QAction::triggered, this, [ this, logicalIndex ]() {
+                Q_EMIT columnActionRequested(logicalIndex, ColumnAction::RemoveComputedFormula);
+            });
+        }
+    }
     return menu;
 }
 

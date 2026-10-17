@@ -35,6 +35,7 @@
 #include "DATableViewStateStore.h"
 #include "DATableHighlightOverlay.h"
 #include "DATableConditionalFormatStore.h"
+#include "DATableComputedColumnStore.h"
 #include "DADataHeaderView.h"
 // Dialog
 #include "Dialog/DARenameColumnsNameDialog.h"
@@ -44,6 +45,7 @@
 #include "Dialog/DADialogDataframeColumnDescribe.h"
 #include "Dialog/DADialogFindReplace.h"
 #include "Dialog/DADialogConditionalFormat.h"
+#include "Dialog/DADialogComputedColumn.h"
 // python operator wrapper（查找/替换）
 #include "DAPyScripts.h"
 #include "DAPyScriptsDataFrame.h"
@@ -100,9 +102,11 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
     // 元数据束借自会话级 DATableMetadataRegistry（随数据存在，widget 关闭后保留，重开可见）。
     // 行列增删的样式键偏移同步在 §7 的回调中接入（onRowsInserted 等系列）。
     DATableMetadata* metadata = registry ? registry->getOrCreate(d) : nullptr;
+    mMetadata                 = metadata;
     mStyleManager             = metadata ? metadata->styleManager() : nullptr;
     mViewStateStore           = metadata ? metadata->viewState() : nullptr;
     mConditionalFormatStore   = metadata ? metadata->conditionalFormat() : nullptr;
+    mComputedColumnStore      = metadata ? metadata->computedColumns() : nullptr;
     // 瞬态高亮层：页级持有（查找/校验两个来源共用），不序列化、不进撤销栈；
     // 注入 delegate 绘制管线③（瞬态装饰）
     mHighlightOverlay = new DATableHighlightOverlay(this);
@@ -116,6 +120,19 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
     });
     // 模型读取列显示格式（actualData 的 DisplayRole 分支）
     mModel->setStyleManager(mStyleManager);
+    // 计算列子存储注入模型（表头浅蓝底色 BackgroundRole + 公式 tooltip ToolTipRole，004 T1.23）
+    mModel->setComputedColumnStore(mComputedColumnStore);
+    // 计算列子存储注入水平表头（ƒx 角标三态绘制 + 列头右键菜单计算列组）
+    if (DADataHeaderView* hh = qobject_cast< DADataHeaderView* >(ui->tableView->horizontalHeader())) {
+        hh->setComputedColumnStore(mComputedColumnStore);
+    }
+    if (mComputedColumnStore) {
+        // 定义/状态变更 → 表头重绘（底色经模型 headerDataChanged，角标经视口 update）
+        connect(mComputedColumnStore, &DATableComputedColumnStore::definitionsChanged, this, &DADataOperateOfDataFrameWidget::refreshComputedColumnHeaders);
+        connect(mComputedColumnStore, &DATableComputedColumnStore::stateChanged, this, [ this ](const QString&, DATableComputedColumnStore::State) {
+            refreshComputedColumnHeaders();
+        });
+    }
     // 样式变更时触发 view 刷新（actualRow 转回 logical row 通知 model）
     connect(mStyleManager, &DATableStyleManager::styleChanged, this, [ this ](int actualRow, int actualCol) {
         if (!mModel) {
@@ -191,6 +208,12 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
             }
         });
     }
+    // 计算列待重算标记（004 T1.23 R8 手动重算）：单元格编辑走 cellValueChanged 精确信号，
+    // 只把依赖该列（或目标列自身被改）的计算列标 Stale；排序不发本信号（R13 不触发）
+    connect(mModel, &DADataTableModel::cellValueChanged, this, [ this ](int actualRow, int actualColumn) {
+        Q_UNUSED(actualRow);
+        markComputedColumnsStaleForColumns({ actualColumn });
+    });
     // 视图状态（列宽按列名 + 行头宽，R6）：
     // 结构变化（模型重置/插删列）后按列名重新应用，保证列宽不随位置错位；
     // 采集只认用户拖拽（sectionResized + 左键按住在表头上），程序化改动不写 store
@@ -245,6 +268,10 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
     connect(ui->tableView, &DADataTableView::findBarCloseRequested, this, &DADataOperateOfDataFrameWidget::closeFindReplace);
     // 条件格式入口（003 T1.5）：表体右键菜单与 Ribbon Table Style 面板共用同一打开逻辑
     connect(ui->tableView, &DADataTableView::conditionalFormatRequested, this, &DADataOperateOfDataFrameWidget::showConditionalFormatDialog);
+    // 计算列入口（004 T1.23）：表体右键菜单与 Ribbon「Data Tools」面板共用同一打开逻辑
+    connect(ui->tableView, &DADataTableView::computedColumnRequested, this, [ this ]() {
+        showComputedColumnDialog(-1);
+    });
     // 选中变化时反向同步 ribbon 控件
     if (auto sm = ui->tableView->selectionModel()) {
         connect(sm, &QItemSelectionModel::selectionChanged, this, [ this ]() {
@@ -343,12 +370,17 @@ void DADataOperateOfDataFrameWidget::insertRowAt(int row)
     QPointer< DADataTableModel > modle = mModel;
     // 统计失效挂点（003 WP2 步骤 5）：插行保守失效全部列统计（exec/undo 都触发）
     DATableConditionalFormatStore* cfStore = mConditionalFormatStore;
-    cmd->setCallBack([ modle, row, cfStore ]() {
+    // 计算列挂点（004 T1.23）：插行是拿不到列信息的整表操作 → 保守全标 Stale
+    QPointer< DADataOperateOfDataFrameWidget > self(this);
+    cmd->setCallBack([ modle, row, cfStore, self ]() {
         if (modle) {
             modle->notifyRowsInserted({ row });
         }
         if (cfStore) {
             cfStore->invalidateAllStats();
+        }
+        if (self) {
+            self->markAllComputedColumnsStale();
         }
     });
     // 行列增删样式键同步：插入行时 >=row 的键 +1；撤销时按删除处理（>=row 的键 -1）
@@ -475,12 +507,17 @@ int DADataOperateOfDataFrameWidget::removeSelectRow()
     QPointer< DADataTableModel > modle = mModel;
     // 统计失效挂点（003）：删行可能改变列 min/max，保守失效全部列统计
     DATableConditionalFormatStore* cfStore = mConditionalFormatStore;
-    cmd->setCallBack([ modle, rows, cfStore ]() {
+    // 计算列挂点（004 T1.23）：删行是整表操作 → 保守全标 Stale
+    QPointer< DADataOperateOfDataFrameWidget > self(this);
+    cmd->setCallBack([ modle, rows, cfStore, self ]() {
         if (modle) {
             modle->notifyRowsInserted(rows);
         }
         if (cfStore) {
             cfStore->invalidateAllStats();
+        }
+        if (self) {
+            self->markAllComputedColumnsStale();
         }
     });
     // 行列增删样式键同步：删除行时 ==row 的键删除，>row 的键 -1；撤销时按插入处理
@@ -530,7 +567,23 @@ int DADataOperateOfDataFrameWidget::removeSelectColumn()
     // 条件格式规则同为装饰类位置键（R20），随列删除同款重映射（被删列的规则一并丢弃，003）
     DATableStyleManager* styleMgr = mStyleManager;
     DATableConditionalFormatStore* cfStore = mConditionalFormatStore;
-    cmd->setDirectionalCallBack([ styleMgr, cfStore, columns ](bool isUndo) {
+    // 计算列联动（004 T1.23 R20）：被删列名在 exec 前解析；定义集合先快照——
+    // undo 整店恢复（含被移除的定义与原状态），redo 重放删列联动
+    //（目标列被删 → 定义移除；依赖列被删 → 置 Invalid，不静默清空列数据）
+    DATableComputedColumnStore* ccStore = mComputedColumnStore;
+    QStringList removedNames;
+    QList< DATableComputedColumnStore::Entry > ccSnapshot;
+    if (ccStore) {
+        const QList< QString > colNames = df.columns();
+        for (int c : std::as_const(columns)) {
+            if (c >= 0 && c < colNames.size()) {
+                removedNames.append(colNames.at(c));
+            }
+        }
+        ccSnapshot = ccStore->snapshot();
+    }
+    auto invalidatedTargets = std::make_shared< QStringList >();
+    cmd->setDirectionalCallBack([ styleMgr, cfStore, ccStore, columns, removedNames, ccSnapshot, invalidatedTargets ](bool isUndo) {
         if (styleMgr) {
             if (isUndo) {
                 styleMgr->onColumnsInserted(columns);
@@ -545,11 +598,24 @@ int DADataOperateOfDataFrameWidget::removeSelectColumn()
                 cfStore->onColumnsRemoved(columns);
             }
         }
+        if (ccStore) {
+            if (isUndo) {
+                ccStore->restore(ccSnapshot);
+            } else {
+                invalidatedTargets->clear();
+                ccStore->onColumnsRemoved(removedNames, nullptr, invalidatedTargets.get());
+            }
+        }
     });
     if (!cmd->exec()) {
         return 0;
     }
     push(cmd.release());
+    // 删列后提示失效的计算列（exec 内的 directional 回调已填充；不静默，R9）
+    if (!invalidatedTargets->isEmpty()) {
+        daWarning << tr("Computed column(s) %1 became invalid because their dependency column(s) were removed")
+                         .arg(invalidatedTargets->join(QStringLiteral(", ")));  // cn:计算列 %1 因依赖列被删除已失效
+    }
     return columns.size();
 }
 
@@ -579,7 +645,9 @@ int DADataOperateOfDataFrameWidget::removeSelectCell()
     QPointer< DADataTableModel > modle = mModel;
     // 统计失效挂点（003）：置 nan 改变列值集合，失效受影响列的统计
     DATableConditionalFormatStore* cfStore = mConditionalFormatStore;
-    cmd->setCallBack([ modle, rows, cols, cfStore ]() {
+    // 计算列挂点（004 T1.23）：按变更列比对依赖集合标 Stale
+    QPointer< DADataOperateOfDataFrameWidget > self(this);
+    cmd->setCallBack([ modle, rows, cols, cfStore, self ]() {
         if (modle) {
             const auto size = qMin(rows.size(), cols.size());
             for (int i = 0; i < size; ++i) {
@@ -591,6 +659,9 @@ int DADataOperateOfDataFrameWidget::removeSelectCell()
             for (int c : uniqueCols) {
                 cfStore->invalidateColumnStats(c);
             }
+        }
+        if (self) {
+            self->markComputedColumnsStaleForColumns(cols);
         }
     });
     if (!cmd->exec()) {
@@ -697,7 +768,9 @@ int DADataOperateOfDataFrameWidget::pasteFromClipboard()
     QPointer< DADataTableModel > modle = mModel;
     // 统计失效挂点（003）：粘贴改变列值集合，失效受影响列的统计
     DATableConditionalFormatStore* cfStore = mConditionalFormatStore;
-    cmd->setCallBack([ modle, rows, cols, cfStore ]() {
+    // 计算列挂点（004 T1.23）：按变更列比对依赖集合标 Stale
+    QPointer< DADataOperateOfDataFrameWidget > self(this);
+    cmd->setCallBack([ modle, rows, cols, cfStore, self ]() {
         if (modle) {
             const auto size = qMin(rows.size(), cols.size());
             for (int i = 0; i < size; ++i) {
@@ -709,6 +782,9 @@ int DADataOperateOfDataFrameWidget::pasteFromClipboard()
             for (int c : uniqueCols) {
                 cfStore->invalidateColumnStats(c);
             }
+        }
+        if (self) {
+            self->markComputedColumnsStaleForColumns(cols);
         }
     });
     if (!cmd->exec()) {
@@ -763,18 +839,29 @@ void DADataOperateOfDataFrameWidget::renameColumns()
     }
     QList< QString > cols = dlg.getColumnsName();
     // 唯一判断在DARenameColumnsNameDialog里进行
+    // 改名对（old→new，仅变化的）
+    QList< QPair< QString, QString > > renames;
+    const int n = qMin(cols.size(), oldcols.size());
+    for (int i = 0; i < n; ++i) {
+        if (cols[ i ] != oldcols[ i ]) {
+            renames.append(qMakePair(oldcols[ i ], cols[ i ]));
+        }
+    }
+    // 计算列引用联动（004 T1.23 R20）：先提示影响面，确认后随改名命令同一撤销单元批量迁移
+    if (!confirmComputedColumnRename(renames)) {
+        return;
+    }
     // 表头刷新走模型通知入口（命令不再持有 QHeaderView*）
     DACommandDataFrame_renameColumns* cmd = new DACommandDataFrame_renameColumns(df, cols, oldcols, mModel);
+    wireComputedColumnRenameMigration(cmd, renames);
     if (!cmd->exec()) {
+        delete cmd;
         return;
     }
     // 列改名迁移：视图状态按列名引用（R20），宽度记录随改名同步迁移
     if (mViewStateStore) {
-        const int n = qMin(cols.size(), oldcols.size());
-        for (int i = 0; i < n; ++i) {
-            if (cols[ i ] != oldcols[ i ]) {
-                mViewStateStore->renameColumn(oldcols[ i ], cols[ i ]);
-            }
+        for (const auto& p : std::as_const(renames)) {
+            mViewStateStore->renameColumn(p.first, p.second);
         }
     }
     //! 通知datamanager
@@ -814,8 +901,14 @@ bool DADataOperateOfDataFrameWidget::renameColumn(int col, const QString& newNam
     }
     QList< QString > newcols = oldcols;
     newcols[ col ]           = newName;
+    // 计算列引用联动（004 T1.23 R20）：先提示影响面，确认后随改名命令同一撤销单元批量迁移
+    const QList< QPair< QString, QString > > renames { qMakePair(oldcols[ col ], newName) };
+    if (!confirmComputedColumnRename(renames)) {
+        return false;
+    }
     std::unique_ptr< DACommandDataFrame_renameColumns > cmd(
         new DACommandDataFrame_renameColumns(df, newcols, oldcols, mModel));
+    wireComputedColumnRenameMigration(cmd.get(), renames);
     if (!cmd->exec()) {
         return false;
     }
@@ -856,11 +949,16 @@ bool DADataOperateOfDataFrameWidget::changeSelectColumnType(const DAPyDType& dt)
     }
     std::unique_ptr< DACommandDataFrame_astype > cmd(new DACommandDataFrame_astype(df, selColumns, dt));
     QPointer< DADataTableModel > modle = mModel;
-    cmd->setCallBack([ modle, selColumns ]() {
+    // 计算列挂点（004 T1.23）：类型转换改变列值 → 依赖该列的计算列标 Stale
+    QPointer< DADataOperateOfDataFrameWidget > self(this);
+    cmd->setCallBack([ modle, selColumns, self ]() {
         if (modle) {
             for (int c : std::as_const(selColumns)) {
                 modle->notifyColumnChanged(c);
             }
+        }
+        if (self) {
+            self->markComputedColumnsStaleForColumns(selColumns);
         }
     });
     if (!cmd->exec()) {
@@ -898,11 +996,16 @@ void DADataOperateOfDataFrameWidget::castSelectToNum()
     pybind11::dict args = mDialogCastNumArgs->getArgs();
     std::unique_ptr< DACommandDataFrame_castNum > cmd(new DACommandDataFrame_castNum(df, colsIndex, args));
     QPointer< DADataTableModel > modle = mModel;
-    cmd->setCallBack([ modle, colsIndex ]() {
+    // 计算列挂点（004 T1.23）：数值转换改变列值 → 依赖该列的计算列标 Stale
+    QPointer< DADataOperateOfDataFrameWidget > self(this);
+    cmd->setCallBack([ modle, colsIndex, self ]() {
         if (modle) {
             for (int c : std::as_const(colsIndex)) {
                 modle->notifyColumnChanged(c);
             }
+        }
+        if (self) {
+            self->markComputedColumnsStaleForColumns(colsIndex);
         }
     });
     if (!cmd->exec()) {
@@ -939,11 +1042,16 @@ void DADataOperateOfDataFrameWidget::castSelectToDatetime()
     pybind11::dict args = mDialogCastDatetimeArgs->getArgs();
     std::unique_ptr< DACommandDataFrame_castDatetime > cmd(new DACommandDataFrame_castDatetime(df, colsIndex, args));
     QPointer< DADataTableModel > modle = mModel;
-    cmd->setCallBack([ modle, colsIndex ]() {
+    // 计算列挂点（004 T1.23）：日期转换改变列值 → 依赖该列的计算列标 Stale
+    QPointer< DADataOperateOfDataFrameWidget > self(this);
+    cmd->setCallBack([ modle, colsIndex, self ]() {
         if (modle) {
             for (int c : std::as_const(colsIndex)) {
                 modle->notifyColumnChanged(c);
             }
+        }
+        if (self) {
+            self->markComputedColumnsStaleForColumns(colsIndex);
         }
     });
     if (!cmd->exec()) {
@@ -973,9 +1081,14 @@ bool DADataOperateOfDataFrameWidget::changeSelectColumnToIndex()
     }
     std::unique_ptr< DACommandDataFrame_setIndex > cmd = std::make_unique< DACommandDataFrame_setIndex >(df, colsIndex);
     DADataTableModel* modle                            = mModel;
-    cmd->setCallBack([ modle ]() {
+    // 计算列挂点（004 T1.23）：列转索引是结构性整表操作 → 保守全标 Stale
+    QPointer< DADataOperateOfDataFrameWidget > self(this);
+    cmd->setCallBack([ modle, self ]() {
         if (modle) {
             modle->refreshData();
+        }
+        if (self) {
+            self->markAllComputedColumnsStale();
         }
     });
     if (!cmd->exec()) {
@@ -2739,6 +2852,11 @@ void DADataOperateOfDataFrameWidget::notifyReplaceChanged(const QVector< int >& 
         }
         mModel->notifyDataChanged(r0, c0, r1, c1);
     }
+    // 计算列挂点（004 T1.23）：替换改变列值 → 依赖变更列的计算列标 Stale
+    //（rows 为空 = 无变更，不标）
+    if (!rows.isEmpty()) {
+        markComputedColumnsStaleForColumns(QList< int >(cols.begin(), cols.end()));
+    }
     runFindScan();  // 替换后重新扫描刷新命中（§WP2 步骤 6）
 }
 
@@ -2752,4 +2870,393 @@ void DADataOperateOfDataFrameWidget::changeEvent(QEvent* e)
     default:
         break;
     }
+}
+
+//===================================================
+// 计算列（004 T1.23）
+//===================================================
+
+/**
+ * @brief 计算列子存储（借自元数据束，可能为 nullptr）
+ */
+DATableComputedColumnStore* DADataOperateOfDataFrameWidget::computedColumnStore() const
+{
+    return mComputedColumnStore;
+}
+
+/**
+ * @brief 列位置索引 → 列名（越界返回空串）
+ */
+QString DADataOperateOfDataFrameWidget::columnNameAt(int actualCol) const
+{
+    DAPyDataFrame df = getDataframe();
+    if (df.isNone() || actualCol < 0) {
+        return QString();
+    }
+    const QList< QString > cols = df.columns();
+    return (actualCol < cols.size()) ? cols.at(actualCol) : QString();
+}
+
+/**
+ * @brief 数据变更后把依赖这些列（或目标列自身被改）的计算列标待重算（R8 手动重算）
+ *
+ * 只标状态不求值；排序路径不调用本函数（R13 行顺序变化不影响列值）。
+ * @param actualCols 变更列位置（空列表 = 无操作）
+ */
+void DADataOperateOfDataFrameWidget::markComputedColumnsStaleForColumns(const QList< int >& actualCols)
+{
+    if (!mComputedColumnStore || mComputedColumnStore->isEmpty() || actualCols.isEmpty()) {
+        return;
+    }
+    DAPyDataFrame df = getDataframe();
+    if (df.isNone()) {
+        return;
+    }
+    const QList< QString > cols = df.columns();
+    QStringList names;
+    names.reserve(actualCols.size());
+    for (int c : actualCols) {
+        if (c >= 0 && c < cols.size()) {
+            names.append(cols.at(c));
+        }
+    }
+    mComputedColumnStore->markStaleForChangedColumns(names);
+}
+
+/**
+ * @brief 整表操作保守把全部计算列标待重算（拿不到变更列信息时用，R8）
+ */
+void DADataOperateOfDataFrameWidget::markAllComputedColumnsStale()
+{
+    if (!mComputedColumnStore || mComputedColumnStore->isEmpty()) {
+        return;
+    }
+    mComputedColumnStore->markAllStale();
+}
+
+/**
+ * @brief store 变更后刷新表头（底色经模型 headerDataChanged，ƒx 角标经视口 update）
+ */
+void DADataOperateOfDataFrameWidget::refreshComputedColumnHeaders()
+{
+    if (mModel) {
+        mModel->notifyHeaderDataChanged(Qt::Horizontal, 0, qMax(0, mModel->columnCount() - 1));
+    }
+    if (DADataHeaderView* hh = qobject_cast< DADataHeaderView* >(ui->tableView->horizontalHeader())) {
+        hh->viewport()->update();
+    }
+}
+
+/**
+ * @brief 求值定义并入栈重算命令（创建/编辑/重算共用管线，D4：重算必须入栈）
+ *
+ * 流程：构建 DACommandDataFrame_evalColumn → 接线回调 → cmd->exec()（首次求值 +
+ * 捕获旧列快照；失败 → 标失效 + 提示，不写数据 R10）→ push（首次 redo 跳过）。
+ * 定义/状态联动经 directional 回调（与数据同一撤销单元）：
+ * - 创建：undo 移除定义，redo 恢复定义（Valid）；
+ * - 重算/编辑：undo 恢复原定义与原状态，redo 写入新定义并置 Valid。
+ * @param def 定义（targetColumnName/expr/dependsOn 已就绪）
+ * @param isNewColumn true=创建路径（目标列求值前不存在）
+ * @return 成功入栈返回 true
+ */
+bool DADataOperateOfDataFrameWidget::applyComputedColumnEval(const DAComputedColumn& def, bool isNewColumn)
+{
+    DAPyDataFrame df = getDataframe();
+    if (df.isNone() || !mComputedColumnStore) {
+        return false;
+    }
+    auto cmd = std::make_unique< DACommandDataFrame_evalColumn >(df, def.targetColumnName, def.expr);
+    QPointer< DADataTableModel > modle     = mModel;
+    DATableComputedColumnStore* ccStore    = mComputedColumnStore;
+    DATableConditionalFormatStore* cfStore = mConditionalFormatStore;
+    QPointer< DADataOperateOfDataFrameWidget > self(this);
+    const QString target = def.targetColumnName;
+    // 编辑/重算场景：捕获原条目（定义+状态），undo 整体还原
+    DATableComputedColumnStore::Entry prevEntry;
+    const bool hasPrev = ccStore->entryOf(target, prevEntry);
+    cmd->setCallBack([ modle, cfStore, self, target, isNewColumn ]() {
+        if (modle) {
+            if (isNewColumn) {
+                // 创建/撤销创建都改变列结构 → 结构刷新（cacheShape + refreshWindow）
+                modle->notifyColumnsInserted({ 0 });
+            } else {
+                // 重算/撤销重算只改列值
+                const DAPyDataFrame mdf = modle->getData().toDataFrame();
+                if (!mdf.isNone()) {
+                    const QList< QString > cols = mdf.columns();
+                    const int pos               = cols.indexOf(target);
+                    if (pos >= 0) {
+                        modle->notifyColumnChanged(pos);
+                    }
+                    if (cfStore) {
+                        cfStore->invalidateColumnStats(pos);
+                    }
+                }
+            }
+        }
+        if (self) {
+            Q_EMIT self->dataModified();
+        }
+    });
+    cmd->setDirectionalCallBack([ ccStore, def, isNewColumn, hasPrev, prevEntry ](bool isUndo) {
+        if (!ccStore) {
+            return;
+        }
+        if (isNewColumn) {
+            if (isUndo) {
+                ccStore->removeDefinition(def.targetColumnName);
+            } else {
+                ccStore->addDefinition(def, DATableComputedColumnStore::State::Valid);
+            }
+        } else {
+            if (isUndo) {
+                if (hasPrev) {
+                    ccStore->addDefinition(prevEntry.def, prevEntry.state);
+                }
+            } else {
+                ccStore->addDefinition(def, DATableComputedColumnStore::State::Valid);
+            }
+        }
+    });
+    {
+        DAWaitCursorScoped waitCursor;  // 求值可能长（大表整列计算），忙等待光标
+        if (!cmd->exec()) {
+            // 求值失败：标失效 + 提示，不静默清空列数据（R9/R10）
+            if (!isNewColumn) {
+                mComputedColumnStore->setState(def.targetColumnName, DATableComputedColumnStore::State::Invalid);
+            }
+            daWarning << tr("Failed to evaluate the formula of computed column \"%1\": %2")
+                             .arg(def.targetColumnName, cmd->lastErrorMessage());  // cn:计算列“%1”公式求值失败：%2
+            return false;
+        }
+    }
+    push(cmd.release());
+    return true;
+}
+
+/**
+ * @brief 打开计算列对话框（col<0 新建；col>=0 编辑该列既有公式）
+ *
+ * 只读/惰性源不可写数据，直接拦截。接受后求值入栈（创建 = 一个撤销单元，
+ * Ctrl+Z 删列 + 移除定义）。
+ * @param col 列位置索引（编辑模式）
+ */
+void DADataOperateOfDataFrameWidget::showComputedColumnDialog(int col)
+{
+    DAPyDataFrame df = getDataframe();
+    if (df.isNone() || !mComputedColumnStore) {
+        // 开发诊断：非 dataframe（只读惰性表）或无元数据注册表
+        qWarning() << "DADataOperateOfDataFrameWidget::showComputedColumnDialog: dataframe or metadata registry unavailable";
+        return;
+    }
+    if (!isTableEditable()) {
+        daWarning << tr("The table is read-only and does not support computed columns");  // cn:只读表格不支持计算列
+        return;
+    }
+    // 编辑模式：解析目标列既有定义（非计算列 → 走新建流程，不阻塞用户）
+    DAComputedColumn editDef;
+    if (col >= 0) {
+        const QString name = columnNameAt(col);
+        DATableComputedColumnStore::Entry entry;
+        if (!name.isEmpty() && mComputedColumnStore->entryOf(name, entry)) {
+            editDef = entry.def;
+        }
+    }
+    DADialogComputedColumn dlg(df, this);
+    if (editDef.isValid()) {
+        dlg.setEditMode(editDef);
+    }
+    if (QDialog::Accepted != dlg.exec()) {
+        return;
+    }
+    DAComputedColumn def(dlg.targetColumnName(), dlg.expressionBody());
+    def.dependsOn = dlg.dependencies();
+    if (def.isSelfReferencing()) {
+        // 对话框已拦截，双保险（存储层校验，计划 §3.3-4）
+        daWarning << tr("The formula must not reference the target column itself");  // cn:公式不得引用目标列自身
+        return;
+    }
+    const bool isNew = !mComputedColumnStore->hasDefinition(def.targetColumnName);
+    applyComputedColumnEval(def, isNew);
+}
+
+/**
+ * @brief 重算单个计算列（列头右键「重新计算」，R8 手动重算，入栈 D4）
+ * @param col 列位置索引
+ * @return 成功入栈返回 true
+ */
+bool DADataOperateOfDataFrameWidget::recomputeComputedColumn(int col)
+{
+    if (!mComputedColumnStore) {
+        return false;
+    }
+    const QString name = columnNameAt(col);
+    if (name.isEmpty()) {
+        return false;
+    }
+    const DAComputedColumn def = mComputedColumnStore->definition(name);
+    if (!def.isValid()) {
+        daWarning << tr("Column \"%1\" has no computed formula").arg(name);  // cn:列“%1”没有计算公式
+        return false;
+    }
+    return applyComputedColumnEval(def, false);
+}
+
+/**
+ * @brief 重算全部待重算/失效的计算列（Ribbon「全部重算」）
+ *
+ * 每列一个独立命令、合并进一个宏命令 = 一个撤销单元（Ctrl+Z 一次回退全部重算）。
+ * 求值顺序按定义插入顺序（创建顺序天然满足「先算被依赖列」；编辑造成的逆序依赖
+ * v1 不做拓扑排序，用户可再点一次全部重算收敛）。
+ * @return 成功重算的列数
+ */
+int DADataOperateOfDataFrameWidget::recomputeAllStaleComputedColumns()
+{
+    if (!mComputedColumnStore || mComputedColumnStore->isEmpty()) {
+        return 0;
+    }
+    DAPyDataFrame df = getDataframe();
+    if (df.isNone() || !isTableEditable()) {
+        return 0;
+    }
+    const QList< DATableComputedColumnStore::Entry > entries = mComputedColumnStore->entries();
+    QUndoCommand* macro = new QUndoCommand(tr("Recompute All Computed Columns"));  // cn:重算全部计算列
+    int done            = 0;
+    DAWaitCursorScoped waitCursor;  // 多列求值可能长，忙等待光标
+    for (const DATableComputedColumnStore::Entry& e : entries) {
+        if (!e.def.enabled || e.state == DATableComputedColumnStore::State::Valid) {
+            continue;  // 只重算 Stale / Invalid
+        }
+        auto* cmd = new DACommandDataFrame_evalColumn(df, e.def.targetColumnName, e.def.expr, macro);
+        QPointer< DADataTableModel > modle     = mModel;
+        DATableComputedColumnStore* ccStore    = mComputedColumnStore;
+        DATableConditionalFormatStore* cfStore = mConditionalFormatStore;
+        QPointer< DADataOperateOfDataFrameWidget > self(this);
+        const QString target                   = e.def.targetColumnName;
+        const DATableComputedColumnStore::Entry prevEntry = e;
+        cmd->setCallBack([ modle, cfStore, self, target ]() {
+            if (modle) {
+                const DAPyDataFrame mdf = modle->getData().toDataFrame();
+                if (!mdf.isNone()) {
+                    const QList< QString > cols = mdf.columns();
+                    const int pos               = cols.indexOf(target);
+                    if (pos >= 0) {
+                        modle->notifyColumnChanged(pos);
+                    }
+                    if (cfStore) {
+                        cfStore->invalidateColumnStats(pos);
+                    }
+                }
+            }
+            if (self) {
+                Q_EMIT self->dataModified();
+            }
+        });
+        cmd->setDirectionalCallBack([ ccStore, prevEntry ](bool isUndo) {
+            if (ccStore) {
+                ccStore->addDefinition(prevEntry.def, isUndo ? prevEntry.state : DATableComputedColumnStore::State::Valid);
+            }
+        });
+        if (!cmd->exec()) {
+            // 求值失败：标失效 + 提示，命令从宏中移除（析构即脱离父命令）
+            mComputedColumnStore->setState(e.def.targetColumnName, DATableComputedColumnStore::State::Invalid);
+            daWarning << tr("Failed to evaluate the formula of computed column \"%1\": %2")
+                             .arg(e.def.targetColumnName, cmd->lastErrorMessage());  // cn:计算列“%1”公式求值失败：%2
+            delete cmd;
+            continue;
+        }
+        ++done;
+    }
+    if (done == 0) {
+        delete macro;
+        return 0;
+    }
+    // 数据已在上面逐列 exec 完成；子命令均为 DACommandWithRedoCount（首次 redo 跳过），
+    // push 宏命令不会重复求值
+    push(macro);
+    return done;
+}
+
+/**
+ * @brief 移除某列的公式定义（保留列数据，列头右键「移除公式」；可撤销）
+ * @param col 列位置索引
+ * @return 成功入栈返回 true
+ */
+bool DADataOperateOfDataFrameWidget::removeComputedColumnFormula(int col)
+{
+    if (!mComputedColumnStore) {
+        return false;
+    }
+    const QString name = columnNameAt(col);
+    if (name.isEmpty() || !mComputedColumnStore->hasDefinition(name)) {
+        return false;
+    }
+    auto cmd = std::make_unique< DACommandComputedColumn_removeDefinition >(mComputedColumnStore, name);
+    if (!cmd->isCaptured()) {
+        return false;
+    }
+    push(cmd.release());  // 普通 QUndoCommand：push 即执行 redo（移除定义）
+    return true;
+}
+
+/**
+ * @brief 列改名前的计算列影响面确认（004 T1.23 R20）
+ *
+ * 统计引用了将被改名列（作依赖或自身是计算列目标）的定义数；>0 时提示
+ * 「有 N 个计算列引用它，将随改名批量更新」，用户确认后继续。
+ * @param renames 改名对（old→new）
+ * @return 继续返回 true（无引用恒 true）
+ */
+bool DADataOperateOfDataFrameWidget::confirmComputedColumnRename(const QList< QPair< QString, QString > >& renames) const
+{
+    if (!mComputedColumnStore || mComputedColumnStore->isEmpty() || renames.isEmpty()) {
+        return true;
+    }
+    QStringList affected;
+    for (const auto& p : renames) {
+        const QStringList refs = mComputedColumnStore->definitionsReferencing(p.first);
+        for (const QString& t : refs) {
+            if (!affected.contains(t)) {
+                affected.append(t);
+            }
+        }
+        if (mComputedColumnStore->hasDefinition(p.first) && !affected.contains(p.first)) {
+            affected.append(p.first);
+        }
+    }
+    if (affected.isEmpty()) {
+        return true;
+    }
+    const auto answer = QMessageBox::question(
+        const_cast< DADataOperateOfDataFrameWidget* >(this),
+        tr("Rename Column"),  // cn:重命名列
+        tr("%1 computed column(s) reference the renamed column(s): %2. Their references will be updated automatically. Continue?")
+            .arg(affected.size())
+            .arg(affected.join(QStringLiteral(", "))),  // cn:有 %1 个计算列引用被改名的列：%2。其引用将自动批量更新，是否继续？
+        QMessageBox::Yes | QMessageBox::No,
+        QMessageBox::Yes);
+    return answer == QMessageBox::Yes;
+}
+
+/**
+ * @brief 把计算列定义迁移挂进改名命令的 directional 回调（与改名同一撤销单元）
+ * @param cmd 改名命令（exec 前接线）
+ * @param renames 改名对（old→new）
+ */
+void DADataOperateOfDataFrameWidget::wireComputedColumnRenameMigration(
+    DACommandDataFrame_renameColumns* cmd, const QList< QPair< QString, QString > >& renames) const
+{
+    if (!cmd || !mComputedColumnStore || renames.isEmpty()) {
+        return;
+    }
+    DATableComputedColumnStore* ccStore = mComputedColumnStore;
+    cmd->setDirectionalCallBack([ ccStore, renames ](bool isUndo) {
+        for (const auto& p : renames) {
+            if (isUndo) {
+                ccStore->renameColumnReferences(p.second, p.first);
+            } else {
+                ccStore->renameColumnReferences(p.first, p.second);
+            }
+        }
+    });
 }

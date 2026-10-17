@@ -9,6 +9,7 @@ class QUndoStack;
 namespace DA
 {
 class DATableStyleManager;
+class DATableComputedColumnStore;
 /**
  * @brief 针对DAData的model
  *
@@ -40,6 +41,8 @@ public:
     DAData getData() const;
     // 设置样式管理器（用于列显示格式查询，非拥有）
     void setStyleManager(DATableStyleManager* mgr);
+    // 设置计算列子存储（表头浅蓝底色 + 公式 tooltip 查询，非拥有，004 T1.23）
+    void setComputedColumnStore(DATableComputedColumnStore* store);
     // 设置使用缓存模式，缓存模式不会频繁调用dataframe，在setdataframe时把常用的参数缓存
     void setUseCacheMode(bool on = true);
     // 设置滑动窗模式的起始行

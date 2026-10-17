@@ -1,11 +1,15 @@
 #include "DADataTableModel.h"
 #include "Commands/DACommandsDataFrame.h"
 #include "DATableStyleManager.h"
+#include "DATableComputedColumnStore.h"
 #include "DATableDataSource.h"
 #include "DATableDataBlock.h"
 #include <QPointer>
+#include <QColor>
 namespace DA
 {
+// 计算列列头浅蓝底色（R9：表示"非原始数据"，官方色板 #BDCDE8）
+static const QColor c_computedColumnHeaderColor(0xBD, 0xCD, 0xE8);
 
 // 复合表头（QVariantList，如MultiIndex）转为"a | b"文本
 static QVariant joinCompositeIndex(const QVariant& res)
@@ -51,6 +55,7 @@ public:
 public:
     DAData data;
     DATableStyleManager* styleManager { nullptr };  ///< 用于列显示格式查询，非拥有
+    const DATableComputedColumnStore* computedStore { nullptr };  ///< 计算列子存储（表头底色/tooltip 查询，非拥有，004 T1.23）
     QUndoStack* undoStack { nullptr };
     int extraColumn { 1 };  ///< 扩展的列数，也就是会多显示出externColumn个空白的列，一般多显示出来的是为了用户添加数据用的
     int extraRow { 1 };  ///< 扩展的行数，也就是会多显示出externRow个空白的行，一般多显示出来的是为了用户添加数据用的
@@ -225,7 +230,7 @@ int DADataTableModel::columnCount(const QModelIndex& parent) const
 QVariant DADataTableModel::actualHeaderData(int actualSection, Qt::Orientation orientation, int role) const
 {
     DA_DC(d);
-    if ((role != Qt::DisplayRole && role != Qt::ToolTipRole) || d->isNone()) {
+    if ((role != Qt::DisplayRole && role != Qt::ToolTipRole && role != Qt::BackgroundRole) || d->isNone()) {
         return QAbstractTableModel::headerData(actualSection, orientation, role);
     }
     // tooltips 和 display
@@ -234,8 +239,31 @@ QVariant DADataTableModel::actualHeaderData(int actualSection, Qt::Orientation o
         if (actualSection >= d->getDataColumnCount()) {
             return QVariant();
         }
-        return d->getDataframeColumnName(actualSection);
+        const QString colName = d->getDataframeColumnName(actualSection);
+        // 计算列列头（004 T1.23 R9）：浅蓝底色（BackgroundRole 经 QHeaderView::paintSection
+        // 的 opt.backgroundBrush 生效）+ 公式/状态 tooltip；ƒx 角标在 DADataHeaderView 绘制
+        if (d->computedStore) {
+            DATableComputedColumnStore::Entry entry;
+            if (d->computedStore->entryOf(colName, entry)) {
+                if (role == Qt::BackgroundRole) {
+                    return c_computedColumnHeaderColor;
+                }
+                if (role == Qt::ToolTipRole) {
+                    return QStringLiteral("%1: %2\n%3: %4")
+                        .arg(tr("Formula"), entry.def.expr, tr("State"), DATableComputedColumnStore::stateText(entry.state));  // cn:公式 / 状态
+                }
+            } else if (role == Qt::BackgroundRole) {
+                return QVariant();
+            }
+        } else if (role == Qt::BackgroundRole) {
+            return QVariant();
+        }
+        return colName;
     } else {
+        if (role == Qt::BackgroundRole) {
+            // 行头不参与计算列底色（004 R9 只染列头）
+            return QVariant();
+        }
         if (actualSection >= d->getDataRowCount()) {
             return QVariant();
         }
@@ -374,6 +402,11 @@ void DADataTableModel::setData(const DAData& data)
 void DADataTableModel::setStyleManager(DATableStyleManager* mgr)
 {
     d_ptr->styleManager = mgr;
+}
+
+void DADataTableModel::setComputedColumnStore(DATableComputedColumnStore* store)
+{
+    d_ptr->computedStore = store;
 }
 
 DAData DADataTableModel::getData() const
