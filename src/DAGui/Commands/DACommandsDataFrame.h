@@ -2,6 +2,8 @@
 #define DACOMMANDSDATAFRAME_H
 #include <QUndoCommand>
 #include <QPoint>
+#include <QPair>
+#include <QVector>
 #include <optional>
 #include <functional>
 #include "DAGuiAPI.h"
@@ -288,6 +290,38 @@ public:
 
 private:
     QList< int > mIndex;
+};
+
+/**
+ * @brief 表头排序命令（破坏式重排 + 置换撤销，D1/R13，禁快照）
+ *
+ * 首次 exec() 调多键排序算子计算置换并持有；exec()（含 redo）= 正置换重排，
+ * undo() = 逆置换重排，全程 O(n) 索引操作、无数据复制、无快照。
+ * 置换语义与 DATableKeyRemap 一致：perm[i] = 新表第 i 行在旧表中的行号（新→旧），
+ * 逆置换 inv[旧行号] = 新位置（旧→新）。
+ *
+ * 每次生效后的联动由调用方经回调完成（顺序：先样式键重映射、再模型刷新与选区/视口
+ * 跟随）：directionalCallback(isUndo) 里用 lastAppliedPermutation() 调
+ * DATableStyleManager::onRowsReordered；callback() 里做模型 notifyDataChanged、
+ * 按逆置换修正选区、视口回顶（参照 paste 命令的回调范式）。
+ */
+class DAGUI_API DACommandDataFrame_sortRows : public DACommandWithRedoCount, public DACallBackInterface
+{
+public:
+    DACommandDataFrame_sortRows(const DAPyDataFrame& df, const QVector< QPair< int, bool > >& keys, QUndoCommand* par = nullptr);
+    virtual void undo() override;
+    virtual bool exec() override;
+    // 正置换（新→旧）；首次成功 exec 前为空
+    const QVector< int >& permutation() const;
+    // 最近一次生效（exec/undo）实际应用的置换：exec=perm、undo=inv（样式重映射直接用此参数）
+    const QVector< int >& lastAppliedPermutation() const;
+
+private:
+    DAPyDataFrame mDataframe;
+    QVector< QPair< int, bool > > mKeys;  ///< 排序键（列位置+是否升序），顺序即优先级
+    QVector< int > mPerm;                 ///< 正置换（新→旧），首次 exec 时由算子计算
+    QVector< int > mInvPerm;              ///< 逆置换（旧→新）
+    QVector< int > mLastApplied;          ///< 最近一次应用的置换
 };
 }  // end of namespace DA
 #endif  // DACOMMANDSDATAFRAME_H

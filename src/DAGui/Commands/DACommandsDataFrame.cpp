@@ -1,5 +1,6 @@
 #include "DACommandsDataFrame.h"
 #include "DAPyScripts.h"
+#include "DATableKeyRemap.h"
 #include "Models/DADataTableModel.h"
 
 //===================================================
@@ -440,6 +441,74 @@ bool DACommandDataFrame_setIndex::exec()
     }
     callback();
     return true;
+}
+
+////////////////////////
+
+/**
+ * @brief 表头排序命令（破坏式重排 + 置换撤销，D1/R13）
+ *
+ * 首次 exec() 调多键排序算子计算置换并持有；exec()（含 redo）= 正置换重排，
+ * undo() = 逆置换重排。全程 O(n) 索引操作、无数据复制、无快照。
+ * @param df 数据
+ * @param keys 排序键（列位置+是否升序），顺序即优先级
+ * @param par
+ */
+DACommandDataFrame_sortRows::DACommandDataFrame_sortRows(
+    const DAPyDataFrame& df, const QVector< QPair< int, bool > >& keys, QUndoCommand* par
+)
+    : DACommandWithRedoCount(par), DACallBackInterface(), mDataframe(df), mKeys(keys)
+{
+    setText(QObject::tr("Sort rows"));  // cn:排序
+}
+
+void DACommandDataFrame_sortRows::undo()
+{
+    if (mPerm.isEmpty()) {
+        return;  // exec 未成功过，无置换可撤
+    }
+    DAPyScriptsDataFrame& pydf = DAPyScripts::getDataFrame();
+    if (!pydf.reorderRows(mDataframe, mInvPerm)) {
+        return;
+    }
+    mLastApplied = mInvPerm;
+    // 顺序（设计稿 §4.1）：先样式键重映射（directionalCallback 里 onRowsReordered），
+    // 再模型刷新/选区/视口跟随（callback 里，由调用方接线）
+    directionalCallback(true);
+    callback();
+}
+
+bool DACommandDataFrame_sortRows::exec()
+{
+    DAPyScriptsDataFrame& pydf = DAPyScripts::getDataFrame();
+    if (mPerm.isEmpty()) {
+        // 首次：算子计算置换并就地重排（多键稳定排序，NaN/NaT 恒排最后）
+        QVector< int > perm;
+        if (!pydf.sort(mDataframe, mKeys, &perm)) {
+            return false;  // 混合类型不可比较 / 列越界等，算子侧已记录异常
+        }
+        if (perm.isEmpty()) {
+            return false;  // 空表无可排（调用方应已拦截，防御性处理）
+        }
+        mPerm    = perm;
+        mInvPerm = DATableKeyRemap::inversePermutation(mPerm);
+    } else if (!pydf.reorderRows(mDataframe, mPerm)) {
+        return false;
+    }
+    mLastApplied = mPerm;
+    directionalCallback(false);
+    callback();
+    return true;
+}
+
+const QVector< int >& DACommandDataFrame_sortRows::permutation() const
+{
+    return mPerm;
+}
+
+const QVector< int >& DACommandDataFrame_sortRows::lastAppliedPermutation() const
+{
+    return mLastApplied;
 }
 
 }  // end DA
