@@ -216,6 +216,8 @@ DACommandDataFrame_renameColumns::DACommandDataFrame_renameColumns(
 )
     : DACommandWithRedoCount(par), DACallBackInterface(), mDataframe(df), mCols(cols), mModel(model)
 {
+    // 005 T1.21 红线5：撤销面板不允许空白条目
+    setText(QObject::tr("rename columns"));  // cn:重命名列
     mOldcols = df.columns();
 }
 
@@ -224,6 +226,8 @@ DACommandDataFrame_renameColumns::DACommandDataFrame_renameColumns(
 )
     : DACommandWithRedoCount(par), DACallBackInterface(), mDataframe(df), mCols(cols), mModel(model), mOldcols(oldcols)
 {
+    // 005 T1.21 红线5：撤销面板不允许空白条目
+    setText(QObject::tr("rename columns"));  // cn:重命名列
 }
 
 void DACommandDataFrame_renameColumns::undo()
@@ -285,6 +289,8 @@ DACommandDataFrame_setnan::DACommandDataFrame_setnan(
 )
     : DACommandWithRedoCount(par), DACallBackInterface(), mDataframe(df), mRows(rows), mColumns(columns)
 {
+    // 005 T1.21 红线5：撤销面板不允许空白条目
+    setText(QObject::tr("clear cells"));  // cn:清除单元格
     // 先把原来数据提取出来
     for (int i = 0; i < mRows.size(); ++i) {
         mOlddatas.append(df.iatObj(rows[ i ], columns[ i ]));

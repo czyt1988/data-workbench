@@ -16925,6 +16925,26 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <source>Modify data (persisted snapshot)</source>
         <translation>修改数据（持久化快照）</translation>
     </message>
+    <message>
+        <source>group items</source>
+        <translation>组合图元</translation>
+    </message>
+    <message>
+        <source>ungroup items</source>
+        <translation>取消组合图元</translation>
+    </message>
+    <message>
+        <source>edit text document</source>
+        <translation>编辑文本文档</translation>
+    </message>
+    <message>
+        <source>rename columns</source>
+        <translation>重命名列</translation>
+    </message>
+    <message>
+        <source>clear cells</source>
+        <translation>清除单元格</translation>
+    </message>
 </context>
 <context>
     <name>main</name>

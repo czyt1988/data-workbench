@@ -16817,6 +16817,26 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <source>Modify data (persisted snapshot)</source>
         <translation>Modify data (persisted snapshot)</translation>
     </message>
+    <message>
+        <source>group items</source>
+        <translation>group items</translation>
+    </message>
+    <message>
+        <source>ungroup items</source>
+        <translation>ungroup items</translation>
+    </message>
+    <message>
+        <source>edit text document</source>
+        <translation>edit text document</translation>
+    </message>
+    <message>
+        <source>rename columns</source>
+        <translation>rename columns</translation>
+    </message>
+    <message>
+        <source>clear cells</source>
+        <translation>clear cells</translation>
+    </message>
 </context>
 <context>
     <name>main</name>
