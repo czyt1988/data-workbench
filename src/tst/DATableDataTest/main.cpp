@@ -22,6 +22,7 @@
 #include "Commands/DACommandsDataFrame.h"
 #include "Dialog/DADialogFindReplace.h"
 #include <QElapsedTimer>
+#include <QSet>
 #include <QLineEdit>
 #include <QPushButton>
 #include <QCheckBox>
@@ -375,6 +376,8 @@ private Q_SLOTS:
     void testSortRowsCommandUndoRedoAndStyleRemap();
     void testHeaderSortInteraction();
     void testSortPerf100k();
+    // 排序选区重映射：散落选区跟随正确性 + 连续段归并 + 整列选区排序性能守卫（2026-10-18 修复回归）
+    void testSortSelectionRemapPerf();
     // 002 查找/替换（T1.4 §4.1）：搜索扩展、替换算子、替换命令 undo/redo、浮动条去抖、页面查找替换全链路
     void testSearchOperatorExtended();
     void testFindReplaceOperator();
@@ -1598,7 +1601,12 @@ void DATableDataTest::testContextMenuComposition()
             QVERIFY2(!a->icon().isNull(), qPrintable(QStringLiteral("icon empty for %1").arg(a->text())));
         }
     }
-    const QStringList expectedHeader { QStringLiteral("Rename Column"),
+    const QStringList expectedHeader { QStringLiteral("Sort Ascending"),
+                                       QStringLiteral("Sort Descending"),
+                                       QStringLiteral("Add Secondary Sort (Ascending)"),
+                                       QStringLiteral("Add Secondary Sort (Descending)"),
+                                       QStringLiteral("<SEP>"),
+                                       QStringLiteral("Rename Column"),
                                        QStringLiteral("Remove Column"),
                                        QStringLiteral("<SEP>"),
                                        QStringLiteral("Copy Column Name"),
@@ -1769,11 +1777,15 @@ void DATableDataTest::testViewStateApplyAndHeaderClickChain()
         QCOMPARE(clickSpy.takeFirst().at(0).toInt(), colF);
         QVERIFY(w2.sortSpec().isEmpty());  // 拾取模式不产生排序规格
     }
-    // 退出拾取模式后点击列头走排序，不再发 columnHeaderClicked
+    // 退出拾取模式后点击列头不再发 columnHeaderClicked，也不再排序
+    // （2026-10-18 交互修订：排序入口=列头右键菜单 → 页面 sortColumn/addSecondarySortColumn）
     if (mPyScriptsOk) {
         w2.setHeaderPickMode(false);
         QTest::mouseClick(hh->viewport(), Qt::LeftButton, Qt::NoModifier, QPoint(xPos, yPos));
         QCOMPARE(clickSpy.count(), 0);
+        QVERIFY(w2.sortSpec().isEmpty());
+        // 菜单排序的执行点（页面方法）仍然生效
+        w2.sortColumn(colF, Qt::AscendingOrder);
         QCOMPARE(w2.sortSpec().size(), 1);
         QCOMPARE(w2.sortSpec().at(0).first, colF);
     }
@@ -2001,20 +2013,30 @@ void DATableDataTest::testHeaderSortInteraction()
         QTest::mouseClick(hh->viewport(), Qt::LeftButton, mods, QPoint(x, y));
     };
 
-    // 单击 → 升序（i 列本就 1..10，数据不变但规格生效）
+    // 【2026-10-18 交互修订】点击表头不再触发排序（误触即整表重排，用户反馈修订）：
+    // 规格保持空、数据不变（Qt 默认的列选中行为保留）
     clickHeader(colI, Qt::NoModifier);
+    QVERIFY(w.sortSpec().isEmpty());
+    QCOMPARE(df.iat(0, colI).toInt(), 1);
+    QCOMPARE(df.iat(9, colI).toInt(), 10);
+    clickHeader(colI, Qt::ShiftModifier);
+    clickHeader(colF, Qt::ControlModifier);
+    QVERIFY(w.sortSpec().isEmpty());
+    // 排序入口 = 列头右键菜单（APP 接线到页面方法）：降序
+    w.sortColumn(colI, Qt::DescendingOrder);
     QCOMPARE(w.sortSpec().size(), 1);
     QCOMPARE(w.sortSpec().at(0).first, colI);
-    QCOMPARE(w.sortSpec().at(0).second, Qt::AscendingOrder);
-    QCOMPARE(hh->sortSpec(), w.sortSpec());  // 表头角标数据源同步
-    QCOMPARE(df.iat(0, colI).toInt(), 1);
-    // 再点 → 降序
-    clickHeader(colI, Qt::NoModifier);
     QCOMPARE(w.sortSpec().at(0).second, Qt::DescendingOrder);
+    QCOMPARE(hh->sortSpec(), w.sortSpec());  // 表头角标数据源同步
     QCOMPARE(df.iat(0, colI).toInt(), 10);
     QCOMPARE(df.iat(9, colI).toInt(), 1);
-    // 点另一列 → 只按新列排序（旧列指示消失：规格仅剩一项）
-    clickHeader(colF, Qt::NoModifier);
+    // 重置规格为仅该列：升序
+    w.sortColumn(colI, Qt::AscendingOrder);
+    QCOMPARE(w.sortSpec().size(), 1);
+    QCOMPARE(w.sortSpec().at(0).second, Qt::AscendingOrder);
+    QCOMPARE(df.iat(0, colI).toInt(), 1);
+    // 排另一列 → 只按新列排序（旧列指示消失：规格仅剩一项）
+    w.sortColumn(colF, Qt::AscendingOrder);
     QCOMPARE(w.sortSpec().size(), 1);
     QCOMPARE(w.sortSpec().at(0).first, colF);
     QCOMPARE(w.sortSpec().at(0).second, Qt::AscendingOrder);
@@ -2024,8 +2046,8 @@ void DATableDataTest::testHeaderSortInteraction()
     }
     QVERIFY(qIsNaN(df.iat(8, colF).toDouble()));
     QVERIFY(qIsNaN(df.iat(9, colF).toDouble()));
-    // Shift 点第二列 → 次排序列（两列规格，多列序号角标的数据源）
-    clickHeader(colI, Qt::ShiftModifier);
+    // 追加次级排序列（菜单「追加为次级排序」）：两列规格，多列序号角标的数据源
+    w.addSecondarySortColumn(colI, Qt::AscendingOrder);
     QCOMPARE(w.sortSpec().size(), 2);
     QCOMPARE(w.sortSpec().at(1).first, colI);
     QCOMPARE(w.sortSpec().at(1).second, Qt::AscendingOrder);
@@ -2054,7 +2076,7 @@ void DATableDataTest::testHeaderSortInteraction()
         QVERIFY2(badgePx >= 10, qPrintable(QStringLiteral("badge pixels=%1").arg(badgePx)));
         QVERIFY2(arrowPx >= 4, qPrintable(QStringLiteral("arrow pixels=%1").arg(arrowPx)));
     }
-    // Ctrl 点同列 → 切换其方向（规格列数不变）
+    // 同列再追加 → 切换其方向（规格列数不变）
     QVector< QVariant > beforeUndoF, beforeUndoI;
     beforeUndoF.reserve(10);
     beforeUndoI.reserve(10);
@@ -2062,7 +2084,7 @@ void DATableDataTest::testHeaderSortInteraction()
         beforeUndoF.append(df.iat(r, colF));
         beforeUndoI.append(df.iat(r, colI));
     }
-    clickHeader(colI, Qt::ControlModifier);
+    w.addSecondarySortColumn(colI, Qt::DescendingOrder);
     QCOMPARE(w.sortSpec().size(), 2);
     QCOMPARE(w.sortSpec().at(1).second, Qt::DescendingOrder);
     bool changed = false;
@@ -2088,7 +2110,7 @@ void DATableDataTest::testHeaderSortInteraction()
     // 选中行随置换跟随：选中行 0 → 排序 → 选区映射到该行数据的新位置
     tv->selectionModel()->select(tv->model()->index(0, colS), QItemSelectionModel::ClearAndSelect);
     const QString marked = df.iat(0, colS).toString();
-    clickHeader(colI, Qt::NoModifier);  // 无修饰 → 重置为仅 i 升序
+    w.sortColumn(colI, Qt::AscendingOrder);  // 重置为仅 i 升序
     QCOMPARE(w.sortSpec().size(), 1);
     int newRow = -1;
     for (int r = 0; r < 10; ++r) {
@@ -2108,7 +2130,7 @@ void DATableDataTest::testHeaderSortInteraction()
     QVERIFY(selFollowed);
     w.hide();
 
-    // 只读/惰性源：点击表头不排序、规格保持空（daWarning 提示路径）
+    // 只读/惰性源：排序入口不生效、规格保持空（daWarning 提示路径）
     if (ensureSqliteReady()) {
         DA::DAAbstractData::Pointer lazy = makeSqliteLazyData();
         DA::DAData ld(lazy);
@@ -2122,6 +2144,8 @@ void DATableDataTest::testHeaderSortInteraction()
         const int x = hl->sectionViewportPosition(0) + qMax(1, hl->sectionSize(0) / 2);
         const int y = qMax(1, hl->viewport()->height() / 2);
         QTest::mouseClick(hl->viewport(), Qt::LeftButton, Qt::NoModifier, QPoint(x, y));
+        wl.sortColumn(0, Qt::AscendingOrder);  // 菜单排序入口在只读源上不执行
+        wl.addSecondarySortColumn(0, Qt::AscendingOrder);
         QVERIFY(wl.sortSpec().isEmpty());
         wl.hide();
     } else {
@@ -2164,6 +2188,111 @@ big = pd.DataFrame({"v": np.random.rand(100000), "w": np.random.randint(0, 100, 
     const qint64 elapsed2 = timer.elapsed();
     qDebug().noquote() << QStringLiteral("testSortPerf100k: 100k two-key sort elapsed_ms=%1").arg(elapsed2);
     QVERIFY2(elapsed2 <= 300, qPrintable(QStringLiteral("100k two-key sort took %1 ms (> 300 ms)").arg(elapsed2)));
+}
+
+// 排序选区重映射（2026-10-18 性能修复的回归守卫）：
+// 正确性——散落单元格选区随置换跟行走、连续行段映射后归并成单 range；
+// 性能——整列选择（Qt 表头点击/ selectColumn 会产生每行一个 range 的 2 万格选区）
+// 下排序不再逐格重建选区（旧实现 32560 行实测 985~7736ms，用户现场 6~19s）
+void DATableDataTest::testSortSelectionRemapPerf()
+{
+    if (!mPandasOk || !mPyScriptsOk) {
+        QSKIP("pandas/DAPyScripts not available");
+    }
+    // ---- 正确性（小表 10 行）----
+    pybind11::object obj = makeTestDataFrame();
+    QVERIFY(!obj.is_none());
+    DA::DAPyDataFrame df(obj);
+    DA::DAData d(df);
+    DA::DATableMetadataRegistry registry(nullptr);
+    DA::DADataOperateOfDataFrameWidget w(d, &registry);
+    w.resize(800, 400);
+    w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+    DA::DADataTableView* tv = w.getDataTableView();
+    QVERIFY(tv != nullptr);
+    DA::DADataHeaderView* hh = qobject_cast< DA::DADataHeaderView* >(tv->horizontalHeader());
+    QVERIFY(hh != nullptr);
+    int colI = -1;
+    for (int c = 0; c < hh->count(); ++c) {
+        if (hh->model() && hh->model()->headerData(c, Qt::Horizontal).toString() == QLatin1String("i")) {
+            colI = c;
+            break;
+        }
+    }
+    QVERIFY(colI >= 0);
+    QAbstractItemModel* m  = tv->model();
+    QItemSelectionModel* sm = tv->selectionModel();
+    // 散落选中 i 列行 0/2/5（值 1/3/6）→ 降序（10..1）后旧行 r 的新位置 = 9-r
+    QItemSelection sel;
+    const QList< int > pickRows { 0, 2, 5 };
+    for (int r : pickRows) {
+        const QModelIndex ix = m->index(r, colI);
+        sel.select(ix, ix);
+    }
+    sm->select(sel, QItemSelectionModel::ClearAndSelect);
+    w.sortColumn(colI, Qt::DescendingOrder);
+    QSet< int > mappedRows;
+    const QModelIndexList after = sm->selectedIndexes();
+    for (const QModelIndex& ix : after) {
+        if (ix.column() == colI) {
+            mappedRows.insert(tv->toActualRow(ix.row()));
+        }
+    }
+    QCOMPARE(mappedRows.size(), 3);
+    QVERIFY(mappedRows.contains(9));  // 值1 → 行9
+    QVERIFY(mappedRows.contains(7));  // 值3 → 行7
+    QVERIFY(mappedRows.contains(4));  // 值6 → 行4
+    // 连续行段：当前为降序（10..1），选中视图行 2..5（值 8/7/6/5）→ 升序后落位行 4..7，连续 → 应归并为 1 个 range
+    QItemSelection sel2;
+    sel2.select(m->index(2, colI), m->index(5, colI));
+    sm->select(sel2, QItemSelectionModel::ClearAndSelect);
+    w.sortColumn(colI, Qt::AscendingOrder);
+    QCOMPARE(sm->selection().size(), 1);
+    const QItemSelectionRange only = sm->selection().at(0);
+    QCOMPARE(only.top(), 4);
+    QCOMPARE(only.bottom(), 7);
+    QCOMPARE(only.left(), colI);
+    QCOMPARE(only.right(), colI);
+    w.hide();
+
+    // ---- 性能（32560 行，复现用户现场规模）----
+    pybind11::dict scope;
+    pybind11::exec(R"(
+import pandas as pd, numpy as np
+rng = np.random.default_rng(7)
+N = 32560
+big = pd.DataFrame({"v": rng.normal(size=N), "w": rng.integers(0, 1000, size=N)})
+)",
+                   scope);
+    DA::DAPyDataFrame bdf(scope[ "big" ]);
+    DA::DAData bd(bdf);
+    DA::DATableMetadataRegistry reg2(nullptr);
+    DA::DADataOperateOfDataFrameWidget wb(bd, &reg2);
+    wb.resize(800, 400);
+    wb.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&wb));
+    DA::DADataTableView* tvb = wb.getDataTableView();
+    QVERIFY(tvb != nullptr);
+    // 整列选择（每行一个 range，2 万格）——旧实现的卡死触发器
+    tvb->selectColumn(0);
+    QVERIFY(tvb->selectionModel()->selectedIndexes().size() > 10000);
+    QElapsedTimer t;
+    t.start();
+    wb.sortColumn(0, Qt::DescendingOrder);
+    const qint64 msSort = t.elapsed();
+    qDebug().noquote() << QStringLiteral("testSortSelectionRemapPerf: 32560-row sort with full-column selection elapsed_ms=%1").arg(msSort);
+    // 旧实现实测 985~7736ms（用户现场 6~19s）；修复后应为几十 ms 级，放宽到 1500ms 防抖
+    QVERIFY2(msSort < 1500, qPrintable(QStringLiteral("sort with full-column selection too slow: %1 ms").arg(msSort)));
+    // 整窗快速路径语义：排序后列仍整体选中
+    QVERIFY(tvb->selectionModel()->hasSelection());
+    // undo 走同一重映射路径，同样不许卡
+    t.restart();
+    wb.getUndoStack()->undo();
+    const qint64 msUndo = t.elapsed();
+    qDebug().noquote() << QStringLiteral("testSortSelectionRemapPerf: undo elapsed_ms=%1").arg(msUndo);
+    QVERIFY2(msUndo < 1500, qPrintable(QStringLiteral("sort undo too slow: %1 ms").arg(msUndo)));
+    wb.hide();
 }
 
 //===================================================
@@ -3897,11 +4026,7 @@ df = pd.DataFrame({"A":[1,2,3],"B":[4,5,6],"K":[3,1,2]})
         }
     }
     QVERIFY(colK >= 0);
-    {
-        const int x = hh->sectionViewportPosition(colK) + qMax(1, hh->sectionSize(colK) / 2);
-        const int y = qMax(1, hh->viewport()->height() / 2);
-        QTest::mouseClick(hh->viewport(), Qt::LeftButton, Qt::NoModifier, QPoint(x, y));
-    }
+    w.sortColumn(colK, Qt::AscendingOrder);  // 菜单排序入口（2026-10-18 修订：点击表头不再排序）
     QCOMPARE(store->stateOf(QStringLiteral("C")), DA::DATableComputedColumnStore::State::Valid);  // 排序未标脏
     // —— 改名被依赖列 A→A2：确认框点 Yes，定义依赖迁移；undo 还原 ——
     int colA = -1;
@@ -6230,9 +6355,7 @@ df = pd.DataFrame({"k": [30, 10, 20, 40, 50, 60], "s": ["c", "a", "b", "d", "e",
             }
         }
         QVERIFY(colK >= 0);
-        const int x = hh->sectionViewportPosition(colK) + qMax(1, hh->sectionSize(colK) / 2);
-        const int y = qMax(1, hh->viewport()->height() / 2);
-        QTest::mouseClick(hh->viewport(), Qt::LeftButton, Qt::NoModifier, QPoint(x, y));
+        w.sortColumn(colK, Qt::AscendingOrder);  // 菜单排序入口（2026-10-18 修订：点击表头不再排序）
         QCOMPARE(df.iat(0, 0).toDouble(), 10.0);            // 升序生效
         QCOMPARE(store->noteText(0, 0), QStringLiteral("NOTE-EDITED"));  // 批注跟着行走
         QVERIFY(!store->hasNote(1, 0));
@@ -6548,7 +6671,8 @@ first_val = float(df.iat[0, 1])
     msNote = step.elapsed();
     QCOMPARE(notes->noteText(50000, 0), QStringLiteral("chain-note"));
 
-    // —— ② 排序（列头点击，破坏式重排 + 置换撤销）——
+    // —— ② 排序（列头右键菜单入口的页面执行点，破坏式重排 + 置换撤销；
+    //    2026-10-18 交互修订：点击表头不再排序）——
     step.start();
     {
         DA::DADataHeaderView* hh = qobject_cast< DA::DADataHeaderView* >(tv->horizontalHeader());
@@ -6561,9 +6685,8 @@ first_val = float(df.iat[0, 1])
             }
         }
         QVERIFY(colVal >= 0);
-        const int x = hh->sectionViewportPosition(colVal) + qMax(1, hh->sectionSize(colVal) / 2);
-        const int y = qMax(1, hh->viewport()->height() / 2);
-        QTest::mouseClick(hh->viewport(), Qt::LeftButton, Qt::NoModifier, QPoint(x, y));
+        w.sortColumn(colVal, Qt::AscendingOrder);
+        QCOMPARE(w.sortSpec().size(), 1);
     }
     msSort = step.elapsed();
     // 升序：首行是列最小值附近（<= 0 的负端），且批注仍在（跟着某一行移动，总数不变）
