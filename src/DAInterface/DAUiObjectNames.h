@@ -144,6 +144,7 @@ constexpr char ComputedColumn[]             = "actionComputedColumn";           
 constexpr char RecomputeAllComputedColumns[] = "actionRecomputeAllComputedColumns";  ///< 全部重算计算列（004 T1.23）
 constexpr char SplitColumn[]                = "actionSplitColumn";                ///< 分列（004 T1.9）
 constexpr char MergeColumns[]               = "actionMergeColumns";               ///< 合并列（004 T1.9）
+constexpr char GroupBy[]                    = "actionGroupBy";                    ///< 分组聚合（004 T1.22）
 // ---- 绘图 ----
 constexpr char AddFigure[]                  = "actionAddFigure";
 constexpr char FigureNewXYAxis[]            = "actionFigureNewXYAxis";

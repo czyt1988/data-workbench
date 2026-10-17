@@ -124,6 +124,7 @@ void DAAppActions::buildDataAction()
     actionRecomputeAllComputedColumns = createAction(UiNames::Action::RecomputeAllComputedColumns, ":/DAGui/icon/refresh-all.svg");
     actionSplitColumn                 = createAction(UiNames::Action::SplitColumn, ":/DAGui/icon/split-column.svg");
     actionMergeColumns                = createAction(UiNames::Action::MergeColumns, ":/DAGui/icon/merge-columns.svg");
+    actionGroupBy                     = createAction(UiNames::Action::GroupBy, ":/DAGui/icon/group-by.svg");
 }
 
 void DAAppActions::buildChartAction()
@@ -668,6 +669,8 @@ void DAAppActions::retranslateUi()
     actionSplitColumn->setToolTip(tr("Split the selected column into multiple columns by delimiter / regex / fixed widths"));  // cn:把选中列按分隔符/正则/固定宽度拆分为多列
     actionMergeColumns->setText(tr("Merge Columns"));               // cn:合并列
     actionMergeColumns->setToolTip(tr("Merge the selected columns into one column in the given order"));  // cn:把选中的多列按给定顺序合并为一列
+    actionGroupBy->setText(tr("Group By"));                         // cn:分组聚合
+    actionGroupBy->setToolTip(tr("Aggregate rows by group keys into a new long-format result dataset"));  // cn:按分组键聚合为新数据集（长格式结果表）
     //-----------------------------------------------------
     // workflow 编辑
     //-----------------------------------------------------

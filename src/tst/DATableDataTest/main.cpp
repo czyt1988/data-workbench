@@ -74,6 +74,8 @@
 // 分列/合并列（004 计划 §4，T1.9）
 #include "Dialog/DADialogSplitColumn.h"
 #include "Dialog/DADialogMergeColumns.h"
+#include "Dialog/DADialogGroupBy.h"
+#include "DADataManager.h"
 #include <QRadioButton>
 #include <QSpinBox>
 #include <QItemSelectionModel>
@@ -383,6 +385,11 @@ private Q_SLOTS:
     void testSplitMergeCommandUndoRedo();
     void testSplitColumnPerf100k();
     void testSplitMergeWidgetFlow();
+
+    // 004 WP3 分组聚合（T1.22 §5.4/§7.1）：多键多列与 pandas 手算对齐、size、
+    // NaN 键组保留、全 NaN 值列、函数守卫、新数据集注册（xxx_GroupBy 命名 + addData_ 可撤销）
+    void testGroupbyOperator();
+    void testGroupByWidgetFlow();
 
 private:
     // 生成/复用sqlite测试库（百万行），失败返回false并置mSqliteErr
@@ -1544,7 +1551,8 @@ void DATableDataTest::testContextMenuComposition()
                                      QStringLiteral("<SEP>"),
                                      QStringLiteral("Computed Column..."),
                                      QStringLiteral("Split Column..."),
-                                     QStringLiteral("Merge Columns...") };
+                                     QStringLiteral("Merge Columns..."),
+                                     QStringLiteral("Group By...") };
     QCOMPARE(bodySeq, expectedBody);
     // 剪贴板组无选区置灰
     QVERIFY(!byText.value(QStringLiteral("Cut"))->isEnabled());
@@ -1560,6 +1568,8 @@ void DATableDataTest::testContextMenuComposition()
     // 分列/合并列（004 T1.9）：无模型=只读置灰；且无选区时分列（需单列）/合并（需多列）都置灰
     QVERIFY(!byText.value(QStringLiteral("Split Column..."))->isEnabled());
     QVERIFY(!byText.value(QStringLiteral("Merge Columns..."))->isEnabled());
+    // 分组聚合（004 T1.22）：无模型=无 dataframe 数据体，置灰
+    QVERIFY(!byText.value(QStringLiteral("Group By..."))->isEnabled());
     delete body;
 }
 
@@ -4284,6 +4294,198 @@ df = pd.DataFrame({"S":["1,2","3,4"],"X":[10,20]})
     QCOMPARE(df.columns(), QList< QString >({ QStringLiteral("S"), QStringLiteral("S_1"), QStringLiteral("S_2"), QStringLiteral("X") }));
     QCOMPARE(df.iat(0, 0).toString(), QStringLiteral("1,2"));
     QCOMPARE(df.iat(0, 3).toInt(), 10);
+    w.hide();
+}
+
+
+//===================================================
+// 004 WP3 分组聚合（T1.22）
+//===================================================
+
+// 004 §7.1：groupby 算子——多键多列与手算对齐（mean/sum/size）、NaN 键组保留、全 NaN 值列、守卫
+void DATableDataTest::testGroupbyOperator()
+{
+    if (!mPandasOk || !mPyScriptsOk) {
+        QSKIP("pandas/DAPyScripts not available");
+    }
+    DA::DAPyScriptsDataFrame& py = DA::DAPyScripts::getDataFrame();
+    // —— 多键多列：g1,g2 分组，v 求均值 + w 求和（与 pandas 手算对齐）——
+    {
+        pybind11::dict scope;
+        pybind11::exec(R"(
+import numpy as np
+import pandas as pd
+df = pd.DataFrame({
+    "g1": ["a","a","b","b","a"],
+    "g2": [1,1,1,2,2],
+    "v": [10.0,20.0,30.0,np.nan,50.0],
+    "w": [1,2,3,4,5],
+})
+)",
+                       pybind11::globals(),
+                       scope);
+        DA::DAPyDataFrame df(scope[ "df" ]);
+        QString err;
+        DA::DAPyDataFrame out = py.groupbyAggregate(df,
+                                                    QStringList({ QStringLiteral("g1"), QStringLiteral("g2") }),
+                                                    QStringList({ QStringLiteral("v"), QStringLiteral("w") }),
+                                                    QStringList({ QStringLiteral("mean"), QStringLiteral("sum") }),
+                                                    &err);
+        QVERIFY2(!out.isNone(), qPrintable(err));
+        // 长格式：分组键 reset_index 成普通列 + 每聚合对一列（"{值列}_{函数}"）
+        QCOMPARE(out.columns(),
+                 QList< QString >({ QStringLiteral("g1"), QStringLiteral("g2"), QStringLiteral("v_mean"), QStringLiteral("w_sum") }));
+        QCOMPARE(out.shape().first, static_cast< std::size_t >(4));  // 4 组
+        // (a,1): v_mean=(10+20)/2=15, w_sum=1+2=3
+        QCOMPARE(out.iat(0, 0).toString(), QStringLiteral("a"));
+        QCOMPARE(out.iat(0, 1).toInt(), 1);
+        QCOMPARE(out.iat(0, 2).toDouble(), 15.0);
+        QCOMPARE(out.iat(0, 3).toInt(), 3);
+        // (a,2): v_mean=50, w_sum=5
+        QCOMPARE(out.iat(1, 2).toDouble(), 50.0);
+        // (b,2): v 全 NaN → v_mean=NaN（空组行为），w_sum=4
+        QCOMPARE(out.iat(3, 0).toString(), QStringLiteral("b"));
+        QCOMPARE(out.iat(3, 1).toInt(), 2);
+        QVERIFY(qIsNaN(out.iat(3, 2).toDouble()));
+        QCOMPARE(out.iat(3, 3).toInt(), 4);
+        // 分组数（预估结果行数）
+        QCOMPARE(py.groupCount(df, QStringList({ QStringLiteral("g1"), QStringLiteral("g2") })), static_cast< qint64 >(4));
+        // size：只计组内行数（聚合函数集合与透视表对齐）
+        DA::DAPyDataFrame out2 =
+            py.groupbyAggregate(df, QStringList({ QStringLiteral("g1") }), QStringList({ QStringLiteral("v") }), QStringList({ QStringLiteral("size") }));
+        QVERIFY(!out2.isNone());
+        QCOMPARE(out2.columns(), QList< QString >({ QStringLiteral("g1"), QStringLiteral("v_size") }));
+        QCOMPARE(out2.iat(0, 1).toInt(), 3);  // a 组 3 行
+        QCOMPARE(out2.iat(1, 1).toInt(), 2);  // b 组 2 行
+        // 同一列多函数
+        DA::DAPyDataFrame out3 = py.groupbyAggregate(df,
+                                                     QStringList({ QStringLiteral("g1") }),
+                                                     QStringList({ QStringLiteral("v"), QStringLiteral("v") }),
+                                                     QStringList({ QStringLiteral("mean"), QStringLiteral("sum") }));
+        QVERIFY(!out3.isNone());
+        QCOMPARE(out3.columns(), QList< QString >({ QStringLiteral("g1"), QStringLiteral("v_mean"), QStringLiteral("v_sum") }));
+        QCOMPARE(out3.iat(0, 2).toDouble(), 80.0);  // a 组 v 求和 = 10+20+50
+        // 不支持的函数（与透视表集合对齐：只有 mean/sum/size）→ 失败 + 诊断
+        QString err2;
+        QVERIFY(py.groupbyAggregate(df,
+                                    QStringList({ QStringLiteral("g1") }),
+                                    QStringList({ QStringLiteral("v") }),
+                                    QStringList({ QStringLiteral("median") }),
+                                    &err2)
+                    .isNone());
+        QVERIFY(!err2.isEmpty());
+        // 不存在的键列 → 失败
+        QVERIFY(py.groupbyAggregate(df, QStringList({ QStringLiteral("nope") }), QStringList({ QStringLiteral("v") }), QStringList({ QStringLiteral("mean") }))
+                    .isNone());
+    }
+    // —— NaN 键组保留（dropna=False，SQL GROUP BY 语义）——
+    {
+        pybind11::dict scope;
+        pybind11::exec(R"(
+import pandas as pd
+df = pd.DataFrame({"k":[None,"a",None,"a"],"v":[1.0,2.0,3.0,4.0]})
+)",
+                       pybind11::globals(),
+                       scope);
+        DA::DAPyDataFrame df(scope[ "df" ]);
+        DA::DAPyDataFrame out =
+            py.groupbyAggregate(df, QStringList({ QStringLiteral("k") }), QStringList({ QStringLiteral("v") }), QStringList({ QStringLiteral("sum") }));
+        QVERIFY(!out.isNone());
+        QCOMPARE(out.shape().first, static_cast< std::size_t >(2));  // "a" 组 + NaN 组
+        QCOMPARE(py.groupCount(df, QStringList({ QStringLiteral("k") })), static_cast< qint64 >(2));
+    }
+}
+
+// 004 §5.4 验收（程序化）：新数据集注册（xxx_GroupBy 命名、addData_ 可撤销、原表无损、信号发射）
+void DATableDataTest::testGroupByWidgetFlow()
+{
+    if (!mPandasOk || !mPyScriptsOk) {
+        QSKIP("pandas/DAPyScripts not available");
+    }
+    qRegisterMetaType< DA::DAData >("DA::DAData");
+    pybind11::dict scope;
+    pybind11::exec(R"(
+import pandas as pd
+df = pd.DataFrame({"g1":["a","a","b"],"v":[10.0,20.0,30.0]})
+)",
+                   pybind11::globals(),
+                   scope);
+    DA::DAPyDataFrame df(scope[ "df" ]);
+    DA::DADataManager mgr;
+    DA::DAData d(df);
+    d.setName(QStringLiteral("src"));
+    mgr.addData(d);  // 初始数据（非撤销路径注册）
+    QCOMPARE(mgr.getDataCount(), 1);
+    DA::DATableMetadataRegistry registry(nullptr);
+    DA::DADataOperateOfDataFrameWidget w(d, &registry);
+    w.resize(700, 400);
+    w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+    QSignalSpy createdSpy(&w, &DA::DADataOperateOfDataFrameWidget::newDataCreated);
+    QVERIFY(createdSpy.isValid());
+    // 驱动对话框：键选 g1、聚合列选 v、函数改 sum → OK
+    QTimer::singleShot(0, []() {
+        auto* dlg = qobject_cast< DA::DADialogGroupBy* >(QApplication::activeModalWidget());
+        if (!dlg) {
+            return;
+        }
+        QListWidget* keys   = dlg->findChild< QListWidget* >(QStringLiteral("listGroupKeys"));
+        QListWidget* values = dlg->findChild< QListWidget* >(QStringLiteral("listGroupValues"));
+        if (keys && values) {
+            for (int i = 0; i < keys->count(); ++i) {
+                if (keys->item(i)->text() == QLatin1String("g1")) {
+                    keys->item(i)->setSelected(true);
+                }
+            }
+            for (int i = 0; i < values->count(); ++i) {
+                if (values->item(i)->text() == QLatin1String("v")) {
+                    values->item(i)->setSelected(true);
+                }
+            }
+        }
+        QTimer::singleShot(100, [ dlg ]() {
+            QTableWidget* funcs = dlg->findChild< QTableWidget* >(QStringLiteral("tableGroupFuncs"));
+            if (funcs && funcs->rowCount() > 0) {
+                if (QComboBox* cb = qobject_cast< QComboBox* >(funcs->cellWidget(0, 1))) {
+                    cb->setCurrentText(QStringLiteral("sum"));
+                }
+            }
+            QTimer::singleShot(500, [ dlg ]() {
+                QDialogButtonBox* box = dlg->findChild< QDialogButtonBox* >();
+                if (box && box->button(QDialogButtonBox::Ok)->isEnabled()) {
+                    dlg->accept();
+                } else {
+                    dlg->reject();
+                }
+            });
+        });
+    });
+    w.showGroupByDialog();
+    // 新数据集已注册且命名符合 xxx_GroupBy 惯例
+    QCOMPARE(createdSpy.count(), 1);
+    QCOMPARE(mgr.getDataCount(), 2);
+    DA::DAData nd = mgr.findData(QStringLiteral("src_GroupBy"));
+    QVERIFY(!nd.isNull());
+    // 结果表内容（长格式：g1, v_sum；a→30、b→30）
+    DA::DAPyDataFrame rdf = nd.toDataFrame();
+    QVERIFY(!rdf.isNone());
+    QCOMPARE(rdf.columns(), QList< QString >({ QStringLiteral("g1"), QStringLiteral("v_sum") }));
+    QCOMPARE(rdf.shape().first, static_cast< std::size_t >(2));
+    QCOMPARE(rdf.iat(0, 0).toString(), QStringLiteral("a"));
+    QCOMPARE(rdf.iat(0, 1).toDouble(), 30.0);
+    QCOMPARE(rdf.iat(1, 1).toDouble(), 30.0);
+    // 原表完全无损（非破坏产出）
+    QCOMPARE(df.columns(), QList< QString >({ QStringLiteral("g1"), QStringLiteral("v") }));
+    QCOMPARE(df.shape().first, static_cast< std::size_t >(3));
+    // Ctrl+Z 一次撤销「新数据集注册」（数据集从管理器消失）——addData_ 进管理器自己的撤销栈
+    QUndoStack* mgrStack = mgr.getUndoStack();
+    QVERIFY(mgrStack != nullptr && mgrStack->count() >= 1);
+    mgrStack->undo();
+    QVERIFY(mgr.findData(QStringLiteral("src_GroupBy")).isNull());
+    QCOMPARE(mgr.getDataCount(), 1);
+    // redo 恢复注册
+    mgrStack->redo();
+    QVERIFY(!mgr.findData(QStringLiteral("src_GroupBy")).isNull());
     w.hide();
 }
 

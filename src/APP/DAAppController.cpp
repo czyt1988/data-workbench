@@ -534,6 +534,7 @@ void DAAppController::initConnection()
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionRecomputeAllComputedColumns, onActionRecomputeAllComputedColumnsTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionSplitColumn, onActionSplitColumnTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionMergeColumns, onActionMergeColumnsTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionGroupBy, onActionGroupByTriggered);
     // View Category
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowWorkFlowArea, onActionShowWorkFlowAreaTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowWorkFlowManagerArea, onActionShowWorkFlowManagerAreaTriggered);
@@ -1488,6 +1489,17 @@ void DAAppController::onDataOperatePageCreated(DADataOperatePageWidget* page)
         // 数据工具改动数据后置工程未保存标记（004：计算列创建/重算等，exec/undo 都发）
         connect(w, &DADataOperateOfDataFrameWidget::dataModified, this, [ this ]() {
             setDirty();
+        });
+        // 新数据集产出（004 T1.22 分组聚合等）：置脏 + 抬起数据操作区 + 激活新页面
+        //（照 DataframeOperateWorker::createPivotTable 的产出流程；注册已由页面走 addData_ 完成）
+        connect(w, &DADataOperateOfDataFrameWidget::newDataCreated, this, [ this ](const DAData& newData) {
+            setDirty();
+            if (mDock) {
+                mDock->raiseDockingArea(DADockingAreaInterface::DockingAreaDataOperate);
+            }
+            if (DADataOperateWidget* dow = getDataOperateWidget()) {
+                dow->showData(newData);
+            }
         });
         // 列头右键菜单已迁入 DADataHeaderView（R12，菜单内容单点定义在 DAGui）：
         // 这里只做信号接线——收到菜单表意信号后先选中该列（复用 selectColumnInDataFrameWidget，
@@ -3485,6 +3497,21 @@ void DAAppController::onActionMergeColumnsTriggered()
         return;
     }
     dfopt->showMergeColumnsDialog();
+}
+
+/**
+ * @brief 分组聚合（004 T1.22，Ribbon「Data Tools」面板）
+ *
+ * 与表体右键菜单「分组聚合...」共用页面 showGroupByDialog 入口：产出新数据集
+ * （addData_ 可撤销注册），新页面激活经页面 newDataCreated 信号统一接线。
+ */
+void DAAppController::onActionGroupByTriggered()
+{
+    DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false);
+    if (!dfopt) {
+        return;
+    }
+    dfopt->showGroupByDialog();
 }
 
 /**

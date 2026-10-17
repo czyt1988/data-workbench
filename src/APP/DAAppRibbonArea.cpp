@@ -505,6 +505,7 @@ void DAAppRibbonArea::buildContextCategoryDataFrame()
     mPannelDataframeOperateDataTools->addMediumAction(mActions->actionRecomputeAllComputedColumns);
     mPannelDataframeOperateDataTools->addLargeAction(mActions->actionSplitColumn);
     mPannelDataframeOperateDataTools->addLargeAction(mActions->actionMergeColumns);
+    mPannelDataframeOperateDataTools->addLargeAction(mActions->actionGroupBy);
 
     // ===== 表格样式 category =====
     mCategoryDataframeStyle = mContextDataFrame->addCategoryPage(tr("Table Style"));  // cn:表格样式
