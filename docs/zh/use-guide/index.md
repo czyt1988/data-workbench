@@ -40,7 +40,7 @@ Data Workbench（软件内显示为 DAWorkBench）是一个数据分析和绘图
 不开工作流，直接对着打开的数据表做的操作。
 
 - [数据清洗](analysis/cleaning.md)：补缺失值、去重、插值、异常值处理、偏态转换。
-- [筛选、计算与排序](analysis/query.md)：条件筛选、表达式计算、按列过滤、排序、查找。
+- [筛选与过滤](analysis/query.md)：条件筛选、按列过滤（排序、查找已移入表格视图，表达式计算已升级为[计算列](data/table.md#计算列)）。
 - [描述统计与透视表](analysis/statistics.md)：一次点击看到数据的分布特征，以及分组汇总。
 - [统计绘图](analysis/stats-plots.md)：九种按列自动成图的图表，包括直方图、核密度、箱线图、热力图、回归图。
 

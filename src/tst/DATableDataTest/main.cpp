@@ -62,6 +62,15 @@
 #include <QLabel>
 #include <QImage>
 
+// 计算列（004 计划 §3，T1.23）
+#include "DAComputedColumn.h"
+#include "DATableComputedColumnStore.h"
+#include "Dialog/DADialogComputedColumn.h"
+#include <QDialogButtonBox>
+#include <QMessageBox>
+#include <QListWidget>
+#include <QTableWidget>
+
 #include "DASqliteLazyTable.h"
 #include <QSqlDatabase>
 #include <QSqlQuery>
@@ -344,6 +353,19 @@ private Q_SLOTS:
     void testConditionalPaintWidgetFlow();
     void testConditionalDialogSourceRestriction();
     void testConditionalScrollPerf1k();
+
+    // 004 WP1 计算列（T1.23 §3.4/§7.1）：定义类与三态存储状态机、XML round-trip、
+    // 依赖提取（含反引号/空格列名/语法错误）、求值算子（快照/失败不动数据）、
+    // 重算命令 undo/redo、对话框校验、widget 全链路（创建/标脏/重算/撤销/表头三态/
+    // 右键菜单/改名删列联动/打开工程不重算）、排序不标脏（R13）
+    void testComputedColumnDefinitionAndStore();
+    void testComputedColumnStoreXmlRoundTrip();
+    void testComputedColumnExprDepends();
+    void testComputedColumnEvalOperator();
+    void testComputedColumnCommandUndoRedo();
+    void testComputedColumnDialogValidation();
+    void testComputedColumnWidgetFlow();
+    void testComputedColumnRenameRemoveLinkage();
 
 private:
     // 生成/复用sqlite测试库（百万行），失败返回false并置mSqliteErr
@@ -1501,7 +1523,9 @@ void DATableDataTest::testContextMenuComposition()
                                      QStringLiteral("Find..."),
                                      QStringLiteral("Replace..."),
                                      QStringLiteral("<SEP>"),
-                                     QStringLiteral("Conditional Format...") };
+                                     QStringLiteral("Conditional Format..."),
+                                     QStringLiteral("<SEP>"),
+                                     QStringLiteral("Computed Column...") };
     QCOMPARE(bodySeq, expectedBody);
     // 剪贴板组无选区置灰
     QVERIFY(!byText.value(QStringLiteral("Cut"))->isEnabled());
@@ -1512,6 +1536,8 @@ void DATableDataTest::testContextMenuComposition()
     QVERIFY(!byText.value(QStringLiteral("Replace..."))->isEnabled());
     // 条件格式（003）：无选区置灰（入口作用于选区所在列）
     QVERIFY(!byText.value(QStringLiteral("Conditional Format..."))->isEnabled());
+    // 计算列（004）：无模型=只读源置灰
+    QVERIFY(!byText.value(QStringLiteral("Computed Column..."))->isEnabled());
     delete body;
 }
 
@@ -3153,6 +3179,622 @@ pdf5k = pd.DataFrame({
     qDebug().noquote() << QStringLiteral("testConditionalScrollPerf1k: 5000 rows, 50 scroll steps + repaints elapsed_ms=%1, statsCalls=%2")
                               .arg(elapsed)
                               .arg(statsCalls);
+    w.hide();
+}
+
+//===================================================
+// 004 WP1 计算列（T1.23）
+//===================================================
+
+// 004 §7.1：计算列状态机——创建→有效、依赖变更→待重算、依赖删除→失效、
+// 目标列被删→定义移除、改名迁移、Invalid 不降级、快照/恢复
+void DATableDataTest::testComputedColumnDefinitionAndStore()
+{
+    using DA::DAComputedColumn;
+    using DA::DATableComputedColumnStore;
+    using State                    = DATableComputedColumnStore::State;
+    // —— 定义类（纯数据）——
+    DAComputedColumn def;
+    QVERIFY(!def.isValid());
+    def = DAComputedColumn(QStringLiteral("C"), QStringLiteral("A + B"));
+    QVERIFY(def.isValid());
+    QCOMPARE(def.engine, DAComputedColumn::pandasEvalEngine());
+    QCOMPARE(def.version, DAComputedColumn::c_currentVersion);
+    QVERIFY(def.enabled);
+    def.dependsOn = QStringList { QStringLiteral("A"), QStringLiteral("B") };
+    QVERIFY(!def.isSelfReferencing());
+    def.dependsOn = QStringList { QStringLiteral("A"), QStringLiteral("C") };
+    QVERIFY(def.isSelfReferencing());  // R7：自覆盖判定（依赖含目标列）
+    // —— 存储状态机 ——
+    DATableComputedColumnStore store;
+    QVERIFY(store.isEmpty());
+    QSignalSpy defSpy(&store, &DATableComputedColumnStore::definitionsChanged);
+    QSignalSpy stateSpy(&store, &DATableComputedColumnStore::stateChanged);
+    DAComputedColumn c1(QStringLiteral("C"), QStringLiteral("A + B"));
+    c1.dependsOn = QStringList { QStringLiteral("A"), QStringLiteral("B") };
+    DAComputedColumn c2(QStringLiteral("D"), QStringLiteral("C * 2"));
+    c2.dependsOn = QStringList { QStringLiteral("C") };
+    store.addDefinition(c1, State::Valid);
+    store.addDefinition(c2, State::Valid);
+    QCOMPARE(store.count(), 2);
+    QCOMPARE(store.targetColumns(), QStringList({ QStringLiteral("C"), QStringLiteral("D") }));
+    QCOMPARE(defSpy.count(), 2);
+    QCOMPARE(store.stateOf(QStringLiteral("C")), State::Valid);
+    QCOMPARE(store.stateOf(QStringLiteral("nope")), State::Invalid);  // 无定义按失效
+    QVERIFY(!store.hasDefinition(QStringLiteral("nope")));
+    // 依赖列变更 → 直接依赖者 Stale，间接依赖者不动（一次只标直接依赖）
+    QStringList marked = store.markStaleForChangedColumns({ QStringLiteral("A") });
+    QCOMPARE(marked, QStringList({ QStringLiteral("C") }));
+    QCOMPARE(store.stateOf(QStringLiteral("C")), State::Stale);
+    QCOMPARE(store.stateOf(QStringLiteral("D")), State::Valid);
+    QCOMPARE(stateSpy.count(), 1);
+    // 目标列自身被改 → 也标 Stale；同时是他人依赖 → 两者都标
+    store.setState(QStringLiteral("C"), State::Valid);
+    marked = store.markStaleForChangedColumns({ QStringLiteral("C") });
+    QCOMPARE(marked.size(), 2);
+    QVERIFY(marked.contains(QStringLiteral("C")) && marked.contains(QStringLiteral("D")));
+    // Invalid 不因数据变更降级为 Stale（保持失效直到修复）
+    store.setState(QStringLiteral("C"), State::Invalid);
+    store.setState(QStringLiteral("D"), State::Valid);
+    marked = store.markStaleForChangedColumns({ QStringLiteral("A") });
+    QCOMPARE(marked, QStringList());
+    QCOMPARE(store.stateOf(QStringLiteral("C")), State::Invalid);
+    // markAllStale 只标 Valid（整表操作保守标记，R8）
+    marked = store.markAllStale();
+    QCOMPARE(marked, QStringList({ QStringLiteral("D") }));
+    QCOMPARE(store.stateOf(QStringLiteral("C")), State::Invalid);
+    // 改名迁移（R20）：依赖列改名 / 目标列自身改名
+    store.setState(QStringLiteral("C"), State::Valid);
+    store.setState(QStringLiteral("D"), State::Valid);
+    int n = store.renameColumnReferences(QStringLiteral("A"), QStringLiteral("A2"));
+    QCOMPARE(n, 1);
+    QCOMPARE(store.definition(QStringLiteral("C")).dependsOn, QStringList({ QStringLiteral("A2"), QStringLiteral("B") }));
+    n = store.renameColumnReferences(QStringLiteral("C"), QStringLiteral("C2"));
+    QCOMPARE(n, 2);  // c1 目标 + c2 依赖
+    QVERIFY(store.hasDefinition(QStringLiteral("C2")));
+    QVERIFY(!store.hasDefinition(QStringLiteral("C")));
+    QCOMPARE(store.definition(QStringLiteral("D")).dependsOn, QStringList({ QStringLiteral("C2") }));
+    // definitionsReferencing：引用 C2 作依赖的定义（不含自身）
+    QCOMPARE(store.definitionsReferencing(QStringLiteral("C2")), QStringList({ QStringLiteral("D") }));
+    QVERIFY(store.definitionsReferencing(QStringLiteral("D")).isEmpty());
+    // 删列联动：删依赖列 B → C2 失效（定义保留）；删目标列 D → 定义移除
+    QStringList removedTargets, invalidatedTargets;
+    store.onColumnsRemoved({ QStringLiteral("B"), QStringLiteral("D") }, &removedTargets, &invalidatedTargets);
+    QCOMPARE(removedTargets, QStringList({ QStringLiteral("D") }));
+    QCOMPARE(invalidatedTargets, QStringList({ QStringLiteral("C2") }));
+    QCOMPARE(store.count(), 1);
+    QCOMPARE(store.stateOf(QStringLiteral("C2")), State::Invalid);
+    // 快照/恢复（删列命令 undo 联动用）
+    const QList< DATableComputedColumnStore::Entry > snap = store.snapshot();
+    store.clear();
+    QVERIFY(store.isEmpty());
+    store.restore(snap);
+    QCOMPARE(store.count(), 1);
+    QCOMPARE(store.stateOf(QStringLiteral("C2")), State::Invalid);
+    QVERIFY(defSpy.count() > 2);
+}
+
+// 004 R10 磁盘契约：<computed-column> 段 round-trip（expr 特殊字符/空格列名/状态/依赖/engine/version）
+void DATableDataTest::testComputedColumnStoreXmlRoundTrip()
+{
+    using DA::DAComputedColumn;
+    using DA::DATableComputedColumnStore;
+    using State = DATableComputedColumnStore::State;
+    DATableComputedColumnStore store;
+    DAComputedColumn c1(QStringLiteral("ratio"), QStringLiteral("A < B && `my col` > 1"));
+    c1.dependsOn = QStringList { QStringLiteral("A"), QStringLiteral("B"), QStringLiteral("my col") };
+    store.addDefinition(c1, State::Stale);
+    DAComputedColumn c2(QStringLiteral("flag"), QStringLiteral("A >= 60"));
+    c2.dependsOn = QStringList { QStringLiteral("A") };
+    c2.enabled   = false;
+    store.addDefinition(c2, State::Invalid);
+    QDomDocument doc;
+    QDomElement table = doc.createElement(QStringLiteral("table"));
+    doc.appendChild(table);
+    store.toXml(doc, table);
+    QDomElement cc = table.firstChildElement(QStringLiteral("computed-column"));
+    QVERIFY(!cc.isNull());
+    // 磁盘契约字段（expr+engine+version+state）
+    QDomElement col0 = cc.firstChildElement(QStringLiteral("column"));
+    QCOMPARE(col0.attribute(QStringLiteral("target")), QStringLiteral("ratio"));
+    QCOMPARE(col0.attribute(QStringLiteral("engine")), QStringLiteral("pandas.eval"));
+    QCOMPARE(col0.attribute(QStringLiteral("version")).toInt(), DAComputedColumn::c_currentVersion);
+    QCOMPARE(col0.attribute(QStringLiteral("state")), QStringLiteral("stale"));
+    // round-trip
+    DATableComputedColumnStore store2;
+    QSignalSpy spy(&store2, &DATableComputedColumnStore::definitionsChanged);
+    QVERIFY(store2.fromXml(cc));
+    QCOMPARE(store2.count(), 2);
+    QCOMPARE(spy.count(), 1);  // 加载只恢复定义，不发求值（store 层无求值路径，R7）
+    QCOMPARE(store2.targetColumns(), QStringList({ QStringLiteral("ratio"), QStringLiteral("flag") }));
+    QCOMPARE(store2.stateOf(QStringLiteral("ratio")), State::Stale);  // 状态持久化（打开工程不重算，R7）
+    QCOMPARE(store2.stateOf(QStringLiteral("flag")), State::Invalid);
+    const DAComputedColumn r1 = store2.definition(QStringLiteral("ratio"));
+    QCOMPARE(r1.expr, c1.expr);  // XML 特殊字符（< && 反引号）经 CDATA 无损
+    QCOMPARE(r1.dependsOn, c1.dependsOn);
+    QCOMPARE(r1.engine, c1.engine);
+    QCOMPARE(r1.version, c1.version);
+    const DAComputedColumn r2 = store2.definition(QStringLiteral("flag"));
+    QVERIFY(!r2.enabled);
+    // 空 store 不写段
+    DATableComputedColumnStore empty;
+    QDomDocument doc2;
+    QDomElement table2 = doc2.createElement(QStringLiteral("table"));
+    doc2.appendChild(table2);
+    empty.toXml(doc2, table2);
+    QVERIFY(table2.firstChildElement(QStringLiteral("computed-column")).isNull());
+}
+
+// 004 §7.1：表达式依赖提取（普通列/反引号空格列名/函数名过滤/语法错误）+ 反引号判定
+void DATableDataTest::testComputedColumnExprDepends()
+{
+    if (!mPandasOk || !mPyScriptsOk) {
+        QSKIP("pandas/DAPyScripts not available");
+    }
+    DA::DAPyScriptsDataFrame& py = DA::DAPyScripts::getDataFrame();
+    pybind11::dict scope;
+    pybind11::exec(R"(
+import pandas as pd
+df = pd.DataFrame({"A":[1,2],"B":[3,4],"my col":[5,6]})
+)",
+                   pybind11::globals(),
+                   scope);
+    DA::DAPyDataFrame df(scope[ "df" ]);
+    bool ok  = false;
+    // 普通列引用（按列序返回）
+    QStringList deps = py.exprDepends(df, QStringLiteral("B * 2 + A"), &ok);
+    QVERIFY(ok);
+    QCOMPARE(deps, QStringList({ QStringLiteral("A"), QStringLiteral("B") }));
+    // 反引号空格列名
+    deps = py.exprDepends(df, QStringLiteral("`my col` / A"), &ok);
+    QVERIFY(ok);
+    QCOMPARE(deps, QStringList({ QStringLiteral("A"), QStringLiteral("my col") }));
+    // 函数名与字符串字面量不误报（只留实际列）
+    deps = py.exprDepends(df, QStringLiteral("abs(A) + 1"), &ok);
+    QVERIFY(ok);
+    QCOMPARE(deps, QStringList({ QStringLiteral("A") }));
+    // 语法错误 → ok=false（对话框转校验失败提示）
+    QString err;
+    deps = py.exprDepends(df, QStringLiteral("A +"), &ok, &err);
+    QVERIFY(!ok);
+    QVERIFY(deps.isEmpty());
+    QVERIFY(!err.isEmpty());
+    // 反引号判定（R20）：合法标识符裸写，空格/数字开头/关键字加反引号
+    QVERIFY(!py.needsBacktick(QStringLiteral("A")));
+    QVERIFY(!py.needsBacktick(QStringLiteral("col_1")));
+    QVERIFY(py.needsBacktick(QStringLiteral("my col")));
+    QVERIFY(py.needsBacktick(QStringLiteral("2024")));
+    QVERIFY(py.needsBacktick(QStringLiteral("in")));
+}
+
+// 004 §7.1：计算列求值算子（新建/重算快照/失败不动数据/空格目标列/预览副本/还原）
+void DATableDataTest::testComputedColumnEvalOperator()
+{
+    if (!mPandasOk || !mPyScriptsOk) {
+        QSKIP("pandas/DAPyScripts not available");
+    }
+    DA::DAPyScriptsDataFrame& py = DA::DAPyScripts::getDataFrame();
+    pybind11::dict scope;
+    pybind11::exec(R"(
+import pandas as pd
+df = pd.DataFrame({"A":[1,2,3],"B":[4,5,6]})
+)",
+                   pybind11::globals(),
+                   scope);
+    DA::DAPyDataFrame df(scope[ "df" ]);
+    // 新建列：had=false、无旧列快照
+    auto r = py.evalColumn(df, QStringLiteral("C"), QStringLiteral("A + B"));
+    QVERIFY(r.ok);
+    QVERIFY(!r.hadColumn);
+    QVERIFY(r.oldColumn.isNone());
+    QCOMPARE(df.iat(0, 2).toInt(), 5);
+    QCOMPARE(df.iat(2, 2).toInt(), 9);
+    // 重算：had=true + 旧列快照
+    QVERIFY(py.evalColumn(df, QStringLiteral("A"), QStringLiteral("A0")) .ok == false);  // A0 不存在 → 失败
+    QVERIFY(df.columns().contains(QStringLiteral("A")));                                  // 数据不变
+    r = py.evalColumn(df, QStringLiteral("C"), QStringLiteral("A * 10"));
+    QVERIFY(r.ok);
+    QVERIFY(r.hadColumn);
+    QVERIFY(!r.oldColumn.isNone());
+    QCOMPARE(df.iat(0, 2).toInt(), 10);
+    // 还原旧列（undo 路径算子）
+    QVERIFY(py.setColumn(df, QStringLiteral("C"), r.oldColumn));
+    QCOMPARE(df.iat(0, 2).toInt(), 5);
+    QCOMPARE(df.iat(2, 2).toInt(), 9);
+    // 空格目标列名（da_eval_column 走 df[target]=result 赋值，不受 pandas eval 反引号赋值缺陷影响）
+    r = py.evalColumn(df, QStringLiteral("new col"), QStringLiteral("A * `new col`"));
+    QVERIFY(!r.ok);  // 引用了尚不存在的 `new col` → 失败（自覆盖同款防线）
+    r = py.evalColumn(df, QStringLiteral("new col"), QStringLiteral("A * 2"));
+    QVERIFY(r.ok);
+    QVERIFY(df.columns().contains(QStringLiteral("new col")));
+    QCOMPARE(df.iat(1, df.columns().indexOf(QStringLiteral("new col"))).toInt(), 4);
+    // 失败：引用不存在列 → ok=false、errorMessage 非空、不新建列
+    r = py.evalColumn(df, QStringLiteral("D"), QStringLiteral("NOSUCH + 1"));
+    QVERIFY(!r.ok);
+    QVERIFY(!r.errorMessage.isEmpty());
+    QVERIFY(!df.columns().contains(QStringLiteral("D")));
+    // 预览副本：head 上求值不触碰原表
+    DA::DAPyDataFrame head = py.headCopy(df, 2);
+    QVERIFY(!head.isNone());
+    QCOMPARE(head.shape().first, static_cast< std::size_t >(2));
+    r = py.evalColumn(head, QStringLiteral("P"), QStringLiteral("A + B"));
+    QVERIFY(r.ok);
+    QVERIFY(head.columns().contains(QStringLiteral("P")));
+    QVERIFY(!df.columns().contains(QStringLiteral("P")));
+    // 列副本算子（分列/合列快照用）
+    DA::DAPySeries colCopy = py.getColumnCopy(df, 0);
+    QVERIFY(!colCopy.isNone());
+    QVERIFY(py.getColumnCopy(df, 99).isNone());  // 越界 → none
+}
+
+// 004 §7.1：重算命令 undo/redo（创建=删列，重算=还原旧列；列值一致，D4 列级记录）
+void DATableDataTest::testComputedColumnCommandUndoRedo()
+{
+    if (!mPandasOk || !mPyScriptsOk) {
+        QSKIP("pandas/DAPyScripts not available");
+    }
+    pybind11::dict scope;
+    pybind11::exec(R"(
+import pandas as pd
+df = pd.DataFrame({"A":[1,2,3],"B":[4,5,6]})
+)",
+                   pybind11::globals(),
+                   scope);
+    DA::DAPyDataFrame df(scope[ "df" ]);
+    QUndoStack stack;
+    // —— 创建命令：exec 建列，push 首次 redo 跳过 ——
+    auto* cmd = new DA::DACommandDataFrame_evalColumn(df, QStringLiteral("C"), QStringLiteral("A + B"));
+    int cbCount = 0, dirUndo = 0, dirRedo = 0;
+    cmd->setCallBack([ &cbCount ]() {
+        ++cbCount;
+    });
+    cmd->setDirectionalCallBack([ &dirUndo, &dirRedo ](bool isUndo) {
+        if (isUndo) {
+            ++dirUndo;
+        } else {
+            ++dirRedo;
+        }
+    });
+    QVERIFY(cmd->exec());
+    QCOMPARE(df.iat(0, 2).toInt(), 5);
+    QVERIFY(df.columns().contains(QStringLiteral("C")));
+    stack.push(cmd);  // 首次 redo 跳过，不重复求值
+    QCOMPARE(cbCount, 1);
+    QCOMPARE(dirRedo, 1);
+    QCOMPARE(stack.count(), 1);
+    // undo → 删除新建列
+    stack.undo();
+    QVERIFY(!df.columns().contains(QStringLiteral("C")));
+    QCOMPARE(df.columns().size(), 2);
+    QCOMPARE(dirUndo, 1);
+    // redo → 重新求值建列
+    stack.redo();
+    QVERIFY(df.columns().contains(QStringLiteral("C")));
+    QCOMPARE(df.iat(2, 2).toInt(), 9);
+    // —— 重算命令：目标列已存在，undo 还原旧列 ——
+    auto* cmd2 = new DA::DACommandDataFrame_evalColumn(df, QStringLiteral("C"), QStringLiteral("A * 10"));
+    QVERIFY(cmd2->exec());
+    QCOMPARE(df.iat(0, 2).toInt(), 10);  // C 被重算为 A*10
+    stack.push(cmd2);
+    stack.undo();                          // 还原为 A+B
+    QCOMPARE(df.iat(0, 2).toInt(), 5);
+    QCOMPARE(df.iat(2, 2).toInt(), 9);
+    stack.redo();
+    QCOMPARE(df.iat(0, 2).toInt(), 10);
+    // —— 失败表达式：exec 返回 false，不入栈，数据不变 ——
+    DA::DACommandDataFrame_evalColumn bad(df, QStringLiteral("E"), QStringLiteral("NOPE + 1"));
+    QVERIFY(!bad.exec());
+    QVERIFY(!bad.lastErrorMessage().isEmpty());
+    QVERIFY(!df.columns().contains(QStringLiteral("E")));
+}
+
+// 004 §3.4：对话框校验（自覆盖/已存在列/不存在列/语法错误拒绝，合法表达式通过并给出依赖）
+void DATableDataTest::testComputedColumnDialogValidation()
+{
+    if (!mPandasOk || !mPyScriptsOk) {
+        QSKIP("pandas/DAPyScripts not available");
+    }
+    pybind11::dict scope;
+    pybind11::exec(R"(
+import pandas as pd
+df = pd.DataFrame({"A":[1,2,3],"B":[4,5,6]})
+)",
+                   pybind11::globals(),
+                   scope);
+    DA::DAPyDataFrame df(scope[ "df" ]);
+    auto okButton = [](DA::DADialogComputedColumn& dlg) -> QPushButton* {
+        QDialogButtonBox* box = dlg.findChild< QDialogButtonBox* >();
+        return box ? box->button(QDialogButtonBox::Ok) : nullptr;
+    };
+    auto setInputs = [](DA::DADialogComputedColumn& dlg, const QString& target, const QString& expr) {
+        QLineEdit* targetEdit = dlg.findChild< QLineEdit* >(QStringLiteral("lineEditComputedTarget"));
+        QLineEdit* exprEdit   = dlg.findChild< QLineEdit* >(QStringLiteral("lineEditComputedExpr"));
+        QVERIFY(targetEdit != nullptr && exprEdit != nullptr);
+        targetEdit->setText(target);
+        exprEdit->setText(expr);
+    };
+    // 合法创建：目标新列 + 引用现有列 → OK 可用，依赖 = {A,B}
+    {
+        DA::DADialogComputedColumn dlg(df);
+        setInputs(dlg, QStringLiteral("C"), QStringLiteral("A + B"));
+        QTest::qWait(450);  // 越过去抖（300ms）
+        QPushButton* ok = okButton(dlg);
+        QVERIFY(ok && ok->isEnabled());
+        QCOMPARE(dlg.dependencies(), QStringList({ QStringLiteral("A"), QStringLiteral("B") }));
+        QCOMPARE(dlg.targetColumnName(), QStringLiteral("C"));
+        QCOMPARE(dlg.expressionBody(), QStringLiteral("A + B"));
+    }
+    // 目标列已存在（创建模式）→ 拒绝（禁止覆盖已有列，R7）
+    {
+        DA::DADialogComputedColumn dlg(df);
+        setInputs(dlg, QStringLiteral("A"), QStringLiteral("B * 2"));
+        QTest::qWait(450);
+        QPushButton* ok = okButton(dlg);
+        QVERIFY(ok && !ok->isEnabled());
+    }
+    // 引用不存在列 → 预览求值失败 → 拒绝
+    {
+        DA::DADialogComputedColumn dlg(df);
+        setInputs(dlg, QStringLiteral("Z"), QStringLiteral("NOPE + 1"));
+        QTest::qWait(450);
+        QPushButton* ok = okButton(dlg);
+        QVERIFY(ok && !ok->isEnabled());
+    }
+    // 语法错误 → 依赖解析失败 → 拒绝
+    {
+        DA::DADialogComputedColumn dlg(df);
+        setInputs(dlg, QStringLiteral("Z"), QStringLiteral("A +"));
+        QTest::qWait(450);
+        QPushButton* ok = okButton(dlg);
+        QVERIFY(ok && !ok->isEnabled());
+    }
+    // 编辑模式：目标字段只读；自覆盖（表达式引用目标列 A）→ 拒绝
+    {
+        DA::DADialogComputedColumn dlg(df);
+        DA::DAComputedColumn def(QStringLiteral("A"), QStringLiteral("B * 2"));
+        dlg.setEditMode(def);
+        QVERIFY(dlg.isEditMode());
+        QLineEdit* targetEdit = dlg.findChild< QLineEdit* >(QStringLiteral("lineEditComputedTarget"));
+        QLineEdit* exprEdit   = dlg.findChild< QLineEdit* >(QStringLiteral("lineEditComputedExpr"));
+        QVERIFY(targetEdit->isReadOnly());
+        QCOMPARE(targetEdit->text(), QStringLiteral("A"));
+        exprEdit->setText(QStringLiteral("A + 1"));  // A 是目标 → 自覆盖
+        QTest::qWait(450);
+        QPushButton* ok = okButton(dlg);
+        QVERIFY(ok && !ok->isEnabled());
+    }
+}
+
+// 004 §3.4：widget 全链路——创建入栈、依赖变更标脏、手动重算、undo 还原、表头浅蓝底色
+void DATableDataTest::testComputedColumnWidgetFlow()
+{
+    if (!mPandasOk || !mPyScriptsOk) {
+        QSKIP("pandas/DAPyScripts not available");
+    }
+    pybind11::dict scope;
+    pybind11::exec(R"(
+import pandas as pd
+df = pd.DataFrame({"A":[1,2,3],"B":[4,5,6]})
+)",
+                   pybind11::globals(),
+                   scope);
+    DA::DAPyDataFrame df(scope[ "df" ]);
+    DA::DAData d(df);
+    DA::DATableMetadataRegistry registry(nullptr);
+    DA::DADataOperateOfDataFrameWidget w(d, &registry);
+    w.resize(700, 400);
+    w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+    DA::DATableComputedColumnStore* store = w.computedColumnStore();
+    QVERIFY(store != nullptr);
+    QVERIFY(store->isEmpty());
+    // —— 经对话框创建计算列 C = A + B（驱动模态对话框填写并接受）——
+    QTimer::singleShot(0, []() {
+        auto* dlg = qobject_cast< DA::DADialogComputedColumn* >(QApplication::activeModalWidget());
+        if (!dlg) {
+            return;
+        }
+        QLineEdit* targetEdit = dlg->findChild< QLineEdit* >(QStringLiteral("lineEditComputedTarget"));
+        QLineEdit* exprEdit   = dlg->findChild< QLineEdit* >(QStringLiteral("lineEditComputedExpr"));
+        if (targetEdit && exprEdit) {
+            targetEdit->setText(QStringLiteral("C"));
+            exprEdit->setText(QStringLiteral("A + B"));
+        }
+        QTimer::singleShot(500, [ dlg ]() {
+            QDialogButtonBox* box = dlg->findChild< QDialogButtonBox* >();
+            if (box && box->button(QDialogButtonBox::Ok)->isEnabled()) {
+                dlg->accept();
+            } else {
+                dlg->reject();
+            }
+        });
+    });
+    w.showComputedColumnDialog(-1);
+    // 创建结果：列 C 物化、定义 Valid、入撤销栈
+    QVERIFY(df.columns().contains(QStringLiteral("C")));
+    QCOMPARE(df.iat(0, 2).toInt(), 5);
+    QVERIFY(store->hasDefinition(QStringLiteral("C")));
+    QCOMPARE(store->stateOf(QStringLiteral("C")), DA::DATableComputedColumnStore::State::Valid);
+    QCOMPARE(w.getUndoStack()->count(), 1);
+    // 表头浅蓝底色（R9：BackgroundRole = #BDCDE8）
+    const int colC = df.columns().indexOf(QStringLiteral("C"));
+    QVariant bg    = w.getDataTableView()->model()->headerData(colC, Qt::Horizontal, Qt::BackgroundRole);
+    QVERIFY(bg.canConvert< QColor >());
+    QCOMPARE(bg.value< QColor >(), QColor(0xBD, 0xCD, 0xE8));
+    // 非计算列无底色
+    QVariant bgA = w.getDataTableView()->model()->headerData(0, Qt::Horizontal, Qt::BackgroundRole);
+    QVERIFY(!bgA.canConvert< QColor >() || !bgA.isValid());
+    // —— 改依赖列 A[0] 1→10 → C 转待重算（cellValueChanged 精确挂点）——
+    QAbstractItemModel* model = w.getDataTableView()->model();
+    QVERIFY(model->setData(model->index(0, 0), QVariant(10), Qt::EditRole));
+    QCOMPARE(store->stateOf(QStringLiteral("C")), DA::DATableComputedColumnStore::State::Stale);
+    // —— 手动重算 C → 值更新（A[0]+B[0]=14）且转有效，入栈 ——
+    const int undoBefore = w.getUndoStack()->count();
+    QVERIFY(w.recomputeComputedColumn(colC));
+    QCOMPARE(df.iat(0, 2).toInt(), 14);
+    QCOMPARE(store->stateOf(QStringLiteral("C")), DA::DATableComputedColumnStore::State::Valid);
+    QCOMPARE(w.getUndoStack()->count(), undoBefore + 1);
+    // —— undo 重算 → C 还原为旧值（5），状态回到重算前（Stale）——
+    w.getUndoStack()->undo();
+    QCOMPARE(df.iat(0, 2).toInt(), 5);
+    QCOMPARE(store->stateOf(QStringLiteral("C")), DA::DATableComputedColumnStore::State::Stale);
+    // —— 移除公式（保留数据）：定义消失、列仍在，可撤销 ——
+    w.getUndoStack()->redo();  // 回到 Valid
+    QVERIFY(w.removeComputedColumnFormula(colC));
+    QVERIFY(!store->hasDefinition(QStringLiteral("C")));
+    QVERIFY(df.columns().contains(QStringLiteral("C")));  // 列数据保留
+    w.getUndoStack()->undo();                             // 恢复定义
+    QVERIFY(store->hasDefinition(QStringLiteral("C")));
+    // —— 打开工程不重算（R7）：元数据快照恢复 + 篡改列值后新建页面，值保持篡改后（未求值）——
+    {
+        DA::DATableMetadata* bundle1 = registry.getOrCreate(d);
+        QVERIFY(bundle1 != nullptr);
+        const QString snapshot = bundle1->snapshotToString();
+        QVERIFY(!snapshot.isEmpty());
+        // 篡改 C 列值（偏离公式结果 A+B），模拟"工程里的物化值"
+        pybind11::exec(R"(df["C"] = [99, 99, 99])", pybind11::globals(), scope);
+        QCOMPARE(df.iat(0, 2).toInt(), 99);
+        // 新会话：新注册表 + 快照恢复（等价 DAAppProject 加载路径），再建页面
+        DA::DATableMetadataRegistry registry2(nullptr);
+        DA::DATableMetadata* bundle2 = registry2.getOrCreate(d);
+        QVERIFY(bundle2->restoreFromString(snapshot));
+        DA::DATableComputedColumnStore* store2 = bundle2->computedColumns();
+        QVERIFY(store2->hasDefinition(QStringLiteral("C")));
+        QCOMPARE(store2->stateOf(QStringLiteral("C")), DA::DATableComputedColumnStore::State::Valid);  // 状态恢复
+        DA::DADataOperateOfDataFrameWidget w2(d, &registry2);
+        w2.resize(700, 400);
+        w2.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&w2));
+        // 打开页面不触发任何重算：C 保持篡改后的值（若重算会变回 A+B=14/7/9）
+        QCOMPARE(df.iat(0, 2).toInt(), 99);
+        QCOMPARE(df.iat(1, 2).toInt(), 99);
+        QCOMPARE(w2.computedColumnStore()->stateOf(QStringLiteral("C")), DA::DATableComputedColumnStore::State::Valid);
+        w2.hide();
+    }
+    w.hide();
+}
+
+// 004 §3.4：改名/删列联动 + 排序不触发标脏（R13/R20）
+void DATableDataTest::testComputedColumnRenameRemoveLinkage()
+{
+    if (!mPandasOk || !mPyScriptsOk) {
+        QSKIP("pandas/DAPyScripts not available");
+    }
+    pybind11::dict scope;
+    pybind11::exec(R"(
+import pandas as pd
+df = pd.DataFrame({"A":[1,2,3],"B":[4,5,6],"K":[3,1,2]})
+)",
+                   pybind11::globals(),
+                   scope);
+    DA::DAPyDataFrame df(scope[ "df" ]);
+    DA::DAData d(df);
+    DA::DATableMetadataRegistry registry(nullptr);
+    DA::DADataOperateOfDataFrameWidget w(d, &registry);
+    w.resize(700, 400);
+    w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+    DA::DATableComputedColumnStore* store = w.computedColumnStore();
+    QVERIFY(store != nullptr);
+    // 直接建一个计算列 C=A+B（走对话框路径，驱动模态）
+    QTimer::singleShot(0, []() {
+        auto* dlg = qobject_cast< DA::DADialogComputedColumn* >(QApplication::activeModalWidget());
+        if (!dlg) {
+            return;
+        }
+        QLineEdit* targetEdit = dlg->findChild< QLineEdit* >(QStringLiteral("lineEditComputedTarget"));
+        QLineEdit* exprEdit   = dlg->findChild< QLineEdit* >(QStringLiteral("lineEditComputedExpr"));
+        if (targetEdit && exprEdit) {
+            targetEdit->setText(QStringLiteral("C"));
+            exprEdit->setText(QStringLiteral("A + B"));
+        }
+        QTimer::singleShot(500, [ dlg ]() {
+            QDialogButtonBox* box = dlg->findChild< QDialogButtonBox* >();
+            if (box && box->button(QDialogButtonBox::Ok)->isEnabled()) {
+                dlg->accept();
+            } else {
+                dlg->reject();
+            }
+        });
+    });
+    w.showComputedColumnDialog(-1);
+    QVERIFY(store->hasDefinition(QStringLiteral("C")));
+    QCOMPARE(store->definition(QStringLiteral("C")).dependsOn, QStringList({ QStringLiteral("A"), QStringLiteral("B") }));
+    DA::DADataTableView* tv = w.getDataTableView();
+    // —— 排序不触发标脏（R13）：点 K 列表头排序后 C 仍 Valid ——
+    DA::DADataHeaderView* hh = qobject_cast< DA::DADataHeaderView* >(tv->horizontalHeader());
+    QVERIFY(hh != nullptr);
+    int colK = -1;
+    for (int c = 0; c < hh->count(); ++c) {
+        if (hh->model()->headerData(c, Qt::Horizontal).toString() == QLatin1String("K")) {
+            colK = c;
+            break;
+        }
+    }
+    QVERIFY(colK >= 0);
+    {
+        const int x = hh->sectionViewportPosition(colK) + qMax(1, hh->sectionSize(colK) / 2);
+        const int y = qMax(1, hh->viewport()->height() / 2);
+        QTest::mouseClick(hh->viewport(), Qt::LeftButton, Qt::NoModifier, QPoint(x, y));
+    }
+    QCOMPARE(store->stateOf(QStringLiteral("C")), DA::DATableComputedColumnStore::State::Valid);  // 排序未标脏
+    // —— 改名被依赖列 A→A2：确认框点 Yes，定义依赖迁移；undo 还原 ——
+    int colA = -1;
+    for (int c = 0; c < hh->count(); ++c) {
+        if (hh->model()->headerData(c, Qt::Horizontal).toString() == QLatin1String("A")) {
+            colA = c;
+            break;
+        }
+    }
+    QVERIFY(colA >= 0);
+    QTimer::singleShot(0, []() {
+        auto* mb = qobject_cast< QMessageBox* >(QApplication::activeModalWidget());
+        if (mb) {
+            mb->button(QMessageBox::Yes)->click();
+        }
+    });
+    const int undoCnt = w.getUndoStack()->count();
+    QVERIFY(w.renameColumn(colA, QStringLiteral("A2")));
+    QCOMPARE(store->definition(QStringLiteral("C")).dependsOn, QStringList({ QStringLiteral("A2"), QStringLiteral("B") }));
+    // undo 改名 → 依赖迁移回 A
+    w.getUndoStack()->undo();
+    QCOMPARE(store->definition(QStringLiteral("C")).dependsOn, QStringList({ QStringLiteral("A"), QStringLiteral("B") }));
+    w.getUndoStack()->redo();  // 回到 A2 状态便于后续（依赖 A2）
+    QCOMPARE(w.getUndoStack()->count(), undoCnt + 1);
+    // —— 删除被依赖列 B → C 失效（定义保留，不静默清空）；undo 恢复 Valid ——
+    int colB = -1;
+    for (int c = 0; c < hh->count(); ++c) {
+        if (hh->model()->headerData(c, Qt::Horizontal).toString() == QLatin1String("B")) {
+            colB = c;
+            break;
+        }
+    }
+    QVERIFY(colB >= 0);
+    tv->clearSelection();
+    tv->selectColumn(colB);
+    QVERIFY(w.removeSelectColumn() > 0);
+    QVERIFY(!df.columns().contains(QStringLiteral("B")));
+    QVERIFY(store->hasDefinition(QStringLiteral("C")));                              // 定义保留
+    QCOMPARE(store->stateOf(QStringLiteral("C")), DA::DATableComputedColumnStore::State::Invalid);  // 失效
+    w.getUndoStack()->undo();                                                        // 恢复列 + 定义状态
+    QVERIFY(df.columns().contains(QStringLiteral("B")));
+    QVERIFY(store->hasDefinition(QStringLiteral("C")));
+    // —— 删除计算列自身 C → 定义一并移除；undo 恢复定义 ——
+    int colC = -1;
+    for (int c = 0; c < hh->count(); ++c) {
+        if (hh->model()->headerData(c, Qt::Horizontal).toString() == QLatin1String("C")) {
+            colC = c;
+            break;
+        }
+    }
+    QVERIFY(colC >= 0);
+    tv->clearSelection();
+    tv->selectColumn(colC);
+    QVERIFY(w.removeSelectColumn() > 0);
+    QVERIFY(!df.columns().contains(QStringLiteral("C")));
+    QVERIFY(!store->hasDefinition(QStringLiteral("C")));  // 目标列被删 → 定义移除
+    w.getUndoStack()->undo();
+    QVERIFY(store->hasDefinition(QStringLiteral("C")));   // 撤销恢复定义
     w.hide();
 }
 
