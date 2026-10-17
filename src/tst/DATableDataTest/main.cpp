@@ -22,6 +22,15 @@
 #include "DATableDataBlock.h"
 #include "DADataFactory.h"
 
+// 表格元数据基础设施（001 计划 §4.1）
+#include "DATableHighlightOverlay.h"
+#include "DATableKeyRemap.h"
+#include "DATableMetadata.h"
+#include "DATableMetadataRegistry.h"
+#include "DATableStyleManager.h"
+#include "DATableViewStateStore.h"
+#include <QSignalSpy>
+
 #include "Models/DADataTableModel.h"
 #include <QUndoStack>
 
@@ -268,6 +277,16 @@ private Q_SLOTS:
     void testSqliteLazyTable();
     void testSqliteModelIntegration();
     void testSqliteReferenceRoundTrip();
+    // 表格元数据基础设施（001 计划 §4.1）：瞬态高亮层
+    void testHighlightOverlayBasics();
+    void testHighlightOverlayPriority();
+    void testHighlightOverlayKeyPacking();
+    // 位置键重映射工具与 DATableStyleManager::onRowsReordered
+    void testKeyRemapUtility();
+    void testStyleManagerRowsReordered();
+    // 视图状态子存储与元数据注册表
+    void testViewStateStore();
+    void testMetadataRegistry();
 
 private:
     // 生成/复用sqlite测试库（百万行），失败返回false并置mSqliteErr
@@ -952,6 +971,339 @@ void DATableDataTest::testSqliteReferenceRoundTrip()
     QCOMPARE(block.cell(2, 2).toString(), QStringLiteral("row2"));
 
     DA::DADataFactory::unregisterCreator(tid);
+}
+
+//===================================================
+// 表格元数据基础设施（001 计划 §4.1 单测）
+//===================================================
+
+// 高亮层：set/levelAt/clear(Source)/clear(Source,Level)/clearAll、来源隔离、级别隔离、changed 信号
+void DATableDataTest::testHighlightOverlayBasics()
+{
+    using DA::DATableHighlightOverlay;
+    DATableHighlightOverlay overlay;
+    QVERIFY(overlay.isEmpty());
+    QCOMPARE(overlay.levelAt(0, 0), DATableHighlightOverlay::Level::None);
+
+    // Find 命中装载
+    QSignalSpy spy(&overlay, &DATableHighlightOverlay::changed);
+    overlay.set(DATableHighlightOverlay::Source::Find,
+                DATableHighlightOverlay::Level::Hit,
+                { qMakePair(1, 2), qMakePair(3, 4) });
+    QCOMPARE(spy.count(), 1);
+    QVERIFY(!overlay.isEmpty());
+    QCOMPARE(overlay.levelAt(1, 2), DATableHighlightOverlay::Level::Hit);
+    QCOMPARE(overlay.levelAt(3, 4), DATableHighlightOverlay::Level::Hit);
+    QCOMPARE(overlay.levelAt(9, 9), DATableHighlightOverlay::Level::None);
+
+    // 级别隔离：同来源设 Hit 后再设 CurrentHit，Hit 集合仍在
+    overlay.set(DATableHighlightOverlay::Source::Find,
+                DATableHighlightOverlay::Level::CurrentHit,
+                { qMakePair(1, 2) });
+    QCOMPARE(overlay.levelAt(1, 2), DATableHighlightOverlay::Level::CurrentHit);
+    QCOMPARE(overlay.levelAt(3, 4), DATableHighlightOverlay::Level::Hit);
+
+    // Validation 来源与 Find 并存，Error/Warning 两级并存
+    overlay.set(DATableHighlightOverlay::Source::Validation,
+                DATableHighlightOverlay::Level::ViolationError,
+                { qMakePair(5, 5) });
+    overlay.set(DATableHighlightOverlay::Source::Validation,
+                DATableHighlightOverlay::Level::ViolationWarning,
+                { qMakePair(6, 6) });
+    QCOMPARE(overlay.levelAt(5, 5), DATableHighlightOverlay::Level::ViolationError);
+    QCOMPARE(overlay.levelAt(6, 6), DATableHighlightOverlay::Level::ViolationWarning);
+
+    // 来源隔离：清 Find 不动 Validation
+    overlay.clear(DATableHighlightOverlay::Source::Find);
+    QCOMPARE(overlay.levelAt(1, 2), DATableHighlightOverlay::Level::None);
+    QCOMPARE(overlay.levelAt(3, 4), DATableHighlightOverlay::Level::None);
+    QCOMPARE(overlay.levelAt(5, 5), DATableHighlightOverlay::Level::ViolationError);
+    QCOMPARE(overlay.levelAt(6, 6), DATableHighlightOverlay::Level::ViolationWarning);
+
+    // clear(Source, Level) 只清该级别（查找导航单独重设 CurrentHit 的场景）
+    overlay.clear(DATableHighlightOverlay::Source::Validation, DATableHighlightOverlay::Level::ViolationError);
+    QCOMPARE(overlay.levelAt(5, 5), DATableHighlightOverlay::Level::None);
+    QCOMPARE(overlay.levelAt(6, 6), DATableHighlightOverlay::Level::ViolationWarning);
+
+    // clearAll
+    overlay.clearAll();
+    QVERIFY(overlay.isEmpty());
+    QCOMPARE(overlay.levelAt(6, 6), DATableHighlightOverlay::Level::None);
+}
+
+// 高亮层：levelAt 固定优先级 CurrentHit > Hit > ViolationError > ViolationWarning；
+// 同格既是查找命中又是校验违规时以 Find 为准（有意决策，本用例钉死，不许改成校验优先）
+void DATableDataTest::testHighlightOverlayPriority()
+{
+    using DA::DATableHighlightOverlay;
+    DATableHighlightOverlay overlay;
+
+    // (0,0)：四级别同格 → CurrentHit 胜出
+    overlay.set(DATableHighlightOverlay::Source::Find, DATableHighlightOverlay::Level::Hit, { qMakePair(0, 0) });
+    overlay.set(DATableHighlightOverlay::Source::Find, DATableHighlightOverlay::Level::CurrentHit, { qMakePair(0, 0) });
+    overlay.set(DATableHighlightOverlay::Source::Validation, DATableHighlightOverlay::Level::ViolationError, { qMakePair(0, 0) });
+    overlay.set(DATableHighlightOverlay::Source::Validation, DATableHighlightOverlay::Level::ViolationWarning, { qMakePair(0, 0) });
+    QCOMPARE(overlay.levelAt(0, 0), DATableHighlightOverlay::Level::CurrentHit);
+
+    // (1,1)：Find Hit 与 Validation Error 同格 → 以 Find 为准
+    overlay.set(DATableHighlightOverlay::Source::Find, DATableHighlightOverlay::Level::Hit, { qMakePair(1, 1) });
+    overlay.set(DATableHighlightOverlay::Source::Validation, DATableHighlightOverlay::Level::ViolationError, { qMakePair(1, 1) });
+    QCOMPARE(overlay.levelAt(1, 1), DATableHighlightOverlay::Level::Hit);
+
+    // (2,2)：Error 压过 Warning
+    overlay.set(DATableHighlightOverlay::Source::Validation, DATableHighlightOverlay::Level::ViolationError, { qMakePair(2, 2) });
+    overlay.set(DATableHighlightOverlay::Source::Validation, DATableHighlightOverlay::Level::ViolationWarning, { qMakePair(2, 2) });
+    QCOMPARE(overlay.levelAt(2, 2), DATableHighlightOverlay::Level::ViolationError);
+
+    // (3,3)：仅 Warning
+    overlay.set(DATableHighlightOverlay::Source::Validation, DATableHighlightOverlay::Level::ViolationWarning, { qMakePair(3, 3) });
+    QCOMPARE(overlay.levelAt(3, 3), DATableHighlightOverlay::Level::ViolationWarning);
+
+    // 语义色映射：命中/警告=金黄、当前命中=主蓝、错误=橙红（官方色板）、None 无效
+    QCOMPARE(DATableHighlightOverlay::colorForLevel(DATableHighlightOverlay::Level::Hit), QColor(0xE6, 0xC2, 0x7C));
+    QCOMPARE(DATableHighlightOverlay::colorForLevel(DATableHighlightOverlay::Level::CurrentHit), QColor(0x52, 0x80, 0xC1));
+    QCOMPARE(DATableHighlightOverlay::colorForLevel(DATableHighlightOverlay::Level::ViolationError), QColor(0xCE, 0x60, 0x43));
+    QCOMPARE(DATableHighlightOverlay::colorForLevel(DATableHighlightOverlay::Level::ViolationWarning), QColor(0xE6, 0xC2, 0x7C));
+    QVERIFY(!DATableHighlightOverlay::colorForLevel(DATableHighlightOverlay::Level::None).isValid());
+}
+
+// 高亮层：打包键 (row<<32)|col 的边界——col=0 与 col=2^31-1 不串行、行维度不串行
+void DATableDataTest::testHighlightOverlayKeyPacking()
+{
+    using DA::DATableHighlightOverlay;
+    DATableHighlightOverlay overlay;
+    const int maxCol = 2147483647;  // 2^31 - 1（键打包前提：行/列号 < 2^31）
+
+    overlay.set(DATableHighlightOverlay::Source::Find, DATableHighlightOverlay::Level::Hit, { qMakePair(7, 0) });
+    overlay.set(DATableHighlightOverlay::Source::Find, DATableHighlightOverlay::Level::CurrentHit, { qMakePair(7, maxCol) });
+    QCOMPARE(overlay.levelAt(7, 0), DATableHighlightOverlay::Level::Hit);
+    QCOMPARE(overlay.levelAt(7, maxCol), DATableHighlightOverlay::Level::CurrentHit);
+    // 行维度不串：相邻行的同列、同行的相邻列都无命中
+    QCOMPARE(overlay.levelAt(6, 0), DATableHighlightOverlay::Level::None);
+    QCOMPARE(overlay.levelAt(8, 0), DATableHighlightOverlay::Level::None);
+    QCOMPARE(overlay.levelAt(6, maxCol), DATableHighlightOverlay::Level::None);
+    QCOMPARE(overlay.levelAt(7, 1), DATableHighlightOverlay::Level::None);
+    QCOMPARE(overlay.levelAt(7, maxCol - 1), DATableHighlightOverlay::Level::None);
+}
+
+// 重映射工具：置换/逆置换、行键与单元格键（按行/按列）、置换+逆置换还原、空置换、单元素置换
+void DATableDataTest::testKeyRemapUtility()
+{
+    using DA::DATableKeyRemap;
+    // 置换语义钉死：perm[i] = 新表第 i 行在旧表中的行号（与 df.iloc[perm] 一致）
+    const QVector< int > perm { 2, 0, 1 };  // 新行0←旧行2，新行1←旧行0，新行2←旧行1
+    const QVector< int > inv = DATableKeyRemap::inversePermutation(perm);
+    const QVector< int > invExpected { 1, 2, 0 };  // inv[旧行号]=新位置
+    QCOMPARE(inv, invExpected);
+
+    // 行键重映射
+    QHash< int, QString > rowKeys;
+    rowKeys.insert(0, QStringLiteral("a"));
+    rowKeys.insert(1, QStringLiteral("b"));
+    rowKeys.insert(2, QStringLiteral("c"));
+    DATableKeyRemap::remapKeys(rowKeys, perm);
+    QCOMPARE(rowKeys.value(0), QStringLiteral("c"));  // 旧行2 → 新行0
+    QCOMPARE(rowKeys.value(1), QStringLiteral("a"));  // 旧行0 → 新行1
+    QCOMPARE(rowKeys.value(2), QStringLiteral("b"));  // 旧行1 → 新行2
+
+    // 置换 + 逆置换 = 还原
+    DATableKeyRemap::remapKeys(rowKeys, inv);
+    QCOMPARE(rowKeys.value(0), QStringLiteral("a"));
+    QCOMPARE(rowKeys.value(1), QStringLiteral("b"));
+    QCOMPARE(rowKeys.value(2), QStringLiteral("c"));
+
+    // 单元格键按行维重映射（列维不变）
+    QHash< QPair< int, int >, QString > cells;
+    cells.insert(qMakePair(0, 5), QStringLiteral("x"));
+    cells.insert(qMakePair(2, 7), QStringLiteral("y"));
+    DATableKeyRemap::remapKeys(cells, perm, DATableKeyRemap::Dimension::Row);
+    QCOMPARE(cells.value(qMakePair(1, 5)), QStringLiteral("x"));  // 旧行0 → 新行1
+    QCOMPARE(cells.value(qMakePair(0, 7)), QStringLiteral("y"));  // 旧行2 → 新行0
+    QVERIFY(!cells.contains(qMakePair(0, 5)));
+    QCOMPARE(cells.size(), 2);
+
+    // 单元格键按列维重映射（行维不变）：列置换交换 5↔7
+    const QVector< int > colPerm { 0, 1, 2, 3, 4, 7, 6, 5 };  // 新列5←旧列7，新列7←旧列5
+    DATableKeyRemap::remapKeys(cells, colPerm, DATableKeyRemap::Dimension::Column);
+    QCOMPARE(cells.value(qMakePair(1, 7)), QStringLiteral("x"));
+    QCOMPARE(cells.value(qMakePair(0, 5)), QStringLiteral("y"));
+
+    // 空置换：新表 0 行，全部键失效
+    QHash< int, QString > h0;
+    h0.insert(0, QStringLiteral("a"));
+    DATableKeyRemap::remapKeys(h0, QVector< int >());
+    QVERIFY(h0.isEmpty());
+
+    // 单元素置换
+    QHash< int, QString > h1;
+    h1.insert(0, QStringLiteral("only"));
+    DATableKeyRemap::remapKeys(h1, QVector< int > { 0 });
+    QCOMPARE(h1.size(), 1);
+    QCOMPARE(h1.value(0), QStringLiteral("only"));
+
+    // 未被置换覆盖的旧键丢弃（新表行数少于旧表）
+    QHash< int, QString > h2;
+    h2.insert(0, QStringLiteral("a"));
+    h2.insert(5, QStringLiteral("far"));
+    DATableKeyRemap::remapKeys(h2, QVector< int > { 0 });
+    QCOMPARE(h2.size(), 1);
+    QCOMPARE(h2.value(0), QStringLiteral("a"));
+}
+
+// DATableStyleManager::onRowsReordered：单元格/行样式键位移正确、styleReset 发出、
+// 列级样式不受影响、与 onRowsInserted/onRowsRemoved 不互相干扰、空置换为无操作
+void DATableDataTest::testStyleManagerRowsReordered()
+{
+    DA::DATableStyleManager mgr;
+    auto makeStyle = [](const QColor& c) {
+        DA::DATableCellStyle s;
+        s.setBackground(QBrush(c));
+        return s;
+    };
+    const QColor red(255, 0, 0), green(0, 255, 0), blue(0, 0, 255), yellow(255, 255, 0);
+    mgr.setCellStyle(0, 1, makeStyle(red));
+    mgr.setCellStyle(2, 1, makeStyle(green));
+    mgr.setRowStyle(1, makeStyle(blue));
+    mgr.setColumnStyle(3, makeStyle(yellow));  // 列级：行重排不应影响
+
+    QSignalSpy resetSpy(&mgr, &DA::DATableStyleManager::styleReset);
+    const QVector< int > perm { 2, 0, 1 };  // 新表 = 旧表 iloc[[2,0,1]]
+    mgr.onRowsReordered(perm);
+    QCOMPARE(resetSpy.count(), 1);
+    // 旧行2(green)→新行0；旧行0(red)→新行1；旧行1的单元格无、行样式 blue→新行2
+    QCOMPARE(mgr.getCellStyle(0, 1).background().color(), green);
+    QCOMPARE(mgr.getCellStyle(1, 1).background().color(), red);
+    QVERIFY(!mgr.hasCellStyle(2, 1));
+    QCOMPARE(mgr.getRowStyle(2).background().color(), blue);
+    QVERIFY(!mgr.hasRowStyle(0));
+    QVERIFY(!mgr.hasRowStyle(1));
+    // 列级样式不受行重排影响
+    QCOMPARE(mgr.getColumnStyle(3).background().color(), yellow);
+
+    // 与 onRowsInserted/onRowsRemoved 不互相干扰：头部插一行键 +1，删回还原
+    mgr.onRowsInserted({ 0 });
+    QCOMPARE(mgr.getCellStyle(1, 1).background().color(), green);
+    QCOMPARE(mgr.getCellStyle(2, 1).background().color(), red);
+    mgr.onRowsRemoved({ 0 });
+    QCOMPARE(mgr.getCellStyle(0, 1).background().color(), green);
+    QCOMPARE(mgr.getCellStyle(1, 1).background().color(), red);
+
+    // 空置换 = 无操作：不发信号、不清存储（与 on*Inserted/Removed 的空表行为一致）
+    const int resetCount = resetSpy.count();
+    mgr.onRowsReordered(QVector< int >());
+    QCOMPARE(resetSpy.count(), resetCount);
+    QCOMPARE(mgr.getCellStyle(0, 1).background().color(), green);
+}
+
+// DATableViewStateStore：XML round-trip（列宽按名/行头宽）、renameColumn 迁移、
+// removeColumn 后重新插入同名不限、重名列 occurrence 消歧互不影响
+void DATableDataTest::testViewStateStore()
+{
+    DA::DATableViewStateStore store;
+    QVERIFY(store.isEmpty());
+    QCOMPARE(store.columnWidth(QStringLiteral("value")), -1);
+    QCOMPARE(store.rowHeaderWidth(), -1);
+
+    store.setColumnWidth(QStringLiteral("id"), 0, 80);
+    store.setColumnWidth(QStringLiteral("value"), 0, 120);
+    store.setColumnWidth(QStringLiteral("value"), 1, 200);  // 两个同名 value 列
+    store.setRowHeaderWidth(60);
+    QVERIFY(!store.isEmpty());
+    // 重名列 occurrence 消歧：各自宽度互不影响
+    QCOMPARE(store.columnWidth(QStringLiteral("value"), 0), 120);
+    QCOMPARE(store.columnWidth(QStringLiteral("value"), 1), 200);
+    store.setColumnWidth(QStringLiteral("value"), 0, 130);
+    QCOMPARE(store.columnWidth(QStringLiteral("value"), 0), 130);
+    QCOMPARE(store.columnWidth(QStringLiteral("value"), 1), 200);
+
+    // XML round-trip
+    QDomDocument doc;
+    QDomElement root = doc.createElement(QStringLiteral("table"));
+    doc.appendChild(root);
+    store.toXml(doc, root);
+    QDomElement vsEle = root.firstChildElement(QStringLiteral("view-state"));
+    QVERIFY(!vsEle.isNull());
+    DA::DATableViewStateStore store2;
+    QVERIFY(store2.fromXml(vsEle));
+    QCOMPARE(store2.columnWidth(QStringLiteral("id"), 0), 80);
+    QCOMPARE(store2.columnWidth(QStringLiteral("value"), 0), 130);
+    QCOMPARE(store2.columnWidth(QStringLiteral("value"), 1), 200);
+    QCOMPARE(store2.rowHeaderWidth(), 60);
+
+    // renameColumn 迁移（occurrence 保持）
+    store2.renameColumn(QStringLiteral("value"), QStringLiteral("val2"));
+    QCOMPARE(store2.columnWidth(QStringLiteral("value"), 0), -1);
+    QCOMPARE(store2.columnWidth(QStringLiteral("value"), 1), -1);
+    QCOMPARE(store2.columnWidth(QStringLiteral("val2"), 0), 130);
+    QCOMPARE(store2.columnWidth(QStringLiteral("val2"), 1), 200);
+
+    // removeColumn 后重新插入同名不限
+    store2.removeColumn(QStringLiteral("val2"));
+    QCOMPARE(store2.columnWidth(QStringLiteral("val2"), 0), -1);
+    store2.setColumnWidth(QStringLiteral("val2"), 0, 99);
+    QCOMPARE(store2.columnWidth(QStringLiteral("val2"), 0), 99);
+
+    // 空 store 不写出 <view-state> 段；clear 复位
+    DA::DATableViewStateStore emptyStore;
+    QDomDocument doc2;
+    QDomElement root2 = doc2.createElement(QStringLiteral("table"));
+    doc2.appendChild(root2);
+    emptyStore.toXml(doc2, root2);
+    QVERIFY(root2.firstChildElement(QStringLiteral("view-state")).isNull());
+    store2.clear();
+    QVERIFY(store2.isEmpty());
+}
+
+// DATableMetadataRegistry：getOrCreate/get/has/remove/clear/nonEmptyEntries 语义与旧注册表一致；
+// 束内子存储随束创建；空束不进保存清单
+void DATableDataTest::testMetadataRegistry()
+{
+    DA::DATableMetadataRegistry registry(nullptr);
+    DA::DAAbstractData::Pointer p1(new DATestLazyTable());
+    DA::DAAbstractData::Pointer p2(new DATestLazyTable());
+    DA::DAData d1(p1);
+    DA::DAData d2(p2);
+
+    QVERIFY(!registry.has(d1));
+    QVERIFY(registry.get(d1) == nullptr);
+    QVERIFY(registry.nonEmptyEntries().isEmpty());
+
+    // getOrCreate：幂等，束内子存储随束创建
+    DA::DATableMetadata* m1 = registry.getOrCreate(d1);
+    QVERIFY(m1 != nullptr);
+    QCOMPARE(registry.get(d1), m1);
+    QVERIFY(registry.has(d1));
+    QCOMPARE(registry.getOrCreate(d1), m1);
+    QVERIFY(m1->styleManager() != nullptr);
+    QVERIFY(m1->viewState() != nullptr);
+    QVERIFY(m1->isEmpty());
+    // 空束不进保存清单
+    QVERIFY(registry.nonEmptyEntries().isEmpty());
+
+    // 非空束进 nonEmptyEntries（保存遍历依据）
+    m1->viewState()->setRowHeaderWidth(50);
+    QCOMPARE(registry.nonEmptyEntries().size(), 1);
+    QCOMPARE(registry.nonEmptyEntries().first().first, d1);
+    QCOMPARE(registry.nonEmptyEntries().first().second, m1);
+
+    // 不同数据键互不干扰
+    DA::DATableMetadata* m2 = registry.getOrCreate(d2);
+    QVERIFY(m2 != nullptr);
+    QVERIFY(m2 != m1);
+    QCOMPARE(registry.get(d2), m2);
+
+    // remove：显式移除并销毁
+    registry.remove(d2);
+    QVERIFY(!registry.has(d2));
+    QVERIFY(registry.get(d2) == nullptr);
+    QCOMPARE(registry.getOrCreate(d2) != m2, true);  // 重新创建是新对象
+    registry.remove(d2);
+
+    // clear：清空全部
+    registry.clear();
+    QVERIFY(!registry.has(d1));
+    QVERIFY(registry.get(d1) == nullptr);
+    QVERIFY(registry.nonEmptyEntries().isEmpty());
 }
 
 // 不用QTEST_MAIN：嵌入式python的静态对象（DAPyBindQt.dll内的解释器句柄、QVariant caster
