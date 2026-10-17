@@ -94,6 +94,10 @@ void DADataObjectSwapUndoCommand::setNewData(const DAData& data)
 
 /**
  * @brief 撤销操作，把旧对象设置回去
+ *
+ * 004 T1.27 增补：在 callback() 之外补发 directionalCallback(true)——就地形状变换
+ * （转置/melt）的元数据清理需与数据替换同一撤销单元（undo 随对象一起还原），
+ * 由调用方经方向回调驱动。未设置方向回调的既有用法不受影响（空调用）。
  */
 void DADataObjectSwapUndoCommand::undo()
 {
@@ -103,10 +107,13 @@ void DADataObjectSwapUndoCommand::undo()
         mgr->notifyDataChangedSignal(mData, DADataManager::ChangeValue);
     }
     callback();
+    directionalCallback(true);
 }
 
 /**
  * @brief 重做操作，把新对象设置进去
+ *
+ * 004 T1.27 增补：补发 directionalCallback(false)（语义同 undo 侧注释）。
  */
 void DADataObjectSwapUndoCommand::redo()
 {
@@ -116,6 +123,7 @@ void DADataObjectSwapUndoCommand::redo()
         mgr->notifyDataChangedSignal(mData, DADataManager::ChangeValue);
     }
     callback();
+    directionalCallback(false);
 }
 //----------------------------------------------------
 // DADataFileCacheUndoCommand
