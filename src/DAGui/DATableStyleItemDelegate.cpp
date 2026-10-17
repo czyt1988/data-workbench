@@ -3,11 +3,16 @@
 #include "DATableHighlightOverlay.h"
 #include "DATableConditionalFormatStore.h"
 #include "DATableValidationStore.h"
+#include "DATableNoteStore.h"
 #include "Models/DAAbstractCacheWindowTableModel.h"
 #include <QPainter>
 #include <QPalette>
 #include <QComboBox>
 #include <QStringList>
+#include <QHelpEvent>
+#include <QToolTip>
+#include <QAbstractItemView>
+#include <QPolygon>
 
 namespace DA
 {
@@ -19,6 +24,8 @@ namespace
 constexpr int c_highlightAlpha = 160;
 // 数据条与单元格内容区边缘的内边距（§1.4-1：条与文字之间留 2px）
 constexpr int c_dataBarPadding = 2;
+// 批注角标（右上角小三角）边长上限（px）；小格按比例收缩，最小 3px 不画
+constexpr int c_noteMarkerSize = 8;
 }
 
 /**
@@ -48,6 +55,15 @@ void DATableStyleItemDelegate::setConditionalFormatStore(DATableConditionalForma
 void DATableStyleItemDelegate::setValidationStore(DATableValidationStore* store)
 {
     mValidationStore = store;
+}
+
+/**
+ * @brief 注入批注子存储（层⑤之后的角标 + helpEvent tooltip，005 T1.26）
+ * @param store 批注子存储（非拥有，可空；空则不画角标不出 tooltip）
+ */
+void DATableStyleItemDelegate::setNoteStore(DATableNoteStore* store)
+{
+    mNoteStore = store;
 }
 
 /**
@@ -111,7 +127,8 @@ void DATableStyleItemDelegate::paint(QPainter* painter, const QStyleOptionViewIt
     const bool noStyle   = (!mStyleManager || mStyleManager->isEmpty());
     const bool noOverlay = (!mOverlay || mOverlay->isEmpty());
     const bool noCf      = (!mCfStore || mCfStore->isEmpty());
-    if (noStyle && noOverlay && noCf) {
+    const bool noNotes   = (!mNoteStore || mNoteStore->isEmpty());
+    if (noStyle && noOverlay && noCf && noNotes) {
         // 快速路径：无任何装饰走默认
         QStyledItemDelegate::paint(painter, option, index);
         return;
@@ -201,9 +218,56 @@ void DATableStyleItemDelegate::paint(QPainter* painter, const QStyleOptionViewIt
         }
     }
 
-    // ⑤ 绘制文字（基类 CE_ItemViewItem 路径，数据条在文字之下不遮字）；
-    //    批注角标插入点：005 在本行之后对有批注的单元格画右上角小三角（与数据条/命中色互不影响）
+    // ⑤ 绘制文字（基类 CE_ItemViewItem 路径，数据条在文字之下不遮字）
     QStyledItemDelegate::paint(painter, opt, index);
+
+    // ⑤之后：批注角标（005 T1.26）——右上角小三角，金黄 #E6C27C（官方色板"标记"语义，
+    // DESIGN.md §2），与数据条/命中色互不影响（画在最上层，只占角落不遮文字主体）
+    if (mNoteStore && mNoteStore->hasNote(actualRow, actualCol)) {
+        const int s = qMin(c_noteMarkerSize, qMin(opt.rect.width(), opt.rect.height()) / 2);
+        if (s >= 3) {
+            QPolygon tri;
+            tri << QPoint(opt.rect.right(), opt.rect.top())
+                << QPoint(opt.rect.right() - s, opt.rect.top())
+                << QPoint(opt.rect.right(), opt.rect.top() + s);
+            painter->save();
+            painter->setPen(Qt::NoPen);
+            painter->setBrush(QColor(0xE6, 0xC2, 0x7C));
+            painter->drawPolygon(tri);
+            painter->restore();
+        }
+    }
+}
+
+/**
+ * @brief 悬停 tooltip（005 T1.26）：有批注的格显示批注全文
+ *
+ * helpEvent 只对可见单元格触发（QAbstractItemView 的 tooltip 事件路径），
+ * 天然满足"只查可见单元格"；行号经 getCacheWindowStartRow 翻译成数据源绝对行。
+ * 无批注走基类（模型 ToolTipRole 等既有语义不受影响）。
+ * @param event 帮助事件
+ * @param view 视图
+ * @param option 样式选项
+ * @param index 模型索引
+ * @return 已处理返回 true
+ */
+bool DATableStyleItemDelegate::helpEvent(QHelpEvent* event, QAbstractItemView* view,
+                                         const QStyleOptionViewItem& option, const QModelIndex& index)
+{
+    if (mNoteStore && event && index.isValid()) {
+        const DAAbstractCacheWindowTableModel* cacheModel =
+            qobject_cast< const DAAbstractCacheWindowTableModel* >(index.model());
+        int actualRow = index.row();
+        if (cacheModel) {
+            actualRow = cacheModel->getCacheWindowStartRow() + index.row();
+        }
+        const QString txt = mNoteStore->noteText(actualRow, index.column());
+        if (!txt.isEmpty()) {
+            QToolTip::showText(event->globalPos(), txt, view ? view->viewport() : nullptr);
+            return true;
+        }
+    }
+    return QStyledItemDelegate::helpEvent(event, view, option, index);
 }
 
 }  // end of namespace DA

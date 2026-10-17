@@ -77,6 +77,8 @@ set(DA_LIB_HEADER_FILES
     DATableConditionalFormatStore.h
     DATableComputedColumnStore.h
     DATableValidationStore.h
+    DATableNoteStore.h
+    DATableNoteEditDialog.h
     DATableStyleItemDelegate.h
 )
 set(DA_LIB_SOURCE_FILES
@@ -145,6 +147,8 @@ set(DA_LIB_SOURCE_FILES
     DATableConditionalFormatStore.cpp
     DATableComputedColumnStore.cpp
     DATableValidationStore.cpp
+    DATableNoteStore.cpp
+    DATableNoteEditDialog.cpp
     DATableStyleItemDelegate.cpp
 )
 set(DA_LIB_QT_UI_FILES

@@ -9,6 +9,7 @@ class DATableStyleManager;
 class DATableHighlightOverlay;
 class DATableConditionalFormatStore;
 class DATableValidationStore;
+class DATableNoteStore;
 
 /**
  * @brief 表格样式自定义 delegate（五层绘制管线）
@@ -35,6 +36,8 @@ public:
     void setConditionalFormatStore(DATableConditionalFormatStore* store);
     // 注入校验规则子存储（枚举列下拉编辑器，005 T1.25；非拥有，可空）
     void setValidationStore(DATableValidationStore* store);
+    // 注入批注子存储（层⑤之后的右上角角标 + helpEvent tooltip，005 T1.26；非拥有，可空）
+    void setNoteStore(DATableNoteStore* store);
 
     void paint(QPainter* painter, const QStyleOptionViewItem& option,
                const QModelIndex& index) const override;
@@ -43,12 +46,17 @@ public:
     // 索引根本不进 createEditor，红线4：不另造一套可编辑判定）
     QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option,
                           const QModelIndex& index) const override;
+    // 悬停 tooltip（005 T1.26）：有批注的格显示批注文本（helpEvent 只对可见单元格
+    // 触发，天然满足"只查可见单元格"）；无批注走基类
+    bool helpEvent(QHelpEvent* event, QAbstractItemView* view,
+                   const QStyleOptionViewItem& option, const QModelIndex& index) override;
 
 private:
     DATableStyleManager* mStyleManager;              // 非拥有
     DATableHighlightOverlay* mOverlay;               // 非拥有（瞬态高亮层，可空）
     DATableConditionalFormatStore* mCfStore { nullptr };  // 非拥有（条件格式子存储，可空）
     DATableValidationStore* mValidationStore { nullptr };  // 非拥有（校验规则子存储，可空，005）
+    DATableNoteStore* mNoteStore { nullptr };              // 非拥有（批注子存储，可空，005 T1.26）
 };
 }  // end of namespace DA
 #endif  // DATABLESTYLEITEMDELEGATE_H

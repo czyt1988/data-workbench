@@ -40,6 +40,7 @@ class DATableCellStyle;
 class DAComputedColumn;
 class DATableValidationStore;
 class DADialogValidationReport;
+class DATableNoteStore;
 
 
 /**
@@ -201,6 +202,17 @@ public:
     void clearValidationHighlights();
     // 规则显示文本（级别 + 列（第 n 个）+ 类型 + 参数 + 名称；报告与列表共用）
     QString validationRuleDisplayText(const DATableValidationRule& rule) const;
+
+    // ===== 单元格批注（005 T1.26）=====
+    // 获取批注子存储（借自元数据束，可能为 nullptr）
+    DATableNoteStore* noteStore() const;
+    // 打开当前单元格的批注编辑弹层（无批注=插入，有批注=编辑且弹层内可删除）；
+    // 弹层跟随单元格右下角定位；保存/删除按旧新条目生成命令入页撤销栈（D4）
+    void showNoteEditorForCurrentCell();
+    // 删除当前单元格批注（命令可撤销）；无当前格或无批注返回 false
+    bool deleteNoteAtCurrentCell();
+    // 清除本表全部批注（一次命令，可撤销）；返回清除的批注数
+    int clearAllNotes();
 
     // ===== 转置 / melt 形状变换（004 T1.27）=====
     // 打开形状变换对话框（meltMode=false 转置 / true 宽转长，模式可在对话框内切换）。
@@ -379,6 +391,11 @@ private:
     // 把校验规则引用迁移挂进改名命令的 directional 回调（与改名同一撤销单元，R20）
     void wireValidationRuleRenameMigration(class DACommandDataFrame_renameColumns* cmd,
                                            const QList< QPair< QString, QString > >& renames) const;
+    // ===== 批注私有辅助（005 T1.26）=====
+    // 当前单元格（数据源绝对坐标）：无有效当前格或越出数据范围返回 false
+    bool currentActualCell(int* actualRow, int* actualCol) const;
+    // 对给定格弹出编辑弹层并落地结果（插入/编辑共用：保存→增/改命令，删除→删除命令）
+    void editNoteAtCell(int actualRow, int actualCol);
 
     Ui::DADataOperateOfDataFrameWidget* ui;
     DAData mData;
@@ -389,6 +406,7 @@ private:
     DATableConditionalFormatStore* mConditionalFormatStore { nullptr };  ///< 借自 DATableMetadata 束，非拥有（条件格式规则，003）
     DATableComputedColumnStore* mComputedColumnStore { nullptr };        ///< 借自 DATableMetadata 束，非拥有（计算列定义，004 T1.23）
     DATableValidationStore* mValidationStore { nullptr };                ///< 借自 DATableMetadata 束，非拥有（校验规则，005 T1.25）
+    DATableNoteStore* mNoteStore { nullptr };                            ///< 借自 DATableMetadata 束，非拥有（单元格批注，005 T1.26）
     DATableMetadata* mMetadata { nullptr };                              ///< 元数据束（借自注册表，非拥有；就地形状变换整束快照/清理用，004 T1.27）
     DATableStyleItemDelegate* mStyleDelegate { nullptr };
     bool mApplyingViewState { false };  ///< 正在应用视图状态（屏蔽 sectionResized 采集）

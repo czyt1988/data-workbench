@@ -1,6 +1,7 @@
 ﻿#include "DADataOperateOfDataFrameWidget.h"
 #include "ui_DADataOperateOfDataFrameWidget.h"
 #include "Models/DADataTableModel.h"
+#include "Models/DAAbstractCacheWindowTableModel.h"
 #include "DADataPyObject.h"
 #include "DADataPyDataFrame.h"
 #include "DAWaitCursorScoped.h"
@@ -18,6 +19,7 @@
 #include <QMessageBox>
 #include <QPointer>
 #include <QClipboard>
+#include <QCursor>
 #include <QGuiApplication>
 #include <QItemSelectionModel>
 #include <QElapsedTimer>
@@ -38,6 +40,8 @@
 #include "DATableComputedColumnStore.h"
 #include "DATableValidationStore.h"
 #include "Commands/DACommandsTableValidation.h"
+#include "DATableNoteStore.h"
+#include "DATableNoteEditDialog.h"
 #include "DADataHeaderView.h"
 // Dialog
 #include "Dialog/DARenameColumnsNameDialog.h"
@@ -117,6 +121,7 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
     mConditionalFormatStore   = metadata ? metadata->conditionalFormat() : nullptr;
     mComputedColumnStore      = metadata ? metadata->computedColumns() : nullptr;
     mValidationStore          = metadata ? metadata->validations() : nullptr;
+    mNoteStore                = metadata ? metadata->notes() : nullptr;
     // 瞬态高亮层：页级持有（查找/校验两个来源共用），不序列化、不进撤销栈；
     // 注入 delegate 绘制管线③（瞬态装饰）
     mHighlightOverlay = new DATableHighlightOverlay(this);
@@ -125,6 +130,16 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
     mStyleDelegate->setConditionalFormatStore(mConditionalFormatStore);
     // 校验规则子存储注入 delegate（枚举列下拉编辑器 createEditor，005 T1.25）
     mStyleDelegate->setValidationStore(mValidationStore);
+    // 批注子存储注入 delegate（层⑤之后角标 + helpEvent tooltip，005 T1.26）与视图
+    //（右键菜单「插入/编辑/删除批注」的启用规则要查当前格有无批注）
+    mStyleDelegate->setNoteStore(mNoteStore);
+    ui->tableView->setNoteStore(mNoteStore);
+    if (mNoteStore) {
+        // 批注变更只影响角标（不经模型 dataChanged 链路），重绘视口即可
+        connect(mNoteStore, &DATableNoteStore::notesChanged, this, [ this ]() {
+            ui->tableView->viewport()->update();
+        });
+    }
     ui->tableView->setItemDelegate(mStyleDelegate);
     // 高亮层变更时重绘视口（瞬态装饰不经模型 dataChanged 链路）
     connect(mHighlightOverlay, &DATableHighlightOverlay::changed, this, [ this ]() {
@@ -338,6 +353,11 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
     // 数据校验入口（005 T1.25）：表体右键菜单与 Ribbon「Data Tools」面板共用同一逻辑
     connect(ui->tableView, &DADataTableView::validationRulesRequested, this, &DADataOperateOfDataFrameWidget::showValidationRulesDialog);
     connect(ui->tableView, &DADataTableView::runValidationRequested, this, &DADataOperateOfDataFrameWidget::runValidationAndShowReport);
+    // 批注入口（005 T1.26）：插入/编辑共用弹层（按有无批注自适应），删除/清除各自命令
+    connect(ui->tableView, &DADataTableView::noteInsertRequested, this, &DADataOperateOfDataFrameWidget::showNoteEditorForCurrentCell);
+    connect(ui->tableView, &DADataTableView::noteEditRequested, this, &DADataOperateOfDataFrameWidget::showNoteEditorForCurrentCell);
+    connect(ui->tableView, &DADataTableView::noteDeleteRequested, this, &DADataOperateOfDataFrameWidget::deleteNoteAtCurrentCell);
+    connect(ui->tableView, &DADataTableView::noteClearAllRequested, this, &DADataOperateOfDataFrameWidget::clearAllNotes);
     // 选中变化时反向同步 ribbon 控件
     if (auto sm = ui->tableView->selectionModel()) {
         connect(sm, &QItemSelectionModel::selectionChanged, this, [ this ]() {
@@ -451,14 +471,22 @@ void DADataOperateOfDataFrameWidget::insertRowAt(int row)
     });
     // 行列增删样式键同步：插入行时 >=row 的键 +1；撤销时按删除处理（>=row 的键 -1）
     DATableStyleManager* styleMgr = mStyleManager;
-    cmd->setDirectionalCallBack([ styleMgr, row ](bool isUndo) {
-        if (!styleMgr) {
-            return;
+    DATableNoteStore* noteStore   = mNoteStore;
+    cmd->setDirectionalCallBack([ styleMgr, noteStore, row ](bool isUndo) {
+        if (styleMgr) {
+            if (isUndo) {
+                styleMgr->onRowsRemoved({ row });
+            } else {
+                styleMgr->onRowsInserted({ row });
+            }
         }
-        if (isUndo) {
-            styleMgr->onRowsRemoved({ row });
-        } else {
-            styleMgr->onRowsInserted({ row });
+        // 批注与样式同源位置键，插删行同款重映射（005 T1.26「批注跟着行走」）
+        if (noteStore) {
+            if (isUndo) {
+                noteStore->onRowsRemoved({ row });
+            } else {
+                noteStore->onRowsInserted({ row });
+            }
         }
     });
     if (!cmd->exec()) {
@@ -532,7 +560,8 @@ void DADataOperateOfDataFrameWidget::insertColumnAt(int col)
     // 条件格式规则同为装饰类位置键（R20），随列插删同款重映射（003）
     DATableStyleManager* styleMgr = mStyleManager;
     DATableConditionalFormatStore* cfStore = mConditionalFormatStore;
-    cmd->setDirectionalCallBack([ styleMgr, cfStore, col ](bool isUndo) {
+    DATableNoteStore* noteStore   = mNoteStore;
+    cmd->setDirectionalCallBack([ styleMgr, cfStore, noteStore, col ](bool isUndo) {
         if (styleMgr) {
             if (isUndo) {
                 styleMgr->onColumnsRemoved({ col });
@@ -545,6 +574,14 @@ void DADataOperateOfDataFrameWidget::insertColumnAt(int col)
                 cfStore->onColumnsRemoved({ col });
             } else {
                 cfStore->onColumnsInserted({ col });
+            }
+        }
+        // 批注列维同款重映射（005 T1.26）
+        if (noteStore) {
+            if (isUndo) {
+                noteStore->onColumnsRemoved({ col });
+            } else {
+                noteStore->onColumnsInserted({ col });
             }
         }
     });
@@ -589,14 +626,23 @@ int DADataOperateOfDataFrameWidget::removeSelectRow()
     // 行列增删样式键同步：删除行时 ==row 的键删除，>row 的键 -1；撤销时按插入处理
     // 注意：被删除行的样式在删除时丢失，撤销(load恢复dataframe)无法恢复样式（已知限制，见 spec §7.3）
     DATableStyleManager* styleMgr = mStyleManager;
-    cmd->setDirectionalCallBack([ styleMgr, rows ](bool isUndo) {
-        if (!styleMgr) {
-            return;
+    DATableNoteStore* noteStore   = mNoteStore;
+    cmd->setDirectionalCallBack([ styleMgr, noteStore, rows ](bool isUndo) {
+        if (styleMgr) {
+            if (isUndo) {
+                styleMgr->onRowsInserted(rows);
+            } else {
+                styleMgr->onRowsRemoved(rows);
+            }
         }
-        if (isUndo) {
-            styleMgr->onRowsInserted(rows);
-        } else {
-            styleMgr->onRowsRemoved(rows);
+        // 批注同款重映射（005 T1.26）：被删行的批注在删除时丢失（与样式同一已知限制，
+        // undo 走 load 恢复 dataframe 无法恢复位置键元数据，见 spec §7.3）
+        if (noteStore) {
+            if (isUndo) {
+                noteStore->onRowsInserted(rows);
+            } else {
+                noteStore->onRowsRemoved(rows);
+            }
         }
     });
     if (!cmd->exec()) {
@@ -633,6 +679,7 @@ int DADataOperateOfDataFrameWidget::removeSelectColumn()
     // 条件格式规则同为装饰类位置键（R20），随列删除同款重映射（被删列的规则一并丢弃，003）
     DATableStyleManager* styleMgr = mStyleManager;
     DATableConditionalFormatStore* cfStore = mConditionalFormatStore;
+    DATableNoteStore* noteStore   = mNoteStore;
     // 计算列联动（004 T1.23 R20）：被删列名在 exec 前解析；定义集合先快照——
     // undo 整店恢复（含被移除的定义与原状态），redo 重放删列联动
     //（目标列被删 → 定义移除；依赖列被删 → 置 Invalid，不静默清空列数据）
@@ -649,7 +696,7 @@ int DADataOperateOfDataFrameWidget::removeSelectColumn()
         ccSnapshot = ccStore->snapshot();
     }
     auto invalidatedTargets = std::make_shared< QStringList >();
-    cmd->setDirectionalCallBack([ styleMgr, cfStore, ccStore, columns, removedNames, ccSnapshot, invalidatedTargets ](bool isUndo) {
+    cmd->setDirectionalCallBack([ styleMgr, cfStore, noteStore, ccStore, columns, removedNames, ccSnapshot, invalidatedTargets ](bool isUndo) {
         if (styleMgr) {
             if (isUndo) {
                 styleMgr->onColumnsInserted(columns);
@@ -662,6 +709,14 @@ int DADataOperateOfDataFrameWidget::removeSelectColumn()
                 cfStore->onColumnsInserted(columns);
             } else {
                 cfStore->onColumnsRemoved(columns);
+            }
+        }
+        // 批注列维同款重映射（005 T1.26，被删列的批注一并丢弃）
+        if (noteStore) {
+            if (isUndo) {
+                noteStore->onColumnsInserted(columns);
+            } else {
+                noteStore->onColumnsRemoved(columns);
             }
         }
         if (ccStore) {
@@ -2229,12 +2284,17 @@ bool DADataOperateOfDataFrameWidget::applySortSpec(const QVector< QPair< int, Qt
     DACommandDataFrame_sortRows* cmdRaw         = cmd.get();
     DATableStyleManager* styleMgr               = mStyleManager;
     DATableValidationStore* vaStore             = mValidationStore;
+    DATableNoteStore* noteStore                 = mNoteStore;
     DADataOperateOfDataFrameWidget* self        = this;
     // ① 样式键重映射（先于模型刷新；exec/undo 均传最近应用的置换，undo 传逆置换即等价按逆置换重映射）
-    cmd->setDirectionalCallBack([ styleMgr, vaStore, cmdRaw ](bool isUndo) {
+    cmd->setDirectionalCallBack([ styleMgr, vaStore, noteStore, cmdRaw ](bool isUndo) {
         Q_UNUSED(isUndo);
         if (styleMgr) {
             styleMgr->onRowsReordered(cmdRaw->lastAppliedPermutation());
+        }
+        // 批注与样式同源（005 T1.26）：同一置换重映射，「批注跟着行走」
+        if (noteStore) {
+            noteStore->onRowsReordered(cmdRaw->lastAppliedPermutation());
         }
         // 排序移动行位置 → 唯一性违规缓存的行号失效（005 T1.25），保守全失效
         if (vaStore) {
@@ -3387,6 +3447,7 @@ void DADataOperateOfDataFrameWidget::showSplitColumnDialog(int col)
     QPointer< DADataTableModel > modle     = mModel;
     DATableStyleManager* styleMgr          = mStyleManager;
     DATableConditionalFormatStore* cfStore = mConditionalFormatStore;
+    DATableNoteStore* noteStore            = mNoteStore;
     QPointer< DADataOperateOfDataFrameWidget > self(this);
     DACommandDataFrame_splitColumn* cmdRaw = cmd.get();
     const int srcCol                       = sourceCol;
@@ -3402,7 +3463,7 @@ void DADataOperateOfDataFrameWidget::showSplitColumnDialog(int col)
         }
     });
     // 位置键元数据重映射（装饰类 R20）：结果列插入原列右侧 → >=插入点的键右移；undo 反向
-    cmd->setDirectionalCallBack([ styleMgr, cfStore, cmdRaw, srcCol ](bool isUndo) {
+    cmd->setDirectionalCallBack([ styleMgr, cfStore, noteStore, cmdRaw, srcCol ](bool isUndo) {
         const int n = cmdRaw->insertedNames().size();
         if (n <= 0) {
             return;
@@ -3424,6 +3485,14 @@ void DADataOperateOfDataFrameWidget::showSplitColumnDialog(int col)
                 cfStore->onColumnsRemoved(inserted);
             } else {
                 cfStore->onColumnsInserted(inserted);
+            }
+        }
+        // 批注列维同款重映射（005 T1.26）
+        if (noteStore) {
+            if (isUndo) {
+                noteStore->onColumnsRemoved(inserted);
+            } else {
+                noteStore->onColumnsInserted(inserted);
             }
         }
     });
@@ -3500,6 +3569,7 @@ void DADataOperateOfDataFrameWidget::showMergeColumnsDialog()
     QPointer< DADataTableModel > modle     = mModel;
     DATableStyleManager* styleMgr          = mStyleManager;
     DATableConditionalFormatStore* cfStore = mConditionalFormatStore;
+    DATableNoteStore* noteStore            = mNoteStore;
     DATableComputedColumnStore* ccStore    = mComputedColumnStore;
     QPointer< DADataOperateOfDataFrameWidget > self(this);
     const int insertPos                    = cmd->insertPosition();
@@ -3516,7 +3586,7 @@ void DADataOperateOfDataFrameWidget::showMergeColumnsDialog()
             Q_EMIT self->dataModified();
         }
     });
-    cmd->setDirectionalCallBack([ styleMgr, cfStore, ccStore, srcCols, insertPos, ccSnapshot, removedNames ](bool isUndo) {
+    cmd->setDirectionalCallBack([ styleMgr, cfStore, noteStore, ccStore, srcCols, insertPos, ccSnapshot, removedNames ](bool isUndo) {
         // 位置键元数据（装饰类 R20）：exec=删源列+插结果列；undo=删结果列+回插源列
         if (styleMgr) {
             if (isUndo) {
@@ -3534,6 +3604,16 @@ void DADataOperateOfDataFrameWidget::showMergeColumnsDialog()
             } else {
                 cfStore->onColumnsRemoved(srcCols);
                 cfStore->onColumnsInserted({ insertPos });
+            }
+        }
+        // 批注列维同款重映射（005 T1.26）：源列批注随删列丢弃，结果列位置右移的键回位
+        if (noteStore) {
+            if (isUndo) {
+                noteStore->onColumnsRemoved({ insertPos });
+                noteStore->onColumnsInserted(srcCols);
+            } else {
+                noteStore->onColumnsRemoved(srcCols);
+                noteStore->onColumnsInserted({ insertPos });
             }
         }
         // 计算列（语义类，列名引用）：exec=删列联动；undo=整店快照恢复
@@ -4346,4 +4426,176 @@ void DADataOperateOfDataFrameWidget::wireValidationRuleRenameMigration(
             }
         }
     });
+}
+
+//===================================================
+// 单元格批注（005 T1.26，设计稿 §4.10）
+//===================================================
+
+/**
+ * @brief 批注子存储（借自元数据束）
+ * @return 可能为 nullptr（无注册表时）
+ */
+DATableNoteStore* DADataOperateOfDataFrameWidget::noteStore() const
+{
+    return mNoteStore;
+}
+
+/**
+ * @brief 当前单元格（数据源绝对坐标）
+ *
+ * 视图行经 toActualRow 翻译成绝对行；越出数据范围（尾部预留空白行列）返回 false。
+ * @param actualRow 非空时输出绝对行
+ * @param actualCol 非空时输出列位置
+ * @return 有有效当前格返回 true
+ */
+bool DADataOperateOfDataFrameWidget::currentActualCell(int* actualRow, int* actualCol) const
+{
+    if (!ui || !ui->tableView) {
+        return false;
+    }
+    QItemSelectionModel* sm = ui->tableView->selectionModel();
+    if (!sm) {
+        return false;
+    }
+    const QModelIndex cur = sm->currentIndex();
+    if (!cur.isValid()) {
+        return false;
+    }
+    const int aRow = toActualRow(cur.row());
+    const int aCol = cur.column();
+    if (aRow < 0 || aRow >= dataRowCount() || aCol < 0 || aCol >= dataColumnCount()) {
+        return false;
+    }
+    if (actualRow) {
+        *actualRow = aRow;
+    }
+    if (actualCol) {
+        *actualCol = aCol;
+    }
+    return true;
+}
+
+/**
+ * @brief 打开当前单元格的批注编辑弹层（无批注=插入，有批注=编辑且弹层内可删除）
+ */
+void DADataOperateOfDataFrameWidget::showNoteEditorForCurrentCell()
+{
+    if (!mNoteStore) {
+        return;
+    }
+    int row = -1, col = -1;
+    if (!currentActualCell(&row, &col)) {
+        daWarning << tr("Please select a cell to annotate");  // cn:请先选中要批注的单元格
+        return;
+    }
+    editNoteAtCell(row, col);
+}
+
+/**
+ * @brief 对给定格弹出编辑弹层并落地结果（插入/编辑共用）
+ *
+ * 弹层跟随单元格右下角定位（先 showActualRow 保证行在滑动窗内，visualRect 转全局
+ * 坐标，出屏由弹层回夹）。保存 → 新增/编辑命令（旧新条目含时间戳记录，D4）；
+ * 弹层内点删除或文本清空 → 删除命令；文本未变不推命令。批注不进 DataFrame（红线3）。
+ * @param actualRow 数据源绝对行
+ * @param actualCol 列位置
+ */
+void DADataOperateOfDataFrameWidget::editNoteAtCell(int actualRow, int actualCol)
+{
+    if (!mNoteStore) {
+        return;
+    }
+    DATableNoteEditDialog dlg(this);
+    const DATableNoteStore::Note oldNote = mNoteStore->note(actualRow, actualCol);
+    dlg.setNoteText(oldNote.text);
+    dlg.setExistingNote(!oldNote.text.isEmpty());
+    // 弹层位置跟随单元格右下角
+    QPoint corner;
+    if (DADataTableView* tv = ui->tableView) {
+        tv->showActualRow(actualRow);
+        QAbstractItemModel* m = tv->model();
+        int startRow          = 0;
+        if (auto* cm = qobject_cast< DAAbstractCacheWindowTableModel* >(m)) {
+            startRow = cm->getCacheWindowStartRow();
+        }
+        const QModelIndex idx = m ? m->index(actualRow - startRow, actualCol) : QModelIndex();
+        if (idx.isValid()) {
+            const QRect vr = tv->visualRect(idx);
+            corner         = tv->viewport()->mapToGlobal(vr.bottomRight());
+        }
+    }
+    if (corner.isNull()) {
+        corner = QCursor::pos();
+    }
+    dlg.popupNear(corner);
+    if (QDialog::Accepted != dlg.exec()) {
+        return;
+    }
+    if (dlg.isDeleteRequested()) {
+        if (oldNote.text.isEmpty()) {
+            return;  // 本来就没有批注
+        }
+        push(new DACommandTableNote_set(mNoteStore, actualRow, actualCol, oldNote, DATableNoteStore::Note()));
+        return;
+    }
+    const QString newText = dlg.noteText().trimmed();
+    if (newText == oldNote.text) {
+        return;  // 无变化不推命令
+    }
+    if (newText.isEmpty()) {
+        // 文本清空 = 删除批注（批注没有"空内容"状态）
+        if (oldNote.text.isEmpty()) {
+            return;
+        }
+        push(new DACommandTableNote_set(mNoteStore, actualRow, actualCol, oldNote, DATableNoteStore::Note()));
+        return;
+    }
+    DATableNoteStore::Note newNote;
+    newNote.text      = newText;
+    const QDateTime now = QDateTime::currentDateTime();
+    newNote.createdAt = oldNote.text.isEmpty() ? now : oldNote.createdAt;
+    newNote.updatedAt = now;
+    push(new DACommandTableNote_set(mNoteStore, actualRow, actualCol, oldNote, newNote));
+}
+
+/**
+ * @brief 删除当前单元格批注（命令可撤销）
+ * @return 成功入栈返回 true；无当前格或无批注返回 false
+ */
+bool DADataOperateOfDataFrameWidget::deleteNoteAtCurrentCell()
+{
+    if (!mNoteStore) {
+        return false;
+    }
+    int row = -1, col = -1;
+    if (!currentActualCell(&row, &col)) {
+        daWarning << tr("Please select a cell whose note is to be deleted");  // cn:请先选中要删除批注的单元格
+        return false;
+    }
+    const DATableNoteStore::Note oldNote = mNoteStore->note(row, col);
+    if (oldNote.text.isEmpty()) {
+        daInfo << tr("The selected cell has no note");  // cn:选中单元格没有批注
+        return false;
+    }
+    push(new DACommandTableNote_set(mNoteStore, row, col, oldNote, DATableNoteStore::Note()));
+    return true;
+}
+
+/**
+ * @brief 清除本表全部批注（一次命令，可撤销）
+ * @return 清除的批注数（无批注返回 0，不推空命令）
+ */
+int DADataOperateOfDataFrameWidget::clearAllNotes()
+{
+    if (!mNoteStore) {
+        return 0;
+    }
+    const int n = mNoteStore->count();
+    if (n == 0) {
+        daInfo << tr("This table has no notes");  // cn:本表没有批注
+        return 0;
+    }
+    push(new DACommandTableNote_clearAll(mNoteStore));
+    return n;
 }

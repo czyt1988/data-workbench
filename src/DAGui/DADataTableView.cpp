@@ -1,6 +1,7 @@
 #include "DADataTableView.h"
 #include "DALogCategory.h"
 #include "DATableDataSource.h"
+#include "DATableNoteStore.h"
 #include <QKeyEvent>
 #include <QGuiApplication>
 #include <QClipboard>
@@ -277,8 +278,48 @@ QMenu* DADataTableView::buildContextMenu(const QModelIndex& at)
                                                 tr("Run Validation"));  // cn:执行校验
     actRunValidation->setEnabled(getData().isDataFrame());
     connect(actRunValidation, &QAction::triggered, this, &DADataTableView::runValidationRequested);
+    // —— 005：单元格批注（T1.26；与 Ribbon「编辑」面板同入口）——
+    // 批注是元数据不写数据：只读源也可批注；启用规则按「当前格」（插入=无批注、
+    // 编辑/删除=有批注、清除=本表有批注）
+    menu->addSeparator();
+    int curActualRow = -1, curCol = -1;
+    bool hasCur      = false;
+    if (QItemSelectionModel* sm2 = selectionModel()) {
+        const QModelIndex cidx = sm2->currentIndex();
+        DADataTableModel* m    = getDataModel();
+        if (cidx.isValid() && m) {
+            const int dataCols = m->columnCount() - m->getExtraColumnCount();
+            const int dataRows = m->actualRowCount() - m->getExtraRowCount();
+            curActualRow       = toActualRow(cidx.row());
+            curCol             = cidx.column();
+            hasCur             = curCol >= 0 && curCol < dataCols && curActualRow >= 0 && curActualRow < dataRows;
+        }
+    }
+    const bool hasNote  = hasCur && mNoteStore && mNoteStore->hasNote(curActualRow, curCol);
+    const int noteCount = mNoteStore ? mNoteStore->count() : 0;
+    QAction* actInsertNote = menu->addAction(QIcon(QStringLiteral(":/DAGui/icon/cell-note.svg")), tr("Insert Note"));  // cn:插入批注
+    QAction* actEditNote   = menu->addAction(QIcon(QStringLiteral(":/DAGui/icon/cell-note.svg")), tr("Edit Note"));    // cn:编辑批注
+    QAction* actDeleteNote = menu->addAction(QIcon(QStringLiteral(":/DAGui/icon/delete.svg")), tr("Delete Note"));     // cn:删除批注
+    QAction* actClearNotes = menu->addAction(QIcon(QStringLiteral(":/DAGui/icon/note-clear.svg")), tr("Clear All Notes"));  // cn:清除本表批注
+    actInsertNote->setEnabled(hasCur && !hasNote);
+    actEditNote->setEnabled(hasNote);
+    actDeleteNote->setEnabled(hasNote);
+    actClearNotes->setEnabled(noteCount > 0);
+    connect(actInsertNote, &QAction::triggered, this, &DADataTableView::noteInsertRequested);
+    connect(actEditNote, &QAction::triggered, this, &DADataTableView::noteEditRequested);
+    connect(actDeleteNote, &QAction::triggered, this, &DADataTableView::noteDeleteRequested);
+    connect(actClearNotes, &QAction::triggered, this, &DADataTableView::noteClearAllRequested);
     // —— 后续计划的分组插入点在菜单底部（见函数注释），插入时组间加分隔符 ——
     return menu;
+}
+
+/**
+ * @brief 注入批注子存储（右键菜单启用规则查询用，非拥有）
+ * @param store 批注子存储（可空）
+ */
+void DADataTableView::setNoteStore(DATableNoteStore* store)
+{
+    mNoteStore = store;
 }
 
 /**
