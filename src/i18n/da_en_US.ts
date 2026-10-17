@@ -2849,6 +2849,22 @@ Layouts</source>
         <source>Undo the last action</source>
         <translation>Undo the last action</translation>
     </message>
+    <message>
+        <source>Find</source>
+        <translation>Find</translation>
+    </message>
+    <message>
+        <source>Find cells matching the keyword (Ctrl+F)</source>
+        <translation>Find cells matching the keyword (Ctrl+F)</translation>
+    </message>
+    <message>
+        <source>Replace</source>
+        <translation>Replace</translation>
+    </message>
+    <message>
+        <source>Find and replace cells (Ctrl+H)</source>
+        <translation>Find and replace cells (Ctrl+H)</translation>
+    </message>
 </context>
 <context>
     <name>DA::DAAppController</name>
@@ -4050,6 +4066,10 @@ Layouts</source>
         <location line="+22"/>
         <source>Recent Files</source>
         <translation>Recent Files</translation>
+    </message>
+    <message>
+        <source>Edit</source>
+        <translation>Edit</translation>
     </message>
 </context>
 <context>
@@ -8858,6 +8878,30 @@ Layouts</source>
         <source>Unable to get statistics for this column</source>
         <translation>Unable to get statistics for this column</translation>
     </message>
+    <message>
+        <source>This data source is read-only and cannot be sorted.</source>
+        <translation>This data source is read-only and cannot be sorted.</translation>
+    </message>
+    <message>
+        <source>Cannot sort: the column contains values of incomparable mixed types.</source>
+        <translation>Cannot sort: the column contains values of incomparable mixed types.</translation>
+    </message>
+    <message>
+        <source>This data source is read-only and cannot be modified.</source>
+        <translation>This data source is read-only and cannot be modified.</translation>
+    </message>
+    <message>
+        <source>No matches found</source>
+        <translation>No matches found</translation>
+    </message>
+    <message>
+        <source>Replace All</source>
+        <translation>Replace All</translation>
+    </message>
+    <message>
+        <source>Too many cells will be changed (%1). This operation cannot be undone. Continue?</source>
+        <translation>Too many cells will be changed (%1). This operation cannot be undone. Continue?</translation>
+    </message>
 </context>
 <context>
     <name>DA::DADataOperateWidget</name>
@@ -8900,6 +8944,14 @@ Layouts</source>
     <message>
         <source>Paste</source>
         <translation>Paste</translation>
+    </message>
+    <message>
+        <source>Find...</source>
+        <translation>Find...</translation>
+    </message>
+    <message>
+        <source>Replace...</source>
+        <translation>Replace...</translation>
     </message>
 </context>
 <context>
@@ -16151,6 +16203,14 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <source>Error</source>
         <translation type="unfinished">Error</translation>
     </message>
+    <message>
+        <source>Sort rows</source>
+        <translation>Sort rows</translation>
+    </message>
+    <message>
+        <source>Replace all</source>
+        <translation>Replace all</translation>
+    </message>
 </context>
 <context>
     <name>main</name>
@@ -16289,4 +16349,82 @@ If a column name contains spaces or special characters, enclose it in backticks 
             <translation>Show Statistics</translation>
         </message>
     </context>
+<context>
+    <name>DA::DADialogFindReplace</name>
+    <message>
+        <source>Entire table</source>
+        <translation>Entire table</translation>
+    </message>
+    <message>
+        <source>Current selection</source>
+        <translation>Current selection</translation>
+    </message>
+    <message>
+        <source>No matches</source>
+        <translation>No matches</translation>
+    </message>
+    <message>
+        <source>%1 of %2 (truncated from %3)</source>
+        <translation>%1 of %2 (truncated from %3)</translation>
+    </message>
+    <message>
+        <source>%1 of %2</source>
+        <translation>%1 of %2</translation>
+    </message>
+    <message>
+        <source>Invalid pattern</source>
+        <translation>Invalid pattern</translation>
+    </message>
+</context>
+<context>
+    <name>DADialogFindReplace</name>
+    <message>
+        <source>Find and Replace</source>
+        <translation>Find and Replace</translation>
+    </message>
+    <message>
+        <source>Find:</source>
+        <translation>Find:</translation>
+    </message>
+    <message>
+        <source>Replace:</source>
+        <translation>Replace:</translation>
+    </message>
+    <message>
+        <source>Previous</source>
+        <translation>Previous</translation>
+    </message>
+    <message>
+        <source>Next</source>
+        <translation>Next</translation>
+    </message>
+    <message>
+        <source>Replace</source>
+        <translation>Replace</translation>
+    </message>
+    <message>
+        <source>Replace All</source>
+        <translation>Replace All</translation>
+    </message>
+    <message>
+        <source>Case sensitive</source>
+        <translation>Case sensitive</translation>
+    </message>
+    <message>
+        <source>Regex</source>
+        <translation>Regex</translation>
+    </message>
+    <message>
+        <source>Whole cell</source>
+        <translation>Whole cell</translation>
+    </message>
+    <message>
+        <source>Scope:</source>
+        <translation>Scope:</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Close</translation>
+    </message>
+</context>
 </TS>

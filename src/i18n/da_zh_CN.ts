@@ -2864,6 +2864,22 @@ Layouts</source>
         <source>Undo the last action</source>
         <translation>撤销</translation>
     </message>
+    <message>
+        <source>Find</source>
+        <translation>查找</translation>
+    </message>
+    <message>
+        <source>Find cells matching the keyword (Ctrl+F)</source>
+        <translation>查找匹配关键字的单元格（Ctrl+F）</translation>
+    </message>
+    <message>
+        <source>Replace</source>
+        <translation>替换</translation>
+    </message>
+    <message>
+        <source>Find and replace cells (Ctrl+H)</source>
+        <translation>查找并替换单元格（Ctrl+H）</translation>
+    </message>
 </context>
 <context>
     <name>DA::DAAppController</name>
@@ -4164,6 +4180,10 @@ Layouts</source>
         <location line="+22"/>
         <source>Recent Files</source>
         <translation>最近打开的文件</translation>
+    </message>
+    <message>
+        <source>Edit</source>
+        <translation>编辑</translation>
     </message>
 </context>
 <context>
@@ -8972,6 +8992,30 @@ Layouts</source>
         <source>Unable to get statistics for this column</source>
         <translation>无法获取此列的统计信息</translation>
     </message>
+    <message>
+        <source>This data source is read-only and cannot be sorted.</source>
+        <translation>该数据源为只读，无法排序</translation>
+    </message>
+    <message>
+        <source>Cannot sort: the column contains values of incomparable mixed types.</source>
+        <translation>无法排序：该列包含不可比较的混合类型</translation>
+    </message>
+    <message>
+        <source>This data source is read-only and cannot be modified.</source>
+        <translation>该数据源为只读，无法修改</translation>
+    </message>
+    <message>
+        <source>No matches found</source>
+        <translation>未找到匹配项</translation>
+    </message>
+    <message>
+        <source>Replace All</source>
+        <translation>全部替换</translation>
+    </message>
+    <message>
+        <source>Too many cells will be changed (%1). This operation cannot be undone. Continue?</source>
+        <translation>改动量过大（%1 格），本次替换将不可撤销，是否继续？</translation>
+    </message>
 </context>
 <context>
     <name>DA::DADataOperateWidget</name>
@@ -9014,6 +9058,14 @@ Layouts</source>
     <message>
         <source>Paste</source>
         <translation>粘贴</translation>
+    </message>
+    <message>
+        <source>Find...</source>
+        <translation>查找...</translation>
+    </message>
+    <message>
+        <source>Replace...</source>
+        <translation>替换...</translation>
     </message>
 </context>
 <context>
@@ -16271,6 +16323,14 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <source>Error</source>
         <translation>出错</translation>
     </message>
+    <message>
+        <source>Sort rows</source>
+        <translation>排序</translation>
+    </message>
+    <message>
+        <source>Replace all</source>
+        <translation>全部替换</translation>
+    </message>
 </context>
 <context>
     <name>main</name>
@@ -16409,4 +16469,82 @@ If a column name contains spaces or special characters, enclose it in backticks 
             <translation>显示统计信息</translation>
         </message>
     </context>
+<context>
+    <name>DA::DADialogFindReplace</name>
+    <message>
+        <source>Entire table</source>
+        <translation>全表</translation>
+    </message>
+    <message>
+        <source>Current selection</source>
+        <translation>当前选区</translation>
+    </message>
+    <message>
+        <source>No matches</source>
+        <translation>无匹配</translation>
+    </message>
+    <message>
+        <source>%1 of %2 (truncated from %3)</source>
+        <translation>第 %1 条 / 共 %2 条（命中过多，已从 %3 条截断）</translation>
+    </message>
+    <message>
+        <source>%1 of %2</source>
+        <translation>第 %1 条 / 共 %2 条</translation>
+    </message>
+    <message>
+        <source>Invalid pattern</source>
+        <translation>无效的匹配模式</translation>
+    </message>
+</context>
+<context>
+    <name>DADialogFindReplace</name>
+    <message>
+        <source>Find and Replace</source>
+        <translation>查找和替换</translation>
+    </message>
+    <message>
+        <source>Find:</source>
+        <translation>查找：</translation>
+    </message>
+    <message>
+        <source>Replace:</source>
+        <translation>替换：</translation>
+    </message>
+    <message>
+        <source>Previous</source>
+        <translation>上一个</translation>
+    </message>
+    <message>
+        <source>Next</source>
+        <translation>下一个</translation>
+    </message>
+    <message>
+        <source>Replace</source>
+        <translation>替换</translation>
+    </message>
+    <message>
+        <source>Replace All</source>
+        <translation>全部替换</translation>
+    </message>
+    <message>
+        <source>Case sensitive</source>
+        <translation>区分大小写</translation>
+    </message>
+    <message>
+        <source>Regex</source>
+        <translation>正则表达式</translation>
+    </message>
+    <message>
+        <source>Whole cell</source>
+        <translation>整格匹配</translation>
+    </message>
+    <message>
+        <source>Scope:</source>
+        <translation>范围：</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>关闭</translation>
+    </message>
+</context>
 </TS>
