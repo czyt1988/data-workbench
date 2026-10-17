@@ -16951,6 +16951,22 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
         <name>DA::DADataHeaderView</name>
         <message>
+            <source>Sort Ascending</source>
+            <translation>Sort Ascending</translation>
+        </message>
+        <message>
+            <source>Sort Descending</source>
+            <translation>Sort Descending</translation>
+        </message>
+        <message>
+            <source>Add Secondary Sort (Ascending)</source>
+            <translation>Add Secondary Sort (Ascending)</translation>
+        </message>
+        <message>
+            <source>Add Secondary Sort (Descending)</source>
+            <translation>Add Secondary Sort (Descending)</translation>
+        </message>
+        <message>
             <source>Rename Column</source>
             <translation>Rename Column</translation>
         </message>
