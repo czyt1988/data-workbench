@@ -21,6 +21,8 @@ set(DA_LIB_HEADER_FILES
     DADataFactory.h
     # 计算列定义（纯数据类，无 GUI/Python 依赖，004 T1.23）
     DAComputedColumn.h
+    # 数据校验规则定义（纯数据类，无 GUI/Python 依赖，005 T1.25）
+    DATableValidationRule.h
 )
 set(DA_LIB_SOURCE_FILES
     DAAbstractData.cpp
@@ -32,6 +34,7 @@ set(DA_LIB_SOURCE_FILES
     DATableDataSource.cpp
     DADataFactory.cpp
     DAComputedColumn.cpp
+    DATableValidationRule.cpp
 )
 list(APPEND DA_LIB_HEADER_FILES
     DADataPythonBinding.h

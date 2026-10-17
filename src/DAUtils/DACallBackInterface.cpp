@@ -73,4 +73,22 @@ void DACallBackInterface::directionalCallback(bool isUndo)
     }
 }
 
+/**
+ * @brief 获取方向感知回调函数（多方接线时链式包裹既有回调用）
+ * @return 方向感知回调函数对象（未设置时为空）
+ */
+DACallBackInterface::DirectionalCallBack DACallBackInterface::getDirectionalCallBack() const
+{
+    return mDirectionalCallBack;
+}
+
+/**
+ * @brief 判断是否设置了方向感知回调
+ * @return 设置了返回true
+ */
+bool DACallBackInterface::hasDirectionalCallBack() const
+{
+    return mDirectionalCallBack != nullptr;
+}
+
 }
