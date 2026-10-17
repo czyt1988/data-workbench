@@ -86,6 +86,9 @@
 #include "DADataUndoCommand.h"
 #include <QCheckBox>
 
+// 填充（005 计划 §3，T1.24）
+#include "Dialog/DADialogFillSeries.h"
+
 #include "DASqliteLazyTable.h"
 #include <QSqlDatabase>
 #include <QSqlQuery>
@@ -403,6 +406,14 @@ private Q_SLOTS:
     void testMeltGuardEstimate();
     void testInplaceReshapeMetadataClear();
     void testReshapeWidgetFlow();
+
+    // 005 WP1 填充（T1.24 §3.4/§7.1）：选区求值（NaN/NaT/None 三种空值、四种模式、
+    // 不足两行）、序列生成（等差/终止值/日期步进）、一次填充一条命令 + undo 完全还原、
+    // 多列独立、Ctrl+D 快捷键与右键菜单构成
+    void testFillSelectionOperator();
+    void testFillSeriesOperator();
+    void testFillCommandUndoRedo();
+    void testFillWidgetFlow();
 
 private:
     // 生成/复用sqlite测试库（百万行），失败返回false并置mSqliteErr
@@ -1567,7 +1578,9 @@ void DATableDataTest::testContextMenuComposition()
                                      QStringLiteral("Merge Columns..."),
                                      QStringLiteral("Group By..."),
                                      QStringLiteral("Transpose..."),
-                                     QStringLiteral("Unpivot (Melt)...") };
+                                     QStringLiteral("Unpivot (Melt)..."),
+                                     QStringLiteral("<SEP>"),
+                                     QStringLiteral("Fill") };
     QCOMPARE(bodySeq, expectedBody);
     // 剪贴板组无选区置灰
     QVERIFY(!byText.value(QStringLiteral("Cut"))->isEnabled());
@@ -1588,6 +1601,24 @@ void DATableDataTest::testContextMenuComposition()
     // 转置/宽转长（004 T1.27）：无模型置灰
     QVERIFY(!byText.value(QStringLiteral("Transpose..."))->isEnabled());
     QVERIFY(!byText.value(QStringLiteral("Unpivot (Melt)..."))->isEnabled());
+    // 填充子菜单（005 T1.24）：无模型=只读源，五项全部置灰且图标齐备
+    QAction* actFill = byText.value(QStringLiteral("Fill"));
+    QVERIFY(actFill != nullptr && actFill->menu() != nullptr);
+    QStringList fillSeq;
+    const auto fillActs = actFill->menu()->actions();
+    for (QAction* a : fillActs) {
+        if (a->isSeparator()) {
+            continue;
+        }
+        fillSeq << a->text();
+        QVERIFY(!a->isEnabled());
+        QVERIFY2(!a->icon().isNull(), qPrintable(QStringLiteral("icon empty for %1").arg(a->text())));
+    }
+    QCOMPARE(fillSeq, QStringList({ QStringLiteral("Fill Down"),
+                                    QStringLiteral("Fill Up"),
+                                    QStringLiteral("Fill Forward (ffill)"),
+                                    QStringLiteral("Fill Backward (bfill)"),
+                                    QStringLiteral("Fill Series...") }));
     delete body;
 }
 
@@ -4829,6 +4860,339 @@ df = pd.DataFrame({"A":[1,2],"B":[3.5,4.5]})
     pageStack.redo();
     QCOMPARE(w.getDataframe().shape().first, static_cast< std::size_t >(4));
     QVERIFY(bundle->isEmpty());
+    w.hide();
+}
+
+
+//===================================================
+// 005 WP1 填充（T1.24）
+//===================================================
+
+// 005 §7.1：选区填充求值——NaN/NaT/None 三种空值、down/up/ffill/bfill 四模式、不足两行
+void DATableDataTest::testFillSelectionOperator()
+{
+    if (!mPandasOk || !mPyScriptsOk) {
+        QSKIP("pandas/DAPyScripts not available");
+    }
+    DA::DAPyScriptsDataFrame& py = DA::DAPyScripts::getDataFrame();
+    pybind11::dict scope;
+    pybind11::exec(R"(
+import pandas as pd, numpy as np
+df = pd.DataFrame({
+    "f": [1.0, np.nan, np.nan, 4.0, np.nan],
+    "d": pd.to_datetime(["2020-01-01", None, None, "2020-01-04", None]),
+    "s": ["a", None, "c", None, None],
+})
+)",
+                   pybind11::globals(),
+                   scope);
+    DA::DAPyDataFrame df(scope[ "df" ]);
+    // down：首行值 1.0 填满其余（float NaN→1.0、4.0→1.0 都算变化）
+    {
+        const auto r = py.fillSelection(df, 0, 0, 4, QStringLiteral("down"));
+        QVERIFY(r.ok);
+        QCOMPARE(r.rows, QVector< int >({ 1, 2, 3, 4 }));
+        QCOMPARE(r.values.size(), 4);
+        for (const QVariant& v : r.values) {
+            QCOMPARE(v.toDouble(), 1.0);
+        }
+    }
+    // ffill：NaN 由最后一个非空值向下传递（行1,2←1.0；行4←4.0）
+    {
+        const auto r = py.fillSelection(df, 0, 0, 4, QStringLiteral("ffill"));
+        QVERIFY(r.ok);
+        QCOMPARE(r.rows, QVector< int >({ 1, 2, 4 }));
+        QCOMPARE(r.values.size(), 3);
+        QCOMPARE(r.values[ 0 ].toDouble(), 1.0);
+        QCOMPARE(r.values[ 1 ].toDouble(), 1.0);
+        QCOMPARE(r.values[ 2 ].toDouble(), 4.0);
+    }
+    // bfill：NaT/NaN 由下一个非空值向上传递（行1,2←4.0）
+    {
+        const auto r = py.fillSelection(df, 0, 0, 4, QStringLiteral("bfill"));
+        QVERIFY(r.ok);
+        QCOMPARE(r.rows, QVector< int >({ 1, 2 }));
+        QCOMPARE(r.values[ 0 ].toDouble(), 4.0);
+        QCOMPARE(r.values[ 1 ].toDouble(), 4.0);
+    }
+    // 日期列 ffill：NaT 判定正确（pandas 侧），值经 caster 落 QDateTime
+    {
+        const auto r = py.fillSelection(df, 1, 0, 4, QStringLiteral("ffill"));
+        QVERIFY(r.ok);
+        QCOMPARE(r.rows, QVector< int >({ 1, 2, 4 }));
+        QCOMPARE(r.values[ 0 ].userType(), static_cast< int >(QMetaType::QDateTime));
+        QCOMPARE(r.values[ 0 ].toDateTime().date(), QDate(2020, 1, 1));
+        QCOMPARE(r.values[ 2 ].toDateTime().date(), QDate(2020, 1, 4));
+    }
+    // 字符串列 bfill：None 判定正确（行1 ← 下一个非空 "c"；末尾连续空值行3,4 无值可传，保持为空）
+    {
+        const auto r = py.fillSelection(df, 2, 0, 4, QStringLiteral("bfill"));
+        QVERIFY(r.ok);
+        QCOMPARE(r.rows, QVector< int >({ 1 }));
+        QCOMPARE(r.values.size(), 1);
+        QCOMPARE(r.values[ 0 ].toString(), QStringLiteral("c"));
+    }
+    // up：末行为空（NaN）时按 Excel 语义以空值填满其余（写入 NaN）
+    {
+        const auto r = py.fillSelection(df, 0, 0, 4, QStringLiteral("up"));
+        QVERIFY(r.ok);
+        QCOMPARE(r.rows, QVector< int >({ 0, 3 }));
+        for (const QVariant& v : r.values) {
+            QVERIFY(qIsNaN(v.toDouble()));
+        }
+    }
+    // 区间不足两行 / 子区间 / 非法参数：空清单且 ok（不发命令由 widget 侧兜底）
+    {
+        const auto r1 = py.fillSelection(df, 0, 2, 2, QStringLiteral("down"));
+        QVERIFY(r1.ok && r1.rows.isEmpty());
+        // 锚点为空且目标也为空（col0 行1-2 均 NaN）→ 无变化
+        const auto r2 = py.fillSelection(df, 0, 1, 2, QStringLiteral("down"));
+        QVERIFY(r2.ok && r2.rows.isEmpty());
+        const auto r3 = py.fillSelection(df, 99, 0, 4, QStringLiteral("down"));
+        QVERIFY(r3.ok && r3.rows.isEmpty());
+        const auto r4 = py.fillSelection(df, 0, 0, 4, QStringLiteral("bad-mode"));
+        QVERIFY(r4.ok && r4.rows.isEmpty());
+    }
+    // ffill 在无值可传递的纯空区间上返回空清单（区间开头连续空值保持为空）
+    {
+        pybind11::dict s2;
+        pybind11::exec(R"(
+import pandas as pd, numpy as np
+df2 = pd.DataFrame({"f": [np.nan, np.nan, 9.0]})
+)",
+                       pybind11::globals(),
+                       s2);
+        DA::DAPyDataFrame df2(s2[ "df2" ]);
+        const auto r = py.fillSelection(df2, 0, 0, 1, QStringLiteral("ffill"));
+        QVERIFY(r.ok && r.rows.isEmpty());
+    }
+}
+
+// 005 §7.1：序列填充生成——等差/终止值截断/日期步进（天/周/月/年）/非法日期报错
+void DATableDataTest::testFillSeriesOperator()
+{
+    if (!mPandasOk || !mPyScriptsOk) {
+        QSKIP("pandas/DAPyScripts not available");
+    }
+    DA::DAPyScriptsDataFrame& py = DA::DAPyScripts::getDataFrame();
+    // 数值等差
+    {
+        bool ok = false;
+        const QVariantList v = py.fillSeries(5, QStringLiteral("linear"), QStringLiteral("10"), QStringLiteral("2.5"), QString(), QStringLiteral("D"), &ok);
+        QVERIFY(ok);
+        QCOMPARE(v.size(), 5);
+        QCOMPARE(v[ 0 ].toDouble(), 10.0);
+        QCOMPARE(v[ 2 ].toDouble(), 15.0);
+        QCOMPARE(v[ 4 ].toDouble(), 20.0);
+    }
+    // 终止值截断（0,1,2,3 —— 4 超过 3.5 停止）
+    {
+        bool ok = false;
+        const QVariantList v = py.fillSeries(10, QStringLiteral("linear"), QStringLiteral("0"), QStringLiteral("1"), QStringLiteral("3.5"), QStringLiteral("D"), &ok);
+        QVERIFY(ok);
+        QCOMPARE(v.size(), 4);
+        QCOMPARE(v[ 3 ].toDouble(), 3.0);
+    }
+    // 日期步进：天/月（含闰月末语义）/年
+    {
+        bool ok = false;
+        const QVariantList d = py.fillSeries(3, QStringLiteral("date"), QStringLiteral("2020-01-01"), QStringLiteral("2"), QString(), QStringLiteral("D"), &ok);
+        QVERIFY(ok);
+        QCOMPARE(d.size(), 3);
+        QCOMPARE(d[ 0 ].toDateTime().date(), QDate(2020, 1, 1));
+        QCOMPARE(d[ 1 ].toDateTime().date(), QDate(2020, 1, 3));
+        QCOMPARE(d[ 2 ].toDateTime().date(), QDate(2020, 1, 5));
+        const QVariantList m = py.fillSeries(3, QStringLiteral("date"), QStringLiteral("2020-01-31"), QStringLiteral("1"), QString(), QStringLiteral("M"), &ok);
+        QVERIFY(ok);
+        QCOMPARE(m[ 1 ].toDateTime().date(), QDate(2020, 2, 29));  // DateOffset 月末语义
+        QCOMPARE(m[ 2 ].toDateTime().date(), QDate(2020, 3, 31));
+        const QVariantList y = py.fillSeries(2, QStringLiteral("date"), QStringLiteral("2020-02-29"), QStringLiteral("1"), QString(), QStringLiteral("Y"), &ok);
+        QVERIFY(ok);
+        QCOMPARE(y[ 1 ].toDateTime().date(), QDate(2021, 2, 28));
+    }
+    // 默认参数（起始 0 步长 1）与 count<=0
+    {
+        bool ok = false;
+        const QVariantList v = py.fillSeries(3, QStringLiteral("linear"), QString(), QString(), QString(), QStringLiteral("D"), &ok);
+        QVERIFY(ok);
+        QCOMPARE(v.size(), 3);
+        QCOMPARE(v[ 2 ].toDouble(), 2.0);
+        const QVariantList e = py.fillSeries(0, QStringLiteral("linear"), QString(), QString(), QString(), QStringLiteral("D"), &ok);
+        QVERIFY(ok && e.isEmpty());
+    }
+    // 非法日期起始 → ok=false（对话框据此置灰 OK）
+    {
+        bool ok = true;
+        const QVariantList v = py.fillSeries(3, QStringLiteral("date"), QStringLiteral("not-a-date"), QString(), QString(), QStringLiteral("D"), &ok);
+        QVERIFY(!ok);
+        QVERIFY(v.isEmpty());
+    }
+}
+
+// 005 §7.1：一次填充一条命令 + undo 完全还原（NaN 旧值以 Python 对象记录，还原保真）
+void DATableDataTest::testFillCommandUndoRedo()
+{
+    if (!mPandasOk || !mPyScriptsOk) {
+        QSKIP("pandas/DAPyScripts not available");
+    }
+    DA::DAPyScriptsDataFrame& py = DA::DAPyScripts::getDataFrame();
+    pybind11::dict scope;
+    pybind11::exec(R"(
+import pandas as pd, numpy as np
+df = pd.DataFrame({"f": [7.0, np.nan, np.nan, np.nan]})
+)",
+                   pybind11::globals(),
+                   scope);
+    DA::DAPyDataFrame df(scope[ "df" ]);
+    const auto r = py.fillSelection(df, 0, 0, 3, QStringLiteral("down"));
+    QVERIFY(r.ok);
+    QCOMPARE(r.rows.size(), 3);
+    QList< int > rows, cols;
+    QList< QVariant > values;
+    for (int i = 0; i < r.rows.size(); ++i) {
+        rows.append(r.rows[ i ]);
+        cols.append(0);
+        values.append(r.values[ i ]);
+    }
+    QUndoStack stack;
+    DA::DACommandDataFrame_paste* cmd = new DA::DACommandDataFrame_paste(df, rows, cols, values);
+    cmd->setText(QStringLiteral("fill down (test)"));
+    QVERIFY(cmd->exec());
+    stack.push(cmd);
+    QCOMPARE(stack.count(), 1);  // 一次填充 = 一条命令
+    // 填充生效
+    QCOMPARE(df.iat(1, 0).toDouble(), 7.0);
+    QCOMPARE(df.iat(3, 0).toDouble(), 7.0);
+    // undo 完全还原（旧值 NaN 精确回写）
+    stack.undo();
+    QVERIFY(qIsNaN(df.iat(1, 0).toDouble()));
+    QVERIFY(qIsNaN(df.iat(3, 0).toDouble()));
+    QCOMPARE(df.iat(0, 0).toDouble(), 7.0);
+    // redo 再应用
+    stack.redo();
+    QCOMPARE(df.iat(2, 0).toDouble(), 7.0);
+    QCOMPARE(stack.text(0), QStringLiteral("fill down (test)"));
+}
+
+// 005 §3.4：widget 全链路——向下填充多列独立（互不串列）、Ctrl+D 快捷键、
+// ffill、序列填充对话框（日期按月），每步一条命令、undo 还原
+void DATableDataTest::testFillWidgetFlow()
+{
+    if (!mPandasOk || !mPyScriptsOk) {
+        QSKIP("pandas/DAPyScripts not available");
+    }
+    qRegisterMetaType< DA::DAData >("DA::DAData");
+    pybind11::dict scope;
+    pybind11::exec(R"(
+import pandas as pd, numpy as np
+df = pd.DataFrame({
+    "n": [5.0, np.nan, np.nan, np.nan, np.nan, np.nan],
+    "s": ["x", None, None, None, None, None],
+    "d": pd.to_datetime([None]*6),
+})
+)",
+                   pybind11::globals(),
+                   scope);
+    DA::DAPyDataFrame df(scope[ "df" ]);
+    DA::DADataManager mgr;
+    DA::DAData d(df);
+    d.setName(QStringLiteral("src"));
+    mgr.addData(d);
+    DA::DATableMetadataRegistry registry(nullptr);
+    DA::DADataOperateOfDataFrameWidget w(d, &registry);
+    w.resize(700, 400);
+    w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+    DA::DADataTableView* tv = w.getDataTableView();
+    QVERIFY(tv != nullptr);
+    QUndoStack& pageStack = *w.getUndoStack();
+    const int stackBefore = pageStack.count();
+    // 注：模型预留 1 个扩展行（extraRow），dataRowCount = dfRows-1，末行为保留行不参与
+    // 选区类操作（与 paste/removeSelectRow 同一口径）。故选区取行 0..4（df 共 6 行）。
+    // —— 多列选区（n/s 两列，行0-4）向下填充：每列各按自己的首行值填充，互不串列 ——
+    {
+        QItemSelection sel(tv->model()->index(0, 0), tv->model()->index(4, 1));
+        tv->selectionModel()->select(sel, QItemSelectionModel::ClearAndSelect);
+        const int written = w.fillSelection(DA::DADataOperateOfDataFrameWidget::FillMode::Down);
+        QCOMPARE(written, 8);  // 两列各 4 行（行1-4）
+        QCOMPARE(df.iat(3, 0).toDouble(), 5.0);
+        QCOMPARE(df.iat(3, 1).toString(), QStringLiteral("x"));
+        QCOMPARE(pageStack.count(), stackBefore + 1);  // 一次填充一条命令
+        pageStack.undo();
+        QVERIFY(qIsNaN(df.iat(3, 0).toDouble()));
+        QCOMPARE(pageStack.count(), stackBefore + 1);
+        pageStack.redo();
+        QCOMPARE(df.iat(3, 0).toDouble(), 5.0);
+        pageStack.undo();  // 回到填充前，后续断言基于原始数据
+    }
+    // —— Ctrl+D 快捷键：只选 n 列行0-2，首行 5.0 填满其余 ——
+    {
+        QItemSelection sel(tv->model()->index(0, 0), tv->model()->index(2, 0));
+        tv->selectionModel()->select(sel, QItemSelectionModel::ClearAndSelect);
+        QSignalSpy spy(tv, &DA::DADataTableView::fillDownRequested);
+        QTest::keyClick(tv, Qt::Key_D, Qt::ControlModifier);
+        QCOMPARE(spy.count(), 1);
+        QCOMPARE(df.iat(1, 0).toDouble(), 5.0);
+        QCOMPARE(df.iat(2, 0).toDouble(), 5.0);
+        QCOMPARE(pageStack.count(), stackBefore + 1);
+        pageStack.undo();
+        QVERIFY(qIsNaN(df.iat(1, 0).toDouble()));
+    }
+    // —— ffill：先把行0/行3 置值再传递（行1,2 ← 行0；行4 ← 行3）——
+    {
+        pybind11::exec(R"(
+import numpy as np
+df.iat[0, 0] = 2.0
+df.iat[3, 0] = 8.0
+)",
+                       pybind11::globals(),
+                       scope);
+        QItemSelection sel(tv->model()->index(0, 0), tv->model()->index(4, 0));
+        tv->selectionModel()->select(sel, QItemSelectionModel::ClearAndSelect);
+        const int written = w.fillSelection(DA::DADataOperateOfDataFrameWidget::FillMode::Forward);
+        QCOMPARE(written, 3);  // 行1,2←2.0；行4←8.0
+        QCOMPARE(df.iat(2, 0).toDouble(), 2.0);
+        QCOMPARE(df.iat(4, 0).toDouble(), 8.0);
+        pageStack.undo();
+        QVERIFY(qIsNaN(df.iat(2, 0).toDouble()));
+        QVERIFY(qIsNaN(df.iat(4, 0).toDouble()));
+    }
+    // —— 序列填充对话框：d 列行0-2 按月步进（2021-01-01 起），预览与写入同一算子 ——
+    {
+        QItemSelection sel(tv->model()->index(0, 2), tv->model()->index(2, 2));
+        tv->selectionModel()->select(sel, QItemSelectionModel::ClearAndSelect);
+        QTimer::singleShot(0, []() {
+            auto* dlg = qobject_cast< DA::DADialogFillSeries* >(QApplication::activeModalWidget());
+            if (!dlg) {
+                return;
+            }
+            QRadioButton* dateRadio = dlg->findChild< QRadioButton* >(QStringLiteral("fillSeriesKindDate"));
+            QVERIFY(dateRadio != nullptr);
+            dateRadio->setChecked(true);
+            QLineEdit* start = dlg->findChild< QLineEdit* >(QStringLiteral("fillSeriesStart"));
+            QVERIFY(start != nullptr);
+            start->setText(QStringLiteral("2021-01-01"));
+            QComboBox* unit = dlg->findChild< QComboBox* >(QStringLiteral("fillSeriesDateUnit"));
+            QVERIFY(unit != nullptr);
+            unit->setCurrentIndex(2);  // 月
+            // 预览已实时生成（同一算子）
+            QLabel* preview = dlg->findChild< QLabel* >(QStringLiteral("fillSeriesPreview"));
+            QVERIFY(preview != nullptr);
+            QVERIFY2(preview->text().contains(QStringLiteral("2021-01-01")), qPrintable(preview->text()));
+            QVERIFY(dlg->isSeriesValid());
+            QDialogButtonBox* box = dlg->findChild< QDialogButtonBox* >();
+            QVERIFY(box && box->button(QDialogButtonBox::Ok)->isEnabled());
+            box->button(QDialogButtonBox::Ok)->click();
+        });
+        const int written = w.showFillSeriesDialog();
+        QCOMPARE(written, 3);
+        QCOMPARE(df.iat(0, 2).toDateTime().date(), QDate(2021, 1, 1));
+        QCOMPARE(df.iat(1, 2).toDateTime().date(), QDate(2021, 2, 1));
+        QCOMPARE(df.iat(2, 2).toDateTime().date(), QDate(2021, 3, 1));
+        QCOMPARE(pageStack.count(), stackBefore + 1);  // 序列填充也是一条命令
+        pageStack.undo();
+        QVERIFY(df.iat(0, 2).isNull() || df.iat(0, 2).toString().isEmpty());  // 还原为 NaT
+    }
     w.hide();
 }
 
