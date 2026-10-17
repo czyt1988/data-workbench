@@ -158,6 +158,14 @@ void DAAppRibbonArea::buildMenu()
     mMenuFill->addAction(mActions->actionFillBackward);
     mMenuFill->addSeparator();
     mMenuFill->addAction(mActions->actionFillSeries);
+    // 批注下拉子菜单（005 T1.26）：插入/编辑/删除/清除本表批注，挂在 actionNote 下
+    mMenuNote = new SARibbonMenu(mApp);
+    mMenuNote->setObjectName(QString::fromUtf8(UiNames::Menu::Note));
+    mMenuNote->addAction(mActions->actionInsertNote);
+    mMenuNote->addAction(mActions->actionEditNote);
+    mMenuNote->addAction(mActions->actionDeleteNote);
+    mMenuNote->addSeparator();
+    mMenuNote->addAction(mActions->actionClearNotes);
     //
     mExportWorkflowSceneToImageMenu = new SARibbonMenu(mApp);
     mExportWorkflowSceneToImageMenu->setObjectName(QString::fromUtf8(UiNames::Menu::ExportWorkflowSceneToImage));
@@ -509,6 +517,9 @@ void DAAppRibbonArea::buildContextCategoryDataFrame()
     // 填充（005 T1.24）：按钮点击=向下填充（与 Ctrl+D 同），下拉含全部五种填充
     mActions->actionFill->setMenu(mMenuFill);
     mPannelDataframeOperateEdit->addLargeAction(mActions->actionFill, QToolButton::MenuButtonPopup);
+    // 批注（005 T1.26）：按钮点击=插入/编辑当前格批注，下拉含全部四项
+    mActions->actionNote->setMenu(mMenuNote);
+    mPannelDataframeOperateEdit->addLargeAction(mActions->actionNote, QToolButton::MenuButtonPopup);
 
     // Data Tools pannel - 数据工具（004：计算列/分列/合列/分组/转置/melt，D6）
     mPannelDataframeOperateDataTools = mCategoryDataframeOperate->addPanel(tr("Data Tools"));  // cn:数据工具

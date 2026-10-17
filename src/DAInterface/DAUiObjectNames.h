@@ -157,6 +157,12 @@ constexpr char FillSeries[]                 = "actionFillSeries";               
 // ---- 数据校验（005 T1.25，Ribbon「Data Tools」面板 + 表体右键同入口）----
 constexpr char ValidationRules[]            = "actionValidationRules";            ///< 校验规则（005 T1.25）
 constexpr char RunValidation[]              = "actionRunValidation";              ///< 执行校验（005 T1.25）
+// ---- 单元格批注（005 T1.26，Ribbon「Edit」面板下拉 + 表体右键同入口）----
+constexpr char Note[]                       = "actionNote";                       ///< 批注下拉根（005 T1.26）
+constexpr char InsertNote[]                 = "actionInsertNote";                 ///< 插入批注（005 T1.26）
+constexpr char EditNote[]                   = "actionEditNote";                   ///< 编辑批注（005 T1.26）
+constexpr char DeleteNote[]                 = "actionDeleteNote";                 ///< 删除批注（005 T1.26）
+constexpr char ClearNotes[]                 = "actionClearNotes";                 ///< 清除本表批注（005 T1.26）
 // ---- 绘图 ----
 constexpr char AddFigure[]                  = "actionAddFigure";
 constexpr char FigureNewXYAxis[]            = "actionFigureNewXYAxis";
@@ -305,6 +311,7 @@ namespace Menu
 constexpr char InsertRow[]                  = "menuInsertRow";
 constexpr char InsertColumn[]               = "menuInsertColumn";
 constexpr char Fill[]                       = "menuFill";  ///< 填充下拉子菜单（005 T1.24）
+constexpr char Note[]                       = "menuNote";  ///< 批注下拉子菜单（005 T1.26）
 constexpr char ExportData[]                 = "menuExportData";
 constexpr char ExportWorkflowSceneToImage[] = "exportWorkflowSceneToImageMenu";
 constexpr char ChartPickSetting[]           = "mMenuChartPickSetting";  ///< 历史命名，保留

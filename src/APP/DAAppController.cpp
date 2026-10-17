@@ -551,6 +551,12 @@ void DAAppController::initConnection()
     // 数据校验（005 T1.25，Ribbon「Data Tools」面板；与表体右键菜单共用页面入口）
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionValidationRules, onActionValidationRulesTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionRunValidation, onActionRunValidationTriggered);
+    // 批注（005 T1.26，Ribbon「Edit」面板下拉；插入/编辑共用弹层入口）
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionNote, onActionNoteTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionInsertNote, onActionNoteTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionEditNote, onActionNoteTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionDeleteNote, onActionDeleteNoteTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionClearNotes, onActionClearNotesTriggered);
     // View Category
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowWorkFlowArea, onActionShowWorkFlowAreaTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowWorkFlowManagerArea, onActionShowWorkFlowManagerAreaTriggered);
@@ -3698,6 +3704,44 @@ void DAAppController::onActionRunValidationTriggered()
         return;
     }
     dfopt->runValidationAndShowReport();
+}
+
+/**
+ * @brief 插入/编辑批注（005 T1.26，Ribbon「Edit」面板下拉）
+ *
+ * 与表体右键菜单共用页面弹层入口（无批注=插入、有批注=编辑且弹层内可删除）。
+ */
+void DAAppController::onActionNoteTriggered()
+{
+    DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false);
+    if (!dfopt) {
+        return;
+    }
+    dfopt->showNoteEditorForCurrentCell();
+}
+
+/**
+ * @brief 删除当前格批注（005 T1.26）
+ */
+void DAAppController::onActionDeleteNoteTriggered()
+{
+    DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false);
+    if (!dfopt) {
+        return;
+    }
+    dfopt->deleteNoteAtCurrentCell();
+}
+
+/**
+ * @brief 清除本表批注（005 T1.26，一次命令可撤销）
+ */
+void DAAppController::onActionClearNotesTriggered()
+{
+    DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false);
+    if (!dfopt) {
+        return;
+    }
+    dfopt->clearAllNotes();
 }
 
 /**

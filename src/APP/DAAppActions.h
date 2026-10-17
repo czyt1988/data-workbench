@@ -115,6 +115,11 @@ public:
     QAction* actionFillSeries { nullptr };                  ///< 序列填充（005 T1.24）
     QAction* actionValidationRules { nullptr };             ///< 校验规则（005 T1.25，Data Tools 面板 + 表体右键同入口）
     QAction* actionRunValidation { nullptr };               ///< 执行校验（005 T1.25）
+    QAction* actionNote { nullptr };                        ///< 批注下拉根（005 T1.26，Edit 面板）
+    QAction* actionInsertNote { nullptr };                  ///< 插入批注（005 T1.26）
+    QAction* actionEditNote { nullptr };                    ///< 编辑批注（005 T1.26）
+    QAction* actionDeleteNote { nullptr };                  ///< 删除批注（005 T1.26）
+    QAction* actionClearNotes { nullptr };                  ///< 清除本表批注（005 T1.26）
 
     //===================================================
     // workflow的上下文标签

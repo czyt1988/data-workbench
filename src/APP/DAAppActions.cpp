@@ -137,6 +137,12 @@ void DAAppActions::buildDataAction()
     // 数据校验 action（005 T1.25；图标取 DAGui 图标库，不引用 APP 资源）
     actionValidationRules             = createAction(UiNames::Action::ValidationRules, ":/DAGui/icon/validation.svg");
     actionRunValidation               = createAction(UiNames::Action::RunValidation, ":/DAGui/icon/validation-run.svg");
+    // 批注 action（005 T1.26；图标取 DAGui 图标库）
+    actionNote                        = createAction(UiNames::Action::Note, ":/DAGui/icon/cell-note.svg");
+    actionInsertNote                  = createAction(UiNames::Action::InsertNote, ":/DAGui/icon/cell-note.svg");
+    actionEditNote                    = createAction(UiNames::Action::EditNote, ":/DAGui/icon/cell-note.svg");
+    actionDeleteNote                  = createAction(UiNames::Action::DeleteNote, ":/DAGui/icon/delete.svg");
+    actionClearNotes                  = createAction(UiNames::Action::ClearNotes, ":/DAGui/icon/note-clear.svg");
 }
 
 void DAAppActions::buildChartAction()
@@ -703,6 +709,16 @@ void DAAppActions::retranslateUi()
     actionValidationRules->setToolTip(tr("Manage data validation rules (range / enum / not-empty / unique / regex) of the current table"));  // cn:管理当前表的数据校验规则（区间/枚举/非空/唯一/正则）
     actionRunValidation->setText(tr("Run Validation"));             // cn:执行校验
     actionRunValidation->setToolTip(tr("Validate the table against enabled rules, highlight violations and show the report (read-only)"));  // cn:按启用规则校验全表，高亮违规并出报告（只读）
+    actionNote->setText(tr("Note"));                                // cn:批注
+    actionNote->setToolTip(tr("Insert or edit a note on the current cell"));  // cn:在当前单元格插入或编辑批注
+    actionInsertNote->setText(tr("Insert Note"));                   // cn:插入批注
+    actionInsertNote->setToolTip(tr("Insert a note on the current cell"));  // cn:在当前单元格插入批注
+    actionEditNote->setText(tr("Edit Note"));                       // cn:编辑批注
+    actionEditNote->setToolTip(tr("Edit the note of the current cell"));  // cn:编辑当前单元格的批注
+    actionDeleteNote->setText(tr("Delete Note"));                   // cn:删除批注
+    actionDeleteNote->setToolTip(tr("Delete the note of the current cell"));  // cn:删除当前单元格的批注
+    actionClearNotes->setText(tr("Clear All Notes"));               // cn:清除本表批注
+    actionClearNotes->setToolTip(tr("Remove all notes of the current table (undoable)"));  // cn:清除本表全部批注（可撤销）
     //-----------------------------------------------------
     // workflow 编辑
     //-----------------------------------------------------
