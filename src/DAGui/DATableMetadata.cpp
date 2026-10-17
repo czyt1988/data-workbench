@@ -1,18 +1,20 @@
 ﻿#include "DATableMetadata.h"
 #include "DATableStyleManager.h"
 #include "DATableViewStateStore.h"
+#include "DATableConditionalFormatStore.h"
 
 namespace DA
 {
 
 /**
- * @brief 构造函数：创建两个 v1 子存储
+ * @brief 构造函数：创建各子存储
  * @param parent 父对象（一般为注册表）
  */
 DATableMetadata::DATableMetadata(QObject* parent) : QObject(parent)
 {
-    mStyleManager = new DATableStyleManager(this);
-    mViewState    = new DATableViewStateStore(this);
+    mStyleManager     = new DATableStyleManager(this);
+    mViewState        = new DATableViewStateStore(this);
+    mConditionalFormat = new DATableConditionalFormatStore(this);
 }
 
 DATableMetadata::~DATableMetadata()
@@ -39,6 +41,15 @@ DATableViewStateStore* DATableMetadata::viewState() const
 }
 
 /**
+ * @brief 条件格式子存储
+ * @return 非空
+ */
+DATableConditionalFormatStore* DATableMetadata::conditionalFormat() const
+{
+    return mConditionalFormat;
+}
+
+/**
  * @brief 聚合序列化
  *
  * 样式段（column-style/row-style/cell/col-format）与 <view-state> 段均作为 tableEle 的子节点。
@@ -52,6 +63,9 @@ void DATableMetadata::toXml(QDomDocument& doc, QDomElement& tableEle) const
     }
     if (mViewState) {
         mViewState->toXml(doc, tableEle);
+    }
+    if (mConditionalFormat) {
+        mConditionalFormat->toXml(doc, tableEle);
     }
 }
 
@@ -75,6 +89,12 @@ bool DATableMetadata::fromXml(const QDomElement& tableEle)
             mViewState->fromXml(vs);
         }
     }
+    if (mConditionalFormat) {
+        QDomElement cf = tableEle.firstChildElement(QStringLiteral("conditional-format"));
+        if (!cf.isNull()) {
+            mConditionalFormat->fromXml(cf);
+        }
+    }
     return true;
 }
 
@@ -86,7 +106,8 @@ bool DATableMetadata::isEmpty() const
 {
     const bool styleEmpty = !mStyleManager || mStyleManager->isEmpty();
     const bool viewEmpty  = !mViewState || mViewState->isEmpty();
-    return styleEmpty && viewEmpty;
+    const bool cfEmpty    = !mConditionalFormat || mConditionalFormat->isEmpty();
+    return styleEmpty && viewEmpty && cfEmpty;
 }
 
 }  // end of namespace DA

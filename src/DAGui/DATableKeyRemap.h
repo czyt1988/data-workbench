@@ -2,8 +2,12 @@
 #define DATABLEKEYREMAP_H
 #include "DAGuiAPI.h"
 #include <QHash>
+#include <QList>
 #include <QPair>
 #include <QVector>
+#include <algorithm>
+#include <functional>
+#include <utility>
 
 namespace DA
 {
@@ -120,6 +124,72 @@ public:
             }
         }
         hash.swap(remapped);
+    }
+
+    /**
+     * @brief 一维键哈希按「一批插入索引」位移（003 列维度扩展）
+     *
+     * 与 DATableStyleManager::onColumnsInserted 语义一致：每个插入索引 idx，
+     * 键 >= idx 的条目 +1（降序逐个处理避免连锁覆盖）。行为对行/列维度通用，
+     * 由调用方决定键的含义（条件格式规则按列索引分桶）。空列表视为无操作。
+     * @param hash 待位移的哈希（就地修改）
+     * @param insertedIndexes 插入的索引列表（一批）
+     */
+    template < typename T >
+    static void shiftKeysOnInserted(QHash< int, T >& hash, const QList< int >& insertedIndexes)
+    {
+        if (insertedIndexes.isEmpty() || hash.isEmpty()) {
+            return;
+        }
+        QList< int > sorted = insertedIndexes;
+        std::sort(sorted.begin(), sorted.end(), std::greater< int >());
+        for (int idx : std::as_const(sorted)) {
+            QHash< int, T > shifted;
+            for (auto it = hash.begin(); it != hash.end();) {
+                if (it.key() >= idx) {
+                    shifted.insert(it.key() + 1, it.value());
+                    it = hash.erase(it);
+                } else {
+                    ++it;
+                }
+            }
+            for (auto sit = shifted.constBegin(); sit != shifted.constEnd(); ++sit) {
+                hash.insert(sit.key(), sit.value());
+            }
+        }
+    }
+
+    /**
+     * @brief 一维键哈希按「一批删除索引」删除并位移（003 列维度扩展）
+     *
+     * 与 DATableStyleManager::onColumnsRemoved 语义一致：每个删除索引 idx，
+     * 键 == idx 的条目删除，键 > idx 的条目 -1（降序逐个处理）。空列表视为无操作。
+     * @param hash 待位移的哈希（就地修改）
+     * @param removedIndexes 删除的索引列表（一批）
+     */
+    template < typename T >
+    static void shiftKeysOnRemoved(QHash< int, T >& hash, const QList< int >& removedIndexes)
+    {
+        if (removedIndexes.isEmpty() || hash.isEmpty()) {
+            return;
+        }
+        QList< int > sorted = removedIndexes;
+        std::sort(sorted.begin(), sorted.end(), std::greater< int >());
+        for (int idx : std::as_const(sorted)) {
+            hash.remove(idx);
+            QHash< int, T > shifted;
+            for (auto it = hash.begin(); it != hash.end();) {
+                if (it.key() > idx) {
+                    shifted.insert(it.key() - 1, it.value());
+                    it = hash.erase(it);
+                } else {
+                    ++it;
+                }
+            }
+            for (auto sit = shifted.constBegin(); sit != shifted.constEnd(); ++sit) {
+                hash.insert(sit.key(), sit.value());
+            }
+        }
     }
 };
 }  // end of namespace DA

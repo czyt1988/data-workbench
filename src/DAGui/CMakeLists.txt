@@ -73,6 +73,8 @@ set(DA_LIB_HEADER_FILES
     DATableKeyRemap.h
     DATableViewStateStore.h
     DATableHighlightOverlay.h
+    DATableConditionalFormatRule.h
+    DATableConditionalFormatStore.h
     DATableStyleItemDelegate.h
 )
 set(DA_LIB_SOURCE_FILES
@@ -137,6 +139,8 @@ set(DA_LIB_SOURCE_FILES
     DATableMetadataRegistry.cpp
     DATableViewStateStore.cpp
     DATableHighlightOverlay.cpp
+    DATableConditionalFormatRule.cpp
+    DATableConditionalFormatStore.cpp
     DATableStyleItemDelegate.cpp
 )
 set(DA_LIB_QT_UI_FILES
