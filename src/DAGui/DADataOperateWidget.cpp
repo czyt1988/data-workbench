@@ -13,8 +13,8 @@
 #include "DADataOperatePageWidget.h"
 #include "DADockAreaTabPosition.h"
 #include <QUndoStack>
-// table style registry
-#include "DATableStyleRegistry.h"
+// table metadata registry
+#include "DATableMetadataRegistry.h"
 // widget
 #include "DADataOperateOfDataFrameWidget.h"
 // py
@@ -43,7 +43,7 @@ public:
 public:
     QMap< DA::DAData, QPointer< QWidget > > _dataToWidget;  ///< 记录数据对应的窗口
     DADataManager* _dataManager { nullptr };
-    DATableStyleRegistry* _styleRegistry { nullptr };  ///< 表格样式会话级注册表，随数据存在
+    DATableMetadataRegistry* _metadataRegistry { nullptr };  ///< 表格元数据会话级注册表，随数据存在
     QMetaObject::Connection _currentHeaderConn;  ///< 当前 DataFrame 窗口的表头点击连接
     ads::CDockManager* _dockManager { nullptr };  ///< 嵌套停靠管理器
     QList< DADataOperatePageWidget* > _pages;  ///< 插入顺序，作为 index 基础
@@ -137,9 +137,9 @@ DADataOperateWidget::~DADataOperateWidget()
 void DADataOperateWidget::setDataManager(DADataManager* mgr)
 {
     d_ptr->_dataManager = mgr;
-    // 样式注册表随数据管理器存在，连接 datasCleared 信号统一清空
-    if (!d_ptr->_styleRegistry) {
-        d_ptr->_styleRegistry = new DATableStyleRegistry(mgr, this);
+    // 元数据注册表随数据管理器存在，连接 datasCleared 信号统一清空
+    if (!d_ptr->_metadataRegistry) {
+        d_ptr->_metadataRegistry = new DATableMetadataRegistry(mgr, this);
     }
     connect(mgr, &DADataManager::dataRemoved, this, &DADataOperateWidget::onDataRemoved);
     connect(mgr, &DADataManager::dataChanged, this, &DADataOperateWidget::onDataChanged);
@@ -220,14 +220,14 @@ QList< DAData > DADataOperateWidget::getOpenedDataList() const
 }
 
 /**
- * @brief 表格样式会话级注册表
+ * @brief 表格元数据会话级注册表
  *
- * 样式生命周期脱离单个 widget，随数据存在。widget 构造时从注册表借用 manager。
+ * 元数据生命周期脱离单个 widget，随数据存在。widget 构造时从注册表借用元数据束。
  * @return 注册表指针
  */
-DATableStyleRegistry* DADataOperateWidget::styleRegistry() const
+DATableMetadataRegistry* DADataOperateWidget::metadataRegistry() const
 {
-    return d_ptr->_styleRegistry;
+    return d_ptr->_metadataRegistry;
 }
 
 /**
@@ -582,8 +582,8 @@ void DADataOperateWidget::showDataframeData(const DA::DAData& d)
     DADataOperateOfDataFrameWidget* w =
         qobject_cast< DADataOperateOfDataFrameWidget* >(d_ptr->_dataToWidget.value(d, nullptr).data());
     if (nullptr == w) {
-        // 没有就创建，传入样式注册表以借用会话级 manager
-        w = new DADataOperateOfDataFrameWidget(d, d_ptr->_styleRegistry, d_ptr->_dockManager);
+        // 没有就创建，传入元数据注册表以借用会话级元数据束
+        w = new DADataOperateOfDataFrameWidget(d, d_ptr->_metadataRegistry, d_ptr->_dockManager);
         emit dataTableCreated(w);
         // 记录窗口
         d_ptr->_dataToWidget[ d ] = w;

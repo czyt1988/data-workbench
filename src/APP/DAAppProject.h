@@ -80,8 +80,8 @@ protected:
 	void makeSaveDataManagerTask(DAZipArchiveThreadWrapper* archive);
 	// 创建保存绘图的任务
 	void makeSaveChartTask(DAZipArchiveThreadWrapper* archive);
-	// 保存表格样式任务
-	void makeSaveTableStyleTask(DAZipArchiveThreadWrapper* archive);
+	// 保存表格元数据任务（样式 + 视图状态，写 table-metadata.xml）
+	void makeSaveTableMetadataTask(DAZipArchiveThreadWrapper* archive);
 	// 保存数据操作窗口嵌套停靠区布局任务（已打开数据页列表 + dock 布局）
 	void makeSaveDataOperateLayoutTask(DAZipArchiveThreadWrapper* archive);
 	// 保存Agent会话任务（主线程收集活跃会话字节→子线程写 agent_sessions/<id>.jsonl）
@@ -118,8 +118,12 @@ private:
 	void loadedWorkflowData(const std::shared_ptr< DAAbstractArchiveTask >& t);
 	void loadedDataManager(const std::shared_ptr< DAAbstractArchiveTask >& t);
 	void loadedChartsInfo(const std::shared_ptr< DAAbstractArchiveTask >& t);
-	// 表格样式加载回调
+	// 表格元数据加载回调（新文件 table-metadata.xml）
+	void loadedTableMetadata(const std::shared_ptr< DAAbstractArchiveTask >& t);
+	// 表格样式加载回调（旧文件 table-styles.xml 回退，仅当新文件不存在时应用）
 	void loadedTableStyles(const std::shared_ptr< DAAbstractArchiveTask >& t);
+	// 把单个 <table data-id data-name> 元素回填到会话级元数据注册表（新旧文件共用）
+	void applyLoadedTableElement(const QDomElement& tableEle);
 	// 数据操作窗口布局加载回调（重建已打开数据页 + 恢复 dock 布局）
 	void loadedDataOperateLayout(const std::shared_ptr< DAAbstractArchiveTask >& t);
 	void setStatusBarInBusy(const QString& info = QString());
@@ -136,6 +140,7 @@ private:
 	DAAppPluginManager* mPluginMgr { nullptr };
 	QString mWorkspaceLocalDir;             ///< 当前工程脚本工作区本地缓存目录
 	bool mWorkspaceLocalKept { false };     ///< 加载时用户选择保留本地工作区（加载收尾后延迟置脏）
+	bool m_tableMetadataLoaded { false };   ///< 本次加载已应用新文件 table-metadata.xml（旧 table-styles.xml 回退跳过）
 };
 
 }  // namespace DA

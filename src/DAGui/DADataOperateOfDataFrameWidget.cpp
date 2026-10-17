@@ -21,10 +21,12 @@
 #include "Commands/DACommandsTableStyle.h"
 #include "Commands/DACommandsTableColumnFormat.h"
 #include "DADataManager.h"
-// table style
+// table metadata / style
 #include "DATableStyleManager.h"
 #include "DATableStyleItemDelegate.h"
-#include "DATableStyleRegistry.h"
+#include "DATableMetadataRegistry.h"
+#include "DATableMetadata.h"
+#include "DATableViewStateStore.h"
 // Dialog
 #include "Dialog/DARenameColumnsNameDialog.h"
 #include "Dialog/DADialogDataframeColumnCastToNumeric.h"
@@ -46,7 +48,7 @@ int DADataOperateOfDataFrameWidget::getDataOperatePageType() const
     return DADataOperatePageWidget::DataOperateOfDataFrame;
 }
 
-DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, DATableStyleRegistry* registry, QWidget* parent)
+DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, DATableMetadataRegistry* registry, QWidget* parent)
     : DADataOperatePageWidget(parent)
     , ui(new Ui::DADataOperateOfDataFrameWidget)
     , mDialogCastNumArgs(nullptr)
@@ -57,11 +59,13 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
     mModel = new DADataTableModel(getUndoStack(), this);
 
     ui->tableView->setModel(mModel);
-    // 表格样式管理器与 delegate
-    // 样式管理器借自会话级 DATableStyleRegistry（随数据存在，widget 关闭后保留，重开可见）。
+    // 表格元数据束与各子存储、delegate
+    // 元数据束借自会话级 DATableMetadataRegistry（随数据存在，widget 关闭后保留，重开可见）。
     // 行列增删的样式键偏移同步在 §7 的回调中接入（onRowsInserted 等系列）。
-    mStyleManager  = registry ? registry->getOrCreate(d) : nullptr;
-    mStyleDelegate = new DATableStyleItemDelegate(mStyleManager, this);
+    DATableMetadata* metadata = registry ? registry->getOrCreate(d) : nullptr;
+    mStyleManager             = metadata ? metadata->styleManager() : nullptr;
+    mViewStateStore           = metadata ? metadata->viewState() : nullptr;
+    mStyleDelegate            = new DATableStyleItemDelegate(mStyleManager, this);
     ui->tableView->setItemDelegate(mStyleDelegate);
     // 模型读取列显示格式（actualData 的 DisplayRole 分支）
     mModel->setStyleManager(mStyleManager);
@@ -1192,6 +1196,15 @@ void DADataOperateOfDataFrameWidget::onTableViewClicked(const QModelIndex& index
 DATableStyleManager* DADataOperateOfDataFrameWidget::styleManager() const
 {
     return mStyleManager;
+}
+
+/**
+ * @brief 获取视图状态子存储
+ * @return 视图状态子存储指针（借自元数据束，registry 为空时为 nullptr）
+ */
+DATableViewStateStore* DADataOperateOfDataFrameWidget::viewStateStore() const
+{
+    return mViewStateStore;
 }
 
 /**

@@ -23,7 +23,9 @@ class DADialogDataframeColumnCastToDatetime;
 class DADialogDataframeColumnDescribe;
 class DATableStyleManager;
 class DATableStyleItemDelegate;
-class DATableStyleRegistry;
+class DATableMetadataRegistry;
+class DATableViewStateStore;
+class DATableHighlightOverlay;
 class DATableCellStyle;
 
 
@@ -38,7 +40,7 @@ public:
     int getDataOperatePageType() const override;
 
 public:
-    explicit DADataOperateOfDataFrameWidget(const DAData& d, DATableStyleRegistry* registry, QWidget* parent = nullptr);
+    explicit DADataOperateOfDataFrameWidget(const DAData& d, DATableMetadataRegistry* registry, QWidget* parent = nullptr);
     ~DADataOperateOfDataFrameWidget();
     // 是否存在data
     bool haveData() const;
@@ -68,6 +70,8 @@ public:
 
     // 获取样式管理器
     DATableStyleManager* styleManager() const;
+    // 获取视图状态子存储（列宽/行头宽，借自元数据束，可能为 nullptr）
+    DATableViewStateStore* viewStateStore() const;
     // 合并样式片段到选中区（fragment 只设部分属性，merge 到目标已有样式）
     // 自动判定层级：整列→列级，整行→行级，否则单元格级
     void mergeStyleToSelection(const DATableCellStyle& fragment);
@@ -164,7 +168,8 @@ private:
     Ui::DADataOperateOfDataFrameWidget* ui;
     DAData mData;
     DADataTableModel* mModel { nullptr };
-    DATableStyleManager* mStyleManager { nullptr };  ///< 借自 DATableStyleRegistry，非拥有（随数据存在，widget 关闭不销毁）
+    DATableStyleManager* mStyleManager { nullptr };  ///< 借自 DATableMetadata 束，非拥有（随数据存在，widget 关闭不销毁）
+    DATableViewStateStore* mViewStateStore { nullptr };  ///< 借自 DATableMetadata 束，非拥有（视图状态：列宽/行头宽）
     DATableStyleItemDelegate* mStyleDelegate { nullptr };
 
     DADialogDataframeColumnCastToNumeric* mDialogCastNumArgs { nullptr };

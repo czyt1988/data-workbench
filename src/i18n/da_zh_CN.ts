@@ -3685,13 +3685,13 @@ Layouts</source>
     </message>
     <message>
         <location line="+45"/>
-        <source>Save table styles</source>
-        <translation>保存表格样式</translation>
+        <source>Save table metadata</source>
+        <translation>保存表格元数据</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Save table cell styles, including background, font, foreground</source>
-        <translation>保存表格单元格样式</translation>
+        <source>Save table metadata, including cell styles and view state</source>
+        <translation>保存表格元数据（单元格样式与视图状态）</translation>
     </message>
     <message>
         <location line="+162"/>

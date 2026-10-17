@@ -3571,13 +3571,13 @@ Layouts</source>
     </message>
     <message>
         <location line="+45"/>
-        <source>Save table styles</source>
-        <translation>Save table styles</translation>
+        <source>Save table metadata</source>
+        <translation>Save table metadata</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Save table cell styles, including background, font, foreground</source>
-        <translation>Save table cell styles, including background, font, foreground</translation>
+        <source>Save table metadata, including cell styles and view state</source>
+        <translation>Save table metadata, including cell styles and view state</translation>
     </message>
     <message>
         <location line="+162"/>

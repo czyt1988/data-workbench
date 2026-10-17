@@ -67,7 +67,9 @@ set(DA_LIB_HEADER_FILES
     DATableDisplayFormat.h
     DATableDisplayFormatComboBox.h
     DATableStyleManager.h
-    DATableStyleRegistry.h
+    DATableMetadata.h
+    DATableMetadataRegistry.h
+    DATableViewStateStore.h
     DATableStyleItemDelegate.h
 )
 set(DA_LIB_SOURCE_FILES
@@ -127,7 +129,9 @@ set(DA_LIB_SOURCE_FILES
     DATableDisplayFormat.cpp
     DATableDisplayFormatComboBox.cpp
     DATableStyleManager.cpp
-    DATableStyleRegistry.cpp
+    DATableMetadata.cpp
+    DATableMetadataRegistry.cpp
+    DATableViewStateStore.cpp
     DATableStyleItemDelegate.cpp
 )
 set(DA_LIB_QT_UI_FILES

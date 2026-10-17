@@ -21,7 +21,7 @@ namespace DA
 class DADataOperatePageWidget;
 class DADataOperateOfDataFrameWidget;
 class DADataManager;
-class DATableStyleRegistry;
+class DATableMetadataRegistry;
 /**
  * @brief 数据操作窗口，负责数据区域操作
  *
@@ -54,8 +54,8 @@ public:
     DADataOperateOfDataFrameWidget* findDataFrameWidget(const DAData& d) const;
     // 按插入顺序返回已打开数据列表（供工程序列化遍历，类比 DAChartOperateWidget::getFigureList）
     QList< DAData > getOpenedDataList() const;
-    // 表格样式会话级注册表（样式生命周期脱离单个 widget，随数据存在）
-    DATableStyleRegistry* styleRegistry() const;
+    // 表格元数据会话级注册表（元数据生命周期脱离单个 widget，随数据存在）
+    DATableMetadataRegistry* metadataRegistry() const;
     // 获取当前操作的表，这个表就是当前打开的表格
     DAData getCurrentOperateData() const;
     // 获取当前正在操作数据选中的列
