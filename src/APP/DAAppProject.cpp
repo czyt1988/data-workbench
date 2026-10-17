@@ -1523,7 +1523,7 @@ void DAAppProject::makeSaveTableMetadataTask(DAZipArchiveThreadWrapper* archive)
     // 遍历元数据注册表收集各束（元数据随数据存在，不依赖 widget 是否打开）
     DADataOperateWidget* optWidget = getDataOperateWidget();
     if (optWidget && optWidget->metadataRegistry()) {
-        QList< QPair< DAData, DATableMetadata* > > entries = optWidget->metadataRegistry()->nonEmptyEntries();
+        const QList< QPair< DAData, DATableMetadata* > > entries = optWidget->metadataRegistry()->nonEmptyEntries();
         for (const auto& entry : entries) {
             const DAData& d     = entry.first;
             DATableMetadata* meta = entry.second;
