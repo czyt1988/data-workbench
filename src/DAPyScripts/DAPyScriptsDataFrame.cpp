@@ -923,6 +923,42 @@ bool DAPyScriptsDataFrame::reorderRows(DAPyDataFrame& df, const QVector< int >& 
 }
 
 /**
+ * @brief 单列统计（min/max/median）的wrapper
+ *
+ * 对应 da_dataframe.da_column_stats(df, column)：全表 O(n) 归约（NaN 排除，
+ * 不采样不近似，003 条件格式色阶/数据条端点）。Python 侧对全 NaN/非数值列
+ * 返回 None → ok=false；列越界抛 IndexError → ok=false（经 dealException 记录）。
+ * @param df 数据（只读）
+ * @param col 列位置索引
+ * @return 统计结果（ok=false 表示不可用）
+ */
+DAPyScriptsDataFrame::ColumnStatsResult DAPyScriptsDataFrame::columnStats(const DAPyDataFrame& df, int col) noexcept
+{
+    ColumnStatsResult result;
+    if (df.isNone()) {
+        return result;
+    }
+    try {
+        pybind11::object da_column_stats = attr("da_column_stats");
+        pybind11::object ret             = da_column_stats(df.object(), col);
+        if (ret.is_none()) {
+            return result;  // 全 NaN / 非数值列：统计不可用
+        }
+        pybind11::tuple t = ret.cast< pybind11::tuple >();
+        if (t.size() != 3) {
+            return result;
+        }
+        result.minValue    = t[ 0 ].cast< double >();
+        result.maxValue    = t[ 1 ].cast< double >();
+        result.medianValue = t[ 2 ].cast< double >();
+        result.ok          = true;
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return result;
+}
+
+/**
  * @brief select方法的wrapper
  * @param df
  * @param contents

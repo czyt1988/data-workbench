@@ -132,6 +132,17 @@ public:
 	// 按给定置换就地重排行（new[i]=old[perm[i]]），对应da_dataframe.da_reorder_rows，
 	// 排序命令的redo/undo用它施加正/逆置换
 	bool reorderRows(DAPyDataFrame& df, const QVector< int >& perm) noexcept;
+	// 列统计结果（条件格式色阶/数据条端点，对应 da_dataframe.da_column_stats）
+	struct ColumnStatsResult
+	{
+		bool ok = false;  ///< 计算是否成功（列越界/全NaN/非数值列为 false）
+		double minValue { 0.0 };
+		double maxValue { 0.0 };
+		double medianValue { 0.0 };
+	};
+	// 单列 min/max/median 全表 O(n) 归约（NaN 排除，不采样不近似）；
+	// 列越界抛错或全 NaN 返回 ok=false
+	ColumnStatsResult columnStats(const DAPyDataFrame& df, int col) noexcept;
 	// dataselect()
 	bool dataselect(DAPyDataFrame& df, double lowervalue, double uppervalue, const QString& index) noexcept;
 

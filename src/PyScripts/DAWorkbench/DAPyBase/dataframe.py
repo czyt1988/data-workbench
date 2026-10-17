@@ -733,6 +733,29 @@ def da_reorder_rows(df: pd.DataFrame, perm):
 
 
 @log_function_call
+def da_column_stats(df: pd.DataFrame, column: int):
+    '''
+    计算单列的 min/max/median（条件格式色阶/数据条的列统计，全表 O(n) 归约，不采样不近似）
+
+    仅对可数值化的列有意义：先 pd.to_numeric(errors="coerce") 把列转数值，
+    NaN/NaT/无法数值化的值排除后归约。列全为 NaN（含纯文本列）返回 None，
+    C++ 侧把 None 视为"统计不可用"（色阶/数据条跳过绘制）。
+
+    :param df: pd.DataFrame
+    :param column: 列位置索引（int）
+    :return: (min, max, median) 三个 float；列不存在或全 NaN 返回 None
+    :raises IndexError: column 越界
+    '''
+    if column < 0 or column >= df.shape[1]:
+        raise IndexError("column index %d out of range [0, %d)" % (column, df.shape[1]))
+    numeric = pd.to_numeric(df.iloc[:, column], errors='coerce')
+    valid = numeric.dropna()
+    if valid.size == 0:
+        return None
+    return (float(valid.min()), float(valid.max()), float(valid.median()))
+
+
+@log_function_call
 def da_to_csv(df: pd.DataFrame, path: str, sep: str):
     '''
     把dataframe写到文件
