@@ -55,6 +55,9 @@ Q_SIGNALS:
     void mergeColumnsRequested();
     // 分组聚合入口（004 T1.22）：产出新数据集（非破坏），dataframe 数据即可用
     void groupByRequested();
+    // 转置 / 宽转长入口（004 T1.27）：默认产出新数据集（R14），dataframe 数据即可用
+    void transposeRequested();
+    void meltRequested();
 
 protected:
     // Ctrl+C / Ctrl+Insert 复制；Ctrl+F 查找；Ctrl+H 替换；Esc 关查找条（快捷键唯一挂点，红线5）

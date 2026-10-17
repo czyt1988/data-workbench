@@ -192,6 +192,15 @@ QMenu* DADataTableView::buildContextMenu(const QModelIndex& at)
                                           tr("Group By..."));  // cn:分组聚合...
     actGroupBy->setEnabled(getData().isDataFrame());
     connect(actGroupBy, &QAction::triggered, this, &DADataTableView::groupByRequested);
+    // 转置 / 宽转长（004 T1.27）：默认产出新数据集（非破坏，R14），dataframe 数据体即可用
+    QAction* actTranspose = menu->addAction(QIcon(QStringLiteral(":/DAGui/icon/transpose.svg")),
+                                            tr("Transpose..."));  // cn:转置...
+    actTranspose->setEnabled(getData().isDataFrame());
+    connect(actTranspose, &QAction::triggered, this, &DADataTableView::transposeRequested);
+    QAction* actMelt = menu->addAction(QIcon(QStringLiteral(":/DAGui/icon/melt.svg")),
+                                       tr("Unpivot (Melt)..."));  // cn:宽转长（melt）...
+    actMelt->setEnabled(getData().isDataFrame());
+    connect(actMelt, &QAction::triggered, this, &DADataTableView::meltRequested);
     // —— 后续计划的分组插入点在菜单底部（见函数注释），插入时组间加分隔符 ——
     return menu;
 }

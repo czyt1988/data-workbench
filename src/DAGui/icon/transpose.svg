@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px"
+	 width="200px" height="200px" viewBox="0 0 200 200" xml:space="preserve">
+	<!-- 转置：方阵沿主对角线翻转——右上三角浅蓝（被翻转区域）、主对角线中灰、
+	     垂直对角线的双向箭头主蓝（翻转动势）。
+	     官方色板：轮廓 #727272（中灰）、底 #FFFFFF、三角 #BDCDE8（浅蓝）、
+	     箭头 #5280C1（主蓝，主操作）；禁渐变/阴影/<text>（icon-ui-design-guide §4.2/§10） -->
+	<rect x="24" y="24" width="152" height="152" fill="#FFFFFF"/>
+	<polygon points="30,30 170,30 170,170" fill="#BDCDE8"/>
+	<g fill="none" stroke="#727272" stroke-width="8" stroke-linecap="butt">
+		<rect x="24" y="24" width="152" height="152"/>
+		<line x1="24" y1="24" x2="176" y2="176"/>
+	</g>
+	<path d="M 62 138 L 138 62" fill="none" stroke="#5280C1" stroke-width="10" stroke-linecap="round"/>
+	<polygon points="138,62 112,66 134,88" fill="#5280C1"/>
+	<polygon points="62,138 88,134 66,112" fill="#5280C1"/>
+</svg>

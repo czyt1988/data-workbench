@@ -157,6 +157,20 @@ public:
     // 原表与其元数据完全不动。成功后发 newDataCreated 交 APP 激活新页面
     void showGroupByDialog();
 
+    // ===== 转置 / melt 形状变换（004 T1.27）=====
+    // 打开形状变换对话框（meltMode=false 转置 / true 宽转长，模式可在对话框内切换）。
+    // 默认产出新数据集（xxx_Transposed / xxx_Melted，addData_ 可撤销，R14）；
+    // 勾选「就地替换」时先弹确认框列出将被清除的元数据类别与条目数，再经
+    // inplaceDataReplaceRequested 交 APP 用 DAAppCommand 建 Swap 命令（统一撤销链，
+    // 元数据清理与数据替换同一撤销单元）；超大表降级为「本次不可撤销」并再次确认
+    void showReshapeDialog(bool meltMode);
+    // 就地替换生效后的整页刷新（模型 reset + 清排序规格；APP 撤销接线回调也用）
+    void refreshAfterInplaceReplace();
+    // 就地替换撤销内存判定（旧对象驻留 ≈ 1× 表内存，§4.11 策略表）：
+    // 单元格数超过 c_inplaceUndoCellLimit 建议降级为不可撤销（静态纯函数，单测覆盖）
+    static constexpr qint64 c_inplaceUndoCellLimit = 50000000;
+    static bool isInplaceUndoTooLarge(qint64 rows, qint64 cols);
+
 Q_SIGNALS:
     // 选中区变化时发射当前代表样式，供 ribbon 控件反向同步
     void currentStyleChanged(const DA::DATableCellStyle& style);
@@ -175,6 +189,12 @@ Q_SIGNALS:
     // 产出了新数据集（分组聚合等，004 T1.22；已经 addData_ 注册、可撤销）；
     // APP 接线：setDirty + 抬起数据操作区 + showData 激活新页面（照透视表流程）
     void newDataCreated(const DA::DAData& data);
+    // 就地数据替换请求（004 T1.27 转置/melt 就地路径；DAGui 拿不到 DAAppCommand，
+    // 按既有 APP↔DAGui 接线走信号）：APP 用 beginDataOperateCommand(data,text,false)
+    // 建 Swap 命令（不要自己 new，统一撤销链）→ setPyObject → endDataOperateCommand；
+    // metadataSnapshot 为整束元数据 XML 快照——APP 经命令 directional 回调做
+    // 「redo 清束 / undo 还原快照」，与数据替换同一撤销单元
+    void inplaceDataReplaceRequested(const DA::DAData& target, const DA::DAData& source, const QString& text, const QString& metadataSnapshot);
 public Q_SLOTS:
     void setDAData(const DA::DAData& d);
     // 在选中行后面插入行
@@ -293,6 +313,10 @@ private:
     void refreshComputedColumnHeaders();
     // 列位置索引 → 列名（越界返回空串）
     QString columnNameAt(int actualCol) const;
+    // 注册新数据集（004 T1.22/T1.27 共用：命名 + addData_ 可撤销注册 + newDataCreated）
+    void registerNewDataset(const DAPyDataFrame& resultDf, const QString& name, const QString& describe);
+    // 就地替换（004 T1.27）：确认框（列清除条目数）→ 超大表降级分支 / 发信号交 APP 建 Swap 命令
+    void requestInplaceReplace(const DAPyDataFrame& newDf, const QString& text);
 
     Ui::DADataOperateOfDataFrameWidget* ui;
     DAData mData;

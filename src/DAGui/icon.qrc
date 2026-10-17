@@ -46,6 +46,8 @@
         <file>icon/split-column.svg</file>
         <file>icon/merge-columns.svg</file>
         <file>icon/group-by.svg</file>
+        <file>icon/transpose.svg</file>
+        <file>icon/melt.svg</file>
         <file>icon/zoomIn.svg</file>
         <file>icon/zoomOut.svg</file>
         <file>icon/select-all.svg</file>
