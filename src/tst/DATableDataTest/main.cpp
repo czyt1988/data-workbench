@@ -1805,6 +1805,30 @@ void DATableDataTest::testHeaderSortInteraction()
     QCOMPARE(w.sortSpec().at(1).first, colI);
     QCOMPARE(w.sortSpec().at(1).second, Qt::AscendingOrder);
     QCOMPARE(hh->sortSpec().size(), 2);
+    // 角标绘制冒烟（§4.2「两列都显示序号角标」的程序化验证）：渲染表头，
+    // 断言角标主蓝 #5280C1 与箭头深蓝灰 #5D6D7E 的纯色像素出现（抗锯齿边缘不参与计数）
+    {
+        const QSize sz = hh->viewport()->size();
+        QVERIFY(sz.width() > 0 && sz.height() > 0);
+        QImage img(sz, QImage::Format_ARGB32);
+        img.fill(static_cast< QRgb >(0x00FFFFFF));
+        hh->viewport()->render(&img);
+        auto countColor = [ &img ](QRgb c) -> int {
+            int n = 0;
+            for (int y = 0; y < img.height(); ++y) {
+                for (int x = 0; x < img.width(); ++x) {
+                    if (img.pixel(x, y) == c) {
+                        ++n;
+                    }
+                }
+            }
+            return n;
+        };
+        const int badgePx = countColor(qRgb(0x52, 0x80, 0xC1));  // 序号角标圆底（两列各一枚）
+        const int arrowPx = countColor(qRgb(0x5D, 0x6D, 0x7E));  // 右端方向箭头（两列各一枚）
+        QVERIFY2(badgePx >= 10, qPrintable(QStringLiteral("badge pixels=%1").arg(badgePx)));
+        QVERIFY2(arrowPx >= 4, qPrintable(QStringLiteral("arrow pixels=%1").arg(arrowPx)));
+    }
     // Ctrl 点同列 → 切换其方向（规格列数不变）
     QVector< QVariant > beforeUndoF, beforeUndoI;
     beforeUndoF.reserve(10);
