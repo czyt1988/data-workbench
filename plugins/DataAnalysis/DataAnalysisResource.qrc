@@ -7,9 +7,7 @@
         <file>icon/dataframe-drop-none.svg</file>
         <file>icon/process-duplicate-data.svg</file>
         <file>icon/dataframe-fill-none.svg</file>
-        <file>icon/dataframe-bfill-none.svg</file>
         <file>icon/dataframe-clip-outlier.svg</file>
-        <file>icon/dataframe-ffill-none.svg</file>
         <file>icon/dataframe-interpolate.svg</file>
         <file>icon/dataframe-describe.svg</file>
         <file>icon/dataframe-pivot-table.svg</file>
