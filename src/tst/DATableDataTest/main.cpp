@@ -1377,11 +1377,16 @@ void DATableDataTest::testMetadataRegistry()
     QVERIFY(m2 != m1);
     QCOMPARE(registry.get(d2), m2);
 
-    // remove：显式移除并销毁
+    // remove：显式移除并销毁。重建的"新对象"断言用语义新鲜度（旧束状态标记消失）
+    // 而不是与悬空指针比地址——分配器可能复用同一地址（指针 ABA，实测会偶发相等）
+    m2->viewState()->setRowHeaderWidth(77);  // 旧束状态标记
     registry.remove(d2);
     QVERIFY(!registry.has(d2));
     QVERIFY(registry.get(d2) == nullptr);
-    QCOMPARE(registry.getOrCreate(d2) != m2, true);  // 重新创建是新对象
+    DA::DATableMetadata* m2Rebuilt = registry.getOrCreate(d2);  // 重新创建是全新空束
+    QVERIFY(m2Rebuilt != nullptr);
+    QCOMPARE(m2Rebuilt->viewState()->rowHeaderWidth(), -1);
+    QVERIFY(m2Rebuilt->isEmpty());
     registry.remove(d2);
 
     // clear：清空全部
@@ -1475,8 +1480,8 @@ void DATableDataTest::testContextMenuComposition()
     QCOMPARE(seq, expectedHeader);
     delete menu;
 
-    // ---- 表体菜单：剪切/复制/粘贴 ‖ 查找/替换（002）；无有效选区（无模型）----
-    // 启用规则：剪切/复制/粘贴无选区置灰；查找恒可用；替换在只读源置灰（无模型=只读）
+    // ---- 表体菜单：剪切/复制/粘贴 ‖ 查找/替换（002）‖ 条件格式（003）；无有效选区（无模型）----
+    // 启用规则：剪切/复制/粘贴/条件格式无选区置灰；查找恒可用；替换在只读源置灰（无模型=只读）
     DA::DADataTableView tv;
     QMenu* body = tv.buildContextMenu(QModelIndex());
     QVERIFY(body != nullptr);
@@ -1494,7 +1499,9 @@ void DATableDataTest::testContextMenuComposition()
                                      QStringLiteral("Paste"),
                                      QStringLiteral("<SEP>"),
                                      QStringLiteral("Find..."),
-                                     QStringLiteral("Replace...") };
+                                     QStringLiteral("Replace..."),
+                                     QStringLiteral("<SEP>"),
+                                     QStringLiteral("Conditional Format...") };
     QCOMPARE(bodySeq, expectedBody);
     // 剪贴板组无选区置灰
     QVERIFY(!byText.value(QStringLiteral("Cut"))->isEnabled());
@@ -1503,6 +1510,8 @@ void DATableDataTest::testContextMenuComposition()
     // 查找恒可用；替换在无模型（只读）时置灰
     QVERIFY(byText.value(QStringLiteral("Find..."))->isEnabled());
     QVERIFY(!byText.value(QStringLiteral("Replace..."))->isEnabled());
+    // 条件格式（003）：无选区置灰（入口作用于选区所在列）
+    QVERIFY(!byText.value(QStringLiteral("Conditional Format..."))->isEnabled());
     delete body;
 }
 
