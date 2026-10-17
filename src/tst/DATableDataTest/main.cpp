@@ -107,6 +107,12 @@
 #include <QHelpEvent>
 #include <QFile>
 
+// 撤销历史面板（005 计划 §6，T1.21）
+#include "DAUndoHistoryWidget.h"
+#include <QUndoGroup>
+#include <QUndoView>
+#include <QSpinBox>
+
 #include "DASqliteLazyTable.h"
 #include <QSqlDatabase>
 #include <QSqlQuery>
@@ -457,6 +463,13 @@ private Q_SLOTS:
     void testNoteCommands();
     void testNoteWidgetFlow();
     void testNotePaintAndTooltip();
+
+    // 005 WP4-A 撤销历史面板与深度可配置（T1.21 §6.3/§7.1）：默认 20/调大后 30 步
+    // 全撤销/深度裁剪仍生效、QUndoView 绑组跟随激活栈与无空白条目、深度调节信号
+    // （用户改发/程序注入不发）、Swap/Persist 命令默认文案非空（红线5）
+    void testUndoStackDepthConfigurable();
+    void testUndoHistoryWidget();
+    void testUndoCommandDefaultTexts();
 
 private:
     // 生成/复用sqlite测试库（百万行），失败返回false并置mSqliteErr
@@ -6346,6 +6359,121 @@ df = pd.DataFrame({"a": [1.0, 2.0, 3.0, 4.0], "b": [5.0, 6.0, 7.0, 8.0]})
     }
     QCOMPARE(goldCount3, 0);
     w.hide();
+}
+
+
+//===================================================
+// 005 WP4-A 撤销历史面板与深度可配置（T1.21）
+//===================================================
+
+// 005 §6.3：撤销栈深度可配置——默认 20；调大到 100 后 30 步操作全部可撤销；
+// 深度仍生效（回到 20 时超出部分被裁剪）
+void DATableDataTest::testUndoStackDepthConfigurable()
+{
+    if (!mPandasOk) {
+        QSKIP("pandas not available");
+    }
+    qRegisterMetaType< DA::DAData >("DA::DAData");
+    pybind11::dict scope;
+    pybind11::exec(R"(
+import pandas as pd, numpy as np
+df = pd.DataFrame({"a": np.arange(40, dtype="float64")})
+)",
+                   pybind11::globals(),
+                   scope);
+    DA::DAPyDataFrame df(scope[ "df" ]);
+    DA::DAData d(df);
+    DA::DATableMetadataRegistry registry(nullptr);
+    DA::DADataOperateOfDataFrameWidget w(d, &registry);
+    // 默认深度 20（构造里 setUndoLimit(20)）
+    QCOMPARE(w.undoLimit(), 20);
+    // 调大到 100（面板路径的 DAGui 侧口径；APP 施加与配置持久化在 L5 接线）
+    w.setUndoLimit(100);
+    QCOMPARE(w.undoLimit(), 100);
+    // 30 步单元格编辑命令（iat 值记录）
+    for (int i = 0; i < 30; ++i) {
+        const double oldv = df.iat(static_cast< std::size_t >(i), 0).toDouble();
+        auto* cmd         = new DA::DACommandDataFrame_iat(df, i, 0, QVariant(oldv), QVariant(oldv + 1000.0));
+        QVERIFY(cmd->exec());
+        w.push(cmd);
+    }
+    QCOMPARE(w.getUndoStack()->count(), 30);  // 深度 100 → 30 步全保留
+    QCOMPARE(df.iat(29, 0).toDouble(), 1029.0);
+    // 全部撤销（§6.3 验收：做出 30 步操作后仍能全部撤销）
+    for (int i = 0; i < 30; ++i) {
+        w.getUndoStack()->undo();
+    }
+    QCOMPARE(w.getUndoStack()->index(), 0);
+    QCOMPARE(df.iat(29, 0).toDouble(), 29.0);
+    // 深度限制仍生效：调回 5，push 8 条只留 5 条
+    w.getUndoStack()->clear();
+    w.setUndoLimit(5);
+    for (int i = 0; i < 8; ++i) {
+        const double oldv = df.iat(static_cast< std::size_t >(i), 0).toDouble();
+        auto* cmd         = new DA::DACommandDataFrame_iat(df, i, 0, QVariant(oldv), QVariant(oldv + 100.0));
+        QVERIFY(cmd->exec());
+        w.push(cmd);
+    }
+    QCOMPARE(w.getUndoStack()->count(), 5);
+    QCOMPARE(w.undoLimit(), 5);
+}
+
+// 005 §6.3：QUndoView 面板——绑 QUndoGroup 跟随激活栈、条目数与文案（无空白条目红线5）、
+// 深度调节信号（用户改发信号、程序 setUndoLimit 不发）
+void DATableDataTest::testUndoHistoryWidget()
+{
+    DA::DAUndoHistoryWidget panel;
+    QUndoGroup group;
+    QUndoStack stackA;
+    QUndoStack stackB;
+    group.addStack(&stackA);
+    group.addStack(&stackB);
+    panel.setUndoGroup(&group);
+    QCOMPARE(panel.undoGroup(), &group);
+    // 栈 A 推两条有文案的命令并激活；视图模型条目跟随激活栈
+    auto* cmd1 = new DA::DACommandTableNote_clearAll(nullptr);  // 空 store 安全（setText 非空即可）
+    QVERIFY(!cmd1->text().isEmpty());
+    stackA.push(cmd1);
+    stackA.setActive();
+    QUndoView* view = panel.findChild< QUndoView* >(QStringLiteral("undoHistoryView"));
+    QVERIFY(view != nullptr);
+    QVERIFY(view->model() != nullptr);
+    // QUndoStack 内置模型行 0 是「<empty>」栈底伪条目（Qt 自带标签，非空白命令），
+    // 命令条目从行 1 起：1 条命令 → 2 行
+    QCOMPARE(view->model()->rowCount(), 2);
+    // 命令文案在视图模型里可见且非空（面板无空白条目的口径）
+    const QString rowText = view->model()->index(1, 0).data(Qt::DisplayRole).toString();
+    QVERIFY(!rowText.trimmed().isEmpty());
+    // 切换激活栈 → 视图跟随（stackB 空 → 只剩栈底伪条目）
+    stackB.setActive();
+    QCOMPARE(view->model()->rowCount(), 1);
+    stackA.setActive();
+    QCOMPARE(view->model()->rowCount(), 2);
+    // 深度调节：用户改 SpinBox → 发 undoLimitChangeRequested；程序 setUndoLimit → 不发
+    QSpinBox* spin = panel.findChild< QSpinBox* >(QStringLiteral("undoLimitSpin"));
+    QVERIFY(spin != nullptr);
+    QCOMPARE(panel.undoLimit(), 20);  // 默认 20（R19）
+    QSignalSpy spy(&panel, &DA::DAUndoHistoryWidget::undoLimitChangeRequested);
+    panel.setUndoLimit(100);
+    QCOMPARE(panel.undoLimit(), 100);
+    QCOMPARE(spy.count(), 0);  // 程序注入不回环
+    spin->setValue(50);
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.at(0).at(0).toInt(), 50);
+}
+
+// 005 红线5：Swap/Persist 命令构造即带默认 tr() 文案（调用方 setText 覆盖；
+// 空文案不覆盖——DAAppCommand 已加守卫），撤销面板不允许空白条目
+void DATableDataTest::testUndoCommandDefaultTexts()
+{
+    {
+        DA::DADataObjectSwapUndoCommand cmd;
+        QVERIFY(!cmd.text().isEmpty());
+    }
+    {
+        DA::DADataObjectPersistUndoCommand cmd;
+        QVERIFY(!cmd.text().isEmpty());
+    }
 }
 
 
