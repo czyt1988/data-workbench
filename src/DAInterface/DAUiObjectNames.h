@@ -147,6 +147,13 @@ constexpr char MergeColumns[]               = "actionMergeColumns";             
 constexpr char GroupBy[]                    = "actionGroupBy";                    ///< 分组聚合（004 T1.22）
 constexpr char Transpose[]                  = "actionTranspose";                  ///< 转置（004 T1.27）
 constexpr char Melt[]                       = "actionMelt";                       ///< 宽转长 melt（004 T1.27）
+// ---- 填充（005 T1.24，Ribbon「Edit」面板下拉 + 表体右键「填充」子菜单，快捷键 Ctrl+D 在视图）----
+constexpr char Fill[]                       = "actionFill";                       ///< 填充下拉根（005 T1.24）
+constexpr char FillDown[]                   = "actionFillDown";                   ///< 向下填充（005 T1.24）
+constexpr char FillUp[]                     = "actionFillUp";                     ///< 向上填充（005 T1.24）
+constexpr char FillForward[]                = "actionFillForward";                ///< 向下填充空值 ffill（005 T1.24）
+constexpr char FillBackward[]               = "actionFillBackward";               ///< 向上填充空值 bfill（005 T1.24）
+constexpr char FillSeries[]                 = "actionFillSeries";                 ///< 序列填充（005 T1.24）
 // ---- 绘图 ----
 constexpr char AddFigure[]                  = "actionAddFigure";
 constexpr char FigureNewXYAxis[]            = "actionFigureNewXYAxis";
@@ -294,6 +301,7 @@ namespace Menu
 {
 constexpr char InsertRow[]                  = "menuInsertRow";
 constexpr char InsertColumn[]               = "menuInsertColumn";
+constexpr char Fill[]                       = "menuFill";  ///< 填充下拉子菜单（005 T1.24）
 constexpr char ExportData[]                 = "menuExportData";
 constexpr char ExportWorkflowSceneToImage[] = "exportWorkflowSceneToImageMenu";
 constexpr char ChartPickSetting[]           = "mMenuChartPickSetting";  ///< 历史命名，保留

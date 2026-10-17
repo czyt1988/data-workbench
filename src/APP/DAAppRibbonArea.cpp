@@ -149,6 +149,15 @@ void DAAppRibbonArea::buildMenu()
     mMenuInsertColumn = new SARibbonMenu(mApp);
     mMenuInsertColumn->setObjectName(QString::fromUtf8(UiNames::Menu::InsertColumn));
     mMenuInsertColumn->addAction(mActions->actionInsertColumnLeft);
+    // 填充下拉子菜单（005 T1.24）：向下/向上/ffill/bfill/序列，挂在 actionFill 下
+    mMenuFill = new SARibbonMenu(mApp);
+    mMenuFill->setObjectName(QString::fromUtf8(UiNames::Menu::Fill));
+    mMenuFill->addAction(mActions->actionFillDown);
+    mMenuFill->addAction(mActions->actionFillUp);
+    mMenuFill->addAction(mActions->actionFillForward);
+    mMenuFill->addAction(mActions->actionFillBackward);
+    mMenuFill->addSeparator();
+    mMenuFill->addAction(mActions->actionFillSeries);
     //
     mExportWorkflowSceneToImageMenu = new SARibbonMenu(mApp);
     mExportWorkflowSceneToImageMenu->setObjectName(QString::fromUtf8(UiNames::Menu::ExportWorkflowSceneToImage));
@@ -492,11 +501,14 @@ void DAAppRibbonArea::buildContextCategoryDataFrame()
     mPannelDataframeOperateFormat->addWidget(mComboxDisplayFormatContainer, SARibbonPanelItem::Medium);
     mPannelDataframeOperateFormat->addMediumAction(mActions->actionTableFormatCells);
 
-    // Edit pannel - 编辑（002 T1.4：查找/替换；005 的填充也进这个面板，D6）
+    // Edit pannel - 编辑（002 T1.4：查找/替换；005 T1.24：填充下拉，D6）
     mPannelDataframeOperateEdit = mCategoryDataframeOperate->addPanel(tr("Edit"));  // cn:编辑
     mPannelDataframeOperateEdit->setObjectName(QString::fromUtf8(UiNames::Ribbon::DataFrameOperateEditPanel));
     mPannelDataframeOperateEdit->addLargeAction(mActions->actionFind);
     mPannelDataframeOperateEdit->addLargeAction(mActions->actionReplace);
+    // 填充（005 T1.24）：按钮点击=向下填充（与 Ctrl+D 同），下拉含全部五种填充
+    mActions->actionFill->setMenu(mMenuFill);
+    mPannelDataframeOperateEdit->addLargeAction(mActions->actionFill, QToolButton::MenuButtonPopup);
 
     // Data Tools pannel - 数据工具（004：计算列/分列/合列/分组/转置/melt，D6）
     mPannelDataframeOperateDataTools = mCategoryDataframeOperate->addPanel(tr("Data Tools"));  // cn:数据工具

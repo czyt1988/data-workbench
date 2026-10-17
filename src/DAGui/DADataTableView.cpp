@@ -10,7 +10,9 @@
 #include <QIcon>
 #include <QContextMenuEvent>
 #include <QSet>
+#include <QHash>
 #include <QPair>
+#include <algorithm>
 #include <climits>
 namespace DA
 {
@@ -71,6 +73,12 @@ void DADataTableView::keyPressEvent(QKeyEvent* event)
         event->accept();
         return;
     }
+    // Ctrl+D 向下填充（005 T1.24；QKeySequence 无 FillDown 标准键，手工判定组合键）
+    if (event->key() == Qt::Key_D && event->modifiers() == Qt::ControlModifier) {
+        Q_EMIT fillDownRequested();
+        event->accept();
+        return;
+    }
     if (event->key() == Qt::Key_Escape) {
         // 焦点在表格时 Esc 关查找条（命中高亮由页面据 findBarCloseRequested 清理）；
         // 不 accept，Esc 继续交基类处理既有语义
@@ -122,6 +130,40 @@ int DADataTableView::selectedDataColumnCount() const
         }
     }
     return cols.size();
+}
+
+/**
+ * @brief 是否存在某数据列拥有 >=2 行的连续选中行区间（005 填充启用规则）
+ *
+ * 按列聚合选中行（视图行号即可——连续性判定与绝对行号偏移无关），排序后找相邻
+ * 差 1 的行对；尾部预留空白列不计。不足两行的选区向下/向上/ffill/bfill 无从发生。
+ * @return 存在返回 true
+ */
+bool DADataTableView::hasMultiRowSelectedRun() const
+{
+    QItemSelectionModel* sm = selectionModel();
+    DADataTableModel* m     = getDataModel();
+    if (!sm || !m) {
+        return false;
+    }
+    const int dataCols = m->columnCount() - m->getExtraColumnCount();
+    QHash< int, QList< int > > colRows;
+    const QModelIndexList idxs = sm->selectedIndexes();
+    for (const QModelIndex& i : idxs) {
+        if (i.column() < dataCols) {
+            colRows[ i.column() ].append(i.row());
+        }
+    }
+    for (auto it = colRows.constBegin(); it != colRows.constEnd(); ++it) {
+        QList< int > rows = it.value();
+        std::sort(rows.begin(), rows.end());
+        for (int i = 1; i < rows.size(); ++i) {
+            if (rows[ i ] == rows[ i - 1 ] + 1) {
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 /**
@@ -201,6 +243,29 @@ QMenu* DADataTableView::buildContextMenu(const QModelIndex& at)
                                        tr("Unpivot (Melt)..."));  // cn:宽转长（melt）...
     actMelt->setEnabled(getData().isDataFrame());
     connect(actMelt, &QAction::triggered, this, &DADataTableView::meltRequested);
+    // —— 005：填充子菜单（向下/向上/ffill/bfill/序列…，D6；Ctrl+D 与 fillDownRequested 共用）——
+    // 只读源全部置灰；向下/向上/ffill/bfill 需要某列存在 >=2 行的连续选中区间
+    //（不足两行无从传递，计划 §3.3-1 选择置灰而非提示）；序列填充有选中即可
+    menu->addSeparator();
+    QMenu* fillMenu = menu->addMenu(QIcon(QStringLiteral(":/DAGui/icon/fill.svg")), tr("Fill"));  // cn:填充
+    const bool canFill     = editable && hasSel;
+    const bool multiRowRun = canFill && hasMultiRowSelectedRun();
+    QAction* actFillDown   = fillMenu->addAction(QIcon(QStringLiteral(":/DAGui/icon/fill-down.svg")), tr("Fill Down"));     // cn:向下填充
+    QAction* actFillUp     = fillMenu->addAction(QIcon(QStringLiteral(":/DAGui/icon/fill-up.svg")), tr("Fill Up"));         // cn:向上填充
+    QAction* actFillFwd    = fillMenu->addAction(QIcon(QStringLiteral(":/DAGui/icon/fill-forward.svg")), tr("Fill Forward (ffill)"));   // cn:向下填充空值(ffill)
+    QAction* actFillBwd    = fillMenu->addAction(QIcon(QStringLiteral(":/DAGui/icon/fill-backward.svg")), tr("Fill Backward (bfill)"));  // cn:向上填充空值(bfill)
+    fillMenu->addSeparator();
+    QAction* actFillSeries = fillMenu->addAction(QIcon(QStringLiteral(":/DAGui/icon/fill-series.svg")), tr("Fill Series..."));  // cn:序列填充...
+    actFillDown->setEnabled(multiRowRun);
+    actFillUp->setEnabled(multiRowRun);
+    actFillFwd->setEnabled(multiRowRun);
+    actFillBwd->setEnabled(multiRowRun);
+    actFillSeries->setEnabled(canFill);
+    connect(actFillDown, &QAction::triggered, this, &DADataTableView::fillDownRequested);
+    connect(actFillUp, &QAction::triggered, this, &DADataTableView::fillUpRequested);
+    connect(actFillFwd, &QAction::triggered, this, &DADataTableView::fillForwardRequested);
+    connect(actFillBwd, &QAction::triggered, this, &DADataTableView::fillBackwardRequested);
+    connect(actFillSeries, &QAction::triggered, this, &DADataTableView::fillSeriesRequested);
     // —— 后续计划的分组插入点在菜单底部（见函数注释），插入时组间加分隔符 ——
     return menu;
 }

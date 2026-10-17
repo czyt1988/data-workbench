@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px"
+	 width="200px" height="200px" viewBox="0 0 200 200" xml:space="preserve">
+	<!-- 向上填充：列末格为源（浅蓝），主蓝实心上箭头，其余格被末行值填满。
+	     官方色板：网格 #727272（中灰）、底 #FFFFFF、源格 #BDCDE8（浅蓝）、
+	     箭头 #5280C1（主蓝，主操作）；禁渐变/阴影/<text>（DESIGN.md §4） -->
+	<rect x="26" y="30" width="72" height="140" fill="#FFFFFF"/>
+	<rect x="26" y="124" width="72" height="46" fill="#BDCDE8"/>
+	<g fill="none" stroke="#727272" stroke-width="8" stroke-linecap="butt">
+		<rect x="26" y="30" width="72" height="140"/>
+		<line x1="26" y1="76" x2="98" y2="76"/>
+		<line x1="26" y1="123" x2="98" y2="123"/>
+	</g>
+	<path d="M 146 158 V 88" fill="none" stroke="#5280C1" stroke-width="14" stroke-linecap="butt"/>
+	<polygon points="120,94 172,94 146,50" fill="#5280C1"/>
+</svg>

@@ -107,6 +107,12 @@ public:
     QAction* actionGroupBy { nullptr };                     ///< 分组聚合（004 T1.22，Data Tools 面板 + 表体右键同入口）
     QAction* actionTranspose { nullptr };                   ///< 转置（004 T1.27，Data Tools 面板 + 表体右键同入口）
     QAction* actionMelt { nullptr };                        ///< 宽转长 melt（004 T1.27，Data Tools 面板 + 表体右键同入口）
+    QAction* actionFill { nullptr };                        ///< 填充（005 T1.24，Edit 面板下拉，含子菜单）
+    QAction* actionFillDown { nullptr };                    ///< 向下填充（005 T1.24）
+    QAction* actionFillUp { nullptr };                      ///< 向上填充（005 T1.24）
+    QAction* actionFillForward { nullptr };                 ///< 向下填充空值 ffill（005 T1.24）
+    QAction* actionFillBackward { nullptr };                ///< 向上填充空值 bfill（005 T1.24）
+    QAction* actionFillSeries { nullptr };                  ///< 序列填充（005 T1.24）
 
     //===================================================
     // workflow的上下文标签

@@ -357,6 +357,7 @@ private:
     QMenu* mMenuViewLineMarkers { nullptr };                   ///< 视图标记线
     QMenu* mMenuInsertRow { nullptr };                         ///< 针对insertrow的action menu
     QMenu* mMenuInsertColumn { nullptr };                      ///< 这对insertcol的action menu
+    QMenu* mMenuFill { nullptr };                              ///< 填充下拉子菜单（005 T1.24，挂在 actionFill 下）
     QMenu* mMenuChartPickSetting { nullptr };                  ///< chart的picker设置
     QMenu* mMenuChartLegendPosition { nullptr };               ///< chart的图例位置菜单（挂在actionChartEnableLegend下）
 };

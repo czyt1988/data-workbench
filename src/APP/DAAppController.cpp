@@ -541,6 +541,13 @@ void DAAppController::initConnection()
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionGroupBy, onActionGroupByTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionTranspose, onActionTransposeTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionMelt, onActionMeltTriggered);
+    // 填充（005 T1.24，Ribbon「Edit」面板下拉；快捷键 Ctrl+D 在 DADataTableView，action 不设 shortcut 红线5）
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionFill, onActionFillDownTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionFillDown, onActionFillDownTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionFillUp, onActionFillUpTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionFillForward, onActionFillForwardTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionFillBackward, onActionFillBackwardTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionFillSeries, onActionFillSeriesTriggered);
     // View Category
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowWorkFlowArea, onActionShowWorkFlowAreaTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowWorkFlowManagerArea, onActionShowWorkFlowManagerAreaTriggered);
@@ -3594,6 +3601,71 @@ void DAAppController::onActionMeltTriggered()
         return;
     }
     dfopt->showReshapeDialog(true);
+}
+
+/**
+ * @brief 向下填充（005 T1.24，Ribbon「Edit」面板下拉 + Ctrl+D + 表体右键）
+ *
+ * 与表体右键「填充 → 向下填充」、DADataTableView 的 Ctrl+D 共用页面 fillSelection 入口；
+ * 求值走 Python 算子（空值判定），一次填充一条 paste 命令入栈（D4）。
+ */
+void DAAppController::onActionFillDownTriggered()
+{
+    DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false);
+    if (!dfopt) {
+        return;
+    }
+    dfopt->fillSelection(DADataOperateOfDataFrameWidget::FillMode::Down);
+}
+
+/**
+ * @brief 向上填充（005 T1.24）
+ */
+void DAAppController::onActionFillUpTriggered()
+{
+    DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false);
+    if (!dfopt) {
+        return;
+    }
+    dfopt->fillSelection(DADataOperateOfDataFrameWidget::FillMode::Up);
+}
+
+/**
+ * @brief 向下填充空值 ffill（005 T1.24）
+ */
+void DAAppController::onActionFillForwardTriggered()
+{
+    DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false);
+    if (!dfopt) {
+        return;
+    }
+    dfopt->fillSelection(DADataOperateOfDataFrameWidget::FillMode::Forward);
+}
+
+/**
+ * @brief 向上填充空值 bfill（005 T1.24）
+ */
+void DAAppController::onActionFillBackwardTriggered()
+{
+    DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false);
+    if (!dfopt) {
+        return;
+    }
+    dfopt->fillSelection(DADataOperateOfDataFrameWidget::FillMode::Backward);
+}
+
+/**
+ * @brief 序列填充（005 T1.24，Ribbon「Edit」面板下拉 + 表体右键）
+ *
+ * 唤出序列填充对话框（数值等差/日期步进，Python 求值+预览）。
+ */
+void DAAppController::onActionFillSeriesTriggered()
+{
+    DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false);
+    if (!dfopt) {
+        return;
+    }
+    dfopt->showFillSeriesDialog();
 }
 
 /**

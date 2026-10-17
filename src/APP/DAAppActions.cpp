@@ -127,6 +127,13 @@ void DAAppActions::buildDataAction()
     actionGroupBy                     = createAction(UiNames::Action::GroupBy, ":/DAGui/icon/group-by.svg");
     actionTranspose                   = createAction(UiNames::Action::Transpose, ":/DAGui/icon/transpose.svg");
     actionMelt                        = createAction(UiNames::Action::Melt, ":/DAGui/icon/melt.svg");
+    // 填充 action（005 T1.24；图标取 DAGui 图标库，快捷键 Ctrl+D 在 DADataTableView，此处不设 shortcut 红线5）
+    actionFill                        = createAction(UiNames::Action::Fill, ":/DAGui/icon/fill.svg");
+    actionFillDown                    = createAction(UiNames::Action::FillDown, ":/DAGui/icon/fill-down.svg");
+    actionFillUp                      = createAction(UiNames::Action::FillUp, ":/DAGui/icon/fill-up.svg");
+    actionFillForward                 = createAction(UiNames::Action::FillForward, ":/DAGui/icon/fill-forward.svg");
+    actionFillBackward                = createAction(UiNames::Action::FillBackward, ":/DAGui/icon/fill-backward.svg");
+    actionFillSeries                  = createAction(UiNames::Action::FillSeries, ":/DAGui/icon/fill-series.svg");
 }
 
 void DAAppActions::buildChartAction()
@@ -677,6 +684,18 @@ void DAAppActions::retranslateUi()
     actionTranspose->setToolTip(tr("Swap rows and columns into a new dataset (in-place optional)"));  // cn:行列互换产出新数据集（可选就地替换）
     actionMelt->setText(tr("Unpivot (Melt)"));                      // cn:宽转长（melt）
     actionMelt->setToolTip(tr("Unpivot wide columns into a long-format new dataset (in-place optional)"));  // cn:把宽表展开为长格式新数据集（可选就地替换）
+    actionFill->setText(tr("Fill"));                                // cn:填充
+    actionFill->setToolTip(tr("Fill the selection (down / up / ffill / bfill / series)"));  // cn:填充选区（向下/向上/ffill/bfill/序列）
+    actionFillDown->setText(tr("Fill Down"));                       // cn:向下填充
+    actionFillDown->setToolTip(tr("Fill the selection down with the value of the first row (Ctrl+D)"));  // cn:用选区首行值向下填充（Ctrl+D）
+    actionFillUp->setText(tr("Fill Up"));                           // cn:向上填充
+    actionFillUp->setToolTip(tr("Fill the selection up with the value of the last row"));  // cn:用选区末行值向上填充
+    actionFillForward->setText(tr("Fill Forward (ffill)"));         // cn:向下填充空值(ffill)
+    actionFillForward->setToolTip(tr("Propagate the last valid value down within the selection"));  // cn:选区内向下传递最后一个非空值
+    actionFillBackward->setText(tr("Fill Backward (bfill)"));       // cn:向上填充空值(bfill)
+    actionFillBackward->setToolTip(tr("Propagate the next valid value up within the selection"));  // cn:选区内向上传递下一个非空值
+    actionFillSeries->setText(tr("Fill Series..."));                // cn:序列填充...
+    actionFillSeries->setToolTip(tr("Generate a linear or date series into the selected columns"));  // cn:对选中列生成数值等差或日期步进序列
     //-----------------------------------------------------
     // workflow 编辑
     //-----------------------------------------------------

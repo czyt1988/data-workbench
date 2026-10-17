@@ -58,9 +58,17 @@ Q_SIGNALS:
     // 转置 / 宽转长入口（004 T1.27）：默认产出新数据集（R14），dataframe 数据即可用
     void transposeRequested();
     void meltRequested();
+    // 填充入口（005 T1.24）：Ctrl+D（向下）与表体右键「填充」子菜单共用，
+    // 页面据此调 fillSelection/showFillSeriesDialog（选区语义按列独立，求值在 Python）
+    void fillDownRequested();
+    void fillUpRequested();
+    void fillForwardRequested();
+    void fillBackwardRequested();
+    void fillSeriesRequested();
 
 protected:
-    // Ctrl+C / Ctrl+Insert 复制；Ctrl+F 查找；Ctrl+H 替换；Esc 关查找条（快捷键唯一挂点，红线5）
+    // Ctrl+C / Ctrl+Insert 复制；Ctrl+F 查找；Ctrl+H 替换；Ctrl+D 向下填充（005）；
+    // Esc 关查找条（快捷键唯一挂点，红线5）
     void keyPressEvent(QKeyEvent* event) override;
     // 表体右键菜单
     void contextMenuEvent(QContextMenuEvent* event) override;
@@ -70,6 +78,9 @@ private:
     bool isDataSourceEditable() const;
     // 当前选区覆盖的数据列数（去重；尾部预留空白列不计，004 分列/合并启用规则用）
     int selectedDataColumnCount() const;
+    // 是否存在某数据列拥有 >=2 行的连续选中行区间（005 填充启用规则：
+    // 不足两行时向下/向上/ffill/bfill 无从发生，菜单置灰，计划 §3.3-1）
+    bool hasMultiRowSelectedRun() const;
 };
 }
 #endif  // DADATATABLEVIEW_H

@@ -2,6 +2,7 @@
 #define DADATAOPERATEOFDATAFRAMEWIDGET_H
 #include <QtWidgets/QWidget>
 #include <QUndoStack>
+#include <QHash>
 #include <QPair>
 #include <QVector>
 #include <optional>
@@ -156,6 +157,22 @@ public:
     // 走 DADataManager::addData_ 可撤销；照透视表 createPivotTable 的真实产出流程），
     // 原表与其元数据完全不动。成功后发 newDataCreated 交 APP 激活新页面
     void showGroupByDialog();
+
+    // ===== 填充（005 T1.24）=====
+    // 填充模式（选区按列独立处理，与 Excel 一致；空值判定由 Python 算子完成）
+    enum class FillMode
+    {
+        Down,      ///< 向下填充（每列选区首行值填满其余行，Ctrl+D）
+        Up,        ///< 向上填充（每列选区末行值填满其余行）
+        Forward,   ///< 选区内向下传递最后一个非空值（ffill）
+        Backward   ///< 选区内向上传递下一个非空值（bfill）
+    };
+    // 选区填充：求值经 da_fill_selection（只返回变化清单），全部列组织成一条
+    // DACommandDataFrame_paste（一次填充=一次撤销，D4）；返回写入单元格数
+    int fillSelection(FillMode mode);
+    // 打开序列填充对话框（数值等差/日期步进，Python 求值+预览）；接受后对选区
+    // 每一列各生成一个序列，一条 paste 命令入栈；返回写入单元格数（取消返回 0）
+    int showFillSeriesDialog();
 
     // ===== 转置 / melt 形状变换（004 T1.27）=====
     // 打开形状变换对话框（meltMode=false 转置 / true 宽转长，模式可在对话框内切换）。
@@ -317,6 +334,17 @@ private:
     void registerNewDataset(const DAPyDataFrame& resultDf, const QString& name, const QString& describe);
     // 就地替换（004 T1.27）：确认框（列清除条目数）→ 超大表降级分支 / 发信号交 APP 建 Swap 命令
     void requestInplaceReplace(const DAPyDataFrame& newDf, const QString& text);
+    // ===== 填充私有辅助（005 T1.24）=====
+    // 选区按列分组的连续行区间：col -> 若干 [rowStart,rowEnd] 闭区间（绝对行号，升序）。
+    // 每列的选中行排序后按连续性切成 run（不规则多选也精确，不填未选中的行）
+    QHash< int, QVector< QPair< int, int > > > selectedColumnRowRuns() const;
+    // 用填充清单构造一条 DACommandDataFrame_paste 并入栈（值记录，D4；含统计失效/
+    // 计算列标脏/模型刷新回调，与 pasteFromClipboard 同款）；返回写入单元格数
+    int pushFillPasteCommand(const DAPyDataFrame& df,
+                             const QList< int >& rows,
+                             const QList< int >& cols,
+                             const QList< QVariant >& values,
+                             const QString& text);
 
     Ui::DADataOperateOfDataFrameWidget* ui;
     DAData mData;
