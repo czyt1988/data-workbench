@@ -181,6 +181,10 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
         connect(sm, &QItemSelectionModel::selectionChanged, this, [ this ]() {
             Q_EMIT currentStyleChanged(getCurrentCellStyle());
             Q_EMIT currentDisplayFormatChanged(getCurrentColumnDisplayFormat());
+            // 查找条处于「当前选区」范围时，选区变化经去抖触发重扫（范围基准随选区更新）
+            if (mFindReplaceDialog && mFindReplaceDialog->isVisible() && mFindReplaceDialog->options().selectionOnly) {
+                mFindReplaceDialog->restartDebounce();
+            }
         });
     }
 }
@@ -2175,8 +2179,15 @@ void DADataOperateOfDataFrameWidget::gotoFindHit(int idx)
     const QPair< int, int > hit = mFindHits.at(mFindHitIndex);
     // 当前命中单独一条 Level::CurrentHit（覆盖该格的 Hit 级别）
     mHighlightOverlay->set(DATableHighlightOverlay::Source::Find, DATableHighlightOverlay::Level::CurrentHit, { hit });
-    // 滚动定位 + 选中（命中来自全表扫描，可能落在滑动窗外，selectActualCell 内部先 showActualRow）
-    ui->tableView->selectActualCell(hit.first, hit.second);
+    if (mLastFindOptions.selectionOnly) {
+        // 选区范围模式：导航只滚动定位、不选中命中格——选区是扫描/替换的范围基准，
+        // 不能被导航收缩（否则「选区内全部替换」会退化成单格）；当前命中靠 CurrentHit 高亮辨识
+        ui->tableView->showActualRow(hit.first);
+        ui->tableView->showColumn(hit.second);
+    } else {
+        // 滚动定位 + 选中（命中来自全表扫描，可能落在滑动窗外，selectActualCell 内部先 showActualRow）
+        ui->tableView->selectActualCell(hit.first, hit.second);
+    }
     updateFindCountLabel();
 }
 

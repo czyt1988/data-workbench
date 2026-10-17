@@ -62,6 +62,8 @@ public:
     void setSearchFailed(bool failed);
     // 立即触发一次查找（跳过去抖：回车/按钮等显式动作）
     void requestSearchNow();
+    // 重启去抖定时（外部输入变化用：如选区范围模式下选区变化触发的延迟重扫）
+    void restartDebounce();
 
 Q_SIGNALS:
     // 去抖到期或显式触发的查找请求

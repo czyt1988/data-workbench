@@ -2261,6 +2261,28 @@ wdf = pd.DataFrame({"t": ["abc", "def", "abcx", "xyz", "abc"]})
     QCOMPARE(df.iat(0, 0).toString(), QLatin1String("abc"));
     QCOMPARE(df.iat(2, 0).toString(), QLatin1String("abcx"));
     QCOMPARE(df.iat(4, 0).toString(), QLatin1String("abc"));
+    // 选区内替换（§4.2）：范围=当前选区，只改选区包围盒内的命中
+    {
+        DA::DADataTableView* tv = w.getDataTableView();
+        QVERIFY(tv != nullptr);
+        QItemSelectionModel* sm = tv->selectionModel();
+        QVERIFY(sm != nullptr);
+        // 选中行 0..2（列 0）：命中 rows {0,2,4} 中只有 0、2 在选区内
+        sm->select(QItemSelection(tv->model()->index(0, 0), tv->model()->index(2, 0)), QItemSelectionModel::ClearAndSelect);
+        dlg->findChild< QComboBox* >(QStringLiteral("comboBoxScope"))->setCurrentIndex(1);  // 当前选区
+        findEdit->setText(QStringLiteral("abc"));
+        replEdit->setText(QStringLiteral("S"));
+        dlg->requestSearchNow();
+        QCOMPARE(w.findHitCount(), 2);  // 扫描范围同样受选区约束
+        QTest::mouseClick(replAllBtn, Qt::LeftButton);
+        QCOMPARE(df.iat(0, 0).toString(), QLatin1String("S"));
+        QCOMPARE(df.iat(2, 0).toString(), QLatin1String("Sx"));
+        QCOMPARE(df.iat(4, 0).toString(), QLatin1String("abc"));  // 选区外不变
+        w.getUndoStack()->undo();
+        QCOMPARE(df.iat(0, 0).toString(), QLatin1String("abc"));
+        QCOMPARE(df.iat(2, 0).toString(), QLatin1String("abcx"));
+        dlg->findChild< QComboBox* >(QStringLiteral("comboBoxScope"))->setCurrentIndex(0);  // 复位全表
+    }
     // 关闭查找条 → Find 高亮清空
     w.showFindReplace(false);
     findEdit->setText(QStringLiteral("abc"));

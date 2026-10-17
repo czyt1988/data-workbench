@@ -97,6 +97,14 @@ void DADialogFindReplace::requestSearchNow()
 }
 
 /**
+ * @brief 重启去抖定时（外部输入变化用：选区范围模式下选区变化触发的延迟重扫）
+ */
+void DADialogFindReplace::restartDebounce()
+{
+    mDebounceTimer->start();
+}
+
+/**
  * @brief 唤出并聚焦输入框
  * @param expandReplace true 展开替换行（Ctrl+H），false 仅查找行（Ctrl+F）
  */
