@@ -2,19 +2,24 @@
 #define DADATAHEADERVIEW_H
 #include "DAGuiAPI.h"
 #include <QHeaderView>
+#include <QPair>
+#include <QVector>
 
 class QMenu;
 class QMouseEvent;
 class QContextMenuEvent;
+class QPainter;
 
 namespace DA
 {
 /**
  * @brief 数据表格头（水平/垂直共用，按 orientation 分支）
  *
- * 表头重写范围（R5/D7）只有四项，本类承载其中三项（排序交互 002 接入）：
- * 1. 带修饰键的点击信号 clickedWithModifiers（001 只发信号不改消费方，
- *    页面继续走既有 sectionClicked 链路保证图表「选择序列」拾取零回归；002 切换）；
+ * 表头重写范围（R5/D7）只有四项，本类承载全部四项：
+ * 1. 带修饰键的点击信号 clickedWithModifiers（002 起由数据页消费做表头点击排序：
+ *    无修饰单击=单列升/降循环，Shift/Ctrl=追加/切换次排序列；拾取模式下页面只
+ *    转发 columnHeaderClicked 不排序），并绘制多列排序角标（setSortSpec：方向箭头
+ *    在段右端、多列序号在左上角，左下/左侧前导位留给 004 的 ƒx）；
  * 2. 列头右键菜单（从 APP 的 setupDataFrameHeaderContextMenu 迁入，R12）：
  *    菜单内容（哪些项、顺序、启用规则）单点定义在本类，QAction 由 DAGui 自建
  *    （不共享 APP 的 action 对象，避免 enabled 互相污染），文案沿用同一英文源串，
@@ -50,6 +55,12 @@ public:
     // 行头宽拖拽的最小宽度（像素）
     static int minimumRowHeaderWidth();
 
+    // 设置多列排序规格（列逻辑索引+方向，顺序即优先级；002 排序角标绘制）：
+    // 规格中的列在右端画升/降箭头，多列时各列左上角画序号角标（1、2…）；
+    // 空规格清除全部角标。左下/左侧前导位留给 004 的 ƒx，不占用
+    void setSortSpec(const QVector< QPair< int, Qt::SortOrder > >& spec);
+    QVector< QPair< int, Qt::SortOrder > > sortSpec() const;
+
 Q_SIGNALS:
     // 左键点击命中 section（带修饰键；002 排序交互消费，001 不接线）
     void clickedWithModifiers(int logicalIndex, Qt::KeyboardModifiers modifiers);
@@ -64,6 +75,8 @@ protected:
     void mouseReleaseEvent(QMouseEvent* event) override;
     void leaveEvent(QEvent* event) override;
     void contextMenuEvent(QContextMenuEvent* event) override;
+    // 排序角标绘制（仅水平实例）：默认绘制之上叠加右端方向箭头与左上角多列序号
+    void paintSection(QPainter* painter, const QRect& rect, int logicalIndex) const override;
 
 private:
     // vertical 实例右缘行头宽拖拽热区（8px）判定
@@ -77,6 +90,7 @@ private:
     bool mRowHeaderResizing { false }; ///< 正在拖拽行头宽
     int mResizeStartX { 0 };           ///< 拖拽起点 x
     int mResizeStartWidth { 0 };       ///< 拖拽起点宽度
+    QVector< QPair< int, Qt::SortOrder > > mSortSpec;  ///< 多列排序规格（列逻辑索引+方向，顺序即优先级；不持久化 R13）
 };
 }  // end of namespace DA
 #endif  // DADATAHEADERVIEW_H

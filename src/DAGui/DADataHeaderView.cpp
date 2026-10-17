@@ -7,6 +7,8 @@
 #include <QFontMetrics>
 #include <QMouseEvent>
 #include <QContextMenuEvent>
+#include <QPainter>
+#include <QPolygon>
 
 namespace DA
 {
@@ -61,6 +63,95 @@ DADataHeaderView::DADataHeaderView(Qt::Orientation orientation, QWidget* parent)
 int DADataHeaderView::minimumRowHeaderWidth()
 {
     return c_minRowHeaderWidth;
+}
+
+/**
+ * @brief 设置多列排序规格（002 表头点击排序）
+ *
+ * 规格中的列在段右端画升/降箭头，多列规格时各列左上角画序号角标（1、2…）；
+ * 空规格清除全部角标。左下/左侧前导位留给 004 的 ƒx，不占用。
+ * @param spec 列逻辑索引+方向，顺序即优先级
+ */
+void DADataHeaderView::setSortSpec(const QVector< QPair< int, Qt::SortOrder > >& spec)
+{
+    if (mSortSpec == spec) {
+        return;
+    }
+    mSortSpec = spec;
+    viewport()->update();
+}
+
+/**
+ * @brief 当前多列排序规格
+ * @return 列逻辑索引+方向列表（顺序即优先级）
+ */
+QVector< QPair< int, Qt::SortOrder > > DADataHeaderView::sortSpec() const
+{
+    return mSortSpec;
+}
+
+/**
+ * @brief 排序角标绘制（仅水平实例）
+ *
+ * 在默认绘制之上叠加两类角标（色值取官方色板，见 icon-ui-design-guide.md）：
+ * - 方向箭头：段右端垂直居中，升序向上/降序向下，深蓝灰 #5D6D7E；
+ * - 多列序号角标：仅规格多于 1 列时绘制，段左上角，主蓝 #5280C1 圆底 + 白色数字，
+ *   显示该列在规格中的优先级（1 起）。
+ * 左侧前导（垂直居中靠左）留给 004 计算列 ƒx 角标，本函数不占用。
+ * @param painter 绘制器
+ * @param rect 段矩形
+ * @param logicalIndex 列逻辑索引
+ */
+void DADataHeaderView::paintSection(QPainter* painter, const QRect& rect, int logicalIndex) const
+{
+    QHeaderView::paintSection(painter, rect, logicalIndex);
+    if (orientation() != Qt::Horizontal || mSortSpec.isEmpty() || !painter || rect.isEmpty()) {
+        return;
+    }
+    int order            = -1;
+    Qt::SortOrder dir    = Qt::AscendingOrder;
+    for (int i = 0; i < mSortSpec.size(); ++i) {
+        if (mSortSpec.at(i).first == logicalIndex) {
+            order = i;
+            dir   = mSortSpec.at(i).second;
+            break;
+        }
+    }
+    if (order < 0) {
+        return;
+    }
+    painter->save();
+    painter->setRenderHint(QPainter::Antialiasing, true);
+    // 右端方向箭头（深蓝灰 #5D6D7E）
+    const qreal arrowHalfW = 4.0;
+    const qreal arrowHalfH = 2.5;
+    const qreal cx         = rect.right() - arrowHalfW - 5.0;
+    const qreal cy         = rect.center().y();
+    QPolygonF arrow;
+    if (dir == Qt::AscendingOrder) {
+        arrow << QPointF(cx - arrowHalfW, cy + arrowHalfH) << QPointF(cx + arrowHalfW, cy + arrowHalfH)
+              << QPointF(cx, cy - arrowHalfH);
+    } else {
+        arrow << QPointF(cx - arrowHalfW, cy - arrowHalfH) << QPointF(cx + arrowHalfW, cy - arrowHalfH)
+              << QPointF(cx, cy + arrowHalfH);
+    }
+    painter->setPen(Qt::NoPen);
+    painter->setBrush(QColor(0x5D, 0x6D, 0x7E));
+    painter->drawPolygon(arrow);
+    // 多列规格：左上角序号角标（主蓝 #5280C1 圆底 + 白字）
+    if (mSortSpec.size() > 1) {
+        const int r = 7;
+        const QPoint center(rect.left() + r + 2, rect.top() + r + 2);
+        painter->setBrush(QColor(0x52, 0x80, 0xC1));
+        painter->drawEllipse(center, r, r);
+        QFont f = painter->font();
+        f.setPixelSize(r + 2);
+        f.setBold(true);
+        painter->setFont(f);
+        painter->setPen(Qt::white);
+        painter->drawText(QRect(center.x() - r, center.y() - r, 2 * r, 2 * r), Qt::AlignCenter, QString::number(order + 1));
+    }
+    painter->restore();
 }
 
 /**

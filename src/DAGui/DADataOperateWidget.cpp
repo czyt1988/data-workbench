@@ -50,6 +50,7 @@ public:
     QHash< DADataOperatePageWidget*, ads::CDockWidget* > _pageToDock;  ///< page -> dock
     QPointer< DADataOperatePageWidget > _currentPage;  ///< 当前激活 page
     bool _suppressCurrentChanged { false };  ///< 创建/加载期间抑制 currentDataTableWidgetChanged
+    bool _headerPickMode { false };  ///< 表头拾取模式（图表「选择序列」会话期间置位，转发给当前 DataFrame 页）
 };
 
 DADataOperateWidget::PrivateData::PrivateData(DADataOperateWidget* p) : q_ptr(p)
@@ -165,6 +166,31 @@ QWidget* DADataOperateWidget::currentWidget() const
 DADataOperateOfDataFrameWidget* DADataOperateWidget::getCurrentDataFrameWidget() const
 {
     return qobject_cast< DADataOperateOfDataFrameWidget* >(currentWidget());
+}
+
+/**
+ * @brief 设置表头拾取模式（图表「选择序列」会话期间置位）
+ *
+ * 存标志并转发给当前 DataFrame 页（拾取模式下表头点击只转发信号、不排序，
+ * §4.1 模式互斥）；页切换时在 setCurrentPage 里同步到新页。
+ * 切换点：DAChartSeriesPickerWidget::connectDataWidgets/disconnectDataWidgets。
+ * @param on true=进入拾取模式
+ */
+void DADataOperateWidget::setHeaderPickMode(bool on)
+{
+    d_ptr->_headerPickMode = on;
+    if (DADataOperateOfDataFrameWidget* w = getCurrentDataFrameWidget()) {
+        w->setHeaderPickMode(on);
+    }
+}
+
+/**
+ * @brief 是否处于表头拾取模式
+ * @return 拾取模式返回 true
+ */
+bool DADataOperateWidget::isHeaderPickMode() const
+{
+    return d_ptr->_headerPickMode;
 }
 
 /**
@@ -572,6 +598,8 @@ void DADataOperateWidget::setCurrentPage(DADataOperatePageWidget* page)
     if (DADataOperateOfDataFrameWidget* d = qobject_cast< DADataOperateOfDataFrameWidget* >(page)) {
         d_ptr->_currentHeaderConn = connect(d, &DADataOperateOfDataFrameWidget::columnHeaderClicked,
                                             this, &DADataOperateWidget::currentDataFrameColumnHeaderClicked);
+        // 拾取模式随页切换同步（拾取会话中切页，新页也要保持「只转发不排序」）
+        d->setHeaderPickMode(d_ptr->_headerPickMode);
     }
     emit currentDataTableWidgetChanged(page, d_ptr->_pages.indexOf(page));
 }

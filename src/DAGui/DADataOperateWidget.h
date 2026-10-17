@@ -48,6 +48,11 @@ public:
 
     // 当前显示的DataFrame窗口，如果不是DataFrame窗口，返回nullptr
     DADataOperateOfDataFrameWidget* getCurrentDataFrameWidget() const;
+    // 表头拾取模式（图表「选择序列」会话期间置位）：存标志并转发给当前 DataFrame 页，
+    // 拾取模式下表头点击只转发信号不排序（002 §4.1 模式互斥）；
+    // 切换点在 DAChartSeriesPickerWidget 的 connect/disconnectDataWidgets
+    void setHeaderPickMode(bool on);
+    bool isHeaderPickMode() const;
     // 获取所有已打开的 DataFrame 操作窗口（供序列化遍历样式）
     QList< DADataOperateOfDataFrameWidget* > getAllDataFrameWidgets() const;
     // 按 DAData 精确查找已打开的 DataFrame 窗口（无则 nullptr），供样式加载按 id 回填后刷新

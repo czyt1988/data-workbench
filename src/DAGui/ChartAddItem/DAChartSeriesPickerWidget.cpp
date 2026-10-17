@@ -273,6 +273,8 @@ void DAChartSeriesPickerWidget::connectDataWidgets()
     }
     if (auto* dow = findDataOperateWidget()) {
         mConnHeaderClicked = connect(dow, &DADataOperateWidget::currentDataFrameColumnHeaderClicked, this, &DAChartSeriesPickerWidget::onDataOperateHeaderClicked);
+        // 进入拾取模式（002 §4.1 模式互斥）：拾取会话期间表头点击只转发信号、不排序
+        dow->setHeaderPickMode(true);
     }
 }
 
@@ -288,6 +290,10 @@ void DAChartSeriesPickerWidget::disconnectDataWidgets()
     if (mConnHeaderClicked) {
         disconnect(mConnHeaderClicked);
         mConnHeaderClicked = QMetaObject::Connection();
+    }
+    // 退出拾取模式：恢复表头点击排序
+    if (auto* dow = findDataOperateWidget()) {
+        dow->setHeaderPickMode(false);
     }
 }
 

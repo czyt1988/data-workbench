@@ -2,6 +2,8 @@
 #define DADATAOPERATEOFDATAFRAMEWIDGET_H
 #include <QtWidgets/QWidget>
 #include <QUndoStack>
+#include <QPair>
+#include <QVector>
 #include <optional>
 #include "DAGuiAPI.h"
 #include "DAData.h"
@@ -100,6 +102,13 @@ public:
     void refreshTable();
     // 确保列可见
     void ensureColumnVisible(const QString& colName, bool selectCol = true);
+
+    // 表头拾取模式（图表「选择序列」会话期间置位）：拾取模式下表头点击只转发
+    // columnHeaderClicked 信号、不排序（§4.1 模式互斥），由 DADataOperateWidget 转发
+    void setHeaderPickMode(bool on);
+    bool isHeaderPickMode() const;
+    // 当前多列排序规格（列逻辑索引+方向，顺序即优先级；不持久化 R13）
+    QVector< QPair< int, Qt::SortOrder > > sortSpec() const;
 Q_SIGNALS:
     // 选中区变化时发射当前代表样式，供 ribbon 控件反向同步
     void currentStyleChanged(const DA::DATableCellStyle& style);
@@ -156,6 +165,9 @@ Q_SIGNALS:
 private Q_SLOTS:
     // 表格点击
     void onTableViewClicked(const QModelIndex& index);
+    // 表头带修饰键点击（DADataHeaderView::clickedWithModifiers）：
+    // 拾取模式只转发 columnHeaderClicked；否则更新排序规格并排序
+    void onHeaderClickedWithModifiers(int logicalIndex, Qt::KeyboardModifiers modifiers);
 
 protected:
     void changeEvent(QEvent* e) override;
@@ -166,6 +178,14 @@ private:
     // 数据源真实数据行数/列数（不含尾部预留的空白行列）
     int dataRowCount() const;
     int dataColumnCount() const;
+    // 数据源是否可编辑（只读/惰性源上排序入口不生效，判定路径同 DADataTableModel::actualFlags）
+    bool isTableEditable() const;
+    // 应用排序规格：构造 DACommandDataFrame_sortRows、接线样式/模型/选区/视口回调并 push；
+    // 算子失败（如混合类型不可比较）提示并保持原规格，返回 false
+    bool applySortSpec(const QVector< QPair< int, Qt::SortOrder > >& newSpec);
+    // 按最近应用的置换修正选区（选中行随排序跟随）：appliedPerm 为新→旧置换，
+    // 旧行号经逆置换映射到新位置（滑动窗未平移，选中位置号即重排前的数据行号）
+    void remapSelectionByPermutation(const QVector< int >& appliedPerm);
     // 按列名（+重名消歧 occurrence）从视图状态子存储应用列宽与行头宽；
     // 应用期间置守卫标志屏蔽采集，避免把「应用」当「用户改动」
     void applyViewStateFromStore();
@@ -180,6 +200,8 @@ private:
     DATableHighlightOverlay* mHighlightOverlay { nullptr };  ///< 瞬态高亮层（页级持有，不序列化、不进撤销栈）
     DATableStyleItemDelegate* mStyleDelegate { nullptr };
     bool mApplyingViewState { false };  ///< 正在应用视图状态（屏蔽 sectionResized 采集）
+    bool mHeaderPickMode { false };     ///< 表头拾取模式（图表「选择序列」会话期间：表头点击只转发不排序）
+    QVector< QPair< int, Qt::SortOrder > > mSortSpec;  ///< 多列排序规格（列逻辑索引+方向，顺序即优先级；不持久化 R13）
 
     DADialogDataframeColumnCastToNumeric* mDialogCastNumArgs { nullptr };
     DADialogDataframeColumnCastToDatetime* mDialogCastDatetimeArgs { nullptr };

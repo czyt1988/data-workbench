@@ -16,6 +16,12 @@
 #include "pandas/DAPySeries.h"
 #include <pybind11/eval.h>
 
+// DAPyScripts 算子封装（002：da_sort 多键置换 / da_reorder_rows / 查找替换）
+#include "DAPyScripts.h"
+#include "DAPyScriptsDataFrame.h"
+#include "Commands/DACommandsDataFrame.h"
+#include <QElapsedTimer>
+
 #include "DAData.h"
 #include "DAAbstractData.h"
 #include "DATableDataSource.h"
@@ -297,6 +303,11 @@ private Q_SLOTS:
     void testLegacyTableStylesXmlCompat();
     void testContextMenuComposition();
     void testViewStateApplyAndHeaderClickChain();
+    // 002 表头排序（T1.3 §4.1）：算子多键+置换、命令 undo/redo+样式重映射、表头交互/拾取互斥/只读源、10万行计时
+    void testSortOperatorMultiKeyPerm();
+    void testSortRowsCommandUndoRedoAndStyleRemap();
+    void testHeaderSortInteraction();
+    void testSortPerf100k();
 
 private:
     // 生成/复用sqlite测试库（百万行），失败返回false并置mSqliteErr
@@ -307,6 +318,7 @@ private:
 private:
     static constexpr qlonglong c_sqliteRows = 1000000;
     bool mPandasOk                          = false;
+    bool mPyScriptsOk                       = false;  ///< DAPyScripts 算子模块可用（da_sort 等）
     QUndoStack mUndoStack;
     QTemporaryDir mTmpDir;
     QString mSqliteConnName = QStringLiteral("databledata_sqlite_conn");
@@ -342,6 +354,33 @@ void DATableDataTest::initTestCase()
     } catch (const std::exception& e) {
         qWarning() << "pandas not available:" << e.what();
         mPandasOk = false;
+    }
+    // DAPyScripts 算子模块（002）：sys.path 指向本仓库 src/PyScripts（DAWorkbench 包源码位置），
+    // 再初始化模块封装。DAWorkbench.DAPyBase 的 io/app_wrapper 依赖 app 注册的 da_app 绑定模块，
+    // 测试环境缺失时按 _safe_import_submodule 降级为 None，不影响 dataframe 算子子模块
+    if (mPandasOk) {
+        const QString tstDir   = QFileInfo(QString::fromUtf8(__FILE__)).absolutePath();
+        const QString repoRoot = QDir::cleanPath(tstDir + QStringLiteral("/../../.."));
+        DA::DAPyInterpreter::appendSysPath(repoRoot + QStringLiteral("/src/PyScripts"));
+        // 测试环境没有 app 注册的 da_app/da_interface/da_data pybind 模块，
+        // DAWorkbench.DAPyBase.io / app_wrapper 会导入失败 → DAWorkbench 顶层缺 io 属性 →
+        // DAPyWorkBench::import 的 attr("io") 抛错连坐 dataframe。用空模块桩顶掉这三个
+        // 绑定模块（io.py 只在函数体内使用 da_app.*，模块级 import 桩即可通过），
+        // 让 dataframe 算子模块可用——测试只用 da_sort/da_search_data 等纯 pandas 算子
+        try {
+            pybind11::exec(R"(
+import sys, types
+for _m in ("da_app", "da_interface", "da_data"):
+    if _m not in sys.modules:
+        sys.modules[_m] = types.ModuleType(_m)
+)");
+        } catch (const std::exception& e) {
+            qWarning() << "stub da_* modules failed:" << e.what();
+        }
+        mPyScriptsOk = DA::DAPyScripts::initScripts();
+        if (!mPyScriptsOk) {
+            qWarning() << "DAPyScripts::initScripts failed";
+        }
     }
 }
 
@@ -1458,7 +1497,10 @@ void DATableDataTest::testViewStateApplyAndHeaderClickChain()
     QCOMPARE(vh->minimumWidth(), 66);
     QCOMPARE(vh->maximumWidth(), 66);
 
-    // 图表「选择序列」拾取链路回归：左键点击列头 → sectionClicked → columnHeaderClicked
+    // 图表「选择序列」拾取链路回归（002：链路切换为 DADataHeaderView::clickedWithModifiers，
+    // 拾取模式下页面只转发 columnHeaderClicked 不排序）：拾取模式 → 左键点击列头 → columnHeaderClicked
+    w2.setHeaderPickMode(true);
+    QVERIFY(w2.isHeaderPickMode());
     QSignalSpy clickSpy(&w2, &DA::DADataOperateOfDataFrameWidget::columnHeaderClicked);
     w2.resize(800, 400);
     w2.show();
@@ -1468,7 +1510,384 @@ void DATableDataTest::testViewStateApplyAndHeaderClickChain()
     QTest::mouseClick(hh->viewport(), Qt::LeftButton, Qt::NoModifier, QPoint(xPos, yPos));
     QVERIFY(clickSpy.count() >= 1);
     QCOMPARE(clickSpy.takeFirst().at(0).toInt(), colF);
+    // 拾取模式下带 Ctrl 修饰点击同样只转发（修饰键不被吞、不排序）
+    if (mPyScriptsOk) {
+        QTest::mouseClick(hh->viewport(), Qt::LeftButton, Qt::ControlModifier, QPoint(xPos, yPos));
+        QVERIFY(clickSpy.count() >= 1);
+        QCOMPARE(clickSpy.takeFirst().at(0).toInt(), colF);
+        QVERIFY(w2.sortSpec().isEmpty());  // 拾取模式不产生排序规格
+    }
+    // 退出拾取模式后点击列头走排序，不再发 columnHeaderClicked
+    if (mPyScriptsOk) {
+        w2.setHeaderPickMode(false);
+        QTest::mouseClick(hh->viewport(), Qt::LeftButton, Qt::NoModifier, QPoint(xPos, yPos));
+        QCOMPARE(clickSpy.count(), 0);
+        QCOMPARE(w2.sortSpec().size(), 1);
+        QCOMPARE(w2.sortSpec().at(0).first, colF);
+    }
     w2.hide();
+}
+
+//===================================================
+// 002 表头排序（T1.3，计划 §4.1 用例）
+//===================================================
+
+// 002 §4.1：da_sort 多键 + 置换——单键升/降序结果正确、稳定排序（同值保序）、
+// perm 语义（new[i]==old[perm[i]]）、置换往返（逆置换还原）、混合类型抛错
+void DATableDataTest::testSortOperatorMultiKeyPerm()
+{
+    if (!mPandasOk || !mPyScriptsOk) {
+        QSKIP("pandas/DAPyScripts not available");
+    }
+    DA::DAPyScriptsDataFrame& py = DA::DAPyScripts::getDataFrame();
+
+    // 单键升序 + perm 语义（new[i] == old[perm[i]]）
+    {
+        pybind11::dict scope;
+        pybind11::exec(R"(
+import pandas as pd
+df = pd.DataFrame({"a":[3,1,2],"b":["x","y","z"]})
+)",
+                       pybind11::globals(),
+                       scope);
+        DA::DAPyDataFrame df(scope[ "df" ]);
+        const QList< QVariant > oldB { df.iat(0, 1), df.iat(1, 1), df.iat(2, 1) };
+        QVector< int > perm;
+        QVERIFY(py.sort(df, { qMakePair(0, true) }, &perm));
+        QCOMPARE(perm, QVector< int >({ 1, 2, 0 }));
+        QCOMPARE(df.iat(0, 0).toInt(), 1);
+        QCOMPARE(df.iat(1, 0).toInt(), 2);
+        QCOMPARE(df.iat(2, 0).toInt(), 3);
+        for (int i = 0; i < 3; ++i) {
+            QCOMPARE(df.iat(i, 1), oldB.at(perm.at(i)));
+        }
+    }
+    // 单键降序稳定（同值保序：c, b(0), b(2), a(1), a(3)）
+    {
+        pybind11::dict scope;
+        pybind11::exec(R"(
+import pandas as pd
+df = pd.DataFrame({"k":["b","a","b","a","c"],"ord":[0,1,2,3,4]})
+)",
+                       pybind11::globals(),
+                       scope);
+        DA::DAPyDataFrame df(scope[ "df" ]);
+        QVector< int > perm;
+        QVERIFY(py.sort(df, { qMakePair(0, false) }, &perm));
+        const QList< int > expect { 4, 0, 2, 1, 3 };
+        for (int i = 0; i < 5; ++i) {
+            QCOMPARE(df.iat(i, 1).toInt(), expect.at(i));
+        }
+    }
+    // 多键：A 升序主键，B 降序次键；NaN 恒排最后（组内也一样）
+    {
+        pybind11::dict scope;
+        pybind11::exec(R"(
+import pandas as pd
+df = pd.DataFrame({"A":[1,1,2,2,1],"B":[1.0,2.0,3.0,4.0,None]})
+)",
+                       pybind11::globals(),
+                       scope);
+        DA::DAPyDataFrame df(scope[ "df" ]);
+        QVector< int > perm;
+        QVERIFY(py.sort(df, { qMakePair(0, true), qMakePair(1, false) }, &perm));
+        QCOMPARE(df.iat(0, 0).toInt(), 1);
+        QCOMPARE(df.iat(1, 0).toInt(), 1);
+        QCOMPARE(df.iat(2, 0).toInt(), 1);
+        QCOMPARE(df.iat(3, 0).toInt(), 2);
+        QCOMPARE(df.iat(4, 0).toInt(), 2);
+        QCOMPARE(df.iat(0, 1).toDouble(), 2.0);
+        QCOMPARE(df.iat(1, 1).toDouble(), 1.0);
+        QVERIFY(qIsNaN(df.iat(2, 1).toDouble()));
+        QCOMPARE(df.iat(3, 1).toDouble(), 4.0);
+        QCOMPARE(df.iat(4, 1).toDouble(), 3.0);
+    }
+    // 置换往返：随机数据 sort → 逆置换还原 → 正置换再排序（undo/redo 的算子基础）
+    {
+        pybind11::dict scope;
+        pybind11::exec(R"(
+import pandas as pd, numpy as np
+np.random.seed(7)
+df = pd.DataFrame({"x":np.random.rand(50),"y":np.random.randint(0,5,50)})
+)",
+                       pybind11::globals(),
+                       scope);
+        DA::DAPyDataFrame df(scope[ "df" ]);
+        QVector< QVariant > oldX, oldY;
+        oldX.reserve(50);
+        oldY.reserve(50);
+        for (int r = 0; r < 50; ++r) {
+            oldX.append(df.iat(r, 0));
+            oldY.append(df.iat(r, 1));
+        }
+        QVector< int > perm;
+        QVERIFY(py.sort(df, { qMakePair(0, true) }, &perm));
+        QCOMPARE(perm.size(), 50);
+        for (int r = 1; r < 50; ++r) {
+            QVERIFY(df.iat(r - 1, 0).toDouble() <= df.iat(r, 0).toDouble());
+        }
+        const QVector< int > inv = DA::DATableKeyRemap::inversePermutation(perm);
+        QVERIFY(py.reorderRows(df, inv));
+        for (int r = 0; r < 50; ++r) {
+            QCOMPARE(df.iat(r, 0), oldX.at(r));
+            QCOMPARE(df.iat(r, 1), oldY.at(r));
+        }
+        QVERIFY(py.reorderRows(df, perm));
+        for (int r = 1; r < 50; ++r) {
+            QVERIFY(df.iat(r - 1, 0).toDouble() <= df.iat(r, 0).toDouble());
+        }
+    }
+    // 混合类型 object 列：算子抛 ValueError（not comparable）→ wrapper 返回 false，数据不变
+    {
+        pybind11::dict scope;
+        pybind11::exec(R"(
+import pandas as pd
+df = pd.DataFrame({"m":pd.Series([1,"a",2.5], dtype=object)})
+)",
+                       pybind11::globals(),
+                       scope);
+        DA::DAPyDataFrame df(scope[ "df" ]);
+        QVector< int > perm;
+        QVERIFY(!py.sort(df, { qMakePair(0, true) }, &perm));
+        QCOMPARE(df.iat(0, 0).toInt(), 1);
+        QCOMPARE(df.iat(1, 0).toString(), QLatin1String("a"));
+    }
+}
+
+// 002 §4.1：DACommandDataFrame_sortRows undo/redo 语义 + onRowsReordered 样式键随排序联动
+void DATableDataTest::testSortRowsCommandUndoRedoAndStyleRemap()
+{
+    if (!mPandasOk || !mPyScriptsOk) {
+        QSKIP("pandas/DAPyScripts not available");
+    }
+    pybind11::dict scope;
+    pybind11::exec(R"(
+import pandas as pd
+df = pd.DataFrame({"a":[3,1,2],"b":["x","y","z"]})
+)",
+                   pybind11::globals(),
+                   scope);
+    DA::DAPyDataFrame df(scope[ "df" ]);
+    // 行 0（a=3）设单元格样式，验证排序后样式键随行移动
+    DA::DATableStyleManager mgr;
+    DA::DATableCellStyle red;
+    red.setBackground(QColor(Qt::red));
+    mgr.setCellStyle(0, 0, red, false);
+    QVERIFY(mgr.hasCellStyle(0, 0));
+
+    QUndoStack stack;
+    DA::DACommandDataFrame_sortRows* cmd = new DA::DACommandDataFrame_sortRows(df, { qMakePair(0, true) });
+    DA::DACommandDataFrame_sortRows* cmdRaw = cmd;
+    cmd->setDirectionalCallBack([ &mgr, cmdRaw ](bool isUndo) {
+        Q_UNUSED(isUndo);
+        mgr.onRowsReordered(cmdRaw->lastAppliedPermutation());
+    });
+    QVERIFY(cmd->exec());
+    // 升序 [1,2,3]；原行 0（a=3,b=x）移动到行 2，样式跟随
+    QCOMPARE(df.iat(0, 0).toInt(), 1);
+    QCOMPARE(df.iat(2, 0).toInt(), 3);
+    QCOMPARE(df.iat(2, 1).toString(), QLatin1String("x"));
+    QVERIFY(!mgr.hasCellStyle(0, 0));
+    QVERIFY(mgr.hasCellStyle(2, 0));
+    // 命令文本（撤销面板显示用）
+    QCOMPARE(cmd->text(), QStringLiteral("Sort rows"));
+
+    stack.push(cmd);  // 首次 redo 跳过（DACommandWithRedoCount）
+    QCOMPARE(df.iat(0, 0).toInt(), 1);
+    // Ctrl+Z 一次 → 顺序完全还原，样式回原行
+    stack.undo();
+    QCOMPARE(df.iat(0, 0).toInt(), 3);
+    QCOMPARE(df.iat(1, 0).toInt(), 1);
+    QCOMPARE(df.iat(2, 0).toInt(), 2);
+    QCOMPARE(df.iat(0, 1).toString(), QLatin1String("x"));
+    QCOMPARE(df.iat(1, 1).toString(), QLatin1String("y"));
+    QVERIFY(mgr.hasCellStyle(0, 0));
+    QVERIFY(!mgr.hasCellStyle(2, 0));
+    // redo → 再次排序，样式再跟随
+    stack.redo();
+    QCOMPARE(df.iat(0, 0).toInt(), 1);
+    QCOMPARE(df.iat(2, 0).toInt(), 3);
+    QVERIFY(mgr.hasCellStyle(2, 0));
+    QVERIFY(!mgr.hasCellStyle(0, 0));
+}
+
+// 002 §4.2（程序化）：表头点击排序交互——单击升/降循环、点另一列重置、Shift/Ctrl 追加与切换次排序列、
+// 一次点击=一个撤销单元、选中行随置换跟随、拾取模式互斥、只读源不排序
+void DATableDataTest::testHeaderSortInteraction()
+{
+    if (!mPandasOk || !mPyScriptsOk) {
+        QSKIP("pandas/DAPyScripts not available");
+    }
+    pybind11::object obj = makeTestDataFrame();
+    QVERIFY(!obj.is_none());
+    DA::DAPyDataFrame df(obj);
+    DA::DAData d(df);
+    DA::DATableMetadataRegistry registry(nullptr);
+    DA::DADataOperateOfDataFrameWidget w(d, &registry);
+    w.resize(800, 400);
+    w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+    DA::DADataTableView* tv = w.getDataTableView();
+    QVERIFY(tv != nullptr);
+    DA::DADataHeaderView* hh = qobject_cast< DA::DADataHeaderView* >(tv->horizontalHeader());
+    QVERIFY(hh != nullptr);
+    auto colOf = [ hh ](const char* name) -> int {
+        for (int c = 0; c < hh->count(); ++c) {
+            if (hh->model() && hh->model()->headerData(c, Qt::Horizontal).toString() == QLatin1String(name)) {
+                return c;
+            }
+        }
+        return -1;
+    };
+    const int colI = colOf("i");
+    const int colF = colOf("f");
+    const int colS = colOf("s");
+    QVERIFY(colI >= 0 && colF >= 0 && colS >= 0);
+    auto clickHeader = [ hh ](int col, Qt::KeyboardModifiers mods) {
+        const int x = hh->sectionViewportPosition(col) + qMax(1, hh->sectionSize(col) / 2);
+        const int y = qMax(1, hh->viewport()->height() / 2);
+        QTest::mouseClick(hh->viewport(), Qt::LeftButton, mods, QPoint(x, y));
+    };
+
+    // 单击 → 升序（i 列本就 1..10，数据不变但规格生效）
+    clickHeader(colI, Qt::NoModifier);
+    QCOMPARE(w.sortSpec().size(), 1);
+    QCOMPARE(w.sortSpec().at(0).first, colI);
+    QCOMPARE(w.sortSpec().at(0).second, Qt::AscendingOrder);
+    QCOMPARE(hh->sortSpec(), w.sortSpec());  // 表头角标数据源同步
+    QCOMPARE(df.iat(0, colI).toInt(), 1);
+    // 再点 → 降序
+    clickHeader(colI, Qt::NoModifier);
+    QCOMPARE(w.sortSpec().at(0).second, Qt::DescendingOrder);
+    QCOMPARE(df.iat(0, colI).toInt(), 10);
+    QCOMPARE(df.iat(9, colI).toInt(), 1);
+    // 点另一列 → 只按新列排序（旧列指示消失：规格仅剩一项）
+    clickHeader(colF, Qt::NoModifier);
+    QCOMPARE(w.sortSpec().size(), 1);
+    QCOMPARE(w.sortSpec().at(0).first, colF);
+    QCOMPARE(w.sortSpec().at(0).second, Qt::AscendingOrder);
+    // f 升序：前 8 行单调不减，2 个 NaN 排最后
+    for (int r = 1; r < 8; ++r) {
+        QVERIFY(df.iat(r - 1, colF).toDouble() <= df.iat(r, colF).toDouble());
+    }
+    QVERIFY(qIsNaN(df.iat(8, colF).toDouble()));
+    QVERIFY(qIsNaN(df.iat(9, colF).toDouble()));
+    // Shift 点第二列 → 次排序列（两列规格，多列序号角标的数据源）
+    clickHeader(colI, Qt::ShiftModifier);
+    QCOMPARE(w.sortSpec().size(), 2);
+    QCOMPARE(w.sortSpec().at(1).first, colI);
+    QCOMPARE(w.sortSpec().at(1).second, Qt::AscendingOrder);
+    QCOMPARE(hh->sortSpec().size(), 2);
+    // Ctrl 点同列 → 切换其方向（规格列数不变）
+    QVector< QVariant > beforeUndoF, beforeUndoI;
+    beforeUndoF.reserve(10);
+    beforeUndoI.reserve(10);
+    for (int r = 0; r < 10; ++r) {
+        beforeUndoF.append(df.iat(r, colF));
+        beforeUndoI.append(df.iat(r, colI));
+    }
+    clickHeader(colI, Qt::ControlModifier);
+    QCOMPARE(w.sortSpec().size(), 2);
+    QCOMPARE(w.sortSpec().at(1).second, Qt::DescendingOrder);
+    bool changed = false;
+    for (int r = 0; r < 10 && !changed; ++r) {
+        changed = (df.iat(r, colI) != beforeUndoI.at(r));
+    }
+    QVERIFY(changed);  // 方向切换确实重排了数据
+    // Ctrl+Z 一次 → 顺序完全还原（一次点击 = 一个撤销单元）
+    // f 列含 NaN，QVariant 相等比较对 NaN!=NaN，用 NaN 感知比较
+    auto sameValue = [](const QVariant& a, const QVariant& b) -> bool {
+        const double da = a.toDouble();
+        const double db = b.toDouble();
+        if (qIsNaN(da) && qIsNaN(db)) {
+            return true;
+        }
+        return a == b;
+    };
+    w.getUndoStack()->undo();
+    for (int r = 0; r < 10; ++r) {
+        QVERIFY2(sameValue(df.iat(r, colF), beforeUndoF.at(r)), qPrintable(QStringLiteral("undo mismatch at row %1 col f").arg(r)));
+        QVERIFY2(sameValue(df.iat(r, colI), beforeUndoI.at(r)), qPrintable(QStringLiteral("undo mismatch at row %1 col i").arg(r)));
+    }
+    // 选中行随置换跟随：选中行 0 → 排序 → 选区映射到该行数据的新位置
+    tv->selectionModel()->select(tv->model()->index(0, colS), QItemSelectionModel::ClearAndSelect);
+    const QString marked = df.iat(0, colS).toString();
+    clickHeader(colI, Qt::NoModifier);  // 无修饰 → 重置为仅 i 升序
+    QCOMPARE(w.sortSpec().size(), 1);
+    int newRow = -1;
+    for (int r = 0; r < 10; ++r) {
+        if (df.iat(r, colS).toString() == marked) {
+            newRow = r;
+            break;
+        }
+    }
+    QVERIFY(newRow >= 0);
+    bool selFollowed = false;
+    const QModelIndexList sel = tv->selectionModel()->selectedIndexes();
+    for (const QModelIndex& si : sel) {
+        if (tv->toActualRow(si.row()) == newRow) {
+            selFollowed = true;
+        }
+    }
+    QVERIFY(selFollowed);
+    w.hide();
+
+    // 只读/惰性源：点击表头不排序、规格保持空（daWarning 提示路径）
+    if (ensureSqliteReady()) {
+        DA::DAAbstractData::Pointer lazy = makeSqliteLazyData();
+        DA::DAData ld(lazy);
+        DA::DATableMetadataRegistry reg2(nullptr);
+        DA::DADataOperateOfDataFrameWidget wl(ld, &reg2);
+        wl.resize(600, 300);
+        wl.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&wl));
+        DA::DADataHeaderView* hl = qobject_cast< DA::DADataHeaderView* >(wl.getDataTableView()->horizontalHeader());
+        QVERIFY(hl != nullptr);
+        const int x = hl->sectionViewportPosition(0) + qMax(1, hl->sectionSize(0) / 2);
+        const int y = qMax(1, hl->viewport()->height() / 2);
+        QTest::mouseClick(hl->viewport(), Qt::LeftButton, Qt::NoModifier, QPoint(x, y));
+        QVERIFY(wl.sortSpec().isEmpty());
+        wl.hide();
+    } else {
+        qWarning() << "sqlite lazy table not ready, read-only sort guard skipped:" << mSqliteErr;
+    }
+}
+
+// 002 §4.2（程序化）：10 万行单列排序 ≤300 ms（算子+封装路径计时）
+void DATableDataTest::testSortPerf100k()
+{
+    if (!mPandasOk || !mPyScriptsOk) {
+        QSKIP("pandas/DAPyScripts not available");
+    }
+    pybind11::dict scope;
+    pybind11::exec(R"(
+import pandas as pd, numpy as np
+np.random.seed(123)
+big = pd.DataFrame({"v": np.random.rand(100000), "w": np.random.randint(0, 100, 100000)})
+)",
+                   pybind11::globals(),
+                   scope);
+    DA::DAPyDataFrame df(scope[ "big" ]);
+    DA::DAPyScriptsDataFrame& py = DA::DAPyScripts::getDataFrame();
+    QVector< int > perm;
+    QElapsedTimer timer;
+    timer.start();
+    QVERIFY(py.sort(df, { qMakePair(0, true) }, &perm));
+    const qint64 elapsed = timer.elapsed();
+    qDebug().noquote() << QStringLiteral("testSortPerf100k: 100k single-key sort elapsed_ms=%1").arg(elapsed);
+    QCOMPARE(perm.size(), 100000);
+    QVERIFY2(elapsed <= 300, qPrintable(QStringLiteral("100k sort took %1 ms (> 300 ms)").arg(elapsed)));
+    // 抽查升序（首、中、尾）
+    const QList< int > probes { 1, 1000, 50000, 99999 };
+    for (int r : probes) {
+        QVERIFY(df.iat(r - 1, 0).toDouble() <= df.iat(r, 0).toDouble());
+    }
+    // 双键排序也在预算内
+    timer.restart();
+    QVERIFY(py.sort(df, { qMakePair(1, true), qMakePair(0, false) }, &perm));
+    const qint64 elapsed2 = timer.elapsed();
+    qDebug().noquote() << QStringLiteral("testSortPerf100k: 100k two-key sort elapsed_ms=%1").arg(elapsed2);
+    QVERIFY2(elapsed2 <= 300, qPrintable(QStringLiteral("100k two-key sort took %1 ms (> 300 ms)").arg(elapsed2)));
 }
 
 // 不用QTEST_MAIN：嵌入式python的静态对象（DAPyBindQt.dll内的解释器句柄、QVariant caster

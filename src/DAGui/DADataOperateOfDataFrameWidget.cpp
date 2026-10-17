@@ -5,6 +5,8 @@
 #include "DADataPyDataFrame.h"
 #include "DAWaitCursorScoped.h"
 #include "DALogCategory.h"
+#include "DATableDataSource.h"
+#include "DATableKeyRemap.h"
 // stl
 #include <memory>
 // qt
@@ -17,6 +19,7 @@
 #include <QClipboard>
 #include <QGuiApplication>
 #include <QItemSelectionModel>
+#include <QElapsedTimer>
 // cmd
 #include "Commands/DACommandsDataFrame.h"
 #include "Commands/DACommandsTableStyle.h"
@@ -118,9 +121,19 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
     });
     connect(mModel, &QAbstractItemModel::columnsInserted, this, [ this ]() {
         applyViewStateFromStore();
+        // 插列后排序规格里的列位置失效，清除规格（数据顺序不变，只清指示器）
+        mSortSpec.clear();
+        if (DADataHeaderView* hh = qobject_cast< DADataHeaderView* >(ui->tableView->horizontalHeader())) {
+            hh->setSortSpec(mSortSpec);
+        }
     });
     connect(mModel, &QAbstractItemModel::columnsRemoved, this, [ this ]() {
         applyViewStateFromStore();
+        // 删列后排序规格里的列位置失效，清除规格
+        mSortSpec.clear();
+        if (DADataHeaderView* hh = qobject_cast< DADataHeaderView* >(ui->tableView->horizontalHeader())) {
+            hh->setSortSpec(mSortSpec);
+        }
     });
     connect(ui->tableView->horizontalHeader(), &QHeaderView::sectionResized, this, [ this ](int logicalIndex, int oldSize, int newSize) {
         Q_UNUSED(oldSize);
@@ -139,8 +152,11 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
     // 构造完成后应用一次视图状态（工程加载的宽度回填在注册表里，此时已可借用）
     applyViewStateFromStore();
     connect(ui->tableView, &QTableView::clicked, this, &DADataOperateOfDataFrameWidget::onTableViewClicked);
-    // 表头点击信号转发，用于"选择序列"窗口拾取列
-    connect(ui->tableView->horizontalHeader(), &QHeaderView::sectionClicked, this, &DADataOperateOfDataFrameWidget::columnHeaderClicked);
+    // 表头点击（002：切换到 DADataHeaderView::clickedWithModifiers，排序交互与拾取模式在页面内分流；
+    // 拾取模式下仍发 columnHeaderClicked，图表「选择序列」拾取链路保持不变）
+    if (DADataHeaderView* hh = qobject_cast< DADataHeaderView* >(ui->tableView->horizontalHeader())) {
+        connect(hh, &DADataHeaderView::clickedWithModifiers, this, &DADataOperateOfDataFrameWidget::onHeaderClickedWithModifiers);
+    }
     // 选中变化时反向同步 ribbon 控件
     if (auto sm = ui->tableView->selectionModel()) {
         connect(sm, &QItemSelectionModel::selectionChanged, this, [ this ]() {
@@ -186,6 +202,11 @@ const DAData& DADataOperateOfDataFrameWidget::data() const
 void DADataOperateOfDataFrameWidget::setDAData(const DA::DAData& d)
 {
     mData = d;
+    // 数据替换后旧排序规格（列位置+方向）失去意义，清除（排序规格不持久化，R13）
+    mSortSpec.clear();
+    if (DADataHeaderView* hh = qobject_cast< DADataHeaderView* >(ui->tableView->horizontalHeader())) {
+        hh->setSortSpec(mSortSpec);
+    }
     // 通用表格数据（DATableDataSource，如数据库惰性表）也可显示；series维持原语义
     if (d.isDataFrame() || (d.isTable() && !d.isSeries())) {
         ui->tableView->setData(d);
@@ -1737,6 +1758,229 @@ DATableDisplayFormat DADataOperateOfDataFrameWidget::getCurrentColumnDisplayForm
         }
     }
     return first;
+}
+
+/**
+ * @brief 表头拾取模式（图表「选择序列」会话期间置位）
+ *
+ * 拾取模式下表头点击只转发 columnHeaderClicked 信号（拾取链路保持不变）、不排序；
+ * 由 DADataOperateWidget::setHeaderPickMode 转发（拾取器 connect/disconnectDataWidgets 切换）。
+ * @param on true=进入拾取模式
+ */
+void DADataOperateOfDataFrameWidget::setHeaderPickMode(bool on)
+{
+    mHeaderPickMode = on;
+}
+
+/**
+ * @brief 是否处于表头拾取模式
+ * @return 拾取模式返回 true
+ */
+bool DADataOperateOfDataFrameWidget::isHeaderPickMode() const
+{
+    return mHeaderPickMode;
+}
+
+/**
+ * @brief 当前多列排序规格
+ * @return 列逻辑索引+方向列表（顺序即优先级；不持久化 R13）
+ */
+QVector< QPair< int, Qt::SortOrder > > DADataOperateOfDataFrameWidget::sortSpec() const
+{
+    return mSortSpec;
+}
+
+/**
+ * @brief 数据源是否可编辑（只读/惰性源上排序入口不生效，D1）
+ *
+ * 判定路径同 DADataTableModel::actualFlags 的只读源分支：tableSource 非空且
+ * isTableEditable() 为假（如数据库惰性表）→ 只读。
+ * @return 可编辑返回 true
+ */
+bool DADataOperateOfDataFrameWidget::isTableEditable() const
+{
+    if (mData.isNull()) {
+        return false;
+    }
+    DAData d                 = mData;
+    const DATableDataSource* ts = d.tableSource();
+    return !(ts && !ts->isTableEditable());
+}
+
+/**
+ * @brief 表头带修饰键点击（002 排序交互入口）
+ *
+ * 分流规则（§4.1）：
+ * - 拾取模式：只转发 columnHeaderClicked（图表「选择序列」拾取链路零回归），不排序；
+ * - 无修饰单击：该列已是规格中唯一一列 → 切方向（升↔降）；否则重置为「仅该列，升序」；
+ * - Shift/Ctrl+单击：该列不在规格中 → 追加（升序）；已在 → 切换其方向；
+ * - 只读/惰性源：不排序，daWarning 提示一次；
+ * - 每次变更 = 一个撤销单元（一次点击一个命令）。
+ * @param logicalIndex 列逻辑索引
+ * @param modifiers 修饰键
+ */
+void DADataOperateOfDataFrameWidget::onHeaderClickedWithModifiers(int logicalIndex, Qt::KeyboardModifiers modifiers)
+{
+    if (mHeaderPickMode) {
+        // 拾取模式：只转发信号（修饰键不吞，拾取侧按列填充表达式）
+        Q_EMIT columnHeaderClicked(logicalIndex);
+        return;
+    }
+    if (logicalIndex < 0 || logicalIndex >= dataColumnCount()) {
+        return;  // 尾部预留空白列不排序
+    }
+    if (!isTableEditable()) {
+        daWarning << tr("This data source is read-only and cannot be sorted.");  // cn:该数据源为只读，无法排序
+        return;
+    }
+    DAPyDataFrame df = getDataframe();
+    if (df.isNone() || dataRowCount() <= 1) {
+        return;  // 非 dataframe 或无可排序的行
+    }
+    // 更新排序规格（列 logical index + 方向，顺序即优先级）
+    const bool addKey = modifiers.testFlag(Qt::ShiftModifier) || modifiers.testFlag(Qt::ControlModifier);
+    QVector< QPair< int, Qt::SortOrder > > newSpec = mSortSpec;
+    if (addKey) {
+        int idx = -1;
+        for (int i = 0; i < newSpec.size(); ++i) {
+            if (newSpec.at(i).first == logicalIndex) {
+                idx = i;
+                break;
+            }
+        }
+        if (idx >= 0) {
+            newSpec[ idx ].second = (newSpec.at(idx).second == Qt::AscendingOrder) ? Qt::DescendingOrder : Qt::AscendingOrder;
+        } else {
+            newSpec.append(qMakePair(logicalIndex, Qt::AscendingOrder));
+        }
+    } else {
+        if (newSpec.size() == 1 && newSpec.at(0).first == logicalIndex) {
+            // 该列已是规格中唯一一列 → 升↔降循环（Excel 语义：点击只切换方向，不取消排序）
+            newSpec[ 0 ].second = (newSpec.at(0).second == Qt::AscendingOrder) ? Qt::DescendingOrder : Qt::AscendingOrder;
+        } else {
+            newSpec.clear();
+            newSpec.append(qMakePair(logicalIndex, Qt::AscendingOrder));
+        }
+    }
+    applySortSpec(newSpec);
+}
+
+/**
+ * @brief 应用排序规格（构造命令 + 回调接线 + push）
+ *
+ * 命令生效后按设计稿 §4.1 顺序联动：先样式键重映射（directionalCallback 里
+ * styleManager()->onRowsReordered(最近应用置换)）→ 再模型刷新（notifyDataChanged
+ * 清块缓存 + 行头 index 变更通知）→ 最后按置换修正选区、视口回顶。
+ * 排序路径打点计时（qDebug 开发诊断，验收口径：10 万行 ≤300 ms）。
+ * @param newSpec 新排序规格
+ * @return 成功 push 返回 true；算子失败（如混合类型列）提示并保持原规格返回 false
+ */
+bool DADataOperateOfDataFrameWidget::applySortSpec(const QVector< QPair< int, Qt::SortOrder > >& newSpec)
+{
+    DAPyDataFrame df = getDataframe();
+    if (df.isNone()) {
+        return false;
+    }
+    QVector< QPair< int, bool > > keys;
+    keys.reserve(newSpec.size());
+    for (const auto& k : newSpec) {
+        keys.append(qMakePair(k.first, k.second == Qt::AscendingOrder));
+    }
+    std::unique_ptr< DACommandDataFrame_sortRows > cmd(new DACommandDataFrame_sortRows(df, keys));
+    QPointer< DADataTableModel > modle          = mModel;
+    QPointer< DADataTableView > view            = ui->tableView;
+    DACommandDataFrame_sortRows* cmdRaw         = cmd.get();
+    DATableStyleManager* styleMgr               = mStyleManager;
+    DADataOperateOfDataFrameWidget* self        = this;
+    // ① 样式键重映射（先于模型刷新；exec/undo 均传最近应用的置换，undo 传逆置换即等价按逆置换重映射）
+    cmd->setDirectionalCallBack([ styleMgr, cmdRaw ](bool isUndo) {
+        Q_UNUSED(isUndo);
+        if (styleMgr) {
+            styleMgr->onRowsReordered(cmdRaw->lastAppliedPermutation());
+        }
+    });
+    // ② 模型刷新 → ③ 选区跟随 → 视口回顶（回调范式照 paste 的逐格 notifyDataChanged 写法）
+    cmd->setCallBack([ modle, view, cmdRaw, self ]() {
+        if (modle) {
+            const int rows = modle->actualRowCount();
+            const int cols = modle->columnCount();
+            modle->notifyDataChanged(0, 0, qMax(0, rows - 1), qMax(0, cols - 1));
+            // 行头显示 index 值，排序后 index 随行移动，需通知垂直表头重取
+            modle->notifyHeaderDataChanged(Qt::Vertical, 0, qMax(0, rows - 1));
+        }
+        if (view) {
+            self->remapSelectionByPermutation(cmdRaw->lastAppliedPermutation());
+            view->showActualRow(0);  // 视口回顶（行位置整体变了，含 undo/redo）
+        }
+    });
+    QElapsedTimer timer;
+    timer.start();
+    if (!cmd->exec()) {
+        // 算子报错（如 object 列混合类型不可比较）：排序规格回滚到变更前
+        daWarning << tr("Cannot sort: the column contains values of incomparable mixed types.");  // cn:无法排序：该列包含不可比较的混合类型
+        return false;
+    }
+    push(cmd.release());
+    mSortSpec = newSpec;
+    if (DADataHeaderView* hh = qobject_cast< DADataHeaderView* >(ui->tableView->horizontalHeader())) {
+        hh->setSortSpec(mSortSpec);
+    }
+    // 排序路径计时打点（开发诊断，英文；验收：10 万行 ≤300 ms）
+    qDebug().noquote() << QStringLiteral("DADataOperateOfDataFrameWidget::applySortSpec: rows=%1 keys=%2 elapsed_ms=%3")
+                              .arg(dataRowCount())
+                              .arg(keys.size())
+                              .arg(timer.elapsed());
+    return true;
+}
+
+/**
+ * @brief 按最近应用的置换修正选区（选中行随排序跟随）
+ *
+ * appliedPerm 为新→旧置换（new[i]=old[appliedPerm[i]]），旧行号 old 的新位置 =
+ * inv[old]（逆置换）。行数不变、滑动窗未平移，回调时视图选中的位置号即重排前的
+ * 数据行号，直接按逆置换映射到新位置重建选区；映射出窗口的行跳过。
+ * @param appliedPerm 最近应用的置换（exec=正置换 / undo=逆置换）
+ */
+void DADataOperateOfDataFrameWidget::remapSelectionByPermutation(const QVector< int >& appliedPerm)
+{
+    DADataTableView* view = ui->tableView;
+    QItemSelectionModel* sm = view ? view->selectionModel() : nullptr;
+    QAbstractItemModel* m   = view ? view->model() : nullptr;
+    if (!sm || !m || appliedPerm.isEmpty() || !sm->hasSelection()) {
+        return;
+    }
+    const QVector< int > inv = DATableKeyRemap::inversePermutation(appliedPerm);
+    auto mapRow              = [ this, view, &inv ](int viewRow) -> int {
+        const int oldActual = toActualRow(viewRow);
+        if (oldActual < 0 || oldActual >= inv.size() || inv.at(oldActual) < 0) {
+            return -1;
+        }
+        return view->toLogicalRow(inv.at(oldActual));  // 目标行不在当前滑动窗内时返回 -1
+    };
+    QItemSelection newSel;
+    const QModelIndexList idxs = sm->selectedIndexes();
+    for (const QModelIndex& i : idxs) {
+        const int newLogical = mapRow(i.row());
+        if (newLogical < 0) {
+            continue;
+        }
+        const QModelIndex ni = m->index(newLogical, i.column());
+        if (ni.isValid()) {
+            newSel.select(ni, ni);
+        }
+    }
+    QModelIndex newCur;
+    const QModelIndex cur = sm->currentIndex();
+    if (cur.isValid()) {
+        const int newLogical = mapRow(cur.row());
+        if (newLogical >= 0) {
+            newCur = m->index(newLogical, cur.column());
+        }
+    }
+    sm->select(newSel, QItemSelectionModel::ClearAndSelect);
+    if (newCur.isValid()) {
+        sm->setCurrentIndex(newCur, QItemSelectionModel::NoUpdate);
+    }
 }
 
 void DADataOperateOfDataFrameWidget::changeEvent(QEvent* e)
