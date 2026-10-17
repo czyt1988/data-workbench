@@ -192,6 +192,7 @@ AI 编写代码时，日志宏的选择直接影响日志是否进入 UI 消息�
 | | [developer-guide.md](docs/zh/dev-guide/developer-guide.md) | 开发者入门指引 |
 | | [module-breakdown.md](docs/zh/dev-guide/architecture/module-breakdown.md) | 各模块业务逻辑详解 |
 | | [table-data-source.md](docs/zh/dev-guide/architecture/table-data-source.md) | 表格数据源抽象层（惰性/数据库表接入、块级取数、引用式持久化） |
+| | [table-metadata.md](docs/zh/dev-guide/architecture/table-metadata.md) | 表格元数据架构（注册表/元数据束/子存储、table-metadata.xml、五层绘制管线） |
 | | [i18n.md](docs/zh/dev-guide/general/i18n.md) / [python-i18n.md](docs/zh/dev-guide/general/python-i18n.md) | 国际化规范 |
 | | [workflow-overview.md](docs/zh/dev-guide/workflow/workflow-overview.md) | 工作流系统架构 |
 | | [workflow-python-node-dev.md](docs/zh/dev-guide/workflow/workflow-python-node-dev.md) | Python 节点开发 |

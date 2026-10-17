@@ -138,6 +138,7 @@ nav:
           - 接口模块: zh/dev-guide/architecture/interface-module.md
           - 数据模块: zh/dev-guide/architecture/data-module.md
           - 表格数据源抽象层: zh/dev-guide/architecture/table-data-source.md
+          - 表格元数据架构: zh/dev-guide/architecture/table-metadata.md
           - 滑动窗表格导航协议: zh/dev-guide/architecture/virtual-table-navigation.md
           - 工程文件结构: zh/dev-guide/architecture/project-file-structure.md
           - 工程序列化架构: zh/dev-guide/architecture/project-serialization-architecture.md
