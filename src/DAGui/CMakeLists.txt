@@ -79,6 +79,7 @@ set(DA_LIB_HEADER_FILES
     DATableValidationStore.h
     DATableNoteStore.h
     DATableNoteEditDialog.h
+    DAUndoHistoryWidget.h
     DATableStyleItemDelegate.h
 )
 set(DA_LIB_SOURCE_FILES
@@ -149,6 +150,7 @@ set(DA_LIB_SOURCE_FILES
     DATableValidationStore.cpp
     DATableNoteStore.cpp
     DATableNoteEditDialog.cpp
+    DAUndoHistoryWidget.cpp
     DATableStyleItemDelegate.cpp
 )
 set(DA_LIB_QT_UI_FILES

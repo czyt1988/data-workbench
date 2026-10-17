@@ -58,6 +58,7 @@
         <file>icon/validation-run.svg</file>
         <file>icon/cell-note.svg</file>
         <file>icon/note-clear.svg</file>
+        <file>icon/undo-history.svg</file>
         <file>icon/zoomIn.svg</file>
         <file>icon/zoomOut.svg</file>
         <file>icon/select-all.svg</file>

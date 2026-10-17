@@ -15,6 +15,25 @@ QUndoStack* DADataOperatePageWidget::getUndoStack()
 	return &mUndoStack;
 }
 
+/**
+ * @brief 撤销栈深度上限（005 T1.21）
+ * @return 当前上限（0=无限制）
+ */
+int DADataOperatePageWidget::undoLimit() const
+{
+	return mUndoStack.undoLimit();
+}
+
+/**
+ * @brief 设置撤销栈深度上限（005 T1.21 R19：默认 20，历史面板可调大；
+ * 配置读写与持久化在 APP 侧，本接口只是施加口径）
+ * @param limit 上限（0=无限制；调大风险主要来自 Swap 类命令的旧对象驻留内存）
+ */
+void DADataOperatePageWidget::setUndoLimit(int limit)
+{
+	mUndoStack.setUndoLimit(qMax(0, limit));
+}
+
 void DADataOperatePageWidget::activeUndoStack()
 {
 	if (!getUndoStack()->isActive()) {
