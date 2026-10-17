@@ -89,6 +89,16 @@
 // 填充（005 计划 §3，T1.24）
 #include "Dialog/DADialogFillSeries.h"
 
+// 数据校验（005 计划 §4，T1.25）
+#include "DATableValidationRule.h"
+#include "DATableValidationStore.h"
+#include "Commands/DACommandsTableValidation.h"
+#include "Dialog/DADialogValidationRules.h"
+#include "Dialog/DADialogValidationReport.h"
+#include "DATableStyleItemDelegate.h"
+#include <QTreeWidget>
+#include <QPlainTextEdit>
+
 #include "DASqliteLazyTable.h"
 #include <QSqlDatabase>
 #include <QSqlQuery>
@@ -414,6 +424,21 @@ private Q_SLOTS:
     void testFillSeriesOperator();
     void testFillCommandUndoRedo();
     void testFillWidgetFlow();
+
+    // 005 WP2 数据校验（T1.25 §4.4/§7.1）：规则定义与存储 XML round-trip 与改名迁移、
+    // 各类型违规判定 + 重名消歧 + 缺列 + 非法正则、违规高亮来源隔离与两级级别、
+    // 唯一性缓存二次不重算（打点计数）、校验只读不入栈、规则对话框命令入栈与撤销、
+    // 枚举下拉编辑器（allowOther 开关 / 无规则默认编辑器 / 只读门禁在模型 flags）、
+    // 报告 Markdown 与点击定位
+    void testValidationRuleAndStoreXml();
+    void testValidateOperator();
+    void testValidationWidgetFlow();
+    void testValidationRulesDialogFlow();
+    void testValidationRenameMigration();
+    void testEnumEditorDelegate();
+    void testValidationReportMarkdown();
+    // 100 万行表校验耗时可接受（§4.4 验收：记录耗时；唯一性只算一次、二次不重算）
+    void testValidationPerf1M();
 
 private:
     // 生成/复用sqlite测试库（百万行），失败返回false并置mSqliteErr
@@ -1580,7 +1605,10 @@ void DATableDataTest::testContextMenuComposition()
                                      QStringLiteral("Transpose..."),
                                      QStringLiteral("Unpivot (Melt)..."),
                                      QStringLiteral("<SEP>"),
-                                     QStringLiteral("Fill") };
+                                     QStringLiteral("Fill"),
+                                     QStringLiteral("<SEP>"),
+                                     QStringLiteral("Validation Rules..."),
+                                     QStringLiteral("Run Validation") };
     QCOMPARE(bodySeq, expectedBody);
     // 剪贴板组无选区置灰
     QVERIFY(!byText.value(QStringLiteral("Cut"))->isEnabled());
@@ -1619,6 +1647,13 @@ void DATableDataTest::testContextMenuComposition()
                                     QStringLiteral("Fill Forward (ffill)"),
                                     QStringLiteral("Fill Backward (bfill)"),
                                     QStringLiteral("Fill Series...") }));
+    // 数据校验（005 T1.25）：无模型=无 dataframe 数据体，两项置灰且图标齐备
+    for (const QString& t : { QStringLiteral("Validation Rules..."), QStringLiteral("Run Validation") }) {
+        QAction* a = byText.value(t);
+        QVERIFY(a != nullptr);
+        QVERIFY(!a->isEnabled());
+        QVERIFY2(!a->icon().isNull(), qPrintable(QStringLiteral("icon empty for %1").arg(t)));
+    }
     delete body;
 }
 
@@ -5193,6 +5228,701 @@ df.iat[3, 0] = 8.0
         pageStack.undo();
         QVERIFY(df.iat(0, 2).isNull() || df.iat(0, 2).toString().isEmpty());  // 还原为 NaT
     }
+    w.hide();
+}
+
+
+//===================================================
+// 005 WP2 数据校验（T1.25）
+//===================================================
+
+// 005 §7.1：规则定义（isValid/paramSummary/枚举字符串）与存储（增删改/XML round-trip/改名迁移）
+void DATableDataTest::testValidationRuleAndStoreXml()
+{
+    using DA::DATableValidationRule;
+    using DA::DATableValidationStore;
+    // —— 规则定义完整性 ——
+    DATableValidationRule r;
+    QVERIFY(!r.isValid());  // 无列名
+    r.columnName = QStringLiteral("score");
+    r.type       = DATableValidationRule::Type::NumericRange;
+    QVERIFY(!r.isValid());  // 区间两端全空
+    r.hasNumericMin = true;
+    r.numericMin    = 0.0;
+    r.hasNumericMax = true;
+    r.numericMax    = 100.0;
+    QVERIFY(r.isValid());
+    QCOMPARE(r.paramSummary(), QStringLiteral("[0, 100]"));
+    r.numericMin = 200.0;  // min > max 非法
+    QVERIFY(!r.isValid());
+    // 枚举/正则/日期
+    DATableValidationRule re;
+    re.type       = DATableValidationRule::Type::EnumSet;
+    re.columnName = QStringLiteral("cat");
+    QVERIFY(!re.isValid());  // 无允许值
+    re.enumValues = QStringList { QStringLiteral("a"), QStringLiteral("b,c") };
+    QVERIFY(re.isValid());
+    QCOMPARE(re.paramSummary(), QStringLiteral("{a, b,c}"));  // 值含逗号也不破坏结构（XML 走子元素）
+    DATableValidationRule rr;
+    rr.type         = DATableValidationRule::Type::Regex;
+    rr.columnName   = QStringLiteral("code");
+    rr.regexPattern = QStringLiteral("[A-Z]+");
+    QVERIFY(rr.isValid());
+    QCOMPARE(rr.paramSummary(), QStringLiteral("[A-Z]+"));
+    // 枚举 ↔ 字符串稳定标识
+    QCOMPARE(DATableValidationRule::typeToString(DATableValidationRule::Type::Unique), QStringLiteral("unique"));
+    DATableValidationRule::Type t;
+    QVERIFY(DATableValidationRule::typeFromString(QStringLiteral("date-range"), &t));
+    QCOMPARE(t, DATableValidationRule::Type::DateRange);
+    QVERIFY(!DATableValidationRule::typeFromString(QStringLiteral("bogus"), &t));
+    // —— 存储与 XML round-trip ——
+    DATableValidationStore store;
+    QVERIFY(store.isEmpty());
+    DATableValidationRule rNum;
+    rNum.columnName    = QStringLiteral("score");
+    rNum.type          = DATableValidationRule::Type::NumericRange;
+    rNum.hasNumericMin = true;
+    rNum.numericMin    = 0.0;
+    rNum.hasNumericMax = true;
+    rNum.numericMax    = 100.0;
+    rNum.level         = DATableValidationRule::Level::Error;
+    rNum.label         = QStringLiteral("score in [0,100]");
+    DATableValidationRule rEnum;
+    rEnum.columnName       = QStringLiteral("x");
+    rEnum.columnOccurrence = 1;  // 第 2 个同名列（R20 消歧）
+    rEnum.type             = DATableValidationRule::Type::EnumSet;
+    rEnum.enumValues       = QStringList { QStringLiteral("a"), QStringLiteral("b") };
+    rEnum.enumAllowOther   = false;
+    rEnum.level            = DATableValidationRule::Level::Warning;
+    rEnum.enabled          = false;
+    DATableValidationRule rDate;
+    rDate.columnName = QStringLiteral("d");
+    rDate.type       = DATableValidationRule::Type::DateRange;
+    rDate.dateMin    = QDateTime(QDate(2020, 1, 1), QTime(0, 0));
+    store.addRule(rNum);
+    store.addRule(rEnum);
+    store.addRule(rDate);
+    QCOMPARE(store.count(), 3);
+    QCOMPARE(store.enabledRuleIndexes(), QList< int >({ 0, 2 }));  // rEnum 停用
+    QDomDocument doc;
+    QDomElement root = doc.createElement(QStringLiteral("table"));
+    doc.appendChild(root);
+    store.toXml(doc, root);
+    const QString xml = doc.toString();
+    DATableValidationStore store2;
+    QDomDocument doc2;
+    QVERIFY(doc2.setContent(xml));
+    QVERIFY(store2.fromXml(doc2.documentElement().firstChildElement(QStringLiteral("validation"))));
+    QCOMPARE(store2.count(), 3);
+    QCOMPARE(store2.rules(), store.rules());  // 全字段 round-trip（含 occurrence/allowOther/enabled/label/日期）
+    // 改名迁移与引用计数（R20）
+    QCOMPARE(store2.rulesReferencing(QStringLiteral("score")), 1);
+    QCOMPARE(store2.renameColumnReferences(QStringLiteral("score"), QStringLiteral("score2")), 1);
+    QCOMPARE(store2.ruleAt(0).columnName, QStringLiteral("score2"));
+    QCOMPARE(store2.rulesReferencing(QStringLiteral("score")), 0);
+    // setRules 整体替换 + 快照恢复
+    const auto snap = store2.snapshot();
+    store2.setRules({ rNum });
+    QCOMPARE(store2.count(), 1);
+    store2.restore(snap);
+    QCOMPARE(store2.count(), 3);
+}
+
+// 005 §7.1：算子各类型违规判定（区间边界/枚举含空值/非空/唯一重复组/正则整格）+
+// 重名消歧 + 缺列跳过 + 非法正则报错
+void DATableDataTest::testValidateOperator()
+{
+    if (!mPandasOk || !mPyScriptsOk) {
+        QSKIP("pandas/DAPyScripts not available");
+    }
+    DA::DAPyScriptsDataFrame& py = DA::DAPyScripts::getDataFrame();
+    pybind11::dict scope;
+    pybind11::exec(R"(
+import pandas as pd, numpy as np
+df = pd.DataFrame({
+    "v": [0.0, 100.0, 150.0, np.nan, -3.0],
+    "cat": ["a", "b", "zzz", None, "a"],
+    "d": pd.to_datetime(["2020-06-01", "2019-01-01", None, "2021-01-01", "2020-06-15"]),
+    "dup": [1, 2, 2, 3, 1],
+    "code": ["A1", "B2", "A1", None, "C!"],
+})
+)",
+                   pybind11::globals(),
+                   scope);
+    DA::DAPyDataFrame df(scope[ "df" ]);
+    QList< DA::DAPyScriptsDataFrame::ValidationRuleSpec > specs;
+    auto addSpec = [&specs](int idx, const QString& col, const QString& type) {
+        DA::DAPyScriptsDataFrame::ValidationRuleSpec s;
+        s.index  = idx;
+        s.column = col;
+        s.type   = type;
+        specs.append(s);
+        return specs.size() - 1;
+    };
+    // 数值区间 [0,100]：边界值 0/100 不违规（闭区间），150/-3 违规，NaN 不判
+    int iNum = addSpec(0, QStringLiteral("v"), QStringLiteral("numeric-range"));
+    specs[ iNum ].hasMin     = true;
+    specs[ iNum ].numericMin = 0.0;
+    specs[ iNum ].hasMax     = true;
+    specs[ iNum ].numericMax = 100.0;
+    // 枚举 {a,b}：zzz 与空值都违规
+    int iEnum = addSpec(1, QStringLiteral("cat"), QStringLiteral("enum"));
+    specs[ iEnum ].enumValues = QStringList { QStringLiteral("a"), QStringLiteral("b") };
+    // 日期区间 [2020-01-01, 2020-12-31]：2019/2021 违规，NaT 不判
+    int iDate = addSpec(2, QStringLiteral("d"), QStringLiteral("date-range"));
+    specs[ iDate ].dateMin = QStringLiteral("2020-01-01T00:00:00.000");
+    specs[ iDate ].dateMax = QStringLiteral("2020-12-31T00:00:00.000");
+    // 唯一：重复组（1,2）全部行违规
+    addSpec(3, QStringLiteral("dup"), QStringLiteral("unique"));
+    // 非空
+    addSpec(4, QStringLiteral("cat"), QStringLiteral("not-empty"));
+    // 正则整格匹配 [A-Z]\d
+    int iRegex = addSpec(5, QStringLiteral("code"), QStringLiteral("regex"));
+    specs[ iRegex ].regexPattern = QStringLiteral("[A-Z]\\d");
+    // 缺失列 → 空清单不报错
+    addSpec(6, QStringLiteral("no-such-col"), QStringLiteral("not-empty"));
+    QList< DA::DAPyScriptsDataFrame::ValidationRuleResult > results;
+    QString err;
+    QVERIFY(py.validateDataFrame(df, specs, &results, &err));
+    QCOMPARE(results.size(), specs.size());
+    QHash< int, QVector< int > > byIndex;
+    for (const auto& r : std::as_const(results)) {
+        byIndex.insert(r.index, r.rows);
+    }
+    QCOMPARE(byIndex.value(0), QVector< int >({ 2, 4 }));        // 数值区间：150 与 -3
+    QCOMPARE(byIndex.value(1), QVector< int >({ 2, 3 }));        // 枚举：zzz 与 None
+    QCOMPARE(byIndex.value(2), QVector< int >({ 1, 3 }));        // 日期：2019 与 2021
+    QCOMPARE(byIndex.value(3), QVector< int >({ 0, 1, 2, 4 }));  // 唯一：1(行0,4) 2(行1,2)
+    QCOMPARE(byIndex.value(4), QVector< int >({ 3 }));           // 非空
+    QCOMPARE(byIndex.value(5), QVector< int >({ 4 }));           // 正则：C! 不整格匹配，None 不判
+    QCOMPARE(byIndex.value(6), QVector< int >());                // 缺列
+    // 重名列「第 n 个同名列」消歧（R20）
+    {
+        pybind11::dict s2;
+        pybind11::exec(R"(
+import pandas as pd
+df2 = pd.DataFrame([[1, 10], [2, 20], [3, 30]], columns=["x", "x"])
+)",
+                       pybind11::globals(),
+                       s2);
+        DA::DAPyDataFrame df2(s2[ "df2" ]);
+        QList< DA::DAPyScriptsDataFrame::ValidationRuleSpec > sp;
+        DA::DAPyScriptsDataFrame::ValidationRuleSpec a;
+        a.index = 0;
+        a.column = QStringLiteral("x");
+        a.occurrence = 0;
+        a.type = QStringLiteral("numeric-range");
+        a.hasMin = true;
+        a.numericMin = 2.0;
+        sp.append(a);
+        DA::DAPyScriptsDataFrame::ValidationRuleSpec b = a;
+        b.index = 1;
+        b.occurrence = 1;
+        b.numericMin = 25.0;
+        sp.append(b);
+        QList< DA::DAPyScriptsDataFrame::ValidationRuleResult > res;
+        QVERIFY(py.validateDataFrame(df2, sp, &res, nullptr));
+        QCOMPARE(res.size(), 2);
+        QCOMPARE(res[ 0 ].rows, QVector< int >({ 0 }));     // 第 1 个 x=[1,2,3]，<2 → 行0
+        QCOMPARE(res[ 1 ].rows, QVector< int >({ 0, 1 }));  // 第 2 个 x=[10,20,30]，<25 → 行0,1
+    }
+    // 非法正则 → 整体失败并输出诊断（调用方提示，不装载部分结果）
+    {
+        QList< DA::DAPyScriptsDataFrame::ValidationRuleSpec > sp;
+        DA::DAPyScriptsDataFrame::ValidationRuleSpec a;
+        a.index = 0;
+        a.column = QStringLiteral("code");
+        a.type = QStringLiteral("regex");
+        a.regexPattern = QStringLiteral("[");
+        sp.append(a);
+        QList< DA::DAPyScriptsDataFrame::ValidationRuleResult > res;
+        QString e2;
+        QVERIFY(!py.validateDataFrame(df, sp, &res, &e2));
+        QVERIFY(!e2.isEmpty());
+    }
+}
+
+// 005 §4.4/§7.1：widget 校验全链路——违规装载两级高亮、来源隔离（清空只清 Validation）、
+// 唯一性缓存二次不重算（打点）、只读不入撤销栈不改数据、耗时输出
+void DATableDataTest::testValidationWidgetFlow()
+{
+    if (!mPandasOk || !mPyScriptsOk) {
+        QSKIP("pandas/DAPyScripts not available");
+    }
+    qRegisterMetaType< DA::DAData >("DA::DAData");
+    pybind11::dict scope;
+    pybind11::exec(R"(
+import pandas as pd, numpy as np
+df = pd.DataFrame({
+    "score": [50.0, 150.0, np.nan, -3.0, 80.0],
+    "cat": ["a", "b", "zzz", None, "a"],
+    "dup": [1, 2, 2, 3, 1],
+})
+)",
+                   pybind11::globals(),
+                   scope);
+    DA::DAPyDataFrame df(scope[ "df" ]);
+    DA::DADataManager mgr;
+    DA::DAData d(df);
+    d.setName(QStringLiteral("vsrc"));
+    mgr.addData(d);
+    DA::DATableMetadataRegistry registry(nullptr);
+    DA::DADataOperateOfDataFrameWidget w(d, &registry);
+    w.resize(700, 400);
+    w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+    DA::DATableValidationStore* store = w.validationStore();
+    QVERIFY(store != nullptr);
+    // 规则：score∈[0,100] Error；cat 枚举{a,b} Warning；dup 唯一 Error
+    DA::DATableValidationRule rNum;
+    rNum.columnName = QStringLiteral("score");
+    rNum.type = DA::DATableValidationRule::Type::NumericRange;
+    rNum.hasNumericMin = true;
+    rNum.numericMin = 0.0;
+    rNum.hasNumericMax = true;
+    rNum.numericMax = 100.0;
+    rNum.level = DA::DATableValidationRule::Level::Error;
+    DA::DATableValidationRule rEnum;
+    rEnum.columnName = QStringLiteral("cat");
+    rEnum.type = DA::DATableValidationRule::Type::EnumSet;
+    rEnum.enumValues = QStringList { QStringLiteral("a"), QStringLiteral("b") };
+    rEnum.level = DA::DATableValidationRule::Level::Warning;
+    DA::DATableValidationRule rUniq;
+    rUniq.columnName = QStringLiteral("dup");
+    rUniq.type = DA::DATableValidationRule::Type::Unique;
+    rUniq.level = DA::DATableValidationRule::Level::Error;
+    store->addRule(rNum);
+    store->addRule(rEnum);
+    store->addRule(rUniq);
+    // 先装载一条查找命中（来源隔离对照）
+    DA::DATableHighlightOverlay* overlay = w.highlightOverlay();
+    QVERIFY(overlay != nullptr);
+    overlay->set(DA::DATableHighlightOverlay::Source::Find, DA::DATableHighlightOverlay::Level::Hit,
+                 QVector< QPair< int, int > >({ qMakePair(2, 1) }));
+    // —— 执行校验（只读红线2：撤销栈不增长、数据不变）——
+    const int stackBefore = w.getUndoStack()->count();
+    int elapsed = -1;
+    const auto outcomes = w.evaluateValidationRules(&elapsed);
+    QCOMPARE(outcomes.size(), 3);
+    QVERIFY(elapsed >= 0);
+    QCOMPARE(w.getUndoStack()->count(), stackBefore);  // 不入撤销栈
+    QCOMPARE(df.iat(1, 0).toDouble(), 150.0);          // 数据不变
+    // 逐规则违规行
+    QCOMPARE(outcomes[ 0 ].rows, QVector< int >({ 1, 3 }));        // 150 与 -3
+    QVERIFY(!outcomes[ 0 ].columnMissing);
+    QCOMPARE(outcomes[ 0 ].columnPosition, 0);
+    QCOMPARE(outcomes[ 1 ].rows, QVector< int >({ 2, 3 }));        // zzz 与 None
+    QCOMPARE(outcomes[ 2 ].rows, QVector< int >({ 0, 1, 2, 4 }));  // 唯一重复组
+    // 高亮装载：Error→ViolationError、Warning→ViolationWarning
+    QCOMPARE(overlay->levelAt(1, 0), DA::DATableHighlightOverlay::Level::ViolationError);
+    QCOMPARE(overlay->levelAt(2, 1), DA::DATableHighlightOverlay::Level::Hit);  // 查找优先（跨来源优先级 001 钉死）
+    QCOMPARE(overlay->levelAt(3, 1), DA::DATableHighlightOverlay::Level::ViolationWarning);
+    QCOMPARE(overlay->levelAt(0, 2), DA::DATableHighlightOverlay::Level::ViolationError);
+    QCOMPARE(overlay->levelAt(4, 0), DA::DATableHighlightOverlay::Level::None);  // 50 合规
+    // 唯一性缓存：首次已求值 1 次；二次校验不重算（打点计数，§4.9）
+    QCOMPARE(store->uniquePythonEvals(), 1);
+    const auto outcomes2 = w.evaluateValidationRules();
+    QCOMPARE(store->uniquePythonEvals(), 1);  // 缓存命中
+    QCOMPARE(outcomes2[ 2 ].rows, outcomes[ 2 ].rows);
+    // 数据变更（单元格编辑信号路径）→ 缓存失效 → 三次校验重算
+    store->invalidateUniqueCache();
+    w.evaluateValidationRules();
+    QCOMPARE(store->uniquePythonEvals(), 2);
+    // 来源隔离：清 Validation 不动 Find 命中（红线2，专门测）
+    w.clearValidationHighlights();
+    QCOMPARE(overlay->levelAt(1, 0), DA::DATableHighlightOverlay::Level::None);
+    QCOMPARE(overlay->levelAt(3, 1), DA::DATableHighlightOverlay::Level::None);
+    QCOMPARE(overlay->levelAt(2, 1), DA::DATableHighlightOverlay::Level::Hit);  // 查找命中仍在
+    w.hide();
+}
+
+// 005 §4.3-2：规则增删改走命令入栈——对话框确定生成 setRules 命令，undo/redo 还原
+void DATableDataTest::testValidationRulesDialogFlow()
+{
+    if (!mPandasOk || !mPyScriptsOk) {
+        QSKIP("pandas/DAPyScripts not available");
+    }
+    qRegisterMetaType< DA::DAData >("DA::DAData");
+    pybind11::dict scope;
+    pybind11::exec(R"(
+import pandas as pd
+df = pd.DataFrame({"score": [1.0, 2.0], "cat": ["a", "b"]})
+)",
+                   pybind11::globals(),
+                   scope);
+    DA::DAPyDataFrame df(scope[ "df" ]);
+    DA::DADataManager mgr;
+    DA::DAData d(df);
+    d.setName(QStringLiteral("vsrc2"));
+    mgr.addData(d);
+    DA::DATableMetadataRegistry registry(nullptr);
+    DA::DADataOperateOfDataFrameWidget w(d, &registry);
+    w.resize(700, 400);
+    w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+    DA::DATableValidationStore* store = w.validationStore();
+    QVERIFY(store != nullptr);
+    QVERIFY(store->isEmpty());
+    // 驱动对话框：添加一条「cat 非空（Warning）」规则 → OK
+    QTimer::singleShot(0, []() {
+        auto* dlg = qobject_cast< DA::DADialogValidationRules* >(QApplication::activeModalWidget());
+        if (!dlg) {
+            return;
+        }
+        QPushButton* add = dlg->findChild< QPushButton* >(QStringLiteral("btnAddRule"));
+        QVERIFY(add != nullptr);
+        add->click();
+        QComboBox* colCombo = dlg->findChild< QComboBox* >(QStringLiteral("comboValidationColumn"));
+        QVERIFY(colCombo != nullptr);
+        for (int i = 0; i < colCombo->count(); ++i) {
+            if (colCombo->itemText(i) == QLatin1String("cat")) {
+                colCombo->setCurrentIndex(i);
+                break;
+            }
+        }
+        QComboBox* typeCombo = dlg->findChild< QComboBox* >(QStringLiteral("comboValidationType"));
+        QVERIFY(typeCombo != nullptr);
+        for (int i = 0; i < typeCombo->count(); ++i) {
+            if (typeCombo->itemData(i).toInt() == static_cast< int >(DA::DATableValidationRule::Type::NotEmpty)) {
+                typeCombo->setCurrentIndex(i);
+                break;
+            }
+        }
+        QComboBox* levelCombo = dlg->findChild< QComboBox* >(QStringLiteral("comboValidationLevel"));
+        QVERIFY(levelCombo != nullptr);
+        for (int i = 0; i < levelCombo->count(); ++i) {
+            if (levelCombo->itemData(i).toInt() == static_cast< int >(DA::DATableValidationRule::Level::Warning)) {
+                levelCombo->setCurrentIndex(i);
+                break;
+            }
+        }
+        QTimer::singleShot(200, [ dlg ]() {
+            QDialogButtonBox* box = dlg->findChild< QDialogButtonBox* >();
+            QVERIFY(box != nullptr);
+            box->button(QDialogButtonBox::Ok)->click();
+        });
+    });
+    const int stackBefore = w.getUndoStack()->count();
+    w.showValidationRulesDialog();
+    // 规则已落库并入栈一条命令
+    QCOMPARE(store->count(), 1);
+    QCOMPARE(store->ruleAt(0).columnName, QStringLiteral("cat"));
+    QCOMPARE(store->ruleAt(0).type, DA::DATableValidationRule::Type::NotEmpty);
+    QCOMPARE(store->ruleAt(0).level, DA::DATableValidationRule::Level::Warning);
+    QCOMPARE(w.getUndoStack()->count(), stackBefore + 1);
+    // undo 移除规则；redo 恢复
+    w.getUndoStack()->undo();
+    QVERIFY(store->isEmpty());
+    w.getUndoStack()->redo();
+    QCOMPARE(store->count(), 1);
+    // 再开对话框不改任何内容直接 OK → 无差异不推空命令
+    QTimer::singleShot(0, []() {
+        auto* dlg = qobject_cast< DA::DADialogValidationRules* >(QApplication::activeModalWidget());
+        if (!dlg) {
+            return;
+        }
+        QDialogButtonBox* box = dlg->findChild< QDialogButtonBox* >();
+        if (box) {
+            box->button(QDialogButtonBox::Ok)->click();
+        }
+    });
+    w.showValidationRulesDialog();
+    QCOMPARE(w.getUndoStack()->count(), stackBefore + 1);
+    QCOMPARE(store->count(), 1);
+    w.hide();
+}
+
+// 005 §4.4：列改名提示「有 N 条规则引用它」并可同步（与改名同一撤销单元，undo 还原）
+void DATableDataTest::testValidationRenameMigration()
+{
+    if (!mPandasOk || !mPyScriptsOk) {
+        QSKIP("pandas/DAPyScripts not available");
+    }
+    pybind11::dict scope;
+    pybind11::exec(R"(
+import pandas as pd
+df = pd.DataFrame({"score": [1.0, 2.0], "other": [3.0, 4.0]})
+)",
+                   pybind11::globals(),
+                   scope);
+    DA::DAPyDataFrame df(scope[ "df" ]);
+    DA::DAData d(df);
+    DA::DATableMetadataRegistry registry(nullptr);
+    DA::DADataOperateOfDataFrameWidget w(d, &registry);
+    w.resize(700, 400);
+    w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+    DA::DATableValidationStore* store = w.validationStore();
+    QVERIFY(store != nullptr);
+    DA::DATableValidationRule r;
+    r.columnName = QStringLiteral("score");
+    r.type = DA::DATableValidationRule::Type::NotEmpty;
+    store->addRule(r);
+    QCOMPARE(store->rulesReferencing(QStringLiteral("score")), 1);
+    // 改名 score→score2：确认框（计算列无引用不弹；校验规则弹）点 Yes
+    QTimer::singleShot(0, []() {
+        auto* mb = qobject_cast< QMessageBox* >(QApplication::activeModalWidget());
+        if (mb) {
+            mb->button(QMessageBox::Yes)->click();
+        }
+    });
+    QVERIFY(w.renameColumn(0, QStringLiteral("score2")));
+    QCOMPARE(store->ruleAt(0).columnName, QStringLiteral("score2"));  // 引用已同步
+    // undo 改名 → 引用迁移回 score（同一撤销单元）
+    w.getUndoStack()->undo();
+    QCOMPARE(store->ruleAt(0).columnName, QStringLiteral("score"));
+    w.getUndoStack()->redo();
+    QCOMPARE(store->ruleAt(0).columnName, QStringLiteral("score2"));
+    w.hide();
+}
+
+// 005 §4.3-6：枚举列编辑下拉——有启用枚举规则的列出 QComboBox（allowOther 控制可编辑），
+// 无规则列出基类默认编辑器；只读门禁在模型 flags（红线4：delegate 不另造判定）
+void DATableDataTest::testEnumEditorDelegate()
+{
+    if (!mPandasOk || !mPyScriptsOk) {
+        QSKIP("pandas/DAPyScripts not available");
+    }
+    qRegisterMetaType< DA::DAData >("DA::DAData");
+    pybind11::dict scope;
+    pybind11::exec(R"(
+import pandas as pd
+df = pd.DataFrame({"cat": ["a", "b"], "num": [1.0, 2.0]})
+)",
+                   pybind11::globals(),
+                   scope);
+    DA::DAPyDataFrame df(scope[ "df" ]);
+    DA::DADataManager mgr;
+    DA::DAData d(df);
+    d.setName(QStringLiteral("vsrc3"));
+    mgr.addData(d);
+    DA::DATableMetadataRegistry registry(nullptr);
+    DA::DADataOperateOfDataFrameWidget w(d, &registry);
+    w.resize(700, 400);
+    w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+    DA::DATableValidationStore* store = w.validationStore();
+    QVERIFY(store != nullptr);
+    // cat 列枚举规则（不允许其他值）
+    DA::DATableValidationRule rEnum;
+    rEnum.columnName = QStringLiteral("cat");
+    rEnum.type = DA::DATableValidationRule::Type::EnumSet;
+    rEnum.enumValues = QStringList { QStringLiteral("a"), QStringLiteral("b"), QStringLiteral("c") };
+    rEnum.enumAllowOther = false;
+    store->addRule(rEnum);
+    DA::DADataTableView* tv = w.getDataTableView();
+    QVERIFY(tv != nullptr);
+    auto* delegate = qobject_cast< DA::DATableStyleItemDelegate* >(tv->itemDelegate());
+    QVERIFY(delegate != nullptr);
+    QStyleOptionViewItem opt;
+    // cat 列（0）→ QComboBox，非 editable，选项来自规则
+    {
+        QModelIndex idx = tv->model()->index(0, 0);
+        QWidget* ed     = delegate->createEditor(&w, opt, idx);
+        QVERIFY(ed != nullptr);
+        QComboBox* cb = qobject_cast< QComboBox* >(ed);
+        QVERIFY(cb != nullptr);
+        QVERIFY(!cb->isEditable());  // allowOther=false → 只能列表内取值
+        QCOMPARE(cb->count(), 3);
+        QCOMPARE(cb->itemText(0), QStringLiteral("a"));
+        QCOMPARE(cb->currentText(), QStringLiteral("a"));  // 预填当前格值
+        delete ed;
+    }
+    // num 列（1）无枚举规则 → 基类默认编辑器（非 QComboBox）
+    {
+        QModelIndex idx = tv->model()->index(0, 1);
+        QWidget* ed     = delegate->createEditor(&w, opt, idx);
+        QVERIFY(ed != nullptr);
+        QVERIFY(qobject_cast< QComboBox* >(ed) == nullptr);
+        delete ed;
+    }
+    // allowOther=true → editable 组合框
+    store->clearAll();
+    rEnum.enumAllowOther = true;
+    store->addRule(rEnum);
+    {
+        QModelIndex idx = tv->model()->index(1, 0);
+        QWidget* ed     = delegate->createEditor(&w, opt, idx);
+        QComboBox* cb   = qobject_cast< QComboBox* >(ed);
+        QVERIFY(cb != nullptr);
+        QVERIFY(cb->isEditable());
+        QCOMPARE(cb->currentText(), QStringLiteral("b"));
+        delete ed;
+    }
+    // 停用规则不出下拉
+    rEnum.enabled = false;
+    store->clearAll();
+    store->addRule(rEnum);
+    {
+        QModelIndex idx = tv->model()->index(0, 0);
+        QWidget* ed     = delegate->createEditor(&w, opt, idx);
+        QVERIFY(ed != nullptr);
+        QVERIFY(qobject_cast< QComboBox* >(ed) == nullptr);
+        delete ed;
+    }
+    // 只读门禁在模型 flags（红线4）：惰性只读源 flags 无 ItemIsEditable，
+    // 视图根本不会为该索引调 createEditor——断言模型侧门禁仍生效
+    {
+        DATestLazyTable* lazy = new DATestLazyTable();
+        DA::DAAbstractData::Pointer p(lazy);
+        DA::DAData ld(p);
+        DA::DATableMetadataRegistry reg2(nullptr);
+        DA::DADataOperateOfDataFrameWidget w2(ld, &reg2);
+        QAbstractItemModel* am = w2.getDataTableView()->model();
+        QVERIFY(am != nullptr);
+        QModelIndex roIdx = am->index(0, 0);
+        QVERIFY(roIdx.isValid());
+        QVERIFY(!(am->flags(roIdx) & Qt::ItemIsEditable));
+    }
+    w.hide();
+}
+
+// 005 §4.3-5：报告——按规则分组/违规数/样例行文本、Markdown 导出内容、点击定位信号
+void DATableDataTest::testValidationReportMarkdown()
+{
+    qRegisterMetaType< QTreeWidgetItem* >("QTreeWidgetItem*");
+    DA::DADialogValidationReport dlg;
+    QList< DA::DADialogValidationReport::Entry > entries;
+    DA::DADialogValidationReport::Entry e1;
+    e1.ruleText       = QStringLiteral("score · Numeric range [0, 100]");
+    e1.isError        = true;
+    e1.columnPosition = 0;
+    e1.rows           = QVector< int >({ 1, 3 });
+    e1.rowTexts       = QStringList { QStringLiteral("Row 2: 150"), QStringLiteral("Row 4: -3") };
+    entries.append(e1);
+    DA::DADialogValidationReport::Entry e2;
+    e2.ruleText       = QStringLiteral("cat · Allowed values (enum) {a, b}");
+    e2.isError        = false;
+    e2.columnPosition = 1;
+    e2.rows           = QVector< int >({ 2 });
+    e2.rowTexts       = QStringList { QStringLiteral("Row 3: zzz") };
+    entries.append(e2);
+    DA::DADialogValidationReport::Entry e3;
+    e3.ruleText       = QStringLiteral("gone · Not empty");
+    e3.columnMissing  = true;
+    entries.append(e3);
+    dlg.setResults(entries, 3, 42);
+    QCOMPARE(dlg.totalViolations(), 3);
+    // 树结构：3 个顶层规则项；e1 两个样例子项；缺列项无子项
+    QTreeWidget* tree = dlg.findChild< QTreeWidget* >(QStringLiteral("validationReportTree"));
+    QVERIFY(tree != nullptr);
+    QCOMPARE(tree->topLevelItemCount(), 3);
+    QCOMPARE(tree->topLevelItem(0)->childCount(), 2);
+    QCOMPARE(tree->topLevelItem(1)->childCount(), 1);
+    QCOMPARE(tree->topLevelItem(2)->childCount(), 0);
+    QVERIFY(tree->topLevelItem(2)->text(0).contains(QStringLiteral("column missing")));
+    // 汇总标签含规则数/违规数/耗时
+    QLabel* summary = dlg.findChild< QLabel* >(QStringLiteral("validationReportSummary"));
+    QVERIFY(summary != nullptr);
+    QVERIFY(summary->text().contains(QStringLiteral("3")));
+    QVERIFY(summary->text().contains(QStringLiteral("42")));
+    // Markdown 导出内容（不经 WebEngine）
+    const QString md = dlg.buildMarkdown();
+    QVERIFY(md.contains(QStringLiteral("score · Numeric range [0, 100]")));
+    QVERIFY(md.contains(QStringLiteral("Row 2: 150")));
+    QVERIFY(md.contains(QStringLiteral("Row 3: zzz")));
+    QVERIFY(md.contains(QStringLiteral("2 violation(s)")));
+    // 点击样例行 → locateCellRequested(绝对行, 列)
+    QSignalSpy spy(&dlg, &DA::DADialogValidationReport::locateCellRequested);
+    QVERIFY(spy.isValid());
+    QTreeWidgetItem* child = tree->topLevelItem(0)->child(1);
+    QVERIFY(child != nullptr);
+    QVERIFY(QMetaObject::invokeMethod(&dlg, "onItemClicked", Q_ARG(QTreeWidgetItem*, child), Q_ARG(int, 0)));
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.at(0).at(0).toInt(), 3);  // 第 2 个样例行 = 绝对行 3
+    QCOMPARE(spy.at(0).at(1).toInt(), 0);  // score 列
+    // 顶层项点击不定位
+    QVERIFY(QMetaObject::invokeMethod(&dlg, "onItemClicked", Q_ARG(QTreeWidgetItem*, tree->topLevelItem(0)), Q_ARG(int, 0)));
+    QCOMPARE(spy.count(), 1);
+    // 清除高亮信号
+    QSignalSpy clearSpy(&dlg, &DA::DADialogValidationReport::clearHighlightsRequested);
+    QPushButton* btnClear = dlg.findChild< QPushButton* >(QStringLiteral("btnClearHighlights"));
+    QVERIFY(btnClear != nullptr);
+    btnClear->click();
+    QCOMPARE(clearSpy.count(), 1);
+}
+
+
+// 005 §4.4：100 万行表校验耗时可接受（记录耗时）；唯一性校验只算一次，二次校验不重算
+void DATableDataTest::testValidationPerf1M()
+{
+    if (!mPandasOk || !mPyScriptsOk) {
+        QSKIP("pandas/DAPyScripts not available");
+    }
+    qRegisterMetaType< DA::DAData >("DA::DAData");
+    pybind11::dict scope;
+    pybind11::exec(R"(
+import pandas as pd, numpy as np
+n = 1000000
+rng = np.random.default_rng(42)
+df = pd.DataFrame({
+    "v": rng.uniform(-10, 110, n),
+    "cat": rng.choice(["a", "b", "c", "zzz"], n),
+    "dup": rng.integers(0, 500000, n),
+    "v2": rng.uniform(0, 1, n),
+    "v3": rng.uniform(0, 1, n),
+})
+df.loc[df.index[::100000], "v"] = np.nan
+)",
+                   pybind11::globals(),
+                   scope);
+    DA::DAPyDataFrame df(scope[ "df" ]);
+    QCOMPARE(df.shape().first, static_cast< std::size_t >(1000000));
+    DA::DADataManager mgr;
+    DA::DAData d(df);
+    d.setName(QStringLiteral("vperf"));
+    mgr.addData(d);
+    DA::DATableMetadataRegistry registry(nullptr);
+    DA::DADataOperateOfDataFrameWidget w(d, &registry);
+    DA::DATableValidationStore* store = w.validationStore();
+    QVERIFY(store != nullptr);
+    // 规则：数值区间 + 枚举 + 唯一 + 非空（四类混合，含 O(n) 的唯一性）
+    DA::DATableValidationRule rNum;
+    rNum.columnName = QStringLiteral("v");
+    rNum.type = DA::DATableValidationRule::Type::NumericRange;
+    rNum.hasNumericMin = true;
+    rNum.numericMin = 0.0;
+    rNum.hasNumericMax = true;
+    rNum.numericMax = 100.0;
+    store->addRule(rNum);
+    DA::DATableValidationRule rEnum;
+    rEnum.columnName = QStringLiteral("cat");
+    rEnum.type = DA::DATableValidationRule::Type::EnumSet;
+    rEnum.enumValues = QStringList { QStringLiteral("a"), QStringLiteral("b"), QStringLiteral("c") };
+    store->addRule(rEnum);
+    DA::DATableValidationRule rUniq;
+    rUniq.columnName = QStringLiteral("dup");
+    rUniq.type = DA::DATableValidationRule::Type::Unique;
+    store->addRule(rUniq);
+    DA::DATableValidationRule rNe;
+    rNe.columnName = QStringLiteral("v");
+    rNe.type = DA::DATableValidationRule::Type::NotEmpty;
+    store->addRule(rNe);
+    // 首次校验（含唯一性 O(n)）
+    int elapsed1 = -1;
+    QElapsedTimer wall;
+    wall.start();
+    const auto out1 = w.evaluateValidationRules(&elapsed1);
+    const qint64 wall1 = wall.elapsed();
+    QCOMPARE(out1.size(), 4);
+    QVERIFY(!out1[ 2 ].rows.isEmpty());  // dup 必有重复
+    QCOMPARE(store->uniquePythonEvals(), 1);
+    // 二次校验：唯一性命中缓存不重算（打点计数不变）
+    int elapsed2 = -1;
+    wall.restart();
+    const auto out2 = w.evaluateValidationRules(&elapsed2);
+    const qint64 wall2 = wall.elapsed();
+    QCOMPARE(store->uniquePythonEvals(), 1);
+    QCOMPARE(out2[ 2 ].rows, out1[ 2 ].rows);
+    // 耗时记录（开发诊断，英文）+ 宽松上限断言（100 万行混合四类规则含装载高亮 ≤ 30s，
+    // 二次校验因唯一性缓存命中应不慢于首次）
+    qDebug().noquote() << QStringLiteral("DATableDataTest::testValidationPerf1M: first_eval_ms=%1 first_wall_ms=%2 second_eval_ms=%3 second_wall_ms=%4 violations=%5")
+                              .arg(elapsed1)
+                              .arg(wall1)
+                              .arg(elapsed2)
+                              .arg(wall2)
+                              .arg(out1[ 0 ].rows.size() + out1[ 1 ].rows.size() + out1[ 2 ].rows.size() + out1[ 3 ].rows.size());
+    QVERIFY2(wall1 < 30000, qPrintable(QStringLiteral("first validation too slow: %1 ms").arg(wall1)));
     w.hide();
 }
 
