@@ -27,6 +27,12 @@
     - **分组聚合（T1.22）**：多分组键 + 多聚合列 + 每列聚合函数（`mean`/`sum`/`size`，与透视表对齐），全表预览 + 分组数预估，产出长格式结果表注册为新数据集 `xxx_GroupBy`（走 `DADataManager::addData_` 可撤销），原表不动；折叠视图不在本批范围
     - **转置 / 宽转长 melt（T1.27）**：**默认产出新数据集** `xxx_Transposed` / `xxx_Melted`（非破坏，原表与元数据完全无损）；「就地替换」为勾选项，确认框列出将被清除的元数据类别与条目数，数据替换与元数据清理同一撤销单元（`DADataObjectSwapUndoCommand`），超大表降级为不可撤销；melt 规模守卫（预估输出行数超 5000 万默认拒绝，可强制继续）
     - 四项均配 Ribbon「Data Tools」面板按钮 + 表体右键菜单同入口，新增 `DATableDataTest` 单测覆盖算子/命令撤销/对话框校验/widget 全链路（含 10 万行分列计时、melt 守卫预估、就地替换元数据清理统计）
+- **表格编辑能力批次 3（填充 / 数据校验 / 单元格批注 / 撤销治理，整批收官）**：11 项表格编辑能力（批次 1–3）至此全部落地，本批四项：
+    - **填充（T1.24）**：选区四动作（向下 `Ctrl+D` / 向上 / ffill / bfill）+ 序列填充对话框（数值等差 / 日期步进，Python 求值、实时预览与写入同一算子）；空值判定（NaN/NaT/None）全部由 pandas 完成，新算子 `da_fill_selection` 只返回变化清单，C++ 组织成**一条** `DACommandDataFrame_paste`（一次填充=一次撤销）；选区按列独立、不规则多选按连续行段处理；入口 Ribbon「Edit」面板填充下拉 + 表体右键「填充」子菜单；同批收掉插件未接线的 ffill/bfill 图标（`Fill None`/`Fill Interpolate` 功能本体保留在数据清洗语境）
+    - **数据校验（T1.25）**：列级规则六类型（数值/日期区间、枚举、非空、唯一、正则）× 错误/警告级别；规则定义类 `DATableValidationRule` 落 `src/DAData`（无 GUI 依赖，工作流可复用），规则集为元数据束子存储随工程保存；一键校验**只读**（不改数据、不入撤销栈），违规装载瞬态高亮层 `Source::Validation` 两级（与查找命中来源隔离），报告对话框按规则分组、点击样例行定位、可导出 HTML/PDF/Word；唯一性校验按列缓存重复集合（100 万行四类规则混合实测首跑 ~160ms、重复校验缓存命中不重算）；枚举列编辑时出下拉（带「允许其他值」开关，只读门禁沿用模型 flags）；列改名提示「有 N 条规则引用它」并随改名命令同一撤销单元迁移；同批删除插件 GUI 副本死代码 `threshold_filter`/`replace_specific_values`（工作流在用的 `threshold_filter_impl` 保留）
+    - **单元格批注（T1.26）**：`DATableNoteStore` 以 (行,列) 位置键存文本+创建/修改时间戳（团队协作预留），随工程保存；有批注的格右上角金黄小三角角标、悬停 tooltip；轻量编辑弹层跟随单元格；**批注跟着行走**——排序/插删行列/分列合列全部走 `DATableKeyRemap` 共享重映射；批注不进 DataFrame（导出与工作流无污染）；增删改与清除全部入撤销栈（旧新文本记录）
+    - **撤销历史与成本治理（T1.21）**：新增「撤销历史」停靠面板（`QUndoView` 绑全局 `QUndoGroup`，跟随激活页、点条目一步回退/前进，widget 在 `src/DAGui`、APP 只挂载），Ribbon「视图」页入口；撤销栈深度可配置（`undo-stack-limit`，默认 20，面板可调大并持久化到 `dawork-config.xml`）；补全缺 `setText` 的命令文案（工作流 9 条 + Swap/Persist 默认文案），面板无空白条目；新增基准模块 `DATableUndoBenchmark`：1M×20 四类命令耗时/驻留、1e8 行滑动窗启动 <1ms、D7 拆窗对照（Qt 每行记账 8B/行，拆窗 1e8 外推常驻 ≈1.5GB——「不拆窗」实测依据），报告见 `docs/zh/dev-guide/general/undo-cost-benchmark.md`；结论：存量快照命令暂不迁移、不做「大表自动降深度」
+    - 配套：修复 `da_insert_nanrow` 在 pandas 3 下的 `.at` 切片赋值报错；新增用户手册页「表格编辑功能总览」（`docs/zh/use-guide/data/table-editing.md`，11 项能力入口速查）；roadmap 状态表 T1.21/T1.24/T1.25/T1.26 置已完成；`DATableDataTest` 新增 20 用例（累计 84）
 
 ### 改进
 
