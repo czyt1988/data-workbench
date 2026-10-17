@@ -67,10 +67,14 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
     mStyleManager             = metadata ? metadata->styleManager() : nullptr;
     mViewStateStore           = metadata ? metadata->viewState() : nullptr;
     // 瞬态高亮层：页级持有（查找/校验两个来源共用），不序列化、不进撤销栈；
-    // WP3 起注入 delegate 的绘制管线③
+    // 注入 delegate 绘制管线③（瞬态装饰）
     mHighlightOverlay = new DATableHighlightOverlay(this);
-    mStyleDelegate    = new DATableStyleItemDelegate(mStyleManager, this);
+    mStyleDelegate    = new DATableStyleItemDelegate(mStyleManager, mHighlightOverlay, this);
     ui->tableView->setItemDelegate(mStyleDelegate);
+    // 高亮层变更时重绘视口（瞬态装饰不经模型 dataChanged 链路）
+    connect(mHighlightOverlay, &DATableHighlightOverlay::changed, this, [ this ]() {
+        ui->tableView->viewport()->update();
+    });
     // 模型读取列显示格式（actualData 的 DisplayRole 分支）
     mModel->setStyleManager(mStyleManager);
     // 样式变更时触发 view 刷新（actualRow 转回 logical row 通知 model）
