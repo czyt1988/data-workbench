@@ -101,6 +101,30 @@ bool DADataTableView::isDataSourceEditable() const
 }
 
 /**
+ * @brief 当前选区覆盖的数据列数（去重；尾部预留空白列不计）
+ *
+ * 004 T1.9 分列/合并列的右键启用规则用：单列选区启用分列、多列选区启用合并。
+ * @return 数据列数（无模型/无选区返回 0）
+ */
+int DADataTableView::selectedDataColumnCount() const
+{
+    QItemSelectionModel* sm = selectionModel();
+    DADataTableModel* m     = getDataModel();
+    if (!sm || !m) {
+        return 0;
+    }
+    const int dataCols = m->columnCount() - m->getExtraColumnCount();
+    QSet< int > cols;
+    const QModelIndexList idxs = sm->selectedIndexes();
+    for (const QModelIndex& i : idxs) {
+        if (i.column() < dataCols) {
+            cols.insert(i.column());
+        }
+    }
+    return cols.size();
+}
+
+/**
  * @brief 构建表体右键菜单
  *
  * v1 只放剪切 / 复制 / 粘贴三项（剪贴板组）。启用规则：无有效选区 → 全部置灰；
@@ -145,13 +169,24 @@ QMenu* DADataTableView::buildContextMenu(const QModelIndex& at)
                                                     tr("Conditional Format..."));  // cn:条件格式...
     actConditionalFormat->setEnabled(hasSel);
     connect(actConditionalFormat, &QAction::triggered, this, &DADataTableView::conditionalFormatRequested);
-    // —— 004：数据工具（计算列；分列/合并/分组/重塑随各自 WP 追加在本组）——
+    // —— 004：数据工具（计算列/分列/合并列；分组/重塑随各自 WP 追加在本组）——
     // 计算列写数据，只读/惰性源置灰（isTableEditable 为假）
     menu->addSeparator();
     QAction* actComputedColumn = menu->addAction(QIcon(QStringLiteral(":/DAGui/icon/computed-column.svg")),
                                                  tr("Computed Column..."));  // cn:计算列...
     actComputedColumn->setEnabled(editable);
     connect(actComputedColumn, &QAction::triggered, this, &DADataTableView::computedColumnRequested);
+    // 分列/合并列（004 T1.9）：按选区列数决定启用哪一项——单列选区启用分列，
+    // 多列选区启用合并列（计划 §4.3-6）；只读源都置灰
+    const int selColCount = selectedDataColumnCount();
+    QAction* actSplitColumn = menu->addAction(QIcon(QStringLiteral(":/DAGui/icon/split-column.svg")),
+                                              tr("Split Column..."));  // cn:分列...
+    actSplitColumn->setEnabled(editable && selColCount == 1);
+    connect(actSplitColumn, &QAction::triggered, this, &DADataTableView::splitColumnRequested);
+    QAction* actMergeColumns = menu->addAction(QIcon(QStringLiteral(":/DAGui/icon/merge-columns.svg")),
+                                               tr("Merge Columns..."));  // cn:合并列...
+    actMergeColumns->setEnabled(editable && selColCount >= 2);
+    connect(actMergeColumns, &QAction::triggered, this, &DADataTableView::mergeColumnsRequested);
     // —— 后续计划的分组插入点在菜单底部（见函数注释），插入时组间加分隔符 ——
     return menu;
 }

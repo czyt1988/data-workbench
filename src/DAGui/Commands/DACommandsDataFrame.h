@@ -265,6 +265,79 @@ private:
 };
 
 /**
+ * @brief 分列命令（列级记录撤销，004 T1.9 D4，禁快照基类）
+ *
+ * exec()（含 redo）= 调 da_split_column 重放拆分（结果列插入原列右侧、原列保留，
+ * 落位规则见算子注释）；首次成功 exec 记录结果列名清单。undo() = 删除结果列 +
+ * 把源列快照写回原位置（防御性还原，保证列顺序/列数/内容完全还原）。
+ * 源列快照由调用方构造前经 getColumnCopy 提取，内存代价 = 一列数据（§4.11 策略表）。
+ * 参数集与对话框预览共用（红线5：预览与执行同一算子）。
+ */
+class DAGUI_API DACommandDataFrame_splitColumn : public DACommandWithRedoCount, public DACallBackInterface
+{
+public:
+    // 分列参数（对话框取参 → 命令执行，同一份）
+    struct SplitParams
+    {
+        int col { -1 };              ///< 源列位置
+        QString mode;                ///< "char"/"regex"/"width"
+        QString delimiter;           ///< char 模式分隔符
+        QString pattern;             ///< regex 模式正则（含捕获组）
+        QList< int > widths;         ///< width 模式宽度列表
+        int maxColumns { 0 };        ///< 结果列数上限（<=0 不限）
+        QString overflow;            ///< "discard"/"keep"/"error"
+        bool inferNumeric { true };  ///< 结果列数值类型推断
+        QStringList newNames;        ///< 结果列名（空=自动 "{源列名}_{i}"）
+    };
+    DACommandDataFrame_splitColumn(const DAPyDataFrame& df, const SplitParams& params, const DAPySeries& oldSourceColumn, QUndoCommand* par = nullptr);
+    virtual void undo() override;
+    virtual bool exec() override;
+    // 最近一次成功 exec 插入的结果列名（首次 exec 前为空）
+    QStringList insertedNames() const;
+    QString lastErrorMessage() const;
+
+private:
+    DAPyDataFrame mDataframe;
+    SplitParams mParams;
+    DAPySeries mOldSource;      ///< 源列快照（undo 还原）
+    QStringList mInsertedNames; ///< 结果列名（首次成功 exec 记录）
+    QString mLastError;
+};
+
+/**
+ * @brief 合并列命令（列级记录撤销，004 T1.9 D4）
+ *
+ * exec()（含 redo）= 调 da_merge_columns 重放合并（结果列插到最左源列位置、
+ * 源列删除）。undo() = 删除结果列 + 按原位置升序写回全部源列快照。
+ * 源列快照由调用方构造前逐列 getColumnCopy 提取（与 params.cols 顺序一一对应）。
+ */
+class DAGUI_API DACommandDataFrame_mergeColumns : public DACommandWithRedoCount, public DACallBackInterface
+{
+public:
+    // 合并参数（对话框取参 → 命令执行，同一份）
+    struct MergeParams
+    {
+        QList< int > cols;     ///< 源列位置（顺序=拼接顺序）
+        QString sep;           ///< 分隔符（可空）
+        bool skipNa { true };  ///< 跳过缺失值（不留多余分隔符）
+        QString name;          ///< 结果列名
+    };
+    DACommandDataFrame_mergeColumns(
+        const DAPyDataFrame& df, const MergeParams& params, const QList< DAPySeries >& oldSourceColumns, QUndoCommand* par = nullptr);
+    virtual void undo() override;
+    virtual bool exec() override;
+    // 结果列插入位置（= min(params.cols)）
+    int insertPosition() const;
+    QString lastErrorMessage() const;
+
+private:
+    DAPyDataFrame mDataframe;
+    MergeParams mParams;
+    QList< DAPySeries > mOldSources;  ///< 源列快照（与 mParams.cols 一一对应，undo 还原）
+    QString mLastError;
+};
+
+/**
  * @brief 移除计算列定义命令（保留列数据，004 T1.23 列头右键「移除公式」）
  *
  * 纯元数据命令（不写 DataFrame）：redo 移除定义，undo 恢复定义与其状态。

@@ -2,6 +2,8 @@
 #include "DAPyScripts.h"
 #include "DATableKeyRemap.h"
 #include "Models/DADataTableModel.h"
+#include <algorithm>
+#include <climits>
 
 //===================================================
 // using DA namespace -- 禁止在头文件using！！
@@ -664,6 +666,166 @@ const QVector< int >& DACommandDataFrame_replace::changedRows() const
 const QVector< int >& DACommandDataFrame_replace::changedCols() const
 {
     return mCols;
+}
+
+//----------------------------------------------------
+// DACommandDataFrame_splitColumn（004 T1.9 分列，列级记录撤销）
+//----------------------------------------------------
+
+/**
+ * @brief 构造
+ * @param df 数据
+ * @param params 分列参数（与对话框预览同一份）
+ * @param oldSourceColumn 源列快照（调用方构造前经 getColumnCopy 提取）
+ * @param par 父命令
+ */
+DACommandDataFrame_splitColumn::DACommandDataFrame_splitColumn(
+    const DAPyDataFrame& df, const SplitParams& params, const DAPySeries& oldSourceColumn, QUndoCommand* par
+)
+    : DACommandWithRedoCount(par), DACallBackInterface(), mDataframe(df), mParams(params), mOldSource(oldSourceColumn)
+{
+    const QString srcName = df.columns().value(params.col);
+    setText(QObject::tr("split column \"%1\"").arg(srcName));  // cn:分列“%1”
+}
+
+QStringList DACommandDataFrame_splitColumn::insertedNames() const
+{
+    return mInsertedNames;
+}
+
+QString DACommandDataFrame_splitColumn::lastErrorMessage() const
+{
+    return mLastError;
+}
+
+/**
+ * @brief 撤销：删除结果列（按名解析、逐个删）+ 源列快照写回原位置
+ *
+ * 防御性还原：源列在拆分中未被改动，但按计划（§4.3-4）仍写回快照，
+ * 保证列顺序/列数/内容完全还原（含 dtype）。
+ */
+void DACommandDataFrame_splitColumn::undo()
+{
+    DAPyScriptsDataFrame& pydf = DAPyScripts::getDataFrame();
+    for (const QString& n : std::as_const(mInsertedNames)) {
+        const QList< QString > cur = mDataframe.columns();
+        const int pos              = cur.indexOf(n);
+        if (pos >= 0) {
+            pydf.drop_icolumn(mDataframe, { pos });
+        }
+    }
+    if (!mOldSource.isNone() && mParams.col >= 0 && mParams.col < mDataframe.columns().size()) {
+        pydf.drop_icolumn(mDataframe, { mParams.col });
+        pydf.insert_at(mDataframe, mParams.col, mOldSource);
+    }
+    callback();
+    directionalCallback(true);
+}
+
+/**
+ * @brief 执行（含 redo）：重放拆分；首次成功记录结果列名清单
+ */
+bool DACommandDataFrame_splitColumn::exec()
+{
+    DAPyScriptsDataFrame& pydf = DAPyScripts::getDataFrame();
+    const QStringList names    = pydf.splitColumn(mDataframe,
+                                               mParams.col,
+                                               mParams.mode,
+                                               mParams.delimiter,
+                                               mParams.pattern,
+                                               mParams.widths,
+                                               mParams.maxColumns,
+                                               mParams.overflow,
+                                               mParams.inferNumeric,
+                                               mParams.newNames,
+                                               &mLastError);
+    if (names.isEmpty()) {
+        return false;
+    }
+    if (mInsertedNames.isEmpty()) {
+        mInsertedNames = names;
+    }
+    callback();
+    directionalCallback(false);
+    return true;
+}
+
+//----------------------------------------------------
+// DACommandDataFrame_mergeColumns（004 T1.9 合并列，列级记录撤销）
+//----------------------------------------------------
+
+/**
+ * @brief 构造
+ * @param df 数据
+ * @param params 合并参数（cols 顺序=拼接顺序）
+ * @param oldSourceColumns 源列快照（与 params.cols 一一对应）
+ * @param par 父命令
+ */
+DACommandDataFrame_mergeColumns::DACommandDataFrame_mergeColumns(
+    const DAPyDataFrame& df, const MergeParams& params, const QList< DAPySeries >& oldSourceColumns, QUndoCommand* par
+)
+    : DACommandWithRedoCount(par), DACallBackInterface(), mDataframe(df), mParams(params), mOldSources(oldSourceColumns)
+{
+    setText(QObject::tr("merge %1 columns into \"%2\"").arg(params.cols.size()).arg(params.name));  // cn:合并 %1 列为“%2”
+}
+
+int DACommandDataFrame_mergeColumns::insertPosition() const
+{
+    int pos = INT_MAX;
+    for (int c : mParams.cols) {
+        pos = qMin(pos, c);
+    }
+    return (pos == INT_MAX) ? -1 : pos;
+}
+
+QString DACommandDataFrame_mergeColumns::lastErrorMessage() const
+{
+    return mLastError;
+}
+
+/**
+ * @brief 撤销：删除结果列 + 按原位置升序写回全部源列快照
+ */
+void DACommandDataFrame_mergeColumns::undo()
+{
+    DAPyScriptsDataFrame& pydf = DAPyScripts::getDataFrame();
+    // 删结果列（按名解析位置）
+    const QList< QString > cur = mDataframe.columns();
+    const int mergedPos        = cur.indexOf(mParams.name);
+    if (mergedPos >= 0) {
+        pydf.drop_icolumn(mDataframe, { mergedPos });
+    }
+    // 源列按位置升序回插（升序保证各快照落回原位置）
+    QList< int > order;
+    order.reserve(mParams.cols.size());
+    for (int i = 0; i < mParams.cols.size(); ++i) {
+        order.append(i);
+    }
+    std::sort(order.begin(), order.end(), [ this ](int a, int b) {
+        return mParams.cols.at(a) < mParams.cols.at(b);
+    });
+    for (int i : std::as_const(order)) {
+        if (i < mOldSources.size() && !mOldSources.at(i).isNone()) {
+            pydf.insert_at(mDataframe, mParams.cols.at(i), mOldSources.at(i));
+        }
+    }
+    callback();
+    directionalCallback(true);
+}
+
+/**
+ * @brief 执行（含 redo）：重放合并（源列须在位——undo 已还原）
+ */
+bool DACommandDataFrame_mergeColumns::exec()
+{
+    DAPyScriptsDataFrame& pydf = DAPyScripts::getDataFrame();
+    const int pos              = pydf.mergeColumns(mDataframe, mParams.cols, mParams.sep, mParams.skipNa, mParams.name, &mLastError);
+    if (pos < 0) {
+        return false;
+    }
+    callback();
+    directionalCallback(false);
+    return true;
 }
 
 }  // end DA

@@ -140,8 +140,16 @@ public:
     bool recomputeComputedColumn(int col);
     // 重算全部待重算/失效的计算列（Ribbon「全部重算」），返回成功重算的列数
     int recomputeAllStaleComputedColumns();
-    // 移除某列的公式定义（保留列数据，列头右键「移除公式」），可撤销；成功返回 true
+    // 移除某列的公式定义（保留列数据，表头右键「移除公式」），可撤销；成功返回 true
     bool removeComputedColumnFormula(int col);
+
+    // ===== 分列 / 合并列（004 T1.9）=====
+    // 打开分列对话框：col<0 时取当前选区的唯一数据列（多列/无选区则提示）；
+    // 接受后执行拆分并入栈（列级记录撤销，结果列插原列右侧、原列保留）
+    void showSplitColumnDialog(int col = -1);
+    // 打开合并列对话框（当前选区 >=2 数据列；顺序可在对话框内调整）；
+    // 接受后执行合并并入栈（结果列替换被合并列的位置）
+    void showMergeColumnsDialog();
 
 Q_SIGNALS:
     // 选中区变化时发射当前代表样式，供 ribbon 控件反向同步

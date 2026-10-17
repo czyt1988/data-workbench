@@ -49,6 +49,10 @@ Q_SIGNALS:
     void conditionalFormatRequested();
     // 计算列入口（004 T1.23）：表体右键菜单与 Ribbon「Data Tools」面板同入口
     void computedColumnRequested();
+    // 分列/合并列入口（004 T1.9）：表体右键菜单与 Ribbon「Data Tools」面板同入口
+    //（启用规则：分列=单列选区、合并=多列选区，见 buildContextMenu）
+    void splitColumnRequested();
+    void mergeColumnsRequested();
 
 protected:
     // Ctrl+C / Ctrl+Insert 复制；Ctrl+F 查找；Ctrl+H 替换；Esc 关查找条（快捷键唯一挂点，红线5）
@@ -59,6 +63,8 @@ protected:
 private:
     // 数据源是否可编辑（判定路径同 DADataTableModel::actualFlags 的只读源分支）
     bool isDataSourceEditable() const;
+    // 当前选区覆盖的数据列数（去重；尾部预留空白列不计，004 分列/合并启用规则用）
+    int selectedDataColumnCount() const;
 };
 }
 #endif  // DADATATABLEVIEW_H
