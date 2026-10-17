@@ -527,6 +527,8 @@ void DAAppController::initConnection()
     // 表内查找/替换（002 T1.4，Ribbon「编辑」面板；快捷键在 DADataTableView::keyPressEvent，action 不设 shortcut 红线5）
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionFind, onActionFindTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionReplace, onActionReplaceTriggered);
+    // 条件格式（003 T1.5，Ribbon「Table Style」面板；与表体右键菜单共用页面入口，R16）
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionConditionalFormat, onActionConditionalFormatTriggered);
     // View Category
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowWorkFlowArea, onActionShowWorkFlowAreaTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowWorkFlowManagerArea, onActionShowWorkFlowManagerAreaTriggered);
@@ -3390,6 +3392,21 @@ void DAAppController::onActionReplaceTriggered()
         return;
     }
     dfopt->showFindReplace(true);
+}
+
+/**
+ * @brief 条件格式（003 T1.5，Ribbon「Table Style」面板）
+ *
+ * 唤出当前数据页的条件格式规则编辑对话框（作用于选区所在列）。
+ * 与表体右键菜单「条件格式...」共用页面 showConditionalFormatDialog 入口（R16）。
+ */
+void DAAppController::onActionConditionalFormatTriggered()
+{
+    DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false);
+    if (!dfopt) {
+        return;
+    }
+    dfopt->showConditionalFormatDialog();
 }
 
 /**

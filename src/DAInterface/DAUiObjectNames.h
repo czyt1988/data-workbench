@@ -68,6 +68,7 @@ constexpr char DataFrameOperateEditPanel[]   = "da-pannel-dataframe.operate.edit
 constexpr char DataFrameStyleFillPanel[]     = "da-pannel-dataframe.style.fill";      ///< 填充样式pannel
 constexpr char DataFrameStyleFontPanel[]     = "da-pannel-dataframe.style.font";      ///< 字体样式pannel
 constexpr char DataFrameStyleClearPanel[]    = "da-pannel-dataframe.style.clear";     ///< 样式清除pannel
+constexpr char DataFrameStyleConditionalPanel[] = "da-pannel-dataframe.style.conditional";  ///< 条件格式pannel（003 T1.5）
 // ---- 工作流上下文标签下的 panel ----
 constexpr char WorkflowItemPanel[]       = "da-pannel-context.workflow.item";        ///< 条目pannel
 constexpr char WorkflowTextPanel[]       = "da-pannel-context.workflow.text";        ///< 文本pannel
@@ -136,6 +137,7 @@ constexpr char ClearStyleAll[]      = "actionClearStyleAll";
 constexpr char TableFormatCells[]   = "actionTableFormatCells";
 constexpr char Find[]               = "actionFind";     ///< 表内查找（002 T1.4，快捷键在 DADataTableView，action 不设 shortcut 红线5）
 constexpr char Replace[]            = "actionReplace";  ///< 表内替换（002 T1.4）
+constexpr char ConditionalFormat[]  = "actionConditionalFormat";  ///< 条件格式（003 T1.5，Ribbon Table Style 面板 + 表体右键同入口，R16）
 // ---- 绘图 ----
 constexpr char AddFigure[]                  = "actionAddFigure";
 constexpr char FigureNewXYAxis[]            = "actionFigureNewXYAxis";

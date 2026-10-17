@@ -217,6 +217,7 @@ void DAAppRibbonArea::resetText()
     mPannelDataframeStyleFill->setPanelName(tr("Fill"));          // cn:底色
     mPannelDataframeStyleFont->setPanelName(tr("Font"));          // cn:字体
     mPannelDataframeStyleClear->setPanelName(tr("Clear"));        // cn:清除
+    mPannelDataframeStyleConditional->setPanelName(tr("Conditional"));  // cn:条件格式
     mComboxColumnTypesContainer->setPrefix(tr("Type"));           // cn:类型
     mComboxDisplayFormatContainer->setPrefix(tr("Format"));       // cn:格式
 
@@ -520,6 +521,12 @@ void DAAppRibbonArea::buildContextCategoryDataFrame()
     mPannelDataframeStyleClear->setObjectName(QString::fromUtf8(UiNames::Ribbon::DataFrameStyleClearPanel));
     mPannelDataframeStyleClear->addLargeAction(mActions->actionClearStyleSelected);
     mPannelDataframeStyleClear->addLargeAction(mActions->actionClearStyleAll);
+
+    // Conditional panel - 条件格式（003 T1.5，R16：Ribbon Table Style 面板为主入口，
+    // 与表体右键菜单「条件格式...」共用页面 showConditionalFormatDialog）
+    mPannelDataframeStyleConditional = mCategoryDataframeStyle->addPanel(tr("Conditional"));  // cn:条件格式
+    mPannelDataframeStyleConditional->setObjectName(QString::fromUtf8(UiNames::Ribbon::DataFrameStyleConditionalPanel));
+    mPannelDataframeStyleConditional->addLargeAction(mActions->actionConditionalFormat);
 }
 
 /**

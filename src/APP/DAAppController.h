@@ -338,6 +338,8 @@ private Q_SLOTS:
     void onTableStyleFontColorChanged(const QColor& c);
     void onActionClearStyleSelectedTriggered();
     void onActionClearStyleAllTriggered();
+    // 条件格式（003 T1.5，Ribbon「Table Style」面板；与表体右键菜单共用页面入口）
+    void onActionConditionalFormatTriggered();
     // 选中区样式反向同步 ribbon 控件
     void onTableStyleCurrentChanged(const DATableCellStyle& style);
     // 表格列显示格式

@@ -117,6 +117,8 @@ void DAAppActions::buildDataAction()
     // 表内查找/替换 action（002 T1.4；图标取 DAGui 图标库，快捷键在 DADataTableView，此处不设 shortcut 红线5）
     actionFind               = createAction(UiNames::Action::Find, ":/DAGui/icon/find.svg");
     actionReplace            = createAction(UiNames::Action::Replace, ":/DAGui/icon/replace.svg");
+    // 条件格式 action（003 T1.5；图标取 DAGui 图标库，不引用 APP 资源）
+    actionConditionalFormat  = createAction(UiNames::Action::ConditionalFormat, ":/DAGui/icon/conditional-format.svg");
 }
 
 void DAAppActions::buildChartAction()
@@ -651,6 +653,8 @@ void DAAppActions::retranslateUi()
     actionFind->setToolTip(tr("Find cells matching the keyword (Ctrl+F)"));  // cn:查找匹配关键字的单元格（Ctrl+F）
     actionReplace->setText(tr("Replace"));                            // cn:替换
     actionReplace->setToolTip(tr("Find and replace cells (Ctrl+H)"));  // cn:查找并替换单元格（Ctrl+H）
+    actionConditionalFormat->setText(tr("Conditional Formatting"));   // cn:条件格式
+    actionConditionalFormat->setToolTip(tr("Manage conditional formatting rules (cell rules / color scale / data bar) of the selected columns"));  // cn:管理选中列的条件格式规则（单元格规则/色阶/数据条）
     //-----------------------------------------------------
     // workflow 编辑
     //-----------------------------------------------------

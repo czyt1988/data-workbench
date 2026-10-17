@@ -286,6 +286,7 @@ private:
     SARibbonPanel* mPannelDataframeStyleFill { nullptr };     ///< 底色面板
     SARibbonPanel* mPannelDataframeStyleFont { nullptr };     ///< 字体面板
     SARibbonPanel* mPannelDataframeStyleClear { nullptr };    ///< 清除面板
+    SARibbonPanel* mPannelDataframeStyleConditional { nullptr };  ///< 条件格式面板（003 T1.5）
     SARibbonColorToolButton* mBtnTableFillColor { nullptr };  ///< 表格底色按钮
     DAFontEditPannelWidget* mWidgetTableFont { nullptr };     ///< 表格字体编辑面板
     //----------------------------------------------------
