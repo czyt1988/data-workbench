@@ -168,22 +168,29 @@ void DADataHeaderView::restoreHotZoneCursor()
 
 /**
  * @brief 右键菜单（水平实例）：列头右键菜单已迁入本类（R12）
+ *
+ * 垂直实例（行头）右键不弹菜单并 accept 事件——QWidget 默认的 contextMenuEvent
+ * 会 ignore 使事件冒泡到父级表格视图，导致表体菜单在行头上弹出；迁移前行头
+ * 右键无任何菜单，此处保持该行为。水平实例命中空白列（尾部预留列/非 dataframe）
+ * 时同样不弹菜单。
  * @param event 上下文菜单事件
  */
 void DADataHeaderView::contextMenuEvent(QContextMenuEvent* event)
 {
     if (orientation() != Qt::Horizontal) {
-        QHeaderView::contextMenuEvent(event);
+        event->accept();  // 行头右键：不弹菜单，阻止冒泡到表体（保持迁移前行为）
         return;
     }
     const int logical = logicalIndexAt(event->pos());
     if (!isColumnMenuAvailable(logical)) {
+        event->accept();
         return;
     }
     QMenu* menu = buildColumnContextMenu(logical);
     menu->popup(event->globalPos());
     // 弹出后菜单独立生命周期，关闭即销毁
     connect(menu, &QMenu::aboutToHide, menu, &QMenu::deleteLater);
+    event->accept();
 }
 
 /**
