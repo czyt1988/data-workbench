@@ -51,6 +51,17 @@
 #include "Models/DADataTableModel.h"
 #include <QUndoStack>
 
+// 条件格式（003 计划 §4.1）
+#include "DATableConditionalFormatRule.h"
+#include "DATableConditionalFormatStore.h"
+#include "Commands/DACommandsConditionalFormat.h"
+#include "Dialog/DADialogConditionalFormat.h"
+#include <QDomDocument>
+#include <QStandardItemModel>
+#include <QElapsedTimer>
+#include <QLabel>
+#include <QImage>
+
 #include "DASqliteLazyTable.h"
 #include <QSqlDatabase>
 #include <QSqlQuery>
@@ -319,6 +330,20 @@ private Q_SLOTS:
     void testReplaceCommandUndoRedo();
     void testFindReplaceDialogDebounce();
     void testFindReplaceWidgetFlow();
+    // 003 条件格式（T1.5 §4.1）：规则求值、叠加顺序、色阶插值、数据条归一化、
+    // 存储 XML round-trip/重映射/统计缓存、命令 undo/redo、统计算子、绘制像素级验证、
+    // 对话框惰性源限制、千行滚动计时
+    void testConditionalRuleEvaluation();
+    void testConditionalEvaluateOrder();
+    void testColorScaleInterpolation();
+    void testDataRowNormalization();
+    void testConditionalStoreXmlAndRemap();
+    void testConditionalStoreStatsCache();
+    void testConditionalCommands();
+    void testColumnStatsOperator();
+    void testConditionalPaintWidgetFlow();
+    void testConditionalDialogSourceRestriction();
+    void testConditionalScrollPerf1k();
 
 private:
     // 生成/复用sqlite测试库（百万行），失败返回false并置mSqliteErr
@@ -2292,6 +2317,833 @@ wdf = pd.DataFrame({"t": ["abc", "def", "abcx", "xyz", "abc"]})
     QCOMPARE(w.findHitCount(), 0);
     QCOMPARE(ov->levelAt(0, 0), DA::DATableHighlightOverlay::Level::None);
     QVERIFY(ov->isEmpty());
+    w.hide();
+}
+
+//===================================================
+// 003 条件格式（T1.5 §4.1）
+//===================================================
+namespace
+{
+using DA::DATableConditionalFormatRule;
+using DA::DATableConditionalFormatStore;
+using CfCond = DATableConditionalFormatRule::Condition;
+using CfType = DATableConditionalFormatRule::Type;
+
+// 官方色板端点（色阶默认色）
+const QColor c_cfScaleMin(0xBD, 0xCD, 0xE8);  // 浅蓝
+const QColor c_cfScaleMax(0x52, 0x80, 0xC1);  // 主蓝
+const QColor c_cfBar(0xCE, 0x60, 0x43);       // 橙红（测试数据条用，与背景区分明显）
+
+// 构造带背景色的单元格规则
+DATableConditionalFormatRule makeBgRule(CfCond cond, const QVariant& v1, const QColor& bg, const QVariant& v2 = QVariant())
+{
+    DATableConditionalFormatRule r;
+    r.type      = CfType::CellRule;
+    r.condition = cond;
+    r.value1    = v1;
+    r.value2    = v2;
+    r.style.setBackground(QBrush(bg));
+    return r;
+}
+
+// 统计图像中某矩形内与 target 完全相等的像素数（文字/网格线像素自然排除）
+int countExactPixels(const QImage& img, const QRect& rect, QRgb target)
+{
+    int n = 0;
+    const QRect r = rect.intersected(img.rect());
+    for (int y = r.top(); y <= r.bottom(); ++y) {
+        for (int x = r.left(); x <= r.right(); ++x) {
+            if (img.pixel(x, y) == target) {
+                ++n;
+            }
+        }
+    }
+    return n;
+}
+
+// 统计矩形内"深色文字"像素数（数据条之上文字未被遮挡的证据：条色为亮色，文字为深色）
+int countDarkPixels(const QImage& img, const QRect& rect)
+{
+    int n = 0;
+    const QRect r = rect.intersected(img.rect());
+    for (int y = r.top(); y <= r.bottom(); ++y) {
+        for (int x = r.left(); x <= r.right(); ++x) {
+            const QRgb p = img.pixel(x, y);
+            if (qRed(p) < 90 && qGreen(p) < 90 && qBlue(p) < 90) {
+                ++n;
+            }
+        }
+    }
+    return n;
+}
+
+// 规则列表逐元素相等（避免依赖 QTest::toString 流式输出）
+bool cfRulesEqual(const QVector< DATableConditionalFormatRule >& a, const QVector< DATableConditionalFormatRule >& b)
+{
+    if (a.size() != b.size()) {
+        return false;
+    }
+    for (int i = 0; i < a.size(); ++i) {
+        if (!(a.at(i) == b.at(i))) {
+            return false;
+        }
+    }
+    return true;
+}
+}  // namespace
+
+/**
+ * @brief 规则求值：每种操作符边界（语义钉死见 DATableConditionalFormatRule 头注释）、
+ * 数值列/文本列分别比较、null/NaN 不命中
+ */
+void DATableDataTest::testConditionalRuleEvaluation()
+{
+    // Greater：严格比较，等于不命中（钉死）
+    QVERIFY(DATableConditionalFormatRule::evaluateCondition(CfCond::Greater, QVariant(101), QVariant("100"), QVariant()));
+    QVERIFY(!DATableConditionalFormatRule::evaluateCondition(CfCond::Greater, QVariant(100), QVariant("100"), QVariant()));
+    QVERIFY(!DATableConditionalFormatRule::evaluateCondition(CfCond::Greater, QVariant(99), QVariant("100"), QVariant()));
+    // 数值单元格 vs 字符串参数："100" 可严格转数值 → 数值比较（跨类型数值等价）
+    QVERIFY(DATableConditionalFormatRule::evaluateCondition(CfCond::Greater, QVariant(100.5), QVariant(100), QVariant()));
+    // 文本列：双方非数值 → 字符串比较
+    QVERIFY(DATableConditionalFormatRule::evaluateCondition(CfCond::Greater, QVariant(QStringLiteral("b")), QVariant(QStringLiteral("a")), QVariant()));
+    QVERIFY(!DATableConditionalFormatRule::evaluateCondition(CfCond::Greater, QVariant(QStringLiteral("a")), QVariant(QStringLiteral("b")), QVariant()));
+    // 混合（"12abc" 无法整串转数值）→ 退化字符串比较
+    QVERIFY(DATableConditionalFormatRule::evaluateCondition(CfCond::Greater, QVariant(QStringLiteral("12abc")), QVariant(QStringLiteral("12")), QVariant()));
+    // Less：镜像语义
+    QVERIFY(DATableConditionalFormatRule::evaluateCondition(CfCond::Less, QVariant(99), QVariant("100"), QVariant()));
+    QVERIFY(!DATableConditionalFormatRule::evaluateCondition(CfCond::Less, QVariant(100), QVariant("100"), QVariant()));
+    // Between：闭区间 [v1, v2]（含端点，钉死）
+    QVERIFY(DATableConditionalFormatRule::evaluateCondition(CfCond::Between, QVariant(5), QVariant(1), QVariant(10)));
+    QVERIFY(DATableConditionalFormatRule::evaluateCondition(CfCond::Between, QVariant(1), QVariant(1), QVariant(10)));
+    QVERIFY(DATableConditionalFormatRule::evaluateCondition(CfCond::Between, QVariant(10), QVariant(1), QVariant(10)));
+    QVERIFY(!DATableConditionalFormatRule::evaluateCondition(CfCond::Between, QVariant(0), QVariant(1), QVariant(10)));
+    QVERIFY(!DATableConditionalFormatRule::evaluateCondition(CfCond::Between, QVariant(11), QVariant(1), QVariant(10)));
+    QVERIFY(DATableConditionalFormatRule::evaluateCondition(CfCond::Between, QVariant(QStringLiteral("b")), QVariant(QStringLiteral("a")), QVariant(QStringLiteral("c"))));
+    // Equal：数值等价跨类型、字符串精确
+    QVERIFY(DATableConditionalFormatRule::evaluateCondition(CfCond::Equal, QVariant(100), QVariant("100"), QVariant()));
+    QVERIFY(DATableConditionalFormatRule::evaluateCondition(CfCond::Equal, QVariant(100.0), QVariant(100), QVariant()));
+    QVERIFY(DATableConditionalFormatRule::evaluateCondition(CfCond::Equal, QVariant(QStringLiteral("abc")), QVariant(QStringLiteral("abc")), QVariant()));
+    QVERIFY(!DATableConditionalFormatRule::evaluateCondition(CfCond::Equal, QVariant(QStringLiteral("abc")), QVariant(QStringLiteral("abd")), QVariant()));
+    // Contains：字符串子串，区分大小写（钉死）
+    QVERIFY(DATableConditionalFormatRule::evaluateCondition(CfCond::Contains, QVariant(QStringLiteral("hello world")), QVariant(QStringLiteral("world")), QVariant()));
+    QVERIFY(!DATableConditionalFormatRule::evaluateCondition(CfCond::Contains, QVariant(QStringLiteral("Hello")), QVariant(QStringLiteral("hello")), QVariant()));
+    // IsEmpty / IsNotEmpty：invalid/null/NaN/空串为空，数值 0 非空
+    QVERIFY(DATableConditionalFormatRule::evaluateCondition(CfCond::IsEmpty, QVariant(), QVariant(), QVariant()));
+    QVERIFY(DATableConditionalFormatRule::evaluateCondition(CfCond::IsEmpty, QVariant(QString()), QVariant(), QVariant()));
+    QVERIFY(DATableConditionalFormatRule::evaluateCondition(CfCond::IsEmpty, QVariant(qQNaN()), QVariant(), QVariant()));
+    QVERIFY(!DATableConditionalFormatRule::evaluateCondition(CfCond::IsEmpty, QVariant(0.0), QVariant(), QVariant()));
+    QVERIFY(DATableConditionalFormatRule::evaluateCondition(CfCond::IsNotEmpty, QVariant(0.0), QVariant(), QVariant()));
+    QVERIFY(!DATableConditionalFormatRule::evaluateCondition(CfCond::IsNotEmpty, QVariant(), QVariant(), QVariant()));
+    // 空值/NaN 对其余操作符一律不命中（钉死）
+    QVERIFY(!DATableConditionalFormatRule::evaluateCondition(CfCond::Greater, QVariant(), QVariant("5"), QVariant()));
+    QVERIFY(!DATableConditionalFormatRule::evaluateCondition(CfCond::Greater, QVariant(qQNaN()), QVariant("5"), QVariant()));
+    QVERIFY(!DATableConditionalFormatRule::evaluateCondition(CfCond::Equal, QVariant(QString()), QVariant(QStringLiteral("x")), QVariant()));
+    // 参数缺失 → 不命中
+    QVERIFY(!DATableConditionalFormatRule::evaluateCondition(CfCond::Greater, QVariant(5), QVariant(), QVariant()));
+    QVERIFY(!DATableConditionalFormatRule::evaluateCondition(CfCond::Between, QVariant(5), QVariant(1), QVariant()));
+    // toNumeric 严格性
+    double d = 0.0;
+    QVERIFY(DATableConditionalFormatRule::toNumeric(QVariant(QStringLiteral("123")), &d) && d == 123.0);
+    QVERIFY(!DATableConditionalFormatRule::toNumeric(QVariant(QStringLiteral("123abc")), &d));
+    QVERIFY(!DATableConditionalFormatRule::toNumeric(QVariant(qQNaN()), &d));
+    QVERIFY(!DATableConditionalFormatRule::toNumeric(QVariant(QDateTime::currentDateTime()), &d));
+}
+
+/**
+ * @brief 叠加顺序：同列两条规则都命中时后者覆盖前者；静态样式打底 + 条件覆盖；
+ * 停用规则跳过；色阶/数据条与统计有效性
+ */
+void DATableDataTest::testConditionalEvaluateOrder()
+{
+    // 两条都命中：后者覆盖前者的背景，未设置属性保留 merge 语义
+    QVector< DATableConditionalFormatRule > rules;
+    DATableConditionalFormatRule r1 = makeBgRule(CfCond::Greater, QVariant(0), QColor(0xCE, 0x60, 0x43));
+    DATableConditionalFormatRule r2;
+    r2.type      = CfType::CellRule;
+    r2.condition = CfCond::Greater;
+    r2.value1    = QVariant(5);
+    r2.style.setForeground(QColor(0xFF, 0xFF, 0xFF));  // 只设前景
+    rules << r1 << r2;
+    DATableConditionalFormatStore::ColumnStats stats;
+    auto res = DATableConditionalFormatStore::evaluate(rules, QVariant(10), false, stats);
+    QVERIFY(res.style.backgroundValid());
+    QCOMPARE(res.style.background().color(), QColor(0xCE, 0x60, 0x43));  // r1 的背景保留（r2 未设背景）
+    QVERIFY(res.style.foregroundValid());
+    QCOMPARE(res.style.foreground(), QColor(0xFF, 0xFF, 0xFF));  // r2 前景叠加
+    // 后者覆盖前者：r2 也设背景 → 最终为 r2 的背景
+    r2.style.setBackground(QBrush(QColor(0x66, 0x9E, 0x8B)));
+    rules[ 1 ] = r2;
+    res        = DATableConditionalFormatStore::evaluate(rules, QVariant(10), false, stats);
+    QCOMPARE(res.style.background().color(), QColor(0x66, 0x9E, 0x8B));
+    // 只命中第一条：值为 3（>0 但 <5）→ r1 背景 + 无前景
+    res = DATableConditionalFormatStore::evaluate(rules, QVariant(3), false, stats);
+    QCOMPARE(res.style.background().color(), QColor(0xCE, 0x60, 0x43));
+    QVERIFY(!res.style.foregroundValid());
+    // 停用规则跳过
+    rules[ 0 ].enabled = false;
+    res                = DATableConditionalFormatStore::evaluate(rules, QVariant(3), false, stats);
+    QVERIFY(res.style.isNull());
+    rules[ 0 ].enabled = true;
+    // 静态打底 + 条件覆盖（delegate 的叠加语义：base.mergeFrom(cf)）
+    DA::DATableCellStyle base;
+    base.setBackground(QBrush(QColor(0xBD, 0xCD, 0xE8)));  // 静态列样式底色
+    res = DATableConditionalFormatStore::evaluate(rules, QVariant(10), false, stats);
+    base.mergeFrom(res.style);
+    QCOMPARE(base.background().color(), QColor(0x66, 0x9E, 0x8B));  // 条件覆盖静态
+    // 色阶规则：统计无效 → 不产生背景；统计有效 → 插值背景
+    QVector< DATableConditionalFormatRule > scaleRules;
+    DATableConditionalFormatRule sr;
+    sr.type = CfType::ColorScale;
+    scaleRules << sr;
+    res = DATableConditionalFormatStore::evaluate(scaleRules, QVariant(5.0), false, stats);
+    QVERIFY(res.style.isNull());
+    stats.minValue = 0.0;
+    stats.maxValue = 10.0;
+    res            = DATableConditionalFormatStore::evaluate(scaleRules, QVariant(5.0), true, stats);
+    QVERIFY(res.style.backgroundValid());
+    QCOMPARE(res.style.background().color(), DATableConditionalFormatRule::lerpColor(c_cfScaleMin, c_cfScaleMax, 0.5));
+    QVERIFY(!res.style.foregroundValid());  // 前景不因色阶变化（可读性）
+    // 非数值单元格：色阶跳过
+    res = DATableConditionalFormatStore::evaluate(scaleRules, QVariant(QStringLiteral("abc")), true, stats);
+    QVERIFY(res.style.isNull());
+    // 数据条规则：统计有效 + 数值 → 条长比例与颜色；统计无效 → 无条
+    QVector< DATableConditionalFormatRule > barRules;
+    DATableConditionalFormatRule br;
+    br.type     = CfType::DataBar;
+    br.barColor = c_cfBar;
+    barRules << br;
+    res = DATableConditionalFormatStore::evaluate(barRules, QVariant(2.5), true, stats);
+    QVERIFY(res.hasDataBar);
+    QCOMPARE(res.barRatio, 0.25);
+    QCOMPARE(res.barColor, c_cfBar);
+    res = DATableConditionalFormatStore::evaluate(barRules, QVariant(2.5), false, stats);
+    QVERIFY(!res.hasDataBar);
+}
+
+/**
+ * @brief 色阶插值：端点、中点（三色）、双色；min==max 退化；越界截断
+ */
+void DATableDataTest::testColorScaleInterpolation()
+{
+    const QColor cmin(0xBD, 0xCD, 0xE8);
+    const QColor cmid(0xFF, 0xFF, 0xFF);
+    const QColor cmax(0x52, 0x80, 0xC1);
+    // 双色：端点精确
+    QCOMPARE(DATableConditionalFormatRule::colorScaleColor(0.0, 0.0, 10.0, 5.0, false, cmin, cmid, cmax), cmin);
+    QCOMPARE(DATableConditionalFormatRule::colorScaleColor(10.0, 0.0, 10.0, 5.0, false, cmin, cmid, cmax), cmax);
+    // 双色中点 = lerp(0.5)（与纯函数自洽）
+    QCOMPARE(DATableConditionalFormatRule::colorScaleColor(5.0, 0.0, 10.0, 5.0, false, cmin, cmid, cmax),
+             DATableConditionalFormatRule::lerpColor(cmin, cmax, 0.5));
+    // 三色：value<=median 段 cmin→cmid，> median 段 cmid→cmax
+    QCOMPARE(DATableConditionalFormatRule::colorScaleColor(5.0, 0.0, 10.0, 5.0, true, cmin, cmid, cmax), cmid);
+    QCOMPARE(DATableConditionalFormatRule::colorScaleColor(0.0, 0.0, 10.0, 5.0, true, cmin, cmid, cmax), cmin);
+    QCOMPARE(DATableConditionalFormatRule::colorScaleColor(10.0, 0.0, 10.0, 5.0, true, cmin, cmid, cmax), cmax);
+    QCOMPARE(DATableConditionalFormatRule::colorScaleColor(2.5, 0.0, 10.0, 5.0, true, cmin, cmid, cmax),
+             DATableConditionalFormatRule::lerpColor(cmin, cmid, 0.5));
+    QCOMPARE(DATableConditionalFormatRule::colorScaleColor(7.5, 0.0, 10.0, 5.0, true, cmin, cmid, cmax),
+             DATableConditionalFormatRule::lerpColor(cmid, cmax, 0.5));
+    // min==max 退化：normalizedPosition → 0.5（钉死）
+    QCOMPARE(DATableConditionalFormatRule::colorScaleColor(5.0, 5.0, 5.0, 5.0, false, cmin, cmid, cmax),
+             DATableConditionalFormatRule::lerpColor(cmin, cmax, 0.5));
+    // 越界截断到端点色
+    QCOMPARE(DATableConditionalFormatRule::colorScaleColor(-100.0, 0.0, 10.0, 5.0, false, cmin, cmid, cmax), cmin);
+    QCOMPARE(DATableConditionalFormatRule::colorScaleColor(100.0, 0.0, 10.0, 5.0, false, cmin, cmid, cmax), cmax);
+    // lerpColor 端点与中值分量
+    QCOMPARE(DATableConditionalFormatRule::lerpColor(cmin, cmax, 0.0), cmin);
+    QCOMPARE(DATableConditionalFormatRule::lerpColor(cmin, cmax, 1.0), cmax);
+    const QColor half = DATableConditionalFormatRule::lerpColor(QColor(0, 0, 0), QColor(255, 255, 255), 0.5);
+    QVERIFY(qAbs(half.red() - 128) <= 1 && qAbs(half.green() - 128) <= 1 && qAbs(half.blue() - 128) <= 1);
+}
+
+/**
+ * @brief 数据条归一化：(v-min)/(max-min)；min==max 退化取半格；越界截断 [0,1]
+ */
+void DATableDataTest::testDataRowNormalization()
+{
+    QCOMPARE(DATableConditionalFormatRule::dataBarRatio(5.0, 0.0, 10.0), 0.5);
+    QCOMPARE(DATableConditionalFormatRule::dataBarRatio(0.0, 0.0, 10.0), 0.0);
+    QCOMPARE(DATableConditionalFormatRule::dataBarRatio(10.0, 0.0, 10.0), 1.0);
+    QCOMPARE(DATableConditionalFormatRule::dataBarRatio(-5.0, 0.0, 10.0), 0.0);   // 越下界截断
+    QCOMPARE(DATableConditionalFormatRule::dataBarRatio(15.0, 0.0, 10.0), 1.0);   // 越上界截断
+    QCOMPARE(DATableConditionalFormatRule::dataBarRatio(5.0, 5.0, 5.0), 0.5);     // min==max 退化半格（§1.4-1）
+    QCOMPARE(DATableConditionalFormatRule::normalizedPosition(2.5, 0.0, 10.0), 0.25);
+}
+
+/**
+ * @brief 存储：XML round-trip（含 DATableMetadata 束聚合）、列插删重映射、
+ * moveRule/clearColumn/clearAll 语义与信号
+ */
+void DATableDataTest::testConditionalStoreXmlAndRemap()
+{
+    DATableConditionalFormatStore store;
+    // 列 1：单元格规则（背景+前景+字体、Between 双参数、停用规则）+ 三色色阶 + 数据条
+    DATableConditionalFormatRule cellRule;
+    cellRule.type      = CfType::CellRule;
+    cellRule.condition = CfCond::Between;
+    cellRule.value1    = QVariant(QStringLiteral("10"));
+    cellRule.value2    = QVariant(QStringLiteral("20"));
+    cellRule.style.setBackground(QBrush(QColor(0xCE, 0x60, 0x43)));
+    cellRule.style.setForeground(QColor(0xFF, 0xFF, 0xFF));
+    QFont f(QStringLiteral("Arial"), 12);
+    f.setBold(true);
+    cellRule.style.setFont(f);
+    DATableConditionalFormatRule offRule = makeBgRule(CfCond::Greater, QVariant(100), QColor(0x66, 0x9E, 0x8B));
+    offRule.enabled                      = false;
+    DATableConditionalFormatRule scaleRule;
+    scaleRule.type           = CfType::ColorScale;
+    scaleRule.threeColorScale = true;
+    DATableConditionalFormatRule barRule;
+    barRule.type     = CfType::DataBar;
+    barRule.barColor = QColor(0x49, 0x7C, 0xAD);
+    store.addRule(1, cellRule);
+    store.addRule(1, offRule);
+    store.addRule(1, scaleRule);
+    store.addRule(1, barRule);
+    store.addRule(3, makeBgRule(CfCond::Contains, QVariant(QStringLiteral("x")), QColor(0xE6, 0xC2, 0x7C)));
+    QCOMPARE(store.ruleCount(), 5);
+    QCOMPARE(store.columnsWithRules(), QList< int >() << 1 << 3);
+    // XML round-trip（store 级）
+    QDomDocument doc;
+    QDomElement root = doc.createElement(QStringLiteral("table"));
+    doc.appendChild(root);
+    store.toXml(doc, root);
+    const QString xml = doc.toString();
+    QVERIFY(xml.contains(QLatin1String("<conditional-format>")));
+    QVERIFY(xml.contains(QLatin1String("col=\"1\"")));
+    QVERIFY(xml.contains(QLatin1String("type=\"color-scale\"")));
+    QVERIFY(xml.contains(QLatin1String("cond=\"between\"")));
+    QDomDocument doc2;
+    QVERIFY(doc2.setContent(xml));
+    DATableConditionalFormatStore store2;
+    QVERIFY(store2.fromXml(doc2.documentElement().firstChildElement(QStringLiteral("conditional-format"))));
+    QCOMPARE(store2.ruleCount(), 5);
+    QCOMPARE(store2.columnsWithRules(), QList< int >() << 1 << 3);
+    // operator== 逐字段（含字体/停用/双参数/色阶端点/条色）
+    QVERIFY(cfRulesEqual(store2.columnRules(1), store.columnRules(1)));
+    QVERIFY(cfRulesEqual(store2.columnRules(3), store.columnRules(3)));
+    // DATableMetadata 束聚合 round-trip（<conditional-format> 段随束序列化）
+    {
+        DA::DATableMetadata meta;
+        meta.conditionalFormat()->addRule(2, cellRule);
+        meta.styleManager()->setColumnStyle(0, DA::DATableCellStyle());
+        QDomDocument mdoc;
+        QDomElement mroot = mdoc.createElement(QStringLiteral("table"));
+        mdoc.appendChild(mroot);
+        meta.toXml(mdoc, mroot);
+        QDomDocument mdoc2;
+        QVERIFY(mdoc2.setContent(mdoc.toString()));
+        DA::DATableMetadata meta2;
+        QVERIFY(meta2.fromXml(mdoc2.documentElement()));
+        QCOMPARE(meta2.conditionalFormat()->ruleCount(), 1);
+        QVERIFY(cfRulesEqual(meta2.conditionalFormat()->columnRules(2), QVector< DATableConditionalFormatRule >() << cellRule));
+        QVERIFY(!meta2.isEmpty());
+    }
+    // 信号：rulesChanged(column)
+    QSignalSpy changedSpy(&store, &DATableConditionalFormatStore::rulesChanged);
+    QSignalSpy resetSpy(&store, &DATableConditionalFormatStore::ruleReset);
+    store.moveRule(1, 0, 2);
+    QCOMPARE(changedSpy.count(), 1);
+    QCOMPARE(changedSpy.takeFirst().at(0).toInt(), 1);
+    QVERIFY(store.columnRules(1).at(2) == cellRule);  // [off,scale,cell,bar]
+    store.moveRule(1, 2, 0);
+    QVERIFY(store.columnRules(1).at(0) == cellRule);  // 还原
+    QCOMPARE(changedSpy.count(), 1);                  // 第二次 move 也发 rulesChanged(1)
+    QCOMPARE(changedSpy.takeFirst().at(0).toInt(), 1);
+    // clearColumn：桶删除 + 信号
+    store.clearColumn(3);
+    QVERIFY(!store.hasRules(3));
+    QCOMPARE(changedSpy.count(), 1);
+    QCOMPARE(changedSpy.takeFirst().at(0).toInt(), 3);
+    store.clearColumn(3);  // 已空列再清不发信号（无变化）
+    QCOMPARE(changedSpy.count(), 0);
+    // 列插删重映射（签名 const QList<int>&，语义同 DATableStyleManager）
+    store.addRule(0, makeBgRule(CfCond::Greater, QVariant(1), QColor(0x52, 0x80, 0xC1)));
+    // 现有：列 0、列 1；插入列 1 → 原列 1 的规则移到列 2，列 0 不动
+    store.onColumnsInserted({ 1 });
+    QCOMPARE(resetSpy.count(), 1);
+    QVERIFY(store.hasRules(0));
+    QVERIFY(!store.hasRules(1));
+    QCOMPARE(store.columnRules(2).size(), 4);
+    // 删除列 2 → 该列规则丢弃，> 2 的键 -1（此处无）
+    store.onColumnsRemoved({ 2 });
+    QCOMPARE(resetSpy.count(), 2);
+    QVERIFY(!store.hasRules(2));
+    QVERIFY(store.hasRules(0));
+    // 批量插入多个索引（降序处理语义与样式管理器一致）：{0,5} 插入 {1,3} → {0,7}
+    store.addRule(5, makeBgRule(CfCond::Greater, QVariant(1), QColor(0x52, 0x80, 0xC1)));
+    store.onColumnsInserted({ 1, 3 });
+    QVERIFY(store.hasRules(0));   // < 1 不动
+    QVERIFY(!store.hasRules(1));  // 插入列本身无规则
+    QVERIFY(!store.hasRules(5));  // 5 已位移
+    QVERIFY(store.hasRules(7));   // 5 → +2（1 与 3 都 <= 5）
+    // 批量删除：删掉 0 与 7 → 全部规则清空
+    store.onColumnsRemoved({ 0, 7 });
+    QVERIFY(!store.hasRules(0));
+    QVERIFY(!store.hasRules(6));
+    QCOMPARE(store.ruleCount(), 0);
+    // clearAll：全部清空 + ruleReset
+    const int resetsBefore = resetSpy.count();
+    store.clearAll();
+    QVERIFY(store.isEmpty());
+    QCOMPARE(store.ruleCount(), 0);
+    QCOMPARE(resetSpy.count(), resetsBefore + 1);
+    // 空 store toXml 不写段
+    QDomDocument edoc;
+    QDomElement eroot = edoc.createElement(QStringLiteral("table"));
+    edoc.appendChild(eroot);
+    store.toXml(edoc, eroot);
+    QVERIFY(edoc.firstChildElement(QStringLiteral("conditional-format")).isNull());
+}
+
+/**
+ * @brief 统计缓存：惰性计算一次 + 缓存命中不再调提供者；失效触发重算；
+ * 无规则列不计算；失败结果也缓存（不每格重试）
+ */
+void DATableDataTest::testConditionalStoreStatsCache()
+{
+    DATableConditionalFormatStore store;
+    int providerCalls = 0;
+    store.setStatsProvider([ &providerCalls ](int column, DATableConditionalFormatStore::ColumnStats& out) {
+        ++providerCalls;
+        if (column == 9) {
+            return false;  // 模拟非数值列/失败
+        }
+        out.minValue    = 0.0;
+        out.maxValue    = 100.0;
+        out.medianValue = 50.0;
+        return true;
+    });
+    DATableConditionalFormatStore::ColumnStats st;
+    // 无规则的列：不计算（红线2）
+    QVERIFY(!store.columnStats(0, st));
+    QCOMPARE(providerCalls, 0);
+    // 加色阶规则后：首次计算，二次命中缓存
+    DATableConditionalFormatRule sr;
+    sr.type = CfType::ColorScale;
+    store.addRule(0, sr);
+    QVERIFY(store.columnStats(0, st));
+    QCOMPARE(providerCalls, 1);
+    QCOMPARE(st.minValue, 0.0);
+    QCOMPARE(st.maxValue, 100.0);
+    QCOMPARE(st.medianValue, 50.0);
+    QVERIFY(store.columnStats(0, st));
+    QVERIFY(store.columnStats(0, st));
+    QCOMPARE(providerCalls, 1);  // 缓存生效，不重算
+    // 失效单列 → 重算一次
+    store.invalidateColumnStats(0);
+    QVERIFY(store.columnStats(0, st));
+    QCOMPARE(providerCalls, 2);
+    // 失败列：失败也缓存，不每格重试
+    DATableConditionalFormatRule sr9;
+    sr9.type = CfType::DataBar;
+    store.addRule(9, sr9);
+    QVERIFY(!store.columnStats(9, st));
+    QVERIFY(!store.columnStats(9, st));
+    QCOMPARE(providerCalls, 3);  // 只调用一次
+    // invalidateAllStats → 全部重算
+    store.invalidateAllStats();
+    QVERIFY(store.columnStats(0, st));
+    QCOMPARE(providerCalls, 4);
+    // needsColumnStats：纯单元格规则列不需要统计
+    store.addRule(1, makeBgRule(CfCond::Greater, QVariant(1), QColor(0xCE, 0x60, 0x43)));
+    QVERIFY(!store.needsColumnStats(1));
+    QVERIFY(store.needsColumnStats(0));
+    // 提供者置空 → 统计不可用
+    store.setStatsProvider(nullptr);
+    QVERIFY(!store.columnStats(0, st));
+}
+
+/**
+ * @brief 命令：增/删/改/移动/清列的 undo/redo 结果对象一致（旧新对象记录范式）
+ */
+void DATableDataTest::testConditionalCommands()
+{
+    DATableConditionalFormatStore store;
+    QUndoStack stack;
+    const DATableConditionalFormatRule ruleA = makeBgRule(CfCond::Greater, QVariant(10), QColor(0xCE, 0x60, 0x43));
+    const DATableConditionalFormatRule ruleB = makeBgRule(CfCond::Less, QVariant(5), QColor(0x66, 0x9E, 0x8B));
+    const QVector< DATableConditionalFormatRule > onlyA  { ruleA };
+    const QVector< DATableConditionalFormatRule > bThenA { ruleB, ruleA };
+    const QVector< DATableConditionalFormatRule > aThenB { ruleA, ruleB };
+    // 增：push 即 redo
+    stack.push(new DA::DACommandConditionalFormat_addRule(&store, 0, ruleA));
+    QVERIFY(cfRulesEqual(store.columnRules(0), onlyA));
+    stack.undo();
+    QVERIFY(!store.hasRules(0));
+    stack.redo();
+    QVERIFY(cfRulesEqual(store.columnRules(0), onlyA));
+    // 第二条 + 指定位置插入
+    stack.push(new DA::DACommandConditionalFormat_addRule(&store, 0, ruleB, 0));
+    QVERIFY(cfRulesEqual(store.columnRules(0), bThenA));
+    stack.undo();
+    QVERIFY(cfRulesEqual(store.columnRules(0), onlyA));
+    stack.redo();
+    // 改：旧新对象记录
+    DATableConditionalFormatRule ruleA2 = ruleA;
+    ruleA2.value1                       = QVariant(20);
+    stack.push(new DA::DACommandConditionalFormat_modifyRule(&store, 0, 1, ruleA, ruleA2));
+    QVERIFY(store.columnRules(0).at(1) == ruleA2);
+    stack.undo();
+    QVERIFY(store.columnRules(0).at(1) == ruleA);
+    stack.redo();
+    QVERIFY(store.columnRules(0).at(1) == ruleA2);
+    stack.undo();  // 回到 [ruleB, ruleA]
+    QVERIFY(cfRulesEqual(store.columnRules(0), bThenA));
+    // 移动：记录前后索引
+    stack.push(new DA::DACommandConditionalFormat_moveRule(&store, 0, 0, 1));
+    QVERIFY(cfRulesEqual(store.columnRules(0), aThenB));
+    stack.undo();
+    QVERIFY(cfRulesEqual(store.columnRules(0), bThenA));
+    stack.redo();
+    QVERIFY(cfRulesEqual(store.columnRules(0), aThenB));
+    stack.undo();  // 回到 [ruleB, ruleA]
+    // 删：undo 原位插回（对象一致）
+    stack.push(new DA::DACommandConditionalFormat_removeRule(&store, 0, 0));
+    QVERIFY(cfRulesEqual(store.columnRules(0), onlyA));
+    stack.undo();
+    QVERIFY(cfRulesEqual(store.columnRules(0), bThenA));
+    stack.redo();
+    stack.undo();  // 回到 [ruleB, ruleA]
+    // 清列：undo 整体还原
+    stack.push(new DA::DACommandConditionalFormat_clearColumn(&store, 0));
+    QVERIFY(!store.hasRules(0));
+    stack.undo();
+    QVERIFY(cfRulesEqual(store.columnRules(0), bThenA));
+    stack.redo();
+    QVERIFY(!store.hasRules(0));
+}
+
+/**
+ * @brief Python 算子 da_column_stats：min/max/median 全表归约、NaN 排除、
+ * 非数值列/越界 → 不可用（C++ wrapper ok=false）
+ */
+void DATableDataTest::testColumnStatsOperator()
+{
+    if (!mPandasOk || !mPyScriptsOk) {
+        QSKIP("pandas/DAPyScripts not available");
+    }
+    pybind11::dict scope;
+    pybind11::exec(R"(
+import numpy as np
+import pandas as pd
+sdf = pd.DataFrame({
+    "v": [1.0, 2.0, 3.0, 4.0, 100.0],
+    "n": [1.0, np.nan, 3.0, np.nan, 5.0],
+    "t": ["a", "b", "c", "d", "e"],
+})
+)",
+                   pybind11::globals(),
+                   scope);
+    DA::DAPyDataFrame df(scope[ "sdf" ]);
+    DA::DAPyScriptsDataFrame& py = DA::DAPyScripts::getDataFrame();
+    auto r0                      = py.columnStats(df, 0);
+    QVERIFY(r0.ok);
+    QCOMPARE(r0.minValue, 1.0);
+    QCOMPARE(r0.maxValue, 100.0);
+    QCOMPARE(r0.medianValue, 3.0);
+    // NaN 排除后归约（有效值 [1,3,5]）
+    auto r1 = py.columnStats(df, 1);
+    QVERIFY(r1.ok);
+    QCOMPARE(r1.minValue, 1.0);
+    QCOMPARE(r1.maxValue, 5.0);
+    QCOMPARE(r1.medianValue, 3.0);
+    // 纯文本列：pd.to_numeric coerce 全 NaN → 不可用
+    auto r2 = py.columnStats(df, 2);
+    QVERIFY(!r2.ok);
+    // 越界 → 不可用（IndexError 经 dealException 吞掉）
+    auto r3 = py.columnStats(df, 99);
+    QVERIFY(!r3.ok);
+    auto r4 = py.columnStats(df, -1);
+    QVERIFY(!r4.ok);
+}
+
+/**
+ * @brief 绘制管线②④的像素级验证（§4.2 程序化）：色阶分布、编辑极值后端点更新
+ *（统计失效）、数据条几何与文字不被遮挡、查找高亮③覆盖条件格式②、
+ * 规则命令 undo/redo、预览叠加/还原
+ */
+void DATableDataTest::testConditionalPaintWidgetFlow()
+{
+    if (!mPandasOk || !mPyScriptsOk) {
+        QSKIP("pandas/DAPyScripts not available");
+    }
+    pybind11::dict scope;
+    pybind11::exec(R"(
+import numpy as np
+import pandas as pd
+cdf = pd.DataFrame({
+    "v": np.arange(10, dtype=float),
+    "b": np.arange(10, dtype=float),
+    "t": ["s%d" % i for i in range(10)],
+})
+)",
+                   pybind11::globals(),
+                   scope);
+    DA::DAPyDataFrame df(scope[ "cdf" ]);
+    DA::DAData d(df);
+    DA::DATableMetadataRegistry registry(nullptr);
+    DA::DADataOperateOfDataFrameWidget w(d, &registry);
+    w.resize(700, 400);
+    w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+    DA::DADataTableView* tv = w.getDataTableView();
+    QVERIFY(tv != nullptr);
+    tv->clearSelection();
+    DATableConditionalFormatStore* store = w.conditionalFormatStore();
+    QVERIFY(store != nullptr);
+    // 色阶（列 0，双色默认浅蓝→主蓝）+ 数据条（列 1，橙红）
+    DATableConditionalFormatRule scaleRule;
+    scaleRule.type = CfType::ColorScale;
+    store->addRule(0, scaleRule);
+    DATableConditionalFormatRule barRule;
+    barRule.type     = CfType::DataBar;
+    barRule.barColor = c_cfBar;
+    store->addRule(1, barRule);
+    auto renderViewport = [ &w, tv ]() {
+        // 清除当前格（模型装载后默认 (0,0)）：windows 风格会给当前格叠渐变着色，
+        // 干扰纯色像素断言（选区已在测试开头 clearSelection）
+        if (tv->selectionModel() && tv->selectionModel()->currentIndex().isValid()) {
+            tv->selectionModel()->setCurrentIndex(QModelIndex(), QItemSelectionModel::NoUpdate);
+        }
+        QApplication::processEvents();
+        tv->viewport()->repaint();
+        QImage img(tv->viewport()->size(), QImage::Format_ARGB32);
+        tv->viewport()->render(&img);
+        return img;
+    };
+    auto cellRect = [ tv ](int row, int col) {
+        return tv->visualRect(tv->model()->index(row, col));
+    };
+    // —— 色阶分布：min 行（值0）= 浅蓝端点，max 行（值9）= 主蓝端点，中间行介于两者 ——
+    QImage img = renderViewport();
+    const QRgb lowRgb  = c_cfScaleMin.rgb();
+    const QRgb highRgb = c_cfScaleMax.rgb();
+    QVERIFY2(countExactPixels(img, cellRect(0, 0), lowRgb) >= 20, "color scale min cell should be filled with low-end color");
+    QVERIFY2(countExactPixels(img, cellRect(9, 0), highRgb) >= 20, "color scale max cell should be filled with high-end color");
+    // 中间行（值5，t=5/9）：与两端点色都不同（分布插值的证据）
+    const QRect midRect = cellRect(5, 0);
+    QCOMPARE(countExactPixels(img, midRect, lowRgb), 0);
+    QCOMPARE(countExactPixels(img, midRect, highRgb), 0);
+    const QColor midExpect = DATableConditionalFormatRule::lerpColor(c_cfScaleMin, c_cfScaleMax, 5.0 / 9.0);
+    QVERIFY2(countExactPixels(img, midRect, midExpect.rgb()) >= 20, "middle cell should be the interpolated color");
+    // —— 数据条：max 行满格条（右侧区域为条色），min 行比例为 0 无条 ——
+    const QRect barMaxRect = cellRect(9, 1);
+    QVERIFY2(countExactPixels(img, barMaxRect, c_cfBar.rgb()) >= 20, "data bar of max cell should be drawn");
+    // 文字不被遮挡：条色为亮色（橙红），文字为深色 → 条区域内存在深色文字像素
+    QVERIFY2(countDarkPixels(img, barMaxRect) > 0, "text pixels must be visible above the data bar");
+    const QRect barMinRect = cellRect(0, 1);
+    QCOMPARE(countExactPixels(img, barMinRect, c_cfBar.rgb()), 0);  // ratio=0 无条
+    // 2px 内边距：单元格最右侧 1px 列不应有条色（条不满到边缘）——值9 比例=1 时条右缘 = 内容区右缘
+    QVERIFY(countExactPixels(img, QRect(barMaxRect.right(), barMaxRect.top(), 1, barMaxRect.height()), c_cfBar.rgb()) == 0);
+    // —— 编辑极值 → 统计失效 → 色阶端点更新（§4.2 第 2 条）——
+    // 行 8（值 8）编辑前 t=8/9；把行 9 的值 9 改成 90 后 max=90 → 行 8 的 t=8/90，
+    // 颜色随之变化即证明统计缓存被编辑失效并重算
+    const QColor before8 = DATableConditionalFormatRule::lerpColor(c_cfScaleMin, c_cfScaleMax, 8.0 / 9.0);
+    QVERIFY2(countExactPixels(img, cellRect(8, 0), before8.rgb()) >= 20, "row8 paints with old max=9 interpolation");
+    QVERIFY(tv->model()->setData(tv->model()->index(9, 0), QVariant(90.0), Qt::EditRole));
+    img = renderViewport();
+    const QColor after8 = DATableConditionalFormatRule::lerpColor(c_cfScaleMin, c_cfScaleMax, 8.0 / 90.0);
+    QVERIFY2(countExactPixels(img, cellRect(8, 0), after8.rgb()) >= 20,
+             "stats must be invalidated after editing the extreme value (row8 re-interpolated against max=90)");
+    QCOMPARE(countExactPixels(img, cellRect(8, 0), before8.rgb()), 0);
+    // 被编辑格（值 90）= 新 max → 高端色
+    QVERIFY2(countExactPixels(img, cellRect(9, 0), highRgb) >= 20, "new max cell paints high-end color");
+    // 撤销编辑 → 统计再失效 → 恢复原端点
+    w.getUndoStack()->undo();
+    img = renderViewport();
+    QVERIFY2(countExactPixels(img, cellRect(8, 0), before8.rgb()) >= 20, "undo edit restores original scale endpoints");
+    QCOMPARE(countExactPixels(img, cellRect(8, 0), after8.rgb()), 0);
+    // —— ③瞬态覆盖②：查找高亮（金黄 alpha160）叠加在色阶背景之上 ——
+    {
+        DA::DATableHighlightOverlay* ov = w.highlightOverlay();
+        ov->set(DA::DATableHighlightOverlay::Source::Find, DA::DATableHighlightOverlay::Level::Hit, { qMakePair(0, 0) });
+        img = renderViewport();
+        // 期望混合色：dst = (hl*160 + bg*(255-160))/255（bg = 色阶低端浅蓝）
+        const QColor hl(0xE6, 0xC2, 0x7C);
+        auto blend = [ & ](int cBg, int cHl) {
+            return (cHl * 160 + cBg * (255 - 160)) / 255;
+        };
+        const QColor expect(blend(c_cfScaleMin.red(), hl.red()), blend(c_cfScaleMin.green(), hl.green()), blend(c_cfScaleMin.blue(), hl.blue()));
+        const QRect r00 = cellRect(0, 0);
+        int blended     = 0;
+        for (int y = r00.top(); y <= r00.bottom(); ++y) {
+            for (int x = r00.left(); x <= r00.right(); ++x) {
+                const QRgb p = img.pixel(x, y);
+                if (qAbs(qRed(p) - expect.red()) <= 2 && qAbs(qGreen(p) - expect.green()) <= 2 && qAbs(qBlue(p) - expect.blue()) <= 2) {
+                    ++blended;
+                }
+            }
+        }
+        QVERIFY2(blended >= 20, qPrintable(QStringLiteral("overlay(3) must cover conditional format(2), blended px=%1").arg(blended)));
+        // 纯②色不再出现于该格（被③覆盖）
+        QCOMPARE(countExactPixels(img, r00, lowRgb), 0);
+        ov->clear(DA::DATableHighlightOverlay::Source::Find);
+        img = renderViewport();
+        QVERIFY2(countExactPixels(img, cellRect(0, 0), lowRgb) >= 20, "clearing overlay restores 2-layer paint");
+    }
+    // —— 规则命令 undo/redo（加规则/删规则）——
+    {
+        QSignalSpy ruleSpy(store, &DATableConditionalFormatStore::rulesChanged);
+        QUndoStack* us = w.getUndoStack();
+        QVERIFY(us != nullptr);
+        DATableConditionalFormatRule greenRule = makeBgRule(CfCond::Greater, QVariant(5), QColor(0x66, 0x9E, 0x8B));
+        us->push(new DA::DACommandConditionalFormat_addRule(store, 0, greenRule));
+        QCOMPARE(store->columnRules(0).size(), 2);
+        QVERIFY(ruleSpy.count() >= 1);
+        img = renderViewport();
+        // 值 6..9 命中绿规则（列表靠后覆盖色阶）
+        QVERIFY2(countExactPixels(img, cellRect(9, 0), QColor(0x66, 0x9E, 0x8B).rgb()) >= 20, "later rule overrides color scale");
+        us->undo();
+        QCOMPARE(store->columnRules(0).size(), 1);
+        img = renderViewport();
+        QVERIFY2(countExactPixels(img, cellRect(9, 0), highRgb) >= 20, "undo add-rule restores scale paint");
+        // push 时栈顶位于已撤销的编辑命令之下（undo 后 index 在其前）→ 编辑命令被丢弃，
+        // 栈中只剩本 addRule 命令（QUndoStack::push 标准语义）
+        QCOMPARE(us->count(), 1);
+        us->redo();
+        QCOMPARE(store->columnRules(0).size(), 2);
+        us->undo();  // 复原，避免影响后续断言
+    }
+    // —— 预览规则集：叠加显示、清除还原（对话框实时预览机制）——
+    {
+        QHash< int, QVector< DATableConditionalFormatRule > > preview;
+        preview.insert(0, QVector< DATableConditionalFormatRule >() << makeBgRule(CfCond::IsNotEmpty, QVariant(), QColor(0xE6, 0xC2, 0x7C)));
+        store->setPreviewRules(preview);
+        QVERIFY(store->hasPreview());
+        img = renderViewport();
+        QVERIFY2(countExactPixels(img, cellRect(3, 0), QColor(0xE6, 0xC2, 0x7C).rgb()) >= 20, "preview rules paint without committing");
+        QCOMPARE(store->ruleCount(), 2);  // 预览不落库（列0 一条色阶 + 列1 一条数据条）
+        store->clearPreview();
+        QVERIFY(!store->hasPreview());
+        img = renderViewport();
+        QVERIFY2(countExactPixels(img, cellRect(3, 0), QColor(0xE6, 0xC2, 0x7C).rgb()) == 0, "clearPreview restores committed rules");
+    }
+    w.hide();
+}
+
+/**
+ * @brief 对话框：惰性/只读源上色阶与数据条置灰 + 说明文案；普通源全部可用；
+ * 编辑不落库（取消后 store 不变）、预览通道工作
+ */
+void DATableDataTest::testConditionalDialogSourceRestriction()
+{
+    DATableConditionalFormatStore store;
+    const QStringList names { QStringLiteral("a"), QStringLiteral("b") };
+    {
+        DA::DADialogConditionalFormat dlg(&store, nullptr);
+        dlg.setup(names, { 0, 1 }, false);  // 惰性/只读源
+        QComboBox* comboType = dlg.findChild< QComboBox* >(QStringLiteral("comboType"));
+        QVERIFY(comboType != nullptr);
+        QStandardItemModel* m = qobject_cast< QStandardItemModel* >(comboType->model());
+        QVERIFY(m != nullptr);
+        QVERIFY(m->item(0)->isEnabled());   // 单元格规则可用
+        QVERIFY(!m->item(1)->isEnabled());  // 色阶置灰
+        QVERIFY(!m->item(2)->isEnabled());  // 数据条置灰
+        QLabel* hint = dlg.findChild< QLabel* >(QStringLiteral("labelDisabledHint"));
+        QVERIFY(hint != nullptr);
+        QVERIFY(!hint->text().isEmpty());       // 说明文案（tr）
+        QVERIFY(!hint->isHidden());             // 且可见
+        // 预览通道：setup 后 store 挂上预览（初始 = 现状）
+        QVERIFY(store.hasPreview());
+        // 新增规则只进工作集，不落库
+        dlg.show();  // 离屏显示，保证鼠标事件投递
+        QPushButton* addBtn = dlg.findChild< QPushButton* >(QStringLiteral("buttonAdd"));
+        QVERIFY(addBtn != nullptr);
+        QTest::mouseClick(addBtn, Qt::LeftButton);
+        QCOMPARE(dlg.resultRules().value(0).size() + dlg.resultRules().value(1).size(), 1);
+        QCOMPARE(store.ruleCount(), 0);  // 未提交
+        dlg.reject();                    // 取消 → 预览还原
+        QVERIFY(!store.hasPreview());
+        QVERIFY(store.isEmpty());
+    }
+    {
+        DA::DADialogConditionalFormat dlg(&store, nullptr);
+        dlg.setup(names, { 0 }, true);  // 普通源
+        QComboBox* comboType = dlg.findChild< QComboBox* >(QStringLiteral("comboType"));
+        QStandardItemModel* m = qobject_cast< QStandardItemModel* >(comboType->model());
+        QVERIFY(m->item(1)->isEnabled());
+        QVERIFY(m->item(2)->isEnabled());
+        dlg.accept();  // 确定：预览清除，结果交调用方（此处无差异 → 不提交）
+        QVERIFY(!store.hasPreview());
+    }
+}
+
+/**
+ * @brief 滚动性能（§4.2「滚动千行无卡顿」的程序化近似）：5000 行 × 3 规则列，
+ * 50 次跳滚 + 全视口重绘计时；并用计数提供者钉住「统计只算一次、滚动不重算」
+ *（红线2 的缓存语义），逐格遍历规则由按列分桶结构保证（rulesForColumn O(1)）
+ */
+void DATableDataTest::testConditionalScrollPerf1k()
+{
+    if (!mPandasOk || !mPyScriptsOk) {
+        QSKIP("pandas/DAPyScripts not available");
+    }
+    pybind11::dict scope;
+    pybind11::exec(R"(
+import numpy as np
+import pandas as pd
+pdf5k = pd.DataFrame({
+    "x": np.arange(5000, dtype=float),
+    "y": np.random.rand(5000) * 100.0,
+    "z": np.arange(5000, dtype=float) % 7,
+})
+)",
+                   pybind11::globals(),
+                   scope);
+    DA::DAPyDataFrame df(scope[ "pdf5k" ]);
+    DA::DAData d(df);
+    DA::DATableMetadataRegistry registry(nullptr);
+    DA::DADataOperateOfDataFrameWidget w(d, &registry);
+    w.resize(700, 400);
+    w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+    DA::DADataTableView* tv = w.getDataTableView();
+    QVERIFY(tv != nullptr);
+    DATableConditionalFormatStore* store = w.conditionalFormatStore();
+    QVERIFY(store != nullptr);
+    // 三列各一条规则：色阶 + 数据条 + 单元格规则
+    DATableConditionalFormatRule scaleRule;
+    scaleRule.type = CfType::ColorScale;
+    store->addRule(0, scaleRule);
+    DATableConditionalFormatRule barRule;
+    barRule.type = CfType::DataBar;
+    store->addRule(1, barRule);
+    store->addRule(2, makeBgRule(CfCond::Greater, QVariant(3), QColor(0xE6, 0xC2, 0x7C)));
+    // 用计数提供者替换 widget 安装的 Python 提供者：钉住统计计算次数
+    int statsCalls = 0;
+    store->setStatsProvider([ &statsCalls ](int column, DATableConditionalFormatStore::ColumnStats& out) {
+        ++statsCalls;
+        out.minValue    = 0.0;
+        out.maxValue    = 5000.0;
+        out.medianValue = 2500.0;
+        Q_UNUSED(column);
+        return true;
+    });
+    // 首绘：色阶列与数据条列各计算一次统计（单元格规则列不算）
+    tv->viewport()->repaint();
+    QApplication::processEvents();
+    const int callsAfterFirstPaint = statsCalls;
+    QVERIFY2(callsAfterFirstPaint >= 2, qPrintable(QStringLiteral("stats computed lazily on first paint, calls=%1").arg(callsAfterFirstPaint)));
+    // 50 次跳滚（覆盖 5000 行）+ 全视口重绘计时
+    QElapsedTimer timer;
+    timer.start();
+    for (int i = 0; i <= 4900; i += 100) {
+        tv->showActualRow(i);
+        tv->viewport()->repaint();
+        if ((i % 1000) == 0) {
+            QApplication::processEvents();
+        }
+    }
+    const qint64 elapsed = timer.elapsed();
+    // 滚动不重算统计（缓存 + 精确失效挂点：滚动不发 cellValueChanged）
+    QCOMPARE(statsCalls, callsAfterFirstPaint);
+    // 离屏软件渲染的宽松上界（主要防"每格重算统计/每格遍历全部规则"级回归；
+    // 主观流畅度仍属 §4.2 手工验收）
+    QVERIFY2(elapsed < 20000, qPrintable(QStringLiteral("50 scroll steps + repaints took %1 ms").arg(elapsed)));
+    qDebug().noquote() << QStringLiteral("testConditionalScrollPerf1k: 5000 rows, 50 scroll steps + repaints elapsed_ms=%1, statsCalls=%2")
+                              .arg(elapsed)
+                              .arg(statsCalls);
     w.hide();
 }
 
