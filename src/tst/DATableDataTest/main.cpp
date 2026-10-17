@@ -471,6 +471,10 @@ private Q_SLOTS:
     void testUndoHistoryWidget();
     void testUndoCommandDefaultTexts();
 
+    // 005 §7.2 收官：10 万行综合体验链路（批注→排序→查找替换→条件格式→填充→校验），
+    // 分步计时 + 全部撤销后数据精确还原
+    void testBatch3FullChain100k();
+
 private:
     // 生成/复用sqlite测试库（百万行），失败返回false并置mSqliteErr
     bool ensureSqliteReady();
@@ -6474,6 +6478,227 @@ void DATableDataTest::testUndoCommandDefaultTexts()
         DA::DADataObjectPersistUndoCommand cmd;
         QVERIFY(!cmd.text().isEmpty());
     }
+}
+
+
+//===================================================
+// 005 §7.2 收官：10 万行综合体验链路（排序 → 查找替换 → 条件格式 → 填充 → 校验 → 批注）
+//===================================================
+
+// 程序化走一遍整批能力的组合链路：无明显卡顿（分步计时 + 宽松上限）、无错位
+// （撤销全部回退后数据精确还原）、各步撤销栈只增对应条数
+void DATableDataTest::testBatch3FullChain100k()
+{
+    if (!mPandasOk || !mPyScriptsOk) {
+        QSKIP("pandas/DAPyScripts not available");
+    }
+    qRegisterMetaType< DA::DAData >("DA::DAData");
+    pybind11::dict scope;
+    QElapsedTimer total;
+    total.start();
+    pybind11::exec(R"(
+import pandas as pd, numpy as np
+n = 100000
+rng = np.random.default_rng(11)
+cat_pool = ["alpha", "beta", "x777", "gamma"]
+sp = np.arange(n, dtype="float64") * 0.5
+sp[::10] = np.nan
+df = pd.DataFrame({
+    "id": rng.integers(0, 10**9, n),
+    "val": rng.uniform(-20, 120, n),
+    "cat": rng.choice(cat_pool, n),
+    "d": pd.to_datetime("2020-01-01") + pd.to_timedelta(rng.integers(0, 1000, n), unit="D"),
+    "sp": sp,
+    "flag": rng.integers(0, 2, n).astype(bool),
+})
+first_val = float(df.iat[0, 1])
+)",
+                   pybind11::globals(),
+                   scope);
+    DA::DAPyDataFrame df(scope[ "df" ]);
+    const double firstVal = scope[ "first_val" ].cast< double >();
+    QCOMPARE(df.shape().first, static_cast< std::size_t >(100000));
+    DA::DADataManager mgr;
+    DA::DAData d(df);
+    d.setName(QStringLiteral("chain100k"));
+    mgr.addData(d);
+    DA::DATableMetadataRegistry registry(nullptr);
+    DA::DADataOperateOfDataFrameWidget w(d, &registry);
+    w.resize(800, 500);
+    w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+    DA::DADataTableView* tv = w.getDataTableView();
+    QVERIFY(tv != nullptr);
+    QUndoStack& pageStack = *w.getUndoStack();
+    DA::DAPyScriptsDataFrame& py = DA::DAPyScripts::getDataFrame();
+    QElapsedTimer step;
+    qint64 msNote = 0, msSort = 0, msReplace = 0, msCf = 0, msFill = 0, msValidate = 0;
+
+    // —— ① 批注（先放批注，验证它扛过后续排序）——
+    DA::DATableNoteStore* notes = w.noteStore();
+    QVERIFY(notes != nullptr);
+    step.start();
+    {
+        DA::DATableNoteStore::Note n1;
+        n1.text      = QStringLiteral("chain-note");
+        n1.createdAt = QDateTime::currentDateTime();
+        n1.updatedAt = n1.createdAt;
+        w.push(new DA::DACommandTableNote_set(notes, 50000, 0, DA::DATableNoteStore::Note(), n1));
+    }
+    msNote = step.elapsed();
+    QCOMPARE(notes->noteText(50000, 0), QStringLiteral("chain-note"));
+
+    // —— ② 排序（列头点击，破坏式重排 + 置换撤销）——
+    step.start();
+    {
+        DA::DADataHeaderView* hh = qobject_cast< DA::DADataHeaderView* >(tv->horizontalHeader());
+        QVERIFY(hh != nullptr);
+        int colVal = -1;
+        for (int c = 0; c < hh->count(); ++c) {
+            if (hh->model()->headerData(c, Qt::Horizontal).toString() == QLatin1String("val")) {
+                colVal = c;
+                break;
+            }
+        }
+        QVERIFY(colVal >= 0);
+        const int x = hh->sectionViewportPosition(colVal) + qMax(1, hh->sectionSize(colVal) / 2);
+        const int y = qMax(1, hh->viewport()->height() / 2);
+        QTest::mouseClick(hh->viewport(), Qt::LeftButton, Qt::NoModifier, QPoint(x, y));
+    }
+    msSort = step.elapsed();
+    // 升序：首行是列最小值附近（<= 0 的负端），且批注仍在（跟着某一行移动，总数不变）
+    QVERIFY(df.iat(0, 1).toDouble() < 0.0);
+    QCOMPARE(notes->count(), 1);
+    QCOMPARE(pageStack.count(), 2);  // 批注 + 排序
+
+    // —— ③ 查找替换（变更清单，一个撤销单元）——
+    QVector< int > repRows, repCols;
+    pybind11::list oldVals, newVals;
+    step.start();
+    {
+        QVERIFY(py.findReplace(df,
+                               QStringLiteral("x777"),
+                               QStringLiteral("x777z"),
+                               false,
+                               false,
+                               false,
+                               qMakePair(0, 99999),
+                               qMakePair(2, 2),
+                               &repRows,
+                               &repCols,
+                               &oldVals,
+                               &newVals));
+        QVERIFY(repRows.size() > 10000);  // 1/4 池命中率
+        auto* cmd = new DA::DACommandDataFrame_replace(df, repRows, repCols, oldVals, newVals);
+        cmd->setText(QStringLiteral("replace all (chain)"));
+        QVERIFY(cmd->exec());
+        w.push(cmd);
+    }
+    msReplace = step.elapsed();
+    const int firstRepRow = repRows.isEmpty() ? -1 : repRows.first();
+    if (firstRepRow >= 0) {
+        QCOMPARE(df.iat(static_cast< std::size_t >(firstRepRow), 2).toString(), QStringLiteral("x777z"));
+    }
+    QCOMPARE(pageStack.count(), 3);
+
+    // —— ④ 条件格式（元数据 + delegate 绘制，不进撤销栈）——
+    step.start();
+    {
+        DA::DATableConditionalFormatStore* cf = w.conditionalFormatStore();
+        QVERIFY(cf != nullptr);
+        DA::DATableConditionalFormatRule rule;
+        rule.type      = DA::DATableConditionalFormatRule::Type::CellRule;
+        rule.condition = DA::DATableConditionalFormatRule::Condition::Greater;
+        rule.value1    = QVariant(100.0);
+        DA::DATableCellStyle st;
+        st.setBackground(QBrush(QColor(0xCE, 0x60, 0x43)));
+        rule.style = st;
+        cf->addRule(1, rule);
+        // 全视口重绘无卡顿（滚动到中部再渲染一次）
+        tv->showActualRow(50000);
+        QApplication::processEvents();
+        QImage img(tv->viewport()->size(), QImage::Format_ARGB32);
+        tv->viewport()->render(&img);
+        QVERIFY(!img.isNull());
+    }
+    msCf = step.elapsed();
+    const int stackAfterCf = pageStack.count();
+
+    // —— ⑤ 填充（sp 列 ffill，选 100 行）——
+    step.start();
+    {
+        int colSp = -1;
+        const QList< QString > cols = df.columns();
+        for (int c = 0; c < cols.size(); ++c) {
+            if (cols[ c ] == QLatin1String("sp")) {
+                colSp = c;
+                break;
+            }
+        }
+        QVERIFY(colSp >= 0);
+        QItemSelection sel(tv->model()->index(0, colSp), tv->model()->index(99, colSp));
+        tv->selectionModel()->select(sel, QItemSelectionModel::ClearAndSelect);
+        const int written = w.fillSelection(DA::DADataOperateOfDataFrameWidget::FillMode::Forward);
+        QVERIFY(written > 0);  // sp 每 10 行一个 NaN，100 行内必有填充
+    }
+    msFill = step.elapsed();
+    QCOMPARE(pageStack.count(), stackAfterCf + 1);  // 条件格式不入栈、填充入栈
+
+    // —— ⑥ 校验（只读，违规高亮 + 耗时记录）——
+    step.start();
+    {
+        DA::DATableValidationStore* vs = w.validationStore();
+        QVERIFY(vs != nullptr);
+        DA::DATableValidationRule rNum;
+        rNum.columnName = QStringLiteral("val");
+        rNum.type       = DA::DATableValidationRule::Type::NumericRange;
+        rNum.hasNumericMin = true;
+        rNum.numericMin = 0.0;
+        rNum.hasNumericMax = true;
+        rNum.numericMax = 100.0;
+        vs->addRule(rNum);
+        DA::DATableValidationRule rNe;
+        rNe.columnName = QStringLiteral("cat");
+        rNe.type       = DA::DATableValidationRule::Type::NotEmpty;
+        rNe.level      = DA::DATableValidationRule::Level::Warning;
+        vs->addRule(rNe);
+        int evalMs = -1;
+        const auto outcomes = w.evaluateValidationRules(&evalMs);
+        QCOMPARE(outcomes.size(), 2);
+        QVERIFY(outcomes[ 0 ].rows.size() > 10000);  // uniform(-20,120) 约 2/7 越界
+        QVERIFY(evalMs >= 0);
+        // 违规高亮已装载（任取一条违规行）
+        DA::DATableHighlightOverlay* ov = w.highlightOverlay();
+        QCOMPARE(ov->levelAt(outcomes[ 0 ].rows.first(), outcomes[ 0 ].columnPosition),
+                 DA::DATableHighlightOverlay::Level::ViolationError);
+    }
+    msValidate = step.elapsed();
+    QCOMPARE(pageStack.count(), stackAfterCf + 1);  // 校验只读不入栈（红线2）
+
+    // —— 全部撤销：数据精确还原 ——
+    while (pageStack.index() > 0) {
+        pageStack.undo();
+    }
+    QCOMPARE(pageStack.index(), 0);
+    QCOMPARE(df.iat(0, 1).toDouble(), firstVal);          // 排序还原
+    QCOMPARE(notes->count(), 0);                          // 批注命令还原
+    QVERIFY(qIsNaN(df.iat(10, 4).toDouble()));            // 填充还原（sp[10] 回到 NaN）
+    if (firstRepRow >= 0) {
+        // 排序已还原 → firstRepRow 的绝对行含义回到替换时（替换发生在排序后、排序已先还原？）
+        // 撤销顺序：填充→替换→排序→批注；替换还原发生在排序还原之前，行号在替换坐标系内一致
+        QVERIFY(df.iat(static_cast< std::size_t >(firstRepRow), 2).toString() != QStringLiteral("x777z"));
+    }
+    // 校验高亮是瞬态（不在撤销栈），清除入口只清自己来源
+    w.clearValidationHighlights();
+    QVERIFY(w.highlightOverlay()->isEmpty());
+
+    const qint64 msTotal = total.elapsed();
+    qDebug().noquote() << QStringLiteral("DATableDataTest::testBatch3FullChain100k: note=%1ms sort=%2ms replace=%3ms cf=%4ms fill=%5ms validate=%6ms total=%7ms")
+                              .arg(msNote).arg(msSort).arg(msReplace).arg(msCf).arg(msFill).arg(msValidate).arg(msTotal);
+    // 宽松上限（防劣化）：全链路 < 60s；排序单步 < 10s（002 实测 10 万行 ~15ms）
+    QVERIFY2(msTotal < 60000, qPrintable(QStringLiteral("full chain too slow: %1 ms").arg(msTotal)));
+    QVERIFY2(msSort < 10000, qPrintable(QStringLiteral("sort too slow: %1 ms").arg(msSort)));
+    w.hide();
 }
 
 
