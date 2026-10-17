@@ -9,6 +9,7 @@
 #include "DATableKeyRemap.h"
 // stl
 #include <memory>
+#include <algorithm>
 // qt
 #include <QTableView>
 #include <QHeaderView>
@@ -24,6 +25,7 @@
 #include "Commands/DACommandsDataFrame.h"
 #include "Commands/DACommandsTableStyle.h"
 #include "Commands/DACommandsTableColumnFormat.h"
+#include "Commands/DACommandsConditionalFormat.h"
 #include "DADataManager.h"
 // table metadata / style
 #include "DATableStyleManager.h"
@@ -32,6 +34,7 @@
 #include "DATableMetadata.h"
 #include "DATableViewStateStore.h"
 #include "DATableHighlightOverlay.h"
+#include "DATableConditionalFormatStore.h"
 #include "DADataHeaderView.h"
 // Dialog
 #include "Dialog/DARenameColumnsNameDialog.h"
@@ -40,6 +43,7 @@
 #include "Dialog/DADialogInsertNewColumn.h"
 #include "Dialog/DADialogDataframeColumnDescribe.h"
 #include "Dialog/DADialogFindReplace.h"
+#include "Dialog/DADialogConditionalFormat.h"
 // python operator wrapper（查找/替换）
 #include "DAPyScripts.h"
 #include "DAPyScriptsDataFrame.h"
@@ -55,6 +59,15 @@ namespace
 {
 // 替换撤销阈值（格）：变更格数超过此值降级为「不可撤销 + 确认提示」（设计稿 §4.11 策略表，默认 100 万格）
 constexpr int c_replaceUndoCellLimit = 1000000;
+
+// 列集合去重排序（003 统计失效挂点用：变更清单的列收敛为唯一列集合）
+QList< int > toUniqueSorted(const QList< int >& in)
+{
+    QList< int > out = in;
+    std::sort(out.begin(), out.end());
+    out.erase(std::unique(out.begin(), out.end()), out.end());
+    return out;
+}
 }
 
 //===================================================
@@ -89,10 +102,13 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
     DATableMetadata* metadata = registry ? registry->getOrCreate(d) : nullptr;
     mStyleManager             = metadata ? metadata->styleManager() : nullptr;
     mViewStateStore           = metadata ? metadata->viewState() : nullptr;
+    mConditionalFormatStore   = metadata ? metadata->conditionalFormat() : nullptr;
     // 瞬态高亮层：页级持有（查找/校验两个来源共用），不序列化、不进撤销栈；
     // 注入 delegate 绘制管线③（瞬态装饰）
     mHighlightOverlay = new DATableHighlightOverlay(this);
     mStyleDelegate    = new DATableStyleItemDelegate(mStyleManager, mHighlightOverlay, this);
+    // 条件格式子存储注入 delegate 绘制管线②（持久装饰）与④（数据条），003 T1.5
+    mStyleDelegate->setConditionalFormatStore(mConditionalFormatStore);
     ui->tableView->setItemDelegate(mStyleDelegate);
     // 高亮层变更时重绘视口（瞬态装饰不经模型 dataChanged 链路）
     connect(mHighlightOverlay, &DATableHighlightOverlay::changed, this, [ this ]() {
@@ -124,6 +140,57 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
             mModel->notifyDataChanged(0, 0, qMax(0, mModel->actualRowCount() - 1), mModel->columnCount() - 1);
         }
     });
+    // 条件格式（003 T1.5）：规则变更 → 重绘对应列（-1 整表）；重映射 → 整表刷新
+    if (mConditionalFormatStore) {
+        connect(mConditionalFormatStore, &DATableConditionalFormatStore::rulesChanged, this, [ this ](int column) {
+            if (!mModel) {
+                return;
+            }
+            const int rEnd = qMax(0, mModel->actualRowCount() - 1);
+            if (column < 0) {
+                mModel->notifyDataChanged(0, 0, rEnd, qMax(0, mModel->columnCount() - 1));
+            } else {
+                mModel->notifyDataChanged(0, column, rEnd, column);
+            }
+        });
+        connect(mConditionalFormatStore, &DATableConditionalFormatStore::ruleReset, this, [ this ]() {
+            if (mModel) {
+                mModel->notifyDataChanged(0, 0, qMax(0, mModel->actualRowCount() - 1), qMax(0, mModel->columnCount() - 1));
+            }
+        });
+        // 列统计提供者（色阶/数据条端点）：store 是会话级（比 widget 长寿），
+        // lambda 用 QPointer 防悬挂，widget 析构时另行清空提供者
+        QPointer< DADataOperateOfDataFrameWidget > self(this);
+        mConditionalFormatStore->setStatsProvider([ self ](int column, DATableConditionalFormatStore::ColumnStats& out) {
+            if (!self) {
+                return false;
+            }
+            DAPyDataFrame df = self->getDataframe();
+            if (df.isNone()) {
+                return false;
+            }
+            DAPyScriptsDataFrame& py = DAPyScripts::getDataFrame();
+            const DAPyScriptsDataFrame::ColumnStatsResult r = py.columnStats(df, column);
+            if (!r.ok) {
+                return false;
+            }
+            out.minValue    = r.minValue;
+            out.maxValue    = r.maxValue;
+            out.medianValue = r.medianValue;
+            return true;
+        });
+        // 统计失效挂点（widget 侧，计划 WP2 步骤 5）：单元格编辑命令在模型内部创建，
+        // 不走 widget 命令回调，用模型的 cellValueChanged 精确信号失效对应列。
+        // 不用 dataChanged：滑窗滚动（setCacheWindowStartRow）与样式刷新也发整窗
+        // dataChanged，会在滚动时每步误失效统计（破坏"滚动千行无卡顿"验收）；
+        // 排序不发本信号（不改列值集合，不失效——性能决策）
+        connect(mModel, &DADataTableModel::cellValueChanged, this, [ this ](int actualRow, int actualColumn) {
+            Q_UNUSED(actualRow);
+            if (mConditionalFormatStore) {
+                mConditionalFormatStore->invalidateColumnStats(actualColumn);
+            }
+        });
+    }
     // 视图状态（列宽按列名 + 行头宽，R6）：
     // 结构变化（模型重置/插删列）后按列名重新应用，保证列宽不随位置错位；
     // 采集只认用户拖拽（sectionResized + 左键按住在表头上），程序化改动不写 store
@@ -176,6 +243,8 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
         showFindReplace(true);
     });
     connect(ui->tableView, &DADataTableView::findBarCloseRequested, this, &DADataOperateOfDataFrameWidget::closeFindReplace);
+    // 条件格式入口（003 T1.5）：表体右键菜单与 Ribbon Table Style 面板共用同一打开逻辑
+    connect(ui->tableView, &DADataTableView::conditionalFormatRequested, this, &DADataOperateOfDataFrameWidget::showConditionalFormatDialog);
     // 选中变化时反向同步 ribbon 控件
     if (auto sm = ui->tableView->selectionModel()) {
         connect(sm, &QItemSelectionModel::selectionChanged, this, [ this ]() {
@@ -191,6 +260,11 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
 
 DADataOperateOfDataFrameWidget::~DADataOperateOfDataFrameWidget()
 {
+    // 条件格式子存储是会话级（借自注册表，比 widget 长寿）：清空统计提供者，
+    // 避免持有已销毁页面的回调（QPointer 已防悬挂，此处彻底释放 lambda 捕获）
+    if (mConditionalFormatStore) {
+        mConditionalFormatStore->setStatsProvider(nullptr);
+    }
     delete ui;
 }
 
@@ -267,9 +341,14 @@ void DADataOperateOfDataFrameWidget::insertRowAt(int row)
     }
     std::unique_ptr< DACommandDataFrame_insertNanRow > cmd(new DACommandDataFrame_insertNanRow(df, row));
     QPointer< DADataTableModel > modle = mModel;
-    cmd->setCallBack([ modle, row ]() {
+    // 统计失效挂点（003 WP2 步骤 5）：插行保守失效全部列统计（exec/undo 都触发）
+    DATableConditionalFormatStore* cfStore = mConditionalFormatStore;
+    cmd->setCallBack([ modle, row, cfStore ]() {
         if (modle) {
             modle->notifyRowsInserted({ row });
+        }
+        if (cfStore) {
+            cfStore->invalidateAllStats();
         }
     });
     // 行列增删样式键同步：插入行时 >=row 的键 +1；撤销时按删除处理（>=row 的键 -1）
@@ -352,15 +431,23 @@ void DADataOperateOfDataFrameWidget::insertColumnAt(int col)
         }
     });
     // 行列增删样式键同步：插入列时 >=col 的键 +1；撤销时按删除处理
+    // 条件格式规则同为装饰类位置键（R20），随列插删同款重映射（003）
     DATableStyleManager* styleMgr = mStyleManager;
-    cmd->setDirectionalCallBack([ styleMgr, col ](bool isUndo) {
-        if (!styleMgr) {
-            return;
+    DATableConditionalFormatStore* cfStore = mConditionalFormatStore;
+    cmd->setDirectionalCallBack([ styleMgr, cfStore, col ](bool isUndo) {
+        if (styleMgr) {
+            if (isUndo) {
+                styleMgr->onColumnsRemoved({ col });
+            } else {
+                styleMgr->onColumnsInserted({ col });
+            }
         }
-        if (isUndo) {
-            styleMgr->onColumnsRemoved({ col });
-        } else {
-            styleMgr->onColumnsInserted({ col });
+        if (cfStore) {
+            if (isUndo) {
+                cfStore->onColumnsRemoved({ col });
+            } else {
+                cfStore->onColumnsInserted({ col });
+            }
         }
     });
     if (!cmd->exec()) {
@@ -386,9 +473,14 @@ int DADataOperateOfDataFrameWidget::removeSelectRow()
     }
     std::unique_ptr< DACommandDataFrame_dropIRow > cmd(new DACommandDataFrame_dropIRow(mData.toDataFrame(), rows));
     QPointer< DADataTableModel > modle = mModel;
-    cmd->setCallBack([ modle, rows ]() {
+    // 统计失效挂点（003）：删行可能改变列 min/max，保守失效全部列统计
+    DATableConditionalFormatStore* cfStore = mConditionalFormatStore;
+    cmd->setCallBack([ modle, rows, cfStore ]() {
         if (modle) {
             modle->notifyRowsInserted(rows);
+        }
+        if (cfStore) {
+            cfStore->invalidateAllStats();
         }
     });
     // 行列增删样式键同步：删除行时 ==row 的键删除，>row 的键 -1；撤销时按插入处理
@@ -435,15 +527,23 @@ int DADataOperateOfDataFrameWidget::removeSelectColumn()
     });
     // 行列增删样式键同步：删除列时 ==col 的键删除，>col 的键 -1；撤销时按插入处理
     // 注意：被删除列的样式在删除时丢失，撤销(load恢复dataframe)无法恢复样式（已知限制，见 spec §7.3）
+    // 条件格式规则同为装饰类位置键（R20），随列删除同款重映射（被删列的规则一并丢弃，003）
     DATableStyleManager* styleMgr = mStyleManager;
-    cmd->setDirectionalCallBack([ styleMgr, columns ](bool isUndo) {
-        if (!styleMgr) {
-            return;
+    DATableConditionalFormatStore* cfStore = mConditionalFormatStore;
+    cmd->setDirectionalCallBack([ styleMgr, cfStore, columns ](bool isUndo) {
+        if (styleMgr) {
+            if (isUndo) {
+                styleMgr->onColumnsInserted(columns);
+            } else {
+                styleMgr->onColumnsRemoved(columns);
+            }
         }
-        if (isUndo) {
-            styleMgr->onColumnsInserted(columns);
-        } else {
-            styleMgr->onColumnsRemoved(columns);
+        if (cfStore) {
+            if (isUndo) {
+                cfStore->onColumnsInserted(columns);
+            } else {
+                cfStore->onColumnsRemoved(columns);
+            }
         }
     });
     if (!cmd->exec()) {
@@ -477,11 +577,19 @@ int DADataOperateOfDataFrameWidget::removeSelectCell()
     }
     std::unique_ptr< DACommandDataFrame_setnan > cmd(new DACommandDataFrame_setnan(df, rows, cols));
     QPointer< DADataTableModel > modle = mModel;
-    cmd->setCallBack([ modle, rows, cols ]() {
+    // 统计失效挂点（003）：置 nan 改变列值集合，失效受影响列的统计
+    DATableConditionalFormatStore* cfStore = mConditionalFormatStore;
+    cmd->setCallBack([ modle, rows, cols, cfStore ]() {
         if (modle) {
             const auto size = qMin(rows.size(), cols.size());
             for (int i = 0; i < size; ++i) {
                 modle->notifyDataChanged(rows[ i ], cols[ i ]);
+            }
+        }
+        if (cfStore) {
+            const QList< int > uniqueCols = toUniqueSorted(cols);
+            for (int c : uniqueCols) {
+                cfStore->invalidateColumnStats(c);
             }
         }
     });
@@ -587,11 +695,19 @@ int DADataOperateOfDataFrameWidget::pasteFromClipboard()
     }
     std::unique_ptr< DACommandDataFrame_paste > cmd(new DACommandDataFrame_paste(df, rows, cols, values));
     QPointer< DADataTableModel > modle = mModel;
-    cmd->setCallBack([ modle, rows, cols ]() {
+    // 统计失效挂点（003）：粘贴改变列值集合，失效受影响列的统计
+    DATableConditionalFormatStore* cfStore = mConditionalFormatStore;
+    cmd->setCallBack([ modle, rows, cols, cfStore ]() {
         if (modle) {
             const auto size = qMin(rows.size(), cols.size());
             for (int i = 0; i < size; ++i) {
                 modle->notifyDataChanged(rows[ i ], cols[ i ]);
+            }
+        }
+        if (cfStore) {
+            const QList< int > uniqueCols = toUniqueSorted(cols);
+            for (int c : uniqueCols) {
+                cfStore->invalidateColumnStats(c);
             }
         }
     });
@@ -1316,6 +1432,15 @@ DATableHighlightOverlay* DADataOperateOfDataFrameWidget::highlightOverlay() cons
 }
 
 /**
+ * @brief 获取条件格式子存储
+ * @return 条件格式子存储指针（借自元数据束，registry 为空时为 nullptr）
+ */
+DATableConditionalFormatStore* DADataOperateOfDataFrameWidget::conditionalFormatStore() const
+{
+    return mConditionalFormatStore;
+}
+
+/**
  * @brief 从视图状态子存储应用列宽与行头宽
  *
  * 列宽按「列名 + 第几次出现（occurrence）」匹配逻辑列号后 resizeSection——
@@ -1924,6 +2049,8 @@ bool DADataOperateOfDataFrameWidget::applySortSpec(const QVector< QPair< int, Qt
     });
     // ② 模型刷新 → ③ 选区跟随 → 视口回顶（回调范式照 paste 的逐格 notifyDataChanged 写法）
     cmd->setCallBack([ modle, view, cmdRaw, self ]() {
+        // 排序不改变列值集合 → 条件格式列统计不失效（003 性能决策）：
+        // 统计失效挂点走 cellValueChanged 精确信号，排序路径不发该信号，天然不失效
         if (modle) {
             const int rows = modle->actualRowCount();
             const int cols = modle->columnCount();
@@ -2043,6 +2170,188 @@ int DADataOperateOfDataFrameWidget::findHitCount() const
 int DADataOperateOfDataFrameWidget::currentFindHitIndex() const
 {
     return mFindHitIndex;
+}
+
+/**
+ * @brief 打开条件格式规则编辑对话框（003 T1.5）
+ *
+ * 作用列 = 当前选区覆盖的列集合（无选区回退当前格所在列）；对话框编辑期间
+ * 用 store 的「预览规则集」实时叠加（不落库），确定后按 resultRules 与 store
+ * 现值的差异生成增/删/改/移子命令的父命令入页撤销栈（D4：一切写操作入栈；
+ * 条件格式不写 DataFrame，红线3），取消还原。惰性/只读源上色阶与数据条
+ * 在对话框内置灰并给出说明（§1.4-2），单元格规则正常。
+ */
+void DADataOperateOfDataFrameWidget::showConditionalFormatDialog()
+{
+    if (!mConditionalFormatStore) {
+        // 开发诊断：无元数据注册表（正常 APP 链路不会出现）
+        qWarning() << "DADataOperateOfDataFrameWidget::showConditionalFormatDialog: metadata registry unavailable";
+        return;
+    }
+    QList< int > cols = getSelectedDataframeCoumns();
+    if (cols.isEmpty()) {
+        const int c = getSelectedOneDataframeColumn();
+        if (c >= 0) {
+            cols.append(c);
+        }
+    }
+    if (cols.isEmpty()) {
+        daWarning << tr("Please select a column first");  // cn:请先选择列
+        return;
+    }
+    // 列名：dataframe 用 columns()；惰性表等无 dataframe 时退回模型表头文本
+    QStringList columnNames;
+    DAPyDataFrame df = getDataframe();
+    if (!df.isNone()) {
+        columnNames = df.columns();
+    } else if (mModel) {
+        const int cc = mModel->columnCount();
+        for (int c = 0; c < cc; ++c) {
+            columnNames.append(mModel->headerData(c, Qt::Horizontal).toString());
+        }
+    }
+    DADialogConditionalFormat dlg(mConditionalFormatStore, this);
+    dlg.setup(columnNames, cols, isColumnStatsSourceAvailable());
+    if (QDialog::Accepted == dlg.exec()) {
+        QUndoCommand* cmd = buildConditionalFormatCommands(dlg.resultRules());
+        if (cmd) {
+            push(cmd);
+        }
+    }
+}
+
+/**
+ * @brief 清除选中列的条件格式规则（一次命令，可撤销）
+ */
+void DADataOperateOfDataFrameWidget::clearConditionalFormatFromSelection()
+{
+    if (!mConditionalFormatStore) {
+        return;
+    }
+    const QList< int > cols = getSelectedDataframeCoumns();
+    if (cols.isEmpty()) {
+        daWarning << tr("Please select a column first");  // cn:请先选择列
+        return;
+    }
+    QUndoCommand* parent = new QUndoCommand(tr("Clear Conditional Format Rules"));  // cn:清除条件格式规则
+    bool any             = false;
+    for (int col : cols) {
+        if (mConditionalFormatStore->hasRules(col)) {
+            new DACommandConditionalFormat_clearColumn(mConditionalFormatStore, col, parent);
+            any = true;
+        }
+    }
+    if (!any) {
+        delete parent;
+        daInfo << tr("The selected columns have no conditional format rules");  // cn:所选列没有条件格式规则
+        return;
+    }
+    push(parent);
+}
+
+/**
+ * @brief 色阶/数据条的数据源可用性（§1.4-2）
+ *
+ * 判定走 DAData 持有的 DATableDataSource（不新造平行接口）：惰性加载
+ * （isLazyLoaded，无法全量列统计）或不可编辑（isTableEditable 为假，数据库表）
+ * 均不可用；无 tableSource 的普通 dataframe 可用。
+ * @return 色阶/数据条可用返回 true
+ */
+bool DADataOperateOfDataFrameWidget::isColumnStatsSourceAvailable() const
+{
+    if (mData.isNull()) {
+        return false;
+    }
+    DAData d                    = mData;
+    const DATableDataSource* ts = d.tableSource();
+    return !(ts && (ts->isLazyLoaded() || !ts->isTableEditable()));
+}
+
+/**
+ * @brief 规则集差异 → 撤销命令（父命令聚合，旧新对象记录范式 D4）
+ *
+ * 每列独立 diff：新集为空 → clearColumn；旧集为空 → 逐条 add；同元素多重集
+ * 仅顺序不同 → move 序列；其余 → 位置式 diff（前缀 modify + 尾部 add/remove）。
+ * undo/redo 结果对象与差异前/后完全一致（单测钉住）。
+ * @param newRules 对话框结果（列 → 规则列表）
+ * @return 父命令；无任何差异返回 nullptr（调用方不推空命令）
+ */
+QUndoCommand* DADataOperateOfDataFrameWidget::buildConditionalFormatCommands(
+    const QHash< int, QVector< DATableConditionalFormatRule > >& newRules) const
+{
+    QUndoCommand* parent = new QUndoCommand(tr("Change Conditional Format Rules"));  // cn:更改条件格式规则
+    bool any             = false;
+    QList< int > cols    = newRules.keys();
+    std::sort(cols.begin(), cols.end());
+    for (int col : std::as_const(cols)) {
+        // 预览已在对话框 accept 时清除，columnRules 返回落库值
+        const QVector< DATableConditionalFormatRule > oldRules = mConditionalFormatStore->columnRules(col);
+        const QVector< DATableConditionalFormatRule > newCol   = newRules.value(col);
+        if (oldRules == newCol) {
+            continue;
+        }
+        any = true;
+        if (newCol.isEmpty()) {
+            new DACommandConditionalFormat_clearColumn(mConditionalFormatStore, col, parent);
+            continue;
+        }
+        if (oldRules.isEmpty()) {
+            for (int i = 0; i < newCol.size(); ++i) {
+                new DACommandConditionalFormat_addRule(mConditionalFormatStore, col, newCol.at(i), i, parent);
+            }
+            continue;
+        }
+        // 纯重排检测（同元素多重集）：move 序列（保持"移动"语义，与对话框上移/下移对应）
+        QVector< DATableConditionalFormatRule > rest = oldRules;
+        bool permutation                             = true;
+        for (const DATableConditionalFormatRule& r : newCol) {
+            int found = -1;
+            for (int i = 0; i < rest.size(); ++i) {
+                if (rest.at(i) == r) {
+                    found = i;
+                    break;
+                }
+            }
+            if (found < 0) {
+                permutation = false;
+                break;
+            }
+            rest.removeAt(found);
+        }
+        if (permutation && rest.isEmpty()) {
+            QVector< DATableConditionalFormatRule > cur = oldRules;
+            for (int i = 0; i < newCol.size(); ++i) {
+                int j = i;
+                while (j < cur.size() && !(cur.at(j) == newCol.at(i))) {
+                    ++j;
+                }
+                if (j > i && j < cur.size()) {
+                    new DACommandConditionalFormat_moveRule(mConditionalFormatStore, col, j, i, parent);
+                    const DATableConditionalFormatRule r = cur.takeAt(j);
+                    cur.insert(i, r);
+                }
+            }
+            continue;
+        }
+        // 位置式 diff：公共前缀 modify + 尾部 add（新更长）/ remove（旧更长，从尾到头保持索引有效）
+        const int n = qMin(oldRules.size(), newCol.size());
+        for (int i = 0; i < n; ++i) {
+            if (!(oldRules.at(i) == newCol.at(i))) {
+                new DACommandConditionalFormat_modifyRule(mConditionalFormatStore, col, i, oldRules.at(i), newCol.at(i), parent);
+            }
+        }
+        for (int i = n; i < newCol.size(); ++i) {
+            new DACommandConditionalFormat_addRule(mConditionalFormatStore, col, newCol.at(i), i, parent);
+        }
+        for (int i = oldRules.size() - 1; i >= n; --i) {
+            new DACommandConditionalFormat_removeRule(mConditionalFormatStore, col, i, parent);
+        }
+    }
+    if (!any) {
+        delete parent;
+        return nullptr;
+    }
+    return parent;
 }
 
 void DADataOperateOfDataFrameWidget::onFindSearchRequested()
@@ -2351,6 +2660,10 @@ void DADataOperateOfDataFrameWidget::applyFindReplace(bool all)
         return;
     }
     if (!undoable) {
+        // 统计失效挂点（003）：降级路径未记录清单，保守失效全部列统计
+        if (mConditionalFormatStore) {
+            mConditionalFormatStore->invalidateAllStats();
+        }
         notifyReplaceChanged(QVector< int >(), QVector< int >());  // 未记录清单 → 全表刷新
         Q_EMIT replaceApplied(pendingCount);
         return;
@@ -2364,12 +2677,25 @@ void DADataOperateOfDataFrameWidget::applyFindReplace(bool all)
     std::unique_ptr< DACommandDataFrame_replace > cmd(new DACommandDataFrame_replace(df, rows, cols, oldValues, newValues));
     QPointer< DADataTableModel > modle    = mModel;
     DACommandDataFrame_replace* cmdRaw    = cmd.get();
-    cmd->setCallBack([ modle, cmdRaw ]() {
+    // 统计失效挂点（003）：替换改变列值集合，失效变更清单覆盖列的统计（exec/undo 都触发）
+    DATableConditionalFormatStore* cfStore = mConditionalFormatStore;
+    cmd->setCallBack([ modle, cmdRaw, cfStore ]() {
+        const QVector< int >& rs = cmdRaw->changedRows();
+        const QVector< int >& cs = cmdRaw->changedCols();
+        if (cfStore) {
+            QList< int > colsList;
+            colsList.reserve(cs.size());
+            for (int c : cs) {
+                colsList.append(c);
+            }
+            const QList< int > uniqueCols = toUniqueSorted(colsList);
+            for (int c : uniqueCols) {
+                cfStore->invalidateColumnStats(c);
+            }
+        }
         if (!modle) {
             return;
         }
-        const QVector< int >& rs = cmdRaw->changedRows();
-        const QVector< int >& cs = cmdRaw->changedCols();
         if (rs.isEmpty()) {
             return;
         }

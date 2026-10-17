@@ -10,6 +10,7 @@
 #include "DADataPyDataFrame.h"
 #include "numpy/DAPyDType.h"
 #include "DATableDisplayFormat.h"
+#include "DATableConditionalFormatRule.h"
 #include "DADataOperatePageWidget.h"
 #include "Dialog/DADialogFindReplace.h"
 namespace Ui
@@ -29,6 +30,7 @@ class DATableStyleItemDelegate;
 class DATableMetadataRegistry;
 class DATableViewStateStore;
 class DATableHighlightOverlay;
+class DATableConditionalFormatStore;
 class DATableCellStyle;
 
 
@@ -77,6 +79,8 @@ public:
     DATableViewStateStore* viewStateStore() const;
     // 获取瞬态高亮层（查找/校验高亮，页级持有，非空）
     DATableHighlightOverlay* highlightOverlay() const;
+    // 获取条件格式子存储（借自元数据束，可能为 nullptr）
+    DATableConditionalFormatStore* conditionalFormatStore() const;
     // 合并样式片段到选中区（fragment 只设部分属性，merge 到目标已有样式）
     // 自动判定层级：整列→列级，整行→行级，否则单元格级
     void mergeStyleToSelection(const DATableCellStyle& fragment);
@@ -111,6 +115,11 @@ public:
     // 当前多列排序规格（列逻辑索引+方向，顺序即优先级；不持久化 R13）
     QVector< QPair< int, Qt::SortOrder > > sortSpec() const;
 
+    // 打开条件格式规则编辑对话框（003 T1.5）：作用于当前选区所在列；
+    // 编辑期预览叠加，确定后按差异生成增/删/改/移命令入页撤销栈（D4）
+    void showConditionalFormatDialog();
+    // 清除选中列的条件格式规则（一次命令，可撤销）
+    void clearConditionalFormatFromSelection();
     // 打开查找/替换浮动条（002 T1.4）：expandReplace=true 展开替换行（Ctrl+H 语义）
     void showFindReplace(bool expandReplace);
     // 关闭查找/替换浮动条并清查找高亮
@@ -219,6 +228,12 @@ private:
     void applyFindReplace(bool all);
     // 替换生效后刷新模型（按变更范围一次性通知）
     void notifyReplaceChanged(const QVector< int >& rows, const QVector< int >& cols);
+    // 条件格式（003）：规则集与 store 现值差异 → 生成增/删/改/移子命令的父命令；
+    // 无差异返回 nullptr（不推空命令）
+    QUndoCommand* buildConditionalFormatCommands(const QHash< int, QVector< DATableConditionalFormatRule > >& newRules) const;
+    // 色阶/数据条的数据源可用性：惰性加载或不可编辑源无法全列统计 → false（§1.4-2，
+    // 判定走模型持有的 DATableDataSource，不新造平行接口）
+    bool isColumnStatsSourceAvailable() const;
     // 按列名（+重名消歧 occurrence）从视图状态子存储应用列宽与行头宽；
     // 应用期间置守卫标志屏蔽采集，避免把「应用」当「用户改动」
     void applyViewStateFromStore();
@@ -231,6 +246,7 @@ private:
     DATableStyleManager* mStyleManager { nullptr };  ///< 借自 DATableMetadata 束，非拥有（随数据存在，widget 关闭不销毁）
     DATableViewStateStore* mViewStateStore { nullptr };  ///< 借自 DATableMetadata 束，非拥有（视图状态：列宽/行头宽）
     DATableHighlightOverlay* mHighlightOverlay { nullptr };  ///< 瞬态高亮层（页级持有，不序列化、不进撤销栈）
+    DATableConditionalFormatStore* mConditionalFormatStore { nullptr };  ///< 借自 DATableMetadata 束，非拥有（条件格式规则，003）
     DATableStyleItemDelegate* mStyleDelegate { nullptr };
     bool mApplyingViewState { false };  ///< 正在应用视图状态（屏蔽 sectionResized 采集）
     bool mHeaderPickMode { false };     ///< 表头拾取模式（图表「选择序列」会话期间：表头点击只转发不排序）

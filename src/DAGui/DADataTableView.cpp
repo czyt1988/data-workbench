@@ -137,6 +137,14 @@ QMenu* DADataTableView::buildContextMenu(const QModelIndex& at)
     actReplace->setEnabled(editable);  // 只读源查找可用、替换置灰
     connect(actFind, &QAction::triggered, this, &DADataTableView::findRequested);
     connect(actReplace, &QAction::triggered, this, &DADataTableView::replaceRequested);
+    // —— 003：条件格式（R16：表体右键菜单与 Ribbon Table Style 面板同入口；列头菜单不放）——
+    // 只读/惰性源也可管理规则（色阶/数据条的可用性限制在对话框内按 §1.4-2 置灰），
+    // 无选区时置灰（入口作用于当前选区所在列）
+    menu->addSeparator();
+    QAction* actConditionalFormat = menu->addAction(QIcon(QStringLiteral(":/DAGui/icon/conditional-format.svg")),
+                                                    tr("Conditional Format..."));  // cn:条件格式...
+    actConditionalFormat->setEnabled(hasSel);
+    connect(actConditionalFormat, &QAction::triggered, this, &DADataTableView::conditionalFormatRequested);
     // —— 后续计划的分组插入点在菜单底部（见函数注释），插入时组间加分隔符 ——
     return menu;
 }

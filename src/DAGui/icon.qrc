@@ -41,6 +41,7 @@
         <file>icon/delete.svg</file>
         <file>icon/find.svg</file>
         <file>icon/replace.svg</file>
+        <file>icon/conditional-format.svg</file>
         <file>icon/zoomIn.svg</file>
         <file>icon/zoomOut.svg</file>
         <file>icon/select-all.svg</file>

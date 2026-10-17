@@ -32,7 +32,7 @@ public:
     // 把选中单元格按包围矩形拼成 Tab/换行分隔的文本写入剪贴板，读 Qt::DisplayRole（随显示格式）
     // 主页剪贴板路由 actionCopy 表格分支也调用此函数
     bool copySelectionToClipboard();
-    // 构建表体右键菜单（v1：剪切/复制/粘贴；002：查找/替换；调用方负责弹出与销毁）
+    // 构建表体右键菜单（v1：剪切/复制/粘贴；002：查找/替换；003：条件格式；调用方负责弹出与销毁）
     QMenu* buildContextMenu(const QModelIndex& at);
 
 Q_SIGNALS:
@@ -45,6 +45,8 @@ Q_SIGNALS:
     void replaceRequested();
     // Esc 关闭查找条（焦点在表格时；对话框自身焦点下的 Esc 由对话框处理）
     void findBarCloseRequested();
+    // 条件格式入口（003 T1.5）：表体右键菜单唤出规则编辑对话框（列头菜单不放，R16）
+    void conditionalFormatRequested();
 
 protected:
     // Ctrl+C / Ctrl+Insert 复制；Ctrl+F 查找；Ctrl+H 替换；Esc 关查找条（快捷键唯一挂点，红线5）
