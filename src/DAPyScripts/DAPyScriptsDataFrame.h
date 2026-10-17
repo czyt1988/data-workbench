@@ -124,6 +124,30 @@ public:
 	                 pybind11::list* newValues                          = nullptr) noexcept;
 	// 按变更清单批量写回单元格值（对应 da_write_cells，替换命令 undo/redo 用）
 	bool writeCells(DAPyDataFrame& df, const QVector< int >& rows, const QVector< int >& cols, const pybind11::list& values) noexcept;
+	// ===== 填充（005 T1.24）=====
+	// 选区填充求值结果（对应 da_dataframe.da_fill_selection）：rows/values 一一对应，
+	// 只含实际变化的单元格（空值判定由 pandas 完成，D4 值记录组织成一条 paste 命令）
+	struct FillSelectionResult
+	{
+		QVector< int > rows;   ///< 要写入的绝对行位置（升序）
+		QVariantList values;   ///< 对应新值（datetime 列经 caster 落 QDateTime）
+		bool ok { false };     ///< 调用是否成功（列越界/模式非法为 false）
+	};
+	// 选区填充求值：第 col 列行区间 [rowStart,rowEnd]（闭区间，绝对行位置）按 mode
+	// 计算填充后变化的单元格，**不改数据**，只返回写入清单（C++ 组织成 paste 命令）。
+	// mode = "down"/"up"/"ffill"/"bfill"。区间不足两行或无变化返回空清单且 ok=true
+	FillSelectionResult fillSelection(const DAPyDataFrame& df, int col, int rowStart, int rowEnd, const QString& mode) noexcept;
+	// 序列填充生成（对应 da_dataframe.da_fill_series，预览与写入共用）：
+	// kind = "linear"（数值等差）/"date"（日期步进）；start/step/stop 空串=用 Python 默认；
+	// dateUnit = "D"/"W"/"M"/"Y"。返回长度 count 的值序列（QVariant），count<=0 或参数
+	// 解析失败返回空列表且 *ok=false（start 无法解析为日期等）
+	QVariantList fillSeries(int count,
+	                        const QString& kind,
+	                        const QString& start,
+	                        const QString& step,
+	                        const QString& stop,
+	                        const QString& dateUnit,
+	                        bool* ok = nullptr) noexcept;
 	// eval
 	bool evalDatas(DAPyDataFrame& df, const QString& expr) noexcept;
 	// ===== 计算列（004 T1.23）=====

@@ -837,6 +837,94 @@ bool DAPyScriptsDataFrame::writeCells(DAPyDataFrame& df, const QVector< int >& r
 }
 
 /**
+ * @brief 选区填充求值 wrapper（对应 da_dataframe.da_fill_selection）
+ *
+ * 第 col 列行区间 [rowStart,rowEnd]（闭区间，绝对行位置）按 mode 计算填充后**变化**的
+ * 单元格，不改数据。空值判定（NaN/NaT/None）由 pandas 完成（设计稿 §4.8 硬要求）；
+ * 返回的行位置与值一一对应，C++ 侧组织成一条 DACommandDataFrame_paste（值记录，D4）。
+ * 区间不足两行或无变化时返回空清单且 ok=true。
+ * @param df 数据（不修改）
+ * @param col 列位置索引
+ * @param rowStart 起始行（含，绝对位置）
+ * @param rowEnd 结束行（含，绝对位置）
+ * @param mode "down"/"up"/"ffill"/"bfill"
+ * @return 填充求值结果
+ */
+DAPyScriptsDataFrame::FillSelectionResult DAPyScriptsDataFrame::fillSelection(const DAPyDataFrame& df, int col, int rowStart, int rowEnd, const QString& mode) noexcept
+{
+    FillSelectionResult res;
+    try {
+        pybind11::object da_fill_selection = attr("da_fill_selection");
+        pybind11::object result            = da_fill_selection(df.object(), col, rowStart, rowEnd, DA::PY::toPyObject(mode));
+        pybind11::tuple t                  = result.cast< pybind11::tuple >();
+        res.rows                           = pyIntSequenceToVector(t[ 0 ]);
+        // values 为 Python list，经 QVariant caster 逐元素转换（datetime 落 QDateTime）
+        res.values                         = t[ 1 ].cast< QVariantList >();
+        res.ok                             = true;
+        return res;
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return res;
+}
+
+/**
+ * @brief 序列填充生成 wrapper（对应 da_dataframe.da_fill_series）
+ *
+ * 生成一个长度为 count 的序列（数值等差 / 日期步进），预览与实际写入共用。
+ * start/step/stop 传空串 → Python 用默认值（linear: 0/1，date: 今天/1）；日期步进用
+ * dateUnit ∈ {"D","W","M","Y"}。返回的值序列经 QVariant caster 转换（date 落 QDateTime）。
+ * @param count 需要生成的值个数（<=0 返回空列表且 *ok=true）
+ * @param kind "linear"/"date"
+ * @param start 起始值（空串=默认）
+ * @param step 步长（空串=默认）
+ * @param stop 终止值（仅 linear，空串=不限）
+ * @param dateUnit 日期单位（仅 date）
+ * @param ok 出参：参数解析失败（如 start 无法解析为日期）置 false
+ * @return 值序列
+ */
+QVariantList DAPyScriptsDataFrame::fillSeries(int count,
+                                              const QString& kind,
+                                              const QString& start,
+                                              const QString& step,
+                                              const QString& stop,
+                                              const QString& dateUnit,
+                                              bool* ok) noexcept
+{
+    if (ok) {
+        *ok = false;
+    }
+    QVariantList res;
+    if (count <= 0) {
+        if (ok) {
+            *ok = true;
+        }
+        return res;
+    }
+    try {
+        pybind11::object da_fill_series = attr("da_fill_series");
+        // 空串 → Python None（用算子默认值）
+        auto argOrNone                  = [](const QString& s) -> pybind11::object {
+            return s.isEmpty() ? pybind11::none() : DA::PY::toPyObject(s);
+        };
+        pybind11::object result         = da_fill_series(count,
+                                                 DA::PY::toPyObject(kind),
+                                                 argOrNone(start),
+                                                 argOrNone(step),
+                                                 argOrNone(stop),
+                                                 DA::PY::toPyObject(dateUnit));
+        res                             = result.cast< QVariantList >();
+        if (ok) {
+            *ok = true;
+        }
+        return res;
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return res;
+}
+
+/**
 
  * @param df
  * @param expr

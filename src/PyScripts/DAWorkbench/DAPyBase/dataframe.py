@@ -940,6 +940,129 @@ def da_write_cells(df: pd.DataFrame, rows, cols, values):
 
 
 @log_function_call
+def da_fill_selection(df: pd.DataFrame, col: int, row_start: int, row_end: int, mode: str):
+    """
+    选区填充求值（005 T1.24，设计稿 §4.8）：在某一列的选中行区间 [row_start, row_end]
+    （闭区间，绝对行位置）内，按 mode 计算填充后的值，**只返回实际发生变化的单元格**
+    （行位置 + 新值），供 C++ 侧组织成一条 DACommandDataFrame_paste（值记录，O(改动量)）。
+
+    空值判定（NaN/NaT/None）一律由 pandas 完成——C++ 侧 QVariant 对空值语义不可靠，
+    这是设计稿的硬要求。本函数**不修改 df**，是纯求值。
+
+    mode 语义（每列在自己的选中区间内独立处理，与 Excel 一致）：
+    - 'down'  向下填充：取区间首行值填满其余行（首行值为空则整列填充为空，与 Excel 一致）
+    - 'up'    向上填充：取区间末行值填满其余行
+    - 'ffill' 向下传递最后一个非空值（区间内 pandas ffill）
+    - 'bfill' 向上传递下一个非空值（区间内 pandas bfill）
+
+    :param df: pd.DataFrame（不修改）
+    :param col: 列位置索引
+    :param row_start: 起始行（含，绝对位置）
+    :param row_end: 结束行（含，绝对位置）
+    :param mode: 'down'/'up'/'ffill'/'bfill'
+    :return: (rows, values) —— rows 为 np.int32 数组（要写入的绝对行位置，升序），
+             values 为等长 list（对应新值，保持 pandas 原生类型以便 iat 按列 dtype 写回）；
+             区间不足两行或无变化时返回 (空数组, 空列表)
+    """
+    nrow = df.shape[0]
+    ncol = df.shape[1]
+    empty = (np.empty(0, dtype=np.int32), [])
+    if col < 0 or col >= ncol:
+        return empty
+    row_start = max(0, int(row_start))
+    row_end = min(int(nrow) - 1, int(row_end))
+    if row_end - row_start < 1:
+        return empty
+    sub = df.iloc[row_start:row_end + 1, col]
+    if mode == 'down':
+        anchor = df.iat[row_start, col]
+        filled = pd.Series([anchor] * len(sub), index=sub.index)
+    elif mode == 'up':
+        anchor = df.iat[row_end, col]
+        filled = pd.Series([anchor] * len(sub), index=sub.index)
+    elif mode == 'ffill':
+        filled = sub.ffill()
+    elif mode == 'bfill':
+        filled = sub.bfill()
+    else:
+        return empty
+    orig_vals = sub.tolist()
+    filled_vals = filled.tolist()
+    rows = []
+    values = []
+    for i in range(len(sub)):
+        ov = orig_vals[i]
+        fv = filled_vals[i]
+        ov_na = bool(pd.isna(ov)) if not isinstance(ov, (list, tuple, dict)) else False
+        fv_na = bool(pd.isna(fv)) if not isinstance(fv, (list, tuple, dict)) else False
+        if ov_na and fv_na:
+            continue  # 空 → 空，无变化
+        if ov_na != fv_na:
+            rows.append(row_start + i)
+            values.append(fv)
+            continue
+        # 两者都非空：直接比较（NaN 已在上面排除）
+        try:
+            same = bool(ov == fv)
+        except Exception:
+            same = False
+        if not same:
+            rows.append(row_start + i)
+            values.append(fv)
+    return (np.asarray(rows, dtype=np.int32), values)
+
+
+@log_function_call
+def da_fill_series(count: int, kind: str = 'linear', start=None, step=None, stop=None, date_unit: str = 'D'):
+    """
+    序列填充求值（005 T1.24）：生成一个长度为 count 的序列（数值等差 / 日期步进），
+    由 Python 求值（date_range/DateOffset 语义），供对话框预览与实际写入共用。
+    **不接触 df**，只按参数生成值列表；每个被选中的列各调用一次得到自己的序列。
+
+    :param count: 需要生成的值个数（= 目标列被选中的行数），<=0 返回空列表
+    :param kind: 'linear' 数值等差 / 'date' 日期步进
+    :param start: 起始值（linear 为数值，date 为可被 pd.Timestamp 解析的值；None 用默认）
+    :param step: 步长（linear 为数值增量，date 为每个日期单位的整数倍数）
+    :param stop: 终止值（仅 linear 用；沿 step 方向越过即停止，最多 count 个）
+    :param date_unit: 日期单位 'D' 天 / 'W' 周 / 'M' 月 / 'Y' 年（DateOffset 语义）
+    :return: list —— linear 为 float 列表，date 为 pd.Timestamp 列表
+    """
+    count = int(count)
+    if count <= 0:
+        return []
+    if kind == 'date':
+        base = pd.Timestamp(start) if start is not None else pd.Timestamp.today().normalize()
+        step_n = int(step) if step is not None else 1
+        if date_unit == 'D':
+            offset = pd.Timedelta(days=step_n)
+        elif date_unit == 'W':
+            offset = pd.Timedelta(weeks=step_n)
+        elif date_unit == 'M':
+            offset = pd.DateOffset(months=step_n)
+        elif date_unit == 'Y':
+            offset = pd.DateOffset(years=step_n)
+        else:
+            offset = pd.Timedelta(days=step_n)
+        return [base + i * offset for i in range(count)]
+    # linear 等差
+    s = float(start) if start is not None else 0.0
+    st = float(step) if step is not None else 1.0
+    has_stop = stop is not None and str(stop) != ''
+    stop_v = float(stop) if has_stop else None
+    vals = []
+    cur = s
+    for _ in range(count):
+        if has_stop:
+            if st >= 0 and cur > stop_v:
+                break
+            if st < 0 and cur < stop_v:
+                break
+        vals.append(cur)
+        cur += st
+    return vals
+
+
+@log_function_call
 def da_data_select(df: pd.DataFrame, index: str, lower: Optional[float] = None, upper: Optional[float] = None):
     '''
     :param df: pd.DataFrame
