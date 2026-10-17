@@ -1062,6 +1062,91 @@ def da_fill_series(count: int, kind: str = 'linear', start=None, step=None, stop
     return vals
 
 
+def _da_resolve_column_position(df: pd.DataFrame, name: str, occurrence: int) -> int:
+    """
+    列名 + 第 n 个同名列 → 列位置索引（R20 重名消歧）。occurrence 从 0 起。
+    找不到返回 -1。
+    """
+    seen = 0
+    for i, c in enumerate(df.columns):
+        if str(c) == str(name):
+            if seen == int(occurrence):
+                return i
+            seen += 1
+    return -1
+
+
+@log_function_call
+def da_validate_dataframe(df: pd.DataFrame, rules):
+    """
+    数据校验求值（005 T1.25，设计稿 §4.9）：逐规则求违规行清单，**只读不改 df**。
+    空值判定（NaN/NaT/None）与比较全部由 pandas 完成（红线1：C++ QVariant 不可靠）。
+
+    :param df: pd.DataFrame（不修改）
+    :param rules: 规则列表，每条为 dict：
+        { 'index': int（规则序号，原样回传）, 'column': str（列名）,
+          'occurrence': int（第 n 个同名列，0 起）, 'type': str, ...类型参数 }
+        type 取值与参数（与 DATableValidationRule 求值语义钉死一致）：
+        - 'numeric-range': numeric_min/numeric_max(float), has_min/has_max(bool)；
+          值可转数值且越界 → 违规；空值/非数值不判（交给 not-empty）
+        - 'date-range': date_min/date_max(可被 pd.Timestamp 解析的字符串或 None)；
+          值可转日期且越界 → 违规；空值不判；闭区间
+        - 'enum': enum_values(list)；值不在集合内 → 违规（**空值也违规**）
+        - 'not-empty': 空值 → 违规
+        - 'unique': 列内重复（duplicated keep=False，重复组全部行违规）
+        - 'regex': regex_pattern(str)；整格完全匹配(fullmatch)不通过 → 违规；
+          空值不判；正则非法抛 ValueError
+    :return: list of (index, rows)：index 为规则序号，rows 为 np.int32 数组（违规行的
+             **绝对行位置**，升序）；列不存在时 rows 为空数组（不报错，规则被跳过）
+    """
+    import re
+    results = []
+    for rule in rules:
+        idx = int(rule.get('index', -1))
+        col_pos = _da_resolve_column_position(df, rule.get('column', ''), int(rule.get('occurrence', 0)))
+        if col_pos < 0:
+            results.append((idx, np.empty(0, dtype=np.int32)))
+            continue
+        ser = df.iloc[:, col_pos]
+        rtype = rule.get('type', '')
+        if rtype == 'numeric-range':
+            num = pd.to_numeric(ser, errors='coerce')
+            viol = pd.Series(False, index=ser.index)
+            if rule.get('has_min'):
+                viol = viol | (num < float(rule['numeric_min']))
+            if rule.get('has_max'):
+                viol = viol | (num > float(rule['numeric_max']))
+            # to_numeric 对空值/非数值产出 NaN，比较结果为 False，天然「不判」
+        elif rtype == 'date-range':
+            dt = pd.to_datetime(ser, errors='coerce')
+            viol = pd.Series(False, index=ser.index)
+            dmin = rule.get('date_min')
+            dmax = rule.get('date_max')
+            if dmin is not None and str(dmin) != '':
+                viol = viol | (dt < pd.Timestamp(dmin))
+            if dmax is not None and str(dmax) != '':
+                viol = viol | (dt > pd.Timestamp(dmax))
+        elif rtype == 'enum':
+            allowed = list(rule.get('enum_values', []))
+            viol = ~ser.isin(allowed)  # 空值(NaN/None)不在集合内 → 违规
+        elif rtype == 'not-empty':
+            viol = ser.isna()
+        elif rtype == 'unique':
+            viol = ser.duplicated(keep=False)
+        elif rtype == 'regex':
+            pattern = rule.get('regex_pattern', '')
+            compiled = re.compile(pattern)  # 非法正则抛 re.error（调用方转违规提示）
+            notna = ser.notna()
+            matched = ser.astype('string').map(lambda x: compiled.fullmatch(x) is not None if pd.notna(x) else True)
+            viol = notna & (~matched.fillna(True))
+        else:
+            results.append((idx, np.empty(0, dtype=np.int32)))
+            continue
+        rows = np.flatnonzero(viol.to_numpy(dtype=bool)).astype(np.int32)
+        results.append((idx, rows))
+    return results
+
+
 @log_function_call
 def da_data_select(df: pd.DataFrame, index: str, lower: Optional[float] = None, upper: Optional[float] = None):
     '''

@@ -925,6 +925,68 @@ QVariantList DAPyScriptsDataFrame::fillSeries(int count,
 }
 
 /**
+ * @brief 一键校验求值 wrapper（对应 da_dataframe.da_validate_dataframe）
+ *
+ * 把规则规格打包成 Python dict 列表下发，逐规则拿回违规行清单（绝对行位置，升序）。
+ * 只读操作（红线2：不改 df、调用方不入撤销栈）；空值判定/比较由 pandas 完成。
+ * 列不存在的规则返回空清单（不报错）；正则非法等 Python 抛错返回 false 并输出诊断。
+ * @param df 数据（不修改）
+ * @param specs 规则规格列表
+ * @param results 非空时输出逐规则结果（与 specs 等长，index 对齐）
+ * @param errorMessage 非空时输出失败诊断（英文异常信息）
+ * @return 全部求值成功返回 true
+ */
+bool DAPyScriptsDataFrame::validateDataFrame(const DAPyDataFrame& df,
+                                             const QList< ValidationRuleSpec >& specs,
+                                             QList< ValidationRuleResult >* results,
+                                             QString* errorMessage) noexcept
+{
+    if (results) {
+        results->clear();
+    }
+    if (df.isNone() || specs.isEmpty()) {
+        return true;  // 无规则 = 无违规，视为成功
+    }
+    try {
+        pybind11::list pyRules;
+        for (const ValidationRuleSpec& s : specs) {
+            pybind11::dict d;
+            d[ "index" ]      = s.index;
+            d[ "column" ]     = DA::PY::toPyObject(s.column);
+            d[ "occurrence" ] = s.occurrence;
+            d[ "type" ]       = DA::PY::toPyObject(s.type);
+            d[ "numeric_min" ] = s.numericMin;
+            d[ "numeric_max" ] = s.numericMax;
+            d[ "has_min" ]     = s.hasMin;
+            d[ "has_max" ]     = s.hasMax;
+            d[ "date_min" ]    = s.dateMin.isEmpty() ? pybind11::none() : DA::PY::toPyObject(s.dateMin);
+            d[ "date_max" ]    = s.dateMax.isEmpty() ? pybind11::none() : DA::PY::toPyObject(s.dateMax);
+            d[ "enum_values" ] = DA::PY::toPyObject(s.enumValues);
+            d[ "regex_pattern" ] = DA::PY::toPyObject(s.regexPattern);
+            pyRules.append(d);
+        }
+        pybind11::object da_validate_dataframe = attr("da_validate_dataframe");
+        pybind11::object ret                   = da_validate_dataframe(df.object(), pyRules);
+        if (results) {
+            for (auto item : ret.cast< pybind11::list >()) {
+                pybind11::tuple t = item.cast< pybind11::tuple >();
+                ValidationRuleResult r;
+                r.index = t[ 0 ].cast< int >();
+                r.rows  = pyIntSequenceToVector(t[ 1 ]);
+                results->append(r);
+            }
+        }
+        return true;
+    } catch (const std::exception& e) {
+        if (errorMessage) {
+            *errorMessage = QString::fromUtf8(e.what());
+        }
+        dealException(e);
+    }
+    return false;
+}
+
+/**
 
  * @param df
  * @param expr

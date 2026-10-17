@@ -148,6 +148,38 @@ public:
 	                        const QString& stop,
 	                        const QString& dateUnit,
 	                        bool* ok = nullptr) noexcept;
+	// ===== 数据校验（005 T1.25）=====
+	// 校验规则规格（下发 Python 求值；列引用 = 列名 + 第 n 个同名列消歧，R20。
+	// 定义类 DATableValidationRule 在 DAData，本结构只做跨模块参数传递，避免
+	// DAPyScripts → DAData 依赖）
+	struct ValidationRuleSpec
+	{
+		int index { -1 };        ///< 规则序号（结果按此对齐回传）
+		QString column;          ///< 列名
+		int occurrence { 0 };    ///< 第 n 个同名列（0 起）
+		QString type;            ///< "numeric-range"/"date-range"/"enum"/"not-empty"/"unique"/"regex"
+		double numericMin { 0.0 };
+		double numericMax { 0.0 };
+		bool hasMin { false };
+		bool hasMax { false };
+		QString dateMin;         ///< ISO 日期串（空 = 不限）
+		QString dateMax;
+		QStringList enumValues;
+		QString regexPattern;
+	};
+	// 单条规则的校验结果
+	struct ValidationRuleResult
+	{
+		int index { -1 };        ///< 对应 spec 的规则序号
+		QVector< int > rows;     ///< 违规行（数据源绝对行位置，升序；列缺失为空）
+	};
+	// 一键校验求值（对应 da_dataframe.da_validate_dataframe）：**只读不改 df**（红线2），
+	// 空值判定/比较全部由 pandas 完成；结果按 spec.index 对齐输出到 results。
+	// 列不存在 → 该条空清单（不报错）；正则非法等 Python 抛错 → 返回 false（errorMessage 输出诊断）
+	bool validateDataFrame(const DAPyDataFrame& df,
+	                       const QList< ValidationRuleSpec >& specs,
+	                       QList< ValidationRuleResult >* results,
+	                       QString* errorMessage = nullptr) noexcept;
 	// eval
 	bool evalDatas(DAPyDataFrame& df, const QString& expr) noexcept;
 	// ===== 计算列（004 T1.23）=====
