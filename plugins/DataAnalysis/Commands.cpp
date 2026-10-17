@@ -90,43 +90,5 @@ bool CommandDataFrame_querydatas::exec()
 }
 
 //===================================================
-// CommandDataFrame_evalDatas
+// CommandDataFrame_evalDatas 已按 004 计划收口移除（内核计算列命令替代，D0/R2）
 //===================================================
-/**
- * @brief evaldatas
- *
- * 对DataFrame中的数据进行列运算
- *
- * @param df  要运算的DataFrame
- * @param exper  运算表达式
- * @param par
- */
-CommandDataFrame_evalDatas::CommandDataFrame_evalDatas(const DA::DAPyDataFrame& df, const QString& exper, QUndoCommand* par)
-    : DA::DACommandWithTemporaryData(df, par), DA::DACallBackInterface(), mExper(exper)
-{
-    setText(QObject::tr("Eval Data"));  // cn:列运算
-}
-
-/**
- * @brief 撤销操作
- */
-void CommandDataFrame_evalDatas::undo()
-{
-    load();
-    callback();
-}
-
-/**
- * @brief 执行列运算操作
- *
- * @return 执行是否成功
- */
-bool CommandDataFrame_evalDatas::exec()
-{
-    DA::DAPyScriptsDataFrame& pydf = DA::DAPyScripts::getDataFrame();
-    if (!pydf.evalDatas(dataframe(), mExper)) {
-        return false;
-    }
-    callback();
-    return true;
-}

@@ -11,7 +11,6 @@ class DAPyModule;
 class QUndoCommand;
 class DataFrameDataSelectDialog;
 class DataFrameQueryDatasDialog;
-class DataFrameEvalDatasDialog;
 class DataFrameCreatePivotTableDialog;
 
 /**
@@ -42,9 +41,8 @@ public Q_SLOTS:
         const QString& marginsName = QStringLiteral("All"),
         bool sort                  = false
     );
-    // 列运算
-    void evalDatas();
-    QUndoCommand* evalDatas(const DA::DAPyDataFrame& df, const QString& exper, Callback fp = nullptr);
+    // 列运算（Eval Data）入口已按 004 计划收口移除（内核计算列替代，D0/R2）；
+    // DADataAnalysisCore/operations.py 的 eval_expression 与工作流节点 data_eval_node.py 保留
     // 过滤给定条件外的数据
     void queryDatas();
     QUndoCommand* queryDatas(const DA::DAPyDataFrame& df, const QString& exper, Callback fp = nullptr);
@@ -60,7 +58,6 @@ private:
     std::unique_ptr< DA::DAPyModule > mDataOperateModule;
     DataFrameDataSelectDialog* mSelectDialog { nullptr };
     DataFrameQueryDatasDialog* mQueryDatasDialog { nullptr };
-    DataFrameEvalDatasDialog* mEvalDatasDialog { nullptr };
     DataFrameCreatePivotTableDialog* mPivotTableDialog { nullptr };
 };
 

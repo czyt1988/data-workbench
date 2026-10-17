@@ -117,9 +117,8 @@ void DataAnalysisUI::finalize()
             actionDropDuplicates,             actionDataFrameFillNone,
             actionDataFrameFillInterpolate,   actionDataFrameRemoveOutlierIQR,
             actionDataFrameRemoveOutliersZScore, actionDataFrameTransformSkewedData,
-            actionDataFrameEvalDatas,         actionDataFrameQueryDatas,
-            actionDataFrameDataFilterColumn,  actionCreateDataDescribe,
-            actionCreatePivotTable
+            actionDataFrameQueryDatas,        actionDataFrameDataFilterColumn,
+            actionCreateDataDescribe,         actionCreatePivotTable
         };
         for (QAction* act : allActions) {
             if (act) {
@@ -141,7 +140,6 @@ void DataAnalysisUI::finalize()
     actionDataFrameRemoveOutliersZScore = nullptr;
     actionDataFrameTransformSkewedData  = nullptr;
     pannelDataFiltering              = nullptr;
-    actionDataFrameEvalDatas         = nullptr;
     actionDataFrameQueryDatas        = nullptr;
     actionDataFrameDataFilterColumn  = nullptr;
     panelDataStatistic               = nullptr;
@@ -215,13 +213,11 @@ void DataAnalysisUI::buildDataCategory()
         //----------------------------------------------------
         pannelDataFiltering = dataframeContextCategory->addPanel(tr("Data Filtering"));  // cn:数据过滤
         pannelDataFiltering->setObjectName(QStringLiteral("DataAnalysisPlugin.pannelDataFiltering"));
-        actionDataFrameEvalDatas =
-            mActions->createAction("actionDataFrameEvalDatas", ":/DataAnalysisPluginIcon/icon/dataframe-eval-datas.svg");
+        // 公式（Eval Data）action 已按 004 计划收口移除（内核计算列替代，D0/R2）
         actionDataFrameQueryDatas =
             mActions->createAction("actionDataFrameQueryDatas", ":/DataAnalysisPluginIcon/icon/dataframe-query-datas.svg");
         actionDataFrameDataFilterColumn =
             mActions->createAction("actionDataFrameDataSelect", ":/DataAnalysisPluginIcon/icon/dataframe-data-select.svg");
-        pannelDataFiltering->addLargeAction(actionDataFrameEvalDatas);
         pannelDataFiltering->addLargeAction(actionDataFrameQueryDatas);
         pannelDataFiltering->addMediumAction(actionDataFrameDataFilterColumn);
         //----------------------------------------------------
@@ -291,9 +287,6 @@ void DataAnalysisUI::retranslateUi()
         // Data Filtering Panel 数据过滤panel
         //----------------------------------------------------
         pannelDataFiltering->setPanelName(tr("Data Filtering"));  // cn:数据过滤
-        actionDataFrameEvalDatas->setText(tr("Eval Data"));      // cn:数值计算
-        actionDataFrameEvalDatas->setToolTip(tr("Evaluate a string describing operations on DataFrame columns")
-        );  // cn:输入关于列操作的表达式字符串并执行计算
         actionDataFrameQueryDatas->setText(tr("Query Data"));                                   // cn:条件筛选
         actionDataFrameQueryDatas->setToolTip(tr("Filter data outside of the given criteria"));  // cn:过滤给定条件外的数据
         actionDataFrameDataFilterColumn->setText(tr("Filter by Column"));                       // cn:列数据过滤
@@ -341,7 +334,6 @@ void DataAnalysisUI::bind(DataframeCleanerWorker* worker)
 void DataAnalysisUI::bind(DataframeOperateWorker* worker)
 {
     connect(actionCreateDataDescribe, &QAction::triggered, worker, &DataframeOperateWorker::createDataframeDescribe);
-    connect(actionDataFrameEvalDatas, &QAction::triggered, worker, QOverload<>::of(&DataframeOperateWorker::evalDatas));
     connect(actionDataFrameQueryDatas, &QAction::triggered, worker, QOverload<>::of(&DataframeOperateWorker::queryDatas));
     connect(actionDataFrameDataFilterColumn, &QAction::triggered, worker, QOverload<>::of(&DataframeOperateWorker::filterByColumn));
 }

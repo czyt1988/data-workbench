@@ -17,7 +17,6 @@
 // Dialogs
 #include "Dialogs/DataFrameDataSelectDialog.h"
 #include "Dialogs/DataFrameQueryDatasDialog.h"
-#include "Dialogs/DataFrameEvalDatasDialog.h"
 #include "Dialogs/DataFrameCreatePivotTableDialog.h"
 
 
@@ -173,63 +172,7 @@ DA::DAPyDataFrame DataframeOperateWorker::createPivotTable(
     return df_pivottable;
 }
 
-/**
- * @brief 数值计算，弹出对话框获取表达式并执行
- */
-void DataframeOperateWorker::evalDatas()
-{
-    auto doptWidget = dockAreaInterface()->getDataOperateWidget();
-    if (!doptWidget) {
-        return;
-    }
-    DA::DADataOperateOfDataFrameWidget* dfopt = doptWidget->getCurrentDataFrameWidget();
-    if (!dfopt) {
-        return;
-    }
-    DA::DAPyDataFrame df = dfopt->getDataframe();
-    if (df.isNone()) {
-        return;
-    }
-    if (!mEvalDatasDialog) {
-        mEvalDatasDialog = new DataFrameEvalDatasDialog(uiInterface()->mainWindow());
-    }
-    if (QDialog::Accepted != mEvalDatasDialog->exec()) {
-        // 说明用户取消
-        return;
-    }
-    // 获取填充值
-    QString exper                  = mEvalDatasDialog->getExpr();
-    DA::DADataTableView* tableView = dfopt->getDataTableView();
-    DA::DADataTableModel* modle    = tableView->getDataModel();
-    Callback fp                    = [ modle ]() {
-        if (modle) {
-            modle->refreshData();
-        }
-    };
-    QUndoCommand* cmd = evalDatas(df, exper, fp);
-    if (cmd) {
-        dfopt->getUndoStack()->push(cmd);  // 推入后不会执行redo逻辑部分
-        uiInterface()->setDirty(true);
-    }
-}
-
-/**
- * @brief 数值计算
- *
- * @param df 数据帧
- * @param exper 表达式
- * @param fp 回调函数
- * @return 命令指针，返回nullptr代表执行失败
- */
-QUndoCommand* DataframeOperateWorker::evalDatas(const DA::DAPyDataFrame& df, const QString& exper, Callback fp)
-{
-    std::unique_ptr< CommandDataFrame_evalDatas > cmd = std::make_unique< CommandDataFrame_evalDatas >(df, exper);
-    cmd->setCallBack(fp);
-    if (!cmd->exec()) {
-        return nullptr;
-    }
-    return cmd.release();
-}
+// 数值计算（Eval Data）入口已按 004 计划收口移除（内核 DAGui 计算列替代，D0/R2）
 
 /**
  * @brief 条件筛选，弹出对话框获取表达式并执行
