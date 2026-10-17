@@ -29,7 +29,13 @@
 #include "DATableMetadataRegistry.h"
 #include "DATableStyleManager.h"
 #include "DATableViewStateStore.h"
+#include "DADataHeaderView.h"
+#include "DADataTableView.h"
+#include "DADataOperateOfDataFrameWidget.h"
 #include <QSignalSpy>
+#include <QMenu>
+#include <QHeaderView>
+#include <QTest>
 
 #include "Models/DADataTableModel.h"
 #include <QUndoStack>
@@ -287,6 +293,10 @@ private Q_SLOTS:
     // 视图状态子存储与元数据注册表
     void testViewStateStore();
     void testMetadataRegistry();
+    // §4.2 手工验收的程序化验证：旧工程 XML 兼容、菜单构成、视图状态重开应用、表头点击链路
+    void testLegacyTableStylesXmlCompat();
+    void testContextMenuComposition();
+    void testViewStateApplyAndHeaderClickChain();
 
 private:
     // 生成/复用sqlite测试库（百万行），失败返回false并置mSqliteErr
@@ -1304,6 +1314,161 @@ void DATableDataTest::testMetadataRegistry()
     QVERIFY(!registry.has(d1));
     QVERIFY(registry.get(d1) == nullptr);
     QVERIFY(registry.nonEmptyEntries().isEmpty());
+}
+
+// §4.2 验收（程序化）：旧工程 table-styles.xml 的 <table> 内层结构可被元数据束兼容读取
+// （内层样式标签与旧文件一致、无 <view-state> 段），新格式 round-trip 样式+视图状态都在
+void DATableDataTest::testLegacyTableStylesXmlCompat()
+{
+    auto makeStyle = [](const QColor& c) {
+        DA::DATableCellStyle s;
+        s.setBackground(QBrush(c));
+        return s;
+    };
+    const QColor red(255, 0, 0), blue(0, 0, 255), green(0, 255, 0);
+
+    // 构造旧工程 table-styles.xml 的 <table> 内层（内层标签由 DATableStyleManager::toXml
+    // 写出，与旧文件逐字节同构），并做一次「文件文本」round-trip 模拟真实解析路径
+    DA::DATableStyleManager src;
+    src.setColumnStyle(1, makeStyle(red));
+    src.setRowStyle(2, makeStyle(blue));
+    src.setCellStyle(3, 0, makeStyle(green));
+    QDomDocument doc;
+    QDomElement tableEle = doc.createElement(QStringLiteral("table"));
+    tableEle.setAttribute(QStringLiteral("data-id"), QStringLiteral("42"));
+    tableEle.setAttribute(QStringLiteral("data-name"), QStringLiteral("legacy"));
+    doc.appendChild(tableEle);
+    src.toXml(doc, tableEle);
+    const QByteArray legacyText = doc.toByteArray();
+
+    QDomDocument parsed;
+    QVERIFY(parsed.setContent(legacyText));
+    QDomElement parsedTable = parsed.documentElement();
+    QVERIFY(parsedTable.firstChildElement(QStringLiteral("view-state")).isNull());  // 旧文件无 view-state 段
+
+    DA::DATableMetadata meta;
+    QVERIFY(meta.fromXml(parsedTable));
+    QCOMPARE(meta.styleManager()->getColumnStyle(1).background().color(), red);
+    QCOMPARE(meta.styleManager()->getRowStyle(2).background().color(), blue);
+    QCOMPARE(meta.styleManager()->getCellStyle(3, 0).background().color(), green);
+    QVERIFY(meta.viewState()->isEmpty());  // 旧文件没有视图状态：为空而非报错
+    QVERIFY(!meta.isEmpty());              // 但有样式：进保存清单（另存即升级为新文件内容）
+
+    // 新格式 round-trip：样式 + <view-state> 都恢复
+    meta.viewState()->setColumnWidth(QStringLiteral("f"), 0, 111);
+    meta.viewState()->setRowHeaderWidth(55);
+    QDomDocument doc2;
+    QDomElement t2 = doc2.createElement(QStringLiteral("table"));
+    doc2.appendChild(t2);
+    meta.toXml(doc2, t2);
+    QDomDocument parsed2;
+    QVERIFY(parsed2.setContent(doc2.toByteArray()));
+    DA::DATableMetadata meta2;
+    QVERIFY(meta2.fromXml(parsed2.documentElement()));
+    QCOMPARE(meta2.styleManager()->getColumnStyle(1).background().color(), red);
+    QCOMPARE(meta2.styleManager()->getRowStyle(2).background().color(), blue);
+    QCOMPARE(meta2.styleManager()->getCellStyle(3, 0).background().color(), green);
+    QCOMPARE(meta2.viewState()->columnWidth(QStringLiteral("f"), 0), 111);
+    QCOMPARE(meta2.viewState()->rowHeaderWidth(), 55);
+}
+
+// §4.2 验收（程序化）：列头菜单 6 项 4 组（顺序/分隔符与迁移前逐项一致、图标取 DAGui 资源）；
+// 表体菜单 v1 三项；无选区全部置灰。离屏构建 QMenu 断言 action 文本序列，不弹出。
+void DATableDataTest::testContextMenuComposition()
+{
+    // ---- 列头菜单：重命名列/删除列 ‖ 复制列名 ‖ 定位最大/定位最小 ‖ 描述统计 ----
+    DA::DADataHeaderView hv(Qt::Horizontal, nullptr);
+    QMenu* menu = hv.buildColumnContextMenu(0);
+    QVERIFY(menu != nullptr);
+    QStringList seq;
+    const auto headerActions = menu->actions();
+    for (QAction* a : headerActions) {
+        seq << (a->isSeparator() ? QStringLiteral("<SEP>") : a->text());
+        if (!a->isSeparator()) {
+            QVERIFY2(!a->icon().isNull(), qPrintable(QStringLiteral("icon empty for %1").arg(a->text())));
+        }
+    }
+    const QStringList expectedHeader { QStringLiteral("Rename Column"),
+                                       QStringLiteral("Remove Column"),
+                                       QStringLiteral("<SEP>"),
+                                       QStringLiteral("Copy Column Name"),
+                                       QStringLiteral("<SEP>"),
+                                       QStringLiteral("Goto Max"),
+                                       QStringLiteral("Goto Min"),
+                                       QStringLiteral("<SEP>"),
+                                       QStringLiteral("Show Statistics") };
+    QCOMPARE(seq, expectedHeader);
+    delete menu;
+
+    // ---- 表体菜单：剪切/复制/粘贴；无有效选区（无模型）→ 全部置灰 ----
+    DA::DADataTableView tv;
+    QMenu* body = tv.buildContextMenu(QModelIndex());
+    QVERIFY(body != nullptr);
+    QStringList bodySeq;
+    const auto bodyActions = body->actions();
+    for (QAction* a : bodyActions) {
+        bodySeq << a->text();
+        QVERIFY2(!a->isEnabled(), qPrintable(QStringLiteral("action should be disabled without selection: %1").arg(a->text())));
+    }
+    const QStringList expectedBody { QStringLiteral("Cut"), QStringLiteral("Copy"), QStringLiteral("Paste") };
+    QCOMPARE(bodySeq, expectedBody);
+    delete body;
+}
+
+// §4.2 验收（程序化）：列宽/行头宽「拖拽后重开数据页保留」——store 写入后新建页面
+// 构造时按列名应用；图表「选择序列」拾取链路回归——点击表头仍发 columnHeaderClicked
+void DATableDataTest::testViewStateApplyAndHeaderClickChain()
+{
+    if (!mPandasOk) {
+        QSKIP("pandas not available");
+    }
+    pybind11::object obj = makeTestDataFrame();
+    QVERIFY(!obj.is_none());
+    DA::DAPyDataFrame df(obj);
+    DA::DAData d(df);
+    DA::DATableMetadataRegistry registry(nullptr);
+
+    // 第一次打开：模拟用户拖拽后写入 store（列 f 宽 137、行头宽 66）
+    {
+        DA::DADataOperateOfDataFrameWidget w(d, &registry);
+        DA::DATableViewStateStore* store = w.viewStateStore();
+        QVERIFY(store != nullptr);
+        store->setColumnWidth(QStringLiteral("f"), 0, 137);
+        store->setRowHeaderWidth(66);
+    }
+
+    // 「重开」数据页（同一 registry 即同一会话；工程保存/加载由 XML round-trip 用例覆盖）：
+    // 构造时按列名应用列宽，行头宽以 setFixedWidth（min=max=w）落地
+    DA::DADataOperateOfDataFrameWidget w2(d, &registry);
+    DA::DADataTableView* tv = w2.getDataTableView();
+    QVERIFY(tv != nullptr);
+    QHeaderView* hh = tv->horizontalHeader();
+    QVERIFY(hh != nullptr);
+    int colF = -1;
+    for (int c = 0; c < hh->count(); ++c) {
+        if (hh->model() && hh->model()->headerData(c, Qt::Horizontal).toString() == QLatin1String("f")) {
+            colF = c;
+            break;
+        }
+    }
+    QVERIFY(colF >= 0);
+    QCOMPARE(hh->sectionSize(colF), 137);
+    QHeaderView* vh = tv->verticalHeader();
+    QVERIFY(vh != nullptr);
+    QCOMPARE(vh->minimumWidth(), 66);
+    QCOMPARE(vh->maximumWidth(), 66);
+
+    // 图表「选择序列」拾取链路回归：左键点击列头 → sectionClicked → columnHeaderClicked
+    QSignalSpy clickSpy(&w2, &DA::DADataOperateOfDataFrameWidget::columnHeaderClicked);
+    w2.resize(800, 400);
+    w2.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w2));
+    const int xPos = hh->sectionViewportPosition(colF) + qMax(1, hh->sectionSize(colF) / 2);
+    const int yPos = qMax(1, hh->viewport()->height() / 2);
+    QTest::mouseClick(hh->viewport(), Qt::LeftButton, Qt::NoModifier, QPoint(xPos, yPos));
+    QVERIFY(clickSpy.count() >= 1);
+    QCOMPARE(clickSpy.takeFirst().at(0).toInt(), colF);
+    w2.hide();
 }
 
 // 不用QTEST_MAIN：嵌入式python的静态对象（DAPyBindQt.dll内的解释器句柄、QVariant caster
