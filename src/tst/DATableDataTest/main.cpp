@@ -99,6 +99,14 @@
 #include <QTreeWidget>
 #include <QPlainTextEdit>
 
+// 单元格批注（005 计划 §5，T1.26）
+#include "DATableNoteStore.h"
+#include "DATableNoteEditDialog.h"
+#include "Commands/DACommandsTableStyle.h"
+#include <QToolTip>
+#include <QHelpEvent>
+#include <QFile>
+
 #include "DASqliteLazyTable.h"
 #include <QSqlDatabase>
 #include <QSqlQuery>
@@ -439,6 +447,16 @@ private Q_SLOTS:
     void testValidationReportMarkdown();
     // 100 万行表校验耗时可接受（§4.4 验收：记录耗时；唯一性只算一次、二次不重算）
     void testValidationPerf1M();
+
+    // 005 WP3 单元格批注（T1.26 §5.4/§7.1）：存储增删改/XML round-trip/快照、
+    // 位置键重映射（排序置换跟行走/插删行下移/插删列）、命令 undo/redo（旧新文本+
+    // 时间戳）、widget 全链路（弹层/清除/插行下移/排序跟随/导出不污染红线3）、
+    // 角标像素断言与 helpEvent tooltip
+    void testNoteStoreBasics();
+    void testNoteRemap();
+    void testNoteCommands();
+    void testNoteWidgetFlow();
+    void testNotePaintAndTooltip();
 
 private:
     // 生成/复用sqlite测试库（百万行），失败返回false并置mSqliteErr
@@ -1608,7 +1626,12 @@ void DATableDataTest::testContextMenuComposition()
                                      QStringLiteral("Fill"),
                                      QStringLiteral("<SEP>"),
                                      QStringLiteral("Validation Rules..."),
-                                     QStringLiteral("Run Validation") };
+                                     QStringLiteral("Run Validation"),
+                                     QStringLiteral("<SEP>"),
+                                     QStringLiteral("Insert Note"),
+                                     QStringLiteral("Edit Note"),
+                                     QStringLiteral("Delete Note"),
+                                     QStringLiteral("Clear All Notes") };
     QCOMPARE(bodySeq, expectedBody);
     // 剪贴板组无选区置灰
     QVERIFY(!byText.value(QStringLiteral("Cut"))->isEnabled());
@@ -1649,6 +1672,15 @@ void DATableDataTest::testContextMenuComposition()
                                     QStringLiteral("Fill Series...") }));
     // 数据校验（005 T1.25）：无模型=无 dataframe 数据体，两项置灰且图标齐备
     for (const QString& t : { QStringLiteral("Validation Rules..."), QStringLiteral("Run Validation") }) {
+        QAction* a = byText.value(t);
+        QVERIFY(a != nullptr);
+        QVERIFY(!a->isEnabled());
+        QVERIFY2(!a->icon().isNull(), qPrintable(QStringLiteral("icon empty for %1").arg(t)));
+    }
+    // 批注（005 T1.26）：无模型=无当前格且无批注，四项全置灰；批注是元数据，
+    // 只读源不置灰（启用规则只看当前格/批注存在性）
+    for (const QString& t : { QStringLiteral("Insert Note"), QStringLiteral("Edit Note"),
+                              QStringLiteral("Delete Note"), QStringLiteral("Clear All Notes") }) {
         QAction* a = byText.value(t);
         QVERIFY(a != nullptr);
         QVERIFY(!a->isEnabled());
@@ -5923,6 +5955,396 @@ df.loc[df.index[::100000], "v"] = np.nan
                               .arg(wall2)
                               .arg(out1[ 0 ].rows.size() + out1[ 1 ].rows.size() + out1[ 2 ].rows.size() + out1[ 3 ].rows.size());
     QVERIFY2(wall1 < 30000, qPrintable(QStringLiteral("first validation too slow: %1 ms").arg(wall1)));
+    w.hide();
+}
+
+
+//===================================================
+// 005 WP3 单元格批注（T1.26）
+//===================================================
+
+// 005 §7.1：批注存储——(row,col) 键增删改、时间戳维护、XML round-trip、快照恢复
+void DATableDataTest::testNoteStoreBasics()
+{
+    DA::DATableNoteStore store;
+    QVERIFY(store.isEmpty());
+    QCOMPARE(store.count(), 0);
+    QVERIFY(!store.hasNote(1, 2));
+    QVERIFY(store.noteText(1, 2).isEmpty());
+    // 新增
+    store.setNote(1, 2, QStringLiteral("hello"));
+    QVERIFY(store.hasNote(1, 2));
+    QCOMPARE(store.noteText(1, 2), QStringLiteral("hello"));
+    const auto created = store.note(1, 2).createdAt;
+    QVERIFY(created.isValid());
+    QCOMPARE(store.note(1, 2).updatedAt, created);
+    // 修改：createdAt 不变，updatedAt 刷新
+    store.setNote(1, 2, QStringLiteral("world"));
+    QCOMPARE(store.note(1, 2).createdAt, created);
+    QVERIFY(store.note(1, 2).updatedAt >= created);
+    // 空文本 = 删除
+    store.setNote(1, 2, QString());
+    QVERIFY(!store.hasNote(1, 2));
+    // 多键 + keys 升序稳定
+    store.setNote(5, 1, QStringLiteral("n51"));
+    store.setNote(2, 3, QStringLiteral("n23"));
+    store.setNote(2, 1, QStringLiteral("n21"));
+    QCOMPARE(store.count(), 3);
+    const auto ks = store.keys();
+    QCOMPARE(ks.size(), 3);
+    QVERIFY(ks[ 0 ] == qMakePair(2, 1) && ks[ 1 ] == qMakePair(2, 3) && ks[ 2 ] == qMakePair(5, 1));
+    // XML round-trip（文本 + 时间戳保留）
+    QDomDocument doc;
+    QDomElement root = doc.createElement(QStringLiteral("table"));
+    doc.appendChild(root);
+    store.toXml(doc, root);
+    DA::DATableNoteStore store2;
+    QDomDocument doc2;
+    QVERIFY(doc2.setContent(doc.toString()));
+    QVERIFY(store2.fromXml(doc2.documentElement().firstChildElement(QStringLiteral("note"))));
+    QCOMPARE(store2.count(), store.count());
+    for (const auto& k : ks) {
+        QCOMPARE(store2.noteText(k.first, k.second), store.noteText(k.first, k.second));
+        QCOMPARE(store2.note(k.first, k.second).createdAt, store.note(k.first, k.second).createdAt);
+        QCOMPARE(store2.note(k.first, k.second).updatedAt, store.note(k.first, k.second).updatedAt);
+    }
+    // 快照/恢复（setNoteEntry 保留时间戳）
+    const auto snap = store.snapshot();
+    store.clearAll();
+    QVERIFY(store.isEmpty());
+    store.restore(snap);
+    QCOMPARE(store.count(), 3);
+    QCOMPARE(store.note(5, 1).createdAt, snap.value(qMakePair(5, 1)).createdAt);
+    // removeNote 单键
+    store.removeNote(5, 1);
+    QCOMPARE(store.count(), 2);
+    QVERIFY(!store.hasNote(5, 1));
+}
+
+// 005 §7.1：位置键重映射——排序置换（批注跟着行走）、插删行、插删列
+void DATableDataTest::testNoteRemap()
+{
+    DA::DATableNoteStore store;
+    store.setNote(0, 0, QStringLiteral("n00"));
+    store.setNote(2, 1, QStringLiteral("n21"));
+    // —— 行重排：perm[i]=新表第 i 行的旧行号（DATableKeyRemap 钉死语义）——
+    // perm=[2,0,1]：新行0=旧行2 → n21 应落到 (0,1)；新行2=旧行1（无批注）
+    store.onRowsReordered(QVector< int >({ 2, 0, 1 }));
+    QVERIFY(!store.hasNote(2, 1));
+    QCOMPARE(store.noteText(0, 1), QStringLiteral("n21"));
+    QVERIFY(store.hasNote(1, 0));  // 旧行0 → 新行1（inv[0]=1）
+    // —— 行插入：>=插入行的键 +1 ——
+    store.clearAll();
+    store.setNote(2, 0, QStringLiteral("a"));
+    store.setNote(5, 0, QStringLiteral("b"));
+    store.onRowsInserted({ 3 });
+    QVERIFY(!store.hasNote(2, 0) == false);  // 行2 < 3 不动
+    QCOMPARE(store.noteText(2, 0), QStringLiteral("a"));
+    QCOMPARE(store.noteText(6, 0), QStringLiteral("b"));  // 行5 → 6
+    // 在批注行上方插入一行 → 批注下移（§5.4 验收）
+    store.onRowsInserted({ 0 });
+    QCOMPARE(store.noteText(3, 0), QStringLiteral("a"));
+    QCOMPARE(store.noteText(7, 0), QStringLiteral("b"));
+    // —— 行删除：==删除行的批注删除，>删除行的键 -1 ——
+    store.onRowsRemoved({ 3 });
+    QVERIFY(!store.hasNote(3, 0));           // 被删行的批注丢失
+    QCOMPARE(store.noteText(6, 0), QStringLiteral("b"));  // 7 → 6
+    // —— 列插入/删除 ——
+    store.clearAll();
+    store.setNote(0, 1, QStringLiteral("c1"));
+    store.setNote(0, 3, QStringLiteral("c3"));
+    store.onColumnsInserted({ 2 });
+    QCOMPARE(store.noteText(0, 1), QStringLiteral("c1"));  // 列1 < 2 不动
+    QCOMPARE(store.noteText(0, 4), QStringLiteral("c3"));  // 列3 → 4
+    store.onColumnsRemoved({ 1 });
+    QVERIFY(!store.hasNote(0, 1));                          // 被删列的批注丢弃
+    QCOMPARE(store.noteText(0, 3), QStringLiteral("c3"));  // 列4 → 3
+}
+
+// 005 §7.1：批注命令——增/改/删（旧新条目记录含时间戳）与清除全部的 undo/redo；文案非空
+void DATableDataTest::testNoteCommands()
+{
+    DA::DATableNoteStore store;
+    QUndoStack stack;
+    // 新增
+    DA::DATableNoteStore::Note n1;
+    n1.text      = QStringLiteral("note-1");
+    n1.createdAt = QDateTime(QDate(2026, 1, 1), QTime(10, 0));
+    n1.updatedAt = n1.createdAt;
+    auto* cmdAdd = new DA::DACommandTableNote_set(&store, 3, 1, DA::DATableNoteStore::Note(), n1);
+    QVERIFY(!cmdAdd->text().isEmpty());  // 撤销面板无空白条目（红线5）
+    stack.push(cmdAdd);
+    QCOMPARE(store.noteText(3, 1), QStringLiteral("note-1"));
+    QCOMPARE(store.note(3, 1).createdAt, n1.createdAt);  // 时间戳按命令记录写入
+    stack.undo();
+    QVERIFY(!store.hasNote(3, 1));
+    stack.redo();
+    QCOMPARE(store.noteText(3, 1), QStringLiteral("note-1"));
+    // 编辑（旧新文本记录）
+    DA::DATableNoteStore::Note n2   = n1;
+    n2.text                         = QStringLiteral("note-2");
+    n2.updatedAt                    = QDateTime(QDate(2026, 2, 2), QTime(11, 0));
+    auto* cmdEdit                   = new DA::DACommandTableNote_set(&store, 3, 1, n1, n2);
+    QCOMPARE(cmdEdit->text().isEmpty(), false);
+    stack.push(cmdEdit);
+    QCOMPARE(store.noteText(3, 1), QStringLiteral("note-2"));
+    stack.undo();
+    QCOMPARE(store.noteText(3, 1), QStringLiteral("note-1"));
+    QCOMPARE(store.note(3, 1).updatedAt, n1.updatedAt);  // 时间戳精确还原
+    stack.redo();
+    // 删除
+    auto* cmdDel = new DA::DACommandTableNote_set(&store, 3, 1, n2, DA::DATableNoteStore::Note());
+    stack.push(cmdDel);
+    QVERIFY(!store.hasNote(3, 1));
+    stack.undo();
+    QCOMPARE(store.noteText(3, 1), QStringLiteral("note-2"));
+    // 清除本表批注（一次命令；首次 redo 捕获整店快照）
+    store.setNote(0, 0, QStringLiteral("x"));
+    store.setNote(9, 9, QStringLiteral("y"));
+    const int before = store.count();
+    QVERIFY(before >= 3);
+    auto* cmdClear = new DA::DACommandTableNote_clearAll(&store);
+    QVERIFY(!cmdClear->text().isEmpty());
+    stack.push(cmdClear);
+    QVERIFY(store.isEmpty());
+    stack.undo();
+    QCOMPARE(store.count(), before);
+    QCOMPARE(store.noteText(9, 9), QStringLiteral("y"));
+    stack.redo();
+    QVERIFY(store.isEmpty());
+}
+
+// 005 §5.4：widget 全链路——弹层插入/编辑/删除、undo/redo、清除本表批注、
+// 插行批注下移、排序后批注跟着行走、导出不污染（批注不进 DataFrame，红线3）
+void DATableDataTest::testNoteWidgetFlow()
+{
+    if (!mPandasOk || !mPyScriptsOk) {
+        QSKIP("pandas/DAPyScripts not available");
+    }
+    qRegisterMetaType< DA::DAData >("DA::DAData");
+    pybind11::dict scope;
+    pybind11::exec(R"(
+import pandas as pd
+df = pd.DataFrame({"k": [30, 10, 20, 40, 50, 60], "s": ["c", "a", "b", "d", "e", "f"]})
+)",
+                   pybind11::globals(),
+                   scope);
+    DA::DAPyDataFrame df(scope[ "df" ]);
+    DA::DADataManager mgr;
+    DA::DAData d(df);
+    d.setName(QStringLiteral("nsrc"));
+    mgr.addData(d);
+    DA::DATableMetadataRegistry registry(nullptr);
+    DA::DADataOperateOfDataFrameWidget w(d, &registry);
+    w.resize(700, 400);
+    w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+    DA::DATableNoteStore* store = w.noteStore();
+    QVERIFY(store != nullptr);
+    DA::DADataTableView* tv = w.getDataTableView();
+    QVERIFY(tv != nullptr);
+    QUndoStack& pageStack = *w.getUndoStack();
+    const int stackBefore = pageStack.count();
+    // —— 弹层插入批注（当前格 = (1,0)，驱动 DATableNoteEditDialog）——
+    tv->selectionModel()->setCurrentIndex(tv->model()->index(1, 0), QItemSelectionModel::ClearAndSelect);
+    QTimer::singleShot(0, []() {
+        auto* dlg = qobject_cast< DA::DATableNoteEditDialog* >(QApplication::activeModalWidget());
+        if (!dlg) {
+            return;
+        }
+        QVERIFY(!dlg->findChild< QPushButton* >(QStringLiteral("noteDeleteBtn"))->isVisibleTo(dlg));  // 无批注不显示删除
+        auto* edit = dlg->findChild< QPlainTextEdit* >(QStringLiteral("noteEditText"));
+        QVERIFY(edit != nullptr);
+        edit->setPlainText(QStringLiteral("NOTE-SECRET-42"));
+        QTimer::singleShot(100, [ dlg ]() {
+            dlg->findChild< QPushButton* >(QStringLiteral("noteSaveBtn"))->click();
+        });
+    });
+    w.showNoteEditorForCurrentCell();
+    QCOMPARE(store->noteText(1, 0), QStringLiteral("NOTE-SECRET-42"));
+    QCOMPARE(pageStack.count(), stackBefore + 1);  // 一次批注 = 一条命令
+    // undo 移除 / redo 恢复
+    pageStack.undo();
+    QVERIFY(!store->hasNote(1, 0));
+    pageStack.redo();
+    QCOMPARE(store->noteText(1, 0), QStringLiteral("NOTE-SECRET-42"));
+    // —— 编辑批注（弹层预填旧文本，删除按钮可见）——
+    QTimer::singleShot(0, []() {
+        auto* dlg = qobject_cast< DA::DATableNoteEditDialog* >(QApplication::activeModalWidget());
+        if (!dlg) {
+            return;
+        }
+        auto* edit = dlg->findChild< QPlainTextEdit* >(QStringLiteral("noteEditText"));
+        QCOMPARE(edit->toPlainText(), QStringLiteral("NOTE-SECRET-42"));
+        QVERIFY(dlg->findChild< QPushButton* >(QStringLiteral("noteDeleteBtn"))->isVisibleTo(dlg));
+        edit->setPlainText(QStringLiteral("NOTE-EDITED"));
+        QTimer::singleShot(100, [ dlg ]() {
+            dlg->findChild< QPushButton* >(QStringLiteral("noteSaveBtn"))->click();
+        });
+    });
+    w.showNoteEditorForCurrentCell();
+    QCOMPARE(store->noteText(1, 0), QStringLiteral("NOTE-EDITED"));
+    QCOMPARE(pageStack.count(), stackBefore + 2);
+    pageStack.undo();
+    QCOMPARE(store->noteText(1, 0), QStringLiteral("NOTE-SECRET-42"));  // 还原旧文本
+    pageStack.redo();
+    // —— 删除当前格批注 ——
+    QVERIFY(w.deleteNoteAtCurrentCell());
+    QVERIFY(!store->hasNote(1, 0));
+    QCOMPARE(pageStack.count(), stackBefore + 3);
+    pageStack.undo();
+    QCOMPARE(store->noteText(1, 0), QStringLiteral("NOTE-EDITED"));
+    // —— 在批注行上方插入一行 → 批注下移（§5.4）——
+    w.insertRowAt(0);
+    QCOMPARE(store->noteText(2, 0), QStringLiteral("NOTE-EDITED"));
+    QVERIFY(!store->hasNote(1, 0) || store->noteText(1, 0).isEmpty());
+    pageStack.undo();  // 撤销插行 → 批注回位
+    QCOMPARE(store->noteText(1, 0), QStringLiteral("NOTE-EDITED"));
+    // —— 排序后批注跟着行走（§5.4：对带批注的行排序）——
+    // k=[30,10,20,...] 升序 → 旧行1(k=10) 排到新行0；批注在旧行1 → 应到新行0
+    {
+        DA::DADataHeaderView* hh = qobject_cast< DA::DADataHeaderView* >(tv->horizontalHeader());
+        QVERIFY(hh != nullptr);
+        int colK = -1;
+        for (int c = 0; c < hh->count(); ++c) {
+            if (hh->model() && hh->model()->headerData(c, Qt::Horizontal).toString() == QLatin1String("k")) {
+                colK = c;
+                break;
+            }
+        }
+        QVERIFY(colK >= 0);
+        const int x = hh->sectionViewportPosition(colK) + qMax(1, hh->sectionSize(colK) / 2);
+        const int y = qMax(1, hh->viewport()->height() / 2);
+        QTest::mouseClick(hh->viewport(), Qt::LeftButton, Qt::NoModifier, QPoint(x, y));
+        QCOMPARE(df.iat(0, 0).toDouble(), 10.0);            // 升序生效
+        QCOMPARE(store->noteText(0, 0), QStringLiteral("NOTE-EDITED"));  // 批注跟着行走
+        QVERIFY(!store->hasNote(1, 0));
+        pageStack.undo();  // 撤销排序 → 批注回原行
+        QCOMPARE(store->noteText(1, 0), QStringLiteral("NOTE-EDITED"));
+        pageStack.redo();  // 再排序（下步基于排序后状态）
+    }
+    // —— 导出不污染（红线3：批注不进 DataFrame）——
+    {
+        store->setNote(0, 1, QStringLiteral("EXPORT-CHECK-NOTE"));
+        const QString csvPath = mTmpDir.isValid() ? mTmpDir.filePath(QStringLiteral("note_export.csv"))
+                                                  : QDir::temp().filePath(QStringLiteral("note_export.csv"));
+        QVERIFY(DA::DAPyScripts::getDataFrame().to_csv(df, csvPath, QStringLiteral(",")));
+        QFile f(csvPath);
+        QVERIFY(f.open(QIODevice::ReadOnly | QIODevice::Text));
+        const QString content = QString::fromUtf8(f.readAll());
+        f.close();
+        QVERIFY(!content.contains(QStringLiteral("EXPORT-CHECK-NOTE")));
+        QVERIFY(!content.contains(QStringLiteral("NOTE-EDITED")));
+        // 列数不变（批注没有变成数据列）
+        QCOMPARE(df.shape().second, static_cast< std::size_t >(2));
+    }
+    // —— 清除本表批注（一次命令可撤销）——
+    const int noteCount = store->count();
+    QVERIFY(noteCount >= 2);
+    QCOMPARE(w.clearAllNotes(), noteCount);
+    QVERIFY(store->isEmpty());
+    pageStack.undo();
+    QCOMPARE(store->count(), noteCount);
+    QCOMPARE(store->noteText(0, 0), QStringLiteral("NOTE-EDITED"));
+    w.hide();
+}
+
+// 005 §5.3-3：角标绘制（层⑤之后右上小三角，官方金黄）与 helpEvent tooltip（只查可见格）
+void DATableDataTest::testNotePaintAndTooltip()
+{
+    if (!mPandasOk) {
+        QSKIP("pandas not available");
+    }
+    qRegisterMetaType< DA::DAData >("DA::DAData");
+    pybind11::dict scope;
+    pybind11::exec(R"(
+import pandas as pd
+df = pd.DataFrame({"a": [1.0, 2.0, 3.0, 4.0], "b": [5.0, 6.0, 7.0, 8.0]})
+)",
+                   pybind11::globals(),
+                   scope);
+    DA::DAPyDataFrame df(scope[ "df" ]);
+    DA::DADataManager mgr;
+    DA::DAData d(df);
+    d.setName(QStringLiteral("npaint"));
+    mgr.addData(d);
+    DA::DATableMetadataRegistry registry(nullptr);
+    DA::DADataOperateOfDataFrameWidget w(d, &registry);
+    w.resize(700, 400);
+    w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+    DA::DATableNoteStore* store = w.noteStore();
+    QVERIFY(store != nullptr);
+    store->setNote(0, 0, QStringLiteral("paint-note"));
+    DA::DADataTableView* tv = w.getDataTableView();
+    QVERIFY(tv != nullptr);
+    // 清当前索引避免选中框干扰角标像素
+    if (tv->selectionModel() && tv->selectionModel()->currentIndex().isValid()) {
+        tv->selectionModel()->setCurrentIndex(QModelIndex(), QItemSelectionModel::NoUpdate);
+    }
+    QApplication::processEvents();
+    tv->viewport()->repaint();
+    QImage img(tv->viewport()->size(), QImage::Format_ARGB32);
+    tv->viewport()->render(&img);
+    const QRect r00 = tv->visualRect(tv->model()->index(0, 0));
+    const QRect r10 = tv->visualRect(tv->model()->index(1, 0));
+    QVERIFY(r00.isValid() && r10.isValid());
+    // 官方金黄 #E6C27C（DESIGN.md §2 标记语义）角标：右上 8px 三角区域含金黄色像素
+    const QRgb gold = qRgb(0xE6, 0xC2, 0x7C);
+    const QRect corner00(r00.right() - 8, r00.top(), 9, 9);
+    int goldCount = 0;
+    for (int y = corner00.top(); y <= corner00.bottom() && y < img.height(); ++y) {
+        for (int x = corner00.left(); x <= corner00.right() && x < img.width(); ++x) {
+            if (x >= 0 && y >= 0 && img.pixel(x, y) == gold) {
+                ++goldCount;
+            }
+        }
+    }
+    QVERIFY2(goldCount >= 10, qPrintable(QStringLiteral("note corner marker not painted, gold pixels=%1").arg(goldCount)));
+    // 无批注格右上角无金黄
+    const QRect corner10(r10.right() - 8, r10.top(), 9, 9);
+    int goldCount2 = 0;
+    for (int y = corner10.top(); y <= corner10.bottom() && y < img.height(); ++y) {
+        for (int x = corner10.left(); x <= corner10.right() && x < img.width(); ++x) {
+            if (x >= 0 && y >= 0 && img.pixel(x, y) == gold) {
+                ++goldCount2;
+            }
+        }
+    }
+    QCOMPARE(goldCount2, 0);
+    // —— helpEvent tooltip：有批注格返回 true 且 QToolTip 文本 = 批注文本；无批注格走基类 ——
+    auto* delegate = qobject_cast< DA::DATableStyleItemDelegate* >(tv->itemDelegate());
+    QVERIFY(delegate != nullptr);
+    QStyleOptionViewItem opt;
+    opt.initFrom(tv);
+    const QRect vr = tv->visualRect(tv->model()->index(0, 0));
+    const QPoint local(vr.center());
+    const QPoint global = tv->viewport()->mapToGlobal(local);
+    QHelpEvent ev(QEvent::ToolTip, local, global);
+    QToolTip::hideText();
+    QVERIFY(delegate->helpEvent(&ev, tv, opt, tv->model()->index(0, 0)));
+    QCOMPARE(QToolTip::text(), QStringLiteral("paint-note"));
+    // 无批注格：基类路径（无 ToolTipRole → false）
+    QToolTip::hideText();
+    QStyleOptionViewItem opt2;
+    opt2.initFrom(tv);
+    QHelpEvent ev2(QEvent::ToolTip, vr.center(), global);
+    QVERIFY(!delegate->helpEvent(&ev2, tv, opt2, tv->model()->index(1, 0)));
+    // 删除批注后角标消失（重绘断言）
+    store->removeNote(0, 0);
+    QApplication::processEvents();
+    tv->viewport()->repaint();
+    QImage img2(tv->viewport()->size(), QImage::Format_ARGB32);
+    tv->viewport()->render(&img2);
+    int goldCount3 = 0;
+    for (int y = corner00.top(); y <= corner00.bottom() && y < img2.height(); ++y) {
+        for (int x = corner00.left(); x <= corner00.right() && x < img2.width(); ++x) {
+            if (x >= 0 && y >= 0 && img2.pixel(x, y) == gold) {
+                ++goldCount3;
+            }
+        }
+    }
+    QCOMPARE(goldCount3, 0);
     w.hide();
 }
 
