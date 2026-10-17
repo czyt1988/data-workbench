@@ -752,6 +752,71 @@ bool DAPyScriptsDataFrame::sort(DAPyDataFrame& df, const QString& by, bool ascen
 }
 
 /**
+ * @brief 多键稳定排序的wrapper
+ *
+ * 对应 da_dataframe.da_sort(df, keys)：keys 为 (列位置, 是否升序) 列表，
+ * 顺序即优先级（第一个是主键）。Python 侧就地重排并返回置换
+ * perm（perm[i] = 新表第 i 行在旧表中的行号，与 DATableKeyRemap /
+ * DATableStyleManager::onRowsReordered 的置换语义一致）。
+ * @param df 数据（就地重排）
+ * @param keys (列位置, 是否升序) 列表
+ * @param perm 非空时输出置换；空表时输出空列表
+ * @return 成功返回true；列越界/混合类型不可比较等抛错返回false（经dealException记录）
+ */
+bool DAPyScriptsDataFrame::sort(DAPyDataFrame& df, const QVector< QPair< int, bool > >& keys, QVector< int >* perm) noexcept
+{
+    if (keys.isEmpty()) {
+        return false;
+    }
+    try {
+        pybind11::object da_sort = attr("da_sort");
+        pybind11::list pykeys;
+        for (const auto& k : keys) {
+            pykeys.append(pybind11::make_tuple(k.first, k.second));
+        }
+        pybind11::object result = da_sort(df.object(), pykeys);
+        if (perm) {
+            perm->clear();
+            if (!result.is_none()) {
+                const int n = static_cast< int >(pybind11::len(result));
+                perm->reserve(n);
+                for (auto item : result) {
+                    perm->append(item.cast< int >());
+                }
+            }
+        }
+        return true;
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return false;
+}
+
+/**
+ * @brief 按给定置换就地重排行的wrapper
+ *
+ * 对应 da_dataframe.da_reorder_rows(df, perm)：new[i] = old[perm[i]]，
+ * 排序命令的 redo/undo 用它施加正置换/逆置换，不重新计算排序。
+ * @param df 数据（就地重排）
+ * @param perm 置换（perm[i] = 新表第 i 行在旧表中的行号）；空置换视为无操作
+ * @return 成功返回true
+ */
+bool DAPyScriptsDataFrame::reorderRows(DAPyDataFrame& df, const QVector< int >& perm) noexcept
+{
+    if (perm.isEmpty()) {
+        return true;
+    }
+    try {
+        pybind11::object da_reorder_rows = attr("da_reorder_rows");
+        da_reorder_rows(df.object(), DA::PY::toPyObject(perm));
+        return true;
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return false;
+}
+
+/**
  * @brief select方法的wrapper
  * @param df
  * @param contents

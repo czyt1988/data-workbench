@@ -5,6 +5,8 @@
 #include <optional>
 #include <QString>
 #include <QList>
+#include <QPair>
+#include <QVector>
 #include "DAPyObjectWrapper.h"
 #include "numpy/DAPyDType.h"
 #include "pandas/DAPyDataFrame.h"
@@ -87,8 +89,14 @@ public:
 	QList< QPair< int, int > > searchData(const DAPyDataFrame& df, const QString& value) noexcept;
 	// eval
 	bool evalDatas(DAPyDataFrame& df, const QString& expr) noexcept;
-	// 排序sort()
+	// 排序sort()（旧单键入口，仅为插件旧排序命令保留，插件收口后移除）
 	bool sort(DAPyDataFrame& df, const QString& by, bool ascending) noexcept;
+	// 多键稳定排序，对应da_dataframe.da_sort：keys为(列位置,是否升序)列表（顺序即优先级），
+	// 成功返回true；perm非空时输出置换（perm[i]=新表第i行在旧表中的行号，与DATableKeyRemap语义一致）
+	bool sort(DAPyDataFrame& df, const QVector< QPair< int, bool > >& keys, QVector< int >* perm = nullptr) noexcept;
+	// 按给定置换就地重排行（new[i]=old[perm[i]]），对应da_dataframe.da_reorder_rows，
+	// 排序命令的redo/undo用它施加正/逆置换
+	bool reorderRows(DAPyDataFrame& df, const QVector< int >& perm) noexcept;
 	// dataselect()
 	bool dataselect(DAPyDataFrame& df, double lowervalue, double uppervalue, const QString& index) noexcept;
 
