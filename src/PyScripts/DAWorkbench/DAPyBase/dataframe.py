@@ -1586,7 +1586,8 @@ def da_insert_nanrow(df: pd.DataFrame, row: int):
     df1 = df.iloc[:row]
     df2 = df.iloc[row:]
     dfnanrow = pd.DataFrame(df.iloc[row, :]).T
-    dfnanrow.at[:, :] = np.nan
+    # pandas 3 起 .at 只接受标量标签（.at[:, :] 抛 InvalidIndexError），改用 .iloc 广播赋 NaN
+    dfnanrow.iloc[:, :] = np.nan
     if isinstance(dfindex, pd.RangeIndex):
         df.__init__(pd.concat([df1, dfnanrow, df2], ignore_index=True))
     else:
