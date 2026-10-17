@@ -214,6 +214,7 @@ list(APPEND DA_LIB_HEADER_FILES_Dialog
     ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnDescribe.h
     ${DA_LIB_SUBDIR_Dialog}/DADialogAgentSessionManager.h
     ${DA_LIB_SUBDIR_Dialog}/DADialogTableDisplayFormat.h
+    ${DA_LIB_SUBDIR_Dialog}/DADialogFindReplace.h
 )
 list(APPEND DA_LIB_SOURCE_FILES_Dialog
     ${DA_LIB_SUBDIR_Dialog}/DATxtFileImportDialog.cpp
@@ -227,6 +228,7 @@ list(APPEND DA_LIB_SOURCE_FILES_Dialog
     ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnDescribe.cpp
     ${DA_LIB_SUBDIR_Dialog}/DADialogAgentSessionManager.cpp
     ${DA_LIB_SUBDIR_Dialog}/DADialogTableDisplayFormat.cpp
+    ${DA_LIB_SUBDIR_Dialog}/DADialogFindReplace.cpp
 )
 list(APPEND DA_LIB_QT_UI_FILES_Dialog
     ${DA_LIB_SUBDIR_Dialog}/DATxtFileImportDialog.ui
@@ -237,6 +239,7 @@ list(APPEND DA_LIB_QT_UI_FILES_Dialog
     ${DA_LIB_SUBDIR_Dialog}/DADialogInsertNewColumn.ui
     ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameSeriesSelector.ui
     ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnDescribe.ui
+    ${DA_LIB_SUBDIR_Dialog}/DADialogFindReplace.ui
 )
 #MimeData
 file(GLOB DA_LIB_HEADER_FILES_MimeData ${DA_LIB_SUBDIR_MimeData}/*.h)

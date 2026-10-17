@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px"
+	 width="200px" height="200px" viewBox="0 0 200 200" xml:space="preserve">
+<!-- 替换：上下对向的交换箭头（⇄），主蓝 #5280C1，200x200 通用功能图标 -->
+<path fill="#5280C1" d="M40,60 H120 V44 L160,72 L120,100 V84 H40 Z"/>
+<path fill="#5280C1" d="M160,116 H80 V100 L40,128 L80,156 V140 H160 Z"/>
+</svg>

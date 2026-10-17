@@ -47,10 +47,10 @@ DAData DADataTableView::getData() const
 }
 
 /**
- * @brief 按键事件：Ctrl+C / Ctrl+Insert 复制选中单元格
+ * @brief 按键事件：Ctrl+C 复制；Ctrl+F 查找；Ctrl+H 替换；Esc 关查找条
  *
- * 表格快捷键的集中挂点：一律在本函数处理（002 起在此追加查找/替换等键位，
- * 本页保持现状 Ctrl+C，不预设空分支）。
+ * 表格快捷键的唯一挂点（红线5：Ribbon action 不设 shortcut，避免双触发）。
+ * 查找/替换发表意信号交页面唤出浮动条；Esc 关查找条后仍交基类（保留退出编辑器等既有语义）。
  * @param event 按键事件
  */
 void DADataTableView::keyPressEvent(QKeyEvent* event)
@@ -60,6 +60,21 @@ void DADataTableView::keyPressEvent(QKeyEvent* event)
             event->accept();
             return;
         }
+    }
+    if (event->matches(QKeySequence::Find)) {
+        Q_EMIT findRequested();
+        event->accept();
+        return;
+    }
+    if (event->matches(QKeySequence::Replace)) {
+        Q_EMIT replaceRequested();
+        event->accept();
+        return;
+    }
+    if (event->key() == Qt::Key_Escape) {
+        // 焦点在表格时 Esc 关查找条（命中高亮由页面据 findBarCloseRequested 清理）；
+        // 不 accept，Esc 继续交基类处理既有语义
+        Q_EMIT findBarCloseRequested();
     }
     QTableView::keyPressEvent(event);
 }
@@ -115,6 +130,13 @@ QMenu* DADataTableView::buildContextMenu(const QModelIndex& at)
     connect(actCut, &QAction::triggered, this, &DADataTableView::contextMenuCutRequested);
     connect(actCopy, &QAction::triggered, this, &DADataTableView::contextMenuCopyRequested);
     connect(actPaste, &QAction::triggered, this, &DADataTableView::contextMenuPasteRequested);
+    // —— 002：查找 / 替换（与快捷键 Ctrl+F/Ctrl+H 共用表意信号，页面唤出浮动条）——
+    menu->addSeparator();
+    QAction* actFind    = menu->addAction(QIcon(QStringLiteral(":/DAGui/icon/find.svg")), tr("Find..."));     // cn:查找...
+    QAction* actReplace = menu->addAction(QIcon(QStringLiteral(":/DAGui/icon/replace.svg")), tr("Replace..."));  // cn:替换...
+    actReplace->setEnabled(editable);  // 只读源查找可用、替换置灰
+    connect(actFind, &QAction::triggered, this, &DADataTableView::findRequested);
+    connect(actReplace, &QAction::triggered, this, &DADataTableView::replaceRequested);
     // —— 后续计划的分组插入点在菜单底部（见函数注释），插入时组间加分隔符 ——
     return menu;
 }

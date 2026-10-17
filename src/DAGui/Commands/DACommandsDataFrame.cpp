@@ -511,4 +511,72 @@ const QVector< int >& DACommandDataFrame_sortRows::lastAppliedPermutation() cons
     return mLastApplied;
 }
 
+////////////////////////
+
+/**
+ * @brief 查找替换命令（值记录撤销，D4：全部替换 = 一个撤销单元）
+ *
+ * 数据在构造前已由调用方经 findReplace 就地替换完成，本命令只持有变更清单：
+ * 首次 push 的 redo 被 DACommandWithRedoCount 跳过（不重复替换），此后
+ * redo=写回新值、undo=写回旧值（da_write_cells 按列分组批量写回，dtype 保持）。
+ * @param df 数据
+ * @param rows 变更行（数据源绝对行号，与 cols/oldValues/newValues 一一对应）
+ * @param cols 变更列
+ * @param oldValues 旧值 Python list（undo 写回）
+ * @param newValues 新值 Python list（redo 写回）
+ * @param par
+ */
+DACommandDataFrame_replace::DACommandDataFrame_replace(
+    const DAPyDataFrame& df,
+    const QVector< int >& rows,
+    const QVector< int >& cols,
+    const pybind11::list& oldValues,
+    const pybind11::list& newValues,
+    QUndoCommand* par
+)
+    : DACommandWithRedoCount(par), DACallBackInterface(), mDataframe(df), mRows(rows), mCols(cols), mOldValues(oldValues), mNewValues(newValues)
+{
+    setText(QObject::tr("Replace all"));  // cn:全部替换
+}
+
+void DACommandDataFrame_replace::undo()
+{
+    if (mRows.isEmpty()) {
+        return;
+    }
+    DAPyScriptsDataFrame& pydf = DAPyScripts::getDataFrame();
+    if (!pydf.writeCells(mDataframe, mRows, mCols, mOldValues)) {
+        return;
+    }
+    callback();
+}
+
+bool DACommandDataFrame_replace::exec()
+{
+    if (mRows.isEmpty()) {
+        return false;  // 无变更不入栈（调用方已拦截，防御性处理）
+    }
+    DAPyScriptsDataFrame& pydf = DAPyScripts::getDataFrame();
+    if (!pydf.writeCells(mDataframe, mRows, mCols, mNewValues)) {
+        return false;
+    }
+    callback();
+    return true;
+}
+
+int DACommandDataFrame_replace::changeCount() const
+{
+    return mRows.size();
+}
+
+const QVector< int >& DACommandDataFrame_replace::changedRows() const
+{
+    return mRows;
+}
+
+const QVector< int >& DACommandDataFrame_replace::changedCols() const
+{
+    return mCols;
+}
+
 }  // end DA

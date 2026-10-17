@@ -39,12 +39,23 @@
 #include "Dialog/DADialogDataframeColumnCastToDatetime.h"
 #include "Dialog/DADialogInsertNewColumn.h"
 #include "Dialog/DADialogDataframeColumnDescribe.h"
+#include "Dialog/DADialogFindReplace.h"
+// python operator wrapper（查找/替换）
+#include "DAPyScripts.h"
+#include "DAPyScriptsDataFrame.h"
+#include <climits>
 
 //===================================================
 // using DA namespace -- 禁止在头文件using!!
 //===================================================
 
 using namespace DA;
+
+namespace
+{
+// 替换撤销阈值（格）：变更格数超过此值降级为「不可撤销 + 确认提示」（设计稿 §4.11 策略表，默认 100 万格）
+constexpr int c_replaceUndoCellLimit = 1000000;
+}
 
 //===================================================
 // DADataOperateOfDataFrameWidget
@@ -157,6 +168,14 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
     if (DADataHeaderView* hh = qobject_cast< DADataHeaderView* >(ui->tableView->horizontalHeader())) {
         connect(hh, &DADataHeaderView::clickedWithModifiers, this, &DADataOperateOfDataFrameWidget::onHeaderClickedWithModifiers);
     }
+    // 查找/替换入口（002 T1.4）：视图快捷键 Ctrl+F/Ctrl+H 与表体右键菜单共用表意信号
+    connect(ui->tableView, &DADataTableView::findRequested, this, [ this ]() {
+        showFindReplace(false);
+    });
+    connect(ui->tableView, &DADataTableView::replaceRequested, this, [ this ]() {
+        showFindReplace(true);
+    });
+    connect(ui->tableView, &DADataTableView::findBarCloseRequested, this, &DADataOperateOfDataFrameWidget::closeFindReplace);
     // 选中变化时反向同步 ribbon 控件
     if (auto sm = ui->tableView->selectionModel()) {
         connect(sm, &QItemSelectionModel::selectionChanged, this, [ this ]() {
@@ -1981,6 +2000,409 @@ void DADataOperateOfDataFrameWidget::remapSelectionByPermutation(const QVector< 
     if (newCur.isValid()) {
         sm->setCurrentIndex(newCur, QItemSelectionModel::NoUpdate);
     }
+}
+
+/**
+ * @brief 打开查找/替换浮动条（懒建，非模态，页级持有）
+ * @param expandReplace true 展开替换行（Ctrl+H），false 仅查找（Ctrl+F）
+ */
+void DADataOperateOfDataFrameWidget::showFindReplace(bool expandReplace)
+{
+    if (!mFindReplaceDialog) {
+        mFindReplaceDialog = new DADialogFindReplace(this);
+        connect(mFindReplaceDialog, &DADialogFindReplace::searchRequested, this, &DADataOperateOfDataFrameWidget::onFindSearchRequested);
+        connect(mFindReplaceDialog, &DADialogFindReplace::nextRequested, this, &DADataOperateOfDataFrameWidget::onFindNextRequested);
+        connect(mFindReplaceDialog, &DADialogFindReplace::previousRequested, this, &DADataOperateOfDataFrameWidget::onFindPrevRequested);
+        connect(mFindReplaceDialog, &DADialogFindReplace::replaceRequested, this, &DADataOperateOfDataFrameWidget::onFindReplaceRequested);
+        connect(mFindReplaceDialog, &DADialogFindReplace::replaceAllRequested, this, &DADataOperateOfDataFrameWidget::onFindReplaceAllRequested);
+        connect(mFindReplaceDialog, &DADialogFindReplace::closed, this, &DADataOperateOfDataFrameWidget::onFindDialogClosed);
+    }
+    mFindReplaceDialog->activate(expandReplace);
+    updateFindCountLabel();
+}
+
+/**
+ * @brief 关闭查找/替换浮动条（清高亮经 closed → onFindDialogClosed）
+ */
+void DADataOperateOfDataFrameWidget::closeFindReplace()
+{
+    if (mFindReplaceDialog && mFindReplaceDialog->isVisible()) {
+        mFindReplaceDialog->close();
+    }
+}
+
+int DADataOperateOfDataFrameWidget::findHitCount() const
+{
+    return mFindHits.size();
+}
+
+int DADataOperateOfDataFrameWidget::currentFindHitIndex() const
+{
+    return mFindHitIndex;
+}
+
+void DADataOperateOfDataFrameWidget::onFindSearchRequested()
+{
+    runFindScan();
+}
+
+void DADataOperateOfDataFrameWidget::onFindPrevRequested()
+{
+    if (mFindHits.isEmpty()) {
+        // 无命中（如刚打开未扫描）：先扫一次再导航
+        runFindScan();
+        if (mFindHits.isEmpty()) {
+            return;
+        }
+        gotoFindHit(mFindHits.size() - 1);
+        return;
+    }
+    gotoFindHit(mFindHitIndex - 1);
+}
+
+void DADataOperateOfDataFrameWidget::onFindNextRequested()
+{
+    if (mFindHits.isEmpty()) {
+        runFindScan();
+        if (mFindHits.isEmpty()) {
+            return;
+        }
+        gotoFindHit(0);
+        return;
+    }
+    gotoFindHit(mFindHitIndex + 1);
+}
+
+void DADataOperateOfDataFrameWidget::onFindReplaceRequested()
+{
+    applyFindReplace(false);
+}
+
+void DADataOperateOfDataFrameWidget::onFindReplaceAllRequested()
+{
+    applyFindReplace(true);
+}
+
+void DADataOperateOfDataFrameWidget::onFindDialogClosed()
+{
+    // 清查找高亮（按来源清 Find，不影响 Validation 层）与命中状态；
+    // 序号自增使任何在途扫描结果作废（关闭即弃）
+    ++mFindRequestSerial;
+    mFindHits.clear();
+    mFindHitIndex  = -1;
+    mFindTotalHits = 0;
+    if (mHighlightOverlay) {
+        mHighlightOverlay->clear(DATableHighlightOverlay::Source::Find);
+    }
+}
+
+/**
+ * @brief 执行一次查找扫描（硬约束①②③的页面侧落点）
+ *
+ * ①去抖在对话框侧（QTimer 350ms）；②请求序号：进入即自增，结果返回时序号非最新即丢弃
+ * （不排队、过期即弃）；③上限截断在算子侧（max_hits 默认 10 万），totalHits 带真实总数。
+ * 扫描同步执行 + DAWaitCursorScoped 忙等待光标（RAII 保证异常/提前返回也恢复）。
+ * 命中灌入 overlay(Source::Find, Level::Hit)，当前命中单独 Level::CurrentHit。
+ */
+void DADataOperateOfDataFrameWidget::runFindScan()
+{
+    if (!mFindReplaceDialog) {
+        return;
+    }
+    const int serial                             = ++mFindRequestSerial;  // 硬约束②：本次请求序号
+    mLastFindOptions                             = mFindReplaceDialog->options();
+    const DADialogFindReplace::FindOptions& opt  = mLastFindOptions;
+    // 清旧命中与高亮
+    mFindHits.clear();
+    mFindHitIndex  = -1;
+    mFindTotalHits = 0;
+    mHighlightOverlay->clear(DATableHighlightOverlay::Source::Find);
+    if (opt.keyword.isEmpty()) {
+        updateFindCountLabel();
+        return;
+    }
+    DAPyDataFrame df = getDataframe();
+    if (df.isNone()) {
+        updateFindCountLabel();
+        return;
+    }
+    DAWaitCursorScoped waitCursor;  // 忙等待光标（§4.2 进度反馈），RAII 恢复
+    DAPyScriptsDataFrame& py = DAPyScripts::getDataFrame();
+    const DAPyScriptsDataFrame::SearchDataResult res =
+        py.searchData(df,
+                      opt.keyword,
+                      opt.caseSensitive,
+                      opt.useRegex,
+                      opt.wholeCell,
+                      findScanRowRange(opt.selectionOnly),
+                      findScanColRange(opt.selectionOnly));
+    if (serial != mFindRequestSerial) {
+        return;  // 过期结果丢弃（期间又发起了新请求/关闭）
+    }
+    if (!res.ok) {
+        mFindReplaceDialog->setSearchFailed(true);  // 无效正则等
+        updateFindCountLabel();
+        return;
+    }
+    mFindTotalHits = res.totalHits;
+    const int n    = qMin(res.rows.size(), res.cols.size());
+    mFindHits.reserve(n);
+    for (int i = 0; i < n; ++i) {
+        mFindHits.append(qMakePair(res.rows.at(i), res.cols.at(i)));
+    }
+    mHighlightOverlay->set(DATableHighlightOverlay::Source::Find, DATableHighlightOverlay::Level::Hit, mFindHits);
+    if (!mFindHits.isEmpty()) {
+        gotoFindHit(0);  // 首条设为当前命中并定位（内部会更新计数标签）
+    } else {
+        updateFindCountLabel();
+    }
+}
+
+/**
+ * @brief 导航到第 idx 条命中（循环），更新当前命中高亮并滚动定位
+ * @param idx 目标序号（越界自动回绕）
+ */
+void DADataOperateOfDataFrameWidget::gotoFindHit(int idx)
+{
+    const int n = mFindHits.size();
+    if (n == 0) {
+        mFindHitIndex = -1;
+        mHighlightOverlay->clear(DATableHighlightOverlay::Source::Find, DATableHighlightOverlay::Level::CurrentHit);
+        updateFindCountLabel();
+        return;
+    }
+    mFindHitIndex              = ((idx % n) + n) % n;  // 循环导航
+    const QPair< int, int > hit = mFindHits.at(mFindHitIndex);
+    // 当前命中单独一条 Level::CurrentHit（覆盖该格的 Hit 级别）
+    mHighlightOverlay->set(DATableHighlightOverlay::Source::Find, DATableHighlightOverlay::Level::CurrentHit, { hit });
+    // 滚动定位 + 选中（命中来自全表扫描，可能落在滑动窗外，selectActualCell 内部先 showActualRow）
+    ui->tableView->selectActualCell(hit.first, hit.second);
+    updateFindCountLabel();
+}
+
+/**
+ * @brief 扫描行范围：全表 → nullopt；选区 → 选中行包围盒（数据源绝对行号）
+ * @param selectionOnly 范围选项是否为「当前选区」
+ * @return 行闭区间或 nullopt
+ */
+std::optional< QPair< int, int > > DADataOperateOfDataFrameWidget::findScanRowRange(bool selectionOnly) const
+{
+    if (!selectionOnly) {
+        return std::nullopt;
+    }
+    QItemSelectionModel* sm = ui->tableView->selectionModel();
+    if (!sm || !sm->hasSelection()) {
+        return std::nullopt;  // 无选区按全表处理
+    }
+    int minR = INT_MAX;
+    int maxR = INT_MIN;
+    const QModelIndexList idxs = sm->selectedIndexes();
+    for (const QModelIndex& i : idxs) {
+        const int ar = toActualRow(i.row());
+        minR         = qMin(minR, ar);
+        maxR         = qMax(maxR, ar);
+    }
+    if (maxR < minR) {
+        return std::nullopt;
+    }
+    return qMakePair(minR, maxR);
+}
+
+/**
+ * @brief 扫描列范围：全表 → nullopt；选区 → 选中列包围盒
+ * @param selectionOnly 范围选项是否为「当前选区」
+ * @return 列闭区间或 nullopt
+ */
+std::optional< QPair< int, int > > DADataOperateOfDataFrameWidget::findScanColRange(bool selectionOnly) const
+{
+    if (!selectionOnly) {
+        return std::nullopt;
+    }
+    QItemSelectionModel* sm = ui->tableView->selectionModel();
+    if (!sm || !sm->hasSelection()) {
+        return std::nullopt;
+    }
+    int minC = INT_MAX;
+    int maxC = INT_MIN;
+    const QModelIndexList idxs = sm->selectedIndexes();
+    for (const QModelIndex& i : idxs) {
+        minC = qMin(minC, i.column());
+        maxC = qMax(maxC, i.column());
+    }
+    if (maxC < minC) {
+        return std::nullopt;
+    }
+    return qMakePair(minC, maxC);
+}
+
+/**
+ * @brief 更新计数标签（含上限截断提示，硬约束③）
+ */
+void DADataOperateOfDataFrameWidget::updateFindCountLabel()
+{
+    if (!mFindReplaceDialog) {
+        return;
+    }
+    mFindReplaceDialog->setHitCount(mFindHitIndex + 1, mFindHits.size(), mFindTotalHits, mFindTotalHits > mFindHits.size());
+}
+
+/**
+ * @brief 应用替换（all=false 替换当前命中这一格 / true 替换扫描范围全部）
+ *
+ * 流程：先用同一匹配语义预扫拿变更格数（真实命中总数=将变更格数）→ 超阈值
+ * （c_replaceUndoCellLimit）弹「不可撤销」确认，确认后执行但不入栈（§4.11 降级路径，
+ * 不违反 D4）→ 否则 findReplace 就地替换 + 构造 DACommandDataFrame_replace push
+ * （一次全部替换 = 一个撤销单元）→ 刷新模型 → 重新扫描刷新命中。
+ * @param all 是否全部替换
+ */
+void DADataOperateOfDataFrameWidget::applyFindReplace(bool all)
+{
+    if (!mFindReplaceDialog) {
+        return;
+    }
+    const DADialogFindReplace::FindOptions opt = mFindReplaceDialog->options();
+    if (opt.keyword.isEmpty()) {
+        return;
+    }
+    DAPyDataFrame df = getDataframe();
+    if (df.isNone()) {
+        return;
+    }
+    if (!isTableEditable()) {
+        daWarning << tr("This data source is read-only and cannot be modified.");  // cn:该数据源为只读，无法修改
+        return;
+    }
+    // 解析替换范围：全部替换 → 扫描范围；替换当前 → 当前命中单格
+    std::optional< QPair< int, int > > rowRange;
+    std::optional< QPair< int, int > > colRange;
+    if (all) {
+        rowRange = findScanRowRange(opt.selectionOnly);
+        colRange = findScanColRange(opt.selectionOnly);
+    } else {
+        if (mFindHitIndex < 0 || mFindHitIndex >= mFindHits.size()) {
+            // 无当前命中：先扫一次（如刚打开直接点替换）
+            runFindScan();
+            if (mFindHits.isEmpty()) {
+                daInfo << tr("No matches found");  // cn:未找到匹配项
+                return;
+            }
+        }
+        const QPair< int, int > hit = mFindHits.at(mFindHitIndex);
+        rowRange                    = qMakePair(hit.first, hit.first);
+        colRange                    = qMakePair(hit.second, hit.second);
+    }
+    DAPyScriptsDataFrame& py = DAPyScripts::getDataFrame();
+    // 预扫变更格数（与替换同一匹配语义，命中总数=将变更格数）
+    int pendingCount = 0;
+    {
+        DAWaitCursorScoped waitCursor;
+        const DAPyScriptsDataFrame::SearchDataResult probe =
+            py.searchData(df, opt.keyword, opt.caseSensitive, opt.useRegex, opt.wholeCell, rowRange, colRange);
+        if (!probe.ok) {
+            mFindReplaceDialog->setSearchFailed(true);  // 无效正则等
+            return;
+        }
+        pendingCount = probe.totalHits;
+    }
+    if (pendingCount <= 0) {
+        daInfo << tr("No matches found");  // cn:未找到匹配项
+        return;
+    }
+    bool undoable = true;
+    if (pendingCount > c_replaceUndoCellLimit) {
+        const auto btn = QMessageBox::question(this,
+                                               tr("Replace All"),  // cn:全部替换
+                                               tr("Too many cells will be changed (%1). This operation cannot be undone. Continue?")
+                                                   .arg(pendingCount),  // cn:改动量过大（%1 格），本次替换将不可撤销，是否继续？
+                                               QMessageBox::Yes | QMessageBox::No,
+                                               QMessageBox::No);
+        if (btn != QMessageBox::Yes) {
+            return;
+        }
+        undoable = false;
+    }
+    QVector< int > rows;
+    QVector< int > cols;
+    pybind11::list oldValues;
+    pybind11::list newValues;
+    bool okReplace = false;
+    {
+        DAWaitCursorScoped waitCursor;
+        if (undoable) {
+            okReplace = py.findReplace(df, opt.keyword, opt.replaceText, opt.caseSensitive, opt.useRegex, opt.wholeCell, rowRange, colRange, &rows, &cols, &oldValues, &newValues);
+        } else {
+            // 降级路径：只执行替换，不记录清单（不可撤销、不入栈）
+            okReplace = py.findReplace(df, opt.keyword, opt.replaceText, opt.caseSensitive, opt.useRegex, opt.wholeCell, rowRange, colRange);
+        }
+    }
+    if (!okReplace) {
+        mFindReplaceDialog->setSearchFailed(true);
+        return;
+    }
+    if (!undoable) {
+        notifyReplaceChanged(QVector< int >(), QVector< int >());  // 未记录清单 → 全表刷新
+        Q_EMIT replaceApplied(pendingCount);
+        return;
+    }
+    if (rows.isEmpty()) {
+        daInfo << tr("No matches found");  // cn:未找到匹配项
+        return;
+    }
+    // 正常路径：数据已被 findReplace 就地替换，构造命令持有变更清单后 push
+    //（DACommandWithRedoCount 首次 redo 跳过，不重复替换；undo/redo 经 da_write_cells 批量写回）
+    std::unique_ptr< DACommandDataFrame_replace > cmd(new DACommandDataFrame_replace(df, rows, cols, oldValues, newValues));
+    QPointer< DADataTableModel > modle    = mModel;
+    DACommandDataFrame_replace* cmdRaw    = cmd.get();
+    cmd->setCallBack([ modle, cmdRaw ]() {
+        if (!modle) {
+            return;
+        }
+        const QVector< int >& rs = cmdRaw->changedRows();
+        const QVector< int >& cs = cmdRaw->changedCols();
+        if (rs.isEmpty()) {
+            return;
+        }
+        int r0 = rs.at(0), r1 = rs.at(0), c0 = cs.at(0), c1 = cs.at(0);
+        for (int r : rs) {
+            r0 = qMin(r0, r);
+            r1 = qMax(r1, r);
+        }
+        for (int c : cs) {
+            c0 = qMin(c0, c);
+            c1 = qMax(c1, c);
+        }
+        modle->notifyDataChanged(r0, c0, r1, c1);
+    });
+    push(cmd.release());
+    notifyReplaceChanged(rows, cols);
+    Q_EMIT replaceApplied(rows.size());
+}
+
+/**
+ * @brief 替换生效后刷新模型（按变更范围一次性通知，避免逐格）
+ * @param rows 变更行（空 → 全表刷新，降级路径未记录清单时用）
+ * @param cols 变更列
+ */
+void DADataOperateOfDataFrameWidget::notifyReplaceChanged(const QVector< int >& rows, const QVector< int >& cols)
+{
+    if (!mModel) {
+        return;
+    }
+    if (rows.isEmpty()) {
+        mModel->notifyDataChanged(0, 0, qMax(0, mModel->actualRowCount() - 1), qMax(0, mModel->columnCount() - 1));
+    } else {
+        int r0 = rows.at(0), r1 = rows.at(0), c0 = cols.at(0), c1 = cols.at(0);
+        for (int r : rows) {
+            r0 = qMin(r0, r);
+            r1 = qMax(r1, r);
+        }
+        for (int c : cols) {
+            c0 = qMin(c0, c);
+            c1 = qMax(c1, c);
+        }
+        mModel->notifyDataChanged(r0, c0, r1, c1);
+    }
+    runFindScan();  // 替换后重新扫描刷新命中（§WP2 步骤 6）
 }
 
 void DADataOperateOfDataFrameWidget::changeEvent(QEvent* e)

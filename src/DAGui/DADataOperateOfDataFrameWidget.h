@@ -11,6 +11,7 @@
 #include "numpy/DAPyDType.h"
 #include "DATableDisplayFormat.h"
 #include "DADataOperatePageWidget.h"
+#include "Dialog/DADialogFindReplace.h"
 namespace Ui
 {
 class DADataOperateOfDataFrameWidget;
@@ -109,6 +110,14 @@ public:
     bool isHeaderPickMode() const;
     // 当前多列排序规格（列逻辑索引+方向，顺序即优先级；不持久化 R13）
     QVector< QPair< int, Qt::SortOrder > > sortSpec() const;
+
+    // 打开查找/替换浮动条（002 T1.4）：expandReplace=true 展开替换行（Ctrl+H 语义）
+    void showFindReplace(bool expandReplace);
+    // 关闭查找/替换浮动条并清查找高亮
+    void closeFindReplace();
+    // 当前查找命中数（已装载高亮，≤上限）与当前命中序号（-1=无），供测试与外部查询
+    int findHitCount() const;
+    int currentFindHitIndex() const;
 Q_SIGNALS:
     // 选中区变化时发射当前代表样式，供 ribbon 控件反向同步
     void currentStyleChanged(const DA::DATableCellStyle& style);
@@ -120,6 +129,8 @@ Q_SIGNALS:
      * @note 用于"选择序列"窗口拾取表格列
      */
     void columnHeaderClicked(int logicalIndex);
+    // 替换已生效（含超阈值不可撤销降级路径），changedCells=变更格数；APP 接线 setDirty
+    void replaceApplied(int changedCells);
 public Q_SLOTS:
     void setDAData(const DA::DAData& d);
     // 在选中行后面插入行
@@ -168,6 +179,13 @@ private Q_SLOTS:
     // 表头带修饰键点击（DADataHeaderView::clickedWithModifiers）：
     // 拾取模式只转发 columnHeaderClicked；否则更新排序规格并排序
     void onHeaderClickedWithModifiers(int logicalIndex, Qt::KeyboardModifiers modifiers);
+    // 查找条：扫描请求（去抖到期）、上一个/下一个导航、替换当前、全部替换、关闭清高亮
+    void onFindSearchRequested();
+    void onFindPrevRequested();
+    void onFindNextRequested();
+    void onFindReplaceRequested();
+    void onFindReplaceAllRequested();
+    void onFindDialogClosed();
 
 protected:
     void changeEvent(QEvent* e) override;
@@ -186,6 +204,21 @@ private:
     // 按最近应用的置换修正选区（选中行随排序跟随）：appliedPerm 为新→旧置换，
     // 旧行号经逆置换映射到新位置（滑动窗未平移，选中位置号即重排前的数据行号）
     void remapSelectionByPermutation(const QVector< int >& appliedPerm);
+    // 执行一次查找扫描（同步 + 忙等待光标 + 请求序号丢弃过期结果，硬约束②），
+    // 命中灌入 overlay(Source::Find, Level::Hit) 并导航到首条
+    void runFindScan();
+    // 导航到第 idx 条命中（循环）：更新 Level::CurrentHit + showActualRow 定位 + 选中
+    void gotoFindHit(int idx);
+    // 解析扫描范围：全表 → nullopt；选区 → 行/列包围盒（数据源绝对坐标）
+    std::optional< QPair< int, int > > findScanRowRange(bool selectionOnly) const;
+    std::optional< QPair< int, int > > findScanColRange(bool selectionOnly) const;
+    // 更新计数标签（含截断提示）
+    void updateFindCountLabel();
+    // 应用替换：all=false 替换当前命中这一格，true 替换扫描范围全部；
+    // 变更格数 > c_replaceUndoCellLimit 时提示不可撤销并走降级路径（不入栈，§4.11）
+    void applyFindReplace(bool all);
+    // 替换生效后刷新模型（按变更范围一次性通知）
+    void notifyReplaceChanged(const QVector< int >& rows, const QVector< int >& cols);
     // 按列名（+重名消歧 occurrence）从视图状态子存储应用列宽与行头宽；
     // 应用期间置守卫标志屏蔽采集，避免把「应用」当「用户改动」
     void applyViewStateFromStore();
@@ -206,6 +239,14 @@ private:
     DADialogDataframeColumnCastToNumeric* mDialogCastNumArgs { nullptr };
     DADialogDataframeColumnCastToDatetime* mDialogCastDatetimeArgs { nullptr };
     DADialogDataframeColumnDescribe* mDialogColumnDescribe { nullptr };
+    DADialogFindReplace* mFindReplaceDialog { nullptr };  ///< 非模态浮动查找/替换条（懒建，页级持有）
+
+    // ===== 查找状态（002 T1.4）=====
+    QVector< QPair< int, int > > mFindHits;  ///< 当前命中集（数据源绝对行列，行主序，≤上限）
+    int mFindHitIndex { -1 };                ///< 当前命中序号（-1=无当前项）
+    int mFindTotalHits { 0 };                ///< 真实命中总数（截断时 > mFindHits.size()）
+    int mFindRequestSerial { 0 };            ///< 扫描请求序号（硬约束②：结果返回时非最新即丢弃）
+    DADialogFindReplace::FindOptions mLastFindOptions;  ///< 最近一次扫描的参数（范围解析用）
 };
 }  // end of namespace DA
 #endif  // DADATAOPERATEOFDATAFRAMEWIDGET_H

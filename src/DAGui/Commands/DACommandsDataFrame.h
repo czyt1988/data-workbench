@@ -323,5 +323,43 @@ private:
     QVector< int > mInvPerm;              ///< 逆置换（旧→新）
     QVector< int > mLastApplied;          ///< 最近一次应用的置换
 };
+
+/**
+ * @brief 查找替换命令（值记录撤销，D4：变更清单，全部替换 = 一个撤销单元）
+ *
+ * 构造前由调用方（页面 widget）先经 DAPyScriptsDataFrame::findReplace 就地替换并拿到
+ * 变更清单（rows/cols/oldValues/newValues），据此判断是否超阈值降级（>阈值 → 不可撤销，
+ * 不构造本命令）。本命令持有变更清单：exec()（含首次 redo 之后的 redo）= 写回新值，
+ * undo() = 写回旧值——数据已在构造前替换完成，故首次 push 的 redo 被 DACommandWithRedoCount
+ * 跳过（mIsFirstRedo），不重复替换。old/new 值以 Python list 持有（da_write_cells 写回，
+ * 按列分组批量赋值，避免逐格 iat 循环）。
+ *
+ * 生效后经 callback() 通知调用方刷新模型（按变更行列范围一次性 notifyDataChanged，
+ * 避免逐格通知）。
+ */
+class DAGUI_API DACommandDataFrame_replace : public DACommandWithRedoCount, public DACallBackInterface
+{
+public:
+    DACommandDataFrame_replace(const DAPyDataFrame& df,
+                               const QVector< int >& rows,
+                               const QVector< int >& cols,
+                               const pybind11::list& oldValues,
+                               const pybind11::list& newValues,
+                               QUndoCommand* par = nullptr);
+    virtual void undo() override;
+    virtual bool exec() override;
+    // 变更格数（构造时即确定，供调用方判断阈值/空命中）
+    int changeCount() const;
+    // 变更涉及的行/列（供调用方计算刷新范围）
+    const QVector< int >& changedRows() const;
+    const QVector< int >& changedCols() const;
+
+private:
+    DAPyDataFrame mDataframe;
+    QVector< int > mRows;
+    QVector< int > mCols;
+    pybind11::list mOldValues;  ///< 旧值清单（undo 写回）
+    pybind11::list mNewValues;  ///< 新值清单（redo 写回）
+};
 }  // end of namespace DA
 #endif  // DACOMMANDSDATAFRAME_H

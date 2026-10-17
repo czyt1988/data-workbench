@@ -39,6 +39,8 @@
         <file>icon/cut.svg</file>
         <file>icon/paste.svg</file>
         <file>icon/delete.svg</file>
+        <file>icon/find.svg</file>
+        <file>icon/replace.svg</file>
         <file>icon/zoomIn.svg</file>
         <file>icon/zoomOut.svg</file>
         <file>icon/select-all.svg</file>

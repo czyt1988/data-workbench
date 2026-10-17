@@ -20,7 +20,12 @@
 #include "DAPyScripts.h"
 #include "DAPyScriptsDataFrame.h"
 #include "Commands/DACommandsDataFrame.h"
+#include "Dialog/DADialogFindReplace.h"
 #include <QElapsedTimer>
+#include <QLineEdit>
+#include <QPushButton>
+#include <QCheckBox>
+#include <QComboBox>
 
 #include "DAData.h"
 #include "DAAbstractData.h"
@@ -308,6 +313,12 @@ private Q_SLOTS:
     void testSortRowsCommandUndoRedoAndStyleRemap();
     void testHeaderSortInteraction();
     void testSortPerf100k();
+    // 002 查找/替换（T1.4 §4.1）：搜索扩展、替换算子、替换命令 undo/redo、浮动条去抖、页面查找替换全链路
+    void testSearchOperatorExtended();
+    void testFindReplaceOperator();
+    void testReplaceCommandUndoRedo();
+    void testFindReplaceDialogDebounce();
+    void testFindReplaceWidgetFlow();
 
 private:
     // 生成/复用sqlite测试库（百万行），失败返回false并置mSqliteErr
@@ -1439,18 +1450,34 @@ void DATableDataTest::testContextMenuComposition()
     QCOMPARE(seq, expectedHeader);
     delete menu;
 
-    // ---- 表体菜单：剪切/复制/粘贴；无有效选区（无模型）→ 全部置灰 ----
+    // ---- 表体菜单：剪切/复制/粘贴 ‖ 查找/替换（002）；无有效选区（无模型）----
+    // 启用规则：剪切/复制/粘贴无选区置灰；查找恒可用；替换在只读源置灰（无模型=只读）
     DA::DADataTableView tv;
     QMenu* body = tv.buildContextMenu(QModelIndex());
     QVERIFY(body != nullptr);
     QStringList bodySeq;
     const auto bodyActions = body->actions();
+    QHash< QString, QAction* > byText;
     for (QAction* a : bodyActions) {
-        bodySeq << a->text();
-        QVERIFY2(!a->isEnabled(), qPrintable(QStringLiteral("action should be disabled without selection: %1").arg(a->text())));
+        bodySeq << (a->isSeparator() ? QStringLiteral("<SEP>") : a->text());
+        if (!a->isSeparator()) {
+            byText.insert(a->text(), a);
+        }
     }
-    const QStringList expectedBody { QStringLiteral("Cut"), QStringLiteral("Copy"), QStringLiteral("Paste") };
+    const QStringList expectedBody { QStringLiteral("Cut"),
+                                     QStringLiteral("Copy"),
+                                     QStringLiteral("Paste"),
+                                     QStringLiteral("<SEP>"),
+                                     QStringLiteral("Find..."),
+                                     QStringLiteral("Replace...") };
     QCOMPARE(bodySeq, expectedBody);
+    // 剪贴板组无选区置灰
+    QVERIFY(!byText.value(QStringLiteral("Cut"))->isEnabled());
+    QVERIFY(!byText.value(QStringLiteral("Copy"))->isEnabled());
+    QVERIFY(!byText.value(QStringLiteral("Paste"))->isEnabled());
+    // 查找恒可用；替换在无模型（只读）时置灰
+    QVERIFY(byText.value(QStringLiteral("Find..."))->isEnabled());
+    QVERIFY(!byText.value(QStringLiteral("Replace..."))->isEnabled());
     delete body;
 }
 
@@ -1888,6 +1915,338 @@ big = pd.DataFrame({"v": np.random.rand(100000), "w": np.random.randint(0, 100, 
     const qint64 elapsed2 = timer.elapsed();
     qDebug().noquote() << QStringLiteral("testSortPerf100k: 100k two-key sort elapsed_ms=%1").arg(elapsed2);
     QVERIFY2(elapsed2 <= 300, qPrintable(QStringLiteral("100k two-key sort took %1 ms (> 300 ms)").arg(elapsed2)));
+}
+
+//===================================================
+// 002 查找/替换（T1.4，计划 §4.1 用例）
+//===================================================
+
+// 002 §4.1：da_search_data 扩展——大小写、正则、整格匹配、行/列范围命中集合、上限截断与总数、
+// 数值列等值（文本查找不退化数值命中）、文本列能搜到（toDouble 修复的验收）
+void DATableDataTest::testSearchOperatorExtended()
+{
+    if (!mPandasOk || !mPyScriptsOk) {
+        QSKIP("pandas/DAPyScripts not available");
+    }
+    DA::DAPyScriptsDataFrame& py = DA::DAPyScripts::getDataFrame();
+    pybind11::dict scope;
+    pybind11::exec(R"(
+import pandas as pd, numpy as np
+sdf = pd.DataFrame({
+    "t": ["Abc", "abc", "xabcx", None, "def"],
+    "n": [1.0, 2.0, 32.0, 4.0, np.nan],
+    "i": [10, 20, 30, 32, 50],
+})
+)",
+                   pybind11::globals(),
+                   scope);
+    DA::DAPyDataFrame df(scope[ "sdf" ]);
+
+    // 文本列子串、大小写不敏感（默认）：命中 t 列 3 格
+    {
+        const auto res = py.searchData(df, QStringLiteral("abc"), false, false, false);
+        QVERIFY(res.ok);
+        QCOMPARE(res.totalHits, 3);
+        QCOMPARE(res.rows, QVector< int >({ 0, 1, 2 }));
+        QCOMPARE(res.cols, QVector< int >({ 0, 0, 0 }));
+    }
+    // 区分大小写：只剩小写 abc 两格
+    {
+        const auto res = py.searchData(df, QStringLiteral("abc"), true, false, false);
+        QVERIFY(res.ok);
+        QCOMPARE(res.totalHits, 2);
+        QCOMPARE(res.rows, QVector< int >({ 1, 2 }));
+    }
+    // 正则：^a 匹配 Abc/abc（不区分大小写）
+    {
+        const auto res = py.searchData(df, QStringLiteral("^a"), false, true, false);
+        QVERIFY(res.ok);
+        QCOMPARE(res.totalHits, 2);
+        QCOMPARE(res.rows, QVector< int >({ 0, 1 }));
+    }
+    // 整格匹配：只有纯 "abc" 的格（行1），Abc 大小写不敏感整格也算（行0）
+    {
+        const auto res = py.searchData(df, QStringLiteral("abc"), false, false, true);
+        QVERIFY(res.ok);
+        QCOMPARE(res.totalHits, 2);
+        QCOMPARE(res.rows, QVector< int >({ 0, 1 }));
+    }
+    // 数值列等值命中（文本查找不退化数值命中）："32" → n 列行2、i 列行3
+    {
+        const auto res = py.searchData(df, QStringLiteral("32"), false, false, false);
+        QVERIFY(res.ok);
+        QCOMPARE(res.totalHits, 2);
+        // 行主序：(2,1) 先于 (3,2)
+        QCOMPARE(res.rows, QVector< int >({ 2, 3 }));
+        QCOMPARE(res.cols, QVector< int >({ 1, 2 }));
+    }
+    // 行范围 [1,2]：t 列 abc 只剩行1、行2
+    {
+        const auto res = py.searchData(df, QStringLiteral("abc"), false, false, false, qMakePair(1, 2));
+        QVERIFY(res.ok);
+        QCOMPARE(res.totalHits, 2);
+        QCOMPARE(res.rows, QVector< int >({ 1, 2 }));
+    }
+    // 列范围 [1,2]（排除 t 列）：搜 abc 命中 0
+    {
+        const auto res = py.searchData(df, QStringLiteral("abc"), false, false, false, std::nullopt, qMakePair(1, 2));
+        QVERIFY(res.ok);
+        QCOMPARE(res.totalHits, 0);
+        QVERIFY(res.rows.isEmpty());
+    }
+    // 上限截断：max_hits=2 → 只回 2 条，totalHits=3（truncated 为真）
+    {
+        const auto res = py.searchData(df, QStringLiteral("abc"), false, false, false, std::nullopt, std::nullopt, 2);
+        QVERIFY(res.ok);
+        QCOMPARE(res.rows.size(), 2);
+        QCOMPARE(res.totalHits, 3);
+        QVERIFY(res.truncated());
+    }
+    // 无效正则：ok=false（不崩、不静默命中）
+    {
+        const auto res = py.searchData(df, QStringLiteral("(["), false, true, false);
+        QVERIFY(!res.ok);
+    }
+}
+
+// 002 §4.1：da_find_and_replace——变更清单与替换结果一致、数值列整格替换保持 dtype、
+// 文本列正则替换、按清单写回还原（撤销）
+void DATableDataTest::testFindReplaceOperator()
+{
+    if (!mPandasOk || !mPyScriptsOk) {
+        QSKIP("pandas/DAPyScripts not available");
+    }
+    DA::DAPyScriptsDataFrame& py = DA::DAPyScripts::getDataFrame();
+
+    // 文本子串替换 + 变更清单 + 写回还原
+    {
+        pybind11::dict scope;
+        pybind11::exec(R"(
+import pandas as pd
+rdf = pd.DataFrame({"t": ["Abc", "abc", "xabcx"]})
+)",
+                       pybind11::globals(),
+                       scope);
+        DA::DAPyDataFrame df(scope[ "rdf" ]);
+        QVector< int > rows, cols;
+        pybind11::list olds, news;
+        QVERIFY(py.findReplace(df, QStringLiteral("abc"), QStringLiteral("Q"), false, false, false, std::nullopt, std::nullopt, &rows, &cols, &olds, &news));
+        QCOMPARE(rows, QVector< int >({ 0, 1, 2 }));
+        QCOMPARE(cols, QVector< int >({ 0, 0, 0 }));
+        QCOMPARE(df.iat(0, 0).toString(), QLatin1String("Q"));
+        QCOMPARE(df.iat(2, 0).toString(), QLatin1String("xQx"));
+        // 写回旧值 = 撤销
+        QVERIFY(py.writeCells(df, rows, cols, olds));
+        QCOMPARE(df.iat(0, 0).toString(), QLatin1String("Abc"));
+        QCOMPARE(df.iat(1, 0).toString(), QLatin1String("abc"));
+        QCOMPARE(df.iat(2, 0).toString(), QLatin1String("xabcx"));
+    }
+    // 正则替换（捕获组）
+    {
+        pybind11::dict scope;
+        pybind11::exec(R"(
+import pandas as pd
+rdf = pd.DataFrame({"t": ["a1b", "c2d", "ef"]})
+)",
+                       pybind11::globals(),
+                       scope);
+        DA::DAPyDataFrame df(scope[ "rdf" ]);
+        QVERIFY(py.findReplace(df, QStringLiteral("([a-z])(\\d)"), QStringLiteral("\\2\\1"), false, true, false));
+        QCOMPARE(df.iat(0, 0).toString(), QLatin1String("1ab"));
+        QCOMPARE(df.iat(1, 0).toString(), QLatin1String("2cd"));
+        QCOMPARE(df.iat(2, 0).toString(), QLatin1String("ef"));
+    }
+    // 数值列整格替换保持 dtype（int64 保持整型）
+    {
+        pybind11::dict scope;
+        pybind11::exec(R"(
+import pandas as pd
+rdf = pd.DataFrame({"i": [10, 32, 50]})
+)",
+                       pybind11::globals(),
+                       scope);
+        DA::DAPyDataFrame df(scope[ "rdf" ]);
+        QVector< int > rows, cols;
+        QVERIFY(py.findReplace(df, QStringLiteral("32"), QStringLiteral("7"), false, false, false, std::nullopt, std::nullopt, &rows, &cols));
+        QCOMPARE(rows.size(), 1);
+        QCOMPARE(df.iat(1, 0).toInt(), 7);
+        // dtype 仍为整型（Python 侧校验；用 exec 执行含 import 的语句，eval 只接受表达式）
+        pybind11::dict chk;
+        chk[ "df" ] = df.object();
+        pybind11::exec("import numpy as np\nres = bool(df['i'].dtype == np.int64)", pybind11::globals(), chk);
+        const bool isInt = chk[ "res" ].cast< bool >();
+        QVERIFY(isInt);
+    }
+    // 数值列 replace 不可解析 → 该列不替换（保持原值）
+    {
+        pybind11::dict scope;
+        pybind11::exec(R"(
+import pandas as pd
+rdf = pd.DataFrame({"i": [10, 32, 50]})
+)",
+                       pybind11::globals(),
+                       scope);
+        DA::DAPyDataFrame df(scope[ "rdf" ]);
+        QVector< int > rows, cols;
+        QVERIFY(py.findReplace(df, QStringLiteral("32"), QStringLiteral("abc"), false, false, false, std::nullopt, std::nullopt, &rows, &cols));
+        QVERIFY(rows.isEmpty());
+        QCOMPARE(df.iat(1, 0).toInt(), 32);
+    }
+}
+
+// 002 §4.1：DACommandDataFrame_replace undo/redo 语义（小表 + 变更清单断言）
+void DATableDataTest::testReplaceCommandUndoRedo()
+{
+    if (!mPandasOk || !mPyScriptsOk) {
+        QSKIP("pandas/DAPyScripts not available");
+    }
+    DA::DAPyScriptsDataFrame& py = DA::DAPyScripts::getDataFrame();
+    pybind11::dict scope;
+    pybind11::exec(R"(
+import pandas as pd
+rdf = pd.DataFrame({"t": ["aa", "ab", "ba", "bb"]})
+)",
+                   pybind11::globals(),
+                   scope);
+    DA::DAPyDataFrame df(scope[ "rdf" ]);
+    // 先就地替换 "a"→"X" 拿变更清单（模拟页面前置 findReplace），再据此构造命令
+    QVector< int > rows, cols;
+    pybind11::list olds, news;
+    QVERIFY(py.findReplace(df, QStringLiteral("a"), QStringLiteral("X"), false, false, false, std::nullopt, std::nullopt, &rows, &cols, &olds, &news));
+    QCOMPARE(rows.size(), 3);  // aa(0), ab(1), ba(2)
+    QCOMPARE(df.iat(0, 0).toString(), QLatin1String("XX"));
+
+    QUndoStack stack;
+    DA::DACommandDataFrame_replace* cmd = new DA::DACommandDataFrame_replace(df, rows, cols, olds, news);
+    QCOMPARE(cmd->changeCount(), 3);
+    QCOMPARE(cmd->text(), QStringLiteral("Replace all"));
+    stack.push(cmd);  // 首次 redo 跳过（数据已是替换后状态）
+    QCOMPARE(df.iat(0, 0).toString(), QLatin1String("XX"));
+    // undo → 写回旧值
+    stack.undo();
+    QCOMPARE(df.iat(0, 0).toString(), QLatin1String("aa"));
+    QCOMPARE(df.iat(1, 0).toString(), QLatin1String("ab"));
+    QCOMPARE(df.iat(2, 0).toString(), QLatin1String("ba"));
+    QCOMPARE(df.iat(3, 0).toString(), QLatin1String("bb"));
+    // redo → 再写新值
+    stack.redo();
+    QCOMPARE(df.iat(0, 0).toString(), QLatin1String("XX"));
+    QCOMPARE(df.iat(1, 0).toString(), QLatin1String("Xb"));
+    QCOMPARE(df.iat(2, 0).toString(), QLatin1String("bX"));
+}
+
+// 002 §4.2（程序化）：浮动查找条去抖——连续输入只触发一次 searchRequested（硬约束①）
+void DATableDataTest::testFindReplaceDialogDebounce()
+{
+    DA::DADialogFindReplace dlg;
+    QSignalSpy spy(&dlg, &DA::DADialogFindReplace::searchRequested);
+    QVERIFY(spy.isValid());
+    // 模拟连续敲击 "abc"：三次快速改文本（未经去抖间隔）
+    dlg.activate(false);
+    QLineEdit* findEdit = dlg.findChild< QLineEdit* >(QStringLiteral("lineEditFind"));
+    QVERIFY(findEdit != nullptr);
+    findEdit->setText(QStringLiteral("a"));
+    findEdit->setText(QStringLiteral("ab"));
+    findEdit->setText(QStringLiteral("abc"));
+    // 去抖窗口内不应触发
+    QTest::qWait(DA::DADialogFindReplace::debounceIntervalMs() / 2);
+    QCOMPARE(spy.count(), 0);
+    // 越过去抖窗口后恰好一次
+    QTest::qWait(DA::DADialogFindReplace::debounceIntervalMs() + 100);
+    QCOMPARE(spy.count(), 1);
+    // 再输入一轮 → 再恰好一次（restart 语义）
+    findEdit->setText(QStringLiteral("abcd"));
+    findEdit->setText(QStringLiteral("abcde"));
+    QTest::qWait(DA::DADialogFindReplace::debounceIntervalMs() + 100);
+    QCOMPARE(spy.count(), 2);
+    // 选项快照
+    findEdit->setText(QStringLiteral("kw"));
+    dlg.findChild< QCheckBox* >(QStringLiteral("checkBoxRegex"))->setChecked(true);
+    dlg.findChild< QComboBox* >(QStringLiteral("comboBoxScope"))->setCurrentIndex(1);
+    const auto opt = dlg.options();
+    QCOMPARE(opt.keyword, QStringLiteral("kw"));
+    QVERIFY(opt.useRegex);
+    QVERIFY(opt.selectionOnly);
+    // Esc 关闭发 closed
+    QSignalSpy closeSpy(&dlg, &DA::DADialogFindReplace::closed);
+    QTest::keyClick(&dlg, Qt::Key_Escape);
+    QCOMPARE(closeSpy.count(), 1);
+}
+
+// 002 §4.2（程序化）：页面查找/替换全链路——扫描装载命中、导航、全部替换、撤销还原、Esc 清高亮
+void DATableDataTest::testFindReplaceWidgetFlow()
+{
+    if (!mPandasOk || !mPyScriptsOk) {
+        QSKIP("pandas/DAPyScripts not available");
+    }
+    pybind11::dict scope;
+    pybind11::exec(R"(
+import pandas as pd
+wdf = pd.DataFrame({"t": ["abc", "def", "abcx", "xyz", "abc"]})
+)",
+                   pybind11::globals(),
+                   scope);
+    DA::DAPyDataFrame df(scope[ "wdf" ]);
+    DA::DAData d(df);
+    DA::DATableMetadataRegistry registry(nullptr);
+    DA::DADataOperateOfDataFrameWidget w(d, &registry);
+    w.resize(700, 360);
+    w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+
+    // 打开查找条并扫描 "abc"（3 命中）
+    w.showFindReplace(false);
+    DA::DADialogFindReplace* dlg = w.findChild< DA::DADialogFindReplace* >();
+    QVERIFY(dlg != nullptr);
+    QLineEdit* findEdit = dlg->findChild< QLineEdit* >(QStringLiteral("lineEditFind"));
+    QVERIFY(findEdit != nullptr);
+    findEdit->setText(QStringLiteral("abc"));
+    dlg->requestSearchNow();  // 跳过去抖立即扫描
+    QCOMPARE(w.findHitCount(), 3);
+    QCOMPARE(w.currentFindHitIndex(), 0);
+    // 高亮层：Hit 3 格 + CurrentHit 1 格
+    DA::DATableHighlightOverlay* ov = w.highlightOverlay();
+    QVERIFY(ov != nullptr);
+    QCOMPARE(ov->levelAt(0, 0), DA::DATableHighlightOverlay::Level::CurrentHit);
+    QCOMPARE(ov->levelAt(2, 0), DA::DATableHighlightOverlay::Level::Hit);
+    QCOMPARE(ov->levelAt(1, 0), DA::DATableHighlightOverlay::Level::None);
+    // 导航到下一条
+    QPushButton* nextBtn = dlg->findChild< QPushButton* >(QStringLiteral("pushButtonNext"));
+    QVERIFY(nextBtn != nullptr);
+    QTest::mouseClick(nextBtn, Qt::LeftButton);
+    QCOMPARE(w.currentFindHitIndex(), 1);
+    QCOMPARE(ov->levelAt(2, 0), DA::DATableHighlightOverlay::Level::CurrentHit);
+    // 全部替换 abc→Q（展开替换行）
+    w.showFindReplace(true);
+    QLineEdit* replEdit = dlg->findChild< QLineEdit* >(QStringLiteral("lineEditReplace"));
+    QVERIFY(replEdit != nullptr);
+    replEdit->setText(QStringLiteral("Q"));
+    QSignalSpy replaceSpy(&w, &DA::DADataOperateOfDataFrameWidget::replaceApplied);
+    QPushButton* replAllBtn = dlg->findChild< QPushButton* >(QStringLiteral("pushButtonReplaceAll"));
+    QVERIFY(replAllBtn != nullptr);
+    QTest::mouseClick(replAllBtn, Qt::LeftButton);
+    QCOMPARE(replaceSpy.count(), 1);
+    QCOMPARE(replaceSpy.takeFirst().at(0).toInt(), 3);
+    QCOMPARE(df.iat(0, 0).toString(), QLatin1String("Q"));
+    QCOMPARE(df.iat(2, 0).toString(), QLatin1String("Qx"));
+    QCOMPARE(df.iat(4, 0).toString(), QLatin1String("Q"));
+    // 替换后自动重扫：关键字 abc 已无命中
+    QCOMPARE(w.findHitCount(), 0);
+    // Ctrl+Z 一次 → 完全还原（全部替换 = 一个撤销单元）
+    w.getUndoStack()->undo();
+    QCOMPARE(df.iat(0, 0).toString(), QLatin1String("abc"));
+    QCOMPARE(df.iat(2, 0).toString(), QLatin1String("abcx"));
+    QCOMPARE(df.iat(4, 0).toString(), QLatin1String("abc"));
+    // 关闭查找条 → Find 高亮清空
+    w.showFindReplace(false);
+    findEdit->setText(QStringLiteral("abc"));
+    dlg->requestSearchNow();
+    QCOMPARE(w.findHitCount(), 3);
+    w.closeFindReplace();
+    QCOMPARE(w.findHitCount(), 0);
+    QCOMPARE(ov->levelAt(0, 0), DA::DATableHighlightOverlay::Level::None);
+    QVERIFY(ov->isEmpty());
+    w.hide();
 }
 
 // 不用QTEST_MAIN：嵌入式python的静态对象（DAPyBindQt.dll内的解释器句柄、QVariant caster
