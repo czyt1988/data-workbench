@@ -529,9 +529,11 @@ void DAAppController::initConnection()
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionReplace, onActionReplaceTriggered);
     // 条件格式（003 T1.5，Ribbon「Table Style」面板；与表体右键菜单共用页面入口，R16）
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionConditionalFormat, onActionConditionalFormatTriggered);
-    // 数据工具（004，Ribbon「Data Tools」面板；计算列与表体右键菜单共用页面入口）
+    // 数据工具（004，Ribbon「Data Tools」面板；计算列/分列/合并列与表体右键菜单共用页面入口）
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionComputedColumn, onActionComputedColumnTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionRecomputeAllComputedColumns, onActionRecomputeAllComputedColumnsTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionSplitColumn, onActionSplitColumnTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionMergeColumns, onActionMergeColumnsTriggered);
     // View Category
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowWorkFlowArea, onActionShowWorkFlowAreaTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowWorkFlowManagerArea, onActionShowWorkFlowManagerAreaTriggered);
@@ -3453,6 +3455,36 @@ void DAAppController::onActionRecomputeAllComputedColumnsTriggered()
         return;
     }
     dfopt->recomputeAllStaleComputedColumns();
+}
+
+/**
+ * @brief 分列（004 T1.9，Ribbon「Data Tools」面板）
+ *
+ * 与表体右键菜单「分列...」共用页面 showSplitColumnDialog 入口：
+ * 作用于当前选区的唯一数据列（页面内校验并提示）。
+ */
+void DAAppController::onActionSplitColumnTriggered()
+{
+    DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false);
+    if (!dfopt) {
+        return;
+    }
+    dfopt->showSplitColumnDialog(-1);
+}
+
+/**
+ * @brief 合并列（004 T1.9，Ribbon「Data Tools」面板）
+ *
+ * 与表体右键菜单「合并列...」共用页面 showMergeColumnsDialog 入口：
+ * 作用于当前选区的多列（页面内校验并提示）。
+ */
+void DAAppController::onActionMergeColumnsTriggered()
+{
+    DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false);
+    if (!dfopt) {
+        return;
+    }
+    dfopt->showMergeColumnsDialog();
 }
 
 /**

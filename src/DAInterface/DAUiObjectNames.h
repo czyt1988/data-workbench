@@ -142,6 +142,8 @@ constexpr char ConditionalFormat[]  = "actionConditionalFormat";  ///< 条件格
 // ---- 数据工具（004，Ribbon「Data Tools」面板 + 表体右键同入口）----
 constexpr char ComputedColumn[]             = "actionComputedColumn";             ///< 计算列（004 T1.23）
 constexpr char RecomputeAllComputedColumns[] = "actionRecomputeAllComputedColumns";  ///< 全部重算计算列（004 T1.23）
+constexpr char SplitColumn[]                = "actionSplitColumn";                ///< 分列（004 T1.9）
+constexpr char MergeColumns[]               = "actionMergeColumns";               ///< 合并列（004 T1.9）
 // ---- 绘图 ----
 constexpr char AddFigure[]                  = "actionAddFigure";
 constexpr char FigureNewXYAxis[]            = "actionFigureNewXYAxis";

@@ -71,6 +71,14 @@
 #include <QListWidget>
 #include <QTableWidget>
 
+// 分列/合并列（004 计划 §4，T1.9）
+#include "Dialog/DADialogSplitColumn.h"
+#include "Dialog/DADialogMergeColumns.h"
+#include <QRadioButton>
+#include <QSpinBox>
+#include <QItemSelectionModel>
+#include <QItemSelection>
+
 #include "DASqliteLazyTable.h"
 #include <QSqlDatabase>
 #include <QSqlQuery>
@@ -366,6 +374,15 @@ private Q_SLOTS:
     void testComputedColumnDialogValidation();
     void testComputedColumnWidgetFlow();
     void testComputedColumnRenameRemoveLinkage();
+
+    // 004 WP2 分列/合列（T1.9 §4.4/§7.1）：三模式算子、溢出策略、类型推断开关、
+    // 合并顺序/分隔符/跳过空值、列级撤销还原（列数/列序/内容）、10 万行分列计时、
+    // 对话框校验与 widget 全链路
+    void testSplitColumnOperator();
+    void testMergeColumnsOperator();
+    void testSplitMergeCommandUndoRedo();
+    void testSplitColumnPerf100k();
+    void testSplitMergeWidgetFlow();
 
 private:
     // 生成/复用sqlite测试库（百万行），失败返回false并置mSqliteErr
@@ -1525,7 +1542,9 @@ void DATableDataTest::testContextMenuComposition()
                                      QStringLiteral("<SEP>"),
                                      QStringLiteral("Conditional Format..."),
                                      QStringLiteral("<SEP>"),
-                                     QStringLiteral("Computed Column...") };
+                                     QStringLiteral("Computed Column..."),
+                                     QStringLiteral("Split Column..."),
+                                     QStringLiteral("Merge Columns...") };
     QCOMPARE(bodySeq, expectedBody);
     // 剪贴板组无选区置灰
     QVERIFY(!byText.value(QStringLiteral("Cut"))->isEnabled());
@@ -1538,6 +1557,9 @@ void DATableDataTest::testContextMenuComposition()
     QVERIFY(!byText.value(QStringLiteral("Conditional Format..."))->isEnabled());
     // 计算列（004）：无模型=只读源置灰
     QVERIFY(!byText.value(QStringLiteral("Computed Column..."))->isEnabled());
+    // 分列/合并列（004 T1.9）：无模型=只读置灰；且无选区时分列（需单列）/合并（需多列）都置灰
+    QVERIFY(!byText.value(QStringLiteral("Split Column..."))->isEnabled());
+    QVERIFY(!byText.value(QStringLiteral("Merge Columns..."))->isEnabled());
     delete body;
 }
 
@@ -3797,6 +3819,474 @@ df = pd.DataFrame({"A":[1,2,3],"B":[4,5,6],"K":[3,1,2]})
     QVERIFY(store->hasDefinition(QStringLiteral("C")));   // 撤销恢复定义
     w.hide();
 }
+
+//===================================================
+// 004 WP2 分列 / 合并列（T1.9）
+//===================================================
+
+// 004 §7.1：分列算子——单字符/正则/固定宽度、溢出策略（丢弃/保留原文/报错）、类型推断开关、自动命名与落位
+void DATableDataTest::testSplitColumnOperator()
+{
+    if (!mPandasOk || !mPyScriptsOk) {
+        QSKIP("pandas/DAPyScripts not available");
+    }
+    DA::DAPyScriptsDataFrame& py = DA::DAPyScripts::getDataFrame();
+    // —— char 模式："1,2,3" 按逗号 → 3 列数值自动解析；原列保留、结果列插原列右侧 ——
+    {
+        pybind11::dict scope;
+        pybind11::exec(R"(
+import pandas as pd
+df = pd.DataFrame({"S":["1,2,3","4,5,6"],"X":[0,1]})
+)",
+                       pybind11::globals(),
+                       scope);
+        DA::DAPyDataFrame df(scope[ "df" ]);
+        QString err;
+        const QStringList names =
+            py.splitColumn(df, 0, QStringLiteral("char"), QStringLiteral(","), QString(), QList< int >(), 0, QStringLiteral("discard"), true, QStringList(), &err);
+        QCOMPARE(names, QStringList({ QStringLiteral("S_1"), QStringLiteral("S_2"), QStringLiteral("S_3") }));
+        // 落位规则：原列保留，结果列插在原列右侧（S, S_1, S_2, S_3, X）
+        QCOMPARE(df.columns(), QList< QString >({ QStringLiteral("S"), QStringLiteral("S_1"), QStringLiteral("S_2"), QStringLiteral("S_3"), QStringLiteral("X") }));
+        QCOMPARE(df.iat(0, 1).toInt(), 1);
+        QCOMPARE(df.iat(1, 3).toInt(), 6);
+        // 数值自动解析：int64 → LongLong
+        QCOMPARE(df.iat(0, 1).userType(), static_cast< int >(QMetaType::LongLong));
+    }
+    // —— 类型推断关：保持字符串 ——
+    {
+        pybind11::dict scope;
+        pybind11::exec(R"(
+import pandas as pd
+df = pd.DataFrame({"S":["1,2","3,4"]})
+)",
+                       pybind11::globals(),
+                       scope);
+        DA::DAPyDataFrame df(scope[ "df" ]);
+        const QStringList names = py.splitColumn(df,
+                                                 0,
+                                                 QStringLiteral("char"),
+                                                 QStringLiteral(","),
+                                                 QString(),
+                                                 QList< int >(),
+                                                 0,
+                                                 QStringLiteral("discard"),
+                                                 false,
+                                                 QStringList());
+        QCOMPARE(names.size(), 2);
+        QCOMPARE(df.iat(0, 1).userType(), static_cast< int >(QMetaType::QString));
+        QCOMPARE(df.iat(0, 1).toString(), QStringLiteral("1"));
+    }
+    // —— regex 捕获组：列数=组数 ——
+    {
+        pybind11::dict scope;
+        pybind11::exec(R"(
+import pandas as pd
+df = pd.DataFrame({"S":["2024-01-15","2023-12-01"]})
+)",
+                       pybind11::globals(),
+                       scope);
+        DA::DAPyDataFrame df(scope[ "df" ]);
+        const QStringList names = py.splitColumn(df,
+                                                 0,
+                                                 QStringLiteral("regex"),
+                                                 QString(),
+                                                 QStringLiteral(R"((\d{4})-(\d{2})-(\d{2}))"),
+                                                 QList< int >(),
+                                                 0,
+                                                 QStringLiteral("discard"),
+                                                 false,
+                                                 QStringList());
+        QCOMPARE(names.size(), 3);
+        QCOMPARE(df.iat(0, 1).toString(), QStringLiteral("2024"));
+        QCOMPARE(df.iat(0, 3).toString(), QStringLiteral("15"));
+    }
+    // —— 溢出策略：keep（剩余并入最后一列）/ discard（丢弃）/ error（报错且数据不变）——
+    {
+        pybind11::dict scope;
+        pybind11::exec(R"(
+import pandas as pd
+df = pd.DataFrame({"S":["a,b,c,d","e,f","g,h,i"]})
+)",
+                       pybind11::globals(),
+                       scope);
+        DA::DAPyDataFrame df(scope[ "df" ]);
+        const QStringList names = py.splitColumn(df,
+                                                 0,
+                                                 QStringLiteral("char"),
+                                                 QStringLiteral(","),
+                                                 QString(),
+                                                 QList< int >(),
+                                                 3,
+                                                 QStringLiteral("keep"),
+                                                 false,
+                                                 QStringList());
+        QCOMPARE(names.size(), 3);
+        QCOMPARE(df.iat(0, 3).toString(), QStringLiteral("c,d"));  // 剩余并入最后一列
+        // 短行末列为空（NaN 经 caster 为 double NaN，非 null QVariant，需 NaN 感知判定）
+        const QVariant missV = df.iat(1, 3);
+        QVERIFY(missV.isNull() || missV.toString().isEmpty()
+                || (missV.userType() == QMetaType::Double && qIsNaN(missV.toDouble())));
+    }
+    {
+        pybind11::dict scope;
+        pybind11::exec(R"(
+import pandas as pd
+df = pd.DataFrame({"S":["a,b,c,d","e,f"]})
+)",
+                       pybind11::globals(),
+                       scope);
+        DA::DAPyDataFrame df(scope[ "df" ]);
+        const QStringList names = py.splitColumn(df,
+                                                 0,
+                                                 QStringLiteral("char"),
+                                                 QStringLiteral(","),
+                                                 QString(),
+                                                 QList< int >(),
+                                                 2,
+                                                 QStringLiteral("discard"),
+                                                 false,
+                                                 QStringList());
+        QCOMPARE(names.size(), 2);
+        QCOMPARE(df.columns().size(), 3);  // S + 2 结果列（超出被丢弃）
+    }
+    {
+        pybind11::dict scope;
+        pybind11::exec(R"(
+import pandas as pd
+df = pd.DataFrame({"S":["a,b,c,d"]})
+)",
+                       pybind11::globals(),
+                       scope);
+        DA::DAPyDataFrame df(scope[ "df" ]);
+        QString err;
+        const QStringList names =
+            py.splitColumn(df, 0, QStringLiteral("char"), QStringLiteral(","), QString(), QList< int >(), 2, QStringLiteral("error"), false, QStringList(), &err);
+        QVERIFY(names.isEmpty());
+        QVERIFY(!err.isEmpty());
+        QCOMPARE(df.columns().size(), 1);  // 报错时数据不变
+    }
+    // —— width 固定宽度 ——
+    {
+        pybind11::dict scope;
+        pybind11::exec(R"(
+import pandas as pd
+df = pd.DataFrame({"S":["abcdef","ghijkl"]})
+)",
+                       pybind11::globals(),
+                       scope);
+        DA::DAPyDataFrame df(scope[ "df" ]);
+        const QStringList names = py.splitColumn(df,
+                                                 0,
+                                                 QStringLiteral("width"),
+                                                 QString(),
+                                                 QString(),
+                                                 QList< int >({ 2, 2, 2 }),
+                                                 0,
+                                                 QStringLiteral("discard"),
+                                                 false,
+                                                 QStringList());
+        QCOMPARE(names.size(), 3);
+        QCOMPARE(df.iat(0, 1).toString(), QStringLiteral("ab"));
+        QCOMPARE(df.iat(1, 3).toString(), QStringLiteral("kl"));
+    }
+    // —— NaN 行 → 结果各列 NaN；自定义列名 ——
+    {
+        pybind11::dict scope;
+        pybind11::exec(R"(
+import pandas as pd
+df = pd.DataFrame({"S":["a,b",None,"c,d"]})
+)",
+                       pybind11::globals(),
+                       scope);
+        DA::DAPyDataFrame df(scope[ "df" ]);
+        const QStringList names = py.splitColumn(df,
+                                                 0,
+                                                 QStringLiteral("char"),
+                                                 QStringLiteral(","),
+                                                 QString(),
+                                                 QList< int >(),
+                                                 0,
+                                                 QStringLiteral("discard"),
+                                                 false,
+                                                 QStringList({ QStringLiteral("P"), QStringLiteral("Q") }));
+        QCOMPARE(names, QStringList({ QStringLiteral("P"), QStringLiteral("Q") }));
+        // NaN 源行 → 结果各列缺失（null / NaN / 空串皆视为缺失）
+        auto isMissing = [](const QVariant& v) {
+            return v.isNull() || v.toString().isEmpty() || (v.userType() == QMetaType::Double && qIsNaN(v.toDouble()));
+        };
+        QVERIFY(isMissing(df.iat(1, 1)));
+        QVERIFY(isMissing(df.iat(1, 2)));
+        QCOMPARE(df.iat(2, 1).toString(), QStringLiteral("c"));
+    }
+}
+
+// 004 §7.1：合并算子——顺序、分隔符、跳过空值开关、落位（替换被合并列的位置）
+void DATableDataTest::testMergeColumnsOperator()
+{
+    if (!mPandasOk || !mPyScriptsOk) {
+        QSKIP("pandas/DAPyScripts not available");
+    }
+    DA::DAPyScriptsDataFrame& py = DA::DAPyScripts::getDataFrame();
+    // 跳过空值：缺失值不留多余分隔符；结果列在最左源列位置、源列删除
+    {
+        pybind11::dict scope;
+        pybind11::exec(R"(
+import pandas as pd
+df = pd.DataFrame({"F":["张",None,"王"],"L":["三","李",None],"O":[1,2,3]})
+)",
+                       pybind11::globals(),
+                       scope);
+        DA::DAPyDataFrame df(scope[ "df" ]);
+        QString err;
+        const int pos = py.mergeColumns(df, QList< int >({ 0, 1 }), QStringLiteral(" "), true, QStringLiteral("姓名"), &err);
+        QCOMPARE(pos, 0);
+        QCOMPARE(df.columns(), QList< QString >({ QStringLiteral("姓名"), QStringLiteral("O") }));
+        QCOMPARE(df.iat(0, 0).toString(), QStringLiteral("张 三"));
+        QCOMPARE(df.iat(1, 0).toString(), QStringLiteral("李"));   // 跳过空值：无多余分隔符
+        QCOMPARE(df.iat(2, 0).toString(), QStringLiteral("王"));
+    }
+    // 不跳过空值：缺失按空串参与拼接（保留分隔符）
+    {
+        pybind11::dict scope;
+        pybind11::exec(R"(
+import pandas as pd
+df = pd.DataFrame({"F":["张",None],"L":["三","李"]})
+)",
+                       pybind11::globals(),
+                       scope);
+        DA::DAPyDataFrame df(scope[ "df" ]);
+        const int pos = py.mergeColumns(df, QList< int >({ 0, 1 }), QStringLiteral("-"), false, QStringLiteral("M"));
+        QCOMPARE(pos, 0);
+        QCOMPARE(df.iat(0, 0).toString(), QStringLiteral("张-三"));
+        QCOMPARE(df.iat(1, 0).toString(), QStringLiteral("-李"));
+    }
+    // 拼接顺序 = cols 顺序（逆序合并）；落位 = 最左源列位置
+    {
+        pybind11::dict scope;
+        pybind11::exec(R"(
+import pandas as pd
+df = pd.DataFrame({"A":["a1","a2"],"B":["b1","b2"],"C":["c1","c2"]})
+)",
+                       pybind11::globals(),
+                       scope);
+        DA::DAPyDataFrame df(scope[ "df" ]);
+        const int pos = py.mergeColumns(df, QList< int >({ 1, 0 }), QStringLiteral("|"), true, QStringLiteral("BA"), nullptr);
+        QCOMPARE(pos, 0);  // 最左源列位置 = min(1,0) = 0
+        QCOMPARE(df.iat(0, 0).toString(), QStringLiteral("b1|a1"));
+        QCOMPARE(df.columns(), QList< QString >({ QStringLiteral("BA"), QStringLiteral("C") }));
+    }
+    // 少于两列 → 失败
+    {
+        pybind11::dict scope;
+        pybind11::exec(R"(
+import pandas as pd
+df = pd.DataFrame({"A":["a1"]})
+)",
+                       pybind11::globals(),
+                       scope);
+        DA::DAPyDataFrame df(scope[ "df" ]);
+        QString err;
+        QCOMPARE(py.mergeColumns(df, QList< int >({ 0 }), QString(), true, QStringLiteral("M"), &err), -1);
+    }
+}
+
+// 004 §7.1：列级撤销——undo 后列数、列顺序、内容完全还原；redo 重放
+void DATableDataTest::testSplitMergeCommandUndoRedo()
+{
+    if (!mPandasOk || !mPyScriptsOk) {
+        QSKIP("pandas/DAPyScripts not available");
+    }
+    DA::DAPyScriptsDataFrame& py = DA::DAPyScripts::getDataFrame();
+    // —— 分列命令 ——
+    {
+        pybind11::dict scope;
+        pybind11::exec(R"(
+import pandas as pd
+df = pd.DataFrame({"S":["a,b,c","d,e,f"],"X":[1,2]})
+)",
+                       pybind11::globals(),
+                       scope);
+        DA::DAPyDataFrame df(scope[ "df" ]);
+        DA::DACommandDataFrame_splitColumn::SplitParams params;
+        params.col          = 0;
+        params.mode         = QStringLiteral("char");
+        params.delimiter    = QStringLiteral(",");
+        params.overflow     = QStringLiteral("discard");
+        params.inferNumeric = false;
+        const DA::DAPySeries oldSource = py.getColumnCopy(df, 0);
+        QVERIFY(!oldSource.isNone());
+        QUndoStack stack;
+        auto* cmd = new DA::DACommandDataFrame_splitColumn(df, params, oldSource);
+        QVERIFY(cmd->exec());
+        QCOMPARE(cmd->insertedNames(), QStringList({ QStringLiteral("S_1"), QStringLiteral("S_2"), QStringLiteral("S_3") }));
+        QCOMPARE(df.columns(), QList< QString >({ QStringLiteral("S"), QStringLiteral("S_1"), QStringLiteral("S_2"), QStringLiteral("S_3"), QStringLiteral("X") }));
+        stack.push(cmd);
+        // undo：删结果列 + 源列快照写回 → 列数/列序/内容完全还原
+        stack.undo();
+        QCOMPARE(df.columns(), QList< QString >({ QStringLiteral("S"), QStringLiteral("X") }));
+        QCOMPARE(df.iat(0, 0).toString(), QStringLiteral("a,b,c"));
+        QCOMPARE(df.iat(1, 1).toInt(), 2);
+        // redo：重放拆分
+        stack.redo();
+        QCOMPARE(df.columns().size(), 5);
+        QCOMPARE(df.iat(0, 2).toString(), QStringLiteral("b"));
+    }
+    // —— 合并命令 ——
+    {
+        pybind11::dict scope;
+        pybind11::exec(R"(
+import pandas as pd
+df = pd.DataFrame({"A":["a1","a2"],"B":["b1","b2"],"C":["c1","c2"]})
+)",
+                       pybind11::globals(),
+                       scope);
+        DA::DAPyDataFrame df(scope[ "df" ]);
+        DA::DACommandDataFrame_mergeColumns::MergeParams params;
+        params.cols   = QList< int >({ 0, 1 });
+        params.sep    = QStringLiteral("-");
+        params.skipNa = true;
+        params.name   = QStringLiteral("M");
+        QList< DA::DAPySeries > snapshots;
+        for (int c : std::as_const(params.cols)) {
+            snapshots.append(py.getColumnCopy(df, c));
+        }
+        QCOMPARE(snapshots.size(), 2);
+        QUndoStack stack;
+        auto* cmd = new DA::DACommandDataFrame_mergeColumns(df, params, snapshots);
+        QCOMPARE(cmd->insertPosition(), 0);
+        QVERIFY(cmd->exec());
+        QCOMPARE(df.columns(), QList< QString >({ QStringLiteral("M"), QStringLiteral("C") }));
+        QCOMPARE(df.iat(0, 0).toString(), QStringLiteral("a1-b1"));
+        stack.push(cmd);
+        // undo：删结果列 + 按原位置升序回插源列 → 完全还原
+        stack.undo();
+        QCOMPARE(df.columns(), QList< QString >({ QStringLiteral("A"), QStringLiteral("B"), QStringLiteral("C") }));
+        QCOMPARE(df.iat(1, 0).toString(), QStringLiteral("a2"));
+        QCOMPARE(df.iat(1, 1).toString(), QStringLiteral("b2"));
+        // redo：重放合并
+        stack.redo();
+        QCOMPARE(df.columns(), QList< QString >({ QStringLiteral("M"), QStringLiteral("C") }));
+        QCOMPARE(df.iat(1, 0).toString(), QStringLiteral("a2-b2"));
+    }
+}
+
+// 004 §4.4 验收：10 万行分列在可接受时间内完成（算子级实测；界面另有忙等待光标）
+void DATableDataTest::testSplitColumnPerf100k()
+{
+    if (!mPandasOk || !mPyScriptsOk) {
+        QSKIP("pandas/DAPyScripts not available");
+    }
+    DA::DAPyScriptsDataFrame& py = DA::DAPyScripts::getDataFrame();
+    pybind11::dict scope;
+    pybind11::exec(R"(
+import pandas as pd
+df = pd.DataFrame({"S": [",".join(str((i * j) % 97) for j in range(5)) for i in range(100000)]})
+)",
+                   pybind11::globals(),
+                   scope);
+    DA::DAPyDataFrame df(scope[ "df" ]);
+    QCOMPARE(df.shape().first, static_cast< std::size_t >(100000));
+    QElapsedTimer timer;
+    timer.start();
+    const QStringList names =
+        py.splitColumn(df, 0, QStringLiteral("char"), QStringLiteral(","), QString(), QList< int >(), 0, QStringLiteral("discard"), true, QStringList());
+    const qint64 elapsed = timer.elapsed();
+    QCOMPARE(names.size(), 5);
+    QCOMPARE(df.shape().second, static_cast< std::size_t >(6));
+    // 验收口径：无界面冻结超过数秒——算子级 10 万行 × 5 段应在 3s 内（实测亚秒级）
+    QVERIFY2(elapsed < 3000, qPrintable(QStringLiteral("100k split took %1 ms (>= 3000 ms)").arg(elapsed)));
+    qDebug().noquote() << QStringLiteral("DATableDataTest::testSplitColumnPerf100k: rows=100000 parts=5 elapsed_ms=%1").arg(elapsed);
+}
+
+// 004 §4.4 验收（程序化）：对话框驱动的 widget 全链路——分列预览一致、Ctrl+Z 一次完全还原、合并同理
+void DATableDataTest::testSplitMergeWidgetFlow()
+{
+    if (!mPandasOk || !mPyScriptsOk) {
+        QSKIP("pandas/DAPyScripts not available");
+    }
+    pybind11::dict scope;
+    pybind11::exec(R"(
+import pandas as pd
+df = pd.DataFrame({"S":["1,2","3,4"],"X":[10,20]})
+)",
+                   pybind11::globals(),
+                   scope);
+    DA::DAPyDataFrame df(scope[ "df" ]);
+    DA::DAData d(df);
+    DA::DATableMetadataRegistry registry(nullptr);
+    DA::DADataOperateOfDataFrameWidget w(d, &registry);
+    w.resize(700, 400);
+    w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+    DA::DADataTableView* tv = w.getDataTableView();
+    QVERIFY(tv != nullptr);
+    // —— 分列：选中 S 列 → 对话框（默认 char ","）→ OK ——
+    tv->clearSelection();
+    tv->selectColumn(0);
+    QTimer::singleShot(0, []() {
+        auto* dlg = qobject_cast< DA::DADialogSplitColumn* >(QApplication::activeModalWidget());
+        if (!dlg) {
+            return;
+        }
+        QTimer::singleShot(500, [ dlg ]() {
+            QDialogButtonBox* box = dlg->findChild< QDialogButtonBox* >();
+            if (box && box->button(QDialogButtonBox::Ok)->isEnabled()) {
+                dlg->accept();
+            } else {
+                dlg->reject();
+            }
+        });
+    });
+    const int undoBefore = w.getUndoStack()->count();
+    w.showSplitColumnDialog(-1);
+    // 结果：S 保留，S_1/S_2 插在其右侧，数值解析
+    QCOMPARE(df.columns(), QList< QString >({ QStringLiteral("S"), QStringLiteral("S_1"), QStringLiteral("S_2"), QStringLiteral("X") }));
+    QCOMPARE(df.iat(0, 1).toInt(), 1);
+    QCOMPARE(df.iat(1, 2).toInt(), 4);
+    QCOMPARE(w.getUndoStack()->count(), undoBefore + 1);
+    // Ctrl+Z 一次完全还原（含列顺序与列数）
+    w.getUndoStack()->undo();
+    QCOMPARE(df.columns(), QList< QString >({ QStringLiteral("S"), QStringLiteral("X") }));
+    QCOMPARE(df.iat(0, 0).toString(), QStringLiteral("1,2"));
+    w.getUndoStack()->redo();
+    QCOMPARE(df.columns().size(), 4);
+    // —— 合并：选 S(0) 与 X(3) → 对话框默认（分隔符空、跳过空值、名字 S_X）→ OK ——
+    tv->clearSelection();
+    tv->selectColumn(0);
+    if (QItemSelectionModel* sm = tv->selectionModel()) {
+        QItemSelection selCol(tv->model()->index(0, 3), tv->model()->index(tv->model()->rowCount() - 1, 3));
+        sm->select(selCol, QItemSelectionModel::Select);
+    }
+    QTimer::singleShot(0, []() {
+        auto* dlg = qobject_cast< DA::DADialogMergeColumns* >(QApplication::activeModalWidget());
+        if (!dlg) {
+            return;
+        }
+        QLineEdit* nameEdit = dlg->findChild< QLineEdit* >(QStringLiteral("lineEditMergeName"));
+        if (nameEdit) {
+            nameEdit->setText(QStringLiteral("SX"));  // 避免与默认自动名断言耦合
+        }
+        QTimer::singleShot(500, [ dlg ]() {
+            QDialogButtonBox* box = dlg->findChild< QDialogButtonBox* >();
+            if (box && box->button(QDialogButtonBox::Ok)->isEnabled()) {
+                dlg->accept();
+            } else {
+                dlg->reject();
+            }
+        });
+    });
+    w.showMergeColumnsDialog();
+    // 结果列替换被合并列位置（最左源列 = 0），另一源列删除
+    QCOMPARE(df.columns(), QList< QString >({ QStringLiteral("SX"), QStringLiteral("S_1"), QStringLiteral("S_2") }));
+    QCOMPARE(df.iat(0, 0).toString(), QStringLiteral("1,210"));  // "1,2" + "" + "10"（分隔符空）
+    // Ctrl+Z 一次完全还原
+    w.getUndoStack()->undo();
+    QCOMPARE(df.columns(), QList< QString >({ QStringLiteral("S"), QStringLiteral("S_1"), QStringLiteral("S_2"), QStringLiteral("X") }));
+    QCOMPARE(df.iat(0, 0).toString(), QStringLiteral("1,2"));
+    QCOMPARE(df.iat(0, 3).toInt(), 10);
+    w.hide();
+}
+
 
 // 不用QTEST_MAIN：嵌入式python的静态对象（DAPyBindQt.dll内的解释器句柄、QVariant caster
 // 类型缓存等）在进程teardown阶段析构顺序不可控，会在测试结果完整输出后引发访问冲突。

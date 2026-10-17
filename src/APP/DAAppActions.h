@@ -102,6 +102,8 @@ public:
     QAction* actionConditionalFormat { nullptr };   ///< 条件格式（003 T1.5，Table Style 面板 + 表体右键同入口，R16）
     QAction* actionComputedColumn { nullptr };              ///< 计算列（004 T1.23，Data Tools 面板 + 表体右键同入口）
     QAction* actionRecomputeAllComputedColumns { nullptr }; ///< 全部重算计算列（004 T1.23，Data Tools 面板）
+    QAction* actionSplitColumn { nullptr };                 ///< 分列（004 T1.9，Data Tools 面板 + 表体右键同入口）
+    QAction* actionMergeColumns { nullptr };                ///< 合并列（004 T1.9，Data Tools 面板 + 表体右键同入口）
 
     //===================================================
     // workflow的上下文标签

@@ -344,6 +344,9 @@ private Q_SLOTS:
     void onActionComputedColumnTriggered();
     // 全部重算计算列（004 T1.23，Ribbon「Data Tools」面板）
     void onActionRecomputeAllComputedColumnsTriggered();
+    // 分列 / 合并列（004 T1.9，Ribbon「Data Tools」面板；与表体右键菜单共用页面入口）
+    void onActionSplitColumnTriggered();
+    void onActionMergeColumnsTriggered();
     // 选中区样式反向同步 ribbon 控件
     void onTableStyleCurrentChanged(const DATableCellStyle& style);
     // 表格列显示格式

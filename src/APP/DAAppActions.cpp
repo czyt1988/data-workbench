@@ -122,6 +122,8 @@ void DAAppActions::buildDataAction()
     // 数据工具 action（004；图标取 DAGui 图标库，不引用 APP 资源）
     actionComputedColumn              = createAction(UiNames::Action::ComputedColumn, ":/DAGui/icon/computed-column.svg");
     actionRecomputeAllComputedColumns = createAction(UiNames::Action::RecomputeAllComputedColumns, ":/DAGui/icon/refresh-all.svg");
+    actionSplitColumn                 = createAction(UiNames::Action::SplitColumn, ":/DAGui/icon/split-column.svg");
+    actionMergeColumns                = createAction(UiNames::Action::MergeColumns, ":/DAGui/icon/merge-columns.svg");
 }
 
 void DAAppActions::buildChartAction()
@@ -662,6 +664,10 @@ void DAAppActions::retranslateUi()
     actionComputedColumn->setToolTip(tr("Create a column computed from a formula of other columns"));  // cn:用表达式基于其他列创建计算列
     actionRecomputeAllComputedColumns->setText(tr("Recompute All"));  // cn:全部重算
     actionRecomputeAllComputedColumns->setToolTip(tr("Recompute all stale/invalid computed columns of the current table"));  // cn:重算当前表全部待重算/失效的计算列
+    actionSplitColumn->setText(tr("Split Column"));                 // cn:分列
+    actionSplitColumn->setToolTip(tr("Split the selected column into multiple columns by delimiter / regex / fixed widths"));  // cn:把选中列按分隔符/正则/固定宽度拆分为多列
+    actionMergeColumns->setText(tr("Merge Columns"));               // cn:合并列
+    actionMergeColumns->setToolTip(tr("Merge the selected columns into one column in the given order"));  // cn:把选中的多列按给定顺序合并为一列
     //-----------------------------------------------------
     // workflow 编辑
     //-----------------------------------------------------

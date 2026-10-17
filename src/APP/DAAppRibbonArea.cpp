@@ -503,6 +503,8 @@ void DAAppRibbonArea::buildContextCategoryDataFrame()
     mPannelDataframeOperateDataTools->setObjectName(QString::fromUtf8(UiNames::Ribbon::DataFrameOperateDataToolsPanel));
     mPannelDataframeOperateDataTools->addLargeAction(mActions->actionComputedColumn);
     mPannelDataframeOperateDataTools->addMediumAction(mActions->actionRecomputeAllComputedColumns);
+    mPannelDataframeOperateDataTools->addLargeAction(mActions->actionSplitColumn);
+    mPannelDataframeOperateDataTools->addLargeAction(mActions->actionMergeColumns);
 
     // ===== 表格样式 category =====
     mCategoryDataframeStyle = mContextDataFrame->addCategoryPage(tr("Table Style"));  // cn:表格样式
