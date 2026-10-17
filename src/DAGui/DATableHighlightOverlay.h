@@ -31,7 +31,7 @@ namespace DA
  * 跨来源先后是有意选的：同一格既是查找命中又是校验违规时以查找为准（查找是用户当前操作焦点）。
  *
  * 四个级别 → 语义色映射集中在本类 colorForLevel()，色值取自官方色板
- * （docs/zh/dev-guide/general/icon-ui-design-guide.md），不透明度与背景混合在 delegate 层实现。
+ * （仓库根目录 DESIGN.md），不透明度与背景混合在 delegate 层实现。
  */
 class DAGUI_API DATableHighlightOverlay : public QObject
 {

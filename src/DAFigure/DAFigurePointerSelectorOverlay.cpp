@@ -29,7 +29,7 @@ namespace DA
 /**
  * @brief 选中框样式常量
  *
- * 橙红 #CE6043 来自项目语义色板（icon-ui-design-guide.md），
+ * 橙红 #CE6043 来自项目语义色板（仓库根目录 DESIGN.md），
  * 与激活plot的蓝色控制线（基类 drawControlLine）形成视觉区分
  */
 static const QColor c_pointer_selection_color = QColor(206, 96, 67);   // #CE6043

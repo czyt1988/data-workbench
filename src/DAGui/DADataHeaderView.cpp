@@ -93,7 +93,7 @@ QVector< QPair< int, Qt::SortOrder > > DADataHeaderView::sortSpec() const
 /**
  * @brief 排序角标绘制（仅水平实例）
  *
- * 在默认绘制之上叠加两类角标（色值取官方色板，见 icon-ui-design-guide.md）：
+ * 在默认绘制之上叠加两类角标（色值取官方色板，见仓库根目录 DESIGN.md）：
  * - 方向箭头：段右端垂直居中，升序向上/降序向下，深蓝灰 #5D6D7E；
  * - 多列序号角标：仅规格多于 1 列时绘制，段左上角，主蓝 #5280C1 圆底 + 白色数字，
  *   显示该列在规格中的优先级（1 起）。
