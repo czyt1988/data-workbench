@@ -2873,6 +2873,62 @@ Layouts</source>
     </message>
 
 
+    <message>
+        <source>Computed Column</source>
+        <translation>Computed Column</translation>
+    </message>
+    <message>
+        <source>Create a column computed from a formula of other columns</source>
+        <translation>Create a column computed from a formula of other columns</translation>
+    </message>
+    <message>
+        <source>Recompute All</source>
+        <translation>Recompute All</translation>
+    </message>
+    <message>
+        <source>Recompute all stale/invalid computed columns of the current table</source>
+        <translation>Recompute all stale/invalid computed columns of the current table</translation>
+    </message>
+    <message>
+        <source>Split Column</source>
+        <translation>Split Column</translation>
+    </message>
+    <message>
+        <source>Split the selected column into multiple columns by delimiter / regex / fixed widths</source>
+        <translation>Split the selected column into multiple columns by delimiter / regex / fixed widths</translation>
+    </message>
+    <message>
+        <source>Merge Columns</source>
+        <translation>Merge Columns</translation>
+    </message>
+    <message>
+        <source>Merge the selected columns into one column in the given order</source>
+        <translation>Merge the selected columns into one column in the given order</translation>
+    </message>
+    <message>
+        <source>Group By</source>
+        <translation>Group By</translation>
+    </message>
+    <message>
+        <source>Aggregate rows by group keys into a new long-format result dataset</source>
+        <translation>Aggregate rows by group keys into a new long-format result dataset</translation>
+    </message>
+    <message>
+        <source>Transpose</source>
+        <translation>Transpose</translation>
+    </message>
+    <message>
+        <source>Swap rows and columns into a new dataset (in-place optional)</source>
+        <translation>Swap rows and columns into a new dataset (in-place optional)</translation>
+    </message>
+    <message>
+        <source>Unpivot (Melt)</source>
+        <translation>Unpivot (Melt)</translation>
+    </message>
+    <message>
+        <source>Unpivot wide columns into a long-format new dataset (in-place optional)</source>
+        <translation>Unpivot wide columns into a long-format new dataset (in-place optional)</translation>
+    </message>
 </context>
 <context>
     <name>DA::DAAppController</name>
@@ -4083,6 +4139,10 @@ Layouts</source>
         <translation>Conditional</translation>
     </message>
 
+    <message>
+        <source>Data Tools</source>
+        <translation>Data Tools</translation>
+    </message>
 </context>
 <context>
     <name>DA::DAAxObjectExcelWrapper</name>
@@ -8930,6 +8990,132 @@ Layouts</source>
 
 
 
+    <message>
+        <source>The table is read-only and does not support computed columns</source>
+        <translation>The table is read-only and does not support computed columns</translation>
+    </message>
+    <message>
+        <source>Failed to evaluate the formula of computed column "%1": %2</source>
+        <translation>Failed to evaluate the formula of computed column "%1": %2</translation>
+    </message>
+    <message>
+        <source>Column "%1" has no computed formula</source>
+        <translation>Column "%1" has no computed formula</translation>
+    </message>
+    <message>
+        <source>The formula must not reference the target column itself</source>
+        <translation>The formula must not reference the target column itself</translation>
+    </message>
+    <message>
+        <source>Computed column(s) %1 became invalid because their dependency column(s) were removed</source>
+        <translation>Computed column(s) %1 became invalid because their dependency column(s) were removed</translation>
+    </message>
+    <message>
+        <source>Computed column(s) %1 became invalid because their dependency column(s) were merged</source>
+        <translation>Computed column(s) %1 became invalid because their dependency column(s) were merged</translation>
+    </message>
+    <message>
+        <source>Rename Column</source>
+        <translation>Rename Column</translation>
+    </message>
+    <message>
+        <source>%1 computed column(s) reference the renamed column(s): %2. Their references will be updated automatically. Continue?</source>
+        <translation>%1 computed column(s) reference the renamed column(s): %2. Their references will be updated automatically. Continue?</translation>
+    </message>
+    <message>
+        <source>Recompute All Computed Columns</source>
+        <translation>Recompute All Computed Columns</translation>
+    </message>
+    <message>
+        <source>Split Column requires an editable table</source>
+        <translation>Split Column requires an editable table</translation>
+    </message>
+    <message>
+        <source>Please select exactly one column to split</source>
+        <translation>Please select exactly one column to split</translation>
+    </message>
+    <message>
+        <source>Failed to snapshot the source column</source>
+        <translation>Failed to snapshot the source column</translation>
+    </message>
+    <message>
+        <source>Split column failed: %1</source>
+        <translation>Split column failed: %1</translation>
+    </message>
+    <message>
+        <source>Merge Columns requires an editable table</source>
+        <translation>Merge Columns requires an editable table</translation>
+    </message>
+    <message>
+        <source>Please select at least two columns to merge</source>
+        <translation>Please select at least two columns to merge</translation>
+    </message>
+    <message>
+        <source>Failed to snapshot the source columns</source>
+        <translation>Failed to snapshot the source columns</translation>
+    </message>
+    <message>
+        <source>Merge columns failed: %1</source>
+        <translation>Merge columns failed: %1</translation>
+    </message>
+    <message>
+        <source>%1_GroupBy</source>
+        <translation>%1_GroupBy</translation>
+    </message>
+    <message>
+        <source>Group-by aggregation of %1</source>
+        <translation>Group-by aggregation of %1</translation>
+    </message>
+    <message>
+        <source>%1_Melted</source>
+        <translation>%1_Melted</translation>
+    </message>
+    <message>
+        <source>Melt (wide to long) of %1</source>
+        <translation>Melt (wide to long) of %1</translation>
+    </message>
+    <message>
+        <source>%1_Transposed</source>
+        <translation>%1_Transposed</translation>
+    </message>
+    <message>
+        <source>Transpose of %1</source>
+        <translation>Transpose of %1</translation>
+    </message>
+    <message>
+        <source>Reshape failed: %1</source>
+        <translation>Reshape failed: %1</translation>
+    </message>
+    <message>
+        <source>Melt table in place</source>
+        <translation>Melt table in place</translation>
+    </message>
+    <message>
+        <source>Transpose table in place</source>
+        <translation>Transpose table in place</translation>
+    </message>
+    <message>
+        <source>(no table metadata to clear)</source>
+        <translation>(no table metadata to clear)</translation>
+    </message>
+    <message>
+        <source>Replace In Place</source>
+        <translation>Replace In Place</translation>
+    </message>
+    <message>
+        <source>Replacing in place will clear the following table metadata:
+%1
+
+Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
+        <translation>Replacing in place will clear the following table metadata:
+%1
+
+Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</translation>
+    </message>
+    <message>
+        <source>The table is very large (%1 cells). Keeping the old data for undo would double memory usage, so this in-place replacement will NOT be undoable. Continue?</source>
+        <translation>The table is very large (%1 cells). Keeping the old data for undo would double memory usage, so this in-place replacement will NOT be undoable. Continue?</translation>
+    </message>
 </context>
 <context>
     <name>DA::DADataOperateWidget</name>
@@ -8985,6 +9171,30 @@ Layouts</source>
         <translation>Conditional Format...</translation>
     </message>
 
+    <message>
+        <source>Computed Column...</source>
+        <translation>Computed Column...</translation>
+    </message>
+    <message>
+        <source>Split Column...</source>
+        <translation>Split Column...</translation>
+    </message>
+    <message>
+        <source>Merge Columns...</source>
+        <translation>Merge Columns...</translation>
+    </message>
+    <message>
+        <source>Group By...</source>
+        <translation>Group By...</translation>
+    </message>
+    <message>
+        <source>Transpose...</source>
+        <translation>Transpose...</translation>
+    </message>
+    <message>
+        <source>Unpivot (Melt)...</source>
+        <translation>Unpivot (Melt)...</translation>
+    </message>
 </context>
 <context>
     <name>DA::DADataframeToVectorPointWidget</name>
@@ -16263,6 +16473,22 @@ If a column name contains spaces or special characters, enclose it in backticks 
 
 
 
+    <message>
+        <source>compute column "%1"</source>
+        <translation>compute column "%1"</translation>
+    </message>
+    <message>
+        <source>remove formula of column "%1" (keep data)</source>
+        <translation>remove formula of column "%1" (keep data)</translation>
+    </message>
+    <message>
+        <source>split column "%1"</source>
+        <translation>split column "%1"</translation>
+    </message>
+    <message>
+        <source>merge %1 columns into "%2"</source>
+        <translation>merge %1 columns into "%2"</translation>
+    </message>
 </context>
 <context>
     <name>main</name>
@@ -16400,7 +16626,19 @@ If a column name contains spaces or special characters, enclose it in backticks 
             <source>Show Statistics</source>
             <translation>Show Statistics</translation>
         </message>
-    </context>
+        <message>
+        <source>Edit Formula</source>
+        <translation>Edit Formula</translation>
+    </message>
+    <message>
+        <source>Recompute</source>
+        <translation>Recompute</translation>
+    </message>
+    <message>
+        <source>Remove Formula (Keep Data)</source>
+        <translation>Remove Formula (Keep Data)</translation>
+    </message>
+</context>
 <context>
     <name>DA::DADialogFindReplace</name>
     <message>
@@ -16675,6 +16913,490 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <source>Bar Color:</source>
         <translation>Bar Color:</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DATableComputedColumnStore</name>
+    <message>
+        <source>Valid</source>
+        <translation>Valid</translation>
+    </message>
+    <message>
+        <source>Needs Recompute</source>
+        <translation>Needs Recompute</translation>
+    </message>
+    <message>
+        <source>Invalid</source>
+        <translation>Invalid</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADataTableModel</name>
+    <message>
+        <source>Formula</source>
+        <translation>Formula</translation>
+    </message>
+    <message>
+        <source>State</source>
+        <translation>State</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DATableMetadata</name>
+    <message>
+        <source>Cell styles</source>
+        <translation>Cell styles</translation>
+    </message>
+    <message>
+        <source>Column widths</source>
+        <translation>Column widths</translation>
+    </message>
+    <message>
+        <source>Conditional format rules</source>
+        <translation>Conditional format rules</translation>
+    </message>
+    <message>
+        <source>Computed columns</source>
+        <translation>Computed columns</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADialogComputedColumn</name>
+    <message>
+        <source>New Computed Column</source>
+        <translation>New Computed Column</translation>
+    </message>
+    <message>
+        <source>Edit Formula</source>
+        <translation>Edit Formula</translation>
+    </message>
+    <message>
+        <source>New column name</source>
+        <translation>New column name</translation>
+    </message>
+    <message>
+        <source>e.g. A + B (column names can be inserted from the list below)</source>
+        <translation>e.g. A + B (column names can be inserted from the list below)</translation>
+    </message>
+    <message>
+        <source>Target Column:</source>
+        <translation>Target Column:</translation>
+    </message>
+    <message>
+        <source>Expression:</source>
+        <translation>Expression:</translation>
+    </message>
+    <message>
+        <source>Columns (click to insert)</source>
+        <translation>Columns (click to insert)</translation>
+    </message>
+    <message>
+        <source>Preview (first %1 rows)</source>
+        <translation>Preview (first %1 rows)</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>Cancel</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>OK</translation>
+    </message>
+    <message>
+        <source>No data</source>
+        <translation>No data</translation>
+    </message>
+    <message>
+        <source>Please specify the target column name</source>
+        <translation>Please specify the target column name</translation>
+    </message>
+    <message>
+        <source>Column "%1" already exists. A computed column must write to a new column (self-overwrite is not allowed).</source>
+        <translation>Column "%1" already exists. A computed column must write to a new column (self-overwrite is not allowed).</translation>
+    </message>
+    <message>
+        <source>Please input the expression</source>
+        <translation>Please input the expression</translation>
+    </message>
+    <message>
+        <source>Expression syntax error: %1</source>
+        <translation>Expression syntax error: %1</translation>
+    </message>
+    <message>
+        <source>The expression must not reference the target column "%1" (self-overwrite is not allowed).</source>
+        <translation>The expression must not reference the target column "%1" (self-overwrite is not allowed).</translation>
+    </message>
+    <message>
+        <source>Failed to build preview sample</source>
+        <translation>Failed to build preview sample</translation>
+    </message>
+    <message>
+        <source>Expression evaluation failed: %1</source>
+        <translation>Expression evaluation failed: %1</translation>
+    </message>
+    <message>
+        <source>OK — %1 dependency column(s): %2</source>
+        <translation>OK — %1 dependency column(s): %2</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADialogSplitColumn</name>
+    <message>
+        <source>Split Column</source>
+        <translation>Split Column</translation>
+    </message>
+    <message>
+        <source>Source column: %1</source>
+        <translation>Source column: %1</translation>
+    </message>
+    <message>
+        <source>Split Mode</source>
+        <translation>Split Mode</translation>
+    </message>
+    <message>
+        <source>Delimiter (single char or string)</source>
+        <translation>Delimiter (single char or string)</translation>
+    </message>
+    <message>
+        <source>Regular expression (capture groups)</source>
+        <translation>Regular expression (capture groups)</translation>
+    </message>
+    <message>
+        <source>Fixed widths</source>
+        <translation>Fixed widths</translation>
+    </message>
+    <message>
+        <source>comma separated, e.g. 3,5,8</source>
+        <translation>comma separated, e.g. 3,5,8</translation>
+    </message>
+    <message>
+        <source>Max columns:</source>
+        <translation>Max columns:</translation>
+    </message>
+    <message>
+        <source>Unlimited</source>
+        <translation>Unlimited</translation>
+    </message>
+    <message>
+        <source>Discard extra parts</source>
+        <translation>Discard extra parts</translation>
+    </message>
+    <message>
+        <source>Keep remainder in last column</source>
+        <translation>Keep remainder in last column</translation>
+    </message>
+    <message>
+        <source>Report error</source>
+        <translation>Report error</translation>
+    </message>
+    <message>
+        <source>Overflow policy:</source>
+        <translation>Overflow policy:</translation>
+    </message>
+    <message>
+        <source>Try to parse result columns as numeric</source>
+        <translation>Try to parse result columns as numeric</translation>
+    </message>
+    <message>
+        <source>comma separated result column names</source>
+        <translation>comma separated result column names</translation>
+    </message>
+    <message>
+        <source>Result names:</source>
+        <translation>Result names:</translation>
+    </message>
+    <message>
+        <source>Preview (first %1 rows)</source>
+        <translation>Preview (first %1 rows)</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>OK</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>Cancel</translation>
+    </message>
+    <message>
+        <source>Delimiter must not be empty</source>
+        <translation>Delimiter must not be empty</translation>
+    </message>
+    <message>
+        <source>Regular expression must not be empty</source>
+        <translation>Regular expression must not be empty</translation>
+    </message>
+    <message>
+        <source>Widths must be comma separated positive integers</source>
+        <translation>Widths must be comma separated positive integers</translation>
+    </message>
+    <message>
+        <source>Widths must not be empty</source>
+        <translation>Widths must not be empty</translation>
+    </message>
+    <message>
+        <source>No data</source>
+        <translation>No data</translation>
+    </message>
+    <message>
+        <source>Failed to build preview sample</source>
+        <translation>Failed to build preview sample</translation>
+    </message>
+    <message>
+        <source>Split failed: %1</source>
+        <translation>Split failed: %1</translation>
+    </message>
+    <message>
+        <source>Auto name "%1" conflicts with an existing column, please rename the result columns</source>
+        <translation>Auto name "%1" conflicts with an existing column, please rename the result columns</translation>
+    </message>
+    <message>
+        <source>Result name count (%1) does not match the split column count (%2)</source>
+        <translation>Result name count (%1) does not match the split column count (%2)</translation>
+    </message>
+    <message>
+        <source>Result column name must not be empty</source>
+        <translation>Result column name must not be empty</translation>
+    </message>
+    <message>
+        <source>Duplicate result column name "%1"</source>
+        <translation>Duplicate result column name "%1"</translation>
+    </message>
+    <message>
+        <source>Result column name "%1" already exists in the table</source>
+        <translation>Result column name "%1" already exists in the table</translation>
+    </message>
+    <message>
+        <source>OK — split into %1 column(s)</source>
+        <translation>OK — split into %1 column(s)</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADialogMergeColumns</name>
+    <message>
+        <source>Merge Columns</source>
+        <translation>Merge Columns</translation>
+    </message>
+    <message>
+        <source>Merge order (top to bottom)</source>
+        <translation>Merge order (top to bottom)</translation>
+    </message>
+    <message>
+        <source>can be empty</source>
+        <translation>can be empty</translation>
+    </message>
+    <message>
+        <source>Separator:</source>
+        <translation>Separator:</translation>
+    </message>
+    <message>
+        <source>Skip missing values (no extra separator)</source>
+        <translation>Skip missing values (no extra separator)</translation>
+    </message>
+    <message>
+        <source>Result column name:</source>
+        <translation>Result column name:</translation>
+    </message>
+    <message>
+        <source>Preview (first %1 rows)</source>
+        <translation>Preview (first %1 rows)</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>OK</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>Cancel</translation>
+    </message>
+    <message>
+        <source>No data</source>
+        <translation>No data</translation>
+    </message>
+    <message>
+        <source>Merge requires at least 2 columns</source>
+        <translation>Merge requires at least 2 columns</translation>
+    </message>
+    <message>
+        <source>Result column name must not be empty</source>
+        <translation>Result column name must not be empty</translation>
+    </message>
+    <message>
+        <source>Column "%1" already exists, please use another result name</source>
+        <translation>Column "%1" already exists, please use another result name</translation>
+    </message>
+    <message>
+        <source>Failed to build preview sample</source>
+        <translation>Failed to build preview sample</translation>
+    </message>
+    <message>
+        <source>Merge failed: %1</source>
+        <translation>Merge failed: %1</translation>
+    </message>
+    <message>
+        <source>OK — merged into "%1" at column %2</source>
+        <translation>OK — merged into "%1" at column %2</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADialogGroupBy</name>
+    <message>
+        <source>Group By</source>
+        <translation>Group By</translation>
+    </message>
+    <message>
+        <source>Group keys (multi-select)</source>
+        <translation>Group keys (multi-select)</translation>
+    </message>
+    <message>
+        <source>Aggregate columns (multi-select)</source>
+        <translation>Aggregate columns (multi-select)</translation>
+    </message>
+    <message>
+        <source>Aggregations (column / function)</source>
+        <translation>Aggregations (column / function)</translation>
+    </message>
+    <message>
+        <source>Column</source>
+        <translation>Column</translation>
+    </message>
+    <message>
+        <source>Function</source>
+        <translation>Function</translation>
+    </message>
+    <message>
+        <source>Preview (first %1 rows)</source>
+        <translation>Preview (first %1 rows)</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>OK</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>Cancel</translation>
+    </message>
+    <message>
+        <source>No data</source>
+        <translation>No data</translation>
+    </message>
+    <message>
+        <source>Please select at least one group key</source>
+        <translation>Please select at least one group key</translation>
+    </message>
+    <message>
+        <source>Please select at least one aggregation column</source>
+        <translation>Please select at least one aggregation column</translation>
+    </message>
+    <message>
+        <source>Aggregation failed: %1</source>
+        <translation>Aggregation failed: %1</translation>
+    </message>
+    <message>
+        <source>OK — %1 group(s) (result rows)</source>
+        <translation>OK — %1 group(s) (result rows)</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADialogReshape</name>
+    <message>
+        <source>Reshape</source>
+        <translation>Reshape</translation>
+    </message>
+    <message>
+        <source>Unpivot / Melt</source>
+        <translation>Unpivot / Melt</translation>
+    </message>
+    <message>
+        <source>Transpose</source>
+        <translation>Transpose</translation>
+    </message>
+    <message>
+        <source>Mode</source>
+        <translation>Mode</translation>
+    </message>
+    <message>
+        <source>Transpose (rows become columns)</source>
+        <translation>Transpose (rows become columns)</translation>
+    </message>
+    <message>
+        <source>Unpivot / Melt (wide to long)</source>
+        <translation>Unpivot / Melt (wide to long)</translation>
+    </message>
+    <message>
+        <source>ID columns (keep, multi-select)</source>
+        <translation>ID columns (keep, multi-select)</translation>
+    </message>
+    <message>
+        <source>Value columns (unpivot; none = all others)</source>
+        <translation>Value columns (unpivot; none = all others)</translation>
+    </message>
+    <message>
+        <source>Variable column name:</source>
+        <translation>Variable column name:</translation>
+    </message>
+    <message>
+        <source>Value column name:</source>
+        <translation>Value column name:</translation>
+    </message>
+    <message>
+        <source>Replace current table in place (default: create a new dataset)</source>
+        <translation>Replace current table in place (default: create a new dataset)</translation>
+    </message>
+    <message>
+        <source>Preview (first %1 rows of a sample)</source>
+        <translation>Preview (first %1 rows of a sample)</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>OK</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>Cancel</translation>
+    </message>
+    <message>
+        <source>No data</source>
+        <translation>No data</translation>
+    </message>
+    <message>
+        <source>Failed to build preview sample</source>
+        <translation>Failed to build preview sample</translation>
+    </message>
+    <message>
+        <source>Column "%1" is in both ID and value columns</source>
+        <translation>Column "%1" is in both ID and value columns</translation>
+    </message>
+    <message>
+        <source>No column left to unpivot (all columns are kept as ID)</source>
+        <translation>No column left to unpivot (all columns are kept as ID)</translation>
+    </message>
+    <message>
+        <source>Variable/value column names must not be empty</source>
+        <translation>Variable/value column names must not be empty</translation>
+    </message>
+    <message>
+        <source>Reshape failed: %1</source>
+        <translation>Reshape failed: %1</translation>
+    </message>
+    <message>
+        <source> — exceeds the %1-row guard, confirmation required on OK</source>
+        <translation> — exceeds the %1-row guard, confirmation required on OK</translation>
+    </message>
+    <message>
+        <source>OK — estimated output rows: %1 (rows %2 x unpivoted columns %3)%4</source>
+        <translation>OK — estimated output rows: %1 (rows %2 x unpivoted columns %3)%4</translation>
+    </message>
+    <message>
+        <source>OK — result will have %1 row(s) (original columns) and one column per original row plus the "index" name column</source>
+        <translation>OK — result will have %1 row(s) (original columns) and one column per original row plus the "index" name column</translation>
+    </message>
+    <message>
+        <source>Melt Scale Guard</source>
+        <translation>Melt Scale Guard</translation>
+    </message>
+    <message>
+        <source>The melt operation is estimated to produce %1 rows (limit %2), which may consume a large amount of memory. Force continue?</source>
+        <translation>The melt operation is estimated to produce %1 rows (limit %2), which may consume a large amount of memory. Force continue?</translation>
     </message>
 </context>
 </TS>

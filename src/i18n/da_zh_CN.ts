@@ -2888,6 +2888,62 @@ Layouts</source>
     </message>
 
 
+    <message>
+        <source>Computed Column</source>
+        <translation>计算列</translation>
+    </message>
+    <message>
+        <source>Create a column computed from a formula of other columns</source>
+        <translation>用表达式基于其他列创建计算列</translation>
+    </message>
+    <message>
+        <source>Recompute All</source>
+        <translation>全部重算</translation>
+    </message>
+    <message>
+        <source>Recompute all stale/invalid computed columns of the current table</source>
+        <translation>重算当前表全部待重算/失效的计算列</translation>
+    </message>
+    <message>
+        <source>Split Column</source>
+        <translation>分列</translation>
+    </message>
+    <message>
+        <source>Split the selected column into multiple columns by delimiter / regex / fixed widths</source>
+        <translation>把选中列按分隔符/正则/固定宽度拆分为多列</translation>
+    </message>
+    <message>
+        <source>Merge Columns</source>
+        <translation>合并列</translation>
+    </message>
+    <message>
+        <source>Merge the selected columns into one column in the given order</source>
+        <translation>把选中的多列按给定顺序合并为一列</translation>
+    </message>
+    <message>
+        <source>Group By</source>
+        <translation>分组聚合</translation>
+    </message>
+    <message>
+        <source>Aggregate rows by group keys into a new long-format result dataset</source>
+        <translation>按分组键聚合为新数据集（长格式结果表）</translation>
+    </message>
+    <message>
+        <source>Transpose</source>
+        <translation>转置</translation>
+    </message>
+    <message>
+        <source>Swap rows and columns into a new dataset (in-place optional)</source>
+        <translation>行列互换产出新数据集（可选就地替换）</translation>
+    </message>
+    <message>
+        <source>Unpivot (Melt)</source>
+        <translation>宽转长（melt）</translation>
+    </message>
+    <message>
+        <source>Unpivot wide columns into a long-format new dataset (in-place optional)</source>
+        <translation>把宽表展开为长格式新数据集（可选就地替换）</translation>
+    </message>
 </context>
 <context>
     <name>DA::DAAppController</name>
@@ -4197,6 +4253,10 @@ Layouts</source>
         <translation>条件格式</translation>
     </message>
 
+    <message>
+        <source>Data Tools</source>
+        <translation>数据工具</translation>
+    </message>
 </context>
 <context>
     <name>DA::DAAxObjectExcelWrapper</name>
@@ -9044,6 +9104,132 @@ Layouts</source>
 
 
 
+    <message>
+        <source>The table is read-only and does not support computed columns</source>
+        <translation>只读表格不支持计算列</translation>
+    </message>
+    <message>
+        <source>Failed to evaluate the formula of computed column "%1": %2</source>
+        <translation>计算列“%1”公式求值失败：%2</translation>
+    </message>
+    <message>
+        <source>Column "%1" has no computed formula</source>
+        <translation>列“%1”没有计算公式</translation>
+    </message>
+    <message>
+        <source>The formula must not reference the target column itself</source>
+        <translation>公式不得引用目标列自身</translation>
+    </message>
+    <message>
+        <source>Computed column(s) %1 became invalid because their dependency column(s) were removed</source>
+        <translation>计算列 %1 因依赖列被删除已失效</translation>
+    </message>
+    <message>
+        <source>Computed column(s) %1 became invalid because their dependency column(s) were merged</source>
+        <translation>计算列 %1 因依赖列被合并已失效</translation>
+    </message>
+    <message>
+        <source>Rename Column</source>
+        <translation>重命名列</translation>
+    </message>
+    <message>
+        <source>%1 computed column(s) reference the renamed column(s): %2. Their references will be updated automatically. Continue?</source>
+        <translation>有 %1 个计算列引用被改名的列：%2。其引用将自动批量更新，是否继续？</translation>
+    </message>
+    <message>
+        <source>Recompute All Computed Columns</source>
+        <translation>重算全部计算列</translation>
+    </message>
+    <message>
+        <source>Split Column requires an editable table</source>
+        <translation>分列需要可编辑的表格</translation>
+    </message>
+    <message>
+        <source>Please select exactly one column to split</source>
+        <translation>请选择要拆分的单个列</translation>
+    </message>
+    <message>
+        <source>Failed to snapshot the source column</source>
+        <translation>源列快照失败</translation>
+    </message>
+    <message>
+        <source>Split column failed: %1</source>
+        <translation>分列失败：%1</translation>
+    </message>
+    <message>
+        <source>Merge Columns requires an editable table</source>
+        <translation>合并列需要可编辑的表格</translation>
+    </message>
+    <message>
+        <source>Please select at least two columns to merge</source>
+        <translation>请选择至少两列进行合并</translation>
+    </message>
+    <message>
+        <source>Failed to snapshot the source columns</source>
+        <translation>源列快照失败</translation>
+    </message>
+    <message>
+        <source>Merge columns failed: %1</source>
+        <translation>合并列失败：%1</translation>
+    </message>
+    <message>
+        <source>%1_GroupBy</source>
+        <translation>%1_分组聚合</translation>
+    </message>
+    <message>
+        <source>Group-by aggregation of %1</source>
+        <translation>生成%1的分组聚合结果</translation>
+    </message>
+    <message>
+        <source>%1_Melted</source>
+        <translation>%1_宽转长</translation>
+    </message>
+    <message>
+        <source>Melt (wide to long) of %1</source>
+        <translation>生成%1的宽转长结果</translation>
+    </message>
+    <message>
+        <source>%1_Transposed</source>
+        <translation>%1_转置</translation>
+    </message>
+    <message>
+        <source>Transpose of %1</source>
+        <translation>生成%1的转置结果</translation>
+    </message>
+    <message>
+        <source>Reshape failed: %1</source>
+        <translation>形状变换失败：%1</translation>
+    </message>
+    <message>
+        <source>Melt table in place</source>
+        <translation>就地宽转长</translation>
+    </message>
+    <message>
+        <source>Transpose table in place</source>
+        <translation>就地转置</translation>
+    </message>
+    <message>
+        <source>(no table metadata to clear)</source>
+        <translation>（无需要清除的表元数据）</translation>
+    </message>
+    <message>
+        <source>Replace In Place</source>
+        <translation>就地替换</translation>
+    </message>
+    <message>
+        <source>Replacing in place will clear the following table metadata:
+%1
+
+Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
+        <translation>就地替换将清除本表的以下元数据：
+%1
+
+数据与元数据共用一个撤销单元（Ctrl+Z 一并还原）。是否继续？</translation>
+    </message>
+    <message>
+        <source>The table is very large (%1 cells). Keeping the old data for undo would double memory usage, so this in-place replacement will NOT be undoable. Continue?</source>
+        <translation>表格过大（%1 单元格）。保留旧数据用于撤销将使内存翻倍，本次就地替换将不可撤销。是否继续？</translation>
+    </message>
 </context>
 <context>
     <name>DA::DADataOperateWidget</name>
@@ -9099,6 +9285,30 @@ Layouts</source>
         <translation>条件格式...</translation>
     </message>
 
+    <message>
+        <source>Computed Column...</source>
+        <translation>计算列...</translation>
+    </message>
+    <message>
+        <source>Split Column...</source>
+        <translation>分列...</translation>
+    </message>
+    <message>
+        <source>Merge Columns...</source>
+        <translation>合并列...</translation>
+    </message>
+    <message>
+        <source>Group By...</source>
+        <translation>分组聚合...</translation>
+    </message>
+    <message>
+        <source>Transpose...</source>
+        <translation>转置...</translation>
+    </message>
+    <message>
+        <source>Unpivot (Melt)...</source>
+        <translation>宽转长（melt）...</translation>
+    </message>
 </context>
 <context>
     <name>DA::DADataframeToVectorPointWidget</name>
@@ -16383,6 +16593,22 @@ If a column name contains spaces or special characters, enclose it in backticks 
 
 
 
+    <message>
+        <source>compute column "%1"</source>
+        <translation>计算列“%1”</translation>
+    </message>
+    <message>
+        <source>remove formula of column "%1" (keep data)</source>
+        <translation>移除列“%1”的公式（保留数据）</translation>
+    </message>
+    <message>
+        <source>split column "%1"</source>
+        <translation>分列“%1”</translation>
+    </message>
+    <message>
+        <source>merge %1 columns into "%2"</source>
+        <translation>合并 %1 列为“%2”</translation>
+    </message>
 </context>
 <context>
     <name>main</name>
@@ -16520,7 +16746,19 @@ If a column name contains spaces or special characters, enclose it in backticks 
             <source>Show Statistics</source>
             <translation>显示统计信息</translation>
         </message>
-    </context>
+        <message>
+        <source>Edit Formula</source>
+        <translation>编辑公式</translation>
+    </message>
+    <message>
+        <source>Recompute</source>
+        <translation>重新计算</translation>
+    </message>
+    <message>
+        <source>Remove Formula (Keep Data)</source>
+        <translation>移除公式（保留数据）</translation>
+    </message>
+</context>
 <context>
     <name>DA::DADialogFindReplace</name>
     <message>
@@ -16795,6 +17033,490 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <source>Bar Color:</source>
         <translation>数据条颜色：</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DATableComputedColumnStore</name>
+    <message>
+        <source>Valid</source>
+        <translation>有效</translation>
+    </message>
+    <message>
+        <source>Needs Recompute</source>
+        <translation>待重算</translation>
+    </message>
+    <message>
+        <source>Invalid</source>
+        <translation>失效</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADataTableModel</name>
+    <message>
+        <source>Formula</source>
+        <translation>公式</translation>
+    </message>
+    <message>
+        <source>State</source>
+        <translation>状态</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DATableMetadata</name>
+    <message>
+        <source>Cell styles</source>
+        <translation>样式</translation>
+    </message>
+    <message>
+        <source>Column widths</source>
+        <translation>列宽</translation>
+    </message>
+    <message>
+        <source>Conditional format rules</source>
+        <translation>条件格式规则</translation>
+    </message>
+    <message>
+        <source>Computed columns</source>
+        <translation>计算列</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADialogComputedColumn</name>
+    <message>
+        <source>New Computed Column</source>
+        <translation>新建计算列</translation>
+    </message>
+    <message>
+        <source>Edit Formula</source>
+        <translation>编辑公式</translation>
+    </message>
+    <message>
+        <source>New column name</source>
+        <translation>新列名</translation>
+    </message>
+    <message>
+        <source>e.g. A + B (column names can be inserted from the list below)</source>
+        <translation>如 A + B（列名可从下方列表点选插入）</translation>
+    </message>
+    <message>
+        <source>Target Column:</source>
+        <translation>目标列名：</translation>
+    </message>
+    <message>
+        <source>Expression:</source>
+        <translation>表达式：</translation>
+    </message>
+    <message>
+        <source>Columns (click to insert)</source>
+        <translation>列名（点选插入）</translation>
+    </message>
+    <message>
+        <source>Preview (first %1 rows)</source>
+        <translation>预览（前 %1 行）</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>确定</translation>
+    </message>
+    <message>
+        <source>No data</source>
+        <translation>无数据</translation>
+    </message>
+    <message>
+        <source>Please specify the target column name</source>
+        <translation>请指定目标列名</translation>
+    </message>
+    <message>
+        <source>Column "%1" already exists. A computed column must write to a new column (self-overwrite is not allowed).</source>
+        <translation>列“%1”已存在。计算列必须写入新列（禁止自覆盖）。</translation>
+    </message>
+    <message>
+        <source>Please input the expression</source>
+        <translation>请输入表达式</translation>
+    </message>
+    <message>
+        <source>Expression syntax error: %1</source>
+        <translation>表达式语法错误：%1</translation>
+    </message>
+    <message>
+        <source>The expression must not reference the target column "%1" (self-overwrite is not allowed).</source>
+        <translation>表达式不得引用目标列“%1”（禁止自覆盖）。</translation>
+    </message>
+    <message>
+        <source>Failed to build preview sample</source>
+        <translation>预览样本构建失败</translation>
+    </message>
+    <message>
+        <source>Expression evaluation failed: %1</source>
+        <translation>表达式求值失败：%1</translation>
+    </message>
+    <message>
+        <source>OK — %1 dependency column(s): %2</source>
+        <translation>通过 — 依赖 %1 列：%2</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADialogSplitColumn</name>
+    <message>
+        <source>Split Column</source>
+        <translation>分列</translation>
+    </message>
+    <message>
+        <source>Source column: %1</source>
+        <translation>源列：%1</translation>
+    </message>
+    <message>
+        <source>Split Mode</source>
+        <translation>分隔模式</translation>
+    </message>
+    <message>
+        <source>Delimiter (single char or string)</source>
+        <translation>分隔符（单字符/字符串）</translation>
+    </message>
+    <message>
+        <source>Regular expression (capture groups)</source>
+        <translation>正则（捕获组）</translation>
+    </message>
+    <message>
+        <source>Fixed widths</source>
+        <translation>固定宽度</translation>
+    </message>
+    <message>
+        <source>comma separated, e.g. 3,5,8</source>
+        <translation>逗号分隔，如 3,5,8</translation>
+    </message>
+    <message>
+        <source>Max columns:</source>
+        <translation>最大列数：</translation>
+    </message>
+    <message>
+        <source>Unlimited</source>
+        <translation>不限</translation>
+    </message>
+    <message>
+        <source>Discard extra parts</source>
+        <translation>丢弃超出部分</translation>
+    </message>
+    <message>
+        <source>Keep remainder in last column</source>
+        <translation>剩余并入最后一列（保留原文）</translation>
+    </message>
+    <message>
+        <source>Report error</source>
+        <translation>报错</translation>
+    </message>
+    <message>
+        <source>Overflow policy:</source>
+        <translation>溢出策略：</translation>
+    </message>
+    <message>
+        <source>Try to parse result columns as numeric</source>
+        <translation>结果列尝试数值解析</translation>
+    </message>
+    <message>
+        <source>comma separated result column names</source>
+        <translation>逗号分隔的结果列名</translation>
+    </message>
+    <message>
+        <source>Result names:</source>
+        <translation>结果列名：</translation>
+    </message>
+    <message>
+        <source>Preview (first %1 rows)</source>
+        <translation>预览（前 %1 行）</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>确定</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+    <message>
+        <source>Delimiter must not be empty</source>
+        <translation>分隔符不能为空</translation>
+    </message>
+    <message>
+        <source>Regular expression must not be empty</source>
+        <translation>正则不能为空</translation>
+    </message>
+    <message>
+        <source>Widths must be comma separated positive integers</source>
+        <translation>宽度必须是逗号分隔的正整数</translation>
+    </message>
+    <message>
+        <source>Widths must not be empty</source>
+        <translation>宽度列表不能为空</translation>
+    </message>
+    <message>
+        <source>No data</source>
+        <translation>无数据</translation>
+    </message>
+    <message>
+        <source>Failed to build preview sample</source>
+        <translation>预览样本构建失败</translation>
+    </message>
+    <message>
+        <source>Split failed: %1</source>
+        <translation>分列失败：%1</translation>
+    </message>
+    <message>
+        <source>Auto name "%1" conflicts with an existing column, please rename the result columns</source>
+        <translation>自动列名“%1”与现有列重名，请修改结果列名</translation>
+    </message>
+    <message>
+        <source>Result name count (%1) does not match the split column count (%2)</source>
+        <translation>结果列名个数（%1）与分列数（%2）不一致</translation>
+    </message>
+    <message>
+        <source>Result column name must not be empty</source>
+        <translation>结果列名不能为空</translation>
+    </message>
+    <message>
+        <source>Duplicate result column name "%1"</source>
+        <translation>结果列名“%1”重复</translation>
+    </message>
+    <message>
+        <source>Result column name "%1" already exists in the table</source>
+        <translation>结果列名“%1”与现有列重名</translation>
+    </message>
+    <message>
+        <source>OK — split into %1 column(s)</source>
+        <translation>通过 — 拆分为 %1 列</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADialogMergeColumns</name>
+    <message>
+        <source>Merge Columns</source>
+        <translation>合并列</translation>
+    </message>
+    <message>
+        <source>Merge order (top to bottom)</source>
+        <translation>合并顺序（自上而下）</translation>
+    </message>
+    <message>
+        <source>can be empty</source>
+        <translation>可为空</translation>
+    </message>
+    <message>
+        <source>Separator:</source>
+        <translation>分隔符：</translation>
+    </message>
+    <message>
+        <source>Skip missing values (no extra separator)</source>
+        <translation>跳过空值（不留多余分隔符）</translation>
+    </message>
+    <message>
+        <source>Result column name:</source>
+        <translation>结果列名：</translation>
+    </message>
+    <message>
+        <source>Preview (first %1 rows)</source>
+        <translation>预览（前 %1 行）</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>确定</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+    <message>
+        <source>No data</source>
+        <translation>无数据</translation>
+    </message>
+    <message>
+        <source>Merge requires at least 2 columns</source>
+        <translation>合并至少需要 2 列</translation>
+    </message>
+    <message>
+        <source>Result column name must not be empty</source>
+        <translation>结果列名不能为空</translation>
+    </message>
+    <message>
+        <source>Column "%1" already exists, please use another result name</source>
+        <translation>列“%1”已存在，请更换结果列名</translation>
+    </message>
+    <message>
+        <source>Failed to build preview sample</source>
+        <translation>预览样本构建失败</translation>
+    </message>
+    <message>
+        <source>Merge failed: %1</source>
+        <translation>合并失败：%1</translation>
+    </message>
+    <message>
+        <source>OK — merged into "%1" at column %2</source>
+        <translation>通过 — 合并为“%1”，位于第 %2 列</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADialogGroupBy</name>
+    <message>
+        <source>Group By</source>
+        <translation>分组聚合</translation>
+    </message>
+    <message>
+        <source>Group keys (multi-select)</source>
+        <translation>分组键（多选）</translation>
+    </message>
+    <message>
+        <source>Aggregate columns (multi-select)</source>
+        <translation>聚合列（多选）</translation>
+    </message>
+    <message>
+        <source>Aggregations (column / function)</source>
+        <translation>聚合设置（列 / 函数）</translation>
+    </message>
+    <message>
+        <source>Column</source>
+        <translation>列</translation>
+    </message>
+    <message>
+        <source>Function</source>
+        <translation>函数</translation>
+    </message>
+    <message>
+        <source>Preview (first %1 rows)</source>
+        <translation>预览（前 %1 行）</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>确定</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+    <message>
+        <source>No data</source>
+        <translation>无数据</translation>
+    </message>
+    <message>
+        <source>Please select at least one group key</source>
+        <translation>请至少选择一个分组键</translation>
+    </message>
+    <message>
+        <source>Please select at least one aggregation column</source>
+        <translation>请至少选择一个聚合列</translation>
+    </message>
+    <message>
+        <source>Aggregation failed: %1</source>
+        <translation>聚合失败：%1</translation>
+    </message>
+    <message>
+        <source>OK — %1 group(s) (result rows)</source>
+        <translation>通过 — 共 %1 组（结果行数）</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADialogReshape</name>
+    <message>
+        <source>Reshape</source>
+        <translation>形状变换</translation>
+    </message>
+    <message>
+        <source>Unpivot / Melt</source>
+        <translation>宽转长（melt）</translation>
+    </message>
+    <message>
+        <source>Transpose</source>
+        <translation>转置</translation>
+    </message>
+    <message>
+        <source>Mode</source>
+        <translation>模式</translation>
+    </message>
+    <message>
+        <source>Transpose (rows become columns)</source>
+        <translation>转置（行列互换）</translation>
+    </message>
+    <message>
+        <source>Unpivot / Melt (wide to long)</source>
+        <translation>宽转长（melt）</translation>
+    </message>
+    <message>
+        <source>ID columns (keep, multi-select)</source>
+        <translation>保留列（id_vars，多选）</translation>
+    </message>
+    <message>
+        <source>Value columns (unpivot; none = all others)</source>
+        <translation>展开列（value_vars；不选=其余全部列）</translation>
+    </message>
+    <message>
+        <source>Variable column name:</source>
+        <translation>变量名列名：</translation>
+    </message>
+    <message>
+        <source>Value column name:</source>
+        <translation>值列名：</translation>
+    </message>
+    <message>
+        <source>Replace current table in place (default: create a new dataset)</source>
+        <translation>就地替换当前表（默认：产出新数据集）</translation>
+    </message>
+    <message>
+        <source>Preview (first %1 rows of a sample)</source>
+        <translation>预览（样本前 %1 行）</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>确定</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+    <message>
+        <source>No data</source>
+        <translation>无数据</translation>
+    </message>
+    <message>
+        <source>Failed to build preview sample</source>
+        <translation>预览样本构建失败</translation>
+    </message>
+    <message>
+        <source>Column "%1" is in both ID and value columns</source>
+        <translation>列“%1”同时出现在保留列与展开列</translation>
+    </message>
+    <message>
+        <source>No column left to unpivot (all columns are kept as ID)</source>
+        <translation>没有可展开的列（全部列都被设为保留列）</translation>
+    </message>
+    <message>
+        <source>Variable/value column names must not be empty</source>
+        <translation>变量名/值列名不能为空</translation>
+    </message>
+    <message>
+        <source>Reshape failed: %1</source>
+        <translation>形状变换失败：%1</translation>
+    </message>
+    <message>
+        <source> — exceeds the %1-row guard, confirmation required on OK</source>
+        <translation> — 超过 %1 行守卫，点确定时需确认</translation>
+    </message>
+    <message>
+        <source>OK — estimated output rows: %1 (rows %2 x unpivoted columns %3)%4</source>
+        <translation>通过 — 预估输出行数：%1（%2 行 × %3 展开列）%4</translation>
+    </message>
+    <message>
+        <source>OK — result will have %1 row(s) (original columns) and one column per original row plus the "index" name column</source>
+        <translation>通过 — 结果将有 %1 行（原列数），列为原行索引 + “index” 命名列</translation>
+    </message>
+    <message>
+        <source>Melt Scale Guard</source>
+        <translation>melt 规模守卫</translation>
+    </message>
+    <message>
+        <source>The melt operation is estimated to produce %1 rows (limit %2), which may consume a large amount of memory. Force continue?</source>
+        <translation>melt 预估产出 %1 行（上限 %2），可能占用大量内存。强制继续？</translation>
     </message>
 </context>
 </TS>
