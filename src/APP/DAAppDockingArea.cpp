@@ -27,6 +27,7 @@
 #include "DADataManageWidget.h"
 // message相关
 #include "DAMessageLogViewWidget.h"
+#include "DAUndoHistoryWidget.h"
 // workflow相关
 #include "DAPyNodeGraphicsItem.h"
 #include "DAPyWorkFlowNodeListWidget.h"
@@ -77,6 +78,9 @@ void DAAppDockingArea::resetText()
     mDataOperateDock->setWindowTitle(tr("Data Operate"));          // cn:数据操作
     mSettingContainerDock->setWindowTitle(tr("Setting"));          // cn:设置
     mMessageLogDock->setWindowTitle(tr("Log"));                    // cn:消息
+    if (mUndoHistoryDock) {
+        mUndoHistoryDock->setWindowTitle(tr("Undo History"));      // cn:撤销历史
+    }
     mAgentDock->setWindowTitle(tr("Agent Assistant"));  // cn:Agent 助手
     mDataLinkTableDock->setWindowTitle(tr("Data Link Table"));  // cn:数据联动表
 }
@@ -255,6 +259,12 @@ void DAAppDockingArea::buildDockingArea()
     mMessageLogDock->setIcon(QIcon(":/app/bright/Icon/showInfomation.svg"));
     dockManager()->addAutoHideDockWidget(ads::SideBarRight, mMessageLogDock);
 
+    // 撤销历史面板 —— 同日志窗口：pin 到右侧边栏 auto-hide（005 T1.21）
+    mUndoHistoryDock = new ads::CDockWidget(dockManager(), QString::fromUtf8(UiNames::Dock::UndoHistoryWidgetDock));
+    mUndoHistoryDock->setWidget(mUndoHistoryWidget);
+    mUndoHistoryDock->setIcon(QIcon(":/DAGui/icon/undo-history.svg"));
+    dockManager()->addAutoHideDockWidget(ads::SideBarRight, mUndoHistoryDock);
+
     // 设置dock的区域大小,默认为左1：中间4：右：1
     resetDefaultSplitterSizes();
 #if 0
@@ -328,6 +338,9 @@ void DAAppDockingArea::buildOtherWidgets()
     // 日志窗口
     mMessageLogViewWidget = new DAMessageLogViewWidget(mApp);
     mMessageLogViewWidget->setObjectName(QString::fromUtf8(UiNames::Dock::MessageLogViewWidget));
+    // 撤销历史面板（005 T1.21，widget 在 DAGui；QUndoGroup 绑定与深度配置接线在 DAAppController）
+    mUndoHistoryWidget = new DAUndoHistoryWidget(mApp);
+    mUndoHistoryWidget->setObjectName(QString::fromUtf8(UiNames::Dock::UndoHistoryWidget));
 }
 
 /**
@@ -499,6 +512,24 @@ ads::CDockWidget* DAAppDockingArea::getSettingContainerDock() const
 ads::CDockWidget* DAAppDockingArea::getMessageLogDock() const
 {
     return mMessageLogDock;
+}
+
+/**
+ * @brief 撤销历史面板（005 T1.21）
+ * @return 非空（buildOtherWidgets 创建）
+ */
+DAUndoHistoryWidget* DAAppDockingArea::getUndoHistoryWidget() const
+{
+    return mUndoHistoryWidget;
+}
+
+/**
+ * @brief 撤销历史面板 dock
+ * @return 可能为 nullptr（dock 构建前）
+ */
+ads::CDockWidget* DAAppDockingArea::getUndoHistoryDock() const
+{
+    return mUndoHistoryDock;
 }
 
 /**

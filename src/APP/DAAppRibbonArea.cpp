@@ -411,6 +411,7 @@ void DAAppRibbonArea::buildRibbonViewCategory()
     mPannelViewMainView->addMediumAction(mActions->actionShowDataManagerArea);
     mPannelViewMainView->addSeparator();
     mPannelViewMainView->addSmallAction(mActions->actionShowMessageLogView);
+    mPannelViewMainView->addSmallAction(mActions->actionShowUndoHistory);  // 005 T1.21 撤销历史面板（点击即 raise）
     mPannelViewMainView->addSmallAction(mActions->actionShowSettingWidget);
     mPannelViewMainView->addSeparator();
     mPannelViewMainView->addMediumAction(mActions->actionShowLeftSideBar);

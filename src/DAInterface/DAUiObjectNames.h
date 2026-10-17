@@ -163,6 +163,8 @@ constexpr char InsertNote[]                 = "actionInsertNote";               
 constexpr char EditNote[]                   = "actionEditNote";                   ///< 编辑批注（005 T1.26）
 constexpr char DeleteNote[]                 = "actionDeleteNote";                 ///< 删除批注（005 T1.26）
 constexpr char ClearNotes[]                 = "actionClearNotes";                 ///< 清除本表批注（005 T1.26）
+// ---- 撤销历史（005 T1.21，Ribbon「视图」页入口，点击即 raise）----
+constexpr char ShowUndoHistory[]            = "actionShowUndoHistory";            ///< 显示撤销历史面板（005 T1.21）
 // ---- 绘图 ----
 constexpr char AddFigure[]                  = "actionAddFigure";
 constexpr char FigureNewXYAxis[]            = "actionFigureNewXYAxis";
@@ -286,6 +288,7 @@ constexpr char DataOperateWidget[]      = "da_dataOperateWidget";
 constexpr char DataManageWidget[]       = "da_dataManageWidget";
 constexpr char SettingContainerWidget[] = "da_settingContainerWidget";
 constexpr char MessageLogViewWidget[]   = "da_messageLogViewWidget";
+constexpr char UndoHistoryWidget[]      = "da_undoHistoryWidget";  ///< 撤销历史面板（005 T1.21，widget 在 DAGui）
 constexpr char AgentDockWidget[]        = "da_agentDockWidget";
 constexpr char MarkdownView[]           = "da_markdownView";
 constexpr char DataLinkTableWidget[]    = "da_dataLinkTableWidget";
@@ -299,6 +302,7 @@ constexpr char DataManageWidgetDock[]       = "da_dataManageWidgetDock";
 constexpr char SettingDock[]                = "da_settingDock";
 constexpr char AgentDockWidgetDock[]        = "da_agentDockWidgetDock";
 constexpr char MessageLogViewWidgetDock[]   = "da_messageLogViewWidgetDock";
+constexpr char UndoHistoryWidgetDock[]      = "da_undoHistoryWidgetDock";
 constexpr char MarkdownViewDock[]           = "da_markdownViewDock";
 constexpr char DataLinkTableWidgetDock[]    = "da_dataLinkTableWidgetDock";
 }  // namespace Dock

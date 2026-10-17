@@ -365,6 +365,10 @@ private Q_SLOTS:
     void onActionNoteTriggered();
     void onActionDeleteNoteTriggered();
     void onActionClearNotesTriggered();
+    // 撤销历史面板（005 T1.21，Ribbon「视图」页；入口选 (a) 点击即 raise，与现有交互一致）
+    void onActionShowUndoHistoryTriggered();
+    // 历史面板调整撤销深度：写回配置（dawork-config.xml）并施加到全部已打开数据页
+    void onUndoHistoryLimitChangeRequested(int limit);
     // 选中区样式反向同步 ribbon 控件
     void onTableStyleCurrentChanged(const DATableCellStyle& style);
     // 表格列显示格式

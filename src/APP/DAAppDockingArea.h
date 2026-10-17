@@ -31,6 +31,7 @@ class DADataOperateWidget;
 class DASettingContainerWidget;
 // 日志窗口
 class DAMessageLogViewWidget;
+class DAUndoHistoryWidget;
 // Agent 窗口
 class DAAgentDockWidget;
 // 数据联动表窗口
@@ -85,6 +86,10 @@ public:
 
     // 信息窗口dock
     ads::CDockWidget* getMessageLogDock() const override;
+
+    // 撤销历史面板（005 T1.21，widget 在 DAGui、APP 只做挂载接线，D0）
+    DAUndoHistoryWidget* getUndoHistoryWidget() const;
+    ads::CDockWidget* getUndoHistoryDock() const;
 
     // 设置窗口dock
     ads::CDockWidget* getSettingContainerDock() const override;
@@ -178,6 +183,9 @@ private:
     // 日志窗口
     DAMessageLogViewWidget* mMessageLogViewWidget { nullptr };  ///< 日志窗口
     ads::CDockWidget* mMessageLogDock { nullptr };
+    // 撤销历史面板（005 T1.21）
+    DAUndoHistoryWidget* mUndoHistoryWidget { nullptr };
+    ads::CDockWidget* mUndoHistoryDock { nullptr };
 
     // Agent 窗口
     DAAgentDockWidget* mAgentDockWidget { nullptr };  ///< Agent 助手窗口

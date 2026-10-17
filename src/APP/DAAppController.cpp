@@ -33,6 +33,7 @@
 #include "DAAppRibbonArea.h"
 #include "DAAppDockingArea.h"
 #include "DAAppCommand.h"
+#include "DAUndoHistoryWidget.h"
 #include "DAAppActions.h"
 #include "DAAppDataManager.h"
 #include "DAProjectInterface.h"
@@ -565,6 +566,7 @@ void DAAppController::initConnection()
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowDataArea, onActionShowDataAreaTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowDataManagerArea, onActionShowDataManagerAreaTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowMessageLogView, onActionShowMessageLogViewTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowUndoHistory, onActionShowUndoHistoryTriggered);  // 005 T1.21 撤销历史面板
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowSettingWidget, onActionSettingWidgetTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowRightSideBar, onActionShowRightSideBarTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowLeftSideBar, onActionShowLeftSideBarTriggered);
@@ -641,6 +643,21 @@ void DAAppController::initConnection()
     // DADataOperateWidget
     DADataOperateWidget* dow = mDock->getDataOperateWidget();
     connect(dow, &DADataOperateWidget::dataTableCreated, this, &DAAppController::onDataOperatePageCreated);
+    // 撤销历史面板（005 T1.21）：QUndoGroup 由 APP 注入（DAGui 不依赖 DAInterface，D0 分层）；
+    // 深度初值读配置；面板调深度 → 写回配置 + 施加全部已打开数据页（R19）
+    if (DAUndoHistoryWidget* uh = mDock->getUndoHistoryWidget()) {
+        if (mCommand) {
+            uh->setUndoGroup(&mCommand->undoGroup());
+        }
+        if (mConfig) {
+            bool limitOk = false;
+            const int cfgLimit = mConfig->value(DA_CONFIG_KEY_UNDO_STACK_LIMIT).toInt(&limitOk);
+            if (limitOk && cfgLimit > 0) {
+                uh->setUndoLimit(cfgLimit);
+            }
+        }
+        connect(uh, &DAUndoHistoryWidget::undoLimitChangeRequested, this, &DAAppController::onUndoHistoryLimitChangeRequested);
+    }
     // DAChartManager
     DAChartManageWidget* cmw = mDock->getChartManageWidget();
     connect(cmw, &DAChartManageWidget::figureElementClicked, this, &DAAppController::onFigureElementClicked);
@@ -1490,6 +1507,15 @@ void DAAppController::onDataOperatePageCreated(DADataOperatePageWidget* page)
 {
     if (mCommand) {
         mCommand->addStack(page->getUndoStack());
+    }
+    // 撤销栈深度从配置施加（005 T1.21 R19：默认 20，历史面板可调大；配置在 APP 侧读写，
+    // DAGui 只暴露 undoLimit()/setUndoLimit(int)，严禁反向依赖）
+    if (mConfig && page) {
+        bool limitOk = false;
+        const int cfgLimit = mConfig->value(DA_CONFIG_KEY_UNDO_STACK_LIMIT).toInt(&limitOk);
+        if (limitOk && cfgLimit > 0) {
+            page->setUndoLimit(cfgLimit);
+        }
     }
     switch (page->getDataOperatePageType()) {
     case DADataOperatePageWidget::DataOperateOfDataFrame: {
@@ -3742,6 +3768,44 @@ void DAAppController::onActionClearNotesTriggered()
         return;
     }
     dfopt->clearAllNotes();
+}
+
+/**
+ * @brief 显示撤销历史面板（005 T1.21，Ribbon「视图」页）
+ *
+ * 入口选 (a)「点击即 raise」：与现有全部面板入口交互一致（APP 无勾选式入口先例，
+ * 面板可由 dock 关闭按钮收起，勾选态收益低）。
+ */
+void DAAppController::onActionShowUndoHistoryTriggered()
+{
+    if (mDock && mDock->getUndoHistoryWidget()) {
+        mDock->raiseDockByWidget((QWidget*)(mDock->getUndoHistoryWidget()));
+    }
+}
+
+/**
+ * @brief 历史面板调整撤销深度（005 T1.21 R19）
+ *
+ * 写回配置（dawork-config.xml，DA_CONFIG_KEY_UNDO_STACK_LIMIT）并施加到全部已打开
+ * 数据页撤销栈；新建页面在 onDataOperatePageCreated 读同一配置。调大风险只来自
+ * Swap 类命令的旧对象驻留内存（快照命令 pickle 到临时文件，吃磁盘不吃内存）。
+ * @param limit 新深度（>0；面板 SpinBox 下限 1）
+ */
+void DAAppController::onUndoHistoryLimitChangeRequested(int limit)
+{
+    if (limit <= 0) {
+        return;
+    }
+    if (mConfig) {
+        mConfig->setProperty(DA_CONFIG_KEY_UNDO_STACK_LIMIT, limit);
+        mConfig->saveConfig();
+    }
+    if (DADataOperateWidget* dow = getDataOperateWidget()) {
+        const auto pages = dow->getAllDataFrameWidgets();
+        for (DADataOperateOfDataFrameWidget* page : pages) {
+            page->setUndoLimit(limit);
+        }
+    }
 }
 
 /**

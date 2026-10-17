@@ -236,6 +236,7 @@ public:
     QAction* actionShowDataArea;
     QAction* actionShowDataManagerArea;  ///< 显示数据管理区域
     QAction* actionShowMessageLogView;
+    QAction* actionShowUndoHistory { nullptr };  ///< 显示撤销历史面板（005 T1.21，视图页，点击即 raise）
     QAction* actionShowSettingWidget;
     QAction* actionShowLeftSideBar;   ///< 显示/隐藏左边侧边栏
     QAction* actionShowRightSideBar;  ///< 显示/隐藏右边侧边栏

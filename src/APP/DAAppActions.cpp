@@ -304,6 +304,7 @@ void DAAppActions::buildViewAction()
     actionShowDataArea         = createAction(UiNames::Action::ShowDataArea, ":/app/bright/Icon/showTable.svg");
     actionShowDataManagerArea  = createAction(UiNames::Action::ShowDataManagerArea, ":/app/bright/Icon/data-manager-view.svg");
     actionShowMessageLogView   = createAction(UiNames::Action::ShowMessageLogView, ":/app/bright/Icon/showInfomation.svg");
+    actionShowUndoHistory      = createAction(UiNames::Action::ShowUndoHistory, ":/DAGui/icon/undo-history.svg");  // 005 T1.21（图标取 DAGui 图标库）
     actionShowSettingWidget    = createAction(UiNames::Action::ShowSettingWidget, ":/app/bright/Icon/showSettingWidget.svg");
     actionShowLeftSideBar = createAction(UiNames::Action::ShowLeftSideBar, ":/app/bright/Icon/left-sider-bar.svg", true, true);
     actionShowRightSideBar = createAction(UiNames::Action::ShowRightSideBar, ":/app/bright/Icon/right-sider-bar.svg", true, true);
@@ -779,6 +780,8 @@ void DAAppActions::retranslateUi()
     actionShowDataManagerArea->setToolTip(tr("Show the data manager area"));          // cn:显示数据管理区域
     actionShowMessageLogView->setText(tr("Show Information Window"));                  // cn:信息窗口
     actionShowMessageLogView->setToolTip(tr("Show the message log window"));          // cn:显示信息窗口
+    actionShowUndoHistory->setText(tr("Undo History"));                                // cn:撤销历史
+    actionShowUndoHistory->setToolTip(tr("Show the undo history panel (follows the active page, click an entry to undo/redo to it)"));  // cn:显示撤销历史面板（跟随当前激活页面，点击条目可回退/前进）
     actionShowSettingWidget->setText(tr("Show Setting Window"));                      // cn:设置窗口
     actionShowSettingWidget->setToolTip(tr("Show the setting window"));               // cn:显示设置窗口
     actionShowLeftSideBar->setText(tr("Show Left \nSide Bar"));                       // cn:显示左侧边栏

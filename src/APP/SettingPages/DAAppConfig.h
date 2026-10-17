@@ -112,6 +112,10 @@
  *@def 操作窗口内部标签页(工作流页/图表/数据表)方位："bottom"=下方(默认)，"top"=上方；应用设置后立即生效
  */
 #define DA_CONFIG_KEY_DOCK_TAB_POSITION "dock-tab-position"
+/**
+ *@def 数据页撤销栈深度上限(005 T1.21 R19)：默认 20，撤销历史面板可调大；0=无限制
+ */
+#define DA_CONFIG_KEY_UNDO_STACK_LIMIT "undo-stack-limit"
 
 namespace DA
 {
