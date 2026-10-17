@@ -39,7 +39,10 @@ DADataAbstractUndoCommand* DAAppCommand::beginDataOperateCommand(
         mDataOperateCommand = std::make_unique< DADataObjectSwapUndoCommand >();
     }
     mDataOperateCommand->setSkipFirstRedo(isSkipFirstRedo);
-    mDataOperateCommand->setText(text);
+    // 空文案不覆盖命令构造时的默认 tr() 文案（005 T1.21 红线5：面板不允许空白条目）
+    if (!text.isEmpty()) {
+        mDataOperateCommand->setText(text);
+    }
     mDataOperateCommand->setOldData(data);
     return mDataOperateCommand.get();
 }

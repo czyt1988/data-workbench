@@ -25,6 +25,7 @@ DACommandWorkFlowSceneAddBackgroundPixmap::DACommandWorkFlowSceneAddBackgroundPi
                                                                                      QUndoCommand* parent)
     : QUndoCommand(parent), mScene(scene), mNeedDeleteOldItem(false), mNeedDeleteNewItem(false)
 {
+	setText(QObject::tr("Set workflow background image"));  // cn:设置工作流背景图
 	mOldItem = mScene->getBackgroundPixmapItem();
 	if (mOldItem) {
 		mNeedDeleteOldItem = true;
@@ -98,6 +99,7 @@ DACommandGraphicsShapeBorderPenChange::DACommandGraphicsShapeBorderPenChange(con
                                                                              QUndoCommand* parent)
     : QUndoCommand(parent), mItems(items), mNewPen(p)
 {
+	setText(QObject::tr("Change shape border"));  // cn:修改图元边框
 	mNewIsShow = p.style() != Qt::NoPen;
 	for (const DAGraphicsItem* i : items) {
 		mOldIsShow.append(i->isShowBorder());
@@ -150,6 +152,7 @@ DACommandGraphicsShapeBackgroundBrushChange::DACommandGraphicsShapeBackgroundBru
                                                                                          QUndoCommand* parent)
     : QUndoCommand(parent), mItems(items), mNewBrush(v)
 {
+	setText(QObject::tr("Change shape background"));  // cn:修改图元背景
 	mNewIsShow = v.style() != Qt::NoBrush;
 	for (const DAGraphicsItem* i : items) {
 		mOldIsShow.append(i->isShowBackground());
@@ -203,6 +206,7 @@ DACommandGraphicsStandardTextItemsChangeFont::DACommandGraphicsStandardTextItems
     QUndoCommand* parent)
     : QUndoCommand(parent), mItems(items), mNewFonts(newfonts)
 {
+	setText(QObject::tr("Change text font"));  // cn:修改文本字体
 	for (const DAGraphicsStandardTextItem* i : items) {
 		mOldFonts.append(i->font());
 	}
@@ -254,6 +258,7 @@ DACommandGraphicsTextItemsChangeFont::DACommandGraphicsTextItemsChangeFont(const
                                                                            QUndoCommand* parent)
     : QUndoCommand(parent), mItems(items), mNewFonts(newfonts)
 {
+	setText(QObject::tr("Change text font"));  // cn:修改文本字体
 	for (const DAGraphicsTextItem* i : items) {
 		mOldFonts.append(i->getSelectTextFont());
 	}
@@ -305,6 +310,7 @@ DACommandGraphicsStandardTextItemsChangeColor::DACommandGraphicsStandardTextItem
     QUndoCommand* parent)
     : QUndoCommand(parent), mItems(items), mNewColors(newcolors)
 {
+	setText(QObject::tr("Change text color"));  // cn:修改文本颜色
 	for (const DAGraphicsStandardTextItem* i : items) {
 		mOldColors.append(i->defaultTextColor());
 	}
@@ -355,6 +361,7 @@ DACommandGraphicsTextItemsChangeColor::DACommandGraphicsTextItemsChangeColor(con
                                                                              QUndoCommand* parent)
     : QUndoCommand(parent), mItems(items), mNewColors(newcolors)
 {
+	setText(QObject::tr("Change text color"));  // cn:修改文本颜色
 	for (const DAGraphicsTextItem* i : items) {
 		mOldColors.append(i->getSelectTextColor());
 	}
@@ -408,6 +415,7 @@ DACommandGraphicsStandardTextItemsChangeHtml::DACommandGraphicsStandardTextItems
     QUndoCommand* parent)
     : QUndoCommand(parent), mItems(items), mOldHtml(oldhtml), mSkipFirstRedo(skipFirstRedo)
 {
+	setText(QObject::tr("Edit text content"));  // cn:编辑文本内容
 	for (const DAGraphicsStandardTextItem* i : items) {
 		mNewHtml.append(i->toHtml());
 	}
@@ -464,6 +472,7 @@ DACommandGraphicsTextItemsChangeHtml::DACommandGraphicsTextItemsChangeHtml(const
                                                                            QUndoCommand* parent)
     : QUndoCommand(parent), mItems(items), mOldHtml(oldhtml), mSkipFirstRedo(skipFirstRedo)
 {
+	setText(QObject::tr("Edit text content"));  // cn:编辑文本内容
 	for (const DAGraphicsTextItem* i : items) {
 		mNewHtml.append(i->toHtml());
 	}

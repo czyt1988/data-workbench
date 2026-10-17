@@ -3,6 +3,7 @@
 #include <QFile>
 #include <QUuid>
 #include <QDebug>
+#include <QObject>
 #include "DADataManager.h"
 #include "DAPybind11QtCaster.hpp"
 
@@ -63,6 +64,9 @@ void DADataAbstractUndoCommand::consumeSkipFirstRedo()
  */
 DADataObjectSwapUndoCommand::DADataObjectSwapUndoCommand(QUndoCommand* par) : DADataAbstractUndoCommand(par)
 {
+    // 默认文案（005 T1.21 红线5：撤销面板不允许空白条目）；
+    // 正常路径由 DAAppCommand::beginDataOperateCommand 的调用方 setText 覆盖为具体操作名
+    setText(QObject::tr("Replace data object"));  // cn:替换数据对象
 }
 
 /**
@@ -135,6 +139,8 @@ void DADataObjectSwapUndoCommand::redo()
  */
 DADataObjectPersistUndoCommand::DADataObjectPersistUndoCommand(QUndoCommand* par) : DADataAbstractUndoCommand(par)
 {
+    // 默认文案（005 T1.21 红线5：撤销面板不允许空白条目）；调用方 setText 覆盖为具体操作名
+    setText(QObject::tr("Modify data (persisted snapshot)"));  // cn:修改数据（持久化快照）
     if (!g_tempDir.isValid()) {
         qDebug() << "invalid temp dir,can not create temporary dir";
     }
