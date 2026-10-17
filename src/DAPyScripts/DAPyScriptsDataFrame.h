@@ -85,8 +85,47 @@ public:
 	bool clipoutlier(DAPyDataFrame& df, double lowervalue, double uppervalue, int axis) noexcept;
 	// querydatas()
 	bool queryDatas(DAPyDataFrame& df, const QString& expr) noexcept;
-	// searchdata()
+	// searchdata()（旧数值等值入口，仅为插件旧检索对话框保留，插件收口后移除）
 	QList< QPair< int, int > > searchData(const DAPyDataFrame& df, const QString& value) noexcept;
+	// 查找结果（紧凑命中数组 + 真实总数，§4.2 硬约束③：超上限截断时 totalHits > rows.size()）
+	struct SearchDataResult
+	{
+		QVector< int > rows;        ///< 命中行（数据源绝对行号，行主序）
+		QVector< int > cols;        ///< 命中列
+		int totalHits        = 0;   ///< 真实命中总数（含被截断部分）
+		bool ok              = false;  ///< 调用是否成功（无效正则等抛错为 false）
+		bool truncated() const
+		{
+			return totalHits > rows.size();
+		}
+	};
+	// 查找（扩展选项，对应 da_search_data）：大小写/正则/整格 + 行/列范围闭区间
+	//（nullopt=不限），命中超 maxHits 截断（totalHits 返回真实总数）
+	SearchDataResult searchData(const DAPyDataFrame& df,
+	                            const QString& value,
+	                            bool caseSensitive,
+	                            bool useRegex,
+	                            bool wholeCell,
+	                            const std::optional< QPair< int, int > >& rowRange = std::nullopt,
+	                            const std::optional< QPair< int, int > >& colRange = std::nullopt,
+	                            int maxHits                                       = 100000) noexcept;
+	// 查找替换（对应 da_find_and_replace）：按同一匹配语义就地替换，
+	// 变更清单输出到 rows/cols/oldValues/newValues（Python list，值记录撤销用 D4）；
+	// 出参可空（超阈值降级路径只要替换结果不要清单）。正则无效等抛错返回 false
+	bool findReplace(DAPyDataFrame& df,
+	                 const QString& find,
+	                 const QString& replace,
+	                 bool caseSensitive,
+	                 bool useRegex,
+	                 bool wholeCell,
+	                 const std::optional< QPair< int, int > >& rowRange = std::nullopt,
+	                 const std::optional< QPair< int, int > >& colRange = std::nullopt,
+	                 QVector< int >* rows                               = nullptr,
+	                 QVector< int >* cols                               = nullptr,
+	                 pybind11::list* oldValues                          = nullptr,
+	                 pybind11::list* newValues                          = nullptr) noexcept;
+	// 按变更清单批量写回单元格值（对应 da_write_cells，替换命令 undo/redo 用）
+	bool writeCells(DAPyDataFrame& df, const QVector< int >& rows, const QVector< int >& cols, const pybind11::list& values) noexcept;
 	// eval
 	bool evalDatas(DAPyDataFrame& df, const QString& expr) noexcept;
 	// 排序sort()（旧单键入口，仅为插件旧排序命令保留，插件收口后移除）

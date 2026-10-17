@@ -674,33 +674,187 @@ bool DAPyScriptsDataFrame::queryDatas(DAPyDataFrame& df, const QString& expr) no
     return false;
 }
 
+namespace
+{
 /**
- * @brief search方法的wrapper
+ * @brief python 整型数组（numpy int32/int64 或 list）→ QVector<int>（缓冲整体拷贝，避免逐元素 cast）
+ */
+QVector< int > pyIntSequenceToVector(const pybind11::object& obj)
+{
+    QVector< int > res;
+    if (obj.is_none()) {
+        return res;
+    }
+    pybind11::array_t< int, pybind11::array::c_style | pybind11::array::forcecast > arr(obj);
+    const auto buf = arr.request();
+    const int* ptr = static_cast< const int* >(buf.ptr);
+    const int n    = static_cast< int >(buf.size);
+    res.reserve(n);
+    for (int i = 0; i < n; ++i) {
+        res.append(ptr[ i ]);
+    }
+    return res;
+}
+
+/**
+ * @brief 行/列范围闭区间 → python tuple（nullopt → None）
+ */
+pybind11::object rangeToPyTuple(const std::optional< QPair< int, int > >& range)
+{
+    if (!range) {
+        return pybind11::none();
+    }
+    return pybind11::make_tuple(range->first, range->second);
+}
+}
+
+/**
+ * @brief search方法的wrapper（旧数值等值入口，插件收口后移除）
+ *
+ * 旧实现把关键字 value.toDouble() 后传给算子——文本永远搜不到（002 计划 §WP2 步骤 2
+ * 要求同批改掉）。现委托给扩展版 searchData（文本/数值统一语义），仅保留旧返回形态。
  * @param df
- * @param value 要搜索的值（字符串形式，内部会转为数值进行匹配）
- * @return
+ * @param value 要搜索的值
+ * @return 命中位置列表（行主序）
  */
 QList< QPair< int, int > > DAPyScriptsDataFrame::searchData(const DAPyDataFrame& df, const QString& value) noexcept
 {
     QList< QPair< int, int > > matches;
+    const SearchDataResult res = searchData(df, value, false, false, false);
+    const int n                = qMin(res.rows.size(), res.cols.size());
+    matches.reserve(n);
+    for (int i = 0; i < n; ++i) {
+        matches.append(qMakePair(res.rows.at(i), res.cols.at(i)));
+    }
+    return matches;
+}
+
+/**
+ * @brief search方法的wrapper（扩展选项，§4.2）
+ *
+ * 对应 da_dataframe.da_search_data：大小写/正则/整格匹配 + 行/列范围闭区间；
+ * 命中上限 maxHits 截断（硬约束③），totalHits 返回真实命中总数；
+ * 无效正则等 Python 抛错时 ok=false（经 dealException 记录）。
+ * @param df 目标数据
+ * @param value 关键字（空串直接返回空结果）
+ * @param caseSensitive 区分大小写
+ * @param useRegex 正则（只作用文本类列）
+ * @param wholeCell 整格匹配
+ * @param rowRange 行范围闭区间（nullopt=全表）
+ * @param colRange 列范围闭区间（nullopt=全表）
+ * @param maxHits 命中上限（默认 10 万）
+ * @return 紧凑命中数组 + 真实总数
+ */
+DAPyScriptsDataFrame::SearchDataResult DAPyScriptsDataFrame::searchData(const DAPyDataFrame& df,
+                                                                        const QString& value,
+                                                                        bool caseSensitive,
+                                                                        bool useRegex,
+                                                                        bool wholeCell,
+                                                                        const std::optional< QPair< int, int > >& rowRange,
+                                                                        const std::optional< QPair< int, int > >& colRange,
+                                                                        int maxHits) noexcept
+{
+    SearchDataResult res;
     try {
         if (value.isEmpty()) {
-            return matches;
+            res.ok = true;
+            return res;
         }
         pybind11::object da_search_data = attr("da_search_data");
-        pybind11::object result         = da_search_data(df.object(), value.toDouble());
-
-        for (auto item : result) {
-            pybind11::tuple pos = item.cast< pybind11::tuple >();
-            matches.append(qMakePair(pos[ 0 ].cast< int >(),  // 行
-                                     pos[ 1 ].cast< int >()   // 列
-                                     ));
-        }
-        return matches;
+        pybind11::dict args;
+        args[ "case_sensitive" ] = caseSensitive;
+        args[ "use_regex" ]      = useRegex;
+        args[ "whole_cell" ]     = wholeCell;
+        args[ "row_range" ]      = rangeToPyTuple(rowRange);
+        args[ "col_range" ]      = rangeToPyTuple(colRange);
+        args[ "max_hits" ]       = maxHits;
+        pybind11::object result  = da_search_data(df.object(), DA::PY::toPyObject(value), pybind11::none(), pybind11::none(), **args);
+        pybind11::tuple t        = result.cast< pybind11::tuple >();
+        res.rows                 = pyIntSequenceToVector(t[ 0 ]);
+        res.cols                 = pyIntSequenceToVector(t[ 1 ]);
+        res.totalHits            = t[ 2 ].cast< int >();
+        res.ok                   = true;
+        return res;
     } catch (const std::exception& e) {
         dealException(e);
     }
-    return matches;
+    return res;
+}
+
+/**
+ * @brief 查找替换的wrapper（对应 da_find_and_replace）
+ *
+ * 按与 searchData 同一匹配语义就地替换，变更清单输出到出参（D4 值记录撤销）；
+ * old/new 值为 Python list（元素为原生标量），供 da_write_cells 撤销/重做写回。
+ * 出参可为空指针（超阈值降级路径只要替换结果、不要清单）。
+ * @return 成功返回true；正则无效等抛错返回false（经dealException记录）
+ */
+bool DAPyScriptsDataFrame::findReplace(DAPyDataFrame& df,
+                                       const QString& find,
+                                       const QString& replace,
+                                       bool caseSensitive,
+                                       bool useRegex,
+                                       bool wholeCell,
+                                       const std::optional< QPair< int, int > >& rowRange,
+                                       const std::optional< QPair< int, int > >& colRange,
+                                       QVector< int >* rows,
+                                       QVector< int >* cols,
+                                       pybind11::list* oldValues,
+                                       pybind11::list* newValues) noexcept
+{
+    if (find.isEmpty()) {
+        return false;
+    }
+    try {
+        pybind11::object da_find_and_replace = attr("da_find_and_replace");
+        pybind11::dict args;
+        args[ "case_sensitive" ] = caseSensitive;
+        args[ "use_regex" ]      = useRegex;
+        args[ "whole_cell" ]     = wholeCell;
+        args[ "row_range" ]      = rangeToPyTuple(rowRange);
+        args[ "col_range" ]      = rangeToPyTuple(colRange);
+        pybind11::object result  = da_find_and_replace(df.object(), DA::PY::toPyObject(find), DA::PY::toPyObject(replace), **args);
+        pybind11::tuple t        = result.cast< pybind11::tuple >();
+        if (rows) {
+            *rows = pyIntSequenceToVector(t[ 0 ]);
+        }
+        if (cols) {
+            *cols = pyIntSequenceToVector(t[ 1 ]);
+        }
+        if (oldValues) {
+            *oldValues = t[ 2 ].cast< pybind11::list >();
+        }
+        if (newValues) {
+            *newValues = t[ 3 ].cast< pybind11::list >();
+        }
+        return true;
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return false;
+}
+
+/**
+ * @brief 按变更清单批量写回单元格值的wrapper（对应 da_write_cells）
+ * @param df 数据（就地修改）
+ * @param rows 行位置
+ * @param cols 列位置
+ * @param values 值（Python list，与 rows/cols 一一对应）
+ * @return 成功返回true
+ */
+bool DAPyScriptsDataFrame::writeCells(DAPyDataFrame& df, const QVector< int >& rows, const QVector< int >& cols, const pybind11::list& values) noexcept
+{
+    if (rows.isEmpty()) {
+        return true;
+    }
+    try {
+        pybind11::object da_write_cells = attr("da_write_cells");
+        da_write_cells(df.object(), DA::PY::toPyObject(rows), DA::PY::toPyObject(cols), values);
+        return true;
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return false;
 }
 
 /**
