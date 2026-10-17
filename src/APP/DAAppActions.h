@@ -100,6 +100,8 @@ public:
     QAction* actionFind { nullptr };                ///< 表内查找（002 T1.4；快捷键在 DADataTableView，此处不设 shortcut 红线5）
     QAction* actionReplace { nullptr };             ///< 表内替换（002 T1.4）
     QAction* actionConditionalFormat { nullptr };   ///< 条件格式（003 T1.5，Table Style 面板 + 表体右键同入口，R16）
+    QAction* actionComputedColumn { nullptr };              ///< 计算列（004 T1.23，Data Tools 面板 + 表体右键同入口）
+    QAction* actionRecomputeAllComputedColumns { nullptr }; ///< 全部重算计算列（004 T1.23，Data Tools 面板）
 
     //===================================================
     // workflow的上下文标签

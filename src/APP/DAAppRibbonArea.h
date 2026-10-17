@@ -281,6 +281,8 @@ private:
     DATableDisplayFormatComboBox* mComboxDisplayFormat { nullptr };          ///< 列显示格式选择器
     // 编辑 panel（002 T1.4：查找/替换；005 填充也进此面板）
     SARibbonPanel* mPannelDataframeOperateEdit { nullptr };                  ///< 编辑面板
+    // 数据工具 panel（004：计算列/分列/合列/分组/转置/melt）
+    SARibbonPanel* mPannelDataframeOperateDataTools { nullptr };            ///< 数据工具面板
     // 表格样式 category
     SARibbonCategory* mCategoryDataframeStyle { nullptr };    ///< dataframe表格样式category
     SARibbonPanel* mPannelDataframeStyleFill { nullptr };     ///< 底色面板

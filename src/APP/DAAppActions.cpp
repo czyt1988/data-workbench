@@ -119,6 +119,9 @@ void DAAppActions::buildDataAction()
     actionReplace            = createAction(UiNames::Action::Replace, ":/DAGui/icon/replace.svg");
     // 条件格式 action（003 T1.5；图标取 DAGui 图标库，不引用 APP 资源）
     actionConditionalFormat  = createAction(UiNames::Action::ConditionalFormat, ":/DAGui/icon/conditional-format.svg");
+    // 数据工具 action（004；图标取 DAGui 图标库，不引用 APP 资源）
+    actionComputedColumn              = createAction(UiNames::Action::ComputedColumn, ":/DAGui/icon/computed-column.svg");
+    actionRecomputeAllComputedColumns = createAction(UiNames::Action::RecomputeAllComputedColumns, ":/DAGui/icon/refresh-all.svg");
 }
 
 void DAAppActions::buildChartAction()
@@ -655,6 +658,10 @@ void DAAppActions::retranslateUi()
     actionReplace->setToolTip(tr("Find and replace cells (Ctrl+H)"));  // cn:查找并替换单元格（Ctrl+H）
     actionConditionalFormat->setText(tr("Conditional Formatting"));   // cn:条件格式
     actionConditionalFormat->setToolTip(tr("Manage conditional formatting rules (cell rules / color scale / data bar) of the selected columns"));  // cn:管理选中列的条件格式规则（单元格规则/色阶/数据条）
+    actionComputedColumn->setText(tr("Computed Column"));             // cn:计算列
+    actionComputedColumn->setToolTip(tr("Create a column computed from a formula of other columns"));  // cn:用表达式基于其他列创建计算列
+    actionRecomputeAllComputedColumns->setText(tr("Recompute All"));  // cn:全部重算
+    actionRecomputeAllComputedColumns->setToolTip(tr("Recompute all stale/invalid computed columns of the current table"));  // cn:重算当前表全部待重算/失效的计算列
     //-----------------------------------------------------
     // workflow 编辑
     //-----------------------------------------------------

@@ -340,6 +340,10 @@ private Q_SLOTS:
     void onActionClearStyleAllTriggered();
     // 条件格式（003 T1.5，Ribbon「Table Style」面板；与表体右键菜单共用页面入口）
     void onActionConditionalFormatTriggered();
+    // 计算列（004 T1.23，Ribbon「Data Tools」面板；与表体右键菜单共用页面入口）
+    void onActionComputedColumnTriggered();
+    // 全部重算计算列（004 T1.23，Ribbon「Data Tools」面板）
+    void onActionRecomputeAllComputedColumnsTriggered();
     // 选中区样式反向同步 ribbon 控件
     void onTableStyleCurrentChanged(const DATableCellStyle& style);
     // 表格列显示格式

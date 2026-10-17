@@ -65,6 +65,7 @@ constexpr char DataFrameOperateColumnPanel[] = "da-pannel-dataframe.operate.colu
 constexpr char DataFrameOperateDTypePanel[]  = "da-pannel-dataframe.operate.type";    ///< 类型设置pannel
 constexpr char DataFrameOperateFormatPanel[] = "da-pannel-dataframe.operate.format";  ///< 显示格式pannel
 constexpr char DataFrameOperateEditPanel[]   = "da-pannel-dataframe.operate.edit";    ///< 编辑pannel（查找/替换，005 填充也进此面板）
+constexpr char DataFrameOperateDataToolsPanel[] = "da-pannel-dataframe.operate.datatools";  ///< 数据工具pannel（004：计算列/分列/合列/分组/转置/melt）
 constexpr char DataFrameStyleFillPanel[]     = "da-pannel-dataframe.style.fill";      ///< 填充样式pannel
 constexpr char DataFrameStyleFontPanel[]     = "da-pannel-dataframe.style.font";      ///< 字体样式pannel
 constexpr char DataFrameStyleClearPanel[]    = "da-pannel-dataframe.style.clear";     ///< 样式清除pannel
@@ -138,6 +139,9 @@ constexpr char TableFormatCells[]   = "actionTableFormatCells";
 constexpr char Find[]               = "actionFind";     ///< 表内查找（002 T1.4，快捷键在 DADataTableView，action 不设 shortcut 红线5）
 constexpr char Replace[]            = "actionReplace";  ///< 表内替换（002 T1.4）
 constexpr char ConditionalFormat[]  = "actionConditionalFormat";  ///< 条件格式（003 T1.5，Ribbon Table Style 面板 + 表体右键同入口，R16）
+// ---- 数据工具（004，Ribbon「Data Tools」面板 + 表体右键同入口）----
+constexpr char ComputedColumn[]             = "actionComputedColumn";             ///< 计算列（004 T1.23）
+constexpr char RecomputeAllComputedColumns[] = "actionRecomputeAllComputedColumns";  ///< 全部重算计算列（004 T1.23）
 // ---- 绘图 ----
 constexpr char AddFigure[]                  = "actionAddFigure";
 constexpr char FigureNewXYAxis[]            = "actionFigureNewXYAxis";

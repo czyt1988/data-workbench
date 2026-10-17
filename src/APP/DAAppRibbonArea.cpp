@@ -498,6 +498,12 @@ void DAAppRibbonArea::buildContextCategoryDataFrame()
     mPannelDataframeOperateEdit->addLargeAction(mActions->actionFind);
     mPannelDataframeOperateEdit->addLargeAction(mActions->actionReplace);
 
+    // Data Tools pannel - 数据工具（004：计算列/分列/合列/分组/转置/melt，D6）
+    mPannelDataframeOperateDataTools = mCategoryDataframeOperate->addPanel(tr("Data Tools"));  // cn:数据工具
+    mPannelDataframeOperateDataTools->setObjectName(QString::fromUtf8(UiNames::Ribbon::DataFrameOperateDataToolsPanel));
+    mPannelDataframeOperateDataTools->addLargeAction(mActions->actionComputedColumn);
+    mPannelDataframeOperateDataTools->addMediumAction(mActions->actionRecomputeAllComputedColumns);
+
     // ===== 表格样式 category =====
     mCategoryDataframeStyle = mContextDataFrame->addCategoryPage(tr("Table Style"));  // cn:表格样式
     mCategoryDataframeStyle->setObjectName(QString::fromUtf8(UiNames::Ribbon::DataFrameStyleCategory));

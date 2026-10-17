@@ -529,6 +529,9 @@ void DAAppController::initConnection()
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionReplace, onActionReplaceTriggered);
     // 条件格式（003 T1.5，Ribbon「Table Style」面板；与表体右键菜单共用页面入口，R16）
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionConditionalFormat, onActionConditionalFormatTriggered);
+    // 数据工具（004，Ribbon「Data Tools」面板；计算列与表体右键菜单共用页面入口）
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionComputedColumn, onActionComputedColumnTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionRecomputeAllComputedColumns, onActionRecomputeAllComputedColumnsTriggered);
     // View Category
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowWorkFlowArea, onActionShowWorkFlowAreaTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowWorkFlowManagerArea, onActionShowWorkFlowManagerAreaTriggered);
@@ -1480,6 +1483,10 @@ void DAAppController::onDataOperatePageCreated(DADataOperatePageWidget* page)
                 setDirty();
             }
         });
+        // 数据工具改动数据后置工程未保存标记（004：计算列创建/重算等，exec/undo 都发）
+        connect(w, &DADataOperateOfDataFrameWidget::dataModified, this, [ this ]() {
+            setDirty();
+        });
         // 列头右键菜单已迁入 DADataHeaderView（R12，菜单内容单点定义在 DAGui）：
         // 这里只做信号接线——收到菜单表意信号后先选中该列（复用 selectColumnInDataFrameWidget，
         // 槽函数经 getSelectedOneDataframeColumn 取列），再执行既有槽逻辑，行为与迁移前一致
@@ -1508,6 +1515,16 @@ void DAAppController::onDataOperatePageCreated(DADataOperatePageWidget* page)
                                 break;
                             case DA::DADataHeaderView::ColumnAction::ShowColumnDescribe:
                                 onActionShowColumnDescribeTriggered();
+                                break;
+                            // 计算列三项（004 T1.23）：页面方法按列位置解析列名后执行
+                            case DA::DADataHeaderView::ColumnAction::EditComputedFormula:
+                                w->showComputedColumnDialog(col);
+                                break;
+                            case DA::DADataHeaderView::ColumnAction::RecomputeComputedColumn:
+                                w->recomputeComputedColumn(col);
+                                break;
+                            case DA::DADataHeaderView::ColumnAction::RemoveComputedFormula:
+                                w->removeComputedColumnFormula(col);
                                 break;
                             }
                         });
@@ -3407,6 +3424,35 @@ void DAAppController::onActionConditionalFormatTriggered()
         return;
     }
     dfopt->showConditionalFormatDialog();
+}
+
+/**
+ * @brief 计算列（004 T1.23，Ribbon「Data Tools」面板）
+ *
+ * 唤出当前数据页的计算列对话框（新建）。与表体右键菜单「计算列...」共用页面
+ * showComputedColumnDialog 入口；脏标记经页面 dataModified 信号统一接线。
+ */
+void DAAppController::onActionComputedColumnTriggered()
+{
+    DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false);
+    if (!dfopt) {
+        return;
+    }
+    dfopt->showComputedColumnDialog(-1);
+}
+
+/**
+ * @brief 全部重算计算列（004 T1.23，Ribbon「Data Tools」面板）
+ *
+ * 重算当前数据页全部待重算/失效的计算列（R8 手动重算；一个宏命令 = 一个撤销单元）。
+ */
+void DAAppController::onActionRecomputeAllComputedColumnsTriggered()
+{
+    DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false);
+    if (!dfopt) {
+        return;
+    }
+    dfopt->recomputeAllStaleComputedColumns();
 }
 
 /**
