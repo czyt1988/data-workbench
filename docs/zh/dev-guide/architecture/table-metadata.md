@@ -73,6 +73,12 @@ classDiagram
       <col-format index="..."/>
       <view-state row-header-width="60">   <!-- 视图状态兄弟段 -->
         <column-width name="value" occurrence="0" width="120"/>
+        <column-order>                      <!-- 列序（006，列名有序表） -->
+          <column name="s" occurrence="0"/>
+          <column name="value" occurrence="0"/>
+        </column-order>
+        <column name="f" occurrence="0" hidden="1"/>   <!-- 隐藏集合（006，每项一条） -->
+        <freeze columns="2"/>              <!-- 冻结列数（006，视图顺序前 m 个可见列） -->
       </view-state>
       <conditional-format>                 <!-- 条件格式兄弟段（003 T1.5，按列索引组织） -->
         <column col="2">
@@ -162,6 +168,11 @@ classDiagram
 - **快捷键集中挂点**：表格快捷键一律在 `DADataTableView::keyPressEvent` 处理（后续查找 Ctrl+F、填充 Ctrl+D 等在此追加），不散落各处。
 - **表头**：`DADataHeaderView` 水平/垂直共用一个类；`clickedWithModifiers`（带修饰键点击）供排序交互（002）消费，图表「选择序列」拾取仍走既有 `sectionClicked` 链路；行头宽在 vertical 实例右缘 8px 热区拖拽，`setFixedWidth` 落地（Qt 纵向表头宽度 = `clamp(qMax(minimumWidth, sizeHint), maximumWidth)`，min=max=w 恒为 w），释放后经 `rowHeaderWidthChanged` 写入视图状态。
 - **列宽持久化纪律**（R6）：按列名 + occurrence 存 `<view-state>`，**禁止 `QHeaderView::saveState()`**——滑动窗下段号=窗口行号，状态会随滚动互相污染。
+- **列视图状态（006）**：`<view-state>` 在列宽之外新增三个子元素——`<column-order>`（列名有序表，空 = 未记录 = 数据列序）、`<column hidden="1"/>`（隐藏集合，每项一条）、`<freeze columns="N"/>`（冻结列数）。列序/隐藏的键同样是「列名 + occurrence」（重名列消歧，R20）；加载后页面做**一次性收敛**（`normalizeToColumns`：孤儿条目剪除 + 新列按实际顺序追加列序末尾，有丢弃时提示一次）；冻结计数只在投影期夹紧到当前可见列数、**不写回**（列数临时变少时用户设置不丢）。
+- **列状态真源与投影**：列序/隐藏/冻结的唯一真源是 `DATableViewStateStore`，视图层不自行改列状态；页面 `applyViewStateFromStore()` 统一投影到列轴窗格容器（`DATablePaneContainer`，冻结窗格与主窗格并排、行头归冻结窗格），任何入口（命令 redo/undo、直接 API、拖动落库）都走这一条路径。
+
+> **⚠️ 列视图命令语义**
+> 列序/隐藏/冻结列数入页撤销栈（`DACommandsTableColumnView` 族：`Reorder columns` / `Hide column "%1"` / `Show all columns` / `Freeze columns to %1` / `Unfreeze columns`）；列宽拖动不入栈但立即持久化；列视图对话框的"隐藏 + 冻结"确定合成一个撤销单元（批量父命令）。
 
 ## 相关文件
 
@@ -169,7 +180,8 @@ classDiagram
 |------|------|
 | `src/DAGui/DATableMetadataRegistry.h/.cpp` | 会话级注册表（按 DAData 键控） |
 | `src/DAGui/DATableMetadata.h/.cpp` | 元数据束（聚合子存储 + 统一序列化） |
-| `src/DAGui/DATableViewStateStore.h/.cpp` | 视图状态子存储（列宽/行头宽） |
+| `src/DAGui/DATableViewStateStore.h/.cpp` | 视图状态子存储（列宽/行头宽/列序/隐藏/冻结列数） |
+| `src/DAGui/DATablePaneContainer.h/.cpp` | 列轴窗格容器（主窗格 + 冻结窗格投影，006） |
 | `src/DAGui/DATableConditionalFormatRule.h/.cpp` | 条件格式规则（纯数据类 + 求值/插值/归一化纯函数） |
 | `src/DAGui/DATableConditionalFormatStore.h/.cpp` | 条件格式子存储（列桶/统计缓存/预览/`<conditional-format>` 段） |
 | `src/DAData/DAComputedColumn.h/.cpp` | 计算列定义（纯数据类，无 GUI 依赖，004 T1.23） |
