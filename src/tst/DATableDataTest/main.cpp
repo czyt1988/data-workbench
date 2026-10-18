@@ -445,6 +445,14 @@ private Q_SLOTS:
     void testLocateKeepHiddenAndNoSelect();
     // 007b：定位请求解析（行位置/索引标签/列名/快捷项/keepHidden 全路径）
     void testGotoDialogRequestResolution();
+    // 007c：列统计区间路径与 pandas 直算对拍（含类型/空值/区间边界/唯一值数）
+    void testColumnStatsOperatorExtended();
+    // 007c：旧路径兼容（columnStats 三元组行为逐位不变）
+    void testColumnStatsLegacyCompatibility();
+    // 007c：唯一值数哨兵（超阈值/不要/数值列不请求）
+    void testColumnStatsUniqueSentinel();
+    // 007c：computeColumnStats 默认 nullopt + 覆写生效
+    void testComputeColumnStatsNullopt();
     // 002 表头排序（T1.3 §4.1）：算子多键+置换、命令 undo/redo+样式重映射、表头交互/拾取互斥/只读源、10万行计时
     void testSortOperatorMultiKeyPerm();
     void testSortRowsCommandUndoRedoAndStyleRemap();
@@ -3179,6 +3187,237 @@ gdf.columns = ["a", "b", "c", "b"]
         QVERIFY(w.resolveGotoRequest(req));
         QVERIFY(w.viewStateStore()->isColumnHidden(QStringLiteral("c"), 0));  // 真源仍隐藏
         QCOMPARE(w.getSelectedOneDataframeRow(), 2);
+    }
+}
+
+// 007c：列统计区间路径与 pandas 直算对拍（类型/空值/区间边界/唯一值数）
+void DATableDataTest::testColumnStatsOperatorExtended()
+{
+    if (!mPandasOk || !mPyScriptsOk) {
+        QSKIP("pandas/DAPyScripts not available");
+    }
+    pybind11::dict scope;
+    pybind11::exec(R"(
+import pandas as pd
+sdf = pd.DataFrame({
+    "v": [1, 2, 3, 4, 100],
+    "n": [1.0, None, 3.0, None, 5.0],
+    "e": [None, None, None, None, None],
+    "t": ["a", "b", "c", "d", "e"],
+    "d": pd.to_datetime(["2020-01-01","2020-01-02","2020-01-03","2020-01-04","2020-01-05"]),
+    "b": [True, False, True, False, True],
+})
+)",
+                    pybind11::globals(),
+                    scope);
+    DA::DAPyDataFrame df(scope[ "sdf" ]);
+    QVERIFY(!df.isNone());
+    DA::DAPyScriptsDataFrame& py = DA::DAPyScripts::getDataFrame();
+    const QList< int > allCols { 0, 1, 2, 3, 4, 5 };
+    const auto r = py.columnStatsRange(df, allCols, 0, 5, 100);
+    QVERIFY(r.ok);
+    QCOMPARE(r.columns.size(), 6);
+    // ① 数值列 v
+    QCOMPARE(r.columns[ 0 ].count, std::size_t(5));
+    QCOMPARE(r.columns[ 0 ].nullCount, std::size_t(0));
+    QVERIFY(r.columns[ 0 ].sum.has_value());
+    QCOMPARE(*r.columns[ 0 ].sum, 110.0);
+    QVERIFY(r.columns[ 0 ].mean.has_value());
+    QCOMPARE(*r.columns[ 0 ].mean, 22.0);
+    QCOMPARE(*r.columns[ 0 ].min, 1.0);
+    QCOMPARE(*r.columns[ 0 ].max, 100.0);
+    // ② 含 NaN 列 n
+    QCOMPARE(r.columns[ 1 ].count, std::size_t(3));
+    QCOMPARE(r.columns[ 1 ].nullCount, std::size_t(2));
+    QCOMPARE(*r.columns[ 1 ].sum, 9.0);
+    QCOMPARE(*r.columns[ 1 ].mean, 3.0);
+    QCOMPARE(*r.columns[ 1 ].min, 1.0);
+    QCOMPARE(*r.columns[ 1 ].max, 5.0);
+    // ③ 全空列 e：四项数值指标皆无值
+    QCOMPARE(r.columns[ 2 ].count, std::size_t(0));
+    QCOMPARE(r.columns[ 2 ].nullCount, std::size_t(5));
+    QVERIFY(!r.columns[ 2 ].sum.has_value());
+    QVERIFY(!r.columns[ 2 ].mean.has_value());
+    QVERIFY(!r.columns[ 2 ].min.has_value());
+    QVERIFY(!r.columns[ 2 ].max.has_value());
+    // ④ 文本列 t：四项全无值、uniqueCount 有值
+    QCOMPARE(r.columns[ 3 ].count, std::size_t(5));
+    QVERIFY(!r.columns[ 3 ].sum.has_value());
+    QVERIFY(!r.columns[ 3 ].min.has_value());
+    QVERIFY(r.columns[ 3 ].uniqueCount.has_value());
+    QCOMPARE(*r.columns[ 3 ].uniqueCount, std::size_t(5));
+    // ⑤ 日期列 d 同文本列
+    QCOMPARE(r.columns[ 4 ].count, std::size_t(5));
+    QVERIFY(!r.columns[ 4 ].sum.has_value());
+    QVERIFY(r.columns[ 4 ].uniqueCount.has_value());
+    QCOMPARE(*r.columns[ 4 ].uniqueCount, std::size_t(5));
+    // ⑥ 布尔列 b：四项全无值（即使 pandas 能求和也不给）
+    QCOMPARE(r.columns[ 5 ].count, std::size_t(5));
+    QVERIFY(!r.columns[ 5 ].sum.has_value());
+    QVERIFY(r.columns[ 5 ].uniqueCount.has_value());
+    QCOMPARE(*r.columns[ 5 ].uniqueCount, std::size_t(2));
+    // ⑦ 区间边界：半开 (0,3) 只统计前 3 行；(0,1) 一行；(2,2) 空
+    const auto r3 = py.columnStatsRange(df, { 0 }, 0, 3, 100);
+    QVERIFY(r3.ok);
+    QCOMPARE(r3.columns[ 0 ].count, std::size_t(3));
+    QCOMPARE(*r3.columns[ 0 ].sum, 6.0);
+    const auto r1 = py.columnStatsRange(df, { 0 }, 0, 1, 100);
+    QCOMPARE(r1.columns[ 0 ].count, std::size_t(1));
+    const auto r0 = py.columnStatsRange(df, { 0 }, 2, 2, 100);
+    QVERIFY(r0.ok);
+    QCOMPARE(r0.columns[ 0 ].count, std::size_t(0));
+    QVERIFY(!r0.columns[ 0 ].sum.has_value());
+    // ⑧ count + nullCount == 区间行数 对每列都成立
+    for (const auto& col : r.columns) {
+        QCOMPARE(col.count + col.nullCount, std::size_t(5));
+    }
+}
+
+// 007c：旧路径兼容（三元组行为逐位不变 + Python 直调口径）
+void DATableDataTest::testColumnStatsLegacyCompatibility()
+{
+    if (!mPandasOk || !mPyScriptsOk) {
+        QSKIP("pandas/DAPyScripts not available");
+    }
+    pybind11::dict scope;
+    pybind11::exec(R"(
+import pandas as pd
+ldf = pd.DataFrame({"v": [1, 2, 100], "t": ["x", "y", "z"], "e": [None, None, None]})
+)",
+                    pybind11::globals(),
+                    scope);
+    DA::DAPyDataFrame df(scope[ "ldf" ]);
+    DA::DAPyScriptsDataFrame& py = DA::DAPyScripts::getDataFrame();
+    // ① 既有封装：数值列三元组
+    const auto r = py.columnStats(df, 0);
+    QVERIFY(r.ok);
+    QCOMPARE(r.minValue, 1.0);
+    QCOMPARE(r.maxValue, 100.0);
+    QCOMPARE(r.medianValue, 2.0);
+    // ② 纯文本列 → ok=false（全 NaN）
+    QVERIFY(!py.columnStats(df, 1).ok);
+    QVERIFY(!py.columnStats(df, 2).ok);
+    // ③ 越界 → ok=false
+    QVERIFY(!py.columnStats(df, 99).ok);
+    QVERIFY(!py.columnStats(df, -1).ok);
+    // ④ Python 直调：旧路径三元组逐位相等
+    {
+        pybind11::object ret = py.attr("da_column_stats")(df.object(), 0);
+        pybind11::tuple t    = ret.cast< pybind11::tuple >();
+        QCOMPARE(t[ 0 ].cast< double >(), 1.0);
+        QCOMPARE(t[ 1 ].cast< double >(), 100.0);
+        QCOMPARE(t[ 2 ].cast< double >(), 2.0);
+    }
+    // ⑤ Python 直调：全 NaN 列返回 None
+    {
+        pybind11::object ret = py.attr("da_column_stats")(df.object(), 2);
+        QVERIFY(ret.is_none());
+    }
+}
+
+// 007c：唯一值数哨兵（超阈值/不要/数值列不请求）
+void DATableDataTest::testColumnStatsUniqueSentinel()
+{
+    if (!mPandasOk || !mPyScriptsOk) {
+        QSKIP("pandas/DAPyScripts not available");
+    }
+    pybind11::dict scope;
+    pybind11::exec(R"(
+import pandas as pd
+udf = pd.DataFrame({"t": ["a", "b", "c", "d", "e"], "v": [1, 2, 3, 4, 5]})
+)",
+                    pybind11::globals(),
+                    scope);
+    DA::DAPyDataFrame df(scope[ "udf" ]);
+    DA::DAPyScriptsDataFrame& py = DA::DAPyScripts::getDataFrame();
+    // ① rows(5) > unique_limit(4) → 不给
+    {
+        const auto r = py.columnStatsRange(df, { 0 }, 0, 5, 4);
+        QVERIFY(r.ok);
+        QVERIFY(!r.columns[ 0 ].uniqueCount.has_value());
+    }
+    // ② unique_limit=0（不要）→ 不给
+    {
+        const auto r = py.columnStatsRange(df, { 0 }, 0, 5, 0);
+        QVERIFY(r.ok);
+        QVERIFY(!r.columns[ 0 ].uniqueCount.has_value());
+    }
+    // ③ 数值列即便 rows<=limit 也不给（口径上不请求）
+    {
+        const auto r = py.columnStatsRange(df, { 1 }, 0, 5, 100);  // 只请求列 1（数值列 v）
+        QVERIFY(r.ok);
+        QVERIFY(!r.columns[ 0 ].uniqueCount.has_value());
+        QVERIFY(r.columns[ 0 ].sum.has_value());
+    }
+    // ④ 文本列 rows(5) <= limit(5) → 给且等于 nunique
+    {
+        const auto r = py.columnStatsRange(df, { 0 }, 0, 5, 5);
+        QVERIFY(r.ok);
+        QVERIFY(r.columns[ 0 ].uniqueCount.has_value());
+        QCOMPARE(*r.columns[ 0 ].uniqueCount, std::size_t(5));
+    }
+    // ⑤ DADataPyDataFrame 翻译层：nullopt → kUniqueNotComputed
+    {
+        DA::DAData d2(df);
+        const DA::DATableDataSource* src = d2.tableSource();
+        QVERIFY(src != nullptr);
+        DA::DATableScanRequest req2;
+        req2.rowBegin  = 0;
+        req2.rowEnd    = 5;
+        req2.columns   = { 0 };
+        req2.uniqueLimit = 4;
+        const auto res = src->computeColumnStats(req2);
+        QVERIFY(res.has_value());
+        QCOMPARE((*res)[ 0 ].uniqueCount, DA::kUniqueNotComputed);
+    }
+}
+
+// 007c：computeColumnStats 默认 nullopt（未覆写源）+ 覆写生效（DADataPyDataFrame）
+void DATableDataTest::testComputeColumnStatsNullopt()
+{
+    if (!mPandasOk) {
+        QSKIP("pandas not available");
+    }
+    DA::DATableScanRequest req;
+    req.rowBegin = 0;
+    req.rowEnd   = 3;
+    req.columns  = { 0 };
+    // ① 未覆写源：DATestLazyTable（既有测试载体，10 万行合成惰性表）
+    {
+        DATestLazyTable ts;
+        QVERIFY(ts.computeColumnStats(req) == std::nullopt);
+    }
+    // ② sqlite 惰性表（若可用）同样 nullopt
+    {
+        if (ensureSqliteReady()) {
+            DA::DAData sqlD = makeSqliteLazyData();
+            const DA::DATableDataSource* src = sqlD.tableSource();
+            QVERIFY(src != nullptr);
+            QVERIFY(src->computeColumnStats(req) == std::nullopt);
+        }
+    }
+    // ③ DADataPyDataFrame：正常请求有值且与 pandas 直算一致
+    {
+        pybind11::dict scope;
+        pybind11::exec(R"(
+import pandas as pd
+ndf = pd.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]})
+)",
+                        pybind11::globals(),
+                        scope);
+        DA::DAPyDataFrame df(scope[ "ndf" ]);
+        DA::DAData d(df);
+        const DA::DATableDataSource* src = d.tableSource();
+        QVERIFY(src != nullptr);
+        const auto res = src->computeColumnStats(req);
+        QVERIFY(res.has_value());
+        QCOMPARE((*res).size(), 1);
+        QCOMPARE((*res)[ 0 ].count, std::size_t(3));
+        QCOMPARE(*(*res)[ 0 ].sum, 6.0);
+        // 越界列 → nullopt（不静默裁剪、不抛异常）
+        DA::DATableScanRequest bad = req;
+        bad.columns = { 2 };  // 只有 2 列
+        QVERIFY(src->computeColumnStats(bad) == std::nullopt);
     }
 }
 
