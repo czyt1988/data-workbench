@@ -185,6 +185,8 @@ private Q_SLOTS:
     void testCtrlGGotoDialog();
     // Ctrl+G 路由分流（007 T1.7：DADataTableView 发信号、DACacheWindowTableView 仍 QInputDialog）
     void testGotoKeyRoutingOnDataTableView();
+    // 007e：DADataTableView 上的 Home/End 整表语义回归（006a 键转发修复的补钉用例）
+    void testHomeEndKeysOnDataTableView();
 
 private:
     NavFixture m_fx;
@@ -665,6 +667,32 @@ void DATableNavigationTest::testGotoKeyRoutingOnDataTableView()
     QSignalSpy spy2(&exposed, &DA::DADataTableView::gotoRequested);
     exposed.callPromptGotoRow();
     QCOMPARE(spy2.count(), 1);
+}
+
+/**
+ * @brief DADataTableView 上的 Home/End 整表语义回归（007e）
+ *
+ * 006a 修的键转发在既有 testHomeEndKeys（基类用例）上测不到覆写路径
+ *（007 计划 §3.6.1 指出的盲区）；本用例在 DADataTableView 实例上直接验证。
+ * Ctrl+End 的列断言按 cacheModel->columnCount()-1（含尾部预留空白列）。
+ */
+void DATableNavigationTest::testHomeEndKeysOnDataTableView()
+{
+    DA::DADataTableView view;
+    view.setModel(m_fx.model);
+    view.resize(c_viewWidth, c_viewHeight);
+    view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+    view.selectActualCell(12345, 2);
+    // Ctrl+Home → (0, 0)
+    QTest::keyClick(&view, Qt::Key_Home, Qt::ControlModifier);
+    QCOMPARE(view.toActualRow(view.currentIndex().row()), 0);
+    QCOMPARE(view.currentIndex().column(), 0);
+    // Ctrl+End → 数据末行末列（整表语义，不是窗口末行）
+    QTest::keyClick(&view, Qt::Key_End, Qt::ControlModifier);
+    QCOMPARE(view.toActualRow(view.currentIndex().row()), DANavTestSource::c_totalRows - 1);
+    QCOMPARE(view.currentIndex().column(), m_fx.model->columnCount() - 1);
+    QVERIFY(view.isActualRowVisible(DANavTestSource::c_totalRows - 1));
 }
 
 int main(int argc, char* argv[])
