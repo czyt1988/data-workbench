@@ -5351,7 +5351,7 @@ QList< DADataOperateOfDataFrameWidget::ValidationRuleOutcome > DADataOperateOfDa
  * @brief 执行校验并弹出报告对话框（非模态，点击样例行定位）
  *
  * 无启用规则时提示并直接打开规则编辑对话框；报告样例行上限 50 条/规则（完整清单
- * 走高亮与导出）。定位复用 selectActualCell（内部先 showActualRow）。
+ * 走高亮与导出）。定位走 007 的定位单入口 locateActualCell。
  */
 void DADataOperateOfDataFrameWidget::runValidationAndShowReport()
 {
@@ -5399,9 +5399,10 @@ void DADataOperateOfDataFrameWidget::runValidationAndShowReport()
     mValidationReport = dlg;
     dlg->setResults(entries, mValidationStore->enabledRuleIndexes().size(), elapsedMs);
     QPointer< DADataTableView > view = ui->tableView;
-    connect(dlg, &DADialogValidationReport::locateCellRequested, this, [ view ](int row, int col) {
+    connect(dlg, &DADialogValidationReport::locateCellRequested, this, [ this, view ](int row, int col) {
+        // 007：报告样例行定位走定位单入口（隐藏列自动取消隐藏 + 冻结区处置）
         if (view && col >= 0) {
-            view->selectActualCell(row, col);
+            locateActualCell(row, col);
         }
     });
     connect(dlg, &DADialogValidationReport::clearHighlightsRequested, this, [ this ]() {
