@@ -54,6 +54,7 @@
 #include "Dialog/DADialogDataframeColumnCastToDatetime.h"
 #include "Dialog/DADialogInsertNewColumn.h"
 #include "Dialog/DADialogDataframeColumnDescribe.h"
+#include "Dialog/DADialogTableColumnView.h"
 #include "Dialog/DADialogFindReplace.h"
 #include "Dialog/DADialogConditionalFormat.h"
 #include "Dialog/DADialogComputedColumn.h"
@@ -365,6 +366,9 @@ void DADataOperateOfDataFrameWidget::configurePaneView(DADataTableView* pane)
         if (mPaneContainer) {
             connect(hh, &QHeaderView::sectionMoved, mPaneContainer, &DATablePaneContainer::onPaneSectionMoved);
         }
+        // 「列」子菜单动作（006d）：列视图真源操作，消费方是页面自身（不经 APP）
+        connect(hh, &DADataHeaderView::columnViewActionRequested,
+                this, &DADataOperateOfDataFrameWidget::onHeaderColumnViewActionRequested);
     }
     // 5) 垂直表头：行头宽拖拽 → 写视图状态
     if (DADataHeaderView* vh = qobject_cast< DADataHeaderView* >(pane->verticalHeader())) {
@@ -2107,6 +2111,84 @@ void DADataOperateOfDataFrameWidget::applyColumnOrderFromView(const QVector< int
     }
     push(new DACommandTableColumnOrder(mViewStateStore, oldOrder, newOrder,
                                        [ this ]() { applyViewStateFromStore(); }));
+}
+
+/**
+ * @brief 「列」子菜单动作分发（006d）
+ *
+ * 「冻结到此列」的序号口径 = 该列在可见列序中的位置 + 1（容器
+ * visibleColumnOrderLogical() 是"列序剔隐藏"的唯一实现，页面不另写一份）。
+ * @param logicalColumn 触发菜单的列（逻辑索引）
+ * @param action 子菜单动作
+ */
+void DADataOperateOfDataFrameWidget::onHeaderColumnViewActionRequested(int logicalColumn,
+                                                                       DADataHeaderView::ColumnViewAction action)
+{
+    switch (action) {
+    case DADataHeaderView::ColumnViewAction::HideColumn:
+        hideColumnAt(logicalColumn);
+        break;
+    case DADataHeaderView::ColumnViewAction::ShowAllColumns:
+        showAllColumns();
+        break;
+    case DADataHeaderView::ColumnViewAction::FreezeToColumn: {
+        const QVector< int > visibleOrder
+            = mPaneContainer ? mPaneContainer->visibleColumnOrderLogical() : QVector< int >();
+        const int pos = visibleOrder.indexOf(logicalColumn);  // 隐藏列的表头点不到，必 >= 0
+        if (pos >= 0) {
+            freezeColumnsTo(pos + 1);
+        }
+        break;
+    }
+    case DADataHeaderView::ColumnViewAction::Unfreeze:
+        freezeColumnsTo(0);
+        break;
+    case DADataHeaderView::ColumnViewAction::OpenColumnViewDialog:
+        showColumnViewDialog();
+        break;
+    }
+}
+
+/**
+ * @brief 打开列视图对话框（006d）
+ *
+ * 输入 = 全局列序（含隐藏列）的身份表（orderedColumnIdentities() 唯一实现）；
+ * 确定后按差异构造一个批量父命令（隐藏集合变更 + 冻结数变更 = 一个撤销单元），
+ * 取消不改动；冻结数比较基准用 store 真源旧值（不是夹紧后的生效值）。
+ */
+void DADataOperateOfDataFrameWidget::showColumnViewDialog()
+{
+    if (!mViewStateStore || !mModel) {
+        return;
+    }
+    if (!mDialogColumnView) {
+        mDialogColumnView = new DADialogTableColumnView(this);
+    }
+    const QList< QPair< QString, int > > ordered = orderedColumnIdentities();
+    if (ordered.isEmpty()) {
+        return;
+    }
+    QSet< QPair< QString, int > > oldHidden = toIdentSet(mViewStateStore->hiddenColumns());
+    mDialogColumnView->setup(ordered, oldHidden, effectiveFrozenColumnCount());
+    if (mDialogColumnView->exec() != QDialog::Accepted) {
+        return;  // 取消不改动任何东西
+    }
+    const QSet< QPair< QString, int > > newHidden = mDialogColumnView->hiddenColumns();
+    const int newFreeze = mDialogColumnView->frozenColumnCount();
+    const int oldFreeze = mViewStateStore->freezeColumnCount();
+    if (newHidden == oldHidden && newFreeze == oldFreeze) {
+        return;  // 无差异不推空命令
+    }
+    DACommandTableColumnViewBatch* batch = new DACommandTableColumnViewBatch(tr("Column View..."));  // cn:列视图
+    if (newHidden != oldHidden) {
+        new DACommandTableColumnVisibility(mViewStateStore, oldHidden, newHidden,
+                                           [ this ]() { applyViewStateFromStore(); }, QString(), batch);
+    }
+    if (newFreeze != oldFreeze) {
+        new DACommandTableFreezeColumns(mViewStateStore, oldFreeze, newFreeze,
+                                        [ this ]() { applyViewStateFromStore(); }, batch);
+    }
+    push(batch);
 }
 
 /**

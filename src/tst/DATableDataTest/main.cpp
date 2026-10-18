@@ -43,7 +43,9 @@
 #include "DATableViewStateStore.h"
 #include "DATablePaneContainer.h"
 #include "Commands/DACommandsTableColumnView.h"
+#include "Dialog/DADialogTableColumnView.h"
 #include <QWindow>
+#include <QSpinBox>
 #include "DADataHeaderView.h"
 #include "DADataTableView.h"
 #include "DADataOperateOfDataFrameWidget.h"
@@ -420,6 +422,12 @@ private Q_SLOTS:
     void testColumnViewCommandsUndoRedo();
     // 006c：真实列宽拖拽写 store、不入撤销栈（可拖动表头回归点）
     void testColumnWidthNotOnUndoStack();
+    // 006d：「列」子菜单 5 项逐项生效（隐藏/显示全部/冻结/解冻/对话框）
+    void testHeaderColumnViewMenuActions();
+    // 006d：列视图对话框确定按差异入一个撤销单元、一次 undo 全还原
+    void testColumnViewDialogDiffAndUndo();
+    // 006d：重名列 a / a (2) 独立勾选、取消不改动
+    void testColumnViewDialogDuplicateNamesInitialAndCancel();
     // 002 表头排序（T1.3 §4.1）：算子多键+置换、命令 undo/redo+样式重映射、表头交互/拾取互斥/只读源、10万行计时
     void testSortOperatorMultiKeyPerm();
     void testSortRowsCommandUndoRedoAndStyleRemap();
@@ -1646,7 +1654,7 @@ void DATableDataTest::testContextMenuComposition()
     const auto headerActions = menu->actions();
     for (QAction* a : headerActions) {
         seq << (a->isSeparator() ? QStringLiteral("<SEP>") : a->text());
-        if (!a->isSeparator()) {
+        if (!a->isSeparator() && !a->menu()) {  // 子菜单本身不设图标（006d 豁免）
             QVERIFY2(!a->icon().isNull(), qPrintable(QStringLiteral("icon empty for %1").arg(a->text())));
         }
     }
@@ -1663,8 +1671,39 @@ void DATableDataTest::testContextMenuComposition()
                                        QStringLiteral("Goto Max"),
                                        QStringLiteral("Goto Min"),
                                        QStringLiteral("<SEP>"),
-                                       QStringLiteral("Show Statistics") };
+                                       QStringLiteral("Show Statistics"),
+                                       QStringLiteral("<SEP>"),
+                                       QStringLiteral("Columns") };
     QCOMPARE(seq, expectedHeader);
+    // 「列」子菜单（006d）：5 项 2 分隔符，5 个图标齐全（冻结/取消冻结共用 freeze-column）
+    QAction* columnsAction = nullptr;
+    for (QAction* a : headerActions) {
+        if (a->text() == QStringLiteral("Columns")) {
+            columnsAction = a;
+            break;
+        }
+    }
+    QVERIFY(columnsAction != nullptr);
+    QVERIFY(columnsAction->menu() != nullptr);
+    const QStringList expectedColumnsMenu { QStringLiteral("Hide This Column"),
+                                            QStringLiteral("Show All Columns"),
+                                            QStringLiteral("<SEP>"),
+                                            QStringLiteral("Freeze to This Column"),
+                                            QStringLiteral("Unfreeze"),
+                                            QStringLiteral("<SEP>"),
+                                            QStringLiteral("Column View...") };
+    QStringList colSeq;
+    const auto colActs = columnsAction->menu()->actions();
+    for (QAction* a : colActs) {
+        colSeq << (a->isSeparator() ? QStringLiteral("<SEP>") : a->text());
+        if (!a->isSeparator()) {
+            QVERIFY2(!a->icon().isNull(), qPrintable(QStringLiteral("icon empty for %1").arg(a->text())));
+        }
+    }
+    QCOMPARE(colSeq, expectedColumnsMenu);
+    // 两个新图标已登记 qrc（引用即渲染）
+    QVERIFY(!QIcon(QStringLiteral(":/DAGui/icon/freeze-column.svg")).isNull());
+    QVERIFY(!QIcon(QStringLiteral(":/DAGui/icon/column-view.svg")).isNull());
     delete menu;
 
     // ---- 表体菜单：剪切/复制/粘贴 ‖ 查找/替换（002）‖ 条件格式（003）；无有效选区（无模型）----
@@ -2286,6 +2325,288 @@ void DATableDataTest::testColumnWidthNotOnUndoStack()
     QVERIFY(qAbs(hh->sectionSize(colF) - (widthBefore + 20)) <= 2);
     QCOMPARE(w.viewStateStore()->columnWidth(QStringLiteral("f"), 0), hh->sectionSize(colF));
     QCOMPARE(w.getUndoStack()->count(), undoBefore);
+}
+
+namespace
+{
+// 构造 N 列小 DataFrame（列名给定）
+static pybind11::object makeDataFrameWithColumns(const QStringList& columns)
+{
+    try {
+        pybind11::dict scope;
+        QStringList quoted;
+        for (const QString& c : columns) {
+            quoted << QStringLiteral("\"%1\"").arg(c);
+        }
+        QStringList rows;
+        for (int r = 0; r < 3; ++r) {
+            QStringList vals;
+            for (int c = 0; c < columns.size(); ++c) {
+                vals << QString::number(r + c);
+            }
+            rows << QStringLiteral("[%1]").arg(vals.join(QStringLiteral(", ")));
+        }
+        const QString pyCode = QStringLiteral("import pandas as pd\n"
+                                              "df = pd.DataFrame([%1], columns=[%2])\n")
+                                   .arg(rows.join(QStringLiteral(", ")))
+                                   .arg(quoted.join(QStringLiteral(", ")));
+        pybind11::exec(pyCode.toStdString(), pybind11::globals(), scope);
+        return scope[ "df" ];
+    } catch (const std::exception& e) {
+        qWarning() << "makeDataFrameWithColumns failed:" << e.what();
+    }
+    return pybind11::none();
+}
+
+// 触发「列」子菜单某项：构建菜单 → 尾部 Columns 子菜单 → 按文本 trigger（006d）
+static void triggerColumnViewMenuAction(DA::DADataHeaderView* hv, int logicalIndex, const QString& text)
+{
+    QVERIFY(hv != nullptr);
+    QMenu* menu = hv->buildColumnContextMenu(logicalIndex);
+    QVERIFY(menu != nullptr);
+    QAction* columnsAct = nullptr;
+    const auto acts = menu->actions();
+    for (QAction* a : acts) {
+        if (a->menu() != nullptr && a->text() == QStringLiteral("Columns")) {
+            columnsAct = a;
+            break;
+        }
+    }
+    QVERIFY(columnsAct != nullptr);
+    QAction* target = nullptr;
+    const auto colActs = columnsAct->menu()->actions();
+    for (QAction* a : colActs) {
+        if (a->text() == text) {
+            target = a;
+            break;
+        }
+    }
+    QVERIFY(target != nullptr);
+    target->trigger();
+    delete menu;
+}
+}  // namespace
+
+// 006d：「列」子菜单 5 项逐项生效、各入栈 1 条；列视图对话框可开可取消
+void DATableDataTest::testHeaderColumnViewMenuActions()
+{
+    if (!mPandasOk) {
+        QSKIP("pandas not available");
+    }
+    pybind11::object obj = makeDataFrameWithColumns({ QStringLiteral("a"), QStringLiteral("b"), QStringLiteral("c") });
+    QVERIFY(!obj.is_none());
+    DA::DAPyDataFrame df(obj);
+    DA::DAData d(df);
+    DA::DATableMetadataRegistry registry(nullptr);
+    DA::DADataOperateOfDataFrameWidget w(d, &registry);
+    w.resize(800, 400);
+    w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+    DA::DADataHeaderView* hv = qobject_cast< DA::DADataHeaderView* >(w.getDataTableView()->horizontalHeader());
+    QVERIFY(hv != nullptr);
+    DA::DATableViewStateStore* store = w.viewStateStore();
+    QVERIFY(store != nullptr);
+    const int n0 = w.getUndoStack()->count();
+
+    // ① 冻结到此列（logical=1：可见列序序号 1，+1 = 冻结 2 个可见列）
+    triggerColumnViewMenuAction(hv, 1, QStringLiteral("Freeze to This Column"));
+    QCOMPARE(store->freezeColumnCount(), 2);
+    QCOMPARE(w.getUndoStack()->count(), n0 + 1);
+    // ② 取消冻结
+    triggerColumnViewMenuAction(hv, 1, QStringLiteral("Unfreeze"));
+    QCOMPARE(store->freezeColumnCount(), 0);
+    QCOMPARE(w.getUndoStack()->count(), n0 + 2);
+    // ③ 隐藏此列（logical=2，列 c）
+    triggerColumnViewMenuAction(hv, 2, QStringLiteral("Hide This Column"));
+    QVERIFY(store->isColumnHidden(QStringLiteral("c"), 0));
+    QCOMPARE(w.getUndoStack()->count(), n0 + 3);
+    // ④ 显示所有列
+    triggerColumnViewMenuAction(hv, 2, QStringLiteral("Show All Columns"));
+    QVERIFY(store->hiddenColumns().isEmpty());
+    QCOMPARE(w.getUndoStack()->count(), n0 + 4);
+    // ⑤ 列视图…（模态对话框弹出后被代为取消：store 与撤销栈不变）
+    bool opened = false;
+    QTimer::singleShot(0, &w, [ &opened ]() {
+        if (QWidget* m = QApplication::activeModalWidget()) {
+            opened = true;
+            QDialog* dlg = qobject_cast< QDialog* >(m);
+            if (dlg) {
+                dlg->reject();
+            }
+        }
+    });
+    triggerColumnViewMenuAction(hv, 0, QStringLiteral("Column View..."));
+    QVERIFY(opened);
+    QVERIFY(store->hiddenColumns().isEmpty());
+    QCOMPARE(store->freezeColumnCount(), 0);
+    QCOMPARE(w.getUndoStack()->count(), n0 + 4);
+}
+
+// 006d：列视图对话框——隐藏 + 冻结差异合成一个撤销单元，一次 undo 全还原
+void DATableDataTest::testColumnViewDialogDiffAndUndo()
+{
+    if (!mPandasOk) {
+        QSKIP("pandas not available");
+    }
+    pybind11::object obj = makeDataFrameWithColumns({ QStringLiteral("a"), QStringLiteral("b"), QStringLiteral("c") });
+    QVERIFY(!obj.is_none());
+    DA::DAPyDataFrame df(obj);
+    DA::DAData d(df);
+    DA::DATableMetadataRegistry registry(nullptr);
+    DA::DADataOperateOfDataFrameWidget w(d, &registry);
+    w.resize(800, 400);
+    w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+    DA::DADataTableView* tv = w.getDataTableView();
+    QVERIFY(tv != nullptr);
+    w.freezeColumnsTo(1);  // 前置：冻结 1
+    const int n0 = w.getUndoStack()->count();
+
+    // 打开对话框：勾掉 a 与 c、spinFreeze 设 1 → 确定
+    //（lambda 内只采集状态 + 收尾关闭对话框，不做断言——QCOMPARE 失败会提前
+    //  return 导致对话框滞留、exec 阻塞）
+    bool opened   = false;
+    int seenCount = -1;
+    QTimer::singleShot(0, &w, [ &opened, &seenCount ]() {
+        DA::DADialogTableColumnView* dlg
+            = qobject_cast< DA::DADialogTableColumnView* >(QApplication::activeModalWidget());
+        if (!dlg) {
+            return;
+        }
+        opened = true;
+        QListWidget* list = dlg->findChild< QListWidget* >(QStringLiteral("listColumns"));
+        QSpinBox* spin    = dlg->findChild< QSpinBox* >(QStringLiteral("spinFreeze"));
+        if (list && spin) {
+            seenCount = list->count();
+            for (int i = 0; i < list->count(); ++i) {
+                const QString name = list->item(i)->data(Qt::UserRole).toString();
+                if (name == QStringLiteral("a") || name == QStringLiteral("c")) {
+                    list->item(i)->setCheckState(Qt::Unchecked);
+                }
+            }
+            spin->setValue(1);
+        }
+        dlg->accept();
+    });
+    w.showColumnViewDialog();
+    QVERIFY(opened);
+    QCOMPARE(seenCount, 3);
+    // ① 两列隐藏且主窗格投影生效（006b）
+    QVERIFY(w.viewStateStore()->isColumnHidden(QStringLiteral("a"), 0));
+    QVERIFY(w.viewStateStore()->isColumnHidden(QStringLiteral("c"), 0));
+    QVERIFY(tv->isColumnHidden(0));
+    QVERIFY(tv->isColumnHidden(2));
+    // ② 冻结数落库
+    QCOMPARE(w.viewStateStore()->freezeColumnCount(), 1);
+    // ③ 一个撤销单元
+    QCOMPARE(w.getUndoStack()->count(), n0 + 1);
+    QCOMPARE(w.getUndoStack()->undoText(), QStringLiteral("Column View..."));
+    // ④ 一次 undo：隐藏集合与冻结数一起还原到前置值
+    w.getUndoStack()->undo();
+    QVERIFY(w.viewStateStore()->hiddenColumns().isEmpty());
+    QVERIFY(!tv->isColumnHidden(0) && !tv->isColumnHidden(2));
+    QCOMPARE(w.viewStateStore()->freezeColumnCount(), 1);
+    // ⑤ 重开：全部勾回、spinFreeze 设 0 → 确定 → 全可见、冻结 0；undo 后重推会
+    // 清掉已撤销的批命令（QUndoStack::push 语义），栈计数回到 n0+1
+    bool opened2 = false;
+    QTimer::singleShot(0, &w, [ &opened2 ]() {
+        DA::DADialogTableColumnView* dlg
+            = qobject_cast< DA::DADialogTableColumnView* >(QApplication::activeModalWidget());
+        if (!dlg) {
+            return;
+        }
+        opened2 = true;
+        QListWidget* list = dlg->findChild< QListWidget* >(QStringLiteral("listColumns"));
+        QSpinBox* spin    = dlg->findChild< QSpinBox* >(QStringLiteral("spinFreeze"));
+        if (list && spin) {
+            for (int i = 0; i < list->count(); ++i) {
+                list->item(i)->setCheckState(Qt::Checked);
+            }
+            spin->setValue(0);
+        }
+        dlg->accept();
+    });
+    w.showColumnViewDialog();
+    QVERIFY(opened2);
+    QVERIFY(w.viewStateStore()->hiddenColumns().isEmpty());
+    QCOMPARE(w.viewStateStore()->freezeColumnCount(), 0);
+    QCOMPARE(w.getUndoStack()->count(), n0 + 1);  // 已撤销的批命令被新 push 清掉
+}
+
+// 006d：重名列显示 a / a (2) 且两项独立勾选；取消不改动任何东西
+void DATableDataTest::testColumnViewDialogDuplicateNamesInitialAndCancel()
+{
+    if (!mPandasOk) {
+        QSKIP("pandas not available");
+    }
+    pybind11::object obj = makeDataFrameWithColumns({ QStringLiteral("a"), QStringLiteral("a"), QStringLiteral("b") });
+    QVERIFY(!obj.is_none());
+    DA::DAPyDataFrame df(obj);
+    DA::DAData d(df);
+    DA::DATableMetadataRegistry registry(nullptr);
+    DA::DADataOperateOfDataFrameWidget w(d, &registry);
+    w.resize(800, 400);
+    w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+    w.freezeColumnsTo(2);  // 前置：冻结 2
+    const int n0 = w.getUndoStack()->count();
+
+    // 打开：读初始状态（重名文本/SpinBox 起始值）后取消勾选 a(occ 0)+改冻结数，再取消
+    bool opened = false;
+    QStringList seenTexts;
+    int seenSpin = -1;
+    QTimer::singleShot(0, &w, [ &opened, &seenTexts, &seenSpin ]() {
+        DA::DADialogTableColumnView* dlg
+            = qobject_cast< DA::DADialogTableColumnView* >(QApplication::activeModalWidget());
+        if (!dlg) {
+            return;
+        }
+        opened = true;
+        QListWidget* list = dlg->findChild< QListWidget* >(QStringLiteral("listColumns"));
+        QSpinBox* spin    = dlg->findChild< QSpinBox* >(QStringLiteral("spinFreeze"));
+        if (list && spin) {
+            const int n = list->count();
+            for (int i = 0; i < n; ++i) {
+                seenTexts << list->item(i)->text();
+            }
+            seenSpin = spin->value();
+            // ③ 取消路径：改动对话框状态后 reject → 不落任何东西
+            list->item(0)->setCheckState(Qt::Unchecked);
+            spin->setValue(1);
+        }
+        dlg->reject();
+    });
+    w.showColumnViewDialog();
+    QVERIFY(opened);
+    // ① 重名显示（occurrence 0 不带后缀）
+    QCOMPARE(seenTexts.size(), 3);
+    QCOMPARE(seenTexts.at(0), QStringLiteral("a"));
+    QCOMPARE(seenTexts.at(1), QStringLiteral("a (2)"));
+    // ② SpinBox 起始值 = 生效冻结数（006d 阶段冻结投影未生效，恒 0）
+    QCOMPARE(seenSpin, w.effectiveFrozenColumnCount());
+    QVERIFY(w.viewStateStore()->hiddenColumns().isEmpty());
+    QCOMPARE(w.viewStateStore()->freezeColumnCount(), 2);
+    QCOMPARE(w.getUndoStack()->count(), n0);
+    // ④ 确定路径：只取消勾选 a (2) → accept → 重名两项独立
+    bool opened2 = false;
+    QTimer::singleShot(0, &w, [ &opened2 ]() {
+        DA::DADialogTableColumnView* dlg
+            = qobject_cast< DA::DADialogTableColumnView* >(QApplication::activeModalWidget());
+        if (!dlg) {
+            return;
+        }
+        opened2 = true;
+        QListWidget* list = dlg->findChild< QListWidget* >(QStringLiteral("listColumns"));
+        if (list && list->count() == 3) {
+            list->item(1)->setCheckState(Qt::Unchecked);  // "a (2)"
+        }
+        dlg->accept();
+    });
+    w.showColumnViewDialog();
+    QVERIFY(opened2);
+    QVERIFY(!w.viewStateStore()->isColumnHidden(QStringLiteral("a"), 0));
+    QVERIFY(w.viewStateStore()->isColumnHidden(QStringLiteral("a"), 1));
+    QVERIFY(!w.viewStateStore()->isColumnHidden(QStringLiteral("b"), 0));
 }
 
 //===================================================

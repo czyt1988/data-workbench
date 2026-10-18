@@ -56,6 +56,18 @@ public:
     };
     Q_ENUM(ColumnAction)
 
+    // 「列」子菜单动作表意（006d）：与既有 ColumnAction 分开——消费方是 DAGui
+    // 页面自身（列视图真源操作），不进 APP 的「先选中该列再执行」链路
+    enum class ColumnViewAction
+    {
+        HideColumn,           ///< 隐藏此列
+        ShowAllColumns,       ///< 显示所有列
+        FreezeToColumn,       ///< 冻结到此列
+        Unfreeze,             ///< 取消冻结
+        OpenColumnViewDialog  ///< 列视图…
+    };
+    Q_ENUM(ColumnViewAction)
+
     explicit DADataHeaderView(Qt::Orientation orientation, QWidget* parent = nullptr);
 
     // 设置计算列子存储（ƒx 角标三态绘制与列头菜单计算列组，非拥有，004 T1.23；
@@ -81,6 +93,8 @@ Q_SIGNALS:
     void clickedWithModifiers(int logicalIndex, Qt::KeyboardModifiers modifiers);
     // 列头右键菜单项被点击（APP 接线：排序类动作直接执行；其余先选中该列再执行既有槽逻辑）
     void columnActionRequested(int logicalIndex, DA::DADataHeaderView::ColumnAction action);
+    // 「列」子菜单动作被点击（006d：消费者是页面自身——列视图真源操作，不经 APP）
+    void columnViewActionRequested(int logicalIndex, DA::DADataHeaderView::ColumnViewAction action);
     // 行头宽度拖拽结束（仅 vertical 实例发射，页面据此写视图状态）
     void rowHeaderWidthChanged(int width);
 

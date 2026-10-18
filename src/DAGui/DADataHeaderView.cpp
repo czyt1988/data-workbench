@@ -361,6 +361,36 @@ QMenu* DADataHeaderView::buildColumnContextMenu(int logicalIndex)
             });
         }
     }
+    // 组6（006d）：列视图——「列」子菜单（隐藏 / 显示全部 ‖ 冻结 / 解冻 ‖ 列视图…）
+    menu->addSeparator();
+    QMenu* columnMenu = menu->addMenu(tr("Columns"));  // cn:列
+    QAction* actHideThis  = columnMenu->addAction(QIcon(QStringLiteral(":/DAGui/icon/hide-column.svg")),
+                                                  tr("Hide This Column"));  // cn:隐藏此列
+    QAction* actShowAll   = columnMenu->addAction(QIcon(QStringLiteral(":/DAGui/icon/show-all-columns.svg")),
+                                                  tr("Show All Columns"));  // cn:显示所有列
+    columnMenu->addSeparator();
+    QAction* actFreezeTo  = columnMenu->addAction(QIcon(QStringLiteral(":/DAGui/icon/freeze-column.svg")),
+                                                  tr("Freeze to This Column"));  // cn:冻结到此列
+    QAction* actUnfreeze  = columnMenu->addAction(QIcon(QStringLiteral(":/DAGui/icon/freeze-column.svg")),
+                                                  tr("Unfreeze"));  // cn:取消冻结
+    columnMenu->addSeparator();
+    QAction* actColumnViewDlg = columnMenu->addAction(QIcon(QStringLiteral(":/DAGui/icon/column-view.svg")),
+                                                      tr("Column View..."));  // cn:列视图…
+    connect(actHideThis, &QAction::triggered, this, [ this, logicalIndex ]() {
+        Q_EMIT columnViewActionRequested(logicalIndex, ColumnViewAction::HideColumn);
+    });
+    connect(actShowAll, &QAction::triggered, this, [ this, logicalIndex ]() {
+        Q_EMIT columnViewActionRequested(logicalIndex, ColumnViewAction::ShowAllColumns);
+    });
+    connect(actFreezeTo, &QAction::triggered, this, [ this, logicalIndex ]() {
+        Q_EMIT columnViewActionRequested(logicalIndex, ColumnViewAction::FreezeToColumn);
+    });
+    connect(actUnfreeze, &QAction::triggered, this, [ this, logicalIndex ]() {
+        Q_EMIT columnViewActionRequested(logicalIndex, ColumnViewAction::Unfreeze);
+    });
+    connect(actColumnViewDlg, &QAction::triggered, this, [ this, logicalIndex ]() {
+        Q_EMIT columnViewActionRequested(logicalIndex, ColumnViewAction::OpenColumnViewDialog);
+    });
     return menu;
 }
 

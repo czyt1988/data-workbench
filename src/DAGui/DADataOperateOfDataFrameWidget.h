@@ -16,6 +16,7 @@
 #include "DATableComputedColumnStore.h"
 #include "DATableValidationRule.h"
 #include "DADataOperatePageWidget.h"
+#include "DADataHeaderView.h"
 #include "Dialog/DADialogFindReplace.h"
 namespace Ui
 {
@@ -121,6 +122,8 @@ public:
     // ===== 列视图（006）=====
     // 列视图直接入口（007 定位的对接面）：只写 store + 重投影，不入撤销栈
     void setColumnHiddenDirectly(const QString& name, int occurrence, bool hidden);
+    // 打开列视图对话框（006d）：勾选可见列 + 冻结列数；确定按差异构造一个批量父命令
+    void showColumnViewDialog();
     // 目标列是否落在「视图顺序前 m 个可见列」的冻结区（007 判定要不要调 showColumn）；
     // 本单恒 false（冻结投影 006e 收口）；freezeColumnCount()==0 时也恒 false
     bool isColumnInFrozenArea(int logicalColumn) const;
@@ -325,6 +328,8 @@ Q_SIGNALS:
 private Q_SLOTS:
     // 表格点击
     void onTableViewClicked(const QModelIndex& index);
+    // 「列」子菜单动作分发（006d）：列视图真源操作
+    void onHeaderColumnViewActionRequested(int logicalColumn, DA::DADataHeaderView::ColumnViewAction action);
     // 表头带修饰键点击（DADataHeaderView::clickedWithModifiers）：
     // 仅拾取模式下转发 columnHeaderClicked；**点击不排序**（2026-10-18 交互修订，
     // 排序入口=列头右键菜单 sortColumn/addSecondarySortColumn）
@@ -463,6 +468,7 @@ private:
     DADialogDataframeColumnCastToDatetime* mDialogCastDatetimeArgs { nullptr };
     DADialogDataframeColumnDescribe* mDialogColumnDescribe { nullptr };
     DADialogFindReplace* mFindReplaceDialog { nullptr };  ///< 非模态浮动查找/替换条（懒建，页级持有）
+    class DADialogTableColumnView* mDialogColumnView { nullptr };  ///< 列视图对话框（006d，懒建复用）
     QPointer< DADialogValidationReport > mValidationReport;  ///< 非模态校验报告窗（005 T1.25，重跑前先关旧的）
 
     // ===== 查找状态（002 T1.4）=====
