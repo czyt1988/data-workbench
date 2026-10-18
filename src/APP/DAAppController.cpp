@@ -558,6 +558,14 @@ void DAAppController::initConnection()
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionEditNote, onActionNoteTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionDeleteNote, onActionDeleteNoteTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionClearNotes, onActionClearNotesTriggered);
+    // 列视图（006 T1.8，Ribbon「View」面板；与列头右键「列」子菜单共用页面入口）
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionFreezeColumns, onActionFreezeColumnsTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionHideColumn, onActionHideColumnTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowAllColumns, onActionShowAllColumnsTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionColumnViewDialog, onActionColumnViewDialogTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionFreezeFirstColumn, onActionFreezeFirstColumnTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionFreezeColumnsPrompt, onActionFreezeColumnsPromptTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionUnfreezeColumns, onActionUnfreezeColumnsTriggered);
     // View Category
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowWorkFlowArea, onActionShowWorkFlowAreaTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowWorkFlowManagerArea, onActionShowWorkFlowManagerAreaTriggered);
@@ -3770,6 +3778,97 @@ void DAAppController::onActionNoteTriggered()
         return;
     }
     dfopt->showNoteEditorForCurrentCell();
+}
+
+/**
+ * @brief 冻结列（006 T1.8，Ribbon「View」面板；主体 = 弹「冻结前 N 列」输入框）
+ */
+void DAAppController::onActionFreezeColumnsTriggered()
+{
+    DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false);
+    if (!dfopt) {
+        return;
+    }
+    dfopt->promptFreezeColumns();
+}
+
+/**
+ * @brief 隐藏列（006 T1.8）：隐藏选中的列（入撤销栈）
+ */
+void DAAppController::onActionHideColumnTriggered()
+{
+    DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false);
+    if (!dfopt) {
+        return;
+    }
+    const QList< int > cols = dfopt->getSelectedDataframeCoumns();
+    if (cols.isEmpty()) {
+        daWarning << tr("Please select a column first");  // cn:请先选择列（复用页面既有源串，本 context 另建条目）
+        return;
+    }
+    for (int c : cols) {
+        dfopt->hideColumnAt(c);
+    }
+}
+
+/**
+ * @brief 显示所有列（006 T1.8）
+ */
+void DAAppController::onActionShowAllColumnsTriggered()
+{
+    DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false);
+    if (!dfopt) {
+        return;
+    }
+    dfopt->showAllColumns();
+}
+
+/**
+ * @brief 列视图对话框（006 T1.8）
+ */
+void DAAppController::onActionColumnViewDialogTriggered()
+{
+    DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false);
+    if (!dfopt) {
+        return;
+    }
+    dfopt->showColumnViewDialog();
+}
+
+/**
+ * @brief 冻结首列（006 T1.8，冻结菜单项）
+ */
+void DAAppController::onActionFreezeFirstColumnTriggered()
+{
+    DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false);
+    if (!dfopt) {
+        return;
+    }
+    dfopt->freezeColumnsTo(1);
+}
+
+/**
+ * @brief 冻结前 N 列…（006 T1.8，冻结菜单项，与主体同一实现）
+ */
+void DAAppController::onActionFreezeColumnsPromptTriggered()
+{
+    DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false);
+    if (!dfopt) {
+        return;
+    }
+    dfopt->promptFreezeColumns();
+}
+
+/**
+ * @brief 取消冻结（006 T1.8，冻结菜单项）
+ */
+void DAAppController::onActionUnfreezeColumnsTriggered()
+{
+    DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false);
+    if (!dfopt) {
+        return;
+    }
+    dfopt->freezeColumnsTo(0);
 }
 
 /**

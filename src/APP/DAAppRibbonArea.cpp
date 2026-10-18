@@ -166,6 +166,13 @@ void DAAppRibbonArea::buildMenu()
     mMenuNote->addAction(mActions->actionDeleteNote);
     mMenuNote->addSeparator();
     mMenuNote->addAction(mActions->actionClearNotes);
+    // 冻结列下拉子菜单（006 T1.8）：冻结首列 / 冻结前 N 列… / 取消冻结，挂在 actionFreezeColumns 下
+    mMenuFreezeColumns = new SARibbonMenu(mApp);
+    mMenuFreezeColumns->setObjectName(QString::fromUtf8(UiNames::Menu::FreezeColumns));
+    mMenuFreezeColumns->addAction(mActions->actionFreezeFirstColumn);
+    mMenuFreezeColumns->addAction(mActions->actionFreezeColumnsPrompt);
+    mMenuFreezeColumns->addSeparator();
+    mMenuFreezeColumns->addAction(mActions->actionUnfreezeColumns);
     //
     mExportWorkflowSceneToImageMenu = new SARibbonMenu(mApp);
     mExportWorkflowSceneToImageMenu->setObjectName(QString::fromUtf8(UiNames::Menu::ExportWorkflowSceneToImage));
@@ -536,6 +543,16 @@ void DAAppRibbonArea::buildContextCategoryDataFrame()
     mPannelDataframeOperateDataTools->addSeparator();
     mPannelDataframeOperateDataTools->addLargeAction(mActions->actionValidationRules);
     mPannelDataframeOperateDataTools->addMediumAction(mActions->actionRunValidation);
+
+    // View pannel - 视图（006 T1.8：冻结列/隐藏列/显示所有列/列视图）
+    // setMenu 必须在 addLargeAction 之前（mMenuInsertRow 同款顺序）
+    mActions->actionFreezeColumns->setMenu(mMenuFreezeColumns);
+    mPannelDataframeOperateView = mCategoryDataframeOperate->addPanel(tr("View"));  // cn:视图
+    mPannelDataframeOperateView->setObjectName(QString::fromUtf8(UiNames::Ribbon::DataFrameOperateViewPanel));
+    mPannelDataframeOperateView->addLargeAction(mActions->actionFreezeColumns, QToolButton::MenuButtonPopup);
+    mPannelDataframeOperateView->addLargeAction(mActions->actionHideColumn);
+    mPannelDataframeOperateView->addLargeAction(mActions->actionShowAllColumns);
+    mPannelDataframeOperateView->addLargeAction(mActions->actionColumnViewDialog);
 
     // ===== 表格样式 category =====
     mCategoryDataframeStyle = mContextDataFrame->addCategoryPage(tr("Table Style"));  // cn:表格样式

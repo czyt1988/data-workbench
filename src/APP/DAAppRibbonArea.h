@@ -283,6 +283,8 @@ private:
     SARibbonPanel* mPannelDataframeOperateEdit { nullptr };                  ///< 编辑面板
     // 数据工具 panel（004：计算列/分列/合列/分组/转置/melt）
     SARibbonPanel* mPannelDataframeOperateDataTools { nullptr };            ///< 数据工具面板
+    SARibbonPanel* mPannelDataframeOperateView { nullptr };                   ///< 视图面板（006 T1.8：冻结/隐藏/显示所有列/列视图）
+    QMenu* mMenuFreezeColumns { nullptr };                                    ///< 冻结列下拉子菜单（挂在 actionFreezeColumns 下）
     // 表格样式 category
     SARibbonCategory* mCategoryDataframeStyle { nullptr };    ///< dataframe表格样式category
     SARibbonPanel* mPannelDataframeStyleFill { nullptr };     ///< 底色面板

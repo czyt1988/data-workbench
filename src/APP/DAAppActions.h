@@ -107,6 +107,13 @@ public:
     QAction* actionGroupBy { nullptr };                     ///< 分组聚合（004 T1.22，Data Tools 面板 + 表体右键同入口）
     QAction* actionTranspose { nullptr };                   ///< 转置（004 T1.27，Data Tools 面板 + 表体右键同入口）
     QAction* actionMelt { nullptr };                        ///< 宽转长 melt（004 T1.27，Data Tools 面板 + 表体右键同入口）
+    QAction* actionFreezeColumns { nullptr };               ///< 冻结列（006 T1.8，View 面板，菜单主体 = 弹输入框）
+    QAction* actionHideColumn { nullptr };                  ///< 隐藏列（006 T1.8）
+    QAction* actionShowAllColumns { nullptr };              ///< 显示所有列（006 T1.8）
+    QAction* actionColumnViewDialog { nullptr };            ///< 列视图…（006 T1.8）
+    QAction* actionFreezeFirstColumn { nullptr };           ///< 冻结首列（006，冻结菜单项）
+    QAction* actionFreezeColumnsPrompt { nullptr };         ///< 冻结前 N 列…（006，冻结菜单项）
+    QAction* actionUnfreezeColumns { nullptr };             ///< 取消冻结（006，冻结菜单项）
     QAction* actionFill { nullptr };                        ///< 填充（005 T1.24，Edit 面板下拉，含子菜单）
     QAction* actionFillDown { nullptr };                    ///< 向下填充（005 T1.24）
     QAction* actionFillUp { nullptr };                      ///< 向上填充（005 T1.24）

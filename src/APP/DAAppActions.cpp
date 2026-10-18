@@ -143,6 +143,15 @@ void DAAppActions::buildDataAction()
     actionEditNote                    = createAction(UiNames::Action::EditNote, ":/DAGui/icon/cell-note.svg");
     actionDeleteNote                  = createAction(UiNames::Action::DeleteNote, ":/DAGui/icon/delete.svg");
     actionClearNotes                  = createAction(UiNames::Action::ClearNotes, ":/DAGui/icon/note-clear.svg");
+    // 列视图 action（006 T1.8；图标取 DAGui 图标库，不设快捷键——表格快捷键唯一挂点在 DADataTableView 红线5）
+    actionFreezeColumns               = createAction(UiNames::Action::FreezeColumns, ":/DAGui/icon/freeze-column.svg");
+    actionHideColumn                  = createAction(UiNames::Action::HideColumn, ":/DAGui/icon/hide-column.svg");
+    actionShowAllColumns              = createAction(UiNames::Action::ShowAllColumns, ":/DAGui/icon/show-all-columns.svg");
+    actionColumnViewDialog            = createAction(UiNames::Action::ColumnViewDialog, ":/DAGui/icon/column-view.svg");
+    // 冻结菜单三项（无图标，照 actionInsertRowAbove 先例单参 createAction）
+    actionFreezeFirstColumn           = createAction(UiNames::Action::FreezeFirstColumn);
+    actionFreezeColumnsPrompt         = createAction(UiNames::Action::FreezeColumnsPrompt);
+    actionUnfreezeColumns             = createAction(UiNames::Action::UnfreezeColumns);
 }
 
 void DAAppActions::buildChartAction()
@@ -720,6 +729,18 @@ void DAAppActions::retranslateUi()
     actionDeleteNote->setToolTip(tr("Delete the note of the current cell"));  // cn:删除当前单元格的批注
     actionClearNotes->setText(tr("Clear All Notes"));               // cn:清除本表批注
     actionClearNotes->setToolTip(tr("Remove all notes of the current table (undoable)"));  // cn:清除本表全部批注（可撤销）
+    // 列视图（006 T1.8）
+    actionFreezeColumns->setText(tr("Freeze Columns"));                               // cn:冻结列
+    actionFreezeColumns->setToolTip(tr("Freeze the leftmost columns of the table"));  // cn:冻结表格左侧的列
+    actionHideColumn->setText(tr("Hide Column"));                                     // cn:隐藏列
+    actionHideColumn->setToolTip(tr("Hide the selected columns"));                    // cn:隐藏选中的列
+    actionShowAllColumns->setText(tr("Show All Columns"));                            // cn:显示所有列
+    actionShowAllColumns->setToolTip(tr("Show all hidden columns"));                  // cn:显示所有被隐藏的列
+    actionColumnViewDialog->setText(tr("Column View..."));                            // cn:列视图...
+    actionColumnViewDialog->setToolTip(tr("Open the column view settings dialog"));   // cn:打开列视图设置对话框
+    actionFreezeFirstColumn->setText(tr("Freeze First Column"));                      // cn:冻结首列
+    actionFreezeColumnsPrompt->setText(tr("Freeze Columns..."));                      // cn:冻结前 N 列…
+    actionUnfreezeColumns->setText(tr("Unfreeze Columns"));                           // cn:取消冻结
     //-----------------------------------------------------
     // workflow 编辑
     //-----------------------------------------------------

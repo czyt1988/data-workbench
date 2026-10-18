@@ -365,6 +365,14 @@ private Q_SLOTS:
     void onActionNoteTriggered();
     void onActionDeleteNoteTriggered();
     void onActionClearNotesTriggered();
+    // 列视图（006 T1.8，Ribbon「View」面板；与列头右键「列」子菜单共用页面入口）
+    void onActionFreezeColumnsTriggered();
+    void onActionHideColumnTriggered();
+    void onActionShowAllColumnsTriggered();
+    void onActionColumnViewDialogTriggered();
+    void onActionFreezeFirstColumnTriggered();
+    void onActionFreezeColumnsPromptTriggered();
+    void onActionUnfreezeColumnsTriggered();
     // 撤销历史面板（005 T1.21，Ribbon「视图」页；入口选 (a) 点击即 raise，与现有交互一致）
     void onActionShowUndoHistoryTriggered();
     // 历史面板调整撤销深度：写回配置（dawork-config.xml）并施加到全部已打开数据页

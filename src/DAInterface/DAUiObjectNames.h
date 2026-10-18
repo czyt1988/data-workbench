@@ -66,6 +66,7 @@ constexpr char DataFrameOperateDTypePanel[]  = "da-pannel-dataframe.operate.type
 constexpr char DataFrameOperateFormatPanel[] = "da-pannel-dataframe.operate.format";  ///< 显示格式pannel
 constexpr char DataFrameOperateEditPanel[]   = "da-pannel-dataframe.operate.edit";    ///< 编辑pannel（查找/替换，005 填充也进此面板）
 constexpr char DataFrameOperateDataToolsPanel[] = "da-pannel-dataframe.operate.datatools";  ///< 数据工具pannel（004：计算列/分列/合列/分组/转置/melt）
+constexpr char DataFrameOperateViewPanel[]     = "da-pannel-dataframe.operate.view";       ///< 视图pannel（006 T1.8：冻结列/隐藏列/列视图）
 constexpr char DataFrameStyleFillPanel[]     = "da-pannel-dataframe.style.fill";      ///< 填充样式pannel
 constexpr char DataFrameStyleFontPanel[]     = "da-pannel-dataframe.style.font";      ///< 字体样式pannel
 constexpr char DataFrameStyleClearPanel[]    = "da-pannel-dataframe.style.clear";     ///< 样式清除pannel
@@ -147,6 +148,15 @@ constexpr char MergeColumns[]               = "actionMergeColumns";             
 constexpr char GroupBy[]                    = "actionGroupBy";                    ///< 分组聚合（004 T1.22）
 constexpr char Transpose[]                  = "actionTranspose";                  ///< 转置（004 T1.27）
 constexpr char Melt[]                       = "actionMelt";                       ///< 宽转长 melt（004 T1.27）
+// ---- 列视图（006 T1.8，Ribbon「View」面板 + 列头右键「列」子菜单同入口）----
+constexpr char FreezeColumns[]              = "actionFreezeColumns";              ///< 冻结列（菜单主体 = 弹输入框）
+constexpr char HideColumn[]                 = "actionHideColumn";                 ///< 隐藏列
+constexpr char ShowAllColumns[]             = "actionShowAllColumns";             ///< 显示所有列
+constexpr char ColumnViewDialog[]           = "actionColumnViewDialog";           ///< 列视图…
+// 冻结菜单三项（照 mMenuInsertRow 先例：菜单项必须是 DAAppActions 的 action 才能进控制器绑定表）
+constexpr char FreezeFirstColumn[]          = "actionFreezeFirstColumn";          ///< 冻结首列
+constexpr char FreezeColumnsPrompt[]        = "actionFreezeColumnsPrompt";        ///< 冻结前 N 列…
+constexpr char UnfreezeColumns[]            = "actionUnfreezeColumns";            ///< 取消冻结
 // ---- 填充（005 T1.24，Ribbon「Edit」面板下拉 + 表体右键「填充」子菜单，快捷键 Ctrl+D 在视图）----
 constexpr char Fill[]                       = "actionFill";                       ///< 填充下拉根（005 T1.24）
 constexpr char FillDown[]                   = "actionFillDown";                   ///< 向下填充（005 T1.24）
@@ -316,6 +326,7 @@ constexpr char InsertRow[]                  = "menuInsertRow";
 constexpr char InsertColumn[]               = "menuInsertColumn";
 constexpr char Fill[]                       = "menuFill";  ///< 填充下拉子菜单（005 T1.24）
 constexpr char Note[]                       = "menuNote";  ///< 批注下拉子菜单（005 T1.26）
+constexpr char FreezeColumns[]              = "menuFreezeColumns";  ///< 冻结列下拉子菜单（006 T1.8，挂在 actionFreezeColumns 下）
 constexpr char ExportData[]                 = "menuExportData";
 constexpr char ExportWorkflowSceneToImage[] = "exportWorkflowSceneToImageMenu";
 constexpr char ChartPickSetting[]           = "mMenuChartPickSetting";  ///< 历史命名，保留
