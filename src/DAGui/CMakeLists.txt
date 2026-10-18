@@ -20,6 +20,7 @@ set(DA_LIB_HEADER_FILES
     DADataOperatePageWidget.h
     DADataTableView.h
     DATablePaneContainer.h
+    DATableStatsWidget.h
     DAFigureFactory.h
     DAGraphicsPixmapItemSettingWidget.h
     DADataListView.h
@@ -98,6 +99,7 @@ set(DA_LIB_SOURCE_FILES
     DADataOperateWidget.cpp
     DADataTableView.cpp
     DATablePaneContainer.cpp
+    DATableStatsWidget.cpp
     DADockAreaTabPosition.cpp
     DAFigureFactory.cpp
     DAGraphicsPixmapItemSettingWidget.cpp
