@@ -127,6 +127,40 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
     mPaneContainer->setMainView(ui->tableView);
     // 拖动落库（006c）：容器合并出全局列序后交页面入栈重投影（拖动 = 一个撤销单元）
     connect(mPaneContainer, &DATablePaneContainer::columnOrderChanged, this, &DADataOperateOfDataFrameWidget::applyColumnOrderFromView);
+    // 冻结窗格懒建（006e）：容器建好窗格后交页面装配同一条 configurePaneView，
+    // 装配完成后再补列宽/行头宽；转发契约（冻结 → 主）也在此接线（APP 只连主窗格）
+    connect(mPaneContainer, &DATablePaneContainer::frozenViewCreated, this, [ this ](DA::DADataTableView* frozen) {
+        configurePaneView(frozen);
+        applyColumnWidthsToPane(frozen);
+        applyRowHeaderWidthToOwner();
+        // 表头动作转发：重命名/删除/定位最大最小/描述统计/计算列三项（APP 只连主窗格）
+        DADataHeaderView* fh = qobject_cast< DADataHeaderView* >(frozen->horizontalHeader());
+        DADataHeaderView* mh = qobject_cast< DADataHeaderView* >(ui->tableView->horizontalHeader());
+        if (fh && mh) {
+            connect(fh, &DADataHeaderView::columnActionRequested, mh, &DADataHeaderView::columnActionRequested);
+        }
+        // 表体剪贴板三信号转发到主窗格同名信号
+        connect(frozen, &DADataTableView::contextMenuCutRequested, ui->tableView, &DADataTableView::contextMenuCutRequested);
+        connect(frozen, &DADataTableView::contextMenuCopyRequested, ui->tableView, &DADataTableView::contextMenuCopyRequested);
+        connect(frozen, &DADataTableView::contextMenuPasteRequested, ui->tableView, &DADataTableView::contextMenuPasteRequested);
+        // 列宽/冻结数变化都会触发容器重投影与几何重算
+        connect(frozen->horizontalHeader(), &QHeaderView::sectionResized, this, [ this ]() {
+            if (mPaneContainer) {
+                mPaneContainer->updateFrozenGeometry();
+            }
+        });
+        // 冻结窗格行头宽变化：行头归属冻结窗格，宽度变化要同步几何
+        if (DADataHeaderView* fvh = qobject_cast< DADataHeaderView* >(frozen->verticalHeader())) {
+            connect(fvh, &DADataHeaderView::rowHeaderWidthChanged, this, [ this ](int width) {
+                if (mViewStateStore) {
+                    mViewStateStore->setRowHeaderWidth(width);
+                }
+                if (mPaneContainer) {
+                    mPaneContainer->updateFrozenGeometry();
+                }
+            });
+        }
+    });
 
     mModel = new DADataTableModel(getUndoStack(), this);
 
@@ -161,9 +195,11 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
     // 窗格装配（006b 抽取的唯一装配点）：表头替换 → setModel → 委托 → 逐窗格连接；
     // 必须在 mStyleDelegate 创建之后（里面要用它），在 setDAData/applyViewStateFromStore 之前
     configurePaneView(ui->tableView);
-    // 高亮层变更时重绘视口（瞬态装饰不经模型 dataChanged 链路）
+    // 高亮层变更时重绘两窗格视口（瞬态装饰不经模型 dataChanged 链路，006e 扩冻结窗格）
     connect(mHighlightOverlay, &DATableHighlightOverlay::changed, this, [ this ]() {
-        ui->tableView->viewport()->update();
+        for (DADataTableView* pane : paneViews()) {
+            pane->viewport()->update();
+        }
     });
     // 模型读取列显示格式（actualData 的 DisplayRole 分支）
     mModel->setStyleManager(mStyleManager);
@@ -290,17 +326,13 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
         applyViewStateFromStore();
         // 插列后排序规格里的列位置失效，清除规格（数据顺序不变，只清指示器）
         mSortSpec.clear();
-        if (DADataHeaderView* hh = qobject_cast< DADataHeaderView* >(ui->tableView->horizontalHeader())) {
-            hh->setSortSpec(mSortSpec);
-        }
+        forEachPaneHeader([ this ](DADataHeaderView* hh) { hh->setSortSpec(mSortSpec); });
     });
     connect(mModel, &QAbstractItemModel::columnsRemoved, this, [ this ]() {
         applyViewStateFromStore();
         // 删列后排序规格里的列位置失效，清除规格
         mSortSpec.clear();
-        if (DADataHeaderView* hh = qobject_cast< DADataHeaderView* >(ui->tableView->horizontalHeader())) {
-            hh->setSortSpec(mSortSpec);
-        }
+        forEachPaneHeader([ this ](DADataHeaderView* hh) { hh->setSortSpec(mSortSpec); });
     });
     // 关闭不必要的绘制特性
     setDAData(d);
@@ -348,8 +380,12 @@ void DADataOperateOfDataFrameWidget::configurePaneView(DADataTableView* pane)
     //    （参照 DACacheWindowTableView 构造对默认行头的同款设置）
     pane->setHorizontalHeader(new DADataHeaderView(Qt::Horizontal, pane));
     pane->setVerticalHeader(new DADataHeaderView(Qt::Vertical, pane));
-    // 2) 模型与委托（同一 delegate 实例注入多个视图，delegate 属页面）
+    // 2) 模型与委托（同一 delegate 实例注入多个视图，delegate 属页面）；
+    //    冻结窗格共享主窗格的 selectionModel（006e，顺序：先 setModel 再共享）
     pane->setModel(mModel);
+    if (pane != ui->tableView) {
+        pane->setSelectionModel(ui->tableView->selectionModel());
+    }
     pane->setItemDelegate(mStyleDelegate);
     // 3) 批注子存储注入视图（右键菜单「插入/编辑/删除批注」的启用规则查当前格）
     pane->setNoteStore(mNoteStore);
@@ -370,11 +406,14 @@ void DADataOperateOfDataFrameWidget::configurePaneView(DADataTableView* pane)
         connect(hh, &DADataHeaderView::columnViewActionRequested,
                 this, &DADataOperateOfDataFrameWidget::onHeaderColumnViewActionRequested);
     }
-    // 5) 垂直表头：行头宽拖拽 → 写视图状态
+    // 5) 垂直表头：行头宽拖拽 → 写视图状态 + 冻结几何重算（006e）
     if (DADataHeaderView* vh = qobject_cast< DADataHeaderView* >(pane->verticalHeader())) {
         connect(vh, &DADataHeaderView::rowHeaderWidthChanged, this, [ this ](int width) {
             if (mViewStateStore) {
                 mViewStateStore->setRowHeaderWidth(width);
+            }
+            if (mPaneContainer) {
+                mPaneContainer->updateFrozenGeometry();
             }
         });
     }
@@ -465,9 +504,7 @@ void DADataOperateOfDataFrameWidget::setDAData(const DA::DAData& d)
     mData = d;
     // 数据替换后旧排序规格（列位置+方向）失去意义，清除（排序规格不持久化，R13）
     mSortSpec.clear();
-    if (DADataHeaderView* hh = qobject_cast< DADataHeaderView* >(ui->tableView->horizontalHeader())) {
-        hh->setSortSpec(mSortSpec);
-    }
+    forEachPaneHeader([ this ](DADataHeaderView* hh) { hh->setSortSpec(mSortSpec); });
     // 通用表格数据（DATableDataSource，如数据库惰性表）也可显示；series维持原语义
     if (d.isDataFrame() || (d.isTable() && !d.isSeries())) {
         ui->tableView->setData(d);
@@ -1793,33 +1830,11 @@ void DADataOperateOfDataFrameWidget::applyViewStateFromStore()
     // 1) 列宽：对每个窗格按列名（+occurrence）套用（Qt 按段存宽度，隐藏段写进
     //    hiddenSectionSize、显示时恢复，安全）
     for (DADataTableView* pane : paneViews()) {
-        QHeaderView* hh = pane->horizontalHeader();
-        if (!hh) {
-            continue;
-        }
-        const int totalCols = mModel->columnCount();
-        QHash< QString, int > seen;  // 列名 -> 已出现次数（即下一列的 occurrence）
-        for (int c = 0; c < totalCols; ++c) {
-            const QString name = mModel->headerData(c, Qt::Horizontal).toString();
-            const int occ      = seen.value(name, 0);
-            seen[ name ]       = occ + 1;
-            if (name.isEmpty()) {
-                continue;  // 尾部预留空白列无列名，不应用
-            }
-            const int w = mViewStateStore->columnWidth(name, occ);
-            if (w > 0) {
-                hh->resizeSection(c, w);
-            }
-        }
+        applyColumnWidthsToPane(pane);
     }
-    // 2) 行头宽：设给行头归属方（本单恒为主窗格；归属随冻结切换见 006e）
-    const int rhw = mViewStateStore->rowHeaderWidth();
-    if (rhw > 0) {
-        if (QHeaderView* vh = ui->tableView->verticalHeader()) {
-            vh->setFixedWidth(rhw);
-        }
-    }
-    // 3) 列序 / 隐藏 / 冻结 → 容器投影（冻结本单容器内夹紧为 0，006e 收口）
+    // 2) 行头宽：设给行头归属方（冻结时归属冻结窗格，否则主窗格）
+    applyRowHeaderWidthToOwner();
+    // 3) 列序 / 隐藏 / 冻结 → 容器投影（冻结集合 = ordered 前 freeze 个非隐藏列）
     const QList< QPair< QString, int > > actual       = actualColumnIdentities();
     const QList< QPair< QString, int > > storedOrder  = orderedColumnIdentities();  // 全局列序身份表
     const QList< QPair< QString, int > > storedHidden = mViewStateStore->hiddenColumns();
@@ -1871,6 +1886,20 @@ void DADataOperateOfDataFrameWidget::applyViewStateFromStore()
         }
     }
     const int freeze = qBound(0, mViewStateStore->freezeColumnCount(), visibleCount);
+    // 冻结被夹小时发一条用户可见提示（只在生效值变化时发，避免重复投影刷屏）
+    if (freeze < mViewStateStore->freezeColumnCount() && mLastProjectedFreeze != freeze) {
+        daWarning << tr("Frozen columns were reduced because visible columns changed.");
+        // cn:可见列已变化，冻结列数被自动缩减
+    }
+    mLastProjectedFreeze = freeze;
+    // 冻结列集合缓存（isColumnInFrozenArea 纯查表，唯一写入时机在这里）
+    mFrozenColumnsLogical.clear();
+    for (int i = 0; i < ordered.size() && mFrozenColumnsLogical.size() < freeze; ++i) {
+        const int logical = ordered.at(i);
+        if (!hidden.contains(logical)) {
+            mFrozenColumnsLogical.insert(logical);  // 前 freeze 个非隐藏列
+        }
+    }
     if (mPaneContainer) {
         mPaneContainer->applyColumnState(ordered, hidden, freeze);
     }
@@ -1878,17 +1907,90 @@ void DADataOperateOfDataFrameWidget::applyViewStateFromStore()
 }
 
 /**
+ * @brief 把 store 里的列宽套到指定窗格（列宽段唯一实现）
+ *
+ * 按「列名 + occurrence」匹配逻辑列号后 resizeSection；尾部预留空白列跳过。
+ * 主窗格与冻结窗格共用（006e）。
+ * @param pane 目标窗格
+ */
+void DADataOperateOfDataFrameWidget::applyColumnWidthsToPane(DADataTableView* pane)
+{
+    if (!pane || !mViewStateStore || !mModel) {
+        return;
+    }
+    QHeaderView* hh = pane->horizontalHeader();
+    if (!hh) {
+        return;
+    }
+    const int totalCols = mModel->columnCount();
+    QHash< QString, int > seen;  // 列名 -> 已出现次数（即下一列的 occurrence）
+    for (int c = 0; c < totalCols; ++c) {
+        const QString name = mModel->headerData(c, Qt::Horizontal).toString();
+        const int occ      = seen.value(name, 0);
+        seen[ name ]       = occ + 1;
+        if (name.isEmpty()) {
+            continue;  // 尾部预留空白列无列名，不应用
+        }
+        const int w = mViewStateStore->columnWidth(name, occ);
+        if (w > 0) {
+            hh->resizeSection(c, w);
+        }
+    }
+}
+
+/**
+ * @brief 行头宽只设给归属方
+ *
+ * 冻结时行头归属冻结窗格（[行号][冻结列][主区]），否则归属主窗格。
+ * 只对归属方 setFixedWidth，不给非归属方的隐藏行头写宽度（切回时留脏值）。
+ */
+void DADataOperateOfDataFrameWidget::applyRowHeaderWidthToOwner()
+{
+    if (!mViewStateStore) {
+        return;
+    }
+    const int rhw = mViewStateStore->rowHeaderWidth();
+    if (rhw <= 0) {
+        return;
+    }
+    QHeaderView* owner = ui->tableView->verticalHeader();
+    if (mPaneContainer && mPaneContainer->frozenView()) {
+        owner = mPaneContainer->frozenView()->verticalHeader();
+    }
+    if (owner) {
+        owner->setFixedWidth(rhw);
+    }
+}
+
+/**
  * @brief 本页所有需要投影的窗格
  *
- * 本单只有主窗格；006e 在末尾追加冻结窗格（非空时）。
+ * 主窗格在前；冻结窗格懒建后追加（006e）。
  * @return 窗格列表（非空）
  */
 QList< DADataTableView* > DADataOperateOfDataFrameWidget::paneViews() const
 {
     QList< DADataTableView* > res;
     res.append(ui->tableView);
-    // 006e：res.append(mPaneContainer->frozenView())（非空时）
+    if (mPaneContainer) {
+        if (DADataTableView* frozen = mPaneContainer->frozenView()) {
+            res.append(frozen);
+        }
+    }
     return res;
+}
+
+/**
+ * @brief 遍历全部窗格的水平表头（排序角标/ƒx 角标等按实例刷新用，006e）
+ * @param fn 对每个表头执行的回调
+ */
+void DADataOperateOfDataFrameWidget::forEachPaneHeader(const std::function< void(DADataHeaderView*) >& fn)
+{
+    for (DADataTableView* pane : paneViews()) {
+        if (DADataHeaderView* hh = qobject_cast< DADataHeaderView* >(pane->horizontalHeader())) {
+            fn(hh);
+        }
+    }
 }
 
 /**
@@ -1944,15 +2046,14 @@ void DADataOperateOfDataFrameWidget::setColumnHiddenDirectly(const QString& name
 /**
  * @brief 目标列是否落在冻结区
  *
- * 006e 起按「视图顺序前 effectiveFrozenColumnCount() 个可见列」判定；本单生效冻结数
- * 恒 0 → 恒 false。007 不得自己重算这份语义（真源唯一）。
+ * 纯查表（mFrozenColumnsLogical 在 applyViewStateFromStore 尾部与投影同一次
+ * 写入）；007 不得自己重算这份语义（真源唯一）。
  * @param logicalColumn 逻辑列号
  * @return 是否在冻结区
  */
 bool DADataOperateOfDataFrameWidget::isColumnInFrozenArea(int logicalColumn) const
 {
-    Q_UNUSED(logicalColumn);
-    return false;
+    return mFrozenColumnsLogical.contains(logicalColumn);
 }
 
 /**
@@ -2225,6 +2326,10 @@ void DADataOperateOfDataFrameWidget::onHeaderSectionResized(DADataTableView* sou
         }
     }
     mViewStateStore->setColumnWidth(name, occ, newSize);
+    // 冻结列宽变化 → 重算冻结窗格宽度（006e；非冻结列宽只影响主区，重算幂等无害）
+    if (mPaneContainer) {
+        mPaneContainer->updateFrozenGeometry();
+    }
 }
 
 /**
@@ -2850,9 +2955,7 @@ bool DADataOperateOfDataFrameWidget::applySortSpec(const QVector< QPair< int, Qt
     push(cmd.release());
     const qint64 pushMs = timer.elapsed();
     mSortSpec = newSpec;
-    if (DADataHeaderView* hh = qobject_cast< DADataHeaderView* >(ui->tableView->horizontalHeader())) {
-        hh->setSortSpec(mSortSpec);
-    }
+    forEachPaneHeader([ this ](DADataHeaderView* hh) { hh->setSortSpec(mSortSpec); });
     // 排序路径计时打点（开发诊断，英文）：elapsed_ms = exec（算子+回调）+ push（入栈）
     qDebug().noquote() << QStringLiteral("DADataOperateOfDataFrameWidget::applySortSpec: rows=%1 keys=%2 elapsed_ms=%3 "
                                          "(exec=%4 push=%5 notify=%6 remap=%7 showRow=%8)")
@@ -3680,9 +3783,8 @@ void DADataOperateOfDataFrameWidget::refreshComputedColumnHeaders()
     if (mModel) {
         mModel->notifyHeaderDataChanged(Qt::Horizontal, 0, qMax(0, mModel->columnCount() - 1));
     }
-    if (DADataHeaderView* hh = qobject_cast< DADataHeaderView* >(ui->tableView->horizontalHeader())) {
-        hh->viewport()->update();
-    }
+    // ƒx 角标经视口 update 重绘——覆盖全部窗格（006e 冻结窗格同刷）
+    forEachPaneHeader([](DADataHeaderView* hh) { hh->viewport()->update(); });
 }
 
 /**
@@ -4437,9 +4539,7 @@ void DADataOperateOfDataFrameWidget::refreshAfterInplaceReplace()
 {
     // 行列互换后旧排序规格（列位置+方向）失去意义，清除（同 setDAData 口径）
     mSortSpec.clear();
-    if (DADataHeaderView* hh = qobject_cast< DADataHeaderView* >(ui->tableView->horizontalHeader())) {
-        hh->setSortSpec(mSortSpec);
-    }
+    forEachPaneHeader([ this ](DADataHeaderView* hh) { hh->setSortSpec(mSortSpec); });
     if (mModel) {
         mModel->refreshData();  // 全模型 reset（shape/列名/块缓存重建，滑窗回顶部）
     }

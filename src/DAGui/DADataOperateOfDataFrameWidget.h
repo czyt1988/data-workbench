@@ -2,6 +2,7 @@
 #define DADATAOPERATEOFDATAFRAMEWIDGET_H
 #include <QtWidgets/QWidget>
 #include <QUndoStack>
+#include <functional>
 #include <QHash>
 #include <QPair>
 #include <QPointer>
@@ -392,8 +393,14 @@ private:
     // 窗格装配唯一路径（006b）：表头替换 → setModel → 委托 → 逐窗格连接；
     // 主窗格与 006e 懒建的冻结窗格都走这里，漏装即该窗格某操作没反应
     void configurePaneView(DADataTableView* pane);
-    // 本页所有需要投影的窗格（本单只有主窗格；006e 在末尾追加冻结窗格）
+    // 本页所有需要投影的窗格（主窗格在前；冻结窗格懒建后追加）
     QList< DADataTableView* > paneViews() const;
+    // 遍历全部窗格的水平表头（排序角标/ƒx 角标等按实例刷新用，006e）
+    void forEachPaneHeader(const std::function< void(DADataHeaderView*) >& fn);
+    // 把 store 里的列宽套到指定窗格（列宽段唯一实现，主/冻结窗格都调，006e）
+    void applyColumnWidthsToPane(DADataTableView* pane);
+    // 行头宽只设给归属方（冻结时归属冻结窗格，否则主窗格，006e）
+    void applyRowHeaderWidthToOwner();
     // 全局列序（含隐藏列）的身份表：store 的 columnOrder 按 (名, occurrence) 精确匹配
     // actualColumnIdentities()，每条只匹配一次，未匹配的实际列按 logical 升序追加末尾；
     // store 为空 = logical 升序。任何地方要"全局列序身份表"都调这里（006d 对话框的输入）
@@ -463,6 +470,8 @@ private:
     bool mApplyingViewState { false };  ///< 正在应用视图状态（屏蔽 sectionResized 采集）
     bool mHeaderPickMode { false };     ///< 表头拾取模式（图表「选择序列」会话期间：表头点击只转发不排序）
     QVector< QPair< int, Qt::SortOrder > > mSortSpec;  ///< 多列排序规格（列逻辑索引+方向，顺序即优先级；不持久化 R13）
+    QSet< int > mFrozenColumnsLogical;  ///< 本轮投影的冻结列集合（logical），仅作 isColumnInFrozenArea 查表用（006e）
+    int mLastProjectedFreeze { -1 };    ///< 上一轮投影的生效冻结数（夹紧提示去重，006e）
 
     DADialogDataframeColumnCastToNumeric* mDialogCastNumArgs { nullptr };
     DADialogDataframeColumnCastToDatetime* mDialogCastDatetimeArgs { nullptr };
