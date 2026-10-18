@@ -3417,7 +3417,7 @@ void DAAppController::onActionCopyColumnNameTriggered()
 /**
  * @brief 跳转到最大值（表头右键）
  *
- * 取当前选中列的最大值位置索引，调用 selectActualCell 滚动并高亮。
+ * 取当前选中列的最大值位置索引，经定位单入口滚动并选中。
  * 依赖表头右键菜单已先选中目标列（B-2-a）。
  */
 void DAAppController::onActionGotoMaxTriggered()
@@ -3441,11 +3441,8 @@ void DAAppController::onActionGotoMaxTriggered()
         daWarning << tr("Cannot find the maximum value in this column (empty, all-NaN, or incomparable types)");  // cn:此列无法找到最大值（空列、全为NaN或类型不可比较）
         return;
     }
-    // 选中并滚动到目标单元格
-    DADataTableView* tv = dfopt->getDataTableView();
-    if (tv) {
-        tv->selectActualCell(static_cast< int >(pos), col);
-    }
+    // 选中并滚动到目标单元格（007：走定位单入口，顺带获得隐藏列/冻结区处置）
+    dfopt->locateActualCell(static_cast< int >(pos), col);
     // 打印结果到信息栏
     {
         pybind11::gil_scoped_acquire gil;
@@ -3463,7 +3460,7 @@ void DAAppController::onActionGotoMaxTriggered()
 /**
  * @brief 跳转到最小值（表头右键）
  *
- * 取当前选中列的最小值位置索引，调用 selectActualCell 滚动并高亮。
+ * 取当前选中列的最小值位置索引，经定位单入口滚动并选中。
  * 依赖表头右键菜单已先选中目标列（B-2-a）。
  */
 void DAAppController::onActionGotoMinTriggered()
@@ -3487,11 +3484,8 @@ void DAAppController::onActionGotoMinTriggered()
         daWarning << tr("Cannot find the minimum value in this column (empty, all-NaN, or incomparable types)");  // cn:此列无法找到最小值（空列、全为NaN或类型不可比较）
         return;
     }
-    // 选中并滚动到目标单元格
-    DADataTableView* tv = dfopt->getDataTableView();
-    if (tv) {
-        tv->selectActualCell(static_cast< int >(pos), col);
-    }
+    // 选中并滚动到目标单元格（007：走定位单入口，顺带获得隐藏列/冻结区处置）
+    dfopt->locateActualCell(static_cast< int >(pos), col);
     // 打印结果到信息栏
     {
         pybind11::gil_scoped_acquire gil;

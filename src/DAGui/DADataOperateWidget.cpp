@@ -1,4 +1,4 @@
-﻿#include "DADataOperateWidget.h"
+#include "DADataOperateWidget.h"
 #include <QDebug>
 #include <QMessageBox>
 #include <QVBoxLayout>
@@ -226,6 +226,26 @@ DADataOperateOfDataFrameWidget* DADataOperateWidget::findDataFrameWidget(const D
         return nullptr;
     }
     return qobject_cast< DADataOperateOfDataFrameWidget* >(ite.value().data());
+}
+
+/**
+ * @brief 跨页定位入口（007）
+ *
+ * 打开（或切到）数据 d 所在页并跳到「行 + 列名」；重名取第一个同名列。
+ * 未打开/找不到列静默返回（调用方按需自补提示）。校验报告、Agent 工具等
+ * 跨页调用方一律走它，不要另写"先取消隐藏再 selectActualCell"的第二套。
+ * @param d 目标数据
+ * @param actualRow 数据源绝对行号
+ * @param columnName 列名
+ */
+void DADataOperateWidget::locateInData(const DA::DAData& d, int actualRow, const QString& columnName)
+{
+    showData(d);  // 已打开则 raise + setCurrentPage（整容器可见）
+    DADataOperateOfDataFrameWidget* w = findDataFrameWidget(d);
+    if (!w) {
+        return;
+    }
+    w->locateActualCell(actualRow, columnName);
 }
 
 /**

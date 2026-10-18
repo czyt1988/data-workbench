@@ -1,4 +1,4 @@
-﻿#ifndef DADATAOPERATEWIDGET_H
+#ifndef DADATAOPERATEWIDGET_H
 #define DADATAOPERATEWIDGET_H
 #include <QWidget>
 #include <QMap>
@@ -73,6 +73,9 @@ public:
     void refreshCurrentOperateTableView();
     // 确保当前窗口的列名可见，可搭配showData函数后使用
     void ensureCurrentTableColumnVisible(const QString& colName, bool selectCol = true);
+    // 跨页定位入口（007）：打开（或切到）数据 d 所在页并跳到「行 + 列名」，
+    // 重名取第一个同名列；未打开/找不到列静默返回。校验报告、Agent 工具等跨页调用方一律走它
+    void locateInData(const DA::DAData& d, int actualRow, const QString& columnName);
     // 保存嵌套停靠区布局（供工程序列化），无停靠区时返回空
     QByteArray saveDataLayout() const;
     // 恢复嵌套停靠区布局（供工程反序列化），state 为空或失败返回 false
