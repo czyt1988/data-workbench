@@ -553,6 +553,8 @@ void DAAppRibbonArea::buildContextCategoryDataFrame()
     mPannelDataframeOperateView->addLargeAction(mActions->actionHideColumn);
     mPannelDataframeOperateView->addLargeAction(mActions->actionShowAllColumns);
     mPannelDataframeOperateView->addLargeAction(mActions->actionColumnViewDialog);
+    // 定位（007 T1.7；快捷键在 DADataTableView，action 不设 shortcut 红线5）
+    mPannelDataframeOperateView->addMediumAction(mActions->actionGotoCell);
 
     // ===== 表格样式 category =====
     mCategoryDataframeStyle = mContextDataFrame->addCategoryPage(tr("Table Style"));  // cn:表格样式

@@ -128,6 +128,7 @@ constexpr char RenameColumn[]       = "actionRenameColumn";
 constexpr char CopyColumnName[]     = "actionCopyColumnName";
 constexpr char GotoMax[]            = "actionGotoMax";
 constexpr char GotoMin[]            = "actionGotoMin";
+constexpr char GotoCell[]           = "actionGotoCell";  ///< 定位（007 T1.7，Ctrl+G 在 DADataTableView，action 不设 shortcut）
 constexpr char ShowColumnDescribe[] = "actionShowColumnDescribe";
 constexpr char RemoveCell[]         = "actionRemoveCell";
 constexpr char CastToNum[]          = "actionCastToNum";

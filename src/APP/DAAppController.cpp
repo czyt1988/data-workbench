@@ -566,6 +566,8 @@ void DAAppController::initConnection()
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionFreezeFirstColumn, onActionFreezeFirstColumnTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionFreezeColumnsPrompt, onActionFreezeColumnsPromptTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionUnfreezeColumns, onActionUnfreezeColumnsTriggered);
+    // 定位（007 T1.7，Ribbon「View」面板；快捷键 Ctrl+G 在 DADataTableView 红线5）
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionGotoCell, onActionGotoCellTriggered);
     // View Category
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowWorkFlowArea, onActionShowWorkFlowAreaTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowWorkFlowManagerArea, onActionShowWorkFlowManagerAreaTriggered);
@@ -3863,6 +3865,18 @@ void DAAppController::onActionUnfreezeColumnsTriggered()
         return;
     }
     dfopt->freezeColumnsTo(0);
+}
+
+/**
+ * @brief 定位（007 T1.7）：打开定位对话框（Ctrl+G 与滚动条右键共用同一入口）
+ */
+void DAAppController::onActionGotoCellTriggered()
+{
+    DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false);
+    if (!dfopt) {
+        return;
+    }
+    dfopt->showGotoDialog();
 }
 
 /**

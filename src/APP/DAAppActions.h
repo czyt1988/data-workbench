@@ -114,6 +114,7 @@ public:
     QAction* actionFreezeFirstColumn { nullptr };           ///< 冻结首列（006，冻结菜单项）
     QAction* actionFreezeColumnsPrompt { nullptr };         ///< 冻结前 N 列…（006，冻结菜单项）
     QAction* actionUnfreezeColumns { nullptr };             ///< 取消冻结（006，冻结菜单项）
+    QAction* actionGotoCell { nullptr };                    ///< 定位（007 T1.7，Ctrl+G 在 DADataTableView，不设 shortcut）
     QAction* actionFill { nullptr };                        ///< 填充（005 T1.24，Edit 面板下拉，含子菜单）
     QAction* actionFillDown { nullptr };                    ///< 向下填充（005 T1.24）
     QAction* actionFillUp { nullptr };                      ///< 向上填充（005 T1.24）

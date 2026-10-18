@@ -373,6 +373,8 @@ private Q_SLOTS:
     void onActionFreezeFirstColumnTriggered();
     void onActionFreezeColumnsPromptTriggered();
     void onActionUnfreezeColumnsTriggered();
+    // 定位（007 T1.7，Ribbon「View」面板；Ctrl+G 在 DADataTableView 红线5）
+    void onActionGotoCellTriggered();
     // 撤销历史面板（005 T1.21，Ribbon「视图」页；入口选 (a) 点击即 raise，与现有交互一致）
     void onActionShowUndoHistoryTriggered();
     // 历史面板调整撤销深度：写回配置（dawork-config.xml）并施加到全部已打开数据页

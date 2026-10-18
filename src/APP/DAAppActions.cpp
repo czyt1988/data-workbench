@@ -152,6 +152,8 @@ void DAAppActions::buildDataAction()
     actionFreezeFirstColumn           = createAction(UiNames::Action::FreezeFirstColumn);
     actionFreezeColumnsPrompt         = createAction(UiNames::Action::FreezeColumnsPrompt);
     actionUnfreezeColumns             = createAction(UiNames::Action::UnfreezeColumns);
+    // 定位 action（007 T1.7；快捷键 Ctrl+G 在 DADataTableView，action 不设 shortcut 红线5）
+    actionGotoCell                    = createAction(UiNames::Action::GotoCell, ":/DAGui/icon/goto-cell.svg");
 }
 
 void DAAppActions::buildChartAction()
@@ -741,6 +743,8 @@ void DAAppActions::retranslateUi()
     actionFreezeFirstColumn->setText(tr("Freeze First Column"));                      // cn:冻结首列
     actionFreezeColumnsPrompt->setText(tr("Freeze Columns..."));                      // cn:冻结前 N 列…
     actionUnfreezeColumns->setText(tr("Unfreeze Columns"));                           // cn:取消冻结
+    actionGotoCell->setText(tr("Go To..."));                                          // cn:定位...
+    actionGotoCell->setToolTip(tr("Jump to a row / index label / column"));           // cn:跳转到指定行、索引标签或列
     //-----------------------------------------------------
     // workflow 编辑
     //-----------------------------------------------------
