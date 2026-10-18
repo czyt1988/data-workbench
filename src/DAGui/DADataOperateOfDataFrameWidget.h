@@ -323,6 +323,9 @@ private:
     // 数据源真实数据行数/列数（不含尾部预留的空白行列）
     int dataRowCount() const;
     int dataColumnCount() const;
+    // 实际数据列的身份表（数据列序升序；尾部预留的空白列——列名为空——跳过）。
+    // occurrence = 该列之前同名列的个数（数据列序中计，006 列视图键的统一口径）
+    QList< QPair< QString, int > > actualColumnIdentities() const;
     // 数据源是否可编辑（只读/惰性源上排序入口不生效，判定路径同 DADataTableModel::actualFlags）
     bool isTableEditable() const;
     // 应用排序规格：构造 DACommandDataFrame_sortRows、接线样式/模型/选区/视口回调并 push；

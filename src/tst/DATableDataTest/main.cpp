@@ -1,4 +1,4 @@
-﻿#include <QtTest/QtTest>
+#include <QtTest/QtTest>
 #include <QApplication>
 #include <QCoreApplication>
 #include <QDebug>
@@ -371,6 +371,12 @@ private Q_SLOTS:
     void testLegacyTableStylesXmlCompat();
     void testContextMenuComposition();
     void testViewStateApplyAndHeaderClickChain();
+    // 006a：view-state 三个新子元素（列序/隐藏/冻结列数）的 round-trip 与迁移
+    void testViewStateColumnViewXml();
+    // 006a：normalizeToColumns 加载收敛语义
+    void testViewStateNormalizeConvergence();
+    // 006a：entryCountsByCategory 覆盖列视图设置（列宽+列序+隐藏+冻结）
+    void testMetadataEntryCountsColumnView();
     // 002 表头排序（T1.3 §4.1）：算子多键+置换、命令 undo/redo+样式重映射、表头交互/拾取互斥/只读源、10万行计时
     void testSortOperatorMultiKeyPerm();
     void testSortRowsCommandUndoRedoAndStyleRemap();
@@ -1790,6 +1796,159 @@ void DATableDataTest::testViewStateApplyAndHeaderClickChain()
         QCOMPARE(w2.sortSpec().at(0).first, colF);
     }
     w2.hide();
+}
+
+// 006a：view-state 三个新子元素（column-order / column hidden / freeze）round-trip、
+// 重名消歧、旧格式兼容、renameColumn/removeColumn 三份键迁移、只设冻结（隐藏）非空
+void DATableDataTest::testViewStateColumnViewXml()
+{
+    using Idents = QList< QPair< QString, int > >;
+    DA::DATableViewStateStore store;
+    QVERIFY(store.isEmpty());
+
+    // ① 三类新元素 round-trip：列序 + 隐藏 + 冻结，逐字段相等
+    store.setColumnOrder(Idents({ qMakePair(QStringLiteral("f"), 0), qMakePair(QStringLiteral("g"), 0),
+                                  qMakePair(QStringLiteral("value"), 1) }));
+    store.setColumnHidden(QStringLiteral("h"), 0, true);
+    store.setFreezeColumnCount(2);
+    QVERIFY(!store.isEmpty());
+    QCOMPARE(store.freezeColumnCount(), 2);
+    QVERIFY(store.isColumnHidden(QStringLiteral("h"), 0));
+    QVERIFY(!store.isColumnHidden(QStringLiteral("h"), 1));
+
+    QDomDocument doc;
+    QDomElement root = doc.createElement(QStringLiteral("table"));
+    doc.appendChild(root);
+    store.toXml(doc, root);
+    QDomElement vsEle = root.firstChildElement(QStringLiteral("view-state"));
+    QVERIFY(!vsEle.isNull());
+    DA::DATableViewStateStore store2;
+    QVERIFY(store2.fromXml(vsEle));
+    const Idents expectOrder { qMakePair(QStringLiteral("f"), 0), qMakePair(QStringLiteral("g"), 0),
+                               qMakePair(QStringLiteral("value"), 1) };
+    QCOMPARE(store2.columnOrder(), expectOrder);
+    QVERIFY(store2.isColumnHidden(QStringLiteral("h"), 0));
+    QCOMPARE(store2.hiddenColumns().size(), 1);
+    QCOMPARE(store2.freezeColumnCount(), 2);
+
+    // ② 重名消歧：两个 value 列的隐藏与列序各自独立
+    store2.setColumnHidden(QStringLiteral("value"), 0, true);
+    QVERIFY(store2.isColumnHidden(QStringLiteral("value"), 0));
+    QVERIFY(!store2.isColumnHidden(QStringLiteral("value"), 1));
+    store2.setColumnHidden(QStringLiteral("value"), 0, false);
+    QVERIFY(!store2.isColumnHidden(QStringLiteral("value"), 0));
+    QVERIFY(!store2.isColumnHidden(QStringLiteral("value"), 1));
+    QCOMPARE(store2.hiddenColumns().size(), 1);  // 只剩 round-trip 进来的 ("h", 0)
+
+    // ③ 旧格式（只有 column-width + row-header-width）加载 → 新状态为空、列宽照旧、无报错
+    QDomDocument oldDoc;
+    oldDoc.setContent(QStringLiteral("<table><view-state row-header-width=\"66\">"
+                                     "<column-width name=\"f\" occurrence=\"0\" width=\"137\"/>"
+                                     "</view-state></table>"));
+    QDomElement oldVs = oldDoc.firstChildElement(QStringLiteral("table")).firstChildElement(QStringLiteral("view-state"));
+    DA::DATableViewStateStore store3;
+    QVERIFY(store3.fromXml(oldVs));
+    QCOMPARE(store3.columnWidth(QStringLiteral("f"), 0), 137);
+    QCOMPARE(store3.rowHeaderWidth(), 66);
+    QVERIFY(store3.columnOrder().isEmpty());
+    QVERIFY(store3.hiddenColumns().isEmpty());
+    QCOMPARE(store3.freezeColumnCount(), 0);
+
+    // ④ renameColumn 迁移三份键（列宽/列序/隐藏）
+    DA::DATableViewStateStore store4;
+    store4.setColumnWidth(QStringLiteral("f"), 0, 137);
+    store4.setColumnOrder(Idents({ qMakePair(QStringLiteral("f"), 0), qMakePair(QStringLiteral("g"), 0) }));
+    store4.setColumnHidden(QStringLiteral("f"), 0, true);
+    store4.renameColumn(QStringLiteral("f"), QStringLiteral("f2"));
+    QCOMPARE(store4.columnWidth(QStringLiteral("f"), 0), -1);
+    QCOMPARE(store4.columnWidth(QStringLiteral("f2"), 0), 137);
+    QCOMPARE(store4.columnOrder(),
+             Idents({ qMakePair(QStringLiteral("f2"), 0), qMakePair(QStringLiteral("g"), 0) }));
+    QVERIFY(!store4.isColumnHidden(QStringLiteral("f"), 0));
+    QVERIFY(store4.isColumnHidden(QStringLiteral("f2"), 0));
+
+    // ⑤ removeColumn 移除三份
+    store4.removeColumn(QStringLiteral("f2"));
+    QCOMPARE(store4.columnWidth(QStringLiteral("f2"), 0), -1);
+    QCOMPARE(store4.columnOrder(), Idents({ qMakePair(QStringLiteral("g"), 0) }));
+    QVERIFY(!store4.isColumnHidden(QStringLiteral("f2"), 0));
+
+    // ⑥ 只设冻结列数（或只设隐藏）时 isEmpty() == false
+    DA::DATableViewStateStore freezeOnly;
+    freezeOnly.setFreezeColumnCount(3);
+    QVERIFY(!freezeOnly.isEmpty());
+    freezeOnly.setFreezeColumnCount(0);
+    QVERIFY(freezeOnly.isEmpty());
+    DA::DATableViewStateStore hiddenOnly;
+    hiddenOnly.setColumnHidden(QStringLiteral("x"), 0, true);
+    QVERIFY(!hiddenOnly.isEmpty());
+    hiddenOnly.setColumnHidden(QStringLiteral("x"), 0, false);
+    QVERIFY(hiddenOnly.isEmpty());
+    // setFreezeColumnCount 归一：负数归 0
+    freezeOnly.setFreezeColumnCount(-2);
+    QCOMPARE(freezeOnly.freezeColumnCount(), 0);
+    QVERIFY(freezeOnly.isEmpty());
+}
+
+// 006a：normalizeToColumns 收敛语义——孤儿剪除、新列追加末尾、空列序不填充、
+// 冻结计数不写回、返回值口径、一次调用即置 isColumnSetNormalized
+void DATableDataTest::testViewStateNormalizeConvergence()
+{
+    using Idents = QList< QPair< QString, int > >;
+
+    // ① 列序含已删除列 → 剪除；② 列序缺实际列 → 按实际顺序追加末尾
+    {
+        DA::DATableViewStateStore store;
+        store.setColumnOrder(Idents({ qMakePair(QStringLiteral("a"), 0), qMakePair(QStringLiteral("gone"), 0),
+                                      qMakePair(QStringLiteral("b"), 0) }));
+        store.setColumnHidden(QStringLiteral("gone"), 0, true);  // ③ 隐藏集合孤儿剪除
+        store.setFreezeColumnCount(3);                            // ⑥ 冻结计数不被写回
+        QVERIFY(!store.isColumnSetNormalized());
+        const bool changed = store.normalizeToColumns(
+            Idents({ qMakePair(QStringLiteral("a"), 0), qMakePair(QStringLiteral("b"), 0), qMakePair(QStringLiteral("c"), 0) }));
+        QVERIFY(changed);  // ④ 有改动返回 true
+        QCOMPARE(store.columnOrder(),
+                 Idents({ qMakePair(QStringLiteral("a"), 0), qMakePair(QStringLiteral("b"), 0),
+                          qMakePair(QStringLiteral("c"), 0) }));
+        QVERIFY(!store.isColumnHidden(QStringLiteral("gone"), 0));
+        QCOMPARE(store.hiddenColumns().size(), 0);
+        QCOMPARE(store.freezeColumnCount(), 3);  // 冻结不参与收敛
+        QVERIFY(store.isColumnSetNormalized());  // ⑦ 调用后置位
+        // 再收敛一次（无变化）→ 返回 false
+        QVERIFY(!store.normalizeToColumns(
+            Idents({ qMakePair(QStringLiteral("a"), 0), qMakePair(QStringLiteral("b"), 0), qMakePair(QStringLiteral("c"), 0) })));
+    }
+
+    // ⑤ 列序为空时不填充（空 = 未记录 = 数据列序）
+    {
+        DA::DATableViewStateStore store;
+        store.setColumnHidden(QStringLiteral("z"), 0, true);
+        QVERIFY(store.normalizeToColumns(
+            Idents({ qMakePair(QStringLiteral("a"), 0), qMakePair(QStringLiteral("b"), 0) })));
+        QVERIFY(store.columnOrder().isEmpty());
+    }
+}
+
+// 006a：entryCountsByCategory 覆盖列视图设置——只设列宽 1 + 列序 2 + 隐藏 1 + 冻结 3
+// → 视图状态那一项计数 == 1+2+1+1（冻结算 1 条）
+void DATableDataTest::testMetadataEntryCountsColumnView()
+{
+    DA::DATableMetadata meta(nullptr);
+    DA::DATableViewStateStore* vs = meta.viewState();
+    QVERIFY(vs != nullptr);
+    vs->setColumnWidth(QStringLiteral("f"), 0, 137);
+    vs->setColumnOrder({ qMakePair(QStringLiteral("f"), 0), qMakePair(QStringLiteral("g"), 0) });
+    vs->setColumnHidden(QStringLiteral("h"), 0, true);
+    vs->setFreezeColumnCount(3);
+    const QList< QPair< QString, int > > counts = meta.entryCountsByCategory();
+    bool found = false;
+    for (const QPair< QString, int >& c : counts) {
+        if (c.first == QStringLiteral("Column view settings")) {
+            found = true;
+            QCOMPARE(c.second, 5);  // 1 列宽 + 2 列序 + 1 隐藏 + 1 冻结
+        }
+    }
+    QVERIFY(found);
 }
 
 //===================================================
@@ -4902,7 +5061,7 @@ void DATableDataTest::testInplaceReshapeMetadataClear()
     for (const auto& p : counts) {
         if (p.first == DA::DATableMetadata::tr("Cell styles")) {
             styleCount = p.second;
-        } else if (p.first == DA::DATableMetadata::tr("Column widths")) {
+        } else if (p.first == DA::DATableMetadata::tr("Column view settings")) {  // 006a 起：列宽并入列视图设置
             widthCount = p.second;
         } else if (p.first == DA::DATableMetadata::tr("Conditional format rules")) {
             cfCount = p.second;

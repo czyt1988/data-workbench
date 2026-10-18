@@ -1,4 +1,4 @@
-﻿#include "DATableMetadata.h"
+#include "DATableMetadata.h"
 #include "DATableStyleManager.h"
 #include "DATableViewStateStore.h"
 #include "DATableConditionalFormatStore.h"
@@ -230,7 +230,7 @@ bool DATableMetadata::restoreFromString(const QString& snapshot)
 
 /**
  * @brief 各类别条目数统计（就地替换确认框列出将被清除的类别与条目数，004 T1.27）
- * @return (类别显示名, 条目数) 列表，只含非空类别，顺序：样式/列宽/条件格式/计算列
+ * @return (类别显示名, 条目数) 列表，只含非空类别，顺序：样式/列视图/条件格式/计算列/校验/批注
  */
 QList< QPair< QString, int > > DATableMetadata::entryCountsByCategory() const
 {
@@ -241,8 +241,10 @@ QList< QPair< QString, int > > DATableMetadata::entryCountsByCategory() const
         res.append(qMakePair(tr("Cell styles"), n));  // cn:样式
     }
     if (mViewState && !mViewState->isEmpty()) {
-        const int n = mViewState->columnWidthEntries().size();
-        res.append(qMakePair(tr("Column widths"), n));  // cn:列宽
+        // 006：列视图设置（列宽 + 列序 + 隐藏 + 冻结计数一并计入，冻结算 1 条）
+        const int n = mViewState->columnWidthEntries().size() + mViewState->columnOrder().size()
+                      + mViewState->hiddenColumns().size() + (mViewState->freezeColumnCount() > 0 ? 1 : 0);
+        res.append(qMakePair(tr("Column view settings"), n));  // cn:列视图设置
     }
     if (mConditionalFormat && !mConditionalFormat->isEmpty()) {
         res.append(qMakePair(tr("Conditional format rules"), mConditionalFormat->ruleCount()));  // cn:条件格式规则

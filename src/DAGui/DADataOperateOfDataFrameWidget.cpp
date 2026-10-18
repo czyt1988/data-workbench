@@ -1,4 +1,4 @@
-﻿#include "DADataOperateOfDataFrameWidget.h"
+#include "DADataOperateOfDataFrameWidget.h"
 #include "ui_DADataOperateOfDataFrameWidget.h"
 #include "Models/DADataTableModel.h"
 #include "Models/DAAbstractCacheWindowTableModel.h"
@@ -1626,6 +1626,36 @@ int DADataOperateOfDataFrameWidget::dataColumnCount() const
 }
 
 /**
+ * @brief 实际数据列的身份表
+ *
+ * 数据列序升序收集 (列名, occurrence)；尾部预留的空白列（列名为空）跳过。
+ * occurrence 只在数据列区间内计（occurrence = 该列之前同名列的个数），
+ * 与 applyViewStateFromStore/onHeaderSectionResized 的口径一致（空白列列名
+ * 为空、两处都 continue，结果等价）。
+ * @return 身份表（006 列视图键的统一口径）
+ */
+QList< QPair< QString, int > > DADataOperateOfDataFrameWidget::actualColumnIdentities() const
+{
+    QList< QPair< QString, int > > res;
+    if (!mModel) {
+        return res;
+    }
+    QHash< QString, int > seen;  // 列名 -> 已出现次数（= 下一列的 occurrence）
+    const int cols = dataColumnCount();
+    res.reserve(cols);
+    for (int c = 0; c < cols; ++c) {
+        const QString name = mModel->headerData(c, Qt::Horizontal).toString();
+        if (name.isEmpty()) {
+            continue;  // 空列名先判掉：不要让空名进 seen/occurrence 计数
+        }
+        const int occ = seen.value(name, 0);
+        seen[ name ]  = occ + 1;
+        res.append(qMakePair(name, occ));
+    }
+    return res;
+}
+
+/**
  * @brief 表格点击
  * @param index
  */
@@ -1694,11 +1724,21 @@ DATableConditionalFormatStore* DADataOperateOfDataFrameWidget::conditionalFormat
  * 屏蔽 sectionResized 采集，避免把「应用」当「用户改动」写回 store。
  * 行头宽用 setFixedWidth 落地（Qt 纵向表头宽度=clamp(qMax(min,sizeHint),max)，
  * min=max=w 恒为 w，不会被视图布局覆盖）。
+ * 首次调用先做一次加载收敛（normalizeToColumns：孤儿剪除 + 新列追加列序末尾），
+ * 有丢弃时发一条用户可见提示；列序/隐藏/冻结的投影由 006b/006e 落地。
  */
 void DADataOperateOfDataFrameWidget::applyViewStateFromStore()
 {
     if (!mViewStateStore || !mModel) {
         return;
+    }
+    // 加载收敛（只做一次）：把已被删除的列从视图状态里剪掉、把新列追加到列序末尾。
+    // 释放后不再收敛（E6：不在列插删时收敛，避免与"删除列"的 Ctrl+Z 互踩）
+    if (!mViewStateStore->isColumnSetNormalized() && dataColumnCount() > 0) {
+        if (mViewStateStore->normalizeToColumns(actualColumnIdentities())) {
+            daWarning << tr("Some column view settings were dropped because the table columns have changed.");
+            // cn:表格的列已变化，部分列视图设置已被丢弃
+        }
     }
     mApplyingViewState = true;
     QHeaderView* hh = ui->tableView->horizontalHeader();
