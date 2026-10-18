@@ -41,6 +41,7 @@
 #include "DATableMetadataRegistry.h"
 #include "DATableStyleManager.h"
 #include "DATableViewStateStore.h"
+#include "DATablePaneContainer.h"
 #include "DADataHeaderView.h"
 #include "DADataTableView.h"
 #include "DADataOperateOfDataFrameWidget.h"
@@ -377,6 +378,10 @@ private Q_SLOTS:
     void testViewStateNormalizeConvergence();
     // 006a：entryCountsByCategory 覆盖列视图设置（列宽+列序+隐藏+冻结）
     void testMetadataEntryCountsColumnView();
+    // 006b：容器运行时包装主窗格 + 列序/隐藏投影（列宽/尾部空白列不受影响）
+    void testPaneContainerWrappingAndMainPaneProjection();
+    // 006b：setColumnHiddenDirectly 直接入口（写 store + 重投影、不入撤销栈）
+    void testSetColumnHiddenDirectlyNoUndo();
     // 002 表头排序（T1.3 §4.1）：算子多键+置换、命令 undo/redo+样式重映射、表头交互/拾取互斥/只读源、10万行计时
     void testSortOperatorMultiKeyPerm();
     void testSortRowsCommandUndoRedoAndStyleRemap();
@@ -1949,6 +1954,108 @@ void DATableDataTest::testMetadataEntryCountsColumnView()
         }
     }
     QVERIFY(found);
+}
+
+// 006b：容器运行时包装主窗格——.ui 不动，getDataTableView() 语义不变；
+// 列序/隐藏投影到主窗格（列宽照常、尾部空白列恒可见排最后、冻结本单夹紧为 0）
+void DATableDataTest::testPaneContainerWrappingAndMainPaneProjection()
+{
+    if (!mPandasOk) {
+        QSKIP("pandas not available");
+    }
+    pybind11::object obj = makeTestDataFrame();
+    QVERIFY(!obj.is_none());
+    DA::DAPyDataFrame df(obj);
+    DA::DAData d(df);
+    DA::DATableMetadataRegistry registry(nullptr);
+
+    // 第一次打开：写 store（列序打乱 s,i,f,d,b + 隐藏 f + 列宽 f=137）
+    {
+        DA::DADataOperateOfDataFrameWidget w(d, &registry);
+        DA::DATableViewStateStore* store = w.viewStateStore();
+        QVERIFY(store != nullptr);
+        store->setColumnOrder({ qMakePair(QStringLiteral("s"), 0), qMakePair(QStringLiteral("i"), 0),
+                                qMakePair(QStringLiteral("f"), 0), qMakePair(QStringLiteral("d"), 0),
+                                qMakePair(QStringLiteral("b"), 0) });
+        store->setColumnHidden(QStringLiteral("f"), 0, true);
+        store->setColumnWidth(QStringLiteral("f"), 0, 137);
+    }
+
+    // 「重开」数据页（同 testViewStateApplyAndHeaderClickChain 范式）
+    DA::DADataOperateOfDataFrameWidget w2(d, &registry);
+    DA::DADataTableView* tv = w2.getDataTableView();
+    QVERIFY(tv != nullptr);
+    // ① 运行时包装：视图的父部件即容器
+    DA::DATablePaneContainer* c = qobject_cast< DA::DATablePaneContainer* >(tv->parentWidget());
+    QVERIFY(c != nullptr);
+    QCOMPARE(c->mainView(), tv);
+    QCOMPARE(c->frozenView(), nullptr);
+    QCOMPARE(c->effectiveFrozenColumnCount(), 0);
+    QCOMPARE(w2.effectiveFrozenColumnCount(), 0);
+    // ② 缓存与只读口径 getter
+    QCOMPARE(c->cachedOrderedLogical().size(), 5);
+    QCOMPARE(c->cachedHiddenLogical().size(), 1);
+    QCOMPARE(c->visibleColumnOrderLogical().size(), 4);
+    QCOMPARE(c->orderedColumnsLogical().size(), 5);
+
+    QHeaderView* hh = tv->horizontalHeader();
+    QVERIFY(hh != nullptr);
+    // 数据列 logical：i=0, f=1, s=2, d=3, b=4；尾部预留空白列 = 5
+    const int colI = 0, colF = 1, colS = 2, colD = 3, colB = 4, colSpare = 5;
+    // ③ 列宽真源仍在（QHeaderView::sectionSize 对隐藏段返回 0，不能直接断言）
+    QCOMPARE(w2.viewStateStore()->columnWidth(QStringLiteral("f"), 0), 137);
+    // ④ 可见性：f 隐藏，其余可见
+    QVERIFY(hh->isSectionHidden(colF));
+    QVERIFY(!hh->isSectionHidden(colI));
+    QVERIFY(!hh->isSectionHidden(colS));
+    QVERIFY(!hh->isSectionHidden(colD));
+    QVERIFY(!hh->isSectionHidden(colB));
+    // ⑤ 顺序：可见列按 visualIndex 升序 == {s, i, d, b}
+    QCOMPARE(hh->visualIndex(colS), 0);
+    QCOMPARE(hh->visualIndex(colI), 1);
+    QCOMPARE(hh->visualIndex(colD), 2);
+    QCOMPARE(hh->visualIndex(colB), 3);
+    // ⑥ 尾部预留空白列：恒可见、恒排最后
+    QVERIFY(!hh->isSectionHidden(colSpare));
+    QCOMPARE(hh->visualIndex(colSpare), 4);
+    // ③b 恢复可见后列宽落地 137（隐藏期间宽度记在 hiddenSectionSize，显示时恢复）
+    w2.setColumnHiddenDirectly(QStringLiteral("f"), 0, false);
+    QVERIFY(!hh->isSectionHidden(colF));
+    QCOMPARE(hh->sectionSize(colF), 137);
+}
+
+// 006b：setColumnHiddenDirectly——写 store + 重投影，不入撤销栈；isColumnInFrozenArea 恒 false
+void DATableDataTest::testSetColumnHiddenDirectlyNoUndo()
+{
+    if (!mPandasOk) {
+        QSKIP("pandas not available");
+    }
+    pybind11::object obj = makeTestDataFrame();
+    QVERIFY(!obj.is_none());
+    DA::DAPyDataFrame df(obj);
+    DA::DAData d(df);
+    DA::DATableMetadataRegistry registry(nullptr);
+    // store 预置隐藏 f → 重开页面投影生效
+    {
+        DA::DADataOperateOfDataFrameWidget w(d, &registry);
+        w.viewStateStore()->setColumnHidden(QStringLiteral("f"), 0, true);
+    }
+    DA::DADataOperateOfDataFrameWidget w(d, &registry);
+    DA::DADataTableView* tv = w.getDataTableView();
+    QVERIFY(tv != nullptr);
+    QHeaderView* hh = tv->horizontalHeader();
+    QVERIFY(hh != nullptr);
+    const int colF = 1;  // f 的 logical
+    QVERIFY(hh->isSectionHidden(colF));
+    // 直接入口恢复可见：不入撤销栈
+    const int undoBefore = w.getUndoStack()->count();
+    w.setColumnHiddenDirectly(QStringLiteral("f"), 0, false);
+    QVERIFY(!hh->isSectionHidden(colF));
+    QCOMPARE(w.getUndoStack()->count(), undoBefore);
+    // 冻结区判定（本单恒 false）
+    QVERIFY(!w.isColumnInFrozenArea(colF));
+    // 直接入口确实写了真源
+    QVERIFY(!w.viewStateStore()->isColumnHidden(QStringLiteral("f"), 0));
 }
 
 //===================================================

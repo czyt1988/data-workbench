@@ -45,6 +45,7 @@
 #include "DATableNoteStore.h"
 #include "DATableNoteEditDialog.h"
 #include "DADataHeaderView.h"
+#include "DATablePaneContainer.h"
 // Dialog
 #include "Dialog/DARenameColumnsNameDialog.h"
 #include "Dialog/DADialogDataframeColumnCastToNumeric.h"
@@ -103,16 +104,17 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
 {
     ui->setupUi(this);
 
-    // 用 DADataHeaderView 替换默认表头（列头右键菜单/带修饰键点击信号/行头宽拖拽）。
-    // 必须在 setModel 之前替换：QTableView::setModel 会把模型接到当前表头上。
-    // 行高/Interactive 设置在 DADataHeaderView(Vertical) 构造内重建
-    // （参照 DACacheWindowTableView 构造对默认行头的同款设置）。
-    ui->tableView->setHorizontalHeader(new DADataHeaderView(Qt::Horizontal, ui->tableView));
-    ui->tableView->setVerticalHeader(new DADataHeaderView(Qt::Vertical, ui->tableView));
+    // 运行时包装（006b）：把 .ui 里已嵌入的视图作为主窗格接管。.ui 不动；
+    // getDataTableView() 返回值与语义不变（= 主窗格），APP/插件调用点零改动。
+    // 必须在任何 configurePaneView() 之前（configurePaneView 里 006c/006d 要往
+    // mPaneContainer 上连线；先装配后建容器 = 那些 if (mPaneContainer) 全部静默跳过）
+    ui->verticalLayout->removeWidget(ui->tableView);
+    mPaneContainer = new DATablePaneContainer(this);
+    ui->verticalLayout->addWidget(mPaneContainer);
+    mPaneContainer->setMainView(ui->tableView);
 
     mModel = new DADataTableModel(getUndoStack(), this);
 
-    ui->tableView->setModel(mModel);
     // 表格元数据束与各子存储、delegate
     // 元数据束借自会话级 DATableMetadataRegistry（随数据存在，widget 关闭后保留，重开可见）。
     // 行列增删的样式键偏移同步在 §7 的回调中接入（onRowsInserted 等系列）。
@@ -132,17 +134,18 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
     mStyleDelegate->setConditionalFormatStore(mConditionalFormatStore);
     // 校验规则子存储注入 delegate（枚举列下拉编辑器 createEditor，005 T1.25）
     mStyleDelegate->setValidationStore(mValidationStore);
-    // 批注子存储注入 delegate（层⑤之后角标 + helpEvent tooltip，005 T1.26）与视图
-    //（右键菜单「插入/编辑/删除批注」的启用规则要查当前格有无批注）
+    // 批注子存储注入 delegate（层⑤之后角标 + helpEvent tooltip，005 T1.26）
+    //（视图侧 setNoteStore 在 configurePaneView 里，006b 起随窗格装配）
     mStyleDelegate->setNoteStore(mNoteStore);
-    ui->tableView->setNoteStore(mNoteStore);
     if (mNoteStore) {
         // 批注变更只影响角标（不经模型 dataChanged 链路），重绘视口即可
         connect(mNoteStore, &DATableNoteStore::notesChanged, this, [ this ]() {
             ui->tableView->viewport()->update();
         });
     }
-    ui->tableView->setItemDelegate(mStyleDelegate);
+    // 窗格装配（006b 抽取的唯一装配点）：表头替换 → setModel → 委托 → 逐窗格连接；
+    // 必须在 mStyleDelegate 创建之后（里面要用它），在 setDAData/applyViewStateFromStore 之前
+    configurePaneView(ui->tableView);
     // 高亮层变更时重绘视口（瞬态装饰不经模型 dataChanged 链路）
     connect(mHighlightOverlay, &DATableHighlightOverlay::changed, this, [ this ]() {
         ui->tableView->viewport()->update();
@@ -151,10 +154,6 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
     mModel->setStyleManager(mStyleManager);
     // 计算列子存储注入模型（表头浅蓝底色 BackgroundRole + 公式 tooltip ToolTipRole，004 T1.23）
     mModel->setComputedColumnStore(mComputedColumnStore);
-    // 计算列子存储注入水平表头（ƒx 角标三态绘制 + 列头右键菜单计算列组）
-    if (DADataHeaderView* hh = qobject_cast< DADataHeaderView* >(ui->tableView->horizontalHeader())) {
-        hh->setComputedColumnStore(mComputedColumnStore);
-    }
     if (mComputedColumnStore) {
         // 定义/状态变更 → 表头重绘（底色经模型 headerDataChanged，角标经视口 update）
         connect(mComputedColumnStore, &DATableComputedColumnStore::definitionsChanged, this, &DADataOperateOfDataFrameWidget::refreshComputedColumnHeaders);
@@ -288,79 +287,11 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
             hh->setSortSpec(mSortSpec);
         }
     });
-    connect(ui->tableView->horizontalHeader(), &QHeaderView::sectionResized, this, [ this ](int logicalIndex, int oldSize, int newSize) {
-        Q_UNUSED(oldSize);
-        onHeaderSectionResized(logicalIndex, newSize);
-    });
-    // 行头宽拖拽（DADataHeaderView vertical 实例）→ 写视图状态
-    if (DADataHeaderView* vh = qobject_cast< DADataHeaderView* >(ui->tableView->verticalHeader())) {
-        connect(vh, &DADataHeaderView::rowHeaderWidthChanged, this, [ this ](int width) {
-            if (mViewStateStore) {
-                mViewStateStore->setRowHeaderWidth(width);
-            }
-        });
-    }
     // 关闭不必要的绘制特性
     setDAData(d);
     // 构造完成后应用一次视图状态（工程加载的宽度回填在注册表里，此时已可借用）
     applyViewStateFromStore();
-    connect(ui->tableView, &QTableView::clicked, this, &DADataOperateOfDataFrameWidget::onTableViewClicked);
-    // 表头点击（002：切换到 DADataHeaderView::clickedWithModifiers，排序交互与拾取模式在页面内分流；
-    // 拾取模式下仍发 columnHeaderClicked，图表「选择序列」拾取链路保持不变）
-    if (DADataHeaderView* hh = qobject_cast< DADataHeaderView* >(ui->tableView->horizontalHeader())) {
-        connect(hh, &DADataHeaderView::clickedWithModifiers, this, &DADataOperateOfDataFrameWidget::onHeaderClickedWithModifiers);
-    }
-    // 查找/替换入口（002 T1.4）：视图快捷键 Ctrl+F/Ctrl+H 与表体右键菜单共用表意信号
-    connect(ui->tableView, &DADataTableView::findRequested, this, [ this ]() {
-        showFindReplace(false);
-    });
-    connect(ui->tableView, &DADataTableView::replaceRequested, this, [ this ]() {
-        showFindReplace(true);
-    });
-    connect(ui->tableView, &DADataTableView::findBarCloseRequested, this, &DADataOperateOfDataFrameWidget::closeFindReplace);
-    // 条件格式入口（003 T1.5）：表体右键菜单与 Ribbon Table Style 面板共用同一打开逻辑
-    connect(ui->tableView, &DADataTableView::conditionalFormatRequested, this, &DADataOperateOfDataFrameWidget::showConditionalFormatDialog);
-    // 计算列入口（004 T1.23）：表体右键菜单与 Ribbon「Data Tools」面板共用同一打开逻辑
-    connect(ui->tableView, &DADataTableView::computedColumnRequested, this, [ this ]() {
-        showComputedColumnDialog(-1);
-    });
-    // 分列/合并列入口（004 T1.9）：表体右键菜单与 Ribbon「Data Tools」面板共用同一打开逻辑
-    connect(ui->tableView, &DADataTableView::splitColumnRequested, this, [ this ]() {
-        showSplitColumnDialog(-1);
-    });
-    connect(ui->tableView, &DADataTableView::mergeColumnsRequested, this, &DADataOperateOfDataFrameWidget::showMergeColumnsDialog);
-    // 分组聚合入口（004 T1.22）：表体右键菜单与 Ribbon「Data Tools」面板共用同一打开逻辑
-    connect(ui->tableView, &DADataTableView::groupByRequested, this, &DADataOperateOfDataFrameWidget::showGroupByDialog);
-    // 转置/宽转长入口（004 T1.27）：表体右键菜单与 Ribbon「Data Tools」面板共用同一打开逻辑
-    connect(ui->tableView, &DADataTableView::transposeRequested, this, [ this ]() {
-        showReshapeDialog(false);
-    });
-    connect(ui->tableView, &DADataTableView::meltRequested, this, [ this ]() {
-        showReshapeDialog(true);
-    });
-    // 填充入口（005 T1.24）：Ctrl+D 与表体右键「填充」子菜单共用表意信号
-    connect(ui->tableView, &DADataTableView::fillDownRequested, this, [ this ]() {
-        fillSelection(FillMode::Down);
-    });
-    connect(ui->tableView, &DADataTableView::fillUpRequested, this, [ this ]() {
-        fillSelection(FillMode::Up);
-    });
-    connect(ui->tableView, &DADataTableView::fillForwardRequested, this, [ this ]() {
-        fillSelection(FillMode::Forward);
-    });
-    connect(ui->tableView, &DADataTableView::fillBackwardRequested, this, [ this ]() {
-        fillSelection(FillMode::Backward);
-    });
-    connect(ui->tableView, &DADataTableView::fillSeriesRequested, this, &DADataOperateOfDataFrameWidget::showFillSeriesDialog);
-    // 数据校验入口（005 T1.25）：表体右键菜单与 Ribbon「Data Tools」面板共用同一逻辑
-    connect(ui->tableView, &DADataTableView::validationRulesRequested, this, &DADataOperateOfDataFrameWidget::showValidationRulesDialog);
-    connect(ui->tableView, &DADataTableView::runValidationRequested, this, &DADataOperateOfDataFrameWidget::runValidationAndShowReport);
-    // 批注入口（005 T1.26）：插入/编辑共用弹层（按有无批注自适应），删除/清除各自命令
-    connect(ui->tableView, &DADataTableView::noteInsertRequested, this, &DADataOperateOfDataFrameWidget::showNoteEditorForCurrentCell);
-    connect(ui->tableView, &DADataTableView::noteEditRequested, this, &DADataOperateOfDataFrameWidget::showNoteEditorForCurrentCell);
-    connect(ui->tableView, &DADataTableView::noteDeleteRequested, this, &DADataOperateOfDataFrameWidget::deleteNoteAtCurrentCell);
-    connect(ui->tableView, &DADataTableView::noteClearAllRequested, this, &DADataOperateOfDataFrameWidget::clearAllNotes);
-    // 选中变化时反向同步 ribbon 控件
+    // 选中变化时反向同步 ribbon 控件（只在主窗格连：006e 冻结窗格共享同一 selection model）
     if (auto sm = ui->tableView->selectionModel()) {
         connect(sm, &QItemSelectionModel::selectionChanged, this, [ this ]() {
             Q_EMIT currentStyleChanged(getCurrentCellStyle());
@@ -381,6 +312,102 @@ DADataOperateOfDataFrameWidget::~DADataOperateOfDataFrameWidget()
         mConditionalFormatStore->setStatsProvider(nullptr);
     }
     delete ui;
+}
+
+/**
+ * @brief 窗格装配唯一路径（006b）
+ *
+ * 表头替换 → setModel → 委托 → 批注 store 注入 → 水平表头（计算列 store + 表意信号
+ * + 列宽采集按触发窗格）→ 垂直表头（行头宽拖拽）→ 视图表意入口连接。
+ * 主窗格与 006e 懒建的冻结窗格都走这里；漏一处 = 该窗格某操作没反应。
+ * 表头替换必须在 setModel 之前（QTableView::setModel 会把模型接到"当前"表头上）。
+ * @param pane 目标窗格
+ */
+void DADataOperateOfDataFrameWidget::configurePaneView(DADataTableView* pane)
+{
+    if (!pane) {
+        return;
+    }
+    // 1) 表头替换：用 DADataHeaderView（列头右键菜单/带修饰键点击信号/行头宽拖拽）。
+    //    行高/Interactive 设置在 DADataHeaderView(Vertical) 构造内重建
+    //    （参照 DACacheWindowTableView 构造对默认行头的同款设置）
+    pane->setHorizontalHeader(new DADataHeaderView(Qt::Horizontal, pane));
+    pane->setVerticalHeader(new DADataHeaderView(Qt::Vertical, pane));
+    // 2) 模型与委托（同一 delegate 实例注入多个视图，delegate 属页面）
+    pane->setModel(mModel);
+    pane->setItemDelegate(mStyleDelegate);
+    // 3) 批注子存储注入视图（右键菜单「插入/编辑/删除批注」的启用规则查当前格）
+    pane->setNoteStore(mNoteStore);
+    // 4) 水平表头：计算列 store 注入（ƒx 角标 + 列头菜单计算列组）+ 信号。
+    //    006c 在此追加 sectionMoved → 容器槽；006d 在此追加 columnViewActionRequested
+    if (DADataHeaderView* hh = qobject_cast< DADataHeaderView* >(pane->horizontalHeader())) {
+        hh->setComputedColumnStore(mComputedColumnStore);
+        connect(hh, &DADataHeaderView::clickedWithModifiers, this, &DADataOperateOfDataFrameWidget::onHeaderClickedWithModifiers);
+        // 列宽采集：用触发信号的那个窗格的表头（不再写死 ui->tableView）
+        connect(hh, &QHeaderView::sectionResized, this, [ this, pane ](int logicalIndex, int, int newSize) {
+            onHeaderSectionResized(pane, logicalIndex, newSize);
+        });
+    }
+    // 5) 垂直表头：行头宽拖拽 → 写视图状态
+    if (DADataHeaderView* vh = qobject_cast< DADataHeaderView* >(pane->verticalHeader())) {
+        connect(vh, &DADataHeaderView::rowHeaderWidthChanged, this, [ this ](int width) {
+            if (mViewStateStore) {
+                mViewStateStore->setRowHeaderWidth(width);
+            }
+        });
+    }
+    // 6) 视图表意入口（快捷键/右键菜单共用）：每装一个窗格连一份
+    connect(pane, &QTableView::clicked, this, &DADataOperateOfDataFrameWidget::onTableViewClicked);
+    // 查找/替换入口（002 T1.4）：视图快捷键 Ctrl+F/Ctrl+H 与表体右键菜单共用表意信号
+    connect(pane, &DADataTableView::findRequested, this, [ this ]() {
+        showFindReplace(false);
+    });
+    connect(pane, &DADataTableView::replaceRequested, this, [ this ]() {
+        showFindReplace(true);
+    });
+    connect(pane, &DADataTableView::findBarCloseRequested, this, &DADataOperateOfDataFrameWidget::closeFindReplace);
+    // 条件格式入口（003 T1.5）：表体右键菜单与 Ribbon Table Style 面板共用同一打开逻辑
+    connect(pane, &DADataTableView::conditionalFormatRequested, this, &DADataOperateOfDataFrameWidget::showConditionalFormatDialog);
+    // 计算列入口（004 T1.23）：表体右键菜单与 Ribbon「Data Tools」面板共用同一打开逻辑
+    connect(pane, &DADataTableView::computedColumnRequested, this, [ this ]() {
+        showComputedColumnDialog(-1);
+    });
+    // 分列/合并列入口（004 T1.9）：表体右键菜单与 Ribbon「Data Tools」面板共用同一打开逻辑
+    connect(pane, &DADataTableView::splitColumnRequested, this, [ this ]() {
+        showSplitColumnDialog(-1);
+    });
+    connect(pane, &DADataTableView::mergeColumnsRequested, this, &DADataOperateOfDataFrameWidget::showMergeColumnsDialog);
+    // 分组聚合入口（004 T1.22）：表体右键菜单与 Ribbon「Data Tools」面板共用同一打开逻辑
+    connect(pane, &DADataTableView::groupByRequested, this, &DADataOperateOfDataFrameWidget::showGroupByDialog);
+    // 转置/宽转长入口（004 T1.27）：表体右键菜单与 Ribbon「Data Tools」面板共用同一打开逻辑
+    connect(pane, &DADataTableView::transposeRequested, this, [ this ]() {
+        showReshapeDialog(false);
+    });
+    connect(pane, &DADataTableView::meltRequested, this, [ this ]() {
+        showReshapeDialog(true);
+    });
+    // 填充入口（005 T1.24）：Ctrl+D 与表体右键「填充」子菜单共用表意信号
+    connect(pane, &DADataTableView::fillDownRequested, this, [ this ]() {
+        fillSelection(FillMode::Down);
+    });
+    connect(pane, &DADataTableView::fillUpRequested, this, [ this ]() {
+        fillSelection(FillMode::Up);
+    });
+    connect(pane, &DADataTableView::fillForwardRequested, this, [ this ]() {
+        fillSelection(FillMode::Forward);
+    });
+    connect(pane, &DADataTableView::fillBackwardRequested, this, [ this ]() {
+        fillSelection(FillMode::Backward);
+    });
+    connect(pane, &DADataTableView::fillSeriesRequested, this, &DADataOperateOfDataFrameWidget::showFillSeriesDialog);
+    // 数据校验入口（005 T1.25）：表体右键菜单与 Ribbon「Data Tools」面板共用同一逻辑
+    connect(pane, &DADataTableView::validationRulesRequested, this, &DADataOperateOfDataFrameWidget::showValidationRulesDialog);
+    connect(pane, &DADataTableView::runValidationRequested, this, &DADataOperateOfDataFrameWidget::runValidationAndShowReport);
+    // 批注入口（005 T1.26）：插入/编辑共用弹层（按有无批注自适应），删除/清除各自命令
+    connect(pane, &DADataTableView::noteInsertRequested, this, &DADataOperateOfDataFrameWidget::showNoteEditorForCurrentCell);
+    connect(pane, &DADataTableView::noteEditRequested, this, &DADataOperateOfDataFrameWidget::showNoteEditorForCurrentCell);
+    connect(pane, &DADataTableView::noteDeleteRequested, this, &DADataOperateOfDataFrameWidget::deleteNoteAtCurrentCell);
+    connect(pane, &DADataTableView::noteClearAllRequested, this, &DADataOperateOfDataFrameWidget::clearAllNotes);
 }
 
 /**
@@ -1741,8 +1768,13 @@ void DADataOperateOfDataFrameWidget::applyViewStateFromStore()
         }
     }
     mApplyingViewState = true;
-    QHeaderView* hh = ui->tableView->horizontalHeader();
-    if (hh) {
+    // 1) 列宽：对每个窗格按列名（+occurrence）套用（Qt 按段存宽度，隐藏段写进
+    //    hiddenSectionSize、显示时恢复，安全）
+    for (DADataTableView* pane : paneViews()) {
+        QHeaderView* hh = pane->horizontalHeader();
+        if (!hh) {
+            continue;
+        }
         const int totalCols = mModel->columnCount();
         QHash< QString, int > seen;  // 列名 -> 已出现次数（即下一列的 occurrence）
         for (int c = 0; c < totalCols; ++c) {
@@ -1758,13 +1790,169 @@ void DADataOperateOfDataFrameWidget::applyViewStateFromStore()
             }
         }
     }
+    // 2) 行头宽：设给行头归属方（本单恒为主窗格；归属随冻结切换见 006e）
     const int rhw = mViewStateStore->rowHeaderWidth();
     if (rhw > 0) {
         if (QHeaderView* vh = ui->tableView->verticalHeader()) {
             vh->setFixedWidth(rhw);
         }
     }
+    // 3) 列序 / 隐藏 / 冻结 → 容器投影（冻结本单容器内夹紧为 0，006e 收口）
+    const QList< QPair< QString, int > > actual       = actualColumnIdentities();
+    const QList< QPair< QString, int > > storedOrder  = orderedColumnIdentities();  // 全局列序身份表
+    const QList< QPair< QString, int > > storedHidden = mViewStateStore->hiddenColumns();
+    QList< int > actualLogical;                            // 身份 → logical：与 actualColumnIdentities() 同口径
+    QHash< QPair< QString, int >, int > logicalOfIdent;    // 重扫列头（跳过空列名），与 actual 逐条对齐
+    {
+        QHash< QString, int > seen;
+        const int cols = dataColumnCount();
+        actualLogical.reserve(cols);
+        for (int c = 0; c < cols; ++c) {
+            const QString name = mModel->headerData(c, Qt::Horizontal).toString();
+            if (name.isEmpty()) {
+                continue;
+            }
+            const int occ = seen.value(name, 0);
+            seen[ name ]  = occ + 1;
+            actualLogical.append(c);
+            logicalOfIdent.insert(qMakePair(name, occ), c);
+        }
+        Q_ASSERT(actualLogical.size() == actual.size());
+    }
+    QVector< int > ordered;  // store 列序里能匹配的列 ++ 未匹配的实际列（数据列序追加末尾）
+    QSet< int > used;
+    ordered.reserve(actualLogical.size());
+    for (const QPair< QString, int >& ident : storedOrder) {
+        const auto it = logicalOfIdent.constFind(ident);
+        if (it == logicalOfIdent.constEnd() || used.contains(it.value())) {
+            continue;  // 孤儿由 006a 收敛剪掉，这里只跳过（防御）
+        }
+        ordered.append(it.value());
+        used.insert(it.value());
+    }
+    for (const int logical : actualLogical) {
+        if (!used.contains(logical)) {
+            ordered.append(logical);
+        }
+    }
+    QSet< int > hidden;  // store 隐藏集合按身份匹配成 logical 集合（孤儿由 006a 收敛剪掉）
+    for (const QPair< QString, int >& ident : storedHidden) {
+        const auto it = logicalOfIdent.constFind(ident);
+        if (it != logicalOfIdent.constEnd()) {
+            hidden.insert(it.value());
+        }
+    }
+    int visibleCount = 0;  // freeze：投影期夹紧，不写回 store（列数临时变少时不丢用户设置）
+    for (int logical : ordered) {
+        if (!hidden.contains(logical)) {
+            ++visibleCount;
+        }
+    }
+    const int freeze = qBound(0, mViewStateStore->freezeColumnCount(), visibleCount);
+    if (mPaneContainer) {
+        mPaneContainer->applyColumnState(ordered, hidden, freeze);
+    }
     mApplyingViewState = false;
+}
+
+/**
+ * @brief 本页所有需要投影的窗格
+ *
+ * 本单只有主窗格；006e 在末尾追加冻结窗格（非空时）。
+ * @return 窗格列表（非空）
+ */
+QList< DADataTableView* > DADataOperateOfDataFrameWidget::paneViews() const
+{
+    QList< DADataTableView* > res;
+    res.append(ui->tableView);
+    // 006e：res.append(mPaneContainer->frozenView())（非空时）
+    return res;
+}
+
+/**
+ * @brief 全局列序（含隐藏列）的身份表
+ *
+ * 口径 = store 的 columnOrder 按 (名, occurrence) 精确匹配 actualColumnIdentities()，
+ * 每条只匹配一次，未匹配的实际列按 logical 升序追加末尾；store 为空 = logical 升序。
+ * 任何地方要"全局列序身份表"都调这里（006d 列视图对话框的输入），不要在调用点重写匹配。
+ * @return 全局列序身份表
+ */
+QList< QPair< QString, int > > DADataOperateOfDataFrameWidget::orderedColumnIdentities() const
+{
+    const QList< QPair< QString, int > > actual = actualColumnIdentities();
+    QList< QPair< QString, int > > res;
+    res.reserve(actual.size());
+    if (!mViewStateStore) {
+        return actual;
+    }
+    QSet< QPair< QString, int > > used;
+    const QList< QPair< QString, int > > storedOrder = mViewStateStore->columnOrder();
+    for (const QPair< QString, int >& ident : storedOrder) {
+        if (actual.contains(ident) && !used.contains(ident)) {  // 精确匹配，每条只匹配一次
+            res.append(ident);
+            used.insert(ident);
+        }
+    }
+    for (const QPair< QString, int >& ident : actual) {
+        if (!used.contains(ident)) {
+            res.append(ident);
+        }
+    }
+    return res;
+}
+
+/**
+ * @brief 列视图直接入口：只写 store + 重投影，不入撤销栈
+ *
+ * 007 定位的对接面（恢复隐藏列后跳转）。唯一投影路径 applyViewStateFromStore，
+ * 不另写第二条，也不偷偷 push 命令。
+ * @param name 列名
+ * @param occurrence 重名消歧位
+ * @param hidden 是否隐藏
+ */
+void DADataOperateOfDataFrameWidget::setColumnHiddenDirectly(const QString& name, int occurrence, bool hidden)
+{
+    if (!mViewStateStore || name.isEmpty()) {
+        return;
+    }
+    mViewStateStore->setColumnHidden(name, occurrence, hidden);
+    applyViewStateFromStore();
+}
+
+/**
+ * @brief 目标列是否落在冻结区
+ *
+ * 006e 起按「视图顺序前 effectiveFrozenColumnCount() 个可见列」判定；本单生效冻结数
+ * 恒 0 → 恒 false。007 不得自己重算这份语义（真源唯一）。
+ * @param logicalColumn 逻辑列号
+ * @return 是否在冻结区
+ */
+bool DADataOperateOfDataFrameWidget::isColumnInFrozenArea(int logicalColumn) const
+{
+    Q_UNUSED(logicalColumn);
+    return false;
+}
+
+/**
+ * @brief 生效冻结列数
+ *
+ * 转发容器（本单恒 0，冻结投影 006e 收口）。
+ * @return 生效冻结列数
+ */
+int DADataOperateOfDataFrameWidget::effectiveFrozenColumnCount() const
+{
+    return mPaneContainer ? mPaneContainer->effectiveFrozenColumnCount() : 0;
+}
+
+/**
+ * @brief 列轴窗格容器只读访问器
+ *
+ * 测试与页面内部接线用；APP 不使用、不改其调用点形状。
+ * @return 容器指针（构造后非空）
+ */
+DATablePaneContainer* DADataOperateOfDataFrameWidget::paneContainer() const
+{
+    return mPaneContainer;
 }
 
 /**
@@ -1773,15 +1961,17 @@ void DADataOperateOfDataFrameWidget::applyViewStateFromStore()
  * 只记录用户拖拽：左键按住且鼠标在表头上；应用守卫期间、程序化/布局触发的
  * sectionResized（模型重置、窗口缩放拉伸末列等）一律不记录。尾部预留空白列
  * 与空列名不记录。occurrence = 该列之前同名列的个数（重名列消歧，R20）。
+ * source = 触发信号的那个窗格（006b 起不再写死 ui->tableView）。
+ * @param source 触发窗格
  * @param logicalIndex 逻辑列号
  * @param newSize 新宽度（像素）
  */
-void DADataOperateOfDataFrameWidget::onHeaderSectionResized(int logicalIndex, int newSize)
+void DADataOperateOfDataFrameWidget::onHeaderSectionResized(DADataTableView* source, int logicalIndex, int newSize)
 {
-    if (mApplyingViewState || !mViewStateStore || !mModel) {
+    if (mApplyingViewState || !mViewStateStore || !mModel || !source) {
         return;
     }
-    QHeaderView* hh = ui->tableView->horizontalHeader();
+    QHeaderView* hh = source->horizontalHeader();
     if (!hh || !(QGuiApplication::mouseButtons() & Qt::LeftButton) || !hh->underMouse()) {
         return;  // 非用户拖拽
     }

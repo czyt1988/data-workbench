@@ -26,6 +26,7 @@ namespace DA
 {
 class DADataTableModel;
 class DADataTableView;
+class DATablePaneContainer;
 class DADialogDataframeColumnCastToNumeric;
 class DADialogDataframeColumnCastToDatetime;
 class DADialogDataframeColumnDescribe;
@@ -116,6 +117,17 @@ public:
     void refreshTable();
     // 确保列可见
     void ensureColumnVisible(const QString& colName, bool selectCol = true);
+
+    // ===== 列视图（006）=====
+    // 列视图直接入口（007 定位的对接面）：只写 store + 重投影，不入撤销栈
+    void setColumnHiddenDirectly(const QString& name, int occurrence, bool hidden);
+    // 目标列是否落在「视图顺序前 m 个可见列」的冻结区（007 判定要不要调 showColumn）；
+    // 本单恒 false（冻结投影 006e 收口）；freezeColumnCount()==0 时也恒 false
+    bool isColumnInFrozenArea(int logicalColumn) const;
+    // 生效冻结列数（本单转发容器，恒 0）
+    int effectiveFrozenColumnCount() const;
+    // 只读访问器：列轴窗格容器（测试与页面内部接线用；APP 不使用、不改其调用点形状）
+    DATablePaneContainer* paneContainer() const;
 
     // 表头拾取模式（图表「选择序列」会话期间置位）：拾取模式下表头点击只转发
     // columnHeaderClicked 信号、不排序（§4.1 模式互斥），由 DADataOperateWidget 转发
@@ -361,8 +373,18 @@ private:
     // 按列名（+重名消歧 occurrence）从视图状态子存储应用列宽与行头宽；
     // 应用期间置守卫标志屏蔽采集，避免把「应用」当「用户改动」
     void applyViewStateFromStore();
-    // 采集用户拖拽的列宽写入视图状态子存储（程序化/布局触发的 sectionResized 不记录）
-    void onHeaderSectionResized(int logicalIndex, int newSize);
+    // 窗格装配唯一路径（006b）：表头替换 → setModel → 委托 → 逐窗格连接；
+    // 主窗格与 006e 懒建的冻结窗格都走这里，漏装即该窗格某操作没反应
+    void configurePaneView(DADataTableView* pane);
+    // 本页所有需要投影的窗格（本单只有主窗格；006e 在末尾追加冻结窗格）
+    QList< DADataTableView* > paneViews() const;
+    // 全局列序（含隐藏列）的身份表：store 的 columnOrder 按 (名, occurrence) 精确匹配
+    // actualColumnIdentities()，每条只匹配一次，未匹配的实际列按 logical 升序追加末尾；
+    // store 为空 = logical 升序。任何地方要"全局列序身份表"都调这里（006d 对话框的输入）
+    QList< QPair< QString, int > > orderedColumnIdentities() const;
+    // 采集用户拖拽的列宽写入视图状态子存储（程序化/布局触发的 sectionResized 不记录）；
+    // source = 触发信号的那个窗格的表头（006b 起不再写死 ui->tableView）
+    void onHeaderSectionResized(DADataTableView* source, int logicalIndex, int newSize);
     // ===== 计算列私有辅助（004 T1.23）=====
     // 求值 def 并入栈重算命令：isNewColumn=true 走创建路径（undo 删列），
     // false 走重算路径（undo 还原旧列）；成功返回 true（求值失败标失效并提示）
@@ -421,6 +443,7 @@ private:
     DATableNoteStore* mNoteStore { nullptr };                            ///< 借自 DATableMetadata 束，非拥有（单元格批注，005 T1.26）
     DATableMetadata* mMetadata { nullptr };                              ///< 元数据束（借自注册表，非拥有；就地形状变换整束快照/清理用，004 T1.27）
     DATableStyleItemDelegate* mStyleDelegate { nullptr };
+    DATablePaneContainer* mPaneContainer { nullptr };  ///< 列轴窗格容器（页级拥有，006；主窗格运行时包装进容器）
     bool mApplyingViewState { false };  ///< 正在应用视图状态（屏蔽 sectionResized 采集）
     bool mHeaderPickMode { false };     ///< 表头拾取模式（图表「选择序列」会话期间：表头点击只转发不排序）
     QVector< QPair< int, Qt::SortOrder > > mSortSpec;  ///< 多列排序规格（列逻辑索引+方向，顺序即优先级；不持久化 R13）
