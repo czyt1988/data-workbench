@@ -97,9 +97,11 @@ private:
 	QWidget* currentEditor() const;
 	// 光标移到指定绝对行/列（不改变视口的纵向位置）
 	void setCurrentActualCell(int actualRow, int actualColumn);
-	// 「定位到行」输入
-	void promptGotoRow();
 
+public:
+	// 「定位到行」输入（virtual：子类可改为发表意信号；基类默认仍是 QInputDialog，
+	// DAPyDataFrameTableView / DAPySeriesTableView 继续使用它；007 T1.7 走信号链）
+	virtual void promptGotoRow();
 private:
 	bool mAdjustingScrollBar { false };            ///< 正在程序化调整滚动条/窗口，避免重入
 	bool mPendingRecenter { false };               ///< 因编辑器打开而延后的窗口重定心

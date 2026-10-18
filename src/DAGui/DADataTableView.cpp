@@ -94,6 +94,18 @@ void DADataTableView::keyPressEvent(QKeyEvent* event)
 }
 
 /**
+ * @brief 定位到行（007 T1.7）：覆写为只发 gotoRequested 表意信号
+ *
+ * 基类默认是 QInputDialog（DAPyDataFrameTableView / DAPySeriesTableView 继续使用）；
+ * 数据表页由此把 Ctrl+G 与滚动条右键「定位到行」统一引到页面的定位对话框
+ *（onGotoRowRequested → promptGotoRow 虚派发走同一条链）。
+ */
+void DADataTableView::promptGotoRow()
+{
+    Q_EMIT gotoRequested();
+}
+
+/**
  * @brief 数据源是否可编辑
  *
  * 判定路径同 DADataTableModel::actualFlags 的只读源分支：tableSource 非空且

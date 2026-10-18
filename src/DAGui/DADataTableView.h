@@ -49,6 +49,8 @@ Q_SIGNALS:
     // 查找/替换入口（002 T1.4）：Ctrl+F/Ctrl+H 快捷键与右键菜单共用，页面据此唤出浮动条
     void findRequested();
     void replaceRequested();
+    // 定位入口（007 T1.7）：Ctrl+G 与滚动条右键「定位到行」共用，页面据此唤出定位对话框
+    void gotoRequested();
     // Esc 关闭查找条（焦点在表格时；对话框自身焦点下的 Esc 由对话框处理）
     void findBarCloseRequested();
     // 条件格式入口（003 T1.5）：表体右键菜单唤出规则编辑对话框（列头菜单不放，R16）
@@ -86,6 +88,9 @@ protected:
     // Ctrl+G/Ctrl+Home/Ctrl+End/PageUp/PageDown/Home/End）。表格快捷键唯一挂点，
     // Ribbon action 不设 shortcut（红线5）
     void keyPressEvent(QKeyEvent* event) override;
+    // 定位到行（007 T1.7）：覆写为只发 gotoRequested 表意信号，本类不弹 QInputDialog
+    //（滚动条右键经 onGotoRowRequested → promptGotoRow 虚派发走同一条链）
+    void promptGotoRow() override;
     // 表体右键菜单
     void contextMenuEvent(QContextMenuEvent* event) override;
 
