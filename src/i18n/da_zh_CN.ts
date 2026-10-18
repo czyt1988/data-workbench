@@ -3100,6 +3100,14 @@ Layouts</source>
         <source>Unfreeze Columns</source>
         <translation>取消冻结</translation>
     </message>
+    <message>
+        <source>Go To...</source>
+        <translation>定位...</translation>
+    </message>
+    <message>
+        <source>Jump to a row / index label / column</source>
+        <translation>跳转到指定行、索引标签或列</translation>
+    </message>
 </context>
 <context>
     <name>DA::DAAppController</name>
@@ -9513,6 +9521,30 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     <message>
         <source>Column View...</source>
         <translation>列视图...</translation>
+    </message>
+    <message>
+        <source>The column "%1" was hidden and has been made visible</source>
+        <translation>列&quot;%1&quot;已隐藏，现已显示</translation>
+    </message>
+    <message>
+        <source>Row number is out of range</source>
+        <translation>行号超出范围</translation>
+    </message>
+    <message>
+        <source>Index label not found: %1</source>
+        <translation>未找到索引标签：%1</translation>
+    </message>
+    <message>
+        <source>There are %1 rows with this index label; jumped to the first one</source>
+        <translation>有 %1 行使用该索引标签，已跳到第一个</translation>
+    </message>
+    <message>
+        <source>Column not found: %1</source>
+        <translation>未找到列名：%1</translation>
+    </message>
+    <message>
+        <source>There are %1 columns with this name; used the first one</source>
+        <translation>有 %1 个同名列，已取第一个</translation>
     </message>
 </context>
 <context>
@@ -18320,6 +18352,112 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <source>Maximum number of undo steps kept per table page (larger uses more memory for swap-type commands)</source>
         <translation>每个表格页保留的最大撤销步数（调大对转置类命令会增加内存占用）</translation>
+    </message>
+</context>
+<context>
+        <name>DA::DADialogGotoCell</name>
+    <message>
+        <source>Go To</source>
+        <translation>定位</translation>
+    </message>
+    <message>
+        <source>Row number:</source>
+        <translation>行号：</translation>
+    </message>
+    <message>
+        <source>Index label:</source>
+        <translation>索引标签：</translation>
+    </message>
+    <message>
+        <source>Column:</source>
+        <translation>列：</translation>
+    </message>
+    <message>
+        <source>Keep hidden columns hidden</source>
+        <translation>保持隐藏列隐藏</translation>
+    </message>
+    <message>
+        <source>First row</source>
+        <translation>首行</translation>
+    </message>
+    <message>
+        <source>Last row</source>
+        <translation>尾行</translation>
+    </message>
+    <message>
+        <source>First column</source>
+        <translation>首列</translation>
+    </message>
+    <message>
+        <source>Last column</source>
+        <translation>尾列</translation>
+    </message>
+    <message>
+        <source>1 - %1</source>
+        <translation>1 - %1</translation>
+    </message>
+</context>
+<context>
+        <name>DA::DATableStatsWidget</name>
+    <message>
+        <source>%1 rows × %2 cols</source>
+        <translation>%1 行 × %2 列</translation>
+    </message>
+    <message>
+        <source>%1 cols selected · %2 rows</source>
+        <translation>已选 %1 列 · %2 行</translation>
+    </message>
+    <message>
+        <source>Count</source>
+        <translation>计数</translation>
+    </message>
+    <message>
+        <source>Null</source>
+        <translation>空值</translation>
+    </message>
+    <message>
+        <source>Sum</source>
+        <translation>求和</translation>
+    </message>
+    <message>
+        <source>Mean</source>
+        <translation>均值</translation>
+    </message>
+    <message>
+        <source>Min</source>
+        <translation>最小值</translation>
+    </message>
+    <message>
+        <source>Max</source>
+        <translation>最大值</translation>
+    </message>
+    <message>
+        <source>Unique</source>
+        <translation>唯一值数</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Per-column details&lt;/b&gt;</source>
+        <translation>&lt;b&gt;逐列明细&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>Selection is too large; per-column details were not computed</source>
+        <translation>选区过大，未计算明细</translation>
+    </message>
+    <message>
+        <source>%1 segments · %2 rows × %3 cols · %4 cells</source>
+        <translation>%1 段 · %2 行 × %3 列 · %4 格</translation>
+    </message>
+    <message>
+        <source>Aggregation is not available for multi-range selections</source>
+        <translation>多段选区不提供聚合</translation>
+    </message>
+    <message>
+        <source>Row %1 · %2: %3</source>
+        <translation>第 %1 行 · %2：%3</translation>
+    </message>
+    <message>
+        <source>Statistics are not available for the current data source</source>
+        <translation>当前数据源不支持选区统计</translation>
     </message>
 </context>
 </TS>

@@ -3093,6 +3093,14 @@ Layouts</source>
         <source>Unfreeze Columns</source>
         <translation>Unfreeze Columns</translation>
     </message>
+    <message>
+        <source>Go To...</source>
+        <translation>Go To...</translation>
+    </message>
+    <message>
+        <source>Jump to a row / index label / column</source>
+        <translation>Jump to a row / index label / column</translation>
+    </message>
 </context>
 <context>
     <name>DA::DAAppController</name>
@@ -9411,6 +9419,30 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     <message>
         <source>Column View...</source>
         <translation>Column View...</translation>
+    </message>
+    <message>
+        <source>The column "%1" was hidden and has been made visible</source>
+        <translation>The column "%1" was hidden and has been made visible</translation>
+    </message>
+    <message>
+        <source>Row number is out of range</source>
+        <translation>Row number is out of range</translation>
+    </message>
+    <message>
+        <source>Index label not found: %1</source>
+        <translation>Index label not found: %1</translation>
+    </message>
+    <message>
+        <source>There are %1 rows with this index label; jumped to the first one</source>
+        <translation>There are %1 rows with this index label; jumped to the first one</translation>
+    </message>
+    <message>
+        <source>Column not found: %1</source>
+        <translation>Column not found: %1</translation>
+    </message>
+    <message>
+        <source>There are %1 columns with this name; used the first one</source>
+        <translation>There are %1 columns with this name; used the first one</translation>
     </message>
 </context>
 <context>
@@ -18212,6 +18244,112 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <source>Maximum number of undo steps kept per table page (larger uses more memory for swap-type commands)</source>
         <translation>Maximum number of undo steps kept per table page (larger uses more memory for swap-type commands)</translation>
+    </message>
+</context>
+<context>
+        <name>DA::DADialogGotoCell</name>
+    <message>
+        <source>Go To</source>
+        <translation>Go To</translation>
+    </message>
+    <message>
+        <source>Row number:</source>
+        <translation>Row number:</translation>
+    </message>
+    <message>
+        <source>Index label:</source>
+        <translation>Index label:</translation>
+    </message>
+    <message>
+        <source>Column:</source>
+        <translation>Column:</translation>
+    </message>
+    <message>
+        <source>Keep hidden columns hidden</source>
+        <translation>Keep hidden columns hidden</translation>
+    </message>
+    <message>
+        <source>First row</source>
+        <translation>First row</translation>
+    </message>
+    <message>
+        <source>Last row</source>
+        <translation>Last row</translation>
+    </message>
+    <message>
+        <source>First column</source>
+        <translation>First column</translation>
+    </message>
+    <message>
+        <source>Last column</source>
+        <translation>Last column</translation>
+    </message>
+    <message>
+        <source>1 - %1</source>
+        <translation>1 - %1</translation>
+    </message>
+</context>
+<context>
+        <name>DA::DATableStatsWidget</name>
+    <message>
+        <source>%1 rows × %2 cols</source>
+        <translation>%1 rows × %2 cols</translation>
+    </message>
+    <message>
+        <source>%1 cols selected · %2 rows</source>
+        <translation>%1 cols selected · %2 rows</translation>
+    </message>
+    <message>
+        <source>Count</source>
+        <translation>Count</translation>
+    </message>
+    <message>
+        <source>Null</source>
+        <translation>Null</translation>
+    </message>
+    <message>
+        <source>Sum</source>
+        <translation>Sum</translation>
+    </message>
+    <message>
+        <source>Mean</source>
+        <translation>Mean</translation>
+    </message>
+    <message>
+        <source>Min</source>
+        <translation>Min</translation>
+    </message>
+    <message>
+        <source>Max</source>
+        <translation>Max</translation>
+    </message>
+    <message>
+        <source>Unique</source>
+        <translation>Unique</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Per-column details&lt;/b&gt;</source>
+        <translation>&lt;b&gt;Per-column details&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>Selection is too large; per-column details were not computed</source>
+        <translation>Selection is too large; per-column details were not computed</translation>
+    </message>
+    <message>
+        <source>%1 segments · %2 rows × %3 cols · %4 cells</source>
+        <translation>%1 segments · %2 rows × %3 cols · %4 cells</translation>
+    </message>
+    <message>
+        <source>Aggregation is not available for multi-range selections</source>
+        <translation>Aggregation is not available for multi-range selections</translation>
+    </message>
+    <message>
+        <source>Row %1 · %2: %3</source>
+        <translation>Row %1 · %2: %3</translation>
+    </message>
+    <message>
+        <source>Statistics are not available for the current data source</source>
+        <translation>Statistics are not available for the current data source</translation>
     </message>
 </context>
 </TS>
