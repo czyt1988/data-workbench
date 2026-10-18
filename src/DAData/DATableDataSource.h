@@ -3,8 +3,10 @@
 #include <QString>
 #include <QVariant>
 #include <cstddef>
+#include <optional>
 #include "DADataAPI.h"
 #include "DATableDataBlock.h"
+#include "DATableScan.h"
 namespace DA
 {
 /**
@@ -39,6 +41,10 @@ public:
     virtual bool isLazyLoaded() const;
     // 表格是否可编辑
     virtual bool isTableEditable() const;
+    // 在源侧一次算完列统计；不支持时返回 nullopt（调用方明说"不支持"并给出说明，
+    // 不下假数据）。pandas 源：numpy 一次算完；将来数据库源：翻译成
+    // SELECT COUNT/SUM/AVG/MIN/MAX（下推）
+    virtual std::optional< DATableStatsResult > computeColumnStats(const DATableScanRequest& req) const;
 };
 }  // namespace DA
 #endif  // DATABLEDATASOURCE_H
