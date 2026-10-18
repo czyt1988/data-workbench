@@ -3049,6 +3049,50 @@ Layouts</source>
         <source>Show the undo history panel (follows the active page, click an entry to undo/redo to it)</source>
         <translation>Show the undo history panel (follows the active page, click an entry to undo/redo to it)</translation>
     </message>
+    <message>
+        <source>Freeze Columns</source>
+        <translation>Freeze Columns</translation>
+    </message>
+    <message>
+        <source>Freeze the leftmost columns of the table</source>
+        <translation>Freeze the leftmost columns of the table</translation>
+    </message>
+    <message>
+        <source>Hide Column</source>
+        <translation>Hide Column</translation>
+    </message>
+    <message>
+        <source>Hide the selected columns</source>
+        <translation>Hide the selected columns</translation>
+    </message>
+    <message>
+        <source>Show All Columns</source>
+        <translation>Show All Columns</translation>
+    </message>
+    <message>
+        <source>Show all hidden columns</source>
+        <translation>Show all hidden columns</translation>
+    </message>
+    <message>
+        <source>Column View...</source>
+        <translation>Column View...</translation>
+    </message>
+    <message>
+        <source>Open the column view settings dialog</source>
+        <translation>Open the column view settings dialog</translation>
+    </message>
+    <message>
+        <source>Freeze First Column</source>
+        <translation>Freeze First Column</translation>
+    </message>
+    <message>
+        <source>Freeze Columns...</source>
+        <translation>Freeze Columns...</translation>
+    </message>
+    <message>
+        <source>Unfreeze Columns</source>
+        <translation>Unfreeze Columns</translation>
+    </message>
 </context>
 <context>
     <name>DA::DAAppController</name>
@@ -3365,6 +3409,10 @@ Layouts</source>
         <location line="-2202"/>
         <source>Before running the workflow, you need to save the project</source>
         <translation>Before running the workflow, you need to save the project</translation>
+    </message>
+    <message>
+        <source>Please select a column first</source>
+        <translation>Please select a column first</translation>
     </message>
 </context>
 <context>
@@ -9343,6 +9391,26 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     <message>
         <source>This table has no notes</source>
         <translation>This table has no notes</translation>
+    </message>
+    <message>
+        <source>Some column view settings were dropped because the table columns have changed.</source>
+        <translation>Some column view settings were dropped because the table columns have changed.</translation>
+    </message>
+    <message>
+        <source>Frozen columns were reduced because visible columns changed.</source>
+        <translation>Frozen columns were reduced because visible columns changed.</translation>
+    </message>
+    <message>
+        <source>Freeze Columns</source>
+        <translation>Freeze Columns</translation>
+    </message>
+    <message>
+        <source>Freeze the first N visible columns (0 = no freeze):</source>
+        <translation>Freeze the first N visible columns (0 = no freeze):</translation>
+    </message>
+    <message>
+        <source>Column View...</source>
+        <translation>Column View...</translation>
     </message>
 </context>
 <context>
@@ -16837,6 +16905,26 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <source>clear cells</source>
         <translation>clear cells</translation>
     </message>
+    <message>
+        <source>Reorder columns</source>
+        <translation>Reorder columns</translation>
+    </message>
+    <message>
+        <source>Hide column "%1"</source>
+        <translation>Hide column "%1"</translation>
+    </message>
+    <message>
+        <source>Show all columns</source>
+        <translation>Show all columns</translation>
+    </message>
+    <message>
+        <source>Freeze columns to %1</source>
+        <translation>Freeze columns to %1</translation>
+    </message>
+    <message>
+        <source>Unfreeze columns</source>
+        <translation>Unfreeze columns</translation>
+    </message>
 </context>
 <context>
     <name>main</name>
@@ -17001,6 +17089,30 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <source>Remove Formula (Keep Data)</source>
         <translation>Remove Formula (Keep Data)</translation>
+    </message>
+    <message>
+        <source>Columns</source>
+        <translation>Columns</translation>
+    </message>
+    <message>
+        <source>Hide This Column</source>
+        <translation>Hide This Column</translation>
+    </message>
+    <message>
+        <source>Show All Columns</source>
+        <translation>Show All Columns</translation>
+    </message>
+    <message>
+        <source>Freeze to This Column</source>
+        <translation>Freeze to This Column</translation>
+    </message>
+    <message>
+        <source>Unfreeze</source>
+        <translation>Unfreeze</translation>
+    </message>
+    <message>
+        <source>Column View...</source>
+        <translation>Column View...</translation>
     </message>
 </context>
 <context>
@@ -17279,6 +17391,22 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>Bar Color:</translation>
     </message>
 </context>
+
+<context>
+        <name>DADialogTableColumnView</name>
+    <message>
+        <source>Column View</source>
+        <translation>Column View</translation>
+    </message>
+    <message>
+        <source>Columns:</source>
+        <translation>Columns:</translation>
+    </message>
+    <message>
+        <source>Freeze Columns:</source>
+        <translation>Freeze Columns:</translation>
+    </message>
+</context>
 <context>
     <name>DA::DATableComputedColumnStore</name>
     <message>
@@ -17330,6 +17458,10 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <source>Cell notes</source>
         <translation>Cell notes</translation>
+    </message>
+    <message>
+        <source>Column view settings</source>
+        <translation>Column view settings</translation>
     </message>
 </context>
 <context>

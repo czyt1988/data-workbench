@@ -3056,6 +3056,50 @@ Layouts</source>
         <source>Show the undo history panel (follows the active page, click an entry to undo/redo to it)</source>
         <translation>显示撤销历史面板（跟随当前激活页面，点击条目可回退/前进）</translation>
     </message>
+    <message>
+        <source>Freeze Columns</source>
+        <translation>冻结列</translation>
+    </message>
+    <message>
+        <source>Freeze the leftmost columns of the table</source>
+        <translation>冻结表格左侧的列</translation>
+    </message>
+    <message>
+        <source>Hide Column</source>
+        <translation>隐藏列</translation>
+    </message>
+    <message>
+        <source>Hide the selected columns</source>
+        <translation>隐藏选中的列</translation>
+    </message>
+    <message>
+        <source>Show All Columns</source>
+        <translation>显示所有列</translation>
+    </message>
+    <message>
+        <source>Show all hidden columns</source>
+        <translation>显示所有被隐藏的列</translation>
+    </message>
+    <message>
+        <source>Column View...</source>
+        <translation>列视图...</translation>
+    </message>
+    <message>
+        <source>Open the column view settings dialog</source>
+        <translation>打开列视图设置对话框</translation>
+    </message>
+    <message>
+        <source>Freeze First Column</source>
+        <translation>冻结首列</translation>
+    </message>
+    <message>
+        <source>Freeze Columns...</source>
+        <translation>冻结前 N 列…</translation>
+    </message>
+    <message>
+        <source>Unfreeze Columns</source>
+        <translation>取消冻结</translation>
+    </message>
 </context>
 <context>
     <name>DA::DAAppController</name>
@@ -3372,6 +3416,10 @@ Layouts</source>
         <location line="-2202"/>
         <source>Before running the workflow, you need to save the project</source>
         <translation>在运行工作流之前，需要先保存工程</translation>
+    </message>
+    <message>
+        <source>Please select a column first</source>
+        <translation>请先选择列</translation>
     </message>
 </context>
 <context>
@@ -9445,6 +9493,26 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     <message>
         <source>This table has no notes</source>
         <translation>本表没有批注</translation>
+    </message>
+    <message>
+        <source>Some column view settings were dropped because the table columns have changed.</source>
+        <translation>表格的列已变化，部分列视图设置已被丢弃</translation>
+    </message>
+    <message>
+        <source>Frozen columns were reduced because visible columns changed.</source>
+        <translation>可见列已变化，冻结列数被自动缩减</translation>
+    </message>
+    <message>
+        <source>Freeze Columns</source>
+        <translation>冻结列</translation>
+    </message>
+    <message>
+        <source>Freeze the first N visible columns (0 = no freeze):</source>
+        <translation>冻结前 N 个可见列（0 = 不冻结）：</translation>
+    </message>
+    <message>
+        <source>Column View...</source>
+        <translation>列视图...</translation>
     </message>
 </context>
 <context>
@@ -16945,6 +17013,26 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <source>clear cells</source>
         <translation>清除单元格</translation>
     </message>
+    <message>
+        <source>Reorder columns</source>
+        <translation>重排列序</translation>
+    </message>
+    <message>
+        <source>Hide column "%1"</source>
+        <translation>隐藏列&quot;%1&quot;</translation>
+    </message>
+    <message>
+        <source>Show all columns</source>
+        <translation>显示所有列</translation>
+    </message>
+    <message>
+        <source>Freeze columns to %1</source>
+        <translation>冻结到第 %1 列</translation>
+    </message>
+    <message>
+        <source>Unfreeze columns</source>
+        <translation>取消冻结</translation>
+    </message>
 </context>
 <context>
     <name>main</name>
@@ -17109,6 +17197,30 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <source>Remove Formula (Keep Data)</source>
         <translation>移除公式（保留数据）</translation>
+    </message>
+    <message>
+        <source>Columns</source>
+        <translation>列</translation>
+    </message>
+    <message>
+        <source>Hide This Column</source>
+        <translation>隐藏此列</translation>
+    </message>
+    <message>
+        <source>Show All Columns</source>
+        <translation>显示所有列</translation>
+    </message>
+    <message>
+        <source>Freeze to This Column</source>
+        <translation>冻结到此列</translation>
+    </message>
+    <message>
+        <source>Unfreeze</source>
+        <translation>取消冻结</translation>
+    </message>
+    <message>
+        <source>Column View...</source>
+        <translation>列视图...</translation>
     </message>
 </context>
 <context>
@@ -17387,6 +17499,22 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>数据条颜色：</translation>
     </message>
 </context>
+
+<context>
+        <name>DADialogTableColumnView</name>
+    <message>
+        <source>Column View</source>
+        <translation>列视图</translation>
+    </message>
+    <message>
+        <source>Columns:</source>
+        <translation>列：</translation>
+    </message>
+    <message>
+        <source>Freeze Columns:</source>
+        <translation>冻结列数：</translation>
+    </message>
+</context>
 <context>
     <name>DA::DATableComputedColumnStore</name>
     <message>
@@ -17438,6 +17566,10 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <source>Cell notes</source>
         <translation>批注</translation>
+    </message>
+    <message>
+        <source>Column view settings</source>
+        <translation>列视图设置</translation>
     </message>
 </context>
 <context>
