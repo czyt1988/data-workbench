@@ -299,6 +299,17 @@ public Q_SLOTS:
     bool changeSelectColumnToIndex();
     // 显示列统计信息（表头右键），通过 pandas describe 获取
     void showColumnDescribe(int col);
+    // ===== 列视图真源操作（006c）：构造命令入栈后由回调重投影，均不动 mSortSpec =====
+    // 列头菜单「隐藏此列」（logicalColumn 为逻辑列号）
+    void hideColumnAt(int logicalColumn);
+    // 列头菜单「显示所有列」
+    void showAllColumns();
+    // 冻结前 N 个可见列（0 = 取消冻结；入撤销栈）
+    void freezeColumnsTo(int visibleCount);
+    // 弹「冻结前 N 列」输入框后走 freezeColumnsTo
+    void promptFreezeColumns();
+    // 容器 columnOrderChanged 驱动：把合并后的全局列序（含隐藏列）转成身份表入栈
+    void applyColumnOrderFromView(const QVector< int >& newOrderLogical);
     // 粘贴剪贴板内容到当前选区左上角（仅填充选区，溢出丢弃），可撤销，返回写入单元格数
     int pasteFromClipboard();
     // 剪切选中区（复制 + 置nan），可撤销，返回受影响单元格数

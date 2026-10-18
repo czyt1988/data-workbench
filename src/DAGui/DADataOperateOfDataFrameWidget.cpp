@@ -25,11 +25,13 @@
 #include <QGuiApplication>
 #include <QItemSelectionModel>
 #include <QElapsedTimer>
+#include <QInputDialog>
 // cmd
 #include "Commands/DACommandsDataFrame.h"
 #include "Commands/DACommandsTableStyle.h"
 #include "Commands/DACommandsTableColumnFormat.h"
 #include "Commands/DACommandsConditionalFormat.h"
+#include "Commands/DACommandsTableColumnView.h"
 #include "DADataManager.h"
 // table metadata / style
 #include "DATableStyleManager.h"
@@ -86,6 +88,16 @@ QList< int > toUniqueSorted(const QList< int >& in)
     out.erase(std::unique(out.begin(), out.end()), out.end());
     return out;
 }
+
+// 身份列表 → 身份集合（Qt5.14 无 QSet 迭代器区间构造，循环插入）
+QSet< QPair< QString, int > > toIdentSet(const QList< QPair< QString, int > >& idents)
+{
+    QSet< QPair< QString, int > > res;
+    for (const QPair< QString, int >& ident : idents) {
+        res.insert(ident);
+    }
+    return res;
+}
 }
 
 //===================================================
@@ -112,6 +124,8 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
     mPaneContainer = new DATablePaneContainer(this);
     ui->verticalLayout->addWidget(mPaneContainer);
     mPaneContainer->setMainView(ui->tableView);
+    // 拖动落库（006c）：容器合并出全局列序后交页面入栈重投影（拖动 = 一个撤销单元）
+    connect(mPaneContainer, &DATablePaneContainer::columnOrderChanged, this, &DADataOperateOfDataFrameWidget::applyColumnOrderFromView);
 
     mModel = new DADataTableModel(getUndoStack(), this);
 
@@ -347,6 +361,10 @@ void DADataOperateOfDataFrameWidget::configurePaneView(DADataTableView* pane)
         connect(hh, &QHeaderView::sectionResized, this, [ this, pane ](int logicalIndex, int, int newSize) {
             onHeaderSectionResized(pane, logicalIndex, newSize);
         });
+        // 列序拖动落库（006c）：必须在表头替换之后（hh 是新表头）；每装一个窗格连一份
+        if (mPaneContainer) {
+            connect(hh, &QHeaderView::sectionMoved, mPaneContainer, &DATablePaneContainer::onPaneSectionMoved);
+        }
     }
     // 5) 垂直表头：行头宽拖拽 → 写视图状态
     if (DADataHeaderView* vh = qobject_cast< DADataHeaderView* >(pane->verticalHeader())) {
@@ -1953,6 +1971,142 @@ int DADataOperateOfDataFrameWidget::effectiveFrozenColumnCount() const
 DATablePaneContainer* DADataOperateOfDataFrameWidget::paneContainer() const
 {
     return mPaneContainer;
+}
+
+/**
+ * @brief 隐藏指定列（列头菜单「隐藏此列」）
+ *
+ * 构造隐藏集合变更命令入栈；已隐藏（集合无差异）不推空命令。不动 mSortSpec。
+ * @param logicalColumn 逻辑列号
+ */
+void DADataOperateOfDataFrameWidget::hideColumnAt(int logicalColumn)
+{
+    if (!mViewStateStore || !mModel) {
+        return;
+    }
+    if (logicalColumn < 0 || logicalColumn >= dataColumnCount()) {
+        return;
+    }
+    const QString name = mModel->headerData(logicalColumn, Qt::Horizontal).toString();
+    if (name.isEmpty()) {
+        return;  // 尾部预留空白列不参与列视图
+    }
+    int occ = 0;
+    for (int c = 0; c < logicalColumn; ++c) {
+        if (mModel->headerData(c, Qt::Horizontal).toString() == name) {
+            ++occ;
+        }
+    }
+    const QSet< QPair< QString, int > > oldHidden = toIdentSet(mViewStateStore->hiddenColumns());
+    QSet< QPair< QString, int > > newHidden       = oldHidden;
+    newHidden.insert(qMakePair(name, occ));
+    if (newHidden == oldHidden) {
+        return;  // 已隐藏，不推空命令
+    }
+    push(new DACommandTableColumnVisibility(mViewStateStore, oldHidden, newHidden,
+                                            [ this ]() { applyViewStateFromStore(); }));
+}
+
+/**
+ * @brief 显示所有列（列头菜单「显示所有列」）
+ *
+ * 隐藏集合清空入栈；空集合（无差异）不推空命令。不动 mSortSpec。
+ */
+void DADataOperateOfDataFrameWidget::showAllColumns()
+{
+    if (!mViewStateStore) {
+        return;
+    }
+    const QSet< QPair< QString, int > > oldHidden = toIdentSet(mViewStateStore->hiddenColumns());
+    if (oldHidden.isEmpty()) {
+        return;
+    }
+    push(new DACommandTableColumnVisibility(mViewStateStore, oldHidden, QSet< QPair< QString, int > >(),
+                                            [ this ]() { applyViewStateFromStore(); }));
+}
+
+/**
+ * @brief 冻结前 N 个可见列（0 = 取消冻结）
+ *
+ * 入撤销栈；与当前计数相同不推空命令。不动 mSortSpec。
+ * @param visibleCount 冻结的可见列数
+ */
+void DADataOperateOfDataFrameWidget::freezeColumnsTo(int visibleCount)
+{
+    if (!mViewStateStore) {
+        return;
+    }
+    const int newCount = qMax(0, visibleCount);
+    if (newCount == mViewStateStore->freezeColumnCount()) {
+        return;
+    }
+    push(new DACommandTableFreezeColumns(mViewStateStore, mViewStateStore->freezeColumnCount(), newCount,
+                                         [ this ]() { applyViewStateFromStore(); }));
+}
+
+/**
+ * @brief 弹「冻结前 N 列」输入框（Ribbon 冻结列主体入口）
+ */
+void DADataOperateOfDataFrameWidget::promptFreezeColumns()
+{
+    if (!mViewStateStore) {
+        return;
+    }
+    const int maxFreeze = qMax(0, dataColumnCount() - static_cast< int >(mViewStateStore->hiddenColumns().size()));
+    bool ok    = false;
+    const int n = QInputDialog::getInt(this,
+                                      tr("Freeze Columns"),  // cn:冻结列
+                                      tr("Freeze the first N visible columns (0 = no freeze):"),  // cn:冻结前 N 个可见列（0 = 不冻结）：
+                                      mViewStateStore->freezeColumnCount(),
+                                      0,
+                                      maxFreeze,
+                                      1,
+                                      &ok);
+    if (!ok) {
+        return;
+    }
+    freezeColumnsTo(n);
+}
+
+/**
+ * @brief 容器 columnOrderChanged 驱动：拖动落库入栈
+ *
+ * 收到的是容器**合并后的全局列序**（含隐藏列）。logical → (列名, occurrence)
+ * 转换按数据列序算 occurrence（不按传入顺序）；无差异不推命令。不动 mSortSpec。
+ * @param newOrderLogical 新全局列序（logical，含隐藏列）
+ */
+void DADataOperateOfDataFrameWidget::applyColumnOrderFromView(const QVector< int >& newOrderLogical)
+{
+    if (!mViewStateStore || !mModel) {
+        return;
+    }
+    QList< QPair< QString, int > > newOrder;
+    newOrder.reserve(newOrderLogical.size());
+    for (int logical : newOrderLogical) {
+        if (logical < 0 || logical >= dataColumnCount()) {
+            continue;
+        }
+        const QString name = mModel->headerData(logical, Qt::Horizontal).toString();
+        if (name.isEmpty()) {
+            continue;  // 尾部预留空白列不进列序
+        }
+        int occ = 0;
+        for (int c = 0; c < logical; ++c) {
+            if (mModel->headerData(c, Qt::Horizontal).toString() == name) {
+                ++occ;
+            }
+        }
+        newOrder.append(qMakePair(name, occ));
+    }
+    QList< QPair< QString, int > > oldOrder = mViewStateStore->columnOrder();
+    if (oldOrder.isEmpty()) {
+        oldOrder = actualColumnIdentities();  // store 为空 → 旧值视作"数据列序"
+    }
+    if (oldOrder == newOrder) {
+        return;  // 无差异不推命令
+    }
+    push(new DACommandTableColumnOrder(mViewStateStore, oldOrder, newOrder,
+                                       [ this ]() { applyViewStateFromStore(); }));
 }
 
 /**

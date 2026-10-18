@@ -288,6 +288,7 @@ set(DA_LIB_HEADER_FILES_Commands
     ${DA_LIB_SUBDIR_Commands}/DACommandsTableColumnFormat.h
     ${DA_LIB_SUBDIR_Commands}/DACommandsConditionalFormat.h
     ${DA_LIB_SUBDIR_Commands}/DACommandsTableValidation.h
+    ${DA_LIB_SUBDIR_Commands}/DACommandsTableColumnView.h
 )
 set(DA_LIB_SOURCE_FILES_Commands
     ${DA_LIB_SUBDIR_Commands}/DACommandWithRedoCount.cpp
@@ -296,6 +297,7 @@ set(DA_LIB_SOURCE_FILES_Commands
     ${DA_LIB_SUBDIR_Commands}/DACommandsTableColumnFormat.cpp
     ${DA_LIB_SUBDIR_Commands}/DACommandsConditionalFormat.cpp
     ${DA_LIB_SUBDIR_Commands}/DACommandsTableValidation.cpp
+    ${DA_LIB_SUBDIR_Commands}/DACommandsTableColumnView.cpp
 )
 list(APPEND DA_LIB_HEADER_FILES_Commands
     ${DA_LIB_SUBDIR_Commands}/DACommandWithTemporaryData.h
