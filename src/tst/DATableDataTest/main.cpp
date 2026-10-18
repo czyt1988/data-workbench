@@ -45,6 +45,7 @@
 #include "Commands/DACommandsTableColumnView.h"
 #include "Dialog/DADialogTableColumnView.h"
 #include <QWindow>
+#include <QScrollBar>
 #include <QSpinBox>
 #include "DADataHeaderView.h"
 #include "DADataTableView.h"
@@ -428,6 +429,12 @@ private Q_SLOTS:
     void testColumnViewDialogDiffAndUndo();
     // 006d：重名列 a / a (2) 独立勾选、取消不改动
     void testColumnViewDialogDuplicateNamesInitialAndCancel();
+    // 006e T6：冻结 + 列视图叠加（双窗格投影互补、宽度、policy、滚动同步、转发、往返）
+    void testFrozenAndColumnViewCombination();
+    // 006e T7：列宽在冻结/解冻往返中不回退、不入撤销栈
+    void testColumnWidthSurvivesFreezeCycle();
+    // 006e T8：行头归属、双向滚动同步、共享 selectionModel
+    void testPaneRowHeaderAndScrollSync();
     // 002 表头排序（T1.3 §4.1）：算子多键+置换、命令 undo/redo+样式重映射、表头交互/拾取互斥/只读源、10万行计时
     void testSortOperatorMultiKeyPerm();
     void testSortRowsCommandUndoRedoAndStyleRemap();
@@ -2501,10 +2508,12 @@ void DATableDataTest::testColumnViewDialogDiffAndUndo()
     // ③ 一个撤销单元
     QCOMPARE(w.getUndoStack()->count(), n0 + 1);
     QCOMPARE(w.getUndoStack()->undoText(), QStringLiteral("Column View..."));
-    // ④ 一次 undo：隐藏集合与冻结数一起还原到前置值
+    // ④ 一次 undo：隐藏集合与冻结数一起还原到前置值（a 归冻结区 → 冻结窗格可见）
     w.getUndoStack()->undo();
     QVERIFY(w.viewStateStore()->hiddenColumns().isEmpty());
-    QVERIFY(!tv->isColumnHidden(0) && !tv->isColumnHidden(2));
+    QVERIFY(!tv->isColumnHidden(1));
+    QVERIFY(!tv->isColumnHidden(2));
+    QVERIFY(tv->isColumnHidden(0));  // a 在冻结区（前置 freeze=1），主窗格隐藏
     QCOMPARE(w.viewStateStore()->freezeColumnCount(), 1);
     // ⑤ 重开：全部勾回、spinFreeze 设 0 → 确定 → 全可见、冻结 0；undo 后重推会
     // 清掉已撤销的批命令（QUndoStack::push 语义），栈计数回到 n0+1
@@ -2607,6 +2616,241 @@ void DATableDataTest::testColumnViewDialogDuplicateNamesInitialAndCancel()
     QVERIFY(!w.viewStateStore()->isColumnHidden(QStringLiteral("a"), 0));
     QVERIFY(w.viewStateStore()->isColumnHidden(QStringLiteral("a"), 1));
     QVERIFY(!w.viewStateStore()->isColumnHidden(QStringLiteral("b"), 0));
+}
+
+// 006e T6：冻结 + 列视图叠加——打乱列序 + 隐藏 1 列 + 冻结 2 的全链路投影
+void DATableDataTest::testFrozenAndColumnViewCombination()
+{
+    if (!mPandasOk) {
+        QSKIP("pandas not available");
+    }
+    pybind11::object obj = makeTestDataFrame();
+    QVERIFY(!obj.is_none());
+    DA::DAPyDataFrame df(obj);
+    DA::DAData d(df);
+    DA::DATableMetadataRegistry registry(nullptr);
+    // widget#1：写 store（列序 s,i,f,d,b + 隐藏 f + 冻结 2 + 各列宽）
+    {
+        DA::DADataOperateOfDataFrameWidget w(d, &registry);
+        DA::DATableViewStateStore* store = w.viewStateStore();
+        QVERIFY(store != nullptr);
+        store->setColumnOrder({ qMakePair(QStringLiteral("s"), 0), qMakePair(QStringLiteral("i"), 0),
+                                qMakePair(QStringLiteral("f"), 0), qMakePair(QStringLiteral("d"), 0),
+                                qMakePair(QStringLiteral("b"), 0) });
+        store->setColumnHidden(QStringLiteral("f"), 0, true);
+        store->setFreezeColumnCount(2);
+        store->setColumnWidth(QStringLiteral("s"), 0, 101);
+        store->setColumnWidth(QStringLiteral("i"), 0, 102);
+        store->setColumnWidth(QStringLiteral("d"), 0, 103);
+        store->setColumnWidth(QStringLiteral("b"), 0, 104);
+    }
+    // 「重开」数据页：构造时投影（frozenSet={s,i}、mainSet={d,b}，spare 恒主窗格可见）
+    DA::DADataOperateOfDataFrameWidget w(d, &registry);
+    w.resize(800, 400);
+    w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+    DA::DATablePaneContainer* container = w.paneContainer();
+    QVERIFY(container != nullptr);
+    DA::DADataTableView* main = w.getDataTableView();
+    DA::DADataTableView* frozen = container->frozenView();
+    QVERIFY(main != nullptr);
+    QVERIFY(frozen != nullptr);
+    QVERIFY(frozen->isVisible());
+    QCOMPARE(w.effectiveFrozenColumnCount(), 2);
+    // 数据列 logical：i=0, f=1, s=2, d=3, b=4；spare=5
+    const int colI = 0, colF = 1, colS = 2, colD = 3, colB = 4;
+    QHeaderView* fh = frozen->horizontalHeader();
+    QHeaderView* mh = main->horizontalHeader();
+    QVERIFY(fh != nullptr);
+    QVERIFY(mh != nullptr);
+    // ① 可见性互补（按"应可见"数据列取样：f 是用户隐藏列，两窗格都隐藏）
+    QVERIFY(fh->isSectionHidden(colF));
+    QVERIFY(mh->isSectionHidden(colF));
+    QVERIFY(!fh->isSectionHidden(colS));
+    QVERIFY(mh->isSectionHidden(colS));  // 冻结列在主区隐藏
+    QVERIFY(!fh->isSectionHidden(colI));
+    QVERIFY(mh->isSectionHidden(colI));
+    QVERIFY(fh->isSectionHidden(colD));
+    QVERIFY(!mh->isSectionHidden(colD));
+    QVERIFY(fh->isSectionHidden(colB));
+    QVERIFY(!mh->isSectionHidden(colB));
+    // 两窗格可见数据列的并集 = 全部非隐藏列、交集为空
+    QSet< int > frozenVisible, mainVisible;
+    const int dataCols[] = { colI, colF, colS, colD, colB };
+    for (int c : dataCols) {
+        if (!fh->isSectionHidden(c)) {
+            frozenVisible.insert(c);
+        }
+        if (!mh->isSectionHidden(c)) {
+            mainVisible.insert(c);
+        }
+    }
+    QCOMPARE(frozenVisible, QSet< int >({ colS, colI }));
+    QCOMPARE(mainVisible, QSet< int >({ colD, colB }));
+    // ② 顺序：各窗格可见列按 visualIndex 升序 == ordered 里本区段的顺序
+    {
+        QList< int > frozenOrder, mainOrder;
+        for (int v = 0; v < fh->count(); ++v) {
+            const int logical = fh->logicalIndex(v);
+            if (!fh->isSectionHidden(logical)) {
+                frozenOrder.append(logical);
+            }
+        }
+        for (int v = 0; v < mh->count(); ++v) {
+            const int logical = mh->logicalIndex(v);
+            if (!mh->isSectionHidden(logical) && logical != 5) {  // spare 恒排主区末尾
+                mainOrder.append(logical);
+            }
+        }
+        QCOMPARE(frozenOrder, QList< int >({ colS, colI }));
+        QCOMPARE(mainOrder, QList< int >({ colD, colB }));
+    }
+    // ③ 列宽在两窗格与 store 一致（f 隐藏，宽度记在 hiddenSectionSize，恢复可见后比对）
+    QCOMPARE(fh->sectionSize(colS), 101);
+    QCOMPARE(fh->sectionSize(colI), 102);
+    QCOMPARE(mh->sectionSize(colD), 103);
+    QCOMPARE(mh->sectionSize(colB), 104);
+    // ④ 冻结窗格宽 = Σ(冻结列宽) + 行头宽 + 2×frame（+2px 余量，±2 断言）
+    {
+        int expect = fh->sectionSize(colS) + fh->sectionSize(colI) + frozen->verticalHeader()->width()
+                     + 2 * frozen->frameWidth();
+        QVERIFY(qAbs(frozen->width() - expect) <= 3);
+    }
+    // ⑤ 滚动条策略：冻结窗格纵横 AlwaysOff；主窗格保持默认
+    QCOMPARE(frozen->verticalScrollBarPolicy(), Qt::ScrollBarAlwaysOff);
+    QCOMPARE(frozen->horizontalScrollBarPolicy(), Qt::ScrollBarAlwaysOff);
+    QCOMPARE(main->verticalScrollBarPolicy(), Qt::ScrollBarAsNeeded);
+    QCOMPARE(main->horizontalScrollBarPolicy(), Qt::ScrollBarAsNeeded);
+    // ⑥ 视口等高（底部等高占位生效）
+    QCOMPARE(frozen->viewport()->height(), main->viewport()->height());
+    // ⑦ 纵向滚动同步 + 末尾不错行
+    {
+        QScrollBar* mv = main->verticalScrollBar();
+        QScrollBar* fv = frozen->verticalScrollBar();
+        mv->setValue(mv->maximum());
+        QApplication::processEvents();
+        QCOMPARE(fv->value(), mv->value());
+        QCOMPARE(frozen->rowViewportPosition(0), main->rowViewportPosition(0));
+        QCOMPARE(frozen->verticalHeader()->offset(), main->verticalHeader()->offset());
+    }
+    // ⑧ 转发契约：冻结表头 columnActionRequested 转发到主表头（Q_SIGNALS 即 public）
+    {
+        DA::DADataHeaderView* fheader = qobject_cast< DA::DADataHeaderView* >(fh);
+        QVERIFY(fheader != nullptr);
+        QSignalSpy spy(mh, &QHeaderView::sectionMoved);  // 占位：真实断言在下面
+        Q_UNUSED(spy);
+        DA::DADataHeaderView* mheader = qobject_cast< DA::DADataHeaderView* >(mh);
+        QVERIFY(mheader != nullptr);
+        QSignalSpy actionSpy(mheader, &DA::DADataHeaderView::columnActionRequested);
+        Q_EMIT fheader->columnActionRequested(colD, DA::DADataHeaderView::ColumnAction::GotoMax);
+        QCOMPARE(actionSpy.count(), 1);
+    }
+    // ⑨ 解冻 → 冻结窗格隐藏；再冻结 → 顺序/宽度/可见集合全部还原（复用已有窗格）
+    w.freezeColumnsTo(0);
+    QVERIFY(!frozen->isVisible());
+    QCOMPARE(mh->sectionSize(colS), 101);  // 解冻后主窗格接管全部列宽
+    w.freezeColumnsTo(2);
+    QVERIFY(frozen->isVisible());
+    QCOMPARE(fh->sectionSize(colS), 101);
+    QCOMPARE(fh->sectionSize(colI), 102);
+    QCOMPARE(mh->sectionSize(colD), 103);
+    QCOMPARE(mh->sectionSize(colB), 104);
+    QVERIFY(!fh->isSectionHidden(colS) && fh->isSectionHidden(colD));
+}
+
+// 006e T7：列宽 137 在"冻结 → 解冻 → 再冻结"往返中两窗格不回退；列宽不入栈
+void DATableDataTest::testColumnWidthSurvivesFreezeCycle()
+{
+    if (!mPandasOk) {
+        QSKIP("pandas not available");
+    }
+    pybind11::object obj = makeTestDataFrame();
+    QVERIFY(!obj.is_none());
+    DA::DAPyDataFrame df(obj);
+    DA::DAData d(df);
+    DA::DATableMetadataRegistry registry(nullptr);
+    DA::DADataOperateOfDataFrameWidget w(d, &registry);
+    w.resize(800, 400);
+    w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+    DA::DADataTableView* main   = w.getDataTableView();
+    DA::DATablePaneContainer* container = w.paneContainer();
+    const int colF = 1;  // f
+    // 冻结（默认列序 [i,f,s,d,b] + 冻结 2 → f 在冻结区）
+    const int n0 = w.getUndoStack()->count();
+    w.freezeColumnsTo(2);
+    QCOMPARE(w.getUndoStack()->count(), n0 + 1);  // 冻结命令入栈 1 条
+    QCOMPARE(w.getUndoStack()->undoText(), QStringLiteral("Freeze columns to 2"));
+    DA::DADataTableView* frozen = container->frozenView();
+    QVERIFY(frozen != nullptr);
+    // ① 用户拖宽 f 到 137（程序化写宽度模拟拖拽结果；采集闸门不受影响——直接写 store）
+    frozen->horizontalHeader()->resizeSection(colF, 137);
+    w.viewStateStore()->setColumnWidth(QStringLiteral("f"), 0, 137);
+    QCOMPARE(frozen->horizontalHeader()->sectionSize(colF), 137);
+    // ② 解冻后主窗格接管：宽度 137 保留
+    w.freezeColumnsTo(0);
+    QCOMPARE(main->horizontalHeader()->sectionSize(colF), 137);
+    // ③ 再冻结：f 归冻结区，冻结窗格 137；主窗格侧 f 隐藏（宽度记在
+    // hiddenSectionSize，Qt 对隐藏段 sectionSize 恒 0——不能直接断言）
+    w.freezeColumnsTo(2);
+    QCOMPARE(frozen->horizontalHeader()->sectionSize(colF), 137);
+    QVERIFY(main->horizontalHeader()->isSectionHidden(colF));
+    // 再解冻一次：主窗格恢复 137（hiddenSectionSize 未回退的证明）
+    w.freezeColumnsTo(0);
+    QApplication::processEvents();
+    QCOMPARE(main->horizontalHeader()->sectionSize(colF), 137);
+    // ④ 列宽不入栈：全程只有 4 条冻结命令（冻/解/再冻/再解），无列宽命令
+    QCOMPARE(w.getUndoStack()->count(), n0 + 4);
+    const int nBeforeWidth = w.getUndoStack()->count();
+    frozen->horizontalHeader()->resizeSection(colF, 150);
+    w.viewStateStore()->setColumnWidth(QStringLiteral("f"), 0, 150);
+    QCOMPARE(w.getUndoStack()->count(), nBeforeWidth);  // 宽度变化零命令
+}
+
+// 006e T8：行头归属与宽、双向纵向滚动同步、两窗格共享同一 selectionModel/model
+void DATableDataTest::testPaneRowHeaderAndScrollSync()
+{
+    if (!mPandasOk) {
+        QSKIP("pandas not available");
+    }
+    pybind11::object obj = makeTestDataFrame();
+    QVERIFY(!obj.is_none());
+    DA::DAPyDataFrame df(obj);
+    DA::DAData d(df);
+    DA::DATableMetadataRegistry registry(nullptr);
+    DA::DADataOperateOfDataFrameWidget w(d, &registry);
+    w.resize(800, 400);
+    w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+    DA::DADataTableView* main = w.getDataTableView();
+    DA::DATablePaneContainer* container = w.paneContainer();
+    w.freezeColumnsTo(2);
+    DA::DADataTableView* frozen = container->frozenView();
+    QVERIFY(frozen != nullptr);
+    // ① 行头归属：冻结时行头归冻结窗格（frozen 可见、main 隐藏）
+    QVERIFY(frozen->verticalHeader()->isVisibleTo(frozen));
+    QVERIFY(!main->verticalHeader()->isVisibleTo(main));
+    // ② 主窗格滚动 → 冻结窗格跟随（取中间值与最大值各一次）
+    QScrollBar* mv = main->verticalScrollBar();
+    QScrollBar* fv = frozen->verticalScrollBar();
+    const int mid = (mv->minimum() + mv->maximum()) / 2;
+    mv->setValue(mid);
+    QApplication::processEvents();
+    QCOMPARE(fv->value(), mv->value());
+    QCOMPARE(frozen->rowViewportPosition(0), main->rowViewportPosition(0));
+    mv->setValue(mv->maximum());
+    QApplication::processEvents();
+    QCOMPARE(fv->value(), mv->value());
+    QCOMPARE(frozen->rowViewportPosition(0), main->rowViewportPosition(0));
+    // ③ 反向：冻结窗格滚动条变化 → 主窗格跟随
+    fv->setValue(mid / 2);
+    QApplication::processEvents();
+    QCOMPARE(mv->value(), fv->value());
+    // ④ 共享同一 selectionModel 与 model
+    QVERIFY(frozen->selectionModel() == main->selectionModel());
+    QVERIFY(frozen->model() == main->model());
+    // ⑤ getDataTableView() == 容器主窗格
+    QVERIFY(w.getDataTableView() == container->mainView());
 }
 
 //===================================================
