@@ -19,6 +19,7 @@
 #include "DADataOperatePageWidget.h"
 #include "DADataHeaderView.h"
 #include "Dialog/DADialogFindReplace.h"
+#include "Dialog/DADialogGotoCell.h"
 namespace Ui
 {
 class DADataOperateOfDataFrameWidget;
@@ -132,6 +133,13 @@ public:
     void setColumnHiddenDirectly(const QString& name, int occurrence, bool hidden);
     // 打开列视图对话框（006d）：勾选可见列 + 冻结列数；确定按差异构造一个批量父命令
     void showColumnViewDialog();
+    // 打开定位对话框（007 T1.7）：Ctrl+G / 滚动条右键 / Ribbon「定位」共用
+    void showGotoDialog();
+    // 解析定位请求并调定位单入口；返回 false = 未解析成功（已给用户可见提示、未改选区）
+    bool resolveGotoRequest(const DADialogGotoCell::Request& req);
+    // 当前单元格模型索引：selectionModel()->currentIndex()，无效时取选区左上角
+    //（都没有返回无效索引）
+    QModelIndex currentOrSelectionTopLeftIndex() const;
     // 目标列是否落在「视图顺序前 m 个可见列」的冻结区（007 判定要不要调 showColumn）；
     // 本单恒 false（冻结投影 006e 收口）；freezeColumnCount()==0 时也恒 false
     bool isColumnInFrozenArea(int logicalColumn) const;
@@ -485,6 +493,7 @@ private:
     DADialogDataframeColumnDescribe* mDialogColumnDescribe { nullptr };
     DADialogFindReplace* mFindReplaceDialog { nullptr };  ///< 非模态浮动查找/替换条（懒建，页级持有）
     class DADialogTableColumnView* mDialogColumnView { nullptr };  ///< 列视图对话框（006d，懒建复用）
+    class DADialogGotoCell* mGotoDialog { nullptr };               ///< 定位对话框（007，懒建复用）
     QPointer< DADialogValidationReport > mValidationReport;  ///< 非模态校验报告窗（005 T1.25，重跑前先关旧的）
 
     // ===== 查找状态（002 T1.4）=====

@@ -241,6 +241,7 @@ list(APPEND DA_LIB_HEADER_FILES_Dialog
     ${DA_LIB_SUBDIR_Dialog}/DADialogValidationRules.h
     ${DA_LIB_SUBDIR_Dialog}/DADialogValidationReport.h
     ${DA_LIB_SUBDIR_Dialog}/DADialogTableColumnView.h
+    ${DA_LIB_SUBDIR_Dialog}/DADialogGotoCell.h
 )
 list(APPEND DA_LIB_SOURCE_FILES_Dialog
     ${DA_LIB_SUBDIR_Dialog}/DATxtFileImportDialog.cpp
@@ -265,6 +266,7 @@ list(APPEND DA_LIB_SOURCE_FILES_Dialog
     ${DA_LIB_SUBDIR_Dialog}/DADialogValidationRules.cpp
     ${DA_LIB_SUBDIR_Dialog}/DADialogValidationReport.cpp
     ${DA_LIB_SUBDIR_Dialog}/DADialogTableColumnView.cpp
+    ${DA_LIB_SUBDIR_Dialog}/DADialogGotoCell.cpp
 )
 list(APPEND DA_LIB_QT_UI_FILES_Dialog
     ${DA_LIB_SUBDIR_Dialog}/DATxtFileImportDialog.ui

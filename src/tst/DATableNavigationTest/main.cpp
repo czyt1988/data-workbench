@@ -181,8 +181,10 @@ private Q_SLOTS:
     void testShrinkNormalizesWindow();
     // DADataTableView 覆写后的键转发（006a）：未处理的键到基类，恢复整表语义键
     void testDataViewKeyForwardToBase();
-    // Ctrl+G 弹出「定位到行」输入框（006a 仍是基类 QInputDialog；007b 改断言 gotoRequested）
+    // Ctrl+G 经 DADataTableView 走 gotoRequested 信号（007 T1.7：覆写替代旧 QInputDialog）
     void testCtrlGGotoDialog();
+    // Ctrl+G 路由分流（007 T1.7：DADataTableView 发信号、DACacheWindowTableView 仍 QInputDialog）
+    void testGotoKeyRoutingOnDataTableView();
 
 private:
     NavFixture m_fx;
@@ -610,11 +612,10 @@ void DATableNavigationTest::testDataViewKeyForwardToBase()
 }
 
 /**
- * @brief Ctrl+G 弹出「定位到行」输入框
+ * @brief Ctrl+G 经 DADataTableView 走 gotoRequested 信号（007 T1.7 信号链）
  *
- * 本单里 DADataTableView 还没覆写 promptGotoRow，走的是基类的 QInputDialog；
- * 007a 改成新对话框后本用例改为断言 gotoRequested 信号。模态框由 zero-shot
- * 定时器代为关闭（嵌套事件循环里 activeModalWidget 可取到）。
+ * 007b 覆写 promptGotoRow 后 Ctrl+G 不再弹 QInputDialog——改为断言信号；
+ * 光标在取消（无对话框）后不动。
  */
 void DATableNavigationTest::testCtrlGGotoDialog()
 {
@@ -626,17 +627,44 @@ void DATableNavigationTest::testCtrlGGotoDialog()
     view.selectActualCell(0, 0);
     const QModelIndex before = view.currentIndex();
 
-    bool modalSeen = false;
-    QTimer::singleShot(0, &view, [ &modalSeen ]() {
-        if (QWidget* m = QApplication::activeModalWidget()) {
-            modalSeen = true;
-            m->close();
-        }
-    });
+    QSignalSpy gotoSpy(&view, &DA::DADataTableView::gotoRequested);
     QTest::keyClick(&view, Qt::Key_G, Qt::ControlModifier);
-    QVERIFY(modalSeen);
-    // 取消输入后光标不动
+    QCOMPARE(gotoSpy.count(), 1);
     QCOMPARE(view.currentIndex(), before);
+}
+
+/**
+ * @brief Ctrl+G 路由分流（007 T1.7）
+ *
+ * DADataTableView 覆写后只发 gotoRequested 信号；基类 DACacheWindowTableView
+ * 的 promptGotoRow 实现一行不改（DAPyDataFrameTableView / DAPySeriesTableView
+ * 行为不变）。滚动条右键经 onGotoRowRequested → promptGotoRow 虚派发走同一条
+ * 链——protected 成员经测试子类暴露（不在生产代码开测试分支）。
+ */
+class NavTestGotoView : public DA::DADataTableView
+{
+public:
+    using DA::DADataTableView::DADataTableView;
+    void callPromptGotoRow() { promptGotoRow(); }
+};
+
+void DATableNavigationTest::testGotoKeyRoutingOnDataTableView()
+{
+    // ① DADataTableView：Ctrl+G → gotoRequested（一信号一次，不弹框）
+    DA::DADataTableView tv;
+    tv.setModel(m_fx.model);
+    tv.resize(c_viewWidth, c_viewHeight);
+    tv.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&tv));
+    QSignalSpy spy(&tv, &DA::DADataTableView::gotoRequested);
+    QTest::keyClick(&tv, Qt::Key_G, Qt::ControlModifier);
+    QCOMPARE(spy.count(), 1);
+    // ② 同一视图：主动调 promptGotoRow（滚动条右键经虚派发走同一条链）
+    NavTestGotoView exposed;
+    exposed.setModel(m_fx.model);
+    QSignalSpy spy2(&exposed, &DA::DADataTableView::gotoRequested);
+    exposed.callPromptGotoRow();
+    QCOMPARE(spy2.count(), 1);
 }
 
 int main(int argc, char* argv[])

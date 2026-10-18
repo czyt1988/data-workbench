@@ -443,6 +443,8 @@ private Q_SLOTS:
     void testLocateActualCellOutOfWindow();
     // 007a：keepHidden=true / select=false 的边界（导航不收缩选区、不解除隐藏）
     void testLocateKeepHiddenAndNoSelect();
+    // 007b：定位请求解析（行位置/索引标签/列名/快捷项/keepHidden 全路径）
+    void testGotoDialogRequestResolution();
     // 002 表头排序（T1.3 §4.1）：算子多键+置换、命令 undo/redo+样式重映射、表头交互/拾取互斥/只读源、10万行计时
     void testSortOperatorMultiKeyPerm();
     void testSortRowsCommandUndoRedoAndStyleRemap();
@@ -3019,6 +3021,165 @@ void DATableDataTest::testLocateKeepHiddenAndNoSelect()
     QCOMPARE(tv->currentIndex().column(), colS);
     QCOMPARE(tv->toActualRow(tv->currentIndex().row()), 2);
     QVERIFY(tv->selectionModel()->isSelected(tv->model()->index(tv->toLogicalRow(2), colS)));
+}
+
+// 007b：定位请求解析——行位置/索引标签/列名/快捷项/keepHidden 全路径
+void DATableDataTest::testGotoDialogRequestResolution()
+{
+    if (!mPandasOk) {
+        QSKIP("pandas not available");
+    }
+    // 索引标签 7 重名、列名 b 重名（执行单夹具列名表 ["a","b","b"] 与其 ① 的 "c" 断言
+    // 自相矛盾——改为四列 a,b,c,b：既有唯一名 c 供 ①/⑦，又保留重名 b 供 ④）
+    pybind11::dict scope;
+    pybind11::exec(R"(
+import pandas as pd
+gdf = pd.DataFrame({"a": [10, 20, 30], "b": [1, 2, 3], "c": [4, 5, 6], "e": [7, 8, 9]}, index=[7, 7, 9])
+gdf.columns = ["a", "b", "c", "b"]
+)",
+                    pybind11::globals(),
+                    scope);
+    DA::DAPyDataFrame df(scope[ "gdf" ]);
+    DA::DAData d(df);
+    DA::DATableMetadataRegistry registry(nullptr);
+    DA::DADataOperateOfDataFrameWidget w(d, &registry);
+    w.resize(800, 400);
+    w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+    DA::DADataTableView* tv = w.getDataTableView();
+    QVERIFY(tv != nullptr);
+    using Req = DA::DADialogGotoCell::Request;
+
+    // ① 行位置 + 列名（普通）
+    {
+        Req req;
+        req.rowKind     = Req::RowKind::Position;
+        req.rowPosition = 3;
+        req.columnKind  = Req::ColumnKind::Name;
+        req.columnName  = QStringLiteral("c");
+        QVERIFY(w.resolveGotoRequest(req));
+        QCOMPARE(w.getSelectedOneDataframeRow(), 2);
+        QCOMPARE(w.getSelectedOneDataframeColumn(), 2);
+    }
+    // ② 索引标签：唯一 → 行 2；重名 → 第一个（行 0）
+    {
+        Req req;
+        req.rowKind    = Req::RowKind::IndexLabel;
+        req.indexLabel = QStringLiteral("9");
+        req.columnKind = Req::ColumnKind::None;
+        QVERIFY(w.resolveGotoRequest(req));
+        QCOMPARE(w.getSelectedOneDataframeRow(), 2);
+    }
+    {
+        Req req;
+        req.rowKind    = Req::RowKind::IndexLabel;
+        req.indexLabel = QStringLiteral("7");  // 重名索引：跳到第一个
+        req.columnKind = Req::ColumnKind::None;
+        QVERIFY(w.resolveGotoRequest(req));
+        QCOMPARE(w.getSelectedOneDataframeRow(), 0);
+    }
+    // ③ 索引不存在：false 且选区不变
+    {
+        tv->selectActualCell(1, 0);
+        const QModelIndex before = tv->currentIndex();
+        Req req;
+        req.rowKind    = Req::RowKind::IndexLabel;
+        req.indexLabel = QStringLiteral("zzz");
+        req.columnKind = Req::ColumnKind::None;
+        QVERIFY(!w.resolveGotoRequest(req));
+        QCOMPARE(tv->currentIndex(), before);
+    }
+    // ④ 列名重名取第一个；列名不存在 → false
+    {
+        Req req;
+        req.rowKind     = Req::RowKind::Position;
+        req.rowPosition = 1;
+        req.columnKind  = Req::ColumnKind::Name;
+        req.columnName  = QStringLiteral("b");  // 重名列取第一个（列 1）
+        QVERIFY(w.resolveGotoRequest(req));
+        QCOMPARE(w.getSelectedOneDataframeColumn(), 1);
+    }
+    {
+        const QModelIndex before = tv->currentIndex();
+        Req req;
+        req.rowKind     = Req::RowKind::None;
+        req.columnKind  = Req::ColumnKind::Name;
+        req.columnName  = QStringLiteral("zzz");
+        QVERIFY(!w.resolveGotoRequest(req));
+        QCOMPARE(tv->currentIndex(), before);
+    }
+    // ⑤ 四个快捷项
+    {
+        Req req;
+        req.rowKind    = Req::RowKind::FirstRow;
+        req.columnKind = Req::ColumnKind::FirstColumn;
+        QVERIFY(w.resolveGotoRequest(req));
+        QCOMPARE(w.getSelectedOneDataframeRow(), 0);
+        QCOMPARE(w.getSelectedOneDataframeColumn(), 0);
+    }
+    {
+        Req req;
+        req.rowKind    = Req::RowKind::LastRow;
+        req.columnKind = Req::ColumnKind::LastColumn;  // 末列 = 索引 3（b 重名第二项）
+        QVERIFY(w.resolveGotoRequest(req));
+        QCOMPARE(w.getSelectedOneDataframeRow(), 2);
+        QCOMPARE(w.getSelectedOneDataframeColumn(), 3);
+    }
+    {
+        Req req;
+        req.rowKind    = Req::RowKind::FirstRow;
+        req.columnKind = Req::ColumnKind::LastColumn;
+        QVERIFY(w.resolveGotoRequest(req));
+        QCOMPARE(w.getSelectedOneDataframeRow(), 0);
+        QCOMPARE(w.getSelectedOneDataframeColumn(), 3);
+    }
+    {
+        Req req;
+        req.rowKind    = Req::RowKind::LastRow;
+        req.columnKind = Req::ColumnKind::FirstColumn;
+        QVERIFY(w.resolveGotoRequest(req));
+        QCOMPARE(w.getSelectedOneDataframeRow(), 2);
+        QCOMPARE(w.getSelectedOneDataframeColumn(), 0);
+    }
+    // ⑥ 只填列保持当前行；只填行保持当前列
+    {
+        Req req;
+        req.rowKind     = Req::RowKind::Position;
+        req.rowPosition = 2;
+        req.columnKind  = Req::ColumnKind::Name;
+        req.columnName  = QStringLiteral("a");  // 行 1 列 0
+        QVERIFY(w.resolveGotoRequest(req));
+        QCOMPARE(w.getSelectedOneDataframeRow(), 1);
+        QCOMPARE(w.getSelectedOneDataframeColumn(), 0);
+        Req onlyCol;
+        onlyCol.rowKind    = Req::RowKind::None;  // 只填列 → 保持当前行（行 1）
+        onlyCol.columnKind = Req::ColumnKind::Name;
+        onlyCol.columnName = QStringLiteral("a");
+        QVERIFY(w.resolveGotoRequest(onlyCol));
+        QCOMPARE(w.getSelectedOneDataframeRow(), 1);
+        QCOMPARE(w.getSelectedOneDataframeColumn(), 0);
+        Req onlyRow;
+        onlyRow.rowKind     = Req::RowKind::Position;
+        onlyRow.rowPosition = 1;  // 只填行 → 保持当前列（列 0）
+        onlyRow.columnKind  = Req::ColumnKind::None;
+        QVERIFY(w.resolveGotoRequest(onlyRow));
+        QCOMPARE(w.getSelectedOneDataframeRow(), 0);
+        QCOMPARE(w.getSelectedOneDataframeColumn(), 0);
+    }
+    // ⑦ keepHidden：隐藏 c 后定位 → 真源保持隐藏（视图层走 v1 已知边界）
+    {
+        w.viewStateStore()->setColumnHidden(QStringLiteral("c"), 0, true);
+        DA::DADataOperateOfDataFrameWidget wProjector(d, &registry);  // 触发重投影（重开页范式）
+        Req req;
+        req.rowKind     = Req::RowKind::Position;
+        req.rowPosition = 3;
+        req.columnKind  = Req::ColumnKind::Name;
+        req.columnName  = QStringLiteral("c");
+        req.keepHidden  = true;
+        QVERIFY(w.resolveGotoRequest(req));
+        QVERIFY(w.viewStateStore()->isColumnHidden(QStringLiteral("c"), 0));  // 真源仍隐藏
+        QCOMPARE(w.getSelectedOneDataframeRow(), 2);
+    }
 }
 
 //===================================================
