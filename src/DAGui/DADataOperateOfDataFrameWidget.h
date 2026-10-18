@@ -119,6 +119,13 @@ public:
     void refreshTable();
     // 确保列可见
     void ensureColumnVisible(const QString& colName, bool selectCol = true);
+    // 定位单入口（007）：跳到「数据行 actualRow + 列 col」并选中；select=false 只做
+    // 「摆位 + 移当前项」，不改选区（查找的「选区范围」导航：选区是替换范围基准，
+    // 不能被导航收缩），也不夺焦点；keepHidden=true 时保留目标列的隐藏状态
+    //（对话框勾选项「保持隐藏列隐藏」用；默认 false = 自动取消隐藏 + 提示，不入撤销栈）
+    void locateActualCell(int actualRow, int col, bool select = true, bool keepHidden = false);
+    // 列名重载：重名取第一个同名列（数据列序；对话框路径会另给"还有 N 个"提示）
+    void locateActualCell(int actualRow, const QString& columnName, bool select = true, bool keepHidden = false);
 
     // ===== 列视图（006）=====
     // 列视图直接入口（007 定位的对接面）：只写 store + 重投影，不入撤销栈

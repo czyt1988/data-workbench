@@ -435,6 +435,14 @@ private Q_SLOTS:
     void testColumnWidthSurvivesFreezeCycle();
     // 006e T8：行头归属、双向滚动同步、共享 selectionModel
     void testPaneRowHeaderAndScrollSync();
+    // 007a：定位单入口——隐藏列自动取消隐藏（不入栈）
+    void testLocateActualCellHiddenColumn();
+    // 007a：定位到冻结区列——主区横滚不动、目标格选中、焦点给冻结窗格
+    void testLocateActualCellFrozenColumn();
+    // 007a：定位窗外行——整表语义（窗口搬动到目标行）
+    void testLocateActualCellOutOfWindow();
+    // 007a：keepHidden=true / select=false 的边界（导航不收缩选区、不解除隐藏）
+    void testLocateKeepHiddenAndNoSelect();
     // 002 表头排序（T1.3 §4.1）：算子多键+置换、命令 undo/redo+样式重映射、表头交互/拾取互斥/只读源、10万行计时
     void testSortOperatorMultiKeyPerm();
     void testSortRowsCommandUndoRedoAndStyleRemap();
@@ -2851,6 +2859,166 @@ void DATableDataTest::testPaneRowHeaderAndScrollSync()
     QVERIFY(frozen->model() == main->model());
     // ⑤ getDataTableView() == 容器主窗格
     QVERIFY(w.getDataTableView() == container->mainView());
+}
+
+// 007a：定位到隐藏列——自动取消隐藏（不入撤销栈）并选中目标格
+void DATableDataTest::testLocateActualCellHiddenColumn()
+{
+    if (!mPandasOk) {
+        QSKIP("pandas not available");
+    }
+    pybind11::object obj = makeTestDataFrame();
+    QVERIFY(!obj.is_none());
+    DA::DAPyDataFrame df(obj);
+    DA::DAData d(df);
+    DA::DATableMetadataRegistry registry(nullptr);
+    DA::DADataOperateOfDataFrameWidget w(d, &registry);
+    w.resize(800, 400);
+    w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+    DA::DADataTableView* tv = w.getDataTableView();
+    QVERIFY(tv != nullptr);
+    const int colF = 1;  // f
+    // 隐藏 f（006 页面入口，入栈一条隐藏命令）
+    w.hideColumnAt(colF);
+    QVERIFY(w.viewStateStore()->isColumnHidden(QStringLiteral("f"), 0));
+    QVERIFY(tv->isColumnHidden(colF));
+    const int undoBefore = w.getUndoStack()->count();
+    // 定位到隐藏列 → 自动取消隐藏 + 提示 + 不入栈
+    w.locateActualCell(3, colF);
+    QVERIFY(!w.viewStateStore()->isColumnHidden(QStringLiteral("f"), 0));
+    QVERIFY(!tv->isColumnHidden(colF));
+    QCOMPARE(tv->toActualRow(tv->currentIndex().row()), 3);
+    QCOMPARE(tv->currentIndex().column(), colF);
+    QCOMPARE(w.getUndoStack()->count(), undoBefore);  // 取消隐藏不入撤销栈
+    // Ctrl+Z 不会把列再藏回去（栈顶仍是 hide 命令——回退的是"隐藏"本身）
+    w.getUndoStack()->undo();
+    QVERIFY(!w.viewStateStore()->isColumnHidden(QStringLiteral("f"), 0));  // hide 命令 undo = 显示
+}
+
+// 007a：定位到冻结区列——主区横滚不动、目标格选中、焦点给冻结窗格
+void DATableDataTest::testLocateActualCellFrozenColumn()
+{
+    if (!mPandasOk) {
+        QSKIP("pandas not available");
+    }
+    pybind11::object obj = makeTestDataFrame();
+    QVERIFY(!obj.is_none());
+    DA::DAPyDataFrame df(obj);
+    DA::DAData d(df);
+    DA::DATableMetadataRegistry registry(nullptr);
+    DA::DADataOperateOfDataFrameWidget w(d, &registry);
+    w.resize(800, 400);
+    w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+    DA::DADataTableView* main   = w.getDataTableView();
+    DA::DATablePaneContainer* c = w.paneContainer();
+    QVERIFY(c != nullptr);
+    // 冻结前 2 列（默认列序 i,f → 冻结区 = {i, f}）
+    w.freezeColumnsTo(2);
+    QVERIFY(w.isColumnInFrozenArea(1));  // f 在冻结区
+    DA::DADataTableView* frozen = c->frozenView();
+    QVERIFY(frozen != nullptr && frozen->isVisible());
+    // 先把主区横向滚动条挪到非 0 位置（f 在冻结区、主区只剩 s,d,b+空白列）
+    QScrollBar* hb = main->horizontalScrollBar();
+    hb->setValue(hb->maximum() > 0 ? hb->maximum() : 0);
+    QApplication::processEvents();
+    const int hbBefore = hb->value();
+    // 定位到冻结区内的列 f
+    w.locateActualCell(5, 1);
+    QCOMPARE(hb->value(), hbBefore);  // 主区横向滚动条不动
+    QCOMPARE(main->toActualRow(main->currentIndex().row()), 5);
+    QCOMPARE(main->currentIndex().column(), 1);
+    // 目标格被选中（ClearAndSelect，不是 NoUpdate）
+    QVERIFY(main->selectionModel()->isSelected(main->model()->index(main->toLogicalRow(5), 1)));
+    // 焦点在冻结窗格
+    w.activateWindow();
+    QApplication::processEvents();
+    QVERIFY(frozen->hasFocus());
+}
+
+// 007a：定位窗外行——整表语义（showActualRow 把窗口搬过去）
+void DATableDataTest::testLocateActualCellOutOfWindow()
+{
+    if (!mPandasOk) {
+        QSKIP("pandas not available");
+    }
+    pybind11::dict scope;
+    pybind11::exec("import pandas as pd\n"
+                   "df = pd.DataFrame({'a': range(100000), 'b': [float(i) for i in range(100000)]})",
+                    pybind11::globals(),
+                    scope);
+    DA::DAPyDataFrame df(scope[ "df" ]);
+    DA::DAData d(df);
+    DA::DATableMetadataRegistry registry(nullptr);
+    DA::DADataOperateOfDataFrameWidget w(d, &registry);
+    w.resize(800, 400);
+    w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+    DA::DADataTableView* tv = w.getDataTableView();
+    QVERIFY(tv != nullptr);
+    QVERIFY(!tv->isActualRowVisible(60000));  // 定位前在窗口外（默认滑动窗 20000 行）
+    w.locateActualCell(60000, 0);
+    // showActualRow 目标行落到视口首行（贴数据两端时收紧）；60000 在数据中部应精确落位
+    QCOMPARE(tv->toActualRow(tv->currentIndex().row()), 60000);
+    QVERIFY(tv->isActualRowVisible(60000));
+    QVERIFY(qAbs(tv->getTopActualRow() - 60000) <= static_cast< int >(60000) / 10);  // 窗口围绕目标行
+    QCOMPARE(tv->currentIndex().column(), 0);
+    // 越界夹取：定位超界行 → 夹到数据范围内（贴近末行；末行走"贴数据尾部收紧"
+    // 路径，Qt 视口取整允许 ±1 行的落位偏差，断言按范围与可见性写）
+    w.locateActualCell(999999, 0);
+    const int lastCur = tv->toActualRow(tv->currentIndex().row());
+    QVERIFY(lastCur >= 100000 - 3 && lastCur <= 99999);
+    QVERIFY(tv->isActualRowVisible(lastCur));
+}
+
+// 007a：keepHidden=true / select=false 边界——不收缩选区、不解除隐藏、不夺焦点
+void DATableDataTest::testLocateKeepHiddenAndNoSelect()
+{
+    if (!mPandasOk) {
+        QSKIP("pandas not available");
+    }
+    pybind11::object obj = makeTestDataFrame();
+    QVERIFY(!obj.is_none());
+    DA::DAPyDataFrame df(obj);
+    DA::DAData d(df);
+    DA::DATableMetadataRegistry registry(nullptr);
+    DA::DADataOperateOfDataFrameWidget w(d, &registry);
+    w.resize(800, 400);
+    w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+    DA::DADataTableView* tv = w.getDataTableView();
+    const int colF = 1, colS = 2;
+    // 隐藏 f + 制造既有选区（整列选中 s）
+    w.hideColumnAt(colF);
+    w.ensureColumnVisible(QStringLiteral("s"), true);
+    const int selBefore      = static_cast< int >(tv->selectionModel()->selectedIndexes().size());
+    const int undoBefore     = w.getUndoStack()->count();
+    const auto hiddenBefore  = w.viewStateStore()->hiddenColumns();
+    // ① select=false：导航不收缩选区、不解除隐藏、不入栈；当前项移到目标格
+    w.locateActualCell(3, colF, /*select=*/false);
+    QVERIFY(w.viewStateStore()->isColumnHidden(QStringLiteral("f"), 0));
+    QVERIFY(tv->isColumnHidden(colF));
+    QCOMPARE(w.viewStateStore()->hiddenColumns().size(), hiddenBefore.size());
+    QCOMPARE(w.getUndoStack()->count(), undoBefore);
+    QCOMPARE(static_cast< int >(tv->selectionModel()->selectedIndexes().size()), selBefore);  // 002 回归：选区不收缩
+    QCOMPARE(tv->currentIndex().column(), colF);
+    QCOMPARE(tv->toActualRow(tv->currentIndex().row()), 3);
+    // ② keepHidden=true：定位选中但 store 保持隐藏（007b 对话框勾选项的通路）。
+    // 视图层已知边界（执行单 §4 步骤 1 写明）：目标列既隐藏又不在冻结区时，
+    // 主区分支的 selectActualCell→showColumn 会解除视图隐藏——v1 接受该结果，
+    // 断言按"store 真源不变 + 当前项与选区落位"写
+    w.locateActualCell(3, colF, /*select=*/true, /*keepHidden=*/true);
+    QVERIFY(w.viewStateStore()->isColumnHidden(QStringLiteral("f"), 0));  // 真源仍隐藏
+    QCOMPARE(w.getUndoStack()->count(), undoBefore);
+    QCOMPARE(tv->currentIndex().column(), colF);
+    QVERIFY(tv->selectionModel()->isSelected(tv->model()->index(tv->toLogicalRow(3), colF)));  // 目标格已选中
+    // ③ 对照：未隐藏列上 keepHidden=true → 正常定位选中（"保持隐藏"不是"不动位置"）
+    w.locateActualCell(2, colS, true, true);
+    QVERIFY(!tv->isColumnHidden(colS));
+    QCOMPARE(tv->currentIndex().column(), colS);
+    QCOMPARE(tv->toActualRow(tv->currentIndex().row()), 2);
+    QVERIFY(tv->selectionModel()->isSelected(tv->model()->index(tv->toLogicalRow(2), colS)));
 }
 
 //===================================================
