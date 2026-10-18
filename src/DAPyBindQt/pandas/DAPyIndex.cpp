@@ -281,6 +281,40 @@ long DAPyIndex::getLoc(const pybind11::object& label) const
 }
 
 /**
+ * @brief 索引标签的全部精确位置（007 T1.7）
+ *
+ * 基于 Index.get_indexer_for：一次调用拿到该 label 的所有位置（重名索引全覆盖），
+ * 不物化整个索引。实测（pandas 3.0.2）钉死的两点形态：
+ * ① 入参必须是集合（标量抛 TypeError）——用 pybind11::list 包一层；
+ * ② 未命中返回 [-1]（不是空数组）——负值过滤后才算 count。
+ * @param label 要查找的 index label
+ * @return {found, firstPos, count}；firstPos = 第一个位置索引（= 数据行号）
+ */
+DAPyIndex::IndexLabelLocations DAPyIndex::findLabelLocations(const pybind11::object& label) const
+{
+    IndexLabelLocations res;
+    try {
+        pybind11::list wrapped;
+        wrapped.append(label);  // 集合入参：标量在 pandas 3 会抛 TypeError
+        pybind11::object idxObj = attr("get_indexer_for")(wrapped);
+        pybind11::list idx      = idxObj.cast< pybind11::list >();
+        for (auto it = idx.begin(); it != idx.end(); ++it) {
+            const long long pos = it->cast< long long >();
+            if (pos >= 0) {  // -1 = 未命中，过滤
+                if (!res.found) {
+                    res.firstPos = pos;
+                    res.found    = true;
+                }
+                ++res.count;
+            }
+        }
+    } catch (const std::exception& e) {
+        qCritical().noquote() << e.what();
+    }
+    return res;
+}
+
+/**
  * @brief 获取索引号，返回-1代表获取失败
  * @param v
  * @param method
