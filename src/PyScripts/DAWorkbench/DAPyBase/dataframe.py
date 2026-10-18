@@ -1337,26 +1337,45 @@ def da_reorder_rows(df: pd.DataFrame, perm):
 
 
 @log_function_call
-def da_column_stats(df: pd.DataFrame, column: int):
+def da_column_stats(df: pd.DataFrame, column=None, cols=None, row_range=None, unique_limit=0):
     '''
-    计算单列的 min/max/median（条件格式色阶/数据条的列统计，全表 O(n) 归约，不采样不近似）
+    列统计：兼容路径返回 (min, max, median)；选区路径返回 list[dict]（每列全部指标）
 
-    仅对可数值化的列有意义：先 pd.to_numeric(errors="coerce") 把列转数值，
-    NaN/NaT/无法数值化的值排除后归约。列全为 NaN（含纯文本列）返回 None，
-    C++ 侧把 None 视为"统计不可用"（色阶/数据条跳过绘制）。
-
-    :param df: pd.DataFrame
-    :param column: 列位置索引（int）
-    :return: (min, max, median) 三个 float；列不存在或全 NaN 返回 None
-    :raises IndexError: column 越界
+    :param column: 旧路径的列位置索引（int）；仅 cols is None 时使用
+    :param cols: 新区间路径的列位置索引列表；None = 走旧路径（003 语义逐条不变）
+    :param row_range: (begin, end) 半开区间（数据行号）；None = 全表
+    :param unique_limit: 非数值列行数 ≤ 此值时才给唯一值数；0 = 不要
+    :return: 旧路径 (min, max, median) 或 None；新区间路径 list[dict]
     '''
-    if column < 0 or column >= df.shape[1]:
-        raise IndexError("column index %d out of range [0, %d)" % (column, df.shape[1]))
-    numeric = pd.to_numeric(df.iloc[:, column], errors='coerce')
-    valid = numeric.dropna()
-    if valid.size == 0:
-        return None
-    return (float(valid.min()), float(valid.max()), float(valid.median()))
+    if cols is None:                      # ===== 003 兼容路径：逐条不变 =====
+        if column < 0 or column >= df.shape[1]:
+            raise IndexError("column index %d out of range [0, %d)" % (column, df.shape[1]))
+        numeric = pd.to_numeric(df.iloc[:, column], errors='coerce')
+        valid = numeric.dropna()
+        if valid.size == 0:
+            return None
+        return (float(valid.min()), float(valid.max()), float(valid.median()))
+    # ===== 新区间路径（007 T1.7）=====
+    sub = df if row_range is None else df.iloc[int(row_range[0]):int(row_range[1])]   # 半开区间；切片，不复制整表
+    rows = int(sub.shape[0])
+    out = []
+    for c in cols:
+        series = sub.iloc[:, int(c)]                  # 位置索引
+        count = int(series.count())                   # 非空计数（NaN/NaT/None 一律算空）
+        null_count = int(series.isna().sum())
+        is_num = pd.api.types.is_numeric_dtype(series) and not pd.api.types.is_bool_dtype(series)
+        unique_count = None
+        if unique_limit and rows <= int(unique_limit) and not is_num:   # 数值列不请求 nunique（省最贵的规约）
+            unique_count = int(series.nunique(dropna=True))
+        stats = {"count": count, "null_count": null_count, "unique_count": unique_count,
+                 "sum": None, "mean": None, "min": None, "max": None}
+        if is_num and count > 0:                      # 全空（count == 0）→ 四项全 None（同 003 口径）
+            stats["sum"] = float(series.sum())
+            stats["mean"] = float(series.mean())
+            stats["min"] = float(series.min())
+            stats["max"] = float(series.max())
+        out.append(stats)
+    return out
 
 
 @log_function_call
