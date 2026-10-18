@@ -1,4 +1,4 @@
-﻿#include "DADataHeaderView.h"
+#include "DADataHeaderView.h"
 #include "Models/DADataTableModel.h"
 #include "DATableComputedColumnStore.h"
 #include "DAData.h"
@@ -8,6 +8,7 @@
 #include <QFontMetrics>
 #include <QMouseEvent>
 #include <QContextMenuEvent>
+#include <QApplication>
 #include <QPainter>
 #include <QPolygon>
 
@@ -54,6 +55,14 @@ DADataHeaderView::DADataHeaderView(Qt::Orientation orientation, QWidget* parent)
         setDefaultSectionSize(fm.lineSpacing() * 1.2);
         setSectionResizeMode(QHeaderView::Interactive);
         setMouseTracking(true);  // 行头宽热区光标切换需要无按键移动事件
+    } else {
+        // 列头可拖动重排列序（006c）；列宽拖拽（贴段边缘）仍由 Qt 的
+        // sectionHandle 优先处理——mouseReleaseEvent 的 mDragMoved 判据
+        // 保证"拖出阈值又拖回原段松手"不误发 clickedWithModifiers。
+        // 首段也必须可拖：Qt 默认 d->pressed==0 时不进 MoveSection
+        // （QHeaderViewPrivate::allowUserMoveOfSection0 为假），不打开则第 0 列拖不动
+        setSectionsMovable(true);
+        setFirstSectionMovable(true);
     }
 }
 
@@ -406,7 +415,7 @@ void DADataHeaderView::contextMenuEvent(QContextMenuEvent* event)
 }
 
 /**
- * @brief 鼠标按下：vertical 热区开始行头宽拖拽；记录按下的 section
+ * @brief 鼠标按下：vertical 热区开始行头宽拖拽；记录按下的 section 与位置
  * @param event 鼠标事件
  */
 void DADataHeaderView::mousePressEvent(QMouseEvent* event)
@@ -420,12 +429,15 @@ void DADataHeaderView::mousePressEvent(QMouseEvent* event)
             return;  // 不进基类，避免触发整列/整行选择
         }
         mPressedLogicalIndex = logicalIndexAt(Qt5Qt6Compat_QXXEvent_Pos(event));
+        mPressedPos          = Qt5Qt6Compat_QXXEvent_Pos(event);
+        mDragMoved           = false;
     }
     QHeaderView::mousePressEvent(event);
 }
 
 /**
- * @brief 鼠标移动：行头宽拖拽改宽（setFixedWidth 落地）；热区光标切换
+ * @brief 鼠标移动：行头宽拖拽改宽（setFixedWidth 落地）；热区光标切换；
+ * 拖动阈值判定（一次性置位 mDragMoved，拖回也不复位）
  * @param event 鼠标事件
  */
 void DADataHeaderView::mouseMoveEvent(QMouseEvent* event)
@@ -435,6 +447,16 @@ void DADataHeaderView::mouseMoveEvent(QMouseEvent* event)
         setFixedWidth(qMax(c_minRowHeaderWidth, mResizeStartWidth + delta));
         event->accept();
         return;
+    }
+    // 拖动判据（006c）：沿表头轴向比较（与 Qt 的 1D 判定同口径）；
+    // 置位后到释放为止不复位——"拖出阈值又拖回原段松手"也视作拖动过
+    if (!mDragMoved && mPressedLogicalIndex >= 0 && (event->buttons() & Qt::LeftButton)) {
+        const QPoint cur  = Qt5Qt6Compat_QXXEvent_Pos(event);
+        const int moved   = (orientation() == Qt::Horizontal) ? qAbs(cur.x() - mPressedPos.x())
+                                                              : qAbs(cur.y() - mPressedPos.y());
+        if (moved >= QApplication::startDragDistance()) {
+            mDragMoved = true;
+        }
     }
     QHeaderView::mouseMoveEvent(event);
     if (orientation() == Qt::Vertical) {
@@ -448,7 +470,8 @@ void DADataHeaderView::mouseMoveEvent(QMouseEvent* event)
 
 /**
  * @brief 鼠标释放：结束行头宽拖拽并发 rowHeaderWidthChanged；
- * 左键同段按下-释放发 clickedWithModifiers（带修饰键点击信号）
+ * 左键**未拖动且同段**按下-释放才发 clickedWithModifiers（带修饰键点击信号）。
+ * Qt 在本覆写之后才执行真正的 moveSection（拖动列序不触发点击）。
  * @param event 鼠标事件
  */
 void DADataHeaderView::mouseReleaseEvent(QMouseEvent* event)
@@ -461,12 +484,13 @@ void DADataHeaderView::mouseReleaseEvent(QMouseEvent* event)
     }
     if (event->button() == Qt::LeftButton && mPressedLogicalIndex >= 0) {
         const int logical = logicalIndexAt(Qt5Qt6Compat_QXXEvent_Pos(event));
-        if (logical == mPressedLogicalIndex) {
+        if (!mDragMoved && logical == mPressedLogicalIndex) {  // 拖动列序不得触发点击（拾取模式误填表达式）
             Q_EMIT clickedWithModifiers(logical, event->modifiers());
         }
     }
     mPressedLogicalIndex = -1;
-    QHeaderView::mouseReleaseEvent(event);
+    mDragMoved           = false;
+    QHeaderView::mouseReleaseEvent(event);  // Qt 在覆写之后才执行真正的 moveSection
 }
 
 /**

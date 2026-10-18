@@ -1,4 +1,4 @@
-﻿#ifndef DADATAHEADERVIEW_H
+#ifndef DADATAHEADERVIEW_H
 #define DADATAHEADERVIEW_H
 #include "DAGuiAPI.h"
 #include <QHeaderView>
@@ -105,7 +105,9 @@ private:
     QColor computedColumnBadgeColor(int logicalIndex) const;
 
     DATableComputedColumnStore* mComputedStore { nullptr };  ///< 计算列子存储（非拥有，004 T1.23）
-    int mPressedLogicalIndex { -1 };   ///< 左键按下的 section（释放时同段才发 clickedWithModifiers）
+    int mPressedLogicalIndex { -1 };   ///< 左键按下的 section（释放时同段且未拖动才发 clickedWithModifiers）
+    QPoint mPressedPos;                ///< 左键按下的位置（拖动阈值比较基准，006c）
+    bool mDragMoved { false };         ///< 本次按下-释放期间是否真正拖动过（等价于 Qt 的"拖动指示器已显示"，006c）
     bool mRowHeaderResizing { false }; ///< 正在拖拽行头宽
     int mResizeStartX { 0 };           ///< 拖拽起点 x
     int mResizeStartWidth { 0 };       ///< 拖拽起点宽度

@@ -189,4 +189,57 @@ QVector< int > DATablePaneContainer::visibleColumnOrderLogical() const
     return res;
 }
 
+/**
+ * @brief 窗格表头 sectionMoved 落库槽（006c）
+ *
+ * 1) 读回发起窗格"可见列按 visualIndex 升序"的新顺序；过滤不在缓存 ordered 里的段
+ *    （尾部预留空白列不参与列序）；
+ * 2) 合并成全局列序：冻结区可见列 ++ 主区可见列 ++ 用户隐藏列（保持旧全局列序里的
+ *    相对顺序）。本单冻结恒 0（applyColumnState 夹紧）且只有一个窗格 → 冻结段为空，
+ *    dataVisible 即"主区可见列"；006e 在此把冻结窗格的可见列插到最前；
+ * 3) 补齐：漏掉的列按旧全局列序追加（防御：绝不让某列从列序里消失）；
+ * 4) emit columnOrderChanged 交页面入栈（applyColumnOrderFromView）。
+ * 程序化投影里的 moveSection 自己也会 emit sectionMoved——被 mApplyingColumnState
+ * 守卫挡住（不回写，防死循环）。
+ */
+void DATablePaneContainer::onPaneSectionMoved(int logicalIndex, int oldVisualIndex, int newVisualIndex)
+{
+    Q_UNUSED(logicalIndex);
+    Q_UNUSED(oldVisualIndex);
+    Q_UNUSED(newVisualIndex);
+    if (mApplyingColumnState || !mMainView) {
+        return;  // 程序化投影不回写
+    }
+    QHeaderView* hh = mMainView->horizontalHeader();
+    if (!hh || hh->count() <= 0) {
+        return;
+    }
+    // 1) 读回发起窗格的可见列新顺序（过滤尾部预留空白列）
+    QVector< int > dataVisible;
+    for (int v = 0; v < hh->count(); ++v) {
+        const int logical = hh->logicalIndex(v);
+        if (logical < 0 || hh->isSectionHidden(logical) || !mOrderedLogical.contains(logical)) {
+            continue;
+        }
+        dataVisible.append(logical);
+    }
+    // 2) 合并成全局列序：可见列 ++ 隐藏列（保持旧全局列序里的相对顺序）
+    QVector< int > merged = dataVisible;
+    for (int logical : mOrderedLogical) {
+        if (mHiddenLogical.contains(logical)) {
+            merged.append(logical);  // 隐藏列钉住旧相对顺序
+        }
+    }
+    // 3) 补齐：漏掉的列按旧全局列序追加（防御）
+    for (int logical : mOrderedLogical) {
+        if (!merged.contains(logical)) {
+            merged.append(logical);
+        }
+    }
+    if (merged.isEmpty()) {
+        return;
+    }
+    Q_EMIT columnOrderChanged(merged);
+}
+
 }  // end of namespace DA

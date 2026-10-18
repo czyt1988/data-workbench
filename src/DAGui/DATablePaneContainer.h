@@ -42,6 +42,12 @@ public:
     QVector< int > orderedColumnsLogical() const;     // 数据列全序（logical，含隐藏列）
     QVector< int > visibleColumnOrderLogical() const; // 可见列序（logical，按视图顺序剔除隐藏列）
 
+public Q_SLOTS:
+    // 窗格表头 sectionMoved 落库槽（006c）：读回发起窗格可见列新顺序 →
+    // 合并全局列序（冻结区可见列 ++ 主区可见列 ++ 隐藏列保持旧相对顺序）→
+    // emit columnOrderChanged 交页面入栈；投影期间（mApplyingColumnState）不回写
+    void onPaneSectionMoved(int logicalIndex, int oldVisualIndex, int newVisualIndex);
+
 Q_SIGNALS:
     // 冻结窗格懒建完成（006e 起发；此时窗格已进布局但尚未装配，页面在槽里 configurePaneView）
     void frozenViewCreated(DA::DADataTableView* frozenView);

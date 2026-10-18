@@ -42,6 +42,8 @@
 #include "DATableStyleManager.h"
 #include "DATableViewStateStore.h"
 #include "DATablePaneContainer.h"
+#include "Commands/DACommandsTableColumnView.h"
+#include <QWindow>
 #include "DADataHeaderView.h"
 #include "DADataTableView.h"
 #include "DADataOperateOfDataFrameWidget.h"
@@ -275,9 +277,39 @@ static bool variantEquals(const QVariant& a, const QVariant& b)
     return a == b;
 }
 
-// 构造混合类型测试DataFrame（int64/float64含NaN/str/datetime64/bool，10行5列）
-static pybind11::object makeTestDataFrame()
+// 自造带 buttons 的鼠标事件（拖拽模拟；006c）。pos 为控件局部坐标；
+// QTest::mouseMove 不携带按键状态、不能用——照 DATableNavigationTest 拷一份。
+// 事件经 QApplication::sendEvent 直达目标部件：用于 mDragMoved 判据类回归
+// （不依赖 QGuiApplication::mouseButtons()/underMouse() 的路径）。
+static void sendMouse(QWidget* w, QEvent::Type type, const QPoint& pos, Qt::MouseButton button, Qt::MouseButtons buttons)
 {
+    const QPoint globalPos = w->mapToGlobal(pos);
+    QMouseEvent e(type, QPointF(pos), QPointF(globalPos), button, buttons, Qt::NoModifier);
+    QApplication::sendEvent(w, &e);
+}
+
+// 走 QTest 的 QWindow 重载（经 QWindowSystemInterface 平台链路：会更新
+// QGuiApplication::mouseButtons() 并合成 Enter/Leave，命中"用户拖拽"闸门；
+// 006c 列宽拖拽用例专用——QWidget 重载不走平台、闸门不触发）
+static void sendWindowMouse(QWidget* target, QEvent::Type type, const QPoint& pos, Qt::MouseButton button)
+{
+    QWidget* tlw = target->window();
+    QWindow* win = tlw->windowHandle();
+    if (!win) {
+        return;
+    }
+    const QPoint localPos = target->mapTo(tlw, pos);
+    if (type == QEvent::MouseButtonPress) {
+        QTest::mousePress(win, button, Qt::NoModifier, localPos);
+    } else if (type == QEvent::MouseButtonRelease) {
+        QTest::mouseRelease(win, button, Qt::NoModifier, localPos);
+    } else if (type == QEvent::MouseMove) {
+        QTest::mouseMove(win, localPos);
+    }
+}
+
+// 构造混合类型测试DataFrame（int64/float64含NaN/str/datetime64/bool，10行5列）
+static pybind11::object makeTestDataFrame(){
     try {
         pybind11::dict scope;
         pybind11::exec(R"(
@@ -382,6 +414,12 @@ private Q_SLOTS:
     void testPaneContainerWrappingAndMainPaneProjection();
     // 006b：setColumnHiddenDirectly 直接入口（写 store + 重投影、不入撤销栈）
     void testSetColumnHiddenDirectlyNoUndo();
+    // 006c：列序拖动不误发点击（红色用例：拖回原段）且落库入栈一条
+    void testColumnOrderDragDoesNotSort();
+    // 006c：列视图命令族往返（列序/隐藏/冻结 + 批量父命令）
+    void testColumnViewCommandsUndoRedo();
+    // 006c：真实列宽拖拽写 store、不入撤销栈（可拖动表头回归点）
+    void testColumnWidthNotOnUndoStack();
     // 002 表头排序（T1.3 §4.1）：算子多键+置换、命令 undo/redo+样式重映射、表头交互/拾取互斥/只读源、10万行计时
     void testSortOperatorMultiKeyPerm();
     void testSortRowsCommandUndoRedoAndStyleRemap();
@@ -2056,6 +2094,198 @@ void DATableDataTest::testSetColumnHiddenDirectlyNoUndo()
     QVERIFY(!w.isColumnInFrozenArea(colF));
     // 直接入口确实写了真源
     QVERIFY(!w.viewStateStore()->isColumnHidden(QStringLiteral("f"), 0));
+}
+
+// 006c：列序拖动判据——①拖出阈值又拖回原段松手不得误发 clickedWithModifiers
+// （红色用例：修复前只看起止逻辑段会误发，拾取模式下会误填表达式）；
+// ②拖到别处 = 一条 Reorder columns 命令；③对照：点击发一次 clickedWithModifiers 但不排序
+void DATableDataTest::testColumnOrderDragDoesNotSort()
+{
+    if (!mPandasOk) {
+        QSKIP("pandas not available");
+    }
+    pybind11::object obj = makeTestDataFrame();
+    QVERIFY(!obj.is_none());
+    DA::DAPyDataFrame df(obj);
+    DA::DAData d(df);
+    DA::DATableMetadataRegistry registry(nullptr);
+    DA::DADataOperateOfDataFrameWidget w(d, &registry);
+    w.resize(900, 400);
+    w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+    DA::DADataTableView* tv = w.getDataTableView();
+    QVERIFY(tv != nullptr);
+    QHeaderView* hh = tv->horizontalHeader();
+    QVERIFY(hh != nullptr);
+    QVERIFY(hh->sectionsMovable());
+    DA::DADataHeaderView* hv = qobject_cast< DA::DADataHeaderView* >(hh);
+    QVERIFY(hv != nullptr);
+
+    const int col0 = 0;  // i
+    const QPoint p0(hh->sectionViewportPosition(col0) + hh->sectionSize(col0) / 2, hh->viewport()->height() / 2);
+    QWidget* hvp = hh->viewport();
+
+    // ① 红色用例：拖出阈值 → 拖回原段松手 → 不发点击、不入栈
+    QSignalSpy clickSpy(hv, &DA::DADataHeaderView::clickedWithModifiers);
+    const int undoBefore = w.getUndoStack()->count();
+    const int dragDist   = QApplication::startDragDistance() + 10;
+    sendWindowMouse(hvp, QEvent::MouseMove, p0 - QPoint(dragDist, 0), Qt::NoButton);  // 先把鼠标送进表头
+    sendWindowMouse(hvp, QEvent::MouseButtonPress, p0, Qt::LeftButton);
+    sendWindowMouse(hvp, QEvent::MouseMove, p0 + QPoint(dragDist, 0), Qt::NoButton);
+    sendWindowMouse(hvp, QEvent::MouseMove, p0, Qt::NoButton);
+    sendWindowMouse(hvp, QEvent::MouseButtonRelease, p0, Qt::LeftButton);
+    QCOMPARE(clickSpy.count(), 0);
+    QCOMPARE(w.getUndoStack()->count(), undoBefore);  // 拖回原段 = 无列序变化
+
+    // ② 回归：拖到第 2 个槽位 → 栈 +1、undoText=="Reorder columns"、可视顺序已变
+    //（释放点必须越过第 2 段中点：Qt 的落点判定是 checkPos > posThreshold，恰好
+    // 压在中点上不算移入，会被判为拖回原位）
+    const int col1 = 1;  // f
+    const QPoint p1(hh->sectionViewportPosition(col1) + hh->sectionSize(col1) / 2 + 15,
+                    hh->viewport()->height() / 2);
+    sendWindowMouse(hvp, QEvent::MouseButtonPress, p0, Qt::LeftButton);
+    sendWindowMouse(hvp, QEvent::MouseMove, p1, Qt::NoButton);
+    sendWindowMouse(hvp, QEvent::MouseButtonRelease, p1, Qt::LeftButton);
+    QCOMPARE(clickSpy.count(), 0);
+    QCOMPARE(w.getUndoStack()->count(), undoBefore + 1);
+    QCOMPARE(w.getUndoStack()->undoText(), QStringLiteral("Reorder columns"));
+    QCOMPARE(hh->visualIndex(col0), 1);
+    // store 列序前两项 == 当前 visual 0/1 两列的身份（(列名, occ) 按数据列序算）
+    const QList< QPair< QString, int > > order = w.viewStateStore()->columnOrder();
+    QCOMPARE(order.size(), 5);
+    QCOMPARE(order.at(0), qMakePair(QStringLiteral("f"), 0));
+    QCOMPARE(order.at(1), qMakePair(QStringLiteral("i"), 0));
+
+    // ③ 对照：真实点击（按下即松手、无移动）发 clickedWithModifiers，但不再产生排序命令
+    const int undoAfterDrag = w.getUndoStack()->count();
+    QTest::mouseClick(hvp, Qt::LeftButton, Qt::NoModifier, p0);
+    QCOMPARE(clickSpy.count(), 1);
+    QCOMPARE(w.getUndoStack()->count(), undoAfterDrag);  // 点击不排序（2026-10-18 修订基线）
+    // 拖动产生的列序可一次撤销回数据列序（store 原为空 → 旧值按实际列序记录，
+    // 投影等价于默认顺序：visualIndex 归位、身份表 = 数据列序）
+    w.getUndoStack()->undo();
+    QCOMPARE(hh->visualIndex(col0), 0);
+    const QList< QPair< QString, int > > undone = w.viewStateStore()->columnOrder();
+    QCOMPARE(undone.size(), 5);
+    QCOMPARE(undone.at(0), qMakePair(QStringLiteral("i"), 0));
+    QCOMPARE(undone.at(1), qMakePair(QStringLiteral("f"), 0));
+}
+
+// 006c：列视图命令族往返——三条命令 redo/undo 逐字段还原、文案、批量父命令
+void DATableDataTest::testColumnViewCommandsUndoRedo()
+{
+    using Idents = QList< QPair< QString, int > >;
+    using IdentSet = QSet< QPair< QString, int > >;
+    DA::DATableViewStateStore store;
+    int cbCount = 0;
+    auto cb = [ &cbCount ]() { ++cbCount; };
+
+    // ① 列序命令：文案 + redo 写新值 + undo 回旧值
+    {
+        DA::DACommandTableColumnOrder cmd(&store, Idents(), Idents({ qMakePair(QStringLiteral("b"), 0), qMakePair(QStringLiteral("a"), 0) }), cb);
+        QCOMPARE(cmd.text(), QStringLiteral("Reorder columns"));
+        cmd.redo();
+        QCOMPARE(cbCount, 1);
+        QCOMPARE(store.columnOrder(), Idents({ qMakePair(QStringLiteral("b"), 0), qMakePair(QStringLiteral("a"), 0) }));
+        cmd.undo();
+        QCOMPARE(cbCount, 2);
+        QVERIFY(store.columnOrder().isEmpty());
+    }
+    // ② 隐藏命令：单列文案 + redo/undo 往返
+    {
+        DA::DACommandTableColumnVisibility cmd(&store, IdentSet(), IdentSet({ qMakePair(QStringLiteral("a"), 0) }), cb);
+        QCOMPARE(cmd.text(), QStringLiteral("Hide column \"a\""));
+        cmd.redo();
+        QVERIFY(store.isColumnHidden(QStringLiteral("a"), 0));
+        QCOMPARE(store.hiddenColumns().size(), 1);
+        cmd.undo();
+        QVERIFY(!store.isColumnHidden(QStringLiteral("a"), 0));
+        QVERIFY(store.hiddenColumns().isEmpty());
+    }
+    // ③ 显示所有列文案 + redo/undo 往返
+    {
+        DA::DACommandTableColumnVisibility cmd(&store, IdentSet({ qMakePair(QStringLiteral("a"), 0) }), IdentSet(), cb);
+        QCOMPARE(cmd.text(), QStringLiteral("Show all columns"));
+        cmd.redo();
+        QVERIFY(store.hiddenColumns().isEmpty());
+        cmd.undo();
+        QCOMPARE(store.hiddenColumns().size(), 1);
+    }
+    // ④ 冻结命令：两种文案 + redo/undo 往返
+    {
+        DA::DACommandTableFreezeColumns cmd(&store, 0, 2, cb);
+        QCOMPARE(cmd.text(), QStringLiteral("Freeze columns to 2"));
+        cmd.redo();
+        QCOMPARE(store.freezeColumnCount(), 2);
+        cmd.undo();
+        QCOMPARE(store.freezeColumnCount(), 0);
+        DA::DACommandTableFreezeColumns cmd2(&store, 2, 0, cb);
+        QCOMPARE(cmd2.text(), QStringLiteral("Unfreeze columns"));
+        cmd2.redo();
+        QCOMPARE(store.freezeColumnCount(), 0);
+        cmd2.undo();
+        QCOMPARE(store.freezeColumnCount(), 2);
+    }
+    // ⑤ 批量父命令：两个子命令一次 redo/undo 全生效/全还原
+    //（freeze 子命令旧值 = 进入⑤时 store 的现值 2，与页面批量构造方式一致）
+    {
+        DA::DACommandTableColumnViewBatch* parent = new DA::DACommandTableColumnViewBatch(QStringLiteral("Column View..."));
+        new DA::DACommandTableColumnVisibility(&store, IdentSet({ qMakePair(QStringLiteral("a"), 0) }),
+                                               IdentSet({ qMakePair(QStringLiteral("a"), 0), qMakePair(QStringLiteral("x"), 0) }),
+                                               cb, QString(), parent);
+        new DA::DACommandTableFreezeColumns(&store, 2, 3, cb, parent);
+        QVERIFY(!parent->text().isEmpty());
+        parent->redo();
+        QVERIFY(store.isColumnHidden(QStringLiteral("x"), 0));
+        QVERIFY(store.isColumnHidden(QStringLiteral("a"), 0));
+        QCOMPARE(store.freezeColumnCount(), 3);
+        parent->undo();
+        QVERIFY(!store.isColumnHidden(QStringLiteral("x"), 0));
+        QVERIFY(store.isColumnHidden(QStringLiteral("a"), 0));  // 旧隐藏集合（④ 结束时的 {a}）还原
+        QCOMPARE(store.freezeColumnCount(), 2);                  // 旧冻结数还原
+        delete parent;
+    }
+}
+
+// 006c：真实列宽拖拽（贴段右缘起手）写 store、不入撤销栈——
+// 可拖动表头（setSectionsMovable(true)）把 resize 起手吞掉是本单红线级回归点
+void DATableDataTest::testColumnWidthNotOnUndoStack()
+{
+    if (!mPandasOk) {
+        QSKIP("pandas not available");
+    }
+    pybind11::object obj = makeTestDataFrame();
+    QVERIFY(!obj.is_none());
+    DA::DAPyDataFrame df(obj);
+    DA::DAData d(df);
+    DA::DATableMetadataRegistry registry(nullptr);
+    DA::DADataOperateOfDataFrameWidget w(d, &registry);
+    w.resize(900, 400);
+    w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+    DA::DADataTableView* tv = w.getDataTableView();
+    QHeaderView* hh = tv->horizontalHeader();
+    QVERIFY(hh != nullptr);
+    const int colF = 1;  // f
+    const int widthBefore = hh->sectionSize(colF);
+    // 起手点取 f 的左右边界（段边界 = 任何 Qt 版本的 resize 起手区都覆盖）
+    const QPoint p(hh->sectionViewportPosition(colF) + hh->sectionSize(colF), hh->viewport()->height() / 2);
+    QWidget* hvp = hh->viewport();
+    const int undoBefore = w.getUndoStack()->count();
+    // 真实拖宽：走平台事件链路（QTest QWindow 重载 → QWindowSystemInterface）
+    // 更新 QGuiApplication::mouseButtons；合成链路不触发 Enter 分发，先给表头
+    // 发一条 Enter（WA_UnderMouse 的唯一写入路径，= "鼠标已位于表头上"）
+    const QPoint globalP(hvp->mapToGlobal(p));
+    QEnterEvent enterEv(QPointF(p), QPointF(w.window()->mapToGlobal(QPoint(0, 0))) + QPointF(p), QPointF(globalP));
+    QApplication::sendEvent(hh, &enterEv);
+    QVERIFY(hh->underMouse());
+    sendWindowMouse(hvp, QEvent::MouseButtonPress, p, Qt::LeftButton);
+    sendWindowMouse(hvp, QEvent::MouseMove, p + QPoint(20, 0), Qt::NoButton);
+    sendWindowMouse(hvp, QEvent::MouseButtonRelease, p + QPoint(20, 0), Qt::LeftButton);
+    // 拖宽生效（±2px 允许样式微调）且写进 store、撤销栈不增长
+    QVERIFY(qAbs(hh->sectionSize(colF) - (widthBefore + 20)) <= 2);
+    QCOMPARE(w.viewStateStore()->columnWidth(QStringLiteral("f"), 0), hh->sectionSize(colF));
+    QCOMPARE(w.getUndoStack()->count(), undoBefore);
 }
 
 //===================================================
