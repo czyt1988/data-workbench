@@ -3,6 +3,7 @@
 #include <QHeaderView>
 #include <QScrollBar>
 #include <QSignalSpy>
+#include <QTimer>
 #include <QUndoStack>
 #include <algorithm>
 
@@ -11,6 +12,7 @@
 #include "DATableDataBlock.h"
 #include "DATableDataSource.h"
 #include "DACacheWindowTableView.h"
+#include "DADataTableView.h"
 #include "DAVirtualScrollBar.h"
 #include "Models/DADataTableModel.h"
 
@@ -177,6 +179,10 @@ private Q_SLOTS:
     void testNotifyUsesAbsoluteRow();
     // 数据变少后窗口自愈
     void testShrinkNormalizesWindow();
+    // DADataTableView 覆写后的键转发（006a）：未处理的键到基类，恢复整表语义键
+    void testDataViewKeyForwardToBase();
+    // Ctrl+G 弹出「定位到行」输入框（006a 仍是基类 QInputDialog；007b 改断言 gotoRequested）
+    void testCtrlGGotoDialog();
 
 private:
     NavFixture m_fx;
@@ -553,6 +559,84 @@ void DATableNavigationTest::testShrinkNormalizesWindow()
     QCOMPARE(cursorActualRow(), 99999);
     QTest::keyClick(m_fx.view, Qt::Key_Up);
     QCOMPARE(cursorActualRow(), 99998);
+}
+
+/**
+ * @brief DADataTableView 覆写后的键转发：未处理的键一律到基类，恢复整表语义
+ *
+ * 修复前 DADataTableView::keyPressEvent 末尾调 QTableView::keyPressEvent，跳过了
+ * DACacheWindowTableView，Ctrl+G/Ctrl+Home/Ctrl+End/PageUp/PageDown/Home/End 在真实
+ * 数据表上全部失效（End 只到窗口末行）。本用例用 fixture 的模型另建一个
+ * DA::DADataTableView（不替换 fixture 原本的 view，避免影响既有用例）；
+ * testHomeEndKeys 测基类行为、本用例测覆写后的转发，两者不重复。
+ */
+void DATableNavigationTest::testDataViewKeyForwardToBase()
+{
+    DA::DADataTableView view;
+    view.setModel(m_fx.model);
+    view.resize(c_viewWidth, c_viewHeight);
+    view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+    view.selectActualCell(0, 0);
+    view.setFocus();
+    QApplication::processEvents();
+    QCOMPARE(view.toActualRow(view.currentIndex().row()), 0);
+
+    // ① Ctrl+End → 数据最后一行（整表语义）。窗口末行按"按下前"的窗口取：
+    // 修复前的错误路径（QTableView::End）恰好落在窗口末行，正确路径整表跳转
+    const int windowLastBefore = view.getTopActualRow() + m_fx.model->rowCount() - 1;
+    QTest::keyClick(&view, Qt::Key_End, Qt::ControlModifier);
+    const QModelIndex cur = view.currentIndex();
+    QVERIFY(cur.isValid());
+    QCOMPARE(view.toActualRow(cur.row()), m_fx.model->actualRowCount() - 1);
+    QVERIFY(view.toActualRow(cur.row()) != windowLastBefore);
+
+    // ② Ctrl+Home → 绝对行 0
+    QTest::keyClick(&view, Qt::Key_Home, Qt::ControlModifier);
+    QCOMPARE(view.toActualRow(view.currentIndex().row()), 0);
+    QCOMPARE(view.getTopActualRow(), 0);
+
+    // ③ PageDown → 视口首行前进一屏，光标跟随（口径同 testPageKey）
+    const int vp = view.getViewportRowCount();
+    QVERIFY(vp > 1);
+    QTest::keyClick(&view, Qt::Key_PageDown);
+    QCOMPARE(view.getTopActualRow(), vp);
+    QCOMPARE(view.toActualRow(view.currentIndex().row()), vp);
+
+    // ④ Ctrl+F 本类仍自己拦截（发表意信号，不落基类）
+    QSignalSpy findSpy(&view, &DA::DADataTableView::findRequested);
+    QTest::keyClick(&view, Qt::Key_F, Qt::ControlModifier);
+    QVERIFY(findSpy.count() >= 1);
+}
+
+/**
+ * @brief Ctrl+G 弹出「定位到行」输入框
+ *
+ * 本单里 DADataTableView 还没覆写 promptGotoRow，走的是基类的 QInputDialog；
+ * 007a 改成新对话框后本用例改为断言 gotoRequested 信号。模态框由 zero-shot
+ * 定时器代为关闭（嵌套事件循环里 activeModalWidget 可取到）。
+ */
+void DATableNavigationTest::testCtrlGGotoDialog()
+{
+    DA::DADataTableView view;
+    view.setModel(m_fx.model);
+    view.resize(c_viewWidth, c_viewHeight);
+    view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+    view.selectActualCell(0, 0);
+    const QModelIndex before = view.currentIndex();
+
+    bool modalSeen = false;
+    QTimer::singleShot(0, &view, [ &modalSeen ]() {
+        if (QWidget* m = QApplication::activeModalWidget()) {
+            modalSeen = true;
+            m->close();
+        }
+    });
+    QTest::keyClick(&view, Qt::Key_G, Qt::ControlModifier);
+    QVERIFY(modalSeen);
+    // 取消输入后光标不动
+    QCOMPARE(view.currentIndex(), before);
 }
 
 int main(int argc, char* argv[])

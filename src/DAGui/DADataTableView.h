@@ -17,7 +17,8 @@ class DATableNoteStore;
  * 表体右键菜单与快捷键的集中落点（设计稿 §3.5）：菜单内容（哪些项、顺序、启用规则）
  * 单点定义在本类（DAGui），QAction 自建、不共享 APP 的 action 对象；点击后发表意信号
  * 交 APP 接线到既有槽逻辑，视图内不新增执行逻辑。表格快捷键一律在 keyPressEvent 处理
- * （现状：Ctrl+C 复制、Ctrl+F 查找、Ctrl+H 替换、Esc 关查找条——002 追加后三键，
+ * （Ctrl+C/Ctrl+F/Ctrl+H/Ctrl+D/Esc 在本类处理；未处理的键一律转发基类 DACacheWindowTableView，
+ * 恢复整表语义键 Ctrl+G/Ctrl+Home/Ctrl+End/PageUp/PageDown/Home/End——002 追加查找替换族，
  * Ribbon action 不设 shortcut，红线5）。
  */
 class DAGUI_API DADataTableView : public DACacheWindowTableView
@@ -81,8 +82,9 @@ Q_SIGNALS:
     void noteClearAllRequested();
 
 protected:
-    // Ctrl+C / Ctrl+Insert 复制；Ctrl+F 查找；Ctrl+H 替换；Ctrl+D 向下填充（005）；
-    // Esc 关查找条（快捷键唯一挂点，红线5）
+    // Ctrl+C/Ctrl+F/Ctrl+H/Esc 在本类处理；未处理的键一律转发基类（恢复整表语义键
+    // Ctrl+G/Ctrl+Home/Ctrl+End/PageUp/PageDown/Home/End）。表格快捷键唯一挂点，
+    // Ribbon action 不设 shortcut（红线5）
     void keyPressEvent(QKeyEvent* event) override;
     // 表体右键菜单
     void contextMenuEvent(QContextMenuEvent* event) override;

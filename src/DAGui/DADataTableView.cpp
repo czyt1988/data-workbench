@@ -50,10 +50,12 @@ DAData DADataTableView::getData() const
 }
 
 /**
- * @brief 按键事件：Ctrl+C 复制；Ctrl+F 查找；Ctrl+H 替换；Esc 关查找条
+ * @brief 按键事件：Ctrl+C 复制；Ctrl+F 查找；Ctrl+H 替换；Ctrl+D 向下填充；Esc 关查找条
  *
  * 表格快捷键的唯一挂点（红线5：Ribbon action 不设 shortcut，避免双触发）。
  * 查找/替换发表意信号交页面唤出浮动条；Esc 关查找条后仍交基类（保留退出编辑器等既有语义）。
+ * 未处理的键一律转发基类 DACacheWindowTableView（恢复整表语义键 Ctrl+G/Ctrl+Home/Ctrl+End/
+ * PageUp/PageDown/Home/End——QTableView 自己的 Home/End 只作用于模型窗口内，滑动窗下等于"窗口首尾"）。
  * @param event 按键事件
  */
 void DADataTableView::keyPressEvent(QKeyEvent* event)
@@ -85,7 +87,10 @@ void DADataTableView::keyPressEvent(QKeyEvent* event)
         // 不 accept，Esc 继续交基类处理既有语义
         Q_EMIT findBarCloseRequested();
     }
-    QTableView::keyPressEvent(event);
+    // 未处理的键一律转发基类（DACacheWindowTableView）：
+    // 恢复 Ctrl+G 定位到行、Ctrl+Home/Ctrl+End 数据首尾、PageUp/PageDown 翻屏、Home/End 行首尾
+    // （QTableView 自己的 Home/End 只作用于模型窗口内，滑动窗下等于"窗口首尾"）
+    DACacheWindowTableView::keyPressEvent(event);
 }
 
 /**
