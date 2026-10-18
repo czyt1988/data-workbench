@@ -19,6 +19,7 @@ set(DA_LIB_HEADER_FILES
     DADataManagerComboBox.h
     DADataOperatePageWidget.h
     DADataTableView.h
+    DATablePaneContainer.h
     DAFigureFactory.h
     DAGraphicsPixmapItemSettingWidget.h
     DADataListView.h
@@ -96,6 +97,7 @@ set(DA_LIB_SOURCE_FILES
     DADataOperatePageWidget.cpp
     DADataOperateWidget.cpp
     DADataTableView.cpp
+    DATablePaneContainer.cpp
     DADockAreaTabPosition.cpp
     DAFigureFactory.cpp
     DAGraphicsPixmapItemSettingWidget.cpp
