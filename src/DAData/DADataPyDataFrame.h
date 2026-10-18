@@ -41,6 +41,9 @@ public:  // DATableDataSource 接口实现
     QString tableColumnName(std::size_t column) const override;
     int tableColumnType(std::size_t column) const override;
     DATableDataBlock fetchBlock(std::size_t startRow, std::size_t rowCount) override;
+    // 源侧列统计（007 T1.7）：da_column_stats 区间路径 numpy 一次算完；
+    // 列越界返回 nullopt（不静默裁剪）
+    std::optional< DATableStatsResult > computeColumnStats(const DATableScanRequest& req) const override;
 
 public:
     // 一些qt操作wrapper
