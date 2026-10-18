@@ -95,6 +95,8 @@
         <file>icon/delete-all-columns.svg</file>
         <file>icon/gotoMax.svg</file>
         <file>icon/gotoMin.svg</file>
+        <file>icon/freeze-column.svg</file>
+        <file>icon/column-view.svg</file>
     </qresource>
     <qresource prefix="/DAGui/MessageType">
         <file>icon/messageType/messageTypeDebug.svg</file>
