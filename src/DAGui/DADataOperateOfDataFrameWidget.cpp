@@ -348,6 +348,7 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
             if (mFindReplaceDialog && mFindReplaceDialog->isVisible() && mFindReplaceDialog->options().selectionOnly) {
                 mFindReplaceDialog->restartDebounce();
             }
+            Q_EMIT tableSelectionChanged();  // 007：状态栏统计触发源
         });
     }
 }
@@ -1931,6 +1932,77 @@ DATableHighlightOverlay* DADataOperateOfDataFrameWidget::highlightOverlay() cons
 DATableConditionalFormatStore* DADataOperateOfDataFrameWidget::conditionalFormatStore() const
 {
     return mConditionalFormatStore;
+}
+
+/**
+ * @brief 选择模型（选区快照 API，007 状态栏统计）
+ *
+ * 只取主窗格（冻结窗格共享同一个 selectionModel）。
+ * @return 选择模型指针（无视图时 nullptr）
+ */
+QItemSelectionModel* DADataOperateOfDataFrameWidget::tableSelectionModel() const
+{
+    return ui->tableView->selectionModel();
+}
+
+/**
+ * @brief 选区段数
+ *
+ * 选区按连续段组织（Ctrl+多点形成多段）；0=无选区，>1=多段（状态栏只给几何计数）。
+ * @return 段数
+ */
+int DADataOperateOfDataFrameWidget::selectionSegmentCount() const
+{
+    QItemSelectionModel* sm = tableSelectionModel();
+    return sm ? sm->selection().size() : 0;
+}
+
+/**
+ * @brief 选区包围盒（闭区间，数据源绝对行号）
+ *
+ * 走 selection() 段列表（不要 selectedIndexes——会物化）。列维度没有滑动窗，
+ * column() 即数据列序号。
+ * @return 无选区返回 false
+ */
+bool DADataOperateOfDataFrameWidget::selectionBoundingBox(int* rowBegin, int* rowEnd, int* colBegin, int* colEnd) const
+{
+    QItemSelectionModel* sm = tableSelectionModel();
+    const QItemSelection sel = sm ? sm->selection() : QItemSelection();
+    if (sel.isEmpty()) {
+        return false;
+    }
+    int top = INT_MAX, bottom = -1, left = INT_MAX, right = -1;
+    for (const QItemSelectionRange& r : sel) {
+        top    = qMin(top, r.top());
+        bottom = qMax(bottom, r.bottom());
+        left   = qMin(left, r.left());
+        right  = qMax(right, r.right());
+    }
+    if (rowBegin) {
+        *rowBegin = toActualRow(top);
+    }
+    if (rowEnd) {
+        *rowEnd = toActualRow(bottom);
+    }
+    if (colBegin) {
+        *colBegin = left;
+    }
+    if (colEnd) {
+        *colEnd = right;
+    }
+    return bottom >= 0;
+}
+
+/**
+ * @brief 选中单元数（几何去重）
+ *
+ * Qt 的 selectedIndexes 保证无重复；会物化选中索引，只在多段选区分支调用。
+ * @return 单元数
+ */
+int DADataOperateOfDataFrameWidget::selectedCellCount() const
+{
+    QItemSelectionModel* sm = tableSelectionModel();
+    return sm ? sm->selectedIndexes().size() : 0;
 }
 
 /**

@@ -8,6 +8,7 @@
 #include <QPointer>
 #include <QVector>
 #include <optional>
+class QItemSelectionModel;
 #include "DAGuiAPI.h"
 #include "DAData.h"
 #include "DADataPyDataFrame.h"
@@ -140,6 +141,18 @@ public:
     // 当前单元格模型索引：selectionModel()->currentIndex()，无效时取选区左上角
     //（都没有返回无效索引）
     QModelIndex currentOrSelectionTopLeftIndex() const;
+
+    // ===== 选区快照（007 状态栏统计；行号一律数据源绝对行号）=====
+    // 选择模型（冻结窗格共享它，只取主窗格）
+    QItemSelectionModel* tableSelectionModel() const;
+    // 选区段数（0=无选区，>1=多段）
+    int selectionSegmentCount() const;
+    // 选区包围盒（闭区间；无选区返回 false）
+    bool selectionBoundingBox(int* rowBegin, int* rowEnd, int* colBegin, int* colEnd) const;
+    // 选中单元数（几何去重；会物化选中索引，只在多段选区分支用）
+    int selectedCellCount() const;
+    // 当前单元格（数据源绝对坐标；声明在 public——007 状态栏统计用）：无有效当前格或越出数据范围返回 false
+    bool currentActualCell(int* actualRow, int* actualCol) const;
     // 目标列是否落在「视图顺序前 m 个可见列」的冻结区（007 判定要不要调 showColumn）；
     // 本单恒 false（冻结投影 006e 收口）；freezeColumnCount()==0 时也恒 false
     bool isColumnInFrozenArea(int logicalColumn) const;
@@ -269,6 +282,8 @@ Q_SIGNALS:
     void currentStyleChanged(const DA::DATableCellStyle& style);
     // 选中列变化时发射当前代表显示格式，供 ribbon 格式下拉框反向同步
     void currentDisplayFormatChanged(const DA::DATableDisplayFormat& fmt);
+    // 选区或当前项变化（007 状态栏统计触发源；两窗格共享 selectionModel 只连主窗格）
+    void tableSelectionChanged();
     /**
      * @brief 表格水平表头单击
      * @param logicalIndex 列逻辑索引
@@ -464,8 +479,6 @@ private:
     void wireValidationRuleRenameMigration(class DACommandDataFrame_renameColumns* cmd,
                                            const QList< QPair< QString, QString > >& renames) const;
     // ===== 批注私有辅助（005 T1.26）=====
-    // 当前单元格（数据源绝对坐标）：无有效当前格或越出数据范围返回 false
-    bool currentActualCell(int* actualRow, int* actualCol) const;
     // 对给定格弹出编辑弹层并落地结果（插入/编辑共用：保存→增/改命令，删除→删除命令）
     void editNoteAtCell(int actualRow, int actualCol);
 
