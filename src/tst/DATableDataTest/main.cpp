@@ -32,6 +32,7 @@
 #include "DAAbstractData.h"
 #include "DATableDataSource.h"
 #include "DATableDataBlock.h"
+#include "DATableScan.h"
 #include "DADataFactory.h"
 
 // 表格元数据基础设施（001 计划 §4.1）
@@ -42,8 +43,10 @@
 #include "DATableStyleManager.h"
 #include "DATableViewStateStore.h"
 #include "DATablePaneContainer.h"
+#include "DATableStatsWidget.h"
 #include "Commands/DACommandsTableColumnView.h"
 #include "Dialog/DADialogTableColumnView.h"
+#include "Dialog/DADialogGotoCell.h"
 #include <QWindow>
 #include <QScrollBar>
 #include <QSpinBox>
@@ -453,6 +456,10 @@ private Q_SLOTS:
     void testColumnStatsUniqueSentinel();
     // 007c：computeColumnStats 默认 nullopt + 覆写生效
     void testComputeColumnStatsNullopt();
+    // 007d：状态栏统计分档显示（单列/多列/超限/多段/单格/不支持）
+    void testStatsWidgetSelectionTiers();
+    // 007d：统计部件去抖与只读（撤销栈不变、解绑隐藏）
+    void testStatsWidgetDebounceAndReadonly();
     // 002 表头排序（T1.3 §4.1）：算子多键+置换、命令 undo/redo+样式重映射、表头交互/拾取互斥/只读源、10万行计时
     void testSortOperatorMultiKeyPerm();
     void testSortRowsCommandUndoRedoAndStyleRemap();
@@ -3419,6 +3426,146 @@ ndf = pd.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]})
         bad.columns = { 2 };  // 只有 2 列
         QVERIFY(src->computeColumnStats(bad) == std::nullopt);
     }
+}
+
+// 007d：状态栏统计分档显示（单列/多列/超限/多段/单格/不支持）
+void DATableDataTest::testStatsWidgetSelectionTiers()
+{
+    if (!mPandasOk) {
+        QSKIP("pandas not available");
+    }
+    // 12 列夹具（多列超限分支需要 ≥9 列）
+    QStringList colNames;
+    for (int i = 0; i < 12; ++i) {
+        colNames << QStringLiteral("c%1").arg(i);
+    }
+    pybind11::object obj = makeDataFrameWithColumns(colNames);
+    QVERIFY(!obj.is_none());
+    DA::DAPyDataFrame df(obj);
+    DA::DAData d(df);
+    DA::DATableMetadataRegistry registry(nullptr);
+    DA::DADataOperateOfDataFrameWidget w(d, &registry);
+    w.resize(800, 400);
+    w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+    DA::DATableStatsWidget stats;
+    stats.setPage(&w);
+    DA::DADataTableView* tv = w.getDataTableView();
+    QItemSelectionModel* sm = tv->selectionModel();
+
+    // ① 单列数值列（c0）：全指标数值档，无 Unique
+    {
+        QItemSelection sel(tv->model()->index(0, 0), tv->model()->index(2, 0));
+        sm->select(sel, QItemSelectionModel::ClearAndSelect);
+        stats.refreshNow();
+        const QString text = stats.statsText();
+        qWarning() << "[dbg] tier1 statsText =" << text;
+        QVERIFY(text.contains(QStringLiteral("Count")));
+        QVERIFY(text.contains(QStringLiteral("Null")));
+        QVERIFY(text.contains(QStringLiteral("Sum")));
+        QVERIFY(text.contains(QStringLiteral("Mean")));
+        QVERIFY(text.contains(QStringLiteral("Min")));
+        QVERIFY(text.contains(QStringLiteral("Max")));
+        QVERIFY(!text.contains(QStringLiteral("Unique")));
+        QVERIFY(stats.detailsTooltipText().isEmpty());
+    }
+    // ② 多列 c ≤ 8（c0..c2）：状态栏只放规模；tooltip 有逐列明细
+    {
+        QItemSelection sel(tv->model()->index(0, 0), tv->model()->index(2, 2));
+        sm->select(sel, QItemSelectionModel::ClearAndSelect);
+        stats.refreshNow();
+        const QString text = stats.statsText();
+        QVERIFY(text.contains(QStringLiteral("cols selected")));
+        QVERIFY(!text.contains(QStringLiteral("Sum")));  // 状态栏不含指标
+        QVERIFY(stats.detailsTooltipText().contains(QStringLiteral("Per-column details")));
+        QVERIFY(stats.detailsTooltipText().contains(QStringLiteral("Sum")));    // 数值列明细有 Sum
+        QVERIFY(stats.detailsTooltipText().contains(QStringLiteral("Count")));
+    }
+    // ③ 多列超限（9 列 c0..c8 > 8）：不请求，tooltip 写"选区过大"
+    {
+        QItemSelection sel(tv->model()->index(0, 0), tv->model()->index(0, 8));
+        sm->select(sel, QItemSelectionModel::ClearAndSelect);
+        stats.refreshNow();
+        QVERIFY(stats.detailsTooltipText().contains(
+            QStringLiteral("Selection is too large; per-column details were not computed")));
+        QVERIFY(stats.statsText().contains(QStringLiteral("cols selected")));
+    }
+    // ④ 多段选区：几何计数 + 说明，不请求统计（两段都在模型窗口内：不同列的行段）
+    {
+        sm->clearSelection();
+        QItemSelection seg1(tv->model()->index(0, 0), tv->model()->index(1, 0));
+        QItemSelection seg2(tv->model()->index(0, 4), tv->model()->index(1, 4));        sm->select(seg1, QItemSelectionModel::Select);
+        sm->select(seg2, QItemSelectionModel::Select);
+        stats.refreshNow();
+        const QString text = stats.statsText();
+        QVERIFY(text.contains(QStringLiteral("2 segments")));
+        QVERIFY(text.contains(QStringLiteral("4 cells")));        QVERIFY(stats.detailsTooltipText().contains(
+            QStringLiteral("Aggregation is not available for multi-range selections")));
+    }
+    // ⑤ 单格（1×1）：引用 + 原始值（数据只有 3 行，取第 2 行 → 显示 Row 2）
+    {
+        QItemSelection sel(tv->model()->index(1, 1), tv->model()->index(1, 1));
+        sm->select(sel, QItemSelectionModel::ClearAndSelect);
+        sm->setCurrentIndex(tv->model()->index(1, 1), QItemSelectionModel::NoUpdate);
+        stats.refreshNow();
+        const QString text = stats.statsText();
+        QVERIFY(text.contains(QStringLiteral("Row 2")));
+        QVERIFY(text.contains(QStringLiteral("c1")));
+    }
+    // ⑥ 不支持的源（惰性表页）：明说"不支持"
+    {
+        DA::DAAbstractData::Pointer lazyPtr(new DATestLazyTable());
+        DA::DAData lazyD(lazyPtr);
+        DA::DADataOperateOfDataFrameWidget lazyW(lazyD, &registry);
+        lazyW.resize(800, 400);
+        lazyW.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&lazyW));
+        stats.setPage(&lazyW);
+        QItemSelectionModel* lazySm = lazyW.getDataTableView()->selectionModel();
+        QItemSelection sel(lazyW.getDataTableView()->model()->index(0, 0),
+                           lazyW.getDataTableView()->model()->index(4, 0));
+        lazySm->select(sel, QItemSelectionModel::ClearAndSelect);
+        stats.refreshNow();
+        QVERIFY(stats.statsText().contains(
+            QStringLiteral("Statistics are not available for the current data source")));
+        stats.setPage(&w);
+    }
+}
+
+// 007d：统计部件去抖与只读（撤销栈不变、解绑隐藏）
+void DATableDataTest::testStatsWidgetDebounceAndReadonly()
+{
+    if (!mPandasOk) {
+        QSKIP("pandas not available");
+    }
+    pybind11::object obj = makeTestDataFrame();
+    QVERIFY(!obj.is_none());
+    DA::DAPyDataFrame df(obj);
+    DA::DAData d(df);
+    DA::DATableMetadataRegistry registry(nullptr);
+    DA::DADataOperateOfDataFrameWidget w(d, &registry);
+    w.resize(800, 400);
+    w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+    DA::DATableStatsWidget stats;
+    stats.setPage(&w);
+    const int undoBefore = w.getUndoStack()->count();
+    DA::DADataTableView* tv = w.getDataTableView();
+    QItemSelectionModel* sm = tv->selectionModel();
+    // 连续 3 次改选区（不插事件循环等待）→ 去抖期间不触发刷新
+    for (int i = 0; i < 3; ++i) {
+        QItemSelection sel(tv->model()->index(i, 1), tv->model()->index(i + 4, 1));
+        sm->select(sel, QItemSelectionModel::ClearAndSelect);
+    }
+    // 统计是只读操作：撤销栈不变
+    QCOMPARE(w.getUndoStack()->count(), undoBefore);
+    // 去抖到期后刷新一次
+    QTest::qWait(600);
+    QVERIFY(!stats.statsText().isEmpty());
+    // 解绑 → 隐藏、清文本
+    stats.setPage(nullptr);
+    QVERIFY(stats.isHidden());
+    QVERIFY(stats.statsText().isEmpty());
 }
 
 //===================================================
