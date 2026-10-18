@@ -1475,6 +1475,73 @@ DAPyScriptsDataFrame::ColumnStatsResult DAPyScriptsDataFrame::columnStats(const 
 }
 
 /**
+ * @brief 按列区间统计（007 T1.7）
+ *
+ * 对应 da_column_stats 的 cols/row_range/unique_limit 扩展路径；cols 非空才走
+ * 新路径（cols is None 时 Python 侧走 003 兼容路径）。空值/类型语义全部由
+ * Python 判定；C++ 只翻译返回的 dict 列表（键缺省/None 一律视为"不适用"）。
+ * @param df 目标表
+ * @param cols 列位置索引列表（与结果同序）
+ * @param rowBegin 行区间起点（数据行号，半开区间）
+ * @param rowEnd 行区间终点
+ * @param uniqueLimit 唯一值数阈值（0 = 不要）
+ * @return {ok, columns}；失败时 ok=false（上层当作"不支持"）
+ */
+DAPyScriptsDataFrame::SelectionStatsResult DAPyScriptsDataFrame::columnStatsRange(
+    const DAPyDataFrame& df, const QList< int >& cols, std::size_t rowBegin, std::size_t rowEnd,
+    std::size_t uniqueLimit) noexcept
+{
+    SelectionStatsResult result;
+    if (df.isNone()) {
+        return result;
+    }
+    try {
+        pybind11::list pyCols;
+        for (int c : cols) {
+            pyCols.append(pybind11::int_(c));
+        }
+        pybind11::dict args;
+        args[ "df" ]          = df.object();
+        args[ "cols" ]        = pyCols;                              // 位置索引列表（非空 → 走新区间路径）
+        args[ "row_range" ]   = pybind11::make_tuple(rowBegin, rowEnd);  // 半开区间
+        args[ "unique_limit" ] = uniqueLimit;                          // 0 = 不要唯一值数
+        pybind11::object ret  = attr("da_column_stats")(**args);
+        if (ret.is_none()) {
+            return result;
+        }
+        pybind11::list items = ret.cast< pybind11::list >();
+        if (static_cast< std::size_t >(items.size()) != static_cast< std::size_t >(cols.size())) {
+            return result;
+        }
+        // 键缺省 / None 一律视为"不适用"（不猜值）
+        auto readNum = [](pybind11::dict d, const char* k) -> std::optional< double > {
+            return (!d.contains(k) || d[ k ].is_none()) ? std::nullopt : std::optional< double >(d[ k ].cast< double >());
+        };
+        auto readInt = [](pybind11::dict d, const char* k) -> std::optional< std::size_t > {
+            return (!d.contains(k) || d[ k ].is_none())
+                       ? std::nullopt
+                       : std::optional< std::size_t >(static_cast< std::size_t >(d[ k ].cast< long long >()));
+        };
+        for (pybind11::handle h : items) {
+            pybind11::dict d = h.cast< pybind11::dict >();
+            SelectionColumnStats cs;
+            cs.count     = static_cast< std::size_t >(d[ "count" ].cast< long long >());
+            cs.nullCount = static_cast< std::size_t >(d[ "null_count" ].cast< long long >());
+            cs.uniqueCount = readInt(d, "unique_count");
+            cs.sum = readNum(d, "sum");
+            cs.mean = readNum(d, "mean");
+            cs.min = readNum(d, "min");
+            cs.max = readNum(d, "max");
+            result.columns.append(cs);
+        }
+        result.ok = true;
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return result;
+}
+
+/**
  * @brief select方法的wrapper
  * @param df
  * @param contents

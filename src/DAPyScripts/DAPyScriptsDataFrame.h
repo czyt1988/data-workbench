@@ -264,6 +264,25 @@ public:
 	// 单列 min/max/median 全表 O(n) 归约（NaN 排除，不采样不近似）；
 	// 列越界抛错或全 NaN 返回 ok=false
 	ColumnStatsResult columnStats(const DAPyDataFrame& df, int col) noexcept;
+	// 选区列统计结果（007 T1.7，对应 da_column_stats 的 cols/row_range/unique_limit 扩展路径）
+	struct SelectionColumnStats
+	{
+		std::size_t count { 0 };
+		std::size_t nullCount { 0 };
+		std::optional< std::size_t > uniqueCount;      ///< nullopt = 未计算（超阈值/不需要）
+		std::optional< double > sum, mean, min, max;   ///< 非数值列全 nullopt
+	};
+	struct SelectionStatsResult
+	{
+		bool ok { false };                      ///< false = 调用失败/引擎异常（上层当作"不支持"）
+		QList< SelectionColumnStats > columns;  ///< 与 cols 同序
+	};
+	// 按列区间统计（半开区间 [rowBegin, rowEnd)；空值/类型语义全部由 Python 判定）
+	SelectionStatsResult columnStatsRange(const DAPyDataFrame& df,
+	                                      const QList< int >& cols,
+	                                      std::size_t rowBegin,
+	                                      std::size_t rowEnd,
+	                                      std::size_t uniqueLimit) noexcept;
 	// dataselect()
 	bool dataselect(DAPyDataFrame& df, double lowervalue, double uppervalue, const QString& index) noexcept;
 
