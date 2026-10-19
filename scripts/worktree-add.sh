@@ -90,16 +90,11 @@ to_win_path() {
         printf '%s\n' "$1"
     fi
 }
-# 路径比较用的规范化形式（去掉结尾斜杠、大小写归一）
-canon_path() { printf '%s' "$1" | sed 's#/*$##' | tr '[:upper:]' '[:lower:]'; }
+# 路径比较用的规范化形式（反斜杠归一、去掉结尾斜杠、大小写归一）
+canon_path() { printf '%s' "$1" | sed 's#\\#/#g; s#/*$##' | tr '[:upper:]' '[:lower:]'; }
 
 # 所有工作树路径，主工作树在最前（porcelain 输出顺序固定）
 worktree_paths() { git worktree list --porcelain | sed -n 's/^worktree //p'; }
-
-MAIN_WT=$(worktree_paths | head -n1)
-[ -n "$MAIN_WT" ] || die "无法定位主工作树"
-cd "$MAIN_WT"
-WT_ROOT="$MAIN_WT/.worktree"
 
 is_registered_worktree() {
     local want p
@@ -109,6 +104,26 @@ is_registered_worktree() {
     done < <(worktree_paths)
     return 1
 }
+
+# 定位主工作树。子模块式检出（.git 文件指向 <父仓库>/.git/modules/<名>）下
+# `git worktree list` 会把 gitdir 本身当成主工作树（gitdir 路径剥不掉 /.git 后缀，
+# core.worktree 也救不了），列表首项不可信，改以「脚本所在的仓库根」为锚点：
+#   - 未注册（主工作树不在列表里）→ 脚本就在主工作树里，直接用
+#   - 已注册且位于 <主工作树>/.worktree/ 下 → 剥掉该后缀得到主工作树
+#   - 已注册且不在 .worktree/ 下（仓外工作树）→ 回退列表首项（普通仓库语义）
+HERE=$(to_win_path "$(pwd -P)")
+MAIN_WT=""
+if is_registered_worktree "$HERE"; then
+    case "$HERE" in
+        */.worktree/*) MAIN_WT="${HERE%/.worktree/*}" ;;
+    esac
+    [ -z "$MAIN_WT" ] && MAIN_WT=$(worktree_paths | head -n1)
+else
+    MAIN_WT="$HERE"
+fi
+[ -n "$MAIN_WT" ] || die "无法定位主工作树"
+cd "$MAIN_WT"
+WT_ROOT="$MAIN_WT/.worktree"
 
 # ---------------------------------------------------------------------------
 # 子模块: 逐层递归，从本地已有检出克隆（不联网）
@@ -133,15 +148,26 @@ init_submodules() {
         if [ "$(git -C "$wt/$child" rev-parse --verify --quiet HEAD 2>/dev/null)" = "$sha" ]; then
             note "  子模块: $child @ ${sha:0:7}（已就位）"
         else
+            # 克隆源候选：主工作树优先（其子模块提交与基线一致），再遍历其余工作树；
+            # 子模块式检出下主工作树不在 `git worktree list` 里，需显式补入
             donor=""
+            local -a donors=("$MAIN_WT")
             while IFS= read -r p; do
+                [ "$(canon_path "$p")" = "$(canon_path "$MAIN_WT")" ] && continue
+                donors+=("$p")
+            done < <(worktree_paths)
+            for p in "${donors[@]}"; do
                 if [ -e "$p/$child/.git" ]; then
                     donor="$p/$child"
                     break
                 fi
-            done < <(worktree_paths)
+            done
             if [ -z "$donor" ]; then
-                die "找不到子模块 '$child' 的本地克隆源。请先在有网环境于主工作树执行一次 git submodule update --init（内网可先用 scripts/export_bundles.sh 导出的 bundle 把子模块更新到位）"
+                # 找不到本地克隆源：警告并继续（不终止）。已知场景：qwt 的嵌套子模块
+                # qim 位于 examples 下、不参与构建且内网无克隆源；若是构建必需的子模块
+                # 缺失，后续 CMake 配置期会以"找不到包"明确报错，不会静默出错。
+                warn "子模块 '$child' 找不到本地克隆源，已跳过（如为构建必需，CMake 配置会报错；内网可先用 bundle 把主工作树该子模块更新到位）"
+                continue
             fi
             # protocol.file.allow: git >= 2.38.1 默认拒绝 file 协议的子模块克隆
             # （CVE-2022-39253 缓解），这里克隆源是本地已有检出，属合法用途。
