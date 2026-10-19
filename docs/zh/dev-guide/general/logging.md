@@ -5,6 +5,7 @@
 DAWorkbench 使用基于 **spdlog** 的异步日志系统，通过 `qInstallMessageHandler` 拦截 Qt 的 `qDebug/qInfo/qWarning/qCritical` 消息，按 category 分流到不同的 spdlog logger，实现：
 
 - **业务日志**（`da.*` category）→ 写入文件 + 控制台 + **UI 日志窗口**
+- **慢日志**（`daworkbench.slow` category）→ 写入独立 `slow.log`，**不进 UI 窗口、不进控制台**（见[慢日志章节](#慢日志slow-log)）
 - **系统日志**（Qt 自身、第三方库等无 category 的消息）→ 仅写入文件 + 控制台，**不污染 UI 窗口**
 
 ### 架构
@@ -14,6 +15,10 @@ qDebug/qInfo/qWarning/qCritical
   │
   ▼
 DALogger::daMessageHandler (qInstallMessageHandler 回调)
+  │
+  ├─ context.category 为 "daworkbench.slow"？
+  │    └─ 是 → mSlowLogger (慢日志 logger)
+  │              └─ rotating_file_sink (slow.log，无控制台/UI sink)
   │
   ├─ context.category 以 "da." 开头？
   │    ├─ 是 → mLogger (业务 logger，带 UI sink)
@@ -39,8 +44,9 @@ DAMessageLogViewWidget (UI 日志窗口)
 
 | 文件 | 职责 |
 |------|------|
-| `src/DAMessageHandler/DALogger.h/.cpp` | RAII 单例，管理 spdlog logger 生命周期、安装 qInstallMessageHandler、按 category 分流 |
-| `src/DAMessageHandler/DALogCategory.h/.cpp` | 声明 `DA_USER` category + `daInfo`/`daWarning`/`daCritical`/`daDebug` 便捷宏 |
+| `src/DAMessageHandler/DALogger.h/.cpp` | RAII 单例，管理 spdlog logger 生命周期、安装 qInstallMessageHandler、按 category 三路分流 |
+| `src/DAMessageHandler/DALogCategory.h/.cpp` | 声明 `DA_USER`/`DA_SLOW` category + `daInfo`/`daWarning`/`daCritical`/`daDebug` 便捷宏 |
+| `src/DAMessageHandler/DASlowLog.h/.cpp` | 慢日志核心：`DA_SLOW_LOG_*` 埋点宏、作用域计时、阈值配置、计数器聚合 |
 | `src/DAMessageHandler/DAMessageLogQueue.h/.cpp` | 线程安全日志队列（spdlog 后台线程 → UI 主线程的桥梁），QTimer 惰性信号发射 |
 | `src/DAMessageHandler/DAMessageLogSink.h/.cpp` | spdlog 自定义 sink，从 `log_msg` 重建 `DAMessageLogItem` 推入队列 |
 | `src/DAMessageHandler/DAMessageLogItem.h/.cpp` | 单条日志数据结构（类型/时间/文件/函数/行号/消息） |
@@ -203,17 +209,21 @@ enum class DALogLevel {
 
 ### 工作原理
 
-`DALogger::dispatchMessage` 通过 `QMessageLogContext::category` 判断日志来源：
+`DALogger::dispatchMessage` 通过 `QMessageLogContext::category` 三路分流：
 
 ```cpp
 void DALogger::dispatchMessage(QtMsgType type, const QMessageLogContext& context, const QString& msg)
 {
-    bool isBusinessLog = context.category && QByteArray(context.category).startsWith("da.");
-    auto& logger = isBusinessLog ? d->mLogger : d->mSystemLogger;
+    static constexpr const char kSlowCategory[] = "daworkbench.slow";
+    const bool isSlow = context.category
+                    && std::strncmp(context.category, kSlowCategory, sizeof(kSlowCategory) - 1) == 0;
+    const bool isBusinessLog = !isSlow && context.category && std::strncmp(context.category, "da.", 3) == 0;
+    auto& logger = isSlow ? d->mSlowLogger : (isBusinessLog ? d->mLogger : d->mSystemLogger);
     // ...
 }
 ```
 
+- `daworkbench.slow` category（慢日志判断在 `da.` 判断之前）→ 慢日志 logger（独立 `slow.log`，无控制台/UI sink；logger 未初始化时直接丢弃，不落回系统日志）
 - `da.*` 开头的 category → 业务 logger（带 UI sink）→ 进入 UI 日志窗口
 - 其他 category（含默认的 `default`）→ 系统 logger（无 UI sink）→ 仅文件和控制台
 
@@ -265,6 +275,124 @@ UI 日志窗口（`DAMessageLogViewWidget`）位于主窗口的 Dock 停靠面�
 
 ---
 
+## 慢日志（Slow Log）
+
+慢日志是**常态在线的粗粒度性能记账**：开发期自动记录超过阈值的操作，不需要事先怀疑某个函数；只写独立的 `slow.log`（category `daworkbench.slow`，`qCWarning(DA_SLOW)` 输出），**不进 UI 消息队列、不进控制台、不需要国际化**（内容纯英文）。核心在 `src/DAMessageHandler/DASlowLog.h/.cpp`，事件循环计时与看门狗在 `src/APP/DAApplication.h` / `DASlowLogWatchdog.h`。
+
+### 三个记录层次
+
+| 层次 | 机制 | 覆盖范围 | 埋点成本 |
+|------|------|---------|---------|
+| 作用域计时 | `DA_SLOW_LOG_SCOPE*` 宏（RAII） | 显式埋点的函数或代码块 | 每处一行宏 |
+| 事件循环计时 | `DAApplication::notify()` 重写 | 所有经主线程事件循环派发的事件（按类型聚合，超阈值单事件给明细） | 一处（应用层） |
+| 卡顿看门狗 | `DASlowLogWatchdog`（独立线程监测主线程 50ms 心跳） | 一切主线程阻塞，包括完全没埋点的代码 | 一处（应用层） |
+
+### 编译期开关
+
+顶层 CMake 选项（`add_compile_definitions` 全局注入，保证 ODR 一致）：
+
+- **Debug 配置自动开启**（`DA_ENABLE_SLOW_LOG_IN_DEBUG`，默认 ON）；
+- **Release 等配置默认关闭**：所有埋点宏展开为空，标签字符串、计时器、分支都不进产物（零残留），可用产物中搜不到埋点标签验证；
+- `-DDA_ENABLE_SLOW_LOG=ON` 强制所有配置开启，用于「接近发布又带慢日志」的诊断构建（搭配 RelWithDebInfo）。
+
+### 运行期环境变量
+
+只认环境变量，启动后解析一次（只读缓存）；非法值回退默认：
+
+| 环境变量 | 默认值 | 说明 |
+|----------|--------|------|
+| `DA_SLOW_LOG` | `on` | 运行期总开关；`off`/`0`/`false`/`no` 视为关闭 |
+| `DA_SLOW_LOG_MS` | `50` | 全局默认阈值（毫秒） |
+| `DA_SLOW_LOG_MS_<tag>` | 无 | 按标签覆盖阈值，如 `DA_SLOW_LOG_MS_dagui.table.sort.applySpec=200` |
+| `DA_SLOW_LOG_AGGREGATE_MS` | `1000` | 高频计数器与事件聚合的输出周期（毫秒） |
+| `DA_SLOW_LOG_STALL_MS` | `500` | 看门狗判定主线程卡顿的阈值（毫秒） |
+| `DA_SLOW_LOG_BUILD` | 由程序写入 | C++ 在 Python 初始化前写入 `1`/`0`，控制 Python 侧装饰器；每次启动覆盖，用户手动设置无效 |
+
+阈值分档建议：界面事件 50 ms、普通业务操作 200 ms、启动与工程加载 1000 ms。日志洪水时优先按标签调高单个阈值，而不是全局调低。
+
+### 输出位置与格式
+
+- **位置**：与 `da_log.log` 同目录（`%APPDATA%\DAWorkBench\log\slow.log`），旋转策略与主日志一致（默认 10 MB × 5）；console 日志模式写到默认日志目录。Python 侧的慢记录写 `da_pyscript.log`（格式一致，分别 grep）。
+- **作用域/单事件记录**（单行自包含字段）：
+
+```
+[slow] tag=dagui.table.sort.applySpec ms=812 self_ms=310 depth=0 thread=main file=DADataOperateOfDataFrameWidget.cpp line=3394 func=DADataOperateOfDataFrameWidget::applySortSpec detail="rows=20000 keys=1"
+```
+
+| 字段 | 含义 |
+|------|------|
+| `tag` | 埋点标签（`<层>.<模块>.<对象>.<动作>`），同时是阈值覆盖键 |
+| `ms` | 总耗时（inclusive，含子作用域） |
+| `self_ms` | 自身耗时（扣除嵌套子作用域） |
+| `depth` | 嵌套深度（最外层为 0） |
+| `thread` | `main` / 十六进制线程 id / `watchdog` |
+| `file`/`line`/`func` | 埋点位置（行内保留是为了单行可 grep） |
+| `detail` | 惰性详情，仅超阈值时组装，可缺省 |
+
+- **聚合记录**（`DAApplication` 定时器按 `DA_SLOW_LOG_AGGREGATE_MS` 周期触发）：
+
+```
+[slow] tag=dagui.model.actualData count=183420 total_ms=940 max_ms=12 window_ms=1000
+[slow] tag=qt.event.aggregate type=paint count=1834 total_ms=2240 max_ms=812 window_ms=1000
+```
+
+- **看门狗记录**（卡顿恢复时输出一条，detail 带卡住时主线程最后进入的作用域）：
+
+```
+[slow] tag=mainloop.stall ms=3200 self_ms=3200 depth=0 thread=watchdog file=DASlowLogWatchdog.cpp line=NN func=run detail="last_scope=dagui.table.sort.applySpec file=DADataOperateOfDataFrameWidget.cpp line=3394"
+```
+
+### C++ 如何新增埋点
+
+包含聚合头 `DALog.h`（已含 `DASlowLog.h`），写一行宏：
+
+```cpp
+#include "DALog.h"
+
+DA_SLOW_LOG_SCOPE("dagui.table.selectionChanged");                  // 默认阈值（50ms）
+DA_SLOW_LOG_SCOPE_MS("app.project.executeLoad", 1000);              // 指定阈值
+DA_SLOW_LOG_SCOPE_DETAIL("dadata.pydataframe.fetchBlock", [&]() {   // 惰性详情：仅超阈值时调用
+    return QStringLiteral("start=%1 count=%2").arg(startRow).arg(rowCount);
+});
+auto stats = DA_SLOW_LOG_CALL("dapyscripts.dataframe.sort", computeSort(df, keys));  // 测量单个表达式
+DA_SLOW_LOG_COUNTER(dagui.model.actualData);                        // 高频路径：计数器聚合（tag 不带引号）
+```
+
+规则与禁区：
+
+1. 标签命名 `<层>.<模块>.<对象>.<动作>`，保持稳定、不带动态参数（标签是阈值覆盖键）；
+2. **高频路径禁止 `DA_SLOW_LOG_SCOPE*`**（模型 `data()`、视图 `paint()`、`iat` 一类每秒万级调用），用 `DA_SLOW_LOG_COUNTER` 或完全不埋——观测者效应会自伤；
+3. 详情参数必须是可调用对象（lambda），只在超阈值时执行一次；不要传现成拼好的 `QString`；
+4. 不要把埋点放进持锁区间（日志写入可能阻塞，会放大锁持有时间）；
+5. `DAUtils` 模块内部禁止使用（它是 `DAMessageHandler` 的下层，会形成循环依赖）；
+6. 详情 lambda 不要调用需要 GIL 的 Python 接口（作用域退出时 GIL 可能已释放）；需要 Python 数据时在 GIL 持有期间先取到局部变量再捕获。
+
+### Python 侧装饰器
+
+`DAPyBase/da_logger.py` 的 `@log_function_call` 已扩展慢调用参数（不新增装饰器）：
+
+```python
+@log_function_call                                        # 不带参数：行为与历史完全一致（仅记录参数）
+@log_function_call(slow=True)                             # 标签自动生成 python.<模块>.<限定名>
+@log_function_call(slow=True, slow_tag="python.workflow.node.run")
+@log_function_call(slow=True, slow_ms=200,
+                   slow_detail=lambda args, kwargs, result: f"rows={len(args[0])}")
+```
+
+- 开关与 C++ 同源：`DA_SLOW_LOG_BUILD != "1"`（C++ 编译期未开启）时不生成计时分支；运行期再受 `DA_SLOW_LOG` / `DA_SLOW_LOG_MS` 控制；
+- `slow_detail(args, kwargs, result)` 仅在超阈值时调用；未提供时输出 `args_len`；
+- 输出经 loguru 写 `da_pyscript.log`，字段与 C++ 一致（`ms`/`self_ms`/`depth`/`thread`/`file`/`line`/`func`/`detail`），嵌套用 thread-local 栈跟踪。
+
+### 如何分析卡顿
+
+1. 复现前设 `DA_SLOW_LOG_MS=1`（临时全量记录）或按标签覆盖阈值，复现场景后读 `slow.log`；
+2. 按 `tag=<模块前缀>` grep 找热点；嵌套耗时看 `ms` 与 `self_ms` 的差值定位是哪一层吃的时间；
+3. 完全没埋点的卡死看 `mainloop.stall` 记录：`detail.last_scope` 是卡顿前主线程最后进入的作用域；
+4. 高频函数的总体开销看聚合记录的 `count`/`total_ms`/`max_ms`；
+5. **已知误报**：调试器断点暂停、系统睡眠/休眠恢复都会被看门狗记成一段卡顿，属预期噪声。
+
+---
+
 ## 日志读取与故障排查
 
 当用户报告运行异常、崩溃、行为不符合预期，或提到「日志」「报错」「看不到效果」时，应主动读取程序运行日志分析根因，不要凭猜测下结论。
@@ -277,7 +405,8 @@ UI 日志窗口（`DAMessageLogViewWidget`）位于主窗口的 Dock 停靠面�
 |------|--------------|------|
 | `da_log.log` | `%APPDATA%\DAWorkBench\log\da_log.log` | C++ 主程序当前日志（最新一次运行） |
 | `da_log.1.log` ~ `da_log.5.log` | 同上目录 | 轮转历史日志（rotating 模式，默认单文件 10MB，保留 5 个） |
-| `da_pyscript.log` | 同上目录 | 嵌入式 Python 脚本输出（工作流节点执行、agent_runner.py 等） |
+| `slow.log` | 同上目录 | 慢日志（超阈值操作/事件聚合/主线程卡顿，仅慢日志编译期开启时创建，见[慢日志章节](#慢日志slow-log)） |
+| `da_pyscript.log` | 同上目录 | 嵌入式 Python 脚本输出（工作流节点执行、agent_runner.py 等）；Python 侧慢日志记录也写在这里 |
 | `dawork-config.xml` | `%APPDATA%\DAWorkBench\config\` | DAAppConfig XML 配置（非日志，但常用于诊断持久化问题） |
 | `agent-config.json` | `%APPDATA%\DAWorkBench\config\` | Agent 配置（LLM 连接/运行参数/子 agent/权限标量，分组稀疏 JSON），api_key 为 DPAPI 加密的 base64 字符串；旧版 `agent-config.ini` 首次启动自动迁移并改名 `.bak` |
 | `recent-files.ini` | `%APPDATA%\DAWorkBench\config\` | 最近打开文件列表，QSettings IniFormat |
@@ -316,6 +445,7 @@ UI 日志窗口（`DAMessageLogViewWidget`）位于主窗口的 Dock 停靠面�
 | 工作流节点执行报错 | `da_pyscript.log` + `da_log.log` | `DAPyWorkFlow` / `NodeDef` / `Traceback` |
 | Agent 对话无响应/报错 | `da_log.log` → `da_pyscript.log` | `DAAgentBridge` / `Agent stderr` / `agent_runner` |
 | 设置不持久化 | `da_log.log` + INI/XML | 相关模块的 `apply` / `saveConfig` 诊断日志；Agent 配置查 `agent-config.json`（旧版残留查 `agent-config.ini.bak`）；最近文件查 `recent-files.ini`；DAAppConfig 查 `dawork-config.xml`；旧版注册表残留查 `reg query "HKCU\Software\DA\DAWorkBench"` |
+| 界面卡顿/操作慢 | `slow.log`（慢日志编译期开启时） | `[slow]` / `tag=<模块前缀>` / `mainloop.stall`；分析方法见[慢日志章节](#慢日志slow-log) |
 | 崩溃转储 | `dumps/dump*.dmp` + `.sysinfo` | dump 文件需用 WinDbg/VS 解析，`.sysinfo` 是文本可直读 |
 
 ### 注意事项
@@ -399,10 +529,15 @@ daInfo << tr("Project saved successfully, path: %1").arg(path);  // cn:工程保
 | 文件 | 说明 |
 |------|------|
 | `src/DAMessageHandler/DALogger.h` | DALogger 单例类声明 |
-| `src/DAMessageHandler/DALogCategory.h` | DA_USER category + 便捷宏 |
+| `src/DAMessageHandler/DALogCategory.h` | DA_USER/DA_SLOW category + 便捷宏 |
+| `src/DAMessageHandler/DALog.h` | 聚合头（含 DASlowLog.h），埋点方唯一需要包含的头 |
+| `src/DAMessageHandler/DASlowLog.h/.cpp` | 慢日志核心：埋点宏、作用域计时、阈值配置、计数器聚合 |
 | `src/DAMessageHandler/DAMessageLogQueue.h` | 线程安全日志队列 |
 | `src/DAMessageHandler/DAMessageLogSink.h` | spdlog 自定义 sink |
 | `src/DAMessageHandler/DAMessageLogItem.h` | 日志数据结构 |
 | `src/DAGui/DAMessageLogViewWidget.h` | UI 日志窗口 |
 | `src/DAGui/Models/DAMessageLogsModel.h` | 日志 TableModel |
+| `src/APP/DAApplication.h/.cpp` | 应用类：事件循环计时（notify 重写）+ 聚合定时器 + 心跳 |
+| `src/APP/DASlowLogWatchdog.h/.cpp` | 主线程卡顿看门狗 |
+| `src/PyScripts/DAWorkbench/DAPyBase/da_logger.py` | Python 侧 `@log_function_call(slow=True)` 慢调用装饰器 |
 | `src/APP/main.cpp` | DALogger 初始化示例 |
