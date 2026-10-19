@@ -419,17 +419,21 @@ void DASlowLogTest::testFileRouting()
 #endif
     DA::DALogger::instance().flush();
 
-    const QString slowContent = readFileAll(slowLog);
     const QString mainContent = readFileAll(mainLog);
+#if defined(DA_ENABLE_SLOW_LOG)
+    const QString slowContent = readFileAll(slowLog);
     QVERIFY2(slowContent.contains("tag=test.route.direct"),
              qPrintable(QStringLiteral("slow.log missing direct record:\n%1").arg(slowContent)));
-#if defined(DA_ENABLE_SLOW_LOG)
     QVERIFY2(slowContent.contains("tag=test.route.scope"),
              qPrintable(QStringLiteral("slow.log missing scope record:\n%1").arg(slowContent)));
-#endif
     // 慢日志文件不含业务/系统日志
     QVERIFY(!slowContent.contains("business line"));
     QVERIFY(!slowContent.contains("system line"));
+#else
+    // 编译期关闭：不创建慢日志 logger，slow.log 不应存在，daworkbench.slow 消息被丢弃
+    Q_UNUSED(slowLog)
+    QVERIFY2(!QFile::exists(slowLog), "slow.log must not be created when DA_ENABLE_SLOW_LOG is off");
+#endif
     // 主日志不含慢日志
     QVERIFY2(mainContent.contains("business line for routing test"),
              qPrintable(QStringLiteral("da_log.log missing business record:\n%1").arg(mainContent)));

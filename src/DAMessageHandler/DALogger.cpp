@@ -174,7 +174,11 @@ void DALogger::PrivateData::buildLoggers(const std::vector< spdlog::sink_ptr >& 
     // 慢日志 logger：只挂独立的 rotating_file_sink（slow.log），不挂控制台与 UI sink，
     // 共用现有 spdlog 线程池；级别固定 trace、格式与主日志一致，不受 setLevel/setPattern 影响。
     // flush_on(warn)：慢日志一律以 qCWarning(DA_SLOW) 输出，每条尽快刷盘，降低崩溃丢尾风险。
-    // 创建失败（如目录不可写）时保持为空，dispatchMessage 会直接丢弃慢日志，不污染业务/系统日志。
+    // 仅编译期开关打开时创建：关闭构建（发布版）不生成 slow.log（零残留验收），
+    // 此时 mSlowLogger 为空，dispatchMessage 直接丢弃 daworkbench.slow 消息，
+    // 不落回系统日志，避免把高频诊断混进普通日志。
+    // 创建失败（如目录不可写）时同样保持为空。
+#if defined(DA_ENABLE_SLOW_LOG)
     if (!slowLogFile.isEmpty()) {
         try {
 #ifdef SPDLOG_WCHAR_FILENAMES
@@ -197,6 +201,11 @@ void DALogger::PrivateData::buildLoggers(const std::vector< spdlog::sink_ptr >& 
                      e.what());
         }
     }
+#else
+    Q_UNUSED(slowLogFile);
+    Q_UNUSED(slowMaxSize);
+    Q_UNUSED(slowMaxFiles);
+#endif
 
     spdlog::set_default_logger(mLogger);
     spdlog::flush_every(std::chrono::seconds(flushIntervalSec));
