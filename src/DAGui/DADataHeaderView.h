@@ -81,6 +81,14 @@ public:
 
     // 行头宽拖拽的最小宽度（像素）
     static int minimumRowHeaderWidth();
+    // 行头宽拖拽热区宽度（像素：vertical 实例右缘与角格右缘共用同一口径）
+    static int rowHeaderResizeHotZoneWidth();
+    // 段边界拖拽热区宽度（像素：列宽/行高边界两侧各这么宽，Excel 式手感）
+    static int sectionResizeHotZoneWidth();
+    // 行头宽直接设值（只 setFixedWidth 不发信号；角格拖拽移动期用）
+    void setRowHeaderWidthDirect(int width);
+    // 行头宽落库（发 rowHeaderWidthChanged；拖拽释放时调）
+    void commitRowHeaderWidth();
 
     // 设置多列排序规格（列逻辑索引+方向，顺序即优先级；002 排序角标绘制）：
     // 规格中的列在右端画升/降箭头，多列时各列左上角画序号角标（1、2…）；
@@ -97,6 +105,11 @@ Q_SIGNALS:
     void columnViewActionRequested(int logicalIndex, DA::DADataHeaderView::ColumnViewAction action);
     // 行头宽度拖拽结束（仅 vertical 实例发射，页面据此写视图状态）
     void rowHeaderWidthChanged(int width);
+    // 行边界拖拽改统一行高结束（仅 vertical 实例发射；滑动窗下行高按单值语义持久化，
+    // 页面据此写视图状态并套到各窗格）
+    void rowHeightChanged(int height);
+    // 水平表头底边拖拽改表头高结束（仅 horizontal 实例发射；页面据此写视图状态并套到各窗格）
+    void horizontalHeaderHeightChanged(int height);
 
 protected:
     void mousePressEvent(QMouseEvent* event) override;
@@ -104,12 +117,30 @@ protected:
     void mouseReleaseEvent(QMouseEvent* event) override;
     void leaveEvent(QEvent* event) override;
     void contextMenuEvent(QContextMenuEvent* event) override;
-    // 排序角标绘制（仅水平实例）：默认绘制之上叠加右端方向箭头与左上角多列序号
+    // 排序角标/计算列 ƒx 角标绘制（仅水平实例）：基类 paintSection 之上叠加右端方向
+    // 箭头与左上角多列序号。基类调用必须 save/restore 包裹：QCommonStyle CE_Header
+    // 收尾会把裁剪恢复成「空区域」（启用裁剪+空区域=全裁掉），Qt 5.15 的
+    // QHeaderView::paintSection 不做 save/restore，污染态会吞掉之后的全部直接绘制
+    // （实测排序箭头/序号角标/ƒx 角标不显示的根因）
     void paintSection(QPainter* painter, const QRect& rect, int logicalIndex) const override;
 
 private:
+    // 自定义段边界拖拽类别（列宽/统一行高/水平表头高；None=未拖拽）
+    enum class ResizeKind
+    {
+        None,
+        ColumnWidth,
+        RowHeight,
+        HeaderHeight
+    };
     // vertical 实例右缘行头宽拖拽热区（8px）判定
     bool isInRowHeaderResizeHotZone(const QPoint& pos) const;
+    // horizontal 实例底边表头高拖拽热区判定
+    bool isInHeaderHeightHotZone(const QPoint& pos) const;
+    // 段「尾端边界」热区命中：返回该段 logical（列宽=右边界、行高=下边界），未命中 -1
+    int sectionEndBoundaryAt(const QPoint& pos) const;
+    // 热区光标反馈（viewport 上管理：列边界/行头宽=SplitH，行边界/表头高=SplitV，其余复位）
+    void updateHotZoneCursor(const QPoint& pos);
     // 恢复热区光标
     void restoreHotZoneCursor();
     // 该列是否允许弹出列头菜单（数据边界判定，保持迁移前行为）
@@ -117,6 +148,8 @@ private:
 
     // 计算列 ƒx 角标状态查询（logicalIndex → 状态色）；非计算列返回无效 QColor
     QColor computedColumnBadgeColor(int logicalIndex) const;
+    // 单段角标叠加绘制（排序方向箭头 + 多列序号角标 + 计算列 ƒx 角标）
+    void paintSectionOverlays(QPainter* painter, const QRect& rect, int logicalIndex) const;
 
     DATableComputedColumnStore* mComputedStore { nullptr };  ///< 计算列子存储（非拥有，004 T1.23）
     int mPressedLogicalIndex { -1 };   ///< 左键按下的 section（释放时同段且未拖动才发 clickedWithModifiers）
@@ -125,6 +158,11 @@ private:
     bool mRowHeaderResizing { false }; ///< 正在拖拽行头宽
     int mResizeStartX { 0 };           ///< 拖拽起点 x
     int mResizeStartWidth { 0 };       ///< 拖拽起点宽度
+    // 自定义段边界拖拽状态（按下热区起、移动应用、释放落库）
+    ResizeKind mResizeKind { ResizeKind::None };  ///< 当前拖拽类别
+    int mResizeLogical { -1 };                    ///< 拖拽的段 logical（ColumnWidth/RowHeight）
+    int mResizeStartPos { 0 };                    ///< 拖拽起点全局坐标（沿表头轴向）
+    int mResizeStartSize { 0 };                   ///< 拖拽起点尺寸（宽/高像素）
     QVector< QPair< int, Qt::SortOrder > > mSortSpec;  ///< 多列排序规格（列逻辑索引+方向，顺序即优先级；不持久化 R13）
 };
 }  // end of namespace DA
