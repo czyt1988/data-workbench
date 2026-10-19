@@ -586,8 +586,9 @@ def my_function():
     ui.addCriticalLogMessage("错误消息", False)
 ```
 
-!!!danger 后台线程中必须传 `showInStatusBar=False`
-    Python 后台线程中调用日志方法时，第二个参数必须为 `False`，否则会触发 GUI 操作导致崩溃。`False` 表示仅走 spdlog 通道（线程安全），不触碰状态栏等 GUI 控件。
+> **🚫 后台线程中必须传 `showInStatusBar=False`**
+>
+> Python 后台线程中调用日志方法时，第二个参数必须为 `False`，否则会触发 GUI 操作导致崩溃。`False` 表示仅走 spdlog 通道（线程安全），不触碰状态栏等 GUI 控件。
 
 ### F2. 完整的后台线程日志封装
 
@@ -648,11 +649,13 @@ bin_Release_qtX.Y.Z_MSVC_x64/bin/
 
 ### G3. 修改 Python 脚本后的生效方式
 
-!!!danger 修改 .py 文件后必须重新部署并重启应用
-    DAWorkbench 嵌入式 Python 在启动时加载脚本到内存，修改 `.py` 文件后：
-    1. **重新运行 CMake configure**（触发 `file(COPY)` 复制到 bin 目录），或手动复制 `.py` 到 `bin/PyScripts/MyPackage/`
-    2. **重启 DAWorkbench 主程序**（Python 解释器重新初始化）
-    3. 使用 `DAPyModule::reload()` 可在运行时重新加载模块，但仅对已导入的模块有效
+> **🚫 修改 .py 文件后必须重新部署并重启应用**
+>
+> DAWorkbench 嵌入式 Python 在启动时加载脚本到内存，修改 `.py` 文件后：
+>
+> 1. **重新运行 CMake configure**（触发 `file(COPY)` 复制到 bin 目录），或手动复制 `.py` 到 `bin/PyScripts/MyPackage/`
+> 2. **重启 DAWorkbench 主程序**（Python 解释器重新初始化）
+> 3. 使用 `DAPyModule::reload()` 可在运行时重新加载模块，但仅对已导入的模块有效
 
 ## 完整调用链示例
 

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px"
+	 width="200px" height="200px" viewBox="0 0 200 200" xml:space="preserve">
+	<!-- 合并列：左侧三个浅蓝源列 → 主蓝箭头 → 右侧结果列（白底灰框 + 浅灰数据行）。
+	     与 split-column.svg 镜像对称。官方色板：轮廓 #727272（中灰）、结果列底 #FFFFFF、
+	     数据行 #B2B2B2（浅灰）、箭头 #5280C1（主蓝，主操作）、源列 #BDCDE8（浅蓝）；
+	     禁渐变/阴影/<text>（DESIGN.md §4） -->
+	<rect x="14" y="30" width="14" height="140" fill="#BDCDE8" stroke="#727272" stroke-width="5"/>
+	<rect x="34" y="30" width="14" height="140" fill="#BDCDE8" stroke="#727272" stroke-width="5"/>
+	<rect x="54" y="30" width="14" height="140" fill="#BDCDE8" stroke="#727272" stroke-width="5"/>
+	<path d="M 80 100 H 108" fill="none" stroke="#5280C1" stroke-width="10" stroke-linecap="butt"/>
+	<polygon points="106,86 106,114 128,100" fill="#5280C1"/>
+	<rect x="140" y="30" width="46" height="140" fill="#FFFFFF"/>
+	<rect x="151" y="52" width="24" height="10" fill="#B2B2B2"/>
+	<rect x="151" y="78" width="24" height="10" fill="#B2B2B2"/>
+	<rect x="151" y="104" width="24" height="10" fill="#B2B2B2"/>
+	<rect x="151" y="130" width="24" height="10" fill="#B2B2B2"/>
+	<rect x="140" y="30" width="46" height="140" fill="none" stroke="#727272" stroke-width="8"/>
+</svg>

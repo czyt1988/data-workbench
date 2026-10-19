@@ -1,11 +1,15 @@
 #include "DADataTableModel.h"
 #include "Commands/DACommandsDataFrame.h"
 #include "DATableStyleManager.h"
+#include "DATableComputedColumnStore.h"
 #include "DATableDataSource.h"
 #include "DATableDataBlock.h"
 #include <QPointer>
+#include <QColor>
 namespace DA
 {
+// 计算列列头浅蓝底色（R9：表示"非原始数据"，官方色板 #BDCDE8）
+static const QColor c_computedColumnHeaderColor(0xBD, 0xCD, 0xE8);
 
 // 复合表头（QVariantList，如MultiIndex）转为"a | b"文本
 static QVariant joinCompositeIndex(const QVariant& res)
@@ -51,6 +55,7 @@ public:
 public:
     DAData data;
     DATableStyleManager* styleManager { nullptr };  ///< 用于列显示格式查询，非拥有
+    const DATableComputedColumnStore* computedStore { nullptr };  ///< 计算列子存储（表头底色/tooltip 查询，非拥有，004 T1.23）
     QUndoStack* undoStack { nullptr };
     int extraColumn { 1 };  ///< 扩展的列数，也就是会多显示出externColumn个空白的列，一般多显示出来的是为了用户添加数据用的
     int extraRow { 1 };  ///< 扩展的行数，也就是会多显示出externRow个空白的行，一般多显示出来的是为了用户添加数据用的
@@ -225,7 +230,7 @@ int DADataTableModel::columnCount(const QModelIndex& parent) const
 QVariant DADataTableModel::actualHeaderData(int actualSection, Qt::Orientation orientation, int role) const
 {
     DA_DC(d);
-    if ((role != Qt::DisplayRole && role != Qt::ToolTipRole) || d->isNone()) {
+    if ((role != Qt::DisplayRole && role != Qt::ToolTipRole && role != Qt::BackgroundRole) || d->isNone()) {
         return QAbstractTableModel::headerData(actualSection, orientation, role);
     }
     // tooltips 和 display
@@ -234,8 +239,31 @@ QVariant DADataTableModel::actualHeaderData(int actualSection, Qt::Orientation o
         if (actualSection >= d->getDataColumnCount()) {
             return QVariant();
         }
-        return d->getDataframeColumnName(actualSection);
+        const QString colName = d->getDataframeColumnName(actualSection);
+        // 计算列列头（004 T1.23 R9）：浅蓝底色（BackgroundRole 经 QHeaderView::paintSection
+        // 的 opt.backgroundBrush 生效）+ 公式/状态 tooltip；ƒx 角标在 DADataHeaderView 绘制
+        if (d->computedStore) {
+            DATableComputedColumnStore::Entry entry;
+            if (d->computedStore->entryOf(colName, entry)) {
+                if (role == Qt::BackgroundRole) {
+                    return c_computedColumnHeaderColor;
+                }
+                if (role == Qt::ToolTipRole) {
+                    return QStringLiteral("%1: %2\n%3: %4")
+                        .arg(tr("Formula"), entry.def.expr, tr("State"), DATableComputedColumnStore::stateText(entry.state));  // cn:公式 / 状态
+                }
+            } else if (role == Qt::BackgroundRole) {
+                return QVariant();
+            }
+        } else if (role == Qt::BackgroundRole) {
+            return QVariant();
+        }
+        return colName;
     } else {
+        if (role == Qt::BackgroundRole) {
+            // 行头不参与计算列底色（004 R9 只染列头）
+            return QVariant();
+        }
         if (actualSection >= d->getDataRowCount()) {
             return QVariant();
         }
@@ -337,6 +365,8 @@ bool DADataTableModel::setActualData(int actualRow, int actualColumn, const QVar
             bool r = df.iat(actualRow, actualColumn, value);
             if (r) {
                 d->blockCache.clear();
+                // 值变更精确通知（003：条件格式列统计失效挂点，与 dataChanged 区分）
+                Q_EMIT cellValueChanged(actualRow, actualColumn);
             }
             return r;
         }
@@ -346,6 +376,8 @@ bool DADataTableModel::setActualData(int actualRow, int actualColumn, const QVar
         cmd_iat->setCallBack([ modle, actualRow, actualColumn ]() {
             if (modle) {
                 modle->notifyDataChanged(actualRow, actualColumn);
+                // exec/undo 都触发：值变更精确通知（003 列统计失效挂点）
+                Q_EMIT modle->cellValueChanged(actualRow, actualColumn);
             }
         });
         if (!cmd_iat->exec()) {
@@ -372,6 +404,11 @@ void DADataTableModel::setStyleManager(DATableStyleManager* mgr)
     d_ptr->styleManager = mgr;
 }
 
+void DADataTableModel::setComputedColumnStore(DATableComputedColumnStore* store)
+{
+    d_ptr->computedStore = store;
+}
+
 DAData DADataTableModel::getData() const
 {
     return d_ptr->data;
@@ -383,25 +420,19 @@ void DADataTableModel::setUseCacheMode(bool on)
     refreshData();
 }
 
+/**
+ * @brief 设置滑动窗起始行
+ *
+ * 夹取范围由基类按 maxCacheWindowStartRow() 统一处理，这里只负责预取数据块。
+ * @param startRow 期望的窗口起始行（数据源绝对行）
+ */
 void DADataTableModel::setCacheWindowStartRow(int startRow)
 {
     DA_D(d);
-
-    // startRow限制在指定的最小值和最大值之间。它能够确保startRow不会超出给定的范围
-    const int dr        = d->getDataRowCount();
-    const int cacheSize = getCacheWindowSize();
-    if (dr <= cacheSize) {
-        startRow = 0;
-    } else {
-        startRow = qBound(0, startRow, dr - cacheSize + d->extraRow);
-        if (startRow >= dr) {
-            startRow = dr - 1;
-        }
-    }
     DAAbstractCacheWindowTableModel::setCacheWindowStartRow(startRow);
     // 表格数据源路径：预取新窗口起始块，避免重绘时逐cell触发取数
-    if (d->tableSource && dr > 0) {
-        d->ensureBlockCached(startRow);
+    if (d->tableSource && d->getDataRowCount() > 0) {
+        d->ensureBlockCached(getCacheWindowStartRow());
     }
 }
 
@@ -421,6 +452,21 @@ void DADataTableModel::refreshData()
         setCacheWindowStartRow(0);  // 滑动窗口到第一行
     }
     endResetModel();
+}
+
+/**
+ * @brief 表头数据变更通知入口
+ *
+ * 发 headerDataChanged 信号让表头视图重取表头数据。列改名等命令在 exec/undo 后
+ * 调用本函数，替代旧的「命令持有 QHeaderView* 并直接调其 headerDataChanged 槽」写法，
+ * 使命令不再耦合具体表头部件（表头可被 DADataHeaderView 等子类替换）。
+ * @param orientation 方向
+ * @param first 起始段号
+ * @param last 结束段号
+ */
+void DADataTableModel::notifyHeaderDataChanged(Qt::Orientation orientation, int first, int last)
+{
+    Q_EMIT headerDataChanged(orientation, first, last);
 }
 
 /**

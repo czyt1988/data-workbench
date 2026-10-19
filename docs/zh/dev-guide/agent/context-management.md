@@ -1,12 +1,12 @@
 # 上下文管理
 
-Agent 在多轮对话中需要管理 LLM 的上下文窗口，避免对话历史超出模型的最大 token 限制。本项目采用多层防御策略：工具结果截断 → 主动上下文压缩 → 反应式溢出恢复，确保长对话不会因上下文溢出而中断。
+Agent 在多轮对话中需要管理大语言模型（LLM）的上下文窗口，避免对话历史超出模型的最大 token 限制。本项目采用多层防御策略：工具结果截断 → 主动上下文压缩 → 反应式溢出恢复，确保长对话不会因上下文溢出而中断。
 
 ---
 
 ## 设计理念
 
-上下文管理采用"宁可早压缩，不要晚溢出"的策略，通过三层防线逐层兜底：
+上下文管理采用「宁可早压缩，不要晚溢出」的策略，三层防线依次生效：
 
 ```mermaid
 graph TD
@@ -54,8 +54,9 @@ graph TD
 - 每条消息额外加约 4 token（角色开销）
 - tool_call 参数额外加开销
 
-!!! note "估算只用于提前触发"
-    Token 估算故意偏向早触发（宁可早压缩不要晚溢出），不用于"跳过压缩"判断。精确的 token 用量由 LLM 返回的 `usage_metadata` 提供，通过 `usage` 协议消息回传。
+> **📝 估算只用于提前触发**
+>
+> Token 估算故意偏向早触发（宁可早压缩不要晚溢出），不用于「跳过压缩」判断。精确的 token 用量由 LLM 返回的 `usage_metadata` 提供，通过 `usage` 协议消息回传。
 
 ---
 
@@ -71,7 +72,7 @@ graph TD
     + 占位提示: "[结果已截断，原长度 X 字符。如需完整数据，请使用更具体的查询参数重新调用工具。]"
 ```
 
-截断后的内容直接进入 state 的 `ToolMessage`，后续轮次自动受益——不需要在每轮重新截断。
+截断后的内容直接进入 state 的 `ToolMessage`，后续轮次自动受益，不需要在每轮重新截断。
 
 ### 配置参数
 
@@ -84,7 +85,7 @@ graph TD
 
 ## 上下文压缩
 
-`ContextCompactor` 是上下文管理的核心组件，负责在对话历史过长时进行智能压缩。
+`ContextCompactor` 是上下文管理的核心组件，负责在对话历史过长时压缩上下文。
 
 ### 压缩策略：head/tail + 中间摘要
 
@@ -117,7 +118,7 @@ graph TB
 
 #### middle（中间摘要）
 
-head 和 tail 之间的所有消息，由 LLM 生成第一人称"交接说明"摘要（最大 2000 token 输出）。摘要使用不绑定工具的 `ChatOpenAI.ainvoke()` 调用（摘要不需要工具调用）。
+head 和 tail 之间的所有消息，由 LLM 生成第一人称「交接说明」摘要（最大 2000 token 输出）。摘要使用不绑定工具的 `ChatOpenAI.ainvoke()` 调用（摘要不需要工具调用）。
 
 摘要消息以 `HumanMessage` 形式构建，附带 `additional_kwargs={"da_type": "summary"}` 标记，用于前向兼容。
 
@@ -163,7 +164,7 @@ def compact(self, messages):
 摘要成功一次: _consecutive_failures 重置为 0
 ```
 
-熔断后，`compact_node` 返回空消息列表（不压缩），agent 继续使用未压缩的上下文。这是"尽力而为"策略——如果摘要服务不可用，宁可带着风险继续对话，也不要因压缩失败而阻塞。
+熔断后，`compact_node` 返回空消息列表（不压缩），agent 继续使用未压缩的上下文。这是「尽力而为」策略：摘要服务不可用时，宁可带着风险继续对话，也不因压缩失败而阻塞。
 
 ---
 
@@ -183,8 +184,9 @@ graph TD
     G --> H
 ```
 
-!!! note "溢出恢复会写回 state"
-    `agent_node` 捕获溢出错误后调用 `force_compact()`，压缩产物既用于本次 LLM 重试，其 `RemoveMessage` + summary 更新也随 final_message 一起写回 LangGraph state，打断「400 → force_compact → 400」循环。
+> **📝 溢出恢复会写回 state**
+>
+> `agent_node` 捕获溢出错误后调用 `force_compact()`，压缩产物既用于本次 LLM 重试，其 `RemoveMessage` + summary 更新也随 final_message 一起写回 LangGraph state，打断「400 → force_compact → 400」循环。
 
 ### 溢出错误检测
 
@@ -193,12 +195,13 @@ graph TD
 - OpenAI `BadRequestError`（含 "context length" / "maximum context" 等关键词）
 - litellm `ContextWindowExceededError`
 
-!!! warning "关键词表禁止加入通用包装词"
-    关键词表在 `error_classifier.py`（`_CONTEXT_OVERFLOW_KEYWORDS`）与 `context_manager.py`（`is_context_overflow_error`）两处同步维护，只允许**特异性**短语。litellm 对所有上游 400 都包装 "The request is invalid" 前缀——此类通用词一旦加入，悬空 tool_calls 等无关的 `BadRequestError` 会被误判为溢出，UI 显示误导性的「上下文窗口超限且压缩失败」。
+> **⚠️ 关键词表禁止加入通用包装词**
+>
+> 关键词表在 `error_classifier.py`（`_CONTEXT_OVERFLOW_KEYWORDS`）与 `context_manager.py`（`is_context_overflow_error`）两处同步维护，只允许**特异性**短语。litellm 对所有上游 400 都包装 "The request is invalid" 前缀，此类通用词一旦加入，悬空 tool_calls 等无关的 `BadRequestError` 会被误判为溢出，UI 显示误导性的「上下文窗口超限且压缩失败」。
 
 ### head/tail 分割的配对完整性
 
-`_find_head_end()` 保证 head 以完整轮次结尾：尾部回退不仅剥离 `ToolMessage`，还会剥离带 `tool_calls` 的 `AIMessage`——否则其配对 ToolMessage 落入 middle 被摘要替换后，head + summary 序列违反 API 配对约束（assistant 的 tool_calls 必须后随对应 tool 消息），下次请求直接 400。
+`_find_head_end()` 保证 head 以完整轮次结尾：尾部回退不仅剥离 `ToolMessage`，还会剥离带 `tool_calls` 的 `AIMessage`；否则其配对 ToolMessage 落入 middle 被摘要替换后，head + summary 序列违反 API 配对约束（assistant 的 tool_calls 必须后随对应 tool 消息），下次请求直接 400。
 
 此外 `agent_node` 在每次调用 LLM 前会执行 `repair_dangling_tool_calls()`：为检查点中悬空的 tool_call（工具执行被 Stop/异常中断的残留）按位置插入占位 ToolMessage，从源头避免配对类 400。
 
@@ -245,7 +248,7 @@ async def compact_node(state):
 
 ## 配置参数汇总
 
-所有上下文管理参数通过 `agent-config.ini` 配置，在 `init` 消息中下发给 Python 侧：
+所有上下文管理参数保存在 `agent-config.json` 中（旧 `agent-config.ini` 首次启动时迁移），在 `init` 消息中下发给 Python 侧：
 
 | 参数 | 配置键 | 默认值 | 说明 |
 |------|--------|--------|------|
@@ -260,14 +263,15 @@ async def compact_node(state):
 | 无活动看门狗 | `inactivity_timeout_sec` | 240 | 子进程无活动超时（秒），触发崩溃恢复 |
 | 最大重启次数 | `max_subprocess_restarts` | 3 | 崩溃恢复最大重启次数 |
 
-!!! note "上下文压缩不重置会话累计 token"
-    自 commit `44e11eb` 起，token 统计改为会话累计（`mCumulativeIn/Out/TotalTokens`），上下文压缩（`compact`）不再清零这些累计值。UI 展示的是会话级累计用量。
+> **📝 上下文压缩不重置会话累计 token**
+>
+> 自 commit `44e11eb` 起，token 统计改为会话累计（`mCumulativeIn/Out/TotalTokens`），上下文压缩（`compact`）不再清零这些累计值。UI 展示的是会话级累计用量。
 
 ---
 
 ## 参见
 
-- [架构设计](./architecture.md) — compact_node 在 LangGraph 中的位置
-- [通信协议](./protocol.md) — usage 消息的协议规范
-- `src/PyScripts/DAWorkbench/agent/context_manager.py` — 上下文管理实现
-- `src/PyScripts/DAWorkbench/agent/agent_runner.py` — compact_node 和 agent_node 实现
+- [架构设计](./architecture.md)：compact_node 在 LangGraph 中的位置
+- [通信协议](./protocol.md)：usage 消息的协议规范
+- `src/PyScripts/DAWorkbench/agent/context_manager.py`：上下文管理实现
+- `src/PyScripts/DAWorkbench/agent/agent_runner.py`：compact_node 和 agent_node 实现

@@ -380,7 +380,7 @@ QString DADialogAgentSessionManager::formatTimestamp(const QString& iso)
  * @brief 状态键 → 显示文本与语义色
  * @param stateKey listSessionsForUI 附带的运行态键
  * @param text 输出：显示文本
- * @param color 输出：语义色（对齐 icon-ui-design-guide 色板：绿=正常进行、金黄=需用户动作、橙红=错误）
+ * @param color 输出：语义色（对齐仓库根目录 DESIGN.md 色板：绿=正常进行、金黄=需用户动作、橙红=错误）
  * @return 是否为非空闲状态（空闲返回 false，text/color 不置值）
  */
 bool DADialogAgentSessionManager::stateDisplay(const QString& stateKey, QString& text, QColor& color)

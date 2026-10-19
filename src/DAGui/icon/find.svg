@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px"
+	 width="200px" height="200px" viewBox="0 0 200 200" xml:space="preserve">
+<!-- 查找：放大镜（主蓝轮廓 + 白内芯 + 斜柄），200x200 通用功能图标，官方色板 #5280C1 -->
+<path fill="#5280C1" d="M24,82 a58,58 0 1,0 116,0 a58,58 0 1,0 -116,0 Z"/>
+<path fill="#FFFFFF" d="M42,82 a40,40 0 1,0 80,0 a40,40 0 1,0 -80,0 Z"/>
+<path fill="#5280C1" d="M112,126 L126,112 L186,172 L172,186 Z"/>
+</svg>

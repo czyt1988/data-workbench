@@ -1,6 +1,6 @@
 # 工作流场景操作指南
 
-本文档详细介绍 DAPyWorkFlow 的场景可视化系统，帮助插件开发者理解如何使用 Qt Graphics View 场景来渲染和交互 Python 工作流节点。
+本文档介绍 DAPyWorkFlow 的场景可视化系统：如何用 Qt Graphics View 场景渲染和交互 Python 工作流节点。
 
 ## 导航
 
@@ -15,9 +15,9 @@
 
 ## 概述
 
-DAPyWorkFlowScene 是 Python 工作流可视化的核心场景管理类，继承自 DAGraphicsScene，负责在 Qt Graphics View 框架中渲染 Python 工作流节点及其连接关系。与旧版 DAWorkFlowGraphicsScene 不同，新场景专为 Python-first 架构设计，通过 DAPyNode 代理对象与 Python 层的节点实例进行双向通信。
+DAPyWorkFlowScene 是 Python 工作流可视化的核心场景管理类，继承自 DAGraphicsScene，负责在 Qt Graphics View 框架中渲染 Python 工作流节点及其连接关系。与旧版 DAWorkFlowGraphicsScene 不同，新场景专为 Python-first 架构设计，通过 DAPyNode 代理对象与 Python 层的节点实例双向通信。
 
-场景系统采用分层设计：
+场景系统分三层：
 
 - **场景层（DAPyWorkFlowScene）**：管理节点和连接线的生命周期，处理用户交互
 - **节点层（DAPyNodeGraphicsItem）**：渲染单个 Python 节点，支持多种可视化模板
@@ -46,7 +46,7 @@ flowchart TB
 
 ### DAPyWorkFlowScene 核心功能
 
-DAPyWorkFlowScene 继承自 DAGraphicsScene，提供完整的 Python 工作流场景管理能力。场景负责协调节点图元和连接线图元的创建、删除、选中状态管理，以及序列化操作。
+DAPyWorkFlowScene 继承自 DAGraphicsScene，负责协调节点图元和连接线图元的创建、删除、选中状态管理，以及序列化操作。
 
 #### 继承关系
 
@@ -123,7 +123,7 @@ QList<DAPyLinkGraphicsItem*> links = scene->getPyNodeLinkItems();
 
 ### DAPyNodeGraphicsItem 渲染系统
 
-DAPyNodeGraphicsItem 继承自 DAGraphicsResizeableItem，提供 Python 工作流节点的可视化渲染。支持两种渲染模板模式，可根据节点类型和用途选择最合适的展示方式。
+DAPyNodeGraphicsItem 继承自 DAGraphicsResizeableItem，负责 Python 工作流节点的可视化渲染。支持两种渲染模板模式，可按节点类型和用途选择。
 
 #### 继承关系
 
@@ -204,12 +204,14 @@ void paintBody(QPainter* painter,
 
 | 状态 | DAPyNodeState | 默认颜色 | 视觉含义 |
 |------|---------------|----------|----------|
-| 空闲 | `Idle` | 灰色 | 节点等待执行 |
-| 等待 | `Waiting` | 黄色 | 节点等待上游数据 |
-| 运行中 | `Running` | 蓝色 | 节点正在执行 |
-| 成功 | `Success` | 绿色 | 节点执行成功 |
-| 错误 | `Error` | 红色 | 节点执行出错 |
-| 跳过 | `Skipped` | 橙色 | 节点被跳过执行 |
+| 空闲 | `Idle` | 无（`QColor()` 为无效颜色，不绘制装饰） | 节点等待执行 |
+| 等待 | `Waiting` | 黄色 `QColor(255, 255, 0, 100)` | 节点等待上游数据 |
+| 运行中 | `Running` | 绿色 `QColor(0, 255, 0, 100)` | 节点正在执行 |
+| 成功 | `Success` | 绿色 `QColor(0, 255, 0, 200)` | 节点执行成功 |
+| 错误 | `Error` | 红色 `QColor(255, 0, 0, 200)` | 节点执行出错 |
+| 跳过 | `Skipped` | 灰色 `QColor(128, 128, 128, 200)` | 节点被跳过执行 |
+
+颜色取自 `DAPyNodePalette::PrivateData` 构造函数里的默认值。运行中和成功都是绿色，靠 alpha 区分：运行中 alpha 为 100，成功为 200。这些颜色在 `DAPyNodeGraphicsItem::paintStateDecoration()` 中作为节点主体的 1 像素描边使用（画笔用状态颜色，画刷为 `Qt::NoBrush`），节点内部不填充；`Idle` 的颜色无效，该方法直接返回。
 
 状态颜色可通过 DAPyNodePalette 自定义：
 
@@ -255,7 +257,7 @@ connect(item, &DA::DAPyNodeGraphicsItem::nodeDoubleClicked,
 
 ### DAPyLinkGraphicsItem 连接系统
 
-DAPyLinkGraphicsItem 继承自 DAGraphicsLinkItem，负责绘制 Python 节点间的数据流向。支持数据流动画效果和连接验证功能。
+DAPyLinkGraphicsItem 继承自 DAGraphicsLinkItem，负责绘制 Python 节点间的数据流向。支持数据流动画和连接验证。
 
 #### 继承关系
 
@@ -291,7 +293,7 @@ classDiagram
 
 #### 数据流动画
 
-连接线支持数据流动画效果，直观展示数据传递过程：
+连接线支持数据流动画，用于展示数据传递过程：
 
 ```cpp
 // 启用数据流动画
@@ -308,17 +310,26 @@ bool isFlowing = linkItem->isDataFlowing();
 
 #### 连接验证
 
-`willCompleteLink()` 方法在连接完成前进行数据类型兼容性验证：
+`willCompleteLink()` 在连接完成前做校验，由 `DAGraphicsScene::endLink()` 调用。返回 `false` 时结束连线动作被跳过，临时连线不落地，连线模式保持，可以重新点击有效端口或右键取消。
 
 ```cpp
-// 重写验证方法检查数据类型
-virtual bool willCompleteLink() override {
-    // 检查源输出类型和目标输入类型是否兼容
-    QString outputType = getFromOutputType();
-    QString inputType = getToInputType();
-    return checkDataTypeCompatibility(outputType, inputType);
+// DAPyLinkGraphicsItem::willCompleteLink() 的校验内容
+bool DAPyLinkGraphicsItem::willCompleteLink()
+{
+    // 源节点或目标节点缺失时拒绝，避免产生孤立连接线
+    if (!d_ptr->mFromNode || !d_ptr->mToNode) {
+        return false;
+    }
+    // 输出端口名须存在于源节点的连接点列表，输入端口名须存在于目标节点的连接点列表
+    if (!outputFound || !inputFound) {
+        return false;
+    }
+    // 两端齐备即允许连接完成
+    return true;
 }
 ```
+
+这一步不比对端口的数据类型。`DAPyLinkGraphicsItem::checkDataTypeCompatibility()` 虽然实现了简化版类型兼容判断，但目前没有调用方，类型是否兼容由节点自身在执行阶段决定。
 
 #### 节点关联
 
@@ -413,8 +424,9 @@ DAPyWorkFlowSceneSerializer 负责 Python 工作流场景的 XML 序列化和反
 - **图元属性**：节点的可视化样式配置（`DAPyNodeStyle` 字段）
 - **连接线布局**：连接线的可视化路径和样式
 
-!!! note "工作流逻辑数据"
-    节点拓扑关系、参数值配置、连接关系等**工作流逻辑数据**由 `DAPyWorkFlowSerializer` 序列化到独立的 workflow-data.xml 中，与场景布局数据分开存储。
+> **📝 工作流逻辑数据**
+>
+> 节点拓扑关系、参数值配置、连接关系等**工作流逻辑数据**由 `DAPyWorkFlowSerializer` 序列化到独立的 workflow-data.xml 中，与场景布局数据分开存储。
 
 #### 使用示例
 
@@ -551,31 +563,36 @@ item->clearPaintCallback();
 
 ## 注意事项
 
-!!! warning "PIMPL 模式"
-    DAPyWorkFlowScene 及相关类使用 PIMPL 模式实现，相关宏定义见 DAGlobals.h：
-    - `DA_DECLARE_PRIVATE` - 声明私有数据指针
-    - `DA_D` - 获取私有数据指针
-    - `DA_DC` - 获取私有数据 const 指针
+> **⚠️ PIMPL 模式**
+>
+> DAPyWorkFlowScene 及相关类使用 PIMPL 模式实现，相关宏定义见 DAGlobals.h：
+> - `DA_DECLARE_PRIVATE` - 声明私有数据指针
+> - `DA_D` - 获取私有数据指针
+> - `DA_DC` - 获取私有数据 const 指针
 
-!!! warning "GIL 管理"
-    与 Python 层交互时需注意 GIL（全局解释器锁）管理。使用 DAPyGILGuard 确保线程安全：
-    ```cpp
-    {
-        DA::DAPyGILGuard gil;  // 获取 GIL
-        // 执行 Python 调用
-    }  // 自动释放 GIL
-    ```
+> **⚠️ GIL 管理**
+>
+> 与 Python 层交互时需注意 GIL（全局解释器锁）管理。使用 DAPyGILGuard 确保线程安全：
+> ```cpp
+> {
+>     DA::DAPyGILGuard gil;  // 获取 GIL
+>     // 执行 Python 调用
+> }  // 自动释放 GIL
+> ```
 
-!!! tip "状态同步"
-    Python 节点状态变更通过 DAPythonSignalHandler 异步通知 C++ 层。C++ 层通过 `pyNodeStateChanged` 信号接收状态更新，避免直接轮询。
+> **💡 状态同步**
+>
+> Python 节点状态变更通过 DAPythonSignalHandler 异步通知 C++ 层。C++ 层通过 `pyNodeStateChanged` 信号接收状态更新，避免直接轮询。
 
-!!! note "渲染模板选择"
-    选择渲染模板时需考虑节点用途：
-    - 通用数据处理节点推荐使用 `RenderDefaultTemplate`（通过 `DAPyNodeStyle` 自定义形状、图标和颜色）
-    - 需要复杂 UI 交互的节点使用 `RenderWidgetTemplate`
+> **📝 渲染模板选择**
+>
+> 选择渲染模板时需考虑节点用途：
+> - 通用数据处理节点推荐使用 `RenderDefaultTemplate`（通过 `DAPyNodeStyle` 自定义形状、图标和颜色）
+> - 需要复杂 UI 交互的节点使用 `RenderWidgetTemplate`
 
-!!! info "undo/redo 支持"
-    场景的添加/删除操作自动支持 undo/redo。使用带下划线后缀的方法（如 `createPyNode_`）可在 QUndoStack 中记录操作。
+> **ℹ️ undo/redo 支持**
+>
+> 场景的添加/删除操作自动支持 undo/redo。使用带下划线后缀的方法（如 `createPyNode_`）可在 QUndoStack 中记录操作。
 
 ## 参考资料
 

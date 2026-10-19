@@ -1,17 +1,6 @@
 # 构建说明
 
-本文档提供 DAWorkBench 项目的完整构建指南，涵盖从环境准备到最终验证的全流程。
-
-本文档详细说明 DAWorkBench 项目的构建流程，帮助开发者快速搭建开发环境并成功编译项目。
-
-## 主要功能特性
-
-**特性**
-
-- ✅ **跨平台支持**：支持 Windows、Linux 平台构建
-- ✅ **多Qt版本兼容**：同时支持 Qt 5.14+ 和 Qt 6.x
-- ✅ **模块化构建**：支持独立构建第三方库、主程序和插件
-- ✅ **自动依赖管理**：通过 git submodule 管理第三方依赖
+本文档说明 DAWorkBench 项目的构建流程，涵盖从环境准备到最终验证。
 
 ## 构建前置要求
 
@@ -21,7 +10,7 @@
 |------|----------|------|
 | CMake | ≥ 3.16 | 构建系统生成器 |
 | C++ 编译器 | C++17 兼容 | MSVC 2019+ / GCC 9+ / Clang 10+ |
-| Qt | 5.14+ 或 Qt 6 | 跨平台 UI 框架 |
+| Qt | 5.14+ 或 Qt 6 | 跨平台界面框架 |
 | Python | ≥ 3.7 | 数据处理后端 |
 | Ninja | 推荐 | 快速构建工具 |
 | Git | 最新版 | 版本控制和子模块管理 |
@@ -30,17 +19,18 @@
 
 | Qt 版本 | 支持状态 | 说明 |
 |---------|----------|------|
-| Qt 5.14+ | ✅ 支持 | 需手动处理部分兼容性问题 |
-| Qt 5.15 | ✅ 推荐 | Qt5 系列最稳定版本 |
-| Qt 6.x | ✅ 推荐 | 原生支持，推荐使用最新版本 |
+| Qt 5.14+ | 支持 | 需手动处理部分兼容性问题 |
+| Qt 5.15 | 推荐 | Qt5 系列最稳定版本 |
+| Qt 6.x | 推荐 | 原生支持，推荐使用最新版本 |
 
-!!! warning "Qt 路径指定方式因生成器而异"
-    Qt 路径的指定方式取决于 CMake 生成器：
-
-    - **Visual Studio 生成器**：通过 `-DCMAKE_PREFIX_PATH` 指定 Qt 安装路径（如 `C:/Qt/6.7.3/msvc2019_64`），**不需要**工具链文件。VS 生成器会自动检测 MSVC 编译器与 Windows SDK。
-    - **Ninja 生成器**：通过 `-DCMAKE_TOOLCHAIN_FILE` 指定 Qt 工具链文件（`qt.toolchain.cmake`），且**必须在 Developer Command Prompt (CMD) 中运行**，否则 PowerShell 无法注入 MSVC 环境变量，出现 `fatal error C1083`。
-
-    详见 [生成器选择](#命令行构建步骤windows)。
+> **⚠️ Qt 路径指定方式因生成器而异**
+>
+> Qt 路径的指定方式取决于 CMake 生成器：
+>
+> - **Visual Studio 生成器**：通过 `-DCMAKE_PREFIX_PATH` 指定 Qt 安装路径（如 `C:/Qt/6.7.3/msvc2019_64`），**不需要**工具链文件。VS 生成器会自动检测 MSVC 编译器与 Windows SDK。
+> - **Ninja 生成器**：通过 `-DCMAKE_TOOLCHAIN_FILE` 指定 Qt 工具链文件（`qt.toolchain.cmake`），且**必须在 Developer Command Prompt (CMD) 中运行**，否则 PowerShell 无法注入 MSVC 环境变量，出现 `fatal error C1083`。
+>
+> 详见 [生成器选择](#命令行构建步骤windows)。
 
 CMake 通过 `<Qt 安装路径>/<版本>/<编译器>/lib/cmake/` 下的 CMake 配置文件（即下图中的 `Qt5`/`Qt6` 配置目录）查找 Qt，因此指定的 Qt 路径必须具备完整的目录结构：
 
@@ -48,7 +38,7 @@ CMake 通过 `<Qt 安装路径>/<版本>/<编译器>/lib/cmake/` 下的 CMake �
 
 ### Python 依赖
 
-项目运行时依赖的 Python 包见项目根目录 `requirements.txt`（共 16 个）。下表列出主要分组：
+项目运行时依赖的 Python 包见项目根目录 `requirements.txt`（共 17 个）。下表列出主要分组：
 
 | 库 | 用途 |
 |------|------|
@@ -88,10 +78,10 @@ flowchart TD
     style J fill:#2196f3
 ```
 
-上图展示了构建的整体流程：首先克隆仓库并拉取子模块获取依赖，然后根据是否首次构建决定是否需要编译 zlib，接着编译第三方库和主项目，最后安装并验证结果。图中各节点含义如下：
+上图展示了构建的整体流程。图中各节点含义如下：
 
 - **克隆仓库**：获取项目源码
-- **拉取子模块**：获取第三方库源码（zlib、SARibbon、ADS 等）
+- **拉取子模块**：获取第三方库源码（zlib、SARibbon、Qt-Advanced-Docking-System 等）
 - **编译 zlib**：zlib 是 quazip 的依赖，必须独立编译（黄色标注表示首次必需）
 - **编译第三方库**：统一构建除 zlib 外的所有第三方库
 - **编译主项目**：构建核心模块和插件
@@ -107,8 +97,9 @@ flowchart TD
 
 ## 第三方库拉取
 
-!!! warning "重要：必须先拉取子模块"
-    编译前请确保已经拉取所有第三方库，否则构建将失败。
+> **⚠️ 重要：必须先拉取子模块**
+>
+> 编译前必须已拉取所有第三方库，否则构建将失败。
 
 项目使用 git submodule 管理第三方库，克隆仓库后需执行：
 
@@ -121,17 +112,18 @@ git submodule update --init --recursive
 
 ![标准源码目录结构](../../assets/PIC/standard-source-dir.png)
 
-!!! tip "网络问题处理"
-    第三方库 `SARibbon` 包含子模块 `QWindowKit`（托管在 GitHub）。如果网络无法访问 GitHub，可以逐个拉取：
-    
-    ```shell
-    git submodule update --init src/3rdparty/zlib
-    git submodule update --init src/3rdparty/quazip
-    git submodule update --init src/3rdparty/spdlog
-    git submodule update --init src/3rdparty/SARibbon
-    git submodule update --init src/3rdparty/ADS
-    git submodule update --init src/3rdparty/pybind11
-    ```
+> **💡 网络问题处理**
+>
+> 第三方库 `SARibbon` 包含子模块 `QWindowKit`（托管在 GitHub）。如果网络无法访问 GitHub，可以逐个拉取：
+>
+> ```shell
+> git submodule update --init src/3rdparty/zlib
+> git submodule update --init src/3rdparty/quazip
+> git submodule update --init src/3rdparty/spdlog
+> git submodule update --init src/3rdparty/SARibbon
+> git submodule update --init src/3rdparty/ADS
+> git submodule update --init src/3rdparty/pybind11
+> ```
 
 ## 命令行构建步骤（Windows）
 
@@ -141,14 +133,14 @@ Windows 平台支持两种 CMake 生成器。**推荐使用 Visual Studio 生成
 
 | 生成器 | 是否可用 | 条件 |
 |--------|:------:|------|
-| **Visual Studio** | ✅ 推荐 | 任何环境均可用，自动检测 MSVC 编译器 |
-| **Ninja** | ⚠️ 有限制 | **必须**在 Developer Command Prompt (CMD) 中运行；PowerShell 中 MSVC 环境变量无法通过 `vcvars64.bat` 注入 |
+| **Visual Studio** | 推荐 | 任何环境均可用，自动检测 MSVC 编译器 |
+| **Ninja** | 有限制 | **必须**在 Developer Command Prompt (CMD) 中运行；PowerShell 中 MSVC 环境变量无法通过 `vcvars64.bat` 注入 |
 
 详细说明见项目根目录 `build.md`。
 
 ### Visual Studio 生成器（推荐）
 
-以下代码展示了 Windows 平台下使用 PowerShell 从配置到安装的完整构建流程。每个步骤都有详细的中文注释说明其作用。
+以下代码展示了 Windows 平台下使用 PowerShell 从配置到安装的完整构建流程。
 
 ```powershell
 # 步骤1：进入项目根目录
@@ -176,40 +168,42 @@ copy build\src\3rdparty\zlib\Release\zlib.dll bin_Release_qt6.7.3_MSVC_x64\
 
 执行上述命令后，构建产物将输出到 `bin_Release_qt6.7.3_MSVC_x64` 目录，包含可执行文件和所有依赖库。
 
-!!! tip "VS 版本选择"
-    - VS 2019 使用 `-G "Visual Studio 16 2019"`
-    - VS 2022 使用 `-G "Visual Studio 17 2022"`
-    - Qt 版本必须与 Visual Studio 编译器版本匹配（如 Qt 6.7.3 msvc2019_64 配 VS 2019）
+> **💡 VS 版本选择**
+>
+> - VS 2019 使用 `-G "Visual Studio 16 2019"`
+> - VS 2022 使用 `-G "Visual Studio 17 2022"`
+> - Qt 版本必须与 Visual Studio 编译器版本匹配（如 Qt 6.7.3 msvc2019_64 配 VS 2019）
 
 ### Ninja 生成器（需 Developer Command Prompt）
 
 如果已安装 Ninja 且**在 Developer Command Prompt (CMD) 中**运行，可以使用 Ninja 获得更快的构建速度：
 
 ```powershell
-# ⚠️ 必须先在 Developer Command Prompt 中运行 vcvars64.bat
+# 必须先在 Developer Command Prompt 中运行 vcvars64.bat
 cmake -S . -B build -G Ninja `
     -DCMAKE_BUILD_TYPE:STRING=Release `
     -DCMAKE_TOOLCHAIN_FILE:FILEPATH="D:\Qt\6.7.3\msvc2019_64\lib\cmake\Qt6\qt.toolchain.cmake"
 cmake --build build --config Release --parallel
 ```
 
-!!! warning "PowerShell 中 Ninja 的限制"
-    在 PowerShell 中通过 `& vcvars64.bat` 调用后，环境变量不会传递给 PowerShell 后续命令，这是 PowerShell 与 bat 脚本交互的已知限制。如果遇到 `fatal error C1083: 无法打开包括文件`，请改用 Visual Studio 生成器。
+> **⚠️ PowerShell 中 Ninja 的限制**
+>
+> 在 PowerShell 中通过 `& vcvars64.bat` 调用后，环境变量不会传递给 PowerShell 后续命令，这是 PowerShell 与 bat 脚本交互的已知限制。如果遇到 `fatal error C1083: 无法打开包括文件`，改用 Visual Studio 生成器。
 
 ### CMake 参数说明
 
 | 参数 | 必需 | 说明 |
 |------|:----:|------|
-| `-G "Visual Studio 16 2019"` | ✅ | VS 2019 生成器（VS 方案）；或 `-G Ninja`（Ninja 方案） |
-| `-A x64` | ✅ (VS) | 64 位架构，仅 VS 生成器需要 |
-| `-DCMAKE_PREFIX_PATH` | ✅ (VS) | Qt 安装路径，VS 生成器用此参数（如 `C:/Qt/6.7.3/msvc2019_64`） |
-| `-DCMAKE_TOOLCHAIN_FILE` | ✅ (Ninja) | Qt 工具链文件路径，Ninja 生成器用此参数 |
-| `-DCMAKE_BUILD_TYPE` | ✅ (Ninja) | 构建类型：`Debug` 或 `Release`（VS 生成器用 `--config` 代替） |
+| `-G "Visual Studio 16 2019"` | 是 | VS 2019 生成器（VS 方案）；或 `-G Ninja`（Ninja 方案） |
+| `-A x64` | 是 (VS) | 64 位架构，仅 VS 生成器需要 |
+| `-DCMAKE_PREFIX_PATH` | 是 (VS) | Qt 安装路径，VS 生成器用此参数（如 `C:/Qt/6.7.3/msvc2019_64`） |
+| `-DCMAKE_TOOLCHAIN_FILE` | 是 (Ninja) | Qt 工具链文件路径，Ninja 生成器用此参数 |
+| `-DCMAKE_BUILD_TYPE` | 是 (Ninja) | 构建类型：`Debug` 或 `Release`（VS 生成器用 `--config` 代替） |
 | `-DCMAKE_EXPORT_COMPILE_COMMANDS` | 可选 | 生成 LSP 配置文件 |
 
 ### 分步构建
 
-如果需要分步构建（例如调试特定库的问题），可按以下顺序执行。分步构建有助于排查编译问题，每个步骤独立执行便于定位错误。
+如果需要分步构建（比如调试特定库的问题），可按以下顺序执行。
 
 ```powershell
 # VS 生成器分步构建
@@ -232,8 +226,9 @@ cmake --build build --config Release --target install
 
 分步构建的产物会累积安装到同一输出目录，最终结果与完整构建一致。
 
-!!! note "构建顺序说明"
-    第三方库 `quazip` 依赖 `zlib`，必须按顺序编译：zlib → 第三方库 → 主项目。
+> **📝 构建顺序说明**
+>
+> 第三方库 `quazip` 依赖 `zlib`，必须按顺序编译：zlib → 第三方库 → 主项目。
 
 ## 命令行构建步骤（Linux）
 
@@ -256,7 +251,7 @@ cmake --build build --config Release --parallel
 cmake --build build --config Release --target install
 ```
 
-构建完成后，输出目录为 `bin_Release_qt6.7.3_GCC_x64`，包含可执行文件 `DAWorkBench` 和相关动态库。
+构建完成后，输出目录为 `bin_Release_qt6.7.3_GNU_x64`，包含可执行文件 `DAWorkBench` 和相关动态库。
 
 ## Qt Creator 构建步骤
 
@@ -274,14 +269,15 @@ cmake --build build --config Release --target install
 3. 选择构建类型（Debug 或 Release）
 4. 点击 **配置项目**
 
-!!! warning "手动指定工具链文件"
-    如果 Qt Creator 无法正确检测 Windows SDK，需要手动配置 CMake 参数：
-    
-    1. 打开 **项目** → **构建设置**
-    2. 在 **CMake** 配置中添加参数：
-       ```
-       -DCMAKE_TOOLCHAIN_FILE:FILEPATH=D:/Qt/6.7.3/msvc2019_64/lib/cmake/Qt6/qt.toolchain.cmake
-       ```
+> **⚠️ 手动指定工具链文件**
+>
+> 如果 Qt Creator 无法正确检测 Windows SDK，需要手动配置 CMake 参数：
+>
+> 1. 打开 **项目** → **构建设置**
+> 2. 在 **CMake** 配置中添加参数：
+>    ```
+>    -DCMAKE_TOOLCHAIN_FILE:FILEPATH=D:/Qt/6.7.3/msvc2019_64/lib/cmake/Qt6/qt.toolchain.cmake
+>    ```
 
 ### 构建运行
 
@@ -305,7 +301,7 @@ bin_{BuildType}_qt{QtVersion}_{Compiler}_{Arch}
 |----------|----------|
 | Qt 5.15.2, Release, MSVC, x64 | `bin_Release_qt5.15.2_MSVC_x64` |
 | Qt 6.7.3, Debug, MSVC, x64 | `bin_Debug_qt6.7.3_MSVC_x64` |
-| Qt 6.7.3, Release, GCC, x64 | `bin_Release_qt6.7.3_GCC_x64` |
+| Qt 6.7.3, Release, GCC, x64 | `bin_Release_qt6.7.3_GNU_x64` |
 
 ### 输出文件说明
 
@@ -314,12 +310,12 @@ bin_{BuildType}_qt{QtVersion}_{Compiler}_{Arch}
 | `DAWorkBench.exe` | 主程序可执行文件 |
 | `DAFigure.dll` | 图表模块动态库 |
 | `DAData.dll` | 数据处理模块动态库 |
-| `DAGui.dll` | GUI 模块动态库 |
+| `DAGui.dll` | 图形界面模块动态库 |
 | `DACommonWidgets.dll` | 通用组件动态库 |
 
 ## 验证构建结果
 
-构建完成后，需要验证输出文件是否正确生成。以下命令用于检查关键文件是否存在。
+构建完成后，检查关键文件是否正确生成：
 
 ### 检查输出文件
 
@@ -333,14 +329,14 @@ dir bin_Release_qt6.7.3_MSVC_x64\*.exe
 dir bin_Release_qt6.7.3_MSVC_x64\*.dll
 
 # Linux - 检查输出目录内容
-ls bin_Release_qt6.7.3_GCC_x64/
+ls bin_Release_qt6.7.3_GNU_x64/
 ```
 
 如果文件列表正常显示，说明编译过程成功。
 
 ### 运行程序
 
-验证程序能否正常启动是最终确认步骤。运行程序并检查主窗口是否正确显示。
+运行程序并检查主窗口是否正确显示。
 
 ```powershell
 # Windows - 启动程序
@@ -348,7 +344,7 @@ ls bin_Release_qt6.7.3_GCC_x64/
 .\bin_Release_qt6.7.3_MSVC_x64\DAWorkBench.exe
 
 # Linux - 启动程序
-./bin_Release_qt6.7.3_GCC_x64/DAWorkBench
+./bin_Release_qt6.7.3_GNU_x64/DAWorkBench
 ```
 
 程序启动后应显示主窗口界面，表示构建成功。
@@ -373,35 +369,40 @@ ls bin_Release_qt6.7.3_GCC_x64/
 | Qt 库找不到 | Qt 环境变量未设置 | 添加 Qt bin 目录到 PATH |
 | 插件加载失败 | 插件路径未配置 | 检查插件目录配置 |
 
-!!! tip "缺少 DLL 解决方案"
-    运行时提示缺少 DLL，可以使用 Qt 自带的 `windeployqt` 工具自动复制依赖：
-    
-    ```powershell
-    cd bin_Release_qt6.7.3_MSVC_x64
-    windeployqt DAWorkBench.exe
-    ```
+> **💡 缺少 DLL 解决方案**
+>
+> 运行时提示缺少 DLL，可以使用 Qt 自带的 `windeployqt` 工具自动复制依赖：
+>
+> ```powershell
+> cd bin_Release_qt6.7.3_MSVC_x64
+> windeployqt DAWorkBench.exe
+> ```
 
 ## 注意事项
 
-!!! warning "生成器选择"
-    Windows 平台**推荐使用 Visual Studio 生成器**。Ninja 生成器虽然在 CI 环境中可用，但在本地 PowerShell 中存在 MSVC 编译器环境变量无法传递的问题，会导致 `fatal error C1083`。如需使用 Ninja，必须在 Developer Command Prompt (CMD) 中运行。详见项目根目录 `build.md`。
+> **⚠️ 生成器选择**
+>
+> Windows 平台**推荐使用 Visual Studio 生成器**。Ninja 生成器虽然在 CI 环境中可用，但在本地 PowerShell 中存在 MSVC 编译器环境变量无法传递的问题，会导致 `fatal error C1083`。如需使用 Ninja，必须在 Developer Command Prompt (CMD) 中运行。详见项目根目录 `build.md`。
 
-!!! warning "第三方库编译顺序"
-    第三方库中的 `quazip` 依赖 `zlib`，必须按顺序编译：
-    1. 先编译 `zlib`
-    2. 再编译其他第三方库
-    3. 最后编译主项目
+> **⚠️ 第三方库编译顺序**
+>
+> 第三方库中的 `quazip` 依赖 `zlib`，必须按顺序编译：
+> 1. 先编译 `zlib`
+> 2. 再编译其他第三方库
+> 3. 最后编译主项目
 
-!!! tip "已有 zlib 环境"
-    如果开发环境已安装 zlib，可跳过 zlib 编译，但需确保 CMake 能找到 zlib 的头文件和库文件。
+> **💡 已有 zlib 环境**
+>
+> 如果开发环境已安装 zlib，可跳过 zlib 编译，但需确保 CMake 能找到 zlib 的头文件和库文件。
 
-!!! tip "快速构建脚本"
-    项目提供了 `scripts/build.ps1` 脚本，自动检测环境并执行正确构建命令：
-    ```powershell
-    .\scripts\build.ps1 -Target DAPyWorkFlow
-    .\scripts\build.ps1 -Target DAPyWorkFlow -Test
-    .\scripts\build.ps1 -Full
-    ```
+> **💡 快速构建脚本**
+>
+> 项目提供了 `scripts/build.ps1` 脚本，自动检测环境并执行正确构建命令：
+> ```powershell
+> .\scripts\build.ps1 -Target DAPyWorkFlow
+> .\scripts\build.ps1 -Target DAPyWorkFlow -Test
+> .\scripts\build.ps1 -Full
+> ```
 
 ## 参考资料
 

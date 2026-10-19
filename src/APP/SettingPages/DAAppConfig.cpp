@@ -18,6 +18,8 @@
 #include "DADumpCapture.h"
 #include "DAPyScriptRunner.h"
 #include "DAAppDockingArea.h"
+#include "DAUndoHistoryWidget.h"
+#include "DADataOperateOfDataFrameWidget.h"
 #include "DAPyWorkFlowOperateWidget.h"
 #include "Chart/DAChartOperateWidget.h"
 #include "DADataOperateWidget.h"
@@ -38,6 +40,7 @@ DAAppConfig::DAAppConfig()
     insert(DA_CONFIG_KEY_APP_FONT_FAMILY, QString());                 // 空=系统默认字体
     insert(DA_CONFIG_KEY_APP_FONT_POINT_SIZE, -1.0);                  // <=0=系统默认字号
     insert(DA_CONFIG_KEY_DOCK_TAB_POSITION, QStringLiteral("bottom"));  // 操作窗口内部标签页默认在下方
+    insert(DA_CONFIG_KEY_UNDO_STACK_LIMIT, 20);                       // 数据页撤销栈深度（R19 默认 20）
     // Python
     insert(DA_CONFIG_KEY_PYTHON_INTERPRETER_PATH, QString());         // 空=自动检测
     insert(DA_CONFIG_KEY_PYTHON_EXTRA_PATHS, QStringList());          // 额外 sys.path
@@ -281,6 +284,25 @@ bool DAAppConfig::apply()
             }
             if (DADataOperateWidget* dataOw = dockArea->getDataOperateWidget()) {
                 dataOw->setInnerDockTabsAtBottom(tabsAtBottom);
+            }
+        }
+    }
+    // 撤销栈深度（005 T1.21 R19）：施加到已打开的数据页撤销栈 + 同步历史面板 SpinBox；
+    // 新建页面在 DAAppController::onDataOperatePageCreated 里读取同一配置施加
+    {
+        bool limitOk   = false;
+        const int undoStackLimit = value(DA_CONFIG_KEY_UNDO_STACK_LIMIT).toInt(&limitOk);
+        if (limitOk && undoStackLimit >= 0 && mUI) {
+            if (DAAppDockingArea* dockArea = mUI->getAppDockingArea()) {
+                if (DADataOperateWidget* dataOw = dockArea->getDataOperateWidget()) {
+                    const auto pages = dataOw->getAllDataFrameWidgets();
+                    for (DADataOperateOfDataFrameWidget* page : pages) {
+                        page->setUndoLimit(undoStackLimit);
+                    }
+                }
+                if (DAUndoHistoryWidget* uh = dockArea->getUndoHistoryWidget()) {
+                    uh->setUndoLimit(undoStackLimit > 0 ? undoStackLimit : 20);
+                }
             }
         }
     }

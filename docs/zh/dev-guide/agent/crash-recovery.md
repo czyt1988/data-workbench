@@ -1,6 +1,6 @@
 # 崩溃恢复与重连机制
 
-Agent 子进程可能因 LLM API 超时、Python 异常、内存不足等原因崩溃。本文档描述子进程的生命周期管理、自动重启机制、会话恢复策略以及重试退避逻辑，确保 agent 在异常情况下能够自动恢复，不影响用户体验。
+Agent 子进程可能因大语言模型（LLM）API 超时、Python 异常、内存不足等原因崩溃。子进程的生命周期管理、自动重启、会话恢复与重试退避都以自动恢复为目标，尽量不影响用户操作。
 
 ---
 
@@ -37,8 +37,9 @@ sequenceDiagram
     Note over M: 后续步骤同预启动, 但无独立"启动中"过渡
 ```
 
-!!! note "agentStarting 与 agentBusy 区分"
-    `agentStarting` 信号在子进程启动时立即发射，令 UI 进入"启动中"过渡态，与 `agentBusy(thinking)`（推理中）区分——避免冷启动期间（约 16 秒 langchain 导入）被误显示为"思考中"。`agentReady` / `agentBusy(false)` / 进程退出后清除该状态。预启动、懒启动、崩溃重启三条路径均触发 `agentStarting`。
+> **📝 agentStarting 与 agentBusy 区分**
+>
+> `agentStarting` 信号在子进程启动时立即发射，令 UI 进入「启动中」过渡态，与 `agentBusy(thinking)`（推理中）区分，避免冷启动期间（约 16 秒 langchain 导入）被误显示为「思考中」。`agentReady` / `agentBusy(false)` / 进程退出后清除该状态。预启动、懒启动、崩溃重启三条路径均触发 `agentStarting`。
 
 ### 停止流程
 
@@ -68,7 +69,7 @@ sequenceDiagram
 | 暂停条件 | 工具执行中 | `ToolExecGuard` RAII 暂停/恢复 |
 | 暂停条件 | 等待用户回答 | 收到 `question` 时暂停，收到 `user_answer` 恢复 |
 
-看门狗超时后，C++ 侧会主动 `kill()` 子进程，触发崩溃恢复流程。
+看门狗超时后，`onInactivityTimeout()` 先发射 `agentError`（提示响应超时），再调用 `requestStop()` 让 Python 优雅退出；`requestStop()` 的 5 秒计时器到期后仍未退出才 `kill()`。子进程退出后走崩溃恢复流程。
 
 ```cpp
 // ToolExecGuard RAII 模式暂停/恢复看门狗
@@ -131,20 +132,20 @@ connect(m_bridge, &DAAgentBridge::sessionRestoreRequested,
 
 ### 模型热替换：不重启的容错替代路径
 
-当需要切换 LLM 配置（供应商 / 模型 / API Key）时，不必走"杀子进程 → 重启 → 恢复会话"的崩溃恢复路径。`DAAgentModule::setActiveModel()` → `DAAgentBridge::reconfigureAgent()` 下发 `reconfigure` 消息，Python 端 `AgentRunner.reconfigure()` 在两轮之间热替换 `ChatOpenAI` 实例——不重启子进程、不丢 `MemorySaver` 会话状态。失败安全：先构造新 LLM，成功后才更新，构造失败发 `error` 不破坏旧模型。详见 [通信协议 - reconfigure](./protocol.md#reconfigure--模型热替换)。
+当需要切换 LLM 配置（供应商 / 模型 / API Key）时，不必走「杀子进程 → 重启 → 恢复会话」的崩溃恢复路径。`DAAgentModule::setActiveModel()` → `DAAgentBridge::reconfigureAgent()` 下发 `reconfigure` 消息，Python 端 `AgentRunner.reconfigure()` 在两轮之间热替换 `ChatOpenAI` 实例，不重启子进程，`MemorySaver` 会话状态也不丢。失败安全：先构造新 LLM，成功后才更新，构造失败发 `error` 不破坏旧模型。详见 [通信协议 - reconfigure](./protocol.md#reconfigure模型热替换)。
 
 ### 死循环防护
 
 除无活动看门狗外，Python 侧还有两重防死循环机制，避免 agent 陷入工具调用循环最终拖垮子进程：
 
-- **`recursion_limit`**（默认不限制，-1）：限制 LangGraph 图最大迭代步数（`compact → agent → tools → ...`，单回合内计数）。超出抛 `GraphRecursionError`，被 `main()` 捕获并报为 `error_type="recursion_limit"`，随后发 `done` 结束本轮。
-- **重复工具调用硬终止**：`AgentRunner` 用 `_last_full_sig` / `_full_sig_repeat_count` 跟踪连续相同的完整 `tool_calls` 签名，连续 3 次相同签名（阈值 `_repeat_terminate_threshold=3`）则 `agent_node` 强制剥离 `tool_calls` 并以最终回复结束（router → END）。配合 `tool_node` 的软引导（已执行签名重复时返回引导性 `ToolMessage` 而非重复执行），在撞到 `recursion_limit` 之前优雅终止死循环。
+- `recursion_limit`（默认不限制，-1）：限制 LangGraph 图最大迭代步数（`compact → agent → tools → ...`，单回合内计数）。超出抛 `GraphRecursionError`，被 `main()` 捕获并报为 `error_type="recursion_limit"`，随后发 `done` 结束本轮。
+- 重复工具调用硬终止：`AgentRunner` 用 `_last_full_sig` / `_full_sig_repeat_count` 跟踪连续相同的完整 `tool_calls` 签名，连续 3 次相同签名（阈值 `_repeat_terminate_threshold=3`）则 `agent_node` 强制剥离 `tool_calls` 并以最终回复结束（router → END）。配合 `tool_node` 的软引导（已执行签名重复时不再执行工具，改返回引导性 `ToolMessage`），在撞到 `recursion_limit` 之前终止死循环。
 
 ---
 
 ## 重试与退避
 
-LLM API 调用可能因网络波动、服务端过载等原因失败。Agent 子进程实现了完善的错误分类与线性退避重试机制，覆盖所有服务器波动类错误（400/429/5xx/网络），避免长任务因瞬时故障中断。
+LLM API 调用可能因网络波动、服务端过载等原因失败。Agent 子进程把错误分类后对服务器波动类错误（400/429/5xx/网络）做线性退避重试，避免长任务因瞬时故障中断。
 
 ### 错误分类
 
@@ -152,19 +153,20 @@ LLM API 调用可能因网络波动、服务端过载等原因失败。Agent 子
 
 | ErrorType | 可重试 | 触发条件 |
 |-----------|--------|---------|
-| `CONTEXT_OVERFLOW` | ❌ | 上下文长度超限（由 `agent_node` 的 force_compact 专用恢复，盲目重试超大请求无意义） |
-| `USER_CANCEL` | ❌ | 用户主动取消 / `asyncio.CancelledError` |
-| `QUOTA_EXHAUSTED` | ❌ | `RateLimitError` 含 `insufficient_quota`（配置类错误，快速失败） |
-| `AUTH_ERROR` | ❌ | `AuthenticationError` 或 HTTP 401/403（配置类错误，快速失败） |
-| `BAD_REQUEST` | ✅ | `BadRequestError`（非溢出类；网关瞬时 400 可自愈，悬空 tool_calls 类结构性 400 已由 `agent_node` 请求前主动修复） |
-| `RATE_LIMIT_EXHAUSTED` | ✅ | `RateLimitError`（非配额类） |
-| `SERVER_ERROR_EXHAUSTED` | ✅ | 服务端 5xx 错误 |
-| `NETWORK_EXHAUSTED` | ✅ | 网络超时 / 连接中断 |
-| `STREAM_INTERRUPTED` | ✅ | 流式输出中断（`httpx.ReadError` 等） |
+| `CONTEXT_OVERFLOW` | 否 | 上下文长度超限（由 `agent_node` 的 force_compact 专用恢复，盲目重试超大请求无意义） |
+| `QUOTA_EXHAUSTED` | 否 | `RateLimitError` 含 `insufficient_quota`（配置类错误，快速失败） |
+| `AUTH_ERROR` | 否 | `AuthenticationError` 或 HTTP 401/403（配置类错误，快速失败） |
+| `BAD_REQUEST` | 是 | `BadRequestError`（非溢出类；网关瞬时 400 可自愈，悬空 tool_calls 类结构性 400 已由 `agent_node` 请求前主动修复） |
+| `RATE_LIMIT_EXHAUSTED` | 是 | `RateLimitError`（非配额类） |
+| `SERVER_ERROR_EXHAUSTED` | 是 | 服务端 5xx 错误 |
+| `NETWORK_EXHAUSTED` | 是 | 网络超时 / 连接中断；流式输出中途中断（`httpx.ReadError`、空的流式响应）也归入此类 |
 | `UNKNOWN` | 视情况 | 带 API/HTTP 特征（`openai.APIError` 实例或含 `status_code`）时可重试；纯本地异常（代码 bug 等）快速失败 |
 
-!!! warning "溢出关键词表禁止加入通用包装词"
-    `is_context_overflow_error` 的关键词表（`error_classifier.py` 与 `context_manager.py` 两处同步维护）只允许特异性短语（"context length"、"maximum context" 等）。litellm 对**所有**上游 400 都包装 "The request is invalid" 前缀——把这类通用词加入关键词表会把悬空 tool_calls 等无关的 `BadRequestError` 误判为上下文溢出，UI 显示误导性的「上下文窗口超限且压缩失败」标题。
+用户取消（`asyncio.CancelledError`）不重试，分类结果同样是 `UNKNOWN`，`detail` 记为 "Agent stopped by user"。
+
+> **⚠️ 溢出关键词表禁止加入通用包装词**
+>
+> `is_context_overflow_error` 的关键词表（`error_classifier.py` 与 `context_manager.py` 两处同步维护）只允许特异性短语（"context length"、"maximum context" 等）。litellm 对**所有**上游 400 都包装 "The request is invalid" 前缀，把这类通用词加入关键词表会把悬空 tool_calls 等无关的 `BadRequestError` 误判为上下文溢出，UI 显示误导性的「上下文窗口超限且压缩失败」标题。
 
 ### 线性退避算法
 
@@ -188,10 +190,11 @@ retry_interval_increment_sec (p) = 1 (默认)
 | 4 | 8s |
 | 5 | 9s |
 
-无抖动——进度条（`retrying` 消息）显示的等待与用户配置完全一致。最坏总等待 35s，远小于看门狗无活动超时（默认 240s），且每次重试前的 `retrying` 消息会刷新看门狗。
+无抖动，进度条（`retrying` 消息）显示的等待与用户配置完全一致。最坏总等待 35s，远小于看门狗无活动超时（默认 240s），且每次重试前的 `retrying` 消息会刷新看门狗。
 
-!!! note "服务端 Retry-After 优先"
-    如果 LLM API 返回了 `Retry-After` HTTP 头（整数秒或 HTTP-date 格式），退避延迟使用服务端指定值，不使用计算值。
+> **📝 服务端 Retry-After 优先**
+>
+> 如果 LLM API 返回了 `Retry-After` HTTP 头（整数秒或 HTTP-date 格式），退避延迟使用服务端指定值，不使用计算值。
 
 ### 重试中断
 
@@ -209,10 +212,11 @@ async def sleep_with_abort(seconds, stop_event):
 
 ### 首 token 前重试规则
 
-!!! warning "首 token 后不重试"
-    流式输出开始后（已向 UI 推送 token），不再重试。这是为了避免部分输出重复——用户已经看到了部分回复，重试会产生重复内容。
-
-    只有在**首 token 之前**发生错误才重试。首 token 之后的错误直接抛出，由用户决定是否重新发送。
+> **⚠️ 首 token 后不重试**
+>
+> 流式输出开始后（已向 UI 推送 token），不再重试。这是为了避免部分输出重复：用户已经看到了部分回复，重试会产生重复内容。
+>
+> 只有在**首 token 之前**发生错误才重试。首 token 之后的错误直接抛出，由用户决定是否重新发送。
 
 ```python
 async def _stream_llm(self, messages):
@@ -324,9 +328,9 @@ sequenceDiagram
 
 ## 参见
 
-- [通信协议](./protocol.md) — retrying/error/done 消息的协议规范
-- [上下文管理](./context-management.md) — 溢出恢复与 force_compact 机制
-- [会话持久化](./session-management.md) — 崩溃后恢复会话历史的机制
-- `src/DAAgent/DAAgentBridge.cpp` — 进程管理与崩溃恢复实现
-- `src/PyScripts/DAWorkbench/agent/retry_wrapper.py` — 线性退避重试实现
-- `src/PyScripts/DAWorkbench/agent/error_classifier.py` — 错误分类实现
+- [通信协议](./protocol.md)：retrying/error/done 消息的协议规范
+- [上下文管理](./context-management.md)：溢出恢复与 force_compact 机制
+- [会话持久化](./session-management.md)：崩溃后恢复会话历史的机制
+- `src/DAAgent/DAAgentBridge.cpp`：进程管理与崩溃恢复实现
+- `src/PyScripts/DAWorkbench/agent/retry_wrapper.py`：线性退避重试实现
+- `src/PyScripts/DAWorkbench/agent/error_classifier.py`：错误分类实现

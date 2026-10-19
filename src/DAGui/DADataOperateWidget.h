@@ -1,4 +1,4 @@
-﻿#ifndef DADATAOPERATEWIDGET_H
+#ifndef DADATAOPERATEWIDGET_H
 #define DADATAOPERATEWIDGET_H
 #include <QWidget>
 #include <QMap>
@@ -21,7 +21,7 @@ namespace DA
 class DADataOperatePageWidget;
 class DADataOperateOfDataFrameWidget;
 class DADataManager;
-class DATableStyleRegistry;
+class DATableMetadataRegistry;
 /**
  * @brief 数据操作窗口，负责数据区域操作
  *
@@ -48,14 +48,19 @@ public:
 
     // 当前显示的DataFrame窗口，如果不是DataFrame窗口，返回nullptr
     DADataOperateOfDataFrameWidget* getCurrentDataFrameWidget() const;
+    // 表头拾取模式（图表「选择序列」会话期间置位）：存标志并转发给当前 DataFrame 页，
+    // 拾取模式下表头点击只转发信号不排序（002 §4.1 模式互斥）；
+    // 切换点在 DAChartSeriesPickerWidget 的 connect/disconnectDataWidgets
+    void setHeaderPickMode(bool on);
+    bool isHeaderPickMode() const;
     // 获取所有已打开的 DataFrame 操作窗口（供序列化遍历样式）
     QList< DADataOperateOfDataFrameWidget* > getAllDataFrameWidgets() const;
     // 按 DAData 精确查找已打开的 DataFrame 窗口（无则 nullptr），供样式加载按 id 回填后刷新
     DADataOperateOfDataFrameWidget* findDataFrameWidget(const DAData& d) const;
     // 按插入顺序返回已打开数据列表（供工程序列化遍历，类比 DAChartOperateWidget::getFigureList）
     QList< DAData > getOpenedDataList() const;
-    // 表格样式会话级注册表（样式生命周期脱离单个 widget，随数据存在）
-    DATableStyleRegistry* styleRegistry() const;
+    // 表格元数据会话级注册表（元数据生命周期脱离单个 widget，随数据存在）
+    DATableMetadataRegistry* metadataRegistry() const;
     // 获取当前操作的表，这个表就是当前打开的表格
     DAData getCurrentOperateData() const;
     // 获取当前正在操作数据选中的列
@@ -68,6 +73,9 @@ public:
     void refreshCurrentOperateTableView();
     // 确保当前窗口的列名可见，可搭配showData函数后使用
     void ensureCurrentTableColumnVisible(const QString& colName, bool selectCol = true);
+    // 跨页定位入口（007）：打开（或切到）数据 d 所在页并跳到「行 + 列名」，
+    // 重名取第一个同名列；未打开/找不到列静默返回。校验报告、Agent 工具等跨页调用方一律走它
+    void locateInData(const DA::DAData& d, int actualRow, const QString& columnName);
     // 保存嵌套停靠区布局（供工程序列化），无停靠区时返回空
     QByteArray saveDataLayout() const;
     // 恢复嵌套停靠区布局（供工程反序列化），state 为空或失败返回 false

@@ -1,6 +1,7 @@
 #include "DAAppActions.h"
 #include "DAUiObjectNames.h"
 #include <QActionGroup>
+#include <QKeySequence>
 #include <QPainter>
 #include <QVector>
 #include <cmath>
@@ -66,6 +67,13 @@ void DAAppActions::buildMainAction()
     actionPaste     = createAction(UiNames::Action::Paste, ":/DAGui/icon/paste.svg");
     actionDelete    = createAction(UiNames::Action::Delete, ":/DAGui/icon/delete.svg");
     actionSelectAll = createAction(UiNames::Action::SelectAll, ":/DAGui/icon/select-all.svg");
+    // 默认快捷键就地定义（DAShortcutManager 注册时收集为默认值，用户覆盖见 shortcuts.json）；
+    // 剪贴板组默认不设键：工作流编辑器内部同功能 action 已占用 Ctrl+C/X/V 等标准键，
+    // 两者同属主窗口会真冲突，该组命令在「设置-快捷键」页可见并由用户自行分配
+    actionOpen->setShortcut(QKeySequence::Open);
+    actionSave->setShortcut(QKeySequence::Save);
+    actionSaveAs->setShortcut(QKeySequence(QStringLiteral("Ctrl+Shift+S")));
+    actionSetting->setShortcut(QKeySequence(QStringLiteral("Ctrl+,")));
 }
 
 void DAAppActions::buildDataAction()
@@ -106,6 +114,46 @@ void DAAppActions::buildDataAction()
     actionClearStyleAll      = createAction(UiNames::Action::ClearStyleAll, ":/app/bright/Icon/removeData.svg");
     // 表格列显示格式 action
     actionTableFormatCells   = createAction(UiNames::Action::TableFormatCells, ":/app/bright/Icon/tableFormat.svg");
+    // 表内查找/替换 action（002 T1.4；图标取 DAGui 图标库，快捷键在 DADataTableView，此处不设 shortcut 红线5）
+    actionFind               = createAction(UiNames::Action::Find, ":/DAGui/icon/find.svg");
+    actionReplace            = createAction(UiNames::Action::Replace, ":/DAGui/icon/replace.svg");
+    // 条件格式 action（003 T1.5；图标取 DAGui 图标库，不引用 APP 资源）
+    actionConditionalFormat  = createAction(UiNames::Action::ConditionalFormat, ":/DAGui/icon/conditional-format.svg");
+    // 数据工具 action（004；图标取 DAGui 图标库，不引用 APP 资源）
+    actionComputedColumn              = createAction(UiNames::Action::ComputedColumn, ":/DAGui/icon/computed-column.svg");
+    actionRecomputeAllComputedColumns = createAction(UiNames::Action::RecomputeAllComputedColumns, ":/DAGui/icon/refresh-all.svg");
+    actionSplitColumn                 = createAction(UiNames::Action::SplitColumn, ":/DAGui/icon/split-column.svg");
+    actionMergeColumns                = createAction(UiNames::Action::MergeColumns, ":/DAGui/icon/merge-columns.svg");
+    actionGroupBy                     = createAction(UiNames::Action::GroupBy, ":/DAGui/icon/group-by.svg");
+    actionTranspose                   = createAction(UiNames::Action::Transpose, ":/DAGui/icon/transpose.svg");
+    actionMelt                        = createAction(UiNames::Action::Melt, ":/DAGui/icon/melt.svg");
+    // 填充 action（005 T1.24；图标取 DAGui 图标库，快捷键 Ctrl+D 在 DADataTableView，此处不设 shortcut 红线5）
+    actionFill                        = createAction(UiNames::Action::Fill, ":/DAGui/icon/fill.svg");
+    actionFillDown                    = createAction(UiNames::Action::FillDown, ":/DAGui/icon/fill-down.svg");
+    actionFillUp                      = createAction(UiNames::Action::FillUp, ":/DAGui/icon/fill-up.svg");
+    actionFillForward                 = createAction(UiNames::Action::FillForward, ":/DAGui/icon/fill-forward.svg");
+    actionFillBackward                = createAction(UiNames::Action::FillBackward, ":/DAGui/icon/fill-backward.svg");
+    actionFillSeries                  = createAction(UiNames::Action::FillSeries, ":/DAGui/icon/fill-series.svg");
+    // 数据校验 action（005 T1.25；图标取 DAGui 图标库，不引用 APP 资源）
+    actionValidationRules             = createAction(UiNames::Action::ValidationRules, ":/DAGui/icon/validation.svg");
+    actionRunValidation               = createAction(UiNames::Action::RunValidation, ":/DAGui/icon/validation-run.svg");
+    // 批注 action（005 T1.26；图标取 DAGui 图标库）
+    actionNote                        = createAction(UiNames::Action::Note, ":/DAGui/icon/cell-note.svg");
+    actionInsertNote                  = createAction(UiNames::Action::InsertNote, ":/DAGui/icon/cell-note.svg");
+    actionEditNote                    = createAction(UiNames::Action::EditNote, ":/DAGui/icon/cell-note.svg");
+    actionDeleteNote                  = createAction(UiNames::Action::DeleteNote, ":/DAGui/icon/delete.svg");
+    actionClearNotes                  = createAction(UiNames::Action::ClearNotes, ":/DAGui/icon/note-clear.svg");
+    // 列视图 action（006 T1.8；图标取 DAGui 图标库，不设快捷键——表格快捷键唯一挂点在 DADataTableView 红线5）
+    actionFreezeColumns               = createAction(UiNames::Action::FreezeColumns, ":/DAGui/icon/freeze-column.svg");
+    actionHideColumn                  = createAction(UiNames::Action::HideColumn, ":/DAGui/icon/hide-column.svg");
+    actionShowAllColumns              = createAction(UiNames::Action::ShowAllColumns, ":/DAGui/icon/show-all-columns.svg");
+    actionColumnViewDialog            = createAction(UiNames::Action::ColumnViewDialog, ":/DAGui/icon/column-view.svg");
+    // 冻结菜单三项（无图标，照 actionInsertRowAbove 先例单参 createAction）
+    actionFreezeFirstColumn           = createAction(UiNames::Action::FreezeFirstColumn);
+    actionFreezeColumnsPrompt         = createAction(UiNames::Action::FreezeColumnsPrompt);
+    actionUnfreezeColumns             = createAction(UiNames::Action::UnfreezeColumns);
+    // 定位 action（007 T1.7；快捷键 Ctrl+G 在 DADataTableView，action 不设 shortcut 红线5）
+    actionGotoCell                    = createAction(UiNames::Action::GotoCell, ":/DAGui/icon/goto-cell.svg");
 }
 
 void DAAppActions::buildChartAction()
@@ -267,6 +315,7 @@ void DAAppActions::buildViewAction()
     actionShowDataArea         = createAction(UiNames::Action::ShowDataArea, ":/app/bright/Icon/showTable.svg");
     actionShowDataManagerArea  = createAction(UiNames::Action::ShowDataManagerArea, ":/app/bright/Icon/data-manager-view.svg");
     actionShowMessageLogView   = createAction(UiNames::Action::ShowMessageLogView, ":/app/bright/Icon/showInfomation.svg");
+    actionShowUndoHistory      = createAction(UiNames::Action::ShowUndoHistory, ":/DAGui/icon/undo-history.svg");  // 005 T1.21（图标取 DAGui 图标库）
     actionShowSettingWidget    = createAction(UiNames::Action::ShowSettingWidget, ":/app/bright/Icon/showSettingWidget.svg");
     actionShowLeftSideBar = createAction(UiNames::Action::ShowLeftSideBar, ":/app/bright/Icon/left-sider-bar.svg", true, true);
     actionShowRightSideBar = createAction(UiNames::Action::ShowRightSideBar, ":/app/bright/Icon/right-sider-bar.svg", true, true);
@@ -309,6 +358,10 @@ void DAAppActions::buildWorkflowAction()
     // 导出
     actionExportWorkflowSceneToImage = createAction(UiNames::Action::ExportWorkflowSceneToImage, ":/app/bright/Icon/exportToPic.svg");
     actionExportWorkflowSceneToPNG = createAction(UiNames::Action::ExportWorkflowSceneToPNG, ":/app/bright/Icon/exportToPng.svg");
+    // 默认快捷键（IDE 习惯：F5 运行 / Shift+F5 停止）
+    actionWorkflowNew->setShortcut(QKeySequence(QStringLiteral("Ctrl+Shift+N")));
+    actionWorkflowRun->setShortcut(QKeySequence(Qt::Key_F5));
+    actionWorkflowTerminate->setShortcut(QKeySequence(QStringLiteral("Shift+F5")));
 }
 
 void DAAppActions::buildOtherActions()
@@ -632,6 +685,66 @@ void DAAppActions::retranslateUi()
     actionClearStyleAll->setToolTip(tr("Clear all styles in current table"));    // cn:清除当前表格所有样式
     actionTableFormatCells->setText(tr("Format Cells..."));           // cn:设置单元格格式...
     actionTableFormatCells->setToolTip(tr("Set number/date display format of the selected column"));  // cn:设置选中列的数值/日期显示格式
+    actionFind->setText(tr("Find"));                                  // cn:查找
+    actionFind->setToolTip(tr("Find cells matching the keyword (Ctrl+F)"));  // cn:查找匹配关键字的单元格（Ctrl+F）
+    actionReplace->setText(tr("Replace"));                            // cn:替换
+    actionReplace->setToolTip(tr("Find and replace cells (Ctrl+H)"));  // cn:查找并替换单元格（Ctrl+H）
+    actionConditionalFormat->setText(tr("Conditional Formatting"));   // cn:条件格式
+    actionConditionalFormat->setToolTip(tr("Manage conditional formatting rules (cell rules / color scale / data bar) of the selected columns"));  // cn:管理选中列的条件格式规则（单元格规则/色阶/数据条）
+    actionComputedColumn->setText(tr("Computed Column"));             // cn:计算列
+    actionComputedColumn->setToolTip(tr("Create a column computed from a formula of other columns"));  // cn:用表达式基于其他列创建计算列
+    actionRecomputeAllComputedColumns->setText(tr("Recompute All"));  // cn:全部重算
+    actionRecomputeAllComputedColumns->setToolTip(tr("Recompute all stale/invalid computed columns of the current table"));  // cn:重算当前表全部待重算/失效的计算列
+    actionSplitColumn->setText(tr("Split Column"));                 // cn:分列
+    actionSplitColumn->setToolTip(tr("Split the selected column into multiple columns by delimiter / regex / fixed widths"));  // cn:把选中列按分隔符/正则/固定宽度拆分为多列
+    actionMergeColumns->setText(tr("Merge Columns"));               // cn:合并列
+    actionMergeColumns->setToolTip(tr("Merge the selected columns into one column in the given order"));  // cn:把选中的多列按给定顺序合并为一列
+    actionGroupBy->setText(tr("Group By"));                         // cn:分组聚合
+    actionGroupBy->setToolTip(tr("Aggregate rows by group keys into a new long-format result dataset"));  // cn:按分组键聚合为新数据集（长格式结果表）
+    actionTranspose->setText(tr("Transpose"));                      // cn:转置
+    actionTranspose->setToolTip(tr("Swap rows and columns into a new dataset (in-place optional)"));  // cn:行列互换产出新数据集（可选就地替换）
+    actionMelt->setText(tr("Unpivot (Melt)"));                      // cn:宽转长（melt）
+    actionMelt->setToolTip(tr("Unpivot wide columns into a long-format new dataset (in-place optional)"));  // cn:把宽表展开为长格式新数据集（可选就地替换）
+    actionFill->setText(tr("Fill"));                                // cn:填充
+    actionFill->setToolTip(tr("Fill the selection (down / up / ffill / bfill / series)"));  // cn:填充选区（向下/向上/ffill/bfill/序列）
+    actionFillDown->setText(tr("Fill Down"));                       // cn:向下填充
+    actionFillDown->setToolTip(tr("Fill the selection down with the value of the first row (Ctrl+D)"));  // cn:用选区首行值向下填充（Ctrl+D）
+    actionFillUp->setText(tr("Fill Up"));                           // cn:向上填充
+    actionFillUp->setToolTip(tr("Fill the selection up with the value of the last row"));  // cn:用选区末行值向上填充
+    actionFillForward->setText(tr("Fill Forward (ffill)"));         // cn:向下填充空值(ffill)
+    actionFillForward->setToolTip(tr("Propagate the last valid value down within the selection"));  // cn:选区内向下传递最后一个非空值
+    actionFillBackward->setText(tr("Fill Backward (bfill)"));       // cn:向上填充空值(bfill)
+    actionFillBackward->setToolTip(tr("Propagate the next valid value up within the selection"));  // cn:选区内向上传递下一个非空值
+    actionFillSeries->setText(tr("Fill Series..."));                // cn:序列填充...
+    actionFillSeries->setToolTip(tr("Generate a linear or date series into the selected columns"));  // cn:对选中列生成数值等差或日期步进序列
+    actionValidationRules->setText(tr("Validation Rules"));         // cn:校验规则
+    actionValidationRules->setToolTip(tr("Manage data validation rules (range / enum / not-empty / unique / regex) of the current table"));  // cn:管理当前表的数据校验规则（区间/枚举/非空/唯一/正则）
+    actionRunValidation->setText(tr("Run Validation"));             // cn:执行校验
+    actionRunValidation->setToolTip(tr("Validate the table against enabled rules, highlight violations and show the report (read-only)"));  // cn:按启用规则校验全表，高亮违规并出报告（只读）
+    actionNote->setText(tr("Note"));                                // cn:批注
+    actionNote->setToolTip(tr("Insert or edit a note on the current cell"));  // cn:在当前单元格插入或编辑批注
+    actionInsertNote->setText(tr("Insert Note"));                   // cn:插入批注
+    actionInsertNote->setToolTip(tr("Insert a note on the current cell"));  // cn:在当前单元格插入批注
+    actionEditNote->setText(tr("Edit Note"));                       // cn:编辑批注
+    actionEditNote->setToolTip(tr("Edit the note of the current cell"));  // cn:编辑当前单元格的批注
+    actionDeleteNote->setText(tr("Delete Note"));                   // cn:删除批注
+    actionDeleteNote->setToolTip(tr("Delete the note of the current cell"));  // cn:删除当前单元格的批注
+    actionClearNotes->setText(tr("Clear All Notes"));               // cn:清除本表批注
+    actionClearNotes->setToolTip(tr("Remove all notes of the current table (undoable)"));  // cn:清除本表全部批注（可撤销）
+    // 列视图（006 T1.8）
+    actionFreezeColumns->setText(tr("Freeze Columns"));                               // cn:冻结列
+    actionFreezeColumns->setToolTip(tr("Freeze the leftmost columns of the table"));  // cn:冻结表格左侧的列
+    actionHideColumn->setText(tr("Hide Column"));                                     // cn:隐藏列
+    actionHideColumn->setToolTip(tr("Hide the selected columns"));                    // cn:隐藏选中的列
+    actionShowAllColumns->setText(tr("Show All Columns"));                            // cn:显示所有列
+    actionShowAllColumns->setToolTip(tr("Show all hidden columns"));                  // cn:显示所有被隐藏的列
+    actionColumnViewDialog->setText(tr("Column View..."));                            // cn:列视图...
+    actionColumnViewDialog->setToolTip(tr("Open the column view settings dialog"));   // cn:打开列视图设置对话框
+    actionFreezeFirstColumn->setText(tr("Freeze First Column"));                      // cn:冻结首列
+    actionFreezeColumnsPrompt->setText(tr("Freeze Columns..."));                      // cn:冻结前 N 列…
+    actionUnfreezeColumns->setText(tr("Unfreeze Columns"));                           // cn:取消冻结
+    actionGotoCell->setText(tr("Go To..."));                                          // cn:定位...
+    actionGotoCell->setToolTip(tr("Jump to a row / index label / column"));           // cn:跳转到指定行、索引标签或列
     //-----------------------------------------------------
     // workflow 编辑
     //-----------------------------------------------------
@@ -692,6 +805,8 @@ void DAAppActions::retranslateUi()
     actionShowDataManagerArea->setToolTip(tr("Show the data manager area"));          // cn:显示数据管理区域
     actionShowMessageLogView->setText(tr("Show Information Window"));                  // cn:信息窗口
     actionShowMessageLogView->setToolTip(tr("Show the message log window"));          // cn:显示信息窗口
+    actionShowUndoHistory->setText(tr("Undo History"));                                // cn:撤销历史
+    actionShowUndoHistory->setToolTip(tr("Show the undo history panel (follows the active page, click an entry to undo/redo to it)"));  // cn:显示撤销历史面板（跟随当前激活页面，点击条目可回退/前进）
     actionShowSettingWidget->setText(tr("Show Setting Window"));                      // cn:设置窗口
     actionShowSettingWidget->setToolTip(tr("Show the setting window"));               // cn:显示设置窗口
     actionShowLeftSideBar->setText(tr("Show Left \nSide Bar"));                       // cn:显示左侧边栏

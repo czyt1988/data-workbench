@@ -60,17 +60,62 @@ nav:
       - 大型工程组织与构建: zh/build/large-cmake-project-guide.md
       - 文档构建: doc-build.md
   - 使用指南:
-      - 使用指南概述: zh/use-guide/index.md
-      - 命令行参数: zh/use-guide/command-line-arguments.md
-      - 工作流使用: zh/use-guide/workflow-usage.md
-      - 数据管理使用: zh/use-guide/data-management.md
-      - 图表使用: zh/use-guide/chart-usage.md
-      - 工程文件管理: zh/use-guide/project-management.md
-      - 脚本工作区: zh/use-guide/script-workspace.md
-      - 插件使用: zh/use-guide/plugin-usage.md
-      - 绘图功能:
-          - 数据探针: zh/use-guide/plot/data-probe.md
-      - 配置文件说明: zh/use-guide/configuration.md
+      - 使用指南: zh/use-guide/index.md
+      - 第一部分 · 入门:
+          - 入门: zh/use-guide/getting-started/index.md
+          - 安装与首次启动: zh/use-guide/getting-started/install.md
+          - 主界面: zh/use-guide/getting-started/main-window.md
+          - 工程文件: zh/use-guide/getting-started/project.md
+      - 第二部分 · 数据:
+          - 数据: zh/use-guide/data/index.md
+          - 导入数据: zh/use-guide/data/import.md
+          - 数据管理面板: zh/use-guide/data/manager.md
+          - 表格视图: zh/use-guide/data/table.md
+          - 表格编辑功能总览: zh/use-guide/data/table-editing.md
+          - 表格样式: zh/use-guide/data/style.md
+          - 导出数据: zh/use-guide/data/export.md
+      - 第三部分 · 工作流:
+          - 工作流: zh/use-guide/workflow/index.md
+          - 工作流基础: zh/use-guide/workflow/basics.md
+          - 编辑器功能: zh/use-guide/workflow/editor.md
+          - 系统节点手册: zh/use-guide/workflow/nodes-system.md
+          - 数据分析节点手册: zh/use-guide/workflow/nodes-analysis.md
+          - 开发自定义节点: zh/use-guide/workflow/custom-node.md
+          - 把节点打包成插件: zh/use-guide/workflow/node-plugin.md
+      - 第四部分 · 数据分析:
+          - 数据分析: zh/use-guide/analysis/index.md
+          - 数据清洗: zh/use-guide/analysis/cleaning.md
+          - 筛选、计算与排序: zh/use-guide/analysis/query.md
+          - 描述统计与透视表: zh/use-guide/analysis/statistics.md
+          - 统计绘图: zh/use-guide/analysis/stats-plots.md
+      - 第五部分 · 绘图:
+          - 绘图: zh/use-guide/chart/index.md
+          - 创建图表: zh/use-guide/chart/create.md
+          - 绘图与坐标系: zh/use-guide/chart/figure.md
+          - 二维图表设置: zh/use-guide/chart/settings-2d.md
+          - 三维图表设置: zh/use-guide/chart/settings-3d.md
+          - 缩放与取值: zh/use-guide/chart/interaction.md
+          - 数据探针与数据联动表: zh/use-guide/chart/data-probe.md
+          - 复制与保存图表: zh/use-guide/chart/save.md
+      - 第六部分 · 智能体:
+          - 智能体: zh/use-guide/agent/index.md
+          - 配置模型: zh/use-guide/agent/model-config.md
+          - 会话与对话: zh/use-guide/agent/session.md
+          - 内置工具: zh/use-guide/agent/tools.md
+          - 权限控制: zh/use-guide/agent/permission.md
+          - 提示词库: zh/use-guide/agent/prompt-library.md
+          - 子智能体: zh/use-guide/agent/subagent.md
+      - 第七部分 · 脚本与扩展:
+          - 脚本与扩展: zh/use-guide/script/index.md
+          - 脚本工作区: zh/use-guide/script/workspace.md
+          - 插件: zh/use-guide/plugin/index.md
+          - 插件管理: zh/use-guide/plugin/manager.md
+      - 第八部分 · 参考:
+          - 参考: zh/use-guide/reference/index.md
+          - 设置项说明: zh/use-guide/reference/settings.md
+          - 命令行参数: zh/use-guide/reference/command-line.md
+          - 快捷键: zh/use-guide/reference/shortcuts.md
+          - 常见故障: zh/use-guide/reference/troubleshooting.md
   - 开发指南:
       - 开发指引: zh/dev-guide/developer-guide.md
       - 项目结构:
@@ -83,6 +128,8 @@ nav:
           - Python 脚本国际化: zh/dev-guide/general/python-i18n.md
           - 日志系统: zh/dev-guide/general/logging.md
           - 枚举字符串工具: zh/dev-guide/general/da-enum-string-utils.md
+          - 配置文件: zh/dev-guide/general/config-files.md
+          - 撤销成本基准报告: zh/dev-guide/general/undo-cost-benchmark.md
           - 第三方库管理: zh/dev-guide/general/third-party-manage.md
           - 设置类窗体规范: zh/dev-guide/ui/settingwidget-standard.md
           - 创建设置面板: zh/dev-guide/ui/creating-setting-panel.md
@@ -93,6 +140,8 @@ nav:
           - 接口模块: zh/dev-guide/architecture/interface-module.md
           - 数据模块: zh/dev-guide/architecture/data-module.md
           - 表格数据源抽象层: zh/dev-guide/architecture/table-data-source.md
+          - 表格元数据架构: zh/dev-guide/architecture/table-metadata.md
+          - 滑动窗表格导航协议: zh/dev-guide/architecture/virtual-table-navigation.md
           - 工程文件结构: zh/dev-guide/architecture/project-file-structure.md
           - 工程序列化架构: zh/dev-guide/architecture/project-serialization-architecture.md
       - Python/C++ 集成:
@@ -164,6 +213,11 @@ markdown_extensions:
   - md_in_html
   - toc:
       permalink: true
+      # 默认的 slug 生成规则只保留 ASCII，中文标题会退化成 _1、_57 这样的锚点，
+      # 文档里指向中文标题的链接会全部失效。改用保留 Unicode 的规则。
+      slugify: !!python/object/apply:pymdownx.slugs.slugify
+        kwds:
+          case: lower
   - fenced_code
   - nl2br
   - admonition

@@ -2,13 +2,6 @@
 
 本页面提供 DAWorkBench API 文档的总览导航，展示模块关系图和各模块核心 API 入口。
 
-## 主要功能特性
-
-- ✅ **模块关系图**：一张图看清 15+ 模块的依赖关系和层次
-- ✅ **核心 API 导航**：按功能域组织的 API 入口表
-- ✅ **Doxygen 集成**：链接到完整的自动生成 API 文档
-- ✅ **接口体系**：从 DACoreInterface 出发的完整接口树
-
 ---
 
 ## 模块关系图
@@ -66,7 +59,7 @@ graph TD
     style L1 fill:#e8f5e9
 ```
 
-上图展示了 DAWorkBench 的五层架构和模块依赖关系。箭头方向表示"依赖于"，依赖始终从上层指向下层。
+上图展示了 DAWorkBench 的五层架构和模块依赖关系。箭头方向表示「依赖于」，依赖始终从上层指向下层。
 
 ---
 
@@ -148,14 +141,14 @@ classDiagram
 | 接口 | 文件 | 说明 |
 |------|------|------|
 | `DACoreInterface` | `src/DAInterface/DACoreInterface.h` | 顶层核心接口，获取所有其他接口（含 `getAgentInterface()`） |
-| `DAUIInterface` | `src/DAInterface/DAUIInterface.h` | UI 管理接口（Ribbon/Docking/StatusBar/主题/表单配置） |
+| `DAUIInterface` | `src/DAInterface/DAUIInterface.h` | 界面管理接口（Ribbon/Docking/StatusBar/主题/表单配置） |
 | `DARibbonAreaInterface` | `src/DAInterface/DARibbonAreaInterface.h` | Ribbon 区域扩展接口 |
 | `DADockingAreaInterface` | `src/DAInterface/DADockingAreaInterface.h` | Dock 停靠区域扩展接口 |
 | `DAStatusBarInterface` | `src/DAInterface/DAStatusBarInterface.h` | 状态栏扩展接口 |
-| `DAUIExtendInterface` | `src/DAInterface/DAUIExtendInterface.h` | UI 扩展接口（注册自定义扩展模块） |
+| `DAUIExtendInterface` | `src/DAInterface/DAUIExtendInterface.h` | 界面扩展接口（注册自定义扩展模块） |
 | `DAProjectInterface` | `src/DAInterface/DAProjectInterface.h` | 工程文件管理接口 |
 | `DADataManagerInterface` | `src/DAInterface/DADataManagerInterface.h` | 数据管理接口 |
-| `DAAgentInterface` | `src/DAAgent/DAAgentInterface.h` | AI 分析子系统接口（LLM 配置/会话/提示词库/工具注册） |
+| `DAAgentInterface` | `src/DAAgent/DAAgentInterface.h` | AI 分析子系统接口（大语言模型配置、会话、提示词库、工具注册） |
 | `DAActionsInterface` | `src/DAInterface/DAActionsInterface.h` | QAction 注册和查找接口 |
 | `DACommandInterface` | `src/DAInterface/DACommandInterface.h` | 撤销/重做命令管理接口 |
 
@@ -221,8 +214,9 @@ daWarning << "Data size exceeds threshold";    // 警告级别，进 UI 窗口
 daCritical << "Failed to load plugin";         // 严重级别，进 UI 窗口
 ```
 
-!!! warning "日志消息不翻译"
-    所有日志消息保持纯英文，不使用 `tr()`。详见 [日志系统文档](../../dev-guide/general/logging.md)。
+> **⚠️ 日志消息不翻译**
+>
+> 所有日志消息保持纯英文，不使用 `tr()`。详见 [日志系统文档](../../dev-guide/general/logging.md)。
 
 ---
 
@@ -230,12 +224,13 @@ daCritical << "Failed to load plugin";         // 严重级别，进 UI 窗口
 
 完整的 API 文档由 Doxygen 自动生成，包含所有类、函数、枚举的详细说明：
 
-- [Doxygen API 首页](../../doxygen/index.html)
-- [类索引](../../doxygen/classes.html)
-- [文件列表](../../doxygen/files.html)
+- [Doxygen API 首页](../../../doxygen/index.html)
+- [类索引](../../../doxygen/classes.html)
+- [文件列表](../../../doxygen/files.html)
 
-!!! tip "Markdown vs Doxygen"
-    本 Markdown API 总览提供导航和关键 API 速查，完整的成员函数文档请参考 Doxygen 生成的内容。
+> **💡 Markdown vs Doxygen**
+>
+> 本 Markdown API 总览提供导航和关键 API 速查，完整的成员函数文档请参考 Doxygen 生成的内容。
 
 ---
 
@@ -244,7 +239,7 @@ daCritical << "Failed to load plugin";         // 严重级别，进 UI 窗口
 | 模块 | 层 | 说明 | 核心类 |
 |------|-----|------|--------|
 | DAShared | L1 | 纯头文件模板库 | 数据结构、宏定义 |
-| DAUtils | L1 | 通用工具类 | XML序列化、CSV、目录管理 |
+| DAUtils | L1 | 通用工具类 | XML 序列化、CSV、目录管理 |
 | DAMessageHandler | L1 | 日志基础设施 | DALogger、spdlog |
 | DAPyBindQt | L1 | Python↔Qt 绑定 | 类型转换器、GIL 守卫 |
 | DAPyScripts | L2 | Python 脚本包装 | I/O、DataFrame 操作 |
@@ -253,7 +248,7 @@ daCritical << "Failed to load plugin";         // 严重级别，进 UI 窗口
 | DAData | L2 | 数据管理 | DAData, DADataManager |
 | DAGraphicsView | L2 | 图形视图框架 | DAGraphicsScene, DAGraphicsView |
 | DAFigure | L2 | 图表容器 | DAFigureWidget, DAChartWidget |
-| DAGui | L3 | GUI 整合层 | 工作流 UI、图表设置 |
+| DAGui | L3 | 图形界面整合层 | 工作流界面、图表设置 |
 | DAInterface | L4 | 抽象接口定义 | DACoreInterface, DAUIInterface |
 | DAAgent | L4 | AI 分析子系统 | DAAgentInterface, DAAgentModule, DAAbstractAgentTool |
 | DAPluginSupport | L4 | 插件框架 | DAAbstractPlugin, DAPluginManager |
@@ -263,7 +258,7 @@ daCritical << "Failed to load plugin";         // 严重级别，进 UI 窗口
 
 ## 相关文档
 
-- [API 文档索引](../api-reference.md) — 核心 API 速查（含代码示例）
-- [架构设计](../../dev-guide/architecture/architecture.md) — 五层架构和设计决策
-- [模块业务逻辑](../../dev-guide/architecture/module-breakdown.md) — 各模块内部工作原理
-- [插件开发指南](../../plugin/plugin-development.md) — 插件和节点开发
+- [API 文档索引](../api-reference.md)：核心 API 速查（含代码示例）
+- [架构设计](../../dev-guide/architecture/architecture.md)：五层架构和设计决策
+- [模块业务逻辑](../../dev-guide/architecture/module-breakdown.md)：各模块内部工作原理
+- [插件开发指南](../../plugin/plugin-development.md)：插件和节点开发

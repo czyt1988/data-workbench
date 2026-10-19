@@ -1,52 +1,41 @@
 # 基于 cmake 的大型工程组织和构建
 
-本文档介绍如何使用 cmake 组织和构建大型 C++ 工程，实现一键编译安装和第三方开发者集成。通过 cmake 可以高效组织庞大的工程结构，自动化编译第三方依赖库，并生成便于插件开发的环境。
+本文档介绍如何用 cmake 组织和构建大型 C++ 工程，实现一键编译安装和第三方开发者集成。
 
-## 主要功能特性
+在大型 C++ 项目中，一个成熟的工程除应用程序本身外，还包括为其核心功能抽象出的库。这些库一方面服务于项目自身的模块化解耦，另一方面也可能作为插件化开发的基础库提供给第三方开发者。工程还依赖众多第三方库。
 
-**特性**
+大型工程由以下几部分组成：
 
-- ✅ **工程目录结构**：标准的 src、docs、3rdparty、cmake 目录组织方式
-- ✅ **第三方库管理**：使用 git submodule 管理第三方库源码
-- ✅ **规范安装路径**：bin、lib、include、lib/cmake 的标准化目录结构
-- ✅ **单模块库 install**：完整的单模块 CMake 配置和安装流程
-- ✅ **多模块 install**：多模块统一导出的 CMake 配置方法
-- ✅ **第三方用户引入**：find_package 引入库的标准方式
+-   **第三方库**：如 `OCCT`、`VTK`、`Qt` 等。
+-   **自定义库**：项目自身抽象出的功能模块。
+-   **可执行程序**：如图形界面程序、命令行工具等。
+-   **静态资源**：脚本、图片、配置文件等。
 
-在大型C++项目中，构建系统的选择直接影响到项目的可维护性、可扩展性以及第三方开发的友好度。一个成熟的工程不仅仅包含应用程序本身，还包括为其核心功能抽象出的库。这些库一方面服务于项目自身的模块化解耦，另一方面也可能作为插件化开发的基础库提供给第三方开发者。此外，项目还不可避免地依赖于众多第三方库。
+大型工程用简单的构建工具很难做到一键编译一键安装，比如 `qmake` 缺少安装和依赖管理功能，Qt6 因此弃用它转向 `cmake`。在 C++ 领域，`cmake` 虽然缺点很多，仍是构建管理的事实标准。
 
-一个典型的大型工程通常由以下几部分组成：
+通过 `cmake` 可以做到：
 
--   **第三方库：** 如 `OCCT`、`VTK`、`Qt` 等。
--   **自定义库：** 项目自身抽象出的功能模块。
--   **可执行程序：** 如 GUI 程序、命令行工具等。
--   **静态资源：** 脚本、图片、配置文件等。
+-   高效组织庞大且复杂的工程结构。
+-   自动化编译第三方依赖库。
+-   按依赖关系自动构建项目所有组件。
+-   一键式安装部署整个项目。
+-   生成便于第三方集成的插件开发环境。
 
-针对这些大型的工程，如果用一些简单的构建工具，是很难做到一键编译一键安装的，例如 `qmake`，缺少强大的安装和依赖管理功能，这也就是为什么 Qt6 弃用 `qmake`，全面转向 `cmake`。目前来说，在C++领域，最适合进行构建管理的还是`cmake`，虽然`cmake` 有非常非常多的缺点，但它凭借强大的功能，依然是当前 C++ 领域构建管理的事实标准。
-
-通过 `cmake`，我们可以实现：
-
--   **高效组织** 庞大且复杂的工程结构。
--   **自动化编译** 第三方依赖库。
--   **按依赖关系** 自动构建项目所有组件。
--   **一键式安装** 部署整个项目。
--   **生成** 便于第三方集成的插件开发环境。
-
-本文将结合实践经验，深入探讨如何利用 `cmake` 组织和构建一个大型工业级软件项目，最终生成一个可供第三方开发者一键引入、便捷地进行二次开发的完整环境。同时，本文也介绍了通过`git submodule` 来方便管理第三方库。
+本文介绍实际项目里用 `cmake` 组织大型工程、生成第三方可直接引入的开发环境，以及用 `git submodule` 管理第三方库的做法。
 
 ## 工程的目录结构
 
-一个清晰、标准的目录结构是大型工程良好管理的开端，工程的顶层文件夹应该包含如下几个文件夹：
+工程的顶层文件夹包含以下几项：
 
-- src 文件夹，这个文件夹用来放置你所有的源代码
-- docs 文件夹，这个文件夹用来放置你所有的文档
-- 3rdparty 文件夹，这个文件夹用来放置你所有的第三方库，这个文件夹可以放在 src 文件夹里面，也可以放在外层目录
+- src 文件夹，放所有源代码
+- docs 文件夹，放所有文档
+- 3rdparty 文件夹，放所有第三方库，可以放在 src 文件夹里面，也可以放在外层目录
 - 针对整个工程的 `CMakeLists.txt` 文档
-- cmake 文件夹，这个文件夹放置了一些封装好的 cmake 文件，用来方便你的 cmake 的集成
+- cmake 文件夹，放封装好的 cmake 文件，方便集成
 
 上面的这些文件夹和文件是一个工程比较通用的组织结构
 
-一般而言，在工程的顶层目录下，还会有`.clang-format`用于规范编码，`.clang-tidy`和`.clazy`用于代码检查这些按需提供，但作为一个开源的项目，还是建议提供的
+工程顶层目录下还会放 `.clang-format` 用于规范编码，`.clang-tidy` 和 `.clazy` 用于代码检查；这些按需提供，开源项目建议提供。
 
 因此一个相对标准的源码目录如下所示：
 
@@ -69,13 +58,13 @@ MyProject/
 
 ## 第三方库的管理
 
-`3rdparty` 文件夹用来放置所有的第三方库的源代码，通常来讲，第三方库源代码不应该下载下来放进 `3rdparty` 文件夹，而是通过 git 的 `submodule` 添加进去，通过 `submodule` 方式添加进去的源代码，可以随时更新到远程仓库上的最新版本，也可以指定这个第三方库是某个固定分支或者是某个 tag。
+`3rdparty` 文件夹放第三方库的源代码。第三方库源码不要直接下载放进 `3rdparty` 文件夹，而是通过 git 的 `submodule` 添加：submodule 方式添加的源码可以随时更新到远程仓库的最新版本，也可以固定在某个分支或某个 tag 上。
 
 ### 添加 submodule
 
 下面的示例展示了如何使用 git submodule 添加第三方库：
 
-例如我这里需要使用 ribbon 界面，添加了 SARibbon 作为第三方库：
+比如要用 ribbon 界面，添加 SARibbon 作为第三方库：
 
 ```shell
 git submodule add https://github.com/czyt1988/SARibbon.git ./src/3rdparty/SARibbon
@@ -84,72 +73,73 @@ git submodule add https://github.com/czyt1988/SARibbon.git ./src/3rdparty/SARibb
 
 上述命令会将 SARibbon 库作为子模块添加到项目的 3rdparty 目录下。
 
-!!! note "首次拉取项目"
-    对于使用 `submodule` 管理第三方库的方式，首次拉取项目之后，需要执行：
-    
-    ```shell
-    git submodule update --init --recursive
-    ```
-    
-    把所有库拉取下来。也可以 clone 的时候使用 `--recursive` 参数：
-    
-    ```shell
-    git clone --recursive
-    ```
+> **📝 首次拉取项目**
+>
+> 对于使用 `submodule` 管理第三方库的方式，首次拉取项目之后，需要执行：
+>
+> ```shell
+> git submodule update --init --recursive
+> ```
+>
+> 把所有库拉取下来。也可以 clone 的时候使用 `--recursive` 参数：
+>
+> ```shell
+> git clone --recursive
+> ```
 
-大部分的第三方库都提供了 `cmake`，如果不提供的话，我会 fork 一个，写一个带有 `cmake` 的版本，例如 [qwt库](https://github.com/czyt1988/QWT)，[QtPropertyBroswer库](https://github.com/czyt1988/QtPropertyBrowser)，3rdparty 文件夹下会写一个 `cmake` 文件，用来集中编译所有的第三方库，一般我会在 `cmake` 中就指定安装目录，确保第三方库的安装目录和我的程序的安装目录是一致的，这样的好处是，如果你的程序需要给其他人进行二次开发的话，能保证你程序编译出来的库和第三方库是在一个安装环境下，这样可以解决第三方库和你自身程序库的依赖问题，不需要用户在编译你的程序之前先进行大量的第三方库的编译，只需要一次统一的编译即可把所有的第三方库安装到固定目录下,最后 install 后，形成一个完整的开发环境。
+大部分第三方库都提供了 `cmake`；没有提供时会 fork 一份并补上 `cmake` 版本，比如 [qwt 库](https://github.com/czyt1988/QWT) 和 [QtPropertyBroswer 库](https://github.com/czyt1988/QtPropertyBrowser)。`3rdparty` 文件夹下的 `cmake` 文件用来集中编译所有第三方库，其中指定安装目录与主程序的安装目录一致。这样程序交给其他人二次开发时，程序自身的库和第三方库处在同一个安装环境里，第三方库与程序库之间的依赖问题随之解决；使用者不需要在编译程序之前先逐个编译第三方库，一次统一编译就能把所有第三方库安装到固定目录下，install 后形成一个完整的开发环境。
 
 
-连同第三方库一起发布的开发环境bin目录
+连同第三方库一起发布的开发环境 bin 目录
 
 ![完整开发环境](../../assets/PIC/cmake-after-install.png)
 
-连同第三方库一起发布的开发环境lib目录
+连同第三方库一起发布的开发环境 lib 目录
 ![完整开发环境2](../../assets/PIC/cmake-after-install2.png)
 
-作为第三方开发者，这个完整开发环境里面包含了所有的库，第三方开发者只需知道安装目录，就可以加载所有的依赖
+这个完整开发环境里面包含了所有的库，第三方开发者只需知道安装目录，就可以加载所有的依赖
 
-下面就介绍一下，如何通过cmake实现这种大型工程的组织
+下面介绍如何通过 cmake 组织这种大型工程。
 
 ## 大型工程的cmake写法
 
-这里不会教你如何写cmake，而是着重讲讲大型工程的cmake要注意事项，工程顶层会有个`CMakeLists.txt`文件，这个文件定义了整个工程的信息、可选项、总体的安装步骤等，实现整个工程的构建，顶层的`CMakeLists.txt`通过`add_subdirectory`添加子目录，一般会添加src目录，以我自己的一个[仿真集成平台data-workbench举例](https://github.com/czyt1988/data-workbench)，介绍如何通过cmake组织一个大型的工程
+这里不介绍如何写 cmake，只讲大型工程的 cmake 要注意的事项。工程顶层有一个 `CMakeLists.txt` 文件，定义整个工程的信息、可选项、总体的安装步骤等；顶层 `CMakeLists.txt` 通过 `add_subdirectory` 添加子目录，一般会添加 src 目录。下面以 [仿真集成平台 data-workbench](https://github.com/czyt1988/data-workbench) 为例，介绍如何通过 cmake 组织大型工程。
 
 > 上述的仿真集成平台不提供业务逻辑，所有业务逻辑都是通过插件实现，插件的开发就需要依赖此集成平台和所有第三方库
 
-要驾驭大型工程的构建，必须深入理解和熟练运用 `cmake` 的 `install` 命令
+组织大型工程的构建，关键是掌握 `cmake` 的 `install` 命令。
 
 `install` 命令的主要功能：
-1.  **复制文件/目录** 到指定位置。
-2.  **导出目标**，生成 `{库名}Targets.cmake` 文件，供其他 `cmake` 项目 `find_package`。
-3.  **为当前项目** 的其他模块提供依赖支持。
+1.  复制文件/目录到指定位置。
+2.  导出目标，生成 `{库名}Targets.cmake` 文件，供其他 `cmake` 项目 `find_package`。
+3.  为当前项目的其他模块提供依赖支持。
 
-`cmake` 强大的一个地方在于它能通过 `$<BUILD_INTERFACE:` 和 `$<INSTALL_INTERFACE:` 生成器表达式，优雅地区分 **构建环境**（源代码目录）和 **安装环境**（安装目录），确保头文件路径和依赖关系在不同场景下都能正确工作。
+`cmake` 通过 `$<BUILD_INTERFACE:` 和 `$<INSTALL_INTERFACE:` 生成器表达式区分**构建环境**（源代码目录）和**安装环境**（安装目录），确保头文件路径和依赖关系在不同场景下都能正确工作。
 
-`cmake`的`install`用法是比较固定的，按照一个例子或者模板非常简单的就能实现自己的安装和部署，针对大型系统一个多组件的安装是必须的，类似于QT的包引入，能进行模块的划分，不需要整个QT所有库都一起引进工程里面，针对自己的大型系统也应该实现类似的引入，因此，下面将着重介绍如何进行模块化的`install`
+`cmake` 的 `install` 用法比较固定，照着一个例子或者模板就能完成自己的安装和部署。大型系统需要多组件的安装，类似 Qt 的包引入：按模块划分，不需要把整个 Qt 的所有库一起引进工程，自己的大型系统也应该实现类似的引入。下面着重介绍如何进行模块化的 `install`。
 
 ### 规范的安装路径
 
-使用规范的安装路径，能让你工程的库以及第三方库安装在同一个目录下，这样你的工程就很容易被第三方使用者集成起来进行二次开发，因此，安装路径尽量使用规范化的安装路径，而不是过于自由的进行定制，一般规范化的安装路径如下：
+规范的安装路径让工程的库以及第三方库安装在同一个目录下，工程很容易被第三方使用者拿去做二次开发，因此安装路径尽量规范化，不要过于自由地定制。常见的规范化安装路径如下：
 
 -   `bin/`: 存放可执行文件和 Windows 下的 DLL 文件。
 -   `lib/`: 存放静态库（.a, .lib）和动态库的导入库（.lib）。
 -   `lib/cmake/<ProjectName>/`: 存放项目的 CMake 配置文件（如 `*Config.cmake`, `*Targets.cmake`）。
 -   `include/<ProjectName>/`: 存放项目的公共头文件。
 
-通常不建议在cmake里硬编码上诉路径，`GNUInstallDirs` 模块定义的标准路径
+不建议在 cmake 里硬编码上述路径，可以用 `GNUInstallDirs` 模块定义的标准路径。
 
-使用 `include(GNUInstallDirs)` 后，你可以使用 `CMAKE_INSTALL_BINDIR`、`CMAKE_INSTALL_LIBDIR`、`CMAKE_INSTALL_INCLUDEDIR` 等变量，确保路径的规范性。
+使用 `include(GNUInstallDirs)` 后，可以用 `CMAKE_INSTALL_BINDIR`、`CMAKE_INSTALL_LIBDIR`、`CMAKE_INSTALL_INCLUDEDIR` 等变量，确保路径的规范性。
 
-下面是常见的cmake安装后的文件夹
+下面是常见的 cmake 安装后的文件夹
 
 ![](../../assets/PIC/cmake-standard-install-dir.png)
 
-基本上大部分的第三方库都是按照这个目录结构进行安装，这样当你的工程包含了大量的第三方库，以及你自身的库的情况下，最终所有的dll都会安装在`bin`录下，所有的库文件都会安装在`lib`目录下，所有的头文件都会在`include`文件夹下面对应的自身库名的文件夹下面，所有`cmake`需要用的文件都在`lib/cmake`文件夹下对应的自身库名的文件夹下面
+大部分第三方库都是按照这个目录结构进行安装。工程包含大量第三方库以及自身的库时，所有 dll 都安装在 `bin` 目录下，所有库文件安装在 `lib` 目录下，所有头文件在 `include` 文件夹下面对应的自身库名的文件夹下面，所有 `cmake` 需要用的文件都在 `lib/cmake` 文件夹下对应的自身库名的文件夹下面。
 
-以这种标准化的形式构建，第三方开发者可以很方便的使用你的工程
+按这种标准化的形式构建，第三方开发者可以很方便地使用这个工程。
 
-这里举一个例子，假如你的库名叫`SARibbonBar`，那么它安装后在windows系统下应该生成如下结构
+比如库名叫 `SARibbonBar`，它安装后在 windows 系统下应该生成如下结构
 
 ```
 bin
@@ -170,7 +160,7 @@ lib
 
 ### 单模块库的 `install` 标准写法
 
-如果你作为一个库开发者，这个库只有一个模块，那么写法相对固定，单一模块的 install 写法基本就是如下步骤：
+库只有一个模块时，install 写法相对固定，基本步骤如下：
 
 #### 1. 定义库名和版本
 
@@ -205,7 +195,7 @@ target_compile_definitions(${LIB_NAME} PUBLIC ...) # 如果有公共宏定义，
 
 #### 3. 安装公共头文件
 
-通过 install 可以复制任意内容，把你要提供的头文件、甚至脚本、资源都移动到指定安装目录下。
+通过 install 可以复制任意内容，把要提供的头文件、甚至脚本、资源都放到指定安装目录下。
 
 下面的 CMake 示例展示了头文件安装配置：
 
@@ -232,12 +222,13 @@ install(TARGETS ${LIB_NAME}
 )
 ```
 
-!!! note "cmake install 功能"
-    install 命令功能较多，包含复制文件、导出目标等，理解需要一定的学习成本。
+> **📝 cmake install 功能**
+>
+> install 命令功能较多，包含复制文件、导出目标等，理解需要一定的学习成本。
 
 #### 5. 生成 `Config.cmake` 文件
 
-这里比较抽象但必不可少，会用到 `write_basic_package_version_file` 和 `configure_package_config_file` 两个函数，用于生成 find_package 所必须的 Config.cmake 文件。
+这一步用到 `write_basic_package_version_file` 和 `configure_package_config_file` 两个函数，生成 find_package 所必须的 Config.cmake 文件。
 
 首先，创建一个模板文件 `${LIB_NAME}Config.cmake.in`，内容如下：
 
@@ -273,7 +264,7 @@ write_basic_package_version_file(
 
 #### 6. 安装生成的 CMake 文件
 
-上述文件会在编译过程生成在 `${CMAKE_CURRENT_BINARY_DIR}` 目录下面，你要在安装过程中把这些文件复制到 lib/cmake/你的库名的配置目录下。
+上述文件会在编译过程生成在 `${CMAKE_CURRENT_BINARY_DIR}` 目录下面，安装时把这些文件复制到 `lib/cmake/<库名>` 的配置目录下。
 
 下面的 CMake 示例展示了 cmake 文件安装：
 
@@ -292,9 +283,9 @@ install(EXPORT ${LIB_NAME}Targets
 
 ----
 
-完成以上步骤后，其他项目就可以通过简单的 `find_package(MyLib)` 来使用你的库了。
+完成以上步骤后，其他项目就可以通过简单的 `find_package(MyLib)` 来使用这个库了。
 
-使用这个库仅仅需要以下步骤：
+使用这个库只需以下步骤：
 
 ```cmake
 set(${YOUR_LIB_NAME}_DIR "your-lib-install-dir/lib/cmake")
@@ -303,9 +294,9 @@ find_package(${YOUR_LIB_NAME})
 
 ### 多模块的install写法
 
-当一个项目包含多个库（如 Qt 的 Core、Gui、Widgets）时，我们需要将所有模块的导出信息合并到一个总的导出目标中，并提供一个顶层的 `Config.cmake` 文件
+一个项目包含多个库（如 Qt 的 Core、Gui、Widgets）时，需要将所有模块的导出信息合并到一个总的导出目标中，并提供一个顶层的 `Config.cmake` 文件。
 
-Qt就是一个多模块的例子，Qt模块的引入是这样写的：
+Qt 就是一个多模块的例子，Qt 模块的引入是这样写的：
 
 ```cmake
 find_package(QT NAMES Qt6 Qt5 COMPONENTS 
@@ -335,21 +326,21 @@ root
  └─{MyPackageName}Config.cmake.in
 ```
 
-为了更好的组织大型项目，一般会在项目的根目录下创建一个cmake文件夹，常用的cmake文件会统一放在此目录下
+大型项目会在项目的根目录下创建一个 cmake 文件夹，常用的 cmake 文件统一放在此目录下。
 
-多模块的install写法有如下步骤：
+多模块的 install 写法有如下步骤：
 
 #### 1.顶层`CMakeLists.txt`写法
 
-顶层的`CMakeLists.txt`里需要进行安装导出目标，它主要处理如下事情
+顶层 `CMakeLists.txt` 负责安装导出目标，主要处理如下事情：
 
 -   定义总包名 `MyPackage` 和总导出目标名 `MyPackageTargets`。
 -   负责生成和安装顶层的 `MyPackageConfig.cmake` 和 `MyPackageConfigVersion.cmake` 文件。
 -   **不安装任何具体的目标**，只导出所有子模块累积到 `MyPackageTargets` 中的信息。
 
-对于模块化的cmake，首先要有个总的进入文件，以MyPackage命名，像Qt5就叫Qt5Config.cmake，自己模块就叫{MyPackageName}Config.cmake
+模块化的 cmake 首先要有个总的进入文件，以 MyPackage 命名，像 Qt5 就叫 Qt5Config.cmake，自己模块就叫 {MyPackageName}Config.cmake。
 
-和单一模块类似，{MyPackageName}Config.cmake会通过{MyPackageName}Config.cmake.in模板生成，一个相对通用的写法如下：
+和单一模块类似，{MyPackageName}Config.cmake 通过 {MyPackageName}Config.cmake.in 模板生成，一个相对通用的写法如下：
 
 ```cmake
 @PACKAGE_INIT@
@@ -362,9 +353,9 @@ set_and_check({MyPackageName}_LIBRARY_DIR "${PACKAGE_PREFIX_DIR}/@CMAKE_INSTALL_
 check_required_components({MyPackageName})
 ```
 
-上面{MyPackageName}需要替换为你的包名
+上面的 {MyPackageName} 需要替换为实际的包名。
 
-在顶层的`CMakeLists.txt`里需要进行安装导出目标，顶层`CMakeLists.txt`的安装写法如下
+顶层 `CMakeLists.txt` 的安装写法如下
 
 ```cmake
 set(MY_PACKAGE_PROJECT_NAME "MyPackageName")
@@ -394,11 +385,11 @@ install(EXPORT ${DA_TARGET_NAME}
 )
 ```
 
-顶层的`CMakeLists.txt`负责导出Config文件，后续所有模块的安装都往这个目标添加
+顶层 `CMakeLists.txt` 负责导出 Config 文件，后续所有模块的安装都往这个目标添加
 
 #### 2.子模块`CMakeLists.txt`写法
 
-多模块的子模块安装时不需要生成config文件，只需要将自己的目标**追加**到顶层定义的总导出集中（上诉例子的导出集名为MY_PACKAGE_TARGET_NAME）。
+子模块安装时不需要生成 config 文件，只需要将自己的目标**追加**到顶层定义的总导出集中（上例的导出集名为 MY_PACKAGE_TARGET_NAME）。
 
 多模块的子模块安装示例
 
@@ -416,21 +407,21 @@ install(TARGETS ${子模块名字}    # 这里是你这个库库的名字
     )
 ```
 
-MY_PACKAGE_TARGET_NAME是在顶层cmake定义的总的导出集，子模块的安装都导出到此导出集即可，这样就能像Qt一样，通过`find_package(MyPackageName COMPONENTS ModuleA ModuleB)`找到对应的库
+MY_PACKAGE_TARGET_NAME 是在顶层 cmake 定义的总的导出集，子模块的安装都导出到此导出集即可，这样就能像 Qt 一样，通过 `find_package(MyPackageName COMPONENTS ModuleA ModuleB)` 找到对应的库
 
 ## 工程的组织
 
-至此，单模块和多模块的安装都已介绍完成，大型工程的组织和安装就是这两者的组合
+单模块和多模块的安装介绍完了，大型工程的组织和安装就是这两者的组合。
 
-工程各个模块安装到固定目录下，连同第三方库指定同一个安装路径，最终形成一个完整的开发环境
+工程各个模块和第三方库安装到固定目录下，最终形成一个完整的开发环境。
 
-这里以实际例子举例，例子源码位于：
+实际例子源码位于：
 
 [github:https://github.com/czyt1988/data-workbench](https://github.com/czyt1988/data-workbench)
 
-[gitee镜像:https://gitee.com/czyt1988/data-workbench](https://gitee.com/czyt1988/data-workbench)
+[gitee 镜像:https://gitee.com/czyt1988/data-workbench](https://gitee.com/czyt1988/data-workbench)
 
-源码目录结构(这里为了便于显示，文件夹用[]扩起)：
+源码目录结构（为便于显示，文件夹用 `[]` 括起）：
 
 ```
 [root]
@@ -457,7 +448,7 @@ MY_PACKAGE_TARGET_NAME是在顶层cmake定义的总的导出集，子模块的�
 
 1. 指定统一的安装目录
 
-这一步可以使得第三方库和工程安装的位置一致，对于linux有比较规范的安装路径，但windows不一样，默认是在`C:\Program Files\xxx`这样的位置，没有统一放lib的地方，因此，windows下，个人习惯指定工程的自身目录下建立一个安装目录，以bin_{Debug/Release}_{x32/x64}的方式命名，如果有`Qt`，还会加上`Qt`的版本以作区分，如下所示：
+这一步使第三方库和工程的安装位置一致。Linux 有比较规范的安装路径，Windows 不一样，默认装在 `C:\Program Files\xxx` 这样的位置，没有统一放 lib 的地方；因此 Windows 下通常在工程自身目录下建一个安装目录，以 bin_{Debug/Release}_{x32/x64} 的方式命名，如果有 `Qt`，再加上 `Qt` 的版本以作区分，如下所示：
 
 ```cmake
 # 获取qt版本
@@ -474,27 +465,28 @@ set(my_install_dir_name bin_qt${QT_VERSION}_${CMAKE_BUILD_TYPE}_${my_platform_na
 set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_LIST_DIR}/${my_install_dir_name}")
 ```
 
-!!! tips "提示"
-    这样操作对库开发还有个好处，可以有效区分不同版本qt，不同编译器的结果
+> **💡 提示**
+>
+> 这样操作对库开发还有个好处，可以有效区分不同版本 Qt、不同编译器的结果
 
 2. 第三方库
 
-如前文所述，第三方库都在`src/3rdparty`下面，首先需要的是对第三方库的编译，`3rdparty`有个`CMakeLists.txt`文件夹用于编译安装所有第三方库，个人习惯不把`3rdparty`下的`CMakeLists.txt`纳入顶层工程的`subdirectory`中，因为不保证所有第三方库的cmake写的都正常，第三方库的`CMakeLists.txt`指定了`CMAKE_INSTALL_PREFIX`和顶层工程一致，确保安装路径一致
+如前文所述，第三方库都在 `src/3rdparty` 下面，首先要做的是编译第三方库。`3rdparty` 有个 `CMakeLists.txt` 文件用于编译安装所有第三方库；它不纳入顶层工程的 `subdirectory` 中，因为不保证所有第三方库的 cmake 写得都正常。第三方库的 `CMakeLists.txt` 指定了 `CMAKE_INSTALL_PREFIX` 和顶层工程一致，确保安装路径一致。
 
 3. 组织顶层工程
 
-顶层工程`CMakeLists`主要负责做以下事情：
+顶层工程 `CMakeLists` 主要负责做以下事情：
 
-- 定义`option`
+- 定义 `option`
 - 定义工程名称
-- 做全局的编译设置，如c++版本要求，编译环境的POSTFIX设置
-- 通过`add_subdirectory`完成整个工程的组织
-- 工程模块化的安装（见多模块的install写法）
+- 做全局的编译设置，如 c++ 版本要求，编译环境的 POSTFIX 设置
+- 通过 `add_subdirectory` 完成整个工程的组织
+- 工程模块化的安装（见多模块的 install 写法）
 - 工程的完整安装
 
 ## 第三方用户引入的方式
 
-对于第三方插件开发者来说，首先需要clone你的工程，并进行编译，先编译第三方库，并进行安装（install），再编译工程，并进行安装（install）,这时候，第三方开发者就可以有一个完整的开发环境了
+第三方插件开发者 clone 工程后，先编译并安装（install）第三方库，再编译并安装工程，就得到了一个完整的开发环境。
 
 ![完整开发环境2](../../assets/PIC/cmake-after-install2.png)
 
@@ -503,7 +495,7 @@ set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_LIST_DIR}/${my_install_dir_name}")
 项目在 `cmake/` 目录下封装了一组声明式构建函数（全部为 CMake `function`，无 `macro`），
 模块与插件的 `CMakeLists.txt` 通过单次调用完成 target 创建、依赖链接、属性设置、安装导出。
 
-### da_add_library —— DA 库模块
+### da_add_library：DA 库模块
 
 一次调用完成：`add_library(SHARED)` + `DAWorkbench::` 别名 + 构建宏定义 + AUTOMOC/UIC/RCC +
 Qt 组件查找链接 + DA 模块链接 + 第三方库导入 + Windows rc 版本资源 + `install(TARGETS EXPORT ...)` +
@@ -522,11 +514,11 @@ da_add_library(
 )
 ```
 
-### da_add_executable —— 主程序
+### da_add_executable：主程序
 
 合并原 app 三段式宏与手写块（rc 资源/子系统切换/第三方 DLL 部署等）。
 
-### da_add_plugin —— 插件
+### da_add_plugin：插件
 
 一次调用完成插件的 target 创建、属性设置（输出到 `bin/plugins`）与安装：
 
@@ -541,7 +533,7 @@ da_add_plugin(
 )
 ```
 
-### da_plugin_bootstrap —— 单插件工程引导
+### da_plugin_bootstrap：单插件工程引导
 
 插件脱离主工程独立构建时（`cmake -S plugins/<name> -B build`），在 CMakeLists 顶部调用：
 
@@ -556,7 +548,7 @@ endif()
 `CMAKE_PREFIX_PATH`/`CMAKE_INSTALL_PREFIX` 设置、DAWorkbench 与全部第三方包预查找、
 C++17/DEBUG_POSTFIX/MSVC `/utf-8` 设置。
 
-### da_plugin_env_setup —— 多插件宿主工程环境设置
+### da_plugin_env_setup：多插件宿主工程环境设置
 
 宿主工程有自己的 `project(带 VERSION)` 且包含多个插件子目录时（如 GreeDataWorkbench：
 根 project 的 VERSION 被 updater 使用，不能被插件 project() 覆盖），在根 CMakeLists 中调用：
@@ -573,7 +565,7 @@ add_subdirectory(插件目录)
 完全一致；`da_add_plugin` 在此环境上增加 `OUTPUT_TO_INSTALL` 选项可使 DLL 直接输出到
 安装目录 `bin/plugins`（构建完即可被主程序加载）。
 
-### da_link_3rdparty —— 第三方库导入
+### da_link_3rdparty：第三方库导入
 
 ```cmake
 da_link_3rdparty(<target>

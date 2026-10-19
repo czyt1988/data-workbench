@@ -1,4 +1,4 @@
-﻿
+
 # Cmake的命令不区分打下写，例如message，set等命令；但Cmake的变量区分大小写
 # 为统一风格，本项目的Cmake命令全部采用小写，变量全部采用大写加下划线组合。
 # DAData 库
@@ -18,7 +18,13 @@ set(DA_LIB_HEADER_FILES
     # 表格数据源抽象（头文件不依赖Python）
     DATableDataBlock.h
     DATableDataSource.h
+    # 列扫描值对象（纯数据类，007 T1.7）
+    DATableScan.h
     DADataFactory.h
+    # 计算列定义（纯数据类，无 GUI/Python 依赖，004 T1.23）
+    DAComputedColumn.h
+    # 数据校验规则定义（纯数据类，无 GUI/Python 依赖，005 T1.25）
+    DATableValidationRule.h
 )
 set(DA_LIB_SOURCE_FILES
     DAAbstractData.cpp
@@ -29,6 +35,8 @@ set(DA_LIB_SOURCE_FILES
     DATableDataBlock.cpp
     DATableDataSource.cpp
     DADataFactory.cpp
+    DAComputedColumn.cpp
+    DATableValidationRule.cpp
 )
 list(APPEND DA_LIB_HEADER_FILES
     DADataPythonBinding.h

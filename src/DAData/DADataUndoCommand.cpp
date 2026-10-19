@@ -3,6 +3,7 @@
 #include <QFile>
 #include <QUuid>
 #include <QDebug>
+#include <QObject>
 #include "DADataManager.h"
 #include "DAPybind11QtCaster.hpp"
 
@@ -63,6 +64,9 @@ void DADataAbstractUndoCommand::consumeSkipFirstRedo()
  */
 DADataObjectSwapUndoCommand::DADataObjectSwapUndoCommand(QUndoCommand* par) : DADataAbstractUndoCommand(par)
 {
+    // 默认文案（005 T1.21 红线5：撤销面板不允许空白条目）；
+    // 正常路径由 DAAppCommand::beginDataOperateCommand 的调用方 setText 覆盖为具体操作名
+    setText(QObject::tr("Replace data object"));  // cn:替换数据对象
 }
 
 /**
@@ -94,6 +98,10 @@ void DADataObjectSwapUndoCommand::setNewData(const DAData& data)
 
 /**
  * @brief 撤销操作，把旧对象设置回去
+ *
+ * 004 T1.27 增补：在 callback() 之外补发 directionalCallback(true)——就地形状变换
+ * （转置/melt）的元数据清理需与数据替换同一撤销单元（undo 随对象一起还原），
+ * 由调用方经方向回调驱动。未设置方向回调的既有用法不受影响（空调用）。
  */
 void DADataObjectSwapUndoCommand::undo()
 {
@@ -103,10 +111,13 @@ void DADataObjectSwapUndoCommand::undo()
         mgr->notifyDataChangedSignal(mData, DADataManager::ChangeValue);
     }
     callback();
+    directionalCallback(true);
 }
 
 /**
  * @brief 重做操作，把新对象设置进去
+ *
+ * 004 T1.27 增补：补发 directionalCallback(false)（语义同 undo 侧注释）。
  */
 void DADataObjectSwapUndoCommand::redo()
 {
@@ -116,6 +127,7 @@ void DADataObjectSwapUndoCommand::redo()
         mgr->notifyDataChangedSignal(mData, DADataManager::ChangeValue);
     }
     callback();
+    directionalCallback(false);
 }
 //----------------------------------------------------
 // DADataFileCacheUndoCommand
@@ -127,6 +139,8 @@ void DADataObjectSwapUndoCommand::redo()
  */
 DADataObjectPersistUndoCommand::DADataObjectPersistUndoCommand(QUndoCommand* par) : DADataAbstractUndoCommand(par)
 {
+    // 默认文案（005 T1.21 红线5：撤销面板不允许空白条目）；调用方 setText 覆盖为具体操作名
+    setText(QObject::tr("Modify data (persisted snapshot)"));  // cn:修改数据（持久化快照）
     if (!g_tempDir.isValid()) {
         qDebug() << "invalid temp dir,can not create temporary dir";
     }

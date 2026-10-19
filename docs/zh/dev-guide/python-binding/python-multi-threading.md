@@ -2,8 +2,9 @@
 
 在 DAWorkBench 中，当 Python 脚本需要执行长时间运算（如读取 ZIP 文件、处理大型 CSV、调用 pandas 做聚合计算）时，直接在 Qt 主线程调用会导致界面冻结。本文详细说明如何通过 **5 层异步模式**在后台线程中运行 Python 代码，在不阻塞 UI 的前提下完成数据导入、进度报告和安全回调。
 
-!!! info "适用范围"
-    本文描述的 5 层异步模式是 **插件级实现模式**，早期在 `GreeDataWorkBench` 插件（现已移除）中落地。框架层提供了 `DAPythonSignalHandler` 和 `thread_status_manager` 等基础工具，具体编排方式由各插件自行决定——下文代码作为该模式的典型示例保留。
+> **ℹ️ 适用范围**
+>
+> 本文描述的 5 层异步模式是 **插件级实现模式**，早期在 `GreeDataWorkBench` 插件（现已移除）中落地。框架层提供了 `DAPythonSignalHandler` 和 `thread_status_manager` 等基础工具，具体编排方式由各插件自行决定，下文代码作为该模式的典型示例保留。
 
 ## 导航
 
@@ -39,7 +40,7 @@
 
 ### 5 层异步模式
 
-整个异步流程由 5 个层协作完成，从 C++ 入口到工作线程再到回调回主线程，形成一个完整的闭环：
+整个异步流程由 5 层协作完成，从 C++ 入口到工作线程，再由回调返回主线程：
 
 | 层 | 位置 | 文件 | 机制 | 关键点 |
 |----|------|------|------|--------|
@@ -89,7 +90,7 @@ sequenceDiagram
     UI->>UI: emit datasAdded()
 ```
 
-## 第 1 层 — C++ 入口：非阻塞调用
+## 第 1 层：C++ 入口：非阻塞调用
 
 ### 职责
 
@@ -145,12 +146,12 @@ void GreeDataWorkBench::importZipData()
 
 ### 关键点
 
-- **`attr("process_zip_data_thread")`** 获取 Python 侧的函数句柄，非阻塞
-- **立即返回**：Python 函数只在内部启动线程，然后返回 task_id，整个过程在毫秒级完成
-- **启动轮询**：调用 `checkZipDataImportStatus()` 开启 QTimer 链
-- **异常保护**：任何 Python 异常都被 `try/catch` 捕获，进度条被正确隐藏
+- `attr("process_zip_data_thread")` 获取 Python 侧的函数句柄，非阻塞
+- 立即返回：Python 函数只在内部启动线程，然后返回 task_id，整个过程在毫秒级完成
+- 启动轮询：调用 `checkZipDataImportStatus()` 开启 QTimer 链
+- 异常保护：任何 Python 异常都被 `try/catch` 捕获，进度条被正确隐藏
 
-## 第 2 层 — Python 线程创建
+## 第 2 层：Python 线程创建
 
 ### 职责
 
@@ -227,12 +228,12 @@ def process_zip_data_thread(zip_path: str,
 
 ### 关键点
 
-- **`threading.Thread(daemon=True)`**：使用 Python 标准库的线程，而非 QThread。`daemon=True` 确保主程序退出时线程自动终止
-- **为什么不是 QThread？** 因为 QThread 是 Qt 线程模型的抽象，与 Python GIL 配合不如原生 Python 线程灵活。Python 线程在 GIL 下天然适用于 I/O 密集型任务和简单的 CPU 任务
-- **`tsm.create_task_with_status()`**：创建 ProcessingStatus 实例并生成唯一的 UUID task_id
-- **立即返回**：`thread.start()` 之后马上 `return taskid`，不等待线程执行
+- `threading.Thread(daemon=True)`：用 Python 标准库的线程，`daemon=True` 确保主程序退出时线程自动终止
+- 不用 QThread 的原因：QThread 是 Qt 线程模型的抽象，与 Python GIL 配合不如原生 Python 线程灵活。Python 线程在 GIL 下适合 I/O 密集型任务和简单的 CPU 任务
+- `tsm.create_task_with_status()`：创建 ProcessingStatus 实例并生成唯一的 UUID task_id
+- 立即返回：`thread.start()` 之后马上 `return taskid`，不等待线程执行
 
-## 第 3 层 — 工作线程执行与进度报告
+## 第 3 层：工作线程执行与进度报告
 
 ### 职责
 
@@ -242,7 +243,7 @@ def process_zip_data_thread(zip_path: str,
 - 读取和解析 CSV
 - 对齐时间列
 - 查找故障事件
-- 进行数据预处理
+- 数据预处理
 - **实时报告进度**
 
 ### 源代码
@@ -334,12 +335,12 @@ class ProcessingStatus:
 
 ### 关键点
 
-- **`threading.RLock`**：可重入锁，允许同一个线程在持有锁的情况下再次获取，避免死锁。这在复杂的进度更新逻辑中很重要
-- **`update_progress()`**：通过锁保护的原子操作更新进度，确保 C++ 轮询读取时不会读到中间状态
-- **`update_custom_data()`**：存储任务特定的元数据（如 ZIP 路径、工程 ID、结果文件列表），C++ 端在任务完成后读取
-- **异常安全**：`try/except` 确保无论处理成功还是失败，都会调用 `callback()` 和 `status.finish()`，避免任务永远处于"运行中"状态
+- `threading.RLock`：可重入锁，同一个线程可以重复获取，避免死锁，复杂的进度更新逻辑需要它
+- `update_progress()`：通过锁保护的原子操作更新进度，确保 C++ 轮询读取时不会读到中间状态
+- `update_custom_data()`：存储任务特定的元数据（如 ZIP 路径、工程 ID、结果文件列表），C++ 端在任务完成后读取
+- 异常安全：`try/except` 确保无论处理成功还是失败，都会调用 `callback()` 和 `status.finish()`，避免任务永远处于「运行中」状态
 
-## 第 4 层 — C++ 非阻塞轮询与 GIL 管理
+## 第 4 层：C++ 非阻塞轮询与 GIL 管理
 
 ### 职责
 
@@ -412,7 +413,7 @@ void GreeDataWorkBench::checkZipDataImportStatus()
 
 ### QTimer 调度链
 
-轮询通过 QTimer 的"链式调度"实现，而非循环：
+轮询用 QTimer 的「链式调度」实现，不用循环：
 
 ```
 checkZipDataImportStatus()
@@ -425,7 +426,7 @@ checkZipDataImportStatus()
 
 ### GIL 管理详解
 
-轮询中的 GIL 操作是整篇文章最关键的技术点，遵循"释放 → 让出 → 重新获取 → 调用"的模式：
+轮询中的 GIL 操作是本文的关键点，按「释放 → 让出 → 重新获取 → 调用」的顺序进行：
 
 ```cpp
 // 步骤1: 释放 GIL
@@ -439,13 +440,15 @@ checkZipDataImportStatus()
 pybind11::dict status = get_task_status(m_importZipTaskID);
 ```
 
-!!! warning "为什么需要 sleep(1)？"
-    `QThread::sleep(1)` 让出 CPU 时间片，确保 Python 工作线程有足够的时间获得 GIL 并更新进度。没有 `sleep()`，C++ 轮询可能频繁占用 GIL，导致工作线程无法执行。
+> **⚠️ 为什么需要 sleep(1)？**
+>
+> `QThread::sleep(1)` 让出 CPU 时间片，确保 Python 工作线程有足够的时间获得 GIL 并更新进度。没有 `sleep()`，C++ 轮询可能频繁占用 GIL，导致工作线程无法执行。
 
-!!! info "与基本 GIL 管理的区别"
-    关于 GIL 管理的基本概念和通用模式，参见 [C++ 调用 Python - GIL 管理详解](./cpp-calling-python.md#gil安全全局解释器锁管理)。本文只介绍多线程场景下的特殊用法。
+> **ℹ️ 与基本 GIL 管理的区别**
+>
+> 关于 GIL 管理的基本概念和通用模式，参见 [C++ 调用 Python 的 GIL 管理详解](./cpp-calling-python.md#gil安全全局解释器锁管理)。本文只介绍多线程场景下的特殊用法。
 
-## 第 5 层 — 回调桥：安全返回主线程
+## 第 5 层：回调桥：安全返回主线程
 
 ### 职责
 
@@ -524,13 +527,14 @@ PYBIND11_EMBEDDED_MODULE(da_interface, m)
 }
 ```
 
-!!! tip "GIL 获取的时机"
-    绑定层在 **主线程的槽函数执行时** 才获取 GIL。这意味着：
-    - `callInMainThread()` 本身在工作线程调用，不涉及 GIL
-    - GIL 的获取发生在主线程槽函数 `onExecuteRequested` 中
-    - 这样可以确保主线程持有 GIL 时，Python 工作线程不会干扰
-
-    注意 `inc_ref()/dec_ref()` 在源码中均已注释，`pyFunc` 生命周期由 lambda 捕获持有；同时捕获了 `pybind11::error_already_set` 与 `std::exception` 两类异常。
+> **💡 GIL 获取的时机**
+>
+> 绑定层在 **主线程的槽函数执行时** 才获取 GIL。这意味着：
+> - `callInMainThread()` 本身在工作线程调用，不涉及 GIL
+> - GIL 的获取发生在主线程槽函数 `onExecuteRequested` 中
+> - 这样可以确保主线程持有 GIL 时，Python 工作线程不会干扰
+>
+> 注意 `inc_ref()/dec_ref()` 在源码中均已注释，`pyFunc` 生命周期由 lambda 捕获持有；同时捕获了 `pybind11::error_already_set` 与 `std::exception` 两类异常。
 
 #### (3) 信号处理器
 
@@ -612,17 +616,17 @@ void DAPythonSignalHandler::onExecuteRequested(int funcWrapperId)
 
 ### 关键设计决策
 
-- **`Qt::QueuedConnection`**：信号槽连接时指定 `Qt::QueuedConnection`，确保 `executeRequested` 信号在接收者所在线程（主线程）的队列中执行
-- **`std::mutex` 保护映射表**：`mFunctionMap`（PIMPL 中的 camelCase 成员，`d->mFunctionMap`）可能被工作线程（写入）和主线程（读取）同时访问，用互斥锁保护
-- **`std::shared_ptr<FunctionWrapper>`**：函数包装器使用智能指针管理，避免函数对象在跨线程传递过程中被提前销毁
-- **GIL 获取在 Lambda 内**：`gil_scoped_acquire` 只在回调函数执行的瞬间获取 GIL，执行完毕立即释放，最小化对 Python 工作线程的影响
-- **`pybind11::function` 引用计数**：Lambda 捕获 `pyFunc` 时自动增加引用计数，确保在跨线程传递过程中 Python 函数对象不被释放（参见 [跨线程操作模式](./python-script-development.md#跨线程操作模式)）
+- `Qt::QueuedConnection`：信号槽连接时指定 `Qt::QueuedConnection`，确保 `executeRequested` 信号在接收者所在线程（主线程）的队列中执行
+- `std::mutex` 保护映射表：`mFunctionMap`（PIMPL 中的 camelCase 成员，`d->mFunctionMap`）可能被工作线程（写入）和主线程（读取）同时访问，用互斥锁保护
+- `std::shared_ptr<FunctionWrapper>`：函数包装器用智能指针管理，避免函数对象在跨线程传递过程中被提前销毁
+- GIL 获取在 Lambda 内：`gil_scoped_acquire` 只在回调函数执行的瞬间获取 GIL，执行完毕立即释放，尽量少占用 Python 工作线程的时间
+- `pybind11::function` 引用计数：Lambda 捕获 `pyFunc` 时自动增加引用计数，确保在跨线程传递过程中 Python 函数对象不被释放（参见 [跨线程操作模式](./python-script-development.md#跨线程操作模式)）
 
 ## 实战案例：GreeDataWorkBench ZIP 导入全流程
 
 ### 流程总览
 
-将前面的 5 层模式串联成一个完整的实战案例。以用户点击"导入 ZIP 数据"按钮开始，到数据表格在界面中显示结束：
+把前面的 5 层模式串成一个完整案例：从用户点击「导入 ZIP 数据」按钮开始，到数据表格在界面中显示结束：
 
 ### 步骤详解
 
@@ -699,10 +703,11 @@ C++ 侧 (GreeDataWorkBench.cpp)            Python 侧 (data_analysis.py)
                                            └────────────────────────────┘
 ```
 
-!!! tip "时序说明"
-    - 步骤 8–11（工作线程处理）是主要的耗时部分，UI 在此期间保持响应
-    - 步骤 12–13（回调插入数据）可能在轮询检测到完成之前已经执行
-    - 步骤 16 使用 `QTimer::singleShot(0, ...)` 延迟执行，确保所有回调数据已插入
+> **💡 时序说明**
+>
+> - 步骤 8–11（工作线程处理）是主要的耗时部分，UI 在此期间保持响应
+> - 步骤 12–13（回调插入数据）可能在轮询检测到完成之前已经执行
+> - 步骤 16 使用 `QTimer::singleShot(0, ...)` 延迟执行，确保所有回调数据已插入
 
 ## 工具类使用指南
 
@@ -829,50 +834,55 @@ def background_worker():
     )
 ```
 
-!!! info "相关链接"
-    - [callInMainThread 详细用法](./python-script-development.md#跨线程操作模式)
-    - [GIL 管理详解](./cpp-calling-python.md#gil安全全局解释器锁管理)
+> **ℹ️ 相关链接**
+>
+> - [callInMainThread 详细用法](./python-script-development.md#跨线程操作模式)
+> - [GIL 管理详解](./cpp-calling-python.md#gil安全全局解释器锁管理)
 
 ## 开发检查清单
 
 实现类似异步模式的插件开发者可参考以下检查清单：
 
-- [ ] Python 线程使用 `daemon=True`，确保程序退出时自动终止
-- [ ] 使用 `StatusManager` 生成 task_id，而非手动管理
-- [ ] C++ 轮询使用 `gil_scoped_release` + `QTimer`，而非忙等循环
+- [ ] Python 线程用 `daemon=True`，确保程序退出时自动终止
+- [ ] 用 `StatusManager` 生成 task_id，不要手动管理
+- [ ] C++ 轮询用 `gil_scoped_release` + `QTimer`，不要用忙等循环
 - [ ] 回调通过 `callInMainThread` 安全返回主线程
 - [ ] 工作线程异常必须调用 `status.finish(False, ...)` 和 `callback(None)`
 - [ ] 并发调用需保护 task_id（互斥锁或队列），当前模式的 task_id 存储为类成员变量，适用于串行导入场景
 - [ ] 轮询中合理使用 `QThread::sleep()` 让出 GIL
-- [ ] 主线程槽函数中获取 GIL（`gil_scoped_acquire`），而非在调用 `callInMainThread` 时
+- [ ] 在主线程槽函数中获取 GIL（`gil_scoped_acquire`），不要在调用 `callInMainThread` 时获取
 - [ ] 使用 `QTimer::singleShot(0, ...)` 确保所有回调完成后再执行最终处理
 - [ ] 异常路径正确隐藏进度条、设置状态栏
 
 ## 注意事项
 
-!!! warning "插件级实现模式"
-    本文描述的 5 层异步模式是 **插件级实现模式**，非框架级通用模式。这意味着：
-    - 该模式早期在 `GreeDataWorkBench` 插件中落地（插件已移除），当前代码作为典型示例保留
-    - DAWorkBench 框架提供了 `DAPythonSignalHandler` 和 `thread_status_manager` 等基础设施
-    - 各插件可以根据自身需求调整其中任何一层
-    - 如需自定义异步模式，请参考本文说明进行调整
+> **⚠️ 插件级实现模式**
+>
+> 本文描述的 5 层异步模式属于插件级实现，框架层没有对应的通用模式：
+> - 该模式早期在 `GreeDataWorkBench` 插件中落地（插件已移除），当前代码作为典型示例保留
+> - DAWorkBench 框架提供了 `DAPythonSignalHandler` 和 `thread_status_manager` 等基础设施
+> - 各插件可以根据自身需求调整其中任何一层
+> - 如需自定义异步模式，可参考本文说明进行调整
 
-!!! tip "何时使用此模式"
-    以下场景适合使用本文的异步模式：
-    - Python 处理时间超过 100ms（否则线程启动开销反而更大）
-    - 需要向用户展示处理进度
-    - 处理过程中需要用户界面保持交互能力
-    - 处理完成后需要将结果插入 Qt 数据管理器
+> **💡 何时使用此模式**
+>
+> 以下场景适合使用本文的异步模式：
+> - Python 处理时间超过 100ms（否则线程启动开销反而更大）
+> - 需要向用户展示处理进度
+> - 处理过程中需要用户界面保持交互能力
+> - 处理完成后需要将结果插入 Qt 数据管理器
 
-!!! warning "GIL 是单线程瓶颈"
-    即使在后台线程运行，Python 的 GIL 仍然是一个全局瓶颈。CPU 密集型的 pandas 操作在单线程下执行，Python 线程主要受益于：
-    - **I/O 等待**：读取 ZIP 文件时释放 GIL，允许主线程运行
-    - **进度更新**：短暂获取 GIL 更新状态，然后释放
-    - **UI 不冻结**：主线程不被 Python 阻塞，Qt 事件循环正常运转
+> **⚠️ GIL 是单线程瓶颈**
+>
+> 即使在后台线程运行，Python 的 GIL 仍然是一个全局瓶颈。CPU 密集型的 pandas 操作在单线程下执行，Python 线程主要受益于：
+> - I/O 等待：读取 ZIP 文件时释放 GIL，允许主线程运行
+> - 进度更新：短暂获取 GIL 更新状态，然后释放
+> - UI 不冻结：主线程不被 Python 阻塞，Qt 事件循环正常运转
+>
+> 真正需要并行计算时，考虑 `multiprocessing` 或 numpy 的向量化操作。
 
-    对于真正需要并行计算的场景，考虑使用 `multiprocessing` 或 numpy 的向量化操作。
-
-!!! info "参考文档"
-    - [C++ 调用 Python 之 GIL 管理](./cpp-calling-python.md#gil安全全局解释器锁管理)
-    - [跨线程操作模式](./python-script-development.md#跨线程操作模式)
-    - [Python 脚本开发实战](./python-script-development.md)
+> **ℹ️ 参考文档**
+>
+> - [C++ 调用 Python 之 GIL 管理](./cpp-calling-python.md#gil安全全局解释器锁管理)
+> - [跨线程操作模式](./python-script-development.md#跨线程操作模式)
+> - [Python 脚本开发实战](./python-script-development.md)

@@ -1,4 +1,4 @@
-﻿#include "DADataOperateWidget.h"
+#include "DADataOperateWidget.h"
 #include <QDebug>
 #include <QMessageBox>
 #include <QVBoxLayout>
@@ -13,8 +13,8 @@
 #include "DADataOperatePageWidget.h"
 #include "DADockAreaTabPosition.h"
 #include <QUndoStack>
-// table style registry
-#include "DATableStyleRegistry.h"
+// table metadata registry
+#include "DATableMetadataRegistry.h"
 // widget
 #include "DADataOperateOfDataFrameWidget.h"
 // py
@@ -43,13 +43,14 @@ public:
 public:
     QMap< DA::DAData, QPointer< QWidget > > _dataToWidget;  ///< 记录数据对应的窗口
     DADataManager* _dataManager { nullptr };
-    DATableStyleRegistry* _styleRegistry { nullptr };  ///< 表格样式会话级注册表，随数据存在
+    DATableMetadataRegistry* _metadataRegistry { nullptr };  ///< 表格元数据会话级注册表，随数据存在
     QMetaObject::Connection _currentHeaderConn;  ///< 当前 DataFrame 窗口的表头点击连接
     ads::CDockManager* _dockManager { nullptr };  ///< 嵌套停靠管理器
     QList< DADataOperatePageWidget* > _pages;  ///< 插入顺序，作为 index 基础
     QHash< DADataOperatePageWidget*, ads::CDockWidget* > _pageToDock;  ///< page -> dock
     QPointer< DADataOperatePageWidget > _currentPage;  ///< 当前激活 page
     bool _suppressCurrentChanged { false };  ///< 创建/加载期间抑制 currentDataTableWidgetChanged
+    bool _headerPickMode { false };  ///< 表头拾取模式（图表「选择序列」会话期间置位，转发给当前 DataFrame 页）
 };
 
 DADataOperateWidget::PrivateData::PrivateData(DADataOperateWidget* p) : q_ptr(p)
@@ -137,9 +138,9 @@ DADataOperateWidget::~DADataOperateWidget()
 void DADataOperateWidget::setDataManager(DADataManager* mgr)
 {
     d_ptr->_dataManager = mgr;
-    // 样式注册表随数据管理器存在，连接 datasCleared 信号统一清空
-    if (!d_ptr->_styleRegistry) {
-        d_ptr->_styleRegistry = new DATableStyleRegistry(mgr, this);
+    // 元数据注册表随数据管理器存在，连接 datasCleared 信号统一清空
+    if (!d_ptr->_metadataRegistry) {
+        d_ptr->_metadataRegistry = new DATableMetadataRegistry(mgr, this);
     }
     connect(mgr, &DADataManager::dataRemoved, this, &DADataOperateWidget::onDataRemoved);
     connect(mgr, &DADataManager::dataChanged, this, &DADataOperateWidget::onDataChanged);
@@ -165,6 +166,31 @@ QWidget* DADataOperateWidget::currentWidget() const
 DADataOperateOfDataFrameWidget* DADataOperateWidget::getCurrentDataFrameWidget() const
 {
     return qobject_cast< DADataOperateOfDataFrameWidget* >(currentWidget());
+}
+
+/**
+ * @brief 设置表头拾取模式（图表「选择序列」会话期间置位）
+ *
+ * 存标志并转发给当前 DataFrame 页（拾取模式下表头点击只转发信号、不排序，
+ * §4.1 模式互斥）；页切换时在 setCurrentPage 里同步到新页。
+ * 切换点：DAChartSeriesPickerWidget::connectDataWidgets/disconnectDataWidgets。
+ * @param on true=进入拾取模式
+ */
+void DADataOperateWidget::setHeaderPickMode(bool on)
+{
+    d_ptr->_headerPickMode = on;
+    if (DADataOperateOfDataFrameWidget* w = getCurrentDataFrameWidget()) {
+        w->setHeaderPickMode(on);
+    }
+}
+
+/**
+ * @brief 是否处于表头拾取模式
+ * @return 拾取模式返回 true
+ */
+bool DADataOperateWidget::isHeaderPickMode() const
+{
+    return d_ptr->_headerPickMode;
 }
 
 /**
@@ -203,6 +229,26 @@ DADataOperateOfDataFrameWidget* DADataOperateWidget::findDataFrameWidget(const D
 }
 
 /**
+ * @brief 跨页定位入口（007）
+ *
+ * 打开（或切到）数据 d 所在页并跳到「行 + 列名」；重名取第一个同名列。
+ * 未打开/找不到列静默返回（调用方按需自补提示）。校验报告、Agent 工具等
+ * 跨页调用方一律走它，不要另写"先取消隐藏再 selectActualCell"的第二套。
+ * @param d 目标数据
+ * @param actualRow 数据源绝对行号
+ * @param columnName 列名
+ */
+void DADataOperateWidget::locateInData(const DA::DAData& d, int actualRow, const QString& columnName)
+{
+    showData(d);  // 已打开则 raise + setCurrentPage（整容器可见）
+    DADataOperateOfDataFrameWidget* w = findDataFrameWidget(d);
+    if (!w) {
+        return;
+    }
+    w->locateActualCell(actualRow, columnName);
+}
+
+/**
  * @brief 按插入顺序返回已打开数据列表
  *
  * 供工程序列化遍历数据页（类比 DAChartOperateWidget::getFigureList）。
@@ -220,14 +266,14 @@ QList< DAData > DADataOperateWidget::getOpenedDataList() const
 }
 
 /**
- * @brief 表格样式会话级注册表
+ * @brief 表格元数据会话级注册表
  *
- * 样式生命周期脱离单个 widget，随数据存在。widget 构造时从注册表借用 manager。
+ * 元数据生命周期脱离单个 widget，随数据存在。widget 构造时从注册表借用元数据束。
  * @return 注册表指针
  */
-DATableStyleRegistry* DADataOperateWidget::styleRegistry() const
+DATableMetadataRegistry* DADataOperateWidget::metadataRegistry() const
 {
-    return d_ptr->_styleRegistry;
+    return d_ptr->_metadataRegistry;
 }
 
 /**
@@ -572,6 +618,8 @@ void DADataOperateWidget::setCurrentPage(DADataOperatePageWidget* page)
     if (DADataOperateOfDataFrameWidget* d = qobject_cast< DADataOperateOfDataFrameWidget* >(page)) {
         d_ptr->_currentHeaderConn = connect(d, &DADataOperateOfDataFrameWidget::columnHeaderClicked,
                                             this, &DADataOperateWidget::currentDataFrameColumnHeaderClicked);
+        // 拾取模式随页切换同步（拾取会话中切页，新页也要保持「只转发不排序」）
+        d->setHeaderPickMode(d_ptr->_headerPickMode);
     }
     emit currentDataTableWidgetChanged(page, d_ptr->_pages.indexOf(page));
 }
@@ -582,8 +630,8 @@ void DADataOperateWidget::showDataframeData(const DA::DAData& d)
     DADataOperateOfDataFrameWidget* w =
         qobject_cast< DADataOperateOfDataFrameWidget* >(d_ptr->_dataToWidget.value(d, nullptr).data());
     if (nullptr == w) {
-        // 没有就创建，传入样式注册表以借用会话级 manager
-        w = new DADataOperateOfDataFrameWidget(d, d_ptr->_styleRegistry, d_ptr->_dockManager);
+        // 没有就创建，传入元数据注册表以借用会话级元数据束
+        w = new DADataOperateOfDataFrameWidget(d, d_ptr->_metadataRegistry, d_ptr->_dockManager);
         emit dataTableCreated(w);
         // 记录窗口
         d_ptr->_dataToWidget[ d ] = w;

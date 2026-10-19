@@ -1,12 +1,12 @@
 # submodule
 
-本项目的第三方库使用submodule进行管理
+本项目的第三方库用 submodule 管理。
 
-关于第三方库的构建你可参阅：[https://czyt1988.github.io/data-workbench/zh/build/third-party-build](https://czyt1988.github.io/data-workbench/zh/build/third-party-build)
+第三方库的构建见：[https://czyt1988.github.io/data-workbench/zh/build/third-party-build](https://czyt1988.github.io/data-workbench/zh/build/third-party-build)
 
-关于第三方库的管理和介绍你可参阅：[https://czyt1988.github.io/data-workbench/zh/dev-guide/third-party-manage](https://czyt1988.github.io/data-workbench/zh/dev-guide/third-party-manage)
+第三方库的管理与介绍见：[https://czyt1988.github.io/data-workbench/zh/dev-guide/third-party-manage](https://czyt1988.github.io/data-workbench/zh/dev-guide/third-party-manage)
 
-## submdule的拉取
+## submodule 的拉取
 
 首次拉取项目之后，需要执行：
 
@@ -14,9 +14,9 @@
 git submodule update --init --recursive
 ```
 
-对所有的submodule进行拉取
+这条命令拉取全部 submodule。
 
-当然也可以逐个拉取：
+也可以逐个拉取：
 
 ```shell
 git submodule update src/3rdparty/DAWidgets
@@ -30,19 +30,19 @@ git submodule update src/3rdparty/QtPropertyBrowser  # 已停用，源码保留�
 git submodule update src/3rdparty/ordered-map
 ```
 
-## submodule的添加
+## submodule 的添加
 
-第三方库统一放置到`/src/3rdparty/xxx`目录下
+第三方库统一放在 `/src/3rdparty/xxx` 目录下。
 
-添加submodule，以pybind11举例
+添加 submodule 的方法以 pybind11 为例：
 
 `git submodule add https://github.com/pybind/pybind11 ./src/3rdparty/pybind11`
 
-- 注意最后路径是`./src/3rdparty/pybind11`,库名称文件夹要指定
+- 最后的路径必须是 `./src/3rdparty/pybind11`，库名称文件夹要写出来。
 
-DA目前添加的submodule有如下：
+项目当前添加的 submodule 如下。
 
-github版本：
+github 源：
 
 ```shell
 git submodule add https://github.com/madler/zlib ./src/3rdparty/zlib
@@ -57,7 +57,7 @@ git submodule add https://github.com/czyt1988/QWT ./src/3rdparty/qwt
 git submodule add https://github.com/Tessil/ordered-map ./src/3rdparty/ordered-map
 ```
 
-gitee版本：
+gitee 源：
 ```shell
 git submodule add https://gitee.com/czyt1988/zlib ./src/3rdparty/zlib
 git submodule add https://gitee.com/czyt1988/quazip ./src/3rdparty/quazip
@@ -70,29 +70,29 @@ git submodule add https://gitee.com/czyt1988/QtPropertyBrowser ./src/3rdparty/Qt
 git submodule add https://gitee.com/czyt1988/QWT ./src/3rdparty/qwt
 git submodule add https://gitee.com/czyt1988/ordered-map ./src/3rdparty/ordered-map
 ```
-## submodule的更新
+## submodule 的更新
 
-如果某个submodule更新了，使用`git submodule update --remote {submodule}`进行更新，如SARibbon项目更新了，可以执行：
+某个 submodule 更新之后，用 `git submodule update --remote {submodule}` 拉取新版本。比如 SARibbon 更新了：
 
 ```shell
 git submodule update --remote src/3rdparty/SARibbon
 ```
 
-## submodule的批量操作
+## submodule 的批量操作
 
-单独进入某个submodule目录下执行git命令和普通的git仓库操作一样，也可以批量执行，如
+进入某个 submodule 目录后，git 命令和普通仓库一样用。批量执行时：
 
 `git submodule foreach '{需要执行的git命令}'`
 
-如 git submodule foreach 'git checkout main'
+比如 `git submodule foreach 'git checkout main'`
 
-## 替换为github源
+## 替换为 github 源
 
-由于github访问域限制，目前项目默认的`subbmodule`的url都是gitee的，如果要切换为github的，可以按照如下步骤执行：
+受 github 访问限制，项目默认的 submodule 地址都是 gitee 的。切换成 github 源按下面两步执行。
 
-1. `.gitmodules`文件的调整
+1. 调整 `.gitmodules` 文件
 
-	打开`.gitmodules`文件，此文件包含了第三方库的地址，你可以对此地址进行调整，例如下面为当前第三方库的github地址配置
+	`.gitmodules` 里写着每个第三方库的地址，改成 github 地址即可。下面是 github 源的写法：
 
 	```ini
 	[submodule "src/3rdparty/spdlog"]
@@ -124,7 +124,7 @@ git submodule update --remote src/3rdparty/SARibbon
 		active = true
 	```
 
-	你也可以调整为其它地址，例如
+	改成 gitee 地址时写法如下：
 
 	```ini
 	[submodule "src/3rdparty/spdlog"]
@@ -156,6 +156,6 @@ git submodule update --remote src/3rdparty/SARibbon
 		active = true
 	```
 
-2. 同步调整`./.git/config`文件里对应的url
+2. 同步调整 `./.git/config` 里对应的 url
 
-	`.gitmodules`文件调整后需要同步调整`.git/config`文件里对应的url才能生效
+	只改 `.gitmodules` 不生效，`.git/config` 里对应的 url 也要一起改。

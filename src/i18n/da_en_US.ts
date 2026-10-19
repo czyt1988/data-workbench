@@ -2849,6 +2849,258 @@ Layouts</source>
         <source>Undo the last action</source>
         <translation>Undo the last action</translation>
     </message>
+    <message>
+        <source>Find</source>
+        <translation>Find</translation>
+    </message>
+    <message>
+        <source>Find cells matching the keyword (Ctrl+F)</source>
+        <translation>Find cells matching the keyword (Ctrl+F)</translation>
+    </message>
+    <message>
+        <source>Replace</source>
+        <translation>Replace</translation>
+    </message>
+    <message>
+        <source>Find and replace cells (Ctrl+H)</source>
+        <translation>Find and replace cells (Ctrl+H)</translation>
+    </message>    <message>
+        <source>Conditional Formatting</source>
+        <translation>Conditional Formatting</translation>
+    </message>    <message>
+        <source>Manage conditional formatting rules (cell rules / color scale / data bar) of the selected columns</source>
+        <translation>Manage conditional formatting rules (cell rules / color scale / data bar) of the selected columns</translation>
+    </message>
+
+
+    <message>
+        <source>Computed Column</source>
+        <translation>Computed Column</translation>
+    </message>
+    <message>
+        <source>Create a column computed from a formula of other columns</source>
+        <translation>Create a column computed from a formula of other columns</translation>
+    </message>
+    <message>
+        <source>Recompute All</source>
+        <translation>Recompute All</translation>
+    </message>
+    <message>
+        <source>Recompute all stale/invalid computed columns of the current table</source>
+        <translation>Recompute all stale/invalid computed columns of the current table</translation>
+    </message>
+    <message>
+        <source>Split Column</source>
+        <translation>Split Column</translation>
+    </message>
+    <message>
+        <source>Split the selected column into multiple columns by delimiter / regex / fixed widths</source>
+        <translation>Split the selected column into multiple columns by delimiter / regex / fixed widths</translation>
+    </message>
+    <message>
+        <source>Merge Columns</source>
+        <translation>Merge Columns</translation>
+    </message>
+    <message>
+        <source>Merge the selected columns into one column in the given order</source>
+        <translation>Merge the selected columns into one column in the given order</translation>
+    </message>
+    <message>
+        <source>Group By</source>
+        <translation>Group By</translation>
+    </message>
+    <message>
+        <source>Aggregate rows by group keys into a new long-format result dataset</source>
+        <translation>Aggregate rows by group keys into a new long-format result dataset</translation>
+    </message>
+    <message>
+        <source>Transpose</source>
+        <translation>Transpose</translation>
+    </message>
+    <message>
+        <source>Swap rows and columns into a new dataset (in-place optional)</source>
+        <translation>Swap rows and columns into a new dataset (in-place optional)</translation>
+    </message>
+    <message>
+        <source>Unpivot (Melt)</source>
+        <translation>Unpivot (Melt)</translation>
+    </message>
+    <message>
+        <source>Unpivot wide columns into a long-format new dataset (in-place optional)</source>
+        <translation>Unpivot wide columns into a long-format new dataset (in-place optional)</translation>
+    </message>
+    <message>
+        <source>Data Probe</source>
+        <translation>Data Probe</translation>
+    </message>
+    <message>
+        <source>Data probe: click to create probes on all charts, values are listed in the data link table</source>
+        <translation>Data probe: click to create probes on all charts, values are listed in the data link table</translation>
+    </message>
+    <message>
+        <source>Fill</source>
+        <translation>Fill</translation>
+    </message>
+    <message>
+        <source>Fill the selection (down / up / ffill / bfill / series)</source>
+        <translation>Fill the selection (down / up / ffill / bfill / series)</translation>
+    </message>
+    <message>
+        <source>Fill Down</source>
+        <translation>Fill Down</translation>
+    </message>
+    <message>
+        <source>Fill the selection down with the value of the first row (Ctrl+D)</source>
+        <translation>Fill the selection down with the value of the first row (Ctrl+D)</translation>
+    </message>
+    <message>
+        <source>Fill Up</source>
+        <translation>Fill Up</translation>
+    </message>
+    <message>
+        <source>Fill the selection up with the value of the last row</source>
+        <translation>Fill the selection up with the value of the last row</translation>
+    </message>
+    <message>
+        <source>Fill Forward (ffill)</source>
+        <translation>Fill Forward (ffill)</translation>
+    </message>
+    <message>
+        <source>Propagate the last valid value down within the selection</source>
+        <translation>Propagate the last valid value down within the selection</translation>
+    </message>
+    <message>
+        <source>Fill Backward (bfill)</source>
+        <translation>Fill Backward (bfill)</translation>
+    </message>
+    <message>
+        <source>Propagate the next valid value up within the selection</source>
+        <translation>Propagate the next valid value up within the selection</translation>
+    </message>
+    <message>
+        <source>Fill Series...</source>
+        <translation>Fill Series...</translation>
+    </message>
+    <message>
+        <source>Generate a linear or date series into the selected columns</source>
+        <translation>Generate a linear or date series into the selected columns</translation>
+    </message>
+    <message>
+        <source>Validation Rules</source>
+        <translation>Validation Rules</translation>
+    </message>
+    <message>
+        <source>Manage data validation rules (range / enum / not-empty / unique / regex) of the current table</source>
+        <translation>Manage data validation rules (range / enum / not-empty / unique / regex) of the current table</translation>
+    </message>
+    <message>
+        <source>Run Validation</source>
+        <translation>Run Validation</translation>
+    </message>
+    <message>
+        <source>Validate the table against enabled rules, highlight violations and show the report (read-only)</source>
+        <translation>Validate the table against enabled rules, highlight violations and show the report (read-only)</translation>
+    </message>
+    <message>
+        <source>Note</source>
+        <translation>Note</translation>
+    </message>
+    <message>
+        <source>Insert or edit a note on the current cell</source>
+        <translation>Insert or edit a note on the current cell</translation>
+    </message>
+    <message>
+        <source>Insert Note</source>
+        <translation>Insert Note</translation>
+    </message>
+    <message>
+        <source>Insert a note on the current cell</source>
+        <translation>Insert a note on the current cell</translation>
+    </message>
+    <message>
+        <source>Edit Note</source>
+        <translation>Edit Note</translation>
+    </message>
+    <message>
+        <source>Edit the note of the current cell</source>
+        <translation>Edit the note of the current cell</translation>
+    </message>
+    <message>
+        <source>Delete Note</source>
+        <translation>Delete Note</translation>
+    </message>
+    <message>
+        <source>Delete the note of the current cell</source>
+        <translation>Delete the note of the current cell</translation>
+    </message>
+    <message>
+        <source>Clear All Notes</source>
+        <translation>Clear All Notes</translation>
+    </message>
+    <message>
+        <source>Remove all notes of the current table (undoable)</source>
+        <translation>Remove all notes of the current table (undoable)</translation>
+    </message>
+    <message>
+        <source>Undo History</source>
+        <translation>Undo History</translation>
+    </message>
+    <message>
+        <source>Show the undo history panel (follows the active page, click an entry to undo/redo to it)</source>
+        <translation>Show the undo history panel (follows the active page, click an entry to undo/redo to it)</translation>
+    </message>
+    <message>
+        <source>Freeze Columns</source>
+        <translation>Freeze Columns</translation>
+    </message>
+    <message>
+        <source>Freeze the leftmost columns of the table</source>
+        <translation>Freeze the leftmost columns of the table</translation>
+    </message>
+    <message>
+        <source>Hide Column</source>
+        <translation>Hide Column</translation>
+    </message>
+    <message>
+        <source>Hide the selected columns</source>
+        <translation>Hide the selected columns</translation>
+    </message>
+    <message>
+        <source>Show All Columns</source>
+        <translation>Show All Columns</translation>
+    </message>
+    <message>
+        <source>Show all hidden columns</source>
+        <translation>Show all hidden columns</translation>
+    </message>
+    <message>
+        <source>Column View...</source>
+        <translation>Column View...</translation>
+    </message>
+    <message>
+        <source>Open the column view settings dialog</source>
+        <translation>Open the column view settings dialog</translation>
+    </message>
+    <message>
+        <source>Freeze First Column</source>
+        <translation>Freeze First Column</translation>
+    </message>
+    <message>
+        <source>Freeze Columns...</source>
+        <translation>Freeze Columns...</translation>
+    </message>
+    <message>
+        <source>Unfreeze Columns</source>
+        <translation>Unfreeze Columns</translation>
+    </message>
+    <message>
+        <source>Go To...</source>
+        <translation>Go To...</translation>
+    </message>
+    <message>
+        <source>Jump to a row / index label / column</source>
+        <translation>Jump to a row / index label / column</translation>
+    </message>
 </context>
 <context>
     <name>DA::DAAppController</name>
@@ -3166,6 +3418,10 @@ Layouts</source>
         <source>Before running the workflow, you need to save the project</source>
         <translation>Before running the workflow, you need to save the project</translation>
     </message>
+    <message>
+        <source>Please select a column first</source>
+        <translation>Please select a column first</translation>
+    </message>
 </context>
 <context>
     <name>DA::DAAppDataManager</name>
@@ -3261,6 +3517,14 @@ Layouts</source>
         <location line="+4"/>
         <source>Failed to open markdown file: %1</source>
         <translation>Failed to open markdown file: %1</translation>
+    </message>
+    <message>
+        <source>Undo History</source>
+        <translation>Undo History</translation>
+    </message>
+    <message>
+        <source>Data Link Table</source>
+        <translation>Data Link Table</translation>
     </message>
 </context>
 <context>
@@ -3571,13 +3835,13 @@ Layouts</source>
     </message>
     <message>
         <location line="+45"/>
-        <source>Save table styles</source>
-        <translation>Save table styles</translation>
+        <source>Save table metadata</source>
+        <translation>Save table metadata</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Save table cell styles, including background, font, foreground</source>
-        <translation>Save table cell styles, including background, font, foreground</translation>
+        <source>Save table metadata, including cell styles and view state</source>
+        <translation>Save table metadata, including cell styles and view state</translation>
     </message>
     <message>
         <location line="+162"/>
@@ -4050,6 +4314,18 @@ Layouts</source>
         <location line="+22"/>
         <source>Recent Files</source>
         <translation>Recent Files</translation>
+    </message>
+    <message>
+        <source>Edit</source>
+        <translation>Edit</translation>
+    </message>    <message>
+        <source>Conditional</source>
+        <translation>Conditional</translation>
+    </message>
+
+    <message>
+        <source>Data Tools</source>
+        <translation>Data Tools</translation>
     </message>
 </context>
 <context>
@@ -8858,6 +9134,316 @@ Layouts</source>
         <source>Unable to get statistics for this column</source>
         <translation>Unable to get statistics for this column</translation>
     </message>
+    <message>
+        <source>This data source is read-only and cannot be sorted.</source>
+        <translation>This data source is read-only and cannot be sorted.</translation>
+    </message>
+    <message>
+        <source>Cannot sort: the column contains values of incomparable mixed types.</source>
+        <translation>Cannot sort: the column contains values of incomparable mixed types.</translation>
+    </message>
+    <message>
+        <source>This data source is read-only and cannot be modified.</source>
+        <translation>This data source is read-only and cannot be modified.</translation>
+    </message>
+    <message>
+        <source>No matches found</source>
+        <translation>No matches found</translation>
+    </message>
+    <message>
+        <source>Replace All</source>
+        <translation>Replace All</translation>
+    </message>
+    <message>
+        <source>Too many cells will be changed (%1). This operation cannot be undone. Continue?</source>
+        <translation>Too many cells will be changed (%1). This operation cannot be undone. Continue?</translation>
+    </message>    <message>
+        <source>Please select a column first</source>
+        <translation>Please select a column first</translation>
+    </message>    <message>
+        <source>Clear Conditional Format Rules</source>
+        <translation>Clear Conditional Format Rules</translation>
+    </message>    <message>
+        <source>The selected columns have no conditional format rules</source>
+        <translation>The selected columns have no conditional format rules</translation>
+    </message>    <message>
+        <source>Change Conditional Format Rules</source>
+        <translation>Change Conditional Format Rules</translation>
+    </message>
+
+
+
+
+    <message>
+        <source>The table is read-only and does not support computed columns</source>
+        <translation>The table is read-only and does not support computed columns</translation>
+    </message>
+    <message>
+        <source>Failed to evaluate the formula of computed column "%1": %2</source>
+        <translation>Failed to evaluate the formula of computed column "%1": %2</translation>
+    </message>
+    <message>
+        <source>Column "%1" has no computed formula</source>
+        <translation>Column "%1" has no computed formula</translation>
+    </message>
+    <message>
+        <source>The formula must not reference the target column itself</source>
+        <translation>The formula must not reference the target column itself</translation>
+    </message>
+    <message>
+        <source>Computed column(s) %1 became invalid because their dependency column(s) were removed</source>
+        <translation>Computed column(s) %1 became invalid because their dependency column(s) were removed</translation>
+    </message>
+    <message>
+        <source>Computed column(s) %1 became invalid because their dependency column(s) were merged</source>
+        <translation>Computed column(s) %1 became invalid because their dependency column(s) were merged</translation>
+    </message>
+    <message>
+        <source>Rename Column</source>
+        <translation>Rename Column</translation>
+    </message>
+    <message>
+        <source>%1 computed column(s) reference the renamed column(s): %2. Their references will be updated automatically. Continue?</source>
+        <translation>%1 computed column(s) reference the renamed column(s): %2. Their references will be updated automatically. Continue?</translation>
+    </message>
+    <message>
+        <source>Recompute All Computed Columns</source>
+        <translation>Recompute All Computed Columns</translation>
+    </message>
+    <message>
+        <source>Split Column requires an editable table</source>
+        <translation>Split Column requires an editable table</translation>
+    </message>
+    <message>
+        <source>Please select exactly one column to split</source>
+        <translation>Please select exactly one column to split</translation>
+    </message>
+    <message>
+        <source>Failed to snapshot the source column</source>
+        <translation>Failed to snapshot the source column</translation>
+    </message>
+    <message>
+        <source>Split column failed: %1</source>
+        <translation>Split column failed: %1</translation>
+    </message>
+    <message>
+        <source>Merge Columns requires an editable table</source>
+        <translation>Merge Columns requires an editable table</translation>
+    </message>
+    <message>
+        <source>Please select at least two columns to merge</source>
+        <translation>Please select at least two columns to merge</translation>
+    </message>
+    <message>
+        <source>Failed to snapshot the source columns</source>
+        <translation>Failed to snapshot the source columns</translation>
+    </message>
+    <message>
+        <source>Merge columns failed: %1</source>
+        <translation>Merge columns failed: %1</translation>
+    </message>
+    <message>
+        <source>%1_GroupBy</source>
+        <translation>%1_GroupBy</translation>
+    </message>
+    <message>
+        <source>Group-by aggregation of %1</source>
+        <translation>Group-by aggregation of %1</translation>
+    </message>
+    <message>
+        <source>%1_Melted</source>
+        <translation>%1_Melted</translation>
+    </message>
+    <message>
+        <source>Melt (wide to long) of %1</source>
+        <translation>Melt (wide to long) of %1</translation>
+    </message>
+    <message>
+        <source>%1_Transposed</source>
+        <translation>%1_Transposed</translation>
+    </message>
+    <message>
+        <source>Transpose of %1</source>
+        <translation>Transpose of %1</translation>
+    </message>
+    <message>
+        <source>Reshape failed: %1</source>
+        <translation>Reshape failed: %1</translation>
+    </message>
+    <message>
+        <source>Melt table in place</source>
+        <translation>Melt table in place</translation>
+    </message>
+    <message>
+        <source>Transpose table in place</source>
+        <translation>Transpose table in place</translation>
+    </message>
+    <message>
+        <source>(no table metadata to clear)</source>
+        <translation>(no table metadata to clear)</translation>
+    </message>
+    <message>
+        <source>Replace In Place</source>
+        <translation>Replace In Place</translation>
+    </message>
+    <message>
+        <source>Replacing in place will clear the following table metadata:
+%1
+
+Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
+        <translation>Replacing in place will clear the following table metadata:
+%1
+
+Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</translation>
+    </message>
+    <message>
+        <source>The table is very large (%1 cells). Keeping the old data for undo would double memory usage, so this in-place replacement will NOT be undoable. Continue?</source>
+        <translation>The table is very large (%1 cells). Keeping the old data for undo would double memory usage, so this in-place replacement will NOT be undoable. Continue?</translation>
+    </message>
+    <message>
+        <source>Column name "%1" already exists, please use another name</source>
+        <translation>Column name "%1" already exists, please use another name</translation>
+    </message>
+    <message>
+        <source>Fill failed: the content does not match the column data type</source>
+        <translation>Fill failed: the content does not match the column data type</translation>
+    </message>
+    <message>
+        <source>Cannot fill a read-only data source</source>
+        <translation>Cannot fill a read-only data source</translation>
+    </message>
+    <message>
+        <source>Fill down</source>
+        <translation>Fill down</translation>
+    </message>
+    <message>
+        <source>Fill up</source>
+        <translation>Fill up</translation>
+    </message>
+    <message>
+        <source>Fill forward (ffill)</source>
+        <translation>Fill forward (ffill)</translation>
+    </message>
+    <message>
+        <source>Fill backward (bfill)</source>
+        <translation>Fill backward (bfill)</translation>
+    </message>
+    <message>
+        <source>Please select cells to fill</source>
+        <translation>Please select cells to fill</translation>
+    </message>
+    <message>
+        <source>Failed to generate the fill series</source>
+        <translation>Failed to generate the fill series</translation>
+    </message>
+    <message>
+        <source>Fill series</source>
+        <translation>Fill series</translation>
+    </message>
+    <message>
+        <source>Numeric range</source>
+        <translation>Numeric range</translation>
+    </message>
+    <message>
+        <source>Date range</source>
+        <translation>Date range</translation>
+    </message>
+    <message>
+        <source>Allowed values (enum)</source>
+        <translation>Allowed values (enum)</translation>
+    </message>
+    <message>
+        <source>Not empty</source>
+        <translation>Not empty</translation>
+    </message>
+    <message>
+        <source>Unique</source>
+        <translation>Unique</translation>
+    </message>
+    <message>
+        <source>Regex (full match)</source>
+        <translation>Regex (full match)</translation>
+    </message>
+    <message>
+        <source>%1 (occurrence %2)</source>
+        <translation>%1 (occurrence %2)</translation>
+    </message>
+    <message>
+        <source>Validation failed: %1</source>
+        <translation>Validation failed: %1</translation>
+    </message>
+    <message>
+        <source>No enabled validation rules yet — add rules first</source>
+        <translation>No enabled validation rules yet — add rules first</translation>
+    </message>
+    <message>
+        <source>Row %1: %2</source>
+        <translation>Row %1: %2</translation>
+    </message>
+    <message>
+        <source>%1 validation rule(s) reference the renamed column(s): %2. Their references will be updated automatically. Continue?</source>
+        <translation>%1 validation rule(s) reference the renamed column(s): %2. Their references will be updated automatically. Continue?</translation>
+    </message>
+    <message>
+        <source>Please select a cell to annotate</source>
+        <translation>Please select a cell to annotate</translation>
+    </message>
+    <message>
+        <source>Please select a cell whose note is to be deleted</source>
+        <translation>Please select a cell whose note is to be deleted</translation>
+    </message>
+    <message>
+        <source>The selected cell has no note</source>
+        <translation>The selected cell has no note</translation>
+    </message>
+    <message>
+        <source>This table has no notes</source>
+        <translation>This table has no notes</translation>
+    </message>
+    <message>
+        <source>Some column view settings were dropped because the table columns have changed.</source>
+        <translation>Some column view settings were dropped because the table columns have changed.</translation>
+    </message>
+    <message>
+        <source>Frozen columns were reduced because visible columns changed.</source>
+        <translation>Frozen columns were reduced because visible columns changed.</translation>
+    </message>
+    <message>
+        <source>Freeze Columns</source>
+        <translation>Freeze Columns</translation>
+    </message>
+    <message>
+        <source>Freeze the first N visible columns (0 = no freeze):</source>
+        <translation>Freeze the first N visible columns (0 = no freeze):</translation>
+    </message>
+    <message>
+        <source>Column View...</source>
+        <translation>Column View...</translation>
+    </message>
+    <message>
+        <source>The column "%1" was hidden and has been made visible</source>
+        <translation>The column "%1" was hidden and has been made visible</translation>
+    </message>
+    <message>
+        <source>Row number is out of range</source>
+        <translation>Row number is out of range</translation>
+    </message>
+    <message>
+        <source>Index label not found: %1</source>
+        <translation>Index label not found: %1</translation>
+    </message>
+    <message>
+        <source>There are %1 rows with this index label; jumped to the first one</source>
+        <translation>There are %1 rows with this index label; jumped to the first one</translation>
+    </message>
+    <message>
+        <source>Column not found: %1</source>
+        <translation>Column not found: %1</translation>
+    </message>
+    <message>
+        <source>There are %1 columns with this name; used the first one</source>
+        <translation>There are %1 columns with this name; used the first one</translation>
+    </message>
 </context>
 <context>
     <name>DA::DADataOperateWidget</name>
@@ -8888,6 +9474,102 @@ Layouts</source>
         <location filename="../DAGui/DADataTableView.cpp" line="+29"/>
         <source>DADataTableView requires a model to be set first</source>
         <translation>DADataTableView requires a model to be set first</translation>
+    </message>
+    <message>
+        <source>Cut</source>
+        <translation>Cut</translation>
+    </message>
+    <message>
+        <source>Copy</source>
+        <translation>Copy</translation>
+    </message>
+    <message>
+        <source>Paste</source>
+        <translation>Paste</translation>
+    </message>
+    <message>
+        <source>Find...</source>
+        <translation>Find...</translation>
+    </message>
+    <message>
+        <source>Replace...</source>
+        <translation>Replace...</translation>
+    </message>    <message>
+        <source>Conditional Format...</source>
+        <translation>Conditional Format...</translation>
+    </message>
+
+    <message>
+        <source>Computed Column...</source>
+        <translation>Computed Column...</translation>
+    </message>
+    <message>
+        <source>Split Column...</source>
+        <translation>Split Column...</translation>
+    </message>
+    <message>
+        <source>Merge Columns...</source>
+        <translation>Merge Columns...</translation>
+    </message>
+    <message>
+        <source>Group By...</source>
+        <translation>Group By...</translation>
+    </message>
+    <message>
+        <source>Transpose...</source>
+        <translation>Transpose...</translation>
+    </message>
+    <message>
+        <source>Unpivot (Melt)...</source>
+        <translation>Unpivot (Melt)...</translation>
+    </message>
+    <message>
+        <source>Fill</source>
+        <translation>Fill</translation>
+    </message>
+    <message>
+        <source>Fill Down</source>
+        <translation>Fill Down</translation>
+    </message>
+    <message>
+        <source>Fill Up</source>
+        <translation>Fill Up</translation>
+    </message>
+    <message>
+        <source>Fill Forward (ffill)</source>
+        <translation>Fill Forward (ffill)</translation>
+    </message>
+    <message>
+        <source>Fill Backward (bfill)</source>
+        <translation>Fill Backward (bfill)</translation>
+    </message>
+    <message>
+        <source>Fill Series...</source>
+        <translation>Fill Series...</translation>
+    </message>
+    <message>
+        <source>Validation Rules...</source>
+        <translation>Validation Rules...</translation>
+    </message>
+    <message>
+        <source>Run Validation</source>
+        <translation>Run Validation</translation>
+    </message>
+    <message>
+        <source>Insert Note</source>
+        <translation>Insert Note</translation>
+    </message>
+    <message>
+        <source>Edit Note</source>
+        <translation>Edit Note</translation>
+    </message>
+    <message>
+        <source>Delete Note</source>
+        <translation>Delete Note</translation>
+    </message>
+    <message>
+        <source>Clear All Notes</source>
+        <translation>Clear All Notes</translation>
     </message>
 </context>
 <context>
@@ -16139,6 +16821,142 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <source>Error</source>
         <translation type="unfinished">Error</translation>
     </message>
+    <message>
+        <source>Sort rows</source>
+        <translation>Sort rows</translation>
+    </message>
+    <message>
+        <source>Replace all</source>
+        <translation>Replace all</translation>
+    </message>    <message>
+        <source>Add Conditional Format Rule</source>
+        <translation>Add Conditional Format Rule</translation>
+    </message>    <message>
+        <source>Remove Conditional Format Rule</source>
+        <translation>Remove Conditional Format Rule</translation>
+    </message>    <message>
+        <source>Modify Conditional Format Rule</source>
+        <translation>Modify Conditional Format Rule</translation>
+    </message>    <message>
+        <source>Move Conditional Format Rule</source>
+        <translation>Move Conditional Format Rule</translation>
+    </message>    <message>
+        <source>Clear Conditional Format Rules of Column</source>
+        <translation>Clear Conditional Format Rules of Column</translation>
+    </message>
+
+
+
+
+
+    <message>
+        <source>compute column "%1"</source>
+        <translation>compute column "%1"</translation>
+    </message>
+    <message>
+        <source>remove formula of column "%1" (keep data)</source>
+        <translation>remove formula of column "%1" (keep data)</translation>
+    </message>
+    <message>
+        <source>split column "%1"</source>
+        <translation>split column "%1"</translation>
+    </message>
+    <message>
+        <source>merge %1 columns into "%2"</source>
+        <translation>merge %1 columns into "%2"</translation>
+    </message>
+    <message>
+        <source>edit validation rules</source>
+        <translation>edit validation rules</translation>
+    </message>
+    <message>
+        <source>add note</source>
+        <translation>add note</translation>
+    </message>
+    <message>
+        <source>delete note</source>
+        <translation>delete note</translation>
+    </message>
+    <message>
+        <source>edit note</source>
+        <translation>edit note</translation>
+    </message>
+    <message>
+        <source>clear all notes</source>
+        <translation>clear all notes</translation>
+    </message>
+    <message>
+        <source>Set workflow background image</source>
+        <translation>Set workflow background image</translation>
+    </message>
+    <message>
+        <source>Change shape border</source>
+        <translation>Change shape border</translation>
+    </message>
+    <message>
+        <source>Change shape background</source>
+        <translation>Change shape background</translation>
+    </message>
+    <message>
+        <source>Change text font</source>
+        <translation>Change text font</translation>
+    </message>
+    <message>
+        <source>Change text color</source>
+        <translation>Change text color</translation>
+    </message>
+    <message>
+        <source>Edit text content</source>
+        <translation>Edit text content</translation>
+    </message>
+    <message>
+        <source>Replace data object</source>
+        <translation>Replace data object</translation>
+    </message>
+    <message>
+        <source>Modify data (persisted snapshot)</source>
+        <translation>Modify data (persisted snapshot)</translation>
+    </message>
+    <message>
+        <source>group items</source>
+        <translation>group items</translation>
+    </message>
+    <message>
+        <source>ungroup items</source>
+        <translation>ungroup items</translation>
+    </message>
+    <message>
+        <source>edit text document</source>
+        <translation>edit text document</translation>
+    </message>
+    <message>
+        <source>rename columns</source>
+        <translation>rename columns</translation>
+    </message>
+    <message>
+        <source>clear cells</source>
+        <translation>clear cells</translation>
+    </message>
+    <message>
+        <source>Reorder columns</source>
+        <translation>Reorder columns</translation>
+    </message>
+    <message>
+        <source>Hide column "%1"</source>
+        <translation>Hide column "%1"</translation>
+    </message>
+    <message>
+        <source>Show all columns</source>
+        <translation>Show all columns</translation>
+    </message>
+    <message>
+        <source>Freeze columns to %1</source>
+        <translation>Freeze columns to %1</translation>
+    </message>
+    <message>
+        <source>Unfreeze columns</source>
+        <translation>Unfreeze columns</translation>
+    </message>
 </context>
 <context>
     <name>main</name>
@@ -16161,6 +16979,1377 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <location line="+9"/>
         <source>Disable the splash screen during startup, useful for debugging to avoid the splash window blocking the IDE</source>
         <translation>Disable the splash screen during startup, useful for debugging to avoid the splash window blocking the IDE</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DASettingPageShortcuts</name>
+    <message>
+        <source>Shortcuts</source>
+        <translation>Shortcuts</translation>
+    </message>
+    <message>
+        <source>Search:</source>
+        <translation>Search:</translation>
+    </message>
+    <message>
+        <source>Filter by command or shortcut</source>
+        <translation>Filter by command or shortcut</translation>
+    </message>
+    <message>
+        <source>Reset All to Defaults</source>
+        <translation>Reset All to Defaults</translation>
+    </message>
+    <message>
+        <source>Command</source>
+        <translation>Command</translation>
+    </message>
+    <message>
+        <source>Shortcut</source>
+        <translation>Shortcut</translation>
+    </message>
+    <message>
+        <source>Shortcut %1 is already assigned to: %2</source>
+        <translation>Shortcut %1 is already assigned to: %2</translation>
+    </message>
+    <message>
+        <source>Shortcut for "%1" changed, click OK or Apply to take effect</source>
+        <translation>Shortcut for "%1" changed, click OK or Apply to take effect</translation>
+    </message>
+    <message>
+        <source>Default: %1</source>
+        <translation>Default: %1</translation>
+    </message>
+    <message>
+        <source>(none)</source>
+        <translation>(none)</translation>
+    </message>
+    <message>
+        <source>Main</source>
+        <translation>Main</translation>
+    </message>
+    <message>
+        <source>Data</source>
+        <translation>Data</translation>
+    </message>
+    <message>
+        <source>Figure</source>
+        <translation>Figure</translation>
+    </message>
+    <message>
+        <source>Chart</source>
+        <translation>Chart</translation>
+    </message>
+    <message>
+        <source>View</source>
+        <translation>View</translation>
+    </message>
+    <message>
+        <source>Workflow</source>
+        <translation>Workflow</translation>
+    </message>
+    <message>
+        <source>Workflow Editor</source>
+        <translation>Workflow Editor</translation>
+    </message>
+    <message>
+        <source>Other</source>
+        <translation>Other</translation>
+    </message>
+    <message>
+        <source>Reset to Default</source>
+        <translation>Reset to Default</translation>
+    </message>
+    <message>
+        <source>Clear Shortcut</source>
+        <translation>Clear Shortcut</translation>
+    </message>
+    <message>
+        <source>Failed to save shortcut settings</source>
+        <translation>Failed to save shortcut settings</translation>
+    </message>
+</context>
+<context>
+        <name>DA::DADataHeaderView</name>
+        <message>
+            <source>Sort Ascending</source>
+            <translation>Sort Ascending</translation>
+        </message>
+        <message>
+            <source>Sort Descending</source>
+            <translation>Sort Descending</translation>
+        </message>
+        <message>
+            <source>Add Secondary Sort (Ascending)</source>
+            <translation>Add Secondary Sort (Ascending)</translation>
+        </message>
+        <message>
+            <source>Add Secondary Sort (Descending)</source>
+            <translation>Add Secondary Sort (Descending)</translation>
+        </message>
+        <message>
+            <source>Rename Column</source>
+            <translation>Rename Column</translation>
+        </message>
+        <message>
+            <source>Remove Column</source>
+            <translation>Remove Column</translation>
+        </message>
+        <message>
+            <source>Copy Column Name</source>
+            <translation>Copy Column Name</translation>
+        </message>
+        <message>
+            <source>Goto Max</source>
+            <translation>Goto Max</translation>
+        </message>
+        <message>
+            <source>Goto Min</source>
+            <translation>Goto Min</translation>
+        </message>
+        <message>
+            <source>Show Statistics</source>
+            <translation>Show Statistics</translation>
+        </message>
+        <message>
+        <source>Edit Formula</source>
+        <translation>Edit Formula</translation>
+    </message>
+    <message>
+        <source>Recompute</source>
+        <translation>Recompute</translation>
+    </message>
+    <message>
+        <source>Remove Formula (Keep Data)</source>
+        <translation>Remove Formula (Keep Data)</translation>
+    </message>
+    <message>
+        <source>Columns</source>
+        <translation>Columns</translation>
+    </message>
+    <message>
+        <source>Hide This Column</source>
+        <translation>Hide This Column</translation>
+    </message>
+    <message>
+        <source>Show All Columns</source>
+        <translation>Show All Columns</translation>
+    </message>
+    <message>
+        <source>Freeze to This Column</source>
+        <translation>Freeze to This Column</translation>
+    </message>
+    <message>
+        <source>Unfreeze</source>
+        <translation>Unfreeze</translation>
+    </message>
+    <message>
+        <source>Column View...</source>
+        <translation>Column View...</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADialogFindReplace</name>
+    <message>
+        <source>Entire table</source>
+        <translation>Entire table</translation>
+    </message>
+    <message>
+        <source>Current selection</source>
+        <translation>Current selection</translation>
+    </message>
+    <message>
+        <source>No matches</source>
+        <translation>No matches</translation>
+    </message>
+    <message>
+        <source>%1 of %2 (truncated from %3)</source>
+        <translation>%1 of %2 (truncated from %3)</translation>
+    </message>
+    <message>
+        <source>%1 of %2</source>
+        <translation>%1 of %2</translation>
+    </message>
+    <message>
+        <source>Invalid pattern</source>
+        <translation>Invalid pattern</translation>
+    </message>
+</context>
+<context>
+    <name>DADialogFindReplace</name>
+    <message>
+        <source>Find and Replace</source>
+        <translation>Find and Replace</translation>
+    </message>
+    <message>
+        <source>Find:</source>
+        <translation>Find:</translation>
+    </message>
+    <message>
+        <source>Replace:</source>
+        <translation>Replace:</translation>
+    </message>
+    <message>
+        <source>Previous</source>
+        <translation>Previous</translation>
+    </message>
+    <message>
+        <source>Next</source>
+        <translation>Next</translation>
+    </message>
+    <message>
+        <source>Replace</source>
+        <translation>Replace</translation>
+    </message>
+    <message>
+        <source>Replace All</source>
+        <translation>Replace All</translation>
+    </message>
+    <message>
+        <source>Case sensitive</source>
+        <translation>Case sensitive</translation>
+    </message>
+    <message>
+        <source>Regex</source>
+        <translation>Regex</translation>
+    </message>
+    <message>
+        <source>Whole cell</source>
+        <translation>Whole cell</translation>
+    </message>
+    <message>
+        <source>Scope:</source>
+        <translation>Scope:</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Close</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADialogConditionalFormat</name>
+    <message>
+        <source>Cell Rule</source>
+        <translation>Cell Rule</translation>
+    </message>
+    <message>
+        <source>Color Scale</source>
+        <translation>Color Scale</translation>
+    </message>
+    <message>
+        <source>Data Bar</source>
+        <translation>Data Bar</translation>
+    </message>
+    <message>
+        <source>greater than</source>
+        <translation>greater than</translation>
+    </message>
+    <message>
+        <source>less than</source>
+        <translation>less than</translation>
+    </message>
+    <message>
+        <source>between</source>
+        <translation>between</translation>
+    </message>
+    <message>
+        <source>equal to</source>
+        <translation>equal to</translation>
+    </message>
+    <message>
+        <source>contains</source>
+        <translation>contains</translation>
+    </message>
+    <message>
+        <source>is empty</source>
+        <translation>is empty</translation>
+    </message>
+    <message>
+        <source>is not empty</source>
+        <translation>is not empty</translation>
+    </message>
+    <message>
+        <source>Select Font</source>
+        <translation>Select Font</translation>
+    </message>
+    <message>
+        <source>Select Color</source>
+        <translation>Select Color</translation>
+    </message>
+    <message>
+        <source>Column %1</source>
+        <translation>Column %1</translation>
+    </message>
+    <message>
+        <source>Color scale and data bar need full-column statistics, which are unavailable for lazy-loaded or read-only data sources. Cell rules are still available.</source>
+        <translation>Color scale and data bar need full-column statistics, which are unavailable for lazy-loaded or read-only data sources. Cell rules are still available.</translation>
+    </message>
+    <message>
+        <source>greater than %1</source>
+        <translation>greater than %1</translation>
+    </message>
+    <message>
+        <source>less than %1</source>
+        <translation>less than %1</translation>
+    </message>
+    <message>
+        <source>between %1 and %2</source>
+        <translation>between %1 and %2</translation>
+    </message>
+    <message>
+        <source>equal to %1</source>
+        <translation>equal to %1</translation>
+    </message>
+    <message>
+        <source>contains &quot;%1&quot;</source>
+        <translation>contains &quot;%1&quot;</translation>
+    </message>
+    <message>
+        <source>3-color scale</source>
+        <translation>3-color scale</translation>
+    </message>
+    <message>
+        <source>2-color scale</source>
+        <translation>2-color scale</translation>
+    </message>
+    <message>
+        <source>data bar</source>
+        <translation>data bar</translation>
+    </message>
+    <message>
+        <source>[Off] </source>
+        <translation>[Off] </translation>
+    </message>
+    <message>
+        <source>Font...</source>
+        <translation>Font...</translation>
+    </message>
+</context>
+<context>
+    <name>DADialogConditionalFormat</name>
+    <message>
+        <source>Conditional Formatting</source>
+        <translation>Conditional Formatting</translation>
+    </message>
+    <message>
+        <source>Rules (top to bottom = evaluation order, later rules override earlier ones):</source>
+        <translation>Rules (top to bottom = evaluation order, later rules override earlier ones):</translation>
+    </message>
+    <message>
+        <source>Add</source>
+        <translation>Add</translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation>Remove</translation>
+    </message>
+    <message>
+        <source>Move Up</source>
+        <translation>Move Up</translation>
+    </message>
+    <message>
+        <source>Move Down</source>
+        <translation>Move Down</translation>
+    </message>
+    <message>
+        <source>Clear Rules of Selected Column</source>
+        <translation>Clear Rules of Selected Column</translation>
+    </message>
+    <message>
+        <source>Rule Type:</source>
+        <translation>Rule Type:</translation>
+    </message>
+    <message>
+        <source>Column:</source>
+        <translation>Column:</translation>
+    </message>
+    <message>
+        <source>Enabled</source>
+        <translation>Enabled</translation>
+    </message>
+    <message>
+        <source>Condition:</source>
+        <translation>Condition:</translation>
+    </message>
+    <message>
+        <source>Value:</source>
+        <translation>Value:</translation>
+    </message>
+    <message>
+        <source>And (upper bound):</source>
+        <translation>And (upper bound):</translation>
+    </message>
+    <message>
+        <source>Style:</source>
+        <translation>Style:</translation>
+    </message>
+    <message>
+        <source>Background</source>
+        <translation>Background</translation>
+    </message>
+    <message>
+        <source>Foreground</source>
+        <translation>Foreground</translation>
+    </message>
+    <message>
+        <source>Font</source>
+        <translation>Font</translation>
+    </message>
+    <message>
+        <source>Font...</source>
+        <translation>Font...</translation>
+    </message>
+    <message>
+        <source>2-Color Scale</source>
+        <translation>2-Color Scale</translation>
+    </message>
+    <message>
+        <source>3-Color Scale</source>
+        <translation>3-Color Scale</translation>
+    </message>
+    <message>
+        <source>Low:</source>
+        <translation>Low:</translation>
+    </message>
+    <message>
+        <source>Middle:</source>
+        <translation>Middle:</translation>
+    </message>
+    <message>
+        <source>High:</source>
+        <translation>High:</translation>
+    </message>
+    <message>
+        <source>Bar Color:</source>
+        <translation>Bar Color:</translation>
+    </message>
+</context>
+
+<context>
+        <name>DADialogTableColumnView</name>
+    <message>
+        <source>Column View</source>
+        <translation>Column View</translation>
+    </message>
+    <message>
+        <source>Columns:</source>
+        <translation>Columns:</translation>
+    </message>
+    <message>
+        <source>Freeze Columns:</source>
+        <translation>Freeze Columns:</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DATableComputedColumnStore</name>
+    <message>
+        <source>Valid</source>
+        <translation>Valid</translation>
+    </message>
+    <message>
+        <source>Needs Recompute</source>
+        <translation>Needs Recompute</translation>
+    </message>
+    <message>
+        <source>Invalid</source>
+        <translation>Invalid</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADataTableModel</name>
+    <message>
+        <source>Formula</source>
+        <translation>Formula</translation>
+    </message>
+    <message>
+        <source>State</source>
+        <translation>State</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DATableMetadata</name>
+    <message>
+        <source>Cell styles</source>
+        <translation>Cell styles</translation>
+    </message>
+    <message>
+        <source>Column widths</source>
+        <translation>Column widths</translation>
+    </message>
+    <message>
+        <source>Conditional format rules</source>
+        <translation>Conditional format rules</translation>
+    </message>
+    <message>
+        <source>Computed columns</source>
+        <translation>Computed columns</translation>
+    </message>
+    <message>
+        <source>Validation rules</source>
+        <translation>Validation rules</translation>
+    </message>
+    <message>
+        <source>Cell notes</source>
+        <translation>Cell notes</translation>
+    </message>
+    <message>
+        <source>Column view settings</source>
+        <translation>Column view settings</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADialogComputedColumn</name>
+    <message>
+        <source>New Computed Column</source>
+        <translation>New Computed Column</translation>
+    </message>
+    <message>
+        <source>Edit Formula</source>
+        <translation>Edit Formula</translation>
+    </message>
+    <message>
+        <source>New column name</source>
+        <translation>New column name</translation>
+    </message>
+    <message>
+        <source>e.g. A + B (column names can be inserted from the list below)</source>
+        <translation>e.g. A + B (column names can be inserted from the list below)</translation>
+    </message>
+    <message>
+        <source>Target Column:</source>
+        <translation>Target Column:</translation>
+    </message>
+    <message>
+        <source>Expression:</source>
+        <translation>Expression:</translation>
+    </message>
+    <message>
+        <source>Columns (click to insert)</source>
+        <translation>Columns (click to insert)</translation>
+    </message>
+    <message>
+        <source>Preview (first %1 rows)</source>
+        <translation>Preview (first %1 rows)</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>Cancel</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>OK</translation>
+    </message>
+    <message>
+        <source>No data</source>
+        <translation>No data</translation>
+    </message>
+    <message>
+        <source>Please specify the target column name</source>
+        <translation>Please specify the target column name</translation>
+    </message>
+    <message>
+        <source>Column "%1" already exists. A computed column must write to a new column (self-overwrite is not allowed).</source>
+        <translation>Column "%1" already exists. A computed column must write to a new column (self-overwrite is not allowed).</translation>
+    </message>
+    <message>
+        <source>Please input the expression</source>
+        <translation>Please input the expression</translation>
+    </message>
+    <message>
+        <source>Expression syntax error: %1</source>
+        <translation>Expression syntax error: %1</translation>
+    </message>
+    <message>
+        <source>The expression must not reference the target column "%1" (self-overwrite is not allowed).</source>
+        <translation>The expression must not reference the target column "%1" (self-overwrite is not allowed).</translation>
+    </message>
+    <message>
+        <source>Failed to build preview sample</source>
+        <translation>Failed to build preview sample</translation>
+    </message>
+    <message>
+        <source>Expression evaluation failed: %1</source>
+        <translation>Expression evaluation failed: %1</translation>
+    </message>
+    <message>
+        <source>OK — %1 dependency column(s): %2</source>
+        <translation>OK — %1 dependency column(s): %2</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADialogSplitColumn</name>
+    <message>
+        <source>Split Column</source>
+        <translation>Split Column</translation>
+    </message>
+    <message>
+        <source>Source column: %1</source>
+        <translation>Source column: %1</translation>
+    </message>
+    <message>
+        <source>Split Mode</source>
+        <translation>Split Mode</translation>
+    </message>
+    <message>
+        <source>Delimiter (single char or string)</source>
+        <translation>Delimiter (single char or string)</translation>
+    </message>
+    <message>
+        <source>Regular expression (capture groups)</source>
+        <translation>Regular expression (capture groups)</translation>
+    </message>
+    <message>
+        <source>Fixed widths</source>
+        <translation>Fixed widths</translation>
+    </message>
+    <message>
+        <source>comma separated, e.g. 3,5,8</source>
+        <translation>comma separated, e.g. 3,5,8</translation>
+    </message>
+    <message>
+        <source>Max columns:</source>
+        <translation>Max columns:</translation>
+    </message>
+    <message>
+        <source>Unlimited</source>
+        <translation>Unlimited</translation>
+    </message>
+    <message>
+        <source>Discard extra parts</source>
+        <translation>Discard extra parts</translation>
+    </message>
+    <message>
+        <source>Keep remainder in last column</source>
+        <translation>Keep remainder in last column</translation>
+    </message>
+    <message>
+        <source>Report error</source>
+        <translation>Report error</translation>
+    </message>
+    <message>
+        <source>Overflow policy:</source>
+        <translation>Overflow policy:</translation>
+    </message>
+    <message>
+        <source>Try to parse result columns as numeric</source>
+        <translation>Try to parse result columns as numeric</translation>
+    </message>
+    <message>
+        <source>comma separated result column names</source>
+        <translation>comma separated result column names</translation>
+    </message>
+    <message>
+        <source>Result names:</source>
+        <translation>Result names:</translation>
+    </message>
+    <message>
+        <source>Preview (first %1 rows)</source>
+        <translation>Preview (first %1 rows)</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>OK</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>Cancel</translation>
+    </message>
+    <message>
+        <source>Delimiter must not be empty</source>
+        <translation>Delimiter must not be empty</translation>
+    </message>
+    <message>
+        <source>Regular expression must not be empty</source>
+        <translation>Regular expression must not be empty</translation>
+    </message>
+    <message>
+        <source>Widths must be comma separated positive integers</source>
+        <translation>Widths must be comma separated positive integers</translation>
+    </message>
+    <message>
+        <source>Widths must not be empty</source>
+        <translation>Widths must not be empty</translation>
+    </message>
+    <message>
+        <source>No data</source>
+        <translation>No data</translation>
+    </message>
+    <message>
+        <source>Failed to build preview sample</source>
+        <translation>Failed to build preview sample</translation>
+    </message>
+    <message>
+        <source>Split failed: %1</source>
+        <translation>Split failed: %1</translation>
+    </message>
+    <message>
+        <source>Auto name "%1" conflicts with an existing column, please rename the result columns</source>
+        <translation>Auto name "%1" conflicts with an existing column, please rename the result columns</translation>
+    </message>
+    <message>
+        <source>Result name count (%1) does not match the split column count (%2)</source>
+        <translation>Result name count (%1) does not match the split column count (%2)</translation>
+    </message>
+    <message>
+        <source>Result column name must not be empty</source>
+        <translation>Result column name must not be empty</translation>
+    </message>
+    <message>
+        <source>Duplicate result column name "%1"</source>
+        <translation>Duplicate result column name "%1"</translation>
+    </message>
+    <message>
+        <source>Result column name "%1" already exists in the table</source>
+        <translation>Result column name "%1" already exists in the table</translation>
+    </message>
+    <message>
+        <source>OK — split into %1 column(s)</source>
+        <translation>OK — split into %1 column(s)</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADialogMergeColumns</name>
+    <message>
+        <source>Merge Columns</source>
+        <translation>Merge Columns</translation>
+    </message>
+    <message>
+        <source>Merge order (top to bottom)</source>
+        <translation>Merge order (top to bottom)</translation>
+    </message>
+    <message>
+        <source>can be empty</source>
+        <translation>can be empty</translation>
+    </message>
+    <message>
+        <source>Separator:</source>
+        <translation>Separator:</translation>
+    </message>
+    <message>
+        <source>Skip missing values (no extra separator)</source>
+        <translation>Skip missing values (no extra separator)</translation>
+    </message>
+    <message>
+        <source>Result column name:</source>
+        <translation>Result column name:</translation>
+    </message>
+    <message>
+        <source>Preview (first %1 rows)</source>
+        <translation>Preview (first %1 rows)</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>OK</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>Cancel</translation>
+    </message>
+    <message>
+        <source>No data</source>
+        <translation>No data</translation>
+    </message>
+    <message>
+        <source>Merge requires at least 2 columns</source>
+        <translation>Merge requires at least 2 columns</translation>
+    </message>
+    <message>
+        <source>Result column name must not be empty</source>
+        <translation>Result column name must not be empty</translation>
+    </message>
+    <message>
+        <source>Column "%1" already exists, please use another result name</source>
+        <translation>Column "%1" already exists, please use another result name</translation>
+    </message>
+    <message>
+        <source>Failed to build preview sample</source>
+        <translation>Failed to build preview sample</translation>
+    </message>
+    <message>
+        <source>Merge failed: %1</source>
+        <translation>Merge failed: %1</translation>
+    </message>
+    <message>
+        <source>OK — merged into "%1" at column %2</source>
+        <translation>OK — merged into "%1" at column %2</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADialogGroupBy</name>
+    <message>
+        <source>Group By</source>
+        <translation>Group By</translation>
+    </message>
+    <message>
+        <source>Group keys (multi-select)</source>
+        <translation>Group keys (multi-select)</translation>
+    </message>
+    <message>
+        <source>Aggregate columns (multi-select)</source>
+        <translation>Aggregate columns (multi-select)</translation>
+    </message>
+    <message>
+        <source>Aggregations (column / function)</source>
+        <translation>Aggregations (column / function)</translation>
+    </message>
+    <message>
+        <source>Column</source>
+        <translation>Column</translation>
+    </message>
+    <message>
+        <source>Function</source>
+        <translation>Function</translation>
+    </message>
+    <message>
+        <source>Preview (first %1 rows)</source>
+        <translation>Preview (first %1 rows)</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>OK</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>Cancel</translation>
+    </message>
+    <message>
+        <source>No data</source>
+        <translation>No data</translation>
+    </message>
+    <message>
+        <source>Please select at least one group key</source>
+        <translation>Please select at least one group key</translation>
+    </message>
+    <message>
+        <source>Please select at least one aggregation column</source>
+        <translation>Please select at least one aggregation column</translation>
+    </message>
+    <message>
+        <source>Aggregation failed: %1</source>
+        <translation>Aggregation failed: %1</translation>
+    </message>
+    <message>
+        <source>OK — %1 group(s) (result rows)</source>
+        <translation>OK — %1 group(s) (result rows)</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADialogReshape</name>
+    <message>
+        <source>Reshape</source>
+        <translation>Reshape</translation>
+    </message>
+    <message>
+        <source>Unpivot / Melt</source>
+        <translation>Unpivot / Melt</translation>
+    </message>
+    <message>
+        <source>Transpose</source>
+        <translation>Transpose</translation>
+    </message>
+    <message>
+        <source>Mode</source>
+        <translation>Mode</translation>
+    </message>
+    <message>
+        <source>Transpose (rows become columns)</source>
+        <translation>Transpose (rows become columns)</translation>
+    </message>
+    <message>
+        <source>Unpivot / Melt (wide to long)</source>
+        <translation>Unpivot / Melt (wide to long)</translation>
+    </message>
+    <message>
+        <source>ID columns (keep, multi-select)</source>
+        <translation>ID columns (keep, multi-select)</translation>
+    </message>
+    <message>
+        <source>Value columns (unpivot; none = all others)</source>
+        <translation>Value columns (unpivot; none = all others)</translation>
+    </message>
+    <message>
+        <source>Variable column name:</source>
+        <translation>Variable column name:</translation>
+    </message>
+    <message>
+        <source>Value column name:</source>
+        <translation>Value column name:</translation>
+    </message>
+    <message>
+        <source>Replace current table in place (default: create a new dataset)</source>
+        <translation>Replace current table in place (default: create a new dataset)</translation>
+    </message>
+    <message>
+        <source>Preview (first %1 rows of a sample)</source>
+        <translation>Preview (first %1 rows of a sample)</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>OK</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>Cancel</translation>
+    </message>
+    <message>
+        <source>No data</source>
+        <translation>No data</translation>
+    </message>
+    <message>
+        <source>Failed to build preview sample</source>
+        <translation>Failed to build preview sample</translation>
+    </message>
+    <message>
+        <source>Column "%1" is in both ID and value columns</source>
+        <translation>Column "%1" is in both ID and value columns</translation>
+    </message>
+    <message>
+        <source>No column left to unpivot (all columns are kept as ID)</source>
+        <translation>No column left to unpivot (all columns are kept as ID)</translation>
+    </message>
+    <message>
+        <source>Variable/value column names must not be empty</source>
+        <translation>Variable/value column names must not be empty</translation>
+    </message>
+    <message>
+        <source>Reshape failed: %1</source>
+        <translation>Reshape failed: %1</translation>
+    </message>
+    <message>
+        <source> — exceeds the %1-row guard, confirmation required on OK</source>
+        <translation> — exceeds the %1-row guard, confirmation required on OK</translation>
+    </message>
+    <message>
+        <source>OK — estimated output rows: %1 (rows %2 x unpivoted columns %3)%4</source>
+        <translation>OK — estimated output rows: %1 (rows %2 x unpivoted columns %3)%4</translation>
+    </message>
+    <message>
+        <source>OK — result will have %1 row(s) (original columns) and one column per original row plus the "index" name column</source>
+        <translation>OK — result will have %1 row(s) (original columns) and one column per original row plus the "index" name column</translation>
+    </message>
+    <message>
+        <source>Melt Scale Guard</source>
+        <translation>Melt Scale Guard</translation>
+    </message>
+    <message>
+        <source>The melt operation is estimated to produce %1 rows (limit %2), which may consume a large amount of memory. Force continue?</source>
+        <translation>The melt operation is estimated to produce %1 rows (limit %2), which may consume a large amount of memory. Force continue?</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADialogFillSeries</name>
+    <message>
+        <source>Fill Series</source>
+        <translation>Fill Series</translation>
+    </message>
+    <message>
+        <source>Linear series (start / step / stop)</source>
+        <translation>Linear series (start / step / stop)</translation>
+    </message>
+    <message>
+        <source>Date series (start / step / unit)</source>
+        <translation>Date series (start / step / unit)</translation>
+    </message>
+    <message>
+        <source>Start value (empty = default)</source>
+        <translation>Start value (empty = default)</translation>
+    </message>
+    <message>
+        <source>Step (empty = 1)</source>
+        <translation>Step (empty = 1)</translation>
+    </message>
+    <message>
+        <source>Stop value (optional)</source>
+        <translation>Stop value (optional)</translation>
+    </message>
+    <message>
+        <source>Stop value (empty = no limit)</source>
+        <translation>Stop value (empty = no limit)</translation>
+    </message>
+    <message>
+        <source>Day</source>
+        <translation>Day</translation>
+    </message>
+    <message>
+        <source>Week</source>
+        <translation>Week</translation>
+    </message>
+    <message>
+        <source>Month</source>
+        <translation>Month</translation>
+    </message>
+    <message>
+        <source>Year</source>
+        <translation>Year</translation>
+    </message>
+    <message>
+        <source>Start date, e.g. 2020-01-01 (empty = today)</source>
+        <translation>Start date, e.g. 2020-01-01 (empty = today)</translation>
+    </message>
+    <message>
+        <source>Invalid parameters: unable to generate the series</source>
+        <translation>Invalid parameters: unable to generate the series</translation>
+    </message>
+    <message>
+        <source>Preview: (empty)</source>
+        <translation>Preview: (empty)</translation>
+    </message>
+    <message>
+        <source>Preview: %1</source>
+        <translation>Preview: %1</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADialogValidationRules</name>
+    <message>
+        <source>Validation Rules</source>
+        <translation>Validation Rules</translation>
+    </message>
+    <message>
+        <source>Add</source>
+        <translation>Add</translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation>Remove</translation>
+    </message>
+    <message>
+        <source>Up</source>
+        <translation>Up</translation>
+    </message>
+    <message>
+        <source>Down</source>
+        <translation>Down</translation>
+    </message>
+    <message>
+        <source>%1 (occurrence %2)</source>
+        <translation>%1 (occurrence %2)</translation>
+    </message>
+    <message>
+        <source>Numeric range</source>
+        <translation>Numeric range</translation>
+    </message>
+    <message>
+        <source>Date range</source>
+        <translation>Date range</translation>
+    </message>
+    <message>
+        <source>Allowed values (enum)</source>
+        <translation>Allowed values (enum)</translation>
+    </message>
+    <message>
+        <source>Not empty</source>
+        <translation>Not empty</translation>
+    </message>
+    <message>
+        <source>Unique</source>
+        <translation>Unique</translation>
+    </message>
+    <message>
+        <source>Regex (full match)</source>
+        <translation>Regex (full match)</translation>
+    </message>
+    <message>
+        <source>Error</source>
+        <translation>Error</translation>
+    </message>
+    <message>
+        <source>Warning</source>
+        <translation>Warning</translation>
+    </message>
+    <message>
+        <source>Enabled</source>
+        <translation>Enabled</translation>
+    </message>
+    <message>
+        <source>Display name in report (optional)</source>
+        <translation>Display name in report (optional)</translation>
+    </message>
+    <message>
+        <source>Column</source>
+        <translation>Column</translation>
+    </message>
+    <message>
+        <source>Type</source>
+        <translation>Type</translation>
+    </message>
+    <message>
+        <source>Level</source>
+        <translation>Level</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation>Name</translation>
+    </message>
+    <message>
+        <source>Empty = no lower bound</source>
+        <translation>Empty = no lower bound</translation>
+    </message>
+    <message>
+        <source>Empty = no upper bound</source>
+        <translation>Empty = no upper bound</translation>
+    </message>
+    <message>
+        <source>Minimum</source>
+        <translation>Minimum</translation>
+    </message>
+    <message>
+        <source>Maximum</source>
+        <translation>Maximum</translation>
+    </message>
+    <message>
+        <source>From</source>
+        <translation>From</translation>
+    </message>
+    <message>
+        <source>To</source>
+        <translation>To</translation>
+    </message>
+    <message>
+        <source>One allowed value per line</source>
+        <translation>One allowed value per line</translation>
+    </message>
+    <message>
+        <source>Allow other values when editing (dropdown)</source>
+        <translation>Allow other values when editing (dropdown)</translation>
+    </message>
+    <message>
+        <source>No parameters</source>
+        <translation>No parameters</translation>
+    </message>
+    <message>
+        <source>Full-match pattern, e.g. [A-Z]{3}\d+</source>
+        <translation>Full-match pattern, e.g. [A-Z]{3}\d+</translation>
+    </message>
+    <message>
+        <source>Pattern</source>
+        <translation>Pattern</translation>
+    </message>
+    <message>
+        <source>Parameters</source>
+        <translation>Parameters</translation>
+    </message>
+    <message>
+        <source> (disabled)</source>
+        <translation> (disabled)</translation>
+    </message>
+    <message>
+        <source>Minimum is not a valid number</source>
+        <translation>Minimum is not a valid number</translation>
+    </message>
+    <message>
+        <source>Maximum is not a valid number</source>
+        <translation>Maximum is not a valid number</translation>
+    </message>
+    <message>
+        <source>From-date is invalid (use yyyy-MM-dd)</source>
+        <translation>From-date is invalid (use yyyy-MM-dd)</translation>
+    </message>
+    <message>
+        <source>To-date is invalid (use yyyy-MM-dd)</source>
+        <translation>To-date is invalid (use yyyy-MM-dd)</translation>
+    </message>
+    <message>
+        <source>Rule parameters are incomplete (both bounds empty / no allowed values / empty pattern)</source>
+        <translation>Rule parameters are incomplete (both bounds empty / no allowed values / empty pattern)</translation>
+    </message>
+    <message>
+        <source>Invalid rule parameters</source>
+        <translation>Invalid rule parameters</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADialogValidationReport</name>
+    <message>
+        <source>Validation Report</source>
+        <translation>Validation Report</translation>
+    </message>
+    <message>
+        <source>Export...</source>
+        <translation>Export...</translation>
+    </message>
+    <message>
+        <source>Clear Highlights</source>
+        <translation>Clear Highlights</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Close</translation>
+    </message>
+    <message>
+        <source>  [column missing]</source>
+        <translation>  [column missing]</translation>
+    </message>
+    <message>
+        <source>  —  %1 violation(s)</source>
+        <translation>  —  %1 violation(s)</translation>
+    </message>
+    <message>
+        <source> (showing first %1)</source>
+        <translation> (showing first %1)</translation>
+    </message>
+    <message>
+        <source>Evaluated %1 rule(s), found %2 violation(s), took %3 ms</source>
+        <translation>Evaluated %1 rule(s), found %2 violation(s), took %3 ms</translation>
+    </message>
+    <message>
+        <source>Error</source>
+        <translation>Error</translation>
+    </message>
+    <message>
+        <source>Warning</source>
+        <translation>Warning</translation>
+    </message>
+    <message>
+        <source>Column missing (rule skipped)</source>
+        <translation>Column missing (rule skipped)</translation>
+    </message>
+    <message>
+        <source>%1 violation(s)</source>
+        <translation>%1 violation(s)</translation>
+    </message>
+    <message>
+        <source>Export Validation Report</source>
+        <translation>Export Validation Report</translation>
+    </message>
+    <message>
+        <source>HTML (*.html);;PDF (*.pdf);;Word (*.docx)</source>
+        <translation>HTML (*.html);;PDF (*.pdf);;Word (*.docx)</translation>
+    </message>
+    <message>
+        <source>Export failed: %1</source>
+        <translation>Export failed: %1</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DATableNoteEditDialog</name>
+    <message>
+        <source>Cell Note</source>
+        <translation>Cell Note</translation>
+    </message>
+    <message>
+        <source>Enter note text...</source>
+        <translation>Enter note text...</translation>
+    </message>
+    <message>
+        <source>Delete</source>
+        <translation>Delete</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAUndoHistoryWidget</name>
+    <message>
+        <source>Undo depth:</source>
+        <translation>Undo depth:</translation>
+    </message>
+    <message>
+        <source>Maximum number of undo steps kept per table page (larger uses more memory for swap-type commands)</source>
+        <translation>Maximum number of undo steps kept per table page (larger uses more memory for swap-type commands)</translation>
+    </message>
+</context>
+<context>
+        <name>DA::DADialogGotoCell</name>
+    <message>
+        <source>Go To</source>
+        <translation>Go To</translation>
+    </message>
+    <message>
+        <source>Row number:</source>
+        <translation>Row number:</translation>
+    </message>
+    <message>
+        <source>Index label:</source>
+        <translation>Index label:</translation>
+    </message>
+    <message>
+        <source>Column:</source>
+        <translation>Column:</translation>
+    </message>
+    <message>
+        <source>Keep hidden columns hidden</source>
+        <translation>Keep hidden columns hidden</translation>
+    </message>
+    <message>
+        <source>First row</source>
+        <translation>First row</translation>
+    </message>
+    <message>
+        <source>Last row</source>
+        <translation>Last row</translation>
+    </message>
+    <message>
+        <source>First column</source>
+        <translation>First column</translation>
+    </message>
+    <message>
+        <source>Last column</source>
+        <translation>Last column</translation>
+    </message>
+    <message>
+        <source>1 - %1</source>
+        <translation>1 - %1</translation>
+    </message>
+</context>
+<context>
+        <name>DA::DATableStatsWidget</name>
+    <message>
+        <source>%1 rows × %2 cols</source>
+        <translation>%1 rows × %2 cols</translation>
+    </message>
+    <message>
+        <source>%1 cols selected · %2 rows</source>
+        <translation>%1 cols selected · %2 rows</translation>
+    </message>
+    <message>
+        <source>Count</source>
+        <translation>Count</translation>
+    </message>
+    <message>
+        <source>Null</source>
+        <translation>Null</translation>
+    </message>
+    <message>
+        <source>Sum</source>
+        <translation>Sum</translation>
+    </message>
+    <message>
+        <source>Mean</source>
+        <translation>Mean</translation>
+    </message>
+    <message>
+        <source>Min</source>
+        <translation>Min</translation>
+    </message>
+    <message>
+        <source>Max</source>
+        <translation>Max</translation>
+    </message>
+    <message>
+        <source>Unique</source>
+        <translation>Unique</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Per-column details&lt;/b&gt;</source>
+        <translation>&lt;b&gt;Per-column details&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>Selection is too large; per-column details were not computed</source>
+        <translation>Selection is too large; per-column details were not computed</translation>
+    </message>
+    <message>
+        <source>%1 segments · %2 rows × %3 cols · %4 cells</source>
+        <translation>%1 segments · %2 rows × %3 cols · %4 cells</translation>
+    </message>
+    <message>
+        <source>Aggregation is not available for multi-range selections</source>
+        <translation>Aggregation is not available for multi-range selections</translation>
+    </message>
+    <message>
+        <source>Row %1 · %2: %3</source>
+        <translation>Row %1 · %2: %3</translation>
+    </message>
+    <message>
+        <source>Statistics are not available for the current data source</source>
+        <translation>Statistics are not available for the current data source</translation>
     </message>
 </context>
 </TS>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px"
+	 width="200px" height="200px" viewBox="0 0 200 200" xml:space="preserve">
+	<!-- 插入/编辑批注：左侧表格网格（中灰框白底）+ 右上金黄便签（折角），批注角标
+	     同源语义色。官方色板：网格 #727272（中灰）、底 #FFFFFF、便签 #E6C27C（金黄，
+	     标记语义）、折角 #FFFFFF；禁渐变/阴影/<text>（DESIGN.md §4） -->
+	<rect x="18" y="46" width="110" height="124" fill="#FFFFFF"/>
+	<g fill="none" stroke="#727272" stroke-width="8" stroke-linecap="butt">
+		<rect x="18" y="46" width="110" height="124"/>
+		<line x1="18" y1="92" x2="128" y2="92"/>
+		<line x1="18" y1="130" x2="128" y2="130"/>
+	</g>
+	<polygon points="104,16 184,16 184,80 168,96 104,96" fill="#E6C27C"/>
+	<polygon points="184,80 168,96 168,80" fill="#FFFFFF"/>
+	<g fill="none" stroke="#727272" stroke-width="6" stroke-linecap="butt">
+		<line x1="118" y1="38" x2="170" y2="38"/>
+		<line x1="118" y1="58" x2="170" y2="58"/>
+	</g>
+</svg>

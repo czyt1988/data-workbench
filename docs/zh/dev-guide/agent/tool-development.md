@@ -1,6 +1,6 @@
 # 工具开发指南
 
-Agent 工具是 LLM 可以调用的函数，用于执行数据分析、绘图、文件操作等任务。本文档描述工具的抽象基类、注册机制、内置工具清单，以及如何开发自定义工具。
+Agent 工具是大语言模型（LLM）可以调用的函数，用于执行数据分析、绘图、文件操作等任务。工具类都以 `DAAbstractAgentTool` 为基类，经 `DAAgentInterface::registerTool` 注册；内置工具与自定义插件工具共用这套接口。
 
 ---
 
@@ -57,14 +57,15 @@ classDiagram
 | `DAAgentChartToolBase` | 插件 (DAAgentTools) | 无 | 图表工具基类，提供图表操作方法 |
 | 具体工具类 | 插件 (DAAgentTools) | 无 | 21 个内置工具的具体实现（另有 `DAPaperAgent` 插件 2 个文献工具，见[工具与内置 Agent 总览](./available-tools.md)） |
 
-!!! note "为什么 DAAgentToolBase 是"瘦"基类"
-    在解耦重构前，`DAAgentToolBase` 同时包含数据访问方法和图表访问方法，导致 DAAgent 模块依赖 DAGui。重构后将图表方法搬到插件的 `DAAgentChartToolBase`，`DAAgentToolBase` 只保留只依赖 DAData/DAInterface 的方法。这样未来写数据工具插件只需继承瘦基类，无需拉 DAGui 依赖。
+> **📝 为什么 DAAgentToolBase 是"瘦"基类**
+>
+> 在解耦重构前，`DAAgentToolBase` 同时包含数据访问方法和图表访问方法，导致 DAAgent 模块依赖 DAGui。重构后将图表方法搬到插件的 `DAAgentChartToolBase`，`DAAgentToolBase` 只保留只依赖 DAData/DAInterface 的方法。这样未来写数据工具插件只需继承瘦基类，无需拉 DAGui 依赖。
 
 ---
 
 ## 工具接口
 
-### getToolSpec() — 工具规格
+### getToolSpec()：工具规格
 
 返回结构化的 `DAAgentToolSpec`（`src/DAAgent/DAAgentToolSpec.h`），描述工具的名称、用途和参数。
 平台在组装时经 `DA::toJson(spec)`（`src/DAAgent/DAAgentToolSpecJson.h`）统一序列化为
@@ -96,7 +97,7 @@ DAAgentToolSpec DAAgentToolQueryData::getToolSpec() const
 - `enumValues` / `defaultValue`：可选值列表 / 默认值，空 / invalid 时序列化自动省略。
 - free-form 对象参数（如 `run_code` 的 `args`）：`types` 填 `{Type::Object}` 即可。
 
-### execute() — 工具执行
+### execute()：工具执行
 
 接收 LLM 传来的参数，执行工具逻辑，返回结果 JSON：
 
@@ -105,7 +106,7 @@ QJsonObject DAAgentToolQueryData::execute(const QJsonObject& params)
 {
     try {
         QString dataName = params["data_name"].toString();
-        QString query    = params["query"].toString();
+        QString query    = params["expr"].toString();
 
         auto* data = findData(dataName);
         if (!data) {
@@ -129,10 +130,11 @@ QJsonObject DAAgentToolQueryData::execute(const QJsonObject& params)
 }
 ```
 
-!!! warning "execute() 必须内部 try/catch"
-    工具抛出未捕获异常会导致 `DAAgentBridge` 崩溃，子进程收不到 `tool_result` 永久挂起。`executeTool()` 有外层兜底，但工具内部应自行捕获并返回 `errorResponse`。
+> **⚠️ execute() 必须内部 try/catch**
+>
+> 工具抛出未捕获异常会导致 `DAAgentBridge` 崩溃，子进程收不到 `tool_result` 永久挂起。`executeTool()` 外层还有一层防护，但工具内部应自行捕获并返回 `errorResponse`。
 
-### getOwnerModule() — 归属模块
+### getOwnerModule()：归属模块
 
 返回工具所属的模块名（用于日志和诊断）：
 
@@ -183,8 +185,9 @@ QJsonObject errorResponse(const QString& message);
 }
 ```
 
-!!! note "未设置 success 字段时自动补 true"
-    `DAAgentBridge::executeTool()` 在工具返回结果中检测 `success` 字段，不存在时自动补 `true`。
+> **📝 未设置 success 字段时自动补 true**
+>
+> `DAAgentBridge::executeTool()` 在工具返回结果中检测 `success` 字段，不存在时自动补 `true`。
 
 ---
 
@@ -275,7 +278,7 @@ bool DAAgentToolsPlugin::initialize()
 |--------|------|---------|
 | `list_data` | 列出所有已加载的数据集 | 无 |
 | `get_data_info` | 获取数据集的详细信息（行列数、数据类型、统计摘要） | `data_name` |
-| `query_data` | 使用 pandas 语法查询数据 | `data_name`, `query` |
+| `query_data` | 使用 pandas 语法查询数据 | `data_name`, `expr` |
 | `get_column_stats` | 获取列的统计信息（均值、标准差、分位数等） | `data_name`, `column` |
 | `export_data` | 导出数据到文件 | `data_name`, `file_path`, `format` |
 
@@ -285,12 +288,12 @@ bool DAAgentToolsPlugin::initialize()
 |--------|------|---------|
 | `create_chart` | 创建图表（同名 figure 已存在则在其中加 chart） | `type`, `data_name`, `x`, `y`(数组), `title?`, `figure_name?`, `x_label?`, `y_label?` |
 | `add_curve` | 向图表添加曲线 | `data_name`, `x_column`, `y_column`, `figure_name?`, `chart_id?` |
-| `set_chart_style` | 设置图表样式（线型、颜色、标记等） | `figure_name?`, `chart_id`, `style` |
+| `set_chart_style` | 设置图表样式（标题、轴标签、图例、网格、背景等） | `figure_name?`, `chart_id?`, `title?`, `x_label?`, `y_label?`, `legend?`, `grid?`, `x_axis_type?`, `x_date_format?`, `background_color?`, `border_color?` |
 | `set_axis` | 配置坐标轴（刻度类型、范围、颜色、标签旋转） | `figure_name?`, `chart_id?`, `axis`(`x`/`y`), `scale_type?`(`normal`/`datetime`), `date_format?`, `min?`, `max?`, `color?`, `label_rotation?` |
 | `update_curve_style` | 修改已有曲线外观（颜色、线型、线宽、标记、填充） | `figure_name?`, `chart_id?`, `curve_name`, `color?`, `width?`, `style?`, `symbol?`, `symbol_size?`, `fill_color?` |
 | `remove_chart_item` | 删除曲线 / 注释 / 区域 | `figure_name?`, `chart_id?`, `item_name`, `item_type?`(`curve`/`annotation`/`region`/`any`) |
 | `add_annotation` | 添加文本/箭头/点/区域标注 | `figure_name?`, `chart_id?`, `type`(`text`/`arrow`/`point`/`region`), `position?`/`start?`+`end?`/`start_x?`+`end_x?`, `text?`, `color?` |
-| `create_subplots` | 创建子图布局 | `rows`, `cols`, `figure_name?` |
+| `create_subplots` | 创建子图布局 | `layout`, `figure_name?` |
 | `save_chart_image` | 保存图表为图片 | `figure_name?`, `file_path`, `format` |
 | `list_figures` | 列出所有 figure 及其 chart | 无 |
 | `list_chart_items` | 列出 chart 内曲线/标注/区域明细 | `figure_name?`, `chart_id?`, `item_type?`(`curve`/`annotation`/`region`/`any`) |
@@ -302,22 +305,25 @@ bool DAAgentToolsPlugin::initialize()
 | `run_code` | 在共享持久命名空间执行内联 Python（预导入 `da_app` 等，变量跨调用持久） | `code`, `args?` |
 | `run_script` | 执行脚本工作区内 `.py`（`path` 为工作区相对路径），与 `run_code` 共享命名空间 | `path`, `args?` |
 
-!!! note "图表工具的 figure_name 参数"
-    所有绘图工具都支持可选的 `figure_name` 参数，用于在指定 figure 中操作。`create_chart` 和 `create_subplots` 的 `figure_name` 用于命名新创建的 figure。
+> **📝 图表工具的 figure_name 参数**
+>
+> 所有绘图工具都支持可选的 `figure_name` 参数，用于在指定 figure 中操作。`create_chart` 和 `create_subplots` 的 `figure_name` 用于命名新创建的 figure。
 
-!!! warning "坐标轴自动缩放"
-    `DAAgentChartToolBase::enableAutoScale(chart)` 在添加数据后必须调用，因为 `DAFigureWidget::createChart()` 会锁定坐标轴范围。不恢复 auto-scale 会导致数据显示在可见范围外而显示空白。
+> **⚠️ 坐标轴自动缩放**
+>
+> `DAAgentChartToolBase::enableAutoScale(chart)` 在添加数据后必须调用，因为 `DAFigureWidget::createChart()` 会锁定坐标轴范围。不恢复 auto-scale 会导致数据显示在可见范围外而显示空白。
 
 ### 文件/报告工具（3 个）
 
 | 工具名 | 用途 | 关键参数 |
 |--------|------|---------|
-| `read_file` | 读取文本文件内容 | `file_path`, `encoding?` |
-| `write_file` | 写入文本文件 | `file_path`, `content`, `encoding?` |
+| `read_file` | 读取文本文件内容 | `file_path` |
+| `write_file` | 写入文本文件 | `file_path`, `content` |
 | `save_report` | 保存分析报告（md/pdf/docx），保存后默认在查看器中打开 | `content`, `file_path`, `format?`(md/pdf/docx, 默认 md), `open_after_save?`(默认 true) |
 
-!!! note "save_report 的 open_after_save 行为"
-    `open_after_save` 默认 `true`。md 报告用应用内置 Markdown 查看器（`DAMarkdownView`）打开；pdf/docx 用系统默认程序（`QDesktopServices`）打开。打开失败不影响保存成功状态——返回消息附加说明，不抛异常。
+> **📝 save_report 的 open_after_save 行为**
+>
+> `open_after_save` 默认 `true`。md 报告用应用内置 Markdown 查看器（`DAMarkdownView`）打开；pdf/docx 用系统默认程序（`QDesktopServices`）打开。打开失败不影响保存成功状态，返回消息附加说明，不抛异常。
 
 ---
 
@@ -327,8 +333,8 @@ bool DAAgentToolsPlugin::initialize()
 
 | 工具类型 | 继承基类 | 所在位置 |
 |---------|---------|---------|
-| 数据工具（只访问数据管理器） | `DAAgentToolBase` | 你的插件 `tools/` 目录 |
-| 图表工具（需要操作图表） | `DAAgentChartToolBase` | 你的插件 `tools/` 目录 |
+| 数据工具（只访问数据管理器） | `DAAgentToolBase` | 插件的 `tools/` 目录 |
+| 图表工具（需要操作图表） | `DAAgentChartToolBase` | 插件的 `tools/` 目录 |
 
 ### 步骤 2：实现工具类
 
@@ -438,13 +444,13 @@ sequenceDiagram
 
 ## 参见
 
-- [架构设计](./architecture.md) — 工具系统在整体架构中的位置
-- [通信协议](./protocol.md) — tool_call/tool_result 消息的协议规范
-- [上下文管理](./context-management.md) — 工具结果截断机制
-- [工具与内置 Agent 总览](./available-tools.md) — 全部 25 个工具的完整参数表与内置 agent 说明
-- `plugins/DAAgentTools/` — 21 个内置工具的完整实现
-- `plugins/DAPaperAgent/` — 2 个文献工具 + 论文撰写 agent 的完整实现
-- `src/DAAgent/DAAbstractAgentTool.h` — 工具抽象基类定义
-- `src/DAAgent/DAAgentToolBase.h` — 瘦工具基类定义
-- `src/DAAgent/DAAgentToolSpec.h` — 结构化工具规格（`DAAgentToolSpec` / `DAAgentToolParam`）
-- `src/DAAgent/DAAgentToolSpecJson.h` — 工具规格 → OpenAI function schema 序列化（`DA::toJson`）
+- [架构设计](./architecture.md)：工具系统在整体架构中的位置
+- [通信协议](./protocol.md)：tool_call/tool_result 消息的协议规范
+- [上下文管理](./context-management.md)：工具结果截断机制
+- [工具与内置 Agent 总览](./available-tools.md)：全部 25 个工具的完整参数表与内置 agent 说明
+- `plugins/DAAgentTools/`：21 个内置工具的完整实现
+- `plugins/DAPaperAgent/`：2 个文献工具 + 论文撰写 agent 的完整实现
+- `src/DAAgent/DAAbstractAgentTool.h`：工具抽象基类定义
+- `src/DAAgent/DAAgentToolBase.h`：瘦工具基类定义
+- `src/DAAgent/DAAgentToolSpec.h`：结构化工具规格（`DAAgentToolSpec` / `DAAgentToolParam`）
+- `src/DAAgent/DAAgentToolSpecJson.h`：工具规格 → OpenAI function schema 序列化（`DA::toJson`）

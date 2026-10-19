@@ -1,15 +1,6 @@
 # Python 环境配置
 
-本文档介绍 Python 环境的配置方法，Python 是数据处理模块的后端引擎，正确配置对软件功能至关重要。
-
-本文档说明 DAWorkBench 的 Python 环境配置方法，包括构建时和运行时的 Python 环境设置。
-
-## 主要功能特性
-
-**特性**
-
-- ✅ **嵌入式 Python**：支持 embeddable package，便于打包发布
-- ✅ **灵活配置**：支持配置文件和系统环境两种查找方式
+本文档介绍 DAWorkBench 的 Python 环境配置方法，包括构建时和运行时的设置。
 
 ---
 
@@ -40,13 +31,14 @@ DAWorkBench 强制依赖 Python，Python 相关模块始终参与编译：
 
 ### Python 依赖库
 
-项目根目录的 `requirements.txt` 列出了运行时所需的全部 Python 包（共 16 个）。下表按用途分组说明：
+项目根目录的 `requirements.txt` 列出了运行时所需的全部 Python 包（共 17 个）。下表按用途分组说明：
 
 | 库名 | 用途 |
 |------|------|
 | pandas | 数据处理核心 |
 | numpy | 数值计算 |
 | scipy | 科学计算 |
+| statsmodels | 统计建模与回归 |
 | loguru | Python 脚本日志 |
 | openpyxl | Excel 文件导入依赖 |
 | chardet | 字符编码检测 |
@@ -61,12 +53,13 @@ DAWorkBench 强制依赖 Python，Python 相关模块始终参与编译：
 | pydantic>=2.0 | Agent 数据模型校验（DAAgent 子系统） |
 | tiktoken | LLM 分词计数（DAAgent 子系统） |
 
-!!! info "AI/Agent 栈为必需依赖"
-    `langgraph`、`langchain-openai`、`langgraph-cli[inmem]`、`pydantic`、`tiktoken` 五个包为 DAAgent 子系统所必需，不可省略。仅安装 pandas/numpy/scipy 会导致 Agent 相关功能无法运行。
+> **ℹ️ AI/Agent 栈为必需依赖**
+>
+> `langgraph`、`langchain-openai`、`langgraph-cli[inmem]`、`pydantic`、`tiktoken` 五个包为 DAAgent 子系统所必需，不可省略。仅安装 pandas/numpy/scipy 会导致 Agent 相关功能无法运行。
 
 安装依赖：
 
-以下命令安装项目所需的 Python 依赖库。建议使用 requirements.txt 批量安装：
+安装项目所需的 Python 依赖库，建议用 requirements.txt 批量安装：
 
 ```shell
 # 使用 pip 批量安装依赖
@@ -88,8 +81,9 @@ pip install langgraph langchain-openai "langgraph-cli[inmem]" "pydantic>=2.0" ti
 
 ## 嵌入式 Python 配置（推荐发布）
 
-!!! tip "embeddable package"
-    使用 Python embeddable package 可获得干净的 Python 环境，便于打包发布，不影响系统 Python。
+> **💡 embeddable package**
+>
+> 使用 Python embeddable package 可获得干净的 Python 环境，便于打包发布，不影响系统 Python。
 
 ### 步骤一：下载 embeddable package
 
@@ -107,7 +101,7 @@ pip install langgraph langchain-openai "langgraph-cli[inmem]" "pydantic>=2.0" ti
 
 ### 步骤三：安装 pip
 
-以下命令下载并安装 pip 到嵌入式 Python 环境中。pip 是 Python 的包管理工具，必需安装：
+以下命令下载并安装 pip 到嵌入式 Python 环境中：
 
 ```powershell
 # 下载 get-pip.py
@@ -140,8 +134,9 @@ del get-pip.py
 .\python.exe -m pip install --target="./Lib/site-packages" -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 
-!!! warning "Windows 包安装位置"
-    Windows 下 pip 默认安装到用户目录 `%APPDATA%\Python\Pythonxx\site-packages`，不利于打包。使用 `--target` 参数指定安装位置。
+> **⚠️ Windows 包安装位置**
+>
+> Windows 下 pip 默认安装到用户目录 `%APPDATA%\Python\Pythonxx\site-packages`，不利于打包。使用 `--target` 参数指定安装位置。
 
 ### 步骤五：完善库路径
 
@@ -163,12 +158,13 @@ del get-pip.py
 }
 ```
 
-!!! info "路径变量"
-    `${current-app-dir}` 代表程序安装目录。例如 Python 安装在程序目录下：
-    ```
-    ${current-app-dir}/python311/python.exe
-    ```
-    此路径变量使配置文件可移植，无需修改即可在不同安装位置使用。
+> **ℹ️ 路径变量**
+>
+> `${current-app-dir}` 代表程序安装目录。例如 Python 安装在程序目录下：
+> ```
+> ${current-app-dir}/python311/python.exe
+> ```
+> 此路径变量使配置文件可移植，无需修改即可在不同安装位置使用。
 
 ### 系统环境方式
 
@@ -183,8 +179,9 @@ del get-pip.py
 | `DA_ENABLE_AUTO_INSTALL_PYTHON_ENV` | ON | 构建完成后自动搜索 Python 环境并把必要 DLL 复制到 `bin/` 目录 |
 | `Python_ROOT_DIR` | - | 指定 Python 安装路径 |
 
-!!! info "Python 为强制依赖"
-    Python 不可禁用，始终参与编译。`DA_ENABLE_AUTO_INSTALL_PYTHON_ENV` 仅控制是否自动部署 Python DLL，不影响 Python 模块本身的编译。
+> **ℹ️ Python 为强制依赖**
+>
+> Python 不可禁用，始终参与编译。`DA_ENABLE_AUTO_INSTALL_PYTHON_ENV` 仅控制是否自动部署 Python DLL，不影响 Python 模块本身的编译。
 
 ---
 
@@ -199,8 +196,9 @@ del get-pip.py
 | 系统 Python | 开发构建 | 提供头文件和库文件 |
 | 嵌入式 Python | 打包发布 | 干净的运行环境 |
 
-!!! warning "版本必须匹配"
-    两个 Python 环境版本必须完全相同（版本号、架构）。
+> **⚠️ 版本必须匹配**
+>
+> 两个 Python 环境版本必须完全相同（版本号、架构）。
 
 ---
 
@@ -247,7 +245,7 @@ cmake -DPython_ROOT_DIR="C:\Python311" ...
 
 ### 放置 Python 环境
 
-将 Python 环境（如 embeddable package）放入程序目录（例如命名为 `Python` 的目录），再通过 `python-config.json` 指向它（见上文"运行时 Python 配置"一节）：
+将 Python 环境（如 embeddable package）放入程序目录（比如命名为 `Python` 的目录），再通过 `python-config.json` 指向它（见上文「运行时 Python 配置」一节）：
 
 ![Python 环境放入程序目录](../../assets/PIC/move-py-to-bin-dir.png)
 

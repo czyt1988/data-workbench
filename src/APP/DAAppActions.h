@@ -97,6 +97,37 @@ public:
     QAction* actionClearStyleSelected { nullptr };  ///< 清除选中区表格样式
     QAction* actionClearStyleAll { nullptr };       ///< 清除整表所有样式
     QAction* actionTableFormatCells { nullptr };    ///< 设置选中列的显示格式
+    QAction* actionFind { nullptr };                ///< 表内查找（002 T1.4；快捷键在 DADataTableView，此处不设 shortcut 红线5）
+    QAction* actionReplace { nullptr };             ///< 表内替换（002 T1.4）
+    QAction* actionConditionalFormat { nullptr };   ///< 条件格式（003 T1.5，Table Style 面板 + 表体右键同入口，R16）
+    QAction* actionComputedColumn { nullptr };              ///< 计算列（004 T1.23，Data Tools 面板 + 表体右键同入口）
+    QAction* actionRecomputeAllComputedColumns { nullptr }; ///< 全部重算计算列（004 T1.23，Data Tools 面板）
+    QAction* actionSplitColumn { nullptr };                 ///< 分列（004 T1.9，Data Tools 面板 + 表体右键同入口）
+    QAction* actionMergeColumns { nullptr };                ///< 合并列（004 T1.9，Data Tools 面板 + 表体右键同入口）
+    QAction* actionGroupBy { nullptr };                     ///< 分组聚合（004 T1.22，Data Tools 面板 + 表体右键同入口）
+    QAction* actionTranspose { nullptr };                   ///< 转置（004 T1.27，Data Tools 面板 + 表体右键同入口）
+    QAction* actionMelt { nullptr };                        ///< 宽转长 melt（004 T1.27，Data Tools 面板 + 表体右键同入口）
+    QAction* actionFreezeColumns { nullptr };               ///< 冻结列（006 T1.8，View 面板，菜单主体 = 弹输入框）
+    QAction* actionHideColumn { nullptr };                  ///< 隐藏列（006 T1.8）
+    QAction* actionShowAllColumns { nullptr };              ///< 显示所有列（006 T1.8）
+    QAction* actionColumnViewDialog { nullptr };            ///< 列视图…（006 T1.8）
+    QAction* actionFreezeFirstColumn { nullptr };           ///< 冻结首列（006，冻结菜单项）
+    QAction* actionFreezeColumnsPrompt { nullptr };         ///< 冻结前 N 列…（006，冻结菜单项）
+    QAction* actionUnfreezeColumns { nullptr };             ///< 取消冻结（006，冻结菜单项）
+    QAction* actionGotoCell { nullptr };                    ///< 定位（007 T1.7，Ctrl+G 在 DADataTableView，不设 shortcut）
+    QAction* actionFill { nullptr };                        ///< 填充（005 T1.24，Edit 面板下拉，含子菜单）
+    QAction* actionFillDown { nullptr };                    ///< 向下填充（005 T1.24）
+    QAction* actionFillUp { nullptr };                      ///< 向上填充（005 T1.24）
+    QAction* actionFillForward { nullptr };                 ///< 向下填充空值 ffill（005 T1.24）
+    QAction* actionFillBackward { nullptr };                ///< 向上填充空值 bfill（005 T1.24）
+    QAction* actionFillSeries { nullptr };                  ///< 序列填充（005 T1.24）
+    QAction* actionValidationRules { nullptr };             ///< 校验规则（005 T1.25，Data Tools 面板 + 表体右键同入口）
+    QAction* actionRunValidation { nullptr };               ///< 执行校验（005 T1.25）
+    QAction* actionNote { nullptr };                        ///< 批注下拉根（005 T1.26，Edit 面板）
+    QAction* actionInsertNote { nullptr };                  ///< 插入批注（005 T1.26）
+    QAction* actionEditNote { nullptr };                    ///< 编辑批注（005 T1.26）
+    QAction* actionDeleteNote { nullptr };                  ///< 删除批注（005 T1.26）
+    QAction* actionClearNotes { nullptr };                  ///< 清除本表批注（005 T1.26）
 
     //===================================================
     // workflow的上下文标签
@@ -213,6 +244,7 @@ public:
     QAction* actionShowDataArea;
     QAction* actionShowDataManagerArea;  ///< 显示数据管理区域
     QAction* actionShowMessageLogView;
+    QAction* actionShowUndoHistory { nullptr };  ///< 显示撤销历史面板（005 T1.21，视图页，点击即 raise）
     QAction* actionShowSettingWidget;
     QAction* actionShowLeftSideBar;   ///< 显示/隐藏左边侧边栏
     QAction* actionShowRightSideBar;  ///< 显示/隐藏右边侧边栏

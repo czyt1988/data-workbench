@@ -1,18 +1,19 @@
 # 接口模块 DAInterface
 
-接口模块 `DAInterface` 是插件系统的核心，提供了一组抽象接口类，使得插件能够与主程序进行解耦交互。所有插件通过接口获取主程序功能，实现松耦合设计。
+接口模块 `DAInterface` 是插件系统的核心，提供一组抽象接口类，插件通过接口访问主程序功能，与具体实现解耦。
 
-!!! info "L4 接口层的另一契约：DAAgentInterface"
-    `DAInterface` 并非 L4 接口层唯一的接口面。`DAAgent` 模块单独暴露 `DAAgentInterface` 契约，覆盖 Agent 生命周期信号、工具注册（`registerTool`）、系统提示词库与 LLM 配置读写，供 `plugins/DAAgentTools/` 等 Agent 工具插件跨 DLL 调用。两者并列于 L4，`DAAgent` 不依赖 `DAGui`。详见 [:octicons-copilot-24: Agent 开发指南](../agent/index.md)。
+> **ℹ️ L4 接口层的另一契约：DAAgentInterface**
+>
+> L4 接口层还有另一个接口契约。`DAAgent` 模块单独暴露 `DAAgentInterface`，覆盖 Agent 生命周期信号、工具注册（`registerTool`）、系统提示词库与 LLM 配置读写，供 `plugins/DAAgentTools/` 等 Agent 工具插件跨 DLL 调用。两者并列于 L4，`DAAgent` 不依赖 `DAGui`。详见 [🤖 Agent 开发指南](../agent/index.md)。
 
 ## 主要功能特性
 
 **特性**
 
-- ✅ **接口抽象**：提供核心接口类，实现主程序与插件的解耦
-- ✅ **层次架构**：接口具有清晰的层次关系，便于扩展和获取
-- ✅ **生命周期管理**：定义了接口的创建顺序，确保依赖关系正确
-- ✅ **Python 支持**：接口支持 Python 绑定，可在 Python 脚本中使用
+- **接口抽象**：提供核心接口类，实现主程序与插件的解耦
+- **层次架构**：接口具有清晰的层次关系，便于扩展和获取
+- **生命周期管理**：定义了接口的创建顺序，确保依赖关系正确
+- **Python 支持**：接口支持 Python 绑定，可在 Python 脚本中使用
 
 ## 接口层次架构
 
@@ -22,7 +23,7 @@
 
 ### 接口继承关系
 
-接口体系采用分层架构设计，通过 `DABaseInterface` 基类统一管理，形成清晰的依赖关系。下图展示了各接口类的继承关系和核心方法：
+接口体系采用分层架构，通过 `DABaseInterface` 基类统一管理。下图展示了各接口类的继承关系和核心方法：
 
 ```mermaid
 classDiagram
@@ -124,7 +125,7 @@ DABaseInterface <|-- DAUIExtendInterface
 
 ### 使用示例
 
-以下示例展示如何通过核心接口获取其他功能接口，实现插件与主程序的交互：
+以下示例通过核心接口获取其他功能接口：
 
 ```cpp
 // 通过核心接口获取其他接口
@@ -145,7 +146,7 @@ if (core->isProjectDirty()) {
 }
 ```
 
-执行上述代码后，插件可获得主程序的 UI、工程、数据管理等核心功能接口，实现与主程序的深度集成。
+执行上述代码后，插件即可获得主程序的 UI、工程、数据管理等接口。
 
 ## DAUIInterface 详解
 
@@ -193,7 +194,7 @@ ads::CDockWidget* dock = dockArea->createDockWidget(
 );
 ```
 
-执行上述代码后，主窗口状态栏显示"操作成功完成"提示，右侧 Dock 区域出现自定义窗口。
+执行上述代码后，主窗口状态栏显示「操作成功完成」提示，右侧 Dock 区域出现自定义窗口。
 
 ## DADataManagerInterface 详解
 
@@ -225,7 +226,7 @@ ads::CDockWidget* dock = dockArea->createDockWidget(
 
 ### 使用示例
 
-以下示例展示如何通过数据管理接口进行数据的增删查改操作，以及监听数据变化事件：
+以下示例通过数据管理接口增删查改数据，并监听数据变化事件：
 
 ```cpp
 // 获取数据管理接口
@@ -249,7 +250,7 @@ connect(dataMgr, &DA::DADataManagerInterface::dataAdded,
         this, &MyClass::onDataAdded);
 ```
 
-执行上述代码后，数据被添加到管理器，可通过名称查找、监听变化事件，实现数据的完整生命周期管理。
+执行上述代码后，数据被添加到管理器，可以按名称查找并监听变化事件。
 
 ## DAProjectInterface 详解
 
@@ -284,7 +285,7 @@ connect(dataMgr, &DA::DADataManagerInterface::dataAdded,
 
 ### 使用示例
 
-以下示例展示如何通过工程接口进行项目的加载、保存、状态查询等操作：
+以下示例通过工程接口加载、保存工程并查询状态：
 
 ```cpp
 // 获取工程接口
@@ -309,7 +310,7 @@ connect(project, &DA::DAProjectInterface::projectSaved,
         this, &MyClass::onProjectSaved);
 ```
 
-执行上述代码后，工程文件被加载或保存，可通过信号槽监听工程状态变化，实现自动化的项目管理。
+执行上述代码后，工程文件被加载或保存，可以通过信号槽监听工程状态变化。
 
 ## 接口获取方法
 
@@ -398,7 +399,7 @@ sequenceDiagram
     App->>Ribbon: 13. 创建 DARibbonAreaInterface
 ```
 
-上图展示了接口创建的完整流程，从核心接口到 UI 扩展接口依次创建，确保依赖关系正确。重点关注：
+上图展示了接口创建的完整流程，从核心接口到 UI 扩展接口依次创建。重点关注：
 - **步骤 1-5**：创建基础功能层接口（Core、DataManager、Project）
 - **步骤 6-7**：构造主界面窗口
 - **步骤 8-13**：创建 UI 相关接口（UI、Command、Actions、Dock、Ribbon）
@@ -435,17 +436,21 @@ sequenceDiagram
 
 ## 注意事项
 
-!!! warning "接口创建顺序"
-    在接口构造过程中，必须严格遵循创建顺序。在早期创建的接口中不能调用尚未创建的接口，否则会导致空指针异常。
+> **⚠️ 接口创建顺序**
+>
+> 在接口构造过程中，必须严格遵循创建顺序。在早期创建的接口中不能调用尚未创建的接口，否则会导致空指针异常。
 
-!!! warning "线程安全"
-    所有接口方法应在主线程中调用。如需在后台线程操作数据，应使用信号槽机制将操作转发到主线程执行。
+> **⚠️ 线程安全**
+>
+> 所有接口方法应在主线程中调用。如需在后台线程操作数据，应使用信号槽机制将操作转发到主线程执行。
 
-!!! info "Python 支持"
-    接口模块支持 Python 绑定，可以在 Python 脚本中使用这些接口。Python 绑定定义在 `DAInterfacePythonBinding.h` 中。
+> **ℹ️ Python 支持**
+>
+> 接口模块支持 Python 绑定，可以在 Python 脚本中使用这些接口。Python 绑定定义在 `DAInterfacePythonBinding.h` 中。
 
-!!! tip "获取接口"
-    推荐在插件初始化时保存接口指针，避免重复获取。所有继承自 `DABaseInterface` 的接口都可以通过 `core()` 方法获取核心接口。
+> **💡 获取接口**
+>
+> 推荐在插件初始化时保存接口指针，避免重复获取。所有继承自 `DABaseInterface` 的接口都可以通过 `core()` 方法获取核心接口。
 
 ## 参考资料
 

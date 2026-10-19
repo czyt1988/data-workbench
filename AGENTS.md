@@ -162,7 +162,7 @@ Python层: DAUtils → DAPyBindQt → DAPyScripts → DAPyCommonWidgets → DAPy
 | 论文撰写 Agent | `plugins/DAPaperAgent/`（内置「论文撰写助手」agent + `search_literature`/`verify_doi` 文献工具） | `registerBuiltinAgent` 机制的参考实现：插件 initialize() 三连调用（提示词 qrc 内嵌 + 工具注册 + 系统提示词片段）；提示词为六阶段论文流程（数据理解→建模锁定→图表→文献大纲→写作→评审定稿，结果包锁定+ask_user 门禁）；开发指南见 `docs/zh/dev-guide/agent/register-builtin-agent-via-plugin.md` |
 | 子 Agent | `src/DAAgent/DAAgentSubagentManager`（定义库：`<exe>/daAgent/subagents/*.md`，frontmatter + md 正文）/ `src/DAAgent/DAAgentSubagentDef`（定义数据结构）/ `src/PyScripts/DAWorkbench/agent/subagent_orchestrator.py`（Python 编排器：并发限流/超时/停止级联/进度上报）/ `src/APP/Dialog/DAAgentManagerDialog`（管理 UI「子 Agent」Tab）+ `DAAgentSubagentEditDialog`（结构化编辑器） | 主 AI 经 `dispatch_subagents` 工具委派子 agent 并行调研并汇总结论；插件经 `registerBuiltinSubagent` 注入领域子 agent；子 agent 调用经同一权限门执法（审批卡带「来自子 Agent」上下文，任务终态自动撤卡）；进度卡片渲染在 `src/DAGui/Agent/resources/chat.js` 的 `updateSubagentProgress`；协议/铁律详见 `src/DAAgent/AGENTS.md` § 五 + T17 |
 | Agent 会话标签页 | `src/DAGui/Agent/DAAgentDockWidget`（宿主：嵌套 `ads::CDockManager` + 会话路由/生命周期，session-tabs）/ `src/DAGui/Agent/DAAgentSessionChatWidget`（单会话聊天视图：独立 QWebEngineView+WebChannel）/ `src/DAGui/Agent/DAAgentDockAreaTitleBar` + `DAAgentSessionComponentsFactory` + `DAAgentSessionDockWidgetTab`（标题栏「+/会话管理」按钮、标签右键菜单） | 每会话一个 dock 标签页（嵌套停靠模式，同 DAChartOperateWidget，不可逃逸区域/不可浮动）；接口事件信号（`agentToken` 等）首参 sessionId 对全部运行会话广播，宿主路由到对应视图（后台会话实时渲染）；用户交互遵循「交互即激活」；会话视图 attach 经 `DAAgentInterface::setSessionViewAttached` 触发模块重发挂起问题卡/审批卡；关闭运行中标签弹「后台继续/停止并关闭」三选；Ribbon「AI智能体」的「新建会话/会话管理」与标题栏按钮共用 `requestNewSession`/`requestShowSessionManager` 入口 |
-| **图标 / UI 设计** | `src/DAGui/icon/`、`src/APP/Icon/` | **🔴 涉及 SVG 图标设计必须先阅读** [docs/zh/dev-guide/general/icon-ui-design-guide.md](docs/zh/dev-guide/general/icon-ui-design-guide.md)：画布规格、语义色板、色彩组合规则、UI 配色映射、AI Checklist |
+| **图标 / UI 设计** | `src/DAGui/icon/`、`src/APP/Icon/` | **🔴 涉及界面或 SVG 图标设计必须先阅读** [DESIGN.md](DESIGN.md)：统一视觉设计规范（UI 配色映射、图标画布/语义色板/色彩组合规则、AI Checklist） |
 | Python 工作流节点开发 | `plugins/DASystemNodes/AGENTS.md` | @NodeDef 节点开发规范、**init**/paint() 等核心陷阱 |
 | 插件模板 | `plugins/plugin-template/` | 新插件脚手架 |
 | 文档源码 | `docs/zh/` | Doxygen Wiki 中文 |
@@ -192,6 +192,7 @@ AI 编写代码时，日志宏的选择直接影响日志是否进入 UI 消息�
 | | [developer-guide.md](docs/zh/dev-guide/developer-guide.md) | 开发者入门指引 |
 | | [module-breakdown.md](docs/zh/dev-guide/architecture/module-breakdown.md) | 各模块业务逻辑详解 |
 | | [table-data-source.md](docs/zh/dev-guide/architecture/table-data-source.md) | 表格数据源抽象层（惰性/数据库表接入、块级取数、引用式持久化） |
+| | [table-metadata.md](docs/zh/dev-guide/architecture/table-metadata.md) | 表格元数据架构（注册表/元数据束/子存储、table-metadata.xml、五层绘制管线） |
 | | [i18n.md](docs/zh/dev-guide/general/i18n.md) / [python-i18n.md](docs/zh/dev-guide/general/python-i18n.md) | 国际化规范 |
 | | [workflow-overview.md](docs/zh/dev-guide/workflow/workflow-overview.md) | 工作流系统架构 |
 | | [workflow-python-node-dev.md](docs/zh/dev-guide/workflow/workflow-python-node-dev.md) | Python 节点开发 |
@@ -199,14 +200,18 @@ AI 编写代码时，日志宏的选择直接影响日志是否进入 UI 消息�
 | | [chart-dock-nesting.md](docs/zh/dev-guide/graphics/chart-dock-nesting.md) | 绘图窗口 ADS 嵌套停靠区、FocusHighlighting 焦点陷阱 |
 | | [logging.md](docs/zh/dev-guide/general/logging.md) | 日志系统、故障排查 |
 | | [creating-setting-panel.md](docs/zh/dev-guide/ui/creating-setting-panel.md) | 创建设置面板 |
-| | [icon-ui-design-guide.md](docs/zh/dev-guide/general/icon-ui-design-guide.md) | 图标与 UI 设计规范（SVG 图标设计必读） |
+| | [DESIGN.md](DESIGN.md) | 统一视觉设计规范：UI 设计 + 图标设计 + 色系（界面/图标设计必读） |
 | **构建** | [build-instructions.md](docs/zh/build/build-instructions.md) | 完整构建指南 |
 | | [build-options.md](docs/zh/build/build-options.md) | CMake 构建选项参考 |
 | | [common-build-errors.md](docs/zh/build/common-build-errors.md) | 常见构建错误 |
-| **使用指南** | [use-guide/index.md](docs/zh/use-guide/index.md) | 用户指南入口 |
-| | [workflow-usage.md](docs/zh/use-guide/workflow-usage.md) | 工作流使用 |
-| | [data-management.md](docs/zh/use-guide/data-management.md) | 数据管理使用 |
-| | [chart-usage.md](docs/zh/use-guide/chart-usage.md) | 图表使用 |
+| **使用指南** | [use-guide/index.md](docs/zh/use-guide/index.md) | 用户指南入口（按功能分八个部分） |
+| | [workflow/basics.md](docs/zh/use-guide/workflow/basics.md) | 工作流使用（入门） |
+| | [workflow/nodes-system.md](docs/zh/use-guide/workflow/nodes-system.md) / [nodes-analysis.md](docs/zh/use-guide/workflow/nodes-analysis.md) | 节点参数手册 |
+| | [data/import.md](docs/zh/use-guide/data/import.md) | 数据导入与管理 |
+| | [chart/create.md](docs/zh/use-guide/chart/create.md) | 绘图入口 |
+| | [agent/model-config.md](docs/zh/use-guide/agent/model-config.md) | 智能体配置入口 |
+| | [reference/settings.md](docs/zh/use-guide/reference/settings.md) | 设置项与默认值 |
+| | [config-files.md](docs/zh/dev-guide/general/config-files.md) | 配置文件位置与内容 |
 | **顶层** | [overview.md](docs/zh/index.md) | 项目概览 |
 | | [plugin-development.md](docs/zh/plugin/plugin-development.md) | 插件开发总览 |
 | | [api-reference.md](docs/zh/reference/api-reference.md) / [overview.md](docs/zh/reference/api-reference/overview.md) | API 参考 |
@@ -249,18 +254,13 @@ AI 编写代码时，日志宏的选择直接影响日志是否进入 UI 消息�
 - Qt6 不再通过 `QDataStream` 隐式包含 `<QIODevice>`。如编译报 `QIODevice` 不完整类型，手动添加 `#include <QIODevice>`。
 - Qt 信号槽中传递自定义类指针（如 `DAPyNodeGraphicsItem*`），若头文件仅有前向声明，`connect` 会导致不完整类型错误。**解决方案**：在 .cpp 文件中 `#include` 完整头文件，而非仅依赖前向声明
 
-### 图标与 UI 设计规范
+### 视觉设计规范（UI 与图标）
 
-> 📖 **详细规范见** [docs/zh/dev-guide/general/icon-ui-design-guide.md](docs/zh/dev-guide/general/icon-ui-design-guide.md)
+> 📖 **详细规范见** [DESIGN.md](DESIGN.md)（仓库根目录，与本文同级）
 
-**强制规则**：**如果涉及 SVG 图标的设计（新增、替换、修改 `src/DAGui/icon/` 或 `src/APP/Icon/` 下任意 `.svg` 文件），必须先阅读上述文档**，并按其 §10 Checklist 逐项核对。该文档是项目图标与 UI 设计的唯一权威规范，涵盖：
+**强制规则**：**凡涉及界面设计或 SVG 图标设计（新增、替换、修改 `src/DAGui/icon/`、`src/APP/Icon/` 或插件 `icon/` 下的任意 `.svg`），必须先阅读 [DESIGN.md](DESIGN.md)**，并按其中 §6 的 Checklist 逐项核对。
 
-- 画布规格（viewBox：200×200 / 64×64 / 32×32 / 1024×1024）
-- 语义化色板（主蓝 `#5280C1`、中灰 `#727272`、绿 `#669E8B`、橙红 `#CE6043`、金黄 `#E6C27C` 等，不要随便引入新色值）
-- 色彩组合规则（容器型 / 功能操作 / 图表类型 / 数据类型 / 消息类型）
-- UI 控件配色映射（按钮、面板、状态指示与图标语义色同源）
-- 命名规范（`camelCase` 文件名、`kebab-case` 子目录）
-- 禁止事项（禁渐变/阴影、禁 `<text>`、禁动画、禁 UI 控件配色与配套图标语义色不一致）
+[DESIGN.md](DESIGN.md) 是项目视觉表现的唯一权威规范，覆盖：设计定位与原则；官方色板（唯一权威源 `docs/assets/PIC/palette.svg`）与遗留色黑名单；UI 配色映射与控件风格；图标画布规格、色彩组合规则、命名与 SVG 结构；现有图标资源清单；AI 工作流、自检 Checklist 与禁止事项。文档站的对应入口页为 `docs/zh/dev-guide/general/icon-ui-design-guide.md`（仅做指引，正文在 DESIGN.md）。
 
 ## 国际化（i18n）规范
 
@@ -294,9 +294,67 @@ Doxygen 注释使用中文
 - [插件开发创建 UI](./docs/zh/plugin/plugin-dev-create-ui.md)
 - 参考现有插件结构（如 `plugins/DataAnalysis/`），确保与主程序接口兼容
 
+## 分支与并行开发（多工作树）
+
+> **🔴 强制规则：任务一律在 `.worktree/` 下的工作分支上进行，不在主工作树的分支上直接开发/提交。**
+
+本机经常有多个 Agent 会话并行开发本项目。多个任务挤在同一个工作区里，切分支、暂存区、未提交改动会互相污染，所以每个任务开一个独立的 git 工作树，任务完成后合并回集成分支 `dev`。
+
+### 分支模型
+
+- `dev` 是唯一集成分支，一切工作的终点；`master` 只用于对外发布，不在其上开发。
+- 功能用 `feat/<域>-<主题>`，修复用 `fix/<主题>`；合并回 `dev` 后删除工作分支。
+- 主工作树里可能已经有用户自己的在途改动（例如 `src/DAConfigs.h`、`src/DAGui/Chart/*.cpp`）——不要动它们，也不要替用户提交或回滚。
+
+### 开工作树
+
+```bash
+bash scripts/worktree-add.sh feat/chart-xyz       # 从最新 dev 切出（分支已存在则直接检出）
+bash scripts/worktree-add.sh fix/table-crash dev  # 指定基线分支
+bash scripts/worktree-add.sh --list               # 列出工作树
+bash scripts/worktree-add.sh --remove feat-chart-xyz   # 删除工作树（保留分支）
+```
+
+工作树落在 `<仓库根>/.worktree/<分支名把 / 换成 ->`（已 gitignore）。**不要用裸 `git worktree add`**，`scripts/worktree-add.sh` 额外做了三件在本项目里缺一不可的事：
+
+1. **子模块离线初始化**：新工作树里裸跑 `git submodule update --init` 不会复用主工作树已有的检出，git 会按 `.gitmodules` 的 URL（本项目全部在 gitee）重新 clone，**内网必然失败**。脚本用 `git -c submodule.<名>.url=<本地已有检出> -c protocol.file.allow=always submodule update --init` 从本地克隆（对象硬链接，秒级完成、不联网、不写任何 git config），并逐层递归 SARibbon → qwindowkit → qmsetup → syscmdline 整条嵌套链。
+2. **复用预编译的第三方库**：把主工作树的 `bin_<Config>_qt<版本>_<编译器>_<架构>` 以目录联接（junction/软链接）挂进工作树，第三方库不用重编也不用重新下载。由此产生两条纪律：
+   - **不要在工作树里执行 `cmake --install`**：安装目录是共享的 `bin_*`，写入会踩到其它并行会话（日常构建、测试都不需要 install，不需要就别装）。
+   - 要改 SARibbon/qwt/DAWidgets 并重编第三方库时，在主工作树做完并 install——这是唯一必须串行的步骤。
+3. **预配置构建目录**：沿用主工作树 `build/CMakeCache.txt` 的生成器 / Qt 路径 / `DA_ENABLE_TESTING` 等选项预配置 `build/`，保证两边配置一致（测试目标只有 `DA_ENABLE_TESTING=ON` 才会编译）。
+
+### 在工作树里干活
+
+- 构建、测试与主工作树完全一致：`.\scripts\build.ps1 -Target <模块>`、`.\scripts\build.ps1 -Target <模块> -Test`（`-Test` 已能在构建目录里正确跑到 ctest，并会把「一个测试都没跑到」视为失败）。
+- 新工作树第一次构建是**全量**（没有可复用的构建目录），只构建需要的模块目标（`-Target`）比 `-Full` 快得多。
+- 未合并的构建目录、`bin_*` 联接、子模块检出都是工作树私有的，删除工作树不影响主工作树。
+- 新工作树里 `git status` 会固定显示一些「噪声」文件（创建时脚本会实测列出来），**不要提交、也不要 checkout 掉**：
+  - 仓库里少数提交成 CRLF、而 `.gitattributes` 要求 `eol=lf` 的文件（如 `src/i18n/backup-da_zh_CN.ts`、`plugins/DataAnalysis/PyScripts/DADataAnalysisGui/update-i18n.sh`）——新检出必然与索引不一致，`git checkout` 也修不好；根治办法是单独开任务 `git add --renormalize <文件>` 后提交；
+  - `src/DAConfigs.h`——配置期由 `DAConfigs.h.in` 无条件重新生成到源码树（含编译日期），见 `src/CMakeLists.txt`。
+- **不要手工 `rm -rf` 工作树目录**：目录联接也是目录，递归删除会跟着清空主工作树的 `bin_*`。删工作树一律用 `--remove`（它先拆联接再删目录）。
+
+### 合并回 `dev`
+
+- 动手前先把 `dev` 的最新改动合进工作分支，收尾前再合一次——让冲突提前暴露，而不是攒到合并那一刻。
+- 合并前以**实时状态**为准（`git -C <工作树> branch --show-current`、`git -C <工作树> status --porcelain`），不要相信之前的快照：并行会话可能在你任务中途切走分支、产生在途改动。
+- 合并路径按实时状态选：
+  1. `dev` 检出在某个工作树且该树干净 → `git -C <该工作树> merge <工作分支>`；
+  2. 该树有在途改动或已切走 → **不要动它**（在那里切分支/检出会毁掉对方的在途改动）；只要 `dev` 此刻没被检出，就用临时工作树合并：
+     `git worktree add .worktree/_merge-dev dev && git -C .worktree/_merge-dev merge --ff-only <工作分支>`，完成后 `bash scripts/worktree-add.sh --remove _merge-dev`；
+  3. `dev` 被占且无法走上述路径 → 与用户协调，不要抢别人正在用的工作树。
+- 合并后重跑构建 + 测试全绿再收尾；然后 `git branch -d <工作分支>`、`bash scripts/worktree-add.sh --remove <名字>`。
+- **「任务完成」包含「已合并回 `dev` 并清理工作树」**，不要把冲突、分叉或"没合并回 dev"的状态留给下一个任务。
+
 ## Git 提交规范
 
-在完成当前任务后，需提交所有更改到 Git 仓库，按照 conventional commits 格式用中文生成 commit messages。
+**每完成一个完整任务就提交一次，不要只改不提交**；提交信息用 **Conventional Commits**，描述用中文。
+
+- 类型取自 `feat` / `fix` / `docs` / `style` / `refactor` / `perf` / `test` / `build` / `ci` / `chore` / `revert`，格式 `type(scope): 中文描述`（`(scope)` 可省略）。
+- **只提交本次任务相关的文件，不要用 `git add -A`**——工作树里固定存在生成物/换行符噪声（见上节），且主工作树可能有其它会话的在途改动。
+- 提交尽量原子化：每个提交尽量能独立构建、测试、审查和回滚，避免把一个大任务全部攒到最后一次性提交；这样也能缩小合并冲突的范围。
+- 版本遵循 **SemVer**，版本号在顶层 `CMakeLists.txt` 的 `DA_VERSION_MAJOR` / `DA_VERSION_MINOR` / `DA_VERSION_PATCH`。
+- 合并回 `dev`、删除工作树与分支是「任务完成」的一部分（见上节）。
+- **除非用户明确要求，不要执行 `git push`**。本仓库配了多个远端：`origin`（gitee，`dev` 的跟踪远端）、`github`、`ali`；需要推时默认推当前分支的跟踪远端，不要顺手推其它远端。
 
 ## COMMANDS
 
@@ -421,6 +479,7 @@ Linux GCC 下 `uint64_t` 是 `unsigned long`，MSVC 下是 `unsigned long long`�
 - **禁止翻译开发诊断日志** — `qInfo`/`qWarning`/`qCritical`/`qDebug`/`logger.*`/`print` 只写日志文件不进 UI 队列，保持纯英文便于跨语言检索
 - **禁止用 `da*` 宏输出开发诊断信息** — `daInfo`/`daWarning`/`daCritical` 会进 UI 消息队列（用户可见）且必须翻译；带 `ClassName::method:` 前缀的技术诊断、异常 `what()` 转储等开发诊断应改用 `q*` 宏保持英文。详见 § 国际化规范
 - **禁止在 Python 节点包中遗漏 `setup_i18n()` 调用** — 必须在包 `__init__.py` 顶部、节点模块导入之前调用 `setup_i18n()`，否则 `_()` 未定义会导致节点注册失败
+- **禁止在 `docs/` 里使用 MkDocs Material / pymdownx 专有 Markdown 语法** — `!!!` 提示框、`=== "标签"` 标签页、`:material-xxx:` 图标只在 MkDocs 站点上渲染，粘到 GitHub、CSDN 等平台会原样显示成文字。提示框改用「引用块 + 加粗 emoji 标签」（`> **⚠️ 标题**`，正文逐行带 `>` 前缀），多选一的并列内容改用加粗小标题。站点侧由 `docs/css/extra.css` 把这些引用块渲染回提示框外观。写法与 emoji 对照表见 [docs/doc-writing-guide.md](docs/doc-writing-guide.md) § Markdown 语法约定
 
 
 ## 相关文件
@@ -429,7 +488,7 @@ Linux GCC 下 `uint64_t` 是 `unsigned long`，MSVC 下是 `unsigned long long`�
 |------|------|
 | [README.md](README.md) | 项目简介和第三方库说明 |
 | [docs/doc-writing-guide.md](docs/doc-writing-guide.md) | 文档撰写规范手册，涉及文档撰写时阅读 |
-| [docs/zh/dev-guide/general/icon-ui-design-guide.md](docs/zh/dev-guide/general/icon-ui-design-guide.md) | 图标与 UI 设计规范，涉及 SVG 图标设计时阅读 |
+| [DESIGN.md](DESIGN.md) | 统一视觉设计规范（UI 设计 + 图标设计 + 色系），涉及界面或 SVG 图标设计时阅读 |
 | [docs/zh/index.md](docs/zh/index.md) | 中文文档入口 |
 
 ## NOTES

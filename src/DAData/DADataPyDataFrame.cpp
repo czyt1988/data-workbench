@@ -1,4 +1,6 @@
 #include "DADataPyDataFrame.h"
+#include "DAPyScripts.h"
+#include "DAPyScriptsDataFrame.h"
 #include <iterator>
 #include <algorithm>
 #include <QMetaType>
@@ -161,6 +163,56 @@ DATableDataBlock DADataPyDataFrame::fetchBlock(std::size_t startRow, std::size_t
         qWarning() << QString("DADataPyDataFrame::fetchBlock failed at row %1: %2").arg(startRow).arg(e.what());
     }
     return DATableDataBlock();
+}
+
+/**
+ * @brief 源侧列统计（007 T1.7）
+ *
+ * 走 DAPyScriptsDataFrame::columnStatsRange（da_column_stats 区间路径，numpy
+ * 一次算完）；越界列返回 nullopt（不静默裁剪——调用方给错请求 = 不支持）。
+ * 本方法只读、不写 mPyObject；失败只 qWarning（开发诊断，英文）。
+ * @param req 扫描请求（行区间 + 列序号 + 唯一值数阈值）
+ * @return 统计结果列表；不支持/失败时 nullopt
+ */
+std::optional< DATableStatsResult > DADataPyDataFrame::computeColumnStats(const DATableScanRequest& req) const
+{
+    try {
+        DAPyDataFrame df = dataframe();
+        if (df.isNone()) {
+            return std::nullopt;
+        }
+        const std::size_t colCount = df.shape().second;  // 越界判定用
+        QList< int > cols;
+        cols.reserve(static_cast< int >(req.columns.size()));
+        for (std::size_t c : req.columns) {
+            if (c >= colCount) {
+                return std::nullopt;  // 越界列：不静默裁剪
+            }
+            cols.append(static_cast< int >(c));
+        }
+        DAPyScriptsDataFrame::SelectionStatsResult r
+            = DAPyScripts::getDataFrame().columnStatsRange(df, cols, req.rowBegin, req.rowEnd, req.uniqueLimit);
+        if (!r.ok) {
+            return std::nullopt;
+        }
+        DATableStatsResult res;
+        res.reserve(r.columns.size());
+        for (const DAPyScriptsDataFrame::SelectionColumnStats& s : r.columns) {
+            DATableColumnStats v;
+            v.count       = s.count;
+            v.nullCount   = s.nullCount;
+            v.uniqueCount = s.uniqueCount ? *s.uniqueCount : kUniqueNotComputed;  // 翻译层只在这里做
+            v.sum         = s.sum;
+            v.mean        = s.mean;
+            v.min         = s.min;
+            v.max         = s.max;
+            res.append(v);
+        }
+        return res;
+    } catch (const std::exception& e) {
+        qWarning() << QString("DADataPyDataFrame::computeColumnStats failed: %1").arg(e.what());
+    }
+    return std::nullopt;
 }
 
 /**

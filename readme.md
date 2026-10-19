@@ -9,7 +9,7 @@
 </p>
 </div>
 
-本项目通过 CI 进行构建
+本项目通过 CI 构建
 
 <div align="center">
 <p>
@@ -21,11 +21,11 @@
 
 ## 简介
 
-`DAWorkbench` 是一款由 AI Agent 驱动的数据分析工作平台，采用插件化设计，界面层基于 C++ 实现，具备高性能渲染能力，能够流畅绘制亿级曲线图并展示亿行级数据表格。平台内嵌 `Python` 环境（`pandas` / `numpy`），封装自研的有向图工作流引擎，实现了 `Python` 层与 C++ 层的双向对接：既可基于 `Python` 快速完成业务封装，也支持 `C++` 插件与 `Python` 插件扩展。
+`DAWorkbench` 是一款由 AI Agent 驱动的数据分析工作平台，采用插件化设计，界面层基于 C++ 实现，能流畅绘制亿级曲线图并展示亿行级数据表格。平台内嵌 `Python` 环境（`pandas` / `numpy`），封装自研的有向图工作流引擎，实现了 `Python` 层与 C++ 层的双向对接：既可基于 `Python` 快速完成业务封装，也支持 `C++` 插件与 `Python` 插件扩展。
 
-平台内置可直接操作软件的 AI Agent，通过插件注入工具层为 Agent 提供操作能力，默认提供 19 个工具。用户可用自然语言对话驱动 Agent 直接操作 GUI，完成数据读取、统计计算、绘图、标注添加和分析报告生成等任务。同时支持通过 Markdown 自定义 Agent，实现固定流程的数据分析与报告自动生成。AI Agent基于`LangGraph`构建，使用进程间通信（每个agent会话单独一个python进程）实现和界面（C++/Qt）的数据交互。
+平台内置可直接操作软件的 AI Agent，工具层通过插件注入，默认提供 21 个工具。用户可用自然语言对话驱动 Agent 直接操作图形界面，完成数据读取、统计计算、绘图、标注添加和分析报告生成等任务。同时支持通过 Markdown 自定义 Agent，实现固定流程的数据分析与报告自动生成。AI Agent 基于 `LangGraph` 构建，通过进程间通信（每个 agent 会话单独一个 python 进程）与界面（C++/Qt）交换数据。
 
-软件核心由五大模块组成：`Agent 模块`、`Workflow 引擎`、`Data 数据处理`、`Chart 可视化`及`插件接口模块`。各模块能力互通，支持 Python 双向操作。`插件接口模块`同时支持纯 Python 插件与 C++ 插件，显著降低插件开发门槛；平台内置 pandas 库，让操作 pandas 像操作 Excel 一样便捷。
+软件核心由五大模块组成：`Agent 模块`、`Workflow 引擎`、`Data 数据处理`、`Chart 可视化`及`插件接口模块`。各模块能力互通，支持 Python 双向操作。`插件接口模块`同时支持纯 Python 插件与 C++ 插件，降低了插件开发门槛；平台内置 pandas 库，让操作 pandas 像操作 Excel 一样便捷。
 
 ![about-data-work-flow](./docs/assets/PIC/about-data-work-flow.png)
 
@@ -33,37 +33,37 @@
 
 #### 原有设计目标
 
-在数据处理过程往往有很多重复性的工作，尤其针对科研实验数据，有可能要面对 n 组数据，每组数据的清洗抽取方式基本是一样的，因此我希望一个数据处理软件应该是带有工作流功能的，当然 python 是很容易实现上述功能，但要求有一定的开发基础且要熟悉一些库才能得心应手
+在数据处理过程中往往有很多重复性的工作，尤其针对科研实验数据，可能要面对 n 组数据，每组数据的清洗抽取方式基本一样，因此一个数据处理软件应该带有工作流功能。用 python 实现上述功能很容易，但要求有一定的开发基础，还要熟悉一些库才能得心应手
 
-python 的 `pandas`、`numpy`、`scipy` 是数据处理的三大利器，通过 python 进行数据处理过程，如此多的数据清洗方法，除非你把整个文档浏览一遍，否则你很难想起他们，因此一个交互式的数据清洗工具是很有必要的，把功能通过 GUI 明确的展现给用户，这样数据处理过程不需要长时间的翻阅文档，不过AI的出现解决了这个问题，AI帮你探索数据，帮你写论文
+python 的 `pandas`、`numpy`、`scipy` 是数据处理的三大利器，数据清洗方法如此多，除非把整个文档浏览一遍，否则很难想起它们，因此一个交互式的数据清洗工具很有必要：把功能通过图形界面明确地展现出来，数据处理过程就不需要长时间翻阅文档。AI 的出现解决了这个问题，AI 能探索数据，也能写论文
 
-最后也是我用 matlab 和 python 这类数据处理工具最头疼的一点，就是数据可视化，虽然 matlab 和 python的matplotlib 能做出很漂亮的图，但细微的调节非常令人抓狂，例如要调整一个文本的位置，交互式的设计你只需要拖动一下鼠标，但在脚本语言里你要指定它的坐标，如果图片非常大，渲染时间比较久，那么移动一个文本到你想要的地方是一件令人非常麻烦的事情，ai虽然绘图很简单方便，但agent通过matplotlib绘制的图片你要进行细微调整也是非常麻烦的一件事情，因此一个带有ai能力且可交互式数据可视化工具是必须的。
+另一点头疼的是数据可视化。matlab 和 python 的 matplotlib 能做出很漂亮的图，但细微的调节很令人抓狂，比如调整一个文本的位置，交互式的设计只需要拖动一下鼠标，在脚本语言里却要指定它的坐标；图片非常大、渲染时间比较久的时候，把一个文本移到想要的位置是件很麻烦的事情。ai 绘图虽然简单方便，但 agent 通过 matplotlib 画出的图要做细微调整同样麻烦，因此一个带有 ai 能力且可交互的数据可视化工具是必须的。
 
-本软件的设计就是为了解决上面遇到的这三个问题，因此软件会分为四大板块：工作流解决固定流程问题，数据处理板块会把 pandas 的功能进行集成，能像操作 excel 一样操作 Dataframe，chart 板块能实现交互式的数据可视化，且能生成论文级别的绘图，集成agent能力，让ai操作软件，自动分析出图
+本软件的设计就是为了解决上面这三个问题，因此软件分为四大板块：工作流解决固定流程问题；数据处理板块集成 pandas 的功能，能像操作 excel 一样操作 Dataframe；chart 板块实现交互式的数据可视化，且能生成论文级别的绘图；集成 agent 能力，让 ai 操作软件，自动分析出图
 
 ### 软件可以做什么
 
 - 可以定制化为数据分析系统，尤其适合实验室数据快速分析，可以一键导入，结合 python 脚本自动清洗，使用者无需掌握 python 即可操作 pandas 的核心函数
 - 把重复的数据清洗流程固定成工作流，换一批数据一键重跑，不用每次重复手工操作
-- 快速绘图，提升数据分析效率，快速发现数据问题，尤其针对十万以上数据分析，比 excel 快得到且绘图更方便
+- 快速绘图，数据分析效率高，也更容易发现数据问题，尤其针对十万以上的数据，比 excel 快得多且绘图更方便
 - 图表支持交互式细调，文本、标记用鼠标拖动即可，能导出矢量图，满足论文发表的要求
-- 可以自定义扩展模块，集成自己的数据清洗和分析方法，并进行呈现
+- 可以自定义扩展模块，集成自己的数据清洗和分析方法并展示出来
 - 自定义 Agent，用提示词写好分析流程，让 AI 操作软件，自动分析出图，自动写报告论文
 
 ## AI Agent
 
 agent 以对话面板的形式嵌在主界面里，它操作的是软件里的真实对象：查询的数据是工作区已加载的数据集，画出的图实时出现在绘图区，写好的报告在内置查看器里打开，agent 做完之后使用者还能接手继续手动调整。
 
-- 使用DAWorkbench的agent分析数据，自动出具报告
-    ![使用DAWorkbench的agent分析数据，出具报告](./docs/assets/screenshot/agent-analysis.gif)
-- 使用DAWorkbench的agent自动绘图
-    ![使用DAWorkbench的agent自动绘图](./docs/assets/screenshot/agent-auto-create-chart.gif)
+- 使用 DAWorkbench 的 agent 分析数据，自动出具报告
+    ![使用 DAWorkbench 的 agent 分析数据，出具报告](./docs/assets/screenshot/agent-analysis.gif)
+- 使用 DAWorkbench 的 agent 自动绘图
+    ![使用 DAWorkbench 的 agent 自动绘图](./docs/assets/screenshot/agent-auto-create-chart.gif)
 
-和通用Agent（如Codex，OpenClaw，deepseek harness等）不一样，DAWorkbench提供了很多内置的工具，基于这些工具AI可以快速完成数据处理、绘图、数据可视化、报告生成等任务，且所有绘图操作都基于DAWorkbench，AI绘制的图样式用户可以直接修改，也可以在绘图上进行标记，并不是一个简单的png绘图，人工可以非常轻松的介入AI创建的绘图中
+和通用 Agent（如 Codex、OpenClaw、deepseek harness 等）不一样，DAWorkbench 提供了很多内置工具，AI 基于这些工具可以快速完成数据处理、绘图、数据可视化、报告生成等任务。所有绘图操作都基于 DAWorkbench，AI 绘制的图用户可以直接修改样式，也可以在绘图上标记，并不是一个简单的 png 绘图，人工可以很轻松地介入 AI 创建的绘图
 
 ### agent 能做什么
 
-默认插件注册了 19 个工具，覆盖数据分析的完整流程：
+默认插件注册了 21 个工具，覆盖数据分析的完整流程（`ask_user` 由平台在运行时注入，不经过插件注册）：
 
 | 类别 | 工具 | 功能 |
 |------|------|------|
@@ -82,8 +82,11 @@ agent 以对话面板的形式嵌在主界面里，它操作的是软件里的�
 | | add_annotation | 添加文本、箭头、点标记、区间高亮 |
 | | save_chart_image | 图表导出为 PNG、PDF、SVG |
 | | list_figures | 列出所有图表，修改前先定位 |
+| | list_chart_items | 列出某个图表里的曲线、标注和区间，给出序号和颜色 |
 | 文件与报告 | read_file / write_file | 读写文本文件 |
 | | save_report | 把 markdown 报告保存为 md、pdf、docx，md 直接在内置查看器打开 |
+| 代码执行 | run_script | 执行工程脚本工作区里的脚本文件 |
+| | run_code | 直接执行传入的 Python 代码片段 |
 | 提问 | ask_user | 信息不够时 agent 主动向使用者提问，支持选项选择和自由输入 |
 
 数据类工具在进程内真实调用 pandas，查询的就是工作区里的数据；绘图类工具直接操作真实的图表部件，agent 画完的图在绘图区里可以继续手动调整。agent 还会在回复里插入图表链接，点击后跳转到对应的图。
@@ -92,11 +95,11 @@ agent 以对话面板的形式嵌在主界面里，它操作的是软件里的�
 
 一个 agent 就是一个 markdown 文件，放在可执行文件旁边的 `daAgent` 目录，文件名即标题。首次启动会生成内置的「数据分析助手」，里面约定了数据探索、绘图、出报告的完整流程。管理对话框里可以增删改 agent，编辑器带 markdown 语法高亮。插件也可以注入内置的领域 agent，同名文件如果已被使用者修改过则不会覆盖。
 
-基于DAWorkbench的智能体编辑窗口，你可以针对你的数据特殊性创建自己的智能体来进行更针对性的分析，例如你的实验数据，如果有一个相对固定的模板，你可以制定一个智能体，输出的报告按照你需要的模板输出，这个功能在大量复杂的数据分析工作上非常实用
+基于 DAWorkbench 的智能体编辑窗口可以针对数据的特殊性创建自己的智能体，做更有针对性的分析。比如实验数据如果有相对固定的模板，可以制定一个智能体，让输出的报告按照需要的模板输出。这个功能在大量复杂的数据分析工作上很实用
 
 ### 模型管理
 
-DAWorkbench的智能体功能支持配置多个供应商，每个供应商有自己的 base_url、API key 和模型列表，可以从供应商的 /models 接口拉取可用模型，也可以手动添加。API key 经 Windows DPAPI 加密后落盘。
+DAWorkbench 的智能体功能支持配置多个供应商，每个供应商有自己的 base_url、API key 和模型列表，可以从供应商的 /models 接口拉取可用模型，也可以手动添加。API key 经 Windows DPAPI 加密后落盘。
 
 ### 会话与可靠性
 
@@ -130,7 +133,7 @@ DAWorkbench的智能体功能支持配置多个供应商，每个供应商有自
 
 图表基于扩展过的 qwt，增加了类似 matplotlib Figure 的 QwtFigure 容器，一个 figure 里可以放多个子图，按网格布局排布。
 
-支持的图表类型：曲线、散点、柱状、多序列柱状、箱线、直方、间隔曲线、谱图、谱曲线、交易曲线、向量场、误差棒，核密度估计、ECDF、回归、热力图、等值线等统计图，以及 3D 柱状、折线、曲面。
+支持的图表类型：曲线、散点、柱状、多序列柱状、箱线、直方、间隔曲线、谱图、谱曲线、交易曲线、向量场、误差棒，核密度估计、经验累积分布图、回归、热力图、等值线等统计图，以及 3D 柱状、折线、曲面。
 
 交互式编辑是这块的重点：图元可以拖动、缩放，文本原地编辑，十字光标和数据探针读数，区域选择、标记、箭头都能在画布上直接加，所有操作可撤销重做。每个元素有对应的属性面板，坐标轴、网格、图例、曲线、标记都能逐项调整。
 
@@ -152,21 +155,21 @@ C++ 插件基于 DAAbstractPlugin 接口，以动态库形式加载，工程里�
 
 ## 第三方库
 
-编译前请确保已经拉取了第三方库，由于使用的是 `git submodule` 方式管理大部分第三方库，因此需要执行：
+编译前需要先拉取第三方库，大部分第三方库用 `git submodule` 管理，需要执行：
 
 ```shell
 git submodule update --init --recursive
 ```
 
-把所有第三方库拉取，具体可见：[submodule.md](./submodule.md)
+该命令会拉取所有第三方库，具体见 [submodule.md](./submodule.md)
 
-编译完第三方库后，需要进行安装 (`install`)，所有依赖将安装到 bin 目录下
+编译完第三方库后需要执行 `install`，所有依赖会安装到 bin 目录下
 
 需要编译的第三方库如下：
 
 - SARibbon
 - Qt-Advanced-Docking-System
-- ctk(只依赖部分，这里作者对 ctk 进行了精简，形成一个 liteCtk)
+- ctk（只依赖部分，这里对 ctk 做了精简，形成一个 liteCtk）
 - qwt
 - spdlog
 - pybind11
@@ -190,21 +193,21 @@ pip install -r requirements.txt
 
 项目文档见：[https://czyt1988.github.io/data-workbench](https://czyt1988.github.io/data-workbench)
 
-### 📖 文档导航
+### 文档导航
 
 | 文档 | 说明 | 路径 |
 |------|------|------|
-| 🏠 首页 | 项目概览、核心特性、快速上手 | [docs/zh/index.md](docs/zh/index.md) |
-| 📦 构建指南 | 环境配置、构建步骤、构建选项、常见错误 | [docs/zh/build/](docs/zh/build/build-instructions.md) |
-| 📝 文档构建 | 本地预览、构建部署文档站点 | [docs/doc-build.md](docs/doc-build.md) |
-| 🚀 快速上手 | 5 分钟环境搭建和首次构建 | [docs/zh/quick-start.md](docs/zh/quick-start.md) |
-| 🛠️ 开发指引 | 开发者入门完整指南 | [docs/zh/dev-guide/developer-guide.md](docs/zh/dev-guide/developer-guide.md) |
-| 🏗️ 架构设计 | 5 层架构、设计决策、扩展点 | [docs/zh/dev-guide/architecture/architecture.md](docs/zh/dev-guide/architecture/architecture.md) |
-| 📊 模块业务逻辑 | 各核心模块内部工作原理 | [docs/zh/dev-guide/architecture/module-breakdown.md](docs/zh/dev-guide/architecture/module-breakdown.md) |
-| 🤖 Agent 开发 | Agent 子系统：LLM 接入、提示词库、工具调用、协议 | [docs/zh/dev-guide/agent/index.md](docs/zh/dev-guide/agent/index.md) |
-| 🔌 插件开发 | 插件系统、节点开发、插件生命周期 | [docs/zh/plugin/plugin-development.md](docs/zh/plugin/plugin-development.md) |
-| 📖 使用指南 | 命令行参数、绘图功能、配置说明 | [docs/zh/use-guide/](docs/zh/use-guide/index.md) |
-| ❓ FAQ | 构建、插件、运行时常见问题 | [docs/zh/reference/faq.md](docs/zh/reference/faq.md) |
+| 首页 | 项目概览、核心特性、快速上手 | [docs/zh/index.md](docs/zh/index.md) |
+| 构建指南 | 环境配置、构建步骤、构建选项、常见错误 | [docs/zh/build/](docs/zh/build/build-instructions.md) |
+| 文档构建 | 本地预览、构建部署文档站点 | [docs/doc-build.md](docs/doc-build.md) |
+| 快速上手 | 5 分钟环境搭建和首次构建 | [docs/zh/quick-start.md](docs/zh/quick-start.md) |
+| 开发指引 | 开发者入门完整指南 | [docs/zh/dev-guide/developer-guide.md](docs/zh/dev-guide/developer-guide.md) |
+| 架构设计 | 5 层架构、设计决策、扩展点 | [docs/zh/dev-guide/architecture/architecture.md](docs/zh/dev-guide/architecture/architecture.md) |
+| 模块业务逻辑 | 各核心模块内部工作原理 | [docs/zh/dev-guide/architecture/module-breakdown.md](docs/zh/dev-guide/architecture/module-breakdown.md) |
+| Agent 开发 | Agent 子系统：LLM 接入、提示词库、工具调用、协议 | [docs/zh/dev-guide/agent/index.md](docs/zh/dev-guide/agent/index.md) |
+| 插件开发 | 插件系统、节点开发、插件生命周期 | [docs/zh/plugin/plugin-development.md](docs/zh/plugin/plugin-development.md) |
+| 使用指南 | 命令行参数、绘图功能、配置说明 | [docs/zh/use-guide/](docs/zh/use-guide/index.md) |
+| FAQ | 构建、插件、运行时常见问题 | [docs/zh/reference/faq.md](docs/zh/reference/faq.md) |
 
 ## 界面截图
 
@@ -212,9 +215,9 @@ pip install -r requirements.txt
 
 - 数据表格
     ![01](./docs/assets/screenshot/01.png)
-- agent绘图
+- agent 绘图
     ![02](./docs/assets/screenshot/02.png)
-- 统计绘图（类似seaborn的各种快速统计功能）
+- 统计绘图（类似 seaborn 的各种快速统计功能）
     ![02](./docs/assets/screenshot/03.png)
 - 工作流
     ![04](./docs/assets/screenshot/04.png)

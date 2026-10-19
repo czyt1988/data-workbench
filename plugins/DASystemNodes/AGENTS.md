@@ -17,7 +17,7 @@ DASystemNodes/
         ├── __init__.py         # 导出所有节点类
         ├── setup.py            # entry_points 声明（data_workbench.plugin）
         ├── utils.py            # 通用工具函数（如 data_to_text）
-        ├── icon/               # 节点图标（SVG，200×200，配色遵循 icon-ui-design-guide.md）
+        ├── icon/               # 节点图标（SVG，200×200，配色遵循仓库根目录 DESIGN.md）
         └── nodes/
             ├── start.py        # 工作流起点
             ├── end.py          # 工作流终点
@@ -71,7 +71,7 @@ copy /Y "plugins\DASystemNodes\PyScripts\DASystemNodes\nodes\text_viewer.py" `
 `@NodeDef(icon=...)` 用于**节点工具箱**（节点树/列表图标 + 拖拽 pixmap），C++ 侧经 `QIcon(iconPath)` 直接加载，因此：
 
 - **必须提供绝对路径或 Qt 资源路径**（如 `:/DAGui/icon/xxx.svg`）；裸短名（如 `icon="describe"`）无法被 QIcon 解析，会静默回退默认节点图标
-- 本包的做法：图标放包内 `icon/` 目录（200×200 SVG，配色遵循 [icon-ui-design-guide.md](../../docs/zh/dev-guide/general/icon-ui-design-guide.md)），节点文件用 `__file__` 计算绝对路径（见上方模板的 `_ICON_DIR`）
+- 本包的做法：图标放包内 `icon/` 目录（200×200 SVG，配色遵循 [DESIGN.md](../../DESIGN.md)），节点文件用 `__file__` 计算绝对路径（见上方模板的 `_ICON_DIR`）
 - 用 `__file__` 相对定位而非 Python 相对导入，是因为目录扫描模式（`spec_from_file_location`）下包不保证在 `sys.path` 中
 - CMake 会把整个包（含 `icon/`）复制到 `pyplugins/`，无需额外安装规则
 - 空字符串 `icon=""` 表示无图标，工具箱显示默认节点图标
@@ -596,5 +596,6 @@ def serialize_runtime_state(self) -> dict:
     return {"display_text": self._display_text}
 ```
 
-!!! warning "新增 DAWorkflowNode 基类方法"
-    如果在 `DAWorkflowNode` 基类中新增需要被子类覆写的方法，**必须**使用 `super()` 转发模式。详见 [Python 节点开发指南 - MRO 遮盖陷阱](../../docs/zh/dev-guide/workflow/workflow-python-node-dev.md#nodef-的-mro-遮盖陷阱)。
+> **⚠️ 新增 DAWorkflowNode 基类方法**
+>
+> 如果在 `DAWorkflowNode` 基类中新增需要被子类覆写的方法，**必须**使用 `super()` 转发模式。详见 [Python 节点开发指南 - MRO 遮盖陷阱](../../docs/zh/dev-guide/workflow/workflow-python-node-dev.md#nodef-的-mro-遮盖陷阱)。

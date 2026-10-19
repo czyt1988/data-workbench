@@ -749,6 +749,8 @@ DACommandsForGraphicsItemGrouping::DACommandsForGraphicsItemGrouping(DAGraphicsS
                                                                      QUndoCommand* parent)
     : QUndoCommand(parent), mScene(sc)
 {
+    // 005 T1.21 红线5：撤销面板不允许空白条目
+    setText(QObject::tr("group items"));  // cn:组合图元
     mWillGroupItems = toSimple(groupingitems);
 }
 
@@ -843,6 +845,8 @@ DACommandsForGraphicsItemUngrouping::DACommandsForGraphicsItemUngrouping(QGraphi
                                                                          QUndoCommand* parent)
     : QUndoCommand(parent), mScene(sc), mGroupItem(group)
 {
+    // 005 T1.21 红线5：撤销面板不允许空白条目
+    setText(QObject::tr("ungroup items"));  // cn:取消组合图元
     mItems = mGroupItem->childItems();
 }
 
@@ -890,6 +894,8 @@ void DACommandsForGraphicsItemUngrouping::undo()
 DACommandTextDocumentWrapper::DACommandTextDocumentWrapper(QTextDocument* doc, QUndoCommand* parent)
     : QUndoCommand(parent), mDoc(doc)
 {
+    // 005 T1.21 红线5：撤销面板不允许空白条目
+    setText(QObject::tr("edit text document"));  // cn:编辑文本文档
 }
 
 /**
@@ -938,6 +944,8 @@ DACommandTextItemHtmlContentChanged::DACommandTextItemHtmlContentChanged(QGraphi
                                                                          QUndoCommand* parent)
     : QUndoCommand(parent), mItem(item), mOldHtml(oldHtml), mNewHtml(newHtml), mDate(QDateTime::currentDateTime())
 {
+    // 005 T1.21 红线5：撤销面板不允许空白条目
+    setText(QObject::tr("change text content"));  // cn:修改文本内容
 }
 
 /**

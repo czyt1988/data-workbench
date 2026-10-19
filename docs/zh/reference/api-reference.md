@@ -1,30 +1,20 @@
 # API 文档索引
 
-本页面提供 DAWorkBench API 文档的快速导航，帮助开发者快速定位所需的接口和类。
-
-## 主要功能特性
-
-**特性**
-
-- ✅ **Doxygen 完整文档**：自动生成的 API 文档，包含所有类、函数、枚举的详细说明
-- ✅ **核心接口速览**：顶层接口和常用类的快速参考
-- ✅ **插件开发 API**：插件基类和节点相关接口说明
-- ✅ **工作流 API**：工作流管理和节点元数据接口
-- ✅ **模块列表索引**：各模块功能概览表格
+本页面是 DAWorkBench API 文档的索引，用于查找接口和类。
 
 ## Doxygen API 文档
 
 完整的 API 文档由 Doxygen 生成，包含所有类、函数、枚举的详细说明。
 
-- [:material-file-document: API 文档首页](../doxygen/index.html)
-- [:material-format-list-bulleted: 类索引](../doxygen/classes.html)
-- [:material-folder: 文件列表](../doxygen/files.html)
+- [📄 API 文档首页](../../doxygen/index.html)
+- [📋 类索引](../../doxygen/classes.html)
+- [📁 文件列表](../../doxygen/files.html)
 
 ## 核心接口速览
 
 ### DACoreInterface
 
-顶层接口，获取所有其他接口。插件通过此接口访问主程序的所有功能，是实现插件与主程序松耦合通信的核心入口。
+顶层接口，用于获取所有其他接口，插件通过它访问主程序的全部功能。
 
 下面的代码展示了 DACoreInterface 的核心方法定义：
 
@@ -46,11 +36,11 @@ public:
 };
 ```
 
-上述接口是插件开发的基石，通过 `core()` 方法获取 DACoreInterface 实例后，即可访问主程序的所有功能模块，包括通过 `getAgentInterface()` 获取的 `DAAgentInterface`（AI 分析子系统入口，定义于 `src/DAAgent/DAAgentInterface.h`）。
+通过 `core()` 方法获取 DACoreInterface 实例后，即可访问主程序的所有功能模块，包括通过 `getAgentInterface()` 获取的 `DAAgentInterface`（AI 分析子系统入口，定义于 `src/DAAgent/DAAgentInterface.h`）。
 
 ### DAUIInterface
 
-UI 相关接口，提供对主程序界面组件的访问能力。通过此接口，插件可以扩展 Ribbon 工具栏、添加 Dock 窗口、注册 Action 等。
+界面相关接口，提供主程序界面组件的访问能力。插件通过它扩展 Ribbon 工具栏、添加 Dock 窗口、注册 Action 等。
 
 下面的代码展示了 DAUIInterface 的核心方法定义：
 
@@ -75,13 +65,11 @@ public:
 };
 ```
 
-通过上述接口，插件可以无缝集成到主程序界面中，实现功能扩展。
-
 ## 插件开发 API
 
 ### DAAbstractPlugin
 
-插件基类，所有插件必须继承此类。该类定义了插件的基本结构、生命周期方法和元信息接口，是插件系统的核心抽象。
+插件基类，所有插件必须继承此类，其中定义了插件的基本结构、生命周期方法和元信息接口。
 
 下面的代码展示了插件基类的核心定义：
 
@@ -111,7 +99,7 @@ public:
 
 ### DAAbstractNodePlugin
 
-节点插件基类，继承自 DAAbstractPlugin，用于提供工作流节点的插件。此类扩展了节点工厂管理功能。
+节点插件基类，继承自 DAAbstractPlugin，用于提供工作流节点，扩展了节点工厂管理功能。
 
 下面的代码展示了节点插件基类的核心定义：
 
@@ -155,7 +143,7 @@ public:
 };
 ```
 
-新的 Python-first 架构使用 `@NodeDef` 装饰器自动发现节点，无需手动编写 C++ 节点工厂。DAPyNodeFactory 作为 Python 层 `DANodeFactory` 的 C++ 代理。
+新的 Python-first 架构使用 `@NodeDef` 装饰器自动发现节点，无需手动编写 C++ 节点工厂。
 
 ### DAPyNode
 
@@ -192,7 +180,7 @@ DAPyNode 是工作流执行的核心单元，所有节点业务逻辑均在 Pyth
 
 ### DAPyWorkFlowManager
 
-工作流管理器（QObject），负责工作流的创建、节点执行调度和信号协调。是 Python-first 架构中工作流执行的中央调度器。
+工作流管理器（QObject），负责工作流的创建、节点执行调度和信号协调。
 
 下面的代码展示了工作流管理器的核心方法：
 
@@ -251,7 +239,7 @@ public:
 
 ### DADataManagerInterface
 
-数据管理接口，负责数据对象的创建、管理和查询。通过此接口，插件可以访问和操作项目中的所有数据。
+数据管理接口，负责数据对象的创建、管理和查询，插件通过它访问和操作项目中的所有数据。
 
 下面的代码展示了数据管理接口的核心方法：
 
@@ -355,13 +343,13 @@ Q_SIGNALS:
 };
 ```
 
-场景是图形视图的核心，协调节点图元显示和工作流逻辑的交互。
+场景协调节点图元显示和工作流逻辑的交互。
 
 ## 日志 API
 
 ### 日志宏
 
-DAWorkBench 使用基于 spdlog 的日志系统，通过便捷宏输出日志。业务日志（`da.*` category）会自动进入 UI 日志窗口。
+DAWorkBench 使用基于 spdlog 的日志系统，通过便捷宏输出日志。业务日志（`da.*` category）会自动进入界面日志窗口。
 
 ```cpp
 #include "DALogCategory.h"
@@ -393,6 +381,6 @@ daCritical << "critical message" << arg;  // 严重级别 - 致命错误，进 U
 
 ## 下一步
 
-- [:material-file-document: Doxygen 文档](../doxygen/index.html) - 完整 API 文档
-- [:material-book: 开发指南](../dev-guide/general/coding-standard.md) - 编码规范
-- [:material-puzzle: 插件开发](../plugin/plugin-development.md) - 插件开发指南
+- [📄 Doxygen 文档](../../doxygen/index.html) - 完整 API 文档
+- [📖 开发指南](../dev-guide/general/coding-standard.md) - 编码规范
+- [🧩 插件开发](../plugin/plugin-development.md) - 插件开发指南

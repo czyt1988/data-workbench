@@ -14,8 +14,9 @@
 
 ## Python 解释器初始化
 
-!!! warning "初始化顺序至关重要"
-    Python 解释器必须在任何 Python 操作之前初始化，且在整个程序生命周期中只能初始化一次。
+> **⚠️ 初始化顺序**
+>
+> Python 解释器必须在任何 Python 操作之前初始化，且在整个程序生命周期中只能初始化一次。
 
 ```cpp title="main.cpp - Python 环境初始化（initializePythonInterpreter）"
 #include "DAPyInterpreter.h"
@@ -57,38 +58,41 @@ void initializePythonInterpreter(const DA::DAAppConfig& cfg)
 }
 ```
 
-!!! info "DAPyInterpreter / DAPyScripts 全为静态 API"
-    `DAPyInterpreter` 与 `DAPyScripts` 均未提供 `getInstance()`，所有方法都是 `static`，直接用类名调用即可：
+> **ℹ️ DAPyInterpreter / DAPyScripts 全为静态 API**
+>
+> `DAPyInterpreter` 与 `DAPyScripts` 均未提供 `getInstance()`，所有方法都是 `static`，直接用类名调用即可：
+>
+> - `DAPyInterpreter`（`src/DAPyBindQt/DAPyInterpreter.h:27-58`）：`getPythonInterpreterPath()`、`initializePythonInterpreter(const QString& pythonHomePath)`、`appendSysPath(const QString&)`、`isPythonInitialized()`、`shutdown()` 等。
+> - `DAPyScripts`（`src/DAPyScripts/DAPyScripts.h:26-34`）：`initScripts()`、`isInitScripts()`、`getIO()`、`getDataFrame()`、`getDataProcess()`、`getStatistics()`、`cleanup()`。
 
-    - `DAPyInterpreter`（`src/DAPyBindQt/DAPyInterpreter.h:27-58`）：`getPythonInterpreterPath()`、`initializePythonInterpreter(const QString& pythonHomePath)`、`appendSysPath(const QString&)`、`isPythonInitialized()`、`shutdown()` 等。
-    - `DAPyScripts`（`src/DAPyScripts/DAPyScripts.h:26-34`）：`initScripts()`、`isInitScripts()`、`getIO()`、`getDataFrame()`、`getDataProcess()`、`getStatistics()`、`cleanup()`。
-
-!!! warning "setPythonHomePath 在 Python 3.11+ 已弃用"
-    `DAPyInterpreter::setPythonHomePath(const QString&)` 在 Python 3.11 及以上版本中不再生效——`Py_SetPythonHome` 自 3.11 起被弃用。源码（`src/DAPyBindQt/DAPyInterpreter.cpp:157-159`）在该版本下直接打印告警并 `Q_UNUSED(path)`。正确做法是使用带 `QString` 参数的 `initializePythonInterpreter(pythonHomePath)` 重载（`src/DAPyBindQt/DAPyInterpreter.h:39`），它在内部一并完成 Python Home 的设置。
-
-    ```cpp
-    // src/DAPyBindQt/DAPyInterpreter.cpp:152-170
-    void DAPyInterpreter::setPythonHomePath(const QString& path)
-    {
-        if (path.isEmpty()) {
-            return;
-        }
-    #if PY_VERSION_HEX >= 0x030B0000
-        Q_UNUSED(path);
-        qWarning() << "Py_SetPythonHome is deprecated in Python 3.11+, "
-                      "use initializePythonInterpreter with pythonHomePath parameter instead";
-    #else
-        // ... 3.11 之前的旧实现（Py_SetPythonHome）...
-    #endif
-    }
-    ```
+> **⚠️ setPythonHomePath 在 Python 3.11+ 已弃用**
+>
+> `DAPyInterpreter::setPythonHomePath(const QString&)` 在 Python 3.11 及以上版本中不再生效：`Py_SetPythonHome` 自 3.11 起被弃用。源码（`src/DAPyBindQt/DAPyInterpreter.cpp:157-159`）在该版本下直接打印告警并 `Q_UNUSED(path)`。正确做法是用带 `QString` 参数的 `initializePythonInterpreter(pythonHomePath)` 重载（`src/DAPyBindQt/DAPyInterpreter.h:39`），它在内部一并完成 Python Home 的设置。
+>
+> ```cpp
+> // src/DAPyBindQt/DAPyInterpreter.cpp:152-170
+> void DAPyInterpreter::setPythonHomePath(const QString& path)
+> {
+>     if (path.isEmpty()) {
+>         return;
+>     }
+> #if PY_VERSION_HEX >= 0x030B0000
+>     Q_UNUSED(path);
+>     qWarning() << "Py_SetPythonHome is deprecated in Python 3.11+, "
+>                   "use initializePythonInterpreter with pythonHomePath parameter instead";
+> #else
+>     // ... 3.11 之前的旧实现（Py_SetPythonHome）...
+> #endif
+> }
+> ```
 
 ## GIL安全：全局解释器锁管理
 
-!!! danger "线程安全警告"
-    在多线程环境下调用 Python 代码时，必须正确管理 GIL，否则会导致程序崩溃或死锁。
+> **🚫 线程安全警告**
+>
+> 在多线程环境下调用 Python 代码时，必须正确管理 GIL，否则会导致程序崩溃或死锁。
 
-下图展示了 GIL 管理的两种典型场景，帮助理解 C++ 和 Python 之间的锁获取机制：
+下图是 GIL 管理的两种典型场景，对应 C++ 和 Python 两侧的锁获取：
 
 ```mermaid
 sequenceDiagram
@@ -118,75 +122,75 @@ Cpp->>Py: 如需调用其他 Python 代码<br/>GIL 已被持有，无需再次�
 
 以下代码展示了 GIL 管理的不同实现方式：
 
-=== "基本 GIL 管理"
+**基本 GIL 管理**
 
-    ```cpp
-    #include <pybind11/pybind11.h>
-    
-    void callPythonFunction()
+```cpp
+#include <pybind11/pybind11.h>
+
+void callPythonFunction()
+{
+    // 方式1：使用 RAII 自动管理
+    pybind11::gil_scoped_acquire acquire;  // 构造时获取 GIL
+    // ... 调用 Python 代码 ...
+    // 析构时自动释放 GIL
+}
+```
+
+**释放 GIL 进行长时间 C++ 操作**
+
+```cpp
+void pythonCallbackWithHeavyWork()
+{
+    // Python 调用此函数时已持有 GIL
+
+    // 1. 先释放 GIL，允许其他 Python 线程执行
     {
-        // 方式1：使用 RAII 自动管理
-        pybind11::gil_scoped_acquire acquire;  // 构造时获取 GIL
-        // ... 调用 Python 代码 ...
-        // 析构时自动释放 GIL
-    }
-    ```
+        pybind11::gil_scoped_release release;
 
-=== "释放 GIL 进行长时间 C++ 操作"
+        // 2. 执行耗时的 C++ 操作
+        heavyComputation();  // 此时其他 Python 线程可以运行
 
-    ```cpp
-    void pythonCallbackWithHeavyWork()
-    {
-        // Python 调用此函数时已持有 GIL
-        
-        // 1. 先释放 GIL，允许其他 Python 线程执行
-        {
-            pybind11::gil_scoped_release release;
-            
-            // 2. 执行耗时的 C++ 操作
-            heavyComputation();  // 此时其他 Python 线程可以运行
-            
-        }  // 3. 离开作用域后重新持有 GIL（隐式）
-        
-        // 4. 继续操作 Python 对象
-        // ...
-    }
-    ```
+    }  // 3. 离开作用域后重新持有 GIL（隐式）
 
-=== "自定义线程安全守卫"
+    // 4. 继续操作 Python 对象
+    // ...
+}
+```
 
-    ```cpp
-    /**
-     * @brief Python 线程安全守卫类
-     * 
-     * 用于非 Python 创建的线程调用 Python 代码时
-     */
-    class PyThreadGuard
-    {
-    public:
-        PyThreadGuard() : m_gil_state(PyGILState_Ensure()) {}
-        ~PyThreadGuard() { PyGILState_Release(m_gil_state); }
-        
-        // 禁止拷贝
-        PyThreadGuard(const PyThreadGuard&) = delete;
-        PyThreadGuard& operator=(const PyThreadGuard&) = delete;
-        
-    private:
-        PyGILState_STATE m_gil_state;
-    };
-    
-    // 使用示例
-    void backgroundThread()
-    {
-        PyThreadGuard guard;  // 确保当前线程持有 GIL
-        // 安全调用 Python 代码
-        pybind11::object result = somePythonFunction();
-    }
-    ```
+**自定义线程安全守卫**
+
+```cpp
+/**
+ * @brief Python 线程安全守卫类
+ * 
+ * 用于非 Python 创建的线程调用 Python 代码时
+ */
+class PyThreadGuard
+{
+public:
+    PyThreadGuard() : m_gil_state(PyGILState_Ensure()) {}
+    ~PyThreadGuard() { PyGILState_Release(m_gil_state); }
+
+    // 禁止拷贝
+    PyThreadGuard(const PyThreadGuard&) = delete;
+    PyThreadGuard& operator=(const PyThreadGuard&) = delete;
+
+private:
+    PyGILState_STATE m_gil_state;
+};
+
+// 使用示例
+void backgroundThread()
+{
+    PyThreadGuard guard;  // 确保当前线程持有 GIL
+    // 安全调用 Python 代码
+    pybind11::object result = somePythonFunction();
+}
+```
 
 ## 调用 Python 脚本示例
 
-`DAPyScriptsIO` 是对 Python 端 `da_io.py` 的薄封装，读取方法由 `FUNCTION_STR_DICT` 宏生成，实际调用的是 `DAWorkbench.io` 模块里的 `da_read` 函数，而非在 C++ 端直接 `import pandas`。
+`DAPyScriptsIO` 是对 Python 端 `da_io.py` 的薄封装，读取方法由 `FUNCTION_STR_DICT` 宏生成，最终调用 `DAWorkbench.io` 模块里的 `da_read` 函数，C++ 端不直接 `import pandas`。
 
 ```cpp title="DAPyScriptsIO - read 接口与实现"
 // src/DAPyScripts/DAPyScriptsIO.h:15-35
@@ -230,5 +234,6 @@ void loadFile(const QString& path)
 }
 ```
 
-!!! note "为什么不在 C++ 端直接 `import pandas`"
-    `FUNCTION_STR_DICT` 宏统一把 `read` 映射到 `DAWorkbench.io.da_read`（与 `read_csv`→`da_read_csv`、`read_txt`→`da_read_txt` 同理）。后缀分发、编码嗅探、pandas 调用等细节都集中在 Python 端的 `da_io.py` 中完成，C++ 侧无需缓存 `pandas` 模块对象，也无需手工拼 `read_csv` 的关键字参数。
+> **📝 为什么不在 C++ 端直接 `import pandas`**
+>
+> `FUNCTION_STR_DICT` 宏统一把 `read` 映射到 `DAWorkbench.io.da_read`（与 `read_csv`→`da_read_csv`、`read_txt`→`da_read_txt` 同理）。后缀分发、编码嗅探、pandas 调用等细节都集中在 Python 端的 `da_io.py` 中完成，C++ 侧无需缓存 `pandas` 模块对象，也无需手工拼 `read_csv` 的关键字参数。

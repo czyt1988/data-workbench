@@ -33,6 +33,8 @@ public:
     //查找action
     QAction* findAction(const char* objname);
     QAction* findAction(const QString& objname);
+    //获取所有已注册的action（快捷键管理器等需要遍历全部命令时使用）
+    QList< QAction* > actions() const;
 };
 }  // end of DA
 #endif  // DAACTIONSINTERFACE_H

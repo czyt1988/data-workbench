@@ -1,31 +1,21 @@
 # 最佳实践与常见问题
 
-本指南汇集插件开发的最佳实践、性能优化建议、常见问题解答，帮助开发者高效开发高质量插件。
-
-## 主要功能特性
-
-**特性**
-
-- ✅ **架构设计原则**：单一职责、松耦合、高内聚、可配置的设计原则指导
-- ✅ **代码组织规范**：推荐的插件文件目录结构和命名规范
-- ✅ **资源管理实践**：智能指针使用、线程安全设计的最佳实践
-- ✅ **性能优化建议**：数据处理、缓存策略、内存管理、UI 性能优化技巧
-- ✅ **错误处理规范**：统一错误处理和异常处理策略
-- ✅ **常见问题解答**：构建、插件加载、节点开发、UI 扩展等常见问题及解决方案
+本文汇集插件开发的最佳实践、性能优化建议和常见问题解答。
 
 ## 插件开发最佳实践
 
-!!! warning "工作流节点 API：C++ 接口为遗留接口"
-    下文部分代码示例使用 C++ 节点接口的 `exec()` / `getInputData()` / `setOutputData()` 模式，这是**遗留 C++ 节点接口**，仅作历史参考。当前工作流节点推荐使用 **Python 优先**的 `@NodeDef` 装饰器写法：
-
-    ```python
-    def execute(self, inputs=None, params=None):
-        df = (inputs or {}).get("data")
-        self._output_data["result"] = processed_df
-        return True
-    ```
-
-    详见 [DASystemNodes 插件开发指南](../../../plugins/DASystemNodes/AGENTS.md) 与 [Python 节点开发](../dev-guide/workflow/workflow-python-node-dev.md)。数据包装类为 `DA::DAData`（提供 `toDataFrame()` / `toSeries()` / `isNull()`），**不存在** `DADataPackage`。
+> **⚠️ 工作流节点 API：C++ 接口为遗留接口**
+>
+> 下文部分代码示例使用 C++ 节点接口的 `exec()` / `getInputData()` / `setOutputData()` 模式，这是**遗留 C++ 节点接口**，仅作历史参考。当前工作流节点推荐使用 **Python 优先**的 `@NodeDef` 装饰器写法：
+>
+> ```python
+> def execute(self, inputs=None, params=None):
+>     df = (inputs or {}).get("data")
+>     self._output_data["result"] = processed_df
+>     return True
+> ```
+>
+> 详见 `plugins/DASystemNodes/AGENTS.md` 与 [Python 节点开发](../dev-guide/workflow/workflow-python-node-dev.md)。数据包装类为 `DA::DAData`（提供 `toDataFrame()` / `toSeries()` / `isNull()`），**不存在** `DADataPackage`。
 
 ### 1. 架构设计原则
 
@@ -34,11 +24,9 @@
 | **单一职责** | 每个插件专注于单一功能领域 | 按功能拆分多个插件 |
 | **松耦合** | 插件间通过接口通信，无直接依赖 | 使用 `DACoreInterface` |
 | **高内聚** | 相关功能集中在一个插件内 | 统一的节点工厂管理 |
-| **可配置** | 关键参数可通过配置文件调整 | 提供 GUI 配置界面 |
+| **可配置** | 关键参数可通过配置文件调整 | 提供配置界面 |
 
 ### 2. 代码组织规范
-
-推荐的插件文件组织方式遵循统一的目录结构，便于维护和团队协作。
 
 下面的目录结构展示了标准插件的组织方式：
 
@@ -67,12 +55,11 @@ MyPlugin/
 └── CMakeLists.txt            # 构建配置文件
 ```
 
-上述结构将插件功能按职责分离，便于代码维护和团队协作。
-
 ### 3. 资源管理最佳实践
 
-!!! tip "使用智能指针"
-    优先使用 Qt 智能指针管理动态对象，避免手动内存管理导致的泄漏和错误。
+> **💡 使用智能指针**
+>
+> 优先使用 Qt 智能指针管理动态对象，避免手动内存管理导致的泄漏和错误。
 
 下面的代码展示了智能指针的正确使用方式：
 
@@ -94,35 +81,32 @@ m_cache = QSharedPointer<MyDataCache>::create();
 MyDataCache* m_cache;  // 需要手动 delete，易出错
 ```
 
-智能指针确保资源在对象生命周期结束时自动释放，防止内存泄漏。
-
 ### 4. 线程安全设计
 
-!!! warning "工作流执行线程"
-    工作流执行在独立线程，节点 `exec()` 方法不要直接操作 UI，否则会导致崩溃。
+> **⚠️ 工作流执行线程**
+>
+> 工作流执行在独立线程，节点 `exec()` 方法不要直接操作界面，否则会导致崩溃。
 
 下面的代码展示了正确的线程安全处理方式：
 
 ```cpp
 bool MyWorker::exec()
 {
-    // ❌ 错误：直接操作 UI - 会崩溃！
+    // 错误：直接操作 UI - 会崩溃！
     QMessageBox::information(nullptr, "Info", "Processing complete");
     
-    // ✅ 正确：使用信号通知主线程
+    // 正确：使用信号通知主线程
     emit processingComplete(this);  // 主线程接收到信号后处理 UI
     
     return true;
 }
 ```
 
-节点执行时处于工作流线程，UI 操作必须在主线程执行，应使用信号槽机制进行跨线程通信。
-
 ## 性能优化建议
 
 ### 1. 数据处理优化
 
-对于超过 10 万行的大型数据，建议使用分块处理方式，避免内存占用过高和 UI 卡顿。
+对于超过 10 万行的大型数据，建议使用分块处理方式，避免内存占用过高和界面卡顿。
 
 下面的代码展示了大数据分块处理的实现方式：
 
@@ -152,8 +136,6 @@ bool MyWorker::exec()
     return true;
 }
 ```
-
-分块处理可以有效控制内存使用，同时定期更新进度让用户感知处理进度。
 
 ### 2. 缓存策略
 
@@ -186,8 +168,6 @@ private:
 };
 ```
 
-缓存策略应根据数据特性设置合理的过期时间和大小限制，避免占用过多内存。
-
 ### 3. 内存管理
 
 避免不必要的深拷贝，利用 Qt 的隐式共享机制减少内存占用。
@@ -198,10 +178,10 @@ private:
 // 避免不必要的深拷贝 - 使用引用或 Qt 隐式共享（遗留 C++ 节点接口示例）
 bool MyWorker::exec()
 {
-    // ❌ 错误：深拷贝 - 复制整个 DataFrame，内存翻倍
+    // 错误：深拷贝 - 复制整个 DataFrame，内存翻倍
     DA::DAData copy = input;
 
-    // ✅ 正确：引用或浅拷贝
+    // 正确：引用或浅拷贝
     const DA::DAData& ref = input;
 
     // 处理完成后只存储必要的结果
@@ -214,27 +194,25 @@ bool MyWorker::exec()
 
 ### 4. UI 性能优化
 
-减少 UI 刷新频率，使用批量更新模式避免频繁重绘导致的界面卡顿。
+减少界面刷新频率，使用批量更新模式避免频繁重绘导致的界面卡顿。
 
-下面的代码展示了正确的 UI 批量更新方式：
+下面的代码展示了正确的界面批量更新方式：
 
 ```cpp
 // 减少 UI 刷新频率 - 使用批量更新模式
 void MyDockWidget::updateDataView()
 {
-    // ❌ 错误：每条数据刷新一次 - 导致界面卡顿
+    // 错误：每条数据刷新一次 - 导致界面卡顿
     for (int i = 0; i < rowCount; ++i) {
         m_tableView->updateRow(i);  // 每次触发重绘，太频繁！
     }
     
-    // ✅ 正确：批量刷新 - 先暂停再一次性更新
+    // 正确：批量刷新 - 先暂停再一次性更新
     m_tableView->setUpdatesEnabled(false);  // 暂停刷新信号
     m_tableView->setModel(newModel);        // 设置新模型
     m_tableView->setUpdatesEnabled(true);   // 恢复刷新，触发一次性重绘
 }
 ```
-
-批量更新通过暂时禁用刷新，在所有数据加载完成后再一次性更新，显著提升性能。
 
 ## 错误处理规范
 
@@ -279,8 +257,6 @@ bool MyWorker::exec()
     }
 }
 ```
-
-统一的错误处理流程确保问题能被正确记录和追踪，便于后续调试。
 
 ### 2. 异常处理策略
 
@@ -397,13 +373,13 @@ bool MyPlugin::initialize()
 ```cpp
 MyPlugin::MyPlugin()
 {
-    // ❌ 错误：构造函数中访问接口
+    // 错误：构造函数中访问接口
     DACoreInterface* core = this->core();  // nullptr!
 }
 
 bool MyPlugin::initialize()
 {
-    // ✅ 正确：initialize() 中访问
+    // 正确：initialize() 中访问
     DACoreInterface* core = this->core();  // 有效
 }
 ```
@@ -443,7 +419,7 @@ void MyNodeFactory::registerNodePrototypes()
 
 **常见原因**：
 
-1. 在 `exec()` 中操作 UI
+1. 在 `exec()` 中操作界面
 2. 访问无效的输入数据
 3. 未处理空指针
 
@@ -484,7 +460,7 @@ if (icon.isNull()) {
 
 **问题**：Dock 窗口出现在非预期位置
 
-**解决**：通过 `DADockingAreaInterface::createDockWidget` 明确指定停靠区域（基于 Qt-Advanced-Docking-System 的 `ads::DockWidgetArea`，**不是** Qt 原生 `QDockWidget` 的 `Qt::DockWidgetArea`）：
+**解决**：通过 `DADockingAreaInterface::createDockWidget` 明确指定停靠区域（用 Qt-Advanced-Docking-System 的 `ads::DockWidgetArea`，Qt 原生 `QDockWidget` 的 `Qt::DockWidgetArea` 在这里不适用）：
 
 ```cpp
 // 明确指定停靠区域与窗口名
@@ -566,6 +542,6 @@ int m_memberVariable;   // m_ prefix + camelCase
 
 ## 下一步
 
-- [:material-book-open: 编码规范](../dev-guide/general/coding-standard.md) - 详细编码规范
-- [:material-api: API 文档](./api-reference.md) - API 参考手册
-- [:material-github: 贡献指南](./contribution-guide.md) - 参与开源贡献
+- [📖 编码规范](../dev-guide/general/coding-standard.md) - 详细编码规范
+- [📘 API 文档](./api-reference.md) - API 参考手册
+- [🐙 贡献指南](./contribution-guide.md) - 参与开源贡献

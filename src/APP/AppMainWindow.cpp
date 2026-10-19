@@ -44,6 +44,8 @@
 #include "DAAppWindowStateSerializer.h"
 #include "DAAppLayoutManager.h"
 #include "DALogCategory.h"
+#include "DAShortcutManager.h"
+#include "DAAppShortcutSetup.h"
 // Qt-Advanced-Docking-System
 #include "DockManager.h"
 
@@ -219,6 +221,16 @@ void AppMainWindow::init()
     // 应用所有配置
     mConfig->loadConfig();
     mConfig->apply();
+    // 快捷键：注册主界面与工作流编辑器的命令，加载用户自定义（shortcuts.json）并立即应用
+    DAShortcutManager* shortcutMgr = mCore->getShortcutManager();
+    if (shortcutMgr) {
+        const int cmdCount = setupAppShortcutCommands(shortcutMgr,
+                                                      mCore->getAppUi()->getAppActions(),
+                                                      mDockArea ? mDockArea->getWorkFlowOperateWidget() : nullptr);
+        shortcutMgr->load();
+        shortcutMgr->applyAll();
+        qDebug() << "shortcut commands registered:" << cmdCount;
+    }
     // 给project接口设置插件管理器
     mCore->getAppProject()->setPluginMgr(mPluginMgr);
     // 插件加载后推送模型选择 + 预启动 agent——此处所有插件工具已注册，

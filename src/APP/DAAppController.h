@@ -318,6 +318,9 @@ private Q_SLOTS:
     void onActionGotoMinTriggered();
     // 显示列统计信息（表头右键）
     void onActionShowColumnDescribeTriggered();
+    // 表内查找/替换（002 T1.4，Ribbon「编辑」面板；唤出当前数据页浮动条）
+    void onActionFindTriggered();
+    void onActionReplaceTriggered();
     // 列数据类型改变
     void onComboxColumnTypesCurrentDTypeChanged(const DA::DAPyDType& dt);
     void onDataOperateDataFrameWidgetSelectTypeChanged(const QList< int >& column, DA::DAPyDType dt);
@@ -335,6 +338,47 @@ private Q_SLOTS:
     void onTableStyleFontColorChanged(const QColor& c);
     void onActionClearStyleSelectedTriggered();
     void onActionClearStyleAllTriggered();
+    // 条件格式（003 T1.5，Ribbon「Table Style」面板；与表体右键菜单共用页面入口）
+    void onActionConditionalFormatTriggered();
+    // 计算列（004 T1.23，Ribbon「Data Tools」面板；与表体右键菜单共用页面入口）
+    void onActionComputedColumnTriggered();
+    // 全部重算计算列（004 T1.23，Ribbon「Data Tools」面板）
+    void onActionRecomputeAllComputedColumnsTriggered();
+    // 分列 / 合并列（004 T1.9，Ribbon「Data Tools」面板；与表体右键菜单共用页面入口）
+    void onActionSplitColumnTriggered();
+    void onActionMergeColumnsTriggered();
+    // 分组聚合（004 T1.22，Ribbon「Data Tools」面板；与表体右键菜单共用页面入口）
+    void onActionGroupByTriggered();
+    // 转置 / 宽转长（004 T1.27，Ribbon「Data Tools」面板；与表体右键菜单共用页面入口）
+    void onActionTransposeTriggered();
+    void onActionMeltTriggered();
+    // 填充（005 T1.24，Ribbon「Edit」面板下拉；与表体右键「填充」子菜单、Ctrl+D 共用页面入口）
+    void onActionFillDownTriggered();
+    void onActionFillUpTriggered();
+    void onActionFillForwardTriggered();
+    void onActionFillBackwardTriggered();
+    void onActionFillSeriesTriggered();
+    // 数据校验（005 T1.25，Ribbon「Data Tools」面板；与表体右键菜单共用页面入口）
+    void onActionValidationRulesTriggered();
+    void onActionRunValidationTriggered();
+    // 单元格批注（005 T1.26，Ribbon「Edit」面板下拉；与表体右键菜单共用页面入口）
+    void onActionNoteTriggered();
+    void onActionDeleteNoteTriggered();
+    void onActionClearNotesTriggered();
+    // 列视图（006 T1.8，Ribbon「View」面板；与列头右键「列」子菜单共用页面入口）
+    void onActionFreezeColumnsTriggered();
+    void onActionHideColumnTriggered();
+    void onActionShowAllColumnsTriggered();
+    void onActionColumnViewDialogTriggered();
+    void onActionFreezeFirstColumnTriggered();
+    void onActionFreezeColumnsPromptTriggered();
+    void onActionUnfreezeColumnsTriggered();
+    // 定位（007 T1.7，Ribbon「View」面板；Ctrl+G 在 DADataTableView 红线5）
+    void onActionGotoCellTriggered();
+    // 撤销历史面板（005 T1.21，Ribbon「视图」页；入口选 (a) 点击即 raise，与现有交互一致）
+    void onActionShowUndoHistoryTriggered();
+    // 历史面板调整撤销深度：写回配置（dawork-config.xml）并施加到全部已打开数据页
+    void onUndoHistoryLimitChangeRequested(int limit);
     // 选中区样式反向同步 ribbon 控件
     void onTableStyleCurrentChanged(const DATableCellStyle& style);
     // 表格列显示格式
@@ -504,14 +548,14 @@ private:
     void initScripts();
     // 初始化Python工作流信号槽
     void initPyWorkflowConnections();
-    // 为 DataFrame 操作窗口的表头注入右键菜单
-    void setupDataFrameHeaderContextMenu(DADataOperateOfDataFrameWidget* w);
-    // 为数据管理树注入右键菜单（series 节点=列操作菜单，共用表头右键 action；
+    // 为数据管理树注入右键菜单（series 节点=列操作菜单，共用列操作 action；
     // 数据集条目=重命名/移除/导出菜单，复用 ribbon 数据标签页 action）
+    // 注：DataFrame 列头右键菜单已迁入 DAGui 的 DADataHeaderView（R12），
+    // controller 只保留 columnActionRequested 信号接线（见 onDataOperatePageCreated）
     void setupDataManagerTreeContextMenu(DADataManagerTreeWidget* w);
-    // 填充共用的列右键菜单项（表头右键与树右键共用）
+    // 填充共用的列右键菜单项（数据管理树 series 节点右键用）
     void populateColumnContextMenu(QMenu& menu);
-    // 在 DataFrame 操作窗口中选中指定列（replace 语义，供表头/树右键共用）
+    // 在 DataFrame 操作窗口中选中指定列（replace 语义，供树右键与列头菜单信号接线共用）
     void selectColumnInDataFrameWidget(DADataOperateOfDataFrameWidget* w, int col);
     // 显示统计绘图引导对话框并预选指定类型
     void showStatsChartGuide(DA::DAChartTypes type);

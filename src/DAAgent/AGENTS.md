@@ -276,7 +276,7 @@ chat.js 选项按钮 → `chatBridge.onUserSelect(answer)` → `DAAgentWebChanne
 
 ### 7.3 注册与执行
 
-- **内置工具插件**：20 个工具由独立插件 `plugins/DAAgentTools/` 提供。插件入口 `DAAgentToolsPlugin`（继承 `DAAbstractPlugin`，IID `org.da.abstract.plugin`）在 `initialize()` 中经 `core()->getAgentInterface()->registerTool(...)` 依次注册 20 个工具。继承关系：`DAAbstractAgentTool` → `DAAgentToolBase`（瘦，`DAAgent_API` 导出，数据/响应方法）→ 10 个非图表工具（5 数据 + 3 文件/报告 + 2 代码执行）；`DAAgentToolBase` → `DAAgentChartToolBase`（7 个图表方法）→ 10 个图表工具。
+- **内置工具插件**：21 个工具由独立插件 `plugins/DAAgentTools/` 提供。插件入口 `DAAgentToolsPlugin`（继承 `DAAbstractPlugin`，IID `org.da.abstract.plugin`）在 `initialize()` 中经 `core()->getAgentInterface()->registerTool(...)` 依次注册 21 个工具。继承关系：`DAAbstractAgentTool` → `DAAgentToolBase`（瘦，`DAAgent_API` 导出，数据/响应方法）→ 10 个非图表工具（5 数据 + 3 文件/报告 + 2 代码执行）；`DAAgentToolBase` → `DAAgentChartToolBase`（7 个图表方法）→ 11 个图表工具。
 - **第三方扩展**：领域工具插件可继承瘦 `DAAgentToolBase`（数据工具）或 `DAAgentChartToolBase`（图表工具），经 `DAAgentInterface::registerTool` 注入，无需改 DAAgent。跨 DLL 派生需要 `DAAgent_API` 导出宏（`DAAGENT_BUILD` 只在编译 DAAgent 库时定义，`DAAgentToolBase` 已 `DAAgent_API` 导出）。
 - 注册：`DAAgentModule::registerTool` → `m_tools[name]` → `m_bridge->setTools(m_tools)`；同时记录 provider（`dynamic_cast<QObject*>` 横转取 `tool->parent()`，即插件对象）到 `mToolProviders`，系统提示词 provider 经 `registerSystemPrompt(name, content, provider)` 显式传入。插件热卸载前 APP 层调用 `unregisterToolsByProvider` / `unregisterSystemPromptsByProvider` 按 provider 注销（必须先于插件实例销毁，否则 `m_tools` 悬空），注销后经 `setTools` 热更新全部存活桥。
 - 执行：`DAAgentBridge::executeTool()` 查表 → **try/catch 兜底**（工具抛异常时返回 `{success:false, error:...}`，避免 Bridge 崩溃导致子进程永久挂起）→ 回传 `tool_result` → 同时 emit `agentToolResult` 供 UI 展示。工具未设置 `success` 字段时自动补 `true`。
@@ -599,7 +599,7 @@ connect(dock, &DAAgentDockWidget::activeModelChangeRequested, agent, &DAAgentInt
 
 > 工具规格从手写 `QJsonObject`（OpenAI function schema）改为结构化值类型，消灭嵌套 JSON 的
 > 拼写错误盲区，获得编译期类型约束 + 注册期校验。**下游插件须同步迁移**（本项目内
-> `plugins/DAAgentTools/` 20 个工具已迁移）。
+> `plugins/DAAgentTools/` 21 个工具已迁移）。
 
 | 变更 | 旧 | 新 |
 |------|----|----|

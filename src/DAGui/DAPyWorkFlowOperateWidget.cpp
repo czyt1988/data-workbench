@@ -1224,6 +1224,27 @@ QAction* DAPyWorkFlowOperateWidget::getInnerAction(DAPyWorkFlowOperateWidget::In
 }
 
 /**
+ * @brief 获取可配置快捷键的内部action
+ *
+ * 这些action的默认快捷键在initActions中就地设置，经DAShortcutManager注册后可在「设置-快捷键」页自定义。
+ * 标记线action（十字线/水平线/垂直线/无标记线）是互斥的显示开关，不参与快捷键配置
+ * @return 可配置的action列表（已过滤未创建的空指针）
+ */
+QList< QAction* > DAPyWorkFlowOperateWidget::configurableActions() const
+{
+    const QList< QAction* > acts { d_ptr->mActionCopy,      d_ptr->mActionCut,     d_ptr->mActionPaste,
+                                    d_ptr->mActionDelete,   d_ptr->mActionCancel,  d_ptr->mActionSelectAll,
+                                    d_ptr->mActionZoomIn,   d_ptr->mActionZoomOut, d_ptr->mActionZoomFit };
+    QList< QAction* > res;
+    for (QAction* a : acts) {
+        if (a) {
+            res.append(a);
+        }
+    }
+    return res;
+}
+
+/**
  * @brief 迭代场景操作
  * @param fp 函数指：bool(DAPyWorkFlowGraphicsScene*)，返回false代表迭代结束，返回true，代表迭代继续
  * @sa FpScenesOpt

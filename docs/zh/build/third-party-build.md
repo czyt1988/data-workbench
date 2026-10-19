@@ -1,16 +1,6 @@
 # 第三方库构建
 
-本文档介绍 data-workbench 依赖的第三方库构建方法，第三方库是项目的基础组件，必须按正确顺序构建。
-
-本文档介绍 data-workbench 项目依赖的第三方库构建方法。第三方库使用 CMake 构建，需要按照特定顺序进行。
-
-## 主要功能特性
-
-**特性**
-
-- ✅ **统一构建**：除 zlib 外，其他库统一构建
-- ✅ **自动安装**：构建后自动安装到项目目录
-- ✅ **Qt 版本兼容**：支持 Qt5 和 Qt6
+本文档介绍 data-workbench 依赖的第三方库构建方法。第三方库使用 CMake 构建，需要按特定顺序构建。
 
 ## 第三方库列表
 
@@ -29,8 +19,9 @@
 | ctk | 精简化的 ctk 组件库（仅用到部分组件，仓库内直接 vendored，非 submodule） | 无依赖 | 统一构建 |
 | ordered-map | 有序 map 容器 | 无依赖 | 统一构建 |
 
-!!! info "submodule 与 vendored 的区别"
-    除 `ctk` 外，上表中的库均作为 git submodule 管理（见项目根目录 `.gitmodules`），克隆仓库后需执行 `git submodule update --init --recursive` 拉取。`ctk` 为仓库内直接 vendored 的精简版本（仅保留用到的组件），无需单独拉取。`DAWidgets` 也是 submodule（路径 `src/3rdparty/DAWidgets`），从 DACommonWidgets 提取，提供 DAColorPickerButton/DAPenEditWidget/DAPropertyItemWidget 等基础控件。
+> **ℹ️ submodule 与 vendored 的区别**
+>
+> 除 `ctk` 外，上表中的库均作为 git submodule 管理（见项目根目录 `.gitmodules`），克隆仓库后需执行 `git submodule update --init --recursive` 拉取。`ctk` 为仓库内直接 vendored 的精简版本（仅保留用到的组件），无需单独拉取。`DAWidgets` 也是 submodule（路径 `src/3rdparty/DAWidgets`），从 DACommonWidgets 提取，提供 DAColorPickerButton/DAPenEditWidget/DAPropertyItemWidget 等基础控件。
 
 ## 依赖关系图
 
@@ -62,8 +53,9 @@ flowchart TD
 - **quazip（蓝色节点）**：Qt ZIP 压缩库，依赖 zlib，必须在 zlib 安装后才能构建
 - **统一构建区域**：除 zlib 外的所有库（包括 quazip）可使用统一的 CMakeLists.txt 构建，无相互依赖顺序要求
 
-!!! warning "构建顺序要求"
-    由于 quazip 依赖 zlib，必须先独立构建并安装 zlib，然后再构建其他第三方库。
+> **⚠️ 构建顺序要求**
+>
+> 由于 quazip 依赖 zlib，必须先独立构建并安装 zlib，然后再构建其他第三方库。
 
 ## 构建步骤
 
@@ -95,17 +87,18 @@ cmake --build build --config Release --parallel
 cmake --build build --config Release --target install
 ```
 
-!!! tip "Qt 工具链文件路径"
-    请根据实际 Qt 安装路径修改 `qt.toolchain.cmake` 的路径。如果不使用管理员权限，可指定 `CMAKE_INSTALL_PREFIX`：
-    
-    ```powershell
-    # 指定自定义安装路径
-    # 适用于非管理员权限或需要安装到特定位置的情况
-    cmake -S . -B build -G Ninja `
-        -DCMAKE_BUILD_TYPE:STRING=Release `
-        -DCMAKE_INSTALL_PREFIX:PATH="C:\local\zlib" `
-        -DCMAKE_TOOLCHAIN_FILE:FILEPATH="D:\Qt\6.7.3\msvc2019_64\lib\cmake\Qt6\qt.toolchain.cmake"
-    ```
+> **💡 Qt 工具链文件路径**
+>
+> 根据实际 Qt 安装路径修改 `qt.toolchain.cmake` 的路径。如果不使用管理员权限，可指定 `CMAKE_INSTALL_PREFIX`：
+>
+> ```powershell
+> # 指定自定义安装路径
+> # 适用于非管理员权限或需要安装到特定位置的情况
+> cmake -S . -B build -G Ninja `
+>     -DCMAKE_BUILD_TYPE:STRING=Release `
+>     -DCMAKE_INSTALL_PREFIX:PATH="C:\local\zlib" `
+>     -DCMAKE_TOOLCHAIN_FILE:FILEPATH="D:\Qt\6.7.3\msvc2019_64\lib\cmake\Qt6\qt.toolchain.cmake"
+> ```
 
 ### 步骤二：构建其他第三方库
 
@@ -129,14 +122,15 @@ cmake --build build --config Release --parallel
 cmake --build build --config Release --target install
 ```
 
-!!! note "自动查找 zlib"
-    CMake 会自动通过 `find_package(ZLIB)` 查找已安装的 zlib。如果找不到，请设置环境变量：
-    
-    ```powershell
-    # 设置 zlib 安装路径环境变量
-    # 使 CMake 能定位 zlib 的头文件和库文件
-    $env:ZLIB_ROOT = "C:\local\zlib"
-    ```
+> **📝 自动查找 zlib**
+>
+> CMake 会自动通过 `find_package(ZLIB)` 查找已安装的 zlib。如果找不到，设置环境变量：
+>
+> ```powershell
+> # 设置 zlib 安装路径环境变量
+> # 使 CMake 能定位 zlib 的头文件和库文件
+> $env:ZLIB_ROOT = "C:\local\zlib"
+> ```
 
 ### 步骤三：验证安装
 
@@ -153,7 +147,7 @@ ls ..\bin_Release_qt*
 | 子目录 | 内容 |
 |--------|------|
 | `bin/` | 动态库 DLL/SO 文件 |
-| `lib/` | 铙入库和 CMake 配置文件 |
+| `lib/` | 静态库和 CMake 配置文件 |
 | `include/` | 头文件 |
 | `cmake/` | CMake 查找模块 |
 
@@ -175,7 +169,7 @@ ls ..\bin_Release_qt*
 
 ### 3. 编译和安装
 
-点击左侧工具栏的运行按钮（绿色三角形，`Ctrl+R`）进行编译和安装：
+点击左侧工具栏的运行按钮（绿色三角形，`Ctrl+R`）完成编译和安装：
 
 ![build-3rdparty-cmake-qtc](../../assets/PIC/build-3rdparty-cmake-qtc-03.png)
 

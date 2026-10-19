@@ -1,27 +1,12 @@
 # 功能定制与扩展能力
 
-本指南说明如何通过插件扩展 DAWorkBench 的界面和功能，包括添加菜单项、工具栏按钮、Dock 窗口、自定义节点等。
-
-## 主要功能特性
-
-**特性**
-
-- ✅ **界面扩展点**：Ribbon 区域、Docking 区域、Actions 管理、Commands 管理
-- ✅ **Ribbon 界面扩展**：添加 Category、Panel、Action 按钮
-- ✅ **Dock 窗口扩展**：创建自定义 Dock 窗口、布局管理
-- ✅ **菜单扩展**：添加上下文菜单、自定义触发逻辑
-- ✅ **快捷键扩展**：注册全局快捷键
-- ✅ **自定义节点类型**：注册节点元数据、创建自定义图元
-- ✅ **数据类型扩展**：注册自定义数据类型、创建数据对象
-- ✅ **事件监听与响应**：监听项目、数据、工作流事件
+这篇文档说明插件如何扩展 DAWorkBench 的界面和功能：添加菜单项、工具栏按钮、Dock 窗口、自定义节点等。
 
 ---
 
 ## 扩展点概览
 
-下面的 mermaid 图表展示了插件可用的各类扩展点：
-
-图表展示了插件可以扩展的界面、数据和功能三个维度的扩展点，以及它们之间的关系：
+下面的 mermaid 图表展示了插件可以扩展的界面、数据和功能三个维度的扩展点，以及它们之间的关系：
 
 ```mermaid
 graph TB
@@ -58,8 +43,6 @@ graph TB
     style DA fill:#e1f5fe
     style NF fill:#f3e5f5
 ```
-
-上述扩展点覆盖了界面、数据和功能三个维度，插件可以根据需求选择合适的扩展点进行集成。
 
 ---
 
@@ -314,8 +297,9 @@ bool MyPlugin::initialize()
 
 ## 自定义节点类型（旧 C++ 架构，仅参考）
 
-!!! warning "遗留架构 —— 当前推荐 Python-first `@NodeDef`"
-    下面 `registerNodePrototypes()` 用 `DANodeMetaData` 注册节点、`MyWorker` 继承 `DAAbstractNode` 重写 `createGraphicsItem()` 的写法属于**已废弃的 C++ 节点架构**。当前工作流节点统一用 Python `@NodeDef` 装饰器声明，节点外观通过 `NodeDisplay` 或 Python `paint()` 自定义，参考 `plugins/DASystemNodes/AGENTS.md`。本节仅作历史背景保留。
+> **⚠️ 遗留架构：当前推荐 Python-first `@NodeDef`**
+>
+> 下面 `registerNodePrototypes()` 用 `DANodeMetaData` 注册节点、`MyWorker` 继承 `DAAbstractNode` 重写 `createGraphicsItem()` 的写法属于**已废弃的 C++ 节点架构**。当前工作流节点统一用 Python `@NodeDef` 装饰器声明，节点外观通过 `NodeDisplay` 或 Python `paint()` 自定义，参考 `plugins/DASystemNodes/AGENTS.md`。本节仅作历史背景保留。
 
 ### 注册节点元数据（旧 C++）
 
@@ -477,10 +461,11 @@ bool MyPlugin::initialize()
 
 ### 监听工作流事件
 
-!!! note "工作流事件"
-    新的 Python-first 工作流架构中，工作流事件由 `DAPyWorkFlowManager` 通过信号驱动。
-    插件可通过 `DAPyWorkFlowManager` 的 `executionStarted()`、`executionFinished(bool)`、`nodeExecuted(QString, bool)` 等信号监听工作流执行状态。
-    具体用法参见 [工作流生命周期](../dev-guide/workflow/workflow-lifecycle.md)。
+> **📝 工作流事件**
+>
+> 新的 Python-first 工作流架构中，工作流事件由 `DAPyWorkFlowManager` 通过信号驱动。
+> 插件可通过 `DAPyWorkFlowManager` 的 `executionStarted()`、`executionFinished(bool)`、`nodeExecuted(QString, bool)` 等信号监听工作流执行状态。
+> 具体用法参见 [工作流生命周期](../dev-guide/workflow/workflow-lifecycle.md)。
 
 ---
 
@@ -573,6 +558,6 @@ bool MyPlugin::initialize()
 
 ## 下一步
 
-- [:material-book: 最佳实践](../reference/best-practices.md) - 开发最佳实践
-- [:material-help-circle: 常见问题](../reference/faq.md) - 常见问题解答
-- [:material-file-document: 贡献指南](../reference/contribution-guide.md) - 参与贡献
+- [📖 最佳实践](../reference/best-practices.md) - 开发最佳实践
+- [❓ 常见问题](../reference/faq.md) - 常见问题解答
+- [📄 贡献指南](../reference/contribution-guide.md) - 参与贡献

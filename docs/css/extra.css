@@ -43,7 +43,30 @@ body {
   padding: 0.5em 0.8em;
 }
 
-/* === Admonition Chinese Polish === */
+/* === Callout 提示框（引用块写法） ===
+   文档里的提示框统一写成「> **emoji 标题**」加正文，这样 GitHub、CSDN 等平台也认；
+   站点上再还原成带左边条和底色的提示框外观。相邻的提示框在 MkDocs 里会被并进同一个
+   引用块，用虚线把后一个标题分开，读起来仍是几个独立的框。 */
+.md-typeset blockquote:has(> p > strong:only-child) {
+  background-color: var(--md-code-bg-color);
+  border-left: 0.25rem solid var(--md-primary-fg-color);
+  border-radius: 0.2rem;
+  padding: 0.7rem 1rem;
+  font-size: 0.9rem;
+  line-height: 1.7;
+}
+
+.md-typeset blockquote:has(> p > strong:only-child) > p:not(:first-child):has(> strong:only-child) {
+  margin-top: 1em;
+  padding-top: 0.7em;
+  border-top: 1px dashed var(--md-default-fg-color--lighter);
+}
+
+.md-typeset blockquote > p > strong:only-child {
+  font-weight: 600;
+}
+
+/* === Admonition（历史写法兜底，新文档不再使用） === */
 .md-typeset .admonition,
 .md-typeset details {
   font-size: 0.9rem;

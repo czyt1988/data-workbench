@@ -1,24 +1,22 @@
 # DAPyWorkFlow 模块概述
 
-DAPyWorkFlow 是 Data Workbench 的新一代工作流引擎模块，采用 Python-first 设计理念，通过 Python 定义节点逻辑，C++ 负责可视化渲染和执行调度，实现高效的工作流编排和数据处理。
+DAPyWorkFlow 是 Data Workbench 的新一代工作流引擎模块。节点逻辑用 Python 定义，可视化渲染和执行调度由 C++ 负责，两层通过 pybind11 桥接。
 
 ## 主要功能特性
 
-**特性**
-
-- ✅ **Python-first 节点定义**：使用 `@NodeDef` 装饰器在 Python 中声明节点类型，无需编写 C++ 代码
-- ✅ **DAG 工作流模型**：基于有向无环图（DAG）描述工作流，自动拓扑排序和依赖解析
-- ✅ **双层架构**：Python 层负责节点逻辑，C++ 层负责可视化，通过 pybind11 无缝桥接
-- ✅ **信号驱动执行**：基于 `DASignalManager` 的事件驱动数据传播机制
-- ✅ **节点自动发现**：支持目录扫描和 entry_points 双模式自动发现插件节点
-- ✅ **可视化编辑**：完整的拖拽式节点编辑，支持连接、断开、undo/redo 操作
-- ✅ **插件扩展**：通过 `data_workbench.plugin` entry point 注册第三方节点
+- Python-first 节点定义：用 `@NodeDef` 装饰器在 Python 中声明节点类型，不需要写 C++ 代码
+- DAG 工作流模型：基于有向无环图（DAG）描述工作流，执行器按节点入度分类并逐个触发
+- 双层架构：Python 层负责节点逻辑，C++ 层负责可视化，通过 pybind11 无缝桥接
+- 信号驱动执行：基于 `DASignalManager` 的事件驱动数据传播机制
+- 节点自动发现：支持目录扫描和 entry_points 双模式自动发现插件节点
+- 可视化编辑：完整的拖拽式节点编辑，支持连接、断开、undo/redo 操作
+- 插件扩展：通过 `data_workbench.plugin` entry point 注册第三方节点
 
 ## 核心概念
 
 ### 双层架构
 
-DAPyWorkFlow 采用 Python/C++ 双层架构设计：
+DAPyWorkFlow 的架构分 Python 和 C++ 两层，中间是桥接层：
 
 | 层级 | 职责 | 主要组件 |
 |------|------|----------|
@@ -32,7 +30,7 @@ DAPyWorkFlow 采用 Python/C++ 双层架构设计：
 
 - **节点（Node）**：工作流的基本执行单元，通过 `@NodeDef` 装饰器定义
 - **连接（Connection）**：节点间的数据流向，由 `DAConnection` 描述
-- **拓扑排序**：执行前自动验证无环性，按依赖顺序执行节点
+- **节点调度**：`DAWorkflowExecutor` 按节点的入度、出度把节点分成全局节点、孤立节点和开始节点，逐个执行并在数据到齐时触发下游节点。`DAWorkflow.is_valid_dag()` 和 `topological_sort()` 提供无环校验和拓扑排序，供调用方自行使用，执行路径不调用
 
 ### Python 节点
 
@@ -150,8 +148,9 @@ DAPyWorkFlow 是原 `DAWorkFlow` 模块的完全重构版本，主要区别如�
 | **可视化** | `DAWorkFlowGraphicsScene` | `DAPyWorkFlowScene` |
 | **数据传递** | `DANodeLinkPoint` 连接点 | `DAConnection` + `DASignalManager` |
 
-!!! note "迁移说明"
-    旧模块的 `DAAbstractNode`、`DAWorkFlowGraphicsScene`、`DANodeLinkPoint` 等类已不再使用。新模块采用完全独立的类体系，不继承旧模块的任何基类。
+> **📝 迁移说明**
+>
+> 旧模块的 `DAAbstractNode`、`DAWorkFlowGraphicsScene`、`DANodeLinkPoint` 等类已不再使用。新模块采用完全独立的类体系，不继承旧模块的任何基类。
 
 ## 模块组成
 
@@ -159,7 +158,7 @@ DAPyWorkFlow 是原 `DAWorkFlow` 模块的完全重构版本，主要区别如�
 
 | 类名 | 职责 | 所在文件 |
 |------|------|----------|
-| `NodeDef` | 节点定义装饰器，收集 Input/Output/Parameter 声明并设置 `_node_descriptor` 属性 dict | `node_def.py` |
+| `NodeDef` | 节点定义装饰器，收集 Input/Output/Parameter 声明并把元数据写成类属性（`qualified_name`、`name`、`category`、`icon`、`inputs`、`outputs`、`parameters`） | `node_def.py` |
 | `NodeDisplay` | 节点渲染/显示属性 dataclass（icon、render_template、body_shape 等样式字段） | `node_def.py` |
 | `DAWorkflowNode` | 工作流节点基类，提供 `set_input_data`/`get_output_data` 等方法 | `node_def.py` |
 | `LinkPointStyle` | 连接点（端口）样式配置 dataclass | `node_def.py` |
@@ -174,7 +173,7 @@ DAPyWorkFlow 是原 `DAWorkFlow` 模块的完全重构版本，主要区别如�
 | `DAWorkflowState` | 工作流状态枚举 | `signal_manager.py` |
 | `DAWorkflowExecutor` | 工作流执行引擎 | `executor.py` |
 | `DAExecutorState` | 执行器状态枚举 | `executor.py` |
-| `DAWorkflowSerializer` | 工作流 JSON 序列化/反序列化 | `serializer.py` |
+| `DAWorkflowSerializer` | 工作流序列化/反序列化（dict / JSON / XML 元素） | `serializer.py` |
 | `NodeProxy` | 节点代理（语法糖），支持 `A >> B` 链式连接语法 | `syntax.py` |
 | `NodeOutputProxy` | 输出端口代理，支持 `A.out >> B.in` 端口级连接 | `syntax.py` |
 | `NodeInputProxy` | 输入端口代理，配合 NodeOutputProxy 使用 | `syntax.py` |
@@ -210,25 +209,26 @@ DAPyWorkFlow 是原 `DAWorkFlow` 模块的完全重构版本，主要区别如�
 | `DANodeParamSettingPanel` | 通用参数设置面板，基于 DAPropertyFormWidget | `DAGui/NodeSetting/DANodeParamSettingPanel.h` |
 | `DANodeParamSettingPanelFactory` | 参数面板单例工厂 | `DAGui/NodeSetting/DANodeParamSettingPanelFactory.h` |
 | `DANodeParamSettingPanelWidget` | QStackedWidget 调度器 | `DAGui/NodeSetting/DANodeParamSettingPanelWidget.h` |
-| `DAFormEditorRegistry` | 11种字段类型编辑器注册表 | `DACommonWidgets/DAFormEditorRegistry.h` |
+| `DAFormEditorRegistry` | 11 种字段类型编辑器注册表 | `DAGui/DAFormEditorRegistry.h` |
 
-!!! note "桥接层基础设施（位于 DAPyBindQt 模块）"
-    以下类虽然在工作流模块中广泛使用，但实际定义在 `src/DAPyBindQt/` 模块中：
-
-    | 类名 | 职责 | 所在文件 |
-    |------|------|----------|
-    | `DAPyGILGuard` | Python GIL RAII 管理（获取/释放） | `src/DAPyBindQt/DAPyGILGuard.h` |
-    | `DAPyJsonCast` | Python 对象 ↔ JSON 双向转换 | `src/DAPyBindQt/` |
-    | `DAPythonSignalHandler` | Python 信号 ↔ Qt 跨线程桥接 | `src/DAPyBindQt/` |
+> **📝 桥接层基础设施（位于 DAPyBindQt 模块）**
+>
+> 以下类虽然在工作流模块中广泛使用，但实际定义在 `src/DAPyBindQt/` 模块中：
+>
+> | 类名 | 职责 | 所在文件 |
+> |------|------|----------|
+> | `DAPyGILGuard` | Python GIL RAII 管理（获取/释放） | `src/DAPyBindQt/DAPyGILGuard.h` |
+> | `DAPyJsonCast` | Python 对象 ↔ JSON 双向转换 | `src/DAPyBindQt/` |
+> | `DAPythonSignalHandler` | Python 信号 ↔ Qt 跨线程桥接 | `src/DAPyBindQt/` |
 
 ## 快速上手
 
 ### 定义一个简单的节点
 
-以下示例展示如何使用 `@NodeDef` 装饰器定义一个数据过滤节点：
+下面的示例用 `@NodeDef` 装饰器定义一个数据过滤节点：
 
 ```python
-from DAWorkFlowPy import NodeDef, Input, Output, Parameter
+from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
 import pandas as pd
 
 @NodeDef(name="数据过滤", category="数据处理", icon="filter")
@@ -248,12 +248,16 @@ class DataFilter:
         filtered = Output("DataFrame", description="筛选后的数据")
         count = Output("int", description="符合条件的行数")
 
+    def __init__(self):
+        super().__init__()
+        self._output_data = {}
+
     def execute(self, inputs, params):
         """执行节点逻辑
 
         :param inputs: 字典，包含所有输入端口的数据
         :param params: 字典，包含所有参数值
-        :return: 字典，包含所有输出端口的数据
+        :return: bool，True 表示执行成功；输出数据写入 self._output_data
         """
         df = inputs["data"]
         column = params["column"]
@@ -262,49 +266,56 @@ class DataFilter:
         # 筛选数据
         filtered_df = df[df[column] > threshold]
 
-        return {
-            "filtered": filtered_df,
-            "count": len(filtered_df)
-        }
+        # 输出数据必须写入 _output_data，execute() 的返回值只表示成功与否
+        self._output_data["filtered"] = filtered_df
+        self._output_data["count"] = len(filtered_df)
+        return True
 ```
 
-!!! tip "嵌套类模式"
-    使用 `class Inputs` 和 `class Outputs` 嵌套类声明端口是推荐的标准做法。这种模式下，端口通过类属性声明，代码结构清晰，便于 IDE 自动补全。
+> **💡 嵌套类模式**
+>
+> 用 `class Inputs` 和 `class Outputs` 嵌套类声明端口是推荐的标准做法：端口通过类属性声明，便于 IDE 自动补全。
 
 ### 注册和使用节点
 
+发现节点之后，按 `qualified_name` 取出节点类，实例化后加入工作流，再用 `DAConnection` 把端口连起来：
+
 ```python
-from DAWorkFlowPy import DANodeRegistry, DAWorkflow, DAConnection
+from DAWorkbench.DAWorkFlowPy import DANodeRegistry, DAWorkflow, DAConnection
 
 # 创建注册表并发现节点
 registry = DANodeRegistry()
 registry.discover(scan_paths=["/path/to/plugins"], use_entry_points=True)
 
-# 获取节点类（含 _node_descriptor 属性 dict）
+# 获取节点类（从注册表按 qualified_name 取回装饰后的类）
 node_cls = registry.get_descriptor("my_module.DataFilter")
 
-# 创建工作流
+# 创建工作流，加入两个节点实例
 workflow = DAWorkflow(name="数据处理流程")
 
-# 创建节点实例
-node1 = DataFilter()
-node1._input_data["column"] = "temperature"
-node1._input_data["threshold"] = 25.0
-workflow.add_node(node1)
+filter_node = node_cls()
+filter_node.column = "temperature"   # 参数值写成实例属性即可
+filter_node.threshold = 25.0
+workflow.add_node(filter_node)
 
-# 添加连接
+clean_node = node_cls()
+workflow.add_node(clean_node)
+
+# 添加连接：filter_node 的 filtered 输出接到 clean_node 的 data 输入
 conn = DAConnection(
-    source_node_id=node1.node_id,
+    source_node_id=filter_node.node_id,
     source_output_channel="filtered",
-    target_node_id=node2.node_id,
+    target_node_id=clean_node.node_id,
     target_input_channel="data"
 )
 workflow.add_connection(conn)
 
-# 验证 DAG 有效性
+# 校验 DAG 有效性（执行器不会自行校验）
 if workflow.is_valid_dag():
     print("工作流有效，可以执行")
 ```
+
+`add_node()` 在实例没有 `node_id` 时按 `qualified_name` 加序号自动分配，并把实例存进 `_nodes`；`add_connection()` 校验两端节点存在、端口对不重复连接。`is_valid_dag()` 只在调用方主动调用时执行，`DAWorkflowExecutor` 不走这条路径。
 
 ## 相关文档索引
 

@@ -1,12 +1,12 @@
 # Qwt库序列化实现指南
 
-Qwt 库序列化实现指南提供 QwtPlotItem 图表项的完整序列化方案，采用工厂模式和注册机制实现类型扩展。
+本文给出 QwtPlotItem 图表项的完整序列化方案，用工厂模式和注册机制支持类型扩展。
 
 ## 1. 概述
 
 ### 1.1 Qwt序列化的挑战
 
-Qwt（Qt Widgets for Technical Applications）是一个用于绘制二维图表的 Qt 扩展库。在 Data Workbench 项目中，我们需要将 Qwt 的图表项（QwtPlotItem）序列化到项目文件中，这面临以下挑战：
+Qwt（Qt Widgets for Technical Applications）是一个用于绘制二维图表的 Qt 扩展库。在 Data Workbench 项目中，Qwt 的图表项（QwtPlotItem）需要序列化到项目文件中，这面临以下挑战：
 
 1. **类型多样性**：Qwt 提供了多种图表项类型（曲线、网格、标记、柱状图等）
 2. **无内置序列化**：Qwt 类本身不提供序列化支持
@@ -15,7 +15,7 @@ Qwt（Qt Widgets for Technical Applications）是一个用于绘制二维图表�
 
 ### 1.2 整体设计思路
 
-Data Workbench 采用以下架构实现 Qwt 序列化，通过分层设计将调用、管理、工厂、操作分离。下图展示了各层的职责关系：
+Data Workbench 的 Qwt 序列化分为四层，把调用、管理、工厂和操作分开。下图是各层的职责关系：
 
 ```mermaid
 graph TB
@@ -49,7 +49,7 @@ graph TB
     Factory --> Operators
 ```
 
-上图展示了四层架构设计：
+上图展示了四层架构：
 - **序列化调用层**：通过 `DAZipArchiveTask_ChartItem` 触发序列化操作
 - **序列化管理器**：`DAChartItemSerialize` 提供序列化入口和类型注册
 - **工厂模式**：`DAChartPlotItemFactory` 根据 RTTI 创建对应类型的对象
@@ -66,7 +66,7 @@ graph TB
 
 ### 2.1 DAChartItemSerialize - 序列化管理器
 
-[DAChartSerialize.h](../../../../src/DAFigure/DAChartSerialize.h) 定义了 QwtPlotItem 的序列化管理器。以下代码展示了核心接口定义：
+`src/DAFigure/DAChartSerialize.h` 定义了 QwtPlotItem 的序列化管理器。以下代码展示了核心接口定义：
 
 ```cpp title="DAChartItemSerialize 类定义"
 class DAFIGURE_API DAChartItemSerialize
@@ -155,7 +155,7 @@ int DAChartItemSerialize::getRtti(const QByteArray& byte) const noexcept
 
 ### 2.2 DAChartPlotItemFactory - 工厂模式
 
-[DAChartPlotItemFactory.h](../../../../src/DAFigure/DAChartPlotItemFactory.h) 实现了 QwtPlotItem 的工厂模式。
+`src/DAFigure/DAChartPlotItemFactory.h` 实现了 QwtPlotItem 的工厂模式。
 
 ```cpp title="DAChartPlotItemFactory 类定义"
 class DAChartPlotItemFactory
@@ -200,7 +200,7 @@ static QHash<int, DAChartPlotItemFactory::FpItemCreate> initDAChartPlotItemFacto
 
 ### 2.3 DAChartItemsManager - 图表项管理器
 
-[DAChartItemsManager.h](./../../../src/DAGui/DAChartItemsManager.h) 用于管理图表项与唯一标识符的映射关系。
+`src/DAGui/Chart/DAChartItemsManager.h` 用于管理图表项与唯一标识符的映射关系。
 
 ```cpp title="DAChartItemsManager 类定义"
 class DAGUI_API DAChartItemsManager
@@ -328,23 +328,26 @@ if (DA::gc_dachart_magic_mark3 != tmp1) {
 | RTTI 值 | 类型 | 说明 |
 |---------|------|------|
 | 5 | QwtPlotCurve | 曲线图 |
-| 6 | QwtPlotGrid | 网格 |
-| 7 | QwtPlotScaleItem | 刻度项 |
-| 8 | QwtPlotLegendItem | 图例项 |
-| 9 | QwtPlotMarker | 标记 |
-| 10 | QwtPlotSpectroCurve | 光谱曲线 |
-| 11 | QwtPlotIntervalCurve | 区间曲线 |
-| 12 | QwtPlotHistogram | 直方图 |
-| 13 | QwtPlotSpectrogram | 光谱图 |
-| 14 | QwtPlotGraphicItem | 图形项 |
-| 15 | QwtPlotTradingCurve | 交易曲线 |
-| 16 | QwtPlotBarChart | 柱状图 |
-| 17 | QwtPlotMultiBarChart | 多柱状图 |
-| 18 | QwtPlotShapeItem | 形状项 |
-| 19 | QwtPlotTextLabel | 文本标签 |
-| 20 | QwtPlotZoneItem | 区域项 |
-| 21 | QwtPlotVectorField | 向量场 |
-| 自定义 | QwtPlotArrowMarker | 箭头标记 |
+| 1 | QwtPlotGrid | 网格 |
+| 2 | QwtPlotScaleItem | 刻度项 |
+| 3 | QwtPlotLegendItem | 图例项 |
+| 4 | QwtPlotMarker | 标记 |
+| 6 | QwtPlotSpectroCurve | 光谱曲线 |
+| 7 | QwtPlotIntervalCurve | 区间曲线 |
+| 8 | QwtPlotHistogram | 直方图 |
+| 9 | QwtPlotSpectrogram | 光谱图 |
+| 10 | QwtPlotGraphicItem | 图形项 |
+| 11 | QwtPlotTradingCurve | 交易曲线 |
+| 12 | QwtPlotBarChart | 柱状图 |
+| 13 | QwtPlotMultiBarChart | 多柱状图 |
+| 14 | QwtPlotShapeItem | 形状项 |
+| 15 | QwtPlotTextLabel | 文本标签 |
+| 16 | QwtPlotZoneItem | 区域项 |
+| 17 | QwtPlotVectorField | 向量场 |
+| 18 | QwtPlotArrowMarker | 箭头标记 |
+| 19 | QwtPlotBoxChart | 箱体图 |
+| 1100 | DADataProbeMarker | 数据探针标记（项目自定义） |
+| 1101 | DAChartTextMarker | 文本标记（项目自定义） |
 
 ### 4.2 序列化函数注册机制
 
@@ -601,7 +604,7 @@ DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtIntervalSample& item);
 class MyCustomPlotItem : public QwtPlotItem
 {
 public:
-    // 定义自定义 RTTI 值（建议使用 10000 以上的值避免冲突）
+    // 定义自定义 RTTI 值（从 QwtPlotItem::Rtti_PlotUserItem（1000）起分配，避免与 Qwt 内置值冲突）
     enum { Rtti_MyCustomPlotItem = 10001 };
 
     virtual int rtti() const override
@@ -919,7 +922,7 @@ void initializeMyPlugin()
 
 ### 6.1 DAGuiEnumStringUtils 机制
 
-[DAGuiEnumStringUtils.h](../../../../src/DAGui/DAGuiEnumStringUtils.h) 提供了枚举与字符串之间的转换功能，用于 XML 配置文件的读写。
+`src/DAGui/DAGuiEnumStringUtils.h` 提供了枚举与字符串之间的转换功能，用于 XML 配置文件的读写。
 
 ```cpp title="枚举转换使用"
 // 使用宏声明枚举转换
@@ -932,7 +935,7 @@ QwtPlotItem::RttiValues rtti = stringToEnum(str, QwtPlotItem::Rtti_PlotItem);
 
 ### 6.2 添加新枚举支持
 
-如果自定义 PlotItem 需要在 XML 中使用 RTTI 值，需要添加枚举转换支持：
+如果自定义 PlotItem 需要在 XML 中使用 RTTI 值，要添加枚举转换支持：
 
 ```cpp title="添加枚举转换支持"
 // 在 DAGuiEnumStringUtils.h 中添加
@@ -951,13 +954,15 @@ DA_ENUM_STRING_IMPLEMENT(MyCustomPlotItem::MyCustomEnum)
 
 ### 7.1 序列化后数据丢失
 
-!!! warning "问题"
-    反序列化后某些属性为默认值。
+> **⚠️ 问题**
+>
+> 反序列化后某些属性为默认值。
 
-!!! tip "解决方案"
-    1. 检查是否正确调用了基类的序列化操作符
-    2. 确保所有属性都被写入和读取
-    3. 验证魔数标记是否正确
+> **💡 解决方案**
+>
+> 1. 检查是否正确调用了基类的序列化操作符
+> 2. 确保所有属性都被写入和读取
+> 3. 验证魔数标记是否正确
 
 ```cpp title="正确做法"
 // 正确做法：先序列化基类
@@ -967,11 +972,13 @@ out << item->getCustomProperty();               // 派生类属性
 
 ### 7.2 版本兼容性问题
 
-!!! warning "问题"
-    旧版本文件无法在新版本中加载。
+> **⚠️ 问题**
+>
+> 旧版本文件无法在新版本中加载。
 
-!!! tip "解决方案"
-    使用版本号进行条件处理：
+> **💡 解决方案**
+>
+> 使用版本号进行条件处理：
 
 ```cpp title="版本兼容处理"
 QDataStream& operator>>(QDataStream& in, MyPlotItem* item)
@@ -1002,12 +1009,14 @@ QDataStream& operator>>(QDataStream& in, MyPlotItem* item)
 
 ### 7.3 内存泄漏问题
 
-!!! warning "问题"
-    反序列化时创建的对象没有被正确释放。
+> **⚠️ 问题**
+>
+> 反序列化时创建的对象没有被正确释放。
 
-!!! tip "解决方案"
-    1. 序列化框架会接管对象的所有权
-    2. 如果手动创建对象，确保正确管理生命周期
+> **💡 解决方案**
+>
+> 1. 序列化框架会接管对象的所有权
+> 2. 如果手动创建对象，确保正确管理生命周期
 
 ```cpp title="内存管理"
 // 正确：让框架管理
@@ -1022,29 +1031,30 @@ in >> item;  // 如果后续不使用，会泄漏
 
 ### 7.4 RTTI 冲突问题
 
-!!! warning "问题"
-    自定义 RTTI 值与现有值冲突。
+> **⚠️ 问题**
+>
+> 自定义 RTTI 值与现有值冲突。
 
-!!! tip "解决方案"
-    1. 使用 10000 以上的值作为自定义 RTTI
-    2. 在项目中统一管理 RTTI 分配
+> **💡 解决方案**
+>
+> 1. 从 `QwtPlotItem::Rtti_PlotUserItem`（1000）起分配自定义 RTTI，项目的 `DADataProbeMarker`/`DAChartTextMarker` 分别取 +100 和 +101
+> 2. 在项目中统一管理 RTTI 分配
 
 ```cpp title="RTTI 分配建议"
 // RTTI 分配建议范围
-// 1-99:    Qwt 内置类型
-// 100-999: DA 项目扩展类型
-// 1000+:   插件自定义类型
+// 0-19:    Qwt 内置类型（见 QwtPlotItem::RttiValues）
+// 1000+:   项目与插件自定义类型（QwtPlotItem::Rtti_PlotUserItem 起）
 ```
 
 ## 8. 相关文件索引
 
 | 文件 | 说明 |
 |------|------|
-| [DAChartSerialize.h](../../../../src/DAFigure/DAChartSerialize.h) | 序列化管理器头文件 |
-| [DAChartSerialize.cpp](../../../../src/DAFigure/DAChartSerialize.cpp) | 序列化管理器实现 |
-| [DAChartPlotItemFactory.h](../../../../src/DAFigure/DAChartPlotItemFactory.h) | 工厂模式头文件 |
-| [DAChartPlotItemFactory.cpp](../../../../src/DAFigure/DAChartPlotItemFactory.cpp) | 工厂模式实现 |
-| [DAChartItemsManager.h](./../../../src/DAGui/DAChartItemsManager.h) | 图表项管理器 |
-| [DAGuiEnumStringUtils.h](../../../../src/DAGui/DAGuiEnumStringUtils.h) | 枚举字符串转换 |
-| [DAZipArchiveTask_ChartItem.h](../../../../src/DAGui/DAZipArchiveTask_ChartItem.h) | 图表项归档任务 |
-| [DAZipArchiveTask_ChartItem.cpp](../../../../src/DAGui/DAZipArchiveTask_ChartItem.cpp) | 图表项归档任务实现 |
+| `src/DAFigure/DAChartSerialize.h` | 序列化管理器头文件 |
+| `src/DAFigure/DAChartSerialize.cpp` | 序列化管理器实现 |
+| `src/DAFigure/DAChartPlotItemFactory.h` | 工厂模式头文件 |
+| `src/DAFigure/DAChartPlotItemFactory.cpp` | 工厂模式实现 |
+| `src/DAGui/Chart/DAChartItemsManager.h` | 图表项管理器 |
+| `src/DAGui/DAGuiEnumStringUtils.h` | 枚举字符串转换 |
+| `src/DAGui/DAZipArchiveTask_ChartItem.h` | 图表项归档任务 |
+| `src/DAGui/DAZipArchiveTask_ChartItem.cpp` | 图表项归档任务实现 |

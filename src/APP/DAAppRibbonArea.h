@@ -279,11 +279,18 @@ private:
     SARibbonPanel* mPannelDataframeOperateFormat { nullptr };                ///< 显示格式面板
     SARibbonLineWidgetContainer* mComboxDisplayFormatContainer { nullptr };  ///< 显示格式选择器container
     DATableDisplayFormatComboBox* mComboxDisplayFormat { nullptr };          ///< 列显示格式选择器
+    // 编辑 panel（002 T1.4：查找/替换；005 填充也进此面板）
+    SARibbonPanel* mPannelDataframeOperateEdit { nullptr };                  ///< 编辑面板
+    // 数据工具 panel（004：计算列/分列/合列/分组/转置/melt）
+    SARibbonPanel* mPannelDataframeOperateDataTools { nullptr };            ///< 数据工具面板
+    SARibbonPanel* mPannelDataframeOperateView { nullptr };                   ///< 视图面板（006 T1.8：冻结/隐藏/显示所有列/列视图）
+    QMenu* mMenuFreezeColumns { nullptr };                                    ///< 冻结列下拉子菜单（挂在 actionFreezeColumns 下）
     // 表格样式 category
     SARibbonCategory* mCategoryDataframeStyle { nullptr };    ///< dataframe表格样式category
     SARibbonPanel* mPannelDataframeStyleFill { nullptr };     ///< 底色面板
     SARibbonPanel* mPannelDataframeStyleFont { nullptr };     ///< 字体面板
     SARibbonPanel* mPannelDataframeStyleClear { nullptr };    ///< 清除面板
+    SARibbonPanel* mPannelDataframeStyleConditional { nullptr };  ///< 条件格式面板（003 T1.5）
     SARibbonColorToolButton* mBtnTableFillColor { nullptr };  ///< 表格底色按钮
     DAFontEditPannelWidget* mWidgetTableFont { nullptr };     ///< 表格字体编辑面板
     //----------------------------------------------------
@@ -352,6 +359,8 @@ private:
     QMenu* mMenuViewLineMarkers { nullptr };                   ///< 视图标记线
     QMenu* mMenuInsertRow { nullptr };                         ///< 针对insertrow的action menu
     QMenu* mMenuInsertColumn { nullptr };                      ///< 这对insertcol的action menu
+    QMenu* mMenuFill { nullptr };                              ///< 填充下拉子菜单（005 T1.24，挂在 actionFill 下）
+    QMenu* mMenuNote { nullptr };                              ///< 批注下拉子菜单（005 T1.26，挂在 actionNote 下）
     QMenu* mMenuChartPickSetting { nullptr };                  ///< chart的picker设置
     QMenu* mMenuChartLegendPosition { nullptr };               ///< chart的图例位置菜单（挂在actionChartEnableLegend下）
 };

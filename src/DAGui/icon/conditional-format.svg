@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px"
+	 width="200px" height="200px" viewBox="0 0 200 200" xml:space="preserve">
+	<!-- 条件格式：3x3 表格网格 + 按条件着色的单元格（浅蓝/橙红语义填充）。
+	     官方色板：网格 #727272（中灰）、底色 #FFFFFF、次级填充 #BDCDE8（浅蓝）、
+	     强调/命中 #CE6043（橙红）；禁渐变/阴影/文字（icon-ui-design-guide §4.1） -->
+	<rect x="20" y="20" width="160" height="160" fill="#FFFFFF"/>
+	<rect x="73" y="20" width="54" height="53" fill="#BDCDE8"/>
+	<rect x="127" y="73" width="53" height="54" fill="#CE6043"/>
+	<rect x="20" y="127" width="53" height="53" fill="#BDCDE8"/>
+	<g fill="none" stroke="#727272" stroke-width="8" stroke-linecap="butt">
+		<rect x="20" y="20" width="160" height="160"/>
+		<line x1="73" y1="20" x2="73" y2="180"/>
+		<line x1="127" y1="20" x2="127" y2="180"/>
+		<line x1="20" y1="73" x2="180" y2="73"/>
+		<line x1="20" y1="127" x2="180" y2="127"/>
+	</g>
+</svg>

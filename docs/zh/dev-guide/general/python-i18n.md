@@ -1,9 +1,10 @@
 # 脚本的国际化
 
-Python 脚本国际化模块提供基于 GNU gettext 标准的多语言支持方案，实现脚本文本的翻译和本地化。
+Python 脚本国际化模块基于 GNU gettext 标准提供多语言支持，覆盖脚本文本的翻译和本地化。
 
-!!! example "示例"
-    脚本的国际化可参考插件`plugins/DataAnalysis/PyScripts/DADataAnalysisGui/i18n/`
+> **📌 示例**
+>
+> 脚本的国际化可参考插件 `plugins/DataAnalysis/PyScripts/DADataAnalysisGui/i18n/`
 
 ## 概述
 
@@ -21,7 +22,7 @@ DAWorkBench 的 Python 脚本使用 GNU gettext 标准实现国际化（i18n）�
 | 文件类型 | 说明 |
 |---------|------|
 | `.pot` | 翻译模板文件，从代码中提取的所有待翻译文本集合，不关联具体语言 |
-| `.po` | 翻译文件，记录"原文本 -> 目标语言文本"的映射关系 |
+| `.po` | 翻译文件，记录「原文本 -> 目标语言文本」的映射关系 |
 | `.mo` | 编译文件，`.po` 的二进制版本，程序运行时加载 |
 
 ## 国际化目录结构
@@ -46,14 +47,15 @@ DAWorkBench 的 Python 脚本使用 GNU gettext 标准实现国际化（i18n）�
 └── xxx.py                 # 库的其他业务逻辑（使用_()翻译文本）
 ```
 
-!!! note "文件名约定"
-    `.po` 和 `.mo` 文件名应与 `DOMAIN` 保持一致。例如 `DADataAnalysisGui` 插件使用 `DADataAnalysisGui.po` / `DADataAnalysisGui.mo`。
+> **📝 文件名约定**
+>
+> `.po` 和 `.mo` 文件名应与 `DOMAIN` 保持一致。比如 `DADataAnalysisGui` 插件使用 `DADataAnalysisGui.po` / `DADataAnalysisGui.mo`。
 
-1. 在你的插件脚本目录下创建一个`i18n`文件夹，并创建一个`__init__.py`文件，代表这个目录为国际化目录，`__init__.py`文件可为空
+1. 在插件脚本目录下创建 `i18n` 文件夹和 `__init__.py` 文件，表示这是一个国际化目录，`__init__.py` 可以为空
 
-2. `i18n`文件夹下创建一个`core.py`，其内容如下：
+2. `i18n` 文件夹下创建 `core.py`，内容如下：
 
-以下代码展示了国际化核心模块的实现，包含语言检测、翻译加载、回调机制等功能：
+以下代码是国际化核心模块的实现：
 
 ```python
     # -*- coding: utf-8 -*-
@@ -204,7 +206,7 @@ def setup_i18n(
     return trans
 ```
 
-上述代码实现了国际化的核心功能：
+三个函数的分工：
 - `get_system_language()`：检测系统语言，支持环境变量、系统 locale、Windows API 三种方式
 - `get_available_languages()`：获取已存在的翻译文件列表
 - `setup_i18n()`：初始化翻译，加载对应语言的 .mo 文件并安装到全局命名空间
@@ -227,8 +229,9 @@ print(_("Data is not DataFrame type"))  # cn:数据不是DataFrame类型
 
 执行上述代码后，文本会根据系统语言自动翻译，如果翻译不存在则显示原文本（英文）。
 
-!!! warning "源文本方向"
-    **禁止**在 `_()` 中直接写中文：`_("没有选中数据")` 是错误写法。源文本必须是英文，中文翻译通过 `.po` 文件提供，`# cn:` 注释仅用于辅助 `update_po.py` 工具自动填充 `.po` 翻译。
+> **⚠️ 源文本方向**
+>
+> **禁止**在 `_()` 中直接写中文：`_("没有选中数据")` 是错误写法。源文本必须是英文，中文翻译通过 `.po` 文件提供，`# cn:` 注释仅用于辅助 `update_po.py` 工具自动填充 `.po` 翻译。
 
 ## 节点包（@NodeDef）i18n
 
@@ -238,14 +241,14 @@ print(_("Data is not DataFrame type"))  # cn:数据不是DataFrame类型
 
 | 字段 | 是否翻译 | 原因 |
 |------|---------|------|
-| `@NodeDef(name=...)` | ❌ **不翻译** | `name` 参与 `qualified_name`（如 `DASystemNodes.Delay`）构成，翻译会破坏已存工程的节点匹配和序列化 |
-| `@NodeDef(category=...)` | ✅ 翻译 | `category` 仅用于节点工具箱分类显示，不参与序列化 |
-| `@NodeDef(description=...)` | ✅ 翻译 | 节点说明文本，显示在 tooltip 中 |
-| `Parameter(description=...)` | ✅ 翻译 | 显示在属性面板 |
-| `Input/Output(description=...)` | ✅ 翻译 | 显示在端口悬停提示 |
+| `@NodeDef(name=...)` | **不翻译** | `name` 参与 `qualified_name`（如 `DASystemNodes.Delay`）构成，翻译会破坏已存工程的节点匹配和序列化 |
+| `@NodeDef(category=...)` | 翻译 | `category` 仅用于节点工具箱分类显示，不参与序列化 |
+| `@NodeDef(description=...)` | 翻译 | 节点说明文本，显示在 tooltip 中 |
+| `Parameter(description=...)` | 翻译 | 显示在属性面板 |
+| `Input/Output(description=...)` | 翻译 | 显示在端口悬停提示 |
 | 类 docstring | 改为英文 | 作为 `description` 的降级回退（不经过 `_()` 翻译），显式传 `description` 参数可获翻译能力 |
-| `paint()` 中的硬编码文本 | ✅ 翻译 | 直接绘制到节点画面，用户可见 |
-| `execute()` 中的日志 | ❌ 不翻译 | 日志保持英文便于检索 |
+| `paint()` 中的硬编码文本 | 翻译 | 直接绘制到节点画面，用户可见 |
+| `execute()` 中的日志 | 不翻译 | 日志保持英文便于检索 |
 
 ### setup_i18n() 调用时机
 
@@ -256,7 +259,7 @@ print(_("Data is not DataFrame type"))  # cn:数据不是DataFrame类型
 # -*- coding: utf-8 -*-
 """DASystemNodes - System-level workflow node package."""
 
-# ⚠️ 必须在节点模块导入之前调用 setup_i18n()
+# 必须在节点模块导入之前调用 setup_i18n()
 from .i18n.core import setup_i18n
 setup_i18n()
 
@@ -277,10 +280,10 @@ from DAWorkbench.DAWorkFlowPy import NodeDef, Input, Output, Parameter
 
 
 @NodeDef(
-    name="Delay",                            # ❌ name 保持英文，不翻译
-    category=_("System / Flow Control"),     # cn:系统 / 流程控制  ✅ category 翻译
+    name="Delay",                            # name 保持英文，不翻译
+    category=_("System / Flow Control"),     # cn:系统 / 流程控制
     icon="",
-    description=_("Delays data propagation by a specified number of seconds"),  # cn:延迟指定秒数后传递数据  ✅ description 翻译
+    description=_("Delays data propagation by a specified number of seconds"),  # cn:延迟指定秒数后传递数据
 )
 class DelayNode:
     """Delay for a specified number of seconds before passing data downstream."""
@@ -291,7 +294,7 @@ class DelayNode:
         min=0.0,
         step=0.1,
         decimals=2,
-        description=_("Delay in seconds"),   # cn:延迟秒数  ✅ description 翻译
+        description=_("Delay in seconds"),   # cn:延迟秒数
     )
 
     class Inputs:
@@ -323,7 +326,7 @@ class DelayNode:
 ```python
 def paint(self, painter, body_rect):
     x, y, w, h = body_rect
-    # ✅ 用 _() 包裹显示文本
+    # 用 _() 包裹显示文本
     lines = getattr(self, "_display_lines", [])
     if not lines:
         lines = [_("(no data)")]  # cn:(无数据)
@@ -345,19 +348,19 @@ PYTHON_FILES=$(find "${PROJECT_ROOT}" -name "*.py" \
 
 ### 参考实现
 
-- `plugins/DASystemNodes/PyScripts/DASystemNodes/i18n/` — 节点包 i18n 标杆实现（8 节点）
-- `plugins/DataAnalysis/PyScripts/DADataAnalysisNodes/i18n/` — 数据分析节点包 i18n（21 节点）
-- `plugins/DataAnalysis/PyScripts/DADataAnalysisGui/i18n/` — GUI 包 i18n 标杆实现
+- `plugins/DASystemNodes/PyScripts/DASystemNodes/i18n/`：节点包 i18n 标杆实现（8 节点）
+- `plugins/DataAnalysis/PyScripts/DADataAnalysisNodes/i18n/`：数据分析节点包 i18n（21 节点）
+- `plugins/DataAnalysis/PyScripts/DADataAnalysisGui/i18n/`：GUI 包 i18n 标杆实现
 
 ## 生成语言模板文件
 
-通过`xgettext.exe`可以生成语言文件模板`.pot`，这个工具是GNU gettext的组成部分，你可以单独下载，一般你安装了git，它会自带这个工具。
+`xgettext.exe` 用来生成语言文件模板 `.pot`，它是 GNU gettext 的组成部分，可以单独下载，装了 Git 通常会自带这个工具。
 
-你可以通过everything搜索xgettext，看看是否系统已经有安装这个工具
+可以用 everything 搜索 xgettext，确认系统里是否已经装了它。
 
-例如我计算机的xgettext位于此目录下：C:\Program Files\Git\usr\bin\xgettext.exe
+本机的 xgettext 位于此目录下：C:\Program Files\Git\usr\bin\xgettext.exe
 
-那么你可以像下面这样调用xgettext.exe
+xgettext.exe 的调用方式如下：
 
 以下命令从 Python 脚本中提取所有 `_()` 包裹的文本，生成翻译模板文件：
 
@@ -367,7 +370,7 @@ PYTHON_FILES=$(find "${PROJECT_ROOT}" -name "*.py" \
 
 执行上述命令后，`dataframe_cleaner.py` 中所有 `_()` 标记的文本被提取到 `DADataAnalysisGui.pot` 文件中。
 
-xgettext的参数说明：
+xgettext 的参数说明如下：
 
 以下命令展示了 xgettext 的基本语法结构：
 
@@ -396,7 +399,7 @@ xgettext -d mylib -l python --from-code=utf-8 -o locale/mylib.pot utils.py i18n/
 ```
 
 执行上述命令后，`utils.py` 和 `i18n/core.py` 中的翻译文本被提取到 `locale/mylib.pot` 文件。各参数含义：
-- `-d mylib`：翻译域设为 `mylib`（和你后续的 `.po/.mo` 文件名一致）；
+- `-d mylib`：翻译域设为 `mylib`（与后续 `.po/.mo` 文件名一致）；
 - `-l python`：明确识别Python语法（可选，xgettext通常能自动识别）；
 - `--from-code=utf-8`：避免中文原文本乱码；
 - `-o locale/mylib.pot`：输出到 `locale` 目录下的 `mylib.pot`；
@@ -414,8 +417,6 @@ xgettext -d mylib -l python --from-code=utf-8 -o locale/mylib.pot $(find . -name
 - `$(...)`：把查找结果作为参数传给 xgettext。
 
 执行命令后，`mylib.pot` 内容如下（自动提取所有 `_()` 文本）：
-
-以下示例展示了生成的 `.pot` 模板文件内容：
 
 ```pot
 msgid ""
@@ -446,11 +447,13 @@ msgstr ""
 - `msgstr`：空值，供后续生成 `.po` 文件时填写翻译；
 - 头部的编码、生成工具等信息自动填充，无需手动修改。
 
-!!! warning "注意"
-    中文如果乱码，说明没有加`--from-code=utf-8` 参数，因为 xgettext 默认可能用系统编码（如GBK），导致中文原文本乱码。
+> **⚠️ 注意**
+>
+> 中文如果乱码，说明没有加 `--from-code=utf-8` 参数，因为 xgettext 默认可能用系统编码（如 GBK），导致中文原文本乱码。
 
-!!! tip "Tip"
-    `.pot`文件是翻译的模板文件，`.po` 文件是翻译文件，`.mo` 文件是编译文件。 `.pot` 是从代码中提取的所有待翻译文本的集合，**不关联任何具体语言**，仅记录需要翻译哪些文本。
+> **💡 Tip**
+>
+> `.pot` 是翻译的模板文件，`.po` 是翻译文件，`.mo` 是编译文件。`.pot` 收集从代码中提取的全部待翻译文本，**不关联任何具体语言**，仅记录需要翻译哪些文本。
 
 ### 批量更新.pot文件
 
@@ -472,7 +475,7 @@ msginit -i locale/mylib.pot -o locale/en/LC_MESSAGES/mylib.po -l en
 
 执行上述命令后，`locale/zh_CN/LC_MESSAGES/mylib.po` 和 `locale/en/LC_MESSAGES/mylib.po` 文件被创建，包含待翻译的文本列表。
 
-`po`文件内容大致如下：
+`po` 文件内容大致如下：
 
 ```po
 msgid ""
@@ -487,12 +490,13 @@ msgid "Whether to rebuild index"
 msgstr "是否重建索引"
 ```
 
-`po`文件记录"英文源文本 -> 目标语言文本"的映射关系，是人工维护翻译的核心文件，最终会被 `msgfmt` 编译为 `.mo` 二进制文件供程序加载。
+`po` 文件记录「英文源文本 -> 目标语言文本」的映射关系，是人工维护翻译的核心文件，最终会被 `msgfmt` 编译为 `.mo` 二进制文件供程序加载。
 
-!!! tip "update_po.py 自动填充工具"
-    项目提供 `update_po.py` 脚本，可从代码中的 `_("English")  # cn:中文` 注释自动填充 `.po` 文件中空 `msgstr`。详见 `plugins/DataAnalysis/PyScripts/DADataAnalysisGui/i18n/update_po.py`。
+> **💡 update_po.py 自动填充工具**
+>
+> 项目提供 `update_po.py` 脚本，可从代码中的 `_("English")  # cn:中文` 注释自动填充 `.po` 文件中空 `msgstr`。详见 `plugins/DataAnalysis/PyScripts/DADataAnalysisGui/i18n/update_po.py`。
 
-生成po文件后，你需要进行手动翻译并保存
+生成 po 文件后需要手动翻译并保存
 
 ### 更新翻译文件
 
@@ -518,7 +522,7 @@ msgstr "是否重建索引"
 # 语法：msgfmt -o 输出的.mo文件路径 待编译的.po文件路径
 ```
 
-例如：
+比如：
 
 编译中文 .po 文件
 
@@ -550,7 +554,7 @@ echo "所有 .po 文件已编译为 .mo 文件！"
   ./compile_po.sh
   ```
 
-最终你的文件结构如下：
+最终的文件结构如下：
 
 ```txt
 你的插件脚本目录/              # 库根目录
@@ -573,7 +577,7 @@ echo "所有 .po 文件已编译为 .mo 文件！"
 
 ## 自动化脚本
 
-为了避免重复执行命令，我们可以编写一个自动化脚本，实现批量生成 `.pot`、`.po`、`.mo` 文件。
+为避免重复执行命令，可以用一个自动化脚本批量生成 `.pot`、`.po`、`.mo` 文件。
 
 ```bash
 #!/bin/bash
@@ -793,16 +797,17 @@ echo -e "\n按任意键退出..."
 read -n 1 -s -r
 ```
 
-把这个脚本保存为 `update-i18n.sh`，放到你的插件目录下
+把脚本保存为 `update-i18n.sh`，放在插件目录下
 
-修改前面配置项目，即可一键自动生成国际化文件
+修改脚本开头的配置项，即可一键生成国际化文件
 
-!!! tip "注意"
-    如果你安装了git bash，用git bash打开脚本，而不是使用Windows自带的cmd，git bash默认已经安装了xgettext和msgfmt这些工具
+> **💡 注意**
+>
+> 用 Git Bash 打开脚本，不要用 Windows 自带的 cmd：Git Bash 默认已带 xgettext 和 msgfmt 这些工具
 
 ## 快速参考
 
-国际化操作的完整流程总结：
+国际化操作的完整流程：
 
 | 步骤 | 命令 | 说明 |
 |------|------|------|

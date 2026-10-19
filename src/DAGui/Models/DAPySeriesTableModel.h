@@ -29,8 +29,6 @@ public:
 public:
 	void setSeries(const QList< DAPySeries >& series);
 	QList< DAPySeries > getSeries() const;
-	// 设置滑动窗模式的起始行
-	virtual void setCacheWindowStartRow(int startRow) override;
 	// 追加series
 	void appendSeries(const DAPySeries& s);
 	void appendSeries(const DAAutoincrementSeries< double >& s);

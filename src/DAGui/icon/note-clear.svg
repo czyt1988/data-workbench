@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px"
+	 width="200px" height="200px" viewBox="0 0 200 200" xml:space="preserve">
+	<!-- 清除本表批注：金黄便签（标记语义）+ 橙红叉（删除/清除语义）。
+	     官方色板：便签 #E6C27C（金黄）、折角 #FFFFFF、叉 #CE6043（橙红，危险/删除）；
+	     禁渐变/阴影/<text>（DESIGN.md §4） -->
+	<polygon points="20,24 148,24 148,120 124,144 20,144" fill="#E6C27C"/>
+	<polygon points="148,120 124,144 124,120" fill="#FFFFFF"/>
+	<g fill="none" stroke="#FFFFFF" stroke-width="8" stroke-linecap="butt" opacity="0.7">
+		<line x1="42" y1="56" x2="126" y2="56"/>
+		<line x1="42" y1="84" x2="126" y2="84"/>
+		<line x1="42" y1="112" x2="100" y2="112"/>
+	</g>
+	<g fill="none" stroke="#CE6043" stroke-width="16" stroke-linecap="round">
+		<line x1="112" y1="112" x2="180" y2="180"/>
+		<line x1="180" y1="112" x2="112" y2="180"/>
+	</g>
+</svg>

@@ -14,7 +14,7 @@
 
 ## 问题诊断流程
 
-下图展示了 Python 调用失败时的诊断流程，帮助快速定位问题类型和解决方案：
+下图是 Python 调用失败时的诊断流程，用来快速定位问题类型和解决方案：
 
 ```mermaid
 flowchart TD
@@ -48,155 +48,157 @@ F1 --> F2[检查模块是否正确编译]
 
 ## 错误码及解决方法
 
-!!! failure "错误1：段错误 (Segmentation Fault)"
+> **❌ 错误1：段错误 (Segmentation Fault)**
+>
+> **原因**：在非 Python 线程调用 Python 代码时未获取 GIL
+>
+> ```cpp
+> // 错误示例
+> void backgroundThread() {
+>     py::object result = py::module::import("pandas");  // 崩溃！
+> }
+>
+> // 正确做法
+> void backgroundThread() {
+>     py::gil_scoped_acquire acquire;
+>     py::object result = py::module::import("pandas");  // OK
+> }
+> ```
 
-    **原因**：在非 Python 线程调用 Python 代码时未获取 GIL
-    
-    ```cpp
-    // 错误示例
-    void backgroundThread() {
-        py::object result = py::module::import("pandas");  // 崩溃！
-    }
-    
-    // 正确做法
-    void backgroundThread() {
-        py::gil_scoped_acquire acquire;
-        py::object result = py::module::import("pandas");  // OK
-    }
-    ```
+> **❌ 错误2：对象被提前释放**
+>
+> **原因**：Python 回调函数在执行前被垃圾回收
+>
+> ```cpp
+> // 错误示例
+> .def("callInMainThread", [](Handler& self, py::function func) {
+>     self.call(func);  // func 可能在执行前被释放
+> })
+>
+> // 正确做法（示意）
+> .def("callInMainThread", [](Handler& self, py::function func) {
+>     func.inc_ref();  // 增加引用计数
+>     self.call([func]() {
+>         py::gil_scoped_acquire gil;
+>         func();
+>         func.dec_ref();
+>     });
+> })
+> ```
+>
+> > **⚠️ inc_ref/dec_ref 并非项目内 callInMainThread 的真实写法**
+> >
+> > 上面的 `inc_ref()/dec_ref()` 模式是通用的最佳实践示例。但 DAWorkBench 实际的 `callInMainThread` 绑定（`src/DAInterface/DAInterfacePythonBinding.cpp:57-79`）把 `//pyFunc.inc_ref();` 与 `//pyFunc.dec_ref();` 都注释掉了，改为依赖 lambda 捕获持有的引用来保证 `pyFunc` 生命周期，并额外 `catch` 了 `std::exception`。参照本条编写新绑定时，可按场景二选一；项目源码当前并没有启用显式 `inc_ref/dec_ref`。
 
-!!! failure "错误2：对象被提前释放"
+> **❌ 错误3：单例对象被 Python 删除**
+>
+> **原因**：未指定正确的所有权策略
+>
+> ```cpp
+> // 错误示例
+> py::class_<DAAppCore>(m, "DAAppCore")
+>     .def_static("getInstance", &DAAppCore::getInstance);
+>     // 默认策略可能导致 Python 尝试删除单例
+>
+> // 正确做法
+> py::class_<DAAppCore>(m, "DAAppCore")
+>     .def_static("getInstance", &DAAppCore::getInstance,
+>                 py::return_value_policy::reference);
+> ```
 
-    **原因**：Python 回调函数在执行前被垃圾回收
-
-    ```cpp
-    // 错误示例
-    .def("callInMainThread", [](Handler& self, py::function func) {
-        self.call(func);  // func 可能在执行前被释放
-    })
-    
-    // 正确做法（示意）
-    .def("callInMainThread", [](Handler& self, py::function func) {
-        func.inc_ref();  // 增加引用计数
-        self.call([func]() {
-            py::gil_scoped_acquire gil;
-            func();
-            func.dec_ref();
-        });
-    })
-    ```
-
-    !!! caveat "inc_ref/dec_ref 并非项目内 callInMainThread 的真实写法"
-        上面的 `inc_ref()/dec_ref()` 模式是通用的最佳实践示例。但 DAWorkBench 实际的 `callInMainThread` 绑定（`src/DAInterface/DAInterfacePythonBinding.cpp:57-79`）把 `//pyFunc.inc_ref();` 与 `//pyFunc.dec_ref();` 都注释掉了，改为依赖 lambda 捕获持有的引用来保证 `pyFunc` 生命周期，并额外 `catch` 了 `std::exception`。在参照本条编写新绑定时，可根据场景二选一，但不要误以为项目源码当前启用了显式 `inc_ref/dec_ref`。
-
-!!! failure "错误3：单例对象被 Python 删除"
-
-    **原因**：未指定正确的所有权策略
-    
-    ```cpp
-    // 错误示例
-    py::class_<DAAppCore>(m, "DAAppCore")
-        .def_static("getInstance", &DAAppCore::getInstance);
-        // 默认策略可能导致 Python 尝试删除单例
-    
-    // 正确做法
-    py::class_<DAAppCore>(m, "DAAppCore")
-        .def_static("getInstance", &DAAppCore::getInstance,
-                    py::return_value_policy::reference);
-    ```
-
-!!! failure "错误4：DataFrame.query 报 \"call stack is not deep enough\""
-
-    **原因**：pandas 的 `DataFrame.query` / `eval` 内部通过 `sys._getframe(level)` 读取**调用者栈帧**来解析 `@local_var` 引用。从 C++ 绑定裸调 `df.query(expr)` 时，`query` 的调用者不在 Python 栈中，`_getframe` 取不到对应层级，于是抛出 `call stack is not deep enough`。
-
-    **修复**：用一个 Python lambda 包一层调用，使 `df.query` 的调用者变成该 lambda 帧，问题从根上消除。
-
-    ```cpp
-    // src/DAPyBindQt/pandas/DAPyDataFrame.cpp:527-541
-    DAPyDataFrame DAPyDataFrame::query(const QString& expr) const
-    {
-        try {
-            // pandas 的 DataFrame.query/eval 内部用 sys._getframe(level) 取调用者
-            // 栈帧来解析 @local_var 引用；从 C++ 绑定裸调 df.query 时，query 的
-            // 调用者不在 Python 栈中，_getframe 会抛 "call stack is not deep enough"。
-            // 用一个 Python lambda 包一层调用，使 df.query 的调用者变成该 lambda 帧，
-            // 问题从根上消除（与 DAPyScriptsDataFrame::queryDatas 调 da_query_datas 思路一致）。
-            auto wrapper = pybind11::eval("(lambda df, expr: df.query(expr))");
-            return DAPyDataFrame(wrapper(object(), expr.toStdString()));
-        } catch (const std::exception& e) {
-            qCritical().noquote() << e.what();
-        }
-        return DAPyDataFrame();
-    }
-    ```
-
-    同一思路也出现在脚本包装层：`DAPyScriptsDataFrame::queryDatas`（`src/DAPyScripts/DAPyScriptsDataFrame.cpp:663-676`）不直接调 `df.query`，而是调 `da_query_datas` 这一 Python 函数，由后者在 Python 栈内完成对 `df.query` 的调用。
-
-    !!! tip "通用规律"
-        凡是 Python 库内部依赖 `sys._getframe` / `inspect` 回溯调用栈的接口（pandas `query/eval` 的 `@` 变量、某些 `exec`/`eval` 场景等），从 C++ 绑定直接调用都会遇到此问题。解法统一为：用 `pybind11::eval` 构造一个 Python 层的可调用对象（lambda 或函数）包一层，让真实调用发生在 Python 栈帧内。
+> **❌ 错误4：DataFrame.query 报 "call stack is not deep enough"**
+>
+> **原因**：pandas 的 `DataFrame.query` / `eval` 内部通过 `sys._getframe(level)` 读取**调用者栈帧**来解析 `@local_var` 引用。从 C++ 绑定裸调 `df.query(expr)` 时，`query` 的调用者不在 Python 栈中，`_getframe` 取不到对应层级，于是抛出 `call stack is not deep enough`。
+>
+> **修复**：用一个 Python lambda 包一层调用，使 `df.query` 的调用者变成该 lambda 帧，问题从根上消除。
+>
+> ```cpp
+> // src/DAPyBindQt/pandas/DAPyDataFrame.cpp:527-541
+> DAPyDataFrame DAPyDataFrame::query(const QString& expr) const
+> {
+>     try {
+>         // pandas 的 DataFrame.query/eval 内部用 sys._getframe(level) 取调用者
+>         // 栈帧来解析 @local_var 引用；从 C++ 绑定裸调 df.query 时，query 的
+>         // 调用者不在 Python 栈中，_getframe 会抛 "call stack is not deep enough"。
+>         // 用一个 Python lambda 包一层调用，使 df.query 的调用者变成该 lambda 帧，
+>         // 问题从根上消除（与 DAPyScriptsDataFrame::queryDatas 调 da_query_datas 思路一致）。
+>         auto wrapper = pybind11::eval("(lambda df, expr: df.query(expr))");
+>         return DAPyDataFrame(wrapper(object(), expr.toStdString()));
+>     } catch (const std::exception& e) {
+>         qCritical().noquote() << e.what();
+>     }
+>     return DAPyDataFrame();
+> }
+> ```
+>
+> 同一思路也出现在脚本包装层：`DAPyScriptsDataFrame::queryDatas`（`src/DAPyScripts/DAPyScriptsDataFrame.cpp:663-676`）调用的是 `da_query_datas` 这一 Python 函数，由后者在 Python 栈内完成对 `df.query` 的调用。
+>
+> > **💡 通用规律**
+> >
+> > 凡是 Python 库内部依赖 `sys._getframe` / `inspect` 回溯调用栈的接口（pandas `query/eval` 的 `@` 变量、某些 `exec`/`eval` 场景等），从 C++ 绑定直接调用都会遇到此问题。解法统一为：用 `pybind11::eval` 构造一个 Python 层的可调用对象（lambda 或函数）包一层，让真实调用发生在 Python 栈帧内。
 
 ## 约束清单
 
 ### 调试技巧
 
-=== "启用 Python 调试输出"
+**启用 Python 调试输出**
 
-    ```cpp
-    // 在初始化时启用详细输出
-    void initializePythonEnv() {
-        // 设置 Python 环境变量
-        qputenv("PYTHONUNBUFFERED", "1");
-        qputenv("PYTHONDONTWRITEBYTECODE", "1");
-        
-        // ...
-    }
-    ```
+```cpp
+// 在初始化时启用详细输出
+void initializePythonEnv() {
+    // 设置 Python 环境变量
+    qputenv("PYTHONUNBUFFERED", "1");
+    qputenv("PYTHONDONTWRITEBYTECODE", "1");
 
-=== "捕获 Python 异常堆栈"
+    // ...
+}
+```
 
-    ```cpp
-    std::string getPythonTraceback()
-    {
-        PyObject* type = nullptr;
-        PyObject* value = nullptr;
-        PyObject* traceback = nullptr;
-        
-        PyErr_Fetch(&type, &value, &traceback);
-        
-        if (!value) return "No exception";
-        
-        PyObject* tb_module = PyImport_ImportModule("traceback");
-        PyObject* format_tb = PyObject_GetAttrString(tb_module, "format_exception");
-        
-        PyObject* args = PyTuple_Pack(3, type, value, traceback);
-        PyObject* result = PyObject_CallObject(format_tb, args);
-        
-        std::string output;
-        if (PyList_Check(result)) {
-            for (Py_ssize_t i = 0; i < PyList_Size(result); ++i) {
-                PyObject* line = PyList_GetItem(result, i);
-                output += PyUnicode_AsUTF8(line);
-            }
+**捕获 Python 异常堆栈**
+
+```cpp
+std::string getPythonTraceback()
+{
+    PyObject* type = nullptr;
+    PyObject* value = nullptr;
+    PyObject* traceback = nullptr;
+
+    PyErr_Fetch(&type, &value, &traceback);
+
+    if (!value) return "No exception";
+
+    PyObject* tb_module = PyImport_ImportModule("traceback");
+    PyObject* format_tb = PyObject_GetAttrString(tb_module, "format_exception");
+
+    PyObject* args = PyTuple_Pack(3, type, value, traceback);
+    PyObject* result = PyObject_CallObject(format_tb, args);
+
+    std::string output;
+    if (PyList_Check(result)) {
+        for (Py_ssize_t i = 0; i < PyList_Size(result); ++i) {
+            PyObject* line = PyList_GetItem(result, i);
+            output += PyUnicode_AsUTF8(line);
         }
-        
-        Py_XDECREF(type);
-        Py_XDECREF(value);
-        Py_XDECREF(traceback);
-        
-        return output;
     }
-    ```
 
-=== "使用 Python 调试器"
+    Py_XDECREF(type);
+    Py_XDECREF(value);
+    Py_XDECREF(traceback);
 
-    ```python
-    # 在 Python 脚本中启用调试
-    import pdb
-    
-    def problematic_function():
-        pdb.set_trace()  # 设置断点
-        # ... 代码 ...
-    ```
+    return output;
+}
+```
+
+**使用 Python 调试器**
+
+```python
+# 在 Python 脚本中启用调试
+import pdb
+
+def problematic_function():
+    pdb.set_trace()  # 设置断点
+    # ... 代码 ...
+```
 
 ## 最佳实践总结
 
@@ -207,7 +209,7 @@ F1 --> F2[检查模块是否正确编译]
     - Python 创建的对象使用 `take_ownership`
     - 内部引用使用 `reference_internal`
 
-2. **线程安全第一**
+2. **线程安全**
     - 所有跨语言调用都要考虑 [GIL 管理](./cpp-calling-python.md#gil安全全局解释器锁管理)
     - UI 操作必须在主线程执行
     - 使用 `DAPythonSignalHandler` 进行跨线程通信
@@ -224,11 +226,12 @@ F1 --> F2[检查模块是否正确编译]
 
 ### 清单
 
-!!! tip "代码审查检查清单"
-    - [ ] 所有 Python 调用都有 GIL 管理
-    - [ ] 所有权策略正确设置
-    - [ ] Python 回调函数引用计数正确
-    - [ ] 异常处理完善
-    - [ ] 无内存泄漏（使用 valgrind/ASan 检查）
-    - [ ] 多线程场景测试通过
-    - [ ] Python 模块路径正确配置
+> **💡 代码审查检查清单**
+>
+> - [ ] 所有 Python 调用都有 GIL 管理
+> - [ ] 所有权策略正确设置
+> - [ ] Python 回调函数引用计数正确
+> - [ ] 异常处理完善
+> - [ ] 无内存泄漏（使用 valgrind/ASan 检查）
+> - [ ] 多线程场景测试通过
+> - [ ] Python 模块路径正确配置

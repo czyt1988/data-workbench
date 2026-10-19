@@ -1,6 +1,6 @@
 # 工作流生命周期
 
-本文档详细描述 DAPyWorkFlow 工作流的完整生命周期，从节点发现、创建、连接到执行的各个阶段，帮助开发者理解工作流引擎的内部机制。
+本文档描述 DAPyWorkFlow 工作流的完整生命周期：节点发现、创建、连接、执行各阶段。
 
 ## 导航
 
@@ -15,7 +15,7 @@
 
 ## 概述
 
-DAPyWorkFlow 的生命周期设计与旧的 DAWorkFlow 模块有本质区别。旧模块采用纯 C++ 实现，节点通过继承 `DAAbstractNode` 定义，使用回调方法（如 `nodeAddedToWorkflow`、`nodeStartRemove` 等）处理生命周期事件。新模块采用 Python-first 架构，节点在 Python 中定义，C++ 仅负责可视化渲染和执行调度。
+DAPyWorkFlow 的生命周期管理不同于旧的 DAWorkFlow 模块。旧模块采用纯 C++ 实现，节点通过继承 `DAAbstractNode` 定义，用回调方法（如 `nodeAddedToWorkflow`、`nodeStartRemove` 等）处理生命周期事件。新模块节点在 Python 中定义，C++ 只负责可视化渲染和执行调度。
 
 新旧模块的核心差异：
 
@@ -26,8 +26,9 @@ DAPyWorkFlow 的生命周期设计与旧的 DAWorkFlow 模块有本质区别。�
 | 数据传递 | `DANodeLinkPoint` 连接点 | `DAConnection` + `DASignalManager` |
 | 执行引擎 | C++ 拓扑排序 | Python `DAWorkflowExecutor` |
 
-!!! note "架构转变"
-    DAPyWorkFlow 不再使用回调方法管理生命周期。节点状态通过 `DAPyNodeState` 枚举管理，数据传递通过 `DASignalManager` 的信号机制完成，执行流程由 `DAWorkflowExecutor` 的拓扑排序算法控制。
+> **📝 架构转变**
+>
+> DAPyWorkFlow 不再使用回调方法管理生命周期。节点状态通过 `DAPyNodeState` 枚举管理，数据传递通过 `DASignalManager` 的信号机制完成，执行流程由 `DAWorkflowExecutor` 按节点入度分类后逐个触发下游控制。
 
 ## 基本概念
 
@@ -44,7 +45,7 @@ DAPyWorkFlow 的生命周期设计与旧的 DAWorkFlow 模块有本质区别。�
 | **发现** | 扫描目录和 entry_points 查找节点类 | `DANodeRegistry` |
 | **创建** | 实例化节点并添加到工作流 | `DAPyNodeFactory`, `DAWorkflow` |
 | **连接** | 建立节点间的数据流向关系 | `DAConnection` |
-| **执行** | 按拓扑排序执行节点 | `DAWorkflowExecutor`, `DASignalManager` |
+| **执行** | 按入度分类触发节点执行 | `DAWorkflowExecutor`, `DASignalManager` |
 | **完成** | 清理资源，通知状态变更 | `DAPyWorkFlowManager` |
 
 ### 核心类关系
@@ -83,8 +84,8 @@ classDiagram
     DASignalManager --> DAWorkflow : 操作
 ```
 
-- **DAWorkflow**：DAG 模型容器，管理节点实例和连接关系
-- **DAWorkflowExecutor**：执行引擎，基于拓扑排序控制节点执行顺序
+- **DAWorkflow**：有向无环图（DAG）模型容器，管理节点实例和连接关系
+- **DAWorkflowExecutor**：执行引擎，按节点入度分类，在上游数据到齐时触发节点执行
 - **DASignalManager**：信号管理器，负责节点间的数据传播和入度计数
 
 ## 节点发现生命周期
@@ -107,12 +108,12 @@ descriptors = registry.discover(
 
 发现流程包含两个并行模式：
 
-1. **目录扫描模式**：遍历指定路径的 `.py` 文件，动态导入模块，检查类是否带有 `_node_descriptor` 属性
+1. **目录扫描模式**：遍历指定路径的 `.py` 文件，动态导入模块，检查类是否带有 `qualified_name` 属性（`@NodeDef` 装饰器写入的标记）
 2. **入口点模式**：通过 `importlib.metadata.entry_points(group='data_workbench.plugin')` 查找已安装的插件包
 
 ### `@NodeDef` 装饰器元数据
 
-`@NodeDef` 装饰器将节点元数据作为 `_node_descriptor` 属性 dict 直接设置在类上：
+`@NodeDef` 装饰器把节点元数据写成被装饰类的类属性：
 
 | 字段 | 类型 | 说明 |
 |------|------|------|
@@ -135,7 +136,7 @@ factory.discoverNodes(scanPaths, useEntryPoints);
 QList<DA::DAPyNodeMetaData> metaList = factory.getNodeMetadataList();
 ```
 
-`DAPyNodeMetaData` 是 C++ 侧对 Python `_node_descriptor` dict 的映射，包含节点名称（`name`）、限定名（`qualifiedName`）、分组（`category`）、图标路径等信息。
+`DAPyNodeMetaData` 是 C++ 侧对 Python 节点类元数据的映射，字段从类的 `qualified_name`、`name`、`category`、`icon`、`__node_description` 属性读入，包含节点名称（`name`）、限定名（`qualifiedName`）、分组（`category`）、图标路径等信息。
 
 ## 节点创建生命周期
 
@@ -154,8 +155,8 @@ from DAWorkbench.DAWorkFlowPy import DAWorkflow
 
 workflow = DAWorkflow()
 
-# 通过 _node_descriptor dict 获取类并创建节点实例
-node_class = node_registry.get_node_class(qualified_name)
+# 从注册表取出装饰后的节点类并创建实例
+node_class = node_registry.get_descriptor(qualified_name)
 node_instance = node_class()
 node_id = workflow.add_node(node_instance)
 ```
@@ -210,8 +211,9 @@ DAPyNodeGraphicsItem* item = scene->createPyNode(metaData, position);
 
 `deserialize_runtime_state()` 钩子由 `DAWorkflowNode` 基类定义，默认空实现。节点覆写后可在工程加载后立即恢复 `paint()` 所需的缓存数据，无需重新执行工作流。详见 [Python 节点开发指南 - 运行时状态持久化](./workflow-python-node-dev.md#运行时状态持久化serialize_runtime_state--deserialize_runtime_state)。
 
-!!! note "加载顺序与 Python 优先"
-    Python 逻辑数据（含 `runtime_state`）必须先于 C++ 视图数据加载，这是不可违反的铁律。详见 `src/DAPyWorkFlow/AGENTS.md` § 持久化架构。
+> **📝 加载顺序与 Python 优先**
+>
+> Python 逻辑数据（含 `runtime_state`）必须先于 C++ 视图数据加载，这是不可违反的铁律。详见 `src/DAPyWorkFlow/AGENTS.md` § 持久化架构。
 
 ## 节点连接生命周期
 
@@ -248,9 +250,11 @@ workflow.add_connection(conn)
 
 `DAWorkflow.add_connection()` 执行以下验证：
 
-1. 源节点和目标节点必须存在于工作流中
-2. 同一对端口不能重复连接
-3. 不允许自连接（源节点 != 目标节点）
+1. 源节点和目标节点必须存在于工作流中，否则抛 `KeyError`
+2. 同一对端口不能重复连接，否则抛 `ValueError`
+3. 同一 `connection_id` 不能重复使用，否则抛 `KeyError`
+
+`add_connection()` 不检查源节点和目标节点是否相同。
 
 ### 可视化连接
 
@@ -268,11 +272,11 @@ DAPyLinkGraphicsItem* link = scene->addPyNodeLink(
 
 - 支持三种连线样式：贝塞尔曲线、直线、肘形连接
 - 提供数据流动画效果
-- 在 `willCompleteLink()` 中验证数据类型兼容性
+- 在 `willCompleteLink()` 中校验源节点、目标节点齐备且两个端口名在节点上存在（不比对数据类型）
 
 ## 工作流执行生命周期
 
-执行生命周期是工作流的核心阶段，涉及拓扑排序、节点分类、信号传播等复杂机制。
+执行阶段涉及节点分类、逐个触发和信号传播。
 
 ### 执行器状态枚举
 
@@ -299,7 +303,7 @@ enum DAPyExecutorState {
 
 ### 节点分类算法
 
-执行前，`DAWorkflowExecutor` 对节点进行分类：
+执行前，`DAWorkflowExecutor` 对节点分类：
 
 ```python
 def _classify_nodes(self) -> tuple:
@@ -326,7 +330,7 @@ def _classify_nodes(self) -> tuple:
 
 ### 拓扑排序执行
 
-DAWorkflowExecutor 使用 Kahn 算法进行拓扑排序执行：
+`_run_workflow()` 按下面的顺序执行。执行器不调用 `DAWorkflow.topological_sort()`，也不跑 Kahn 算法的队列循环：决定执行顺序的是节点分类（入度、出度）和 `DASignalManager.is_node_ready()` 的入度计数。下游节点在 `_execute_node()` 末尾经 `_propagate_and_transmit()` 就地按需触发，没有预先排好的执行序列。
 
 ```python
 def _run_workflow(self) -> bool:
@@ -345,6 +349,10 @@ def _run_workflow(self) -> bool:
     for node_id in begin_nodes:
         self._execute_node(node_id, transmit=True)
 ```
+
+`topological_sort()` 和 `is_valid_dag()` 实现完整，也通过 C++ 代理 `DAPyWorkFlow::topologicalSort()` / `isValidDag()` 暴露出来，但执行路径上没有调用它们，工作流开始执行前不做无环校验。
+
+工作流含环时，环上的节点入度和出度都不为 0，`_classify_nodes()` 不会把它们归入全局节点、孤立节点或开始节点，`_run_workflow()` 也就不执行它们；依赖环上节点输出的下游节点等不到全部输入，同样不执行。这些节点保持 `waiting` 状态，且执行过程中不会产生错误消息，`execute()` 会返回 `True`。需要提前发现环，调用方要自行调用 `is_valid_dag()`。
 
 ### 信号传播机制
 
@@ -450,7 +458,7 @@ Qt 信号通知（由 `DAPyWorkFlowManager` 发射）：
 | `nodeRemoved` | `QString nodeId` | 节点移除 |
 | `connectionAdded` | `QString connId, QString srcNodeId, ...` | 连接添加 |
 | `connectionRemoved` | `QString connId` | 连接移除 |
-| `executionStarted` | — | 工作流开始执行 |
+| `executionStarted` | 无 | 工作流开始执行 |
 | `executionFinished` | `bool success` | 工作流执行完成 |
 | `nodeExecuted` | `QString nodeId, bool success` | 节点执行完成 |
 | `executorStateChanged` | `QString oldState, QString newState` | 执行器状态变更 |
@@ -475,14 +483,12 @@ enum DAPyNodeState {
 ```mermaid
 stateDiagram-v2
     [*] --> Idle: 节点创建
-    Idle --> Waiting: 上游节点开始执行
+    Idle --> Waiting: 工作流开始执行
     Waiting --> Running: 所有上游数据到达
     Running --> Success: 执行成功
     Running --> Error: 执行失败
-    Running --> Skipped: 被终止/跳过
     Success --> [*]: 清理
     Error --> [*]: 清理
-    Skipped --> [*]: 清理
 
     note right of Waiting
         DASignalManager 管理入度计数
@@ -494,11 +500,12 @@ stateDiagram-v2
 
 | 转换 | 触发条件 | 处理逻辑 |
 |------|----------|----------|
-| Idle → Waiting | 工作流开始执行 | 非开始节点进入等待状态 |
+| Idle → Waiting | 工作流开始执行 | `execute()` 开始时把所有节点统一置为等待状态 |
 | Waiting → Running | `is_node_ready()` 返回 True | 入度计数满足，开始执行 |
 | Running → Success | `execute()` 返回 True | 输出数据传播到下游 |
-| Running → Error | `execute()` 返回 False 或抛出异常 | 记录错误，停止当前分支 |
-| Running → Skipped | 用户请求终止 | 跳过后续执行 |
+| Running → Error | `execute()` 返回 False 或抛出异常 | 记录错误，不再向下游传播数据 |
+
+`Skipped` 在 `DAPyNodeState` 和 `DAPyNodePalette` 里有定义，但执行器不会写入这个状态：`terminate()` 只设置终止标记，请求终止时未执行到的节点停留在 `waiting`。
 
 ### 状态同步
 
@@ -530,7 +537,7 @@ void DAPyWorkFlowScene::onPyNodeStateNotification(
 
 ## GIL 与线程安全
 
-DAPyWorkFlow 涉及 Python GIL（全局解释器锁）的精细管理。
+DAPyWorkFlow 涉及 Python GIL（全局解释器锁）的管理。
 
 ### DAPyGILGuard RAII 模式
 
@@ -569,10 +576,11 @@ DAPyWorkFlow 涉及 Python GIL（全局解释器锁）的精细管理。
 
 ### GIL 安全规则
 
-!!! warning "关键规则"
-    1. **error_already_set 必须在 GIL 作用域内消费**：异常析构时尝试获取 GIL 会导致死锁
-    2. **禁止在持有 GIL 时调用 QThread::wait()**：阻塞等待会导致死锁
-    3. **禁止在静态初始化阶段调用 Python API**：GIL 尚未就绪
+> **⚠️ 关键规则**
+>
+> 1. **error_already_set 必须在 GIL 作用域内消费**：异常析构时尝试获取 GIL 会导致死锁
+> 2. **禁止在持有 GIL 时调用 QThread::wait()**：阻塞等待会导致死锁
+> 3. **禁止在静态初始化阶段调用 Python API**：GIL 尚未就绪
 
 ### 主线程回调
 
@@ -592,19 +600,17 @@ void DAPythonSignalHandler::callInMainThread(
 }
 ```
 
-此机制确保 Python 后台线程可以安全地更新 UI。
-
 ## 注意事项
 
 ### 工作流设计约束
 
-1. **DAG 约束**：工作流必须是无环有向图。`DAWorkflow.is_valid_dag()` 可验证有效性
+1. **DAG 约束**：工作流应是有向无环图。执行器不校验无环性，需要时由调用方调用 `DAWorkflow.is_valid_dag()`；存在环时环上的节点不会被触发执行（见上文「拓扑排序执行」）
 2. **节点 ID 唯一性**：`node_id` 在工作流内必须唯一，由 `DAWorkflow.add_node()` 自动保证
-3. **连接端口匹配**：连接的输出端口和输入端口数据类型应当兼容（由 `DAPyLinkGraphicsItem` 验证）
+3. **连接端口匹配**：`add_connection()` 只校验节点存在性与端口名，不校验端口数据类型
 
 ### 执行控制
 
-1. **终止请求**：`terminate()` 不会中断正在执行的节点，而是等待其完成后停止后续节点
+1. **终止请求**：`terminate()` 不中断正在执行的节点，等当前节点执行完再停止后续节点
 2. **暂停/恢复**：`pause()` 在当前节点完成后暂停，`resume()` 恢复执行
 3. **异步执行**：`execute_async()` 在后台线程执行，通过 `wait_completion()` 等待完成
 
@@ -616,7 +622,7 @@ void DAPythonSignalHandler::callInMainThread(
 
 ### 调试建议
 
-1. **启用日志**：Python 侧使用 `logging.getLogger("DAWorkFlowPy")` 记录执行日志
+1. **启用日志**：执行器的调试输出由 `DA_WF_DEBUG` 环境变量控制（设为 `1`/`true`/`yes` 打开，`src/PyScripts/DAWorkbench/DAWorkFlowPy/_debug.py`），对应 C++ 侧的 `DA_WORKFLOW_DEBUG` 宏
 2. **状态监控**：连接 `DAPyWorkFlowManager::executorStateChanged` 信号跟踪执行进度
 3. **错误处理**：检查 `DAWorkflowExecutor.error_messages` 获取详细错误信息
 
@@ -648,7 +654,7 @@ void DAPythonSignalHandler::callInMainThread(
 
 ### 相关文档
 
-- [DAPyWorkFlow 模块概述](./workflow-overview.md) — 架构概览和快速上手
-- [Python 节点开发指南](./workflow-python-node-dev.md) — 节点定义和开发细节
-- [C++ 集成指南](./workflow-cpp-integration.md) — C++ 层集成和 pybind11 桥接
-- [场景操作指南](./workflow-scene-operation.md) — 可视化场景操作方法
+- [DAPyWorkFlow 模块概述](./workflow-overview.md)：架构概览和快速上手
+- [Python 节点开发指南](./workflow-python-node-dev.md)：节点定义和开发细节
+- [C++ 集成指南](./workflow-cpp-integration.md)：C++ 层集成和 pybind11 桥接
+- [场景操作指南](./workflow-scene-operation.md)：可视化场景操作方法

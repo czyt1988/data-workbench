@@ -2,13 +2,6 @@
 
 本页面列出 DAWorkBench 项目的所有 CMake 构建选项，说明其作用、默认值和影响范围。
 
-## 主要功能特性
-
-- ✅ **完整选项列表**：6 个 CMake 选项的详细说明
-- ✅ **影响范围**：每个选项影响的模块和构建行为
-- ✅ **使用示例**：常见构建场景的选项组合
-- ✅ **选项交互**：选项间的依赖和冲突关系
-
 ---
 
 ## 选项总览
@@ -16,7 +9,7 @@
 | 选项 | 默认值 | 简述 | 影响范围 |
 |------|:------:|------|---------|
 | `DA_ENABLE_AUTO_INSTALL_PYTHON_ENV` | `ON` | 自动搜索并部署 Python DLL | APP（仅 Windows） |
-| `DA_ENABLE_AUTO_TRANSLATE` | `ON` | 自动编译翻译文件（.ts → .qm） | i18n |
+| `DA_ENABLE_AUTO_TRANSLATE` | `ON` | 自动编译翻译文件（.ts → .qm） | 国际化翻译 |
 | `DA_AUTO_INSTALL_PREFIX` | `ON` | 自动安装到本地目录 | 所有模块的 install 行为 |
 | `DA_AUTO_GENERATE_CONFIG_INFO` | `OFF` | 自动生成 DAConfigs.h（已改为无条件生成） | 库开发者专用 |
 | `DA_BUILD_PLUGINS` | `ON` | 构建 plugins/ 目录下的插件 | plugins/ 子目录 |
@@ -26,8 +19,9 @@
 
 ## 选项详解
 
-!!! info "Python 为强制依赖"
-    Python 不再是可选构建选项，而是强制依赖，始终参与编译，无法禁用。相关模块包括 DAPyBindQt、DAPyScripts、DAPyCommonWidgets、DAPyWorkFlow、DAData。如需配置 Python 环境，参见 [Python 环境配置](./python-environment.md)。
+> **ℹ️ Python 为强制依赖**
+>
+> Python 是强制依赖，始终参与编译，无法禁用。相关模块包括 DAPyBindQt、DAPyScripts、DAPyCommonWidgets、DAPyWorkFlow、DAData。如需配置 Python 环境，参见 [Python 环境配置](./python-environment.md)。
 
 ### DA_ENABLE_AUTO_INSTALL_PYTHON_ENV
 
@@ -44,15 +38,16 @@ cmake -DDA_ENABLE_AUTO_INSTALL_PYTHON_ENV=ON ...
 cmake -DDA_ENABLE_AUTO_INSTALL_PYTHON_ENV=OFF ...
 ```
 
-!!! tip "Linux 用户"
-    此选项在 Linux 上无效。Linux 通过系统包管理器或 virtualenv 管理 Python 环境。
+> **💡 Linux 用户**
+>
+> 此选项在 Linux 上无效。Linux 通过系统包管理器或 virtualenv 管理 Python 环境。
 
 ### DA_ENABLE_AUTO_TRANSLATE
 
 - **默认值**：`ON`
 - **作用**：构建时自动调用 Qt Linguist 工具，将 `.ts` 翻译源文件编译为 `.qm` 二进制翻译文件
 - **依赖**：需要安装 Qt Linguist 工具（`lrelease`）
-- **影响范围**：i18n 翻译文件
+- **影响范围**：国际化翻译文件
 
 ```bash
 # 启用自动翻译（默认）
@@ -89,13 +84,14 @@ cmake -DCMAKE_INSTALL_PREFIX=/custom/path -DDA_AUTO_INSTALL_PREFIX=OFF ...
 cmake -DDA_AUTO_GENERATE_CONFIG_INFO=ON ...
 ```
 
-!!! info "翻译源文件更新"
-    若需提取新增的 `tr()` 字符串到 `.ts` 翻译源文件，不再通过 CMake 选项触发，而是构建 `update_translations` 自定义目标：
-
-    ```bash
-    # 手动更新 .ts 翻译源文件（不加入 ALL，避免每次构建重写 .ts）
-    cmake --build <build-dir> --target update_translations
-    ```
+> **ℹ️ 翻译源文件更新**
+>
+> 若需提取新增的 `tr()` 字符串到 `.ts` 翻译源文件，不再通过 CMake 选项触发，而是构建 `update_translations` 自定义目标：
+>
+> ```bash
+> # 手动更新 .ts 翻译源文件（不加入 ALL，避免每次构建重写 .ts）
+> cmake --build <build-dir> --target update_translations
+> ```
 
 ### DA_BUILD_PLUGINS
 
@@ -126,8 +122,9 @@ cmake -DDA_ENABLE_TESTING=ON ...
 .\scripts\build.ps1 -Target DAPyWorkFlow -Test
 ```
 
-!!! warning "默认关闭"
-    测试工程不参与日常构建。仅当需要运行/开发测试时，在配置阶段显式设为 `ON`，否则 `src/tst` 不会被加入构建。
+> **⚠️ 默认关闭**
+>
+> 测试工程不参与日常构建。仅当需要运行/开发测试时，在配置阶段显式设为 `ON`，否则 `src/tst` 不会被加入构建。
 
 ---
 
@@ -141,8 +138,9 @@ flowchart TD
     U["update_translations 目标"] -->|手动触发需要| G["Qt Linguist (lupdate)"]
 ```
 
-!!! info "update_translations 是 CMake 目标而非选项"
-    `lupdate` 的触发已从 CMake 选项改为自定义目标 `update_translations`，不加入 `ALL`，避免每次构建重写 `.ts` 文件。仅在新增 `tr()` 字符串后手动构建该目标。
+> **ℹ️ update_translations 是 CMake 目标而非选项**
+>
+> `lupdate` 的触发已从 CMake 选项改为自定义目标 `update_translations`，不加入 `ALL`，避免每次构建重写 `.ts` 文件。仅在新增 `tr()` 字符串后手动构建该目标。
 
 ### 冲突与约束
 
@@ -195,9 +193,9 @@ cmake --build build --config Release --parallel
 
 ## 相关文档
 
-- [构建说明](./build-instructions.md) — 完整构建流程
-- [第三方库构建](./third-party-build.md) — 第三方库编译
-- [主程序构建](./main-program-build.md) — 主程序构建详解
-- [Python 环境配置](./python-environment.md) — Python 环境说明
-- [构建常见错误](./common-build-errors.md) — 构建问题排查
-- [工程组织](./large-cmake-project-guide.md) — CMake 工程组织指南
+- [构建说明](./build-instructions.md)：完整构建流程
+- [第三方库构建](./third-party-build.md)：第三方库编译
+- [主程序构建](./main-program-build.md)：主程序构建详解
+- [Python 环境配置](./python-environment.md)：Python 环境说明
+- [构建常见错误](./common-build-errors.md)：构建问题排查
+- [工程组织](./large-cmake-project-guide.md)：CMake 工程组织指南

@@ -42,8 +42,8 @@
 #include "DAZipArchiveTask_ChartItem.h"
 #include "DADataOperateWidget.h"
 #include "DADataOperateOfDataFrameWidget.h"
-#include "DATableStyleManager.h"
-#include "DATableStyleRegistry.h"
+#include "DATableMetadata.h"
+#include "DATableMetadataRegistry.h"
 #include "DADataEnumStringUtils.h"
 #include "DADataFactory.h"
 #include <QDataStream>
@@ -76,6 +76,7 @@ const QString c_workflowdata_save_filename = QStringLiteral("workflow-data.xml")
 const QString c_chartsxml_save_filename    = QStringLiteral("charts.xml");
 const QString c_chartitem_save_folder      = QStringLiteral("chart-data");
 const QString c_tablestylesxml_save_filename = QStringLiteral("table-styles.xml");
+const QString c_tablemetadataxml_save_filename = QStringLiteral("table-metadata.xml");
 const QString c_dataoperatexml_save_filename = QStringLiteral("data-operate.xml");
 
 #ifndef DAAPPPROJECT_TASK_LOAD_ID_BEGIN
@@ -121,6 +122,12 @@ const QString c_dataoperatexml_save_filename = QStringLiteral("data-operate.xml"
  */
 #ifndef DAAPPPROJECT_TASK_LOAD_ID_TABLE_STYLES
 #define DAAPPPROJECT_TASK_LOAD_ID_TABLE_STYLES (DAAPPPROJECT_TASK_LOAD_ID_BEGIN + 6)
+#endif
+/**
+ *@def 加载任务id - 表格元数据（table-metadata.xml，新格式；旧 table-styles.xml 用 TABLE_STYLES id 回退）
+ */
+#ifndef DAAPPPROJECT_TASK_LOAD_ID_TABLE_METADATA
+#define DAAPPPROJECT_TASK_LOAD_ID_TABLE_METADATA (DAAPPPROJECT_TASK_LOAD_ID_BEGIN + 10)
 #endif
 
 /**
@@ -975,8 +982,8 @@ bool DAAppProject::executeSave(DAZipArchiveThreadWrapper* archive, const QString
     // datamanager
     makeSaveDataManagerTask(archive);
 
-    // 表格样式
-    makeSaveTableStyleTask(archive);
+    // 表格元数据（样式 + 视图状态）
+    makeSaveTableMetadataTask(archive);
 
     // 数据操作窗口嵌套停靠区布局（已打开数据页列表 + dock 布局）
     makeSaveDataOperateLayoutTask(archive);
@@ -1048,8 +1055,18 @@ bool DAAppProject::executeLoad(DAZipArchiveThreadWrapper* archive, const QString
     auto taskChartItem =
         archive->appendChartItemLoadTask(c_chartitem_save_folder, DAAPPPROJECT_TASK_LOAD_ID_CHARTITEMMANAGER);
 
-    // 表格样式加载（在 datamanager 之后，此时 DAData 及其持久化 id 已恢复，
-    // 样式按 data-id 回填到会话级 DATableStyleRegistry，无需依赖 widget 是否打开）
+    // 表格元数据加载（在 datamanager 之后，此时 DAData 及其持久化 id 已恢复，
+    // 元数据按 data-id 回填到会话级 DATableMetadataRegistry，无需依赖 widget 是否打开）。
+    // 先读新文件 table-metadata.xml；置回退标志，旧 table-styles.xml 仅在新文件缺失时生效（R18）。
+    m_tableMetadataLoaded  = false;
+    auto taskTableMetadata = archive->appendXmlLoadTask(c_tablemetadataxml_save_filename,
+                                                        DAAPPPROJECT_TASK_LOAD_ID_TABLE_METADATA);
+    if (taskTableMetadata) {
+        taskTableMetadata->setLoadedCallBack(
+            [ this ](std::shared_ptr< DAAbstractArchiveTask > t) { loadedTableMetadata(t); });
+    }
+
+    // 旧工程回退：table-styles.xml（仅当 table-metadata.xml 不存在时应用，见 loadedTableStyles）
     auto taskTableStyles = archive->appendXmlLoadTask(c_tablestylesxml_save_filename,
                                                        DAAPPPROJECT_TASK_LOAD_ID_TABLE_STYLES);
     if (taskTableStyles) {
@@ -1483,34 +1500,34 @@ void DAAppProject::makeSaveChartTask(DAZipArchiveThreadWrapper* archive)
 }
 
 /**
- * @brief 保存表格样式任务
+ * @brief 保存表格元数据任务
  *
- * 遍历样式注册表（按 DAData 键控，会话级存活，不依赖 widget 是否打开），
- * 收集各非空 styleManager 的样式，合并为 table-styles.xml，以 data-id 为匹配键。
+ * 遍历元数据注册表（按 DAData 键控，会话级存活，不依赖 widget 是否打开），
+ * 收集各非空元数据束（样式 + 视图状态，后续含条件格式/批注等），合并为
+ * table-metadata.xml（根标签 <table-metadata version="1">），以 data-id 为匹配键。
+ * 保存只写新文件，不再写旧 table-styles.xml（R18：读旧写新，不双写）。
  * @param archive 归档器
  */
-void DAAppProject::makeSaveTableStyleTask(DAZipArchiveThreadWrapper* archive)
+void DAAppProject::makeSaveTableMetadataTask(DAZipArchiveThreadWrapper* archive)
 {
     QDomDocument doc;
     QDomProcessingInstruction pi = doc.createProcessingInstruction("xml", "version=\"1.0\" encoding=\"UTF-8\"");
     doc.appendChild(pi);
-    QDomElement root = doc.createElement(QStringLiteral("root"));
-    root.setAttribute("type", "table-styles");
+    QDomElement root = doc.createElement(QStringLiteral("table-metadata"));
+    root.setAttribute(QStringLiteral("version"), QStringLiteral("1"));
     doc.appendChild(root);
     QDomElement projectEle = doc.createElement(QStringLiteral("project"));
     projectEle.setAttribute("version", getProjectVersion().toString());
     root.appendChild(projectEle);
-    QDomElement stylesEle = doc.createElement(QStringLiteral("table-styles"));
-    projectEle.appendChild(stylesEle);
 
-    // 遍历样式注册表收集样式（样式随数据存在，不依赖 widget 是否打开）
+    // 遍历元数据注册表收集各束（元数据随数据存在，不依赖 widget 是否打开）
     DADataOperateWidget* optWidget = getDataOperateWidget();
-    if (optWidget && optWidget->styleRegistry()) {
-        QList< QPair< DAData, DATableStyleManager* > > entries = optWidget->styleRegistry()->nonEmptyEntries();
+    if (optWidget && optWidget->metadataRegistry()) {
+        const QList< QPair< DAData, DATableMetadata* > > entries = optWidget->metadataRegistry()->nonEmptyEntries();
         for (const auto& entry : entries) {
-            const DAData& d      = entry.first;
-            DATableStyleManager* mgr = entry.second;
-            if (!mgr || mgr->isEmpty()) {
+            const DAData& d     = entry.first;
+            DATableMetadata* meta = entry.second;
+            if (!meta || meta->isEmpty()) {
                 continue;
             }
             QDomElement tableEle = doc.createElement(QStringLiteral("table"));
@@ -1518,14 +1535,14 @@ void DAAppProject::makeSaveTableStyleTask(DAZipArchiveThreadWrapper* archive)
             tableEle.setAttribute(QStringLiteral("data-id"), QString::number(d.id()));
             // data-name 作人类可读与旧工程回退
             tableEle.setAttribute(QStringLiteral("data-name"), d.getName());
-            mgr->toXml(doc, tableEle);
-            stylesEle.appendChild(tableEle);
+            meta->toXml(doc, tableEle);
+            projectEle.appendChild(tableEle);
         }
     }
 
-    auto t = archive->appendXmlSaveTask(c_tablestylesxml_save_filename, doc);
-    t->setName(tr("Save table styles"));  // cn:保存表格样式
-    t->setDescribe(tr("Save table cell styles, including background, font, foreground"));  // cn:保存表格单元格样式
+    auto t = archive->appendXmlSaveTask(c_tablemetadataxml_save_filename, doc);
+    t->setName(tr("Save table metadata"));  // cn:保存表格元数据
+    t->setDescribe(tr("Save table metadata, including cell styles and view state"));  // cn:保存表格元数据（单元格样式与视图状态）
 }
 
 /**
@@ -2044,15 +2061,103 @@ void DAAppProject::loadedChartsInfo(const std::shared_ptr< DAAbstractArchiveTask
 }
 
 /**
- * @brief 表格样式加载回调
+ * @brief 把单个 <table data-id data-name> 元素回填到会话级元数据注册表
  *
- * 解析 table-styles.xml，按 data-id 优先匹配 DAData（getDataById），回退 data-name。
- * 样式回填到会话级 DATableStyleRegistry（随数据存在，不依赖 widget 是否打开），
- * 若该数据已有打开的 widget 则触发刷新重绘。
+ * 按 data-id 优先匹配 DAData（getDataById），回退 data-name。命中后
+ * getOrCreate 元数据束并 fromXml（样式段 + <view-state> 段，旧文件无该段自动跳过），
+ * 若该数据已有打开的 widget 则触发刷新重绘。新旧两种工程文件共用本函数。
+ * @param tableEle table 元素
+ */
+void DAAppProject::applyLoadedTableElement(const QDomElement& tableEle)
+{
+    DADataOperateWidget* optWidget = getDataOperateWidget();
+    if (!optWidget || !optWidget->metadataRegistry()) {
+        return;
+    }
+    DADataManagerInterface* dataMgr = getDataManagerInterface();
+    if (!dataMgr) {
+        return;
+    }
+    // 优先按 data-id 匹配（跨会话稳定），回退 data-name（旧工程）
+    DAData matched;
+    if (tableEle.hasAttribute(QStringLiteral("data-id"))) {
+        bool ok = false;
+        DAAbstractData::IdType id = tableEle.attribute(QStringLiteral("data-id")).toULongLong(&ok);
+        if (ok && id != 0) {
+            matched = dataMgr->getDataById(id);
+        }
+    }
+    if (matched.isNull()) {
+        QString dataName = tableEle.attribute(QStringLiteral("data-name"));
+        if (!dataName.isEmpty()) {
+            matched = dataMgr->dataManager()->findData(dataName);
+        }
+    }
+    if (matched.isNull()) {
+        QString hint = tableEle.attribute(QStringLiteral("data-name"));
+        if (hint.isEmpty()) {
+            hint = tableEle.attribute(QStringLiteral("data-id"));
+        }
+        daWarning << tr("Table style for data '%1' has no matching data, skipped").arg(hint);  // cn:数据'%1'的表格样式未找到匹配数据，已跳过
+        return;
+    }
+    // 回填到会话级注册表（随数据存在，后续打开 widget 即可见）
+    DATableMetadata* meta = optWidget->metadataRegistry()->getOrCreate(matched);
+    if (meta) {
+        meta->fromXml(tableEle);
+        // 若该数据已有打开的 widget，触发刷新重绘
+        if (auto* w = optWidget->findDataFrameWidget(matched)) {
+            w->refreshTable();
+        }
+    }
+}
+
+/**
+ * @brief 表格元数据加载回调（新文件 table-metadata.xml）
+ *
+ * 解析 <table-metadata version="1"> → <project> → <table> 并回填注册表；
+ * 新文件存在（文档非空且根标签匹配）即置 m_tableMetadataLoaded，
+ * 旧 table-styles.xml 的回退回调随之跳过（R18：读旧写新）。
+ * @param t 归档任务
+ */
+void DAAppProject::loadedTableMetadata(const std::shared_ptr< DAAbstractArchiveTask >& t)
+{
+    const std::shared_ptr< DAZipArchiveTask_Xml > xmlArchive = std::static_pointer_cast< DAZipArchiveTask_Xml >(t);
+    QDomDocument xmlDoc = xmlArchive->getDomDocument();
+    if (xmlDoc.isNull()) {
+        return;  // 归档里没有新文件（旧工程），交给 table-styles.xml 回退
+    }
+    QDomElement root = xmlDoc.documentElement();
+    if (root.isNull() || root.tagName() != QLatin1String("table-metadata")) {
+        return;
+    }
+    QDomElement projectEle = root.firstChildElement(QStringLiteral("project"));
+    if (projectEle.isNull()) {
+        return;
+    }
+    m_tableMetadataLoaded = true;
+    QDomNode n = projectEle.firstChild();
+    while (!n.isNull()) {
+        QDomElement tableEle = n.toElement();
+        if (!tableEle.isNull() && tableEle.tagName() == QLatin1String("table")) {
+            applyLoadedTableElement(tableEle);
+        }
+        n = n.nextSibling();
+    }
+}
+
+/**
+ * @brief 表格样式加载回调（旧文件 table-styles.xml 回退路径）
+ *
+ * 仅当 table-metadata.xml 不存在（m_tableMetadataLoaded 为 false）时应用；
+ * 内层 <table> 结构与新文件相同，解析路径共用 applyLoadedTableElement。
  * @param t 归档任务
  */
 void DAAppProject::loadedTableStyles(const std::shared_ptr< DAAbstractArchiveTask >& t)
 {
+    if (m_tableMetadataLoaded) {
+        return;  // 新文件已应用，忽略旧文件（保存只写新文件，此处防同归档双份并存）
+    }
     const std::shared_ptr< DAZipArchiveTask_Xml > xmlArchive = std::static_pointer_cast< DAZipArchiveTask_Xml >(t);
     QDomDocument xmlDoc = xmlArchive->getDomDocument();
     if (xmlDoc.isNull()) {
@@ -2070,50 +2175,11 @@ void DAAppProject::loadedTableStyles(const std::shared_ptr< DAAbstractArchiveTas
     if (stylesEle.isNull()) {
         return;
     }
-    DADataOperateWidget* optWidget = getDataOperateWidget();
-    if (!optWidget || !optWidget->styleRegistry()) {
-        return;
-    }
-    DADataManagerInterface* dataMgr = getDataManagerInterface();
     QDomNode n = stylesEle.firstChild();
     while (!n.isNull()) {
         QDomElement tableEle = n.toElement();
-        if (tableEle.isNull() || tableEle.tagName() != QLatin1String("table")) {
-            n = n.nextSibling();
-            continue;
-        }
-        // 优先按 data-id 匹配（跨会话稳定），回退 data-name（旧工程）
-        DAData matched;
-        if (tableEle.hasAttribute(QStringLiteral("data-id"))) {
-            bool ok = false;
-            DAAbstractData::IdType id = tableEle.attribute(QStringLiteral("data-id")).toULongLong(&ok);
-            if (ok && id != 0) {
-                matched = dataMgr->getDataById(id);
-            }
-        }
-        if (matched.isNull()) {
-            QString dataName = tableEle.attribute(QStringLiteral("data-name"));
-            if (!dataName.isEmpty()) {
-                matched = dataMgr->dataManager()->findData(dataName);
-            }
-        }
-        if (matched.isNull()) {
-            QString hint = tableEle.attribute(QStringLiteral("data-name"));
-            if (hint.isEmpty()) {
-                hint = tableEle.attribute(QStringLiteral("data-id"));
-            }
-            daWarning << tr("Table style for data '%1' has no matching data, skipped").arg(hint);  // cn:数据'%1'的表格样式未找到匹配数据，已跳过
-            n = n.nextSibling();
-            continue;
-        }
-        // 回填到会话级注册表（随数据存在，后续打开 widget 即可见）
-        DATableStyleManager* mgr = optWidget->styleRegistry()->getOrCreate(matched);
-        if (mgr) {
-            mgr->fromXml(tableEle);
-            // 若该数据已有打开的 widget，触发刷新重绘
-            if (auto* w = optWidget->findDataFrameWidget(matched)) {
-                w->refreshTable();
-            }
+        if (!tableEle.isNull() && tableEle.tagName() == QLatin1String("table")) {
+            applyLoadedTableElement(tableEle);
         }
         n = n.nextSibling();
     }

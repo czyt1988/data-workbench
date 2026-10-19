@@ -1,23 +1,21 @@
 # 可缩放图元模块
 
-可缩放图元编辑模块（DAGraphicsView）基于 Qt 的 Graphics View 框架，提供类似 Microsoft Visio 的图元缩放编辑功能，是工作流可视化编辑的核心基础模块。
+可缩放图元编辑模块（DAGraphicsView）基于 Qt 的 Graphics View 框架，提供类似 Microsoft Visio 的图元缩放编辑功能，是工作流可视化编辑的基础模块。
 
 ## 主要功能特性
 
-**特性**
-
-- ✅ **8控制点缩放**：提供8个可视控制点，用户可通过拖拽控制点调整图元尺寸
-- ✅ **鼠标事件集成**：自动处理鼠标悬停、点击、拖拽事件，实现流畅的缩放交互
-- ✅ **尺寸限制**：支持设置最小/最大尺寸，防止图元过小或过大
-- ✅ **网格对齐**：支持网格对齐功能，便于精确定位
-- ✅ **redo/undo 支持**：图元缩放操作支持撤销重做
-- ✅ **XML 序列化**：支持图元状态保存和加载
+- 提供 8 个可视控制点，拖拽控制点即可调整图元尺寸
+- 自动处理鼠标悬停、点击、拖拽事件，缩放交互流畅
+- 支持设置最小/最大尺寸，防止图元过小或过大
+- 支持网格对齐，便于精确定位
+- 图元缩放操作支持撤销重做
+- 支持图元状态的保存和加载（XML 序列化）
 
 ## 模块架构
 
 ### 核心类关系图
 
-绘图模块的核心类通过继承关系组织，`DAGraphicsResizeableItem` 提供缩放控制功能，派生出矩形、图片等具体图元类型。下图展示了类的继承和依赖关系：
+绘图模块的核心类通过继承关系组织，`DAGraphicsResizeableItem` 提供缩放控制功能，派生出矩形、图片等具体图元类型。下图是类的继承和依赖关系：
 
 ```mermaid
 classDiagram
@@ -44,10 +42,13 @@ classDiagram
         +setBodyMaximumSize()
         +setEnableResize()
         +paintBody()
-        +paintSelectedBorder()
-        +paintResizeControlPoints()
-        +prepareControlInfoChange()
-        +getControlPointByPos()
+        +controlPointSize()
+    }
+    
+    class DAGraphicsResizeOverlayItem {
+        +setControlPointSize()
+        +controlPointSize()
+        +syncToTarget()
         +isResizing()
     }
     
@@ -87,13 +88,14 @@ classDiagram
     DAGraphicsItem <|-- DAGraphicsResizeableItem
     DAGraphicsResizeableItem <|-- DAGraphicsRectItem
     DAGraphicsResizeableItem <|-- DAGraphicsPixmapItem
+    DAGraphicsResizeOverlayItem --> DAGraphicsResizeableItem : 选中时附着，提供控制点
     DAGraphicsScene --> DAGraphicsResizeableItem : 管理
     DAGraphicsView --> DAGraphicsScene : 显示
 ```
 
 上图展示了可缩放图元模块的类继承关系：
 - `DAGraphicsItem` 是所有图元的基类，提供 XML 序列化、边框、可选、可移动等基础功能
-- `DAGraphicsResizeableItem` 在基类基础上添加 8 控制点缩放功能
+- `DAGraphicsResizeableItem` 在基类基础上添加缩放能力，控制点由选中时附着的 `DAGraphicsResizeOverlayItem` 提供
 - `DAGraphicsRectItem` 和 `DAGraphicsPixmapItem` 是具体的图元实现
 - `DAGraphicsScene` 和 `DAGraphicsView` 提供场景管理和视图显示
 
@@ -115,7 +117,7 @@ flowchart LR
 
 ### DAGraphicsResizeableItem
 
-`DAGraphicsResizeableItem` 是可缩放图元模块的核心类，继承自 `DAGraphicsItem`，提供了完整的图元缩放控制功能。
+`DAGraphicsResizeableItem` 是可缩放图元模块的核心类，继承自 `DAGraphicsItem` 并实现 `DAIResizableGraphicsItem` 接口，负责图元的 body 尺寸管理。
 
 #### 关键设计理念
 
@@ -123,14 +125,14 @@ flowchart LR
 
 | 接口 | 说明 |
 |------|------|
-| `paint` | 完整绘制流程，包含控制点、边框、内容体 |
+| `paint` | 完整绘制流程，依次绘制背景、边框、内容体，选中时补选中边框 |
 | `paintBody` | 仅绘制内容体，用户只需重写此方法 |
 
-这种设计将控制点绘制、边框绘制等公共逻辑封装在基类中，用户只需关注核心内容绘制。
+这种设计把背景、边框等公共绘制逻辑留在基类，控制点改由 `DAGraphicsResizeOverlayItem` 覆盖层绘制，用户只需关注核心内容绘制。
 
 #### 控制点类型
 
-图元提供8个控制点和4条控制线，用于精确调整尺寸：
+图元被单选选中时，场景会创建 `DAGraphicsResizeOverlayItem` 覆盖层，由它提供 8 个控制点和一个位于 body 正上方的旋转控制点（`RotationHandle`）。控制点类型枚举定义在 `src/DAGraphicsView/DAGraphicsResizeOverlayItem.h`：
 
 ```cpp
 enum ControlType {
@@ -143,10 +145,7 @@ enum ControlType {
     ControlPointBottomMid,       // 底部中间控制点
     ControlPointBottomLeft,      // 左下控制点
     ControlPointLeftMid,         // 左面中间控制点
-    ControlLineLeft,             // 左边控制线
-    ControlLineTop,              // 顶部控制线
-    ControlLineRight,            // 右边控制线
-    ControlLineBottom            // 底部控制线
+    RotationHandle               // 旋转控制点，位于 body 正上方
 };
 ```
 
@@ -154,24 +153,23 @@ enum ControlType {
 
 #### 绘制流程
 
-`DAGraphicsResizeableItem::paint` 的完整绘制流程如下。该流程自动处理选中状态、控制点、边框的绘制，用户只需实现 `paintBody`：
+`DAGraphicsResizeableItem::paint` 依次绘制背景、边框和内容体，选中时再补一圈虚线边框；控制点不在 `paint` 里处理，由 Overlay 负责，用户只需实现 `paintBody`：
 
 ```mermaid
 flowchart TD
-    A[paint 开始] --> B{是否选中}
-    B -->|选中| C[paintSelectedBorder]
-    B -->|未选中| D[paintBackground]
-    C --> E[paintResizeControlPoints]
-    E --> F[paintBody]
-    D --> F
-    F --> G[paintBorder]
-    G --> H[paint 结束]
+    A[paint 开始] --> B[paintBackground]
+    B --> C[paintBorder]
+    C --> D[paintBody]
+    D --> E{是否选中}
+    E -->|选中| F[绘制选中虚线边框]
+    E -->|未选中| G[paint 结束]
+    F --> G
 ```
 
 上图展示了完整的绘制流程：
-- 选中状态决定是否绘制选中边框和控制点
-- 无论是否选中，都会绘制背景和内容体
-- 最后绘制边框，完成整体渲染
+- 背景、边框、内容体按固定顺序绘制
+- 选中时额外绘制一圈虚线边框
+- 控制点由场景里的 Overlay 单独绘制，与 `paint` 无关
 
 ## 使用方法
 
@@ -241,17 +239,11 @@ scene->addItem_(pixmapItem);
 监听图元尺寸变化信号：
 
 ```cpp
-// 连接场景的尺寸变化信号
+// 连接场景的尺寸变化信号（图元自身不发出这个信号）
 connect(scene, &DA::DAGraphicsScene::itemBodySizeChanged,
         this, [](DA::DAGraphicsResizeableItem* item, 
                  const QSizeF& oldSize, const QSizeF& newSize) {
     qDebug() << "图元尺寸从" << oldSize << "变为" << newSize;
-});
-
-// 连接单个图元的尺寸变化信号
-connect(rectItem, &DA::DAGraphicsResizeableItem::itemBodySizeChanged,
-        this, [](const QSizeF& oldSize, const QSizeF& newSize) {
-    qDebug() << "尺寸变化：" << oldSize << "->" << newSize;
 });
 ```
 
@@ -269,7 +261,7 @@ item->setBodyMaximumSize(QSizeF(500, 400));
 // 禁用缩放功能
 item->setEnableResize(false);
 
-// 设置控制点大小
+// 设置控制点大小（已标记废弃，控制点交互由 Overlay 负责，保留用于兼容旧代码）
 item->setControlerSize(QSizeF(8, 8));
 ```
 
@@ -293,7 +285,7 @@ scene->setGridLinePen(QPen(QColor(200, 200, 200), 1, Qt::DotLine));
 
 ## 与工作流模块的关系
 
-可缩放图元模块是工作流可视化编辑的基础，工作流节点图元继承可缩放图元获得完整的编辑能力。下图展示了两个模块的关系：
+工作流节点图元继承可缩放图元，获得完整的编辑能力。下图是两个模块的关系：
 
 ```mermaid
 flowchart TD
@@ -310,12 +302,13 @@ flowchart TD
 上图展示了可缩放图元模块如何支撑工作流可视化编辑：
 - `DAAbstractNodeGraphicsItem` 继承 `DAGraphicsResizeableItem`，获得 8 控制点缩放能力
 - 缩放控制点支持节点尺寸调整，鼠标事件处理支持节点交互
-- redo/undo 支持操作历史，实现完整的编辑体验
+- redo/undo 记录操作历史
 
-工作流模块中的 `DAAbstractNodeGraphicsItem` 继承 `DAGraphicsResizeableItem`，通过可缩放图元的能力实现工作流节点的可视化编辑。
+工作流模块中的 `DAAbstractNodeGraphicsItem` 继承 `DAGraphicsResizeableItem`，因此具备缩放编辑能力。
 
-!!! tip "继承关系"
-    自定义工作流节点图元时，继承 `DAAbstractNodeGraphicsItem` 即可获得完整的缩放编辑能力。
+> **💡 继承关系**
+>
+> 自定义工作流节点图元时，继承 `DAAbstractNodeGraphicsItem` 即可获得完整的缩放编辑能力。
 
 ## API 参考
 
@@ -330,9 +323,7 @@ flowchart TD
 | `setBodyMaximumSize` | QSizeF | void | 设置最大尺寸限制 |
 | `setEnableResize` | bool | void | 设置是否允许缩放 |
 | `isResizable` | 无 | bool | 判断是否可缩放 |
-| `setControlerSize` | QSizeF | void | 设置控制点大小 |
-| `prepareControlInfoChange` | 无 | void | 尺寸变化后刷新控制点信息 |
-| `getControlPointByPos` | QPointF | ControlType | 检测点在哪个控制点上 |
+| `setControlerSize` | QSizeF | void | 设置控制点大小（已标记废弃，控制点交互改由 Overlay 负责） |
 
 ### DAGraphicsResizeableItem 需重写方法
 
@@ -346,7 +337,7 @@ flowchart TD
 
 | 信号 | 参数 | 触发时机 |
 |------|------|----------|
-| `itemBodySizeChanged` | QSizeF, QSizeF | 内容尺寸变化时 |
+| `itemBodySizeChanged` | DAGraphicsResizeableItem*, QSizeF, QSizeF | 内容尺寸变化时（由 `DAGraphicsScene` 发出） |
 
 ### DAGraphicsScene 相关方法
 
@@ -361,25 +352,27 @@ flowchart TD
 
 ## 注意事项
 
-!!! warning "PIMPL 模式"
-    `DAGraphicsResizeableItem` 使用 PIMPL 模式实现，相关宏定义见 `DAGlobals.h`：
-    - `DA_DECLARE_PRIVATE` - 声明私有数据指针
-    - `DA_D` - 获取私有数据指针
+> **⚠️ PIMPL 模式**
+>
+> `DAGraphicsResizeableItem` 使用 PIMPL 模式实现，相关宏定义见 `DAGlobals.h`：
+> - `DA_DECLARE_PRIVATE` - 声明私有数据指针
+> - `DA_D` - 获取私有数据指针
 
-!!! warning "prepareControlInfoChange 调用"
-    在尺寸变化后（如 `prepareGeometryChange` 之后）必须调用 `prepareControlInfoChange()` 刷新控制点信息，否则控制点位置可能不正确。
+> **⚠️ 控制点刷新**
+>
+> `prepareControlInfoChange()` 已随 Overlay 改造移除。控制点由场景创建的 `DAGraphicsResizeOverlayItem` 绘制，它通过 `syncToTarget()` 跟随目标图元的位置和尺寸，不需要在尺寸变化后手动刷新控制点信息。
 
-!!! tip "paintBody 绘制范围"
-    `paintBody` 的 `bodyRect` 参数限定绘制区域，请勿在此区域外绘制，否则可能导致显示异常。
+> **💡 paintBody 绘制范围**
+>
+> `paintBody` 的 `bodyRect` 参数限定绘制区域，不要在此区域外绘制，否则可能导致显示异常。
 
-!!! note "Qt版本兼容性"
-    Qt5 和 Qt6 的 Graphics View 框架接口基本一致，无需特殊兼容处理。
+> **📝 Qt版本兼容性**
+>
+> Qt5 和 Qt6 的 Graphics View 框架接口基本一致，无需特殊兼容处理。
 
-!!! info "样式配置"
-    全局样式通过 `daGlobalGraphicsResizeableItemPalette` 单例管理：
-    - `resizeControlPointBorderColor` - 控制点边框颜色
-    - `resizeBorderColor` - 选中边框颜色
-    - `resizeControlPointBrush` - 控制点填充颜色
+> **ℹ️ 样式配置**
+>
+> 控制点尺寸记录在图元自身（`controlPointSize()`，随图元序列化到 XML 的 `controler` 节点），选中边框由图元用固定的虚线画笔绘制，覆盖层的控制点外观在 `DAGraphicsResizeOverlayItem` 内部绘制。
 
 ## 参考资料
 

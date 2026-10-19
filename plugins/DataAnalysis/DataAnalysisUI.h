@@ -66,11 +66,13 @@ public:
     QAction* actionDataFrameTransformSkewedData { nullptr };   ///< 转换偏态数值数据以改善分布
     // Data Filtering Panel 数据过滤panel
     SARibbonPanel* pannelDataFiltering { nullptr };
-    QAction* actionDataFrameEvalDatas { nullptr };         ///< 数值计算
     QAction* actionDataFrameQueryDatas { nullptr };        ///< 列数据过滤
-    QAction* actionDataFrameDataRetrieval { nullptr };     ///< 检索指定数据
     QAction* actionDataFrameDataFilterColumn { nullptr };  ///< 过滤范围外的数据
-    QAction* actionDataFrameSort { nullptr };              ///< 数据排序
+    // 排序/检索入口已按 002 计划收口移除（内核 DADataOperateOfDataFrameWidget 表头点击排序 +
+    // 浮动查找条替代）；公式（Eval Data）入口已按 004 计划收口移除（内核 DAGui 计算列
+    // DADialogComputedColumn 替代）；DADataAnalysisCore 的 sort_dataframe/search_dataframe/
+    // eval_expression 与工作流节点 data_sort_node.py/data_search_node.py/data_eval_node.py
+    // 是独立入口，保留不动（D0/R2）
     // Statistic Panel 数据统计panel
     SARibbonPanel* panelDataStatistic { nullptr };
     QAction* actionCreateDataDescribe { nullptr };  ///< 数据描述

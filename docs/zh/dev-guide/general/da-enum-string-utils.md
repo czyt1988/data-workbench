@@ -4,12 +4,12 @@
 
 ## 概述
 
-`DAEnumStringUtils.hpp` 提供了一套基于宏的枚举字符串转换机制，用于在 C++ 枚举值和 `QString` 之间进行双向映射。该系统解决了手动编写枚举转换函数的繁琐问题，支持大小写敏感和不敏感两种匹配模式，并包含跨模块导出支持（DLL/共享库）。
+`DAEnumStringUtils.hpp` 提供了一套基于宏的枚举字符串转换机制，用于在 C++ 枚举值和 `QString` 之间进行双向映射，支持大小写敏感和不敏感两种匹配模式，并包含跨模块导出支持（DLL/共享库）。
 
 核心功能：
 
-- `enumToString(value)` — 枚举值转字符串
-- `stringToEnum<Type>(str, default)` — 字符串转枚举值
+- `enumToString(value)`：枚举值转字符串
+- `stringToEnum<Type>(str, default)`：字符串转枚举值
 - 大小写敏感 / 不敏感两种匹配策略
 - 共享库导出支持（`DA_ENUM_STRING_DECLARE_EXPORT`）
 
@@ -63,8 +63,8 @@ using DAEnumEntry = std::pair< EnumType, const char* >;
 
 系统采用 C++ 模板分离编译模式：
 
-- **头文件 (.h)** — 使用声明宏告知编译器需要为该枚举生成转换函数
-- **源文件 (.cpp)** — 使用定义宏实际构建映射表
+- **头文件 (.h)**：使用声明宏告知编译器需要为该枚举生成转换函数
+- **源文件 (.cpp)**：使用定义宏实际构建映射表
 
 这种分离确保了一个枚举的映射只在翻译单元中定义一次，避免 ODR 违反。
 
@@ -304,7 +304,7 @@ QString key = DAEnumTraits< EnumType >::caseSensitive ? s : s.toLower();
 
 ### 实践建议
 
-项目中的所有现有枚举映射均使用 `DA_ENUM_STRING_INSENSITIVE_DEFINE`。推荐遵循这一约定，映射字符串值统一使用小写加下划线的格式，例如：
+项目中的所有现有枚举映射均使用 `DA_ENUM_STRING_INSENSITIVE_DEFINE`。推荐遵循这一约定，映射字符串值统一使用小写加下划线的格式，比如：
 
 - `rounded_rect`、`ellipse`（节点形状）
 - `left_of_text`、`above_text`（图标位置）
@@ -378,7 +378,7 @@ DA_ENUM_STRING_DECLARE_EXPORT(DAUTILS_API, QFont::Weight)
 
 ## 项目约定
 
-本项目对枚举字符串转换有一系列约定，遵循这些约定可以保持代码库的一致性。
+本项目对枚举字符串转换有一系列约定。
 
 ### 文件命名
 
@@ -417,7 +417,7 @@ DA_ENUM_STRING_DECLARE_EXPORT(DAUTILS_API, QFont::Weight)
 
 当某个枚举存在类型别名时，不需要重复声明和定义。直接复用原枚举的映射即可。
 
-例如 `PortSide` 是 `AspectDirection` 的类型别名：
+比如 `PortSide` 是 `AspectDirection` 的类型别名：
 
 ```cpp
 // DAPyNodeStyleDefine.h
@@ -526,13 +526,13 @@ using PortSide = AspectDirection;
 
 ## 完整示例
 
-以下提供从零到一的完整示例，涵盖头文件中定义枚举、声明映射、源文件中定义映射、以及应用代码中使用的全过程。
+以下完整示例覆盖头文件中定义枚举并声明映射、源文件中定义映射、应用代码中使用这三个环节。
 
 ### 示例一：模块内部使用
 
 假设在 `DAModule` 模块中定义了一组枚举，仅需在本模块内部使用转换功能。
 
-**头文件 — `DAModule/DAModuleEnum.h`：**
+**头文件 `DAModule/DAModuleEnum.h`：**
 
 ```cpp
 #ifndef DAMODULEENUM_H
@@ -563,7 +563,7 @@ DA_ENUM_STRING_DECLARE(DA::DataPhase)
 #endif  // DAMODULEENUM_H
 ```
 
-**源文件 — `DAModule/DAModuleEnumStringUtils.cpp`：**
+**源文件 `DAModule/DAModuleEnumStringUtils.cpp`：**
 
 ```cpp
 #include "DAModuleEnum.h"
@@ -600,7 +600,7 @@ void runPhase(DA::DataPhase phase)
 
 如果枚举所在的模块是共享库，需要让其他模块调用转换函数，则使用导出模式。
 
-**头文件 — `DALib/DALibEnum.h`：**
+**头文件 `DALib/DALibEnum.h`：**
 
 ```cpp
 #ifndef DALIBENUM_H
@@ -631,7 +631,7 @@ DA_ENUM_STRING_DECLARE_EXPORT(DALIB_API, DA::LogLevel)
 #endif  // DALIBENUM_H
 ```
 
-**源文件 — `DALib/DALibEnumStringUtils.cpp`：**
+**源文件 `DALib/DALibEnumStringUtils.cpp`：**
 
 ```cpp
 #include "DALibEnum.h"
@@ -653,7 +653,7 @@ template DALIB_API DA::LogLevel DA::stringToEnum<DA::LogLevel>(const QString&, D
 
 项目中大量使用了 Qt 和 Qwt 的枚举，这些枚举不在 `DA` 命名空间中，但仍可以使用本系统。
 
-**头文件 — `DAUtils/DAQtEnumTypeStringUtils.h`：**
+**头文件 `DAUtils/DAQtEnumTypeStringUtils.h`：**
 
 ```cpp
 #ifndef DAQTENUMTYPESTRINGUTILS_H
@@ -670,7 +670,7 @@ DA_ENUM_STRING_DECLARE_EXPORT(DAUTILS_API, Qt::BrushStyle)
 #endif  // DAQTENUMTYPESTRINGUTILS_H
 ```
 
-**源文件 — `DAUtils/DAQtEnumTypeStringUtils.cpp`：**
+**源文件 `DAUtils/DAQtEnumTypeStringUtils.cpp`：**
 
 ```cpp
 #include "DAQtEnumTypeStringUtils.h"

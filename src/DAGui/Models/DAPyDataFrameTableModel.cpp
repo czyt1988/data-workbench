@@ -311,24 +311,6 @@ void DAPyDataFrameTableModel::setUseCacheMode(bool on)
 }
 
 /**
- * @brief 设置滑动窗模式的起始行
- * @param startRow
- */
-void DAPyDataFrameTableModel::setCacheWindowStartRow(int startRow)
-{
-    DA_D(d);
-
-    // startRow限制在指定的最小值和最大值之间。它能够确保startRow不会超出给定的范围
-    const int dr        = d->getDataframeRowCount();
-    const int cacheSize = getCacheWindowSize();
-    startRow            = qBound(0, startRow, dr - cacheSize + d->extraRow);
-    if (startRow >= dr) {
-        startRow = dr - 1;
-    }
-    DAAbstractCacheWindowTableModel::setCacheWindowStartRow(startRow);
-}
-
-/**
  * @brief 全部刷新
  */
 void DAPyDataFrameTableModel::refreshData()
@@ -397,6 +379,8 @@ void DAPyDataFrameTableModel::cacheColumnShape()
 void DAPyDataFrameTableModel::setExtraRowCount(int v)
 {
     d_ptr->extraRow = v;
+    // 额外空行数参与窗口起始行上界计算，改变后重新夹取一次
+    setCacheWindowStartRow(getCacheWindowStartRow());
 }
 
 /**

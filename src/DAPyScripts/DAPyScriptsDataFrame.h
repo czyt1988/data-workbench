@@ -5,6 +5,8 @@
 #include <optional>
 #include <QString>
 #include <QList>
+#include <QPair>
+#include <QVector>
 #include "DAPyObjectWrapper.h"
 #include "numpy/DAPyDType.h"
 #include "pandas/DAPyDataFrame.h"
@@ -83,12 +85,204 @@ public:
 	bool clipoutlier(DAPyDataFrame& df, double lowervalue, double uppervalue, int axis) noexcept;
 	// querydatas()
 	bool queryDatas(DAPyDataFrame& df, const QString& expr) noexcept;
-	// searchdata()
-	QList< QPair< int, int > > searchData(const DAPyDataFrame& df, const QString& value) noexcept;
+	// 查找结果（紧凑命中数组 + 真实总数，§4.2 硬约束③：超上限截断时 totalHits > rows.size()）
+	struct SearchDataResult
+	{
+		QVector< int > rows;        ///< 命中行（数据源绝对行号，行主序）
+		QVector< int > cols;        ///< 命中列
+		int totalHits        = 0;   ///< 真实命中总数（含被截断部分）
+		bool ok              = false;  ///< 调用是否成功（无效正则等抛错为 false）
+		bool truncated() const
+		{
+			return totalHits > rows.size();
+		}
+	};
+	// 查找（扩展选项，对应 da_search_data）：大小写/正则/整格 + 行/列范围闭区间
+	//（nullopt=不限），命中超 maxHits 截断（totalHits 返回真实总数）
+	SearchDataResult searchData(const DAPyDataFrame& df,
+	                            const QString& value,
+	                            bool caseSensitive,
+	                            bool useRegex,
+	                            bool wholeCell,
+	                            const std::optional< QPair< int, int > >& rowRange = std::nullopt,
+	                            const std::optional< QPair< int, int > >& colRange = std::nullopt,
+	                            int maxHits                                       = 100000) noexcept;
+	// 查找替换（对应 da_find_and_replace）：按同一匹配语义就地替换，
+	// 变更清单输出到 rows/cols/oldValues/newValues（Python list，值记录撤销用 D4）；
+	// 出参可空（超阈值降级路径只要替换结果不要清单）。正则无效等抛错返回 false
+	bool findReplace(DAPyDataFrame& df,
+	                 const QString& find,
+	                 const QString& replace,
+	                 bool caseSensitive,
+	                 bool useRegex,
+	                 bool wholeCell,
+	                 const std::optional< QPair< int, int > >& rowRange = std::nullopt,
+	                 const std::optional< QPair< int, int > >& colRange = std::nullopt,
+	                 QVector< int >* rows                               = nullptr,
+	                 QVector< int >* cols                               = nullptr,
+	                 pybind11::list* oldValues                          = nullptr,
+	                 pybind11::list* newValues                          = nullptr) noexcept;
+	// 按变更清单批量写回单元格值（对应 da_write_cells，替换命令 undo/redo 用）
+	bool writeCells(DAPyDataFrame& df, const QVector< int >& rows, const QVector< int >& cols, const pybind11::list& values) noexcept;
+	// ===== 填充（005 T1.24）=====
+	// 选区填充求值结果（对应 da_dataframe.da_fill_selection）：rows/values 一一对应，
+	// 只含实际变化的单元格（空值判定由 pandas 完成，D4 值记录组织成一条 paste 命令）
+	struct FillSelectionResult
+	{
+		QVector< int > rows;   ///< 要写入的绝对行位置（升序）
+		QVariantList values;   ///< 对应新值（datetime 列经 caster 落 QDateTime）
+		bool ok { false };     ///< 调用是否成功（列越界/模式非法为 false）
+	};
+	// 选区填充求值：第 col 列行区间 [rowStart,rowEnd]（闭区间，绝对行位置）按 mode
+	// 计算填充后变化的单元格，**不改数据**，只返回写入清单（C++ 组织成 paste 命令）。
+	// mode = "down"/"up"/"ffill"/"bfill"。区间不足两行或无变化返回空清单且 ok=true
+	FillSelectionResult fillSelection(const DAPyDataFrame& df, int col, int rowStart, int rowEnd, const QString& mode) noexcept;
+	// 序列填充生成（对应 da_dataframe.da_fill_series，预览与写入共用）：
+	// kind = "linear"（数值等差）/"date"（日期步进）；start/step/stop 空串=用 Python 默认；
+	// dateUnit = "D"/"W"/"M"/"Y"。返回长度 count 的值序列（QVariant），count<=0 或参数
+	// 解析失败返回空列表且 *ok=false（start 无法解析为日期等）
+	QVariantList fillSeries(int count,
+	                        const QString& kind,
+	                        const QString& start,
+	                        const QString& step,
+	                        const QString& stop,
+	                        const QString& dateUnit,
+	                        bool* ok = nullptr) noexcept;
+	// ===== 数据校验（005 T1.25）=====
+	// 校验规则规格（下发 Python 求值；列引用 = 列名 + 第 n 个同名列消歧，R20。
+	// 定义类 DATableValidationRule 在 DAData，本结构只做跨模块参数传递，避免
+	// DAPyScripts → DAData 依赖）
+	struct ValidationRuleSpec
+	{
+		int index { -1 };        ///< 规则序号（结果按此对齐回传）
+		QString column;          ///< 列名
+		int occurrence { 0 };    ///< 第 n 个同名列（0 起）
+		QString type;            ///< "numeric-range"/"date-range"/"enum"/"not-empty"/"unique"/"regex"
+		double numericMin { 0.0 };
+		double numericMax { 0.0 };
+		bool hasMin { false };
+		bool hasMax { false };
+		QString dateMin;         ///< ISO 日期串（空 = 不限）
+		QString dateMax;
+		QStringList enumValues;
+		QString regexPattern;
+	};
+	// 单条规则的校验结果
+	struct ValidationRuleResult
+	{
+		int index { -1 };        ///< 对应 spec 的规则序号
+		QVector< int > rows;     ///< 违规行（数据源绝对行位置，升序；列缺失为空）
+	};
+	// 一键校验求值（对应 da_dataframe.da_validate_dataframe）：**只读不改 df**（红线2），
+	// 空值判定/比较全部由 pandas 完成；结果按 spec.index 对齐输出到 results。
+	// 列不存在 → 该条空清单（不报错）；正则非法等 Python 抛错 → 返回 false（errorMessage 输出诊断）
+	bool validateDataFrame(const DAPyDataFrame& df,
+	                       const QList< ValidationRuleSpec >& specs,
+	                       QList< ValidationRuleResult >* results,
+	                       QString* errorMessage = nullptr) noexcept;
 	// eval
 	bool evalDatas(DAPyDataFrame& df, const QString& expr) noexcept;
-	// 排序sort()
-	bool sort(DAPyDataFrame& df, const QString& by, bool ascending) noexcept;
+	// ===== 计算列（004 T1.23）=====
+	// 计算列求值结果（对应 da_dataframe.da_eval_column）
+	struct EvalColumnResult
+	{
+		bool ok { false };         ///< 求值是否成功（语法错误/引用不存在列等抛错为 false，df 不变）
+		bool hadColumn { false };  ///< 求值前目标列是否已存在（false=新建列，undo 应删除该列）
+		DAPySeries oldColumn;      ///< hadColumn=true 时为求值前旧列快照（列级撤销记录，D4）
+		QString errorMessage;      ///< 失败时的异常信息（英文诊断，对话框提示用）
+	};
+	// 计算列求值：把 body（RHS 表达式，列引用可含反引号）求值结果写入 targetColumn 列，
+	// 返回旧列快照（对应 da_dataframe.da_eval_column；目标列名可含空格，健壮路径见算子注释）
+	EvalColumnResult evalColumn(DAPyDataFrame& df, const QString& targetColumn, const QString& body) noexcept;
+	// 提取表达式体引用的列名（与 df 实际列的交集，按列序返回，对应 da_dataframe.da_expr_depends）；
+	// 表达式无法解析（语法错误）返回空列表且 *ok=false（errorMessage 输出异常诊断）
+	QStringList exprDepends(const DAPyDataFrame& df, const QString& body, bool* ok = nullptr, QString* errorMessage = nullptr) noexcept;
+	// 列名在 eval 表达式里是否需要反引号包裹（对应 da_dataframe.da_needs_backtick，R20）
+	bool needsBacktick(const QString& name) noexcept;
+	// 取头部前 n 行的独立副本（对话框预览与执行同一算子，对应 da_dataframe.da_head_copy）
+	DAPyDataFrame headCopy(const DAPyDataFrame& df, int n) noexcept;
+	// 取某列的独立副本（分列/合列命令列级快照，对应 da_dataframe.da_get_column_copy）；越界返回 none
+	DAPySeries getColumnCopy(const DAPyDataFrame& df, int col) noexcept;
+	// 按列名把 series 写回列（计算列重算命令 undo 还原，对应 da_dataframe.da_set_column）
+	bool setColumn(DAPyDataFrame& df, const QString& name, const DAPySeries& series) noexcept;
+	// ===== 分列 / 合并列（004 T1.9）=====
+	// 分列（对应 da_dataframe.da_split_column，就地：结果列插入原列右侧，原列保留）：
+	// mode = "char"/"regex"/"width"；maxColumns<=0 表示不限；overflow = "discard"/"keep"/"error"；
+	// newNames 空 = 自动命名 "{源列名}_{i}"。成功返回实际插入的结果列名（按顺序）；
+	// 失败（参数/正则/溢出策略抛错）返回空列表且 errorMessage 输出诊断
+	QStringList splitColumn(DAPyDataFrame& df,
+	                        int col,
+	                        const QString& mode,
+	                        const QString& delimiter,
+	                        const QString& pattern,
+	                        const QList< int >& widths,
+	                        int maxColumns,
+	                        const QString& overflow,
+	                        bool inferNumeric,
+	                        const QStringList& newNames,
+	                        QString* errorMessage = nullptr) noexcept;
+	// 合并列（对应 da_dataframe.da_merge_columns，就地：结果列插到最左源列位置并删除源列）；
+	// 成功返回插入位置（>=0），失败返回 -1 且 errorMessage 输出诊断
+	int mergeColumns(DAPyDataFrame& df, const QList< int >& cols, const QString& sep, bool skipNa, const QString& name, QString* errorMessage = nullptr) noexcept;
+	// ===== 分组聚合（004 T1.22）=====
+	// 分组聚合（对应 da_dataframe.da_groupby_aggregate）：产出长格式聚合结果表
+	//（新 DataFrame，不改原表）；聚合函数集合与透视表对齐（mean/sum/size）。
+	// values/funcs 一一对应；失败返回 none 的 DAPyDataFrame 且 errorMessage 输出诊断
+	DAPyDataFrame groupbyAggregate(const DAPyDataFrame& df,
+	                               const QStringList& keys,
+	                               const QStringList& values,
+	                               const QStringList& funcs,
+	                               QString* errorMessage = nullptr) noexcept;
+	// 分组数（对话框「预估结果行数」，对应 da_dataframe.da_group_count）；失败返回 -1
+	qint64 groupCount(const DAPyDataFrame& df, const QStringList& keys) noexcept;
+	// ===== 形状变换（004 T1.27）=====
+	// 转置（对应 da_dataframe.da_transpose）：产出新 DataFrame（不改原表，R14）；
+	// 失败返回显式 none 的 DAPyDataFrame
+	DAPyDataFrame transpose(const DAPyDataFrame& df, QString* errorMessage = nullptr) noexcept;
+	// 宽转长 melt（对应 da_dataframe.da_melt）：产出新 DataFrame（不改原表）；
+	// valueVars 空 = 除 idVars 外全部列（pandas 语义）；失败返回显式 none
+	DAPyDataFrame melt(const DAPyDataFrame& df,
+	                   const QStringList& idVars,
+	                   const QStringList& valueVars,
+	                   const QString& varName,
+	                   const QString& valueName,
+	                   QString* errorMessage = nullptr) noexcept;
+	// 多键稳定排序，对应da_dataframe.da_sort：keys为(列位置,是否升序)列表（顺序即优先级），
+	// 成功返回true；perm非空时输出置换（perm[i]=新表第i行在旧表中的行号，与DATableKeyRemap语义一致）
+	bool sort(DAPyDataFrame& df, const QVector< QPair< int, bool > >& keys, QVector< int >* perm = nullptr) noexcept;
+	// 按给定置换就地重排行（new[i]=old[perm[i]]），对应da_dataframe.da_reorder_rows，
+	// 排序命令的redo/undo用它施加正/逆置换
+	bool reorderRows(DAPyDataFrame& df, const QVector< int >& perm) noexcept;
+	// 列统计结果（条件格式色阶/数据条端点，对应 da_dataframe.da_column_stats）
+	struct ColumnStatsResult
+	{
+		bool ok = false;  ///< 计算是否成功（列越界/全NaN/非数值列为 false）
+		double minValue { 0.0 };
+		double maxValue { 0.0 };
+		double medianValue { 0.0 };
+	};
+	// 单列 min/max/median 全表 O(n) 归约（NaN 排除，不采样不近似）；
+	// 列越界抛错或全 NaN 返回 ok=false
+	ColumnStatsResult columnStats(const DAPyDataFrame& df, int col) noexcept;
+	// 选区列统计结果（007 T1.7，对应 da_column_stats 的 cols/row_range/unique_limit 扩展路径）
+	struct SelectionColumnStats
+	{
+		std::size_t count { 0 };
+		std::size_t nullCount { 0 };
+		std::optional< std::size_t > uniqueCount;      ///< nullopt = 未计算（超阈值/不需要）
+		std::optional< double > sum, mean, min, max;   ///< 非数值列全 nullopt
+	};
+	struct SelectionStatsResult
+	{
+		bool ok { false };                      ///< false = 调用失败/引擎异常（上层当作"不支持"）
+		QList< SelectionColumnStats > columns;  ///< 与 cols 同序
+	};
+	// 按列区间统计（半开区间 [rowBegin, rowEnd)；空值/类型语义全部由 Python 判定）
+	SelectionStatsResult columnStatsRange(const DAPyDataFrame& df,
+	                                      const QList< int >& cols,
+	                                      std::size_t rowBegin,
+	                                      std::size_t rowEnd,
+	                                      std::size_t uniqueLimit) noexcept;
 	// dataselect()
 	bool dataselect(DAPyDataFrame& df, double lowervalue, double uppervalue, const QString& index) noexcept;
 

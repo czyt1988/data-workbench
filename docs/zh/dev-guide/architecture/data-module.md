@@ -1,15 +1,15 @@
 # 数据模块 DAData
 
-数据模块 `DAData` 负责管理 DAWorkBench 中所有数据对象的创建、存储、查询和操作，是连接 Python 数据处理能力和 C++ GUI 框架的核心桥梁。
+数据模块 `DAData` 负责 DAWorkBench 中数据对象的创建、存储、查询和操作，连接 Python 数据处理能力与 C++ GUI 框架。
 
 ## 主要功能特性
 
 **特性**
 
-- ✅ **隐式共享设计**：`DAData` 使用隐式共享，可安全地进行值传递
-- ✅ **Python 对象包装**：完整封装 pandas DataFrame 和 Series
-- ✅ **统一数据管理**：`DADataManager` 提供数据的增删改查和信号通知
-- ✅ **多格式支持**：通过 pandas 支持 CSV、Excel、Pickle 等格式读写
+- **隐式共享设计**：`DAData` 使用隐式共享，可安全地按值传递
+- **Python 对象包装**：完整封装 pandas DataFrame 和 Series
+- **统一数据管理**：`DADataManager` 提供数据的增删改查和信号通知
+- **多格式支持**：通过 pandas 支持 CSV、Excel、Pickle 等格式读写
 
 ## 模块依赖
 
@@ -46,7 +46,7 @@ data.setDescribe("传感器原始数据");
 
 **核心特性**
 
-- 使用隐式共享（Implicit Sharing），可安全地进行值传递
+- 使用隐式共享（Implicit Sharing），可安全地按值传递
 - 可放入 `QMap`、`QHash` 等容器中
 - 支持与 Python 对象的互相转换
 
@@ -84,7 +84,7 @@ classDiagram
     DAAbstractData <|-- DADataPyObject
     DADataPyObject <|-- DADataPyDataFrame
 DADataPyObject <|-- DADataPySeries
-    ```
+```
 
 上图展示了数据类型的继承层次：
 - `DAAbstractData` 是抽象基类，定义基本接口（名称、描述、数据类型）
@@ -116,7 +116,7 @@ DADataPyObject <|-- DADataPySeries
 - 脏标记管理（标识数据是否已修改）
 - 信号通知机制
 
-以下代码展示了如何通过接口获取数据管理器并进行数据操作：
+以下代码通过接口获取数据管理器并操作数据：
 
 ```cpp
 // 通过接口获取数据管理器
@@ -148,8 +148,8 @@ for (int i = 0; i < mgr->getDataCount(); ++i) {
 | 信号 | 参数 | 触发时机 |
 |------|------|----------|
 | `dataAdded(const DAData&)` | DAData | 数据添加时触发 |
-| `dataRemoved(const DAData&)` | DAData | 数据删除时触发 |
-| `dataChanged(const DAData&)` | DAData | 数据内容变化时触发 |
+| `dataRemoved(const DAData&, int)` | DAData, int | 数据删除时触发（第二个参数是删除前的索引） |
+| `dataChanged(const DAData&, ChangeType)` | DAData, DADataManager::ChangeType | 数据内容变化时触发 |
 | `datasCleared()` | 无 | 所有数据被清空时触发 |
 
 ## 支持的文件格式
@@ -168,33 +168,33 @@ for (int i = 0; i < mgr->getDataCount(); ++i) {
 
 ### 与工作流模块
 
-工作流节点可以通过输入/输出端口传递 `DAData` 对象，节点之间的数据流动通过数据管理器统一协调。
+工作流节点之间的数据由执行器的信号队列直接传递 Python 对象，不经过 `DADataManager`。工作流结果要出现在数据管理面板中，需要在图中放置 `Output to DataManager` 节点，由它把输入数据发布给数据管理器。
 
-下图展示了工作流节点通过数据管理器传递数据的流程：
+下图展示了节点间的直接传递和结果发布两条路径：
 
 ```mermaid
 flowchart LR
     subgraph Node1["节点1"]
         O1["输出端口"]
     end
-    
-    subgraph DM["数据管理器"]
-        D["DAData"]
-    end
-    
+
     subgraph Node2["节点2"]
         I2["输入端口"]
     end
-    
-    O1 --> D
-D --> I2
-    ```
 
-上图展示了数据在工作流节点间传递的方式：
-- 节点1的输出端口将数据发送到数据管理器
-- 数据管理器存储 DAData 对象
-- 节点2的输入端口从数据管理器获取数据
-- 数据管理器作为中间协调者，解耦了节点间的直接依赖
+    subgraph DM["数据管理器"]
+        D["DAData"]
+    end
+
+    O1 -->|"信号队列直接传递"| I2
+    O1 --> P["Output to DataManager 节点"]
+    P -->|"同名数据原地更新，否则 addData_() 新建"| D
+```
+
+上图展示了数据在工作流中的传递方式：
+- 节点 1 的输出端口将数据直接传给下游节点的输入端口
+- `Output to DataManager` 节点把数据发布到数据管理器，同名数据已存在时原地更新，否则新建条目
+- 数据管理器持有发布后的 DAData 对象，表格视图通过 `dataChanged`/`dataAdded` 信号刷新
 
 ### 与绘图模块
 
@@ -204,7 +204,7 @@ D --> I2
 
 插件通过 `DADataManagerInterface` 接口访问数据管理器，可以添加、修改、删除数据，也可以监听数据变化信号进行响应。
 
-以下代码展示了插件如何获取数据管理器并监听数据变化信号：
+以下代码展示插件如何获取数据管理器并监听数据变化信号：
 
 ```cpp
 // 在插件中获取数据管理器
@@ -248,14 +248,17 @@ connect(dataMgr, &DADataManagerInterface::dataAdded,
 
 ## 注意事项
 
-!!! warning "Python GIL 管理"
-    操作 Python 数据对象时，需要正确管理 GIL，避免多线程问题。
+> **⚠️ Python GIL 管理**
+>
+> 操作 Python 数据对象时，需要正确管理 GIL，避免多线程问题。
 
-!!! tip "数据生命周期"
-    `DAData` 使用隐式共享，复制操作不会深拷贝数据，修改会影响所有引用。
+> **💡 数据生命周期**
+>
+> `DAData` 使用隐式共享，复制操作不会深拷贝数据，修改会影响所有引用。
 
-!!! note "数据类型检查"
-    在使用 `toDataFrame()` 或 `toSeries()` 前，应先使用 `isDataFrame()` 或 `isSeries()` 检查类型。
+> **📝 数据类型检查**
+>
+> 在调用 `toDataFrame()` 或 `toSeries()` 前，先用 `isDataFrame()` 或 `isSeries()` 检查类型。
 
 ## 参考资料
 

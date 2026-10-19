@@ -46,15 +46,12 @@ public:
     void setUseCacheMode(bool on = true);
     // 滑动窗模式
 
-    // 设置滑动窗模式的起始行
-    virtual void setCacheWindowStartRow(int startRow) override;
-
     // 刷新
     void refreshData();
 
     // 超出模型实际数据行数的额外空行数量
     void setExtraRowCount(int v);
-    int getExtraRowCount() const;
+    int getExtraRowCount() const override;
     // 超出模型实际数据列数的额外空列数量
     void setExtraColumnCount(int v);
     int getExtraColumnCount() const;

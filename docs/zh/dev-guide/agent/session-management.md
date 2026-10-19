@@ -1,6 +1,6 @@
 # 会话持久化
 
-Agent 对话历史以 JSONL 格式持久化到磁盘，支持多会话管理、工程内会话导出/导入、自动清理过期会话。本文档描述会话持久化的设计要点、文件格式、生命周期管理和崩溃安全机制。
+Agent 对话历史以 JSONL 格式持久化到磁盘，支持多会话管理、工程内会话导出/导入、自动清理过期会话。读写、索引与清理全部由 C++ 侧完成，Python 子进程只负责推理与 state 重建。
 
 ---
 
@@ -25,7 +25,7 @@ Agent 对话历史以 JSONL 格式持久化到磁盘，支持多会话管理、�
 └── last_active.json           # 上次活跃会话指针 (sessionId + projectPath)
 ```
 
-> Windows 路径展开为 `%APPDATA%/DAWorkBench/DAWorkBench/sessions/`。路径由 `DADir::getAppDataPath("sessions")` 决定。
+> Windows 上展开为 `%APPDATA%/DAWorkBench/sessions/`。路径由 `DADir::getAppDataPath("sessions")` 决定。
 
 ### 会话文件（JSONL）
 
@@ -49,16 +49,18 @@ Agent 对话历史以 JSONL 格式持久化到磁盘，支持多会话管理、�
 
 | type | message.role | 说明 | 含 tool_calls | 含 tool_call_id |
 |------|-------------|------|:---:|:---:|
-| `user` | `human` | 用户消息 | — | — |
-| `assistant` | `ai` | LLM 回复 | 可能 | — |
-| `tool_result` | `tool` | 工具执行结果 | — | 是 |
-| `usage` | — | Token 用量记录（每轮 `message_end.usage` 与独立 `usage` 消息均落盘） | — | — |
+| `user` | `human` | 用户消息 | 无 | 无 |
+| `assistant` | `ai` | 大语言模型（LLM）回复 | 可能 | 无 |
+| `tool_result` | `tool` | 工具执行结果 | 无 | 是 |
+| `usage` | 无 | Token 用量记录（每轮 `message_end.usage` 与独立 `usage` 消息均落盘） | 无 | 无 |
 
-!!! note "usage 记录的累计重放"
-    `usage` 记录用于会话级 token 累计统计的持久化。切换会话时 `DAAgentModule::emitTokenUsageForSession()` 读取目标会话的全部 `usage` 记录，先清零 `mCumulativeIn/Out/TotalTokens` 再逐条累加，重新 emit `tokenUsageUpdated`——UI 立即显示该会话的累计用量与进度条，不会拘留上一会话的数值。上下文压缩不再重置这些累计值。
+> **📝 usage 记录的累计重放**
+>
+> `usage` 记录用于会话级 token 累计统计的持久化。切换会话时 `DAAgentModule::emitTokenUsageForSession()` 读取目标会话的全部 `usage` 记录，先清零 `mCumulativeIn/Out/TotalTokens` 再逐条累加，重新 emit `tokenUsageUpdated`，UI 立即显示该会话的累计用量与进度条，不会残留上一会话的数值。上下文压缩不再重置这些累计值。
 
-!!! note "question/answer 复用 tool_call/tool_result 语义"
-    HITL 提问（`ask_user` 工具）在 JSONL 中存储为 `assistant` 类型（含 `tool_calls`），用户回答存储为 `tool_result` 类型。一期不单独区分 question/answer 记录类型。
+> **📝 question/answer 复用 tool_call/tool_result 语义**
+>
+> HITL 提问（`ask_user` 工具）在 JSONL 中存储为 `assistant` 类型（含 `tool_calls`），用户回答存储为 `tool_result` 类型。一期不单独区分 question/answer 记录类型。
 
 ### 全局索引（sessions_index.json）
 
@@ -101,8 +103,10 @@ sequenceDiagram
     participant M as DAAgentModule
     participant S as SessionStore
 
-    UI->>IF: sessionCreateRequested()
-    IF->>M: newSession()
+    UI->>UI: 标题栏「+」/ Ribbon 新建会话 → requestNewSession()：创建或 raise 未绑定视图（不落盘）
+    Note over UI: 用户发送首条消息
+    UI->>IF: sendMessage(text)
+    IF->>M: sendMessage(text)
     M->>S: createSession()
     S->>S: 生成 UUID4
     S->>S: 创建空 .jsonl 文件
@@ -110,11 +114,12 @@ sequenceDiagram
     S-->>M: 返回 sessionId
     M->>M: emit sessionCreated(sessionId)
     M->>IF: emit sessionCreated(sessionId)
-    IF->>UI: onSessionCreated() → clearChat()
+    IF->>UI: 宿主把未绑定视图绑定到该会话（更新标题/objectName）
 ```
 
-!!! note "newSession() vs createSession()"
-    `newSession()` 会 emit `sessionCreated` 信号触发 UI clearChat，用于用户点击"+"按钮。`createSession()` 不 emit 信号，用于 `sendMessage()` 自动创建会话——避免清除刚显示的用户消息。
+> **📝 newSession() vs createSession()**
+>
+> `newSession()` 会 emit `sessionCreated`，供程序化路径使用（如测试、插件调用）；UI 的「+」按钮自 session-tabs 起不再走它，而是由 Dock 宿主创建未绑定视图，首条消息才落盘建会话。`createSession()` 本身不 emit 信号，只创建文件、更新索引并切换当前会话；`sendMessage()` 在没有活跃会话时调用它懒建，随后 emit `sessionCreated` 供宿主完成视图绑定。
 
 ### 切换会话
 
@@ -142,14 +147,17 @@ sequenceDiagram
     Note over UI: 切换耗时 = UI 重放（<500ms），无子进程操作
 ```
 
-!!! note "state 重建时机（init → load_session → user_msg 管道序）"
-    空闲会话下次 `sendMessage` 时：`DAAgentBridge::startAgent` 内部 `waitForStarted` 后依次写 stdin——`init` → `load_session`（该会话全量历史）→ `user_msg`。Python 主循环 `await` 逐条顺序消费（`agent_runner.py` main loop），`user_msg` 必然在 state 重建完成后处理——铁律 T15 的时序约束由管道序结构性保证，C++ 侧无需额外门控。
+> **📝 state 重建时机（init → load_session → user_msg 管道序）**
+>
+> 空闲会话下次 `sendMessage` 时：`DAAgentBridge::startAgent` 内部 `waitForStarted` 后依次写 stdin：`init` → `load_session`（该会话全量历史）→ `user_msg`。Python 主循环 `await` 逐条顺序消费（`agent_runner.py` main loop），`user_msg` 必然在 state 重建完成后处理；铁律 T15 的时序约束由管道序结构性保证，C++ 侧无需额外门控。
 
-!!! note "桥生命周期与退役"
-    会话桥存在当且仅当：**活跃会话**（任意状态）∨ **后台忙碌**（turn 进行中）∨ **等待用户输入**（ask_user/审批挂起）。退役触发点：后台会话跑完（`agentDone` 且非活跃）、切离空闲会话、删除会话、`sendMessage` 防御性重建（桥已死不再自愈）。退役 = `disconnect` 全部路由 + `requestStop()`（非阻塞）+ `processExited → deleteLater`。另有至多 1 个**预热未绑定桥**（`auto_prestart`），首次 `sendMessage` 时被接管。
+> **📝 桥生命周期与退役**
+>
+> 会话桥存在当且仅当：**活跃会话**（任意状态）∨ **后台忙碌**（turn 进行中）∨ **等待用户输入**（ask_user/审批挂起）。退役触发点：后台会话跑完（`agentDone` 且非活跃）、切离空闲会话、删除会话、`sendMessage` 防御性重建（桥已死不再自愈）。退役 = `disconnect` 全部路由 + `requestStop()`（非阻塞）+ `processExited → deleteLater`。另有至多 1 个**预热未绑定桥**（`auto_prestart`），首次 `sendMessage` 时被接管。
 
-!!! danger "崩溃自愈路径不可在 processExited 清理会话映射"
-    `DAAgentBridge::onProcessFinished` 中 `processExited` 信号**先于** `recoverFromCrash`（1s 延迟重启）发射。若 Module 在 `processExited` 中移除会话→桥映射，会孤儿化正在自愈的桥（其信号仍连接、持久化仍写盘，但 `bridgeForSession` 查不到 → `sendMessage` 会为同一会话再建一个桥，出现双进程写同一会话）。死亡且不再自愈的桥由 `sendMessage` 的 `isRunning()` 防御分支惰性清理。
+> **🚫 崩溃自愈路径不可在 processExited 清理会话映射**
+>
+> `DAAgentBridge::onProcessFinished` 中 `processExited` 信号**先于** `recoverFromCrash`（1s 延迟重启）发射。若 Module 在 `processExited` 中移除会话→桥映射，会孤儿化正在自愈的桥（其信号仍连接、持久化仍写盘，但 `bridgeForSession` 查不到 → `sendMessage` 会为同一会话再建一个桥，出现双进程写同一会话）。死亡且不再自愈的桥由 `sendMessage` 的 `isRunning()` 防御分支惰性清理。
 
 ### 删除会话
 
@@ -171,7 +179,7 @@ renameSession(id, title)
 
 ### 自动标题
 
-`ensureTitle(sessionId)` 在用户首次发送消息后，取消息内容前 30 个字符作为会话标题。如果会话已有非空标题则不覆盖。
+`ensureTitle(sessionId)` 在用户首次发送消息后取消息内容的首行（trim 后），字符数超过 20 则截断到 20 个字符并追加省略号，作为会话标题。如果会话已有非空标题则不覆盖。
 
 ---
 
@@ -187,7 +195,7 @@ graph LR
     D --> E["写入 zip 的 agent_sessions/<id>.jsonl"]
 ```
 
-`exportActiveSessions()` 返回 `QHash<QString, QByteArray>`——每个活跃会话的 ID 到 JSONL 字节内容的映射。在主线程收集（不碰 UI），子线程写入 zip。
+`exportActiveSessions()` 返回 `QHash<QString, QByteArray>`，即每个活跃会话的 ID 到 JSONL 字节内容的映射。在主线程收集（不碰 UI），子线程写入 zip。
 
 ### 打开工程时导入
 
@@ -218,8 +226,9 @@ int maxCount = qMax(1, config.maxSessions);       // 防止 ini 手改为 0
 int retentionDays = qMax(0, config.retentionDays); // 防止负值
 ```
 
-!!! warning "保护活跃会话"
-    `cleanupOldSessions` 跳过当前活跃会话（`skipSessionId`）和 `lastActive` 指针指向的会话，避免清理正在使用的会话。
+> **⚠️ 保护活跃会话**
+>
+> `cleanupOldSessions` 跳过当前活跃会话（`skipSessionId`）和 `lastActive` 指针指向的会话，避免清理正在使用的会话。
 
 ---
 
@@ -290,8 +299,9 @@ DAAppProject 加载任务
     → 不自动恢复（始终以全新对话开始）
 ```
 
-!!! note "sessionCleared 清空游离会话残留"
-    `restoreLastActiveSession()` 始终 emit `sessionCleared()`（`DAAgentInterface.h`），用于在启动 / 打开工程后清空上一会话残留的聊天区、复位 token 统计控件、清空标题，并清空 `m_currentSessionId`——之后用户发消息由 `sendMessage` 懒创建绑定当前工程的新会话。打开一个无内嵌会话的工程时，此信号尤为重要（清掉此前自由会话的游离残留）。
+> **📝 sessionCleared 清空游离会话残留**
+>
+> `restoreLastActiveSession()` 始终 emit `sessionCleared()`（`DAAgentInterface.h`），用于在启动 / 打开工程后清空上一会话残留的聊天区、复位 token 统计控件、清空标题，并清空 `m_currentSessionId`；之后用户发消息由 `sendMessage` 懒创建绑定当前工程的新会话。打开一个无内嵌会话的工程时，这个信号负责清掉此前自由会话的游离残留。
 
 ### 保存工程
 
@@ -321,20 +331,22 @@ setLastActive(sessionId, newPath)    // 更新指针的 projectPath
 | 保留天数 | `session_retention_days` | 30 | 自由会话保留天数 |
 | 预启动开关 | `auto_prestart` | true | 程序启动时是否自动预热 agent 子进程（关闭则回退到懒启动，影响会话下拉填充后是否立即预热） |
 
-!!! note "`max_sessions` / `session_retention_days` 默认值须一致"
-    这两项的默认值在以下三处须保持一致：
-    1. 设置页 spin range/setValue（`DAAgentSettingsWidget`）
-    2. `DAAgentModule::getLLMConfig` / `setLLMConfig` 的默认值
-    3. `DAAgentModule::cleanupSessions` 的 QSettings 读取
+> **📝 `max_sessions` / `session_retention_days` 默认值须一致**
+>
+> 这两项的默认值在以下三处须保持一致：
+> 1. 设置页 spin range/setValue（`DAAgentSettingsWidget`）
+> 2. `DAAgentModule::getLLMConfig` / `setLLMConfig` 的默认值
+> 3. `DAAgentModule::cleanupSessions` 的 QSettings 读取
 
-!!! note "`context_window` / `max_output_tokens` 已移出 Agent 设置页"
-    `context_window`（默认 262144）与 `max_output_tokens`（默认 131072）不再是 Agent 设置页的全局可编辑项，已移至**按模型派生**的属性：设置页的模型信息表只读展示每个模型的这两值，实际值由激活供应商 + 激活模型条目决定（`setActiveModel` / `syncActiveConnection` 写入），随 `init` / `reconfigure` 下发给子进程。`DAAgentSettingsWidget.cpp` 的保存逻辑显式跳过这两项（`不含 context_window/max_output_tokens，由激活模型派生`）。
+> **📝 `context_window` / `max_output_tokens` 已移出 Agent 设置页**
+>
+> `context_window`（默认 262144）与 `max_output_tokens`（默认 131072）不再是 Agent 设置页的全局可编辑项，已移至**按模型派生**的属性：设置页的模型信息表只读展示每个模型的这两值，实际值由激活供应商 + 激活模型条目决定（`setActiveModel` / `syncActiveConnection` 写入），随 `init` / `reconfigure` 下发给子进程。`DAAgentSettingsWidget.cpp` 的保存逻辑显式跳过这两项（`不含 context_window/max_output_tokens，由激活模型派生`）。
 
 ---
 
 ## 单元测试
 
-`src/tst/DAAgentSessionStoreTest/` 提供 5 个 C++ 测试用例（不链接 Python）：
+`src/tst/DAAgentSessionStoreTest/` 提供 12 个 C++ 测试用例（不链接 Python）：
 
 | 用例 | 覆盖内容 |
 |------|---------|
@@ -343,6 +355,13 @@ setLastActive(sessionId, newPath)    // 更新指针的 projectPath
 | `testIndexAtomicWrite` | listSessions 倒序，renameSession 更新 index + title |
 | `testCleanup` | 数量上限删最旧、时间上限删超期、skipSessionId 保护活跃、qMax 边界防护 |
 | `testLastActive` | last_active 往返 + projectPath 精确匹配 |
+| `testImportSessionFiles` | 导入会话标记 projectPath + 索引合并 |
+| `testProjectPathFiltering` | `listSessions(filter)` 按工程路径过滤 + 倒序 |
+| `testEnsureTitle` | 自动标题生成与已有标题不覆盖 |
+| `testMessageCount` | 按会话 ID 查消息计数（空会话复用守卫依赖） |
+| `testTokenAccumulate` | usage 记录累计进索引 token 字段 + 持久化 |
+| `testTokenLazyMigration` | 旧格式索引（无 token 字段）懒迁移回填 |
+| `testErrorRecordRoundTrip` | `type=error` 记录落盘、读回、过滤与索引兼容 |
 
 测试隔离：`main()` 起手 `QStandardPaths::setTestModeEnabled(true)` 重定向 AppData 到临时目录，不污染真实 `%APPDATA%`。
 
@@ -352,15 +371,15 @@ cmake -S . -B build -D DA_ENABLE_TESTING=ON
 cmake --build build --target DAAgentSessionStoreTest --config Release
 
 # 运行 (Windows Qt Test stdout 不可见，须用 -o)
-.\build\bin\DAAgentSessionStoreTest.exe -o result.txt
+.\build\bin\Release\DAAgentSessionStoreTest.exe -o result.txt
 ```
 
 ---
 
 ## 参见
 
-- [崩溃恢复与重连](./crash-recovery.md) — 崩溃后通过 SessionStore 恢复会话
-- [通信协议](./protocol.md) — load_session / session_loaded 协议消息
-- [架构设计](./architecture.md) — DAAgentSessionStore 在架构中的位置
-- `src/DAAgent/DAAgentSessionStore.h/.cpp` — 持久化层实现
-- `src/tst/DAAgentSessionStoreTest/main.cpp` — 单元测试
+- [崩溃恢复与重连](./crash-recovery.md)：崩溃后通过 SessionStore 恢复会话
+- [通信协议](./protocol.md)：load_session / session_loaded 协议消息
+- [架构设计](./architecture.md)：DAAgentSessionStore 在架构中的位置
+- `src/DAAgent/DAAgentSessionStore.h/.cpp`：持久化层实现
+- `src/tst/DAAgentSessionStoreTest/main.cpp`：单元测试

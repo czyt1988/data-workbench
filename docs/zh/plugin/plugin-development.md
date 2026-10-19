@@ -1,18 +1,6 @@
 # 插件开发全流程
 
-本指南详细说明从创建插件项目到实现完整功能的全部流程，帮助开发者快速开发高质量的 DAWorkBench 插件。
-
-## 主要功能特性
-
-**特性**
-
-- ✅ **创建新插件**：模板生成工具和手动创建两种方式
-- ✅ **CMake 配置**：根目录和 src 目录的完整 CMakeLists.txt 配置
-- ✅ **插件主类实现**：MyPlugin 类的头文件和实现文件详解
-- ✅ **节点工厂实现**：MyNodeFactory 类的节点创建和元数据注册
-- ✅ **工作节点实现**：MyWorker 类的执行逻辑和图元创建
-- ✅ **内置服务使用**：日志、配置、数据管理等服务的调用方法
-- ✅ **构建和安装**：完整的构建流程和验证方法
+这篇文档覆盖从创建插件项目到实现完整功能的全部流程。
 
 ---
 
@@ -20,8 +8,9 @@
 
 ### 方式一：使用模板生成工具
 
-!!! tip "推荐方式"
-    使用 `plugins/plugin-template/make-plugin.py` 自动生成插件项目，无需手动创建文件结构。
+> **💡 推荐方式**
+>
+> 使用 `plugins/plugin-template/make-plugin.py` 自动生成插件项目，无需手动创建文件结构。
 
 1. 配置 `template.json`：
 
@@ -39,7 +28,7 @@
 }
 ```
 
-上述配置定义了插件的基本信息，脚本将根据此配置生成完整的插件项目。各字段说明：
+各字段说明：
 
 - `plugin-base-name`：插件基础名称，用于生成类名和文件名
 - `plugin-display-name`：插件显示名称，用于界面展示
@@ -82,17 +71,15 @@ MyPlugin/
 └── data-workbench/           # 主项目子模块引用 - 确保版本兼容
 ```
 
-上述结构将插件功能按职责分离，便于代码维护和团队协作。
-
 #### 添加 data-workbench 子模块
 
-如果你用 `git` 来管理插件项目，`data-workbench` 应该作为插件项目的子模块，这是最推荐的依赖管理方式。在插件项目根目录执行：
+用 `git` 管理插件项目时，`data-workbench` 应作为插件项目的子模块，这是推荐的依赖管理方式。在插件项目根目录执行：
 
 ```bash
 git submodule add https://gitee.com/czyt1988/data-workbench.git ./data-workbench
 ```
 
-上述命令的效果：
+命令的效果：
 
 - 在当前项目根目录下创建 `data-workbench` 子目录
 - 将 data-workbench 仓库作为子模块添加到项目中
@@ -108,8 +95,9 @@ git submodule update --init --recursive
 
 ### 方式三：Python-first 节点插件（纯 Python，无需 C++ NodeFactory）
 
-!!! tip "新节点插件推荐此模式"
-    新增工作流节点插件时，**无需编写 C++ NodeFactory**。参考 `plugins/DASystemNodes/`：C++ 插件入口只负责注册 Python 脚本路径，节点用 `@NodeDef` 装饰器声明，`DAPyNodeFactory::discoverNodes()` 启动时扫描 Python 包自动发现节点。详见 `plugins/DASystemNodes/AGENTS.md`。
+> **💡 新节点插件推荐此模式**
+>
+> 新增工作流节点插件时，**无需编写 C++ NodeFactory**。参考 `plugins/DASystemNodes/`：C++ 插件入口只负责注册 Python 脚本路径，节点用 `@NodeDef` 装饰器声明，`DAPyNodeFactory::discoverNodes()` 启动时扫描 Python 包自动发现节点。详见 `plugins/DASystemNodes/AGENTS.md`。
 
 DASystemNodes 风格的纯 Python 节点插件结构（作为 src/ C++ 布局的替代方案）：
 
@@ -180,7 +168,7 @@ da_add_plugin(
 上述 src 目录 CMake 配置的关键点：
 
 - standalone 构建时在顶部调用 `da_plugin_bootstrap` 完成 project/安装目录/工具文件引导
-- 使用 `file(GLOB)` 收集源文件、头文件、UI 文件和资源文件
+- 使用 `file(GLOB)` 收集源文件、头文件、界面文件和资源文件
 - `da_add_plugin` 一次完成 target 创建、`_PLUGIN_BUILD` 宏定义、Qt/DA 模块/第三方库链接、
   属性设置与安装（VERSION 缺省继承根 `DA_VERSION`）
 - Windows 平台的 `AxContainer` / `DAAxOfficeWrapper` 依赖用 `QT_WIN32_PUBLIC` /
@@ -299,10 +287,11 @@ void MyPlugin::destroyNodeFactory(DA::DAPyNodeFactory* p)
 
 ## 实现节点工厂（旧 C++ 架构，仅参考）
 
-!!! warning "遗留架构 —— 当前推荐 Python-first `@NodeDef`"
-    下面 `MyNodeFactory` 继承 `DA::DAPyNodeFactory` 并重写 `create` / `getNodeMetaDataList` / `getFactoryName` 的写法属于**已废弃的 C++ 节点工厂架构**，当前 `DAPyNodeFactory`（`src/DAPyWorkFlow/DAPyNodeFactory.h`）不再暴露这些虚函数，上述代码无法编译。
-
-    **新插件应采用 Python-first 模型**：节点用 `@NodeDef` 装饰器声明，C++ 插件入口只负责注册 Python 脚本路径，`DAPyNodeFactory::discoverNodes()` 启动时扫描 Python 包自动发现节点，无需手写 C++ 工厂。参考 `plugins/DASystemNodes/`（纯 Python 节点插件，C++ 入口 `DASystemNodesPlugin` 仅注册 Python 路径，不定义任何节点）。本节仅作历史背景保留。
+> **⚠️ 遗留架构：当前推荐 Python-first `@NodeDef`**
+>
+> 下面 `MyNodeFactory` 继承 `DA::DAPyNodeFactory` 并重写 `create` / `getNodeMetaDataList` / `getFactoryName` 的写法属于**已废弃的 C++ 节点工厂架构**，当前 `DAPyNodeFactory`（`src/DAPyWorkFlow/DAPyNodeFactory.h`）不再暴露这些虚函数，上述代码无法编译。
+>
+> **新插件应采用 Python-first 模型**：节点用 `@NodeDef` 装饰器声明，C++ 插件入口只负责注册 Python 脚本路径，`DAPyNodeFactory::discoverNodes()` 启动时扫描 Python 包自动发现节点，无需手写 C++ 工厂。参考 `plugins/DASystemNodes/`（纯 Python 节点插件，C++ 入口 `DASystemNodesPlugin` 仅注册 Python 路径，不定义任何节点）。本节仅作历史背景保留。
 
 ### MyNodeFactory.h
 
@@ -403,8 +392,9 @@ DA::DAAbstractNode* MyNodeFactory::create(const DA::DANodeMetaData& meta)
 
 ## 实现工作节点（旧 C++ 节点，仅参考）
 
-!!! warning "遗留架构 —— 当前推荐 Python-first `@NodeDef`"
-    下面 `MyWorker` 继承 `DA::DAAbstractNode` 并重写 `exec()` 的写法属于**已废弃的 C++ 节点架构**。当前工作流节点统一用 Python `@NodeDef` 装饰器声明，执行入口为 `execute(self, inputs, params)`，输出通过 `self._output_data` 写入，数据包装类为 `DAData`（`src/DAData/DAData.h`，**不是** `DADataPackage`）。本节仅作历史背景保留。
+> **⚠️ 遗留架构：当前推荐 Python-first `@NodeDef`**
+>
+> 下面 `MyWorker` 继承 `DA::DAAbstractNode` 并重写 `exec()` 的写法属于**已废弃的 C++ 节点架构**。当前工作流节点统一用 Python `@NodeDef` 装饰器声明，执行入口为 `execute(self, inputs, params)`，输出通过 `self._output_data` 写入，数据包装类为 `DAData`（`src/DAData/DAData.h`，**不是** `DADataPackage`）。本节仅作历史背景保留。
 
 ### MyWorker.h
 
@@ -579,7 +569,7 @@ bool MyPlugin::initialize()
 }
 ```
 
-> 插件自有的设置页应通过重载 `DAAbstractPlugin::createSettingPage()` 返回 `DAAbstractSettingPage*`，而不是直接读写全局配置。
+> 插件自有的设置页通过重载 `DAAbstractPlugin::createSettingPage()` 返回 `DAAbstractSettingPage*`，不要直接读写全局配置。
 
 ### 数据管理服务
 
@@ -638,8 +628,8 @@ PyScripts/
 
 | 层 | 职责 | 依赖限制 |
 |----|------|----------|
-| **Core** | 纯算法（pandas/numpy），不含任何 Qt 或 UI 代码 | 仅 pandas, numpy 等科学计算库 |
-| **Gui** | UI 交互逻辑，调用 Core 层算法并与主程序接口交互 | Core 层 + da_app, da_interface, da_data |
+| **Core** | 纯算法（pandas/numpy），不含任何 Qt 或界面代码 | 仅 pandas, numpy 等科学计算库 |
+| **Gui** | 界面交互逻辑，调用 Core 层算法并与主程序接口交互 | Core 层 + da_app, da_interface, da_data |
 | **Nodes** | 工作流节点定义（使用 `@NodeDef` 装饰器），自动被主程序发现 | Core 层 + DAWorkbench.DAWorkFlowPy |
 
 ### CMake 安装 Python 脚本
@@ -706,13 +696,13 @@ agent 工具须以插件对象为 parent、系统提示词注册须传 provider�
 
 ## 现有插件参考
 
-DAWorkBench 自带的三个插件（`plugins/CMakeLists.txt` 构建）是开发新插件的最佳参考：
+DAWorkBench 自带的三个插件（由 `plugins/CMakeLists.txt` 构建）可以直接拿来参考：
 
 | 插件 | 路径 | 类型 | 说明 |
 |------|------|------|------|
 | **DataAnalysis** | `plugins/DataAnalysis/` | C++ + Python | 数据分析节点插件，三层 Python 包架构（Core/Gui/Nodes）参考实现 |
-| **DASystemNodes** | `plugins/DASystemNodes/` | 纯 Python | 系统级工作流节点（Start/End/If/Else/Delay/Print/TextViewer/DataToManager 等），C++ 入口仅注册 Python 路径，是 **Python-first `@NodeDef` 节点插件的最佳模板** |
-| **DAAgentTools** | `plugins/DAAgentTools/` | C++ | 平台内置 agent 工具插件（19 个工具，通过 `DAAgentInterface::registerTool()` 注册），供 LLM agent 调用 |
+| **DASystemNodes** | `plugins/DASystemNodes/` | 纯 Python | 系统级工作流节点（Start/End/If/Else/Delay/Print/TextViewer/DataToManager 等），C++ 入口仅注册 Python 路径，是 Python-first `@NodeDef` 节点插件的模板 |
+| **DAAgentTools** | `plugins/DAAgentTools/` | C++ | 平台内置 agent 工具插件（21 个工具，通过 `DAAgentInterface::registerTool()` 注册），供大语言模型（LLM）agent 调用 |
 
 > 新增 Python-first 节点插件优先参考 `plugins/DASystemNodes/`，无需编写 C++ NodeFactory。详见 `plugins/DASystemNodes/AGENTS.md`。
 
@@ -720,6 +710,6 @@ DAWorkBench 自带的三个插件（`plugins/CMakeLists.txt` 构建）是开发�
 
 ## 下一步
 
-- [:material-sync: 插件生命周期](./plugin-lifecycle.md) - 生命周期管理详解
-- [:material-database: 数据持久化](./plugin-persistence.md) - 数据存储方案
-- [:material-puzzle: 功能扩展](./plugin-extension.md) - 界面和功能扩展
+- [🔄 插件生命周期](./plugin-lifecycle.md) - 生命周期管理详解
+- [🗄️ 数据持久化](./plugin-persistence.md) - 数据存储方案
+- [🧩 功能扩展](./plugin-extension.md) - 界面和功能扩展

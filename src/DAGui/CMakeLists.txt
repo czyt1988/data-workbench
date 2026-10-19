@@ -14,9 +14,13 @@ set(DA_LIB_HEADER_FILES
     DAAbstractNodeSettingWidget.h
     DAAbstractOperateWidget.h
     DACacheWindowTableView.h
+    DAVirtualScrollBar.h
+    DADataHeaderView.h
     DADataManagerComboBox.h
     DADataOperatePageWidget.h
     DADataTableView.h
+    DATablePaneContainer.h
+    DATableStatsWidget.h
     DAFigureFactory.h
     DAGraphicsPixmapItemSettingWidget.h
     DADataListView.h
@@ -66,13 +70,26 @@ set(DA_LIB_HEADER_FILES
     DATableDisplayFormat.h
     DATableDisplayFormatComboBox.h
     DATableStyleManager.h
-    DATableStyleRegistry.h
+    DATableMetadata.h
+    DATableMetadataRegistry.h
+    DATableKeyRemap.h
+    DATableViewStateStore.h
+    DATableHighlightOverlay.h
+    DATableConditionalFormatRule.h
+    DATableConditionalFormatStore.h
+    DATableComputedColumnStore.h
+    DATableValidationStore.h
+    DATableNoteStore.h
+    DATableNoteEditDialog.h
+    DAUndoHistoryWidget.h
     DATableStyleItemDelegate.h
 )
 set(DA_LIB_SOURCE_FILES
     DAAbstractNodeSettingWidget.cpp
     DAAbstractOperateWidget.cpp
     DACacheWindowTableView.cpp
+    DAVirtualScrollBar.cpp
+    DADataHeaderView.cpp
     DADataListView.cpp
     DADataManageTableView.cpp
     DADataManagerTreeWidget.cpp
@@ -81,6 +98,8 @@ set(DA_LIB_SOURCE_FILES
     DADataOperatePageWidget.cpp
     DADataOperateWidget.cpp
     DADataTableView.cpp
+    DATablePaneContainer.cpp
+    DATableStatsWidget.cpp
     DADockAreaTabPosition.cpp
     DAFigureFactory.cpp
     DAGraphicsPixmapItemSettingWidget.cpp
@@ -125,7 +144,17 @@ set(DA_LIB_SOURCE_FILES
     DATableDisplayFormat.cpp
     DATableDisplayFormatComboBox.cpp
     DATableStyleManager.cpp
-    DATableStyleRegistry.cpp
+    DATableMetadata.cpp
+    DATableMetadataRegistry.cpp
+    DATableViewStateStore.cpp
+    DATableHighlightOverlay.cpp
+    DATableConditionalFormatRule.cpp
+    DATableConditionalFormatStore.cpp
+    DATableComputedColumnStore.cpp
+    DATableValidationStore.cpp
+    DATableNoteStore.cpp
+    DATableNoteEditDialog.cpp
+    DAUndoHistoryWidget.cpp
     DATableStyleItemDelegate.cpp
 )
 set(DA_LIB_QT_UI_FILES
@@ -203,6 +232,18 @@ list(APPEND DA_LIB_HEADER_FILES_Dialog
     ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnDescribe.h
     ${DA_LIB_SUBDIR_Dialog}/DADialogAgentSessionManager.h
     ${DA_LIB_SUBDIR_Dialog}/DADialogTableDisplayFormat.h
+    ${DA_LIB_SUBDIR_Dialog}/DADialogFindReplace.h
+    ${DA_LIB_SUBDIR_Dialog}/DADialogConditionalFormat.h
+    ${DA_LIB_SUBDIR_Dialog}/DADialogComputedColumn.h
+    ${DA_LIB_SUBDIR_Dialog}/DADialogSplitColumn.h
+    ${DA_LIB_SUBDIR_Dialog}/DADialogMergeColumns.h
+    ${DA_LIB_SUBDIR_Dialog}/DADialogGroupBy.h
+    ${DA_LIB_SUBDIR_Dialog}/DADialogReshape.h
+    ${DA_LIB_SUBDIR_Dialog}/DADialogFillSeries.h
+    ${DA_LIB_SUBDIR_Dialog}/DADialogValidationRules.h
+    ${DA_LIB_SUBDIR_Dialog}/DADialogValidationReport.h
+    ${DA_LIB_SUBDIR_Dialog}/DADialogTableColumnView.h
+    ${DA_LIB_SUBDIR_Dialog}/DADialogGotoCell.h
 )
 list(APPEND DA_LIB_SOURCE_FILES_Dialog
     ${DA_LIB_SUBDIR_Dialog}/DATxtFileImportDialog.cpp
@@ -216,6 +257,18 @@ list(APPEND DA_LIB_SOURCE_FILES_Dialog
     ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnDescribe.cpp
     ${DA_LIB_SUBDIR_Dialog}/DADialogAgentSessionManager.cpp
     ${DA_LIB_SUBDIR_Dialog}/DADialogTableDisplayFormat.cpp
+    ${DA_LIB_SUBDIR_Dialog}/DADialogFindReplace.cpp
+    ${DA_LIB_SUBDIR_Dialog}/DADialogConditionalFormat.cpp
+    ${DA_LIB_SUBDIR_Dialog}/DADialogComputedColumn.cpp
+    ${DA_LIB_SUBDIR_Dialog}/DADialogSplitColumn.cpp
+    ${DA_LIB_SUBDIR_Dialog}/DADialogMergeColumns.cpp
+    ${DA_LIB_SUBDIR_Dialog}/DADialogGroupBy.cpp
+    ${DA_LIB_SUBDIR_Dialog}/DADialogReshape.cpp
+    ${DA_LIB_SUBDIR_Dialog}/DADialogFillSeries.cpp
+    ${DA_LIB_SUBDIR_Dialog}/DADialogValidationRules.cpp
+    ${DA_LIB_SUBDIR_Dialog}/DADialogValidationReport.cpp
+    ${DA_LIB_SUBDIR_Dialog}/DADialogTableColumnView.cpp
+    ${DA_LIB_SUBDIR_Dialog}/DADialogGotoCell.cpp
 )
 list(APPEND DA_LIB_QT_UI_FILES_Dialog
     ${DA_LIB_SUBDIR_Dialog}/DATxtFileImportDialog.ui
@@ -226,6 +279,9 @@ list(APPEND DA_LIB_QT_UI_FILES_Dialog
     ${DA_LIB_SUBDIR_Dialog}/DADialogInsertNewColumn.ui
     ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameSeriesSelector.ui
     ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnDescribe.ui
+    ${DA_LIB_SUBDIR_Dialog}/DADialogFindReplace.ui
+    ${DA_LIB_SUBDIR_Dialog}/DADialogConditionalFormat.ui
+    ${DA_LIB_SUBDIR_Dialog}/DADialogTableColumnView.ui
 )
 #MimeData
 file(GLOB DA_LIB_HEADER_FILES_MimeData ${DA_LIB_SUBDIR_MimeData}/*.h)
@@ -237,12 +293,18 @@ set(DA_LIB_HEADER_FILES_Commands
     ${DA_LIB_SUBDIR_Commands}/DACommandsForWorkFlow.h
     ${DA_LIB_SUBDIR_Commands}/DACommandsTableStyle.h
     ${DA_LIB_SUBDIR_Commands}/DACommandsTableColumnFormat.h
+    ${DA_LIB_SUBDIR_Commands}/DACommandsConditionalFormat.h
+    ${DA_LIB_SUBDIR_Commands}/DACommandsTableValidation.h
+    ${DA_LIB_SUBDIR_Commands}/DACommandsTableColumnView.h
 )
 set(DA_LIB_SOURCE_FILES_Commands
     ${DA_LIB_SUBDIR_Commands}/DACommandWithRedoCount.cpp
     ${DA_LIB_SUBDIR_Commands}/DACommandsForWorkFlow.cpp
     ${DA_LIB_SUBDIR_Commands}/DACommandsTableStyle.cpp
     ${DA_LIB_SUBDIR_Commands}/DACommandsTableColumnFormat.cpp
+    ${DA_LIB_SUBDIR_Commands}/DACommandsConditionalFormat.cpp
+    ${DA_LIB_SUBDIR_Commands}/DACommandsTableValidation.cpp
+    ${DA_LIB_SUBDIR_Commands}/DACommandsTableColumnView.cpp
 )
 list(APPEND DA_LIB_HEADER_FILES_Commands
     ${DA_LIB_SUBDIR_Commands}/DACommandWithTemporaryData.h

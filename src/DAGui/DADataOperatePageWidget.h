@@ -23,6 +23,10 @@ public:
 	~DADataOperatePageWidget();
 	virtual int getDataOperatePageType() const = 0;
 	QUndoStack* getUndoStack();
+	// 撤销栈深度（005 T1.21 R19：DAGui 只暴露读写接口，配置读取/持久化在 APP 侧，
+	// 严禁 DAGui→APP 反向依赖；0=无限制，QUndoStack 语义）
+	int undoLimit() const;
+	void setUndoLimit(int limit);
 	// 激活此窗口的UndoStack
 	void activeUndoStack();
 	// 推入命令并激活本窗口的UndoStack

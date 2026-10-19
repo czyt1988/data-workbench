@@ -15,11 +15,8 @@
 // Commands
 #include "Commands.h"
 // Dialogs
-#include "Dialogs/DataFrameDataSearchDialog.h"
 #include "Dialogs/DataFrameDataSelectDialog.h"
-#include "Dialogs/DataFrameSortDialog.h"
 #include "Dialogs/DataFrameQueryDatasDialog.h"
-#include "Dialogs/DataFrameEvalDatasDialog.h"
 #include "Dialogs/DataFrameCreatePivotTableDialog.h"
 
 
@@ -175,63 +172,7 @@ DA::DAPyDataFrame DataframeOperateWorker::createPivotTable(
     return df_pivottable;
 }
 
-/**
- * @brief 数值计算，弹出对话框获取表达式并执行
- */
-void DataframeOperateWorker::evalDatas()
-{
-    auto doptWidget = dockAreaInterface()->getDataOperateWidget();
-    if (!doptWidget) {
-        return;
-    }
-    DA::DADataOperateOfDataFrameWidget* dfopt = doptWidget->getCurrentDataFrameWidget();
-    if (!dfopt) {
-        return;
-    }
-    DA::DAPyDataFrame df = dfopt->getDataframe();
-    if (df.isNone()) {
-        return;
-    }
-    if (!mEvalDatasDialog) {
-        mEvalDatasDialog = new DataFrameEvalDatasDialog(uiInterface()->mainWindow());
-    }
-    if (QDialog::Accepted != mEvalDatasDialog->exec()) {
-        // 说明用户取消
-        return;
-    }
-    // 获取填充值
-    QString exper                  = mEvalDatasDialog->getExpr();
-    DA::DADataTableView* tableView = dfopt->getDataTableView();
-    DA::DADataTableModel* modle    = tableView->getDataModel();
-    Callback fp                    = [ modle ]() {
-        if (modle) {
-            modle->refreshData();
-        }
-    };
-    QUndoCommand* cmd = evalDatas(df, exper, fp);
-    if (cmd) {
-        dfopt->getUndoStack()->push(cmd);  // 推入后不会执行redo逻辑部分
-        uiInterface()->setDirty(true);
-    }
-}
-
-/**
- * @brief 数值计算
- *
- * @param df 数据帧
- * @param exper 表达式
- * @param fp 回调函数
- * @return 命令指针，返回nullptr代表执行失败
- */
-QUndoCommand* DataframeOperateWorker::evalDatas(const DA::DAPyDataFrame& df, const QString& exper, Callback fp)
-{
-    std::unique_ptr< CommandDataFrame_evalDatas > cmd = std::make_unique< CommandDataFrame_evalDatas >(df, exper);
-    cmd->setCallBack(fp);
-    if (!cmd->exec()) {
-        return nullptr;
-    }
-    return cmd.release();
-}
+// 数值计算（Eval Data）入口已按 004 计划收口移除（内核 DAGui 计算列替代，D0/R2）
 
 /**
  * @brief 条件筛选，弹出对话框获取表达式并执行
@@ -290,38 +231,6 @@ QUndoCommand* DataframeOperateWorker::queryDatas(const DA::DAPyDataFrame& df, co
         return nullptr;
     }
     return cmd.release();
-}
-
-/**
- * @brief 搜索数据
- *
- * 此函数将会弹出搜索对话框，用户可以在对话框中输入搜索内容
- *
- */
-void DataframeOperateWorker::searchData()
-{
-    auto doptWidget = dockAreaInterface()->getDataOperateWidget();
-    if (!doptWidget) {
-        return;
-    }
-    DA::DADataOperateOfDataFrameWidget* dfopt = doptWidget->getCurrentDataFrameWidget();
-    if (!dfopt) {
-        return;
-    }
-    DA::DAPyDataFrame df = dfopt->getDataframe();
-    if (df.isNone()) {
-        return;
-    }
-
-    if (!mSearchDialog) {
-        mSearchDialog = new DataFrameDataSearchDialog(uiInterface()->mainWindow());
-    }
-    DA::DADataTableView* tableView = dfopt->getDataTableView();
-    if (!tableView) {
-        return;
-    }
-    mSearchDialog->setDataTableView(tableView);
-    mSearchDialog->exec();
 }
 
 /**
@@ -390,75 +299,6 @@ QUndoCommand* DataframeOperateWorker::filterByColumn(
 {
     std::unique_ptr< CommandDataFrame_filterByColumn > cmd =
         std::make_unique< CommandDataFrame_filterByColumn >(df, lower, upper, index);
-    cmd->setCallBack(fp);
-    if (!cmd->exec()) {
-        return nullptr;
-    }
-    return cmd.release();
-}
-
-/**
- * @brief 数据排序
- *
- * 此函数将会弹出排序对话框，用户可以在对话框中选择排序的列和排序方式
- */
-void DataframeOperateWorker::sortDatas()
-{
-    auto doptWidget = dockAreaInterface()->getDataOperateWidget();
-    if (!doptWidget) {
-        return;
-    }
-    DA::DADataOperateOfDataFrameWidget* dfopt = doptWidget->getCurrentDataFrameWidget();
-    if (!dfopt) {
-        return;
-    }
-    DA::DAPyDataFrame df = dfopt->getDataframe();
-    if (df.isNone()) {
-        return;
-    }
-    if (!mSortDialog) {
-        mSortDialog = new DataFrameSortDialog(uiInterface()->mainWindow());
-    }
-    mSortDialog->setDataframe(df);
-    // 获取选中的列
-    if (dfopt->isDataframeTableHaveSelection()) {
-        mSortDialog->setSortBy(dfopt->getSelectedOneDataframeColumn());
-    }
-    if (QDialog::Accepted != mSortDialog->exec()) {
-        return;
-    }
-    // 获取排序参数
-    QString by                     = mSortDialog->getSortBy();
-    bool ascending                 = mSortDialog->getSortType();
-    DA::DADataTableView* tableView = dfopt->getDataTableView();
-    DA::DADataTableModel* modle    = tableView->getDataModel();
-    Callback fp                    = [ modle ]() {
-        if (modle) {
-            modle->refreshData();
-        }
-    };
-
-    QUndoCommand* cmd = sortDatas(df, by, ascending, fp);
-    if (cmd) {
-        dfopt->getUndoStack()->push(cmd);  // 推入后不会执行redo逻辑部分
-        uiInterface()->setDirty(true);
-    }
-}
-
-/**
- * @brief 数据排序
- *
- * 排序数据
- *
- * @param df 数据
- * @param by 排序列
- * @param ascending 是否升序
- * @param fp 回调函数
- * @return QUndoCommand* 排序命令,返回nullptr代表执行失败
- */
-QUndoCommand* DataframeOperateWorker::sortDatas(const DA::DAPyDataFrame& df, const QString& by, const bool ascending, Callback fp)
-{
-    std::unique_ptr< CommandDataFrame_sort > cmd = std::make_unique< CommandDataFrame_sort >(df, by, ascending);
     cmd->setCallBack(fp);
     if (!cmd->exec()) {
         return nullptr;

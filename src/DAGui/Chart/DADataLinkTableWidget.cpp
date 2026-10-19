@@ -63,8 +63,11 @@ void DADataLinkTableWidget::onFigureCreated(DA::DAFigureWidget* figWidget)
         return;
     }
     // 探针创建 -> 对应 tab 加列并请求前置
+    // 注意：lambda 槽不支持 Qt::UniqueConnection（Qt Debug 版在 QObject::connect 内触发断言崩溃），
+    // 先断开旧连接再连接以保证幂等
+    disconnect(figWidget, &DA::DAFigureWidget::dataProbeCreated, this, nullptr);
     connect(figWidget, &DA::DAFigureWidget::dataProbeCreated, this,
-            [this, figWidget](DA::DADataProbeMarker* probe) { onProbeCreated(figWidget, probe); }, Qt::UniqueConnection);
+            [this, figWidget](DA::DADataProbeMarker* probe) { onProbeCreated(figWidget, probe); });
 }
 
 void DADataLinkTableWidget::onFigureRemoving(DA::DAFigureWidget* figWidget)

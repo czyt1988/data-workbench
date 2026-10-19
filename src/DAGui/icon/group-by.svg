@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px"
+	 width="200px" height="200px" viewBox="0 0 200 200" xml:space="preserve">
+	<!-- 分组聚合：左侧表格按分组着色（上两组浅蓝、下两组白，组带语义）+ 右侧主蓝 Σ 聚合符号。
+	     官方色板：网格 #727272（中灰）、底 #FFFFFF、分组带 #BDCDE8（浅蓝）、
+	     Σ #5280C1（主蓝，主操作）；禁渐变/阴影/<text>（DESIGN.md §4） -->
+	<rect x="20" y="25" width="100" height="150" fill="#FFFFFF"/>
+	<rect x="20" y="25" width="100" height="75" fill="#BDCDE8"/>
+	<g fill="none" stroke="#727272" stroke-width="8" stroke-linecap="butt">
+		<rect x="20" y="25" width="100" height="150"/>
+		<line x1="20" y1="62" x2="120" y2="62"/>
+		<line x1="20" y1="100" x2="120" y2="100"/>
+		<line x1="20" y1="137" x2="120" y2="137"/>
+	</g>
+	<path d="M 182 70 H 150 L 166 100 L 150 130 H 182"
+	      fill="none" stroke="#5280C1" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

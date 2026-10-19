@@ -13,7 +13,6 @@
 #include <QMenu>
 #include <QApplication>
 #include <QActionGroup>
-#include <QHeaderView>
 #include <QItemSelectionModel>
 #include <QAbstractItemModel>
 #include <QClipboard>
@@ -34,6 +33,7 @@
 #include "DAAppRibbonArea.h"
 #include "DAAppDockingArea.h"
 #include "DAAppCommand.h"
+#include "DAUndoHistoryWidget.h"
 #include "DAAppActions.h"
 #include "DAAppDataManager.h"
 #include "DAProjectInterface.h"
@@ -72,6 +72,10 @@
 #include "DAShapeEditPannelWidget.h"
 // Table style
 #include "DATableCellStyle.h"
+// 表格元数据与数据撤销命令（004 T1.27 就地形状变换：Swap 命令 + 元数据束快照/清理）
+#include "DATableMetadata.h"
+#include "DATableMetadataRegistry.h"
+#include "DADataUndoCommand.h"
 // Workflow
 #include "DAPyWorkFlowOperateWidget.h"
 #include "DAPyWorkFlowGraphicsView.h"
@@ -89,6 +93,7 @@
 #include "numpy/DAPyDType.h"
 // Widget
 #include "DADataOperateOfDataFrameWidget.h"
+#include "DADataHeaderView.h"
 #include "DATableDisplayFormatComboBox.h"
 #include "Dialog/DADialogTableDisplayFormat.h"
 #include "DADataTableView.h"
@@ -524,6 +529,45 @@ void DAAppController::initConnection()
             &DATableDisplayFormatComboBox::currentFormatCategoryChanged,
             this,
             &DAAppController::onTableDisplayFormatCategoryChanged);
+    // 表内查找/替换（002 T1.4，Ribbon「编辑」面板；快捷键在 DADataTableView::keyPressEvent，action 不设 shortcut 红线5）
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionFind, onActionFindTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionReplace, onActionReplaceTriggered);
+    // 条件格式（003 T1.5，Ribbon「Table Style」面板；与表体右键菜单共用页面入口，R16）
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionConditionalFormat, onActionConditionalFormatTriggered);
+    // 数据工具（004，Ribbon「Data Tools」面板；计算列/分列/合并列与表体右键菜单共用页面入口）
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionComputedColumn, onActionComputedColumnTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionRecomputeAllComputedColumns, onActionRecomputeAllComputedColumnsTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionSplitColumn, onActionSplitColumnTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionMergeColumns, onActionMergeColumnsTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionGroupBy, onActionGroupByTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionTranspose, onActionTransposeTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionMelt, onActionMeltTriggered);
+    // 填充（005 T1.24，Ribbon「Edit」面板下拉；快捷键 Ctrl+D 在 DADataTableView，action 不设 shortcut 红线5）
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionFill, onActionFillDownTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionFillDown, onActionFillDownTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionFillUp, onActionFillUpTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionFillForward, onActionFillForwardTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionFillBackward, onActionFillBackwardTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionFillSeries, onActionFillSeriesTriggered);
+    // 数据校验（005 T1.25，Ribbon「Data Tools」面板；与表体右键菜单共用页面入口）
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionValidationRules, onActionValidationRulesTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionRunValidation, onActionRunValidationTriggered);
+    // 批注（005 T1.26，Ribbon「Edit」面板下拉；插入/编辑共用弹层入口）
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionNote, onActionNoteTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionInsertNote, onActionNoteTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionEditNote, onActionNoteTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionDeleteNote, onActionDeleteNoteTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionClearNotes, onActionClearNotesTriggered);
+    // 列视图（006 T1.8，Ribbon「View」面板；与列头右键「列」子菜单共用页面入口）
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionFreezeColumns, onActionFreezeColumnsTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionHideColumn, onActionHideColumnTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowAllColumns, onActionShowAllColumnsTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionColumnViewDialog, onActionColumnViewDialogTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionFreezeFirstColumn, onActionFreezeFirstColumnTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionFreezeColumnsPrompt, onActionFreezeColumnsPromptTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionUnfreezeColumns, onActionUnfreezeColumnsTriggered);
+    // 定位（007 T1.7，Ribbon「View」面板；快捷键 Ctrl+G 在 DADataTableView 红线5）
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionGotoCell, onActionGotoCellTriggered);
     // View Category
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowWorkFlowArea, onActionShowWorkFlowAreaTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowWorkFlowManagerArea, onActionShowWorkFlowManagerAreaTriggered);
@@ -532,6 +576,7 @@ void DAAppController::initConnection()
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowDataArea, onActionShowDataAreaTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowDataManagerArea, onActionShowDataManagerAreaTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowMessageLogView, onActionShowMessageLogViewTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowUndoHistory, onActionShowUndoHistoryTriggered);  // 005 T1.21 撤销历史面板
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowSettingWidget, onActionSettingWidgetTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowRightSideBar, onActionShowRightSideBarTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowLeftSideBar, onActionShowLeftSideBarTriggered);
@@ -608,6 +653,21 @@ void DAAppController::initConnection()
     // DADataOperateWidget
     DADataOperateWidget* dow = mDock->getDataOperateWidget();
     connect(dow, &DADataOperateWidget::dataTableCreated, this, &DAAppController::onDataOperatePageCreated);
+    // 撤销历史面板（005 T1.21）：QUndoGroup 由 APP 注入（DAGui 不依赖 DAInterface，D0 分层）；
+    // 深度初值读配置；面板调深度 → 写回配置 + 施加全部已打开数据页（R19）
+    if (DAUndoHistoryWidget* uh = mDock->getUndoHistoryWidget()) {
+        if (mCommand) {
+            uh->setUndoGroup(&mCommand->undoGroup());
+        }
+        if (mConfig) {
+            bool limitOk = false;
+            const int cfgLimit = mConfig->value(DA_CONFIG_KEY_UNDO_STACK_LIMIT).toInt(&limitOk);
+            if (limitOk && cfgLimit > 0) {
+                uh->setUndoLimit(cfgLimit);
+            }
+        }
+        connect(uh, &DAUndoHistoryWidget::undoLimitChangeRequested, this, &DAAppController::onUndoHistoryLimitChangeRequested);
+    }
     // DAChartManager
     DAChartManageWidget* cmw = mDock->getChartManageWidget();
     connect(cmw, &DAChartManageWidget::figureElementClicked, this, &DAAppController::onFigureElementClicked);
@@ -1458,6 +1518,15 @@ void DAAppController::onDataOperatePageCreated(DADataOperatePageWidget* page)
     if (mCommand) {
         mCommand->addStack(page->getUndoStack());
     }
+    // 撤销栈深度从配置施加（005 T1.21 R19：默认 20，历史面板可调大；配置在 APP 侧读写，
+    // DAGui 只暴露 undoLimit()/setUndoLimit(int)，严禁反向依赖）
+    if (mConfig && page) {
+        bool limitOk = false;
+        const int cfgLimit = mConfig->value(DA_CONFIG_KEY_UNDO_STACK_LIMIT).toInt(&limitOk);
+        if (limitOk && cfgLimit > 0) {
+            page->setUndoLimit(cfgLimit);
+        }
+    }
     switch (page->getDataOperatePageType()) {
     case DADataOperatePageWidget::DataOperateOfDataFrame: {
         DADataOperateOfDataFrameWidget* w = static_cast< DADataOperateOfDataFrameWidget* >(page);
@@ -1469,8 +1538,161 @@ void DAAppController::onDataOperatePageCreated(DADataOperatePageWidget* page)
         connect(w, &DADataOperateOfDataFrameWidget::currentStyleChanged, this, &DAAppController::onTableStyleCurrentChanged);
         // 选中列变化时反向同步 ribbon 显示格式下拉框
         connect(w, &DADataOperateOfDataFrameWidget::currentDisplayFormatChanged, this, &DAAppController::onTableDisplayFormatCurrentChanged);
-        // 表头右键菜单注入
-        setupDataFrameHeaderContextMenu(w);
+        // 替换生效后置工程未保存标记（002 T1.4；含超阈值不可撤销降级路径，与剪切/粘贴同口径）
+        connect(w, &DADataOperateOfDataFrameWidget::replaceApplied, this, [ this ](int changedCells) {
+            if (changedCells > 0) {
+                setDirty();
+            }
+        });
+        // 数据工具改动数据后置工程未保存标记（004：计算列创建/重算等，exec/undo 都发）
+        connect(w, &DADataOperateOfDataFrameWidget::dataModified, this, [ this ]() {
+            setDirty();
+        });
+        // 新数据集产出（004 T1.22 分组聚合等）：置脏 + 抬起数据操作区 + 激活新页面
+        //（照 DataframeOperateWorker::createPivotTable 的产出流程；注册已由页面走 addData_ 完成）
+        connect(w, &DADataOperateOfDataFrameWidget::newDataCreated, this, [ this ](const DAData& newData) {
+            setDirty();
+            if (mDock) {
+                mDock->raiseDockingArea(DADockingAreaInterface::DockingAreaDataOperate);
+            }
+            if (DADataOperateWidget* dow = getDataOperateWidget()) {
+                dow->showData(newData);
+            }
+        });
+        // 就地数据替换（004 T1.27 转置/melt 就地路径）：Swap 命令必须经 DAAppCommand
+        // begin/end 建（统一撤销链，DAGui 侧不 new）；元数据清理与数据替换同一撤销
+        // 单元——directional 回调 redo 清束 / undo 还原页面捕获的整束 XML 快照
+        connect(w,
+                &DADataOperateOfDataFrameWidget::inplaceDataReplaceRequested,
+                this,
+                [ this, w ](const DAData& data, const DAData& source, const QString& text, const QString& metadataSnapshot) {
+                    if (!mCommand) {
+                        return;
+                    }
+                    DADataAbstractUndoCommand* cmd = mCommand->beginDataOperateCommand(data, text, false /*isObjectPersist=false → Swap 内存驻留*/);
+                    DATableMetadata* bundle        = nullptr;
+                    if (DADataOperateWidget* dow = getDataOperateWidget()) {
+                        if (DATableMetadataRegistry* reg = dow->metadataRegistry()) {
+                            bundle = reg->get(data);
+                        }
+                    }
+                    QPointer< DADataOperateOfDataFrameWidget > wp(w);
+                    if (cmd) {
+                        cmd->setDirectionalCallBack([ wp, bundle, metadataSnapshot ](bool isUndo) {
+                            if (bundle) {
+                                if (isUndo) {
+                                    bundle->restoreFromString(metadataSnapshot);
+                                } else {
+                                    bundle->clearAll();
+                                }
+                            }
+                            if (wp) {
+                                wp->refreshAfterInplaceReplace();
+                            }
+                        });
+                    }
+                    DAData mutableData = data;  // DAData 共享底层对象，副本上 setPyObject 即生效
+                    mutableData.setPyObject(source.toPyObject());  // 执行替换
+                    if (cmd) {
+                        // push → 首次 redo：Swap 重设新对象（幂等）+ directional 清元数据
+                        mCommand->endDataOperateCommand(data);
+                    } else if (bundle) {
+                        // 惰性源不支持快照（begin 返回 nullptr）：不可撤销兜底执行
+                        bundle->clearAll();
+                    }
+                    if (wp) {
+                        wp->refreshAfterInplaceReplace();
+                    }
+                    setDirty();
+                });
+        // 列头右键菜单已迁入 DADataHeaderView（R12，菜单内容单点定义在 DAGui）：
+        // 这里只做信号接线——排序类动作直接执行（**不预选列**：整列选择会产生上万个
+        // 选区 range，拖慢排序的选区重映射且对排序无意义）；其余动作先选中该列
+        // （复用 selectColumnInDataFrameWidget，槽函数经 getSelectedOneDataframeColumn 取列），
+        // 再执行既有槽逻辑，行为与迁移前一致
+        if (DADataTableView* tv = w->getDataTableView()) {
+            if (DADataHeaderView* hv = qobject_cast< DADataHeaderView* >(tv->horizontalHeader())) {
+                connect(hv,
+                        &DADataHeaderView::columnActionRequested,
+                        this,
+                        [ this, w ](int col, DA::DADataHeaderView::ColumnAction action) {
+                            using ColumnAction = DA::DADataHeaderView::ColumnAction;
+                            // 排序类（2026-10-18 交互修订：排序入口=列头右键菜单，点击表头不排序）
+                            if (action == ColumnAction::SortAscending || action == ColumnAction::SortDescending
+                                || action == ColumnAction::AddSecondarySortAscending
+                                || action == ColumnAction::AddSecondarySortDescending) {
+                                const Qt::SortOrder order = (action == ColumnAction::SortAscending
+                                                             || action == ColumnAction::AddSecondarySortAscending)
+                                                                ? Qt::AscendingOrder
+                                                                : Qt::DescendingOrder;
+                                if (action == ColumnAction::AddSecondarySortAscending
+                                    || action == ColumnAction::AddSecondarySortDescending) {
+                                    w->addSecondarySortColumn(col, order);
+                                } else {
+                                    w->sortColumn(col, order);
+                                }
+                                // 置脏由页面 dataModified 信号驱动（排序命令回调里发，exec/undo 全覆盖）
+                                return;
+                            }
+                            selectColumnInDataFrameWidget(w, col);
+                            switch (action) {
+                            case ColumnAction::RenameColumn:
+                                onActionRenameColumnTriggered();
+                                break;
+                            case ColumnAction::RemoveColumn:
+                                onActionRemoveColumnTriggered();
+                                break;
+                            case ColumnAction::CopyColumnName:
+                                onActionCopyColumnNameTriggered();
+                                break;
+                            case ColumnAction::GotoMax:
+                                onActionGotoMaxTriggered();
+                                break;
+                            case ColumnAction::GotoMin:
+                                onActionGotoMinTriggered();
+                                break;
+                            case ColumnAction::ShowColumnDescribe:
+                                onActionShowColumnDescribeTriggered();
+                                break;
+                            // 计算列三项（004 T1.23）：页面方法按列位置解析列名后执行
+                            case ColumnAction::EditComputedFormula:
+                                w->showComputedColumnDialog(col);
+                                break;
+                            case ColumnAction::RecomputeComputedColumn:
+                                w->recomputeComputedColumn(col);
+                                break;
+                            case ColumnAction::RemoveComputedFormula:
+                                w->removeComputedColumnFormula(col);
+                                break;
+                            // 排序类已在上面前置分支处理（保留 case 保证枚举全覆盖）
+                            case ColumnAction::SortAscending:
+                            case ColumnAction::SortDescending:
+                            case ColumnAction::AddSecondarySortAscending:
+                            case ColumnAction::AddSecondarySortDescending:
+                                break;
+                            }
+                        });
+            }
+            // 表体右键菜单（v1 骨架：剪切/复制/粘贴）信号接线：路由到既有槽逻辑
+            // （与 onActionCut/Copy/PasteTriggered 的数据页分支一致），不新增执行逻辑
+            connect(tv, &DADataTableView::contextMenuCutRequested, this, [ this, w ]() {
+                if (w->cutSelection() > 0) {
+                    setDirty();
+                }
+            });
+            connect(tv, &DADataTableView::contextMenuCopyRequested, this, [ this, w ]() {
+                if (DADataTableView* t = w->getDataTableView()) {
+                    if (!t->copySelectionToClipboard()) {
+                        daWarning << tr("No cells selected to copy");  // cn:没有选中可复制的单元格
+                    }
+                }
+            });
+            connect(tv, &DADataTableView::contextMenuPasteRequested, this, [ this, w ]() {
+                if (w->pasteFromClipboard() > 0) {
+                    setDirty();
+                }
+            });
+        }
     } break;
     default:
         break;
@@ -3197,7 +3419,7 @@ void DAAppController::onActionCopyColumnNameTriggered()
 /**
  * @brief 跳转到最大值（表头右键）
  *
- * 取当前选中列的最大值位置索引，调用 selectActualCell 滚动并高亮。
+ * 取当前选中列的最大值位置索引，经定位单入口滚动并选中。
  * 依赖表头右键菜单已先选中目标列（B-2-a）。
  */
 void DAAppController::onActionGotoMaxTriggered()
@@ -3221,11 +3443,8 @@ void DAAppController::onActionGotoMaxTriggered()
         daWarning << tr("Cannot find the maximum value in this column (empty, all-NaN, or incomparable types)");  // cn:此列无法找到最大值（空列、全为NaN或类型不可比较）
         return;
     }
-    // 选中并滚动到目标单元格
-    DADataTableView* tv = dfopt->getDataTableView();
-    if (tv) {
-        tv->selectActualCell(static_cast< int >(pos), col);
-    }
+    // 选中并滚动到目标单元格（007：走定位单入口，顺带获得隐藏列/冻结区处置）
+    dfopt->locateActualCell(static_cast< int >(pos), col);
     // 打印结果到信息栏
     {
         pybind11::gil_scoped_acquire gil;
@@ -3243,7 +3462,7 @@ void DAAppController::onActionGotoMaxTriggered()
 /**
  * @brief 跳转到最小值（表头右键）
  *
- * 取当前选中列的最小值位置索引，调用 selectActualCell 滚动并高亮。
+ * 取当前选中列的最小值位置索引，经定位单入口滚动并选中。
  * 依赖表头右键菜单已先选中目标列（B-2-a）。
  */
 void DAAppController::onActionGotoMinTriggered()
@@ -3267,11 +3486,8 @@ void DAAppController::onActionGotoMinTriggered()
         daWarning << tr("Cannot find the minimum value in this column (empty, all-NaN, or incomparable types)");  // cn:此列无法找到最小值（空列、全为NaN或类型不可比较）
         return;
     }
-    // 选中并滚动到目标单元格
-    DADataTableView* tv = dfopt->getDataTableView();
-    if (tv) {
-        tv->selectActualCell(static_cast< int >(pos), col);
-    }
+    // 选中并滚动到目标单元格（007：走定位单入口，顺带获得隐藏列/冻结区处置）
+    dfopt->locateActualCell(static_cast< int >(pos), col);
     // 打印结果到信息栏
     {
         pybind11::gil_scoped_acquire gil;
@@ -3305,13 +3521,433 @@ void DAAppController::onActionShowColumnDescribeTriggered()
 }
 
 /**
- * @brief 为 DataFrame 操作窗口的表头注入右键菜单
+ * @brief 表内查找（002 T1.4，Ribbon「编辑」面板）
  *
- * 方案 B-2：controller 直接操作 widget 的 horizontalHeader。
- * 右键时先选中该列（replace 语义），再弹出菜单。
- * 菜单项 enable 按 Q9-A 统一判定：走到这里 col 已有效，全部 enable。
- * 生命周期依赖 Qt 自动断连（header 是 widget 子对象，widget 销毁即断连）。
- * @param w 目标 DataFrame 操作窗口
+ * 唤出当前数据页的非模态浮动查找条（仅查找行）。快捷键 Ctrl+F 在 DADataTableView
+ * 处理（红线5：action 不设 shortcut，避免双触发），此处仅 Ribbon 入口。
+ */
+void DAAppController::onActionFindTriggered()
+{
+    DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false);
+    if (!dfopt) {
+        return;
+    }
+    dfopt->showFindReplace(false);
+}
+
+/**
+ * @brief 表内替换（002 T1.4，Ribbon「编辑」面板）
+ *
+ * 唤出当前数据页浮动条并展开替换行。快捷键 Ctrl+H 在 DADataTableView 处理。
+ */
+void DAAppController::onActionReplaceTriggered()
+{
+    DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false);
+    if (!dfopt) {
+        return;
+    }
+    dfopt->showFindReplace(true);
+}
+
+/**
+ * @brief 条件格式（003 T1.5，Ribbon「Table Style」面板）
+ *
+ * 唤出当前数据页的条件格式规则编辑对话框（作用于选区所在列）。
+ * 与表体右键菜单「条件格式...」共用页面 showConditionalFormatDialog 入口（R16）。
+ */
+void DAAppController::onActionConditionalFormatTriggered()
+{
+    DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false);
+    if (!dfopt) {
+        return;
+    }
+    dfopt->showConditionalFormatDialog();
+}
+
+/**
+ * @brief 计算列（004 T1.23，Ribbon「Data Tools」面板）
+ *
+ * 唤出当前数据页的计算列对话框（新建）。与表体右键菜单「计算列...」共用页面
+ * showComputedColumnDialog 入口；脏标记经页面 dataModified 信号统一接线。
+ */
+void DAAppController::onActionComputedColumnTriggered()
+{
+    DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false);
+    if (!dfopt) {
+        return;
+    }
+    dfopt->showComputedColumnDialog(-1);
+}
+
+/**
+ * @brief 全部重算计算列（004 T1.23，Ribbon「Data Tools」面板）
+ *
+ * 重算当前数据页全部待重算/失效的计算列（R8 手动重算；一个宏命令 = 一个撤销单元）。
+ */
+void DAAppController::onActionRecomputeAllComputedColumnsTriggered()
+{
+    DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false);
+    if (!dfopt) {
+        return;
+    }
+    dfopt->recomputeAllStaleComputedColumns();
+}
+
+/**
+ * @brief 分列（004 T1.9，Ribbon「Data Tools」面板）
+ *
+ * 与表体右键菜单「分列...」共用页面 showSplitColumnDialog 入口：
+ * 作用于当前选区的唯一数据列（页面内校验并提示）。
+ */
+void DAAppController::onActionSplitColumnTriggered()
+{
+    DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false);
+    if (!dfopt) {
+        return;
+    }
+    dfopt->showSplitColumnDialog(-1);
+}
+
+/**
+ * @brief 合并列（004 T1.9，Ribbon「Data Tools」面板）
+ *
+ * 与表体右键菜单「合并列...」共用页面 showMergeColumnsDialog 入口：
+ * 作用于当前选区的多列（页面内校验并提示）。
+ */
+void DAAppController::onActionMergeColumnsTriggered()
+{
+    DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false);
+    if (!dfopt) {
+        return;
+    }
+    dfopt->showMergeColumnsDialog();
+}
+
+/**
+ * @brief 分组聚合（004 T1.22，Ribbon「Data Tools」面板）
+ *
+ * 与表体右键菜单「分组聚合...」共用页面 showGroupByDialog 入口：产出新数据集
+ * （addData_ 可撤销注册），新页面激活经页面 newDataCreated 信号统一接线。
+ */
+void DAAppController::onActionGroupByTriggered()
+{
+    DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false);
+    if (!dfopt) {
+        return;
+    }
+    dfopt->showGroupByDialog();
+}
+
+/**
+ * @brief 转置（004 T1.27，Ribbon「Data Tools」面板）
+ *
+ * 与表体右键菜单「转置...」共用页面 showReshapeDialog(false) 入口；
+ * 默认产出新数据集，就地替换为对话框勾选项（R14）。
+ */
+void DAAppController::onActionTransposeTriggered()
+{
+    DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false);
+    if (!dfopt) {
+        return;
+    }
+    dfopt->showReshapeDialog(false);
+}
+
+/**
+ * @brief 宽转长 melt（004 T1.27，Ribbon「Data Tools」面板）
+ *
+ * 与表体右键菜单「宽转长（melt）...」共用页面 showReshapeDialog(true) 入口；
+ * melt 规模守卫在对话框 OK 确认点（行数×展开列数 > 5000 万默认拒绝，可强制继续）。
+ */
+void DAAppController::onActionMeltTriggered()
+{
+    DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false);
+    if (!dfopt) {
+        return;
+    }
+    dfopt->showReshapeDialog(true);
+}
+
+/**
+ * @brief 向下填充（005 T1.24，Ribbon「Edit」面板下拉 + Ctrl+D + 表体右键）
+ *
+ * 与表体右键「填充 → 向下填充」、DADataTableView 的 Ctrl+D 共用页面 fillSelection 入口；
+ * 求值走 Python 算子（空值判定），一次填充一条 paste 命令入栈（D4）。
+ */
+void DAAppController::onActionFillDownTriggered()
+{
+    DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false);
+    if (!dfopt) {
+        return;
+    }
+    dfopt->fillSelection(DADataOperateOfDataFrameWidget::FillMode::Down);
+}
+
+/**
+ * @brief 向上填充（005 T1.24）
+ */
+void DAAppController::onActionFillUpTriggered()
+{
+    DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false);
+    if (!dfopt) {
+        return;
+    }
+    dfopt->fillSelection(DADataOperateOfDataFrameWidget::FillMode::Up);
+}
+
+/**
+ * @brief 向下填充空值 ffill（005 T1.24）
+ */
+void DAAppController::onActionFillForwardTriggered()
+{
+    DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false);
+    if (!dfopt) {
+        return;
+    }
+    dfopt->fillSelection(DADataOperateOfDataFrameWidget::FillMode::Forward);
+}
+
+/**
+ * @brief 向上填充空值 bfill（005 T1.24）
+ */
+void DAAppController::onActionFillBackwardTriggered()
+{
+    DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false);
+    if (!dfopt) {
+        return;
+    }
+    dfopt->fillSelection(DADataOperateOfDataFrameWidget::FillMode::Backward);
+}
+
+/**
+ * @brief 序列填充（005 T1.24，Ribbon「Edit」面板下拉 + 表体右键）
+ *
+ * 唤出序列填充对话框（数值等差/日期步进，Python 求值+预览）。
+ */
+void DAAppController::onActionFillSeriesTriggered()
+{
+    DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false);
+    if (!dfopt) {
+        return;
+    }
+    dfopt->showFillSeriesDialog();
+}
+
+/**
+ * @brief 校验规则管理（005 T1.25，Ribbon「Data Tools」面板）
+ *
+ * 与表体右键菜单「校验规则...」共用页面 showValidationRulesDialog 入口；
+ * 规则增删改经 setRules 命令入页撤销栈（D4）。
+ */
+void DAAppController::onActionValidationRulesTriggered()
+{
+    DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false);
+    if (!dfopt) {
+        return;
+    }
+    dfopt->showValidationRulesDialog();
+}
+
+/**
+ * @brief 执行校验（005 T1.25，Ribbon「Data Tools」面板）
+ *
+ * 只读操作（红线2：不改数据、不入撤销栈）；违规装载 Source::Validation 高亮并弹报告。
+ */
+void DAAppController::onActionRunValidationTriggered()
+{
+    DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false);
+    if (!dfopt) {
+        return;
+    }
+    dfopt->runValidationAndShowReport();
+}
+
+/**
+ * @brief 插入/编辑批注（005 T1.26，Ribbon「Edit」面板下拉）
+ *
+ * 与表体右键菜单共用页面弹层入口（无批注=插入、有批注=编辑且弹层内可删除）。
+ */
+void DAAppController::onActionNoteTriggered()
+{
+    DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false);
+    if (!dfopt) {
+        return;
+    }
+    dfopt->showNoteEditorForCurrentCell();
+}
+
+/**
+ * @brief 冻结列（006 T1.8，Ribbon「View」面板；主体 = 弹「冻结前 N 列」输入框）
+ */
+void DAAppController::onActionFreezeColumnsTriggered()
+{
+    DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false);
+    if (!dfopt) {
+        return;
+    }
+    dfopt->promptFreezeColumns();
+}
+
+/**
+ * @brief 隐藏列（006 T1.8）：隐藏选中的列（入撤销栈）
+ */
+void DAAppController::onActionHideColumnTriggered()
+{
+    DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false);
+    if (!dfopt) {
+        return;
+    }
+    const QList< int > cols = dfopt->getSelectedDataframeCoumns();
+    if (cols.isEmpty()) {
+        daWarning << tr("Please select a column first");  // cn:请先选择列（复用页面既有源串，本 context 另建条目）
+        return;
+    }
+    for (int c : cols) {
+        dfopt->hideColumnAt(c);
+    }
+}
+
+/**
+ * @brief 显示所有列（006 T1.8）
+ */
+void DAAppController::onActionShowAllColumnsTriggered()
+{
+    DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false);
+    if (!dfopt) {
+        return;
+    }
+    dfopt->showAllColumns();
+}
+
+/**
+ * @brief 列视图对话框（006 T1.8）
+ */
+void DAAppController::onActionColumnViewDialogTriggered()
+{
+    DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false);
+    if (!dfopt) {
+        return;
+    }
+    dfopt->showColumnViewDialog();
+}
+
+/**
+ * @brief 冻结首列（006 T1.8，冻结菜单项）
+ */
+void DAAppController::onActionFreezeFirstColumnTriggered()
+{
+    DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false);
+    if (!dfopt) {
+        return;
+    }
+    dfopt->freezeColumnsTo(1);
+}
+
+/**
+ * @brief 冻结前 N 列…（006 T1.8，冻结菜单项，与主体同一实现）
+ */
+void DAAppController::onActionFreezeColumnsPromptTriggered()
+{
+    DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false);
+    if (!dfopt) {
+        return;
+    }
+    dfopt->promptFreezeColumns();
+}
+
+/**
+ * @brief 取消冻结（006 T1.8，冻结菜单项）
+ */
+void DAAppController::onActionUnfreezeColumnsTriggered()
+{
+    DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false);
+    if (!dfopt) {
+        return;
+    }
+    dfopt->freezeColumnsTo(0);
+}
+
+/**
+ * @brief 定位（007 T1.7）：打开定位对话框（Ctrl+G 与滚动条右键共用同一入口）
+ */
+void DAAppController::onActionGotoCellTriggered()
+{
+    DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false);
+    if (!dfopt) {
+        return;
+    }
+    dfopt->showGotoDialog();
+}
+
+/**
+ * @brief 删除当前格批注（005 T1.26）
+ */
+void DAAppController::onActionDeleteNoteTriggered()
+{
+    DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false);
+    if (!dfopt) {
+        return;
+    }
+    dfopt->deleteNoteAtCurrentCell();
+}
+
+/**
+ * @brief 清除本表批注（005 T1.26，一次命令可撤销）
+ */
+void DAAppController::onActionClearNotesTriggered()
+{
+    DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false);
+    if (!dfopt) {
+        return;
+    }
+    dfopt->clearAllNotes();
+}
+
+/**
+ * @brief 显示撤销历史面板（005 T1.21，Ribbon「视图」页）
+ *
+ * 入口选 (a)「点击即 raise」：与现有全部面板入口交互一致（APP 无勾选式入口先例，
+ * 面板可由 dock 关闭按钮收起，勾选态收益低）。
+ */
+void DAAppController::onActionShowUndoHistoryTriggered()
+{
+    if (mDock && mDock->getUndoHistoryWidget()) {
+        mDock->raiseDockByWidget((QWidget*)(mDock->getUndoHistoryWidget()));
+    }
+}
+
+/**
+ * @brief 历史面板调整撤销深度（005 T1.21 R19）
+ *
+ * 写回配置（dawork-config.xml，DA_CONFIG_KEY_UNDO_STACK_LIMIT）并施加到全部已打开
+ * 数据页撤销栈；新建页面在 onDataOperatePageCreated 读同一配置。调大风险只来自
+ * Swap 类命令的旧对象驻留内存（快照命令 pickle 到临时文件，吃磁盘不吃内存）。
+ * @param limit 新深度（>0；面板 SpinBox 下限 1）
+ */
+void DAAppController::onUndoHistoryLimitChangeRequested(int limit)
+{
+    if (limit <= 0) {
+        return;
+    }
+    if (mConfig) {
+        mConfig->setProperty(DA_CONFIG_KEY_UNDO_STACK_LIMIT, limit);
+        mConfig->saveConfig();
+    }
+    if (DADataOperateWidget* dow = getDataOperateWidget()) {
+        const auto pages = dow->getAllDataFrameWidgets();
+        for (DADataOperateOfDataFrameWidget* page : pages) {
+            page->setUndoLimit(limit);
+        }
+    }
+}
+
+/**
+ * @brief 填充共用的列操作右键菜单项
+ *
+ * 供数据管理树 series 节点右键复用（表头右键菜单已迁入 DADataHeaderView，R12）。
+ * 6 项 4 组：重命名列 / 删除列 ‖ 复制列名 ‖ 定位最大 / 定位最小 ‖ 描述统计。
+ * 走到这里 col 已由调用方选中，菜单项全部 enable。
+ * @param menu 目标菜单
  */
 void DAAppController::populateColumnContextMenu(QMenu& menu)
 {
@@ -3343,47 +3979,6 @@ void DAAppController::selectColumnInDataFrameWidget(DADataOperateOfDataFrameWidg
     sel->clearSelection();
     QItemSelection selRange(m->index(0, col), m->index(m->rowCount() - 1, col));
     sel->select(selRange, QItemSelectionModel::Select | QItemSelectionModel::Columns);
-}
-
-/**
- * @brief 为 DataFrame 操作窗口的表头注入右键菜单
- *
- * 方案 B-2：controller 直接操作 widget 的 horizontalHeader。
- * 右键时先选中该列（replace 语义），再弹出菜单。
- * 菜单项 enable 按 Q9-A 统一判定：走到这里 col 已有效，全部 enable。
- * 生命周期依赖 Qt 自动断连（header 是 widget 子对象，widget 销毁即断连）。
- * @param w 目标 DataFrame 操作窗口
- */
-void DAAppController::setupDataFrameHeaderContextMenu(DADataOperateOfDataFrameWidget* w)
-{
-    if (!w || !w->getDataTableView()) {
-        return;
-    }
-    QHeaderView* hv = w->getDataTableView()->horizontalHeader();
-    if (!hv) {
-        return;
-    }
-    hv->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(hv, &QWidget::customContextMenuRequested, this, [ this, w, hv ](const QPoint& pos) {
-        int col = hv->logicalIndexAt(pos);
-        if (col < 0) {
-            return;
-        }
-        DAPyDataFrame df = w->getDataframe();
-        if (df.isNone()) {
-            return;
-        }
-        auto shape = df.shape();
-        if (col >= (int)shape.second) {
-            return;
-        }
-        // 先选中该列（replace 语义），槽函数通过 getSelectedOneDataframeColumn 取列
-        selectColumnInDataFrameWidget(w, col);
-        // 弹出共用菜单
-        QMenu menu(w);
-        populateColumnContextMenu(menu);
-        menu.exec(hv->mapToGlobal(pos));
-    });
 }
 
 /**

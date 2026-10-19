@@ -142,6 +142,8 @@ public:
     void setOnlyOneWorkflow(bool v);
     // 获取窗口内置的action，一般这个函数用来把action设置到工具栏或者菜单中
     QAction* getInnerAction(InnerActions act);
+    // 获取可配置快捷键的内部action（供DAShortcutManager注册，默认快捷键在initActions中就地设置）
+    QList< QAction* > configurableActions() const;
     // 迭代场景操作
     void iteratorScene(FpScenesOpt fp);
     // 设置当前视图的标记线

@@ -26,7 +26,7 @@
 旧体系入口位于 `DAUIInterface::getConfigValues()` / `DAAppUI::getConfigValues()`，底层依赖 `DACommonPropertySettingDialog`。该实现：
 
 - 基于 `QtPropertyBrowser`
-- 使用面向旧窗口实现细节的 JSON schema
+- 用面向旧窗口实现细节的 JSON schema
 - 通过 Python `property_config_builder.py` 生成配置
 - 与现有 `DAProperty*` 体系完全割裂
 
@@ -167,7 +167,7 @@
 - `enabled_when`
 - `required_when`
 
-规则表达式首版限定为简单表达式，围绕其他字段当前值求值，例如：
+规则表达式首版限定为简单表达式，围绕其他字段当前值求值，比如：
 
 - `method == 'value'`
 - `mode != 'custom'`
@@ -423,7 +423,7 @@ spec = (
 
 ### DAUIInterface
 
-文档更新为面向“统一表单配置窗口”，而不是旧对话框 JSON。
+文档更新为面向“统一表单配置窗口”，不再描述旧对话框 JSON。
 
 ### DAAppUI
 

@@ -1,18 +1,6 @@
 # 术语表
 
-本页面汇总 DAWorkBench 项目中使用的专业术语和缩略语，便于查阅和理解项目文档。
-
-## 主要功能特性
-
-**特性**
-
-- ✅ **核心概念术语**：工作流、节点、连接点、原型、元数据等核心概念定义
-- ✅ **图形相关术语**：图元、场景、视图等图形界面术语
-- ✅ **界面相关术语**：Dock 窗口、Ribbon、Action 等界面组件术语
-- ✅ **插件相关术语**：插件、接口、核心接口等插件系统术语
-- ✅ **数据相关术语**：DataFrame、数据包、序列化、持久化等数据处理术语
-- ✅ **架构相关术语**：MVC、松耦合、热插拔等架构设计术语
-- ✅ **英文缩写对照**：DA、ETL、GUI、API 等常用缩写解释
+本页面汇总 DAWorkBench 项目中使用的专业术语和缩略语。
 
 ## 核心概念
 
@@ -27,7 +15,7 @@
 **定义**：工作流中的处理单元，代表一个数据处理步骤。
 
 **特性**：
-- 拥有输入和输出连接点
+- 有输入和输出连接点
 - 可配置参数
 - 执行特定数据处理任务
 
@@ -143,7 +131,7 @@
 
 **层次**：
 - **DACoreInterface**：顶层接口
-- **DAUIInterface**：UI 接口
+- **DAUIInterface**：界面接口
 - **DADataManagerInterface**：数据接口
 
 ### 核心接口 (Core Interface)
@@ -164,7 +152,7 @@
 
 **定义**：DAWorkBench 中数据对象的统一包装，用于在工作流节点间传递数据。
 
-**实现**：公开包装类为 `DAData`（见 `src/DAData/DAData.h`），它封装 `DAAbstractData` 智能指针，支持隐式共享。`DataPackage` 是 `DAAbstractData::DataType` 中的一个数据类型分类（通过 `DAData::isDataPackage()` 判断），并非独立的类——历史上文档误写的 `DADataPackage` 类并不存在。
+**实现**：公开包装类为 `DAData`（见 `src/DAData/DAData.h`），它封装 `DAAbstractData` 智能指针，支持隐式共享。`DataPackage` 是 `DAAbstractData::DataType` 中的一个数据类型分类（通过 `DAData::isDataPackage()` 判断），不是独立的类；历史上文档误写的 `DADataPackage` 类并不存在。
 
 **内容**：可包含 DataFrame、Series、自定义 Python 对象等。
 
@@ -184,7 +172,7 @@
 
 ### Agent
 
-**定义**：DAWorkBench 的 AI 分析助手，由 DAAgent 模块（`src/DAAgent/`）承载，通过独立 Python 子进程（LangGraph）驱动 LLM 推理与工具调用循环。
+**定义**：DAWorkBench 的 AI 分析助手，由 DAAgent 模块（`src/DAAgent/`）承载，通过独立 Python 子进程（LangGraph）驱动大语言模型（LLM）推理与工具调用循环。
 
 **访问**：插件通过 `DACoreInterface::getAgentInterface()` 获取 `DAAgentInterface`，注册工具、配置 LLM、管理会话与提示词库。
 
@@ -204,7 +192,7 @@
 
 **定义**：Agent 在推理过程中调用宿主程序注册的工具（如查询数据、生成图表、读写文件）来完成数据分析任务。
 
-**实现**：插件实现 `DAAbstractAgentTool` 并通过 `DAAgentInterface::registerTool()` 注册；内置 `DAAgentTools` 插件提供 19 个工具。
+**实现**：插件实现 `DAAbstractAgentTool` 并通过 `DAAgentInterface::registerTool()` 注册；内置 `DAAgentTools` 插件提供 21 个工具。
 
 ### 会话 (Session)
 
@@ -264,6 +252,6 @@
 
 ## 下一步
 
-- [:material-book: 开发指南](../dev-guide/general/coding-standard.md) - 编码规范
-- [:material-api: API 文档](./api-reference.md) - API 参考
-- [:material-puzzle: 插件开发](../plugin/plugin-development.md) - 插件开发指南
+- [📖 开发指南](../dev-guide/general/coding-standard.md) - 编码规范
+- [📘 API 文档](./api-reference.md) - API 参考
+- [🧩 插件开发](../plugin/plugin-development.md) - 插件开发指南

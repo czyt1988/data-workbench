@@ -37,9 +37,9 @@ graph LR
 
 ## C++ → Python（stdin）
 
-### init — 启动配置
+### init：启动配置
 
-子进程启动后，C++ 一次性下发 LLM 配置、工具规格和系统提示词。
+子进程启动后，C++ 一次性下发大语言模型（LLM）配置、工具规格和系统提示词。
 
 ```json
 {
@@ -85,13 +85,15 @@ graph LR
 }
 ```
 
-!!! warning "config 必填字段"
-    `config` 中 `base_url`/`api_key`/`model` 三项缺一不可，子进程会报错退出。上下文管理参数有默认值兜底。
+> **⚠️ config 必填字段**
+>
+> `config` 中 `base_url`/`api_key`/`model` 三项缺一不可，子进程会报错退出。上下文管理参数都有默认值。
 
-!!! note "context_window / max_output_tokens 按激活模型派生"
-    `context_window`（默认 262144）与 `max_output_tokens`（默认 131072）不再是一个全局固定值，而是由激活供应商 + 激活模型条目派生（见 `DAAgentModule.cpp` 的 `setActiveModel` / `syncActiveConnection`）。切换激活模型时，经 `reconfigure` 消息把新值热下发给运行中的子进程。
+> **📝 context_window / max_output_tokens 按激活模型派生**
+>
+> `context_window`（默认 262144）与 `max_output_tokens`（默认 131072）由激活供应商 + 激活模型条目派生，不再是一个全局固定值（见 `DAAgentModule.cpp` 的 `setActiveModel` / `syncActiveConnection`）。切换激活模型时，经 `reconfigure` 消息把新值热下发给运行中的子进程。
 
-### user_msg — 用户消息
+### user_msg：用户消息
 
 触发一轮 agent 推理。
 
@@ -99,9 +101,9 @@ graph LR
 {"type": "user_msg", "content": "帮我查看当前有哪些数据"}
 ```
 
-### tool_result — 工具执行结果
+### tool_result：工具执行结果
 
-C++ 执行工具后，将结果回传给 Python（RPC 应答）。
+C++ 执行工具后，将结果回传给 Python，作为对应 tool_call 的应答（RPC，远程过程调用）。
 
 ```json
 {
@@ -114,7 +116,7 @@ C++ 执行工具后，将结果回传给 Python（RPC 应答）。
 }
 ```
 
-### user_answer — 用户回答
+### user_answer：用户回答
 
 用户对 HITL 提问的回答，触发 LangGraph `resume()`。
 
@@ -122,7 +124,7 @@ C++ 执行工具后，将结果回传给 Python（RPC 应答）。
 {"type": "user_answer", "answer": "使用折线图"}
 ```
 
-### load_session — 会话切换
+### load_session：会话切换
 
 切换会话时下发历史消息，重建 LangGraph state（不重启子进程）。
 
@@ -137,7 +139,7 @@ C++ 执行工具后，将结果回传给 Python（RPC 应答）。
 }
 ```
 
-### reconfigure — 模型热替换
+### reconfigure：模型热替换
 
 运行中热替换 LLM 配置（base_url/api_key/model/max_output_tokens 等），不重启子进程、不重建图、不丢 MemorySaver 会话状态。
 
@@ -155,8 +157,9 @@ C++ 执行工具后，将结果回传给 Python（RPC 应答）。
 }
 ```
 
-!!! note "reconfigure 不发 done"
-    `reconfigure` 与 `load_session` 同构，不是一轮对话：消息在 stdin 缓冲区排队，当前轮 `run()`/`resume()` 返回（`done` 已发）后主循环才处理它——当前轮用旧模型跑完，下一轮用新模型。成功由 Python 端 `AgentRunner.reconfigure()` 内部发 `ready` 确认（不发 `done`）。失败安全：先构造新 `ChatOpenAI`，成功后才更新 `self.*`，构造失败发 `error` 不破坏旧 LLM。
+> **📝 reconfigure 不发 done**
+>
+> `reconfigure` 与 `load_session` 同构，不是一轮对话：消息在 stdin 缓冲区排队，当前轮 `run()`/`resume()` 返回（`done` 已发）后主循环才处理它，当前轮仍用旧模型跑完，下一轮用新模型。成功由 Python 端 `AgentRunner.reconfigure()` 内部发 `ready` 确认（不发 `done`）。失败安全：先构造新 `ChatOpenAI`，成功后才更新 `self.*`，构造失败发 `error` 不破坏旧 LLM。
 
 ```mermaid
 sequenceDiagram
@@ -175,7 +178,7 @@ sequenceDiagram
     B-->>C: emit agentReady(model) + activeModelChanged(...)
 ```
 
-### stop — 停止
+### stop：停止
 
 优雅停止，子进程退出主循环。
 
@@ -187,7 +190,7 @@ sequenceDiagram
 
 ## Python → C++（stdout）
 
-### booting — 启动心跳
+### booting：启动心跳
 
 **必须在导入 LangChain 之前发送**。C++ 收到后重置 ready 超时计时器。
 
@@ -195,10 +198,11 @@ sequenceDiagram
 {"type": "booting"}
 ```
 
-!!! danger "省略 booting 会导致静默崩溃"
-    LangChain 冷启动导入约 16 秒。若不发送 booting 心跳，C++ 的 60 秒 ready 超时计时器会在导入期间 `kill()` 子进程。`TerminateProcess` 不会 flush Python 的块缓冲 stderr，导致**静默崩溃**（exitCode=62097，无任何 stderr 输出）。
+> **🚫 省略 booting 会导致静默崩溃**
+>
+> LangChain 冷启动导入约 16 秒。若不发送 booting 心跳，C++ 的 60 秒 ready 超时计时器会在导入期间 `kill()` 子进程。`TerminateProcess` 不会 flush Python 的块缓冲 stderr，导致**静默崩溃**（exitCode=62097，无任何 stderr 输出）。
 
-### ready — 就绪
+### ready：就绪
 
 初始化完成，C++ 停止 ready 超时计时器。
 
@@ -206,7 +210,7 @@ sequenceDiagram
 {"type": "ready", "model": "deepseek-chat"}
 ```
 
-### token — 流式 token
+### token：流式 token
 
 LLM 生成的 token 逐个推送。
 
@@ -214,7 +218,7 @@ LLM 生成的 token 逐个推送。
 {"type": "token", "content": "当前"}
 ```
 
-### message_end — 消息结束
+### message_end：消息结束
 
 本轮 LLM 最终回复，附带 LLM 返回的 token 用量统计。
 
@@ -230,10 +234,11 @@ LLM 生成的 token 逐个推送。
 }
 ```
 
-!!! note "message_end.usage 是每轮权威锚点"
-    `message_end` 附带的 `usage` 是本轮 LLM 返回的真实 token 用量，作为权威锚点（与独立的 `usage` 消息互补）。C++ 侧将其**累加进会话累计统计**（`mCumulativeIn/Out/TotalTokens`），上下文压缩不再重置这些累计值——UI 展示的是会话级累计用量，切换会话时从持久化 `usage` 记录重放累计。
+> **📝 message_end.usage 是每轮权威锚点**
+>
+> `message_end` 附带的 `usage` 是本轮 LLM 返回的真实 token 用量，作为权威锚点（与独立的 `usage` 消息互补）。C++ 侧将其**累加进会话累计统计**（`mCumulativeIn/Out/TotalTokens`），上下文压缩不会重置这些累计值，UI 展示的是会话级累计用量，切换会话时从持久化 `usage` 记录重放累计。
 
-### tool_call — 工具调用
+### tool_call：工具调用
 
 请求 C++ 执行工具。Python 端会阻塞等待匹配 `call_id` 的 `tool_result`。
 
@@ -246,7 +251,7 @@ LLM 生成的 token 逐个推送。
 }
 ```
 
-### question — HITL 提问
+### question：HITL 提问
 
 向用户提问，**只发送一次**。
 
@@ -259,7 +264,7 @@ LLM 生成的 token 逐个推送。
 }
 ```
 
-### usage — Token 用量
+### usage：Token 用量
 
 独立的 token 统计回传（如上下文摘要的用量）。
 
@@ -281,7 +286,7 @@ LLM 生成的 token 逐个推送。
 | `summary` | 上下文摘要（compact）生成产生的用量 |
 | `streaming_estimate` | 流式过程中的 token 估算（`message_end.usage` 到达前的预估） |
 
-### session_loaded — 会话加载完成
+### session_loaded：会话加载完成
 
 `load_session` 后 Python 重建 state 完成的确认。
 
@@ -289,10 +294,11 @@ LLM 生成的 token 逐个推送。
 {"type": "session_loaded", "session_id": "uuid-xxxx"}
 ```
 
-!!! warning "收到 session_loaded 前禁止发 user_msg"
-    在收到 `session_loaded` 之前发送 `user_msg` 会导致 state 未重建完毕，历史消息丢失。
+> **⚠️ 收到 session_loaded 前禁止发 user_msg**
+>
+> 在收到 `session_loaded` 之前发送 `user_msg` 会导致 state 未重建完毕，历史消息丢失。
 
-### retrying — 重试通知
+### retrying：重试通知
 
 线性退避重试期间的通知（第 k 次重试前等待 `retry_interval_sec + (k-1)*retry_interval_increment_sec` 秒）。
 
@@ -307,7 +313,7 @@ LLM 生成的 token 逐个推送。
 }
 ```
 
-### error — 错误
+### error：错误
 
 子进程侧的不可恢复错误。
 
@@ -320,7 +326,7 @@ LLM 生成的 token 逐个推送。
 }
 ```
 
-### done — 本轮结束
+### done：本轮结束
 
 本轮处理结束。暂停于 `interrupt()` 期间**不发送** done。
 
@@ -372,8 +378,9 @@ sequenceDiagram
     Note over P: 构造 ToolMessage, 进入下一轮
 ```
 
-!!! note "工具执行通过 QTimer::singleShot(0) 投递"
-    工具执行通过 `QTimer::singleShot(0)` 投递回主线程事件循环，避免在 stdout 读取回调中长时间阻塞管道（管道阻塞会死锁子进程）。
+> **📝 工具执行通过 QTimer::singleShot(0) 投递**
+>
+> 工具执行通过 `QTimer::singleShot(0)` 投递回主线程事件循环，避免在 stdout 读取回调中长时间阻塞管道（管道阻塞会死锁子进程）。
 
 ---
 
@@ -451,7 +458,7 @@ QJsonDocument doc = QJsonDocument::fromJson(line.toUtf8());
 
 ### stdin 读取方式
 
-Python 侧使用 `sys.stdin.buffer.read1(4096)` 而非 `read(n)`：
+Python 侧使用 `sys.stdin.buffer.read1(4096)`，不用 `read(n)`：
 
 - `read(n)` 会等待满 n 字节，对 QProcess 管道永久卡死
 - `read1(n)` 读取可用字节立即返回，最多读 n 字节
@@ -490,8 +497,8 @@ async for chunk in llm.astream(messages):
 
 ## 参见
 
-- [架构设计](./architecture.md) — 双进程模型与信号链
-- [崩溃恢复与重连](./crash-recovery.md) — 进程异常退出后的协议恢复
-- [会话持久化](./session-management.md) — load_session 机制的完整流程
-- `src/DAAgent/DAAgentBridge.cpp` — C++ 侧协议解析实现
-- `src/PyScripts/DAWorkbench/agent/agent_runner.py` — Python 侧协议收发实现
+- [架构设计](./architecture.md)：双进程模型与信号链
+- [崩溃恢复与重连](./crash-recovery.md)：进程异常退出后的协议恢复
+- [会话持久化](./session-management.md)：load_session 机制的完整流程
+- `src/DAAgent/DAAgentBridge.cpp`：C++ 侧协议解析实现
+- `src/PyScripts/DAWorkbench/agent/agent_runner.py`：Python 侧协议收发实现

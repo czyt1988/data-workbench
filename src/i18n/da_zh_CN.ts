@@ -1923,8 +1923,8 @@ All</source>
         <location line="+13"/>
         <source>Rename 
 Data</source>
-        <translation>重命名
-            数据</translation>
+        <translation type="unfinished">重命名
+数据</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -2864,6 +2864,250 @@ Layouts</source>
         <source>Undo the last action</source>
         <translation>撤销</translation>
     </message>
+    <message>
+        <source>Find</source>
+        <translation>查找</translation>
+    </message>
+    <message>
+        <source>Find cells matching the keyword (Ctrl+F)</source>
+        <translation>查找匹配关键字的单元格（Ctrl+F）</translation>
+    </message>
+    <message>
+        <source>Replace</source>
+        <translation>替换</translation>
+    </message>
+    <message>
+        <source>Find and replace cells (Ctrl+H)</source>
+        <translation>查找并替换单元格（Ctrl+H）</translation>
+    </message>    <message>
+        <source>Conditional Formatting</source>
+        <translation>条件格式</translation>
+    </message>    <message>
+        <source>Manage conditional formatting rules (cell rules / color scale / data bar) of the selected columns</source>
+        <translation>管理选中列的条件格式规则（单元格规则/色阶/数据条）</translation>
+    </message>
+
+
+    <message>
+        <source>Computed Column</source>
+        <translation>计算列</translation>
+    </message>
+    <message>
+        <source>Create a column computed from a formula of other columns</source>
+        <translation>用表达式基于其他列创建计算列</translation>
+    </message>
+    <message>
+        <source>Recompute All</source>
+        <translation>全部重算</translation>
+    </message>
+    <message>
+        <source>Recompute all stale/invalid computed columns of the current table</source>
+        <translation>重算当前表全部待重算/失效的计算列</translation>
+    </message>
+    <message>
+        <source>Split Column</source>
+        <translation>分列</translation>
+    </message>
+    <message>
+        <source>Split the selected column into multiple columns by delimiter / regex / fixed widths</source>
+        <translation>把选中列按分隔符/正则/固定宽度拆分为多列</translation>
+    </message>
+    <message>
+        <source>Merge Columns</source>
+        <translation>合并列</translation>
+    </message>
+    <message>
+        <source>Merge the selected columns into one column in the given order</source>
+        <translation>把选中的多列按给定顺序合并为一列</translation>
+    </message>
+    <message>
+        <source>Group By</source>
+        <translation>分组聚合</translation>
+    </message>
+    <message>
+        <source>Aggregate rows by group keys into a new long-format result dataset</source>
+        <translation>按分组键聚合为新数据集（长格式结果表）</translation>
+    </message>
+    <message>
+        <source>Transpose</source>
+        <translation>转置</translation>
+    </message>
+    <message>
+        <source>Swap rows and columns into a new dataset (in-place optional)</source>
+        <translation>行列互换产出新数据集（可选就地替换）</translation>
+    </message>
+    <message>
+        <source>Unpivot (Melt)</source>
+        <translation>宽转长（melt）</translation>
+    </message>
+    <message>
+        <source>Unpivot wide columns into a long-format new dataset (in-place optional)</source>
+        <translation>把宽表展开为长格式新数据集（可选就地替换）</translation>
+    </message>
+    <message>
+        <source>Fill</source>
+        <translation>填充</translation>
+    </message>
+    <message>
+        <source>Fill the selection (down / up / ffill / bfill / series)</source>
+        <translation>填充选区（向下/向上/ffill/bfill/序列）</translation>
+    </message>
+    <message>
+        <source>Fill Down</source>
+        <translation>向下填充</translation>
+    </message>
+    <message>
+        <source>Fill the selection down with the value of the first row (Ctrl+D)</source>
+        <translation>用选区首行值向下填充（Ctrl+D）</translation>
+    </message>
+    <message>
+        <source>Fill Up</source>
+        <translation>向上填充</translation>
+    </message>
+    <message>
+        <source>Fill the selection up with the value of the last row</source>
+        <translation>用选区末行值向上填充</translation>
+    </message>
+    <message>
+        <source>Fill Forward (ffill)</source>
+        <translation>向下填充空值(ffill)</translation>
+    </message>
+    <message>
+        <source>Propagate the last valid value down within the selection</source>
+        <translation>选区内向下传递最后一个非空值</translation>
+    </message>
+    <message>
+        <source>Fill Backward (bfill)</source>
+        <translation>向上填充空值(bfill)</translation>
+    </message>
+    <message>
+        <source>Propagate the next valid value up within the selection</source>
+        <translation>选区内向上传递下一个非空值</translation>
+    </message>
+    <message>
+        <source>Fill Series...</source>
+        <translation>序列填充...</translation>
+    </message>
+    <message>
+        <source>Generate a linear or date series into the selected columns</source>
+        <translation>对选中列生成数值等差或日期步进序列</translation>
+    </message>
+    <message>
+        <source>Validation Rules</source>
+        <translation>校验规则</translation>
+    </message>
+    <message>
+        <source>Manage data validation rules (range / enum / not-empty / unique / regex) of the current table</source>
+        <translation>管理当前表的数据校验规则（区间/枚举/非空/唯一/正则）</translation>
+    </message>
+    <message>
+        <source>Run Validation</source>
+        <translation>执行校验</translation>
+    </message>
+    <message>
+        <source>Validate the table against enabled rules, highlight violations and show the report (read-only)</source>
+        <translation>按启用规则校验全表，高亮违规并出报告（只读）</translation>
+    </message>
+    <message>
+        <source>Note</source>
+        <translation>批注</translation>
+    </message>
+    <message>
+        <source>Insert or edit a note on the current cell</source>
+        <translation>在当前单元格插入或编辑批注</translation>
+    </message>
+    <message>
+        <source>Insert Note</source>
+        <translation>插入批注</translation>
+    </message>
+    <message>
+        <source>Insert a note on the current cell</source>
+        <translation>在当前单元格插入批注</translation>
+    </message>
+    <message>
+        <source>Edit Note</source>
+        <translation>编辑批注</translation>
+    </message>
+    <message>
+        <source>Edit the note of the current cell</source>
+        <translation>编辑当前单元格的批注</translation>
+    </message>
+    <message>
+        <source>Delete Note</source>
+        <translation>删除批注</translation>
+    </message>
+    <message>
+        <source>Delete the note of the current cell</source>
+        <translation>删除当前单元格的批注</translation>
+    </message>
+    <message>
+        <source>Clear All Notes</source>
+        <translation>清除本表批注</translation>
+    </message>
+    <message>
+        <source>Remove all notes of the current table (undoable)</source>
+        <translation>清除本表全部批注（可撤销）</translation>
+    </message>
+    <message>
+        <source>Undo History</source>
+        <translation>撤销历史</translation>
+    </message>
+    <message>
+        <source>Show the undo history panel (follows the active page, click an entry to undo/redo to it)</source>
+        <translation>显示撤销历史面板（跟随当前激活页面，点击条目可回退/前进）</translation>
+    </message>
+    <message>
+        <source>Freeze Columns</source>
+        <translation>冻结列</translation>
+    </message>
+    <message>
+        <source>Freeze the leftmost columns of the table</source>
+        <translation>冻结表格左侧的列</translation>
+    </message>
+    <message>
+        <source>Hide Column</source>
+        <translation>隐藏列</translation>
+    </message>
+    <message>
+        <source>Hide the selected columns</source>
+        <translation>隐藏选中的列</translation>
+    </message>
+    <message>
+        <source>Show All Columns</source>
+        <translation>显示所有列</translation>
+    </message>
+    <message>
+        <source>Show all hidden columns</source>
+        <translation>显示所有被隐藏的列</translation>
+    </message>
+    <message>
+        <source>Column View...</source>
+        <translation>列视图...</translation>
+    </message>
+    <message>
+        <source>Open the column view settings dialog</source>
+        <translation>打开列视图设置对话框</translation>
+    </message>
+    <message>
+        <source>Freeze First Column</source>
+        <translation>冻结首列</translation>
+    </message>
+    <message>
+        <source>Freeze Columns...</source>
+        <translation>冻结前 N 列…</translation>
+    </message>
+    <message>
+        <source>Unfreeze Columns</source>
+        <translation>取消冻结</translation>
+    </message>
+    <message>
+        <source>Go To...</source>
+        <translation>定位...</translation>
+    </message>
+    <message>
+        <source>Jump to a row / index label / column</source>
+        <translation>跳转到指定行、索引标签或列</translation>
+    </message>
 </context>
 <context>
     <name>DA::DAAppController</name>
@@ -3181,6 +3425,10 @@ Layouts</source>
         <source>Before running the workflow, you need to save the project</source>
         <translation>在运行工作流之前，需要先保存工程</translation>
     </message>
+    <message>
+        <source>Please select a column first</source>
+        <translation>请先选择列</translation>
+    </message>
 </context>
 <context>
     <name>DA::DAAppDataManager</name>
@@ -3282,6 +3530,10 @@ Layouts</source>
         <source>Failed to open markdown file: %1</source>
         <translation>打开 Markdown 文件失败:%1</translation>
     </message>
+    <message>
+        <source>Undo History</source>
+        <translation>撤销历史</translation>
+    </message>
 </context>
 <context>
     <name>DADataLinkTableModel</name>
@@ -3354,32 +3606,17 @@ Layouts</source>
         <translation>列 %1</translation>
     </message>
     <message>
-        <location line="+30"/>
-        <source>Rename</source>
-        <translation>重命名</translation>
-    </message>
-    <message>
-        <location line="+1"/>
+        <location line="+31"/>
         <source>New name:</source>
         <translation>新名称:</translation>
     </message>
     <message>
-        <location line="+30"/>
-        <source>Delete</source>
-        <translation>删除</translation>
-    </message>
-    <message>
-        <location line="+1"/>
+        <location line="+31"/>
         <source>Are you sure to delete this column?</source>
         <translation>确定删除这一列吗？</translation>
     </message>
     <message>
-        <location line="+30"/>
-        <source>Delete All</source>
-        <translation>全部删除</translation>
-    </message>
-    <message>
-        <location line="+1"/>
+        <location line="+31"/>
         <source>Are you sure to delete all columns? This cannot be undone.</source>
         <translation>确定删除所有列吗？此操作不可撤销。</translation>
     </message>
@@ -3700,13 +3937,13 @@ Layouts</source>
     </message>
     <message>
         <location line="+45"/>
-        <source>Save table styles</source>
-        <translation>保存表格样式</translation>
+        <source>Save table metadata</source>
+        <translation>保存表格元数据</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Save table cell styles, including background, font, foreground</source>
-        <translation>保存表格单元格样式</translation>
+        <source>Save table metadata, including cell styles and view state</source>
+        <translation>保存表格元数据（单元格样式与视图状态）</translation>
     </message>
     <message>
         <location line="+162"/>
@@ -4179,6 +4416,18 @@ Layouts</source>
         <location line="+22"/>
         <source>Recent Files</source>
         <translation>最近打开的文件</translation>
+    </message>
+    <message>
+        <source>Edit</source>
+        <translation>编辑</translation>
+    </message>    <message>
+        <source>Conditional</source>
+        <translation>条件格式</translation>
+    </message>
+
+    <message>
+        <source>Data Tools</source>
+        <translation>数据工具</translation>
     </message>
 </context>
 <context>
@@ -8987,6 +9236,316 @@ Layouts</source>
         <source>Unable to get statistics for this column</source>
         <translation>无法获取此列的统计信息</translation>
     </message>
+    <message>
+        <source>This data source is read-only and cannot be sorted.</source>
+        <translation>该数据源为只读，无法排序</translation>
+    </message>
+    <message>
+        <source>Cannot sort: the column contains values of incomparable mixed types.</source>
+        <translation>无法排序：该列包含不可比较的混合类型</translation>
+    </message>
+    <message>
+        <source>This data source is read-only and cannot be modified.</source>
+        <translation>该数据源为只读，无法修改</translation>
+    </message>
+    <message>
+        <source>No matches found</source>
+        <translation>未找到匹配项</translation>
+    </message>
+    <message>
+        <source>Replace All</source>
+        <translation>全部替换</translation>
+    </message>
+    <message>
+        <source>Too many cells will be changed (%1). This operation cannot be undone. Continue?</source>
+        <translation>改动量过大（%1 格），本次替换将不可撤销，是否继续？</translation>
+    </message>    <message>
+        <source>Please select a column first</source>
+        <translation>请先选择列</translation>
+    </message>    <message>
+        <source>Clear Conditional Format Rules</source>
+        <translation>清除条件格式规则</translation>
+    </message>    <message>
+        <source>The selected columns have no conditional format rules</source>
+        <translation>所选列没有条件格式规则</translation>
+    </message>    <message>
+        <source>Change Conditional Format Rules</source>
+        <translation>更改条件格式规则</translation>
+    </message>
+
+
+
+
+    <message>
+        <source>The table is read-only and does not support computed columns</source>
+        <translation>只读表格不支持计算列</translation>
+    </message>
+    <message>
+        <source>Failed to evaluate the formula of computed column "%1": %2</source>
+        <translation>计算列“%1”公式求值失败：%2</translation>
+    </message>
+    <message>
+        <source>Column "%1" has no computed formula</source>
+        <translation>列“%1”没有计算公式</translation>
+    </message>
+    <message>
+        <source>The formula must not reference the target column itself</source>
+        <translation>公式不得引用目标列自身</translation>
+    </message>
+    <message>
+        <source>Computed column(s) %1 became invalid because their dependency column(s) were removed</source>
+        <translation>计算列 %1 因依赖列被删除已失效</translation>
+    </message>
+    <message>
+        <source>Computed column(s) %1 became invalid because their dependency column(s) were merged</source>
+        <translation>计算列 %1 因依赖列被合并已失效</translation>
+    </message>
+    <message>
+        <source>Rename Column</source>
+        <translation>重命名列</translation>
+    </message>
+    <message>
+        <source>%1 computed column(s) reference the renamed column(s): %2. Their references will be updated automatically. Continue?</source>
+        <translation>有 %1 个计算列引用被改名的列：%2。其引用将自动批量更新，是否继续？</translation>
+    </message>
+    <message>
+        <source>Recompute All Computed Columns</source>
+        <translation>重算全部计算列</translation>
+    </message>
+    <message>
+        <source>Split Column requires an editable table</source>
+        <translation>分列需要可编辑的表格</translation>
+    </message>
+    <message>
+        <source>Please select exactly one column to split</source>
+        <translation>请选择要拆分的单个列</translation>
+    </message>
+    <message>
+        <source>Failed to snapshot the source column</source>
+        <translation>源列快照失败</translation>
+    </message>
+    <message>
+        <source>Split column failed: %1</source>
+        <translation>分列失败：%1</translation>
+    </message>
+    <message>
+        <source>Merge Columns requires an editable table</source>
+        <translation>合并列需要可编辑的表格</translation>
+    </message>
+    <message>
+        <source>Please select at least two columns to merge</source>
+        <translation>请选择至少两列进行合并</translation>
+    </message>
+    <message>
+        <source>Failed to snapshot the source columns</source>
+        <translation>源列快照失败</translation>
+    </message>
+    <message>
+        <source>Merge columns failed: %1</source>
+        <translation>合并列失败：%1</translation>
+    </message>
+    <message>
+        <source>%1_GroupBy</source>
+        <translation>%1_分组聚合</translation>
+    </message>
+    <message>
+        <source>Group-by aggregation of %1</source>
+        <translation>生成%1的分组聚合结果</translation>
+    </message>
+    <message>
+        <source>%1_Melted</source>
+        <translation>%1_宽转长</translation>
+    </message>
+    <message>
+        <source>Melt (wide to long) of %1</source>
+        <translation>生成%1的宽转长结果</translation>
+    </message>
+    <message>
+        <source>%1_Transposed</source>
+        <translation>%1_转置</translation>
+    </message>
+    <message>
+        <source>Transpose of %1</source>
+        <translation>生成%1的转置结果</translation>
+    </message>
+    <message>
+        <source>Reshape failed: %1</source>
+        <translation>形状变换失败：%1</translation>
+    </message>
+    <message>
+        <source>Melt table in place</source>
+        <translation>就地宽转长</translation>
+    </message>
+    <message>
+        <source>Transpose table in place</source>
+        <translation>就地转置</translation>
+    </message>
+    <message>
+        <source>(no table metadata to clear)</source>
+        <translation>（无需要清除的表元数据）</translation>
+    </message>
+    <message>
+        <source>Replace In Place</source>
+        <translation>就地替换</translation>
+    </message>
+    <message>
+        <source>Replacing in place will clear the following table metadata:
+%1
+
+Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
+        <translation>就地替换将清除本表的以下元数据：
+%1
+
+数据与元数据共用一个撤销单元（Ctrl+Z 一并还原）。是否继续？</translation>
+    </message>
+    <message>
+        <source>The table is very large (%1 cells). Keeping the old data for undo would double memory usage, so this in-place replacement will NOT be undoable. Continue?</source>
+        <translation>表格过大（%1 单元格）。保留旧数据用于撤销将使内存翻倍，本次就地替换将不可撤销。是否继续？</translation>
+    </message>
+    <message>
+        <source>Column name "%1" already exists, please use another name</source>
+        <translation>列名"%1"已存在，请使用其他名称</translation>
+    </message>
+    <message>
+        <source>Fill failed: the content does not match the column data type</source>
+        <translation>填充失败：内容与列数据类型不匹配</translation>
+    </message>
+    <message>
+        <source>Cannot fill a read-only data source</source>
+        <translation>只读数据源不能填充</translation>
+    </message>
+    <message>
+        <source>Fill down</source>
+        <translation>向下填充</translation>
+    </message>
+    <message>
+        <source>Fill up</source>
+        <translation>向上填充</translation>
+    </message>
+    <message>
+        <source>Fill forward (ffill)</source>
+        <translation>向下填充空值(ffill)</translation>
+    </message>
+    <message>
+        <source>Fill backward (bfill)</source>
+        <translation>向上填充空值(bfill)</translation>
+    </message>
+    <message>
+        <source>Please select cells to fill</source>
+        <translation>请先选中要填充的单元格</translation>
+    </message>
+    <message>
+        <source>Failed to generate the fill series</source>
+        <translation>生成填充序列失败</translation>
+    </message>
+    <message>
+        <source>Fill series</source>
+        <translation>序列填充</translation>
+    </message>
+    <message>
+        <source>Numeric range</source>
+        <translation>数值区间</translation>
+    </message>
+    <message>
+        <source>Date range</source>
+        <translation>日期区间</translation>
+    </message>
+    <message>
+        <source>Allowed values (enum)</source>
+        <translation>枚举集合</translation>
+    </message>
+    <message>
+        <source>Not empty</source>
+        <translation>非空</translation>
+    </message>
+    <message>
+        <source>Unique</source>
+        <translation>唯一</translation>
+    </message>
+    <message>
+        <source>Regex (full match)</source>
+        <translation>正则（整格匹配）</translation>
+    </message>
+    <message>
+        <source>%1 (occurrence %2)</source>
+        <translation>%1（第 %2 个同名列）</translation>
+    </message>
+    <message>
+        <source>Validation failed: %1</source>
+        <translation>数据校验失败：%1</translation>
+    </message>
+    <message>
+        <source>No enabled validation rules yet — add rules first</source>
+        <translation>暂无启用的校验规则——请先添加规则</translation>
+    </message>
+    <message>
+        <source>Row %1: %2</source>
+        <translation>行 %1：%2</translation>
+    </message>
+    <message>
+        <source>%1 validation rule(s) reference the renamed column(s): %2. Their references will be updated automatically. Continue?</source>
+        <translation>有 %1 条校验规则引用被改名的列：%2。其引用将自动批量更新，是否继续？</translation>
+    </message>
+    <message>
+        <source>Please select a cell to annotate</source>
+        <translation>请先选中要批注的单元格</translation>
+    </message>
+    <message>
+        <source>Please select a cell whose note is to be deleted</source>
+        <translation>请先选中要删除批注的单元格</translation>
+    </message>
+    <message>
+        <source>The selected cell has no note</source>
+        <translation>选中单元格没有批注</translation>
+    </message>
+    <message>
+        <source>This table has no notes</source>
+        <translation>本表没有批注</translation>
+    </message>
+    <message>
+        <source>Some column view settings were dropped because the table columns have changed.</source>
+        <translation>表格的列已变化，部分列视图设置已被丢弃</translation>
+    </message>
+    <message>
+        <source>Frozen columns were reduced because visible columns changed.</source>
+        <translation>可见列已变化，冻结列数被自动缩减</translation>
+    </message>
+    <message>
+        <source>Freeze Columns</source>
+        <translation>冻结列</translation>
+    </message>
+    <message>
+        <source>Freeze the first N visible columns (0 = no freeze):</source>
+        <translation>冻结前 N 个可见列（0 = 不冻结）：</translation>
+    </message>
+    <message>
+        <source>Column View...</source>
+        <translation>列视图...</translation>
+    </message>
+    <message>
+        <source>The column "%1" was hidden and has been made visible</source>
+        <translation>列&quot;%1&quot;已隐藏，现已显示</translation>
+    </message>
+    <message>
+        <source>Row number is out of range</source>
+        <translation>行号超出范围</translation>
+    </message>
+    <message>
+        <source>Index label not found: %1</source>
+        <translation>未找到索引标签：%1</translation>
+    </message>
+    <message>
+        <source>There are %1 rows with this index label; jumped to the first one</source>
+        <translation>有 %1 行使用该索引标签，已跳到第一个</translation>
+    </message>
+    <message>
+        <source>Column not found: %1</source>
+        <translation>未找到列名：%1</translation>
+    </message>
+    <message>
+        <source>There are %1 columns with this name; used the first one</source>
+        <translation>有 %1 个同名列，已取第一个</translation>
+    </message>
 </context>
 <context>
     <name>DA::DADataOperateWidget</name>
@@ -9017,6 +9576,102 @@ Layouts</source>
         <location filename="../DAGui/DADataTableView.cpp" line="+29"/>
         <source>DADataTableView requires a model to be set first</source>
         <translation>你需要先设置模型</translation>
+    </message>
+    <message>
+        <source>Cut</source>
+        <translation>剪切</translation>
+    </message>
+    <message>
+        <source>Copy</source>
+        <translation>复制</translation>
+    </message>
+    <message>
+        <source>Paste</source>
+        <translation>粘贴</translation>
+    </message>
+    <message>
+        <source>Find...</source>
+        <translation>查找...</translation>
+    </message>
+    <message>
+        <source>Replace...</source>
+        <translation>替换...</translation>
+    </message>    <message>
+        <source>Conditional Format...</source>
+        <translation>条件格式...</translation>
+    </message>
+
+    <message>
+        <source>Computed Column...</source>
+        <translation>计算列...</translation>
+    </message>
+    <message>
+        <source>Split Column...</source>
+        <translation>分列...</translation>
+    </message>
+    <message>
+        <source>Merge Columns...</source>
+        <translation>合并列...</translation>
+    </message>
+    <message>
+        <source>Group By...</source>
+        <translation>分组聚合...</translation>
+    </message>
+    <message>
+        <source>Transpose...</source>
+        <translation>转置...</translation>
+    </message>
+    <message>
+        <source>Unpivot (Melt)...</source>
+        <translation>宽转长（melt）...</translation>
+    </message>
+    <message>
+        <source>Fill</source>
+        <translation>填充</translation>
+    </message>
+    <message>
+        <source>Fill Down</source>
+        <translation>向下填充</translation>
+    </message>
+    <message>
+        <source>Fill Up</source>
+        <translation>向上填充</translation>
+    </message>
+    <message>
+        <source>Fill Forward (ffill)</source>
+        <translation>向下填充空值(ffill)</translation>
+    </message>
+    <message>
+        <source>Fill Backward (bfill)</source>
+        <translation>向上填充空值(bfill)</translation>
+    </message>
+    <message>
+        <source>Fill Series...</source>
+        <translation>序列填充...</translation>
+    </message>
+    <message>
+        <source>Validation Rules...</source>
+        <translation>校验规则...</translation>
+    </message>
+    <message>
+        <source>Run Validation</source>
+        <translation>执行校验</translation>
+    </message>
+    <message>
+        <source>Insert Note</source>
+        <translation>插入批注</translation>
+    </message>
+    <message>
+        <source>Edit Note</source>
+        <translation>编辑批注</translation>
+    </message>
+    <message>
+        <source>Delete Note</source>
+        <translation>删除批注</translation>
+    </message>
+    <message>
+        <source>Clear All Notes</source>
+        <translation>清除本表批注</translation>
     </message>
 </context>
 <context>
@@ -16274,6 +16929,142 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <source>Error</source>
         <translation>出错</translation>
     </message>
+    <message>
+        <source>Sort rows</source>
+        <translation>排序</translation>
+    </message>
+    <message>
+        <source>Replace all</source>
+        <translation>全部替换</translation>
+    </message>    <message>
+        <source>Add Conditional Format Rule</source>
+        <translation>添加条件格式规则</translation>
+    </message>    <message>
+        <source>Remove Conditional Format Rule</source>
+        <translation>删除条件格式规则</translation>
+    </message>    <message>
+        <source>Modify Conditional Format Rule</source>
+        <translation>修改条件格式规则</translation>
+    </message>    <message>
+        <source>Move Conditional Format Rule</source>
+        <translation>移动条件格式规则</translation>
+    </message>    <message>
+        <source>Clear Conditional Format Rules of Column</source>
+        <translation>清除列条件格式规则</translation>
+    </message>
+
+
+
+
+
+    <message>
+        <source>compute column "%1"</source>
+        <translation>计算列“%1”</translation>
+    </message>
+    <message>
+        <source>remove formula of column "%1" (keep data)</source>
+        <translation>移除列“%1”的公式（保留数据）</translation>
+    </message>
+    <message>
+        <source>split column "%1"</source>
+        <translation>分列“%1”</translation>
+    </message>
+    <message>
+        <source>merge %1 columns into "%2"</source>
+        <translation>合并 %1 列为“%2”</translation>
+    </message>
+    <message>
+        <source>edit validation rules</source>
+        <translation>编辑校验规则</translation>
+    </message>
+    <message>
+        <source>add note</source>
+        <translation>添加批注</translation>
+    </message>
+    <message>
+        <source>delete note</source>
+        <translation>删除批注</translation>
+    </message>
+    <message>
+        <source>edit note</source>
+        <translation>编辑批注</translation>
+    </message>
+    <message>
+        <source>clear all notes</source>
+        <translation>清除本表批注</translation>
+    </message>
+    <message>
+        <source>Set workflow background image</source>
+        <translation>设置工作流背景图</translation>
+    </message>
+    <message>
+        <source>Change shape border</source>
+        <translation>修改图元边框</translation>
+    </message>
+    <message>
+        <source>Change shape background</source>
+        <translation>修改图元背景</translation>
+    </message>
+    <message>
+        <source>Change text font</source>
+        <translation>修改文本字体</translation>
+    </message>
+    <message>
+        <source>Change text color</source>
+        <translation>修改文本颜色</translation>
+    </message>
+    <message>
+        <source>Edit text content</source>
+        <translation>编辑文本内容</translation>
+    </message>
+    <message>
+        <source>Replace data object</source>
+        <translation>替换数据对象</translation>
+    </message>
+    <message>
+        <source>Modify data (persisted snapshot)</source>
+        <translation>修改数据（持久化快照）</translation>
+    </message>
+    <message>
+        <source>group items</source>
+        <translation>组合图元</translation>
+    </message>
+    <message>
+        <source>ungroup items</source>
+        <translation>取消组合图元</translation>
+    </message>
+    <message>
+        <source>edit text document</source>
+        <translation>编辑文本文档</translation>
+    </message>
+    <message>
+        <source>rename columns</source>
+        <translation>重命名列</translation>
+    </message>
+    <message>
+        <source>clear cells</source>
+        <translation>清除单元格</translation>
+    </message>
+    <message>
+        <source>Reorder columns</source>
+        <translation>重排列序</translation>
+    </message>
+    <message>
+        <source>Hide column "%1"</source>
+        <translation>隐藏列&quot;%1&quot;</translation>
+    </message>
+    <message>
+        <source>Show all columns</source>
+        <translation>显示所有列</translation>
+    </message>
+    <message>
+        <source>Freeze columns to %1</source>
+        <translation>冻结到第 %1 列</translation>
+    </message>
+    <message>
+        <source>Unfreeze columns</source>
+        <translation>取消冻结</translation>
+    </message>
 </context>
 <context>
     <name>main</name>
@@ -16296,6 +17087,1377 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <location line="+9"/>
         <source>Disable the splash screen during startup, useful for debugging to avoid the splash window blocking the IDE</source>
         <translation>禁用启动画面，适用于调试时避免启动窗口遮挡IDE</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DASettingPageShortcuts</name>
+    <message>
+        <source>Shortcuts</source>
+        <translation>快捷键</translation>
+    </message>
+    <message>
+        <source>Search:</source>
+        <translation>搜索：</translation>
+    </message>
+    <message>
+        <source>Filter by command or shortcut</source>
+        <translation>按命令或快捷键过滤</translation>
+    </message>
+    <message>
+        <source>Reset All to Defaults</source>
+        <translation>全部重置为默认</translation>
+    </message>
+    <message>
+        <source>Command</source>
+        <translation>命令</translation>
+    </message>
+    <message>
+        <source>Shortcut</source>
+        <translation>快捷键</translation>
+    </message>
+    <message>
+        <source>Shortcut %1 is already assigned to: %2</source>
+        <translation>快捷键 %1 已被命令占用：%2</translation>
+    </message>
+    <message>
+        <source>Shortcut for &quot;%1&quot; changed, click OK or Apply to take effect</source>
+        <translation>命令&quot;%1&quot;的快捷键已修改，点击确定或应用后生效</translation>
+    </message>
+    <message>
+        <source>Default: %1</source>
+        <translation>默认：%1</translation>
+    </message>
+    <message>
+        <source>(none)</source>
+        <translation>（无）</translation>
+    </message>
+    <message>
+        <source>Main</source>
+        <translation>主页</translation>
+    </message>
+    <message>
+        <source>Data</source>
+        <translation>数据</translation>
+    </message>
+    <message>
+        <source>Figure</source>
+        <translation>绘图</translation>
+    </message>
+    <message>
+        <source>Chart</source>
+        <translation>图表操作</translation>
+    </message>
+    <message>
+        <source>View</source>
+        <translation>视图</translation>
+    </message>
+    <message>
+        <source>Workflow</source>
+        <translation>工作流</translation>
+    </message>
+    <message>
+        <source>Workflow Editor</source>
+        <translation>工作流编辑器</translation>
+    </message>
+    <message>
+        <source>Other</source>
+        <translation>其它</translation>
+    </message>
+    <message>
+        <source>Reset to Default</source>
+        <translation>重置为默认</translation>
+    </message>
+    <message>
+        <source>Clear Shortcut</source>
+        <translation>清除快捷键</translation>
+    </message>
+    <message>
+        <source>Failed to save shortcut settings</source>
+        <translation>保存快捷键设置失败</translation>
+    </message>
+</context>
+<context>
+        <name>DA::DADataHeaderView</name>
+        <message>
+            <source>Sort Ascending</source>
+            <translation>升序排序</translation>
+        </message>
+        <message>
+            <source>Sort Descending</source>
+            <translation>降序排序</translation>
+        </message>
+        <message>
+            <source>Add Secondary Sort (Ascending)</source>
+            <translation>追加为次级排序（升序）</translation>
+        </message>
+        <message>
+            <source>Add Secondary Sort (Descending)</source>
+            <translation>追加为次级排序（降序）</translation>
+        </message>
+        <message>
+            <source>Rename Column</source>
+            <translation>重命名此列</translation>
+        </message>
+        <message>
+            <source>Remove Column</source>
+            <translation>删除列</translation>
+        </message>
+        <message>
+            <source>Copy Column Name</source>
+            <translation>复制列名</translation>
+        </message>
+        <message>
+            <source>Goto Max</source>
+            <translation>跳转到最大值</translation>
+        </message>
+        <message>
+            <source>Goto Min</source>
+            <translation>跳转到最小值</translation>
+        </message>
+        <message>
+            <source>Show Statistics</source>
+            <translation>显示统计信息</translation>
+        </message>
+        <message>
+        <source>Edit Formula</source>
+        <translation>编辑公式</translation>
+    </message>
+    <message>
+        <source>Recompute</source>
+        <translation>重新计算</translation>
+    </message>
+    <message>
+        <source>Remove Formula (Keep Data)</source>
+        <translation>移除公式（保留数据）</translation>
+    </message>
+    <message>
+        <source>Columns</source>
+        <translation>列</translation>
+    </message>
+    <message>
+        <source>Hide This Column</source>
+        <translation>隐藏此列</translation>
+    </message>
+    <message>
+        <source>Show All Columns</source>
+        <translation>显示所有列</translation>
+    </message>
+    <message>
+        <source>Freeze to This Column</source>
+        <translation>冻结到此列</translation>
+    </message>
+    <message>
+        <source>Unfreeze</source>
+        <translation>取消冻结</translation>
+    </message>
+    <message>
+        <source>Column View...</source>
+        <translation>列视图...</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADialogFindReplace</name>
+    <message>
+        <source>Entire table</source>
+        <translation>全表</translation>
+    </message>
+    <message>
+        <source>Current selection</source>
+        <translation>当前选区</translation>
+    </message>
+    <message>
+        <source>No matches</source>
+        <translation>无匹配</translation>
+    </message>
+    <message>
+        <source>%1 of %2 (truncated from %3)</source>
+        <translation>第 %1 条 / 共 %2 条（命中过多，已从 %3 条截断）</translation>
+    </message>
+    <message>
+        <source>%1 of %2</source>
+        <translation>第 %1 条 / 共 %2 条</translation>
+    </message>
+    <message>
+        <source>Invalid pattern</source>
+        <translation>无效的匹配模式</translation>
+    </message>
+</context>
+<context>
+    <name>DADialogFindReplace</name>
+    <message>
+        <source>Find and Replace</source>
+        <translation>查找和替换</translation>
+    </message>
+    <message>
+        <source>Find:</source>
+        <translation>查找：</translation>
+    </message>
+    <message>
+        <source>Replace:</source>
+        <translation>替换：</translation>
+    </message>
+    <message>
+        <source>Previous</source>
+        <translation>上一个</translation>
+    </message>
+    <message>
+        <source>Next</source>
+        <translation>下一个</translation>
+    </message>
+    <message>
+        <source>Replace</source>
+        <translation>替换</translation>
+    </message>
+    <message>
+        <source>Replace All</source>
+        <translation>全部替换</translation>
+    </message>
+    <message>
+        <source>Case sensitive</source>
+        <translation>区分大小写</translation>
+    </message>
+    <message>
+        <source>Regex</source>
+        <translation>正则表达式</translation>
+    </message>
+    <message>
+        <source>Whole cell</source>
+        <translation>整格匹配</translation>
+    </message>
+    <message>
+        <source>Scope:</source>
+        <translation>范围：</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>关闭</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADialogConditionalFormat</name>
+    <message>
+        <source>Cell Rule</source>
+        <translation>单元格规则</translation>
+    </message>
+    <message>
+        <source>Color Scale</source>
+        <translation>色阶</translation>
+    </message>
+    <message>
+        <source>Data Bar</source>
+        <translation>数据条</translation>
+    </message>
+    <message>
+        <source>greater than</source>
+        <translation>大于</translation>
+    </message>
+    <message>
+        <source>less than</source>
+        <translation>小于</translation>
+    </message>
+    <message>
+        <source>between</source>
+        <translation>介于</translation>
+    </message>
+    <message>
+        <source>equal to</source>
+        <translation>等于</translation>
+    </message>
+    <message>
+        <source>contains</source>
+        <translation>包含</translation>
+    </message>
+    <message>
+        <source>is empty</source>
+        <translation>为空</translation>
+    </message>
+    <message>
+        <source>is not empty</source>
+        <translation>非空</translation>
+    </message>
+    <message>
+        <source>Select Font</source>
+        <translation>选择字体</translation>
+    </message>
+    <message>
+        <source>Select Color</source>
+        <translation>选择颜色</translation>
+    </message>
+    <message>
+        <source>Column %1</source>
+        <translation>列 %1</translation>
+    </message>
+    <message>
+        <source>Color scale and data bar need full-column statistics, which are unavailable for lazy-loaded or read-only data sources. Cell rules are still available.</source>
+        <translation>色阶与数据条需要全列统计，惰性加载或只读数据源不可用；单元格规则仍可正常使用</translation>
+    </message>
+    <message>
+        <source>greater than %1</source>
+        <translation>大于 %1</translation>
+    </message>
+    <message>
+        <source>less than %1</source>
+        <translation>小于 %1</translation>
+    </message>
+    <message>
+        <source>between %1 and %2</source>
+        <translation>介于 %1 和 %2 之间</translation>
+    </message>
+    <message>
+        <source>equal to %1</source>
+        <translation>等于 %1</translation>
+    </message>
+    <message>
+        <source>contains &quot;%1&quot;</source>
+        <translation>包含 &quot;%1&quot;</translation>
+    </message>
+    <message>
+        <source>3-color scale</source>
+        <translation>三色色阶</translation>
+    </message>
+    <message>
+        <source>2-color scale</source>
+        <translation>双色色阶</translation>
+    </message>
+    <message>
+        <source>data bar</source>
+        <translation>数据条</translation>
+    </message>
+    <message>
+        <source>[Off] </source>
+        <translation>[停用] </translation>
+    </message>
+    <message>
+        <source>Font...</source>
+        <translation>字体...</translation>
+    </message>
+</context>
+<context>
+    <name>DADialogConditionalFormat</name>
+    <message>
+        <source>Conditional Formatting</source>
+        <translation>条件格式</translation>
+    </message>
+    <message>
+        <source>Rules (top to bottom = evaluation order, later rules override earlier ones):</source>
+        <translation>规则（自上而下 = 求值顺序，靠后的规则覆盖靠前的）：</translation>
+    </message>
+    <message>
+        <source>Add</source>
+        <translation>添加</translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation>删除</translation>
+    </message>
+    <message>
+        <source>Move Up</source>
+        <translation>上移</translation>
+    </message>
+    <message>
+        <source>Move Down</source>
+        <translation>下移</translation>
+    </message>
+    <message>
+        <source>Clear Rules of Selected Column</source>
+        <translation>清除所选列规则</translation>
+    </message>
+    <message>
+        <source>Rule Type:</source>
+        <translation>规则类型：</translation>
+    </message>
+    <message>
+        <source>Column:</source>
+        <translation>列：</translation>
+    </message>
+    <message>
+        <source>Enabled</source>
+        <translation>启用</translation>
+    </message>
+    <message>
+        <source>Condition:</source>
+        <translation>条件：</translation>
+    </message>
+    <message>
+        <source>Value:</source>
+        <translation>值：</translation>
+    </message>
+    <message>
+        <source>And (upper bound):</source>
+        <translation>且（上界）：</translation>
+    </message>
+    <message>
+        <source>Style:</source>
+        <translation>样式：</translation>
+    </message>
+    <message>
+        <source>Background</source>
+        <translation>背景</translation>
+    </message>
+    <message>
+        <source>Foreground</source>
+        <translation>前景</translation>
+    </message>
+    <message>
+        <source>Font</source>
+        <translation>字体</translation>
+    </message>
+    <message>
+        <source>Font...</source>
+        <translation>字体...</translation>
+    </message>
+    <message>
+        <source>2-Color Scale</source>
+        <translation>双色色阶</translation>
+    </message>
+    <message>
+        <source>3-Color Scale</source>
+        <translation>三色色阶</translation>
+    </message>
+    <message>
+        <source>Low:</source>
+        <translation>低端：</translation>
+    </message>
+    <message>
+        <source>Middle:</source>
+        <translation>中间：</translation>
+    </message>
+    <message>
+        <source>High:</source>
+        <translation>高端：</translation>
+    </message>
+    <message>
+        <source>Bar Color:</source>
+        <translation>数据条颜色：</translation>
+    </message>
+</context>
+
+<context>
+        <name>DADialogTableColumnView</name>
+    <message>
+        <source>Column View</source>
+        <translation>列视图</translation>
+    </message>
+    <message>
+        <source>Columns:</source>
+        <translation>列：</translation>
+    </message>
+    <message>
+        <source>Freeze Columns:</source>
+        <translation>冻结列数：</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DATableComputedColumnStore</name>
+    <message>
+        <source>Valid</source>
+        <translation>有效</translation>
+    </message>
+    <message>
+        <source>Needs Recompute</source>
+        <translation>待重算</translation>
+    </message>
+    <message>
+        <source>Invalid</source>
+        <translation>失效</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADataTableModel</name>
+    <message>
+        <source>Formula</source>
+        <translation>公式</translation>
+    </message>
+    <message>
+        <source>State</source>
+        <translation>状态</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DATableMetadata</name>
+    <message>
+        <source>Cell styles</source>
+        <translation>样式</translation>
+    </message>
+    <message>
+        <source>Column widths</source>
+        <translation>列宽</translation>
+    </message>
+    <message>
+        <source>Conditional format rules</source>
+        <translation>条件格式规则</translation>
+    </message>
+    <message>
+        <source>Computed columns</source>
+        <translation>计算列</translation>
+    </message>
+    <message>
+        <source>Validation rules</source>
+        <translation>校验规则</translation>
+    </message>
+    <message>
+        <source>Cell notes</source>
+        <translation>批注</translation>
+    </message>
+    <message>
+        <source>Column view settings</source>
+        <translation>列视图设置</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADialogComputedColumn</name>
+    <message>
+        <source>New Computed Column</source>
+        <translation>新建计算列</translation>
+    </message>
+    <message>
+        <source>Edit Formula</source>
+        <translation>编辑公式</translation>
+    </message>
+    <message>
+        <source>New column name</source>
+        <translation>新列名</translation>
+    </message>
+    <message>
+        <source>e.g. A + B (column names can be inserted from the list below)</source>
+        <translation>如 A + B（列名可从下方列表点选插入）</translation>
+    </message>
+    <message>
+        <source>Target Column:</source>
+        <translation>目标列名：</translation>
+    </message>
+    <message>
+        <source>Expression:</source>
+        <translation>表达式：</translation>
+    </message>
+    <message>
+        <source>Columns (click to insert)</source>
+        <translation>列名（点选插入）</translation>
+    </message>
+    <message>
+        <source>Preview (first %1 rows)</source>
+        <translation>预览（前 %1 行）</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>确定</translation>
+    </message>
+    <message>
+        <source>No data</source>
+        <translation>无数据</translation>
+    </message>
+    <message>
+        <source>Please specify the target column name</source>
+        <translation>请指定目标列名</translation>
+    </message>
+    <message>
+        <source>Column "%1" already exists. A computed column must write to a new column (self-overwrite is not allowed).</source>
+        <translation>列“%1”已存在。计算列必须写入新列（禁止自覆盖）。</translation>
+    </message>
+    <message>
+        <source>Please input the expression</source>
+        <translation>请输入表达式</translation>
+    </message>
+    <message>
+        <source>Expression syntax error: %1</source>
+        <translation>表达式语法错误：%1</translation>
+    </message>
+    <message>
+        <source>The expression must not reference the target column "%1" (self-overwrite is not allowed).</source>
+        <translation>表达式不得引用目标列“%1”（禁止自覆盖）。</translation>
+    </message>
+    <message>
+        <source>Failed to build preview sample</source>
+        <translation>预览样本构建失败</translation>
+    </message>
+    <message>
+        <source>Expression evaluation failed: %1</source>
+        <translation>表达式求值失败：%1</translation>
+    </message>
+    <message>
+        <source>OK — %1 dependency column(s): %2</source>
+        <translation>通过 — 依赖 %1 列：%2</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADialogSplitColumn</name>
+    <message>
+        <source>Split Column</source>
+        <translation>分列</translation>
+    </message>
+    <message>
+        <source>Source column: %1</source>
+        <translation>源列：%1</translation>
+    </message>
+    <message>
+        <source>Split Mode</source>
+        <translation>分隔模式</translation>
+    </message>
+    <message>
+        <source>Delimiter (single char or string)</source>
+        <translation>分隔符（单字符/字符串）</translation>
+    </message>
+    <message>
+        <source>Regular expression (capture groups)</source>
+        <translation>正则（捕获组）</translation>
+    </message>
+    <message>
+        <source>Fixed widths</source>
+        <translation>固定宽度</translation>
+    </message>
+    <message>
+        <source>comma separated, e.g. 3,5,8</source>
+        <translation>逗号分隔，如 3,5,8</translation>
+    </message>
+    <message>
+        <source>Max columns:</source>
+        <translation>最大列数：</translation>
+    </message>
+    <message>
+        <source>Unlimited</source>
+        <translation>不限</translation>
+    </message>
+    <message>
+        <source>Discard extra parts</source>
+        <translation>丢弃超出部分</translation>
+    </message>
+    <message>
+        <source>Keep remainder in last column</source>
+        <translation>剩余并入最后一列（保留原文）</translation>
+    </message>
+    <message>
+        <source>Report error</source>
+        <translation>报错</translation>
+    </message>
+    <message>
+        <source>Overflow policy:</source>
+        <translation>溢出策略：</translation>
+    </message>
+    <message>
+        <source>Try to parse result columns as numeric</source>
+        <translation>结果列尝试数值解析</translation>
+    </message>
+    <message>
+        <source>comma separated result column names</source>
+        <translation>逗号分隔的结果列名</translation>
+    </message>
+    <message>
+        <source>Result names:</source>
+        <translation>结果列名：</translation>
+    </message>
+    <message>
+        <source>Preview (first %1 rows)</source>
+        <translation>预览（前 %1 行）</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>确定</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+    <message>
+        <source>Delimiter must not be empty</source>
+        <translation>分隔符不能为空</translation>
+    </message>
+    <message>
+        <source>Regular expression must not be empty</source>
+        <translation>正则不能为空</translation>
+    </message>
+    <message>
+        <source>Widths must be comma separated positive integers</source>
+        <translation>宽度必须是逗号分隔的正整数</translation>
+    </message>
+    <message>
+        <source>Widths must not be empty</source>
+        <translation>宽度列表不能为空</translation>
+    </message>
+    <message>
+        <source>No data</source>
+        <translation>无数据</translation>
+    </message>
+    <message>
+        <source>Failed to build preview sample</source>
+        <translation>预览样本构建失败</translation>
+    </message>
+    <message>
+        <source>Split failed: %1</source>
+        <translation>分列失败：%1</translation>
+    </message>
+    <message>
+        <source>Auto name "%1" conflicts with an existing column, please rename the result columns</source>
+        <translation>自动列名“%1”与现有列重名，请修改结果列名</translation>
+    </message>
+    <message>
+        <source>Result name count (%1) does not match the split column count (%2)</source>
+        <translation>结果列名个数（%1）与分列数（%2）不一致</translation>
+    </message>
+    <message>
+        <source>Result column name must not be empty</source>
+        <translation>结果列名不能为空</translation>
+    </message>
+    <message>
+        <source>Duplicate result column name "%1"</source>
+        <translation>结果列名“%1”重复</translation>
+    </message>
+    <message>
+        <source>Result column name "%1" already exists in the table</source>
+        <translation>结果列名“%1”与现有列重名</translation>
+    </message>
+    <message>
+        <source>OK — split into %1 column(s)</source>
+        <translation>通过 — 拆分为 %1 列</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADialogMergeColumns</name>
+    <message>
+        <source>Merge Columns</source>
+        <translation>合并列</translation>
+    </message>
+    <message>
+        <source>Merge order (top to bottom)</source>
+        <translation>合并顺序（自上而下）</translation>
+    </message>
+    <message>
+        <source>can be empty</source>
+        <translation>可为空</translation>
+    </message>
+    <message>
+        <source>Separator:</source>
+        <translation>分隔符：</translation>
+    </message>
+    <message>
+        <source>Skip missing values (no extra separator)</source>
+        <translation>跳过空值（不留多余分隔符）</translation>
+    </message>
+    <message>
+        <source>Result column name:</source>
+        <translation>结果列名：</translation>
+    </message>
+    <message>
+        <source>Preview (first %1 rows)</source>
+        <translation>预览（前 %1 行）</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>确定</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+    <message>
+        <source>No data</source>
+        <translation>无数据</translation>
+    </message>
+    <message>
+        <source>Merge requires at least 2 columns</source>
+        <translation>合并至少需要 2 列</translation>
+    </message>
+    <message>
+        <source>Result column name must not be empty</source>
+        <translation>结果列名不能为空</translation>
+    </message>
+    <message>
+        <source>Column "%1" already exists, please use another result name</source>
+        <translation>列“%1”已存在，请更换结果列名</translation>
+    </message>
+    <message>
+        <source>Failed to build preview sample</source>
+        <translation>预览样本构建失败</translation>
+    </message>
+    <message>
+        <source>Merge failed: %1</source>
+        <translation>合并失败：%1</translation>
+    </message>
+    <message>
+        <source>OK — merged into "%1" at column %2</source>
+        <translation>通过 — 合并为“%1”，位于第 %2 列</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADialogGroupBy</name>
+    <message>
+        <source>Group By</source>
+        <translation>分组聚合</translation>
+    </message>
+    <message>
+        <source>Group keys (multi-select)</source>
+        <translation>分组键（多选）</translation>
+    </message>
+    <message>
+        <source>Aggregate columns (multi-select)</source>
+        <translation>聚合列（多选）</translation>
+    </message>
+    <message>
+        <source>Aggregations (column / function)</source>
+        <translation>聚合设置（列 / 函数）</translation>
+    </message>
+    <message>
+        <source>Column</source>
+        <translation>列</translation>
+    </message>
+    <message>
+        <source>Function</source>
+        <translation>函数</translation>
+    </message>
+    <message>
+        <source>Preview (first %1 rows)</source>
+        <translation>预览（前 %1 行）</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>确定</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+    <message>
+        <source>No data</source>
+        <translation>无数据</translation>
+    </message>
+    <message>
+        <source>Please select at least one group key</source>
+        <translation>请至少选择一个分组键</translation>
+    </message>
+    <message>
+        <source>Please select at least one aggregation column</source>
+        <translation>请至少选择一个聚合列</translation>
+    </message>
+    <message>
+        <source>Aggregation failed: %1</source>
+        <translation>聚合失败：%1</translation>
+    </message>
+    <message>
+        <source>OK — %1 group(s) (result rows)</source>
+        <translation>通过 — 共 %1 组（结果行数）</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADialogReshape</name>
+    <message>
+        <source>Reshape</source>
+        <translation>形状变换</translation>
+    </message>
+    <message>
+        <source>Unpivot / Melt</source>
+        <translation>宽转长（melt）</translation>
+    </message>
+    <message>
+        <source>Transpose</source>
+        <translation>转置</translation>
+    </message>
+    <message>
+        <source>Mode</source>
+        <translation>模式</translation>
+    </message>
+    <message>
+        <source>Transpose (rows become columns)</source>
+        <translation>转置（行列互换）</translation>
+    </message>
+    <message>
+        <source>Unpivot / Melt (wide to long)</source>
+        <translation>宽转长（melt）</translation>
+    </message>
+    <message>
+        <source>ID columns (keep, multi-select)</source>
+        <translation>保留列（id_vars，多选）</translation>
+    </message>
+    <message>
+        <source>Value columns (unpivot; none = all others)</source>
+        <translation>展开列（value_vars；不选=其余全部列）</translation>
+    </message>
+    <message>
+        <source>Variable column name:</source>
+        <translation>变量名列名：</translation>
+    </message>
+    <message>
+        <source>Value column name:</source>
+        <translation>值列名：</translation>
+    </message>
+    <message>
+        <source>Replace current table in place (default: create a new dataset)</source>
+        <translation>就地替换当前表（默认：产出新数据集）</translation>
+    </message>
+    <message>
+        <source>Preview (first %1 rows of a sample)</source>
+        <translation>预览（样本前 %1 行）</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>确定</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+    <message>
+        <source>No data</source>
+        <translation>无数据</translation>
+    </message>
+    <message>
+        <source>Failed to build preview sample</source>
+        <translation>预览样本构建失败</translation>
+    </message>
+    <message>
+        <source>Column "%1" is in both ID and value columns</source>
+        <translation>列“%1”同时出现在保留列与展开列</translation>
+    </message>
+    <message>
+        <source>No column left to unpivot (all columns are kept as ID)</source>
+        <translation>没有可展开的列（全部列都被设为保留列）</translation>
+    </message>
+    <message>
+        <source>Variable/value column names must not be empty</source>
+        <translation>变量名/值列名不能为空</translation>
+    </message>
+    <message>
+        <source>Reshape failed: %1</source>
+        <translation>形状变换失败：%1</translation>
+    </message>
+    <message>
+        <source> — exceeds the %1-row guard, confirmation required on OK</source>
+        <translation> — 超过 %1 行守卫，点确定时需确认</translation>
+    </message>
+    <message>
+        <source>OK — estimated output rows: %1 (rows %2 x unpivoted columns %3)%4</source>
+        <translation>通过 — 预估输出行数：%1（%2 行 × %3 展开列）%4</translation>
+    </message>
+    <message>
+        <source>OK — result will have %1 row(s) (original columns) and one column per original row plus the "index" name column</source>
+        <translation>通过 — 结果将有 %1 行（原列数），列为原行索引 + “index” 命名列</translation>
+    </message>
+    <message>
+        <source>Melt Scale Guard</source>
+        <translation>melt 规模守卫</translation>
+    </message>
+    <message>
+        <source>The melt operation is estimated to produce %1 rows (limit %2), which may consume a large amount of memory. Force continue?</source>
+        <translation>melt 预估产出 %1 行（上限 %2），可能占用大量内存。强制继续？</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADialogFillSeries</name>
+    <message>
+        <source>Fill Series</source>
+        <translation>序列填充</translation>
+    </message>
+    <message>
+        <source>Linear series (start / step / stop)</source>
+        <translation>数值等差（起始值/步长/终止值）</translation>
+    </message>
+    <message>
+        <source>Date series (start / step / unit)</source>
+        <translation>日期步进（起始日期/步长/单位）</translation>
+    </message>
+    <message>
+        <source>Start value (empty = default)</source>
+        <translation>起始值（留空用默认）</translation>
+    </message>
+    <message>
+        <source>Step (empty = 1)</source>
+        <translation>步长（留空为 1）</translation>
+    </message>
+    <message>
+        <source>Stop value (optional)</source>
+        <translation>终止值（可选）</translation>
+    </message>
+    <message>
+        <source>Stop value (empty = no limit)</source>
+        <translation>终止值（留空不限）</translation>
+    </message>
+    <message>
+        <source>Day</source>
+        <translation>天</translation>
+    </message>
+    <message>
+        <source>Week</source>
+        <translation>周</translation>
+    </message>
+    <message>
+        <source>Month</source>
+        <translation>月</translation>
+    </message>
+    <message>
+        <source>Year</source>
+        <translation>年</translation>
+    </message>
+    <message>
+        <source>Start date, e.g. 2020-01-01 (empty = today)</source>
+        <translation>起始日期，如 2020-01-01（留空为今天）</translation>
+    </message>
+    <message>
+        <source>Invalid parameters: unable to generate the series</source>
+        <translation>参数无效：无法生成序列</translation>
+    </message>
+    <message>
+        <source>Preview: (empty)</source>
+        <translation>预览：（空）</translation>
+    </message>
+    <message>
+        <source>Preview: %1</source>
+        <translation>预览：%1</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADialogValidationRules</name>
+    <message>
+        <source>Validation Rules</source>
+        <translation>数据校验规则</translation>
+    </message>
+    <message>
+        <source>Add</source>
+        <translation>添加</translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation>删除</translation>
+    </message>
+    <message>
+        <source>Up</source>
+        <translation>上移</translation>
+    </message>
+    <message>
+        <source>Down</source>
+        <translation>下移</translation>
+    </message>
+    <message>
+        <source>%1 (occurrence %2)</source>
+        <translation>%1（第 %2 个同名列）</translation>
+    </message>
+    <message>
+        <source>Numeric range</source>
+        <translation>数值区间</translation>
+    </message>
+    <message>
+        <source>Date range</source>
+        <translation>日期区间</translation>
+    </message>
+    <message>
+        <source>Allowed values (enum)</source>
+        <translation>枚举集合</translation>
+    </message>
+    <message>
+        <source>Not empty</source>
+        <translation>非空</translation>
+    </message>
+    <message>
+        <source>Unique</source>
+        <translation>唯一</translation>
+    </message>
+    <message>
+        <source>Regex (full match)</source>
+        <translation>正则（整格匹配）</translation>
+    </message>
+    <message>
+        <source>Error</source>
+        <translation>错误</translation>
+    </message>
+    <message>
+        <source>Warning</source>
+        <translation>警告</translation>
+    </message>
+    <message>
+        <source>Enabled</source>
+        <translation>启用</translation>
+    </message>
+    <message>
+        <source>Display name in report (optional)</source>
+        <translation>报告显示名（可选）</translation>
+    </message>
+    <message>
+        <source>Column</source>
+        <translation>列</translation>
+    </message>
+    <message>
+        <source>Type</source>
+        <translation>类型</translation>
+    </message>
+    <message>
+        <source>Level</source>
+        <translation>级别</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation>名称</translation>
+    </message>
+    <message>
+        <source>Empty = no lower bound</source>
+        <translation>留空 = 不限下界</translation>
+    </message>
+    <message>
+        <source>Empty = no upper bound</source>
+        <translation>留空 = 不限上界</translation>
+    </message>
+    <message>
+        <source>Minimum</source>
+        <translation>下界</translation>
+    </message>
+    <message>
+        <source>Maximum</source>
+        <translation>上界</translation>
+    </message>
+    <message>
+        <source>From</source>
+        <translation>起始</translation>
+    </message>
+    <message>
+        <source>To</source>
+        <translation>截止</translation>
+    </message>
+    <message>
+        <source>One allowed value per line</source>
+        <translation>每行一个允许值</translation>
+    </message>
+    <message>
+        <source>Allow other values when editing (dropdown)</source>
+        <translation>编辑时允许其他值（下拉）</translation>
+    </message>
+    <message>
+        <source>No parameters</source>
+        <translation>无参数</translation>
+    </message>
+    <message>
+        <source>Full-match pattern, e.g. [A-Z]{3}\d+</source>
+        <translation>整格匹配正则，如 [A-Z]{3}\d+</translation>
+    </message>
+    <message>
+        <source>Pattern</source>
+        <translation>正则</translation>
+    </message>
+    <message>
+        <source>Parameters</source>
+        <translation>参数</translation>
+    </message>
+    <message>
+        <source> (disabled)</source>
+        <translation>（已停用）</translation>
+    </message>
+    <message>
+        <source>Minimum is not a valid number</source>
+        <translation>下界不是有效数值</translation>
+    </message>
+    <message>
+        <source>Maximum is not a valid number</source>
+        <translation>上界不是有效数值</translation>
+    </message>
+    <message>
+        <source>From-date is invalid (use yyyy-MM-dd)</source>
+        <translation>起始日期无效（用 yyyy-MM-dd）</translation>
+    </message>
+    <message>
+        <source>To-date is invalid (use yyyy-MM-dd)</source>
+        <translation>截止日期无效（用 yyyy-MM-dd）</translation>
+    </message>
+    <message>
+        <source>Rule parameters are incomplete (both bounds empty / no allowed values / empty pattern)</source>
+        <translation>规则参数不完整（上下界全空/无允许值/正则为空）</translation>
+    </message>
+    <message>
+        <source>Invalid rule parameters</source>
+        <translation>规则参数无效</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADialogValidationReport</name>
+    <message>
+        <source>Validation Report</source>
+        <translation>数据校验报告</translation>
+    </message>
+    <message>
+        <source>Export...</source>
+        <translation>导出...</translation>
+    </message>
+    <message>
+        <source>Clear Highlights</source>
+        <translation>清除高亮</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>关闭</translation>
+    </message>
+    <message>
+        <source>  [column missing]</source>
+        <translation>[列不存在]</translation>
+    </message>
+    <message>
+        <source>  —  %1 violation(s)</source>
+        <translation>—  %1 处违规</translation>
+    </message>
+    <message>
+        <source> (showing first %1)</source>
+        <translation>（显示前 %1 条）</translation>
+    </message>
+    <message>
+        <source>Evaluated %1 rule(s), found %2 violation(s), took %3 ms</source>
+        <translation>校验 %1 条规则，发现 %2 处违规，耗时 %3 毫秒</translation>
+    </message>
+    <message>
+        <source>Error</source>
+        <translation>错误 / 警告</translation>
+    </message>
+    <message>
+        <source>Warning</source>
+        <translation>错误 / 警告</translation>
+    </message>
+    <message>
+        <source>Column missing (rule skipped)</source>
+        <translation>列不存在（规则被跳过）</translation>
+    </message>
+    <message>
+        <source>%1 violation(s)</source>
+        <translation>%1 处违规</translation>
+    </message>
+    <message>
+        <source>Export Validation Report</source>
+        <translation>导出校验报告</translation>
+    </message>
+    <message>
+        <source>HTML (*.html);;PDF (*.pdf);;Word (*.docx)</source>
+        <translation>HTML (*.html);;PDF (*.pdf);;Word (*.docx)</translation>
+    </message>
+    <message>
+        <source>Export failed: %1</source>
+        <translation>导出失败：%1</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DATableNoteEditDialog</name>
+    <message>
+        <source>Cell Note</source>
+        <translation>单元格批注</translation>
+    </message>
+    <message>
+        <source>Enter note text...</source>
+        <translation>输入批注文本...</translation>
+    </message>
+    <message>
+        <source>Delete</source>
+        <translation>删除</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAUndoHistoryWidget</name>
+    <message>
+        <source>Undo depth:</source>
+        <translation>撤销深度：</translation>
+    </message>
+    <message>
+        <source>Maximum number of undo steps kept per table page (larger uses more memory for swap-type commands)</source>
+        <translation>每个表格页保留的最大撤销步数（调大对转置类命令会增加内存占用）</translation>
+    </message>
+</context>
+<context>
+        <name>DA::DADialogGotoCell</name>
+    <message>
+        <source>Go To</source>
+        <translation>定位</translation>
+    </message>
+    <message>
+        <source>Row number:</source>
+        <translation>行号：</translation>
+    </message>
+    <message>
+        <source>Index label:</source>
+        <translation>索引标签：</translation>
+    </message>
+    <message>
+        <source>Column:</source>
+        <translation>列：</translation>
+    </message>
+    <message>
+        <source>Keep hidden columns hidden</source>
+        <translation>保持隐藏列隐藏</translation>
+    </message>
+    <message>
+        <source>First row</source>
+        <translation>首行</translation>
+    </message>
+    <message>
+        <source>Last row</source>
+        <translation>尾行</translation>
+    </message>
+    <message>
+        <source>First column</source>
+        <translation>首列</translation>
+    </message>
+    <message>
+        <source>Last column</source>
+        <translation>尾列</translation>
+    </message>
+    <message>
+        <source>1 - %1</source>
+        <translation>1 - %1</translation>
+    </message>
+</context>
+<context>
+        <name>DA::DATableStatsWidget</name>
+    <message>
+        <source>%1 rows × %2 cols</source>
+        <translation>%1 行 × %2 列</translation>
+    </message>
+    <message>
+        <source>%1 cols selected · %2 rows</source>
+        <translation>已选 %1 列 · %2 行</translation>
+    </message>
+    <message>
+        <source>Count</source>
+        <translation>计数</translation>
+    </message>
+    <message>
+        <source>Null</source>
+        <translation>空值</translation>
+    </message>
+    <message>
+        <source>Sum</source>
+        <translation>求和</translation>
+    </message>
+    <message>
+        <source>Mean</source>
+        <translation>均值</translation>
+    </message>
+    <message>
+        <source>Min</source>
+        <translation>最小值</translation>
+    </message>
+    <message>
+        <source>Max</source>
+        <translation>最大值</translation>
+    </message>
+    <message>
+        <source>Unique</source>
+        <translation>唯一值数</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Per-column details&lt;/b&gt;</source>
+        <translation>&lt;b&gt;逐列明细&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>Selection is too large; per-column details were not computed</source>
+        <translation>选区过大，未计算明细</translation>
+    </message>
+    <message>
+        <source>%1 segments · %2 rows × %3 cols · %4 cells</source>
+        <translation>%1 段 · %2 行 × %3 列 · %4 格</translation>
+    </message>
+    <message>
+        <source>Aggregation is not available for multi-range selections</source>
+        <translation>多段选区不提供聚合</translation>
+    </message>
+    <message>
+        <source>Row %1 · %2: %3</source>
+        <translation>第 %1 行 · %2：%3</translation>
+    </message>
+    <message>
+        <source>Statistics are not available for the current data source</source>
+        <translation>当前数据源不支持选区统计</translation>
     </message>
 </context>
 </TS>

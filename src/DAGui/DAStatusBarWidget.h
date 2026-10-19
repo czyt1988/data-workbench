@@ -43,6 +43,10 @@ public:
 	// switch button的显示隐藏
 	void setSwitchButtonVisible(DA::DAWorkbenchFeatureType type, bool visible);
 	bool isSwitchButtonVisible(DA::DAWorkbenchFeatureType type) const;
+	// 额外永久部件插槽（007 状态栏统计部件；部件由调用方持有，本类不 delete；
+	// 加在 stretch 之后 = 贴状态栏最右）
+	void setExtraPermanentWidget(QWidget* w);
+	QWidget* extraPermanentWidget() const;
 Q_SIGNALS:
 	void requestSwitch(DA::DAWorkbenchFeatureType type);
 

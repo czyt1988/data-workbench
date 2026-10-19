@@ -1,19 +1,6 @@
 # 插件数据持久化方案
 
-本文档详细说明插件如何安全、高效地保存和管理数据文件，包括配置存储、节点数据、缓存管理等。
-
-## 主要功能特性
-
-**特性**
-
-- ✅ **持久化需求场景**：配置存储、节点数据、临时缓存、用户数据等场景分析
-- ✅ **数据目录规范**：标准目录结构、获取数据目录的方法
-- ✅ **文件命名规范**：配置文件、缓存文件、数据文件、日志文件的命名规则
-- ✅ **配置存储方案**：QSettings 和 JSON 两种配置存储方式
-- ✅ **安全写入最佳实践**：原子写入模式、版本兼容策略
-- ✅ **节点数据持久化**：工作流自动序列化、大数据存储策略
-- ✅ **缓存管理**：缓存目录创建、清理策略、大小限制
-- ✅ **数据访问示例**：完整的数据管理类实现
+这篇文档覆盖插件保存和管理数据时的目录规范、配置存储、节点数据持久化和缓存管理。
 
 ---
 
@@ -112,8 +99,9 @@ QString generateTimestampFilename(const QString& prefix)
 
 ### 方式一：QSettings
 
-!!! tip "适合简单配置"
-    适用于键值对形式的简单配置，系统原生支持。
+> **💡 适合简单配置**
+>
+> 适用于键值对形式的简单配置，系统原生支持。
 
 ```cpp
 // 保存配置（用 DA::DADir::getConfigPath()，不是 DA::getUserConfigPath()）
@@ -155,8 +143,9 @@ void MyPlugin::loadConfig()
 
 ### 方式二：JSON 配置
 
-!!! tip "适合复杂配置"
-    适用于嵌套结构、数组的复杂配置。
+> **💡 适合复杂配置**
+>
+> 适用于嵌套结构、数组的复杂配置。
 
 ```cpp
 #include <QJsonDocument>
@@ -241,8 +230,9 @@ void MyPlugin::loadJsonConfig()
 
 ### 原子写入模式
 
-!!! important "避免数据丢失"
-    使用原子写入确保数据完整性，防止写入过程中崩溃导致数据损坏。
+> **❗ 避免数据丢失**
+>
+> 使用原子写入确保数据完整性，防止写入过程中崩溃导致数据损坏。
 
 ```cpp
 bool MyPlugin::safeWriteFile(const QString& filePath, const QByteArray& data)
@@ -344,8 +334,9 @@ QJsonObject MyPlugin::upgradeConfig(const QJsonObject& oldConfig, int oldVersion
 
 ### 工作流自动序列化
 
-!!! note "内置支持"
-    DAWorkBench 自动保存工作流和节点数据，插件无需手动处理。
+> **📝 内置支持**
+>
+> DAWorkBench 自动保存工作流和节点数据，插件无需手动处理。
 
 节点参数通过内置序列化机制保存。当前 Python-first 节点用 `@NodeDef` 声明，`Parameter` 声明的参数由 `DAWorkflowSerializer` 自动序列化，**运行时缓存状态**通过 `serialize_runtime_state()` / `deserialize_runtime_state()` 钩子持久化（见 `plugins/DASystemNodes/AGENTS.md` 第九章）：
 
@@ -369,8 +360,9 @@ class TextViewerNode:
         self._display_text = state.get("display_text", "")
 ```
 
-!!! warning "旧 C++ 节点钩子已废弃"
-    旧 C++ `DAAbstractNode` 的 `saveToVariant()` / `loadFromVariant()` 虚函数属于已废弃架构，当前工作流节点统一用 Python `@NodeDef` 模型，不要使用这些 C++ 钩子。仅作历史背景：
+> **⚠️ 旧 C++ 节点钩子已废弃**
+>
+> 旧 C++ `DAAbstractNode` 的 `saveToVariant()` / `loadFromVariant()` 虚函数属于已废弃架构，当前工作流节点统一用 Python `@NodeDef` 模型，不要使用这些 C++ 钩子。仅作历史背景：
 
 ```cpp
 // 旧 C++ 节点序列化钩子（已废弃，当前代码库不再使用）
@@ -587,8 +579,8 @@ bool MyPlugin::saveData(const QString& path, const QByteArray& data)
 
 ## 下一步
 
-- [:material-puzzle: 功能扩展](./plugin-extension.md) - 界面和功能扩展
-- [:material-book: 最佳实践](../reference/best-practices.md) - 更多开发建议
-- [:material-help-circle: 常见问题](../reference/faq.md) - 常见问题解答
+- [🧩 功能扩展](./plugin-extension.md) - 界面和功能扩展
+- [📖 最佳实践](../reference/best-practices.md) - 更多开发建议
+- [❓ 常见问题](../reference/faq.md) - 常见问题解答
 
 > 详见 [日志系统文档](../dev-guide/general/logging.md)。

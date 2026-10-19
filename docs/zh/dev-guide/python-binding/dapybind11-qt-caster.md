@@ -1,4 +1,4 @@
-# DAPybind11QtCaster.hpp — pybind11 与 Qt 类型转换器
+# DAPybind11QtCaster.hpp：pybind11 与 Qt 类型转换器
 
 本文档详细说明 `src/DAPyBindQt/DAPybind11QtCaster.hpp` 提供的 pybind11 ↔ Qt 类型自动双向转换机制。**所有需要处理 Python 对象与 Qt 类型互转的代码都应依赖此文件，不应自行实现类型转换逻辑。**
 
@@ -152,7 +152,7 @@ py::object py_obj = DA::PY::toPyObject(dt);
 ```
 
 **QDateTime cast（C++ → Python）的关键行为**：
-- 使用"墙上时间"戳调用 `datetime.fromtimestamp(ts)`，**不调用 `toUTC()`**
+- 使用「墙上时间」戳调用 `datetime.fromtimestamp(ts)`，**不调用 `toUTC()`**
 - 生成的 Python `datetime` 对象直接反映本地时间
 - 无效的 QDateTime → `None`
 
@@ -193,12 +193,12 @@ bool canCastToQString(pybind11::handle src);
 
 ```cpp
 // === Python list → QList ===
-QList<int> ints = py_obj.cast<QList<int>>();            // ✅ 自动
-QList<QString> strs = py_obj.cast<QList<QString>>();    // ✅ 自动
+QList<int> ints = py_obj.cast<QList<int>>();            // 自动
+QList<QString> strs = py_obj.cast<QList<QString>>();    // 自动
 QList<QString> strs = DA::PY::fromPyList<QString>(py_obj);
 
 // === QList → Python list ===
-py::object py_list = py::cast(qlist);                    // ✅ 自动
+py::object py_list = py::cast(qlist);                    // 自动
 py::object py_list = DA::PY::toPyObject(qlist);
 
 // === QVector<T>（仅 Qt5）===
@@ -213,7 +213,7 @@ QSet<int> s = py_obj.cast<QSet<int>>();
 
 **`QList<自定义绑定类型>` 的注意事项**：
 
-当 `QList<T>` 中 `T` 是自定义绑定类型（如 `QList<DAData>`）时，自动 caster 可能将元素转为 pybind11 内部类型而非正确的绑定类型。此时推荐手动遍历：
+当 `QList<T>` 中 `T` 是自定义绑定类型（如 `QList<DAData>`）时，自动 caster 可能把元素转成 pybind11 内部类型，拿不到正确的绑定类型。此时建议手动遍历：
 
 ```cpp
 // Lambda 手动包装，确保每个元素以正确的绑定类型返回
@@ -245,7 +245,7 @@ py::object py_dict = py::cast(map);
 py::object py_dict = DA::PY::toPyObject(hash);
 ```
 
-### QVariant — 通用类型桥接器
+### QVariant：通用类型桥接器
 
 `QVariant` 是项目中**最重要的转换器**，作为 Qt 和 Python 类型系统之间的万能桥接器。它处理几乎所有 Python 类型的转换，并在 C++ → Python 方向保留了完整的元类型信息。
 
@@ -315,7 +315,7 @@ py::object py_obj = DA::PY::toPyObject(var);
 - `QMetaType::QVariantList` → Python list（元素递归转换）
 - `QMetaType::QVariantMap/QVariantHash` → Python dict
 - 其他已知命名类型（`QList<T>`、`QMap<K,V>` 等）→ 通过 `typeName()` 检测
-- 兜底 → `toString()` → Python str
+- 其余情况 → `toString()` → Python str
 
 ## DA::PY 命名空间中的辅助函数
 
@@ -366,7 +366,7 @@ bool DA::PY::canCastToQString(pybind11::handle src);
 
 ### 场景 1：绑定 C++ 方法时直接声明 Qt 类型
 
-最简单的用法 — 只要 `DAPybind11InQt.h` 已包含，pybind11 自动处理类型转换：
+最简单的用法：只要 `DAPybind11InQt.h` 已包含，pybind11 自动处理类型转换：
 
 ```cpp
 #include "DAPybind11InQt.h"
@@ -374,11 +374,11 @@ bool DA::PY::canCastToQString(pybind11::handle src);
 PYBIND11_EMBEDDED_MODULE(my_module, m)
 {
     py::class_<MyWidget>(m, "MyWidget")
-        // ✅ QString 参数自动从 Python str 转换
+        // QString 参数自动从 Python str 转换
         .def("setTitle", &MyWidget::setTitle)
-        // ✅ QList<int> 返回值自动转为 Python list
+        // QList<int> 返回值自动转为 Python list
         .def("getValues", &MyWidget::getValues)
-        // ✅ QDateTime 参数自动从 Python datetime 转换
+        // QDateTime 参数自动从 Python datetime 转换
         .def("setTimestamp", &MyWidget::setTimestamp);
 }
 ```
@@ -388,11 +388,11 @@ PYBIND11_EMBEDDED_MODULE(my_module, m)
 当方法需要默认参数值时，用 Lambda 显式包装：
 
 ```cpp
-// ❌ 直接绑定 — caster 不支持参数默认值
+// 直接绑定 — caster 不支持参数默认值
 .def("addInfoLogMessage", &DAUIInterface::addInfoLogMessage)
 // 这样绑定后 Python 调用必须提供所有参数
 
-// ✅ Lambda 包装 — 提供默认参数
+// Lambda 包装 — 提供默认参数
 .def("addInfoLogMessage",
     [](DA::DAUIInterface& self, const std::string& msg, bool showInStatusBar) {
         self.addInfoLogMessage(
@@ -471,31 +471,31 @@ py::object createPythonString(const QString& str) {
 ```
 
 ```cpp
-// ❌ 错误
+// 错误
 #include <pybind11/pybind11.h>
 
-// ✅ 正确
+// 正确
 #include "DAPybind11InQt.h"
 ```
 
 ### 陷阱 2：QVector<T> 仅在 Qt5 下可用
 
 ```cpp
-// ❌ 在 Qt6 下编译失败 — QVector 的 type_caster 在 Qt5 条件宏内
+// 在 Qt6 下编译失败 — QVector 的 type_caster 在 Qt5 条件宏内
 QVector<int> vec = py_obj.cast<QVector<int>>();
 
-// ✅ 使用 QList 代替（Qt6 中 QVector ≡ QList）
+// 使用 QList 代替（Qt6 中 QVector ≡ QList）
 QList<int> list = py_obj.cast<QList<int>>();
 ```
 
 ### 陷阱 3：QDateTime 时区混淆
 
-C++ `QDateTime` 转换为 Python `datetime` 时，使用"墙上时间"戳调用 `datetime.fromtimestamp(ts)`。这会导致：
+C++ `QDateTime` 转换为 Python `datetime` 时，使用「墙上时间」戳调用 `datetime.fromtimestamp(ts)`。这会导致：
 
 - 如果源 QDateTime 是 UTC 时间，Python 端会显示为本地时间
 - 如果源 QDateTime 是本地时间，Python 端时间值不变
 
-如果需要精确的 UTC 时间传递，建议使用时间戳（毫秒）而非 QDateTime 对象。
+需要精确传递 UTC 时间时，建议用时间戳（毫秒）代替 QDateTime 对象。
 
 ### 陷阱 4：pandas.NaT 与 canCastToQDateTime
 
@@ -519,8 +519,8 @@ if (DA::PY::canCastToQDateTime(py_obj)) {
 
 ## 相关文档
 
-- [Python/C++ 集成总览](./index.md) — 导航入口
-- [Python 绑定开发](./python-binding-development.md) — 完整的绑定开发流程
-- [故障排除与最佳实践](./troubleshooting-and-best-practices.md) — 常见错误与调试技巧
-- [嵌入式 Python 调试](./embedded-python-debugging.md) — 调试 pybind11 模块
-- [模块依赖关系](../architecture/module-dependency.md) — DAPyBindQt 模块的定位与职责
+- [Python/C++ 集成总览](./index.md)：导航入口
+- [Python 绑定开发](./python-binding-development.md)：完整的绑定开发流程
+- [故障排除与最佳实践](./troubleshooting-and-best-practices.md)：常见错误与调试技巧
+- [嵌入式 Python 调试](./embedded-python-debugging.md)：调试 pybind11 模块
+- [模块依赖关系](../architecture/module-dependency.md)：DAPyBindQt 模块的定位与职责

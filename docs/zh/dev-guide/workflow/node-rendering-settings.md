@@ -1,6 +1,6 @@
 # 节点渲染配置指南
 
-本文档详细介绍 Python 工作流节点的渲染配置系统，包括样式结构体 `DAPyNodeStyle` 的所有字段、枚举类型说明、Python 和 C++ 使用示例以及常见问题。
+本文档介绍 Python 工作流节点的渲染配置系统：样式结构体 `DAPyNodeStyle` 的所有字段、枚举类型、Python 和 C++ 示例以及常见问题。
 
 ## 导航
 
@@ -16,11 +16,11 @@
 
 ## 概述
 
-DAPyWorkFlow 的节点渲染系统采用 **DAPyNodeStyle 统一控制** 的架构。所有节点的视觉表现（形状、颜色、端口、图标等）都由 `DAPyNodeStyle` 结构体管理。
+节点的视觉表现（形状、颜色、端口、图标等）都由 `DAPyNodeStyle` 结构体管理。
 
 ### 架构演变
 
-早期版本使用 `render_template` 参数区分渲染模式（`"rect"`、`"svg"`、`"widget"`），通过不同的绘制函数实现视觉差异。从 T7 版本开始，渲染模板简化为两种：
+早期版本使用 `render_template` 参数区分渲染模式（`"rect"`、`"svg"`、`"widget"`），通过不同的绘制函数实现视觉差异。版本演进后渲染模板简化为两种：
 
 | 模板类型 | 说明 |
 |----------|------|
@@ -82,7 +82,7 @@ Python @NodeDef(style=NodeDisplay(...)) → C++ PY::toNodeStyle(obj) → DAPyNod
                                                                       → paintNodeStyleBody() 绘制
 ```
 
-Python 侧通过 `NodeDisplay` dataclass 声明样式属性（所有字段为 Optional，None 表示使用 C++ 默认值），C++ 侧通过 `PY::toNodeStyle()` 函数从 Python 对象属性读取样式字段并构造 `DAPyNodeStyle` 实例，应用到图元进行绘制。
+Python 侧通过 `NodeDisplay` dataclass 声明样式属性（所有字段为 Optional，None 表示使用 C++ 默认值），C++ 侧通过 `PY::toNodeStyle()` 函数从 Python 对象属性读取样式字段并构造 `DAPyNodeStyle` 实例，应用到图元。
 
 ## DAPyNodeStyle 字段表
 
@@ -128,7 +128,7 @@ Python 侧通过 `NodeDisplay` dataclass 声明样式属性（所有字段为 Op
 
 ## 枚举说明
 
-### BodyShape — 节点体形状
+### BodyShape：节点体形状
 
 ```cpp
 // 嵌套在 DAPyNodeStyle 类内部
@@ -141,7 +141,7 @@ enum BodyShape
 
 圆角矩形是默认形状，适用于大多数场景。椭圆形状适用于流程开始/结束节点或特殊标识节点。
 
-### NamePosition — 节点名称位置
+### NamePosition：节点名称位置
 
 ```cpp
 // 嵌套在 DAPyNodeStyle 类内部
@@ -154,7 +154,7 @@ enum NamePosition
 
 `NameInsideBody` 将名称绘制在节点主体内部。`NameBelowBody` 将名称绘制在节点主体下方，适合节点内需要更多空间或椭圆形状。
 
-### IconPosition — 图标位置
+### IconPosition：图标位置
 
 ```cpp
 // 嵌套在 DAPyNodeStyle 类内部
@@ -165,7 +165,7 @@ enum IconPosition
 };
 ```
 
-### PortShape — 端口形状
+### PortShape：端口形状
 
 ```cpp
 // 嵌套在 DAPyLinkPointStyle 类内部
@@ -179,7 +179,7 @@ enum PortShape
 
 矩形为默认形状，圆形端口常用于数据流节点，菱形端口可区分特殊数据类型。
 
-### PortSide — 端口方位
+### PortSide：端口方位
 
 ```cpp
 // PortSide 是 DAAspectDirection 的类型别名，定义在 DAGraphicsViewGlobal.h 中
@@ -196,7 +196,7 @@ using PortSide = DAAspectDirection;
 
 端口方位复用 `DAGraphicsViewGlobal.h` 中定义的 `DAAspectDirection` 枚举。默认输入端口在 `West`（左侧），输出端口在 `East`（右侧）。
 
-### BodyIconType — 节点体图标类型
+### BodyIconType：节点体图标类型
 
 ```cpp
 // 嵌套在 DAPyNodeStyle 类内部
@@ -210,7 +210,7 @@ enum BodyIconType
 
 `PixmapBodyIcon` 类型从 `bodyIconSource` 路径加载位图。`SvgBodyIcon` 类型使用 `QSvgRenderer` 渲染矢量图形，支持缩放不失真。
 
-### LinkPointLayoutStrategy — 连接点布局策略
+### LinkPointLayoutStrategy：连接点布局策略
 
 ```cpp
 // 嵌套在 DAPyNodeStyle 类内部
@@ -221,7 +221,7 @@ enum LinkPointLayoutStrategy
 };
 ```
 
-### NodeRenderTemplate — 渲染模板类型（简化版）
+### NodeRenderTemplate：渲染模板类型（简化版）
 
 ```cpp
 // 嵌套在 DAPyNodeStyle 类内部
@@ -572,7 +572,7 @@ class OldStyleNode:
     ...
 ```
 
-这些参数自动映射到 `RenderDefaultTemplate`，行为与 `style=NodeDisplay()` 一致。建议新代码统一使用 `NodeDisplay` 的显式字段进行精细控制。
+这些参数自动映射到 `RenderDefaultTemplate`，行为与 `style=NodeDisplay()` 一致。新代码建议统一用 `NodeDisplay` 的显式字段做精细控制。
 
 ### 椭圆体 + 名称位置
 
@@ -619,7 +619,7 @@ SVG 渲染使用 `QSvgRenderer`，支持标准 SVG 1.2 子集。
 
 ### 相关文档
 
-- [Python 节点开发指南](./workflow-python-node-dev.md) — 节点定义和使用
-- [工作流生命周期](./workflow-lifecycle.md) — 节点状态与执行
-- [场景操作指南](./workflow-scene-operation.md) — 可视化场景操作
-- [DAGraphicsView 模块](../../DAGraphicsView/) — 图形视图框架
+- [Python 节点开发指南](./workflow-python-node-dev.md)：节点定义和使用
+- [工作流生命周期](./workflow-lifecycle.md)：节点状态与执行
+- [场景操作指南](./workflow-scene-operation.md)：可视化场景操作
+- [DAGraphicsView 模块](../../DAGraphicsView/)：图形视图框架

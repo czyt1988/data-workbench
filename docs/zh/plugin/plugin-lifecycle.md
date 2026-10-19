@@ -1,26 +1,12 @@
 # 插件生命周期管理
 
-本文档详细说明插件从加载到卸载的完整生命周期，以及各阶段的钩子函数和最佳实践。
-
-## 主要功能特性
-
-**特性**
-
-- ✅ **生命周期阶段**：加载阶段、运行阶段、卸载阶段的完整流程
-- ✅ **加载阶段详解**：扫描插件目录、加载动态库、实例化对象、设置接口、调用初始化
-- ✅ **运行阶段详解**：事件监听、状态维护、节点执行、语言变更响应
-- ✅ **卸载阶段详解**：正常卸载、finalize() 钩子、资源释放清单
-- ✅ **生命周期钩子**：插件层、节点工厂层、节点层的各类钩子函数
-- ✅ **工作流节点生命周期**：节点创建流程、连接流程、执行流程
-- ✅ **最佳实践**：资源管理、异步操作、错误处理、状态持久化
+这篇文档覆盖插件从加载到卸载的完整生命周期，以及各阶段的钩子函数和最佳实践。
 
 ---
 
 ## 生命周期阶段概览
 
-下面的 mermaid 图表展示了插件从加载到卸载的三个主要阶段：
-
-图表展示了插件生命周期的三个阶段及其内部流程，绿色标注初始化完成，蓝色标注运行状态，红色标注卸载状态：
+下面的 mermaid 图表展示了插件从加载到卸载的三个主要阶段，绿色标注初始化完成，蓝色标注运行状态，红色标注卸载状态：
 
 ```mermaid
 graph TB
@@ -55,8 +41,6 @@ graph TB
     style B4 fill:#e1f5fe    # 蓝色：运行状态
     style C4 fill:#ffcdd2    # 红色：卸载完成
 ```
-
-插件生命周期分为加载、运行、卸载三个阶段，每个阶段有特定的流程和钩子函数。
 
 ---
 
@@ -113,8 +97,9 @@ if (!plugin) {
 
 ### 4. 设置核心接口
 
-!!! important "关键步骤"
-    在调用 `initialize()` 之前，必须设置核心接口，否则插件无法访问主程序功能。
+> **❗ 关键步骤**
+>
+> 在调用 `initialize()` 之前，必须设置核心接口，否则插件无法访问主程序功能。
 
 ```cpp
 // DAAbstractPlugin 内部实现
@@ -338,7 +323,7 @@ public:
 | **Ribbon action** | 先从 panel 移除按钮，再 `DAActionsInterface::removeAction(act)` | action 的 parent 是宿主接口对象，**不会**随插件库卸载销毁，必须显式移除（参考 `DataAnalysisUI::finalize()`） |
 | **agent 工具** | 宿主自动注销（按 provider） | 工具必须以插件对象为 parent；卸载前宿主调用 `DAAgentInterface::unregisterToolsByProvider(plugin)` |
 | **agent 系统提示词** | 宿主自动注销（按 provider） | 注册时传 provider：`registerSystemPrompt(name, content, this)` |
-| **内存缓冲** | 直接释放或智能指针 | 使用 `QSharedPointer` 更安全 |
+| **内存缓冲** | 直接释放或智能指针 | 用 `QSharedPointer` 更安全 |
 | **文件句柄** | 关闭文件 | 先确保数据已保存 |
 | **网络连接** | 断开连接 | 处理未完成的请求 |
 | **线程** | 停止并等待结束 | 使用 `quit()` + `wait()` |
@@ -385,16 +370,17 @@ DAAppPluginManager::disablePlugin(baseName)
  └─ emit nodeMetaDatasChanged()
 ```
 
-!!! warning "宿主注销必须先于插件实例销毁"
-    `QPluginLoader::unload()` 会销毁插件实例及其全部 QObject 子对象（含 agent 工具）。
-    宿主注册表（如 `DAAgentModule::mTools`）若仍持有这些指针将成为悬空指针，因此
-    `disablePlugin` 在调用 `unloadPlugin` **之前**按 provider 注销 agent 工具与系统提示词。
-    这一顺序由 APP 层编排保证，不依赖插件自觉。
+> **⚠️ 宿主注销必须先于插件实例销毁**
+>
+> `QPluginLoader::unload()` 会销毁插件实例及其全部 QObject 子对象（含 agent 工具）。
+> 宿主注册表（如 `DAAgentModule::mTools`）若仍持有这些指针将成为悬空指针，因此
+> `disablePlugin` 在调用 `unloadPlugin` **之前**按 provider 注销 agent 工具与系统提示词。
+> 这一顺序由 APP 层编排保证，不依赖插件自觉。
 
 ### 降级停用状态
 
 Windows 下若插件库仍被其他模块引用，`QPluginLoader::unload()` 释放库会失败。此时插件实例已被销毁、
-`finalize()` 已执行、宿主注册表已清理，功能上完全停用，仅 DLL 驻留内存——管理界面状态显示
+`finalize()` 已执行、宿主注册表已清理，功能上完全停用，仅 DLL 驻留内存；管理界面状态显示
 「已停用（重启后释放库）」，重启后完全释放。降级停用同样会写入 `.pluginignore`，下次启动不再加载。
 
 ### finalize() 热卸载契约
@@ -406,7 +392,7 @@ Windows 下若插件库仍被其他模块引用，`QPluginLoader::unload()` 释�
 2. agent 工具必须以插件对象为 parent（`new MyTool(core, this)`），系统提示词注册时传 provider
    （`registerSystemPrompt(name, content, this)`），宿主据此按 provider 自动注销
 3. 未实现 `finalize()` 清理的插件被热卸载后不会崩溃（action parent 在宿主、信号连接随实例销毁自动断开），
-   但 ribbon 上会残留失效按钮——外部插件应尽快补齐清理逻辑
+   但 ribbon 上会残留失效按钮，外部插件应尽快补齐清理逻辑
 4. `registerBuiltinAgent` 写入 `<exe>/daAgent/` 的提示词文件**保留不删**（属提示词库资产，用户可能已编辑）
 
 ### 相关 API
@@ -438,8 +424,9 @@ Windows 下若插件库仍被其他模块引用，`QPluginLoader::unload()` 释�
 
 ### 节点工厂层钩子（旧 C++ 架构，仅参考）
 
-!!! warning "遗留架构 —— 当前推荐 Python-first `@NodeDef`"
-    下面 `nodeAddedToWorkflow()` / `nodeStartRemove()` 等**钩子属于已废弃的 C++ `DAAbstractNodeFactory` 架构**，当前 `DAPyNodeFactory`（`src/DAPyWorkFlow/DAPyNodeFactory.h`）不再暴露这些虚函数。当前工作流节点统一用 Python `@NodeDef` 装饰器声明，节点加入/移除工作流的生命周期由 C++ 渲染代理层（`DAPyNodeGraphicsItem`）和 Python 基类 `DAWorkflowNode` 管理，参考 `plugins/DASystemNodes/AGENTS.md`。本节仅作历史背景保留。
+> **⚠️ 遗留架构：当前推荐 Python-first `@NodeDef`**
+>
+> 下面 `nodeAddedToWorkflow()` / `nodeStartRemove()` 等**钩子属于已废弃的 C++ `DAAbstractNodeFactory` 架构**，当前 `DAPyNodeFactory`（`src/DAPyWorkFlow/DAPyNodeFactory.h`）不再暴露这些虚函数。当前工作流节点统一用 Python `@NodeDef` 装饰器声明，节点加入/移除工作流的生命周期由 C++ 渲染代理层（`DAPyNodeGraphicsItem`）和 Python 基类 `DAWorkflowNode` 管理，参考 `plugins/DASystemNodes/AGENTS.md`。本节仅作历史背景保留。
 
 | 钩子函数 | 调用时机 | 用途 |
 |----------|----------|------|
@@ -474,8 +461,9 @@ public:
 
 ### 节点层钩子（旧 C++ 架构，仅参考）
 
-!!! warning "遗留架构 —— 当前推荐 Python-first `@NodeDef`"
-    下面 `prepareLinkOutput()` / `prepareLinkInput()` / `finishLink()` 等**钩子属于已废弃的 C++ `DAAbstractNode` 架构**。当前工作流节点用 Python `@NodeDef` 声明，连接点（Input/Output）由 `Input` / `Output` 描述符静态声明，运行时由 C++ 渲染代理层处理连接生命周期，无需重写这些虚函数。参考 `plugins/DASystemNodes/AGENTS.md`。本节仅作历史背景保留。
+> **⚠️ 遗留架构：当前推荐 Python-first `@NodeDef`**
+>
+> 下面 `prepareLinkOutput()` / `prepareLinkInput()` / `finishLink()` 等**钩子属于已废弃的 C++ `DAAbstractNode` 架构**。当前工作流节点用 Python `@NodeDef` 声明，连接点（Input/Output）由 `Input` / `Output` 描述符静态声明，运行时由 C++ 渲染代理层处理连接生命周期，无需重写这些虚函数。参考 `plugins/DASystemNodes/AGENTS.md`。本节仅作历史背景保留。
 
 | 钩子函数 | 调用时机 | 用途 |
 |----------|----------|------|
@@ -556,8 +544,9 @@ bool MyWorker::exec()
 
 ### 1. 资源管理
 
-!!! tip "推荐使用智能指针"
-    使用 `QSharedPointer` 或 `std::shared_ptr` 管理动态分配的资源。
+> **💡 推荐使用智能指针**
+>
+> 使用 `QSharedPointer` 或 `std::shared_ptr` 管理动态分配的资源。
 
 ```cpp
 class MyPlugin : public DA::DAAbstractNodePlugin
@@ -634,8 +623,8 @@ void MyPlugin::finalize()  // cn:旧 aboutToUnload 的替代
 
 ## 下一步
 
-- [:material-database: 数据持久化](./plugin-persistence.md) - 详细数据存储方案
-- [:material-puzzle: 功能扩展](./plugin-extension.md) - 界面和功能扩展
-- [:material-book: 最佳实践](../reference/best-practices.md) - 更多开发建议
+- [🗄️ 数据持久化](./plugin-persistence.md) - 详细数据存储方案
+- [🧩 功能扩展](./plugin-extension.md) - 界面和功能扩展
+- [📖 最佳实践](../reference/best-practices.md) - 更多开发建议
 
 > 详见 [日志系统文档](../dev-guide/general/logging.md)。

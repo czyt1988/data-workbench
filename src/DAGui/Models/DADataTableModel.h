@@ -9,6 +9,7 @@ class QUndoStack;
 namespace DA
 {
 class DATableStyleManager;
+class DATableComputedColumnStore;
 /**
  * @brief 针对DAData的model
  *
@@ -40,18 +41,23 @@ public:
     DAData getData() const;
     // 设置样式管理器（用于列显示格式查询，非拥有）
     void setStyleManager(DATableStyleManager* mgr);
+    // 设置计算列子存储（表头浅蓝底色 + 公式 tooltip 查询，非拥有，004 T1.23）
+    void setComputedColumnStore(DATableComputedColumnStore* store);
     // 设置使用缓存模式，缓存模式不会频繁调用dataframe，在setdataframe时把常用的参数缓存
     void setUseCacheMode(bool on = true);
     // 设置滑动窗模式的起始行
     virtual void setCacheWindowStartRow(int startRow) override;
     // 刷新
     void refreshData();
+    // 表头数据变更通知入口：发 headerDataChanged（供 renameColumns 等命令调用，
+    // 替代命令直接持有 QHeaderView* 调其槽的旧写法，解除表头替换的外部耦合）
+    void notifyHeaderDataChanged(Qt::Orientation orientation, int first, int last);
     // cell级变更通知：先失效块缓存再走基类通知（基类此二函数不调cacheShape）
     void notifyDataChanged(int row, int col) override;
     void notifyDataChanged(int rowStart, int colStart, int rowEnd, int colEnd) override;
     // 超出模型实际数据行数的额外空行数量
     void setExtraRowCount(int v);
-    int getExtraRowCount() const;
+    int getExtraRowCount() const override;
     // 超出模型实际数据列数的额外空列数量
     void setExtraColumnCount(int v);
     int getExtraColumnCount() const;
@@ -64,6 +70,12 @@ public:
     // 块级取数每次获取的行数（仅DATableDataSource数据生效，默认512）
     void setBlockFetchRowCount(int n);
     int getBlockFetchRowCount() const;
+
+Q_SIGNALS:
+    // 单元格值经编辑命令实际改变（exec/undo 都发，参数为数据源绝对行列）。
+    // 与 dataChanged 区分：滑动窗滚动/样式刷新也会发 dataChanged（整窗范围），
+    // 本信号只在「值变更」时发——003 条件格式列统计失效的精确挂点
+    void cellValueChanged(int actualRow, int actualColumn);
 
 protected:
     // 缓存

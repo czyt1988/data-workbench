@@ -28,6 +28,7 @@
         <file>icon/setting-log.svg</file>
         <file>icon/setting-advanced.svg</file>
         <file>icon/setting-agent.svg</file>
+        <file>icon/setting-shortcuts.svg</file>
         <file>icon/picture.svg</file>
         <file>icon/chart.svg</file>
         <file>icon/data-table.svg</file>
@@ -38,6 +39,28 @@
         <file>icon/cut.svg</file>
         <file>icon/paste.svg</file>
         <file>icon/delete.svg</file>
+        <file>icon/find.svg</file>
+        <file>icon/replace.svg</file>
+        <file>icon/sort-ascending.svg</file>
+        <file>icon/sort-descending.svg</file>
+        <file>icon/conditional-format.svg</file>
+        <file>icon/computed-column.svg</file>
+        <file>icon/split-column.svg</file>
+        <file>icon/merge-columns.svg</file>
+        <file>icon/group-by.svg</file>
+        <file>icon/transpose.svg</file>
+        <file>icon/melt.svg</file>
+        <file>icon/fill.svg</file>
+        <file>icon/fill-down.svg</file>
+        <file>icon/fill-up.svg</file>
+        <file>icon/fill-forward.svg</file>
+        <file>icon/fill-backward.svg</file>
+        <file>icon/fill-series.svg</file>
+        <file>icon/validation.svg</file>
+        <file>icon/validation-run.svg</file>
+        <file>icon/cell-note.svg</file>
+        <file>icon/note-clear.svg</file>
+        <file>icon/undo-history.svg</file>
         <file>icon/zoomIn.svg</file>
         <file>icon/zoomOut.svg</file>
         <file>icon/select-all.svg</file>
@@ -70,6 +93,11 @@
         <file>icon/show-all-columns.svg</file>
         <file>icon/delete-column.svg</file>
         <file>icon/delete-all-columns.svg</file>
+        <file>icon/gotoMax.svg</file>
+        <file>icon/gotoMin.svg</file>
+        <file>icon/freeze-column.svg</file>
+        <file>icon/column-view.svg</file>
+        <file>icon/goto-cell.svg</file>
     </qresource>
     <qresource prefix="/DAGui/MessageType">
         <file>icon/messageType/messageTypeDebug.svg</file>

@@ -25,6 +25,8 @@ public:
 	QLabel* m_progressTextLabel;  ///< 进度文本组件
 	// 布局
 	QHBoxLayout* m_layout;
+	// 额外永久部件（007 状态栏统计；本类不持有不删除）
+	QWidget* m_extraPermanentWidget { nullptr };
 
 	// 动画效果
 	QPropertyAnimation* m_fadeAnimation;
@@ -349,6 +351,36 @@ void DA::DAStatusBarWidget::setSwitchButtonVisible(DA::DAWorkbenchFeatureType ty
 	default:
 		break;
 	}
+}
+
+/**
+ * @brief 设置额外永久部件（007：状态栏统计部件挂载点）
+ *
+ * 部件由调用方持有，本类不 delete；加在 stretch 之后 = 贴状态栏最右。
+ * @param w 部件（nullptr 只摘除）
+ */
+void DAStatusBarWidget::setExtraPermanentWidget(QWidget* w)
+{
+	if (d_ptr->m_extraPermanentWidget == w) {
+		return;
+	}
+	if (d_ptr->m_extraPermanentWidget) {
+		d_ptr->m_layout->removeWidget(d_ptr->m_extraPermanentWidget);
+		d_ptr->m_extraPermanentWidget->setParent(nullptr);
+	}
+	d_ptr->m_extraPermanentWidget = w;
+	if (w) {
+		d_ptr->m_layout->addWidget(w);
+	}
+}
+
+/**
+ * @brief 当前挂载的额外永久部件
+ * @return 部件指针（未挂载为 nullptr）
+ */
+QWidget* DAStatusBarWidget::extraPermanentWidget() const
+{
+	return d_ptr->m_extraPermanentWidget;
 }
 
 bool DA::DAStatusBarWidget::isSwitchButtonVisible(DA::DAWorkbenchFeatureType type) const

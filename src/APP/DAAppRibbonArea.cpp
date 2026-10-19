@@ -149,6 +149,30 @@ void DAAppRibbonArea::buildMenu()
     mMenuInsertColumn = new SARibbonMenu(mApp);
     mMenuInsertColumn->setObjectName(QString::fromUtf8(UiNames::Menu::InsertColumn));
     mMenuInsertColumn->addAction(mActions->actionInsertColumnLeft);
+    // 填充下拉子菜单（005 T1.24）：向下/向上/ffill/bfill/序列，挂在 actionFill 下
+    mMenuFill = new SARibbonMenu(mApp);
+    mMenuFill->setObjectName(QString::fromUtf8(UiNames::Menu::Fill));
+    mMenuFill->addAction(mActions->actionFillDown);
+    mMenuFill->addAction(mActions->actionFillUp);
+    mMenuFill->addAction(mActions->actionFillForward);
+    mMenuFill->addAction(mActions->actionFillBackward);
+    mMenuFill->addSeparator();
+    mMenuFill->addAction(mActions->actionFillSeries);
+    // 批注下拉子菜单（005 T1.26）：插入/编辑/删除/清除本表批注，挂在 actionNote 下
+    mMenuNote = new SARibbonMenu(mApp);
+    mMenuNote->setObjectName(QString::fromUtf8(UiNames::Menu::Note));
+    mMenuNote->addAction(mActions->actionInsertNote);
+    mMenuNote->addAction(mActions->actionEditNote);
+    mMenuNote->addAction(mActions->actionDeleteNote);
+    mMenuNote->addSeparator();
+    mMenuNote->addAction(mActions->actionClearNotes);
+    // 冻结列下拉子菜单（006 T1.8）：冻结首列 / 冻结前 N 列… / 取消冻结，挂在 actionFreezeColumns 下
+    mMenuFreezeColumns = new SARibbonMenu(mApp);
+    mMenuFreezeColumns->setObjectName(QString::fromUtf8(UiNames::Menu::FreezeColumns));
+    mMenuFreezeColumns->addAction(mActions->actionFreezeFirstColumn);
+    mMenuFreezeColumns->addAction(mActions->actionFreezeColumnsPrompt);
+    mMenuFreezeColumns->addSeparator();
+    mMenuFreezeColumns->addAction(mActions->actionUnfreezeColumns);
     //
     mExportWorkflowSceneToImageMenu = new SARibbonMenu(mApp);
     mExportWorkflowSceneToImageMenu->setObjectName(QString::fromUtf8(UiNames::Menu::ExportWorkflowSceneToImage));
@@ -217,6 +241,7 @@ void DAAppRibbonArea::resetText()
     mPannelDataframeStyleFill->setPanelName(tr("Fill"));          // cn:底色
     mPannelDataframeStyleFont->setPanelName(tr("Font"));          // cn:字体
     mPannelDataframeStyleClear->setPanelName(tr("Clear"));        // cn:清除
+    mPannelDataframeStyleConditional->setPanelName(tr("Conditional"));  // cn:条件格式
     mComboxColumnTypesContainer->setPrefix(tr("Type"));           // cn:类型
     mComboxDisplayFormatContainer->setPrefix(tr("Format"));       // cn:格式
 
@@ -393,6 +418,7 @@ void DAAppRibbonArea::buildRibbonViewCategory()
     mPannelViewMainView->addMediumAction(mActions->actionShowDataManagerArea);
     mPannelViewMainView->addSeparator();
     mPannelViewMainView->addSmallAction(mActions->actionShowMessageLogView);
+    mPannelViewMainView->addSmallAction(mActions->actionShowUndoHistory);  // 005 T1.21 撤销历史面板（点击即 raise）
     mPannelViewMainView->addSmallAction(mActions->actionShowSettingWidget);
     mPannelViewMainView->addSeparator();
     mPannelViewMainView->addMediumAction(mActions->actionShowLeftSideBar);
@@ -491,6 +517,45 @@ void DAAppRibbonArea::buildContextCategoryDataFrame()
     mPannelDataframeOperateFormat->addWidget(mComboxDisplayFormatContainer, SARibbonPanelItem::Medium);
     mPannelDataframeOperateFormat->addMediumAction(mActions->actionTableFormatCells);
 
+    // Edit pannel - 编辑（002 T1.4：查找/替换；005 T1.24：填充下拉，D6）
+    mPannelDataframeOperateEdit = mCategoryDataframeOperate->addPanel(tr("Edit"));  // cn:编辑
+    mPannelDataframeOperateEdit->setObjectName(QString::fromUtf8(UiNames::Ribbon::DataFrameOperateEditPanel));
+    mPannelDataframeOperateEdit->addLargeAction(mActions->actionFind);
+    mPannelDataframeOperateEdit->addLargeAction(mActions->actionReplace);
+    // 填充（005 T1.24）：按钮点击=向下填充（与 Ctrl+D 同），下拉含全部五种填充
+    mActions->actionFill->setMenu(mMenuFill);
+    mPannelDataframeOperateEdit->addLargeAction(mActions->actionFill, QToolButton::MenuButtonPopup);
+    // 批注（005 T1.26）：按钮点击=插入/编辑当前格批注，下拉含全部四项
+    mActions->actionNote->setMenu(mMenuNote);
+    mPannelDataframeOperateEdit->addLargeAction(mActions->actionNote, QToolButton::MenuButtonPopup);
+
+    // Data Tools pannel - 数据工具（004：计算列/分列/合列/分组/转置/melt，D6）
+    mPannelDataframeOperateDataTools = mCategoryDataframeOperate->addPanel(tr("Data Tools"));  // cn:数据工具
+    mPannelDataframeOperateDataTools->setObjectName(QString::fromUtf8(UiNames::Ribbon::DataFrameOperateDataToolsPanel));
+    mPannelDataframeOperateDataTools->addLargeAction(mActions->actionComputedColumn);
+    mPannelDataframeOperateDataTools->addMediumAction(mActions->actionRecomputeAllComputedColumns);
+    mPannelDataframeOperateDataTools->addLargeAction(mActions->actionSplitColumn);
+    mPannelDataframeOperateDataTools->addLargeAction(mActions->actionMergeColumns);
+    mPannelDataframeOperateDataTools->addLargeAction(mActions->actionGroupBy);
+    mPannelDataframeOperateDataTools->addMediumAction(mActions->actionTranspose);
+    mPannelDataframeOperateDataTools->addMediumAction(mActions->actionMelt);
+    // 数据校验（005 T1.25）：规则管理 + 一键校验（只读，不入撤销栈）
+    mPannelDataframeOperateDataTools->addSeparator();
+    mPannelDataframeOperateDataTools->addLargeAction(mActions->actionValidationRules);
+    mPannelDataframeOperateDataTools->addMediumAction(mActions->actionRunValidation);
+
+    // View pannel - 视图（006 T1.8：冻结列/隐藏列/显示所有列/列视图）
+    // setMenu 必须在 addLargeAction 之前（mMenuInsertRow 同款顺序）
+    mActions->actionFreezeColumns->setMenu(mMenuFreezeColumns);
+    mPannelDataframeOperateView = mCategoryDataframeOperate->addPanel(tr("View"));  // cn:视图
+    mPannelDataframeOperateView->setObjectName(QString::fromUtf8(UiNames::Ribbon::DataFrameOperateViewPanel));
+    mPannelDataframeOperateView->addLargeAction(mActions->actionFreezeColumns, QToolButton::MenuButtonPopup);
+    mPannelDataframeOperateView->addLargeAction(mActions->actionHideColumn);
+    mPannelDataframeOperateView->addLargeAction(mActions->actionShowAllColumns);
+    mPannelDataframeOperateView->addLargeAction(mActions->actionColumnViewDialog);
+    // 定位（007 T1.7；快捷键在 DADataTableView，action 不设 shortcut 红线5）
+    mPannelDataframeOperateView->addMediumAction(mActions->actionGotoCell);
+
     // ===== 表格样式 category =====
     mCategoryDataframeStyle = mContextDataFrame->addCategoryPage(tr("Table Style"));  // cn:表格样式
     mCategoryDataframeStyle->setObjectName(QString::fromUtf8(UiNames::Ribbon::DataFrameStyleCategory));
@@ -514,6 +579,12 @@ void DAAppRibbonArea::buildContextCategoryDataFrame()
     mPannelDataframeStyleClear->setObjectName(QString::fromUtf8(UiNames::Ribbon::DataFrameStyleClearPanel));
     mPannelDataframeStyleClear->addLargeAction(mActions->actionClearStyleSelected);
     mPannelDataframeStyleClear->addLargeAction(mActions->actionClearStyleAll);
+
+    // Conditional panel - 条件格式（003 T1.5，R16：Ribbon Table Style 面板为主入口，
+    // 与表体右键菜单「条件格式...」共用页面 showConditionalFormatDialog）
+    mPannelDataframeStyleConditional = mCategoryDataframeStyle->addPanel(tr("Conditional"));  // cn:条件格式
+    mPannelDataframeStyleConditional->setObjectName(QString::fromUtf8(UiNames::Ribbon::DataFrameStyleConditionalPanel));
+    mPannelDataframeStyleConditional->addLargeAction(mActions->actionConditionalFormat);
 }
 
 /**
@@ -862,10 +933,12 @@ void DAAppRibbonArea::buildRedoUndo()
     mActions->actionRedo->setObjectName(QString::fromUtf8(UiNames::Action::Redo));
     mActions->actionRedo->setIcon(QIcon(":/app/bright/Icon/redo.svg"));
     mActions->actionRedo->setShortcut(QKeySequence::Redo);
+    mActions->recordAction(mActions->actionRedo);
     mActions->actionUndo = undoGroup.createUndoAction(this);
     mActions->actionUndo->setObjectName(QString::fromUtf8(UiNames::Action::Undo));
     mActions->actionUndo->setIcon(QIcon(":/app/bright/Icon/undo.svg"));
     mActions->actionUndo->setShortcut(QKeySequence::Undo);
+    mActions->recordAction(mActions->actionUndo);
     SARibbonQuickAccessBar* bar = ribbonBar()->quickAccessBar();
     if (!bar) {
         return;

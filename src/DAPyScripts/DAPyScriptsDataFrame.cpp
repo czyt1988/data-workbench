@@ -674,33 +674,316 @@ bool DAPyScriptsDataFrame::queryDatas(DAPyDataFrame& df, const QString& expr) no
     return false;
 }
 
-/**
- * @brief search方法的wrapper
- * @param df
- * @param value 要搜索的值（字符串形式，内部会转为数值进行匹配）
- * @return
- */
-QList< QPair< int, int > > DAPyScriptsDataFrame::searchData(const DAPyDataFrame& df, const QString& value) noexcept
+namespace
 {
-    QList< QPair< int, int > > matches;
+/**
+ * @brief python 整型数组（numpy int32/int64 或 list）→ QVector<int>（缓冲整体拷贝，避免逐元素 cast）
+ */
+QVector< int > pyIntSequenceToVector(const pybind11::object& obj)
+{
+    QVector< int > res;
+    if (obj.is_none()) {
+        return res;
+    }
+    pybind11::array_t< int, pybind11::array::c_style | pybind11::array::forcecast > arr(obj);
+    const auto buf = arr.request();
+    const int* ptr = static_cast< const int* >(buf.ptr);
+    const int n    = static_cast< int >(buf.size);
+    res.reserve(n);
+    for (int i = 0; i < n; ++i) {
+        res.append(ptr[ i ]);
+    }
+    return res;
+}
+
+/**
+ * @brief 行/列范围闭区间 → python tuple（nullopt → None）
+ */
+pybind11::object rangeToPyTuple(const std::optional< QPair< int, int > >& range)
+{
+    if (!range) {
+        return pybind11::none();
+    }
+    return pybind11::make_tuple(range->first, range->second);
+}
+}
+
+/**
+ * @brief search方法的wrapper（扩展选项，§4.2）
+ *
+ * 对应 da_dataframe.da_search_data：大小写/正则/整格匹配 + 行/列范围闭区间；
+ * 命中上限 maxHits 截断（硬约束③），totalHits 返回真实命中总数；
+ * 无效正则等 Python 抛错时 ok=false（经 dealException 记录）。
+ * @param df 目标数据
+ * @param value 关键字（空串直接返回空结果）
+ * @param caseSensitive 区分大小写
+ * @param useRegex 正则（只作用文本类列）
+ * @param wholeCell 整格匹配
+ * @param rowRange 行范围闭区间（nullopt=全表）
+ * @param colRange 列范围闭区间（nullopt=全表）
+ * @param maxHits 命中上限（默认 10 万）
+ * @return 紧凑命中数组 + 真实总数
+ */
+DAPyScriptsDataFrame::SearchDataResult DAPyScriptsDataFrame::searchData(const DAPyDataFrame& df,
+                                                                        const QString& value,
+                                                                        bool caseSensitive,
+                                                                        bool useRegex,
+                                                                        bool wholeCell,
+                                                                        const std::optional< QPair< int, int > >& rowRange,
+                                                                        const std::optional< QPair< int, int > >& colRange,
+                                                                        int maxHits) noexcept
+{
+    SearchDataResult res;
     try {
         if (value.isEmpty()) {
-            return matches;
+            res.ok = true;
+            return res;
         }
         pybind11::object da_search_data = attr("da_search_data");
-        pybind11::object result         = da_search_data(df.object(), value.toDouble());
-
-        for (auto item : result) {
-            pybind11::tuple pos = item.cast< pybind11::tuple >();
-            matches.append(qMakePair(pos[ 0 ].cast< int >(),  // 行
-                                     pos[ 1 ].cast< int >()   // 列
-                                     ));
-        }
-        return matches;
+        pybind11::dict args;
+        args[ "case_sensitive" ] = caseSensitive;
+        args[ "use_regex" ]      = useRegex;
+        args[ "whole_cell" ]     = wholeCell;
+        args[ "row_range" ]      = rangeToPyTuple(rowRange);
+        args[ "col_range" ]      = rangeToPyTuple(colRange);
+        args[ "max_hits" ]       = maxHits;
+        pybind11::object result  = da_search_data(df.object(), DA::PY::toPyObject(value), pybind11::none(), pybind11::none(), **args);
+        pybind11::tuple t        = result.cast< pybind11::tuple >();
+        res.rows                 = pyIntSequenceToVector(t[ 0 ]);
+        res.cols                 = pyIntSequenceToVector(t[ 1 ]);
+        res.totalHits            = t[ 2 ].cast< int >();
+        res.ok                   = true;
+        return res;
     } catch (const std::exception& e) {
         dealException(e);
     }
-    return matches;
+    return res;
+}
+
+/**
+ * @brief 查找替换的wrapper（对应 da_find_and_replace）
+ *
+ * 按与 searchData 同一匹配语义就地替换，变更清单输出到出参（D4 值记录撤销）；
+ * old/new 值为 Python list（元素为原生标量），供 da_write_cells 撤销/重做写回。
+ * 出参可为空指针（超阈值降级路径只要替换结果、不要清单）。
+ * @return 成功返回true；正则无效等抛错返回false（经dealException记录）
+ */
+bool DAPyScriptsDataFrame::findReplace(DAPyDataFrame& df,
+                                       const QString& find,
+                                       const QString& replace,
+                                       bool caseSensitive,
+                                       bool useRegex,
+                                       bool wholeCell,
+                                       const std::optional< QPair< int, int > >& rowRange,
+                                       const std::optional< QPair< int, int > >& colRange,
+                                       QVector< int >* rows,
+                                       QVector< int >* cols,
+                                       pybind11::list* oldValues,
+                                       pybind11::list* newValues) noexcept
+{
+    if (find.isEmpty()) {
+        return false;
+    }
+    try {
+        pybind11::object da_find_and_replace = attr("da_find_and_replace");
+        pybind11::dict args;
+        args[ "case_sensitive" ] = caseSensitive;
+        args[ "use_regex" ]      = useRegex;
+        args[ "whole_cell" ]     = wholeCell;
+        args[ "row_range" ]      = rangeToPyTuple(rowRange);
+        args[ "col_range" ]      = rangeToPyTuple(colRange);
+        pybind11::object result  = da_find_and_replace(df.object(), DA::PY::toPyObject(find), DA::PY::toPyObject(replace), **args);
+        pybind11::tuple t        = result.cast< pybind11::tuple >();
+        if (rows) {
+            *rows = pyIntSequenceToVector(t[ 0 ]);
+        }
+        if (cols) {
+            *cols = pyIntSequenceToVector(t[ 1 ]);
+        }
+        if (oldValues) {
+            *oldValues = t[ 2 ].cast< pybind11::list >();
+        }
+        if (newValues) {
+            *newValues = t[ 3 ].cast< pybind11::list >();
+        }
+        return true;
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return false;
+}
+
+/**
+ * @brief 按变更清单批量写回单元格值的wrapper（对应 da_write_cells）
+ * @param df 数据（就地修改）
+ * @param rows 行位置
+ * @param cols 列位置
+ * @param values 值（Python list，与 rows/cols 一一对应）
+ * @return 成功返回true
+ */
+bool DAPyScriptsDataFrame::writeCells(DAPyDataFrame& df, const QVector< int >& rows, const QVector< int >& cols, const pybind11::list& values) noexcept
+{
+    if (rows.isEmpty()) {
+        return true;
+    }
+    try {
+        pybind11::object da_write_cells = attr("da_write_cells");
+        da_write_cells(df.object(), DA::PY::toPyObject(rows), DA::PY::toPyObject(cols), values);
+        return true;
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return false;
+}
+
+/**
+ * @brief 选区填充求值 wrapper（对应 da_dataframe.da_fill_selection）
+ *
+ * 第 col 列行区间 [rowStart,rowEnd]（闭区间，绝对行位置）按 mode 计算填充后**变化**的
+ * 单元格，不改数据。空值判定（NaN/NaT/None）由 pandas 完成（设计稿 §4.8 硬要求）；
+ * 返回的行位置与值一一对应，C++ 侧组织成一条 DACommandDataFrame_paste（值记录，D4）。
+ * 区间不足两行或无变化时返回空清单且 ok=true。
+ * @param df 数据（不修改）
+ * @param col 列位置索引
+ * @param rowStart 起始行（含，绝对位置）
+ * @param rowEnd 结束行（含，绝对位置）
+ * @param mode "down"/"up"/"ffill"/"bfill"
+ * @return 填充求值结果
+ */
+DAPyScriptsDataFrame::FillSelectionResult DAPyScriptsDataFrame::fillSelection(const DAPyDataFrame& df, int col, int rowStart, int rowEnd, const QString& mode) noexcept
+{
+    FillSelectionResult res;
+    try {
+        pybind11::object da_fill_selection = attr("da_fill_selection");
+        pybind11::object result            = da_fill_selection(df.object(), col, rowStart, rowEnd, DA::PY::toPyObject(mode));
+        pybind11::tuple t                  = result.cast< pybind11::tuple >();
+        res.rows                           = pyIntSequenceToVector(t[ 0 ]);
+        // values 为 Python list，经 QVariant caster 逐元素转换（datetime 落 QDateTime）
+        res.values                         = t[ 1 ].cast< QVariantList >();
+        res.ok                             = true;
+        return res;
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return res;
+}
+
+/**
+ * @brief 序列填充生成 wrapper（对应 da_dataframe.da_fill_series）
+ *
+ * 生成一个长度为 count 的序列（数值等差 / 日期步进），预览与实际写入共用。
+ * start/step/stop 传空串 → Python 用默认值（linear: 0/1，date: 今天/1）；日期步进用
+ * dateUnit ∈ {"D","W","M","Y"}。返回的值序列经 QVariant caster 转换（date 落 QDateTime）。
+ * @param count 需要生成的值个数（<=0 返回空列表且 *ok=true）
+ * @param kind "linear"/"date"
+ * @param start 起始值（空串=默认）
+ * @param step 步长（空串=默认）
+ * @param stop 终止值（仅 linear，空串=不限）
+ * @param dateUnit 日期单位（仅 date）
+ * @param ok 出参：参数解析失败（如 start 无法解析为日期）置 false
+ * @return 值序列
+ */
+QVariantList DAPyScriptsDataFrame::fillSeries(int count,
+                                              const QString& kind,
+                                              const QString& start,
+                                              const QString& step,
+                                              const QString& stop,
+                                              const QString& dateUnit,
+                                              bool* ok) noexcept
+{
+    if (ok) {
+        *ok = false;
+    }
+    QVariantList res;
+    if (count <= 0) {
+        if (ok) {
+            *ok = true;
+        }
+        return res;
+    }
+    try {
+        pybind11::object da_fill_series = attr("da_fill_series");
+        // 空串 → Python None（用算子默认值）
+        auto argOrNone                  = [](const QString& s) -> pybind11::object {
+            return s.isEmpty() ? pybind11::none() : DA::PY::toPyObject(s);
+        };
+        pybind11::object result         = da_fill_series(count,
+                                                 DA::PY::toPyObject(kind),
+                                                 argOrNone(start),
+                                                 argOrNone(step),
+                                                 argOrNone(stop),
+                                                 DA::PY::toPyObject(dateUnit));
+        res                             = result.cast< QVariantList >();
+        if (ok) {
+            *ok = true;
+        }
+        return res;
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return res;
+}
+
+/**
+ * @brief 一键校验求值 wrapper（对应 da_dataframe.da_validate_dataframe）
+ *
+ * 把规则规格打包成 Python dict 列表下发，逐规则拿回违规行清单（绝对行位置，升序）。
+ * 只读操作（红线2：不改 df、调用方不入撤销栈）；空值判定/比较由 pandas 完成。
+ * 列不存在的规则返回空清单（不报错）；正则非法等 Python 抛错返回 false 并输出诊断。
+ * @param df 数据（不修改）
+ * @param specs 规则规格列表
+ * @param results 非空时输出逐规则结果（与 specs 等长，index 对齐）
+ * @param errorMessage 非空时输出失败诊断（英文异常信息）
+ * @return 全部求值成功返回 true
+ */
+bool DAPyScriptsDataFrame::validateDataFrame(const DAPyDataFrame& df,
+                                             const QList< ValidationRuleSpec >& specs,
+                                             QList< ValidationRuleResult >* results,
+                                             QString* errorMessage) noexcept
+{
+    if (results) {
+        results->clear();
+    }
+    if (df.isNone() || specs.isEmpty()) {
+        return true;  // 无规则 = 无违规，视为成功
+    }
+    try {
+        pybind11::list pyRules;
+        for (const ValidationRuleSpec& s : specs) {
+            pybind11::dict d;
+            d[ "index" ]      = s.index;
+            d[ "column" ]     = DA::PY::toPyObject(s.column);
+            d[ "occurrence" ] = s.occurrence;
+            d[ "type" ]       = DA::PY::toPyObject(s.type);
+            d[ "numeric_min" ] = s.numericMin;
+            d[ "numeric_max" ] = s.numericMax;
+            d[ "has_min" ]     = s.hasMin;
+            d[ "has_max" ]     = s.hasMax;
+            d[ "date_min" ]    = s.dateMin.isEmpty() ? pybind11::none() : DA::PY::toPyObject(s.dateMin);
+            d[ "date_max" ]    = s.dateMax.isEmpty() ? pybind11::none() : DA::PY::toPyObject(s.dateMax);
+            d[ "enum_values" ] = DA::PY::toPyObject(s.enumValues);
+            d[ "regex_pattern" ] = DA::PY::toPyObject(s.regexPattern);
+            pyRules.append(d);
+        }
+        pybind11::object da_validate_dataframe = attr("da_validate_dataframe");
+        pybind11::object ret                   = da_validate_dataframe(df.object(), pyRules);
+        if (results) {
+            for (auto item : ret.cast< pybind11::list >()) {
+                pybind11::tuple t = item.cast< pybind11::tuple >();
+                ValidationRuleResult r;
+                r.index = t[ 0 ].cast< int >();
+                r.rows  = pyIntSequenceToVector(t[ 1 ]);
+                results->append(r);
+            }
+        }
+        return true;
+    } catch (const std::exception& e) {
+        if (errorMessage) {
+            *errorMessage = QString::fromUtf8(e.what());
+        }
+        dealException(e);
+    }
+    return false;
 }
 
 /**
@@ -725,30 +1008,537 @@ bool DAPyScriptsDataFrame::evalDatas(DAPyDataFrame& df, const QString& expr) noe
 }
 
 /**
- * @brief sort方法的wrapper
- * @param df
- * @param by
- * @param ascending
- * @return
+ * @brief 计算列求值的wrapper（004 T1.23）
+ *
+ * 对应 da_dataframe.da_eval_column(df, target_column, body)：把 RHS 表达式 body
+ * 求值结果写入 target_column 列（目标列名可含空格，走 df[col]=result 赋值路径），
+ * 返回求值前的旧列快照 (had_column, old_series)，供列级撤销记录（D4）。
+ * @param df 数据（就地写入目标列）
+ * @param targetColumn 目标列名
+ * @param body RHS 表达式体（列引用可含反引号）
+ * @return ok=false 表示求值抛错（语法错误/引用不存在列），df 不变；
+ *         ok=true 时 hadColumn/oldColumn 描述旧列快照（新建列 hadColumn=false）
  */
-bool DAPyScriptsDataFrame::sort(DAPyDataFrame& df, const QString& by, bool ascending) noexcept
+DAPyScriptsDataFrame::EvalColumnResult DAPyScriptsDataFrame::evalColumn(DAPyDataFrame& df, const QString& targetColumn, const QString& body) noexcept
+{
+    EvalColumnResult result;
+    if (df.isNone() || targetColumn.isEmpty() || body.isEmpty()) {
+        return result;
+    }
+    try {
+        pybind11::object da_eval_column = attr("da_eval_column");
+        pybind11::object ret            = da_eval_column(df.object(), DA::PY::toPyObject(targetColumn), DA::PY::toPyObject(body));
+        pybind11::tuple t               = ret.cast< pybind11::tuple >();
+        result.ok                       = true;
+        result.hadColumn                = t[ 0 ].cast< bool >();
+        if (result.hadColumn && !t[ 1 ].is_none()) {
+            result.oldColumn = DAPySeries(t[ 1 ]);
+        }
+    } catch (const std::exception& e) {
+        result.errorMessage = QString::fromUtf8(e.what());
+        dealException(e);
+    }
+    return result;
+}
+
+/**
+ * @brief 提取表达式引用列名的wrapper（004 T1.23 依赖追踪）
+ *
+ * 对应 da_dataframe.da_expr_depends(body, columns)：反引号段替换为合成标识符后用
+ * ast 提取 Name 节点，与实际列求交集（按列序返回）。语法错误抛 SyntaxError → ok=false。
+ * @param df 数据（提供实际列名）
+ * @param body RHS 表达式体
+ * @param ok 非空时输出解析是否成功
+ * @param errorMessage 非空时输出失败诊断（英文异常信息）
+ * @return 被引用的列名列表（解析失败返回空）
+ */
+QStringList DAPyScriptsDataFrame::exprDepends(const DAPyDataFrame& df, const QString& body, bool* ok, QString* errorMessage) noexcept
+{
+    QStringList depends;
+    if (ok) {
+        *ok = false;
+    }
+    if (df.isNone() || body.isEmpty()) {
+        return depends;
+    }
+    try {
+        pybind11::object da_expr_depends = attr("da_expr_depends");
+        pybind11::object columns         = df.object().attr("columns");
+        pybind11::object ret             = da_expr_depends(DA::PY::toPyObject(body), columns);
+        for (auto item : ret) {
+            depends.append(item.cast< std::string >().c_str());
+        }
+        if (ok) {
+            *ok = true;
+        }
+    } catch (const std::exception& e) {
+        if (errorMessage) {
+            *errorMessage = QString::fromUtf8(e.what());
+        }
+        dealException(e);
+    }
+    return depends;
+}
+
+/**
+ * @brief 列名是否需要反引号的wrapper（004 T1.23 R20）
+ * @param name 列名
+ * @return 含空格/特殊字符/以数字开头/关键字返回 true
+ */
+bool DAPyScriptsDataFrame::needsBacktick(const QString& name) noexcept
 {
     try {
-        pybind11::object da_sort = attr("da_sort");
-        pybind11::dict args;
+        pybind11::object da_needs_backtick = attr("da_needs_backtick");
+        return da_needs_backtick(DA::PY::toPyObject(name)).cast< bool >();
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return false;
+}
 
-        if (by.isEmpty()) {
-            return false;
-        }
+/**
+ * @brief 取头部副本的wrapper（004：对话框预览与执行同一算子）
+ * @param df 数据（只读）
+ * @param n 行数
+ * @return 前 n 行的独立副本（失败返回 none 的 DAPyDataFrame）
+ */
+DAPyDataFrame DAPyScriptsDataFrame::headCopy(const DAPyDataFrame& df, int n) noexcept
+{
+    try {
+        pybind11::object da_head_copy = attr("da_head_copy");
+        return DAPyDataFrame(da_head_copy(df.object(), pybind11::int_(n)));
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    // 失败哨兵：显式包装 none（DAPyDataFrame() 默认构造创建的是空 DataFrame，isNone()==false）
+    return DAPyDataFrame(pybind11::none());
+}
 
-        args[ "by" ]        = DA::PY::toPyObject(by);
-        args[ "ascending" ] = ascending;
-        da_sort(df.object(), **args);
+/**
+ * @brief 取某列副本的wrapper（004 T1.9 分列/合列列级快照）
+ * @param df 数据（只读）
+ * @param col 列位置
+ * @return 该列的独立副本（越界/失败返回 none 的 DAPySeries）
+ */
+DAPySeries DAPyScriptsDataFrame::getColumnCopy(const DAPyDataFrame& df, int col) noexcept
+{
+    try {
+        pybind11::object da_get_column_copy = attr("da_get_column_copy");
+        return DAPySeries(da_get_column_copy(df.object(), pybind11::int_(col)));
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return DAPySeries();
+}
+
+/**
+ * @brief 按列名写回列的wrapper（004 T1.23 计算列重算 undo 还原）
+ * @param df 数据（就地修改）
+ * @param name 列名
+ * @param series 要写回的列数据
+ * @return 成功返回 true
+ */
+bool DAPyScriptsDataFrame::setColumn(DAPyDataFrame& df, const QString& name, const DAPySeries& series) noexcept
+{
+    try {
+        pybind11::object da_set_column = attr("da_set_column");
+        da_set_column(df.object(), DA::PY::toPyObject(name), series.object());
         return true;
     } catch (const std::exception& e) {
         dealException(e);
     }
     return false;
+}
+
+/**
+ * @brief 分列的wrapper（004 T1.9）
+ *
+ * 对应 da_dataframe.da_split_column：就地把第 col 列拆分，结果列插入原列右侧。
+ * 预览与执行共用本封装（对话框对 da_head_copy 副本调用，同一算子红线5）。
+ * @param df 数据（就地修改）
+ * @param col 源列位置
+ * @param mode "char"/"regex"/"width"
+ * @param delimiter char 模式分隔符
+ * @param pattern regex 模式正则（含捕获组）
+ * @param widths width 模式宽度列表
+ * @param maxColumns 结果列数上限（<=0 表示不限）
+ * @param overflow "discard"/"keep"/"error"
+ * @param inferNumeric 结果列尝试数值解析
+ * @param newNames 结果列名（空=自动 "{源列名}_{i}"）
+ * @param errorMessage 非空时输出失败诊断
+ * @return 实际插入的结果列名（失败返回空列表）
+ */
+QStringList DAPyScriptsDataFrame::splitColumn(DAPyDataFrame& df,
+                                              int col,
+                                              const QString& mode,
+                                              const QString& delimiter,
+                                              const QString& pattern,
+                                              const QList< int >& widths,
+                                              int maxColumns,
+                                              const QString& overflow,
+                                              bool inferNumeric,
+                                              const QStringList& newNames,
+                                              QString* errorMessage) noexcept
+{
+    QStringList result;
+    if (df.isNone()) {
+        return result;
+    }
+    try {
+        pybind11::object da_split_column = attr("da_split_column");
+        pybind11::dict args;
+        args[ "mode" ]      = DA::PY::toPyObject(mode);
+        args[ "delimiter" ] = DA::PY::toPyObject(delimiter);
+        args[ "pattern" ]   = DA::PY::toPyObject(pattern);
+        if (widths.isEmpty()) {
+            args[ "widths" ] = pybind11::none();
+        } else {
+            pybind11::list wl;
+            for (int w : widths) {
+                wl.append(pybind11::int_(w));
+            }
+            args[ "widths" ] = wl;
+        }
+        args[ "max_columns" ] = (maxColumns <= 0) ? pybind11::object(pybind11::none()) : pybind11::object(pybind11::int_(maxColumns));
+        args[ "overflow" ]      = DA::PY::toPyObject(overflow);
+        args[ "infer_numeric" ] = inferNumeric;
+        if (newNames.isEmpty()) {
+            args[ "new_names" ] = pybind11::none();
+        } else {
+            args[ "new_names" ] = DA::PY::toPyObject(newNames);
+        }
+        pybind11::object ret = da_split_column(df.object(), pybind11::int_(col), **args);
+        for (auto item : ret) {
+            result.append(QString::fromStdString(item.cast< std::string >()));
+        }
+    } catch (const std::exception& e) {
+        if (errorMessage) {
+            *errorMessage = QString::fromUtf8(e.what());
+        }
+        dealException(e);
+    }
+    return result;
+}
+
+/**
+ * @brief 合并列的wrapper（004 T1.9）
+ *
+ * 对应 da_dataframe.da_merge_columns：按 cols 顺序拼接为新列，插到最左源列位置并删除源列。
+ * @param df 数据（就地修改）
+ * @param cols 源列位置（顺序=拼接顺序，>=2 列）
+ * @param sep 分隔符（可空）
+ * @param skipNa 跳过缺失值（不留多余分隔符）
+ * @param name 结果列名
+ * @param errorMessage 非空时输出失败诊断
+ * @return 成功返回插入位置（>=0），失败返回 -1
+ */
+int DAPyScriptsDataFrame::mergeColumns(
+    DAPyDataFrame& df, const QList< int >& cols, const QString& sep, bool skipNa, const QString& name, QString* errorMessage) noexcept
+{
+    if (df.isNone() || cols.size() < 2) {
+        return -1;
+    }
+    try {
+        pybind11::object da_merge_columns = attr("da_merge_columns");
+        pybind11::list pycols;
+        for (int c : cols) {
+            pycols.append(pybind11::int_(c));
+        }
+        pybind11::object ret = da_merge_columns(df.object(), pycols, DA::PY::toPyObject(sep), skipNa, DA::PY::toPyObject(name));
+        pybind11::tuple t    = ret.cast< pybind11::tuple >();
+        return t[ 0 ].cast< int >();
+    } catch (const std::exception& e) {
+        if (errorMessage) {
+            *errorMessage = QString::fromUtf8(e.what());
+        }
+        dealException(e);
+    }
+    return -1;
+}
+
+/**
+ * @brief 分组聚合的wrapper（004 T1.22）
+ *
+ * 对应 da_dataframe.da_groupby_aggregate(df, keys, values, funcs)：产出长格式聚合
+ * 结果表（新 DataFrame，不改原表）。聚合函数集合与透视表对齐（mean/sum/size）。
+ * @param df 数据（只读）
+ * @param keys 分组键列名
+ * @param values 聚合列名（与 funcs 一一对应）
+ * @param funcs 聚合函数（'mean'/'sum'/'size'）
+ * @param errorMessage 非空时输出失败诊断
+ * @return 聚合结果（失败返回 none 的 DAPyDataFrame）
+ */
+DAPyDataFrame DAPyScriptsDataFrame::groupbyAggregate(
+    const DAPyDataFrame& df, const QStringList& keys, const QStringList& values, const QStringList& funcs, QString* errorMessage) noexcept
+{
+    // 失败哨兵：DAPyDataFrame() 默认构造创建的是空 DataFrame（isNone()==false），
+    // 失败路径必须显式包装 none，调用方的 isNone() 判定才成立
+    if (df.isNone() || keys.isEmpty() || values.isEmpty() || values.size() != funcs.size()) {
+        return DAPyDataFrame(pybind11::none());
+    }
+    try {
+        pybind11::object da_groupby_aggregate = attr("da_groupby_aggregate");
+        pybind11::object ret =
+            da_groupby_aggregate(df.object(), DA::PY::toPyObject(keys), DA::PY::toPyObject(values), DA::PY::toPyObject(funcs));
+        return DAPyDataFrame(ret);
+    } catch (const std::exception& e) {
+        if (errorMessage) {
+            *errorMessage = QString::fromUtf8(e.what());
+        }
+        dealException(e);
+    }
+    return DAPyDataFrame(pybind11::none());
+}
+
+/**
+ * @brief 分组数的wrapper（004 T1.22 对话框预估结果行数）
+ * @param df 数据（只读）
+ * @param keys 分组键列名
+ * @return 分组数；失败返回 -1
+ */
+qint64 DAPyScriptsDataFrame::groupCount(const DAPyDataFrame& df, const QStringList& keys) noexcept
+{
+    if (df.isNone() || keys.isEmpty()) {
+        return -1;
+    }
+    try {
+        pybind11::object da_group_count = attr("da_group_count");
+        return da_group_count(df.object(), DA::PY::toPyObject(keys)).cast< qint64 >();
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return -1;
+}
+
+/**
+ * @brief 转置的wrapper（004 T1.27）
+ *
+ * 对应 da_dataframe.da_transpose：产出新 DataFrame（不改原表，R14 非破坏默认）。
+ * @param df 数据（只读）
+ * @param errorMessage 非空时输出失败诊断
+ * @return 转置结果（失败返回显式 none 的 DAPyDataFrame）
+ */
+DAPyDataFrame DAPyScriptsDataFrame::transpose(const DAPyDataFrame& df, QString* errorMessage) noexcept
+{
+    if (df.isNone()) {
+        return DAPyDataFrame(pybind11::none());
+    }
+    try {
+        pybind11::object da_transpose = attr("da_transpose");
+        return DAPyDataFrame(da_transpose(df.object()));
+    } catch (const std::exception& e) {
+        if (errorMessage) {
+            *errorMessage = QString::fromUtf8(e.what());
+        }
+        dealException(e);
+    }
+    return DAPyDataFrame(pybind11::none());
+}
+
+/**
+ * @brief 宽转长 melt 的wrapper（004 T1.27）
+ *
+ * 对应 da_dataframe.da_melt：产出新 DataFrame（不改原表）。valueVars 空 = 除 idVars
+ * 外全部列（pandas 语义）。规模守卫（行数×展开列数）由调用侧对话框预估，见计划 §6.3-4。
+ * @param df 数据（只读）
+ * @param idVars 保留列名
+ * @param valueVars 展开列名（空=全部非保留列）
+ * @param varName 变量名列名
+ * @param valueName 值列名
+ * @param errorMessage 非空时输出失败诊断
+ * @return melt 结果（失败返回显式 none 的 DAPyDataFrame）
+ */
+DAPyDataFrame DAPyScriptsDataFrame::melt(const DAPyDataFrame& df,
+                                         const QStringList& idVars,
+                                         const QStringList& valueVars,
+                                         const QString& varName,
+                                         const QString& valueName,
+                                         QString* errorMessage) noexcept
+{
+    if (df.isNone()) {
+        return DAPyDataFrame(pybind11::none());
+    }
+    try {
+        pybind11::object da_melt = attr("da_melt");
+        pybind11::object pyId    = idVars.isEmpty() ? pybind11::none() : pybind11::object(DA::PY::toPyObject(idVars));
+        pybind11::object pyValue = valueVars.isEmpty() ? pybind11::none() : pybind11::object(DA::PY::toPyObject(valueVars));
+        return DAPyDataFrame(da_melt(df.object(), pyId, pyValue, DA::PY::toPyObject(varName), DA::PY::toPyObject(valueName)));
+    } catch (const std::exception& e) {
+        if (errorMessage) {
+            *errorMessage = QString::fromUtf8(e.what());
+        }
+        dealException(e);
+    }
+    return DAPyDataFrame(pybind11::none());
+}
+
+
+/**
+ * @brief 多键稳定排序的wrapper
+ *
+ * 对应 da_dataframe.da_sort(df, keys)：keys 为 (列位置, 是否升序) 列表，
+ * 顺序即优先级（第一个是主键）。Python 侧就地重排并返回置换
+ * perm（perm[i] = 新表第 i 行在旧表中的行号，与 DATableKeyRemap /
+ * DATableStyleManager::onRowsReordered 的置换语义一致）。
+ * @param df 数据（就地重排）
+ * @param keys (列位置, 是否升序) 列表
+ * @param perm 非空时输出置换；空表时输出空列表
+ * @return 成功返回true；列越界/混合类型不可比较等抛错返回false（经dealException记录）
+ */
+bool DAPyScriptsDataFrame::sort(DAPyDataFrame& df, const QVector< QPair< int, bool > >& keys, QVector< int >* perm) noexcept
+{
+    if (keys.isEmpty()) {
+        return false;
+    }
+    try {
+        pybind11::object da_sort = attr("da_sort");
+        pybind11::list pykeys;
+        for (const auto& k : keys) {
+            pykeys.append(pybind11::make_tuple(k.first, k.second));
+        }
+        pybind11::object result = da_sort(df.object(), pykeys);
+        if (perm) {
+            perm->clear();
+            if (!result.is_none()) {
+                const int n = static_cast< int >(pybind11::len(result));
+                perm->reserve(n);
+                for (auto item : result) {
+                    perm->append(item.cast< int >());
+                }
+            }
+        }
+        return true;
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return false;
+}
+
+/**
+ * @brief 按给定置换就地重排行的wrapper
+ *
+ * 对应 da_dataframe.da_reorder_rows(df, perm)：new[i] = old[perm[i]]，
+ * 排序命令的 redo/undo 用它施加正置换/逆置换，不重新计算排序。
+ * @param df 数据（就地重排）
+ * @param perm 置换（perm[i] = 新表第 i 行在旧表中的行号）；空置换视为无操作
+ * @return 成功返回true
+ */
+bool DAPyScriptsDataFrame::reorderRows(DAPyDataFrame& df, const QVector< int >& perm) noexcept
+{
+    if (perm.isEmpty()) {
+        return true;
+    }
+    try {
+        pybind11::object da_reorder_rows = attr("da_reorder_rows");
+        da_reorder_rows(df.object(), DA::PY::toPyObject(perm));
+        return true;
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return false;
+}
+
+/**
+ * @brief 单列统计（min/max/median）的wrapper
+ *
+ * 对应 da_dataframe.da_column_stats(df, column)：全表 O(n) 归约（NaN 排除，
+ * 不采样不近似，003 条件格式色阶/数据条端点）。Python 侧对全 NaN/非数值列
+ * 返回 None → ok=false；列越界抛 IndexError → ok=false（经 dealException 记录）。
+ * @param df 数据（只读）
+ * @param col 列位置索引
+ * @return 统计结果（ok=false 表示不可用）
+ */
+DAPyScriptsDataFrame::ColumnStatsResult DAPyScriptsDataFrame::columnStats(const DAPyDataFrame& df, int col) noexcept
+{
+    ColumnStatsResult result;
+    if (df.isNone()) {
+        return result;
+    }
+    try {
+        pybind11::object da_column_stats = attr("da_column_stats");
+        pybind11::object ret             = da_column_stats(df.object(), col);
+        if (ret.is_none()) {
+            return result;  // 全 NaN / 非数值列：统计不可用
+        }
+        pybind11::tuple t = ret.cast< pybind11::tuple >();
+        if (t.size() != 3) {
+            return result;
+        }
+        result.minValue    = t[ 0 ].cast< double >();
+        result.maxValue    = t[ 1 ].cast< double >();
+        result.medianValue = t[ 2 ].cast< double >();
+        result.ok          = true;
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return result;
+}
+
+/**
+ * @brief 按列区间统计（007 T1.7）
+ *
+ * 对应 da_column_stats 的 cols/row_range/unique_limit 扩展路径；cols 非空才走
+ * 新路径（cols is None 时 Python 侧走 003 兼容路径）。空值/类型语义全部由
+ * Python 判定；C++ 只翻译返回的 dict 列表（键缺省/None 一律视为"不适用"）。
+ * @param df 目标表
+ * @param cols 列位置索引列表（与结果同序）
+ * @param rowBegin 行区间起点（数据行号，半开区间）
+ * @param rowEnd 行区间终点
+ * @param uniqueLimit 唯一值数阈值（0 = 不要）
+ * @return {ok, columns}；失败时 ok=false（上层当作"不支持"）
+ */
+DAPyScriptsDataFrame::SelectionStatsResult DAPyScriptsDataFrame::columnStatsRange(
+    const DAPyDataFrame& df, const QList< int >& cols, std::size_t rowBegin, std::size_t rowEnd,
+    std::size_t uniqueLimit) noexcept
+{
+    SelectionStatsResult result;
+    if (df.isNone()) {
+        return result;
+    }
+    try {
+        pybind11::list pyCols;
+        for (int c : cols) {
+            pyCols.append(pybind11::int_(c));
+        }
+        pybind11::dict args;
+        args[ "df" ]          = df.object();
+        args[ "cols" ]        = pyCols;                              // 位置索引列表（非空 → 走新区间路径）
+        args[ "row_range" ]   = pybind11::make_tuple(rowBegin, rowEnd);  // 半开区间
+        args[ "unique_limit" ] = uniqueLimit;                          // 0 = 不要唯一值数
+        pybind11::object ret  = attr("da_column_stats")(**args);
+        if (ret.is_none()) {
+            return result;
+        }
+        pybind11::list items = ret.cast< pybind11::list >();
+        if (static_cast< std::size_t >(items.size()) != static_cast< std::size_t >(cols.size())) {
+            return result;
+        }
+        // 键缺省 / None 一律视为"不适用"（不猜值）
+        auto readNum = [](pybind11::dict d, const char* k) -> std::optional< double > {
+            return (!d.contains(k) || d[ k ].is_none()) ? std::nullopt : std::optional< double >(d[ k ].cast< double >());
+        };
+        auto readInt = [](pybind11::dict d, const char* k) -> std::optional< std::size_t > {
+            return (!d.contains(k) || d[ k ].is_none())
+                       ? std::nullopt
+                       : std::optional< std::size_t >(static_cast< std::size_t >(d[ k ].cast< long long >()));
+        };
+        for (pybind11::handle h : items) {
+            pybind11::dict d = h.cast< pybind11::dict >();
+            SelectionColumnStats cs;
+            cs.count     = static_cast< std::size_t >(d[ "count" ].cast< long long >());
+            cs.nullCount = static_cast< std::size_t >(d[ "null_count" ].cast< long long >());
+            cs.uniqueCount = readInt(d, "unique_count");
+            cs.sum = readNum(d, "sum");
+            cs.mean = readNum(d, "mean");
+            cs.min = readNum(d, "min");
+            cs.max = readNum(d, "max");
+            result.columns.append(cs);
+        }
+        result.ok = true;
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return result;
 }
 
 /**

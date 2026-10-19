@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px"
+	 width="200px" height="200px" viewBox="0 0 200 200" xml:space="preserve">
+	<!-- 序列填充：左侧阶梯上升的浅蓝条形（等差/日期步进生成的递增序列）+ 右侧
+	     主蓝斜向上箭头（增长趋势）。官方色板：底 #FFFFFF、条形 #BDCDE8（浅蓝）、
+	     基线 #727272（中灰）、箭头 #5280C1（主蓝，主操作）；禁渐变/阴影/<text>（DESIGN.md §4） -->
+	<line x1="24" y1="170" x2="128" y2="170" stroke="#727272" stroke-width="8" stroke-linecap="butt"/>
+	<rect x="32" y="140" width="24" height="26" fill="#BDCDE8"/>
+	<rect x="62" y="108" width="24" height="58" fill="#BDCDE8"/>
+	<rect x="92" y="76" width="24" height="90" fill="#BDCDE8"/>
+	<path d="M 136 140 L 176 56" fill="none" stroke="#5280C1" stroke-width="12" stroke-linecap="round"/>
+	<polygon points="182,42 152,52 174,74" fill="#5280C1"/>
+</svg>

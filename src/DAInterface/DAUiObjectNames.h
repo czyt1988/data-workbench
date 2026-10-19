@@ -64,9 +64,13 @@ constexpr char DataFrameOperateAxesPanel[]   = "da-pannel-dataframe.operate.axes
 constexpr char DataFrameOperateColumnPanel[] = "da-pannel-dataframe.operate.column";  ///< 列操作pannel
 constexpr char DataFrameOperateDTypePanel[]  = "da-pannel-dataframe.operate.type";    ///< 类型设置pannel
 constexpr char DataFrameOperateFormatPanel[] = "da-pannel-dataframe.operate.format";  ///< 显示格式pannel
+constexpr char DataFrameOperateEditPanel[]   = "da-pannel-dataframe.operate.edit";    ///< 编辑pannel（查找/替换，005 填充也进此面板）
+constexpr char DataFrameOperateDataToolsPanel[] = "da-pannel-dataframe.operate.datatools";  ///< 数据工具pannel（004：计算列/分列/合列/分组/转置/melt）
+constexpr char DataFrameOperateViewPanel[]     = "da-pannel-dataframe.operate.view";       ///< 视图pannel（006 T1.8：冻结列/隐藏列/列视图）
 constexpr char DataFrameStyleFillPanel[]     = "da-pannel-dataframe.style.fill";      ///< 填充样式pannel
 constexpr char DataFrameStyleFontPanel[]     = "da-pannel-dataframe.style.font";      ///< 字体样式pannel
 constexpr char DataFrameStyleClearPanel[]    = "da-pannel-dataframe.style.clear";     ///< 样式清除pannel
+constexpr char DataFrameStyleConditionalPanel[] = "da-pannel-dataframe.style.conditional";  ///< 条件格式pannel（003 T1.5）
 // ---- 工作流上下文标签下的 panel ----
 constexpr char WorkflowItemPanel[]       = "da-pannel-context.workflow.item";        ///< 条目pannel
 constexpr char WorkflowTextPanel[]       = "da-pannel-context.workflow.text";        ///< 文本pannel
@@ -124,6 +128,7 @@ constexpr char RenameColumn[]       = "actionRenameColumn";
 constexpr char CopyColumnName[]     = "actionCopyColumnName";
 constexpr char GotoMax[]            = "actionGotoMax";
 constexpr char GotoMin[]            = "actionGotoMin";
+constexpr char GotoCell[]           = "actionGotoCell";  ///< 定位（007 T1.7，Ctrl+G 在 DADataTableView，action 不设 shortcut）
 constexpr char ShowColumnDescribe[] = "actionShowColumnDescribe";
 constexpr char RemoveCell[]         = "actionRemoveCell";
 constexpr char CastToNum[]          = "actionCastToNum";
@@ -133,6 +138,44 @@ constexpr char ChangeToIndex[]      = "actionChangeToIndex";
 constexpr char ClearStyleSelected[] = "actionClearStyleSelected";
 constexpr char ClearStyleAll[]      = "actionClearStyleAll";
 constexpr char TableFormatCells[]   = "actionTableFormatCells";
+constexpr char Find[]               = "actionFind";     ///< 表内查找（002 T1.4，快捷键在 DADataTableView，action 不设 shortcut 红线5）
+constexpr char Replace[]            = "actionReplace";  ///< 表内替换（002 T1.4）
+constexpr char ConditionalFormat[]  = "actionConditionalFormat";  ///< 条件格式（003 T1.5，Ribbon Table Style 面板 + 表体右键同入口，R16）
+// ---- 数据工具（004，Ribbon「Data Tools」面板 + 表体右键同入口）----
+constexpr char ComputedColumn[]             = "actionComputedColumn";             ///< 计算列（004 T1.23）
+constexpr char RecomputeAllComputedColumns[] = "actionRecomputeAllComputedColumns";  ///< 全部重算计算列（004 T1.23）
+constexpr char SplitColumn[]                = "actionSplitColumn";                ///< 分列（004 T1.9）
+constexpr char MergeColumns[]               = "actionMergeColumns";               ///< 合并列（004 T1.9）
+constexpr char GroupBy[]                    = "actionGroupBy";                    ///< 分组聚合（004 T1.22）
+constexpr char Transpose[]                  = "actionTranspose";                  ///< 转置（004 T1.27）
+constexpr char Melt[]                       = "actionMelt";                       ///< 宽转长 melt（004 T1.27）
+// ---- 列视图（006 T1.8，Ribbon「View」面板 + 列头右键「列」子菜单同入口）----
+constexpr char FreezeColumns[]              = "actionFreezeColumns";              ///< 冻结列（菜单主体 = 弹输入框）
+constexpr char HideColumn[]                 = "actionHideColumn";                 ///< 隐藏列
+constexpr char ShowAllColumns[]             = "actionShowAllColumns";             ///< 显示所有列
+constexpr char ColumnViewDialog[]           = "actionColumnViewDialog";           ///< 列视图…
+// 冻结菜单三项（照 mMenuInsertRow 先例：菜单项必须是 DAAppActions 的 action 才能进控制器绑定表）
+constexpr char FreezeFirstColumn[]          = "actionFreezeFirstColumn";          ///< 冻结首列
+constexpr char FreezeColumnsPrompt[]        = "actionFreezeColumnsPrompt";        ///< 冻结前 N 列…
+constexpr char UnfreezeColumns[]            = "actionUnfreezeColumns";            ///< 取消冻结
+// ---- 填充（005 T1.24，Ribbon「Edit」面板下拉 + 表体右键「填充」子菜单，快捷键 Ctrl+D 在视图）----
+constexpr char Fill[]                       = "actionFill";                       ///< 填充下拉根（005 T1.24）
+constexpr char FillDown[]                   = "actionFillDown";                   ///< 向下填充（005 T1.24）
+constexpr char FillUp[]                     = "actionFillUp";                     ///< 向上填充（005 T1.24）
+constexpr char FillForward[]                = "actionFillForward";                ///< 向下填充空值 ffill（005 T1.24）
+constexpr char FillBackward[]               = "actionFillBackward";               ///< 向上填充空值 bfill（005 T1.24）
+constexpr char FillSeries[]                 = "actionFillSeries";                 ///< 序列填充（005 T1.24）
+// ---- 数据校验（005 T1.25，Ribbon「Data Tools」面板 + 表体右键同入口）----
+constexpr char ValidationRules[]            = "actionValidationRules";            ///< 校验规则（005 T1.25）
+constexpr char RunValidation[]              = "actionRunValidation";              ///< 执行校验（005 T1.25）
+// ---- 单元格批注（005 T1.26，Ribbon「Edit」面板下拉 + 表体右键同入口）----
+constexpr char Note[]                       = "actionNote";                       ///< 批注下拉根（005 T1.26）
+constexpr char InsertNote[]                 = "actionInsertNote";                 ///< 插入批注（005 T1.26）
+constexpr char EditNote[]                   = "actionEditNote";                   ///< 编辑批注（005 T1.26）
+constexpr char DeleteNote[]                 = "actionDeleteNote";                 ///< 删除批注（005 T1.26）
+constexpr char ClearNotes[]                 = "actionClearNotes";                 ///< 清除本表批注（005 T1.26）
+// ---- 撤销历史（005 T1.21，Ribbon「视图」页入口，点击即 raise）----
+constexpr char ShowUndoHistory[]            = "actionShowUndoHistory";            ///< 显示撤销历史面板（005 T1.21）
 // ---- 绘图 ----
 constexpr char AddFigure[]                  = "actionAddFigure";
 constexpr char FigureNewXYAxis[]            = "actionFigureNewXYAxis";
@@ -256,6 +299,7 @@ constexpr char DataOperateWidget[]      = "da_dataOperateWidget";
 constexpr char DataManageWidget[]       = "da_dataManageWidget";
 constexpr char SettingContainerWidget[] = "da_settingContainerWidget";
 constexpr char MessageLogViewWidget[]   = "da_messageLogViewWidget";
+constexpr char UndoHistoryWidget[]      = "da_undoHistoryWidget";  ///< 撤销历史面板（005 T1.21，widget 在 DAGui）
 constexpr char AgentDockWidget[]        = "da_agentDockWidget";
 constexpr char MarkdownView[]           = "da_markdownView";
 constexpr char DataLinkTableWidget[]    = "da_dataLinkTableWidget";
@@ -269,6 +313,7 @@ constexpr char DataManageWidgetDock[]       = "da_dataManageWidgetDock";
 constexpr char SettingDock[]                = "da_settingDock";
 constexpr char AgentDockWidgetDock[]        = "da_agentDockWidgetDock";
 constexpr char MessageLogViewWidgetDock[]   = "da_messageLogViewWidgetDock";
+constexpr char UndoHistoryWidgetDock[]      = "da_undoHistoryWidgetDock";
 constexpr char MarkdownViewDock[]           = "da_markdownViewDock";
 constexpr char DataLinkTableWidgetDock[]    = "da_dataLinkTableWidgetDock";
 }  // namespace Dock
@@ -280,6 +325,9 @@ namespace Menu
 {
 constexpr char InsertRow[]                  = "menuInsertRow";
 constexpr char InsertColumn[]               = "menuInsertColumn";
+constexpr char Fill[]                       = "menuFill";  ///< 填充下拉子菜单（005 T1.24）
+constexpr char Note[]                       = "menuNote";  ///< 批注下拉子菜单（005 T1.26）
+constexpr char FreezeColumns[]              = "menuFreezeColumns";  ///< 冻结列下拉子菜单（006 T1.8，挂在 actionFreezeColumns 下）
 constexpr char ExportData[]                 = "menuExportData";
 constexpr char ExportWorkflowSceneToImage[] = "exportWorkflowSceneToImageMenu";
 constexpr char ChartPickSetting[]           = "mMenuChartPickSetting";  ///< 历史命名，保留

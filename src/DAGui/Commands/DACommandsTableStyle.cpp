@@ -106,4 +106,97 @@ void DACommandTableStyle::applyRecords(bool isRedo)
     }
 }
 
+
+//===================================================
+// 单元格批注命令（005 T1.26）
+//===================================================
+
+/**
+ * @brief 构造
+ * @param store 批注子存储（非拥有，QPointer 防悬挂）
+ * @param row 数据源绝对行
+ * @param col 列位置
+ * @param oldNote 旧条目（text 空 = 原先无批注）
+ * @param newNote 新条目（text 空 = 删除批注）
+ * @param parent 父命令
+ */
+DACommandTableNote_set::DACommandTableNote_set(DATableNoteStore* store,
+                                               int row,
+                                               int col,
+                                               const DATableNoteStore::Note& oldNote,
+                                               const DATableNoteStore::Note& newNote,
+                                               QUndoCommand* parent)
+    : QUndoCommand(parent), mStore(store), mRow(row), mCol(col), mOldNote(oldNote), mNewNote(newNote)
+{
+    // 文案按情形区分（撤销面板可读，红线5）
+    if (mOldNote.text.isEmpty() && !mNewNote.text.isEmpty()) {
+        setText(QObject::tr("add note"));  // cn:添加批注
+    } else if (!mOldNote.text.isEmpty() && mNewNote.text.isEmpty()) {
+        setText(QObject::tr("delete note"));  // cn:删除批注
+    } else {
+        setText(QObject::tr("edit note"));  // cn:编辑批注
+    }
+}
+
+/**
+ * @brief 写入一侧条目（text 空 = 移除该格批注）
+ */
+void DACommandTableNote_set::applyEntry(const DATableNoteStore::Note& note)
+{
+    if (!mStore) {
+        return;
+    }
+    if (note.text.isEmpty()) {
+        mStore->removeNote(mRow, mCol);
+    } else {
+        mStore->setNoteEntry(mRow, mCol, note);  // 保留原时间戳（undo/redo 精确还原）
+    }
+}
+
+void DACommandTableNote_set::redo()
+{
+    applyEntry(mNewNote);
+}
+
+void DACommandTableNote_set::undo()
+{
+    applyEntry(mOldNote);
+}
+
+/**
+ * @brief 构造
+ * @param store 批注子存储（非拥有，QPointer 防悬挂）
+ * @param parent 父命令
+ */
+DACommandTableNote_clearAll::DACommandTableNote_clearAll(DATableNoteStore* store, QUndoCommand* parent)
+    : QUndoCommand(parent), mStore(store)
+{
+    setText(QObject::tr("clear all notes"));  // cn:清除本表批注
+}
+
+/**
+ * @brief redo：首次捕获整店快照后清空
+ */
+void DACommandTableNote_clearAll::redo()
+{
+    if (!mStore) {
+        return;
+    }
+    if (!mCaptured) {
+        mSnapshot = mStore->snapshot();
+        mCaptured = true;
+    }
+    mStore->clearAll();
+}
+
+/**
+ * @brief undo：整店还原（含时间戳）
+ */
+void DACommandTableNote_clearAll::undo()
+{
+    if (mStore) {
+        mStore->restore(mSnapshot);
+    }
+}
+
 }  // end of namespace DA

@@ -1,0 +1,19 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="200" height="200">
+    <!-- Keyboard body (rounded rectangle) -->
+    <rect x="96" y="280" width="832" height="476" rx="72" fill="#497CAD"/>
+    <!-- Row 1: five keys -->
+    <rect x="188" y="356" width="104" height="92" rx="20" fill="#FFFFFF"/>
+    <rect x="324" y="356" width="104" height="92" rx="20" fill="#FFFFFF"/>
+    <rect x="460" y="356" width="104" height="92" rx="20" fill="#FFFFFF"/>
+    <rect x="596" y="356" width="104" height="92" rx="20" fill="#FFFFFF"/>
+    <rect x="732" y="356" width="104" height="92" rx="20" fill="#FFFFFF"/>
+    <!-- Row 2: four keys -->
+    <rect x="192" y="480" width="136" height="92" rx="20" fill="#FFFFFF"/>
+    <rect x="360" y="480" width="136" height="92" rx="20" fill="#FFFFFF"/>
+    <rect x="528" y="480" width="136" height="92" rx="20" fill="#FFFFFF"/>
+    <rect x="696" y="480" width="136" height="92" rx="20" fill="#FFFFFF"/>
+    <!-- Row 3: space bar -->
+    <rect x="288" y="604" width="448" height="92" rx="20" fill="#FFFFFF"/>
+</svg>

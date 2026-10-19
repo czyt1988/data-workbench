@@ -2,6 +2,8 @@ bin_*
 build*
 Testing/
 log/
+# 多工作树模式的产物目录(scripts/worktree-add.sh)
+.worktree/
 # bundle 导出脚本(scripts/export_bundles.sh)的输出目录
 bundle_export/
 # 保留 scripts 目录下的构建脚本
@@ -161,6 +163,7 @@ scripts/_remaining_unfinished.txt
 .zcode
 .superplan
 test_result.txt
+.obsidian
 
 # tools/perf 运行生成物（会话事件数组与 dump 的 DOM）
 tools/perf/events.js

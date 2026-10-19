@@ -1,46 +1,36 @@
 # 性能优化建议
 
-本文档提供 DAWorkBench 插件和节点开发的性能优化建议，帮助开发者编写高效的数据处理代码。
+本文档给出 DAWorkBench 插件和节点开发的性能优化建议。
 
-## 主要功能特性
-
-**特性**
-
-- ✅ **数据处理优化**：避免深拷贝、分块处理、使用 pandas 高效操作、缓存计算结果
-- ✅ **内存管理优化**：智能指针使用、及时释放大对象、限制缓存大小
-- ✅ **UI 性能优化**：批量更新、异步加载、延迟渲染
-- ✅ **线程优化**：避免 exec() 阻塞、合理使用线程池、控制并发数
-- ✅ **工作流执行优化**：合理拓扑顺序、减少节点间数据传递、使用条件节点
-- ✅ **配置优化**：缓存过期设置、日志级别优化
-- ✅ **性能监控**：添加计时统计、内存使用监控
-
-!!! warning "工作流节点 API：C++ 接口为遗留接口"
-    下文部分代码示例使用 C++ 节点接口的 `exec()` / `getInputData()` / `setOutputData()` / `getInputDataFrame()` 模式，这是**遗留 C++ 节点接口**，仅作历史参考。当前工作流节点推荐 **Python 优先**写法（`@NodeDef` + `execute(self, inputs, params)` + `self._output_data`），详见 [Python 节点开发](../dev-guide/workflow/workflow-python-node-dev.md)。数据包装类为 `DA::DAData`（`toDataFrame()` / `toSeries()` / `isNull()`），**不存在** `DADataPackage`；取行数用 `DAPyDataFrame::shape().first`。
+> **⚠️ 工作流节点 API：C++ 接口为遗留接口**
+>
+> 下文部分代码示例使用 C++ 节点接口的 `exec()` / `getInputData()` / `setOutputData()` / `getInputDataFrame()` 模式，这是**遗留 C++ 节点接口**，仅作历史参考。当前工作流节点推荐 **Python 优先**写法（`@NodeDef` + `execute(self, inputs, params)` + `self._output_data`），详见 [Python 节点开发](../dev-guide/workflow/workflow-python-node-dev.md)。数据包装类为 `DA::DAData`（`toDataFrame()` / `toSeries()` / `isNull()`），**不存在** `DADataPackage`；取行数用 `DAPyDataFrame::shape().first`。
 
 ## 数据处理优化
 
 ### 1. 避免深拷贝
 
-!!! tip "核心原则"
-    大数据操作应尽量使用引用或浅拷贝，避免不必要的深拷贝，减少内存占用和拷贝时间。
+> **💡 核心原则**
+>
+> 大数据操作应尽量使用引用或浅拷贝，避免不必要的深拷贝，减少内存占用和拷贝时间。
 
 下面的代码展示了正确的数据处理方式：
 
 ```cpp
-// ❌ 错误：深拷贝整个 DataFrame - 内存翻倍，耗时增加
+// 错误：深拷贝整个 DataFrame - 内存翻倍，耗时增加
 DA::DAData copy = inputData;  // 复制所有数据
 
-// ✅ 正确：使用引用 - 无额外内存开销
+// 正确：使用引用 - 无额外内存开销
 const DA::DAData& ref = inputData;
 
-// ✅ 正确：Qt 隐式共享 - 自动优化，避免深拷贝
+// 正确：Qt 隐式共享 - 自动优化，避免深拷贝
 QVariant output;
 output.setValue(ref);  // Qt 自动使用隐式共享机制
 ```
 
 ### 2. 分块处理大数据
 
-对于超过 10 万行的数据，建议分块处理，避免内存占用过高和 UI 卡顿。
+对于超过 10 万行的数据，建议分块处理，避免内存占用过高和界面卡顿。
 
 下面的代码展示了分块处理的实现方式：
 
@@ -65,8 +55,6 @@ bool MyWorker::exec()
 }
 ```
 
-分块处理可以有效控制内存峰值使用，同时让用户感知处理进度。
-
 ### 3. 使用 pandas 高效操作
 
 利用 pandas 内置的高效操作，避免 Python 循环处理。
@@ -74,11 +62,11 @@ bool MyWorker::exec()
 下面的 Python 示例展示了高效和低效的处理方式：
 
 ```python
-# ✅ 使用 pandas 内置函数 - 向量化操作，性能高
+# 使用 pandas 内置函数 - 向量化操作，性能高
 df.dropna()                      # 删除空值，比 Python 循环快得多
 df.groupby('column').mean()      # 高效聚合计算
 
-# ❌ 避免 Python 循环处理 - 效率低，应使用 pandas 方法
+# 避免 Python 循环处理 - 效率低，应使用 pandas 方法
 for i in range(len(df)):
     if pd.isna(df.iloc[i]):
         # 逐行处理效率低下
@@ -130,11 +118,11 @@ private:
 下面的代码展示了智能指针的正确使用：
 
 ```cpp
-// ✅ 推荐：智能指针自动管理 - 离开作用域自动释放
+// 推荐：智能指针自动管理 - 离开作用域自动释放
 QSharedPointer<MyDataProcessor> m_processor;
 m_processor = QSharedPointer<MyDataProcessor>::create();  // 创建并自动管理
 
-// ❌ 避免：裸指针需要手动管理 - 容易忘记 delete
+// 避免：裸指针需要手动管理 - 容易忘记 delete
 MyDataProcessor* m_processor;  // 需要 delete，易出错
 ```
 
@@ -182,17 +170,17 @@ void MyPlugin::checkCacheLimit()
 
 ### 1. 批量更新 UI
 
-减少 UI 刷新频率，使用批量更新模式避免频繁重绘。
+减少界面刷新频率，使用批量更新模式避免频繁重绘。
 
 下面的代码展示了正确的批量更新方式：
 
 ```cpp
-// ❌ 错误：频繁更新 - 每行刷新一次，界面卡顿
+// 错误：频繁更新 - 每行刷新一次，界面卡顿
 for (int i = 0; i < rowCount; ++i) {
     m_tableView->updateRow(i);  // 每次触发重绘，太频繁
 }
 
-// ✅ 正确：批量更新 - 先暂停再一次性更新
+// 正确：批量更新 - 先暂停再一次性更新
 m_tableView->setUpdatesEnabled(false);   // 暂停刷新信号
 m_tableView->setModel(newModel);         // 设置新模型
 m_tableView->setUpdatesEnabled(true);    // 恢复刷新，触发一次性重绘
@@ -248,7 +236,7 @@ void MyChartWidget::paintEvent(QPaintEvent* event)
 下面的代码展示了正确的非阻塞处理：
 
 ```cpp
-// ❌ 错误：长时间阻塞 - 工作流线程被阻塞
+// 错误：长时间阻塞 - 工作流线程被阻塞
 bool MyWorker::exec()
 {
     while (!processComplete()) {
@@ -256,7 +244,7 @@ bool MyWorker::exec()
     }
 }
 
-// ✅ 正确：使用进度回调 - 分步处理并报告进度
+// 正确：使用进度回调 - 分步处理并报告进度
 bool MyWorker::exec()
 {
     int steps = calculateTotalSteps();           // 计算总步骤数
@@ -324,9 +312,7 @@ bool MyNodeFactory::nodeAddedToWorkflow(DA::DAAbstractNode* node)
 
 合并相邻节点减少数据传递次数。
 
-下面的 mermaid 流程图展示了节点合并的优化思路：
-
-图表展示了将多个相邻节点合并为单一节点的优化方式，减少数据传递开销：
+下面的 mermaid 流程图展示了节点合并的优化思路，把多个相邻节点合并为单一节点，减少数据传递开销：
 
 ```mermaid
 graph LR
@@ -335,8 +321,6 @@ graph LR
     
     D[读取+清洗+转换]  # 合并后的单一节点
 ```
-
-合并节点可以减少数据在工作流中的传递次数，降低拷贝开销。
 
 ### 3. 使用条件节点
 
@@ -448,12 +432,12 @@ void MyPlugin::checkMemoryUsage()
 |------|------|
 | **数据处理** | 分块处理、避免深拷贝、使用缓存 |
 | **内存管理** | 智能指针、及时释放、限制缓存 |
-| **UI 性能** | 批量更新、异步加载、延迟渲染 |
+| **界面性能** | 批量更新、异步加载、延迟渲染 |
 | **线程使用** | 控制并发、避免阻塞、合理等待 |
 | **工作流** | 优化拓扑、合并节点、条件执行 |
 
 ## 下一步
 
-- [:material-book: 最佳实践](./best-practices.md) - 综合最佳实践
-- [:material-help-circle: FAQ](./faq.md) - 常见问题解答
-- [:material-api: API 文档](./api-reference.md) - API 参考
+- [📖 最佳实践](./best-practices.md) - 综合最佳实践
+- [❓ FAQ](./faq.md) - 常见问题解答
+- [📘 API 文档](./api-reference.md) - API 参考

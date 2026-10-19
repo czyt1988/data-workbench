@@ -1,12 +1,12 @@
 # 通过插件注册内置 Agent（以 DAPaperAgent 为例）
 
-本文以 `plugins/DAPaperAgent/`（论文撰写 agent 插件）为参考实现，讲解如何通过插件机制向平台注入：
+`plugins/DAPaperAgent/`（论文撰写 agent 插件）是这套机制的参考实现，它经三个接口向平台注入以下内容：
 
-1. **一个内置 agent 提示词**（出现在 Ribbon「AI Agent」gallery 与管理对话框中，用户可运行、编辑、删除）
-2. **若干领域工具**（agent 可调用的 C++ 工具，如文献检索）
-3. **一个系统提示词片段**（教所有 agent 使用这些工具）
+1. 一个内置 agent 提示词（出现在 Ribbon「AI Agent」gallery 与管理对话框中，用户可运行、编辑、删除）
+2. 若干领域工具（agent 可调用的 C++ 工具，如文献检索）
+3. 一个系统提示词片段（教所有 agent 使用这些工具）
 
-DAPaperAgent 是 `DAAgentInterface::registerBuiltinAgent` 机制的第一个使用者，可作为新插件的最佳模板。
+DAPaperAgent 是 `DAAgentInterface::registerBuiltinAgent` 机制的第一个使用者，新插件可照此实现。
 
 ---
 
@@ -62,8 +62,8 @@ class DAPaperAgentPlugin : public QObject, public DAAbstractPlugin
 
 要点：
 
-- **直接继承 `DAAbstractPlugin`**（不需要节点工厂）——与 `DAAgentToolsPlugin` 相同，这是 agent 工具类插件的形态；不要用 `plugin-template`（那是节点插件模板）
-- **插件类持有工具 QObject 的 parent**，工具随插件释放
+- 直接继承 `DAAbstractPlugin`（不需要节点工厂），与 `DAAgentToolsPlugin` 相同，这是 agent 工具类插件的形态；不要用 `plugin-template`（那是节点插件模板）
+- 插件类持有工具 QObject 的 parent，工具随插件释放
 
 ### initialize() 三连调用
 
@@ -89,7 +89,7 @@ bool DAPaperAgentPlugin::initialize()
 }
 ```
 
-**为什么提示词用 qrc 内嵌而非磁盘文件**：插件分发形态是单个 dll，qrc 保证提示词随插件部署到任何机器；`registerBuiltinAgent` 的"仅不存在时写入"语义保证用户编辑过的 `daAgent/论文撰写助手.md` 永远不会被插件覆盖。
+**提示词用 qrc 内嵌**：插件以单个 dll 分发，qrc 保证提示词随插件部署到任何机器；`registerBuiltinAgent` 的「仅不存在时写入」语义保证用户编辑过的 `daAgent/论文撰写助手.md` 不会被插件覆盖。
 
 ### CMakeLists 要点
 
@@ -120,7 +120,7 @@ da_add_plugin(
 
 ## 工具实现要点
 
-工具继承 `DAAgentToolBase`（`src/DAAgent/DAAgentToolBase.h`），模式与 `plugins/DAAgentTools/tools/` 完全一致：
+工具继承 `DAAgentToolBase`（`src/DAAgent/DAAgentToolBase.h`），模式与 `plugins/DAAgentTools/tools/` 一致：
 
 ```cpp
 class DAPaperToolSearchLiterature : public DAAgentToolBase
@@ -147,15 +147,15 @@ loop.exec(QEventLoop::ExcludeUserInputEvents);  // 防用户输入重入
 
 该模式来自 `DAAppProject::waitArchiveSave` 的同步等待先例；`ExcludeUserInputEvents` 保证等待期间不处理用户输入（避免重入 `executeTool`），QProcess 协议读写仍可进行。**超时必须设置**（10s），否则断网时工具永久卡死。
 
-工具的 `getToolSpec` 应在 description 中写明已知限制（如"需直连网络，不走代理"），LLM 会据此降级。
+工具的 `getToolSpec` 应在 description 中写明已知限制（如「需直连网络，不走代理」），大语言模型（LLM）会据此降级。
 
 ---
 
-## 时序：为什么需要 agentListChanged 兜底
+## 时序：为什么需要 agentListChanged 作为后备
 
-Ribbon 的 agent gallery 在 `AppMainWindow` 构造期（`createUi` → `buildRibbonAgentCategory`）首次填充，而插件 `initialize()` 在其后 `init()` → `initPlugins()` 才执行——插件注入的 agent 错过了首次填充。
+Ribbon 的 agent gallery 在 `AppMainWindow` 构造期（`createUi` → `buildRibbonAgentCategory`）首次填充，而插件 `initialize()` 在其后 `init()` → `initPlugins()` 才执行，插件注入的 agent 错过了首次填充。
 
-因此 `DAAgentModule::initialize` 把 `DAAgentManager::agentListChanged` 透传为接口信号（与 `subagentListChanged` 同构），`DAAppRibbonArea::buildRibbonAgentCategory` 末尾连接该信号兜底刷新 gallery：
+因此 `DAAgentModule::initialize` 把 `DAAgentManager::agentListChanged` 透传为接口信号（与 `subagentListChanged` 同构），`DAAppRibbonArea::buildRibbonAgentCategory` 末尾连接该信号刷新 gallery：
 
 ```cpp
 connect(agent, &DA::DAAgentInterface::agentListChanged, this, [this]() {
@@ -173,24 +173,24 @@ connect(agent, &DA::DAAgentInterface::agentListChanged, this, [this]() {
 
 `resources/paper-agent.md` 是约 120 行的中文流程编排型提示词（对比 `src/DAAgent/default-agent.md` 的 24 行简短风格），包含：
 
-- **角色与核心原则**（数据的客观性绝不被叙事需求干扰）
-- **启动流程**（跨会话恢复：读 progress.md 续作）
-- **六阶段工作流**（数据理解 → 建模与锁定 → 图表 → 文献与大纲 → 写作 → 评审定稿），每阶段以 `ask_user` 确认为门禁
-- **铁律**（防"叙事污染数据"：结果包锁定后只读、统计量逐字转述、禁止编造引用等）
+- 角色与核心原则（数据的客观性绝不被叙事需求干扰）
+- 启动流程（跨会话恢复：读 progress.md 续作）
+- 六阶段工作流（数据理解 → 建模与锁定 → 图表 → 文献与大纲 → 写作 → 评审定稿），每阶段以 `ask_user` 确认为门禁
+- 铁律（防「叙事污染数据」：结果包锁定后只读、统计量逐字转述、禁止编造引用等）
 
 设计要点：
 
-1. **状态持久化靠文件约定**，不需要 C++ 支持：`daPaper/<论文名>/progress.md` + `.approved/<阶段>.md` 审批标记，全部由 agent 经 `write_file`/`read_file` 自管理
-2. **门禁用 `ask_user`**：这是平台内置的人机交互工具，每阶段结束向用户呈现摘要并等待确认
-3. **降级路径写进提示词**：statsmodels 缺失时降级 scipy、文献 API 不可达时切离线模式，agent 不会因环境缺失而卡死
+1. 状态持久化靠文件约定，不需要 C++ 支持：`daPaper/<论文名>/progress.md` + `.approved/<阶段>.md` 审批标记，全部由 agent 经 `write_file`/`read_file` 自管理
+2. 门禁用 `ask_user`：这是平台内置的人机交互工具，每阶段结束向用户呈现摘要并等待确认
+3. 降级路径写进提示词：statsmodels 缺失时降级 scipy、文献 API 不可达时切离线模式，agent 不会因环境缺失而卡死
 
 ---
 
 ## 新建同类插件的最短路径
 
 1. 复制 `plugins/DAPaperAgent/` 为模板，改名插件类/目录/`BUILD_DEFINE`
-2. 替换 `resources/paper-agent.md` 为你的领域提示词，qrc 前缀自定（避免与其它插件冲突）
+2. 替换 `resources/paper-agent.md` 为该领域的提示词，qrc 前缀自定（避免与其它插件冲突）
 3. 工具按需增删（继承 `DAAgentToolBase`；数据访问用 `dataMgr()/findData()/allDatas()`）
 4. `plugins/CMakeLists.txt` 加 `add_subdirectory`
 5. 构建：`.\scripts\build.ps1 -Target <插件名>`
-6. 验证：启动后检查 Ribbon gallery 出现你的 agent；`da_log.log` 中 `setTools` 收录你的工具名
+6. 验证：启动后检查 Ribbon gallery 出现新 agent；`da_log.log` 中 `setTools` 收录新工具名

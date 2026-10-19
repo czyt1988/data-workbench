@@ -9,11 +9,8 @@ class DAPyModule;
 }
 
 class QUndoCommand;
-class DataFrameDataSearchDialog;
 class DataFrameDataSelectDialog;
-class DataFrameSortDialog;
 class DataFrameQueryDatasDialog;
-class DataFrameEvalDatasDialog;
 class DataFrameCreatePivotTableDialog;
 
 /**
@@ -44,30 +41,23 @@ public Q_SLOTS:
         const QString& marginsName = QStringLiteral("All"),
         bool sort                  = false
     );
-    // 列运算
-    void evalDatas();
-    QUndoCommand* evalDatas(const DA::DAPyDataFrame& df, const QString& exper, Callback fp = nullptr);
+    // 列运算（Eval Data）入口已按 004 计划收口移除（内核计算列替代，D0/R2）；
+    // DADataAnalysisCore/operations.py 的 eval_expression 与工作流节点 data_eval_node.py 保留
     // 过滤给定条件外的数据
     void queryDatas();
     QUndoCommand* queryDatas(const DA::DAPyDataFrame& df, const QString& exper, Callback fp = nullptr);
-    // 检索给定的数据
-    void searchData();
     // 过滤给定条件外的数据
     void filterByColumn();
     QUndoCommand* filterByColumn(
         const DA::DAPyDataFrame& df, double lower = 0.0, double upper = 0.0, const QString& index = QString(), Callback fp = nullptr
     );
-    // 数据排序
-    void sortDatas();
-    QUndoCommand* sortDatas(const DA::DAPyDataFrame& df, const QString& by, const bool ascending, Callback fp = nullptr);
+    // 排序/检索入口已按 002 计划收口移除（内核表头点击排序 + 浮动查找条替代）；
+    // DADataAnalysisCore 与工作流节点 data_sort_node.py/data_search_node.py 是独立入口，保留
 
 private:
     std::unique_ptr< DA::DAPyModule > mDataOperateModule;
-    DataFrameDataSearchDialog* mSearchDialog { nullptr };
     DataFrameDataSelectDialog* mSelectDialog { nullptr };
-    DataFrameSortDialog* mSortDialog { nullptr };
     DataFrameQueryDatasDialog* mQueryDatasDialog { nullptr };
-    DataFrameEvalDatasDialog* mEvalDatasDialog { nullptr };
     DataFrameCreatePivotTableDialog* mPivotTableDialog { nullptr };
 };
 

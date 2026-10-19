@@ -10,6 +10,7 @@ class AppMainWindow;
 class DAStatusBar;
 class DAAppDockingArea;
 class DAAppActions;
+class DATableStatsWidget;
 
 class DAAppStatusBar : public DAStatusBarInterface
 {
@@ -54,6 +55,7 @@ private:
 	DAAppActions* mActions { nullptr };
 	QToolButton* mShowLeftSideBarButton { nullptr };
 	QToolButton* mShowRightSideBarButton { nullptr };
+	DATableStatsWidget* mTableStatsWidget { nullptr };  ///< 状态栏选区统计部件（007）
 };
 }  // end DA
 #endif  // DAAPPSTATUSBAR_H
