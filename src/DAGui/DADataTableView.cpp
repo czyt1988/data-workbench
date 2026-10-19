@@ -6,6 +6,7 @@
 #include <QGuiApplication>
 #include <QClipboard>
 #include <QItemSelectionModel>
+#include <QItemSelection>
 #include <QMenu>
 #include <QAction>
 #include <QIcon>
@@ -130,6 +131,7 @@ bool DADataTableView::isDataSourceEditable() const
  * @brief 当前选区覆盖的数据列数（去重；尾部预留空白列不计）
  *
  * 004 T1.9 分列/合并列的右键启用规则用：单列选区启用分列、多列选区启用合并。
+ * 按选区区间展开列号（全选卡顿修复：不再 selectedIndexes 物化整个选区）。
  * @return 数据列数（无模型/无选区返回 0）
  */
 int DADataTableView::selectedDataColumnCount() const
@@ -141,10 +143,10 @@ int DADataTableView::selectedDataColumnCount() const
     }
     const int dataCols = m->columnCount() - m->getExtraColumnCount();
     QSet< int > cols;
-    const QModelIndexList idxs = sm->selectedIndexes();
-    for (const QModelIndex& i : idxs) {
-        if (i.column() < dataCols) {
-            cols.insert(i.column());
+    const QItemSelection sel = sm->selection();
+    for (const QItemSelectionRange& r : sel) {
+        for (int c = qMax(0, r.left()); c <= r.right() && c < dataCols; ++c) {
+            cols.insert(c);
         }
     }
     return cols.size();
@@ -153,8 +155,10 @@ int DADataTableView::selectedDataColumnCount() const
 /**
  * @brief 是否存在某数据列拥有 >=2 行的连续选中行区间（005 填充启用规则）
  *
- * 按列聚合选中行（视图行号即可——连续性判定与绝对行号偏移无关），排序后找相邻
- * 差 1 的行对；尾部预留空白列不计。不足两行的选区向下/向上/ffill/bfill 无从发生。
+ * 区间内同一列的选中行天然连续：高度 ≥2 且覆盖任一数据列即命中（等价于旧的
+ * 逐格聚合+排序判定）；高度为 1 的区间才需要按列归并行号找跨区间的相邻对。
+ * 尾部预留空白列不计。不足两行的选区向下/向上/ffill/bfill 无从发生。
+ * （全选卡顿修复：不再 selectedIndexes 物化整个选区）
  * @return 存在返回 true
  */
 bool DADataTableView::hasMultiRowSelectedRun() const
@@ -165,11 +169,19 @@ bool DADataTableView::hasMultiRowSelectedRun() const
         return false;
     }
     const int dataCols = m->columnCount() - m->getExtraColumnCount();
-    QHash< int, QList< int > > colRows;
-    const QModelIndexList idxs = sm->selectedIndexes();
-    for (const QModelIndex& i : idxs) {
-        if (i.column() < dataCols) {
-            colRows[ i.column() ].append(i.row());
+    QHash< int, QList< int > > colRows;  // 仅高度为 1 的区间需要跨区间归并判定
+    const QItemSelection sel = sm->selection();
+    for (const QItemSelectionRange& r : sel) {
+        if (r.height() >= 2) {
+            if (r.left() < dataCols) {
+                return true;  // 区间内同列选中行天然连续
+            }
+            continue;
+        }
+        if (r.height() == 1) {
+            for (int c = qMax(0, r.left()); c <= r.right() && c < dataCols; ++c) {
+                colRows[ c ].append(r.top());
+            }
         }
     }
     for (auto it = colRows.constBegin(); it != colRows.constEnd(); ++it) {
@@ -369,28 +381,42 @@ bool DADataTableView::copySelectionToClipboard()
     if (!sm) {
         return false;
     }
-    QModelIndexList idxs = sm->selectedIndexes();
-    if (idxs.isEmpty()) {
+    const QItemSelection selection = sm->selection();
+    if (selection.isEmpty()) {
         return false;
     }
-    // 包围矩形
+    // 包围矩形（按区间求，不物化 selectedIndexes）。成员判定改为「逐行收集选中列
+    // 闭区间 + 游标推进」，避免为每个选中格建哈希集合（全选时是百万级插入），
+    // 也避免逐格做 O(段数) 的区间判定；复杂度 O(格数 + 行数×段数)
     int minRow = INT_MAX, maxRow = INT_MIN, minCol = INT_MAX, maxCol = INT_MIN;
-    QSet< QPair< int, int > > sel;
-    sel.reserve(idxs.size());
-    for (const QModelIndex& i : std::as_const(idxs)) {
-        minRow = qMin(minRow, i.row());
-        maxRow = qMax(maxRow, i.row());
-        minCol = qMin(minCol, i.column());
-        maxCol = qMax(maxCol, i.column());
-        sel.insert(qMakePair(i.row(), i.column()));
+    for (const QItemSelectionRange& r : selection) {
+        minRow = qMin(minRow, r.top());
+        maxRow = qMax(maxRow, r.bottom());
+        minCol = qMin(minCol, r.left());
+        maxCol = qMax(maxCol, r.right());
     }
     QString text;
+    QList< QPair< int, int > > rowSpans;  // 复用容器，避免逐行分配
     for (int r = minRow; r <= maxRow; ++r) {
+        // 该行被选中的列闭区间（按左端排序后用游标推进，避免逐格做 O(段数) 判定）
+        rowSpans.clear();
+        for (const QItemSelectionRange& range : selection) {
+            if (r >= range.top() && r <= range.bottom()) {
+                rowSpans.append(qMakePair(range.left(), range.right()));
+            }
+        }
+        std::sort(rowSpans.begin(), rowSpans.end());
+        int spanIdx = 0;
         for (int c = minCol; c <= maxCol; ++c) {
             if (c > minCol) {
                 text += QLatin1Char('\t');
             }
-            if (sel.contains(qMakePair(r, c))) {
+            while (spanIdx < rowSpans.size() && c > rowSpans[ spanIdx ].second) {
+                ++spanIdx;
+            }
+            const bool inSpan
+                = (spanIdx < rowSpans.size() && c >= rowSpans[ spanIdx ].first && c <= rowSpans[ spanIdx ].second);
+            if (inSpan) {
                 QModelIndex idx = model()->index(r, c);
                 if (idx.isValid()) {
                     text += idx.data(Qt::DisplayRole).toString();

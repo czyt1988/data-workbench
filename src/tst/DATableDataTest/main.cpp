@@ -567,6 +567,13 @@ private Q_SLOTS:
     // 分步计时 + 全部撤销后数据精确还原
     void testBatch3FullChain100k();
 
+    // 全选卡顿修复：代表样式三级策略（列级快路径 / 小选区逐格精确 / 大选区近似）
+    // 的语义回归——各属性独立一致性、空白行列稀释、行级与单元格级叠加
+    void testSelectAllRepresentativeStyle();
+    // 全选卡顿修复：大选区不再物化 selectedIndexes 的性能守卫（旧实现宽表下
+    // 千万级堆分配会冻结界面数十秒，新实现应毫秒级返回）
+    void testSelectAllLargeSelectionPerf();
+
 private:
     // 生成/复用sqlite测试库（百万行），失败返回false并置mSqliteErr
     bool ensureSqliteReady();
@@ -8597,6 +8604,257 @@ first_val = float(df.iat[0, 1])
     // 宽松上限（防劣化）：全链路 < 60s；排序单步 < 10s（002 实测 10 万行 ~15ms）
     QVERIFY2(msTotal < 60000, qPrintable(QStringLiteral("full chain too slow: %1 ms").arg(msTotal)));
     QVERIFY2(msSort < 10000, qPrintable(QStringLiteral("sort too slow: %1 ms").arg(msSort)));
+    w.hide();
+}
+
+
+// 全选卡顿修复（2026-10-19）：代表样式三级策略的语义回归。
+// 覆盖列级快路径（选区无行级/单元格级样式）、小选区逐格精确路径、
+// 三属性独立一致性、尾部预留空白行列的稀释语义（与旧实现逐位一致）
+void DATableDataTest::testSelectAllRepresentativeStyle()
+{
+    if (!mPandasOk) {
+        QSKIP("pandas not available");
+    }
+    pybind11::dict scope;
+    pybind11::exec(R"(
+import pandas as pd
+df = pd.DataFrame({"a": [1, 2, 3, 4], "b": [5, 6, 7, 8],
+                   "c": [9, 10, 11, 12], "d": [13, 14, 15, 16]})
+)",
+                   pybind11::globals(),
+                   scope);
+    DA::DAPyDataFrame df(scope[ "df" ]);
+    DA::DAData d(df);
+    DA::DATableMetadataRegistry registry(nullptr);
+    DA::DADataOperateOfDataFrameWidget w(d, &registry);
+    w.resize(800, 400);
+    DA::DADataTableView* tv = w.getDataTableView();
+    QVERIFY(tv != nullptr);
+    QItemSelectionModel* sm = tv->selectionModel();
+    QVERIFY(sm != nullptr);
+    DA::DATableStyleManager* mgr = w.styleManager();
+    QVERIFY(mgr != nullptr);
+    const int dataCols = static_cast< int >(df.shape().second);
+    const int dataRows = static_cast< int >(df.shape().first);
+    QCOMPARE(dataCols, 4);
+
+    auto selectRect = [ tv, sm ](int r0, int c0, int r1, int c1) {
+        const QItemSelection sel(tv->model()->index(r0, c0), tv->model()->index(r1, c1));
+        sm->select(sel, QItemSelectionModel::ClearAndSelect);
+    };
+
+    // ① 无任何样式：全选（角格点击等价入口）返回空样式
+    tv->selectAll();
+    QVERIFY(w.getCurrentCellStyle().isNull());
+
+    // ② 所有数据列同一底色：只选数据列（不含尾部空白列）→ 列级快路径给出该底色
+    DA::DATableCellStyle red;
+    red.setBackground(QBrush(QColor(Qt::red)));
+    for (int c = 0; c < dataCols; ++c) {
+        mgr->setColumnStyle(c, red, false);
+    }
+    selectRect(0, 0, dataRows - 1, dataCols - 1);
+    {
+        const DA::DATableCellStyle s = w.getCurrentCellStyle();
+        QVERIFY(s.backgroundValid());
+        QCOMPARE(s.background().color(), QColor(Qt::red));
+        QVERIFY(!s.foregroundValid());
+        QVERIFY(!s.fontValid());
+    }
+    // ③ 全选含尾部预留空白列（无列样式）→ 底色不一致，与旧实现同为 invalid
+    tv->selectAll();
+    QVERIFY(!w.getCurrentCellStyle().backgroundValid());
+
+    // ④ 属性独立一致性：a 列红底 + b 列绿底，只选这两列 → 底色 invalid、
+    //    前景色/字体两侧都未设置 → 仍一致但 invalid（旧实现同判定）
+    DA::DATableCellStyle green;
+    green.setBackground(QBrush(QColor(Qt::green)));
+    mgr->setColumnStyle(1, green, false);
+    selectRect(0, 0, dataRows - 1, 1);
+    {
+        const DA::DATableCellStyle s = w.getCurrentCellStyle();
+        QVERIFY(!s.backgroundValid());
+        QVERIFY(!s.foregroundValid());
+        QVERIFY(!s.fontValid());
+    }
+    mgr->clearColumn(1);
+
+    // ⑤ 小选区 + 单元格级样式 → 逐格精确路径：选中格有底色、邻格无 → invalid
+    DA::DATableCellStyle blue;
+    blue.setBackground(QBrush(QColor(Qt::blue)));
+    mgr->setCellStyle(0, 0, blue, false);
+    selectRect(0, 0, 1, 1);
+    QVERIFY(!w.getCurrentCellStyle().backgroundValid());
+    // 只选那一格 → 单元格级样式生效
+    selectRect(0, 0, 0, 0);
+    {
+        const DA::DATableCellStyle s = w.getCurrentCellStyle();
+        QVERIFY(s.backgroundValid());
+        QCOMPARE(s.background().color(), QColor(Qt::blue));
+    }
+    mgr->clearCell(0, 0);
+
+    // ⑥ 行级样式覆盖整行选区 → 精确路径给出该行底色
+    mgr->setRowStyle(1, blue, false);
+    selectRect(1, 0, 1, dataCols - 1);
+    {
+        const DA::DATableCellStyle s = w.getCurrentCellStyle();
+        QVERIFY(s.backgroundValid());
+        QCOMPARE(s.background().color(), QColor(Qt::blue));
+    }
+    // 行级样式只覆盖部分行 → 选区跨两行时底色不一致
+    selectRect(0, 0, 2, 0);
+    QVERIFY(!w.getCurrentCellStyle().backgroundValid());
+
+    // ⑦ 窗口滑动后行级样式键仍按绝对行号命中（快路径判定用窗口换算）
+    mgr->clearRow(1);
+    mgr->clearAll();
+    QVERIFY(mgr->isEmpty());
+    selectRect(0, 0, 1, 1);
+    QVERIFY(w.getCurrentCellStyle().isNull());
+
+    // ⑧ 选区几何接口与 Qt 原生接口对拍（不相交段 / 重叠段 / 整列 / 全选）：
+    //    改写后一律走区间运算，这里用 Qt 的 selectedIndexes/selectedColumns/
+    //    selectedRows 作参照，保证语义逐位不变（同时验证选区段互不重叠这一前提）
+    auto toSet = [](const QList< int >& in) {
+        QSet< int > out;
+        for (int v : in) {
+            out.insert(v);
+        }
+        return out;
+    };
+    auto checkGeometryAgainstQt = [ &w, tv, sm, &toSet ]() {
+        const QModelIndexList ref = sm->selectedIndexes();
+        QCOMPARE(w.selectedCellCount(), ref.size());
+        QSet< int > refCols, refRows, refFullCols, refFullRows;
+        for (const QModelIndex& i : ref) {
+            refCols.insert(i.column());
+            refRows.insert(tv->toActualRow(i.row()));
+        }
+        const QModelIndexList refColIdx = sm->selectedColumns();
+        for (const QModelIndex& i : refColIdx) {
+            refFullCols.insert(i.column());
+        }
+        const QModelIndexList refRowIdx = sm->selectedRows();
+        for (const QModelIndex& i : refRowIdx) {
+            refFullRows.insert(tv->toActualRow(i.row()));
+        }
+        QCOMPARE(toSet(w.getSelectedDataframeCoumns(false)), refCols);
+        QCOMPARE(toSet(w.getSelectedDataframeRows(false)), refRows);
+        QCOMPARE(toSet(w.getFullySelectedDataframeColumns(false)), refFullCols);
+        QCOMPARE(toSet(w.getFullySelectedDataframeRows(false)), refFullRows);
+    };
+    // ⑧-1 不相交两段
+    selectRect(0, 0, 1, 1);
+    {
+        const QItemSelection extra(tv->model()->index(2, 2), tv->model()->index(3, 3));
+        sm->select(extra, QItemSelectionModel::Select);
+    }
+    checkGeometryAgainstQt();
+    // ⑧-2 重叠两段（叠加到 ⑧-1 上）
+    {
+        const QItemSelection overlap(tv->model()->index(1, 1), tv->model()->index(2, 2));
+        sm->select(overlap, QItemSelectionModel::Select);
+    }
+    checkGeometryAgainstQt();
+    // ⑧-3 整列选中（全行 × 单列）→ 整列判定命中、整行判定不命中
+    selectRect(0, 1, tv->model()->rowCount() - 1, 1);
+    checkGeometryAgainstQt();
+    QCOMPARE(w.getFullySelectedDataframeColumns(false).size(), 1);
+    QVERIFY(w.getFullySelectedDataframeRows(false).isEmpty());
+    // ⑧-4 全选 → 所有模型列（含尾部预留空白列）整列命中，与 Qt 参照一致
+    tv->selectAll();
+    checkGeometryAgainstQt();
+    QCOMPARE(w.getFullySelectedDataframeColumns(false).size(), tv->model()->columnCount());
+    w.hide();
+}
+
+// 全选卡顿修复（2026-10-19）：大选区不再物化 selectedIndexes 的性能守卫。
+// 夹具 20000 行 × 200 列 = 402 万格。旧实现实测（同夹具）：selectAll 整链 1079ms、
+// 几何接口 524ms、代表样式 935ms、显示格式 55ms——它要物化 QModelIndex/QPoint/
+// DATableCellStyle 三份百万级列表（Qt5 下大元素逐个堆分配）、做三次全量一致性扫描，
+// 并让 Qt 的 selectedColumns/selectedRows 按 O(列×行) 逐格判定；列数再宽一个量级
+// 就是用户实测的"界面冻结数十秒"。新实现全部走区间运算，应在毫秒级返回。
+void DATableDataTest::testSelectAllLargeSelectionPerf()
+{
+    if (!mPandasOk) {
+        QSKIP("pandas not available");
+    }
+    pybind11::dict scope;
+    pybind11::exec(R"(
+import pandas as pd, numpy as np
+df = pd.DataFrame(np.arange(20000 * 200, dtype="int64").reshape(20000, 200),
+                  columns=["c%03d" % i for i in range(200)])
+)",
+                   pybind11::globals(),
+                   scope);
+    DA::DAPyDataFrame df(scope[ "df" ]);
+    QVERIFY(!df.isNone());
+    DA::DAData d(df);
+    DA::DATableMetadataRegistry registry(nullptr);
+    DA::DADataOperateOfDataFrameWidget w(d, &registry);
+    w.resize(800, 400);
+    w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+    DA::DADataTableView* tv = w.getDataTableView();
+    QVERIFY(tv != nullptr);
+    const int modelRows = tv->model()->rowCount();
+    const int modelCols = tv->model()->columnCount();
+    QVERIFY2(modelRows * modelCols > 1000000,
+             qPrintable(QStringLiteral("fixture too small: %1x%2").arg(modelRows).arg(modelCols)));
+
+    // 角格点击的等价入口：selectAll 同步触发 selectionChanged → 代表样式/
+    // 显示格式计算，计时覆盖整条选区变化处理链
+    QElapsedTimer t;
+    t.start();
+    tv->selectAll();
+    const qint64 msSelectAll = t.elapsed();
+
+    // 选区规模自检（确认守卫打在真的大选区上），并验证几何计数不物化
+    QCOMPARE(w.selectedCellCount(), modelRows * modelCols);
+    QCOMPARE(w.selectionSegmentCount(), 1);
+
+    t.restart();
+    const QList< int > cols = w.getSelectedDataframeCoumns(false);
+    const QList< int > rows = w.getSelectedDataframeRows(false);
+    const qint64 msGeometry = t.elapsed();
+    QCOMPARE(cols.size(), modelCols);
+    QCOMPARE(rows.size(), modelRows);
+
+    // 整列/整行判定：旧实现经 Qt 的 selectedColumns/selectedRows 是 O(列×行)
+    t.restart();
+    const QList< int > fullCols = w.getFullySelectedDataframeColumns(false);
+    const QList< int > fullRows = w.getFullySelectedDataframeRows(false);
+    const qint64 msFullSpan     = t.elapsed();
+    QCOMPARE(fullCols.size(), modelCols);
+    QCOMPARE(fullRows.size(), modelRows);
+
+    // 显示格式（点击链路里的第二个消费者，经 collectSelectedColumns 走整列判定）
+    t.restart();
+    w.getCurrentColumnDisplayFormat();
+    const qint64 msFormat = t.elapsed();
+
+    // 代表样式（点击链路里的主要消费者，走列级快路径）
+    t.restart();
+    QVERIFY(w.getCurrentCellStyle().isNull());
+    const qint64 msStyle = t.elapsed();
+
+    qDebug().noquote() << QStringLiteral("DATableDataTest::testSelectAllLargeSelectionPerf: cells=%1 "
+                                         "selectAll=%2ms geometry=%3ms fullSpan=%4ms format=%5ms style=%6ms")
+                              .arg(w.selectedCellCount())
+                              .arg(msSelectAll)
+                              .arg(msGeometry)
+                              .arg(msFullSpan)
+                              .arg(msFormat)
+                              .arg(msStyle);
+    // 防劣化上限：单步 < 200ms（新实现实测均为毫秒级；旧实现在同夹具下
+    // selectAll 1079ms / geometry 524ms / style 935ms，会全部触线）
+    QVERIFY2(msSelectAll < 200, qPrintable(QStringLiteral("selectAll too slow: %1 ms").arg(msSelectAll)));
+    QVERIFY2(msGeometry < 200, qPrintable(QStringLiteral("selection geometry too slow: %1 ms").arg(msGeometry)));
+    QVERIFY2(msFullSpan < 200, qPrintable(QStringLiteral("full row/column span too slow: %1 ms").arg(msFullSpan)));
+    QVERIFY2(msFormat < 200, qPrintable(QStringLiteral("display format too slow: %1 ms").arg(msFormat)));
+    QVERIFY2(msStyle < 200, qPrintable(QStringLiteral("representative style too slow: %1 ms").arg(msStyle)));
     w.hide();
 }
 

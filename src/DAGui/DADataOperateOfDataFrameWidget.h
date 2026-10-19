@@ -149,7 +149,7 @@ public:
     int selectionSegmentCount() const;
     // 选区包围盒（闭区间；无选区返回 false）
     bool selectionBoundingBox(int* rowBegin, int* rowEnd, int* colBegin, int* colEnd) const;
-    // 选中单元数（几何去重；会物化选中索引，只在多段选区分支用）
+    // 选中单元数（几何去重；按选区区间累加宽×高，不物化索引）
     int selectedCellCount() const;
     // 当前单元格（数据源绝对坐标；声明在 public——007 状态栏统计用）：无有效当前格或越出数据范围返回 false
     bool currentActualCell(int* actualRow, int* actualCol) const;
@@ -379,6 +379,11 @@ protected:
 private:
     // 视图行号（滑动窗内逻辑行）转数据源绝对行号：数据操作唯一换算点
     int toActualRow(int viewRow) const;
+    // 选区是否与行级/单元格级样式相交（样式键是稀疏表且为数据源绝对行号，
+    // windowStart 用于换算回窗口内逻辑行；全选卡顿修复的快路径判定用，
+    // 条目数远小于选区格数，避免把整个选区物化成逐格列表）
+    bool selectionIntersectsRowStyles(const QItemSelection& sel, int windowStart) const;
+    bool selectionIntersectsCellStyles(const QItemSelection& sel, int windowStart) const;
     // 数据源真实数据行数/列数（不含尾部预留的空白行列）
     int dataRowCount() const;
     int dataColumnCount() const;

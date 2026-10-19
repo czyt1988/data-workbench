@@ -100,6 +100,31 @@ QSet< QPair< QString, int > > toIdentSet(const QList< QPair< QString, int > >& i
     }
     return res;
 }
+
+// 一维闭区间的合并覆盖长度（「整列/整行是否全选」判定用）：排序后归并相邻/重叠段再累加，
+// 对重叠选区段也不会重复计数。按值传入以便就地排序（段数 = 触及该列/行的选区段数，很小）
+int mergedSpanCoverage(QVector< QPair< int, int > > spans)
+{
+    if (spans.isEmpty()) {
+        return 0;
+    }
+    std::sort(spans.begin(), spans.end());
+    int covered  = 0;
+    int curStart = spans.first().first;
+    int curEnd   = spans.first().second;
+    for (int i = 1; i < spans.size(); ++i) {
+        const QPair< int, int >& s = spans.at(i);
+        if (s.first > curEnd + 1) {
+            covered += curEnd - curStart + 1;
+            curStart  = s.first;
+            curEnd    = s.second;
+        } else {
+            curEnd = qMax(curEnd, s.second);
+        }
+    }
+    covered += curEnd - curStart + 1;
+    return covered;
+}
 }
 
 //===================================================
@@ -912,12 +937,9 @@ int DADataOperateOfDataFrameWidget::pasteFromClipboard()
     // 定位选区左上角；无选区时用当前光标格
     QModelIndex anchor;
     if (QItemSelectionModel* sm = ui->tableView->selectionModel()) {
-        const QModelIndexList idxs = sm->selectedIndexes();
-        if (!idxs.isEmpty()) {
-            anchor = idxs.first();
-        } else {
-            anchor = sm->currentIndex();
-        }
+        // 段列表取首个区间左上角（等价于旧 selectedIndexes().first()，不物化整个选区）
+        const QItemSelection sel = sm->selection();
+        anchor                   = sel.isEmpty() ? sm->currentIndex() : sel.first().topLeft();
     }
     if (!anchor.isValid()) {
         daWarning << tr("Please select a cell to paste into");  // cn:请先选中要粘贴的起始单元格
@@ -1412,31 +1434,33 @@ DADataTableView* DADataOperateOfDataFrameWidget::getDataTableView() const
  */
 QList< int > DADataOperateOfDataFrameWidget::getSelectedDataframeCoumns(bool ensureInDataframe) const
 {
+    QList< int > res;
     QItemSelectionModel* selModel = ui->tableView->selectionModel();
     if (!selModel) {
-        return QList< int >();
+        return res;
     }
-    QSet< int > res;
-    const QModelIndexList selindexs = selModel->selectedIndexes();
+    // 按选区区间展开列号（全选卡顿修复：不再 selectedIndexes 物化整个选区，
+    // 全选时开销从 窗口行数×列数 降为 选中列数）
+    int dfCols = -1;
     if (ensureInDataframe) {
         // 确保返回的列数都在dataframe里
         DAPyDataFrame df = getDataframe();
         if (df.isNone()) {
-            return QList< int >();
+            return res;
         }
-        auto shape = df.shape();
-        for (const QModelIndex& i : selindexs) {
-            if (i.column() < (int)shape.second) {
-                res.insert(i.column());
+        dfCols = static_cast< int >(df.shape().second);
+    }
+    QSet< int > colSet;
+    const QItemSelection sel = selModel->selection();
+    for (const QItemSelectionRange& r : sel) {
+        for (int c = r.left(); c <= r.right(); ++c) {
+            if (dfCols >= 0 && c >= dfCols) {
+                continue;
             }
-        }
-    } else {
-        // 不确保返回的列数都在dataframe里
-        for (const QModelIndex& i : selindexs) {
-            res.insert(i.column());
+            colSet.insert(c);
         }
     }
-    return res.values();
+    return colSet.values();
 }
 
 /**
@@ -1446,22 +1470,26 @@ QList< int > DADataOperateOfDataFrameWidget::getSelectedDataframeCoumns(bool ens
  */
 QList< int > DADataOperateOfDataFrameWidget::getSelectedDataframeRows(bool ensureInDataframe) const
 {
+    QList< int > res;
     QItemSelectionModel* selModel = ui->tableView->selectionModel();
     if (!selModel) {
-        return QList< int >();
+        return res;
     }
-    QSet< int > res;
-    const QModelIndexList selindexs = selModel->selectedIndexes();
-    const int rowCount              = dataRowCount();
-    for (const QModelIndex& i : selindexs) {
+    // 按选区区间展开行号（全选卡顿修复：不再 selectedIndexes 物化整个选区）
+    const int rowCount = dataRowCount();
+    QSet< int > rowSet;
+    const QItemSelection sel = selModel->selection();
+    for (const QItemSelectionRange& r : sel) {
         // 视图行号是滑动窗内的逻辑行，数据操作一律用数据源绝对行
-        const int actualRow = toActualRow(i.row());
-        if (ensureInDataframe && actualRow >= rowCount) {
-            continue;
+        for (int vr = r.top(); vr <= r.bottom(); ++vr) {
+            const int actualRow = toActualRow(vr);
+            if (ensureInDataframe && actualRow >= rowCount) {
+                continue;
+            }
+            rowSet.insert(actualRow);
         }
-        res.insert(actualRow);
     }
-    return res.values();
+    return rowSet.values();
 }
 
 /**
@@ -1500,58 +1528,97 @@ int DADataOperateOfDataFrameWidget::dataRowCount() const
 
 /**
  * @brief 返回表格中完全选中的一整列的列数
+ *
+ * 按选区区间做「逐列行区间合并」判定（全选卡顿修复：不用
+ * QItemSelectionModel::selectedColumns——它对每列逐行判定，复杂度 O(列×行)，
+ * 200 列×2 万行实测 55ms，宽表下线性放大到秒级；本实现是 O(段数×选中列数)）。
  * @return
  */
 QList< int > DADataOperateOfDataFrameWidget::getFullySelectedDataframeColumns(bool ensureInDataframe) const
 {
+    QList< int > res;
     QItemSelectionModel* selModel = ui->tableView->selectionModel();
     if (!selModel) {
-        return QList< int >();
+        return res;
     }
-    QSet< int > res;
-    const QModelIndexList selindexs = selModel->selectedColumns();
+    QAbstractItemModel* m = ui->tableView->model();
+    if (!m) {
+        return res;
+    }
+    const int rowCount = m->rowCount();
+    const int colCount = m->columnCount();
+    if (rowCount <= 0 || colCount <= 0) {
+        return res;
+    }
+    int colLimit = colCount;
     if (ensureInDataframe) {
         // 确保返回的列数都在dataframe里
         DAPyDataFrame df = getDataframe();
         if (df.isNone()) {
-            return QList< int >();
+            return res;
         }
-        auto shape = df.shape();
-        for (const QModelIndex& i : selindexs) {
-            if (i.column() < (int)shape.second) {
-                res.insert(i.column());
-            }
-        }
-    } else {
-        // 不确保返回的列数都在dataframe里
-        for (const QModelIndex& i : selindexs) {
-            res.insert(i.column());
+        colLimit = qMin(colCount, static_cast< int >(df.shape().second));
+    }
+    // 逐列收集选中的行闭区间（只收 colLimit 内的列）
+    QHash< int, QVector< QPair< int, int > > > colSpans;
+    const QItemSelection sel = selModel->selection();
+    for (const QItemSelectionRange& r : sel) {
+        for (int c = qMax(0, r.left()); c <= r.right() && c < colLimit; ++c) {
+            colSpans[ c ].append(qMakePair(r.top(), r.bottom()));
         }
     }
-    return res.values();
+    // 合并区间后覆盖满全部模型行 → 整列选中
+    for (auto it = colSpans.constBegin(); it != colSpans.constEnd(); ++it) {
+        if (mergedSpanCoverage(it.value()) >= rowCount) {
+            res.append(it.key());
+        }
+    }
+    return res;
 }
 
 /**
  * @brief 返回表格中完全选中的一整行的行数
+ *
+ * 同 getFullySelectedDataframeColumns：按选区区间做「逐行列区间合并」判定，
+ * 不用 QItemSelectionModel::selectedRows（它对每行逐列判定，复杂度 O(行×列)）。
  * @return
  */
 QList< int > DADataOperateOfDataFrameWidget::getFullySelectedDataframeRows(bool ensureInDataframe) const
 {
+    QList< int > res;
     QItemSelectionModel* selModel = ui->tableView->selectionModel();
     if (!selModel) {
-        return QList< int >();
+        return res;
     }
-    QSet< int > res;
-    const QModelIndexList selindexs = selModel->selectedRows();
-    const int rowCount              = dataRowCount();
-    for (const QModelIndex& i : selindexs) {
-        const int actualRow = toActualRow(i.row());
-        if (ensureInDataframe && actualRow >= rowCount) {
+    QAbstractItemModel* m = ui->tableView->model();
+    if (!m) {
+        return res;
+    }
+    const int colCount = m->columnCount();
+    if (colCount <= 0) {
+        return res;
+    }
+    // 逐行（窗口内逻辑行）收集选中的列闭区间
+    QHash< int, QVector< QPair< int, int > > > rowSpans;
+    const QItemSelection sel = selModel->selection();
+    for (const QItemSelectionRange& r : sel) {
+        for (int vr = r.top(); vr <= r.bottom(); ++vr) {
+            rowSpans[ vr ].append(qMakePair(r.left(), r.right()));
+        }
+    }
+    const int dataRows = dataRowCount();
+    for (auto it = rowSpans.constBegin(); it != rowSpans.constEnd(); ++it) {
+        if (mergedSpanCoverage(it.value()) < colCount) {
             continue;
         }
-        res.insert(actualRow);
+        // 视图行号是滑动窗内的逻辑行，返回值一律用数据源绝对行
+        const int actualRow = toActualRow(it.key());
+        if (ensureInDataframe && actualRow >= dataRows) {
+            continue;
+        }
+        res.append(actualRow);
     }
-    return res.values();
+    return res;
 }
 
 int DADataOperateOfDataFrameWidget::getSelectedOneDataframeRow(bool ensureInDataframe) const
@@ -1560,13 +1627,14 @@ int DADataOperateOfDataFrameWidget::getSelectedOneDataframeRow(bool ensureInData
     if (!selModel) {
         return -1;
     }
-    const QModelIndexList selindexs = selModel->selectedIndexes();
-    if (selindexs.isEmpty()) {
-        return -1;
-    }
-    const int rowCount = dataRowCount();
-    for (const QModelIndex& i : selindexs) {
-        const int actualRow = toActualRow(i.row());
+    // 区间遍历（全选卡顿修复：不再 selectedIndexes 物化整个选区）。
+    // 旧实现按 selectedIndexes 的行主序取第一个满足过滤的行：区间内行号自顶向下
+    // 递增、toActualRow 单调，故区间首行不满足过滤时整个区间都不满足，直接跳下一段，
+    // 结果与逐格遍历逐位一致。
+    const int rowCount = ensureInDataframe ? dataRowCount() : 0;
+    const QItemSelection sel = selModel->selection();
+    for (const QItemSelectionRange& r : sel) {
+        const int actualRow = toActualRow(r.top());
         if (!ensureInDataframe || actualRow < rowCount) {
             return actualRow;
         }
@@ -1580,25 +1648,23 @@ int DADataOperateOfDataFrameWidget::getSelectedOneDataframeColumn(bool ensureInD
     if (!selModel) {
         return -1;
     }
-    const QModelIndexList selindexs = selModel->selectedIndexes();
-    if (selindexs.isEmpty()) {
-        return -1;
-    }
+    // 区间遍历（全选卡顿修复：不再 selectedIndexes 物化整个选区）。
+    // 旧实现按 selectedIndexes 的行主序取第一个满足过滤的列：区间内列号自左向右
+    // 递增，故区间首列不满足过滤时整个区间都不满足，直接跳下一段，结果逐位一致。
+    int dfCols = -1;
     if (ensureInDataframe) {
         // 确保返回的列数都在dataframe里
         DAPyDataFrame df = getDataframe();
         if (df.isNone()) {
             return -1;
         }
-        auto shape = df.shape();
-        for (const QModelIndex& i : selindexs) {
-            if (i.column() < (int)shape.second) {
-                return i.column();
-            }
+        dfCols = static_cast< int >(df.shape().second);
+    }
+    const QItemSelection sel = selModel->selection();
+    for (const QItemSelectionRange& r : sel) {
+        if (dfCols < 0 || r.left() < dfCols) {
+            return r.left();
         }
-    } else {
-        // 不确保返回的列数都在dataframe里
-        return selindexs.first().column();
     }
     return -1;
 }
@@ -1996,13 +2062,22 @@ bool DADataOperateOfDataFrameWidget::selectionBoundingBox(int* rowBegin, int* ro
 /**
  * @brief 选中单元数（几何去重）
  *
- * Qt 的 selectedIndexes 保证无重复；会物化选中索引，只在多段选区分支调用。
+ * 按选区区间累加宽×高（selection() 的区间互不重叠，无重复计数；
+ * 全选卡顿修复：不再物化 selectedIndexes）。
  * @return 单元数
  */
 int DADataOperateOfDataFrameWidget::selectedCellCount() const
 {
     QItemSelectionModel* sm = tableSelectionModel();
-    return sm ? sm->selectedIndexes().size() : 0;
+    if (!sm) {
+        return 0;
+    }
+    qint64 count = 0;
+    const QItemSelection sel = sm->selection();
+    for (const QItemSelectionRange& r : sel) {
+        count += qint64(r.width()) * qint64(r.height());
+    }
+    return static_cast< int >(qMin< qint64 >(count, INT_MAX));
 }
 
 /**
@@ -2885,6 +2960,60 @@ void DADataOperateOfDataFrameWidget::clearStyleAll()
     push(cmd.release());
 }
 
+namespace
+{
+// 小选区逐格精确比对的格数上限：选区不超过它且存在行级/单元格级样式时才逐格
+// （全选卡顿修复）；超过则不做逐格一致性证明（见 getCurrentCellStyle 注释）
+constexpr qint64 c_styleExactScanCellLimit = 10000;
+
+// 逐属性一致性流式累加器：不物化选区样式列表（全选时是 窗口行数×列数 的
+// QList<DATableCellStyle>，宽表下千万级堆分配直接冻结界面），只保留首项样式
+// 与三个属性的一致标志；判定语义与旧实现的逐属性全量扫描一致
+class CellStyleConsensus
+{
+public:
+    void add(const DATableCellStyle& s)
+    {
+        if (!mHaveFirst) {
+            mFirst     = s;
+            mHaveFirst = true;
+            return;
+        }
+        mBgOK   = mBgOK && (s.backgroundValid() == mFirst.backgroundValid())
+                && (!mFirst.backgroundValid() || s.background() == mFirst.background());
+        mFgOK   = mFgOK && (s.foregroundValid() == mFirst.foregroundValid())
+                && (!mFirst.foregroundValid() || s.foreground() == mFirst.foreground());
+        mFontOK = mFontOK && (s.fontValid() == mFirst.fontValid())
+                && (!mFirst.fontValid() || s.font() == mFirst.font());
+    }
+
+    DATableCellStyle take()
+    {
+        DATableCellStyle result;
+        if (!mHaveFirst) {
+            return result;
+        }
+        if (mBgOK && mFirst.backgroundValid()) {
+            result.setBackground(mFirst.background());
+        }
+        if (mFgOK && mFirst.foregroundValid()) {
+            result.setForeground(mFirst.foreground());
+        }
+        if (mFontOK && mFirst.fontValid()) {
+            result.setFont(mFirst.font());
+        }
+        return result;
+    }
+
+private:
+    DATableCellStyle mFirst;
+    bool mHaveFirst { false };
+    bool mBgOK { true };
+    bool mFgOK { true };
+    bool mFontOK { true };
+};
+}  // namespace
+
 /**
  * @brief 获取选中区代表的样式
  *
@@ -2892,6 +3021,18 @@ void DADataOperateOfDataFrameWidget::clearStyleAll()
  * - 所有单元格该属性值相同 → 该属性 valid，返回具体值
  * - 该属性在不同单元格有不同值 → 该属性 invalid（ribbon 不调整该控件）
  * 无选中时返回空样式。
+ *
+ * @note 性能（全选卡顿修复）：旧实现把选区物化成逐格列表再逐格 resolveCellStyle，
+ * 全选时是 窗口行数×列数 的 QModelIndex/QPoint/DATableCellStyle 三份大列表
+ * （宽表下千万级堆分配，界面冻结数十秒）。现按三级策略计算：
+ * 1) 快路径（精确）：选区内没有行级/单元格级样式 → 每格最终样式只由列级样式决定，
+ *    一致性只需比较各选中列的列样式（含"无样式"档），O(选中列数)；
+ * 2) 小选区（精确）：选区格数 ≤ c_styleExactScanCellLimit 且有行级/单元格级样式，
+ *    走逐格流式比对（CellStyleConsensus，不物化列表）；
+ * 3) 大选区（近似）：既有行级/单元格级样式、选区又超阈值时，不再逐格证明一致性，
+ *    返回空样式（ribbon 控件保持原状态）。样式指示是提示性 UI，为它扫描几十万格
+ *    不值得（Excel 同场景也只认活动单元格格式）。
+ * 路径 1)/2) 与旧实现逐位等价（含尾部预留空白行列的遍历语义）；3) 是有意取舍。
  * @return 代表样式
  */
 DATableCellStyle DADataOperateOfDataFrameWidget::getCurrentCellStyle() const
@@ -2900,87 +3041,105 @@ DATableCellStyle DADataOperateOfDataFrameWidget::getCurrentCellStyle() const
     if (!mStyleManager || !mModel) {
         return result;
     }
-    // 收集选中区所有单元格的 resolveCellStyle
-    QList< DATableCellStyle > styles;
-    QList< int > fullCols = getFullySelectedDataframeColumns(false);
-    QList< int > fullRows = getFullySelectedDataframeRows(false);
-    const QList< QPoint > cells = getSelectedDataframeCells(false);
-
-    if (!fullCols.isEmpty()) {
-        // 整列选中：取列级 resolveCellStyle（用 actualRow=0 采样）
-        // 但要检查所有选中列的一致性，且需考虑行级/单元格级叠加
-        // 简化：用所有选中单元格的 resolveCellStyle 判断一致性
-        for (const QPoint& p : cells) {
-            styles.append(mStyleManager->resolveCellStyle(p.x(), p.y()));
-        }
-        if (styles.isEmpty()) {
-            // cells 为空但 fullCols 非空（极端情况），用列级样式
-            for (int col : std::as_const(fullCols)) {
-                styles.append(mStyleManager->resolveCellStyle(0, col));
-            }
-        }
-    } else if (!fullRows.isEmpty()) {
-        for (const QPoint& p : cells) {
-            styles.append(mStyleManager->resolveCellStyle(p.x(), p.y()));
-        }
-        if (styles.isEmpty()) {
-            for (int row : std::as_const(fullRows)) {
-                styles.append(mStyleManager->resolveCellStyle(row, 0));
-            }
-        }
-    } else {
-        for (const QPoint& p : cells) {
-            styles.append(mStyleManager->resolveCellStyle(p.x(), p.y()));
-        }
-    }
-
-    if (styles.isEmpty()) {
+    QItemSelectionModel* sm = ui->tableView->selectionModel();
+    if (!sm) {
         return result;
     }
-
-    // 对每个属性独立判断一致性
-    const DATableCellStyle& first = styles.first();
-
-    // background
-    bool bgConsistent = true;
-    for (int i = 1; i < styles.size(); ++i) {
-        if (styles[ i ].backgroundValid() != first.backgroundValid()
-            || (first.backgroundValid() && styles[ i ].background() != first.background())) {
-            bgConsistent = false;
-            break;
+    const QItemSelection sel = sm->selection();
+    if (sel.isEmpty()) {
+        return result;
+    }
+    // 选区格数与选中列集合（区间运算，不物化索引）
+    qint64 cellCount   = 0;
+    QSet< int > selCols;
+    for (const QItemSelectionRange& r : sel) {
+        cellCount += qint64(r.width()) * qint64(r.height());
+        for (int c = r.left(); c <= r.right(); ++c) {
+            selCols.insert(c);
         }
     }
-    if (bgConsistent && first.backgroundValid()) {
-        result.setBackground(first.background());
+    const int windowStart   = mModel->getCacheWindowStartRow();
+    const bool rowStyleHit  = selectionIntersectsRowStyles(sel, windowStart);
+    const bool cellStyleHit = rowStyleHit ? false : selectionIntersectsCellStyles(sel, windowStart);
+    if (!rowStyleHit && !cellStyleHit) {
+        // 1) 快路径：每格最终样式 = 列级样式（或无），一致性由选中列的列样式决定
+        //（尾部预留空白列没有列样式，参与比较后与旧实现的逐格遍历等价）
+        CellStyleConsensus acc;
+        for (int c : std::as_const(selCols)) {
+            acc.add(mStyleManager->hasColumnStyle(c) ? mStyleManager->getColumnStyle(c) : DATableCellStyle());
+        }
+        return acc.take();
     }
-
-    // foreground
-    bool fgConsistent = true;
-    for (int i = 1; i < styles.size(); ++i) {
-        if (styles[ i ].foregroundValid() != first.foregroundValid()
-            || (first.foregroundValid() && styles[ i ].foreground() != first.foreground())) {
-            fgConsistent = false;
-            break;
+    if (cellCount > c_styleExactScanCellLimit) {
+        // 3) 大选区 + 行/格级样式：放弃精确一致性（见函数注释）
+        return result;
+    }
+    // 2) 小选区：逐格流式比对（范围含尾部预留空白行列，与旧实现一致）
+    CellStyleConsensus acc;
+    for (const QItemSelectionRange& r : sel) {
+        for (int row = r.top(); row <= r.bottom(); ++row) {
+            const int actualRow = toActualRow(row);
+            for (int col = r.left(); col <= r.right(); ++col) {
+                acc.add(mStyleManager->resolveCellStyle(actualRow, col));
+            }
         }
     }
-    if (fgConsistent && first.foregroundValid()) {
-        result.setForeground(first.foreground());
-    }
+    return acc.take();
+}
 
-    // font
-    bool fontConsistent = true;
-    for (int i = 1; i < styles.size(); ++i) {
-        if (styles[ i ].fontValid() != first.fontValid()
-            || (first.fontValid() && styles[ i ].font() != first.font())) {
-            fontConsistent = false;
-            break;
+/**
+ * @brief 选区是否与行级样式相交（稀疏键表判定，不展开选区）
+ *
+ * 样式键是数据源绝对行号，减窗口起始行换算回窗口内逻辑行后与区间比对；
+ * 全 invalid 的空样式不参与叠加（mergeFrom 只覆盖 valid 属性），视同不相交。
+ * @param sel 选区区间列表
+ * @param windowStart 当前窗口起始行
+ * @return 相交返回 true
+ */
+bool DADataOperateOfDataFrameWidget::selectionIntersectsRowStyles(const QItemSelection& sel, int windowStart) const
+{
+    if (!mStyleManager) {
+        return false;
+    }
+    const QList< int > styledRows = mStyleManager->styledRows();
+    for (int actualRow : styledRows) {
+        if (mStyleManager->getRowStyle(actualRow).isNull()) {
+            continue;
+        }
+        const int viewRow = actualRow - windowStart;
+        for (const QItemSelectionRange& r : sel) {
+            if (viewRow >= r.top() && viewRow <= r.bottom()) {
+                return true;
+            }
         }
     }
-    if (fontConsistent && first.fontValid()) {
-        result.setFont(first.font());
-    }
+    return false;
+}
 
-    return result;
+/**
+ * @brief 选区是否与单元格级样式相交（稀疏键表判定，不展开选区）
+ * @param sel 选区区间列表
+ * @param windowStart 当前窗口起始行
+ * @return 相交返回 true
+ */
+bool DADataOperateOfDataFrameWidget::selectionIntersectsCellStyles(const QItemSelection& sel, int windowStart) const
+{
+    if (!mStyleManager) {
+        return false;
+    }
+    const QList< QPair< int, int > > styledCells = mStyleManager->styledCells();
+    for (const QPair< int, int >& key : styledCells) {
+        if (mStyleManager->getCellStyle(key.first, key.second).isNull()) {
+            continue;
+        }
+        const int viewRow = key.first - windowStart;
+        for (const QItemSelectionRange& r : sel) {
+            if (viewRow >= r.top() && viewRow <= r.bottom() && key.second >= r.left() && key.second <= r.right()) {
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 /**
@@ -3828,11 +3987,12 @@ std::optional< QPair< int, int > > DADataOperateOfDataFrameWidget::findScanRowRa
     }
     int minR = INT_MAX;
     int maxR = INT_MIN;
-    const QModelIndexList idxs = sm->selectedIndexes();
-    for (const QModelIndex& i : idxs) {
-        const int ar = toActualRow(i.row());
-        minR         = qMin(minR, ar);
-        maxR         = qMax(maxR, ar);
+    // 按选区区间取包围盒（全选卡顿修复：不再 selectedIndexes 物化整个选区；
+    // toActualRow 随视图行单调，区间顶/底的映射即最小/最大）
+    const QItemSelection sel = sm->selection();
+    for (const QItemSelectionRange& r : sel) {
+        minR = qMin(minR, toActualRow(r.top()));
+        maxR = qMax(maxR, toActualRow(r.bottom()));
     }
     if (maxR < minR) {
         return std::nullopt;
@@ -3856,10 +4016,11 @@ std::optional< QPair< int, int > > DADataOperateOfDataFrameWidget::findScanColRa
     }
     int minC = INT_MAX;
     int maxC = INT_MIN;
-    const QModelIndexList idxs = sm->selectedIndexes();
-    for (const QModelIndex& i : idxs) {
-        minC = qMin(minC, i.column());
-        maxC = qMax(maxC, i.column());
+    // 按选区区间取包围盒（全选卡顿修复：不再 selectedIndexes 物化整个选区）
+    const QItemSelection sel = sm->selection();
+    for (const QItemSelectionRange& r : sel) {
+        minC = qMin(minC, r.left());
+        maxC = qMax(maxC, r.right());
     }
     if (maxC < minC) {
         return std::nullopt;
