@@ -42,6 +42,7 @@ from enum import Enum
 from .workflow import DAWorkflow
 from .signal_manager import DASignalManager, DAWorkflowState
 from ._debug import wf_dbg as _wf_dbg_
+from DAWorkbench.DAPyBase.da_logger import log_function_call  # 慢日志装饰器（slow=True 时计时）
 
 def _wf_dbg(*args):
     _wf_dbg_("Exec", *args)
@@ -467,6 +468,9 @@ class DAWorkflowExecutor:
 
         return (global_nodes, isolated_nodes, begin_nodes)
 
+    @log_function_call(slow=True,
+                       slow_tag="python.workflow.executor.executeNode",
+                       slow_detail=lambda a, k, r: f"node={a[1] if len(a) > 1 else k.get('node_id', '-')}")
     def _execute_node(self, node_id: str, transmit: bool = True) -> bool:
         """
         执行单个节点

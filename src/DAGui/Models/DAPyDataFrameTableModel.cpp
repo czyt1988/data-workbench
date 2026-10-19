@@ -1,32 +1,10 @@
 ﻿#include "DAPyDataFrameTableModel.h"
 #include "Commands/DACommandsDataFrame.h"
+#include "DALog.h"
 #include <QUndoStack>
 #include <QPointer>
 #include <algorithm>
 #include <QCache>
-#ifndef DAPYDATAFRAMETABLEMODULE_PROFILE_PRINT
-#define DAPYDATAFRAMETABLEMODULE_PROFILE_PRINT 0
-#endif
-#ifndef DAPYDATAFRAMETABLEMODULE_PROFILE_REALTIME_PRINT
-#define DAPYDATAFRAMETABLEMODULE_PROFILE_REALTIME_PRINT 1
-#endif
-#if DAPYDATAFRAMETABLEMODULE_PROFILE_PRINT
-#include <QElapsedTimer>
-#if DAPYDATAFRAMETABLEMODULE_PROFILE_REALTIME_PRINT
-#define DAPYDATAFRAMETABLEMODEL_CALL_ADD(d_valuename)                                                                  \
-    do {                                                                                                               \
-        ++(d_ptr->d_valuename);                                                                                        \
-        if (d_ptr->d_valuename % 10000 == 0) {                                                                         \
-            qDebug() << #d_valuename "=" << d_ptr->d_valuename;                                                        \
-        }                                                                                                              \
-    } while (0)
-#else
-#define DAPYDATAFRAMETABLEMODEL_CALL_ADD(d_valuename) ++(d_ptr->d_valuename)
-#endif
-#else
-// do nothing
-#define DAPYDATAFRAMETABLEMODEL_CALL_ADD
-#endif
 namespace DA
 {
 class DAPyDataFrameTableModel::PrivateData
@@ -49,11 +27,6 @@ public:
     int extraRow { 1 };  ///< 扩展的行数，也就是会多显示出externRow个空白的行，一般多显示出来的是为了用户添加数据用的
     int minShowRow { 20 };    ///< 最小显示的行数
     int minShowColumn { 4 };  ///< 最小显示的列数
-#if DAPYDATAFRAMETABLEMODULE_PROFILE_PRINT
-    mutable std::size_t cntheaderData { 0 };
-    mutable std::size_t cntcolumnCount { 0 };
-    mutable std::size_t cntdata { 0 };
-#endif
     int dataframeRow { 0 };        ///< dataframe的行
     int dataframeColumn { 0 };     ///< dataframe的列
     QList< QString > columnsName;  ///< 列名
@@ -145,15 +118,6 @@ DAPyDataFrameTableModel::DAPyDataFrameTableModel(QUndoStack* stack, QObject* par
     : DAAbstractCacheWindowTableModel(parent), DA_PIMPL_CONSTRUCT
 {
     d_ptr->undoStack = stack;
-}
-
-DAPyDataFrameTableModel::~DAPyDataFrameTableModel()
-{
-#if DAPYDATAFRAMETABLEMODULE_PROFILE_PRINT
-    qDebug() << "cntheaderData=" << d_ptr->cntheaderData;
-    qDebug() << "cntcolumnCount=" << d_ptr->cntcolumnCount;
-    qDebug() << "cntdata=" << d_ptr->cntdata;
-#endif
 }
 
 QVariant DAPyDataFrameTableModel::actualHeaderData(int actualSection, Qt::Orientation orientation, int role) const
@@ -291,17 +255,10 @@ void DAPyDataFrameTableModel::setDAData(const DAData& d)
 
 void DAPyDataFrameTableModel::setDataFrame(const DAPyDataFrame& d)
 {
+    DA_SLOW_LOG_SCOPE("dagui.model.setDataFrame");
     // 缓存好必要的信息
-#if DAPYDATAFRAMETABLEMODULE_PROFILE_PRINT
-    QElapsedTimer __elasper;
-    __elasper.start();
-    qDebug() << "setDAData begin";
-#endif
     d_ptr->dataframe = d;
     refreshData();
-#if DAPYDATAFRAMETABLEMODULE_PROFILE_PRINT
-    qDebug() << "setDAData after refresh,cost:" << __elasper.elapsed() << " ms";
-#endif
 }
 
 void DAPyDataFrameTableModel::setUseCacheMode(bool on)
@@ -334,9 +291,6 @@ void DAPyDataFrameTableModel::cacheShape()
     d->dataframeRow    = static_cast< int >(shape.first);
     d->dataframeColumn = static_cast< int >(shape.second);
     d->columnsName     = d->dataframe.columns();
-#if DAPYDATAFRAMETABLEMODULE_PROFILE_PRINT
-
-#endif
 }
 
 void DAPyDataFrameTableModel::cacheRowShape()

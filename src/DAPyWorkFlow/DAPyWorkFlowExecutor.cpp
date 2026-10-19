@@ -7,6 +7,7 @@
 #include "DAPyWorkFlowAPI.h"
 #include <QDebug>
 #include <pybind11/functional.h>
+#include "DALog.h"
 
 namespace DA
 {
@@ -151,6 +152,7 @@ void DAPyWorkFlowExecutor::initExecutor(const DAPyWorkFlow& workflow)
  */
 bool DAPyWorkFlowExecutor::execute()
 {
+    DA_SLOW_LOG_SCOPE("dapyworkflow.executor.execute");
     DA_WF_DBG("[C++] Executor::execute: start synchronous execution");
     if (isNone()) {
         qWarning() << "DAPyWorkFlowExecutor::execute: executor is not initialized";

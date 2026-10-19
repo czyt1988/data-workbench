@@ -45,6 +45,7 @@ from typing import Optional, Union
 
 from .types import Input, Output, Parameter
 from ._debug import wf_dbg as _wf_dbg_
+from DAWorkbench.DAPyBase.da_logger import log_function_call  # 慢日志装饰器（slow=True 时计时）
 
 # 颜色类型：支持 hex 字符串 "#rrggbb" 或 RGB 元组 (r, g, b) / (r, g, b, a)
 ColorType = Union[str, tuple]
@@ -398,6 +399,7 @@ class DAWorkflowNode:
         except AttributeError:
             pass
 
+    @log_function_call(slow=True, slow_tag="python.workflow.node.run")
     def run(self) -> bool:
         """
         无参执行入口，由 DAWorkflowExecutor 调用。

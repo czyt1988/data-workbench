@@ -194,17 +194,27 @@ decltype(auto) slowLogCall(const char* tag, const char* file, int line, const ch
     ::DA::DASlowLogScope DA_SLOW_LOG_CONCAT(da_slow_scope_, __COUNTER__)( \
         tag, (ms), __FILE__, __LINE__, Q_FUNC_INFO)
 
-#define DA_SLOW_LOG_SCOPE_DETAIL_IMPL(tag, detail, var) \
+// 详情类宏为可变参数：detail 通常是 lambda，捕获列表/参数列表里的顶层逗号
+// 会被预处理器当作宏参数分隔符，必须用 __VA_ARGS__ 重新拼接
+#define DA_SLOW_LOG_SCOPE_DETAIL_IMPL(tag, var, ...) \
     ::DA::DASlowLogScope var(tag, __FILE__, __LINE__, Q_FUNC_INFO); \
-    var.setDetail(detail)
+    var.setDetail(__VA_ARGS__)
 
 // 作用域计时 + 惰性详情：detail 必须是可调用对象，仅超阈值时调用一次
-#define DA_SLOW_LOG_SCOPE_DETAIL(tag, detail) \
-    DA_SLOW_LOG_SCOPE_DETAIL_IMPL(tag, detail, DA_SLOW_LOG_CONCAT(da_slow_scope_, __COUNTER__))
+#define DA_SLOW_LOG_SCOPE_DETAIL(tag, ...) \
+    DA_SLOW_LOG_SCOPE_DETAIL_IMPL(tag, DA_SLOW_LOG_CONCAT(da_slow_scope_, __COUNTER__), __VA_ARGS__)
 
-// 测量单个表达式并保留返回值
-#define DA_SLOW_LOG_CALL(tag, expr) \
-    ::DA::slowLogCall(tag, __FILE__, __LINE__, Q_FUNC_INFO, [&]() -> decltype(auto) { return (expr); })
+#define DA_SLOW_LOG_SCOPE_DETAIL_MS_IMPL(tag, ms, var, ...) \
+    ::DA::DASlowLogScope var(tag, (ms), __FILE__, __LINE__, Q_FUNC_INFO); \
+    var.setDetail(__VA_ARGS__)
+
+// 作用域计时 + 显式阈值（毫秒）+ 惰性详情
+#define DA_SLOW_LOG_SCOPE_DETAIL_MS(tag, ms, ...) \
+    DA_SLOW_LOG_SCOPE_DETAIL_MS_IMPL(tag, ms, DA_SLOW_LOG_CONCAT(da_slow_scope_, __COUNTER__), __VA_ARGS__)
+
+// 测量单个表达式并保留返回值（表达式可含顶层逗号，如多参数函数调用）
+#define DA_SLOW_LOG_CALL(tag, ...) \
+    ::DA::slowLogCall(tag, __FILE__, __LINE__, Q_FUNC_INFO, [&]() -> decltype(auto) { return (__VA_ARGS__); })
 
 #define DA_SLOW_LOG_COUNTER_IMPL(tag, var, ptr) \
     static ::DA::DASlowLogCounter* const ptr = ::DA::DASlowLog::counter(#tag); \
@@ -222,8 +232,9 @@ decltype(auto) slowLogCall(const char* tag, const char* file, int line, const ch
 
 #define DA_SLOW_LOG_SCOPE(tag) ((void)0)
 #define DA_SLOW_LOG_SCOPE_MS(tag, ms) ((void)0)
-#define DA_SLOW_LOG_SCOPE_DETAIL(tag, detail) ((void)0)
-#define DA_SLOW_LOG_CALL(tag, expr) (expr)
+#define DA_SLOW_LOG_SCOPE_DETAIL(tag, ...) ((void)0)
+#define DA_SLOW_LOG_SCOPE_DETAIL_MS(tag, ms, ...) ((void)0)
+#define DA_SLOW_LOG_CALL(tag, ...) (__VA_ARGS__)
 #define DA_SLOW_LOG_COUNTER(tag) ((void)0)
 
 #endif

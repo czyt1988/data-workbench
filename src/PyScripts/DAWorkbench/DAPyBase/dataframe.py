@@ -24,7 +24,7 @@ import copy
 '''
 
 
-@log_function_call
+@log_function_call(slow=True)
 def da_drop_irow(df: pd.DataFrame, index: List[int]):
     '''
     传入行索引，并把对应的行删除
@@ -36,7 +36,7 @@ def da_drop_irow(df: pd.DataFrame, index: List[int]):
     df.drop(index=i, axis=0, inplace=True)
 
 
-@log_function_call
+@log_function_call(slow=True)
 def da_drop_icolumn(df: pd.DataFrame, index: List[int]):
     '''
     传入列索引，并把对应的列删除
@@ -48,7 +48,7 @@ def da_drop_icolumn(df: pd.DataFrame, index: List[int]):
     df.drop(cols, axis=1, inplace=True)
 
 
-@log_function_call
+@log_function_call(slow=True)
 def da_drop_na(df: pd.DataFrame, axis: int = 0, how: Literal['any', 'all'] = 'any', index: Optional[List[int]] = None, thresh: Optional[int] = None):
     '''
     删除dataframe中的nan值
@@ -71,7 +71,7 @@ def da_drop_na(df: pd.DataFrame, axis: int = 0, how: Literal['any', 'all'] = 'an
         df.dropna(axis=axis, how=how, subset=subset, inplace=True)
 
 
-@log_function_call
+@log_function_call(slow=True)
 def da_drop_duplicates(df: pd.DataFrame, keep: Literal['first', 'last'] = 'first', index: Optional[List[int]] = None, ignore_index=False):
     '''
     删除dataframe中的重复值
@@ -89,7 +89,7 @@ def da_drop_duplicates(df: pd.DataFrame, keep: Literal['first', 'last'] = 'first
                        ignore_index=ignore_index, inplace=True)
 
 
-@log_function_call
+@log_function_call(slow=True)
 def da_fill_na(df: pd.DataFrame, value: Union[Scalar, dict, None] = None, axis: Optional[Axis] = None, limit: Optional[int] = None, downcast: Optional[dict] = None):
     '''
     填充dataframe中的nan值
@@ -111,7 +111,7 @@ def da_fill_na(df: pd.DataFrame, value: Union[Scalar, dict, None] = None, axis: 
     df.fillna(axis=axis, value=value, downcast=downcast, inplace=True)
 
 
-@log_function_call
+@log_function_call(slow=True)
 def da_ffill_na(df: pd.DataFrame, axis: Optional[Axis] = None, limit: Optional[int] = None, downcast: Optional[dict] = None):
     '''
     填充dataframe中的nan值
@@ -124,7 +124,7 @@ def da_ffill_na(df: pd.DataFrame, axis: Optional[Axis] = None, limit: Optional[i
     df.ffill(axis=axis, inplace=True, limit=limit, downcast=downcast)
 
 
-@log_function_call
+@log_function_call(slow=True)
 def da_bfill_na(df: pd.DataFrame, axis: Optional[Axis] = None, limit: Optional[int] = None, limit_area: Optional[Literal['inside', 'outside']] = None):
     '''
     填充dataframe中的nan值
@@ -137,7 +137,7 @@ def da_bfill_na(df: pd.DataFrame, axis: Optional[Axis] = None, limit: Optional[i
     df.bfill(axis=axis, inplace=True, limit=limit, limit_area=limit_area)
 
 
-@log_function_call
+@log_function_call(slow=True)
 def da_nstd_filter_outlier(df: pd.DataFrame, n=3, axis: Optional[int] = None, index: Optional[List[int]] = None):
     """
     使用n倍标准差法过滤DataFrame的行或列（直接在原数据上修改）
@@ -175,7 +175,7 @@ def da_nstd_filter_outlier(df: pd.DataFrame, n=3, axis: Optional[int] = None, in
         df.drop(df.index[~keep_rows], inplace=True)
 
 
-@log_function_call
+@log_function_call(slow=True)
 def da_fill_interpolate(df: pd.DataFrame, method: Literal['spline', 'polynomial'] = 'spline', order: int = 1, axis: int = 0, limit: Optional[int] = None,
                         limit_direction: Literal["forward", "backward", "both"] = "forward", limit_area: Literal["inside", "outside", None] = None, downcast: Optional[dict] = None):
     '''
@@ -194,7 +194,7 @@ def da_fill_interpolate(df: pd.DataFrame, method: Literal['spline', 'polynomial'
                    downcast=downcast, inplace=True)
 
 
-@log_function_call
+@log_function_call(slow=True)
 def da_clip_outlier(df: pd.DataFrame, lower: Optional[float] = None, upper: Optional[float] = None, axis: int = 0):
     '''
     替换dataframe的异常值
@@ -207,7 +207,7 @@ def da_clip_outlier(df: pd.DataFrame, lower: Optional[float] = None, upper: Opti
     df.clip(lower=lower, upper=upper, axis=axis, inplace=True)
 
 
-@log_function_call
+@log_function_call(slow=True)
 def da_create_pivot_table(df: pd.DataFrame, values=None, index=None, columns=None, aggfunc: Literal['mean', 'sum', 'size'] = 'mean',
                           margins: bool = False, margins_name: str = "All", sort: bool = False):
     '''
@@ -224,7 +224,7 @@ def da_create_pivot_table(df: pd.DataFrame, values=None, index=None, columns=Non
     return df.pivot_table(values=values, index=index, columns=columns, aggfunc=aggfunc, margins=margins, margins_name=margins_name, sort=sort)
 
 
-@log_function_call
+@log_function_call(slow=True)
 def da_eval_datas(df: pd.DataFrame, expr: str, parser: str = "pandas", engine: Optional[str] = None, local_dict=None, global_dict=None, resolvers=(), level: int = 0, target=None):
     '''
     pandas.DataFrame.eval的wrapper（expr 为完整赋值表达式，如 "C = A + B"）
@@ -244,7 +244,7 @@ def da_eval_datas(df: pd.DataFrame, expr: str, parser: str = "pandas", engine: O
                 resolvers=resolvers, level=level, target=target)
 
 
-@log_function_call
+@log_function_call(slow=True)
 def da_eval_column(df: pd.DataFrame, target_column: str, body: str, parser: str = "pandas", engine: Optional[str] = None):
     '''
     计算列求值（004 T1.23）：把 RHS 表达式 body 求值后写入 target_column 列
@@ -290,7 +290,7 @@ def da_needs_backtick(name: str) -> bool:
     return not (s.isidentifier() and not keyword.iskeyword(s))
 
 
-@log_function_call
+@log_function_call(slow=True)
 def da_make_eval_expr(target: str, body: str) -> str:
     '''
     构建 pandas eval 完整赋值表达式："目标列 = 表达式体"（004 T1.23）
@@ -302,7 +302,7 @@ def da_make_eval_expr(target: str, body: str) -> str:
     return '%s = %s' % (t, body)
 
 
-@log_function_call
+@log_function_call(slow=True)
 def da_expr_depends(expr: str, columns):
     '''
     提取表达式引用的列名（与实际列的交集，按 columns 顺序返回，004 T1.23 依赖追踪）
@@ -334,7 +334,7 @@ def da_expr_depends(expr: str, columns):
     return [str(c) for c in columns if str(c) in names]
 
 
-@log_function_call
+@log_function_call(slow=True)
 def da_head_copy(df: pd.DataFrame, n: int) -> pd.DataFrame:
     '''
     取头部前 n 行的独立副本（对话框实时预览用，004：预览与执行同一算子，
@@ -343,7 +343,7 @@ def da_head_copy(df: pd.DataFrame, n: int) -> pd.DataFrame:
     return df.head(max(0, int(n))).copy()
 
 
-@log_function_call
+@log_function_call(slow=True)
 def da_get_column_copy(df: pd.DataFrame, col: int) -> pd.Series:
     '''
     按列位置取一列的独立副本（分列/合列命令的列级撤销快照，004 T1.9 D4）
@@ -355,7 +355,7 @@ def da_get_column_copy(df: pd.DataFrame, col: int) -> pd.Series:
     return df.iloc[:, col].copy()
 
 
-@log_function_call
+@log_function_call(slow=True)
 def da_set_column(df: pd.DataFrame, name: str, series: pd.Series):
     '''
     按列名把 series 写回列（计算列重算命令的 undo 还原旧列，004 T1.23）
@@ -379,7 +379,7 @@ def _da_try_numeric(values: pd.Series) -> pd.Series:
     return values
 
 
-@log_function_call
+@log_function_call(slow=True)
 def da_split_column(df: pd.DataFrame, col: int, mode: str = 'char', delimiter: str = ',',
                     pattern: Optional[str] = None, widths=None,
                     max_columns: Optional[int] = None, overflow: str = 'discard',
@@ -493,7 +493,7 @@ def da_split_column(df: pd.DataFrame, col: int, mode: str = 'char', delimiter: s
     return names
 
 
-@log_function_call
+@log_function_call(slow=True)
 def da_groupby_aggregate(df: pd.DataFrame, keys, values, funcs) -> pd.DataFrame:
     '''
     分组聚合（004 T1.22）：产出长格式聚合结果表（新 DataFrame，不改原表）
@@ -539,7 +539,7 @@ def da_groupby_aggregate(df: pd.DataFrame, keys, values, funcs) -> pd.DataFrame:
     return pd.concat(parts, axis=1).reset_index()
 
 
-@log_function_call
+@log_function_call(slow=True)
 def da_group_count(df: pd.DataFrame, keys) -> int:
     '''
     分组数（004 T1.22 对话框「预估结果行数」）：与 da_groupby_aggregate 同口径
@@ -548,7 +548,7 @@ def da_group_count(df: pd.DataFrame, keys) -> int:
     return int(df.groupby([str(k) for k in keys], dropna=False).ngroups)
 
 
-@log_function_call
+@log_function_call(slow=True)
 def da_transpose(df: pd.DataFrame) -> pd.DataFrame:
     '''
     转置（004 T1.27）：行列互换，产出**新** DataFrame（不改原表，R14 非破坏默认）
@@ -562,7 +562,7 @@ def da_transpose(df: pd.DataFrame) -> pd.DataFrame:
     return out
 
 
-@log_function_call
+@log_function_call(slow=True)
 def da_melt(df: pd.DataFrame, id_vars, value_vars, var_name: str = 'variable', value_name: str = 'value') -> pd.DataFrame:
     '''
     宽转长 melt（004 T1.27）：产出**新** DataFrame（不改原表，R14 非破坏默认）
@@ -582,7 +582,7 @@ def da_melt(df: pd.DataFrame, id_vars, value_vars, var_name: str = 'variable', v
     return out
 
 
-@log_function_call
+@log_function_call(slow=True)
 def da_merge_columns(df: pd.DataFrame, cols, sep: str = '', skip_na: bool = True, name: str = 'merged'):
     '''
     就地合并列（004 T1.9）：按 cols 给定顺序把各列值拼接为新列，
@@ -630,7 +630,7 @@ def da_merge_columns(df: pd.DataFrame, cols, sep: str = '', skip_na: bool = True
     return (pos, name)
 
 
-@log_function_call
+@log_function_call(slow=True)
 def da_query_datas(df: pd.DataFrame, expr: Optional[str]):
     '''
     pandas.DataFrame.query的wrapper
@@ -761,7 +761,7 @@ def _da_find_hits_equality(df: pd.DataFrame, data, row_range, col_range):
     return rr + r_lo, cc + c_lo
 
 
-@log_function_call
+@log_function_call(slow=True)
 def da_search_data(df: pd.DataFrame, data, start_row=None, start_col=None,
                    case_sensitive: bool = False, use_regex: bool = False, whole_cell: bool = False,
                    row_range=None, col_range=None, max_hits: int = 100000):
@@ -826,7 +826,7 @@ def _da_coerce_to_dtype(dtype, text: str):
     return None
 
 
-@log_function_call
+@log_function_call(slow=True)
 def da_find_and_replace(df: pd.DataFrame, find: str, replace: str,
                         case_sensitive: bool = False, use_regex: bool = False, whole_cell: bool = False,
                         row_range=None, col_range=None):
@@ -908,7 +908,7 @@ def da_find_and_replace(df: pd.DataFrame, find: str, replace: str,
     return (rows.astype(np.int32), cols.astype(np.int32), old_sorted, new_sorted)
 
 
-@log_function_call
+@log_function_call(slow=True)
 def da_write_cells(df: pd.DataFrame, rows, cols, values):
     """
     按 (行, 列) 位置批量写回单元格值（替换命令的撤销/重做用，D4 值记录）
@@ -939,7 +939,7 @@ def da_write_cells(df: pd.DataFrame, rows, cols, values):
         df.iloc[rows_arr[idx], c] = [values[i] for i in idx]
 
 
-@log_function_call
+@log_function_call(slow=True)
 def da_fill_selection(df: pd.DataFrame, col: int, row_start: int, row_end: int, mode: str):
     """
     选区填充求值（005 T1.24，设计稿 §4.8）：在某一列的选中行区间 [row_start, row_end]
@@ -1012,7 +1012,7 @@ def da_fill_selection(df: pd.DataFrame, col: int, row_start: int, row_end: int, 
     return (np.asarray(rows, dtype=np.int32), values)
 
 
-@log_function_call
+@log_function_call(slow=True)
 def da_fill_series(count: int, kind: str = 'linear', start=None, step=None, stop=None, date_unit: str = 'D'):
     """
     序列填充求值（005 T1.24）：生成一个长度为 count 的序列（数值等差 / 日期步进），
@@ -1076,7 +1076,7 @@ def _da_resolve_column_position(df: pd.DataFrame, name: str, occurrence: int) ->
     return -1
 
 
-@log_function_call
+@log_function_call(slow=True)
 def da_validate_dataframe(df: pd.DataFrame, rules):
     """
     数据校验求值（005 T1.25，设计稿 §4.9）：逐规则求违规行清单，**只读不改 df**。
@@ -1147,7 +1147,7 @@ def da_validate_dataframe(df: pd.DataFrame, rules):
     return results
 
 
-@log_function_call
+@log_function_call(slow=True)
 def da_data_select(df: pd.DataFrame, index: str, lower: Optional[float] = None, upper: Optional[float] = None):
     '''
     :param df: pd.DataFrame
@@ -1292,7 +1292,7 @@ def _apply_row_permutation(df: pd.DataFrame, perm):
     df.index = sorted_df.index
 
 
-@log_function_call
+@log_function_call(slow=True)
 def da_sort(df: pd.DataFrame, keys=None, by=None, ascending: bool = True):
     '''
     多键稳定排序，就地重排 df 并返回置换 perm
@@ -1323,7 +1323,7 @@ def da_sort(df: pd.DataFrame, keys=None, by=None, ascending: bool = True):
     return perm.tolist()
 
 
-@log_function_call
+@log_function_call(slow=True)
 def da_reorder_rows(df: pd.DataFrame, perm):
     '''
     按给定置换就地重排行：new[i] = old[perm[i]]（与 da_sort 返回的 perm 同语义）。
@@ -1336,7 +1336,7 @@ def da_reorder_rows(df: pd.DataFrame, perm):
     _apply_row_permutation(df, perm)
 
 
-@log_function_call
+@log_function_call(slow=True)
 def da_column_stats(df: pd.DataFrame, column=None, cols=None, row_range=None, unique_limit=0):
     '''
     列统计：兼容路径返回 (min, max, median)；选区路径返回 list[dict]（每列全部指标）
@@ -1378,7 +1378,7 @@ def da_column_stats(df: pd.DataFrame, column=None, cols=None, row_range=None, un
     return out
 
 
-@log_function_call
+@log_function_call(slow=True)
 def da_to_csv(df: pd.DataFrame, path: str, sep: str):
     '''
     把dataframe写到文件
@@ -1395,7 +1395,7 @@ def da_to_csv(df: pd.DataFrame, path: str, sep: str):
     df.to_csv(path, sep=sep, index=False)
 
 
-@log_function_call
+@log_function_call(slow=True)
 def da_to_excel(df: pd.DataFrame, path: str):
     '''
     把dataframe写到文件
@@ -1410,7 +1410,7 @@ def da_to_excel(df: pd.DataFrame, path: str):
     df.to_excel(path, index=False)
 
 
-@log_function_call
+@log_function_call(slow=True)
 def da_to_pickle(df: pd.DataFrame, path: str):
     '''
     把dataframe写到文件
@@ -1425,7 +1425,7 @@ def da_to_pickle(df: pd.DataFrame, path: str):
     df.to_pickle(path)
 
 
-@log_function_call
+@log_function_call(slow=True)
 def da_to_parquet(df: pd.DataFrame, path: str):
     '''
     把dataframe写到文件
@@ -1440,7 +1440,7 @@ def da_to_parquet(df: pd.DataFrame, path: str):
     df.to_parquet(path)
 
 
-@log_function_call
+@log_function_call(slow=True)
 def da_from_pickle(df: pd.DataFrame, path: str):
     '''
     从文件加载到dataframe
@@ -1461,7 +1461,7 @@ def da_from_pickle(df: pd.DataFrame, path: str):
         df[col] = tmp[col]
 
 
-@log_function_call
+@log_function_call(slow=True)
 def da_from_parquet(df: pd.DataFrame, path: str):
     '''
     从文件加载到dataframe
@@ -1482,7 +1482,7 @@ def da_from_parquet(df: pd.DataFrame, path: str):
         df[col] = tmp[col]
 
 
-@log_function_call
+@log_function_call(slow=True)
 def da_astype(df: pd.DataFrame, colsIndex: List[int], dtype: np.dtype):
     '''
     通过列索引改变dataframe的数据类型
@@ -1495,7 +1495,7 @@ def da_astype(df: pd.DataFrame, colsIndex: List[int], dtype: np.dtype):
     df[cols] = df[cols].astype(dtype)
 
 
-@log_function_call
+@log_function_call(slow=True)
 def da_setnan(df: pd.DataFrame, rowindex: List[int], colindex: List[int]):
     '''
     设置nan值
@@ -1518,7 +1518,7 @@ def da_setnan(df: pd.DataFrame, rowindex: List[int], colindex: List[int]):
         df[col_name].values[rows] = np.nan
 
 
-@log_function_call
+@log_function_call(slow=True)
 def da_cast_to_num(df: pd.DataFrame,
                    colsIndex: List[int],
                    errors: str = 'coerce',
@@ -1533,7 +1533,7 @@ def da_cast_to_num(df: pd.DataFrame,
             df[col], errors=errors, downcast=downcast)
 
 
-@log_function_call
+@log_function_call(slow=True)
 def da_cast_to_datetime(df: pd.DataFrame,
                         colsIndex: List[int],
                         errors: str = 'coerce',
@@ -1561,7 +1561,7 @@ def da_cast_to_datetime(df: pd.DataFrame,
             origin=origin, cache=cache)
 
 
-@log_function_call
+@log_function_call(slow=True)
 def da_setindex(df: pd.DataFrame, colsIndex: List[int]):
     '''
     设置索引
@@ -1592,7 +1592,7 @@ def da_setindex(df: pd.DataFrame, colsIndex: List[int]):
     df.set_index(cols, inplace=True)
 
 
-@log_function_call
+@log_function_call(slow=True)
 def da_insert_nanrow(df: pd.DataFrame, row: int):
     '''
     插入一行，插入的行默认为nan
@@ -1613,7 +1613,7 @@ def da_insert_nanrow(df: pd.DataFrame, row: int):
         df.__init__(pd.concat([df1, dfnanrow, df2], ignore_index=False))
 
 
-@log_function_call
+@log_function_call(slow=True)
 def da_insert_column(df: pd.DataFrame, col: int, name: str,
                      dtype: Optional[np.dtype] = None,
                      defaultvalue=np.nan,
@@ -1653,7 +1653,7 @@ def da_insert_column(df: pd.DataFrame, col: int, name: str,
         df.insert(col, name, s)
 
 
-@log_function_call
+@log_function_call(slow=True)
 def da_itake_column(df: pd.DataFrame, col: int) -> pd.Series:
     '''提取一列
 
@@ -1666,7 +1666,7 @@ def da_itake_column(df: pd.DataFrame, col: int) -> pd.Series:
     return s
 
 
-@log_function_call
+@log_function_call(slow=True)
 def da_insert_at(df: pd.DataFrame, col: int, series: pd.Series):
     df.insert(col, series.name, series)
 

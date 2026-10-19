@@ -7,6 +7,7 @@
 #include "numpy/DAPyDType.h"
 // DAMessageHandler
 #include "DALogCategory.h"
+#include "DASlowLog.h"
 //===================================================
 // using DA namespace -- 禁止在头文件using！！
 //===================================================
@@ -145,6 +146,11 @@ int DADataPyDataFrame::tableColumnType(std::size_t column) const
  */
 DATableDataBlock DADataPyDataFrame::fetchBlock(std::size_t startRow, std::size_t rowCount)
 {
+    DA_SLOW_LOG_SCOPE_DETAIL("dadata.pydataframe.fetchBlock", [startRow, rowCount]() {
+        return QStringLiteral("start=%1 count=%2")
+            .arg(static_cast< qulonglong >(startRow))
+            .arg(static_cast< qulonglong >(rowCount));
+    });
     try {
         DAPyDataFrame df                  = dataframe();
         std::pair< std::size_t, std::size_t > sp = df.shape();
@@ -176,6 +182,9 @@ DATableDataBlock DADataPyDataFrame::fetchBlock(std::size_t startRow, std::size_t
  */
 std::optional< DATableStatsResult > DADataPyDataFrame::computeColumnStats(const DATableScanRequest& req) const
 {
+    DA_SLOW_LOG_SCOPE_DETAIL("dadata.pydataframe.computeColumnStats", [&req]() {
+        return QStringLiteral("cols=%1").arg(req.columns.size());
+    });
     try {
         DAPyDataFrame df = dataframe();
         if (df.isNone()) {

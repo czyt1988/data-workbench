@@ -1,5 +1,6 @@
 #include "DACommandsDataFrame.h"
 #include "DAPyScripts.h"
+#include "DASlowLog.h"
 #include "DATableKeyRemap.h"
 #include "Models/DADataTableModel.h"
 #include <algorithm>
@@ -559,6 +560,7 @@ DACommandDataFrame_sortRows::DACommandDataFrame_sortRows(
 
 void DACommandDataFrame_sortRows::undo()
 {
+    DA_SLOW_LOG_SCOPE("dagui.command.sortRows.undo");
     if (mPerm.isEmpty()) {
         return;  // exec 未成功过，无置换可撤
     }
@@ -575,6 +577,7 @@ void DACommandDataFrame_sortRows::undo()
 
 bool DACommandDataFrame_sortRows::exec()
 {
+    DA_SLOW_LOG_SCOPE("dagui.command.sortRows.exec");
     DAPyScriptsDataFrame& pydf = DAPyScripts::getDataFrame();
     if (mPerm.isEmpty()) {
         // 首次：算子计算置换并就地重排（多键稳定排序，NaN/NaT 恒排最后）

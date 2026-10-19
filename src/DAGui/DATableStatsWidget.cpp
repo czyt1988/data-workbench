@@ -4,6 +4,7 @@
 #include "Models/DADataTableModel.h"
 #include "DATableDataSource.h"
 #include "DATableScan.h"
+#include "DALog.h"
 // qt
 #include <QFontMetrics>
 #include <QHBoxLayout>
@@ -131,6 +132,9 @@ void DATableStatsWidget::refreshNow()
     const int segCount = mPage->selectionSegmentCount();
     const int rows     = rowEnd - rowBegin + 1;   // 闭区间转行数
     const int cols     = colEnd - colBegin + 1;
+    DA_SLOW_LOG_SCOPE_DETAIL("dagui.stats.refreshNow", [cols, rows]() {
+        return QStringLiteral("columns=%1 row_range=%2").arg(cols).arg(rows);
+    });
     // 「始终」部分：当前单元格引用 + 选区规模
     int curRow = 0, curCol = 0;
     const bool hasCur = mPage->currentActualCell(&curRow, &curCol);

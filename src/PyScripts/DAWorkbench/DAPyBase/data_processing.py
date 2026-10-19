@@ -9,7 +9,7 @@ import pywt
 from DAWorkbench.DAPyBase.da_logger import log_function_call  # type: ignore # 引入装饰器
 
 
-@log_function_call
+@log_function_call(slow=True)
 def spectrum_analysis(waveform, sampling_rate, fftsize=None, phases=False,
                       nextpower2=False, db=False, detrend=None):
     '''
@@ -75,7 +75,7 @@ def spectrum_analysis(waveform, sampling_rate, fftsize=None, phases=False,
     return freq, amplitudes
 
 
-@log_function_call
+@log_function_call(slow=True)
 def butterworth_filter(waveform, sampling_freq, filter_order, filter_type='lowpass', cutoff_freq=0,
                        upper_freq=0, lower_freq=0,  phases=False):
     '''
@@ -123,7 +123,7 @@ def butterworth_filter(waveform, sampling_freq, filter_order, filter_type='lowpa
     return filtered_data
 
 
-@log_function_call
+@log_function_call(slow=True)
 def peak_analysis(waveform, sampling_rate, height=None, direction=0, threshold=None, distance=None, prominence=None,
                   width=None, wlen=None, rel_height=0.5, plateau_size=None):
     '''
@@ -186,7 +186,7 @@ def peak_analysis(waveform, sampling_rate, height=None, direction=0, threshold=N
     return peak_data
 
 
-@log_function_call
+@log_function_call(slow=True)
 def wavelet_cwt(waveform, sampling_rate, scales, wavelet, sampling_period, method='conv', axis=-1):
     '''
     连续小波变换
@@ -213,7 +213,7 @@ def wavelet_cwt(waveform, sampling_rate, scales, wavelet, sampling_period, metho
     return coef, freqs
 
 
-@log_function_call
+@log_function_call(slow=True)
 def wavelet_dwt(waveform, sampling_rate, wavelet, mode='symmetric', level=None, axis=-1):
     '''
     离散小波变换
@@ -228,7 +228,7 @@ def wavelet_dwt(waveform, sampling_rate, wavelet, mode='symmetric', level=None, 
     return pywt.wavedec(waveform, wavelet=wavelet, mode=mode, level=level, axis=axis)
 
 
-@log_function_call
+@log_function_call(slow=True)
 def da_spectrum_analysis(waveform, sampling_rate, args: Optional[Dict] = None):
     '''
     频谱分析,此函数主要针对一维波形进行频谱分析
@@ -252,7 +252,7 @@ def da_spectrum_analysis(waveform, sampling_rate, args: Optional[Dict] = None):
         })
 
 
-@log_function_call
+@log_function_call(slow=True)
 def da_butterworth_filter(waveform, sampling_freq, filter_order, args: Optional[Dict] = None):
     '''
     巴特沃斯滤波器，此函数主要针对一维波形进行滤波
@@ -266,7 +266,7 @@ def da_butterworth_filter(waveform, sampling_freq, filter_order, args: Optional[
     })
 
 
-@log_function_call
+@log_function_call(slow=True)
 def da_peak_analysis(waveform, sampling_rate, args: Optional[Dict] = None):
     '''
     峰值分析
@@ -295,7 +295,7 @@ def da_peak_analysis(waveform, sampling_rate, args: Optional[Dict] = None):
     return peak_data
 
 
-@log_function_call
+@log_function_call(slow=True)
 def short_time_fourier_transform(waveform, sampling_rate, window='hann', nperseg=256,
                                  noverlap=None, nfft=None, detrend=False,
                                  return_onesided=True, boundary='zeros', padded=True,
@@ -353,7 +353,7 @@ def short_time_fourier_transform(waveform, sampling_rate, window='hann', nperseg
     return times, frequencies, Zxx
 
 
-@log_function_call
+@log_function_call(slow=True)
 def da_stft_analysis(waveform, sampling_rate, args: Optional[Dict] = None):
     '''
     短时傅里叶变换分析的DataFrame封装版本
@@ -387,7 +387,7 @@ def da_stft_analysis(waveform, sampling_rate, args: Optional[Dict] = None):
     }
 
 
-@log_function_call
+@log_function_call(slow=True)
 def da_wavelet_cwt(waveform, sampling_rate, scales, args: Optional[Dict] = None):
     '''
     连续小波变换
@@ -413,7 +413,7 @@ def da_wavelet_cwt(waveform, sampling_rate, scales, args: Optional[Dict] = None)
     }
 
 
-@log_function_call
+@log_function_call(slow=True)
 def da_wavelet_dwt(waveform, sampling_rate, args: Optional[Dict] = None):
     '''
     离散小波变换
