@@ -1,4 +1,5 @@
 #include "AppMainWindow.h"
+#include "DAApplication.h"
 // stl
 #include <iostream>
 // windows system only
@@ -124,12 +125,20 @@ int main(int argc, char* argv[])
     }
     // 打印程序默认路径
     daDebug << DA::DADir();
+    // 慢日志编译期状态 → Python 侧环境变量：必须在 Python 初始化之前写入，
+    // 每次启动都覆盖（用户手动设置无效），避免 Release 版出现
+    // 「Python 侧开了、C++ 侧没编入」的错位（见 DASlowLog / da_logger.py）
+#ifdef DA_ENABLE_SLOW_LOG
+    qputenv("DA_SLOW_LOG_BUILD", "1");
+#else
+    qputenv("DA_SLOW_LOG_BUILD", "0");
+#endif
     // 初始化python环境,不启用python直接返回
     initializePythonInterpreter(earlyConfig);
     // 高清屏的适配
     enableHDPIScaling();
-    // 启动app
-    QApplication app(argc, argv);
+    // 启动app（通用应用类：慢日志事件循环计时 + 主线程卡顿看门狗，见 DAApplication）
+    DA::DAApplication app(argc, argv);
     QApplication::setApplicationVersion(DA_VERSION);
     QApplication::setApplicationName(DA_PROJECT_NAME);
     // 设置 organizationName:保留以兼容第三方库(如 SARibbon)内部 QSettings 两参数构造。

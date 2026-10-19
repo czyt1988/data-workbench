@@ -120,6 +120,12 @@ DAPyDataFrameTableModel::DAPyDataFrameTableModel(QUndoStack* stack, QObject* par
     d_ptr->undoStack = stack;
 }
 
+// 析构必须定义在 .cpp（PIMPL 锚点）：unique_ptr<PrivateData> 的删除器
+// 只能在 PrivateData 完整类型处实例化，隐式内联析构会在使用方编译单元报错
+DAPyDataFrameTableModel::~DAPyDataFrameTableModel()
+{
+}
+
 QVariant DAPyDataFrameTableModel::actualHeaderData(int actualSection, Qt::Orientation orientation, int role) const
 {
     DA_DC(d);

@@ -176,7 +176,9 @@ QString cleanedFuncName(const char* func)
     if (space < 0) {
         space = head.lastIndexOf('*');  // 返回类型带指针（如 int* Foo::bar）
     }
-    return QString::fromUtf8((space >= 0) ? head.mid(space + 1) : head);
+    const QByteArray name = (space >= 0) ? head.mid(space + 1) : head;
+    // 精简结果为空（如某些 lambda 的 Q_FUNC_INFO 形态）时回退原始串，保证字段可用
+    return QString::fromUtf8(name.isEmpty() ? s : name);
 }
 
 QString currentThreadLabel()

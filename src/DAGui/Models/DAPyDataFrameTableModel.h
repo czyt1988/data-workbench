@@ -24,6 +24,7 @@ class DAGUI_API DAPyDataFrameTableModel : public DAAbstractCacheWindowTableModel
     DA_DECLARE_PRIVATE(DAPyDataFrameTableModel)
 public:
     DAPyDataFrameTableModel(QUndoStack* stack, QObject* parent = nullptr);
+    ~DAPyDataFrameTableModel();
 
 public:
     virtual int columnCount(const QModelIndex& parent = QModelIndex()) const override;

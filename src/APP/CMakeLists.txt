@@ -56,6 +56,9 @@ da_add_executable(
     QT_PUBLIC Core Gui Widgets Xml Svg Network
     QT_WIN32_PUBLIC AxContainer
     LINK_PUBLIC DAPluginSupport DAAgent DAPyWorkFlow
+    # 慢日志核心（DASlowLog/DALogger）：DAApplication 与 main.cpp 直接使用，
+    # 按方案要求显式私有链接，不依赖经 DAPluginSupport 等的传递链
+    LINK_PRIVATE DAMessageHandler
     THIRDPARTY ctk SARibbonBar ads qwt python pybind11
     COMPILE_DEFINITIONS_PRIVATE QT_DEPRECATED_WARNINGS
     COMPILE_DEFINITIONS_PUBLIC
