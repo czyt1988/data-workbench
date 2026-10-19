@@ -68,6 +68,24 @@ option(DA_BUILD_PLUGINS
 option(DA_ENABLE_TESTING
     "This option will enable testing"
     OFF)
+# 慢日志：默认在 Debug 配置下自动开启；Release 等配置默认关闭。
+# DA_ENABLE_SLOW_LOG=ON 可强制所有配置开启（用于带调试信息的发布配置，
+# 如 -DDA_ENABLE_SLOW_LOG=ON 搭配 RelWithDebInfo）。
+# DA_ENABLE_SLOW_LOG_IN_DEBUG=OFF 可单独关闭 Debug 配置下的自动开启。
+# 必须顶层全局注入（ODR 一致性）：所有编译单元看到相同的宏展开；
+# Windows 强制使用 VS 多配置生成器，CMAKE_BUILD_TYPE 配置期为空，
+# 因此用生成器表达式在构建期按配置求值，而不是走 DAConfigs.h
+option(DA_ENABLE_SLOW_LOG
+    "Enable slow log instrumentation in all configurations"
+    OFF)
+option(DA_ENABLE_SLOW_LOG_IN_DEBUG
+    "Enable slow log instrumentation in Debug configuration"
+    ON)
+if(DA_ENABLE_SLOW_LOG)
+    add_compile_definitions(DA_ENABLE_SLOW_LOG)
+elseif(DA_ENABLE_SLOW_LOG_IN_DEBUG)
+    add_compile_definitions($<$<CONFIG:Debug>:DA_ENABLE_SLOW_LOG>)
+endif()
 if(DA_AUTO_INSTALL_PREFIX)
     message(STATUS "DA Auto Install")
     set(DA_BIN_DIR_NAME)

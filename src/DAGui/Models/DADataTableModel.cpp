@@ -4,6 +4,7 @@
 #include "DATableComputedColumnStore.h"
 #include "DATableDataSource.h"
 #include "DATableDataBlock.h"
+#include "DALog.h"
 #include <QPointer>
 #include <QColor>
 namespace DA
@@ -229,6 +230,8 @@ int DADataTableModel::columnCount(const QModelIndex& parent) const
 
 QVariant DADataTableModel::actualHeaderData(int actualSection, Qt::Orientation orientation, int role) const
 {
+    // 高频路径（每秒可达数万次）：只做计数器聚合，不逐次输出
+    DA_SLOW_LOG_COUNTER(dagui.model.actualHeaderData);
     DA_DC(d);
     if ((role != Qt::DisplayRole && role != Qt::ToolTipRole && role != Qt::BackgroundRole) || d->isNone()) {
         return QAbstractTableModel::headerData(actualSection, orientation, role);
@@ -295,6 +298,8 @@ Qt::ItemFlags DADataTableModel::actualFlags(int actualRow, int actualColumn) con
 
 QVariant DADataTableModel::actualData(int actualRow, int actualColumn, int role) const
 {
+    // 高频路径（每秒可达数万次）：只做计数器聚合，不逐次输出
+    DA_SLOW_LOG_COUNTER(dagui.model.actualData);
     DA_DC(d);
     if (d->isNone()) {
         return QVariant();

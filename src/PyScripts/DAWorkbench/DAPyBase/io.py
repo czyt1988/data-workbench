@@ -141,7 +141,7 @@ def detect_encoding(file_path, chunk_size=1024):
     return encoding
 
 
-@log_function_call
+@log_function_call(slow=True)
 def read_csv(path: str, args: Optional[Dict] = None) -> pd.DataFrame:
     '''
     读取csv文件
@@ -190,7 +190,7 @@ def read_csv(path: str, args: Optional[Dict] = None) -> pd.DataFrame:
         'utf-8', b'', 0, 1, f"Failed to read CSV file with all tried encodings: {encodings_to_try}")
 
 
-@log_function_call
+@log_function_call(slow=True)
 def read_pkl(path: str, args: Optional[Dict] = None) -> pd.DataFrame:
     '''
     读取pkl文件
@@ -203,7 +203,7 @@ def read_pkl(path: str, args: Optional[Dict] = None) -> pd.DataFrame:
     return _postprocess_df(df)
 
 
-@log_function_call
+@log_function_call(slow=True)
 def read_txt(path: str, args: Optional[Dict] = None) -> pd.DataFrame:
     r'''
     读取txt文件
@@ -222,7 +222,7 @@ def read_txt(path: str, args: Optional[Dict] = None) -> pd.DataFrame:
     return _postprocess_df(df)
 
 
-@log_function_call
+@log_function_call(slow=True)
 def read_excel(path: str, args: Optional[Dict] = None) -> pd.DataFrame:
     '''
     读取excel文件
@@ -234,7 +234,7 @@ def read_excel(path: str, args: Optional[Dict] = None) -> pd.DataFrame:
     return _postprocess_df(df)
 
 
-@log_function_call
+@log_function_call(slow=True)
 def read_parquet(path: str, args: Optional[Dict] = None) -> pd.DataFrame:
     '''
     读取parquet文件
@@ -246,7 +246,7 @@ def read_parquet(path: str, args: Optional[Dict] = None) -> pd.DataFrame:
     return _postprocess_df(df)
 
 
-@log_function_call
+@log_function_call(slow=True)
 def da_read(path: str, args: Optional[Dict] = None):
     '''
     读取文件
@@ -263,7 +263,7 @@ def da_read(path: str, args: Optional[Dict] = None):
     return fun(path, args)
 
 
-@log_function_call
+@log_function_call(slow=True)
 def da_read_and_add_to_datamanager(path: str, args: Optional[Dict] = None):
     '''
     读取文件并添加到数据管理器中
@@ -327,7 +327,7 @@ def add_to_datamanager(df: pd.DataFrame, use_redo: bool = True, name: str = None
 ##################################################
 
 
-@log_function_call
+@log_function_call(slow=True)
 def da_to_csv(df, path: str, args: Optional[Dict] = None):
     '''
     保存csv文件
@@ -337,7 +337,7 @@ def da_to_csv(df, path: str, args: Optional[Dict] = None):
     df.to_csv(path_or_buf=path, **args)
 
 
-@log_function_call
+@log_function_call(slow=True)
 def da_to_excel(df, path: str, args: Optional[Dict] = None):
     '''
     保存excel文件
@@ -347,7 +347,7 @@ def da_to_excel(df, path: str, args: Optional[Dict] = None):
     df.to_excel(path, **args)
 
 
-@log_function_call
+@log_function_call(slow=True)
 def da_to_pickle(df, path: str, args: Optional[Dict] = None):
     '''
     保存pickle文件
@@ -357,7 +357,7 @@ def da_to_pickle(df, path: str, args: Optional[Dict] = None):
     df.to_pickle(path, **args)
 
 
-@log_function_call
+@log_function_call(slow=True)
 def da_to_parquet(df, path: str, args: Optional[Dict] = None):
     '''
     保存parquet文件

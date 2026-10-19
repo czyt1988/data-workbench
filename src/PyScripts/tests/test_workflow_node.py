@@ -41,6 +41,18 @@ _debug_mod = importlib.util.module_from_spec(_debug_spec)
 sys.modules["DAWorkbench.DAWorkFlowPy._debug"] = _debug_mod
 _debug_spec.loader.exec_module(_debug_mod)
 
+# node_def 依赖的慢日志装饰器（DAWorkbench.DAPyBase.da_logger，仅依赖 loguru）。
+# 按路径直接加载并注册桩包，避免触发 DAPyBase/__init__.py 引入 pandas 等重依赖
+_dapybase = types.ModuleType("DAWorkbench.DAPyBase")
+_dapybase.__path__ = [os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "..", "DAWorkbench", "DAPyBase"))]
+sys.modules["DAWorkbench.DAPyBase"] = _dapybase
+_da_logger_path = os.path.join(_dapybase.__path__[0], "da_logger.py")
+_da_logger_spec = importlib.util.spec_from_file_location("DAWorkbench.DAPyBase.da_logger", _da_logger_path)
+_da_logger_mod = importlib.util.module_from_spec(_da_logger_spec)
+sys.modules["DAWorkbench.DAPyBase.da_logger"] = _da_logger_mod
+_da_logger_spec.loader.exec_module(_da_logger_mod)
+
 _node_def_path = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "..", "DAWorkbench", "DAWorkFlowPy", "node_def.py")
 )

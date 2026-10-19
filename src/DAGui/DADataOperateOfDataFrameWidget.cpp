@@ -6,6 +6,7 @@
 #include "DADataPyDataFrame.h"
 #include "DAWaitCursorScoped.h"
 #include "DALogCategory.h"
+#include "DASlowLog.h"
 #include "DATableDataSource.h"
 #include "DATableKeyRemap.h"
 #include "DAPybind11QtCaster.hpp"
@@ -367,6 +368,9 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
     // 选中变化时反向同步 ribbon 控件（只在主窗格连：006e 冻结窗格共享同一 selection model）
     if (auto sm = ui->tableView->selectionModel()) {
         connect(sm, &QItemSelectionModel::selectionChanged, this, [ this ]() {
+            DA_SLOW_LOG_SCOPE_DETAIL("dagui.table.selectionChanged", [this]() {
+                return QStringLiteral("rows=%1 cols=%2").arg(dataRowCount()).arg(dataColumnCount());
+            });
             Q_EMIT currentStyleChanged(getCurrentCellStyle());
             Q_EMIT currentDisplayFormatChanged(getCurrentColumnDisplayFormat());
             // 查找条处于「当前选区」范围时，选区变化经去抖触发重扫（范围基准随选区更新）
@@ -945,6 +949,9 @@ int DADataOperateOfDataFrameWidget::pasteFromClipboard()
         return 0;
     }
     QString text = cb->text();
+    DA_SLOW_LOG_SCOPE_DETAIL("dagui.table.paste", [&text]() {
+        return QStringLiteral("clipboard_len=%1").arg(text.size());
+    });
     if (text.isEmpty()) {
         daWarning << tr("Clipboard is empty");  // cn:剪贴板为空
         return 0;
@@ -2871,6 +2878,12 @@ void DADataOperateOfDataFrameWidget::mergeStyleToSelection(const DATableCellStyl
     QList< int > fullCols = getFullySelectedDataframeColumns(false);
     QList< int > fullRows = getFullySelectedDataframeRows(false);
     const QList< QPoint > cells = getSelectedDataframeCells(false);
+    DA_SLOW_LOG_SCOPE_DETAIL("dagui.table.style.mergeSelection", [&cells, &fullCols, &fullRows]() {
+        return QStringLiteral("cells=%1 fullCols=%2 fullRows=%3")
+            .arg(cells.size())
+            .arg(fullCols.size())
+            .arg(fullRows.size());
+    });
 
     if (cells.isEmpty() && fullCols.isEmpty() && fullRows.isEmpty()) {
         daWarning << tr("Please select a valid cell");  // cn:请选择正确的单元格
@@ -2928,6 +2941,12 @@ void DADataOperateOfDataFrameWidget::applyStyleToSelection(const DATableCellStyl
     QList< int > fullCols = getFullySelectedDataframeColumns(false);
     QList< int > fullRows = getFullySelectedDataframeRows(false);
     const QList< QPoint > cells = getSelectedDataframeCells(false);
+    DA_SLOW_LOG_SCOPE_DETAIL("dagui.table.style.applySelection", [&cells, &fullCols, &fullRows]() {
+        return QStringLiteral("cells=%1 fullCols=%2 fullRows=%3")
+            .arg(cells.size())
+            .arg(fullCols.size())
+            .arg(fullRows.size());
+    });
 
     if (cells.isEmpty() && fullCols.isEmpty() && fullRows.isEmpty()) {
         daWarning << tr("Please select a valid cell");  // cn:请选择正确的单元格
@@ -3408,6 +3427,9 @@ void DADataOperateOfDataFrameWidget::onHeaderClickedWithModifiers(int logicalInd
  */
 void DADataOperateOfDataFrameWidget::sortColumn(int logicalIndex, Qt::SortOrder order)
 {
+    DA_SLOW_LOG_SCOPE_DETAIL("dagui.table.sort.column", [logicalIndex]() {
+        return QStringLiteral("column=%1").arg(logicalIndex);
+    });
     applySortAction(logicalIndex, order, false);
 }
 
@@ -3418,6 +3440,9 @@ void DADataOperateOfDataFrameWidget::sortColumn(int logicalIndex, Qt::SortOrder 
  */
 void DADataOperateOfDataFrameWidget::addSecondarySortColumn(int logicalIndex, Qt::SortOrder order)
 {
+    DA_SLOW_LOG_SCOPE_DETAIL("dagui.table.sort.secondaryColumn", [logicalIndex]() {
+        return QStringLiteral("column=%1").arg(logicalIndex);
+    });
     applySortAction(logicalIndex, order, true);
 }
 
@@ -3435,6 +3460,9 @@ void DADataOperateOfDataFrameWidget::addSecondarySortColumn(int logicalIndex, Qt
  */
 bool DADataOperateOfDataFrameWidget::applySortAction(int logicalIndex, Qt::SortOrder order, bool addKey)
 {
+    DA_SLOW_LOG_SCOPE_DETAIL("dagui.table.sort.action", [this]() {
+        return QStringLiteral("keys=%1").arg(mSortSpec.size());
+    });
     if (mHeaderPickMode) {
         return false;  // 拾取会话中不排序（与点击互斥语义一致）
     }
@@ -3476,12 +3504,15 @@ bool DADataOperateOfDataFrameWidget::applySortAction(int logicalIndex, Qt::SortO
  * 命令生效后按设计稿 §4.1 顺序联动：先样式键重映射（directionalCallback 里
  * styleManager()->onRowsReordered(最近应用置换)）→ 再模型刷新（notifyDataChanged
  * 清块缓存 + 行头 index 变更通知）→ 最后按置换修正选区、视口回顶。
- * 排序路径打点计时（qDebug 开发诊断，验收口径：10 万行 ≤300 ms）。
+ * 排序路径计时走慢日志嵌套作用域（超阈值才写 slow.log，验收口径：10 万行 ≤300 ms）。
  * @param newSpec 新排序规格
  * @return 成功 push 返回 true；算子失败（如混合类型列）提示并保持原规格返回 false
  */
 bool DADataOperateOfDataFrameWidget::applySortSpec(const QVector< QPair< int, Qt::SortOrder > >& newSpec)
 {
+    DA_SLOW_LOG_SCOPE_DETAIL("dagui.table.sort.applySpec", [this, &newSpec]() {
+        return QStringLiteral("rows=%1 keys=%2").arg(dataRowCount()).arg(newSpec.size());
+    });
     DAPyDataFrame df = getDataframe();
     if (df.isNone()) {
         return false;
@@ -3499,14 +3530,6 @@ bool DADataOperateOfDataFrameWidget::applySortSpec(const QVector< QPair< int, Qt
     DATableValidationStore* vaStore             = mValidationStore;
     DATableNoteStore* noteStore                 = mNoteStore;
     DADataOperateOfDataFrameWidget* self        = this;
-    // 相位计时（开发诊断）：callback 在后续 redo/undo 也会执行，用共享指针承载避免悬空
-    struct PhaseTimings
-    {
-        qint64 notifyMs  = 0;
-        qint64 remapMs   = 0;
-        qint64 showRowMs = 0;
-    };
-    QSharedPointer< PhaseTimings > pt(new PhaseTimings);
     // ① 样式键重映射（先于模型刷新；exec/undo 均传最近应用的置换，undo 传逆置换即等价按逆置换重映射）
     cmd->setDirectionalCallBack([ styleMgr, vaStore, noteStore, cmdRaw ](bool isUndo) {
         Q_UNUSED(isUndo);
@@ -3523,26 +3546,25 @@ bool DADataOperateOfDataFrameWidget::applySortSpec(const QVector< QPair< int, Qt
         }
     });
     // ② 模型刷新 → ③ 选区跟随 → 视口回顶（回调范式照 paste 的逐格 notifyDataChanged 写法）
-    cmd->setCallBack([ modle, view, cmdRaw, self, pt ]() {
+    cmd->setCallBack([ modle, view, cmdRaw, self ]() {
         // 排序不改变列值集合 → 条件格式列统计不失效（003 性能决策）：
         // 统计失效挂点走 cellValueChanged 精确信号，排序路径不发该信号，天然不失效
-        QElapsedTimer ct;
+        // 各阶段用嵌套慢日志作用域计时：只在超过各自阈值时写入 slow.log
         if (modle) {
-            ct.start();
+            DA_SLOW_LOG_SCOPE("dagui.table.sort.notify");
             const int rows = modle->actualRowCount();
             const int cols = modle->columnCount();
             modle->notifyDataChanged(0, 0, qMax(0, rows - 1), qMax(0, cols - 1));
             // 行头显示 index 值，排序后 index 随行移动，需通知垂直表头重取
             modle->notifyHeaderDataChanged(Qt::Vertical, 0, qMax(0, rows - 1));
-            pt->notifyMs = ct.elapsed();
         }
         if (view) {
-            ct.restart();
-            self->remapSelectionByPermutation(cmdRaw->lastAppliedPermutation());
-            pt->remapMs = ct.elapsed();
-            ct.restart();
+            {
+                DA_SLOW_LOG_SCOPE("dagui.table.sort.remap");
+                self->remapSelectionByPermutation(cmdRaw->lastAppliedPermutation());
+            }
+            DA_SLOW_LOG_SCOPE("dagui.table.sort.showRow");
             view->showActualRow(0);  // 视口回顶（行位置整体变了，含 undo/redo）
-            pt->showRowMs = ct.elapsed();
         }
         // 排序是破坏式重排：置工程未保存标记（exec/undo 都发，与 004 dataModified 口径一致；
         // 修复 002 遗留缺口——此前排序从不标脏，排序后关工程不提示保存）
@@ -3550,30 +3572,22 @@ bool DADataOperateOfDataFrameWidget::applySortSpec(const QVector< QPair< int, Qt
     });
     // 排序是整表操作（大表算子+刷新可达秒级）：全程忙等待光标（RAII 恢复），避免 UI 假死观感
     DAWaitCursorScoped waitCursor;
-    QElapsedTimer timer;
-    timer.start();
-    if (!cmd->exec()) {
+    bool execOk = false;
+    {
+        DA_SLOW_LOG_SCOPE("dagui.table.sort.exec");
+        execOk = cmd->exec();
+    }
+    if (!execOk) {
         // 算子报错（如 object 列混合类型不可比较）：排序规格回滚到变更前
         daWarning << tr("Cannot sort: the column contains values of incomparable mixed types.");  // cn:无法排序：该列包含不可比较的混合类型
         return false;
     }
-    const qint64 execMs = timer.elapsed();
-    timer.restart();
-    push(cmd.release());
-    const qint64 pushMs = timer.elapsed();
+    {
+        DA_SLOW_LOG_SCOPE("dagui.table.sort.push");
+        push(cmd.release());
+    }
     mSortSpec = newSpec;
     forEachPaneHeader([ this ](DADataHeaderView* hh) { hh->setSortSpec(mSortSpec); });
-    // 排序路径计时打点（开发诊断，英文）：elapsed_ms = exec（算子+回调）+ push（入栈）
-    qDebug().noquote() << QStringLiteral("DADataOperateOfDataFrameWidget::applySortSpec: rows=%1 keys=%2 elapsed_ms=%3 "
-                                         "(exec=%4 push=%5 notify=%6 remap=%7 showRow=%8)")
-                              .arg(dataRowCount())
-                              .arg(keys.size())
-                              .arg(execMs + pushMs)
-                              .arg(execMs)
-                              .arg(pushMs)
-                              .arg(pt->notifyMs)
-                              .arg(pt->remapMs)
-                              .arg(pt->showRowMs);
     return true;
 }
 
@@ -3988,6 +4002,9 @@ void DADataOperateOfDataFrameWidget::onFindDialogClosed()
  */
 void DADataOperateOfDataFrameWidget::runFindScan()
 {
+    DA_SLOW_LOG_SCOPE_DETAIL("dagui.table.findScan", [this]() {
+        return QStringLiteral("text_len=%1").arg(mLastFindOptions.keyword.size());
+    });
     if (!mFindReplaceDialog) {
         return;
     }

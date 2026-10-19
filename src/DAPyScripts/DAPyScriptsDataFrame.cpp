@@ -2,6 +2,7 @@
 #include "DAPybind11QtCaster.hpp"
 #include <QDebug>
 #include "DALogCategory.h"
+#include "DASlowLog.h"
 namespace DA
 {
 
@@ -733,6 +734,11 @@ DAPyScriptsDataFrame::SearchDataResult DAPyScriptsDataFrame::searchData(const DA
                                                                         const std::optional< QPair< int, int > >& colRange,
                                                                         int maxHits) noexcept
 {
+    DA_SLOW_LOG_SCOPE_DETAIL("dapyscripts.dataframe.searchData", [&rowRange, &colRange]() {
+        return QStringLiteral("start_row=%1 start_col=%2")
+            .arg(rowRange.has_value() ? rowRange->first : -1)
+            .arg(colRange.has_value() ? colRange->first : -1);
+    });
     SearchDataResult res;
     try {
         if (value.isEmpty()) {
@@ -941,6 +947,9 @@ bool DAPyScriptsDataFrame::validateDataFrame(const DAPyDataFrame& df,
                                              QList< ValidationRuleResult >* results,
                                              QString* errorMessage) noexcept
 {
+    DA_SLOW_LOG_SCOPE_DETAIL("dapyscripts.dataframe.validate", [&specs]() {
+        return QStringLiteral("rules=%1").arg(specs.size());
+    });
     if (results) {
         results->clear();
     }
@@ -1387,6 +1396,19 @@ DAPyDataFrame DAPyScriptsDataFrame::melt(const DAPyDataFrame& df,
  */
 bool DAPyScriptsDataFrame::sort(DAPyDataFrame& df, const QVector< QPair< int, bool > >& keys, QVector< int >* perm) noexcept
 {
+    DA_SLOW_LOG_SCOPE_DETAIL("dapyscripts.dataframe.sort", [&keys, &df]() {
+        // 详情仅在超阈值时执行；Python 调用可能抛错，兜底捕获保证 noexcept 安全
+        std::size_t rows = 0;
+        try {
+            if (!df.isNone()) {
+                rows = df.shape().first;
+            }
+        } catch (...) {
+        }
+        return QStringLiteral("keys=%1 rows=%2")
+            .arg(keys.size())
+            .arg(static_cast< qulonglong >(rows));
+    });
     if (keys.isEmpty()) {
         return false;
     }
@@ -1425,6 +1447,9 @@ bool DAPyScriptsDataFrame::sort(DAPyDataFrame& df, const QVector< QPair< int, bo
  */
 bool DAPyScriptsDataFrame::reorderRows(DAPyDataFrame& df, const QVector< int >& perm) noexcept
 {
+    DA_SLOW_LOG_SCOPE_DETAIL("dapyscripts.dataframe.reorderRows", [&perm]() {
+        return QStringLiteral("rows=%1").arg(perm.size());
+    });
     if (perm.isEmpty()) {
         return true;
     }
@@ -1491,6 +1516,12 @@ DAPyScriptsDataFrame::SelectionStatsResult DAPyScriptsDataFrame::columnStatsRang
     const DAPyDataFrame& df, const QList< int >& cols, std::size_t rowBegin, std::size_t rowEnd,
     std::size_t uniqueLimit) noexcept
 {
+    DA_SLOW_LOG_SCOPE_DETAIL("dapyscripts.dataframe.columnStatsRange", [&cols, rowBegin, rowEnd]() {
+        return QStringLiteral("cols=%1 row_begin=%2 row_end=%3")
+            .arg(cols.size())
+            .arg(static_cast< qulonglong >(rowBegin))
+            .arg(static_cast< qulonglong >(rowEnd));
+    });
     SelectionStatsResult result;
     if (df.isNone()) {
         return result;

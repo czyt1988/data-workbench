@@ -151,6 +151,7 @@ Python层: DAUtils → DAPyBindQt → DAPyScripts → DAPyCommonWidgets → DAPy
 | 翻译/国际化 | `src/i18n/`, `src/APP/App_zh_CN.ts` | DATranslatorManeger |
 | 崩溃转储 | `src/APP/DADumpCapture.h` | Windows dump 文件生成 |
 | 日志系统 | `src/DAMessageHandler/` | DALogger + daInfo/daWarning/daCritical 便捷宏，详见 `docs/zh/dev-guide/general/logging.md` |
+| 慢日志（性能埋点） | `src/DAMessageHandler/DASlowLog.h`（宏/作用域/计数器）+ `src/APP/DAApplication.h`（事件计时）+ `src/APP/DASlowLogWatchdog.h`（卡顿看门狗） | `DA_SLOW_LOG_*` 宏埋点写独立 `slow.log`（不进 UI 队列）；Debug 自动开启、Release 零残留；开关/阈值/格式详见 [logging.md](docs/zh/dev-guide/general/logging.md) § 慢日志 |
 | PIMPL 宏定义 | `src/DAGlobals.h` | DA_DECLARE_PRIVATE, DA_D, DA_DC 等 |
 | Qt5/Qt6 兼容宏 | `src/DAGlobals.h` | Qt5Qt6Compat_* 系列宏 |
 | 通用 Widgets | `src/DACommonWidgets/` | 按钮、列表、树等基础组件 |
@@ -175,6 +176,7 @@ AI 编写代码时，日志宏的选择直接影响日志是否进入 UI 消息�
 
 - 业务代码用 `daDebug` / `daInfo` / `daWarning` / `daCritical` 宏（`src/DAMessageHandler/DALogCategory.h`），category = `da.user`，既写文件又进 UI 消息队列(**注意：使用da* 的日志是会在界面显示，必须国际化**)
 - `qDebug` / `qInfo` / `qWarning` / `qCritical`（Qt 自身、第三方库）只写文件和控制台，不进 UI 队列
+- 慢日志（性能计时）用 `DA_SLOW_LOG_*` 宏（`src/DAMessageHandler/DASlowLog.h`），内部经 `qCWarning(DA_SLOW)` 写独立 `slow.log`——**不是 `da*` 宏、不进界面消息队列、不需要国际化**（内容纯英文）；禁止用 `da*` 宏输出性能计时
 - 第三方库日志（SARibbon、qwt、ADS、QtWebEngine 等）在文件里可见，排查时不要误认为是本项目代码——看 `[源文件:行号]` 字段，本项目代码文件路径在 `src/` 下
 
 > 📖 何时用 `da*` vs `q*` 的判断标准详见 § 国际化（i18n）规范；日志系统 API、配置、故障排查详见 [docs/zh/dev-guide/general/logging.md](docs/zh/dev-guide/general/logging.md)

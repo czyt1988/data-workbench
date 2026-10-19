@@ -8,7 +8,9 @@
 #include "DAPybind11InQt.h"
 #include "DAPybind11QtCaster.hpp"
 #include <QDebug>
+#include <memory>
 #include "DALogCategory.h"
+#include "DASlowLog.h"
 
 namespace DA
 {
@@ -444,11 +446,18 @@ bool DAPyWorkFlowManager::disconnectNode(const QString& connectionId)
 bool DAPyWorkFlowManager::executeWorkflow()
 {
     DA_D(d);
+    // 慢日志详情只读 int（不触 Python）：作用域退出时 GIL 可能已随 gil 析构释放，
+    // 节点数在 GIL 持有期间先行填充
+    auto nodeCount = std::make_shared< int >(-1);
+    DA_SLOW_LOG_SCOPE_DETAIL("dapyworkflow.manager.executeWorkflow", [nodeCount]() {
+        return QStringLiteral("nodes=%1").arg(*nodeCount);
+    });
     DAPyGILGuard gil;
     if (d->mWorkflow.isNone()) {
         qCritical() << "DAPyWorkFlowManager::executeWorkflow: workflow is invalid";
         return false;
     }
+    *nodeCount = d->mWorkflow.nodeCount();
     // 创建执行器代理（纯 DAPyObjectWrapper 子类）
     DAPyWorkFlowExecutor executor(d->mWorkflow);
     if (executor.isNone()) {

@@ -52,6 +52,7 @@
 #include "Chart/DAChartOperateWidget.h"
 #include "DAAppPluginManager.h"
 #include "DALogCategory.h"
+#include "DASlowLog.h"
 #include "DAAppCore.h"
 #include "DAAppUI.h"
 #include "AppMainWindow.h"
@@ -963,6 +964,10 @@ bool DAAppProject::requestSave()
 
 bool DAAppProject::executeSave(DAZipArchiveThreadWrapper* archive, const QString& path, bool* started)
 {
+    // 工程保存属启动/工程加载档位：阈值 1000ms
+    DA_SLOW_LOG_SCOPE_DETAIL_MS("app.project.executeSave", 1000, [&path]() {
+        return QStringLiteral("file=%1").arg(path);
+    });
     if (started) {
         *started = false;
     }
@@ -1017,6 +1022,10 @@ bool DAAppProject::executeSave(DAZipArchiveThreadWrapper* archive, const QString
 
 bool DAAppProject::executeLoad(DAZipArchiveThreadWrapper* archive, const QString& path, bool* started, const QString& agentProjectPath)
 {
+    // 工程加载属启动/工程加载档位：阈值 1000ms
+    DA_SLOW_LOG_SCOPE_DETAIL_MS("app.project.executeLoad", 1000, [&path]() {
+        return QStringLiteral("file=%1").arg(path);
+    });
     if (started) {
         *started = false;
     }

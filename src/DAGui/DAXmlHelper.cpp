@@ -1,8 +1,8 @@
 #include "DAXmlHelper.h"
-#include <QElapsedTimer>
 #include <QObject>
 #include <QDebug>
 #include "DALogCategory.h"
+#include "DASlowLog.h"
 // Qt
 #include <QBuffer>
 #include <QDomDocument>
@@ -142,29 +142,38 @@ DAXmlHelper::PrivateData::PrivateData(DAXmlHelper* p) : q_ptr(p)
 
 void DAXmlHelper::PrivateData::saveWorkflow(DAPyWorkFlowEditWidget* wfe, QDomDocument& doc, QDomElement& workflowEle)
 {
+    DA_SLOW_LOG_SCOPE_MS("dagui.xml.saveWorkflow", 1000);
     // 保存工作流的扩展信息
-    QElapsedTimer tes;
-    tes.start();
     clearDealItemSet();  // 清空保存过的item的记录
     DAPyWorkFlowGraphicsScene* workFlowScene = wfe->getWorkFlowGraphicsScene();
     // 保存开始，设置场景没有就绪
     workFlowScene->setReady(false);
     // extern info由scene的serializer处理
-    QDomElement externEle = doc.createElement("extern");
-    workflowEle.appendChild(externEle);
-    qDebug() << QString("save workflow extern info cost: %1 ms").arg(tes.restart());  // cn:保存工作流扩展信息耗时: %1 ms
+    {
+        DA_SLOW_LOG_SCOPE("dagui.xml.saveWorkflow.extern");
+        QDomElement externEle = doc.createElement("extern");
+        workflowEle.appendChild(externEle);
+    }
     // 保存所有节点
-    saveNodes(wfe, doc, workflowEle);
-    qDebug() << QString("save workflow nodes cost: %1 ms").arg(tes.restart());  // cn:保存工作流节点耗时: %1 ms
+    {
+        DA_SLOW_LOG_SCOPE("dagui.xml.saveWorkflow.nodes");
+        saveNodes(wfe, doc, workflowEle);
+    }
     // 保存所有连接
-    saveNodeLinks(workFlowScene, doc, workflowEle);
-    qDebug() << QString("save workflow links cost: %1 ms").arg(tes.restart());  // cn:保存工作流连线耗时: %1 ms
+    {
+        DA_SLOW_LOG_SCOPE("dagui.xml.saveWorkflow.links");
+        saveNodeLinks(workFlowScene, doc, workflowEle);
+    }
     // 保存特殊的item。例如文本
-    saveCommonItems(workFlowScene, doc, workflowEle);
-    qDebug() << QString("save special item cost: %1 ms").arg(tes.restart());  // cn:保存特殊图元耗时: %1 ms
+    {
+        DA_SLOW_LOG_SCOPE("dagui.xml.saveWorkflow.specialItems");
+        saveCommonItems(workFlowScene, doc, workflowEle);
+    }
     // 保存scene信息
-    saveSecenInfo(workFlowScene, doc, workflowEle);
-    qDebug() << QString("save scene info cost: %1 ms").arg(tes.restart());  // cn:保存场景信息耗时: %1 ms
+    {
+        DA_SLOW_LOG_SCOPE("dagui.xml.saveWorkflow.sceneInfo");
+        saveSecenInfo(workFlowScene, doc, workflowEle);
+    }
     // 保存完成，设置场景就绪
     workFlowScene->setReady(true);
 }
@@ -183,37 +192,44 @@ void DAXmlHelper::PrivateData::saveWorkflow(DAPyWorkFlowEditWidget* wfe, QDomDoc
  */
 bool DAXmlHelper::PrivateData::loadWorkflow(DAPyWorkFlowEditWidget* wfe, const QDomElement& workflowEle)
 {
-    QElapsedTimer tes;
-    tes.start();
+    DA_SLOW_LOG_SCOPE_MS("dagui.xml.loadWorkflow", 1000);
     DAPyWorkFlowGraphicsScene* workFlowScene = wfe->getWorkFlowGraphicsScene();
     // 加载开始，设置场景没有就绪
     workFlowScene->setReady(false);
     //
     clearDealItemSet();  // 清空保存过的item的记录
     // extern info由scene的serializer处理
-    QDomElement externEle = workflowEle.firstChildElement("extern");
-    Q_UNUSED(externEle);
-    qDebug() << QString("load workflow extern info cost: %1 ms").arg(tes.restart());  // cn:加载工作流扩展信息耗时: %1 ms
+    {
+        DA_SLOW_LOG_SCOPE("dagui.xml.loadWorkflow.extern");
+        QDomElement externEle = workflowEle.firstChildElement("extern");
+        Q_UNUSED(externEle);
+    }
     // 从文件加载
-    if (!loadNodes(workFlowScene, workflowEle)) {
-        daCritical << QObject::tr("error occurred while loading nodes");  // cn:加载节点时发生错误
+    {
+        DA_SLOW_LOG_SCOPE("dagui.xml.loadWorkflow.nodes");
+        if (!loadNodes(workFlowScene, workflowEle)) {
+            daCritical << QObject::tr("error occurred while loading nodes");  // cn:加载节点时发生错误
+        }
     }
-    qDebug() << QString("load workflow nodes cost: %1 ms").arg(tes.restart());  // cn:加载工作流节点耗时: %1 ms
-
-    if (!loadNodeLinks(workFlowScene, workflowEle)) {
-        daCritical << QObject::tr("error occurred while loading node links");  // cn:加载节点连线时发生错误
+    {
+        DA_SLOW_LOG_SCOPE("dagui.xml.loadWorkflow.links");
+        if (!loadNodeLinks(workFlowScene, workflowEle)) {
+            daCritical << QObject::tr("error occurred while loading node links");  // cn:加载节点连线时发生错误
+        }
     }
-    qDebug() << QString("load workflow links cost: %1 ms").arg(tes.restart());  // cn:加载工作流连线耗时: %1 ms
     // false代表不进行回退操作
-    if (!loadCommonItems(workFlowScene, workflowEle, false)) {
-        daCritical << QObject::tr("error occurred while loading special items");  // cn:加载特殊图元时发生错误
+    {
+        DA_SLOW_LOG_SCOPE("dagui.xml.loadWorkflow.specialItems");
+        if (!loadCommonItems(workFlowScene, workflowEle, false)) {
+            daCritical << QObject::tr("error occurred while loading special items");  // cn:加载特殊图元时发生错误
+        }
     }
-    qDebug() << QString("load special item cost: %1 ms").arg(tes.restart());  // cn:加载特殊图元耗时: %1 ms
-
-    if (!loadSecenInfo(workFlowScene, workflowEle)) {
-        daCritical << QObject::tr("error occurred while loading scene info");  // cn:加载场景信息时发生错误
+    {
+        DA_SLOW_LOG_SCOPE("dagui.xml.loadWorkflow.sceneInfo");
+        if (!loadSecenInfo(workFlowScene, workflowEle)) {
+            daCritical << QObject::tr("error occurred while loading scene info");  // cn:加载场景信息时发生错误
+        }
     }
-    qDebug() << QString("load scene info cost: %1 ms").arg(tes.restart());  // cn:加载场景信息耗时: %1 ms
 
     // 加载完成，设置场景就绪
     workFlowScene->setReady(true);
