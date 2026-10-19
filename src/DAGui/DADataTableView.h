@@ -7,6 +7,7 @@
 
 class QMenu;
 class QContextMenuEvent;
+class QShowEvent;
 
 namespace DA
 {
@@ -46,9 +47,11 @@ Q_SIGNALS:
     void contextMenuCutRequested();
     void contextMenuCopyRequested();
     void contextMenuPasteRequested();
-    // 查找/替换入口（002 T1.4）：Ctrl+F/Ctrl+H 快捷键与右键菜单共用，页面据此唤出浮动条
-    void findRequested();
-    void replaceRequested();
+    // 查找/替换入口（002 T1.4）：Ctrl+F/Ctrl+H 快捷键与右键菜单共用，页面据此唤出浮动条；
+    // prefillFromCurrentCell：右键菜单入口置真（浮动条查找框预填当前单元格内容），
+    // 快捷键入口置假（保持空框/旧词）
+    void findRequested(bool prefillFromCurrentCell);
+    void replaceRequested(bool prefillFromCurrentCell);
     // 定位入口（007 T1.7）：Ctrl+G 与滚动条右键「定位到行」共用，页面据此唤出定位对话框
     void gotoRequested();
     // Esc 关闭查找条（焦点在表格时；对话框自身焦点下的 Esc 由对话框处理）
@@ -84,10 +87,16 @@ Q_SIGNALS:
     void noteClearAllRequested();
 
 protected:
-    // Ctrl+C/Ctrl+F/Ctrl+H/Esc 在本类处理；未处理的键一律转发基类（恢复整表语义键
+    // Ctrl+C/Ctrl+X/Ctrl+V/Ctrl+F/Ctrl+H/Esc 在本类处理；未处理的键一律转发基类（恢复整表语义键
     // Ctrl+G/Ctrl+Home/Ctrl+End/PageUp/PageDown/Home/End）。表格快捷键唯一挂点，
     // Ribbon action 不设 shortcut（红线5）
     void keyPressEvent(QKeyEvent* event) override;
+    // ShortcutOverride：本类 keyPressEvent 处理的标准键先在覆盖阶段认领，
+    // 防止其它 dock 控件注册的窗口级快捷键把按键抢走（键事件不再到达本类）
+    bool event(QEvent* e) override;
+    // 左上角角格（QTableCornerButton）右缘热区拖拽改行头宽（与行头右缘热区同语义）
+    bool eventFilter(QObject* watched, QEvent* e) override;
+    void showEvent(QShowEvent* event) override;
     // 定位到行（007 T1.7）：覆写为只发 gotoRequested 表意信号，本类不弹 QInputDialog
     //（滚动条右键经 onGotoRowRequested → promptGotoRow 虚派发走同一条链）
     void promptGotoRow() override;
@@ -95,7 +104,14 @@ protected:
     void contextMenuEvent(QContextMenuEvent* event) override;
 
 private:
+    // 角格事件过滤器懒装（QTableCornerButton 由 QTableView 首布局创建）
+    void installCornerButtonFilter();
     DATableNoteStore* mNoteStore { nullptr };  ///< 非拥有（批注子存储，005 T1.26，可空）
+    bool mCornerResizing { false };            ///< 角格右缘行头宽拖拽进行中
+    int mCornerResizeStartX { 0 };             ///< 拖拽起点全局 x
+    int mCornerResizeStartWidth { 0 };         ///< 拖拽起点行头宽
+    bool mCornerFilterInstalled { false };     ///< 角格事件过滤器已装（防重复）
+    QWidget* mCornerButton { nullptr };        ///< 左上角角格（QTableCornerButton，非拥有）
     // 数据源是否可编辑（判定路径同 DADataTableModel::actualFlags 的只读源分支）
     bool isDataSourceEditable() const;
     // 当前选区覆盖的数据列数（去重；尾部预留空白列不计，004 分列/合并启用规则用）

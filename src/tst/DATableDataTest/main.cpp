@@ -27,6 +27,12 @@
 #include <QPushButton>
 #include <QCheckBox>
 #include <QComboBox>
+#include <QClipboard>
+#include <QGuiApplication>
+#include <QImage>
+#include <QMenu>
+#include <QItemSelectionModel>
+#include <QAbstractButton>
 
 #include "DAData.h"
 #include "DAAbstractData.h"
@@ -426,6 +432,14 @@ private Q_SLOTS:
     void testColumnViewCommandsUndoRedo();
     // 006c：真实列宽拖拽写 store、不入撤销栈（可拖动表头回归点）
     void testColumnWidthNotOnUndoStack();
+    // 表格 UX 修订：宽热区拖拽（列宽/统一行高/表头高/角格行头宽）与落库
+    void testHeaderResizeHotZones();
+    // 表格 UX 修订：Ctrl+C/X/V 快捷键走视图→页面既有剪切/复制/粘贴链
+    void testClipboardShortcuts();
+    // 表格 UX 修订：排序后列头方向箭头与多列序号角标真实绘制（像素级）
+    void testSortIndicatorPixels();
+    // 表格 UX 修订：右键「替换...」预填当前单格内容到查找框
+    void testFindReplacePrefillFromContextMenu();
     // 006d：「列」子菜单 5 项逐项生效（隐藏/显示全部/冻结/解冻/对话框）
     void testHeaderColumnViewMenuActions();
     // 006d：列视图对话框确定按差异入一个撤销单元、一次 undo 全还原
@@ -2364,6 +2378,225 @@ void DATableDataTest::testColumnWidthNotOnUndoStack()
     QVERIFY(qAbs(hh->sectionSize(colF) - (widthBefore + 20)) <= 2);
     QCOMPARE(w.viewStateStore()->columnWidth(QStringLiteral("f"), 0), hh->sectionSize(colF));
     QCOMPARE(w.getUndoStack()->count(), undoBefore);
+}
+
+namespace
+{
+// 给目标 widget 补一条 Enter（WA_UnderMouse 的唯一写入路径 = "鼠标已位于其上"），
+// 合成鼠标链路不派发 Enter，而列宽采集闸门要查 underMouse
+static void sendEnter(QWidget* w, const QPoint& pos)
+{
+    const QPoint globalP(w->mapToGlobal(pos));
+    QEnterEvent enterEv(QPointF(pos), QPointF(w->window()->mapToGlobal(QPoint(0, 0))) + QPointF(pos), QPointF(globalP));
+    QApplication::sendEvent(w, &enterEv);
+}
+
+// 统计图像中与目标色各通道差 <= tol 的像素数（排序角标/序号角标像素级断言用）
+static int countPixelsNear(const QImage& img, const QColor& target, int tol)
+{
+    int n = 0;
+    for (int y = 0; y < img.height(); ++y) {
+        for (int x = 0; x < img.width(); ++x) {
+            const QColor c = img.pixelColor(x, y);
+            if (qAbs(c.red() - target.red()) <= tol && qAbs(c.green() - target.green()) <= tol
+                && qAbs(c.blue() - target.blue()) <= tol) {
+                ++n;
+            }
+        }
+    }
+    return n;
+}
+}  // namespace
+
+// 表格 UX 修订：段边界宽热区（6px/侧）拖拽——列宽、统一行高、水平表头高、角格行头宽；
+// 起手点取「边界内偏 5px」：旧 Qt  grip（4px）命中不了、新热区必须命中（区分度）
+void DATableDataTest::testHeaderResizeHotZones()
+{
+    if (!mPandasOk) {
+        QSKIP("pandas not available");
+    }
+    pybind11::object obj = makeTestDataFrame();
+    QVERIFY(!obj.is_none());
+    DA::DAPyDataFrame df(obj);
+    DA::DAData d(df);
+    DA::DATableMetadataRegistry registry(nullptr);
+    DA::DADataOperateOfDataFrameWidget w(d, &registry);
+    w.resize(900, 400);
+    w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+    DA::DADataTableView* tv = w.getDataTableView();
+    QHeaderView* hh         = tv->horizontalHeader();
+    QHeaderView* vh         = tv->verticalHeader();
+    QVERIFY(hh && vh);
+    const int colF = 1;  // f
+
+    // —— 列宽：f 右边界内偏 5px 起手拖 +20 ——
+    const int colWidthBefore = hh->sectionSize(colF);
+    const QPoint pCol(hh->sectionViewportPosition(colF) + colWidthBefore + 5, hh->viewport()->height() / 2);
+    QWidget* hvp = hh->viewport();
+    sendEnter(hh, pCol);  // 列宽采集闸门查 hh->underMouse()
+    QVERIFY(hh->underMouse());
+    sendWindowMouse(hvp, QEvent::MouseButtonPress, pCol, Qt::LeftButton);
+    sendWindowMouse(hvp, QEvent::MouseMove, pCol + QPoint(20, 0), Qt::NoButton);
+    sendWindowMouse(hvp, QEvent::MouseButtonRelease, pCol + QPoint(20, 0), Qt::LeftButton);
+    QCOMPARE(hh->sectionSize(colF), colWidthBefore + 20);
+    QCOMPARE(w.viewStateStore()->columnWidth(QStringLiteral("f"), 0), colWidthBefore + 20);
+
+    // —— 统一行高：第 2 行下边界内偏 5px 起手拖 +12（全部行同高 + 落库单值）——
+    // x 取「右缘热区以左」的中点：行头窄时 width/2 会落进右缘行头宽热区
+    const int rowHeightBefore = vh->sectionSize(2);
+    const int rowSafeX        = qMax(2, (vh->width() - DA::DADataHeaderView::rowHeaderResizeHotZoneWidth()) / 2);
+    const QPoint pRow(rowSafeX, vh->sectionViewportPosition(2) + rowHeightBefore + 5);
+    QWidget* vvp = vh->viewport();
+    sendEnter(vvp, pRow);
+    sendWindowMouse(vvp, QEvent::MouseButtonPress, pRow, Qt::LeftButton);
+    sendWindowMouse(vvp, QEvent::MouseMove, pRow + QPoint(0, 12), Qt::NoButton);
+    sendWindowMouse(vvp, QEvent::MouseButtonRelease, pRow + QPoint(0, 12), Qt::LeftButton);
+    const int rowHeightAfter = vh->sectionSize(2);
+    QCOMPARE(rowHeightAfter, rowHeightBefore + 12);
+    QCOMPARE(vh->sectionSize(5), rowHeightAfter);  // 统一行高：其它行同高
+    QCOMPARE(w.viewStateStore()->rowHeight(), rowHeightAfter);
+
+    // —— 水平表头高：底边热区起手拖 +10 ——
+    const int headHeightBefore = hh->height();
+    const QPoint pHead(hh->viewport()->width() / 2, hh->height() - 3);
+    sendEnter(hvp, pHead);
+    sendWindowMouse(hvp, QEvent::MouseButtonPress, pHead, Qt::LeftButton);
+    sendWindowMouse(hvp, QEvent::MouseMove, pHead + QPoint(0, 10), Qt::NoButton);
+    sendWindowMouse(hvp, QEvent::MouseButtonRelease, pHead + QPoint(0, 10), Qt::LeftButton);
+    QCOMPARE(hh->height(), headHeightBefore + 10);
+    QCOMPARE(w.viewStateStore()->horizontalHeaderHeight(), hh->height());
+
+    // —— 角格右缘拖行头宽 +15 ——（QTableCornerButton 为私有角部件，按唯一直接子按钮定位）
+    QWidget* corner = tv->findChild< QAbstractButton* >();
+    QVERIFY(corner != nullptr);
+    const int rowHeaderWidthBefore = vh->width();
+    const QPoint pCorner(corner->width() - 3, corner->height() / 2);
+    sendEnter(corner, pCorner);
+    sendWindowMouse(corner, QEvent::MouseButtonPress, pCorner, Qt::LeftButton);
+    sendWindowMouse(corner, QEvent::MouseMove, pCorner + QPoint(15, 0), Qt::NoButton);
+    sendWindowMouse(corner, QEvent::MouseButtonRelease, pCorner + QPoint(15, 0), Qt::LeftButton);
+    QCOMPARE(vh->width(), rowHeaderWidthBefore + 15);
+    QCOMPARE(w.viewStateStore()->rowHeaderWidth(), vh->width());
+}
+
+// 表格 UX 修订：Ctrl+C/X/V 在表格视图内生效（视图发表意信号、页面既有槽执行，
+// 与真机 DAAppController 接线同形状）；快捷键不被任何窗口级 shortcut 抢走
+void DATableDataTest::testClipboardShortcuts()
+{
+    if (!mPandasOk) {
+        QSKIP("pandas not available");
+    }
+    pybind11::object obj = makeTestDataFrame();
+    QVERIFY(!obj.is_none());
+    DA::DAPyDataFrame df(obj);
+    DA::DAData d(df);
+    DA::DATableMetadataRegistry registry(nullptr);
+    DA::DADataOperateOfDataFrameWidget w(d, &registry);
+    w.resize(900, 400);
+    w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+    DA::DADataTableView* tv = w.getDataTableView();
+    // 真机接线复刻：剪切/粘贴表意信号 → 页面既有槽（复制由视图直接写剪贴板）
+    connect(tv, &DA::DADataTableView::contextMenuCutRequested, &w, [ &w ]() { w.cutSelection(); });
+    connect(tv, &DA::DADataTableView::contextMenuPasteRequested, &w, [ &w ]() { w.pasteFromClipboard(); });
+    tv->setFocus();
+    const int colI = 0;
+    tv->selectActualCell(0, colI);
+    QVERIFY(tv->selectionModel()->hasSelection());
+
+    // Ctrl+C：选中格显示文本进剪贴板（逐行尾随换行，与粘贴到 Excel 的口径一致）
+    QTest::keyClick(tv, Qt::Key_C, Qt::ControlModifier);
+    QCOMPARE(QGuiApplication::clipboard()->text(), QStringLiteral("1\n"));
+    // Ctrl+X：原格置 nan、剪贴板不变
+    QTest::keyClick(tv, Qt::Key_X, Qt::ControlModifier);
+    QVERIFY(qIsNaN(df.iat(0, colI).toDouble()));
+    QCOMPARE(QGuiApplication::clipboard()->text(), QStringLiteral("1\n"));
+    // Ctrl+V：粘贴回原格（值还原）
+    QTest::keyClick(tv, Qt::Key_V, Qt::ControlModifier);
+    QCOMPARE(df.iat(0, colI).toDouble(), 1.0);
+}
+
+// 表格 UX 修订：排序后列头右端方向箭头（C2/C3）、多列左上序号角标（C4）必须真实
+// 绘制到表头像素（抓 viewport 图按官方色板取色计数，防"数据同步了但没画"回归）
+void DATableDataTest::testSortIndicatorPixels()
+{
+    if (!mPandasOk || !mPyScriptsOk) {
+        QSKIP("pandas/DAPyScripts not available");
+    }
+    pybind11::object obj = makeTestDataFrame();
+    QVERIFY(!obj.is_none());
+    DA::DAPyDataFrame df(obj);
+    DA::DAData d(df);
+    DA::DATableMetadataRegistry registry(nullptr);
+    DA::DADataOperateOfDataFrameWidget w(d, &registry);
+    w.resize(900, 400);
+    w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+    DA::DADataTableView* tv = w.getDataTableView();
+    DA::DADataHeaderView* hh = qobject_cast< DA::DADataHeaderView* >(tv->horizontalHeader());
+    QVERIFY(hh != nullptr);
+    const QColor arrowColor(0x5D, 0x6D, 0x7E);  // 方向箭头（DESIGN.md 深蓝灰）
+    const QColor badgeColor(0x52, 0x80, 0xC1);  // 序号角标圆底（主蓝）
+
+    // 未排序：无箭头无角标
+    QCOMPARE(countPixelsNear(hh->viewport()->grab().toImage(), arrowColor, 10), 0);
+
+    // 单列升序：右端向上箭头出现
+    w.sortColumn(0, Qt::AscendingOrder);
+    QCOMPARE(hh->sortSpec().size(), 1);  // 规格已同步到表头实例
+    const QImage oneKey = hh->viewport()->grab().toImage();
+    oneKey.save(QStringLiteral("sort_header_onekey.png"));  // TEMP-DIAG
+    QVERIFY2(countPixelsNear(oneKey, arrowColor, 10) > 0, "sort direction arrow not painted");
+    QCOMPARE(countPixelsNear(oneKey, badgeColor, 10), 0);  // 单列不画序号角标
+
+    // 追加次级列：两枚序号角标（主蓝圆底）出现，箭头仍在
+    w.addSecondarySortColumn(1, Qt::AscendingOrder);
+    const QImage twoKeys = hh->viewport()->grab().toImage();
+    QVERIFY2(countPixelsNear(twoKeys, badgeColor, 10) > 20, "multi-column order badges not painted");
+    QVERIFY2(countPixelsNear(twoKeys, arrowColor, 10) > 0, "sort direction arrow not painted");
+
+    // 清规格：角标全部消失
+    w.sortColumn(2, Qt::DescendingOrder);
+    QCOMPARE(countPixelsNear(hh->viewport()->grab().toImage(), badgeColor, 10), 0);
+}
+
+// 表格 UX 修订：表体右键「替换...」打开浮动条时查找框预填当前单格显示文本；
+// 多格选区不预填（保持旧词）
+void DATableDataTest::testFindReplacePrefillFromContextMenu()
+{
+    if (!mPandasOk) {
+        QSKIP("pandas not available");
+    }
+    pybind11::object obj = makeTestDataFrame();
+    QVERIFY(!obj.is_none());
+    DA::DAPyDataFrame df(obj);
+    DA::DAData d(df);
+    DA::DATableMetadataRegistry registry(nullptr);
+    DA::DADataOperateOfDataFrameWidget w(d, &registry);
+    w.resize(900, 400);
+    w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+    DA::DADataTableView* tv = w.getDataTableView();
+    const QModelIndex cell  = tv->model()->index(2, 2);  // s 列第 2 行 = "c"
+    tv->selectionModel()->select(cell, QItemSelectionModel::ClearAndSelect);
+    QCOMPARE(tv->model()->data(cell, Qt::DisplayRole).toString(), QStringLiteral("c"));
+
+    QMenu* menu = tv->buildContextMenu(cell);
+    QVERIFY(menu != nullptr);
+    QAction* actReplace = nullptr;
+    for (QAction* a : menu->actions()) {
+        if (a->text().startsWith(QStringLiteral("Replace"))) {
+            actReplace = a;
+        }
+    }
+    QVERIFY(actReplace != nullptr);
+    actReplace->trigger();
+    const auto dialogs = w.findChildren< DA::DADialogFindReplace* >();
+    QCOMPARE(dialogs.size(), 1);
+    QCOMPARE(dialogs.first()->findText(), QStringLiteral("c"));
+    dialogs.first()->close();
+    menu->deleteLater();
 }
 
 namespace

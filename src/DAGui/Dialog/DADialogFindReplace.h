@@ -53,6 +53,10 @@ public:
 
     // 唤出并聚焦输入框；expandReplace=true 展开替换行（Ctrl+H 语义）
     void activate(bool expandReplace);
+    // 设置查找关键字（右键入口预填当前单元格内容用；经 textChanged 走去抖扫描）
+    void setFindText(const QString& text);
+    // 查找输入框当前文本（测试与外部查询用）
+    QString findText() const;
     // 当前参数快照
     FindOptions options() const;
     // 更新计数显示：current=当前命中序号（1 起，<=0 表示无当前项），shown=已高亮条数，

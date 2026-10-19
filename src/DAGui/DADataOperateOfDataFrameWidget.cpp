@@ -432,6 +432,13 @@ void DADataOperateOfDataFrameWidget::configurePaneView(DADataTableView* pane)
         // 「列」子菜单动作（006d）：列视图真源操作，消费方是页面自身（不经 APP）
         connect(hh, &DADataHeaderView::columnViewActionRequested,
                 this, &DADataOperateOfDataFrameWidget::onHeaderColumnViewActionRequested);
+        // 表头高拖拽落库（底边热区）：写视图状态 + 套到各窗格（冻结窗格行对齐要求同高）
+        connect(hh, &DADataHeaderView::horizontalHeaderHeightChanged, this, [ this ](int height) {
+            if (mViewStateStore) {
+                mViewStateStore->setHorizontalHeaderHeight(height);
+            }
+            applyHeaderHeightToPanes(height);
+        });
     }
     // 5) 垂直表头：行头宽拖拽 → 写视图状态 + 冻结几何重算（006e）
     if (DADataHeaderView* vh = qobject_cast< DADataHeaderView* >(pane->verticalHeader())) {
@@ -443,15 +450,23 @@ void DADataOperateOfDataFrameWidget::configurePaneView(DADataTableView* pane)
                 mPaneContainer->updateFrozenGeometry();
             }
         });
+        // 统一行高拖拽落库（行边界热区）：写视图状态 + 套到各窗格
+        connect(vh, &DADataHeaderView::rowHeightChanged, this, [ this ](int height) {
+            if (mViewStateStore) {
+                mViewStateStore->setRowHeight(height);
+            }
+            applyRowHeightToPanes(height);
+        });
     }
     // 6) 视图表意入口（快捷键/右键菜单共用）：每装一个窗格连一份
     connect(pane, &QTableView::clicked, this, &DADataOperateOfDataFrameWidget::onTableViewClicked);
-    // 查找/替换入口（002 T1.4）：视图快捷键 Ctrl+F/Ctrl+H 与表体右键菜单共用表意信号
-    connect(pane, &DADataTableView::findRequested, this, [ this ]() {
-        showFindReplace(false);
+    // 查找/替换入口（002 T1.4）：视图快捷键 Ctrl+F/Ctrl+H 与表体右键菜单共用表意信号；
+    // 右键菜单入口带 prefill=true（查找框预填当前单格内容，D9）
+    connect(pane, &DADataTableView::findRequested, this, [ this ](bool prefill) {
+        showFindReplace(false, prefill);
     });
-    connect(pane, &DADataTableView::replaceRequested, this, [ this ]() {
-        showFindReplace(true);
+    connect(pane, &DADataTableView::replaceRequested, this, [ this ](bool prefill) {
+        showFindReplace(true, prefill);
     });
     // 定位入口（007 T1.7）：视图只发表意信号、页面弹对话框；滚动条右键经
     // promptGotoRow 虚派发走同一条链（每装一个窗格连一份，冻结窗格 Ctrl+G 同样可用）
@@ -2112,6 +2127,14 @@ void DADataOperateOfDataFrameWidget::applyViewStateFromStore()
     }
     // 2) 行头宽：设给行头归属方（冻结时归属冻结窗格，否则主窗格）
     applyRowHeaderWidthToOwner();
+    // 2.5) 统一行高 / 水平表头高（单值设置，套到各窗格；滑动窗下段号=窗口行号，
+    //      逐行行高无稳定语义，故行高按单值，R6 同纪律）
+    if (const int rowH = mViewStateStore->rowHeight(); rowH > 0) {
+        applyRowHeightToPanes(rowH);
+    }
+    if (const int headH = mViewStateStore->horizontalHeaderHeight(); headH > 0) {
+        applyHeaderHeightToPanes(headH);
+    }
     // 3) 列序 / 隐藏 / 冻结 → 容器投影（冻结集合 = ordered 前 freeze 个非隐藏列）
     const QList< QPair< QString, int > > actual       = actualColumnIdentities();
     const QList< QPair< QString, int > > storedOrder  = orderedColumnIdentities();  // 全局列序身份表
@@ -2238,6 +2261,72 @@ void DADataOperateOfDataFrameWidget::applyRowHeaderWidthToOwner()
     if (owner) {
         owner->setFixedWidth(rhw);
     }
+}
+
+/**
+ * @brief 统一行高套到全部窗格垂直表头
+ *
+ * 滑动窗下段号=窗口行号，逐行行高无稳定语义（R6 同纪律）：行高按单值——默认行高
+ * + 全部可见段一并设齐，滚动换入的新段随默认行高保持一致。拖拽落库与加载回填共用。
+ * @param height 行高（像素，<=0 忽略）
+ */
+void DADataOperateOfDataFrameWidget::applyRowHeightToPanes(int height)
+{
+    if (height <= 0) {
+        return;
+    }
+    for (DADataTableView* pane : paneViews()) {
+        if (!pane) {
+            continue;
+        }
+        if (QHeaderView* vh = pane->verticalHeader()) {
+            vh->setDefaultSectionSize(height);
+            const int n = vh->count();
+            for (int i = 0; i < n; ++i) {
+                if (!vh->isSectionHidden(i)) {
+                    vh->resizeSection(i, height);
+                }
+            }
+        }
+    }
+}
+
+/**
+ * @brief 水平表头高套到全部窗格（setFixedHeight 落地，视图布局不覆盖）
+ * @param height 表头高（像素，<=0 忽略）
+ */
+void DADataOperateOfDataFrameWidget::applyHeaderHeightToPanes(int height)
+{
+    if (height <= 0) {
+        return;
+    }
+    for (DADataTableView* pane : paneViews()) {
+        if (pane && pane->horizontalHeader()) {
+            pane->horizontalHeader()->setFixedHeight(height);
+        }
+    }
+}
+
+/**
+ * @brief 当前选区为单格时取其显示文本（D9 预填用）
+ * @return 单格显示文本（Qt::DisplayRole）；选区非单格/无选区返回空串
+ */
+QString DADataOperateOfDataFrameWidget::currentSingleCellDisplayText() const
+{
+    QItemSelectionModel* sm = ui->tableView ? ui->tableView->selectionModel() : nullptr;
+    if (!sm || !mModel) {
+        return QString();
+    }
+    const QItemSelection sel = sm->selection();
+    if (sel.size() != 1) {
+        return QString();
+    }
+    const QItemSelectionRange& r = sel.first();
+    if (r.height() != 1 || r.width() != 1) {
+        return QString();
+    }
+    const QModelIndex idx = mModel->index(r.top(), r.left());
+    return idx.isValid() ? idx.data(Qt::DisplayRole).toString() : QString();
 }
 
 /**
@@ -3609,7 +3698,7 @@ void DADataOperateOfDataFrameWidget::remapSelectionByPermutation(const QVector< 
  * @brief 打开查找/替换浮动条（懒建，非模态，页级持有）
  * @param expandReplace true 展开替换行（Ctrl+H），false 仅查找（Ctrl+F）
  */
-void DADataOperateOfDataFrameWidget::showFindReplace(bool expandReplace)
+void DADataOperateOfDataFrameWidget::showFindReplace(bool expandReplace, bool prefillFromCurrentCell)
 {
     if (!mFindReplaceDialog) {
         mFindReplaceDialog = new DADialogFindReplace(this);
@@ -3619,6 +3708,14 @@ void DADataOperateOfDataFrameWidget::showFindReplace(bool expandReplace)
         connect(mFindReplaceDialog, &DADialogFindReplace::replaceRequested, this, &DADataOperateOfDataFrameWidget::onFindReplaceRequested);
         connect(mFindReplaceDialog, &DADialogFindReplace::replaceAllRequested, this, &DADataOperateOfDataFrameWidget::onFindReplaceAllRequested);
         connect(mFindReplaceDialog, &DADialogFindReplace::closed, this, &DADataOperateOfDataFrameWidget::onFindDialogClosed);
+    }
+    // 右键菜单入口：查找框预填当前单格显示文本（省得用户把选中内容再敲一遍，D9）；
+    // 快捷键入口保持空框/旧词。预填经 textChanged 走去抖扫描，activate 里 selectAll 便于直接改写
+    if (prefillFromCurrentCell) {
+        const QString cellText = currentSingleCellDisplayText();
+        if (!cellText.isEmpty()) {
+            mFindReplaceDialog->setFindText(cellText);
+        }
     }
     mFindReplaceDialog->activate(expandReplace);
     updateFindCountLabel();

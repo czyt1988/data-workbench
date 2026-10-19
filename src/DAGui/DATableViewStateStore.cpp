@@ -97,6 +97,42 @@ void DATableViewStateStore::setRowHeaderWidth(int width)
 }
 
 /**
+ * @brief 查询统一行高
+ * @return 高度（像素），未记录返回 -1
+ */
+int DATableViewStateStore::rowHeight() const
+{
+    return mRowHeight;
+}
+
+/**
+ * @brief 记录统一行高
+ * @param height 高度（像素），<=0 视为清除
+ */
+void DATableViewStateStore::setRowHeight(int height)
+{
+    mRowHeight = (height > 0) ? height : -1;
+}
+
+/**
+ * @brief 查询水平表头高
+ * @return 高度（像素），未记录返回 -1
+ */
+int DATableViewStateStore::horizontalHeaderHeight() const
+{
+    return mHorizontalHeaderHeight;
+}
+
+/**
+ * @brief 记录水平表头高
+ * @param height 高度（像素），<=0 视为清除
+ */
+void DATableViewStateStore::setHorizontalHeaderHeight(int height)
+{
+    mHorizontalHeaderHeight = (height > 0) ? height : -1;
+}
+
+/**
  * @brief 查询列序
  * @return 列名有序表（空 = 未记录 = 数据列序）
  */
@@ -322,6 +358,12 @@ void DATableViewStateStore::toXml(QDomDocument& doc, QDomElement& parent) const
     if (mRowHeaderWidth > 0) {
         vs.setAttribute(QStringLiteral("row-header-width"), mRowHeaderWidth);
     }
+    if (mRowHeight > 0) {
+        vs.setAttribute(QStringLiteral("row-height"), mRowHeight);
+    }
+    if (mHorizontalHeaderHeight > 0) {
+        vs.setAttribute(QStringLiteral("horizontal-header-height"), mHorizontalHeaderHeight);
+    }
     for (auto it = mColumnWidths.constBegin(); it != mColumnWidths.constEnd(); ++it) {
         QDomElement cw = doc.createElement(QStringLiteral("column-width"));
         cw.setAttribute(QStringLiteral("name"), it.key().first);
@@ -368,6 +410,12 @@ bool DATableViewStateStore::fromXml(const QDomElement& e)
     clear();
     if (e.hasAttribute(QStringLiteral("row-header-width"))) {
         mRowHeaderWidth = e.attribute(QStringLiteral("row-header-width")).toInt();
+    }
+    if (e.hasAttribute(QStringLiteral("row-height"))) {
+        mRowHeight = e.attribute(QStringLiteral("row-height")).toInt();
+    }
+    if (e.hasAttribute(QStringLiteral("horizontal-header-height"))) {
+        mHorizontalHeaderHeight = e.attribute(QStringLiteral("horizontal-header-height")).toInt();
     }
     QDomNode n = e.firstChild();
     while (!n.isNull()) {
@@ -421,8 +469,8 @@ bool DATableViewStateStore::fromXml(const QDomElement& e)
  */
 bool DATableViewStateStore::isEmpty() const
 {
-    return mColumnWidths.isEmpty() && mRowHeaderWidth <= 0 && mColumnOrder.isEmpty() && mHiddenColumns.isEmpty()
-           && mFreezeColumnCount <= 0;
+    return mColumnWidths.isEmpty() && mRowHeaderWidth <= 0 && mRowHeight <= 0 && mHorizontalHeaderHeight <= 0
+           && mColumnOrder.isEmpty() && mHiddenColumns.isEmpty() && mFreezeColumnCount <= 0;
 }
 
 /**
@@ -433,7 +481,9 @@ bool DATableViewStateStore::isEmpty() const
 void DATableViewStateStore::clear()
 {
     mColumnWidths.clear();
-    mRowHeaderWidth   = -1;
+    mRowHeaderWidth         = -1;
+    mRowHeight              = -1;
+    mHorizontalHeaderHeight = -1;
     mColumnOrder.clear();
     mHiddenColumns.clear();
     mFreezeColumnCount = 0;

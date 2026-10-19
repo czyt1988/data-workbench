@@ -1126,6 +1126,16 @@ void DAPyWorkFlowOperateWidget::initActions()
             this,
             &DAPyWorkFlowOperateWidget::onActionGroupViewLineMarkersTriggered);
 
+    // 编辑器本地语义的快捷键（复制/剪切/粘贴/删除/取消/全选/缩放）收敛到本编辑器
+    // 及其子控件焦点内：QAction 默认 WindowShortcut 会注册到主窗口级，焦点在数据
+    // 表格等其它控件时也会触发并抢走 Ctrl+C/X/V、Delete、Esc、Ctrl+A（用户反馈：
+    // 表格内无法用通用快捷键复制粘贴剪切），故统一改为 WidgetWithChildrenShortcut
+    const QList< QAction* > editorLocalActions { d->mActionCopy, d->mActionCut, d->mActionPaste, d->mActionDelete,
+                                                 d->mActionCancel, d->mActionSelectAll, d->mActionZoomIn,
+                                                 d->mActionZoomOut, d->mActionZoomFit };
+    for (QAction* a : editorLocalActions) {
+        a->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    }
     addAction(d->mActionCopy);
     addAction(d->mActionCut);
     addAction(d->mActionPaste);

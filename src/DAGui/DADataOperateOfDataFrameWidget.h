@@ -178,8 +178,9 @@ public:
     void showConditionalFormatDialog();
     // 清除选中列的条件格式规则（一次命令，可撤销）
     void clearConditionalFormatFromSelection();
-    // 打开查找/替换浮动条（002 T1.4）：expandReplace=true 展开替换行（Ctrl+H 语义）
-    void showFindReplace(bool expandReplace);
+    // 打开查找/替换浮动条（002 T1.4）：expandReplace=true 展开替换行（Ctrl+H 语义）；
+    // prefillFromCurrentCell=true（右键菜单入口）时查找框预填当前单格显示文本（D9）
+    void showFindReplace(bool expandReplace, bool prefillFromCurrentCell = false);
     // 关闭查找/替换浮动条并清查找高亮
     void closeFindReplace();
     // 当前查找命中数（已装载高亮，≤上限）与当前命中序号（-1=无），供测试与外部查询
@@ -436,6 +437,12 @@ private:
     void applyColumnWidthsToPane(DADataTableView* pane);
     // 行头宽只设给归属方（冻结时归属冻结窗格，否则主窗格，006e）
     void applyRowHeaderWidthToOwner();
+    // 统一行高套到全部窗格垂直表头（默认行高+全部可见段；拖拽落库与加载回填共用）
+    void applyRowHeightToPanes(int height);
+    // 水平表头高套到全部窗格（setFixedHeight；拖拽落库与加载回填共用）
+    void applyHeaderHeightToPanes(int height);
+    // 当前选区为单格时取其显示文本（Qt::DisplayRole），否则空串（D9 预填用）
+    QString currentSingleCellDisplayText() const;
     // 全局列序（含隐藏列）的身份表：store 的 columnOrder 按 (名, occurrence) 精确匹配
     // actualColumnIdentities()，每条只匹配一次，未匹配的实际列按 logical 升序追加末尾；
     // store 为空 = logical 升序。任何地方要"全局列序身份表"都调这里（006d 对话框的输入）
