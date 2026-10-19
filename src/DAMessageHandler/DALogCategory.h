@@ -20,6 +20,21 @@
 DAMESSAGEHANDLER_API Q_DECLARE_LOGGING_CATEGORY(DA_USER)
 
 /**
+ * @brief 慢日志 category
+ *
+ * 字符串为 "daworkbench.slow"，DALogger::dispatchMessage 会将该 category
+ * 路由到专用的 mSlowLogger（独立 slow.log 文件，不挂 UI sink 与控制台）。
+ *
+ * 慢日志一律通过 qCWarning(DA_SLOW) 输出（由 DASlowLog 内部完成），
+ * 内容保持纯英文，不需要国际化；category 不以 "da." 开头，
+ * 因此永远不会进入界面日志队列。
+ *
+ * @see DASlowLog
+ * @see DALogger::dispatchMessage
+ */
+DAMESSAGEHANDLER_API Q_DECLARE_LOGGING_CATEGORY(DA_SLOW)
+
+/**
  * @brief 便捷日志宏，使用 DA_USER category，日志会进入 UI 日志窗口
  *
  * 用法与 qDebug/qInfo/qWarning/qCritical 一致，支持 << 链式输出：

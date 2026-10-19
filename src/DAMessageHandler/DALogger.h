@@ -37,6 +37,7 @@ enum class DAOverflowPolicy
  *
  * - qDebug/qInfo/qWarning/qCritical → daMessageHandler → 按 category 分流
  * - 业务日志（context.category 以 "da." 开头）→ mLogger（带 UI sink）→ DAMessageLogQueue → UI
+ * - 慢日志（context.category 为 "daworkbench.slow"）→ mSlowLogger（独立 slow.log，不进 UI 队列）
  * - 系统日志（Qt 自身、第三方库）→ mSystemLogger（仅文件+控制台，不进 UI 队列）
  * - spdlog 通过多 sink 分发到文件、控制台、UI 队列
  * - DAMessageLogSink 从 log_msg 重建 DAMessageLogItem，推送到 DAMessageLogQueue
@@ -110,11 +111,15 @@ public:
     // 判断 UI 队列捕获是否启用
     bool isQueueCaptureEnabled() const;
 
+    // 主动刷盘（业务/系统/慢日志三个 logger），用于测试与退出前确保落盘
+    void flush();
+
 private:
     DALogger();
     Q_DISABLE_COPY(DALogger)
     void installMessageHandler();
-    // 按 category 分流：da.* 开头走业务 logger（带 UI sink），其他走系统 logger
+    // 按 category 三路分流：daworkbench.slow 走慢日志 logger（独立 slow.log），
+    // da.* 开头走业务 logger（带 UI sink），其他走系统 logger
     void dispatchMessage(QtMsgType type, const QMessageLogContext& context, const QString& msg);
     static void daMessageHandler(QtMsgType type, const QMessageLogContext& ctx, const QString& msg);
 };

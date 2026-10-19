@@ -4,8 +4,10 @@
 #include "DAMessageLogItem.h"
 // Qt
 #include <QByteArray>
+#include <QFileInfo>
 #include <QString>
 // DAUtils
+#include "DADir.h"
 #include "DAStringUtil.h"
 // spdlog
 #include <spdlog/spdlog.h>
@@ -16,6 +18,7 @@
 // stl
 #include <atomic>
 #include <cstring>
+#include <exception>
 #include <memory>
 #include <mutex>
 #include <vector>
@@ -29,16 +32,20 @@ public:
     PrivateData(DALogger* p);
     ~PrivateData();
 
-    // 提取 setup* 方法的公共逻辑：构建 UI sink、业务/系统 logger、设置 pattern/level/flush
+    // 提取 setup* 方法的公共逻辑：构建 UI sink、业务/系统/慢日志 logger、设置 pattern/level/flush
     void buildLoggers(const std::vector< spdlog::sink_ptr >& baseSinks,
                       DAOverflowPolicy policy,
                       const std::string& pattern,
                       spdlog::level::level_enum flushLevel,
-                      int flushIntervalSec);
+                      int flushIntervalSec,
+                      const QString& slowLogFile,
+                      int slowMaxSize,
+                      int slowMaxFiles);
 
 public:
     std::shared_ptr< spdlog::logger > mLogger;        ///< 业务日志 logger（带 UI sink，收 da.* category）
-    std::shared_ptr< spdlog::logger > mSystemLogger;  ///< 系统日志 logger（无 UI sink，收非 da.* category）
+    std::shared_ptr< spdlog::logger > mSystemLogger;  ///< 系统日志 logger（无 UI sink，收非 daworkbench.slow/da.* category）
+    std::shared_ptr< spdlog::logger > mSlowLogger;    ///< 慢日志 logger（独立 slow.log，收 daworkbench.slow category，不进 UI 队列）
     std::shared_ptr< DAMessageLogSink > mUiSink;      ///< 持有 UI sink 引用，用于 setQueueLevel
     std::atomic< int > mQueueLevel { static_cast< int >(spdlog::level::info) };  ///< UI sink 当前级别（原子读写，线程安全）
     std::atomic_bool mQueueCaptureEnabled { true };
@@ -126,18 +133,24 @@ buildAsyncLogger(const std::string& name, const std::vector< spdlog::sink_ptr >&
 /**
  * @brief 提取 setup* 方法的公共逻辑
  *
- * 构建 UI sink、业务/系统 logger，设置 pattern/level/flush，并安装 message handler。
+ * 构建 UI sink、业务/系统/慢日志 logger，设置 pattern/level/flush，并安装 message handler。
  * @param baseSinks 基础 sinks（文件/控制台），业务 logger 和系统 logger 共享
  * @param policy 异步队列溢出策略
  * @param pattern spdlog pattern 字符串
  * @param flushLevel flush_on 级别
  * @param flushIntervalSec flush_every 间隔（秒）
+ * @param slowLogFile 慢日志文件完整路径（slow.log）；为空则不创建慢日志 logger
+ * @param slowMaxSize 慢日志旋转大小上限（字节）
+ * @param slowMaxFiles 慢日志旋转保留文件数
  */
 void DALogger::PrivateData::buildLoggers(const std::vector< spdlog::sink_ptr >& baseSinks,
                                          DAOverflowPolicy policy,
                                          const std::string& pattern,
                                          spdlog::level::level_enum flushLevel,
-                                         int flushIntervalSec)
+                                         int flushIntervalSec,
+                                         const QString& slowLogFile,
+                                         int slowMaxSize,
+                                         int slowMaxFiles)
 {
     mUiSink = std::make_shared< DAMessageLogSink >();
     mUiSink->set_level(static_cast< spdlog::level::level_enum >(mQueueLevel.load(std::memory_order_acquire)));
@@ -157,6 +170,34 @@ void DALogger::PrivateData::buildLoggers(const std::vector< spdlog::sink_ptr >& 
     mSystemLogger->set_level(spdlog::level::trace);
     mLogger->flush_on(flushLevel);
     mSystemLogger->flush_on(flushLevel);
+
+    // 慢日志 logger：只挂独立的 rotating_file_sink（slow.log），不挂控制台与 UI sink，
+    // 共用现有 spdlog 线程池；级别固定 trace、格式与主日志一致，不受 setLevel/setPattern 影响。
+    // flush_on(warn)：慢日志一律以 qCWarning(DA_SLOW) 输出，每条尽快刷盘，降低崩溃丢尾风险。
+    // 创建失败（如目录不可写）时保持为空，dispatchMessage 会直接丢弃慢日志，不污染业务/系统日志。
+    if (!slowLogFile.isEmpty()) {
+        try {
+#ifdef SPDLOG_WCHAR_FILENAMES
+            spdlog::filename_t slowPath = qstringToSystemWString(slowLogFile);
+#else
+            std::string slowPath(slowLogFile.toLocal8Bit().constData());
+#endif
+            std::vector< spdlog::sink_ptr > slowSinks;
+            slowSinks.emplace_back(
+                std::make_shared< spdlog::sinks::rotating_file_sink_mt >(slowPath, slowMaxSize, slowMaxFiles));
+            mSlowLogger = buildAsyncLogger("da_slow", slowSinks, policy);
+            mSlowLogger->set_pattern(pattern);
+            mSlowLogger->set_level(spdlog::level::trace);
+            mSlowLogger->flush_on(spdlog::level::warn);
+        } catch (const std::exception& e) {
+            // 此时 message handler 尚未安装，qWarning 走 Qt 默认输出（stderr），不会递归
+            mSlowLogger.reset();
+            qWarning("DALogger::buildLoggers: failed to create slow logger for %s: %s",
+                     qPrintable(slowLogFile),
+                     e.what());
+        }
+    }
+
     spdlog::set_default_logger(mLogger);
     spdlog::flush_every(std::chrono::seconds(flushIntervalSec));
 
@@ -198,6 +239,9 @@ DALogger::~DALogger()
     }
     if (d->mSystemLogger) {
         d->mSystemLogger->flush();
+    }
+    if (d->mSlowLogger) {
+        d->mSlowLogger->flush();
     }
     // spdlog::shutdown() 内部调用 drop_all() + reset thread_pool，
     // thread_pool 析构时 join 后台线程，确保所有排队消息处理完毕。
@@ -241,7 +285,10 @@ void DALogger::setupRotatingFile(const QString& filename, int maxSize, int maxFi
     }
     baseSinks.emplace_back(std::make_shared< spdlog::sinks::rotating_file_sink_mt >(path, maxSize, maxFiles));
 
-    d->buildLoggers(baseSinks, policy, "[%Y-%m-%d %H:%M:%S.%e] [%^%l%$] [%s:%#] %v", spdlog::level::warn, 15);
+    // 慢日志与主日志同目录，沿用主日志的旋转参数
+    const QString slowLogFile = QFileInfo(filename).absolutePath() + QStringLiteral("/slow.log");
+    d->buildLoggers(baseSinks, policy, "[%Y-%m-%d %H:%M:%S.%e] [%^%l%$] [%s:%#] %v", spdlog::level::warn, 15,
+                    slowLogFile, maxSize, maxFiles);
 }
 
 /**
@@ -268,7 +315,10 @@ void DALogger::setupDailyFile(const QString& filename, int maxFiles, bool output
     // daily_file_sink_mt: rotation_hour=0, rotation_minute=0（每天午夜轮转）
     baseSinks.emplace_back(std::make_shared< spdlog::sinks::daily_file_sink_mt >(path, 0, 0, false, maxFiles));
 
-    d->buildLoggers(baseSinks, policy, "[%Y-%m-%d %H:%M:%S.%e] [%^%l%$] [%s:%#] %v", spdlog::level::warn, 15);
+    // 慢日志始终用旋转文件（默认 10 MB × 5），与主日志同目录
+    const QString slowLogFile = QFileInfo(filename).absolutePath() + QStringLiteral("/slow.log");
+    d->buildLoggers(baseSinks, policy, "[%Y-%m-%d %H:%M:%S.%e] [%^%l%$] [%s:%#] %v", spdlog::level::warn, 15,
+                    slowLogFile, 10 * 1024 * 1024, 5);
 }
 
 /**
@@ -282,7 +332,10 @@ void DALogger::setupConsole(DAOverflowPolicy policy)
     std::vector< spdlog::sink_ptr > baseSinks;
     baseSinks.emplace_back(std::make_shared< spdlog::sinks::stdout_color_sink_mt >());
 
-    d->buildLoggers(baseSinks, policy, "[%Y-%m-%d %H:%M:%S.%e] [%^%l%$] %v", spdlog::level::info, 1);
+    // console 模式无主日志文件，慢日志写到默认日志目录，旋转参数用默认值（10 MB × 5）
+    const QString slowLogFile = DADir::getLogPath() + QStringLiteral("/slow.log");
+    d->buildLoggers(baseSinks, policy, "[%Y-%m-%d %H:%M:%S.%e] [%^%l%$] [%s:%#] %v", spdlog::level::info, 1,
+                    slowLogFile, 10 * 1024 * 1024, 5);
 }
 
 /**
@@ -365,6 +418,26 @@ bool DALogger::isQueueCaptureEnabled() const
 }
 
 /**
+ * @brief 主动刷盘（业务/系统/慢日志三个 logger）
+ *
+ * 异步 logger 的 flush 会等待队列中已提交消息全部写出，
+ * 用于单元测试断言文件内容与退出前确保落盘。
+ */
+void DALogger::flush()
+{
+    DA_D(d);
+    if (d->mLogger) {
+        d->mLogger->flush();
+    }
+    if (d->mSystemLogger) {
+        d->mSystemLogger->flush();
+    }
+    if (d->mSlowLogger) {
+        d->mSlowLogger->flush();
+    }
+}
+
+/**
  * @brief 安装 qInstallMessageHandler
  */
 void DALogger::installMessageHandler()
@@ -390,10 +463,12 @@ void DALogger::daMessageHandler(QtMsgType type, const QMessageLogContext& contex
 /**
  * @brief 按 category 分流日志
  *
+ * - context.category 为 "daworkbench.slow"（前缀匹配）→ 慢日志，走 mSlowLogger（独立 slow.log，
+ *   不进 UI 队列；mSlowLogger 未初始化时直接丢弃，不落回系统日志，避免高频诊断混入普通日志）
  * - context.category 以 "da." 开头 → 业务日志，走 mLogger（带 UI sink，进 DAMessageLogQueue → UI）
  * - 其他（Qt 自身、第三方库、未声明 category 的 qDebug 等）→ 系统日志，走 mSystemLogger（仅文件+控制台）
  *
- * 这样 UI 日志窗口只显示业务日志，避免第三方库噪音污染。
+ * 这样 UI 日志窗口只显示业务日志，避免第三方库与慢日志噪音污染。
  * @param type Qt 消息类型
  * @param context Qt 消息上下文（含 category）
  * @param msg 消息内容
@@ -404,21 +479,23 @@ void DALogger::dispatchMessage(QtMsgType type, const QMessageLogContext& context
     auto level = mapQtMsgTypeToSpdlog(type);
     // 通过 source_loc 传递 file/line/function，null-safe
     spdlog::source_loc loc { context.file, context.line, context.function };
-    // 按 category 分流：da.* 开头的业务日志走带 UI sink 的 logger
+    // 按 category 三路分流，慢日志判断必须在 da. 判断之前
     // 使用 strncmp 零分配前缀比较，避免每条日志创建临时 QByteArray
-    bool isBusinessLog = context.category && std::strncmp(context.category, "da.", 3) == 0;
-    auto& logger       = isBusinessLog ? d->mLogger : d->mSystemLogger;
-    if (logger) {
-        // 使用 toUtf8 确保跨平台 UTF-8 编码（Windows 下 toStdString 使用系统 locale 编码会导致乱码）
-        // 复用 QByteArray 避免双重临时对象，通过 string_view_t 直接传给 spdlog
-        QByteArray utf8 = msg.toUtf8();
-        logger->log(loc, level, spdlog::string_view_t(utf8.constData(), utf8.size()));
+    static constexpr const char kSlowCategory[] = "daworkbench.slow";
+    const bool isSlow                           = context.category
+                    && std::strncmp(context.category, kSlowCategory, sizeof(kSlowCategory) - 1) == 0;
+    const bool isBusinessLog                    = !isSlow && context.category && std::strncmp(context.category, "da.", 3) == 0;
+    auto& logger                                = isSlow ? d->mSlowLogger : (isBusinessLog ? d->mLogger : d->mSystemLogger);
+    if (!logger) {
+        return;
     }
+    // 使用 toUtf8 确保跨平台 UTF-8 编码（Windows 下 toStdString 使用系统 locale 编码会导致乱码）
+    // 复用 QByteArray 避免双重临时对象，通过 string_view_t 直接传给 spdlog
+    QByteArray utf8 = msg.toUtf8();
+    logger->log(loc, level, spdlog::string_view_t(utf8.constData(), utf8.size()));
     if (type == QtFatalMsg) {
         // Fatal 消息需要同步 flush 确保落盘，Qt 会在 handler 返回后自动 abort
-        if (logger) {
-            logger->flush();
-        }
+        logger->flush();
     }
 }
 
