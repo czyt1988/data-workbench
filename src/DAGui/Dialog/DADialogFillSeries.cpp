@@ -86,7 +86,7 @@ void DADialogFillSeries::setupUI()
     connect(mEditStart, &QLineEdit::textChanged, this, &DADialogFillSeries::updatePreview);
     connect(mEditStep, &QLineEdit::textChanged, this, &DADialogFillSeries::updatePreview);
     connect(mEditStop, &QLineEdit::textChanged, this, &DADialogFillSeries::updatePreview);
-    connect(mComboDateUnit, &QComboBox::currentIndexChanged, this, &DADialogFillSeries::updatePreview);
+    connect(mComboDateUnit, QOverload< int >::of(&QComboBox::currentIndexChanged), this, &DADialogFillSeries::updatePreview);
     // objectName 供离屏测试定位
     mRadioLinear->setObjectName(QStringLiteral("fillSeriesKindLinear"));
     mRadioDate->setObjectName(QStringLiteral("fillSeriesKindDate"));

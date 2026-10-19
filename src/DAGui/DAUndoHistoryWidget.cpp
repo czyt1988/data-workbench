@@ -33,7 +33,7 @@ DAUndoHistoryWidget::DAUndoHistoryWidget(QWidget* parent) : QWidget(parent)
     mView = new QUndoView(this);
     mView->setObjectName(QStringLiteral("undoHistoryView"));
     main->addWidget(mView, 1);
-    connect(mSpinLimit, &QSpinBox::valueChanged, this, [ this ](int v) {
+    connect(mSpinLimit, QOverload< int >::of(&QSpinBox::valueChanged), this, [ this ](int v) {
         if (mUpdatingLimit) {
             return;
         }

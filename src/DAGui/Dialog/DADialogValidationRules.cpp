@@ -191,12 +191,12 @@ void DADialogValidationRules::setupUI()
     connect(mBtnRemove, &QPushButton::clicked, this, &DADialogValidationRules::onRemoveRule);
     connect(mBtnUp, &QPushButton::clicked, this, &DADialogValidationRules::onMoveUp);
     connect(mBtnDown, &QPushButton::clicked, this, &DADialogValidationRules::onMoveDown);
-    connect(mComboType, &QComboBox::currentIndexChanged, this, &DADialogValidationRules::onTypeChanged);
+    connect(mComboType, QOverload< int >::of(&QComboBox::currentIndexChanged), this, &DADialogValidationRules::onTypeChanged);
     auto editorChanged = [ this ]() {
         onEditorChanged();
     };
-    connect(mComboColumn, &QComboBox::currentIndexChanged, this, editorChanged);
-    connect(mComboLevel, &QComboBox::currentIndexChanged, this, editorChanged);
+    connect(mComboColumn, QOverload< int >::of(&QComboBox::currentIndexChanged), this, editorChanged);
+    connect(mComboLevel, QOverload< int >::of(&QComboBox::currentIndexChanged), this, editorChanged);
     connect(mCheckEnabled, &QCheckBox::toggled, this, editorChanged);
     connect(mEditLabel, &QLineEdit::textChanged, this, editorChanged);
     connect(mEditNumMin, &QLineEdit::textChanged, this, editorChanged);

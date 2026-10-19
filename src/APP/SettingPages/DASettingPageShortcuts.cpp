@@ -201,14 +201,21 @@ void DASettingPageShortcuts::rebuildTree()
             item->setToolTip(0, objName);
             item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
             QKeySequenceEdit* editor = new QKeySequenceEdit(mTree);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
             editor->setMaximumSequenceLength(1);
+#endif
             editor->setMinimumWidth(180);
             mTree->setItemWidget(item, 1, editor);
             mCommandItems.insert(objName, item);
             mEditors.insert(objName, editor);
             connect(editor, &QKeySequenceEdit::keySequenceChanged, this,
                     [this, objName](const QKeySequence& keys) {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
                         onEditorChanged(objName, keys);
+#else
+                        // 旧版 QKeySequenceEdit 没有单序列限制，这里只取第一个组合键保持语义一致
+                        onEditorChanged(objName, keys.isEmpty() ? QKeySequence() : QKeySequence(keys[0]));
+#endif
                     });
             refreshRow(objName);
         }

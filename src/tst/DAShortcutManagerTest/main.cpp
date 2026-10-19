@@ -1,6 +1,7 @@
 #include "DAShortcutManager.h"
 #include <QtTest/QtTest>
 #include <QApplication>
+#include <QAction>
 #include <QTemporaryDir>
 #include <QFile>
 

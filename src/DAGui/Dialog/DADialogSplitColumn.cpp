@@ -144,7 +144,7 @@ void DADialogSplitColumn::setupUI()
         connect(e, &QLineEdit::textChanged, this, &DADialogSplitColumn::onInputChanged);
     }
     connect(mSpinMaxColumns, QOverload< int >::of(&QSpinBox::valueChanged), this, &DADialogSplitColumn::onInputChanged);
-    connect(mComboOverflow, &QComboBox::currentIndexChanged, this, &DADialogSplitColumn::onInputChanged);
+    connect(mComboOverflow, QOverload< int >::of(&QComboBox::currentIndexChanged), this, &DADialogSplitColumn::onInputChanged);
     connect(mCheckInferNumeric, &QCheckBox::toggled, this, &DADialogSplitColumn::onInputChanged);
     connect(mEditNames, &QLineEdit::textEdited, this, &DADialogSplitColumn::onNamesEdited);
 

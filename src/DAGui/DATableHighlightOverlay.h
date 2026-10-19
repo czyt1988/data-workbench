@@ -88,11 +88,11 @@ private:
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 inline uint qHash(DATableHighlightOverlay::Source source, uint seed = 0) noexcept
 {
-    return qHash(static_cast< int >(source), seed);
+    return ::qHash(static_cast< int >(source), seed);
 }
 inline uint qHash(DATableHighlightOverlay::Level level, uint seed = 0) noexcept
 {
-    return qHash(static_cast< int >(level), seed);
+    return ::qHash(static_cast< int >(level), seed);
 }
 #endif
 }  // end of namespace DA

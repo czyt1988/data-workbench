@@ -271,7 +271,7 @@ private:                                                                        
 template< typename T >
 uint qHash(const std::shared_ptr< T >& ptr, uint seed = 0)
 {
-    return qHash(ptr.get(), seed);
+    return ::qHash(ptr.get(), seed);
 }
 #endif  // QT_VERSION < QT_VERSION_CHECK(5, 15, 0)
 
