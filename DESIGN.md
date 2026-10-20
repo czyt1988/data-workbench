@@ -212,7 +212,7 @@ Agent 会话（`src/DAGui/Agent/resources/chat.css`）等内嵌 Web 界面的自
 | 场景 | viewBox | 示例 |
 |------|---------|------|
 | 通用功能图标（200×200） | `0 0 200 200` | `chart.svg`、`setting.svg`、`copy.svg`、`cut.svg` |
-| 图表类型图标（64×64） | `0 0 64 64` | `chart-type/*.svg`（DAGui 与 APP 目录）、`axisLeftBottom.svg` |
+| 图表类型图标（64×64） | `0 0 64 64` | `DAGui/icon/chart-type/*.svg`、`axisLeftBottom.svg` |
 | 状态/消息图标（32×32） | `0 0 32 32` | `messageType/*`、`accept.svg`、`cancel.svg` |
 | iconfont 系图标（1024×1024） | `0 0 1024 1024` | `delete.svg`、`favorite.svg`、`select-all.svg`、`setting-common.svg`（存量） |
 | 数据类型图标（200×200） | `0 0 200 200` | `data-type/*.svg` |
@@ -297,7 +297,7 @@ Debug：   #497CAD（蓝虫子，单色）
 - **语义前缀**：
   - `axis*`：坐标轴方位
   - `chart*` / `chart-type/chart-*`：图表类型与图表工具
-  - `stats-*`：统计图表类型（`APP/Icon/chart-type/stats-*`）
+  - `stats-*`：统计图表类型（`DAGui/icon/chart-type/stats-*`）
   - `view-*-marker`：视图标记（十字线、水平线、垂直线）
   - `setting-*`：各类设置入口
   - `left/right/top/bottomSide*`：方向性操作
