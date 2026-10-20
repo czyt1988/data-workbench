@@ -3,6 +3,7 @@
 #include <QPainter>
 #include <QPixmap>
 #include <QLinearGradient>
+#include <QHash>
 
 namespace DA
 {
@@ -59,6 +60,14 @@ void drawTextDash(QPainter& p, const QRect& row, const QColor& color, double wid
         return;
     }
     p.fillRect(QRect(row.left() + 3, row.center().y() - h / 2, qRound((row.width() - 6) * widthRatio), h), color);
+}
+
+// 预设缩略图缓存（这些函数只在界面线程、QGuiApplication已创建后调用，静态缓存安全；
+// QIcon复制是隐式共享，返回缓存副本成本很低；缓存键由预设颜色组合构成，数量固定）
+QHash< QString, QIcon >& thumbCache()
+{
+    static QHash< QString, QIcon > cache;
+    return cache;
 }
 }  // namespace
 
@@ -135,6 +144,16 @@ QList< DACFHighlightStyle > DAConditionalFormatPresets::highlightStyles()
  */
 QIcon DAConditionalFormatPresets::colorScaleThumb(const QList< QColor >& colors)
 {
+    // 缓存键：所有颜色的rgba拼接（区分双/三色与不同颜色组合）
+    QString key = QStringLiteral("cs:");
+    for (const QColor& c : colors) {
+        key += QString::number(c.rgba()) + QLatin1Char(':');
+    }
+    QHash< QString, QIcon >& cache = thumbCache();
+    auto it = cache.find(key);
+    if (it != cache.end()) {
+        return it.value();
+    }
     QPixmap pm(c_thumbW, c_thumbH);
     pm.fill(c_white);
     QPainter p(&pm);
@@ -155,7 +174,9 @@ QIcon DAConditionalFormatPresets::colorScaleThumb(const QList< QColor >& colors)
     }
     drawThumbGrid(p);
     p.end();
-    return QIcon(pm);
+    const QIcon icon(pm);
+    cache.insert(key, icon);
+    return icon;
 }
 
 /**
@@ -166,6 +187,13 @@ QIcon DAConditionalFormatPresets::colorScaleThumb(const QList< QColor >& colors)
  */
 QIcon DAConditionalFormatPresets::dataBarThumb(const QColor& color, bool gradient)
 {
+    // 缓存键：颜色rgba + 渐变/实心标记
+    const QString key = QStringLiteral("bar:%1:%2").arg(color.rgba()).arg(gradient ? 1 : 0);
+    QHash< QString, QIcon >& cache = thumbCache();
+    auto it = cache.find(key);
+    if (it != cache.end()) {
+        return it.value();
+    }
     constexpr double c_lens[ 4 ] = { 1.0, 0.72, 0.5, 0.28 };
     QPixmap pm(c_thumbW, c_thumbH);
     pm.fill(c_white);
@@ -188,7 +216,9 @@ QIcon DAConditionalFormatPresets::dataBarThumb(const QColor& color, bool gradien
     }
     drawThumbGrid(p);
     p.end();
-    return QIcon(pm);
+    const QIcon icon(pm);
+    cache.insert(key, icon);
+    return icon;
 }
 
 /**
@@ -198,11 +228,18 @@ QIcon DAConditionalFormatPresets::dataBarThumb(const QColor& color, bool gradien
  */
 QIcon DAConditionalFormatPresets::highlightThumb(const DACFHighlightStyle& style)
 {
+    const QColor bg = style.hasBackground() ? style.background : c_white;
+    const QColor fg = style.hasForeground() ? style.foreground : textColorOn(bg);
+    // 缓存键：解析后的背景/前景色rgba（解析结果完全决定渲染，不串图）
+    const QString key = QStringLiteral("hl:%1:%2").arg(bg.rgba()).arg(fg.rgba());
+    QHash< QString, QIcon >& cache = thumbCache();
+    auto it = cache.find(key);
+    if (it != cache.end()) {
+        return it.value();
+    }
     QPixmap pm(c_thumbW, c_thumbH);
     pm.fill(c_white);
     QPainter p(&pm);
-    const QColor bg = style.hasBackground() ? style.background : c_white;
-    const QColor fg = style.hasForeground() ? style.foreground : textColorOn(bg);
     for (int i = 0; i < 4; ++i) {
         const QRect row = thumbRowRect(i);
         p.fillRect(row, bg);
@@ -210,7 +247,9 @@ QIcon DAConditionalFormatPresets::highlightThumb(const DACFHighlightStyle& style
     }
     drawThumbGrid(p);
     p.end();
-    return QIcon(pm);
+    const QIcon icon(pm);
+    cache.insert(key, icon);
+    return icon;
 }
 
 }  // end of namespace DA
