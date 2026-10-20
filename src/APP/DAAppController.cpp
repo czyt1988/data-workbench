@@ -537,8 +537,9 @@ void DAAppController::initConnection()
     // WPS 式预设菜单：action 挂菜单后 Ribbon 按钮（InstantPopup）点击即弹；
     // 内容每次 aboutToShow 由当前数据页重填（作用列/惰性源可用性实时）
     {
-        QMenu* cfMenu = new QMenu();
-        cfMenu->QObject::setParent(this);  // 控制器非 QWidget，经 QObject 父子关系管理生命周期
+        // QMenu 是 QWidget，父对象必须也是 QWidget：经 QObject::setParent 挂到非 widget 的控制器上
+        // 会触发 Qt Debug 断言 "!d->isWidget" 并直接中止进程（Release 版的父子语义同样不安全）
+        QMenu* cfMenu = new QMenu(mMainWindow);
         mActions->actionConditionalFormat->setMenu(cfMenu);
         connect(cfMenu, &QMenu::aboutToShow, this, [ this, cfMenu ]() {
             cfMenu->clear();

@@ -225,25 +225,25 @@ void DAAppRibbonArea::resetText()
     mPannelDataExport->setPanelName(tr("Export"));           // cn:导出
     mMenuExportData->setTitle(tr("Export Format"));          // cn:导出格式
 
-    mCategoryView->setCategoryName(tr("View"));                // cn:视图
-    mPannelViewMainView->setPanelName(tr("Display"));          // cn:视图显示
-    mPannelViewLayout->setPanelName(tr("Layout"));             // cn:布局
-    mPannelViewAppearance->setPanelName(tr("Appearance"));     // cn:外观
-    mComboxRibbonThemeContainer->setPrefix(tr("Theme"));       // cn:主题
+    mCategoryView->setCategoryName(tr("View"));             // cn:视图
+    mPannelViewMainView->setPanelName(tr("Display"));       // cn:视图显示
+    mPannelViewLayout->setPanelName(tr("Layout"));          // cn:布局
+    mPannelViewAppearance->setPanelName(tr("Appearance"));  // cn:外观
+    mComboxRibbonThemeContainer->setPrefix(tr("Theme"));    // cn:主题
 
-    mContextDataFrame->setContextTitle(tr("DataFrame"));          // cn:DataFrame
-    mCategoryDataframeOperate->setCategoryName(tr("Operate"));    // cn:操作
-    mPannelDataframeOperateAxes->setPanelName(tr("Axes"));        // cn:坐标轴
-    mPannelDataframeOperateColumn->setPanelName(tr("Column"));    // cn:列
-    mPannelDataframeOperateDType->setPanelName(tr("Type"));       // cn:类型
-    mPannelDataframeOperateFormat->setPanelName(tr("Format"));    // cn:格式
-    mCategoryDataframeStyle->setCategoryName(tr("Table Style"));  // cn:表格样式
-    mPannelDataframeStyleFill->setPanelName(tr("Fill"));          // cn:底色
-    mPannelDataframeStyleFont->setPanelName(tr("Font"));          // cn:字体
-    mPannelDataframeStyleClear->setPanelName(tr("Clear"));        // cn:清除
+    mContextDataFrame->setContextTitle(tr("DataFrame"));                // cn:DataFrame
+    mCategoryDataframeOperate->setCategoryName(tr("Operate"));          // cn:操作
+    mPannelDataframeOperateAxes->setPanelName(tr("Axes"));              // cn:坐标轴
+    mPannelDataframeOperateColumn->setPanelName(tr("Column"));          // cn:列
+    mPannelDataframeOperateDType->setPanelName(tr("Type"));             // cn:类型
+    mPannelDataframeOperateFormat->setPanelName(tr("Format"));          // cn:格式
+    mCategoryDataframeStyle->setCategoryName(tr("Table Style"));        // cn:表格样式
+    mPannelDataframeStyleFill->setPanelName(tr("Fill"));                // cn:底色
+    mPannelDataframeStyleFont->setPanelName(tr("Font"));                // cn:字体
+    mPannelDataframeStyleClear->setPanelName(tr("Clear"));              // cn:清除
     mPannelDataframeStyleConditional->setPanelName(tr("Conditional"));  // cn:条件格式
-    mComboxColumnTypesContainer->setPrefix(tr("Type"));           // cn:类型
-    mComboxDisplayFormatContainer->setPrefix(tr("Format"));       // cn:格式
+    mComboxColumnTypesContainer->setPrefix(tr("Type"));                 // cn:类型
+    mComboxDisplayFormatContainer->setPrefix(tr("Format"));             // cn:格式
 
     mContextWorkflow->setContextTitle(tr("Workflow"));  // cn:工作流
     // 表格
@@ -516,10 +516,6 @@ void DAAppRibbonArea::buildContextCategoryDataFrame()
     mComboxDisplayFormatContainer->setWidget(mComboxDisplayFormat);
     mPannelDataframeOperateFormat->addWidget(mComboxDisplayFormatContainer, SARibbonPanelItem::Medium);
     mPannelDataframeOperateFormat->addMediumAction(mActions->actionTableFormatCells);
-    // 条件格式（WPS 式菜单按钮）：分割线后大按钮，点击直接弹预设菜单（InstantPopup），
-    // 菜单内容由当前数据页 populateConditionalFormatMenu 实时填充（控制器接线）
-    mPannelDataframeOperateFormat->addSeparator();
-    mPannelDataframeOperateFormat->addLargeAction(mActions->actionConditionalFormat, QToolButton::InstantPopup);
 
     // Edit pannel - 编辑（002 T1.4：查找/替换；005 T1.24：填充下拉，D6）
     mPannelDataframeOperateEdit = mCategoryDataframeOperate->addPanel(tr("Edit"));  // cn:编辑
@@ -1182,8 +1178,7 @@ void DAAppRibbonArea::buildRibbonAgentCategory()
 
     // 会话操作（session-tabs，large button）：与 Agent 助手标题栏「+/会话管理」同一入口
     mActionAgentNewSession = new QAction(QIcon(":/DAGui/icon/session-new.svg"), tr("New Session"), this);  // cn:新建会话
-    mActionAgentNewSession->setToolTip(
-        tr("Open a new agent chat session"));  // cn:打开一个新的 Agent 会话标签页
+    mActionAgentNewSession->setToolTip(tr("Open a new agent chat session"));  // cn:打开一个新的 Agent 会话标签页
     mPanelAgent->addLargeAction(mActionAgentNewSession);
     mActionAgentSessionManager = new QAction(QIcon(":/DAGui/icon/session-manager.svg"), tr("Session Manager"), this);  // cn:会话管理
     mActionAgentSessionManager->setToolTip(
@@ -1200,7 +1195,7 @@ void DAAppRibbonArea::buildRibbonAgentCategory()
     // agent 依赖此信号兜底刷新（保存/删除/插件 registerBuiltinAgent 均触发）；
     // 保留当前选中项，与管理对话框关闭后的刷新行为一致
     if (DA::DAAgentInterface* agent = DA_APP_CORE.getAgentInterface()) {
-        connect(agent, &DA::DAAgentInterface::agentListChanged, this, [this]() {
+        connect(agent, &DA::DAAgentInterface::agentListChanged, this, [ this ]() {
             QString prevTitle = mSelectedAgentTitle;
             populateAgentGallery();
             if (!prevTitle.isEmpty()) {
