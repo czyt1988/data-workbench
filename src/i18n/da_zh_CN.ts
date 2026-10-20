@@ -4114,8 +4114,8 @@ Layouts</source>
     </message>
     <message>
         <location line="-421"/>
-        <source>Data Operation</source>
-        <translation>数据操作</translation>
+        <source>Dataset</source>
+        <translation>数据集</translation>
     </message>
     <message>
         <location line="-1"/>
@@ -4164,8 +4164,14 @@ Layouts</source>
     <message>
         <location line="-232"/>
         <location line="+234"/>
-        <source>Operate</source>
-        <translation>操作</translation>
+        <source>Table Operations</source>
+        <translation>表格操作</translation>
+    </message>
+    <message>
+        <location line="-233"/>
+        <location line="+236"/>
+        <source>Data Operations</source>
+        <translation>数据操作</translation>
     </message>
     <message>
         <location line="-233"/>
@@ -4460,8 +4466,13 @@ Layouts</source>
     </message>
     <message>
         <location line="-52"/>
-        <source>Data Tools</source>
-        <translation>数据工具</translation>
+        <source>Computed Column</source>
+        <translation>计算列</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Data Transform</source>
+        <translation>数据变换</translation>
     </message>
 </context>
 <context>
@@ -17598,8 +17609,13 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     <message>
         <location filename="../../plugins/DataAnalysis/DataAnalysisUI.cpp" line="+181"/>
         <location line="+79"/>
-        <source>Data Cleaning</source>
-        <translation>数据清洗</translation>
+        <source>Missing Values</source>
+        <translation>缺失值</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Outliers &amp; Duplicates</source>
+        <translation>异常与重复</translation>
     </message>
     <message>
         <location line="-46"/>

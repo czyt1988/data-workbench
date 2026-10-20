@@ -53,9 +53,11 @@ public:
     QAction* actionExportToOneExcel { nullptr };      ///< 把数据导出到一个excel中
 
     //===================================================
-    // 数据标签 Dataframe Context Category
+    // 数据操作 category（Dataframe 上下文标签内）
     //===================================================
-    SARibbonPanel* panelDataCleaner { nullptr };
+    // 数据清洗 panel 拆分为「缺失值」「异常与重复」两个面板
+    SARibbonPanel* panelDataCleanerMissing { nullptr };
+    SARibbonPanel* panelDataCleanerOutliers { nullptr };
     // 数据清洗 panel
     QAction* actionDataFrameDropNone { nullptr };              ///< 删除Nan值
     QAction* actionDropDuplicates { nullptr };                 ///< 重复值处理

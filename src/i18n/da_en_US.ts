@@ -4125,8 +4125,8 @@ Layouts</translation>
     </message>
     <message>
         <location line="-421"/>
-        <source>Data Operation</source>
-        <translation>Data Operation</translation>
+        <source>Dataset</source>
+        <translation>Dataset</translation>
     </message>
     <message>
         <location line="-1"/>
@@ -4175,8 +4175,14 @@ Layouts</translation>
     <message>
         <location line="-232"/>
         <location line="+234"/>
-        <source>Operate</source>
-        <translation>Operate</translation>
+        <source>Table Operations</source>
+        <translation>Table Operations</translation>
+    </message>
+    <message>
+        <location line="-233"/>
+        <location line="+236"/>
+        <source>Data Operations</source>
+        <translation>Data Operations</translation>
     </message>
     <message>
         <location line="-233"/>
@@ -4471,8 +4477,13 @@ Layouts</translation>
     </message>
     <message>
         <location line="-52"/>
-        <source>Data Tools</source>
-        <translation>Data Tools</translation>
+        <source>Computed Column</source>
+        <translation>Computed Column</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Data Transform</source>
+        <translation>Data Transform</translation>
     </message>
 </context>
 <context>
@@ -17609,8 +17620,13 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     <message>
         <location filename="../../plugins/DataAnalysis/DataAnalysisUI.cpp" line="+181"/>
         <location line="+79"/>
-        <source>Data Cleaning</source>
-        <translation>Data Cleaning</translation>
+        <source>Missing Values</source>
+        <translation>Missing Values</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Outliers &amp; Duplicates</source>
+        <translation>Outliers &amp; Duplicates</translation>
     </message>
     <message>
         <location line="-46"/>

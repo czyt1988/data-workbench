@@ -221,7 +221,7 @@ void DAAppRibbonArea::resetText()
     mPannelMainCreate->setPanelName(tr("Create"));           // cn:创建
     mPannelSetting->setPanelName(tr("Config"));              // cn:配置
     mCategoryData->setCategoryName(tr("Data"));              // cn:数据
-    mPannelDataOperate->setPanelName(tr("Data Operation"));  // cn:数据操作
+    mPannelDataOperate->setPanelName(tr("Dataset"));         // cn:数据集
     mPannelDataExport->setPanelName(tr("Export"));           // cn:导出
     mMenuExportData->setTitle(tr("Export Format"));          // cn:导出格式
 
@@ -232,11 +232,16 @@ void DAAppRibbonArea::resetText()
     mComboxRibbonThemeContainer->setPrefix(tr("Theme"));    // cn:主题
 
     mContextDataFrame->setContextTitle(tr("DataFrame"));                // cn:DataFrame
-    mCategoryDataframeOperate->setCategoryName(tr("Operate"));          // cn:操作
+    mCategoryDataframeTableOperate->setCategoryName(tr("Table Operations"));  // cn:表格操作
     mPannelDataframeOperateAxes->setPanelName(tr("Axes"));              // cn:坐标轴
     mPannelDataframeOperateColumn->setPanelName(tr("Column"));          // cn:列
     mPannelDataframeOperateDType->setPanelName(tr("Type"));             // cn:类型
     mPannelDataframeOperateFormat->setPanelName(tr("Format"));          // cn:格式
+    mPannelDataframeOperateEdit->setPanelName(tr("Edit"));              // cn:编辑
+    mPannelDataframeOperateView->setPanelName(tr("View"));              // cn:视图
+    mCategoryDataframeDataOperate->setCategoryName(tr("Data Operations"));  // cn:数据操作
+    mPannelDataframeDataOperateComputed->setPanelName(tr("Computed Column"));  // cn:计算列
+    mPannelDataframeDataOperateTransform->setPanelName(tr("Data Transform"));  // cn:数据变换
     mCategoryDataframeStyle->setCategoryName(tr("Table Style"));        // cn:表格样式
     mPannelDataframeStyleFill->setPanelName(tr("Fill"));                // cn:底色
     mPannelDataframeStyleFont->setPanelName(tr("Font"));                // cn:字体
@@ -466,10 +471,10 @@ void DAAppRibbonArea::buildContextCategoryDataFrame()
 {
     mContextDataFrame = ribbonBar()->addContextCategory(tr("DataFrame"));  // cn:DataFrame
     mContextDataFrame->setObjectName(QString::fromUtf8(UiNames::Ribbon::DataFrameContextCategory));
-    mCategoryDataframeOperate = mContextDataFrame->addCategoryPage(tr("Operate"));  // cn:操作
-    mCategoryDataframeOperate->setObjectName(QString::fromUtf8(UiNames::Ribbon::DataFrameOperateCategory));
+    mCategoryDataframeTableOperate = mContextDataFrame->addCategoryPage(tr("Table Operations"));  // cn:表格操作
+    mCategoryDataframeTableOperate->setObjectName(QString::fromUtf8(UiNames::Ribbon::DataFrameOperateCategory));
     // Axes pannel
-    mPannelDataframeOperateAxes = mCategoryDataframeOperate->addPanel(tr("Axes"));  // cn:坐标轴
+    mPannelDataframeOperateAxes = mCategoryDataframeTableOperate->addPanel(tr("Axes"));  // cn:坐标轴
     mPannelDataframeOperateAxes->setObjectName(QString::fromUtf8(UiNames::Ribbon::DataFrameOperateAxesPanel));
     mActions->actionInsertRow->setMenu(mMenuInsertRow);
     mPannelDataframeOperateAxes->addLargeAction(mActions->actionInsertRow, QToolButton::MenuButtonPopup);
@@ -482,7 +487,7 @@ void DAAppRibbonArea::buildContextCategoryDataFrame()
     mPannelDataframeOperateAxes->addLargeAction(mActions->actionRenameColumns);
     mPannelDataframeOperateAxes->addLargeAction(mActions->actionChangeToIndex);
     // Column pannel - 列级五件套（原表头右键菜单上移，action 与右键共用）
-    mPannelDataframeOperateColumn = mCategoryDataframeOperate->addPanel(tr("Column"));  // cn:列
+    mPannelDataframeOperateColumn = mCategoryDataframeTableOperate->addPanel(tr("Column"));  // cn:列
     mPannelDataframeOperateColumn->setObjectName(QString::fromUtf8(UiNames::Ribbon::DataFrameOperateColumnPanel));
     mPannelDataframeOperateColumn->addMediumAction(mActions->actionRenameColumn);
     mPannelDataframeOperateColumn->addMediumAction(mActions->actionCopyColumnName);
@@ -492,7 +497,7 @@ void DAAppRibbonArea::buildContextCategoryDataFrame()
     mPannelDataframeOperateColumn->addSeparator();
     mPannelDataframeOperateColumn->addMediumAction(mActions->actionShowColumnDescribe);
     // Type pannel
-    mPannelDataframeOperateDType = mCategoryDataframeOperate->addPanel(tr("Type"));  // cn:类型
+    mPannelDataframeOperateDType = mCategoryDataframeTableOperate->addPanel(tr("Type"));  // cn:类型
     mPannelDataframeOperateDType->setObjectName(QString::fromUtf8(UiNames::Ribbon::DataFrameOperateDTypePanel));
     mComboxColumnTypesContainer = new SARibbonLineWidgetContainer(mPannelDataframeOperateDType);
     mComboxColumnTypes          = new DAPyDTypeComboBox(mComboxColumnTypesContainer);
@@ -508,7 +513,7 @@ void DAAppRibbonArea::buildContextCategoryDataFrame()
     mPannelDataframeOperateDType->addWidget(mCastActionsButtonGroup, SARibbonPanelItem::Medium);
 
     // Format pannel - 显示格式
-    mPannelDataframeOperateFormat = mCategoryDataframeOperate->addPanel(tr("Format"));  // cn:格式
+    mPannelDataframeOperateFormat = mCategoryDataframeTableOperate->addPanel(tr("Format"));  // cn:格式
     mPannelDataframeOperateFormat->setObjectName(QString::fromUtf8(UiNames::Ribbon::DataFrameOperateFormatPanel));
     mComboxDisplayFormatContainer = new SARibbonLineWidgetContainer(mPannelDataframeOperateFormat);
     mComboxDisplayFormat          = new DATableDisplayFormatComboBox(mComboxDisplayFormatContainer);
@@ -518,7 +523,7 @@ void DAAppRibbonArea::buildContextCategoryDataFrame()
     mPannelDataframeOperateFormat->addMediumAction(mActions->actionTableFormatCells);
 
     // Edit pannel - 编辑（002 T1.4：查找/替换；005 T1.24：填充下拉，D6）
-    mPannelDataframeOperateEdit = mCategoryDataframeOperate->addPanel(tr("Edit"));  // cn:编辑
+    mPannelDataframeOperateEdit = mCategoryDataframeTableOperate->addPanel(tr("Edit"));  // cn:编辑
     mPannelDataframeOperateEdit->setObjectName(QString::fromUtf8(UiNames::Ribbon::DataFrameOperateEditPanel));
     mPannelDataframeOperateEdit->addLargeAction(mActions->actionFind);
     mPannelDataframeOperateEdit->addLargeAction(mActions->actionReplace);
@@ -529,25 +534,10 @@ void DAAppRibbonArea::buildContextCategoryDataFrame()
     mActions->actionNote->setMenu(mMenuNote);
     mPannelDataframeOperateEdit->addLargeAction(mActions->actionNote, QToolButton::MenuButtonPopup);
 
-    // Data Tools pannel - 数据工具（004：计算列/分列/合列/分组/转置/melt，D6）
-    mPannelDataframeOperateDataTools = mCategoryDataframeOperate->addPanel(tr("Data Tools"));  // cn:数据工具
-    mPannelDataframeOperateDataTools->setObjectName(QString::fromUtf8(UiNames::Ribbon::DataFrameOperateDataToolsPanel));
-    mPannelDataframeOperateDataTools->addLargeAction(mActions->actionComputedColumn);
-    mPannelDataframeOperateDataTools->addMediumAction(mActions->actionRecomputeAllComputedColumns);
-    mPannelDataframeOperateDataTools->addLargeAction(mActions->actionSplitColumn);
-    mPannelDataframeOperateDataTools->addLargeAction(mActions->actionMergeColumns);
-    mPannelDataframeOperateDataTools->addLargeAction(mActions->actionGroupBy);
-    mPannelDataframeOperateDataTools->addMediumAction(mActions->actionTranspose);
-    mPannelDataframeOperateDataTools->addMediumAction(mActions->actionMelt);
-    // 数据校验（005 T1.25）：规则管理 + 一键校验（只读，不入撤销栈）
-    mPannelDataframeOperateDataTools->addSeparator();
-    mPannelDataframeOperateDataTools->addLargeAction(mActions->actionValidationRules);
-    mPannelDataframeOperateDataTools->addMediumAction(mActions->actionRunValidation);
-
     // View pannel - 视图（006 T1.8：冻结列/隐藏列/显示所有列/列视图）
     // setMenu 必须在 addLargeAction 之前（mMenuInsertRow 同款顺序）
     mActions->actionFreezeColumns->setMenu(mMenuFreezeColumns);
-    mPannelDataframeOperateView = mCategoryDataframeOperate->addPanel(tr("View"));  // cn:视图
+    mPannelDataframeOperateView = mCategoryDataframeTableOperate->addPanel(tr("View"));  // cn:视图
     mPannelDataframeOperateView->setObjectName(QString::fromUtf8(UiNames::Ribbon::DataFrameOperateViewPanel));
     mPannelDataframeOperateView->addLargeAction(mActions->actionFreezeColumns, QToolButton::MenuButtonPopup);
     mPannelDataframeOperateView->addLargeAction(mActions->actionHideColumn);
@@ -555,6 +545,34 @@ void DAAppRibbonArea::buildContextCategoryDataFrame()
     mPannelDataframeOperateView->addLargeAction(mActions->actionColumnViewDialog);
     // 定位（007 T1.7；快捷键在 DADataTableView，action 不设 shortcut 红线5）
     mPannelDataframeOperateView->addMediumAction(mActions->actionGotoCell);
+
+    // ===== 数据操作 category =====
+    // 核心数据加工入口；插件的数据清洗/过滤/统计面板在加载时追加到本页
+    mCategoryDataframeDataOperate = mContextDataFrame->addCategoryPage(tr("Data Operations"));  // cn:数据操作
+    mCategoryDataframeDataOperate->setObjectName(
+        QString::fromUtf8(UiNames::Ribbon::DataFrameDataOperateCategory));
+
+    // Computed pannel - 计算列（004 T1.23）
+    mPannelDataframeDataOperateComputed =
+        mCategoryDataframeDataOperate->addPanel(tr("Computed Column"));  // cn:计算列
+    mPannelDataframeDataOperateComputed->setObjectName(
+        QString::fromUtf8(UiNames::Ribbon::DataFrameDataOperateComputedPanel));
+    mPannelDataframeDataOperateComputed->addLargeAction(mActions->actionComputedColumn);
+    mPannelDataframeDataOperateComputed->addMediumAction(mActions->actionRecomputeAllComputedColumns);
+
+    // Transform pannel - 数据变换（004：分列/合列/分组/转置/melt；005：校验）
+    mPannelDataframeDataOperateTransform = mCategoryDataframeDataOperate->addPanel(tr("Data Transform"));  // cn:数据变换
+    mPannelDataframeDataOperateTransform->setObjectName(
+        QString::fromUtf8(UiNames::Ribbon::DataFrameDataOperateTransformPanel));
+    mPannelDataframeDataOperateTransform->addLargeAction(mActions->actionSplitColumn);
+    mPannelDataframeDataOperateTransform->addLargeAction(mActions->actionMergeColumns);
+    mPannelDataframeDataOperateTransform->addLargeAction(mActions->actionGroupBy);
+    mPannelDataframeDataOperateTransform->addMediumAction(mActions->actionTranspose);
+    mPannelDataframeDataOperateTransform->addMediumAction(mActions->actionMelt);
+    // 数据校验（005 T1.25）：规则管理 + 一键校验（只读，不入撤销栈）
+    mPannelDataframeDataOperateTransform->addSeparator();
+    mPannelDataframeDataOperateTransform->addLargeAction(mActions->actionValidationRules);
+    mPannelDataframeDataOperateTransform->addMediumAction(mActions->actionRunValidation);
 
     // ===== 表格样式 category =====
     mCategoryDataframeStyle = mContextDataFrame->addCategoryPage(tr("Table Style"));  // cn:表格样式

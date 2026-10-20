@@ -268,7 +268,7 @@ private:
     // Context - dataframe
     //----------------------------------------------------
     SARibbonContextCategory* mContextDataFrame { nullptr };                ///< 对应dataframe的上下文
-    SARibbonCategory* mCategoryDataframeOperate { nullptr };               ///< dataframe对应的category
+    SARibbonCategory* mCategoryDataframeTableOperate { nullptr };          ///< 表格操作category
     SARibbonPanel* mPannelDataframeOperateAxes { nullptr };                ///< 数据信息的编辑
     SARibbonPanel* mPannelDataframeOperateColumn { nullptr };              ///< 列级操作（五件套，与表头右键共用）
     SARibbonPanel* mPannelDataframeOperateDType { nullptr };               ///< 数据类型的编辑
@@ -281,10 +281,12 @@ private:
     DATableDisplayFormatComboBox* mComboxDisplayFormat { nullptr };          ///< 列显示格式选择器
     // 编辑 panel（002 T1.4：查找/替换；005 填充也进此面板）
     SARibbonPanel* mPannelDataframeOperateEdit { nullptr };                  ///< 编辑面板
-    // 数据工具 panel（004：计算列/分列/合列/分组/转置/melt）
-    SARibbonPanel* mPannelDataframeOperateDataTools { nullptr };            ///< 数据工具面板
     SARibbonPanel* mPannelDataframeOperateView { nullptr };                   ///< 视图面板（006 T1.8：冻结/隐藏/显示所有列/列视图）
     QMenu* mMenuFreezeColumns { nullptr };                                    ///< 冻结列下拉子菜单（挂在 actionFreezeColumns 下）
+    // 数据操作 category（核心数据加工入口；插件的数据清洗/过滤/统计面板在加载时追加到本页）
+    SARibbonCategory* mCategoryDataframeDataOperate { nullptr };          ///< 数据操作category
+    SARibbonPanel* mPannelDataframeDataOperateComputed { nullptr };       ///< 计算列面板（计算列/全部重算）
+    SARibbonPanel* mPannelDataframeDataOperateTransform { nullptr };      ///< 数据变换面板（分列/合列/分组/转置/melt/校验）
     // 表格样式 category
     SARibbonCategory* mCategoryDataframeStyle { nullptr };    ///< dataframe表格样式category
     SARibbonPanel* mPannelDataframeStyleFill { nullptr };     ///< 底色面板

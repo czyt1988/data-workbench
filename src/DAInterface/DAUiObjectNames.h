@@ -36,8 +36,10 @@ constexpr char DataFrameContextCategory[] = "da-ribbon-contextcategory-dataframe
 constexpr char WorkflowContextCategory[]  = "da-ribbon-contextcategory-workflow";   ///< 工作流上下文标签
 constexpr char ChartContextCategory[]     = "da-ribbon-contextcategory-chart";      ///< 图表上下文标签
 // ---- 上下文标签内部的 category ----
-constexpr char DataFrameOperateCategory[] = "da-ribbon-category-dataframe.operate";  ///< DataFrame操作category
-constexpr char DataFrameStyleCategory[]   = "da-ribbon-category-dataframe.style";    ///< DataFrame样式category
+constexpr char DataFrameOperateCategory[] = "da-ribbon-category-dataframe.operate";  ///< DataFrame表格操作category
+constexpr char DataFrameDataOperateCategory[] =
+    "da-ribbon-category-dataframe.data-operate";                                     ///< DataFrame数据操作category
+constexpr char DataFrameStyleCategory[] = "da-ribbon-category-dataframe.style";      ///< DataFrame样式category
 constexpr char WorkflowEditCategory[]     = "da-ribbon-category-workflow.edit";      ///< 工作流编辑category
 constexpr char WorkflowViewCategory[]     = "da-ribbon-category-workflow.view";      ///< 工作流视图category
 constexpr char WorkflowRunCategory[]      = "da-ribbon-category-workflow.run";       ///< 工作流运行category
@@ -65,8 +67,11 @@ constexpr char DataFrameOperateColumnPanel[] = "da-pannel-dataframe.operate.colu
 constexpr char DataFrameOperateDTypePanel[]  = "da-pannel-dataframe.operate.type";    ///< 类型设置pannel
 constexpr char DataFrameOperateFormatPanel[] = "da-pannel-dataframe.operate.format";  ///< 显示格式pannel
 constexpr char DataFrameOperateEditPanel[]   = "da-pannel-dataframe.operate.edit";    ///< 编辑pannel（查找/替换，005 填充也进此面板）
-constexpr char DataFrameOperateDataToolsPanel[] = "da-pannel-dataframe.operate.datatools";  ///< 数据工具pannel（004：计算列/分列/合列/分组/转置/melt）
-constexpr char DataFrameOperateViewPanel[]     = "da-pannel-dataframe.operate.view";       ///< 视图pannel（006 T1.8：冻结列/隐藏列/列视图）
+constexpr char DataFrameOperateViewPanel[]   = "da-pannel-dataframe.operate.view";    ///< 视图pannel（006 T1.8：冻结列/隐藏列/列视图）
+constexpr char DataFrameDataOperateComputedPanel[] =
+    "da-pannel-dataframe.data-operate.computed";  ///< 数据操作-计算列pannel（计算列/全部重算）
+constexpr char DataFrameDataOperateTransformPanel[] =
+    "da-pannel-dataframe.data-operate.transform";  ///< 数据操作-数据变换pannel（分列/合列/分组/转置/melt/校验）
 constexpr char DataFrameStyleFillPanel[]     = "da-pannel-dataframe.style.fill";      ///< 填充样式pannel
 constexpr char DataFrameStyleFontPanel[]     = "da-pannel-dataframe.style.font";      ///< 字体样式pannel
 constexpr char DataFrameStyleClearPanel[]    = "da-pannel-dataframe.style.clear";     ///< 样式清除pannel
