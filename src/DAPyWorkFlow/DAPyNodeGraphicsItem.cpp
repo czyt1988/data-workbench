@@ -134,6 +134,9 @@ public:
     qreal mNameLineHeight { 0.0 };                   ///< 名称行高
     qreal mMaxPortLabelWidth { 0.0 };                ///< 端口标签最大前进宽度
     qreal mSmallLineHeight { 0.0 };                  ///< 小字体行高
+    // shape()命中路径缓存（shape()是const方法经DA_DC拿到const指针，缓存成员必须mutable）
+    mutable QPainterPath mCachedShape;               ///< 缓存的命中路径
+    mutable bool mShapeCacheValid { false };         ///< 命中路径缓存是否有效
 };
 
 /**
@@ -565,6 +568,8 @@ void DAPyNodeGraphicsItem::setRenderTemplate(DAPyNodeStyle::NodeRenderTemplate t
     }
 
     d->mStyle.renderTemplate = tmpl;
+    // 模板切换影响主体绘制配置，命中路径缓存失效
+    d->mShapeCacheValid = false;
 
     // 初始化新的资源
     if (tmpl == DAPyNodeStyle::RenderWidgetTemplate && !d->mProxyWidget) {
@@ -691,6 +696,8 @@ QString DAPyNodeGraphicsItem::getNodeName() const
 void DAPyNodeGraphicsItem::setNodeStyle(const DAPyNodeStyle& style)
 {
     d_ptr->mStyle = style;
+    // 主体形状可能变化，命中路径缓存失效
+    d_ptr->mShapeCacheValid = false;
     d_ptr->updateNodeStyle(getBodyRect());
     update();
 }
@@ -840,8 +847,9 @@ void DAPyNodeGraphicsItem::updateLinkPoints()
     }
 
     d->updateLinkPointPositions(getBodyRect());
-    // 端口列表已重建，标签矩形缓存失效，边界派生量随之重建
-    d->mLabelRectsValid = false;
+    // 端口列表已重建，标签矩形缓存失效，边界派生量与命中路径随之重建
+    d->mLabelRectsValid   = false;
+    d->mShapeCacheValid   = false;
     d->rebuildBoundsMetrics();
 }
 
@@ -1530,6 +1538,11 @@ QRectF DAPyNodeGraphicsItem::boundingRect() const
 QPainterPath DAPyNodeGraphicsItem::shape() const
 {
     DA_DC(d);
+    // 命中路径缓存：几何/形状/端口变化经各失效入口置无效，未失效时直接复用
+    if (d->mShapeCacheValid) {
+        return d->mCachedShape;
+    }
+
     QPainterPath path;
 
     if (d->mStyle.bodyShape == DAPyNodeStyle::EllipseShape) {
@@ -1553,6 +1566,8 @@ QPainterPath DAPyNodeGraphicsItem::shape() const
         path.addRect(lp.hitRegion());
     }
 
+    d->mCachedShape     = path;
+    d->mShapeCacheValid = true;
     return path;
 }
 
@@ -1565,6 +1580,8 @@ void DAPyNodeGraphicsItem::setBodySize(const QSizeF& s)
     DA_D(d);
     DAGraphicsResizeableItem::setBodySize(s);
     d->updateLinkPointPositions(getBodyRect());
+    // 主体尺寸与端口位置已变化，命中路径缓存失效
+    d->mShapeCacheValid = false;
     if (d->mStyle.renderTemplate == DAPyNodeStyle::RenderDefaultTemplate) {
         updateNodeStyleGeometry();
     } else {
