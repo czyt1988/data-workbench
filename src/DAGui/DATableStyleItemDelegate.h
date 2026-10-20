@@ -2,6 +2,8 @@
 #define DATABLESTYLEITEMDELEGATE_H
 #include "DAGuiAPI.h"
 #include <QStyledItemDelegate>
+#include <QBrush>
+#include <QHash>
 
 namespace DA
 {
@@ -57,6 +59,10 @@ private:
     DATableConditionalFormatStore* mCfStore { nullptr };  // 非拥有（条件格式子存储，可空）
     DATableValidationStore* mValidationStore { nullptr };  // 非拥有（校验规则子存储，可空，005）
     DATableNoteStore* mNoteStore { nullptr };              // 非拥有（批注子存储，可空，005 T1.26）
+    // 数据条渐变画刷缓存（按颜色键；paint()是const方法，缓存成员必须mutable）
+    mutable QHash< QRgb, QBrush > mDataBarBrushes;
+    // 取数据条渐变画刷（单位坐标+对象边界模式，命中缓存直接返回）
+    QBrush dataBarBrush(const QColor& barColor) const;
 };
 }  // end of namespace DA
 #endif  // DATABLESTYLEITEMDELEGATE_H

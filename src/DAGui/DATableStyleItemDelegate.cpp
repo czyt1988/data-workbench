@@ -224,13 +224,9 @@ void DATableStyleItemDelegate::paint(QPainter* painter, const QStyleOptionViewIt
         if (barWidth > 0 && barArea.width() > 0 && barArea.height() > 0) {
             const QRect barRect(barArea.left(), barArea.top(), barWidth, barArea.height());
             if (cfResult.barGradient) {
-                // 渐变填充：沿条长方向透明度递增（色相保持官方色板原色，不引入新色值）
-                QColor c0 = barColor;
-                c0.setAlpha(110);
-                QLinearGradient g(barRect.topLeft(), barRect.topRight());
-                g.setColorAt(0.0, c0);
-                g.setColorAt(1.0, barColor);
-                painter->fillRect(barRect, g);
+                // 渐变填充：沿条长方向透明度递增（色相保持官方色板原色，不引入新色值）；
+                // 画刷为单位坐标+对象边界模式，按颜色缓存后可复用于任意宽度和位置的条
+                painter->fillRect(barRect, dataBarBrush(barColor));
             } else {
                 painter->fillRect(barRect, barColor);
             }
@@ -256,6 +252,34 @@ void DATableStyleItemDelegate::paint(QPainter* painter, const QStyleOptionViewIt
             painter->restore();
         }
     }
+}
+
+/**
+ * @brief 取数据条渐变画刷（带缓存）
+ *
+ * 渐变用单位坐标加对象边界模式（QGradient::ObjectBoundingMode），
+ * 坐标按被填充矩形的边界自动映射，同一份画刷可复用于任意宽度和位置的条；
+ * 左端透明度 110 由颜色派生，缓存键只需 barColor.rgba()。
+ * 缓存条目数量受数据条颜色种类限制，不会无上限增长。
+ * @param barColor 数据条颜色
+ * @return 渐变画刷
+ */
+QBrush DATableStyleItemDelegate::dataBarBrush(const QColor& barColor) const
+{
+    const QRgb key = barColor.rgba();
+    auto it = mDataBarBrushes.find(key);
+    if (it != mDataBarBrushes.end()) {
+        return it.value();
+    }
+    QColor c0 = barColor;
+    c0.setAlpha(110);
+    QLinearGradient g(0, 0, 1, 0);
+    g.setCoordinateMode(QGradient::ObjectBoundingMode);
+    g.setColorAt(0.0, c0);
+    g.setColorAt(1.0, barColor);
+    const QBrush b(g);
+    mDataBarBrushes.insert(key, b);
+    return b;
 }
 
 /**
