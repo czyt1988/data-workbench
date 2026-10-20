@@ -160,7 +160,7 @@ void DATableStyleItemDelegate::paint(QPainter* painter, const QStyleOptionViewIt
             }
             if (style.fontValid()) {
                 opt.font = style.font();
-                opt.fontMetrics = QFontMetrics(style.font());
+                opt.fontMetrics = fontMetricsFor(style.font());
             }
         }
     }
@@ -197,7 +197,7 @@ void DATableStyleItemDelegate::paint(QPainter* painter, const QStyleOptionViewIt
                 }
                 if (cfStyle.fontValid()) {
                     opt.font        = cfStyle.font();
-                    opt.fontMetrics = QFontMetrics(cfStyle.font());
+                    opt.fontMetrics = fontMetricsFor(cfStyle.font());
                 }
             }
         }
@@ -280,6 +280,26 @@ QBrush DATableStyleItemDelegate::dataBarBrush(const QColor& barColor) const
     const QBrush b(g);
     mDataBarBrushes.insert(key, b);
     return b;
+}
+
+/**
+ * @brief 取字体度量（带缓存）
+ *
+ * 单元格命中自定义字体时按字体缓存QFontMetrics，避免每格构造一次；
+ * 不给度量传绘制设备，保持与原实现一致。
+ * Qt5的QFontMetrics无默认构造，因此只用find()/insert()，不调用QHash::value()。
+ * @param font 字体
+ * @return 该字体的度量
+ */
+QFontMetrics DATableStyleItemDelegate::fontMetricsFor(const QFont& font) const
+{
+    auto it = mFontMetricsCache.find(font);
+    if (it != mFontMetricsCache.end()) {
+        return it.value();
+    }
+    const QFontMetrics fm(font);
+    mFontMetricsCache.insert(font, fm);
+    return fm;
 }
 
 /**

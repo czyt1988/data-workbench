@@ -4,6 +4,8 @@
 #include <QStyledItemDelegate>
 #include <QBrush>
 #include <QHash>
+#include <QFont>
+#include <QFontMetrics>
 
 namespace DA
 {
@@ -63,6 +65,10 @@ private:
     mutable QHash< QRgb, QBrush > mDataBarBrushes;
     // 取数据条渐变画刷（单位坐标+对象边界模式，命中缓存直接返回）
     QBrush dataBarBrush(const QColor& barColor) const;
+    // 自定义字体度量缓存（按字体键；字体种类通常很少，只按字体增长）
+    mutable QHash< QFont, QFontMetrics > mFontMetricsCache;
+    // 取字体度量（命中缓存直接返回；Qt5的QFontMetrics无默认构造，只用find/insert）
+    QFontMetrics fontMetricsFor(const QFont& font) const;
 };
 }  // end of namespace DA
 #endif  // DATABLESTYLEITEMDELEGATE_H
