@@ -145,15 +145,16 @@ __pycache__
 .kittify/missions/__pycache__/
 .kittify/runtime/
 .kittify/workspaces/
-.qtcreator
-.qoder
-.trae
-.kilo
-.sisyphus
-.superpowers
-.omc
-.omo
-.plan
+.qtcreator/
+.qoder/
+.trae/
+.kilo/
+.sisyphus/
+.superpowers/
+.omc/
+.omo/
+.plan/
+.obsidian/
 opencode.md
 docs/superpowers
 nul
@@ -161,9 +162,10 @@ scripts/apply_cn_to_ts.py
 scripts/_cn_map.json
 scripts/_remaining_unfinished.txt
 .zcode
+.zcodeignore
 .superplan
 test_result.txt
-.obsidian
+
 
 # tools/perf 运行生成物（会话事件数组与 dump 的 DOM）
 tools/perf/events.js
