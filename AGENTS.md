@@ -256,6 +256,14 @@ AI 编写代码时，日志宏的选择直接影响日志是否进入 UI 消息�
 - Qt6 不再通过 `QDataStream` 隐式包含 `<QIODevice>`。如编译报 `QIODevice` 不完整类型，手动添加 `#include <QIODevice>`。
 - Qt 信号槽中传递自定义类指针（如 `DAPyNodeGraphicsItem*`），若头文件仅有前向声明，`connect` 会导致不完整类型错误。**解决方案**：在 .cpp 文件中 `#include` 完整头文件，而非仅依赖前向声明
 
+### 通用基础控件下沉 DAWidgets（通用控件优先原则）
+
+`src/3rdparty/DAWidgets` 是本项目自维护的通用窗口控件库（允许改动的子模块，与 SARibbon/qwt 同级）。开发中发现**缺少具备通用性/复用性的基础控件**时（例：通用列/条目选择控件、渐变色阶预览条、带色块的取色按钮等），**先在 DAWidgets 里实现，再由顶层项目引用**，不要在 DAGui 等业务模块里造一次性控件：
+
+- **下沉判据**：控件不含业务语义（只认文本/标识/颜色等通用数据结构），且能想到第二个复用场景（列选择、字段选择、条目挑选等）→ 下沉 DAWidgets；强绑定业务数据的控件留在业务模块。
+- **改动流程**（第三方库是预编译产物，只能串行）：在**主工作树**的 DAWidgets 子模块里改代码并提交 → 主工作树重编 3rdparty 并 `cmake --install`（工作树里**禁止 install**，会踩共享 `bin_*`）→ 任务工作树同步子模块提交 → 顶层引用新控件并随任务提交子模块指针。
+- **翻译**：DAWidgets 新控件的界面文本用 `tr()`（英文源 + `//cn:` 注释）；顶层 `CMakeLists.txt` 的 `DA_LUPDATE_SOURCE_DIRS` 已包含 `src/3rdparty/DAWidgets/src`，纳入统一 lupdate/翻译流。
+
 ### 视觉设计规范（UI 与图标）
 
 > 📖 **详细规范见** [DESIGN.md](DESIGN.md)（仓库根目录，与本文同级）
