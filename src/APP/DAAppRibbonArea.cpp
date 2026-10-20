@@ -516,6 +516,10 @@ void DAAppRibbonArea::buildContextCategoryDataFrame()
     mComboxDisplayFormatContainer->setWidget(mComboxDisplayFormat);
     mPannelDataframeOperateFormat->addWidget(mComboxDisplayFormatContainer, SARibbonPanelItem::Medium);
     mPannelDataframeOperateFormat->addMediumAction(mActions->actionTableFormatCells);
+    // 条件格式（WPS 式菜单按钮）：分割线后大按钮，点击直接弹预设菜单（InstantPopup），
+    // 菜单内容由当前数据页 populateConditionalFormatMenu 实时填充（控制器接线）
+    mPannelDataframeOperateFormat->addSeparator();
+    mPannelDataframeOperateFormat->addLargeAction(mActions->actionConditionalFormat, QToolButton::InstantPopup);
 
     // Edit pannel - 编辑（002 T1.4：查找/替换；005 T1.24：填充下拉，D6）
     mPannelDataframeOperateEdit = mCategoryDataframeOperate->addPanel(tr("Edit"));  // cn:编辑
@@ -584,7 +588,8 @@ void DAAppRibbonArea::buildContextCategoryDataFrame()
     // 与表体右键菜单「条件格式...」共用页面 showConditionalFormatDialog）
     mPannelDataframeStyleConditional = mCategoryDataframeStyle->addPanel(tr("Conditional"));  // cn:条件格式
     mPannelDataframeStyleConditional->setObjectName(QString::fromUtf8(UiNames::Ribbon::DataFrameStyleConditionalPanel));
-    mPannelDataframeStyleConditional->addLargeAction(mActions->actionConditionalFormat);
+    // 与操作页「格式」面板同 action 同菜单：点击直接弹预设菜单（InstantPopup）
+    mPannelDataframeStyleConditional->addLargeAction(mActions->actionConditionalFormat, QToolButton::InstantPopup);
 }
 
 /**

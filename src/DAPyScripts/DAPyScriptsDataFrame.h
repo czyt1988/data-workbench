@@ -5,6 +5,7 @@
 #include <optional>
 #include <QString>
 #include <QList>
+#include <QVariant>
 #include <QPair>
 #include <QVector>
 #include "DAPyObjectWrapper.h"
@@ -261,9 +262,13 @@ public:
 		double maxValue { 0.0 };
 		double medianValue { 0.0 };
 	};
-	// 单列 min/max/median 全表 O(n) 归约（NaN 排除，不采样不近似）；
-	// 列越界抛错或全 NaN 返回 ok=false
-	ColumnStatsResult columnStats(const DAPyDataFrame& df, int col) noexcept;
+    // 单列 min/max/median 全表 O(n) 归约（NaN 排除，不采样不近似）；
+    // 列越界抛错或全 NaN 返回 ok=false
+    ColumnStatsResult columnStats(const DAPyDataFrame& df, int col) noexcept;
+    // 列重复值（条件格式重复/唯一条件，对应 da_dataframe.da_column_duplicate_values）：
+    // 列内出现≥2 次的值的去重列表（Python 原生类型经 caster 转 QVariant）；
+    // 无重复返回 true 且 out 为空；df 空/列越界/异常返回 false
+    bool columnDuplicateValues(const DAPyDataFrame& df, int col, QList< QVariant >& out) noexcept;
 	// 选区列统计结果（007 T1.7，对应 da_column_stats 的 cols/row_range/unique_limit 扩展路径）
 	struct SelectionColumnStats
 	{

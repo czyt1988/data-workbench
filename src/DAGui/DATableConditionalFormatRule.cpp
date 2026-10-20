@@ -1,5 +1,6 @@
 #include "DATableConditionalFormatRule.h"
 #include "da_qt5qt6_compat.hpp"
+#include <QDateTime>
 #include <QMetaType>
 #include <QtMath>
 
@@ -77,6 +78,15 @@ bool DATableConditionalFormatRule::evaluateCondition(Condition cond, const QVari
     if (cond == Condition::IsNotEmpty) {
         return !isCellEmpty(cellValue);
     }
+    if (cond == Condition::DateOccurring) {
+        if (!v1.isValid()) {
+            return false;
+        }
+        return evaluateDateOccurring(static_cast< DateOccurrence >(v1.toInt()), cellValue, QDate::currentDate());
+    }
+    if (cond == Condition::Duplicate || cond == Condition::Unique) {
+        return false;  // 需列重复键集合上下文，走 evaluateDuplicate
+    }
     if (isCellEmpty(cellValue)) {
         return false;  // 其余操作符：空值不命中
     }
@@ -130,6 +140,140 @@ bool DATableConditionalFormatRule::evaluateCondition(Condition cond, const QVari
         break;
     }
     return false;
+}
+
+/**
+ * @brief 发生日期区间端点（含首尾）
+ *
+ * 周以周一为首日（QDate::dayOfWeek() 1=周一）；月以自然月首末日为准。
+ * @param occ 日期区间类别
+ * @param today "今天"基准（单测注入固定日期）
+ * @return [起, 止] 闭区间
+ */
+QPair< QDate, QDate > DATableConditionalFormatRule::dateOccurrenceRange(DateOccurrence occ, const QDate& today)
+{
+    switch (occ) {
+    case DateOccurrence::Yesterday:
+        return qMakePair(today.addDays(-1), today.addDays(-1));
+    case DateOccurrence::Today:
+        return qMakePair(today, today);
+    case DateOccurrence::Tomorrow:
+        return qMakePair(today.addDays(1), today.addDays(1));
+    case DateOccurrence::Last7Days:
+        return qMakePair(today.addDays(-6), today);
+    case DateOccurrence::LastWeek: {
+        const QDate thisMonday = today.addDays(1 - today.dayOfWeek());
+        return qMakePair(thisMonday.addDays(-7), thisMonday.addDays(-1));
+    }
+    case DateOccurrence::ThisWeek: {
+        const QDate thisMonday = today.addDays(1 - today.dayOfWeek());
+        return qMakePair(thisMonday, thisMonday.addDays(6));
+    }
+    case DateOccurrence::NextWeek: {
+        const QDate thisMonday = today.addDays(1 - today.dayOfWeek());
+        return qMakePair(thisMonday.addDays(7), thisMonday.addDays(13));
+    }
+    case DateOccurrence::LastMonth: {
+        const QDate first = QDate(today.year(), today.month(), 1);
+        return qMakePair(first.addMonths(-1), first.addDays(-1));
+    }
+    case DateOccurrence::ThisMonth: {
+        const QDate first = QDate(today.year(), today.month(), 1);
+        return qMakePair(first, first.addMonths(1).addDays(-1));
+    }
+    case DateOccurrence::NextMonth: {
+        const QDate first = QDate(today.year(), today.month(), 1).addMonths(1);
+        return qMakePair(first, first.addMonths(1).addDays(-1));
+    }
+    }
+    return qMakePair(today, today);
+}
+
+/**
+ * @brief 发生日期求值
+ *
+ * 单元格值取日期：QDate/QDateTime 直接取，字符串先按 ISO（yyyy-MM-dd 或带时间）解析；
+ * 非日期值与空值不命中。
+ * @param occ 日期区间类别
+ * @param cellValue 单元格原始值（Qt::EditRole）
+ * @param today "今天"基准
+ * @return 落在区间内返回 true
+ */
+bool DATableConditionalFormatRule::evaluateDateOccurring(DateOccurrence occ, const QVariant& cellValue,
+                                                         const QDate& today)
+{
+    if (isCellEmpty(cellValue)) {
+        return false;
+    }
+    QDate d;
+    if (cellValue.userType() == QMetaType::QDate) {
+        d = cellValue.toDate();
+    } else if (cellValue.userType() == QMetaType::QDateTime) {
+        d = cellValue.toDateTime().date();
+    } else {
+        const QDateTime dt = QDateTime::fromString(cellValue.toString(), Qt::ISODate);
+        d                  = dt.date();
+    }
+    if (!d.isValid()) {
+        return false;
+    }
+    const QPair< QDate, QDate > range = dateOccurrenceRange(occ, today);
+    return d >= range.first && d <= range.second;
+}
+
+/**
+ * @brief 重复/唯一求值
+ *
+ * duplicateKeys 为列内出现≥2 次的值的归一化键集合（duplicateKey 口径）；
+ * keysValid=false（惰性源等无列上下文）一律不命中；空单元格不命中。
+ * @param cond Duplicate 或 Unique（其余返回 false）
+ * @param cellValue 单元格原始值（Qt::EditRole）
+ * @param duplicateKeys 列重复键集合
+ * @param keysValid 集合是否有效
+ * @return 命中返回 true
+ */
+bool DATableConditionalFormatRule::evaluateDuplicate(Condition cond, const QVariant& cellValue,
+                                                     const QSet< QString >& duplicateKeys, bool keysValid)
+{
+    if (cond != Condition::Duplicate && cond != Condition::Unique) {
+        return false;
+    }
+    if (!keysValid || isCellEmpty(cellValue)) {
+        return false;
+    }
+    const bool dup = duplicateKeys.contains(duplicateKey(cellValue));
+    return (cond == Condition::Duplicate) ? dup : !dup;
+}
+
+/**
+ * @brief 值的归一化键（重复判定口径）
+ *
+ * 数值类型 → 最短往返十进制串（int/float 同值同键，与 pandas 数值相等分组一致）；
+ * 日期/时间 → ISO 串；其余（含数字串）→ toString 原样（字符串"100"与数值 100 不同键，
+ * 与 pandas 对象列分组语义一致）；空值返回空串（空值不参与重复判定）。
+ * @param v 值
+ * @return 归一化键
+ */
+QString DATableConditionalFormatRule::duplicateKey(const QVariant& v)
+{
+    if (isCellEmpty(v)) {
+        return QString();
+    }
+    switch (v.userType()) {
+    case QMetaType::Int:
+    case QMetaType::UInt:
+    case QMetaType::LongLong:
+    case QMetaType::ULongLong:
+    case QMetaType::Float:
+    case QMetaType::Double:
+        return QString::number(v.toDouble(), 'r');  // 'r' = 最短可往返表示
+    case QMetaType::QDateTime:
+        return v.toDateTime().toString(Qt::ISODate);
+    case QMetaType::QDate:
+        return v.toDate().toString(Qt::ISODate);
+    default:
+        return v.toString();
+    }
 }
 
 /**
@@ -239,6 +383,9 @@ void DATableConditionalFormatRule::toXml(QDomDocument& doc, QDomElement& parent)
         break;
     case Type::DataBar:
         re.setAttribute(QStringLiteral("color"), barColor.name(QColor::HexArgb));
+        if (barGradient) {
+            re.setAttribute(QStringLiteral("grad"), 1);
+        }
         break;
     }
     parent.appendChild(re);
@@ -265,7 +412,9 @@ bool DATableConditionalFormatRule::fromXml(const QDomElement& e)
             condition = c;
         }
         if (e.hasAttribute(QStringLiteral("v1"))) {
-            value1 = e.attribute(QStringLiteral("v1"));
+            // 发生日期的 value1 是 DateOccurrence 整数值，其余条件保持字符串语义
+            value1 = (condition == Condition::DateOccurring) ? QVariant(e.attribute(QStringLiteral("v1")).toInt())
+                                                             : QVariant(e.attribute(QStringLiteral("v1")));
         }
         if (e.hasAttribute(QStringLiteral("v2"))) {
             value2 = e.attribute(QStringLiteral("v2"));
@@ -296,6 +445,7 @@ bool DATableConditionalFormatRule::fromXml(const QDomElement& e)
         if (c.isValid()) {
             barColor = c;
         }
+        barGradient = e.attribute(QStringLiteral("grad"), QStringLiteral("0")).toInt() != 0;
         break;
     }
     }
@@ -362,6 +512,12 @@ QString DATableConditionalFormatRule::conditionToString(Condition c)
         return QStringLiteral("empty");
     case Condition::IsNotEmpty:
         return QStringLiteral("notempty");
+    case Condition::DateOccurring:
+        return QStringLiteral("date-occurring");
+    case Condition::Duplicate:
+        return QStringLiteral("duplicate");
+    case Condition::Unique:
+        return QStringLiteral("unique");
     }
     return QStringLiteral("greater");
 }
@@ -388,6 +544,78 @@ bool DATableConditionalFormatRule::conditionFromString(const QString& s, Conditi
         *c = Condition::IsEmpty;
     } else if (s == QLatin1String("notempty")) {
         *c = Condition::IsNotEmpty;
+    } else if (s == QLatin1String("date-occurring")) {
+        *c = Condition::DateOccurring;
+    } else if (s == QLatin1String("duplicate")) {
+        *c = Condition::Duplicate;
+    } else if (s == QLatin1String("unique")) {
+        *c = Condition::Unique;
+    } else {
+        return false;
+    }
+    return true;
+}
+
+/**
+ * @brief 发生日期类别 → XML 字符串
+ * @param o 类别
+ * @return 字符串
+ */
+QString DATableConditionalFormatRule::dateOccurrenceToString(DateOccurrence o)
+{
+    switch (o) {
+    case DateOccurrence::Yesterday:
+        return QStringLiteral("yesterday");
+    case DateOccurrence::Today:
+        return QStringLiteral("today");
+    case DateOccurrence::Tomorrow:
+        return QStringLiteral("tomorrow");
+    case DateOccurrence::Last7Days:
+        return QStringLiteral("last7days");
+    case DateOccurrence::LastWeek:
+        return QStringLiteral("lastweek");
+    case DateOccurrence::ThisWeek:
+        return QStringLiteral("thisweek");
+    case DateOccurrence::NextWeek:
+        return QStringLiteral("nextweek");
+    case DateOccurrence::LastMonth:
+        return QStringLiteral("lastmonth");
+    case DateOccurrence::ThisMonth:
+        return QStringLiteral("thismonth");
+    case DateOccurrence::NextMonth:
+        return QStringLiteral("nextmonth");
+    }
+    return QStringLiteral("today");
+}
+
+/**
+ * @brief XML 字符串 → 发生日期类别
+ * @param s 字符串
+ * @param o 输出类别
+ * @return 合法返回 true
+ */
+bool DATableConditionalFormatRule::dateOccurrenceFromString(const QString& s, DateOccurrence* o)
+{
+    if (s == QLatin1String("yesterday")) {
+        *o = DateOccurrence::Yesterday;
+    } else if (s == QLatin1String("today")) {
+        *o = DateOccurrence::Today;
+    } else if (s == QLatin1String("tomorrow")) {
+        *o = DateOccurrence::Tomorrow;
+    } else if (s == QLatin1String("last7days")) {
+        *o = DateOccurrence::Last7Days;
+    } else if (s == QLatin1String("lastweek")) {
+        *o = DateOccurrence::LastWeek;
+    } else if (s == QLatin1String("thisweek")) {
+        *o = DateOccurrence::ThisWeek;
+    } else if (s == QLatin1String("nextweek")) {
+        *o = DateOccurrence::NextWeek;
+    } else if (s == QLatin1String("lastmonth")) {
+        *o = DateOccurrence::LastMonth;
+    } else if (s == QLatin1String("thismonth")) {
+        *o = DateOccurrence::ThisMonth;
+    } else if (s == QLatin1String("nextmonth")) {
+        *o = DateOccurrence::NextMonth;
     } else {
         return false;
     }
@@ -416,6 +644,7 @@ bool DATableConditionalFormatRule::operator==(const DATableConditionalFormatRule
            && scaleMaxColor == other.scaleMaxColor
            && threeColorScale == other.threeColorScale
            && barColor == other.barColor
+           && barGradient == other.barGradient
            && enabled == other.enabled;
 }
 

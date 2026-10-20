@@ -25,6 +25,7 @@ namespace Ui
 {
 class DADataOperateOfDataFrameWidget;
 }
+class QMenu;
 
 namespace DA
 {
@@ -46,6 +47,7 @@ class DAComputedColumn;
 class DATableValidationStore;
 class DADialogValidationReport;
 class DATableNoteStore;
+class DATableConditionalFormatRule;
 
 
 /**
@@ -174,10 +176,14 @@ public:
     void addSecondarySortColumn(int logicalIndex, Qt::SortOrder order);
 
     // 打开条件格式规则编辑对话框（003 T1.5）：作用于当前选区所在列；
-    // 编辑期预览叠加，确定后按差异生成增/删/改/移命令入页撤销栈（D4）
-    void showConditionalFormatDialog();
+    // 编辑期预览叠加，确定后按差异生成增/删/改/移命令入页撤销栈（D4）；
+    // initialType 为 DATableConditionalFormatRule::Type 整数值（-1=不预设，菜单「其他规则」入口传对应类型）
+    void showConditionalFormatDialog(int initialType = -1);
     // 清除选中列的条件格式规则（一次命令，可撤销）
     void clearConditionalFormatFromSelection();
+    // 填充条件格式菜单（WPS 式：数据条/色阶/突出显示单元格规则/清除规则/自定义设置；
+    // Ribbon 条件格式按钮与表体右键子菜单共用；每次 aboutToShow 调用先 clear 再填充）
+    void populateConditionalFormatMenu(QMenu* menu);
     // 打开查找/替换浮动条（002 T1.4）：expandReplace=true 展开替换行（Ctrl+H 语义）
     void showFindReplace(bool expandReplace);
     // 关闭查找/替换浮动条并清查找高亮
@@ -377,6 +383,15 @@ protected:
     void changeEvent(QEvent* e) override;
 
 private:
+    // ===== 条件格式菜单（WPS 式预设入口）=====
+    // 条件格式入口作用列：选区覆盖列；无选区回退当前格所在列；空=无有效列
+    QList< int > conditionalFormatScopeColumns() const;
+    // 给每个作用列追加一条规则（与落库值差异生成撤销命令入栈）
+    void applyConditionalFormatRuleToScope(const DATableConditionalFormatRule& rule);
+    // 突出显示单元格规则/重复值快速对话框：确定后施加到作用列
+    void showQuickCellRuleDialog(DATableConditionalFormatRule::Condition cond);
+    // 清除全表条件格式规则（一次命令，可撤销）
+    void clearAllConditionalFormatRules();
     // 视图行号（滑动窗内逻辑行）转数据源绝对行号：数据操作唯一换算点
     int toActualRow(int viewRow) const;
     // 选区是否与行级/单元格级样式相交（样式键是稀疏表且为数据源绝对行号，

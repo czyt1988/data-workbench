@@ -1500,6 +1500,36 @@ DAPyScriptsDataFrame::ColumnStatsResult DAPyScriptsDataFrame::columnStats(const 
 }
 
 /**
+ * @brief 列重复值（条件格式重复/唯一条件）
+ *
+ * 对应 da_dataframe.da_column_duplicate_values：列内出现≥2 次的值的去重列表，
+ * 空值不参与；Python 原生类型经 DAPybind11QtCaster 转 QVariant（数值/字符串/日期时间）。
+ * @param df 数据（只读）
+ * @param col 列位置索引
+ * @param out 输出重复值去重列表（无重复为空列表）
+ * @return 调用成功返回 true；df 空/列越界/异常返回 false
+ */
+bool DAPyScriptsDataFrame::columnDuplicateValues(const DAPyDataFrame& df, int col, QList< QVariant >& out) noexcept
+{
+    out.clear();
+    if (df.isNone()) {
+        return false;
+    }
+    try {
+        pybind11::object da_column_duplicate_values = attr("da_column_duplicate_values");
+        pybind11::object ret                        = da_column_duplicate_values(df.object(), col);
+        const pybind11::list lst                    = ret.cast< pybind11::list >();
+        for (const auto& item : lst) {
+            out.append(item.cast< QVariant >());
+        }
+        return true;
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return false;
+}
+
+/**
  * @brief 按列区间统计（007 T1.7）
  *
  * 对应 da_column_stats 的 cols/row_range/unique_limit 扩展路径；cols 非空才走

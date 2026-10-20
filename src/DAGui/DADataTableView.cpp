@@ -233,14 +233,19 @@ QMenu* DADataTableView::buildContextMenu(const QModelIndex& at)
     actReplace->setEnabled(editable);  // 只读源查找可用、替换置灰
     connect(actFind, &QAction::triggered, this, &DADataTableView::findRequested);
     connect(actReplace, &QAction::triggered, this, &DADataTableView::replaceRequested);
-    // —— 003：条件格式（R16：表体右键菜单与 Ribbon Table Style 面板同入口；列头菜单不放）——
-    // 只读/惰性源也可管理规则（色阶/数据条的可用性限制在对话框内按 §1.4-2 置灰），
+    // —— 003：条件格式（R16：表体右键菜单与 Ribbon 条件格式按钮同入口；列头菜单不放）——
+    // 子菜单形式（WPS 式预设）：内容经 conditionalFormatMenuAboutToShow 交页面填充
+    // （页面持有 store 与撤销栈）；只读/惰性源也可管理规则（色阶/数据条在子菜单内置灰），
     // 无选区时置灰（入口作用于当前选区所在列）
     menu->addSeparator();
     QAction* actConditionalFormat = menu->addAction(QIcon(QStringLiteral(":/DAGui/icon/conditional-format.svg")),
-                                                    tr("Conditional Format..."));  // cn:条件格式...
+                                                    tr("Conditional Format"));  // cn:条件格式
     actConditionalFormat->setEnabled(hasSel);
-    connect(actConditionalFormat, &QAction::triggered, this, &DADataTableView::conditionalFormatRequested);
+    QMenu* cfSubMenu = new QMenu(menu);
+    actConditionalFormat->setMenu(cfSubMenu);
+    connect(cfSubMenu, &QMenu::aboutToShow, this, [ this, cfSubMenu ]() {
+        Q_EMIT conditionalFormatMenuAboutToShow(cfSubMenu);
+    });
     // —— 004：数据工具（计算列/分列/合并列；分组/重塑随各自 WP 追加在本组）——
     // 计算列写数据，只读/惰性源置灰（isTableEditable 为假）
     menu->addSeparator();

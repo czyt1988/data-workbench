@@ -3,6 +3,9 @@
 #include "DAGuiAPI.h"
 #include "DATableCellStyle.h"
 #include <QColor>
+#include <QDate>
+#include <QSet>
+#include <QString>
 #include <QVariant>
 #include <QDomDocument>
 #include <QDomElement>
@@ -40,13 +43,30 @@ public:
     // 单元格规则条件操作符
     enum class Condition
     {
-        Greater,     ///< 大于（严格，等于不命中）
-        Less,        ///< 小于（严格）
-        Between,     ///< 介于（闭区间 [value1, value2]）
-        Equal,       ///< 等于
-        Contains,    ///< 包含（字符串子串，区分大小写）
-        IsEmpty,     ///< 为空（invalid/null/NaN/空串）
-        IsNotEmpty   ///< 非空
+        Greater,       ///< 大于（严格，等于不命中）
+        Less,          ///< 小于（严格）
+        Between,       ///< 介于（闭区间 [value1, value2]）
+        Equal,         ///< 等于
+        Contains,      ///< 包含（字符串子串，区分大小写）
+        IsEmpty,       ///< 为空（invalid/null/NaN/空串）
+        IsNotEmpty,    ///< 非空
+        DateOccurring, ///< 发生日期（value1 = DateOccurrence 整数值，相对"今天"的区间判定）
+        Duplicate,     ///< 重复值（列内出现≥2 次；求值需列重复键集合，见 evaluateDuplicate）
+        Unique         ///< 唯一值（列内仅出现 1 次；求值需列重复键集合，见 evaluateDuplicate）
+    };
+    // 发生日期条件的日期区间类别（value1 以其整数值序列化）
+    enum class DateOccurrence
+    {
+        Yesterday,  ///< 昨天
+        Today,      ///< 今天
+        Tomorrow,   ///< 明天
+        Last7Days,  ///< 最近 7 天（含今天往前共 7 天）
+        LastWeek,   ///< 上周（周一~周日）
+        ThisWeek,   ///< 本周（周一~周日）
+        NextWeek,   ///< 下周（周一~周日）
+        LastMonth,  ///< 上月
+        ThisMonth,  ///< 本月
+        NextMonth   ///< 下月
     };
 
     DATableConditionalFormatRule();
@@ -56,8 +76,19 @@ public:
     static bool toNumeric(const QVariant& v, double* out);
     // 值是否为"空"（invalid/null/NaN/空串）
     static bool isCellEmpty(const QVariant& v);
-    // 条件求值：空单元格除 IsEmpty/IsNotEmpty 外不命中；数值优先、退化字符串比较
+    // 条件求值：空单元格除 IsEmpty/IsNotEmpty 外不命中；数值优先、退化字符串比较；
+    // DateOccurring 以 QDate::currentDate() 为"今天"求值；Duplicate/Unique 一律 false（需列上下文，走 evaluateDuplicate）
     static bool evaluateCondition(Condition cond, const QVariant& cellValue, const QVariant& v1, const QVariant& v2);
+    // 发生日期求值：单元格日期落在 occ 相对 today 的区间内命中（非日期值不命中）
+    static bool evaluateDateOccurring(DateOccurrence occ, const QVariant& cellValue, const QDate& today);
+    // 重复/唯一求值：duplicateKeys = 列内出现≥2 次的值的归一化键集合（duplicateKey 口径）；
+    // keysValid=false（惰性源等无列上下文）一律不命中；空单元格不命中
+    static bool evaluateDuplicate(Condition cond, const QVariant& cellValue, const QSet< QString >& duplicateKeys,
+                                  bool keysValid);
+    // 值的归一化键（重复判定口径）：数值类型 → 最短往返十进制串；日期/时间 → ISO 串；其余 toString 原样；空值返回空串
+    static QString duplicateKey(const QVariant& v);
+    // 发生日期区间端点（含首尾；供界面摘要与单测复用）
+    static QPair< QDate, QDate > dateOccurrenceRange(DateOccurrence occ, const QDate& today);
     // 归一化位置：hi>lo → (v-lo)/(hi-lo) 截断 [0,1]；hi==lo 退化返回 0.5
     static double normalizedPosition(double value, double lo, double hi);
     // 颜色线性插值（RGB 分量），t 截断 [0,1]
@@ -79,6 +110,8 @@ public:
     static bool typeFromString(const QString& s, Type* t);
     static QString conditionToString(Condition c);
     static bool conditionFromString(const QString& s, Condition* c);
+    static QString dateOccurrenceToString(DateOccurrence o);
+    static bool dateOccurrenceFromString(const QString& s, DateOccurrence* o);
 
     bool operator==(const DATableConditionalFormatRule& other) const;
     bool operator!=(const DATableConditionalFormatRule& other) const;
@@ -94,6 +127,7 @@ public:
     QColor scaleMaxColor { QColor(0x52, 0x80, 0xC1) };  ///< 色阶高端色（官方主蓝 #5280C1）
     bool threeColorScale { false };              ///< 是否三色色阶（false=双色）
     QColor barColor { QColor(0xBD, 0xCD, 0xE8) };  ///< 数据条填充色（官方浅蓝 #BDCDE8）
+    bool barGradient { false };                  ///< 数据条渐变填充（false=实心；渐变沿条长方向透明度递增）
     bool enabled { true };                       ///< 启停（列表顺序即优先级）
 };
 }  // end of namespace DA

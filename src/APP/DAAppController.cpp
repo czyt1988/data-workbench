@@ -534,6 +534,23 @@ void DAAppController::initConnection()
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionReplace, onActionReplaceTriggered);
     // 条件格式（003 T1.5，Ribbon「Table Style」面板；与表体右键菜单共用页面入口，R16）
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionConditionalFormat, onActionConditionalFormatTriggered);
+    // WPS 式预设菜单：action 挂菜单后 Ribbon 按钮（InstantPopup）点击即弹；
+    // 内容每次 aboutToShow 由当前数据页重填（作用列/惰性源可用性实时）
+    {
+        QMenu* cfMenu = new QMenu();
+        cfMenu->QObject::setParent(this);  // 控制器非 QWidget，经 QObject 父子关系管理生命周期
+        mActions->actionConditionalFormat->setMenu(cfMenu);
+        connect(cfMenu, &QMenu::aboutToShow, this, [ this, cfMenu ]() {
+            cfMenu->clear();
+            DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false);
+            if (!dfopt) {
+                QAction* na = cfMenu->addAction(tr("No active table"));  // cn:无活动表格
+                na->setEnabled(false);
+                return;
+            }
+            dfopt->populateConditionalFormatMenu(cfMenu);
+        });
+    }
     // 数据工具（004，Ribbon「Data Tools」面板；计算列/分列/合并列与表体右键菜单共用页面入口）
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionComputedColumn, onActionComputedColumnTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionRecomputeAllComputedColumns, onActionRecomputeAllComputedColumnsTriggered);

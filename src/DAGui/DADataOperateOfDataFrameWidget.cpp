@@ -28,6 +28,8 @@
 #include <QItemSelectionModel>
 #include <QElapsedTimer>
 #include <QInputDialog>
+#include <QMenu>
+#include <QBrush>
 // cmd
 #include "Commands/DACommandsDataFrame.h"
 #include "Commands/DACommandsTableStyle.h"
@@ -59,6 +61,8 @@
 #include "Dialog/DADialogTableColumnView.h"
 #include "Dialog/DADialogFindReplace.h"
 #include "Dialog/DADialogConditionalFormat.h"
+#include "Dialog/DADialogConditionalFormatQuickRule.h"
+#include "DAConditionalFormatPresets.h"
 #include "Dialog/DADialogComputedColumn.h"
 #include "Dialog/DADialogSplitColumn.h"
 #include "Dialog/DADialogMergeColumns.h"
@@ -302,6 +306,28 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
             out.medianValue = r.medianValue;
             return true;
         });
+        // 重复键提供者（重复/唯一条件）：与统计同款 QPointer 防悬挂 + 惰性缓存语义
+        mConditionalFormatStore->setDuplicatesProvider([ self ](int column, QSet< QString >& out) {
+            if (!self) {
+                return false;
+            }
+            DAPyDataFrame df = self->getDataframe();
+            if (df.isNone()) {
+                return false;
+            }
+            DAPyScriptsDataFrame& py = DAPyScripts::getDataFrame();
+            QList< QVariant > values;
+            if (!py.columnDuplicateValues(df, column, values)) {
+                return false;
+            }
+            for (const QVariant& v : std::as_const(values)) {
+                const QString key = DATableConditionalFormatRule::duplicateKey(v);
+                if (!key.isEmpty()) {
+                    out.insert(key);
+                }
+            }
+            return true;
+        });
         // 统计失效挂点（widget 侧，计划 WP2 步骤 5）：单元格编辑命令在模型内部创建，
         // 不走 widget 命令回调，用模型的 cellValueChanged 精确信号失效对应列。
         // 不用 dataChanged：滑窗滚动（setCacheWindowStartRow）与样式刷新也发整窗
@@ -388,6 +414,7 @@ DADataOperateOfDataFrameWidget::~DADataOperateOfDataFrameWidget()
     // 避免持有已销毁页面的回调（QPointer 已防悬挂，此处彻底释放 lambda 捕获）
     if (mConditionalFormatStore) {
         mConditionalFormatStore->setStatsProvider(nullptr);
+        mConditionalFormatStore->setDuplicatesProvider(nullptr);
     }
     delete ui;
 }
@@ -462,7 +489,12 @@ void DADataOperateOfDataFrameWidget::configurePaneView(DADataTableView* pane)
     connect(pane, &DADataTableView::gotoRequested, this, &DADataOperateOfDataFrameWidget::showGotoDialog);
     connect(pane, &DADataTableView::findBarCloseRequested, this, &DADataOperateOfDataFrameWidget::closeFindReplace);
     // 条件格式入口（003 T1.5）：表体右键菜单与 Ribbon Table Style 面板共用同一打开逻辑
-    connect(pane, &DADataTableView::conditionalFormatRequested, this, &DADataOperateOfDataFrameWidget::showConditionalFormatDialog);
+    connect(pane, &DADataTableView::conditionalFormatRequested, this, [ this ]() {
+        showConditionalFormatDialog();
+    });
+    // 右键条件格式子菜单：页面填充 WPS 式预设（aboutToShow 每次重填，保证作用列/可用性实时）
+    connect(pane, &DADataTableView::conditionalFormatMenuAboutToShow, this,
+            &DADataOperateOfDataFrameWidget::populateConditionalFormatMenu);
     // 计算列入口（004 T1.23）：表体右键菜单与 Ribbon「Data Tools」面板共用同一打开逻辑
     connect(pane, &DADataTableView::computedColumnRequested, this, [ this ]() {
         showComputedColumnDialog(-1);
@@ -3667,7 +3699,7 @@ int DADataOperateOfDataFrameWidget::currentFindHitIndex() const
  * 条件格式不写 DataFrame，红线3），取消还原。惰性/只读源上色阶与数据条
  * 在对话框内置灰并给出说明（§1.4-2），单元格规则正常。
  */
-void DADataOperateOfDataFrameWidget::showConditionalFormatDialog()
+void DADataOperateOfDataFrameWidget::showConditionalFormatDialog(int initialType)
 {
     if (!mConditionalFormatStore) {
         // 开发诊断：无元数据注册表（正常 APP 链路不会出现）
@@ -3697,7 +3729,7 @@ void DADataOperateOfDataFrameWidget::showConditionalFormatDialog()
         }
     }
     DADialogConditionalFormat dlg(mConditionalFormatStore, this);
-    dlg.setup(columnNames, cols, isColumnStatsSourceAvailable());
+    dlg.setup(columnNames, cols, isColumnStatsSourceAvailable(), initialType);
     if (QDialog::Accepted == dlg.exec()) {
         QUndoCommand* cmd = buildConditionalFormatCommands(dlg.resultRules());
         if (cmd) {
@@ -3733,6 +3765,253 @@ void DADataOperateOfDataFrameWidget::clearConditionalFormatFromSelection()
         return;
     }
     push(parent);
+}
+
+/**
+ * @brief 条件格式入口作用列
+ *
+ * 选区覆盖列；无选区回退当前格所在列；空列表 = 无有效列（调用方提示）。
+ * @return 作用列（升序不保证，按选区返回序）
+ */
+QList< int > DADataOperateOfDataFrameWidget::conditionalFormatScopeColumns() const
+{
+    QList< int > cols = getSelectedDataframeCoumns();
+    if (cols.isEmpty()) {
+        const int c = getSelectedOneDataframeColumn();
+        if (c >= 0) {
+            cols.append(c);
+        }
+    }
+    return cols;
+}
+
+/**
+ * @brief 给每个作用列追加一条规则（预设一键施加）
+ *
+ * 新规则集 = 落库规则 + 追加项，经 buildConditionalFormatCommands 差异生成撤销命令入栈
+ * （D4：一切写操作入栈；条件格式不写 DataFrame，红线3）。
+ * @param rule 预设规则
+ */
+void DADataOperateOfDataFrameWidget::applyConditionalFormatRuleToScope(const DATableConditionalFormatRule& rule)
+{
+    if (!mConditionalFormatStore) {
+        return;
+    }
+    const QList< int > cols = conditionalFormatScopeColumns();
+    if (cols.isEmpty()) {
+        daWarning << tr("Please select a column first");  // cn:请先选择列
+        return;
+    }
+    QHash< int, QVector< DATableConditionalFormatRule > > newRules;
+    for (int c : cols) {
+        QVector< DATableConditionalFormatRule > v = mConditionalFormatStore->columnRules(c);
+        v.append(rule);
+        newRules.insert(c, v);
+    }
+    if (QUndoCommand* cmd = buildConditionalFormatCommands(newRules)) {
+        push(cmd);
+    }
+}
+
+/**
+ * @brief 突出显示单元格规则/重复值快速对话框：确定后施加到作用列
+ * @param cond 条件（重复/唯一在对话框内可切换）
+ */
+void DADataOperateOfDataFrameWidget::showQuickCellRuleDialog(DATableConditionalFormatRule::Condition cond)
+{
+    DADialogConditionalFormatQuickRule dlg(cond, this);
+    if (QDialog::Accepted == dlg.exec()) {
+        applyConditionalFormatRuleToScope(dlg.resultRule());
+    }
+}
+
+/**
+ * @brief 清除全表条件格式规则（一次命令，可撤销）
+ */
+void DADataOperateOfDataFrameWidget::clearAllConditionalFormatRules()
+{
+    if (!mConditionalFormatStore) {
+        return;
+    }
+    const QList< int > cols = mConditionalFormatStore->columnsWithRules();
+    if (cols.isEmpty()) {
+        daInfo << tr("The table has no conditional format rules");  // cn:本表没有条件格式规则
+        return;
+    }
+    QUndoCommand* parent = new QUndoCommand(tr("Clear Conditional Format Rules"));  // cn:清除条件格式规则
+    for (int c : cols) {
+        new DACommandConditionalFormat_clearColumn(mConditionalFormatStore, c, parent);
+    }
+    push(parent);
+}
+
+/**
+ * @brief 填充条件格式菜单（WPS 式预设入口）
+ *
+ * 结构（分组间分隔符）：数据条▸ / 色阶▸ ‖ 突出显示单元格规则▸ ‖ 清除规则▸ ‖ 自定义设置...。
+ * 数据条/色阶子菜单为预设缩略图一键施加 + 「其他规则...」进自定义对话框；
+ * 突出显示子菜单含大于/小于/介于/等于/文本包含（快速对话框）、发生日期▸（十项一键）、
+ * 重复值...（快速对话框）与「其他规则...」；惰性/只读源上数据条与色阶子菜单置灰。
+ * @param menu 目标菜单（先 clear 再填充；Ribbon 与右键子菜单共用）
+ */
+void DADataOperateOfDataFrameWidget::populateConditionalFormatMenu(QMenu* menu)
+{
+    if (!menu) {
+        return;
+    }
+    using CfRule  = DATableConditionalFormatRule;
+    using CfCond  = DATableConditionalFormatRule::Condition;
+    using CfType  = DATableConditionalFormatRule::Type;
+    const QIcon cfIcon(QStringLiteral(":/DAGui/icon/conditional-format.svg"));
+    const bool scaleBarAvailable = isColumnStatsSourceAvailable();
+    menu->clear();
+
+    // 预设色名（与 DAConditionalFormatPresets 数据条六色同序）
+    const QStringList barColorNames { tr("Blue"),    // cn:蓝色
+                                      tr("Green"),    // cn:绿色
+                                      tr("Red"),      // cn:红色
+                                      tr("Yellow"),   // cn:黄色
+                                      tr("Cyan"),     // cn:青色
+                                      tr("Purple") };  // cn:紫色
+
+    // —— 数据条▸（渐变 6 + 实心 6 + 其他规则）——
+    QMenu* barMenu = menu->addMenu(cfIcon, tr("Data Bars"));  // cn:数据条
+    barMenu->setEnabled(scaleBarAvailable);
+    {
+        const QList< DACFDataBarPreset > presets = DAConditionalFormatPresets::dataBarPresets();
+        QAction* head = barMenu->addAction(tr("Gradient Fill"));  // cn:渐变填充
+        head->setEnabled(false);
+        for (int i = 0; i < 6 && i < presets.size(); ++i) {
+            const DACFDataBarPreset ps = presets.at(i);
+            QAction* a = barMenu->addAction(DAConditionalFormatPresets::dataBarThumb(ps.color, ps.gradient),
+                                            tr("%1 Gradient Fill").arg(barColorNames.value(i)));  // cn:%1渐变填充
+            connect(a, &QAction::triggered, this, [ this, ps ]() {
+                CfRule r;
+                r.type       = CfType::DataBar;
+                r.barColor   = ps.color;
+                r.barGradient = true;
+                applyConditionalFormatRuleToScope(r);
+            });
+        }
+        barMenu->addSeparator();
+        QAction* head2 = barMenu->addAction(tr("Solid Fill"));  // cn:实心填充
+        head2->setEnabled(false);
+        for (int i = 6; i < presets.size(); ++i) {
+            const DACFDataBarPreset ps = presets.at(i);
+            QAction* a = barMenu->addAction(DAConditionalFormatPresets::dataBarThumb(ps.color, ps.gradient),
+                                            tr("%1 Solid Fill").arg(barColorNames.value(i - 6)));  // cn:%1实心填充
+            connect(a, &QAction::triggered, this, [ this, ps ]() {
+                CfRule r;
+                r.type     = CfType::DataBar;
+                r.barColor = ps.color;
+                applyConditionalFormatRuleToScope(r);
+            });
+        }
+        barMenu->addSeparator();
+        QAction* other = barMenu->addAction(tr("Other Rules..."));  // cn:其他规则...
+        connect(other, &QAction::triggered, this, [ this ]() {
+            showConditionalFormatDialog(static_cast< int >(CfType::DataBar));
+        });
+    }
+
+    // —— 色阶▸（12 预设 + 其他规则）——
+    QMenu* scaleMenu = menu->addMenu(cfIcon, tr("Color Scales"));  // cn:色阶
+    scaleMenu->setEnabled(scaleBarAvailable);
+    {
+        const QList< DACFColorScalePreset > presets = DAConditionalFormatPresets::colorScalePresets();
+        for (const DACFColorScalePreset& ps : presets) {
+            QAction* a = scaleMenu->addAction(DAConditionalFormatPresets::colorScaleThumb(ps.colors),
+                                              tr("%1-Color Scale").arg(ps.colors.size()));  // cn:%1色色阶
+            connect(a, &QAction::triggered, this, [ this, ps ]() {
+                CfRule r;
+                r.type          = CfType::ColorScale;
+                r.threeColorScale = (ps.colors.size() >= 3);
+                if (ps.colors.size() >= 3) {
+                    r.scaleMinColor = ps.colors.at(0);
+                    r.scaleMidColor = ps.colors.at(1);
+                    r.scaleMaxColor = ps.colors.at(2);
+                } else if (ps.colors.size() == 2) {
+                    r.scaleMinColor = ps.colors.at(0);
+                    r.scaleMaxColor = ps.colors.at(1);
+                }
+                applyConditionalFormatRuleToScope(r);
+            });
+        }
+        scaleMenu->addSeparator();
+        QAction* other = scaleMenu->addAction(tr("Other Rules..."));  // cn:其他规则...
+        connect(other, &QAction::triggered, this, [ this ]() {
+            showConditionalFormatDialog(static_cast< int >(CfType::ColorScale));
+        });
+    }
+    menu->addSeparator();
+
+    // —— 突出显示单元格规则▸ ——
+    QMenu* hlMenu = menu->addMenu(cfIcon, tr("Highlight Cells Rules"));  // cn:突出显示单元格规则
+    {
+        QAction* aGreater = hlMenu->addAction(tr("Greater Than..."));  // cn:大于...
+        connect(aGreater, &QAction::triggered, this, [ this ]() { showQuickCellRuleDialog(CfCond::Greater); });
+        QAction* aLess = hlMenu->addAction(tr("Less Than..."));  // cn:小于...
+        connect(aLess, &QAction::triggered, this, [ this ]() { showQuickCellRuleDialog(CfCond::Less); });
+        QAction* aBetween = hlMenu->addAction(tr("Between..."));  // cn:介于...
+        connect(aBetween, &QAction::triggered, this, [ this ]() { showQuickCellRuleDialog(CfCond::Between); });
+        QAction* aEqual = hlMenu->addAction(tr("Equal To..."));  // cn:等于...
+        connect(aEqual, &QAction::triggered, this, [ this ]() { showQuickCellRuleDialog(CfCond::Equal); });
+        QAction* aContains = hlMenu->addAction(tr("Text Contains..."));  // cn:文本包含...
+        connect(aContains, &QAction::triggered, this, [ this ]() { showQuickCellRuleDialog(CfCond::Contains); });
+        // 发生日期▸：十项一键施加（默认橙红底白字样式）
+        QMenu* dateMenu = hlMenu->addMenu(tr("A Date Occurring"));  // cn:发生日期
+        const QList< QPair< CfRule::DateOccurrence, QString > > dateItems {
+            { CfRule::DateOccurrence::Yesterday, tr("Yesterday") },                // cn:昨天
+            { CfRule::DateOccurrence::Today, tr("Today") },                        // cn:今天
+            { CfRule::DateOccurrence::Tomorrow, tr("Tomorrow") },                  // cn:明天
+            { CfRule::DateOccurrence::Last7Days, tr("In the Last 7 Days") },       // cn:最近 7 天
+            { CfRule::DateOccurrence::LastWeek, tr("Last Week") },                 // cn:上周
+            { CfRule::DateOccurrence::ThisWeek, tr("This Week") },                 // cn:本周
+            { CfRule::DateOccurrence::NextWeek, tr("Next Week") },                 // cn:下周
+            { CfRule::DateOccurrence::LastMonth, tr("Last Month") },               // cn:上月
+            { CfRule::DateOccurrence::ThisMonth, tr("This Month") },               // cn:本月
+            { CfRule::DateOccurrence::NextMonth, tr("Next Month") },               // cn:下月
+        };
+        for (const auto& item : dateItems) {
+            QAction* a = dateMenu->addAction(item.second);
+            connect(a, &QAction::triggered, this, [ this, item ]() {
+                CfRule r;
+                r.type      = CfType::CellRule;
+                r.condition = CfCond::DateOccurring;
+                r.value1    = static_cast< int >(item.first);
+                const DACFHighlightStyle def = DAConditionalFormatPresets::highlightStyles().value(0);
+                if (def.hasBackground()) {
+                    r.style.setBackground(QBrush(def.background));
+                }
+                if (def.hasForeground()) {
+                    r.style.setForeground(def.foreground);
+                }
+                applyConditionalFormatRuleToScope(r);
+            });
+        }
+        QAction* aDup = hlMenu->addAction(tr("Duplicate Values..."));  // cn:重复值...
+        connect(aDup, &QAction::triggered, this, [ this ]() { showQuickCellRuleDialog(CfCond::Duplicate); });
+        hlMenu->addSeparator();
+        QAction* aOther = hlMenu->addAction(tr("Other Rules..."));  // cn:其他规则...
+        connect(aOther, &QAction::triggered, this, [ this ]() {
+            showConditionalFormatDialog(static_cast< int >(CfType::CellRule));
+        });
+    }
+    menu->addSeparator();
+
+    // —— 清除规则▸ ——
+    QMenu* clearMenu = menu->addMenu(tr("Clear Rules"));  // cn:清除规则
+    {
+        QAction* aSel = clearMenu->addAction(tr("Clear Rules from Selected Columns"));  // cn:清除所选列的规则
+        connect(aSel, &QAction::triggered, this, &DADataOperateOfDataFrameWidget::clearConditionalFormatFromSelection);
+        QAction* aAll = clearMenu->addAction(tr("Clear Rules from Entire Sheet"));  // cn:清除全表的规则
+        connect(aAll, &QAction::triggered, this, &DADataOperateOfDataFrameWidget::clearAllConditionalFormatRules);
+    }
+    menu->addSeparator();
+
+    // —— 自定义设置...（规则管理对话框）——
+    QAction* aManage = menu->addAction(cfIcon, tr("Custom Rules..."));  // cn:自定义设置...
+    connect(aManage, &QAction::triggered, this, [ this ]() { showConditionalFormatDialog(); });
 }
 
 /**

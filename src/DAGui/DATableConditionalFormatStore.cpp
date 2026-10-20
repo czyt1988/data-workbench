@@ -110,6 +110,27 @@ bool DATableConditionalFormatStore::needsColumnStats(int column) const
 }
 
 /**
+ * @brief 某列是否含重复/唯一条件规则（delegate 借此决定是否取重复键集合）
+ * @param column 列索引
+ * @return 含启用的重复/唯一条件单元格规则返回 true
+ */
+bool DATableConditionalFormatStore::needsColumnDuplicates(int column) const
+{
+    const QVector< DATableConditionalFormatRule >* rules = rulesForColumn(column);
+    if (!rules) {
+        return false;
+    }
+    for (const DATableConditionalFormatRule& r : *rules) {
+        if (r.enabled && r.type == DATableConditionalFormatRule::Type::CellRule
+            && (r.condition == DATableConditionalFormatRule::Condition::Duplicate
+                || r.condition == DATableConditionalFormatRule::Condition::Unique)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
  * @brief 追加/插入规则
  * @param column 列索引
  * @param rule 规则
@@ -210,6 +231,7 @@ void DATableConditionalFormatStore::clearAll()
 {
     mRules.clear();
     mStatsCache.clear();
+    mDupCache.clear();
     Q_EMIT ruleReset();
 }
 
@@ -226,6 +248,7 @@ void DATableConditionalFormatStore::onColumnsInserted(const QList< int >& actual
     }
     DATableKeyRemap::shiftKeysOnInserted(mRules, actualCols);
     mStatsCache.clear();
+    mDupCache.clear();
     Q_EMIT ruleReset();
 }
 
@@ -242,6 +265,7 @@ void DATableConditionalFormatStore::onColumnsRemoved(const QList< int >& actualC
     }
     DATableKeyRemap::shiftKeysOnRemoved(mRules, actualCols);
     mStatsCache.clear();
+    mDupCache.clear();
     Q_EMIT ruleReset();
 }
 
@@ -297,6 +321,7 @@ bool DATableConditionalFormatStore::columnStats(int column, ColumnStats& out)
 void DATableConditionalFormatStore::invalidateColumnStats(int column)
 {
     mStatsCache.remove(column);
+    mDupCache.remove(column);  // 重复键同属列值集合派生量，与统计同挂点失效
 }
 
 /**
@@ -305,6 +330,52 @@ void DATableConditionalFormatStore::invalidateColumnStats(int column)
 void DATableConditionalFormatStore::invalidateAllStats()
 {
     mStatsCache.clear();
+    mDupCache.clear();
+}
+
+/**
+ * @brief 安装列重复键提供者（widget 注入，内部走 Python da_column_duplicate_values）
+ *
+ * 提供者变更（含置空）时重复键缓存全部失效。
+ * @param provider 重复键提供者
+ */
+void DATableConditionalFormatStore::setDuplicatesProvider(DuplicatesProvider provider)
+{
+    mDupProvider = std::move(provider);
+    mDupCache.clear();
+}
+
+/**
+ * @brief 查询列重复键集合（惰性计算 + 缓存；红线2：禁止每格重算）
+ *
+ * 该列无规则（预览优先）不计算返回 false；首次查询经提供者全表 O(n) 归约后缓存，
+ * 失败（无提供者/惰性源）也缓存为失败，失效前不再重试。
+ * @param column 列索引
+ * @param out 输出重复键集合
+ * @return 有效集合返回 true
+ */
+bool DATableConditionalFormatStore::columnDuplicateKeys(int column, QSet< QString >& out)
+{
+    if (!rulesForColumn(column)) {
+        return false;
+    }
+    auto it = mDupCache.find(column);
+    if (it != mDupCache.end()) {
+        if (it.value().failed) {
+            return false;
+        }
+        out = it.value().keys;
+        return true;
+    }
+    DupCacheEntry entry;
+    if (!mDupProvider || !mDupProvider(column, entry.keys)) {
+        entry.failed = true;
+        mDupCache.insert(column, entry);
+        return false;
+    }
+    mDupCache.insert(column, entry);
+    out = entry.keys;
+    return true;
 }
 
 /**
@@ -355,7 +426,8 @@ DATableConditionalFormatStore::EvaluateResult
 DATableConditionalFormatStore::evaluate(const QVector< DATableConditionalFormatRule >& rules,
                                         const QVariant& cellValue,
                                         bool statsValid,
-                                        const ColumnStats& stats)
+                                        const ColumnStats& stats,
+                                        const QSet< QString >* duplicateKeys)
 {
     EvaluateResult result;
     double cellNum    = 0.0;
@@ -366,11 +438,22 @@ DATableConditionalFormatStore::evaluate(const QVector< DATableConditionalFormatR
             continue;
         }
         switch (r.type) {
-        case DATableConditionalFormatRule::Type::CellRule:
-            if (DATableConditionalFormatRule::evaluateCondition(r.condition, cellValue, r.value1, r.value2)) {
+        case DATableConditionalFormatRule::Type::CellRule: {
+            bool hit = false;
+            if (r.condition == DATableConditionalFormatRule::Condition::Duplicate
+                || r.condition == DATableConditionalFormatRule::Condition::Unique) {
+                // 重复/唯一需列上下文：无集合（惰性源等）一律不命中
+                static const QSet< QString > c_emptyKeys;
+                hit = DATableConditionalFormatRule::evaluateDuplicate(
+                    r.condition, cellValue, duplicateKeys ? *duplicateKeys : c_emptyKeys, duplicateKeys != nullptr);
+            } else {
+                hit = DATableConditionalFormatRule::evaluateCondition(r.condition, cellValue, r.value1, r.value2);
+            }
+            if (hit) {
                 result.style.mergeFrom(r.style);  // 复用样式叠加语义（①层同一代码路径）
             }
             break;
+        }
         case DATableConditionalFormatRule::Type::ColorScale:
         case DATableConditionalFormatRule::Type::DataBar: {
             if (!statsValid) {
@@ -392,6 +475,7 @@ DATableConditionalFormatStore::evaluate(const QVector< DATableConditionalFormatR
                 result.hasDataBar = true;
                 result.barRatio   = DATableConditionalFormatRule::dataBarRatio(cellNum, stats.minValue, stats.maxValue);
                 result.barColor   = r.barColor;
+                result.barGradient = r.barGradient;
             }
             break;
         }
@@ -437,6 +521,7 @@ bool DATableConditionalFormatStore::fromXml(const QDomElement& e)
 {
     mRules.clear();
     mStatsCache.clear();
+    mDupCache.clear();
     QDomNode cn = e.firstChild();
     while (!cn.isNull()) {
         QDomElement colEle = cn.toElement();

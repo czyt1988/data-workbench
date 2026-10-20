@@ -7,6 +7,7 @@
 #include "Models/DAAbstractCacheWindowTableModel.h"
 #include <QPainter>
 #include <QPalette>
+#include <QLinearGradient>
 #include <QComboBox>
 #include <QStringList>
 #include <QHelpEvent>
@@ -178,7 +179,14 @@ void DATableStyleItemDelegate::paint(QPainter* painter, const QStyleOptionViewIt
                 // 色阶/数据条才触发统计（惰性计算 + 缓存；纯单元格规则的列不打 Python）
                 statsValid = mCfStore->columnStats(actualCol, stats);
             }
-            cfResult = DATableConditionalFormatStore::evaluate(*cfRules, index.data(Qt::EditRole), statsValid, stats);
+            // 重复/唯一条件才取重复键集合（惰性计算 + 缓存）；取不到（惰性源）传空指针=不命中
+            QSet< QString > dupKeys;
+            const QSet< QString >* dupKeysPtr = nullptr;
+            if (mCfStore->needsColumnDuplicates(actualCol) && mCfStore->columnDuplicateKeys(actualCol, dupKeys)) {
+                dupKeysPtr = &dupKeys;
+            }
+            cfResult =
+                DATableConditionalFormatStore::evaluate(*cfRules, index.data(Qt::EditRole), statsValid, stats, dupKeysPtr);
             const DATableCellStyle& cfStyle = cfResult.style;
             if (!cfStyle.isNull()) {
                 if (cfStyle.backgroundValid()) {
@@ -214,7 +222,18 @@ void DATableStyleItemDelegate::paint(QPainter* painter, const QStyleOptionViewIt
         const QRect barArea = opt.rect.adjusted(c_dataBarPadding, c_dataBarPadding, -c_dataBarPadding, -c_dataBarPadding);
         const int barWidth  = qRound(barArea.width() * qBound(0.0, cfResult.barRatio, 1.0));
         if (barWidth > 0 && barArea.width() > 0 && barArea.height() > 0) {
-            painter->fillRect(QRect(barArea.left(), barArea.top(), barWidth, barArea.height()), barColor);
+            const QRect barRect(barArea.left(), barArea.top(), barWidth, barArea.height());
+            if (cfResult.barGradient) {
+                // 渐变填充：沿条长方向透明度递增（色相保持官方色板原色，不引入新色值）
+                QColor c0 = barColor;
+                c0.setAlpha(110);
+                QLinearGradient g(barRect.topLeft(), barRect.topRight());
+                g.setColorAt(0.0, c0);
+                g.setColorAt(1.0, barColor);
+                painter->fillRect(barRect, g);
+            } else {
+                painter->fillRect(barRect, barColor);
+            }
         }
     }
 

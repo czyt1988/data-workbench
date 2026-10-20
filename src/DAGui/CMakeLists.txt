@@ -77,6 +77,7 @@ set(DA_LIB_HEADER_FILES
     DATableHighlightOverlay.h
     DATableConditionalFormatRule.h
     DATableConditionalFormatStore.h
+    DAConditionalFormatPresets.h
     DATableComputedColumnStore.h
     DATableValidationStore.h
     DATableNoteStore.h
@@ -150,6 +151,7 @@ set(DA_LIB_SOURCE_FILES
     DATableHighlightOverlay.cpp
     DATableConditionalFormatRule.cpp
     DATableConditionalFormatStore.cpp
+    DAConditionalFormatPresets.cpp
     DATableComputedColumnStore.cpp
     DATableValidationStore.cpp
     DATableNoteStore.cpp
@@ -234,6 +236,7 @@ list(APPEND DA_LIB_HEADER_FILES_Dialog
     ${DA_LIB_SUBDIR_Dialog}/DADialogTableDisplayFormat.h
     ${DA_LIB_SUBDIR_Dialog}/DADialogFindReplace.h
     ${DA_LIB_SUBDIR_Dialog}/DADialogConditionalFormat.h
+    ${DA_LIB_SUBDIR_Dialog}/DADialogConditionalFormatQuickRule.h
     ${DA_LIB_SUBDIR_Dialog}/DADialogComputedColumn.h
     ${DA_LIB_SUBDIR_Dialog}/DADialogSplitColumn.h
     ${DA_LIB_SUBDIR_Dialog}/DADialogMergeColumns.h
@@ -259,6 +262,7 @@ list(APPEND DA_LIB_SOURCE_FILES_Dialog
     ${DA_LIB_SUBDIR_Dialog}/DADialogTableDisplayFormat.cpp
     ${DA_LIB_SUBDIR_Dialog}/DADialogFindReplace.cpp
     ${DA_LIB_SUBDIR_Dialog}/DADialogConditionalFormat.cpp
+    ${DA_LIB_SUBDIR_Dialog}/DADialogConditionalFormatQuickRule.cpp
     ${DA_LIB_SUBDIR_Dialog}/DADialogComputedColumn.cpp
     ${DA_LIB_SUBDIR_Dialog}/DADialogSplitColumn.cpp
     ${DA_LIB_SUBDIR_Dialog}/DADialogMergeColumns.cpp
@@ -280,7 +284,6 @@ list(APPEND DA_LIB_QT_UI_FILES_Dialog
     ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameSeriesSelector.ui
     ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnDescribe.ui
     ${DA_LIB_SUBDIR_Dialog}/DADialogFindReplace.ui
-    ${DA_LIB_SUBDIR_Dialog}/DADialogConditionalFormat.ui
     ${DA_LIB_SUBDIR_Dialog}/DADialogTableColumnView.ui
 )
 #MimeData

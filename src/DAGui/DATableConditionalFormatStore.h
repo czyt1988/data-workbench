@@ -45,6 +45,10 @@ public:
     // 统计提供者：成功计算返回 true 并填充 out（widget 注入，内部走 Python；
     // 未安装或计算失败（非数值列/惰性源）返回 false，失败结果也缓存避免每格重算）
     using StatsProvider = std::function< bool(int column, ColumnStats& out) >;
+    // 重复键提供者：成功返回 true 并填充 out = 列内出现≥2 次的值的归一化键集合
+    //（DATableConditionalFormatRule::duplicateKey 口径；widget 注入，内部走 Python；
+    // 未安装或计算失败（惰性源）返回 false，失败结果也缓存避免每格重算）
+    using DuplicatesProvider = std::function< bool(int column, QSet< QString >& out) >;
 
     // ②层求值结果（纯函数输出，delegate 消费、单测断言）
     struct EvaluateResult
@@ -53,6 +57,7 @@ public:
         bool hasDataBar { false };   ///< 是否绘制数据条
         double barRatio { 0.0 };     ///< 数据条归一化条长 [0,1]
         QColor barColor;             ///< 数据条填充色
+        bool barGradient { false };  ///< 数据条渐变填充（沿条长方向透明度递增）
     };
 
     explicit DATableConditionalFormatStore(QObject* parent = nullptr);
@@ -67,6 +72,8 @@ public:
     int ruleCount() const;
     // 某列是否含依赖列统计的规则（色阶/数据条；delegate 借此决定是否触发统计计算）
     bool needsColumnStats(int column) const;
+    // 某列是否含重复/唯一条件规则（delegate 借此决定是否取重复键集合）
+    bool needsColumnDuplicates(int column) const;
 
     // 增删改移（全部发 rulesChanged(column)；命令层调用，本类不入撤销栈）
     void addRule(int column, const DATableConditionalFormatRule& rule, int index = -1);
@@ -88,17 +95,24 @@ public:
     void invalidateColumnStats(int column);
     void invalidateAllStats();
 
+    // ===== 列重复键缓存（重复/唯一条件求值用）=====
+    void setDuplicatesProvider(DuplicatesProvider provider);
+    // 查询列重复键集合（惰性计算 + 缓存）；该列无规则或未安装提供者或计算失败返回 false
+    bool columnDuplicateKeys(int column, QSet< QString >& out);
+
     // ===== 预览规则集（对话框编辑期间叠加，不落库；取消即还原）=====
     void setPreviewRules(const QHash< int, QVector< DATableConditionalFormatRule > >& preview);
     void clearPreview();
     bool hasPreview() const;
 
     // ===== ②层求值（静态纯函数：规则列表 + 单元格值 + 列统计 → 样式与数据条）=====
-    // 按列表顺序求值（后者覆盖前者）；statsValid=false 时色阶/数据条规则跳过
+    // 按列表顺序求值（后者覆盖前者）；statsValid=false 时色阶/数据条规则跳过；
+    // duplicateKeys 非空指针时重复/唯一条件按其集合求值，空指针时该两条件不命中
     static EvaluateResult evaluate(const QVector< DATableConditionalFormatRule >& rules,
                                    const QVariant& cellValue,
                                    bool statsValid,
-                                   const ColumnStats& stats);
+                                   const ColumnStats& stats,
+                                   const QSet< QString >* duplicateKeys = nullptr);
 
     // ===== 序列化（<conditional-format> 段，短属性名照样式段风格）=====
     void toXml(QDomDocument& doc, QDomElement& parent) const;
@@ -118,10 +132,19 @@ private:
         bool failed { false };
     };
 
+    // 重复键缓存条目（failed=true 记录一次失败，失效前不再重算，避免每格打 Python）
+    struct DupCacheEntry
+    {
+        QSet< QString > keys;
+        bool failed { false };
+    };
+
     QHash< int, QVector< DATableConditionalFormatRule > > mRules;  ///< 列索引 → 规则列表（顺序即优先级）
     QHash< int, QVector< DATableConditionalFormatRule > > mPreviewRules;  ///< 预览规则集（对话框编辑期）
     QHash< int, StatsCacheEntry > mStatsCache;                     ///< 列统计缓存
     StatsProvider mStatsProvider;                                  ///< 统计提供者（widget 注入）
+    QHash< int, DupCacheEntry > mDupCache;                         ///< 列重复键缓存
+    DuplicatesProvider mDupProvider;                               ///< 重复键提供者（widget 注入）
 };
 }  // end of namespace DA
 #endif  // DATABLECONDITIONALFORMATSTORE_H

@@ -55,6 +55,8 @@ Q_SIGNALS:
     void findBarCloseRequested();
     // 条件格式入口（003 T1.5）：表体右键菜单唤出规则编辑对话框（列头菜单不放，R16）
     void conditionalFormatRequested();
+    // 条件格式右键子菜单即将显示（页面据此填充 WPS 式预设菜单；菜单由视图持有）
+    void conditionalFormatMenuAboutToShow(QMenu* menu);
     // 计算列入口（004 T1.23）：表体右键菜单与 Ribbon「Data Tools」面板同入口
     void computedColumnRequested();
     // 分列/合并列入口（004 T1.9）：表体右键菜单与 Ribbon「Data Tools」面板同入口

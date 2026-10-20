@@ -1379,6 +1379,30 @@ def da_column_stats(df: pd.DataFrame, column=None, cols=None, row_range=None, un
 
 
 @log_function_call(slow=True)
+def da_column_duplicate_values(df: pd.DataFrame, column: int):
+    '''
+    列重复值：返回列内出现≥2 次的值的去重列表（条件格式重复值/唯一值条件用）
+
+    空值（NaN/NaT/None）不参与重复判定；分组口径为 pandas 值相等
+    （与 C++ DATableConditionalFormatRule::duplicateKey 归一化口径一致：
+    数值按值、日期按时刻、其余按原值）。
+
+    :param df: pd.DataFrame
+    :param column: 列位置索引
+    :return: 重复值列表（Python 原生类型；无重复为空列表）；列越界抛 IndexError
+    '''
+    if column < 0 or column >= df.shape[1]:
+        raise IndexError("column index %d out of range [0, %d)" % (column, df.shape[1]))
+    ser = df.iloc[:, column].dropna()
+    if ser.empty:
+        return []
+    dup_mask = ser.duplicated(keep=False)   # 重复组全部行置真
+    if not dup_mask.any():
+        return []
+    return ser[dup_mask].unique().tolist()
+
+
+@log_function_call(slow=True)
 def da_to_csv(df: pd.DataFrame, path: str, sep: str):
     '''
     把dataframe写到文件

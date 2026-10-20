@@ -359,6 +359,8 @@ if(DA_ENABLE_AUTO_TRANSLATE)
         ${CMAKE_CURRENT_SOURCE_DIR}/src/DAPyScripts
         ${CMAKE_CURRENT_SOURCE_DIR}/src/DAUtils
         ${CMAKE_CURRENT_SOURCE_DIR}/src/DAPyWorkFlow
+        # DAWidgets 子模块（自维护第三方库，新增控件 UI 文本用 tr()，纳入统一翻译流）
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/3rdparty/DAWidgets/src
         ${CMAKE_CURRENT_SOURCE_DIR}/plugins/DataAnalysis
         ${CMAKE_CURRENT_SOURCE_DIR}/plugins/DAAgentTools
     )
