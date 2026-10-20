@@ -66,8 +66,12 @@ public:
     QString buildTooltip() const;
     // 确保绘制字体与度量已按基线字体构建，字体键变化时重建并使文本排版缓存失效
     void ensurePaintFonts(const QFont& baseFont);
-    // 使文本排版缓存（标题省略、参数行）失效
+    // 使文本排版缓存（标题省略、参数行、端口标签矩形）失效
     void invalidateTextCaches();
+    // 重建端口标签尺寸矩形缓存（调用前保证mSmallFm已构建）
+    void rebuildLabelRects();
+    // 重建boundingRect所需的文本度量派生量（名称宽度/行高、端口标签最大宽度、小字体行高）
+    void rebuildBoundsMetrics();
 
 public:
     DAPyNode mProxy;  ///< Python节点代理（值持有）
@@ -120,6 +124,16 @@ public:
     };
     QVector< ParamLine > mParamLines;                ///< 缓存的参数行文本
     qreal mParamLinesWidth { -1.0 };                 ///< mParamLines 对应的可用宽度（-1表示无效）
+    // 端口标签尺寸缓存（绘制时不再逐端口测量）
+    QVector< QRectF > mInputLabelRects;              ///< 输入端口标签尺寸矩形（不含位置）
+    QVector< QRectF > mOutputLabelRects;             ///< 输出端口标签尺寸矩形（不含位置）
+    bool mLabelRectsValid { false };                 ///< 端口标签矩形缓存是否有效
+    // boundingRect派生量缓存（只缓存测量结果，矩形本身每次用当前几何做算术，
+    // 不与prepareGeometryChange()的时序耦合）
+    qreal mNameAdvanceWidth { 0.0 };                 ///< 名称前进宽度
+    qreal mNameLineHeight { 0.0 };                   ///< 名称行高
+    qreal mMaxPortLabelWidth { 0.0 };                ///< 端口标签最大前进宽度
+    qreal mSmallLineHeight { 0.0 };                  ///< 小字体行高
 };
 
 /**
@@ -209,6 +223,7 @@ void DAPyNodeGraphicsItem::PrivateData::ensurePaintFonts(const QFont& baseFont)
  * @brief 使文本排版缓存失效
  *
  * 标题省略与参数行缓存依赖字体与可用宽度，字体重建后必须重排；
+ * 端口标签矩形依赖端口标签字体度量，一并失效；
  * 宽度变化由各绘制点的宽度比较覆盖，无需在此处理。
  */
 void DAPyNodeGraphicsItem::PrivateData::invalidateTextCaches()
@@ -216,6 +231,61 @@ void DAPyNodeGraphicsItem::PrivateData::invalidateTextCaches()
     mElidedNameWidth = -1.0;
     mParamLines.clear();
     mParamLinesWidth = -1.0;
+    mLabelRectsValid = false;
+}
+
+/**
+ * @brief 重建端口标签尺寸矩形缓存
+ *
+ * 用端口标签字体度量计算每个DAPyLinkPoint::name的包围矩形并加上文字间距，
+ * 与drawLinkPointGroup中的现场测量逻辑一致；
+ * 调用前必须保证mSmallFm已构建（paintLinkPoints的字体键控块保证）。
+ */
+void DAPyNodeGraphicsItem::PrivateData::rebuildLabelRects()
+{
+    const qreal spacing = 2;  // 文字与连接点间距（与drawLinkPointGroup一致）
+    mInputLabelRects.clear();
+    mOutputLabelRects.clear();
+    for (const DAPyLinkPoint& lp : std::as_const(mInputLinkPoints)) {
+        QRectF r = mSmallFm->boundingRect(lp.name);
+        r.adjust(0, 0, spacing, spacing);
+        mInputLabelRects.append(r);
+    }
+    for (const DAPyLinkPoint& lp : std::as_const(mOutputLinkPoints)) {
+        QRectF r = mSmallFm->boundingRect(lp.name);
+        r.adjust(0, 0, spacing, spacing);
+        mOutputLabelRects.append(r);
+    }
+    mLabelRectsValid = true;
+}
+
+/**
+ * @brief 重建boundingRect所需的文本度量派生量
+ *
+ * 字体来源与boundingRect旧实现完全一致：名称与端口均用默认构造QFont再设字号，
+ * 不从绘制器字体派生；端口取值来源是mInputKeys/mOutputKeys而非DAPyLinkPoint::name
+ * （空key时两者不同，属既有行为，保持取值来源不变）。
+ * 在setNodeName()、setProxy()（经updateLinkPoints()）、updateLinkPoints()后调用。
+ */
+void DAPyNodeGraphicsItem::PrivateData::rebuildBoundsMetrics()
+{
+    QFont nameFont;
+    nameFont.setPointSize(normalFontSize);
+    QFontMetricsF nameFm(nameFont);
+    mNameAdvanceWidth = nameFm.horizontalAdvance(mName);
+    mNameLineHeight   = nameFm.height();
+
+    QFont smallFont;
+    smallFont.setPointSize(smallFontSize);
+    QFontMetricsF smallFm(smallFont);
+    mMaxPortLabelWidth = 0.0;
+    for (const QString& key : std::as_const(mInputKeys)) {
+        mMaxPortLabelWidth = qMax(mMaxPortLabelWidth, smallFm.horizontalAdvance(key));
+    }
+    for (const QString& key : std::as_const(mOutputKeys)) {
+        mMaxPortLabelWidth = qMax(mMaxPortLabelWidth, smallFm.horizontalAdvance(key));
+    }
+    mSmallLineHeight = smallFm.height();
 }
 
 /**
@@ -599,8 +669,9 @@ void DAPyNodeGraphicsItem::setNodeName(const QString& name)
         return;
     }
     d->mName = name;
-    // 名称变化使标题省略缓存失效（宽度可能恰好不变，必须显式失效）
+    // 名称变化使标题省略缓存失效（宽度可能恰好不变，必须显式失效），并重建边界派生量
     d->invalidateTextCaches();
+    d->rebuildBoundsMetrics();
     updateNodeBody();
 }
 
@@ -769,6 +840,9 @@ void DAPyNodeGraphicsItem::updateLinkPoints()
     }
 
     d->updateLinkPointPositions(getBodyRect());
+    // 端口列表已重建，标签矩形缓存失效，边界派生量随之重建
+    d->mLabelRectsValid = false;
+    d->rebuildBoundsMetrics();
 }
 
 /**
@@ -981,7 +1055,8 @@ void DAPyNodeGraphicsItem::paintBody(QPainter* painter,
  * @param[in] defaultFillColor 默认填充色（输入为白色，输出为深灰色）
  * @param[in] linkPointDrawWidth 连接点绘制宽度
  * @param[in] linkPointDrawHeight 连接点绘制高度
- * @param[in] fm 端口标签字体的度量（由调用方缓存并提供）
+ * @param[in] fm 端口标签字体的度量（由调用方缓存并提供，回退测量用）
+ * @param[in] labelRects 端口标签尺寸矩形缓存（与points同序；不足时回退现场测量）
  */
 static void drawLinkPointGroup(QPainter* painter,
                                const QList< DAPyLinkPoint >& points,
@@ -989,7 +1064,8 @@ static void drawLinkPointGroup(QPainter* painter,
                                const QColor& defaultFillColor,
                                qreal linkPointDrawWidth,
                                qreal linkPointDrawHeight,
-                               const QFontMetricsF& fm)
+                               const QFontMetricsF& fm,
+                               const QVector< QRectF >& labelRects)
 {
     const qreal spacing = 2;  // 文字与连接点间距
 
@@ -999,7 +1075,8 @@ static void drawLinkPointGroup(QPainter* painter,
     painter->setBrush(fillBrush);
     painter->setPen(borderPen);
 
-    for (const auto& lp : std::as_const(points)) {
+    for (int i = 0; i < points.size(); ++i) {
+        const DAPyLinkPoint& lp = points.at(i);
         // 根据方向确定矩形尺寸（East/West为水平矩形，North/South为垂直矩形）
         qreal halfW, halfH;
         if (lp.direction == DAAspectDirection::East || lp.direction == DAAspectDirection::West) {
@@ -1038,8 +1115,14 @@ static void drawLinkPointGroup(QPainter* painter,
         }
 
         // 绘制连接点名称（方向感知定位）
-        QRectF textRect = fm.boundingRect(lp.name);
-        textRect.adjust(0, 0, spacing, spacing);
+        QRectF textRect;
+        if (i < labelRects.size()) {
+            textRect = labelRects[ i ];
+        } else {
+            // 回退分支：端口列表与缓存不同步时现场测量，防止越界
+            textRect = fm.boundingRect(lp.name);
+            textRect.adjust(0, 0, spacing, spacing);
+        }
 
         switch (lp.direction) {
         case DAAspectDirection::East: {
@@ -1114,13 +1197,24 @@ void DAPyNodeGraphicsItem::paintLinkPoints(QPainter* painter, const QStyleOption
         d->mSmallFont.setPointSize(d->smallFontSize);
         d->mSmallFm.emplace(d->mSmallFont);
         d->mSmallFontKey = fontKey;
+        d->mLabelRectsValid = false;  // 度量已变化，标签矩形缓存失效
+    }
+    // 标签矩形按端口缓存，失效后用当前度量重建
+    if (!d->mLabelRectsValid) {
+        d->rebuildLabelRects();
     }
     // 设置字体用于连接点标签
     painter->setFont(d->mSmallFont);
     const DAPyNodeStyle& st = d->mStyle;
     // 绘制输入连接点（默认白色填充）
-    drawLinkPointGroup(
-        painter, d->mInputLinkPoints, st.inputPortStyle, Qt::white, d->linkPointDrawWidth, d->linkPointDrawHeight, *d->mSmallFm);
+    drawLinkPointGroup(painter,
+                       d->mInputLinkPoints,
+                       st.inputPortStyle,
+                       Qt::white,
+                       d->linkPointDrawWidth,
+                       d->linkPointDrawHeight,
+                       *d->mSmallFm,
+                       d->mInputLabelRects);
 
     // 绘制输出连接点（默认深灰色填充）
     drawLinkPointGroup(painter,
@@ -1129,7 +1223,8 @@ void DAPyNodeGraphicsItem::paintLinkPoints(QPainter* painter, const QStyleOption
                        Qt::darkGray,
                        d->linkPointDrawWidth,
                        d->linkPointDrawHeight,
-                       *d->mSmallFm);
+                       *d->mSmallFm,
+                       d->mOutputLabelRects);
 
     painter->restore();
 }
@@ -1373,13 +1468,10 @@ QRectF DAPyNodeGraphicsItem::boundingRect() const
 {
     QRectF rect = DAGraphicsResizeableItem::boundingRect();
     DA_DC(d);
-    // 名称位置扩展（Below 模式）
+    // 名称位置扩展（Below 模式），度量取缓存派生量（rebuildBoundsMetrics构建）
     if (d->mStyle.namePosition == DAPyNodeStyle::NameBelowBody && !d_ptr->mName.isEmpty()) {
-        QFont font;
-        font.setPointSize(d->normalFontSize);
-        QFontMetricsF fm(font);
-        const qreal textHeight = fm.height() + 4;  // 额外4px间距
-        const qreal textWidth  = fm.horizontalAdvance(d->mName) + 4;
+        const qreal textHeight = d->mNameLineHeight + 4;  // 额外4px间距
+        const qreal textWidth  = d->mNameAdvanceWidth + 4;
         // 如果文字比body宽，水平扩展
         qreal extraWidth = qMax(0.0, textWidth - rect.width());
         rect.adjust(0, 0, extraWidth, textHeight);
@@ -1389,22 +1481,11 @@ QRectF DAPyNodeGraphicsItem::boundingRect() const
     const DAPyNodeStyle::PortSide& inputSide  = d->mStyle.inputPortSide;
     const DAPyNodeStyle::PortSide& outputSide = d->mStyle.outputPortSide;
 
-    // 计算端口标签最大宽度
-    QFont smallFont;
-    smallFont.setPointSize(d->smallFontSize);
-    QFontMetricsF smallFm(smallFont);
-    qreal maxLabelW = 0;
-    for (const QString& key : std::as_const(d->mInputKeys)) {
-        maxLabelW = qMax(maxLabelW, smallFm.horizontalAdvance(key));
-    }
-    for (const QString& key : std::as_const(d->mOutputKeys)) {
-        maxLabelW = qMax(maxLabelW, smallFm.horizontalAdvance(key));
-    }
     const qreal labelSpacing = 2.0;
     // East/West 端口偏移 = 端口半宽 + 标签间距 + 标签宽度 + 安全余量
-    const qreal ewOffset = d->linkPointDrawWidth / 2 + labelSpacing + maxLabelW + 4;
+    const qreal ewOffset = d->linkPointDrawWidth / 2 + labelSpacing + d->mMaxPortLabelWidth + 4;
     // North/South 端口偏移 = 端口半高 + 标签间距 + 标签高度 + 安全余量
-    const qreal nsOffset = d->linkPointDrawWidth / 2 + labelSpacing + smallFm.height() + 4;
+    const qreal nsOffset = d->linkPointDrawWidth / 2 + labelSpacing + d->mSmallLineHeight + 4;
 
     // 计算各方向扩展量（同一方向有 input+output 时累加）
     qreal leftOff = 0, rightOff = 0, topOff = 0, bottomOff = 0;
