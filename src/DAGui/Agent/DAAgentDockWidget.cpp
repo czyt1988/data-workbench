@@ -405,7 +405,7 @@ void DAAgentDockWidget::requestDeleteSession(const QString& sessionId)
     const QMessageBox::StandardButton btn = QMessageBox::question(
         this,
         tr("Delete Session"),                                          // cn:删除会话
-        tr("Delete session \"%1\"? Its chat history will be removed.")  // cn:删除会话"%1"？其聊天记录将被移除。
+        tr("Delete session \"%1\"? Its chat history will be removed.")  // cn:删除会话“%1”？其聊天记录将被移除。
             .arg(d->sessionTitle(sessionId)));
     if (QMessageBox::Yes == btn) {
         emit sessionDeleteRequested(sessionId);
@@ -705,9 +705,9 @@ void DAAgentDockWidget::onDockCloseRequested(ads::CDockWidget* dock)
     const QString state = d->sessionState(sid);
     QString text;
     if (state == QLatin1String("waiting_input")) {
-        text = tr("Session \"%1\" is waiting for your input. What do you want to do?");  // cn:会话"%1"正在等待你的输入。要如何处理？
+        text = tr("Session \"%1\" is waiting for your input. What do you want to do?");  // cn:会话“%1”正在等待你的输入。要如何处理？
     } else {
-        text = tr("Session \"%1\" is still running. What do you want to do?");  // cn:会话"%1"仍在运行中。要如何处理？
+        text = tr("Session \"%1\" is still running. What do you want to do?");  // cn:会话“%1”仍在运行中。要如何处理？
     }
     QMessageBox box(QMessageBox::Question,
                     tr("Close Session"),  // cn:关闭会话

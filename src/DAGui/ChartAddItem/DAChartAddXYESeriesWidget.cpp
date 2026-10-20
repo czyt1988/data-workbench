@@ -290,11 +290,11 @@ bool DAChartAddXYESeriesWidget::getToVectorPointFFromUI(QVector< QwtIntervalSamp
         } catch (const std::exception& e) {
             daCritical << tr("Exception occurred during extracting from "
                              "pandas.Series to double vector:%1")
-                              .arg(e.what());  // cn:从pandas.Series提取为double vector过程中出现异常:%1
+                              .arg(e.what());  // cn:从 pandas.Series 提取为 double vector 过程中出现异常：%1
             QMessageBox::warning(this,
                                  tr("Warning"),  // cn:警告
                                  tr("Exception occurred during extracting from "
-                                    "pandas.Series to double vector"));  // cn:从pandas.Series提取为double vector过程中出现异常
+                                    "pandas.Series to double vector"));  // cn:从 pandas.Series 提取为 double vector 过程中出现异常
 
             return false;
         }
@@ -335,11 +335,11 @@ bool DAChartAddXYESeriesWidget::getToVectorPointFFromUI(QVector< QwtIntervalSamp
         } catch (const std::exception& e) {
             daCritical << tr("Exception occurred during extracting from "
                              "pandas.Series to double vector:%1")
-                              .arg(e.what());  // cn:从pandas.Series提取为double vector过程中出现异常:%1
+                              .arg(e.what());  // cn:从 pandas.Series 提取为 double vector 过程中出现异常：%1
             QMessageBox::warning(this,
                                  tr("Warning"),  // cn:警告
                                  tr("Exception occurred during extracting from "
-                                    "pandas.Series to double vector"));  // cn:从pandas.Series提取为double vector过程中出现异常
+                                    "pandas.Series to double vector"));  // cn:从 pandas.Series 提取为 double vector 过程中出现异常
 
             return false;
         }
@@ -388,7 +388,7 @@ bool DAChartAddXYESeriesWidget::getToVectorPointFFromUI(QVector< QwtIntervalSamp
             }
         } catch (const std::exception& e) {
             daCritical << tr("Exception occurred during extracting from pandas.Series to double vector:%1")
-                              .arg(e.what());  // cn:从pandas.Series提取为double vector过程中出现异常:%1
+                              .arg(e.what());  // cn:从 pandas.Series 提取为 double vector 过程中出现异常：%1
             return false;
         }
     }

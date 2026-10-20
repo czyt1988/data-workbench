@@ -668,7 +668,7 @@
     <message>
         <location line="+1"/>
         <source>tokens: -</source>
-        <translation>token: -</translation>
+        <translation>Token: -</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -976,12 +976,12 @@
     <message>
         <location line="+508"/>
         <source>tokens: ~%1 / %2</source>
-        <translation>token: ~%1 / %2</translation>
+        <translation>Token: ~%1 / %2</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>tokens: %1 / %2</source>
-        <translation>token: %1 / %2</translation>
+        <translation>Token: %1 / %2</translation>
     </message>
     <message>
         <location line="+13"/>
@@ -1086,7 +1086,7 @@
     <message>
         <location line="-29"/>
         <source>Max graph reasoning steps per turn (each tool-call cycle consumes 3 steps). Check &apos;No limit&apos; to disable. Recommended: 150.</source>
-        <translation>单回合图最大推理步数（每轮工具调用耗 3 步）。勾选"不限制"可关闭该上限。建议 150。</translation>
+        <translation>单回合图最大推理步数（每轮工具调用耗 3 步）。勾选&quot;不限制&quot;可关闭该上限。建议 150。</translation>
     </message>
     <message>
         <location line="+7"/>
@@ -1151,7 +1151,7 @@
     <message>
         <location line="+1"/>
         <source>Max Output Tokens</source>
-        <translation>最大输出 token</translation>
+        <translation>最大输出 Token 数</translation>
     </message>
     <message>
         <location line="+19"/>
@@ -1585,7 +1585,8 @@ XY Axis</source>
         <location line="+1"/>
         <source>Add 
 Curve</source>
-        <translation>曲线</translation>
+        <translation>添加
+曲线</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -1971,7 +1972,8 @@ Data</source>
         <location line="+1"/>
         <source>Export 
 Data</source>
-        <translation>导出数据</translation>
+        <translation>导出
+数据</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -2134,7 +2136,7 @@ Line 3D</source>
     <message>
         <location line="+1"/>
         <source>ECDF</source>
-        <translation>累积分布</translation>
+        <translation>经验累积分布</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -2165,12 +2167,12 @@ Line 3D</source>
         <location line="+22"/>
         <source>Copy To Clipboard</source>
         <translation>复制到
-剪切板</translation>
+剪贴板</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Copy the figure to the clipboard</source>
-        <translation>将绘图复制到剪切板</translation>
+        <translation>将绘图复制到剪贴板</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -2409,7 +2411,8 @@ Column</source>
     <message>
         <location line="+2"/>
         <source>To Index</source>
-        <translation>转换为索引</translation>
+        <translation>转换为
+索引</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -2517,7 +2520,7 @@ Move</source>
     <message>
         <location line="+2"/>
         <source>When moving elements, other elements linked to this element follow the movement</source>
-        <translation>允许移动图元时，其它和此图元链接起来的图元跟随移动</translation>
+        <translation>允许移动图元时，其他和此图元链接起来的图元跟随移动</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -2593,7 +2596,8 @@ Workflow</source>
         <location line="+1"/>
         <source>Terminate 
 Workflow</source>
-        <translation>结束</translation>
+        <translation>停止
+工作流</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -3312,12 +3316,12 @@ Layouts</source>
     <message>
         <location line="+96"/>
         <source>Invalid dataset link: &apos;%1&apos;</source>
-        <translation>无效的数据集链接："%1"</translation>
+        <translation>无效的数据集链接：&quot;%1&quot;</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Dataset &apos;%1&apos; not found, it may have been removed</source>
-        <translation>未找到数据集"%1"，可能已被移除</translation>
+        <translation>未找到数据集&quot;%1&quot;，可能已被移除</translation>
     </message>
     <message>
         <location line="+19"/>
@@ -3877,7 +3881,7 @@ Layouts</source>
     <message>
         <location line="+61"/>
         <source>An exception occurred while serializing the dataframe named %1 to %2</source>
-        <translation>把名称为%1的dataframe序列化到%2时出现异常</translation>
+        <translation>把名称为%1的 DataFrame 序列化到%2时出现异常</translation>
     </message>
     <message>
         <location line="+141"/>
@@ -3922,12 +3926,12 @@ Layouts</source>
     <message>
         <location line="+188"/>
         <source>No data factory registered for type &apos;%1&apos;, skipping data &apos;%2&apos; (plugin not loaded?)</source>
-        <translation>类型'%1'没有注册数据工厂，跳过数据'%2'（插件未加载？）</translation>
+        <translation>类型&apos;%1&apos;没有注册数据工厂，跳过数据&apos;%2&apos;（插件未加载？）</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Failed to restore reference content of data &apos;%1&apos;</source>
-        <translation>恢复数据'%1'的引用内容失败</translation>
+        <translation>恢复数据&apos;%1&apos;的引用内容失败</translation>
     </message>
     <message>
         <location line="+110"/>
@@ -4046,7 +4050,7 @@ Layouts</source>
     <message>
         <location line="+55"/>
         <source>Failed to parse workflow-data.xml</source>
-        <translation>解析workflow-data.xml失败</translation>
+        <translation>解析 workflow-data.xml 失败</translation>
     </message>
     <message>
         <location line="+28"/>
@@ -4071,7 +4075,7 @@ Layouts</source>
     <message>
         <location line="+18"/>
         <source>Missing data content</source>
-        <translation>保存</translation>
+        <translation>缺少数据内容</translation>
     </message>
     <message>
         <location line="+52"/>
@@ -4081,7 +4085,7 @@ Layouts</source>
     <message>
         <location line="+5"/>
         <source>Unable to find the temporary file corresponding to %1</source>
-        <translation>无法在找到%1对应的临时文件</translation>
+        <translation>无法找到%1对应的临时文件</translation>
     </message>
 </context>
 <context>
@@ -4167,7 +4171,7 @@ Layouts</source>
         <location line="-233"/>
         <location line="+236"/>
         <source>Axes</source>
-        <translation>Axes</translation>
+        <translation>坐标轴</translation>
     </message>
     <message>
         <location line="-235"/>
@@ -4224,14 +4228,14 @@ Layouts</source>
         <location line="+2"/>
         <location line="+407"/>
         <source>Workflow Edit</source>
-        <translation>编辑</translation>
+        <translation>工作流编辑</translation>
     </message>
     <message>
         <location line="-439"/>
         <location line="+33"/>
         <location line="+411"/>
         <source>Clipboard</source>
-        <translation>剪切板</translation>
+        <translation>剪贴板</translation>
     </message>
     <message>
         <location line="-397"/>
@@ -4248,7 +4252,7 @@ Layouts</source>
     <message>
         <location line="+3"/>
         <source>Agent Manager</source>
-        <translation>agent管理</translation>
+        <translation>Agent 管理</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -4258,7 +4262,7 @@ Layouts</source>
     <message>
         <location line="+8"/>
         <source>Run Agent</source>
-        <translation>执行agent</translation>
+        <translation>执行 Agent</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -4328,7 +4332,7 @@ Layouts</source>
         <location line="-424"/>
         <location line="+505"/>
         <source>Workflow Run</source>
-        <translation>运行</translation>
+        <translation>工作流运行</translation>
     </message>
     <message>
         <location line="-504"/>
@@ -4414,7 +4418,7 @@ Layouts</source>
     <message>
         <location line="+28"/>
         <source>Workflow View</source>
-        <translation>显示</translation>
+        <translation>工作流视图</translation>
     </message>
     <message>
         <location line="-493"/>
@@ -4466,7 +4470,7 @@ Layouts</source>
         <location filename="../DAAxOfficeWrapper/DAAxObjectExcelWrapper.cpp" line="+913"/>
         <location line="+32"/>
         <source>The local computer does not have Excel or WPS installed</source>
-        <translation>当前计算机中没有安装excel或者wps</translation>
+        <translation>当前计算机中没有安装 Excel 或 WPS</translation>
     </message>
     <message>
         <location line="-26"/>
@@ -5871,12 +5875,12 @@ Layouts</source>
         <location line="-44"/>
         <location line="+73"/>
         <source>Exception occurred during extracting from pandas.Series to double vector:%1</source>
-        <translation>从pandas.Series提取为double vector过程中出现异常:%1</translation>
+        <translation>从 pandas.Series 提取为 double vector 过程中出现异常：%1</translation>
     </message>
     <message>
         <location line="-68"/>
         <source>Exception occurred during extracting from pandas.Series to double vector</source>
-        <translation>从pandas.Series提取为double vector过程中出现异常</translation>
+        <translation>从 pandas.Series 提取为 double vector 过程中出现异常</translation>
     </message>
     <message>
         <location line="+14"/>
@@ -6240,13 +6244,13 @@ Layouts</source>
         <location line="+45"/>
         <location line="+54"/>
         <source>Exception occurred during extracting from pandas.Series to double vector:%1</source>
-        <translation>从pandas.Series提取为double vector过程中出现异常:%1</translation>
+        <translation>从 pandas.Series 提取为 double vector 过程中出现异常：%1</translation>
     </message>
     <message>
         <location line="-94"/>
         <location line="+45"/>
         <source>Exception occurred during extracting from pandas.Series to double vector</source>
-        <translation>从pandas.Series提取为double vector过程中出现异常</translation>
+        <translation>从 pandas.Series 提取为 double vector 过程中出现异常</translation>
     </message>
     <message>
         <location line="-30"/>
@@ -6333,13 +6337,13 @@ Layouts</source>
         <location line="+33"/>
         <location line="+35"/>
         <source>Exception occurred during extracting from pandas.Series to double vector:%1</source>
-        <translation>从pandas.Series提取为double vector过程中出现异常:%1</translation>
+        <translation>从 pandas.Series 提取为 double vector 过程中出现异常：%1</translation>
     </message>
     <message>
         <location line="-63"/>
         <location line="+33"/>
         <source>Exception occurred during extracting from pandas.Series to double vector</source>
-        <translation>从pandas.Series提取为double vector过程中出现异常</translation>
+        <translation>从 pandas.Series 提取为 double vector 过程中出现异常</translation>
     </message>
 </context>
 <context>
@@ -7913,7 +7917,7 @@ Layouts</source>
         <location line="+19"/>
         <location line="+17"/>
         <source>New name:</source>
-        <translation>新名称:</translation>
+        <translation>新名称：</translation>
     </message>
     <message>
         <location line="-41"/>
@@ -8727,17 +8731,17 @@ Layouts</source>
     <message>
         <location line="+2"/>
         <source>Z Value</source>
-        <translation>Z 值</translation>
+        <translation>Z值</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>X Axis</source>
-        <translation>X 轴</translation>
+        <translation>X轴</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Y Axis</source>
-        <translation>Y 轴</translation>
+        <translation>Y轴</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -9110,7 +9114,7 @@ Layouts</source>
 <context>
     <name>DA::DADataHeaderView</name>
     <message>
-        <location filename="../DAGui/DADataHeaderView.cpp" line="+283"/>
+        <location filename="../DAGui/DADataHeaderView.cpp" line="+359"/>
         <source>Sort Ascending</source>
         <translation>升序排序</translation>
     </message>
@@ -9286,7 +9290,7 @@ Layouts</source>
     <message>
         <location line="+40"/>
         <source>New name:</source>
-        <translation>新名称:</translation>
+        <translation>新名称：</translation>
     </message>
     <message>
         <location line="+58"/>
@@ -9395,7 +9399,7 @@ Layouts</source>
 <context>
     <name>DA::DADataOperateOfDataFrameWidget</name>
     <message>
-        <location filename="../DAGui/DADataOperateOfDataFrameWidget.cpp" line="+694"/>
+        <location filename="../DAGui/DADataOperateOfDataFrameWidget.cpp" line="+709"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
@@ -9415,21 +9419,21 @@ Layouts</source>
         <location line="+40"/>
         <location line="+46"/>
         <location line="+47"/>
-        <location line="+1862"/>
+        <location line="+1936"/>
         <location line="+24"/>
         <source>Please select a valid column</source>
         <translation>请选择正确的列</translation>
     </message>
     <message>
-        <location line="-2341"/>
-        <location line="+1923"/>
+        <location line="-2415"/>
+        <location line="+1997"/>
         <location line="+63"/>
         <location line="+47"/>
         <source>Please select a valid cell</source>
         <translation>请选择正确的单元格</translation>
     </message>
     <message>
-        <location line="-1969"/>
+        <location line="-2043"/>
         <source>Clipboard is empty</source>
         <translation>剪贴板为空</translation>
     </message>
@@ -9480,7 +9484,7 @@ Layouts</source>
         <translation>无法获取此列的统计信息</translation>
     </message>
     <message>
-        <location line="+1995"/>
+        <location line="+2069"/>
         <source>This data source is read-only and cannot be sorted.</source>
         <translation>该数据源为只读，无法排序</translation>
     </message>
@@ -9490,7 +9494,7 @@ Layouts</source>
         <translation>无法排序：该列包含不可比较的混合类型</translation>
     </message>
     <message>
-        <location line="+836"/>
+        <location line="+844"/>
         <source>This data source is read-only and cannot be modified.</source>
         <translation>该数据源为只读，无法修改</translation>
     </message>
@@ -9556,12 +9560,12 @@ Layouts</source>
         <translation>公式不得引用目标列自身</translation>
     </message>
     <message>
-        <location line="-3840"/>
+        <location line="-3922"/>
         <source>Computed column(s) %1 became invalid because their dependency column(s) were removed</source>
         <translation>计算列 %1 因依赖列被删除已失效</translation>
     </message>
     <message>
-        <location line="+4261"/>
+        <location line="+4343"/>
         <source>Computed column(s) %1 became invalid because their dependency column(s) were merged</source>
         <translation>计算列 %1 因依赖列被合并已失效</translation>
     </message>
@@ -10002,17 +10006,17 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>本表没有批注</translation>
     </message>
     <message>
-        <location line="-3967"/>
+        <location line="-4049"/>
         <source>Some column view settings were dropped because the table columns have changed.</source>
         <translation>表格的列已变化，部分列视图设置已被丢弃</translation>
     </message>
     <message>
-        <location line="+66"/>
+        <location line="+74"/>
         <source>Frozen columns were reduced because visible columns changed.</source>
         <translation>可见列已变化，冻结列数被自动缩减</translation>
     </message>
     <message>
-        <location line="+272"/>
+        <location line="+338"/>
         <source>Freeze Columns</source>
         <translation>冻结列</translation>
     </message>
@@ -10027,13 +10031,13 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>列视图...</translation>
     </message>
     <message>
-        <location line="-820"/>
+        <location line="-894"/>
         <location line="+65"/>
         <source>The column &quot;%1&quot; was hidden and has been made visible</source>
         <translation>列&quot;%1&quot;已隐藏，现已显示</translation>
     </message>
     <message>
-        <location line="+792"/>
+        <location line="+866"/>
         <source>Row number is out of range</source>
         <translation>行号超出范围</translation>
     </message>
@@ -10097,12 +10101,12 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DA::DADataTableView</name>
     <message>
-        <location filename="../DAGui/DADataTableView.cpp" line="+38"/>
+        <location filename="../DAGui/DADataTableView.cpp" line="+57"/>
         <source>DADataTableView requires a model to be set first</source>
         <translation>你需要先设置模型</translation>
     </message>
     <message>
-        <location line="+182"/>
+        <location line="+329"/>
         <source>Cut</source>
         <translation>剪切</translation>
     </message>
@@ -10127,7 +10131,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>替换...</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location line="+11"/>
         <source>Conditional Format</source>
         <translation>条件格式</translation>
     </message>
@@ -10237,7 +10241,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     <message>
         <location line="+60"/>
         <source>Exception occurred during extraction from pandas.Series to double vector: %1</source>
-        <translation>从pandas.Series提取为double vector过程中出现异常:%1</translation>
+        <translation>从 pandas.Series 提取为 double vector 过程中出现异常：%1</translation>
     </message>
 </context>
 <context>
@@ -10602,7 +10606,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     <message>
         <location line="+5"/>
         <source>Applies To Columns</source>
-        <translation>应用列</translation>
+        <translation>应用于列</translation>
     </message>
     <message>
         <location line="+8"/>
@@ -11160,7 +11164,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>当前选区</translation>
     </message>
     <message>
-        <location line="+106"/>
+        <location line="+129"/>
         <source>No matches</source>
         <translation>无匹配</translation>
     </message>
@@ -11758,7 +11762,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     <message>
         <location line="+8"/>
         <source>Decimal places:</source>
-        <translation>小数位数:</translation>
+        <translation>小数位数：</translation>
     </message>
     <message>
         <location line="+9"/>
@@ -11768,22 +11772,22 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     <message>
         <location line="+2"/>
         <source>Preset:</source>
-        <translation>预设:</translation>
+        <translation>预设：</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Pattern:</source>
-        <translation>格式串:</translation>
+        <translation>格式串：</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Seconds since epoch</source>
-        <translation>epoch 秒</translation>
+        <translation>自纪元起的秒数</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Milliseconds since epoch</source>
-        <translation>epoch 毫秒</translation>
+        <translation>自纪元起的毫秒数</translation>
     </message>
     <message>
         <location line="+8"/>
@@ -11838,12 +11842,12 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     <message>
         <location line="+3"/>
         <source>Error</source>
-        <translation>错误 / 警告</translation>
+        <translation>错误</translation>
     </message>
     <message>
         <location line="+0"/>
         <source>Warning</source>
-        <translation>错误 / 警告</translation>
+        <translation>警告</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -12553,7 +12557,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <location line="+4"/>
         <location line="+5"/>
         <source> tokens</source>
-        <translation>token</translation>
+        <translation> Token</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -12568,7 +12572,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     <message>
         <location line="+1"/>
         <source>Max Output Tokens</source>
-        <translation>最大输出 token</translation>
+        <translation>最大输出 Token 数</translation>
     </message>
     <message>
         <location line="+4"/>
@@ -12783,6 +12787,14 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     </message>
 </context>
 <context>
+    <name>DA::DAPaperAgentPlugin</name>
+    <message>
+        <location filename="../../plugins/DAPaperAgent/DAPaperAgentPlugin.h" line="+32"/>
+        <source>Built-in paper writing agent with literature search tools</source>
+        <translation>内置论文撰写 Agent（附文献检索工具）</translation>
+    </message>
+</context>
+<context>
     <name>DA::DAPluginManager</name>
     <message>
         <location filename="../DAPluginSupport/DAPluginManager.cpp" line="+64"/>
@@ -12912,7 +12924,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     <message>
         <location line="+0"/>
         <source>Status</source>
-        <translation type="unfinished"></translation>
+        <translation>状态</translation>
     </message>
     <message>
         <location line="+24"/>
@@ -13041,7 +13053,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     <message>
         <location line="+1"/>
         <source>Max Output Tokens</source>
-        <translation>最大输出 token</translation>
+        <translation>最大输出 Token 数</translation>
     </message>
     <message>
         <location line="+14"/>
@@ -13312,7 +13324,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     <message>
         <location line="+1"/>
         <source>Title:</source>
-        <translation>标题:</translation>
+        <translation>标题：</translation>
     </message>
     <message>
         <location line="+267"/>
@@ -13341,12 +13353,12 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <location line="+13"/>
         <location line="+13"/>
         <location line="+13"/>
-        <location line="+503"/>
+        <location line="+513"/>
         <source>No active workflow detected</source>
         <translation>未检测到激活的工作流</translation>
     </message>
     <message>
-        <location line="-580"/>
+        <location line="-590"/>
         <source>Workflow execution failed</source>
         <translation>工作流执行失败</translation>
     </message>
@@ -13361,7 +13373,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>是否确认关闭工作流</translation>
     </message>
     <message>
-        <location line="+243"/>
+        <location line="+253"/>
         <location line="+1"/>
         <source>Copy</source>
         <translation>复制</translation>
@@ -13913,7 +13925,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     <message>
         <location line="+3"/>
         <source>Other</source>
-        <translation>其它</translation>
+        <translation>其他</translation>
     </message>
     <message>
         <location line="+101"/>
@@ -14176,52 +14188,52 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     <message>
         <location filename="../3rdparty/DAWidgets/src/DATimeFormatEditWidget.cpp" line="+59"/>
         <source>example: 8:5</source>
-        <translation type="unfinished"></translation>
+        <translation>示例：8:5</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>example: 08:05</source>
-        <translation type="unfinished"></translation>
+        <translation>示例：08:05</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>example: 8:5:12</source>
-        <translation type="unfinished"></translation>
+        <translation>示例：8:5:12</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>example: 08:05:12</source>
-        <translation type="unfinished"></translation>
+        <translation>示例：08:05:12</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>example: 2017-8-1</source>
-        <translation type="unfinished"></translation>
+        <translation>示例：2017-8-1</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>example: 2017-8-1 8:5</source>
-        <translation type="unfinished"></translation>
+        <translation>示例：2017-8-1 8:5</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>example: 2017-8-1 8:5:12</source>
-        <translation type="unfinished"></translation>
+        <translation>示例：2017-8-1 8:5:12</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>example: 2017-08-01</source>
-        <translation type="unfinished"></translation>
+        <translation>示例：2017-08-01</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>example: 2017-08-01 08:05</source>
-        <translation type="unfinished"></translation>
+        <translation>示例：2017-08-01 08:05</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>example: 2017-08-01 08:05:12</source>
-        <translation type="unfinished"></translation>
+        <translation>示例：2017-08-01 08:05:12</translation>
     </message>
 </context>
 <context>
@@ -14280,7 +14292,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     <message>
         <location line="+1"/>
         <source>Failed to read text file(%1), reason: %2</source>
-        <translation>读取文本文件(%1)失败,原因:%2</translation>
+        <translation>读取文本文件(%1)失败，原因：%2</translation>
     </message>
 </context>
 <context>
@@ -14329,7 +14341,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     <message>
         <location line="+4"/>
         <source>AI Agent driven data analysis workbench</source>
-        <translation>AI Agent 驱动的数据分析工作台</translation>
+        <translation>AI Agent 驱动的数据分析工作平台</translation>
     </message>
     <message>
         <location line="+8"/>
@@ -14339,7 +14351,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     <message>
         <location line="+20"/>
         <source>DAWorkbench is an AI Agent driven data analysis workbench built on C++17/Qt, featuring a directed-graph workflow engine, embedded Python (pandas/numpy) data processing, interactive publication-grade charting, and a plugin architecture supporting both C++ and Python extensions.</source>
-        <translation>DAWorkbench 是一个基于 C++17/Qt 的 AI Agent 驱动数据分析工作台，具备有向图工作流引擎、内嵌 Python（pandas/numpy）数据处理、交互式出版级图表绘制，以及同时支持 C++ 与 Python 扩展的插件架构。</translation>
+        <translation>DAWorkbench 是一个基于 C++17/Qt 的 AI Agent 驱动数据分析工作平台，具备有向图工作流引擎、内嵌 Python（pandas/numpy）数据处理、交互式出版级图表绘制，以及同时支持 C++ 与 Python 扩展的插件架构。</translation>
     </message>
     <message>
         <location line="+7"/>
@@ -14540,32 +14552,32 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     <message>
         <location filename="../3rdparty/DAWidgets/src/DAAligmentEditWidget.ui" line="+20"/>
         <source>Aligment Edit Widget</source>
-        <translation type="unfinished"></translation>
+        <translation>对齐编辑控件</translation>
     </message>
     <message>
         <location line="+21"/>
         <source>Aligment Left</source>
-        <translation type="unfinished"></translation>
+        <translation>左对齐</translation>
     </message>
     <message>
         <location line="+17"/>
         <source>Aligment Right</source>
-        <translation type="unfinished"></translation>
+        <translation>右对齐</translation>
     </message>
     <message>
         <location line="+17"/>
         <source>Aligment Top</source>
-        <translation type="unfinished"></translation>
+        <translation>顶端对齐</translation>
     </message>
     <message>
         <location line="+17"/>
         <source>Aligment Bottom</source>
-        <translation type="unfinished"></translation>
+        <translation>底端对齐</translation>
     </message>
     <message>
         <location line="+17"/>
         <source>Aligment Center</source>
-        <translation type="unfinished"></translation>
+        <translation>居中对齐</translation>
     </message>
 </context>
 <context>
@@ -14573,7 +14585,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     <message>
         <location filename="../3rdparty/DAWidgets/src/DAAligmentPositionEditWidget.ui" line="+20"/>
         <source>Aligment Position</source>
-        <translation type="unfinished"></translation>
+        <translation>对齐位置</translation>
     </message>
 </context>
 <context>
@@ -14615,7 +14627,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     <message>
         <location filename="../3rdparty/DAWidgets/src/DABrushEditWidget.ui" line="+20"/>
         <source>Brush Edit</source>
-        <translation type="unfinished"></translation>
+        <translation>画刷编辑</translation>
     </message>
 </context>
 <context>
@@ -16235,7 +16247,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     <message>
         <location line="+16"/>
         <source>errors:</source>
-        <translation>错误处理:</translation>
+        <translation>错误处理：</translation>
     </message>
     <message>
         <location line="+6"/>
@@ -16325,7 +16337,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     <message>
         <location line="+12"/>
         <source>parse set:</source>
-        <translation>解析设置:</translation>
+        <translation>解析设置：</translation>
     </message>
     <message>
         <location line="+18"/>
@@ -16389,7 +16401,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     <message>
         <location line="+6"/>
         <source>errors:</source>
-        <translation>错误处理:</translation>
+        <translation>错误处理：</translation>
     </message>
     <message>
         <location line="+23"/>
@@ -16409,7 +16421,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     <message>
         <location line="+12"/>
         <source>downcast:</source>
-        <translation>向下转换:</translation>
+        <translation>向下转换：</translation>
     </message>
     <message>
         <location line="+35"/>
@@ -16704,7 +16716,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     <message>
         <location filename="../3rdparty/DAWidgets/src/DAFilePathEditWidget.ui" line="+14"/>
         <source>File Path Edit</source>
-        <translation type="unfinished"></translation>
+        <translation>文件路径编辑</translation>
     </message>
     <message>
         <location line="+24"/>
@@ -16714,7 +16726,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     <message>
         <location line="+13"/>
         <source>Ctrl+O</source>
-        <translation type="unfinished"></translation>
+        <translation>Ctrl+O</translation>
     </message>
 </context>
 <context>
@@ -16722,7 +16734,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     <message>
         <location filename="../3rdparty/DAWidgets/src/DAFontEditPannelWidget.ui" line="+26"/>
         <source>Font Edit</source>
-        <translation type="unfinished"></translation>
+        <translation>字体编辑</translation>
     </message>
 </context>
 <context>
@@ -16850,12 +16862,12 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     <message>
         <location line="+23"/>
         <source>pen:</source>
-        <translation>画笔:</translation>
+        <translation>画笔：</translation>
     </message>
     <message>
         <location line="+23"/>
         <source>link style:</source>
-        <translation>连线样式:</translation>
+        <translation>连线样式：</translation>
     </message>
     <message>
         <location line="+7"/>
@@ -16893,7 +16905,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     <message>
         <location line="+19"/>
         <source>Name:</source>
-        <translation>名称:</translation>
+        <translation>名称：</translation>
     </message>
 </context>
 <context>
@@ -16901,12 +16913,12 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     <message>
         <location filename="../3rdparty/DAWidgets/src/DAPenEditWidget.cpp" line="+137"/>
         <source>Pen Editor</source>
-        <translation type="unfinished"></translation>
+        <translation>画笔编辑器</translation>
     </message>
     <message>
         <location line="+1"/>
         <source> px</source>
-        <translation type="unfinished"></translation>
+        <translation> 像素</translation>
     </message>
 </context>
 <context>
@@ -16919,12 +16931,12 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     <message>
         <location line="+43"/>
         <source>Apply</source>
-        <translation type="unfinished">应用</translation>
+        <translation>应用</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>ok</source>
-        <translation>确认</translation>
+        <translation>确定</translation>
     </message>
     <message>
         <location line="+10"/>
@@ -17040,7 +17052,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     <message>
         <location line="+12"/>
         <source>Manager or workflow is invalid</source>
-        <translation>Manager或workflow无效</translation>
+        <translation>管理器或工作流无效</translation>
     </message>
     <message>
         <location line="+93"/>
@@ -17073,7 +17085,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     <message>
         <location line="+12"/>
         <source>Table Name:</source>
-        <translation>表名:</translation>
+        <translation>表名：</translation>
     </message>
     <message>
         <location line="+38"/>
@@ -17413,7 +17425,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     <message>
         <location filename="../3rdparty/DAWidgets/src/DAShapeEditPannelWidget.ui" line="+14"/>
         <source>Shape Edit</source>
-        <translation type="unfinished"></translation>
+        <translation>形状编辑</translation>
     </message>
     <message>
         <location line="+21"/>
@@ -17431,22 +17443,22 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     <message>
         <location filename="../3rdparty/DAWidgets/src/DATimeFormatEditWidget.ui" line="+26"/>
         <source>Time Format Set</source>
-        <translation type="unfinished"></translation>
+        <translation>时间格式设置</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>select time format：</source>
-        <translation type="unfinished"></translation>
+        <translation>选择时间格式：</translation>
     </message>
     <message>
         <location line="+16"/>
         <source>example:</source>
-        <translation type="unfinished"></translation>
+        <translation>示例：</translation>
     </message>
     <message>
         <location line="+28"/>
         <source>TextLabel</source>
-        <translation type="unfinished"></translation>
+        <translation>文本标签</translation>
     </message>
 </context>
 <context>
@@ -17555,7 +17567,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     <message>
         <location line="+20"/>
         <source>preview max row:</source>
-        <translation>预览最大行数:</translation>
+        <translation>预览最大行数：</translation>
     </message>
     <message>
         <location line="+35"/>
@@ -17629,7 +17641,7 @@ To Excel</source>
     <message>
         <location line="+2"/>
         <source>Export all data from the data management area to an Excel file, with each dataset as a separate sheet.</source>
-        <translation>把数据管理区所有数据导出到一个excel文件中，每个数据将作为excel的一个sheet</translation>
+        <translation>把数据管理区所有数据导出到一个 Excel 文件中，每个数据将作为 Excel 的一个工作表</translation>
     </message>
     <message>
         <location line="+8"/>
@@ -18162,12 +18174,12 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location line="+2"/>
         <source>Save as Excel File</source>
-        <translation>保存为 excel 文件</translation>
+        <translation>保存为 Excel 文件</translation>
     </message>
     <message>
         <location line="+80"/>
         <source>%1. Elapsed: %2:%3</source>
-        <translation>%1,已用时%2:%3</translation>
+        <translation>%1. 已用时 %2:%3</translation>
     </message>
 </context>
 <context>
@@ -18180,7 +18192,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location line="+4"/>
         <source>This function only supports data in the pandas DataFrame format.</source>
-        <translation>只支持dataframe格式数据</translation>
+        <translation>只支持 DataFrame 格式数据</translation>
     </message>
     <message>
         <location line="+7"/>
@@ -18274,12 +18286,12 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location line="+47"/>
         <source>drop dataframe rows</source>
-        <translation>移除dataframe行</translation>
+        <translation>移除 DataFrame 行</translation>
     </message>
     <message>
         <location line="+26"/>
         <source>drop dataframe columns</source>
-        <translation>移除dataframe列</translation>
+        <translation>移除 DataFrame 列</translation>
     </message>
     <message>
         <location line="+72"/>
@@ -18460,17 +18472,17 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location line="+275"/>
         <source>current workflow file version:</source>
-        <translation>当前工作流文件版本:</translation>
+        <translation>当前工作流文件版本：</translation>
     </message>
     <message>
         <location line="+69"/>
         <source>An exception occurred during the process of parsing and pasting content, missing workflow tag</source>
-        <translation>解析粘贴内容过程出现异常,缺失workflow标签</translation>
+        <translation>解析粘贴内容过程出现异常，缺失 workflow 标签</translation>
     </message>
     <message>
         <location line="+42"/>
         <source>Cannot create item by class name:%1, maybe unregistered to DAGraphicsItemFactory</source>
-        <translation>无法通过类名:%1创建元件,类名没有注册到DAGraphicsItemFactory</translation>
+        <translation>无法通过类名 %1 创建元件，类名没有注册到 DAGraphicsItemFactory</translation>
     </message>
     <message>
         <location line="+185"/>
@@ -19542,132 +19554,132 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location filename="../3rdparty/DAWidgets/src/DABrushStyleComboBox.cpp" line="+56"/>
         <source>No Brush</source>
-        <translation type="unfinished"></translation>
+        <translation>无画刷</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Solid Pattern</source>
-        <translation type="unfinished"></translation>
+        <translation>实心图案</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Dense1 Pattern</source>
-        <translation type="unfinished"></translation>
+        <translation>密集图案 1</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Dense2 Pattern</source>
-        <translation type="unfinished"></translation>
+        <translation>密集图案 2</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Dense3 Pattern</source>
-        <translation type="unfinished"></translation>
+        <translation>密集图案 3</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Dense4 Pattern</source>
-        <translation type="unfinished"></translation>
+        <translation>密集图案 4</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Dense5 Pattern</source>
-        <translation type="unfinished"></translation>
+        <translation>密集图案 5</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Dense6 Pattern</source>
-        <translation type="unfinished"></translation>
+        <translation>密集图案 6</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Dense7 Pattern</source>
-        <translation type="unfinished"></translation>
+        <translation>密集图案 7</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Hor Pattern</source>
-        <translation type="unfinished"></translation>
+        <translation>水平线图案</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Ver Pattern</source>
-        <translation type="unfinished"></translation>
+        <translation>垂直线图案</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Cross Pattern</source>
-        <translation type="unfinished"></translation>
+        <translation>交叉线图案</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Backward Diagonal Pattern</source>
-        <translation type="unfinished"></translation>
+        <translation>反向斜线图案</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Forward Diagonal Pattern</source>
-        <translation type="unfinished"></translation>
+        <translation>正向斜线图案</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Crossing Diagonal Pattern</source>
-        <translation type="unfinished"></translation>
+        <translation>交叉斜线图案</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Linear Gradient Pattern</source>
-        <translation type="unfinished"></translation>
+        <translation>线性渐变图案</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Conical Gradient Pattern</source>
-        <translation type="unfinished"></translation>
+        <translation>锥形渐变图案</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Radial Gradient Pattern</source>
-        <translation type="unfinished"></translation>
+        <translation>径向渐变图案</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Texture Pattern</source>
-        <translation type="unfinished"></translation>
+        <translation>纹理图案</translation>
     </message>
     <message>
         <location filename="../3rdparty/DAWidgets/src/DAPenStyleComboBox.cpp" line="+62"/>
         <source>No Pen</source>
-        <translation type="unfinished"></translation>
+        <translation>无画笔</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Solid Line</source>
-        <translation type="unfinished"></translation>
+        <translation>实线</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Dash Line</source>
-        <translation type="unfinished"></translation>
+        <translation>虚线</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Dot Line</source>
-        <translation type="unfinished"></translation>
+        <translation>点线</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Dash Dot Line</source>
-        <translation type="unfinished"></translation>
+        <translation>点划线</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Dash Dot Dot Line</source>
-        <translation type="unfinished"></translation>
+        <translation>双点划线</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Custom Dash Line</source>
-        <translation type="unfinished"></translation>
+        <translation>自定义虚线</translation>
     </message>
 </context>
 <context>

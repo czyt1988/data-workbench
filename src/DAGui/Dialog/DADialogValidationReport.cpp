@@ -152,7 +152,7 @@ QString DADialogValidationReport::buildMarkdown() const
     md += tr("Evaluated %1 rule(s), found %2 violation(s), took %3 ms").arg(mEvaluatedRuleCount).arg(totalViolations()).arg(mElapsedMs);
     md += QStringLiteral("\n\n");
     for (const Entry& e : std::as_const(mEntries)) {
-        const QString level = e.isError ? tr("Error") : tr("Warning");  // cn:错误 / 警告
+        const QString level = e.isError ? tr("Error") : tr("Warning");  // cn:错误
         md += QStringLiteral("## [") + level + QStringLiteral("] ") + e.ruleText + QStringLiteral("\n\n");
         if (e.columnMissing) {
             md += tr("Column missing (rule skipped)") + QStringLiteral("\n\n");  // cn:列不存在（规则被跳过）

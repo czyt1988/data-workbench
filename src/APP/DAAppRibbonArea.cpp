@@ -233,7 +233,7 @@ void DAAppRibbonArea::resetText()
 
     mContextDataFrame->setContextTitle(tr("DataFrame"));          // cn:DataFrame
     mCategoryDataframeOperate->setCategoryName(tr("Operate"));    // cn:操作
-    mPannelDataframeOperateAxes->setPanelName(tr("Axes"));        // cn:坐标
+    mPannelDataframeOperateAxes->setPanelName(tr("Axes"));        // cn:坐标轴
     mPannelDataframeOperateColumn->setPanelName(tr("Column"));    // cn:列
     mPannelDataframeOperateDType->setPanelName(tr("Type"));       // cn:类型
     mPannelDataframeOperateFormat->setPanelName(tr("Format"));    // cn:格式
@@ -250,7 +250,7 @@ void DAAppRibbonArea::resetText()
     mBtnTableFillColor->setText(tr("Fill Color"));  // cn:填充颜色
 
     mCategoryWorkflowGraphicsEdit->setCategoryName(tr("Workflow Edit"));  // cn:工作流编辑
-    mPannelClipBoard->setPanelName(tr("Clipboard"));                      // cn:剪切板
+    mPannelClipBoard->setPanelName(tr("Clipboard"));                      // cn:剪贴板
     mPannelWorkflowItem->setPanelName(tr("Item"));                        // cn:图元
     mPannelWorkflowText->setPanelName(tr("Text"));                        // cn:文本
     mPannelWorkflowBackground->setPanelName(tr("Background"));            // cn:背景
@@ -469,7 +469,7 @@ void DAAppRibbonArea::buildContextCategoryDataFrame()
     mCategoryDataframeOperate = mContextDataFrame->addCategoryPage(tr("Operate"));  // cn:操作
     mCategoryDataframeOperate->setObjectName(QString::fromUtf8(UiNames::Ribbon::DataFrameOperateCategory));
     // Axes pannel
-    mPannelDataframeOperateAxes = mCategoryDataframeOperate->addPanel(tr("Axes"));  // cn:坐标
+    mPannelDataframeOperateAxes = mCategoryDataframeOperate->addPanel(tr("Axes"));  // cn:坐标轴
     mPannelDataframeOperateAxes->setObjectName(QString::fromUtf8(UiNames::Ribbon::DataFrameOperateAxesPanel));
     mActions->actionInsertRow->setMenu(mMenuInsertRow);
     mPannelDataframeOperateAxes->addLargeAction(mActions->actionInsertRow, QToolButton::MenuButtonPopup);
@@ -661,7 +661,7 @@ void DAAppRibbonArea::buildContextCategoryWorkflowEdit_()
     // 条目pannel
 
     // 剪切板
-    mPannelClipBoard = mCategoryWorkflowGraphicsEdit->addPanel(tr("Clipboard"));  // cn:剪切板
+    mPannelClipBoard = mCategoryWorkflowGraphicsEdit->addPanel(tr("Clipboard"));  // cn:剪贴板
     mPannelClipBoard->addLargeAction(wfo->getInnerAction(DAPyWorkFlowOperateWidget::ActionPaste));
     mPannelClipBoard->addSmallAction(wfo->getInnerAction(DAPyWorkFlowOperateWidget::ActionCut));
     mPannelClipBoard->addSmallAction(wfo->getInnerAction(DAPyWorkFlowOperateWidget::ActionCopy));
@@ -1166,7 +1166,7 @@ void DAAppRibbonArea::buildRibbonAgentCategory()
     mPanelAgent = mCategoryAgent->addPanel(tr("AI Agent"));  // cn:AI智能体
 
     // agent 管理（large button）
-    mActionAgentManage = new QAction(QIcon(":/da/icon/agent-manage.svg"), tr("Agent Manager"), this);  // cn:agent管理
+    mActionAgentManage = new QAction(QIcon(":/da/icon/agent-manage.svg"), tr("Agent Manager"), this);  // cn:Agent 管理
     mActionAgentManage->setToolTip(tr("Manage agents: add, edit, delete prompts"));  // cn:管理 agent：新增、修改、删除提示词
     mPanelAgent->addLargeAction(mActionAgentManage);
 
@@ -1175,7 +1175,7 @@ void DAAppRibbonArea::buildRibbonAgentCategory()
     mAgentGallery->setMaximumWidth(700);
 
     // 执行 agent（large button）
-    mActionRunAgent = new QAction(QIcon(":/da/icon/run-agent.svg"), tr("Run Agent"), this);  // cn:执行agent
+    mActionRunAgent = new QAction(QIcon(":/da/icon/run-agent.svg"), tr("Run Agent"), this);  // cn:执行 Agent
     mActionRunAgent->setToolTip(
         tr("Run AI analysis with the selected agent prompt"));  // cn:使用当前选中的 agent 提示词执行 AI 分析
     mPanelAgent->addLargeAction(mActionRunAgent);

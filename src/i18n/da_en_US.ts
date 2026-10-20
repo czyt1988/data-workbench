@@ -135,12 +135,12 @@
     <message>
         <location line="+13"/>
         <source>Default layout snapshot is not ready</source>
-        <translation type="unfinished"></translation>
+        <translation>Default layout snapshot is not ready</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Default layout restored</source>
-        <translation type="unfinished"></translation>
+        <translation>Default layout restored</translation>
     </message>
     <message>
         <location line="+29"/>
@@ -177,12 +177,12 @@
         <location line="+213"/>
         <location line="+1062"/>
         <source>Message not sent: agent subprocess is not running</source>
-        <translation type="unfinished"></translation>
+        <translation>Message not sent: agent subprocess is not running</translation>
     </message>
     <message>
         <location line="-1020"/>
         <source>Answer not sent: agent subprocess is not running</source>
-        <translation type="unfinished"></translation>
+        <translation>Answer not sent: agent subprocess is not running</translation>
     </message>
     <message>
         <location line="+877"/>
@@ -205,12 +205,12 @@
     <message>
         <location filename="../DAGui/Agent/DAAgentDockAreaTitleBar.cpp" line="+27"/>
         <source>New Session</source>
-        <translation type="unfinished">New Session</translation>
+        <translation>New Session</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Session Manager</source>
-        <translation type="unfinished">Session Manager</translation>
+        <translation>Session Manager</translation>
     </message>
 </context>
 <context>
@@ -218,7 +218,7 @@
     <message>
         <location filename="../DAGui/Agent/DAAgentDockWidget.cpp" line="+302"/>
         <source>No agent session is open</source>
-        <translation type="unfinished"></translation>
+        <translation>No agent session is open</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -230,47 +230,47 @@
     <message>
         <location line="-115"/>
         <source>Rename Session</source>
-        <translation type="unfinished">Rename Session</translation>
+        <translation>Rename Session</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Session name:</source>
-        <translation type="unfinished"></translation>
+        <translation>Session name:</translation>
     </message>
     <message>
         <location line="+20"/>
         <source>Delete Session</source>
-        <translation type="unfinished">Delete Session</translation>
+        <translation>Delete Session</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Delete session &quot;%1&quot;? Its chat history will be removed.</source>
-        <translation type="unfinished"></translation>
+        <translation>Delete session "%1"? Its chat history will be removed.</translation>
     </message>
     <message>
         <location line="+300"/>
         <source>Session &quot;%1&quot; is waiting for your input. What do you want to do?</source>
-        <translation type="unfinished"></translation>
+        <translation>Session "%1" is waiting for your input. What do you want to do?</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Session &quot;%1&quot; is still running. What do you want to do?</source>
-        <translation type="unfinished"></translation>
+        <translation>Session "%1" is still running. What do you want to do?</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Close Session</source>
-        <translation type="unfinished"></translation>
+        <translation>Close Session</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Keep Running in Background</source>
-        <translation type="unfinished"></translation>
+        <translation>Keep Running in Background</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Stop Session and Close</source>
-        <translation type="unfinished"></translation>
+        <translation>Stop Session and Close</translation>
     </message>
 </context>
 <context>
@@ -423,7 +423,7 @@
     <message>
         <location filename="../DAAgent/DAAgentModule.cpp" line="+2652"/>
         <source>The agent ended this turn after %1 tool calls, but its last message looks like an unfinished plan (e.g. announcing a next step without executing it). Send a message such as &quot;continue&quot; to let it finish.</source>
-        <translation type="unfinished"></translation>
+        <translation>The agent ended this turn after %1 tool calls, but its last message looks like an unfinished plan (e.g. announcing a next step without executing it). Send a message such as "continue" to let it finish.</translation>
     </message>
     <message>
         <location line="-2266"/>
@@ -633,391 +633,391 @@
     <message>
         <location filename="../DAGui/Agent/DAAgentSessionChatWidget.cpp" line="+405"/>
         <source>Send</source>
-        <translation type="unfinished">Send</translation>
+        <translation>Send</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Stop</source>
-        <translation type="unfinished">Stop</translation>
+        <translation>Stop</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Ready</source>
-        <translation type="unfinished">Ready</translation>
+        <translation>Ready</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Agent starting...</source>
-        <translation type="unfinished">Agent starting...</translation>
+        <translation>Agent starting...</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Agent thinking...</source>
-        <translation type="unfinished">Agent thinking...</translation>
+        <translation>Agent thinking...</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Stopping...</source>
-        <translation type="unfinished">Stopping...</translation>
+        <translation>Stopping...</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Type a message...</source>
-        <translation type="unfinished">Type a message...</translation>
+        <translation>Type a message...</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>tokens: -</source>
-        <translation type="unfinished">tokens: -</translation>
+        <translation>tokens: -</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>input: %1</source>
-        <translation type="unfinished">input: %1</translation>
+        <translation>input: %1</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>output: %1</source>
-        <translation type="unfinished">output: %1</translation>
+        <translation>output: %1</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>total: %1</source>
-        <translation type="unfinished">total: %1</translation>
+        <translation>total: %1</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>window: %1</source>
-        <translation type="unfinished">window: %1</translation>
+        <translation>window: %1</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>source: %1</source>
-        <translation type="unfinished">source: %1</translation>
+        <translation>source: %1</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>unknown</source>
-        <translation type="unfinished">unknown</translation>
+        <translation>unknown</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>No model</source>
-        <translation type="unfinished">No model</translation>
+        <translation>No model</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Select LLM model</source>
-        <translation type="unfinished">Select LLM model</translation>
+        <translation>Select LLM model</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Providers</source>
-        <translation type="unfinished">Providers</translation>
+        <translation>Providers</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Back</source>
-        <translation type="unfinished">Back</translation>
+        <translation>Back</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Details</source>
-        <translation type="unfinished">Details</translation>
+        <translation>Details</translation>
     </message>
     <message>
         <location line="-138"/>
         <location line="+139"/>
         <source>Copy</source>
-        <translation type="unfinished">Copy</translation>
+        <translation>Copy</translation>
     </message>
     <message>
         <location line="-130"/>
         <source>Paste</source>
-        <translation type="unfinished">Paste</translation>
+        <translation>Paste</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Select All</source>
-        <translation type="unfinished">Select All</translation>
+        <translation>Select All</translation>
     </message>
     <message>
         <location line="+122"/>
         <source>Copied</source>
-        <translation type="unfinished">Copied</translation>
+        <translation>Copied</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>[truncated]</source>
-        <translation type="unfinished">[truncated]</translation>
+        <translation>[truncated]</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Permission mode</source>
-        <translation type="unfinished">Permission mode</translation>
+        <translation>Permission mode</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Full Auto</source>
-        <translation type="unfinished">Full Auto</translation>
+        <translation>Full Auto</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Auto</source>
-        <translation type="unfinished">Auto</translation>
+        <translation>Auto</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Ask Every Time</source>
-        <translation type="unfinished">Ask Every Time</translation>
+        <translation>Ask Every Time</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Run everything without asking (system directories still blocked)</source>
-        <translation type="unfinished">Run everything without asking (system directories still blocked)</translation>
+        <translation>Run everything without asking (system directories still blocked)</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Reads and chart edits pass; file writes and code execution judged by rules</source>
-        <translation type="unfinished">Reads and chart edits pass; file writes and code execution judged by rules</translation>
+        <translation>Reads and chart edits pass; file writes and code execution judged by rules</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>File writes and code execution need approval every time</source>
-        <translation type="unfinished">File writes and code execution need approval every time</translation>
+        <translation>File writes and code execution need approval every time</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Switch to Full Auto mode? Code execution and file writes will no longer ask for confirmation.</source>
-        <translation type="unfinished">Switch to Full Auto mode? Code execution and file writes will no longer ask for confirmation.</translation>
+        <translation>Switch to Full Auto mode? Code execution and file writes will no longer ask for confirmation.</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Switch</source>
-        <translation type="unfinished">Switch</translation>
+        <translation>Switch</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Cancel</source>
-        <translation type="unfinished">Cancel</translation>
+        <translation>Cancel</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>needs your approval</source>
-        <translation type="unfinished">needs your approval</translation>
+        <translation>needs your approval</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Approve</source>
-        <translation type="unfinished">Approve</translation>
+        <translation>Approve</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Deny</source>
-        <translation type="unfinished">Deny</translation>
+        <translation>Deny</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Approve &amp;&amp; remember for this session</source>
-        <translation type="unfinished">Approve &amp;&amp; remember for this session</translation>
+        <translation>Approve &amp;&amp; remember for this session</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Approved</source>
-        <translation type="unfinished">Approved</translation>
+        <translation>Approved</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Denied</source>
-        <translation type="unfinished">Denied</translation>
+        <translation>Denied</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Approved (remembered for this session)</source>
-        <translation type="unfinished">Approved (remembered for this session)</translation>
+        <translation>Approved (remembered for this session)</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>%1 more lines</source>
-        <translation type="unfinished">%1 more lines</translation>
+        <translation>%1 more lines</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>From subagent: %1</source>
-        <translation type="unfinished">From subagent: %1</translation>
+        <translation>From subagent: %1</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>result truncated</source>
-        <translation type="unfinished"></translation>
+        <translation>result truncated</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Answer not sent, please retry</source>
-        <translation type="unfinished"></translation>
+        <translation>Answer not sent, please retry</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Submit</source>
-        <translation type="unfinished">Submit</translation>
+        <translation>Submit</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Type your own answer...</source>
-        <translation type="unfinished">Type your own answer...</translation>
+        <translation>Type your own answer...</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>%1 session(s) from the previous project are still running in the background</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 session(s) from the previous project are still running in the background</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Click to view and stop these sessions</source>
-        <translation type="unfinished"></translation>
+        <translation>Click to view and stop these sessions</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>%1 subagent task(s)</source>
-        <translation type="unfinished">%1 subagent task(s)</translation>
+        <translation>%1 subagent task(s)</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>%1/%2 done</source>
-        <translation type="unfinished">%1/%2 done</translation>
+        <translation>%1/%2 done</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>completed</source>
-        <translation type="unfinished">completed</translation>
+        <translation>completed</translation>
     </message>
     <message>
         <location line="+579"/>
         <source>Failed after repeated retries: rate limited</source>
-        <translation type="unfinished"></translation>
+        <translation>Failed after repeated retries: rate limited</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Failed after repeated retries: network error</source>
-        <translation type="unfinished"></translation>
+        <translation>Failed after repeated retries: network error</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Failed after repeated retries: server error</source>
-        <translation type="unfinished"></translation>
+        <translation>Failed after repeated retries: server error</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Request was rejected by the LLM service, see details for the original error</source>
-        <translation type="unfinished"></translation>
+        <translation>Request was rejected by the LLM service, see details for the original error</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Agent response timeout</source>
-        <translation type="unfinished"></translation>
+        <translation>Agent response timeout</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Agent process crashed, recovering...</source>
-        <translation type="unfinished"></translation>
+        <translation>Agent process crashed, recovering...</translation>
     </message>
     <message>
         <location line="-620"/>
         <location line="+17"/>
         <source>queued</source>
-        <translation type="unfinished">queued</translation>
+        <translation>queued</translation>
     </message>
     <message>
         <location line="-16"/>
         <location line="+17"/>
         <source>running</source>
-        <translation type="unfinished">running</translation>
+        <translation>running</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>done</source>
-        <translation type="unfinished">done</translation>
+        <translation>done</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>failed</source>
-        <translation type="unfinished">failed</translation>
+        <translation>failed</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>timeout</source>
-        <translation type="unfinished">timeout</translation>
+        <translation>timeout</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>stopped</source>
-        <translation type="unfinished">stopped</translation>
+        <translation>stopped</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Load earlier messages</source>
-        <translation type="unfinished">Load earlier messages</translation>
+        <translation>Load earlier messages</translation>
     </message>
     <message>
         <location line="+36"/>
         <source>The permission mode is Full Auto from last session. Code execution and file writes will run without asking. Keep Full Auto mode?</source>
-        <translation type="unfinished">The permission mode is Full Auto from last session. Code execution and file writes will run without asking. Keep Full Auto mode?</translation>
+        <translation>The permission mode is Full Auto from last session. Code execution and file writes will run without asking. Keep Full Auto mode?</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Keep Full Auto</source>
-        <translation type="unfinished">Keep Full Auto</translation>
+        <translation>Keep Full Auto</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Switch to Auto</source>
-        <translation type="unfinished">Switch to Auto</translation>
+        <translation>Switch to Auto</translation>
     </message>
     <message>
         <location line="+508"/>
         <source>tokens: ~%1 / %2</source>
-        <translation type="unfinished">tokens: ~%1 / %2</translation>
+        <translation>tokens: ~%1 / %2</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>tokens: %1 / %2</source>
-        <translation type="unfinished">tokens: %1 / %2</translation>
+        <translation>tokens: %1 / %2</translation>
     </message>
     <message>
         <location line="+13"/>
         <source>API quota exhausted, please check account balance or change API key</source>
-        <translation type="unfinished">API quota exhausted, please check account balance or change API key</translation>
+        <translation>API quota exhausted, please check account balance or change API key</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>API key invalid or expired, please check settings</source>
-        <translation type="unfinished">API key invalid or expired, please check settings</translation>
+        <translation>API key invalid or expired, please check settings</translation>
     </message>
     <message>
         <location line="+20"/>
         <source>Context window exceeded and compaction failed</source>
-        <translation type="unfinished">Context window exceeded and compaction failed</translation>
+        <translation>Context window exceeded and compaction failed</translation>
     </message>
     <message>
         <location line="+15"/>
         <source>Agent process crashed repeatedly, unable to recover</source>
-        <translation type="unfinished">Agent process crashed repeatedly, unable to recover</translation>
+        <translation>Agent process crashed repeatedly, unable to recover</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Failed to switch model, keeping current model</source>
-        <translation type="unfinished">Failed to switch model, keeping current model</translation>
+        <translation>Failed to switch model, keeping current model</translation>
     </message>
     <message>
         <location line="+4"/>
         <location line="+4"/>
         <source>Agent request failed, see details for the original error</source>
-        <translation type="unfinished"></translation>
+        <translation>Agent request failed, see details for the original error</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Agent error: %1</source>
-        <translation type="unfinished">Agent error: %1</translation>
+        <translation>Agent error: %1</translation>
     </message>
 </context>
 <context>
@@ -1025,17 +1025,17 @@
     <message>
         <location filename="../DAGui/Agent/DAAgentSessionDockWidgetTab.cpp" line="+47"/>
         <source>Rename Session</source>
-        <translation type="unfinished">Rename Session</translation>
+        <translation>Rename Session</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Stop Session</source>
-        <translation type="unfinished"></translation>
+        <translation>Stop Session</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Delete Session</source>
-        <translation type="unfinished">Delete Session</translation>
+        <translation>Delete Session</translation>
     </message>
 </context>
 <context>
@@ -1079,39 +1079,39 @@
     <message>
         <location line="+89"/>
         <source>Max automatic retries when the LLM service returns an error (rate limit, server error, bad request, network). 0 disables. Recommended: 5.</source>
-        <translation type="unfinished"></translation>
+        <translation>Max automatic retries when the LLM service returns an error (rate limit, server error, bad request, network). 0 disables. Recommended: 5.</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Seconds to wait before the first retry. Recommended: 5.</source>
-        <translation type="unfinished"></translation>
+        <translation>Seconds to wait before the first retry. Recommended: 5.</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Extra seconds added to the wait after each failed retry (e.g. interval 5, increment 1 waits 5, 6, 7...). Recommended: 1.</source>
-        <translation type="unfinished"></translation>
+        <translation>Extra seconds added to the wait after each failed retry (e.g. interval 5, increment 1 waits 5, 6, 7...). Recommended: 1.</translation>
     </message>
     <message>
         <location line="+25"/>
         <location line="+7"/>
         <location line="+23"/>
         <source>No limit</source>
-        <translation type="unfinished"></translation>
+        <translation>No limit</translation>
     </message>
     <message>
         <location line="-29"/>
         <source>Max graph reasoning steps per turn (each tool-call cycle consumes 3 steps). Check &apos;No limit&apos; to disable. Recommended: 150.</source>
-        <translation type="unfinished"></translation>
+        <translation>Max graph reasoning steps per turn (each tool-call cycle consumes 3 steps). Check 'No limit' to disable. Recommended: 150.</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Unlimited reasoning steps per turn. Loop protection still applies: repeated identical tool calls are terminated automatically.</source>
-        <translation type="unfinished"></translation>
+        <translation>Unlimited reasoning steps per turn. Loop protection still applies: repeated identical tool calls are terminated automatically.</translation>
     </message>
     <message>
         <location line="+23"/>
         <source>Max reasoning steps for each subagent task. Set to -1 for no limit. Recommended: 60.</source>
-        <translation type="unfinished"></translation>
+        <translation>Max reasoning steps for each subagent task. Set to -1 for no limit. Recommended: 60.</translation>
     </message>
     <message>
         <location line="+7"/>
@@ -1276,12 +1276,12 @@
     <message>
         <location line="+1"/>
         <source>Retry interval</source>
-        <translation type="unfinished"></translation>
+        <translation>Retry interval</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Retry interval increment</source>
-        <translation type="unfinished"></translation>
+        <translation>Retry interval increment</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -1967,63 +1967,65 @@ All</translation>
         <location line="+13"/>
         <source>Rename 
 Data</source>
-        <translation type="unfinished"></translation>
+        <translation>Rename 
+Data</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Rename the selected dataset</source>
-        <translation type="unfinished"></translation>
+        <translation>Rename the selected dataset</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Export 
 Data</source>
-        <translation type="unfinished"></translation>
+        <translation>Export 
+Data</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Export the selected data to a file</source>
-        <translation type="unfinished"></translation>
+        <translation>Export the selected data to a file</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Export CSV</source>
-        <translation type="unfinished"></translation>
+        <translation>Export CSV</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Export the selected data to a CSV file</source>
-        <translation type="unfinished"></translation>
+        <translation>Export the selected data to a CSV file</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Export Excel</source>
-        <translation type="unfinished"></translation>
+        <translation>Export Excel</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Export the selected data to an Excel file</source>
-        <translation type="unfinished"></translation>
+        <translation>Export the selected data to an Excel file</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Export Pickle</source>
-        <translation type="unfinished"></translation>
+        <translation>Export Pickle</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Export the selected data to a pickle file</source>
-        <translation type="unfinished"></translation>
+        <translation>Export the selected data to a pickle file</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Export Parquet</source>
-        <translation type="unfinished"></translation>
+        <translation>Export Parquet</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Export the selected data to a parquet file</source>
-        <translation type="unfinished"></translation>
+        <translation>Export the selected data to a parquet file</translation>
     </message>
     <message>
         <location line="+30"/>
@@ -2154,22 +2156,22 @@ Line 3D</translation>
     <message>
         <location line="+26"/>
         <source>Disable X Zoom</source>
-        <translation type="unfinished"></translation>
+        <translation>Disable X Zoom</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Disable zoom on the X axis</source>
-        <translation type="unfinished"></translation>
+        <translation>Disable zoom on the X axis</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Disable Y Zoom</source>
-        <translation type="unfinished"></translation>
+        <translation>Disable Y Zoom</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Disable zoom on the Y axis</source>
-        <translation type="unfinished"></translation>
+        <translation>Disable zoom on the Y axis</translation>
     </message>
     <message>
         <location line="+22"/>
@@ -2184,52 +2186,52 @@ Line 3D</translation>
     <message>
         <location line="+1"/>
         <source>Legend Top</source>
-        <translation type="unfinished"></translation>
+        <translation>Legend Top</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Place the legend at the top of the chart</source>
-        <translation type="unfinished"></translation>
+        <translation>Place the legend at the top of the chart</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Legend Bottom</source>
-        <translation type="unfinished"></translation>
+        <translation>Legend Bottom</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Place the legend at the bottom of the chart</source>
-        <translation type="unfinished"></translation>
+        <translation>Place the legend at the bottom of the chart</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Legend Left</source>
-        <translation type="unfinished"></translation>
+        <translation>Legend Left</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Place the legend at the left of the chart</source>
-        <translation type="unfinished"></translation>
+        <translation>Place the legend at the left of the chart</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Legend Right</source>
-        <translation type="unfinished"></translation>
+        <translation>Legend Right</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Place the legend at the right of the chart</source>
-        <translation type="unfinished"></translation>
+        <translation>Place the legend at the right of the chart</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Pointer</source>
-        <translation type="unfinished"></translation>
+        <translation>Pointer</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Select chart elements by clicking, drag to move, Delete to remove</source>
-        <translation type="unfinished"></translation>
+        <translation>Select chart elements by clicking, drag to move, Delete to remove</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -2304,12 +2306,12 @@ Line 3D</translation>
     <message>
         <location line="+1"/>
         <source>Add Text</source>
-        <translation type="unfinished"></translation>
+        <translation>Add Text</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Add a text marker to the chart</source>
-        <translation type="unfinished"></translation>
+        <translation>Add a text marker to the chart</translation>
     </message>
     <message>
         <location line="+4"/>
@@ -2811,74 +2813,76 @@ Config</translation>
     <message>
         <location line="+2"/>
         <source>Cut</source>
-        <translation type="unfinished">Cut</translation>
+        <translation>Cut</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Cut the selection to the clipboard</source>
-        <translation type="unfinished"></translation>
+        <translation>Cut the selection to the clipboard</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Copy</source>
-        <translation type="unfinished">Copy</translation>
+        <translation>Copy</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Copy the selection to the clipboard</source>
-        <translation type="unfinished"></translation>
+        <translation>Copy the selection to the clipboard</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Paste</source>
-        <translation type="unfinished">Paste</translation>
+        <translation>Paste</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Paste from the clipboard</source>
-        <translation type="unfinished"></translation>
+        <translation>Paste from the clipboard</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Delete</source>
-        <translation type="unfinished">Delete</translation>
+        <translation>Delete</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Delete the selection</source>
-        <translation type="unfinished"></translation>
+        <translation>Delete the selection</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Select All</source>
-        <translation type="unfinished">Select All</translation>
+        <translation>Select All</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Select all content</source>
-        <translation type="unfinished"></translation>
+        <translation>Select all content</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Reset 
 Layout</source>
-        <translation type="unfinished"></translation>
+        <translation>Reset 
+Layout</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Restore the default window layout (confirmation required)</source>
-        <translation type="unfinished"></translation>
+        <translation>Restore the default window layout (confirmation required)</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Manage 
 Layouts</source>
-        <translation type="unfinished"></translation>
+        <translation>Manage 
+Layouts</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Open the layout manager to save, apply or remove layout schemes</source>
-        <translation type="unfinished"></translation>
+        <translation>Open the layout manager to save, apply or remove layout schemes</translation>
     </message>
     <message>
         <location line="+4"/>
@@ -3258,77 +3262,77 @@ Layouts</source>
     <message>
         <location line="+110"/>
         <source>Reset Layout</source>
-        <translation type="unfinished"></translation>
+        <translation>Reset Layout</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>This will restore the default window layout. Continue?</source>
-        <translation type="unfinished"></translation>
+        <translation>This will restore the default window layout. Continue?</translation>
     </message>
     <message>
         <location line="+383"/>
         <source>Please select a dataset to rename</source>
-        <translation type="unfinished"></translation>
+        <translation>Please select a dataset to rename</translation>
     </message>
     <message>
         <location line="+59"/>
         <source>Please select a dataset to export</source>
-        <translation type="unfinished"></translation>
+        <translation>Please select a dataset to export</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>CSV File</source>
-        <translation type="unfinished"></translation>
+        <translation>CSV File</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Excel File</source>
-        <translation type="unfinished"></translation>
+        <translation>Excel File</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Pickle File</source>
-        <translation type="unfinished"></translation>
+        <translation>Pickle File</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Parquet File</source>
-        <translation type="unfinished"></translation>
+        <translation>Parquet File</translation>
     </message>
     <message>
         <location line="+19"/>
         <source>Export Data</source>
-        <translation type="unfinished">Export Data</translation>
+        <translation>Export Data</translation>
     </message>
     <message>
         <location line="+33"/>
         <source>Cannot determine export format, please select a file suffix</source>
-        <translation type="unfinished"></translation>
+        <translation>Cannot determine export format, please select a file suffix</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Data exported successfully, path: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Data exported successfully, path: %1</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Data export failed, path: %1, reason: %2</source>
-        <translation type="unfinished"></translation>
+        <translation>Data export failed, path: %1, reason: %2</translation>
     </message>
     <message>
         <location line="+49"/>
         <source>Unsupported link type: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Unsupported link type: %1</translation>
     </message>
     <message>
         <location line="+96"/>
         <source>Invalid dataset link: &apos;%1&apos;</source>
-        <translation type="unfinished"></translation>
+        <translation>Invalid dataset link: '%1'</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Dataset &apos;%1&apos; not found, it may have been removed</source>
-        <translation type="unfinished"></translation>
+        <translation>Dataset '%1' not found, it may have been removed</translation>
     </message>
     <message>
         <location line="+19"/>
@@ -3398,68 +3402,68 @@ Layouts</source>
     <message>
         <location line="+37"/>
         <source>Windows 7</source>
-        <translation type="unfinished">Windows 7</translation>
+        <translation>Windows 7</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Office 2013</source>
-        <translation type="unfinished">Office 2013</translation>
+        <translation>Office 2013</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Office 2016 Blue</source>
-        <translation type="unfinished">Office 2016 Blue</translation>
+        <translation>Office 2016 Blue</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Office 2016 Green</source>
-        <translation type="unfinished">Office 2016 Green</translation>
+        <translation>Office 2016 Green</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Office 2016 Dark</source>
-        <translation type="unfinished">Office 2016 Dark</translation>
+        <translation>Office 2016 Dark</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Office 2021 Blue</source>
-        <translation type="unfinished">Office 2021 Blue</translation>
+        <translation>Office 2021 Blue</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Office 2021 Green</source>
-        <translation type="unfinished">Office 2021 Green</translation>
+        <translation>Office 2021 Green</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Office 2021 Dark</source>
-        <translation type="unfinished">Office 2021 Dark</translation>
+        <translation>Office 2021 Dark</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Dark</source>
-        <translation type="unfinished">Dark</translation>
+        <translation>Dark</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Dark 2</source>
-        <translation type="unfinished">Dark 2</translation>
+        <translation>Dark 2</translation>
     </message>
     <message>
         <location line="-217"/>
         <location line="+313"/>
         <source>No cells selected to copy</source>
-        <translation type="unfinished"></translation>
+        <translation>No cells selected to copy</translation>
     </message>
     <message>
         <location line="-1469"/>
         <source>No active table</source>
-        <translation type="unfinished"></translation>
+        <translation>No active table</translation>
     </message>
     <message>
         <location line="+1790"/>
         <source>Cannot rename a series, please select a dataset</source>
-        <translation type="unfinished"></translation>
+        <translation>Cannot rename a series, please select a dataset</translation>
     </message>
     <message>
         <location line="+248"/>
@@ -3509,7 +3513,7 @@ Layouts</source>
     <message>
         <location line="+566"/>
         <source>Export</source>
-        <translation type="unfinished">Export</translation>
+        <translation>Export</translation>
     </message>
     <message>
         <location line="+156"/>
@@ -3574,27 +3578,27 @@ Layouts</source>
     <message>
         <location line="+22"/>
         <source>Only DataFrame data can be exported</source>
-        <translation type="unfinished"></translation>
+        <translation>Only DataFrame data can be exported</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Python scripts not initialized</source>
-        <translation type="unfinished"></translation>
+        <translation>Python scripts not initialized</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Python scripts not initialized, cannot export file: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Python scripts not initialized, cannot export file: %1</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Data is empty, cannot export</source>
-        <translation type="unfinished"></translation>
+        <translation>Data is empty, cannot export</translation>
     </message>
     <message>
         <location line="+18"/>
         <source>Unsupported export format: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Unsupported export format: %1</translation>
     </message>
 </context>
 <context>
@@ -3670,17 +3674,17 @@ Layouts</source>
     <message>
         <location filename="../APP/DAAppLayoutManager.cpp" line="+93"/>
         <source>Layout scheme &apos;%1&apos; not found</source>
-        <translation type="unfinished"></translation>
+        <translation>Layout scheme '%1' not found</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Failed to restore layout scheme &apos;%1&apos;, it may be saved by an incompatible version</source>
-        <translation type="unfinished"></translation>
+        <translation>Failed to restore layout scheme '%1', it may be saved by an incompatible version</translation>
     </message>
     <message>
         <location line="+14"/>
         <source>Preset layout schemes cannot be removed</source>
-        <translation type="unfinished"></translation>
+        <translation>Preset layout schemes cannot be removed</translation>
     </message>
 </context>
 <context>
@@ -3688,39 +3692,39 @@ Layouts</source>
     <message>
         <location filename="../APP/DAAppPluginManager.cpp" line="+154"/>
         <source>Plugin manager is not initialized</source>
-        <translation type="unfinished"></translation>
+        <translation>Plugin manager is not initialized</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Plugin %1 is already loaded</source>
-        <translation type="unfinished"></translation>
+        <translation>Plugin %1 is already loaded</translation>
     </message>
     <message>
         <location line="+14"/>
         <source>Plugin file %1 is not found in the plugin directory</source>
-        <translation type="unfinished"></translation>
+        <translation>Plugin file %1 is not found in the plugin directory</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Failed to load plugin %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Failed to load plugin %1</translation>
     </message>
     <message>
         <location line="+39"/>
         <location line="+6"/>
         <location line="+34"/>
         <source>Plugin %1 is not loaded</source>
-        <translation type="unfinished"></translation>
+        <translation>Plugin %1 is not loaded</translation>
     </message>
     <message>
         <location line="-27"/>
         <source>Nodes of plugin %1 are in use by open workflows (%2), please close them first</source>
-        <translation type="unfinished"></translation>
+        <translation>Nodes of plugin %1 are in use by open workflows (%2), please close them first</translation>
     </message>
     <message>
         <location line="+24"/>
         <source>Plugin %1 refused to finalize, disabling cancelled</source>
-        <translation type="unfinished"></translation>
+        <translation>Plugin %1 refused to finalize, disabling cancelled</translation>
     </message>
     <message>
         <location line="+127"/>
@@ -3933,12 +3937,12 @@ Layouts</source>
     <message>
         <location line="+188"/>
         <source>No data factory registered for type &apos;%1&apos;, skipping data &apos;%2&apos; (plugin not loaded?)</source>
-        <translation type="unfinished"></translation>
+        <translation>No data factory registered for type '%1', skipping data '%2' (plugin not loaded?)</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Failed to restore reference content of data &apos;%1&apos;</source>
-        <translation type="unfinished"></translation>
+        <translation>Failed to restore reference content of data '%1'</translation>
     </message>
     <message>
         <location line="+110"/>
@@ -4132,12 +4136,12 @@ Layouts</source>
     <message>
         <location line="-2"/>
         <source>Create</source>
-        <translation type="unfinished"></translation>
+        <translation>Create</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Export Format</source>
-        <translation type="unfinished"></translation>
+        <translation>Export Format</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -4155,12 +4159,12 @@ Layouts</source>
     <message>
         <location line="+1"/>
         <source>Layout</source>
-        <translation type="unfinished">Layout</translation>
+        <translation>Layout</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Appearance</source>
-        <translation type="unfinished">Appearance</translation>
+        <translation>Appearance</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -4184,7 +4188,7 @@ Layouts</source>
         <location line="-235"/>
         <location line="+248"/>
         <source>Column</source>
-        <translation type="unfinished">Column</translation>
+        <translation>Column</translation>
     </message>
     <message>
         <location line="-247"/>
@@ -4279,22 +4283,22 @@ Layouts</source>
     <message>
         <location line="+4"/>
         <source>New Session</source>
-        <translation type="unfinished">New Session</translation>
+        <translation>New Session</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Open a new agent chat session</source>
-        <translation type="unfinished"></translation>
+        <translation>Open a new agent chat session</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Session Manager</source>
-        <translation type="unfinished">Session Manager</translation>
+        <translation>Session Manager</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Manage agent sessions: switch, rename, delete</source>
-        <translation type="unfinished"></translation>
+        <translation>Manage agent sessions: switch, rename, delete</translation>
     </message>
     <message>
         <location line="+58"/>
@@ -4505,12 +4509,12 @@ Layouts</source>
     <message>
         <location filename="../DAGui/DACacheWindowTableView.cpp" line="+765"/>
         <source>Go To Row</source>
-        <translation type="unfinished"></translation>
+        <translation>Go To Row</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Row number (1 - %1):</source>
-        <translation type="unfinished"></translation>
+        <translation>Row number (1 - %1):</translation>
     </message>
 </context>
 <context>
@@ -6621,7 +6625,7 @@ Layouts</source>
     <message>
         <location line="+3"/>
         <source>Ticks Inside</source>
-        <translation type="unfinished"></translation>
+        <translation>Ticks Inside</translation>
     </message>
     <message>
         <location line="+10"/>
@@ -8728,92 +8732,92 @@ Layouts</source>
     <message>
         <location filename="../DAGui/ChartSetting/DAChartTextMarkerSettingPanel.cpp" line="+54"/>
         <source>Basic</source>
-        <translation type="unfinished">Basic</translation>
+        <translation>Basic</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Title</source>
-        <translation type="unfinished">Title</translation>
+        <translation>Title</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Z Value</source>
-        <translation type="unfinished">Z Value</translation>
+        <translation>Z Value</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>X Axis</source>
-        <translation type="unfinished">X Axis</translation>
+        <translation>X Axis</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Y Axis</source>
-        <translation type="unfinished">Y Axis</translation>
+        <translation>Y Axis</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Anchor X</source>
-        <translation type="unfinished"></translation>
+        <translation>Anchor X</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Anchor Y</source>
-        <translation type="unfinished"></translation>
+        <translation>Anchor Y</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Text</source>
-        <translation type="unfinished">Text</translation>
+        <translation>Text</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Edit Rich Text...</source>
-        <translation type="unfinished"></translation>
+        <translation>Edit Rich Text...</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Content</source>
-        <translation type="unfinished"></translation>
+        <translation>Content</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Font</source>
-        <translation type="unfinished">Font</translation>
+        <translation>Font</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Text Color</source>
-        <translation type="unfinished">Text Color</translation>
+        <translation>Text Color</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Alignment</source>
-        <translation type="unfinished">Alignment</translation>
+        <translation>Alignment</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Background</source>
-        <translation type="unfinished">Background</translation>
+        <translation>Background</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Border Radius</source>
-        <translation type="unfinished">Border Radius</translation>
+        <translation>Border Radius</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Background Brush</source>
-        <translation type="unfinished">Background Brush</translation>
+        <translation>Background Brush</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Layout</source>
-        <translation type="unfinished">Layout</translation>
+        <translation>Layout</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Spacing</source>
-        <translation type="unfinished">Spacing</translation>
+        <translation>Spacing</translation>
     </message>
 </context>
 <context>
@@ -9121,7 +9125,7 @@ Layouts</source>
 <context>
     <name>DA::DADataHeaderView</name>
     <message>
-        <location filename="../DAGui/DADataHeaderView.cpp" line="+283"/>
+        <location filename="../DAGui/DADataHeaderView.cpp" line="+359"/>
         <source>Sort Ascending</source>
         <translation>Sort Ascending</translation>
     </message>
@@ -9221,7 +9225,7 @@ Layouts</source>
     <message>
         <location filename="../DAGui/Chart/DADataLinkTableModel.cpp" line="+15"/>
         <source>Curve</source>
-        <translation type="unfinished">Curve</translation>
+        <translation>Curve</translation>
     </message>
 </context>
 <context>
@@ -9230,56 +9234,56 @@ Layouts</source>
         <location filename="../DAGui/Chart/DADataLinkTableTab.cpp" line="+63"/>
         <location line="+380"/>
         <source>Rename</source>
-        <translation type="unfinished">Rename</translation>
+        <translation>Rename</translation>
     </message>
     <message>
         <location line="-377"/>
         <source>Refresh</source>
-        <translation type="unfinished">Refresh</translation>
+        <translation>Refresh</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Refresh All</source>
-        <translation type="unfinished"></translation>
+        <translation>Refresh All</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Hide</source>
-        <translation type="unfinished"></translation>
+        <translation>Hide</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Show</source>
-        <translation type="unfinished"></translation>
+        <translation>Show</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Hide All</source>
-        <translation type="unfinished"></translation>
+        <translation>Hide All</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Show All</source>
-        <translation type="unfinished"></translation>
+        <translation>Show All</translation>
     </message>
     <message>
         <location line="+3"/>
         <location line="+420"/>
         <source>Delete</source>
-        <translation type="unfinished">Delete</translation>
+        <translation>Delete</translation>
     </message>
     <message>
         <location line="-418"/>
         <location line="+480"/>
         <source>Delete All</source>
-        <translation type="unfinished"></translation>
+        <translation>Delete All</translation>
     </message>
     <message>
         <location line="-404"/>
         <location line="+107"/>
         <location line="+85"/>
         <source>Chart %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Chart %1</translation>
     </message>
     <message>
         <location line="-184"/>
@@ -9287,27 +9291,27 @@ Layouts</source>
         <location line="+25"/>
         <location line="+57"/>
         <source>Curve</source>
-        <translation type="unfinished">Curve</translation>
+        <translation>Curve</translation>
     </message>
     <message>
         <location line="+48"/>
         <source>Column %1</source>
-        <translation type="unfinished">Column %1</translation>
+        <translation>Column %1</translation>
     </message>
     <message>
         <location line="+40"/>
         <source>New name:</source>
-        <translation type="unfinished">New name:</translation>
+        <translation>New name:</translation>
     </message>
     <message>
         <location line="+58"/>
         <source>Are you sure to delete this column?</source>
-        <translation type="unfinished"></translation>
+        <translation>Are you sure to delete this column?</translation>
     </message>
     <message>
         <location line="+62"/>
         <source>Are you sure to delete all columns? This cannot be undone.</source>
-        <translation type="unfinished"></translation>
+        <translation>Are you sure to delete all columns? This cannot be undone.</translation>
     </message>
 </context>
 <context>
@@ -9315,7 +9319,7 @@ Layouts</source>
     <message>
         <location filename="../DAGui/Chart/DADataLinkTableWidget.cpp" line="+125"/>
         <source>Figure</source>
-        <translation type="unfinished">Figure</translation>
+        <translation>Figure</translation>
     </message>
 </context>
 <context>
@@ -9387,12 +9391,12 @@ Layouts</source>
     <message>
         <location line="+123"/>
         <source>The dataset name cannot be empty</source>
-        <translation type="unfinished"></translation>
+        <translation>The dataset name cannot be empty</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>The dataset name &quot;%1&quot; already exists</source>
-        <translation type="unfinished"></translation>
+        <translation>The dataset name "%1" already exists</translation>
     </message>
 </context>
 <context>
@@ -9406,7 +9410,7 @@ Layouts</source>
 <context>
     <name>DA::DADataOperateOfDataFrameWidget</name>
     <message>
-        <location filename="../DAGui/DADataOperateOfDataFrameWidget.cpp" line="+694"/>
+        <location filename="../DAGui/DADataOperateOfDataFrameWidget.cpp" line="+709"/>
         <source>Warning</source>
         <translation>Warning</translation>
     </message>
@@ -9426,48 +9430,48 @@ Layouts</source>
         <location line="+40"/>
         <location line="+46"/>
         <location line="+47"/>
-        <location line="+1862"/>
+        <location line="+1936"/>
         <location line="+24"/>
         <source>Please select a valid column</source>
         <translation>Please select a valid column</translation>
     </message>
     <message>
-        <location line="-2341"/>
-        <location line="+1923"/>
+        <location line="-2415"/>
+        <location line="+1997"/>
         <location line="+63"/>
         <location line="+47"/>
         <source>Please select a valid cell</source>
         <translation>Please select a valid cell</translation>
     </message>
     <message>
-        <location line="-1969"/>
+        <location line="-2043"/>
         <source>Clipboard is empty</source>
-        <translation type="unfinished"></translation>
+        <translation>Clipboard is empty</translation>
     </message>
     <message>
         <location line="+11"/>
         <source>Please select a cell to paste into</source>
-        <translation type="unfinished"></translation>
+        <translation>Please select a cell to paste into</translation>
     </message>
     <message>
         <location line="+50"/>
         <source>Nothing to paste: the clipboard content exceeds the table boundary</source>
-        <translation type="unfinished"></translation>
+        <translation>Nothing to paste: the clipboard content exceeds the table boundary</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Paste partially dropped: %1 row(s) and %2 cell(s) outside the table were ignored</source>
-        <translation type="unfinished"></translation>
+        <translation>Paste partially dropped: %1 row(s) and %2 cell(s) outside the table were ignored</translation>
     </message>
     <message>
         <location line="+29"/>
         <source>Paste failed: the content does not match the column data type</source>
-        <translation type="unfinished"></translation>
+        <translation>Paste failed: the content does not match the column data type</translation>
     </message>
     <message>
         <location line="+17"/>
         <source>No cells selected to cut</source>
-        <translation type="unfinished"></translation>
+        <translation>No cells selected to cut</translation>
     </message>
     <message>
         <location line="+22"/>
@@ -9491,7 +9495,7 @@ Layouts</source>
         <translation>Unable to get statistics for this column</translation>
     </message>
     <message>
-        <location line="+1995"/>
+        <location line="+2069"/>
         <source>This data source is read-only and cannot be sorted.</source>
         <translation>This data source is read-only and cannot be sorted.</translation>
     </message>
@@ -9501,7 +9505,7 @@ Layouts</source>
         <translation>Cannot sort: the column contains values of incomparable mixed types.</translation>
     </message>
     <message>
-        <location line="+836"/>
+        <location line="+844"/>
         <source>This data source is read-only and cannot be modified.</source>
         <translation>This data source is read-only and cannot be modified.</translation>
     </message>
@@ -9567,12 +9571,12 @@ Layouts</source>
         <translation>The formula must not reference the target column itself</translation>
     </message>
     <message>
-        <location line="-3840"/>
+        <location line="-3922"/>
         <source>Computed column(s) %1 became invalid because their dependency column(s) were removed</source>
         <translation>Computed column(s) %1 became invalid because their dependency column(s) were removed</translation>
     </message>
     <message>
-        <location line="+4261"/>
+        <location line="+4343"/>
         <source>Computed column(s) %1 became invalid because their dependency column(s) were merged</source>
         <translation>Computed column(s) %1 became invalid because their dependency column(s) were merged</translation>
     </message>
@@ -9685,189 +9689,189 @@ Layouts</source>
     <message>
         <location line="-1420"/>
         <source>The table has no conditional format rules</source>
-        <translation type="unfinished"></translation>
+        <translation>The table has no conditional format rules</translation>
     </message>
     <message>
         <location line="+32"/>
         <source>Blue</source>
-        <translation type="unfinished"></translation>
+        <translation>Blue</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Green</source>
-        <translation type="unfinished"></translation>
+        <translation>Green</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Red</source>
-        <translation type="unfinished"></translation>
+        <translation>Red</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Yellow</source>
-        <translation type="unfinished"></translation>
+        <translation>Yellow</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Cyan</source>
-        <translation type="unfinished"></translation>
+        <translation>Cyan</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Purple</source>
-        <translation type="unfinished"></translation>
+        <translation>Purple</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Data Bars</source>
-        <translation type="unfinished"></translation>
+        <translation>Data Bars</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Gradient Fill</source>
-        <translation type="unfinished"></translation>
+        <translation>Gradient Fill</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>%1 Gradient Fill</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 Gradient Fill</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Solid Fill</source>
-        <translation type="unfinished"></translation>
+        <translation>Solid Fill</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>%1 Solid Fill</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 Solid Fill</translation>
     </message>
     <message>
         <location line="+9"/>
         <location line="+30"/>
         <location line="+54"/>
         <source>Other Rules...</source>
-        <translation type="unfinished"></translation>
+        <translation>Other Rules...</translation>
     </message>
     <message>
         <location line="-77"/>
         <source>Color Scales</source>
-        <translation type="unfinished"></translation>
+        <translation>Color Scales</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>%1-Color Scale</source>
-        <translation type="unfinished"></translation>
+        <translation>%1-Color Scale</translation>
     </message>
     <message>
         <location line="+25"/>
         <source>Highlight Cells Rules</source>
-        <translation type="unfinished"></translation>
+        <translation>Highlight Cells Rules</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Greater Than...</source>
-        <translation type="unfinished"></translation>
+        <translation>Greater Than...</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Less Than...</source>
-        <translation type="unfinished"></translation>
+        <translation>Less Than...</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Between...</source>
-        <translation type="unfinished"></translation>
+        <translation>Between...</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Equal To...</source>
-        <translation type="unfinished"></translation>
+        <translation>Equal To...</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Text Contains...</source>
-        <translation type="unfinished"></translation>
+        <translation>Text Contains...</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>A Date Occurring</source>
-        <translation type="unfinished"></translation>
+        <translation>A Date Occurring</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Yesterday</source>
-        <translation type="unfinished"></translation>
+        <translation>Yesterday</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Today</source>
-        <translation type="unfinished"></translation>
+        <translation>Today</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Tomorrow</source>
-        <translation type="unfinished"></translation>
+        <translation>Tomorrow</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>In the Last 7 Days</source>
-        <translation type="unfinished"></translation>
+        <translation>In the Last 7 Days</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Last Week</source>
-        <translation type="unfinished"></translation>
+        <translation>Last Week</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>This Week</source>
-        <translation type="unfinished"></translation>
+        <translation>This Week</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Next Week</source>
-        <translation type="unfinished"></translation>
+        <translation>Next Week</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Last Month</source>
-        <translation type="unfinished"></translation>
+        <translation>Last Month</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>This Month</source>
-        <translation type="unfinished"></translation>
+        <translation>This Month</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Next Month</source>
-        <translation type="unfinished"></translation>
+        <translation>Next Month</translation>
     </message>
     <message>
         <location line="+19"/>
         <source>Duplicate Values...</source>
-        <translation type="unfinished"></translation>
+        <translation>Duplicate Values...</translation>
     </message>
     <message>
         <location line="+11"/>
         <source>Clear Rules</source>
-        <translation type="unfinished"></translation>
+        <translation>Clear Rules</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Clear Rules from Selected Columns</source>
-        <translation type="unfinished"></translation>
+        <translation>Clear Rules from Selected Columns</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Clear Rules from Entire Sheet</source>
-        <translation type="unfinished"></translation>
+        <translation>Clear Rules from Entire Sheet</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Custom Rules...</source>
-        <translation type="unfinished"></translation>
+        <translation>Custom Rules...</translation>
     </message>
     <message>
         <location line="+1249"/>
@@ -10013,17 +10017,17 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation>This table has no notes</translation>
     </message>
     <message>
-        <location line="-3967"/>
+        <location line="-4049"/>
         <source>Some column view settings were dropped because the table columns have changed.</source>
         <translation>Some column view settings were dropped because the table columns have changed.</translation>
     </message>
     <message>
-        <location line="+66"/>
+        <location line="+74"/>
         <source>Frozen columns were reduced because visible columns changed.</source>
         <translation>Frozen columns were reduced because visible columns changed.</translation>
     </message>
     <message>
-        <location line="+272"/>
+        <location line="+338"/>
         <source>Freeze Columns</source>
         <translation>Freeze Columns</translation>
     </message>
@@ -10038,13 +10042,13 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation>Column View...</translation>
     </message>
     <message>
-        <location line="-820"/>
+        <location line="-894"/>
         <location line="+65"/>
         <source>The column &quot;%1&quot; was hidden and has been made visible</source>
         <translation>The column &quot;%1&quot; was hidden and has been made visible</translation>
     </message>
     <message>
-        <location line="+792"/>
+        <location line="+866"/>
         <source>Row number is out of range</source>
         <translation>Row number is out of range</translation>
     </message>
@@ -10108,12 +10112,12 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DA::DADataTableView</name>
     <message>
-        <location filename="../DAGui/DADataTableView.cpp" line="+38"/>
+        <location filename="../DAGui/DADataTableView.cpp" line="+57"/>
         <source>DADataTableView requires a model to be set first</source>
         <translation>DADataTableView requires a model to be set first</translation>
     </message>
     <message>
-        <location line="+182"/>
+        <location line="+329"/>
         <source>Cut</source>
         <translation>Cut</translation>
     </message>
@@ -10138,9 +10142,9 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation>Replace...</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location line="+11"/>
         <source>Conditional Format</source>
-        <translation type="unfinished"></translation>
+        <translation>Conditional Format</translation>
     </message>
     <message>
         <location line="+11"/>
@@ -10267,7 +10271,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <location line="+5"/>
         <location line="+309"/>
         <source>Show sessions from all projects</source>
-        <translation type="unfinished"></translation>
+        <translation>Show sessions from all projects</translation>
     </message>
     <message>
         <location line="-285"/>
@@ -10278,7 +10282,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <location line="+1"/>
         <location line="+58"/>
         <source>State</source>
-        <translation type="unfinished">State</translation>
+        <translation>State</translation>
     </message>
     <message>
         <location line="-57"/>
@@ -10295,32 +10299,32 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     <message>
         <location line="-45"/>
         <source>Session Details</source>
-        <translation type="unfinished"></translation>
+        <translation>Session Details</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Select a session to view details</source>
-        <translation type="unfinished"></translation>
+        <translation>Select a session to view details</translation>
     </message>
     <message>
         <location line="+36"/>
         <source>Input Tokens</source>
-        <translation type="unfinished"></translation>
+        <translation>Input Tokens</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Output Tokens</source>
-        <translation type="unfinished"></translation>
+        <translation>Output Tokens</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Total Tokens</source>
-        <translation type="unfinished"></translation>
+        <translation>Total Tokens</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Created</source>
-        <translation type="unfinished"></translation>
+        <translation>Created</translation>
     </message>
     <message>
         <location line="+18"/>
@@ -10354,42 +10358,42 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     <message>
         <location line="-218"/>
         <source>no project</source>
-        <translation type="unfinished"></translation>
+        <translation>no project</translation>
     </message>
     <message>
         <location line="+97"/>
         <source>Starting</source>
-        <translation type="unfinished"></translation>
+        <translation>Starting</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Running</source>
-        <translation type="unfinished"></translation>
+        <translation>Running</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Waiting for you</source>
-        <translation type="unfinished"></translation>
+        <translation>Waiting for you</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Error</source>
-        <translation type="unfinished">Error</translation>
+        <translation>Error</translation>
     </message>
     <message>
         <location line="+43"/>
         <source>Show sessions from all projects (%1 running in background)</source>
-        <translation type="unfinished"></translation>
+        <translation>Show sessions from all projects (%1 running in background)</translation>
     </message>
     <message>
         <location line="+80"/>
         <source>Idle</source>
-        <translation type="unfinished"></translation>
+        <translation>Idle</translation>
     </message>
     <message>
         <location line="+28"/>
         <source>%1 sessions · %2 tokens total</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 sessions · %2 tokens total</translation>
     </message>
     <message>
         <location line="+44"/>
@@ -10414,7 +10418,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     <message>
         <location line="+42"/>
         <source>Stop</source>
-        <translation type="unfinished">Stop</translation>
+        <translation>Stop</translation>
     </message>
 </context>
 <context>
@@ -10588,12 +10592,12 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     <message>
         <location filename="../DAGui/Dialog/DADialogConditionalFormat.cpp" line="+58"/>
         <source>Conditional Formatting Rules</source>
-        <translation type="unfinished"></translation>
+        <translation>Conditional Formatting Rules</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Rule Type</source>
-        <translation type="unfinished"></translation>
+        <translation>Rule Type</translation>
     </message>
     <message>
         <location line="+4"/>
@@ -10613,12 +10617,12 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     <message>
         <location line="+5"/>
         <source>Applies To Columns</source>
-        <translation type="unfinished"></translation>
+        <translation>Applies To Columns</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Condition and Format</source>
-        <translation type="unfinished"></translation>
+        <translation>Condition and Format</translation>
     </message>
     <message>
         <location line="+7"/>
@@ -10660,129 +10664,129 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     <message>
         <location line="-575"/>
         <source>a date occurring</source>
-        <translation type="unfinished"></translation>
+        <translation>a date occurring</translation>
     </message>
     <message>
         <location line="+1"/>
         <location line="+580"/>
         <source>duplicate values</source>
-        <translation type="unfinished"></translation>
+        <translation>duplicate values</translation>
     </message>
     <message>
         <location line="-579"/>
         <location line="+582"/>
         <source>unique values</source>
-        <translation type="unfinished"></translation>
+        <translation>unique values</translation>
     </message>
     <message>
         <location line="-581"/>
         <source>Condition:</source>
-        <translation type="unfinished">Condition:</translation>
+        <translation>Condition:</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Date:</source>
-        <translation type="unfinished"></translation>
+        <translation>Date:</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Value:</source>
-        <translation type="unfinished">Value:</translation>
+        <translation>Value:</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>And (upper bound):</source>
-        <translation type="unfinished">And (upper bound):</translation>
+        <translation>And (upper bound):</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Background</source>
-        <translation type="unfinished">Background</translation>
+        <translation>Background</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Foreground</source>
-        <translation type="unfinished">Foreground</translation>
+        <translation>Foreground</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Font</source>
-        <translation type="unfinished">Font</translation>
+        <translation>Font</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Style:</source>
-        <translation type="unfinished">Style:</translation>
+        <translation>Style:</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>2-Color Scale</source>
-        <translation type="unfinished">2-Color Scale</translation>
+        <translation>2-Color Scale</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>3-Color Scale</source>
-        <translation type="unfinished">3-Color Scale</translation>
+        <translation>3-Color Scale</translation>
     </message>
     <message>
         <location line="+12"/>
         <source>Low:</source>
-        <translation type="unfinished">Low:</translation>
+        <translation>Low:</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Middle:</source>
-        <translation type="unfinished">Middle:</translation>
+        <translation>Middle:</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>High:</source>
-        <translation type="unfinished">High:</translation>
+        <translation>High:</translation>
     </message>
     <message>
         <location line="+11"/>
         <source>Gradient Fill</source>
-        <translation type="unfinished"></translation>
+        <translation>Gradient Fill</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Bar Color:</source>
-        <translation type="unfinished">Bar Color:</translation>
+        <translation>Bar Color:</translation>
     </message>
     <message>
         <location line="+15"/>
         <source>Existing Rules (top to bottom = evaluation order, later rules override earlier ones)</source>
-        <translation type="unfinished"></translation>
+        <translation>Existing Rules (top to bottom = evaluation order, later rules override earlier ones)</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Enabled</source>
-        <translation type="unfinished">Enabled</translation>
+        <translation>Enabled</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Add Rule</source>
-        <translation type="unfinished">Add Rule</translation>
+        <translation>Add Rule</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Remove</source>
-        <translation type="unfinished">Remove</translation>
+        <translation>Remove</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Move Up</source>
-        <translation type="unfinished">Move Up</translation>
+        <translation>Move Up</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Move Down</source>
-        <translation type="unfinished">Move Down</translation>
+        <translation>Move Down</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Clear Rules of Selected Column</source>
-        <translation type="unfinished">Clear Rules of Selected Column</translation>
+        <translation>Clear Rules of Selected Column</translation>
     </message>
     <message>
         <location line="+56"/>
@@ -10792,58 +10796,58 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     <message>
         <location line="+441"/>
         <source>Yesterday</source>
-        <translation type="unfinished"></translation>
+        <translation>Yesterday</translation>
     </message>
     <message>
         <location line="+2"/>
         <location line="+18"/>
         <source>Today</source>
-        <translation type="unfinished"></translation>
+        <translation>Today</translation>
     </message>
     <message>
         <location line="-16"/>
         <source>Tomorrow</source>
-        <translation type="unfinished"></translation>
+        <translation>Tomorrow</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>In the Last 7 Days</source>
-        <translation type="unfinished"></translation>
+        <translation>In the Last 7 Days</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Last Week</source>
-        <translation type="unfinished"></translation>
+        <translation>Last Week</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>This Week</source>
-        <translation type="unfinished"></translation>
+        <translation>This Week</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Next Week</source>
-        <translation type="unfinished"></translation>
+        <translation>Next Week</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Last Month</source>
-        <translation type="unfinished"></translation>
+        <translation>Last Month</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>This Month</source>
-        <translation type="unfinished"></translation>
+        <translation>This Month</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Next Month</source>
-        <translation type="unfinished"></translation>
+        <translation>Next Month</translation>
     </message>
     <message>
         <location line="+70"/>
         <source>Please select at least one column first.</source>
-        <translation type="unfinished"></translation>
+        <translation>Please select at least one column first.</translation>
     </message>
     <message>
         <location line="-483"/>
@@ -10885,7 +10889,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     <message>
         <location line="+9"/>
         <source>date occurring: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>date occurring: %1</translation>
     </message>
     <message>
         <location line="+12"/>
@@ -10900,7 +10904,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     <message>
         <location line="+3"/>
         <source>gradient data bar</source>
-        <translation type="unfinished"></translation>
+        <translation>gradient data bar</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -10923,137 +10927,137 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     <message>
         <location filename="../DAGui/Dialog/DADialogConditionalFormatQuickRule.cpp" line="+60"/>
         <source>Value:</source>
-        <translation type="unfinished">Value:</translation>
+        <translation>Value:</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>And (upper bound):</source>
-        <translation type="unfinished">And (upper bound):</translation>
+        <translation>And (upper bound):</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Rule:</source>
-        <translation type="unfinished"></translation>
+        <translation>Rule:</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Duplicate values</source>
-        <translation type="unfinished"></translation>
+        <translation>Duplicate values</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Unique values</source>
-        <translation type="unfinished"></translation>
+        <translation>Unique values</translation>
     </message>
     <message>
         <location line="+19"/>
         <source>Custom Colors...</source>
-        <translation type="unfinished"></translation>
+        <translation>Custom Colors...</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Format Style:</source>
-        <translation type="unfinished"></translation>
+        <translation>Format Style:</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Background:</source>
-        <translation type="unfinished"></translation>
+        <translation>Background:</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Foreground:</source>
-        <translation type="unfinished"></translation>
+        <translation>Foreground:</translation>
     </message>
     <message>
         <location line="+46"/>
         <source>Duplicate/Unique Values</source>
-        <translation type="unfinished"></translation>
+        <translation>Duplicate/Unique Values</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Format cells whose values are duplicate or unique in the column.</source>
-        <translation type="unfinished"></translation>
+        <translation>Format cells whose values are duplicate or unique in the column.</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Greater Than</source>
-        <translation type="unfinished"></translation>
+        <translation>Greater Than</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Format cells that are greater than:</source>
-        <translation type="unfinished"></translation>
+        <translation>Format cells that are greater than:</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Less Than</source>
-        <translation type="unfinished"></translation>
+        <translation>Less Than</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Format cells that are less than:</source>
-        <translation type="unfinished"></translation>
+        <translation>Format cells that are less than:</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Between</source>
-        <translation type="unfinished"></translation>
+        <translation>Between</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Format cells that are between:</source>
-        <translation type="unfinished"></translation>
+        <translation>Format cells that are between:</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Equal To</source>
-        <translation type="unfinished"></translation>
+        <translation>Equal To</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Format cells that are equal to:</source>
-        <translation type="unfinished"></translation>
+        <translation>Format cells that are equal to:</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Text Contains</source>
-        <translation type="unfinished"></translation>
+        <translation>Text Contains</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Format cells that contain the text:</source>
-        <translation type="unfinished"></translation>
+        <translation>Format cells that contain the text:</translation>
     </message>
     <message>
         <location line="+30"/>
         <source>Please enter the condition value first.</source>
-        <translation type="unfinished"></translation>
+        <translation>Please enter the condition value first.</translation>
     </message>
     <message>
         <location line="+13"/>
         <source>Orange-red fill with white text</source>
-        <translation type="unfinished"></translation>
+        <translation>Orange-red fill with white text</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Yellow fill with dark slate text</source>
-        <translation type="unfinished"></translation>
+        <translation>Yellow fill with dark slate text</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Green fill with white text</source>
-        <translation type="unfinished"></translation>
+        <translation>Green fill with white text</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Light blue fill with dark slate text</source>
-        <translation type="unfinished"></translation>
+        <translation>Light blue fill with dark slate text</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Orange-red text</source>
-        <translation type="unfinished"></translation>
+        <translation>Orange-red text</translation>
     </message>
 </context>
 <context>
@@ -11171,7 +11175,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation>Current selection</translation>
     </message>
     <message>
-        <location line="+106"/>
+        <location line="+129"/>
         <source>No matches</source>
         <translation>No matches</translation>
     </message>
@@ -12177,7 +12181,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     <message>
         <location line="+1000"/>
         <source>add data probes</source>
-        <translation type="unfinished"></translation>
+        <translation>add data probes</translation>
     </message>
 </context>
 <context>
@@ -12232,28 +12236,28 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     <message>
         <location filename="../3rdparty/DAWidgets/src/DAItemListEditWidget.cpp" line="+67"/>
         <source>Add</source>
-        <translation type="unfinished">Add</translation>
+        <translation>Add</translation>
     </message>
     <message>
         <location line="+1"/>
         <location line="+1"/>
         <source>Remove All</source>
-        <translation type="unfinished"></translation>
+        <translation>Remove All</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Remove all selected items?</source>
-        <translation type="unfinished"></translation>
+        <translation>Remove all selected items?</translation>
     </message>
     <message>
         <location line="+44"/>
         <source>Remove</source>
-        <translation type="unfinished">Remove</translation>
+        <translation>Remove</translation>
     </message>
     <message>
         <location line="+58"/>
         <source>No available items</source>
-        <translation type="unfinished"></translation>
+        <translation>No available items</translation>
     </message>
 </context>
 <context>
@@ -12261,12 +12265,12 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     <message>
         <location filename="../3rdparty/DAWidgets/src/DAItemListPickDialog.cpp" line="+30"/>
         <source>Select Items</source>
-        <translation type="unfinished"></translation>
+        <translation>Select Items</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Search...</source>
-        <translation type="unfinished">Search...</translation>
+        <translation>Search...</translation>
     </message>
 </context>
 <context>
@@ -12274,52 +12278,52 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     <message>
         <location filename="../APP/Dialog/DALayoutManagerDialog.cpp" line="+24"/>
         <source>Layout Manager</source>
-        <translation type="unfinished"></translation>
+        <translation>Layout Manager</translation>
     </message>
     <message>
         <location line="+21"/>
         <source>Double-click a scheme to apply it</source>
-        <translation type="unfinished"></translation>
+        <translation>Double-click a scheme to apply it</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Save Current</source>
-        <translation type="unfinished"></translation>
+        <translation>Save Current</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Apply Selected</source>
-        <translation type="unfinished"></translation>
+        <translation>Apply Selected</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Delete Selected</source>
-        <translation type="unfinished"></translation>
+        <translation>Delete Selected</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Reset Default</source>
-        <translation type="unfinished"></translation>
+        <translation>Reset Default</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Save the current window layout as a named scheme</source>
-        <translation type="unfinished"></translation>
+        <translation>Save the current window layout as a named scheme</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Apply the selected layout scheme</source>
-        <translation type="unfinished"></translation>
+        <translation>Apply the selected layout scheme</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Delete the selected custom layout scheme (presets cannot be deleted)</source>
-        <translation type="unfinished"></translation>
+        <translation>Delete the selected custom layout scheme (presets cannot be deleted)</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Restore the default window layout</source>
-        <translation type="unfinished"></translation>
+        <translation>Restore the default window layout</translation>
     </message>
     <message>
         <location line="+13"/>
@@ -12329,57 +12333,57 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     <message>
         <location line="+26"/>
         <source>Default</source>
-        <translation type="unfinished">Default</translation>
+        <translation>Default</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Focus Analysis</source>
-        <translation type="unfinished"></translation>
+        <translation>Focus Analysis</translation>
     </message>
     <message>
         <location line="+41"/>
         <source>Save Layout</source>
-        <translation type="unfinished"></translation>
+        <translation>Save Layout</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Layout scheme name:</source>
-        <translation type="unfinished"></translation>
+        <translation>Layout scheme name:</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Cannot overwrite preset layout schemes, please use another name</source>
-        <translation type="unfinished"></translation>
+        <translation>Cannot overwrite preset layout schemes, please use another name</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Layout scheme &apos;%1&apos; saved</source>
-        <translation type="unfinished"></translation>
+        <translation>Layout scheme '%1' saved</translation>
     </message>
     <message>
         <location line="+33"/>
         <source>Remove Layout</source>
-        <translation type="unfinished"></translation>
+        <translation>Remove Layout</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Remove layout scheme &apos;%1&apos;?</source>
-        <translation type="unfinished"></translation>
+        <translation>Remove layout scheme '%1'?</translation>
     </message>
     <message>
         <location line="+21"/>
         <source>Reset Layout</source>
-        <translation type="unfinished"></translation>
+        <translation>Reset Layout</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>This will restore the default window layout. Continue?</source>
-        <translation type="unfinished"></translation>
+        <translation>This will restore the default window layout. Continue?</translation>
     </message>
     <message>
         <location line="-15"/>
         <source>Layout scheme &apos;%1&apos; removed</source>
-        <translation type="unfinished"></translation>
+        <translation>Layout scheme '%1' removed</translation>
     </message>
 </context>
 <context>
@@ -12407,17 +12411,17 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     <message>
         <location line="+6"/>
         <source>Export as HTML...</source>
-        <translation type="unfinished"></translation>
+        <translation>Export as HTML...</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Export as PDF...</source>
-        <translation type="unfinished"></translation>
+        <translation>Export as PDF...</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Export as Word Document...</source>
-        <translation type="unfinished"></translation>
+        <translation>Export as Word Document...</translation>
     </message>
     <message>
         <location line="+9"/>
@@ -12453,32 +12457,32 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     <message>
         <location line="+20"/>
         <source>HTML Files (*.html);;All Files (*)</source>
-        <translation type="unfinished"></translation>
+        <translation>HTML Files (*.html);;All Files (*)</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>PDF Files (*.pdf);;All Files (*)</source>
-        <translation type="unfinished"></translation>
+        <translation>PDF Files (*.pdf);;All Files (*)</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Word Documents (*.docx);;All Files (*)</source>
-        <translation type="unfinished"></translation>
+        <translation>Word Documents (*.docx);;All Files (*)</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Export Markdown</source>
-        <translation type="unfinished"></translation>
+        <translation>Export Markdown</translation>
     </message>
     <message>
         <location line="+15"/>
         <source>Markdown exported to %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Markdown exported to %1</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Failed to export markdown: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Failed to export markdown: %1</translation>
     </message>
 </context>
 <context>
@@ -12794,6 +12798,14 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     </message>
 </context>
 <context>
+    <name>DA::DAPaperAgentPlugin</name>
+    <message>
+        <location filename="../../plugins/DAPaperAgent/DAPaperAgentPlugin.h" line="+32"/>
+        <source>Built-in paper writing agent with literature search tools</source>
+        <translation>Built-in paper writing agent with literature search tools</translation>
+    </message>
+</context>
+<context>
     <name>DA::DAPluginManager</name>
     <message>
         <location filename="../DAPluginSupport/DAPluginManager.cpp" line="+64"/>
@@ -12813,7 +12825,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     <message>
         <location line="+47"/>
         <source>Failed to write plugin ignore file %1: %2</source>
-        <translation type="unfinished"></translation>
+        <translation>Failed to write plugin ignore file %1: %2</translation>
     </message>
     <message>
         <location line="+97"/>
@@ -12849,27 +12861,27 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     <message>
         <location line="-13"/>
         <source>%1 is not a valid plugin library file</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 is not a valid plugin library file</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>plugin %1 is already loaded</source>
-        <translation type="unfinished"></translation>
+        <translation>plugin %1 is already loaded</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>plugin %1 is disabled, remove it from the ignore list first</source>
-        <translation type="unfinished"></translation>
+        <translation>plugin %1 is disabled, remove it from the ignore list first</translation>
     </message>
     <message>
         <location line="+17"/>
         <source>plugin %1 loaded at runtime</source>
-        <translation type="unfinished"></translation>
+        <translation>plugin %1 loaded at runtime</translation>
     </message>
     <message>
         <location line="+131"/>
         <source>Plugin %1 has been finalized and deactivated, but its library could not be released; it will be fully released after restart</source>
-        <translation type="unfinished"></translation>
+        <translation>Plugin %1 has been finalized and deactivated, but its library could not be released; it will be fully released after restart</translation>
     </message>
     <message>
         <location line="+21"/>
@@ -12923,63 +12935,63 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     <message>
         <location line="+0"/>
         <source>Status</source>
-        <translation type="unfinished"></translation>
+        <translation>Status</translation>
     </message>
     <message>
         <location line="+24"/>
         <source>C++ Plugins</source>
-        <translation type="unfinished"></translation>
+        <translation>C++ Plugins</translation>
     </message>
     <message>
         <location line="+13"/>
         <source>Loaded</source>
-        <translation type="unfinished"></translation>
+        <translation>Loaded</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Not Loaded</source>
-        <translation type="unfinished"></translation>
+        <translation>Not Loaded</translation>
     </message>
     <message>
         <location line="+3"/>
         <location line="+28"/>
         <source>Disabled</source>
-        <translation type="unfinished">Disabled</translation>
+        <translation>Disabled</translation>
     </message>
     <message>
         <location line="-25"/>
         <source>Load Failed</source>
-        <translation type="unfinished"></translation>
+        <translation>Load Failed</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Inactive (restart to release library)</source>
-        <translation type="unfinished"></translation>
+        <translation>Inactive (restart to release library)</translation>
     </message>
     <message>
         <location line="+13"/>
         <source>Python Node Packages (changes take effect after restart)</source>
-        <translation type="unfinished"></translation>
+        <translation>Python Node Packages (changes take effect after restart)</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Enabled</source>
-        <translation type="unfinished">Enabled</translation>
+        <translation>Enabled</translation>
     </message>
     <message>
         <location line="+39"/>
         <source>Failed to save the enabled state of Python package %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Failed to save the enabled state of Python package %1</translation>
     </message>
     <message>
         <location line="+29"/>
         <source>%1 plugin change(s) applied, some changes take effect after restart</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 plugin change(s) applied, some changes take effect after restart</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>%1 plugin change(s) applied</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 plugin change(s) applied</translation>
     </message>
     <message>
         <location line="-142"/>
@@ -13352,12 +13364,12 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <location line="+13"/>
         <location line="+13"/>
         <location line="+13"/>
-        <location line="+503"/>
+        <location line="+513"/>
         <source>No active workflow detected</source>
         <translation>No active workflow detected</translation>
     </message>
     <message>
-        <location line="-580"/>
+        <location line="-590"/>
         <source>Workflow execution failed</source>
         <translation>Workflow execution failed</translation>
     </message>
@@ -13372,7 +13384,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation>Confirm to close workflow</translation>
     </message>
     <message>
-        <location line="+243"/>
+        <location line="+253"/>
         <location line="+1"/>
         <source>Copy</source>
         <translation>Copy</translation>
@@ -14187,52 +14199,52 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     <message>
         <location filename="../3rdparty/DAWidgets/src/DATimeFormatEditWidget.cpp" line="+59"/>
         <source>example: 8:5</source>
-        <translation type="unfinished"></translation>
+        <translation>example: 8:5</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>example: 08:05</source>
-        <translation type="unfinished"></translation>
+        <translation>example: 08:05</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>example: 8:5:12</source>
-        <translation type="unfinished"></translation>
+        <translation>example: 8:5:12</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>example: 08:05:12</source>
-        <translation type="unfinished"></translation>
+        <translation>example: 08:05:12</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>example: 2017-8-1</source>
-        <translation type="unfinished"></translation>
+        <translation>example: 2017-8-1</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>example: 2017-8-1 8:5</source>
-        <translation type="unfinished"></translation>
+        <translation>example: 2017-8-1 8:5</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>example: 2017-8-1 8:5:12</source>
-        <translation type="unfinished"></translation>
+        <translation>example: 2017-8-1 8:5:12</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>example: 2017-08-01</source>
-        <translation type="unfinished"></translation>
+        <translation>example: 2017-08-01</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>example: 2017-08-01 08:05</source>
-        <translation type="unfinished"></translation>
+        <translation>example: 2017-08-01 08:05</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>example: 2017-08-01 08:05:12</source>
-        <translation type="unfinished"></translation>
+        <translation>example: 2017-08-01 08:05:12</translation>
     </message>
 </context>
 <context>
@@ -14312,22 +14324,22 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     <message>
         <location filename="../DAGui/DAVirtualScrollBar.cpp" line="+193"/>
         <source>Row %1 of %2</source>
-        <translation type="unfinished"></translation>
+        <translation>Row %1 of %2</translation>
     </message>
     <message>
         <location line="+126"/>
         <source>Go To Row...</source>
-        <translation type="unfinished"></translation>
+        <translation>Go To Row...</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>First Row</source>
-        <translation type="unfinished"></translation>
+        <translation>First Row</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Last Row</source>
-        <translation type="unfinished"></translation>
+        <translation>Last Row</translation>
     </message>
 </context>
 <context>
@@ -14551,32 +14563,32 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     <message>
         <location filename="../3rdparty/DAWidgets/src/DAAligmentEditWidget.ui" line="+20"/>
         <source>Aligment Edit Widget</source>
-        <translation type="unfinished"></translation>
+        <translation>Aligment Edit Widget</translation>
     </message>
     <message>
         <location line="+21"/>
         <source>Aligment Left</source>
-        <translation type="unfinished"></translation>
+        <translation>Aligment Left</translation>
     </message>
     <message>
         <location line="+17"/>
         <source>Aligment Right</source>
-        <translation type="unfinished"></translation>
+        <translation>Aligment Right</translation>
     </message>
     <message>
         <location line="+17"/>
         <source>Aligment Top</source>
-        <translation type="unfinished"></translation>
+        <translation>Aligment Top</translation>
     </message>
     <message>
         <location line="+17"/>
         <source>Aligment Bottom</source>
-        <translation type="unfinished"></translation>
+        <translation>Aligment Bottom</translation>
     </message>
     <message>
         <location line="+17"/>
         <source>Aligment Center</source>
-        <translation type="unfinished"></translation>
+        <translation>Aligment Center</translation>
     </message>
 </context>
 <context>
@@ -14584,7 +14596,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     <message>
         <location filename="../3rdparty/DAWidgets/src/DAAligmentPositionEditWidget.ui" line="+20"/>
         <source>Aligment Position</source>
-        <translation type="unfinished"></translation>
+        <translation>Aligment Position</translation>
     </message>
 </context>
 <context>
@@ -14626,7 +14638,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     <message>
         <location filename="../3rdparty/DAWidgets/src/DABrushEditWidget.ui" line="+20"/>
         <source>Brush Edit</source>
-        <translation type="unfinished"></translation>
+        <translation>Brush Edit</translation>
     </message>
 </context>
 <context>
@@ -16715,17 +16727,17 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     <message>
         <location filename="../3rdparty/DAWidgets/src/DAFilePathEditWidget.ui" line="+14"/>
         <source>File Path Edit</source>
-        <translation type="unfinished"></translation>
+        <translation>File Path Edit</translation>
     </message>
     <message>
         <location line="+24"/>
         <source>Open</source>
-        <translation type="unfinished">Open</translation>
+        <translation>Open</translation>
     </message>
     <message>
         <location line="+13"/>
         <source>Ctrl+O</source>
-        <translation type="unfinished"></translation>
+        <translation>Ctrl+O</translation>
     </message>
 </context>
 <context>
@@ -16733,7 +16745,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     <message>
         <location filename="../3rdparty/DAWidgets/src/DAFontEditPannelWidget.ui" line="+26"/>
         <source>Font Edit</source>
-        <translation type="unfinished"></translation>
+        <translation>Font Edit</translation>
     </message>
 </context>
 <context>
@@ -16912,12 +16924,12 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     <message>
         <location filename="../3rdparty/DAWidgets/src/DAPenEditWidget.cpp" line="+137"/>
         <source>Pen Editor</source>
-        <translation type="unfinished"></translation>
+        <translation>Pen Editor</translation>
     </message>
     <message>
         <location line="+1"/>
         <source> px</source>
-        <translation type="unfinished"></translation>
+        <translation> px</translation>
     </message>
 </context>
 <context>
@@ -16930,7 +16942,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     <message>
         <location line="+43"/>
         <source>Apply</source>
-        <translation type="unfinished">Apply</translation>
+        <translation>Apply</translation>
     </message>
     <message>
         <location line="+7"/>
@@ -17424,17 +17436,17 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     <message>
         <location filename="../3rdparty/DAWidgets/src/DAShapeEditPannelWidget.ui" line="+14"/>
         <source>Shape Edit</source>
-        <translation type="unfinished"></translation>
+        <translation>Shape Edit</translation>
     </message>
     <message>
         <location line="+21"/>
         <source>Border</source>
-        <translation type="unfinished">Border</translation>
+        <translation>Border</translation>
     </message>
     <message>
         <location line="+27"/>
         <source>Fill</source>
-        <translation type="unfinished">Fill</translation>
+        <translation>Fill</translation>
     </message>
 </context>
 <context>
@@ -17442,22 +17454,22 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     <message>
         <location filename="../3rdparty/DAWidgets/src/DATimeFormatEditWidget.ui" line="+26"/>
         <source>Time Format Set</source>
-        <translation type="unfinished"></translation>
+        <translation>Time Format Set</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>select time format：</source>
-        <translation type="unfinished"></translation>
+        <translation>select time format：</translation>
     </message>
     <message>
         <location line="+16"/>
         <source>example:</source>
-        <translation type="unfinished"></translation>
+        <translation>example:</translation>
     </message>
     <message>
         <location line="+28"/>
         <source>TextLabel</source>
-        <translation type="unfinished"></translation>
+        <translation>TextLabel</translation>
     </message>
 </context>
 <context>
@@ -18294,7 +18306,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location line="+66"/>
         <source>paste data</source>
-        <translation type="unfinished"></translation>
+        <translation>paste data</translation>
     </message>
     <message>
         <location line="+143"/>
@@ -18856,7 +18868,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location line="+270"/>
         <source>change text content</source>
-        <translation type="unfinished"></translation>
+        <translation>change text content</translation>
     </message>
     <message>
         <location filename="../DAGraphicsView/DAGraphicsItemFactory.cpp" line="+88"/>
@@ -19065,12 +19077,12 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location line="+58"/>
         <source>remove item from chart</source>
-        <translation type="unfinished"></translation>
+        <translation>remove item from chart</translation>
     </message>
     <message>
         <location line="+68"/>
         <source>move plot item position</source>
-        <translation type="unfinished"></translation>
+        <translation>move plot item position</translation>
     </message>
     <message>
         <location filename="../DAFigure/Models/DAStandardItemPlot.cpp" line="+72"/>
@@ -19286,7 +19298,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location line="+12"/>
         <source>Script runner failed to import baseline modules: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Script runner failed to import baseline modules: %1</translation>
     </message>
     <message>
         <location line="+6"/>
@@ -19296,77 +19308,77 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location filename="../DAFigure/DAChartTextEditorPopup.cpp" line="+80"/>
         <source>Text Background Color</source>
-        <translation type="unfinished"></translation>
+        <translation>Text Background Color</translation>
     </message>
     <message>
         <location line="+13"/>
         <source>Strikethrough</source>
-        <translation type="unfinished"></translation>
+        <translation>Strikethrough</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Superscript</source>
-        <translation type="unfinished"></translation>
+        <translation>Superscript</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Subscript</source>
-        <translation type="unfinished"></translation>
+        <translation>Subscript</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Clear</source>
-        <translation type="unfinished">Clear</translation>
+        <translation>Clear</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Clear character format of selected text</source>
-        <translation type="unfinished"></translation>
+        <translation>Clear character format of selected text</translation>
     </message>
     <message>
         <location line="+19"/>
         <source>Cancel</source>
-        <translation type="unfinished">Cancel</translation>
+        <translation>Cancel</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>OK</source>
-        <translation type="unfinished">OK</translation>
+        <translation>OK</translation>
     </message>
     <message>
         <location filename="../DAFigure/DAChartTextMarkerEditor.cpp" line="+128"/>
         <source>Text Marker</source>
-        <translation type="unfinished"></translation>
+        <translation>Text Marker</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Text</source>
-        <translation type="unfinished">Text</translation>
+        <translation>Text</translation>
     </message>
     <message>
         <location filename="../DAGui/Agent/DAAgentDockWidget.cpp" line="-595"/>
         <source>(untitled)</source>
-        <translation type="unfinished">(untitled)</translation>
+        <translation>(untitled)</translation>
     </message>
     <message>
         <location line="+20"/>
         <source>Starting</source>
-        <translation type="unfinished"></translation>
+        <translation>Starting</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Running</source>
-        <translation type="unfinished"></translation>
+        <translation>Running</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Waiting for you</source>
-        <translation type="unfinished"></translation>
+        <translation>Waiting for you</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Error</source>
-        <translation type="unfinished">Error</translation>
+        <translation>Error</translation>
     </message>
     <message>
         <location filename="../DAGui/Commands/DACommandsDataFrame.cpp" line="+35"/>
@@ -19547,132 +19559,132 @@ If a column name contains spaces or special characters, enclose it in backticks 
     <message>
         <location filename="../3rdparty/DAWidgets/src/DABrushStyleComboBox.cpp" line="+56"/>
         <source>No Brush</source>
-        <translation type="unfinished"></translation>
+        <translation>No Brush</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Solid Pattern</source>
-        <translation type="unfinished"></translation>
+        <translation>Solid Pattern</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Dense1 Pattern</source>
-        <translation type="unfinished"></translation>
+        <translation>Dense1 Pattern</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Dense2 Pattern</source>
-        <translation type="unfinished"></translation>
+        <translation>Dense2 Pattern</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Dense3 Pattern</source>
-        <translation type="unfinished"></translation>
+        <translation>Dense3 Pattern</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Dense4 Pattern</source>
-        <translation type="unfinished"></translation>
+        <translation>Dense4 Pattern</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Dense5 Pattern</source>
-        <translation type="unfinished"></translation>
+        <translation>Dense5 Pattern</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Dense6 Pattern</source>
-        <translation type="unfinished"></translation>
+        <translation>Dense6 Pattern</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Dense7 Pattern</source>
-        <translation type="unfinished"></translation>
+        <translation>Dense7 Pattern</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Hor Pattern</source>
-        <translation type="unfinished"></translation>
+        <translation>Hor Pattern</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Ver Pattern</source>
-        <translation type="unfinished"></translation>
+        <translation>Ver Pattern</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Cross Pattern</source>
-        <translation type="unfinished"></translation>
+        <translation>Cross Pattern</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Backward Diagonal Pattern</source>
-        <translation type="unfinished"></translation>
+        <translation>Backward Diagonal Pattern</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Forward Diagonal Pattern</source>
-        <translation type="unfinished"></translation>
+        <translation>Forward Diagonal Pattern</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Crossing Diagonal Pattern</source>
-        <translation type="unfinished"></translation>
+        <translation>Crossing Diagonal Pattern</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Linear Gradient Pattern</source>
-        <translation type="unfinished"></translation>
+        <translation>Linear Gradient Pattern</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Conical Gradient Pattern</source>
-        <translation type="unfinished"></translation>
+        <translation>Conical Gradient Pattern</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Radial Gradient Pattern</source>
-        <translation type="unfinished"></translation>
+        <translation>Radial Gradient Pattern</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Texture Pattern</source>
-        <translation type="unfinished"></translation>
+        <translation>Texture Pattern</translation>
     </message>
     <message>
         <location filename="../3rdparty/DAWidgets/src/DAPenStyleComboBox.cpp" line="+62"/>
         <source>No Pen</source>
-        <translation type="unfinished"></translation>
+        <translation>No Pen</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Solid Line</source>
-        <translation type="unfinished"></translation>
+        <translation>Solid Line</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Dash Line</source>
-        <translation type="unfinished"></translation>
+        <translation>Dash Line</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Dot Line</source>
-        <translation type="unfinished"></translation>
+        <translation>Dot Line</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Dash Dot Line</source>
-        <translation type="unfinished"></translation>
+        <translation>Dash Dot Line</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Dash Dot Dot Line</source>
-        <translation type="unfinished"></translation>
+        <translation>Dash Dot Dot Line</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Custom Dash Line</source>
-        <translation type="unfinished"></translation>
+        <translation>Custom Dash Line</translation>
     </message>
 </context>
 <context>

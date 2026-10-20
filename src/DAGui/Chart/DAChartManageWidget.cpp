@@ -633,7 +633,7 @@ void DAChartManageWidget::onContextMenuRenameTriggered()
             bool ok = false;
             QString newName = QInputDialog::getText(tree,
                                                     tr("Rename"),     // cn:重命名
-                                                    tr("New name:"),  // cn:新名称:
+                                                    tr("New name:"),  // cn:新名称：
                                                     QLineEdit::Normal,
                                                     oldName,
                                                     &ok);
@@ -650,7 +650,7 @@ void DAChartManageWidget::onContextMenuRenameTriggered()
             bool ok = false;
             QString newName = QInputDialog::getText(tree,
                                                     tr("Rename"),     // cn:重命名
-                                                    tr("New name:"),  // cn:新名称:
+                                                    tr("New name:"),  // cn:新名称：
                                                     QLineEdit::Normal,
                                                     oldName,
                                                     &ok);
@@ -670,7 +670,7 @@ void DAChartManageWidget::onContextMenuRenameTriggered()
             bool ok = false;
             QString newName = QInputDialog::getText(tree,
                                                     tr("Rename"),     // cn:重命名
-                                                    tr("New name:"),  // cn:新名称:
+                                                    tr("New name:"),  // cn:新名称：
                                                     QLineEdit::Normal,
                                                     oldName,
                                                     &ok);
@@ -692,7 +692,7 @@ void DAChartManageWidget::onContextMenuRenameTriggered()
             bool ok = false;
             QString newName = QInputDialog::getText(tree,
                                                     tr("Rename"),     // cn:重命名
-                                                    tr("New name:"),  // cn:新名称:
+                                                    tr("New name:"),  // cn:新名称：
                                                     QLineEdit::Normal,
                                                     oldName,
                                                     &ok);
@@ -711,7 +711,7 @@ void DAChartManageWidget::onContextMenuRenameTriggered()
             bool ok = false;
             QString newName = QInputDialog::getText(tree,
                                                     tr("Rename"),     // cn:重命名
-                                                    tr("New name:"),  // cn:新名称:
+                                                    tr("New name:"),  // cn:新名称：
                                                     QLineEdit::Normal,
                                                     oldName,
                                                     &ok);
@@ -728,7 +728,7 @@ void DAChartManageWidget::onContextMenuRenameTriggered()
             bool ok = false;
             QString newName = QInputDialog::getText(tree,
                                                     tr("Rename"),     // cn:重命名
-                                                    tr("New name:"),  // cn:新名称:
+                                                    tr("New name:"),  // cn:新名称：
                                                     QLineEdit::Normal,
                                                     oldName,
                                                     &ok);

@@ -910,7 +910,7 @@ DATable< QVariant > DAAxObjectExcelWrapper::readExcelSheet(const QString& filena
     DAAxObjectExcelWrapper excel;
     if (!excel.isValid()) {
         if (errString) {
-            *errString = DAAxObjectExcelWrapper::tr("The local computer does not have Excel or WPS installed");  // cn:当前计算机中没有安装excel或者wps
+            *errString = DAAxObjectExcelWrapper::tr("The local computer does not have Excel or WPS installed");  // cn:当前计算机中没有安装 Excel 或 WPS
         }
         return res;
     }
@@ -942,7 +942,7 @@ bool DAAxObjectExcelWrapper::writeExcel(const QString& filename,
     DAAxObjectExcelWrapper excel;
     if (!excel.isValid()) {
         if (errString) {
-            *errString = DAAxObjectExcelWrapper::tr("The local computer does not have Excel or WPS installed");  // cn:当前计算机中没有安装excel或者wps
+            *errString = DAAxObjectExcelWrapper::tr("The local computer does not have Excel or WPS installed");  // cn:当前计算机中没有安装 Excel 或 WPS
         }
         return false;
     }

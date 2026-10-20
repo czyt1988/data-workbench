@@ -207,7 +207,7 @@ bool DAPyWorkFlowSceneSerializer::loadSceneFromXml(const QDomElement* sceneEleme
     // 获取manager和workflow
     DAPyWorkFlowManager* mgr = scene->getManager();
     if (!mgr || !mgr->isWorkflowValid()) {
-        d->mLastErrorString = QCoreApplication::translate("DAPyWorkFlowSceneSerializer", "Manager or workflow is invalid");  //cn:Manager或workflow无效
+        d->mLastErrorString = QCoreApplication::translate("DAPyWorkFlowSceneSerializer", "Manager or workflow is invalid");  //cn:管理器或工作流无效
         return false;
     }
     DAPyWorkFlow wf = mgr->getWorkflow();

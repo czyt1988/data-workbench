@@ -409,7 +409,7 @@ void DAAgentSessionChatWidget::onWebReady()
         {"thinking", tr("Agent thinking...")},       // cn:Agent 思考中...
         {"stopping", tr("Stopping...")},             // cn:终止中...
         {"inputPlaceholder", tr("Type a message...")},  // cn:输入消息...
-        {"tokenEmpty", tr("tokens: -")},             // cn:token: -
+        {"tokenEmpty", tr("tokens: -")},             // cn:Token: -
         {"popoverInput", tr("input: %1")},           // cn:输入：%1
         {"popoverOutput", tr("output: %1")},         // cn:输出：%1
         {"popoverTotal", tr("total: %1")},           // cn:总计：%1
@@ -1020,9 +1020,9 @@ QString DAAgentSessionChatWidget::formatTokenLabel(int totalTokens, int contextW
     // （C++ 只推这 5 原始值，标签复用 tr("input: %1") 等既有翻译，JS 做 %1→值 替换）。
     int win = contextWindow > 0 ? contextWindow : -1;
     if (source == QStringLiteral("streaming_estimate")) {
-        return tr("tokens: ~%1 / %2").arg(totalTokens).arg(win);  // cn:token: ~%1 / %2
+        return tr("tokens: ~%1 / %2").arg(totalTokens).arg(win);  // cn:Token: ~%1 / %2
     }
-    return tr("tokens: %1 / %2").arg(totalTokens).arg(win);  // cn:token: %1 / %2
+    return tr("tokens: %1 / %2").arg(totalTokens).arg(win);  // cn:Token: %1 / %2
 }
 
 /**

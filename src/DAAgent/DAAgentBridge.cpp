@@ -457,7 +457,7 @@ void DAAgentBridge::sendMessage(const QString& text)
         d->mTurnActive = false;
         d->mLastUserMessage.clear();
         d->mInactivityTimer->stop();
-        emit agentError(tr("Message not sent: agent subprocess is not running"));  //cn:消息未发送：agent 子进程未在运行
+        emit agentError(tr("Message not sent: agent subprocess is not running"));  //cn:消息未发送：agent 子进程未运行
         emit agentBusy(false);
         return;
     }
@@ -499,7 +499,7 @@ void DAAgentBridge::sendUserAnswer(const QString& answer)
         // 回滚忙碌态并发明确错误，避免用户以为已回答而 UI 挂到看门狗超时
         d->mTurnActive = false;
         d->mInactivityTimer->stop();
-        emit agentError(tr("Answer not sent: agent subprocess is not running"));  //cn:回答未发送：agent 子进程未在运行
+        emit agentError(tr("Answer not sent: agent subprocess is not running"));  //cn:回答未发送：agent 子进程未运行
         emit agentBusy(false);
         return;
     }
@@ -1519,7 +1519,7 @@ void DAAgentBridge::resendLastMessage()
             // mLastUserMessage 保留——消息从未送达，若后续再走恢复链应继续重试
             d->mTurnActive = false;
             d->mInactivityTimer->stop();
-            emit agentError(tr("Message not sent: agent subprocess is not running"));  //cn:消息未发送：agent 子进程未在运行
+            emit agentError(tr("Message not sent: agent subprocess is not running"));  //cn:消息未发送：agent 子进程未运行
             emit agentBusy(false);
             return;
         }

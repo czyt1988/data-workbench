@@ -242,7 +242,7 @@ DAPyWorkFlowEditWidget* DAPyWorkFlowOperateWidget::appendWorkflowWithDialog()
 {
     bool ok = false;
     QString text = QInputDialog::getText(this, tr("Title of new workflow"),  // cn:新工作流标题
-                                         tr("Title:"),                       // cn:标题:
+                                         tr("Title:"),                       // cn:标题：
                                          QLineEdit::Normal, QString(), &ok);
     if (!ok || text.isEmpty()) {
         return nullptr;

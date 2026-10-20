@@ -89,7 +89,7 @@ void DAPluginManager::PrivateData::ensureIgnoreFileExist()
     QFile ignoreFile(getIgnoreFilePath());
     daInfo << DAPluginManager::tr("No plugins ignore files, a %1 file will be "
                                   "automatically generated")
-                  .arg(ignoreFile.fileName());  // cn:缺少插件忽略文件，将自动生成.pluginignore文件
+                  .arg(ignoreFile.fileName());  // cn:缺少插件忽略文件，将自动生成%1文件
     if (!ignoreFile.exists()) {
         // 不存在，则创建一个
         if (ignoreFile.open(QIODevice::ReadWrite)) {
