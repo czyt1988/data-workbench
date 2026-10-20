@@ -272,9 +272,31 @@ std::pair< qreal, qreal > DAPyPainterProxy::textBoundingRect(const std::string& 
     QFont font(QString::fromStdString(family), size);
     font.setBold(bold);
     font.setItalic(italic);
-    QFontMetricsF fm(font);
+    return textBoundingRect(text, font);
+}
+
+/**
+ * @brief 测量文本尺寸（缓存版）
+ *
+ * 按字体键缓存最近一次的QFontMetricsF，同字体重复测量时不再重复构造。
+ * 缓存是"最近一次"而非哈希表：同一段绘制回调里字体通常固定，单条缓存足够且避免无上限增长。
+ *
+ * @param[in] text 要测量的文本
+ * @param[in] font 要使用的字体
+ * @return (width, height) 文本尺寸
+ */
+std::pair< qreal, qreal > DAPyPainterProxy::textBoundingRect(const std::string& text, const QFont& font)
+{
+    if (!mPainter) {
+        return { 0.0, 0.0 };
+    }
+    const QString key = font.key();
+    if (!mCachedFm || key != mCachedFontKey) {
+        mCachedFontKey = key;
+        mCachedFm.emplace(font);
+    }
     const QString qtext = QString::fromStdString(text);
-    return { fm.horizontalAdvance(qtext), fm.height() };
+    return { mCachedFm->horizontalAdvance(qtext), mCachedFm->height() };
 }
 
 /**

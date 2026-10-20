@@ -298,7 +298,11 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
              pybind11::arg("h"),
              "Draw diamond shape inside the specified rectangle")
         .def("textBoundingRect",
-             &DA::DAPyPainterProxy::textBoundingRect,
+             static_cast< std::pair< qreal, qreal > (DA::DAPyPainterProxy::*)(const std::string&,
+                                                                               const std::string&,
+                                                                               qreal,
+                                                                               bool,
+                                                                               bool) >(&DA::DAPyPainterProxy::textBoundingRect),
              pybind11::arg("text"),
              pybind11::arg("family"),
              pybind11::arg("size"),
@@ -347,7 +351,7 @@ PYBIND11_EMBEDDED_MODULE(da_py_workflow, m)
             "textBoundingRectWithFont",
             [](DA::DAPyPainterProxy& self, const std::string& text, const pybind11::dict& font_dict) {
                 QFont f = DA::DAPyQtTypeDictCast::pyDictToQFont(font_dict);
-                return self.textBoundingRect(text, f.family().toStdString(), f.pointSize(), f.bold(), f.italic());
+                return self.textBoundingRect(text, f);
             },
             pybind11::arg("text"),
             pybind11::arg("font_dict"),

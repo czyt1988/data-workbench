@@ -3,8 +3,11 @@
 #include "DAPyWorkFlowAPI.h"
 #include "DAPybind11InQt.h"
 #include <QRectF>
+#include <QFont>
+#include <QFontMetricsF>
 #include <vector>
 #include <utility>
+#include <optional>
 
 class QPainter;
 
@@ -49,6 +52,8 @@ public:
     void drawDiamond(qreal x, qreal y, qreal w, qreal h);
     // 测量文本尺寸
     std::pair< qreal, qreal > textBoundingRect(const std::string& text, const std::string& family, qreal size, bool bold = false, bool italic = false);
+    // 测量文本尺寸（直接指定字体，内部按字体键缓存最近一次的度量）
+    std::pair< qreal, qreal > textBoundingRect(const std::string& text, const QFont& font);
     // 设置裁剪区域
     void setClipRect(qreal x, qreal y, qreal w, qreal h);
     // 清除裁剪
@@ -69,6 +74,8 @@ public:
 
 private:
     QPainter* mPainter;  ///< 底层QPainter指针（不拥有所有权）
+    QString mCachedFontKey;                    ///< 上次度量使用的字体缓存键
+    std::optional< QFontMetricsF > mCachedFm;  ///< 上次度量使用的字体度量
 };
 
 }  // namespace DA
