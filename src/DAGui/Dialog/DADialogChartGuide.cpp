@@ -124,31 +124,31 @@ void DADialogChartGuide::initListWidget()
     item->setData(Qt::UserRole, static_cast< int >(DA::DAChartTypes::Bar));
     ui->listWidgetChartType->addItem(item);
     // errorbar
-    item = new QListWidgetItem(QIcon(":/app/chart-type/Icon/chart-type/chart-intervalcurve.svg"), tr("error bar"));  // cn:误差棒
+    item = new QListWidgetItem(QIcon(":/DAGui/ChartType/icon/chart-type/chart-intervalcurve.svg"), tr("error bar"));  // cn:误差棒
     item->setData(Qt::UserRole, static_cast< int >(DA::DAChartTypes::ErrorBar));
     ui->listWidgetChartType->addItem(item);
     // boxplot
-    item = new QListWidgetItem(QIcon(":/app/chart-type/Icon/chart-type/chart-OHLC.svg"), tr("box"));  // cn:箱体
+    item = new QListWidgetItem(QIcon(":/DAGui/ChartType/icon/chart-type/chart-OHLC.svg"), tr("box"));  // cn:箱体
     item->setData(Qt::UserRole, static_cast< int >(DA::DAChartTypes::Box));
     ui->listWidgetChartType->addItem(item);
     // spectrogram
-    item = new QListWidgetItem(QIcon(":/app/chart-type/Icon/chart-type/chart-spectrogram.svg"), tr("cloud map"));  // cn:云图
+    item = new QListWidgetItem(QIcon(":/DAGui/ChartType/icon/chart-type/chart-spectrogram.svg"), tr("cloud map"));  // cn:云图
     item->setData(Qt::UserRole, static_cast< int >(DA::DAChartTypes::Spectrogram));
     ui->listWidgetChartType->addItem(item);
     // multibar
-    item = new QListWidgetItem(QIcon(":/app/chart-type/Icon/chart-type/chart-multibar.svg"), tr("multi bar"));  // cn:多重柱状
+    item = new QListWidgetItem(QIcon(":/DAGui/ChartType/icon/chart-type/chart-multibar.svg"), tr("multi bar"));  // cn:多重柱状
     item->setData(Qt::UserRole, static_cast< int >(DA::DAChartTypes::MultiBar));
     ui->listWidgetChartType->addItem(item);
     // histogram
-    item = new QListWidgetItem(QIcon(":/app/chart-type/Icon/chart-type/chart-histogram.svg"), tr("histogram"));  // cn:直方图
+    item = new QListWidgetItem(QIcon(":/DAGui/ChartType/icon/chart-type/chart-histogram.svg"), tr("histogram"));  // cn:直方图
     item->setData(Qt::UserRole, static_cast< int >(DA::DAChartTypes::Histogram));
     ui->listWidgetChartType->addItem(item);
     // contour
-    item = new QListWidgetItem(QIcon(":/app/chart-type/Icon/chart-type/chart-spectrocurve.svg"), tr("contour"));  // cn:等高线
+    item = new QListWidgetItem(QIcon(":/DAGui/ChartType/icon/chart-type/chart-spectrocurve.svg"), tr("contour"));  // cn:等高线
     item->setData(Qt::UserRole, static_cast< int >(DA::DAChartTypes::Contour));
     ui->listWidgetChartType->addItem(item);
     // vectorfield
-    item = new QListWidgetItem(QIcon(":/app/chart-type/Icon/chart-type/chart-vectorfield.svg"), tr("vector field"));  // cn:向量场
+    item = new QListWidgetItem(QIcon(":/DAGui/ChartType/icon/chart-type/chart-vectorfield.svg"), tr("vector field"));  // cn:向量场
     item->setData(Qt::UserRole, static_cast< int >(DA::DAChartTypes::VectorField));
     ui->listWidgetChartType->addItem(item);
     // surface3d

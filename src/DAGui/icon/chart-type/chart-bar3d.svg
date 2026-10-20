@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<svg version="1.1" id="图层_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-	 width="64px" height="64px" viewBox="0 0 64 64" enable-background="new 0 0 64 64" xml:space="preserve">
-<!-- 3D bar chart -->
-<g stroke="#497CAD" stroke-width="1.5" fill="none" stroke-linejoin="round">
-	<!-- axis -->
-	<polyline points="8,56 8,16 12,12 12,52"/>
-	<polyline points="12,52 56,52 60,48 16,48"/>
-	<polyline points="8,56 52,56 56,52 56,12"/>
-	<!-- bar 1 -->
-	<polyline points="18,52 18,32 22,28 22,48 18,52"/>
-	<polyline points="22,48 22,28 26,24 26,48"/>
-	<!-- bar 2 -->
-	<polyline points="30,52 30,20 34,16 34,48 30,52"/>
-	<polyline points="34,48 34,16 38,12 38,48"/>
-	<!-- bar 3 -->
-	<polyline points="42,52 42,36 46,32 46,48 42,52"/>
-	<polyline points="46,48 46,32 50,28 50,48"/>
-</g>
+<!-- 3D 柱状图：透视坐标轴 + 三根立方柱（顶面浅蓝/正面主蓝/侧面深蓝）。
+     图表系列取色池与轴线灰见 DESIGN.md §4.2.3；64×64 固定画布 -->
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+	<!-- 透视坐标轴 -->
+	<path d="M8 54V10M8 54H60M8 54L20 42" fill="none" stroke="#727272" stroke-width="2"
+	      stroke-linecap="round" stroke-linejoin="round"/>
+	<!-- 柱 1 -->
+	<path d="M14 42h11v12H14z" fill="#5280C1"/>
+	<path d="M14 42l7-7h11l-7 7z" fill="#BDCDE8"/>
+	<path d="M25 42l7-7v12l-7 7z" fill="#497CAD"/>
+	<!-- 柱 2 -->
+	<path d="M28 26h11v28H28z" fill="#5280C1"/>
+	<path d="M28 26l7-7h11l-7 7z" fill="#BDCDE8"/>
+	<path d="M39 26l7-7v28l-7 7z" fill="#497CAD"/>
+	<!-- 柱 3 -->
+	<path d="M42 36h11v18H42z" fill="#5280C1"/>
+	<path d="M42 36l7-7h11l-7 7z" fill="#BDCDE8"/>
+	<path d="M53 36l7-7v18l-7 7z" fill="#497CAD"/>
 </svg>

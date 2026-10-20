@@ -1,2 +1,11 @@
-<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg t="1655281143029" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2833" xmlns:xlink="http://www.w3.org/1999/xlink" width="200" height="200"><defs><style type="text/css">@font-face { font-family: feedback-iconfont; src: url("//at.alicdn.com/t/font_1031158_u69w8yhxdu.woff2?t=1630033759944") format("woff2"), url("//at.alicdn.com/t/font_1031158_u69w8yhxdu.woff?t=1630033759944") format("woff"), url("//at.alicdn.com/t/font_1031158_u69w8yhxdu.ttf?t=1630033759944") format("truetype"); }
-</style></defs><path d="M810.666667 597.333333a128 128 0 0 0-120.32 85.333334H640a85.333333 85.333333 0 0 1-85.333333-85.333334v-170.666666a170.666667 170.666667 0 0 0-170.666667-170.666667H333.653333a128 128 0 1 0 0 85.333333H384a85.333333 85.333333 0 0 1 85.333333 85.333334v170.666666a170.666667 170.666667 0 0 0 170.666667 170.666667h50.346667A128 128 0 1 0 810.666667 597.333333zM213.333333 341.333333a42.666667 42.666667 0 1 1 42.666667-42.666666 42.666667 42.666667 0 0 1-42.666667 42.666666z m597.333334 426.666667a42.666667 42.666667 0 1 1 42.666666-42.666667 42.666667 42.666667 0 0 1-42.666666 42.666667z" p-id="2834" fill="#497cad"></path></svg>
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 连接项设置：两端节点（深蓝实心圆 + 白色端口）由粗连线相连，表示节点间连线。
+     用于工作流节点「Link」设置页。1024 画布「深蓝实心 + 白色镂空」风格。
+     官方色板：#497CAD、#FFFFFF -->
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 1024 1024">
+	<rect x="250" y="462" width="524" height="100" rx="50" fill="#497CAD"/>
+	<circle cx="260" cy="512" r="130" fill="#497CAD"/>
+	<circle cx="764" cy="512" r="130" fill="#497CAD"/>
+	<circle cx="260" cy="512" r="40" fill="#FFFFFF"/>
+	<circle cx="764" cy="512" r="40" fill="#FFFFFF"/>
+</svg>

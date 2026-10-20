@@ -3,6 +3,7 @@
 #include <QMessageBox>
 #include <QApplication>
 #include <QFileInfo>
+#include <QPixmap>
 #include <QSet>
 #include "ui_DASettingPageGeneral.h"
 #include "AppMainWindow.h"
@@ -18,10 +19,10 @@ namespace DA
 DASettingPageGeneral::DASettingPageGeneral(QWidget* parent)
     : DAAbstractSettingPage(parent)
     , ui(new Ui::DASettingPageGeneral)
-    , mPixmapRibbonStandard(":/app/settingpages/Icon/settingpages/ribbon-style-standard-3r.png")
-    , mPixmapRibbonStandard2Row(":/app/settingpages/Icon/settingpages/ribbon-style-standard-2r.png")
-    , mPixmapRibbonLite(":/app/settingpages/Icon/settingpages/ribbon-style-lite-3r.png")
-    , mPixmapRibbonLite2Row(":/app/settingpages/Icon/settingpages/ribbon-style-lite-2r.png")
+    , mIconRibbonStandard(":/app/settingpages/Icon/settingpages/ribbon-style-standard-3r.svg")
+    , mIconRibbonStandard2Row(":/app/settingpages/Icon/settingpages/ribbon-style-standard-2r.svg")
+    , mIconRibbonLite(":/app/settingpages/Icon/settingpages/ribbon-style-lite-3r.svg")
+    , mIconRibbonLite2Row(":/app/settingpages/Icon/settingpages/ribbon-style-lite-2r.svg")
 {
     ui->setupUi(this);
     mButtonGroupRibbonStyle.setExclusive(true);
@@ -74,6 +75,16 @@ DASettingPageGeneral::DASettingPageGeneral(QWidget* parent)
 DASettingPageGeneral::~DASettingPageGeneral()
 {
     delete ui;
+}
+
+void DASettingPageGeneral::setRibbonStylePreview(const QIcon& icon)
+{
+    // 预览为 SVG，按当前设备像素比渲染物理尺寸，避免高分屏拉伸发虚
+    const qreal dpr = devicePixelRatioF();
+    const QSize physicalSize(qRound(240 * dpr), qRound(96 * dpr));
+    QPixmap pm = icon.pixmap(physicalSize);
+    pm.setDevicePixelRatio(dpr);
+    ui->labelImage->setPixmap(pm);
 }
 
 void DASettingPageGeneral::fillRibbonThemeCombo()
@@ -171,19 +182,19 @@ bool DASettingPageGeneral::setAppConfig(DAAppConfig* p)
     switch (ribbonStyle) {
     case SARibbonBar::RibbonStyleCompactThreeRow:
         ui->radioButtonLiteStyle->setChecked(true);
-        ui->labelImage->setPixmap(mPixmapRibbonLite);
+        setRibbonStylePreview(mIconRibbonLite);
         break;
     case SARibbonBar::RibbonStyleCompactTwoRow:
         ui->radioButtonLiteStyle2Row->setChecked(true);
-        ui->labelImage->setPixmap(mPixmapRibbonLite2Row);
+        setRibbonStylePreview(mIconRibbonLite2Row);
         break;
     case SARibbonBar::RibbonStyleLooseThreeRow:
         ui->radioButtonStandardStyle->setChecked(true);
-        ui->labelImage->setPixmap(mPixmapRibbonStandard);
+        setRibbonStylePreview(mIconRibbonStandard);
         break;
     case SARibbonBar::RibbonStyleLooseTwoRow:
         ui->radioButtonStandardStyle2Row->setChecked(true);
-        ui->labelImage->setPixmap(mPixmapRibbonStandard2Row);
+        setRibbonStylePreview(mIconRibbonStandard2Row);
         break;
     default:
         break;
@@ -227,16 +238,16 @@ void DASettingPageGeneral::onButtonGroupRibbonStyleClicked(int id)
     SARibbonBar::RibbonStyles ribbonStyle = static_cast< SARibbonBar::RibbonStyles >(id);
     switch (ribbonStyle) {
     case SARibbonBar::RibbonStyleCompactThreeRow:
-        ui->labelImage->setPixmap(mPixmapRibbonLite);
+        setRibbonStylePreview(mIconRibbonLite);
         break;
     case SARibbonBar::RibbonStyleCompactTwoRow:
-        ui->labelImage->setPixmap(mPixmapRibbonLite2Row);
+        setRibbonStylePreview(mIconRibbonLite2Row);
         break;
     case SARibbonBar::RibbonStyleLooseThreeRow:
-        ui->labelImage->setPixmap(mPixmapRibbonStandard);
+        setRibbonStylePreview(mIconRibbonStandard);
         break;
     case SARibbonBar::RibbonStyleLooseTwoRow:
-        ui->labelImage->setPixmap(mPixmapRibbonStandard2Row);
+        setRibbonStylePreview(mIconRibbonStandard2Row);
         break;
     default:
         break;

@@ -1,1 +1,15 @@
-<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg t="1765295472290" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="4714" xmlns:xlink="http://www.w3.org/1999/xlink" width="200" height="200"><path d="M615.088 1019.824V12.8L10.832 148.96l0.48 731.984 603.776 138.88zM261.024 314.928l38.736 73.152 38.72-73.152h77.472l-77.456 146.32 96.8 182.88h-77.44L299.76 534.4l-58.08 109.728h-77.472l96.816-182.88-77.44-146.32h77.44z m426.016 154.912H590.24v38.72h96.816v-38.72zM590.24 702.208v38.736h96.816v-38.72H590.24z m0-116.176v38.72h96.816v-38.72H590.24z m96.816-232.368H590.24v38.72h96.816v-38.72z m0-116.192H590.24v38.72h96.816v-38.72z m193.648 387.296v-38.736H745.12v38.72h135.552z m0-116.192v-38.72H745.12v38.72h135.552z m0 232.368v-38.72H745.12v38.72h135.552zM745.12 237.472v38.72h135.552v-38.72H745.12z m0 154.912h135.552v-38.72H745.12v38.72z m-139.152-200.848h377.472v658.368H605.984v38.72h413.088L1017.68 152.8H605.984v38.72z" fill="#37812E" p-id="4715"></path></svg>
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 导出到单个 Excel：左侧两个浅蓝数据页 → 主蓝导出箭头 → 右侧 Excel 工作簿（保留 Excel 绿）。
+     语义对应 actionExportToOneExcel。Excel 绿 #37812E 为品牌色例外（DESIGN.md §2.4），
+     其余取官方色板 #BDCDE8、#5280C1、#FFFFFF；禁渐变/阴影/<text> -->
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+	<!-- 数据页（两个待合并的数据源） -->
+	<rect x="18" y="40" width="44" height="52" rx="5" fill="#BDCDE8" stroke="#5280C1" stroke-width="6"/>
+	<rect x="34" y="64" width="44" height="52" rx="5" fill="#FFFFFF" stroke="#5280C1" stroke-width="6"/>
+	<!-- 导出箭头 -->
+	<line x1="88" y1="92" x2="106" y2="92" stroke="#5280C1" stroke-width="10" stroke-linecap="round"/>
+	<polygon points="104,76 130,92 104,108" fill="#5280C1"/>
+	<!-- Excel 工作簿 -->
+	<rect x="120" y="32" width="66" height="136" rx="8" fill="#37812E"/>
+	<path d="M138 78L168 114M168 78L138 114" fill="none" stroke="#FFFFFF" stroke-width="12" stroke-linecap="round"/>
+</svg>

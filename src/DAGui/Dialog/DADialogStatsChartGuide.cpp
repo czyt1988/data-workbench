@@ -105,47 +105,47 @@ void DADialogStatsChartGuide::initListWidget()
 {
     QListWidgetItem* item = nullptr;
     // histplot
-    item = new QListWidgetItem(QIcon(":/app/chart-type/Icon/chart-type/stats-histplot.svg"),
+    item = new QListWidgetItem(QIcon(":/DAGui/ChartType/icon/chart-type/stats-histplot.svg"),
                                tr("Histplot"));  // cn:直方图
     item->setData(Qt::UserRole, static_cast< int >(DA::DAChartTypes::StatsHistplot));
     ui->listWidgetChartType->addItem(item);
     // kdeplot 1d
-    item = new QListWidgetItem(QIcon(":/app/chart-type/Icon/chart-type/stats-kdeplot.svg"),
+    item = new QListWidgetItem(QIcon(":/DAGui/ChartType/icon/chart-type/stats-kdeplot.svg"),
                                tr("KDE 1D"));  // cn:一维核密度
     item->setData(Qt::UserRole, static_cast< int >(DA::DAChartTypes::StatsKdeplot1d));
     ui->listWidgetChartType->addItem(item);
     // kdeplot 2d
-    item = new QListWidgetItem(QIcon(":/app/chart-type/Icon/chart-type/stats-kdeplot-2d.svg"),
+    item = new QListWidgetItem(QIcon(":/DAGui/ChartType/icon/chart-type/stats-kdeplot-2d.svg"),
                                tr("KDE 2D"));  // cn:二维核密度
     item->setData(Qt::UserRole, static_cast< int >(DA::DAChartTypes::StatsKdeplot2d));
     ui->listWidgetChartType->addItem(item);
     // boxplot
-    item = new QListWidgetItem(QIcon(":/app/chart-type/Icon/chart-type/stats-boxplot.svg"),
+    item = new QListWidgetItem(QIcon(":/DAGui/ChartType/icon/chart-type/stats-boxplot.svg"),
                                tr("Boxplot"));  // cn:箱线图
     item->setData(Qt::UserRole, static_cast< int >(DA::DAChartTypes::StatsBoxplot));
     ui->listWidgetChartType->addItem(item);
     // heatmap
-    item = new QListWidgetItem(QIcon(":/app/chart-type/Icon/chart-type/stats-heatmap.svg"),
+    item = new QListWidgetItem(QIcon(":/DAGui/ChartType/icon/chart-type/stats-heatmap.svg"),
                                tr("Heatmap"));  // cn:热力图
     item->setData(Qt::UserRole, static_cast< int >(DA::DAChartTypes::StatsHeatmap));
     ui->listWidgetChartType->addItem(item);
     // scatterplot
-    item = new QListWidgetItem(QIcon(":/app/chart-type/Icon/chart-type/stats-scatterplot.svg"),
+    item = new QListWidgetItem(QIcon(":/DAGui/ChartType/icon/chart-type/stats-scatterplot.svg"),
                                tr("Scatter"));  // cn:散点图
     item->setData(Qt::UserRole, static_cast< int >(DA::DAChartTypes::StatsScatterplot));
     ui->listWidgetChartType->addItem(item);
     // barplot
-    item = new QListWidgetItem(QIcon(":/app/chart-type/Icon/chart-type/stats-barplot.svg"),
+    item = new QListWidgetItem(QIcon(":/DAGui/ChartType/icon/chart-type/stats-barplot.svg"),
                                tr("Barplot"));  // cn:柱状图
     item->setData(Qt::UserRole, static_cast< int >(DA::DAChartTypes::StatsBarplot));
     ui->listWidgetChartType->addItem(item);
     // regplot
-    item = new QListWidgetItem(QIcon(":/app/chart-type/Icon/chart-type/stats-regplot.svg"),
+    item = new QListWidgetItem(QIcon(":/DAGui/ChartType/icon/chart-type/stats-regplot.svg"),
                                tr("Regplot"));  // cn:回归图
     item->setData(Qt::UserRole, static_cast< int >(DA::DAChartTypes::StatsRegplot));
     ui->listWidgetChartType->addItem(item);
     // ecdfplot
-    item = new QListWidgetItem(QIcon(":/app/chart-type/Icon/chart-type/stats-ecdfplot.svg"),
+    item = new QListWidgetItem(QIcon(":/DAGui/ChartType/icon/chart-type/stats-ecdfplot.svg"),
                                tr("ECDF"));  // cn:经验累积分布
     item->setData(Qt::UserRole, static_cast< int >(DA::DAChartTypes::StatsECDFplot));
     ui->listWidgetChartType->addItem(item);

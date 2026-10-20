@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Ribbon 样式预览：Lite（紧凑）三行。标题栏 + 标签栏 + 两个面板，
+     每个面板一个较小的大按钮与三行小按钮。官方色板：#5D6D7E、#BDCDE8、
+     #5280C1、#B2B2B2、#FFFFFF；禁渐变/阴影/<text>（DESIGN.md §4） -->
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="74" viewBox="0 0 240 74">
+	<rect x="1" y="1" width="238" height="72" rx="6" fill="#FFFFFF" stroke="#B2B2B2" stroke-width="2"/>
+	<rect x="3" y="3" width="234" height="14" fill="#5D6D7E"/>
+	<rect x="9" y="8" width="26" height="4" rx="2" fill="#FFFFFF" fill-opacity="0.8"/>
+	<circle cx="222" cy="10" r="3" fill="#FFFFFF"/>
+	<circle cx="231" cy="10" r="3" fill="#FFFFFF"/>
+	<rect x="3" y="17" width="234" height="14" fill="#BDCDE8"/>
+	<rect x="10" y="19" width="42" height="12" rx="2" fill="#FFFFFF"/>
+	<rect x="58" y="21" width="28" height="8" rx="4" fill="#FFFFFF" fill-opacity="0.65"/>
+	<rect x="92" y="21" width="28" height="8" rx="4" fill="#FFFFFF" fill-opacity="0.65"/>
+	<!-- 面板 1 -->
+	<rect x="12" y="35" width="30" height="22" rx="3" fill="#5280C1"/>
+	<g fill="#FFFFFF">
+		<rect x="18" y="47" width="5" height="7" rx="1"/>
+		<rect x="25" y="43" width="5" height="11" rx="1"/>
+		<rect x="32" y="41" width="5" height="13" rx="1"/>
+	</g>
+	<g>
+		<rect x="50" y="35" width="10" height="8" rx="2" fill="#5280C1"/>
+		<rect x="64" y="37" width="30" height="4" rx="2" fill="#B2B2B2"/>
+		<rect x="50" y="46" width="10" height="8" rx="2" fill="#5280C1"/>
+		<rect x="64" y="48" width="26" height="4" rx="2" fill="#B2B2B2"/>
+		<rect x="50" y="57" width="10" height="8" rx="2" fill="#5280C1"/>
+		<rect x="64" y="59" width="28" height="4" rx="2" fill="#B2B2B2"/>
+	</g>
+	<line x1="114" y1="33" x2="114" y2="65" stroke="#B2B2B2" stroke-width="1.5"/>
+	<!-- 面板 2 -->
+	<rect x="124" y="35" width="30" height="22" rx="3" fill="#5280C1"/>
+	<g fill="#FFFFFF">
+		<rect x="130" y="41" width="5" height="13" rx="1"/>
+		<rect x="137" y="45" width="5" height="9" rx="1"/>
+		<rect x="144" y="43" width="5" height="11" rx="1"/>
+	</g>
+	<g>
+		<rect x="162" y="35" width="10" height="8" rx="2" fill="#5280C1"/>
+		<rect x="176" y="37" width="30" height="4" rx="2" fill="#B2B2B2"/>
+		<rect x="162" y="46" width="10" height="8" rx="2" fill="#5280C1"/>
+		<rect x="176" y="48" width="26" height="4" rx="2" fill="#B2B2B2"/>
+		<rect x="162" y="57" width="10" height="8" rx="2" fill="#5280C1"/>
+		<rect x="176" y="59" width="28" height="4" rx="2" fill="#B2B2B2"/>
+	</g>
+</svg>

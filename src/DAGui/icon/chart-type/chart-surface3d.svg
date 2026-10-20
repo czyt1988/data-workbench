@@ -1,17 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<svg version="1.1" id="图层_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-	 width="64px" height="64px" viewBox="0 0 64 64" enable-background="new 0 0 64 64" xml:space="preserve">
-<!-- 3D surface wireframe -->
-<g stroke="#497CAD" stroke-width="1.5" fill="none" stroke-linejoin="round">
-	<!-- back grid -->
-	<polyline points="12,20 32,12 52,20 52,44 32,52 12,44 12,20"/>
-	<polyline points="32,12 32,52"/>
-	<polyline points="12,44 52,44"/>
-	<!-- surface mesh -->
-	<polyline points="12,32 22,28 32,36 42,24 52,30"/>
-	<polyline points="12,38 22,34 32,42 42,30 52,36"/>
-	<polyline points="22,28 22,48 22,52"/>
-	<polyline points="32,36 32,52"/>
-	<polyline points="42,24 42,44 42,52"/>
-</g>
+<!-- 3D 曲面图：透视坐标轴 + 带网格的曲面片（浅蓝面 + 深蓝网格线），读取为三维曲面。
+     图表系列取色池与轴线灰见 DESIGN.md §4.2.3；64×64 固定画布 -->
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+	<!-- 透视坐标轴 -->
+	<path d="M8 56V10M8 56H60M8 56L20 44" fill="none" stroke="#727272" stroke-width="2"
+	      stroke-linecap="round" stroke-linejoin="round"/>
+	<!-- 曲面片 -->
+	<path d="M14 42L28 24H56L42 42Z" fill="#BDCDE8"/>
+	<!-- 曲面网格 -->
+	<g fill="none" stroke="#497CAD" stroke-width="1.2">
+		<path d="M18.6 36H46.6"/>
+		<path d="M23.2 30H51.2"/>
+		<path d="M21 42L35 24"/>
+		<path d="M28 42L42 24"/>
+		<path d="M35 42L49 24"/>
+	</g>
+	<!-- 曲面轮廓 -->
+	<path d="M14 42L28 24H56L42 42Z" fill="none" stroke="#497CAD" stroke-width="2" stroke-linejoin="round"/>
 </svg>

@@ -161,36 +161,36 @@ void DAAppActions::buildChartAction()
     // 绘图标签 Chart Category
     actionAddFigure       = createAction(UiNames::Action::AddFigure, ":/app/bright/Icon/addFigure.svg");
     actionFigureNewXYAxis = createAction(UiNames::Action::FigureNewXYAxis, ":/app/bright/Icon/newAxis.svg");
-    actionChartAddCurve   = createAction(UiNames::Action::ChartAddCurve, ":/app/chart-type/Icon/chart-type/chart-curve.svg");
+    actionChartAddCurve   = createAction(UiNames::Action::ChartAddCurve, ":/DAGui/ChartType/icon/chart-type/chart-curve.svg");
     actionChartAddScatter2D =
-        createAction(UiNames::Action::ChartAddScatter2D, ":/app/chart-type/Icon/chart-type/chart-scatter-2d.svg");
+        createAction(UiNames::Action::ChartAddScatter2D, ":/DAGui/ChartType/icon/chart-type/chart-scatter-2d.svg");
     actionChartAddErrorBar =
-        createAction(UiNames::Action::ChartAddErrorBar, ":/app/chart-type/Icon/chart-type/chart-intervalcurve.svg");
-    actionChartAddBoxPlot = createAction(UiNames::Action::ChartAddBoxPlot, ":/app/chart-type/Icon/chart-type/chart-OHLC.svg");
-    actionChartAddBar     = createAction(UiNames::Action::ChartAddBar, ":/app/chart-type/Icon/chart-type/chart-bar.svg");
-    actionChartAddMultiBar = createAction(UiNames::Action::ChartAddMultiBar, ":/app/chart-type/Icon/chart-type/chart-multibar.svg");
+        createAction(UiNames::Action::ChartAddErrorBar, ":/DAGui/ChartType/icon/chart-type/chart-intervalcurve.svg");
+    actionChartAddBoxPlot = createAction(UiNames::Action::ChartAddBoxPlot, ":/DAGui/ChartType/icon/chart-type/chart-OHLC.svg");
+    actionChartAddBar     = createAction(UiNames::Action::ChartAddBar, ":/DAGui/ChartType/icon/chart-type/chart-bar.svg");
+    actionChartAddMultiBar = createAction(UiNames::Action::ChartAddMultiBar, ":/DAGui/ChartType/icon/chart-type/chart-multibar.svg");
     actionChartAddHistogramBar =
-        createAction(UiNames::Action::ChartAddHistogramBar, ":/app/chart-type/Icon/chart-type/chart-histogram.svg");
+        createAction(UiNames::Action::ChartAddHistogramBar, ":/DAGui/ChartType/icon/chart-type/chart-histogram.svg");
     actionChartAddContourMap =
-        createAction(UiNames::Action::ChartAddContourMap, ":/app/chart-type/Icon/chart-type/chart-spectrocurve.svg");
+        createAction(UiNames::Action::ChartAddContourMap, ":/DAGui/ChartType/icon/chart-type/chart-spectrocurve.svg");
     actionChartAddCloudMap =
-        createAction(UiNames::Action::ChartAddCloudMap, ":/app/chart-type/Icon/chart-type/chart-spectrogram.svg");
+        createAction(UiNames::Action::ChartAddCloudMap, ":/DAGui/ChartType/icon/chart-type/chart-spectrogram.svg");
     actionChartAddVectorfield =
-        createAction(UiNames::Action::ChartAddVectorfield, ":/app/chart-type/Icon/chart-type/chart-vectorfield.svg");
-    actionChartAdd3DSurface = createAction(UiNames::Action::ChartAdd3DSurface, ":/app/chart-type/Icon/chart-type/chart-surface3d.svg");
-    actionChartAdd3DBar     = createAction(UiNames::Action::ChartAdd3DBar, ":/app/chart-type/Icon/chart-type/chart-bar3d.svg");
-    actionChartAdd3DLine    = createAction(UiNames::Action::ChartAdd3DLine, ":/app/chart-type/Icon/chart-type/chart-line3d.svg");
+        createAction(UiNames::Action::ChartAddVectorfield, ":/DAGui/ChartType/icon/chart-type/chart-vectorfield.svg");
+    actionChartAdd3DSurface = createAction(UiNames::Action::ChartAdd3DSurface, ":/DAGui/ChartType/icon/chart-type/chart-surface3d.svg");
+    actionChartAdd3DBar     = createAction(UiNames::Action::ChartAdd3DBar, ":/DAGui/ChartType/icon/chart-type/chart-bar3d.svg");
+    actionChartAdd3DLine    = createAction(UiNames::Action::ChartAdd3DLine, ":/DAGui/ChartType/icon/chart-type/chart-line3d.svg");
 
     // 统计绘图 Stats Plot
-    actionStatsHistplot     = createAction(UiNames::Action::StatsHistplot, ":/app/chart-type/Icon/chart-type/stats-histplot.svg");
-    actionStatsKdeplot1d    = createAction(UiNames::Action::StatsKdeplot1d, ":/app/chart-type/Icon/chart-type/stats-kdeplot.svg");
-    actionStatsKdeplot2d    = createAction(UiNames::Action::StatsKdeplot2d, ":/app/chart-type/Icon/chart-type/stats-kdeplot-2d.svg");
-    actionStatsBoxplot      = createAction(UiNames::Action::StatsBoxplot, ":/app/chart-type/Icon/chart-type/stats-boxplot.svg");
-    actionStatsHeatmap      = createAction(UiNames::Action::StatsHeatmap, ":/app/chart-type/Icon/chart-type/stats-heatmap.svg");
-    actionStatsScatterplot  = createAction(UiNames::Action::StatsScatterplot, ":/app/chart-type/Icon/chart-type/stats-scatterplot.svg");
-    actionStatsBarplot      = createAction(UiNames::Action::StatsBarplot, ":/app/chart-type/Icon/chart-type/stats-barplot.svg");
-    actionStatsRegplot      = createAction(UiNames::Action::StatsRegplot, ":/app/chart-type/Icon/chart-type/stats-regplot.svg");
-    actionStatsECDFplot     = createAction(UiNames::Action::StatsECDFplot, ":/app/chart-type/Icon/chart-type/stats-ecdfplot.svg");
+    actionStatsHistplot     = createAction(UiNames::Action::StatsHistplot, ":/DAGui/ChartType/icon/chart-type/stats-histplot.svg");
+    actionStatsKdeplot1d    = createAction(UiNames::Action::StatsKdeplot1d, ":/DAGui/ChartType/icon/chart-type/stats-kdeplot.svg");
+    actionStatsKdeplot2d    = createAction(UiNames::Action::StatsKdeplot2d, ":/DAGui/ChartType/icon/chart-type/stats-kdeplot-2d.svg");
+    actionStatsBoxplot      = createAction(UiNames::Action::StatsBoxplot, ":/DAGui/ChartType/icon/chart-type/stats-boxplot.svg");
+    actionStatsHeatmap      = createAction(UiNames::Action::StatsHeatmap, ":/DAGui/ChartType/icon/chart-type/stats-heatmap.svg");
+    actionStatsScatterplot  = createAction(UiNames::Action::StatsScatterplot, ":/DAGui/ChartType/icon/chart-type/stats-scatterplot.svg");
+    actionStatsBarplot      = createAction(UiNames::Action::StatsBarplot, ":/DAGui/ChartType/icon/chart-type/stats-barplot.svg");
+    actionStatsRegplot      = createAction(UiNames::Action::StatsRegplot, ":/DAGui/ChartType/icon/chart-type/stats-regplot.svg");
+    actionStatsECDFplot     = createAction(UiNames::Action::StatsECDFplot, ":/DAGui/ChartType/icon/chart-type/stats-ecdfplot.svg");
 
     actionFigureSettingApplyAllChart =
         createAction(UiNames::Action::FigureSettingApplyAllChart, ":/app/bright/Icon/apply-to-all-figure.svg", true, true);

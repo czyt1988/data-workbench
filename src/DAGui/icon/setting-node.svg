@@ -1,2 +1,10 @@
-<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg t="1655281347191" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="8933" xmlns:xlink="http://www.w3.org/1999/xlink" width="200" height="200"><defs><style type="text/css">@font-face { font-family: feedback-iconfont; src: url("//at.alicdn.com/t/font_1031158_u69w8yhxdu.woff2?t=1630033759944") format("woff2"), url("//at.alicdn.com/t/font_1031158_u69w8yhxdu.woff?t=1630033759944") format("woff"), url("//at.alicdn.com/t/font_1031158_u69w8yhxdu.ttf?t=1630033759944") format("truetype"); }
-</style></defs><path d="M512 8.416438l-436.252055 252.493151v503.583562l436.252055 251.090411 436.252055-251.090411V260.909589L512 8.416438z m328.241096 270.728767L512 471.320548 183.758904 279.145205 512 89.775342l328.241096 189.369863z m-694.356164 58.915069L476.931507 531.638356v381.545206L145.884932 723.813699V338.060274zM547.068493 914.586301V531.638356l331.046575-193.578082v384.350685L547.068493 914.586301z" p-id="8934" fill="#497cad"></path></svg>
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 节点设置：等轴测立方体（深蓝实心 + 白色棱线）。用于工作流节点「Node」设置页。
+     1024 画布「深蓝实心 + 白色镂空」风格。官方色板：#497CAD、#FFFFFF -->
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 1024 1024">
+	<path d="M512 110L880 300V700L512 890L144 700V300Z" fill="#497CAD"/>
+	<g fill="none" stroke="#FFFFFF" stroke-width="22" stroke-linejoin="round">
+		<path d="M144 300L512 490L880 300"/>
+		<path d="M512 490V890"/>
+	</g>
+</svg>

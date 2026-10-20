@@ -1,13 +1,15 @@
-<?xml version="1.0" standalone="no"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="200" height="200">
-    <!-- Slider track 1 (knob at left) -->
-    <rect x="180" y="292" width="664" height="16" rx="8" fill="#497CAD"/>
-    <circle cx="340" cy="300" r="56" fill="#497CAD"/>
-    <!-- Slider track 2 (knob at center) -->
-    <rect x="180" y="504" width="664" height="16" rx="8" fill="#497CAD"/>
-    <circle cx="512" cy="512" r="56" fill="#497CAD"/>
-    <!-- Slider track 3 (knob at right) -->
-    <rect x="180" y="716" width="664" height="16" rx="8" fill="#497CAD"/>
-    <circle cx="684" cy="724" r="56" fill="#497CAD"/>
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 高级设置：三条滑杆（深蓝轨道 + 白色旋钮）。用于设置页「高级」入口，
+     1024 画布「深蓝实心 + 白色镂空」风格。官方色板：#497CAD、#FFFFFF -->
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 1024 1024">
+	<g fill="#497CAD">
+		<rect x="150" y="260" width="724" height="56" rx="28"/>
+		<rect x="150" y="484" width="724" height="56" rx="28"/>
+		<rect x="150" y="708" width="724" height="56" rx="28"/>
+	</g>
+	<g fill="#FFFFFF" stroke="#497CAD" stroke-width="32">
+		<circle cx="300" cy="288" r="52"/>
+		<circle cx="512" cy="512" r="52"/>
+		<circle cx="724" cy="736" r="52"/>
+	</g>
 </svg>

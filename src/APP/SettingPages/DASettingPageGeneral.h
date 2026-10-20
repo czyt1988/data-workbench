@@ -5,6 +5,7 @@
 #include "DAGuiAPI.h"
 #include <QButtonGroup>
 #include <QFont>
+#include <QIcon>
 #include "SARibbonBar.h"
 namespace Ui
 {
@@ -50,14 +51,16 @@ private:
     void fillLanguageCombo();
     // 填充 dock 标签页方位下拉
     void fillDockTabPositionCombo();
+    // 按当前设备像素比把 Ribbon 样式预览渲染到 labelImage
+    void setRibbonStylePreview(const QIcon& icon);
 
 private:
     Ui::DASettingPageGeneral* ui;
     DAAppConfig* mAppConfig { nullptr };
-    QPixmap mPixmapRibbonStandard;
-    QPixmap mPixmapRibbonStandard2Row;
-    QPixmap mPixmapRibbonLite;
-    QPixmap mPixmapRibbonLite2Row;
+    QIcon mIconRibbonStandard;
+    QIcon mIconRibbonStandard2Row;
+    QIcon mIconRibbonLite;
+    QIcon mIconRibbonLite2Row;
     QButtonGroup mButtonGroupRibbonStyle;
     SARibbonBar::RibbonStyles mOldRibbonStyle { SARibbonBar::RibbonStyleCompactTwoRow };
     SARibbonBar::RibbonStyles mNewRibbonStyle { SARibbonBar::RibbonStyleCompactTwoRow };

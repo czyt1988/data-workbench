@@ -1,10 +1,10 @@
-<?xml version="1.0" standalone="no"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="200" height="200">
-    <!-- Snake body: S-curve -->
-    <path d="M 220 780 C 220 560 480 560 480 380 C 480 260 620 180 720 180" fill="none" stroke="#497CAD" stroke-width="80" stroke-linecap="round"/>
-    <!-- Snake head -->
-    <circle cx="720" cy="150" r="80" fill="#497CAD"/>
-    <!-- Eye -->
-    <circle cx="750" cy="130" r="16" fill="#FFFFFF"/>
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Python 设置：Python 双蛇标志的简化绘制（深蓝 + 浅蓝两条互锁蛇形，白色眼点）。
+     用于设置页「Python」入口。1024 画布「实心 + 白色镂空」风格。
+     官方色板：#497CAD、#BDCDE8、#FFFFFF -->
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 1024 1024">
+	<path fill="#497CAD" d="M512 64c-141 0-132 61-132 61v126h268v42H250s-130 15-130 148c0 133 113 128 113 128h67v-93s-4-113 111-113h189s108 2 108-104V180s5-116-196-116z"/>
+	<path fill="#BDCDE8" transform="rotate(180 512 512)" d="M512 64c-141 0-132 61-132 61v126h268v42H250s-130 15-130 148c0 133 113 128 113 128h67v-93s-4-113 111-113h189s108 2 108-104V180s5-116-196-116z"/>
+	<circle cx="430" cy="200" r="30" fill="#FFFFFF"/>
+	<circle cx="594" cy="824" r="30" fill="#FFFFFF"/>
 </svg>

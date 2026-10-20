@@ -1,13 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<svg version="1.1" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px"
-	 width="200px" height="200px" viewBox="0 0 200 200" xml:space="preserve">
-	<!-- 序列填充：左侧阶梯上升的浅蓝条形（等差/日期步进生成的递增序列）+ 右侧
-	     主蓝斜向上箭头（增长趋势）。官方色板：底 #FFFFFF、条形 #BDCDE8（浅蓝）、
-	     基线 #727272（中灰）、箭头 #5280C1（主蓝，主操作）；禁渐变/阴影/<text>（DESIGN.md §4） -->
-	<line x1="24" y1="170" x2="128" y2="170" stroke="#727272" stroke-width="8" stroke-linecap="butt"/>
-	<rect x="32" y="140" width="24" height="26" fill="#BDCDE8"/>
-	<rect x="62" y="108" width="24" height="58" fill="#BDCDE8"/>
-	<rect x="92" y="76" width="24" height="90" fill="#BDCDE8"/>
-	<path d="M 136 140 L 176 56" fill="none" stroke="#5280C1" stroke-width="12" stroke-linecap="round"/>
-	<polygon points="182,42 152,52 174,74" fill="#5280C1"/>
+<!-- 序列填充：基线 + 左侧源值格（浅蓝）+ 主蓝箭头 + 右侧递增的三格序列（浅蓝，顶边主蓝）。
+     语义对应「序列填充...」菜单项。官方色板：#727272、#5280C1、#BDCDE8、#FFFFFF；
+     禁渐变/阴影/<text>（DESIGN.md §4） -->
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+	<!-- 基线 -->
+	<rect x="16" y="150" width="168" height="10" fill="#727272"/>
+	<!-- 源值格 -->
+	<rect x="22" y="100" width="36" height="50" fill="#BDCDE8"/>
+	<!-- 生成箭头 -->
+	<line x1="64" y1="125" x2="88" y2="125" stroke="#5280C1" stroke-width="12"/>
+	<polygon points="86,109 112,125 86,141" fill="#5280C1"/>
+	<!-- 递增序列 -->
+	<rect x="118" y="120" width="20" height="30" fill="#BDCDE8"/>
+	<rect x="118" y="120" width="20" height="6" fill="#5280C1"/>
+	<rect x="144" y="98" width="20" height="52" fill="#BDCDE8"/>
+	<rect x="144" y="98" width="20" height="6" fill="#5280C1"/>
+	<rect x="170" y="76" width="20" height="74" fill="#BDCDE8"/>
+	<rect x="170" y="76" width="20" height="6" fill="#5280C1"/>
 </svg>

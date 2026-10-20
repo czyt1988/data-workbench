@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Ribbon 样式预览：Standard（宽松）三行。标题栏 + 标签栏 + 两个面板，
+     每个面板一个跨三行的大按钮与三行小按钮。官方色板：#5D6D7E、#BDCDE8、
+     #5280C1、#B2B2B2、#FFFFFF；禁渐变/阴影/<text>（DESIGN.md §4） -->
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="96" viewBox="0 0 240 96">
+	<rect x="1" y="1" width="238" height="94" rx="6" fill="#FFFFFF" stroke="#B2B2B2" stroke-width="2"/>
+	<!-- 标题栏 -->
+	<rect x="3" y="3" width="234" height="14" fill="#5D6D7E"/>
+	<rect x="9" y="8" width="26" height="4" rx="2" fill="#FFFFFF" fill-opacity="0.8"/>
+	<circle cx="222" cy="10" r="3" fill="#FFFFFF"/>
+	<circle cx="231" cy="10" r="3" fill="#FFFFFF"/>
+	<!-- 标签栏 -->
+	<rect x="3" y="17" width="234" height="14" fill="#BDCDE8"/>
+	<rect x="10" y="19" width="42" height="12" rx="2" fill="#FFFFFF"/>
+	<rect x="58" y="21" width="28" height="8" rx="4" fill="#FFFFFF" fill-opacity="0.65"/>
+	<rect x="92" y="21" width="28" height="8" rx="4" fill="#FFFFFF" fill-opacity="0.65"/>
+	<!-- 面板 1：大按钮 + 三行小按钮 -->
+	<rect x="12" y="35" width="44" height="40" rx="4" fill="#5280C1"/>
+	<g fill="#FFFFFF">
+		<rect x="20" y="55" width="7" height="12" rx="1"/>
+		<rect x="30" y="49" width="7" height="18" rx="1"/>
+		<rect x="40" y="45" width="7" height="22" rx="1"/>
+	</g>
+	<rect x="14" y="79" width="40" height="4" rx="2" fill="#B2B2B2"/>
+	<g>
+		<rect x="62" y="35" width="12" height="12" rx="2" fill="#5280C1"/>
+		<rect x="78" y="39" width="28" height="4" rx="2" fill="#B2B2B2"/>
+		<rect x="62" y="52" width="12" height="12" rx="2" fill="#5280C1"/>
+		<rect x="78" y="56" width="24" height="4" rx="2" fill="#B2B2B2"/>
+		<rect x="62" y="69" width="12" height="12" rx="2" fill="#5280C1"/>
+		<rect x="78" y="73" width="26" height="4" rx="2" fill="#B2B2B2"/>
+	</g>
+	<line x1="114" y1="33" x2="114" y2="85" stroke="#B2B2B2" stroke-width="1.5"/>
+	<!-- 面板 2 -->
+	<rect x="124" y="35" width="44" height="40" rx="4" fill="#5280C1"/>
+	<g fill="#FFFFFF">
+		<rect x="132" y="45" width="7" height="22" rx="1"/>
+		<rect x="142" y="51" width="7" height="16" rx="1"/>
+		<rect x="152" y="49" width="7" height="18" rx="1"/>
+	</g>
+	<rect x="126" y="79" width="40" height="4" rx="2" fill="#B2B2B2"/>
+	<g>
+		<rect x="174" y="35" width="12" height="12" rx="2" fill="#5280C1"/>
+		<rect x="190" y="39" width="28" height="4" rx="2" fill="#B2B2B2"/>
+		<rect x="174" y="52" width="12" height="12" rx="2" fill="#5280C1"/>
+		<rect x="190" y="56" width="24" height="4" rx="2" fill="#B2B2B2"/>
+		<rect x="174" y="69" width="12" height="12" rx="2" fill="#5280C1"/>
+		<rect x="190" y="73" width="26" height="4" rx="2" fill="#B2B2B2"/>
+	</g>
+</svg>

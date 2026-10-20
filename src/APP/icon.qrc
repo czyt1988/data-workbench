@@ -127,34 +127,9 @@
         <file>Icon/messageTypeWarning.svg</file>
     </qresource>
     <qresource prefix="/app/settingpages">
-        <file>Icon/settingpages/ribbon-style-lite-2r.png</file>
-        <file>Icon/settingpages/ribbon-style-lite-3r.png</file>
-        <file>Icon/settingpages/ribbon-style-standard-2r.png</file>
-        <file>Icon/settingpages/ribbon-style-standard-3r.png</file>
-    </qresource>
-    <qresource prefix="/app/chart-type">
-        <file>Icon/chart-type/chart-bar.svg</file>
-        <file>Icon/chart-type/chart-curve.svg</file>
-        <file>Icon/chart-type/chart-histogram.svg</file>
-        <file>Icon/chart-type/chart-intervalcurve.svg</file>
-        <file>Icon/chart-type/chart-multibar.svg</file>
-        <file>Icon/chart-type/chart-OHLC.svg</file>
-        <file>Icon/chart-type/chart-scatter.svg</file>
-        <file>Icon/chart-type/chart-spectrocurve.svg</file>
-        <file>Icon/chart-type/chart-spectrogram.svg</file>
-        <file>Icon/chart-type/chart-vectorfield.svg</file>
-        <file>Icon/chart-type/chart-surface3d.svg</file>
-        <file>Icon/chart-type/chart-bar3d.svg</file>
-        <file>Icon/chart-type/chart-line3d.svg</file>
-        <file>Icon/chart-type/chart-scatter-2d.svg</file>
-        <file>Icon/chart-type/stats-histplot.svg</file>
-        <file>Icon/chart-type/stats-kdeplot.svg</file>
-        <file>Icon/chart-type/stats-kdeplot-2d.svg</file>
-        <file>Icon/chart-type/stats-boxplot.svg</file>
-        <file>Icon/chart-type/stats-heatmap.svg</file>
-        <file>Icon/chart-type/stats-scatterplot.svg</file>
-        <file>Icon/chart-type/stats-barplot.svg</file>
-        <file>Icon/chart-type/stats-regplot.svg</file>
-        <file>Icon/chart-type/stats-ecdfplot.svg</file>
+        <file>Icon/settingpages/ribbon-style-lite-2r.svg</file>
+        <file>Icon/settingpages/ribbon-style-lite-3r.svg</file>
+        <file>Icon/settingpages/ribbon-style-standard-2r.svg</file>
+        <file>Icon/settingpages/ribbon-style-standard-3r.svg</file>
     </qresource>
 </RCC>

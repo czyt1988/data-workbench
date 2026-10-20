@@ -134,15 +134,15 @@ data-workbench 的视觉语言围绕「**科研工程工具**」定位展开：�
 | `#495A79` / `#42516D` | `messageTypeWarning.svg` 边框与叹号 | 注册例外（messageType 成套），语义上可由 `#5D6D7E` 替代 |
 | `#AD925D` | `folder.svg` 阴影面 | 存量保留，新图标不再引入暗金 |
 | `#BFD1EB` | `data.svg`、`workflow.svg`、`question.svg`、`showDataIn*/insertColumn*/insertRow*` 等列表/插入类填充 | 修订时统一为 `#BDCDE8` |
-| `#515151` | `data.svg` 表头、`rename-column.svg`、`show-column.svg`、`show-all-columns.svg` 等 | 修订时收敛为 `#5D6D7E` |
+| `#515151` | `data.svg` 表头、`rename-column.svg` 等 | 修订时收敛为 `#5D6D7E` |
 | `#BFBFBF` / `#7F7F7F` | `picture.svg` 的禁用/次要轮廓 | 修订时收敛为 `#B2B2B2` / `#727272` |
-| `#D1D1D1` / `#000000` | 缩放系图标（`zoomIn`/`zoomOut`/`viewAll`）及部分 APP 图标（`addFigure`、`newWorkflow`、`chart-picker`、`chart-zoomer`、`itemLinkageMove`） | 修订时收敛为 `#B2B2B2` / `#727272` |
+| `#D1D1D1` / `#000000` | `viewAll.svg` 及部分 APP 图标（`addFigure`、`newWorkflow`、`chart-picker`、`itemLinkageMove`） | 修订时收敛为 `#B2B2B2` / `#727272` |
 | `#333333` | iconfont 系（`castToDatetime`、`castToNum`、`castToString`） | 修订时收敛为 `#497CAD` 或 `#727272` |
 | `#575869` | `item-set-group.svg`、`item-cancel-group.svg` | 修订时收敛为最接近的官方色 |
 | `#64FF6C` / `#C7D0DA` | `itemLinkageMove.svg` | 修订时收敛为 `#669E8B` / `#B2B2B2` |
-| `#27A2DF` / `#808FA1` | `chart-zoomer.svg` | 修订时收敛为 `#3CAED5` 等最接近的官方色 |
 | `#E4C651` | `file.svg`、`markdown.svg` | 修订时收敛为 `#E6C27C` |
 | `#B3B3B3` | `removeRow.svg`、`removeColumn.svg`、`showInfomation.svg` | 修订时收敛为 `#B2B2B2` |
+| `#37812E` | `plugins/DataAnalysis/icon/export-to-one-xlsx.svg`（Excel 工作簿主体） | **注册例外**：Office/Excel 品牌绿，仅限该 Excel 导出图标保留，其它图标不得引用 |
 
 ---
 
@@ -260,8 +260,9 @@ Agent 会话（`src/DAGui/Agent/resources/chat.css`）等内嵌 Web 界面的自
 轴线/边框：#727272（中灰）
 ```
 
-- `DAGui/icon/chart-type/`（13 个）以系列池前 3 色为主；按分类需要扩展使用紫/金的图标是 `chart-scatter.svg`（散点分类）、`chart-spectrocurve.svg`（光谱曲线）。
-- `APP/Icon/chart-type/`（23 个，含 `stats-*` 统计图表系列）已按系列池取色，且全部落在官方色板内，是新增图表图标的参考范本。
+- 图表类型图标的**唯一存放位置**是 `DAGui/icon/chart-type/`（23 个 = 14 个 `chart-*` + 9 个 `stats-*`），资源前缀 `:/DAGui/ChartType/`。APP 层经该前缀引用（APP → DAGui 方向合法），不得在 `APP/Icon/` 下再建副本。
+- `DAFigure/icon/` 保留 10 个与 `chart-type/` 同名同内容的图标（`chart-bar`/`chart-curve`/`chart-OHLC`/`chart-multibar`/`chart-scatter`/`chart-histogram`/`chart-intervalcurve`/`chart-spectrocurve`/`chart-spectrogram`/`chart-vectorfield`）：`DAChartUtil::plotItemIcon()` 属于 L2 功能层，不能反向依赖 L3 的 DAGui 资源，因此这份副本是层级约束下的必要重复，修改时两处同步。
+- 以 `chart-bar`/`chart-bar3d` 为代表的前 3 色（橙红/深蓝/绿）与 3D 图表是一类范本；`chart-scatter`（散点分类）、`chart-spectrocurve`（光谱曲线）按分类需要扩展使用紫/金。
 - **图表系列色必须从官方色板取色，不得引入新色**。
 
 #### 4.2.4 数据类型图标（`data-type/`）
@@ -367,15 +368,15 @@ Debug：   #497CAD（蓝虫子，单色）
 
 | 子目录 | 内容 |
 |--------|------|
-| `chart-type/` | 13 个图表类型图标（柱/曲/直方/区间曲/多柱/OHLC/散点/光谱曲/光谱图/矢量场/3D 柱/3D 曲/3D 曲面），统一 64×64 |
+| `chart-type/` | 23 个图表类型图标（14 个 `chart-*`：柱/曲/直方/区间曲/多柱/OHLC/散点/二维散点/光谱曲/光谱图/矢量场/3D 柱/3D 曲/3D 曲面；9 个 `stats-*`：barplot/boxplot/ecdfplot/heatmap/histplot/kdeplot/kdeplot-2d/regplot/scatterplot），统一 64×64。**全项目唯一存放位置** |
 | `data-type/` | 6 个数据类型图标（DataFrame/DateTime/Float/Int/Obj/Str），统一 200×200 蓝框白底 |
 | `messageType/` | 4 个消息级别图标（Debug/Info/Warning/Error），统一 32×32 |
 
 ### 5.3 `src/APP/Icon/`
 
 - **根目录（117 个应用级图标）**：图表工具（`chart-*`）、数据转换（`castTo*`）、缩放（`zoomIn`/`zoomOut`）、导入导出、工作流/项目管理、消息级别图标等；配色与画布同样受本规范约束。
-- `chart-type/`（23 个 = 14 个 `chart-*` + 9 个 `stats-*`：barplot/boxplot/ecdfplot/heatmap/histplot/kdeplot/kdeplot-2d/regplot/scatterplot），统一 64×64，**用色全部符合官方色板，是新增图表图标的参考范本**。
-- `settingpages/`：Ribbon 样式预览 PNG（设置页用），非图标资源。
+- 图表类型图标统一放在 `DAGui/icon/chart-type/`（见 §5.2），本目录不再保留 `chart-type/` 副本。
+- `settingpages/`：Ribbon 样式预览 SVG（设置页用），非图标资源；4 个文件统一 `240×96` 画布，按标准/紧凑 × 两行/三行画出面板与按钮排布。
 
 ### 5.4 插件图标
 

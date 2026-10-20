@@ -1,13 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<svg version="1.1" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px"
-	 width="200px" height="200px" viewBox="0 0 200 200" xml:space="preserve">
-	<!-- 撤销历史：时钟表盘（中灰圈白底）+ 逆时针回退箭头（主蓝，撤销语义）+
-	     表盘内两条历史刻度线（浅蓝）。官方色板：表盘圈 #727272（中灰）、底 #FFFFFF、
-	     箭头 #5280C1（主蓝，主操作）、刻度 #BDCDE8（浅蓝）；禁渐变/阴影/<text>（DESIGN.md §4） -->
-	<circle cx="100" cy="100" r="72" fill="#FFFFFF"/>
-	<circle cx="100" cy="100" r="72" fill="none" stroke="#727272" stroke-width="12"/>
-	<line x1="100" y1="52" x2="100" y2="100" stroke="#BDCDE8" stroke-width="12" stroke-linecap="round"/>
-	<line x1="100" y1="100" x2="134" y2="120" stroke="#BDCDE8" stroke-width="12" stroke-linecap="round"/>
-	<path d="M 40 62 A 76 76 0 0 0 26 118" fill="none" stroke="#5280C1" stroke-width="14" stroke-linecap="round"/>
-	<polygon points="18,104 46,124 20,140" fill="#5280C1"/>
+<!-- 撤销历史：时钟表盘（中灰圈 + 白底 + 深蓝指针）+ 外侧逆时针回退箭头（主蓝）。
+     弧线拆成 4 段小圆弧，避免大弧标志在两个候选圆心间选到画布外。
+     语义对应「显示撤销历史」动作。官方色板：#727272、#497CAD、#5280C1、#FFFFFF；
+     禁渐变/阴影/文字元素（DESIGN.md §4） -->
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+	<!-- 表盘 -->
+	<circle cx="100" cy="100" r="54" fill="#FFFFFF" stroke="#727272" stroke-width="12"/>
+	<!-- 时针/分针 -->
+	<path d="M100 100V52M100 100L136 122" fill="none" stroke="#497CAD" stroke-width="10"
+	      stroke-linecap="round"/>
+	<!-- 逆时针回退箭头（300° 圆弧） -->
+	<path d="M100 22A78 78 0 0 0 22 100A78 78 0 0 0 100 178A78 78 0 0 0 178 100A78 78 0 0 0 167.6 61"
+	      fill="none" stroke="#5280C1" stroke-width="12" stroke-linecap="round"/>
+	<polygon points="157.6,43.7 178.8,54.5 156.3,67.5" fill="#5280C1"/>
 </svg>

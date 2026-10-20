@@ -1,13 +1,13 @@
-<?xml version="1.0" standalone="no"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="200" height="200">
-    <!-- Document body with folded corner -->
-    <path d="M 256 128 L 576 128 L 768 320 L 768 832 L 256 832 Z" fill="#497CAD"/>
-    <!-- Folded corner (white triangle) -->
-    <path d="M 576 128 L 576 320 L 768 320 Z" fill="#FFFFFF"/>
-    <!-- Log lines -->
-    <rect x="336" y="420" width="352" height="24" rx="12" fill="#FFFFFF"/>
-    <rect x="336" y="484" width="352" height="24" rx="12" fill="#FFFFFF"/>
-    <rect x="336" y="548" width="256" height="24" rx="12" fill="#FFFFFF"/>
-    <rect x="336" y="612" width="320" height="24" rx="12" fill="#FFFFFF"/>
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 日志设置：日志文档（深蓝实心 + 白色折角与文本行）。用于设置页「日志」入口。
+     1024 画布「深蓝实心 + 白色镂空」风格。官方色板：#497CAD、#FFFFFF -->
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 1024 1024">
+	<path d="M240 120H600L784 304V904H240Z" fill="#497CAD"/>
+	<path d="M600 120V304H784Z" fill="#FFFFFF"/>
+	<g fill="#FFFFFF">
+		<rect x="320" y="400" width="384" height="40" rx="20"/>
+		<rect x="320" y="488" width="384" height="40" rx="20"/>
+		<rect x="320" y="576" width="288" height="40" rx="20"/>
+		<rect x="320" y="664" width="336" height="40" rx="20"/>
+	</g>
 </svg>

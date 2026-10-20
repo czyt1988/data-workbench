@@ -119,6 +119,16 @@
         <file>icon/chart-type/chart-surface3d.svg</file>
         <file>icon/chart-type/chart-bar3d.svg</file>
         <file>icon/chart-type/chart-line3d.svg</file>
+        <file>icon/chart-type/chart-scatter-2d.svg</file>
+        <file>icon/chart-type/stats-histplot.svg</file>
+        <file>icon/chart-type/stats-kdeplot.svg</file>
+        <file>icon/chart-type/stats-kdeplot-2d.svg</file>
+        <file>icon/chart-type/stats-boxplot.svg</file>
+        <file>icon/chart-type/stats-heatmap.svg</file>
+        <file>icon/chart-type/stats-scatterplot.svg</file>
+        <file>icon/chart-type/stats-barplot.svg</file>
+        <file>icon/chart-type/stats-regplot.svg</file>
+        <file>icon/chart-type/stats-ecdfplot.svg</file>
     </qresource>
     <qresource prefix="/DAGui/ChartSetting">
         <file>icon/axisLeftBottom.svg</file>

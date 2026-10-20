@@ -1,34 +1,30 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!-- Generator: AI Design -->
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 数据拾取设置：图表框（中灰 10 描边）+ 曲线 + 竖向拾取线 + 拾取点 + 右下齿轮。
+     语义对应「数据拾取」设置项。线宽与同目录图标统一为 8~10。官方色板：#727272、
+     #5280C1、#497CAD、#669E8B、#5D6D7E、#FFFFFF；禁渐变/阴影/<text>（DESIGN.md §4） -->
 <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
-  <!-- Chart area background -->
-  <rect x="18" y="25" width="160" height="120" rx="6" ry="6" fill="#BDCDE8" stroke="#727272" stroke-width="2"/>
-  <!-- X axis -->
-  <line x1="33" y1="135" x2="168" y2="135" stroke="#727272" stroke-width="1.5"/>
-  <!-- Y axis -->
-  <line x1="33" y1="35" x2="33" y2="135" stroke="#727272" stroke-width="1.5"/>
-  <!-- Curve -->
-  <path d="M 33 110 C 58 50, 82 120, 105 85 S 142 70, 168 95" fill="none" stroke="#5280C1" stroke-width="3" stroke-linecap="round"/>
-  <!-- Vertical picker line (dashed) -->
-  <line x1="105" y1="35" x2="105" y2="135" stroke="#727272" stroke-width="2" stroke-dasharray="5,3"/>
-  <!-- Feature point on curve -->
-  <circle cx="105" cy="85" r="6" fill="#669E8B" stroke="#FFFFFF" stroke-width="2"/>
-  <!-- Gear (bottom-right corner) -->
-  <g transform="translate(145, 148)">
-    <!-- 8 gear teeth as rounded rects arranged radially -->
-    <g fill="#497CAD">
-      <rect x="17" y="0" width="6" height="8" rx="1"/>
-      <rect x="17" y="32" width="6" height="8" rx="1"/>
-      <rect x="0" y="17" width="8" height="6" rx="1"/>
-      <rect x="32" y="17" width="8" height="6" rx="1"/>
-      <rect x="5" y="5" width="6" height="6" rx="1" transform="rotate(45 8 8)"/>
-      <rect x="29" y="5" width="6" height="6" rx="1" transform="rotate(45 32 8)"/>
-      <rect x="5" y="29" width="6" height="6" rx="1" transform="rotate(45 8 32)"/>
-      <rect x="29" y="29" width="6" height="6" rx="1" transform="rotate(45 32 32)"/>
-    </g>
-    <!-- Gear ring -->
-    <circle cx="20" cy="20" r="14" fill="#FFFFFF" stroke="#497CAD" stroke-width="2.5"/>
-    <!-- Gear center -->
-    <circle cx="20" cy="20" r="4" fill="#497CAD"/>
-  </g>
+	<!-- 图表框 -->
+	<rect x="14" y="14" width="172" height="140" rx="10" fill="#FFFFFF" stroke="#727272" stroke-width="10"/>
+	<!-- 坐标轴 -->
+	<path d="M36 138V36M36 138H160" fill="none" stroke="#727272" stroke-width="8" stroke-linecap="round"/>
+	<!-- 曲线 -->
+	<path d="M36 112C62 52 88 126 112 88S146 70 164 96" fill="none" stroke="#5280C1"
+	      stroke-width="10" stroke-linecap="round"/>
+	<!-- 竖向拾取线与拾取点 -->
+	<line x1="112" y1="36" x2="112" y2="138" stroke="#5D6D7E" stroke-width="8" stroke-dasharray="10 8"/>
+	<circle cx="112" cy="88" r="12" fill="#669E8B" stroke="#FFFFFF" stroke-width="6"/>
+	<!-- 右下齿轮（白色挖底避免与边框粘连） -->
+	<circle cx="158" cy="158" r="34" fill="#FFFFFF"/>
+	<g fill="#497CAD">
+		<rect x="152" y="126" width="12" height="16" rx="3"/>
+		<rect x="152" y="126" width="12" height="16" rx="3" transform="rotate(45 158 158)"/>
+		<rect x="152" y="126" width="12" height="16" rx="3" transform="rotate(90 158 158)"/>
+		<rect x="152" y="126" width="12" height="16" rx="3" transform="rotate(135 158 158)"/>
+		<rect x="152" y="126" width="12" height="16" rx="3" transform="rotate(180 158 158)"/>
+		<rect x="152" y="126" width="12" height="16" rx="3" transform="rotate(225 158 158)"/>
+		<rect x="152" y="126" width="12" height="16" rx="3" transform="rotate(270 158 158)"/>
+		<rect x="152" y="126" width="12" height="16" rx="3" transform="rotate(315 158 158)"/>
+	</g>
+	<circle cx="158" cy="158" r="20" fill="#497CAD"/>
+	<circle cx="158" cy="158" r="8" fill="#FFFFFF"/>
 </svg>

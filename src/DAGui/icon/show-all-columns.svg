@@ -1,5 +1,12 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
-  <path d="M20 100 Q100 35 180 100 Q100 165 20 100 Z" fill="#BDCDE8" stroke="#727272" stroke-width="8" stroke-linejoin="round"/>
-  <circle cx="100" cy="100" r="22" fill="#5280C1"/>
-  <circle cx="100" cy="100" r="10" fill="#515151"/>
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 显示所有列：眼睛（中灰轮廓 + 主蓝虹膜）+ 虹膜内三根白色列条，表示显示全部列。
+     与 show-column 仅列条数量不同。官方色板：#727272、#5280C1、#FFFFFF；
+     禁渐变/阴影/文字元素（DESIGN.md §4） -->
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+	<path d="M12 100C52 42 148 42 188 100C148 158 52 158 12 100Z" fill="#FFFFFF"
+	      stroke="#727272" stroke-width="12" stroke-linejoin="round"/>
+	<circle cx="100" cy="100" r="42" fill="#5280C1"/>
+	<rect x="69" y="72" width="14" height="56" rx="7" fill="#FFFFFF"/>
+	<rect x="93" y="72" width="14" height="56" rx="7" fill="#FFFFFF"/>
+	<rect x="117" y="72" width="14" height="56" rx="7" fill="#FFFFFF"/>
 </svg>
