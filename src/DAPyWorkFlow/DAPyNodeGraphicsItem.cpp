@@ -94,6 +94,7 @@ public:
     qreal linkPointDrawHeight { 10 };                ///< 连接点的绘制高度（高度相对于东西方向的高度）
     static constexpr qreal kPortMinGap { 4.0 };      ///< 连接点之间的最小间隔
     DAPyObjectWrapper mPaintCallback;                ///< 自定义绘制回调（Python函数对象）
+    DAPyObjectWrapper mWorkflowModule;               ///< 缓存的da_py_workflow模块对象（绘制回调的类型转换器依赖）
     bool mPaintCallbackError { false };              ///< 绘制回调是否发生过异常
     QRectF mIconRect;                                ///< 绘制Icon的区域，仅仅有icon时才有用
     QRectF mTextRect;                                ///< 绘制text的区域
@@ -990,8 +991,11 @@ void DAPyNodeGraphicsItem::paintBody(QPainter* painter,
         // 注意：paint回调应在50ms内完成，避免阻塞GUI线程
         DAPyGILGuard gil;
         try {
-            // 确保 da_py_workflow 模块已加载，使 DAPyPainterProxy 类型转换器可用
-            pybind11::module_::import("da_py_workflow");
+            // 确保 da_py_workflow 模块已加载，使 DAPyPainterProxy 类型转换器可用；
+            // 模块对象每节点只导入一次，后续绘制直接复用（解释器仅应用退出时关闭）
+            if (d_ptr->mWorkflowModule.isNone()) {
+                d_ptr->mWorkflowModule = DAPyObjectWrapper(pybind11::module_::import("da_py_workflow"));
+            }
             DAPyPainterProxy proxy(painter);
             pybind11::tuple bodyTuple =
                 pybind11::make_tuple(bodyRect.x(), bodyRect.y(), bodyRect.width(), bodyRect.height());
