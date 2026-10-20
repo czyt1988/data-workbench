@@ -51,7 +51,13 @@ def _hex_to_rgb(color):
 
 def _wrap_text_by_width(painter, text, max_width, font):
     """
-    按像素宽度逐字符测量切分文本为多行，遇到换行符 \\n 也强制换行。
+    按像素宽度把文本切分为多行，遇到换行符 \\n 也强制换行。
+
+    对每行用二分查找确定最长可容纳前缀，把每行测量次数降到对数级，
+    保持原有贪心换行语义：行取"宽度不超过 max_width 的最长前缀"，
+    第一个字符就超宽时也单独成行。
+    已知限制：依赖"前缀越长、宽度不减"的单调性，正常字体成立；
+    若遇负字距导致非单调，换行点可能与逐字符测量略有差异。
 
     :param painter: DAPyPainterProxy 实例
     :param text: 原始文本
@@ -62,22 +68,28 @@ def _wrap_text_by_width(painter, text, max_width, font):
     if not text:
         return [""]
     lines = []
-    current = ""
-    for ch in text:
-        if ch == "\n":
-            lines.append(current)
-            current = ""
+    for paragraph in text.split("\n"):
+        if not paragraph:
+            lines.append("")
             continue
-        candidate = current + ch
-        # NOTE: 变量名用 _w 而非 _ ，避免与 gettext._() 内置函数冲突
-        # （Python 将赋值过的 _ 视为局部变量，导致后续 _("...") 调用报 UnboundLocalError）
-        text_w, _h = painter.textBoundingRectWithFont(candidate, font)
-        if text_w > max_width and current:
-            lines.append(current)
-            current = ch
-        else:
-            current = candidate
-    lines.append(current)
+        start = 0
+        length = len(paragraph)
+        while start < length:
+            # 至少放一个字符，保持与原实现一致：单字符超宽时也单独成行
+            best = start + 1
+            low, high = start + 1, length
+            while low <= high:
+                mid = (low + high) // 2
+                # NOTE: 变量名用 _height 而非 _ ，避免与 gettext._() 内置函数冲突
+                # （Python 将赋值过的 _ 视为局部变量，导致后续 _("...") 调用报 UnboundLocalError）
+                width, _height = painter.textBoundingRectWithFont(paragraph[start:mid], font)
+                if width <= max_width:
+                    best = mid
+                    low = mid + 1
+                else:
+                    high = mid - 1
+            lines.append(paragraph[start:best])
+            start = best
     return lines
 
 
