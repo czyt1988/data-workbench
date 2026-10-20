@@ -119,6 +119,29 @@ void DADialogFindReplace::activate(bool expandReplace)
 }
 
 /**
+ * @brief 设置查找关键字
+ *
+ * 右键「查找/替换」入口预填当前单元格内容用；textChanged 连去抖定时器，
+ * 设值后自动走一次延迟扫描（与手输同链路）。
+ * @param text 关键字
+ */
+void DADialogFindReplace::setFindText(const QString& text)
+{
+    if (ui->lineEditFind->text() != text) {
+        ui->lineEditFind->setText(text);
+    }
+}
+
+/**
+ * @brief 查找输入框当前文本
+ * @return 文本
+ */
+QString DADialogFindReplace::findText() const
+{
+    return ui->lineEditFind->text();
+}
+
+/**
  * @brief 当前参数快照
  * @return 查找/替换选项
  */

@@ -19,6 +19,9 @@ namespace
 {
 // 行头右缘拖拽热区宽度（像素）
 constexpr int c_rowHeaderResizeHotZone = 8;
+// 段边界拖拽热区宽度（像素，边界两侧各这么宽）：Qt 默认 PM_HeaderGripMargin 仅 4px，
+// 实测用户几乎命中不了（反馈：列宽/行高"无法调节"），加宽到 Excel 式手感
+constexpr int c_sectionResizeHotZone = 6;
 // 行头最小宽度（像素）
 constexpr int c_minRowHeaderWidth = 24;
 
@@ -64,6 +67,9 @@ DADataHeaderView::DADataHeaderView(Qt::Orientation orientation, QWidget* parent)
         setSectionsMovable(true);
         setFirstSectionMovable(true);
     }
+    // 热区光标反馈依赖无按键移动事件：viewport 追踪显式打开（QHeaderView::initialize
+    // 已设一次，这里对替换/重父化等路径再保险）
+    viewport()->setMouseTracking(true);
 }
 
 /**
@@ -73,6 +79,49 @@ DADataHeaderView::DADataHeaderView(Qt::Orientation orientation, QWidget* parent)
 int DADataHeaderView::minimumRowHeaderWidth()
 {
     return c_minRowHeaderWidth;
+}
+
+/**
+ * @brief 行头宽拖拽热区宽度（vertical 右缘 / 角格右缘同口径）
+ * @return 像素
+ */
+int DADataHeaderView::rowHeaderResizeHotZoneWidth()
+{
+    return c_rowHeaderResizeHotZone;
+}
+
+/**
+ * @brief 段边界拖拽热区宽度（边界两侧各这么宽）
+ * @return 像素
+ */
+int DADataHeaderView::sectionResizeHotZoneWidth()
+{
+    return c_sectionResizeHotZone;
+}
+
+/**
+ * @brief 行头宽直接设值（不发信号）
+ *
+ * 角格拖拽移动期调用（释放时由 commitRowHeaderWidth 统一落库，避免移动期刷屏写 store）。
+ * @param width 目标宽度（像素，按最小宽度夹紧）
+ */
+void DADataHeaderView::setRowHeaderWidthDirect(int width)
+{
+    if (orientation() != Qt::Vertical) {
+        return;
+    }
+    setFixedWidth(qMax(c_minRowHeaderWidth, width));
+}
+
+/**
+ * @brief 行头宽落库（发 rowHeaderWidthChanged 交页面写视图状态）
+ */
+void DADataHeaderView::commitRowHeaderWidth()
+{
+    if (orientation() != Qt::Vertical) {
+        return;
+    }
+    Q_EMIT rowHeaderWidthChanged(width());
 }
 
 /**
@@ -168,12 +217,39 @@ QColor DADataHeaderView::computedColumnBadgeColor(int logicalIndex) const
  */
 void DADataHeaderView::paintSection(QPainter* painter, const QRect& rect, int logicalIndex) const
 {
+    // save/restore 包裹基类调用：QCommonStyle CE_Header 收尾把裁剪恢复成空区域，
+    // 基类 paintSection 自身不做 save/restore，不包裹则后续角标绘制全被裁掉
+    painter->save();
     QHeaderView::paintSection(painter, rect, logicalIndex);
-    if (orientation() != Qt::Horizontal || !painter || rect.isEmpty()) {
+    painter->restore();
+    if (orientation() != Qt::Horizontal) {
         return;
     }
-    int order            = -1;
-    Qt::SortOrder dir    = Qt::AscendingOrder;
+    paintSectionOverlays(painter, rect, logicalIndex);
+}
+
+/**
+ * @brief 单段角标叠加绘制（排序方向箭头 + 多列序号角标 + 计算列 ƒx 角标）
+ *
+ * 色值取官方色板（见仓库根目录 DESIGN.md）：
+ * - 方向箭头：段右端垂直居中，升序向上/降序向下，深蓝灰 #5D6D7E；
+ * - 多列序号角标：仅规格多于 1 列时绘制，段左上角，主蓝 #5280C1 圆底 + 白色数字，
+ *   显示该列在规格中的优先级（1 起）；
+ * - 计算列 ƒx 角标（004 T1.23 R9）：左侧前导垂直居中，状态色（有效=主蓝 #5280C1 /
+ *   待重算=金黄 #E6C27C / 失效=橙红 #CE6043）；浅蓝 #BDCDE8 底色经模型 BackgroundRole
+ *   由基类绘制。该列同时带多列排序序号角标（左上）时 ƒx 移到左下，三者共存不重叠
+ *   （排序箭头恒在右端）。单元格区域不染色（R9）。
+ * @param painter 绘制器（基类 paintSection 经 save/restore 包裹后沿用同一 painter）
+ * @param rect 段矩形
+ * @param logicalIndex 列逻辑索引
+ */
+void DADataHeaderView::paintSectionOverlays(QPainter* painter, const QRect& rect, int logicalIndex) const
+{
+    if (!painter || rect.isEmpty()) {
+        return;
+    }
+    int order         = -1;
+    Qt::SortOrder dir = Qt::AscendingOrder;
     for (int i = 0; i < mSortSpec.size(); ++i) {
         if (mSortSpec.at(i).first == logicalIndex) {
             order = i;
@@ -408,11 +484,79 @@ bool DADataHeaderView::isInRowHeaderResizeHotZone(const QPoint& pos) const
 }
 
 /**
- * @brief 恢复热区光标（仅在当前是拖拽光标时复位，不覆盖基类的段边界光标）
+ * @brief horizontal 实例底边表头高拖拽热区判定
+ * @param pos 表头内坐标
+ * @return 在热区内返回 true
+ */
+bool DADataHeaderView::isInHeaderHeightHotZone(const QPoint& pos) const
+{
+    if (orientation() != Qt::Horizontal) {
+        return false;
+    }
+    return pos.y() >= height() - c_sectionResizeHotZone;
+}
+
+/**
+ * @brief 段「尾端边界」热区命中判定（列宽=右边界、行高=下边界）
+ *
+ * 自定义拖拽起手区：比 Qt 的 sectionHandle（PM_HeaderGripMargin≈4px 且光标反馈
+ * 不可靠）更宽更明确。命中返回该段 logical（拖拽改该段尺寸），未命中返回 -1。
+ * @param pos 表头内坐标
+ * @return 段 logical 或 -1
+ */
+int DADataHeaderView::sectionEndBoundaryAt(const QPoint& pos) const
+{
+    const int axis = (orientation() == Qt::Horizontal) ? pos.x() : pos.y();
+    const int n    = count();
+    for (int visual = 0; visual < n; ++visual) {
+        const int logical = logicalIndex(visual);
+        if (logical < 0 || isSectionHidden(logical)) {
+            continue;
+        }
+        const int end = sectionViewportPosition(logical) + sectionSize(logical);
+        if (qAbs(axis - end) <= c_sectionResizeHotZone) {
+            return logical;
+        }
+    }
+    return -1;
+}
+
+/**
+ * @brief 热区光标反馈（viewport 上统一管理）
+ *
+ * 列边界/行头宽右缘 = SplitH；行边界/表头高底边 = SplitV；离开全部热区复位箭头。
+ * 光标设在 viewport 上（基类把段边界光标设在表头 widget 上、靠 viewport 继承，
+ * 一旦 viewport 自有光标即失效——本类自管后口径唯一）。
+ * @param pos 表头内坐标
+ */
+void DADataHeaderView::updateHotZoneCursor(const QPoint& pos)
+{
+    Qt::CursorShape want = Qt::ArrowCursor;
+    if (orientation() == Qt::Vertical) {
+        if (isInRowHeaderResizeHotZone(pos)) {
+            want = Qt::SplitHCursor;
+        } else if (sectionEndBoundaryAt(pos) >= 0) {
+            want = Qt::SplitVCursor;
+        }
+    } else {
+        if (isInHeaderHeightHotZone(pos)) {
+            want = Qt::SplitVCursor;
+        } else if (sectionEndBoundaryAt(pos) >= 0) {
+            want = Qt::SplitHCursor;
+        }
+    }
+    if (viewport()->cursor().shape() != want) {
+        viewport()->setCursor(want);
+    }
+}
+
+/**
+ * @brief 恢复热区光标（拖拽光标复位为箭头）
  */
 void DADataHeaderView::restoreHotZoneCursor()
 {
-    if (viewport()->cursor().shape() == Qt::SplitHCursor) {
+    const Qt::CursorShape cur = viewport()->cursor().shape();
+    if (cur == Qt::SplitHCursor || cur == Qt::SplitVCursor) {
         viewport()->setCursor(Qt::ArrowCursor);
     }
 }
@@ -451,15 +595,37 @@ void DADataHeaderView::contextMenuEvent(QContextMenuEvent* event)
 void DADataHeaderView::mousePressEvent(QMouseEvent* event)
 {
     if (event->button() == Qt::LeftButton) {
-        if (isInRowHeaderResizeHotZone(Qt5Qt6Compat_QXXEvent_Pos(event))) {
+        const QPoint pos = Qt5Qt6Compat_QXXEvent_Pos(event);
+        if (isInRowHeaderResizeHotZone(pos)) {
             mRowHeaderResizing = true;
             mResizeStartX      = globalPosOf(event).x();
             mResizeStartWidth  = width();
+            viewport()->setCursor(Qt::SplitHCursor);
             event->accept();
             return;  // 不进基类，避免触发整列/整行选择
         }
-        mPressedLogicalIndex = logicalIndexAt(Qt5Qt6Compat_QXXEvent_Pos(event));
-        mPressedPos          = Qt5Qt6Compat_QXXEvent_Pos(event);
+        // 水平表头底边：表头高拖拽（Excel 式可调表头高）
+        if (isInHeaderHeightHotZone(pos)) {
+            mResizeKind      = ResizeKind::HeaderHeight;
+            mResizeStartPos  = globalPosOf(event).y();
+            mResizeStartSize = height();
+            viewport()->setCursor(Qt::SplitVCursor);
+            event->accept();
+            return;
+        }
+        // 段尾边界：列宽/行高拖拽（自定义宽热区；不进基类，避免误触整列/整行选择与列序拖动）
+        const int boundary = sectionEndBoundaryAt(pos);
+        if (boundary >= 0) {
+            mResizeKind     = (orientation() == Qt::Horizontal) ? ResizeKind::ColumnWidth : ResizeKind::RowHeight;
+            mResizeLogical  = boundary;
+            mResizeStartPos = (orientation() == Qt::Horizontal) ? globalPosOf(event).x() : globalPosOf(event).y();
+            mResizeStartSize = sectionSize(boundary);
+            viewport()->setCursor((orientation() == Qt::Horizontal) ? Qt::SplitHCursor : Qt::SplitVCursor);
+            event->accept();
+            return;
+        }
+        mPressedLogicalIndex = logicalIndexAt(pos);
+        mPressedPos          = pos;
         mDragMoved           = false;
     }
     QHeaderView::mousePressEvent(event);
@@ -478,6 +644,36 @@ void DADataHeaderView::mouseMoveEvent(QMouseEvent* event)
         event->accept();
         return;
     }
+    if (mResizeKind != ResizeKind::None) {
+        const QPoint g = globalPosOf(event);
+        switch (mResizeKind) {
+        case ResizeKind::ColumnWidth:
+            // resizeSection 自带 sectionResized 信号（页面据此落库列宽）
+            resizeSection(mResizeLogical, qMax(minimumSectionSize(), mResizeStartSize + g.x() - mResizeStartPos));
+            break;
+        case ResizeKind::RowHeight: {
+            // 滑动窗下段号=窗口行号，逐行行高无稳定语义（R6）：行边界拖拽按「统一行高」
+            // 应用（默认行高 + 全部可见段），滚动/重开均一致
+            const int h = qMax(minimumSectionSize(), mResizeStartSize + g.y() - mResizeStartPos);
+            setDefaultSectionSize(h);
+            const int n = count();
+            for (int i = 0; i < n; ++i) {
+                if (!isSectionHidden(i)) {
+                    resizeSection(i, h);
+                }
+            }
+            break;
+        }
+        case ResizeKind::HeaderHeight:
+            // setFixedHeight 令 min=max=h，视图布局不会覆盖（与行头宽同法）
+            setFixedHeight(qMax(fontMetrics().lineSpacing(), mResizeStartSize + g.y() - mResizeStartPos));
+            break;
+        case ResizeKind::None:
+            break;
+        }
+        event->accept();
+        return;
+    }
     // 拖动判据（006c）：沿表头轴向比较（与 Qt 的 1D 判定同口径）；
     // 置位后到释放为止不复位——"拖出阈值又拖回原段松手"也视作拖动过
     if (!mDragMoved && mPressedLogicalIndex >= 0 && (event->buttons() & Qt::LeftButton)) {
@@ -489,13 +685,7 @@ void DADataHeaderView::mouseMoveEvent(QMouseEvent* event)
         }
     }
     QHeaderView::mouseMoveEvent(event);
-    if (orientation() == Qt::Vertical) {
-        if (isInRowHeaderResizeHotZone(Qt5Qt6Compat_QXXEvent_Pos(event))) {
-            viewport()->setCursor(Qt::SplitHCursor);
-        } else {
-            restoreHotZoneCursor();
-        }
-    }
+    updateHotZoneCursor(Qt5Qt6Compat_QXXEvent_Pos(event));
 }
 
 /**
@@ -509,6 +699,21 @@ void DADataHeaderView::mouseReleaseEvent(QMouseEvent* event)
     if (mRowHeaderResizing) {
         mRowHeaderResizing = false;
         Q_EMIT rowHeaderWidthChanged(width());
+        updateHotZoneCursor(Qt5Qt6Compat_QXXEvent_Pos(event));
+        event->accept();
+        return;
+    }
+    if (mResizeKind != ResizeKind::None) {
+        const ResizeKind kind = mResizeKind;
+        mResizeKind           = ResizeKind::None;
+        if (kind == ResizeKind::RowHeight && mResizeLogical >= 0) {
+            Q_EMIT rowHeightChanged(sectionSize(mResizeLogical));
+        } else if (kind == ResizeKind::HeaderHeight) {
+            Q_EMIT horizontalHeaderHeightChanged(height());
+        }
+        // ColumnWidth 的落库经 resizeSection→sectionResized 移动期已完成，释放不重复写
+        mResizeLogical = -1;
+        updateHotZoneCursor(Qt5Qt6Compat_QXXEvent_Pos(event));
         event->accept();
         return;
     }

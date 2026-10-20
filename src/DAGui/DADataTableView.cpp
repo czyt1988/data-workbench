@@ -1,4 +1,6 @@
 #include "DADataTableView.h"
+#include "DADataHeaderView.h"
+#include "DAGlobals.h"
 #include "DALogCategory.h"
 #include "DATableDataSource.h"
 #include "DATableNoteStore.h"
@@ -11,6 +13,10 @@
 #include <QAction>
 #include <QIcon>
 #include <QContextMenuEvent>
+#include <QAbstractButton>
+#include <QEvent>
+#include <QMouseEvent>
+#include <QShowEvent>
 #include <QSet>
 #include <QHash>
 #include <QPair>
@@ -18,8 +24,21 @@
 #include <climits>
 namespace DA
 {
+namespace
+{
+// 鼠标事件的全局坐标（Qt5/Qt6 兼容）
+QPoint globalPosOf(const QMouseEvent* event)
+{
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    return event->globalPos();
+#else
+    return event->globalPosition().toPoint();
+#endif
+}
+}  // namespace
 DADataTableView::DADataTableView(QWidget* parent) : DACacheWindowTableView(parent)
 {
+    installCornerButtonFilter();
 }
 
 DADataTableView::~DADataTableView()
@@ -51,29 +70,47 @@ DAData DADataTableView::getData() const
 }
 
 /**
- * @brief 按键事件：Ctrl+C 复制；Ctrl+F 查找；Ctrl+H 替换；Ctrl+D 向下填充；Esc 关查找条
+ * @brief 按键事件：Ctrl+C 复制；Ctrl+X 剪切；Ctrl+V 粘贴；Ctrl+F 查找；Ctrl+H 替换；
+ * Ctrl+D 向下填充；Esc 关查找条
  *
  * 表格快捷键的唯一挂点（红线5：Ribbon action 不设 shortcut，避免双触发）。
- * 查找/替换发表意信号交页面唤出浮动条；Esc 关查找条后仍交基类（保留退出编辑器等既有语义）。
+ * 剪切/粘贴与表体右键菜单共用表意信号（APP 接线到既有 cutSelection/pasteFromClipboard，
+ * 视图内不新增执行逻辑）；查找/替换发表意信号交页面唤出浮动条（快捷键入口不预填）；
+ * Esc 关查找条后仍交基类（保留退出编辑器等既有语义）。
  * 未处理的键一律转发基类 DACacheWindowTableView（恢复整表语义键 Ctrl+G/Ctrl+Home/Ctrl+End/
  * PageUp/PageDown/Home/End——QTableView 自己的 Home/End 只作用于模型窗口内，滑动窗下等于"窗口首尾"）。
  * @param event 按键事件
  */
 void DADataTableView::keyPressEvent(QKeyEvent* event)
 {
-    if (event == QKeySequence::Copy) {
+    if (event->matches(QKeySequence::Copy)) {
         if (copySelectionToClipboard()) {
             event->accept();
             return;
         }
     }
+    // Ctrl+X/Ctrl+V：启用规则与右键菜单同口径（有选区；粘贴另需数据源可编辑）
+    if (event->matches(QKeySequence::Cut)) {
+        if (selectionModel() && selectionModel()->hasSelection() && isDataSourceEditable()) {
+            Q_EMIT contextMenuCutRequested();
+            event->accept();
+            return;
+        }
+    }
+    if (event->matches(QKeySequence::Paste)) {
+        if (selectionModel() && selectionModel()->hasSelection() && isDataSourceEditable()) {
+            Q_EMIT contextMenuPasteRequested();
+            event->accept();
+            return;
+        }
+    }
     if (event->matches(QKeySequence::Find)) {
-        Q_EMIT findRequested();
+        Q_EMIT findRequested(false);
         event->accept();
         return;
     }
     if (event->matches(QKeySequence::Replace)) {
-        Q_EMIT replaceRequested();
+        Q_EMIT replaceRequested(false);
         event->accept();
         return;
     }
@@ -92,6 +129,135 @@ void DADataTableView::keyPressEvent(QKeyEvent* event)
     // 恢复 Ctrl+G 定位到行、Ctrl+Home/Ctrl+End 数据首尾、PageUp/PageDown 翻屏、Home/End 行首尾
     // （QTableView 自己的 Home/End 只作用于模型窗口内，滑动窗下等于"窗口首尾"）
     DACacheWindowTableView::keyPressEvent(event);
+}
+
+/**
+ * @brief 通用事件：ShortcutOverride 阶段认领表格自处理的标准键
+ *
+ * 窗口级快捷键（其它 dock 控件注册的 QAction shortcut）会在 ShortcutOverride 阶段
+ * 认领按键——一旦认领，keyPressEvent 收不到该键（用户反馈：表格内 Ctrl+C/X/V 无反应）。
+ * 本覆写对表格自处理的标准键先行 accept，保证键事件送达 keyPressEvent/基类。
+ * @param e 事件
+ * @return 认领返回 true
+ */
+bool DADataTableView::event(QEvent* e)
+{
+    if (e->type() == QEvent::ShortcutOverride) {
+        QKeyEvent* ke      = static_cast< QKeyEvent* >(e);
+        const bool handled = ke->matches(QKeySequence::Copy) || ke->matches(QKeySequence::Cut)
+                             || ke->matches(QKeySequence::Paste) || ke->matches(QKeySequence::Find)
+                             || ke->matches(QKeySequence::Replace) || ke->matches(QKeySequence::SelectAll)
+                             || (ke->key() == Qt::Key_D && ke->modifiers() == Qt::ControlModifier)
+                             || (ke->key() == Qt::Key_G && ke->modifiers() == Qt::ControlModifier)
+                             || ke->key() == Qt::Key_Escape;
+        if (handled) {
+            ke->accept();
+            return true;
+        }
+    }
+    return DACacheWindowTableView::event(e);
+}
+
+/**
+ * @brief 显示事件：懒装角格事件过滤器
+ *
+ * QTableCornerButton 由 QTableView 首次布局时创建，构造期拿不到，故在 showEvent 补装。
+ * @param event 显示事件
+ */
+void DADataTableView::showEvent(QShowEvent* event)
+{
+    DACacheWindowTableView::showEvent(event);
+    installCornerButtonFilter();
+}
+
+/**
+ * @brief 安装角格（左上角全选按钮）事件过滤器
+ *
+ * 角格右缘热区拖拽改行头宽（与行头右缘热区同语义，用户反馈：垂直表头与水平表头
+ * 交接处也应能调行头宽）；热区外保持角格既有点击全选行为。
+ * QTableCornerButton 是 QTableView 的私有点角部件：公开 cornerWidget() 读的是
+ * QAbstractScrollAreaPrivate 的成员（QTableViewPrivate 同名成员遮蔽，恒为 nullptr），
+ * 故按「唯一直接子 QAbstractButton」定位（构造期即存在）。
+ */
+void DADataTableView::installCornerButtonFilter()
+{
+    if (mCornerFilterInstalled) {
+        return;
+    }
+    QWidget* corner = findChild< QAbstractButton* >();
+    if (!corner) {
+        return;
+    }
+    mCornerButton        = corner;
+    mCornerFilterInstalled = true;
+    corner->installEventFilter(this);
+    corner->setMouseTracking(true);  // 热区光标切换需要无按键移动事件
+}
+
+/**
+ * @brief 事件过滤：角格右缘热区拖拽改行头宽
+ *
+ * 按下右缘热区开始拖拽（吞掉事件，避免触发全选）；移动按全局 x 增量 setFixedWidth；
+ * 释放发 rowHeaderWidthChanged 交页面落库。热区内外切换 SplitHCursor 光标反馈。
+ * @param watched 被观察对象（角格）
+ * @param e 事件
+ * @return 吞掉返回 true
+ */
+bool DADataTableView::eventFilter(QObject* watched, QEvent* e)
+{
+    QWidget* corner = mCornerButton;
+    if (corner && watched == corner) {
+        DADataHeaderView* vh = qobject_cast< DADataHeaderView* >(verticalHeader());
+        if (vh) {
+            const int hotZone = DADataHeaderView::rowHeaderResizeHotZoneWidth();
+            switch (e->type()) {
+            case QEvent::MouseButtonPress: {
+                QMouseEvent* me = static_cast< QMouseEvent* >(e);
+                if (me->button() == Qt::LeftButton && Qt5Qt6Compat_QXXEvent_Pos(me).x() >= corner->width() - hotZone) {
+                    mCornerResizing         = true;
+                    mCornerResizeStartX     = globalPosOf(me).x();
+                    mCornerResizeStartWidth = vh->width();
+                    e->accept();
+                    return true;
+                }
+                break;
+            }
+            case QEvent::MouseMove: {
+                QMouseEvent* me = static_cast< QMouseEvent* >(e);
+                if (mCornerResizing) {
+                    const int delta = globalPosOf(me).x() - mCornerResizeStartX;
+                    vh->setRowHeaderWidthDirect(mCornerResizeStartWidth + delta);
+                    e->accept();
+                    return true;
+                }
+                if (Qt5Qt6Compat_QXXEvent_Pos(me).x() >= corner->width() - hotZone) {
+                    corner->setCursor(Qt::SplitHCursor);
+                } else if (corner->cursor().shape() == Qt::SplitHCursor) {
+                    corner->setCursor(Qt::ArrowCursor);
+                }
+                break;
+            }
+            case QEvent::MouseButtonRelease: {
+                if (mCornerResizing) {
+                    mCornerResizing = false;
+                    vh->commitRowHeaderWidth();
+                    e->accept();
+                    return true;
+                }
+                break;
+            }
+            case QEvent::Leave: {
+                if (corner->cursor().shape() == Qt::SplitHCursor) {
+                    corner->setCursor(Qt::ArrowCursor);
+                }
+                break;
+            }
+            default:
+                break;
+            }
+        }
+    }
+    return DACacheWindowTableView::eventFilter(watched, e);
 }
 
 /**
@@ -231,8 +397,9 @@ QMenu* DADataTableView::buildContextMenu(const QModelIndex& at)
     QAction* actFind    = menu->addAction(QIcon(QStringLiteral(":/DAGui/icon/find.svg")), tr("Find..."));     // cn:查找...
     QAction* actReplace = menu->addAction(QIcon(QStringLiteral(":/DAGui/icon/replace.svg")), tr("Replace..."));  // cn:替换...
     actReplace->setEnabled(editable);  // 只读源查找可用、替换置灰
-    connect(actFind, &QAction::triggered, this, &DADataTableView::findRequested);
-    connect(actReplace, &QAction::triggered, this, &DADataTableView::replaceRequested);
+    // 右键入口置 prefill=true：浮动条查找框预填当前单元格内容（D9）
+    connect(actFind, &QAction::triggered, this, [ this ]() { Q_EMIT findRequested(true); });
+    connect(actReplace, &QAction::triggered, this, [ this ]() { Q_EMIT replaceRequested(true); });
     // —— 003：条件格式（R16：表体右键菜单与 Ribbon 条件格式按钮同入口；列头菜单不放）——
     // 子菜单形式（WPS 式预设）：内容经 conditionalFormatMenuAboutToShow 交页面填充
     // （页面持有 store 与撤销栈）；只读/惰性源也可管理规则（色阶/数据条在子菜单内置灰），

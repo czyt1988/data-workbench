@@ -53,6 +53,13 @@ public:
     // 行头宽：未记录返回 -1
     int rowHeaderWidth() const;
     void setRowHeaderWidth(int width);
+    // 统一行高（行边界拖拽语义；滑动窗下段号=窗口行号，逐行行高无稳定语义，故单值，R6）：
+    // 未记录返回 -1
+    int rowHeight() const;
+    void setRowHeight(int height);
+    // 水平表头高（表头底边拖拽语义）：未记录返回 -1
+    int horizontalHeaderHeight() const;
+    void setHorizontalHeaderHeight(int height);
 
     // 列序：列名的有序表（空 = 未记录 = 数据列序，006）
     QList< QPair< QString, int > > columnOrder() const;
@@ -85,6 +92,8 @@ private:
     // (列名, occurrence) -> 宽度
     QHash< QPair< QString, int >, int > mColumnWidths;
     int mRowHeaderWidth { -1 };  ///< 行头宽（像素），-1 表示未记录
+    int mRowHeight { -1 };       ///< 统一行高（像素），-1 表示未记录
+    int mHorizontalHeaderHeight { -1 };  ///< 水平表头高（像素），-1 表示未记录
     // 列序：列名的有序表（空 = 未记录 = 数据列序）
     QList< QPair< QString, int > > mColumnOrder;
     // 隐藏集合（列名 + occurrence）

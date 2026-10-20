@@ -1532,14 +1532,15 @@ def da_setnan(df: pd.DataFrame, rowindex: List[int], colindex: List[int]):
         raise ValueError('row index length not equal column index length')
     if not rowindex:
         return
-    # 按列分组，每列使用 numpy 高级索引一次性赋值
-    # df[col_name].values 返回该列底层数据的视图，修改会反映到 df
+    # 按列分组，每列用 iloc 一次性赋值
+    # 注意：pandas 3.x（CoW）下 Series.values 返回只读视图，直接写会抛
+    # "assignment destination is read-only"；iloc 赋值是合法突变口，且自动做
+    # 类型提升（int→float 容纳 NaN、datetime→NaT、object→NaN）
     col_to_rows = {}
     for r, c in zip(rowindex, colindex):
         col_to_rows.setdefault(c, []).append(r)
     for c, rows in col_to_rows.items():
-        col_name = df.columns[c]
-        df[col_name].values[rows] = np.nan
+        df.iloc[rows, c] = np.nan
 
 
 @log_function_call(slow=True)
