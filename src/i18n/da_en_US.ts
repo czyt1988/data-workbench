@@ -62,7 +62,7 @@
 <context>
     <name>DA::AppMainWindow</name>
     <message>
-        <location filename="../APP/AppMainWindow.cpp" line="+78"/>
+        <location filename="../APP/AppMainWindow.cpp" line="+80"/>
         <source>Initializing core interface...</source>
         <translation>Initializing core interface...</translation>
     </message>
@@ -97,7 +97,7 @@
         <translation>Do you need to save the project?</translation>
     </message>
     <message>
-        <location line="+90"/>
+        <location line="+100"/>
         <source>Untitled</source>
         <translation>Untitled</translation>
     </message>
@@ -164,7 +164,7 @@
 <context>
     <name>DA::DAAgentBridge</name>
     <message>
-        <location filename="../DAAgent/DAAgentBridge.cpp" line="+191"/>
+        <location filename="../DAAgent/DAAgentBridge.cpp" line="+198"/>
         <source>Agent process startup timed out</source>
         <translation>Agent process startup timed out</translation>
     </message>
@@ -175,17 +175,17 @@
     </message>
     <message>
         <location line="+213"/>
-        <location line="+876"/>
+        <location line="+1062"/>
         <source>Message not sent: agent subprocess is not running</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-836"/>
+        <location line="-1020"/>
         <source>Answer not sent: agent subprocess is not running</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+697"/>
+        <location line="+877"/>
         <source>Agent process crashed (exit code %1), recovering... (%2/%3)</source>
         <translation>Agent process crashed (exit code %1), recovering... (%2/%3)</translation>
     </message>
@@ -195,7 +195,7 @@
         <translation>Agent process crashed repeatedly (%1 times), please restart the application</translation>
     </message>
     <message>
-        <location line="+44"/>
+        <location line="+48"/>
         <source>Agent response timeout (no activity for %1 minutes)</source>
         <translation>Agent response timeout (no activity for %1 minutes)</translation>
     </message>
@@ -216,13 +216,13 @@
 <context>
     <name>DA::DAAgentDockWidget</name>
     <message>
-        <location filename="../DAGui/Agent/DAAgentDockWidget.cpp" line="+301"/>
+        <location filename="../DAGui/Agent/DAAgentDockWidget.cpp" line="+302"/>
         <source>No agent session is open</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+3"/>
-        <location line="+185"/>
+        <location line="+191"/>
         <location line="+5"/>
         <source>New Session</source>
         <translation>New Session</translation>
@@ -248,7 +248,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+296"/>
+        <location line="+300"/>
         <source>Session &quot;%1&quot; is waiting for your input. What do you want to do?</source>
         <translation type="unfinished"></translation>
     </message>
@@ -421,12 +421,12 @@
 <context>
     <name>DA::DAAgentModule</name>
     <message>
-        <location filename="../DAAgent/DAAgentModule.cpp" line="+937"/>
+        <location filename="../DAAgent/DAAgentModule.cpp" line="+2652"/>
         <source>The agent ended this turn after %1 tool calls, but its last message looks like an unfinished plan (e.g. announcing a next step without executing it). Send a message such as &quot;continue&quot; to let it finish.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-588"/>
+        <location line="-2266"/>
         <source>Agent system prompt file is empty, fallback to built-in default: %1</source>
         <translation>Agent system prompt file is empty, fallback to built-in default: %1</translation>
     </message>
@@ -436,18 +436,18 @@
         <translation>Failed to read Agent system prompt file, fallback to built-in default: %1</translation>
     </message>
     <message>
-        <location line="+276"/>
+        <location line="+351"/>
         <source>LLM is not configured, cannot start agent. Please configure LLM in settings first.</source>
         <translation>LLM is not configured, cannot start agent. Please configure LLM in settings first.</translation>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+1032"/>
+        <location line="+1383"/>
         <source>LLM is not configured. Please configure LLM in settings first.</source>
         <translation>LLM is not configured. Please configure LLM in settings first.</translation>
     </message>
     <message>
-        <location line="-1021"/>
+        <location line="-1372"/>
         <source>Cannot find Python interpreter path, please configure it in settings</source>
         <translation>Cannot find Python interpreter path, please configure it in settings</translation>
     </message>
@@ -457,7 +457,7 @@
         <translation>Cannot find agent_runner.py path: %1</translation>
     </message>
     <message>
-        <location line="+1015"/>
+        <location line="+1366"/>
         <source>LLM is not configured, skip agent analysis. Please configure LLM in settings first.</source>
         <translation>LLM is not configured, skip agent analysis. Please configure LLM in settings first.</translation>
     </message>
@@ -631,7 +631,7 @@
 <context>
     <name>DA::DAAgentSessionChatWidget</name>
     <message>
-        <location filename="../DAGui/Agent/DAAgentSessionChatWidget.cpp" line="+293"/>
+        <location filename="../DAGui/Agent/DAAgentSessionChatWidget.cpp" line="+405"/>
         <source>Send</source>
         <translation type="unfinished">Send</translation>
     </message>
@@ -726,12 +726,23 @@
         <translation type="unfinished">Details</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="-138"/>
+        <location line="+139"/>
         <source>Copy</source>
         <translation type="unfinished">Copy</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="-130"/>
+        <source>Paste</source>
+        <translation type="unfinished">Paste</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Select All</source>
+        <translation type="unfinished">Select All</translation>
+    </message>
+    <message>
+        <location line="+122"/>
         <source>Copied</source>
         <translation type="unfinished">Copied</translation>
     </message>
@@ -806,12 +817,12 @@
         <translation type="unfinished">Deny</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+3"/>
         <source>Approve &amp;&amp; remember for this session</source>
         <translation type="unfinished">Approve &amp;&amp; remember for this session</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Approved</source>
         <translation type="unfinished">Approved</translation>
     </message>
@@ -836,6 +847,36 @@
         <translation type="unfinished">From subagent: %1</translation>
     </message>
     <message>
+        <location line="+5"/>
+        <source>result truncated</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Answer not sent, please retry</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Submit</source>
+        <translation type="unfinished">Submit</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Type your own answer...</source>
+        <translation type="unfinished">Type your own answer...</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>%1 session(s) from the previous project are still running in the background</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Click to view and stop these sessions</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location line="+2"/>
         <source>%1 subagent task(s)</source>
         <translation type="unfinished">%1 subagent task(s)</translation>
@@ -851,12 +892,44 @@
         <translation type="unfinished">completed</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+579"/>
+        <source>Failed after repeated retries: rate limited</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Failed after repeated retries: network error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Failed after repeated retries: server error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Request was rejected by the LLM service, see details for the original error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Agent response timeout</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Agent process crashed, recovering...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-620"/>
+        <location line="+17"/>
         <source>queued</source>
         <translation type="unfinished">queued</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="-16"/>
+        <location line="+17"/>
         <source>running</source>
         <translation type="unfinished">running</translation>
     </message>
@@ -901,7 +974,7 @@
         <translation type="unfinished">Switch to Auto</translation>
     </message>
     <message>
-        <location line="+460"/>
+        <location line="+508"/>
         <source>tokens: ~%1 / %2</source>
         <translation type="unfinished">tokens: ~%1 / %2</translation>
     </message>
@@ -921,42 +994,12 @@
         <translation type="unfinished">API key invalid or expired, please check settings</translation>
     </message>
     <message>
-        <location line="+3"/>
-        <source>Failed after %1 retries: rate limited</source>
-        <translation type="unfinished">Failed after %1 retries: rate limited</translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Failed after %1 retries: network error</source>
-        <translation type="unfinished">Failed after %1 retries: network error</translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Failed after %1 retries: server error</source>
-        <translation type="unfinished">Failed after %1 retries: server error</translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Request format error: %1</source>
-        <translation type="unfinished">Request format error: %1</translation>
-    </message>
-    <message>
-        <location line="+3"/>
+        <location line="+20"/>
         <source>Context window exceeded and compaction failed</source>
         <translation type="unfinished">Context window exceeded and compaction failed</translation>
     </message>
     <message>
-        <location line="+3"/>
-        <source>Agent response timeout (no activity for %1 minutes)</source>
-        <translation type="unfinished">Agent response timeout (no activity for %1 minutes)</translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Agent process crashed, recovering... (%1/3)</source>
-        <translation type="unfinished">Agent process crashed, recovering... (%1/3)</translation>
-    </message>
-    <message>
-        <location line="+3"/>
+        <location line="+15"/>
         <source>Agent process crashed repeatedly, unable to recover</source>
         <translation type="unfinished">Agent process crashed repeatedly, unable to recover</translation>
     </message>
@@ -966,7 +1009,13 @@
         <translation type="unfinished">Failed to switch model, keeping current model</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+4"/>
+        <location line="+4"/>
+        <source>Agent request failed, see details for the original error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Agent error: %1</source>
         <translation type="unfinished">Agent error: %1</translation>
     </message>
@@ -1003,20 +1052,22 @@
         <translation> d</translation>
     </message>
     <message>
-        <location line="+5"/>
-        <location line="+18"/>
+        <location line="+7"/>
+        <location line="+30"/>
         <source> times</source>
         <translation> times</translation>
     </message>
     <message>
-        <location line="-12"/>
+        <location line="-24"/>
+        <location line="+6"/>
+        <location line="+6"/>
         <location line="+6"/>
         <location line="+38"/>
         <source> sec</source>
         <translation> sec</translation>
     </message>
     <message>
-        <location line="-137"/>
+        <location line="-151"/>
         <source>Base URL</source>
         <translation>Base URL</translation>
     </message>
@@ -1026,7 +1077,22 @@
         <translation>API Key</translation>
     </message>
     <message>
-        <location line="+112"/>
+        <location line="+89"/>
+        <source>Max automatic retries when the LLM service returns an error (rate limit, server error, bad request, network). 0 disables. Recommended: 5.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Seconds to wait before the first retry. Recommended: 5.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Extra seconds added to the wait after each failed retry (e.g. interval 5, increment 1 waits 5, 6, 7...). Recommended: 1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+25"/>
         <location line="+7"/>
         <location line="+23"/>
         <source>No limit</source>
@@ -1058,7 +1124,7 @@
         <translation>Stop Timeout</translation>
     </message>
     <message>
-        <location line="-188"/>
+        <location line="-202"/>
         <source>Add Provider</source>
         <translation>Add Provider</translation>
     </message>
@@ -1148,12 +1214,7 @@
         <translation>Free sessions older than this are deleted on startup. Recommended: 30.</translation>
     </message>
     <message>
-        <location line="+5"/>
-        <source>Max automatic retries on transient LLM errors. 0 disables. Recommended: 7.</source>
-        <translation>Max automatic retries on transient LLM errors. 0 disables. Recommended: 7.</translation>
-    </message>
-    <message>
-        <location line="+6"/>
+        <location line="+25"/>
         <source>Timeout (seconds) for a single LLM request. Recommended: 120.</source>
         <translation>Timeout (seconds) for a single LLM request. Recommended: 120.</translation>
     </message>
@@ -1214,6 +1275,16 @@
     </message>
     <message>
         <location line="+1"/>
+        <source>Retry interval</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Retry interval increment</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Request timeout</source>
         <translation>Request timeout</translation>
     </message>
@@ -1253,7 +1324,7 @@
         <translation>Agent Settings</translation>
     </message>
     <message>
-        <location line="+100"/>
+        <location line="+102"/>
         <source>(unnamed)</source>
         <translation>(unnamed)</translation>
     </message>
@@ -1368,7 +1439,7 @@
 <context>
     <name>DA::DAAgentWebChannel</name>
     <message>
-        <location filename="../DAGui/Agent/DAAgentWebChannel.cpp" line="+185"/>
+        <location filename="../DAGui/Agent/DAAgentWebChannel.cpp" line="+239"/>
         <source>Submit</source>
         <translation>Submit</translation>
     </message>
@@ -1381,7 +1452,7 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="../APP/DAAppActions.cpp" line="+420"/>
+        <location filename="../APP/DAAppActions.cpp" line="+470"/>
         <source>Open</source>
         <translation>Open</translation>
     </message>
@@ -1843,7 +1914,7 @@ All</translation>
         <translation>Legend</translation>
     </message>
     <message>
-        <location line="+55"/>
+        <location line="+54"/>
         <source>To Numeric</source>
         <translation>To Numeric</translation>
     </message>
@@ -1863,7 +1934,7 @@ All</translation>
         <translation>To Datetime</translation>
     </message>
     <message>
-        <location line="+29"/>
+        <location line="+89"/>
         <source>Grouping</source>
         <translation>Grouping</translation>
     </message>
@@ -1878,7 +1949,7 @@ All</translation>
         <translation>Show Information Window</translation>
     </message>
     <message>
-        <location line="-137"/>
+        <location line="-196"/>
         <source>Enable or disable legend in the chart</source>
         <translation>Enable or disable legend in the chart</translation>
     </message>
@@ -2241,27 +2312,7 @@ Line 3D</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Add Horizontal Probe</source>
-        <translation>Add Horizontal Probe</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Add a horizontal plot probe marker to the chart</source>
-        <translation>Add a horizontal plot probe marker to the chart</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Add Vertical Probe</source>
-        <translation>Add Vertical Probe</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Add a vertical plot probe marker to the chart</source>
-        <translation>Add a vertical plot probe marker to the chart</translation>
-    </message>
-    <message>
-        <location line="+1"/>
+        <location line="+4"/>
         <source>Data Picker Setting</source>
         <translation>Data Picker Setting</translation>
     </message>
@@ -2445,7 +2496,7 @@ Column</translation>
         <translation>Set number/date display format of the selected column</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+64"/>
         <source>New 
 Workflow</source>
         <translation>New 
@@ -2700,7 +2751,7 @@ Data Manager</translation>
         <translation>Show the message log window</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+3"/>
         <source>Show Setting Window</source>
         <translation>Show Setting Window</translation>
     </message>
@@ -2850,254 +2901,317 @@ Layouts</source>
         <translation>Undo the last action</translation>
     </message>
     <message>
+        <location line="-156"/>
         <source>Find</source>
         <translation>Find</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Find cells matching the keyword (Ctrl+F)</source>
         <translation>Find cells matching the keyword (Ctrl+F)</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Replace</source>
         <translation>Replace</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Find and replace cells (Ctrl+H)</source>
         <translation>Find and replace cells (Ctrl+H)</translation>
-    </message>    <message>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Conditional Formatting</source>
         <translation>Conditional Formatting</translation>
-    </message>    <message>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Manage conditional formatting rules (cell rules / color scale / data bar) of the selected columns</source>
         <translation>Manage conditional formatting rules (cell rules / color scale / data bar) of the selected columns</translation>
     </message>
-
-
     <message>
+        <location line="+1"/>
         <source>Computed Column</source>
         <translation>Computed Column</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Create a column computed from a formula of other columns</source>
         <translation>Create a column computed from a formula of other columns</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Recompute All</source>
         <translation>Recompute All</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Recompute all stale/invalid computed columns of the current table</source>
         <translation>Recompute all stale/invalid computed columns of the current table</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Split Column</source>
         <translation>Split Column</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Split the selected column into multiple columns by delimiter / regex / fixed widths</source>
         <translation>Split the selected column into multiple columns by delimiter / regex / fixed widths</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Merge Columns</source>
         <translation>Merge Columns</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Merge the selected columns into one column in the given order</source>
         <translation>Merge the selected columns into one column in the given order</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Group By</source>
         <translation>Group By</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Aggregate rows by group keys into a new long-format result dataset</source>
         <translation>Aggregate rows by group keys into a new long-format result dataset</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Transpose</source>
         <translation>Transpose</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Swap rows and columns into a new dataset (in-place optional)</source>
         <translation>Swap rows and columns into a new dataset (in-place optional)</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Unpivot (Melt)</source>
         <translation>Unpivot (Melt)</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Unpivot wide columns into a long-format new dataset (in-place optional)</source>
         <translation>Unpivot wide columns into a long-format new dataset (in-place optional)</translation>
     </message>
     <message>
+        <location line="-66"/>
         <source>Data Probe</source>
         <translation>Data Probe</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>Data probe: click to create probes on all charts, values are listed in the data link table</source>
         <translation>Data probe: click to create probes on all charts, values are listed in the data link table</translation>
     </message>
     <message>
+        <location line="+65"/>
         <source>Fill</source>
         <translation>Fill</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Fill the selection (down / up / ffill / bfill / series)</source>
         <translation>Fill the selection (down / up / ffill / bfill / series)</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Fill Down</source>
         <translation>Fill Down</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Fill the selection down with the value of the first row (Ctrl+D)</source>
         <translation>Fill the selection down with the value of the first row (Ctrl+D)</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Fill Up</source>
         <translation>Fill Up</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Fill the selection up with the value of the last row</source>
         <translation>Fill the selection up with the value of the last row</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Fill Forward (ffill)</source>
         <translation>Fill Forward (ffill)</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Propagate the last valid value down within the selection</source>
         <translation>Propagate the last valid value down within the selection</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Fill Backward (bfill)</source>
         <translation>Fill Backward (bfill)</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Propagate the next valid value up within the selection</source>
         <translation>Propagate the next valid value up within the selection</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Fill Series...</source>
         <translation>Fill Series...</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Generate a linear or date series into the selected columns</source>
         <translation>Generate a linear or date series into the selected columns</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Validation Rules</source>
         <translation>Validation Rules</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Manage data validation rules (range / enum / not-empty / unique / regex) of the current table</source>
         <translation>Manage data validation rules (range / enum / not-empty / unique / regex) of the current table</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Run Validation</source>
         <translation>Run Validation</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Validate the table against enabled rules, highlight violations and show the report (read-only)</source>
         <translation>Validate the table against enabled rules, highlight violations and show the report (read-only)</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Note</source>
         <translation>Note</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Insert or edit a note on the current cell</source>
         <translation>Insert or edit a note on the current cell</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Insert Note</source>
         <translation>Insert Note</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Insert a note on the current cell</source>
         <translation>Insert a note on the current cell</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Edit Note</source>
         <translation>Edit Note</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Edit the note of the current cell</source>
         <translation>Edit the note of the current cell</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Delete Note</source>
         <translation>Delete Note</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Delete the note of the current cell</source>
         <translation>Delete the note of the current cell</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Clear All Notes</source>
         <translation>Clear All Notes</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Remove all notes of the current table (undoable)</source>
         <translation>Remove all notes of the current table (undoable)</translation>
     </message>
     <message>
+        <location line="+75"/>
         <source>Undo History</source>
         <translation>Undo History</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Show the undo history panel (follows the active page, click an entry to undo/redo to it)</source>
         <translation>Show the undo history panel (follows the active page, click an entry to undo/redo to it)</translation>
     </message>
     <message>
+        <location line="-74"/>
         <source>Freeze Columns</source>
         <translation>Freeze Columns</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Freeze the leftmost columns of the table</source>
         <translation>Freeze the leftmost columns of the table</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Hide Column</source>
         <translation>Hide Column</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Hide the selected columns</source>
         <translation>Hide the selected columns</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Show All Columns</source>
         <translation>Show All Columns</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Show all hidden columns</source>
         <translation>Show all hidden columns</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Column View...</source>
         <translation>Column View...</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Open the column view settings dialog</source>
         <translation>Open the column view settings dialog</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Freeze First Column</source>
         <translation>Freeze First Column</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Freeze Columns...</source>
         <translation>Freeze Columns...</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Unfreeze Columns</source>
         <translation>Unfreeze Columns</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Go To...</source>
         <translation>Go To...</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Jump to a row / index label / column</source>
         <translation>Jump to a row / index label / column</translation>
     </message>
@@ -3105,24 +3219,24 @@ Layouts</source>
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+746"/>
+        <location filename="../APP/DAAppController.cpp" line="+847"/>
         <source>Save Project</source>
         <translation>Save Project</translation>
     </message>
     <message>
         <location line="+19"/>
-        <location line="+847"/>
+        <location line="+1014"/>
         <source>Warning</source>
         <translation>Warning</translation>
     </message>
     <message>
-        <location line="-836"/>
+        <location line="-1003"/>
         <source>Failed to save project! Path: %1</source>
         <translation>Failed to save project! Path: %1</translation>
     </message>
     <message>
         <location line="+3"/>
-        <location line="+614"/>
+        <location line="+619"/>
         <source>Project saved successfully, path: %1</source>
         <translation>Project saved successfully, path: %1</translation>
     </message>
@@ -3132,7 +3246,7 @@ Layouts</source>
         <translation>Project loaded successfully, path: %1</translation>
     </message>
     <message>
-        <location line="+162"/>
+        <location line="+324"/>
         <source>Image saved successfully to %1</source>
         <translation>Image saved successfully to %1</translation>
     </message>
@@ -3202,29 +3316,44 @@ Layouts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+75"/>
+        <location line="+49"/>
+        <source>Unsupported link type: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+96"/>
+        <source>Invalid dataset link: &apos;%1&apos;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Dataset &apos;%1&apos; not found, it may have been removed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+19"/>
         <source>Before creating a new coordinate, you need to create a figure</source>
         <translation>Before creating a new coordinate, you need to create a figure</translation>
     </message>
     <message>
-        <location line="-1489"/>
+        <location line="-1754"/>
         <source>Please select the data operation window</source>
         <translation>Please select the data operation window</translation>
     </message>
     <message>
         <location line="-50"/>
-        <location line="+523"/>
+        <location line="+528"/>
         <location line="+73"/>
         <source>Project File</source>
         <translation>Project File</translation>
     </message>
     <message>
-        <location line="-578"/>
+        <location line="-583"/>
         <source>Whether to overwrite the file: %1</source>
         <translation>Whether to overwrite the file: %1</translation>
     </message>
     <message>
-        <location line="+465"/>
+        <location line="+470"/>
         <location line="+19"/>
         <source>Question</source>
         <translation>Question</translation>
@@ -3246,23 +3375,23 @@ Layouts</source>
         <translation>Failed to load project file: %1</translation>
     </message>
     <message>
-        <location line="+147"/>
+        <location line="+309"/>
         <source>Image files</source>
         <translation>Image files</translation>
     </message>
     <message>
-        <location line="-212"/>
-        <location line="+213"/>
+        <location line="-374"/>
+        <location line="+375"/>
         <source>Any files</source>
         <translation>Any files</translation>
     </message>
     <message>
-        <location line="-214"/>
+        <location line="-376"/>
         <source>Markdown files</source>
         <translation>Markdown files</translation>
     </message>
     <message>
-        <location line="+311"/>
+        <location line="+473"/>
         <source>Received null project interface</source>
         <translation>Received null project interface</translation>
     </message>
@@ -3317,22 +3446,28 @@ Layouts</source>
         <translation type="unfinished">Dark 2</translation>
     </message>
     <message>
-        <location line="+96"/>
+        <location line="-217"/>
+        <location line="+313"/>
         <source>No cells selected to copy</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+321"/>
+        <location line="-1469"/>
+        <source>No active table</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1790"/>
         <source>Cannot rename a series, please select a dataset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+204"/>
+        <location line="+248"/>
         <source>Figure &apos;%1&apos; not found, it may have been closed or renamed</source>
         <translation>Figure &apos;%1&apos; not found, it may have been closed or renamed</translation>
     </message>
     <message>
-        <location line="+755"/>
+        <location line="+809"/>
         <source>Rename Column</source>
         <translation>Rename Column</translation>
     </message>
@@ -3347,7 +3482,7 @@ Layouts</source>
         <translation>Cannot find the maximum value in this column (empty, all-NaN, or incomparable types)</translation>
     </message>
     <message>
-        <location line="+14"/>
+        <location line="+11"/>
         <source>Column [%1] maximum value: %2, row: %3</source>
         <translation>Column [%1] maximum value: %2, row: %3</translation>
     </message>
@@ -3362,7 +3497,7 @@ Layouts</source>
         <translation>Cannot find the minimum value in this column (empty, all-NaN, or incomparable types)</translation>
     </message>
     <message>
-        <location line="+14"/>
+        <location line="+11"/>
         <source>Column [%1] minimum value: %2, row: %3</source>
         <translation>Column [%1] minimum value: %2, row: %3</translation>
     </message>
@@ -3372,7 +3507,7 @@ Layouts</source>
         <translation>Column [%1] minimum value at row %2</translation>
     </message>
     <message>
-        <location line="+187"/>
+        <location line="+566"/>
         <source>Export</source>
         <translation type="unfinished">Export</translation>
     </message>
@@ -3414,11 +3549,12 @@ Layouts</source>
         <translation>The selected data source is empty</translation>
     </message>
     <message>
-        <location line="-2202"/>
+        <location line="-2673"/>
         <source>Before running the workflow, you need to save the project</source>
         <translation>Before running the workflow, you need to save the project</translation>
     </message>
     <message>
+        <location line="+1938"/>
         <source>Please select a column first</source>
         <translation>Please select a column first</translation>
     </message>
@@ -3464,7 +3600,7 @@ Layouts</source>
 <context>
     <name>DA::DAAppDockingArea</name>
     <message>
-        <location filename="../APP/DAAppDockingArea.cpp" line="+70"/>
+        <location filename="../APP/DAAppDockingArea.cpp" line="+73"/>
         <source>Workflow Node</source>
         <translation>Workflow Node</translation>
     </message>
@@ -3504,12 +3640,12 @@ Layouts</source>
         <translation>Log</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+4"/>
         <source>Agent Assistant</source>
         <translation>Agent Assistant</translation>
     </message>
     <message>
-        <location line="+453"/>
+        <location line="+513"/>
         <source>Markdown Viewer</source>
         <translation>Markdown Viewer</translation>
     </message>
@@ -3519,10 +3655,12 @@ Layouts</source>
         <translation>Failed to open markdown file: %1</translation>
     </message>
     <message>
+        <location line="-519"/>
         <source>Undo History</source>
         <translation>Undo History</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>Data Link Table</source>
         <translation>Data Link Table</translation>
     </message>
@@ -3603,7 +3741,7 @@ Layouts</source>
 <context>
     <name>DA::DAAppProject</name>
     <message>
-        <location filename="../APP/DAAppProject.cpp" line="+828"/>
+        <location filename="../APP/DAAppProject.cpp" line="+836"/>
         <source>Saving project</source>
         <translation>Saving project</translation>
     </message>
@@ -3673,7 +3811,7 @@ Layouts</source>
         <translation>Failed to save project! Path: %1</translation>
     </message>
     <message>
-        <location line="+168"/>
+        <location line="+186"/>
         <source>Load script workspace</source>
         <translation>Load script workspace</translation>
     </message>
@@ -3803,17 +3941,17 @@ Layouts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+131"/>
+        <location line="+110"/>
         <source>Table style for data &apos;%1&apos; has no matching data, skipped</source>
         <translation>Table style for data &apos;%1&apos; has no matching data, skipped</translation>
     </message>
     <message>
-        <location line="+92"/>
+        <location line="+162"/>
         <source>Data operate page &apos;%1&apos; has no matching data, skipped</source>
         <translation>Data operate page &apos;%1&apos; has no matching data, skipped</translation>
     </message>
     <message>
-        <location line="-736"/>
+        <location line="-785"/>
         <source>Save data information, including data names and data organization formats</source>
         <translation>Save data information, including data names and data organization formats</translation>
     </message>
@@ -3869,19 +4007,19 @@ Layouts</source>
         <translation>Project saved successfully</translation>
     </message>
     <message>
-        <location line="-899"/>
-        <location line="+902"/>
+        <location line="-917"/>
+        <location line="+920"/>
         <source>Failed to save project</source>
         <translation>Failed to save project</translation>
     </message>
     <message>
-        <location line="-912"/>
+        <location line="-930"/>
         <location line="+34"/>
         <source>The current project is busy</source>
         <translation>The current project is busy</translation>
     </message>
     <message>
-        <location line="+602"/>
+        <location line="+620"/>
         <source>Save data information</source>
         <translation>Save data information</translation>
     </message>
@@ -3891,8 +4029,8 @@ Layouts</source>
         <translation>Project loaded successfully</translation>
     </message>
     <message>
-        <location line="-856"/>
-        <location line="+860"/>
+        <location line="-874"/>
+        <location line="+878"/>
         <source>Failed to load project</source>
         <translation>Failed to load project</translation>
     </message>
@@ -3960,7 +4098,7 @@ Layouts</source>
 <context>
     <name>DA::DAAppRibbonArea</name>
     <message>
-        <location filename="../APP/DAAppRibbonArea.cpp" line="+192"/>
+        <location filename="../APP/DAAppRibbonArea.cpp" line="+216"/>
         <location line="+3"/>
         <source>File</source>
         <translation>File</translation>
@@ -3976,13 +4114,13 @@ Layouts</source>
         <translation>Config</translation>
     </message>
     <message>
-        <location line="+25"/>
-        <location line="+346"/>
+        <location line="+26"/>
+        <location line="+397"/>
         <source>Workflow</source>
         <translation>Workflow</translation>
     </message>
     <message>
-        <location line="-369"/>
+        <location line="-421"/>
         <source>Data Operation</source>
         <translation>Data Operation</translation>
     </message>
@@ -4003,13 +4141,14 @@ Layouts</source>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+28"/>
-        <location line="+413"/>
+        <location line="+29"/>
+        <location line="+297"/>
+        <location line="+167"/>
         <source>View</source>
         <translation>View</translation>
     </message>
     <message>
-        <location line="-440"/>
+        <location line="-492"/>
         <source>Display</source>
         <translation>Display</translation>
     </message>
@@ -4025,94 +4164,94 @@ Layouts</source>
     </message>
     <message>
         <location line="+3"/>
-        <location line="+231"/>
+        <location line="+233"/>
         <source>DataFrame</source>
         <translation>DataFrame</translation>
     </message>
     <message>
-        <location line="-230"/>
-        <location line="+232"/>
+        <location line="-232"/>
+        <location line="+234"/>
         <source>Operate</source>
         <translation>Operate</translation>
     </message>
     <message>
-        <location line="-231"/>
-        <location line="+234"/>
+        <location line="-233"/>
+        <location line="+236"/>
         <source>Axes</source>
         <translation>Axes</translation>
     </message>
     <message>
-        <location line="-233"/>
-        <location line="+246"/>
+        <location line="-235"/>
+        <location line="+248"/>
         <source>Column</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Column</translation>
     </message>
     <message>
-        <location line="-245"/>
-        <location line="+6"/>
-        <location line="+249"/>
+        <location line="-247"/>
+        <location line="+7"/>
+        <location line="+250"/>
         <location line="+5"/>
         <source>Type</source>
         <translation>Type</translation>
     </message>
     <message>
-        <location line="-259"/>
-        <location line="+6"/>
-        <location line="+264"/>
+        <location line="-261"/>
+        <location line="+7"/>
+        <location line="+265"/>
         <location line="+4"/>
         <source>Format</source>
         <translation>Format</translation>
     </message>
     <message>
-        <location line="-273"/>
-        <location line="+279"/>
+        <location line="-275"/>
+        <location line="+324"/>
         <source>Table Style</source>
         <translation>Table Style</translation>
     </message>
     <message>
-        <location line="-278"/>
-        <location line="+282"/>
+        <location line="-323"/>
+        <location line="+327"/>
         <source>Fill</source>
         <translation>Fill</translation>
     </message>
     <message>
-        <location line="-281"/>
-        <location line="+289"/>
+        <location line="-326"/>
+        <location line="+334"/>
         <source>Font</source>
         <translation>Font</translation>
     </message>
     <message>
-        <location line="-288"/>
-        <location line="+294"/>
+        <location line="-333"/>
+        <location line="+339"/>
         <source>Clear</source>
         <translation>Clear</translation>
     </message>
     <message>
-        <location line="-288"/>
+        <location line="-332"/>
         <source>Fill Color</source>
         <translation>Fill Color</translation>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+356"/>
+        <location line="+407"/>
         <source>Workflow Edit</source>
         <translation>Workflow Edit</translation>
     </message>
     <message>
-        <location line="-387"/>
-        <location line="+32"/>
-        <location line="+360"/>
+        <location line="-439"/>
+        <location line="+33"/>
+        <location line="+411"/>
         <source>Clipboard</source>
         <translation>Clipboard</translation>
     </message>
     <message>
-        <location line="-346"/>
-        <location line="+465"/>
+        <location line="-397"/>
+        <location line="+516"/>
         <source>Chart Style</source>
         <translation>Chart Style</translation>
     </message>
     <message>
-        <location line="+380"/>
+        <location line="+381"/>
         <location line="+2"/>
         <source>AI Agent</source>
         <translation>AI Agent</translation>
@@ -4179,43 +4318,43 @@ Layouts</source>
         <translation>Agent module is not ready</translation>
     </message>
     <message>
-        <location line="-1009"/>
-        <location line="+364"/>
+        <location line="-1061"/>
+        <location line="+415"/>
         <source>Item</source>
         <translation>Item</translation>
     </message>
     <message>
-        <location line="-363"/>
-        <location line="+372"/>
+        <location line="-414"/>
+        <location line="+423"/>
         <source>Text</source>
         <translation>Text</translation>
     </message>
     <message>
-        <location line="-371"/>
-        <location line="+376"/>
+        <location line="-422"/>
+        <location line="+427"/>
         <source>Background</source>
         <translation>Background</translation>
     </message>
     <message>
-        <location line="-373"/>
-        <location line="+454"/>
+        <location line="-424"/>
+        <location line="+505"/>
         <source>Workflow Run</source>
         <translation>Workflow Run</translation>
     </message>
     <message>
-        <location line="-453"/>
-        <location line="+456"/>
+        <location line="-504"/>
+        <location line="+507"/>
         <source>Run</source>
         <translation>Run</translation>
     </message>
     <message>
-        <location line="-454"/>
-        <location line="+289"/>
+        <location line="-505"/>
+        <location line="+340"/>
         <source>Figure</source>
         <translation>Figure</translation>
     </message>
     <message>
-        <location line="-283"/>
+        <location line="-334"/>
         <source>Figure Setting</source>
         <translation>Figure Setting</translation>
     </message>
@@ -4231,12 +4370,12 @@ Layouts</source>
     </message>
     <message>
         <location line="+5"/>
-        <location line="+516"/>
+        <location line="+567"/>
         <source>Chart Edit</source>
         <translation>Chart Edit</translation>
     </message>
     <message>
-        <location line="-518"/>
+        <location line="-569"/>
         <source>Chart Setting</source>
         <translation>Chart Setting</translation>
     </message>
@@ -4247,12 +4386,12 @@ Layouts</source>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+525"/>
+        <location line="+576"/>
         <source>Select Tool</source>
         <translation>Select Tool</translation>
     </message>
     <message>
-        <location line="-524"/>
+        <location line="-575"/>
         <source>Chart Assist Tool</source>
         <translation>Chart Assist Tool</translation>
     </message>
@@ -4274,7 +4413,7 @@ Layouts</source>
     </message>
     <message>
         <location line="-15"/>
-        <location line="+311"/>
+        <location line="+362"/>
         <source>Stats Plot</source>
         <translation>Stats Plot</translation>
     </message>
@@ -4289,8 +4428,8 @@ Layouts</source>
         <translation>Workflow View</translation>
     </message>
     <message>
-        <location line="-441"/>
-        <location line="+477"/>
+        <location line="-493"/>
+        <location line="+529"/>
         <source>Export</source>
         <translation>Export</translation>
     </message>
@@ -4300,8 +4439,8 @@ Layouts</source>
         <translation>Chart Operate</translation>
     </message>
     <message>
-        <location line="-497"/>
-        <location line="+541"/>
+        <location line="-549"/>
+        <location line="+593"/>
         <source>Theme</source>
         <translation>Theme</translation>
     </message>
@@ -4311,19 +4450,23 @@ Layouts</source>
         <translation>Assist Tools</translation>
     </message>
     <message>
-        <location line="+22"/>
+        <location line="+21"/>
         <source>Recent Files</source>
         <translation>Recent Files</translation>
     </message>
     <message>
+        <location line="-350"/>
         <source>Edit</source>
         <translation>Edit</translation>
-    </message>    <message>
+    </message>
+    <message>
+        <location line="-281"/>
+        <location line="+345"/>
         <source>Conditional</source>
         <translation>Conditional</translation>
     </message>
-
     <message>
+        <location line="-52"/>
         <source>Data Tools</source>
         <translation>Data Tools</translation>
     </message>
@@ -4355,6 +4498,19 @@ Layouts</source>
         <location line="+6"/>
         <source>failed to save Excel file</source>
         <translation>failed to save Excel file</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DACacheWindowTableView</name>
+    <message>
+        <location filename="../DAGui/DACacheWindowTableView.cpp" line="+765"/>
+        <source>Go To Row</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Row number (1 - %1):</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -6403,7 +6559,7 @@ Layouts</source>
 <context>
     <name>DA::DAChartAxisSettingPanel</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartAxisSettingPanel.cpp" line="+191"/>
+        <location filename="../DAGui/ChartSetting/DAChartAxisSettingPanel.cpp" line="+192"/>
         <source>Enable</source>
         <translation>Enable</translation>
     </message>
@@ -7735,13 +7891,13 @@ Layouts</source>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+736"/>
+        <location line="+741"/>
         <location line="+24"/>
         <source>Delete</source>
         <translation>Delete</translation>
     </message>
     <message>
-        <location line="-758"/>
+        <location line="-763"/>
         <source>Setting</source>
         <translation>Setting</translation>
     </message>
@@ -7776,7 +7932,7 @@ Layouts</source>
         <translation>3D Chart</translation>
     </message>
     <message>
-        <location line="+142"/>
+        <location line="+147"/>
         <location line="+24"/>
         <source>Are you sure to delete &quot;%1&quot;?</source>
         <translation>Are you sure to delete &quot;%1&quot;?</translation>
@@ -8139,7 +8295,7 @@ Layouts</source>
         <translation>Cannot resolve expression &apos;%1&apos;, expected format: data[&apos;column&apos;]</translation>
     </message>
     <message>
-        <location line="+83"/>
+        <location line="+89"/>
         <source>Select Series</source>
         <translation>Select Series</translation>
     </message>
@@ -8149,7 +8305,7 @@ Layouts</source>
         <translation>Return to add chart</translation>
     </message>
     <message>
-        <location line="-199"/>
+        <location line="-205"/>
         <source>X:</source>
         <translation>X:</translation>
     </message>
@@ -8963,6 +9119,206 @@ Layouts</source>
     </message>
 </context>
 <context>
+    <name>DA::DADataHeaderView</name>
+    <message>
+        <location filename="../DAGui/DADataHeaderView.cpp" line="+283"/>
+        <source>Sort Ascending</source>
+        <translation>Sort Ascending</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Sort Descending</source>
+        <translation>Sort Descending</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Add Secondary Sort (Ascending)</source>
+        <translation>Add Secondary Sort (Ascending)</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Add Secondary Sort (Descending)</source>
+        <translation>Add Secondary Sort (Descending)</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Rename Column</source>
+        <translation>Rename Column</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Remove Column</source>
+        <translation>Remove Column</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Copy Column Name</source>
+        <translation>Copy Column Name</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Goto Max</source>
+        <translation>Goto Max</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Goto Min</source>
+        <translation>Goto Min</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Show Statistics</source>
+        <translation>Show Statistics</translation>
+    </message>
+    <message>
+        <location line="+39"/>
+        <source>Edit Formula</source>
+        <translation>Edit Formula</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Recompute</source>
+        <translation>Recompute</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Remove Formula (Keep Data)</source>
+        <translation>Remove Formula (Keep Data)</translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>Columns</source>
+        <translation>Columns</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Hide This Column</source>
+        <translation>Hide This Column</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Show All Columns</source>
+        <translation>Show All Columns</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Freeze to This Column</source>
+        <translation>Freeze to This Column</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Unfreeze</source>
+        <translation>Unfreeze</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Column View...</source>
+        <translation>Column View...</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADataLinkTableModel</name>
+    <message>
+        <location filename="../DAGui/Chart/DADataLinkTableModel.cpp" line="+15"/>
+        <source>Curve</source>
+        <translation type="unfinished">Curve</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADataLinkTableTab</name>
+    <message>
+        <location filename="../DAGui/Chart/DADataLinkTableTab.cpp" line="+63"/>
+        <location line="+380"/>
+        <source>Rename</source>
+        <translation type="unfinished">Rename</translation>
+    </message>
+    <message>
+        <location line="-377"/>
+        <source>Refresh</source>
+        <translation type="unfinished">Refresh</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Refresh All</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Hide</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Show</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Hide All</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Show All</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <location line="+420"/>
+        <source>Delete</source>
+        <translation type="unfinished">Delete</translation>
+    </message>
+    <message>
+        <location line="-418"/>
+        <location line="+480"/>
+        <source>Delete All</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-404"/>
+        <location line="+107"/>
+        <location line="+85"/>
+        <source>Chart %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-184"/>
+        <location line="+107"/>
+        <location line="+25"/>
+        <location line="+57"/>
+        <source>Curve</source>
+        <translation type="unfinished">Curve</translation>
+    </message>
+    <message>
+        <location line="+48"/>
+        <source>Column %1</source>
+        <translation type="unfinished">Column %1</translation>
+    </message>
+    <message>
+        <location line="+40"/>
+        <source>New name:</source>
+        <translation type="unfinished">New name:</translation>
+    </message>
+    <message>
+        <location line="+58"/>
+        <source>Are you sure to delete this column?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+62"/>
+        <source>Are you sure to delete all columns? This cannot be undone.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADataLinkTableWidget</name>
+    <message>
+        <location filename="../DAGui/Chart/DADataLinkTableWidget.cpp" line="+125"/>
+        <source>Figure</source>
+        <translation type="unfinished">Figure</translation>
+    </message>
+</context>
+<context>
     <name>DA::DADataManageTableView</name>
     <message>
         <location filename="../DAGui/DADataManageTableView.cpp" line="+89"/>
@@ -9050,7 +9406,7 @@ Layouts</source>
 <context>
     <name>DA::DADataOperateOfDataFrameWidget</name>
     <message>
-        <location filename="../DAGui/DADataOperateOfDataFrameWidget.cpp" line="+252"/>
+        <location filename="../DAGui/DADataOperateOfDataFrameWidget.cpp" line="+694"/>
         <source>Warning</source>
         <translation>Warning</translation>
     </message>
@@ -9060,41 +9416,41 @@ Layouts</source>
         <translation>The name of the new column to be inserted must be specified</translation>
     </message>
     <message>
-        <location line="+48"/>
+        <location line="+65"/>
         <source>Please select valid data cells</source>
         <translation>Please select valid data cells</translation>
     </message>
     <message>
-        <location line="+42"/>
-        <location line="+298"/>
-        <location line="+35"/>
-        <location line="+41"/>
-        <location line="+42"/>
-        <location line="+765"/>
+        <location line="+61"/>
+        <location line="+410"/>
+        <location line="+40"/>
+        <location line="+46"/>
+        <location line="+47"/>
+        <location line="+1862"/>
         <location line="+24"/>
         <source>Please select a valid column</source>
         <translation>Please select a valid column</translation>
     </message>
     <message>
-        <location line="-1163"/>
-        <location line="+828"/>
-        <location line="+61"/>
-        <location line="+48"/>
+        <location line="-2341"/>
+        <location line="+1923"/>
+        <location line="+63"/>
+        <location line="+47"/>
         <source>Please select a valid cell</source>
         <translation>Please select a valid cell</translation>
     </message>
     <message>
-        <location line="-889"/>
+        <location line="-1969"/>
         <source>Clipboard is empty</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+14"/>
+        <location line="+11"/>
         <source>Please select a cell to paste into</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+49"/>
+        <location line="+50"/>
         <source>Nothing to paste: the clipboard content exceeds the table boundary</source>
         <translation type="unfinished"></translation>
     </message>
@@ -9104,7 +9460,7 @@ Layouts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+16"/>
+        <location line="+29"/>
         <source>Paste failed: the content does not match the column data type</source>
         <translation type="unfinished"></translation>
     </message>
@@ -9119,7 +9475,7 @@ Layouts</source>
         <translation>Table has no columns</translation>
     </message>
     <message>
-        <location line="+45"/>
+        <location line="+69"/>
         <source>Column name cannot be empty</source>
         <translation>Column name cannot be empty</translation>
     </message>
@@ -9129,164 +9485,398 @@ Layouts</source>
         <translation>Column name &quot;%1&quot; already exists, please use another name</translation>
     </message>
     <message>
-        <location line="+203"/>
+        <location line="+238"/>
         <location line="+4"/>
         <source>Unable to get statistics for this column</source>
         <translation>Unable to get statistics for this column</translation>
     </message>
     <message>
+        <location line="+1995"/>
         <source>This data source is read-only and cannot be sorted.</source>
         <translation>This data source is read-only and cannot be sorted.</translation>
     </message>
     <message>
+        <location line="+109"/>
         <source>Cannot sort: the column contains values of incomparable mixed types.</source>
         <translation>Cannot sort: the column contains values of incomparable mixed types.</translation>
     </message>
     <message>
+        <location line="+836"/>
         <source>This data source is read-only and cannot be modified.</source>
         <translation>This data source is read-only and cannot be modified.</translation>
     </message>
     <message>
+        <location line="+14"/>
+        <location line="+22"/>
+        <location line="+44"/>
         <source>No matches found</source>
         <translation>No matches found</translation>
     </message>
     <message>
+        <location line="-38"/>
         <source>Replace All</source>
         <translation>Replace All</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Too many cells will be changed (%1). This operation cannot be undone. Continue?</source>
         <translation>Too many cells will be changed (%1). This operation cannot be undone. Continue?</translation>
-    </message>    <message>
+    </message>
+    <message>
+        <location line="-687"/>
+        <location line="+34"/>
+        <location line="+51"/>
         <source>Please select a column first</source>
         <translation>Please select a column first</translation>
-    </message>    <message>
+    </message>
+    <message>
+        <location line="-48"/>
+        <location line="+87"/>
         <source>Clear Conditional Format Rules</source>
         <translation>Clear Conditional Format Rules</translation>
-    </message>    <message>
+    </message>
+    <message>
+        <location line="-77"/>
         <source>The selected columns have no conditional format rules</source>
         <translation>The selected columns have no conditional format rules</translation>
-    </message>    <message>
+    </message>
+    <message>
+        <location line="+283"/>
         <source>Change Conditional Format Rules</source>
         <translation>Change Conditional Format Rules</translation>
     </message>
-
-
-
-
     <message>
+        <location line="+661"/>
         <source>The table is read-only and does not support computed columns</source>
         <translation>The table is read-only and does not support computed columns</translation>
     </message>
     <message>
-        <source>Failed to evaluate the formula of computed column "%1": %2</source>
-        <translation>Failed to evaluate the formula of computed column "%1": %2</translation>
+        <location line="-25"/>
+        <location line="+135"/>
+        <source>Failed to evaluate the formula of computed column &quot;%1&quot;: %2</source>
+        <translation>Failed to evaluate the formula of computed column &quot;%1&quot;: %2</translation>
     </message>
     <message>
-        <source>Column "%1" has no computed formula</source>
-        <translation>Column "%1" has no computed formula</translation>
+        <location line="-64"/>
+        <source>Column &quot;%1&quot; has no computed formula</source>
+        <translation>Column &quot;%1&quot; has no computed formula</translation>
     </message>
     <message>
+        <location line="-23"/>
         <source>The formula must not reference the target column itself</source>
         <translation>The formula must not reference the target column itself</translation>
     </message>
     <message>
+        <location line="-3840"/>
         <source>Computed column(s) %1 became invalid because their dependency column(s) were removed</source>
         <translation>Computed column(s) %1 became invalid because their dependency column(s) were removed</translation>
     </message>
     <message>
+        <location line="+4261"/>
         <source>Computed column(s) %1 became invalid because their dependency column(s) were merged</source>
         <translation>Computed column(s) %1 became invalid because their dependency column(s) were merged</translation>
     </message>
     <message>
+        <location line="-265"/>
+        <location line="+1018"/>
         <source>Rename Column</source>
         <translation>Rename Column</translation>
     </message>
     <message>
+        <location line="-1017"/>
         <source>%1 computed column(s) reference the renamed column(s): %2. Their references will be updated automatically. Continue?</source>
         <translation>%1 computed column(s) reference the renamed column(s): %2. Their references will be updated automatically. Continue?</translation>
     </message>
     <message>
+        <location line="-110"/>
         <source>Recompute All Computed Columns</source>
         <translation>Recompute All Computed Columns</translation>
     </message>
     <message>
+        <location line="+158"/>
         <source>Split Column requires an editable table</source>
         <translation>Split Column requires an editable table</translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>Please select exactly one column to split</source>
         <translation>Please select exactly one column to split</translation>
     </message>
     <message>
+        <location line="+14"/>
         <source>Failed to snapshot the source column</source>
         <translation>Failed to snapshot the source column</translation>
     </message>
     <message>
+        <location line="+59"/>
         <source>Split column failed: %1</source>
         <translation>Split column failed: %1</translation>
     </message>
     <message>
+        <location line="+19"/>
         <source>Merge Columns requires an editable table</source>
         <translation>Merge Columns requires an editable table</translation>
     </message>
     <message>
+        <location line="+5"/>
         <source>Please select at least two columns to merge</source>
         <translation>Please select at least two columns to merge</translation>
     </message>
     <message>
+        <location line="+16"/>
         <source>Failed to snapshot the source columns</source>
         <translation>Failed to snapshot the source columns</translation>
     </message>
     <message>
+        <location line="+89"/>
         <source>Merge columns failed: %1</source>
         <translation>Merge columns failed: %1</translation>
     </message>
     <message>
+        <location line="+43"/>
         <source>%1_GroupBy</source>
         <translation>%1_GroupBy</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Group-by aggregation of %1</source>
         <translation>Group-by aggregation of %1</translation>
     </message>
     <message>
+        <location line="+155"/>
         <source>%1_Melted</source>
         <translation>%1_Melted</translation>
     </message>
     <message>
+        <location line="+0"/>
         <source>Melt (wide to long) of %1</source>
         <translation>Melt (wide to long) of %1</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>%1_Transposed</source>
         <translation>%1_Transposed</translation>
     </message>
     <message>
+        <location line="+0"/>
         <source>Transpose of %1</source>
         <translation>Transpose of %1</translation>
     </message>
     <message>
+        <location line="-13"/>
         <source>Reshape failed: %1</source>
         <translation>Reshape failed: %1</translation>
     </message>
     <message>
+        <location line="+5"/>
         <source>Melt table in place</source>
         <translation>Melt table in place</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Transpose table in place</source>
         <translation>Transpose table in place</translation>
     </message>
     <message>
+        <location line="-81"/>
         <source>(no table metadata to clear)</source>
         <translation>(no table metadata to clear)</translation>
     </message>
     <message>
+        <location line="-1420"/>
+        <source>The table has no conditional format rules</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+32"/>
+        <source>Blue</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Green</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Red</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Yellow</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Cyan</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Purple</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Data Bars</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Gradient Fill</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>%1 Gradient Fill</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Solid Fill</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>%1 Solid Fill</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <location line="+30"/>
+        <location line="+54"/>
+        <source>Other Rules...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-77"/>
+        <source>Color Scales</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>%1-Color Scale</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+25"/>
+        <source>Highlight Cells Rules</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Greater Than...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Less Than...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Between...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Equal To...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Text Contains...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>A Date Occurring</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Yesterday</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Today</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Tomorrow</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>In the Last 7 Days</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Last Week</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>This Week</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Next Week</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Last Month</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>This Month</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Next Month</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+19"/>
+        <source>Duplicate Values...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Clear Rules</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Clear Rules from Selected Columns</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Clear Rules from Entire Sheet</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Custom Rules...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1249"/>
+        <location line="+22"/>
         <source>Replace In Place</source>
         <translation>Replace In Place</translation>
     </message>
     <message>
+        <location line="-21"/>
         <source>Replacing in place will clear the following table metadata:
 %1
 
@@ -9297,150 +9887,184 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</translation>
     </message>
     <message>
+        <location line="+22"/>
         <source>The table is very large (%1 cells). Keeping the old data for undo would double memory usage, so this in-place replacement will NOT be undoable. Continue?</source>
         <translation>The table is very large (%1 cells). Keeping the old data for undo would double memory usage, so this in-place replacement will NOT be undoable. Continue?</translation>
     </message>
     <message>
-        <source>Column name "%1" already exists, please use another name</source>
-        <translation>Column name "%1" already exists, please use another name</translation>
-    </message>
-    <message>
+        <location line="+169"/>
         <source>Fill failed: the content does not match the column data type</source>
         <translation>Fill failed: the content does not match the column data type</translation>
     </message>
     <message>
+        <location line="+24"/>
+        <location line="+64"/>
         <source>Cannot fill a read-only data source</source>
         <translation>Cannot fill a read-only data source</translation>
     </message>
     <message>
+        <location line="-52"/>
         <source>Fill down</source>
         <translation>Fill down</translation>
     </message>
     <message>
+        <location line="+4"/>
         <source>Fill up</source>
         <translation>Fill up</translation>
     </message>
     <message>
+        <location line="+4"/>
         <source>Fill forward (ffill)</source>
         <translation>Fill forward (ffill)</translation>
     </message>
     <message>
+        <location line="+4"/>
         <source>Fill backward (bfill)</source>
         <translation>Fill backward (bfill)</translation>
     </message>
     <message>
+        <location line="+46"/>
         <source>Please select cells to fill</source>
         <translation>Please select cells to fill</translation>
     </message>
     <message>
+        <location line="+30"/>
         <source>Failed to generate the fill series</source>
         <translation>Failed to generate the fill series</translation>
     </message>
     <message>
+        <location line="+10"/>
         <source>Fill series</source>
         <translation>Fill series</translation>
     </message>
     <message>
+        <location line="+26"/>
         <source>Numeric range</source>
         <translation>Numeric range</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>Date range</source>
         <translation>Date range</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>Allowed values (enum)</source>
         <translation>Allowed values (enum)</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>Not empty</source>
         <translation>Not empty</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>Unique</source>
         <translation>Unique</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>Regex (full match)</source>
         <translation>Regex (full match)</translation>
     </message>
     <message>
+        <location line="+5"/>
         <source>%1 (occurrence %2)</source>
         <translation>%1 (occurrence %2)</translation>
     </message>
     <message>
+        <location line="+138"/>
         <source>Validation failed: %1</source>
         <translation>Validation failed: %1</translation>
     </message>
     <message>
+        <location line="+48"/>
         <source>No enabled validation rules yet — add rules first</source>
         <translation>No enabled validation rules yet — add rules first</translation>
     </message>
     <message>
+        <location line="+26"/>
         <source>Row %1: %2</source>
         <translation>Row %1: %2</translation>
     </message>
     <message>
+        <location line="+60"/>
         <source>%1 validation rule(s) reference the renamed column(s): %2. Their references will be updated automatically. Continue?</source>
         <translation>%1 validation rule(s) reference the renamed column(s): %2. Their references will be updated automatically. Continue?</translation>
     </message>
     <message>
+        <location line="+96"/>
         <source>Please select a cell to annotate</source>
         <translation>Please select a cell to annotate</translation>
     </message>
     <message>
+        <location line="+84"/>
         <source>Please select a cell whose note is to be deleted</source>
         <translation>Please select a cell whose note is to be deleted</translation>
     </message>
     <message>
+        <location line="+5"/>
         <source>The selected cell has no note</source>
         <translation>The selected cell has no note</translation>
     </message>
     <message>
+        <location line="+18"/>
         <source>This table has no notes</source>
         <translation>This table has no notes</translation>
     </message>
     <message>
+        <location line="-3967"/>
         <source>Some column view settings were dropped because the table columns have changed.</source>
         <translation>Some column view settings were dropped because the table columns have changed.</translation>
     </message>
     <message>
+        <location line="+66"/>
         <source>Frozen columns were reduced because visible columns changed.</source>
         <translation>Frozen columns were reduced because visible columns changed.</translation>
     </message>
     <message>
+        <location line="+272"/>
         <source>Freeze Columns</source>
         <translation>Freeze Columns</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Freeze the first N visible columns (0 = no freeze):</source>
         <translation>Freeze the first N visible columns (0 = no freeze):</translation>
     </message>
     <message>
+        <location line="+119"/>
         <source>Column View...</source>
         <translation>Column View...</translation>
     </message>
     <message>
-        <source>The column "%1" was hidden and has been made visible</source>
-        <translation>The column "%1" was hidden and has been made visible</translation>
+        <location line="-820"/>
+        <location line="+65"/>
+        <source>The column &quot;%1&quot; was hidden and has been made visible</source>
+        <translation>The column &quot;%1&quot; was hidden and has been made visible</translation>
     </message>
     <message>
+        <location line="+792"/>
         <source>Row number is out of range</source>
         <translation>Row number is out of range</translation>
     </message>
     <message>
+        <location line="+27"/>
         <source>Index label not found: %1</source>
         <translation>Index label not found: %1</translation>
     </message>
     <message>
+        <location line="+4"/>
         <source>There are %1 rows with this index label; jumped to the first one</source>
         <translation>There are %1 rows with this index label; jumped to the first one</translation>
     </message>
     <message>
+        <location line="+27"/>
         <source>Column not found: %1</source>
         <translation>Column not found: %1</translation>
     </message>
     <message>
+        <location line="+4"/>
         <source>There are %1 columns with this name; used the first one</source>
         <translation>There are %1 columns with this name; used the first one</translation>
     </message>
@@ -9448,7 +10072,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DA::DADataOperateWidget</name>
     <message>
-        <location filename="../DAGui/DADataOperateWidget.cpp" line="+379"/>
+        <location filename="../DAGui/DADataOperateWidget.cpp" line="+425"/>
         <source>removing a widget that does not exist in the dock</source>
         <translation>removing a widget that does not exist in the dock</translation>
     </message>
@@ -9469,105 +10093,142 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     </message>
 </context>
 <context>
+    <name>DA::DADataTableModel</name>
+    <message>
+        <location filename="../DAGui/Models/DADataTableModel.cpp" line="+256"/>
+        <source>Formula</source>
+        <translation>Formula</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>State</source>
+        <translation>State</translation>
+    </message>
+</context>
+<context>
     <name>DA::DADataTableView</name>
     <message>
-        <location filename="../DAGui/DADataTableView.cpp" line="+29"/>
+        <location filename="../DAGui/DADataTableView.cpp" line="+38"/>
         <source>DADataTableView requires a model to be set first</source>
         <translation>DADataTableView requires a model to be set first</translation>
     </message>
     <message>
+        <location line="+182"/>
         <source>Cut</source>
         <translation>Cut</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Copy</source>
         <translation>Copy</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Paste</source>
         <translation>Paste</translation>
     </message>
     <message>
+        <location line="+9"/>
         <source>Find...</source>
         <translation>Find...</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Replace...</source>
         <translation>Replace...</translation>
-    </message>    <message>
-        <source>Conditional Format...</source>
-        <translation>Conditional Format...</translation>
     </message>
-
     <message>
+        <location line="+10"/>
+        <source>Conditional Format</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+11"/>
         <source>Computed Column...</source>
         <translation>Computed Column...</translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>Split Column...</source>
         <translation>Split Column...</translation>
     </message>
     <message>
+        <location line="+4"/>
         <source>Merge Columns...</source>
         <translation>Merge Columns...</translation>
     </message>
     <message>
+        <location line="+5"/>
         <source>Group By...</source>
         <translation>Group By...</translation>
     </message>
     <message>
+        <location line="+5"/>
         <source>Transpose...</source>
         <translation>Transpose...</translation>
     </message>
     <message>
+        <location line="+4"/>
         <source>Unpivot (Melt)...</source>
         <translation>Unpivot (Melt)...</translation>
     </message>
     <message>
+        <location line="+7"/>
         <source>Fill</source>
         <translation>Fill</translation>
     </message>
     <message>
+        <location line="+3"/>
         <source>Fill Down</source>
         <translation>Fill Down</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Fill Up</source>
         <translation>Fill Up</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Fill Forward (ffill)</source>
         <translation>Fill Forward (ffill)</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Fill Backward (bfill)</source>
         <translation>Fill Backward (bfill)</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>Fill Series...</source>
         <translation>Fill Series...</translation>
     </message>
     <message>
+        <location line="+15"/>
         <source>Validation Rules...</source>
         <translation>Validation Rules...</translation>
     </message>
     <message>
+        <location line="+4"/>
         <source>Run Validation</source>
         <translation>Run Validation</translation>
     </message>
     <message>
+        <location line="+22"/>
         <source>Insert Note</source>
         <translation>Insert Note</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Edit Note</source>
         <translation>Edit Note</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Delete Note</source>
         <translation>Delete Note</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Clear All Notes</source>
         <translation>Clear All Notes</translation>
     </message>
@@ -9593,17 +10254,23 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DA::DADialogAgentSessionManager</name>
     <message>
-        <location filename="../DAGui/Dialog/DADialogAgentSessionManager.cpp" line="+116"/>
+        <location filename="../DAGui/Dialog/DADialogAgentSessionManager.cpp" line="+118"/>
         <source>Session Manager</source>
         <translation>Session Manager</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+8"/>
         <source>Double-click a session to switch:</source>
         <translation>Double-click a session to switch:</translation>
     </message>
     <message>
-        <location line="+19"/>
+        <location line="+5"/>
+        <location line="+309"/>
+        <source>Show sessions from all projects</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-285"/>
         <source>Title</source>
         <translation>Title</translation>
     </message>
@@ -9611,7 +10278,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <location line="+1"/>
         <location line="+58"/>
         <source>State</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">State</translation>
     </message>
     <message>
         <location line="-57"/>
@@ -9657,35 +10324,40 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     </message>
     <message>
         <location line="+18"/>
-        <location line="+362"/>
+        <location line="+422"/>
         <source>Switch</source>
         <translation>Switch</translation>
     </message>
     <message>
-        <location line="-360"/>
-        <location line="+361"/>
+        <location line="-420"/>
+        <location line="+422"/>
         <source>Rename</source>
         <translation>Rename</translation>
     </message>
     <message>
-        <location line="-360"/>
-        <location line="+362"/>
+        <location line="-421"/>
+        <location line="+432"/>
         <source>Delete</source>
         <translation>Delete</translation>
     </message>
     <message>
-        <location line="-361"/>
+        <location line="-431"/>
         <source>Close</source>
         <translation>Close</translation>
     </message>
     <message>
         <location line="+46"/>
-        <location line="+167"/>
+        <location line="+223"/>
         <source>(untitled)</source>
         <translation>(untitled)</translation>
     </message>
     <message>
-        <location line="-71"/>
+        <location line="-218"/>
+        <source>no project</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+97"/>
         <source>Starting</source>
         <translation type="unfinished"></translation>
     </message>
@@ -9705,7 +10377,12 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation type="unfinished">Error</translation>
     </message>
     <message>
-        <location line="+73"/>
+        <location line="+43"/>
+        <source>Show sessions from all projects (%1 running in background)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+80"/>
         <source>Idle</source>
         <translation type="unfinished"></translation>
     </message>
@@ -9715,7 +10392,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+40"/>
+        <location line="+44"/>
         <source>Rename Session</source>
         <translation>Rename Session</translation>
     </message>
@@ -9733,6 +10410,11 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <location line="+1"/>
         <source>Delete session &quot;%1&quot;? This cannot be undone.</source>
         <translation>Delete session &quot;%1&quot;? This cannot be undone.</translation>
+    </message>
+    <message>
+        <location line="+42"/>
+        <source>Stop</source>
+        <translation type="unfinished">Stop</translation>
     </message>
 </context>
 <context>
@@ -9804,6 +10486,577 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     </message>
 </context>
 <context>
+    <name>DA::DADialogComputedColumn</name>
+    <message>
+        <location filename="../DAGui/Dialog/DADialogComputedColumn.cpp" line="+29"/>
+        <source>New Computed Column</source>
+        <translation>New Computed Column</translation>
+    </message>
+    <message>
+        <location line="+93"/>
+        <source>Edit Formula</source>
+        <translation>Edit Formula</translation>
+    </message>
+    <message>
+        <location line="-72"/>
+        <source>New column name</source>
+        <translation>New column name</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>e.g. A + B (column names can be inserted from the list below)</source>
+        <translation>e.g. A + B (column names can be inserted from the list below)</translation>
+    </message>
+    <message>
+        <location line="-3"/>
+        <source>Target Column:</source>
+        <translation>Target Column:</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Expression:</source>
+        <translation>Expression:</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Columns (click to insert)</source>
+        <translation>Columns (click to insert)</translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Preview (first %1 rows)</source>
+        <translation>Preview (first %1 rows)</translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>Cancel</source>
+        <translation>Cancel</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>OK</source>
+        <translation>OK</translation>
+    </message>
+    <message>
+        <location line="+112"/>
+        <source>No data</source>
+        <translation>No data</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Please specify the target column name</source>
+        <translation>Please specify the target column name</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Column &quot;%1&quot; already exists. A computed column must write to a new column (self-overwrite is not allowed).</source>
+        <translation>Column &quot;%1&quot; already exists. A computed column must write to a new column (self-overwrite is not allowed).</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Please input the expression</source>
+        <translation>Please input the expression</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Expression syntax error: %1</source>
+        <translation>Expression syntax error: %1</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>The expression must not reference the target column &quot;%1&quot; (self-overwrite is not allowed).</source>
+        <translation>The expression must not reference the target column &quot;%1&quot; (self-overwrite is not allowed).</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Failed to build preview sample</source>
+        <translation>Failed to build preview sample</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Expression evaluation failed: %1</source>
+        <translation>Expression evaluation failed: %1</translation>
+    </message>
+    <message>
+        <location line="+30"/>
+        <source>OK — %1 dependency column(s): %2</source>
+        <translation>OK — %1 dependency column(s): %2</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADialogConditionalFormat</name>
+    <message>
+        <location filename="../DAGui/Dialog/DADialogConditionalFormat.cpp" line="+58"/>
+        <source>Conditional Formatting Rules</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Rule Type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Cell Rule</source>
+        <translation>Cell Rule</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Color Scale</source>
+        <translation>Color Scale</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Data Bar</source>
+        <translation>Data Bar</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Applies To Columns</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Condition and Format</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>greater than</source>
+        <translation>greater than</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>less than</source>
+        <translation>less than</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>between</source>
+        <translation>between</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>equal to</source>
+        <translation>equal to</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>contains</source>
+        <translation>contains</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <location line="+574"/>
+        <source>is empty</source>
+        <translation>is empty</translation>
+    </message>
+    <message>
+        <location line="-573"/>
+        <location line="+576"/>
+        <source>is not empty</source>
+        <translation>is not empty</translation>
+    </message>
+    <message>
+        <location line="-575"/>
+        <source>a date occurring</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <location line="+580"/>
+        <source>duplicate values</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-579"/>
+        <location line="+582"/>
+        <source>unique values</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-581"/>
+        <source>Condition:</source>
+        <translation type="unfinished">Condition:</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Date:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Value:</source>
+        <translation type="unfinished">Value:</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>And (upper bound):</source>
+        <translation type="unfinished">And (upper bound):</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Background</source>
+        <translation type="unfinished">Background</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Foreground</source>
+        <translation type="unfinished">Foreground</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Font</source>
+        <translation type="unfinished">Font</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Style:</source>
+        <translation type="unfinished">Style:</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>2-Color Scale</source>
+        <translation type="unfinished">2-Color Scale</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>3-Color Scale</source>
+        <translation type="unfinished">3-Color Scale</translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>Low:</source>
+        <translation type="unfinished">Low:</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Middle:</source>
+        <translation type="unfinished">Middle:</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>High:</source>
+        <translation type="unfinished">High:</translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Gradient Fill</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Bar Color:</source>
+        <translation type="unfinished">Bar Color:</translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>Existing Rules (top to bottom = evaluation order, later rules override earlier ones)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Enabled</source>
+        <translation type="unfinished">Enabled</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Add Rule</source>
+        <translation type="unfinished">Add Rule</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Remove</source>
+        <translation type="unfinished">Remove</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Move Up</source>
+        <translation type="unfinished">Move Up</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Move Down</source>
+        <translation type="unfinished">Move Down</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Clear Rules of Selected Column</source>
+        <translation type="unfinished">Clear Rules of Selected Column</translation>
+    </message>
+    <message>
+        <location line="+56"/>
+        <source>Select Font</source>
+        <translation>Select Font</translation>
+    </message>
+    <message>
+        <location line="+441"/>
+        <source>Yesterday</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <location line="+18"/>
+        <source>Today</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-16"/>
+        <source>Tomorrow</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>In the Last 7 Days</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Last Week</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>This Week</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Next Week</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Last Month</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>This Month</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Next Month</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+70"/>
+        <source>Please select at least one column first.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-483"/>
+        <location line="+156"/>
+        <location line="+177"/>
+        <source>Column %1</source>
+        <translation>Column %1</translation>
+    </message>
+    <message>
+        <location line="-319"/>
+        <source>Color scale and data bar need full-column statistics, which are unavailable for lazy-loaded or read-only data sources. Cell rules are still available.</source>
+        <translation>Color scale and data bar need full-column statistics, which are unavailable for lazy-loaded or read-only data sources. Cell rules are still available.</translation>
+    </message>
+    <message>
+        <location line="+327"/>
+        <source>greater than %1</source>
+        <translation>greater than %1</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>less than %1</source>
+        <translation>less than %1</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>between %1 and %2</source>
+        <translation>between %1 and %2</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>equal to %1</source>
+        <translation>equal to %1</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>contains &quot;%1&quot;</source>
+        <translation>contains &quot;%1&quot;</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>date occurring: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>3-color scale</source>
+        <translation>3-color scale</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>2-color scale</source>
+        <translation>2-color scale</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>gradient data bar</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>data bar</source>
+        <translation>data bar</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>[Off] </source>
+        <translation>[Off] </translation>
+    </message>
+    <message>
+        <location line="-560"/>
+        <source>Font...</source>
+        <translation>Font...</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADialogConditionalFormatQuickRule</name>
+    <message>
+        <location filename="../DAGui/Dialog/DADialogConditionalFormatQuickRule.cpp" line="+60"/>
+        <source>Value:</source>
+        <translation type="unfinished">Value:</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>And (upper bound):</source>
+        <translation type="unfinished">And (upper bound):</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Rule:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Duplicate values</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Unique values</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+19"/>
+        <source>Custom Colors...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Format Style:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Background:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Foreground:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+46"/>
+        <source>Duplicate/Unique Values</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Format cells whose values are duplicate or unique in the column.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Greater Than</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Format cells that are greater than:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Less Than</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Format cells that are less than:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Between</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Format cells that are between:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Equal To</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Format cells that are equal to:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Text Contains</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Format cells that contain the text:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+30"/>
+        <source>Please enter the condition value first.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Orange-red fill with white text</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Yellow fill with dark slate text</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Green fill with white text</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Light blue fill with dark slate text</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Orange-red text</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DA::DADialogDataframeColumnDescribe</name>
     <message>
         <location filename="../DAGui/Dialog/DADialogDataframeColumnDescribe.cpp" line="+29"/>
@@ -9824,6 +11077,618 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <location line="+0"/>
         <source>Value</source>
         <translation>Value</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADialogFillSeries</name>
+    <message>
+        <location filename="../DAGui/Dialog/DADialogFillSeries.cpp" line="+107"/>
+        <source>Fill Series</source>
+        <translation>Fill Series</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Linear series (start / step / stop)</source>
+        <translation>Linear series (start / step / stop)</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Date series (start / step / unit)</source>
+        <translation>Date series (start / step / unit)</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <location line="+22"/>
+        <source>Start value (empty = default)</source>
+        <translation>Start value (empty = default)</translation>
+    </message>
+    <message>
+        <location line="-21"/>
+        <source>Step (empty = 1)</source>
+        <translation>Step (empty = 1)</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Stop value (optional)</source>
+        <translation>Stop value (optional)</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Stop value (empty = no limit)</source>
+        <translation>Stop value (empty = no limit)</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Day</source>
+        <translation>Day</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Week</source>
+        <translation>Week</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Month</source>
+        <translation>Month</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Year</source>
+        <translation>Year</translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Start date, e.g. 2020-01-01 (empty = today)</source>
+        <translation>Start date, e.g. 2020-01-01 (empty = today)</translation>
+    </message>
+    <message>
+        <location line="+18"/>
+        <source>Invalid parameters: unable to generate the series</source>
+        <translation>Invalid parameters: unable to generate the series</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Preview: (empty)</source>
+        <translation>Preview: (empty)</translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Preview: %1</source>
+        <translation>Preview: %1</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADialogFindReplace</name>
+    <message>
+        <location filename="../DAGui/Dialog/DADialogFindReplace.cpp" line="+40"/>
+        <source>Entire table</source>
+        <translation>Entire table</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Current selection</source>
+        <translation>Current selection</translation>
+    </message>
+    <message>
+        <location line="+106"/>
+        <source>No matches</source>
+        <translation>No matches</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>%1 of %2 (truncated from %3)</source>
+        <translation>%1 of %2 (truncated from %3)</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>%1 of %2</source>
+        <translation>%1 of %2</translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Invalid pattern</source>
+        <translation>Invalid pattern</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADialogGotoCell</name>
+    <message>
+        <location filename="../DAGui/Dialog/DADialogGotoCell.cpp" line="+36"/>
+        <source>Go To</source>
+        <translation>Go To</translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Row number:</source>
+        <translation>Row number:</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Index label:</source>
+        <translation>Index label:</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Column:</source>
+        <translation>Column:</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Keep hidden columns hidden</source>
+        <translation>Keep hidden columns hidden</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>First row</source>
+        <translation>First row</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Last row</source>
+        <translation>Last row</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>First column</source>
+        <translation>First column</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Last column</source>
+        <translation>Last column</translation>
+    </message>
+    <message>
+        <location line="+35"/>
+        <source>1 - %1</source>
+        <translation>1 - %1</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADialogGroupBy</name>
+    <message>
+        <location filename="../DAGui/Dialog/DADialogGroupBy.cpp" line="+28"/>
+        <source>Group By</source>
+        <translation>Group By</translation>
+    </message>
+    <message>
+        <location line="+18"/>
+        <source>Group keys (multi-select)</source>
+        <translation>Group keys (multi-select)</translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Aggregate columns (multi-select)</source>
+        <translation>Aggregate columns (multi-select)</translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Aggregations (column / function)</source>
+        <translation>Aggregations (column / function)</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Column</source>
+        <translation>Column</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Function</source>
+        <translation>Function</translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Preview (first %1 rows)</source>
+        <translation>Preview (first %1 rows)</translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>OK</source>
+        <translation>OK</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Cancel</source>
+        <translation>Cancel</translation>
+    </message>
+    <message>
+        <location line="+97"/>
+        <source>No data</source>
+        <translation>No data</translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Please select at least one group key</source>
+        <translation>Please select at least one group key</translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>Please select at least one aggregation column</source>
+        <translation>Please select at least one aggregation column</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Aggregation failed: %1</source>
+        <translation>Aggregation failed: %1</translation>
+    </message>
+    <message>
+        <location line="+18"/>
+        <source>OK — %1 group(s) (result rows)</source>
+        <translation>OK — %1 group(s) (result rows)</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADialogMergeColumns</name>
+    <message>
+        <location filename="../DAGui/Dialog/DADialogMergeColumns.cpp" line="+33"/>
+        <source>Merge Columns</source>
+        <translation>Merge Columns</translation>
+    </message>
+    <message>
+        <location line="+18"/>
+        <source>Merge order (top to bottom)</source>
+        <translation>Merge order (top to bottom)</translation>
+    </message>
+    <message>
+        <location line="+29"/>
+        <source>can be empty</source>
+        <translation>can be empty</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Separator:</source>
+        <translation>Separator:</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Skip missing values (no extra separator)</source>
+        <translation>Skip missing values (no extra separator)</translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Result column name:</source>
+        <translation>Result column name:</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Preview (first %1 rows)</source>
+        <translation>Preview (first %1 rows)</translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>OK</source>
+        <translation>OK</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Cancel</source>
+        <translation>Cancel</translation>
+    </message>
+    <message>
+        <location line="+92"/>
+        <source>No data</source>
+        <translation>No data</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Merge requires at least 2 columns</source>
+        <translation>Merge requires at least 2 columns</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Result column name must not be empty</source>
+        <translation>Result column name must not be empty</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Column &quot;%1&quot; already exists, please use another result name</source>
+        <translation>Column &quot;%1&quot; already exists, please use another result name</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Failed to build preview sample</source>
+        <translation>Failed to build preview sample</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Merge failed: %1</source>
+        <translation>Merge failed: %1</translation>
+    </message>
+    <message>
+        <location line="+16"/>
+        <source>OK — merged into &quot;%1&quot; at column %2</source>
+        <translation>OK — merged into &quot;%1&quot; at column %2</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADialogReshape</name>
+    <message>
+        <location filename="../DAGui/Dialog/DADialogReshape.cpp" line="+36"/>
+        <source>Reshape</source>
+        <translation>Reshape</translation>
+    </message>
+    <message>
+        <location line="+120"/>
+        <source>Unpivot / Melt</source>
+        <translation>Unpivot / Melt</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Transpose</source>
+        <translation>Transpose</translation>
+    </message>
+    <message>
+        <location line="-100"/>
+        <source>Mode</source>
+        <translation>Mode</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Transpose (rows become columns)</source>
+        <translation>Transpose (rows become columns)</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Unpivot / Melt (wide to long)</source>
+        <translation>Unpivot / Melt (wide to long)</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>ID columns (keep, multi-select)</source>
+        <translation>ID columns (keep, multi-select)</translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Value columns (unpivot; none = all others)</source>
+        <translation>Value columns (unpivot; none = all others)</translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>Variable column name:</source>
+        <translation>Variable column name:</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Value column name:</source>
+        <translation>Value column name:</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Replace current table in place (default: create a new dataset)</source>
+        <translation>Replace current table in place (default: create a new dataset)</translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Preview (first %1 rows of a sample)</source>
+        <translation>Preview (first %1 rows of a sample)</translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>OK</source>
+        <translation>OK</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Cancel</source>
+        <translation>Cancel</translation>
+    </message>
+    <message>
+        <location line="+146"/>
+        <source>No data</source>
+        <translation>No data</translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Failed to build preview sample</source>
+        <translation>Failed to build preview sample</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Column &quot;%1&quot; is in both ID and value columns</source>
+        <translation>Column &quot;%1&quot; is in both ID and value columns</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>No column left to unpivot (all columns are kept as ID)</source>
+        <translation>No column left to unpivot (all columns are kept as ID)</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Variable/value column names must not be empty</source>
+        <translation>Variable/value column names must not be empty</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Reshape failed: %1</source>
+        <translation>Reshape failed: %1</translation>
+    </message>
+    <message>
+        <location line="+21"/>
+        <source> — exceeds the %1-row guard, confirmation required on OK</source>
+        <translation> — exceeds the %1-row guard, confirmation required on OK</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>OK — estimated output rows: %1 (rows %2 x unpivoted columns %3)%4</source>
+        <translation>OK — estimated output rows: %1 (rows %2 x unpivoted columns %3)%4</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>OK — result will have %1 row(s) (original columns) and one column per original row plus the &quot;index&quot; name column</source>
+        <translation>OK — result will have %1 row(s) (original columns) and one column per original row plus the &quot;index&quot; name column</translation>
+    </message>
+    <message>
+        <location line="+17"/>
+        <source>Melt Scale Guard</source>
+        <translation>Melt Scale Guard</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>The melt operation is estimated to produce %1 rows (limit %2), which may consume a large amount of memory. Force continue?</source>
+        <translation>The melt operation is estimated to produce %1 rows (limit %2), which may consume a large amount of memory. Force continue?</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADialogSplitColumn</name>
+    <message>
+        <location filename="../DAGui/Dialog/DADialogSplitColumn.cpp" line="+35"/>
+        <source>Split Column</source>
+        <translation>Split Column</translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>Source column: %1</source>
+        <translation>Source column: %1</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Split Mode</source>
+        <translation>Split Mode</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Delimiter (single char or string)</source>
+        <translation>Delimiter (single char or string)</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Regular expression (capture groups)</source>
+        <translation>Regular expression (capture groups)</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Fixed widths</source>
+        <translation>Fixed widths</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>comma separated, e.g. 3,5,8</source>
+        <translation>comma separated, e.g. 3,5,8</translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>Max columns:</source>
+        <translation>Max columns:</translation>
+    </message>
+    <message>
+        <location line="-1"/>
+        <source>Unlimited</source>
+        <translation>Unlimited</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Discard extra parts</source>
+        <translation>Discard extra parts</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Keep remainder in last column</source>
+        <translation>Keep remainder in last column</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Report error</source>
+        <translation>Report error</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Overflow policy:</source>
+        <translation>Overflow policy:</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Try to parse result columns as numeric</source>
+        <translation>Try to parse result columns as numeric</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>comma separated result column names</source>
+        <translation>comma separated result column names</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Result names:</source>
+        <translation>Result names:</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Preview (first %1 rows)</source>
+        <translation>Preview (first %1 rows)</translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>OK</source>
+        <translation>OK</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Cancel</source>
+        <translation>Cancel</translation>
+    </message>
+    <message>
+        <location line="+92"/>
+        <source>Delimiter must not be empty</source>
+        <translation>Delimiter must not be empty</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Regular expression must not be empty</source>
+        <translation>Regular expression must not be empty</translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>Widths must be comma separated positive integers</source>
+        <translation>Widths must be comma separated positive integers</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Widths must not be empty</source>
+        <translation>Widths must not be empty</translation>
+    </message>
+    <message>
+        <location line="+18"/>
+        <source>No data</source>
+        <translation>No data</translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Failed to build preview sample</source>
+        <translation>Failed to build preview sample</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Split failed: %1</source>
+        <translation>Split failed: %1</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Auto name &quot;%1&quot; conflicts with an existing column, please rename the result columns</source>
+        <translation>Auto name &quot;%1&quot; conflicts with an existing column, please rename the result columns</translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>Result name count (%1) does not match the split column count (%2)</source>
+        <translation>Result name count (%1) does not match the split column count (%2)</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Result column name must not be empty</source>
+        <translation>Result column name must not be empty</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Duplicate result column name &quot;%1&quot;</source>
+        <translation>Duplicate result column name &quot;%1&quot;</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Result column name &quot;%1&quot; already exists in the table</source>
+        <translation>Result column name &quot;%1&quot; already exists in the table</translation>
+    </message>
+    <message>
+        <location line="+32"/>
+        <source>OK — split into %1 column(s)</source>
+        <translation>OK — split into %1 column(s)</translation>
     </message>
 </context>
 <context>
@@ -9938,6 +11803,294 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     </message>
 </context>
 <context>
+    <name>DA::DADialogValidationReport</name>
+    <message>
+        <location filename="../DAGui/Dialog/DADialogValidationReport.cpp" line="+35"/>
+        <location line="+116"/>
+        <source>Validation Report</source>
+        <translation>Validation Report</translation>
+    </message>
+    <message>
+        <location line="-104"/>
+        <source>Export...</source>
+        <translation>Export...</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Clear Highlights</source>
+        <translation>Clear Highlights</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Close</source>
+        <translation>Close</translation>
+    </message>
+    <message>
+        <location line="+30"/>
+        <source>  [column missing]</source>
+        <translation>  [column missing]</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>  —  %1 violation(s)</source>
+        <translation>  —  %1 violation(s)</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source> (showing first %1)</source>
+        <translation> (showing first %1)</translation>
+    </message>
+    <message>
+        <location line="+27"/>
+        <location line="+40"/>
+        <source>Evaluated %1 rule(s), found %2 violation(s), took %3 ms</source>
+        <translation>Evaluated %1 rule(s), found %2 violation(s), took %3 ms</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Error</source>
+        <translation>Error</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Warning</source>
+        <translation>Warning</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Column missing (rule skipped)</source>
+        <translation>Column missing (rule skipped)</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>%1 violation(s)</source>
+        <translation>%1 violation(s)</translation>
+    </message>
+    <message>
+        <location line="+17"/>
+        <source>Export Validation Report</source>
+        <translation>Export Validation Report</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>HTML (*.html);;PDF (*.pdf);;Word (*.docx)</source>
+        <translation>HTML (*.html);;PDF (*.pdf);;Word (*.docx)</translation>
+    </message>
+    <message>
+        <location line="+16"/>
+        <location line="+7"/>
+        <source>Export failed: %1</source>
+        <translation>Export failed: %1</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADialogValidationRules</name>
+    <message>
+        <location filename="../DAGui/Dialog/DADialogValidationRules.cpp" line="+60"/>
+        <source>Validation Rules</source>
+        <translation>Validation Rules</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Add</source>
+        <translation>Add</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Remove</source>
+        <translation>Remove</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Up</source>
+        <translation>Up</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Down</source>
+        <translation>Down</translation>
+    </message>
+    <message>
+        <location line="+21"/>
+        <location line="+166"/>
+        <source>%1 (occurrence %2)</source>
+        <translation>%1 (occurrence %2)</translation>
+    </message>
+    <message>
+        <location line="-160"/>
+        <location line="+138"/>
+        <source>Numeric range</source>
+        <translation>Numeric range</translation>
+    </message>
+    <message>
+        <location line="-137"/>
+        <location line="+140"/>
+        <source>Date range</source>
+        <translation>Date range</translation>
+    </message>
+    <message>
+        <location line="-139"/>
+        <location line="+142"/>
+        <source>Allowed values (enum)</source>
+        <translation>Allowed values (enum)</translation>
+    </message>
+    <message>
+        <location line="-141"/>
+        <location line="+144"/>
+        <source>Not empty</source>
+        <translation>Not empty</translation>
+    </message>
+    <message>
+        <location line="-143"/>
+        <location line="+146"/>
+        <source>Unique</source>
+        <translation>Unique</translation>
+    </message>
+    <message>
+        <location line="-145"/>
+        <location line="+148"/>
+        <source>Regex (full match)</source>
+        <translation>Regex (full match)</translation>
+    </message>
+    <message>
+        <location line="-145"/>
+        <location line="+149"/>
+        <source>Error</source>
+        <translation>Error</translation>
+    </message>
+    <message>
+        <location line="-148"/>
+        <location line="+147"/>
+        <source>Warning</source>
+        <translation>Warning</translation>
+    </message>
+    <message>
+        <location line="-146"/>
+        <source>Enabled</source>
+        <translation>Enabled</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Display name in report (optional)</source>
+        <translation>Display name in report (optional)</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Column</source>
+        <translation>Column</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Type</source>
+        <translation>Type</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Level</source>
+        <translation>Level</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Name</source>
+        <translation>Name</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Empty = no lower bound</source>
+        <translation>Empty = no lower bound</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Empty = no upper bound</source>
+        <translation>Empty = no upper bound</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Minimum</source>
+        <translation>Minimum</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Maximum</source>
+        <translation>Maximum</translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>From</source>
+        <translation>From</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>To</source>
+        <translation>To</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>One allowed value per line</source>
+        <translation>One allowed value per line</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Allow other values when editing (dropdown)</source>
+        <translation>Allow other values when editing (dropdown)</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>No parameters</source>
+        <translation>No parameters</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Full-match pattern, e.g. [A-Z]{3}\d+</source>
+        <translation>Full-match pattern, e.g. [A-Z]{3}\d+</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Pattern</source>
+        <translation>Pattern</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Parameters</source>
+        <translation>Parameters</translation>
+    </message>
+    <message>
+        <location line="+98"/>
+        <source> (disabled)</source>
+        <translation> (disabled)</translation>
+    </message>
+    <message>
+        <location line="+192"/>
+        <source>Minimum is not a valid number</source>
+        <translation>Minimum is not a valid number</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Maximum is not a valid number</source>
+        <translation>Maximum is not a valid number</translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>From-date is invalid (use yyyy-MM-dd)</source>
+        <translation>From-date is invalid (use yyyy-MM-dd)</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>To-date is invalid (use yyyy-MM-dd)</source>
+        <translation>To-date is invalid (use yyyy-MM-dd)</translation>
+    </message>
+    <message>
+        <location line="+18"/>
+        <source>Rule parameters are incomplete (both bounds empty / no allowed values / empty pattern)</source>
+        <translation>Rule parameters are incomplete (both bounds empty / no allowed values / empty pattern)</translation>
+    </message>
+    <message>
+        <location line="+88"/>
+        <source>Invalid rule parameters</source>
+        <translation>Invalid rule parameters</translation>
+    </message>
+</context>
+<context>
     <name>DA::DAExportToPngSettingDialog</name>
     <message>
         <location filename="../APP/Dialog/DAExportToPngSettingDialog.cpp" line="+60"/>
@@ -10012,14 +12165,19 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DA::DAFigureWidget</name>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="+148"/>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="+153"/>
         <source>Unexpected plotting operation: a chart that does not belong to the DAChartWidget type was added to the figure</source>
         <translation>Unexpected plotting operation: a chart that does not belong to the DAChartWidget type was added to the figure</translation>
     </message>
     <message>
-        <location line="+1188"/>
+        <location line="+1168"/>
         <source>Unsupported chart editor type: %1</source>
         <translation>Unsupported chart editor type: %1</translation>
+    </message>
+    <message>
+        <location line="+1000"/>
+        <source>add data probes</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -10067,6 +12225,48 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <location line="+11"/>
         <source>Text</source>
         <translation>Text</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAItemListEditWidget</name>
+    <message>
+        <location filename="../3rdparty/DAWidgets/src/DAItemListEditWidget.cpp" line="+67"/>
+        <source>Add</source>
+        <translation type="unfinished">Add</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <location line="+1"/>
+        <source>Remove All</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Remove all selected items?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+44"/>
+        <source>Remove</source>
+        <translation type="unfinished">Remove</translation>
+    </message>
+    <message>
+        <location line="+58"/>
+        <source>No available items</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAItemListPickDialog</name>
+    <message>
+        <location filename="../3rdparty/DAWidgets/src/DAItemListPickDialog.cpp" line="+30"/>
+        <source>Select Items</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Search...</source>
+        <translation type="unfinished">Search...</translation>
     </message>
 </context>
 <context>
@@ -10185,7 +12385,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DA::DAMarkdownView</name>
     <message>
-        <location filename="../DAGui/MarkdownView/DAMarkdownView.cpp" line="+282"/>
+        <location filename="../DAGui/MarkdownView/DAMarkdownView.cpp" line="+326"/>
         <source>Copy</source>
         <translation>Copy</translation>
     </message>
@@ -10206,11 +12406,26 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     </message>
     <message>
         <location line="+6"/>
+        <source>Export as HTML...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Export as PDF...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Export as Word Document...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
         <source>Reload</source>
         <translation>Reload</translation>
     </message>
     <message>
-        <location line="+33"/>
+        <location line="+38"/>
         <source>Markdown Source</source>
         <translation>Markdown Source</translation>
     </message>
@@ -10234,6 +12449,36 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <location line="+5"/>
         <source>Markdown saved to %1</source>
         <translation>Markdown saved to %1</translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>HTML Files (*.html);;All Files (*)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>PDF Files (*.pdf);;All Files (*)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Word Documents (*.docx);;All Files (*)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Export Markdown</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>Markdown exported to %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Failed to export markdown: %1</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -10719,7 +12964,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     <message>
         <location line="+9"/>
         <source>Enabled</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Enabled</translation>
     </message>
     <message>
         <location line="+39"/>
@@ -11107,12 +13352,12 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <location line="+13"/>
         <location line="+13"/>
         <location line="+13"/>
-        <location line="+482"/>
+        <location line="+503"/>
         <source>No active workflow detected</source>
         <translation>No active workflow detected</translation>
     </message>
     <message>
-        <location line="-559"/>
+        <location line="-580"/>
         <source>Workflow execution failed</source>
         <translation>Workflow execution failed</translation>
     </message>
@@ -11590,6 +13835,114 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     </message>
 </context>
 <context>
+    <name>DA::DASettingPageShortcuts</name>
+    <message>
+        <location filename="../APP/SettingPages/DASettingPageShortcuts.cpp" line="+64"/>
+        <source>Shortcuts</source>
+        <translation>Shortcuts</translation>
+    </message>
+    <message>
+        <location line="+36"/>
+        <source>Search:</source>
+        <translation>Search:</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Filter by command or shortcut</source>
+        <translation>Filter by command or shortcut</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Reset All to Defaults</source>
+        <translation>Reset All to Defaults</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Command</source>
+        <translation>Command</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Shortcut</source>
+        <translation>Shortcut</translation>
+    </message>
+    <message>
+        <location line="+174"/>
+        <source>Shortcut %1 is already assigned to: %2</source>
+        <translation>Shortcut %1 is already assigned to: %2</translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>Shortcut for &quot;%1&quot; changed, click OK or Apply to take effect</source>
+        <translation>Shortcut for &quot;%1&quot; changed, click OK or Apply to take effect</translation>
+    </message>
+    <message>
+        <location line="+28"/>
+        <source>Default: %1</source>
+        <translation>Default: %1</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>(none)</source>
+        <translation>(none)</translation>
+    </message>
+    <message>
+        <location line="+48"/>
+        <source>Main</source>
+        <translation>Main</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Data</source>
+        <translation>Data</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Figure</source>
+        <translation>Figure</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Chart</source>
+        <translation>Chart</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>View</source>
+        <translation>View</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Workflow</source>
+        <translation>Workflow</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Workflow Editor</source>
+        <translation>Workflow Editor</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Other</source>
+        <translation>Other</translation>
+    </message>
+    <message>
+        <location line="+101"/>
+        <source>Reset to Default</source>
+        <translation>Reset to Default</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Clear Shortcut</source>
+        <translation>Clear Shortcut</translation>
+    </message>
+    <message>
+        <location line="-457"/>
+        <source>Failed to save shortcut settings</source>
+        <translation>Failed to save shortcut settings</translation>
+    </message>
+</context>
+<context>
     <name>DA::DASettingWidget</name>
     <message>
         <location filename="../DAGui/DASettingWidget.cpp" line="+97"/>
@@ -11600,7 +13953,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DA::DAStatusBarWidget</name>
     <message>
-        <location filename="../DAGui/DAStatusBarWidget.cpp" line="+47"/>
+        <location filename="../DAGui/DAStatusBarWidget.cpp" line="+49"/>
         <source>Workflow</source>
         <translation>Workflow</translation>
     </message>
@@ -11628,6 +13981,24 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <location line="+2"/>
         <source>Switch to Chart Mode</source>
         <translation>Switch to Chart Mode</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DATableComputedColumnStore</name>
+    <message>
+        <location filename="../DAGui/DATableComputedColumnStore.cpp" line="+461"/>
+        <source>Valid</source>
+        <translation>Valid</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Needs Recompute</source>
+        <translation>Needs Recompute</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Invalid</source>
+        <translation>Invalid</translation>
     </message>
 </context>
 <context>
@@ -11673,6 +14044,195 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <location line="+36"/>
         <source>Text</source>
         <translation>Text</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DATableMetadata</name>
+    <message>
+        <location filename="../DAGui/DATableMetadata.cpp" line="+241"/>
+        <source>Cell styles</source>
+        <translation>Cell styles</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Conditional format rules</source>
+        <translation>Conditional format rules</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Computed columns</source>
+        <translation>Computed columns</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Validation rules</source>
+        <translation>Validation rules</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Cell notes</source>
+        <translation>Cell notes</translation>
+    </message>
+    <message>
+        <location line="-12"/>
+        <source>Column view settings</source>
+        <translation>Column view settings</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DATableNoteEditDialog</name>
+    <message>
+        <location filename="../DAGui/DATableNoteEditDialog.cpp" line="+31"/>
+        <source>Cell Note</source>
+        <translation>Cell Note</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Enter note text...</source>
+        <translation>Enter note text...</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Delete</source>
+        <translation>Delete</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DATableStatsWidget</name>
+    <message>
+        <location filename="../DAGui/DATableStatsWidget.cpp" line="+158"/>
+        <source>%1 rows × %2 cols</source>
+        <translation>%1 rows × %2 cols</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>%1 cols selected · %2 rows</source>
+        <translation>%1 cols selected · %2 rows</translation>
+    </message>
+    <message>
+        <location line="+64"/>
+        <location line="+30"/>
+        <source>Count</source>
+        <translation>Count</translation>
+    </message>
+    <message>
+        <location line="-29"/>
+        <location line="+30"/>
+        <source>Null</source>
+        <translation>Null</translation>
+    </message>
+    <message>
+        <location line="-27"/>
+        <location line="+29"/>
+        <source>Sum</source>
+        <translation>Sum</translation>
+    </message>
+    <message>
+        <location line="-28"/>
+        <location line="+29"/>
+        <source>Mean</source>
+        <translation>Mean</translation>
+    </message>
+    <message>
+        <location line="-28"/>
+        <location line="+29"/>
+        <source>Min</source>
+        <translation>Min</translation>
+    </message>
+    <message>
+        <location line="-28"/>
+        <location line="+29"/>
+        <source>Max</source>
+        <translation>Max</translation>
+    </message>
+    <message>
+        <location line="-26"/>
+        <location line="+28"/>
+        <source>Unique</source>
+        <translation>Unique</translation>
+    </message>
+    <message>
+        <location line="-20"/>
+        <source>&lt;b&gt;Per-column details&lt;/b&gt;</source>
+        <translation>&lt;b&gt;Per-column details&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <location line="-38"/>
+        <source>Selection is too large; per-column details were not computed</source>
+        <translation>Selection is too large; per-column details were not computed</translation>
+    </message>
+    <message>
+        <location line="-35"/>
+        <source>%1 segments · %2 rows × %3 cols · %4 cells</source>
+        <translation>%1 segments · %2 rows × %3 cols · %4 cells</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Aggregation is not available for multi-range selections</source>
+        <translation>Aggregation is not available for multi-range selections</translation>
+    </message>
+    <message>
+        <location line="-21"/>
+        <source>Row %1 · %2: %3</source>
+        <translation>Row %1 · %2: %3</translation>
+    </message>
+    <message>
+        <location line="+57"/>
+        <source>Statistics are not available for the current data source</source>
+        <translation>Statistics are not available for the current data source</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DATimeFormatEditWidget</name>
+    <message>
+        <location filename="../3rdparty/DAWidgets/src/DATimeFormatEditWidget.cpp" line="+59"/>
+        <source>example: 8:5</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>example: 08:05</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>example: 8:5:12</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>example: 08:05:12</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>example: 2017-8-1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>example: 2017-8-1 8:5</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>example: 2017-8-1 8:5:12</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>example: 2017-08-01</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>example: 2017-08-01 08:05</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>example: 2017-08-01 08:05:12</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -11732,6 +14292,42 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <location line="+1"/>
         <source>Failed to read text file(%1), reason: %2</source>
         <translation>Failed to read text file(%1), reason: %2</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAUndoHistoryWidget</name>
+    <message>
+        <location filename="../DAGui/DAUndoHistoryWidget.cpp" line="+22"/>
+        <source>Undo depth:</source>
+        <translation>Undo depth:</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Maximum number of undo steps kept per table page (larger uses more memory for swap-type commands)</source>
+        <translation>Maximum number of undo steps kept per table page (larger uses more memory for swap-type commands)</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAVirtualScrollBar</name>
+    <message>
+        <location filename="../DAGui/DAVirtualScrollBar.cpp" line="+193"/>
+        <source>Row %1 of %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+126"/>
+        <source>Go To Row...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>First Row</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Last Row</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -11951,9 +14547,50 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     </message>
 </context>
 <context>
+    <name>DAAligmentEditWidget</name>
+    <message>
+        <location filename="../3rdparty/DAWidgets/src/DAAligmentEditWidget.ui" line="+20"/>
+        <source>Aligment Edit Widget</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+21"/>
+        <source>Aligment Left</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+17"/>
+        <source>Aligment Right</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+17"/>
+        <source>Aligment Top</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+17"/>
+        <source>Aligment Bottom</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+17"/>
+        <source>Aligment Center</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DAAligmentPositionEditWidget</name>
+    <message>
+        <location filename="../3rdparty/DAWidgets/src/DAAligmentPositionEditWidget.ui" line="+20"/>
+        <source>Aligment Position</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-1494"/>
+        <location filename="../APP/DAAppController.cpp" line="-3691"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>
@@ -11982,6 +14619,14 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <location line="+6"/>
         <source>Failed to open Excel file &quot;%1&quot;</source>
         <translation>Failed to open Excel file &quot;%1&quot;</translation>
+    </message>
+</context>
+<context>
+    <name>DABrushEditWidget</name>
+    <message>
+        <location filename="../3rdparty/DAWidgets/src/DABrushEditWidget.ui" line="+20"/>
+        <source>Brush Edit</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -13863,6 +16508,69 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     </message>
 </context>
 <context>
+    <name>DADialogFindReplace</name>
+    <message>
+        <location filename="../DAGui/Dialog/DADialogFindReplace.ui" line="+14"/>
+        <source>Find and Replace</source>
+        <translation>Find and Replace</translation>
+    </message>
+    <message>
+        <location line="+26"/>
+        <source>Find:</source>
+        <translation>Find:</translation>
+    </message>
+    <message>
+        <location line="+52"/>
+        <source>Replace:</source>
+        <translation>Replace:</translation>
+    </message>
+    <message>
+        <location line="-31"/>
+        <source>Previous</source>
+        <translation>Previous</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Next</source>
+        <translation>Next</translation>
+    </message>
+    <message>
+        <location line="+38"/>
+        <source>Replace</source>
+        <translation>Replace</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Replace All</source>
+        <translation>Replace All</translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>Case sensitive</source>
+        <translation>Case sensitive</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Regex</source>
+        <translation>Regex</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Whole cell</source>
+        <translation>Whole cell</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Scope:</source>
+        <translation>Scope:</translation>
+    </message>
+    <message>
+        <location line="+23"/>
+        <source>Close</source>
+        <translation>Close</translation>
+    </message>
+</context>
+<context>
     <name>DADialogInsertNewColumn</name>
     <message>
         <location filename="../DAGui/Dialog/DADialogInsertNewColumn.ui" line="+14"/>
@@ -13939,6 +16647,24 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     </message>
 </context>
 <context>
+    <name>DADialogTableColumnView</name>
+    <message>
+        <location filename="../DAGui/Dialog/DADialogTableColumnView.ui" line="+14"/>
+        <source>Column View</source>
+        <translation>Column View</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Columns:</source>
+        <translation>Columns:</translation>
+    </message>
+    <message>
+        <location line="+16"/>
+        <source>Freeze Columns:</source>
+        <translation>Freeze Columns:</translation>
+    </message>
+</context>
+<context>
     <name>DAExportToPngSettingDialog</name>
     <message>
         <location filename="../APP/Dialog/DAExportToPngSettingDialog.ui" line="+14"/>
@@ -13979,9 +16705,35 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DAFigureWidget</name>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="-1248"/>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="-2228"/>
         <source>Figure</source>
         <translation>Figure</translation>
+    </message>
+</context>
+<context>
+    <name>DAFilePathEditWidget</name>
+    <message>
+        <location filename="../3rdparty/DAWidgets/src/DAFilePathEditWidget.ui" line="+14"/>
+        <source>File Path Edit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+24"/>
+        <source>Open</source>
+        <translation type="unfinished">Open</translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Ctrl+O</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DAFontEditPannelWidget</name>
+    <message>
+        <location filename="../3rdparty/DAWidgets/src/DAFontEditPannelWidget.ui" line="+26"/>
+        <source>Font Edit</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -14153,6 +16905,19 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <location line="+19"/>
         <source>Name:</source>
         <translation>Name:</translation>
+    </message>
+</context>
+<context>
+    <name>DAPenEditWidget</name>
+    <message>
+        <location filename="../3rdparty/DAWidgets/src/DAPenEditWidget.cpp" line="+137"/>
+        <source>Pen Editor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source> px</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -14655,6 +17420,47 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     </message>
 </context>
 <context>
+    <name>DAShapeEditPannelWidget</name>
+    <message>
+        <location filename="../3rdparty/DAWidgets/src/DAShapeEditPannelWidget.ui" line="+14"/>
+        <source>Shape Edit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+21"/>
+        <source>Border</source>
+        <translation type="unfinished">Border</translation>
+    </message>
+    <message>
+        <location line="+27"/>
+        <source>Fill</source>
+        <translation type="unfinished">Fill</translation>
+    </message>
+</context>
+<context>
+    <name>DATimeFormatEditWidget</name>
+    <message>
+        <location filename="../3rdparty/DAWidgets/src/DATimeFormatEditWidget.ui" line="+26"/>
+        <source>Time Format Set</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>select time format：</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+16"/>
+        <source>example:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+28"/>
+        <source>TextLabel</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DATxtFileImportDialog</name>
     <message>
         <location filename="../DAGui/Dialog/DATxtFileImportDialog.ui" line="+14"/>
@@ -14789,25 +17595,25 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DataAnalysisUI</name>
     <message>
-        <location filename="../../plugins/DataAnalysis/DataAnalysisUI.cpp" line="+186"/>
-        <location line="+87"/>
+        <location filename="../../plugins/DataAnalysis/DataAnalysisUI.cpp" line="+181"/>
+        <location line="+79"/>
         <source>Data Cleaning</source>
         <translation>Data Cleaning</translation>
     </message>
     <message>
-        <location line="-54"/>
-        <location line="+83"/>
+        <location line="-46"/>
+        <location line="+75"/>
         <source>Data Filtering</source>
         <translation>Data Filtering</translation>
     </message>
     <message>
         <location line="-62"/>
-        <location line="+77"/>
+        <location line="+70"/>
         <source>Statistics</source>
         <translation>Statistics</translation>
     </message>
     <message>
-        <location line="-58"/>
+        <location line="-51"/>
         <source>Export 
 Individual Data</source>
         <translation>Export 
@@ -14874,21 +17680,16 @@ To Excel</translation>
     </message>
     <message>
         <location line="+7"/>
-        <source>Eval Data</source>
-        <translation>Eval Data</translation>
-    </message>
-    <message>
-        <location line="+3"/>
         <source>Query Data</source>
         <translation>Query Data</translation>
     </message>
     <message>
-        <location line="+12"/>
+        <location line="+8"/>
         <source>Data Description</source>
         <translation>Data Description</translation>
     </message>
     <message>
-        <location line="-40"/>
+        <location line="-33"/>
         <source>Fill None</source>
         <translation>Fill None</translation>
     </message>
@@ -14924,38 +17725,13 @@ To Excel</translation>
     </message>
     <message>
         <location line="+7"/>
-        <source>Evaluate a string describing operations on DataFrame columns</source>
-        <translation>Evaluate a string describing operations on DataFrame columns</translation>
-    </message>
-    <message>
-        <location line="+3"/>
         <source>Filter data outside of the given criteria</source>
         <translation>Filter data outside of the given criteria</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Data Retrieval</source>
-        <translation>Data Retrieval</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Retrieve data for a certain condition</source>
-        <translation>Retrieve data for a certain condition</translation>
-    </message>
-    <message>
-        <location line="+1"/>
         <source>Filter by Column</source>
         <translation>Filter by Column</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Sort</source>
-        <translation>Sort</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Sort Data</source>
-        <translation>Sort Data</translation>
     </message>
     <message>
         <location line="+7"/>
@@ -15102,49 +17878,6 @@ To Excel</translation>
     </message>
 </context>
 <context>
-    <name>DataFrameDataSearchDialog</name>
-    <message>
-        <location filename="../../plugins/DataAnalysis/Dialogs/DataFrameDataSearchDialog.ui" line="+14"/>
-        <source>Dataframe Search</source>
-        <translation>Dataframe Search</translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>Seacrch</source>
-        <translation>Seacrch</translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>From Begin</source>
-        <translation>From Begin</translation>
-    </message>
-    <message>
-        <location line="+10"/>
-        <source>Find item:</source>
-        <translation>Find item:</translation>
-    </message>
-    <message>
-        <location line="+45"/>
-        <source>Next</source>
-        <translation>Next</translation>
-    </message>
-    <message>
-        <location line="+10"/>
-        <source>Close</source>
-        <translation>Close</translation>
-    </message>
-    <message>
-        <location filename="../../plugins/DataAnalysis/Dialogs/DataFrameDataSearchDialog.cpp" line="+59"/>
-        <source>Cannot find item</source>
-        <translation>Cannot find item</translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>Found at column %1, line %2</source>
-        <translation>Found at column %1, line %2</translation>
-    </message>
-</context>
-<context>
     <name>DataFrameDataSelectDialog</name>
     <message>
         <location filename="../../plugins/DataAnalysis/Dialogs/DataFrameDataSelectDialog.ui" line="+14"/>
@@ -15182,164 +17915,6 @@ To Excel</translation>
         <location line="+24"/>
         <source>The current input cannot be converted to a floating-point number.</source>
         <translation>The current input cannot be converted to a floating-point number.</translation>
-    </message>
-</context>
-<context>
-    <name>DataFrameEvalDatasDialog</name>
-    <message>
-        <location filename="../../plugins/DataAnalysis/Dialogs/DataFrameEvalDatasDialog.ui" line="+14"/>
-        <source>Eval Data</source>
-        <translation>Eval Data</translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>Enter an expression, for example: new_col = age * 2. Column names containing spaces or punctuations (besides underscores) or starting with digits must be surrounded by backticks. (For example, a column named “Area (cm^2)” would be referenced as `Area (cm^2)`). Column names which are Python keywords (like “list”, “for”, “import”, etc) cannot be used. For example, if one of your columns is called a a and you want to sum it with b, your eval should be `a a` + b.</source>
-        <translation>Enter an expression, for example: new_col = age * 2. Column names containing spaces or punctuations (besides underscores) or starting with digits must be surrounded by backticks. (For example, a column named “Area (cm^2)” would be referenced as `Area (cm^2)`). Column names which are Python keywords (like “list”, “for”, “import”, etc) cannot be used. For example, if one of your columns is called a a and you want to sum it with b, your eval should be `a a` + b.</translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>The string to evaluate</source>
-        <translation>The string to evaluate</translation>
-    </message>
-    <message>
-        <location line="+22"/>
-        <source>OK</source>
-        <translation>OK</translation>
-    </message>
-    <message>
-        <location line="+10"/>
-        <source>Cancel</source>
-        <translation>Cancel</translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>Explanation：</source>
-        <translation>Explanation：</translation>
-    </message>
-    <message>
-        <location filename="../../plugins/DataAnalysis/Dialogs/DataFrameEvalDatasDialog.cpp" line="+15"/>
-        <source># I. Basic Syntax
-
-You can write expressions using the following elements:
-
-- **Column names**: Use column names directly in calculations (e.g., `age`, `salary`)
-- **Constants**: Numbers, strings, and boolean values (e.g., `10`, `&quot;male&quot;`, `True`)
-- **Operators**:
-  - Mathematical operations: `+`, `-`, `*`, `/`, `**` (power), `%` (modulus)
-  - Comparison operations: `==`, `!=`, `&gt;`, `&lt;`, `&gt;=`, `&lt;=`
-  - Logical operations: `and`, `or`, `not`
-- **Function calls** (partially supported):
-  - Common math functions: `abs()`, `sin()`, `cos()`, `log()`, `exp()`, etc.
-  - Conditional logic: `where(condition, x, y)`
-  - String operations: `str.contains()`, `str.startswith()`, etc. (to be used with columns)
-
-| Goal | Example Expression |
-|------|--------------------|
-| Add a new column | `new_col = col1 + col2` |
-| Modify an existing column | `col = col * 2` |
-| Conditional assignment | `col = where(col &gt; 10, 1, 0)` |
-| Filter rows (returns boolean) | `col1 &gt; 5 and col2 &lt; 10` |
-
----
-
-## Example 1: Add or Modify a Column
-
-```python
-age + 10
-```
-
-This adds 10 to each value in the `age` column and either updates the original column or writes to a new column.
-
----
-
-## Example 2: Create a New Column and Assign Values
-
-```python
-new_column = salary * 1.1
-```
-
-This creates a new column named `new_column`, whose values are 1.1 times those of the `salary` column.
-
----
-
-## Example 3: Conditional Filtering and Assignment
-
-```python
-bonus = where(age &gt; 30, salary * 0.2, salary * 0.1)
-```
-
-This means: if age is greater than 30, the bonus is 20% of the salary; otherwise, it&apos;s 10%.
-
----
-
-## Example 4: String Matching (for filtering)
-
-```python
-name.str.contains(&quot;John&quot;)
-```
-
-This can be used to filter rows where the name contains &quot;John&quot;.</source>
-        <translation># I. Basic Syntax
-
-You can write expressions using the following elements:
-
-- **Column names**: Use column names directly in calculations (e.g., `age`, `salary`)
-- **Constants**: Numbers, strings, and boolean values (e.g., `10`, `&quot;male&quot;`, `True`)
-- **Operators**:
-  - Mathematical operations: `+`, `-`, `*`, `/`, `**` (power), `%` (modulus)
-  - Comparison operations: `==`, `!=`, `&gt;`, `&lt;`, `&gt;=`, `&lt;=`
-  - Logical operations: `and`, `or`, `not`
-- **Function calls** (partially supported):
-  - Common math functions: `abs()`, `sin()`, `cos()`, `log()`, `exp()`, etc.
-  - Conditional logic: `where(condition, x, y)`
-  - String operations: `str.contains()`, `str.startswith()`, etc. (to be used with columns)
-
-| Goal | Example Expression |
-|------|--------------------|
-| Add a new column | `new_col = col1 + col2` |
-| Modify an existing column | `col = col * 2` |
-| Conditional assignment | `col = where(col &gt; 10, 1, 0)` |
-| Filter rows (returns boolean) | `col1 &gt; 5 and col2 &lt; 10` |
-
----
-
-## Example 1: Add or Modify a Column
-
-```python
-age + 10
-```
-
-This adds 10 to each value in the `age` column and either updates the original column or writes to a new column.
-
----
-
-## Example 2: Create a New Column and Assign Values
-
-```python
-new_column = salary * 1.1
-```
-
-This creates a new column named `new_column`, whose values are 1.1 times those of the `salary` column.
-
----
-
-## Example 3: Conditional Filtering and Assignment
-
-```python
-bonus = where(age &gt; 30, salary * 0.2, salary * 0.1)
-```
-
-This means: if age is greater than 30, the bonus is 20% of the salary; otherwise, it&apos;s 10%.
-
----
-
-## Example 4: String Matching (for filtering)
-
-```python
-name.str.contains(&quot;John&quot;)
-```
-
-This can be used to filter rows where the name contains &quot;John&quot;.</translation>
     </message>
 </context>
 <context>
@@ -15457,24 +18032,6 @@ If a column name contains spaces or special characters, enclose it in backticks 
 
 **Note**:  
 If a column name contains spaces or special characters, enclose it in backticks (`` ` ``), e.g., `` `Embarked On` ``.</translation>
-    </message>
-</context>
-<context>
-    <name>DataFrameSortDialog</name>
-    <message>
-        <location filename="../../plugins/DataAnalysis/Dialogs/DataFrameSortDialog.ui" line="+14"/>
-        <source>Sort</source>
-        <translation>Sort</translation>
-    </message>
-    <message>
-        <location filename="../../plugins/DataAnalysis/Dialogs/DataFrameSortDialog.cpp" line="+13"/>
-        <source>Ascending</source>
-        <translation>Ascending</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Descending</source>
-        <translation>Descending</translation>
     </message>
 </context>
 <context>
@@ -15621,7 +18178,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>DataframeOperateWorker</name>
     <message>
-        <location filename="../../plugins/DataAnalysis/DataframeOperateWorker.cpp" line="+68"/>
+        <location filename="../../plugins/DataAnalysis/DataframeOperateWorker.cpp" line="+65"/>
         <source>Please first open the data table to operate on.</source>
         <translation>Please first open the data table to operate on.</translation>
     </message>
@@ -15654,12 +18211,12 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../APP/main.cpp" line="+109"/>
+        <location filename="../APP/main.cpp" line="+110"/>
         <source>Failed to set console output codepage to UTF-8</source>
         <translation>Failed to set console output codepage to UTF-8</translation>
     </message>
     <message>
-        <location line="+70"/>
+        <location line="+78"/>
         <source>Initializing...</source>
         <translation>Initializing...</translation>
     </message>
@@ -15704,7 +18261,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>Python home path is %1</translation>
     </message>
     <message>
-        <location filename="../DAGui/Commands/DACommandsDataFrame.cpp" line="+20"/>
+        <location filename="../DAGui/Commands/DACommandsDataFrame.cpp" line="+24"/>
         <source>set dataframe data</source>
         <translation>set dataframe data</translation>
     </message>
@@ -15730,22 +18287,17 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>drop dataframe columns</translation>
     </message>
     <message>
-        <location line="+66"/>
+        <location line="+72"/>
         <source>change column type</source>
         <translation>change column type</translation>
     </message>
     <message>
-        <location line="+64"/>
+        <location line="+66"/>
         <source>paste data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+31"/>
-        <source>eval data</source>
-        <translation>eval data</translation>
-    </message>
-    <message>
-        <location line="+27"/>
+        <location line="+143"/>
         <source>cast column to number</source>
         <translation>cast column to number</translation>
     </message>
@@ -15765,24 +18317,24 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>change table style</translation>
     </message>
     <message>
-        <location filename="../DAGui/DAXmlHelper.cpp" line="+199"/>
-        <location line="+277"/>
+        <location filename="../DAGui/DAXmlHelper.cpp" line="+211"/>
+        <location line="+281"/>
         <source>error occurred while loading nodes</source>
         <translation>error occurred while loading nodes</translation>
     </message>
     <message>
-        <location line="-272"/>
-        <location line="+275"/>
+        <location line="-275"/>
+        <location line="+278"/>
         <source>error occurred while loading node links</source>
         <translation>error occurred while loading node links</translation>
     </message>
     <message>
-        <location line="-270"/>
+        <location line="-271"/>
         <source>error occurred while loading special items</source>
         <translation>error occurred while loading special items</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+6"/>
         <source>error occurred while loading scene info</source>
         <translation>error occurred while loading scene info</translation>
     </message>
@@ -16166,7 +18718,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>DAPyScripts is not initialized, getStatistics() called before initScripts()</translation>
     </message>
     <message>
-        <location filename="../DAPyScripts/DAPyScriptsDataFrame.cpp" line="+17"/>
+        <location filename="../DAPyScripts/DAPyScriptsDataFrame.cpp" line="+18"/>
         <source>cannot import da_dataframe module</source>
         <translation>cannot import da_dataframe module</translation>
     </message>
@@ -16206,7 +18758,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>cannot import DAWorkbench module</translation>
     </message>
     <message>
-        <location filename="../DAPyBindQt/pandas/DAPyIndex.cpp" line="+321"/>
+        <location filename="../DAPyBindQt/pandas/DAPyIndex.cpp" line="+355"/>
         <source>DAPyIndex: the Python object type is not pandas.Index</source>
         <translation>DAPyIndex: the Python object type is not pandas.Index</translation>
     </message>
@@ -16300,6 +18852,11 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <location line="+70"/>
         <source>Item Rotation</source>
         <translation>Item Rotation</translation>
+    </message>
+    <message>
+        <location line="+270"/>
+        <source>change text content</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../DAGraphicsView/DAGraphicsItemFactory.cpp" line="+88"/>
@@ -16616,19 +19173,9 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>Data Select</translation>
     </message>
     <message>
-        <location line="+44"/>
-        <source>Data Sort</source>
-        <translation>Data Sort</translation>
-    </message>
-    <message>
         <location line="+40"/>
         <source>Data Query</source>
         <translation>Data Query</translation>
-    </message>
-    <message>
-        <location line="+42"/>
-        <source>Eval Data</source>
-        <translation>Eval Data</translation>
     </message>
     <message>
         <location filename="../DAGui/DAFormEditorRegistry.cpp" line="+376"/>
@@ -16646,7 +19193,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>New Item</translation>
     </message>
     <message>
-        <location filename="../APP/SettingPages/DAAppConfig.cpp" line="+89"/>
+        <location filename="../APP/SettingPages/DAAppConfig.cpp" line="+92"/>
         <location line="+37"/>
         <source>Cannot open config file &quot;%1&quot;: %2</source>
         <translation>Cannot open config file &quot;%1&quot;: %2</translation>
@@ -16732,17 +19279,17 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>change table display format</translation>
     </message>
     <message>
-        <location filename="../DAPyScripts/DAPyScriptRunner.cpp" line="+268"/>
+        <location filename="../DAPyScripts/DAPyScriptRunner.cpp" line="+299"/>
         <source>Python interpreter is not initialized, script runner cannot start</source>
         <translation>Python interpreter is not initialized, script runner cannot start</translation>
     </message>
     <message>
-        <location line="+16"/>
-        <source>Script runner failed to import baseline module %1: %2</source>
-        <translation>Script runner failed to import baseline module %1: %2</translation>
+        <location line="+12"/>
+        <source>Script runner failed to import baseline modules: %1</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location line="+6"/>
         <source>Failed to initialize script runner: %1</source>
         <translation>Failed to initialize script runner: %1</translation>
     </message>
@@ -16797,7 +19344,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished">Text</translation>
     </message>
     <message>
-        <location filename="../DAGui/Agent/DAAgentDockWidget.cpp" line="-585"/>
+        <location filename="../DAGui/Agent/DAAgentDockWidget.cpp" line="-595"/>
         <source>(untitled)</source>
         <translation type="unfinished">(untitled)</translation>
     </message>
@@ -16822,140 +19369,310 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation type="unfinished">Error</translation>
     </message>
     <message>
+        <location filename="../DAGui/Commands/DACommandsDataFrame.cpp" line="+35"/>
         <source>Sort rows</source>
         <translation>Sort rows</translation>
     </message>
     <message>
+        <location line="+79"/>
         <source>Replace all</source>
         <translation>Replace all</translation>
-    </message>    <message>
+    </message>
+    <message>
+        <location filename="../DAGui/Commands/DACommandsConditionalFormat.cpp" line="+24"/>
         <source>Add Conditional Format Rule</source>
         <translation>Add Conditional Format Rule</translation>
-    </message>    <message>
+    </message>
+    <message>
+        <location line="+43"/>
         <source>Remove Conditional Format Rule</source>
         <translation>Remove Conditional Format Rule</translation>
-    </message>    <message>
+    </message>
+    <message>
+        <location line="+50"/>
         <source>Modify Conditional Format Rule</source>
         <translation>Modify Conditional Format Rule</translation>
-    </message>    <message>
+    </message>
+    <message>
+        <location line="+39"/>
         <source>Move Conditional Format Rule</source>
         <translation>Move Conditional Format Rule</translation>
-    </message>    <message>
+    </message>
+    <message>
+        <location line="+37"/>
         <source>Clear Conditional Format Rules of Column</source>
         <translation>Clear Conditional Format Rules of Column</translation>
     </message>
-
-
-
-
-
     <message>
-        <source>compute column "%1"</source>
-        <translation>compute column "%1"</translation>
+        <location filename="../DAGui/Commands/DACommandsDataFrame.cpp" line="-266"/>
+        <source>compute column &quot;%1&quot;</source>
+        <translation>compute column &quot;%1&quot;</translation>
     </message>
     <message>
-        <source>remove formula of column "%1" (keep data)</source>
-        <translation>remove formula of column "%1" (keep data)</translation>
+        <location line="+70"/>
+        <source>remove formula of column &quot;%1&quot; (keep data)</source>
+        <translation>remove formula of column &quot;%1&quot; (keep data)</translation>
     </message>
     <message>
-        <source>split column "%1"</source>
-        <translation>split column "%1"</translation>
+        <location line="+256"/>
+        <source>split column &quot;%1&quot;</source>
+        <translation>split column &quot;%1&quot;</translation>
     </message>
     <message>
-        <source>merge %1 columns into "%2"</source>
-        <translation>merge %1 columns into "%2"</translation>
+        <location line="+81"/>
+        <source>merge %1 columns into &quot;%2&quot;</source>
+        <translation>merge %1 columns into &quot;%2&quot;</translation>
     </message>
     <message>
+        <location filename="../DAGui/Commands/DACommandsTableValidation.cpp" line="+21"/>
         <source>edit validation rules</source>
         <translation>edit validation rules</translation>
     </message>
     <message>
+        <location filename="../DAGui/Commands/DACommandsTableStyle.cpp" line="+117"/>
         <source>add note</source>
         <translation>add note</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>delete note</source>
         <translation>delete note</translation>
     </message>
     <message>
+        <location line="+2"/>
         <source>edit note</source>
         <translation>edit note</translation>
     </message>
     <message>
+        <location line="+37"/>
         <source>clear all notes</source>
         <translation>clear all notes</translation>
     </message>
     <message>
+        <location filename="../DAGui/Commands/DACommandsForWorkFlow.cpp" line="+28"/>
         <source>Set workflow background image</source>
         <translation>Set workflow background image</translation>
     </message>
     <message>
+        <location line="+74"/>
         <source>Change shape border</source>
         <translation>Change shape border</translation>
     </message>
     <message>
+        <location line="+53"/>
         <source>Change shape background</source>
         <translation>Change shape background</translation>
     </message>
     <message>
+        <location line="+54"/>
+        <location line="+52"/>
         <source>Change text font</source>
         <translation>Change text font</translation>
     </message>
     <message>
+        <location line="+52"/>
+        <location line="+51"/>
         <source>Change text color</source>
         <translation>Change text color</translation>
     </message>
     <message>
+        <location line="+54"/>
+        <location line="+57"/>
         <source>Edit text content</source>
         <translation>Edit text content</translation>
     </message>
     <message>
+        <location filename="../DAData/DADataUndoCommand.cpp" line="+69"/>
         <source>Replace data object</source>
         <translation>Replace data object</translation>
     </message>
     <message>
+        <location line="+74"/>
         <source>Modify data (persisted snapshot)</source>
         <translation>Modify data (persisted snapshot)</translation>
     </message>
     <message>
+        <location filename="../DAGraphicsView/DACommandsForGraphics.cpp" line="-195"/>
         <source>group items</source>
         <translation>group items</translation>
     </message>
     <message>
+        <location line="+96"/>
         <source>ungroup items</source>
         <translation>ungroup items</translation>
     </message>
     <message>
+        <location line="+49"/>
         <source>edit text document</source>
         <translation>edit text document</translation>
     </message>
     <message>
+        <location filename="../DAGui/Commands/DACommandsDataFrame.cpp" line="-557"/>
+        <location line="+10"/>
         <source>rename columns</source>
         <translation>rename columns</translation>
     </message>
     <message>
+        <location line="+63"/>
         <source>clear cells</source>
         <translation>clear cells</translation>
     </message>
     <message>
+        <location filename="../DAGui/Commands/DACommandsTableColumnView.cpp" line="+35"/>
         <source>Reorder columns</source>
         <translation>Reorder columns</translation>
     </message>
     <message>
-        <source>Hide column "%1"</source>
-        <translation>Hide column "%1"</translation>
+        <location line="+57"/>
+        <source>Hide column &quot;%1&quot;</source>
+        <translation>Hide column &quot;%1&quot;</translation>
     </message>
     <message>
+        <location line="-6"/>
+        <location line="+8"/>
+        <location line="+3"/>
         <source>Show all columns</source>
         <translation>Show all columns</translation>
     </message>
     <message>
+        <location line="+62"/>
         <source>Freeze columns to %1</source>
         <translation>Freeze columns to %1</translation>
     </message>
     <message>
+        <location line="-2"/>
         <source>Unfreeze columns</source>
         <translation>Unfreeze columns</translation>
+    </message>
+    <message>
+        <location filename="../3rdparty/DAWidgets/src/DABrushStyleComboBox.cpp" line="+56"/>
+        <source>No Brush</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Solid Pattern</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Dense1 Pattern</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Dense2 Pattern</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Dense3 Pattern</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Dense4 Pattern</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Dense5 Pattern</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Dense6 Pattern</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Dense7 Pattern</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Hor Pattern</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Ver Pattern</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Cross Pattern</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Backward Diagonal Pattern</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Forward Diagonal Pattern</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Crossing Diagonal Pattern</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Linear Gradient Pattern</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Conical Gradient Pattern</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Radial Gradient Pattern</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Texture Pattern</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../3rdparty/DAWidgets/src/DAPenStyleComboBox.cpp" line="+62"/>
+        <source>No Pen</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Solid Line</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Dash Line</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Dot Line</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Dash Dot Line</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Dash Dot Dot Line</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Custom Dash Line</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -16979,1377 +19696,6 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <location line="+9"/>
         <source>Disable the splash screen during startup, useful for debugging to avoid the splash window blocking the IDE</source>
         <translation>Disable the splash screen during startup, useful for debugging to avoid the splash window blocking the IDE</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DASettingPageShortcuts</name>
-    <message>
-        <source>Shortcuts</source>
-        <translation>Shortcuts</translation>
-    </message>
-    <message>
-        <source>Search:</source>
-        <translation>Search:</translation>
-    </message>
-    <message>
-        <source>Filter by command or shortcut</source>
-        <translation>Filter by command or shortcut</translation>
-    </message>
-    <message>
-        <source>Reset All to Defaults</source>
-        <translation>Reset All to Defaults</translation>
-    </message>
-    <message>
-        <source>Command</source>
-        <translation>Command</translation>
-    </message>
-    <message>
-        <source>Shortcut</source>
-        <translation>Shortcut</translation>
-    </message>
-    <message>
-        <source>Shortcut %1 is already assigned to: %2</source>
-        <translation>Shortcut %1 is already assigned to: %2</translation>
-    </message>
-    <message>
-        <source>Shortcut for "%1" changed, click OK or Apply to take effect</source>
-        <translation>Shortcut for "%1" changed, click OK or Apply to take effect</translation>
-    </message>
-    <message>
-        <source>Default: %1</source>
-        <translation>Default: %1</translation>
-    </message>
-    <message>
-        <source>(none)</source>
-        <translation>(none)</translation>
-    </message>
-    <message>
-        <source>Main</source>
-        <translation>Main</translation>
-    </message>
-    <message>
-        <source>Data</source>
-        <translation>Data</translation>
-    </message>
-    <message>
-        <source>Figure</source>
-        <translation>Figure</translation>
-    </message>
-    <message>
-        <source>Chart</source>
-        <translation>Chart</translation>
-    </message>
-    <message>
-        <source>View</source>
-        <translation>View</translation>
-    </message>
-    <message>
-        <source>Workflow</source>
-        <translation>Workflow</translation>
-    </message>
-    <message>
-        <source>Workflow Editor</source>
-        <translation>Workflow Editor</translation>
-    </message>
-    <message>
-        <source>Other</source>
-        <translation>Other</translation>
-    </message>
-    <message>
-        <source>Reset to Default</source>
-        <translation>Reset to Default</translation>
-    </message>
-    <message>
-        <source>Clear Shortcut</source>
-        <translation>Clear Shortcut</translation>
-    </message>
-    <message>
-        <source>Failed to save shortcut settings</source>
-        <translation>Failed to save shortcut settings</translation>
-    </message>
-</context>
-<context>
-        <name>DA::DADataHeaderView</name>
-        <message>
-            <source>Sort Ascending</source>
-            <translation>Sort Ascending</translation>
-        </message>
-        <message>
-            <source>Sort Descending</source>
-            <translation>Sort Descending</translation>
-        </message>
-        <message>
-            <source>Add Secondary Sort (Ascending)</source>
-            <translation>Add Secondary Sort (Ascending)</translation>
-        </message>
-        <message>
-            <source>Add Secondary Sort (Descending)</source>
-            <translation>Add Secondary Sort (Descending)</translation>
-        </message>
-        <message>
-            <source>Rename Column</source>
-            <translation>Rename Column</translation>
-        </message>
-        <message>
-            <source>Remove Column</source>
-            <translation>Remove Column</translation>
-        </message>
-        <message>
-            <source>Copy Column Name</source>
-            <translation>Copy Column Name</translation>
-        </message>
-        <message>
-            <source>Goto Max</source>
-            <translation>Goto Max</translation>
-        </message>
-        <message>
-            <source>Goto Min</source>
-            <translation>Goto Min</translation>
-        </message>
-        <message>
-            <source>Show Statistics</source>
-            <translation>Show Statistics</translation>
-        </message>
-        <message>
-        <source>Edit Formula</source>
-        <translation>Edit Formula</translation>
-    </message>
-    <message>
-        <source>Recompute</source>
-        <translation>Recompute</translation>
-    </message>
-    <message>
-        <source>Remove Formula (Keep Data)</source>
-        <translation>Remove Formula (Keep Data)</translation>
-    </message>
-    <message>
-        <source>Columns</source>
-        <translation>Columns</translation>
-    </message>
-    <message>
-        <source>Hide This Column</source>
-        <translation>Hide This Column</translation>
-    </message>
-    <message>
-        <source>Show All Columns</source>
-        <translation>Show All Columns</translation>
-    </message>
-    <message>
-        <source>Freeze to This Column</source>
-        <translation>Freeze to This Column</translation>
-    </message>
-    <message>
-        <source>Unfreeze</source>
-        <translation>Unfreeze</translation>
-    </message>
-    <message>
-        <source>Column View...</source>
-        <translation>Column View...</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DADialogFindReplace</name>
-    <message>
-        <source>Entire table</source>
-        <translation>Entire table</translation>
-    </message>
-    <message>
-        <source>Current selection</source>
-        <translation>Current selection</translation>
-    </message>
-    <message>
-        <source>No matches</source>
-        <translation>No matches</translation>
-    </message>
-    <message>
-        <source>%1 of %2 (truncated from %3)</source>
-        <translation>%1 of %2 (truncated from %3)</translation>
-    </message>
-    <message>
-        <source>%1 of %2</source>
-        <translation>%1 of %2</translation>
-    </message>
-    <message>
-        <source>Invalid pattern</source>
-        <translation>Invalid pattern</translation>
-    </message>
-</context>
-<context>
-    <name>DADialogFindReplace</name>
-    <message>
-        <source>Find and Replace</source>
-        <translation>Find and Replace</translation>
-    </message>
-    <message>
-        <source>Find:</source>
-        <translation>Find:</translation>
-    </message>
-    <message>
-        <source>Replace:</source>
-        <translation>Replace:</translation>
-    </message>
-    <message>
-        <source>Previous</source>
-        <translation>Previous</translation>
-    </message>
-    <message>
-        <source>Next</source>
-        <translation>Next</translation>
-    </message>
-    <message>
-        <source>Replace</source>
-        <translation>Replace</translation>
-    </message>
-    <message>
-        <source>Replace All</source>
-        <translation>Replace All</translation>
-    </message>
-    <message>
-        <source>Case sensitive</source>
-        <translation>Case sensitive</translation>
-    </message>
-    <message>
-        <source>Regex</source>
-        <translation>Regex</translation>
-    </message>
-    <message>
-        <source>Whole cell</source>
-        <translation>Whole cell</translation>
-    </message>
-    <message>
-        <source>Scope:</source>
-        <translation>Scope:</translation>
-    </message>
-    <message>
-        <source>Close</source>
-        <translation>Close</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DADialogConditionalFormat</name>
-    <message>
-        <source>Cell Rule</source>
-        <translation>Cell Rule</translation>
-    </message>
-    <message>
-        <source>Color Scale</source>
-        <translation>Color Scale</translation>
-    </message>
-    <message>
-        <source>Data Bar</source>
-        <translation>Data Bar</translation>
-    </message>
-    <message>
-        <source>greater than</source>
-        <translation>greater than</translation>
-    </message>
-    <message>
-        <source>less than</source>
-        <translation>less than</translation>
-    </message>
-    <message>
-        <source>between</source>
-        <translation>between</translation>
-    </message>
-    <message>
-        <source>equal to</source>
-        <translation>equal to</translation>
-    </message>
-    <message>
-        <source>contains</source>
-        <translation>contains</translation>
-    </message>
-    <message>
-        <source>is empty</source>
-        <translation>is empty</translation>
-    </message>
-    <message>
-        <source>is not empty</source>
-        <translation>is not empty</translation>
-    </message>
-    <message>
-        <source>Select Font</source>
-        <translation>Select Font</translation>
-    </message>
-    <message>
-        <source>Select Color</source>
-        <translation>Select Color</translation>
-    </message>
-    <message>
-        <source>Column %1</source>
-        <translation>Column %1</translation>
-    </message>
-    <message>
-        <source>Color scale and data bar need full-column statistics, which are unavailable for lazy-loaded or read-only data sources. Cell rules are still available.</source>
-        <translation>Color scale and data bar need full-column statistics, which are unavailable for lazy-loaded or read-only data sources. Cell rules are still available.</translation>
-    </message>
-    <message>
-        <source>greater than %1</source>
-        <translation>greater than %1</translation>
-    </message>
-    <message>
-        <source>less than %1</source>
-        <translation>less than %1</translation>
-    </message>
-    <message>
-        <source>between %1 and %2</source>
-        <translation>between %1 and %2</translation>
-    </message>
-    <message>
-        <source>equal to %1</source>
-        <translation>equal to %1</translation>
-    </message>
-    <message>
-        <source>contains &quot;%1&quot;</source>
-        <translation>contains &quot;%1&quot;</translation>
-    </message>
-    <message>
-        <source>3-color scale</source>
-        <translation>3-color scale</translation>
-    </message>
-    <message>
-        <source>2-color scale</source>
-        <translation>2-color scale</translation>
-    </message>
-    <message>
-        <source>data bar</source>
-        <translation>data bar</translation>
-    </message>
-    <message>
-        <source>[Off] </source>
-        <translation>[Off] </translation>
-    </message>
-    <message>
-        <source>Font...</source>
-        <translation>Font...</translation>
-    </message>
-</context>
-<context>
-    <name>DADialogConditionalFormat</name>
-    <message>
-        <source>Conditional Formatting</source>
-        <translation>Conditional Formatting</translation>
-    </message>
-    <message>
-        <source>Rules (top to bottom = evaluation order, later rules override earlier ones):</source>
-        <translation>Rules (top to bottom = evaluation order, later rules override earlier ones):</translation>
-    </message>
-    <message>
-        <source>Add</source>
-        <translation>Add</translation>
-    </message>
-    <message>
-        <source>Remove</source>
-        <translation>Remove</translation>
-    </message>
-    <message>
-        <source>Move Up</source>
-        <translation>Move Up</translation>
-    </message>
-    <message>
-        <source>Move Down</source>
-        <translation>Move Down</translation>
-    </message>
-    <message>
-        <source>Clear Rules of Selected Column</source>
-        <translation>Clear Rules of Selected Column</translation>
-    </message>
-    <message>
-        <source>Rule Type:</source>
-        <translation>Rule Type:</translation>
-    </message>
-    <message>
-        <source>Column:</source>
-        <translation>Column:</translation>
-    </message>
-    <message>
-        <source>Enabled</source>
-        <translation>Enabled</translation>
-    </message>
-    <message>
-        <source>Condition:</source>
-        <translation>Condition:</translation>
-    </message>
-    <message>
-        <source>Value:</source>
-        <translation>Value:</translation>
-    </message>
-    <message>
-        <source>And (upper bound):</source>
-        <translation>And (upper bound):</translation>
-    </message>
-    <message>
-        <source>Style:</source>
-        <translation>Style:</translation>
-    </message>
-    <message>
-        <source>Background</source>
-        <translation>Background</translation>
-    </message>
-    <message>
-        <source>Foreground</source>
-        <translation>Foreground</translation>
-    </message>
-    <message>
-        <source>Font</source>
-        <translation>Font</translation>
-    </message>
-    <message>
-        <source>Font...</source>
-        <translation>Font...</translation>
-    </message>
-    <message>
-        <source>2-Color Scale</source>
-        <translation>2-Color Scale</translation>
-    </message>
-    <message>
-        <source>3-Color Scale</source>
-        <translation>3-Color Scale</translation>
-    </message>
-    <message>
-        <source>Low:</source>
-        <translation>Low:</translation>
-    </message>
-    <message>
-        <source>Middle:</source>
-        <translation>Middle:</translation>
-    </message>
-    <message>
-        <source>High:</source>
-        <translation>High:</translation>
-    </message>
-    <message>
-        <source>Bar Color:</source>
-        <translation>Bar Color:</translation>
-    </message>
-</context>
-
-<context>
-        <name>DADialogTableColumnView</name>
-    <message>
-        <source>Column View</source>
-        <translation>Column View</translation>
-    </message>
-    <message>
-        <source>Columns:</source>
-        <translation>Columns:</translation>
-    </message>
-    <message>
-        <source>Freeze Columns:</source>
-        <translation>Freeze Columns:</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DATableComputedColumnStore</name>
-    <message>
-        <source>Valid</source>
-        <translation>Valid</translation>
-    </message>
-    <message>
-        <source>Needs Recompute</source>
-        <translation>Needs Recompute</translation>
-    </message>
-    <message>
-        <source>Invalid</source>
-        <translation>Invalid</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DADataTableModel</name>
-    <message>
-        <source>Formula</source>
-        <translation>Formula</translation>
-    </message>
-    <message>
-        <source>State</source>
-        <translation>State</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DATableMetadata</name>
-    <message>
-        <source>Cell styles</source>
-        <translation>Cell styles</translation>
-    </message>
-    <message>
-        <source>Column widths</source>
-        <translation>Column widths</translation>
-    </message>
-    <message>
-        <source>Conditional format rules</source>
-        <translation>Conditional format rules</translation>
-    </message>
-    <message>
-        <source>Computed columns</source>
-        <translation>Computed columns</translation>
-    </message>
-    <message>
-        <source>Validation rules</source>
-        <translation>Validation rules</translation>
-    </message>
-    <message>
-        <source>Cell notes</source>
-        <translation>Cell notes</translation>
-    </message>
-    <message>
-        <source>Column view settings</source>
-        <translation>Column view settings</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DADialogComputedColumn</name>
-    <message>
-        <source>New Computed Column</source>
-        <translation>New Computed Column</translation>
-    </message>
-    <message>
-        <source>Edit Formula</source>
-        <translation>Edit Formula</translation>
-    </message>
-    <message>
-        <source>New column name</source>
-        <translation>New column name</translation>
-    </message>
-    <message>
-        <source>e.g. A + B (column names can be inserted from the list below)</source>
-        <translation>e.g. A + B (column names can be inserted from the list below)</translation>
-    </message>
-    <message>
-        <source>Target Column:</source>
-        <translation>Target Column:</translation>
-    </message>
-    <message>
-        <source>Expression:</source>
-        <translation>Expression:</translation>
-    </message>
-    <message>
-        <source>Columns (click to insert)</source>
-        <translation>Columns (click to insert)</translation>
-    </message>
-    <message>
-        <source>Preview (first %1 rows)</source>
-        <translation>Preview (first %1 rows)</translation>
-    </message>
-    <message>
-        <source>Cancel</source>
-        <translation>Cancel</translation>
-    </message>
-    <message>
-        <source>OK</source>
-        <translation>OK</translation>
-    </message>
-    <message>
-        <source>No data</source>
-        <translation>No data</translation>
-    </message>
-    <message>
-        <source>Please specify the target column name</source>
-        <translation>Please specify the target column name</translation>
-    </message>
-    <message>
-        <source>Column "%1" already exists. A computed column must write to a new column (self-overwrite is not allowed).</source>
-        <translation>Column "%1" already exists. A computed column must write to a new column (self-overwrite is not allowed).</translation>
-    </message>
-    <message>
-        <source>Please input the expression</source>
-        <translation>Please input the expression</translation>
-    </message>
-    <message>
-        <source>Expression syntax error: %1</source>
-        <translation>Expression syntax error: %1</translation>
-    </message>
-    <message>
-        <source>The expression must not reference the target column "%1" (self-overwrite is not allowed).</source>
-        <translation>The expression must not reference the target column "%1" (self-overwrite is not allowed).</translation>
-    </message>
-    <message>
-        <source>Failed to build preview sample</source>
-        <translation>Failed to build preview sample</translation>
-    </message>
-    <message>
-        <source>Expression evaluation failed: %1</source>
-        <translation>Expression evaluation failed: %1</translation>
-    </message>
-    <message>
-        <source>OK — %1 dependency column(s): %2</source>
-        <translation>OK — %1 dependency column(s): %2</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DADialogSplitColumn</name>
-    <message>
-        <source>Split Column</source>
-        <translation>Split Column</translation>
-    </message>
-    <message>
-        <source>Source column: %1</source>
-        <translation>Source column: %1</translation>
-    </message>
-    <message>
-        <source>Split Mode</source>
-        <translation>Split Mode</translation>
-    </message>
-    <message>
-        <source>Delimiter (single char or string)</source>
-        <translation>Delimiter (single char or string)</translation>
-    </message>
-    <message>
-        <source>Regular expression (capture groups)</source>
-        <translation>Regular expression (capture groups)</translation>
-    </message>
-    <message>
-        <source>Fixed widths</source>
-        <translation>Fixed widths</translation>
-    </message>
-    <message>
-        <source>comma separated, e.g. 3,5,8</source>
-        <translation>comma separated, e.g. 3,5,8</translation>
-    </message>
-    <message>
-        <source>Max columns:</source>
-        <translation>Max columns:</translation>
-    </message>
-    <message>
-        <source>Unlimited</source>
-        <translation>Unlimited</translation>
-    </message>
-    <message>
-        <source>Discard extra parts</source>
-        <translation>Discard extra parts</translation>
-    </message>
-    <message>
-        <source>Keep remainder in last column</source>
-        <translation>Keep remainder in last column</translation>
-    </message>
-    <message>
-        <source>Report error</source>
-        <translation>Report error</translation>
-    </message>
-    <message>
-        <source>Overflow policy:</source>
-        <translation>Overflow policy:</translation>
-    </message>
-    <message>
-        <source>Try to parse result columns as numeric</source>
-        <translation>Try to parse result columns as numeric</translation>
-    </message>
-    <message>
-        <source>comma separated result column names</source>
-        <translation>comma separated result column names</translation>
-    </message>
-    <message>
-        <source>Result names:</source>
-        <translation>Result names:</translation>
-    </message>
-    <message>
-        <source>Preview (first %1 rows)</source>
-        <translation>Preview (first %1 rows)</translation>
-    </message>
-    <message>
-        <source>OK</source>
-        <translation>OK</translation>
-    </message>
-    <message>
-        <source>Cancel</source>
-        <translation>Cancel</translation>
-    </message>
-    <message>
-        <source>Delimiter must not be empty</source>
-        <translation>Delimiter must not be empty</translation>
-    </message>
-    <message>
-        <source>Regular expression must not be empty</source>
-        <translation>Regular expression must not be empty</translation>
-    </message>
-    <message>
-        <source>Widths must be comma separated positive integers</source>
-        <translation>Widths must be comma separated positive integers</translation>
-    </message>
-    <message>
-        <source>Widths must not be empty</source>
-        <translation>Widths must not be empty</translation>
-    </message>
-    <message>
-        <source>No data</source>
-        <translation>No data</translation>
-    </message>
-    <message>
-        <source>Failed to build preview sample</source>
-        <translation>Failed to build preview sample</translation>
-    </message>
-    <message>
-        <source>Split failed: %1</source>
-        <translation>Split failed: %1</translation>
-    </message>
-    <message>
-        <source>Auto name "%1" conflicts with an existing column, please rename the result columns</source>
-        <translation>Auto name "%1" conflicts with an existing column, please rename the result columns</translation>
-    </message>
-    <message>
-        <source>Result name count (%1) does not match the split column count (%2)</source>
-        <translation>Result name count (%1) does not match the split column count (%2)</translation>
-    </message>
-    <message>
-        <source>Result column name must not be empty</source>
-        <translation>Result column name must not be empty</translation>
-    </message>
-    <message>
-        <source>Duplicate result column name "%1"</source>
-        <translation>Duplicate result column name "%1"</translation>
-    </message>
-    <message>
-        <source>Result column name "%1" already exists in the table</source>
-        <translation>Result column name "%1" already exists in the table</translation>
-    </message>
-    <message>
-        <source>OK — split into %1 column(s)</source>
-        <translation>OK — split into %1 column(s)</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DADialogMergeColumns</name>
-    <message>
-        <source>Merge Columns</source>
-        <translation>Merge Columns</translation>
-    </message>
-    <message>
-        <source>Merge order (top to bottom)</source>
-        <translation>Merge order (top to bottom)</translation>
-    </message>
-    <message>
-        <source>can be empty</source>
-        <translation>can be empty</translation>
-    </message>
-    <message>
-        <source>Separator:</source>
-        <translation>Separator:</translation>
-    </message>
-    <message>
-        <source>Skip missing values (no extra separator)</source>
-        <translation>Skip missing values (no extra separator)</translation>
-    </message>
-    <message>
-        <source>Result column name:</source>
-        <translation>Result column name:</translation>
-    </message>
-    <message>
-        <source>Preview (first %1 rows)</source>
-        <translation>Preview (first %1 rows)</translation>
-    </message>
-    <message>
-        <source>OK</source>
-        <translation>OK</translation>
-    </message>
-    <message>
-        <source>Cancel</source>
-        <translation>Cancel</translation>
-    </message>
-    <message>
-        <source>No data</source>
-        <translation>No data</translation>
-    </message>
-    <message>
-        <source>Merge requires at least 2 columns</source>
-        <translation>Merge requires at least 2 columns</translation>
-    </message>
-    <message>
-        <source>Result column name must not be empty</source>
-        <translation>Result column name must not be empty</translation>
-    </message>
-    <message>
-        <source>Column "%1" already exists, please use another result name</source>
-        <translation>Column "%1" already exists, please use another result name</translation>
-    </message>
-    <message>
-        <source>Failed to build preview sample</source>
-        <translation>Failed to build preview sample</translation>
-    </message>
-    <message>
-        <source>Merge failed: %1</source>
-        <translation>Merge failed: %1</translation>
-    </message>
-    <message>
-        <source>OK — merged into "%1" at column %2</source>
-        <translation>OK — merged into "%1" at column %2</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DADialogGroupBy</name>
-    <message>
-        <source>Group By</source>
-        <translation>Group By</translation>
-    </message>
-    <message>
-        <source>Group keys (multi-select)</source>
-        <translation>Group keys (multi-select)</translation>
-    </message>
-    <message>
-        <source>Aggregate columns (multi-select)</source>
-        <translation>Aggregate columns (multi-select)</translation>
-    </message>
-    <message>
-        <source>Aggregations (column / function)</source>
-        <translation>Aggregations (column / function)</translation>
-    </message>
-    <message>
-        <source>Column</source>
-        <translation>Column</translation>
-    </message>
-    <message>
-        <source>Function</source>
-        <translation>Function</translation>
-    </message>
-    <message>
-        <source>Preview (first %1 rows)</source>
-        <translation>Preview (first %1 rows)</translation>
-    </message>
-    <message>
-        <source>OK</source>
-        <translation>OK</translation>
-    </message>
-    <message>
-        <source>Cancel</source>
-        <translation>Cancel</translation>
-    </message>
-    <message>
-        <source>No data</source>
-        <translation>No data</translation>
-    </message>
-    <message>
-        <source>Please select at least one group key</source>
-        <translation>Please select at least one group key</translation>
-    </message>
-    <message>
-        <source>Please select at least one aggregation column</source>
-        <translation>Please select at least one aggregation column</translation>
-    </message>
-    <message>
-        <source>Aggregation failed: %1</source>
-        <translation>Aggregation failed: %1</translation>
-    </message>
-    <message>
-        <source>OK — %1 group(s) (result rows)</source>
-        <translation>OK — %1 group(s) (result rows)</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DADialogReshape</name>
-    <message>
-        <source>Reshape</source>
-        <translation>Reshape</translation>
-    </message>
-    <message>
-        <source>Unpivot / Melt</source>
-        <translation>Unpivot / Melt</translation>
-    </message>
-    <message>
-        <source>Transpose</source>
-        <translation>Transpose</translation>
-    </message>
-    <message>
-        <source>Mode</source>
-        <translation>Mode</translation>
-    </message>
-    <message>
-        <source>Transpose (rows become columns)</source>
-        <translation>Transpose (rows become columns)</translation>
-    </message>
-    <message>
-        <source>Unpivot / Melt (wide to long)</source>
-        <translation>Unpivot / Melt (wide to long)</translation>
-    </message>
-    <message>
-        <source>ID columns (keep, multi-select)</source>
-        <translation>ID columns (keep, multi-select)</translation>
-    </message>
-    <message>
-        <source>Value columns (unpivot; none = all others)</source>
-        <translation>Value columns (unpivot; none = all others)</translation>
-    </message>
-    <message>
-        <source>Variable column name:</source>
-        <translation>Variable column name:</translation>
-    </message>
-    <message>
-        <source>Value column name:</source>
-        <translation>Value column name:</translation>
-    </message>
-    <message>
-        <source>Replace current table in place (default: create a new dataset)</source>
-        <translation>Replace current table in place (default: create a new dataset)</translation>
-    </message>
-    <message>
-        <source>Preview (first %1 rows of a sample)</source>
-        <translation>Preview (first %1 rows of a sample)</translation>
-    </message>
-    <message>
-        <source>OK</source>
-        <translation>OK</translation>
-    </message>
-    <message>
-        <source>Cancel</source>
-        <translation>Cancel</translation>
-    </message>
-    <message>
-        <source>No data</source>
-        <translation>No data</translation>
-    </message>
-    <message>
-        <source>Failed to build preview sample</source>
-        <translation>Failed to build preview sample</translation>
-    </message>
-    <message>
-        <source>Column "%1" is in both ID and value columns</source>
-        <translation>Column "%1" is in both ID and value columns</translation>
-    </message>
-    <message>
-        <source>No column left to unpivot (all columns are kept as ID)</source>
-        <translation>No column left to unpivot (all columns are kept as ID)</translation>
-    </message>
-    <message>
-        <source>Variable/value column names must not be empty</source>
-        <translation>Variable/value column names must not be empty</translation>
-    </message>
-    <message>
-        <source>Reshape failed: %1</source>
-        <translation>Reshape failed: %1</translation>
-    </message>
-    <message>
-        <source> — exceeds the %1-row guard, confirmation required on OK</source>
-        <translation> — exceeds the %1-row guard, confirmation required on OK</translation>
-    </message>
-    <message>
-        <source>OK — estimated output rows: %1 (rows %2 x unpivoted columns %3)%4</source>
-        <translation>OK — estimated output rows: %1 (rows %2 x unpivoted columns %3)%4</translation>
-    </message>
-    <message>
-        <source>OK — result will have %1 row(s) (original columns) and one column per original row plus the "index" name column</source>
-        <translation>OK — result will have %1 row(s) (original columns) and one column per original row plus the "index" name column</translation>
-    </message>
-    <message>
-        <source>Melt Scale Guard</source>
-        <translation>Melt Scale Guard</translation>
-    </message>
-    <message>
-        <source>The melt operation is estimated to produce %1 rows (limit %2), which may consume a large amount of memory. Force continue?</source>
-        <translation>The melt operation is estimated to produce %1 rows (limit %2), which may consume a large amount of memory. Force continue?</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DADialogFillSeries</name>
-    <message>
-        <source>Fill Series</source>
-        <translation>Fill Series</translation>
-    </message>
-    <message>
-        <source>Linear series (start / step / stop)</source>
-        <translation>Linear series (start / step / stop)</translation>
-    </message>
-    <message>
-        <source>Date series (start / step / unit)</source>
-        <translation>Date series (start / step / unit)</translation>
-    </message>
-    <message>
-        <source>Start value (empty = default)</source>
-        <translation>Start value (empty = default)</translation>
-    </message>
-    <message>
-        <source>Step (empty = 1)</source>
-        <translation>Step (empty = 1)</translation>
-    </message>
-    <message>
-        <source>Stop value (optional)</source>
-        <translation>Stop value (optional)</translation>
-    </message>
-    <message>
-        <source>Stop value (empty = no limit)</source>
-        <translation>Stop value (empty = no limit)</translation>
-    </message>
-    <message>
-        <source>Day</source>
-        <translation>Day</translation>
-    </message>
-    <message>
-        <source>Week</source>
-        <translation>Week</translation>
-    </message>
-    <message>
-        <source>Month</source>
-        <translation>Month</translation>
-    </message>
-    <message>
-        <source>Year</source>
-        <translation>Year</translation>
-    </message>
-    <message>
-        <source>Start date, e.g. 2020-01-01 (empty = today)</source>
-        <translation>Start date, e.g. 2020-01-01 (empty = today)</translation>
-    </message>
-    <message>
-        <source>Invalid parameters: unable to generate the series</source>
-        <translation>Invalid parameters: unable to generate the series</translation>
-    </message>
-    <message>
-        <source>Preview: (empty)</source>
-        <translation>Preview: (empty)</translation>
-    </message>
-    <message>
-        <source>Preview: %1</source>
-        <translation>Preview: %1</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DADialogValidationRules</name>
-    <message>
-        <source>Validation Rules</source>
-        <translation>Validation Rules</translation>
-    </message>
-    <message>
-        <source>Add</source>
-        <translation>Add</translation>
-    </message>
-    <message>
-        <source>Remove</source>
-        <translation>Remove</translation>
-    </message>
-    <message>
-        <source>Up</source>
-        <translation>Up</translation>
-    </message>
-    <message>
-        <source>Down</source>
-        <translation>Down</translation>
-    </message>
-    <message>
-        <source>%1 (occurrence %2)</source>
-        <translation>%1 (occurrence %2)</translation>
-    </message>
-    <message>
-        <source>Numeric range</source>
-        <translation>Numeric range</translation>
-    </message>
-    <message>
-        <source>Date range</source>
-        <translation>Date range</translation>
-    </message>
-    <message>
-        <source>Allowed values (enum)</source>
-        <translation>Allowed values (enum)</translation>
-    </message>
-    <message>
-        <source>Not empty</source>
-        <translation>Not empty</translation>
-    </message>
-    <message>
-        <source>Unique</source>
-        <translation>Unique</translation>
-    </message>
-    <message>
-        <source>Regex (full match)</source>
-        <translation>Regex (full match)</translation>
-    </message>
-    <message>
-        <source>Error</source>
-        <translation>Error</translation>
-    </message>
-    <message>
-        <source>Warning</source>
-        <translation>Warning</translation>
-    </message>
-    <message>
-        <source>Enabled</source>
-        <translation>Enabled</translation>
-    </message>
-    <message>
-        <source>Display name in report (optional)</source>
-        <translation>Display name in report (optional)</translation>
-    </message>
-    <message>
-        <source>Column</source>
-        <translation>Column</translation>
-    </message>
-    <message>
-        <source>Type</source>
-        <translation>Type</translation>
-    </message>
-    <message>
-        <source>Level</source>
-        <translation>Level</translation>
-    </message>
-    <message>
-        <source>Name</source>
-        <translation>Name</translation>
-    </message>
-    <message>
-        <source>Empty = no lower bound</source>
-        <translation>Empty = no lower bound</translation>
-    </message>
-    <message>
-        <source>Empty = no upper bound</source>
-        <translation>Empty = no upper bound</translation>
-    </message>
-    <message>
-        <source>Minimum</source>
-        <translation>Minimum</translation>
-    </message>
-    <message>
-        <source>Maximum</source>
-        <translation>Maximum</translation>
-    </message>
-    <message>
-        <source>From</source>
-        <translation>From</translation>
-    </message>
-    <message>
-        <source>To</source>
-        <translation>To</translation>
-    </message>
-    <message>
-        <source>One allowed value per line</source>
-        <translation>One allowed value per line</translation>
-    </message>
-    <message>
-        <source>Allow other values when editing (dropdown)</source>
-        <translation>Allow other values when editing (dropdown)</translation>
-    </message>
-    <message>
-        <source>No parameters</source>
-        <translation>No parameters</translation>
-    </message>
-    <message>
-        <source>Full-match pattern, e.g. [A-Z]{3}\d+</source>
-        <translation>Full-match pattern, e.g. [A-Z]{3}\d+</translation>
-    </message>
-    <message>
-        <source>Pattern</source>
-        <translation>Pattern</translation>
-    </message>
-    <message>
-        <source>Parameters</source>
-        <translation>Parameters</translation>
-    </message>
-    <message>
-        <source> (disabled)</source>
-        <translation> (disabled)</translation>
-    </message>
-    <message>
-        <source>Minimum is not a valid number</source>
-        <translation>Minimum is not a valid number</translation>
-    </message>
-    <message>
-        <source>Maximum is not a valid number</source>
-        <translation>Maximum is not a valid number</translation>
-    </message>
-    <message>
-        <source>From-date is invalid (use yyyy-MM-dd)</source>
-        <translation>From-date is invalid (use yyyy-MM-dd)</translation>
-    </message>
-    <message>
-        <source>To-date is invalid (use yyyy-MM-dd)</source>
-        <translation>To-date is invalid (use yyyy-MM-dd)</translation>
-    </message>
-    <message>
-        <source>Rule parameters are incomplete (both bounds empty / no allowed values / empty pattern)</source>
-        <translation>Rule parameters are incomplete (both bounds empty / no allowed values / empty pattern)</translation>
-    </message>
-    <message>
-        <source>Invalid rule parameters</source>
-        <translation>Invalid rule parameters</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DADialogValidationReport</name>
-    <message>
-        <source>Validation Report</source>
-        <translation>Validation Report</translation>
-    </message>
-    <message>
-        <source>Export...</source>
-        <translation>Export...</translation>
-    </message>
-    <message>
-        <source>Clear Highlights</source>
-        <translation>Clear Highlights</translation>
-    </message>
-    <message>
-        <source>Close</source>
-        <translation>Close</translation>
-    </message>
-    <message>
-        <source>  [column missing]</source>
-        <translation>  [column missing]</translation>
-    </message>
-    <message>
-        <source>  —  %1 violation(s)</source>
-        <translation>  —  %1 violation(s)</translation>
-    </message>
-    <message>
-        <source> (showing first %1)</source>
-        <translation> (showing first %1)</translation>
-    </message>
-    <message>
-        <source>Evaluated %1 rule(s), found %2 violation(s), took %3 ms</source>
-        <translation>Evaluated %1 rule(s), found %2 violation(s), took %3 ms</translation>
-    </message>
-    <message>
-        <source>Error</source>
-        <translation>Error</translation>
-    </message>
-    <message>
-        <source>Warning</source>
-        <translation>Warning</translation>
-    </message>
-    <message>
-        <source>Column missing (rule skipped)</source>
-        <translation>Column missing (rule skipped)</translation>
-    </message>
-    <message>
-        <source>%1 violation(s)</source>
-        <translation>%1 violation(s)</translation>
-    </message>
-    <message>
-        <source>Export Validation Report</source>
-        <translation>Export Validation Report</translation>
-    </message>
-    <message>
-        <source>HTML (*.html);;PDF (*.pdf);;Word (*.docx)</source>
-        <translation>HTML (*.html);;PDF (*.pdf);;Word (*.docx)</translation>
-    </message>
-    <message>
-        <source>Export failed: %1</source>
-        <translation>Export failed: %1</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DATableNoteEditDialog</name>
-    <message>
-        <source>Cell Note</source>
-        <translation>Cell Note</translation>
-    </message>
-    <message>
-        <source>Enter note text...</source>
-        <translation>Enter note text...</translation>
-    </message>
-    <message>
-        <source>Delete</source>
-        <translation>Delete</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DAUndoHistoryWidget</name>
-    <message>
-        <source>Undo depth:</source>
-        <translation>Undo depth:</translation>
-    </message>
-    <message>
-        <source>Maximum number of undo steps kept per table page (larger uses more memory for swap-type commands)</source>
-        <translation>Maximum number of undo steps kept per table page (larger uses more memory for swap-type commands)</translation>
-    </message>
-</context>
-<context>
-        <name>DA::DADialogGotoCell</name>
-    <message>
-        <source>Go To</source>
-        <translation>Go To</translation>
-    </message>
-    <message>
-        <source>Row number:</source>
-        <translation>Row number:</translation>
-    </message>
-    <message>
-        <source>Index label:</source>
-        <translation>Index label:</translation>
-    </message>
-    <message>
-        <source>Column:</source>
-        <translation>Column:</translation>
-    </message>
-    <message>
-        <source>Keep hidden columns hidden</source>
-        <translation>Keep hidden columns hidden</translation>
-    </message>
-    <message>
-        <source>First row</source>
-        <translation>First row</translation>
-    </message>
-    <message>
-        <source>Last row</source>
-        <translation>Last row</translation>
-    </message>
-    <message>
-        <source>First column</source>
-        <translation>First column</translation>
-    </message>
-    <message>
-        <source>Last column</source>
-        <translation>Last column</translation>
-    </message>
-    <message>
-        <source>1 - %1</source>
-        <translation>1 - %1</translation>
-    </message>
-</context>
-<context>
-        <name>DA::DATableStatsWidget</name>
-    <message>
-        <source>%1 rows × %2 cols</source>
-        <translation>%1 rows × %2 cols</translation>
-    </message>
-    <message>
-        <source>%1 cols selected · %2 rows</source>
-        <translation>%1 cols selected · %2 rows</translation>
-    </message>
-    <message>
-        <source>Count</source>
-        <translation>Count</translation>
-    </message>
-    <message>
-        <source>Null</source>
-        <translation>Null</translation>
-    </message>
-    <message>
-        <source>Sum</source>
-        <translation>Sum</translation>
-    </message>
-    <message>
-        <source>Mean</source>
-        <translation>Mean</translation>
-    </message>
-    <message>
-        <source>Min</source>
-        <translation>Min</translation>
-    </message>
-    <message>
-        <source>Max</source>
-        <translation>Max</translation>
-    </message>
-    <message>
-        <source>Unique</source>
-        <translation>Unique</translation>
-    </message>
-    <message>
-        <source>&lt;b&gt;Per-column details&lt;/b&gt;</source>
-        <translation>&lt;b&gt;Per-column details&lt;/b&gt;</translation>
-    </message>
-    <message>
-        <source>Selection is too large; per-column details were not computed</source>
-        <translation>Selection is too large; per-column details were not computed</translation>
-    </message>
-    <message>
-        <source>%1 segments · %2 rows × %3 cols · %4 cells</source>
-        <translation>%1 segments · %2 rows × %3 cols · %4 cells</translation>
-    </message>
-    <message>
-        <source>Aggregation is not available for multi-range selections</source>
-        <translation>Aggregation is not available for multi-range selections</translation>
-    </message>
-    <message>
-        <source>Row %1 · %2: %3</source>
-        <translation>Row %1 · %2: %3</translation>
-    </message>
-    <message>
-        <source>Statistics are not available for the current data source</source>
-        <translation>Statistics are not available for the current data source</translation>
     </message>
 </context>
 </TS>

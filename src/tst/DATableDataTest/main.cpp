@@ -23,6 +23,8 @@
 #include "Dialog/DADialogFindReplace.h"
 #include <QElapsedTimer>
 #include <QSet>
+#include <QDate>
+#include <QBrush>
 #include <QLineEdit>
 #include <QPushButton>
 #include <QCheckBox>
@@ -477,6 +479,7 @@ private Q_SLOTS:
     // 存储 XML round-trip/重映射/统计缓存、命令 undo/redo、统计算子、绘制像素级验证、
     // 对话框惰性源限制、千行滚动计时
     void testConditionalRuleEvaluation();
+    void testConditionalNewConditions();
     void testConditionalEvaluateOrder();
     void testColorScaleInterpolation();
     void testDataRowNormalization();
@@ -1766,7 +1769,7 @@ void DATableDataTest::testContextMenuComposition()
                                      QStringLiteral("Find..."),
                                      QStringLiteral("Replace..."),
                                      QStringLiteral("<SEP>"),
-                                     QStringLiteral("Conditional Format..."),
+                                     QStringLiteral("Conditional Format"),
                                      QStringLiteral("<SEP>"),
                                      QStringLiteral("Computed Column..."),
                                      QStringLiteral("Split Column..."),
@@ -1792,8 +1795,10 @@ void DATableDataTest::testContextMenuComposition()
     // 查找恒可用；替换在无模型（只读）时置灰
     QVERIFY(byText.value(QStringLiteral("Find..."))->isEnabled());
     QVERIFY(!byText.value(QStringLiteral("Replace..."))->isEnabled());
-    // 条件格式（003）：无选区置灰（入口作用于选区所在列）
-    QVERIFY(!byText.value(QStringLiteral("Conditional Format..."))->isEnabled());
+    // 条件格式（003）：无选区置灰（入口作用于选区所在列）；
+    // 交互改造后该项为子菜单（预设入口，内容由页面在 aboutToShow 填充）
+    QVERIFY(!byText.value(QStringLiteral("Conditional Format"))->isEnabled());
+    QVERIFY(byText.value(QStringLiteral("Conditional Format"))->menu() != nullptr);
     // 计算列（004）：无模型=只读源置灰
     QVERIFY(!byText.value(QStringLiteral("Computed Column..."))->isEnabled());
     // 分列/合并列（004 T1.9）：无模型=只读置灰；且无选区时分列（需单列）/合并（需多列）都置灰
@@ -4563,6 +4568,78 @@ void DATableDataTest::testConditionalRuleEvaluation()
 }
 
 /**
+ * @brief 新条件（条件格式交互改造）：发生日期区间判定、重复/唯一键求值、序列化往返
+ */
+void DATableDataTest::testConditionalNewConditions()
+{
+    // —— 发生日期：区间端点与判定（注入固定"今天"）——
+    const QDate today(2026, 10, 19);
+    using Occ = DATableConditionalFormatRule::DateOccurrence;
+    const QPair< QDate, QDate > weekRange = DATableConditionalFormatRule::dateOccurrenceRange(Occ::ThisWeek, today);
+    QVERIFY(weekRange.first <= today && today <= weekRange.second);
+    QVERIFY(DATableConditionalFormatRule::evaluateDateOccurring(Occ::Today, QVariant(today), today));
+    QVERIFY(!DATableConditionalFormatRule::evaluateDateOccurring(Occ::Yesterday, QVariant(today), today));
+    QVERIFY(DATableConditionalFormatRule::evaluateDateOccurring(Occ::Yesterday, QVariant(today.addDays(-1)), today));
+    QVERIFY(DATableConditionalFormatRule::evaluateDateOccurring(Occ::Last7Days, QVariant(today.addDays(-6)), today));
+    QVERIFY(!DATableConditionalFormatRule::evaluateDateOccurring(Occ::Last7Days, QVariant(today.addDays(-7)), today));
+    // 非日期值与 ISO 字符串
+    QVERIFY(!DATableConditionalFormatRule::evaluateDateOccurring(Occ::Today, QVariant(42), today));
+    QVERIFY(DATableConditionalFormatRule::evaluateDateOccurring(Occ::Today, QVariant(today.toString(Qt::ISODate)), today));
+
+    // —— 重复/唯一：归一化键与集合求值 ——
+    QCOMPARE(DATableConditionalFormatRule::duplicateKey(QVariant(100)),
+             DATableConditionalFormatRule::duplicateKey(QVariant(100.0)));
+    QVERIFY(DATableConditionalFormatRule::duplicateKey(QVariant(QStringLiteral("100")))
+            != DATableConditionalFormatRule::duplicateKey(QVariant(100)));  // 数字串与数值不同键
+    QVERIFY(DATableConditionalFormatRule::duplicateKey(QVariant()).isEmpty());
+    const QSet< QString > dups { DATableConditionalFormatRule::duplicateKey(QVariant(100)) };
+    QVERIFY(DATableConditionalFormatRule::evaluateDuplicate(CfCond::Duplicate, QVariant(100), dups, true));
+    QVERIFY(!DATableConditionalFormatRule::evaluateDuplicate(CfCond::Unique, QVariant(100), dups, true));
+    QVERIFY(!DATableConditionalFormatRule::evaluateDuplicate(CfCond::Duplicate, QVariant(5), dups, true));
+    QVERIFY(DATableConditionalFormatRule::evaluateDuplicate(CfCond::Unique, QVariant(5), dups, true));
+    // 无列上下文（惰性源）一律不命中；空单元格不命中
+    QVERIFY(!DATableConditionalFormatRule::evaluateDuplicate(CfCond::Duplicate, QVariant(100), dups, false));
+    QVERIFY(!DATableConditionalFormatRule::evaluateDuplicate(CfCond::Unique, QVariant(5), dups, false));
+    QVERIFY(!DATableConditionalFormatRule::evaluateDuplicate(CfCond::Duplicate, QVariant(), dups, true));
+
+    // —— evaluate 集成：带集合 Duplicate 命中输出样式；空指针不命中 ——
+    DATableConditionalFormatRule r;
+    r.condition = CfCond::Duplicate;
+    r.style.setBackground(QBrush(QColor(0xCE, 0x60, 0x43)));
+    const QVector< DATableConditionalFormatRule > rules { r };
+    DATableConditionalFormatStore::ColumnStats stats;
+    const DATableConditionalFormatStore::EvaluateResult resHit =
+        DATableConditionalFormatStore::evaluate(rules, QVariant(100), false, stats, &dups);
+    QVERIFY(resHit.style.backgroundValid());
+    const DATableConditionalFormatStore::EvaluateResult resNoCtx =
+        DATableConditionalFormatStore::evaluate(rules, QVariant(100), false, stats, nullptr);
+    QVERIFY(!resNoCtx.style.backgroundValid());
+
+    // —— 序列化往返：DateOccurring（value1 整数）与数据条渐变标志 ——
+    QDomDocument doc;
+    QDomElement root = doc.createElement(QStringLiteral("column"));
+    doc.appendChild(root);
+    DATableConditionalFormatRule rd;
+    rd.condition = CfCond::DateOccurring;
+    rd.value1    = static_cast< int >(Occ::ThisMonth);
+    rd.toXml(doc, root);
+    DATableConditionalFormatRule rd2;
+    QVERIFY(rd2.fromXml(root.firstChildElement(QStringLiteral("rule"))));
+    QCOMPARE(rd2.condition, CfCond::DateOccurring);
+    QCOMPARE(rd2.value1.toInt(), static_cast< int >(Occ::ThisMonth));
+    QDomElement root2 = doc.createElement(QStringLiteral("column2"));
+    doc.appendChild(root2);
+    DATableConditionalFormatRule rb;
+    rb.type        = CfType::DataBar;
+    rb.barGradient = true;
+    rb.toXml(doc, root2);
+    DATableConditionalFormatRule rb2;
+    QVERIFY(rb2.fromXml(root2.firstChildElement(QStringLiteral("rule"))));
+    QCOMPARE(rb2.type, CfType::DataBar);
+    QVERIFY(rb2.barGradient);
+}
+
+/**
  * @brief 叠加顺序：同列两条规则都命中时后者覆盖前者；静态样式打底 + 条件覆盖；
  * 停用规则跳过；色阶/数据条与统计有效性
  */
@@ -5163,7 +5240,8 @@ void DATableDataTest::testConditionalDialogSourceRestriction()
         QPushButton* addBtn = dlg.findChild< QPushButton* >(QStringLiteral("buttonAdd"));
         QVERIFY(addBtn != nullptr);
         QTest::mouseClick(addBtn, Qt::LeftButton);
-        QCOMPARE(dlg.resultRules().value(0).size() + dlg.resultRules().value(1).size(), 1);
+        // 新交互语义：「添加规则」把当前定义施加到所选各列（scope 两列 → 每列一条）
+        QCOMPARE(dlg.resultRules().value(0).size() + dlg.resultRules().value(1).size(), 2);
         QCOMPARE(store.ruleCount(), 0);  // 未提交
         dlg.reject();                    // 取消 → 预览还原
         QVERIFY(!store.hasPreview());
