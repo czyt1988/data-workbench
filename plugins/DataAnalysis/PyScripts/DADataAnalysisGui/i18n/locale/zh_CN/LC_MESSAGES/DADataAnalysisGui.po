@@ -50,8 +50,7 @@ msgid "Minimum Non-NA Values"
 msgstr "最少非空值数量"
 
 #: dataframe_cleaner.py:99
-msgid ""
-"Minimum number of non-missing values required to keep the row (0=disable)"
+msgid "Minimum number of non-missing values required to keep the row (0=disable)"
 msgstr "保留行所需的最少非缺失值数量（0=禁用）"
 
 #: dataframe_cleaner.py:101 dataframe_cleaner.py:606
@@ -168,9 +167,7 @@ msgid "Maximum Consecutive Fills"
 msgstr "最大连续填充数"
 
 #: dataframe_cleaner.py:215
-msgid ""
-"Maximum number of consecutive missing values to fill (leave empty for "
-"unlimited)"
+msgid "Maximum number of consecutive missing values to fill (leave empty for unlimited)"
 msgstr "要填充的连续缺失值的最大数量（留空表示无限制）"
 
 #: dataframe_cleaner.py:239
@@ -283,56 +280,6 @@ msgstr "原地插值"
 msgid "Whether to interpolate in place or return a copy"
 msgstr "是否原地插值或返回副本"
 
-#: dataframe_cleaner.py:339 dataframe_cleaner.py:393
-msgid "Replace Values"
-msgstr "替换值"
-
-#: dataframe_cleaner.py:340
-msgid "Values to Replace"
-msgstr "要替换的值"
-
-#: dataframe_cleaner.py:342
-msgid "Values to find and replace (comma separated for multiple values)"
-msgstr "要查找和替换的值（多个值用逗号分隔）"
-
-#: dataframe_cleaner.py:343
-msgid "Replacement Value"
-msgstr "替换值"
-
-#: dataframe_cleaner.py:345
-msgid "Value to use as replacement"
-msgstr "用作替换的值"
-
-#: dataframe_cleaner.py:346
-msgid "Case Sensitive"
-msgstr "区分大小写"
-
-#: dataframe_cleaner.py:348
-msgid "Consider letter case when matching values (for text only)"
-msgstr "匹配值时考虑字母大小写（仅适用于文本）"
-
-#: dataframe_cleaner.py:363
-msgid "Please specify values to replace"
-msgstr "请指定要替换的值"
-
-#: dataframe_cleaner.py:368
-msgid "No valid values specified for replacement"
-msgstr "未指定有效的替换值"
-
-#: dataframe_cleaner.py:382
-#, python-brace-format
-msgid "Replaced {count} values"
-msgstr "已替换 {count} 个值"
-
-#: dataframe_cleaner.py:384
-msgid "No matching values found to replace"
-msgstr "未找到可替换的匹配值"
-
-#: dataframe_cleaner.py:388
-#, python-brace-format
-msgid "Failed to replace values: {error}"
-msgstr "替换值失败: {error}"
-
 #: dataframe_cleaner.py:414
 msgid "Remove Outliers (IQR Method)"
 msgstr "移除异常值（IQR 方法）"
@@ -346,9 +293,7 @@ msgid "IQR Multiplier"
 msgstr "IQR乘数"
 
 #: dataframe_cleaner.py:418
-msgid ""
-"Values beyond Q1-multiplier*IQR and Q3+multiplier*IQR are outliers (typical: "
-"1.5-3)"
+msgid "Values beyond Q1-multiplier*IQR and Q3+multiplier*IQR are outliers (typical: 1.5-3)"
 msgstr "超出 Q1-乘数*IQR 和 Q3+乘数*IQR 的值视为异常值（典型值：1.5-3）"
 
 #: dataframe_cleaner.py:420 dataframe_cleaner.py:498
@@ -432,8 +377,7 @@ msgid "Z-score Threshold"
 msgstr "Z-score阈值"
 
 #: dataframe_cleaner.py:493
-msgid ""
-"Values with absolute Z-score above this threshold are outliers (typical: 3)"
+msgid "Values with absolute Z-score above this threshold are outliers (typical: 3)"
 msgstr "绝对值超过此阈值的Z-score被视为异常值（典型值：3）"
 
 #: dataframe_cleaner.py:494
@@ -461,140 +405,6 @@ msgstr "使用 Z-score 方法处理了异常值（{action}）"
 #: dataframe_cleaner.py:551
 msgid "Remove Outliers (Z-Score)"
 msgstr "移除异常值（Z-Score）"
-
-#: dataframe_cleaner.py:571
-msgid ""
-"No numeric columns found in selected data. Please select numeric columns for "
-"threshold filtering."
-msgstr "所选数据中未找到数值列。请选择数值列进行上下限过滤。"
-
-#: dataframe_cleaner.py:577
-msgid "No numeric columns selected. Please select at least one numeric column."
-msgstr "未选择数值列。请至少选择一个数值列。"
-
-#: dataframe_cleaner.py:581 dataframe_cleaner.py:656
-msgid "Threshold Filter"
-msgstr "上下限过滤"
-
-#: dataframe_cleaner.py:582
-msgid "Filter Conditions"
-msgstr "过滤条件"
-
-#: dataframe_cleaner.py:583
-msgid "Filter Type"
-msgstr "过滤类型"
-
-#: dataframe_cleaner.py:586
-msgid "Remove values GREATER THAN threshold (too high)"
-msgstr "删除大于阈值的值（过高）"
-
-#: dataframe_cleaner.py:587
-msgid "Remove values LESS THAN threshold (too low)"
-msgstr "删除小于阈值的值（过低）"
-
-#: dataframe_cleaner.py:588
-msgid "Remove values WITHIN range (keep outliers)"
-msgstr "删除范围内的值（保留异常值）"
-
-#: dataframe_cleaner.py:589
-msgid "Remove values OUTSIDE range (keep normal range)"
-msgstr "删除范围外的值（保留正常范围）"
-
-#: dataframe_cleaner.py:591
-msgid ""
-"Select the type of filtering you want to apply: remove values that are too "
-"high, too low, within a specific range, or outside a specific range."
-msgstr ""
-"选择要应用的过滤类型：删除过高的值、过低的值、特定范围内的值或特定范围外的"
-"值。"
-
-#: dataframe_cleaner.py:592
-msgid "Lower Threshold"
-msgstr "下限阈值"
-
-#: dataframe_cleaner.py:594
-msgid ""
-"The minimum acceptable value. Rows with values below this (depending on "
-"filter type) will be removed."
-msgstr "可接受的最小值。低于此值的行（根据过滤类型）将被删除。"
-
-#: dataframe_cleaner.py:595
-msgid "Upper Threshold"
-msgstr "上限阈值"
-
-#: dataframe_cleaner.py:597
-msgid ""
-"The maximum acceptable value. Rows with values above this (depending on "
-"filter type) will be removed."
-msgstr "可接受的最大值。高于此值的行（根据过滤类型）将被删除。"
-
-#: dataframe_cleaner.py:598
-msgid "Row Removal Logic"
-msgstr "行删除逻辑"
-
-#: dataframe_cleaner.py:601
-msgid "Remove row if ANY selected column meets the condition"
-msgstr "任意选中的列满足条件时删除行"
-
-#: dataframe_cleaner.py:602
-msgid "Remove row only if ALL selected columns meet the condition"
-msgstr "所有选中的列都满足条件时才删除行"
-
-#: dataframe_cleaner.py:604
-msgid ""
-"When multiple columns are selected: 'Any' removes the row if any column "
-"violates the threshold; 'All' only removes the row if all columns violate "
-"the threshold."
-msgstr ""
-"当选择多个列时：'任意'表示任意列违反阈值就删除行；'所有'表示所有列都违反阈值"
-"才删除行。"
-
-#: dataframe_cleaner.py:607
-msgid "Treat NaN as Threshold Violation"
-msgstr "将NaN视为违反阈值"
-
-#: dataframe_cleaner.py:609
-msgid ""
-"If enabled, rows with NaN (missing) values in selected columns will also be "
-"removed. If disabled, NaN values will be ignored."
-msgstr "启用后，所选列中含 NaN（缺失）值的行也会被删除；禁用则忽略 NaN 值。"
-
-#: dataframe_cleaner.py:612
-msgid "Renumber rows from 0 after filtering"
-msgstr "过滤后从 0 开始重新编号行"
-
-#: dataframe_cleaner.py:635
-#, python-brace-format
-msgid "Threshold filtering failed: {error}"
-msgstr "阈值过滤失败：{error}"
-
-#: dataframe_cleaner.py:640
-msgid "Removed {removed_rows} rows with values greater than {upper_threshold}"
-msgstr "删除了 {removed_rows} 行大于 {upper_threshold} 的数据"
-
-#: dataframe_cleaner.py:643
-msgid "Removed {removed_rows} rows with values less than {lower_threshold}"
-msgstr "删除了 {removed_rows} 行小于 {lower_threshold} 的数据"
-
-#: dataframe_cleaner.py:646
-#, python-brace-format
-msgid ""
-"Removed {removed_rows} rows with values between {lower_threshold} and "
-"{upper_threshold}"
-msgstr "删除了{removed_rows}个值在{lower_threshold}和{upper_threshold}之间的行"
-
-#: dataframe_cleaner.py:649
-#, python-brace-format
-msgid ""
-"Removed {removed_rows} rows with values outside {lower_threshold} to "
-"{upper_threshold} range"
-msgstr ""
-"删除了 {removed_rows} 行超出 {lower_threshold} 到 {upper_threshold} 范围的数"
-"据"
-
-#: dataframe_cleaner.py:652
-msgid "Filtered {removed_rows} rows based on threshold conditions"
-msgstr "根据阈值条件过滤了 {removed_rows} 行"
 
 #: dataframe_cleaner.py:678 dataframe_cleaner.py:716
 msgid "Transform Skewed Data"
@@ -834,7 +644,7 @@ msgid ""
 "Failed To Export dataframe: {err1}\n"
 "{err2}"
 msgstr ""
-"导出dataframe失败: {err1}\n"
+"导出 DataFrame 失败：{err1}\n"
 "{err2}"
 
 #: dataframe_io.py:69 dataframe_io.py:120
@@ -848,7 +658,7 @@ msgstr "正在写入工作表: {sheet_name}"
 
 #: dataframe_io.py:105
 msgid "Failed To Export Excel File"
-msgstr "导出Excel文件失败"
+msgstr "导出 Excel 文件失败"
 
 #: dataframe_io.py:106
 #, python-brace-format
@@ -861,7 +671,7 @@ msgid ""
 "Failed To Export Excel File: {err1}\n"
 "{err2}"
 msgstr ""
-"导出Excel文件失败: {err1}\n"
+"导出 Excel 文件失败：{err1}\n"
 "{err2}"
 
 #: utils.py:29

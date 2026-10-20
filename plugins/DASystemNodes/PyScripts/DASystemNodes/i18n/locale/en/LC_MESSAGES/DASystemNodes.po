@@ -16,79 +16,102 @@ msgstr ""
 "Language: en\n"
 
 msgid "(no data)"
-msgstr ""
-
-msgid "(no input)"
-msgstr ""
+msgstr "(no data)"
 
 msgid "<unprintable>"
-msgstr ""
+msgstr "<unprintable>"
 
 msgid "Auto-wrap text by node body width; off for single line, excess is clipped"
-msgstr ""
+msgstr "Auto-wrap text by node body width; off for single line, excess is clipped"
 
 msgid "Condition expression result"
-msgstr ""
+msgstr "Condition expression result"
 
 msgid "Constant value output"
-msgstr ""
+msgstr "Constant value output"
 
 msgid "Constant value, supports Python literal expressions (e.g. 1, 'hello', [1,2,3])"
-msgstr ""
+msgstr "Constant value, supports Python literal expressions (e.g. 1, 'hello', [1,2,3])"
 
 msgid "Data to display"
-msgstr ""
+msgstr "Data to display"
 
 msgid "Data to forward (optional)"
-msgstr ""
-
-msgid "Data to print"
-msgstr ""
+msgstr "Data to forward (optional)"
 
 msgid "Data to publish to DataManager"
-msgstr ""
+msgstr "Data to publish to DataManager"
 
 msgid "Delay in seconds"
-msgstr ""
+msgstr "Delay in seconds"
 
 msgid "Display name of the data in the DataManager panel"
-msgstr ""
+msgstr "Display name of the data in the DataManager panel"
 
 msgid "Maximum text character count, excess is truncated with …"
-msgstr ""
-
-msgid "Node title (displayed at node top); empty defaults to 'Print'"
-msgstr ""
+msgstr "Maximum text character count, excess is truncated with …"
 
 msgid "None"
-msgstr ""
+msgstr "None"
 
 msgid "Output after delay, forwards trigger as-is"
-msgstr ""
+msgstr "Output after delay, forwards trigger as-is"
 
 msgid "Outputs data when condition is False"
-msgstr ""
+msgstr "Outputs data when condition is False"
 
 msgid "Outputs data when condition is True"
-msgstr ""
+msgstr "Outputs data when condition is True"
 
 msgid "System / Data"
-msgstr ""
+msgstr "System / Data"
 
 msgid "System / Display"
-msgstr ""
+msgstr "System / Display"
 
 msgid "System / Flow Control"
-msgstr ""
+msgstr "System / Flow Control"
 
 msgid "Text font (family/size/bold/italic/color)"
-msgstr ""
+msgstr "Text font (family/size/bold/italic/color)"
 
 msgid "Trigger signal"
-msgstr ""
+msgstr "Trigger signal"
 
 msgid "Upstream completion signal"
-msgstr ""
+msgstr "Upstream completion signal"
 
 msgid "Workflow start trigger signal"
-msgstr ""
+msgstr "Workflow start trigger signal"
+
+#: nodes/condition_if.py:16
+msgid "Conditional branch node. Forwards input data to the 'true' or 'false' output port based on the boolean condition input. The unmatched branch outputs None, so only one path executes downstream."
+msgstr "Conditional branch node. Forwards input data to the 'true' or 'false' output port based on the boolean condition input. The unmatched branch outputs None, so only one path executes downstream."
+
+#: nodes/text_viewer.py:88
+msgid "Displays input data as text directly on the node body. Supports font customization, auto-wrap, text truncation, and optional console logging. Useful for inspecting intermediate data during workflow execution."
+msgstr "Displays input data as text directly on the node body. Supports font customization, auto-wrap, text truncation, and optional console logging. Useful for inspecting intermediate data during workflow execution."
+
+#: nodes/end.py:16
+msgid "Marks the workflow end point. Receives upstream data but produces no output, indicating the workflow has completed."
+msgstr "Marks the workflow end point. Receives upstream data but produces no output, indicating the workflow has completed."
+
+#: nodes/start.py:16
+msgid "Marks the workflow start point. It has no inputs and emits a trigger signal (True) on execution to kick off downstream nodes."
+msgstr "Marks the workflow start point. It has no inputs and emits a trigger signal (True) on execution to kick off downstream nodes."
+
+#: nodes/constant.py:17
+msgid "Outputs a user-specified constant value. Supports Python literal expressions such as numbers (1), strings ('hello'), lists ([1,2,3]), and dicts. Useful as a parameter source for downstream nodes."
+msgstr "Outputs a user-specified constant value. Supports Python literal expressions such as numbers (1), strings ('hello'), lists ([1,2,3]), and dicts. Useful as a parameter source for downstream nodes."
+
+#: nodes/delay.py:17
+msgid "Pauses execution for a specified number of seconds, then forwards the trigger input to the output unchanged. Useful for timing control or rate-limiting in workflows."
+msgstr "Pauses execution for a specified number of seconds, then forwards the trigger input to the output unchanged. Useful for timing control or rate-limiting in workflows."
+
+#: nodes/text_viewer.py:118
+msgid "Print input data to log/console"
+msgstr "Print input data to log/console"
+
+#: nodes/data_to_manager.py:17
+msgid "Publishes input data to the DAWorkbench DataManager panel. If data with the same name already exists, it is updated in place; otherwise a new entry is created. Recommended for DataFrame data."
+msgstr "Publishes input data to the DAWorkbench DataManager panel. If data with the same name already exists, it is updated in place; otherwise a new entry is created. Recommended for DataFrame data."

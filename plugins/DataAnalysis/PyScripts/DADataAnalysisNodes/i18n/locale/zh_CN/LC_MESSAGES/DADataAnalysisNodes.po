@@ -297,5 +297,86 @@ msgstr "log/sqrt/boxcox"
 msgid "pandas eval expression, e.g. 'C = A + B'"
 msgstr "pandas eval 表达式，如 'C = A + B'"
 
-msgid "query expression, e.g. 'age > 25 and name == "John"'"
-msgstr "query 表达式，如 'age > 25 and name == "John"'"
+#: data_pivot_table_node.py:15
+msgid "Creates a pivot table from a DataFrame. Specify row index columns, optional column index columns, value columns, and an aggregation function (mean, sum, count, min, or max)."
+msgstr "从 DataFrame 创建透视表。指定行索引列、可选的列索引列、值列和聚合函数（均值、求和、计数、最小值或最大值）。"
+
+#: data_eval_node.py:16
+msgid "Evaluates a pandas eval expression on a DataFrame (e.g. 'C = A + B' to create a new column from arithmetic). Outputs the resulting DataFrame with the expression applied."
+msgstr "在 DataFrame 上执行 pandas eval 表达式（如 'C = A + B' 通过算术运算创建新列）。输出应用表达式后的 DataFrame。"
+
+#: data_export_node.py:22
+msgid "Exports a DataFrame to a file in CSV, JSON, Excel, Parquet, or Feather format. Specify the output path and format; the output directory is created automatically if it does not exist."
+msgstr "将 DataFrame 导出为 CSV、JSON、Excel、Parquet 或 Feather 格式文件。指定输出路径和格式；输出目录不存在时自动创建。"
+
+#: data_fill_interpolate_node.py:15
+msgid "Fills missing values (NaN) by interpolation. Supports linear, polynomial, spline, and time-based interpolation methods."
+msgstr "通过插值填充缺失值（NaN）。支持线性、多项式、样条和时间插值方法。"
+
+#: data_fillna_node.py:15
+msgid "Fills missing values (NaN) in a DataFrame using a specified method: constant value, forward fill, backward fill, mean, median, or mode."
+msgstr "使用指定方法填充 DataFrame 中的缺失值（NaN）：常量值、前向填充、后向填充、均值、中位数或众数。"
+
+#: data_filter_by_column_node.py:15
+msgid "Filters DataFrame rows by a numeric column's value range. Set min and/or max thresholds (inclusive); a value of 0 means no limit on that bound."
+msgstr "按数值列的值范围筛选 DataFrame 行。设置最小和/或最大阈值（包含），值为 0 表示该边界不限制。"
+
+#: data_threshold_filter_node.py:15
+msgid "Filters DataFrame rows by comparing a column's values against a threshold. Supports operators: >, >=, <, <=, ==, !=. Outputs the filtered data and the count of removed rows."
+msgstr "通过比较列值与阈值来筛选 DataFrame 行。支持运算符：>、>=、<、<=、==、!=。输出筛选后的数据和移除的行数。"
+
+#: data_query_node.py:15
+msgid "Filters DataFrame rows using a pandas query expression (e.g. 'age > 25 and name == \"John\"'). Outputs the filtered data and the result row count."
+msgstr "使用 pandas query 表达式（如 'age > 25 and name == \"John\"'）筛选 DataFrame 行。输出筛选后的数据和结果行数。"
+
+#: data_filter_node.py:22
+msgid "Filters DataFrame rows using a pandas query expression (e.g. 'age > 25') or by non-null values in a specified column. Outputs the filtered data and the count of removed rows."
+msgstr "使用 pandas query 表达式（如 'age > 25'）或指定列的非空值来筛选 DataFrame 行。输出筛选后的数据和移除的行数。"
+
+#: data_plot_node.py:30
+msgid "Generates a bar, line, or scatter chart from a DataFrame and saves it as a PNG image. Specify the target column and chart type; the file path is output for downstream use."
+msgstr "从 DataFrame 生成柱状图、折线图或散点图并保存为 PNG 图片。指定目标列和图表类型；输出文件路径供下游使用。"
+
+#: data_describe_node.py:15
+msgid "Generates descriptive statistics (count, mean, std, min, max, and configurable percentiles) for a DataFrame using pandas describe(). Outputs a statistics summary DataFrame."
+msgstr "使用 pandas describe() 生成 DataFrame 的描述性统计（计数、均值、标准差、最小值、最大值和可配置分位数）。输出统计摘要 DataFrame。"
+
+#: data_source_node.py:23
+msgid "Loads data from a file (CSV, Excel, JSON, or Parquet) into a DataFrame. Configure the file path and format; CSV supports encoding and separator options, Excel supports sheet selection."
+msgstr "从文件（CSV、Excel、JSON 或 Parquet）加载数据为 DataFrame。配置文件路径和格式；CSV 支持编码和分隔符选项，Excel 支持工作表选择。"
+
+#: data_drop_duplicates_node.py:15
+msgid "Removes duplicate rows from a DataFrame. Specify which columns to check for duplicates (comma-separated, empty = all columns) and whether to keep the first, last, or no duplicate occurrence."
+msgstr "删除 DataFrame 中的重复行。指定用于识别重复的列（逗号分隔，空表示全部列），以及保留第一个、最后一个还是不保留重复项。"
+
+#: data_remove_outliers_zscore_node.py:15
+msgid "Removes outlier rows from a DataFrame using Z-score method. A row is removed if its Z-score (standard deviations from the mean) in the specified column exceeds the threshold (default 3.0)."
+msgstr "使用 Z-score 方法移除 DataFrame 中的异常值行。若指定列的 Z-score（偏离均值的标准差倍数）超过阈值（默认 3.0）则移除该行。"
+
+#: data_remove_outliers_iqr_node.py:15
+msgid "Removes outlier rows from a DataFrame using the IQR (interquartile range) method. Values outside 1.5×IQR (configurable) from the quartiles are treated as outliers and removed."
+msgstr "使用 IQR（四分位距）方法移除 DataFrame 中的异常值行。偏离四分位数 1.5×IQR（可配置）以外的值被视为异常值并移除。"
+
+#: data_dropna_node.py:16
+msgid "Removes rows or columns containing missing values (NaN). Supports 'any' (drop if any value is missing) or 'all' (drop only if all values are missing) strategies, with optional column subset and minimum non-missing count threshold."
+msgstr "删除包含缺失值（NaN）的行或列。支持 'any'（任一缺失即删除）或 'all'（全部缺失才删除）策略，可选列子集和非缺失值最小数量阈值。"
+
+#: data_replace_values_node.py:15
+msgid "Replaces a specific value with a new value in a selected column. Matching is case-sensitive. Outputs the modified DataFrame and the count of replacements made."
+msgstr "在选定列中将指定旧值替换为新值。区分大小写。输出修改后的 DataFrame 和替换次数。"
+
+#: data_search_node.py:15
+msgid "Searches a DataFrame for rows matching a pattern in a specified column. Supports regex patterns and case-sensitive matching. Outputs matching rows and the match count."
+msgstr "在 DataFrame 的指定列中搜索匹配模式的行。支持正则表达式和区分大小写匹配。输出匹配行和匹配数。"
+
+#: data_sort_node.py:15
+msgid "Sorts a DataFrame by one or more columns. Specify column names as a comma-separated list and choose ascending or descending order."
+msgstr "按一个或多个列对 DataFrame 排序。列名以逗号分隔，可选择升序或降序。"
+
+#: data_transform_node.py:22
+msgid "Transforms a DataFrame column: rename a column, drop a column, or fill missing values in a column. Specify the target column, operation type, and the corresponding parameter (new name or fill value)."
+msgstr "变换 DataFrame 列：重命名列、删除列或填充列中的缺失值。指定目标列、操作类型和相应参数（新列名或填充值）。"
+
+#: data_query_node.py:20
+msgid "query expression, e.g. 'age > 25 and name == \"John\"'"
+msgstr "query 表达式，如 'age > 25 and name == \"John\"'"

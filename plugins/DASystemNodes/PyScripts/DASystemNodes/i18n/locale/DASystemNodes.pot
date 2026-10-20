@@ -17,9 +17,6 @@ msgstr ""
 msgid "(no data)"
 msgstr ""
 
-msgid "(no input)"
-msgstr ""
-
 msgid "<unprintable>"
 msgstr ""
 
@@ -41,9 +38,6 @@ msgstr ""
 msgid "Data to forward (optional)"
 msgstr ""
 
-msgid "Data to print"
-msgstr ""
-
 msgid "Data to publish to DataManager"
 msgstr ""
 
@@ -54,9 +48,6 @@ msgid "Display name of the data in the DataManager panel"
 msgstr ""
 
 msgid "Maximum text character count, excess is truncated with …"
-msgstr ""
-
-msgid "Node title (displayed at node top); empty defaults to 'Print'"
 msgstr ""
 
 msgid "None"
@@ -90,4 +81,28 @@ msgid "Upstream completion signal"
 msgstr ""
 
 msgid "Workflow start trigger signal"
+msgstr ""
+
+msgid "Conditional branch node. Forwards input data to the 'true' or 'false' output port based on the boolean condition input. The unmatched branch outputs None, so only one path executes downstream."
+msgstr ""
+
+msgid "Displays input data as text directly on the node body. Supports font customization, auto-wrap, text truncation, and optional console logging. Useful for inspecting intermediate data during workflow execution."
+msgstr ""
+
+msgid "Marks the workflow end point. Receives upstream data but produces no output, indicating the workflow has completed."
+msgstr ""
+
+msgid "Marks the workflow start point. It has no inputs and emits a trigger signal (True) on execution to kick off downstream nodes."
+msgstr ""
+
+msgid "Outputs a user-specified constant value. Supports Python literal expressions such as numbers (1), strings ('hello'), lists ([1,2,3]), and dicts. Useful as a parameter source for downstream nodes."
+msgstr ""
+
+msgid "Pauses execution for a specified number of seconds, then forwards the trigger input to the output unchanged. Useful for timing control or rate-limiting in workflows."
+msgstr ""
+
+msgid "Print input data to log/console"
+msgstr ""
+
+msgid "Publishes input data to the DAWorkbench DataManager panel. If data with the same name already exists, it is updated in place; otherwise a new entry is created. Recommended for DataFrame data."
 msgstr ""

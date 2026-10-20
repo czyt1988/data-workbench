@@ -18,9 +18,6 @@ msgstr ""
 msgid "(no data)"
 msgstr "(无数据)"
 
-msgid "(no input)"
-msgstr "(无输入)"
-
 msgid "<unprintable>"
 msgstr "<不可打印>"
 
@@ -42,9 +39,6 @@ msgstr "要显示的数据"
 msgid "Data to forward (optional)"
 msgstr "要转发的数据（可选）"
 
-msgid "Data to print"
-msgstr "要打印的数据"
-
 msgid "Data to publish to DataManager"
 msgstr "要发布到 DataManager 的数据"
 
@@ -56,9 +50,6 @@ msgstr "数据在 DataManager 面板中的显示名称"
 
 msgid "Maximum text character count, excess is truncated with …"
 msgstr "文字最大字符数，超出部分以 … 截断"
-
-msgid "Node title (displayed at node top); empty defaults to 'Print'"
-msgstr "节点标题（显示在节点顶部）；为空时默认显示 'Print'"
 
 msgid "None"
 msgstr "无"
@@ -92,3 +83,35 @@ msgstr "上游完成信号"
 
 msgid "Workflow start trigger signal"
 msgstr "工作流启动触发信号"
+
+#: nodes/condition_if.py:16
+msgid "Conditional branch node. Forwards input data to the 'true' or 'false' output port based on the boolean condition input. The unmatched branch outputs None, so only one path executes downstream."
+msgstr "条件分支节点。根据布尔条件输入将数据转发到 true 或 false 输出端口。未匹配的分支输出 None，仅一条路径向下执行。"
+
+#: nodes/text_viewer.py:88
+msgid "Displays input data as text directly on the node body. Supports font customization, auto-wrap, text truncation, and optional console logging. Useful for inspecting intermediate data during workflow execution."
+msgstr "将输入数据以文本形式直接显示在节点体上。支持字体自定义、自动换行、文本截断和可选的控制台日志输出。用于检查工作流执行过程中的中间数据。"
+
+#: nodes/end.py:16
+msgid "Marks the workflow end point. Receives upstream data but produces no output, indicating the workflow has completed."
+msgstr "标记工作流终点。接收上游数据但不产生输出，表示工作流已完成。"
+
+#: nodes/start.py:16
+msgid "Marks the workflow start point. It has no inputs and emits a trigger signal (True) on execution to kick off downstream nodes."
+msgstr "标记工作流起点。无输入，执行时输出触发信号（True）启动下游节点。"
+
+#: nodes/constant.py:17
+msgid "Outputs a user-specified constant value. Supports Python literal expressions such as numbers (1), strings ('hello'), lists ([1,2,3]), and dicts. Useful as a parameter source for downstream nodes."
+msgstr "输出用户指定的常量值。支持 Python 字面量表达式，如数字(1)、字符串('hello')、列表([1,2,3])和字典。用作下游节点的参数来源。"
+
+#: nodes/delay.py:17
+msgid "Pauses execution for a specified number of seconds, then forwards the trigger input to the output unchanged. Useful for timing control or rate-limiting in workflows."
+msgstr "暂停执行指定秒数，然后将触发输入原样转发到输出。用于工作流中的定时控制或限流。"
+
+#: nodes/text_viewer.py:118
+msgid "Print input data to log/console"
+msgstr "是否将输入数据打印到日志/控制台"
+
+#: nodes/data_to_manager.py:17
+msgid "Publishes input data to the DAWorkbench DataManager panel. If data with the same name already exists, it is updated in place; otherwise a new entry is created. Recommended for DataFrame data."
+msgstr "将输入数据发布到 DAWorkbench DataManager 面板。若同名数据已存在则原地更新，否则新建条目。推荐用于 DataFrame 数据。"

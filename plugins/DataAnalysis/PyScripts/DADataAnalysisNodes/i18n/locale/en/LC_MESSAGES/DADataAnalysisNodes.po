@@ -16,286 +16,367 @@ msgstr ""
 "Language: en\n"
 
 msgid "0: drop rows; 1: drop columns"
-msgstr ""
+msgstr "0: drop rows; 1: drop columns"
 
 msgid ">, >=, <, <=, ==, !="
-msgstr ""
+msgstr ">, >=, <, <=, ==, !="
 
 msgid "Actual export file path"
-msgstr ""
+msgstr "Actual export file path"
 
 msgid "Actual file format loaded"
-msgstr ""
+msgstr "Actual file format loaded"
 
 msgid "Aggregation function: mean/sum/count/min/max"
-msgstr ""
+msgstr "Aggregation function: mean/sum/count/min/max"
 
 msgid "Ascending order"
-msgstr ""
+msgstr "Ascending order"
 
 msgid "Bar Chart"
-msgstr ""
+msgstr "Bar Chart"
 
 msgid "Bar Chart (default)"
-msgstr ""
+msgstr "Bar Chart (default)"
 
 msgid "Bar Chart - {}"
-msgstr ""
+msgstr "Bar Chart - {}"
 
 msgid "Case sensitive"
-msgstr ""
+msgstr "Case sensitive"
 
 msgid "Chart file save path"
-msgstr ""
+msgstr "Chart file save path"
 
 msgid "Chart type: bar/line/scatter"
-msgstr ""
+msgstr "Chart type: bar/line/scatter"
 
 msgid "Cleaned data"
-msgstr ""
+msgstr "Cleaned data"
 
 msgid "Column index column name(s), comma-separated"
-msgstr ""
+msgstr "Column index column name(s), comma-separated"
 
 msgid "Column name to check"
-msgstr ""
+msgstr "Column name to check"
 
 msgid "Column name to filter by"
-msgstr ""
+msgstr "Column name to filter by"
 
 msgid "Column names for identifying duplicates, comma-separated, empty means all columns"
-msgstr ""
+msgstr "Column names for identifying duplicates, comma-separated, empty means all columns"
 
 msgid "Column names to check for missing values, comma-separated, empty means all columns"
-msgstr ""
+msgstr "Column names to check for missing values, comma-separated, empty means all columns"
 
 msgid "Column to check"
-msgstr ""
+msgstr "Column to check"
 
 msgid "Column to filter"
-msgstr ""
+msgstr "Column to filter"
 
 msgid "Column to replace"
-msgstr ""
+msgstr "Column to replace"
 
 msgid "Column to search"
-msgstr ""
+msgstr "Column to search"
 
 msgid "Column to transform"
-msgstr ""
+msgstr "Column to transform"
 
 msgid "Computation result"
-msgstr ""
+msgstr "Computation result"
 
 msgid "Data Analysis"
-msgstr ""
+msgstr "Data Analysis"
 
 msgid "Data Cleaning"
-msgstr ""
+msgstr "Data Cleaning"
 
 msgid "Data Operations"
-msgstr ""
+msgstr "Data Operations"
 
 msgid "Data file path"
-msgstr ""
+msgstr "Data file path"
 
 msgid "Deduplicated data"
-msgstr ""
+msgstr "Deduplicated data"
 
 msgid "Descriptive statistics result"
-msgstr ""
+msgstr "Descriptive statistics result"
 
 msgid "Excel sheet name or index (Excel only)"
-msgstr ""
+msgstr "Excel sheet name or index (Excel only)"
 
 msgid "Export file path"
-msgstr ""
+msgstr "Export file path"
 
 msgid "Export format"
-msgstr ""
+msgstr "Export format"
 
 msgid "Field separator (CSV only)"
-msgstr ""
+msgstr "Field separator (CSV only)"
 
 msgid "File encoding (CSV only)"
-msgstr ""
+msgstr "File encoding (CSV only)"
 
 msgid "File format"
-msgstr ""
+msgstr "File format"
 
 msgid "File not found: {}"
-msgstr ""
+msgstr "File not found: {}"
 
 msgid "Fill value for fillna operation"
-msgstr ""
+msgstr "Fill value for fillna operation"
 
 msgid "Fill value when method=constant"
-msgstr ""
+msgstr "Fill value when method=constant"
 
 msgid "Filled data"
-msgstr ""
+msgstr "Filled data"
 
 msgid "Filter condition expression (df.query syntax)"
-msgstr ""
+msgstr "Filter condition expression (df.query syntax)"
 
 msgid "Filter result"
-msgstr ""
+msgstr "Filter result"
 
 msgid "Filter target column name"
-msgstr ""
+msgstr "Filter target column name"
 
 msgid "Filtered DataFrame"
-msgstr ""
+msgstr "Filtered DataFrame"
 
 msgid "Filtered data"
-msgstr ""
+msgstr "Filtered data"
 
 msgid "IQR multiplier, default 1.5"
-msgstr ""
+msgstr "IQR multiplier, default 1.5"
 
 msgid "Index"
-msgstr ""
+msgstr "Index"
 
 msgid "Input DataFrame"
-msgstr ""
+msgstr "Input DataFrame"
 
 msgid "Input data"
-msgstr ""
+msgstr "Input data"
 
 msgid "Interpolated data"
-msgstr ""
+msgstr "Interpolated data"
 
 msgid "Line Chart"
-msgstr ""
+msgstr "Line Chart"
 
 msgid "Line Chart - {}"
-msgstr ""
+msgstr "Line Chart - {}"
 
 msgid "Loaded DataFrame data"
-msgstr ""
+msgstr "Loaded DataFrame data"
 
 msgid "Maximum value (inclusive), 0 means no limit"
-msgstr ""
+msgstr "Maximum value (inclusive), 0 means no limit"
 
 msgid "Minimum number of non-missing values, 0 means not used"
-msgstr ""
+msgstr "Minimum number of non-missing values, 0 means not used"
 
 msgid "Minimum value (inclusive), 0 means no limit"
-msgstr ""
+msgstr "Minimum value (inclusive), 0 means no limit"
 
 msgid "Need at least 2 numeric columns"
-msgstr ""
+msgstr "Need at least 2 numeric columns"
 
 msgid "New column name for rename operation"
-msgstr ""
+msgstr "New column name for rename operation"
 
 msgid "New value"
-msgstr ""
+msgstr "New value"
 
 msgid "Number of matched rows"
-msgstr ""
+msgstr "Number of matched rows"
 
 msgid "Number of removed rows"
-msgstr ""
+msgstr "Number of removed rows"
 
 msgid "Number of removed rows/columns"
-msgstr ""
+msgstr "Number of removed rows/columns"
 
 msgid "Number of replacements"
-msgstr ""
+msgstr "Number of replacements"
 
 msgid "Number of result rows"
-msgstr ""
+msgstr "Number of result rows"
 
 msgid "Old value"
-msgstr ""
+msgstr "Old value"
 
 msgid "Operation type: rename/drop/fillna"
-msgstr ""
+msgstr "Operation type: rename/drop/fillna"
 
 msgid "Order of polynomial or spline"
-msgstr ""
+msgstr "Order of polynomial or spline"
 
 msgid "Percentiles, comma-separated"
-msgstr ""
+msgstr "Percentiles, comma-separated"
 
 msgid "Pivot table result"
-msgstr ""
+msgstr "Pivot table result"
 
 msgid "Plot target column"
-msgstr ""
+msgstr "Plot target column"
 
 msgid "Query result"
-msgstr ""
+msgstr "Query result"
 
 msgid "Replaced data"
-msgstr ""
+msgstr "Replaced data"
 
 msgid "Row count"
-msgstr ""
+msgstr "Row count"
 
 msgid "Row index column name(s), comma-separated"
-msgstr ""
+msgstr "Row index column name(s), comma-separated"
 
 msgid "Scatter - {} vs {}"
-msgstr ""
+msgstr "Scatter - {} vs {}"
 
 msgid "Scatter: insufficient numeric columns"
-msgstr ""
+msgstr "Scatter: insufficient numeric columns"
 
 msgid "Search pattern, supports regex"
-msgstr ""
+msgstr "Search pattern, supports regex"
 
 msgid "Search results"
-msgstr ""
+msgstr "Search results"
 
 msgid "Sort column names, comma separated"
-msgstr ""
+msgstr "Sort column names, comma separated"
 
 msgid "Sorted data"
-msgstr ""
+msgstr "Sorted data"
 
 msgid "Target column name"
-msgstr ""
+msgstr "Target column name"
 
 msgid "Threshold"
-msgstr ""
+msgstr "Threshold"
 
 msgid "Transformed DataFrame"
-msgstr ""
+msgstr "Transformed DataFrame"
 
 msgid "Transformed data"
-msgstr ""
+msgstr "Transformed data"
 
 msgid "Value column name(s), comma-separated"
-msgstr ""
+msgstr "Value column name(s), comma-separated"
 
 msgid "Whether export succeeded"
-msgstr ""
+msgstr "Whether export succeeded"
 
 msgid "Z-score threshold, default 3.0"
-msgstr ""
+msgstr "Z-score threshold, default 3.0"
 
 msgid "any: drop if any missing; all: drop only if all missing"
-msgstr ""
+msgstr "any: drop if any missing; all: drop only if all missing"
 
 msgid "constant: fixed value; ffill/bfill: forward/backward fill; mean/median/mode: statistical value"
-msgstr ""
+msgstr "constant: fixed value; ffill/bfill: forward/backward fill; mean/median/mode: statistical value"
 
 msgid "file_path is empty"
-msgstr ""
+msgstr "file_path is empty"
 
 msgid "first/last/False: keep first/last/none"
-msgstr ""
+msgstr "first/last/False: keep first/last/none"
 
 msgid "linear/polynomial/spline/time"
-msgstr ""
+msgstr "linear/polynomial/spline/time"
 
 msgid "log/sqrt/boxcox"
-msgstr ""
+msgstr "log/sqrt/boxcox"
 
 msgid "pandas eval expression, e.g. 'C = A + B'"
-msgstr ""
+msgstr "pandas eval expression, e.g. 'C = A + B'"
 
-msgid "query expression, e.g. 'age > 25 and name == "John"'"
-msgstr ""
+#: data_pivot_table_node.py:15
+msgid "Creates a pivot table from a DataFrame. Specify row index columns, optional column index columns, value columns, and an aggregation function (mean, sum, count, min, or max)."
+msgstr "Creates a pivot table from a DataFrame. Specify row index columns, optional column index columns, value columns, and an aggregation function (mean, sum, count, min, or max)."
+
+#: data_eval_node.py:16
+msgid "Evaluates a pandas eval expression on a DataFrame (e.g. 'C = A + B' to create a new column from arithmetic). Outputs the resulting DataFrame with the expression applied."
+msgstr "Evaluates a pandas eval expression on a DataFrame (e.g. 'C = A + B' to create a new column from arithmetic). Outputs the resulting DataFrame with the expression applied."
+
+#: data_export_node.py:22
+msgid "Exports a DataFrame to a file in CSV, JSON, Excel, Parquet, or Feather format. Specify the output path and format; the output directory is created automatically if it does not exist."
+msgstr "Exports a DataFrame to a file in CSV, JSON, Excel, Parquet, or Feather format. Specify the output path and format; the output directory is created automatically if it does not exist."
+
+#: data_fill_interpolate_node.py:15
+msgid "Fills missing values (NaN) by interpolation. Supports linear, polynomial, spline, and time-based interpolation methods."
+msgstr "Fills missing values (NaN) by interpolation. Supports linear, polynomial, spline, and time-based interpolation methods."
+
+#: data_fillna_node.py:15
+msgid "Fills missing values (NaN) in a DataFrame using a specified method: constant value, forward fill, backward fill, mean, median, or mode."
+msgstr "Fills missing values (NaN) in a DataFrame using a specified method: constant value, forward fill, backward fill, mean, median, or mode."
+
+#: data_filter_by_column_node.py:15
+msgid "Filters DataFrame rows by a numeric column's value range. Set min and/or max thresholds (inclusive); a value of 0 means no limit on that bound."
+msgstr "Filters DataFrame rows by a numeric column's value range. Set min and/or max thresholds (inclusive); a value of 0 means no limit on that bound."
+
+#: data_threshold_filter_node.py:15
+msgid "Filters DataFrame rows by comparing a column's values against a threshold. Supports operators: >, >=, <, <=, ==, !=. Outputs the filtered data and the count of removed rows."
+msgstr "Filters DataFrame rows by comparing a column's values against a threshold. Supports operators: >, >=, <, <=, ==, !=. Outputs the filtered data and the count of removed rows."
+
+#: data_query_node.py:15
+msgid "Filters DataFrame rows using a pandas query expression (e.g. 'age > 25 and name == \"John\"'). Outputs the filtered data and the result row count."
+msgstr "Filters DataFrame rows using a pandas query expression (e.g. 'age > 25 and name == \"John\"'). Outputs the filtered data and the result row count."
+
+#: data_filter_node.py:22
+msgid "Filters DataFrame rows using a pandas query expression (e.g. 'age > 25') or by non-null values in a specified column. Outputs the filtered data and the count of removed rows."
+msgstr "Filters DataFrame rows using a pandas query expression (e.g. 'age > 25') or by non-null values in a specified column. Outputs the filtered data and the count of removed rows."
+
+#: data_plot_node.py:30
+msgid "Generates a bar, line, or scatter chart from a DataFrame and saves it as a PNG image. Specify the target column and chart type; the file path is output for downstream use."
+msgstr "Generates a bar, line, or scatter chart from a DataFrame and saves it as a PNG image. Specify the target column and chart type; the file path is output for downstream use."
+
+#: data_describe_node.py:15
+msgid "Generates descriptive statistics (count, mean, std, min, max, and configurable percentiles) for a DataFrame using pandas describe(). Outputs a statistics summary DataFrame."
+msgstr "Generates descriptive statistics (count, mean, std, min, max, and configurable percentiles) for a DataFrame using pandas describe(). Outputs a statistics summary DataFrame."
+
+#: data_source_node.py:23
+msgid "Loads data from a file (CSV, Excel, JSON, or Parquet) into a DataFrame. Configure the file path and format; CSV supports encoding and separator options, Excel supports sheet selection."
+msgstr "Loads data from a file (CSV, Excel, JSON, or Parquet) into a DataFrame. Configure the file path and format; CSV supports encoding and separator options, Excel supports sheet selection."
+
+#: data_drop_duplicates_node.py:15
+msgid "Removes duplicate rows from a DataFrame. Specify which columns to check for duplicates (comma-separated, empty = all columns) and whether to keep the first, last, or no duplicate occurrence."
+msgstr "Removes duplicate rows from a DataFrame. Specify which columns to check for duplicates (comma-separated, empty = all columns) and whether to keep the first, last, or no duplicate occurrence."
+
+#: data_remove_outliers_zscore_node.py:15
+msgid "Removes outlier rows from a DataFrame using Z-score method. A row is removed if its Z-score (standard deviations from the mean) in the specified column exceeds the threshold (default 3.0)."
+msgstr "Removes outlier rows from a DataFrame using Z-score method. A row is removed if its Z-score (standard deviations from the mean) in the specified column exceeds the threshold (default 3.0)."
+
+#: data_remove_outliers_iqr_node.py:15
+msgid "Removes outlier rows from a DataFrame using the IQR (interquartile range) method. Values outside 1.5×IQR (configurable) from the quartiles are treated as outliers and removed."
+msgstr "Removes outlier rows from a DataFrame using the IQR (interquartile range) method. Values outside 1.5×IQR (configurable) from the quartiles are treated as outliers and removed."
+
+#: data_dropna_node.py:16
+msgid "Removes rows or columns containing missing values (NaN). Supports 'any' (drop if any value is missing) or 'all' (drop only if all values are missing) strategies, with optional column subset and minimum non-missing count threshold."
+msgstr "Removes rows or columns containing missing values (NaN). Supports 'any' (drop if any value is missing) or 'all' (drop only if all values are missing) strategies, with optional column subset and minimum non-missing count threshold."
+
+#: data_replace_values_node.py:15
+msgid "Replaces a specific value with a new value in a selected column. Matching is case-sensitive. Outputs the modified DataFrame and the count of replacements made."
+msgstr "Replaces a specific value with a new value in a selected column. Matching is case-sensitive. Outputs the modified DataFrame and the count of replacements made."
+
+#: data_search_node.py:15
+msgid "Searches a DataFrame for rows matching a pattern in a specified column. Supports regex patterns and case-sensitive matching. Outputs matching rows and the match count."
+msgstr "Searches a DataFrame for rows matching a pattern in a specified column. Supports regex patterns and case-sensitive matching. Outputs matching rows and the match count."
+
+#: data_sort_node.py:15
+msgid "Sorts a DataFrame by one or more columns. Specify column names as a comma-separated list and choose ascending or descending order."
+msgstr "Sorts a DataFrame by one or more columns. Specify column names as a comma-separated list and choose ascending or descending order."
+
+#: data_transform_node.py:22
+msgid "Transforms a DataFrame column: rename a column, drop a column, or fill missing values in a column. Specify the target column, operation type, and the corresponding parameter (new name or fill value)."
+msgstr "Transforms a DataFrame column: rename a column, drop a column, or fill missing values in a column. Specify the target column, operation type, and the corresponding parameter (new name or fill value)."
+
+#: data_query_node.py:20
+msgid "query expression, e.g. 'age > 25 and name == \"John\"'"
+msgstr "query expression, e.g. 'age > 25 and name == \"John\"'"

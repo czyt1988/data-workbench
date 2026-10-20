@@ -51,8 +51,7 @@ msgid "Minimum Non-NA Values"
 msgstr ""
 
 #: dataframe_cleaner.py:99
-msgid ""
-"Minimum number of non-missing values required to keep the row (0=disable)"
+msgid "Minimum number of non-missing values required to keep the row (0=disable)"
 msgstr ""
 
 #: dataframe_cleaner.py:101 dataframe_cleaner.py:606
@@ -169,9 +168,7 @@ msgid "Maximum Consecutive Fills"
 msgstr ""
 
 #: dataframe_cleaner.py:215
-msgid ""
-"Maximum number of consecutive missing values to fill (leave empty for "
-"unlimited)"
+msgid "Maximum number of consecutive missing values to fill (leave empty for unlimited)"
 msgstr ""
 
 #: dataframe_cleaner.py:239
@@ -284,56 +281,6 @@ msgstr ""
 msgid "Whether to interpolate in place or return a copy"
 msgstr ""
 
-#: dataframe_cleaner.py:339 dataframe_cleaner.py:393
-msgid "Replace Values"
-msgstr ""
-
-#: dataframe_cleaner.py:340
-msgid "Values to Replace"
-msgstr ""
-
-#: dataframe_cleaner.py:342
-msgid "Values to find and replace (comma separated for multiple values)"
-msgstr ""
-
-#: dataframe_cleaner.py:343
-msgid "Replacement Value"
-msgstr ""
-
-#: dataframe_cleaner.py:345
-msgid "Value to use as replacement"
-msgstr ""
-
-#: dataframe_cleaner.py:346
-msgid "Case Sensitive"
-msgstr ""
-
-#: dataframe_cleaner.py:348
-msgid "Consider letter case when matching values (for text only)"
-msgstr ""
-
-#: dataframe_cleaner.py:363
-msgid "Please specify values to replace"
-msgstr ""
-
-#: dataframe_cleaner.py:368
-msgid "No valid values specified for replacement"
-msgstr ""
-
-#: dataframe_cleaner.py:382
-#, python-brace-format
-msgid "Replaced {count} values"
-msgstr ""
-
-#: dataframe_cleaner.py:384
-msgid "No matching values found to replace"
-msgstr ""
-
-#: dataframe_cleaner.py:388
-#, python-brace-format
-msgid "Failed to replace values: {error}"
-msgstr ""
-
 #: dataframe_cleaner.py:414
 msgid "Remove Outliers (IQR Method)"
 msgstr ""
@@ -347,9 +294,7 @@ msgid "IQR Multiplier"
 msgstr ""
 
 #: dataframe_cleaner.py:418
-msgid ""
-"Values beyond Q1-multiplier*IQR and Q3+multiplier*IQR are outliers (typical: "
-"1.5-3)"
+msgid "Values beyond Q1-multiplier*IQR and Q3+multiplier*IQR are outliers (typical: 1.5-3)"
 msgstr ""
 
 #: dataframe_cleaner.py:420 dataframe_cleaner.py:498
@@ -433,8 +378,7 @@ msgid "Z-score Threshold"
 msgstr ""
 
 #: dataframe_cleaner.py:493
-msgid ""
-"Values with absolute Z-score above this threshold are outliers (typical: 3)"
+msgid "Values with absolute Z-score above this threshold are outliers (typical: 3)"
 msgstr ""
 
 #: dataframe_cleaner.py:494
@@ -461,137 +405,6 @@ msgstr ""
 
 #: dataframe_cleaner.py:551
 msgid "Remove Outliers (Z-Score)"
-msgstr ""
-
-#: dataframe_cleaner.py:571
-msgid ""
-"No numeric columns found in selected data. Please select numeric columns for "
-"threshold filtering."
-msgstr ""
-
-#: dataframe_cleaner.py:577
-msgid "No numeric columns selected. Please select at least one numeric column."
-msgstr ""
-
-#: dataframe_cleaner.py:581 dataframe_cleaner.py:656
-msgid "Threshold Filter"
-msgstr ""
-
-#: dataframe_cleaner.py:582
-msgid "Filter Conditions"
-msgstr ""
-
-#: dataframe_cleaner.py:583
-msgid "Filter Type"
-msgstr ""
-
-#: dataframe_cleaner.py:586
-msgid "Remove values GREATER THAN threshold (too high)"
-msgstr ""
-
-#: dataframe_cleaner.py:587
-msgid "Remove values LESS THAN threshold (too low)"
-msgstr ""
-
-#: dataframe_cleaner.py:588
-msgid "Remove values WITHIN range (keep outliers)"
-msgstr ""
-
-#: dataframe_cleaner.py:589
-msgid "Remove values OUTSIDE range (keep normal range)"
-msgstr ""
-
-#: dataframe_cleaner.py:591
-msgid ""
-"Select the type of filtering you want to apply: remove values that are too "
-"high, too low, within a specific range, or outside a specific range."
-msgstr ""
-
-#: dataframe_cleaner.py:592
-msgid "Lower Threshold"
-msgstr ""
-
-#: dataframe_cleaner.py:594
-msgid ""
-"The minimum acceptable value. Rows with values below this (depending on "
-"filter type) will be removed."
-msgstr ""
-
-#: dataframe_cleaner.py:595
-msgid "Upper Threshold"
-msgstr ""
-
-#: dataframe_cleaner.py:597
-msgid ""
-"The maximum acceptable value. Rows with values above this (depending on "
-"filter type) will be removed."
-msgstr ""
-
-#: dataframe_cleaner.py:598
-msgid "Row Removal Logic"
-msgstr ""
-
-#: dataframe_cleaner.py:601
-msgid "Remove row if ANY selected column meets the condition"
-msgstr ""
-
-#: dataframe_cleaner.py:602
-msgid "Remove row only if ALL selected columns meet the condition"
-msgstr ""
-
-#: dataframe_cleaner.py:604
-msgid ""
-"When multiple columns are selected: 'Any' removes the row if any column "
-"violates the threshold; 'All' only removes the row if all columns violate the "
-"threshold."
-msgstr ""
-
-#: dataframe_cleaner.py:607
-msgid "Treat NaN as Threshold Violation"
-msgstr ""
-
-#: dataframe_cleaner.py:609
-msgid ""
-"If enabled, rows with NaN (missing) values in selected columns will also be "
-"removed. If disabled, NaN values will be ignored."
-msgstr ""
-
-#: dataframe_cleaner.py:612
-msgid "Renumber rows from 0 after filtering"
-msgstr ""
-
-#: dataframe_cleaner.py:635
-#, python-brace-format
-msgid "Threshold filtering failed: {error}"
-msgstr ""
-
-#: dataframe_cleaner.py:640
-#, python-brace-format
-msgid "Removed {removed_rows} rows with values greater than {upper_threshold}"
-msgstr ""
-
-#: dataframe_cleaner.py:643
-#, python-brace-format
-msgid "Removed {removed_rows} rows with values less than {lower_threshold}"
-msgstr ""
-
-#: dataframe_cleaner.py:646
-#, python-brace-format
-msgid ""
-"Removed {removed_rows} rows with values between {lower_threshold} and "
-"{upper_threshold}"
-msgstr ""
-
-#: dataframe_cleaner.py:649
-#, python-brace-format
-msgid ""
-"Removed {removed_rows} rows with values outside {lower_threshold} to "
-"{upper_threshold} range"
-msgstr ""
-
-#: dataframe_cleaner.py:652
-#, python-brace-format
-msgid "Filtered {removed_rows} rows based on threshold conditions"
 msgstr ""
 
 #: dataframe_cleaner.py:678 dataframe_cleaner.py:716
