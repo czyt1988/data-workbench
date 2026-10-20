@@ -6,6 +6,7 @@
 #include "DAPyLinkPoint.h"
 #include "DAPyWorkFlowScene.h"
 #include <memory>
+#include <optional>
 #include <QImage>
 #include <QPainter>
 #include <QSvgRenderer>
@@ -63,6 +64,10 @@ public:
     int countVisibleParameters() const;
     // 构建tooltip文本
     QString buildTooltip() const;
+    // 确保绘制字体与度量已按基线字体构建，字体键变化时重建并使文本排版缓存失效
+    void ensurePaintFonts(const QFont& baseFont);
+    // 使文本排版缓存（标题省略、参数行）失效
+    void invalidateTextCaches();
 
 public:
     DAPyNode mProxy;  ///< Python节点代理（值持有）
@@ -96,6 +101,25 @@ public:
     QList< CachedParameter > mCachedParameters;      ///< 缓存的参数列表
     bool mShowParameters { true };                   ///< 是否在节点上显示参数
     int maxDisplayParams { 10 };                      ///< 最多显示的参数行数
+    // 绘制字体与文本排版缓存（避免每帧重复构造字体、度量与排版）
+    // 标题与端口标签字体从绘制器字体派生（继承视图/应用字体），参数行字体用默认字体构造，
+    // 三者基线不同，不能合并；smallFontSize/normalFontSize无setter，字号无需单独失效
+    QString mCachedBaseFontKey;                      ///< 上次缓存字体所基于的绘制器字体键
+    QFont mTitleFont;                                ///< 标题字体
+    QFont mSmallFont;                                ///< 端口标签字体
+    QFont mParamFont;                                ///< 参数行字体（默认字体构造）
+    std::optional< QFontMetricsF > mTitleFm;
+    std::optional< QFontMetricsF > mSmallFm;
+    std::optional< QFontMetricsF > mParamFm;
+    QString mSmallFontKey;                           ///< 端口标签字体基于的绘制器字体键（paintLinkPoints调用时刻，回调可能已改变绘制器字体）
+    QString mElidedName;                             ///< 缓存后的标题显示文本
+    qreal mElidedNameWidth { -1.0 };                 ///< mElidedName 对应的可用宽度（-1表示无效）
+    struct ParamLine {
+        QString text;
+        bool overflow { false };                     ///< true表示这一行是省略号行
+    };
+    QVector< ParamLine > mParamLines;                ///< 缓存的参数行文本
+    qreal mParamLinesWidth { -1.0 };                 ///< mParamLines 对应的可用宽度（-1表示无效）
 };
 
 /**
@@ -147,6 +171,51 @@ QString DAPyNodeGraphicsItem::PrivateData::buildTooltip() const
         }
     }
     return tip;
+}
+
+/**
+ * @brief 确保绘制字体与度量已按基线字体构建
+ * @param[in] baseFont 绘制器当前字体（标题与端口标签字体的基线）
+ *
+ * 基线字体键变化时重建三组字体与度量并使文本排版缓存失效。
+ * 绘制器字体随视图/应用字体变化，因此每帧比较一次QFont::key()；
+ * 应用级setFont()经此比较自动生效，无需额外失效入口。
+ */
+void DAPyNodeGraphicsItem::PrivateData::ensurePaintFonts(const QFont& baseFont)
+{
+    const QString key = baseFont.key();
+    if (mTitleFm && key == mCachedBaseFontKey) {
+        return;
+    }
+    mCachedBaseFontKey = key;
+
+    mTitleFont = baseFont;
+    mTitleFont.setPointSize(normalFontSize);
+    mTitleFm.emplace(mTitleFont);
+
+    mSmallFont = baseFont;
+    mSmallFont.setPointSize(smallFontSize);
+    mSmallFm.emplace(mSmallFont);
+    mSmallFontKey = key;
+
+    mParamFont = QFont();
+    mParamFont.setPointSize(smallFontSize);
+    mParamFm.emplace(mParamFont);
+
+    invalidateTextCaches();
+}
+
+/**
+ * @brief 使文本排版缓存失效
+ *
+ * 标题省略与参数行缓存依赖字体与可用宽度，字体重建后必须重排；
+ * 宽度变化由各绘制点的宽度比较覆盖，无需在此处理。
+ */
+void DAPyNodeGraphicsItem::PrivateData::invalidateTextCaches()
+{
+    mElidedNameWidth = -1.0;
+    mParamLines.clear();
+    mParamLinesWidth = -1.0;
 }
 
 /**
@@ -509,6 +578,8 @@ void DAPyNodeGraphicsItem::setProxy(const DAPyNode& proxy)
         d_ptr->mCachedParameters.clear();
     }
     updateLinkPoints();
+    // 名称与参数缓存已重建，文本排版缓存失效
+    d_ptr->invalidateTextCaches();
     // 构建并设置tooltip（包含完整参数信息，不截断）
     setToolTip(d_ptr->buildTooltip());
     update();
@@ -528,6 +599,8 @@ void DAPyNodeGraphicsItem::setNodeName(const QString& name)
         return;
     }
     d->mName = name;
+    // 名称变化使标题省略缓存失效（宽度可能恰好不变，必须显式失效）
+    d->invalidateTextCaches();
     updateNodeBody();
 }
 
@@ -825,6 +898,10 @@ void DAPyNodeGraphicsItem::paintBody(QPainter* painter,
     Q_UNUSED(option);
     Q_UNUSED(widget);
 
+    // 确保绘制字体缓存有效（回调分支与模板分支末尾的端口绘制都会用到）；
+    // 端口标签字体在paintLinkPoints中按其调用时刻的绘制器字体单独键控
+    d_ptr->ensurePaintFonts(painter->font());
+
     // 如果有自定义绘制回调，尝试调用Python回调
     if (d_ptr->mPaintCallback && !d_ptr->mPaintCallback.isNone()) {
         // 获取GIL，创建代理，调用Python回调
@@ -904,7 +981,7 @@ void DAPyNodeGraphicsItem::paintBody(QPainter* painter,
  * @param[in] defaultFillColor 默认填充色（输入为白色，输出为深灰色）
  * @param[in] linkPointDrawWidth 连接点绘制宽度
  * @param[in] linkPointDrawHeight 连接点绘制高度
- * @param[in] smallFontSize 连接点标签字体大小
+ * @param[in] fm 端口标签字体的度量（由调用方缓存并提供）
  */
 static void drawLinkPointGroup(QPainter* painter,
                                const QList< DAPyLinkPoint >& points,
@@ -912,7 +989,7 @@ static void drawLinkPointGroup(QPainter* painter,
                                const QColor& defaultFillColor,
                                qreal linkPointDrawWidth,
                                qreal linkPointDrawHeight,
-                               int smallFontSize)
+                               const QFontMetricsF& fm)
 {
     const qreal spacing = 2;  // 文字与连接点间距
 
@@ -921,10 +998,6 @@ static void drawLinkPointGroup(QPainter* painter,
     borderPen.setWidthF(portStyle.borderWidth);
     painter->setBrush(fillBrush);
     painter->setPen(borderPen);
-
-    QFont smallFont = painter->font();
-    smallFont.setPointSize(smallFontSize);
-    QFontMetricsF fm(smallFont);
 
     for (const auto& lp : std::as_const(points)) {
         // 根据方向确定矩形尺寸（East/West为水平矩形，North/South为垂直矩形）
@@ -1033,14 +1106,21 @@ void DAPyNodeGraphicsItem::paintLinkPoints(QPainter* painter, const QStyleOption
 
     painter->save();
 
+    // 端口标签字体按paintLinkPoints调用时刻的绘制器字体派生（与旧实现一致：
+    // 自定义paint回调可能已改变绘制器字体），字体键未变时直接复用缓存
+    const QString fontKey = painter->font().key();
+    if (!d->mSmallFm || fontKey != d->mSmallFontKey) {
+        d->mSmallFont = painter->font();
+        d->mSmallFont.setPointSize(d->smallFontSize);
+        d->mSmallFm.emplace(d->mSmallFont);
+        d->mSmallFontKey = fontKey;
+    }
     // 设置字体用于连接点标签
-    QFont smallFont = painter->font();
-    smallFont.setPointSize(d->smallFontSize);
-    painter->setFont(smallFont);
+    painter->setFont(d->mSmallFont);
     const DAPyNodeStyle& st = d->mStyle;
     // 绘制输入连接点（默认白色填充）
     drawLinkPointGroup(
-        painter, d->mInputLinkPoints, st.inputPortStyle, Qt::white, d->linkPointDrawWidth, d->linkPointDrawHeight, d->smallFontSize);
+        painter, d->mInputLinkPoints, st.inputPortStyle, Qt::white, d->linkPointDrawWidth, d->linkPointDrawHeight, *d->mSmallFm);
 
     // 绘制输出连接点（默认深灰色填充）
     drawLinkPointGroup(painter,
@@ -1049,7 +1129,7 @@ void DAPyNodeGraphicsItem::paintLinkPoints(QPainter* painter, const QStyleOption
                        Qt::darkGray,
                        d->linkPointDrawWidth,
                        d->linkPointDrawHeight,
-                       d->smallFontSize);
+                       *d->mSmallFm);
 
     painter->restore();
 }
@@ -1125,6 +1205,10 @@ void DAPyNodeGraphicsItem::paintNodeStyleBody(QPainter* painter, const QRectF& b
 
     const DAPyNodeStyle& style = d->mStyle;
 
+    // 标题字体按当前绘制器字体派生（正常路径下与paintBody入口一致，键比较零开销；
+    // 回调异常回退路径下绘制器字体可能已被回调修改，保持与旧实现相同的派生点）
+    d->ensurePaintFonts(painter->font());
+
     // 确定背景色（无效时使用默认值）
     QColor bgColor  = style.backgroundColor.isValid() ? style.backgroundColor : QColor(240, 240, 240);
     QColor bdrColor = style.borderColor.isValid() ? style.borderColor : QColor(180, 180, 180);
@@ -1157,17 +1241,18 @@ void DAPyNodeGraphicsItem::paintNodeStyleBody(QPainter* painter, const QRectF& b
     painter->drawPixmap(d->mIconRect.toRect(), d->mIconPixmap);
     // 绘制文字
     if (!d->mName.isEmpty()) {
-        QFont font = painter->font();
-        font.setPointSize(d->normalFontSize);
-        painter->setFont(font);
-        painter->setPen(Qt::black);
-        // 若文字超出mTextRect宽度，自动省略显示，避免裁剪
-        QFontMetricsF fm(font);
-        QString displayName = d->mName;
-        if (fm.horizontalAdvance(displayName) > d->mTextRect.width()) {
-            displayName = fm.elidedText(displayName, Qt::ElideRight, d->mTextRect.width());
+        // 标题省略结果按可用宽度缓存，宽度未变时直接复用
+        const qreal width = d->mTextRect.width();
+        if (d->mElidedNameWidth != width) {
+            d->mElidedName = d->mName;
+            if (d->mTitleFm->horizontalAdvance(d->mElidedName) > width) {
+                d->mElidedName = d->mTitleFm->elidedText(d->mElidedName, Qt::ElideRight, width);
+            }
+            d->mElidedNameWidth = width;
         }
-        painter->drawText(d->mTextRect, Qt::AlignCenter, displayName);
+        painter->setFont(d->mTitleFont);
+        painter->setPen(Qt::black);
+        painter->drawText(d->mTextRect, Qt::AlignCenter, d->mElidedName);
     }
     painter->restore();
 
@@ -1197,12 +1282,11 @@ void DAPyNodeGraphicsItem::paintParameters(QPainter* painter, const QRectF& body
     if (d->mPaintCallback && !d->mPaintCallback.isNone()) {
         return;
     }
+    // 参数行字体与度量已由ensurePaintFonts构建（paintBody入口保证）
+    const QFontMetricsF& fm = *d->mParamFm;
 
     painter->save();
-    QFont paramFont;
-    paramFont.setPointSize(d->smallFontSize);
-    painter->setFont(paramFont);
-    QFontMetricsF fm(paramFont);
+    painter->setFont(d->mParamFont);
 
     const qreal margin    = 4;
     const qreal separatorGap = 4;  // 分割线上下间距
@@ -1220,24 +1304,43 @@ void DAPyNodeGraphicsItem::paintParameters(QPainter* painter, const QRectF& body
     painter->setPen(QColor(60, 60, 60));
     qreal drawY = separatorY + separatorGap + fm.ascent();
     qreal textWidth = bodyRect.width() - 2 * margin;
-    int shown = 0;
 
-    for (const auto& cp : std::as_const(d->mCachedParameters)) {
-        if (!cp.showOnNode) {
-            continue;
+    // 参数行文本按可用宽度缓存，宽度未变且缓存未被失效时直接复用；
+    // 重建逻辑逐行复刻旧行为：跳过showOnNode=false的参数，可见参数超过
+    // maxDisplayParams时以一行"..."（overflow）结束
+    if (d->mParamLinesWidth != textWidth) {
+        d->mParamLines.clear();
+        int shown = 0;
+        for (const auto& cp : std::as_const(d->mCachedParameters)) {
+            if (!cp.showOnNode) {
+                continue;
+            }
+            if (shown >= d->maxDisplayParams) {
+                PrivateData::ParamLine pl;
+                pl.text     = "...";
+                pl.overflow = true;
+                d->mParamLines.append(pl);
+                break;
+            }
+            PrivateData::ParamLine pl;
+            pl.text = cp.name + ": " + cp.value.toString();
+            pl.text = fm.elidedText(pl.text, Qt::ElideRight, textWidth);
+            d->mParamLines.append(pl);
+            ++shown;
         }
-        if (shown >= d->maxDisplayParams) {
+        d->mParamLinesWidth = textWidth;
+    }
+
+    for (const auto& pl : std::as_const(d->mParamLines)) {
+        if (pl.overflow) {
+            // 省略号行保持原有矩形+对齐路径，不改用普通行基线绘制
             painter->drawText(QRectF(bodyRect.left() + margin, drawY - fm.ascent(),
                                      textWidth, fm.height()),
                               Qt::AlignLeft | Qt::AlignVCenter, "...");
-            break;
+        } else {
+            painter->drawText(QPointF(bodyRect.left() + margin, drawY), pl.text);
         }
-        QString valueStr = cp.value.toString();
-        QString line     = cp.name + ": " + valueStr;
-        line = fm.elidedText(line, Qt::ElideRight, textWidth);
-        painter->drawText(QPointF(bodyRect.left() + margin, drawY), line);
         drawY += lineStep;
-        shown++;
     }
     painter->restore();
 }
@@ -1698,6 +1801,7 @@ void DAPyNodeGraphicsItem::setShowParameters(bool show)
         return;
     }
     d_ptr->mShowParameters = show;
+    d_ptr->invalidateTextCaches();
     updateNodeBody();
 }
 
@@ -1717,6 +1821,7 @@ int DAPyNodeGraphicsItem::getMaxDisplayParams() const
 void DAPyNodeGraphicsItem::setMaxDisplayParams(int max)
 {
     d_ptr->maxDisplayParams = qMax(1, max);
+    d_ptr->invalidateTextCaches();
     updateNodeBody();
 }
 
@@ -1731,6 +1836,7 @@ void DAPyNodeGraphicsItem::refreshParameterCache()
     DAPyGILGuard gil;
     if (d_ptr->mProxy.isNone()) {
         d_ptr->mCachedParameters.clear();
+        d_ptr->invalidateTextCaches();
         return;
     }
     try {
@@ -1749,6 +1855,8 @@ void DAPyNodeGraphicsItem::refreshParameterCache()
         qWarning() << "DAPyNodeGraphicsItem refreshParameterCache exception:" << e.what();
         d_ptr->mCachedParameters.clear();
     }
+    // 参数值/可见性已重建，参数行缓存失效
+    d_ptr->invalidateTextCaches();
     setToolTip(d_ptr->buildTooltip());
     updateNodeBody();
 }
