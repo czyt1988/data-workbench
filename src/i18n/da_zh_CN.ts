@@ -370,7 +370,7 @@
     <message>
         <location line="+23"/>
         <source>Subagent definitions available for dispatch. Edit to change tools or instructions.</source>
-        <translation>可派发的子 Agent 定义，编辑可调整工具白名单与提示词</translation>
+        <translation>可派发的子 Agent 定义，编辑可调整工具白名单与提示词。</translation>
     </message>
     <message>
         <location line="+15"/>
@@ -438,13 +438,13 @@
     <message>
         <location line="+351"/>
         <source>LLM is not configured, cannot start agent. Please configure LLM in settings first.</source>
-        <translation>LLM 未配置，无法启动 Agent，请先在设置中配置 LLM</translation>
+        <translation>LLM 未配置，无法启动 Agent，请先在设置中配置 LLM。</translation>
     </message>
     <message>
         <location line="+2"/>
         <location line="+1383"/>
         <source>LLM is not configured. Please configure LLM in settings first.</source>
-        <translation>LLM 未配置，请先在设置中配置 LLM</translation>
+        <translation>LLM 未配置，请先在设置中配置 LLM。</translation>
     </message>
     <message>
         <location line="-1372"/>
@@ -459,7 +459,7 @@
     <message>
         <location line="+1366"/>
         <source>LLM is not configured, skip agent analysis. Please configure LLM in settings first.</source>
-        <translation>LLM 未配置，跳过 Agent 分析，请先在设置中配置 LLM</translation>
+        <translation>LLM 未配置，跳过 Agent 分析，请先在设置中配置 LLM。</translation>
     </message>
 </context>
 <context>
@@ -1044,18 +1044,18 @@
         <location filename="../APP/SettingPages/DAAgentSettingsWidget.cpp" line="+152"/>
         <location line="+5"/>
         <source> s</source>
-        <translation>秒</translation>
+        <translation> 秒</translation>
     </message>
     <message>
         <location line="+35"/>
         <source> d</source>
-        <translation>天</translation>
+        <translation> 天</translation>
     </message>
     <message>
         <location line="+7"/>
         <location line="+30"/>
         <source> times</source>
-        <translation>次</translation>
+        <translation> 次</translation>
     </message>
     <message>
         <location line="-24"/>
@@ -1064,7 +1064,7 @@
         <location line="+6"/>
         <location line="+38"/>
         <source> sec</source>
-        <translation>秒</translation>
+        <translation> 秒</translation>
     </message>
     <message>
         <location line="-151"/>
@@ -1081,7 +1081,7 @@
         <location line="+7"/>
         <location line="+23"/>
         <source>No limit</source>
-        <translation>无限制</translation>
+        <translation>不限制</translation>
     </message>
     <message>
         <location line="-29"/>
@@ -1971,8 +1971,7 @@ Data</source>
         <location line="+1"/>
         <source>Export 
 Data</source>
-        <translation>导出
-            数据</translation>
+        <translation>导出数据</translation>
     </message>
     <message>
         <location line="+1"/>
