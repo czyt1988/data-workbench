@@ -1,0 +1,62 @@
+# DAWorkbench translations
+# Copyright (C) 2026 DAWorkbench
+# This file is distributed under the same license as the DAWorkbench package.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: DAWorkbench 1.0\n"
+"Report-Msgid-Bugs-To: i18n@example.com\n"
+"POT-Creation-Date: 2026-10-20 00:00+0000\n"
+"PO-Revision-Date: 2026-10-20 00:00+0000\n"
+"Last-Translator: AI Agent\n"
+"Language-Team: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+
+
+msgid "Canceled"
+msgstr "Canceled"
+
+msgid "Completed"
+msgstr "Completed"
+
+msgid "Demonstrates a mixed layout: ellipse body, name below, diamond output ports, and blue border."
+msgstr "Demonstrates a mixed layout: ellipse body, name below, diamond output ports, and blue border."
+
+msgid "Demonstrates a rectangular body with large corner radius."
+msgstr "Demonstrates a rectangular body with large corner radius."
+
+msgid "Demonstrates custom background and border colors (red background, blue border)."
+msgstr "Demonstrates custom background and border colors (red background, blue border)."
+
+msgid "Demonstrates ellipse body shape with name below, icon above, and circular ports (input north / output south)."
+msgstr "Demonstrates ellipse body shape with name below, icon above, and circular ports (input north / output south)."
+
+msgid "Demonstrates rectangular body with circular ports and north/south port layout."
+msgstr "Demonstrates rectangular body with circular ports and north/south port layout."
+
+msgid "Demonstrates rectangular body with diamond-shaped ports and colored port fills."
+msgstr "Demonstrates rectangular body with diamond-shaped ports and colored port fills."
+
+msgid "Demonstrates the default node appearance with no custom style applied."
+msgstr "Demonstrates the default node appearance with no custom style applied."
+
+msgid "Failed"
+msgstr "Failed"
+
+msgid "Initializing"
+msgstr "Initializing"
+
+msgid "Paused"
+msgstr "Paused"
+
+msgid "Resumed"
+msgstr "Resumed"
+
+msgid "Style Demo"
+msgstr "Style Demo"
+
+msgid "Task canceled"
+msgstr "Task canceled"

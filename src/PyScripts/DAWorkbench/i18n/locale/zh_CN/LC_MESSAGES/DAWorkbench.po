@@ -1,0 +1,62 @@
+# DAWorkbench translations
+# Copyright (C) 2026 DAWorkbench
+# This file is distributed under the same license as the DAWorkbench package.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: DAWorkbench 1.0\n"
+"Report-Msgid-Bugs-To: i18n@example.com\n"
+"POT-Creation-Date: 2026-10-20 00:00+0000\n"
+"PO-Revision-Date: 2026-10-20 00:00+0000\n"
+"Last-Translator: AI Agent\n"
+"Language-Team: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_CN\n"
+
+
+msgid "Canceled"
+msgstr "已取消"
+
+msgid "Completed"
+msgstr "完成"
+
+msgid "Demonstrates a mixed layout: ellipse body, name below, diamond output ports, and blue border."
+msgstr "演示混合布局：椭圆体、名称在下方、菱形输出端口、蓝色边框。"
+
+msgid "Demonstrates a rectangular body with large corner radius."
+msgstr "演示矩形体配大圆角半径。"
+
+msgid "Demonstrates custom background and border colors (red background, blue border)."
+msgstr "演示自定义背景色和边框色（红色背景，蓝色边框）。"
+
+msgid "Demonstrates ellipse body shape with name below, icon above, and circular ports (input north / output south)."
+msgstr "演示椭圆体形状，名称在下方，图标在上方，圆形端口（输入北/输出南）。"
+
+msgid "Demonstrates rectangular body with circular ports and north/south port layout."
+msgstr "演示矩形体配圆形端口，端口南北布局。"
+
+msgid "Demonstrates rectangular body with diamond-shaped ports and colored port fills."
+msgstr "演示矩形体配菱形端口和彩色端口填充。"
+
+msgid "Demonstrates the default node appearance with no custom style applied."
+msgstr "演示默认节点外观，未应用任何自定义样式。"
+
+msgid "Failed"
+msgstr "失败"
+
+msgid "Initializing"
+msgstr "初始化"
+
+msgid "Paused"
+msgstr "已暂停"
+
+msgid "Resumed"
+msgstr "继续处理"
+
+msgid "Style Demo"
+msgstr "样式演示"
+
+msgid "Task canceled"
+msgstr "任务已取消"
