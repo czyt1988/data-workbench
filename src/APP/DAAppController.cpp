@@ -4,6 +4,7 @@
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QMessageBox>
+#include <QProgressDialog>
 #include <QSignalBlocker>
 #include <QStandardPaths>
 #include <QTimer>
@@ -2274,12 +2275,15 @@ void DAAppController::onPlot3DItemCreated(DA::DAFigureWidget* f, DA::DAChart3DWi
 
 /**
  * @brief 添加数据
+ *
+ * 支持一次选择多个文件批量导入；选中 txt 时在导入前弹一次解析设置对话框，
+ * 同一批 txt 共用此设置；多文件时显示可取消的进度对话框，结束后汇总失败原因
  */
 void DAAppController::onActionAddDataTriggered()
 {
     QFileDialog dialog(app());
     dialog.setNameFilters(mFileReadFilters);
-    dialog.setFileMode(QFileDialog::ExistingFile);
+    dialog.setFileMode(QFileDialog::ExistingFiles);
     if (QDialog::Accepted != dialog.exec()) {
         return;
     }
@@ -2287,24 +2291,88 @@ void DAAppController::onActionAddDataTriggered()
     if (fileNames.empty()) {
         return;
     }
-    QString fileName = fileNames.back();
-    // 对txt要弹出对话框进行指引
-    QVariantMap args;
-    QString err;
-    QFileInfo fi(fileName);
-    if (fi.suffix().toLower() == "txt") {
-        DATxtFileImportDialog dlg(mMainWindow);
-        dlg.setTextFilePath(fileName);
-        if (QDialog::Accepted != dlg.exec()) {
-            return;
+    const int total = static_cast< int >(fileNames.size());
+    // 对txt要弹出对话框进行指引，批量选择时只弹一次，同一批txt共用此解析设置
+    QVariantMap txtArgs;
+    bool hasTxt = false;
+    for (const QString& fileName : fileNames) {
+        if (QFileInfo(fileName).suffix().toLower() == "txt") {
+            DATxtFileImportDialog dlg(mMainWindow);
+            dlg.setTextFilePath(fileName);
+            if (QDialog::Accepted != dlg.exec()) {
+                return;
+            }
+            // 获取导入txt的配置
+            txtArgs = dlg.getSetting();
+            hasTxt = true;
+            qDebug() << "da_read:args->" << txtArgs;
+            break;
         }
-        // 获取导入txt的配置
-        args = dlg.getSetting();
-        qDebug() << "da_read:args->" << args;
-    } else {
     }
+    // 多文件时显示进度对话框（可在文件之间取消），单文件保持原有仅等待光标的行为
+    QProgressDialog progress(tr("Importing data files ..."),  // cn:正在导入数据文件...
+                             tr("Cancel"),                     // cn:取消
+                             0,
+                             total,
+                             mMainWindow);
+    progress.setWindowTitle(tr("Import Data"));  // cn:导入数据
+    progress.setWindowModality(Qt::WindowModal);
+    if (total > 1) {
+        progress.setMinimumDuration(0);
+        progress.show();
+    }
+    int successCnt = 0;
+    QStringList failedFiles;
     DA_WAIT_CURSOR_SCOPED();
-    importData(fileName, args, &err);
+    for (int i = 0; i < total; ++i) {
+        const QString& fileName = fileNames.at(i);
+        progress.setLabelText(tr("Importing (%1/%2): %3")  // cn:正在导入（%1/%2）：%3
+                                  .arg(i + 1)
+                                  .arg(total)
+                                  .arg(QFileInfo(fileName).fileName()));
+        progress.setValue(i);
+        if (progress.wasCanceled()) {
+            break;
+        }
+        QVariantMap args;
+        if (hasTxt && QFileInfo(fileName).suffix().toLower() == "txt") {
+            args = txtArgs;
+        }
+        QString err;
+        if (importData(fileName, args, &err)) {
+            ++successCnt;
+        } else {
+            // 压平Python异常信息里的换行，保证汇总列表每个文件占一行
+            QString item = QFileInfo(fileName).fileName();
+            if (!err.isEmpty()) {
+                item += QStringLiteral(": ") + err.simplified();
+            }
+            failedFiles << item;
+        }
+    }
+    const bool canceled = progress.wasCanceled() && successCnt < total;
+    progress.setValue(total);  // 到达最大值，让进度对话框自动关闭
+    // 汇总导入结果（单文件成功保持原有静默行为，不额外提示）
+    if (successCnt == total) {
+        if (total > 1) {
+            daInfo << tr("Imported %1 file(s) successfully").arg(total);  // cn:成功导入 %1 个文件
+        }
+        return;
+    }
+    QString msg;
+    if (canceled) {
+        msg = tr("Import canceled, %1 of %2 file(s) imported").arg(successCnt).arg(total);  // cn:导入已取消，%2 个文件中已导入 %1 个
+        if (!failedFiles.isEmpty()) {
+            msg += QStringLiteral("\n");
+        }
+    }
+    if (!failedFiles.isEmpty()) {
+        msg += tr("%1 of %2 file(s) failed to import:\n%3")  // cn:%2 个文件中有 %1 个导入失败：\n%3
+                  .arg(failedFiles.size())
+                  .arg(total)
+                  .arg(failedFiles.join('\n'));
+    }
+    daWarning << msg;
 }
 
 /**
