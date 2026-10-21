@@ -157,6 +157,8 @@ public Q_SLOTS:
     void saveAs();
     //   打开 文件前的检查，  返回true说明可以打开
     bool openCheck();
+    // 新建工程（当前工程有未保存修改时先提示保存），返回 true 表示已创建
+    bool newProject();
     // 打开文件
     void open();
     // 打开工程文件

@@ -25,16 +25,7 @@ DARecentFilesManager::DARecentFilesManager(QObject* parent, int maxEntries, cons
     mApp = appName.isEmpty() ? QCoreApplication::applicationName() : appName;
 
     mGroup = new QActionGroup(this);
-    connect(mGroup, &QActionGroup::triggered, this, [ this ](QAction* a) {
-        QString path = a->data().toString();
-        if (fileExists(path)) {
-            Q_EMIT fileSelected(path);
-        } else {
-            mFiles.removeAll(path);
-            writeSettings();
-            rebuildMenu();
-        }
-    });
+    connect(mGroup, &QActionGroup::triggered, this, [ this ](QAction* a) { selectFile(a->data().toString()); });
 
     readAndCleanSettings();
 }
@@ -70,6 +61,7 @@ void DARecentFilesManager::addFile(const QString& filePath)
     if (mRecentMenu) {
         rebuildMenu();
     }
+    Q_EMIT recentFilesChanged();
 }
 
 /**
@@ -81,6 +73,7 @@ void DARecentFilesManager::clear()
     writeSettings();
     if (mRecentMenu)
         rebuildMenu();
+    Q_EMIT recentFilesChanged();
 }
 
 /**
@@ -102,6 +95,7 @@ void DARecentFilesManager::rescan()
     if (changed) {
         writeSettings();
         rebuildMenu();
+        Q_EMIT recentFilesChanged();
     }
 }
 
@@ -127,6 +121,7 @@ void DARecentFilesManager::setMaxEntries(int max)
     if (mRecentMenu) {
         rebuildMenu();
     }
+    Q_EMIT recentFilesChanged();
 }
 
 /**
@@ -136,6 +131,34 @@ void DARecentFilesManager::setMaxEntries(int max)
 int DARecentFilesManager::getMaxEntries() const
 {
     return mMax;
+}
+
+/**
+ * @brief 获取最近文件列表
+ * @return 最新在前的文件路径列表，可能包含已失效的路径
+ */
+QStringList DARecentFilesManager::getRecentFiles() const
+{
+    return mFiles;
+}
+
+/**
+ * @brief 选中某个文件
+ * @param filePath 文件路径
+ * @return 文件存在时发射 fileSelected 信号并返回 true；文件不存在时把该路径从列表移除并返回 false
+ */
+bool DARecentFilesManager::selectFile(const QString& filePath)
+{
+    const QString abs = QFileInfo(filePath).absoluteFilePath();
+    if (fileExists(abs)) {
+        Q_EMIT fileSelected(abs);
+        return true;
+    }
+    mFiles.removeAll(abs);
+    writeSettings();
+    rebuildMenu();
+    Q_EMIT recentFilesChanged();
+    return false;
 }
 
 /**

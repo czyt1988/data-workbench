@@ -404,6 +404,7 @@ void DAAppController::postPluginInit()
 void DAAppController::initConnection()
 {
     // Main Category
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionNewProject, newProject);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionOpen, open);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionSave, save);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionSaveAs, saveAs);
@@ -1361,6 +1362,39 @@ bool DAAppController::openCheck()
         return btn == QMessageBox::Yes;
     }
 
+    return true;
+}
+
+/**
+ * @brief 新建工程
+ *
+ * 当前工程有未保存修改时先提示保存/放弃/取消，确认后清空为未命名的空工程
+ * @return true 表示已创建
+ */
+bool DAAppController::newProject()
+{
+    DAAppProject* project = DA_APP_CORE.getAppProject();
+    if (project->isDirty()) {
+        QMessageBox::StandardButton btn = QMessageBox::question(
+            app(),
+            tr("Question"),  // cn:提示
+            tr("The current project has unsaved changes. Do you want to save before creating a new project?"),  // cn:当前工程有未保存的更改，是否在新建工程之前保存？
+            QMessageBox::StandardButton::Yes | QMessageBox::StandardButton::No | QMessageBox::StandardButton::Cancel,
+            QMessageBox::StandardButton::Yes);
+        switch (btn) {
+        case QMessageBox::StandardButton::Yes:
+            if (!save()) {
+                return false;  // 保存失败（含用户取消保存对话框）时中止新建
+            }
+            break;
+        case QMessageBox::StandardButton::No:
+            break;  // 放弃未保存的修改，直接新建
+        default:
+            return false;  // 用户取消
+        }
+    }
+    project->clear();
+    daInfo << tr("New project created");  // cn:已新建工程
     return true;
 }
 

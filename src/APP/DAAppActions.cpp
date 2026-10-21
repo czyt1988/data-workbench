@@ -48,6 +48,7 @@ void DAAppActions::buildActions()
 void DAAppActions::buildMainAction()
 {
     // Main Category
+    actionNewProject   = createAction(UiNames::Action::NewProject, ":/app/bright/Icon/file-new.svg");
     actionOpen          = createAction(UiNames::Action::Open, ":/app/bright/Icon/file.svg");
     actionSave          = createAction(UiNames::Action::Save, ":/app/bright/Icon/save.svg");
     actionSaveAs        = createAction(UiNames::Action::SaveAs, ":/app/bright/Icon/save-as.svg");
@@ -70,6 +71,7 @@ void DAAppActions::buildMainAction()
     // 默认快捷键就地定义（DAShortcutManager 注册时收集为默认值，用户覆盖见 shortcuts.json）；
     // 剪贴板组默认不设键：工作流编辑器内部同功能 action 已占用 Ctrl+C/X/V 等标准键，
     // 两者同属主窗口会真冲突，该组命令在「设置-快捷键」页可见并由用户自行分配
+    actionNewProject->setShortcut(QKeySequence(QStringLiteral("Ctrl+N")));
     actionOpen->setShortcut(QKeySequence::Open);
     actionSave->setShortcut(QKeySequence::Save);
     actionSaveAs->setShortcut(QKeySequence(QStringLiteral("Ctrl+Shift+S")));
@@ -467,6 +469,8 @@ QPixmap DAAppActions::createColorThemePixmap(const QList< QColor >& clrs, const 
 void DAAppActions::retranslateUi()
 {
     // Main Category
+    actionNewProject->setText(tr("New Project"));                  // cn:新建工程
+    actionNewProject->setToolTip(tr("Create a new empty project"));  // cn:创建新的空工程
     actionOpen->setText(tr("Open"));                     // cn:打开
     actionOpen->setToolTip(tr("Open file or project"));  // cn:打开文件或项目
     actionSave->setText(tr("Save"));                     // cn:保存

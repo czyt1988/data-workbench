@@ -32,19 +32,30 @@ public:
 	// 重新扫描：删除不存在文件
 	void rescan();
 
-	// 设置最大条目数，运行期可调用，会立即裁剪超出的记录并刷新菜单
-	void setMaxEntries(int max);
+    // 设置最大条目数，运行期可调用，会立即裁剪超出的记录并刷新菜单
+    void setMaxEntries(int max);
 
-	// 获取最大条目数
-	int getMaxEntries() const;
+    // 获取最大条目数
+    int getMaxEntries() const;
+
+    // 获取最近文件列表（最新在前；可能包含已失效的路径，由展示方决定失效条目的呈现方式）
+    QStringList getRecentFiles() const;
+
+    // 选中某个文件：文件存在时发射 fileSelected 信号并返回 true；文件不存在时把该路径从列表移除并返回 false
+    bool selectFile(const QString& filePath);
 
 Q_SIGNALS:
 
-	/**
-	 * @brief 用户从菜单选中某文件
-	 * @param filePath
-	 */
-	void fileSelected(const QString& filePath);
+    /**
+     * @brief 用户从菜单选中某文件
+     * @param filePath
+     */
+    void fileSelected(const QString& filePath);
+
+    /**
+     * @brief 最近文件列表发生变化（新增/移除/清空/失效清理/条目数裁剪）后发射
+     */
+    void recentFilesChanged();
 
 private:
 	void rebuildMenu();                              // 重建菜单

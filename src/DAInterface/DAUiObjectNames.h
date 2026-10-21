@@ -97,6 +97,7 @@ constexpr char ChartEditChartSettingPanel[]  = "da-pannel-context-chartedit.char
 namespace Action
 {
 // ---- 主页 ----
+constexpr char NewProject[]   = "actionNewProject";
 constexpr char Open[]          = "actionOpen";
 constexpr char Save[]          = "actionSave";
 constexpr char SaveAs[]        = "actionSaveAs";

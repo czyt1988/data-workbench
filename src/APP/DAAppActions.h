@@ -41,6 +41,7 @@ public:
     //===================================================
     // 主页标签 Main Category
     //===================================================
+    QAction* actionNewProject;   ///< 新建工程
     QAction* actionOpen;           ///< 打开
     QAction* actionSave;           ///< 保存
     QAction* actionSaveAs;         ///< 另存为
