@@ -1,6 +1,8 @@
 <RCC>
     <qresource prefix="/app/bright">
         <file>Icon/file.svg</file>
+        <file>Icon/file-new.svg</file>
+        <file>Icon/exit.svg</file>
         <file>Icon/plugin.svg</file>
         <file>Icon/redo.svg</file>
         <file>Icon/save.svg</file>

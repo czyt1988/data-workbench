@@ -59,7 +59,7 @@ class DACommandInterface;
 class DAAppDataManager;
 class DADataOperateOfDataFrameWidget;
 class DAAppProject;
-class DAAppRibbonApplicationMenu;
+class DAAppApplicationWidget;
 //
 class DADataOperatePageWidget;
 // 窗口
@@ -167,8 +167,8 @@ private:
     void buildContextCategoryWorkflowRun_();
     // 构建chart上下文
     void buildContextCategoryChartEdit();
-    // 构建ApplicationMenu
-    void buildApplicationMenu();
+    // 构建应用面板（应用按钮弹出的 Backstage 面板）
+    void buildApplicationWidget();
     // 构建右工具栏
     void buildRightButtonBar();
     // 构建 AI分析 标签页（agent 提示词库 gallery + 管理/执行）
@@ -354,9 +354,9 @@ private:
     //----------------------------------------------------
     //
     //----------------------------------------------------
-    // ApplicationMenu
-    DAAppRibbonApplicationMenu* mApplicationMenu { nullptr };  ///< ribbon-app menu
-                                                               // 菜单相关
+    // 应用面板
+    DAAppApplicationWidget* mApplicationWidget { nullptr };  ///< 应用按钮弹出的 Backstage 面板
+                                                             // 菜单相关
     QMenu* mExportWorkflowSceneToImageMenu { nullptr };        ///< scene导出为图片菜单
     QMenu* mMenuViewLineMarkers { nullptr };                   ///< 视图标记线
     QMenu* mMenuInsertRow { nullptr };                         ///< 针对insertrow的action menu

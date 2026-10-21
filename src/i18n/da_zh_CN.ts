@@ -1452,7 +1452,7 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="../APP/DAAppActions.cpp" line="+470"/>
+        <location filename="../APP/DAAppActions.cpp" line="+474"/>
         <source>Open</source>
         <translation>打开</translation>
     </message>
@@ -1924,7 +1924,17 @@
         <translation>启用或禁用图表中的图例</translation>
     </message>
     <message>
-        <location line="-132"/>
+        <location line="-142"/>
+        <source>New Project</source>
+        <translation>新建工程</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Create a new empty project</source>
+        <translation>创建新的空工程</translation>
+    </message>
+    <message>
+        <location line="+9"/>
         <source>Open Markdown</source>
         <translation>打开 Markdown</translation>
     </message>
@@ -3149,31 +3159,158 @@
     </message>
 </context>
 <context>
+    <name>DA::DAAppApplicationWidget</name>
+    <message>
+        <location filename="../APP/DAAppApplicationWidget.cpp" line="+491"/>
+        <source>(untitled project)</source>
+        <translation>(未命名工程)</translation>
+    </message>
+    <message>
+        <location line="+16"/>
+        <source>Information</source>
+        <translation>提示</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>The file does not exist and has been removed from the recent list</source>
+        <translation>文件不存在，已从最近列表中移除</translation>
+    </message>
+    <message>
+        <location line="+57"/>
+        <location line="+10"/>
+        <source>Open Project</source>
+        <translation>打开工程</translation>
+    </message>
+    <message>
+        <location line="-9"/>
+        <location line="+17"/>
+        <source>New Project</source>
+        <translation>新建工程</translation>
+    </message>
+    <message>
+        <location line="-16"/>
+        <location line="+21"/>
+        <source>Import Data</source>
+        <translation>导入数据</translation>
+    </message>
+    <message>
+        <location line="-20"/>
+        <location line="+26"/>
+        <source>Save As</source>
+        <translation>另存为</translation>
+    </message>
+    <message>
+        <location line="-24"/>
+        <source>Save Project</source>
+        <translation>保存工程</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Setting</source>
+        <translation>设置</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>About</source>
+        <translation>关于</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Exit</source>
+        <translation>退出</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Browse...</source>
+        <translation>浏览…</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Recent Projects</source>
+        <translation>最近打开的工程</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>No recent projects</source>
+        <translation>暂无最近打开的工程</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Append To Project...</source>
+        <translation>追加工程…</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Open Markdown...</source>
+        <translation>打开 Markdown…</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Clear Recent List</source>
+        <translation>清空最近列表</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Create a new empty untitled project. You will be asked to save the current project if it has unsaved changes.</source>
+        <translation>创建一个新的空白未命名工程；当前工程有未保存的更改时会先提示保存。</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Create Empty Project</source>
+        <translation>创建空白工程</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Import data files into the project (txt, csv, xls, xlsx, parquet, pickle; multiple files can be selected for batch import).</source>
+        <translation>导入数据文件到工程（txt、csv、xls、xlsx、parquet、pickle，可多选批量导入）。</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Browse Files...</source>
+        <translation>浏览文件导入…</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Choose Save Location...</source>
+        <translation>选择保存位置…</translation>
+    </message>
+</context>
+<context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+849"/>
+        <location filename="../APP/DAAppController.cpp" line="+850"/>
         <source>Save Project</source>
         <translation>保存工程</translation>
     </message>
     <message>
         <location line="+19"/>
-        <location line="+1014"/>
+        <location line="+1047"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location line="-1003"/>
+        <location line="-1036"/>
         <source>Failed to save project! Path: %1</source>
         <translation>工程保存失败！路径为:%1</translation>
     </message>
     <message>
         <location line="+3"/>
-        <location line="+619"/>
+        <location line="+652"/>
         <source>Project saved successfully, path: %1</source>
         <translation>工程保存成功，路径为:%1</translation>
     </message>
     <message>
-        <location line="+27"/>
+        <location line="-154"/>
+        <source>The current project has unsaved changes. Do you want to save before creating a new project?</source>
+        <translation>当前工程有未保存的更改，是否在新建工程之前保存？</translation>
+    </message>
+    <message>
+        <location line="+16"/>
+        <source>New project created</source>
+        <translation>已新建工程</translation>
+    </message>
+    <message>
+        <location line="+165"/>
         <source>Project loaded successfully, path: %1</source>
         <translation>工程加载成功，路径为:%1</translation>
     </message>
@@ -3305,30 +3442,31 @@
         <translation>在创建一个坐标系之前，需要先创建一个绘图窗口</translation>
     </message>
     <message>
-        <location line="-1821"/>
+        <location line="-1854"/>
         <source>Please select the data operation window</source>
         <translation>请选中数据操作窗口</translation>
     </message>
     <message>
         <location line="-50"/>
-        <location line="+528"/>
+        <location line="+561"/>
         <location line="+73"/>
         <source>Project File</source>
         <translation>工程文件</translation>
     </message>
     <message>
-        <location line="-583"/>
+        <location line="-616"/>
         <source>Whether to overwrite the file: %1</source>
         <translation>是否覆盖文件:%1</translation>
     </message>
     <message>
         <location line="+470"/>
         <location line="+19"/>
+        <location line="+21"/>
         <source>Question</source>
         <translation>疑问</translation>
     </message>
     <message>
-        <location line="-18"/>
+        <location line="-39"/>
         <source>The current project has unsaved changes. Do you want to save before opening another project?</source>
         <translation>当前工程有未保存的更改，是否在打开其他工程之前保存？</translation>
     </message>
@@ -3338,7 +3476,7 @@
         <translation>已存在其他工程，是否要替换？</translation>
     </message>
     <message>
-        <location line="+67"/>
+        <location line="+100"/>
         <location line="+43"/>
         <source>Failed to load project file: %1</source>
         <translation>加载工程文件失败:%1</translation>
@@ -3421,12 +3559,12 @@
         <translation>没有选中可复制的单元格</translation>
     </message>
     <message>
-        <location line="-1469"/>
+        <location line="-1502"/>
         <source>No active table</source>
         <translation>无活动表格</translation>
     </message>
     <message>
-        <location line="+1857"/>
+        <location line="+1890"/>
         <source>Cannot rename a series, please select a dataset</source>
         <translation>无法重命名series，请选中数据集</translation>
     </message>
@@ -4068,7 +4206,7 @@
 <context>
     <name>DA::DAAppRibbonArea</name>
     <message>
-        <location filename="../APP/DAAppRibbonArea.cpp" line="+216"/>
+        <location filename="../APP/DAAppRibbonArea.cpp" line="+219"/>
         <location line="+3"/>
         <source>File</source>
         <translation>文件</translation>
@@ -4228,7 +4366,7 @@
         <translation>图表样式</translation>
     </message>
     <message>
-        <location line="+384"/>
+        <location line="+377"/>
         <location line="+2"/>
         <source>AI Agent</source>
         <translation>AI智能体</translation>
@@ -4295,7 +4433,7 @@
         <translation>Agent 模块未就绪</translation>
     </message>
     <message>
-        <location line="-1075"/>
+        <location line="-1068"/>
         <location line="+426"/>
         <source>Item</source>
         <translation>图元</translation>
@@ -4427,12 +4565,7 @@
         <translation>辅助工具</translation>
     </message>
     <message>
-        <location line="+21"/>
-        <source>Recent Files</source>
-        <translation>最近打开的文件</translation>
-    </message>
-    <message>
-        <location line="-655"/>
+        <location line="-634"/>
         <location line="+288"/>
         <source>Edit</source>
         <translation>编辑</translation>
@@ -13535,7 +13668,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DA::DARecentFilesManager</name>
     <message>
-        <location filename="../DAGui/DARecentFilesManager.cpp" line="+153"/>
+        <location filename="../DAGui/DARecentFilesManager.cpp" line="+176"/>
         <source>(empty)</source>
         <translation>空</translation>
     </message>
@@ -14583,7 +14716,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-3759"/>
+        <location filename="../APP/DAAppController.cpp" line="-3793"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>

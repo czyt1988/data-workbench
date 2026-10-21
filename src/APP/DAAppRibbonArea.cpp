@@ -29,7 +29,7 @@
 #include <QInputDialog>
 #include <QMenu>
 // ui
-#include "DAAppRibbonApplicationMenu.h"
+#include "DAAppApplicationWidget.h"
 
 // Py
 #include "pandas/DAPyDataFrame.h"
@@ -206,6 +206,9 @@ void DAAppRibbonArea::buildMenu()
 void DAAppRibbonArea::retranslateUi()
 {
     resetText();
+    if (mApplicationWidget) {
+        mApplicationWidget->retranslateUi();
+    }
 }
 
 /**
@@ -301,7 +304,7 @@ void DAAppRibbonArea::buildRibbon()
     buildContextCategoryWorkflow();
     buildContextCategoryChartEdit();
     //
-    buildApplicationMenu();
+    buildApplicationWidget();
     //
     buildRightButtonBar();
 }
@@ -883,22 +886,15 @@ void DAAppRibbonArea::buildContextCategoryChartEdit()
 }
 
 /**
- * @brief 构建ApplicationMenu
+ * @brief 构建应用面板并挂载到应用按钮
+ * @details 面板替代原来的应用按钮菜单：点击应用按钮切换面板显隐，
+ *          原菜单的功能全部收编进面板的各页签与底部动作
  */
-void DAAppRibbonArea::buildApplicationMenu()
+void DAAppRibbonArea::buildApplicationWidget()
 {
-    mApplicationMenu = new DAAppRibbonApplicationMenu(app());
-    mApplicationMenu->addAction(mActions->actionOpen);
-    mApplicationMenu->addAction(mActions->actionOpenMarkdown);
-    mApplicationMenu->addAction(mActions->actionSave);
-    mApplicationMenu->addAction(mActions->actionSaveAs);
-    mActions->recentFilesManager->attachToMenu(mApplicationMenu, tr("Recent Files"));  // cn:最近打开的文件
-    SARibbonApplicationButton* appBtn = qobject_cast< SARibbonApplicationButton* >(ribbonBar()->applicationButton());
-    if (nullptr == appBtn) {
-        return;
-    }
-    mApplicationMenu->update();
-    appBtn->setMenu(mApplicationMenu);
+    mApplicationWidget = new DAAppApplicationWidget(app(), mActions);
+    // 挂载后点击应用按钮自动切换面板显隐（见 SARibbonMainWindow::setApplicationWidget）
+    app()->setApplicationWidget(mApplicationWidget);
 }
 
 /**

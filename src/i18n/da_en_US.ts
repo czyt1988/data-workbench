@@ -1452,7 +1452,7 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="../APP/DAAppActions.cpp" line="+470"/>
+        <location filename="../APP/DAAppActions.cpp" line="+474"/>
         <source>Open</source>
         <translation>Open</translation>
     </message>
@@ -1922,7 +1922,17 @@
         <translation>Enable or disable legend in the chart</translation>
     </message>
     <message>
-        <location line="-132"/>
+        <location line="-142"/>
+        <source>New Project</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Create a new empty project</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
         <source>Open Markdown</source>
         <translation>Open Markdown</translation>
     </message>
@@ -3133,31 +3143,158 @@
     </message>
 </context>
 <context>
+    <name>DA::DAAppApplicationWidget</name>
+    <message>
+        <location filename="../APP/DAAppApplicationWidget.cpp" line="+491"/>
+        <source>(untitled project)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+16"/>
+        <source>Information</source>
+        <translation type="unfinished">Information</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>The file does not exist and has been removed from the recent list</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+57"/>
+        <location line="+10"/>
+        <source>Open Project</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-9"/>
+        <location line="+17"/>
+        <source>New Project</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-16"/>
+        <location line="+21"/>
+        <source>Import Data</source>
+        <translation type="unfinished">Import Data</translation>
+    </message>
+    <message>
+        <location line="-20"/>
+        <location line="+26"/>
+        <source>Save As</source>
+        <translation type="unfinished">Save As</translation>
+    </message>
+    <message>
+        <location line="-24"/>
+        <source>Save Project</source>
+        <translation type="unfinished">Save Project</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Setting</source>
+        <translation type="unfinished">Setting</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>About</source>
+        <translation type="unfinished">About</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Exit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Browse...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Recent Projects</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>No recent projects</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Append To Project...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Open Markdown...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Clear Recent List</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Create a new empty untitled project. You will be asked to save the current project if it has unsaved changes.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Create Empty Project</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Import data files into the project (txt, csv, xls, xlsx, parquet, pickle; multiple files can be selected for batch import).</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Browse Files...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Choose Save Location...</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+849"/>
+        <location filename="../APP/DAAppController.cpp" line="+850"/>
         <source>Save Project</source>
         <translation>Save Project</translation>
     </message>
     <message>
         <location line="+19"/>
-        <location line="+1014"/>
+        <location line="+1047"/>
         <source>Warning</source>
         <translation>Warning</translation>
     </message>
     <message>
-        <location line="-1003"/>
+        <location line="-1036"/>
         <source>Failed to save project! Path: %1</source>
         <translation>Failed to save project! Path: %1</translation>
     </message>
     <message>
         <location line="+3"/>
-        <location line="+619"/>
+        <location line="+652"/>
         <source>Project saved successfully, path: %1</source>
         <translation>Project saved successfully, path: %1</translation>
     </message>
     <message>
-        <location line="+27"/>
+        <location line="-154"/>
+        <source>The current project has unsaved changes. Do you want to save before creating a new project?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+16"/>
+        <source>New project created</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+165"/>
         <source>Project loaded successfully, path: %1</source>
         <translation>Project loaded successfully, path: %1</translation>
     </message>
@@ -3289,30 +3426,31 @@
         <translation>Before creating a new coordinate, you need to create a figure</translation>
     </message>
     <message>
-        <location line="-1821"/>
+        <location line="-1854"/>
         <source>Please select the data operation window</source>
         <translation>Please select the data operation window</translation>
     </message>
     <message>
         <location line="-50"/>
-        <location line="+528"/>
+        <location line="+561"/>
         <location line="+73"/>
         <source>Project File</source>
         <translation>Project File</translation>
     </message>
     <message>
-        <location line="-583"/>
+        <location line="-616"/>
         <source>Whether to overwrite the file: %1</source>
         <translation>Whether to overwrite the file: %1</translation>
     </message>
     <message>
         <location line="+470"/>
         <location line="+19"/>
+        <location line="+21"/>
         <source>Question</source>
         <translation>Question</translation>
     </message>
     <message>
-        <location line="-18"/>
+        <location line="-39"/>
         <source>The current project has unsaved changes. Do you want to save before opening another project?</source>
         <translation>The current project has unsaved changes. Do you want to save before opening another project?</translation>
     </message>
@@ -3322,7 +3460,7 @@
         <translation>Another project already exists. Do you want to replace it?</translation>
     </message>
     <message>
-        <location line="+67"/>
+        <location line="+100"/>
         <location line="+43"/>
         <source>Failed to load project file: %1</source>
         <translation>Failed to load project file: %1</translation>
@@ -3405,12 +3543,12 @@
         <translation>No cells selected to copy</translation>
     </message>
     <message>
-        <location line="-1469"/>
+        <location line="-1502"/>
         <source>No active table</source>
         <translation>No active table</translation>
     </message>
     <message>
-        <location line="+1857"/>
+        <location line="+1890"/>
         <source>Cannot rename a series, please select a dataset</source>
         <translation>Cannot rename a series, please select a dataset</translation>
     </message>
@@ -4052,7 +4190,7 @@
 <context>
     <name>DA::DAAppRibbonArea</name>
     <message>
-        <location filename="../APP/DAAppRibbonArea.cpp" line="+216"/>
+        <location filename="../APP/DAAppRibbonArea.cpp" line="+219"/>
         <location line="+3"/>
         <source>File</source>
         <translation>File</translation>
@@ -4212,7 +4350,7 @@
         <translation>Chart Style</translation>
     </message>
     <message>
-        <location line="+384"/>
+        <location line="+377"/>
         <location line="+2"/>
         <source>AI Agent</source>
         <translation>AI Agent</translation>
@@ -4279,7 +4417,7 @@
         <translation>Agent module is not ready</translation>
     </message>
     <message>
-        <location line="-1075"/>
+        <location line="-1068"/>
         <location line="+426"/>
         <source>Item</source>
         <translation>Item</translation>
@@ -4411,12 +4549,7 @@
         <translation>Assist Tools</translation>
     </message>
     <message>
-        <location line="+21"/>
-        <source>Recent Files</source>
-        <translation>Recent Files</translation>
-    </message>
-    <message>
-        <location line="-655"/>
+        <location line="-634"/>
         <location line="+288"/>
         <source>Edit</source>
         <translation>Edit</translation>
@@ -13519,7 +13652,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DA::DARecentFilesManager</name>
     <message>
-        <location filename="../DAGui/DARecentFilesManager.cpp" line="+153"/>
+        <location filename="../DAGui/DARecentFilesManager.cpp" line="+176"/>
         <source>(empty)</source>
         <translation>(empty)</translation>
     </message>
@@ -14567,7 +14700,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-3759"/>
+        <location filename="../APP/DAAppController.cpp" line="-3793"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>
