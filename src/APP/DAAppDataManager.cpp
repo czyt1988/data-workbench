@@ -35,8 +35,15 @@ bool DAAppDataManager::importFromFile(const QString& f, const QVariantMap& args,
     daInfo << tr("Begin importing file: %1").arg(f);  // cn:开始导入文件:%1
     try {
         if (DAPyScripts::isInitScripts()) {
-            DAPyScripts::getIO().read_and_add_to_datamanager(f, args, err);
-            return true;
+            // read_and_add_to_datamanager 内部捕获异常并经 err 带回失败原因，
+            // 以 err 是否有内容作为导入结果；err 为空指针时用局部缓冲兜底，保证返回值真实
+            QString errBuffer;
+            QString* errPtr = (nullptr == err) ? &errBuffer : err;
+            DAPyScripts::getIO().read_and_add_to_datamanager(f, args, errPtr);
+            return errPtr->isEmpty();
+        }
+        if (err) {
+            *err = tr("Python scripts not initialized");  // cn:Python脚本未初始化
         }
         daWarning << tr("Python scripts not initialized, cannot import file: %1").arg(f);  // cn:Python脚本未初始化，无法导入文件:%1
     } catch (const std::exception& e) {
