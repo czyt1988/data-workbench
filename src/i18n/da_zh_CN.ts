@@ -1523,10 +1523,8 @@
     </message>
     <message>
         <location line="+2"/>
-        <source>Add 
-Data</source>
-        <translation>添加
-数据</translation>
+        <source>Add Data</source>
+        <translation>添加数据</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -1535,10 +1533,8 @@ Data</source>
     </message>
     <message>
         <location line="+1"/>
-        <source>Remove 
-Data</source>
-        <translation>移除
-数据</translation>
+        <source>Remove Data</source>
+        <translation>移除数据</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -1547,10 +1543,8 @@ Data</source>
     </message>
     <message>
         <location line="+16"/>
-        <source>Add 
-Figure</source>
-        <translation>添加
-绘图</translation>
+        <source>Add Figure</source>
+        <translation>添加绘图</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -1559,10 +1553,8 @@ Figure</source>
     </message>
     <message>
         <location line="+1"/>
-        <source>Resize 
-Chart</source>
-        <translation>绘图
-尺寸</translation>
+        <source>Resize Chart</source>
+        <translation>绘图尺寸</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -1571,8 +1563,7 @@ Chart</source>
     </message>
     <message>
         <location line="+1"/>
-        <source>New 
-XY Axis</source>
+        <source>New XY Axis</source>
         <translation>新建
 坐标系</translation>
     </message>
@@ -1583,10 +1574,8 @@ XY Axis</source>
     </message>
     <message>
         <location line="+1"/>
-        <source>Add 
-Curve</source>
-        <translation>添加
-曲线</translation>
+        <source>Add Curve</source>
+        <translation>添加曲线</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -1595,8 +1584,7 @@ Curve</source>
     </message>
     <message>
         <location line="+1"/>
-        <source>Add 
-Scatter</source>
+        <source>Add Scatter</source>
         <translation>散点图</translation>
     </message>
     <message>
@@ -1606,8 +1594,7 @@ Scatter</source>
     </message>
     <message>
         <location line="+1"/>
-        <source>Add 
-Error Bar</source>
+        <source>Add Error Bar</source>
         <translation>误差棒图</translation>
     </message>
     <message>
@@ -1617,8 +1604,7 @@ Error Bar</source>
     </message>
     <message>
         <location line="+1"/>
-        <source>Add 
-Box Plot</source>
+        <source>Add Box Plot</source>
         <translation>箱线图</translation>
     </message>
     <message>
@@ -1628,8 +1614,7 @@ Box Plot</source>
     </message>
     <message>
         <location line="+1"/>
-        <source>Add 
-Bar</source>
+        <source>Add Bar</source>
         <translation>柱状图</translation>
     </message>
     <message>
@@ -1639,8 +1624,7 @@ Bar</source>
     </message>
     <message>
         <location line="+1"/>
-        <source>Add 
-MultiBar</source>
+        <source>Add MultiBar</source>
         <translation>多重柱状图</translation>
     </message>
     <message>
@@ -1650,8 +1634,7 @@ MultiBar</source>
     </message>
     <message>
         <location line="+1"/>
-        <source>Add 
-Histogram</source>
+        <source>Add Histogram</source>
         <translation>分布图</translation>
     </message>
     <message>
@@ -1661,8 +1644,7 @@ Histogram</source>
     </message>
     <message>
         <location line="+1"/>
-        <source>Add 
-Contour Map</source>
+        <source>Add Contour Map</source>
         <translation>等高线图</translation>
     </message>
     <message>
@@ -1672,8 +1654,7 @@ Contour Map</source>
     </message>
     <message>
         <location line="+1"/>
-        <source>Add 
-Cloud Map</source>
+        <source>Add Cloud Map</source>
         <translation>云图</translation>
     </message>
     <message>
@@ -1683,8 +1664,7 @@ Cloud Map</source>
     </message>
     <message>
         <location line="+1"/>
-        <source>Add 
-Vector Field</source>
+        <source>Add Vector Field</source>
         <translation>向量场图</translation>
     </message>
     <message>
@@ -1785,10 +1765,8 @@ Vector Field</source>
     </message>
     <message>
         <location line="+1"/>
-        <source>Show 
-All</source>
-        <translation>显示
-全部</translation>
+        <source>Show All</source>
+        <translation>显示全部</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -1893,8 +1871,7 @@ All</source>
     <message>
         <location line="+1"/>
         <source>Link All Picker</source>
-        <translation>联动
-拾取</translation>
+        <translation>联动拾取</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -1958,8 +1935,7 @@ All</source>
     </message>
     <message>
         <location line="+13"/>
-        <source>Rename 
-Data</source>
+        <source>Rename Data</source>
         <translation>重命名
 数据</translation>
     </message>
@@ -1970,10 +1946,8 @@ Data</source>
     </message>
     <message>
         <location line="+1"/>
-        <source>Export 
-Data</source>
-        <translation>导出
-数据</translation>
+        <source>Export Data</source>
+        <translation>导出数据</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -2022,8 +1996,7 @@ Data</source>
     </message>
     <message>
         <location line="+30"/>
-        <source>Add 
-Surface 3D</source>
+        <source>Add Surface 3D</source>
         <translation>3D曲面图</translation>
     </message>
     <message>
@@ -2033,8 +2006,7 @@ Surface 3D</source>
     </message>
     <message>
         <location line="+1"/>
-        <source>Add 
-Bar 3D</source>
+        <source>Add Bar 3D</source>
         <translation>3D柱状图</translation>
     </message>
     <message>
@@ -2044,8 +2016,7 @@ Bar 3D</source>
     </message>
     <message>
         <location line="+1"/>
-        <source>Add 
-Line 3D</source>
+        <source>Add Line 3D</source>
         <translation>3D线图</translation>
     </message>
     <message>
@@ -2356,10 +2327,8 @@ Line 3D</source>
     </message>
     <message>
         <location line="+1"/>
-        <source>Insert 
-Row</source>
-        <translation>插入
-行</translation>
+        <source>Insert Row</source>
+        <translation>插入行</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -2378,8 +2347,7 @@ Row</source>
     </message>
     <message>
         <location line="+1"/>
-        <source>Insert 
-Column</source>
+        <source>Insert Column</source>
         <translation>插入
 列(右)</translation>
     </message>
@@ -2501,8 +2469,7 @@ Column</source>
     </message>
     <message>
         <location line="+64"/>
-        <source>New 
-Workflow</source>
+        <source>New Workflow</source>
         <translation>新建
 工作流</translation>
     </message>
@@ -2513,8 +2480,7 @@ Workflow</source>
     </message>
     <message>
         <location line="+1"/>
-        <source>Linkage 
-Move</source>
+        <source>Linkage Move</source>
         <translation>联动</translation>
     </message>
     <message>
@@ -2534,10 +2500,8 @@ Move</source>
     </message>
     <message>
         <location line="+1"/>
-        <source>Draw 
-Rect</source>
-        <translation>绘制
-矩形</translation>
+        <source>Draw Rect</source>
+        <translation>绘制矩形</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -2546,10 +2510,8 @@ Rect</source>
     </message>
     <message>
         <location line="+1"/>
-        <source>Draw 
-Text</source>
-        <translation>绘制
-文本</translation>
+        <source>Draw Text</source>
+        <translation>绘制文本</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -2558,10 +2520,8 @@ Text</source>
     </message>
     <message>
         <location line="+1"/>
-        <source>Show 
-Grid</source>
-        <translation>显示
-网格</translation>
+        <source>Show Grid</source>
+        <translation>显示网格</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -2570,10 +2530,8 @@ Grid</source>
     </message>
     <message>
         <location line="+1"/>
-        <source>Lock 
-View</source>
-        <translation>锁定
-视图</translation>
+        <source>Lock View</source>
+        <translation>锁定视图</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -2582,8 +2540,7 @@ View</source>
     </message>
     <message>
         <location line="+1"/>
-        <source>Run 
-Workflow</source>
+        <source>Run Workflow</source>
         <translation>运行
 工作流</translation>
     </message>
@@ -2594,8 +2551,7 @@ Workflow</source>
     </message>
     <message>
         <location line="+1"/>
-        <source>Terminate 
-Workflow</source>
+        <source>Terminate Workflow</source>
         <translation>停止
 工作流</translation>
     </message>
@@ -2616,10 +2572,8 @@ Workflow</source>
     </message>
     <message>
         <location line="+1"/>
-        <source>Add 
-Background</source>
-        <translation>添加
-背景</translation>
+        <source>Add Background</source>
+        <translation>添加背景</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -2678,8 +2632,7 @@ Background</source>
     </message>
     <message>
         <location line="+4"/>
-        <source>Show 
-Workflow Area</source>
+        <source>Show Workflow Area</source>
         <translation>工作流
 操作视图</translation>
     </message>
@@ -2690,8 +2643,7 @@ Workflow Area</source>
     </message>
     <message>
         <location line="+1"/>
-        <source>Show 
-Workflow Manager</source>
+        <source>Show Workflow Manager</source>
         <translation>工作流
 管理视图</translation>
     </message>
@@ -2702,8 +2654,7 @@ Workflow Manager</source>
     </message>
     <message>
         <location line="+1"/>
-        <source>Show 
-Chart Area</source>
+        <source>Show Chart Area</source>
         <translation>绘图
 操作视图</translation>
     </message>
@@ -2714,8 +2665,7 @@ Chart Area</source>
     </message>
     <message>
         <location line="+1"/>
-        <source>Show 
-Chart Manager</source>
+        <source>Show Chart Manager</source>
         <translation>绘图
 管理视图</translation>
     </message>
@@ -2726,8 +2676,7 @@ Chart Manager</source>
     </message>
     <message>
         <location line="+1"/>
-        <source>Show 
-Table Area</source>
+        <source>Show Table Area</source>
         <translation>数据
 操作区域</translation>
     </message>
@@ -2738,8 +2687,7 @@ Table Area</source>
     </message>
     <message>
         <location line="+1"/>
-        <source>Show 
-Data Manager</source>
+        <source>Show Data Manager</source>
         <translation>数据
 管理视图</translation>
     </message>
@@ -2765,8 +2713,7 @@ Data Manager</source>
     </message>
     <message>
         <location line="+1"/>
-        <source>Show Left 
-Side Bar</source>
+        <source>Show Left Side Bar</source>
         <translation>左侧边栏</translation>
     </message>
     <message>
@@ -2776,8 +2723,7 @@ Side Bar</source>
     </message>
     <message>
         <location line="+1"/>
-        <source>Show Right 
-Side Bar</source>
+        <source>Show Right Side Bar</source>
         <translation>右侧边栏</translation>
     </message>
     <message>
@@ -2787,10 +2733,8 @@ Side Bar</source>
     </message>
     <message>
         <location line="+1"/>
-        <source>Show 
-Agent Area</source>
-        <translation>Agent
-助手</translation>
+        <source>Show Agent Area</source>
+        <translation>Agent 助手</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -2799,10 +2743,8 @@ Agent Area</source>
     </message>
     <message>
         <location line="+2"/>
-        <source>Plugin 
-Config</source>
-        <translation>插件
-设置</translation>
+        <source>Plugin Config</source>
+        <translation>插件设置</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -2861,8 +2803,7 @@ Config</source>
     </message>
     <message>
         <location line="+1"/>
-        <source>Reset 
-Layout</source>
+        <source>Reset Layout</source>
         <translation>恢复
 默认布局</translation>
     </message>
@@ -2873,10 +2814,8 @@ Layout</source>
     </message>
     <message>
         <location line="+1"/>
-        <source>Manage 
-Layouts</source>
-        <translation>布局
-管理</translation>
+        <source>Manage Layouts</source>
+        <translation>布局管理</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -17674,15 +17613,13 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     </message>
     <message>
         <location line="-54"/>
-        <source>Export 
-Individual Data</source>
+        <source>Export Individual Data</source>
         <translation>导出
 单个数据</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Export 
-Multiple Data</source>
+        <source>Export Multiple Data</source>
         <translation>导出
 多个数据</translation>
     </message>
@@ -17693,8 +17630,7 @@ Multiple Data</source>
     </message>
     <message>
         <location line="+3"/>
-        <source>Export 
-To Excel</source>
+        <source>Export To Excel</source>
         <translation>导出Excel</translation>
     </message>
     <message>

@@ -1523,10 +1523,8 @@
     </message>
     <message>
         <location line="+2"/>
-        <source>Add 
-Data</source>
-        <translation>Add 
-Data</translation>
+        <source>Add Data</source>
+        <translation>Add Data</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -1535,10 +1533,8 @@ Data</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Remove 
-Data</source>
-        <translation>Remove 
-Data</translation>
+        <source>Remove Data</source>
+        <translation>Remove Data</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -1547,10 +1543,8 @@ Data</translation>
     </message>
     <message>
         <location line="+16"/>
-        <source>Add 
-Figure</source>
-        <translation>Add 
-Figure</translation>
+        <source>Add Figure</source>
+        <translation>Add Figure</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -1559,10 +1553,8 @@ Figure</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Resize 
-Chart</source>
-        <translation>Resize 
-Chart</translation>
+        <source>Resize Chart</source>
+        <translation>Resize Chart</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -1571,10 +1563,8 @@ Chart</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>New 
-XY Axis</source>
-        <translation>New 
-XY Axis</translation>
+        <source>New XY Axis</source>
+        <translation>New XY Axis</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -1583,10 +1573,8 @@ XY Axis</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Add 
-Curve</source>
-        <translation>Add 
-Curve</translation>
+        <source>Add Curve</source>
+        <translation>Add Curve</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -1595,10 +1583,8 @@ Curve</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Add 
-Scatter</source>
-        <translation>Add 
-Scatter</translation>
+        <source>Add Scatter</source>
+        <translation>Add Scatter</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -1607,10 +1593,8 @@ Scatter</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Add 
-Error Bar</source>
-        <translation>Add 
-Error Bar</translation>
+        <source>Add Error Bar</source>
+        <translation>Add Error Bar</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -1619,10 +1603,8 @@ Error Bar</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Add 
-Box Plot</source>
-        <translation>Add 
-Box Plot</translation>
+        <source>Add Box Plot</source>
+        <translation>Add Box Plot</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -1631,10 +1613,8 @@ Box Plot</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Add 
-Bar</source>
-        <translation>Add 
-Bar</translation>
+        <source>Add Bar</source>
+        <translation>Add Bar</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -1643,10 +1623,8 @@ Bar</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Add 
-MultiBar</source>
-        <translation>Add 
-MultiBar</translation>
+        <source>Add MultiBar</source>
+        <translation>Add MultiBar</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -1655,10 +1633,8 @@ MultiBar</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Add 
-Histogram</source>
-        <translation>Add 
-Histogram</translation>
+        <source>Add Histogram</source>
+        <translation>Add Histogram</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -1667,10 +1643,8 @@ Histogram</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Add 
-Contour Map</source>
-        <translation>Add 
-Contour Map</translation>
+        <source>Add Contour Map</source>
+        <translation>Add Contour Map</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -1679,10 +1653,8 @@ Contour Map</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Add 
-Cloud Map</source>
-        <translation>Add 
-Cloud Map</translation>
+        <source>Add Cloud Map</source>
+        <translation>Add Cloud Map</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -1691,10 +1663,8 @@ Cloud Map</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Add 
-Vector Field</source>
-        <translation>Add 
-Vector Field</translation>
+        <source>Add Vector Field</source>
+        <translation>Add Vector Field</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -1793,10 +1763,8 @@ Vector Field</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Show 
-All</source>
-        <translation>Show 
-All</translation>
+        <source>Show All</source>
+        <translation>Show All</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -1965,10 +1933,8 @@ All</translation>
     </message>
     <message>
         <location line="+13"/>
-        <source>Rename 
-Data</source>
-        <translation>Rename 
-Data</translation>
+        <source>Rename Data</source>
+        <translation>Rename Data</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -1977,10 +1943,8 @@ Data</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Export 
-Data</source>
-        <translation>Export 
-Data</translation>
+        <source>Export Data</source>
+        <translation>Export Data</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -2029,10 +1993,8 @@ Data</translation>
     </message>
     <message>
         <location line="+30"/>
-        <source>Add 
-Surface 3D</source>
-        <translation>Add 
-Surface 3D</translation>
+        <source>Add Surface 3D</source>
+        <translation>Add Surface 3D</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -2041,10 +2003,8 @@ Surface 3D</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Add 
-Bar 3D</source>
-        <translation>Add 
-Bar 3D</translation>
+        <source>Add Bar 3D</source>
+        <translation>Add Bar 3D</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -2053,10 +2013,8 @@ Bar 3D</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Add 
-Line 3D</source>
-        <translation>Add 
-Line 3D</translation>
+        <source>Add Line 3D</source>
+        <translation>Add Line 3D</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -2355,10 +2313,8 @@ Line 3D</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Insert 
-Row</source>
-        <translation>Insert 
-Row</translation>
+        <source>Insert Row</source>
+        <translation>Insert Row</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -2377,10 +2333,8 @@ Row</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Insert 
-Column</source>
-        <translation>Insert 
-Column</translation>
+        <source>Insert Column</source>
+        <translation>Insert Column</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -2499,10 +2453,8 @@ Column</translation>
     </message>
     <message>
         <location line="+64"/>
-        <source>New 
-Workflow</source>
-        <translation>New 
-Workflow</translation>
+        <source>New Workflow</source>
+        <translation>New Workflow</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -2511,10 +2463,8 @@ Workflow</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Linkage 
-Move</source>
-        <translation>Linkage 
-Move</translation>
+        <source>Linkage Move</source>
+        <translation>Linkage Move</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -2533,10 +2483,8 @@ Move</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Draw 
-Rect</source>
-        <translation>Draw 
-Rect</translation>
+        <source>Draw Rect</source>
+        <translation>Draw Rect</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -2545,10 +2493,8 @@ Rect</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Draw 
-Text</source>
-        <translation>Draw 
-Text</translation>
+        <source>Draw Text</source>
+        <translation>Draw Text</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -2557,10 +2503,8 @@ Text</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Show 
-Grid</source>
-        <translation>Show 
-Grid</translation>
+        <source>Show Grid</source>
+        <translation>Show Grid</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -2569,10 +2513,8 @@ Grid</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Lock 
-View</source>
-        <translation>Lock 
-View</translation>
+        <source>Lock View</source>
+        <translation>Lock View</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -2581,10 +2523,8 @@ View</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Run 
-Workflow</source>
-        <translation>Run 
-Workflow</translation>
+        <source>Run Workflow</source>
+        <translation>Run Workflow</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -2593,10 +2533,8 @@ Workflow</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Terminate 
-Workflow</source>
-        <translation>Terminate 
-Workflow</translation>
+        <source>Terminate Workflow</source>
+        <translation>Terminate Workflow</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -2615,10 +2553,8 @@ Workflow</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Add 
-Background</source>
-        <translation>Add 
-Background</translation>
+        <source>Add Background</source>
+        <translation>Add Background</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -2677,10 +2613,8 @@ Background</translation>
     </message>
     <message>
         <location line="+4"/>
-        <source>Show 
-Workflow Area</source>
-        <translation>Show 
-Workflow Area</translation>
+        <source>Show Workflow Area</source>
+        <translation>Show Workflow Area</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -2689,10 +2623,8 @@ Workflow Area</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Show 
-Workflow Manager</source>
-        <translation>Show 
-Workflow Manager</translation>
+        <source>Show Workflow Manager</source>
+        <translation>Show Workflow Manager</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -2701,10 +2633,8 @@ Workflow Manager</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Show 
-Chart Area</source>
-        <translation>Show 
-Chart Area</translation>
+        <source>Show Chart Area</source>
+        <translation>Show Chart Area</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -2713,10 +2643,8 @@ Chart Area</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Show 
-Chart Manager</source>
-        <translation>Show 
-Chart Manager</translation>
+        <source>Show Chart Manager</source>
+        <translation>Show Chart Manager</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -2725,10 +2653,8 @@ Chart Manager</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Show 
-Table Area</source>
-        <translation>Show 
-Table Area</translation>
+        <source>Show Table Area</source>
+        <translation>Show Table Area</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -2737,10 +2663,8 @@ Table Area</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Show 
-Data Manager</source>
-        <translation>Show 
-Data Manager</translation>
+        <source>Show Data Manager</source>
+        <translation>Show Data Manager</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -2764,10 +2688,8 @@ Data Manager</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Show Left 
-Side Bar</source>
-        <translation>Show Left 
-Side Bar</translation>
+        <source>Show Left Side Bar</source>
+        <translation>Show Left Side Bar</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -2776,10 +2698,8 @@ Side Bar</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Show Right 
-Side Bar</source>
-        <translation>Show Right 
-Side Bar</translation>
+        <source>Show Right Side Bar</source>
+        <translation>Show Right Side Bar</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -2788,10 +2708,8 @@ Side Bar</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Show 
-Agent Area</source>
-        <translation>Show 
-Agent Area</translation>
+        <source>Show Agent Area</source>
+        <translation>Show Agent Area</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -2800,10 +2718,8 @@ Agent Area</translation>
     </message>
     <message>
         <location line="+2"/>
-        <source>Plugin 
-Config</source>
-        <translation>Plugin 
-Config</translation>
+        <source>Plugin Config</source>
+        <translation>Plugin Config</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -2862,10 +2778,8 @@ Config</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Reset 
-Layout</source>
-        <translation>Reset 
-Layout</translation>
+        <source>Reset Layout</source>
+        <translation>Reset Layout</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -2874,10 +2788,8 @@ Layout</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Manage 
-Layouts</source>
-        <translation>Manage 
-Layouts</translation>
+        <source>Manage Layouts</source>
+        <translation>Manage Layouts</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -17685,17 +17597,13 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     </message>
     <message>
         <location line="-54"/>
-        <source>Export 
-Individual Data</source>
-        <translation>Export 
-Individual Data</translation>
+        <source>Export Individual Data</source>
+        <translation>Export Individual Data</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Export 
-Multiple Data</source>
-        <translation>Export 
-Multiple Data</translation>
+        <source>Export Multiple Data</source>
+        <translation>Export Multiple Data</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -17704,10 +17612,8 @@ Multiple Data</translation>
     </message>
     <message>
         <location line="+3"/>
-        <source>Export 
-To Excel</source>
-        <translation>Export 
-To Excel</translation>
+        <source>Export To Excel</source>
+        <translation>Export To Excel</translation>
     </message>
     <message>
         <location line="+2"/>

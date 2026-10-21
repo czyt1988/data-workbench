@@ -485,13 +485,13 @@ void DAAppActions::retranslateUi()
     actionAbout->setText(tr("About"));                                            // cn:关于
     actionAbout->setToolTip(tr("About the application"));                         // cn:关于应用程序
                                                                                   // Data Category
-    actionAddData->setText(tr("Add \nData"));                                     // cn:添加\n数据
+    actionAddData->setText(tr("Add Data"));                                     // cn:添加数据
     actionAddData->setToolTip(tr("Add data to the table"));                       // cn:添加数据到表格
-    actionRemoveData->setText(tr("Remove \nData"));                               // cn:移除\n数据
+    actionRemoveData->setText(tr("Remove Data"));                               // cn:移除数据
     actionRemoveData->setToolTip(tr("Remove data from the table"));               // cn:从表格中移除数据
-    actionRenameData->setText(tr("Rename \nData"));                               // cn:重命名\n数据
+    actionRenameData->setText(tr("Rename Data"));                               // cn:重命名\n数据
     actionRenameData->setToolTip(tr("Rename the selected dataset"));              // cn:重命名选中的数据集
-    actionExportData->setText(tr("Export \nData"));                               // cn:导出\n数据
+    actionExportData->setText(tr("Export Data"));                               // cn:导出数据
     actionExportData->setToolTip(tr("Export the selected data to a file"));       // cn:导出选中的数据到文件
     actionExportDataCsv->setText(tr("Export CSV"));                               // cn:导出 CSV
     actionExportDataCsv->setToolTip(tr("Export the selected data to a CSV file"));  // cn:导出选中的数据为 CSV 文件
@@ -504,37 +504,37 @@ void DAAppActions::retranslateUi()
     //-----------------------------------------------------
     // Chart Category
     //-----------------------------------------------------
-    actionAddFigure->setText(tr("Add \nFigure"));                                  // cn:添加\n绘图
+    actionAddFigure->setText(tr("Add Figure"));                                  // cn:添加绘图
     actionAddFigure->setToolTip(tr("Add a figure to the workspace"));              // cn:添加绘图到工作区
-    actionChartEditorResizeSubChart->setText(tr("Resize \nChart"));                // cn:绘图\n尺寸
+    actionChartEditorResizeSubChart->setText(tr("Resize Chart"));                // cn:绘图尺寸
     actionChartEditorResizeSubChart->setToolTip(tr("Resize the sub-chart"));       // cn:调整子图尺寸
-    actionFigureNewXYAxis->setText(tr("New \nXY Axis"));                           // cn:新建\n坐标系
+    actionFigureNewXYAxis->setText(tr("New XY Axis"));                           // cn:新建\n坐标系
     actionFigureNewXYAxis->setToolTip(tr("Add a new XY axis to the figure"));      // cn:新建坐标系
-    actionChartAddCurve->setText(tr("Add \nCurve"));                               // cn:折线图
+    actionChartAddCurve->setText(tr("Add Curve"));                               // cn:折线图
     actionChartAddCurve->setToolTip(tr("Add a curve to the chart"));               // cn:添加折线图
-    actionChartAddScatter2D->setText(tr("Add \nScatter"));                         // cn:散点图
+    actionChartAddScatter2D->setText(tr("Add Scatter"));                         // cn:散点图
     actionChartAddScatter2D->setToolTip(tr("Add a scatter plot to the chart"));    // cn:添加散点图
-    actionChartAddErrorBar->setText(tr("Add \nError Bar"));                        // cn:误差棒图
+    actionChartAddErrorBar->setText(tr("Add Error Bar"));                        // cn:误差棒图
     actionChartAddErrorBar->setToolTip(tr("Add an error bar to the chart"));       // cn:添加误差棒图
-    actionChartAddBoxPlot->setText(tr("Add \nBox Plot"));                          // cn:箱线图
+    actionChartAddBoxPlot->setText(tr("Add Box Plot"));                          // cn:箱线图
     actionChartAddBoxPlot->setToolTip(tr("Add a box plot to the chart"));          // cn:添加箱线图
-    actionChartAddBar->setText(tr("Add \nBar"));                                   // cn:柱状图
+    actionChartAddBar->setText(tr("Add Bar"));                                   // cn:柱状图
     actionChartAddBar->setToolTip(tr("Add a bar chart to the chart"));             // cn:添加柱状图
-    actionChartAddMultiBar->setText(tr("Add \nMultiBar"));                         // cn:多重柱状图
+    actionChartAddMultiBar->setText(tr("Add MultiBar"));                         // cn:多重柱状图
     actionChartAddMultiBar->setToolTip(tr("Add a multi-bar chart to the chart"));  // cn:添加多重柱状图
-    actionChartAddHistogramBar->setText(tr("Add \nHistogram"));                    // cn:分布图
+    actionChartAddHistogramBar->setText(tr("Add Histogram"));                    // cn:分布图
     actionChartAddHistogramBar->setToolTip(tr("Add a histogram to the chart"));    // cn:添加分布图
-    actionChartAddContourMap->setText(tr("Add \nContour Map"));                    // cn:等高线图
+    actionChartAddContourMap->setText(tr("Add Contour Map"));                    // cn:等高线图
     actionChartAddContourMap->setToolTip(tr("Add a contour map to the chart"));    // cn:添加等高线图
-    actionChartAddCloudMap->setText(tr("Add \nCloud Map"));                        // cn:云图
+    actionChartAddCloudMap->setText(tr("Add Cloud Map"));                        // cn:云图
     actionChartAddCloudMap->setToolTip(tr("Add a cloud map to the chart"));        // cn:添加云图
-    actionChartAddVectorfield->setText(tr("Add \nVector Field"));                  // cn:向量场图
+    actionChartAddVectorfield->setText(tr("Add Vector Field"));                  // cn:向量场图
     actionChartAddVectorfield->setToolTip(tr("Add a vector field to the chart"));  // cn:添加向量场图
-    actionChartAdd3DSurface->setText(tr("Add \nSurface 3D"));                        // cn:3D曲面图
+    actionChartAdd3DSurface->setText(tr("Add Surface 3D"));                        // cn:3D曲面图
     actionChartAdd3DSurface->setToolTip(tr("Add a 3D surface plot to the chart"));   // cn:添加3D曲面图
-    actionChartAdd3DBar->setText(tr("Add \nBar 3D"));                                 // cn:3D柱状图
+    actionChartAdd3DBar->setText(tr("Add Bar 3D"));                                 // cn:3D柱状图
     actionChartAdd3DBar->setToolTip(tr("Add a 3D bar chart to the chart"));           // cn:添加3D柱状图
-    actionChartAdd3DLine->setText(tr("Add \nLine 3D"));                              // cn:3D线图
+    actionChartAdd3DLine->setText(tr("Add Line 3D"));                              // cn:3D线图
     actionChartAdd3DLine->setToolTip(tr("Add a 3D line plot to the chart"));          // cn:添加3D线图
 
     // Stats Plot
@@ -577,7 +577,7 @@ void DAAppActions::retranslateUi()
     actionChartZoomIn->setToolTip(tr("Zoom in on the chart"));                              // cn:放大
     actionChartZoomOut->setText(tr("Zoom Out"));                                            // cn:缩小
     actionChartZoomOut->setToolTip(tr("Zoom out of the chart"));                            // cn:缩小
-    actionChartZoomAll->setText(tr("Show \nAll"));                                          // cn:显示\n全部
+    actionChartZoomAll->setText(tr("Show All"));                                          // cn:显示全部
     actionChartZoomAll->setToolTip(tr("Zoom to show all data in the chart"));               // cn:缩放以显示所有数据
     actionChartEnablePan->setText(tr("Pan"));                                               // cn:拖动
     actionChartEnablePan->setToolTip(tr("Enable or disable pan in the chart"));             // cn:启用或禁用图表中的拖动
@@ -604,7 +604,7 @@ void DAAppActions::retranslateUi()
     actionChartPickerTextFollowMouse->setToolTip(tr("Set picker text to follow mouse cursor"));  // cn:设置拾取文本跟随鼠标
     actionChartEnablePickerXY->setText(tr("XY Picker"));                                         // cn:点拾取
     actionChartEnablePickerXY->setToolTip(tr("Enable or disable XY picker in the chart"));  // cn:启用或禁用图表中的点拾取
-    actionChartLinkAllPickerEnabled->setText(tr("Link All Picker"));                        // cn:联动\n拾取
+    actionChartLinkAllPickerEnabled->setText(tr("Link All Picker"));                        // cn:联动拾取
     actionChartLinkAllPickerEnabled->setToolTip(tr("Enable or disable all picker linked"));  // cn:启用或禁用所有拾取联动
     actionChartEnableLegend->setText(tr("Legend"));                                          // cn:图例
     actionChartEnableLegend->setToolTip(tr("Enable or disable legend in the chart"));  // cn:启用或禁用图表中的图例
@@ -652,11 +652,11 @@ void DAAppActions::retranslateUi()
     actionRemoveColumn->setToolTip(tr("Remove a column from the table"));        // cn:从表中删除列
     actionRemoveCell->setText(tr("Remove Cell"));                                // cn:移除单元格
     actionRemoveCell->setToolTip(tr("Remove a cell from the table"));            // cn:从表中移除单元格
-    actionInsertRow->setText(tr("Insert \nRow"));                                // cn:插入行
+    actionInsertRow->setText(tr("Insert Row"));                                // cn:插入行
     actionInsertRow->setToolTip(tr("Insert a row into the table"));              // cn:插入行
     actionInsertRowAbove->setText(tr("Insert Row(Above)"));                      // cn:插入行(上)
     actionInsertRowAbove->setToolTip(tr("Insert a row above the current row"));  // cn:插入行(上)
-    actionInsertColumnRight->setText(tr("Insert \nColumn"));                     // cn:插入\n列(右)
+    actionInsertColumnRight->setText(tr("Insert Column"));                     // cn:插入\n列(右)
     actionInsertColumnRight->setToolTip(tr("Insert a column to the right of the current column"));  // cn:插入列(右)
     actionInsertColumnLeft->setText(tr("Insert Column(Left)"));                                     // cn:插入列(左)
     actionInsertColumnLeft->setToolTip(tr("Insert a column to the left of the current column"));    // cn:插入列(左)
@@ -748,30 +748,30 @@ void DAAppActions::retranslateUi()
     //-----------------------------------------------------
     // workflow 编辑
     //-----------------------------------------------------
-    actionWorkflowNew->setText(tr("New \nWorkflow"));                    // cn:新建\n工作流
+    actionWorkflowNew->setText(tr("New Workflow"));                    // cn:新建\n工作流
     actionWorkflowNew->setToolTip(tr("Create a new workflow"));          // cn:创建新工作流
-    actionWorkflowEnableItemLinkageMove->setText(tr("Linkage \nMove"));  // cn:联动
+    actionWorkflowEnableItemLinkageMove->setText(tr("Linkage Move"));  // cn:联动
     actionWorkflowEnableItemLinkageMove->setToolTip(
         tr("When moving elements, other elements linked to this element follow the movement"));  // cn:允许移动图元时，其它和此图元链接起来的图元跟随移动
     actionItemGrouping->setText(tr("Grouping"));                                                 // cn:分组
     actionItemGrouping->setToolTip(tr("Group selected elements"));   // cn:对选中的元素进行分组
     actionItemUngroup->setText(tr("Ungroup"));                       // cn:取消分组
     actionItemUngroup->setToolTip(tr("Ungroup selected elements"));  // cn:对选中的元素进行取消分组
-    actionWorkflowStartDrawRect->setText(tr("Draw \nRect"));         // cn:绘制\n矩形
+    actionWorkflowStartDrawRect->setText(tr("Draw Rect"));         // cn:绘制矩形
     actionWorkflowStartDrawRect->setToolTip(tr("Draw a rectangle on the workflow scene"));  // cn:在工作流场景中绘制矩形
-    actionWorkflowStartDrawText->setText(tr("Draw \nText"));                                // cn:绘制\n文本
+    actionWorkflowStartDrawText->setText(tr("Draw Text"));                                // cn:绘制文本
     actionWorkflowStartDrawText->setToolTip(tr("Draw text on the workflow scene"));         // cn:在工作流场景中绘制文本
-    actionWorkflowShowGrid->setText(tr("Show \nGrid"));                                     // cn:显示\n网格
+    actionWorkflowShowGrid->setText(tr("Show Grid"));                                     // cn:显示网格
     actionWorkflowShowGrid->setToolTip(tr("Show grid on the workflow scene"));              // cn:在工作流场景中显示网格
-    actionWorkflowViewReadOnly->setText(tr("Lock \nView"));                                 // cn:锁定\n视图
+    actionWorkflowViewReadOnly->setText(tr("Lock View"));                                 // cn:锁定视图
     actionWorkflowViewReadOnly->setToolTip(tr("Lock the workflow view"));                   // cn:锁定工作流视图
-    actionWorkflowRun->setText(tr("Run \nWorkflow"));                                       // cn:运行\n工作流
+    actionWorkflowRun->setText(tr("Run Workflow"));                                       // cn:运行\n工作流
     actionWorkflowRun->setToolTip(tr("Run the workflow"));                                  // cn:运行工作流
-    actionWorkflowTerminate->setText(tr("Terminate \nWorkflow"));                           // cn:停止\n工作流
+    actionWorkflowTerminate->setText(tr("Terminate Workflow"));                           // cn:停止\n工作流
     actionWorkflowTerminate->setToolTip(tr("Terminate the workflow"));                      // cn:停止工作流
     actionWorkflowLinkEnable->setText(tr("Link"));                                          // cn:连线
     actionWorkflowLinkEnable->setToolTip(tr("Enable or disable link between elements"));    // cn:启用或禁用元素之间连线
-    actionWorkflowAddBackgroundPixmap->setText(tr("Add \nBackground"));                     // cn:添加\n背景
+    actionWorkflowAddBackgroundPixmap->setText(tr("Add Background"));                     // cn:添加背景
     actionWorkflowAddBackgroundPixmap->setToolTip(tr("Add a background pixmap to the workflow scene"));  // cn:在工作流场景中添加背景图片
     actionWorkflowLockBackgroundPixmap->setText(tr("Lock Background"));                                  // cn:锁定背景
     actionWorkflowLockBackgroundPixmap->setToolTip(
@@ -791,17 +791,17 @@ void DAAppActions::retranslateUi()
     //-----------------------------------------------------
     // View Category
     //-----------------------------------------------------
-    actionShowWorkFlowArea->setText(tr("Show \nWorkflow Area"));                      // cn:工作流\n区域
+    actionShowWorkFlowArea->setText(tr("Show Workflow Area"));                      // cn:工作流\n操作视图
     actionShowWorkFlowArea->setToolTip(tr("Show the workflow area"));                 // cn:显示工作流区域
-    actionShowWorkFlowManagerArea->setText(tr("Show \nWorkflow Manager"));            // cn:工作流\n管理
+    actionShowWorkFlowManagerArea->setText(tr("Show Workflow Manager"));            // cn:工作流\n管理视图
     actionShowWorkFlowManagerArea->setToolTip(tr("Show the workflow manager area"));  // cn:显示工作流管理区域
-    actionShowChartArea->setText(tr("Show \nChart Area"));                            // cn:绘图\n区域
+    actionShowChartArea->setText(tr("Show Chart Area"));                            // cn:绘图\n操作视图
     actionShowChartArea->setToolTip(tr("Show the chart area"));                       // cn:显示绘图区域
-    actionShowChartManagerArea->setText(tr("Show \nChart Manager"));                  // cn:绘图\n管理
+    actionShowChartManagerArea->setText(tr("Show Chart Manager"));                  // cn:绘图\n管理视图
     actionShowChartManagerArea->setToolTip(tr("Show the chart manager area"));        // cn:显示绘图管理区域
-    actionShowDataArea->setText(tr("Show \nTable Area"));                             // cn:表格\n区域
+    actionShowDataArea->setText(tr("Show Table Area"));                             // cn:数据\n操作区域
     actionShowDataArea->setToolTip(tr("Show the data area"));                         // cn:显示数据区域
-    actionShowDataManagerArea->setText(tr("Show \nData Manager"));                    // cn:数据\n管理
+    actionShowDataManagerArea->setText(tr("Show Data Manager"));                    // cn:数据\n管理视图
     actionShowDataManagerArea->setToolTip(tr("Show the data manager area"));          // cn:显示数据管理区域
     actionShowMessageLogView->setText(tr("Show Information Window"));                  // cn:信息窗口
     actionShowMessageLogView->setToolTip(tr("Show the message log window"));          // cn:显示信息窗口
@@ -809,14 +809,14 @@ void DAAppActions::retranslateUi()
     actionShowUndoHistory->setToolTip(tr("Show the undo history panel (follows the active page, click an entry to undo/redo to it)"));  // cn:显示撤销历史面板（跟随当前激活页面，点击条目可回退/前进）
     actionShowSettingWidget->setText(tr("Show Setting Window"));                      // cn:设置窗口
     actionShowSettingWidget->setToolTip(tr("Show the setting window"));               // cn:显示设置窗口
-    actionShowLeftSideBar->setText(tr("Show Left \nSide Bar"));                       // cn:显示左侧边栏
+    actionShowLeftSideBar->setText(tr("Show Left Side Bar"));                       // cn:显示左侧边栏
     actionShowLeftSideBar->setToolTip(tr("Show the left side bar"));  // cn:显示左侧边栏
-    actionShowRightSideBar->setText(tr("Show Right \nSide Bar"));       // cn:显示右侧边栏
+    actionShowRightSideBar->setText(tr("Show Right Side Bar"));       // cn:显示右侧边栏
     actionShowRightSideBar->setToolTip(tr("Show the right side bar"));  // cn:显示右侧边栏
-    actionShowAgentArea->setText(tr("Show \nAgent Area"));  // cn:Agent\n助手
+    actionShowAgentArea->setText(tr("Show Agent Area"));  // cn:Agent 助手
     actionShowAgentArea->setToolTip(tr("Show the agent assistant area"));  // cn:显示 Agent 助手区域
     // Config Category
-    actionPluginManager->setText(tr("Plugin \nConfig"));             // cn:插件\n设置
+    actionPluginManager->setText(tr("Plugin Config"));             // cn:插件设置
     actionPluginManager->setToolTip(tr("Show the plugin manager"));  // cn:显示插件管理器
     // Other
     actionCut->setText(tr("Cut"));                                   // cn:剪切
@@ -829,9 +829,9 @@ void DAAppActions::retranslateUi()
     actionDelete->setToolTip(tr("Delete the selection"));             // cn:删除选中内容
     actionSelectAll->setText(tr("Select All"));                       // cn:全选
     actionSelectAll->setToolTip(tr("Select all content"));            // cn:全选内容
-    actionResetDefaultLayout->setText(tr("Reset \nLayout"));          // cn:恢复\n默认布局
+    actionResetDefaultLayout->setText(tr("Reset Layout"));          // cn:恢复\n默认布局
     actionResetDefaultLayout->setToolTip(tr("Restore the default window layout (confirmation required)"));  // cn:恢复默认窗口布局（需确认）
-    actionManageLayouts->setText(tr("Manage \nLayouts"));             // cn:布局\n管理
+    actionManageLayouts->setText(tr("Manage Layouts"));             // cn:布局管理
     actionManageLayouts->setToolTip(tr("Open the layout manager to save, apply or remove layout schemes"));  // cn:打开布局管理对话框，保存、应用或删除布局方案
 
     //

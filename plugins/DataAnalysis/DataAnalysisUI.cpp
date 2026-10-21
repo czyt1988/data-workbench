@@ -251,12 +251,12 @@ void DataAnalysisUI::buildDataCategory()
 void DataAnalysisUI::retranslateUi()
 {
     if (panelDataOperate) {
-        actionExportIndividualData->setText(tr("Export \nIndividual Data"));  // cn:导出\n单个数据
-        actionExportMultipleData->setText(tr("Export \nMultiple Data"));      // cn:导出\n多个数据
+        actionExportIndividualData->setText(tr("Export Individual Data"));  // cn:导出\n单个数据
+        actionExportMultipleData->setText(tr("Export Multiple Data"));      // cn:导出\n多个数据
         actionExportMultipleData->setToolTip(tr("Export all data from the data management area to a folder, with each "
                                                 "dataset saved as an individual data file.")
         );  // cn:把数据管理区所有数据导出到一个文件夹中，每个数据形成一个数据文件
-        actionExportToOneExcel->setText(tr("Export \nTo Excel"));  // cn:导出Excel
+        actionExportToOneExcel->setText(tr("Export To Excel"));  // cn:导出Excel
         actionExportToOneExcel->setToolTip(
             tr("Export all data from the data management area to an Excel file, with each dataset as a separate sheet.")
         );  // cn:把数据管理区所有数据导出到一个excel文件中，每个数据将作为excel的一个sheet
