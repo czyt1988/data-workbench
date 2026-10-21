@@ -473,7 +473,7 @@ void DAAppActions::retranslateUi()
     actionSave->setToolTip(tr("Save file or project"));                                // cn:保存文件或项目
     actionSaveAs->setText(tr("Save As"));                                              // cn:另存为
     actionSaveAs->setToolTip(tr("Save file or project as"));                           // cn:保存文件或项目为
-    actionAppendProject->setText(tr("Append To Project"));                             // cn:附加到项目
+    actionAppendProject->setText(tr("Append To Project"));                             // cn:追加到工程
     actionAppendProject->setToolTip(tr("Append file or project to current project"));  // cn:附加文件或项目到当前项目
     actionOpenMarkdown->setText(tr("Open Markdown"));  // cn:打开 Markdown
     actionOpenMarkdown->setToolTip(tr("Open a Markdown file and display it in the central area"));  // cn:打开 Markdown 文件并在中央区显示
@@ -554,7 +554,7 @@ void DAAppActions::retranslateUi()
     actionStatsBarplot->setToolTip(tr("Bar plot with aggregation"));                    // cn:统计柱状图
     actionStatsRegplot->setText(tr("Regplot"));                                         // cn:回归图
     actionStatsRegplot->setToolTip(tr("Regression plot with CI"));                     // cn:回归图（含置信区间）
-    actionStatsECDFplot->setText(tr("ECDF"));                                           // cn:累积分布
+    actionStatsECDFplot->setText(tr("ECDF"));                                           // cn:经验累积分布
     actionStatsECDFplot->setToolTip(tr("Empirical Cumulative Distribution Function"));  // cn:经验累积分布图
 
     actionFigureSettingApplyAllChart->setText(tr("Apply All Charts"));  // cn:应用到\n所有绘图
@@ -608,8 +608,8 @@ void DAAppActions::retranslateUi()
     actionChartLinkAllPickerEnabled->setToolTip(tr("Enable or disable all picker linked"));  // cn:启用或禁用所有拾取联动
     actionChartEnableLegend->setText(tr("Legend"));                                          // cn:图例
     actionChartEnableLegend->setToolTip(tr("Enable or disable legend in the chart"));  // cn:启用或禁用图表中的图例
-    actionCopyFigureInClipboard->setText(tr("Copy To Clipboard"));                     // cn:复制到剪切板
-    actionCopyFigureInClipboard->setToolTip(tr("Copy the figure to the clipboard"));   // cn:将绘图复制到剪切板
+    actionCopyFigureInClipboard->setText(tr("Copy To Clipboard"));                     // cn:复制到\n剪贴板
+    actionCopyFigureInClipboard->setToolTip(tr("Copy the figure to the clipboard"));   // cn:将绘图复制到剪贴板
     actionChartLegendAtTop->setText(tr("Legend Top"));                                  // cn:图例在上
     actionChartLegendAtTop->setToolTip(tr("Place the legend at the top of the chart"));  // cn:图例置于图表上方
     actionChartLegendAtBottom->setText(tr("Legend Bottom"));                            // cn:图例在下
@@ -650,7 +650,7 @@ void DAAppActions::retranslateUi()
     actionRemoveRow->setToolTip(tr("Remove a row from the table"));              // cn:从表中删除行
     actionRemoveColumn->setText(tr("Remove Column"));                            // cn:删除列
     actionRemoveColumn->setToolTip(tr("Remove a column from the table"));        // cn:从表中删除列
-    actionRemoveCell->setText(tr("Remove Cell"));                                // cn:移除单元格
+    actionRemoveCell->setText(tr("Remove Cell"));                                // cn:删除单元格
     actionRemoveCell->setToolTip(tr("Remove a cell from the table"));            // cn:从表中移除单元格
     actionInsertRow->setText(tr("Insert Row"));                                // cn:插入行
     actionInsertRow->setToolTip(tr("Insert a row into the table"));              // cn:插入行
@@ -784,7 +784,7 @@ void DAAppActions::retranslateUi()
     //-----------------------------------------------------
     actionExportWorkflowSceneToImage->setText(tr("Export To Image"));                           // cn:导出为图片
     actionExportWorkflowSceneToImage->setToolTip(tr("Export the workflow scene to an image"));  // cn:导出工作流场景为图片
-    actionExportWorkflowSceneToPNG->setText(tr("Export To PNG"));                               // cn:导出为PNG
+    actionExportWorkflowSceneToPNG->setText(tr("Export To PNG"));                               // cn:导出PNG
     actionExportWorkflowSceneToPNG->setToolTip(tr("Export the workflow scene to a PNG image"));  // cn:导出工作流场景为PNG图片
     actionWorkflowViewMarker->setText(tr("Show Marker"));                                        // cn:显示标记
     actionWorkflowViewMarker->setToolTip(tr("Show marker on the workflow scene"));  // cn:在工作流场景中显示标记
@@ -809,9 +809,9 @@ void DAAppActions::retranslateUi()
     actionShowUndoHistory->setToolTip(tr("Show the undo history panel (follows the active page, click an entry to undo/redo to it)"));  // cn:显示撤销历史面板（跟随当前激活页面，点击条目可回退/前进）
     actionShowSettingWidget->setText(tr("Show Setting Window"));                      // cn:设置窗口
     actionShowSettingWidget->setToolTip(tr("Show the setting window"));               // cn:显示设置窗口
-    actionShowLeftSideBar->setText(tr("Show Left Side Bar"));                       // cn:显示左侧边栏
+    actionShowLeftSideBar->setText(tr("Show Left Side Bar"));                       // cn:左侧边栏
     actionShowLeftSideBar->setToolTip(tr("Show the left side bar"));  // cn:显示左侧边栏
-    actionShowRightSideBar->setText(tr("Show Right Side Bar"));       // cn:显示右侧边栏
+    actionShowRightSideBar->setText(tr("Show Right Side Bar"));       // cn:右侧边栏
     actionShowRightSideBar->setToolTip(tr("Show the right side bar"));  // cn:显示右侧边栏
     actionShowAgentArea->setText(tr("Show Agent Area"));  // cn:Agent 助手
     actionShowAgentArea->setToolTip(tr("Show the agent assistant area"));  // cn:显示 Agent 助手区域

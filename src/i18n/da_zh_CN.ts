@@ -1575,7 +1575,7 @@
     <message>
         <location line="+1"/>
         <source>Add Curve</source>
-        <translation>添加曲线</translation>
+        <translation>折线图</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -14988,7 +14988,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     <message>
         <location filename="../DAGui/ChartAddItem/DAChartAddSpectrogramWidget.ui" line="+14"/>
         <source>Add Curve</source>
-        <translation>添加曲线</translation>
+        <translation>折线图</translation>
     </message>
     <message>
         <location line="+23"/>
