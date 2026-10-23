@@ -77,6 +77,29 @@ QString readFileAll(const QString& path)
     return QString::fromUtf8(f.readAll());
 }
 
+// 异步 logger 的 flush 只把刷新请求入队，不阻塞等待落盘，文件内容可能稍后才可见
+QString readFileAllEventually(const QString& path, const QStringList& needles, int timeoutMs = 3000)
+{
+    QElapsedTimer timer;
+    timer.start();
+    QString content = readFileAll(path);
+    while (timer.elapsed() < timeoutMs) {
+        bool allFound = true;
+        for (const QString& needle : needles) {
+            if (!content.contains(needle)) {
+                allFound = false;
+                break;
+            }
+        }
+        if (allFound) {
+            break;
+        }
+        QTest::qWait(20);
+        content = readFileAll(path);
+    }
+    return content;
+}
+
 }  // namespace
 
 class DASlowLogTest : public QObject
@@ -419,9 +442,13 @@ void DASlowLogTest::testFileRouting()
 #endif
     DA::DALogger::instance().flush();
 
-    const QString mainContent = readFileAll(mainLog);
+    const QString mainContent = readFileAllEventually(
+        mainLog,
+        { QStringLiteral("business line for routing test"), QStringLiteral("system line for routing test") });
 #if defined(DA_ENABLE_SLOW_LOG)
-    const QString slowContent = readFileAll(slowLog);
+    const QString slowContent = readFileAllEventually(
+        slowLog,
+        { QStringLiteral("tag=test.route.direct"), QStringLiteral("tag=test.route.scope") });
     QVERIFY2(slowContent.contains("tag=test.route.direct"),
              qPrintable(QStringLiteral("slow.log missing direct record:\n%1").arg(slowContent)));
     QVERIFY2(slowContent.contains("tag=test.route.scope"),
