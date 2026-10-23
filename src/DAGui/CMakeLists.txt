@@ -368,15 +368,19 @@ set(DA_LIB_QT_UI_FILES_Chart
 # 非 Python 部分（保持原门控语义：两个基类 .cpp 不依赖 Python）
 set(DA_LIB_HEADER_FILES_ChartAddItem
     ${DA_LIB_SUBDIR_ChartAddItem}/DAAbstractChartAddItemWidget.h
+    ${DA_LIB_SUBDIR_ChartAddItem}/DAAbstractChartAddWidgetBase.h
     ${DA_LIB_SUBDIR_ChartAddItem}/DAAbstractStatsChartAddWidget.h
 )
 set(DA_LIB_SOURCE_FILES_ChartAddItem
     ${DA_LIB_SUBDIR_ChartAddItem}/DAAbstractChartAddItemWidget.cpp
+    ${DA_LIB_SUBDIR_ChartAddItem}/DAAbstractChartAddWidgetBase.cpp
     ${DA_LIB_SUBDIR_ChartAddItem}/DAAbstractStatsChartAddWidget.cpp
 )
 # Python 部分（DAAbstractChart3DAddItemWidget 等）
 list(APPEND DA_LIB_HEADER_FILES_ChartAddItem
         ${DA_LIB_SUBDIR_ChartAddItem}/DAAbstractChart3DAddItemWidget.h
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddItemWidgetFactory.h
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartSeriesDataResult.h
         ${DA_LIB_SUBDIR_ChartAddItem}/DAChartSeriesPickerWidget.h
         ${DA_LIB_SUBDIR_ChartAddItem}/DAChartSeriesSelectWidget.h
         ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddXYSeriesWidget.h
@@ -409,6 +413,8 @@ list(APPEND DA_LIB_HEADER_FILES_ChartAddItem
     )
     list(APPEND DA_LIB_SOURCE_FILES_ChartAddItem
         ${DA_LIB_SUBDIR_ChartAddItem}/DAAbstractChart3DAddItemWidget.cpp
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddItemWidgetFactory.cpp
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartSeriesDataResult.cpp
         ${DA_LIB_SUBDIR_ChartAddItem}/DAChartSeriesPickerWidget.cpp
         ${DA_LIB_SUBDIR_ChartAddItem}/DAChartSeriesSelectWidget.cpp
         ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddXYSeriesWidget.cpp
