@@ -1,35 +1,15 @@
 #include "DADialogChartGuide.h"
 #include "ui_DADialogChartGuide.h"
-#include <QPen>
+#include <QHash>
+#include <QListWidgetItem>
+#include <QSet>
+#include <utility>
 // DA
 #include "DADataManager.h"
+#include "ChartAddItem/DAChartAddItemWidgetFactory.h"
 #include "ChartAddItem/DAAbstractChartAddItemWidget.h"
-#include "ChartAddItem/DAChartAddCurveWidget.h"
-#include "ChartAddItem/DAChartAddBarWidget.h"
-#include "ChartAddItem/DAChartAddIntervalCurveWidget.h"
-#include "ChartAddItem/DAChartAddTradingCurveWidget.h"
-#include "ChartAddItem/DAChartAddErrorBarWidget.h"
-#include "ChartAddItem/DAChartAddBoxChartWidget.h"
-#include "ChartAddItem/DAChartAddMultiBarWidget.h"
-#include "ChartAddItem/DAChartAddHistogramWidget.h"
-#include "ChartAddItem/DAChartAddContourWidget.h"
-#include "ChartAddItem/DAChartAddVectorFieldWidget.h"
-#include "ChartAddItem/DAChartAddSpectrogramWidget.h"
-#include "DAChartUtil.h"
-// qwt
-#include "qwt_plot_curve.h"
-#include "qwt_plot_barchart.h"
-#include "qwt_plot_intervalcurve.h"
-#include "qwt_plot_tradingcurve.h"
-#include "qwt_plot_spectrogram.h"
 #include "ChartAddItem/DAAbstractChart3DAddItemWidget.h"
-#include "ChartAddItem/DAChartAdd3DSurfaceWidget.h"
-#include "ChartAddItem/DAChartAdd3DBarWidget.h"
-#include "ChartAddItem/DAChartAdd3DLineWidget.h"
-// qwt3d
-#include "qwt3d_surface.h"
-#include "qwt3d_bar.h"
-#include "qwt3d_line3d.h"
+#include "ChartAddItem/DAAbstractChartAddWidgetBase.h"
 
 namespace DA
 {
@@ -37,21 +17,11 @@ class DADialogChartGuide::PrivateData
 {
     DA_DECLARE_PUBLIC(DADialogChartGuide)
 public:
-    PrivateData(DADialogChartGuide* p);
-    DAChartAddCurveWidget* mAddCurve { nullptr };
-    DAChartAddBarWidget* mAddBar { nullptr };
-    DAChartAddIntervalCurveWidget* mAddIntervalCurve { nullptr };
-    DAChartAddTradingCurveWidget* mAddTradingCurve { nullptr };
-    DAChartAddSpectrogramWidget* mAddSpectroGram { nullptr };
-    DAChartAddErrorBarWidget* mAddErrorBar { nullptr };
-    DAChartAddBoxChartWidget* mAddBoxChart { nullptr };
-    DAChartAddMultiBarWidget* mAddMultiBar { nullptr };
-    DAChartAddHistogramWidget* mAddHistogram { nullptr };
-    DAChartAddContourWidget* mAddContour { nullptr };
-    DAChartAddVectorFieldWidget* mAddVectorField { nullptr };
-    DAChartAdd3DSurfaceWidget* mAdd3DSurface { nullptr };
-    DAChartAdd3DBarWidget* mAdd3DBar { nullptr };
-    DAChartAdd3DLineWidget* mAdd3DLine { nullptr };
+    explicit PrivateData(DADialogChartGuide* p);
+    // 图表类型 → 已创建的页面（按需创建，类型用作 key 所以这里是 int）
+    QHash< int, QWidget* > pages;
+    // 已经赋过数据管理器的页面
+    QSet< DAAbstractChartAddWidgetBase* > initializedWidgets;
 };
 
 DADialogChartGuide::PrivateData::PrivateData(DADialogChartGuide* p) : q_ptr(p)
@@ -65,41 +35,7 @@ DADialogChartGuide::DADialogChartGuide(QWidget* parent)
     : QDialog(parent), DA_PIMPL_CONSTRUCT, ui(new Ui::DADialogChartGuide)
 {
     ui->setupUi(this);
-    DA_D(d);
     initListWidget();
-
-    d->mAddCurve         = new DAChartAddCurveWidget();
-    d->mAddBar           = new DAChartAddBarWidget();
-    d->mAddIntervalCurve = new DAChartAddIntervalCurveWidget();
-    d->mAddTradingCurve  = new DAChartAddTradingCurveWidget();
-    d->mAddSpectroGram   = new DAChartAddSpectrogramWidget();
-    d->mAddErrorBar      = new DAChartAddErrorBarWidget();
-    d->mAddBoxChart      = new DAChartAddBoxChartWidget();
-    d->mAddMultiBar      = new DAChartAddMultiBarWidget();
-    d->mAddHistogram     = new DAChartAddHistogramWidget();
-    d->mAddContour       = new DAChartAddContourWidget();
-    d->mAddVectorField   = new DAChartAddVectorFieldWidget();
-
-    ui->stackedWidget->addWidget(d->mAddCurve);
-    ui->stackedWidget->addWidget(d->mAddBar);
-    ui->stackedWidget->addWidget(d->mAddIntervalCurve);
-    ui->stackedWidget->addWidget(d->mAddTradingCurve);
-    ui->stackedWidget->addWidget(d->mAddSpectroGram);
-    ui->stackedWidget->addWidget(d->mAddErrorBar);
-    ui->stackedWidget->addWidget(d->mAddBoxChart);
-    ui->stackedWidget->addWidget(d->mAddMultiBar);
-    ui->stackedWidget->addWidget(d->mAddHistogram);
-    ui->stackedWidget->addWidget(d->mAddContour);
-    ui->stackedWidget->addWidget(d->mAddVectorField);
-
-    d->mAdd3DSurface = new DAChartAdd3DSurfaceWidget();
-    d->mAdd3DBar     = new DAChartAdd3DBarWidget();
-    d->mAdd3DLine    = new DAChartAdd3DLineWidget();
-
-    ui->stackedWidget->addWidget(d->mAdd3DSurface);
-    ui->stackedWidget->addWidget(d->mAdd3DBar);
-    ui->stackedWidget->addWidget(d->mAdd3DLine);
-
     connect(ui->listWidgetChartType, &QListWidget::currentItemChanged, this, &DADialogChartGuide::onListWidgetCurrentItemChanged);
 }
 
@@ -108,108 +44,100 @@ DADialogChartGuide::~DADialogChartGuide()
     delete ui;
 }
 
+/**
+ * @brief 用注册表填充左侧类型列表（二维与三维，注册顺序即显示顺序）
+ */
 void DADialogChartGuide::initListWidget()
 {
-    QListWidgetItem* item = nullptr;
-    // curve
-    item = new QListWidgetItem(QIcon(":/DAGui/ChartType/icon/chart-type/chart-curve.svg"), tr("curve"));  // cn:曲线
-    item->setData(Qt::UserRole, static_cast< int >(DA::DAChartTypes::Curve));
-    ui->listWidgetChartType->addItem(item);
-    // scatter
-    item = new QListWidgetItem(QIcon(":/DAGui/ChartType/icon/chart-type/chart-scatter.svg"), tr("scatter"));  // cn:散点
-    item->setData(Qt::UserRole, static_cast< int >(DA::DAChartTypes::Scatter));
-    ui->listWidgetChartType->addItem(item);
-    // bar
-    item = new QListWidgetItem(QIcon(":/DAGui/ChartType/icon/chart-type/chart-bar.svg"), tr("bar"));  // cn:柱状
-    item->setData(Qt::UserRole, static_cast< int >(DA::DAChartTypes::Bar));
-    ui->listWidgetChartType->addItem(item);
-    // errorbar
-    item = new QListWidgetItem(QIcon(":/DAGui/ChartType/icon/chart-type/chart-intervalcurve.svg"), tr("error bar"));  // cn:误差棒
-    item->setData(Qt::UserRole, static_cast< int >(DA::DAChartTypes::ErrorBar));
-    ui->listWidgetChartType->addItem(item);
-    // boxplot
-    item = new QListWidgetItem(QIcon(":/DAGui/ChartType/icon/chart-type/chart-OHLC.svg"), tr("box"));  // cn:箱体
-    item->setData(Qt::UserRole, static_cast< int >(DA::DAChartTypes::Box));
-    ui->listWidgetChartType->addItem(item);
-    // spectrogram
-    item = new QListWidgetItem(QIcon(":/DAGui/ChartType/icon/chart-type/chart-spectrogram.svg"), tr("cloud map"));  // cn:云图
-    item->setData(Qt::UserRole, static_cast< int >(DA::DAChartTypes::Spectrogram));
-    ui->listWidgetChartType->addItem(item);
-    // multibar
-    item = new QListWidgetItem(QIcon(":/DAGui/ChartType/icon/chart-type/chart-multibar.svg"), tr("multi bar"));  // cn:多重柱状
-    item->setData(Qt::UserRole, static_cast< int >(DA::DAChartTypes::MultiBar));
-    ui->listWidgetChartType->addItem(item);
-    // histogram
-    item = new QListWidgetItem(QIcon(":/DAGui/ChartType/icon/chart-type/chart-histogram.svg"), tr("histogram"));  // cn:直方图
-    item->setData(Qt::UserRole, static_cast< int >(DA::DAChartTypes::Histogram));
-    ui->listWidgetChartType->addItem(item);
-    // contour
-    item = new QListWidgetItem(QIcon(":/DAGui/ChartType/icon/chart-type/chart-spectrocurve.svg"), tr("contour"));  // cn:等高线
-    item->setData(Qt::UserRole, static_cast< int >(DA::DAChartTypes::Contour));
-    ui->listWidgetChartType->addItem(item);
-    // vectorfield
-    item = new QListWidgetItem(QIcon(":/DAGui/ChartType/icon/chart-type/chart-vectorfield.svg"), tr("vector field"));  // cn:向量场
-    item->setData(Qt::UserRole, static_cast< int >(DA::DAChartTypes::VectorField));
-    ui->listWidgetChartType->addItem(item);
-    // surface3d
-    item = new QListWidgetItem(QIcon(":/DAGui/ChartType/icon/chart-type/chart-surface3d.svg"), tr("surface 3D"));  // cn:3D曲面
-    item->setData(Qt::UserRole, static_cast< int >(DA::DAChartTypes::Surface3D));
-    ui->listWidgetChartType->addItem(item);
-    // bar3d
-    item = new QListWidgetItem(QIcon(":/DAGui/ChartType/icon/chart-type/chart-bar3d.svg"), tr("bar 3D"));  // cn:3D柱状
-    item->setData(Qt::UserRole, static_cast< int >(DA::DAChartTypes::Bar3D));
-    ui->listWidgetChartType->addItem(item);
-    // line3d
-    item = new QListWidgetItem(QIcon(":/DAGui/ChartType/icon/chart-type/chart-line3d.svg"), tr("line 3D"));  // cn:3D线图
-    item->setData(Qt::UserRole, static_cast< int >(DA::DAChartTypes::Line3D));
-    ui->listWidgetChartType->addItem(item);
-    // 初始化
+    const QList< DAChartAddItemWidgetDescriptor > descs = DAChartAddItemWidgetFactory::instance().allDescriptors();
+    for (const DAChartAddItemWidgetDescriptor& desc : descs) {
+        if (DAChartAddWidgetFamily::Stats == desc.family) {
+            continue;
+        }
+        QListWidgetItem* item = new QListWidgetItem(desc.icon(), desc.text());
+        item->setData(Qt::UserRole, static_cast< int >(desc.type));
+        ui->listWidgetChartType->addItem(item);
+    }
     ui->listWidgetChartType->setCurrentRow(0);
 }
+
 /**
- * @brief 设置datamanager,会把combox填入所有的dataframe
+ * @brief 设置datamanager
  * @param dmgr
  */
 void DADialogChartGuide::setDataManager(DADataManager* dmgr)
 {
     mDataMgr = dmgr;
-    mInitializedWidgets.clear();
-    mInitialized3DWidgets.clear();
-    // 预初始化当前选中的 widget
-    QListWidgetItem* cur = ui->listWidgetChartType->currentItem();
-    if (cur) {
-        DA::DAChartTypes ct = static_cast< DA::DAChartTypes >(cur->data(Qt::UserRole).toInt());
-        if (is3DChartType(ct)) {
-            if (DAAbstractChart3DAddItemWidget* w = getChartAdd3DItemWidget(ct)) {
-                ensureWidget3DDataManager(w);
-            }
-        } else
-        {
-            if (DAAbstractChartAddItemWidget* w = getChartAddItemWidget(ct)) {
-                ensureWidgetDataManager(w);
-            }
+    DA_D(d);
+    d->initializedWidgets.clear();
+    // 已创建的页面立即刷新
+    for (QWidget* page : std::as_const(d->pages)) {
+        if (auto* w = qobject_cast< DAAbstractChartAddWidgetBase* >(page)) {
+            ensureWidgetDataManager(w);
         }
     }
-}
-
-void DADialogChartGuide::ensureWidgetDataManager(DAAbstractChartAddItemWidget* w)
-{
-    if (w && !mInitializedWidgets.contains(w)) {
-        w->setDataManager(mDataMgr);
-        mInitializedWidgets.insert(w);
+    // 当前页可能在列表首次选中时已创建，这里确保它也拿到数据管理器
+    if (QListWidgetItem* cur = ui->listWidgetChartType->currentItem()) {
+        selectPage(static_cast< DA::DAChartTypes >(cur->data(Qt::UserRole).toInt()));
     }
 }
 
 /**
- * @brief 确保3D widget的dataManager已初始化
- * @param w
+ * @brief 给页面设置数据管理器，同一页面只设置一次
+ * @param w 页面
  */
-void DADialogChartGuide::ensureWidget3DDataManager(DAAbstractChart3DAddItemWidget* w)
+void DADialogChartGuide::ensureWidgetDataManager(DAAbstractChartAddWidgetBase* w)
 {
-    if (w && !mInitialized3DWidgets.contains(w)) {
-        w->setDataManager(mDataMgr);
-        mInitialized3DWidgets.insert(w);
+    DA_D(d);
+    if (nullptr == w || nullptr == mDataMgr) {
+        return;
     }
+    if (d->initializedWidgets.contains(w)) {
+        return;
+    }
+    w->setDataManager(mDataMgr);
+    d->initializedWidgets.insert(w);
+}
+
+/**
+ * @brief 按注册表创建页面并加入页面栈
+ * @param type 图表类型
+ * @return 页面指针，类型未注册返回 nullptr
+ */
+QWidget* DADialogChartGuide::ensurePage(DA::DAChartTypes type)
+{
+    DA_D(d);
+    const DAChartAddItemWidgetDescriptor* desc = DAChartAddItemWidgetFactory::instance().descriptor(type);
+    if (nullptr == desc || !desc->creator) {
+        return nullptr;
+    }
+    // 允许多种类型共用同一个页面（如散点复用曲线页面），保证切换类型时已选数据不丢
+    const DA::DAChartTypes pageType = (DA::DAChartTypes::Unknow == desc->pageType) ? type : desc->pageType;
+    const int key                   = static_cast< int >(pageType);
+    if (QWidget* page = d->pages.value(key, nullptr)) {
+        return page;
+    }
+    QWidget* page = desc->creator();
+    if (nullptr == page) {
+        return nullptr;
+    }
+    ui->stackedWidget->addWidget(page);
+    d->pages.insert(key, page);
+    ensureWidgetDataManager(qobject_cast< DAAbstractChartAddWidgetBase* >(page));
+    return page;
+}
+
+/**
+ * @brief 切换到指定类型的页面
+ * @param type 图表类型
+ */
+void DADialogChartGuide::selectPage(DA::DAChartTypes type)
+{
+    QWidget* page = ensurePage(type);
+    if (nullptr == page) {
+        return;
+    }
+    ui->stackedWidget->setCurrentWidget(page);
 }
 
 /**
@@ -231,8 +159,8 @@ DA::DAChartTypes DADialogChartGuide::getCurrentChartType() const
  */
 QwtPlotItem* DADialogChartGuide::createPlotItem()
 {
-    DAAbstractChartAddItemWidget* w = qobject_cast< DAAbstractChartAddItemWidget* >(ui->stackedWidget->currentWidget());
-    if (!w) {
+    DAAbstractChartAddItemWidget* w = getCurrentChartAddItemWidget();
+    if (nullptr == w) {
         return nullptr;
     }
     QwtPlotItem* item = w->createPlotItem();
@@ -246,34 +174,29 @@ QwtPlotItem* DADialogChartGuide::createPlotItem()
 
 /**
  * @brief 批量获取绘图item（如曲线的 1 个 x + 多个 y）
- * @return 如果没有返回空列表
+ * @return 无法创建时返回空列表
  */
 QList< QwtPlotItem* > DADialogChartGuide::createPlotItems()
 {
-    DAAbstractChartAddItemWidget* w = qobject_cast< DAAbstractChartAddItemWidget* >(ui->stackedWidget->currentWidget());
-    if (!w) {
+    DAAbstractChartAddItemWidget* w = getCurrentChartAddItemWidget();
+    if (nullptr == w) {
         return {};
     }
     QList< QwtPlotItem* > items = w->createPlotItems();
-    if (items.isEmpty()) {
-        return {};
-    }
-    for (QwtPlotItem* item : items) {
+    for (QwtPlotItem* item : std::as_const(items)) {
         initSetPlotItem(item);
     }
     return items;
 }
 
 /**
- * @brief 获取当前添加部件提供的坐标轴标题推荐
- * @param xTitle 输出 x 轴标题
- * @param yTitle 输出 y 轴标题
- * @return 当前部件不提供时返回 false
+ * @brief 获取坐标轴标题推荐
+ * @return 当前页面不提供时返回 false
  */
 bool DADialogChartGuide::getAxisTitleHint(QString& xTitle, QString& yTitle) const
 {
-    DAAbstractChartAddItemWidget* w = qobject_cast< DAAbstractChartAddItemWidget* >(ui->stackedWidget->currentWidget());
-    if (!w) {
+    DAAbstractChartAddItemWidget* w = getCurrentChartAddItemWidget();
+    if (nullptr == w) {
         return false;
     }
     return w->getAxisTitleHint(xTitle, yTitle);
@@ -284,51 +207,27 @@ DAAbstractChartAddItemWidget* DADialogChartGuide::getCurrentChartAddItemWidget()
     return qobject_cast< DAAbstractChartAddItemWidget* >(ui->stackedWidget->currentWidget());
 }
 
-DAAbstractChartAddItemWidget* DADialogChartGuide::getChartAddItemWidget(DAChartTypes chartType) const
+/**
+ * @brief 根据类型获取二维绘图指引窗口
+ * @param chartType 图表类型
+ * @return 类型未注册或不是二维类型时返回 nullptr
+ */
+DAAbstractChartAddItemWidget* DADialogChartGuide::getChartAddItemWidget(DAChartTypes chartType)
 {
-    DA_DC(d);
-    switch (chartType) {
-    case DA::DAChartTypes::Curve:
-    case DA::DAChartTypes::Scatter:
-        return d->mAddCurve;
-    case DA::DAChartTypes::Bar:
-        return d->mAddBar;
-    case DA::DAChartTypes::ErrorBar:
-        return d->mAddErrorBar;
-    case DA::DAChartTypes::Box:
-        return d->mAddBoxChart;
-    case DA::DAChartTypes::Spectrogram:
-        return d->mAddSpectroGram;
-    case DA::DAChartTypes::MultiBar:
-        return d->mAddMultiBar;
-    case DA::DAChartTypes::Histogram:
-        return d->mAddHistogram;
-    case DA::DAChartTypes::Contour:
-        return d->mAddContour;
-    case DA::DAChartTypes::VectorField:
-        return d->mAddVectorField;
-    default:
-        break;
-    }
-    return nullptr;
+    return qobject_cast< DAAbstractChartAddItemWidget* >(ensurePage(chartType));
 }
 
 /**
  * @brief 根据当前绘图类型设置item属性
- * @param item
+ * @param item 待修饰的绘图项
+ *
+ * 修饰动作来自注册表的 initPlotItem，例如散点图把曲线改为点状。
  */
 void DADialogChartGuide::initSetPlotItem(QwtPlotItem* item)
 {
-    DA::DAChartTypes ct = getCurrentChartType();
-    switch (ct) {
-    case DA::DAChartTypes::Scatter: {
-        if (item->rtti() == QwtPlotItem::Rtti_PlotCurve) {
-            QwtPlotCurve* cur = static_cast< QwtPlotCurve* >(item);
-            cur->setStyle(QwtPlotCurve::Dots);
-        }
-    } break;
-    default:
-        break;
+    const DAChartAddItemWidgetDescriptor* desc = DAChartAddItemWidgetFactory::instance().descriptor(getCurrentChartType());
+    if (desc && desc->initPlotItem) {
+        desc->initPlotItem(item);
     }
 }
 
@@ -339,14 +238,7 @@ void DADialogChartGuide::initSetPlotItem(QwtPlotItem* item)
  */
 bool DADialogChartGuide::is3DChartType(DA::DAChartTypes t)
 {
-    switch (t) {
-    case DA::DAChartTypes::Surface3D:
-    case DA::DAChartTypes::Bar3D:
-    case DA::DAChartTypes::Line3D:
-        return true;
-    default:
-        return false;
-    }
+    return DAChartAddItemWidgetFactory::is3DType(t);
 }
 
 /**
@@ -355,8 +247,8 @@ bool DADialogChartGuide::is3DChartType(DA::DAChartTypes t)
  */
 Qwt3DPlotItem* DADialogChartGuide::create3DPlotItem()
 {
-    DAAbstractChart3DAddItemWidget* w = qobject_cast< DAAbstractChart3DAddItemWidget* >(ui->stackedWidget->currentWidget());
-    if (!w) {
+    DAAbstractChart3DAddItemWidget* w = getCurrentChart3DAddItemWidget();
+    if (nullptr == w) {
         return nullptr;
     }
     Qwt3DPlotItem* item = w->create3DPlotItem();
@@ -369,6 +261,7 @@ Qwt3DPlotItem* DADialogChartGuide::create3DPlotItem()
 
 /**
  * @brief 获取当前的3D绘图指引窗口
+ * @return
  */
 DAAbstractChart3DAddItemWidget* DADialogChartGuide::getCurrentChart3DAddItemWidget() const
 {
@@ -376,32 +269,22 @@ DAAbstractChart3DAddItemWidget* DADialogChartGuide::getCurrentChart3DAddItemWidg
 }
 
 /**
- * @brief 根据chartType获取3D绘图指引窗口
+ * @brief 根据类型获取3D绘图指引窗口
+ * @param chartType 图表类型
+ * @return 类型未注册或不是三维类型时返回 nullptr
  */
-DAAbstractChart3DAddItemWidget* DADialogChartGuide::getChartAdd3DItemWidget(DAChartTypes chartType) const
+DAAbstractChart3DAddItemWidget* DADialogChartGuide::getChartAdd3DItemWidget(DAChartTypes chartType)
 {
-    DA_DC(d);
-    switch (chartType) {
-    case DA::DAChartTypes::Surface3D:
-        return d->mAdd3DSurface;
-    case DA::DAChartTypes::Bar3D:
-        return d->mAdd3DBar;
-    case DA::DAChartTypes::Line3D:
-        return d->mAdd3DLine;
-    default:
-        break;
-    }
-    return nullptr;
+    return qobject_cast< DAAbstractChart3DAddItemWidget* >(ensurePage(chartType));
 }
 
 /**
  * @brief 根据当前绘图类型设置3D item属性
- * @note 当前为占位实现，3D item 属性由 06/07 计划的设置面板处理
+ * @note 当前为占位实现，3D item 属性由后续的设置面板处理
  */
 void DADialogChartGuide::initSet3DPlotItem(Qwt3DPlotItem* item)
 {
     Q_UNUSED(item)
-    // 当前为占位实现，3D item 属性由后续计划的设置面板处理
 }
 
 /**
@@ -416,6 +299,7 @@ void DADialogChartGuide::setCurrentChartType(DA::DAChartTypes t)
         int v     = item->data(Qt::UserRole).toInt();
         if (v == static_cast< int >(t)) {
             ui->listWidgetChartType->setCurrentItem(item);
+            break;
         }
     }
 }
@@ -423,61 +307,10 @@ void DADialogChartGuide::setCurrentChartType(DA::DAChartTypes t)
 void DADialogChartGuide::onListWidgetCurrentItemChanged(QListWidgetItem* current, QListWidgetItem* previous)
 {
     Q_UNUSED(previous);
-    DA_D(d);
-    DA::DAChartTypes ct = static_cast< DA::DAChartTypes >(current->data(Qt::UserRole).toInt());
-    // 延迟初始化：切换到该 widget 时才设置 dataManager
-    if (is3DChartType(ct)) {
-        if (DAAbstractChart3DAddItemWidget* w = getChartAdd3DItemWidget(ct)) {
-            ensureWidget3DDataManager(w);
-        }
-    } else
-    {
-        if (DAAbstractChartAddItemWidget* w = getChartAddItemWidget(ct)) {
-            ensureWidgetDataManager(w);
-        }
+    if (nullptr == current) {
+        return;
     }
-    switch (ct) {
-    case DA::DAChartTypes::Curve:
-        ui->stackedWidget->setCurrentWidget(d->mAddCurve);
-        break;
-    case DA::DAChartTypes::Scatter:
-        ui->stackedWidget->setCurrentWidget(d->mAddCurve);
-        break;
-    case DA::DAChartTypes::Bar:
-        ui->stackedWidget->setCurrentWidget(d->mAddBar);
-        break;
-    case DA::DAChartTypes::ErrorBar:
-        ui->stackedWidget->setCurrentWidget(d->mAddErrorBar);
-        break;
-    case DA::DAChartTypes::Box:
-        ui->stackedWidget->setCurrentWidget(d->mAddBoxChart);
-        break;
-    case DA::DAChartTypes::Spectrogram:
-        ui->stackedWidget->setCurrentWidget(d->mAddSpectroGram);
-        break;
-    case DA::DAChartTypes::MultiBar:
-        ui->stackedWidget->setCurrentWidget(d->mAddMultiBar);
-        break;
-    case DA::DAChartTypes::Histogram:
-        ui->stackedWidget->setCurrentWidget(d->mAddHistogram);
-        break;
-    case DA::DAChartTypes::Contour:
-        ui->stackedWidget->setCurrentWidget(d->mAddContour);
-        break;
-    case DA::DAChartTypes::VectorField:
-        ui->stackedWidget->setCurrentWidget(d->mAddVectorField);
-        break;
-    case DA::DAChartTypes::Surface3D:
-        ui->stackedWidget->setCurrentWidget(d->mAdd3DSurface);
-        break;
-    case DA::DAChartTypes::Bar3D:
-        ui->stackedWidget->setCurrentWidget(d->mAdd3DBar);
-        break;
-    case DA::DAChartTypes::Line3D:
-        ui->stackedWidget->setCurrentWidget(d->mAdd3DLine);
-        break;
-    default:
-        break;
-    }
+    selectPage(static_cast< DA::DAChartTypes >(current->data(Qt::UserRole).toInt()));
 }
-}
+
+}  // end DA

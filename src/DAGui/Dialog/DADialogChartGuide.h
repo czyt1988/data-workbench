@@ -4,7 +4,6 @@
 #include "DAFigureAPI.h"
 #include <QDialog>
 #include <QList>
-#include <QSet>
 #include "DAData.h"
 #include "qwt_plot_item.h"
 #include "qwt3d_plotitem.h"
@@ -19,19 +18,13 @@ namespace DA
 class DADataManager;
 class DAAbstractChartAddItemWidget;
 class DAAbstractChart3DAddItemWidget;
-class DAChartAdd3DSurfaceWidget;
-class DAChartAdd3DBarWidget;
-class DAChartAdd3DLineWidget;
+class DAAbstractChartAddWidgetBase;
+
 /**
- * @brief 把dataframe抽取两列转换为两个double-vector
- * @code
- * DADialogDataframeToPointVector dlg;
- * dlg.setDataManager(xx);
- * dlg.setCurrentData(xxx);
- * if(QDialog::Accept == dlg.exec()){
+ * @brief 绘图引导窗口
  *
- * }
- * @endcode
+ * 左侧列表 + 右侧页面栈：列表内容与页面创建方式全部来自
+ * DAChartAddItemWidgetFactory 注册表，本类只负责容器与路由。
  */
 class DAGUI_API DADialogChartGuide : public QDialog
 {
@@ -54,34 +47,36 @@ public:
     bool getAxisTitleHint(QString& xTitle, QString& yTitle) const;
     // 获取当前的绘图指引窗口
     DAAbstractChartAddItemWidget* getCurrentChartAddItemWidget() const;
-    DAAbstractChartAddItemWidget* getChartAddItemWidget(DA::DAChartTypes chartType) const;
+    // 根据类型获取二维绘图指引窗口（页面未创建时按需创建）
+    DAAbstractChartAddItemWidget* getChartAddItemWidget(DA::DAChartTypes chartType);
     // 根据当前绘图类型设置item属性
     void initSetPlotItem(QwtPlotItem* item);
     // 创建3D绘图item，如果没有返回nullptr
     Qwt3DPlotItem* create3DPlotItem();
     // 获取当前的3D绘图指引窗口
     DAAbstractChart3DAddItemWidget* getCurrentChart3DAddItemWidget() const;
-    // 根据chartType获取3D绘图指引窗口
-    DAAbstractChart3DAddItemWidget* getChartAdd3DItemWidget(DA::DAChartTypes chartType) const;
+    // 根据chartType获取3D绘图指引窗口（页面未创建时按需创建）
+    DAAbstractChart3DAddItemWidget* getChartAdd3DItemWidget(DA::DAChartTypes chartType);
     // 根据当前绘图类型设置3D item属性
     void initSet3DPlotItem(Qwt3DPlotItem* item);
     // 判断是否为3D图表类型
     static bool is3DChartType(DA::DAChartTypes t);
+
 private Q_SLOTS:
     // 选择绘图类型改变
     void onListWidgetCurrentItemChanged(QListWidgetItem* current, QListWidgetItem* previous);
 
 private:
     void initListWidget();
-    void ensureWidgetDataManager(DAAbstractChartAddItemWidget* w);
-    // 确保3D widget的dataManager已初始化
-    void ensureWidget3DDataManager(DAAbstractChart3DAddItemWidget* w);
+    // 切换到指定类型的页面（按需创建）
+    void selectPage(DA::DAChartTypes type);
+    // 按注册表创建并缓存页面，未注册返回 nullptr
+    QWidget* ensurePage(DA::DAChartTypes type);
+    void ensureWidgetDataManager(DAAbstractChartAddWidgetBase* w);
 
 private:
     Ui::DADialogChartGuide* ui;
     DADataManager* mDataMgr { nullptr };
-    QSet< DAAbstractChartAddItemWidget* > mInitializedWidgets;
-    QSet< DAAbstractChart3DAddItemWidget* > mInitialized3DWidgets;
 };
 }  // end DA
 #endif  // DADIALOGDATAFRAMEPLOT_H
