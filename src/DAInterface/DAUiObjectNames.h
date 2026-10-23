@@ -263,6 +263,8 @@ constexpr char ShowSettingWidget[]       = "actionShowSettingWidget";
 constexpr char ShowLeftSideBar[]         = "actionShowLeftSideBar";
 constexpr char ShowRightSideBar[]        = "actionShowRightSideBar";
 constexpr char ShowAgentArea[]           = "actionShowAgentArea";
+constexpr char ShowDataLinkTable[]      = "actionShowDataLinkTable";
+constexpr char ShowMarkdownView[]       = "actionShowMarkdownView";
 constexpr char ResetDefaultLayout[]      = "actionResetDefaultLayout";
 constexpr char ManageLayouts[]           = "actionManageLayouts";
 // ---- 工作流 ----

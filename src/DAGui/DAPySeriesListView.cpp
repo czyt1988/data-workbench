@@ -27,6 +27,7 @@ public:
     AcceptMode acceptMode { AcceptMultDataframeMultSeries };
     QList< QPair< DAData, QStringList > > series;  // 真实数据
     DADataManager* dataMgr { nullptr };
+    AddSeriesValidator validator;  ///< 添加序列前的验证器，可为空
 };
 
 DAPySeriesListView::PrivateData::PrivateData(DAPySeriesListView* p) : q_ptr(p)
@@ -85,6 +86,15 @@ DAPySeriesListView::AcceptMode DAPySeriesListView::getAcceptMode() const
 }
 
 /**
+ * @brief 设置添加验证器
+ * @param validator 返回 false 拒绝添加；传空清除验证器
+ */
+void DAPySeriesListView::setAddSeriesValidator(AddSeriesValidator validator)
+{
+    d_ptr->validator = std::move(validator);
+}
+
+/**
  * @brief 添加序列
  * @param data 序列对应的数据，对应dataframe的data
  * @param name 序列名字
@@ -92,6 +102,9 @@ DAPySeriesListView::AcceptMode DAPySeriesListView::getAcceptMode() const
 void DAPySeriesListView::addSeries(const DAData& dataframeData, const QString& name)
 {
     DA_D(d);
+    if (d->validator && !d->validator(dataframeData, name)) {
+        return;
+    }
     if (!d->dataMgr) {
         d->dataMgr = dataframeData.getDataManager();
     }
@@ -197,9 +210,28 @@ void DAPySeriesListView::dropEvent(QDropEvent* event)
         return;
     }
     const QList< QPair< DAData, QStringList > >& series = seriesMime->getDataSeries();
-    for (const auto& p : series) {
-        for (const QString& name : p.second) {
-            addSeries(p.first, name);
+    if (d_ptr->acceptMode == AcceptOneSeries) {
+        // 仅接受一个序列：多列拖入时只保留第一个，其余忽略并通知外部提示
+        int ignored = 0;
+        bool added  = false;
+        for (const auto& p : series) {
+            for (const QString& name : p.second) {
+                if (added) {
+                    ++ignored;
+                    continue;
+                }
+                addSeries(p.first, name);
+                added = true;  // 无论验证器是否拒绝，都只尝试第一个，避免旧内容被反复清空
+            }
+        }
+        if (ignored > 0) {
+            Q_EMIT excessSeriesIgnored(ignored);
+        }
+    } else {
+        for (const auto& p : series) {
+            for (const QString& name : p.second) {
+                addSeries(p.first, name);
+            }
         }
     }
     event->acceptProposedAction();

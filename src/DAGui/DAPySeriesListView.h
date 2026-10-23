@@ -3,6 +3,7 @@
 #include "DAGuiAPI.h"
 #include <QListView>
 #include <QStringList>
+#include <functional>
 #include "DAData.h"
 class QDragEnterEvent;
 class QDropEvent;
@@ -23,6 +24,8 @@ public:
         AcceptOneDataframeMultSeries,  ///< 接受1个dataframe以及它下面的多个series
         AcceptMultDataframeMultSeries  ///< 接受多个dataframe的多个series
     };
+    // 添加序列前的验证器：返回 false 拒绝添加（data 为 dataframe 数据，name 为列名）
+    typedef std::function< bool(const DAData&, const QString&) > AddSeriesValidator;
 
 public:
     DAPySeriesListView(QWidget* par = nullptr);
@@ -33,6 +36,8 @@ public:
     // 模式
     void setAcceptMode(AcceptMode mode);
     AcceptMode getAcceptMode() const;
+    // 设置添加验证器（可为空），在 addSeries 实际添加前调用，返回 false 则拒绝
+    void setAddSeriesValidator(AddSeriesValidator validator);
 
     // 添加序列
     void addSeries(const DAData& dataframeData, const QString& name);
@@ -45,6 +50,8 @@ public:
 
 Q_SIGNALS:
     void seriesChanged();
+    // AcceptOneSeries 模式下一次拖入多个序列时，只保留第一个，其余被忽略
+    void excessSeriesIgnored(int ignoredCount);
 
 protected:
     void dragEnterEvent(QDragEnterEvent* event) override;

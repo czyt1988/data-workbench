@@ -322,6 +322,8 @@ void DAAppActions::buildViewAction()
     actionShowLeftSideBar = createAction(UiNames::Action::ShowLeftSideBar, ":/app/bright/Icon/left-sider-bar.svg", true, true);
     actionShowRightSideBar = createAction(UiNames::Action::ShowRightSideBar, ":/app/bright/Icon/right-sider-bar.svg", true, true);
     actionShowAgentArea = createAction(UiNames::Action::ShowAgentArea, ":/app/bright/Icon/showAgent.svg");
+    actionShowDataLinkTable = createAction(UiNames::Action::ShowDataLinkTable, ":/app/bright/Icon/plot-probe.svg");
+    actionShowMarkdownView = createAction(UiNames::Action::ShowMarkdownView, ":/app/bright/Icon/markdown.svg");
     actionResetDefaultLayout = createAction(UiNames::Action::ResetDefaultLayout, ":/app/bright/Icon/viewAll.svg");
     actionManageLayouts      = createAction(UiNames::Action::ManageLayouts, ":/app/bright/Icon/layoutManage.svg");
 }
@@ -819,6 +821,12 @@ void DAAppActions::retranslateUi()
     actionShowRightSideBar->setToolTip(tr("Show the right side bar"));  // cn:显示右侧边栏
     actionShowAgentArea->setText(tr("Show Agent Area"));  // cn:Agent 助手
     actionShowAgentArea->setToolTip(tr("Show the agent assistant area"));  // cn:显示 Agent 助手区域
+    actionShowDataLinkTable->setText(tr("Show Data Link Table"));  // cn:数据联动表
+    actionShowDataLinkTable->setToolTip(tr("Show the data link table (hidden by default, shown when data probes are used)"));  // cn:显示数据联动表（默认隐藏，使用数据探针后自动显示）
+    if (actionShowMarkdownView) {
+        actionShowMarkdownView->setText(tr("Show Markdown Viewer"));  // cn:Markdown 查看器
+        actionShowMarkdownView->setToolTip(tr("Show the markdown viewer (opens a file dialog if no file is open)"));  // cn:显示 Markdown 查看器（未打开文件时将弹出文件选择框）
+    }
     // Config Category
     actionPluginManager->setText(tr("Plugin Config"));             // cn:插件设置
     actionPluginManager->setToolTip(tr("Show the plugin manager"));  // cn:显示插件管理器

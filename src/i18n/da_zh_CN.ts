@@ -1452,7 +1452,7 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="../APP/DAAppActions.cpp" line="+474"/>
+        <location filename="../APP/DAAppActions.cpp" line="+476"/>
         <source>Open</source>
         <translation>打开</translation>
     </message>
@@ -2752,7 +2752,27 @@
         <translation>显示 Agent 助手区域</translation>
     </message>
     <message>
+        <location line="+1"/>
+        <source>Show Data Link Table</source>
+        <translation>数据联动表</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Show the data link table (hidden by default, shown when data probes are used)</source>
+        <translation>显示数据联动表（默认隐藏，使用数据探针后自动显示）</translation>
+    </message>
+    <message>
         <location line="+2"/>
+        <source>Show Markdown Viewer</source>
+        <translation>Markdown 查看器</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Show the markdown viewer (opens a file dialog if no file is open)</source>
+        <translation>显示 Markdown 查看器（未打开文件时将弹出文件选择框）</translation>
+    </message>
+    <message>
+        <location line="+3"/>
         <source>Plugin Config</source>
         <translation>插件设置</translation>
     </message>
@@ -2853,7 +2873,7 @@
         <translation>撤销</translation>
     </message>
     <message>
-        <location line="-156"/>
+        <location line="-162"/>
         <source>Find</source>
         <translation>查找</translation>
     </message>
@@ -3278,7 +3298,7 @@
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+850"/>
+        <location filename="../APP/DAAppController.cpp" line="+849"/>
         <source>Save Project</source>
         <translation>保存工程</translation>
     </message>
@@ -3325,7 +3345,7 @@
         <translation>图片保存失败：%1</translation>
     </message>
     <message>
-        <location line="+110"/>
+        <location line="+69"/>
         <source>Reset Layout</source>
         <translation>恢复默认布局</translation>
     </message>
@@ -3442,7 +3462,7 @@
         <translation>在创建一个坐标系之前，需要先创建一个绘图窗口</translation>
     </message>
     <message>
-        <location line="-1854"/>
+        <location line="-1813"/>
         <source>Please select the data operation window</source>
         <translation>请选中数据操作窗口</translation>
     </message>
@@ -3503,68 +3523,18 @@
         <translation>获取到空工程接口</translation>
     </message>
     <message>
-        <location line="+37"/>
-        <source>Windows 7</source>
-        <translation>Windows 7</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Office 2013</source>
-        <translation>Office 2013</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Office 2016 Blue</source>
-        <translation>Office 2016 蓝色</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Office 2016 Green</source>
-        <translation>Office 2016 绿色</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Office 2016 Dark</source>
-        <translation>Office 2016 深色</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Office 2021 Blue</source>
-        <translation>Office 2021 蓝色</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Office 2021 Green</source>
-        <translation>Office 2021 绿色</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Office 2021 Dark</source>
-        <translation>Office 2021 深色</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Dark</source>
-        <translation>深色</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Dark 2</source>
-        <translation>深色2</translation>
-    </message>
-    <message>
-        <location line="-217"/>
-        <location line="+313"/>
+        <location line="-171"/>
+        <location line="+272"/>
         <source>No cells selected to copy</source>
         <translation>没有选中可复制的单元格</translation>
     </message>
     <message>
-        <location line="-1502"/>
+        <location line="-1458"/>
         <source>No active table</source>
         <translation>无活动表格</translation>
     </message>
     <message>
-        <location line="+1890"/>
+        <location line="+1846"/>
         <source>Cannot rename a series, please select a dataset</source>
         <translation>无法重命名series，请选中数据集</translation>
     </message>
@@ -3656,12 +3626,12 @@
         <translation>选中的数据源为空</translation>
     </message>
     <message>
-        <location line="-2740"/>
+        <location line="-2699"/>
         <source>Before running the workflow, you need to save the project</source>
         <translation>在运行工作流之前，需要先保存工程</translation>
     </message>
     <message>
-        <location line="+2005"/>
+        <location line="+1964"/>
         <source>Please select a column first</source>
         <translation>请先选择列</translation>
     </message>
@@ -3758,7 +3728,7 @@
         <translation>数据联动表</translation>
     </message>
     <message>
-        <location line="+512"/>
+        <location line="+514"/>
         <source>Markdown Viewer</source>
         <translation>Markdown 查看器</translation>
     </message>
@@ -3768,7 +3738,7 @@
         <translation>打开 Markdown 文件失败:%1</translation>
     </message>
     <message>
-        <location line="-519"/>
+        <location line="-521"/>
         <source>Undo History</source>
         <translation>撤销历史</translation>
     </message>
@@ -4222,13 +4192,13 @@
         <translation>配置</translation>
     </message>
     <message>
-        <location line="+31"/>
-        <location line="+409"/>
+        <location line="+29"/>
+        <location line="+401"/>
         <source>Workflow</source>
         <translation>工作流</translation>
     </message>
     <message>
-        <location line="-438"/>
+        <location line="-428"/>
         <source>Dataset</source>
         <translation>数据集</translation>
     </message>
@@ -4249,15 +4219,15 @@
     </message>
     <message>
         <location line="+2"/>
-        <location line="+13"/>
+        <location line="+11"/>
         <location line="+21"/>
-        <location line="+280"/>
+        <location line="+272"/>
         <location line="+195"/>
         <source>View</source>
         <translation>视图</translation>
     </message>
     <message>
-        <location line="-508"/>
+        <location line="-498"/>
         <source>Display</source>
         <translation>视图显示</translation>
     </message>
@@ -4267,101 +4237,96 @@
         <translation>布局</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Appearance</source>
-        <translation>外观</translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <location line="+240"/>
+        <location line="+2"/>
+        <location line="+232"/>
         <source>DataFrame</source>
         <translation>DataFrame</translation>
     </message>
     <message>
-        <location line="-239"/>
-        <location line="+241"/>
+        <location line="-231"/>
+        <location line="+233"/>
         <source>Table Operations</source>
         <translation>表格操作</translation>
     </message>
     <message>
-        <location line="-234"/>
-        <location line="+311"/>
+        <location line="-226"/>
+        <location line="+303"/>
         <source>Data Operations</source>
         <translation>数据操作</translation>
     </message>
     <message>
-        <location line="-317"/>
-        <location line="+243"/>
+        <location line="-309"/>
+        <location line="+235"/>
         <source>Axes</source>
         <translation>坐标轴</translation>
     </message>
     <message>
-        <location line="-242"/>
-        <location line="+255"/>
+        <location line="-234"/>
+        <location line="+247"/>
         <source>Column</source>
         <translation>列</translation>
     </message>
     <message>
-        <location line="-254"/>
+        <location line="-246"/>
         <location line="+12"/>
-        <location line="+252"/>
+        <location line="+244"/>
         <location line="+5"/>
         <source>Type</source>
         <translation>类型</translation>
     </message>
     <message>
-        <location line="-268"/>
+        <location line="-260"/>
         <location line="+12"/>
-        <location line="+267"/>
+        <location line="+259"/>
         <location line="+4"/>
         <source>Format</source>
         <translation>格式</translation>
     </message>
     <message>
-        <location line="-277"/>
-        <location line="+335"/>
+        <location line="-269"/>
+        <location line="+327"/>
         <source>Table Style</source>
         <translation>表格样式</translation>
     </message>
     <message>
-        <location line="-334"/>
-        <location line="+338"/>
+        <location line="-326"/>
+        <location line="+330"/>
         <source>Fill</source>
         <translation>底色</translation>
     </message>
     <message>
-        <location line="-337"/>
-        <location line="+345"/>
+        <location line="-329"/>
+        <location line="+337"/>
         <source>Font</source>
         <translation>字体</translation>
     </message>
     <message>
-        <location line="-344"/>
-        <location line="+350"/>
+        <location line="-336"/>
+        <location line="+342"/>
         <source>Clear</source>
         <translation>清除</translation>
     </message>
     <message>
-        <location line="-343"/>
+        <location line="-335"/>
         <source>Fill Color</source>
         <translation>填充颜色</translation>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+419"/>
+        <location line="+411"/>
         <source>Workflow Edit</source>
         <translation>工作流编辑</translation>
     </message>
     <message>
-        <location line="-456"/>
-        <location line="+38"/>
-        <location line="+422"/>
+        <location line="-446"/>
+        <location line="+36"/>
+        <location line="+414"/>
         <source>Clipboard</source>
         <translation>剪贴板</translation>
     </message>
     <message>
-        <location line="-408"/>
-        <location line="+528"/>
+        <location line="-400"/>
+        <location line="+520"/>
         <source>Chart Style</source>
         <translation>图表样式</translation>
     </message>
@@ -4433,43 +4398,43 @@
         <translation>Agent 模块未就绪</translation>
     </message>
     <message>
-        <location line="-1068"/>
-        <location line="+426"/>
+        <location line="-1060"/>
+        <location line="+418"/>
         <source>Item</source>
         <translation>图元</translation>
     </message>
     <message>
-        <location line="-425"/>
-        <location line="+434"/>
+        <location line="-417"/>
+        <location line="+426"/>
         <source>Text</source>
         <translation>文本</translation>
     </message>
     <message>
-        <location line="-433"/>
-        <location line="+438"/>
+        <location line="-425"/>
+        <location line="+430"/>
         <source>Background</source>
         <translation>背景</translation>
     </message>
     <message>
-        <location line="-435"/>
-        <location line="+517"/>
+        <location line="-427"/>
+        <location line="+509"/>
         <source>Workflow Run</source>
         <translation>工作流运行</translation>
     </message>
     <message>
-        <location line="-516"/>
-        <location line="+519"/>
+        <location line="-508"/>
+        <location line="+511"/>
         <source>Run</source>
         <translation>运行</translation>
     </message>
     <message>
-        <location line="-517"/>
-        <location line="+350"/>
+        <location line="-509"/>
+        <location line="+342"/>
         <source>Figure</source>
         <translation>绘图</translation>
     </message>
     <message>
-        <location line="-344"/>
+        <location line="-336"/>
         <source>Figure Setting</source>
         <translation>绘图设置</translation>
     </message>
@@ -4485,12 +4450,12 @@
     </message>
     <message>
         <location line="+5"/>
-        <location line="+582"/>
+        <location line="+574"/>
         <source>Chart Edit</source>
         <translation>绘图编辑</translation>
     </message>
     <message>
-        <location line="-584"/>
+        <location line="-576"/>
         <source>Chart Setting</source>
         <translation>绘图设置</translation>
     </message>
@@ -4501,12 +4466,12 @@
     </message>
     <message>
         <location line="+2"/>
-        <location line="+591"/>
+        <location line="+583"/>
         <source>Select Tool</source>
         <translation>选区工具</translation>
     </message>
     <message>
-        <location line="-590"/>
+        <location line="-582"/>
         <source>Chart Assist Tool</source>
         <translation>图表辅助工具</translation>
     </message>
@@ -4528,7 +4493,7 @@
     </message>
     <message>
         <location line="-15"/>
-        <location line="+374"/>
+        <location line="+366"/>
         <source>Stats Plot</source>
         <translation>统计绘图</translation>
     </message>
@@ -4543,8 +4508,8 @@
         <translation>工作流视图</translation>
     </message>
     <message>
-        <location line="-509"/>
-        <location line="+546"/>
+        <location line="-499"/>
+        <location line="+536"/>
         <source>Export</source>
         <translation>导出</translation>
     </message>
@@ -4554,8 +4519,7 @@
         <translation>绘图操作</translation>
     </message>
     <message>
-        <location line="-566"/>
-        <location line="+613"/>
+        <location line="+47"/>
         <source>Theme</source>
         <translation>主题</translation>
     </message>
@@ -4565,26 +4529,26 @@
         <translation>辅助工具</translation>
     </message>
     <message>
-        <location line="-634"/>
-        <location line="+288"/>
+        <location line="-626"/>
+        <location line="+280"/>
         <source>Edit</source>
         <translation>编辑</translation>
     </message>
     <message>
-        <location line="-279"/>
-        <location line="+355"/>
+        <location line="-271"/>
+        <location line="+347"/>
         <source>Conditional</source>
         <translation>条件格式</translation>
     </message>
     <message>
-        <location line="-361"/>
-        <location line="+316"/>
+        <location line="-353"/>
+        <location line="+308"/>
         <source>Computed Column</source>
         <translation>计算列</translation>
     </message>
     <message>
-        <location line="-315"/>
-        <location line="+322"/>
+        <location line="-307"/>
+        <location line="+314"/>
         <source>Data Transform</source>
         <translation>数据变换</translation>
     </message>
@@ -6412,6 +6376,7 @@
         <translation>y</translation>
     </message>
     <message>
+        <location line="+11"/>
         <location line="+242"/>
         <location line="+8"/>
         <location line="+23"/>
@@ -6422,11 +6387,25 @@
         <location line="+14"/>
         <location line="+19"/>
         <location line="+11"/>
+        <location line="+205"/>
+        <location line="+21"/>
+        <location line="+12"/>
+        <location line="+26"/>
+        <location line="+7"/>
+        <location line="+7"/>
+        <location line="+22"/>
+        <location line="+9"/>
+        <location line="+25"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location line="-138"/>
+        <location line="-714"/>
+        <source>Only one series can be used as x, the extra series were ignored</source>
+        <translation>x只能添加一个序列，多余的序列已被忽略</translation>
+    </message>
+    <message>
+        <location line="+242"/>
         <source>The initial value of x auto increment series must be a floating-point arithmetic number</source>
         <translation>x自增序列的初始值必须为浮点数</translation>
     </message>
@@ -6447,28 +6426,44 @@
     </message>
     <message>
         <location line="+23"/>
+        <location line="+281"/>
         <source>x and y cannot be set to autoincrement at the same time</source>
         <translation>x和y无法同时设置为自增</translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location line="-268"/>
         <location line="+33"/>
         <location line="+30"/>
+        <location line="+226"/>
+        <location line="+38"/>
+        <location line="+7"/>
+        <location line="+7"/>
         <source>The None value cannot be converted to a series</source>
         <translation>None值无法转换为序列</translation>
     </message>
     <message>
-        <location line="-49"/>
+        <location line="-327"/>
         <location line="+33"/>
         <location line="+35"/>
+        <location line="+215"/>
+        <location line="+62"/>
+        <location line="+34"/>
         <source>Exception occurred during extracting from pandas.Series to double vector:%1</source>
         <translation>从 pandas.Series 提取为 double vector 过程中出现异常：%1</translation>
     </message>
     <message>
-        <location line="-63"/>
+        <location line="-374"/>
         <location line="+33"/>
+        <location line="+249"/>
+        <location line="+62"/>
+        <location line="+34"/>
         <source>Exception occurred during extracting from pandas.Series to double vector</source>
         <translation>从 pandas.Series 提取为 double vector 过程中出现异常</translation>
+    </message>
+    <message>
+        <location line="-25"/>
+        <source>The length of y series &apos;%1&apos; (%2) does not match the length of x series &apos;%3&apos; (%4). All y series must have the same length as x</source>
+        <translation>y序列&apos;%1&apos;的长度(%2)与x序列&apos;%3&apos;的长度(%4)不一致，所有y序列的长度必须与x一致</translation>
     </message>
 </context>
 <context>
@@ -14716,7 +14711,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-3793"/>
+        <location filename="../APP/DAAppController.cpp" line="-3752"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>

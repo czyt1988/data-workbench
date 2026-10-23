@@ -9,7 +9,6 @@
 #include <QStandardPaths>
 #include <QTimer>
 #include <QFontComboBox>
-#include <QComboBox>
 #include <QInputDialog>
 #include <QMenu>
 #include <QApplication>
@@ -264,6 +263,9 @@ void DAAppController::initialize()
     // Agent 助手 Dock 的显示/隐藏由 actionShowAgentArea 驱动
     mDock->getAgentDock()->setToggleViewActionMode(ads::CDockWidget::ActionModeShow);
     mDock->getAgentDock()->setToggleViewAction(mActions->actionShowAgentArea);
+    // 数据联动表 Dock：默认隐藏，视图开关驱动显示（数据探针产生数据时经 requestRaise 自动弹出）
+    mDock->getDataLinkTableDock()->setToggleViewActionMode(ads::CDockWidget::ActionModeShow);
+    mDock->getDataLinkTableDock()->setToggleViewAction(mActions->actionShowDataLinkTable);
     // Agent 信号链：DAGui(Dock) 与 DAAgent 互不依赖，由 APP 层 connect（决策 D3b）。
     // 接口信号 → Dock 槽（13 条）—— DAAgentModule 不再持有 Dock，亦不再在 connectSignals
     // 中连 Bridge→Dock / this→Dock，唯一渲染路径经接口信号。
@@ -600,6 +602,8 @@ void DAAppController::initConnection()
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowSettingWidget, onActionSettingWidgetTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowRightSideBar, onActionShowRightSideBarTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowLeftSideBar, onActionShowLeftSideBarTriggered);
+    // Markdown 查看器（懒创建 dock：已创建时 raise；未打开过文件时弹文件选择框）
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowMarkdownView, onActionShowMarkdownViewTriggered);
     // workflow view 工作流视图
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowViewReadOnly, onActionWorkflowViewReadOnlyTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowViewMarker, onActionWorkflowViewMarkerTriggered);
@@ -630,14 +634,9 @@ void DAAppController::initConnection()
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionPaste, onActionPasteTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionDelete, onActionDeleteTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionSelectAll, onActionSelectAllTriggered);
-    // 视图页-布局/外观
+    // 视图页-布局（外观面板已删除，Ribbon 主题切换由 设置→常规 页提供）
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionResetDefaultLayout, onActionResetDefaultLayoutTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionManageLayouts, onActionManageLayoutsTriggered);
-    setupRibbonThemeCombo();
-    connect(mRibbon->mComboxRibbonTheme,
-            QOverload< int >::of(&QComboBox::currentIndexChanged),
-            this,
-            &DAAppController::onRibbonThemeComboCurrentIndexChanged);
     //===================================================
     // setDockAreaInterface 有其他的绑定
     //===================================================
@@ -1931,59 +1930,18 @@ void DAAppController::onActionTerminateCurrentWorkflowTriggered()
 }
 
 /**
- * @brief 视图页-外观面板：填充主题下拉并同步当前配置值
+ * @brief 显示 Markdown 查看器（视图页开关）
  *
- * 10 款完整枚举（与设置页 fillRibbonThemeCombo 一致），当前值取 DA_CONFIG_KEY_RIBBON_THEME
+ * dock 已创建（打开过文件）时直接 raise 找回窗口；
+ * 从未打开过时复用「打开 Markdown」的文件选择流程创建 dock
  */
-void DAAppController::setupRibbonThemeCombo()
+void DAAppController::onActionShowMarkdownViewTriggered()
 {
-    QComboBox* combo = mRibbon->mComboxRibbonTheme;
-    if (!combo) {
+    if (ads::CDockWidget* mdock = mDock->getMarkdownDock()) {
+        mdock->raise();
         return;
     }
-    QSignalBlocker blocker(combo);
-    combo->clear();
-    // 与 DASettingPageGeneral::fillRibbonThemeCombo 保持一致
-    combo->addItem(tr("Windows 7"), static_cast< int >(SARibbonTheme::RibbonThemeWindows7));        // cn:Windows 7
-    combo->addItem(tr("Office 2013"), static_cast< int >(SARibbonTheme::RibbonThemeOffice2013));    // cn:Office 2013
-    combo->addItem(tr("Office 2016 Blue"), static_cast< int >(SARibbonTheme::RibbonThemeOffice2016Blue));  // cn:Office 2016 蓝色
-    combo->addItem(tr("Office 2016 Green"), static_cast< int >(SARibbonTheme::RibbonThemeOffice2016Green));  // cn:Office 2016 绿色
-    combo->addItem(tr("Office 2016 Dark"), static_cast< int >(SARibbonTheme::RibbonThemeOffice2016Dark));    // cn:Office 2016 深色
-    combo->addItem(tr("Office 2021 Blue"), static_cast< int >(SARibbonTheme::RibbonThemeOffice2021Blue));    // cn:Office 2021 蓝色
-    combo->addItem(tr("Office 2021 Green"), static_cast< int >(SARibbonTheme::RibbonThemeOffice2021Green));  // cn:Office 2021 绿色
-    combo->addItem(tr("Office 2021 Dark"), static_cast< int >(SARibbonTheme::RibbonThemeOffice2021Dark));    // cn:Office 2021 深色
-    combo->addItem(tr("Dark"), static_cast< int >(SARibbonTheme::RibbonThemeDark));                  // cn:深色
-    combo->addItem(tr("Dark 2"), static_cast< int >(SARibbonTheme::RibbonThemeDark2));               // cn:深色2
-    // 同步当前配置（-1=跟随框架默认主题，不选中任何项）
-    if (mConfig) {
-        int theme = (*mConfig)[ DA_CONFIG_KEY_RIBBON_THEME ].toInt();
-        int idx   = combo->findData(theme);
-        if (idx >= 0) {
-            combo->setCurrentIndex(idx);
-        }
-    }
-}
-
-/**
- * @brief 视图页-外观面板：主题切换
- *
- * 立即应用主题并写入 DA_CONFIG_KEY_RIBBON_THEME 持久化（修复原右上角菜单不持久化问题）
- */
-void DAAppController::onRibbonThemeComboCurrentIndexChanged(int index)
-{
-    if (index < 0 || !mMainWindow) {
-        return;
-    }
-    QComboBox* combo = mRibbon->mComboxRibbonTheme;
-    if (!combo) {
-        return;
-    }
-    int theme = combo->itemData(index).toInt();
-    mMainWindow->setRibbonTheme(static_cast< SARibbonTheme >(theme));
-    if (mConfig) {
-        (*mConfig)[ DA_CONFIG_KEY_RIBBON_THEME ] = theme;
-        mConfig->saveConfig();
-    }
+    onActionOpenMarkdownTriggered();
 }
 
 /**

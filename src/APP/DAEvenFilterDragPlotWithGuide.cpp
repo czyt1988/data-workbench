@@ -151,30 +151,36 @@ bool DAEvenFilterDragPlotWithGuide::dropEvent(QDropEvent* e, DAFigureWidget* fig
         if (series.isEmpty()) {
             return false;
         }
-        // 情况1：只有1个series
-        if (series.size() == 1) {
-            DAData data            = series.first().first;
-            QStringList serieNames = series.first().second;
-            if (serieNames.size() > 0) {
-                DAChartAddCurveWidget* addCurveWidget = getChartAddCurveWidget();
-                if (addCurveWidget) {
-                    if (serieNames.size() == 1) {
-                        addCurveWidget->setY(data, serieNames.first());
-                    } else {
-                        addCurveWidget->setX(data, serieNames.first());
-                        addCurveWidget->setY(data, serieNames[ 1 ]);
+        DAChartAddCurveWidget* addCurveWidget = getChartAddCurveWidget();
+        if (addCurveWidget) {
+            if (series.size() == 1) {
+                // 同一 dataframe 的多列：第一列作 x，其余全部作 y
+                DAData data            = series.first().first;
+                QStringList serieNames = series.first().second;
+                if (serieNames.size() == 1) {
+                    addCurveWidget->setY(data, serieNames.first());
+                } else if (serieNames.size() > 1) {
+                    addCurveWidget->setX(data, serieNames.first());
+                    for (int i = 1; i < serieNames.size(); ++i) {
+                        addCurveWidget->setY(data, serieNames[ i ]);
                     }
                 }
-            }
-        } else {
-            // 多个数据，各取
-            DAData dataX = series[ 0 ].first;
-            DAData dataY = series[ 1 ].first;
-            if (!series[ 0 ].second.isEmpty() && !series[ 1 ].second.isEmpty()) {
-                DAChartAddCurveWidget* addCurveWidget = getChartAddCurveWidget();
-                if (addCurveWidget) {
+            } else {
+                // 多个数据源：第一个的第一列作 x，其余各数据源的列全部作 y
+                DAData dataX = series[ 0 ].first;
+                if (!series[ 0 ].second.isEmpty()) {
                     addCurveWidget->setX(dataX, series[ 0 ].second.first());
-                    addCurveWidget->setY(dataY, series[ 1 ].second.first());
+                }
+                bool firstSkipped = false;
+                for (const auto& p : series) {
+                    for (const QString& name : p.second) {
+                        if (!firstSkipped) {
+                            // 跳过已作为 x 的第一列
+                            firstSkipped = true;
+                            continue;
+                        }
+                        addCurveWidget->setY(p.first, name);
+                    }
                 }
             }
         }

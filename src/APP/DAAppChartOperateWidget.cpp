@@ -104,9 +104,9 @@ void DAAppChartOperateWidget::onChartGuideAccept()
         Q_EMIT plot3DItemCreated(fig, chart3d, item);
     } else
     {
-        // === 2D 路径（现有逻辑） ===
-        QwtPlotItem* item = mChartGuideDlg->createPlotItem();
-        if (nullptr == item) {
+        // === 2D 路径：批量创建（曲线支持 1 个 x + 多个 y） ===
+        QList< QwtPlotItem* > items = mChartGuideDlg->createPlotItems();
+        if (items.isEmpty()) {
             return;
         }
         DAFigureWidget* fig = getCurrentFigure();
@@ -117,13 +117,25 @@ void DAAppChartOperateWidget::onChartGuideAccept()
         if (!chart) {
             chart = fig->createChart();
         }
+        // 坐标轴标题推荐（x 列名 / 单 y 列名或多 y 的 "y"）；仅在轴标题为空时设置，避免覆盖用户已改的标题
+        QString xTitle, yTitle;
+        if (mChartGuideDlg->getAxisTitleHint(xTitle, yTitle)) {
+            if (chart->getAxisLabel(QwtPlot::xBottom).isEmpty() && !xTitle.isEmpty()) {
+                chart->setAxisLabel(QwtPlot::xBottom, xTitle);
+            }
+            if (chart->getAxisLabel(QwtPlot::yLeft).isEmpty() && !yTitle.isEmpty()) {
+                chart->setAxisLabel(QwtPlot::yLeft, yTitle);
+            }
+        }
         // 颜色由 qwt 颜色循环在 addItem_ -> attach 时自动分配，无需显式取色
-        fig->addItem_(chart, item);
+        for (QwtPlotItem* item : items) {
+            fig->addItem_(chart, item);
+        }
         if (chart) {
             chart->rescaleAxes();
             chart->replot();
         }
-        Q_EMIT plotItemCreated(fig, chart, item);
+        Q_EMIT plotItemCreated(fig, chart, items.first());
     }
 }
 

@@ -244,6 +244,41 @@ QwtPlotItem* DADialogChartGuide::createPlotItem()
     return item;
 }
 
+/**
+ * @brief 批量获取绘图item（如曲线的 1 个 x + 多个 y）
+ * @return 如果没有返回空列表
+ */
+QList< QwtPlotItem* > DADialogChartGuide::createPlotItems()
+{
+    DAAbstractChartAddItemWidget* w = qobject_cast< DAAbstractChartAddItemWidget* >(ui->stackedWidget->currentWidget());
+    if (!w) {
+        return {};
+    }
+    QList< QwtPlotItem* > items = w->createPlotItems();
+    if (items.isEmpty()) {
+        return {};
+    }
+    for (QwtPlotItem* item : items) {
+        initSetPlotItem(item);
+    }
+    return items;
+}
+
+/**
+ * @brief 获取当前添加部件提供的坐标轴标题推荐
+ * @param xTitle 输出 x 轴标题
+ * @param yTitle 输出 y 轴标题
+ * @return 当前部件不提供时返回 false
+ */
+bool DADialogChartGuide::getAxisTitleHint(QString& xTitle, QString& yTitle) const
+{
+    DAAbstractChartAddItemWidget* w = qobject_cast< DAAbstractChartAddItemWidget* >(ui->stackedWidget->currentWidget());
+    if (!w) {
+        return false;
+    }
+    return w->getAxisTitleHint(xTitle, yTitle);
+}
+
 DAAbstractChartAddItemWidget* DADialogChartGuide::getCurrentChartAddItemWidget() const
 {
     return qobject_cast< DAAbstractChartAddItemWidget* >(ui->stackedWidget->currentWidget());

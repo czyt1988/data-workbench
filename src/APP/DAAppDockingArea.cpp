@@ -240,6 +240,7 @@ void DAAppDockingArea::buildDockingArea()
     mAgentDock->setIcon(QIcon(":/app/bright/Icon/showAgent.svg"));
 
     // 数据联动表 Dock —— 作为右侧附属区的标签页，与"设置"/"Agent"同组
+    // 默认隐藏：只在数据探针产生数据（requestRaise）或用户通过视图开关打开时显示
     mDataLinkTableWidget = new DADataLinkTableWidget(mApp);
     mDataLinkTableWidget->setObjectName(QString::fromUtf8(UiNames::Dock::DataLinkTableWidget));
     mDataLinkTableWidget->setChartOperateWidget(mChartOperateWidget);
@@ -248,6 +249,7 @@ void DAAppDockingArea::buildDockingArea()
         QString::fromUtf8(UiNames::Dock::DataLinkTableWidgetDock),
         mSettingContainerDock->dockAreaWidget());
     mDataLinkTableDock->setIcon(QIcon(":/app/bright/Icon/plot-probe.svg"));
+    mDataLinkTableDock->toggleView(false);
     // 探针创建（探针模式点击）-> 联动表 dock 提到前台
     connect(mDataLinkTableWidget, &DADataLinkTableWidget::requestRaise, this, [this]() {
         raiseDockByWidget(mDataLinkTableWidget);
@@ -606,4 +608,13 @@ bool DAAppDockingArea::showMarkdownFile(const QString& filePath)
     mMarkdownDock->raise();
     mMarkdownView->scrollToTop();
     return true;
+}
+
+/**
+ * @brief 获取 Markdown 查看 dock（懒创建）
+ * @return 尚未创建过时返回 nullptr
+ */
+ads::CDockWidget* DAAppDockingArea::getMarkdownDock() const
+{
+    return mMarkdownDock;
 }

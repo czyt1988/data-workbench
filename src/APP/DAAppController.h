@@ -465,8 +465,8 @@ private Q_SLOTS:
     //===================================================
     // 其他
     //===================================================
-    // 视图页-外观面板的主题下拉切换（写 DA_CONFIG_KEY_RIBBON_THEME 持久化）
-    void onRibbonThemeComboCurrentIndexChanged(int index);
+    // 显示 Markdown 查看器（懒创建 dock：已创建时 raise，未打开过文件时弹文件选择框）
+    void onActionShowMarkdownViewTriggered();
     // 恢复默认布局（触发前弹确认框）
     void onActionResetDefaultLayoutTriggered();
     // 打开布局管理对话框（保存/应用/删除布局方案）
@@ -572,8 +572,6 @@ private:
     void activateContextCategoryForWidget(QWidget* widget);
     // 激活操作窗口当前的undo栈（焦点切到数据操作/绘图窗口时同步全局undo/redo action状态）
     void activateUndoStackForWidget(DAAbstractOperateWidget* w);
-    // 视图页-外观面板：填充主题下拉（10款完整枚举，与设置页一致）并同步当前值
-    void setupRibbonThemeCombo();
     // 注册 Agent 聊天窗口本地跳转链接处理器（da-figure:/da-data: 等协议，见 DAAgentLinkDispatcher）
     void setupAgentLinkHandlers();
     // da-figure: 协议处理：定位目标 figure 并 raise 绘图区（由 setupAgentLinkHandlers 注册）

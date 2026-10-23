@@ -3,6 +3,7 @@
 #include "DAGuiAPI.h"
 #include "DAFigureAPI.h"
 #include <QDialog>
+#include <QList>
 #include <QSet>
 #include "DAData.h"
 #include "qwt_plot_item.h"
@@ -47,6 +48,10 @@ public:
     void setCurrentChartType(DA::DAChartTypes t);
     // 获取绘图item，如果没有返回nullptr
     QwtPlotItem* createPlotItem();
+    // 批量获取绘图item（如曲线的 1 个 x + 多个 y），无法创建返回空列表
+    QList< QwtPlotItem* > createPlotItems();
+    // 获取当前添加部件提供的坐标轴标题推荐（x/y 轴标题），不提供返回 false
+    bool getAxisTitleHint(QString& xTitle, QString& yTitle) const;
     // 获取当前的绘图指引窗口
     DAAbstractChartAddItemWidget* getCurrentChartAddItemWidget() const;
     DAAbstractChartAddItemWidget* getChartAddItemWidget(DA::DAChartTypes chartType) const;

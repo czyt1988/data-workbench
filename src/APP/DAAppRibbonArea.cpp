@@ -231,8 +231,6 @@ void DAAppRibbonArea::resetText()
     mCategoryView->setCategoryName(tr("View"));             // cn:视图
     mPannelViewMainView->setPanelName(tr("Display"));       // cn:视图显示
     mPannelViewLayout->setPanelName(tr("Layout"));          // cn:布局
-    mPannelViewAppearance->setPanelName(tr("Appearance"));  // cn:外观
-    mComboxRibbonThemeContainer->setPrefix(tr("Theme"));    // cn:主题
 
     mContextDataFrame->setContextTitle(tr("DataFrame"));                // cn:DataFrame
     mCategoryDataframeTableOperate->setCategoryName(tr("Table Operations"));  // cn:表格操作
@@ -408,7 +406,7 @@ void DAAppRibbonArea::buildRibbonDataCategory()
  * @brief 构建视图标签
  * objectname=da-ribbon-category-view
  *
- * 结构：显示、布局、外观。
+ * 结构：显示、布局。（原外观面板已删除，Ribbon 主题切换由 设置→常规 页提供）
  */
 void DAAppRibbonArea::buildRibbonViewCategory()
 {
@@ -416,7 +414,7 @@ void DAAppRibbonArea::buildRibbonViewCategory()
     mCategoryView->setObjectName(QString::fromUtf8(UiNames::Ribbon::ViewCategory));
 
     // 显示面板：工作流区、工作流管理区、绘图区、绘图管理区、数据区、数据管理区、
-    // 消息日志、撤销历史、设置、左右侧边栏、智能体区
+    // 消息日志、撤销历史、设置、左右侧边栏、智能体区、数据联动表、Markdown 查看器
     mPannelViewMainView = new SARibbonPanel(mCategoryView);
     mPannelViewMainView->setObjectName(QString::fromUtf8(UiNames::Ribbon::ViewMainPanel));
     mPannelViewMainView->addLargeAction(mActions->actionShowWorkFlowArea);
@@ -429,6 +427,8 @@ void DAAppRibbonArea::buildRibbonViewCategory()
     mPannelViewMainView->addSmallAction(mActions->actionShowMessageLogView);
     mPannelViewMainView->addSmallAction(mActions->actionShowUndoHistory);  // 撤销历史：点击即打开并置顶
     mPannelViewMainView->addSmallAction(mActions->actionShowSettingWidget);
+    mPannelViewMainView->addSmallAction(mActions->actionShowDataLinkTable);  // 数据联动表：默认隐藏，数据探针后自动显示
+    mPannelViewMainView->addSmallAction(mActions->actionShowMarkdownView);  // Markdown 查看器：懒创建，关闭后可从此处找回
     mPannelViewMainView->addSeparator();
     mPannelViewMainView->addMediumAction(mActions->actionShowLeftSideBar);
     mPannelViewMainView->addMediumAction(mActions->actionShowRightSideBar);
@@ -443,16 +443,6 @@ void DAAppRibbonArea::buildRibbonViewCategory()
     mPannelViewLayout->addLargeAction(mActions->actionManageLayouts);
     mPannelViewLayout->addLargeAction(mActions->actionResetDefaultLayout);
     mCategoryView->addPanel(mPannelViewLayout);
-
-    // 外观面板：切换 Ribbon 主题
-    // 下拉框列出全部 10 款主题，与设置页一致，切换即生效并持久化
-    mPannelViewAppearance = new SARibbonPanel(mCategoryView);
-    mPannelViewAppearance->setObjectName(QString::fromUtf8(UiNames::Ribbon::ViewAppearancePanel));
-    mComboxRibbonThemeContainer = new SARibbonLineWidgetContainer(mPannelViewAppearance);
-    mComboxRibbonTheme          = new QComboBox(mComboxRibbonThemeContainer);
-    mComboxRibbonThemeContainer->setWidget(mComboxRibbonTheme);
-    mPannelViewAppearance->addWidget(mComboxRibbonThemeContainer, SARibbonPanelItem::Medium);
-    mCategoryView->addPanel(mPannelViewAppearance);
 
     //----------------------------------------------------------
 
