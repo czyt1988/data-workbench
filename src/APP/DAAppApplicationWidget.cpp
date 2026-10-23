@@ -12,6 +12,7 @@
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QListWidget>
+#include <QLocale>
 #include <QMessageBox>
 #include <QSizePolicy>
 #include <QStackedWidget>
@@ -441,7 +442,7 @@ QWidget* DAAppApplicationWidget::PrivateData::makeRecentItemWidget(const QString
     vLay->addWidget(pathLabel);
     hLay->addLayout(vLay, 1);
     // 最后修改时间
-    QLabel* timeLabel = new QLabel(fi.lastModified().toString(Qt::SystemLocaleShortDate), w);
+    QLabel* timeLabel = new QLabel(QLocale::system().toString(fi.lastModified(), QLocale::ShortFormat), w);
     timeLabel->setStyleSheet("color:#727272;font-size:9pt;");
     hLay->addWidget(timeLabel);
     if (!exists) {

@@ -993,7 +993,11 @@ int DADataOperateOfDataFrameWidget::pasteFromClipboard()
     if (QItemSelectionModel* sm = ui->tableView->selectionModel()) {
         // 段列表取首个区间左上角（等价于旧 selectedIndexes().first()，不物化整个选区）
         const QItemSelection sel = sm->selection();
-        anchor                   = sel.isEmpty() ? sm->currentIndex() : sel.first().topLeft();
+        if (sel.isEmpty()) {
+            anchor = sm->currentIndex();
+        } else {
+            anchor = sel.first().topLeft();
+        }
     }
     if (!anchor.isValid()) {
         daWarning << tr("Please select a cell to paste into");  // cn:请先选中要粘贴的起始单元格
