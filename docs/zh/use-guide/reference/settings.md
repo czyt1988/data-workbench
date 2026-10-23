@@ -45,7 +45,7 @@ Ribbon 样式四种模式的差别是功能组占三行还是两行、按钮区�
 
 窗口状态那一项需要理解两件事：勾选时关闭软件会把窗口几何和停靠布局写进状态文件，下次启动恢复；不勾选时关闭软件会删除已经存在的状态文件，下次启动用默认布局。想回到默认布局又不想改开关，用「Clear the saved window state」/ 清除已保存的窗口状态 按钮，确认后删掉文件即可。
 
-界面语言下拉框里除了 `System` / 跟随系统，其余条目由程序从翻译文件的搜索目录推导出来，搜索目录是可执行文件目录下的 `translations`、`translations_user`，以及可执行文件上一级的 `translations`。随软件发布的翻译文件是 `da_zh_CN` 和 `da_en_US` 两份。下拉框里没有需要的语言时，直接改 `dawork-config.xml` 的 `language` 键（取值是 `zh_CN`、`en_US` 这样的语言代码）是另一条途径，两种改法都在重启程序后生效。
+界面语言下拉框里除了 `System` / 跟随系统，其余条目由程序从翻译文件的搜索目录推导出来，搜索目录是可执行文件目录下的 `translations`、`translations_user`，以及可执行文件上一级的 `translations`。随软件发布的翻译文件是 `da_zh_CN` 和 `da_en_US` 两份。下拉框里没有需要的语言时，直接改 `dawork-config.json` 的 `ui.language` 项（取值是 `zh_CN`、`en_US` 这样的语言代码）是另一条途径，两种改法都在重启程序后生效。
 
 这一页改错的典型表现是外观与预期不符：字体调大后对话框里的控件显得拥挤，重启后布局按新的字号重排；语言改成英文后仍有少量文字保持中文，说明这些文字没有对应的翻译条目，属于正常情况；窗口状态记录关掉后每次启动都回到默认布局，这是关闭时删除了状态文件的结果。
 
@@ -96,28 +96,25 @@ Ribbon 样式四种模式的差别是功能组占三行还是两行、按钮区�
 
 ## Advanced / 高级
 
-这个页面分行为、插件路径、节点脚本路径和脚本工作区四块。
+这个页面分行为和脚本工作区两块。
 
 | 设置项 | 控件 | 取值范围或选项 | 默认值 | 作用 |
 |--------|------|----------------|--------|------|
-| `Workflow execution timeout` / 工作流执行超时 | 小数数字框 | −1 到 86400，单位秒，−1 显示为 `Unlimited` / 无限 | −1 | 保存进配置；当前版本的程序没有读取它，运行工作流不会因此中断 |
 | `Max recent files` / 最近文件数上限 | 数字框 | 1 到 100 | 10 | 应用菜单里「Recent Files」/ 最近文件 列表最多保留几条 |
 | `Crash dump retention days` / 崩溃转储保留天数 | 数字框 | 1 到 365，单位天 | 7 | 点应用时清理超过这个天数的崩溃转储文件 |
 | `Auto-save interval` / 自动保存间隔 | 数字框 | 0 到 1440，单位分钟，0 显示为 `Disabled` / 禁用 | 0，不自动保存 | 按间隔自动保存有改动的工程 |
 | `Show splash screen on startup` / 启动时显示启动画面 | 复选框 | 勾选或不勾选 | 勾选 | 启动时先显示启动画面 |
-| `Plugin search path` / 插件搜索路径 | 单行输入框加 `Browse` | 一个目录 | 空 | 保存进配置；当前版本没有读取它，插件仍从固定目录加载 |
-| `Node script search paths` / 节点脚本搜索路径 | 列表加 `Add`、`Remove` | 若干目录 | 空列表 | 保存进配置；当前版本没有读取它，节点仍从固定目录发现 |
 | `Workspace directory` / 工作区目录 | 单行输入框加 `Browse`，占位文字 `Empty for system temporary directory` | 一个目录 | 空，用系统临时目录 | 脚本工作区本地目录的根目录 |
 | `Script execution timeout` / 脚本执行超时 | 数字框 | 0 到 3600，单位秒，0 显示为 `Disabled` / 禁用 | 300 | 单次脚本执行的时限 |
 | `Script result max characters` / 脚本结果最大字符数 | 数字框 | 1000 到 100000 | 10000 | 脚本返回值回传文本的截断长度 |
 
-页面底部注明插件路径、节点脚本路径和启动画面的改动在重启后生效，工作区目录在下次打开工程时生效。启动画面在启动阶段读取；脚本超时和结果长度在点应用时立即设置给执行引擎；自动保存间隔在点应用时重建定时器；崩溃转储清理在点应用时立即执行一次。
+页面底部注明启动画面的改动在重启后生效，工作区目录在下次打开工程时生效。启动画面在启动阶段读取；脚本超时和结果长度在点应用时立即设置给执行引擎；自动保存间隔在点应用时重建定时器；崩溃转储清理在点应用时立即执行一次。
 
 行为一块里几项的后果比较直接：`Max recent files` / 最近文件数上限 改小之后应用菜单里的历史列表立即裁剪到新条数；`Crash dump retention days` / 崩溃转储保留天数 在点应用时清理一次超龄文件，转储目录的位置见[常见故障](../reference/troubleshooting.md)；`Auto-save interval` / 自动保存间隔 大于 0 时软件按间隔保存有改动的工程，工程还没保存过时会先弹出保存对话框，行为细节见[工程文件](../getting-started/project.md)；`Show splash screen on startup` / 启动时显示启动画面 关掉后启动阶段直接进主窗口。
 
 工作区一块的两项只管脚本，不影响工作流节点的运行。`Script execution timeout` / 脚本执行超时 填 0 表示不限时，脚本卡住时只能停整轮智能体回复；`Script result max characters` / 脚本结果最大字符数 只截断回传文本，不改脚本里的数据。两项的作用见[脚本工作区](../script/workspace.md)。
 
-工作流执行超时、插件搜索路径、节点脚本搜索路径三项写进配置但不改变程序行为，界面上没有任何提示说明这一点，按实际表现理解即可。工作区目录的细节见[脚本工作区](../script/workspace.md)，插件目录的细节见[插件管理](../plugin/manager.md)。
+工作区目录的细节见[脚本工作区](../script/workspace.md)；插件与节点包的固定目录见[插件管理](../plugin/manager.md)。
 
 ## Shortcuts / 快捷键
 
@@ -289,13 +286,10 @@ Ribbon 样式四种模式的差别是功能组占三行还是两行、按钮区�
 | 日志 | `Max size per file` / 单文件最大体积 | 重启程序 |
 | 日志 | `Max files to keep` / 保留文件数 | 重启程序 |
 | 日志 | `Display number of logs` / 显示日志条数 | 立即 |
-| 高级 | `Workflow execution timeout` / 工作流执行超时 | 无作用，程序没有读取这一项 |
 | 高级 | `Max recent files` / 最近文件数上限 | 立即 |
 | 高级 | `Crash dump retention days` / 崩溃转储保留天数 | 立即清理一次 |
 | 高级 | `Auto-save interval` / 自动保存间隔 | 立即重建定时器 |
 | 高级 | `Show splash screen on startup` / 启动时显示启动画面 | 重启程序 |
-| 高级 | `Plugin search path` / 插件搜索路径 | 无作用，程序没有读取这一项 |
-| 高级 | `Node script search paths` / 节点脚本搜索路径 | 无作用，程序没有读取这一项 |
 | 高级 | `Workspace directory` / 工作区目录 | 下次打开工程 |
 | 高级 | `Script execution timeout` / 脚本执行超时 | 立即，下一次脚本运行起 |
 | 高级 | `Script result max characters` / 脚本结果最大字符数 | 立即，下一次脚本运行起 |
@@ -305,11 +299,11 @@ Ribbon 样式四种模式的差别是功能组占三行还是两行、按钮区�
 
 ## 常见问题
 
-**改完设置没有任何变化。** 先确认点的是 `Apply` / 应用 或 `OK` / 确定，`Cancel` / 取消 不写入任何改动。再对照上表确认这一项属于哪一类：标着重启的要重启软件，工作区目录要重新打开工程，标着无作用的三项本身不影响行为。
+**改完设置没有任何变化。** 先确认点的是 `Apply` / 应用 或 `OK` / 确定，`Cancel` / 取消 不写入任何改动。再对照上表确认这一项属于哪一类：标着重启的要重启软件，工作区目录要重新打开工程。
 
 **换了一台机器，模型配置里的密钥失效。** 密钥用 Windows 数据保护接口按当前用户加密保存，配置文件拷到别的机器或别的 Windows 账户下无法解密，需要在那一台重新填写。模型名称和地址可以照抄。
 
-**配置文件损坏后程序启动异常。** 日志和消息面板里会出现 `Cannot load config file` 或 `Cannot open config file` 加文件路径。关闭软件，把 `dawork-config.xml` 改名备份，重新启动让程序生成一份初始配置，再按需要逐项设置。
+**配置文件损坏后程序启动异常。** 日志和消息面板里会出现 `Cannot load config file` 或 `Cannot open config file` 加文件路径。关闭软件，把 `dawork-config.json` 改名备份，重新启动让程序生成一份初始配置，再按需要逐项设置。
 
 **设置界面的主题换了，Ribbon 上的图标没有变。** 主题只换 Ribbon 的配色，界面图标是随软件发布的固定资源，不随主题变化。
 
@@ -319,7 +313,6 @@ Ribbon 样式四种模式的差别是功能组占三行还是两行、按钮区�
 
 **崩溃转储保留天数改了，旧文件还在。** 这项清理只在 Windows 的 MSVC 构建里执行，而且只在点应用时跑一次，不按天定时；其它平台的构建不清理，手工删除转储目录里的文件即可，目录位置见[常见故障](../reference/troubleshooting.md)。
 
-**`Workflow execution timeout` 填了数字，工作流还是跑很久不被打断。** 这一项在当前版本里没有被程序读取，填任何值都不改变运行行为，需要限制工作流时长时用脚本超时或节点内部的检查。
 
 **在配置文件里手改了某一项，打开设置对话框还是旧值。** 设置对话框只在第一次打开时按配置文件构建页面，之后一直复用这一份；手改配置文件后要重启程序才会读回新值，正常途径是在对话框里改。
 
@@ -341,7 +334,7 @@ Windows 上应用设置放在用户 AppData 目录下的 `DAWorkBench\config` �
 
 | 文件 | 内容 |
 |------|------|
-| `dawork-config.xml` | 通用、Python、日志、高级四页的应用设置，加一个没有界面的工作区覆盖策略 `workspace-overwrite-policy` |
+| `dawork-config.json` | 通用、Python、日志、高级四页的应用设置，加两个没有设置页的项：工作区覆盖策略 `script.workspace-overwrite-policy` 与撤销栈深度 `ui.undo-stack-limit` |
 | `dawork-layouts.json` | 界面布局方案，见[主界面](../getting-started/main-window.md)的布局一节 |
 | `.dawork-ui-state` | 关闭时保存的窗口几何、停靠布局快照 |
 | `recent-files.ini` | 最近打开过的工程文件列表 |
@@ -351,7 +344,7 @@ Windows 上应用设置放在用户 AppData 目录下的 `DAWorkBench\config` �
 
 相邻的几个目录也在这里：日志目录 `log` 下有 `da_log.log` 和 Python 侧的 `da_pyscript.log`，崩溃转储目录 `dumps`，会话存储目录 `sessions`。可执行文件目录下另有一个 `python-config.json`，保存解释器路径的副本，Python 页点应用时会同步写入。
 
-`dawork-config.xml` 由各个设置页在点应用时写入，文件结构是一个 `<configs>` 根节点加若干键值项，带一个版本号用于升级时的兼容处理。文件不存在时启动会生成一份带全部初始值的配置；文件损坏时启动日志里出现 `Cannot load config file` 或 `Cannot open config file`，程序按内置初始值继续运行。
+`dawork-config.json` 由各个设置页在点应用时写入，文件按通用、Python、日志、高级、脚本五组组织，带一个版本号用于升级时的兼容处理。文件不存在时启动会生成一份带全部初始值的配置；文件损坏时启动日志里出现 `Cannot load config file` 或 `Cannot open config file`，程序按内置初始值继续运行。旧版本用的是 `dawork-config.xml`，升级后第一次启动会自动迁移成 JSON，原文件改名为 `dawork-config.xml.bak`。
 
 `dawork-layouts.json` 存的是界面布局方案，内置的 `Default` 与 `Focus Analysis` 之外的自定义方案都在这里；`.dawork-ui-state` 只有勾选了界面状态记录才会存在，随时可以删除。`recent-files.ini` 是标准 ini 格式，内容就是路径列表加最大条数。
 
@@ -361,39 +354,37 @@ Windows 上应用设置放在用户 AppData 目录下的 `DAWorkBench\config` �
 
 旧版本的设置存在系统注册表里，升级后的第一次启动会把智能体相关的键迁到 `agent-config.ini`、把最近文件迁到 `recent-files.ini`；`agent-config.ini` 在新版第一次加载时迁移成 `agent-config.json`，原文件改名加 `.bak` 保留。迁移只在第一次运行新版时发生，之后注册表里不再读写这些内容。
 
-手工编辑 `dawork-config.xml` 时按下面的键名定位，改完保存文件并重启程序。编辑前关闭软件，运行期间程序会按当前状态回写这个文件。
+手工编辑 `dawork-config.json` 时按下面的路径定位，改完保存文件并重启程序。编辑前关闭软件，运行期间程序会按当前状态回写这个文件。
 
 | 页面 | 设置项 | 键名 |
 |------|--------|------|
-| 通用 | Ribbon 样式 | `ribbon-style` |
-| 通用 | `Ribbon theme` / Ribbon 主题 | `ribbon-theme` |
-| 通用 | `Operation window tab position` / 操作窗口标签页位置 | `dock-tab-position` |
-| 通用 | `Application font` / 应用字体 | `app-font-family` |
-| 通用 | `Size` / 字号 | `app-font-point-size` |
-| 通用 | `Interface language` / 界面语言 | `language` |
-| 通用 | 是否记录界面几何和状态 | `save-ui-state-on-close` |
-| Python | `Interpreter path` / 解释器路径 | `python-interpreter-path` |
-| Python | `Extra module search paths (sys.path)` / 额外模块搜索路径 | `python-extra-paths` |
-| 日志 | `File log level` / 文件日志级别 | `log-level` |
-| 日志 | `UI queue level` / 界面队列级别 | `log-queue-level` |
-| 日志 | 输出到标准输出 | `log-output-stdout` |
-| 日志 | `Rotation mode` / 轮转方式 | `log-rotation-mode` |
-| 日志 | `Max size per file` / 单文件最大体积 | `log-max-size` |
-| 日志 | `Max files to keep` / 保留文件数 | `log-max-files` |
-| 日志 | `Display number of logs` / 显示日志条数 | `show-log-num` |
-| 高级 | `Workflow execution timeout` / 工作流执行超时 | `workflow-timeout` |
-| 高级 | `Max recent files` / 最近文件数上限 | `recent-files-max` |
-| 高级 | `Crash dump retention days` / 崩溃转储保留天数 | `dump-retention-days` |
-| 高级 | 自动保存间隔 | `autosave-interval` |
-| 高级 | 启动时显示启动画面 | `show-splash` |
-| 高级 | `Plugin search path` / 插件搜索路径 | `plugin-extra-paths` |
-| 高级 | `Node script search paths` / 节点脚本搜索路径 | `node-script-paths` |
-| 高级 | `Workspace directory` / 工作区目录 | `workspace-dir` |
-| 高级 | 脚本执行超时 | `script-timeout` |
-| 高级 | 脚本结果最大字符数 | `script-result-max-chars` |
-| 无界面 | 工作区覆盖策略 | `workspace-overwrite-policy` |
+| 通用 | Ribbon 样式 | `ui.ribbon-style` |
+| 通用 | `Ribbon theme` / Ribbon 主题 | `ui.ribbon-theme` |
+| 通用 | `Operation window tab position` / 操作窗口标签页位置 | `ui.dock-tab-position` |
+| 通用 | `Application font` / 应用字体 | `ui.font-family` |
+| 通用 | `Size` / 字号 | `ui.font-point-size` |
+| 通用 | `Interface language` / 界面语言 | `ui.language` |
+| 通用 | 是否记录界面几何和状态 | `ui.save-ui-state-on-close` |
+| Python | `Interpreter path` / 解释器路径 | `python.interpreter-path` |
+| Python | `Extra module search paths (sys.path)` / 额外模块搜索路径 | `python.extra-paths` |
+| 日志 | `File log level` / 文件日志级别 | `log.level` |
+| 日志 | `UI queue level` / 界面队列级别 | `log.queue-level` |
+| 日志 | 输出到标准输出 | `log.output-stdout` |
+| 日志 | `Rotation mode` / 轮转方式 | `log.rotation-mode` |
+| 日志 | `Max size per file` / 单文件最大体积 | `log.max-size-bytes` |
+| 日志 | `Max files to keep` / 保留文件数 | `log.max-files` |
+| 日志 | `Display number of logs` / 显示日志条数 | `log.show-log-num` |
+| 高级 | `Max recent files` / 最近文件数上限 | `advanced.recent-files-max` |
+| 高级 | `Crash dump retention days` / 崩溃转储保留天数 | `advanced.dump-retention-days` |
+| 高级 | 自动保存间隔 | `advanced.autosave-interval-min` |
+| 高级 | 启动时显示启动画面 | `advanced.show-splash` |
+| 高级 | `Workspace directory` / 工作区目录 | `script.workspace-dir` |
+| 高级 | 脚本执行超时 | `script.timeout-sec` |
+| 高级 | 脚本结果最大字符数 | `script.result-max-chars` |
+| 无界面 | 工作区覆盖策略 | `script.workspace-overwrite-policy` |
+| 无界面 | 撤销历史面板的撤销栈深度 | `ui.undo-stack-limit` |
 
-同一个文件里还有一项没有界面入口的策略键 `workspace-overwrite-policy`，取值 `ask`、`always-local`、`always-zip`，默认 `ask`，控制打开工程时本地脚本工作区与包内版本不一致时的处理方式，改完需要重启程序，三个取值的后果见[工程文件](../getting-started/project.md)。
+同一个文件里还有一项没有界面入口的策略键 `script.workspace-overwrite-policy`，取值 `ask`、`always-local`、`always-zip`，默认 `ask`，控制打开工程时本地脚本工作区与包内版本不一致时的处理方式，改完需要重启程序，三个取值的后果见[工程文件](../getting-started/project.md)。
 
 ## 哪些设置跟着工程走
 

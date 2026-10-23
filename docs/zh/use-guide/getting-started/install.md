@@ -127,7 +127,7 @@ pip install -r requirements.txt
 按顺序做完下面三件事，后面各章的操作就都能照着做。
 
 1. 指定 Python 解释器。打开设置对话框的 Python 页，点 `Auto Detect` / 自动检测，或者手动填路径，再点 `Test` / 测试 确认解释器可以启动，提示为 `OK` / 正常。解释器没配好时，导入数据、运行工作流和智能体都会失败。这一页的每一项见[设置项说明](../reference/settings.md)。
-2. 需要中文界面就改语言。设置对话框的通用页里有 `Interface language` / 界面语言 下拉框，选好之后重启程序生效；下拉框里没有要用的语言时，把语言代码（中文是 `zh_CN`）写进配置文件 `dawork-config.xml` 的 `language` 项也能达到同样效果。细节见[主界面](main-window.md)的语言一节。
+2. 需要中文界面就改语言。设置对话框的通用页里有 `Interface language` / 界面语言 下拉框，选好之后重启程序生效；下拉框里没有要用的语言时，把语言代码（中文是 `zh_CN`）写进配置文件 `dawork-config.json` 的 `ui.language` 项也能达到同样效果。细节见[主界面](main-window.md)的语言一节。
 3. 导入一份数据。主页标签页的 `Create` / 创建 面板里有 `Add Data` / 添加数据，选一个 CSV 文件或 Excel 文件即可；支持的文件格式和导入参数见[导入数据](../data/import.md)。
 
 想用智能体，还需要在设置里添加模型供应商并填入接口地址与密钥，否则它收不到回复，步骤见[配置模型](../agent/model-config.md)。
