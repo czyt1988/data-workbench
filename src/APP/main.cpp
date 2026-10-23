@@ -62,9 +62,8 @@ static void migrateSettingsFromRegistry()
     // 迁移 agent 配置(5 个 key:base_url/model/api_key + ready/stop_timeout)
     QString agentIni = configDir + "/agent-config.ini";
     if (!QFile::exists(agentIni)
-        && (reg.contains("agent/llm_base_url") || reg.contains("agent/llm_model")
-            || reg.contains("agent/llm_api_key") || reg.contains("agent/ready_timeout_sec")
-            || reg.contains("agent/stop_timeout_sec"))) {
+        && (reg.contains("agent/llm_base_url") || reg.contains("agent/llm_model") || reg.contains("agent/llm_api_key")
+            || reg.contains("agent/ready_timeout_sec") || reg.contains("agent/stop_timeout_sec"))) {
         QSettings ini(agentIni, QSettings::IniFormat);
         if (reg.contains("agent/llm_base_url"))
             ini.setValue("agent/llm_base_url", reg.value("agent/llm_base_url"));
@@ -107,7 +106,7 @@ int main(int argc, char* argv[])
 #ifdef Q_OS_WIN
     // 设置控制台输出代码页为 UTF-8 (65001)
     if (!SetConsoleOutputCP(CP_UTF8)) {
-        daWarning << QObject::tr("Failed to set console output codepage to UTF-8");  //cn:设置控制台输出代码页为 UTF-8 失败
+        qWarning() << "Failed to set console output codepage to UTF-8";  // 设置控制台输出代码页为 UTF-8 失败
     }
 #endif
     // 进行dump捕获
@@ -121,7 +120,7 @@ int main(int argc, char* argv[])
     // 注册旋转文件消息捕获（依据配置：轮转模式/大小/数量/stdout/级别）
     setupLogger(earlyConfig);
     for (int i = 0; i < argc; ++i) {
-        daDebug << "argv[" << i << "]" << argv[ i ];
+        qDebug() << "argv[" << i << "]" << argv[ i ];
     }
     // 打印程序默认路径
     daDebug << DA::DADir();
@@ -139,12 +138,12 @@ int main(int argc, char* argv[])
     enableHDPIScaling();
     // 启动app（通用应用类：慢日志事件循环计时 + 主线程卡顿看门狗，见 DAApplication）
     DA::DAApplication app(argc, argv);
-    QApplication::setApplicationVersion(DA_VERSION);
-    QApplication::setApplicationName(DA_PROJECT_NAME);
+    DA::DAApplication::setApplicationVersion(DA_VERSION);
+    DA::DAApplication::setApplicationName(DA_PROJECT_NAME);
     // 设置 organizationName:保留以兼容第三方库(如 SARibbon)内部 QSettings 两参数构造。
     // 原注册表路径(HKCU\Software\DA\DAWorkBench)的配置已迁移到 JSON 文件,
     // 详见下方 setDefaultFormat 全局重定向 + migrateSettingsFromRegistry()。
-    QApplication::setOrganizationName("DA");
+    DA::DAApplication::setOrganizationName("DA");
 
     // ── 全局 QSettings 重定向:NativeFormat → IniFormat,写入 AppData/config 目录 ──
     // 必须在所有 QSettings 对象创建之前调用;对默认构造、两参数构造(org,app)均生效。
@@ -176,8 +175,8 @@ int main(int argc, char* argv[])
 
     // 创建并显示启动画面(启动画面必须在QApplication之后创建)
     // --no-splash 参数可跳过启动画面，适用于调试场景；同时受配置项 show-splash 控制
-    bool showSplash = earlyConfig.value(DA_CONFIG_KEY_SHOW_SPLASH).toBool();
-    showSplash      = showSplash && !cmdParser.isSet(CS_CMD_NOSPLASH);
+    bool showSplash            = earlyConfig.value(DA_CONFIG_KEY_SHOW_SPLASH).toBool();
+    showSplash                 = showSplash && !cmdParser.isSet(CS_CMD_NOSPLASH);
     DA::DASplashScreen* splash = nullptr;
     if (showSplash) {
         splash = new DA::DASplashScreen();
@@ -291,8 +290,8 @@ void enableHDPIScaling()
  */
 void setAppFont(const DA::DAAppConfig& cfg)
 {
-    QFont font = QApplication::font();
-    QString family = cfg.value(DA_CONFIG_KEY_APP_FONT_FAMILY).toString();
+    QFont font       = QApplication::font();
+    QString family   = cfg.value(DA_CONFIG_KEY_APP_FONT_FAMILY).toString();
     double pointSize = cfg.value(DA_CONFIG_KEY_APP_FONT_POINT_SIZE).toDouble();
     if (!family.isEmpty()) {
         font.setFamily(family);
