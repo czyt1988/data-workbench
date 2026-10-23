@@ -3604,19 +3604,17 @@
         <translation>请选择正确的列</translation>
     </message>
     <message>
-        <location line="+55"/>
-        <location line="+35"/>
+        <location line="+52"/>
         <source>No figure/chart available for statistical plot</source>
         <translation>没有可用于统计绘图的图表窗口</translation>
     </message>
     <message>
-        <location line="+42"/>
+        <location line="+27"/>
         <source>No data column selected</source>
         <translation>未选择数据列</translation>
     </message>
     <message>
-        <location line="-58"/>
-        <location line="+36"/>
+        <location line="-22"/>
         <source>Cannot resolve the data source for statistical plot; please ensure a dataframe is selected in the settings window</source>
         <translation>无法确定统计绘图的数据源，请确保在设置窗口中已选择数据表</translation>
     </message>
@@ -3626,7 +3624,7 @@
         <translation>选中的数据源为空</translation>
     </message>
     <message>
-        <location line="-2699"/>
+        <location line="-2646"/>
         <source>Before running the workflow, you need to save the project</source>
         <translation>在运行工作流之前，需要先保存工程</translation>
     </message>
@@ -6000,7 +5998,7 @@
         <translation>请先选择 X 轴数据列再绘图</translation>
     </message>
     <message>
-        <location line="+48"/>
+        <location line="+45"/>
         <source>Barplot Settings</source>
         <translation>柱状图设置</translation>
     </message>
@@ -6366,7 +6364,7 @@
 <context>
     <name>DA::DAChartAddXYSeriesWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddXYSeriesWidget.cpp" line="+23"/>
+        <location filename="../DAGui/ChartAddItem/DAChartAddXYSeriesWidget.cpp" line="+25"/>
         <source>x</source>
         <translation>x</translation>
     </message>
@@ -6377,91 +6375,57 @@
     </message>
     <message>
         <location line="+11"/>
-        <location line="+242"/>
-        <location line="+8"/>
-        <location line="+23"/>
-        <location line="+9"/>
-        <location line="+23"/>
-        <location line="+13"/>
-        <location line="+19"/>
-        <location line="+14"/>
-        <location line="+19"/>
-        <location line="+11"/>
-        <location line="+205"/>
-        <location line="+21"/>
-        <location line="+12"/>
-        <location line="+26"/>
-        <location line="+7"/>
-        <location line="+7"/>
-        <location line="+22"/>
-        <location line="+9"/>
-        <location line="+25"/>
+        <location line="+190"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location line="-714"/>
+        <location line="-189"/>
         <source>Only one series can be used as x, the extra series were ignored</source>
         <translation>x只能添加一个序列，多余的序列已被忽略</translation>
     </message>
     <message>
-        <location line="+242"/>
+        <location line="+147"/>
         <source>The initial value of x auto increment series must be a floating-point arithmetic number</source>
         <translation>x自增序列的初始值必须为浮点数</translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="+3"/>
         <source>The step value of x auto increment series must be a floating-point arithmetic number</source>
         <translation>x自增序列的步长必须为浮点数</translation>
     </message>
     <message>
-        <location line="+23"/>
+        <location line="+3"/>
         <source>The initial value of y auto increment series must be a floating-point arithmetic number</source>
         <translation>y自增序列的初始值必须为浮点数</translation>
     </message>
     <message>
-        <location line="+9"/>
+        <location line="+3"/>
         <source>The step value of y auto increment series must be a floating-point arithmetic number</source>
         <translation>y自增序列的步长必须为浮点数</translation>
     </message>
     <message>
-        <location line="+23"/>
-        <location line="+281"/>
+        <location line="-11"/>
         <source>x and y cannot be set to autoincrement at the same time</source>
         <translation>x和y无法同时设置为自增</translation>
     </message>
     <message>
-        <location line="-268"/>
-        <location line="+33"/>
-        <location line="+30"/>
-        <location line="+226"/>
-        <location line="+38"/>
-        <location line="+7"/>
-        <location line="+7"/>
+        <location line="+26"/>
         <source>The None value cannot be converted to a series</source>
         <translation>None值无法转换为序列</translation>
     </message>
     <message>
-        <location line="-327"/>
-        <location line="+33"/>
-        <location line="+35"/>
-        <location line="+215"/>
-        <location line="+62"/>
-        <location line="+34"/>
+        <location line="+13"/>
         <source>Exception occurred during extracting from pandas.Series to double vector:%1</source>
         <translation>从 pandas.Series 提取为 double vector 过程中出现异常：%1</translation>
     </message>
     <message>
-        <location line="-374"/>
-        <location line="+33"/>
-        <location line="+249"/>
-        <location line="+62"/>
-        <location line="+34"/>
+        <location line="-18"/>
         <source>Exception occurred during extracting from pandas.Series to double vector</source>
         <translation>从 pandas.Series 提取为 double vector 过程中出现异常</translation>
     </message>
     <message>
-        <location line="-25"/>
+        <location line="-7"/>
         <source>The length of y series &apos;%1&apos; (%2) does not match the length of x series &apos;%3&apos; (%4). All y series must have the same length as x</source>
         <translation>y序列&apos;%1&apos;的长度(%2)与x序列&apos;%3&apos;的长度(%4)不一致，所有y序列的长度必须与x一致</translation>
     </message>
@@ -10531,74 +10495,6 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     </message>
 </context>
 <context>
-    <name>DA::DADialogChartGuide</name>
-    <message>
-        <location filename="../DAGui/Dialog/DADialogChartGuide.cpp" line="+115"/>
-        <source>curve</source>
-        <translation>曲线</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>scatter</source>
-        <translation>散点</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>bar</source>
-        <translation>柱状</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>error bar</source>
-        <translation>误差棒</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>box</source>
-        <translation>箱体</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>cloud map</source>
-        <translation>云图</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>multi bar</source>
-        <translation>多重柱状</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>histogram</source>
-        <translation>直方图</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>contour</source>
-        <translation>等高线</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>vector field</source>
-        <translation>向量场</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>surface 3D</source>
-        <translation>3D曲面</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>bar 3D</source>
-        <translation>3D柱状</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>line 3D</source>
-        <translation>3D线图</translation>
-    </message>
-</context>
-<context>
     <name>DA::DADialogComputedColumn</name>
     <message>
         <location filename="../DAGui/Dialog/DADialogComputedColumn.cpp" line="+29"/>
@@ -11802,54 +11698,6 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <location line="+32"/>
         <source>OK — split into %1 column(s)</source>
         <translation>通过 — 拆分为 %1 列</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DADialogStatsChartGuide</name>
-    <message>
-        <location filename="../DAGui/Dialog/DADialogStatsChartGuide.cpp" line="+109"/>
-        <source>Histplot</source>
-        <translation>直方图</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>KDE 1D</source>
-        <translation>一维核密度</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>KDE 2D</source>
-        <translation>二维核密度</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>Boxplot</source>
-        <translation>箱线图</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>Heatmap</source>
-        <translation>热力图</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>Scatter</source>
-        <translation>散点图</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>Barplot</source>
-        <translation>柱状图</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>Regplot</source>
-        <translation>回归图</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>ECDF</source>
-        <translation>经验累积分布</translation>
     </message>
 </context>
 <context>
@@ -16307,6 +16155,71 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <source>Chart Guide</source>
         <translation>图表向导</translation>
     </message>
+    <message>
+        <location filename="../DAGui/ChartAddItem/DAChartAddItemWidgetFactory.cpp" line="+114"/>
+        <source>curve</source>
+        <translation>曲线</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>scatter</source>
+        <translation>散点</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>bar</source>
+        <translation>柱状</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>error bar</source>
+        <translation>误差棒</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>box</source>
+        <translation>箱体</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>cloud map</source>
+        <translation>云图</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>multi bar</source>
+        <translation>多重柱状</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>histogram</source>
+        <translation>直方图</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>contour</source>
+        <translation>等高线</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>vector field</source>
+        <translation>向量场</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>surface 3D</source>
+        <translation>3D曲面</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>bar 3D</source>
+        <translation>3D柱状</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>line 3D</source>
+        <translation>3D线图</translation>
+    </message>
 </context>
 <context>
     <name>DADialogDataFrameSeriesSelector</name>
@@ -16765,6 +16678,51 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <location filename="../DAGui/Dialog/DADialogStatsChartGuide.ui" line="+14"/>
         <source>Statistics Chart Guide</source>
         <translation>统计图表向导</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/ChartAddItem/DAChartAddItemWidgetFactory.cpp" line="+8"/>
+        <source>Histplot</source>
+        <translation>直方图</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>KDE 1D</source>
+        <translation>一维核密度</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>KDE 2D</source>
+        <translation>二维核密度</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Boxplot</source>
+        <translation>箱线图</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Heatmap</source>
+        <translation>热力图</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Scatter</source>
+        <translation>散点图</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Barplot</source>
+        <translation>柱状图</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Regplot</source>
+        <translation>回归图</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>ECDF</source>
+        <translation>经验累积分布</translation>
     </message>
 </context>
 <context>
@@ -18341,12 +18299,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../APP/main.cpp" line="+110"/>
-        <source>Failed to set console output codepage to UTF-8</source>
-        <translation>设置控制台输出代码页为 UTF-8 失败</translation>
-    </message>
-    <message>
-        <location line="+78"/>
+        <location filename="../APP/main.cpp" line="+187"/>
         <source>Initializing...</source>
         <translation>正在初始化...</translation>
     </message>

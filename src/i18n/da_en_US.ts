@@ -3588,19 +3588,17 @@
         <translation>Please select a valid column</translation>
     </message>
     <message>
-        <location line="+55"/>
-        <location line="+35"/>
+        <location line="+52"/>
         <source>No figure/chart available for statistical plot</source>
         <translation>No figure/chart available for statistical plot</translation>
     </message>
     <message>
-        <location line="+42"/>
+        <location line="+27"/>
         <source>No data column selected</source>
         <translation>No data column selected</translation>
     </message>
     <message>
-        <location line="-58"/>
-        <location line="+36"/>
+        <location line="-22"/>
         <source>Cannot resolve the data source for statistical plot; please ensure a dataframe is selected in the settings window</source>
         <translation>Cannot resolve the data source for statistical plot; please ensure a dataframe is selected in the settings window</translation>
     </message>
@@ -3610,7 +3608,7 @@
         <translation>The selected data source is empty</translation>
     </message>
     <message>
-        <location line="-2699"/>
+        <location line="-2646"/>
         <source>Before running the workflow, you need to save the project</source>
         <translation>Before running the workflow, you need to save the project</translation>
     </message>
@@ -5984,7 +5982,7 @@
         <translation>Please select an X-axis data column before plotting</translation>
     </message>
     <message>
-        <location line="+48"/>
+        <location line="+45"/>
         <source>Barplot Settings</source>
         <translation>Barplot Settings</translation>
     </message>
@@ -6350,7 +6348,7 @@
 <context>
     <name>DA::DAChartAddXYSeriesWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddXYSeriesWidget.cpp" line="+23"/>
+        <location filename="../DAGui/ChartAddItem/DAChartAddXYSeriesWidget.cpp" line="+25"/>
         <source>x</source>
         <translation>x</translation>
     </message>
@@ -6361,91 +6359,57 @@
     </message>
     <message>
         <location line="+11"/>
-        <location line="+242"/>
-        <location line="+8"/>
-        <location line="+23"/>
-        <location line="+9"/>
-        <location line="+23"/>
-        <location line="+13"/>
-        <location line="+19"/>
-        <location line="+14"/>
-        <location line="+19"/>
-        <location line="+11"/>
-        <location line="+205"/>
-        <location line="+21"/>
-        <location line="+12"/>
-        <location line="+26"/>
-        <location line="+7"/>
-        <location line="+7"/>
-        <location line="+22"/>
-        <location line="+9"/>
-        <location line="+25"/>
+        <location line="+190"/>
         <source>Warning</source>
         <translation>Warning</translation>
     </message>
     <message>
-        <location line="-714"/>
+        <location line="-189"/>
         <source>Only one series can be used as x, the extra series were ignored</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+242"/>
+        <location line="+147"/>
         <source>The initial value of x auto increment series must be a floating-point arithmetic number</source>
         <translation>The initial value of x auto increment series must be a floating-point arithmetic number</translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="+3"/>
         <source>The step value of x auto increment series must be a floating-point arithmetic number</source>
         <translation>The step value of x auto increment series must be a floating-point arithmetic number</translation>
     </message>
     <message>
-        <location line="+23"/>
+        <location line="+3"/>
         <source>The initial value of y auto increment series must be a floating-point arithmetic number</source>
         <translation>The initial value of y auto increment series must be a floating-point arithmetic number</translation>
     </message>
     <message>
-        <location line="+9"/>
+        <location line="+3"/>
         <source>The step value of y auto increment series must be a floating-point arithmetic number</source>
         <translation>The step value of y auto increment series must be a floating-point arithmetic number</translation>
     </message>
     <message>
-        <location line="+23"/>
-        <location line="+281"/>
+        <location line="-11"/>
         <source>x and y cannot be set to autoincrement at the same time</source>
         <translation>x and y cannot be set to autoincrement at the same time</translation>
     </message>
     <message>
-        <location line="-268"/>
-        <location line="+33"/>
-        <location line="+30"/>
-        <location line="+226"/>
-        <location line="+38"/>
-        <location line="+7"/>
-        <location line="+7"/>
+        <location line="+26"/>
         <source>The None value cannot be converted to a series</source>
         <translation>The None value cannot be converted to a series</translation>
     </message>
     <message>
-        <location line="-327"/>
-        <location line="+33"/>
-        <location line="+35"/>
-        <location line="+215"/>
-        <location line="+62"/>
-        <location line="+34"/>
+        <location line="+13"/>
         <source>Exception occurred during extracting from pandas.Series to double vector:%1</source>
         <translation>Exception occurred during extracting from pandas.Series to double vector:%1</translation>
     </message>
     <message>
-        <location line="-374"/>
-        <location line="+33"/>
-        <location line="+249"/>
-        <location line="+62"/>
-        <location line="+34"/>
+        <location line="-18"/>
         <source>Exception occurred during extracting from pandas.Series to double vector</source>
         <translation>Exception occurred during extracting from pandas.Series to double vector</translation>
     </message>
     <message>
-        <location line="-25"/>
+        <location line="-7"/>
         <source>The length of y series &apos;%1&apos; (%2) does not match the length of x series &apos;%3&apos; (%4). All y series must have the same length as x</source>
         <translation type="unfinished"></translation>
     </message>
@@ -10515,74 +10479,6 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     </message>
 </context>
 <context>
-    <name>DA::DADialogChartGuide</name>
-    <message>
-        <location filename="../DAGui/Dialog/DADialogChartGuide.cpp" line="+115"/>
-        <source>curve</source>
-        <translation>curve</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>scatter</source>
-        <translation>scatter</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>bar</source>
-        <translation>bar</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>error bar</source>
-        <translation>error bar</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>box</source>
-        <translation>box</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>cloud map</source>
-        <translation>cloud map</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>multi bar</source>
-        <translation>multi bar</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>histogram</source>
-        <translation>histogram</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>contour</source>
-        <translation>contour</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>vector field</source>
-        <translation>vector field</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>surface 3D</source>
-        <translation>surface 3D</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>bar 3D</source>
-        <translation>bar 3D</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>line 3D</source>
-        <translation>line 3D</translation>
-    </message>
-</context>
-<context>
     <name>DA::DADialogComputedColumn</name>
     <message>
         <location filename="../DAGui/Dialog/DADialogComputedColumn.cpp" line="+29"/>
@@ -11786,54 +11682,6 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <location line="+32"/>
         <source>OK — split into %1 column(s)</source>
         <translation>OK — split into %1 column(s)</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DADialogStatsChartGuide</name>
-    <message>
-        <location filename="../DAGui/Dialog/DADialogStatsChartGuide.cpp" line="+109"/>
-        <source>Histplot</source>
-        <translation>Histplot</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>KDE 1D</source>
-        <translation>KDE 1D</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>KDE 2D</source>
-        <translation>KDE 2D</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>Boxplot</source>
-        <translation>Boxplot</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>Heatmap</source>
-        <translation>Heatmap</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>Scatter</source>
-        <translation>Scatter</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>Barplot</source>
-        <translation>Barplot</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>Regplot</source>
-        <translation>Regplot</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>ECDF</source>
-        <translation>ECDF</translation>
     </message>
 </context>
 <context>
@@ -16291,6 +16139,71 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <source>Chart Guide</source>
         <translation>Chart Guide</translation>
     </message>
+    <message>
+        <location filename="../DAGui/ChartAddItem/DAChartAddItemWidgetFactory.cpp" line="+114"/>
+        <source>curve</source>
+        <translation>curve</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>scatter</source>
+        <translation>scatter</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>bar</source>
+        <translation>bar</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>error bar</source>
+        <translation>error bar</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>box</source>
+        <translation>box</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>cloud map</source>
+        <translation>cloud map</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>multi bar</source>
+        <translation>multi bar</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>histogram</source>
+        <translation>histogram</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>contour</source>
+        <translation>contour</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>vector field</source>
+        <translation>vector field</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>surface 3D</source>
+        <translation>surface 3D</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>bar 3D</source>
+        <translation>bar 3D</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>line 3D</source>
+        <translation>line 3D</translation>
+    </message>
 </context>
 <context>
     <name>DADialogDataFrameSeriesSelector</name>
@@ -16749,6 +16662,51 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <location filename="../DAGui/Dialog/DADialogStatsChartGuide.ui" line="+14"/>
         <source>Statistics Chart Guide</source>
         <translation>Statistics Chart Guide</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/ChartAddItem/DAChartAddItemWidgetFactory.cpp" line="+8"/>
+        <source>Histplot</source>
+        <translation>Histplot</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>KDE 1D</source>
+        <translation>KDE 1D</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>KDE 2D</source>
+        <translation>KDE 2D</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Boxplot</source>
+        <translation>Boxplot</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Heatmap</source>
+        <translation>Heatmap</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Scatter</source>
+        <translation>Scatter</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Barplot</source>
+        <translation>Barplot</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Regplot</source>
+        <translation>Regplot</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>ECDF</source>
+        <translation>ECDF</translation>
     </message>
 </context>
 <context>
@@ -18316,12 +18274,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../APP/main.cpp" line="+110"/>
-        <source>Failed to set console output codepage to UTF-8</source>
-        <translation>Failed to set console output codepage to UTF-8</translation>
-    </message>
-    <message>
-        <location line="+78"/>
+        <location filename="../APP/main.cpp" line="+187"/>
         <source>Initializing...</source>
         <translation>Initializing...</translation>
     </message>
