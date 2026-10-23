@@ -82,10 +82,6 @@ void DAChartAddStatsEcdfplotWidget::onButtonBoxAccepted()
         return;
     }
 
-    // Stash the DAData as a dynamic property so the controller's
-    // onStatsPlotRequested slot can retrieve it via sender().
-    setProperty("__da_data__", QVariant::fromValue(sel.first));
-
     QJsonObject params = buildPlotParams();
     // Stash the selected column name into params so the controller can read it
     params["column"] = sel.second;
@@ -100,7 +96,7 @@ void DAChartAddStatsEcdfplotWidget::onButtonBoxAccepted()
         }
     }
 
-    Q_EMIT plotRequested(params, getFigureWidget(), getChartWidget());
+    Q_EMIT plotRequested(params, sel.first, getFigureWidget(), getChartWidget());
 }
 
 }  // namespace DA

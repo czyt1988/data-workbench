@@ -4516,73 +4516,20 @@ void DAAppController::onTableDisplayFormatCurrentChanged(const DA::DATableDispla
 }
 
 /**
- * @brief 统计绘图请求的统一处理槽
- *
- * DAAbstractStatsChartAddWidget::plotRequested 信号触发后，此函数：
- * 1. 从 params 中读取 column / hue 列名
- * 2. 从 widget 的数据选择组件获取 DAData/DAPyDataFrame
- * 3. 调用 executeStatsPlot，由 DAStatsPlotCoordinator 完成绘图
- *
- * @note 绘图类型通过 params["__plot_type__"] 指定，缺省为 "histplot"。
- */
-void DAAppController::onStatsPlotRequested(const QJsonObject& params, DA::DAFigureWidget* fig, DA::DAChartWidget* chart)
-{
-    qDebug() << "[onStatsPlotRequested] called, fig=" << fig << "chart=" << chart;
-    if (!fig || !chart) {
-        daWarning << tr("No figure/chart available for statistical plot");  //cn:没有可用于统计绘图的图表窗口
-        return;
-    }
-
-    // Resolve the DAData from the sender widget's dynamic property
-    DAData data;
-    QObject* senderObj = sender();
-    qDebug() << "[onStatsPlotRequested] sender=" << senderObj;
-    auto* statsWidget = qobject_cast< DAAbstractStatsChartAddWidget* >(senderObj);
-    if (statsWidget) {
-        QVariant dataVar = statsWidget->property("__da_data__");
-        if (dataVar.isValid() && dataVar.canConvert< DAData >()) {
-            data = dataVar.value< DAData >();
-        }
-        qDebug() << "[onStatsPlotRequested] statsWidget found, data.isDataFrame=" << data.isDataFrame();
-    } else {
-        qDebug() << "[onStatsPlotRequested] sender is NOT a StatsChartAddWidget (lambda forwarding issue?)";
-    }
-    if (!data.isDataFrame()) {
-        daWarning << tr("Cannot resolve the data source for statistical plot; "
-                        "please ensure a dataframe is selected in the settings window");  //cn:无法确定统计绘图的数据源，请确保在设置窗口中已选择数据表
-        return;
-    }
-
-    executeStatsPlot(params, fig, chart, data);
-}
-
-/**
  * @brief 统计绘图引导对话框确认后的处理槽
  *
- * 直接从对话框获取当前 widget 的 DAData，不依赖 sender()（因为 lambda 转发会破坏 sender 链）。
+ * 参数与数据源都由信号携带，不需要再从 widget 的动态属性或 sender() 反查。
  */
-void DAAppController::onStatsGuideAccepted(const QJsonObject& params, DA::DAFigureWidget* fig, DA::DAChartWidget* chart)
+void DAAppController::onStatsGuideAccepted(const QJsonObject& params,
+                                           const DA::DAData& data,
+                                           DA::DAFigureWidget* fig,
+                                           DA::DAChartWidget* chart)
 {
     if (!fig || !chart) {
         daWarning << tr("No figure/chart available for statistical plot");  //cn:没有可用于统计绘图的图表窗口
         return;
     }
 
-    if (!mStatsChartGuideDlg) {
-        return;
-    }
-
-    DAAbstractStatsChartAddWidget* w = mStatsChartGuideDlg->getCurrentStatsChartAddWidget();
-    if (!w) {
-        return;
-    }
-
-    // 从 widget 的动态属性获取 DAData
-    QVariant dataVar = w->property("__da_data__");
-    DAData data;
-    if (dataVar.isValid() && dataVar.canConvert< DAData >()) {
-        data = dataVar.value< DAData >();
-    }
     if (!data.isDataFrame()) {
         daWarning << tr("Cannot resolve the data source for statistical plot; "
                         "please ensure a dataframe is selected in the settings window");  //cn:无法确定统计绘图的数据源，请确保在设置窗口中已选择数据表
@@ -4617,8 +4564,6 @@ void DAAppController::executeStatsPlot(const QJsonObject& params,
     }
 
     QString plotType = params.value("__plot_type__").toString("histplot");
-    qDebug() << "[executeStatsPlot] type=" << plotType << "column=" << columnName
-             << "data.isDataFrame=" << data.isDataFrame();
 
     DAWaitCursorScoped wait;
     Q_UNUSED(wait);

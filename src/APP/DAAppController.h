@@ -496,10 +496,8 @@ private Q_SLOTS:
     void onPlotItemCreated(DA::DAFigureWidget* f, DA::DAChartWidget* plot, QwtPlotItem* item);
     // 3D绘图项创建完成，提升绘图 dock 显示新3D绘图
     void onPlot3DItemCreated(DA::DAFigureWidget* f, DA::DAChart3DWidget* plot, Qwt3DPlotItem* item);
-    // 统计绘图请求槽：DAAbstractStatsChartAddWidget::plotRequested -> 调用 Python plot()
-    void onStatsPlotRequested(const QJsonObject& params, DA::DAFigureWidget* fig, DA::DAChartWidget* chart);
-    // 统计绘图引导对话框确认槽（直接从对话框获取 widget，不依赖 sender()）
-    void onStatsGuideAccepted(const QJsonObject& params, DA::DAFigureWidget* fig, DA::DAChartWidget* chart);
+    // 统计绘图引导对话框确认槽：参数与数据源随信号一起传入
+    void onStatsGuideAccepted(const QJsonObject& params, const DA::DAData& data, DA::DAFigureWidget* fig, DA::DAChartWidget* chart);
     //===================================================
     // project
     //===================================================

@@ -1,7 +1,8 @@
 #ifndef DAABSTRACTSTATSCHARTADDWIDGET_H
 #define DAABSTRACTSTATSCHARTADDWIDGET_H
 #include "DAGuiAPI.h"
-#include "DAAbstractChartAddItemWidget.h"
+#include "DAAbstractChartAddWidgetBase.h"
+#include "DAData.h"
 #include <QJsonObject>
 
 namespace DA
@@ -12,22 +13,19 @@ class DAChartWidget;
 /**
  * @brief 统计绘图设置窗口基类
  *
- * 统计绘图不走 DAAbstractChartAddItemWidget::createPlotItem() 契约（不返回 QwtPlotItem*），
- * 而是收集参数为 QJsonObject，通过 plotRequested 信号发射给 Controller，
- * 由 Controller 调用 Python 统计绘图函数完成计算和绘图。
+ * 统计绘图不返回 QwtPlotItem，而是把参数收集为 JSON、连同数据源一起
+ * 通过 plotRequested 信号交给 Controller，由 Controller 调用 Python
+ * 统计绘图函数完成计算和绘制。
+ *
+ * 它与 DAAbstractChartAddItemWidget 是并列的两种输出契约，
+ * 不继承「必须返回 QwtPlotItem*」的接口。
  */
-class DAGUI_API DAAbstractStatsChartAddWidget : public DAAbstractChartAddItemWidget
+class DAGUI_API DAAbstractStatsChartAddWidget : public DAAbstractChartAddWidgetBase
 {
     Q_OBJECT
 public:
     explicit DAAbstractStatsChartAddWidget(QWidget* parent = nullptr);
     virtual ~DAAbstractStatsChartAddWidget();
-
-    /**
-     * @brief 统计绘图不实现 createPlotItem()，此函数始终返回 nullptr
-     * @note 统计绘图走 Python 路线，子类应实现 buildPlotParams() 并发射 plotRequested 信号
-     */
-    virtual QwtPlotItem* createPlotItem() override;
 
     /**
      * @brief 收集当前窗口中的参数为 JSON 对象
@@ -36,7 +34,7 @@ public:
     virtual QJsonObject buildPlotParams() const = 0;
 
     /**
-     * @brief 用户确认时的处理逻辑（验证数据、设置属性、发射信号）
+     * @brief 用户确认时的处理逻辑（校验数据、发射绘图请求）
      * @note 子类必须实现此方法，由引导对话框在 accept 时调用
      */
     virtual void onButtonBoxAccepted() = 0;
@@ -53,10 +51,11 @@ Q_SIGNALS:
     /**
      * @brief 绘图请求信号，子类在用户确认参数后发射此信号
      * @param params 绘图参数 JSON
+     * @param data 数据源，直接随信号传递，避免用动态属性做隐式通道
      * @param fig 目标 Figure 窗口
      * @param chart 目标 Chart 窗口
      */
-    void plotRequested(const QJsonObject& params, DA::DAFigureWidget* fig, DA::DAChartWidget* chart);
+    void plotRequested(const QJsonObject& params, const DA::DAData& data, DA::DAFigureWidget* fig, DA::DAChartWidget* chart);
 
 protected:
     DAFigureWidget* mFigureWidget { nullptr };

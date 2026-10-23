@@ -91,10 +91,6 @@ void DAChartAddStatsBoxplotWidget::onButtonBoxAccepted()
         return;
     }
 
-    // Stash the DAData as a dynamic property so the controller's
-    // onStatsPlotRequested slot can retrieve it via sender().
-    setProperty("__da_data__", QVariant::fromValue(firstData));
-
     QJsonObject params = buildPlotParams();
     // Stash the first column name (controller reads "column" positionally)
     params["column"] = columnNames.first();
@@ -115,7 +111,7 @@ void DAChartAddStatsBoxplotWidget::onButtonBoxAccepted()
         }
     }
 
-    Q_EMIT plotRequested(params, getFigureWidget(), getChartWidget());
+    Q_EMIT plotRequested(params, firstData, getFigureWidget(), getChartWidget());
 }
 
 }  // namespace DA

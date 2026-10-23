@@ -2,9 +2,9 @@
 #define DADIALOGSTATSCHARTGUIDE_H
 #include "DAGuiAPI.h"
 #include "DAFigureAPI.h"
+#include "DAData.h"
 #include <QDialog>
 #include <QJsonObject>
-#include <QSet>
 
 namespace Ui
 {
@@ -22,8 +22,8 @@ class DAChartWidget;
 /**
  * @brief 统计绘图引导对话框
  *
- * 参考 DADialogChartGuide 的设计，将 9 个统计绘图设置窗口整合到一个
- * 左侧列表 + 右侧 stacked widget 的对话框中。
+ * 左侧列表 + 右侧页面栈：列表内容与页面创建方式来自
+ * DAChartAddItemWidgetFactory 注册表的 Stats 家族。
  *
  * 使用方式：
  * @code
@@ -61,17 +61,18 @@ public:
     // 获取当前显示的统计绘图设置 widget
     DAAbstractStatsChartAddWidget* getCurrentStatsChartAddWidget() const;
 
-    // 根据类型获取对应的统计绘图设置 widget
-    DAAbstractStatsChartAddWidget* getStatsChartAddWidget(DA::DAChartTypes chartType) const;
+    // 根据类型获取对应的统计绘图设置 widget（页面未创建时按需创建）
+    DAAbstractStatsChartAddWidget* getStatsChartAddWidget(DA::DAChartTypes chartType);
 
 Q_SIGNALS:
     /**
      * @brief 用户确认绘图参数后发射此信号
      * @param params 绘图参数 JSON
+     * @param data 数据源，随信号一起传递
      * @param fig 目标 Figure 窗口
      * @param chart 目标 Chart 窗口
      */
-    void plotRequested(const QJsonObject& params, DA::DAFigureWidget* fig, DA::DAChartWidget* chart);
+    void plotRequested(const QJsonObject& params, const DA::DAData& data, DA::DAFigureWidget* fig, DA::DAChartWidget* chart);
 
 private Q_SLOTS:
     void onListWidgetCurrentItemChanged(QListWidgetItem* current, QListWidgetItem* previous);
@@ -79,6 +80,10 @@ private Q_SLOTS:
 
 private:
     void initListWidget();
+    // 按注册表创建并缓存页面，未注册或不是统计类型时返回 nullptr
+    QWidget* ensurePage(DA::DAChartTypes type);
+    // 切换到指定类型的页面
+    void selectPage(DA::DAChartTypes type);
     void ensureWidgetDataManager(DAAbstractStatsChartAddWidget* w);
     void propagateFigureChart(DAAbstractStatsChartAddWidget* w);
 
@@ -87,7 +92,6 @@ private:
     DADataManager* mDataMgr { nullptr };
     DAFigureWidget* mFigureWidget { nullptr };
     DAChartWidget* mChartWidget { nullptr };
-    QSet< DAAbstractStatsChartAddWidget* > mInitializedWidgets;
 };
 
 }  // namespace DA

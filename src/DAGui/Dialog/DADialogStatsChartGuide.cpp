@@ -1,21 +1,15 @@
 #include "DADialogStatsChartGuide.h"
 #include "ui_DADialogStatsChartGuide.h"
-#include <QDebug>
+#include <QHash>
+#include <QListWidgetItem>
+#include <QSet>
+#include <utility>
 // DA
 #include "DADataManager.h"
+#include "ChartAddItem/DAChartAddItemWidgetFactory.h"
 #include "ChartAddItem/DAAbstractStatsChartAddWidget.h"
-#include "ChartAddItem/DAChartAddStatsHistplotWidget.h"
-#include "ChartAddItem/DAChartAddStatsKdeplot1dWidget.h"
-#include "ChartAddItem/DAChartAddStatsKdeplot2dWidget.h"
-#include "ChartAddItem/DAChartAddStatsBoxplotWidget.h"
-#include "ChartAddItem/DAChartAddStatsHeatmapWidget.h"
-#include "ChartAddItem/DAChartAddStatsScatterplotWidget.h"
-#include "ChartAddItem/DAChartAddStatsBarplotWidget.h"
-#include "ChartAddItem/DAChartAddStatsRegplotWidget.h"
-#include "ChartAddItem/DAChartAddStatsEcdfplotWidget.h"
 #include "DAFigureWidget.h"
 #include "DAChartWidget.h"
-#include "DALogCategory.h"
 
 namespace DA
 {
@@ -24,17 +18,11 @@ class DADialogStatsChartGuide::PrivateData
 {
     DA_DECLARE_PUBLIC(DADialogStatsChartGuide)
 public:
-    PrivateData(DADialogStatsChartGuide* p);
-
-    DAChartAddStatsHistplotWidget* mHistplot { nullptr };
-    DAChartAddStatsKdeplot1dWidget* mKdeplot1d { nullptr };
-    DAChartAddStatsKdeplot2dWidget* mKdeplot2d { nullptr };
-    DAChartAddStatsBoxplotWidget* mBoxplot { nullptr };
-    DAChartAddStatsHeatmapWidget* mHeatmap { nullptr };
-    DAChartAddStatsScatterplotWidget* mScatterplot { nullptr };
-    DAChartAddStatsBarplotWidget* mBarplot { nullptr };
-    DAChartAddStatsRegplotWidget* mRegplot { nullptr };
-    DAChartAddStatsEcdfplotWidget* mEcdfplot { nullptr };
+    explicit PrivateData(DADialogStatsChartGuide* p);
+    // 图表类型 → 已创建的页面（按需创建，类型用作 key 所以这里是 int）
+    QHash< int, QWidget* > pages;
+    // 已经赋过数据管理器的页面
+    QSet< DAAbstractStatsChartAddWidget* > initializedWidgets;
 };
 
 DADialogStatsChartGuide::PrivateData::PrivateData(DADialogStatsChartGuide* p) : q_ptr(p)
@@ -49,51 +37,10 @@ DADialogStatsChartGuide::DADialogStatsChartGuide(QWidget* parent)
     : QDialog(parent), DA_PIMPL_CONSTRUCT, ui(new Ui::DADialogStatsChartGuide)
 {
     ui->setupUi(this);
-    DA_D(d);
-
     initListWidget();
-
-    // 创建 9 个统计绘图设置 widget
-    d->mHistplot    = new DAChartAddStatsHistplotWidget();
-    d->mKdeplot1d   = new DAChartAddStatsKdeplot1dWidget();
-    d->mKdeplot2d   = new DAChartAddStatsKdeplot2dWidget();
-    d->mBoxplot     = new DAChartAddStatsBoxplotWidget();
-    d->mHeatmap     = new DAChartAddStatsHeatmapWidget();
-    d->mScatterplot = new DAChartAddStatsScatterplotWidget();
-    d->mBarplot     = new DAChartAddStatsBarplotWidget();
-    d->mRegplot     = new DAChartAddStatsRegplotWidget();
-    d->mEcdfplot    = new DAChartAddStatsEcdfplotWidget();
-
-    // 添加到 stackedWidget
-    ui->stackedWidget->addWidget(d->mHistplot);
-    ui->stackedWidget->addWidget(d->mKdeplot1d);
-    ui->stackedWidget->addWidget(d->mKdeplot2d);
-    ui->stackedWidget->addWidget(d->mBoxplot);
-    ui->stackedWidget->addWidget(d->mHeatmap);
-    ui->stackedWidget->addWidget(d->mScatterplot);
-    ui->stackedWidget->addWidget(d->mBarplot);
-    ui->stackedWidget->addWidget(d->mRegplot);
-    ui->stackedWidget->addWidget(d->mEcdfplot);
-
     // 信号连接
-    connect(ui->listWidgetChartType, &QListWidget::currentItemChanged,
-            this, &DADialogStatsChartGuide::onListWidgetCurrentItemChanged);
-    connect(ui->buttonBox, &QDialogButtonBox::accepted,
-            this, &DADialogStatsChartGuide::onAccepted);
-
-    // 将每个 widget 的 plotRequested 信号转发为本对话框的同名信号
-    auto forwardSignal = [this](const QJsonObject& params, DAFigureWidget* fig, DAChartWidget* chart) {
-        Q_EMIT plotRequested(params, fig, chart);
-    };
-    connect(d->mHistplot, &DAAbstractStatsChartAddWidget::plotRequested, this, forwardSignal);
-    connect(d->mKdeplot1d, &DAAbstractStatsChartAddWidget::plotRequested, this, forwardSignal);
-    connect(d->mKdeplot2d, &DAAbstractStatsChartAddWidget::plotRequested, this, forwardSignal);
-    connect(d->mBoxplot, &DAAbstractStatsChartAddWidget::plotRequested, this, forwardSignal);
-    connect(d->mHeatmap, &DAAbstractStatsChartAddWidget::plotRequested, this, forwardSignal);
-    connect(d->mScatterplot, &DAAbstractStatsChartAddWidget::plotRequested, this, forwardSignal);
-    connect(d->mBarplot, &DAAbstractStatsChartAddWidget::plotRequested, this, forwardSignal);
-    connect(d->mRegplot, &DAAbstractStatsChartAddWidget::plotRequested, this, forwardSignal);
-    connect(d->mEcdfplot, &DAAbstractStatsChartAddWidget::plotRequested, this, forwardSignal);
+    connect(ui->listWidgetChartType, &QListWidget::currentItemChanged, this, &DADialogStatsChartGuide::onListWidgetCurrentItemChanged);
+    connect(ui->buttonBox, &QDialogButtonBox::accepted, this, &DADialogStatsChartGuide::onAccepted);
 }
 
 DADialogStatsChartGuide::~DADialogStatsChartGuide()
@@ -101,65 +48,77 @@ DADialogStatsChartGuide::~DADialogStatsChartGuide()
     delete ui;
 }
 
+/**
+ * @brief 用注册表填充左侧类型列表（只取统计家族）
+ */
 void DADialogStatsChartGuide::initListWidget()
 {
-    QListWidgetItem* item = nullptr;
-    // histplot
-    item = new QListWidgetItem(QIcon(":/DAGui/ChartType/icon/chart-type/stats-histplot.svg"),
-                               tr("Histplot"));  // cn:直方图
-    item->setData(Qt::UserRole, static_cast< int >(DA::DAChartTypes::StatsHistplot));
-    ui->listWidgetChartType->addItem(item);
-    // kdeplot 1d
-    item = new QListWidgetItem(QIcon(":/DAGui/ChartType/icon/chart-type/stats-kdeplot.svg"),
-                               tr("KDE 1D"));  // cn:一维核密度
-    item->setData(Qt::UserRole, static_cast< int >(DA::DAChartTypes::StatsKdeplot1d));
-    ui->listWidgetChartType->addItem(item);
-    // kdeplot 2d
-    item = new QListWidgetItem(QIcon(":/DAGui/ChartType/icon/chart-type/stats-kdeplot-2d.svg"),
-                               tr("KDE 2D"));  // cn:二维核密度
-    item->setData(Qt::UserRole, static_cast< int >(DA::DAChartTypes::StatsKdeplot2d));
-    ui->listWidgetChartType->addItem(item);
-    // boxplot
-    item = new QListWidgetItem(QIcon(":/DAGui/ChartType/icon/chart-type/stats-boxplot.svg"),
-                               tr("Boxplot"));  // cn:箱线图
-    item->setData(Qt::UserRole, static_cast< int >(DA::DAChartTypes::StatsBoxplot));
-    ui->listWidgetChartType->addItem(item);
-    // heatmap
-    item = new QListWidgetItem(QIcon(":/DAGui/ChartType/icon/chart-type/stats-heatmap.svg"),
-                               tr("Heatmap"));  // cn:热力图
-    item->setData(Qt::UserRole, static_cast< int >(DA::DAChartTypes::StatsHeatmap));
-    ui->listWidgetChartType->addItem(item);
-    // scatterplot
-    item = new QListWidgetItem(QIcon(":/DAGui/ChartType/icon/chart-type/stats-scatterplot.svg"),
-                               tr("Scatter"));  // cn:散点图
-    item->setData(Qt::UserRole, static_cast< int >(DA::DAChartTypes::StatsScatterplot));
-    ui->listWidgetChartType->addItem(item);
-    // barplot
-    item = new QListWidgetItem(QIcon(":/DAGui/ChartType/icon/chart-type/stats-barplot.svg"),
-                               tr("Barplot"));  // cn:柱状图
-    item->setData(Qt::UserRole, static_cast< int >(DA::DAChartTypes::StatsBarplot));
-    ui->listWidgetChartType->addItem(item);
-    // regplot
-    item = new QListWidgetItem(QIcon(":/DAGui/ChartType/icon/chart-type/stats-regplot.svg"),
-                               tr("Regplot"));  // cn:回归图
-    item->setData(Qt::UserRole, static_cast< int >(DA::DAChartTypes::StatsRegplot));
-    ui->listWidgetChartType->addItem(item);
-    // ecdfplot
-    item = new QListWidgetItem(QIcon(":/DAGui/ChartType/icon/chart-type/stats-ecdfplot.svg"),
-                               tr("ECDF"));  // cn:经验累积分布
-    item->setData(Qt::UserRole, static_cast< int >(DA::DAChartTypes::StatsECDFplot));
-    ui->listWidgetChartType->addItem(item);
-
+    const QList< DAChartAddItemWidgetDescriptor > descs =
+        DAChartAddItemWidgetFactory::instance().descriptors(DAChartAddWidgetFamily::Stats);
+    for (const DAChartAddItemWidgetDescriptor& desc : descs) {
+        QListWidgetItem* item = new QListWidgetItem(desc.icon(), desc.text());
+        item->setData(Qt::UserRole, static_cast< int >(desc.type));
+        ui->listWidgetChartType->addItem(item);
+    }
     // 默认选中第一项
     ui->listWidgetChartType->setCurrentRow(0);
 }
 
+/**
+ * @brief 按注册表创建页面并加入页面栈
+ * @param type 图表类型
+ * @return 页面指针；未注册或不是统计类型时返回 nullptr
+ */
+QWidget* DADialogStatsChartGuide::ensurePage(DA::DAChartTypes type)
+{
+    DA_D(d);
+    const int key = static_cast< int >(type);
+    if (QWidget* page = d->pages.value(key, nullptr)) {
+        return page;
+    }
+    const DAChartAddItemWidgetDescriptor* desc = DAChartAddItemWidgetFactory::instance().descriptor(type);
+    if (nullptr == desc || DAChartAddWidgetFamily::Stats != desc->family || !desc->creator) {
+        return nullptr;
+    }
+    QWidget* page = desc->creator();
+    if (nullptr == page) {
+        return nullptr;
+    }
+    ui->stackedWidget->addWidget(page);
+    d->pages.insert(key, page);
+    if (auto* w = qobject_cast< DAAbstractStatsChartAddWidget* >(page)) {
+        // 信号签名一致，直接转发为对话框的同名信号
+        connect(w, &DAAbstractStatsChartAddWidget::plotRequested, this, &DADialogStatsChartGuide::plotRequested);
+        ensureWidgetDataManager(w);
+        propagateFigureChart(w);
+    }
+    return page;
+}
+
+/**
+ * @brief 切换到指定类型的页面
+ * @param type 图表类型
+ */
+void DADialogStatsChartGuide::selectPage(DA::DAChartTypes type)
+{
+    QWidget* page = ensurePage(type);
+    if (nullptr == page) {
+        return;
+    }
+    ui->stackedWidget->setCurrentWidget(page);
+}
+
 void DADialogStatsChartGuide::ensureWidgetDataManager(DAAbstractStatsChartAddWidget* w)
 {
-    if (w && !mInitializedWidgets.contains(w)) {
-        w->setDataManager(mDataMgr);
-        mInitializedWidgets.insert(w);
+    DA_D(d);
+    if (nullptr == w || nullptr == mDataMgr) {
+        return;
     }
+    if (d->initializedWidgets.contains(w)) {
+        return;
+    }
+    w->setDataManager(mDataMgr);
+    d->initializedWidgets.insert(w);
 }
 
 void DADialogStatsChartGuide::propagateFigureChart(DAAbstractStatsChartAddWidget* w)
@@ -173,30 +132,38 @@ void DADialogStatsChartGuide::propagateFigureChart(DAAbstractStatsChartAddWidget
 void DADialogStatsChartGuide::setDataManager(DADataManager* dmgr)
 {
     mDataMgr = dmgr;
-    mInitializedWidgets.clear();
-    // 预初始化当前选中的 widget
-    QListWidgetItem* cur = ui->listWidgetChartType->currentItem();
-    if (cur) {
-        DA::DAChartTypes ct = static_cast< DA::DAChartTypes >(cur->data(Qt::UserRole).toInt());
-        if (DAAbstractStatsChartAddWidget* w = getStatsChartAddWidget(ct)) {
+    DA_D(d);
+    d->initializedWidgets.clear();
+    for (QWidget* page : std::as_const(d->pages)) {
+        if (auto* w = qobject_cast< DAAbstractStatsChartAddWidget* >(page)) {
             ensureWidgetDataManager(w);
         }
+    }
+    // 当前页可能在列表首次选中时已创建，这里确保它也拿到数据管理器
+    if (QListWidgetItem* cur = ui->listWidgetChartType->currentItem()) {
+        selectPage(static_cast< DA::DAChartTypes >(cur->data(Qt::UserRole).toInt()));
     }
 }
 
 void DADialogStatsChartGuide::setFigureWidget(DAFigureWidget* fig)
 {
     mFigureWidget = fig;
-    for (auto* w : mInitializedWidgets) {
-        w->setFigureWidget(fig);
+    DA_D(d);
+    for (QWidget* page : std::as_const(d->pages)) {
+        if (auto* w = qobject_cast< DAAbstractStatsChartAddWidget* >(page)) {
+            w->setFigureWidget(fig);
+        }
     }
 }
 
 void DADialogStatsChartGuide::setChartWidget(DAChartWidget* chart)
 {
     mChartWidget = chart;
-    for (auto* w : mInitializedWidgets) {
-        w->setChartWidget(chart);
+    DA_D(d);
+    for (QWidget* page : std::as_const(d->pages)) {
+        if (auto* w = qobject_cast< DAAbstractStatsChartAddWidget* >(page)) {
+            w->setChartWidget(chart);
+        }
     }
 }
 
@@ -220,7 +187,7 @@ void DADialogStatsChartGuide::setCurrentChartType(DA::DAChartTypes t)
             break;
         }
     }
-    // 确保当前 widget 始终获取到 figure/chart（同类型重复调用时
+    // 确保当前 widget 始终获取到 dataManager/figure/chart（同类型重复调用时
     // currentItemChanged 不触发，需要手动传播）
     if (DAAbstractStatsChartAddWidget* w = getCurrentStatsChartAddWidget()) {
         ensureWidgetDataManager(w);
@@ -233,96 +200,33 @@ DAAbstractStatsChartAddWidget* DADialogStatsChartGuide::getCurrentStatsChartAddW
     return qobject_cast< DAAbstractStatsChartAddWidget* >(ui->stackedWidget->currentWidget());
 }
 
-DAAbstractStatsChartAddWidget* DADialogStatsChartGuide::getStatsChartAddWidget(DAChartTypes chartType) const
+/**
+ * @brief 根据类型获取统计绘图设置 widget
+ * @param chartType 图表类型
+ * @return 未注册或不是统计类型时返回 nullptr
+ */
+DAAbstractStatsChartAddWidget* DADialogStatsChartGuide::getStatsChartAddWidget(DAChartTypes chartType)
 {
-    DA_DC(d);
-    switch (chartType) {
-    case DA::DAChartTypes::StatsHistplot:
-        return d->mHistplot;
-    case DA::DAChartTypes::StatsKdeplot1d:
-        return d->mKdeplot1d;
-    case DA::DAChartTypes::StatsKdeplot2d:
-        return d->mKdeplot2d;
-    case DA::DAChartTypes::StatsBoxplot:
-        return d->mBoxplot;
-    case DA::DAChartTypes::StatsHeatmap:
-        return d->mHeatmap;
-    case DA::DAChartTypes::StatsScatterplot:
-        return d->mScatterplot;
-    case DA::DAChartTypes::StatsBarplot:
-        return d->mBarplot;
-    case DA::DAChartTypes::StatsRegplot:
-        return d->mRegplot;
-    case DA::DAChartTypes::StatsECDFplot:
-        return d->mEcdfplot;
-    default:
-        break;
-    }
-    return nullptr;
+    return qobject_cast< DAAbstractStatsChartAddWidget* >(ensurePage(chartType));
 }
 
 void DADialogStatsChartGuide::onListWidgetCurrentItemChanged(QListWidgetItem* current, QListWidgetItem* previous)
 {
     Q_UNUSED(previous);
-    DA_D(d);
-    DA::DAChartTypes ct = static_cast< DA::DAChartTypes >(current->data(Qt::UserRole).toInt());
-    // 延迟初始化：切换到该 widget 时才设置 dataManager
-    if (DAAbstractStatsChartAddWidget* w = getStatsChartAddWidget(ct)) {
-        ensureWidgetDataManager(w);
-        propagateFigureChart(w);
+    if (nullptr == current) {
+        return;
     }
-    // 切换 stackedWidget 页面
-    switch (ct) {
-    case DA::DAChartTypes::StatsHistplot:
-        ui->stackedWidget->setCurrentWidget(d->mHistplot);
-        break;
-    case DA::DAChartTypes::StatsKdeplot1d:
-        ui->stackedWidget->setCurrentWidget(d->mKdeplot1d);
-        break;
-    case DA::DAChartTypes::StatsKdeplot2d:
-        ui->stackedWidget->setCurrentWidget(d->mKdeplot2d);
-        break;
-    case DA::DAChartTypes::StatsBoxplot:
-        ui->stackedWidget->setCurrentWidget(d->mBoxplot);
-        break;
-    case DA::DAChartTypes::StatsHeatmap:
-        ui->stackedWidget->setCurrentWidget(d->mHeatmap);
-        break;
-    case DA::DAChartTypes::StatsScatterplot:
-        ui->stackedWidget->setCurrentWidget(d->mScatterplot);
-        break;
-    case DA::DAChartTypes::StatsBarplot:
-        ui->stackedWidget->setCurrentWidget(d->mBarplot);
-        break;
-    case DA::DAChartTypes::StatsRegplot:
-        ui->stackedWidget->setCurrentWidget(d->mRegplot);
-        break;
-    case DA::DAChartTypes::StatsECDFplot:
-        ui->stackedWidget->setCurrentWidget(d->mEcdfplot);
-        break;
-    default:
-        break;
-    }
+    selectPage(static_cast< DA::DAChartTypes >(current->data(Qt::UserRole).toInt()));
 }
 
 void DADialogStatsChartGuide::onAccepted()
 {
     DAAbstractStatsChartAddWidget* w = getCurrentStatsChartAddWidget();
-    qDebug() << "[DADialogStatsChartGuide::onAccepted] widget=" << w
-             << "type=" << static_cast<int>(getCurrentChartType())
-             << "fig=" << mFigureWidget << "chart=" << mChartWidget;
-    if (!w) {
+    if (nullptr == w) {
         return;
     }
-    // 调用 widget 的确认逻辑：验证数据选择、设置 __da_data__ 属性、
-    // 构建完整参数（含 column, __plot_type__ 等），并发射 widget 自身的
-    // plotRequested 信号。该信号已在构造函数中被转发到本对话框的同名信号。
+    // 调用 widget 的确认逻辑：校验数据、构建参数并发射 plotRequested
     w->onButtonBoxAccepted();
-
-    // 检查 widget 是否正确设置了 __da_data__
-    QVariant dataVar = w->property("__da_data__");
-    qDebug() << "[DADialogStatsChartGuide::onAccepted] __da_data__ valid="
-             << dataVar.isValid() << "canConvert=" << dataVar.canConvert<DAData>();
 }
 
 }  // namespace DA
