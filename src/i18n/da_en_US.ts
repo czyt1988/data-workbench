@@ -7990,8 +7990,8 @@
 <context>
     <name>DA::DAChartManageWidget</name>
     <message>
-        <location filename="../DAGui/Chart/DAChartManageWidget.cpp" line="+92"/>
-        <location line="+543"/>
+        <location filename="../DAGui/Chart/DAChartManageWidget.cpp" line="+98"/>
+        <location line="+609"/>
         <location line="+17"/>
         <location line="+20"/>
         <location line="+22"/>
@@ -8001,24 +8001,34 @@
         <translation>Rename</translation>
     </message>
     <message>
-        <location line="-637"/>
+        <location line="-703"/>
         <source>Visible</source>
         <translation>Visible</translation>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+741"/>
+        <location line="+807"/>
         <location line="+24"/>
         <source>Delete</source>
         <translation>Delete</translation>
     </message>
     <message>
-        <location line="-763"/>
+        <location line="-826"/>
+        <source>Transfer</source>
+        <translation>Transfer</translation>
+    </message>
+    <message>
+        <location line="+3"/>
         <source>Setting</source>
         <translation>Setting</translation>
     </message>
     <message>
-        <location line="+327"/>
+        <location line="+95"/>
+        <source>figure</source>
+        <translation>figure</translation>
+    </message>
+    <message>
+        <location line="+288"/>
         <source>received figure create signal, but cannot find figure</source>
         <translation>received figure create signal, but cannot find figure</translation>
     </message>
@@ -8028,7 +8038,8 @@
         <translation>received figure close signal, but cannot find figure index</translation>
     </message>
     <message>
-        <location line="+182"/>
+        <location line="-299"/>
+        <location line="+485"/>
         <source>chart</source>
         <translation>chart</translation>
     </message>

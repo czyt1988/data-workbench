@@ -23,6 +23,7 @@
 #include "qwt3d_plotitem.h"
 #include "qwt3d_types.h"
 #include "Models/DAFigureTreeModel.h"
+#include "DAFigureWidgetCommands.h"
 namespace DA
 {
 //===============================================================
@@ -38,6 +39,8 @@ public:
     void ensureTreeContextMenu(DAChartManageWidget* q);
     // 根据节点类型更新右键菜单各 action 的可见性
     void updateContextMenuActions(int nodeType);
+    // 重建"转移"子菜单（目标随 figure/chart 增删动态变化，每次右键时重建），返回是否存在可转移目标
+    bool rebuildTransferMenu(DAChartManageWidget* q);
 
 public:
     QPointer< DAChartOperateWidget > mChartOptWidget;
@@ -52,6 +55,9 @@ public:
     QAction* mActVisible { nullptr };
     QAction* mActDelete { nullptr };
     QAction* mActSetting { nullptr };
+    // "转移"子菜单（图元右键时列出其它 figure 及其 chart）
+    QMenu* mMenuTransfer { nullptr };
+    QAction* mActTransfer { nullptr };
     // 当前右键上下文（action 触发时使用）
     DAFigureTreeView* mContextTree { nullptr };
     DAFigureWidget* mContextFigureWidget { nullptr };
@@ -93,6 +99,12 @@ void DAChartManageWidget::PrivateData::ensureTreeContextMenu(DAChartManageWidget
     mActVisible = mTreeContextMenu->addAction(tr("Visible"));  // cn:可见
     mActVisible->setCheckable(true);
     mActDelete  = mTreeContextMenu->addAction(tr("Delete"));   // cn:删除
+    mTreeContextMenu->addSeparator();
+    // "转移"子菜单（仅图元节点可见，内容在每次右键时按当前 figure/chart 动态重建）
+    mMenuTransfer = new QMenu(mTreeContextMenu);
+    mActTransfer  = mMenuTransfer->menuAction();
+    mActTransfer->setText(tr("Transfer"));  // cn:转移
+    mTreeContextMenu->addAction(mActTransfer);
     mTreeContextMenu->addSeparator();
     mActSetting = mTreeContextMenu->addAction(tr("Setting"));  // cn:设置
     QObject::connect(mActRename, &QAction::triggered, q, &DAChartManageWidget::onContextMenuRenameTriggered);
@@ -159,6 +171,62 @@ void DAChartManageWidget::PrivateData::updateContextMenuActions(int nodeType)
         mActSetting->setVisible(false);
         break;
     }
+    // "转移"仅对2D图元节点有意义（图元所在chart由右键上下文提供，跨figure移动）
+    mActTransfer->setVisible(nodeType == DAFigureTreeModel::NodeTypePlotItem);
+}
+/**
+ * @brief 重建"转移"子菜单
+ *
+ * 目标 figure/chart 随用户增删动态变化，因此不能像其它 action 一样只构建一次，
+ * 每次图元节点右键时先清空再重建：
+ * - 一级子菜单列出除图元所在 figure 外的所有含 2D chart 的 figure（避免无效转移）；
+ * - 目标 figure 只有一个 chart 时直接作为叶子项，选中即转移；
+ * - 有多个 chart 时展开二级子菜单供用户选择目标 chart。
+ * 若没有任何可转移目标，返回 false（调用方隐藏整个"转移"项）。
+ */
+bool DAChartManageWidget::PrivateData::rebuildTransferMenu(DAChartManageWidget* q)
+{
+    mMenuTransfer->clear();
+    if (!mChartOptWidget || !mContextFigureWidget) {
+        return false;
+    }
+    const QList< DAFigureWidget* > figures = mChartOptWidget->getFigureList();
+    for (DAFigureWidget* fig : figures) {
+        if (!fig || fig == mContextFigureWidget) {
+            continue;  // 自身所在figure不列举
+        }
+        const QList< DAChartWidget* > charts = fig->getCharts();
+        if (charts.isEmpty()) {
+            continue;
+        }
+        QString figName = fig->windowTitle();
+        if (figName.isEmpty()) {
+            figName = tr("figure");  // cn:绘图
+        }
+        if (charts.size() == 1) {
+            // 唯一chart：直接作为叶子项，选中即转移到该figure的唯一chart
+            QAction* act = mMenuTransfer->addAction(figName);
+            QObject::connect(act, &QAction::triggered, q, [ q, chart = charts.first() ]() {
+                q->transferPlotItemToChart(chart);
+            });
+        } else {
+            // 多个chart：二级子菜单选择目标chart
+            QMenu* chartMenu = new QMenu(mMenuTransfer);
+            for (DAChartWidget* chart : charts) {
+                QString chartName = chart->title().text();
+                if (chartName.isEmpty()) {
+                    chartName = tr("chart");  // cn:绘图
+                }
+                QAction* act = chartMenu->addAction(chartName);
+                QObject::connect(act, &QAction::triggered, q, [ q, chart ]() {
+                    q->transferPlotItemToChart(chart);
+                });
+            }
+            chartMenu->menuAction()->setText(figName);
+            mMenuTransfer->addMenu(chartMenu);
+        }
+    }
+    return !mMenuTransfer->isEmpty();
 }
 //===================================================
 // DAChartManageWidget
@@ -582,6 +650,10 @@ void DAChartManageWidget::onTreeViewContextMenuRequested(DAFigureTreeView* tree,
     d_ptr->mContextItem         = item;
     d_ptr->mContextNodeType     = nodeType;
     d_ptr->updateContextMenuActions(nodeType);
+    // "转移"子菜单目标随 figure/chart 增删变化，图元节点右键时重建；无目标则隐藏
+    if (nodeType == DAFigureTreeModel::NodeTypePlotItem) {
+        d_ptr->mActTransfer->setVisible(d_ptr->rebuildTransferMenu(this));
+    }
 
     // 根据当前可见性同步"可见"action 的勾选状态，action->isVisible说明这个action起作用，在上面已经确认这个item需要可见性判断
     // (checked = 当前可见, unchecked = 当前隐藏)
@@ -940,6 +1012,49 @@ void DAChartManageWidget::onContextMenuSettingTriggered()
     }
     default:
         break;
+    }
+}
+
+/**
+ * @brief 把右键上下文中的图元转移到目标chart（跨figure移动）
+ *
+ * 复用 DAFigureWidgetCommandMoveItem 撤销命令：
+ * redo 时 item->attach(targetChart)（QwtPlotItem::attach 会先 detach 旧 plot），
+ * undo 时 item->attach(sourceChart) 移回原 chart，两边的树模型都通过
+ * QwtPlot::itemAttached 信号自动更新。命令压入源 figure 的 undo 栈，
+ * 撤销/重做走应用层 QUndoGroup 统一分发。
+ * @param targetChart 目标chart（属于其它 figure）
+ */
+void DAChartManageWidget::transferPlotItemToChart(DAChartWidget* targetChart)
+{
+    DAFigureTreeView* tree = d_ptr->mContextTree;
+    QStandardItem* item    = d_ptr->mContextItem;
+    int nodeType           = d_ptr->mContextNodeType;
+    DAFigureWidget* figWidget = d_ptr->mContextFigureWidget;
+    if (!tree || !item || !figWidget || !targetChart) {
+        return;
+    }
+    if (nodeType != DAFigureTreeModel::NodeTypePlotItem) {
+        return;
+    }
+    DAFigureTreeModel* model = tree->getFigureTreeModel();
+    if (!model) {
+        return;
+    }
+    QwtPlotItem* plotItem = model->plotItemFromItem(item);
+    QwtPlot* plot         = model->plotFromItem(item);
+    if (!plotItem || !plot) {
+        return;
+    }
+    DAChartWidget* sourceChart = qobject_cast< DAChartWidget* >(plot);
+    if (!sourceChart || sourceChart == targetChart) {
+        return;
+    }
+    figWidget->push(new DAFigureWidgetCommandMoveItem(figWidget, sourceChart, targetChart, plotItem));
+    // 转移后在源树中选中该图元的新位置（树模型已通过itemAttached信号把节点移到目标figure的树）
+    QModelIndex newIdx = model->indexFromPlotItem(plotItem);
+    if (newIdx.isValid()) {
+        tree->setCurrentIndex(newIdx);
     }
 }
 

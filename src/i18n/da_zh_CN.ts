@@ -8006,8 +8006,8 @@
 <context>
     <name>DA::DAChartManageWidget</name>
     <message>
-        <location filename="../DAGui/Chart/DAChartManageWidget.cpp" line="+92"/>
-        <location line="+543"/>
+        <location filename="../DAGui/Chart/DAChartManageWidget.cpp" line="+98"/>
+        <location line="+609"/>
         <location line="+17"/>
         <location line="+20"/>
         <location line="+22"/>
@@ -8017,24 +8017,34 @@
         <translation>重命名</translation>
     </message>
     <message>
-        <location line="-637"/>
+        <location line="-703"/>
         <source>Visible</source>
         <translation>可见</translation>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+741"/>
+        <location line="+807"/>
         <location line="+24"/>
         <source>Delete</source>
         <translation>删除</translation>
     </message>
     <message>
-        <location line="-763"/>
+        <location line="-826"/>
+        <source>Transfer</source>
+        <translation>转移</translation>
+    </message>
+    <message>
+        <location line="+3"/>
         <source>Setting</source>
         <translation>设置</translation>
     </message>
     <message>
-        <location line="+327"/>
+        <location line="+95"/>
+        <source>figure</source>
+        <translation>绘图</translation>
+    </message>
+    <message>
+        <location line="+288"/>
         <source>received figure create signal, but cannot find figure</source>
         <translation>获取了绘图创建的信号，但无法找到绘图</translation>
     </message>
@@ -8044,7 +8054,8 @@
         <translation>获取了绘图关闭的信号，但无法找到绘图的索引</translation>
     </message>
     <message>
-        <location line="+182"/>
+        <location line="-299"/>
+        <location line="+485"/>
         <source>chart</source>
         <translation>绘图</translation>
     </message>
