@@ -9,6 +9,7 @@
 #include "DAConfigs.h"
 #include <QIcon>
 #include "AppMainWindow.h"
+#include "DAAppCore.h"
 #include "SettingPages/DAAppConfig.h"
 namespace DA
 {
@@ -16,7 +17,7 @@ DAAppSettingDialog::DAAppSettingDialog(QWidget* parent) : DASettingDialog(parent
 {
 }
 
-void DAAppSettingDialog::buildUI(DAAppConfig* config)
+void DAAppSettingDialog::buildUI(DAAppConfig* config, DAAppCore* core)
 {
     // 通用设置页
     DASettingPageGeneral* general = new DASettingPageGeneral();
@@ -40,18 +41,17 @@ void DAAppSettingDialog::buildUI(DAAppConfig* config)
 
     // 快捷键设置页（数据源为 DAShortcutManager，独立于 DAAppConfig 持久化到 shortcuts.json）
     DASettingPageShortcuts* shortcutsPage = new DASettingPageShortcuts();
-    shortcutsPage->setShortcutManager(config->getCore()->getShortcutManager());
+    shortcutsPage->setShortcutManager(core->getShortcutManager());
     settingWidget()->addPage(shortcutsPage);
 
-    // Agent LLM 设置页（与其它设置页统一经 config-> 取接口；本页注入 setAgentInterface 而非 setAppConfig，
-    // 取接口路径 config->getCore()->getAgentInterface() 与其它页 page->setAppConfig(config) 同样经 config-> 取数据）
+    // Agent LLM 设置页（本页注入 setAgentInterface 而非 setAppConfig）
     DAAgentSettingsWidget* agentPage = new DAAgentSettingsWidget();
-    agentPage->setAgentInterface(config->getCore()->getAgentInterface());
+    agentPage->setAgentInterface(core->getAgentInterface());
     settingWidget()->addPage(agentPage);
 
     // Agent 权限设置页（permission-layer P1 骨架：模式/审批超时/判官）
     DAAgentPermissionSettingsWidget* permissionPage = new DAAgentPermissionSettingsWidget();
-    permissionPage->setAgentInterface(config->getCore()->getAgentInterface());
+    permissionPage->setAgentInterface(core->getAgentInterface());
     settingWidget()->addPage(permissionPage);
 
     setPage(0);

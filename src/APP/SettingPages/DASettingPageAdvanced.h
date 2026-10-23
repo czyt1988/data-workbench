@@ -14,7 +14,7 @@ namespace DA
 class DAAppConfig;
 
 /**
- * @brief 高级设置页：工作流超时、最近文件数、dump保留、节点/插件路径、启动画面、自动保存
+ * @brief 高级设置页：最近文件数、dump保留天数、启动画面、自动保存、脚本工作区
  */
 class DASettingPageAdvanced : public DAAbstractSettingPage
 {
@@ -28,13 +28,8 @@ public:
     virtual QIcon getSettingPageIcon() const override;
     bool setAppConfig(DAAppConfig* p);
 private Q_SLOTS:
-    void onDoubleSpinBoxWorkflowTimeoutValueChanged(double v);
     void onSpinBoxRecentFilesMaxValueChanged(int v);
     void onSpinBoxDumpRetentionDaysValueChanged(int v);
-    void onLineEditPluginPathTextChanged(const QString& text);
-    void onToolButtonPluginBrowseClicked();
-    void onToolButtonAddNodePathClicked();
-    void onToolButtonRemoveNodePathClicked();
     void onCheckBoxShowSplashStateChanged(int state);
     void onSpinBoxAutosaveIntervalValueChanged(int v);
     void onLineEditWorkspaceDirTextChanged(const QString& text);

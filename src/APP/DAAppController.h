@@ -379,7 +379,7 @@ private Q_SLOTS:
     void onActionGotoCellTriggered();
     // 撤销历史面板（005 T1.21，Ribbon「视图」页；入口选 (a) 点击即 raise，与现有交互一致）
     void onActionShowUndoHistoryTriggered();
-    // 历史面板调整撤销深度：写回配置（dawork-config.xml）并施加到全部已打开数据页
+    // 历史面板调整撤销深度：写回配置（ui.undo-stack-limit）并施加到全部已打开数据页
     void onUndoHistoryLimitChangeRequested(int limit);
     // 选中区样式反向同步 ribbon 控件
     void onTableStyleCurrentChanged(const DATableCellStyle& style);
@@ -465,7 +465,7 @@ private Q_SLOTS:
     //===================================================
     // 其他
     //===================================================
-    // 视图页-外观面板的主题下拉切换（写 DA_CONFIG_KEY_RIBBON_THEME 持久化）
+    // 视图页-外观面板的主题下拉切换（写 ui.ribbon-theme 持久化）
     void onRibbonThemeComboCurrentIndexChanged(int index);
     // 恢复默认布局（触发前弹确认框）
     void onActionResetDefaultLayoutTriggered();

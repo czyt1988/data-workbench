@@ -18,7 +18,7 @@ namespace DA
  * 的 tr()，红线5：面板里不允许空白条目）。
  *
  * 撤销深度调节（R19）：面板提供 QSpinBox 入口，改动只发 undoLimitChangeRequested
- * 信号——配置读取/写回（DA_CONFIG_KEY_UNDO_STACK_LIMIT，dawork-config.xml）与对各
+ * 信号——配置读取/写回（ui.undo-stack-limit，dawork-config.json）与对各
  * 数据页 QUndoStack 的施加都在 APP 侧完成（D0 分层：严禁 DAGui→APP 反向依赖，
  * DAGui 只暴露 undoLimit()/setUndoLimit(int) 口径的接口）。
  */

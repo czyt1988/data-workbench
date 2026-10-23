@@ -18,7 +18,8 @@ class DAAppSettingDialog : public DASettingDialog
     Q_OBJECT
 public:
     explicit DAAppSettingDialog(QWidget* parent = nullptr);
-    void buildUI(DAAppConfig* config);
+    // 配置与核心均由 AppMainWindow 注入（依赖注入，不使用全局单例）
+    void buildUI(DAAppConfig* config, DAAppCore* core);
     virtual ~DAAppSettingDialog() override;
 };
 }

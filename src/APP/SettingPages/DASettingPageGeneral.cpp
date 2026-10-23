@@ -140,19 +140,22 @@ void DASettingPageGeneral::apply()
     if (nullptr == mAppConfig) {
         return;
     }
-    DAAppConfig& cfg = *mAppConfig;
     // 记录旧值
-    mOldRibbonStyle = static_cast< SARibbonBar::RibbonStyles >(cfg[ DA_CONFIG_KEY_RIBBON_STYLE ].toInt());
+    mOldRibbonStyle = static_cast< SARibbonBar::RibbonStyles >(mAppConfig->ui().ribbonStyle);
     // 更新
-    cfg[ DA_CONFIG_KEY_RIBBON_STYLE ]           = static_cast< int >(mNewRibbonStyle);
-    cfg[ DA_CONFIG_KEY_RIBBON_THEME ]            = ui->comboBoxRibbonTheme->currentData().toInt();
-    cfg[ DA_CONFIG_KEY_LANGUAGE ]                = ui->comboBoxLanguage->currentData().toString();
-    cfg[ DA_CONFIG_KEY_DOCK_TAB_POSITION ]       = ui->comboBoxDockTabPosition->currentData().toString();
-    QFont f                                       = ui->fontComboBoxAppFont->currentFont();
-    cfg[ DA_CONFIG_KEY_APP_FONT_FAMILY ]        = f.family();
-    cfg[ DA_CONFIG_KEY_APP_FONT_POINT_SIZE ]    = ui->spinBoxFontSize->value();
-    cfg[ DA_CONFIG_KEY_SAVE_UI_STATE_ON_CLOSE ] = ui->checkBoxSaveUIState->isChecked();
-    cfg.apply();
+    DAUISettings s        = mAppConfig->ui();
+    s.ribbonStyle         = static_cast< int >(mNewRibbonStyle);
+    s.ribbonTheme         = ui->comboBoxRibbonTheme->currentData().toInt();
+    s.language            = ui->comboBoxLanguage->currentData().toString();
+    s.dockTabPosition     = (ui->comboBoxDockTabPosition->currentData().toString() == QLatin1String("top"))
+                                ? DADockTabPosition::Top
+                                : DADockTabPosition::Bottom;
+    QFont f               = ui->fontComboBoxAppFont->currentFont();
+    s.fontFamily          = f.family();
+    s.fontPointSize       = ui->spinBoxFontSize->value();
+    s.saveUiStateOnClose  = ui->checkBoxSaveUIState->isChecked();
+    // setUI 会发出 sectionChanged，由主窗口负责热应用；保存由设置对话框触发
+    mAppConfig->setUI(s);
     emit settingApplyed();
 }
 
@@ -172,11 +175,10 @@ bool DASettingPageGeneral::setAppConfig(DAAppConfig* p)
         return false;
     }
     QSignalBlocker blocker(this);
-    mAppConfig       = p;
-    DAAppConfig& cfg = *p;
+    mAppConfig                 = p;
+    const DAUISettings& cfgUI  = p->ui();
     // ribbon style
-    SARibbonBar::RibbonStyles ribbonStyle =
-        static_cast< SARibbonBar::RibbonStyles >(cfg[ DA_CONFIG_KEY_RIBBON_STYLE ].toInt());
+    SARibbonBar::RibbonStyles ribbonStyle = static_cast< SARibbonBar::RibbonStyles >(cfgUI.ribbonStyle);
     mOldRibbonStyle = ribbonStyle;
     mNewRibbonStyle = ribbonStyle;
     switch (ribbonStyle) {
@@ -200,35 +202,31 @@ bool DASettingPageGeneral::setAppConfig(DAAppConfig* p)
         break;
     }
     // ribbon theme
-    int theme = cfg[ DA_CONFIG_KEY_RIBBON_THEME ].toInt();
+    int theme = cfgUI.ribbonTheme;
     int tidx  = ui->comboBoxRibbonTheme->findData(theme);
     if (tidx >= 0) {
         ui->comboBoxRibbonTheme->setCurrentIndex(tidx);
     }
     // language
-    QString lang = cfg[ DA_CONFIG_KEY_LANGUAGE ].toString();
+    QString lang = cfgUI.language;
     int lidx    = ui->comboBoxLanguage->findData(lang);
     ui->comboBoxLanguage->setCurrentIndex(lidx >= 0 ? lidx : 0);
-    // 操作窗口标签页方位（空值/非法值回落到默认"下方"）
-    QString tabPos = cfg[ DA_CONFIG_KEY_DOCK_TAB_POSITION ].toString();
-    int pidx      = ui->comboBoxDockTabPosition->findData(tabPos);
-    if (pidx < 0) {
-        pidx = ui->comboBoxDockTabPosition->findData(QStringLiteral("bottom"));
-    }
-    ui->comboBoxDockTabPosition->setCurrentIndex(pidx);
+    // 操作窗口标签页方位（取值已在加载时规范化）
+    const QString tabPos = (cfgUI.dockTabPosition == DADockTabPosition::Top) ? QStringLiteral("top")
+                                                                            : QStringLiteral("bottom");
+    int pidx             = ui->comboBoxDockTabPosition->findData(tabPos);
+    ui->comboBoxDockTabPosition->setCurrentIndex(pidx >= 0 ? pidx : 0);
     // font
     QFont f;
-    QString fam = cfg[ DA_CONFIG_KEY_APP_FONT_FAMILY ].toString();
-    if (!fam.isEmpty()) {
-        f.setFamily(fam);
+    if (!cfgUI.fontFamily.isEmpty()) {
+        f.setFamily(cfgUI.fontFamily);
     }
     ui->fontComboBoxAppFont->setCurrentFont(f);
-    double sz = cfg[ DA_CONFIG_KEY_APP_FONT_POINT_SIZE ].toDouble();
+    double sz = cfgUI.fontPointSize;
     ui->spinBoxFontSize->setValue(sz > 0 ? static_cast< int >(sz)
                                          : (QApplication::font().pointSize() > 0 ? QApplication::font().pointSize() : 9));
     // 是否记录ui
-    bool isSaveUIState = cfg[ DA_CONFIG_KEY_SAVE_UI_STATE_ON_CLOSE ].toBool();
-    ui->checkBoxSaveUIState->setChecked(isSaveUIState);
+    ui->checkBoxSaveUIState->setChecked(cfgUI.saveUiStateOnClose);
 
     return true;
 }

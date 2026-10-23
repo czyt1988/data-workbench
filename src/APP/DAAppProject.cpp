@@ -187,7 +187,7 @@ static QString makeScriptWorkspaceDir(const QString& projectFilePath)
     QString root;
     DAAppConfig* cfg = getWorkspaceAppConfig();
     if (cfg) {
-        root = cfg->value(DA_CONFIG_KEY_WORKSPACE_DIR).toString().trimmed();
+        root = cfg->script().workspaceDir.trimmed();
     }
     if (root.isEmpty()) {
         root = QDir::tempPath();
@@ -1262,20 +1262,17 @@ bool DAAppProject::precheckWorkspaceOnLoad(const QString& projectPath, QString* 
         return true;  // 无本地缓存，无冲突
     }
     // 策略配置（默认 ask；always-local/always-zip 供高级用户免弹窗）
-    QString policy = QStringLiteral("ask");
+    DAWorkspaceOverwritePolicy policy = DAWorkspaceOverwritePolicy::Ask;
     if (DAAppConfig* cfg = getWorkspaceAppConfig()) {
-        const QString v = cfg->value(DA_CONFIG_KEY_WORKSPACE_OVERWRITE_POLICY).toString().trimmed();
-        if (!v.isEmpty()) {
-            policy = v;
-        }
+        policy = cfg->script().overwritePolicy;
     }
-    if (policy == QLatin1String("always-local")) {
+    if (policy == DAWorkspaceOverwritePolicy::AlwaysLocal) {
         if (keepLocal) {
             *keepLocal = true;
         }
         return true;
     }
-    if (policy == QLatin1String("always-zip")) {
+    if (policy == DAWorkspaceOverwritePolicy::AlwaysZip) {
         return true;  // 覆盖解压
     }
     // ask：指纹比对（内容 MD5；解压不回写时间戳，不能用 mtime 判定）
