@@ -130,6 +130,8 @@ public:
      * @return 加载成功返回 true
      */
     bool showMarkdownFile(const QString& filePath) override;
+    // Markdown 查看 dock（懒创建，未创建时为 nullptr），供视图开关 raise 使用
+    ads::CDockWidget* getMarkdownDock() const;
     // 切换左侧边栏（工作流节点、图表管理、数据管理）的显示/隐藏
     void toggleLeftSidebar(bool show);
     // 切换右侧边栏（设置、日志）的显示/隐藏

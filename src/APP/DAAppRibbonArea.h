@@ -253,9 +253,7 @@ private:
     SARibbonCategory* mCategoryView { nullptr };        ///< 视图标签
     SARibbonPanel* mPannelViewMainView { nullptr };     ///< 主要视图操作
     SARibbonPanel* mPannelViewLayout { nullptr };       ///< 布局管理
-    SARibbonPanel* mPannelViewAppearance { nullptr };   ///< 外观（Ribbon主题）
-    QComboBox* mComboxRibbonTheme { nullptr };          ///< Ribbon主题选择器
-    SARibbonLineWidgetContainer* mComboxRibbonThemeContainer { nullptr };  ///< Ribbon主题选择器container
+    // 外观面板（Ribbon 主题）已删除：主题切换由 设置→常规 页提供
 
     //----------------------------------------------------
     // figure

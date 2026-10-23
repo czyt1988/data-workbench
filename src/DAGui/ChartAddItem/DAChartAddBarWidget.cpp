@@ -18,6 +18,18 @@ QwtPlotItem* DAChartAddBarWidget::createPlotItem()
 	}
 	QwtPlotBarChart* item = new QwtPlotBarChart();
 	item->setSamples(xy);
+	// 多 y 时截断提示与曲线（柱状图同组柱重叠，仅取第一条 y）
+	if (getXYInfo().y.size() > 1) {
+		QString name;
+		QList< QVector< QPointF > > xys;
+		QStringList names;
+		if (getMultiSeries(xys, names) && !names.isEmpty()) {
+			name = names.first();
+		}
+		item->setTitle(name);
+	} else {
+		item->setTitle(getNameHint());
+	}
 	return item;
 }
 }

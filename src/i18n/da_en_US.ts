@@ -1452,7 +1452,7 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="../APP/DAAppActions.cpp" line="+474"/>
+        <location filename="../APP/DAAppActions.cpp" line="+476"/>
         <source>Open</source>
         <translation>Open</translation>
     </message>
@@ -2727,7 +2727,27 @@
         <translation>Show the agent assistant area</translation>
     </message>
     <message>
+        <location line="+1"/>
+        <source>Show Data Link Table</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Show the data link table (hidden by default, shown when data probes are used)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location line="+2"/>
+        <source>Show Markdown Viewer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Show the markdown viewer (opens a file dialog if no file is open)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
         <source>Plugin Config</source>
         <translation>Plugin Config</translation>
     </message>
@@ -2827,7 +2847,7 @@
         <translation>Undo the last action</translation>
     </message>
     <message>
-        <location line="-156"/>
+        <location line="-162"/>
         <source>Find</source>
         <translation>Find</translation>
     </message>
@@ -3317,7 +3337,7 @@
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+849"/>
+        <location filename="../APP/DAAppController.cpp" line="+848"/>
         <source>Save Project</source>
         <translation>Save Project</translation>
     </message>
@@ -3364,7 +3384,7 @@
         <translation>Failed to save image to %1</translation>
     </message>
     <message>
-        <location line="+112"/>
+        <location line="+69"/>
         <source>Reset Layout</source>
         <translation>Reset Layout</translation>
     </message>
@@ -3481,7 +3501,7 @@
         <translation>Before creating a new coordinate, you need to create a figure</translation>
     </message>
     <message>
-        <location line="-1855"/>
+        <location line="-1812"/>
         <source>Please select the data operation window</source>
         <translation>Please select the data operation window</translation>
     </message>
@@ -3542,68 +3562,18 @@
         <translation>Received null project interface</translation>
     </message>
     <message>
-        <location line="+37"/>
-        <source>Windows 7</source>
-        <translation>Windows 7</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Office 2013</source>
-        <translation>Office 2013</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Office 2016 Blue</source>
-        <translation>Office 2016 Blue</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Office 2016 Green</source>
-        <translation>Office 2016 Green</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Office 2016 Dark</source>
-        <translation>Office 2016 Dark</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Office 2021 Blue</source>
-        <translation>Office 2021 Blue</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Office 2021 Green</source>
-        <translation>Office 2021 Green</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Office 2021 Dark</source>
-        <translation>Office 2021 Dark</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Dark</source>
-        <translation>Dark</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Dark 2</source>
-        <translation>Dark 2</translation>
-    </message>
-    <message>
-        <location line="-217"/>
-        <location line="+315"/>
+        <location line="-171"/>
+        <location line="+272"/>
         <source>No cells selected to copy</source>
         <translation>No cells selected to copy</translation>
     </message>
     <message>
-        <location line="-1502"/>
+        <location line="-1456"/>
         <source>No active table</source>
         <translation>No active table</translation>
     </message>
     <message>
-        <location line="+1890"/>
+        <location line="+1844"/>
         <source>Cannot rename a series, please select a dataset</source>
         <translation>Cannot rename a series, please select a dataset</translation>
     </message>
@@ -3695,12 +3665,12 @@
         <translation>The selected data source is empty</translation>
     </message>
     <message>
-        <location line="-2744"/>
+        <location line="-2701"/>
         <source>Before running the workflow, you need to save the project</source>
         <translation>Before running the workflow, you need to save the project</translation>
     </message>
     <message>
-        <location line="+2007"/>
+        <location line="+1964"/>
         <source>Please select a column first</source>
         <translation>Please select a column first</translation>
     </message>
@@ -3792,7 +3762,7 @@
         <translation>Agent Assistant</translation>
     </message>
     <message>
-        <location line="+513"/>
+        <location line="+515"/>
         <source>Markdown Viewer</source>
         <translation>Markdown Viewer</translation>
     </message>
@@ -3802,7 +3772,7 @@
         <translation>Failed to open markdown file: %1</translation>
     </message>
     <message>
-        <location line="-519"/>
+        <location line="-521"/>
         <source>Undo History</source>
         <translation>Undo History</translation>
     </message>
@@ -4261,13 +4231,13 @@
         <translation>Config</translation>
     </message>
     <message>
-        <location line="+31"/>
-        <location line="+409"/>
+        <location line="+29"/>
+        <location line="+401"/>
         <source>Workflow</source>
         <translation>Workflow</translation>
     </message>
     <message>
-        <location line="-438"/>
+        <location line="-428"/>
         <source>Dataset</source>
         <translation>Dataset</translation>
     </message>
@@ -4288,15 +4258,15 @@
     </message>
     <message>
         <location line="+2"/>
-        <location line="+13"/>
+        <location line="+11"/>
         <location line="+21"/>
-        <location line="+280"/>
+        <location line="+272"/>
         <location line="+195"/>
         <source>View</source>
         <translation>View</translation>
     </message>
     <message>
-        <location line="-508"/>
+        <location line="-498"/>
         <source>Display</source>
         <translation>Display</translation>
     </message>
@@ -4306,101 +4276,96 @@
         <translation>Layout</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Appearance</source>
-        <translation>Appearance</translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <location line="+240"/>
+        <location line="+2"/>
+        <location line="+232"/>
         <source>DataFrame</source>
         <translation>DataFrame</translation>
     </message>
     <message>
-        <location line="-239"/>
-        <location line="+241"/>
+        <location line="-231"/>
+        <location line="+233"/>
         <source>Table Operations</source>
         <translation>Table Operations</translation>
     </message>
     <message>
-        <location line="-234"/>
-        <location line="+311"/>
+        <location line="-226"/>
+        <location line="+303"/>
         <source>Data Operations</source>
         <translation>Data Operations</translation>
     </message>
     <message>
-        <location line="-317"/>
-        <location line="+243"/>
+        <location line="-309"/>
+        <location line="+235"/>
         <source>Axes</source>
         <translation>Axes</translation>
     </message>
     <message>
-        <location line="-242"/>
-        <location line="+255"/>
+        <location line="-234"/>
+        <location line="+247"/>
         <source>Column</source>
         <translation>Column</translation>
     </message>
     <message>
-        <location line="-254"/>
+        <location line="-246"/>
         <location line="+12"/>
-        <location line="+252"/>
+        <location line="+244"/>
         <location line="+5"/>
         <source>Type</source>
         <translation>Type</translation>
     </message>
     <message>
-        <location line="-268"/>
+        <location line="-260"/>
         <location line="+12"/>
-        <location line="+267"/>
+        <location line="+259"/>
         <location line="+4"/>
         <source>Format</source>
         <translation>Format</translation>
     </message>
     <message>
-        <location line="-277"/>
-        <location line="+335"/>
+        <location line="-269"/>
+        <location line="+327"/>
         <source>Table Style</source>
         <translation>Table Style</translation>
     </message>
     <message>
-        <location line="-334"/>
-        <location line="+338"/>
+        <location line="-326"/>
+        <location line="+330"/>
         <source>Fill</source>
         <translation>Fill</translation>
     </message>
     <message>
-        <location line="-337"/>
-        <location line="+345"/>
+        <location line="-329"/>
+        <location line="+337"/>
         <source>Font</source>
         <translation>Font</translation>
     </message>
     <message>
-        <location line="-344"/>
-        <location line="+350"/>
+        <location line="-336"/>
+        <location line="+342"/>
         <source>Clear</source>
         <translation>Clear</translation>
     </message>
     <message>
-        <location line="-343"/>
+        <location line="-335"/>
         <source>Fill Color</source>
         <translation>Fill Color</translation>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+419"/>
+        <location line="+411"/>
         <source>Workflow Edit</source>
         <translation>Workflow Edit</translation>
     </message>
     <message>
-        <location line="-456"/>
-        <location line="+38"/>
-        <location line="+422"/>
+        <location line="-446"/>
+        <location line="+36"/>
+        <location line="+414"/>
         <source>Clipboard</source>
         <translation>Clipboard</translation>
     </message>
     <message>
-        <location line="-408"/>
-        <location line="+528"/>
+        <location line="-400"/>
+        <location line="+520"/>
         <source>Chart Style</source>
         <translation>Chart Style</translation>
     </message>
@@ -4472,43 +4437,43 @@
         <translation>Agent module is not ready</translation>
     </message>
     <message>
-        <location line="-1068"/>
-        <location line="+426"/>
+        <location line="-1060"/>
+        <location line="+418"/>
         <source>Item</source>
         <translation>Item</translation>
     </message>
     <message>
-        <location line="-425"/>
-        <location line="+434"/>
+        <location line="-417"/>
+        <location line="+426"/>
         <source>Text</source>
         <translation>Text</translation>
     </message>
     <message>
-        <location line="-433"/>
-        <location line="+438"/>
+        <location line="-425"/>
+        <location line="+430"/>
         <source>Background</source>
         <translation>Background</translation>
     </message>
     <message>
-        <location line="-435"/>
-        <location line="+517"/>
+        <location line="-427"/>
+        <location line="+509"/>
         <source>Workflow Run</source>
         <translation>Workflow Run</translation>
     </message>
     <message>
-        <location line="-516"/>
-        <location line="+519"/>
+        <location line="-508"/>
+        <location line="+511"/>
         <source>Run</source>
         <translation>Run</translation>
     </message>
     <message>
-        <location line="-517"/>
-        <location line="+350"/>
+        <location line="-509"/>
+        <location line="+342"/>
         <source>Figure</source>
         <translation>Figure</translation>
     </message>
     <message>
-        <location line="-344"/>
+        <location line="-336"/>
         <source>Figure Setting</source>
         <translation>Figure Setting</translation>
     </message>
@@ -4524,12 +4489,12 @@
     </message>
     <message>
         <location line="+5"/>
-        <location line="+582"/>
+        <location line="+574"/>
         <source>Chart Edit</source>
         <translation>Chart Edit</translation>
     </message>
     <message>
-        <location line="-584"/>
+        <location line="-576"/>
         <source>Chart Setting</source>
         <translation>Chart Setting</translation>
     </message>
@@ -4540,12 +4505,12 @@
     </message>
     <message>
         <location line="+2"/>
-        <location line="+591"/>
+        <location line="+583"/>
         <source>Select Tool</source>
         <translation>Select Tool</translation>
     </message>
     <message>
-        <location line="-590"/>
+        <location line="-582"/>
         <source>Chart Assist Tool</source>
         <translation>Chart Assist Tool</translation>
     </message>
@@ -4567,7 +4532,7 @@
     </message>
     <message>
         <location line="-15"/>
-        <location line="+374"/>
+        <location line="+366"/>
         <source>Stats Plot</source>
         <translation>Stats Plot</translation>
     </message>
@@ -4582,8 +4547,8 @@
         <translation>Workflow View</translation>
     </message>
     <message>
-        <location line="-509"/>
-        <location line="+546"/>
+        <location line="-499"/>
+        <location line="+536"/>
         <source>Export</source>
         <translation>Export</translation>
     </message>
@@ -4593,8 +4558,7 @@
         <translation>Chart Operate</translation>
     </message>
     <message>
-        <location line="-566"/>
-        <location line="+613"/>
+        <location line="+47"/>
         <source>Theme</source>
         <translation>Theme</translation>
     </message>
@@ -4604,26 +4568,26 @@
         <translation>Assist Tools</translation>
     </message>
     <message>
-        <location line="-634"/>
-        <location line="+288"/>
+        <location line="-626"/>
+        <location line="+280"/>
         <source>Edit</source>
         <translation>Edit</translation>
     </message>
     <message>
-        <location line="-279"/>
-        <location line="+355"/>
+        <location line="-271"/>
+        <location line="+347"/>
         <source>Conditional</source>
         <translation>Conditional</translation>
     </message>
     <message>
-        <location line="-361"/>
-        <location line="+316"/>
+        <location line="-353"/>
+        <location line="+308"/>
         <source>Computed Column</source>
         <translation>Computed Column</translation>
     </message>
     <message>
-        <location line="-315"/>
-        <location line="+322"/>
+        <location line="-307"/>
+        <location line="+314"/>
         <source>Data Transform</source>
         <translation>Data Transform</translation>
     </message>
@@ -6451,6 +6415,7 @@
         <translation>y</translation>
     </message>
     <message>
+        <location line="+11"/>
         <location line="+242"/>
         <location line="+8"/>
         <location line="+23"/>
@@ -6461,11 +6426,25 @@
         <location line="+14"/>
         <location line="+19"/>
         <location line="+11"/>
+        <location line="+205"/>
+        <location line="+21"/>
+        <location line="+12"/>
+        <location line="+26"/>
+        <location line="+7"/>
+        <location line="+7"/>
+        <location line="+22"/>
+        <location line="+9"/>
+        <location line="+25"/>
         <source>Warning</source>
         <translation>Warning</translation>
     </message>
     <message>
-        <location line="-138"/>
+        <location line="-714"/>
+        <source>Only one series can be used as x, the extra series were ignored</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+242"/>
         <source>The initial value of x auto increment series must be a floating-point arithmetic number</source>
         <translation>The initial value of x auto increment series must be a floating-point arithmetic number</translation>
     </message>
@@ -6486,28 +6465,44 @@
     </message>
     <message>
         <location line="+23"/>
+        <location line="+281"/>
         <source>x and y cannot be set to autoincrement at the same time</source>
         <translation>x and y cannot be set to autoincrement at the same time</translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location line="-268"/>
         <location line="+33"/>
         <location line="+30"/>
+        <location line="+226"/>
+        <location line="+38"/>
+        <location line="+7"/>
+        <location line="+7"/>
         <source>The None value cannot be converted to a series</source>
         <translation>The None value cannot be converted to a series</translation>
     </message>
     <message>
-        <location line="-49"/>
+        <location line="-327"/>
         <location line="+33"/>
         <location line="+35"/>
+        <location line="+215"/>
+        <location line="+62"/>
+        <location line="+34"/>
         <source>Exception occurred during extracting from pandas.Series to double vector:%1</source>
         <translation>Exception occurred during extracting from pandas.Series to double vector:%1</translation>
     </message>
     <message>
-        <location line="-63"/>
+        <location line="-374"/>
         <location line="+33"/>
+        <location line="+249"/>
+        <location line="+62"/>
+        <location line="+34"/>
         <source>Exception occurred during extracting from pandas.Series to double vector</source>
         <translation>Exception occurred during extracting from pandas.Series to double vector</translation>
+    </message>
+    <message>
+        <location line="-25"/>
+        <source>The length of y series &apos;%1&apos; (%2) does not match the length of x series &apos;%3&apos; (%4). All y series must have the same length as x</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -14739,7 +14734,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-3793"/>
+        <location filename="../APP/DAAppController.cpp" line="-3750"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>
@@ -18334,12 +18329,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../APP/main.cpp" line="+110"/>
-        <source>Failed to set console output codepage to UTF-8</source>
-        <translation>Failed to set console output codepage to UTF-8</translation>
-    </message>
-    <message>
-        <location line="+79"/>
+        <location filename="../APP/main.cpp" line="+188"/>
         <source>Initializing...</source>
         <translation>Initializing...</translation>
     </message>
@@ -18374,7 +18364,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>Ready</translation>
     </message>
     <message>
-        <location line="+135"/>
+        <location line="+136"/>
         <source>Python interpreter path is %1</source>
         <translation>Python interpreter path is %1</translation>
     </message>
@@ -19785,7 +19775,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>main</name>
     <message>
-        <location filename="../APP/main.cpp" line="-120"/>
+        <location filename="../APP/main.cpp" line="-121"/>
         <source>version:%1,compile datetime:%2</source>
         <translation>version:%1,compile datetime:%2</translation>
     </message>
