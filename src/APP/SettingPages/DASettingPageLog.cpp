@@ -80,15 +80,16 @@ void DASettingPageLog::apply()
     if (nullptr == mAppConfig) {
         return;
     }
-    DAAppConfig& cfg = *mAppConfig;
-    cfg[ DA_CONFIG_KEY_LOG_LEVEL ]           = ui->comboBoxLogLevel->currentData().toInt();
-    cfg[ DA_CONFIG_KEY_LOG_QUEUE_LEVEL ]     = ui->comboBoxQueueLevel->currentData().toInt();
-    cfg[ DA_CONFIG_KEY_LOG_OUTPUT_STDOUT ]   = ui->checkBoxOutputStdout->isChecked();
-    cfg[ DA_CONFIG_KEY_LOG_ROTATION_MODE ]   = ui->comboBoxRotationMode->currentData().toInt();
-    cfg[ DA_CONFIG_KEY_LOG_MAX_SIZE ]        = ui->spinBoxMaxSize->value() * 1024 * 1024;  // MB -> bytes
-    cfg[ DA_CONFIG_KEY_LOG_MAX_FILES ]       = ui->spinBoxMaxFiles->value();
-    cfg[ DA_CONFIG_KEY_SHOW_LOG_NUM ]        = ui->spinBoxDisplayLogsNum->value();
-    cfg.apply();
+    DALogSettings s = mAppConfig->log();
+    s.level         = static_cast< DALogLevel >(ui->comboBoxLogLevel->currentData().toInt());
+    s.queueLevel    = static_cast< DALogLevel >(ui->comboBoxQueueLevel->currentData().toInt());
+    s.outputStdout  = ui->checkBoxOutputStdout->isChecked();
+    s.rotationMode  = static_cast< DALogRotationMode >(ui->comboBoxRotationMode->currentData().toInt());
+    s.maxSizeBytes  = qint64(ui->spinBoxMaxSize->value()) * 1024 * 1024;  // MB -> bytes
+    s.maxFiles      = ui->spinBoxMaxFiles->value();
+    s.showLogNum    = ui->spinBoxDisplayLogsNum->value();
+    // setLog 会发出 sectionChanged，由主窗口负责热应用；保存由设置对话框触发
+    mAppConfig->setLog(s);
     emit settingApplyed();
 }
 
@@ -109,34 +110,27 @@ bool DASettingPageLog::setAppConfig(DAAppConfig* p)
     }
     QSignalBlocker blocker(this);
     mAppConfig = p;
-    DAAppConfig& cfg = *p;
+    const DALogSettings& s = p->log();
     // 日志级别
-    int level = cfg[ DA_CONFIG_KEY_LOG_LEVEL ].toInt();
+    int level = static_cast< int >(s.level);
     int lidx  = ui->comboBoxLogLevel->findData(level);
     ui->comboBoxLogLevel->setCurrentIndex(lidx >= 0 ? lidx : 0);
     // UI 队列级别
-    int qlevel = cfg[ DA_CONFIG_KEY_LOG_QUEUE_LEVEL ].toInt();
+    int qlevel = static_cast< int >(s.queueLevel);
     int qidx   = ui->comboBoxQueueLevel->findData(qlevel);
-    ui->comboBoxQueueLevel->setCurrentIndex(qidx >= 0 ? qidx : static_cast< int >(DA::DALogLevel::Info));
+    ui->comboBoxQueueLevel->setCurrentIndex(qidx >= 0 ? qidx : 0);
     // stdout
-    ui->checkBoxOutputStdout->setChecked(cfg[ DA_CONFIG_KEY_LOG_OUTPUT_STDOUT ].toBool());
+    ui->checkBoxOutputStdout->setChecked(s.outputStdout);
     // 轮转模式
-    int mode = cfg[ DA_CONFIG_KEY_LOG_ROTATION_MODE ].toInt();
+    int mode = static_cast< int >(s.rotationMode);
     int midx = ui->comboBoxRotationMode->findData(mode);
     ui->comboBoxRotationMode->setCurrentIndex(midx >= 0 ? midx : 0);
-    // 单文件大小(bytes -> MB)
-    int maxBytes = cfg[ DA_CONFIG_KEY_LOG_MAX_SIZE ].toInt();
-    int maxMB    = (maxBytes > 0) ? (maxBytes / (1024 * 1024)) : 10;
-    if (maxMB < 1) {
-        maxMB = 1;
-    }
-    ui->spinBoxMaxSize->setValue(maxMB);
+    // 单文件大小(bytes -> MB)，取值已在加载时规范化
+    ui->spinBoxMaxSize->setValue(static_cast< int >(s.maxSizeBytes / (1024 * 1024)));
     // 保留文件数
-    ui->spinBoxMaxFiles->setValue(cfg[ DA_CONFIG_KEY_LOG_MAX_FILES ].toInt());
+    ui->spinBoxMaxFiles->setValue(s.maxFiles);
     // 显示条数
-    bool isOK   = false;
-    int logNum  = cfg[ DA_CONFIG_KEY_SHOW_LOG_NUM ].toInt(&isOK);
-    ui->spinBoxDisplayLogsNum->setValue((isOK && logNum >= 10) ? logNum : 5000);
+    ui->spinBoxDisplayLogsNum->setValue(s.showLogNum);
     return true;
 }
 

@@ -113,12 +113,13 @@ int main(int argc, char* argv[])
     DA::DADumpCapture::initDump([]() -> QString { return appPreposeDump(); });
 
     // 早期加载应用配置，供日志/Python/字体/翻译/启动画面等早期初始化使用。
+    // 唯一实例在此创建，随后通过构造参数注入主窗口与各消费方（依赖注入，不使用全局单例）。
     // 这些项的变更需重启程序生效（配置由设置对话框写入，下次启动在此读取）。
-    DA::DAAppConfig earlyConfig;
-    earlyConfig.loadConfig();
+    DA::DAAppConfig appConfig;
+    appConfig.load();
 
     // 注册旋转文件消息捕获（依据配置：轮转模式/大小/数量/stdout/级别）
-    setupLogger(earlyConfig);
+    setupLogger(appConfig);
     for (int i = 0; i < argc; ++i) {
         qDebug() << "argv[" << i << "]" << argv[ i ];
     }
@@ -133,7 +134,7 @@ int main(int argc, char* argv[])
     qputenv("DA_SLOW_LOG_BUILD", "0");
 #endif
     // 初始化python环境,不启用python直接返回
-    initializePythonInterpreter(earlyConfig);
+    initializePythonInterpreter(appConfig);
     // 高清屏的适配
     enableHDPIScaling();
     // 启动app（通用应用类：慢日志事件循环计时 + 主线程卡顿看门狗，见 DAApplication）
@@ -161,11 +162,11 @@ int main(int argc, char* argv[])
     // 解析命令行参数
     cmdParser.process(app);
     // 字体设置（依据配置：字体族/字号）
-    setAppFont(earlyConfig);
+    setAppFont(appConfig);
 
     //  安装翻译（依据配置：语言代码，空表示跟随系统）
     DA::DATranslatorManeger datr;
-    QString langCode = earlyConfig.value(DA_CONFIG_KEY_LANGUAGE).toString();
+    QString langCode = appConfig.ui().language;
     if (langCode.isEmpty()) {
         datr.installAllTranslator();
     } else {
@@ -175,8 +176,8 @@ int main(int argc, char* argv[])
 
     // 创建并显示启动画面(启动画面必须在QApplication之后创建)
     // --no-splash 参数可跳过启动画面，适用于调试场景；同时受配置项 show-splash 控制
-    bool showSplash            = earlyConfig.value(DA_CONFIG_KEY_SHOW_SPLASH).toBool();
-    showSplash                 = showSplash && !cmdParser.isSet(CS_CMD_NOSPLASH);
+    bool showSplash = appConfig.advanced().showSplash;
+    showSplash      = showSplash && !cmdParser.isSet(CS_CMD_NOSPLASH);
     DA::DASplashScreen* splash = nullptr;
     if (showSplash) {
         splash = new DA::DASplashScreen();
@@ -204,7 +205,7 @@ int main(int argc, char* argv[])
     if (splash) {
         splash->showMessage(QObject::tr("Loading user interface..."));  // cn:正在加载用户界面...
     }
-    DA::AppMainWindow w;
+    DA::AppMainWindow w(&appConfig);
     QStringList positionalArgs = cmdParser.positionalArguments();
     daDebug << "positionalArgs:" << positionalArgs;
     if (positionalArgs.size() == 1) {
@@ -290,9 +291,10 @@ void enableHDPIScaling()
  */
 void setAppFont(const DA::DAAppConfig& cfg)
 {
-    QFont font       = QApplication::font();
-    QString family   = cfg.value(DA_CONFIG_KEY_APP_FONT_FAMILY).toString();
-    double pointSize = cfg.value(DA_CONFIG_KEY_APP_FONT_POINT_SIZE).toDouble();
+
+    QFont font             = QApplication::font();
+    const QString family   = cfg.ui().fontFamily;
+    const double pointSize = cfg.ui().fontPointSize;
     if (!family.isEmpty()) {
         font.setFamily(family);
     } else {
@@ -310,34 +312,27 @@ void setAppFont(const DA::DAAppConfig& cfg)
  * @brief 根据配置初始化日志系统
  *
  * 依据轮转模式选择 rotating/daily/console，并设置日志级别与 UI 队列级别。
+ * 取值合法性已由 DAAppConfig 加载时的规范化保证，这里不再重复兜底。
  * @param cfg 早期加载的应用配置
  */
 void setupLogger(const DA::DAAppConfig& cfg)
 {
-    QString logPath   = DA::DADir::getLogFilePath();
-    int mode          = cfg.value(DA_CONFIG_KEY_LOG_ROTATION_MODE).toInt();
-    int maxSize       = cfg.value(DA_CONFIG_KEY_LOG_MAX_SIZE).toInt();
-    int maxFiles      = cfg.value(DA_CONFIG_KEY_LOG_MAX_FILES).toInt();
-    bool outputStdout = cfg.value(DA_CONFIG_KEY_LOG_OUTPUT_STDOUT).toBool();
-    if (maxSize <= 0) {
-        maxSize = 10 * 1024 * 1024;
-    }
-    if (maxFiles <= 0) {
-        maxFiles = 5;
-    }
-    switch (mode) {
-    case 1:  // daily
-        DA::DALogger::instance().setupDailyFile(logPath, maxFiles, outputStdout);
+    const DA::DALogSettings& logSettings = cfg.log();
+    const QString logPath                = DA::DADir::getLogFilePath();
+    switch (logSettings.rotationMode) {
+    case DA::DALogRotationMode::Daily:
+        DA::DALogger::instance().setupDailyFile(logPath, logSettings.maxFiles, logSettings.outputStdout);
         break;
-    case 2:  // console only
+    case DA::DALogRotationMode::Console:
         DA::DALogger::instance().setupConsole();
         break;
-    default:  // rotating
-        DA::DALogger::instance().setupRotatingFile(logPath, maxSize, maxFiles, outputStdout);
+    case DA::DALogRotationMode::Rotating:
+    default:
+        DA::DALogger::instance().setupRotatingFile(logPath, logSettings.maxSizeBytes, logSettings.maxFiles, logSettings.outputStdout);
         break;
     }
-    DA::DALogger::instance().setLevel(static_cast< DA::DALogLevel >(cfg.value(DA_CONFIG_KEY_LOG_LEVEL).toInt()));
-    DA::DALogger::instance().setQueueLevel(static_cast< DA::DALogLevel >(cfg.value(DA_CONFIG_KEY_LOG_QUEUE_LEVEL).toInt()));
+    DA::DALogger::instance().setLevel(logSettings.level);
+    DA::DALogger::instance().setQueueLevel(logSettings.queueLevel);
 }
 
 /**
@@ -378,7 +373,7 @@ void initializePythonInterpreter(const DA::DAAppConfig& cfg)
     }
     DA::DAPyInterpreter::initializePythonInterpreter(pythonHomePath);
     // 追加用户配置的额外模块搜索路径
-    QStringList extraPaths = cfg.value(DA_CONFIG_KEY_PYTHON_EXTRA_PATHS).toStringList();
+    const QStringList extraPaths = cfg.python().extraPaths;
     for (const QString& p : extraPaths) {
         if (!p.trimmed().isEmpty()) {
             DA::DAPyInterpreter::appendSysPath(p);

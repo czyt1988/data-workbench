@@ -62,7 +62,7 @@
 <context>
     <name>DA::AppMainWindow</name>
     <message>
-        <location filename="../APP/AppMainWindow.cpp" line="+80"/>
+        <location filename="../APP/AppMainWindow.cpp" line="+83"/>
         <source>Initializing core interface...</source>
         <translation>正在初始化核心接口...</translation>
     </message>
@@ -72,7 +72,7 @@
         <translation>正在创建用户界面...</translation>
     </message>
     <message>
-        <location line="+30"/>
+        <location line="+31"/>
         <source>Restore UI state</source>
         <translation>加载界面状态信息</translation>
     </message>
@@ -97,12 +97,12 @@
         <translation>是否保存工程？</translation>
     </message>
     <message>
-        <location line="+100"/>
+        <location line="+101"/>
         <source>Untitled</source>
         <translation>未命名</translation>
     </message>
     <message>
-        <location line="+18"/>
+        <location line="+12"/>
         <source>Topology execution completed</source>
         <translation>拓扑执行完成</translation>
     </message>
@@ -3296,20 +3296,75 @@
     </message>
 </context>
 <context>
+    <name>DA::DAAppConfig</name>
+    <message>
+        <location filename="../APP/SettingPages/DAAppConfig.cpp" line="+376"/>
+        <source>Migrated configuration but failed to write &quot;%1&quot;</source>
+        <translation>已迁移配置，但写入&quot;%1&quot;失败</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Migrated configuration from &quot;%1&quot; to &quot;%2&quot;</source>
+        <translation>已把配置从&quot;%1&quot;迁移为&quot;%2&quot;</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Migrated configuration but cannot rename &quot;%1&quot;</source>
+        <translation>已迁移配置，但无法重命名&quot;%1&quot;</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Cannot load config file &quot;%1&quot;</source>
+        <translation>无法加载配置文件&quot;%1&quot;</translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <location line="+38"/>
+        <source>Cannot open config file &quot;%1&quot;: %2</source>
+        <translation>无法打开配置文件&quot;%1&quot;，原因是%2</translation>
+    </message>
+    <message>
+        <location line="-29"/>
+        <location line="+303"/>
+        <source>Cannot load config file &quot;%1&quot;: %2</source>
+        <translation>无法加载配置文件&quot;%1&quot;，原因是%2</translation>
+    </message>
+    <message>
+        <location line="-297"/>
+        <source>Cannot load config file &quot;%1&quot;: root is not an object</source>
+        <translation>无法加载配置文件&quot;%1&quot;：根节点不是对象</translation>
+    </message>
+    <message>
+        <location line="+30"/>
+        <source>Cannot write config file &quot;%1&quot;: %2</source>
+        <translation>无法写入配置文件&quot;%1&quot;，原因是%2</translation>
+    </message>
+    <message>
+        <location line="+208"/>
+        <source>Config file &quot;%1&quot; has a newer version %2</source>
+        <translation>配置文件&quot;%1&quot;的版本 %2 比当前程序新</translation>
+    </message>
+    <message>
+        <location line="+65"/>
+        <source>Config file (%1) is missing the &lt;configs&gt; tag</source>
+        <translation>配置文件(%1)缺失&lt;configs&gt;标签</translation>
+    </message>
+</context>
+<context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+849"/>
+        <location filename="../APP/DAAppController.cpp" line="+848"/>
         <source>Save Project</source>
         <translation>保存工程</translation>
     </message>
     <message>
         <location line="+19"/>
-        <location line="+1047"/>
+        <location line="+1046"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location line="-1036"/>
+        <location line="-1035"/>
         <source>Failed to save project! Path: %1</source>
         <translation>工程保存失败！路径为:%1</translation>
     </message>
@@ -3335,7 +3390,7 @@
         <translation>工程加载成功，路径为:%1</translation>
     </message>
     <message>
-        <location line="+324"/>
+        <location line="+323"/>
         <source>Image saved successfully to %1</source>
         <translation>图片保存成功：%1</translation>
     </message>
@@ -3462,7 +3517,7 @@
         <translation>在创建一个坐标系之前，需要先创建一个绘图窗口</translation>
     </message>
     <message>
-        <location line="-1813"/>
+        <location line="-1812"/>
         <source>Please select the data operation window</source>
         <translation>请选中数据操作窗口</translation>
     </message>
@@ -3502,23 +3557,23 @@
         <translation>加载工程文件失败:%1</translation>
     </message>
     <message>
-        <location line="+309"/>
+        <location line="+308"/>
         <source>Image files</source>
         <translation>图片文件</translation>
     </message>
     <message>
-        <location line="-374"/>
-        <location line="+375"/>
+        <location line="-373"/>
+        <location line="+374"/>
         <source>Any files</source>
         <translation>任意文件</translation>
     </message>
     <message>
-        <location line="-376"/>
+        <location line="-375"/>
         <source>Markdown files</source>
         <translation>Markdown 文件</translation>
     </message>
     <message>
-        <location line="+473"/>
+        <location line="+472"/>
         <source>Received null project interface</source>
         <translation>获取到空工程接口</translation>
     </message>
@@ -3529,12 +3584,12 @@
         <translation>没有选中可复制的单元格</translation>
     </message>
     <message>
-        <location line="-1458"/>
+        <location line="-1456"/>
         <source>No active table</source>
         <translation>无活动表格</translation>
     </message>
     <message>
-        <location line="+1846"/>
+        <location line="+1844"/>
         <source>Cannot rename a series, please select a dataset</source>
         <translation>无法重命名series，请选中数据集</translation>
     </message>
@@ -3584,7 +3639,7 @@
         <translation>列[%1] 最小值位于第 %2 行</translation>
     </message>
     <message>
-        <location line="+566"/>
+        <location line="+568"/>
         <source>Export</source>
         <translation>导出</translation>
     </message>
@@ -3624,7 +3679,7 @@
         <translation>选中的数据源为空</translation>
     </message>
     <message>
-        <location line="-2646"/>
+        <location line="-2648"/>
         <source>Before running the workflow, you need to save the project</source>
         <translation>在运行工作流之前，需要先保存工程</translation>
     </message>
@@ -3897,7 +3952,7 @@
         <translation>解压工程内脚本工作区到本地缓存目录</translation>
     </message>
     <message>
-        <location line="+148"/>
+        <location line="+145"/>
         <source>Script Workspace Conflict</source>
         <translation>脚本工作区冲突</translation>
     </message>
@@ -4083,19 +4138,19 @@
         <translation>成功保存工程</translation>
     </message>
     <message>
-        <location line="-917"/>
-        <location line="+920"/>
+        <location line="-914"/>
+        <location line="+917"/>
         <source>Failed to save project</source>
         <translation>无法保存工程</translation>
     </message>
     <message>
-        <location line="-930"/>
+        <location line="-927"/>
         <location line="+34"/>
         <source>The current project is busy</source>
         <translation>当前工程正繁忙</translation>
     </message>
     <message>
-        <location line="+620"/>
+        <location line="+617"/>
         <source>Save data information</source>
         <translation>保存数据信息</translation>
     </message>
@@ -4105,8 +4160,8 @@
         <translation>成功加载工程</translation>
     </message>
     <message>
-        <location line="-874"/>
-        <location line="+878"/>
+        <location line="-871"/>
+        <location line="+875"/>
         <source>Failed to load project</source>
         <translation>无法加载工程</translation>
     </message>
@@ -5998,7 +6053,7 @@
         <translation>请先选择 X 轴数据列再绘图</translation>
     </message>
     <message>
-        <location line="+45"/>
+        <location line="+44"/>
         <source>Barplot Settings</source>
         <translation>柱状图设置</translation>
     </message>
@@ -13547,18 +13602,12 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DA::DASettingPageAdvanced</name>
     <message>
-        <location filename="../APP/SettingPages/DASettingPageAdvanced.cpp" line="+20"/>
-        <location line="+14"/>
+        <location filename="../APP/SettingPages/DASettingPageAdvanced.cpp" line="+28"/>
         <source> s</source>
         <translation>秒</translation>
     </message>
     <message>
-        <location line="-13"/>
-        <source>Unlimited</source>
-        <translation>无限</translation>
-    </message>
-    <message>
-        <location line="+5"/>
+        <location line="-8"/>
         <source> day</source>
         <translation>天</translation>
     </message>
@@ -13579,22 +13628,12 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>留空使用系统临时目录</translation>
     </message>
     <message>
-        <location line="+86"/>
+        <location line="+66"/>
         <source>Advanced</source>
         <translation>高级</translation>
     </message>
     <message>
-        <location line="+74"/>
-        <source>Select plugin search path</source>
-        <translation>选择插件搜索路径</translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>Select node script search path</source>
-        <translation>选择节点脚本搜索路径</translation>
-    </message>
-    <message>
-        <location line="+36"/>
+        <location line="+64"/>
         <source>Select script workspace directory</source>
         <translation>选择脚本工作区目录</translation>
     </message>
@@ -13657,12 +13696,12 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>跟随系统</translation>
     </message>
     <message>
-        <location line="+49"/>
+        <location line="+52"/>
         <source>General</source>
         <translation>通用</translation>
     </message>
     <message>
-        <location line="+143"/>
+        <location line="+138"/>
         <source>Question</source>
         <translation>疑问</translation>
     </message>
@@ -13677,7 +13716,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>成功删除窗口状态记录文件</translation>
     </message>
     <message>
-        <location line="-179"/>
+        <location line="-177"/>
         <source>Top</source>
         <translation>上方</translation>
     </message>
@@ -13745,7 +13784,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>关闭</translation>
     </message>
     <message>
-        <location line="+23"/>
+        <location line="+24"/>
         <source>Log</source>
         <translation>消息</translation>
     </message>
@@ -13763,7 +13802,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>Python</translation>
     </message>
     <message>
-        <location line="+44"/>
+        <location line="+43"/>
         <source>Select Python Interpreter</source>
         <translation>选择Python解释器</translation>
     </message>
@@ -14559,7 +14598,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-3752"/>
+        <location filename="../APP/DAAppController.cpp" line="-3750"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>
@@ -17221,11 +17260,6 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     </message>
     <message>
         <location line="+6"/>
-        <source>Workflow execution timeout</source>
-        <translation>工作流执行超时</translation>
-    </message>
-    <message>
-        <location line="+10"/>
         <source>Max recent files</source>
         <translation>最大最近文件数</translation>
     </message>
@@ -17245,33 +17279,12 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>启动时显示启动画面</translation>
     </message>
     <message>
-        <location line="+10"/>
-        <source>Plugin search path</source>
-        <translation>插件搜索路径</translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <location line="+69"/>
+        <location line="+26"/>
         <source>Browse</source>
         <translation>浏览</translation>
     </message>
     <message>
-        <location line="-59"/>
-        <source>Node script search paths</source>
-        <translation>节点脚本搜索路径</translation>
-    </message>
-    <message>
-        <location line="+11"/>
-        <source>Add</source>
-        <translation>添加</translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>Remove</source>
-        <translation>删除</translation>
-    </message>
-    <message>
-        <location line="+25"/>
+        <location line="-16"/>
         <source>Script workspace</source>
         <translation>脚本工作区</translation>
     </message>
@@ -18299,7 +18312,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../APP/main.cpp" line="+187"/>
+        <location filename="../APP/main.cpp" line="+188"/>
         <source>Initializing...</source>
         <translation>正在初始化...</translation>
     </message>
@@ -18334,7 +18347,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>启动完成</translation>
     </message>
     <message>
-        <location line="+142"/>
+        <location line="+136"/>
         <source>Python interpreter path is %1</source>
         <translation>Python解释器路径为%1</translation>
     </message>
@@ -19276,22 +19289,6 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>新项目</translation>
     </message>
     <message>
-        <location filename="../APP/SettingPages/DAAppConfig.cpp" line="+92"/>
-        <location line="+37"/>
-        <source>Cannot open config file &quot;%1&quot;: %2</source>
-        <translation>无法打开配置文件\&quot;%1\&quot;，原因是%2</translation>
-    </message>
-    <message>
-        <location line="-28"/>
-        <source>Cannot load config file &quot;%1&quot;: %2</source>
-        <translation>无法加载配置文件\&quot;%1\&quot;，原因是%2</translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>Config file (%1) is missing the &lt;configs&gt; tag</source>
-        <translation>配置文件(%1)缺失&lt;configs&gt;标签</translation>
-    </message>
-    <message>
         <location filename="../DAPyScripts/DAPyScriptsStatistics.cpp" line="+17"/>
         <source>cannot import DAWorkbench.DAStatistics module</source>
         <translation>无法导入 DAWorkbench.DAStatistics 模块</translation>
@@ -19761,7 +19758,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>main</name>
     <message>
-        <location filename="../APP/main.cpp" line="-127"/>
+        <location filename="../APP/main.cpp" line="-121"/>
         <source>version:%1,compile datetime:%2</source>
         <translation>版本：%1，编译时间：%2</translation>
     </message>

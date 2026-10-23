@@ -62,7 +62,7 @@
 <context>
     <name>DA::AppMainWindow</name>
     <message>
-        <location filename="../APP/AppMainWindow.cpp" line="+80"/>
+        <location filename="../APP/AppMainWindow.cpp" line="+83"/>
         <source>Initializing core interface...</source>
         <translation>Initializing core interface...</translation>
     </message>
@@ -72,7 +72,7 @@
         <translation>Creating user interface...</translation>
     </message>
     <message>
-        <location line="+30"/>
+        <location line="+31"/>
         <source>Restore UI state</source>
         <translation>Restore UI state</translation>
     </message>
@@ -97,12 +97,12 @@
         <translation>Do you need to save the project?</translation>
     </message>
     <message>
-        <location line="+100"/>
+        <location line="+101"/>
         <source>Untitled</source>
         <translation>Untitled</translation>
     </message>
     <message>
-        <location line="+18"/>
+        <location line="+12"/>
         <source>Topology execution completed</source>
         <translation>Topology execution completed</translation>
     </message>
@@ -3280,20 +3280,75 @@
     </message>
 </context>
 <context>
+    <name>DA::DAAppConfig</name>
+    <message>
+        <location filename="../APP/SettingPages/DAAppConfig.cpp" line="+376"/>
+        <source>Migrated configuration but failed to write &quot;%1&quot;</source>
+        <translation>Migrated configuration but failed to write &quot;%1&quot;</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Migrated configuration from &quot;%1&quot; to &quot;%2&quot;</source>
+        <translation>Migrated configuration from &quot;%1&quot; to &quot;%2&quot;</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Migrated configuration but cannot rename &quot;%1&quot;</source>
+        <translation>Migrated configuration but cannot rename &quot;%1&quot;</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Cannot load config file &quot;%1&quot;</source>
+        <translation>Cannot load config file &quot;%1&quot;</translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <location line="+38"/>
+        <source>Cannot open config file &quot;%1&quot;: %2</source>
+        <translation>Cannot open config file &quot;%1&quot;: %2</translation>
+    </message>
+    <message>
+        <location line="-29"/>
+        <location line="+303"/>
+        <source>Cannot load config file &quot;%1&quot;: %2</source>
+        <translation>Cannot load config file &quot;%1&quot;: %2</translation>
+    </message>
+    <message>
+        <location line="-297"/>
+        <source>Cannot load config file &quot;%1&quot;: root is not an object</source>
+        <translation>Cannot load config file &quot;%1&quot;: root is not an object</translation>
+    </message>
+    <message>
+        <location line="+30"/>
+        <source>Cannot write config file &quot;%1&quot;: %2</source>
+        <translation>Cannot write config file &quot;%1&quot;: %2</translation>
+    </message>
+    <message>
+        <location line="+208"/>
+        <source>Config file &quot;%1&quot; has a newer version %2</source>
+        <translation>Config file &quot;%1&quot; has a newer version %2</translation>
+    </message>
+    <message>
+        <location line="+65"/>
+        <source>Config file (%1) is missing the &lt;configs&gt; tag</source>
+        <translation>Config file (%1) is missing the &lt;configs&gt; tag</translation>
+    </message>
+</context>
+<context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+849"/>
+        <location filename="../APP/DAAppController.cpp" line="+848"/>
         <source>Save Project</source>
         <translation>Save Project</translation>
     </message>
     <message>
         <location line="+19"/>
-        <location line="+1047"/>
+        <location line="+1046"/>
         <source>Warning</source>
         <translation>Warning</translation>
     </message>
     <message>
-        <location line="-1036"/>
+        <location line="-1035"/>
         <source>Failed to save project! Path: %1</source>
         <translation>Failed to save project! Path: %1</translation>
     </message>
@@ -3319,7 +3374,7 @@
         <translation>Project loaded successfully, path: %1</translation>
     </message>
     <message>
-        <location line="+324"/>
+        <location line="+323"/>
         <source>Image saved successfully to %1</source>
         <translation>Image saved successfully to %1</translation>
     </message>
@@ -3446,7 +3501,7 @@
         <translation>Before creating a new coordinate, you need to create a figure</translation>
     </message>
     <message>
-        <location line="-1813"/>
+        <location line="-1812"/>
         <source>Please select the data operation window</source>
         <translation>Please select the data operation window</translation>
     </message>
@@ -3486,23 +3541,23 @@
         <translation>Failed to load project file: %1</translation>
     </message>
     <message>
-        <location line="+309"/>
+        <location line="+308"/>
         <source>Image files</source>
         <translation>Image files</translation>
     </message>
     <message>
-        <location line="-374"/>
-        <location line="+375"/>
+        <location line="-373"/>
+        <location line="+374"/>
         <source>Any files</source>
         <translation>Any files</translation>
     </message>
     <message>
-        <location line="-376"/>
+        <location line="-375"/>
         <source>Markdown files</source>
         <translation>Markdown files</translation>
     </message>
     <message>
-        <location line="+473"/>
+        <location line="+472"/>
         <source>Received null project interface</source>
         <translation>Received null project interface</translation>
     </message>
@@ -3513,12 +3568,12 @@
         <translation>No cells selected to copy</translation>
     </message>
     <message>
-        <location line="-1458"/>
+        <location line="-1456"/>
         <source>No active table</source>
         <translation>No active table</translation>
     </message>
     <message>
-        <location line="+1846"/>
+        <location line="+1844"/>
         <source>Cannot rename a series, please select a dataset</source>
         <translation>Cannot rename a series, please select a dataset</translation>
     </message>
@@ -3568,7 +3623,7 @@
         <translation>Column [%1] minimum value at row %2</translation>
     </message>
     <message>
-        <location line="+566"/>
+        <location line="+568"/>
         <source>Export</source>
         <translation>Export</translation>
     </message>
@@ -3608,7 +3663,7 @@
         <translation>The selected data source is empty</translation>
     </message>
     <message>
-        <location line="-2646"/>
+        <location line="-2648"/>
         <source>Before running the workflow, you need to save the project</source>
         <translation>Before running the workflow, you need to save the project</translation>
     </message>
@@ -3881,7 +3936,7 @@
         <translation>Extract workspace/ to local cache directory</translation>
     </message>
     <message>
-        <location line="+148"/>
+        <location line="+145"/>
         <source>Script Workspace Conflict</source>
         <translation>Script Workspace Conflict</translation>
     </message>
@@ -4067,19 +4122,19 @@
         <translation>Project saved successfully</translation>
     </message>
     <message>
-        <location line="-917"/>
-        <location line="+920"/>
+        <location line="-914"/>
+        <location line="+917"/>
         <source>Failed to save project</source>
         <translation>Failed to save project</translation>
     </message>
     <message>
-        <location line="-930"/>
+        <location line="-927"/>
         <location line="+34"/>
         <source>The current project is busy</source>
         <translation>The current project is busy</translation>
     </message>
     <message>
-        <location line="+620"/>
+        <location line="+617"/>
         <source>Save data information</source>
         <translation>Save data information</translation>
     </message>
@@ -4089,8 +4144,8 @@
         <translation>Project loaded successfully</translation>
     </message>
     <message>
-        <location line="-874"/>
-        <location line="+878"/>
+        <location line="-871"/>
+        <location line="+875"/>
         <source>Failed to load project</source>
         <translation>Failed to load project</translation>
     </message>
@@ -5982,7 +6037,7 @@
         <translation>Please select an X-axis data column before plotting</translation>
     </message>
     <message>
-        <location line="+45"/>
+        <location line="+44"/>
         <source>Barplot Settings</source>
         <translation>Barplot Settings</translation>
     </message>
@@ -13531,18 +13586,12 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DA::DASettingPageAdvanced</name>
     <message>
-        <location filename="../APP/SettingPages/DASettingPageAdvanced.cpp" line="+20"/>
-        <location line="+14"/>
+        <location filename="../APP/SettingPages/DASettingPageAdvanced.cpp" line="+28"/>
         <source> s</source>
         <translation> s</translation>
     </message>
     <message>
-        <location line="-13"/>
-        <source>Unlimited</source>
-        <translation>Unlimited</translation>
-    </message>
-    <message>
-        <location line="+5"/>
+        <location line="-8"/>
         <source> day</source>
         <translation> day</translation>
     </message>
@@ -13563,22 +13612,12 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation>Empty for system temporary directory</translation>
     </message>
     <message>
-        <location line="+86"/>
+        <location line="+66"/>
         <source>Advanced</source>
         <translation>Advanced</translation>
     </message>
     <message>
-        <location line="+74"/>
-        <source>Select plugin search path</source>
-        <translation>Select plugin search path</translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>Select node script search path</source>
-        <translation>Select node script search path</translation>
-    </message>
-    <message>
-        <location line="+36"/>
+        <location line="+64"/>
         <source>Select script workspace directory</source>
         <translation>Select script workspace directory</translation>
     </message>
@@ -13641,12 +13680,12 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation>System</translation>
     </message>
     <message>
-        <location line="+49"/>
+        <location line="+52"/>
         <source>General</source>
         <translation>General</translation>
     </message>
     <message>
-        <location line="+143"/>
+        <location line="+138"/>
         <source>Question</source>
         <translation>Question</translation>
     </message>
@@ -13661,7 +13700,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation>Successfully removed window state record file</translation>
     </message>
     <message>
-        <location line="-179"/>
+        <location line="-177"/>
         <source>Top</source>
         <translation>Top</translation>
     </message>
@@ -13729,7 +13768,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation>Off</translation>
     </message>
     <message>
-        <location line="+23"/>
+        <location line="+24"/>
         <source>Log</source>
         <translation>Log</translation>
     </message>
@@ -13747,7 +13786,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation>Python</translation>
     </message>
     <message>
-        <location line="+44"/>
+        <location line="+43"/>
         <source>Select Python Interpreter</source>
         <translation>Select Python Interpreter</translation>
     </message>
@@ -14543,7 +14582,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-3752"/>
+        <location filename="../APP/DAAppController.cpp" line="-3750"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>
@@ -17205,11 +17244,6 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     </message>
     <message>
         <location line="+6"/>
-        <source>Workflow execution timeout</source>
-        <translation>Workflow execution timeout</translation>
-    </message>
-    <message>
-        <location line="+10"/>
         <source>Max recent files</source>
         <translation>Max recent files</translation>
     </message>
@@ -17229,33 +17263,12 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation>Show splash screen on startup</translation>
     </message>
     <message>
-        <location line="+10"/>
-        <source>Plugin search path</source>
-        <translation>Plugin search path</translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <location line="+69"/>
+        <location line="+26"/>
         <source>Browse</source>
         <translation>Browse</translation>
     </message>
     <message>
-        <location line="-59"/>
-        <source>Node script search paths</source>
-        <translation>Node script search paths</translation>
-    </message>
-    <message>
-        <location line="+11"/>
-        <source>Add</source>
-        <translation>Add</translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>Remove</source>
-        <translation>Remove</translation>
-    </message>
-    <message>
-        <location line="+25"/>
+        <location line="-16"/>
         <source>Script workspace</source>
         <translation>Script workspace</translation>
     </message>
@@ -18274,7 +18287,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../APP/main.cpp" line="+187"/>
+        <location filename="../APP/main.cpp" line="+188"/>
         <source>Initializing...</source>
         <translation>Initializing...</translation>
     </message>
@@ -18309,7 +18322,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>Ready</translation>
     </message>
     <message>
-        <location line="+142"/>
+        <location line="+136"/>
         <source>Python interpreter path is %1</source>
         <translation>Python interpreter path is %1</translation>
     </message>
@@ -19251,22 +19264,6 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>New Item</translation>
     </message>
     <message>
-        <location filename="../APP/SettingPages/DAAppConfig.cpp" line="+92"/>
-        <location line="+37"/>
-        <source>Cannot open config file &quot;%1&quot;: %2</source>
-        <translation>Cannot open config file &quot;%1&quot;: %2</translation>
-    </message>
-    <message>
-        <location line="-28"/>
-        <source>Cannot load config file &quot;%1&quot;: %2</source>
-        <translation>Cannot load config file &quot;%1&quot;: %2</translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>Config file (%1) is missing the &lt;configs&gt; tag</source>
-        <translation>Config file (%1) is missing the &lt;configs&gt; tag</translation>
-    </message>
-    <message>
         <location filename="../DAPyScripts/DAPyScriptsStatistics.cpp" line="+17"/>
         <source>cannot import DAWorkbench.DAStatistics module</source>
         <translation>cannot import DAWorkbench.DAStatistics module</translation>
@@ -19736,7 +19733,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>main</name>
     <message>
-        <location filename="../APP/main.cpp" line="-127"/>
+        <location filename="../APP/main.cpp" line="-121"/>
         <source>version:%1,compile datetime:%2</source>
         <translation>version:%1,compile datetime:%2</translation>
     </message>

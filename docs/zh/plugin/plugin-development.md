@@ -551,25 +551,19 @@ bool MyWorker::exec()
 
 ### 配置服务
 
-DAWorkBench 的配置由 `DAAppConfig`（`src/APP/SettingPages/DAAppConfig.h`）统一管理，配置键通过 `DA_CONFIG_KEY_*` 宏定义，生成的总头文件为 `DAConfigs.h`（注意是复数）。不要使用 `DA::getConfigValue` / `DA::setConfigValue`，也不要 `#include "DAConfig.h"`（无此文件）。
+应用级配置由 `DAAppConfig`（`src/APP/SettingPages/DAAppConfig.h`）管理，存放在配置目录的 `dawork-config.json` 里。它是 APP 层的强类型配置对象，不导出、也不向插件暴露，插件不应读取或修改应用配置（也没有全局访问入口，实例由 `main()` 创建后注入应用内部各消费方）。
+
+插件需要自己的配置时，自行定义数据结构并落盘到配置目录（`DADir::getConfigPath()`）。参考 `src/DAAgent/DAAgentConfig` 的写法：`load()` / `save()` 是唯一接触存储格式的代码，其余代码只碰强类型字段，默认值和取值范围校验集中在配置类内部。
 
 ```cpp
-#include "DAConfigs.h"  // 引入 DAAppConfig + 所有 DA_CONFIG_KEY_* 宏（生成的总头文件）
-
 bool MyPlugin::initialize()
 {
-    // 通过 DAAppConfig 读写配置；DA_CONFIG_KEY_* 宏见 DAAppConfig.h
-    // 已有键示例：DA_CONFIG_KEY_LOG_LEVEL / DA_CONFIG_KEY_WORKFLOW_TIMEOUT 等
-    QString logLevel = DA::DAAppConfig::instance()->value(DA_CONFIG_KEY_LOG_LEVEL).toString();
-
-    // 读取自定义配置可基于已注册键名，写入后需调用 saveConfig() 持久化
-    DA::DAAppConfig::instance()->setValue(DA_CONFIG_KEY_WORKFLOW_TIMEOUT, 60);
-
+    // 插件自有配置：文件名与格式自定，建议放在 DADir::getConfigPath() 下
     return true;
 }
 ```
 
-> 插件自有的设置页通过重载 `DAAbstractPlugin::createSettingPage()` 返回 `DAAbstractSettingPage*`，不要直接读写全局配置。
+> 插件自有的设置页通过重载 `DAAbstractPlugin::createSettingPage()` 返回 `DAAbstractSettingPage*`。
 
 ### 数据管理服务
 

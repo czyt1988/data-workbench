@@ -96,7 +96,7 @@
 
 | 内容 | 存放位置 |
 |------|----------|
-| 界面偏好：主题、Ribbon 样式、语言、字体、日志级别、超时与自动保存间隔 | `dawork-config.xml` |
+| 界面偏好：主题、Ribbon 样式、语言、字体、日志级别、自动保存间隔 | `dawork-config.json` |
 | 界面布局方案 | `dawork-layouts.json` |
 | 界面状态的快照 | `.dawork-ui-state` |
 | 模型供应商与运行参数 | `agent-config.json` |
@@ -130,15 +130,17 @@
 
 两边内容逐文件比对下来完全一致时不会弹窗，直接按包内版本解压。这份比对按文件内容算，与文件的修改时间无关。
 
-默认行为是每次都问。想少点一次，可以改配置文件里的策略项 `workspace-overwrite-policy`，它在 `dawork-config.xml` 的 `<configs>` 下，形状如下。
+默认行为是每次都问。想少点一次，可以改配置文件里的策略项 `script.workspace-overwrite-policy`，它在 `dawork-config.json` 的 `script` 组里，形状如下。
 
-```xml
-<prop key="workspace-overwrite-policy">
-  <value class="QVariant" type="QString">ask</value>
-</prop>
+```json
+{
+  "script": {
+    "workspace-overwrite-policy": "ask"
+  }
+}
 ```
 
-`key` 是策略项的名字，`<value>` 里的文字是取值：`ask` 表示每次都弹窗询问，也是初始值；`always-local` 表示直接保留本地版本，不再询问；`always-zip` 表示直接用工程内版本覆盖本地，不再询问。改这一项需要先关闭程序，改完重新启动。设置对话框里目前没有这一项的入口。
+取值：`ask` 表示每次都弹窗询问，也是初始值；`always-local` 表示直接保留本地版本，不再询问；`always-zip` 表示直接用工程内版本覆盖本地，不再询问。改这一项需要先关闭程序，改完重新启动。设置对话框里目前没有这一项的入口。
 
 ## 常见问题
 

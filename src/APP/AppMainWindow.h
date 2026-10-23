@@ -31,7 +31,8 @@ class AppMainWindow : public SARibbonMainWindow
     friend class DAAppRibbonArea;
 
 public:
-    AppMainWindow(QWidget* parent = nullptr);
+    // 配置对象由 main() 创建并注入，本窗口不拥有其生命周期
+    explicit AppMainWindow(DAAppConfig* config, QWidget* parent = nullptr);
     ~AppMainWindow() override;
 
     // 多语言翻译
@@ -87,8 +88,6 @@ private:
     // 初始化工作流的节点
     void initWorkflowNodes();
 
-    // 初始化设置
-    void initConfig();
 private Q_SLOTS:
     //
     void onWorkflowFinished(bool success);
@@ -103,7 +102,7 @@ private:
     DAAppDockingArea* mDockArea { nullptr };
     DAAppController* mController { nullptr };
     DAAppPluginManager* mPluginMgr { nullptr };
-    std::unique_ptr< DAAppConfig > mConfig;
+    DAAppConfig* mConfig { nullptr };                ///< 应用配置（非拥有指针，由 main() 持有）
     DAAppSettingDialog* mSettingDialog { nullptr };  ///< 设置窗口,避免过多的中间传递
     bool mIsSaveUIStateOnClose { false };            ///< 是否在退出时记录程序的状态
     QTimer* mAutosaveTimer { nullptr };               ///< 自动保存定时器

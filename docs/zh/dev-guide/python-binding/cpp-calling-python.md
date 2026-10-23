@@ -49,7 +49,7 @@ void initializePythonInterpreter(const DA::DAAppConfig& cfg)
 
     // 3. 追加用户配置的额外模块搜索路径到 sys.path
     //    appendSysPath 同样是 DAPyInterpreter 的 static 方法
-    QStringList extraPaths = cfg.value(DA_CONFIG_KEY_PYTHON_EXTRA_PATHS).toStringList();
+    QStringList extraPaths = cfg.python().extraPaths;
     for (const QString& p : extraPaths) {
         if (!p.trimmed().isEmpty()) {
             DA::DAPyInterpreter::appendSysPath(p);

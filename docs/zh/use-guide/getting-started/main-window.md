@@ -128,7 +128,7 @@ Ribbon 样式控制标签和面板的行数与紧凑程度，共四种，在设�
 
 ## 界面语言
 
-设置对话框通用页里的 `Interface language` / 界面语言 下拉框决定界面文字用哪种语言。第一项是 `System` / 跟随系统，表示跟随操作系统语言。翻译文件的名字是 `da_<语言代码>.qm`，程序在程序目录的 `translations/` 和 `translations_user/` 两个目录里查找，随程序发布的翻译有 `da_en_US`（英文）和 `da_zh_CN`（简体中文）；语言代码也可以直接写进配置文件 `dawork-config.xml` 的 `language` 项。
+设置对话框通用页里的 `Interface language` / 界面语言 下拉框决定界面文字用哪种语言。第一项是 `System` / 跟随系统，表示跟随操作系统语言。翻译文件的名字是 `da_<语言代码>.qm`，程序在程序目录的 `translations/` 和 `translations_user/` 两个目录里查找，随程序发布的翻译有 `da_en_US`（英文）和 `da_zh_CN`（简体中文）；语言代码也可以直接写进配置文件 `dawork-config.json` 的 `ui.language` 项。
 
 页面上注明语言和字体的改动在重启程序后生效，改完需要关闭并重新启动程序。Ribbon 和插件页面上的文字也会跟着一起切换。
 

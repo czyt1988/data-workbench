@@ -66,9 +66,8 @@ void DASettingPagePython::apply()
     if (nullptr == mAppConfig) {
         return;
     }
-    DAAppConfig& cfg    = *mAppConfig;
-    QString path        = ui->lineEditPythonPath->text().trimmed();
-    cfg[ DA_CONFIG_KEY_PYTHON_INTERPRETER_PATH ] = path;
+    DAPythonSettings s = mAppConfig->python();
+    s.interpreterPath  = ui->lineEditPythonPath->text().trimmed();
     // 额外模块路径
     QStringList extraPaths;
     for (int i = 0; i < ui->listWidgetExtraPaths->count(); ++i) {
@@ -77,10 +76,11 @@ void DASettingPagePython::apply()
             extraPaths << it->text().trimmed();
         }
     }
-    cfg[ DA_CONFIG_KEY_PYTHON_EXTRA_PATHS ] = extraPaths;
+    s.extraPaths = extraPaths;
+    // setPython 会发出 sectionChanged；解释器路径需重启生效
+    mAppConfig->setPython(s);
     // 同步到 python-config.json，下次启动由 DAPyInterpreter 读取
-    writePythonConfigJson(path);
-    cfg.apply();
+    writePythonConfigJson(s.interpreterPath);
     emit settingApplyed();
 }
 
@@ -101,9 +101,8 @@ bool DASettingPagePython::setAppConfig(DAAppConfig* p)
     }
     QSignalBlocker blocker(this);
     mAppConfig = p;
-    DAAppConfig& cfg = *p;
-    // 解释器路径：优先配置键，其次 python-config.json，最后自动检测
-    QString path = cfg[ DA_CONFIG_KEY_PYTHON_INTERPRETER_PATH ].toString();
+    // 解释器路径：优先配置，其次 python-config.json，最后自动检测
+    QString path = p->python().interpreterPath;
     if (path.isEmpty()) {
         path = readPythonConfigJson();
     }
@@ -112,7 +111,7 @@ bool DASettingPagePython::setAppConfig(DAAppConfig* p)
     }
     ui->lineEditPythonPath->setText(path);
     // 额外模块路径
-    QStringList extraPaths = cfg[ DA_CONFIG_KEY_PYTHON_EXTRA_PATHS ].toStringList();
+    const QStringList extraPaths = p->python().extraPaths;
     ui->listWidgetExtraPaths->clear();
     for (const QString& s : extraPaths) {
         if (!s.trimmed().isEmpty()) {

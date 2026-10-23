@@ -1,317 +1,806 @@
 #include "DAAppConfig.h"
 #include <QDir>
 #include <QFile>
-#include <QDebug>
-#include <QApplication>
-#include <QObject>
-#include "SARibbonBar.h"
-#include "SARibbonMainWindow.h"
-#include "AppMainWindow.h"
-#include "DAAppCore.h"
-#include "DAAppUI.h"
-#include "DAAppActions.h"
-#include "DARecentFilesManager.h"
-#include "DAMessageLogQueue.h"
-#include "DALogger.h"
+#include <QFileInfo>
+#include <QSaveFile>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonValue>
+#include <QDomDocument>
+#include <QDomElement>
+#include <utility>
+#include "DADir.h"
 #include "DALogCategory.h"
-#include "DAAbstractSettingPage.h"
-#include "DADumpCapture.h"
-#include "DAPyScriptRunner.h"
-#include "DAAppDockingArea.h"
-#include "DAUndoHistoryWidget.h"
-#include "DADataOperateOfDataFrameWidget.h"
-#include "DAPyWorkFlowOperateWidget.h"
-#include "Chart/DAChartOperateWidget.h"
-#include "DADataOperateWidget.h"
+
 namespace DA
 {
 
-DAAppConfig::DAAppConfig()
+namespace
 {
-    mVersion        = QVersionNumber(0, 0, 3);
-    mConfigFilePath = getAbsoluteConfigFilePath();
-    // 先设置默认参数，这些默认参数后续如果配置文件中有会被替换掉
-    insert(DA_CONFIG_KEY_RIBBON_STYLE, static_cast< int >(SARibbonBar::RibbonStyleCompactTwoRow));
-    insert(DA_CONFIG_KEY_SHOW_LOG_NUM, 5000);             // 5000条日志
-    insert(DA_CONFIG_KEY_SAVE_UI_STATE_ON_CLOSE, false);  // 程序在退出时是否保存ui的状态
-    // 通用/UI
-    insert(DA_CONFIG_KEY_LANGUAGE, QString());                        // 空=跟随系统
-    insert(DA_CONFIG_KEY_RIBBON_THEME, -1);                           // -1=不覆盖框架默认主题
-    insert(DA_CONFIG_KEY_APP_FONT_FAMILY, QString());                 // 空=系统默认字体
-    insert(DA_CONFIG_KEY_APP_FONT_POINT_SIZE, -1.0);                  // <=0=系统默认字号
-    insert(DA_CONFIG_KEY_DOCK_TAB_POSITION, QStringLiteral("bottom"));  // 操作窗口内部标签页默认在下方
-    insert(DA_CONFIG_KEY_UNDO_STACK_LIMIT, 20);                       // 数据页撤销栈深度（R19 默认 20）
-    // Python
-    insert(DA_CONFIG_KEY_PYTHON_INTERPRETER_PATH, QString());         // 空=自动检测
-    insert(DA_CONFIG_KEY_PYTHON_EXTRA_PATHS, QStringList());          // 额外 sys.path
-    // 日志
-    insert(DA_CONFIG_KEY_LOG_LEVEL, static_cast< int >(DA::DALogLevel::Trace));
-    insert(DA_CONFIG_KEY_LOG_QUEUE_LEVEL, static_cast< int >(DA::DALogLevel::Info));
-    insert(DA_CONFIG_KEY_LOG_OUTPUT_STDOUT, true);
-    insert(DA_CONFIG_KEY_LOG_ROTATION_MODE, 0);                       // 0=rotating
-    insert(DA_CONFIG_KEY_LOG_MAX_SIZE, 10 * 1024 * 1024);             // 10MB
-    insert(DA_CONFIG_KEY_LOG_MAX_FILES, 5);
-    // 工作流/数据/高级
-    insert(DA_CONFIG_KEY_WORKFLOW_TIMEOUT, -1.0);                     // <0=无限等待
-    insert(DA_CONFIG_KEY_RECENT_FILES_MAX, 10);
-    insert(DA_CONFIG_KEY_DUMP_RETENTION_DAYS, 7);
-    insert(DA_CONFIG_KEY_NODE_SCRIPT_PATHS, QStringList());
-    insert(DA_CONFIG_KEY_PLUGIN_EXTRA_PATHS, QStringList());
-    insert(DA_CONFIG_KEY_SHOW_SPLASH, true);
-    insert(DA_CONFIG_KEY_AUTOSAVE_INTERVAL, 0);                      // 0=禁用
-    // 脚本工作区/脚本执行引擎
-    insert(DA_CONFIG_KEY_WORKSPACE_DIR, QString());                  // 空=用系统临时目录
-    insert(DA_CONFIG_KEY_SCRIPT_TIMEOUT, 300);                       // 默认 300 秒，0=禁用（显式选择）
-    insert(DA_CONFIG_KEY_SCRIPT_RESULT_MAX_CHARS, 10000);            // 默认 10000 字符
-    insert(DA_CONFIG_KEY_WORKSPACE_OVERWRITE_POLICY, QStringLiteral("ask"));
+constexpr int kConfigVersion = 1;
+
+// 日志级别名（下标与 DALogLevel 枚举值一一对应）
+const char* const kLogLevelNames[] = { "trace", "debug", "info", "warn", "error", "critical", "off" };
+constexpr int kLogLevelCount = int(sizeof(kLogLevelNames) / sizeof(kLogLevelNames[ 0 ]));
+
+// ---- JSON 值读取（宽松：字符串与数字互认，避免手工改文件后不可用） ----
+
+int jsonToInt(const QJsonValue& v, int def)
+{
+    if (v.isDouble()) {
+        return v.toInt();
+    }
+    if (v.isString()) {
+        bool ok   = false;
+        const int r = v.toString().toInt(&ok);
+        return ok ? r : def;
+    }
+    return def;
 }
 
-DAAppConfig::~DAAppConfig()
+qint64 jsonToInt64(const QJsonValue& v, qint64 def)
 {
+    if (v.isDouble()) {
+        return static_cast< qint64 >(v.toDouble());
+    }
+    if (v.isString()) {
+        bool ok        = false;
+        const qint64 r = v.toString().toLongLong(&ok);
+        return ok ? r : def;
+    }
+    return def;
 }
 
-void DAAppConfig::setCore(DAAppCore* core)
+double jsonToDouble(const QJsonValue& v, double def)
 {
-    mCore       = core;
-    mUI         = core->getAppUi();
-    mMainWindow = qobject_cast< AppMainWindow* >(mUI->getMainWindow());
+    if (v.isDouble()) {
+        return v.toDouble();
+    }
+    if (v.isString()) {
+        bool ok         = false;
+        const double r  = v.toString().toDouble(&ok);
+        return ok ? r : def;
+    }
+    return def;
 }
 
-bool DAAppConfig::loadConfig(bool noFileCreateNewOne)
+bool jsonToBool(const QJsonValue& v, bool def)
 {
-    QFile xmlConfigFile(mConfigFilePath);
-    if (!xmlConfigFile.exists()) {
-        // 没有配置文件
-        if (noFileCreateNewOne) {
-            return saveConfig();
+    if (v.isBool()) {
+        return v.toBool();
+    }
+    if (v.isDouble()) {
+        return v.toInt() != 0;
+    }
+    if (v.isString()) {
+        const QString s = v.toString().trimmed().toLower();
+        if (s == QLatin1String("true") || s == QLatin1String("1")) {
+            return true;
         }
-        return false;
+        if (s == QLatin1String("false") || s == QLatin1String("0")) {
+            return false;
+        }
     }
-    if (!xmlConfigFile.open(QIODevice::ReadWrite)) {
-        // 有配置文件，但打开失败
-        daWarning.noquote() << QObject::tr("Cannot open config file \"%1\": %2")  // cn:无法打开配置文件\"%1\"，原因是%2
-                                   .arg(mConfigFilePath, xmlConfigFile.errorString());
-        return false;
-    }
-
-    // 文件存在了才加载文件
-    QString err;
-    QDomDocument doc;
-    if (!doc.setContent(&xmlConfigFile, &err)) {
-        daCritical.noquote() << QObject::tr("Cannot load config file \"%1\": %2")  // cn:无法加载配置文件\"%1\"，原因是%2
-                                    .arg(mConfigFilePath, err);
-        return false;
-    }
-    QDomElement configsEle = doc.firstChildElement("configs");
-    if (configsEle.isNull()) {
-        daWarning.noquote() << QObject::tr("Config file (%1) is missing the <configs> tag").arg(mConfigFilePath);  // cn:配置文件(%1)缺失<configs>标签
-        return false;
-    }
-    QVersionNumber version = mVersion;
-    QString ver            = configsEle.attribute("ver");
-    if (ver.isEmpty()) {
-        version = QVersionNumber();
-    }
-    // 加载所有管理的配置
-    if (!loadFromXml(&configsEle, version)) {
-        return false;
-    }
-
-    return true;
+    return def;
 }
 
-bool DAAppConfig::saveConfig()
+QString jsonToString(const QJsonValue& v, const QString& def)
 {
-    QFile xmlConfigFile(mConfigFilePath);
-    // 一定要带上QIODevice::Truncate
-    if (!xmlConfigFile.open(QIODevice::ReadWrite | QIODevice::Truncate)) {
-        // 有配置文件，但打开失败
-        daCritical << QObject::tr("Cannot open config file \"%1\": %2")  // cn:无法打开配置文件\"%1\"，原因是%2
-                          .arg(mConfigFilePath, xmlConfigFile.errorString());
-        return false;
+    if (v.isString()) {
+        return v.toString();
     }
-    QDomDocument doc;
-    QDomElement configsEle = doc.createElement("configs");
-    configsEle.setAttribute("ver", mVersion.toString());
-    doc.appendChild(configsEle);
-    // 加载所有管理的配置
-    if (!saveToXml(&doc, &configsEle, mVersion)) {
-        return false;
-    }
-    QTextStream s(&xmlConfigFile);
-    doc.save(s, 2);
-    xmlConfigFile.close();
-    return true;
+    return def;
 }
+
+QStringList jsonToStringList(const QJsonValue& v, const QStringList& def)
+{
+    if (v.isArray()) {
+        QStringList r;
+        const QJsonArray arr = v.toArray();
+        for (const QJsonValue& item : arr) {
+            if (item.isString()) {
+                r << item.toString();
+            }
+        }
+        return r;
+    }
+    if (v.isString()) {
+        return v.toString().isEmpty() ? def : QStringList { v.toString() };
+    }
+    return def;
+}
+
+// ---- 枚举解析/序列化（JSON 用可读字符串，同时兼容旧版整数） ----
+
+DALogLevel logLevelFromValue(const QJsonValue& v, DALogLevel def)
+{
+    if (v.isDouble()) {
+        const int i = v.toInt();
+        if (i >= 0 && i < kLogLevelCount) {
+            return static_cast< DALogLevel >(i);
+        }
+        return def;
+    }
+    if (v.isString()) {
+        const QString s = v.toString().trimmed().toLower();
+        for (int i = 0; i < kLogLevelCount; ++i) {
+            if (s == QLatin1String(kLogLevelNames[ i ])) {
+                return static_cast< DALogLevel >(i);
+            }
+        }
+        // 兼容常见写法
+        if (s == QLatin1String("warning")) {
+            return DALogLevel::Warn;
+        }
+    }
+    return def;
+}
+
+QString logLevelToValue(DALogLevel v)
+{
+    const int i = static_cast< int >(v);
+    if (i >= 0 && i < kLogLevelCount) {
+        return QString::fromLatin1(kLogLevelNames[ i ]);
+    }
+    return QString::fromLatin1(kLogLevelNames[ 0 ]);
+}
+
+DALogRotationMode rotationModeFromValue(const QJsonValue& v, DALogRotationMode def)
+{
+    if (v.isDouble()) {
+        const int i = v.toInt();
+        if (i >= 0 && i <= 2) {
+            return static_cast< DALogRotationMode >(i);
+        }
+        return def;
+    }
+    if (v.isString()) {
+        const QString s = v.toString().trimmed().toLower();
+        if (s == QLatin1String("rotating")) {
+            return DALogRotationMode::Rotating;
+        }
+        if (s == QLatin1String("daily")) {
+            return DALogRotationMode::Daily;
+        }
+        if (s == QLatin1String("console")) {
+            return DALogRotationMode::Console;
+        }
+    }
+    return def;
+}
+
+QString rotationModeToValue(DALogRotationMode v)
+{
+    switch (v) {
+    case DALogRotationMode::Daily:
+        return QStringLiteral("daily");
+    case DALogRotationMode::Console:
+        return QStringLiteral("console");
+    case DALogRotationMode::Rotating:
+    default:
+        return QStringLiteral("rotating");
+    }
+}
+
+DADockTabPosition tabPositionFromValue(const QJsonValue& v, DADockTabPosition def)
+{
+    if (v.isDouble()) {
+        const int i = v.toInt();
+        if (i == 0) {
+            return DADockTabPosition::Bottom;
+        }
+        if (i == 1) {
+            return DADockTabPosition::Top;
+        }
+        return def;
+    }
+    if (v.isString()) {
+        const QString s = v.toString().trimmed().toLower();
+        if (s == QLatin1String("top")) {
+            return DADockTabPosition::Top;
+        }
+        if (s == QLatin1String("bottom")) {
+            return DADockTabPosition::Bottom;
+        }
+    }
+    return def;
+}
+
+QString tabPositionToValue(DADockTabPosition v)
+{
+    return (v == DADockTabPosition::Top) ? QStringLiteral("top") : QStringLiteral("bottom");
+}
+
+DAWorkspaceOverwritePolicy overwritePolicyFromValue(const QJsonValue& v, DAWorkspaceOverwritePolicy def)
+{
+    if (v.isDouble()) {
+        const int i = v.toInt();
+        if (i >= 0 && i <= 2) {
+            return static_cast< DAWorkspaceOverwritePolicy >(i);
+        }
+        return def;
+    }
+    if (v.isString()) {
+        const QString s = v.toString().trimmed().toLower();
+        if (s == QLatin1String("ask")) {
+            return DAWorkspaceOverwritePolicy::Ask;
+        }
+        if (s == QLatin1String("always-local") || s == QLatin1String("alwayslocal")) {
+            return DAWorkspaceOverwritePolicy::AlwaysLocal;
+        }
+        if (s == QLatin1String("always-zip") || s == QLatin1String("alwayszip")) {
+            return DAWorkspaceOverwritePolicy::AlwaysZip;
+        }
+    }
+    return def;
+}
+
+QString overwritePolicyToValue(DAWorkspaceOverwritePolicy v)
+{
+    switch (v) {
+    case DAWorkspaceOverwritePolicy::AlwaysLocal:
+        return QStringLiteral("always-local");
+    case DAWorkspaceOverwritePolicy::AlwaysZip:
+        return QStringLiteral("always-zip");
+    case DAWorkspaceOverwritePolicy::Ask:
+    default:
+        return QStringLiteral("ask");
+    }
+}
+
+// ---- 旧版 XML 文本转换 ----
+
+bool xmlTextToBool(const QString& s, bool def)
+{
+    const QString t = s.trimmed().toLower();
+    if (t == QLatin1String("true") || t == QLatin1String("1")) {
+        return true;
+    }
+    if (t == QLatin1String("false") || t == QLatin1String("0")) {
+        return false;
+    }
+    return def;
+}
+
+// ---- 取值范围规范化（加载与 setter 共用） ----
+
+void normalizeUI(DAUISettings& s)
+{
+    if (s.ribbonTheme < 0) {
+        s.ribbonTheme = -1;
+    }
+    if (s.fontPointSize <= 0.0) {
+        s.fontPointSize = -1.0;
+    }
+    if (s.undoStackLimit < 0) {
+        s.undoStackLimit = 20;
+    }
+    s.language = s.language.trimmed();
+}
+
+void normalizeLog(DALogSettings& s)
+{
+    const int level = static_cast< int >(s.level);
+    if (level < 0 || level >= kLogLevelCount) {
+        s.level = DALogLevel::Trace;
+    }
+    const int queueLevel = static_cast< int >(s.queueLevel);
+    if (queueLevel < 0 || queueLevel >= kLogLevelCount) {
+        s.queueLevel = DALogLevel::Info;
+    }
+    const int rotationMode = static_cast< int >(s.rotationMode);
+    if (rotationMode < 0 || rotationMode > 2) {
+        s.rotationMode = DALogRotationMode::Rotating;
+    }
+    if (s.maxSizeBytes <= 0) {
+        s.maxSizeBytes = qint64(10) * 1024 * 1024;
+    }
+    if (s.maxFiles <= 0) {
+        s.maxFiles = 5;
+    }
+    if (s.showLogNum <= 10 || s.showLogNum >= 999999) {
+        s.showLogNum = 5000;
+    }
+}
+
+void normalizePython(DAPythonSettings& s)
+{
+    s.interpreterPath = s.interpreterPath.trimmed();
+    QStringList cleaned;
+    for (const QString& p : std::as_const(s.extraPaths)) {
+        const QString t = p.trimmed();
+        if (!t.isEmpty()) {
+            cleaned << t;
+        }
+    }
+    s.extraPaths = cleaned;
+}
+
+void normalizeAdvanced(DAAdvancedSettings& s)
+{
+    if (s.recentFilesMax <= 0) {
+        s.recentFilesMax = 10;
+    }
+    if (s.dumpRetentionDays <= 0) {
+        s.dumpRetentionDays = 7;
+    }
+    if (s.autosaveIntervalMin < 0) {
+        s.autosaveIntervalMin = 0;
+    }
+}
+
+void normalizeScript(DAScriptSettings& s)
+{
+    s.workspaceDir = s.workspaceDir.trimmed();
+    const int policy = static_cast< int >(s.overwritePolicy);
+    if (policy < 0 || policy > 2) {
+        s.overwritePolicy = DAWorkspaceOverwritePolicy::Ask;
+    }
+    if (s.scriptTimeoutSec < 0) {
+        s.scriptTimeoutSec = 300;
+    }
+    if (s.scriptResultMaxChars <= 0) {
+        s.scriptResultMaxChars = 10000;
+    }
+}
+
+}  // namespace
+
+DAAppConfig::DAAppConfig(const QString& configFilePath, QObject* parent)
+    : QObject(parent)
+    , mConfigFilePath(configFilePath.isEmpty() ? getAbsoluteConfigFilePath() : configFilePath)
+{
+}
+
+DAAppConfig::~DAAppConfig() = default;
 
 /**
- * @brief 保存到xml
- * @param doc
- * @param parentElement
- * @return
+ * @brief 从磁盘加载配置
+ *
+ * 优先级：新的 JSON 配置 → 旧版 XML 配置（一次性迁移）→ 默认值。
+ * 任一阶段得到的值都会经过 @ref normalize 规范化；加载过程不发变更信号。
+ * @param createIfMissing 没有任何配置文件时是否生成一份默认配置
+ * @return 是否成功读到配置（生成默认配置也算成功）
  */
-bool DAAppConfig::saveToXml(QDomDocument* doc, QDomElement* parentElement, const QVersionNumber& ver) const
+bool DAAppConfig::load(bool createIfMissing)
 {
-    auto i = begin();
-    for (; i != end(); ++i) {
-        QDomElement propEle = doc->createElement("prop");
-        propEle.setAttribute("key", i.key());
-        QDomElement valueEle = makeElement(i.value(), "value", doc);
-        propEle.appendChild(valueEle);
-        parentElement->appendChild(propEle);
+    QFile jsonFile(mConfigFilePath);
+    if (!jsonFile.exists()) {
+        // 没有 JSON：尝试从旧版 XML 一次性迁移
+        const QString legacyPath = legacyConfigFilePath();
+        if (QFileInfo::exists(legacyPath)) {
+            if (loadLegacyXml(legacyPath)) {
+                normalize();
+                if (!save()) {
+                    daWarning.noquote() << tr("Migrated configuration but failed to write \"%1\"")  // cn:已迁移配置，但写入\"%1\"失败
+                                               .arg(mConfigFilePath);
+                    return true;  // 内存中已是迁移后的值，可以继续运行
+                }
+                const QString bakPath = legacyPath + QStringLiteral(".bak");
+                QFile::remove(bakPath);
+                if (QFile::rename(legacyPath, bakPath)) {
+                    daInfo.noquote() << tr("Migrated configuration from \"%1\" to \"%2\"")  // cn:已把配置从\"%1\"迁移为\"%2\"
+                                            .arg(legacyPath, mConfigFilePath);
+                } else {
+                    daWarning.noquote() << tr("Migrated configuration but cannot rename \"%1\"")  // cn:已迁移配置，但无法重命名\"%1\"
+                                               .arg(legacyPath);
+                }
+                return true;
+            }
+            daWarning.noquote() << tr("Cannot load config file \"%1\"")  // cn:无法加载配置文件\"%1\"
+                                       .arg(legacyPath);
+        }
+        normalize();
+        if (createIfMissing) {
+            return save();
+        }
+        return false;
     }
-    parentElement->setAttribute("name", cConfigName);
+
+    if (!jsonFile.open(QIODevice::ReadOnly)) {
+        daWarning.noquote() << tr("Cannot open config file \"%1\": %2")  // cn:无法打开配置文件\"%1\"，原因是%2
+                                   .arg(mConfigFilePath, jsonFile.errorString());
+        normalize();
+        return false;
+    }
+    QJsonParseError parseError;
+    const QJsonDocument doc = QJsonDocument::fromJson(jsonFile.readAll(), &parseError);
+    jsonFile.close();
+    if (parseError.error != QJsonParseError::NoError) {
+        daCritical.noquote() << tr("Cannot load config file \"%1\": %2")  // cn:无法加载配置文件\"%1\"，原因是%2
+                                    .arg(mConfigFilePath, parseError.errorString());
+        normalize();
+        return false;
+    }
+    if (!doc.isObject()) {
+        daCritical.noquote() << tr("Cannot load config file \"%1\": root is not an object")  // cn:无法加载配置文件\"%1\"：根节点不是对象
+                                    .arg(mConfigFilePath);
+        normalize();
+        return false;
+    }
+    loadFromJsonObject(doc.object());
+    normalize();
     return true;
 }
 
 /**
- * @brief 从xml加载
- * @param parentElement
- * @return
+ * @brief 保存到磁盘
+ *
+ * 采用 QSaveFile 原子写：先写临时文件再重命名，避免写到一半崩溃留下截断的配置。
+ * 未知键会从加载时的原始根对象原样保留。
+ * @return 是否保存成功
  */
-bool DAAppConfig::loadFromXml(const QDomElement* parentElement, const QVersionNumber& ver)
+bool DAAppConfig::save() const
 {
-    QDomNodeList ns = parentElement->childNodes();
-    for (int i = 0; i < ns.size(); ++i) {
-        QDomElement propEle = ns.at(i).toElement();
-        if (propEle.isNull()) {
-            continue;
-        }
-        if (propEle.tagName() != "prop") {
-            continue;
-        }
-        QString k            = propEle.attribute("key");
-        QDomElement valueEle = propEle.firstChildElement("value");
-        if (valueEle.isNull()) {
-            continue;
-        }
-        QVariant v;
-        if (!loadElement(v, &valueEle)) {
-            continue;
-        }
-        insert(k, v);
+    const QFileInfo fi(mConfigFilePath);
+    QDir().mkpath(fi.absolutePath());
+    QSaveFile file(mConfigFilePath);
+    if (!file.open(QIODevice::WriteOnly)) {
+        daCritical.noquote() << tr("Cannot open config file \"%1\": %2")  // cn:无法打开配置文件\"%1\"，原因是%2
+                                    .arg(mConfigFilePath, file.errorString());
+        return false;
+    }
+    const QJsonDocument doc(toJson());
+    file.write(doc.toJson(QJsonDocument::Indented));
+    if (!file.commit()) {
+        daCritical.noquote() << tr("Cannot write config file \"%1\": %2")  // cn:无法写入配置文件\"%1\"，原因是%2
+                                    .arg(mConfigFilePath, file.errorString());
+        return false;
     }
     return true;
 }
 
 /**
- * @brief 获取配置文件名字
- * @return
+ * @brief 恢复全部默认值并通知各分节
+ */
+void DAAppConfig::resetToDefaults()
+{
+    mUiSettings       = DAUISettings();
+    mLogSettings      = DALogSettings();
+    mPythonSettings   = DAPythonSettings();
+    mAdvancedSettings = DAAdvancedSettings();
+    mScriptSettings   = DAScriptSettings();
+    normalize();
+    for (Section s : { Section::UI, Section::Log, Section::Python, Section::Advanced, Section::Script }) {
+        Q_EMIT sectionChanged(s);
+    }
+    Q_EMIT changed();
+}
+
+const DAUISettings& DAAppConfig::ui() const
+{
+    return mUiSettings;
+}
+
+/**
+ * @brief 设置通用/界面配置
+ *
+ * 写入前做规范化，常用于避免设置页写入非法值。
+ * @param v 新的配置值
+ */
+void DAAppConfig::setUI(const DAUISettings& v)
+{
+    mUiSettings = v;
+    normalizeUI(mUiSettings);
+    Q_EMIT sectionChanged(Section::UI);
+    Q_EMIT changed();
+}
+
+const DALogSettings& DAAppConfig::log() const
+{
+    return mLogSettings;
+}
+
+void DAAppConfig::setLog(const DALogSettings& v)
+{
+    mLogSettings = v;
+    normalizeLog(mLogSettings);
+    Q_EMIT sectionChanged(Section::Log);
+    Q_EMIT changed();
+}
+
+const DAPythonSettings& DAAppConfig::python() const
+{
+    return mPythonSettings;
+}
+
+void DAAppConfig::setPython(const DAPythonSettings& v)
+{
+    mPythonSettings = v;
+    normalizePython(mPythonSettings);
+    Q_EMIT sectionChanged(Section::Python);
+    Q_EMIT changed();
+}
+
+const DAAdvancedSettings& DAAppConfig::advanced() const
+{
+    return mAdvancedSettings;
+}
+
+void DAAppConfig::setAdvanced(const DAAdvancedSettings& v)
+{
+    mAdvancedSettings = v;
+    normalizeAdvanced(mAdvancedSettings);
+    Q_EMIT sectionChanged(Section::Advanced);
+    Q_EMIT changed();
+}
+
+const DAScriptSettings& DAAppConfig::script() const
+{
+    return mScriptSettings;
+}
+
+void DAAppConfig::setScript(const DAScriptSettings& v)
+{
+    mScriptSettings = v;
+    normalizeScript(mScriptSettings);
+    Q_EMIT sectionChanged(Section::Script);
+    Q_EMIT changed();
+}
+
+/**
+ * @brief 当前配置文件名
  */
 QString DAAppConfig::getConfigFileName()
 {
-    return "dawork-config.xml";
+    return QStringLiteral("dawork-config.json");
 }
 
 /**
- * @brief 获取配置文件的绝对路径
- * @return
+ * @brief 旧版 XML 配置文件名（仅用于一次性迁移）
+ */
+QString DAAppConfig::getLegacyConfigFileName()
+{
+    return QStringLiteral("dawork-config.xml");
+}
+
+/**
+ * @brief 当前配置文件的绝对路径
  */
 QString DAAppConfig::getAbsoluteConfigFilePath()
 {
-    return QDir::toNativeSeparators(DAAbstractSettingPage::getConfigFileSavePath() + QDir::separator()
-                                    + getConfigFileName());
+    return QDir::toNativeSeparators(DADir::getConfigPath() + QDir::separator() + getConfigFileName());
 }
 
 /**
- * @brief 应用配置
- *
- * 此函数应用运行时可生效的配置项。对于在 main.cpp 早期初始化的项
- * （语言、字体、Python 解释器、日志轮转参数、启动画面等），此处不重新初始化，
- * 它们通过 @ref loadEarlyAppConfig 在下次启动时早期读取生效。
- * @return
+ * @brief 旧版 XML 配置文件的绝对路径（与当前配置文件同目录）
  */
-bool DAAppConfig::apply()
+QString DAAppConfig::legacyConfigFilePath() const
 {
-    qDebug() << "apply setting";
-    SARibbonBar* bar = mMainWindow->ribbonBar();
-    if (bar) {
-        SARibbonBar::RibbonStyles ribbonStyle =
-            static_cast< SARibbonBar::RibbonStyles >(value(DA_CONFIG_KEY_RIBBON_STYLE).toInt());
-        bar->setRibbonStyle(ribbonStyle);
+    return QFileInfo(mConfigFilePath).absolutePath() + QDir::separator() + getLegacyConfigFileName();
+}
+
+/**
+ * @brief 全部字段的取值规范化
+ */
+void DAAppConfig::normalize()
+{
+    normalizeUI(mUiSettings);
+    normalizeLog(mLogSettings);
+    normalizePython(mPythonSettings);
+    normalizeAdvanced(mAdvancedSettings);
+    normalizeScript(mScriptSettings);
+}
+
+/**
+ * @brief 组装为 JSON 对象
+ *
+ * 以加载时的原始根对象为底，只覆盖已知路径，从而保留将来版本写入的未知键。
+ */
+QJsonObject DAAppConfig::toJson() const
+{
+    QJsonObject root = mUnknownRoot;
+    root.insert(QStringLiteral("version"), kConfigVersion);
+
+    QJsonObject ui = root.value(QStringLiteral("ui")).toObject();
+    ui.insert(QStringLiteral("ribbon-style"), mUiSettings.ribbonStyle);
+    ui.insert(QStringLiteral("ribbon-theme"), mUiSettings.ribbonTheme);
+    ui.insert(QStringLiteral("language"), mUiSettings.language);
+    ui.insert(QStringLiteral("dock-tab-position"), tabPositionToValue(mUiSettings.dockTabPosition));
+    ui.insert(QStringLiteral("font-family"), mUiSettings.fontFamily);
+    ui.insert(QStringLiteral("font-point-size"), mUiSettings.fontPointSize);
+    ui.insert(QStringLiteral("save-ui-state-on-close"), mUiSettings.saveUiStateOnClose);
+    ui.insert(QStringLiteral("undo-stack-limit"), mUiSettings.undoStackLimit);
+    root.insert(QStringLiteral("ui"), ui);
+
+    QJsonObject logObj = root.value(QStringLiteral("log")).toObject();
+    logObj.insert(QStringLiteral("level"), logLevelToValue(mLogSettings.level));
+    logObj.insert(QStringLiteral("queue-level"), logLevelToValue(mLogSettings.queueLevel));
+    logObj.insert(QStringLiteral("output-stdout"), mLogSettings.outputStdout);
+    logObj.insert(QStringLiteral("rotation-mode"), rotationModeToValue(mLogSettings.rotationMode));
+    logObj.insert(QStringLiteral("max-size-bytes"), mLogSettings.maxSizeBytes);
+    logObj.insert(QStringLiteral("max-files"), mLogSettings.maxFiles);
+    logObj.insert(QStringLiteral("show-log-num"), mLogSettings.showLogNum);
+    root.insert(QStringLiteral("log"), logObj);
+
+    QJsonObject python = root.value(QStringLiteral("python")).toObject();
+    python.insert(QStringLiteral("interpreter-path"), mPythonSettings.interpreterPath);
+    QJsonArray extraPaths;
+    for (const QString& p : std::as_const(mPythonSettings.extraPaths)) {
+        extraPaths.append(p);
     }
-    // ribbon 主题（-1 表示不覆盖框架默认主题）
-    if (mMainWindow) {
-        int ribbonTheme = value(DA_CONFIG_KEY_RIBBON_THEME).toInt();
-        if (ribbonTheme >= 0) {
-            mMainWindow->setRibbonTheme(static_cast< SARibbonTheme >(ribbonTheme));
+    python.insert(QStringLiteral("extra-paths"), extraPaths);
+    root.insert(QStringLiteral("python"), python);
+
+    QJsonObject advanced = root.value(QStringLiteral("advanced")).toObject();
+    advanced.insert(QStringLiteral("recent-files-max"), mAdvancedSettings.recentFilesMax);
+    advanced.insert(QStringLiteral("dump-retention-days"), mAdvancedSettings.dumpRetentionDays);
+    advanced.insert(QStringLiteral("show-splash"), mAdvancedSettings.showSplash);
+    advanced.insert(QStringLiteral("autosave-interval-min"), mAdvancedSettings.autosaveIntervalMin);
+    root.insert(QStringLiteral("advanced"), advanced);
+
+    QJsonObject script = root.value(QStringLiteral("script")).toObject();
+    script.insert(QStringLiteral("workspace-dir"), mScriptSettings.workspaceDir);
+    script.insert(QStringLiteral("workspace-overwrite-policy"), overwritePolicyToValue(mScriptSettings.overwritePolicy));
+    script.insert(QStringLiteral("timeout-sec"), mScriptSettings.scriptTimeoutSec);
+    script.insert(QStringLiteral("result-max-chars"), mScriptSettings.scriptResultMaxChars);
+    root.insert(QStringLiteral("script"), script);
+
+    return root;
+}
+
+/**
+ * @brief 从 JSON 根对象读取各分节
+ *
+ * 缺失的键保持当前值（默认值），因此只写部分键的配置文件也能正常使用。
+ * @param root JSON 根对象
+ */
+void DAAppConfig::loadFromJsonObject(const QJsonObject& root)
+{
+    mUnknownRoot = root;
+
+    const int version = jsonToInt(root.value(QStringLiteral("version")), kConfigVersion);
+    if (version > kConfigVersion) {
+        daWarning.noquote() << tr("Config file \"%1\" has a newer version %2")  // cn:配置文件\"%1\"的版本 %2 比当前程序新
+                                   .arg(mConfigFilePath)
+                                   .arg(version);
+    }
+
+    const QJsonObject ui = root.value(QStringLiteral("ui")).toObject();
+    mUiSettings.ribbonStyle        = jsonToInt(ui.value(QStringLiteral("ribbon-style")), mUiSettings.ribbonStyle);
+    mUiSettings.ribbonTheme        = jsonToInt(ui.value(QStringLiteral("ribbon-theme")), mUiSettings.ribbonTheme);
+    mUiSettings.language           = jsonToString(ui.value(QStringLiteral("language")), mUiSettings.language);
+    mUiSettings.dockTabPosition    = tabPositionFromValue(ui.value(QStringLiteral("dock-tab-position")), mUiSettings.dockTabPosition);
+    mUiSettings.fontFamily         = jsonToString(ui.value(QStringLiteral("font-family")), mUiSettings.fontFamily);
+    mUiSettings.fontPointSize      = jsonToDouble(ui.value(QStringLiteral("font-point-size")), mUiSettings.fontPointSize);
+    mUiSettings.saveUiStateOnClose = jsonToBool(ui.value(QStringLiteral("save-ui-state-on-close")), mUiSettings.saveUiStateOnClose);
+    mUiSettings.undoStackLimit     = jsonToInt(ui.value(QStringLiteral("undo-stack-limit")), mUiSettings.undoStackLimit);
+
+    const QJsonObject logObj = root.value(QStringLiteral("log")).toObject();
+    mLogSettings.level         = logLevelFromValue(logObj.value(QStringLiteral("level")), mLogSettings.level);
+    mLogSettings.queueLevel    = logLevelFromValue(logObj.value(QStringLiteral("queue-level")), mLogSettings.queueLevel);
+    mLogSettings.outputStdout  = jsonToBool(logObj.value(QStringLiteral("output-stdout")), mLogSettings.outputStdout);
+    mLogSettings.rotationMode  = rotationModeFromValue(logObj.value(QStringLiteral("rotation-mode")), mLogSettings.rotationMode);
+    mLogSettings.maxSizeBytes  = jsonToInt64(logObj.value(QStringLiteral("max-size-bytes")), mLogSettings.maxSizeBytes);
+    mLogSettings.maxFiles      = jsonToInt(logObj.value(QStringLiteral("max-files")), mLogSettings.maxFiles);
+    mLogSettings.showLogNum    = jsonToInt(logObj.value(QStringLiteral("show-log-num")), mLogSettings.showLogNum);
+
+    const QJsonObject python = root.value(QStringLiteral("python")).toObject();
+    mPythonSettings.interpreterPath = jsonToString(python.value(QStringLiteral("interpreter-path")), mPythonSettings.interpreterPath);
+    mPythonSettings.extraPaths      = jsonToStringList(python.value(QStringLiteral("extra-paths")), mPythonSettings.extraPaths);
+
+    const QJsonObject advanced = root.value(QStringLiteral("advanced")).toObject();
+    mAdvancedSettings.recentFilesMax     = jsonToInt(advanced.value(QStringLiteral("recent-files-max")), mAdvancedSettings.recentFilesMax);
+    mAdvancedSettings.dumpRetentionDays  = jsonToInt(advanced.value(QStringLiteral("dump-retention-days")), mAdvancedSettings.dumpRetentionDays);
+    mAdvancedSettings.showSplash         = jsonToBool(advanced.value(QStringLiteral("show-splash")), mAdvancedSettings.showSplash);
+    mAdvancedSettings.autosaveIntervalMin = jsonToInt(advanced.value(QStringLiteral("autosave-interval-min")), mAdvancedSettings.autosaveIntervalMin);
+
+    const QJsonObject script = root.value(QStringLiteral("script")).toObject();
+    mScriptSettings.workspaceDir = jsonToString(script.value(QStringLiteral("workspace-dir")), mScriptSettings.workspaceDir);
+    mScriptSettings.overwritePolicy = overwritePolicyFromValue(script.value(QStringLiteral("workspace-overwrite-policy")),
+                                                              mScriptSettings.overwritePolicy);
+    mScriptSettings.scriptTimeoutSec     = jsonToInt(script.value(QStringLiteral("timeout-sec")), mScriptSettings.scriptTimeoutSec);
+    mScriptSettings.scriptResultMaxChars = jsonToInt(script.value(QStringLiteral("result-max-chars")), mScriptSettings.scriptResultMaxChars);
+}
+
+/**
+ * @brief 从旧版 XML 配置读取（一次性迁移）
+ *
+ * 只处理保留的键；workflow-timeout、plugin-extra-paths、node-script-paths
+ * 已删除，读取时直接忽略。
+ * @param path 旧版配置文件路径
+ * @return 是否成功解析
+ */
+bool DAAppConfig::loadLegacyXml(const QString& path)
+{
+    QFile file(path);
+    if (!file.open(QIODevice::ReadOnly)) {
+        return false;
+    }
+    QString err;
+    QDomDocument doc;
+    if (!doc.setContent(&file, &err)) {
+        daCritical.noquote() << tr("Cannot load config file \"%1\": %2")  // cn:无法加载配置文件\"%1\"，原因是%2
+                                    .arg(path, err);
+        return false;
+    }
+    const QDomElement configs = doc.firstChildElement(QStringLiteral("configs"));
+    if (configs.isNull()) {
+        daWarning.noquote() << tr("Config file (%1) is missing the <configs> tag")  // cn:配置文件(%1)缺失<configs>标签
+                                   .arg(path);
+        return false;
+    }
+    for (QDomElement prop = configs.firstChildElement(QStringLiteral("prop")); !prop.isNull();
+         prop             = prop.nextSiblingElement(QStringLiteral("prop"))) {
+        const QString key          = prop.attribute(QStringLiteral("key"));
+        const QDomElement valueEle = prop.firstChildElement(QStringLiteral("value"));
+        if (key.isEmpty() || valueEle.isNull()) {
+            continue;
         }
-    }
-    // 日志级别与 UI 队列级别
-    DA::DALogger::instance().setLevel(static_cast< DA::DALogLevel >(value(DA_CONFIG_KEY_LOG_LEVEL).toInt()));
-    DA::DALogger::instance().setQueueLevel(static_cast< DA::DALogLevel >(value(DA_CONFIG_KEY_LOG_QUEUE_LEVEL).toInt()));
-    // 日志显示条数
-    bool isOK  = false;
-    int logNum = value(DA_CONFIG_KEY_SHOW_LOG_NUM).toInt(&isOK);
-    if (isOK && logNum > 10 && logNum < 999999) {
-        DA::DAMessageLogQueue::instance().setCapacity(logNum);
-    }
-    // 最近文件最大条目数
-    if (mUI) {
-        DAAppActions* actions = mUI->getAppActions();
-        if (actions && actions->recentFilesManager) {
-            int recentMax = value(DA_CONFIG_KEY_RECENT_FILES_MAX).toInt();
-            if (recentMax > 0) {
-                actions->recentFilesManager->setMaxEntries(recentMax);
-            }
-        }
-    }
-    // 崩溃转储保留天数清理（仅 Windows/MSVC 有效）
-#if defined(Q_OS_WIN) && defined(Q_CC_MSVC)
-    int dumpDays = value(DA_CONFIG_KEY_DUMP_RETENTION_DAYS).toInt();
-    if (dumpDays > 0) {
-        DA::DADumpCapture::cleanupOldDumps(dumpDays);
-    }
-#endif
-    // 自动保存间隔（0=禁用）
-    if (mMainWindow) {
-        int autosaveMin = value(DA_CONFIG_KEY_AUTOSAVE_INTERVAL).toInt();
-        mMainWindow->setupAutosaveTimer(autosaveMin);
-    }
-    // 脚本执行引擎参数（立即生效；workspace-dir 在下次打开工程时生效）
-    DAPyScriptRunner::setScriptTimeout(value(DA_CONFIG_KEY_SCRIPT_TIMEOUT).toInt());
-    DAPyScriptRunner::setResultMaxChars(value(DA_CONFIG_KEY_SCRIPT_RESULT_MAX_CHARS).toInt());
-    // 操作窗口内部标签页（工作流页/图表/数据表）方位（立即生效，仅影响嵌套停靠区，外层 dock 区域保持默认）
-    if (mUI) {
-        DAAppDockingArea* dockArea = mUI->getAppDockingArea();
-        if (dockArea) {
-            const bool tabsAtBottom = value(DA_CONFIG_KEY_DOCK_TAB_POSITION).toString() != QLatin1String("top");
-            if (DAPyWorkFlowOperateWidget* wfo = dockArea->getWorkFlowOperateWidget()) {
-                wfo->setInnerDockTabsAtBottom(tabsAtBottom);
-            }
-            if (DAChartOperateWidget* chartOw = dockArea->getChartOperateWidget()) {
-                chartOw->setInnerDockTabsAtBottom(tabsAtBottom);
-            }
-            if (DADataOperateWidget* dataOw = dockArea->getDataOperateWidget()) {
-                dataOw->setInnerDockTabsAtBottom(tabsAtBottom);
-            }
-        }
-    }
-    // 撤销栈深度（005 T1.21 R19）：施加到已打开的数据页撤销栈 + 同步历史面板 SpinBox；
-    // 新建页面在 DAAppController::onDataOperatePageCreated 里读取同一配置施加
-    {
-        bool limitOk   = false;
-        const int undoStackLimit = value(DA_CONFIG_KEY_UNDO_STACK_LIMIT).toInt(&limitOk);
-        if (limitOk && undoStackLimit >= 0 && mUI) {
-            if (DAAppDockingArea* dockArea = mUI->getAppDockingArea()) {
-                if (DADataOperateWidget* dataOw = dockArea->getDataOperateWidget()) {
-                    const auto pages = dataOw->getAllDataFrameWidgets();
-                    for (DADataOperateOfDataFrameWidget* page : pages) {
-                        page->setUndoLimit(undoStackLimit);
-                    }
-                }
-                if (DAUndoHistoryWidget* uh = dockArea->getUndoHistoryWidget()) {
-                    uh->setUndoLimit(undoStackLimit > 0 ? undoStackLimit : 20);
-                }
-            }
-        }
-    }
-    // 退出时是否保存ui的状态
-    bool isSaveUIState = value(DA_CONFIG_KEY_SAVE_UI_STATE_ON_CLOSE).toBool();
-    if (mMainWindow) {
-        mMainWindow->setSaveUIStateOnClose(isSaveUIState);
+        applyLegacyProp(key, valueEle);
     }
     return true;
 }
 
-}  // end da
+/**
+ * @brief 把旧版 XML 的一个键值对写入对应字段
+ * @param key 旧版键名
+ * @param valueElement 旧版 <value> 节点
+ */
+void DAAppConfig::applyLegacyProp(const QString& key, const QDomElement& valueElement)
+{
+    const QString text = valueElement.text().trimmed();
+    if (key == QLatin1String("ribbon-style")) {
+        mUiSettings.ribbonStyle = text.toInt();
+    } else if (key == QLatin1String("ribbon-theme")) {
+        mUiSettings.ribbonTheme = text.toInt();
+    } else if (key == QLatin1String("language")) {
+        mUiSettings.language = text;
+    } else if (key == QLatin1String("dock-tab-position")) {
+        mUiSettings.dockTabPosition = tabPositionFromValue(QJsonValue(text), mUiSettings.dockTabPosition);
+    } else if (key == QLatin1String("app-font-family")) {
+        mUiSettings.fontFamily = text;
+    } else if (key == QLatin1String("app-font-size")) {
+        mUiSettings.fontPointSize = text.toDouble();
+    } else if (key == QLatin1String("save-ui-state-on-close")) {
+        mUiSettings.saveUiStateOnClose = xmlTextToBool(text, mUiSettings.saveUiStateOnClose);
+    } else if (key == QLatin1String("undo-stack-limit")) {
+        mUiSettings.undoStackLimit = text.toInt();
+    } else if (key == QLatin1String("python-interpreter-path")) {
+        mPythonSettings.interpreterPath = text;
+    } else if (key == QLatin1String("python-extra-paths")) {
+        QStringList paths;
+        for (QDomElement r = valueElement.firstChildElement(QStringLiteral("r")); !r.isNull();
+             r             = r.nextSiblingElement(QStringLiteral("r"))) {
+            const QString p = r.text().trimmed();
+            if (!p.isEmpty()) {
+                paths << p;
+            }
+        }
+        mPythonSettings.extraPaths = paths;
+    } else if (key == QLatin1String("log-level")) {
+        mLogSettings.level = static_cast< DALogLevel >(text.toInt());
+    } else if (key == QLatin1String("log-queue-level")) {
+        mLogSettings.queueLevel = static_cast< DALogLevel >(text.toInt());
+    } else if (key == QLatin1String("log-output-stdout")) {
+        mLogSettings.outputStdout = xmlTextToBool(text, mLogSettings.outputStdout);
+    } else if (key == QLatin1String("log-rotation-mode")) {
+        mLogSettings.rotationMode = static_cast< DALogRotationMode >(text.toInt());
+    } else if (key == QLatin1String("log-max-size")) {
+        mLogSettings.maxSizeBytes = text.toLongLong();
+    } else if (key == QLatin1String("log-max-files")) {
+        mLogSettings.maxFiles = text.toInt();
+    } else if (key == QLatin1String("show-log-num")) {
+        mLogSettings.showLogNum = text.toInt();
+    } else if (key == QLatin1String("recent-files-max")) {
+        mAdvancedSettings.recentFilesMax = text.toInt();
+    } else if (key == QLatin1String("dump-retention-days")) {
+        mAdvancedSettings.dumpRetentionDays = text.toInt();
+    } else if (key == QLatin1String("show-splash")) {
+        mAdvancedSettings.showSplash = xmlTextToBool(text, mAdvancedSettings.showSplash);
+    } else if (key == QLatin1String("autosave-interval")) {
+        mAdvancedSettings.autosaveIntervalMin = text.toInt();
+    } else if (key == QLatin1String("workspace-dir")) {
+        mScriptSettings.workspaceDir = text;
+    } else if (key == QLatin1String("workspace-overwrite-policy")) {
+        mScriptSettings.overwritePolicy = overwritePolicyFromValue(QJsonValue(text), mScriptSettings.overwritePolicy);
+    } else if (key == QLatin1String("script-timeout")) {
+        mScriptSettings.scriptTimeoutSec = text.toInt();
+    } else if (key == QLatin1String("script-result-max-chars")) {
+        mScriptSettings.scriptResultMaxChars = text.toInt();
+    }
+    // 其余键（含已删除的 workflow-timeout / plugin-extra-paths / node-script-paths）忽略
+}
+
+}  // namespace DA

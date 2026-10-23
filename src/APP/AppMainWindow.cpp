@@ -46,6 +46,7 @@
 #include "DALogCategory.h"
 #include "DAShortcutManager.h"
 #include "DAAppShortcutSetup.h"
+#include "DAAppConfigApplier.h"
 // Qt-Advanced-Docking-System
 #include "DockManager.h"
 
@@ -55,8 +56,10 @@ namespace DA
 //===================================================
 // AppMainWindow
 //===================================================
-AppMainWindow::AppMainWindow(QWidget* parent) : SARibbonMainWindow(parent)
+AppMainWindow::AppMainWindow(DAAppConfig* config, QWidget* parent)
+    : SARibbonMainWindow(parent), mConfig(config)
 {
+    Q_CHECK_PTR(mConfig);
     // 查找活动的启动画面并更新消息的辅助函数
     auto updateSplash = [](const QString& msg) {
         const QWidgetList widgets = QApplication::topLevelWidgets();
@@ -96,6 +99,7 @@ AppMainWindow::AppMainWindow(QWidget* parent) : SARibbonMainWindow(parent)
         .setAppDockingArea(mUI->getAppDockingArea())  // dock
         .setAppRibbonArea(mUI->getAppRibbonArea())    // ribbon
         ;
+    mController->setConfig(mConfig);
     mController->initialize();
     ribbonBar()->setContentsMargins(3, 0, 3, 0);
     // 快照前先应用 CompactTwoRow 样式（无状态文件时的实际样式），
@@ -161,7 +165,7 @@ void AppMainWindow::closeEvent(QCloseEvent* e)
     }
     // 退出时持久化应用配置（保证非设置对话框触发的改动也能保存）
     if (mConfig) {
-        mConfig->saveConfig();
+        mConfig->save();
     }
     DAAppCloseAction closeAction = DAAppCloseAction::CloseDirectly;
     if (mController->isDirty()) {
@@ -210,17 +214,18 @@ void AppMainWindow::closeEvent(QCloseEvent* e)
 
 void AppMainWindow::init()
 {
-    // 初始化配置文件，这个要在所有之前
-    initConfig();
     // 初始化图元工厂
     DAGraphicsItemFactory::initialization();
     // 先初始化插件
     initPlugins();
     // 初始化工作流的节点
     initWorkflowNodes();
-    // 应用所有配置
-    mConfig->loadConfig();
-    mConfig->apply();
+    // 应用所有配置（配置对象由 main() 创建并已加载）
+    applyAllAppSettings(*mConfig, mCore);
+    // 分节变更后立即热应用（设置页写回、控制器写回都会触发）
+    connect(mConfig, &DAAppConfig::sectionChanged, this, [this](DAAppConfig::Section section) {
+        applyAppSettings(*mConfig, mCore, section);
+    });
     // 快捷键：注册主界面与工作流编辑器的命令，加载用户自定义（shortcuts.json）并立即应用
     DAShortcutManager* shortcutMgr = mCore->getShortcutManager();
     if (shortcutMgr) {
@@ -277,12 +282,6 @@ void AppMainWindow::initWorkflowNodes()
     }
 }
 
-void AppMainWindow::initConfig()
-{
-    mConfig = std::make_unique< DAAppConfig >();
-    mConfig->setCore(mCore);
-}
-
 void AppMainWindow::onWorkflowFinished(bool success)
 {
     if (success) {
@@ -294,7 +293,7 @@ void AppMainWindow::onWorkflowFinished(bool success)
 
 void AppMainWindow::onConfigNeedSave()
 {
-    mConfig->saveConfig();
+    mConfig->save();
 }
 
 bool AppMainWindow::isSaveUIStateOnClose() const
@@ -368,7 +367,7 @@ DAAppPluginManager* AppMainWindow::getPluginManager() const
 
 DAAppConfig* AppMainWindow::getAppConfig() const
 {
-    return mConfig.get();
+    return mConfig;
 }
 
 /**
@@ -380,7 +379,7 @@ void AppMainWindow::showSettingDialog()
         // 创建设置窗口
         mSettingDialog = new DAAppSettingDialog(this);
         connect(mSettingDialog, &DAAppSettingDialog::needSave, this, &AppMainWindow::onConfigNeedSave);
-        mSettingDialog->buildUI(getAppConfig());
+        mSettingDialog->buildUI(getAppConfig(), mCore);
 
         QList< DAAbstractPlugin* > plugins = mPluginMgr->getAllPlugins();
         for (DAAbstractPlugin* p : std::as_const(plugins)) {

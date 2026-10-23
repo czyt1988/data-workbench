@@ -679,9 +679,8 @@ void DAAppController::initConnection()
             uh->setUndoGroup(&mCommand->undoGroup());
         }
         if (mConfig) {
-            bool limitOk = false;
-            const int cfgLimit = mConfig->value(DA_CONFIG_KEY_UNDO_STACK_LIMIT).toInt(&limitOk);
-            if (limitOk && cfgLimit > 0) {
+            const int cfgLimit = mConfig->ui().undoStackLimit;
+            if (cfgLimit > 0) {
                 uh->setUndoLimit(cfgLimit);
             }
         }
@@ -1573,9 +1572,8 @@ void DAAppController::onDataOperatePageCreated(DADataOperatePageWidget* page)
     // 撤销栈深度从配置施加（005 T1.21 R19：默认 20，历史面板可调大；配置在 APP 侧读写，
     // DAGui 只暴露 undoLimit()/setUndoLimit(int)，严禁反向依赖）
     if (mConfig && page) {
-        bool limitOk = false;
-        const int cfgLimit = mConfig->value(DA_CONFIG_KEY_UNDO_STACK_LIMIT).toInt(&limitOk);
-        if (limitOk && cfgLimit > 0) {
+        const int cfgLimit = mConfig->ui().undoStackLimit;
+        if (cfgLimit > 0) {
             page->setUndoLimit(cfgLimit);
         }
     }
@@ -3997,7 +3995,7 @@ void DAAppController::onActionShowUndoHistoryTriggered()
 /**
  * @brief 历史面板调整撤销深度（005 T1.21 R19）
  *
- * 写回配置（dawork-config.xml，DA_CONFIG_KEY_UNDO_STACK_LIMIT）并施加到全部已打开
+ * 写回配置（dawork-config.json 的 ui.undo-stack-limit）并施加到全部已打开
  * 数据页撤销栈；新建页面在 onDataOperatePageCreated 读同一配置。调大风险只来自
  * Swap 类命令的旧对象驻留内存（快照命令 pickle 到临时文件，吃磁盘不吃内存）。
  * @param limit 新深度（>0；面板 SpinBox 下限 1）
@@ -4008,8 +4006,10 @@ void DAAppController::onUndoHistoryLimitChangeRequested(int limit)
         return;
     }
     if (mConfig) {
-        mConfig->setProperty(DA_CONFIG_KEY_UNDO_STACK_LIMIT, limit);
-        mConfig->saveConfig();
+        DAUISettings s   = mConfig->ui();
+        s.undoStackLimit = limit;
+        mConfig->setUI(s);
+        mConfig->save();
     }
     if (DADataOperateWidget* dow = getDataOperateWidget()) {
         const auto pages = dow->getAllDataFrameWidgets();

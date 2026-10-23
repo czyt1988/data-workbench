@@ -407,7 +407,7 @@ DA_SLOW_LOG_COUNTER(dagui.model.actualData);                        // 高频路
 | `da_log.1.log` ~ `da_log.5.log` | 同上目录 | 轮转历史日志（rotating 模式，默认单文件 10MB，保留 5 个） |
 | `slow.log` | 同上目录 | 慢日志（超阈值操作/事件聚合/主线程卡顿，仅慢日志编译期开启时创建，见[慢日志章节](#慢日志slow-log)） |
 | `da_pyscript.log` | 同上目录 | 嵌入式 Python 脚本输出（工作流节点执行、agent_runner.py 等）；Python 侧慢日志记录也写在这里 |
-| `dawork-config.xml` | `%APPDATA%\DAWorkBench\config\` | DAAppConfig XML 配置（非日志，但常用于诊断持久化问题） |
+| `dawork-config.json` | `%APPDATA%\DAWorkBench\config\` | DAAppConfig JSON 配置（非日志，但常用于诊断持久化问题） |
 | `agent-config.json` | `%APPDATA%\DAWorkBench\config\` | Agent 配置（LLM 连接/运行参数/子 agent/权限标量，分组稀疏 JSON），api_key 为 DPAPI 加密的 base64 字符串；旧版 `agent-config.ini` 首次启动自动迁移并改名 `.bak` |
 | `recent-files.ini` | `%APPDATA%\DAWorkBench\config\` | 最近打开文件列表，QSettings IniFormat |
 
@@ -444,7 +444,7 @@ DA_SLOW_LOG_COUNTER(dagui.model.actualData);                        // 高频路
 | 插件加载失败 | `da_log.log` | `loaded plugin` / `DAPluginManager` / `plugin directory` |
 | 工作流节点执行报错 | `da_pyscript.log` + `da_log.log` | `DAPyWorkFlow` / `NodeDef` / `Traceback` |
 | Agent 对话无响应/报错 | `da_log.log` → `da_pyscript.log` | `DAAgentBridge` / `Agent stderr` / `agent_runner` |
-| 设置不持久化 | `da_log.log` + INI/XML | 相关模块的 `apply` / `saveConfig` 诊断日志；Agent 配置查 `agent-config.json`（旧版残留查 `agent-config.ini.bak`）；最近文件查 `recent-files.ini`；DAAppConfig 查 `dawork-config.xml`；旧版注册表残留查 `reg query "HKCU\Software\DA\DAWorkBench"` |
+| 设置不持久化 | `da_log.log` + INI/XML | 相关模块的 `apply` / `saveConfig` 诊断日志；Agent 配置查 `agent-config.json`（旧版残留查 `agent-config.ini.bak`）；最近文件查 `recent-files.ini`；DAAppConfig 查 `dawork-config.json`；旧版注册表残留查 `reg query "HKCU\Software\DA\DAWorkBench"` |
 | 界面卡顿/操作慢 | `slow.log`（慢日志编译期开启时） | `[slow]` / `tag=<模块前缀>` / `mainloop.stall`；分析方法见[慢日志章节](#慢日志slow-log) |
 | 崩溃转储 | `dumps/dump*.dmp` + `.sysinfo` | dump 文件需用 WinDbg/VS 解析，`.sysinfo` 是文本可直读 |
 
