@@ -1,13 +1,15 @@
 #include "DAChartAddXYSeriesWidget.h"
 #include <QMessageBox>
 #include <QDialog>
-#include "ui_DAChartAddXYSeriesWidget.h"
-#include "DADataManager.h"
-#include "Models/DADataManagerTreeModel.h"
-#include "DALogCategory.h"
-#include "DAChartSeriesPickerWidget.h"
 #include <QHeaderView>
+#include "ui_DAChartAddXYSeriesWidget.h"
+// DA
+#include "DADataManager.h"
+#include "DAAutoincrementSeries.hpp"
+#include "DALogCategory.h"
 #include "Models/DAPySeriesTableModel.h"
+#include "pandas/DAPyDataFrame.h"
+#include "pandas/DAPySeries.h"
 namespace DA
 {
 
@@ -77,15 +79,153 @@ void DAChartAddXYSeriesWidget::setDataManager(DADataManager* dmgr)
 }
 
 /**
- * @brief 根据配置获取数据
- * @return 如果没有符合条件，返回一个empty的vector
+ * @brief 根据配置获取单条点列
+ * @return 失败或没有符合条件时返回空数组
+ * @note 本函数不弹窗、不写界面，失败原因请使用 extractSeries()
  */
 QVector< QPointF > DAChartAddXYSeriesWidget::getSeries() const
 {
-    DAChartAddXYSeriesWidget* that = const_cast< DAChartAddXYSeriesWidget* >(this);
-    QVector< QPointF > xy;
-    that->getToVectorPointFFromUI(xy);
-    return xy;
+    return extractSeries().points;
+}
+
+/**
+ * @brief 提取单条 xy 序列
+ * @return 点列与失败原因
+ */
+DAChartSeriesResult DAChartAddXYSeriesWidget::extractSeries() const
+{
+    DAChartXYSeriesSpec spec;
+    DAChartSeriesDataError error;
+    if (!buildSeriesSpec(spec, error)) {
+        DAChartSeriesResult res;
+        res.error = error;
+        return res;
+    }
+    return extractXYSeries(spec);
+}
+
+/**
+ * @brief 提取多条 xy 序列（1 个 x + 多个 y）
+ * @return 点列、命名与失败原因
+ */
+DAChartMultiSeriesResult DAChartAddXYSeriesWidget::extractMultiSeries() const
+{
+    DAChartXYSeriesSpec spec;
+    DAChartSeriesDataError error;
+    if (!buildSeriesSpec(spec, error)) {
+        DAChartMultiSeriesResult res;
+        res.error = error;
+        return res;
+    }
+    return extractMultiXYSeries(spec);
+}
+
+/**
+ * @brief 从界面收集取数输入
+ * @param spec 输出：取数输入
+ * @param error 输出：自增数值解析失败时的失败原因
+ * @return 输入完整且合法返回 true
+ */
+bool DAChartAddXYSeriesWidget::buildSeriesSpec(DAChartXYSeriesSpec& spec, DAChartSeriesDataError& error) const
+{
+    spec = DAChartXYSeriesSpec();
+    spec.xAutoincrement = isXAutoincrement();
+    spec.yAutoincrement = isYAutoincrement();
+    if (spec.xAutoincrement && spec.yAutoincrement) {
+        error.code = DAChartSeriesDataError::BothAutoincrement;
+        return false;
+    }
+    const QPair< DAData, QString > x = getX();
+    spec.xData                       = x.first;
+    spec.xColumn                     = x.second;
+    if (!spec.yAutoincrement) {
+        spec.ySeries = getYList();
+    }
+    bool isOK = false;
+    if (spec.xAutoincrement) {
+        spec.xBase = ui->lineEditXInitValue->text().toDouble(&isOK);
+        if (!isOK) {
+            error.code = DAChartSeriesDataError::InvalidXInitialValue;
+            return false;
+        }
+        spec.xStep = ui->lineEditXStepValue->text().toDouble(&isOK);
+        if (!isOK) {
+            error.code = DAChartSeriesDataError::InvalidXStepValue;
+            return false;
+        }
+    }
+    if (spec.yAutoincrement) {
+        spec.yBase = ui->lineEditYInitValue->text().toDouble(&isOK);
+        if (!isOK) {
+            error.code = DAChartSeriesDataError::InvalidYInitialValue;
+            return false;
+        }
+        spec.yStep = ui->lineEditYStepValue->text().toDouble(&isOK);
+        if (!isOK) {
+            error.code = DAChartSeriesDataError::InvalidYStepValue;
+            return false;
+        }
+    }
+    return true;
+}
+
+/**
+ * @brief 把取数失败原因翻译成界面文案
+ * @param error 失败原因
+ * @return 已翻译的提示文本，没有错误时返回空串
+ */
+QString DAChartAddXYSeriesWidget::describeSeriesError(const DAChartSeriesDataError& error) const
+{
+    switch (error.code) {
+    case DAChartSeriesDataError::NoError:
+        return QString();
+    case DAChartSeriesDataError::BothAutoincrement:
+        return tr("x and y cannot be set to autoincrement at the same time");  // cn:x和y无法同时设置为自增
+    case DAChartSeriesDataError::InvalidXInitialValue:
+        return tr("The initial value of x auto increment series "
+                  "must be a floating-point arithmetic number");  // cn:x自增序列的初始值必须为浮点数
+    case DAChartSeriesDataError::InvalidXStepValue:
+        return tr("The step value of x auto increment series "
+                  "must be a floating-point arithmetic number");  // cn:x自增序列的步长必须为浮点数
+    case DAChartSeriesDataError::InvalidYInitialValue:
+        return tr("The initial value of y auto increment series "
+                  "must be a floating-point arithmetic number");  // cn:y自增序列的初始值必须为浮点数
+    case DAChartSeriesDataError::InvalidYStepValue:
+        return tr("The step value of y auto increment series "
+                  "must be a floating-point arithmetic number");  // cn:y自增序列的步长必须为浮点数
+    case DAChartSeriesDataError::LengthMismatch:
+        return tr("The length of y series '%1' (%2) does not match the length of x series "
+                  "'%3' (%4). All y series must have the same length as x")
+            .arg(error.seriesName)
+            .arg(error.seriesSize)
+            .arg(error.xSeriesName)
+            .arg(error.xSize);  // cn:y序列'%1'的长度(%2)与x序列'%3'的长度(%4)不一致，所有y序列的长度必须与x一致
+    case DAChartSeriesDataError::ConversionFailed:
+        return tr("Exception occurred during extracting from "
+                  "pandas.Series to double vector");  // cn:从 pandas.Series 提取为 double vector 过程中出现异常
+    case DAChartSeriesDataError::NoXSeries:
+    case DAChartSeriesDataError::NoYSeries:
+    case DAChartSeriesDataError::SeriesNotConvertible:
+        return tr("The None value cannot be converted to a series");  // cn:None值无法转换为序列
+    }
+    return QString();
+}
+
+/**
+ * @brief 弹出取数失败警告
+ * @param error 失败原因
+ * @note 转换类失败同时写一条 daCritical 日志，便于排查具体异常
+ */
+void DAChartAddXYSeriesWidget::warnSeriesError(const DAChartSeriesDataError& error)
+{
+    if (DAChartSeriesDataError::ConversionFailed == error.code) {
+        daCritical << tr("Exception occurred during extracting from "
+                         "pandas.Series to double vector:%1")
+                          .arg(error.detail);  // cn:从 pandas.Series 提取为 double vector 过程中出现异常：%1
+    }
+    QMessageBox::warning(this,
+                         tr("Warning"),  // cn:警告
+                         describeSeriesError(error));
 }
 
 /**
@@ -262,192 +402,12 @@ void DAChartAddXYSeriesWidget::showParentGuideDialog()
 }
 
 /**
- * @brief 获取x自增
- * @param v
- * @return 成功返回true
- * @note 注意此函数失败会有警告对话框
- */
-bool DAChartAddXYSeriesWidget::getXAutoIncFromUI(DAAutoincrementSeries< double >& v)
-{
-    bool isOK   = false;
-    double base = ui->lineEditXInitValue->text().toDouble(&isOK);
-    if (!isOK) {
-        QMessageBox::warning(
-            this,
-            tr("Warning"),                                                                                 // cn:警告
-            tr("The initial value of x auto increment series must be a floating-point arithmetic number")  // cn:x自增序列的初始值必须为浮点数
-        );
-        return false;
-    }
-    double step = ui->lineEditXStepValue->text().toDouble(&isOK);
-    if (!isOK) {
-        QMessageBox::warning(this,
-                             tr("Warning"),  // cn:警告
-                             tr("The step value of x auto increment series "
-                                "must be a floating-point arithmetic number")  // cn:x自增序列的步长必须为浮点数
-        );
-        return false;
-    }
-    v.setBaseValue(base);
-    v.setStepValue(step);
-    return true;
-}
-
-/**
- * @brief 获取y自增
- * @param v
- * @return 成功返回true
- * @note 注意此函数失败会有警告对话框
- */
-bool DAChartAddXYSeriesWidget::getYAutoIncFromUI(DAAutoincrementSeries< double >& v)
-{
-    bool isOK   = false;
-    double base = ui->lineEditYInitValue->text().toDouble(&isOK);
-    if (!isOK) {
-        QMessageBox::warning(this,
-                             tr("Warning"),  // cn:警告
-                             tr("The initial value of y auto increment series "
-                                "must be a floating-point arithmetic number")  // cn:y自增序列的初始值必须为浮点数
-        );
-        return false;
-    }
-    double step = ui->lineEditYStepValue->text().toDouble(&isOK);
-    if (!isOK) {
-        QMessageBox::warning(this,
-                             tr("Warning"),  // cn:警告
-                             tr("The step value of y auto increment series "
-                                "must be a floating-point arithmetic number")  // cn:y自增序列的步长必须为浮点数
-        );
-        return false;
-    }
-    v.setBaseValue(base);
-    v.setStepValue(step);
-    return true;
-}
-
-/**
- * @brief 获取点序列
- * @param res
- * @return
- * @note 注意此函数失败会有警告对话框
- */
-bool DAChartAddXYSeriesWidget::getToVectorPointFFromUI(QVector< QPointF >& res)
-{
-    bool isXAuto = ui->groupBoxXAutoincrement->isChecked();
-    bool isYAuto = ui->groupBoxYAutoincrement->isChecked();
-    if (isXAuto && isYAuto) {
-        QMessageBox::warning(this,
-                             tr("Warning"),                                                 // cn:警告
-                             tr("x and y cannot be set to autoincrement at the same time")  // cn:x和y无法同时设置为自增
-        );
-        return false;
-    }
-    if (isXAuto) {  // 不存在同时，因此这个就是x自增
-        DAAutoincrementSeries< double > xinc;
-        if (!getXAutoIncFromUI(xinc)) {
-            return false;
-        }
-        DAPySeries y = getYSeries();
-        if (y.isNone()) {
-            QMessageBox::warning(this,
-                                 tr("Warning"),                                          // cn:警告
-                                 tr("The None value cannot be converted to a series"));  // cn:None值无法转换为序列
-            return false;
-        }
-        const int s = static_cast< int >(y.size());
-        try {
-            std::vector< double > vy;
-            vy.reserve(y.size());
-            y.castTo< double >(std::back_inserter(vy));
-            res.resize(static_cast< int >(s));
-            for (int i = 0; i < s; ++i) {
-                res[ i ].setX(xinc[ i ]);
-                res[ i ].setY(vy[ i ]);
-            }
-        } catch (const std::exception& e) {
-            daCritical << tr("Exception occurred during extracting from "
-                             "pandas.Series to double vector:%1")
-                              .arg(e.what());  // cn:从 pandas.Series 提取为 double vector 过程中出现异常：%1
-            QMessageBox::warning(this,
-                                 tr("Warning"),  // cn:警告
-                                 tr("Exception occurred during extracting from "
-                                    "pandas.Series to double vector"));  // cn:从 pandas.Series 提取为 double vector 过程中出现异常
-
-            return false;
-        }
-    } else if (isYAuto) {
-        DAAutoincrementSeries< double > yinc;
-        if (!getYAutoIncFromUI(yinc)) {
-            return false;
-        }
-        DAPySeries x = getXSeries();
-        if (x.isNone()) {
-            QMessageBox::warning(this,
-                                 tr("Warning"),                                          // cn:警告
-                                 tr("The None value cannot be converted to a series"));  // cn:None值无法转换为序列
-            return false;
-        }
-        std::size_t s = x.size();
-        try {
-            std::vector< double > vx;
-            vx.reserve(x.size());
-            x.castTo< double >(std::back_inserter(vx));
-            res.resize(static_cast< int >(s));
-            for (auto i = 0; i < s; ++i) {
-                res[ i ].setX(vx[ i ]);
-                res[ i ].setY(yinc[ i ]);
-            }
-        } catch (const std::exception& e) {
-            daCritical << tr("Exception occurred during extracting from "
-                             "pandas.Series to double vector:%1")
-                              .arg(e.what());  // cn:从 pandas.Series 提取为 double vector 过程中出现异常：%1
-            QMessageBox::warning(this,
-                                 tr("Warning"),  // cn:警告
-                                 tr("Exception occurred during extracting from "
-                                    "pandas.Series to double vector"));  // cn:从 pandas.Series 提取为 double vector 过程中出现异常
-
-            return false;
-        }
-    } else {
-        DAPySeries x = getXSeries();
-        DAPySeries y = getYSeries();
-        if (x.isNone() || y.isNone()) {
-            QMessageBox::warning(this,
-                                 tr("Warning"),                                          // cn:警告
-                                 tr("The None value cannot be converted to a series"));  // cn:None值无法转换为序列
-            return false;
-        }
-        std::size_t s = std::min(x.size(), y.size());
-        if (0 == s) {
-            return true;
-        }
-        try {
-            std::vector< qreal > vx, vy;
-            vx.reserve(x.size());
-            vy.reserve(y.size());
-            x.castTo< qreal >(std::back_inserter(vx));
-            y.castTo< qreal >(std::back_inserter(vy));
-            res.resize(static_cast< int >(s));
-            for (auto i = 0; i < s; ++i) {
-                res[ i ].setX(vx[ i ]);
-                res[ i ].setY(vy[ i ]);
-            }
-        } catch (const std::exception& e) {
-            daCritical << tr("Exception occurred during extracting from pandas.Series to double vector:%1")
-                              .arg(e.what());  // cn:从 pandas.Series 提取为 double vector 过程中出现异常：%1
-            return false;
-        }
-    }
-    return true;
-}
-
-/**
- * @brief 尝试获取x值得自增内容
+ * @brief 尝试获取x值的自增内容
  * @param base
  * @param step
  * @return
  */
-bool DAChartAddXYSeriesWidget::tryGetXSelfInc(double& base, double& step)
+bool DAChartAddXYSeriesWidget::tryGetXSelfInc(double& base, double& step) const
 {
     bool isOK = false;
     double a  = ui->lineEditXInitValue->text().toDouble(&isOK);
@@ -464,12 +424,12 @@ bool DAChartAddXYSeriesWidget::tryGetXSelfInc(double& base, double& step)
 }
 
 /**
- * @brief 尝试获取y值得自增内容
+ * @brief 尝试获取y值的自增内容
  * @param base
  * @param step
  * @return
  */
-bool DAChartAddXYSeriesWidget::tryGetYSelfInc(double& base, double& step)
+bool DAChartAddXYSeriesWidget::tryGetYSelfInc(double& base, double& step) const
 {
     bool isOK = false;
     double a  = ui->lineEditYInitValue->text().toDouble(&isOK);
@@ -601,163 +561,6 @@ QList< DAPySeries > DAChartAddXYSeriesWidget::getYSeriesList() const
 }
 
 /**
- * @brief 批量获取多条 xy 序列（1 个 x + 多个 y）
- *
- * 每条 y 与 x 组成一组点列；x 为实际序列时要求所有 y 长度与 x 一致，
- * 不一致弹警告并返回 false。y 自增时长度取 x 长度。
- * @param res 输出：每组点列（与 y 一一对应）
- * @param names 输出：每条曲线的命名（y 列名，自增时为 "y"）
- * @return 成功返回 true；无数据返回 false（无警告框）
- */
-bool DAChartAddXYSeriesWidget::getMultiSeries(QList< QVector< QPointF > >& res, QStringList& names) const
-{
-    res.clear();
-    names.clear();
-    const bool isXAuto = ui->groupBoxXAutoincrement->isChecked();
-    const bool isYAuto = ui->groupBoxYAutoincrement->isChecked();
-    DAChartAddXYSeriesWidget* that = const_cast< DAChartAddXYSeriesWidget* >(this);
-    if (isXAuto && isYAuto) {
-        QMessageBox::warning(that,
-                             tr("Warning"),                                                 // cn:警告
-                             tr("x and y cannot be set to autoincrement at the same time")  // cn:x和y无法同时设置为自增
-        );
-        return false;
-    }
-    const QList< QPair< DAData, QString > > ys = getYList();
-    if (!isYAuto && ys.isEmpty()) {
-        return false;
-    }
-    // x 数据
-    DAAutoincrementSeries< double > xinc;
-    std::vector< double > vx;
-    std::size_t xSize = 0;
-    if (isXAuto) {
-        if (!that->getXAutoIncFromUI(xinc)) {
-            return false;
-        }
-    } else {
-        DAPySeries x = getXSeries();
-        if (x.isNone()) {
-            QMessageBox::warning(that,
-                                 tr("Warning"),                                          // cn:警告
-                                 tr("The None value cannot be converted to a series"));  // cn:None值无法转换为序列
-            return false;
-        }
-        try {
-            vx.reserve(x.size());
-            x.castTo< double >(std::back_inserter(vx));
-            xSize = vx.size();
-        } catch (const std::exception& e) {
-            daCritical << tr("Exception occurred during extracting from pandas.Series to double vector:%1")
-                              .arg(e.what());  // cn:从 pandas.Series 提取为 double vector 过程中出现异常：%1
-            QMessageBox::warning(that,
-                                 tr("Warning"),  // cn:警告
-                                 tr("Exception occurred during extracting from "
-                                    "pandas.Series to double vector"));  // cn:从 pandas.Series 提取为 double vector 过程中出现异常
-            return false;
-        }
-    }
-    // y 自增：一条曲线，长度同 x
-    if (isYAuto) {
-        DAAutoincrementSeries< double > yinc;
-        if (!that->getYAutoIncFromUI(yinc)) {
-            return false;
-        }
-        const std::size_t s = xSize;  // x/y 无法同时自增，此处 x 一定非自增
-        QVector< QPointF > xy(static_cast< int >(s));
-        for (std::size_t i = 0; i < s; ++i) {
-            xy[ static_cast< int >(i) ].setX(vx[ i ]);
-            xy[ static_cast< int >(i) ].setY(yinc[ static_cast< int >(i) ]);
-        }
-        res.append(xy);
-        names.append(QStringLiteral("y"));
-        return true;
-    }
-    // 逐条 y 生成
-    for (const auto& yp : ys) {
-        if (yp.first.isNull()) {
-            QMessageBox::warning(that,
-                                 tr("Warning"),                                          // cn:警告
-                                 tr("The None value cannot be converted to a series"));  // cn:None值无法转换为序列
-            return false;
-        }
-        DAPyDataFrame df = yp.first.toDataFrame();
-        if (df.isNone()) {
-            QMessageBox::warning(that,
-                                 tr("Warning"),                                          // cn:警告
-                                 tr("The None value cannot be converted to a series"));  // cn:None值无法转换为序列
-            return false;
-        }
-        DAPySeries y = df[ yp.second ];
-        if (y.isNone()) {
-            QMessageBox::warning(that,
-                                 tr("Warning"),                                          // cn:警告
-                                 tr("The None value cannot be converted to a series"));  // cn:None值无法转换为序列
-            return false;
-        }
-        if (isXAuto) {
-            // x 自增：长度按 y
-            const int s = static_cast< int >(y.size());
-            try {
-                QVector< QPointF > xy(s);
-                std::vector< double > vy;
-                vy.reserve(y.size());
-                y.castTo< double >(std::back_inserter(vy));
-                for (int i = 0; i < s; ++i) {
-                    xy[ i ].setX(xinc[ i ]);
-                    xy[ i ].setY(vy[ static_cast< std::size_t >(i) ]);
-                }
-                res.append(xy);
-                names.append(yp.second);
-            } catch (const std::exception& e) {
-                daCritical << tr("Exception occurred during extracting from pandas.Series to double vector:%1")
-                                  .arg(e.what());  // cn:从 pandas.Series 提取为 double vector 过程中出现异常：%1
-                QMessageBox::warning(that,
-                                     tr("Warning"),  // cn:警告
-                                     tr("Exception occurred during extracting from "
-                                        "pandas.Series to double vector"));  // cn:从 pandas.Series 提取为 double vector 过程中出现异常
-                return false;
-            }
-        } else {
-            // x 为实际序列：y 长度必须与 x 一致
-            if (y.size() != xSize) {
-                QMessageBox::warning(that,
-                                     tr("Warning"),  // cn:警告
-                                     tr("The length of y series '%1' (%2) does not match the length of x series "
-                                        "'%3' (%4). All y series must have the same length as x")
-                                         .arg(yp.second)
-                                         .arg(static_cast< qulonglong >(y.size()))
-                                         .arg(getX().second)
-                                         .arg(static_cast< qulonglong >(xSize))  // cn:y序列'%1'的长度(%2)与x序列'%3'的长度(%4)不一致，所有y序列的长度必须与x一致
-                );
-                return false;
-            }
-            try {
-                QVector< QPointF > xy(static_cast< int >(xSize));
-                std::vector< double > vy;
-                vy.reserve(y.size());
-                y.castTo< double >(std::back_inserter(vy));
-                for (std::size_t i = 0; i < xSize; ++i) {
-                    xy[ static_cast< int >(i) ].setX(vx[ i ]);
-                    xy[ static_cast< int >(i) ].setY(vy[ i ]);
-                }
-                res.append(xy);
-                names.append(yp.second);
-            } catch (const std::exception& e) {
-                daCritical << tr("Exception occurred during extracting from pandas.Series to double vector:%1")
-                                  .arg(e.what());  // cn:从 pandas.Series 提取为 double vector 过程中出现异常：%1
-                QMessageBox::warning(that,
-                                     tr("Warning"),  // cn:警告
-                                     tr("Exception occurred during extracting from "
-                                        "pandas.Series to double vector"));  // cn:从 pandas.Series 提取为 double vector 过程中出现异常
-                return false;
-            }
-        }
-    }
-    return true;
-}
-
-/**
  * @brief 坐标轴标题推荐
  *
  * x 轴：选了 x 序列用其列名，x 自增时为 "x"；
@@ -783,4 +586,3 @@ bool DAChartAddXYSeriesWidget::getAxisTitleHint(QString& xTitle, QString& yTitle
 }
 
 }
-
