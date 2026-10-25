@@ -1,4 +1,4 @@
-﻿# DESIGN.md — data-workbench 统一视觉设计规范
+# DESIGN.md — data-workbench 统一视觉设计规范
 
 > **本文档是 data-workbench 全部视觉表现的唯一权威规范**，统一两件事：
 >
