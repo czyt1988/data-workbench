@@ -65,6 +65,7 @@ set(DA_LIB_HEADER_FILES
     DAPropertyPanelWidget.h
     DASettingDialog.h
     DASettingWidget.h
+    DASpinBoxStyle.h
     DATableCellStyle.h
     DATableDisplayFormat.h
     DATableDisplayFormatComboBox.h
@@ -138,6 +139,7 @@ set(DA_LIB_SOURCE_FILES
     DAPropertyPanelWidget.cpp
     DASettingDialog.cpp
     DASettingWidget.cpp
+    DASpinBoxStyle.cpp
     DATableCellStyle.cpp
     DATableDisplayFormat.cpp
     DATableDisplayFormatComboBox.cpp

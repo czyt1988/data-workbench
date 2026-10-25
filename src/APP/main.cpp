@@ -30,6 +30,7 @@
 #include "DACoreInterface.h"
 #include "DAAbstractArchiveTask.h"
 #include "DASplashScreen.h"
+#include "DASpinBoxStyle.h"
 #include "SettingPages/DAAppConfig.h"
 #include "DAPybind11InQt.h"
 #include "DAPyInterpreter.h"
@@ -139,6 +140,9 @@ int main(int argc, char* argv[])
     enableHDPIScaling();
     // 启动app（通用应用类：慢日志事件循环计时 + 主线程卡顿看门狗，见 DAApplication）
     DA::DAApplication app(argc, argv);
+    // Windows 11 平台样式把 SpinBox 上下按钮画成左右并排，而 SARibbon 主题 QSS
+    // 会把 SpinBox 尺寸压到数值区不可见；安装代理样式统一修正
+    DA::DASpinBoxStyle::install();
     DA::DAApplication::setApplicationVersion(DA_VERSION);
     DA::DAApplication::setApplicationName(DA_PROJECT_NAME);
     // 设置 organizationName:保留以兼容第三方库(如 SARibbon)内部 QSettings 两参数构造。
