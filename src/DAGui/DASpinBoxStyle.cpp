@@ -9,11 +9,6 @@
 
 namespace DA
 {
-namespace
-{
-// 数值样本覆盖符号位与常见量级，保证最小宽度不随当前值跳动
-const char* const kNumberSample = "-99999";
-}  // namespace
 
 /**
  * @brief 构造代理样式
@@ -31,10 +26,9 @@ DASpinBoxStyle::~DASpinBoxStyle() = default;
 /**
  * @brief 安装到应用
  *
- * 所有平台样式都需要本类：windows11 的上下按钮是左右并排（需要重排为竖排），
- * 而任何样式在窗口挂上 QSS 后都会由 QStyleSheetStyle 计算 SpinBox 尺寸，把
- * 数值区压到不足 4px（需要补最小宽度）。子控件重排只在基础样式确实左右并排时
- * 生效，其它样式保持原生矩形。
+ * 任何样式在窗口挂上 QSS 后（SARibbon 主题必然挂）都会由 QStyleSheetStyle 计算
+ * SpinBox 尺寸，把数值区压到不足 4px，因此所有平台样式都需要补最小宽度。按钮
+ * 布局保持平台原生（Windows 11 的左右按钮点击区域比竖排更大）。
  *
  * 基础样式重新创建为独立实例：QApplication::setStyle 会释放旧样式，不能复用
  * QApplication::style() 返回的指针。
@@ -60,70 +54,11 @@ bool DASpinBoxStyle::install()
 }
 
 /**
- * @brief 计算 SpinBox 各子控件矩形
- *
- * 基础样式的上下按钮左右并排时，把按钮列改到数值区右侧并上下平分高度，数值区
- * 取剩余宽度；按钮本身已是竖排的样式（windowsvista/Fusion 等）保持原生矩形。
- * 箭头绘制仍由基础样式完成，它会通过 proxy()->subControlRect() 取用这里的矩形。
- *
- * @param cc 复杂控件类型，仅处理 CC_SpinBox
- * @param opt 样式选项
- * @param sc 子控件
- * @param widget 目标控件
- * @return 子控件矩形
- */
-QRect DASpinBoxStyle::subControlRect(ComplexControl cc,
-                                     const QStyleOptionComplex* opt,
-                                     SubControl sc,
-                                     const QWidget* widget) const
-{
-    if (cc != CC_SpinBox) {
-        return QProxyStyle::subControlRect(cc, opt, sc, widget);
-    }
-    const auto* spinOpt = qstyleoption_cast< const QStyleOptionSpinBox* >(opt);
-    if (!spinOpt || spinOpt->buttonSymbols == QAbstractSpinBox::NoButtons) {
-        return QProxyStyle::subControlRect(cc, opt, sc, widget);
-    }
-    // 问基础样式要按钮矩形：只有左右并排（top 相同、left 不同）才需要重排
-    const QRect baseUp = QProxyStyle::subControlRect(cc, opt, SC_SpinBoxUp, widget);
-    const QRect baseDown = QProxyStyle::subControlRect(cc, opt, SC_SpinBoxDown, widget);
-    const bool horizontalButtons = !baseUp.isEmpty() && !baseDown.isEmpty() && baseUp.top() == baseDown.top()
-                                   && baseUp.left() != baseDown.left();
-    if (!horizontalButtons) {
-        return QProxyStyle::subControlRect(cc, opt, sc, widget);
-    }
-
-    const QRect rect = spinOpt->rect;
-    const int frameWidth = pixelMetric(PM_SpinBoxFrameWidth, spinOpt, widget);
-    const int buttonWidth = qMax(baseUp.width(), baseDown.width());
-    const int innerHeight = rect.height() - 2 * frameWidth;
-    if (buttonWidth <= 0 || innerHeight <= 0) {
-        return QProxyStyle::subControlRect(cc, opt, sc, widget);
-    }
-    const int upHeight = (innerHeight + 1) / 2;
-    const bool rightToLeft = (spinOpt->direction == Qt::RightToLeft);
-    const int buttonX = rightToLeft ? rect.left() + frameWidth : rect.right() - frameWidth - buttonWidth + 1;
-    const int editX = rightToLeft ? rect.left() + frameWidth + buttonWidth : rect.left() + frameWidth;
-    const int editWidth = qMax(0, rect.width() - 2 * frameWidth - buttonWidth);
-    switch (sc) {
-    case SC_SpinBoxUp:
-        return QRect(buttonX, rect.top() + frameWidth, buttonWidth, upHeight);
-    case SC_SpinBoxDown:
-        return QRect(buttonX, rect.top() + frameWidth + upHeight, buttonWidth, innerHeight - upHeight);
-    case SC_SpinBoxEditField:
-        return QRect(editX, rect.top() + frameWidth, editWidth, innerHeight);
-    default:
-        break;
-    }
-    return QProxyStyle::subControlRect(cc, opt, sc, widget);
-}
-
-/**
  * @brief 控件应用样式时补足 SpinBox 的最小宽度
  *
  * 窗口一旦挂有 QSS，Qt 会用 QStyleSheetStyle 计算 QSpinBox 尺寸，其结果只有
- * 「按钮宽度 + 4px 文本区」，数值区无法显示。这里按字体、前后缀、小数位与
- * 样式给出的按钮宽度计算最小宽度，保证任何布局下数值都可见。
+ * 「按钮宽度 + 4px 文本区」，数值区无法显示。这里按字体、数值范围、前后缀与
+ * 小数位计算最小宽度，保证任何布局下数值都可见。
  *
  * @param widget 正在应用样式的控件
  */
@@ -145,40 +80,59 @@ void DASpinBoxStyle::polish(QWidget* widget)
 
 /**
  * @brief 计算数值区可见所需的最小宽度
+ *
+ * 取样值覆盖数值范围两端（含符号、前后缀与小数位），并至少保留三位数字的
+ * 文本宽度；按钮占用宽度按基础样式的实际矩形累加（左右并排时为两个按钮之和，
+ * 竖排时取单列宽度）。
+ *
  * @param spin 目标 SpinBox
  * @return 最小宽度（像素）；非 QSpinBox/QDoubleSpinBox 返回 0
  */
 int DASpinBoxStyle::spinBoxMinimumWidth(const QAbstractSpinBox* spin) const
 {
+    const QFontMetrics fm(spin->font());
+    const auto widerText = [&fm](const QString& a, const QString& b) {
+        return fm.horizontalAdvance(a) >= fm.horizontalAdvance(b) ? a : b;
+    };
+
     QString sample;
     if (const auto* intSpin = qobject_cast< const QSpinBox* >(spin)) {
-        sample = intSpin->prefix() + QString::fromLatin1(kNumberSample) + intSpin->suffix();
+        sample = widerText(intSpin->prefix() + QString::number(intSpin->minimum()) + intSpin->suffix(),
+                           intSpin->prefix() + QString::number(intSpin->maximum()) + intSpin->suffix());
+        sample = widerText(sample, QStringLiteral("000"));
     } else if (const auto* doubleSpin = qobject_cast< const QDoubleSpinBox* >(spin)) {
-        sample = doubleSpin->prefix() + QString::fromLatin1(kNumberSample);
-        if (doubleSpin->decimals() > 0) {
-            sample += QLatin1Char('.') + QString(doubleSpin->decimals(), QLatin1Char('9'));
-        }
-        sample += doubleSpin->suffix();
+        const int decimals = doubleSpin->decimals();
+        sample = widerText(doubleSpin->prefix() + QString::number(doubleSpin->minimum(), 'f', decimals)
+                               + doubleSpin->suffix(),
+                           doubleSpin->prefix() + QString::number(doubleSpin->maximum(), 'f', decimals)
+                               + doubleSpin->suffix());
+        sample = widerText(sample, QStringLiteral("0.00"));
     } else {
         return 0;
     }
-    const QFontMetrics fm(spin->font());
     // 特殊值文本（如「Disabled」）可能比数值更长
-    if (!spin->specialValueText().isEmpty()
-        && fm.horizontalAdvance(spin->specialValueText()) > fm.horizontalAdvance(sample)) {
-        sample = spin->specialValueText();
+    if (!spin->specialValueText().isEmpty()) {
+        sample = widerText(sample, spin->specialValueText());
     }
+
     QStyleOptionSpinBox opt;
     opt.initFrom(spin);
     opt.buttonSymbols = spin->buttonSymbols();
-    int buttonWidth = 0;
+    int buttonsWidth = 0;
     if (spin->buttonSymbols() != QAbstractSpinBox::NoButtons) {
         const QRect upRect = QProxyStyle::subControlRect(CC_SpinBox, &opt, SC_SpinBoxUp, spin);
-        buttonWidth = upRect.isValid() ? upRect.width() : 16;
+        const QRect downRect = QProxyStyle::subControlRect(CC_SpinBox, &opt, SC_SpinBoxDown, spin);
+        if (upRect.isValid() && downRect.isValid()) {
+            const bool horizontal = upRect.top() == downRect.top() && upRect.left() != downRect.left();
+            buttonsWidth = horizontal ? upRect.width() + downRect.width()
+                                      : qMax(upRect.width(), downRect.width());
+        } else {
+            buttonsWidth = 16;
+        }
     }
     const int frameWidth = pixelMetric(PM_SpinBoxFrameWidth, &opt, spin);
     // 文本区左右各留 4px，避免数字贴边
-    return fm.horizontalAdvance(sample) + buttonWidth + 2 * frameWidth + 8;
+    return fm.horizontalAdvance(sample) + buttonsWidth + 2 * frameWidth + 8;
 }
 
 }  // namespace DA

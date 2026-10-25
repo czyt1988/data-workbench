@@ -14,21 +14,20 @@
 /**
  * @brief SpinBox 代理样式的回归测试
  *
- * 覆盖两个问题：
- * 1. windows11 平台样式把上下按钮画成左右并排；
- * 2. 窗口挂任意 QSS 后，QStyleSheetStyle 把 SpinBox 尺寸压成「按钮 + 4px 文本区」。
+ * 窗口挂任意 QSS 后（SARibbon 主题必然挂），QStyleSheetStyle 会把 SpinBox 尺寸
+ * 压成「按钮 + 4px 文本区」。本样式只补最小宽度，不改变平台原生的按钮布局
+ * （Windows 11 的左右按钮点击区域比竖排更大）。
  */
 class DASpinBoxStyleTest : public QObject
 {
     Q_OBJECT
 private Q_SLOTS:
     void initTestCase();
-    void spinButtonsAreStacked();
-    void doubleSpinButtonsAreStacked();
-    void valueAreaKeepsRoom();
+    void valueAreaKeepsRoomUnderQss();
+    void doubleValueAreaKeepsRoomUnderQss();
     void otherControlsDelegateToBase();
     void minimumWidthGrowsWithDecimals();
-    void windows11HorizontalButtonsAreRelayouted();
+    void windows11ButtonsStayHorizontal();
 
 private:
     QStyleOptionSpinBox makeSpinOption(const QAbstractSpinBox* spin) const;
@@ -63,41 +62,37 @@ QRect DASpinBoxStyleTest::subControlRect(const QWidget* widget,
                                          const QStyleOptionComplex* opt,
                                          QStyle::SubControl sc)
 {
-    // 走控件真实样式（窗口有 QSS 时是 QStyleSheetStyle，最终委托到代理样式）
+    // 走控件真实样式（窗口有 QSS 时是 QStyleSheetStyle）
     return widget->style()->subControlRect(QStyle::CC_SpinBox, opt, sc, widget);
 }
 
 /**
- * @brief 窗口挂 QSS 时，QSpinBox 的上下按钮应上下排列且数值区可见
+ * @brief QSpinBox：QSS 触发的尺寸塌缩应被最小宽度抵消，数值区放得下范围两端
  */
-void DASpinBoxStyleTest::spinButtonsAreStacked()
+void DASpinBoxStyleTest::valueAreaKeepsRoomUnderQss()
 {
     QMainWindow window;
     // 任意 QSS 都会让子控件走 QStyleSheetStyle，这里模拟 SARibbon 主题
-    window.setStyleSheet(QStringLiteral("QPushButton { color: red; }"));
+    window.setStyleSheet(QStringLiteral("QWidget { outline: none; }"));
     auto* spin = new QSpinBox(&window);
-    spin->setRange(0, 9999);
-    spin->setValue(42);
+    spin->setRange(-9999, 9999);
+    spin->setValue(1234);
     window.setCentralWidget(spin);
     window.resize(320, 120);
     window.show();
     QVERIFY(QTest::qWaitForWindowExposed(&window));
 
+    const QFontMetrics fm(spin->font());
     const QStyleOptionSpinBox opt = makeSpinOption(spin);
-    const QRect up                  = subControlRect(spin, &opt, QStyle::SC_SpinBoxUp);
-    const QRect down                = subControlRect(spin, &opt, QStyle::SC_SpinBoxDown);
     const QRect edit                = subControlRect(spin, &opt, QStyle::SC_SpinBoxEditField);
-    QVERIFY(!up.isEmpty());
-    QVERIFY(!down.isEmpty());
-    QCOMPARE(up.left(), down.left());
-    QVERIFY2(up.bottom() < down.top(), "up/down buttons must be stacked vertically");
-    QVERIFY2(edit.width() >= 40, "value area must keep room for the number");
+    QVERIFY2(edit.width() >= fm.horizontalAdvance(QStringLiteral("-9999")),
+             "value area must fit the widest value of the range");
 }
 
 /**
- * @brief QDoubleSpinBox 同样应竖排按钮并保留数值区
+ * @brief QDoubleSpinBox：小数位、符号与后缀都要计入数值区宽度
  */
-void DASpinBoxStyleTest::doubleSpinButtonsAreStacked()
+void DASpinBoxStyleTest::doubleValueAreaKeepsRoomUnderQss()
 {
     QMainWindow window;
     window.setStyleSheet(QStringLiteral("QLabel { color: red; }"));
@@ -111,36 +106,11 @@ void DASpinBoxStyleTest::doubleSpinButtonsAreStacked()
     window.show();
     QVERIFY(QTest::qWaitForWindowExposed(&window));
 
-    const QStyleOptionSpinBox opt = makeSpinOption(spin);
-    const QRect up                  = subControlRect(spin, &opt, QStyle::SC_SpinBoxUp);
-    const QRect down                = subControlRect(spin, &opt, QStyle::SC_SpinBoxDown);
-    const QRect edit                = subControlRect(spin, &opt, QStyle::SC_SpinBoxEditField);
-    QCOMPARE(up.left(), down.left());
-    QVERIFY(up.bottom() < down.top());
-    QVERIFY(edit.width() >= 40);
-}
-
-/**
- * @brief QSS 触发的尺寸塌缩应被最小宽度抵消，数值不贴边
- */
-void DASpinBoxStyleTest::valueAreaKeepsRoom()
-{
-    QMainWindow window;
-    window.setStyleSheet(QStringLiteral("QWidget { outline: none; }"));
-    auto* spin = new QSpinBox(&window);
-    spin->setRange(-99999, 99999);
-    spin->setValue(12345);
-    window.setCentralWidget(spin);
-    window.resize(320, 120);
-    window.show();
-    QVERIFY(QTest::qWaitForWindowExposed(&window));
-
     const QFontMetrics fm(spin->font());
-    QVERIFY2(spin->minimumWidth() >= fm.horizontalAdvance(QStringLiteral("-99999")),
-             "minimum width must fit the widest value");
     const QStyleOptionSpinBox opt = makeSpinOption(spin);
     const QRect edit                = subControlRect(spin, &opt, QStyle::SC_SpinBoxEditField);
-    QVERIFY(edit.width() >= fm.horizontalAdvance(QStringLiteral("12345")));
+    QVERIFY2(edit.width() >= fm.horizontalAdvance(QStringLiteral("-99.00 px")),
+             "value area must fit sign, decimals and suffix");
 }
 
 /**
@@ -179,9 +149,9 @@ void DASpinBoxStyleTest::minimumWidthGrowsWithDecimals()
 }
 
 /**
- * @brief windows11 样式的左右并排按钮应被重排为竖排（真实问题场景）
+ * @brief Windows 11 真实场景：保留左右并排按钮，同时数值区放得下范围最大值
  */
-void DASpinBoxStyleTest::windows11HorizontalButtonsAreRelayouted()
+void DASpinBoxStyleTest::windows11ButtonsStayHorizontal()
 {
     if (!QStyleFactory::keys().contains(QStringLiteral("windows11"), Qt::CaseInsensitive)) {
         QSKIP("windows11 style is not available on this platform");
@@ -204,9 +174,12 @@ void DASpinBoxStyleTest::windows11HorizontalButtonsAreRelayouted()
     const QRect up                  = subControlRect(spin, &opt, QStyle::SC_SpinBoxUp);
     const QRect down                = subControlRect(spin, &opt, QStyle::SC_SpinBoxDown);
     const QRect edit                = subControlRect(spin, &opt, QStyle::SC_SpinBoxEditField);
-    QCOMPARE(up.left(), down.left());
-    QVERIFY2(up.bottom() < down.top(), "windows11 side-by-side buttons must become vertical");
-    QVERIFY(edit.width() >= 40);
+    QCOMPARE(up.top(), down.top());
+    QVERIFY2(up.left() != down.left(), "windows11 native side-by-side buttons must be preserved");
+
+    const QFontMetrics fm(spin->font());
+    QVERIFY2(edit.width() >= fm.horizontalAdvance(QStringLiteral("9999")),
+             "value area must fit the maximum value");
 }
 
 QTEST_MAIN(DASpinBoxStyleTest)
