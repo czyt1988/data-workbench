@@ -7,10 +7,11 @@
 #include <QMessageBox>
 #include <QProcess>
 #include <QSignalBlocker>
-#include <QListWidgetItem>
 #include "ui_DASettingPagePython.h"
 #include "DAAppConfig.h"
+#include "DAFilePathEditWidget.h"
 #include "DAPyInterpreter.h"
+#include "DAStringListEditWidget.h"
 #include "DALogCategory.h"
 namespace DA
 {
@@ -20,12 +21,23 @@ DASettingPagePython::DASettingPagePython(QWidget* parent)
     , ui(new Ui::DASettingPagePython)
 {
     ui->setupUi(this);
-    connect(ui->lineEditPythonPath, &QLineEdit::textChanged, this, &DASettingPagePython::onLineEditPythonPathTextChanged);
-    connect(ui->toolButtonBrowse, &QToolButton::clicked, this, &DASettingPagePython::onToolButtonBrowseClicked);
+    ui->filePathEditPythonPath->setMode(DAFilePathEditWidget::Mode::OpenFile);
+    ui->stringListEditExtraPaths->setAddMode(DAStringListEditWidget::AddMode::External);
+    ui->stringListEditExtraPaths->setPlaceholderText(tr("Add module search paths..."));  // cn:添加模块搜索路径...
+    connect(ui->filePathEditPythonPath,
+            &DAFilePathEditWidget::pathChanged,
+            this,
+            &DASettingPagePython::onInterpreterPathChanged);
     connect(ui->toolButtonAutoDetect, &QToolButton::clicked, this, &DASettingPagePython::onToolButtonAutoDetectClicked);
     connect(ui->toolButtonTest, &QToolButton::clicked, this, &DASettingPagePython::onToolButtonTestClicked);
-    connect(ui->toolButtonAddPath, &QToolButton::clicked, this, &DASettingPagePython::onToolButtonAddPathClicked);
-    connect(ui->toolButtonRemovePath, &QToolButton::clicked, this, &DASettingPagePython::onToolButtonRemovePathClicked);
+    connect(ui->stringListEditExtraPaths,
+            &DAStringListEditWidget::addRequested,
+            this,
+            &DASettingPagePython::onExtraPathAddRequested);
+    connect(ui->stringListEditExtraPaths,
+            &DAStringListEditWidget::itemsChanged,
+            this,
+            &DASettingPagePython::settingChanged);
 }
 
 DASettingPagePython::~DASettingPagePython()
@@ -67,13 +79,14 @@ void DASettingPagePython::apply()
         return;
     }
     DAPythonSettings s = mAppConfig->python();
-    s.interpreterPath  = ui->lineEditPythonPath->text().trimmed();
-    // 额外模块路径
+    s.interpreterPath  = ui->filePathEditPythonPath->getFilePath().trimmed();
+    // 额外模块路径（空串由控件保留，保存时过滤）
     QStringList extraPaths;
-    for (int i = 0; i < ui->listWidgetExtraPaths->count(); ++i) {
-        QListWidgetItem* it = ui->listWidgetExtraPaths->item(i);
-        if (it) {
-            extraPaths << it->text().trimmed();
+    const QStringList rawPaths = ui->stringListEditExtraPaths->items();
+    for (const QString& p : rawPaths) {
+        const QString trimmed = p.trimmed();
+        if (!trimmed.isEmpty()) {
+            extraPaths << trimmed;
         }
     }
     s.extraPaths = extraPaths;
@@ -109,31 +122,22 @@ bool DASettingPagePython::setAppConfig(DAAppConfig* p)
     if (path.isEmpty()) {
         path = DA::DAPyInterpreter::getPythonInterpreterPath();
     }
-    ui->lineEditPythonPath->setText(path);
+    ui->filePathEditPythonPath->setFilePath(path);
     // 额外模块路径
-    const QStringList extraPaths = p->python().extraPaths;
-    ui->listWidgetExtraPaths->clear();
-    for (const QString& s : extraPaths) {
+    QStringList extraPaths;
+    for (const QString& s : p->python().extraPaths) {
         if (!s.trimmed().isEmpty()) {
-            ui->listWidgetExtraPaths->addItem(s);
+            extraPaths << s;
         }
     }
+    ui->stringListEditExtraPaths->setItems(extraPaths);
     return true;
 }
 
-void DASettingPagePython::onLineEditPythonPathTextChanged(const QString& text)
+void DASettingPagePython::onInterpreterPathChanged(const QString& path)
 {
-    Q_UNUSED(text);
+    Q_UNUSED(path);
     emit settingChanged();
-}
-
-void DASettingPagePython::onToolButtonBrowseClicked()
-{
-    QString f = QFileDialog::getOpenFileName(this, tr("Select Python Interpreter"));  // cn:选择Python解释器
-    if (!f.isEmpty()) {
-        ui->lineEditPythonPath->setText(f);
-        emit settingChanged();
-    }
 }
 
 void DASettingPagePython::onToolButtonAutoDetectClicked()
@@ -145,13 +149,13 @@ void DASettingPagePython::onToolButtonAutoDetectClicked()
                                  tr("No Python interpreter found in system PATH"));  // cn:系统PATH中未找到Python解释器
         return;
     }
-    ui->lineEditPythonPath->setText(list.first().absoluteFilePath());
+    ui->filePathEditPythonPath->setFilePath(list.first().absoluteFilePath());
     emit settingChanged();
 }
 
 void DASettingPagePython::onToolButtonTestClicked()
 {
-    QString path = ui->lineEditPythonPath->text().trimmed();
+    QString path = ui->filePathEditPythonPath->getFilePath().trimmed();
     if (path.isEmpty()) {
         ui->labelTestResult->setText(tr("Please specify a Python interpreter path"));  // cn:请指定Python解释器路径
         return;
@@ -170,21 +174,11 @@ void DASettingPagePython::onToolButtonTestClicked()
     ui->labelTestResult->setText(out.isEmpty() ? tr("OK") : out);  // cn:正常
 }
 
-void DASettingPagePython::onToolButtonAddPathClicked()
+void DASettingPagePython::onExtraPathAddRequested()
 {
     QString d = QFileDialog::getExistingDirectory(this, tr("Select module search path"));  // cn:选择模块搜索路径
     if (!d.isEmpty()) {
-        ui->listWidgetExtraPaths->addItem(d);
-        emit settingChanged();
-    }
-}
-
-void DASettingPagePython::onToolButtonRemovePathClicked()
-{
-    int row = ui->listWidgetExtraPaths->currentRow();
-    if (row >= 0) {
-        delete ui->listWidgetExtraPaths->takeItem(row);
-        emit settingChanged();
+        ui->stringListEditExtraPaths->appendItem(d);
     }
 }
 

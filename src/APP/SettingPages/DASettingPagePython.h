@@ -28,12 +28,10 @@ public:
     virtual QIcon getSettingPageIcon() const override;
     bool setAppConfig(DAAppConfig* p);
 private Q_SLOTS:
-    void onLineEditPythonPathTextChanged(const QString& text);
-    void onToolButtonBrowseClicked();
+    void onInterpreterPathChanged(const QString& path);
     void onToolButtonAutoDetectClicked();
     void onToolButtonTestClicked();
-    void onToolButtonAddPathClicked();
-    void onToolButtonRemovePathClicked();
+    void onExtraPathAddRequested();
 
 private:
     // 读取 python-config.json 中的解释器路径

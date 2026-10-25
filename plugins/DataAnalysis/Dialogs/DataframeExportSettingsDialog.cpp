@@ -1,7 +1,7 @@
 #include "DataframeExportSettingsDialog.h"
 #include "ui_DataframeExportSettingsDialog.h"
-#include <QFileDialog>
 #include <QMessageBox>
+#include "DAFilePathEditWidget.h"
 
 /**
  * @brief 构造函数
@@ -11,8 +11,9 @@ DataframeExportSettingsDialog::DataframeExportSettingsDialog(QWidget* parent)
     : QDialog(parent), ui(new Ui::DataframeExportSettingsDialog)
 {
     ui->setupUi(this);
+    ui->filePathEditFolder->setMode(DA::DAFilePathEditWidget::Mode::ExistingDirectory);
+    ui->filePathEditFolder->setPlaceholderText(tr("Select Folder"));  // cn:选择文件夹
     connect(this, &QDialog::accepted, this, &DataframeExportSettingsDialog::onAccept);
-    connect(ui->toolButtonBrowser, &QToolButton::clicked, this, &DataframeExportSettingsDialog::onBrowser);
 }
 
 /**
@@ -53,7 +54,7 @@ QString DataframeExportSettingsDialog::getSelectSuffix() const
  */
 QString DataframeExportSettingsDialog::getSavePath() const
 {
-    return ui->lineEditFolderPath->text();
+    return ui->filePathEditFolder->getFilePath();
 }
 
 /**
@@ -63,22 +64,6 @@ QString DataframeExportSettingsDialog::getSavePath() const
 bool DataframeExportSettingsDialog::isExportAll() const
 {
     return ui->radioButtonExportAll->isChecked();
-}
-
-/**
- * @brief 浏览文件夹按钮的槽函数
- */
-void DataframeExportSettingsDialog::onBrowser()
-{
-    QString folderPath = QFileDialog::getExistingDirectory(this,                 // 父窗口
-                                                           tr("Select Folder"),  // cn:选择文件夹
-                                                           ui->lineEditFolderPath->text(),  // 初始目录（若输入框已有内容）
-                                                           QFileDialog::ShowDirsOnly  // 仅显示目录
-    );
-    if (folderPath.isEmpty()) {
-        return;
-    }
-    ui->lineEditFolderPath->setText(folderPath);
 }
 
 /**

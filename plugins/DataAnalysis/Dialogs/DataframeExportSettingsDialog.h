@@ -22,7 +22,6 @@ public:
     // 是否保存所有，或者只是保存选中
     bool isExportAll() const;
 private Q_SLOTS:
-    void onBrowser();
     //
     void onAccept();
 

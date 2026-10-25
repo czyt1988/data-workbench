@@ -47,7 +47,6 @@ private:
 
 private:
     Ui::DADialogTableColumnView* ui { nullptr };
-    QList< QPair< QString, int > > mOrderedColumns;
 };
 }  // end of namespace DA
 #endif  // DADIALOGTABLECOLUMNVIEW_H

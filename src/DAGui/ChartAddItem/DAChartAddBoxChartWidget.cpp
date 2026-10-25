@@ -1,7 +1,7 @@
 #include "DAChartAddBoxChartWidget.h"
 #include "ui_DAChartAddBoxChartWidget.h"
 #include <QMessageBox>
-#include <QListWidgetItem>
+#include "DACheckListWidget.h"
 #include "DADataManager.h"
 #include "DALogCategory.h"
 #include "qwt_plot_boxchart.h"
@@ -53,7 +53,7 @@ void DAChartAddBoxChartWidget::onComboBoxCurrentDataChanged(const DAData& d)
 
 void DAChartAddBoxChartWidget::refreshColumns()
 {
-	ui->listWidgetColumns->clear();
+	ui->checkListColumns->setItems({});
 	DAData d = ui->comboBoxDataFrame->getCurrentDAData();
 	if (!d.isDataFrame()) {
 		return;
@@ -62,11 +62,13 @@ void DAChartAddBoxChartWidget::refreshColumns()
 	if (df.isNone()) {
 		return;
 	}
+	QVector< DAItemEntry > entries;
 	const QList< QString > cols = df.columns();
+	entries.reserve(cols.size());
 	for (const QString& name : cols) {
-		QListWidgetItem* item = new QListWidgetItem(name, ui->listWidgetColumns);
-		item->setCheckState(Qt::Unchecked);
+		entries.append(DAItemEntry { name, QVariant() });
 	}
+	ui->checkListColumns->setItems(entries);
 }
 
 QwtPlotItem* DAChartAddBoxChartWidget::createPlotItem()
@@ -84,11 +86,9 @@ QwtPlotItem* DAChartAddBoxChartWidget::createPlotItem()
 	}
 	// 收集选中的列
 	QStringList selectedCols;
-	for (int i = 0; i < ui->listWidgetColumns->count(); ++i) {
-		QListWidgetItem* item = ui->listWidgetColumns->item(i);
-		if (item->checkState() == Qt::Checked) {
-			selectedCols << item->text();
-		}
+	const QVector< DAItemEntry > checked = ui->checkListColumns->checkedEntries();
+	for (const DAItemEntry& e : checked) {
+		selectedCols << e.text;
 	}
 	if (selectedCols.isEmpty()) {
 		QMessageBox::warning(this,

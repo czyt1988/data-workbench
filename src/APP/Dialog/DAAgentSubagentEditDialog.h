@@ -7,19 +7,20 @@
 
 class QLineEdit;
 class QPlainTextEdit;
-class QListWidget;
 
 namespace DA
 {
 class DAMarkdownHighlighter;
+class DACheckListWidget;
 
 /**
  * @brief 子 Agent 定义结构化编辑对话框（subagent-phase1 C，Q13/Q15）
  *
  * 结构化表单：name（新增可编辑、编辑态只读——重命名由 manager 的
  * saveSubagent(oldName) 承担）、description（进父派发工具描述）、
- * 工具白名单（QListWidget 复选框，数据源 registeredToolNames()）、
- * 正文（QPlainTextEdit + DAMarkdownHighlighter，md 系统提示词）。
+ * 工具白名单（DACheckListWidget 勾选列表，数据源 registeredToolNames()；
+ * 定义里引用但未注册的工具强制勾选且禁用），正文（QPlainTextEdit +
+ * DAMarkdownHighlighter，md 系统提示词）。
  * frontmatter 不暴露给用户，由 DAAgentSubagentDef 序列化处理。
  * 保存仅校验并收集表单，实际落盘由调用方经 saveSubagent 完成。
  */
@@ -53,7 +54,7 @@ private:
 
     QLineEdit* m_nameEdit { nullptr };
     QLineEdit* m_descEdit { nullptr };
-    QListWidget* m_toolsList { nullptr };
+    DACheckListWidget* m_toolsList { nullptr };
     QPlainTextEdit* m_promptEdit { nullptr };
     DAMarkdownHighlighter* m_highlighter { nullptr };
     QStringList m_existingNames;  ///< 已存在的子 agent 名（重名检测）

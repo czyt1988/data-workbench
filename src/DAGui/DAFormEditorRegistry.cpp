@@ -4,22 +4,16 @@
 #include <QCheckBox>
 #include <QComboBox>
 #include <QDoubleSpinBox>
-#include <QFileDialog>
 #include <QFont>
-#include <QHBoxLayout>
 #include <QLineEdit>
-#include <QListWidget>
-#include <QListWidgetItem>
 #include <QPlainTextEdit>
-#include <QPushButton>
 #include <QSignalBlocker>
 #include <QSpinBox>
-#include <QToolButton>
-#include <QVBoxLayout>
 // 项目内编辑器控件
 #include "DAColorPickerButton.h"
 #include "DAFilePathEditWidget.h"
 #include "DAFontEditPannelWidget.h"
+#include "DAStringListEditWidget.h"
 
 namespace DA
 {
@@ -358,95 +352,48 @@ void connectEnum(QWidget* editor, QObject* context, const std::function< void() 
 //@}
 
 //@{
-//! @name list 类型编辑器（QListWidget + 添加/删除按钮）
+//! @name list 类型编辑器（DAStringListEditWidget，Inline 模式）
 QWidget* createListEditor(const DAFormFieldDef& field, QWidget* parent)
 {
-    QWidget* container  = new QWidget(parent);
-    QHBoxLayout* hLayout = new QHBoxLayout(container);
-    hLayout->setContentsMargins(0, 0, 0, 0);
-
-    QListWidget* listWidget = new QListWidget(container);
-    listWidget->setSelectionMode(QAbstractItemView::ExtendedSelection);
-    hLayout->addWidget(listWidget, 1);
-
-    QVBoxLayout* btnLayout = new QVBoxLayout();
-    btnLayout->setContentsMargins(0, 0, 0, 0);
-    btnLayout->setSpacing(2);
-
-    QPushButton* btnAdd    = new QPushButton(QObject::tr("Add"), container);  // cn:添加
-    QPushButton* btnRemove = new QPushButton(QObject::tr("Remove"), container);  // cn:删除
-    btnLayout->addWidget(btnAdd);
-    btnLayout->addWidget(btnRemove);
-    btnLayout->addStretch();
-    hLayout->addLayout(btnLayout);
-
+    DAStringListEditWidget* edit = new DAStringListEditWidget(parent);
+    edit->setAddMode(DAStringListEditWidget::AddMode::Inline);
     // 预填充：优先 options，其次 defaultValue（QStringList）
+    QStringList items;
     if (!field.options.isEmpty()) {
         for (const DAFormOption& opt : field.options) {
             QString text = opt.value.isValid() && !opt.value.isNull() ? opt.value.toString() : opt.label;
             if (text.isEmpty()) {
                 text = opt.label;
             }
-            listWidget->addItem(text);
+            items.append(text);
         }
     } else if (field.defaultValue.canConvert< QStringList >()) {
-        QStringList sl = field.defaultValue.value< QStringList >();
-        for (const QString& s : std::as_const(sl)) {
-            listWidget->addItem(s);
-        }
+        items = field.defaultValue.value< QStringList >();
     }
-
-    QObject::connect(btnAdd, &QPushButton::clicked, listWidget, [ listWidget ]() {
-        listWidget->addItem(QObject::tr("New Item"));  // cn:新项目
-    });
-    QObject::connect(btnRemove, &QPushButton::clicked, listWidget, [ listWidget ]() {
-        QList< QListWidgetItem* > selected = listWidget->selectedItems();
-        for (QListWidgetItem* item : std::as_const(selected)) {
-            listWidget->takeItem(listWidget->row(item));
-            delete item;
-        }
-    });
-
-    return container;
+    edit->setItems(items);
+    return edit;
 }
 
 QVariant readList(QWidget* editor)
 {
-    QListWidget* listWidget = editor ? editor->findChild< QListWidget* >() : nullptr;
-    if (!listWidget) {
-        return {};
+    if (auto* edit = qobject_cast< DAStringListEditWidget* >(editor)) {
+        return edit->items();
     }
-    QStringList sl;
-    for (int i = 0; i < listWidget->count(); ++i) {
-        if (auto* it = listWidget->item(i)) {
-            sl.append(it->text());
-        }
-    }
-    return sl;
+    return {};
 }
 
 void writeList(QWidget* editor, const QVariant& value)
 {
-    QListWidget* listWidget = editor ? editor->findChild< QListWidget* >() : nullptr;
-    if (!listWidget) {
-        return;
-    }
-    QSignalBlocker b(listWidget);
-    listWidget->clear();
-    QStringList sl = value.toStringList();
-    for (const QString& s : std::as_const(sl)) {
-        listWidget->addItem(s);
+    if (auto* edit = qobject_cast< DAStringListEditWidget* >(editor)) {
+        QSignalBlocker b(edit);
+        edit->setItems(value.toStringList());
     }
 }
 
 void connectList(QWidget* editor, QObject* context, const std::function< void() >& slot)
 {
-    if (!editor) {
-        return;
-    }
-    QList< QPushButton* > buttons = editor->findChildren< QPushButton* >();
-    for (QPushButton* btn : std::as_const(buttons)) {
-        QObject::connect(btn, &QPushButton::clicked, context, [ slot ]() { slot(); });
+    if (auto* edit = qobject_cast< DAStringListEditWidget* >(editor)) {
+        QObject::connect(edit, &DAStringListEditWidget::itemsChanged, context, [ slot ]() { slot(); });
     }
 }
 //@}
@@ -496,26 +443,7 @@ void connectFile(QWidget* editor, QObject* context, const std::function< void() 
 QWidget* createFolderEditor(const DAFormFieldDef& field, QWidget* parent)
 {
     DAFilePathEditWidget* edit = new DAFilePathEditWidget(parent);
-
-    // 找到内部工具按钮，断开原始连接，重连为目录选择对话框
-    QToolButton* toolBtn = edit->findChild< QToolButton* >();
-    if (toolBtn) {
-        // 仅断开 clicked 信号，避免影响 DAFilePathEditWidget 的其他内部连接
-        QObject::disconnect(toolBtn, &QToolButton::clicked, edit, nullptr);
-        QObject::connect(toolBtn, &QToolButton::clicked, edit, [ edit ]() {
-            QFileDialog fileDialog;
-            fileDialog.setFileMode(QFileDialog::Directory);
-            fileDialog.setOption(QFileDialog::ShowDirsOnly, true);
-            if (fileDialog.exec()) {
-                auto files = fileDialog.selectedFiles();
-                if (!files.isEmpty()) {
-                    QString p = files.back();
-                    edit->setFilePath(p);
-                    Q_EMIT edit->selectedPath(p);   // 显式发射，触发 onFieldChanged
-                }
-            }
-        });
-    }
+    edit->setMode(DAFilePathEditWidget::Mode::ExistingDirectory);
 
     QString def = field.defaultValue.toString();
     if (!def.isEmpty()) {
@@ -730,7 +658,7 @@ DAFormEditorRegistry::~DAFormEditorRegistry()
  *
  * 覆盖任何已注册的同名类型适配器。类型与编辑器控件映射：
  * str→QLineEdit/QPlainTextEdit, int→QSpinBox, float→QDoubleSpinBox, bool→QCheckBox,
- * enum→QComboBox, list→QListWidget+按钮, file/folder→DAFilePathEditWidget,
+ * enum→QComboBox, list→DAStringListEditWidget, file/folder→DAFilePathEditWidget,
  * color→DAColorPickerButton, font→DAFontEditPannelWidget, code→QPlainTextEdit。
  */
 void DAFormEditorRegistry::registerDefaults()

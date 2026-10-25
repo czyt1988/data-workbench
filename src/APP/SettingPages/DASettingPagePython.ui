@@ -30,14 +30,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QLineEdit" name="lineEditPythonPath"/>
-        </item>
-        <item>
-         <widget class="QToolButton" name="toolButtonBrowse">
-          <property name="text">
-           <string>Browse</string>
-          </property>
-         </widget>
+         <widget class="DA::DAFilePathEditWidget" name="filePathEditPythonPath"/>
         </item>
         <item>
          <widget class="QToolButton" name="toolButtonAutoDetect">
@@ -72,38 +65,7 @@
      </property>
      <layout class="QVBoxLayout" name="verticalLayoutExtraPaths">
       <item>
-       <widget class="QListWidget" name="listWidgetExtraPaths"/>
-      </item>
-      <item>
-       <layout class="QHBoxLayout" name="horizontalLayoutPaths">
-        <item>
-         <widget class="QToolButton" name="toolButtonAddPath">
-          <property name="text">
-           <string>Add</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QToolButton" name="toolButtonRemovePath">
-          <property name="text">
-           <string>Remove</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <spacer name="horizontalSpacerPaths">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>40</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-       </layout>
+       <widget class="DA::DAStringListEditWidget" name="stringListEditExtraPaths"/>
       </item>
      </layout>
     </widget>
@@ -130,6 +92,18 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>DA::DAFilePathEditWidget</class>
+   <extends>QWidget</extends>
+   <header>DAFilePathEditWidget.h</header>
+  </customwidget>
+  <customwidget>
+   <class>DA::DAStringListEditWidget</class>
+   <extends>QWidget</extends>
+   <header>DAStringListEditWidget.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

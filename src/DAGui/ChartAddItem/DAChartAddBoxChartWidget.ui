@@ -46,11 +46,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QListWidget" name="listWidgetColumns">
-        <property name="selectionMode">
-         <enum>QAbstractItemView::NoSelection</enum>
-        </property>
-       </widget>
+       <widget class="DA::DACheckListWidget" name="checkListColumns"/>
       </item>
      </layout>
     </widget>
@@ -75,6 +71,11 @@
    <class>DA::DADataManagerComboBox</class>
    <extends>QComboBox</extends>
    <header>DADataManagerComboBox.h</header>
+  </customwidget>
+  <customwidget>
+   <class>DA::DACheckListWidget</class>
+   <extends>QWidget</extends>
+   <header>DACheckListWidget.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

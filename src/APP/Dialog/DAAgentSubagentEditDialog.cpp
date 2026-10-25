@@ -6,14 +6,14 @@
 #include <QFormLayout>
 #include <QLineEdit>
 #include <QPlainTextEdit>
-#include <QListWidget>
-#include <QListWidgetItem>
 #include <QPushButton>
 #include <QLabel>
 #include <QStyle>
 #include <QMessageBox>
 #include <QSplitter>
 #include <QFont>
+// DAWidgets
+#include "DACheckListWidget.h"
 
 namespace DA
 {
@@ -40,7 +40,7 @@ DAAgentSubagentEditDialog::DAAgentSubagentEditDialog(const QJsonObject& def,
         m_nameEdit->setReadOnly(true);
     }
     // 工具白名单勾选（定义中的 tools ∪ 已注册工具为全集；
-    // 引用未注册工具时保留为禁用勾选项，防静默丢失）
+    // 引用未注册工具时保留为 forced + disabled 勾选项，防静默丢失）
     const QStringList defTools = [def]() {
         QStringList l;
         for (const QJsonValue& v : def.value("tools").toArray()) {
@@ -48,18 +48,31 @@ DAAgentSubagentEditDialog::DAAgentSubagentEditDialog(const QJsonObject& def,
         }
         return l;
     }();
+    QVector< DAItemEntry > entries;
+    QStringList unregistered;
+    entries.reserve(m_registeredTools.size() + defTools.size());
     for (const QString& t : m_registeredTools) {
-        QListWidgetItem* item = new QListWidgetItem(t, m_toolsList);
-        item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
-        item->setCheckState(defTools.contains(t) ? Qt::Checked : Qt::Unchecked);
+        entries.append(DAItemEntry { t, QVariant() });
     }
     for (const QString& t : defTools) {
         if (!m_registeredTools.contains(t)) {
-            QListWidgetItem* item = new QListWidgetItem(t, m_toolsList);
-            item->setFlags((item->flags() | Qt::ItemIsUserCheckable) & ~Qt::ItemIsEnabled);
-            item->setCheckState(Qt::Checked);
-            item->setToolTip(tr("Unregistered tool (kept in definition)"));  //cn:未注册的工具（保留在定义中）
+            unregistered << t;
+            entries.append(DAItemEntry { t, QVariant() });
         }
+    }
+    m_toolsList->setItems(entries);
+    QVector< DAItemEntry > checked;
+    for (const DAItemEntry& e : entries) {
+        if (defTools.contains(e.text)) {
+            checked.append(e);
+        }
+    }
+    m_toolsList->setCheckedEntries(checked);
+    // 定义里引用但未注册的工具：强制勾选且禁用，用户不能取消（防静默丢失）
+    for (const QString& t : unregistered) {
+        const DAItemEntry e { t, QVariant() };
+        m_toolsList->setEntryForcedChecked(e, true);
+        m_toolsList->setEntryEnabled(e, false);
     }
     setWindowTitle(isEdit ? tr("Edit Subagent")   //cn:编辑子 Agent
                           : tr("New Subagent"));  //cn:新增子 Agent
@@ -95,7 +108,7 @@ void DAAgentSubagentEditDialog::buildUi()
     toolsLabel->setToolTip(tr("Only checked tools can be called by this subagent. "
                               "Permission rules still apply on every call."));  //cn:子 Agent 只能调用勾选的工具；每次调用仍受权限规则约束
     toolsLay->addWidget(toolsLabel);
-    m_toolsList = new QListWidget(toolsPanel);
+    m_toolsList = new DACheckListWidget(toolsPanel);
     toolsLay->addWidget(m_toolsList, 1);
     splitter->addWidget(toolsPanel);
 
@@ -179,11 +192,9 @@ QJsonObject DAAgentSubagentEditDialog::getDefinition() const
     def["name"]           = m_nameEdit->text().trimmed();
     def["description"]    = m_descEdit->text().trimmed();
     QJsonArray tools;
-    for (int i = 0; i < m_toolsList->count(); ++i) {
-        QListWidgetItem* item = m_toolsList->item(i);
-        if (item->checkState() == Qt::Checked) {
-            tools.append(item->text());
-        }
+    const QVector< DAItemEntry > checked = m_toolsList->checkedEntries();
+    for (const DAItemEntry& e : checked) {
+        tools.append(e.text);
     }
     def["tools"]          = tools;
     def["system_prompt"]  = m_promptEdit->toPlainText();

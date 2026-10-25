@@ -3,16 +3,15 @@
 #include <QDialog>
 #include <QStringList>
 
-class QListWidget;
-class QPushButton;
-
 namespace DA
 {
+
+class DACheckListWidget;
 /**
  * @brief 模型获取结果对话框
  *
  * 「获取可用模型」GET /models 成功后弹出，列表项为可勾选 checkbox（默认全选），
- * 提供「全选」「全不选」按钮。OK 返回勾选的模型 id 列表。
+ * 提供「全选」「反选」按钮。OK 返回勾选的模型 id 列表。
  */
 class DAModelFetchDialog : public QDialog
 {
@@ -28,14 +27,10 @@ public:
     /// 返回勾选的模型 id 列表
     QStringList getSelectedModelIds() const;
 
-private Q_SLOTS:
-    void onSelectAll();
-    void onDeselectAll();
-
 private:
     void buildUi();
 
-    QListWidget* mList { nullptr };
+    DACheckListWidget* mList { nullptr };
 };
 }  // namespace DA
 

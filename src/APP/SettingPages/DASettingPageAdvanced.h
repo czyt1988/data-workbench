@@ -32,8 +32,7 @@ private Q_SLOTS:
     void onSpinBoxDumpRetentionDaysValueChanged(int v);
     void onCheckBoxShowSplashStateChanged(int state);
     void onSpinBoxAutosaveIntervalValueChanged(int v);
-    void onLineEditWorkspaceDirTextChanged(const QString& text);
-    void onToolButtonWorkspaceDirBrowseClicked();
+    void onWorkspaceDirChanged(const QString& path);
     void onSpinBoxScriptTimeoutValueChanged(int v);
     void onSpinBoxScriptResultMaxCharsValueChanged(int v);
 

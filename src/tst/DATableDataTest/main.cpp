@@ -2751,12 +2751,13 @@ void DATableDataTest::testColumnViewDialogDiffAndUndo()
             return;
         }
         opened = true;
-        QListWidget* list = dlg->findChild< QListWidget* >(QStringLiteral("listColumns"));
+        QListWidget* list = dlg->findChild< QListWidget* >(QStringLiteral("checkList"));
         QSpinBox* spin    = dlg->findChild< QSpinBox* >(QStringLiteral("spinFreeze"));
         if (list && spin) {
             seenCount = list->count();
             for (int i = 0; i < list->count(); ++i) {
-                const QString name = list->item(i)->data(Qt::UserRole).toString();
+                // DACheckListWidget 把 (列名, occurrence) 存在 UserRole 的 QVariantList 里
+                const QString name = list->item(i)->data(Qt::UserRole).toList().value(0).toString();
                 if (name == QStringLiteral("a") || name == QStringLiteral("c")) {
                     list->item(i)->setCheckState(Qt::Unchecked);
                 }
@@ -2795,7 +2796,7 @@ void DATableDataTest::testColumnViewDialogDiffAndUndo()
             return;
         }
         opened2 = true;
-        QListWidget* list = dlg->findChild< QListWidget* >(QStringLiteral("listColumns"));
+        QListWidget* list = dlg->findChild< QListWidget* >(QStringLiteral("checkList"));
         QSpinBox* spin    = dlg->findChild< QSpinBox* >(QStringLiteral("spinFreeze"));
         if (list && spin) {
             for (int i = 0; i < list->count(); ++i) {
@@ -2841,7 +2842,7 @@ void DATableDataTest::testColumnViewDialogDuplicateNamesInitialAndCancel()
             return;
         }
         opened = true;
-        QListWidget* list = dlg->findChild< QListWidget* >(QStringLiteral("listColumns"));
+        QListWidget* list = dlg->findChild< QListWidget* >(QStringLiteral("checkList"));
         QSpinBox* spin    = dlg->findChild< QSpinBox* >(QStringLiteral("spinFreeze"));
         if (list && spin) {
             const int n = list->count();
@@ -2875,7 +2876,7 @@ void DATableDataTest::testColumnViewDialogDuplicateNamesInitialAndCancel()
             return;
         }
         opened2 = true;
-        QListWidget* list = dlg->findChild< QListWidget* >(QStringLiteral("listColumns"));
+        QListWidget* list = dlg->findChild< QListWidget* >(QStringLiteral("checkList"));
         if (list && list->count() == 3) {
             list->item(1)->setCheckState(Qt::Unchecked);  // "a (2)"
         }

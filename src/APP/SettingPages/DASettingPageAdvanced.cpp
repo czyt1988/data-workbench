@@ -1,9 +1,8 @@
 #include "DASettingPageAdvanced.h"
-#include <QFileDialog>
-#include <QListWidgetItem>
 #include <QSignalBlocker>
 #include "ui_DASettingPageAdvanced.h"
 #include "DAAppConfig.h"
+#include "DAFilePathEditWidget.h"
 #include "DALogCategory.h"
 namespace DA
 {
@@ -23,7 +22,8 @@ DASettingPageAdvanced::DASettingPageAdvanced(QWidget* parent)
     ui->spinBoxAutosaveInterval->setSuffix(tr(" min"));  // cn: 分钟
     ui->spinBoxAutosaveInterval->setSpecialValueText(tr("Disabled"));  // cn:禁用
     // 脚本工作区
-    ui->lineEditWorkspaceDir->setPlaceholderText(tr("Empty for system temporary directory"));  // cn:留空使用系统临时目录
+    ui->filePathEditWorkspaceDir->setMode(DAFilePathEditWidget::Mode::ExistingDirectory);
+    ui->filePathEditWorkspaceDir->setPlaceholderText(tr("Empty for system temporary directory"));  // cn:留空使用系统临时目录
     ui->spinBoxScriptTimeout->setRange(0, 3600);
     ui->spinBoxScriptTimeout->setSuffix(tr(" s"));
     ui->spinBoxScriptTimeout->setSpecialValueText(tr("Disabled"));  // cn:禁用
@@ -42,14 +42,10 @@ DASettingPageAdvanced::DASettingPageAdvanced(QWidget* parent)
             QOverload< int >::of(&QSpinBox::valueChanged),
             this,
             &DASettingPageAdvanced::onSpinBoxAutosaveIntervalValueChanged);
-    connect(ui->lineEditWorkspaceDir,
-            &QLineEdit::textChanged,
+    connect(ui->filePathEditWorkspaceDir,
+            &DAFilePathEditWidget::pathChanged,
             this,
-            &DASettingPageAdvanced::onLineEditWorkspaceDirTextChanged);
-    connect(ui->toolButtonWorkspaceDirBrowse,
-            &QToolButton::clicked,
-            this,
-            &DASettingPageAdvanced::onToolButtonWorkspaceDirBrowseClicked);
+            &DASettingPageAdvanced::onWorkspaceDirChanged);
     connect(ui->spinBoxScriptTimeout,
             QOverload< int >::of(&QSpinBox::valueChanged),
             this,
@@ -78,7 +74,7 @@ void DASettingPageAdvanced::apply()
     advanced.autosaveIntervalMin = ui->spinBoxAutosaveInterval->value();
     // 脚本分节
     DAScriptSettings script = mAppConfig->script();
-    script.workspaceDir     = ui->lineEditWorkspaceDir->text().trimmed();
+    script.workspaceDir     = ui->filePathEditWorkspaceDir->getFilePath().trimmed();
     script.scriptTimeoutSec = ui->spinBoxScriptTimeout->value();
     script.scriptResultMaxChars = ui->spinBoxScriptResultMaxChars->value();
     // setter 会发出 sectionChanged，由主窗口负责热应用；保存由设置对话框触发
@@ -115,7 +111,7 @@ bool DASettingPageAdvanced::setAppConfig(DAAppConfig* p)
     ui->spinBoxAutosaveInterval->setValue(advanced.autosaveIntervalMin);
     // 脚本工作区与执行引擎（取值已在加载时规范化）
     const DAScriptSettings& script = p->script();
-    ui->lineEditWorkspaceDir->setText(script.workspaceDir);
+    ui->filePathEditWorkspaceDir->setFilePath(script.workspaceDir);
     ui->spinBoxScriptTimeout->setValue(script.scriptTimeoutSec);
     ui->spinBoxScriptResultMaxChars->setValue(script.scriptResultMaxChars);
     return true;
@@ -145,19 +141,10 @@ void DASettingPageAdvanced::onSpinBoxAutosaveIntervalValueChanged(int v)
     emit settingChanged();
 }
 
-void DASettingPageAdvanced::onLineEditWorkspaceDirTextChanged(const QString& text)
+void DASettingPageAdvanced::onWorkspaceDirChanged(const QString& path)
 {
-    Q_UNUSED(text);
+    Q_UNUSED(path);
     emit settingChanged();
-}
-
-void DASettingPageAdvanced::onToolButtonWorkspaceDirBrowseClicked()
-{
-    QString d = QFileDialog::getExistingDirectory(this, tr("Select script workspace directory"));  // cn:选择脚本工作区目录
-    if (!d.isEmpty()) {
-        ui->lineEditWorkspaceDir->setText(d);
-        emit settingChanged();
-    }
 }
 
 void DASettingPageAdvanced::onSpinBoxScriptTimeoutValueChanged(int v)

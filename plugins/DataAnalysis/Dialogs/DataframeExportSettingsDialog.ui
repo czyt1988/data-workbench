@@ -15,25 +15,7 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_2">
-     <item>
-      <widget class="QLineEdit" name="lineEditFolderPath"/>
-     </item>
-     <item>
-      <widget class="QToolButton" name="toolButtonBrowser">
-       <property name="toolTip">
-        <string>Select Folder To Export</string>
-       </property>
-       <property name="text">
-        <string/>
-       </property>
-       <property name="icon">
-        <iconset resource="../DataAnalysisResource.qrc">
-         <normaloff>:/DataAnalysisPluginIcon/icon/folder.svg</normaloff>:/DataAnalysisPluginIcon/icon/folder.svg</iconset>
-       </property>
-      </widget>
-     </item>
-    </layout>
+    <widget class="DA::DAFilePathEditWidget" name="filePathEditFolder"/>
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
@@ -240,6 +222,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>DA::DAFilePathEditWidget</class>
+   <extends>QWidget</extends>
+   <header>DAFilePathEditWidget.h</header>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="../DataAnalysisResource.qrc"/>
  </resources>
