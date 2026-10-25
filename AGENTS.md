@@ -513,3 +513,4 @@ Linux GCC 下 `uint64_t` 是 `unsigned long`，MSVC 下是 `unsigned long long`�
 - `src/DAGui/NodeSetting/` 为工作流节点通用设置面板模块，遵循 ChartSetting 的三层架构 (基类→面板→具体面板 + 单例工厂 + QStackedWidget 调度器)
 - 如果你首次编译或者首次使用`git worktree`命令,你需要先拉取第三方库：`git submodule update --init --recursive`
 - 第三方库有如下几个库也是我维护，你在此项目中是可用改动的：`src\3rdparty\SARibbon`、`src\3rdparty\qwt`、`src\3rdparty\DAWidgets`,除了这三个库，其它第三方库禁止改动其代码
+- 在涉及界面的开发时，需要思考这个界面的控件是否可以放到`src\3rdparty\DAWidgets`作为通用模块，可以在其他模块复用，是否能想到第二个、与当前业务无关的复用场景？只有一个使用点的控件不进，API 是否能稳定下来、是否能写 QtTest？一次性业务弹窗不进。只依赖 Qt / DAWidgets？只要 include 了项目内其它模块，就不能进 DAWidgets。如果适合，则可放到DAWidgets；
