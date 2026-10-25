@@ -582,8 +582,10 @@ void DADataOperateWidget::onDataCloseRequested(DADataOperatePageWidget* page)
         return;
     }
     QMessageBox::StandardButton btn = QMessageBox::question(this,
-                                                             tr("Question"),                             // cn:询问
-                                                             tr("Whether to close the data table widget"));  // cn:是否关闭数据表窗口
+                                                             tr("Question"),                                 // cn:询问
+                                                             tr("Whether to close the data table widget"),  // cn:是否关闭数据表窗口
+                                                             QMessageBox::Yes | QMessageBox::No,
+                                                             QMessageBox::No);
     if (QMessageBox::Yes != btn) {
         return;
     }

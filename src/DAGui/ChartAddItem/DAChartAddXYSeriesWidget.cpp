@@ -4,6 +4,7 @@
 #include <QHeaderView>
 #include "ui_DAChartAddXYSeriesWidget.h"
 // DA
+#include "DAChartAutoincrementSeriesWidget.h"
 #include "DADataManager.h"
 #include "DAAutoincrementSeries.hpp"
 #include "DALogCategory.h"
@@ -38,8 +39,33 @@ DAChartAddXYSeriesWidget::DAChartAddXYSeriesWidget(QWidget* parent)
                              tr("Only one series can be used as x, the extra series were ignored")  // cn:x只能添加一个序列，多余的序列已被忽略
         );
     });
-    connect(ui->groupBoxXAutoincrement, &QGroupBox::clicked, this, &DAChartAddXYSeriesWidget::onGroupBoxXAutoincrementClicked);
-    connect(ui->groupBoxYAutoincrement, &QGroupBox::clicked, this, &DAChartAddXYSeriesWidget::onGroupBoxYAutoincrementClicked);
+    connect(ui->widgetXAutoincrement,
+            &DAChartAutoincrementSeriesWidget::seriesEnabledChanged,
+            this,
+            &DAChartAddXYSeriesWidget::onGroupBoxXAutoincrementClicked);
+    connect(ui->widgetYAutoincrement,
+            &DAChartAutoincrementSeriesWidget::seriesEnabledChanged,
+            this,
+            &DAChartAddXYSeriesWidget::onGroupBoxYAutoincrementClicked);
+    // 勾选自增后禁用对应的序列选择区（沿用原 .ui 的 auto-connection 语义）
+    connect(ui->widgetXAutoincrement, &DAChartAutoincrementSeriesWidget::seriesEnabledChanged, ui->listViewX, &QWidget::setDisabled);
+    connect(ui->widgetXAutoincrement,
+            &DAChartAutoincrementSeriesWidget::seriesEnabledChanged,
+            ui->toolButtonRemoveFromX,
+            &QWidget::setDisabled);
+    connect(ui->widgetXAutoincrement,
+            &DAChartAutoincrementSeriesWidget::seriesEnabledChanged,
+            ui->toolButtonAddToX,
+            &QWidget::setDisabled);
+    connect(ui->widgetYAutoincrement, &DAChartAutoincrementSeriesWidget::seriesEnabledChanged, ui->listViewY, &QWidget::setDisabled);
+    connect(ui->widgetYAutoincrement,
+            &DAChartAutoincrementSeriesWidget::seriesEnabledChanged,
+            ui->toolButtonRemoveFromY,
+            &QWidget::setDisabled);
+    connect(ui->widgetYAutoincrement,
+            &DAChartAutoincrementSeriesWidget::seriesEnabledChanged,
+            ui->toolButtonAddToY,
+            &QWidget::setDisabled);
     connect(ui->listViewX, &DAPySeriesListView::seriesChanged, this, &DAChartAddXYSeriesWidget::onXSeriesChanged);
     connect(ui->listViewY, &DAPySeriesListView::seriesChanged, this, &DAChartAddXYSeriesWidget::onYSeriesChanged);
     connect(ui->toolButtonRemoveFromX, &QToolButton::clicked, this, &DAChartAddXYSeriesWidget::onButtonXRemoveClicked);
@@ -59,7 +85,7 @@ DAChartAddXYSeriesWidget::~DAChartAddXYSeriesWidget()
  */
 bool DAChartAddXYSeriesWidget::isXAutoincrement() const
 {
-    return ui->groupBoxXAutoincrement->isChecked();
+    return ui->widgetXAutoincrement->isSeriesEnabled();
 }
 
 /**
@@ -68,7 +94,7 @@ bool DAChartAddXYSeriesWidget::isXAutoincrement() const
  */
 bool DAChartAddXYSeriesWidget::isYAutoincrement() const
 {
-    return ui->groupBoxYAutoincrement->isChecked();
+    return ui->widgetYAutoincrement->isSeriesEnabled();
 }
 
 void DAChartAddXYSeriesWidget::setDataManager(DADataManager* dmgr)
@@ -141,30 +167,13 @@ bool DAChartAddXYSeriesWidget::buildSeriesSpec(DAChartXYSeriesSpec& spec, DAChar
     if (!spec.yAutoincrement) {
         spec.ySeries = getYList();
     }
-    bool isOK = false;
     if (spec.xAutoincrement) {
-        spec.xBase = ui->lineEditXInitValue->text().toDouble(&isOK);
-        if (!isOK) {
-            error.code = DAChartSeriesDataError::InvalidXInitialValue;
-            return false;
-        }
-        spec.xStep = ui->lineEditXStepValue->text().toDouble(&isOK);
-        if (!isOK) {
-            error.code = DAChartSeriesDataError::InvalidXStepValue;
-            return false;
-        }
+        spec.xBase = ui->widgetXAutoincrement->startValue();
+        spec.xStep = ui->widgetXAutoincrement->stepValue();
     }
     if (spec.yAutoincrement) {
-        spec.yBase = ui->lineEditYInitValue->text().toDouble(&isOK);
-        if (!isOK) {
-            error.code = DAChartSeriesDataError::InvalidYInitialValue;
-            return false;
-        }
-        spec.yStep = ui->lineEditYStepValue->text().toDouble(&isOK);
-        if (!isOK) {
-            error.code = DAChartSeriesDataError::InvalidYStepValue;
-            return false;
-        }
+        spec.yBase = ui->widgetYAutoincrement->startValue();
+        spec.yStep = ui->widgetYAutoincrement->stepValue();
     }
     return true;
 }
@@ -290,7 +299,7 @@ void DAChartAddXYSeriesWidget::onYSeriesChanged()
 void DAChartAddXYSeriesWidget::updateTable()
 {
     ui->tableViewXY->clear();
-    if (ui->groupBoxXAutoincrement->isChecked()) {
+    if (ui->widgetXAutoincrement->isSeriesEnabled()) {
         double base, step;
         if (tryGetXSelfInc(base, step)) {
             ui->tableViewXY->setSeriesAt(0, DAAutoincrementSeries< double >(base, step));
@@ -302,7 +311,7 @@ void DAChartAddXYSeriesWidget::updateTable()
         }
     }
     // y 支持多列：第一列落到 1 号位，其余依次追加
-    if (ui->groupBoxYAutoincrement->isChecked()) {
+    if (ui->widgetYAutoincrement->isSeriesEnabled()) {
         double base, step;
         if (tryGetYSelfInc(base, step)) {
             ui->tableViewXY->setSeriesAt(1, DAAutoincrementSeries< double >(base, step));
@@ -409,17 +418,8 @@ void DAChartAddXYSeriesWidget::showParentGuideDialog()
  */
 bool DAChartAddXYSeriesWidget::tryGetXSelfInc(double& base, double& step) const
 {
-    bool isOK = false;
-    double a  = ui->lineEditXInitValue->text().toDouble(&isOK);
-    if (!isOK) {
-        return false;
-    }
-    double b = ui->lineEditXStepValue->text().toDouble(&isOK);
-    if (!isOK) {
-        return false;
-    }
-    base = a;
-    step = b;
+    base = ui->widgetXAutoincrement->startValue();
+    step = ui->widgetXAutoincrement->stepValue();
     return true;
 }
 
@@ -431,17 +431,8 @@ bool DAChartAddXYSeriesWidget::tryGetXSelfInc(double& base, double& step) const
  */
 bool DAChartAddXYSeriesWidget::tryGetYSelfInc(double& base, double& step) const
 {
-    bool isOK = false;
-    double a  = ui->lineEditYInitValue->text().toDouble(&isOK);
-    if (!isOK) {
-        return false;
-    }
-    double b = ui->lineEditYStepValue->text().toDouble(&isOK);
-    if (!isOK) {
-        return false;
-    }
-    base = a;
-    step = b;
+    base = ui->widgetYAutoincrement->startValue();
+    step = ui->widgetYAutoincrement->stepValue();
     return true;
 }
 

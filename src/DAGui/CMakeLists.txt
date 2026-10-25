@@ -23,7 +23,6 @@ set(DA_LIB_HEADER_FILES
     DATableStatsWidget.h
     DAFigureFactory.h
     DAGraphicsPixmapItemSettingWidget.h
-    DADataListView.h
     DADataManageTableView.h
     DADataManageWidget.h
     DADataManagerTreeWidget.h
@@ -91,7 +90,6 @@ set(DA_LIB_SOURCE_FILES
     DACacheWindowTableView.cpp
     DAVirtualScrollBar.cpp
     DADataHeaderView.cpp
-    DADataListView.cpp
     DADataManageTableView.cpp
     DADataManagerTreeWidget.cpp
     DADataManageWidget.cpp
@@ -178,21 +176,18 @@ set(DA_LIB_QT_RC_FILES
 )
 # python about
 list(APPEND DA_LIB_HEADER_FILES
-    DADataframeToVectorPointWidget.h
     DADataOperateOfDataFrameWidget.h
     DAPyDataFrameTableView.h
     DAPySeriesTableView.h
     DAPySeriesListView.h
 )
 list(APPEND DA_LIB_SOURCE_FILES
-    DADataframeToVectorPointWidget.cpp
     DADataOperateOfDataFrameWidget.cpp
     DAPyDataFrameTableView.cpp
     DAPySeriesTableView.cpp
     DAPySeriesListView.cpp
 )
 list(APPEND DA_LIB_QT_UI_FILES
-    DADataframeToVectorPointWidget.ui
     DADataOperateOfDataFrameWidget.ui
 )
 # 子目录
@@ -230,7 +225,6 @@ list(APPEND DA_LIB_HEADER_FILES_Dialog
     ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnCastToNumeric.h
     ${DA_LIB_SUBDIR_Dialog}/DADialogInsertNewColumn.h
     ${DA_LIB_SUBDIR_Dialog}/DADialogPythonArgs.h
-    ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameSeriesSelector.h
     ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnDescribe.h
     ${DA_LIB_SUBDIR_Dialog}/DADialogAgentSessionManager.h
     ${DA_LIB_SUBDIR_Dialog}/DADialogTableDisplayFormat.h
@@ -256,7 +250,6 @@ list(APPEND DA_LIB_SOURCE_FILES_Dialog
     ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnCastToNumeric.cpp
     ${DA_LIB_SUBDIR_Dialog}/DADialogInsertNewColumn.cpp
     ${DA_LIB_SUBDIR_Dialog}/DADialogPythonArgs.cpp
-    ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameSeriesSelector.cpp
     ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnDescribe.cpp
     ${DA_LIB_SUBDIR_Dialog}/DADialogAgentSessionManager.cpp
     ${DA_LIB_SUBDIR_Dialog}/DADialogTableDisplayFormat.cpp
@@ -281,7 +274,6 @@ list(APPEND DA_LIB_QT_UI_FILES_Dialog
     ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnCastToDatetime.ui
     ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnCastToNumeric.ui
     ${DA_LIB_SUBDIR_Dialog}/DADialogInsertNewColumn.ui
-    ${DA_LIB_SUBDIR_Dialog}/DADialogDataFrameSeriesSelector.ui
     ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnDescribe.ui
     ${DA_LIB_SUBDIR_Dialog}/DADialogFindReplace.ui
     ${DA_LIB_SUBDIR_Dialog}/DADialogTableColumnView.ui
@@ -385,6 +377,7 @@ list(APPEND DA_LIB_HEADER_FILES_ChartAddItem
         ${DA_LIB_SUBDIR_ChartAddItem}/DAChartSeriesSelectWidget.h
         ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddXYSeriesWidget.h
         ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddXYESeriesWidget.h
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAutoincrementSeriesWidget.h
         ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddtGridRasterDataWidget.h
         ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddOHLCSeriesWidget.h
         ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddCurveWidget.h
@@ -419,6 +412,7 @@ list(APPEND DA_LIB_HEADER_FILES_ChartAddItem
         ${DA_LIB_SUBDIR_ChartAddItem}/DAChartSeriesSelectWidget.cpp
         ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddXYSeriesWidget.cpp
         ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddXYESeriesWidget.cpp
+        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAutoincrementSeriesWidget.cpp
         ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddtGridRasterDataWidget.cpp
         ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddOHLCSeriesWidget.cpp
         ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddCurveWidget.cpp

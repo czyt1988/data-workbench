@@ -1,6 +1,7 @@
 #include "DAChartAddMultiBarWidget.h"
 #include "ui_DAChartAddMultiBarWidget.h"
 #include <QMessageBox>
+#include "DAChartAutoincrementSeriesWidget.h"
 #include "DADataManager.h"
 #include "DALogCategory.h"
 #include "DAPySeriesListView.h"
@@ -19,7 +20,19 @@ DAChartAddMultiBarWidget::DAChartAddMultiBarWidget(QWidget* parent)
 	ui->listViewY->setAcceptMode(DAPySeriesListView::AcceptMultDataframeMultSeries);
 	connect(ui->listViewX, &DAPySeriesListView::seriesChanged, this, &DAChartAddMultiBarWidget::onXSeriesChanged);
 	connect(ui->listViewY, &DAPySeriesListView::seriesChanged, this, &DAChartAddMultiBarWidget::onYSeriesChanged);
-	connect(ui->groupBoxXAutoincrement, &QGroupBox::clicked, this, &DAChartAddMultiBarWidget::onGroupBoxXAutoincrementClicked);
+	connect(ui->widgetXAutoincrement,
+		&DAChartAutoincrementSeriesWidget::seriesEnabledChanged,
+		this,
+		&DAChartAddMultiBarWidget::onGroupBoxXAutoincrementClicked);
+	// 勾选自增后禁用 X 序列选择区（沿用原 .ui 的 auto-connection 语义）
+	connect(ui->widgetXAutoincrement,
+		&DAChartAutoincrementSeriesWidget::seriesEnabledChanged,
+		ui->listViewX,
+		&QWidget::setDisabled);
+	connect(ui->widgetXAutoincrement,
+		&DAChartAutoincrementSeriesWidget::seriesEnabledChanged,
+		ui->toolButtonRemoveFromX,
+		&QWidget::setDisabled);
 	connect(ui->toolButtonRemoveFromX, &QToolButton::clicked, this, &DAChartAddMultiBarWidget::onButtonXRemoveClicked);
 	connect(ui->toolButtonRemoveFromY, &QToolButton::clicked, this, &DAChartAddMultiBarWidget::onButtonYRemoveClicked);
 }
@@ -61,30 +74,14 @@ void DAChartAddMultiBarWidget::onButtonYRemoveClicked()
 
 bool DAChartAddMultiBarWidget::tryGetXSelfInc(double& base, double& step)
 {
-	bool isOK = false;
-	double a  = ui->lineEditXInitValue->text().toDouble(&isOK);
-	if (!isOK) {
-		return false;
-	}
-	double b = ui->lineEditXStepValue->text().toDouble(&isOK);
-	if (!isOK) {
-		return false;
-	}
-	base = a;
-	step = b;
+	base = ui->widgetXAutoincrement->startValue();
+	step = ui->widgetXAutoincrement->stepValue();
 	return true;
 }
 
 bool DAChartAddMultiBarWidget::extractXSeries(std::vector< double >& res)
 {
-	if (ui->groupBoxXAutoincrement->isChecked()) {
-		double base, step;
-		if (!tryGetXSelfInc(base, step)) {
-			QMessageBox::warning(this,
-				tr("Warning"),  // cn:警告
-				tr("The initial value and step of x auto increment must be floating-point numbers"));  // cn:x自增序列的初始值和步长必须为浮点数
-			return false;
-		}
+	if (ui->widgetXAutoincrement->isSeriesEnabled()) {
 		// 先留空，后面根据 y 的长度填充
 		return true;
 	}
@@ -160,7 +157,7 @@ QwtPlotItem* DAChartAddMultiBarWidget::createPlotItem()
 	}
 	// 确定 x 长度
 	std::size_t xLen = 0;
-	if (ui->groupBoxXAutoincrement->isChecked()) {
+	if (ui->widgetXAutoincrement->isSeriesEnabled()) {
 		// 用最长的 y 作为长度
 		for (const auto& y : yValues) {
 			xLen = std::max(xLen, y.size());
@@ -175,12 +172,12 @@ QwtPlotItem* DAChartAddMultiBarWidget::createPlotItem()
 	QVector< QwtSetSample > samples;
 	samples.reserve(static_cast< int >(xLen));
 	double xBase = 1.0, xStep = 1.0;
-	if (ui->groupBoxXAutoincrement->isChecked()) {
+	if (ui->widgetXAutoincrement->isSeriesEnabled()) {
 		tryGetXSelfInc(xBase, xStep);
 	}
 	try {
 		for (std::size_t i = 0; i < xLen; ++i) {
-			double xv = ui->groupBoxXAutoincrement->isChecked() ? (xBase + i * xStep) : (i < xValues.size() ? xValues[ i ] : 0.0);
+			double xv = ui->widgetXAutoincrement->isSeriesEnabled() ? (xBase + i * xStep) : (i < xValues.size() ? xValues[ i ] : 0.0);
 			QVector< double > set;
 			set.reserve(yValues.size());
 			for (const auto& y : yValues) {

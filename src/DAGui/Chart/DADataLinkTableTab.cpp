@@ -500,7 +500,8 @@ void DADataLinkTableTab::onDeleteColumn()
     }
     int ret = QMessageBox::question(this, tr("Delete"),  // cn:删除
                                     tr("Are you sure to delete this column?"),  // cn:确定删除这一列吗？
-                                    QMessageBox::Yes | QMessageBox::No);
+                                    QMessageBox::Yes | QMessageBox::No,
+                                    QMessageBox::No);
     if (ret != QMessageBox::Yes) {
         return;
     }
@@ -562,7 +563,8 @@ void DADataLinkTableTab::onDeleteAllColumns()
 {
     int ret = QMessageBox::question(this, tr("Delete All"),  // cn:全部删除
                                     tr("Are you sure to delete all columns? This cannot be undone."),  // cn:确定删除所有列吗？此操作不可撤销。
-                                    QMessageBox::Yes | QMessageBox::No);
+                                    QMessageBox::Yes | QMessageBox::No,
+                                    QMessageBox::No);
     if (ret != QMessageBox::Yes) {
         return;
     }

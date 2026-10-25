@@ -23,9 +23,11 @@ enum class DAAppSavePromptChoice
 inline DAAppSavePromptChoice toAppSavePromptChoice(QMessageBox::StandardButton btn)
 {
     switch (btn) {
-    case QMessageBox::Yes:
+    case QMessageBox::Save:
+    case QMessageBox::Yes:  // 兼容旧调用点
         return DAAppSavePromptChoice::Save;
-    case QMessageBox::No:
+    case QMessageBox::Discard:
+    case QMessageBox::No:  // 兼容旧调用点
         return DAAppSavePromptChoice::Discard;
     case QMessageBox::Cancel:
     default:

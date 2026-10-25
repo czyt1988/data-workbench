@@ -1,6 +1,7 @@
 #include "DAChartAddXYESeriesWidget.h"
 #include "ui_DAChartAddXYESeriesWidget.h"
 #include <QMessageBox>
+#include "DAChartAutoincrementSeriesWidget.h"
 #include "DADataManager.h"
 #include "DALogCategory.h"
 #include "DAChartSeriesSelectWidget.h"
@@ -31,8 +32,17 @@ DAChartAddXYESeriesWidget::DAChartAddXYESeriesWidget(QWidget* parent)
     connect(ui->selectWidgetX, &DAChartSeriesSelectWidget::seriesChanged, this, &DAChartAddXYESeriesWidget::onXSeriesChanged);
     connect(ui->selectWidgetY, &DAChartSeriesSelectWidget::seriesChanged, this, &DAChartAddXYESeriesWidget::onYSeriesChanged);
     connect(ui->selectWidgetYE, &DAChartSeriesSelectWidget::seriesChanged, this, &DAChartAddXYESeriesWidget::onYESeriesChanged);
-    connect(ui->groupBoxXAutoincrement, &QGroupBox::clicked, this, &DAChartAddXYESeriesWidget::onGroupBoxXAutoincrementClicked);
-    connect(ui->groupBoxYAutoincrement, &QGroupBox::clicked, this, &DAChartAddXYESeriesWidget::onGroupBoxYAutoincrementClicked);
+    connect(ui->widgetXAutoincrement,
+            &DAChartAutoincrementSeriesWidget::seriesEnabledChanged,
+            this,
+            &DAChartAddXYESeriesWidget::onGroupBoxXAutoincrementClicked);
+    connect(ui->widgetYAutoincrement,
+            &DAChartAutoincrementSeriesWidget::seriesEnabledChanged,
+            this,
+            &DAChartAddXYESeriesWidget::onGroupBoxYAutoincrementClicked);
+    // 勾选自增后禁用对应的序列选择区（沿用原 .ui 的 auto-connection 语义）
+    connect(ui->widgetXAutoincrement, &DAChartAutoincrementSeriesWidget::seriesEnabledChanged, ui->selectWidgetX, &QWidget::setDisabled);
+    connect(ui->widgetYAutoincrement, &DAChartAutoincrementSeriesWidget::seriesEnabledChanged, ui->selectWidgetY, &QWidget::setDisabled);
 }
 
 DAChartAddXYESeriesWidget::~DAChartAddXYESeriesWidget()
@@ -46,7 +56,7 @@ DAChartAddXYESeriesWidget::~DAChartAddXYESeriesWidget()
  */
 bool DAChartAddXYESeriesWidget::isXAutoincrement() const
 {
-    return ui->groupBoxXAutoincrement->isChecked();
+    return ui->widgetXAutoincrement->isSeriesEnabled();
 }
 
 /**
@@ -55,7 +65,7 @@ bool DAChartAddXYESeriesWidget::isXAutoincrement() const
  */
 bool DAChartAddXYESeriesWidget::isYAutoincrement() const
 {
-    return ui->groupBoxYAutoincrement->isChecked();
+    return ui->widgetYAutoincrement->isSeriesEnabled();
 }
 
 /**
@@ -170,64 +180,24 @@ void DAChartAddXYESeriesWidget::onDataManagerChanged(DADataManager* dmgr)
 /**
  * @brief 获取x自增
  * @param v
- * @return 成功返回true
- * @note 注意此函数失败会有警告对话框
+ * @return 恒为 true（QDoubleSpinBox 保证输入合法）
  */
 bool DAChartAddXYESeriesWidget::getXAutoIncFromUI(DAAutoincrementSeries< double >& v)
 {
-    bool isOK   = false;
-    double base = ui->lineEditXInitValue->text().toDouble(&isOK);
-    if (!isOK) {
-        QMessageBox::warning(
-            this,
-            tr("Warning"),                                                                                 // cn:警告
-            tr("The initial value of x auto increment series must be a floating-point arithmetic number")  // cn:x自增序列的初始值必须为浮点数
-        );
-        return false;
-    }
-    double step = ui->lineEditXStepValue->text().toDouble(&isOK);
-    if (!isOK) {
-        QMessageBox::warning(this,
-                             tr("Warning"),  // cn:警告
-                             tr("The step value of x auto increment series "
-                                "must be a floating-point arithmetic number")  // cn:x自增序列的步长必须为浮点数
-        );
-        return false;
-    }
-    v.setBaseValue(base);
-    v.setStepValue(step);
+    v.setBaseValue(ui->widgetXAutoincrement->startValue());
+    v.setStepValue(ui->widgetXAutoincrement->stepValue());
     return true;
 }
 
 /**
  * @brief 获取y自增
  * @param v
- * @return 成功返回true
- * @note 注意此函数失败会有警告对话框
+ * @return 恒为 true（QDoubleSpinBox 保证输入合法）
  */
 bool DAChartAddXYESeriesWidget::getYAutoIncFromUI(DAAutoincrementSeries< double >& v)
 {
-    bool isOK   = false;
-    double base = ui->lineEditYInitValue->text().toDouble(&isOK);
-    if (!isOK) {
-        QMessageBox::warning(this,
-                             tr("Warning"),  // cn:警告
-                             tr("The initial value of y auto increment series "
-                                "must be a floating-point arithmetic number")  // cn:y自增序列的初始值必须为浮点数
-        );
-        return false;
-    }
-    double step = ui->lineEditYStepValue->text().toDouble(&isOK);
-    if (!isOK) {
-        QMessageBox::warning(this,
-                             tr("Warning"),  // cn:警告
-                             tr("The step value of y auto increment series "
-                                "must be a floating-point arithmetic number")  // cn:y自增序列的步长必须为浮点数
-        );
-        return false;
-    }
-    v.setBaseValue(base);
-    v.setStepValue(step);
+    v.setBaseValue(ui->widgetYAutoincrement->startValue());
+    v.setStepValue(ui->widgetYAutoincrement->stepValue());
     return true;
 }
 
@@ -239,8 +209,8 @@ bool DAChartAddXYESeriesWidget::getYAutoIncFromUI(DAAutoincrementSeries< double 
  */
 bool DAChartAddXYESeriesWidget::getToVectorPointFFromUI(QVector< QwtIntervalSample >& res)
 {
-    bool isXAuto = ui->groupBoxXAutoincrement->isChecked();
-    bool isYAuto = ui->groupBoxYAutoincrement->isChecked();
+    bool isXAuto = ui->widgetXAutoincrement->isSeriesEnabled();
+    bool isYAuto = ui->widgetYAutoincrement->isSeriesEnabled();
     if (isXAuto && isYAuto) {
         QMessageBox::warning(this,
                              tr("Warning"),                                                 // cn:警告
@@ -403,17 +373,8 @@ bool DAChartAddXYESeriesWidget::getToVectorPointFFromUI(QVector< QwtIntervalSamp
  */
 bool DAChartAddXYESeriesWidget::tryGetXSelfInc(double& base, double& step)
 {
-    bool isOK = false;
-    double a  = ui->lineEditXInitValue->text().toDouble(&isOK);
-    if (!isOK) {
-        return false;
-    }
-    double b = ui->lineEditXStepValue->text().toDouble(&isOK);
-    if (!isOK) {
-        return false;
-    }
-    base = a;
-    step = b;
+    base = ui->widgetXAutoincrement->startValue();
+    step = ui->widgetXAutoincrement->stepValue();
     return true;
 }
 
@@ -425,17 +386,8 @@ bool DAChartAddXYESeriesWidget::tryGetXSelfInc(double& base, double& step)
  */
 bool DAChartAddXYESeriesWidget::tryGetYSelfInc(double& base, double& step)
 {
-    bool isOK = false;
-    double a  = ui->lineEditYInitValue->text().toDouble(&isOK);
-    if (!isOK) {
-        return false;
-    }
-    double b = ui->lineEditYStepValue->text().toDouble(&isOK);
-    if (!isOK) {
-        return false;
-    }
-    base = a;
-    step = b;
+    base = ui->widgetYAutoincrement->startValue();
+    step = ui->widgetYAutoincrement->stepValue();
     return true;
 }
 }

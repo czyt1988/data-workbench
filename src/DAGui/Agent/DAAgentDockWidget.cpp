@@ -404,9 +404,11 @@ void DAAgentDockWidget::requestDeleteSession(const QString& sessionId)
     }
     const QMessageBox::StandardButton btn = QMessageBox::question(
         this,
-        tr("Delete Session"),                                          // cn:删除会话
+        tr("Delete Session"),                                           // cn:删除会话
         tr("Delete session \"%1\"? Its chat history will be removed.")  // cn:删除会话“%1”？其聊天记录将被移除。
-            .arg(d->sessionTitle(sessionId)));
+            .arg(d->sessionTitle(sessionId)),
+        QMessageBox::Yes | QMessageBox::No,
+        QMessageBox::No);
     if (QMessageBox::Yes == btn) {
         emit sessionDeleteRequested(sessionId);
     }

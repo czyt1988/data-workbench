@@ -173,9 +173,9 @@ void AppMainWindow::closeEvent(QCloseEvent* e)
         auto btn    = QMessageBox::question(this,
                                             tr("Question"),                          // cn:疑问
                                             tr("Do you need to save the project?"),  // cn:是否需要保存工程？
-                                            QMessageBox::StandardButton::Yes | QMessageBox::StandardButton::No
+                                            QMessageBox::StandardButton::Save | QMessageBox::StandardButton::Discard
                                                 | QMessageBox::StandardButton::Cancel,
-                                            QMessageBox::StandardButton::Yes);
+                                            QMessageBox::StandardButton::Save);
         closeAction = resolveAppCloseAction(true, toAppSavePromptChoice(btn));
     }
     if (DAAppCloseAction::CancelClosing == closeAction) {

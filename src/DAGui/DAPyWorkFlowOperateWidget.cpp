@@ -510,8 +510,9 @@ void DAPyWorkFlowOperateWidget::removeWorkflow(int index)
     QMessageBox::StandardButton btn = QMessageBox::question(
         this,
         tr("Question"),                                                        // cn:疑问
-        tr("Confirm to delete workflow:%1").arg(getWorkFlowWidgetName(index))  // cn:是否确认删除工作流:%1
-    );
+        tr("Confirm to delete workflow:%1").arg(getWorkFlowWidgetName(index)),  // cn:是否确认删除工作流:%1
+        QMessageBox::Yes | QMessageBox::No,
+        QMessageBox::No);
     if (btn != QMessageBox::Yes) {
         return;
     }
@@ -902,7 +903,9 @@ void DAPyWorkFlowOperateWidget::onWorkflowCloseRequested(DAPyWorkFlowEditWidget*
     }
     QMessageBox::StandardButton btn = QMessageBox::question(this,
                                                             tr("Question"),                          // cn:疑问
-                                                            tr("Confirm to close workflow"));  // cn:是否确认关闭工作流
+                                                            tr("Confirm to close workflow"),  // cn:是否确认关闭工作流
+                                                            QMessageBox::Yes | QMessageBox::No,
+                                                            QMessageBox::No);
     if (QMessageBox::Yes != btn) {
         return;
     }

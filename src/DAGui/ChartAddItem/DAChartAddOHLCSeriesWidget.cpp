@@ -1,6 +1,7 @@
 #include "DAChartAddOHLCSeriesWidget.h"
 #include "ui_DAChartAddOHLCSeriesWidget.h"
 #include <QMessageBox>
+#include "DAChartAutoincrementSeriesWidget.h"
 #include "DADataManager.h"
 #include "Models/DADataManagerTreeModel.h"
 #include "DALogCategory.h"
@@ -53,7 +54,12 @@ DAChartAddOHLCSeriesWidget::DAChartAddOHLCSeriesWidget(QWidget* parent)
     connect(ui->selectWidgetH, &DAChartSeriesSelectWidget::seriesChanged, this, &DAChartAddOHLCSeriesWidget::onHSeriesChanged);
     connect(ui->selectWidgetL, &DAChartSeriesSelectWidget::seriesChanged, this, &DAChartAddOHLCSeriesWidget::onLSeriesChanged);
     connect(ui->selectWidgetC, &DAChartSeriesSelectWidget::seriesChanged, this, &DAChartAddOHLCSeriesWidget::onCSeriesChanged);
-    connect(ui->groupBoxTAutoincrement, &QGroupBox::clicked, this, &DAChartAddOHLCSeriesWidget::onGroupBoxTAutoincrementClicked);
+    connect(ui->widgetTAutoincrement,
+            &DAChartAutoincrementSeriesWidget::seriesEnabledChanged,
+            this,
+            &DAChartAddOHLCSeriesWidget::onGroupBoxTAutoincrementClicked);
+    // 勾选自增后禁用时间序列选择区（沿用原 .ui 的 auto-connection 语义）
+    connect(ui->widgetTAutoincrement, &DAChartAutoincrementSeriesWidget::seriesEnabledChanged, ui->selectWidgetT, &QWidget::setDisabled);
 }
 
 DAChartAddOHLCSeriesWidget::~DAChartAddOHLCSeriesWidget()
@@ -67,7 +73,7 @@ DAChartAddOHLCSeriesWidget::~DAChartAddOHLCSeriesWidget()
  */
 bool DAChartAddOHLCSeriesWidget::isTAutoincrement() const
 {
-    return ui->groupBoxTAutoincrement->isChecked();
+    return ui->widgetTAutoincrement->isSeriesEnabled();
 }
 
 /**
@@ -202,32 +208,12 @@ void DAChartAddOHLCSeriesWidget::onDataManagerChanged(DADataManager* dmgr)
 /**
  * @brief 获取x自增
  * @param v
- * @return 成功返回true
- * @note 注意此函数失败会有警告对话框
+ * @return 恒为 true（QDoubleSpinBox 保证输入合法）
  */
 bool DAChartAddOHLCSeriesWidget::getTAutoIncFromUI(DAAutoincrementSeries< double >& v)
 {
-    bool isOK   = false;
-    double base = ui->lineEditTInitValue->text().toDouble(&isOK);
-    if (!isOK) {
-        QMessageBox::warning(
-            this,
-            tr("Warning"),                                                                                 // cn:警告
-            tr("The initial value of t auto increment series must be a floating-point arithmetic number")  // cn:t自增序列的初始值必须为浮点数
-        );
-        return false;
-    }
-    double step = ui->lineEditTStepValue->text().toDouble(&isOK);
-    if (!isOK) {
-        QMessageBox::warning(this,
-                             tr("Warning"),  // cn:警告
-                             tr("The step value of t auto increment series "
-                                "must be a floating-point arithmetic number")  // cn:t自增序列的步长必须为浮点数
-        );
-        return false;
-    }
-    v.setBaseValue(base);
-    v.setStepValue(step);
+    v.setBaseValue(ui->widgetTAutoincrement->startValue());
+    v.setStepValue(ui->widgetTAutoincrement->stepValue());
     return true;
 }
 
@@ -239,7 +225,7 @@ bool DAChartAddOHLCSeriesWidget::getTAutoIncFromUI(DAAutoincrementSeries< double
  */
 bool DAChartAddOHLCSeriesWidget::getToVectorPointFFromUI(QVector< QwtOHLCSample >& res)
 {
-    bool isTAuto = ui->groupBoxTAutoincrement->isChecked();
+    bool isTAuto = ui->widgetTAutoincrement->isSeriesEnabled();
     // 辅助 lambda：从 DAChartSeriesSelectWidget 提取 DAPySeries
     auto extractSeries = [](DAChartSeriesSelectWidget* w) -> DAPySeries {
         QPair< DAData, QString > sel = w->getCurrentSeries();
@@ -393,17 +379,8 @@ bool DAChartAddOHLCSeriesWidget::getToVectorPointFFromUI(QVector< QwtOHLCSample 
  */
 bool DAChartAddOHLCSeriesWidget::tryGetTSelfInc(double& base, double& step)
 {
-    bool isOK = false;
-    double a  = ui->lineEditTInitValue->text().toDouble(&isOK);
-    if (!isOK) {
-        return false;
-    }
-    double b = ui->lineEditTStepValue->text().toDouble(&isOK);
-    if (!isOK) {
-        return false;
-    }
-    base = a;
-    step = b;
+    base = ui->widgetTAutoincrement->startValue();
+    step = ui->widgetTAutoincrement->stepValue();
     return true;
 }
 }

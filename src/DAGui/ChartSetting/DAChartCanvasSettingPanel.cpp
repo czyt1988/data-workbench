@@ -144,25 +144,20 @@ void DAChartCanvasSettingPanel::buildPropertyPanel()
 
     panel->addCollapsibleGroup(tr("Style")  // cn:样式
     );
-    // FrameStyle: 使用QComboBox填充QFrame::Shape枚举
-    QComboBox* frameStyleCombo = new QComboBox(this);
-    frameStyleCombo->addItem(tr("No Frame")  // cn:无边框
-                             , static_cast< int >(QFrame::NoFrame));
-    frameStyleCombo->addItem(tr("Box")  // cn:方框
-                             , static_cast< int >(QFrame::Box));
-    frameStyleCombo->addItem(tr("Panel")  // cn:面板
-                             , static_cast< int >(QFrame::Panel));
-    frameStyleCombo->addItem(tr("Styled Panel")  // cn:样式面板
-                             , static_cast< int >(QFrame::StyledPanel));
-    frameStyleCombo->addItem(tr("Win Panel")  // cn:窗口面板
-                             , static_cast< int >(QFrame::WinPanel));
-
-    connect(
-        frameStyleCombo, QOverload< int >::of(&QComboBox::currentIndexChanged), panel, &DAPropertyPanelContainerWidget::propertyValueChanged
-    );
-
-    panel->addProperty(PID_FrameStyle, tr("Frame Shape")  // cn:边框形状
-                       , frameStyleCombo);
+    // FrameStyle：addEnumProperty 把 QFrame::Shape 写进 itemData，
+    // handler 读 currentData()，不再把 combo 索引当成 PropertyId 转发
+    panel->addEnumProperty(PID_FrameStyle,
+                           tr("Frame Shape"),  // cn:边框形状
+                           { tr("No Frame"),    // cn:无边框
+                             tr("Box"),         // cn:方框
+                             tr("Panel"),       // cn:面板
+                             tr("Styled Panel"),  // cn:样式面板
+                             tr("Win Panel") },  // cn:窗口面板
+                           { static_cast< int >(QFrame::NoFrame),
+                             static_cast< int >(QFrame::Box),
+                             static_cast< int >(QFrame::Panel),
+                             static_cast< int >(QFrame::StyledPanel),
+                             static_cast< int >(QFrame::WinPanel) });
     panel->endGroup();
 }
 

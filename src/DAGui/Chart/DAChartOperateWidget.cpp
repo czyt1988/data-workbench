@@ -539,7 +539,9 @@ void DAChartOperateWidget::onFigureCloseRequested(DAFigureWidget* fig)
     }
     QMessageBox::StandardButton btn = QMessageBox::question(this,
                                                             tr("Question"),                             // cn:询问
-                                                            tr("Whether to close the figure widget"));  // cn:是否关闭绘图窗口
+                                                            tr("Whether to close the figure widget"),  // cn:是否关闭绘图窗口
+                                                            QMessageBox::Yes | QMessageBox::No,
+                                                            QMessageBox::No);
     if (QMessageBox::Yes != btn) {
         return;
     }

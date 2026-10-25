@@ -136,7 +136,7 @@
 #define DAAPPCONTROLLER_PASS()                                                                                         \
     QMessageBox::warning(                                                                                              \
         app(),                                                                                                         \
-        QCoreApplication::translate("DAAppRibbonArea", "warning", nullptr),                                            \
+        QCoreApplication::translate("DAAppRibbonArea", "Warning", nullptr),                                             \
         QCoreApplication::translate("DAAppRibbonArea",                                                                 \
                                     "The current function is not implemented, only the UI is reserved, "               \
                                     "please pay attention: https://gitee.com/czyt1988/data-work-flow",                 \
@@ -865,8 +865,9 @@ void DAAppController::saveAs()
         QMessageBox::StandardButton btn = QMessageBox::question(
             app(),
             tr("Warning"),                                                      // cn:警告
-            tr("Whether to overwrite the file: %1").arg(fi.absoluteFilePath())  // cn:是否覆盖文件:%1
-        );
+            tr("Whether to overwrite the file: %1").arg(fi.absoluteFilePath()),  // cn:是否覆盖文件:%1
+            QMessageBox::StandardButton::Yes | QMessageBox::StandardButton::No,
+            QMessageBox::StandardButton::No);
         if (btn != QMessageBox::Yes) {
             return;
         }
@@ -1337,8 +1338,9 @@ bool DAAppController::openCheck()
             app(),
             tr("Question"),  // cn:提示
             tr("The current project has unsaved changes. Do you want to save before opening another project?"),  // cn:当前工程有未保存的更改，是否在打开其他工程之前保存？
-            QMessageBox::StandardButton::Yes | QMessageBox::StandardButton::No | QMessageBox::StandardButton::Cancel,
-            QMessageBox::StandardButton::Yes);
+            QMessageBox::StandardButton::Save | QMessageBox::StandardButton::Discard
+                | QMessageBox::StandardButton::Cancel,
+            QMessageBox::StandardButton::Save);
         switch (resolveAppOpenPreparation(hasProjectContent, true, toAppSavePromptChoice(btn))) {
         case DAAppOpenPreparation::SaveThenOpen:
             return save();
@@ -1355,8 +1357,9 @@ bool DAAppController::openCheck()
         QMessageBox::StandardButton btn = QMessageBox::question(
             app(),
             tr("Question"),                                                   // cn:提示
-            tr("Another project already exists. Do you want to replace it?")  // cn:已存在其他工程，是否要替换？
-        );
+            tr("Another project already exists. Do you want to replace it?"),  // cn:已存在其他工程，是否要替换？
+            QMessageBox::StandardButton::Yes | QMessageBox::StandardButton::No,
+            QMessageBox::StandardButton::No);
         return btn == QMessageBox::Yes;
     }
 
@@ -1377,15 +1380,16 @@ bool DAAppController::newProject()
             app(),
             tr("Question"),  // cn:提示
             tr("The current project has unsaved changes. Do you want to save before creating a new project?"),  // cn:当前工程有未保存的更改，是否在新建工程之前保存？
-            QMessageBox::StandardButton::Yes | QMessageBox::StandardButton::No | QMessageBox::StandardButton::Cancel,
-            QMessageBox::StandardButton::Yes);
+            QMessageBox::StandardButton::Save | QMessageBox::StandardButton::Discard
+                | QMessageBox::StandardButton::Cancel,
+            QMessageBox::StandardButton::Save);
         switch (btn) {
-        case QMessageBox::StandardButton::Yes:
+        case QMessageBox::StandardButton::Save:
             if (!save()) {
                 return false;  // 保存失败（含用户取消保存对话框）时中止新建
             }
             break;
-        case QMessageBox::StandardButton::No:
+        case QMessageBox::StandardButton::Discard:
             break;  // 放弃未保存的修改，直接新建
         default:
             return false;  // 用户取消

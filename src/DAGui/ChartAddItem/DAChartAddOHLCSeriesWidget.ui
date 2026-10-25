@@ -37,50 +37,7 @@
            <widget class="DA::DAChartSeriesSelectWidget" name="selectWidgetT"/>
           </item>
           <item>
-           <widget class="QGroupBox" name="groupBoxTAutoincrement">
-            <property name="title">
-             <string>Autoincrement series</string>
-            </property>
-            <property name="flat">
-             <bool>false</bool>
-            </property>
-            <property name="checkable">
-             <bool>true</bool>
-            </property>
-            <property name="checked">
-             <bool>false</bool>
-            </property>
-            <layout class="QGridLayout" name="gridLayout">
-             <item row="0" column="0">
-              <widget class="QLabel" name="labelTInitValue">
-               <property name="text">
-                <string>Initial value</string>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="1">
-              <widget class="QLineEdit" name="lineEditTInitValue">
-               <property name="text">
-                <string>1</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="0">
-              <widget class="QLabel" name="labelTStep">
-               <property name="text">
-                <string>Self increasing step size</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="1">
-              <widget class="QLineEdit" name="lineEditTStepValue">
-               <property name="text">
-                <string>1</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </widget>
+           <widget class="DA::DAChartAutoincrementSeriesWidget" name="widgetTAutoincrement"/>
           </item>
          </layout>
         </widget>
@@ -176,24 +133,13 @@
    <extends>QTableView</extends>
    <header>DAPySeriesTableView.h</header>
   </customwidget>
+  <customwidget>
+   <class>DA::DAChartAutoincrementSeriesWidget</class>
+   <extends>QGroupBox</extends>
+   <header>DAChartAutoincrementSeriesWidget.h</header>
+  </customwidget>
  </customwidgets>
  <resources/>
  <connections>
-  <connection>
-   <sender>groupBoxTAutoincrement</sender>
-   <signal>clicked(bool)</signal>
-   <receiver>selectWidgetT</receiver>
-   <slot>setDisabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>251</x>
-     <y>120</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>321</x>
-     <y>75</y>
-    </hint>
-   </hints>
-  </connection>
  </connections>
 </ui>

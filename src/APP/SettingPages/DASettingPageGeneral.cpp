@@ -302,7 +302,9 @@ void DASettingPageGeneral::onToolButtonClearSaveStateClicked()
                               tr("Question"),  // cn:疑问
                               tr("This operation will delete the file that records the window state information. After "
                                  "deleting the file, if the window state information recording is not enabled, the "
-                                 "window will open in the default layout"));  // cn:此操作将删除记录窗口位置信息的文件，删除文件后，如果不开启窗口位置信息记录，窗口将以默认布局打开
+                                 "window will open in the default layout"),  // cn:此操作将删除记录窗口位置信息的文件，删除文件后，如果不开启窗口位置信息记录，窗口将以默认布局打开
+                              QMessageBox::Yes | QMessageBox::No,
+                              QMessageBox::No);
     if (btn != QMessageBox::Yes) {
         return;
     }
