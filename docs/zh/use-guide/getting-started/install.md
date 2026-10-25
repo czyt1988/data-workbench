@@ -60,7 +60,7 @@ sudo apt install qt6-base-dev qt6-base-dev-tools qt6-svg-dev \
 | 内容 | 说明 |
 |------|------|
 | `DAWorkBench.exe` | 主程序 |
-| 各模块动态库 | `DAData.dll`、`DAGui.dll`、`DAFigure.dll`、`DACommonWidgets.dll` 等，按功能拆分 |
+| 各模块动态库 | `DAData.dll`、`DAGui.dll`、`DAFigure.dll`、`DAWidgets.dll` 等，按功能拆分 |
 | `plugins/` | C++ 插件，每个 `.dll` 在插件管理器里占一行 |
 | `pyplugins/` | Python 节点包，每个包一个子目录，必须有 `__init__.py` |
 | `daAgent/` | 智能体的提示词文件（`.md`）和子智能体定义（`subagents/` 子目录） |

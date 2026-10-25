@@ -90,7 +90,7 @@ graph TB
 总体可以分为 4 大部分：
 
 - **第三方库**：Qt、SARibbon、pybind11 等基础依赖
-- **DA 公共库**：DACommonWidgets、DAData、DAFigure 等通用模块
+- **DA 公共库**：DAWidgets、DAGui、DAData、DAFigure 等通用模块
 - **应用程序**：APP 主程序，提供基础框架
 - **插件**：DataAnalysis 等功能插件，提供具体业务逻辑
 

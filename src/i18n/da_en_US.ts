@@ -13836,6 +13836,11 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <source>Select module search path</source>
         <translation>Select module search path</translation>
     </message>
+    <message>
+        <location filename="../APP/SettingPages/DASettingPagePython.cpp"/>
+        <source>Add module search paths...</source>
+        <translation>Add module search paths...</translation>
+    </message>
 </context>
 <context>
     <name>DA::DASettingPageShortcuts</name>
@@ -14300,12 +14305,12 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DA::DAUndoHistoryWidget</name>
     <message>
-        <location filename="../DAGui/DAUndoHistoryWidget.cpp" line="+22"/>
+        <location filename="../3rdparty/DAWidgets/src/DAUndoHistoryWidget.cpp"/>
         <source>Undo depth:</source>
         <translation>Undo depth:</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location filename="../3rdparty/DAWidgets/src/DAUndoHistoryWidget.cpp"/>
         <source>Maximum number of undo steps kept per table page (larger uses more memory for swap-type commands)</source>
         <translation>Maximum number of undo steps kept per table page (larger uses more memory for swap-type commands)</translation>
     </message>
@@ -14602,7 +14607,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     <name>DAAppRibbonArea</name>
     <message>
         <location line="+11"/>
-        <source>warning</source>
+        <source>Warning</source>
         <translation>warning</translation>
     </message>
     <message>
@@ -18228,6 +18233,11 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <source>Please select the folder for exporting data</source>
         <translation>Please select the folder for exporting data</translation>
     </message>
+    <message>
+        <location filename="../../plugins/DataAnalysis/Dialogs/DataframeExportSettingsDialog.cpp"/>
+        <source>Select Folder</source>
+        <translation>Select Folder</translation>
+    </message>
 </context>
 <context>
     <name>DataframeIOWorker</name>
@@ -19762,6 +19772,65 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <location line="+9"/>
         <source>Disable the splash screen during startup, useful for debugging to avoid the splash window blocking the IDE</source>
         <translation>Disable the splash screen during startup, useful for debugging to avoid the splash window blocking the IDE</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DACheckListWidget</name>
+    <message>
+        <location filename="../3rdparty/DAWidgets/src/DACheckListWidget.cpp"/>
+        <source>Search...</source>
+        <translation>Search...</translation>
+    </message>
+    <message>
+        <location filename="../3rdparty/DAWidgets/src/DACheckListWidget.cpp"/>
+        <source>Select All</source>
+        <translation>Select All</translation>
+    </message>
+    <message>
+        <location filename="../3rdparty/DAWidgets/src/DACheckListWidget.cpp"/>
+        <source>Invert Selection</source>
+        <translation>Invert Selection</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAStringListEditWidget</name>
+    <message>
+        <location filename="../3rdparty/DAWidgets/src/DAStringListEditWidget.cpp"/>
+        <source>Add</source>
+        <translation>Add</translation>
+    </message>
+    <message>
+        <location filename="../3rdparty/DAWidgets/src/DAStringListEditWidget.cpp"/>
+        <source>Remove</source>
+        <translation>Remove</translation>
+    </message>
+    <message>
+        <location filename="../3rdparty/DAWidgets/src/DAStringListEditWidget.cpp"/>
+        <source>Up</source>
+        <translation>Up</translation>
+    </message>
+    <message>
+        <location filename="../3rdparty/DAWidgets/src/DAStringListEditWidget.cpp"/>
+        <source>Down</source>
+        <translation>Down</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAChartAutoincrementSeriesWidget</name>
+    <message>
+        <location filename="../DAGui/ChartAddItem/DAChartAutoincrementSeriesWidget.cpp"/>
+        <source>Autoincrement series</source>
+        <translation>Autoincrement series</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/ChartAddItem/DAChartAutoincrementSeriesWidget.cpp"/>
+        <source>Initial value</source>
+        <translation>Initial value</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/ChartAddItem/DAChartAutoincrementSeriesWidget.cpp"/>
+        <source>Self increasing step size</source>
+        <translation>Self increasing step size</translation>
     </message>
 </context>
 </TS>

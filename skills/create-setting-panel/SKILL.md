@@ -209,7 +209,7 @@ container->endGroup();
 connect(container, &DAPropertyPanelContainerWidget::propertyValueChanged, ...);
 ```
 
-**Reference**: `src/DACommonWidgets/DAPropertyPanelContainerWidget.h`
+**Reference**: `src/DAGui/DAPropertyPanelContainerWidget.h`
 
 ## Scenario C: App Setting Page
 
@@ -232,7 +232,7 @@ public:
 };
 ```
 
-**Reference**: `src/DACommonWidgets/DAAbstractSettingPage.h`
+**Reference**: `src/DAGui/DAAbstractSettingPage.h`
 
 ## Key Differences
 

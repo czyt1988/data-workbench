@@ -1,4 +1,4 @@
-# 开发指引
+﻿# 开发指引
 
 - **项目全景**：快速理解项目定位、核心价值和整体架构
 - **模块地图**：一张图看清各模块的关系和职责边界
@@ -146,7 +146,6 @@ data-workbench/
 │   ├── DAData/            # L2: 数据管理
 │   ├── DAGraphicsView/    # L2: 图形视图框架
 │   ├── DAFigure/          # L2: 图表容器
-│   ├── DACommonWidgets/   # L3: 通用 UI 组件
 │   ├── DAGui/             # L3: GUI 整合层（最大模块）
 │   ├── DAInterface/       # L4: 抽象接口定义
 │   ├── DAPluginSupport/   # L4: 插件框架
@@ -244,7 +243,6 @@ graph LR
     DAGui --> DAF[DAFigure]
     DAGui --> DAPW
     DAGui --> DAGV[DAGraphicsView]
-    DAGui --> DACW[DACommonWidgets]
     DAGui --> DAPBQ[DAPyBindQt]
     DAPW --> DAGV
     DAPW --> DAPBQ

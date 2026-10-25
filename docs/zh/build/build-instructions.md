@@ -1,4 +1,4 @@
-# 构建说明
+﻿# 构建说明
 
 本文档说明 DAWorkBench 项目的构建流程，涵盖从环境准备到最终验证。
 
@@ -311,7 +311,6 @@ bin_{BuildType}_qt{QtVersion}_{Compiler}_{Arch}
 | `DAFigure.dll` | 图表模块动态库 |
 | `DAData.dll` | 数据处理模块动态库 |
 | `DAGui.dll` | 图形界面模块动态库 |
-| `DACommonWidgets.dll` | 通用组件动态库 |
 
 ## 验证构建结果
 

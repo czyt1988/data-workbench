@@ -8,7 +8,7 @@
 
 | 层次 | 模块 | 说明 |
 |------|------|------|
-| 通用层 | DACommonWidgets | `DAPropertyPanelWidget`、`DAPropertyPanelContainerWidget`、`DACollapsiblePanel`、`DAAbstractSettingPage`，提供属性项管理、分组折叠和通用 UI |
+| 通用层 | DAGui（原 DACommonWidgets 已并入） | `DAPropertyPanelWidget`、`DAPropertyPanelContainerWidget`、`DACollapsiblePanel`、`DAAbstractSettingPage`，提供属性项管理、分组折叠和通用 UI |
 | 图表层 | DAGui | `DAChartItemSettingPanel`、`DAAbstractChartItemSettingWidget`，叠加 Qwt 专有方法 |
 | 应用层 | APP | 组合使用上述组件，管理具体的面板实例和工厂注册 |
 
@@ -733,10 +733,10 @@ void DAChartCurveSettingPanel::buildPropertyPanel()
 
 | 文件路径 | 功能说明 |
 |---------|---------|
-| `src/DACommonWidgets/DAPropertyPanelWidget.h` | 属性面板核心控件，所有 add/set 便捷方法，分组与子面板管理 |
-| `src/DACommonWidgets/DAPropertyPanelContainerWidget.h` | 属性面板容器控件，QScrollArea + API 代理 |
-| `src/DACommonWidgets/DACollapsiblePanel.h` | 可折叠面板控件，展开/收起机制 |
-| `src/DACommonWidgets/DAAbstractSettingPage.h` | 应用级设置页面基类 |
+| `src/DAGui/DAPropertyPanelWidget.h` | 属性面板核心控件，所有 add/set 便捷方法，分组与子面板管理 |
+| `src/DAGui/DAPropertyPanelContainerWidget.h` | 属性面板容器控件，QScrollArea + API 代理 |
+| `src/DAGui/DACollapsiblePanel.h` | 可折叠面板控件，展开/收起机制 |
+| `src/DAGui/DAAbstractSettingPage.h` | 应用级设置页面基类 |
 | `src/DAGui/ChartSetting/DAAbstractChartItemSettingWidget.h` | 图表项设置基类，d_cast/s_cast/ReturnWhenItemNull |
 | `src/DAGui/ChartSetting/DAChartItemSettingPanel.h` | ChartItem 面板基类，Qwt 专有方法，纯虚 buildPropertyPanel |
 | `src/DAGui/ChartSetting/DAChartItemSettingPanel.cpp` | ChartItem 面板基类实现 |
@@ -747,7 +747,7 @@ void DAChartCurveSettingPanel::buildPropertyPanel()
 | `src/DAGui/NodeSetting/DANodeParamSettingPanelFactory.h` | 工厂类，qualifiedName 路由与创建 |
 | `src/DAGui/NodeSetting/DANodeParameterFormAdapter.h` | DAPyNodeParameter → DAFormSpec 适配器 |
 | `src/DAGui/DAFormEditorRegistry.h` | 11 种字段类型编辑器注册表 |
-| `src/DACommonWidgets/DAPropertyFormWidget.h` | 统一表单渲染容器 |
+| `src/DAGui/DAPropertyFormWidget.h` | 统一表单渲染容器 |
 | `src/DAGui/DAAbstractNodeSettingWidget.h` | 节点设置基类，持有 DAPyNode* |
 | `src/DAGui/DAPyWorkFlowNodeItemSettingWidget.h` | 工作流节点设置容器，嵌入参数面板作为主标签页 |
 | `docs/zh/dev-guide/ui/settingwidget-standard.md` | 设置类窗口规范（6 函数生命周期） |

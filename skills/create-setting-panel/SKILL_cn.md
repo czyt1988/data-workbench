@@ -224,7 +224,7 @@ container->endGroup();
 connect(container, &DAPropertyPanelContainerWidget::propertyValueChanged, ...);
 ```
 
-**参考文件**：`src/DACommonWidgets/DAPropertyPanelContainerWidget.h`
+**参考文件**：`src/DAGui/DAPropertyPanelContainerWidget.h`
 
 ## 场景C：应用级设置页面
 
@@ -284,12 +284,12 @@ protected: void onValueChanged() { emit settingChanged(); } };
 
 | 文件 | 用途 |
 |------|------|
-| `src/DACommonWidgets/DAPropertyPanelWidget.h` | 全部 addXxxProperty + getXxxValue/setXxxValue + 分组/子面板API |
-| `src/DACommonWidgets/DACollapsiblePanel.h` | 可折叠面板控件：展开/收起、标题、信号 |
-| `src/DACommonWidgets/DAPropertyPanelContainerWidget.h` | 属性面板容器：滚动区域 + API代理 |
+| `src/DAGui/DAPropertyPanelWidget.h` | 全部 addXxxProperty + getXxxValue/setXxxValue + 分组/子面板API |
+| `src/DAGui/DACollapsiblePanel.h` | 可折叠面板控件：展开/收起、标题、信号 |
+| `src/DAGui/DAPropertyPanelContainerWidget.h` | 属性面板容器：滚动区域 + API代理 |
 | `src/DAGui/ChartSetting/DAChartItemSettingPanel.h` | ChartItem 基类：纯虚 buildPropertyPanel、Qwt 专有方法 |
 | `src/DAGui/ChartSetting/DAChartAxisSettingPanel.h/cpp` | 独立面板完整示例：3跳信号链、QButtonGroup 兼容 |
 | `src/DAGui/ChartSetting/DAChartItemSettingPanelFactory.h/cpp` | 注册工厂：registerAllKnownPanels() |
-| `src/DACommonWidgets/DAAbstractSettingPage.h` | 应用级页面基类：apply、settingChanged、settingApplyed |
+| `src/DAGui/DAAbstractSettingPage.h` | 应用级页面基类：apply、settingChanged、settingApplyed |
 | `src/DAGui/DANodeSettingWidget.h` | 现有工作流节点设置参考（非 DAPropertyPanelWidget） |
 | `src/DAGui/ChartSetting/DAAbstractChartItemSettingWidget.h` | ReturnWhenItemNull 宏、d_cast/s_cast、replot |

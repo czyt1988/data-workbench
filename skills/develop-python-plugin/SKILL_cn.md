@@ -327,8 +327,8 @@ Python 节点实例属性                      ← execute() 中读取
 | `DAAbstractNodeSettingWidget` | `src/DAGui/DAAbstractNodeSettingWidget.h` | 节点设置基类，持有 `DAPyNode*`，提供 `getParameters()` |
 | `DANodeParamSettingPanel` | `src/DAGui/NodeSetting/DANodeParamSettingPanel.h` | 通用参数面板，继承基类，持有 `DAPropertyFormWidget`，字段变化即时写回代理 |
 | `DANodeParameterFormAdapter` | `src/DAGui/NodeSetting/DANodeParameterFormAdapter.h` | `DAPyNodeParameter` → `DAFormSpec` 适配器，含类型归一化 |
-| `DAFormEditorRegistry` | `src/DACommonWidgets/DAFormEditorRegistry.h` | 11 种字段类型编辑器注册表（create/read/write/connect 适配器） |
-| `DAPropertyFormWidget` | `src/DACommonWidgets/DAPropertyFormWidget.h` | 统一表单渲染容器，驱动 `DAFormSpec` + `DAFormRuleEvaluator` 联动 |
+| `DAFormEditorRegistry` | `src/DAGui/DAFormEditorRegistry.h` | 11 种字段类型编辑器注册表（create/read/write/connect 适配器） |
+| `DAPropertyFormWidget` | `src/DAGui/DAPropertyFormWidget.h` | 统一表单渲染容器，驱动 `DAFormSpec` + `DAFormRuleEvaluator` 联动 |
 | `DANodeParamSettingPanelFactory` | `src/DAGui/NodeSetting/DANodeParamSettingPanelFactory.h` | 单例工厂，`qualifiedName → createPanel` 映射，支持插件扩展 |
 | `DANodeParamSettingPanelWidget` | `src/DAGui/NodeSetting/DANodeParamSettingPanelWidget.h` | `QStackedWidget` 调度器，惰性加载缓存，根据 `qualifiedName` 切换面板 |
 | `DAPyWorkFlowNodeItemSettingWidget` | `src/DAGui/DAPyWorkFlowNodeItemSettingWidget.h` | 工作流节点设置容器，参数面板作为主标签页（index 0，"参数"） |
@@ -427,7 +427,7 @@ DANodeParamSettingPanelFactory::instance().registerPanel(
 
 | 文件 | 说明 |
 |---|---|
-| `src/DACommonWidgets/DAFormEditorRegistry.h/.cpp` | 11 种类型编辑器注册 + 适配器（create/read/write/connect） |
+| `src/DAGui/DAFormEditorRegistry.h/.cpp` | 11 种类型编辑器注册 + 适配器（create/read/write/connect） |
 | `src/DAGui/NodeSetting/DANodeParamSettingPanel.h/.cpp` | 基于 DAPropertyFormWidget 的参数面板 |
 | `src/DAGui/NodeSetting/DANodeParameterFormAdapter.h/.cpp` | DAPyNodeParameter → DAFormSpec 适配器 |
 | `src/DAGui/NodeSetting/DANodeParamSettingPanelFactory.h/.cpp` | 单例工厂 + qualifiedName 路由 |
@@ -675,7 +675,7 @@ _node_display.body_icon_scale   # Optional[float]
 | DAPyInterpreter | `src/DAPyBindQt/DAPyInterpreter.h/.cpp` | Python 解释器管理 |
 | DAPyGILGuard | `src/DAPyBindQt/DAPyGILGuard.h` | GIL RAII 守卫 |
 | DAPybind11InQt | `src/DAPyBindQt/DAPybind11InQt.h` | slots 宏冲突处理 |
-| DAFormEditorRegistry | `src/DACommonWidgets/DAFormEditorRegistry.h/.cpp` | 11 种字段类型编辑器注册 + 适配器 |
+| DAFormEditorRegistry | `src/DAGui/DAFormEditorRegistry.h/.cpp` | 11 种字段类型编辑器注册 + 适配器 |
 | DAAbstractNodeSettingWidget | `src/DAGui/DAAbstractNodeSettingWidget.h/.cpp` | 节点设置基类，持有 DAPyNode* |
 | DANodeParameterFormAdapter | `src/DAGui/NodeSetting/DANodeParameterFormAdapter.h/.cpp` | DAPyNodeParameter → DAFormSpec 适配器 |
 | DANodeParamSettingPanel | `src/DAGui/NodeSetting/DANodeParamSettingPanel.h/.cpp` | 通用参数面板，基于 DAPropertyFormWidget |

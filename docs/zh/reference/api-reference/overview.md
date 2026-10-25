@@ -18,7 +18,6 @@ graph TD
     end
     subgraph L3["界面层"]
         DAGui["DAGui<br/>工作流/图表/数据 UI"]
-        DACW["DACommonWidgets<br/>通用控件"]
     end
     subgraph L2["功能层"]
         DAPW["DAPyWorkFlow<br/>DAPyNode, DAPyWorkFlowManager"]
@@ -43,7 +42,6 @@ graph TD
     DAGui --> DAD
     DAGui --> DAF
     DAGui --> DAGV
-    DAGui --> DACW
     DAPW --> DAGV
     DAPW --> DAPBQ
     DAD --> DAPBQ
