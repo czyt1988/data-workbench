@@ -1,4 +1,4 @@
-#include "DASplashScreen.h"
+﻿#include "DASplashScreen.h"
 #include <QPainter>
 #include <QApplication>
 #include <QScreen>
@@ -48,9 +48,9 @@ DASplashScreen::PrivateData::PrivateData(DASplashScreen* p) : q_ptr(p)
 DASplashScreen::DASplashScreen() : QSplashScreen(generateDefaultPixmap()), DA_PIMPL_CONSTRUCT
 {
     // 调试时不置顶，避免遮挡IDE
-    if (!isDebuggerPresent()) {
-        setWindowFlags(windowFlags() | Qt::WindowStaysOnTopHint);
-    }
+    // if (!isDebuggerPresent()) {
+    //     setWindowFlags(windowFlags() | Qt::WindowStaysOnTopHint);
+    // }
 }
 
 /**
@@ -62,9 +62,9 @@ DASplashScreen::DASplashScreen(const QPixmap& pixmap)
     : QSplashScreen(pixmap.isNull() ? generateDefaultPixmap() : pixmap), DA_PIMPL_CONSTRUCT
 {
     // 调试时不置顶，避免遮挡IDE
-    if (!isDebuggerPresent()) {
-        setWindowFlags(windowFlags() | Qt::WindowStaysOnTopHint);
-    }
+    // if (!isDebuggerPresent()) {
+    //     setWindowFlags(windowFlags() | Qt::WindowStaysOnTopHint);
+    // }
 }
 
 DASplashScreen::~DASplashScreen()
