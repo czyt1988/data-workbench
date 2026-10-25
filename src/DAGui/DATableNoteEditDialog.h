@@ -5,11 +5,11 @@
 #include <QPoint>
 #include "DAGuiAPI.h"
 
-class QPlainTextEdit;
 class QPushButton;
 
 namespace DA
 {
+class DATextEditWidget;
 /**
  * @brief 单元格批注编辑弹层（005 T1.26，轻量对话框）
  *
@@ -40,7 +40,7 @@ private Q_SLOTS:
 private:
     void setupUI();
 
-    QPlainTextEdit* mEdit { nullptr };
+    DATextEditWidget* mEdit { nullptr };
     QPushButton* mBtnDelete { nullptr };
     bool mDeleteRequested { false };
 };

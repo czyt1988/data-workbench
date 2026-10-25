@@ -1,13 +1,15 @@
 #include "DASettingPageShortcuts.h"
 #include "DAShortcutManager.h"
 #include "DALogCategory.h"
+#include "DAStringFilterProxyModel.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QLineEdit>
 #include <QPushButton>
-#include <QTreeWidget>
-#include <QTreeWidgetItem>
+#include <QTreeView>
+#include <QStandardItemModel>
+#include <QStandardItem>
 #include <QKeySequenceEdit>
 #include <QHeaderView>
 #include <QMenu>
@@ -17,6 +19,12 @@
 
 namespace DA
 {
+
+namespace
+{
+// 过滤用的组合文本（显示名 + 命令 ID + 生效快捷键），供通用过滤代理匹配
+constexpr int kShortcutSearchRole = Qt::UserRole + 1;
+}  // namespace
 
 DASettingPageShortcuts::DASettingPageShortcuts(QWidget* parent) : DAAbstractSettingPage(parent)
 {
@@ -108,10 +116,16 @@ void DASettingPageShortcuts::buildUI()
     mainLayout->addLayout(toolLayout);
 
     // 命令树：分类 -> 命令，第二列为快捷键录入框
-    mTree = new QTreeWidget(this);
-    mTree->setColumnCount(2);
-    mTree->setHeaderLabels(QStringList() << tr("Command")   // cn:命令
-                                         << tr("Shortcut"));  // cn:快捷键
+    mTree = new QTreeView(this);
+    mModel = new QStandardItemModel(this);
+    mProxy = new DAStringFilterProxyModel(this);
+    mProxy->setSourceModel(mModel);
+    mProxy->setFilterColumn(0);
+    mProxy->setFilterRole(kShortcutSearchRole);
+    mModel->setHorizontalHeaderLabels(QStringList() << tr("Command")   // cn:命令
+                                                    << tr("Shortcut"));  // cn:快捷键
+    mTree->setModel(mProxy);
+    mTree->setHeaderHidden(false);
     mTree->setRootIsDecorated(true);
     mTree->header()->setStretchLastSection(false);  // 快捷键列固定宽度，命令列拉伸
     mTree->header()->setSectionResizeMode(0, QHeaderView::Stretch);
@@ -128,7 +142,7 @@ void DASettingPageShortcuts::buildUI()
 
     connect(mSearchEdit, &QLineEdit::textChanged, this, &DASettingPageShortcuts::onSearchTextChanged);
     connect(resetAllBtn, &QPushButton::clicked, this, &DASettingPageShortcuts::onResetAllClicked);
-    connect(mTree, &QTreeWidget::customContextMenuRequested, this, &DASettingPageShortcuts::onTreeContextMenu);
+    connect(mTree, &QWidget::customContextMenuRequested, this, &DASettingPageShortcuts::onTreeContextMenu);
 }
 
 /**
@@ -150,7 +164,11 @@ void DASettingPageShortcuts::reloadFromManager()
  */
 void DASettingPageShortcuts::rebuildTree()
 {
-    mTree->clear();
+    // 重建期间先清空过滤，保证每个源行都有有效的代理索引可挂编辑器
+    mProxy->setFilterText(QString());
+    mModel->clear();
+    mModel->setHorizontalHeaderLabels(QStringList() << tr("Command")   // cn:命令
+                                                    << tr("Shortcut"));  // cn:快捷键
     mCommandItems.clear();
     mEditors.clear();
     if (nullptr == mManager) {
@@ -184,29 +202,36 @@ void DASettingPageShortcuts::rebuildTree()
     }
 
     for (const QString& catKey : std::as_const(orderedCats)) {
-        QTreeWidgetItem* catItem = new QTreeWidgetItem(mTree);
-        catItem->setText(0, categoryDisplayName(catKey));
-        QFont catFont = catItem->font(0);
+        auto* catItem = new QStandardItem(categoryDisplayName(catKey));
+        QFont catFont = catItem->font();
         catFont.setBold(true);
-        catItem->setFont(0, catFont);
+        catItem->setFont(catFont);
         catItem->setFlags(Qt::ItemIsEnabled);  // 分类节点不可选中
+        mModel->appendRow(catItem);
         // 分类内按显示名排序
         QStringList names = grouped.value(catKey);
         std::sort(names.begin(), names.end(), [this](const QString& a, const QString& b) {
             return QString::localeAwareCompare(mManager->displayNameOf(a), mManager->displayNameOf(b)) < 0;
         });
         for (const QString& objName : std::as_const(names)) {
-            QTreeWidgetItem* item = new QTreeWidgetItem(catItem);
-            item->setData(0, Qt::UserRole, objName);
-            item->setToolTip(0, objName);
-            item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
+            auto* nameItem = new QStandardItem(mManager->displayNameOf(objName));
+            nameItem->setData(objName, Qt::UserRole);
+            nameItem->setToolTip(objName);
+            nameItem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
+            auto* keyItem = new QStandardItem();
+            keyItem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
+            QList< QStandardItem* > row;
+            row << nameItem << keyItem;
+            catItem->appendRow(row);
+
             QKeySequenceEdit* editor = new QKeySequenceEdit(mTree);
 #if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
             editor->setMaximumSequenceLength(1);
 #endif
             editor->setMinimumWidth(180);
-            mTree->setItemWidget(item, 1, editor);
-            mCommandItems.insert(objName, item);
+            const QModelIndex proxyIndex = mProxy->mapFromSource(keyItem->index());
+            mTree->setIndexWidget(proxyIndex, editor);
+            mCommandItems.insert(objName, nameItem);
             mEditors.insert(objName, editor);
             connect(editor, &QKeySequenceEdit::keySequenceChanged, this,
                     [this, objName](const QKeySequence& keys) {
@@ -317,7 +342,7 @@ void DASettingPageShortcuts::onEditorChanged(const QString& objName, const QKeyS
  */
 void DASettingPageShortcuts::refreshRow(const QString& objName)
 {
-    QTreeWidgetItem* item   = mCommandItems.value(objName, nullptr);
+    QStandardItem* item     = mCommandItems.value(objName, nullptr);
     QKeySequenceEdit* editor = mEditors.value(objName, nullptr);
     if (nullptr == item || nullptr == editor || nullptr == mManager) {
         return;
@@ -328,15 +353,23 @@ void DASettingPageShortcuts::refreshRow(const QString& objName)
     mUpdating              = true;
     editor->setKeySequence(eff);
     mUpdating = false;
-    item->setText(0, mManager->displayNameOf(objName));
-    QFont f = item->font(0);
+    const QString displayName = mManager->displayNameOf(objName);
+    item->setText(displayName);
+    QFont f = item->font();
     f.setBold(modified);  // 已修改的行加粗标记
-    item->setFont(0, f);
-    if (modified) {
-        item->setToolTip(1, tr("Default: %1")  // cn:默认：%1
-                                .arg(def.isEmpty() ? tr("(none)") : def.toString(QKeySequence::NativeText)));
-    } else {
-        item->setToolTip(1, QString());
+    item->setFont(f);
+    // 过滤文本：显示名 + 命令 ID + 生效快捷键
+    item->setData(displayName + QLatin1Char('\n') + objName + QLatin1Char('\n')
+                      + eff.toString(QKeySequence::NativeText),
+                  kShortcutSearchRole);
+    QStandardItem* keyItem = item->parent() ? item->parent()->child(item->row(), 1) : mModel->item(item->row(), 1);
+    if (keyItem) {
+        if (modified) {
+            keyItem->setToolTip(tr("Default: %1")  // cn:默认：%1
+                                    .arg(def.isEmpty() ? tr("(none)") : def.toString(QKeySequence::NativeText)));
+        } else {
+            keyItem->setToolTip(QString());
+        }
     }
 }
 
@@ -358,17 +391,22 @@ void DASettingPageShortcuts::refreshAllRows()
  */
 void DASettingPageShortcuts::markRowError(const QString& objName, bool isError)
 {
-    QTreeWidgetItem* item = mCommandItems.value(objName, nullptr);
+    QStandardItem* item = mCommandItems.value(objName, nullptr);
     if (nullptr == item) {
         return;
     }
+    QStandardItem* keyItem = item->parent() ? item->parent()->child(item->row(), 1) : mModel->item(item->row(), 1);
     if (isError) {
         const QBrush errBrush(QColor(0xCE, 0x60, 0x43));
-        item->setForeground(0, errBrush);
-        item->setForeground(1, errBrush);
+        item->setForeground(errBrush);
+        if (keyItem) {
+            keyItem->setForeground(errBrush);
+        }
     } else {
-        item->setForeground(0, QBrush());
-        item->setForeground(1, QBrush());
+        item->setForeground(QBrush());
+        if (keyItem) {
+            keyItem->setForeground(QBrush());
+        }
     }
 }
 
@@ -451,30 +489,16 @@ void DASettingPageShortcuts::onSearchTextChanged(const QString& text)
  */
 void DASettingPageShortcuts::applyFilter()
 {
-    if (nullptr == mTree || nullptr == mManager) {
+    if (nullptr == mTree || nullptr == mManager || nullptr == mProxy) {
         return;
     }
     const QString filter = mSearchEdit ? mSearchEdit->text().trimmed() : QString();
-    for (int i = 0; i < mTree->topLevelItemCount(); ++i) {
-        QTreeWidgetItem* catItem = mTree->topLevelItem(i);
-        int visibleCount         = 0;
-        for (int j = 0; j < catItem->childCount(); ++j) {
-            QTreeWidgetItem* item  = catItem->child(j);
-            const QString objName  = item->data(0, Qt::UserRole).toString();
-            bool match             = true;
-            if (!filter.isEmpty()) {
-                const QKeySequence eff = workingKeysOf(objName);
-                match                  = mManager->displayNameOf(objName).contains(filter, Qt::CaseInsensitive)
-                        || objName.contains(filter, Qt::CaseInsensitive)
-                        || eff.toString(QKeySequence::NativeText).contains(filter, Qt::CaseInsensitive);
-            }
-            item->setHidden(!match);
-            if (match) {
-                ++visibleCount;
-            }
-        }
-        catItem->setHidden(0 == visibleCount);
-        catItem->setExpanded(!filter.isEmpty());
+    // 过滤语义由通用代理统一实现（匹配 refreshed 到 kShortcutSearchRole 的组合文本）
+    mProxy->setFilterText(filter);
+    if (filter.isEmpty()) {
+        mTree->collapseAll();
+    } else {
+        mTree->expandAll();
     }
 }
 
@@ -498,11 +522,15 @@ void DASettingPageShortcuts::onTreeContextMenu(const QPoint& pos)
     if (nullptr == mManager) {
         return;
     }
-    QTreeWidgetItem* item = mTree->itemAt(pos);
-    if (nullptr == item || nullptr == item->parent()) {
+    QModelIndex index = mTree->indexAt(pos);
+    if (!index.isValid()) {
+        return;
+    }
+    index = mProxy->mapToSource(index);
+    if (!index.parent().isValid()) {
         return;  // 分类节点无菜单
     }
-    const QString objName = item->data(0, Qt::UserRole).toString();
+    const QString objName = index.siblingAtColumn(0).data(Qt::UserRole).toString();
     QMenu menu(this);
     QAction* resetAct = menu.addAction(tr("Reset to Default"));  // cn:重置为默认
     resetAct->setEnabled(mWorkingOverrides.contains(objName));

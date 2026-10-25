@@ -1,4 +1,4 @@
-#include "DAChartAxisSettingPanel.h"
+﻿#include "DAChartAxisSettingPanel.h"
 #include "DAPropertyPanelContainerWidget.h"
 #include "DAChartUtil.h"
 #include "DAChartWidget.h"
@@ -203,6 +203,7 @@ void DAChartAxisSettingPanel::buildPropertyPanel()
     );
     panel->addColorProperty(PID_LabelFontColor, tr("Label Font Color")  // cn:标签字体颜色
     );
+    panel->linkFontColorProperty(PID_LabelFont, PID_LabelFontColor);
     panel->addAlignmentProperty(PID_LabelAlignment, tr("Label Alignment")  // cn:标签对齐
     );
     panel->addDoubleProperty(PID_LabelRotation, tr("Label Rotation")  // cn:标签旋转

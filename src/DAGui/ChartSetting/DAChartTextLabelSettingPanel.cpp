@@ -1,4 +1,4 @@
-#include "DAChartTextLabelSettingPanel.h"
+﻿#include "DAChartTextLabelSettingPanel.h"
 #include "DAPropertyPanelWidget.h"
 #include "qwt_text.h"
 #include <QSignalBlocker>
@@ -67,6 +67,7 @@ void DAChartTextLabelSettingPanel::buildPropertyPanel()
     );
     panel->addColorProperty(PropTextColor, tr("Text Color")  // cn:文字颜色
     );
+    panel->linkFontColorProperty(PropFont, PropTextColor);
     panel->addAlignmentProperty(PropTextAlignment, tr("Alignment")  // cn:对齐方式
     );
     panel->addIntProperty(PropMargin, tr("Margin")  // cn:外边距

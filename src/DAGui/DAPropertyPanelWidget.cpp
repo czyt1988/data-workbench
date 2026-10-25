@@ -975,6 +975,49 @@ int DAPropertyPanelWidget::addFontProperty(const QString& name, const QFont& fon
 }
 
 /**
+ * @brief 把字体面板的颜色按钮与独立的字体颜色属性双向绑定
+ *
+ * 字体面板的 currentFontColorChanged 原本路由到字体属性的 propertyId，
+ * 而 getFontValue 只读 QFont（不含颜色），导致字体面板里点颜色按钮没有视觉效果。
+ * 绑定后：
+ * - 字体面板颜色变化 -> 同步颜色属性的 DAColorPickerButton，并转发颜色属性的变化；
+ * - 颜色属性变化 -> 同步字体面板的颜色按钮；
+ * - 绑定时用颜色属性的当前值初始化字体面板。
+ * 原有 onPropertyValueChanged(PID_FontColor) 逻辑保持不变。
+ * @param fontPropId 字体属性 id
+ * @param colorPropId 颜色属性 id
+ */
+void DAPropertyPanelWidget::linkFontColorProperty(int fontPropId, int colorPropId)
+{
+    DAPropertyItemWidget* fontItem  = getPropertyItem(fontPropId);
+    DAPropertyItemWidget* colorItem = getPropertyItem(colorPropId);
+    if (!fontItem || !colorItem) {
+        return;
+    }
+    auto* fontEditor = qobject_cast< DAFontEditPannelWidget* >(fontItem->editorWidget());
+    auto* colorBtn   = qobject_cast< DAColorPickerButton* >(colorItem->editorWidget());
+    if (!fontEditor || !colorBtn) {
+        return;
+    }
+    {
+        // 绑定时用颜色属性的当前值初始化字体面板颜色
+        QSignalBlocker blocker(fontEditor);
+        fontEditor->setCurrentFontColor(colorBtn->color());
+    }
+    connect(fontEditor, &DAFontEditPannelWidget::currentFontColorChanged, this, [ this, colorBtn, colorPropId ](const QColor& c) {
+        {
+            QSignalBlocker blocker(colorBtn);  // 避免颜色按钮的 colorChanged 再发一次
+            colorBtn->setColor(c);
+        }
+        Q_EMIT propertyValueChanged(colorPropId);
+    });
+    connect(colorBtn, &DAColorPickerButton::colorChanged, this, [ fontEditor ](const QColor& c) {
+        QSignalBlocker blocker(fontEditor);
+        fontEditor->setCurrentFontColor(c);
+    });
+}
+
+/**
  * @brief 添加画刷属性
  */
 int DAPropertyPanelWidget::addBrushProperty(int id, const QString& name, const QBrush& brush)

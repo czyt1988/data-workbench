@@ -160,6 +160,8 @@ public:
 	// 字体
 	int addFontProperty(int id, const QString& name, const QFont& font = QFont());
 	int addFontProperty(const QString& name, const QFont& font = QFont());
+	// 字体面板颜色按钮与独立颜色属性双向绑定
+	void linkFontColorProperty(int fontPropId, int colorPropId);
 
 	// 画刷
 	int addBrushProperty(int id, const QString& name, const QBrush& brush = QBrush());

@@ -1,4 +1,4 @@
-#include "DAChart3DPlotSettingPanel.h"
+﻿#include "DAChart3DPlotSettingPanel.h"
 #include "DAPropertyPanelContainerWidget.h"
 #include "DAChart3DWidget.h"
 #include <QSignalBlocker>
@@ -75,6 +75,7 @@ void DAChart3DPlotSettingPanel::buildPropertyPanel()
     );
     mPanel->addColorProperty(PID_TitleColor, tr("Title Color")  // cn:标题颜色
     );
+    mPanel->linkFontColorProperty(PID_TitleFont, PID_TitleColor);
     mPanel->endGroup();
 
     // ── Background ──

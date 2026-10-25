@@ -1,4 +1,4 @@
-#include "DAChartLegendSettingPanel.h"
+﻿#include "DAChartLegendSettingPanel.h"
 #include "DAPropertyPanelContainerWidget.h"
 #include <QSignalBlocker>
 #include "qwt_text.h"
@@ -102,6 +102,7 @@ void DAChartLegendSettingPanel::buildPropertyPanel()
     );
     panel->addColorProperty(PropFontColor, tr("Font Color")  // cn:字体颜色
     );
+    panel->linkFontColorProperty(PropFont, PropFontColor);
     panel->addBrushProperty(PropBackgroundBrush, tr("Background Brush")  // cn:背景画刷
     );
     panel->endGroup();

@@ -3,26 +3,22 @@
 #include "DAFigureAPI.h"
 #include <QWidget>
 #include <QString>
-#include <QTextCharFormat>
 
 class QKeyEvent;
 class QHideEvent;
 
 namespace DA
 {
+
 /**
- * @brief 富文本编辑弹窗
+ * @brief 富文本编辑弹窗（DAChartTextMarker 的实时编辑壳）
  *
- * 用于 DAChartTextMarker 的富文本实时编辑，窗口标志为 Qt::Popup：
+ * 内容由 DARichTextEditWidget 提供（工具栏 + 富文本编辑区）；本类只负责
+ * Qt::Popup 定位、OK/Cancel 按钮与关闭语义：
  * - 在锚点附近弹出，自动避开锚点且不超出屏幕
- * - 工具栏复用 DAWidgets 的 DAFontEditPannelWidget（字体/字号/加粗/斜体/下划线/文字颜色，
- *   采用 SingleRowLayout 单排布局以压缩工具栏高度）
- *   与 DAColorPickerButton（文字背景色），另有删除线/上标/下标/清除格式按钮
- * - 文本或格式变化时发射 textChanged(html)，调用方据此实时刷新绘图
- *
- * 关闭语义：
  * - 点击弹窗外部或「OK」= 确认（accepted）
  * - Esc 或「Cancel」= 取消（rejected）
+ * - 文本或格式变化时发射 textChanged(html)，调用方据此实时刷新绘图
  */
 class DAFIGURE_API DAChartTextEditorPopup : public QWidget
 {
@@ -63,17 +59,10 @@ protected:
     virtual bool eventFilter(QObject* obj, QEvent* e) override;
 
 private Q_SLOTS:
-    void onFontChanged(const QFont& f);
-    void onFontColorChanged(const QColor& c);
-    void onBackgroundColorChanged(const QColor& c);
-    void onTextEditCharFormatChanged(const QTextCharFormat& fmt);
-    void onTextChanged();
     void onAccept();
     void onReject();
 
 private:
-    // 应用字符格式到当前选中段（无选中时作用于后续输入）
-    void mergeCharFormat(const QTextCharFormat& fmt);
     // 构建界面与信号连接
     void buildUI();
     // 显示弹窗并聚焦编辑区

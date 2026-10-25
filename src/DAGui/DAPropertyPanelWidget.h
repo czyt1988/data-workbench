@@ -177,6 +177,8 @@ public:
 	// 添加字体属性
 	int addFontProperty(int id, const QString& name, const QFont& font = QFont());
 	int addFontProperty(const QString& name, const QFont& font = QFont());
+	// 把字体面板的颜色按钮与独立的字体颜色属性双向绑定（绑定时用颜色属性当前值初始化）
+	void linkFontColorProperty(int fontPropId, int colorPropId);
 
 	// 添加画刷属性
 	int addBrushProperty(int id, const QString& name, const QBrush& brush = QBrush());

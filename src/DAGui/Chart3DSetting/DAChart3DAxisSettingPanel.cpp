@@ -1,4 +1,4 @@
-#include "DAChart3DAxisSettingPanel.h"
+﻿#include "DAChart3DAxisSettingPanel.h"
 #include "DAPropertyPanelContainerWidget.h"
 #include "DAChart3DWidget.h"
 #include <QSignalBlocker>
@@ -153,6 +153,7 @@ void DAChart3DAxisSettingPanel::buildPropertyPanel()
     );
     mPanel->addColorProperty(PID_LabelColor, tr("Label Color")  // cn:标签颜色
     );
+    mPanel->linkFontColorProperty(PID_LabelFont, PID_LabelColor);
     mPanel->endGroup();
 
     // ── Numbers ──
@@ -162,6 +163,7 @@ void DAChart3DAxisSettingPanel::buildPropertyPanel()
     );
     mPanel->addColorProperty(PID_NumberColor, tr("Number Color")  // cn:数字颜色
     );
+    mPanel->linkFontColorProperty(PID_NumberFont, PID_NumberColor);
     mPanel->endGroup();
 
     // ── Range ──

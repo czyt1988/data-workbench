@@ -486,6 +486,13 @@ int DAPropertyPanelContainerWidget::addFontProperty(const QString& name, const Q
 	return d->mRootPanel->addFontProperty(name, font);
 }
 
+/// linkFontColorProperty 代理
+void DAPropertyPanelContainerWidget::linkFontColorProperty(int fontPropId, int colorPropId)
+{
+	DA_D(d);
+	d->mRootPanel->linkFontColorProperty(fontPropId, colorPropId);
+}
+
 /// addBrushProperty（指定ID）代理
 int DAPropertyPanelContainerWidget::addBrushProperty(int id, const QString& name, const QBrush& brush)
 {

@@ -1,4 +1,4 @@
-#include "DAChart3DCoordSysSettingPanel.h"
+﻿#include "DAChart3DCoordSysSettingPanel.h"
 #include "DAPropertyPanelContainerWidget.h"
 #include "DAChart3DWidget.h"
 #include <QSignalBlocker>
@@ -103,6 +103,8 @@ void DAChart3DCoordSysSettingPanel::buildPropertyPanel()
     );
     mPanel->addFontProperty(PID_LabelFont, tr("Label Font")  // cn:标签字体
     );
+    mPanel->linkFontColorProperty(PID_NumberFont, PID_NumberColor);
+    mPanel->linkFontColorProperty(PID_LabelFont, PID_LabelColor);
     mPanel->endGroup();
 
     // ── Ticks ──

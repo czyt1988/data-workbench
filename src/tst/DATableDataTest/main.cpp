@@ -87,6 +87,7 @@
 #include <QDialogButtonBox>
 #include <QMessageBox>
 #include <QListWidget>
+#include <QListView>
 #include <QTableWidget>
 
 // 分列/合并列（004 计划 §4，T1.9）
@@ -116,6 +117,7 @@
 #include "DATableStyleItemDelegate.h"
 #include <QTreeWidget>
 #include <QPlainTextEdit>
+#include <DATextEditWidget.h>
 
 // 单元格批注（005 计划 §5，T1.26）
 #include "DATableNoteStore.h"
@@ -2751,15 +2753,16 @@ void DATableDataTest::testColumnViewDialogDiffAndUndo()
             return;
         }
         opened = true;
-        QListWidget* list = dlg->findChild< QListWidget* >(QStringLiteral("checkList"));
+        QListView* list = dlg->findChild< QListView* >(QStringLiteral("checkList"));
+        QAbstractItemModel* m = list ? list->model() : nullptr;
         QSpinBox* spin    = dlg->findChild< QSpinBox* >(QStringLiteral("spinFreeze"));
-        if (list && spin) {
-            seenCount = list->count();
-            for (int i = 0; i < list->count(); ++i) {
+        if (m && spin) {
+            seenCount = m->rowCount();
+            for (int i = 0; i < m->rowCount(); ++i) {
                 // DACheckListWidget 把 (列名, occurrence) 存在 UserRole 的 QVariantList 里
-                const QString name = list->item(i)->data(Qt::UserRole).toList().value(0).toString();
+                const QString name = m->index(i, 0).data(Qt::UserRole).toList().value(0).toString();
                 if (name == QStringLiteral("a") || name == QStringLiteral("c")) {
-                    list->item(i)->setCheckState(Qt::Unchecked);
+                    m->setData(m->index(i, 0), Qt::Unchecked, Qt::CheckStateRole);
                 }
             }
             spin->setValue(1);
@@ -2796,11 +2799,12 @@ void DATableDataTest::testColumnViewDialogDiffAndUndo()
             return;
         }
         opened2 = true;
-        QListWidget* list = dlg->findChild< QListWidget* >(QStringLiteral("checkList"));
+        QListView* list = dlg->findChild< QListView* >(QStringLiteral("checkList"));
+        QAbstractItemModel* m = list ? list->model() : nullptr;
         QSpinBox* spin    = dlg->findChild< QSpinBox* >(QStringLiteral("spinFreeze"));
-        if (list && spin) {
-            for (int i = 0; i < list->count(); ++i) {
-                list->item(i)->setCheckState(Qt::Checked);
+        if (m && spin) {
+            for (int i = 0; i < m->rowCount(); ++i) {
+                m->setData(m->index(i, 0), Qt::Checked, Qt::CheckStateRole);
             }
             spin->setValue(0);
         }
@@ -2842,16 +2846,17 @@ void DATableDataTest::testColumnViewDialogDuplicateNamesInitialAndCancel()
             return;
         }
         opened = true;
-        QListWidget* list = dlg->findChild< QListWidget* >(QStringLiteral("checkList"));
+        QListView* list = dlg->findChild< QListView* >(QStringLiteral("checkList"));
+        QAbstractItemModel* m = list ? list->model() : nullptr;
         QSpinBox* spin    = dlg->findChild< QSpinBox* >(QStringLiteral("spinFreeze"));
-        if (list && spin) {
-            const int n = list->count();
+        if (m && spin) {
+            const int n = m->rowCount();
             for (int i = 0; i < n; ++i) {
-                seenTexts << list->item(i)->text();
+                seenTexts << m->index(i, 0).data(Qt::DisplayRole).toString();
             }
             seenSpin = spin->value();
             // ③ 取消路径：改动对话框状态后 reject → 不落任何东西
-            list->item(0)->setCheckState(Qt::Unchecked);
+            m->setData(m->index(0, 0), Qt::Unchecked, Qt::CheckStateRole);
             spin->setValue(1);
         }
         dlg->reject();
@@ -2876,9 +2881,10 @@ void DATableDataTest::testColumnViewDialogDuplicateNamesInitialAndCancel()
             return;
         }
         opened2 = true;
-        QListWidget* list = dlg->findChild< QListWidget* >(QStringLiteral("checkList"));
-        if (list && list->count() == 3) {
-            list->item(1)->setCheckState(Qt::Unchecked);  // "a (2)"
+        QListView* list = dlg->findChild< QListView* >(QStringLiteral("checkList"));
+        QAbstractItemModel* m = list ? list->model() : nullptr;
+        if (m && m->rowCount() == 3) {
+            m->setData(m->index(1, 0), Qt::Unchecked, Qt::CheckStateRole);  // "a (2)"
         }
         dlg->accept();
     });
@@ -8390,9 +8396,9 @@ df = pd.DataFrame({"k": [30, 10, 20, 40, 50, 60], "s": ["c", "a", "b", "d", "e",
             return;
         }
         QVERIFY(!dlg->findChild< QPushButton* >(QStringLiteral("noteDeleteBtn"))->isVisibleTo(dlg));  // 无批注不显示删除
-        auto* edit = dlg->findChild< QPlainTextEdit* >(QStringLiteral("noteEditText"));
+        auto* edit = dlg->findChild< DA::DATextEditWidget* >(QStringLiteral("noteEditText"));
         QVERIFY(edit != nullptr);
-        edit->setPlainText(QStringLiteral("NOTE-SECRET-42"));
+        edit->setText(QStringLiteral("NOTE-SECRET-42"));
         QTimer::singleShot(100, [ dlg ]() {
             dlg->findChild< QPushButton* >(QStringLiteral("noteSaveBtn"))->click();
         });
@@ -8411,10 +8417,10 @@ df = pd.DataFrame({"k": [30, 10, 20, 40, 50, 60], "s": ["c", "a", "b", "d", "e",
         if (!dlg) {
             return;
         }
-        auto* edit = dlg->findChild< QPlainTextEdit* >(QStringLiteral("noteEditText"));
-        QCOMPARE(edit->toPlainText(), QStringLiteral("NOTE-SECRET-42"));
+        auto* edit = dlg->findChild< DA::DATextEditWidget* >(QStringLiteral("noteEditText"));
+        QCOMPARE(edit->text(), QStringLiteral("NOTE-SECRET-42"));
         QVERIFY(dlg->findChild< QPushButton* >(QStringLiteral("noteDeleteBtn"))->isVisibleTo(dlg));
-        edit->setPlainText(QStringLiteral("NOTE-EDITED"));
+        edit->setText(QStringLiteral("NOTE-EDITED"));
         QTimer::singleShot(100, [ dlg ]() {
             dlg->findChild< QPushButton* >(QStringLiteral("noteSaveBtn"))->click();
         });

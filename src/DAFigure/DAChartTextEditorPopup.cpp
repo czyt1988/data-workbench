@@ -1,145 +1,33 @@
 #include "DAChartTextEditorPopup.h"
-#include "DAFontEditPannelWidget.h"
-#include "DAColorPickerButton.h"
+#include "DARichTextEditWidget.h"
 
-#include <QVBoxLayout>
 #include <QHBoxLayout>
-#include <QToolButton>
 #include <QPushButton>
-#include <QTextEdit>
-#include <QTextCursor>
+#include <QVBoxLayout>
 #include <QKeyEvent>
 #include <QHideEvent>
 #include <QEvent>
-#include <QSignalBlocker>
-#include <QRegularExpression>
+#include <QTextEdit>
 #include <QGuiApplication>
 #include <QScreen>
 
 namespace DA
 {
-/**
- * @brief 从QTextEdit::toHtml()的完整文档中提取body内层HTML片段
- *
- * QTextEdit::toHtml()输出完整HTML文档，此处仅保留body内部内容，
- * 丢弃其中body标签上的默认样式（字体等默认属性由QwtText::setFont接管），
- * 得到干净的富文本片段便于序列化
- * @param fullHtml 完整HTML文档
- * @return body内层HTML片段，提取失败时返回原文
- */
-static QString extractBodyHtml(const QString& fullHtml)
-{
-    static QRegularExpression re(
-        R"(<body[^>]*>(.*)</body>)",
-        QRegularExpression::DotMatchesEverythingOption | QRegularExpression::CaseInsensitiveOption
-    );
-    QRegularExpressionMatch m = re.match(fullHtml);
-    if (m.hasMatch()) {
-        return m.captured(1).trimmed();
-    }
-    return fullHtml;
-}
 
 class DAChartTextEditorPopup::PrivateData
 {
     DA_DECLARE_PUBLIC(DAChartTextEditorPopup)
 public:
     PrivateData(DAChartTextEditorPopup* p);
-    void buildFontPanel(QHBoxLayout* lay);
-    void buildButtonRow(QVBoxLayout* lay);
 
-public:
-    DAFontEditPannelWidget* mFontPanel { nullptr };  ///< 字体编辑面板(族/字号/粗斜下划线/文字颜色)
-    DAColorPickerButton* mBgColorButton { nullptr };  ///< 文字背景色
-    QToolButton* mBtnStrikeout { nullptr };           ///< 删除线
-    QToolButton* mBtnSuperscript { nullptr };         ///< 上标
-    QToolButton* mBtnSubscript { nullptr };           ///< 下标
-    QToolButton* mBtnClearFormat { nullptr };         ///< 清除格式
-    QTextEdit* mTextEdit { nullptr };                 ///< 富文本编辑区
+    DARichTextEditWidget* mEditor { nullptr };
     QPushButton* mBtnOk { nullptr };
     QPushButton* mBtnCancel { nullptr };
-    bool mUpdating { false };  ///< setHtml等内部更新时阻断textChanged回环
+    bool mUpdating { false };  ///< hideEvent 去重
 };
 
 DAChartTextEditorPopup::PrivateData::PrivateData(DAChartTextEditorPopup* p) : q_ptr(p)
 {
-}
-
-/**
- * @brief 创建工具栏（字体面板+背景色+删除线/上下标/清除格式）
- * @param lay 工具栏水平布局
- */
-void DAChartTextEditorPopup::PrivateData::buildFontPanel(QHBoxLayout* lay)
-{
-    mFontPanel = new DAFontEditPannelWidget(q_ptr);
-    // 弹窗工具栏高度受限，字体面板使用单排布局
-    mFontPanel->setLayoutMode(DAFontEditPannelWidget::SingleRowLayout);
-    lay->addWidget(mFontPanel, 1);
-
-    mBgColorButton = new DAColorPickerButton(q_ptr);
-    mBgColorButton->setToolTip(QObject::tr("Text Background Color")  //cn:文字背景色
-    );
-    lay->addWidget(mBgColorButton);
-
-    // 删除线：按钮文字自带删除线字体样式
-    mBtnStrikeout = new QToolButton(q_ptr);
-    {
-        QFont f = mBtnStrikeout->font();
-        f.setStrikeOut(true);
-        mBtnStrikeout->setFont(f);
-    }
-    mBtnStrikeout->setText("S");
-    mBtnStrikeout->setCheckable(true);
-    mBtnStrikeout->setToolTip(QObject::tr("Strikethrough")  //cn:删除线
-    );
-    lay->addWidget(mBtnStrikeout);
-
-    mBtnSuperscript = new QToolButton(q_ptr);
-    mBtnSuperscript->setText(QStringLiteral("x\xC2\xB2"));  // x²
-    mBtnSuperscript->setCheckable(true);
-    mBtnSuperscript->setToolTip(QObject::tr("Superscript")  //cn:上标
-    );
-    lay->addWidget(mBtnSuperscript);
-
-    mBtnSubscript = new QToolButton(q_ptr);
-    mBtnSubscript->setText(QStringLiteral("x\xE2\x82\x82"));  // x₂
-    mBtnSubscript->setCheckable(true);
-    mBtnSubscript->setToolTip(QObject::tr("Subscript")  //cn:下标
-    );
-    lay->addWidget(mBtnSubscript);
-
-    mBtnClearFormat = new QToolButton(q_ptr);
-    mBtnClearFormat->setText(QObject::tr("Clear")  //cn:清除
-    );
-    mBtnClearFormat->setToolTip(QObject::tr("Clear character format of selected text")  //cn:清除选中文本的字符格式
-    );
-    lay->addWidget(mBtnClearFormat);
-}
-
-/**
- * @brief 创建编辑区与确认按钮行
- * @param lay 主垂直布局
- */
-void DAChartTextEditorPopup::PrivateData::buildButtonRow(QVBoxLayout* lay)
-{
-    mTextEdit = new QTextEdit(q_ptr);
-    mTextEdit->setAcceptRichText(true);
-    mTextEdit->setMinimumHeight(80);
-    mTextEdit->setMinimumWidth(340);
-    lay->addWidget(mTextEdit, 1);
-
-    QHBoxLayout* btnLay = new QHBoxLayout();
-    btnLay->addStretch(1);
-    mBtnCancel = new QPushButton(QObject::tr("Cancel")  //cn:取消
-                                  ,
-                                  q_ptr);
-    btnLay->addWidget(mBtnCancel);
-    mBtnOk = new QPushButton(QObject::tr("OK")  //cn:确定
-                             ,
-                             q_ptr);
-    mBtnOk->setDefault(true);
-    btnLay->addWidget(mBtnOk);
-    lay->addLayout(btnLay);
 }
 
 //===================================================
@@ -173,55 +61,30 @@ void DAChartTextEditorPopup::buildUI()
     mainLay->setContentsMargins(6, 6, 6, 6);
     mainLay->setSpacing(4);
 
-    // 工具栏
-    QHBoxLayout* toolLay = new QHBoxLayout();
-    toolLay->setContentsMargins(0, 0, 0, 0);
-    toolLay->setSpacing(2);
-    d->buildFontPanel(toolLay);
-    mainLay->addLayout(toolLay);
+    // 内容控件（工具栏 + 编辑区）
+    d->mEditor = new DARichTextEditWidget(this);
+    mainLay->addWidget(d->mEditor, 1);
 
-    // 编辑区与按钮
-    d->buildButtonRow(mainLay);
+    // 确认/取消按钮（壳负责，内容控件不拥有）
+    QHBoxLayout* btnLay = new QHBoxLayout();
+    btnLay->addStretch(1);
+    d->mBtnCancel = new QPushButton(tr("Cancel")  //cn:取消
+                                     ,
+                                     this);
+    btnLay->addWidget(d->mBtnCancel);
+    d->mBtnOk = new QPushButton(tr("OK")  //cn:确定
+                                 ,
+                                 this);
+    d->mBtnOk->setDefault(true);
+    btnLay->addWidget(d->mBtnOk);
+    mainLay->addLayout(btnLay);
 
-    // 字体面板 -> QTextEdit
-    connect(d->mFontPanel, &DAFontEditPannelWidget::currentFontChanged, this, &DAChartTextEditorPopup::onFontChanged);
-    connect(
-        d->mFontPanel, &DAFontEditPannelWidget::currentFontColorChanged, this, &DAChartTextEditorPopup::onFontColorChanged);
-    // 背景色
-    connect(d->mBgColorButton, &DAColorPickerButton::colorChanged, this, &DAChartTextEditorPopup::onBackgroundColorChanged);
-    // 删除线/上标/下标/清除格式
-    connect(d->mBtnStrikeout, &QToolButton::clicked, this, [ this ](bool on) {
-        QTextCharFormat fmt;
-        fmt.setFontStrikeOut(on);
-        mergeCharFormat(fmt);
-    });
-    connect(d->mBtnSuperscript, &QToolButton::clicked, this, [ this ](bool on) {
-        QTextCharFormat fmt;
-        fmt.setVerticalAlignment(on ? QTextCharFormat::AlignSuperScript : QTextCharFormat::AlignNormal);
-        mergeCharFormat(fmt);
-    });
-    connect(d->mBtnSubscript, &QToolButton::clicked, this, [ this ](bool on) {
-        QTextCharFormat fmt;
-        fmt.setVerticalAlignment(on ? QTextCharFormat::AlignSubScript : QTextCharFormat::AlignNormal);
-        mergeCharFormat(fmt);
-    });
-    connect(d->mBtnClearFormat, &QToolButton::clicked, this, [ this, d ]() {
-        QTextCursor cursor = d->mTextEdit->textCursor();
-        if (!cursor.hasSelection()) {
-            cursor.select(QTextCursor::WordUnderCursor);
-        }
-        cursor.setCharFormat(QTextCharFormat());
-        d->mTextEdit->setTextCursor(cursor);
-        Q_EMIT textChanged(toHtml());
-    });
-    // QTextEdit -> 面板状态回显
-    connect(d->mTextEdit, &QTextEdit::currentCharFormatChanged, this, &DAChartTextEditorPopup::onTextEditCharFormatChanged);
-    connect(d->mTextEdit, &QTextEdit::textChanged, this, &DAChartTextEditorPopup::onTextChanged);
-    // 确认/取消
+    connect(d->mEditor, &DARichTextEditWidget::textChanged, this, &DAChartTextEditorPopup::textChanged);
     connect(d->mBtnOk, &QPushButton::clicked, this, &DAChartTextEditorPopup::onAccept);
     connect(d->mBtnCancel, &QPushButton::clicked, this, &DAChartTextEditorPopup::onReject);
     // Esc拦截（Qt::Popup默认Esc行为无法区分确认/取消，这里统一转为取消）
-    d->mTextEdit->installEventFilter(this);
+    d->mEditor->textEdit()->installEventFilter(this);
+    adjustSize();
 }
 
 /**
@@ -230,14 +93,7 @@ void DAChartTextEditorPopup::buildUI()
  */
 void DAChartTextEditorPopup::setHtml(const QString& html)
 {
-    DA_D(d);
-    QSignalBlocker blocker(d->mTextEdit);
-    d->mTextEdit->setHtml(html);
-    d->mTextEdit->selectAll();
-    // 全选状态下字体面板同步为首字符格式，便于用户直接输入覆盖
-    QTextCharFormat fmt = d->mTextEdit->currentCharFormat();
-    blocker.unblock();
-    onTextEditCharFormatChanged(fmt);
+    d_ptr->mEditor->setHtml(html);
 }
 
 /**
@@ -246,7 +102,7 @@ void DAChartTextEditorPopup::setHtml(const QString& html)
  */
 QString DAChartTextEditorPopup::toHtml() const
 {
-    return extractBodyHtml(d_ptr->mTextEdit->toHtml());
+    return d_ptr->mEditor->toHtml();
 }
 
 /**
@@ -255,7 +111,7 @@ QString DAChartTextEditorPopup::toHtml() const
  */
 QString DAChartTextEditorPopup::toPlainText() const
 {
-    return d_ptr->mTextEdit->toPlainText();
+    return d_ptr->mEditor->toPlainText();
 }
 
 /**
@@ -309,7 +165,7 @@ void DAChartTextEditorPopup::execShow()
     show();
     raise();
     activateWindow();
-    d->mTextEdit->setFocus(Qt::PopupFocusReason);
+    d->mEditor->textEdit()->setFocus(Qt::PopupFocusReason);
 }
 
 /**
@@ -353,7 +209,7 @@ void DAChartTextEditorPopup::hideEvent(QHideEvent* e)
 bool DAChartTextEditorPopup::eventFilter(QObject* obj, QEvent* e)
 {
     DA_D(d);
-    if (obj == d->mTextEdit && e->type() == QEvent::KeyPress) {
+    if (obj == d->mEditor->textEdit() && e->type() == QEvent::KeyPress) {
         QKeyEvent* ke = static_cast< QKeyEvent* >(e);
         if (ke->key() == Qt::Key_Escape) {
             onReject();
@@ -361,113 +217,6 @@ bool DAChartTextEditorPopup::eventFilter(QObject* obj, QEvent* e)
         }
     }
     return QWidget::eventFilter(obj, e);
-}
-
-/**
- * @brief 应用字符格式到当前选中段
- * @param fmt 字符格式
- */
-void DAChartTextEditorPopup::mergeCharFormat(const QTextCharFormat& fmt)
-{
-    DA_D(d);
-    QTextCursor cursor = d->mTextEdit->textCursor();
-    if (!cursor.hasSelection()) {
-        // 无选中：作用于当前空字符，对后续输入生效
-        d->mTextEdit->mergeCurrentCharFormat(fmt);
-    } else {
-        cursor.mergeCharFormat(fmt);
-        d->mTextEdit->mergeCurrentCharFormat(fmt);
-    }
-    d->mTextEdit->setTextCursor(cursor);
-}
-
-/**
- * @brief 字体变化（字体族/字号/加粗/斜体/下划线）
- * @param f 新字体
- */
-void DAChartTextEditorPopup::onFontChanged(const QFont& f)
-{
-    DA_D(d);
-    if (d->mUpdating) {
-        return;
-    }
-    QTextCharFormat fmt;
-    fmt.setFont(f);
-    mergeCharFormat(fmt);
-    d->mTextEdit->setFocus(Qt::PopupFocusReason);
-}
-
-/**
- * @brief 文字颜色变化
- * @param c 新颜色
- */
-void DAChartTextEditorPopup::onFontColorChanged(const QColor& c)
-{
-    DA_D(d);
-    if (d->mUpdating) {
-        return;
-    }
-    QTextCharFormat fmt;
-    fmt.setForeground(c);
-    mergeCharFormat(fmt);
-    d->mTextEdit->setFocus(Qt::PopupFocusReason);
-}
-
-/**
- * @brief 文字背景色变化
- * @param c 新颜色，无效颜色(QColor())表示清除背景
- */
-void DAChartTextEditorPopup::onBackgroundColorChanged(const QColor& c)
-{
-    DA_D(d);
-    if (d->mUpdating) {
-        return;
-    }
-    QTextCharFormat fmt;
-    if (c.isValid()) {
-        fmt.setBackground(c);
-    } else {
-        fmt.clearBackground();
-    }
-    mergeCharFormat(fmt);
-    d->mTextEdit->setFocus(Qt::PopupFocusReason);
-}
-
-/**
- * @brief 编辑区当前格式变化，回显到字体面板与格式按钮
- * @param fmt 当前字符格式
- */
-void DAChartTextEditorPopup::onTextEditCharFormatChanged(const QTextCharFormat& fmt)
-{
-    DA_D(d);
-    QSignalBlocker blocker(this);  // 阻断本widget所有信号防止回环
-    d->mUpdating = true;
-
-    QFont f = fmt.font();
-    d->mFontPanel->setCurrentFont(f);
-    QColor fc = fmt.foreground().color();
-    d->mFontPanel->setCurrentFontColor(fc.isValid() ? fc : Qt::black);
-
-    QColor bg = fmt.background().color();
-    d->mBgColorButton->setColor(bg);
-
-    d->mBtnStrikeout->setChecked(fmt.fontStrikeOut());
-    d->mBtnSuperscript->setChecked(fmt.verticalAlignment() == QTextCharFormat::AlignSuperScript);
-    d->mBtnSubscript->setChecked(fmt.verticalAlignment() == QTextCharFormat::AlignSubScript);
-
-    d->mUpdating = false;
-}
-
-/**
- * @brief 编辑区文本变化，发射textChanged
- */
-void DAChartTextEditorPopup::onTextChanged()
-{
-    DA_D(d);
-    if (d->mUpdating) {
-        return;
-    }
-    Q_EMIT textChanged(toHtml());
 }
 
 /**

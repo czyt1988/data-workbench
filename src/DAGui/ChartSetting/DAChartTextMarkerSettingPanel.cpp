@@ -1,4 +1,4 @@
-#include "DAChartTextMarkerSettingPanel.h"
+﻿#include "DAChartTextMarkerSettingPanel.h"
 #include "DAPropertyPanelContainerWidget.h"
 #include "DAChartTextEditorPopup.h"
 #include <QSignalBlocker>
@@ -93,6 +93,7 @@ void DAChartTextMarkerSettingPanel::buildPropertyPanel()
     );
     panel->addColorProperty(PropTextColor, tr("Text Color")  // cn:文字颜色
     );
+    panel->linkFontColorProperty(PropFont, PropTextColor);
     panel->addAlignmentProperty(PropLabelAlignment, tr("Alignment")  // cn:对齐方式
     );
     panel->endGroup();

@@ -10,10 +10,9 @@
 #include <QContextMenuEvent>
 #include <QDialog>
 #include <QDialogButtonBox>
-#include <QPlainTextEdit>
-#include <QFont>
 #include <QUrl>
 #include "DALogCategory.h"
+#include "DATextEditWidget.h"
 
 namespace DA
 {
@@ -411,13 +410,11 @@ void DAMarkdownView::onViewMarkdownSource()
 {
     QDialog dlg(this);
     dlg.setWindowTitle(tr("Markdown Source"));  // cn:Markdown 源码
-    auto* edit = new QPlainTextEdit(&dlg);
-    edit->setPlainText(mMarkdown);
+    auto* edit = new DA::DATextEditWidget(&dlg);
+    edit->setText(mMarkdown);
     edit->setReadOnly(true);
-    edit->setLineWrapMode(QPlainTextEdit::NoWrap);
-    QFont monoFont(QStringLiteral("Consolas"), 10);
-    monoFont.setStyleHint(QFont::Monospace);
-    edit->setFont(monoFont);
+    edit->setLineWrapEnabled(false);
+    edit->setMonospace(true);
     auto* btnBox = new QDialogButtonBox(QDialogButtonBox::Close, &dlg);
     QObject::connect(btnBox, &QDialogButtonBox::rejected, &dlg, &QDialog::close);
     auto* layout = new QVBoxLayout(&dlg);

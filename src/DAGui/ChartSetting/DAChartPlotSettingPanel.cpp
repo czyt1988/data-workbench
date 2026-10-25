@@ -1,4 +1,4 @@
-#include "DAChartPlotSettingPanel.h"
+﻿#include "DAChartPlotSettingPanel.h"
 #include "DAPropertyPanelContainerWidget.h"
 #include "qwt_text.h"
 #include <QSignalBlocker>
@@ -119,6 +119,7 @@ void DAChartPlotSettingPanel::buildPropertyPanel()
     );
     panel->addColorProperty(PID_TitleColor, tr("Title Color")  // cn:标题颜色
     );
+    panel->linkFontColorProperty(PID_TitleFont, PID_TitleColor);
     panel->endGroup();
 
     panel->addCollapsibleGroup(tr("Footer")  // cn:脚注
@@ -129,6 +130,7 @@ void DAChartPlotSettingPanel::buildPropertyPanel()
     );
     panel->addColorProperty(PID_FooterColor, tr("Footer Color")  // cn:脚注颜色
     );
+    panel->linkFontColorProperty(PID_FooterFont, PID_FooterColor);
     panel->endGroup();
 }
 

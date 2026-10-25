@@ -1,11 +1,11 @@
 #include "DATableNoteEditDialog.h"
-#include <QPlainTextEdit>
 #include <QPushButton>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QDialogButtonBox>
 #include <QGuiApplication>
 #include <QScreen>
+#include "DATextEditWidget.h"
 
 namespace DA
 {
@@ -31,7 +31,7 @@ void DATableNoteEditDialog::setupUI()
     setWindowTitle(tr("Cell Note"));  // cn:单元格批注
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
     QVBoxLayout* main = new QVBoxLayout(this);
-    mEdit             = new QPlainTextEdit(this);
+    mEdit             = new DATextEditWidget(this);
     mEdit->setObjectName(QStringLiteral("noteEditText"));
     mEdit->setPlaceholderText(tr("Enter note text..."));  // cn:输入批注文本...
     mEdit->setMinimumSize(280, 120);
@@ -53,12 +53,12 @@ void DATableNoteEditDialog::setupUI()
 
 void DATableNoteEditDialog::setNoteText(const QString& text)
 {
-    mEdit->setPlainText(text);
+    mEdit->setText(text);
 }
 
 QString DATableNoteEditDialog::noteText() const
 {
-    return mEdit->toPlainText();
+    return mEdit->text();
 }
 
 void DATableNoteEditDialog::setExistingNote(bool existing)
