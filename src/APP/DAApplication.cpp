@@ -121,12 +121,15 @@ bool DAApplication::notify(QObject* receiver, QEvent* event)
         return QApplication::notify(receiver, event);
     }
     const int typeValue = static_cast< int >(event->type());
-    const auto start    = std::chrono::steady_clock::now();
-    const bool result   = QApplication::notify(receiver, event);
-    const qint64 ns     = std::chrono::duration_cast< std::chrono::nanoseconds >(
+    // receiver 可能在事件派发过程中被析构（关闭面板、删除控件等），必须在派发前
+    // 建立 QPointer；派发返回后原指针可能已悬空，不能再直接解引用
+    QPointer< QObject > receiverGuard(receiver);
+    const auto start  = std::chrono::steady_clock::now();
+    const bool result = QApplication::notify(receiver, event);
+    const qint64 ns   = std::chrono::duration_cast< std::chrono::nanoseconds >(
                           std::chrono::steady_clock::now() - start)
                           .count();
-    recordEvent(typeValue, ns, receiver);
+    recordEvent(typeValue, ns, receiverGuard);
     return result;
 #else
     return QApplication::notify(receiver, event);
@@ -138,7 +141,7 @@ bool DAApplication::notify(QObject* receiver, QEvent* event)
 /**
  * @brief 记录一次事件派发耗时：入桶聚合；单次超阈值立即输出明细
  */
-void DAApplication::recordEvent(int typeValue, qint64 ns, QObject* receiver)
+void DAApplication::recordEvent(int typeValue, qint64 ns, const QPointer< QObject >& receiver)
 {
     EventBucket& b = (typeValue >= 0 && typeValue < kEventBucketCount) ? mEventBuckets[ typeValue ] : mEventBucketOther;
     ++b.count;

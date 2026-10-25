@@ -2,6 +2,7 @@
 #define DAAPPLICATION_H
 // Qt
 #include <QApplication>
+#include <QPointer>
 // stl
 #include <atomic>
 #include <memory>
@@ -48,7 +49,7 @@ private:
     };
     static constexpr int kEventBucketCount = 1024;
 
-    void recordEvent(int typeValue, qint64 ns, QObject* receiver);
+    void recordEvent(int typeValue, qint64 ns, const QPointer< QObject >& receiver);
     void flushEventAggregates();
 
     std::atomic< quint64 > mHeartbeat { 0 };  ///< 主线程心跳计数（QTimer 递增，看门狗线程读取）
