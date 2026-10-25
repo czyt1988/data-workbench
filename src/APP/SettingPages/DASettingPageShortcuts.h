@@ -4,9 +4,8 @@
 #include <QKeySequence>
 #include <QHash>
 
-class QTreeView;
-class QStandardItemModel;
-class QStandardItem;
+class QTreeWidget;
+class QTreeWidgetItem;
 class QLineEdit;
 class QLabel;
 class QKeySequenceEdit;
@@ -14,7 +13,6 @@ class QKeySequenceEdit;
 namespace DA
 {
 class DAShortcutManager;
-class DAStringFilterProxyModel;
 
 /**
  * @brief 快捷键设置页
@@ -75,13 +73,11 @@ private:
 
 private:
     DAShortcutManager* mManager { nullptr };
-    QTreeView* mTree { nullptr };
-    QStandardItemModel* mModel { nullptr };
-    DAStringFilterProxyModel* mProxy { nullptr };
+    QTreeWidget* mTree { nullptr };
     QLineEdit* mSearchEdit { nullptr };
     QLabel* mStatusLabel { nullptr };
     QHash< QString, QKeySequence > mWorkingOverrides;  ///< 工作副本（键存在=已覆盖，空序列=显式清除）
-    QHash< QString, QStandardItem* > mCommandItems;
+    QHash< QString, QTreeWidgetItem* > mCommandItems;
     QHash< QString, QKeySequenceEdit* > mEditors;
     bool mUpdating { false };  ///< 程序性刷新编辑器时抑制 keySequenceChanged 处理
 };
