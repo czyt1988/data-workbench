@@ -21,7 +21,7 @@ data-workbench/
 ├── docs/zh/            # 中文技术文档 (dev-guide/, use-guide/, build/)
 ├── plugins/            # 插件 (DataAnalysis, CrewAIAdapter, DAAgentTools, plugin-template)
 ├── src/
-│   ├── 3rdparty/       # 第三方库 (qwt, SARibbon, qt-advanced-docking 等)
+│   ├── 3rdparty/       # 第三方库 (qwt, SARibbon, qt-advanced-docking, DAWidgets 等)
 │   ├── DAShared/       # 共享基础类型 (20 files)
 │   ├── DAUtils/        # 工具类 (40 files)
 │   ├── DAAxOfficeWrapper/ # Windows Office 封装 (10 files, 仅 Win)
@@ -31,7 +31,6 @@ data-workbench/
 │   ├── DAPyCommonWidgets/ # Python 通用 Widgets (13 files)
 │   ├── DAPyWorkFlow/   # Python 工作流节点 (50 files)
 │   ├── DAData/         # 数据管理/结构 (22 files)
-│   ├── DACommonWidgets/ # 通用 UI 组件 (82 files)
 │   ├── DAGraphicsView/ # 图形视图框架 (54 files)
 │   ├── DAFigure/       # 图表/Figure 容器 (103 files)
 │   ├── DAGui/          # GUI Widgets/面板/对话框 (334 files, 最大模块)
@@ -63,7 +62,6 @@ data-workbench/
        └→ DAMessageHandler
 Python层: DAUtils → DAPyBindQt → DAPyScripts → DAPyCommonWidgets → DAPyWorkFlow
 功能层: DAData (→ DAUtils, DAPyBindQt, DAPyScripts)
-       DACommonWidgets (→ DAUtils)
        DAGraphicsView (→ DAUtils)
        DAFigure (→ DAUtils + Qwt)
 界面层: DAGui (→ 所有上述模块 + SARibbon/ADS/qwt)
@@ -90,7 +88,7 @@ Python层: DAUtils → DAPyBindQt → DAPyScripts → DAPyCommonWidgets → DAPy
 │ Layer 4: 接口层    │ DAInterface, DAPluginSupport,│
 │                    │ DAAgent                      │
 ├─────────────────────────────────────────────────┤
-│ Layer 3: 界面层    │ DAGui, DACommonWidgets      │
+│ Layer 3: 界面层    │ DAGui                       │
 ├─────────────────────────────────────────────────┤
 │ Layer 2: 功能层    │ DAData, DAFigure, DAPyWorkFlow,
 │                    │ DAGraphicsView, DAPyScripts,
@@ -109,7 +107,7 @@ Python层: DAUtils → DAPyBindQt → DAPyScripts → DAPyCommonWidgets → DAPy
 |----|------|
 | **L1 基础层** | DAShared（纯头文件）、DAUtils、DAMessageHandler、DAPyBindQt |
 | **L2 功能层** | DAData、DAFigure、DAPyWorkFlow、DAGraphicsView、DAPyScripts、DAPyCommonWidgets |
-| **L3 界面层** | DAGui、DACommonWidgets |
+| **L3 界面层** | DAGui（项目级 UI 框架：设置面板、属性面板、图表设置等） |
 | **L4 接口层** | DAInterface、DAPluginSupport、DAAgent |
 | **L5 应用层** | APP |
 
@@ -154,7 +152,8 @@ Python层: DAUtils → DAPyBindQt → DAPyScripts → DAPyCommonWidgets → DAPy
 | 慢日志（性能埋点） | `src/DAMessageHandler/DASlowLog.h`（宏/作用域/计数器）+ `src/APP/DAApplication.h`（事件计时）+ `src/APP/DASlowLogWatchdog.h`（卡顿看门狗） | `DA_SLOW_LOG_*` 宏埋点写独立 `slow.log`（不进 UI 队列）；Debug 自动开启、Release 零残留；开关/阈值/格式详见 [logging.md](docs/zh/dev-guide/general/logging.md) § 慢日志 |
 | PIMPL 宏定义 | `src/DAGlobals.h` | DA_DECLARE_PRIVATE, DA_D, DA_DC 等 |
 | Qt5/Qt6 兼容宏 | `src/DAGlobals.h` | Qt5Qt6Compat_* 系列宏 |
-| 通用 Widgets | `src/DACommonWidgets/` | 按钮、列表、树等基础组件 |
+| 通用 Widgets（L1） | `src/3rdparty/DAWidgets/` | 纯 Qt/Svg 通用控件：选择器、折叠、属性编辑器、文件路径、勾选/字符串列表、文本编辑器、撤销面板、遮罩基类 |
+| 项目级 UI 框架（L2） | `src/DAGui/` | `DAFormSpec`/`DAPropertyFormWidget`、属性面板、设置框架、图表设置基类 |
 | 枚举/字符串转换 | `src/DAShared/DAEnumStringUtils.hpp` | 通用枚举↔字符串映射宏，详见`docs/zh/dev-guide/general/da-enum-string-utils.md` |
 | 插件开发参考 | `plugins/DataAnalysis/` | 最完整的插件示例 |
 | Agent 工具/设置 | `plugins/DAAgentTools/`（21 内置工具）/ `src/APP/SettingPages/DAAgentSettingsWidget`（LLM 设置页） | 工具由 `DAAgentToolsPlugin` 注册；设置页经 `setAgentInterface` 持久化 `agent-config.json`（DAAgent 不依赖 DAGui） |
@@ -261,8 +260,40 @@ AI 编写代码时，日志宏的选择直接影响日志是否进入 UI 消息�
 `src/3rdparty/DAWidgets` 是本项目自维护的通用窗口控件库（允许改动的子模块，与 SARibbon/qwt 同级）。开发中发现**缺少具备通用性/复用性的基础控件**时（例：通用列/条目选择控件、渐变色阶预览条、带色块的取色按钮等），**先在 DAWidgets 里实现，再由顶层项目引用**，不要在 DAGui 等业务模块里造一次性控件：
 
 - **下沉判据**：控件不含业务语义（只认文本/标识/颜色等通用数据结构），且能想到第二个复用场景（列选择、字段选择、条目挑选等）→ 下沉 DAWidgets；强绑定业务数据的控件留在业务模块。
-- **改动流程**（第三方库是预编译产物，只能串行）：在**主工作树**的 DAWidgets 子模块里改代码并提交 → 主工作树重编 3rdparty 并 `cmake --install`（工作树里**禁止 install**，会踩共享 `bin_*`）→ 任务工作树同步子模块提交 → 顶层引用新控件并随任务提交子模块指针。
+- **改动流程**（第三方库是预编译产物，只能串行）：在**主工作树**的 DAWidgets 子模块里改代码并提交 → DAWidgets 独立构建测试全绿 + demo 冒烟 → 主工作树重编 3rdparty 并 `cmake --install`（工作树里**禁止 install**，会踩共享 `bin_*`）→ 任务工作树同步子模块提交 → 顶层引用新控件并随任务提交子模块指针。测试与示例命令见 [src/3rdparty/DAWidgets/AGENTS.md](src/3rdparty/DAWidgets/AGENTS.md)。
 - **翻译**：DAWidgets 新控件的界面文本用 `tr()`（英文源 + `//cn:` 注释）；顶层 `CMakeLists.txt` 的 `DA_LUPDATE_SOURCE_DIRS` 已包含 `src/3rdparty/DAWidgets/src`，纳入统一 lupdate/翻译流。
+
+#### 新控件四问（全过才进 DAWidgets）
+
+1. **依赖问**：是否只依赖 Qt / Svg / DAWidgets？
+2. **复用问**：是否能想到第二个、与当前业务无关的复用场景？
+3. **语义问**：是否只认文本、标识、颜色、枚举等通用数据？
+4. **稳定问**：API 是否能稳定下来、是否能写 QtTest？
+
+四问全过 → DAWidgets（L1）；1/2 过、3 不过 → DAGui（L2）局部控件；只在单模块内 → 留在该模块。
+
+#### Widget-first 契约
+
+- 内容默认做成 `QWidget`；需要模态时用 10 行 `QDialog` 壳：标题 + 内容 + `QDialogButtonBox` + `accept/reject`。
+- **内容 Widget 不拥有 OK/Cancel/Close**；按钮、Esc、模态、定位、尺寸归壳。否则嵌入时会被对话框语义污染。
+- 只有同一内容确实同时有"嵌入"和"弹窗"两种使用时，才拆成两个类；不为假想场景拆。
+- 通用对话框容器暂不做：出现 3 个逐行相同的壳再抽，且放在 DAWidgets。
+
+#### 列表控件按三形态选型
+
+| 形态 | 数据契约 | 代表场景 | 控件 |
+|---|---|---|---|
+| 从候选里挑 | `DAItemEntry`（text + data 标识），可搜索、可多选、可排序 | 合并列、分组键、列可见性、子 Agent 工具白名单 | `DAItemListEditWidget`（+`setReorderEnabled`）/ `DACheckListWidget` |
+| 纯字符串列表 | `QStringList`，可自由输入、可编辑、可排序 | 表单 list 字段、模块搜索路径 | `DAStringListEditWidget` |
+| 对象列表 | 列表只是业务对象数组的索引，Add 打开复合编辑器 | 验证规则、Agent 提示词、布局管理 | 保留手写 `QListWidget` + 按钮 |
+
+**不要**把三种形态塞进一个控件；布尔开关会变成互斥语义，最后比手写更难维护。
+
+#### 消息框规则
+
+- **字段校验不得用模态 `QMessageBox`**：优先内联状态（状态标签 + 提交按钮置灰）；不能用内联的才弹窗，且标题用功能名或统一的 `Warning`/`Information`，禁止把整句错误当标题。
+- **破坏性确认默认安全**：`QMessageBox::question` 的破坏性操作必须显式传 `No`/`Cancel` 作为默认按钮。
+- **保存提示用语义按钮**：保存/放弃/取消场景用 `Save | Discard | Cancel`，不要用 `Yes/No/Cancel` 表达三种含义。
 
 ### 视觉设计规范（UI 与图标）
 
