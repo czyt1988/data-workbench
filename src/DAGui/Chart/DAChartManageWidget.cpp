@@ -54,6 +54,7 @@ public:
     QAction* mActRename { nullptr };
     QAction* mActVisible { nullptr };
     QAction* mActDelete { nullptr };
+    QAction* mActRemoveChart { nullptr };
     QAction* mActSetting { nullptr };
     // "转移"子菜单（图元右键时列出其它 figure 及其 chart）
     QMenu* mMenuTransfer { nullptr };
@@ -99,6 +100,8 @@ void DAChartManageWidget::PrivateData::ensureTreeContextMenu(DAChartManageWidget
     mActVisible = mTreeContextMenu->addAction(tr("Visible"));  // cn:可见
     mActVisible->setCheckable(true);
     mActDelete  = mTreeContextMenu->addAction(tr("Delete"));   // cn:删除
+    // 删除整个坐标系（subplot），与 Ribbon 的"新建坐标系"对称，走可撤销命令
+    mActRemoveChart = mTreeContextMenu->addAction(tr("Remove Chart"));  // cn:删除坐标系
     mTreeContextMenu->addSeparator();
     // "转移"子菜单（仅图元节点可见，内容在每次右键时按当前 figure/chart 动态重建）
     mMenuTransfer = new QMenu(mTreeContextMenu);
@@ -110,13 +113,14 @@ void DAChartManageWidget::PrivateData::ensureTreeContextMenu(DAChartManageWidget
     QObject::connect(mActRename, &QAction::triggered, q, &DAChartManageWidget::onContextMenuRenameTriggered);
     QObject::connect(mActVisible, &QAction::triggered, q, &DAChartManageWidget::onContextMenuVisibleTriggered);
     QObject::connect(mActDelete, &QAction::triggered, q, &DAChartManageWidget::onContextMenuDeleteTriggered);
+    QObject::connect(mActRemoveChart, &QAction::triggered, q, &DAChartManageWidget::onContextMenuRemoveChartTriggered);
     QObject::connect(mActSetting, &QAction::triggered, q, &DAChartManageWidget::onContextMenuSettingTriggered);
 }
 
 /**
  * @brief 根据节点类型更新右键菜单各 action 的可见性
  *
- * - chart节点(NodeTypePlotFolder): 重命名、设置
+ * - chart节点(NodeTypePlotFolder): 重命名、删除坐标系、设置
  * - layer节点(NodeTypePlot): 无菜单（调用方在外部判断，不进入此函数）
  * - 坐标轴节点(NodeTypeAxis): 重命名、可见、设置
  * - 图元节点(NodeTypePlotItem): 重命名、可见、删除、(分割线)、设置
@@ -131,18 +135,21 @@ void DAChartManageWidget::PrivateData::updateContextMenuActions(int nodeType)
         mActRename->setVisible(true);
         mActVisible->setVisible(false);
         mActDelete->setVisible(false);
+        mActRemoveChart->setVisible(true);
         mActSetting->setVisible(true);
         break;
     case DAFigureTreeModel::NodeTypeAxis:
         mActRename->setVisible(true);
         mActVisible->setVisible(true);
         mActDelete->setVisible(false);
+        mActRemoveChart->setVisible(false);
         mActSetting->setVisible(true);
         break;
     case DAFigureTreeModel::NodeTypePlotItem:
         mActRename->setVisible(true);
         mActVisible->setVisible(true);
         mActDelete->setVisible(true);
+        mActRemoveChart->setVisible(false);
         mActSetting->setVisible(true);
         break;
     // 3D 节点
@@ -150,24 +157,28 @@ void DAChartManageWidget::PrivateData::updateContextMenuActions(int nodeType)
         mActRename->setVisible(true);
         mActVisible->setVisible(false);
         mActDelete->setVisible(false);
+        mActRemoveChart->setVisible(true);
         mActSetting->setVisible(true);
         break;
     case DAFigureTreeModel::NodeTypePlot3DAxis:
         mActRename->setVisible(true);
         mActVisible->setVisible(false);
         mActDelete->setVisible(false);
+        mActRemoveChart->setVisible(false);
         mActSetting->setVisible(true);
         break;
     case DAFigureTreeModel::NodeTypePlot3DItem:
         mActRename->setVisible(true);
         mActVisible->setVisible(true);
         mActDelete->setVisible(true);
+        mActRemoveChart->setVisible(false);
         mActSetting->setVisible(true);
         break;
     default:
         mActRename->setVisible(false);
         mActVisible->setVisible(false);
         mActDelete->setVisible(false);
+        mActRemoveChart->setVisible(false);
         mActSetting->setVisible(false);
         break;
     }
@@ -940,6 +951,72 @@ void DAChartManageWidget::onContextMenuDeleteTriggered()
             delete plot3DItem;
             chart3D->update();  // 触发 GL 重绘
         }
+    }
+}
+
+/**
+ * @brief 右键菜单"删除坐标系"触发（chart 节点/3D chart 节点）
+ *
+ * 删除整个 subplot（含其全部图元），与 Ribbon 的"新建坐标系"对称。
+ * 走 @ref DAFigureWidget::removeChart_ / remove3DChart_ 的可撤销命令，
+ * Ctrl+Z 恢复时按原归一化矩形把 chart 加回布局，树节点随
+ * QwtFigure::axesRemoved / axesAdded 信号自动增删
+ */
+void DAChartManageWidget::onContextMenuRemoveChartTriggered()
+{
+    DAFigureTreeView* tree = d_ptr->mContextTree;
+    QStandardItem* item    = d_ptr->mContextItem;
+    int nodeType           = d_ptr->mContextNodeType;
+    if (!tree || !item) {
+        return;
+    }
+    if (nodeType != DAFigureTreeModel::NodeTypePlotFolder
+        && nodeType != DAFigureTreeModel::NodeTypePlot3DFolder) {
+        return;
+    }
+    DAFigureTreeModel* model = tree->getFigureTreeModel();
+    DAFigureWidget* figWidget = d_ptr->mContextFigureWidget;
+    if (!model || !figWidget) {
+        return;
+    }
+    if (nodeType == DAFigureTreeModel::NodeTypePlotFolder) {
+        QwtPlot* plot = model->plotFromItem(item);
+        if (!plot) {
+            return;
+        }
+        QString name = plot->title().text();
+        if (name.isEmpty()) {
+            name = tr("chart");  // cn:绘图
+        }
+        int ret = QMessageBox::question(tree,
+                                        tr("Remove Chart"),                                       // cn:删除坐标系
+                                        tr("Are you sure to remove chart \"%1\"? All its items will be removed.").arg(name),  // cn:确认删除坐标系"%1"吗？其全部图元将一并移除。
+                                        QMessageBox::Yes | QMessageBox::No,
+                                        QMessageBox::No);
+        if (ret != QMessageBox::Yes) {
+            return;
+        }
+        figWidget->removeChart_(qobject_cast< DAChartWidget* >(plot));
+    }
+    // === 3D chart 删除 ===
+    else {
+        DAChart3DWidget* chart3D = model->plot3DFromItem(item);
+        if (!chart3D) {
+            return;
+        }
+        QString name = chart3D->title();
+        if (name.isEmpty()) {
+            name = tr("chart");  // cn:绘图
+        }
+        int ret = QMessageBox::question(tree,
+                                        tr("Remove Chart"),                                       // cn:删除坐标系
+                                        tr("Are you sure to remove chart \"%1\"? All its items will be removed.").arg(name),  // cn:确认删除坐标系"%1"吗？其全部图元将一并移除。
+                                        QMessageBox::Yes | QMessageBox::No,
+                                        QMessageBox::No);
+        if (ret != QMessageBox::Yes) {
+            return;
+        }
+        figWidget->remove3DChart_(chart3D);
     }
 }
 

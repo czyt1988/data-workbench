@@ -116,6 +116,7 @@ private Q_SLOTS:
     void onContextMenuRenameTriggered();
     void onContextMenuVisibleTriggered(bool on);
     void onContextMenuDeleteTriggered();
+    void onContextMenuRemoveChartTriggered();
     void onContextMenuSettingTriggered();
     // 把右键上下文中的图元转移到目标chart（经undo命令，可撤销/重做）
     void transferPlotItemToChart(DA::DAChartWidget* targetChart);

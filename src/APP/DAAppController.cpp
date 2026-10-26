@@ -1124,6 +1124,8 @@ void DAAppController::onFigureElementClicked(const DAFigureElementSelection& sel
         if (selection.isSelectedPlot3D()) {
             selection.figureWidget->setCurrent3DChart(selection.plot3D);
         }
+        // 唤起设置停靠窗（隐藏/被覆盖时用户否则看不到任何反馈）
+        mDock->raiseDockByWidget((QWidget*)(setting));
         return;
     }
 
@@ -1136,6 +1138,8 @@ void DAAppController::onFigureElementClicked(const DAFigureElementSelection& sel
     }
     setting->showChartSettingWidget();
     chartSetting->setSelection(selection);
+    // 唤起设置停靠窗（隐藏/被覆盖时用户否则看不到任何反馈）
+    mDock->raiseDockByWidget((QWidget*)(setting));
     if (selection.isSelectedPlot()) {
         // 单独选中plot，那么把figure的current plot进行切换
         if (selection.plot->isHostPlot()) {

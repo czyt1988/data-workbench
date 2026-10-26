@@ -16068,6 +16068,23 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <source>Chart Manage</source>
         <translation>图表管理</translation>
     </message>
+    <message>
+        <location filename="../DAGui/Chart/DAChartManageWidget.cpp" line="+104"/>
+        <source>Remove Chart</source>
+        <translation>删除坐标系</translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <location line="+16"/>
+        <source>Are you sure to remove chart &quot;%1&quot;? All its items will be removed.</source>
+        <translation>确认删除坐标系“%1”吗？其全部图元将一并移除。</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <location line="+16"/>
+        <source>chart</source>
+        <translation>绘图</translation>
+    </message>
 </context>
 <context>
     <name>DAChartSeriesPickerWidget</name>
