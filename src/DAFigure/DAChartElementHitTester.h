@@ -3,6 +3,7 @@
 #include "DAFigureAPI.h"
 #include <QPointF>
 #include <QRect>
+class QPainterPath;
 class QwtPlot;
 class QwtPlotItem;
 class QwtScaleWidget;
@@ -67,6 +68,9 @@ public:
     static QwtPlotItem* itemAt(QwtPlot* plot, const QPoint& canvasPos, int tolerance = 8);
     // 获取 item 的选中框（canvas 像素坐标），无效返回空矩形
     static QRect itemSelectionRect(QwtPlot* plot, const QwtPlotItem* item, int margin = 4);
+    // 获取曲线类 item 的选中路径（canvas 像素坐标，沿数据采样点连线；纯散点为环绕采样点的圆圈集合），
+    // 非曲线类返回空路径（此类 item 用 itemSelectionRect 的矩形选中框）
+    static QPainterPath itemSelectionPath(QwtPlot* plot, const QwtPlotItem* item);
     // item 是否支持拖动移动
     static bool isMovableItem(const QwtPlotItem* item);
     // 记录 item 当前几何（数据坐标）
@@ -95,6 +99,8 @@ private:
     static bool textLabelHit(QwtPlot* plot, const QwtPlotTextLabel* label, const QPoint& canvasPos);
     // marker 的 label 文字矩形（canvas 像素坐标）
     static QRectF markerLabelRect(QwtPlot* plot, const QwtPlotMarker* marker);
+    // 箭头在 canvas 上的起止端点（与 QwtPlotArrowMarker::draw 的绘制几何一致）
+    static void arrowCanvasPoints(QwtPlot* plot, const QwtPlotArrowMarker* arrow, QPointF& canvasStart, QPointF& canvasEnd);
     // 数据坐标矩形转 canvas 像素矩形（使用 item 自己的 x/y 轴映射）
     static QRectF transformDataRect(QwtPlot* plot, const QwtPlotItem* item, const QRectF& dataRect);
 };

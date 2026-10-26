@@ -234,7 +234,9 @@ void DAFigurePointerSelectorOverlay::onItemAttached(QwtPlotItem* item, bool on)
  * @brief 鼠标按下：plot级命中分派
  *
  * 先让基类完成激活plot切换；再对激活plot做区域命中：
- * 标题/footer → SelectPlot；轴 → 选中轴；canvas → 转发给editor
+ * 标题/footer → SelectPlot；轴 → 选中轴；canvas → 转发给editor。
+ * 点击非激活plot时基类会切换激活并accept，此时不直接返回——
+ * 被点击的plot已经是新激活plot，继续命中流程，实现"一次点击=切换+选中"
  * @param me figure坐标鼠标事件
  */
 void DAFigurePointerSelectorOverlay::mousePressEvent(QMouseEvent* me)
@@ -249,9 +251,10 @@ void DAFigurePointerSelectorOverlay::mousePressEvent(QMouseEvent* me)
         return;
     }
     // 先让基类处理激活plot切换（点击其他子图会切换激活）
+    const QWidget* activeBefore = currentActiveWidget();
     DAFigureWidgetOverlay::mousePressEvent(me);
-    if (me->isAccepted()) {
-        // 基类消费了事件（如发生了激活切换），本次点击仅用于切换，不选择元素
+    if (me->isAccepted() && currentActiveWidget() == activeBefore) {
+        // 基类消费了事件且未发生激活切换（如点击figure空白区取消激活），不选择元素
         return;
     }
     QwtPlot* plot = currentActivePlot();
@@ -466,9 +469,11 @@ void DAFigurePointerSelectorOverlay::clearSelection()
 }
 
 /**
- * @brief 绘制选中item的选中框
+ * @brief 绘制选中item的选中高亮
  *
- * 选中框为 canvas 像素矩形经 mapRectTo 映射到 figure 坐标，
+ * 曲线类：沿数据采样点的路径描边（boundingRect 几乎占满canvas，矩形框遮挡严重），
+ * 只画半透明描边、不填充、不画手柄（曲线不可拖动，手柄无意义）；
+ * 其余类型：canvas 像素矩形经 mapRectTo 映射到 figure 坐标，
  * 橙红虚线边框 + 半透明填充 + 四角白色手柄方块
  * @param p painter
  */
@@ -481,6 +486,22 @@ void DAFigurePointerSelectorOverlay::drawItemSelectionRect(QPainter* p) const
     QwtPlotItem* item = d->mSelectedItem;
     QwtPlot* plot     = item->plot();
     if (!plot || !plot->canvas()) {
+        return;
+    }
+    // 曲线类：沿路径高亮
+    const QPainterPath canvasPath = DAChartElementHitTester::itemSelectionPath(plot, item);
+    if (!canvasPath.isEmpty()) {
+        const QPoint canvasOrigin = DAFigureChartEditorWidgetOverlay::mapRectTo(
+            plot->canvas(), figure(), QRect(0, 0, 1, 1)).topLeft();
+        p->save();
+        p->translate(canvasOrigin);
+        QPen pen(c_pointer_selection_color, 3.0, Qt::SolidLine);
+        pen.setCapStyle(Qt::RoundCap);
+        pen.setJoinStyle(Qt::RoundJoin);
+        p->setPen(pen);
+        p->setBrush(Qt::NoBrush);
+        p->drawPath(canvasPath);
+        p->restore();
         return;
     }
     const QRect canvasRect = DAChartElementHitTester::itemSelectionRect(plot, item);

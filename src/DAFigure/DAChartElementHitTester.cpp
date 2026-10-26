@@ -3,6 +3,9 @@
 #include <QApplication>
 #include <QWidget>
 #include <QPainterPath>
+#include <QtMath>
+// std
+#include <cmath>
 // qwt
 #include "qwt_plot.h"
 #include "qwt_plot_canvas.h"
@@ -294,22 +297,23 @@ bool DAChartElementHitTester::arrowHit(QwtPlot* plot, const QwtPlotArrowMarker* 
     if (!plot || !arrow) {
         return false;
     }
-    const QwtScaleMap& xMap = plot->canvasMap(arrow->xAxis());
-    const QwtScaleMap& yMap = plot->canvasMap(arrow->yAxis());
-    const QPointF start = arrow->startPoint();
-    const QPointF end   = arrow->endPoint();
-    const QPointF ps(xMap.transform(start.x()), yMap.transform(start.y()));
-    const QPointF pe(xMap.transform(end.x()), yMap.transform(end.y()));
+    // 与 QwtPlotArrowMarker::draw 相同的 canvas 端点计算：
+    // ExplicitPoints 用 endPoint 经 canvasMap 变换；StartLengthAngle 在 canvas 像素空间按长度/角度偏移
+    //（endPoint() 在该模式下于数据坐标加像素长度，与绘制几何错位，不可用于命中）
+    QPointF ps, pe;
+    arrowCanvasPoints(plot, arrow, ps, pe);
     const double tol2 = static_cast< double >(tolerance) * tolerance;
     // 线段距离
     if (distanceSquareToPointSegment(QPointF(canvasPos), ps, pe) <= tol2) {
         return true;
     }
-    // 端点图形（箭头头部/尾部）区域
+    // 端点图形（箭头头部/尾部）区域：平方距离比较
     const double headR = std::max(arrow->headSize().width(), arrow->headSize().height()) / 2.0 + tolerance;
     const double tailR = std::max(arrow->tailSize().width(), arrow->tailSize().height()) / 2.0 + tolerance;
     const QPointF pc   = canvasPos;
-    if ((pc - pe).manhattanLength() <= headR * headR || (pc - ps).manhattanLength() <= tailR * tailR) {
+    const QPointF dh   = pc - pe;
+    const QPointF dt   = pc - ps;
+    if (dh.x() * dh.x() + dh.y() * dh.y() <= headR * headR || dt.x() * dt.x() + dt.y() * dt.y() <= tailR * tailR) {
         return true;
     }
     return false;
@@ -472,7 +476,16 @@ QRect DAChartElementHitTester::itemSelectionRect(QwtPlot* plot, const QwtPlotIte
         if (!arrow) {
             return QRect();
         }
-        rect = transformDataRect(plot, item, arrow->boundingRect());
+        // 不用 arrow->boundingRect()：其像素 margin 加在数据坐标上（量纲错误），
+        // 且 StartLengthAngle 模式下 endPoint 与绘制终点错位；改用绘制几何构造紧凑选框
+        QPointF ps, pe;
+        arrowCanvasPoints(plot, arrow, ps, pe);
+        // 端点图形尺寸参与选框计算
+        const qreal headR = std::max(arrow->headSize().width(), arrow->headSize().height()) / 2.0;
+        const qreal tailR = std::max(arrow->tailSize().width(), arrow->tailSize().height()) / 2.0;
+        const qreal halfPen = arrow->linePen().widthF() / 2.0;
+        const qreal r = std::max({ headR, tailR, halfPen, 2.0 });
+        rect = QRectF(ps, pe).normalized().adjusted(-r, -r, r, r);
     } break;
     case QwtPlotItem::Rtti_PlotShape: {
         const QwtPlotShapeItem* shape = dynamic_cast< const QwtPlotShapeItem* >(item);
@@ -518,6 +531,62 @@ QRect DAChartElementHitTester::itemSelectionRect(QwtPlot* plot, const QwtPlotIte
         return QRect();
     }
     return rect.adjusted(-margin, -margin, margin, margin).toAlignedRect();
+}
+
+/**
+ * @brief 获取曲线类 item 的选中路径（canvas 像素坐标）
+ *
+ * 沿数据采样点连线构造路径（NaN 断线），替代矩形选中框：
+ * 曲线的 boundingRect 是整条曲线的数据包围盒，映射后几乎占满 canvas，
+ * 用矩形做选中高亮会遮挡整个绘图区。纯散点（NoCurve 样式）没有连线，
+ * 改为在每个采样点画小圆圈。点数多时按步长抽稀（高亮线粗 2~3px，抽稀不影响观感）
+ * @param plot 目标绘图
+ * @param item 曲线类 item
+ * @return canvas 像素坐标路径，非曲线类返回空路径
+ */
+QPainterPath DAChartElementHitTester::itemSelectionPath(QwtPlot* plot, const QwtPlotItem* item)
+{
+    QPainterPath path;
+    if (!plot || !item || !plot->canvas()) {
+        return path;
+    }
+    const QwtPlotCurve* curve = dynamic_cast< const QwtPlotCurve* >(item);
+    if (!curve || curve->dataSize() == 0) {
+        return path;
+    }
+    const QwtScaleMap& xMap = plot->canvasMap(curve->xAxis());
+    const QwtScaleMap& yMap = plot->canvasMap(curve->yAxis());
+    // 裁剪带：canvas 外扩 16px，超出部分离屏不参与路径
+    const QRectF canvasRect(plot->canvas()->contentsRect());
+    const QRectF clipRect = canvasRect.adjusted(-16, -16, 16, 16);
+    const bool scatterOnly = (QwtPlotCurve::NoCurve == curve->style());
+    const int total = static_cast< int >(curve->dataSize());
+    // 路径点数上限：超限按步长抽稀（散点圆圈同样抽稀，避免几万个圆圈拖慢 overlay 重绘）
+    const int maxPoints = 2000;
+    const int step      = std::max(1, total / maxPoints);
+    bool lineStarted = false;
+    for (int i = 0; i < total; i += step) {
+        const QPointF sample = curve->sample(i);
+        if (qIsNaN(sample.x()) || qIsNaN(sample.y())) {
+            lineStarted = false;
+            continue;
+        }
+        const QPointF pt(xMap.transform(sample.x()), yMap.transform(sample.y()));
+        if (scatterOnly) {
+            const qreal r = 3.0;
+            if (clipRect.contains(pt)) {
+                path.addEllipse(pt, r, r);
+            }
+            continue;
+        }
+        if (!lineStarted) {
+            path.moveTo(pt);
+            lineStarted = true;
+        } else {
+            path.lineTo(pt);
+        }
+    }
+    return path;
 }
 
 //===================================================
@@ -628,6 +697,38 @@ void DAChartElementHitTester::moveItemBy(QwtPlotItem* item, const QPointF& delta
 //===================================================
 // 私有辅助
 //===================================================
+
+/**
+ * @brief 计算箭头在 canvas 上的起止端点（像素坐标）
+ *
+ * 与 QwtPlotArrowMarker::draw 的绘制几何逐分支一致：
+ * - ExplicitPoints：起终点均经 canvasMap 变换
+ * - StartLengthAngle：起点变换，终点 = 起点像素 + (length·cos(angle), -length·sin(angle))
+ *   （y 取负：canvas 像素坐标向下为正，与数学角度方向相反）
+ * @param plot 目标绘图
+ * @param arrow 箭头 item
+ * @param canvasStart [out] canvas 起点
+ * @param canvasEnd [out] canvas 终点
+ */
+void DAChartElementHitTester::arrowCanvasPoints(QwtPlot* plot,
+                                                const QwtPlotArrowMarker* arrow,
+                                                QPointF& canvasStart,
+                                                QPointF& canvasEnd)
+{
+    const QwtScaleMap& xMap = plot->canvasMap(arrow->xAxis());
+    const QwtScaleMap& yMap = plot->canvasMap(arrow->yAxis());
+    const QPointF start     = arrow->startPoint();
+    canvasStart             = QPointF(xMap.transform(start.x()), yMap.transform(start.y()));
+    if (QwtPlotArrowMarker::ExplicitPoints == arrow->positionMode()) {
+        const QPointF end = arrow->endPoint();
+        canvasEnd         = QPointF(xMap.transform(end.x()), yMap.transform(end.y()));
+    } else {
+        // StartLengthAngle：长度是 canvas 像素长度，直接在像素空间偏移
+        const double angleRad = qDegreesToRadians(arrow->angle());
+        canvasEnd             = canvasStart
+                    + QPointF(arrow->length() * std::cos(angleRad), -arrow->length() * std::sin(angleRad));
+    }
+}
 
 /**
  * @brief 计算 marker 的 label 文字矩形（canvas 像素坐标）
