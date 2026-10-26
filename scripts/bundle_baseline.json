@@ -1,13 +1,13 @@
 {
-  "data-workbench": "b76d002cc74cbd0a5981c3d2bd2074cd39440e66",
+  "data-workbench": "0ed85209446b270c5ab5ce7457b2ed0073244988",
   "spdlog": "79524ddd08a4ec981b7fea76afd08ee05f83755d",
   "ADS": "023ce95934fecfd4cf5c672c9c404fabe0f54923",
   "SARibbon": "81405b6845ef94f68f8fb3130d455997b2b417b7",
   "pybind11": "97bf890db679505a14dfe547a5e77bb2bd05dc90",
   "QtPropertyBrowser": "68a30cbd6fcbd461dbce8cdf28a6285d14a919d4",
-  "qwt": "d66316b2f9f4f50fc5ef0914b69bccf68256db86",
+  "qwt": "29d0b994b54f92777b8d60e0ebe6c3d62d70db74",
   "ordered-map": "46adc0e4720e9d00b6d63f62168840a086ab26e0",
-  "quazip": "25a37bc8d38611de5a2962fc6b2558fedf9be771",
+  "quazip": "3108956647d02547615d4b9aca71b0c517f6dda1",
   "zlib": "51b7f2abdade71cd9bb0e7a373ef2610ec6f9daf",
-  "DAWidgets": "515c4155ea66a2ddaf1e23ebe377267d5ce0b22a"
+  "DAWidgets": "565026c727e15f09e7ff98edc398eed5e65bb461"
 }
