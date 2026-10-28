@@ -251,7 +251,10 @@ bool DAPyDataFrame::columns(std::size_t i, const QString& name)
             return false;
         }
         obj_columns[ i ] = pybind11::cast(name);
-        attr("columns")  = obj_columns;
+        // 注意：DAPyObjectWrapper::attr(const char*) 返回 object 值副本而非
+        // attribute_accessor，"attr(\"columns\") = xxx" 只改副本指针、不 setattr；
+        // 属性写入必须走基类成员 mObject（原生 pybind11 object，attr 返回 accessor）
+        object().attr("columns") = obj_columns;
         return true;
     } catch (const std::exception& e) {
         qCritical().noquote() << e.what();
@@ -268,8 +271,8 @@ bool DAPyDataFrame::columns(const QList< QString >& cols)
 {
     try {
         pybind11::list obj_columns = pybind11::cast(cols);
-
-        attr("columns") = obj_columns;
+        // 同上：属性写入必须走 mObject.attr（accessor），wrapper 的 attr() 副本赋值无效
+        object().attr("columns") = obj_columns;
         return true;
     } catch (const std::exception& e) {
         qCritical().noquote() << e.what();
