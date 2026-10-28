@@ -3,7 +3,7 @@
 #include "DAFigureAPI.h"
 #include <QPointF>
 #include <QRect>
-class QPainterPath;
+#include <QPainterPath>
 class QwtPlot;
 class QwtPlotItem;
 class QwtScaleWidget;
@@ -51,12 +51,14 @@ public:
     /**
      * @brief item 几何快照（数据坐标）
      *
-     * marker 类记录锚点(p1)；箭头记录起点(p1)与终点(p2)
+     * marker 类记录锚点(p1)；箭头记录起点(p1)与终点(p2)；
+     * 形状类（矩形/椭圆/多边形选区）记录完整路径(path)
      */
     struct ItemGeometry
     {
         QPointF p1;        ///< 锚点/起点
         QPointF p2;        ///< 终点（仅箭头有效）
+        QPainterPath path;      ///< 形状路径（仅形状类有效）
         bool valid { false };  ///< 几何是否有效
     };
 
@@ -73,6 +75,8 @@ public:
     static QPainterPath itemSelectionPath(QwtPlot* plot, const QwtPlotItem* item);
     // item 是否支持拖动移动
     static bool isMovableItem(const QwtPlotItem* item);
+    // 形状类（矩形/椭圆/多边形）item 的平移：按数据坐标偏移整条 path
+    static bool translateShapeItem(QwtPlotShapeItem* shape, const QPointF& deltaData);
     // 记录 item 当前几何（数据坐标）
     static ItemGeometry itemGeometry(const QwtPlotItem* item);
     // 恢复 item 几何（数据坐标）

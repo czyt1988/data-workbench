@@ -2,6 +2,7 @@
 #include <QtTest/QtTest>
 #include <QApplication>
 #include <QSignalSpy>
+#include <QUndoStack>
 
 #include "DAFigureWidget.h"
 #include "DAChartWidget.h"
@@ -12,6 +13,7 @@
 // qwt
 #include "qwt_plot_curve.h"
 #include "qwt_plot_arrowmarker.h"
+#include "qwt_plot_shapeitem.h"
 #include "qwt_scale_map.h"
 #include "qwt_point_data.h"
 #include "qwt_axis_id.h"
@@ -21,12 +23,14 @@ namespace DA
 /**
  * @brief 指针工具（PointerSelector）交互逻辑测试
  *
- * 覆盖三个改动点：
+ * 覆盖的改动点：
  * 1. 首次点击非激活子图 = 切换激活 + 选中元素（不再需要点两次）
  * 2. 箭头命中与选中框：StartLengthAngle 模式下绘制终点在 canvas 像素空间偏移，
  *    命中测试需与之一致；选中框用绘制几何构造紧凑矩形
  * 3. 曲线选中高亮为沿数据采样点的路径（itemSelectionPath），
  *    替代整条曲线包围盒矩形
+ * 4. 拖动平移为逐事件增量（多次 mouseMove 不累加放大位移）
+ * 5. 形状类（矩形/椭圆/多边形选区）可通过指针工具拖动，undo 可回弹
  */
 class TSTDAFigurePointerToolTest : public QObject
 {
@@ -51,6 +55,12 @@ private Q_SLOTS:
     void testScatterSelectionPath();
     // 非曲线类型返回空路径
     void testNonCurveSelectionPathEmpty();
+    // 箭头拖动：多次 mouseMove 逐事件增量平移，总位移等于鼠标位移
+    void testArrowDragIncrementalMove();
+    // 形状类（矩形选区）可通过指针工具拖动
+    void testShapeDragMove();
+    // 形状类拖动后 undo 回弹到原位置
+    void testShapeDragUndoRestore();
 
 private:
     // 生成测试用正弦曲线数据
@@ -58,6 +68,9 @@ private:
     static QVector< double > makeSineY(int n);
     // 把 canvas 像素坐标换算为 figure 坐标后对 figure widget 发点击
     void clickCanvas(DAChartWidget* chart, const QPoint& canvasPos);
+    // 把 canvas 像素坐标换算为 figure 坐标后对 figure widget 发拖动
+    //（press → 若干段 move → release，move 段数由 steps 决定）
+    void dragCanvas(DAChartWidget* chart, const QPoint& fromCanvasPos, const QPoint& toCanvasPos, int steps = 5);
 
     QApplication* mApp { nullptr };
     DAFigureWidget* mFig { nullptr };
@@ -128,6 +141,32 @@ void TSTDAFigurePointerToolTest::clickCanvas(DAChartWidget* chart, const QPoint&
     QApplication::sendEvent(overlay, &press);
     QMouseEvent release(QEvent::MouseButtonRelease, figPos, mFig->mapToGlobal(figPos), Qt::LeftButton, Qt::NoButton, Qt::NoModifier);
     QApplication::sendEvent(overlay, &release);
+}
+
+void TSTDAFigurePointerToolTest::dragCanvas(DAChartWidget* chart, const QPoint& fromCanvasPos, const QPoint& toCanvasPos, int steps)
+{
+    // 与 clickCanvas 相同的坐标换算；move 拆成多段，模拟真实拖动的连续 mouseMove 流
+    DAFigurePointerSelectorOverlay* overlay = mFig->findChild< DAFigurePointerSelectorOverlay* >();
+    QVERIFY2(overlay, "pointer selector overlay should exist after beginChartEditor");
+    const auto toFig = [ chart, this ](const QPoint & canvasPos) {
+        return chart->canvas()->mapTo(mFig, canvasPos);
+    };
+    const QPoint fromFig = toFig(fromCanvasPos);
+    QMouseEvent press(QEvent::MouseButtonPress, fromFig, mFig->mapToGlobal(fromFig), Qt::LeftButton, Qt::LeftButton, Qt::NoModifier);
+    QApplication::sendEvent(overlay, &press);
+    const int n = qMax(1, steps);
+    for (int i = 1; i <= n; ++i) {
+        const QPoint canvasPos = fromCanvasPos + (toCanvasPos - fromCanvasPos) * i / n;
+        const QPoint figPos    = toFig(canvasPos);
+        QMouseEvent move(QEvent::MouseMove, figPos, mFig->mapToGlobal(figPos), Qt::NoButton, Qt::LeftButton, Qt::NoModifier);
+        QApplication::sendEvent(overlay, &move);
+        QApplication::processEvents();
+    }
+    const QPoint toFig2 = toFig(toCanvasPos);
+    QMouseEvent release(
+        QEvent::MouseButtonRelease, toFig2, mFig->mapToGlobal(toFig2), Qt::LeftButton, Qt::NoButton, Qt::NoModifier);
+    QApplication::sendEvent(overlay, &release);
+    QApplication::processEvents();
 }
 
 /**
@@ -351,6 +390,140 @@ void TSTDAFigurePointerToolTest::testNonCurveSelectionPathEmpty()
     QVERIFY2(path.isEmpty(), "non-curve item should have empty selection path (use rect)");
     arrow->detach();
     delete arrow;
+    mFig->removeChart(chart);
+}
+
+/**
+ * @brief 箭头拖动：多次 mouseMove 逐事件增量平移
+ *
+ * 回归测试：旧实现每次 move 都用"按下点 → 当前点"的总位移平移当前几何，
+ * 首个 move 后总位移被反复叠加，箭头移动远快于鼠标。
+ * 期望：拖动结束后箭头起终点的位移与鼠标位移（换算为数据坐标）一致
+ */
+void TSTDAFigurePointerToolTest::testArrowDragIncrementalMove()
+{
+    DAChartWidget* chart = mFig->createChart_(QRectF(0.07, 0.07, 0.86, 0.86));
+    QVERIFY(chart);
+    chart->setAxisScale(QwtAxis::XBottom, 0, 100);
+    chart->setAxisScale(QwtAxis::YLeft, 0, 100);
+    QwtPlotArrowMarker* arrow = new QwtPlotArrowMarker();
+    arrow->setPoints(QPointF(20, 50), QPointF(60, 50));
+    arrow->attach(chart);
+    mFig->setCurrentChart(chart);
+    mFig->show();
+    QApplication::processEvents();
+    mFig->beginChartEditor(DAFigureWidget::PointerSelector);
+    QApplication::processEvents();
+    // 第一次点击选中箭头，第二次按住线段中点拖动
+    const QwtScaleMap& xMap = chart->canvasMap(arrow->xAxis());
+    const QwtScaleMap& yMap = chart->canvasMap(arrow->yAxis());
+    const QPoint midStart(static_cast< int >(xMap.transform(40)), static_cast< int >(yMap.transform(50)));
+    clickCanvas(chart, midStart);
+    QApplication::processEvents();
+    // 鼠标向右下移动 (15, 10) 像素，拆成 5 段 move
+    const QPoint midEnd = midStart + QPoint(15, 10);
+    dragCanvas(chart, midStart, midEnd, 5);
+    QApplication::processEvents();
+    // 期望终点：起/终点各偏移鼠标位移对应的数据坐标增量
+    const double dxData = xMap.invTransform(midEnd.x()) - xMap.invTransform(midStart.x());
+    const double dyData = yMap.invTransform(midEnd.y()) - yMap.invTransform(midStart.y());
+    QVERIFY2(qAbs(arrow->startPoint().x() - (20 + dxData)) < 1e-6 && qAbs(arrow->startPoint().y() - (50 + dyData)) < 1e-6,
+             "arrow start point should move exactly by mouse delta");
+    QVERIFY2(qAbs(arrow->endPoint().x() - (60 + dxData)) < 1e-6 && qAbs(arrow->endPoint().y() - (50 + dyData)) < 1e-6,
+             "arrow end point should move exactly by mouse delta");
+    // undo 回到拖动前
+    mFig->getUndoStack()->undo();
+    QApplication::processEvents();
+    QVERIFY2(qAbs(arrow->startPoint().x() - 20) < 1e-6 && qAbs(arrow->endPoint().x() - 60) < 1e-6,
+             "undo should restore arrow position");
+    mFig->endChartEditor();
+    arrow->detach();
+    delete arrow;
+    mFig->removeChart(chart);
+}
+
+/**
+ * @brief 形状类（矩形选区）可通过指针工具拖动
+ *
+ * 矩形/椭圆/多边形工具产出的都是 QwtPlotShapeItem（DAChartSelectRegionShapeItem），
+ * 期望：isMovableItem 为 true；拖动后 path 平移鼠标位移；undo 回弹
+ */
+void TSTDAFigurePointerToolTest::testShapeDragMove()
+{
+    DAChartWidget* chart = mFig->createChart_(QRectF(0.07, 0.07, 0.86, 0.86));
+    QVERIFY(chart);
+    chart->setAxisScale(QwtAxis::XBottom, 0, 100);
+    chart->setAxisScale(QwtAxis::YLeft, 0, 100);
+    QwtPlotShapeItem* shape = new QwtPlotShapeItem("region");
+    QPainterPath path;
+    path.addRect(QRectF(20, 30, 40, 20));
+    shape->setShape(path);
+    shape->attach(chart);
+    mFig->setCurrentChart(chart);
+    mFig->show();
+    QApplication::processEvents();
+    QVERIFY2(DAChartElementHitTester::isMovableItem(shape), "shape item should be movable by pointer tool");
+    mFig->beginChartEditor(DAFigureWidget::PointerSelector);
+    QApplication::processEvents();
+    const QwtScaleMap& xMap = chart->canvasMap(shape->xAxis());
+    const QwtScaleMap& yMap = chart->canvasMap(shape->yAxis());
+    // 第一次点击选中（矩形中心），第二次按住同一点拖动
+    const QPoint center(static_cast< int >(xMap.transform(40)), static_cast< int >(yMap.transform(40)));
+    clickCanvas(chart, center);
+    QApplication::processEvents();
+    const QPoint target = center + QPoint(12, -8);
+    dragCanvas(chart, center, target, 4);
+    QApplication::processEvents();
+    // path 包围盒应整体平移鼠标位移（宽高不变）
+    const QRectF brAfter = shape->shape().boundingRect();
+    const double dxData  = xMap.invTransform(target.x()) - xMap.invTransform(center.x());
+    const double dyData  = yMap.invTransform(target.y()) - yMap.invTransform(center.y());
+    QVERIFY2(qAbs(brAfter.left() - (20 + dxData)) < 1e-6 && qAbs(brAfter.top() - (30 + dyData)) < 1e-6,
+             "shape bounding rect should translate by mouse delta");
+    QVERIFY2(qAbs(brAfter.width() - 40) < 1e-6 && qAbs(brAfter.height() - 20) < 1e-6,
+             "shape size should not change during move");
+    mFig->endChartEditor();
+    shape->detach();
+    delete shape;
+    mFig->removeChart(chart);
+}
+
+/**
+ * @brief 形状类拖动后 undo 回弹到原位置
+ */
+void TSTDAFigurePointerToolTest::testShapeDragUndoRestore()
+{
+    DAChartWidget* chart = mFig->createChart_(QRectF(0.07, 0.07, 0.86, 0.86));
+    QVERIFY(chart);
+    chart->setAxisScale(QwtAxis::XBottom, 0, 100);
+    chart->setAxisScale(QwtAxis::YLeft, 0, 100);
+    QwtPlotShapeItem* shape = new QwtPlotShapeItem("region");
+    QPainterPath path;
+    path.addEllipse(QRectF(30, 30, 30, 30));
+    shape->setShape(path);
+    shape->attach(chart);
+    mFig->setCurrentChart(chart);
+    mFig->show();
+    QApplication::processEvents();
+    mFig->beginChartEditor(DAFigureWidget::PointerSelector);
+    QApplication::processEvents();
+    const QwtScaleMap& xMap = chart->canvasMap(shape->xAxis());
+    const QwtScaleMap& yMap = chart->canvasMap(shape->yAxis());
+    const QPoint center(static_cast< int >(xMap.transform(45)), static_cast< int >(yMap.transform(45)));
+    clickCanvas(chart, center);
+    QApplication::processEvents();
+    dragCanvas(chart, center, center + QPoint(10, 10), 3);
+    QApplication::processEvents();
+    // 拖动后 undo：path 应回到初始椭圆
+    mFig->getUndoStack()->undo();
+    QApplication::processEvents();
+    const QRectF br = shape->shape().boundingRect();
+    QVERIFY2(qAbs(br.left() - 30) < 1e-6 && qAbs(br.top() - 30) < 1e-6 && qAbs(br.width() - 30) < 1e-6
+                     && qAbs(br.height() - 30) < 1e-6,
+             "undo should restore the ellipse to its original geometry");
+    mFig->endChartEditor();
+    shape->detach();
+    delete shape;
     mFig->removeChart(chart);
 }
 

@@ -21,7 +21,7 @@ public:
 public:
     QwtPlotItem* mCurrentItem { nullptr };  ///< 当前选中的item（生命周期由plot管理）
     bool mIsDragging { false };             ///< 拖动态
-    QPoint mPressCanvasPos;                 ///< 按下时canvas坐标
+    QPoint mLastCanvasPos;                  ///< 最近一次处理的canvas坐标（增量位移起点）
     DAChartElementHitTester::ItemGeometry mDragOldGeo;  ///< 拖动前几何
     DAChartElementHitTester::ItemGeometry mDragNewGeo;  ///< 拖动后几何
 };
@@ -131,10 +131,10 @@ bool DAChartPointerSelectorEditor::mousePressEvent(const QMouseEvent* e)
     Q_EMIT itemClicked(this, hitItem);
     // 按住已选中的可移动item，进入拖动
     if (!firstSelect && DAChartElementHitTester::isMovableItem(hitItem)) {
-        d->mIsDragging     = true;
-        d->mPressCanvasPos = canvasPos;
-        d->mDragOldGeo     = DAChartElementHitTester::itemGeometry(hitItem);
-        d->mDragNewGeo     = d->mDragOldGeo;
+        d->mIsDragging    = true;
+        d->mLastCanvasPos = canvasPos;
+        d->mDragOldGeo    = DAChartElementHitTester::itemGeometry(hitItem);
+        d->mDragNewGeo    = d->mDragOldGeo;
         Q_EMIT itemDragBegan();
     }
     return true;
@@ -142,6 +142,11 @@ bool DAChartPointerSelectorEditor::mousePressEvent(const QMouseEvent* e)
 
 /**
  * @brief 鼠标移动：拖动态下实时平移item
+ *
+ * 每次以"上一个事件位置 → 当前位置"的增量平移 item 的当前几何。
+ * 不能用"按下位置 → 当前位置"的总位移直接平移当前几何：
+ * 首个 move 事件后 item 已经离开原位，叠加总位移会把已移动的部分重复计入，
+ * 表现为 item 移动速度远快于鼠标（位移被累加放大）
  * @param e 鼠标事件（canvas坐标）
  * @return 拖动态返回true
  */
@@ -152,12 +157,13 @@ bool DAChartPointerSelectorEditor::mouseMoveEvent(const QMouseEvent* e)
         return false;
     }
     const QPoint canvasPos = compat::eventPos(e);
-    const QPointF delta    = dataDelta(d->mPressCanvasPos, canvasPos);
+    const QPointF delta    = dataDelta(d->mLastCanvasPos, canvasPos);
     if (delta.manhattanLength() <= 0.0) {
         return true;
     }
     DAChartElementHitTester::moveItemBy(d->mCurrentItem, delta);
-    d->mDragNewGeo = DAChartElementHitTester::itemGeometry(d->mCurrentItem);
+    d->mLastCanvasPos = canvasPos;
+    d->mDragNewGeo    = DAChartElementHitTester::itemGeometry(d->mCurrentItem);
     if (QwtPlot* p = plot()) {
         p->replot();
     }

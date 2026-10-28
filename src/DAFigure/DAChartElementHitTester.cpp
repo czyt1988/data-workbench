@@ -3,6 +3,7 @@
 #include <QApplication>
 #include <QWidget>
 #include <QPainterPath>
+#include <QTransform>
 #include <QtMath>
 // std
 #include <cmath>
@@ -596,8 +597,8 @@ QPainterPath DAChartElementHitTester::itemSelectionPath(QwtPlot* plot, const Qwt
 /**
  * @brief 判断 item 是否支持拖动移动
  *
- * 仅可定位类元素可移动：marker 族（文字标注/水平线/垂直线/十字标记/数据探针）
- * 与箭头。曲线/系列类图元的几何由数据决定，不支持移动
+ * 仅可定位类元素可移动：marker 族（文字标注/水平线/垂直线/十字标记/数据探针）、
+ * 箭头与形状类（矩形/椭圆/多边形选区）。曲线/系列类图元的几何由数据决定，不支持移动
  * @param item 目标 item
  * @return 可移动返回 true
  */
@@ -612,6 +613,7 @@ bool DAChartElementHitTester::isMovableItem(const QwtPlotItem* item)
     case DADataProbeMarker::Rtti_DataProbeMarker:
     case DAChartTextMarker::Rtti_TextMarker:
     case QwtPlotItem::Rtti_PlotArrowMarker:
+    case QwtPlotItem::Rtti_PlotShape:
         return true;
     default:
         return false;
@@ -620,6 +622,8 @@ bool DAChartElementHitTester::isMovableItem(const QwtPlotItem* item)
 
 /**
  * @brief 记录 item 当前几何（数据坐标）
+ *
+ * 箭头记录起终点；marker 记录锚点；形状类记录完整路径
  * @param item 目标 item
  * @return 几何快照，item 不可移动时返回 valid=false
  */
@@ -633,6 +637,9 @@ DAChartElementHitTester::ItemGeometry DAChartElementHitTester::itemGeometry(cons
         g.p1    = arrow->startPoint();
         g.p2    = arrow->endPoint();
         g.valid = true;
+    } else if (const QwtPlotShapeItem* shape = dynamic_cast< const QwtPlotShapeItem* >(item)) {
+        g.path  = shape->shape();
+        g.valid = !g.path.isEmpty();
     } else if (const QwtPlotMarker* marker = dynamic_cast< const QwtPlotMarker* >(item)) {
         g.p1    = marker->value();
         g.valid = true;
@@ -662,16 +669,39 @@ void DAChartElementHitTester::setItemGeometry(QwtPlotItem* item, const ItemGeome
             probe->setProbeValue(g.p1.y());
         }
         probe->captureData();
+    } else if (QwtPlotShapeItem* shape = dynamic_cast< QwtPlotShapeItem* >(item)) {
+        // setShape 只替换路径，pen/brush 等外观属性保持不变
+        shape->setShape(g.path);
     } else if (QwtPlotMarker* marker = dynamic_cast< QwtPlotMarker* >(item)) {
         marker->setValue(g.p1);
     }
 }
 
 /**
+ * @brief 形状类（矩形/椭圆/多边形）item 的平移
+ *
+ * QwtPlotShapeItem 的几何是数据坐标 QPainterPath，无锚点概念，
+ * 平移即对整条 path 施加数据坐标偏移（QTransform::translate 后回写）
+ * @param shape 形状 item
+ * @param deltaData 数据坐标平移量
+ * @return 平移成功返回 true（path 为空时返回 false）
+ */
+bool DAChartElementHitTester::translateShapeItem(QwtPlotShapeItem* shape, const QPointF& deltaData)
+{
+    if (!shape || shape->shape().isEmpty()) {
+        return false;
+    }
+    QTransform t;
+    t.translate(deltaData.x(), deltaData.y());
+    shape->setShape(t.map(shape->shape()));
+    return true;
+}
+
+/**
  * @brief 按数据坐标平移 item
  *
  * 数据探针按其类型仅移动对应方向的分量并重新捕获数据；
- * 其余 marker 平移锚点，箭头平移起终点
+ * marker 平移锚点；箭头平移起终点；形状类平移整条 path
  * @param item 目标 item
  * @param deltaData 数据坐标平移量
  */
@@ -689,6 +719,8 @@ void DAChartElementHitTester::moveItemBy(QwtPlotItem* item, const QPointF& delta
             probe->setProbeValue(probe->probeValue() + deltaData.y());
         }
         probe->captureData();
+    } else if (QwtPlotShapeItem* shape = dynamic_cast< QwtPlotShapeItem* >(item)) {
+        translateShapeItem(shape, deltaData);
     } else if (QwtPlotMarker* marker = dynamic_cast< QwtPlotMarker* >(item)) {
         marker->setValue(marker->value() + deltaData);
     }
