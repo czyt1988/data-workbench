@@ -2997,6 +2997,9 @@ void DATableDataTest::testFrozenAndColumnViewCombination()
                      + 2 * frozen->frameWidth();
         QVERIFY(qAbs(frozen->width() - expect) <= 3);
     }
+    // ④b 冻结侧容器与窗格同宽：水平布局剩余空间均分曾把侧容器拉宽到半窗，
+    //    冻结窗格右侧留一大片空白（现场「冻结后一段空白、拖分界空白不消」根因）
+    QCOMPARE(frozen->parentWidget()->width(), frozen->width());
     // ⑤ 滚动条策略：冻结窗格纵横 AlwaysOff；主窗格保持默认
     QCOMPARE(frozen->verticalScrollBarPolicy(), Qt::ScrollBarAlwaysOff);
     QCOMPARE(frozen->horizontalScrollBarPolicy(), Qt::ScrollBarAlwaysOff);
@@ -3185,6 +3188,8 @@ void DATableDataTest::testFrozenAutoFitUnrecordedWidths()
                      + 2 * frozen->frameWidth();
         QVERIFY(qAbs(frozen->width() - expect) <= 3);
         QVERIFY(frozen->width() < 350);  // 两列短内容 + 行头，远小于旧默认（2×100+行头+frame）
+        // 侧容器不被布局拉伸（空白回归断言，同 T6 ④b）
+        QCOMPARE(frozen->parentWidget()->width(), frozen->width());
     }
 }
 
@@ -3220,6 +3225,8 @@ void DATableDataTest::testFrozenBoundarySeparatorDragAndAutoFit()
         int expect = fh->sectionSize(0) + fh->sectionSize(colF) + frozen->verticalHeader()->width()
                      + 2 * frozen->frameWidth();
         QVERIFY(qAbs(frozen->width() - expect) <= 3);
+        // 侧容器同宽跟随：拖动分界不留拉伸空白（现场「拖动空白还在」根因回归）
+        QCOMPARE(frozen->parentWidget()->width(), frozen->width());
     }
     // ② 释放 → store 落库（(名, occurrence) 键）
     QSignalSpy resizeSpy(container, &DA::DATablePaneContainer::frozenBoundaryResized);

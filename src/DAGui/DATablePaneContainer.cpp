@@ -496,6 +496,9 @@ void DATablePaneContainer::updateFrozenGeometry()
  *
  * = Σ(冻结列 sectionSize) + 冻结窗格行头宽 + 2×frameWidth + 2px 余量
  * （余量是 AlwaysOff 下"最后一列不被裁"的保险；行头宽取归属方——冻结窗格）。
+ * 冻结侧容器必须锁到同一宽度：水平布局各项 stretch 全 0 时剩余空间在可伸展项间
+ * 均分，侧容器保持 Preferred 会被拉宽到半个窗口——冻结窗格右侧留一大片空白
+ * （现场「冻结一列仍有一段宽空白、拖分界空白不消」的根因）。
  */
 void DATablePaneContainer::updateFrozenWidth()
 {
@@ -516,6 +519,9 @@ void DATablePaneContainer::updateFrozenWidth()
     }
     w += 2 * mFrozenView->frameWidth() + 2;
     mFrozenView->setFixedWidth(w);
+    if (mFrozenSide) {
+        mFrozenSide->setFixedWidth(w);
+    }
 }
 
 /**
