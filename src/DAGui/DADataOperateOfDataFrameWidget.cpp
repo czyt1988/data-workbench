@@ -158,11 +158,29 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
     mPaneContainer->setMainView(ui->tableView);
     // 拖动落库（006c）：容器合并出全局列序后交页面入栈重投影（拖动 = 一个撤销单元）
     connect(mPaneContainer, &DATablePaneContainer::columnOrderChanged, this, &DADataOperateOfDataFrameWidget::applyColumnOrderFromView);
+    // 冻结分界条（宽随列宽改造）：拖动结束写 store（与表头拖拽同键 (名, occurrence)），
+    // 双击对末冻结列做内容自适应；两信号均在容器已确定末冻结列的前提下发出
+    connect(mPaneContainer, &DATablePaneContainer::frozenBoundaryResized, this,
+            [ this ](int logicalColumn, int newWidth) {
+        storeColumnWidthAt(logicalColumn, newWidth);
+    });
+    connect(mPaneContainer, &DATablePaneContainer::frozenBoundaryAutoFitRequested, this, [ this ](int logicalColumn) {
+        if (!mPaneContainer || !mPaneContainer->frozenView()) {
+            return;
+        }
+        const int w = contentFittedColumnWidth(mPaneContainer->frozenView(), logicalColumn);
+        if (w <= 0) {
+            return;
+        }
+        mPaneContainer->frozenView()->horizontalHeader()->resizeSection(logicalColumn, w);
+        storeColumnWidthAt(logicalColumn, w);
+    });
     // 冻结窗格懒建（006e）：容器建好窗格后交页面装配同一条 configurePaneView，
     // 装配完成后再补列宽/行头宽；转发契约（冻结 → 主）也在此接线（APP 只连主窗格）
     connect(mPaneContainer, &DATablePaneContainer::frozenViewCreated, this, [ this ](DA::DADataTableView* frozen) {
         configurePaneView(frozen);
         applyColumnWidthsToPane(frozen);
+        autoFitUnrecordedColumnWidths(frozen);  // 无记录列内容自适应（冻结窗格首次懒建时视口可能还没行，靠 2) 的兜底）
         applyRowHeaderWidthToOwner();
         // 表头动作转发：重命名/删除/定位最大最小/描述统计/计算列三项（APP 只连主窗格）
         DADataHeaderView* fh = qobject_cast< DADataHeaderView* >(frozen->horizontalHeader());
@@ -2167,6 +2185,9 @@ void DADataOperateOfDataFrameWidget::applyViewStateFromStore()
     //    hiddenSectionSize、显示时恢复，安全）
     for (DADataTableView* pane : paneViews()) {
         applyColumnWidthsToPane(pane);
+        // store 无记录的列 → 内容自适应（冻结区宽随列宽改造：默认 100px 的冻结列
+        // 曾让冻结区固定偏宽；自适应只补空白，不动已记录列）
+        autoFitUnrecordedColumnWidths(pane);
     }
     // 2) 行头宽：设给行头归属方（冻结时归属冻结窗格，否则主窗格）
     applyRowHeaderWidthToOwner();
@@ -2248,6 +2269,13 @@ void DADataOperateOfDataFrameWidget::applyViewStateFromStore()
         mPaneContainer->applyColumnState(ordered, hidden, freeze);
     }
     mApplyingViewState = false;
+    // 4) 投影落地后再补一轮内容自适应：懒建的冻结窗格在 frozenViewCreated 时刻
+    //    视口往往还没行（列刚被投影隐藏/显示），此时自适应量不到单元格；这里
+    //    窗格已布局，采样才有效。已自适应过的列此轮宽非默认值但仍无 store 记录，
+    //    重复自适应幂等（同一批可见文本宽度不变）
+    for (DADataTableView* pane : paneViews()) {
+        autoFitUnrecordedColumnWidths(pane);
+    }
 }
 
 /**
@@ -2280,6 +2308,111 @@ void DADataOperateOfDataFrameWidget::applyColumnWidthsToPane(DADataTableView* pa
             hh->resizeSection(c, w);
         }
     }
+}
+
+/**
+ * @brief store 无记录的列做内容自适应列宽
+ *
+ * 「冻结区过宽」根因修复：从未动过列宽的列保持 Qt 默认 100px，冻结窗格宽 =
+ * Σ(冻结列宽) + 行头宽 + 2×frame + 2px 余量，一列冻结也显得极宽。这里对 store
+ * 无记录的数据列取内容自适应宽（表头文本 + 视口采样单元格文本），冻结与主区
+ * 两窗格都套（同一列两边宽度一致，冻结列宽直接决定冻结区宽）。
+ * 视口首屏采样（visibleRegion 内的行），不遍历全模型——滑动窗默认 20000 行，
+ * QHeaderView::resizeContentsPrecision 全遍历会卡大表。尾部预留空白列跳过。
+ * @param pane 目标窗格
+ */
+void DADataOperateOfDataFrameWidget::autoFitUnrecordedColumnWidths(DADataTableView* pane)
+{
+    if (!pane || !mViewStateStore || !mModel) {
+        return;
+    }
+    QHeaderView* hh = pane->horizontalHeader();
+    if (!hh) {
+        return;
+    }
+    const int totalCols = mModel->columnCount();
+    QHash< QString, int > seen;  // 列名 -> 已出现次数（即下一列的 occurrence）
+    for (int c = 0; c < totalCols; ++c) {
+        const QString name = mModel->headerData(c, Qt::Horizontal).toString();
+        const int occ      = seen.value(name, 0);
+        seen[ name ]       = occ + 1;
+        if (name.isEmpty()) {
+            continue;  // 尾部预留空白列不参与
+        }
+        if (mViewStateStore->hasColumnWidth(name, occ)) {
+            continue;  // 已有记录（用户拖过/工程加载），不动
+        }
+        const int w = contentFittedColumnWidth(pane, c);
+        if (w > 0) {
+            hh->resizeSection(c, w);
+        }
+    }
+}
+
+/**
+ * @brief 指定列的内容自适应宽度
+ *
+ * = max(表头文本宽 + 表头边距, 视口可见单元格文本宽) + 两侧边距，钳制
+ * [min, max]：min = 视觉可接受的最小数据列宽（略宽于表头最小段宽 25px），
+ * max = 防长文本把列撑爆的上限（Excel 同款做法：自适应有上限，超长靠截断省略）。
+ * 单元格文本只取当前视口可见行（visibleRegion 采样），首屏足够代表性且不卡大表。
+ * @param pane 目标窗格（取视口与水平表头）
+ * @param logicalColumn 逻辑列号
+ * @return 自适应宽度（像素）；列号无效返回 -1
+ */
+int DADataOperateOfDataFrameWidget::contentFittedColumnWidth(DADataTableView* pane, int logicalColumn) const
+{
+    if (!pane || !mModel || !pane->horizontalHeader()) {
+        return -1;
+    }
+    QHeaderView* hh = pane->horizontalHeader();
+    if (logicalColumn < 0 || logicalColumn >= mModel->columnCount()) {
+        return -1;
+    }
+    constexpr int c_minAutoWidth  = 40;    // 最小数据列宽（px）
+    constexpr int c_maxAutoWidth  = 400;   // 自适应上限（px，长文本截断显示）
+    constexpr int c_cellHMargin   = 14;    // 单元格文本两侧边距（含 selection 高亮内边距）
+    constexpr int c_headerHMargin = 12;    // 表头文本两侧边距（排序角标预留）
+    int textWidth = hh->fontMetrics().horizontalAdvance(
+        mModel->headerData(logicalColumn, Qt::Horizontal, Qt::DisplayRole).toString())
+        + c_headerHMargin;
+    const int rows = mModel->rowCount();
+    for (int r = 0; r < rows; ++r) {
+        if (!pane->visualRect(pane->model()->index(r, logicalColumn)).isValid()) {
+            continue;  // 只采样视口可见行
+        }
+        textWidth = qMax(textWidth,
+                         hh->fontMetrics().horizontalAdvance(
+                             mModel->data(mModel->index(r, logicalColumn), Qt::DisplayRole).toString())
+                             + c_cellHMargin);
+    }
+    return qBound(c_minAutoWidth, textWidth, c_maxAutoWidth);
+}
+
+/**
+ * @brief 按 (名, occurrence) 写一条列宽进 store
+ *
+ * 分界条拖动/双击自适应的公共落库段：与 onHeaderSectionResized 同键口径
+ * （列名 + 数据列序 occurrence），列号越界/空名静默忽略。
+ * @param logicalColumn 逻辑列号
+ * @param width 宽度（像素）
+ */
+void DADataOperateOfDataFrameWidget::storeColumnWidthAt(int logicalColumn, int width)
+{
+    if (!mViewStateStore || !mModel || logicalColumn < 0 || logicalColumn >= dataColumnCount() || width <= 0) {
+        return;
+    }
+    const QString name = mModel->headerData(logicalColumn, Qt::Horizontal).toString();
+    if (name.isEmpty()) {
+        return;
+    }
+    int occ = 0;
+    for (int c = 0; c < logicalColumn; ++c) {
+        if (mModel->headerData(c, Qt::Horizontal).toString() == name) {
+            ++occ;
+        }
+    }
+    mViewStateStore->setColumnWidth(name, occ, width);
 }
 
 /**

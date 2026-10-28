@@ -450,6 +450,12 @@ private:
     void forEachPaneHeader(const std::function< void(DADataHeaderView*) >& fn);
     // 把 store 里的列宽套到指定窗格（列宽段唯一实现，主/冻结窗格都调，006e）
     void applyColumnWidthsToPane(DADataTableView* pane);
+    // store 无记录的列做内容自适应列宽（表头文本 + 视口采样单元格文本，钳制上下限）
+    void autoFitUnrecordedColumnWidths(DADataTableView* pane);
+    // 指定列的内容自适应宽度（表头 + 视口采样单元格文本，钳制上下限；分界条双击用）
+    int contentFittedColumnWidth(DADataTableView* pane, int logicalColumn) const;
+    // 按 (名, occurrence) 写一条列宽进 store（分界条拖动/双击的落库公共段）
+    void storeColumnWidthAt(int logicalColumn, int width);
     // 行头宽只设给归属方（冻结时归属冻结窗格，否则主窗格，006e）
     void applyRowHeaderWidthToOwner();
     // 统一行高套到全部窗格垂直表头（默认行高+全部可见段；拖拽落库与加载回填共用）

@@ -456,6 +456,10 @@ private Q_SLOTS:
     void testColumnWidthSurvivesFreezeCycle();
     // 006e T8：行头归属、双向滚动同步、共享 selectionModel
     void testPaneRowHeaderAndScrollSync();
+    // 冻结区宽随列宽改造：无记录列内容自适应（不再 100px 默认宽、上限钳制、不动已记录列）
+    void testFrozenAutoFitUnrecordedWidths();
+    // 冻结分界条：拖动改末冻结列宽（容器几何跟随 + store 落库 + 表头联动）、双击自适应
+    void testFrozenBoundarySeparatorDragAndAutoFit();
     // 007a：定位单入口——隐藏列自动取消隐藏（不入栈）
     void testLocateActualCellHiddenColumn();
     // 007a：定位到冻结区列——主区横滚不动、目标格选中、焦点给冻结窗格
@@ -3128,6 +3132,123 @@ void DATableDataTest::testPaneRowHeaderAndScrollSync()
     QVERIFY(frozen->model() == main->model());
     // ⑤ getDataTableView() == 容器主窗格
     QVERIFY(w.getDataTableView() == container->mainView());
+}
+
+// 冻结区宽随列宽改造：store 无记录的列做内容自适应
+void DATableDataTest::testFrozenAutoFitUnrecordedWidths()
+{
+    if (!mPandasOk) {
+        QSKIP("pandas not available");
+    }
+    pybind11::object obj = makeTestDataFrame();
+    QVERIFY(!obj.is_none());
+    DA::DAPyDataFrame df(obj);
+    DA::DAData d(df);
+    DA::DATableMetadataRegistry registry(nullptr);
+    // widget#1：只写冻结 2（不写任何列宽——模拟从未动过列宽的用户）
+    {
+        DA::DADataOperateOfDataFrameWidget w1(d, &registry);
+        w1.viewStateStore()->setFreezeColumnCount(2);
+    }
+    // 「重开」数据页：构造时投影 + 无记录列内容自适应
+    DA::DADataOperateOfDataFrameWidget w(d, &registry);
+    w.resize(800, 400);
+    w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+    DA::DATablePaneContainer* container = w.paneContainer();
+    QVERIFY(container != nullptr);
+    DA::DADataTableView* frozen = container->frozenView();
+    QVERIFY(frozen != nullptr && frozen->isVisible());
+    DA::DADataTableView* main = w.getDataTableView();
+    // ① 无记录列不再保持 Qt 默认 100px：短内容列自适应后明显窄于默认
+    //   （默认列序 [i,f,s,d,b]，冻结 2 → 冻结区 = i、f；i 列内容 1~10 两位数字，
+    //    自适应后应 < 100）
+    QHeaderView* fh = frozen->horizontalHeader();
+    QHeaderView* mh = main->horizontalHeader();
+    QVERIFY(fh->sectionSize(0) < 100);   // i（冻结区）
+    QVERIFY(fh->sectionSize(1) < 100);   // f（冻结区）
+    QVERIFY(mh->sectionSize(2) < 100);   // s（主区）
+    // ② 自适应宽 ≥ 最小钳制 40
+    QVERIFY(fh->sectionSize(0) >= 40);
+    QVERIFY(fh->sectionSize(1) >= 40);
+    // ③ 已记录列不被自适应改动：写一条显式列宽后重投影（refreshData → modelReset →
+    //    applyViewStateFromStore），该列保持记录值
+    w.viewStateStore()->setColumnWidth(QStringLiteral("i"), 0, 173);
+    w.refreshTable();
+    QApplication::processEvents();
+    QCOMPARE(frozen->horizontalHeader()->sectionSize(0), 173);
+    // ④ 长文本列被上限钳制（d 列是日期字符串，自适应封顶 400 不至于撑爆）
+    QVERIFY(mh->sectionSize(3) <= 400);
+    // ⑤ 冻结窗格宽 = Σ(冻结列自适应宽) + 行头宽 + 2×frame（±3 余量），不再固定偏宽
+    {
+        int expect = fh->sectionSize(0) + fh->sectionSize(1) + frozen->verticalHeader()->width()
+                     + 2 * frozen->frameWidth();
+        QVERIFY(qAbs(frozen->width() - expect) <= 3);
+        QVERIFY(frozen->width() < 350);  // 两列短内容 + 行头，远小于旧默认（2×100+行头+frame）
+    }
+}
+
+// 冻结分界条：拖动改末冻结列宽 + 双击自适应
+void DATableDataTest::testFrozenBoundarySeparatorDragAndAutoFit()
+{
+    if (!mPandasOk) {
+        QSKIP("pandas not available");
+    }
+    pybind11::object obj = makeTestDataFrame();
+    QVERIFY(!obj.is_none());
+    DA::DAPyDataFrame df(obj);
+    DA::DAData d(df);
+    DA::DATableMetadataRegistry registry(nullptr);
+    DA::DADataOperateOfDataFrameWidget w(d, &registry);
+    w.resize(800, 400);
+    w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+    DA::DATablePaneContainer* container = w.paneContainer();
+    DA::DADataTableView* main = w.getDataTableView();
+    w.freezeColumnsTo(2);  // 默认列序 [i,f,s,d,b] → 冻结区 = i、f（末冻结列 f）
+    DA::DADataTableView* frozen = container->frozenView();
+    QVERIFY(frozen != nullptr);
+    QHeaderView* fh = frozen->horizontalHeader();
+    const int colF = 1;  // f = 末冻结列
+    const int width0 = fh->sectionSize(colF);
+    QVERIFY(width0 > 0);
+    // ① 拖动状态机：按下 → 位移 +40 → 冻结窗格宽同步跟随（既有 sectionResized 链）
+    QVERIFY(container->beginFrozenBoundaryDrag());
+    container->dragFrozenBoundary(40);
+    QCOMPARE(fh->sectionSize(colF), width0 + 40);
+    {
+        int expect = fh->sectionSize(0) + fh->sectionSize(colF) + frozen->verticalHeader()->width()
+                     + 2 * frozen->frameWidth();
+        QVERIFY(qAbs(frozen->width() - expect) <= 3);
+    }
+    // ② 释放 → store 落库（(名, occurrence) 键）
+    QSignalSpy resizeSpy(container, &DA::DATablePaneContainer::frozenBoundaryResized);
+    container->endFrozenBoundaryDrag();
+    QCOMPARE(resizeSpy.count(), 1);
+    QCOMPARE(resizeSpy.takeFirst().at(1).toInt(), width0 + 40);
+    QCOMPARE(w.viewStateStore()->columnWidth(QStringLiteral("f"), 0), width0 + 40);
+    // ③ 左拖夹紧到表头最小段宽；释放：宽确有变化（钳制生效）→ 发信号且值=钳制宽
+    QVERIFY(container->beginFrozenBoundaryDrag());
+    container->dragFrozenBoundary(-2000);
+    QCOMPARE(fh->sectionSize(colF), fh->minimumSectionSize());
+    QSignalSpy clampSpy(container, &DA::DATablePaneContainer::frozenBoundaryResized);
+    container->endFrozenBoundaryDrag();
+    QCOMPARE(clampSpy.count(), 1);
+    QCOMPARE(clampSpy.takeFirst().at(1).toInt(), fh->minimumSectionSize());
+    QCOMPARE(w.viewStateStore()->columnWidth(QStringLiteral("f"), 0), fh->minimumSectionSize());
+    // ④ 双击 → 内容自适应（末冻结列回到自适应宽，且落库）
+    QSignalSpy fitSpy(container, &DA::DATablePaneContainer::frozenBoundaryAutoFitRequested);
+    container->requestFrozenBoundaryAutoFit();
+    QCOMPARE(fitSpy.count(), 1);
+    QApplication::processEvents();  // 信号是直连，自适应已同步完成；processEvents 兜底
+    const int fitted = fh->sectionSize(colF);
+    QVERIFY(fitted > 0 && fitted <= 400);
+    QCOMPARE(w.viewStateStore()->columnWidth(QStringLiteral("f"), 0), fitted);
+    // ⑤ 主窗格表头同步同一列宽（两窗格同一 logical 段宽一致——Qt 按段存宽）
+    QCOMPARE(main->horizontalHeader()->isSectionHidden(colF), true);
+    // ⑥ 拖动期间撤销栈零变化（列宽不经撤销，与 T7 纪律一致）
+    //    （上面 ①-④ 只有一次 freezeColumnsTo 入栈）
+    QVERIFY(w.getUndoStack()->count() >= 1);
 }
 
 // 007a：定位到隐藏列——自动取消隐藏（不入撤销栈）并选中目标格

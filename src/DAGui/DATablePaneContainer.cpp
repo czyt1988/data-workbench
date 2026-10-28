@@ -4,12 +4,118 @@
 #include <QEvent>
 #include <QHBoxLayout>
 #include <QLayout>
+#include <QMouseEvent>
+#include <QPainter>
 #include <QScrollBar>
 #include <QTimer>
 #include <QVBoxLayout>
 
 namespace DA
 {
+
+namespace
+{
+// 分界条宽度（像素）
+constexpr int c_separatorWidth = 5;
+// 分界条拖动的末冻结列宽上限（像素，防呆）
+constexpr int c_boundaryMaxColumnWidth = 4096;
+
+/**
+ * @brief 冻结分界条（水平布局 [冻结侧][分界条][主窗格] 中的把手）
+ *
+ * 只做事件转发与自绘，拖动状态机在容器（beginFrozenBoundaryDrag / dragFrozenBoundary /
+ * endFrozenBoundaryDrag）。常态画 1px 中灰竖线（DESIGN.md 分隔线色），hover/拖动时
+ * 加粗为主题高亮色。
+ */
+class FrozenPaneSeparator : public QWidget
+{
+public:
+    explicit FrozenPaneSeparator(DATablePaneContainer* owner, QWidget* parent = nullptr)
+        : QWidget(parent), mOwner(owner)
+    {
+        setFixedWidth(c_separatorWidth);
+        setCursor(Qt::SizeHorCursor);
+        setMouseTracking(true);
+    }
+
+protected:
+    void paintEvent(QPaintEvent* event) override
+    {
+        Q_UNUSED(event);
+        QPainter p(this);
+        const QColor line = (mHovered || mDragging) ? palette().color(QPalette::Highlight)
+                                                    : QColor(0x72, 0x72, 0x72);
+        p.setPen(QPen(line, (mHovered || mDragging) ? 2 : 1));
+        p.drawLine(width() / 2, 0, width() / 2, height());
+    }
+
+    void enterEvent(QEvent* event) override
+    {
+        QWidget::enterEvent(event);
+        mHovered = true;
+        update();
+    }
+
+    void leaveEvent(QEvent* event) override
+    {
+        QWidget::leaveEvent(event);
+        mHovered = false;
+        update();
+    }
+
+    void mousePressEvent(QMouseEvent* event) override
+    {
+        if (event->button() == Qt::LeftButton && mOwner->beginFrozenBoundaryDrag()) {
+            mDragging = true;
+            mPressGlobalX = globalPosOf(event).x();
+            update();
+        }
+        QWidget::mousePressEvent(event);
+    }
+
+    void mouseMoveEvent(QMouseEvent* event) override
+    {
+        if (mDragging) {
+            mOwner->dragFrozenBoundary(globalPosOf(event).x() - mPressGlobalX);
+        }
+        QWidget::mouseMoveEvent(event);
+    }
+
+    void mouseReleaseEvent(QMouseEvent* event) override
+    {
+        if (mDragging && event->button() == Qt::LeftButton) {
+            mDragging = false;
+            mOwner->endFrozenBoundaryDrag();
+            update();
+        }
+        QWidget::mouseReleaseEvent(event);
+    }
+
+    void mouseDoubleClickEvent(QMouseEvent* event) override
+    {
+        if (event->button() == Qt::LeftButton) {
+            mOwner->requestFrozenBoundaryAutoFit();
+        }
+        QWidget::mouseDoubleClickEvent(event);
+    }
+
+private:
+    // 鼠标事件的全局坐标（Qt5/Qt6 兼容，与 DADataHeaderView 同法）
+    static QPoint globalPosOf(const QMouseEvent* event)
+    {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+        return event->globalPos();
+#else
+        return event->globalPosition().toPoint();
+#endif
+    }
+
+    DATablePaneContainer* mOwner;  ///< 非拥有（事件转发的目标容器）
+    int mPressGlobalX { 0 };       ///< 拖动起始全局 x
+    bool mHovered { false };       ///< hover 态（加粗高亮反馈）
+    bool mDragging { false };      ///< 拖动态（与容器拖动状态机同步）
+};
+}  // namespace
 
 /**
  * @brief 构造函数
@@ -126,9 +232,12 @@ void DATablePaneContainer::ensureFrozenView()
     mBottomSpacer->setFixedHeight(0);
     vlay->addWidget(mFrozenView);
     vlay->addWidget(mBottomSpacer);
-    // 冻结侧插到主窗格之前（左侧）
+    // 分界条（冻结/主区把手，拖动改末冻结列宽，Excel 语义）
+    mSeparator = new FrozenPaneSeparator(this);
+    // 布局 [冻结侧][分界条][主窗格]：冻结侧与分界条插到主窗格之前
     if (QHBoxLayout* hlay = qobject_cast< QHBoxLayout* >(layout())) {
         hlay->insertWidget(0, mFrozenSide);
+        hlay->insertWidget(1, mSeparator);
     }
     // 纵向滚动同步（双向，守卫防乒乓）
     connect(mFrozenView->verticalScrollBar(), &QScrollBar::valueChanged, this, &DATablePaneContainer::syncScroll);
@@ -196,6 +305,9 @@ void DATablePaneContainer::applyColumnState(const QVector< int >& orderedLogical
     if (mFrozenView) {
         mFrozenView->verticalHeader()->setVisible(mEffectiveFrozen > 0);
         mFrozenView->setVisible(mEffectiveFrozen > 0);
+    }
+    if (mSeparator) {
+        mSeparator->setVisible(mEffectiveFrozen > 0);
     }
     if (mMainView) {
         mMainView->verticalHeader()->setVisible(mEffectiveFrozen <= 0);
@@ -446,6 +558,118 @@ void DATablePaneContainer::syncScroll(int value)
         to->setValue(value);
     }
     mSyncingScroll = false;
+}
+
+/**
+ * @brief 视图顺序最后一个冻结列
+ *
+ * 取 mOrderedLogical 中前 mEffectiveFrozen 个非隐藏列的最后一个（与
+ * applyColumnState 的分割法律同源）。
+ * @return 逻辑列号；无冻结返回 -1
+ */
+int DATablePaneContainer::lastFrozenLogical() const
+{
+    if (mEffectiveFrozen <= 0 || !mFrozenView) {
+        return -1;
+    }
+    int taken = 0;
+    for (int logical : mOrderedLogical) {
+        if (mHiddenLogical.contains(logical)) {
+            continue;
+        }
+        if (++taken == mEffectiveFrozen) {
+            return logical;
+        }
+    }
+    return -1;
+}
+
+/**
+ * @brief 分界条按下：进入拖动态
+ *
+ * 记录末冻结列起始宽（宽上限防呆；双击自适应在拖动前可能把列拉得很宽）。
+ * @return 成功进入拖动态返回 true（无冻结列/读不到宽度返回 false）
+ */
+bool DATablePaneContainer::beginFrozenBoundaryDrag()
+{
+    const int logical = lastFrozenLogical();
+    if (logical < 0 || !mFrozenView) {
+        return false;
+    }
+    QHeaderView* fh = mFrozenView->horizontalHeader();
+    if (!fh) {
+        return false;
+    }
+    mBoundaryDragStartWidth = fh->sectionSize(logical);
+    return mBoundaryDragStartWidth > 0;
+}
+
+/**
+ * @brief 分界条位移：改末冻结列宽
+ *
+ * 实时 resizeSection（冻结窗格宽经既有 sectionResized → updateFrozenGeometry 链跟随），
+ * 夹紧到表头最小段宽；此处不发落库信号——释放时 endFrozenBoundaryDrag 统一提交。
+ * @param deltaX 相对按下位置的水平位移（像素，右拖变宽）
+ */
+void DATablePaneContainer::dragFrozenBoundary(int deltaX)
+{
+    if (mBoundaryDragStartWidth <= 0 || !mFrozenView) {
+        return;
+    }
+    const int logical = lastFrozenLogical();
+    if (logical < 0) {
+        return;
+    }
+    QHeaderView* fh = mFrozenView->horizontalHeader();
+    if (!fh) {
+        return;
+    }
+    const int w = qBound(fh->minimumSectionSize(),
+                         mBoundaryDragStartWidth + deltaX,
+                         c_boundaryMaxColumnWidth);
+    if (w != fh->sectionSize(logical)) {
+        fh->resizeSection(logical, w);
+    }
+}
+
+/**
+ * @brief 分界条释放：提交末冻结列新宽
+ *
+ * 发 frozenBoundaryAutoFitRequested 的姊妹信号 frozenBoundaryResized 交页面写
+ * store（分界条路径不经表头拖拽采集闸门——合成鼠标事件的 underMouse 判定在
+ * 测试与自动化场景不可靠，列宽落库由本信号唯一承载）。
+ */
+void DATablePaneContainer::endFrozenBoundaryDrag()
+{
+    if (mBoundaryDragStartWidth <= 0 || !mFrozenView) {
+        mBoundaryDragStartWidth = -1;
+        return;
+    }
+    const int startWidth  = mBoundaryDragStartWidth;
+    mBoundaryDragStartWidth = -1;
+    const int logical = lastFrozenLogical();
+    if (logical < 0) {
+        return;
+    }
+    QHeaderView* fh = mFrozenView->horizontalHeader();
+    if (!fh) {
+        return;
+    }
+    const int w = fh->sectionSize(logical);
+    if (w > 0 && w != startWidth) {
+        Q_EMIT frozenBoundaryResized(logical, w);
+    }
+}
+
+/**
+ * @brief 双击分界条 → 请求末冻结列内容自适应
+ */
+void DATablePaneContainer::requestFrozenBoundaryAutoFit()
+{
+    const int logical = lastFrozenLogical();
+    if (logical >= 0) {
+        Q_EMIT frozenBoundaryAutoFitRequested(logical);
+    }
 }
 
 }  // end of namespace DA

@@ -47,6 +47,15 @@ public:
 
     // 重算冻结窗格宽度与底部等高占位（列宽/行头宽/滚动条可见性变化后调用，幂等）
     void updateFrozenGeometry();
+    // ===== 冻结分界条（宽随列宽改造）：三段拖动状态机 + 双击自适应入口 =====
+    // 分界条按下：记末冻结列起始宽，成功进入拖动态返回 true（分界条控件与测试调用）
+    bool beginFrozenBoundaryDrag();
+    // 分界条位移：实时改末冻结列宽（冻结窗格宽经既有 sectionResized 链跟随）
+    void dragFrozenBoundary(int deltaX);
+    // 分界条释放：末冻结列新宽经 frozenBoundaryResized 信号交页面写 store
+    void endFrozenBoundaryDrag();
+    // 双击分界条：发 frozenBoundaryAutoFitRequested 交页面做内容自适应（测试直调）
+    void requestFrozenBoundaryAutoFit();
 
 public Q_SLOTS:
     // 窗格表头 sectionMoved 落库槽（006c）：读回发起窗格可见列新顺序 →
@@ -59,6 +68,10 @@ Q_SIGNALS:
     void frozenViewCreated(DA::DADataTableView* frozenView);
     // 拖动落库后的全局列序（006c：页面入栈后统一重投影）
     void columnOrderChanged(const QVector< int >& newGlobalOrderLogical);
+    // 冻结分界条拖动结束：末冻结列新宽度落库（分界条路径不经表头拖拽采集闸门，页面承接写 store）
+    void frozenBoundaryResized(int logicalColumn, int newWidth);
+    // 双击冻结分界条：请求对末冻结列做内容自适应（页面承接）
+    void frozenBoundaryAutoFitRequested(int logicalColumn);
 
 protected:
     bool eventFilter(QObject* watched, QEvent* event) override;
@@ -68,7 +81,7 @@ protected:
 private:
     // 单窗格投影：可见性（不在显示集合里的段隐藏）+ 顺序（目标列 visualIndex 依次挪到 0,1,2…）
     void projectPane(DADataTableView* pane, const QVector< int >& paneVisibleOrdered);
-    // 懒建冻结窗格（竖排布局 [frozen][bottomSpacer] + 滚动同步接线）
+    // 懒建冻结窗格（竖排布局 [frozen][bottomSpacer] + 滚动同步接线 + 分界条入列）
     void ensureFrozenView();
     // 纵向滚动同步（双向，守卫防乒乓）
     void syncScroll(int value);
@@ -78,16 +91,20 @@ private:
     void updateFrozenBottomSpacer();
     // 指定窗格的可见数据列按 visualIndex 升序读回（过滤尾部预留空白列）
     QVector< int > visibleDataColumnsOf(DADataTableView* pane) const;
+    // 视图顺序最后一个冻结列（无冻结/读不到返回 -1）
+    int lastFrozenLogical() const;
 
 private:
     DADataTableView* mMainView { nullptr };   ///< 非拥有（页面持有，本容器重父化到自己的布局）
     DADataTableView* mFrozenView { nullptr }; ///< 冻结窗格（容器拥有，hide 折叠不销毁）
     QWidget* mFrozenSide { nullptr };         ///< 冻结侧容器（[frozen][bottomSpacer] 竖排零边距）
     QWidget* mBottomSpacer { nullptr };       ///< 底部等高占位（对齐主窗格横向滚动条高度）
+    QWidget* mSeparator { nullptr };          ///< 冻结分界条（容器拥有，随冻结显隐）
     QVector< int > mOrderedLogical;           ///< 全局列序缓存
     QSet< int > mHiddenLogical;               ///< 隐藏集合缓存
     QSet< int > mFrozenLogical;               ///< 本轮投影的冻结列集合
     int mEffectiveFrozen { 0 };               ///< 本轮投影实际冻结列数
+    int mBoundaryDragStartWidth { -1 };       ///< 分界拖动起始时末冻结列宽（-1 = 非拖动态）
     bool mApplyingColumnState { false };      ///< 投影守卫（006c 屏蔽 sectionMoved 回写）
     bool mSyncingScroll { false };            ///< 滚动同步守卫（防乒乓）
 };
