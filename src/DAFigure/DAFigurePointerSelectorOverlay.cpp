@@ -211,7 +211,8 @@ void DAFigurePointerSelectorOverlay::onItemDragEnded(QwtPlotItem* item,
 {
     releaseMouse();
     d_ptr->mDragging = false;
-    if (item && oldGeo.valid && newGeo.valid && oldGeo.p1 != newGeo.p1) {
+    // 锚点类几何记录在 p1；形状类记录在 path（锚点 p1 恒为空），两类分别比较
+    if (item && oldGeo.valid && newGeo.valid && (oldGeo.p1 != newGeo.p1 || oldGeo.path != newGeo.path)) {
         Q_EMIT requestMoveItemPosition(item, oldGeo, newGeo);
     }
     updateOverlay();
