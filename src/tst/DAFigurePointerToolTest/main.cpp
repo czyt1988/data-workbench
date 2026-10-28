@@ -10,6 +10,10 @@
 #include "DAFigureElementSelection.h"
 #include "DAFigurePointerSelectorOverlay.h"
 
+// Qt
+#include <QImage>
+#include <QPainter>
+
 // qwt
 #include "qwt_plot_curve.h"
 #include "qwt_plot_arrowmarker.h"
@@ -61,6 +65,8 @@ private Q_SLOTS:
     void testShapeDragMove();
     // 形状类拖动后 undo 回弹到原位置
     void testShapeDragUndoRestore();
+    // 指针模式激活plot：不画百分比线/边缘点线等子图调整蒙版，只保留边框
+    void testPointerModeActivePlotMaskClean();
 
 private:
     // 生成测试用正弦曲线数据
@@ -524,6 +530,69 @@ void TSTDAFigurePointerToolTest::testShapeDragUndoRestore()
     mFig->endChartEditor();
     shape->detach();
     delete shape;
+    mFig->removeChart(chart);
+}
+
+/**
+ * @brief 指针模式激活plot的蒙版干净性
+ *
+ * 回归测试：指针工具继承自子图编辑覆盖层，旧实现把基类 drawControlLine 的整套
+ * 尺寸调整蒙版画了出来——plot 蓝框之外还有到 figure 边缘的百分比标注文本、
+ * 点状指示线与四角控制点。这些只对"调整 plot 在 figure 中的位置/大小"有意义，
+ * 指针模式选中 plot 仅需一个边框表示归属。
+ *
+ * 验证方式：向 QImage 直接渲染 overlay（QwtWidgetOverlay::paintEvent 即此路径），
+ * 断言 plot 边框之外的 figure 边缘区域无任何墨迹（百分比文本/点线/控制点都落在那里）
+ * @note 旧实现在此用例失败：figure 顶部/左侧边缘有百分比文本与点线墨迹
+ */
+void TSTDAFigurePointerToolTest::testPointerModeActivePlotMaskClean()
+{
+    DAChartWidget* chart = mFig->createChart_(QRectF(0.3, 0.3, 0.4, 0.4));
+    QVERIFY(chart);
+    chart->setAxisScale(QwtAxis::XBottom, 0, 100);
+    chart->setAxisScale(QwtAxis::YLeft, 0, 100);
+    QwtPlotCurve* curve = chart->addCurve(makeSineX(50), makeSineY(50), "curve");
+    QVERIFY(curve);
+    mFig->setCurrentChart(chart);
+    mFig->show();
+    QApplication::processEvents();
+    mFig->beginChartEditor(DAFigureWidget::PointerSelector);
+    QApplication::processEvents();
+    DAFigurePointerSelectorOverlay* overlay = mFig->findChild< DAFigurePointerSelectorOverlay* >();
+    QVERIFY2(overlay, "pointer selector overlay should exist");
+    QVERIFY2(overlay->currentActiveWidget() == chart, "chart should be the active widget");
+    // overlay 与 figure 同尺寸，直接渲染（paintEvent → drawOverlay → drawActiveWidget）
+    QImage img(overlay->size(), QImage::Format_ARGB32_Premultiplied);
+    img.fill(Qt::transparent);
+    QPainter painter(&img);
+    overlay->render(&painter);
+    painter.end();
+    img.save("pointer_mask_clean.png");  //cn:失败时留现场排查
+    // chart 几何（figure 坐标）之外、figure 内部的边缘条带：旧蒙版的百分比文本/点线/控制点全部落在此区域
+    const QRect chartRect = chart->frameGeometry().adjusted(-10, -10, 10, 10);
+    const QRect figureRect(0, 0, img.width(), img.height());
+    auto scanInk = [ &img ](const QRect & region) -> int {
+        int ink = 0;
+        for (int y = std::max(0, region.top()); y <= std::min(img.height() - 1, region.bottom()); ++y) {
+            const QRgb* line = reinterpret_cast< const QRgb* >(img.scanLine(y));
+            for (int x = std::max(0, region.left()); x <= std::min(img.width() - 1, region.right()); ++x) {
+                if (qAlpha(line[ x ]) > 0) {
+                    ++ink;
+                }
+            }
+        }
+        return ink;
+    };
+    // 1) 顶部条带（chart 上边缘以上）：百分比文本 + 中心点线落点
+    QVERIFY2(scanInk(figureRect.adjusted(0, 0, 0, -figureRect.height() + chartRect.top())) == 0,
+             "no ink allowed in top margin: percent text/dotted lines are subchart-resize aids");
+    // 2) 左侧条带：百分比文本 + 左点线
+    QVERIFY2(scanInk(figureRect.adjusted(0, 0, -figureRect.width() + chartRect.left(), 0)) == 0,
+             "no ink allowed in left margin");
+    // 3) 边框本身仍在：chart 边框上要有墨迹（选中指示保留）
+    QVERIFY2(scanInk(chartRect) > 0, "active plot border should still be drawn as selection indicator");
+    mFig->endChartEditor();
+    chart->removePlotItem(curve);
     mFig->removeChart(chart);
 }
 

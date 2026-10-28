@@ -16,6 +16,8 @@
 #include "qwt_plot_item.h"
 #include "qwt_scale_widget.h"
 #include "qwt_text_label.h"
+// Qt
+#include <QPen>
 
 namespace DA
 {
@@ -410,7 +412,7 @@ bool DAFigurePointerSelectorOverlay::eventFilter(QObject* obj, QEvent* event)
 /**
  * @brief 覆盖层内容绘制
  *
- * 基类绘制激活plot蓝框；本类追加选中元素框。
+ * 基类绘制激活plot选中框（经本类drawActiveWidget简化）；本类追加选中元素框。
  * 绘制统一在drawOverlay中进行（QwtWidgetOverlay的paintEvent会调用它）
  * @param p painter
  */
@@ -418,6 +420,27 @@ void DAFigurePointerSelectorOverlay::drawOverlay(QPainter* p) const
 {
     DAFigureWidgetOverlay::drawOverlay(p);
     drawItemSelectionRect(p);
+}
+
+/**
+ * @brief 绘制激活plot的选中框
+ *
+ * 基类drawControlLine面向子图尺寸调整：蓝框 + 到figure边缘的点线 + 百分比标注 + 四角控制点，
+ * 这些是调节plot位置/大小时的辅助蒙版，对指针工具属于干扰信息。
+ * 指针模式只保留边框本身表示"当前选中的plot"，不画百分比线等蒙版。
+ * @param painter painter
+ * @param activeW 激活widget
+ */
+void DAFigurePointerSelectorOverlay::drawActiveWidget(QPainter* painter, QWidget* activeW) const
+{
+    if (!activeW) {
+        return;
+    }
+    painter->save();
+    painter->setBrush(Qt::NoBrush);
+    painter->setPen(borderPen());
+    painter->drawRect(activeW->frameGeometry().adjusted(1, 1, -1, -1));
+    painter->restore();
 }
 
 //===================================================

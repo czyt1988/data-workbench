@@ -82,6 +82,8 @@ protected:
     void mouseReleaseEvent(QMouseEvent* me) override;
     void keyPressEvent(QKeyEvent* ke) override;
     void drawOverlay(QPainter* p) const override;
+    // 指针模式激活plot只画简洁选中框（基类drawControlLine的百分比标注/边缘点线/控制点是子图尺寸调整的蒙版）
+    void drawActiveWidget(QPainter* painter, QWidget* activeW) const override;
     bool eventFilter(QObject* obj, QEvent* event) override;
 
 private:
