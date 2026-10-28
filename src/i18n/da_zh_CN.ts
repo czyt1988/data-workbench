@@ -222,13 +222,13 @@
     </message>
     <message>
         <location line="+3"/>
-        <location line="+191"/>
+        <location line="+193"/>
         <location line="+5"/>
         <source>New Session</source>
         <translation>新建会话</translation>
     </message>
     <message>
-        <location line="-115"/>
+        <location line="-117"/>
         <source>Rename Session</source>
         <translation>重命名会话</translation>
     </message>
@@ -248,7 +248,7 @@
         <translation>删除会话“%1”？其聊天记录将被移除。</translation>
     </message>
     <message>
-        <location line="+300"/>
+        <location line="+302"/>
         <source>Session &quot;%1&quot; is waiting for your input. What do you want to do?</source>
         <translation>会话“%1”正在等待你的输入。要如何处理？</translation>
     </message>
@@ -1347,12 +1347,7 @@
 <context>
     <name>DA::DAAgentSubagentEditDialog</name>
     <message>
-        <location filename="../APP/Dialog/DAAgentSubagentEditDialog.cpp" line="+61"/>
-        <source>Unregistered tool (kept in definition)</source>
-        <translation>未注册的工具（保留在定义中）</translation>
-    </message>
-    <message>
-        <location line="+3"/>
+        <location filename="../APP/Dialog/DAAgentSubagentEditDialog.cpp" line="+77"/>
         <source>Edit Subagent</source>
         <translation>编辑子 Agent</translation>
     </message>
@@ -3181,7 +3176,7 @@
 <context>
     <name>DA::DAAppApplicationWidget</name>
     <message>
-        <location filename="../APP/DAAppApplicationWidget.cpp" line="+491"/>
+        <location filename="../APP/DAAppApplicationWidget.cpp" line="+492"/>
         <source>(untitled project)</source>
         <translation>(未命名工程)</translation>
     </message>
@@ -3359,28 +3354,28 @@
     </message>
     <message>
         <location line="+19"/>
-        <location line="+1046"/>
+        <location line="+1065"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location line="-1035"/>
+        <location line="-1053"/>
         <source>Failed to save project! Path: %1</source>
         <translation>工程保存失败！路径为:%1</translation>
     </message>
     <message>
         <location line="+3"/>
-        <location line="+652"/>
+        <location line="+659"/>
         <source>Project saved successfully, path: %1</source>
         <translation>工程保存成功，路径为:%1</translation>
     </message>
     <message>
-        <location line="-154"/>
+        <location line="-155"/>
         <source>The current project has unsaved changes. Do you want to save before creating a new project?</source>
         <translation>当前工程有未保存的更改，是否在新建工程之前保存？</translation>
     </message>
     <message>
-        <location line="+16"/>
+        <location line="+17"/>
         <source>New project created</source>
         <translation>已新建工程</translation>
     </message>
@@ -3390,7 +3385,7 @@
         <translation>工程加载成功，路径为:%1</translation>
     </message>
     <message>
-        <location line="+323"/>
+        <location line="+334"/>
         <source>Image saved successfully to %1</source>
         <translation>图片保存成功：%1</translation>
     </message>
@@ -3517,63 +3512,63 @@
         <translation>在创建一个坐标系之前，需要先创建一个绘图窗口</translation>
     </message>
     <message>
-        <location line="-1812"/>
+        <location line="-1830"/>
         <source>Please select the data operation window</source>
         <translation>请选中数据操作窗口</translation>
     </message>
     <message>
-        <location line="-50"/>
-        <location line="+561"/>
+        <location line="-51"/>
+        <location line="+569"/>
         <location line="+73"/>
         <source>Project File</source>
         <translation>工程文件</translation>
     </message>
     <message>
-        <location line="-616"/>
+        <location line="-624"/>
         <source>Whether to overwrite the file: %1</source>
         <translation>是否覆盖文件:%1</translation>
     </message>
     <message>
-        <location line="+470"/>
-        <location line="+19"/>
-        <location line="+21"/>
+        <location line="+475"/>
+        <location line="+20"/>
+        <location line="+22"/>
         <source>Question</source>
         <translation>疑问</translation>
     </message>
     <message>
-        <location line="-39"/>
+        <location line="-41"/>
         <source>The current project has unsaved changes. Do you want to save before opening another project?</source>
         <translation>当前工程有未保存的更改，是否在打开其他工程之前保存？</translation>
     </message>
     <message>
-        <location line="+19"/>
+        <location line="+20"/>
         <source>Another project already exists. Do you want to replace it?</source>
         <translation>已存在其他工程，是否要替换？</translation>
     </message>
     <message>
-        <location line="+100"/>
+        <location line="+102"/>
         <location line="+43"/>
         <source>Failed to load project file: %1</source>
         <translation>加载工程文件失败:%1</translation>
     </message>
     <message>
-        <location line="+308"/>
+        <location line="+319"/>
         <source>Image files</source>
         <translation>图片文件</translation>
     </message>
     <message>
-        <location line="-373"/>
-        <location line="+374"/>
+        <location line="-384"/>
+        <location line="+385"/>
         <source>Any files</source>
         <translation>任意文件</translation>
     </message>
     <message>
-        <location line="-375"/>
+        <location line="-386"/>
         <source>Markdown files</source>
         <translation>Markdown 文件</translation>
     </message>
     <message>
-        <location line="+472"/>
+        <location line="+483"/>
         <source>Received null project interface</source>
         <translation>获取到空工程接口</translation>
     </message>
@@ -3584,12 +3579,12 @@
         <translation>没有选中可复制的单元格</translation>
     </message>
     <message>
-        <location line="-1456"/>
+        <location line="-1475"/>
         <source>No active table</source>
         <translation>无活动表格</translation>
     </message>
     <message>
-        <location line="+1844"/>
+        <location line="+1863"/>
         <source>Cannot rename a series, please select a dataset</source>
         <translation>无法重命名series，请选中数据集</translation>
     </message>
@@ -3599,7 +3594,7 @@
         <translation>未找到绘图&quot;%1&quot;，可能已关闭或被重命名</translation>
     </message>
     <message>
-        <location line="+809"/>
+        <location line="+825"/>
         <source>Rename Column</source>
         <translation>重命名此列</translation>
     </message>
@@ -3639,7 +3634,7 @@
         <translation>列[%1] 最小值位于第 %2 行</translation>
     </message>
     <message>
-        <location line="+568"/>
+        <location line="+595"/>
         <source>Export</source>
         <translation>导出</translation>
     </message>
@@ -3679,12 +3674,12 @@
         <translation>选中的数据源为空</translation>
     </message>
     <message>
-        <location line="-2648"/>
+        <location line="-2691"/>
         <source>Before running the workflow, you need to save the project</source>
         <translation>在运行工作流之前，需要先保存工程</translation>
     </message>
     <message>
-        <location line="+1964"/>
+        <location line="+1980"/>
         <source>Please select a column first</source>
         <translation>请先选择列</translation>
     </message>
@@ -4681,7 +4676,7 @@
         <translation>标签颜色</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+6"/>
         <source>Numbers</source>
         <translation>数字</translation>
     </message>
@@ -4696,7 +4691,7 @@
         <translation>数字颜色</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+6"/>
         <source>Range</source>
         <translation>范围</translation>
     </message>
@@ -5007,7 +5002,7 @@
         <translation>标签字体</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+7"/>
         <source>Ticks</source>
         <translation>刻度</translation>
     </message>
@@ -5070,212 +5065,6 @@
         <location line="+2"/>
         <source>Line Smooth</source>
         <translation>线平滑</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DAChart3DItemSettingPanel</name>
-    <message>
-        <location filename="../DAGui/Chart3DSetting/DAChart3DItemSettingPanel.cpp" line="+72"/>
-        <source>No Plot</source>
-        <translation>无绘图</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <location line="+99"/>
-        <source>Wireframe</source>
-        <translation>线框</translation>
-    </message>
-    <message>
-        <location line="-98"/>
-        <source>Hidden Line</source>
-        <translation>隐藏线</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <location line="+95"/>
-        <source>Filled</source>
-        <translation>填充</translation>
-    </message>
-    <message>
-        <location line="-94"/>
-        <location line="+95"/>
-        <source>Filled Mesh</source>
-        <translation>填充网格</translation>
-    </message>
-    <message>
-        <location line="-94"/>
-        <source>Points</source>
-        <translation>点</translation>
-    </message>
-    <message>
-        <location line="+17"/>
-        <source>Flat</source>
-        <translation>平面着色</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Gouraud</source>
-        <translation>平滑着色</translation>
-    </message>
-    <message>
-        <location line="+17"/>
-        <source>No Floor</source>
-        <translation>无投影</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Isoline</source>
-        <translation>等高线投影</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Data</source>
-        <translation>数据</translation>
-    </message>
-    <message>
-        <location line="+17"/>
-        <source>No Coord</source>
-        <translation>无坐标系</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Box</source>
-        <translation>盒形</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Frame</source>
-        <translation>框架</translation>
-    </message>
-    <message>
-        <location line="+17"/>
-        <source>Linear</source>
-        <translation>线性</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Log10</source>
-        <translation>对数</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>User</source>
-        <translation>自定义</translation>
-    </message>
-    <message>
-        <location line="+38"/>
-        <source>Lines</source>
-        <translation>线条</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Tube</source>
-        <translation>管状</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Dots</source>
-        <translation>点</translation>
-    </message>
-    <message>
-        <location line="+18"/>
-        <source>Dot</source>
-        <translation>圆点</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Cube</source>
-        <translation>立方体</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Tetrahedron</source>
-        <translation>四面体</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Octahedron</source>
-        <translation>八面体</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Sphere</source>
-        <translation>球体</translation>
-    </message>
-    <message>
-        <location line="+17"/>
-        <source>Default</source>
-        <translation>默认</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Dark</source>
-        <translation>深色</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Scientific</source>
-        <translation>科学</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Warm</source>
-        <translation>暖色</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Cool</source>
-        <translation>冷色</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Matplotlib</source>
-        <translation>Matplotlib</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Earth Tones</source>
-        <translation>大地色</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Ocean</source>
-        <translation>海洋</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>High Contrast</source>
-        <translation>高对比</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Presentation</source>
-        <translation>演示</translation>
-    </message>
-    <message>
-        <location line="+17"/>
-        <source>No Lighting</source>
-        <translation>无光照</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Flat Light</source>
-        <translation>平面光</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Studio</source>
-        <translation>工作室</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Outdoor</source>
-        <translation>户外</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Soft</source>
-        <translation>柔和</translation>
     </message>
 </context>
 <context>
@@ -5419,7 +5208,7 @@
         <translation>标题颜色</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+6"/>
         <source>Background</source>
         <translation>背景</translation>
     </message>
@@ -5795,19 +5584,19 @@
 <context>
     <name>DA::DAChartAddBoxChartWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddBoxChartWidget.cpp" line="+77"/>
-        <location line="+18"/>
+        <location filename="../DAGui/ChartAddItem/DAChartAddBoxChartWidget.cpp" line="+79"/>
+        <location line="+16"/>
         <location line="+28"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location line="-45"/>
+        <location line="-43"/>
         <source>Please select a dataframe</source>
         <translation>请选择一个数据框</translation>
     </message>
     <message>
-        <location line="+18"/>
+        <location line="+16"/>
         <source>Please select at least one column</source>
         <translation>请至少选择一列</translation>
     </message>
@@ -5899,19 +5688,13 @@
 <context>
     <name>DA::DAChartAddMultiBarWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddMultiBarWidget.cpp" line="+84"/>
-        <location line="+9"/>
+        <location filename="../DAGui/ChartAddItem/DAChartAddMultiBarWidget.cpp" line="+90"/>
         <location line="+26"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location line="-34"/>
-        <source>The initial value and step of x auto increment must be floating-point numbers</source>
-        <translation>x自增序列的初始值和步长必须为浮点数</translation>
-    </message>
-    <message>
-        <location line="+8"/>
+        <location line="-26"/>
         <source>Please drag a series into the X list</source>
         <translation>警告 / 请把一个序列拖入X列表</translation>
     </message>
@@ -5934,7 +5717,7 @@
 <context>
     <name>DA::DAChartAddOHLCSeriesWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddOHLCSeriesWidget.cpp" line="+36"/>
+        <location filename="../DAGui/ChartAddItem/DAChartAddOHLCSeriesWidget.cpp" line="+37"/>
         <location line="+9"/>
         <source>Time</source>
         <translation>时间</translation>
@@ -5964,9 +5747,7 @@
         <translation>收盘</translation>
     </message>
     <message>
-        <location line="+166"/>
-        <location line="+8"/>
-        <location line="+43"/>
+        <location line="+202"/>
         <location line="+6"/>
         <location line="+6"/>
         <location line="+6"/>
@@ -5980,17 +5761,7 @@
         <translation>警告</translation>
     </message>
     <message>
-        <location line="-134"/>
-        <source>The initial value of t auto increment series must be a floating-point arithmetic number</source>
-        <translation>t自增序列的初始值必须为浮点数</translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>The step value of t auto increment series must be a floating-point arithmetic number</source>
-        <translation>t自增序列的步长必须为浮点数</translation>
-    </message>
-    <message>
-        <location line="+43"/>
+        <location line="-83"/>
         <location line="+66"/>
         <source>open value must be a series</source>
         <translation>开盘值必须是序列</translation>
@@ -6305,7 +6076,7 @@
 <context>
     <name>DA::DAChartAddXYESeriesWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddXYESeriesWidget.cpp" line="+20"/>
+        <location filename="../DAGui/ChartAddItem/DAChartAddXYESeriesWidget.cpp" line="+21"/>
         <source>x</source>
         <translation>x</translation>
     </message>
@@ -6335,11 +6106,7 @@
         <translation>错误</translation>
     </message>
     <message>
-        <location line="+154"/>
-        <location line="+8"/>
-        <location line="+23"/>
-        <location line="+9"/>
-        <location line="+23"/>
+        <location line="+186"/>
         <location line="+26"/>
         <location line="+23"/>
         <location line="+15"/>
@@ -6352,27 +6119,7 @@
         <translation>警告</translation>
     </message>
     <message>
-        <location line="-181"/>
-        <source>The initial value of x auto increment series must be a floating-point arithmetic number</source>
-        <translation>x自增序列的初始值必须为浮点数</translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>The step value of x auto increment series must be a floating-point arithmetic number</source>
-        <translation>x自增序列的步长必须为浮点数</translation>
-    </message>
-    <message>
-        <location line="+23"/>
-        <source>The initial value of y auto increment series must be a floating-point arithmetic number</source>
-        <translation>y自增序列的初始值必须为浮点数</translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>The step value of y auto increment series must be a floating-point arithmetic number</source>
-        <translation>y自增序列的步长必须为浮点数</translation>
-    </message>
-    <message>
-        <location line="+23"/>
+        <location line="-118"/>
         <source>x and y cannot be set to autoincrement at the same time</source>
         <translation>x和y无法同时设置为自增</translation>
     </message>
@@ -6419,7 +6166,7 @@
 <context>
     <name>DA::DAChartAddXYSeriesWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddXYSeriesWidget.cpp" line="+25"/>
+        <location filename="../DAGui/ChartAddItem/DAChartAddXYSeriesWidget.cpp" line="+26"/>
         <source>x</source>
         <translation>x</translation>
     </message>
@@ -6430,17 +6177,17 @@
     </message>
     <message>
         <location line="+11"/>
-        <location line="+190"/>
+        <location line="+198"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location line="-189"/>
+        <location line="-197"/>
         <source>Only one series can be used as x, the extra series were ignored</source>
         <translation>x只能添加一个序列，多余的序列已被忽略</translation>
     </message>
     <message>
-        <location line="+147"/>
+        <location line="+155"/>
         <source>The initial value of x auto increment series must be a floating-point arithmetic number</source>
         <translation>x自增序列的初始值必须为浮点数</translation>
     </message>
@@ -6689,6 +6436,24 @@
     </message>
 </context>
 <context>
+    <name>DA::DAChartAutoincrementSeriesWidget</name>
+    <message>
+        <location filename="../DAGui/ChartAddItem/DAChartAutoincrementSeriesWidget.cpp" line="+31"/>
+        <source>Autoincrement series</source>
+        <translation>自增序列</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Initial value</source>
+        <translation>初始值</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Self increasing step size</source>
+        <translation>自增步长</translation>
+    </message>
+</context>
+<context>
     <name>DA::DAChartAxisSettingPanel</name>
     <message>
         <location filename="../DAGui/ChartSetting/DAChartAxisSettingPanel.cpp" line="+192"/>
@@ -6721,7 +6486,7 @@
         <translation>标签字体颜色</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+3"/>
         <source>Label Alignment</source>
         <translation>标签对齐</translation>
     </message>
@@ -7086,32 +6851,32 @@
         <translation>样式</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+6"/>
         <source>No Frame</source>
         <translation>无边框</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+1"/>
         <source>Box</source>
         <translation>方框</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+1"/>
         <source>Panel</source>
         <translation>面板</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+1"/>
         <source>Styled Panel</source>
         <translation>样式面板</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+1"/>
         <source>Win Panel</source>
         <translation>窗口面板</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="-5"/>
         <source>Frame Shape</source>
         <translation>边框形状</translation>
     </message>
@@ -7998,7 +7763,7 @@
         <translation>字体颜色</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+3"/>
         <source>Background Brush</source>
         <translation>背景画刷</translation>
     </message>
@@ -8006,8 +7771,8 @@
 <context>
     <name>DA::DAChartManageWidget</name>
     <message>
-        <location filename="../DAGui/Chart/DAChartManageWidget.cpp" line="+98"/>
-        <location line="+609"/>
+        <location filename="../DAGui/Chart/DAChartManageWidget.cpp" line="+99"/>
+        <location line="+619"/>
         <location line="+17"/>
         <location line="+20"/>
         <location line="+22"/>
@@ -8017,19 +7782,26 @@
         <translation>重命名</translation>
     </message>
     <message>
-        <location line="-703"/>
+        <location line="-713"/>
         <source>Visible</source>
         <translation>可见</translation>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+807"/>
+        <location line="+817"/>
         <location line="+24"/>
         <source>Delete</source>
         <translation>删除</translation>
     </message>
     <message>
-        <location line="-826"/>
+        <location line="-839"/>
+        <location line="+888"/>
+        <location line="+20"/>
+        <source>Remove Chart</source>
+        <translation type="unfinished">删除坐标系</translation>
+    </message>
+    <message>
+        <location line="-903"/>
         <source>Transfer</source>
         <translation>转移</translation>
     </message>
@@ -8039,7 +7811,7 @@
         <translation>设置</translation>
     </message>
     <message>
-        <location line="+95"/>
+        <location line="+103"/>
         <source>figure</source>
         <translation>绘图</translation>
     </message>
@@ -8054,13 +7826,21 @@
         <translation>获取了绘图关闭的信号，但无法找到绘图的索引</translation>
     </message>
     <message>
-        <location line="-299"/>
+        <location line="+465"/>
+        <location line="+20"/>
+        <source>Are you sure to remove chart &quot;%1&quot;? All its items will be removed.</source>
+        <translation type="unfinished">确认删除坐标系“%1”吗？其全部图元将一并移除。</translation>
+    </message>
+    <message>
+        <location line="-784"/>
         <location line="+485"/>
+        <location line="+275"/>
+        <location line="+20"/>
         <source>chart</source>
         <translation>绘图</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="-290"/>
         <location line="+17"/>
         <location line="+20"/>
         <location line="+22"/>
@@ -8326,7 +8106,7 @@
         <translation>标题颜色</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+5"/>
         <source>Footer</source>
         <translation>脚注</translation>
     </message>
@@ -8794,6 +8574,19 @@
     </message>
 </context>
 <context>
+    <name>DA::DAChartTextEditorPopup</name>
+    <message>
+        <location filename="../DAFigure/DAChartTextEditorPopup.cpp" line="+71"/>
+        <source>Cancel</source>
+        <translation type="unfinished">取消</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>OK</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DA::DAChartTextLabelSettingPanel</name>
     <message>
         <location filename="../DAGui/ChartSetting/DAChartTextLabelSettingPanel.cpp" line="+47"/>
@@ -8841,7 +8634,7 @@
         <translation>文字颜色</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+3"/>
         <source>Alignment</source>
         <translation>对齐</translation>
     </message>
@@ -8929,7 +8722,7 @@
         <translation>文字颜色</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+3"/>
         <source>Alignment</source>
         <translation>对齐</translation>
     </message>
@@ -9234,6 +9027,24 @@
     </message>
 </context>
 <context>
+    <name>DA::DACheckListWidget</name>
+    <message>
+        <location filename="../3rdparty/DAWidgets/src/DACheckListWidget.cpp" line="+63"/>
+        <source>Search...</source>
+        <translation>搜索</translation>
+    </message>
+    <message>
+        <location line="+16"/>
+        <source>Select All</source>
+        <translation>全选</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Invert Selection</source>
+        <translation>反选</translation>
+    </message>
+</context>
+<context>
     <name>DA::DACoreInterface</name>
     <message>
         <location filename="../DAInterface/DACoreInterface.cpp" line="+59"/>
@@ -9413,12 +9224,12 @@
     </message>
     <message>
         <location line="-418"/>
-        <location line="+480"/>
+        <location line="+481"/>
         <source>Delete All</source>
         <translation>全部删除</translation>
     </message>
     <message>
-        <location line="-404"/>
+        <location line="-405"/>
         <location line="+107"/>
         <location line="+85"/>
         <source>Chart %1</source>
@@ -9448,7 +9259,7 @@
         <translation>确定删除这一列吗？</translation>
     </message>
     <message>
-        <location line="+62"/>
+        <location line="+63"/>
         <source>Are you sure to delete all columns? This cannot be undone.</source>
         <translation>确定删除所有列吗？此操作不可撤销。</translation>
     </message>
@@ -9549,7 +9360,7 @@
 <context>
     <name>DA::DADataOperateOfDataFrameWidget</name>
     <message>
-        <location filename="../DAGui/DADataOperateOfDataFrameWidget.cpp" line="+709"/>
+        <location filename="../DAGui/DADataOperateOfDataFrameWidget.cpp" line="+730"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
@@ -9564,31 +9375,31 @@
         <translation>请选择正确的行</translation>
     </message>
     <message>
-        <location line="+61"/>
-        <location line="+410"/>
+        <location line="+57"/>
+        <location line="+506"/>
         <location line="+40"/>
         <location line="+46"/>
         <location line="+47"/>
-        <location line="+1936"/>
+        <location line="+2129"/>
         <location line="+24"/>
         <source>Please select a valid column</source>
         <translation>请选择正确的列</translation>
     </message>
     <message>
-        <location line="-2415"/>
-        <location line="+1997"/>
+        <location line="-2621"/>
+        <location line="+2203"/>
         <location line="+63"/>
         <location line="+47"/>
         <source>Please select a valid cell</source>
         <translation>请选择正确的单元格</translation>
     </message>
     <message>
-        <location line="-2043"/>
+        <location line="-2249"/>
         <source>Clipboard is empty</source>
         <translation>剪贴板为空</translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location line="+15"/>
         <source>Please select a cell to paste into</source>
         <translation>请先选中要粘贴的起始单元格</translation>
     </message>
@@ -9628,13 +9439,13 @@
         <translation>列名&quot;%1&quot;已存在，请使用其他名称</translation>
     </message>
     <message>
-        <location line="+238"/>
+        <location line="+247"/>
         <location line="+4"/>
         <source>Unable to get statistics for this column</source>
         <translation>无法获取此列的统计信息</translation>
     </message>
     <message>
-        <location line="+2069"/>
+        <location line="+2262"/>
         <source>This data source is read-only and cannot be sorted.</source>
         <translation>该数据源为只读，无法排序</translation>
     </message>
@@ -9710,12 +9521,12 @@
         <translation>公式不得引用目标列自身</translation>
     </message>
     <message>
-        <location line="-3922"/>
+        <location line="-4132"/>
         <source>Computed column(s) %1 became invalid because their dependency column(s) were removed</source>
         <translation>计算列 %1 因依赖列被删除已失效</translation>
     </message>
     <message>
-        <location line="+4343"/>
+        <location line="+4553"/>
         <source>Computed column(s) %1 became invalid because their dependency column(s) were merged</source>
         <translation>计算列 %1 因依赖列被合并已失效</translation>
     </message>
@@ -9826,7 +9637,22 @@
         <translation>（无需要清除的表元数据）</translation>
     </message>
     <message>
-        <location line="-1420"/>
+        <location line="-2871"/>
+        <source>Freeze the first N columns (0 = no freeze):</source>
+        <translation>冻结前 N 列（0 = 不冻结）：</translation>
+    </message>
+    <message>
+        <location line="+163"/>
+        <source>Column names must be unique</source>
+        <translation>列名不能重复</translation>
+    </message>
+    <message>
+        <location line="+34"/>
+        <source>Rename and update column view</source>
+        <translation>重命名并更新列视图</translation>
+    </message>
+    <message>
+        <location line="+1254"/>
         <source>The table has no conditional format rules</source>
         <translation>本表没有条件格式规则</translation>
     </message>
@@ -10156,38 +9982,33 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>本表没有批注</translation>
     </message>
     <message>
-        <location line="-4049"/>
+        <location line="-4242"/>
         <source>Some column view settings were dropped because the table columns have changed.</source>
         <translation>表格的列已变化，部分列视图设置已被丢弃</translation>
     </message>
     <message>
-        <location line="+74"/>
+        <location line="+71"/>
         <source>Frozen columns were reduced because visible columns changed.</source>
         <translation>可见列已变化，冻结列数被自动缩减</translation>
     </message>
     <message>
-        <location line="+338"/>
+        <location line="+448"/>
         <source>Freeze Columns</source>
         <translation>冻结列</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Freeze the first N visible columns (0 = no freeze):</source>
-        <translation>冻结前 N 个可见列（0 = 不冻结）：</translation>
-    </message>
-    <message>
-        <location line="+119"/>
+        <location line="+126"/>
         <source>Column View...</source>
         <translation>列视图...</translation>
     </message>
     <message>
-        <location line="-894"/>
+        <location line="-1007"/>
         <location line="+65"/>
         <source>The column &quot;%1&quot; was hidden and has been made visible</source>
         <translation>列&quot;%1&quot;已隐藏，现已显示</translation>
     </message>
     <message>
-        <location line="+866"/>
+        <location line="+1059"/>
         <source>Row number is out of range</source>
         <translation>行号超出范围</translation>
     </message>
@@ -10374,24 +10195,6 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <location line="+1"/>
         <source>Clear All Notes</source>
         <translation>清除本表批注</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DADataframeToVectorPointWidget</name>
-    <message>
-        <location filename="../DAGui/DADataframeToVectorPointWidget.cpp" line="+15"/>
-        <source>x</source>
-        <translation>x</translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>y</source>
-        <translation>y</translation>
-    </message>
-    <message>
-        <location line="+60"/>
-        <source>Exception occurred during extraction from pandas.Series to double vector: %1</source>
-        <translation>从 pandas.Series 提取为 double vector 过程中出现异常：%1</translation>
     </message>
 </context>
 <context>
@@ -11767,6 +11570,54 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     </message>
 </context>
 <context>
+    <name>DA::DADialogTableColumnView</name>
+    <message>
+        <location filename="../DAGui/Dialog/DADialogTableColumnView.cpp" line="+58"/>
+        <source>Column View</source>
+        <translation type="unfinished">列视图</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Search...</source>
+        <translation type="unfinished">搜索</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Column</source>
+        <translation type="unfinished">列</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Hidden</source>
+        <translation>隐藏</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Frozen</source>
+        <translation>冻结</translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>Show All</source>
+        <translation>显示全部</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Unhide all columns</source>
+        <translation>取消所有列的隐藏</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Unfreeze All</source>
+        <translation>取消全部冻结</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Remove column freezing</source>
+        <translation>取消所有列的冻结</translation>
+    </message>
+</context>
+<context>
     <name>DA::DADialogTableDisplayFormat</name>
     <message>
         <location filename="../DAGui/Dialog/DADialogTableDisplayFormat.cpp" line="+101"/>
@@ -12257,7 +12108,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DA::DAItemListEditWidget</name>
     <message>
-        <location filename="../3rdparty/DAWidgets/src/DAItemListEditWidget.cpp" line="+67"/>
+        <location filename="../3rdparty/DAWidgets/src/DAItemListEditWidget.cpp" line="+74"/>
         <source>Add</source>
         <translation>添加</translation>
     </message>
@@ -12273,12 +12124,22 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>确定移除所有已选条目吗？</translation>
     </message>
     <message>
-        <location line="+44"/>
+        <location line="+19"/>
+        <source>Up</source>
+        <translation type="unfinished">上移</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Down</source>
+        <translation type="unfinished">下移</translation>
+    </message>
+    <message>
+        <location line="+33"/>
         <source>Remove</source>
         <translation>删除</translation>
     </message>
     <message>
-        <location line="+58"/>
+        <location line="+98"/>
         <source>No available items</source>
         <translation>无可用条目</translation>
     </message>
@@ -12286,14 +12147,9 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DA::DAItemListPickDialog</name>
     <message>
-        <location filename="../3rdparty/DAWidgets/src/DAItemListPickDialog.cpp" line="+30"/>
+        <location filename="../3rdparty/DAWidgets/src/DAItemListPickDialog.cpp" line="+26"/>
         <source>Select Items</source>
         <translation>选择条目</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>Search...</source>
-        <translation>搜索</translation>
     </message>
 </context>
 <context>
@@ -12412,7 +12268,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DA::DAMarkdownView</name>
     <message>
-        <location filename="../DAGui/MarkdownView/DAMarkdownView.cpp" line="+326"/>
+        <location filename="../DAGui/MarkdownView/DAMarkdownView.cpp" line="+325"/>
         <source>Copy</source>
         <translation>复制</translation>
     </message>
@@ -12457,7 +12313,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>Markdown 源码</translation>
     </message>
     <message>
-        <location line="+31"/>
+        <location line="+29"/>
         <source>Save Markdown</source>
         <translation>保存 Markdown</translation>
     </message>
@@ -12622,7 +12478,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DA::DAModelFetchDialog</name>
     <message>
-        <location filename="../APP/Dialog/DAModelFetchDialog.cpp" line="+33"/>
+        <location filename="../APP/Dialog/DAModelFetchDialog.cpp" line="+34"/>
         <source>Available Models</source>
         <translation>可用模型</translation>
     </message>
@@ -12632,17 +12488,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>选择要添加的模型：</translation>
     </message>
     <message>
-        <location line="+6"/>
-        <source>Select All</source>
-        <translation>全选</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Deselect All</source>
-        <translation>全不选</translation>
-    </message>
-    <message>
-        <location line="+9"/>
+        <location line="+8"/>
         <source>OK</source>
         <translation>确定</translation>
     </message>
@@ -13362,17 +13208,17 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     </message>
     <message>
         <location line="+267"/>
-        <location line="+392"/>
+        <location line="+393"/>
         <source>Question</source>
         <translation>疑问</translation>
     </message>
     <message>
-        <location line="-391"/>
+        <location line="-392"/>
         <source>Confirm to delete workflow:%1</source>
         <translation>是否确认删除工作流:%1</translation>
     </message>
     <message>
-        <location line="+142"/>
+        <location line="+143"/>
         <location line="+13"/>
         <location line="+13"/>
         <source>Missing view</source>
@@ -13387,12 +13233,12 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <location line="+13"/>
         <location line="+13"/>
         <location line="+13"/>
-        <location line="+513"/>
+        <location line="+515"/>
         <source>No active workflow detected</source>
         <translation>未检测到激活的工作流</translation>
     </message>
     <message>
-        <location line="-590"/>
+        <location line="-592"/>
         <source>Workflow execution failed</source>
         <translation>工作流执行失败</translation>
     </message>
@@ -13407,7 +13253,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>是否确认关闭工作流</translation>
     </message>
     <message>
-        <location line="+253"/>
+        <location line="+255"/>
         <location line="+1"/>
         <source>Copy</source>
         <translation>复制</translation>
@@ -13618,7 +13464,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>秒</translation>
     </message>
     <message>
-        <location line="-8"/>
+        <location line="-9"/>
         <source> day</source>
         <translation>天</translation>
     </message>
@@ -13629,7 +13475,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     </message>
     <message>
         <location line="+1"/>
-        <location line="+5"/>
+        <location line="+6"/>
         <source>Disabled</source>
         <translation>禁用</translation>
     </message>
@@ -13639,14 +13485,9 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>留空使用系统临时目录</translation>
     </message>
     <message>
-        <location line="+66"/>
+        <location line="+62"/>
         <source>Advanced</source>
         <translation>高级</translation>
-    </message>
-    <message>
-        <location line="+64"/>
-        <source>Select script workspace directory</source>
-        <translation>选择脚本工作区目录</translation>
     </message>
 </context>
 <context>
@@ -13722,12 +13563,12 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>此操作将删除记录窗口位置信息的文件，删除文件后，如果不开启窗口位置信息记录，窗口将以默认布局打开</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+9"/>
         <source>Successfully removed window state record file</source>
         <translation>成功删除窗口状态记录文件</translation>
     </message>
     <message>
-        <location line="-177"/>
+        <location line="-179"/>
         <source>Top</source>
         <translation>上方</translation>
     </message>
@@ -13803,22 +13644,17 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DA::DASettingPagePython</name>
     <message>
-        <location filename="../APP/SettingPages/DASettingPagePython.cpp" line="+60"/>
+        <location filename="../APP/SettingPages/DASettingPagePython.cpp" line="+72"/>
         <source>Cannot write python config file: %1</source>
         <translation>无法写入Python配置文件：%1</translation>
     </message>
     <message>
-        <location line="+29"/>
+        <location line="+30"/>
         <source>Python</source>
         <translation>Python</translation>
     </message>
     <message>
-        <location line="+43"/>
-        <source>Select Python Interpreter</source>
-        <translation>选择Python解释器</translation>
-    </message>
-    <message>
-        <location line="+12"/>
+        <location line="+46"/>
         <source>Information</source>
         <translation>信息</translation>
     </message>
@@ -13853,7 +13689,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>选择模块搜索路径</translation>
     </message>
     <message>
-        <location filename="../APP/SettingPages/DASettingPagePython.cpp"/>
+        <location line="-153"/>
         <source>Add module search paths...</source>
         <translation>添加模块搜索路径...</translation>
     </message>
@@ -13861,7 +13697,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DA::DASettingPageShortcuts</name>
     <message>
-        <location filename="../APP/SettingPages/DASettingPageShortcuts.cpp" line="+64"/>
+        <location filename="../APP/SettingPages/DASettingPageShortcuts.cpp" line="+65"/>
         <source>Shortcuts</source>
         <translation>快捷键</translation>
     </message>
@@ -13951,7 +13787,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>其他</translation>
     </message>
     <message>
-        <location line="+101"/>
+        <location line="+103"/>
         <source>Reset to Default</source>
         <translation>重置为默认</translation>
     </message>
@@ -13961,7 +13797,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>清除快捷键</translation>
     </message>
     <message>
-        <location line="-457"/>
+        <location line="-459"/>
         <source>Failed to save shortcut settings</source>
         <translation>保存快捷键设置失败</translation>
     </message>
@@ -14005,6 +13841,29 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <location line="+2"/>
         <source>Switch to Chart Mode</source>
         <translation>切换为图表模式</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAStringListEditWidget</name>
+    <message>
+        <location filename="../3rdparty/DAWidgets/src/DAStringListEditWidget.cpp" line="+72"/>
+        <source>Add</source>
+        <translation>添加</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Remove</source>
+        <translation>删除</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Up</source>
+        <translation>上移</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Down</source>
+        <translation>下移</translation>
     </message>
 </context>
 <context>
@@ -14321,12 +14180,12 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DA::DAUndoHistoryWidget</name>
     <message>
-        <location filename="../3rdparty/DAWidgets/src/DAUndoHistoryWidget.cpp"/>
+        <location filename="../3rdparty/DAWidgets/src/DAUndoHistoryWidget.cpp" line="+22"/>
         <source>Undo depth:</source>
         <translation>撤销深度：</translation>
     </message>
     <message>
-        <location filename="../3rdparty/DAWidgets/src/DAUndoHistoryWidget.cpp"/>
+        <location line="+5"/>
         <source>Maximum number of undo steps kept per table page (larger uses more memory for swap-type commands)</source>
         <translation>每个表格页保留的最大撤销步数（调大对转置类命令会增加内存占用）</translation>
     </message>
@@ -14614,7 +14473,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-3750"/>
+        <location filename="../APP/DAAppController.cpp" line="-3785"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>
@@ -14835,50 +14694,6 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     </message>
 </context>
 <context>
-    <name>DAChartAddCurveWidget</name>
-    <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddCurveWidget.ui" line="+14"/>
-        <source>Add XY Series</source>
-        <translation>添加 XY 序列</translation>
-    </message>
-    <message>
-        <location line="+22"/>
-        <source>X</source>
-        <translation>X</translation>
-    </message>
-    <message>
-        <location line="+12"/>
-        <location line="+61"/>
-        <source>Autoincrement series</source>
-        <translation>自增序列</translation>
-    </message>
-    <message>
-        <location line="-46"/>
-        <location line="+61"/>
-        <source>Initial value</source>
-        <translation>初始值</translation>
-    </message>
-    <message>
-        <location line="-54"/>
-        <location line="+14"/>
-        <location line="+47"/>
-        <location line="+14"/>
-        <source>1</source>
-        <translation>1</translation>
-    </message>
-    <message>
-        <location line="-68"/>
-        <location line="+61"/>
-        <source>Self increasing step size</source>
-        <translation>自增步长</translation>
-    </message>
-    <message>
-        <location line="-41"/>
-        <source>Y</source>
-        <translation>Y</translation>
-    </message>
-</context>
-<context>
     <name>DAChartAddHistogramWidget</name>
     <message>
         <location filename="../DAGui/ChartAddItem/DAChartAddHistogramWidget.ui" line="+14"/>
@@ -14929,28 +14744,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>X</translation>
     </message>
     <message>
-        <location line="+23"/>
-        <source>Autoincrement series</source>
-        <translation>自增序列</translation>
-    </message>
-    <message>
-        <location line="+15"/>
-        <source>Initial value</source>
-        <translation>初始值</translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <location line="+14"/>
-        <source>1</source>
-        <translation>1</translation>
-    </message>
-    <message>
-        <location line="-7"/>
-        <source>Self increasing step size</source>
-        <translation>自增步长</translation>
-    </message>
-    <message>
-        <location line="+20"/>
+        <location line="+29"/>
         <source>Y (Multiple)</source>
         <translation>Y（多选）</translation>
     </message>
@@ -14973,28 +14767,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>时间</translation>
     </message>
     <message>
-        <location line="+12"/>
-        <source>Autoincrement series</source>
-        <translation>自增序列</translation>
-    </message>
-    <message>
-        <location line="+15"/>
-        <source>Initial value</source>
-        <translation>初始值</translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <location line="+14"/>
-        <source>1</source>
-        <translation>1</translation>
-    </message>
-    <message>
-        <location line="-7"/>
-        <source>Self increasing step size</source>
-        <translation>自增步长</translation>
-    </message>
-    <message>
-        <location line="+20"/>
+        <location line="+18"/>
         <source>Open</source>
         <translation>打开</translation>
     </message>
@@ -15935,38 +15708,12 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>X</translation>
     </message>
     <message>
-        <location line="+12"/>
-        <location line="+61"/>
-        <source>Autoincrement series</source>
-        <translation>自增序列</translation>
-    </message>
-    <message>
-        <location line="-46"/>
-        <location line="+75"/>
-        <source>Initial value</source>
-        <translation>初始值</translation>
-    </message>
-    <message>
-        <location line="-68"/>
-        <location line="+14"/>
-        <location line="+40"/>
-        <location line="+7"/>
-        <source>1</source>
-        <translation>1</translation>
-    </message>
-    <message>
-        <location line="-54"/>
-        <location line="+68"/>
-        <source>Self increasing step size</source>
-        <translation>自增步长</translation>
-    </message>
-    <message>
-        <location line="-48"/>
+        <location line="+18"/>
         <source>Y</source>
         <translation>Y</translation>
     </message>
     <message>
-        <location line="+67"/>
+        <location line="+24"/>
         <source>Error</source>
         <translation>错误</translation>
     </message>
@@ -15989,33 +15736,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>添加序列到 X</translation>
     </message>
     <message>
-        <location line="+25"/>
-        <location line="+86"/>
-        <source>Autoincrement series</source>
-        <translation>自增序列</translation>
-    </message>
-    <message>
-        <location line="-71"/>
-        <location line="+86"/>
-        <source>Initial value</source>
-        <translation>初始值</translation>
-    </message>
-    <message>
-        <location line="-79"/>
-        <location line="+14"/>
-        <location line="+72"/>
-        <location line="+14"/>
-        <source>1</source>
-        <translation>1</translation>
-    </message>
-    <message>
-        <location line="-93"/>
-        <location line="+86"/>
-        <source>Self increasing step size</source>
-        <translation>自增步长</translation>
-    </message>
-    <message>
-        <location line="-66"/>
+        <location line="+31"/>
         <source>Y</source>
         <translation>Y</translation>
     </message>
@@ -16025,7 +15746,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>添加序列到 Y</translation>
     </message>
     <message>
-        <location line="+87"/>
+        <location line="+44"/>
         <source>Drag the data into the corresponding list</source>
         <translation>把数据拖入对应的列表</translation>
     </message>
@@ -16067,23 +15788,6 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <location filename="../DAGui/Chart/DAChartManageWidget.ui" line="+14"/>
         <source>Chart Manage</source>
         <translation>图表管理</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/Chart/DAChartManageWidget.cpp" line="+104"/>
-        <source>Remove Chart</source>
-        <translation>删除坐标系</translation>
-    </message>
-    <message>
-        <location line="+20"/>
-        <location line="+16"/>
-        <source>Are you sure to remove chart &quot;%1&quot;? All its items will be removed.</source>
-        <translation>确认删除坐标系“%1”吗？其全部图元将一并移除。</translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <location line="+16"/>
-        <source>chart</source>
-        <translation>绘图</translation>
     </message>
 </context>
 <context>
@@ -16198,29 +15902,6 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     </message>
 </context>
 <context>
-    <name>DADataframeToVectorPointWidget</name>
-    <message>
-        <location filename="../DAGui/DADataframeToVectorPointWidget.ui" line="+14"/>
-        <source>Dataframe To Vector Point</source>
-        <translation>DataFrame 转矢量点</translation>
-    </message>
-    <message>
-        <location line="+12"/>
-        <source>x:</source>
-        <translation>x:</translation>
-    </message>
-    <message>
-        <location line="+18"/>
-        <source>y:</source>
-        <translation>y:</translation>
-    </message>
-    <message>
-        <location line="+14"/>
-        <source>data view</source>
-        <translation>数据视图</translation>
-    </message>
-</context>
-<context>
     <name>DADialogChartGuide</name>
     <message>
         <location filename="../DAGui/Dialog/DADialogChartGuide.ui" line="+14"/>
@@ -16291,24 +15972,6 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <location line="+7"/>
         <source>line 3D</source>
         <translation>3D线图</translation>
-    </message>
-</context>
-<context>
-    <name>DADialogDataFrameSeriesSelector</name>
-    <message>
-        <location filename="../DAGui/Dialog/DADialogDataFrameSeriesSelector.ui" line="+14"/>
-        <source>Dialog</source>
-        <translation>对话框</translation>
-    </message>
-    <message>
-        <location line="+13"/>
-        <source>Data</source>
-        <translation>数据</translation>
-    </message>
-    <message>
-        <location line="+24"/>
-        <source>Data preview</source>
-        <translation>数据预览</translation>
     </message>
 </context>
 <context>
@@ -16795,24 +16458,6 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <location line="+7"/>
         <source>ECDF</source>
         <translation>经验累积分布</translation>
-    </message>
-</context>
-<context>
-    <name>DADialogTableColumnView</name>
-    <message>
-        <location filename="../DAGui/Dialog/DADialogTableColumnView.ui" line="+14"/>
-        <source>Column View</source>
-        <translation>列视图</translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>Columns:</source>
-        <translation>列：</translation>
-    </message>
-    <message>
-        <location line="+16"/>
-        <source>Freeze Columns:</source>
-        <translation>冻结列数：</translation>
     </message>
 </context>
 <context>
@@ -17312,12 +16957,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>启动时显示启动画面</translation>
     </message>
     <message>
-        <location line="+26"/>
-        <source>Browse</source>
-        <translation>浏览</translation>
-    </message>
-    <message>
-        <location line="-16"/>
+        <location line="+10"/>
         <source>Script workspace</source>
         <translation>脚本工作区</translation>
     </message>
@@ -17327,7 +16967,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>工作区目录</translation>
     </message>
     <message>
-        <location line="+17"/>
+        <location line="+10"/>
         <source>Script execution timeout</source>
         <translation>脚本执行超时</translation>
     </message>
@@ -17502,11 +17142,6 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     </message>
     <message>
         <location line="+10"/>
-        <source>Browse</source>
-        <translation>浏览</translation>
-    </message>
-    <message>
-        <location line="+7"/>
         <source>Auto Detect</source>
         <translation>自动检测</translation>
     </message>
@@ -17521,17 +17156,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>额外模块搜索路径 (sys.path)</translation>
     </message>
     <message>
-        <location line="+11"/>
-        <source>Add</source>
-        <translation>添加</translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>Remove</source>
-        <translation>删除</translation>
-    </message>
-    <message>
-        <location line="+25"/>
+        <location line="+12"/>
         <source>Note: interpreter and module path changes take effect after restarting the program</source>
         <translation>注意：解释器和模块路径更改在重启程序后生效</translation>
     </message>
@@ -18176,12 +17801,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>导出数据设置</translation>
     </message>
     <message>
-        <location line="+11"/>
-        <source>Select Folder To Export</source>
-        <translation>选择导出文件夹</translation>
-    </message>
-    <message>
-        <location line="+21"/>
+        <location line="+14"/>
         <source>Export All</source>
         <translation>导出全部</translation>
     </message>
@@ -18261,12 +17881,12 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>网页格式。保留表格样式。适合在报告或邮件中嵌入数据。</translation>
     </message>
     <message>
-        <location filename="../../plugins/DataAnalysis/Dialogs/DataframeExportSettingsDialog.cpp" line="+74"/>
+        <location filename="../../plugins/DataAnalysis/Dialogs/DataframeExportSettingsDialog.cpp" line="+15"/>
         <source>Select Folder</source>
         <translation>选择文件夹</translation>
     </message>
     <message>
-        <location line="+18"/>
+        <location line="+62"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
@@ -18274,11 +17894,6 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <location line="+1"/>
         <source>Please select the folder for exporting data</source>
         <translation>请选择需要导出数据的文件夹</translation>
-    </message>
-    <message>
-        <location filename="../../plugins/DataAnalysis/Dialogs/DataframeExportSettingsDialog.cpp"/>
-        <source>Select Folder</source>
-        <translation>选择文件夹</translation>
     </message>
 </context>
 <context>
@@ -18350,7 +17965,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../APP/main.cpp" line="+188"/>
+        <location filename="../APP/main.cpp" line="+192"/>
         <source>Initializing...</source>
         <translation>正在初始化...</translation>
     </message>
@@ -18421,7 +18036,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>移除 DataFrame 列</translation>
     </message>
     <message>
-        <location line="+72"/>
+        <location line="+75"/>
         <source>change column type</source>
         <translation>改变列数据类型</translation>
     </message>
@@ -19312,21 +18927,6 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>数据查询</translation>
     </message>
     <message>
-        <location filename="../DAGui/DAFormEditorRegistry.cpp" line="+376"/>
-        <source>Add</source>
-        <translation>添加</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Remove</source>
-        <translation>删除</translation>
-    </message>
-    <message>
-        <location line="+23"/>
-        <source>New Item</source>
-        <translation>新项目</translation>
-    </message>
-    <message>
         <location filename="../DAPyScripts/DAPyScriptsStatistics.cpp" line="+17"/>
         <source>cannot import DAWorkbench.DAStatistics module</source>
         <translation>无法导入 DAWorkbench.DAStatistics 模块</translation>
@@ -19412,7 +19012,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>初始化脚本执行引擎失败：%1</translation>
     </message>
     <message>
-        <location filename="../DAFigure/DAChartTextEditorPopup.cpp" line="+80"/>
+        <location filename="../DAFigure/DARichTextEditWidget.cpp" line="+69"/>
         <source>Text Background Color</source>
         <translation>文字背景色</translation>
     </message>
@@ -19442,16 +19042,6 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>清除选中文本的字符格式</translation>
     </message>
     <message>
-        <location line="+19"/>
-        <source>Cancel</source>
-        <translation>取消</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>OK</source>
-        <translation>确定</translation>
-    </message>
-    <message>
         <location filename="../DAFigure/DAChartTextMarkerEditor.cpp" line="+128"/>
         <source>Text Marker</source>
         <translation>文本标注</translation>
@@ -19462,7 +19052,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>文本</translation>
     </message>
     <message>
-        <location filename="../DAGui/Agent/DAAgentDockWidget.cpp" line="-595"/>
+        <location filename="../DAGui/Agent/DAAgentDockWidget.cpp" line="-597"/>
         <source>(untitled)</source>
         <translation>（未命名）</translation>
     </message>
@@ -19625,13 +19215,13 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>编辑文本文档</translation>
     </message>
     <message>
-        <location filename="../DAGui/Commands/DACommandsDataFrame.cpp" line="-557"/>
+        <location filename="../DAGui/Commands/DACommandsDataFrame.cpp" line="-560"/>
         <location line="+10"/>
         <source>rename columns</source>
         <translation>重命名列</translation>
     </message>
     <message>
-        <location line="+63"/>
+        <location line="+66"/>
         <source>clear cells</source>
         <translation>清除单元格</translation>
     </message>
@@ -19814,65 +19404,6 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <location line="+9"/>
         <source>Disable the splash screen during startup, useful for debugging to avoid the splash window blocking the IDE</source>
         <translation>禁用启动画面，适用于调试时避免启动窗口遮挡IDE</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DACheckListWidget</name>
-    <message>
-        <location filename="../3rdparty/DAWidgets/src/DACheckListWidget.cpp"/>
-        <source>Search...</source>
-        <translation>搜索</translation>
-    </message>
-    <message>
-        <location filename="../3rdparty/DAWidgets/src/DACheckListWidget.cpp"/>
-        <source>Select All</source>
-        <translation>全选</translation>
-    </message>
-    <message>
-        <location filename="../3rdparty/DAWidgets/src/DACheckListWidget.cpp"/>
-        <source>Invert Selection</source>
-        <translation>反选</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DAStringListEditWidget</name>
-    <message>
-        <location filename="../3rdparty/DAWidgets/src/DAStringListEditWidget.cpp"/>
-        <source>Add</source>
-        <translation>添加</translation>
-    </message>
-    <message>
-        <location filename="../3rdparty/DAWidgets/src/DAStringListEditWidget.cpp"/>
-        <source>Remove</source>
-        <translation>删除</translation>
-    </message>
-    <message>
-        <location filename="../3rdparty/DAWidgets/src/DAStringListEditWidget.cpp"/>
-        <source>Up</source>
-        <translation>上移</translation>
-    </message>
-    <message>
-        <location filename="../3rdparty/DAWidgets/src/DAStringListEditWidget.cpp"/>
-        <source>Down</source>
-        <translation>下移</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DAChartAutoincrementSeriesWidget</name>
-    <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAutoincrementSeriesWidget.cpp"/>
-        <source>Autoincrement series</source>
-        <translation>自增序列</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAutoincrementSeriesWidget.cpp"/>
-        <source>Initial value</source>
-        <translation>初始值</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAutoincrementSeriesWidget.cpp"/>
-        <source>Self increasing step size</source>
-        <translation>自增步长</translation>
     </message>
 </context>
 </TS>

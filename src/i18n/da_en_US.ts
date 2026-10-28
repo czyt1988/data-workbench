@@ -222,13 +222,13 @@
     </message>
     <message>
         <location line="+3"/>
-        <location line="+191"/>
+        <location line="+193"/>
         <location line="+5"/>
         <source>New Session</source>
         <translation>New Session</translation>
     </message>
     <message>
-        <location line="-115"/>
+        <location line="-117"/>
         <source>Rename Session</source>
         <translation>Rename Session</translation>
     </message>
@@ -248,7 +248,7 @@
         <translation>Delete session &quot;%1&quot;? Its chat history will be removed.</translation>
     </message>
     <message>
-        <location line="+300"/>
+        <location line="+302"/>
         <source>Session &quot;%1&quot; is waiting for your input. What do you want to do?</source>
         <translation>Session &quot;%1&quot; is waiting for your input. What do you want to do?</translation>
     </message>
@@ -1347,12 +1347,7 @@
 <context>
     <name>DA::DAAgentSubagentEditDialog</name>
     <message>
-        <location filename="../APP/Dialog/DAAgentSubagentEditDialog.cpp" line="+61"/>
-        <source>Unregistered tool (kept in definition)</source>
-        <translation>Unregistered tool (kept in definition)</translation>
-    </message>
-    <message>
-        <location line="+3"/>
+        <location filename="../APP/Dialog/DAAgentSubagentEditDialog.cpp" line="+77"/>
         <source>Edit Subagent</source>
         <translation>Edit Subagent</translation>
     </message>
@@ -3165,7 +3160,7 @@
 <context>
     <name>DA::DAAppApplicationWidget</name>
     <message>
-        <location filename="../APP/DAAppApplicationWidget.cpp" line="+491"/>
+        <location filename="../APP/DAAppApplicationWidget.cpp" line="+492"/>
         <source>(untitled project)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3343,28 +3338,28 @@
     </message>
     <message>
         <location line="+19"/>
-        <location line="+1046"/>
+        <location line="+1065"/>
         <source>Warning</source>
         <translation>Warning</translation>
     </message>
     <message>
-        <location line="-1035"/>
+        <location line="-1053"/>
         <source>Failed to save project! Path: %1</source>
         <translation>Failed to save project! Path: %1</translation>
     </message>
     <message>
         <location line="+3"/>
-        <location line="+652"/>
+        <location line="+659"/>
         <source>Project saved successfully, path: %1</source>
         <translation>Project saved successfully, path: %1</translation>
     </message>
     <message>
-        <location line="-154"/>
+        <location line="-155"/>
         <source>The current project has unsaved changes. Do you want to save before creating a new project?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+16"/>
+        <location line="+17"/>
         <source>New project created</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3374,7 +3369,7 @@
         <translation>Project loaded successfully, path: %1</translation>
     </message>
     <message>
-        <location line="+323"/>
+        <location line="+334"/>
         <source>Image saved successfully to %1</source>
         <translation>Image saved successfully to %1</translation>
     </message>
@@ -3501,63 +3496,63 @@
         <translation>Before creating a new coordinate, you need to create a figure</translation>
     </message>
     <message>
-        <location line="-1812"/>
+        <location line="-1830"/>
         <source>Please select the data operation window</source>
         <translation>Please select the data operation window</translation>
     </message>
     <message>
-        <location line="-50"/>
-        <location line="+561"/>
+        <location line="-51"/>
+        <location line="+569"/>
         <location line="+73"/>
         <source>Project File</source>
         <translation>Project File</translation>
     </message>
     <message>
-        <location line="-616"/>
+        <location line="-624"/>
         <source>Whether to overwrite the file: %1</source>
         <translation>Whether to overwrite the file: %1</translation>
     </message>
     <message>
-        <location line="+470"/>
-        <location line="+19"/>
-        <location line="+21"/>
+        <location line="+475"/>
+        <location line="+20"/>
+        <location line="+22"/>
         <source>Question</source>
         <translation>Question</translation>
     </message>
     <message>
-        <location line="-39"/>
+        <location line="-41"/>
         <source>The current project has unsaved changes. Do you want to save before opening another project?</source>
         <translation>The current project has unsaved changes. Do you want to save before opening another project?</translation>
     </message>
     <message>
-        <location line="+19"/>
+        <location line="+20"/>
         <source>Another project already exists. Do you want to replace it?</source>
         <translation>Another project already exists. Do you want to replace it?</translation>
     </message>
     <message>
-        <location line="+100"/>
+        <location line="+102"/>
         <location line="+43"/>
         <source>Failed to load project file: %1</source>
         <translation>Failed to load project file: %1</translation>
     </message>
     <message>
-        <location line="+308"/>
+        <location line="+319"/>
         <source>Image files</source>
         <translation>Image files</translation>
     </message>
     <message>
-        <location line="-373"/>
-        <location line="+374"/>
+        <location line="-384"/>
+        <location line="+385"/>
         <source>Any files</source>
         <translation>Any files</translation>
     </message>
     <message>
-        <location line="-375"/>
+        <location line="-386"/>
         <source>Markdown files</source>
         <translation>Markdown files</translation>
     </message>
     <message>
-        <location line="+472"/>
+        <location line="+483"/>
         <source>Received null project interface</source>
         <translation>Received null project interface</translation>
     </message>
@@ -3568,12 +3563,12 @@
         <translation>No cells selected to copy</translation>
     </message>
     <message>
-        <location line="-1456"/>
+        <location line="-1475"/>
         <source>No active table</source>
         <translation>No active table</translation>
     </message>
     <message>
-        <location line="+1844"/>
+        <location line="+1863"/>
         <source>Cannot rename a series, please select a dataset</source>
         <translation>Cannot rename a series, please select a dataset</translation>
     </message>
@@ -3583,7 +3578,7 @@
         <translation>Figure &apos;%1&apos; not found, it may have been closed or renamed</translation>
     </message>
     <message>
-        <location line="+809"/>
+        <location line="+825"/>
         <source>Rename Column</source>
         <translation>Rename Column</translation>
     </message>
@@ -3623,7 +3618,7 @@
         <translation>Column [%1] minimum value at row %2</translation>
     </message>
     <message>
-        <location line="+568"/>
+        <location line="+595"/>
         <source>Export</source>
         <translation>Export</translation>
     </message>
@@ -3663,12 +3658,12 @@
         <translation>The selected data source is empty</translation>
     </message>
     <message>
-        <location line="-2648"/>
+        <location line="-2691"/>
         <source>Before running the workflow, you need to save the project</source>
         <translation>Before running the workflow, you need to save the project</translation>
     </message>
     <message>
-        <location line="+1964"/>
+        <location line="+1980"/>
         <source>Please select a column first</source>
         <translation>Please select a column first</translation>
     </message>
@@ -4665,7 +4660,7 @@
         <translation>Label Color</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+6"/>
         <source>Numbers</source>
         <translation>Numbers</translation>
     </message>
@@ -4680,7 +4675,7 @@
         <translation>Number Color</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+6"/>
         <source>Range</source>
         <translation>Range</translation>
     </message>
@@ -4991,7 +4986,7 @@
         <translation>Label Font</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+7"/>
         <source>Ticks</source>
         <translation>Ticks</translation>
     </message>
@@ -5054,212 +5049,6 @@
         <location line="+2"/>
         <source>Line Smooth</source>
         <translation>Line Smooth</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DAChart3DItemSettingPanel</name>
-    <message>
-        <location filename="../DAGui/Chart3DSetting/DAChart3DItemSettingPanel.cpp" line="+72"/>
-        <source>No Plot</source>
-        <translation>No Plot</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <location line="+99"/>
-        <source>Wireframe</source>
-        <translation>Wireframe</translation>
-    </message>
-    <message>
-        <location line="-98"/>
-        <source>Hidden Line</source>
-        <translation>Hidden Line</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <location line="+95"/>
-        <source>Filled</source>
-        <translation>Filled</translation>
-    </message>
-    <message>
-        <location line="-94"/>
-        <location line="+95"/>
-        <source>Filled Mesh</source>
-        <translation>Filled Mesh</translation>
-    </message>
-    <message>
-        <location line="-94"/>
-        <source>Points</source>
-        <translation>Points</translation>
-    </message>
-    <message>
-        <location line="+17"/>
-        <source>Flat</source>
-        <translation>Flat</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Gouraud</source>
-        <translation>Gouraud</translation>
-    </message>
-    <message>
-        <location line="+17"/>
-        <source>No Floor</source>
-        <translation>No Floor</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Isoline</source>
-        <translation>Isoline</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Data</source>
-        <translation>Data</translation>
-    </message>
-    <message>
-        <location line="+17"/>
-        <source>No Coord</source>
-        <translation>No Coord</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Box</source>
-        <translation>Box</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Frame</source>
-        <translation>Frame</translation>
-    </message>
-    <message>
-        <location line="+17"/>
-        <source>Linear</source>
-        <translation>Linear</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Log10</source>
-        <translation>Log10</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>User</source>
-        <translation>User</translation>
-    </message>
-    <message>
-        <location line="+38"/>
-        <source>Lines</source>
-        <translation>Lines</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Tube</source>
-        <translation>Tube</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Dots</source>
-        <translation>Dots</translation>
-    </message>
-    <message>
-        <location line="+18"/>
-        <source>Dot</source>
-        <translation>Dot</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Cube</source>
-        <translation>Cube</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Tetrahedron</source>
-        <translation>Tetrahedron</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Octahedron</source>
-        <translation>Octahedron</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Sphere</source>
-        <translation>Sphere</translation>
-    </message>
-    <message>
-        <location line="+17"/>
-        <source>Default</source>
-        <translation>Default</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Dark</source>
-        <translation>Dark</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Scientific</source>
-        <translation>Scientific</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Warm</source>
-        <translation>Warm</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Cool</source>
-        <translation>Cool</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Matplotlib</source>
-        <translation>Matplotlib</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Earth Tones</source>
-        <translation>Earth Tones</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Ocean</source>
-        <translation>Ocean</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>High Contrast</source>
-        <translation>High Contrast</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Presentation</source>
-        <translation>Presentation</translation>
-    </message>
-    <message>
-        <location line="+17"/>
-        <source>No Lighting</source>
-        <translation>No Lighting</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Flat Light</source>
-        <translation>Flat Light</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Studio</source>
-        <translation>Studio</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Outdoor</source>
-        <translation>Outdoor</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Soft</source>
-        <translation>Soft</translation>
     </message>
 </context>
 <context>
@@ -5403,7 +5192,7 @@
         <translation>Title Color</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+6"/>
         <source>Background</source>
         <translation>Background</translation>
     </message>
@@ -5779,19 +5568,19 @@
 <context>
     <name>DA::DAChartAddBoxChartWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddBoxChartWidget.cpp" line="+77"/>
-        <location line="+18"/>
+        <location filename="../DAGui/ChartAddItem/DAChartAddBoxChartWidget.cpp" line="+79"/>
+        <location line="+16"/>
         <location line="+28"/>
         <source>Warning</source>
         <translation>Warning</translation>
     </message>
     <message>
-        <location line="-45"/>
+        <location line="-43"/>
         <source>Please select a dataframe</source>
         <translation>Please select a dataframe</translation>
     </message>
     <message>
-        <location line="+18"/>
+        <location line="+16"/>
         <source>Please select at least one column</source>
         <translation>Please select at least one column</translation>
     </message>
@@ -5883,19 +5672,13 @@
 <context>
     <name>DA::DAChartAddMultiBarWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddMultiBarWidget.cpp" line="+84"/>
-        <location line="+9"/>
+        <location filename="../DAGui/ChartAddItem/DAChartAddMultiBarWidget.cpp" line="+90"/>
         <location line="+26"/>
         <source>Warning</source>
         <translation>Warning</translation>
     </message>
     <message>
-        <location line="-34"/>
-        <source>The initial value and step of x auto increment must be floating-point numbers</source>
-        <translation>The initial value and step of x auto increment must be floating-point numbers</translation>
-    </message>
-    <message>
-        <location line="+8"/>
+        <location line="-26"/>
         <source>Please drag a series into the X list</source>
         <translation>Please drag a series into the X list</translation>
     </message>
@@ -5918,7 +5701,7 @@
 <context>
     <name>DA::DAChartAddOHLCSeriesWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddOHLCSeriesWidget.cpp" line="+36"/>
+        <location filename="../DAGui/ChartAddItem/DAChartAddOHLCSeriesWidget.cpp" line="+37"/>
         <location line="+9"/>
         <source>Time</source>
         <translation>Time</translation>
@@ -5948,9 +5731,7 @@
         <translation>Close</translation>
     </message>
     <message>
-        <location line="+166"/>
-        <location line="+8"/>
-        <location line="+43"/>
+        <location line="+202"/>
         <location line="+6"/>
         <location line="+6"/>
         <location line="+6"/>
@@ -5964,17 +5745,7 @@
         <translation>Warning</translation>
     </message>
     <message>
-        <location line="-134"/>
-        <source>The initial value of t auto increment series must be a floating-point arithmetic number</source>
-        <translation>The initial value of t auto increment series must be a floating-point arithmetic number</translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>The step value of t auto increment series must be a floating-point arithmetic number</source>
-        <translation>The step value of t auto increment series must be a floating-point arithmetic number</translation>
-    </message>
-    <message>
-        <location line="+43"/>
+        <location line="-83"/>
         <location line="+66"/>
         <source>open value must be a series</source>
         <translation>open value must be a series</translation>
@@ -6289,7 +6060,7 @@
 <context>
     <name>DA::DAChartAddXYESeriesWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddXYESeriesWidget.cpp" line="+20"/>
+        <location filename="../DAGui/ChartAddItem/DAChartAddXYESeriesWidget.cpp" line="+21"/>
         <source>x</source>
         <translation>x</translation>
     </message>
@@ -6319,11 +6090,7 @@
         <translation>Error</translation>
     </message>
     <message>
-        <location line="+154"/>
-        <location line="+8"/>
-        <location line="+23"/>
-        <location line="+9"/>
-        <location line="+23"/>
+        <location line="+186"/>
         <location line="+26"/>
         <location line="+23"/>
         <location line="+15"/>
@@ -6336,27 +6103,7 @@
         <translation>Warning</translation>
     </message>
     <message>
-        <location line="-181"/>
-        <source>The initial value of x auto increment series must be a floating-point arithmetic number</source>
-        <translation>The initial value of x auto increment series must be a floating-point arithmetic number</translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>The step value of x auto increment series must be a floating-point arithmetic number</source>
-        <translation>The step value of x auto increment series must be a floating-point arithmetic number</translation>
-    </message>
-    <message>
-        <location line="+23"/>
-        <source>The initial value of y auto increment series must be a floating-point arithmetic number</source>
-        <translation>The initial value of y auto increment series must be a floating-point arithmetic number</translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>The step value of y auto increment series must be a floating-point arithmetic number</source>
-        <translation>The step value of y auto increment series must be a floating-point arithmetic number</translation>
-    </message>
-    <message>
-        <location line="+23"/>
+        <location line="-118"/>
         <source>x and y cannot be set to autoincrement at the same time</source>
         <translation>x and y cannot be set to autoincrement at the same time</translation>
     </message>
@@ -6403,7 +6150,7 @@
 <context>
     <name>DA::DAChartAddXYSeriesWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddXYSeriesWidget.cpp" line="+25"/>
+        <location filename="../DAGui/ChartAddItem/DAChartAddXYSeriesWidget.cpp" line="+26"/>
         <source>x</source>
         <translation>x</translation>
     </message>
@@ -6414,17 +6161,17 @@
     </message>
     <message>
         <location line="+11"/>
-        <location line="+190"/>
+        <location line="+198"/>
         <source>Warning</source>
         <translation>Warning</translation>
     </message>
     <message>
-        <location line="-189"/>
+        <location line="-197"/>
         <source>Only one series can be used as x, the extra series were ignored</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+147"/>
+        <location line="+155"/>
         <source>The initial value of x auto increment series must be a floating-point arithmetic number</source>
         <translation>The initial value of x auto increment series must be a floating-point arithmetic number</translation>
     </message>
@@ -6673,6 +6420,24 @@
     </message>
 </context>
 <context>
+    <name>DA::DAChartAutoincrementSeriesWidget</name>
+    <message>
+        <location filename="../DAGui/ChartAddItem/DAChartAutoincrementSeriesWidget.cpp" line="+31"/>
+        <source>Autoincrement series</source>
+        <translation>Autoincrement series</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Initial value</source>
+        <translation>Initial value</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Self increasing step size</source>
+        <translation>Self increasing step size</translation>
+    </message>
+</context>
+<context>
     <name>DA::DAChartAxisSettingPanel</name>
     <message>
         <location filename="../DAGui/ChartSetting/DAChartAxisSettingPanel.cpp" line="+192"/>
@@ -6705,7 +6470,7 @@
         <translation>Label Font Color</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+3"/>
         <source>Label Alignment</source>
         <translation>Label Alignment</translation>
     </message>
@@ -7070,32 +6835,32 @@
         <translation>Style</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+6"/>
         <source>No Frame</source>
         <translation>No Frame</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+1"/>
         <source>Box</source>
         <translation>Box</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+1"/>
         <source>Panel</source>
         <translation>Panel</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+1"/>
         <source>Styled Panel</source>
         <translation>Styled Panel</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+1"/>
         <source>Win Panel</source>
         <translation>Win Panel</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="-5"/>
         <source>Frame Shape</source>
         <translation>Frame Shape</translation>
     </message>
@@ -7982,7 +7747,7 @@
         <translation>Font Color</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+3"/>
         <source>Background Brush</source>
         <translation>Background Brush</translation>
     </message>
@@ -7990,8 +7755,8 @@
 <context>
     <name>DA::DAChartManageWidget</name>
     <message>
-        <location filename="../DAGui/Chart/DAChartManageWidget.cpp" line="+98"/>
-        <location line="+609"/>
+        <location filename="../DAGui/Chart/DAChartManageWidget.cpp" line="+99"/>
+        <location line="+619"/>
         <location line="+17"/>
         <location line="+20"/>
         <location line="+22"/>
@@ -8001,19 +7766,26 @@
         <translation>Rename</translation>
     </message>
     <message>
-        <location line="-703"/>
+        <location line="-713"/>
         <source>Visible</source>
         <translation>Visible</translation>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+807"/>
+        <location line="+817"/>
         <location line="+24"/>
         <source>Delete</source>
         <translation>Delete</translation>
     </message>
     <message>
-        <location line="-826"/>
+        <location line="-839"/>
+        <location line="+888"/>
+        <location line="+20"/>
+        <source>Remove Chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-903"/>
         <source>Transfer</source>
         <translation>Transfer</translation>
     </message>
@@ -8023,7 +7795,7 @@
         <translation>Setting</translation>
     </message>
     <message>
-        <location line="+95"/>
+        <location line="+103"/>
         <source>figure</source>
         <translation>figure</translation>
     </message>
@@ -8038,13 +7810,21 @@
         <translation>received figure close signal, but cannot find figure index</translation>
     </message>
     <message>
-        <location line="-299"/>
+        <location line="+465"/>
+        <location line="+20"/>
+        <source>Are you sure to remove chart &quot;%1&quot;? All its items will be removed.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-784"/>
         <location line="+485"/>
+        <location line="+275"/>
+        <location line="+20"/>
         <source>chart</source>
         <translation>chart</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="-290"/>
         <location line="+17"/>
         <location line="+20"/>
         <location line="+22"/>
@@ -8310,7 +8090,7 @@
         <translation>Title Color</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+5"/>
         <source>Footer</source>
         <translation>Footer</translation>
     </message>
@@ -8778,6 +8558,19 @@
     </message>
 </context>
 <context>
+    <name>DA::DAChartTextEditorPopup</name>
+    <message>
+        <location filename="../DAFigure/DAChartTextEditorPopup.cpp" line="+71"/>
+        <source>Cancel</source>
+        <translation type="unfinished">Cancel</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>OK</source>
+        <translation type="unfinished">OK</translation>
+    </message>
+</context>
+<context>
     <name>DA::DAChartTextLabelSettingPanel</name>
     <message>
         <location filename="../DAGui/ChartSetting/DAChartTextLabelSettingPanel.cpp" line="+47"/>
@@ -8825,7 +8618,7 @@
         <translation>Text Color</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+3"/>
         <source>Alignment</source>
         <translation>Alignment</translation>
     </message>
@@ -8913,7 +8706,7 @@
         <translation>Text Color</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+3"/>
         <source>Alignment</source>
         <translation>Alignment</translation>
     </message>
@@ -9218,6 +9011,24 @@
     </message>
 </context>
 <context>
+    <name>DA::DACheckListWidget</name>
+    <message>
+        <location filename="../3rdparty/DAWidgets/src/DACheckListWidget.cpp" line="+63"/>
+        <source>Search...</source>
+        <translation>Search...</translation>
+    </message>
+    <message>
+        <location line="+16"/>
+        <source>Select All</source>
+        <translation>Select All</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Invert Selection</source>
+        <translation>Invert Selection</translation>
+    </message>
+</context>
+<context>
     <name>DA::DACoreInterface</name>
     <message>
         <location filename="../DAInterface/DACoreInterface.cpp" line="+59"/>
@@ -9397,12 +9208,12 @@
     </message>
     <message>
         <location line="-418"/>
-        <location line="+480"/>
+        <location line="+481"/>
         <source>Delete All</source>
         <translation>Delete All</translation>
     </message>
     <message>
-        <location line="-404"/>
+        <location line="-405"/>
         <location line="+107"/>
         <location line="+85"/>
         <source>Chart %1</source>
@@ -9432,7 +9243,7 @@
         <translation>Are you sure to delete this column?</translation>
     </message>
     <message>
-        <location line="+62"/>
+        <location line="+63"/>
         <source>Are you sure to delete all columns? This cannot be undone.</source>
         <translation>Are you sure to delete all columns? This cannot be undone.</translation>
     </message>
@@ -9533,7 +9344,7 @@
 <context>
     <name>DA::DADataOperateOfDataFrameWidget</name>
     <message>
-        <location filename="../DAGui/DADataOperateOfDataFrameWidget.cpp" line="+709"/>
+        <location filename="../DAGui/DADataOperateOfDataFrameWidget.cpp" line="+730"/>
         <source>Warning</source>
         <translation>Warning</translation>
     </message>
@@ -9548,31 +9359,31 @@
         <translation>Please select valid data cells</translation>
     </message>
     <message>
-        <location line="+61"/>
-        <location line="+410"/>
+        <location line="+57"/>
+        <location line="+506"/>
         <location line="+40"/>
         <location line="+46"/>
         <location line="+47"/>
-        <location line="+1936"/>
+        <location line="+2129"/>
         <location line="+24"/>
         <source>Please select a valid column</source>
         <translation>Please select a valid column</translation>
     </message>
     <message>
-        <location line="-2415"/>
-        <location line="+1997"/>
+        <location line="-2621"/>
+        <location line="+2203"/>
         <location line="+63"/>
         <location line="+47"/>
         <source>Please select a valid cell</source>
         <translation>Please select a valid cell</translation>
     </message>
     <message>
-        <location line="-2043"/>
+        <location line="-2249"/>
         <source>Clipboard is empty</source>
         <translation>Clipboard is empty</translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location line="+15"/>
         <source>Please select a cell to paste into</source>
         <translation>Please select a cell to paste into</translation>
     </message>
@@ -9612,13 +9423,13 @@
         <translation>Column name &quot;%1&quot; already exists, please use another name</translation>
     </message>
     <message>
-        <location line="+238"/>
+        <location line="+247"/>
         <location line="+4"/>
         <source>Unable to get statistics for this column</source>
         <translation>Unable to get statistics for this column</translation>
     </message>
     <message>
-        <location line="+2069"/>
+        <location line="+2262"/>
         <source>This data source is read-only and cannot be sorted.</source>
         <translation>This data source is read-only and cannot be sorted.</translation>
     </message>
@@ -9694,12 +9505,12 @@
         <translation>The formula must not reference the target column itself</translation>
     </message>
     <message>
-        <location line="-3922"/>
+        <location line="-4132"/>
         <source>Computed column(s) %1 became invalid because their dependency column(s) were removed</source>
         <translation>Computed column(s) %1 became invalid because their dependency column(s) were removed</translation>
     </message>
     <message>
-        <location line="+4343"/>
+        <location line="+4553"/>
         <source>Computed column(s) %1 became invalid because their dependency column(s) were merged</source>
         <translation>Computed column(s) %1 became invalid because their dependency column(s) were merged</translation>
     </message>
@@ -9810,7 +9621,22 @@
         <translation>(no table metadata to clear)</translation>
     </message>
     <message>
-        <location line="-1420"/>
+        <location line="-2871"/>
+        <source>Freeze the first N columns (0 = no freeze):</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+163"/>
+        <source>Column names must be unique</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+34"/>
+        <source>Rename and update column view</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1254"/>
         <source>The table has no conditional format rules</source>
         <translation>The table has no conditional format rules</translation>
     </message>
@@ -10140,38 +9966,33 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation>This table has no notes</translation>
     </message>
     <message>
-        <location line="-4049"/>
+        <location line="-4242"/>
         <source>Some column view settings were dropped because the table columns have changed.</source>
         <translation>Some column view settings were dropped because the table columns have changed.</translation>
     </message>
     <message>
-        <location line="+74"/>
+        <location line="+71"/>
         <source>Frozen columns were reduced because visible columns changed.</source>
         <translation>Frozen columns were reduced because visible columns changed.</translation>
     </message>
     <message>
-        <location line="+338"/>
+        <location line="+448"/>
         <source>Freeze Columns</source>
         <translation>Freeze Columns</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Freeze the first N visible columns (0 = no freeze):</source>
-        <translation>Freeze the first N visible columns (0 = no freeze):</translation>
-    </message>
-    <message>
-        <location line="+119"/>
+        <location line="+126"/>
         <source>Column View...</source>
         <translation>Column View...</translation>
     </message>
     <message>
-        <location line="-894"/>
+        <location line="-1007"/>
         <location line="+65"/>
         <source>The column &quot;%1&quot; was hidden and has been made visible</source>
         <translation>The column &quot;%1&quot; was hidden and has been made visible</translation>
     </message>
     <message>
-        <location line="+866"/>
+        <location line="+1059"/>
         <source>Row number is out of range</source>
         <translation>Row number is out of range</translation>
     </message>
@@ -10358,24 +10179,6 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <location line="+1"/>
         <source>Clear All Notes</source>
         <translation>Clear All Notes</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DADataframeToVectorPointWidget</name>
-    <message>
-        <location filename="../DAGui/DADataframeToVectorPointWidget.cpp" line="+15"/>
-        <source>x</source>
-        <translation>x</translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>y</source>
-        <translation>y</translation>
-    </message>
-    <message>
-        <location line="+60"/>
-        <source>Exception occurred during extraction from pandas.Series to double vector: %1</source>
-        <translation>Exception occurred during extraction from pandas.Series to double vector: %1</translation>
     </message>
 </context>
 <context>
@@ -11751,6 +11554,54 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     </message>
 </context>
 <context>
+    <name>DA::DADialogTableColumnView</name>
+    <message>
+        <location filename="../DAGui/Dialog/DADialogTableColumnView.cpp" line="+58"/>
+        <source>Column View</source>
+        <translation type="unfinished">Column View</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Search...</source>
+        <translation type="unfinished">Search...</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Column</source>
+        <translation type="unfinished">Column</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Hidden</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Frozen</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>Show All</source>
+        <translation type="unfinished">Show All</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Unhide all columns</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Unfreeze All</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Remove column freezing</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DA::DADialogTableDisplayFormat</name>
     <message>
         <location filename="../DAGui/Dialog/DADialogTableDisplayFormat.cpp" line="+101"/>
@@ -12241,7 +12092,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DA::DAItemListEditWidget</name>
     <message>
-        <location filename="../3rdparty/DAWidgets/src/DAItemListEditWidget.cpp" line="+67"/>
+        <location filename="../3rdparty/DAWidgets/src/DAItemListEditWidget.cpp" line="+74"/>
         <source>Add</source>
         <translation>Add</translation>
     </message>
@@ -12257,12 +12108,22 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation>Remove all selected items?</translation>
     </message>
     <message>
-        <location line="+44"/>
+        <location line="+19"/>
+        <source>Up</source>
+        <translation type="unfinished">Up</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Down</source>
+        <translation type="unfinished">Down</translation>
+    </message>
+    <message>
+        <location line="+33"/>
         <source>Remove</source>
         <translation>Remove</translation>
     </message>
     <message>
-        <location line="+58"/>
+        <location line="+98"/>
         <source>No available items</source>
         <translation>No available items</translation>
     </message>
@@ -12270,14 +12131,9 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DA::DAItemListPickDialog</name>
     <message>
-        <location filename="../3rdparty/DAWidgets/src/DAItemListPickDialog.cpp" line="+30"/>
+        <location filename="../3rdparty/DAWidgets/src/DAItemListPickDialog.cpp" line="+26"/>
         <source>Select Items</source>
         <translation>Select Items</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>Search...</source>
-        <translation>Search...</translation>
     </message>
 </context>
 <context>
@@ -12396,7 +12252,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DA::DAMarkdownView</name>
     <message>
-        <location filename="../DAGui/MarkdownView/DAMarkdownView.cpp" line="+326"/>
+        <location filename="../DAGui/MarkdownView/DAMarkdownView.cpp" line="+325"/>
         <source>Copy</source>
         <translation>Copy</translation>
     </message>
@@ -12441,7 +12297,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation>Markdown Source</translation>
     </message>
     <message>
-        <location line="+31"/>
+        <location line="+29"/>
         <source>Save Markdown</source>
         <translation>Save Markdown</translation>
     </message>
@@ -12606,7 +12462,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DA::DAModelFetchDialog</name>
     <message>
-        <location filename="../APP/Dialog/DAModelFetchDialog.cpp" line="+33"/>
+        <location filename="../APP/Dialog/DAModelFetchDialog.cpp" line="+34"/>
         <source>Available Models</source>
         <translation>Available Models</translation>
     </message>
@@ -12616,17 +12472,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation>Select models to add:</translation>
     </message>
     <message>
-        <location line="+6"/>
-        <source>Select All</source>
-        <translation>Select All</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Deselect All</source>
-        <translation>Deselect All</translation>
-    </message>
-    <message>
-        <location line="+9"/>
+        <location line="+8"/>
         <source>OK</source>
         <translation>OK</translation>
     </message>
@@ -13346,17 +13192,17 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     </message>
     <message>
         <location line="+267"/>
-        <location line="+392"/>
+        <location line="+393"/>
         <source>Question</source>
         <translation>Question</translation>
     </message>
     <message>
-        <location line="-391"/>
+        <location line="-392"/>
         <source>Confirm to delete workflow:%1</source>
         <translation>Confirm to delete workflow:%1</translation>
     </message>
     <message>
-        <location line="+142"/>
+        <location line="+143"/>
         <location line="+13"/>
         <location line="+13"/>
         <source>Missing view</source>
@@ -13371,12 +13217,12 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <location line="+13"/>
         <location line="+13"/>
         <location line="+13"/>
-        <location line="+513"/>
+        <location line="+515"/>
         <source>No active workflow detected</source>
         <translation>No active workflow detected</translation>
     </message>
     <message>
-        <location line="-590"/>
+        <location line="-592"/>
         <source>Workflow execution failed</source>
         <translation>Workflow execution failed</translation>
     </message>
@@ -13391,7 +13237,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation>Confirm to close workflow</translation>
     </message>
     <message>
-        <location line="+253"/>
+        <location line="+255"/>
         <location line="+1"/>
         <source>Copy</source>
         <translation>Copy</translation>
@@ -13602,7 +13448,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation> s</translation>
     </message>
     <message>
-        <location line="-8"/>
+        <location line="-9"/>
         <source> day</source>
         <translation> day</translation>
     </message>
@@ -13613,7 +13459,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     </message>
     <message>
         <location line="+1"/>
-        <location line="+5"/>
+        <location line="+6"/>
         <source>Disabled</source>
         <translation>Disabled</translation>
     </message>
@@ -13623,14 +13469,9 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation>Empty for system temporary directory</translation>
     </message>
     <message>
-        <location line="+66"/>
+        <location line="+62"/>
         <source>Advanced</source>
         <translation>Advanced</translation>
-    </message>
-    <message>
-        <location line="+64"/>
-        <source>Select script workspace directory</source>
-        <translation>Select script workspace directory</translation>
     </message>
 </context>
 <context>
@@ -13706,12 +13547,12 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation>This operation will delete the file that records the window state information. After deleting the file, if the window state information recording is not enabled, the window will open in the default layout</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+9"/>
         <source>Successfully removed window state record file</source>
         <translation>Successfully removed window state record file</translation>
     </message>
     <message>
-        <location line="-177"/>
+        <location line="-179"/>
         <source>Top</source>
         <translation>Top</translation>
     </message>
@@ -13787,22 +13628,17 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DA::DASettingPagePython</name>
     <message>
-        <location filename="../APP/SettingPages/DASettingPagePython.cpp" line="+60"/>
+        <location filename="../APP/SettingPages/DASettingPagePython.cpp" line="+72"/>
         <source>Cannot write python config file: %1</source>
         <translation>Cannot write python config file: %1</translation>
     </message>
     <message>
-        <location line="+29"/>
+        <location line="+30"/>
         <source>Python</source>
         <translation>Python</translation>
     </message>
     <message>
-        <location line="+43"/>
-        <source>Select Python Interpreter</source>
-        <translation>Select Python Interpreter</translation>
-    </message>
-    <message>
-        <location line="+12"/>
+        <location line="+46"/>
         <source>Information</source>
         <translation>Information</translation>
     </message>
@@ -13837,7 +13673,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation>Select module search path</translation>
     </message>
     <message>
-        <location filename="../APP/SettingPages/DASettingPagePython.cpp"/>
+        <location line="-153"/>
         <source>Add module search paths...</source>
         <translation>Add module search paths...</translation>
     </message>
@@ -13845,7 +13681,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DA::DASettingPageShortcuts</name>
     <message>
-        <location filename="../APP/SettingPages/DASettingPageShortcuts.cpp" line="+64"/>
+        <location filename="../APP/SettingPages/DASettingPageShortcuts.cpp" line="+65"/>
         <source>Shortcuts</source>
         <translation>Shortcuts</translation>
     </message>
@@ -13935,7 +13771,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation>Other</translation>
     </message>
     <message>
-        <location line="+101"/>
+        <location line="+103"/>
         <source>Reset to Default</source>
         <translation>Reset to Default</translation>
     </message>
@@ -13945,7 +13781,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation>Clear Shortcut</translation>
     </message>
     <message>
-        <location line="-457"/>
+        <location line="-459"/>
         <source>Failed to save shortcut settings</source>
         <translation>Failed to save shortcut settings</translation>
     </message>
@@ -13989,6 +13825,29 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <location line="+2"/>
         <source>Switch to Chart Mode</source>
         <translation>Switch to Chart Mode</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAStringListEditWidget</name>
+    <message>
+        <location filename="../3rdparty/DAWidgets/src/DAStringListEditWidget.cpp" line="+72"/>
+        <source>Add</source>
+        <translation>Add</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Remove</source>
+        <translation>Remove</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Up</source>
+        <translation>Up</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Down</source>
+        <translation>Down</translation>
     </message>
 </context>
 <context>
@@ -14305,12 +14164,12 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DA::DAUndoHistoryWidget</name>
     <message>
-        <location filename="../3rdparty/DAWidgets/src/DAUndoHistoryWidget.cpp"/>
+        <location filename="../3rdparty/DAWidgets/src/DAUndoHistoryWidget.cpp" line="+22"/>
         <source>Undo depth:</source>
         <translation>Undo depth:</translation>
     </message>
     <message>
-        <location filename="../3rdparty/DAWidgets/src/DAUndoHistoryWidget.cpp"/>
+        <location line="+5"/>
         <source>Maximum number of undo steps kept per table page (larger uses more memory for swap-type commands)</source>
         <translation>Maximum number of undo steps kept per table page (larger uses more memory for swap-type commands)</translation>
     </message>
@@ -14598,7 +14457,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-3750"/>
+        <location filename="../APP/DAAppController.cpp" line="-3785"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>
@@ -14819,50 +14678,6 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     </message>
 </context>
 <context>
-    <name>DAChartAddCurveWidget</name>
-    <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddCurveWidget.ui" line="+14"/>
-        <source>Add XY Series</source>
-        <translation>Add XY Series</translation>
-    </message>
-    <message>
-        <location line="+22"/>
-        <source>X</source>
-        <translation>X</translation>
-    </message>
-    <message>
-        <location line="+12"/>
-        <location line="+61"/>
-        <source>Autoincrement series</source>
-        <translation>Autoincrement series</translation>
-    </message>
-    <message>
-        <location line="-46"/>
-        <location line="+61"/>
-        <source>Initial value</source>
-        <translation>Initial value</translation>
-    </message>
-    <message>
-        <location line="-54"/>
-        <location line="+14"/>
-        <location line="+47"/>
-        <location line="+14"/>
-        <source>1</source>
-        <translation>1</translation>
-    </message>
-    <message>
-        <location line="-68"/>
-        <location line="+61"/>
-        <source>Self increasing step size</source>
-        <translation>Self increasing step size</translation>
-    </message>
-    <message>
-        <location line="-41"/>
-        <source>Y</source>
-        <translation>Y</translation>
-    </message>
-</context>
-<context>
     <name>DAChartAddHistogramWidget</name>
     <message>
         <location filename="../DAGui/ChartAddItem/DAChartAddHistogramWidget.ui" line="+14"/>
@@ -14913,28 +14728,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation>X</translation>
     </message>
     <message>
-        <location line="+23"/>
-        <source>Autoincrement series</source>
-        <translation>Autoincrement series</translation>
-    </message>
-    <message>
-        <location line="+15"/>
-        <source>Initial value</source>
-        <translation>Initial value</translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <location line="+14"/>
-        <source>1</source>
-        <translation>1</translation>
-    </message>
-    <message>
-        <location line="-7"/>
-        <source>Self increasing step size</source>
-        <translation>Self increasing step size</translation>
-    </message>
-    <message>
-        <location line="+20"/>
+        <location line="+29"/>
         <source>Y (Multiple)</source>
         <translation>Y (Multiple)</translation>
     </message>
@@ -14957,28 +14751,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation>Time</translation>
     </message>
     <message>
-        <location line="+12"/>
-        <source>Autoincrement series</source>
-        <translation>Autoincrement series</translation>
-    </message>
-    <message>
-        <location line="+15"/>
-        <source>Initial value</source>
-        <translation>Initial value</translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <location line="+14"/>
-        <source>1</source>
-        <translation>1</translation>
-    </message>
-    <message>
-        <location line="-7"/>
-        <source>Self increasing step size</source>
-        <translation>Self increasing step size</translation>
-    </message>
-    <message>
-        <location line="+20"/>
+        <location line="+18"/>
         <source>Open</source>
         <translation>Open</translation>
     </message>
@@ -15919,38 +15692,12 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation>X</translation>
     </message>
     <message>
-        <location line="+12"/>
-        <location line="+61"/>
-        <source>Autoincrement series</source>
-        <translation>Autoincrement series</translation>
-    </message>
-    <message>
-        <location line="-46"/>
-        <location line="+75"/>
-        <source>Initial value</source>
-        <translation>Initial value</translation>
-    </message>
-    <message>
-        <location line="-68"/>
-        <location line="+14"/>
-        <location line="+40"/>
-        <location line="+7"/>
-        <source>1</source>
-        <translation>1</translation>
-    </message>
-    <message>
-        <location line="-54"/>
-        <location line="+68"/>
-        <source>Self increasing step size</source>
-        <translation>Self increasing step size</translation>
-    </message>
-    <message>
-        <location line="-48"/>
+        <location line="+18"/>
         <source>Y</source>
         <translation>Y</translation>
     </message>
     <message>
-        <location line="+67"/>
+        <location line="+24"/>
         <source>Error</source>
         <translation>Error</translation>
     </message>
@@ -15973,33 +15720,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation>Add series to X</translation>
     </message>
     <message>
-        <location line="+25"/>
-        <location line="+86"/>
-        <source>Autoincrement series</source>
-        <translation>Autoincrement series</translation>
-    </message>
-    <message>
-        <location line="-71"/>
-        <location line="+86"/>
-        <source>Initial value</source>
-        <translation>Initial value</translation>
-    </message>
-    <message>
-        <location line="-79"/>
-        <location line="+14"/>
-        <location line="+72"/>
-        <location line="+14"/>
-        <source>1</source>
-        <translation>1</translation>
-    </message>
-    <message>
-        <location line="-93"/>
-        <location line="+86"/>
-        <source>Self increasing step size</source>
-        <translation>Self increasing step size</translation>
-    </message>
-    <message>
-        <location line="-66"/>
+        <location line="+31"/>
         <source>Y</source>
         <translation>Y</translation>
     </message>
@@ -16009,7 +15730,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation>Add series to Y</translation>
     </message>
     <message>
-        <location line="+87"/>
+        <location line="+44"/>
         <source>Drag the data into the corresponding list</source>
         <translation>Drag the data into the corresponding list</translation>
     </message>
@@ -16165,29 +15886,6 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     </message>
 </context>
 <context>
-    <name>DADataframeToVectorPointWidget</name>
-    <message>
-        <location filename="../DAGui/DADataframeToVectorPointWidget.ui" line="+14"/>
-        <source>Dataframe To Vector Point</source>
-        <translation>Dataframe To Vector Point</translation>
-    </message>
-    <message>
-        <location line="+12"/>
-        <source>x:</source>
-        <translation>x:</translation>
-    </message>
-    <message>
-        <location line="+18"/>
-        <source>y:</source>
-        <translation>y:</translation>
-    </message>
-    <message>
-        <location line="+14"/>
-        <source>data view</source>
-        <translation>data view</translation>
-    </message>
-</context>
-<context>
     <name>DADialogChartGuide</name>
     <message>
         <location filename="../DAGui/Dialog/DADialogChartGuide.ui" line="+14"/>
@@ -16258,24 +15956,6 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <location line="+7"/>
         <source>line 3D</source>
         <translation>line 3D</translation>
-    </message>
-</context>
-<context>
-    <name>DADialogDataFrameSeriesSelector</name>
-    <message>
-        <location filename="../DAGui/Dialog/DADialogDataFrameSeriesSelector.ui" line="+14"/>
-        <source>Dialog</source>
-        <translation>Dialog</translation>
-    </message>
-    <message>
-        <location line="+13"/>
-        <source>Data</source>
-        <translation>Data</translation>
-    </message>
-    <message>
-        <location line="+24"/>
-        <source>Data preview</source>
-        <translation>Data preview</translation>
     </message>
 </context>
 <context>
@@ -16762,24 +16442,6 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <location line="+7"/>
         <source>ECDF</source>
         <translation>ECDF</translation>
-    </message>
-</context>
-<context>
-    <name>DADialogTableColumnView</name>
-    <message>
-        <location filename="../DAGui/Dialog/DADialogTableColumnView.ui" line="+14"/>
-        <source>Column View</source>
-        <translation>Column View</translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>Columns:</source>
-        <translation>Columns:</translation>
-    </message>
-    <message>
-        <location line="+16"/>
-        <source>Freeze Columns:</source>
-        <translation>Freeze Columns:</translation>
     </message>
 </context>
 <context>
@@ -17279,12 +16941,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation>Show splash screen on startup</translation>
     </message>
     <message>
-        <location line="+26"/>
-        <source>Browse</source>
-        <translation>Browse</translation>
-    </message>
-    <message>
-        <location line="-16"/>
+        <location line="+10"/>
         <source>Script workspace</source>
         <translation>Script workspace</translation>
     </message>
@@ -17294,7 +16951,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation>Workspace directory</translation>
     </message>
     <message>
-        <location line="+17"/>
+        <location line="+10"/>
         <source>Script execution timeout</source>
         <translation>Script execution timeout</translation>
     </message>
@@ -17469,11 +17126,6 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     </message>
     <message>
         <location line="+10"/>
-        <source>Browse</source>
-        <translation>Browse</translation>
-    </message>
-    <message>
-        <location line="+7"/>
         <source>Auto Detect</source>
         <translation>Auto Detect</translation>
     </message>
@@ -17488,17 +17140,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation>Extra module search paths (sys.path)</translation>
     </message>
     <message>
-        <location line="+11"/>
-        <source>Add</source>
-        <translation>Add</translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>Remove</source>
-        <translation>Remove</translation>
-    </message>
-    <message>
-        <location line="+25"/>
+        <location line="+12"/>
         <source>Note: interpreter and module path changes take effect after restarting the program</source>
         <translation>Note: interpreter and module path changes take effect after restarting the program</translation>
     </message>
@@ -18134,12 +17776,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>Export Data Setting</translation>
     </message>
     <message>
-        <location line="+11"/>
-        <source>Select Folder To Export</source>
-        <translation>Select Folder To Export</translation>
-    </message>
-    <message>
-        <location line="+21"/>
+        <location line="+14"/>
         <source>Export All</source>
         <translation>Export All</translation>
     </message>
@@ -18219,12 +17856,12 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>Web page format. Preserves table styling. Ideal for embedding data in reports or emails.</translation>
     </message>
     <message>
-        <location filename="../../plugins/DataAnalysis/Dialogs/DataframeExportSettingsDialog.cpp" line="+74"/>
+        <location filename="../../plugins/DataAnalysis/Dialogs/DataframeExportSettingsDialog.cpp" line="+15"/>
         <source>Select Folder</source>
         <translation>Select Folder</translation>
     </message>
     <message>
-        <location line="+18"/>
+        <location line="+62"/>
         <source>Warning</source>
         <translation>Warning</translation>
     </message>
@@ -18232,11 +17869,6 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <location line="+1"/>
         <source>Please select the folder for exporting data</source>
         <translation>Please select the folder for exporting data</translation>
-    </message>
-    <message>
-        <location filename="../../plugins/DataAnalysis/Dialogs/DataframeExportSettingsDialog.cpp"/>
-        <source>Select Folder</source>
-        <translation>Select Folder</translation>
     </message>
 </context>
 <context>
@@ -18308,7 +17940,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../APP/main.cpp" line="+188"/>
+        <location filename="../APP/main.cpp" line="+192"/>
         <source>Initializing...</source>
         <translation>Initializing...</translation>
     </message>
@@ -18379,7 +18011,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>drop dataframe columns</translation>
     </message>
     <message>
-        <location line="+72"/>
+        <location line="+75"/>
         <source>change column type</source>
         <translation>change column type</translation>
     </message>
@@ -19270,21 +18902,6 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>Data Query</translation>
     </message>
     <message>
-        <location filename="../DAGui/DAFormEditorRegistry.cpp" line="+376"/>
-        <source>Add</source>
-        <translation>Add</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Remove</source>
-        <translation>Remove</translation>
-    </message>
-    <message>
-        <location line="+23"/>
-        <source>New Item</source>
-        <translation>New Item</translation>
-    </message>
-    <message>
         <location filename="../DAPyScripts/DAPyScriptsStatistics.cpp" line="+17"/>
         <source>cannot import DAWorkbench.DAStatistics module</source>
         <translation>cannot import DAWorkbench.DAStatistics module</translation>
@@ -19370,7 +18987,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>Failed to initialize script runner: %1</translation>
     </message>
     <message>
-        <location filename="../DAFigure/DAChartTextEditorPopup.cpp" line="+80"/>
+        <location filename="../DAFigure/DARichTextEditWidget.cpp" line="+69"/>
         <source>Text Background Color</source>
         <translation>Text Background Color</translation>
     </message>
@@ -19400,16 +19017,6 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>Clear character format of selected text</translation>
     </message>
     <message>
-        <location line="+19"/>
-        <source>Cancel</source>
-        <translation>Cancel</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>OK</source>
-        <translation>OK</translation>
-    </message>
-    <message>
         <location filename="../DAFigure/DAChartTextMarkerEditor.cpp" line="+128"/>
         <source>Text Marker</source>
         <translation>Text Marker</translation>
@@ -19420,7 +19027,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>Text</translation>
     </message>
     <message>
-        <location filename="../DAGui/Agent/DAAgentDockWidget.cpp" line="-595"/>
+        <location filename="../DAGui/Agent/DAAgentDockWidget.cpp" line="-597"/>
         <source>(untitled)</source>
         <translation>(untitled)</translation>
     </message>
@@ -19583,13 +19190,13 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>edit text document</translation>
     </message>
     <message>
-        <location filename="../DAGui/Commands/DACommandsDataFrame.cpp" line="-557"/>
+        <location filename="../DAGui/Commands/DACommandsDataFrame.cpp" line="-560"/>
         <location line="+10"/>
         <source>rename columns</source>
         <translation>rename columns</translation>
     </message>
     <message>
-        <location line="+63"/>
+        <location line="+66"/>
         <source>clear cells</source>
         <translation>clear cells</translation>
     </message>
@@ -19772,65 +19379,6 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <location line="+9"/>
         <source>Disable the splash screen during startup, useful for debugging to avoid the splash window blocking the IDE</source>
         <translation>Disable the splash screen during startup, useful for debugging to avoid the splash window blocking the IDE</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DACheckListWidget</name>
-    <message>
-        <location filename="../3rdparty/DAWidgets/src/DACheckListWidget.cpp"/>
-        <source>Search...</source>
-        <translation>Search...</translation>
-    </message>
-    <message>
-        <location filename="../3rdparty/DAWidgets/src/DACheckListWidget.cpp"/>
-        <source>Select All</source>
-        <translation>Select All</translation>
-    </message>
-    <message>
-        <location filename="../3rdparty/DAWidgets/src/DACheckListWidget.cpp"/>
-        <source>Invert Selection</source>
-        <translation>Invert Selection</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DAStringListEditWidget</name>
-    <message>
-        <location filename="../3rdparty/DAWidgets/src/DAStringListEditWidget.cpp"/>
-        <source>Add</source>
-        <translation>Add</translation>
-    </message>
-    <message>
-        <location filename="../3rdparty/DAWidgets/src/DAStringListEditWidget.cpp"/>
-        <source>Remove</source>
-        <translation>Remove</translation>
-    </message>
-    <message>
-        <location filename="../3rdparty/DAWidgets/src/DAStringListEditWidget.cpp"/>
-        <source>Up</source>
-        <translation>Up</translation>
-    </message>
-    <message>
-        <location filename="../3rdparty/DAWidgets/src/DAStringListEditWidget.cpp"/>
-        <source>Down</source>
-        <translation>Down</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DAChartAutoincrementSeriesWidget</name>
-    <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAutoincrementSeriesWidget.cpp"/>
-        <source>Autoincrement series</source>
-        <translation>Autoincrement series</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAutoincrementSeriesWidget.cpp"/>
-        <source>Initial value</source>
-        <translation>Initial value</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAutoincrementSeriesWidget.cpp"/>
-        <source>Self increasing step size</source>
-        <translation>Self increasing step size</translation>
     </message>
 </context>
 </TS>
