@@ -558,6 +558,9 @@ private:
     void populateColumnContextMenu(QMenu& menu);
     // 在 DataFrame 操作窗口中选中指定列（replace 语义，供树右键与列头菜单信号接线共用）
     void selectColumnInDataFrameWidget(DADataOperateOfDataFrameWidget* w, int col);
+    // 在指定页面重命名列（表头右键直入口）：弹输入框 → w->renameColumn；
+    // 与 onActionRenameColumnTriggered 的差异：不经焦点检查、不依赖选区
+    void renameColumnOnPage(DADataOperateOfDataFrameWidget* w, int col);
     // 显示统计绘图引导对话框并预选指定类型
     void showStatsChartGuide(DA::DAChartTypes type);
     // 执行导出：取选中数据集 → 保存对话框 → exportToFile → daInfo/daWarning 反馈

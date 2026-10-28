@@ -1665,7 +1665,10 @@ void DAAppController::onDataOperatePageCreated(DADataOperatePageWidget* page)
                 });
         // 列头右键菜单已迁入 DADataHeaderView（R12，菜单内容单点定义在 DAGui）：
         // 这里只做信号接线——排序类动作直接执行（**不预选列**：整列选择会产生上万个
-        // 选区 range，拖慢排序的选区重映射且对排序无意义）；其余动作先选中该列
+        // 选区 range，拖慢排序的选区重映射且对排序无意义）；重命名/删除列直接用
+        // 信号携带的 (页面, 列号) 走页面直入口（右键菜单是独立窗口会抢走 ADS 停靠区
+        // 焦点，且选区可能不在目标列上——经 getCurrentDataFrameOperateWidget 的
+        // 焦点检查会失败弹「请选中数据操作窗口」）；其余动作先选中该列
         // （复用 selectColumnInDataFrameWidget，槽函数经 getSelectedOneDataframeColumn 取列），
         // 再执行既有槽逻辑，行为与迁移前一致
         if (DADataTableView* tv = w->getDataTableView()) {
@@ -1692,14 +1695,19 @@ void DAAppController::onDataOperatePageCreated(DADataOperatePageWidget* page)
                                 // 置脏由页面 dataModified 信号驱动（排序命令回调里发，exec/undo 全覆盖）
                                 return;
                             }
+                            // 重命名/删除列：直传 (页面, 列号)，不依赖焦点与选区
+                            if (action == ColumnAction::RenameColumn) {
+                                renameColumnOnPage(w, col);
+                                return;
+                            }
+                            if (action == ColumnAction::RemoveColumn) {
+                                if (w->removeColumnAt(col) > 0) {
+                                    setDirty();
+                                }
+                                return;
+                            }
                             selectColumnInDataFrameWidget(w, col);
                             switch (action) {
-                            case ColumnAction::RenameColumn:
-                                onActionRenameColumnTriggered();
-                                break;
-                            case ColumnAction::RemoveColumn:
-                                onActionRemoveColumnTriggered();
-                                break;
                             case ColumnAction::CopyColumnName:
                                 onActionCopyColumnNameTriggered();
                                 break;
@@ -1722,6 +1730,9 @@ void DAAppController::onDataOperatePageCreated(DADataOperatePageWidget* page)
                             case ColumnAction::RemoveComputedFormula:
                                 w->removeComputedColumnFormula(col);
                                 break;
+                            // 重命名/删除列已在前置分支处理（保留 case 保证枚举全覆盖）
+                            case ColumnAction::RenameColumn:
+                            case ColumnAction::RemoveColumn:
                             // 排序类已在上面前置分支处理（保留 case 保证枚举全覆盖）
                             case ColumnAction::SortAscending:
                             case ColumnAction::SortDescending:
@@ -3451,13 +3462,29 @@ void DAAppController::onActionRenameColumnTriggered()
     if (col < 0) {
         return;
     }
-    DADataTableView* tv = dfopt->getDataTableView();
+    renameColumnOnPage(dfopt, col);
+}
+
+/**
+ * @brief 在指定页面重命名列（表头右键直入口）
+ *
+ * 不经焦点检查、不依赖选区——右键菜单是独立窗口会抢走停靠区焦点，信号里
+ * 携带的 (w, col) 即操作目标。弹输入框（预填当前列名）→ w->renameColumn。
+ * @param w 目标数据页（信号接线的 lambda 捕获）
+ * @param col 目标列（逻辑索引）
+ */
+void DAAppController::renameColumnOnPage(DADataOperateOfDataFrameWidget* w, int col)
+{
+    if (!w || col < 0) {
+        return;
+    }
+    DADataTableView* tv = w->getDataTableView();
     if (!tv) {
         return;
     }
     QString oldName = tv->actualColumnName(col);
     bool ok         = false;
-    QString newName = QInputDialog::getText(dfopt,
+    QString newName = QInputDialog::getText(w,
                                             tr("Rename Column"),     // cn:重命名列
                                             tr("New column name:"),  // cn:新列名：
                                             QLineEdit::Normal,
@@ -3466,7 +3493,7 @@ void DAAppController::onActionRenameColumnTriggered()
     if (!ok) {
         return;
     }
-    if (dfopt->renameColumn(col, newName.trimmed())) {
+    if (w->renameColumn(col, newName.trimmed())) {
         setDirty();
     }
 }
@@ -4131,11 +4158,38 @@ void DAAppController::setupDataManagerTreeContextMenu(DADataManagerTreeWidget* w
             if (!dfopt) {
                 return;
             }
-            // 选中该列，槽函数通过 getSelectedOneDataframeColumn 取列
-            selectColumnInDataFrameWidget(dfopt, col);
-            // 弹出共用菜单
+            // 弹共用菜单，但重命名/删除列换成临时 action 绑直入口（不经焦点检查——
+            // 树右键时焦点在数据管理器 dock，共用 action 绑定的槽会弹
+            // 「请选中数据操作窗口」）；其余动作先选中该列，共用槽经
+            // getSelectedOneDataframeColumn 取列
             QMenu menu(w);
             populateColumnContextMenu(menu);
+            {
+                QList< QAction* > acts = menu.actions();
+                for (int i = 0; i < acts.size(); ++i) {
+                    if (acts.at(i) == mActions->actionRenameColumn) {
+                        QAction* local = new QAction(mActions->actionRenameColumn->icon(),
+                                                     mActions->actionRenameColumn->text(), &menu);
+                        connect(local, &QAction::triggered, this, [ this, dfopt, col ]() {
+                            renameColumnOnPage(dfopt, col);
+                        });
+                        menu.insertAction(acts.at(i), local);
+                        menu.removeAction(acts.at(i));
+                    } else if (acts.at(i) == mActions->actionRemoveColumn) {
+                        QAction* local = new QAction(mActions->actionRemoveColumn->icon(),
+                                                     mActions->actionRemoveColumn->text(), &menu);
+                        connect(local, &QAction::triggered, this, [ this, dfopt, col ]() {
+                            if (dfopt->removeColumnAt(col) > 0) {
+                                setDirty();
+                            }
+                        });
+                        menu.insertAction(acts.at(i), local);
+                        menu.removeAction(acts.at(i));
+                    }
+                }
+            }
+            // 选中该列（非重命名/删除的共用槽经 getSelectedOneDataframeColumn 取列）
+            selectColumnInDataFrameWidget(dfopt, col);
             menu.exec(tv->viewport()->mapToGlobal(pos));
             return;
         }

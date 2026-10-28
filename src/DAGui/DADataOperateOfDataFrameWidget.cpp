@@ -37,6 +37,9 @@
 #include "Commands/DACommandsConditionalFormat.h"
 #include "Commands/DACommandsTableColumnView.h"
 #include "DADataManager.h"
+#include "DACallBackInterface.h"
+
+#include <QDomDocument>
 // table metadata / style
 #include "DATableStyleManager.h"
 #include "DATableStyleItemDelegate.h"
@@ -845,15 +848,75 @@ int DADataOperateOfDataFrameWidget::removeSelectRow()
  */
 int DADataOperateOfDataFrameWidget::removeSelectColumn()
 {
-    DAPyDataFrame df = getDataframe();
-    if (df.isNone()) {
-        return 0;
-    }
     QList< int > columns = getSelectedDataframeCoumns();
     if (columns.size() <= 0) {
         daWarning << tr("Please select a valid column");  // cn:请选择正确的列
         return 0;
     }
+    return removeColumns(columns);
+}
+
+/**
+ * @brief 移除指定列（表头右键「删除列」直接入口）
+ *
+ * 与 removeSelectColumn 的差异：不依赖选区——右键菜单弹出瞬间焦点被菜单窗口
+ * 抢走，APP 侧 getCurrentDataFrameOperateWidget 的焦点检查会失败，选区也不一定
+ * 在目标列上；本入口直接按列号操作本页。
+ * 冻结列被删除时冻结名额同步缩减（效果同隐藏：主区列不补位），全部冻结列
+ * 删光后冻结窗格随之隐藏（removeColumns 内投影收敛）。
+ * @param col 列位置索引
+ * @return 成功移除的列数（0 = 失败/列号无效）
+ */
+int DADataOperateOfDataFrameWidget::removeColumnAt(int col)
+{
+    if (col < 0 || col >= dataColumnCount()) {
+        return 0;
+    }
+    return removeColumns(QList< int >({ col }));
+}
+
+/**
+ * @brief 按列号列表删除列（removeSelectColumn / removeColumnAt 共用命令管线）
+ *
+ * 命令：DACommandDataFrame_dropIColumn（临时 pickle 快照，undo 整表还原）。
+ * 联动（对照重命名路径补全）：
+ * 1) 视图状态（列宽/列序/隐藏/冻结）：删除前整店 XML 快照，redo 清被删列条目
+ *    并缩减冻结名额，undo 从快照整店还原（同一撤销单元）；
+ * 2) 数据管理器树：notifyDataChangedSignal(ChangeValue) 重建列子项；
+ * 3) 样式/条件格式/批注/计算列重映射与失效提示：与旧 removeSelectColumn 一致。
+ * @param columns 列位置索引列表
+ * @return 成功移除的列数
+ */
+int DADataOperateOfDataFrameWidget::removeColumns(const QList< int >& columns)
+{
+    DAPyDataFrame df = getDataframe();
+    if (df.isNone()) {
+        return 0;
+    }
+    if (columns.isEmpty()) {
+        return 0;
+    }
+    // —— 删除前解析：被删列名（视图状态按名字清条目）+ 冻结名额内被删数 ——
+    QStringList removedNames;
+    const QList< QString > colNames = df.columns();
+    int frozenRemoved = 0;
+    for (int c : columns) {
+        if (c >= 0 && c < colNames.size()) {
+            removedNames.append(colNames.at(c));
+        }
+        if (isColumnInFrozenArea(c)) {
+            ++frozenRemoved;
+        }
+    }
+    // 视图状态整店快照（undo 还原；QDomDocument 按引用持有，lambda 里 shared_ptr 保活）
+    auto snapDoc = std::make_shared< QDomDocument >();
+    QDomElement snapRoot = snapDoc->createElement(QStringLiteral("snapshot"));
+    snapDoc->appendChild(snapRoot);  // 必须挂进文档，否则 documentElement() 读不到
+    if (mViewStateStore) {
+        mViewStateStore->toXml(*snapDoc, snapRoot);
+    }
+    const int oldFreeze = mViewStateStore ? mViewStateStore->freezeColumnCount() : 0;
+    const int newFreeze = qMax(0, oldFreeze - frozenRemoved);
     std::unique_ptr< DACommandDataFrame_dropIColumn > cmd(new DACommandDataFrame_dropIColumn(mData.toDataFrame(), columns));
     QPointer< DADataTableModel > modle = mModel;
     cmd->setCallBack([ modle, columns ]() {
@@ -871,19 +934,15 @@ int DADataOperateOfDataFrameWidget::removeSelectColumn()
     // undo 整店恢复（含被移除的定义与原状态），redo 重放删列联动
     //（目标列被删 → 定义移除；依赖列被删 → 置 Invalid，不静默清空列数据）
     DATableComputedColumnStore* ccStore = mComputedColumnStore;
-    QStringList removedNames;
+    DATableViewStateStore* viewStore = mViewStateStore;
     QList< DATableComputedColumnStore::Entry > ccSnapshot;
     if (ccStore) {
-        const QList< QString > colNames = df.columns();
-        for (int c : std::as_const(columns)) {
-            if (c >= 0 && c < colNames.size()) {
-                removedNames.append(colNames.at(c));
-            }
-        }
         ccSnapshot = ccStore->snapshot();
     }
     auto invalidatedTargets = std::make_shared< QStringList >();
-    cmd->setDirectionalCallBack([ styleMgr, cfStore, noteStore, ccStore, columns, removedNames, ccSnapshot, invalidatedTargets ](bool isUndo) {
+    auto self = QPointer< DADataOperateOfDataFrameWidget >(this);
+    cmd->setDirectionalCallBack([ styleMgr, cfStore, noteStore, ccStore, viewStore, snapDoc, columns,
+                                   removedNames, newFreeze, ccSnapshot, invalidatedTargets, self ](bool isUndo) {
         if (styleMgr) {
             if (isUndo) {
                 styleMgr->onColumnsInserted(columns);
@@ -914,6 +973,25 @@ int DADataOperateOfDataFrameWidget::removeSelectColumn()
                 ccStore->onColumnsRemoved(removedNames, nullptr, invalidatedTargets.get());
             }
         }
+        // 视图状态随命令往返：redo 清被删列条目 + 冻结名额缩减；undo 整店快照还原
+        if (viewStore) {
+            if (isUndo) {
+                const QDomElement vs = snapDoc->documentElement().firstChildElement(QStringLiteral("view-state"));
+                if (!vs.isNull()) {
+                    viewStore->fromXml(vs);
+                } else {
+                    viewStore->clear();
+                }
+            } else {
+                for (const QString& n : removedNames) {
+                    viewStore->removeColumn(n);
+                }
+                viewStore->setFreezeColumnCount(newFreeze);
+            }
+        }
+        if (self) {
+            self->applyViewStateFromStore();  // 冻结投影收敛（冻结列删光 → 窗格隐藏）
+        }
     });
     if (!cmd->exec()) {
         return 0;
@@ -923,6 +1001,10 @@ int DADataOperateOfDataFrameWidget::removeSelectColumn()
     if (!invalidatedTargets->isEmpty()) {
         daWarning << tr("Computed column(s) %1 became invalid because their dependency column(s) were removed")
                          .arg(invalidatedTargets->join(QStringLiteral(", ")));  // cn:计算列 %1 因依赖列被删除已失效
+    }
+    // 数据管理器树重建列子项（对照重命名路径的通知）
+    if (DADataManager* mgr = mData.getDataManager()) {
+        mgr->notifyDataChangedSignal(mData, DADataManager::ChangeValue);
     }
     return columns.size();
 }
@@ -1231,23 +1313,32 @@ bool DADataOperateOfDataFrameWidget::renameColumn(int col, const QString& newNam
         new DACommandDataFrame_renameColumns(df, newcols, oldcols, mModel));
     wireComputedColumnRenameMigration(cmd.get(), renames);
     wireValidationRuleRenameMigration(cmd.get(), renames);
+    // 视图状态迁移（列宽/列序/隐藏按列名键）：挂 directional 回调 redo/undo 双向
+    // 迁移（链式包裹前两个迁移，同 wireValidationRuleRenameMigration 手法）——
+    // 旧实现只在页面 exec 后单向迁移，undo 后 store 里还是新列名，后续投影按
+    // 孤儿键跳过，列宽/隐藏/冻结状态错位
+    if (mViewStateStore) {
+        DATableViewStateStore* vsStore = mViewStateStore;
+        DACallBackInterface::DirectionalCallBack prev = cmd->getDirectionalCallBack();
+        cmd->setDirectionalCallBack([ prev, vsStore, renames ](bool isUndo) {
+            if (prev) {
+                prev(isUndo);
+            }
+            for (const auto& p : std::as_const(renames)) {
+                vsStore->renameColumn(isUndo ? p.second : p.first, isUndo ? p.first : p.second);
+            }
+        });
+    }
     if (!cmd->exec()) {
         return false;
     }
-    // 列改名迁移：视图状态按列名引用（R20），宽度记录随改名同步迁移；
-    // 放在 refreshData 之前，保证 modelReset 触发 applyViewStateFromStore 时按新列名命中
-    if (mViewStateStore) {
-        mViewStateStore->renameColumn(oldcols[ col ], newName);
-    }
+    // 列改名后模型列名缓存随命令 exec/undo 的 refreshData 重建（命令内完成），
+    // 这里补视图状态投影（模型 reset 触发的 applyViewStateFromStore 用新键命中）
     if (DADataManager* mgr = mData.getDataManager()) {
         mgr->notifyDataChangedSignal(mData, DADataManager::ChangeDataframeColumnName);
     }
     push(cmd.release());
-    // DADataTableModel 在缓存模式下缓存了列名，headerDataChanged 信号无法刷新缓存，
-    // 需显式调用 refreshData() 重置模型以刷新表头显示
-    if (DADataTableModel* m = ui->tableView->getDataModel()) {
-        m->refreshData();
-    }
+    applyViewStateFromStore();
     return true;
 }
 
@@ -2199,7 +2290,7 @@ void DADataOperateOfDataFrameWidget::applyViewStateFromStore()
     if (const int headH = mViewStateStore->horizontalHeaderHeight(); headH > 0) {
         applyHeaderHeightToPanes(headH);
     }
-    // 3) 列序 / 隐藏 / 冻结 → 容器投影（冻结集合 = ordered 前 freeze 个非隐藏列）
+    // 3) 列序 / 隐藏 / 冻结 → 容器投影（冻结集合 = ordered 前 freeze 个列，隐藏列占名额）
     const QList< QPair< QString, int > > actual       = actualColumnIdentities();
     const QList< QPair< QString, int > > storedOrder  = orderedColumnIdentities();  // 全局列序身份表
     const QList< QPair< QString, int > > storedHidden = mViewStateStore->hiddenColumns();
@@ -2244,26 +2335,18 @@ void DADataOperateOfDataFrameWidget::applyViewStateFromStore()
             hidden.insert(it.value());
         }
     }
-    int visibleCount = 0;  // freeze：投影期夹紧，不写回 store（列数临时变少时不丢用户设置）
-    for (int logical : ordered) {
-        if (!hidden.contains(logical)) {
-            ++visibleCount;
-        }
-    }
-    const int freeze = qBound(0, mViewStateStore->freezeColumnCount(), visibleCount);
+    const int freeze = qBound(0, mViewStateStore->freezeColumnCount(), ordered.size());
     // 冻结被夹小时发一条用户可见提示（只在生效值变化时发，避免重复投影刷屏）
     if (freeze < mViewStateStore->freezeColumnCount() && mLastProjectedFreeze != freeze) {
         daWarning << tr("Frozen columns were reduced because visible columns changed.");
         // cn:可见列已变化，冻结列数被自动缩减
     }
     mLastProjectedFreeze = freeze;
-    // 冻结列集合缓存（isColumnInFrozenArea 纯查表，唯一写入时机在这里）
+    // 冻结列集合缓存（isColumnInFrozenArea 纯查表，唯一写入时机在这里）：
+    // 列序前 freeze 个列——隐藏列占名额（隐藏的冻结列也在集合里，不补位）
     mFrozenColumnsLogical.clear();
-    for (int i = 0; i < ordered.size() && mFrozenColumnsLogical.size() < freeze; ++i) {
-        const int logical = ordered.at(i);
-        if (!hidden.contains(logical)) {
-            mFrozenColumnsLogical.insert(logical);  // 前 freeze 个非隐藏列
-        }
+    for (int i = 0; i < ordered.size() && i < freeze; ++i) {
+        mFrozenColumnsLogical.insert(ordered.at(i));
     }
     if (mPaneContainer) {
         mPaneContainer->applyColumnState(ordered, hidden, freeze);
@@ -2674,10 +2757,10 @@ void DADataOperateOfDataFrameWidget::showAllColumns()
 }
 
 /**
- * @brief 冻结前 N 个可见列（0 = 取消冻结）
+ * @brief 冻结列序前 N 个列（0 = 取消冻结；隐藏列占名额）
  *
  * 入撤销栈；与当前计数相同不推空命令。不动 mSortSpec。
- * @param visibleCount 冻结的可见列数
+ * @param count 冻结列数（列序前 N 个，含隐藏列）
  */
 void DADataOperateOfDataFrameWidget::freezeColumnsTo(int visibleCount)
 {
@@ -2700,11 +2783,11 @@ void DADataOperateOfDataFrameWidget::promptFreezeColumns()
     if (!mViewStateStore) {
         return;
     }
-    const int maxFreeze = qMax(0, dataColumnCount() - static_cast< int >(mViewStateStore->hiddenColumns().size()));
+    const int maxFreeze = qMax(0, dataColumnCount());  // 冻结名额含隐藏列，上限 = 全部数据列
     bool ok    = false;
     const int n = QInputDialog::getInt(this,
                                       tr("Freeze Columns"),  // cn:冻结列
-                                      tr("Freeze the first N visible columns (0 = no freeze):"),  // cn:冻结前 N 个可见列（0 = 不冻结）：
+                                      tr("Freeze the first N columns (0 = no freeze):"),  // cn:冻结前 N 列（0 = 不冻结）：
                                       mViewStateStore->freezeColumnCount(),
                                       0,
                                       maxFreeze,
@@ -2760,8 +2843,9 @@ void DADataOperateOfDataFrameWidget::applyColumnOrderFromView(const QVector< int
 /**
  * @brief 「列」子菜单动作分发（006d）
  *
- * 「冻结到此列」的序号口径 = 该列在可见列序中的位置 + 1（容器
- * visibleColumnOrderLogical() 是"列序剔隐藏"的唯一实现，页面不另写一份）。
+ * 「冻结到此列」的序号口径 = 该列在全局列序中的位置 + 1（容器
+ * orderedColumnsLogical() 是"数据列全序"的唯一实现，页面不另写一份）；
+ * 冻结名额含该列之前的隐藏列（隐藏列占名额，与 applyColumnState 分割法律同源）。
  * @param logicalColumn 触发菜单的列（逻辑索引）
  * @param action 子菜单动作
  */
@@ -2776,9 +2860,9 @@ void DADataOperateOfDataFrameWidget::onHeaderColumnViewActionRequested(int logic
         showAllColumns();
         break;
     case DADataHeaderView::ColumnViewAction::FreezeToColumn: {
-        const QVector< int > visibleOrder
-            = mPaneContainer ? mPaneContainer->visibleColumnOrderLogical() : QVector< int >();
-        const int pos = visibleOrder.indexOf(logicalColumn);  // 隐藏列的表头点不到，必 >= 0
+        const QVector< int > ordered
+            = mPaneContainer ? mPaneContainer->orderedColumnsLogical() : QVector< int >();
+        const int pos = ordered.indexOf(logicalColumn);  // 隐藏列的表头点不到，必 >= 0
         if (pos >= 0) {
             freezeColumnsTo(pos + 1);
         }
@@ -2794,11 +2878,13 @@ void DADataOperateOfDataFrameWidget::onHeaderColumnViewActionRequested(int logic
 }
 
 /**
- * @brief 打开列视图对话框（006d）
+ * @brief 打开列视图对话框（006d；表格化改版：列名编辑/隐藏/冻结三列表格）
  *
  * 输入 = 全局列序（含隐藏列）的身份表（orderedColumnIdentities() 唯一实现）；
- * 确定后按差异构造一个批量父命令（隐藏集合变更 + 冻结数变更 = 一个撤销单元），
- * 取消不改动；冻结数比较基准用 store 真源旧值（不是夹紧后的生效值）。
+ * 确定后按差异构造一个批量父命令（改名 + 隐藏集合变更 + 冻结数变更 =
+ * 一个撤销单元），取消不改动；冻结数比较基准用 store 真源旧值。
+ * 改名对经 DACommandDataFrame_renameColumns 入批（列名缓存重建 + 视图状态
+ * 键迁移 + 数据管理器通知均在命令/页面接线里完成）。
  */
 void DADataOperateOfDataFrameWidget::showColumnViewDialog()
 {
@@ -2813,17 +2899,93 @@ void DADataOperateOfDataFrameWidget::showColumnViewDialog()
         return;
     }
     QSet< QPair< QString, int > > oldHidden = toIdentSet(mViewStateStore->hiddenColumns());
-    mDialogColumnView->setup(ordered, oldHidden, effectiveFrozenColumnCount());
+    mDialogColumnView->setup(ordered, oldHidden, mViewStateStore->freezeColumnCount());
     if (mDialogColumnView->exec() != QDialog::Accepted) {
         return;  // 取消不改动任何东西
     }
     const QSet< QPair< QString, int > > newHidden = mDialogColumnView->hiddenColumns();
     const int newFreeze = mDialogColumnView->frozenColumnCount();
     const int oldFreeze = mViewStateStore->freezeColumnCount();
-    if (newHidden == oldHidden && newFreeze == oldFreeze) {
+    // 改名对（对话框按行序给出 (旧身份 → 新名)）：换算成全表列名表（只改目标行）
+    const QList< QPair< QPair< QString, int >, QString > > renames = mDialogColumnView->renamedColumns();
+    if (newHidden == oldHidden && newFreeze == oldFreeze && renames.isEmpty()) {
         return;  // 无差异不推空命令
     }
+    // 批量父命令先行（renameCmd 要以它为 parent 构造）
     DACommandTableColumnViewBatch* batch = new DACommandTableColumnViewBatch(tr("Column View..."));  // cn:列视图
+    if (!renames.isEmpty()) {
+        DAPyDataFrame df = getDataframe();
+        if (df.isNone()) {
+            delete batch;
+            return;
+        }
+        const QList< QString > oldcols = df.columns();
+        const QList< QString > newcols = [ this, &oldcols, &renames ]() {
+            // 身份 (名, occurrence) → 数据列序中的位置（occurrence 按数据列序计）
+            QList< QString > res = oldcols;
+            QHash< QString, int > seen;
+            QHash< QPair< QString, int >, int > posOfIdent;
+            for (int c = 0; c < res.size(); ++c) {
+                const int occ = seen.value(res.at(c), 0);
+                seen[ res.at(c) ] = occ + 1;
+                posOfIdent.insert(qMakePair(res.at(c), occ), c);
+            }
+            for (const auto& p : renames) {
+                const auto it = posOfIdent.constFind(p.first);
+                if (it != posOfIdent.constEnd() && it.value() >= 0 && it.value() < res.size()) {
+                    res[ it.value() ] = p.second;
+                }
+            }
+            return res;
+        }();
+        // 重名校验（全表口径兜底；对话框已校验行间不重）
+        {
+            QSet< QString > uniq;
+            bool dup = false;
+            for (const QString& n : newcols) {
+                if (uniq.contains(n)) {
+                    dup = true;
+                    break;
+                }
+                uniq.insert(n);
+            }
+            if (dup) {
+                daWarning << tr("Column names must be unique");  // cn:列名不能重复
+                delete batch;
+                return;
+            }
+        }
+        QList< QPair< QString, QString > > renamePairs;  // 计算列/校验规则/视图状态迁移用
+        for (const auto& p : renames) {
+            renamePairs.append(qMakePair(p.first.first, p.second));
+        }
+        // 计算列/校验规则引用联动确认（与 renameColumns 同款）
+        if (!confirmComputedColumnRename(renamePairs) || !confirmValidationRuleRename(renamePairs)) {
+            delete batch;
+            return;
+        }
+        // 构造即挂 batch（QUndoCommand 的 parent 只能在构造时给）；DACommandWithRedoCount
+        // 首次 redo 跳过 exec——与"页面 exec 后 push 首次 redo 不重放"的批量语义吻合
+        DACommandDataFrame_renameColumns* renameCmd = new DACommandDataFrame_renameColumns(df, newcols, oldcols, mModel, batch);
+        wireComputedColumnRenameMigration(renameCmd, renamePairs);
+        wireValidationRuleRenameMigration(renameCmd, renamePairs);
+        // 视图状态键迁移挂 directional（undo 反向回迁），与 renameColumn 同款
+        DATableViewStateStore* vsStore = mViewStateStore;
+        DACallBackInterface::DirectionalCallBack prev = renameCmd->getDirectionalCallBack();
+        renameCmd->setDirectionalCallBack([ prev, vsStore, renamePairs ](bool isUndo) {
+            if (prev) {
+                prev(isUndo);
+            }
+            for (const auto& p : std::as_const(renamePairs)) {
+                vsStore->renameColumn(isUndo ? p.second : p.first, isUndo ? p.first : p.second);
+            }
+        });
+        if (!renameCmd->exec()) {
+            delete batch;  // 连同子命令一起销毁
+            return;
+        }
+        batch->setText(tr("Rename and update column view"));  // cn:重命名并更新列视图
+    }
     if (newHidden != oldHidden) {
         new DACommandTableColumnVisibility(mViewStateStore, oldHidden, newHidden,
                                            [ this ]() { applyViewStateFromStore(); }, QString(), batch);
@@ -2833,6 +2995,13 @@ void DADataOperateOfDataFrameWidget::showColumnViewDialog()
                                         [ this ]() { applyViewStateFromStore(); }, batch);
     }
     push(batch);
+    // 数据管理器树重建（改名改变树内列子项显示）
+    if (!renames.isEmpty()) {
+        if (DADataManager* mgr = mData.getDataManager()) {
+            mgr->notifyDataChangedSignal(mData, DADataManager::ChangeDataframeColumnName);
+        }
+        applyViewStateFromStore();
+    }
 }
 
 /**

@@ -235,7 +235,10 @@ void DACommandDataFrame_renameColumns::undo()
 {
     mDataframe.columns(mOldcols);
     if (mModel) {
-        mModel->notifyHeaderDataChanged(Qt::Horizontal, 0, mCols.size() - 1);
+        // 缓存路径（tableSource/缓存模式）下列名读 columnsName 缓存，headerDataChanged
+        // 信号只会让表头重取一次旧缓存——必须 refreshData 重建缓存（renameColumn 页面
+        // 路径的既有结论）；全 reset 对列名变更的开销可接受（不逐 cell 取数）
+        mModel->refreshData();
     }
     callback();
     directionalCallback(true);  // 004 T1.23：列名引用的计算列定义随撤销反向迁移
@@ -247,7 +250,7 @@ bool DACommandDataFrame_renameColumns::exec()
         return false;
     }
     if (mModel) {
-        mModel->notifyHeaderDataChanged(Qt::Horizontal, 0, mCols.size() - 1);
+        mModel->refreshData();  // 同 undo：重建列名缓存，表头显示新名字
     }
     callback();
     directionalCallback(false);  // 004 T1.23：列名引用的计算列定义随改名迁移

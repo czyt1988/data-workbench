@@ -323,6 +323,11 @@ public Q_SLOTS:
     int removeSelectRow();
     // 移除选择的列
     int removeSelectColumn();
+    // 移除指定列（表头右键/树右键用，绕过选区与焦点依赖）；冻结列被删除时
+    // 冻结名额同步缩减（效果同隐藏），全部冻结列删光后冻结窗格隐藏
+    int removeColumnAt(int col);
+    // 删列命令管线（上面两个入口共用）：视图状态整店快照随命令 undo/redo 往返
+    int removeColumns(const QList< int >& columns);
     // 设置选中单元格为nan,返回设置成功的个数
     int removeSelectCell();
     // 列更名
@@ -345,8 +350,8 @@ public Q_SLOTS:
     void hideColumnAt(int logicalColumn);
     // 列头菜单「显示所有列」
     void showAllColumns();
-    // 冻结前 N 个可见列（0 = 取消冻结；入撤销栈）
-    void freezeColumnsTo(int visibleCount);
+    // 冻结列序前 N 个列（0 = 取消冻结；隐藏列占名额，入撤销栈）
+    void freezeColumnsTo(int count);
     // 弹「冻结前 N 列」输入框后走 freezeColumnsTo
     void promptFreezeColumns();
     // 容器 columnOrderChanged 驱动：把合并后的全局列序（含隐藏列）转成身份表入栈
