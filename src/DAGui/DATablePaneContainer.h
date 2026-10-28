@@ -32,9 +32,10 @@ public:
     DADataTableView* frozenView() const;
 
     // 列状态投影：ordered = 全部数据列显示顺序（含隐藏列，logical 升序表）；
-    // hidden = 用户隐藏集合；freezeCount = 冻结的可见列数（容器内夹紧到可见列数）
+    // hidden = 用户隐藏集合；freezeCount = 冻结列数（列序前 N 个，隐藏列占名额——
+    // 隐藏的冻结列不显示也不让主区列补位，全部冻结列隐藏时冻结窗格整体隐藏）
     void applyColumnState(const QVector< int >& orderedLogical, const QSet< int >& hiddenLogical, int freezeCount);
-    // 生效冻结列数（= 本轮投影实际切进冻结窗格的列数）
+    // 生效冻结列数（= 本轮投影实际切进冻结窗格的**可见**列数，全隐藏时为 0）
     int effectiveFrozenColumnCount() const;
     // 最近一次投影的全局列序 / 隐藏集合缓存（006c 合并全局列序用）
     QVector< int > cachedOrderedLogical() const;
@@ -42,7 +43,7 @@ public:
     // 只读口径 getter（006d「冻结到此列」/ 006e/007 冻结区判定共用，调用点不要重算"列序剔隐藏"）
     QVector< int > orderedColumnsLogical() const;     // 数据列全序（logical，含隐藏列）
     QVector< int > visibleColumnOrderLogical() const; // 可见列序（logical，按视图顺序剔除隐藏列）
-    // 本轮投影切进冻结窗格的列集合（logical）
+    // 本轮投影视为冻结的列集合（logical，含被隐藏的冻结列——名额语义）
     QSet< int > frozenColumnsLogical() const;
 
     // 重算冻结窗格宽度与底部等高占位（列宽/行头宽/滚动条可见性变化后调用，幂等）

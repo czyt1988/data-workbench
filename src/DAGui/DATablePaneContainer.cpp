@@ -251,13 +251,16 @@ void DATablePaneContainer::ensureFrozenView()
  * @brief 列状态投影（双窗格）
  *
  * 缓存 ordered/hidden/frozen（006c 合并全局列序、冻结区判定用）。冻结集合 =
- * ordered 中前 freeze 个非隐藏列，其余非隐藏列归主区；用户隐藏列两边都隐藏。
- * 主窗格显示集合额外追加尾部预留空白列（不在 ordered 里的段：恒可见、恒排末尾，
- * 不参与列序/隐藏）；冻结窗格不显示空白列。投影全程置守卫：moveSection 自己
- * 也会 emit sectionMoved，不屏蔽会"程序化重投影 → 又生成一条列序命令"死循环。
+ * ordered 中前 freeze 个列（**隐藏列占名额**：冻结的是"位置"而非"可见列"，
+ * 隐藏一个冻结列不会让主区列补位挤进冻结区——Excel 冻结语义），其余列归主区；
+ * 用户隐藏列两边都隐藏。全部冻结列被隐藏时冻结窗格整体隐藏（名额保留，
+ * 任一冻结列恢复可见即恢复窗格）。主窗格显示集合额外追加尾部预留空白列
+ * （不在 ordered 里的段：恒可见、恒排末尾，不参与列序/隐藏）；冻结窗格不显示
+ * 空白列。投影全程置守卫：moveSection 自己也会 emit sectionMoved，不屏蔽会
+ * "程序化重投影 → 又生成一条列序命令"死循环。
  * @param orderedLogical 全局列序（logical，含隐藏列）
  * @param hiddenLogical 用户隐藏集合
- * @param freezeCount 冻结的可见列数
+ * @param freezeCount 冻结列数（列序前 N 个，含隐藏列）
  */
 void DATablePaneContainer::applyColumnState(const QVector< int >& orderedLogical,
                                              const QSet< int >& hiddenLogical, int freezeCount)
@@ -267,14 +270,14 @@ void DATablePaneContainer::applyColumnState(const QVector< int >& orderedLogical
     const int freeze = qBound(0, freezeCount, orderedLogical.size());
     QVector< int > frozenSet, mainSet;
     mFrozenLogical.clear();
-    for (int logical : orderedLogical) {
-        if (hiddenLogical.contains(logical)) {
-            continue;  // 用户隐藏列两边都隐藏
-        }
-        if (frozenSet.size() < freeze) {
-            frozenSet.append(logical);
-            mFrozenLogical.insert(logical);
-        } else {
+    for (int i = 0; i < orderedLogical.size(); ++i) {
+        const int logical = orderedLogical.at(i);
+        if (i < freeze) {
+            mFrozenLogical.insert(logical);  // 冻结名额：隐藏列也占位（不补位）
+            if (!hiddenLogical.contains(logical)) {
+                frozenSet.append(logical);  // 只有可见的冻结列进冻结窗格
+            }
+        } else if (!hiddenLogical.contains(logical)) {
             mainSet.append(logical);
         }
     }
@@ -567,23 +570,22 @@ void DATablePaneContainer::syncScroll(int value)
 }
 
 /**
- * @brief 视图顺序最后一个冻结列
+ * @brief 视图顺序最后一个可见冻结列
  *
- * 取 mOrderedLogical 中前 mEffectiveFrozen 个非隐藏列的最后一个（与
- * applyColumnState 的分割法律同源）。
- * @return 逻辑列号；无冻结返回 -1
+ * 与 applyColumnState 的分割法律同源：冻结名额 = mOrderedLogical 中落在
+ * mFrozenLogical 集合里的前若干个；从后往前找第一个「在冻结名额里且未被
+ * 隐藏」的列（末名额列可能被隐藏——分界条要对最后一个看得见的冻结列生效；
+ * 全部冻结列隐藏时窗格已隐藏，本函数不会被触达）。
+ * @return 逻辑列号；无可见冻结列返回 -1
  */
 int DATablePaneContainer::lastFrozenLogical() const
 {
-    if (mEffectiveFrozen <= 0 || !mFrozenView) {
+    if (mFrozenLogical.isEmpty() || !mFrozenView) {
         return -1;
     }
-    int taken = 0;
-    for (int logical : mOrderedLogical) {
-        if (mHiddenLogical.contains(logical)) {
-            continue;
-        }
-        if (++taken == mEffectiveFrozen) {
+    for (int i = mOrderedLogical.size() - 1; i >= 0; --i) {
+        const int logical = mOrderedLogical.at(i);
+        if (mFrozenLogical.contains(logical) && !mHiddenLogical.contains(logical)) {
             return logical;
         }
     }
