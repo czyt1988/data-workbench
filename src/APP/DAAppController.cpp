@@ -32,6 +32,7 @@
 #include "DAAppCore.h"
 #include "DAAppRibbonArea.h"
 #include "DAAppDockingArea.h"
+#include "DAChartOperateWidget.h"
 #include "DAAppCommand.h"
 #include "DAUndoHistoryWidget.h"
 #include "DAAppActions.h"
@@ -112,7 +113,10 @@
 #include "ChartAddItem/DAChartAddStatsEcdfplotWidget.h"
 #include "ChartAddItem/DAChartSeriesSelectWidget.h"
 #include "ChartAddItem/DAAbstractStatsChartAddWidget.h"
-#include "DAStatsPlotCoordinator.h"
+#include "Stats/DAStatsPlotCoordinator.h"
+// 表内快速绘图（转入绘图区的编排器）
+#include "TableChart/DAChartQuickPlot.h"
+#include "TableChart/DATableChartTypes.h"
 // Agent
 #include "DAAgentModule.h"
 #include "DAAgentInterface.h"        // PMF connect 到接口信号/方法需完整类型
@@ -500,6 +504,7 @@ void DAAppController::initConnection()
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionGotoMax, onActionGotoMaxTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionGotoMin, onActionGotoMinTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowColumnDescribe, onActionShowColumnDescribeTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionQuickPlot, onActionQuickPlotTriggered);
 
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionCastToNum, onActionCastToNumTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionCastToString, onActionCastToStringTriggered);
@@ -1259,6 +1264,8 @@ void DAAppController::onActionSettingTriggered()
  */
 void DAAppController::activateContextCategoryForWidget(QWidget* widget)
 {
+    // 当前窗口切换后同步「快速绘图」按钮可用状态（无数据表页/无选区时置灰）
+    updateQuickPlotActionState();
     if (nullptr == widget) {
         mRibbon->hideContextCategory(DAAppRibbonArea::AllContextCategory);
         return;
@@ -1606,6 +1613,33 @@ void DAAppController::onDataOperatePageCreated(DADataOperatePageWidget* page)
         connect(w, &DADataOperateOfDataFrameWidget::dataModified, this, [ this ]() {
             setDirty();
         });
+        // ===== 表内快速绘图（快速图表预览）=====
+        // 转入绘图区需要 DAChartOperateWidget，由 APP 注入处理器：DAGui 页面不反向依赖 APP。
+        // 浮窗与正式图表共用 DAChartQuickPlot 这一份「请求 + 规格 + 构建」实现。
+        w->setQuickPlotTransferHandler([ this ](const DA::DATableChartRequest& req,
+                                                const DA::DATableChartSpec& spec,
+                                                bool append,
+                                                QString* error) -> bool {
+            DAChartOperateWidget* cow = mDock ? mDock->getChartOperateWidget() : nullptr;
+            if (!cow) {
+                if (error) {
+                    *error = tr("The chart area is not available");  // cn:绘图区不可用
+                }
+                return false;
+            }
+            if (append && !cow->getCurrentChart()) {
+                if (error) {
+                    *error = tr("There is no current chart to append to");  // cn:当前没有可追加的图表
+                }
+                return false;
+            }
+            return DA::DAChartQuickPlot::transferToFigure(req, spec, cow, append, nullptr, error) != nullptr;
+        });
+        // 选区变化时刷新「快速绘图」动作的可用状态（无选区置灰）
+        connect(w, &DADataOperateOfDataFrameWidget::tableSelectionChanged, this, [ this ]() {
+            updateQuickPlotActionState();
+        });
+        updateQuickPlotActionState();
         // 新数据集产出（004 T1.22 分组聚合等）：置脏 + 抬起数据操作区 + 激活新页面
         //（照 DataframeOperateWorker::createPivotTable 的产出流程；注册已由页面走 addData_ 完成）
         connect(w, &DADataOperateOfDataFrameWidget::newDataCreated, this, [ this ](const DAData& newData) {
@@ -1706,6 +1740,15 @@ void DAAppController::onDataOperatePageCreated(DADataOperatePageWidget* page)
                                 }
                                 return;
                             }
+                            // 快速绘图：右键列已在多选内则保留整个选区，否则只选该列再出图
+                            if (action == ColumnAction::QuickPlot) {
+                                const QList< int > selected = w->getSelectedDataframeCoumns();
+                                if (!selected.contains(col)) {
+                                    selectColumnInDataFrameWidget(w, col);
+                                }
+                                w->showQuickPlot();
+                                return;
+                            }
                             selectColumnInDataFrameWidget(w, col);
                             switch (action) {
                             case ColumnAction::CopyColumnName:
@@ -1730,6 +1773,8 @@ void DAAppController::onDataOperatePageCreated(DADataOperatePageWidget* page)
                             case ColumnAction::RemoveComputedFormula:
                                 w->removeComputedColumnFormula(col);
                                 break;
+                            // 快速绘图已在前置分支处理（保留 case 保证枚举全覆盖）
+                            case ColumnAction::QuickPlot:
                             // 重命名/删除列已在前置分支处理（保留 case 保证枚举全覆盖）
                             case ColumnAction::RenameColumn:
                             case ColumnAction::RemoveColumn:
@@ -3629,6 +3674,41 @@ void DAAppController::onActionShowColumnDescribeTriggered()
         return;
     }
     dfopt->showColumnDescribe(col);
+}
+
+/**
+ * @brief 快速绘图（Ribbon「列」面板 + 列头右键）
+ *
+ * 只负责取当前页并转给页面：选区 → 请求 → 浮窗的规则都在页面与 DAGui 的
+ * 快速绘图模块里，APP 不重复实现建图逻辑。
+ */
+void DAAppController::onActionQuickPlotTriggered()
+{
+    DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false);
+    if (!dfopt) {
+        return;
+    }
+    if (!dfopt->isDataframeTableHaveSelection()) {
+        daWarning << tr("Select the columns to plot first");  // cn:请先选择要绘图的列
+        return;
+    }
+    dfopt->showQuickPlot();
+}
+
+/**
+ * @brief 刷新「快速绘图」动作的可用状态
+ *
+ * 当前没有数据表页、或表格里没有选区时置灰（实施方案 §3.1）。
+ */
+void DAAppController::updateQuickPlotActionState()
+{
+    if (!mActions || !mActions->actionQuickPlot || !mDock) {
+        return;
+    }
+    // 早于数据操作区创建时也要安全（getCurrentDataFrameOperateWidget 内部未判空）
+    DADataOperateWidget* dataWidget = mDock->getDataOperateWidget();
+    DADataOperateOfDataFrameWidget* dfopt = dataWidget ? dataWidget->getCurrentDataFrameWidget() : nullptr;
+    mActions->actionQuickPlot->setEnabled(dfopt && dfopt->isDataframeTableHaveSelection());
 }
 
 /**

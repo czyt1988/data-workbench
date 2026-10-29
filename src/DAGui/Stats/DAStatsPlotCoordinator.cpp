@@ -407,15 +407,32 @@ void DAStatsPlotCoordinator::plotBoxplot(const QJsonObject& params,
     QVariantMap args = toVariantMap(params);
 
     pybind11::dict result = DA::DAPyScripts::getStatistics().computeBoxplotStats(df, args);
-    if (result.is_none() || pybind11::len(result) == 0) return;
+    renderBoxplotResult(result, renderer, QStringLiteral("Boxplot"));
+}
+
+/**
+ * @brief 把 compute_boxplot_stats 的返回结果渲染成箱线图
+ *
+ * 统计向导与快速绘图共用这一份「Python 统计结果 → 箱体 + 离群点 + 类别轴」实现，
+ * 保证两条路径画出来的箱线图完全一致（实施方案 §7.3）。
+ * @param result Python 返回的统计字典（samples / hue_categories）
+ * @param renderer 目标图表的渲染器
+ * @param title 图表标题，空串时不改标题
+ * @return 成功渲染返回 true
+ */
+bool DAStatsPlotCoordinator::renderBoxplotResult(const pybind11::dict& result,
+                                                 DAChartPlotRenderer& renderer,
+                                                 const QString& title)
+{
+    if (result.is_none() || pybind11::len(result) == 0) return false;
 
     // Python returns: samples (list of dict), each dict has:
     //   position, whisker_lower, q1, median, q3, whisker_upper, outliers, mean,
     //   column (str — x-axis category label), hue (str or None — color group)
     pybind11::str samplesKey("samples");
-    if (!result.contains(samplesKey)) return;
+    if (!result.contains(samplesKey)) return false;
     pybind11::object samplesObj = result[samplesKey];
-    if (samplesObj.is_none() || !pybind11::isinstance<pybind11::list>(samplesObj)) return;
+    if (samplesObj.is_none() || !pybind11::isinstance<pybind11::list>(samplesObj)) return false;
     auto samplesList = pybind11::cast<pybind11::list>(samplesObj);
 
     // Hue grouping? Python returns hue_categories = None (no hue) or list of strings.
@@ -467,7 +484,7 @@ void DAStatsPlotCoordinator::plotBoxplot(const QJsonObject& params,
         allOutliers.append(boxOutliers);
     }
 
-    if (boxData.positions.isEmpty()) return;
+    if (boxData.positions.isEmpty()) return false;
 
     // Clear outliers from boxData so renderer doesn't duplicate; we render them as scatter
     for (int i = 0; i < boxData.outliers.size(); ++i) {
@@ -475,7 +492,7 @@ void DAStatsPlotCoordinator::plotBoxplot(const QJsonObject& params,
     }
 
     QVariantMap boxStyle;
-    boxStyle["title"] = QStringLiteral("Boxplot");
+    boxStyle["title"] = title.isEmpty() ? QStringLiteral("Boxplot") : title;
     renderer.renderBoxChart(boxData, boxStyle);
 
     if (!allOutliers.isEmpty()) {
@@ -486,6 +503,7 @@ void DAStatsPlotCoordinator::plotBoxplot(const QJsonObject& params,
 
     // x 轴 = 类别字符串（hue 类别名或列名），在每个箱体位置显示
     renderer.setXBottomCategoryScale(axisPositions, axisLabels, posMin, posMax);
+    return true;
 }
 
 // ============================================================

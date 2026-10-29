@@ -51,6 +51,7 @@ public:
         GotoMax,               ///< 定位最大
         GotoMin,               ///< 定位最小
         ShowColumnDescribe,    ///< 描述统计
+        QuickPlot,             ///< 快速绘图（表内图表浮窗）
         EditComputedFormula,   ///< 编辑公式（计算列，004 T1.23）
         RecomputeComputedColumn,  ///< 重新计算（计算列，004 T1.23）
         RemoveComputedFormula  ///< 移除公式保留数据（计算列，004 T1.23）

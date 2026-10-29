@@ -136,6 +136,7 @@ constexpr char GotoMax[]            = "actionGotoMax";
 constexpr char GotoMin[]            = "actionGotoMin";
 constexpr char GotoCell[]           = "actionGotoCell";  ///< 定位（007 T1.7，Ctrl+G 在 DADataTableView，action 不设 shortcut）
 constexpr char ShowColumnDescribe[] = "actionShowColumnDescribe";
+constexpr char QuickPlot[]          = "actionQuickPlot";  ///< 快速绘图（表内图表浮窗）
 constexpr char RemoveCell[]         = "actionRemoveCell";
 constexpr char CastToNum[]          = "actionCastToNum";
 constexpr char CastToString[]       = "actionCastToString";

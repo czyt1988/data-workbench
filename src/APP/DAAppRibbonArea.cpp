@@ -481,7 +481,7 @@ void DAAppRibbonArea::buildContextCategoryDataFrame()
     mPannelDataframeOperateAxes->addSeparator();
     mPannelDataframeOperateAxes->addLargeAction(mActions->actionRenameColumns);
     mPannelDataframeOperateAxes->addLargeAction(mActions->actionChangeToIndex);
-    // 列面板：重命名列、复制列名、定位最大、定位最小、描述统计
+    // 列面板：重命名列、复制列名、定位最大、定位最小、描述统计、快速绘图
     mPannelDataframeOperateColumn = mCategoryDataframeTableOperate->addPanel(tr("Column"));  // cn:列
     mPannelDataframeOperateColumn->setObjectName(QString::fromUtf8(UiNames::Ribbon::DataFrameOperateColumnPanel));
     mPannelDataframeOperateColumn->addMediumAction(mActions->actionRenameColumn);
@@ -491,6 +491,7 @@ void DAAppRibbonArea::buildContextCategoryDataFrame()
     mPannelDataframeOperateColumn->addMediumAction(mActions->actionGotoMin);
     mPannelDataframeOperateColumn->addSeparator();
     mPannelDataframeOperateColumn->addMediumAction(mActions->actionShowColumnDescribe);
+    mPannelDataframeOperateColumn->addMediumAction(mActions->actionQuickPlot);
     // 类型面板：列类型下拉框、转换为数值、转换为字符串、转换为日期
     mPannelDataframeOperateDType = mCategoryDataframeTableOperate->addPanel(tr("Type"));  // cn:类型
     mPannelDataframeOperateDType->setObjectName(QString::fromUtf8(UiNames::Ribbon::DataFrameOperateDTypePanel));

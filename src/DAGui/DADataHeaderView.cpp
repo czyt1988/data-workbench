@@ -392,9 +392,11 @@ QMenu* DADataHeaderView::buildColumnContextMenu(int logicalIndex)
     QAction* actGotoMin = menu->addAction(QIcon(QStringLiteral(":/DAGui/icon/gotoMin.svg")),
                                           tr("Goto Min"));  // cn:跳转到最小值
     menu->addSeparator();
-    // 组4：描述统计
+    // 组4：描述统计 / 快速绘图
     QAction* actDescribe = menu->addAction(QIcon(QStringLiteral(":/DAGui/icon/showDataInList.svg")),
                                            tr("Show Statistics"));  // cn:显示统计信息
+    QAction* actQuickPlot = menu->addAction(QIcon(QStringLiteral(":/DAGui/icon/chart.svg")),
+                                            tr("Quick Plot"));  // cn:快速绘图
 
     connect(actSortAsc, &QAction::triggered, this, [ this, logicalIndex ]() {
         Q_EMIT columnActionRequested(logicalIndex, ColumnAction::SortAscending);
@@ -426,6 +428,9 @@ QMenu* DADataHeaderView::buildColumnContextMenu(int logicalIndex)
     });
     connect(actDescribe, &QAction::triggered, this, [ this, logicalIndex ]() {
         Q_EMIT columnActionRequested(logicalIndex, ColumnAction::ShowColumnDescribe);
+    });
+    connect(actQuickPlot, &QAction::triggered, this, [ this, logicalIndex ]() {
+        Q_EMIT columnActionRequested(logicalIndex, ColumnAction::QuickPlot);
     });
     // 组5（004 T1.23）：计算列——仅当该列是计算列时追加「编辑公式 / 重新计算 / 移除公式（保留数据）」
     if (mComputedStore && orientation() == Qt::Horizontal && model()) {

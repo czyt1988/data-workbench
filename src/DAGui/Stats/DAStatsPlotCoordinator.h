@@ -1,4 +1,5 @@
 #pragma once
+#include "DAGuiAPI.h"
 #include <QString>
 #include <QJsonObject>
 #include <QPolygonF>
@@ -36,7 +37,7 @@ class dict;
  *       pybind11::dict is allowed (it is consuming return values, not
  *       calling Python).
  */
-class DAStatsPlotCoordinator
+class DAGUI_API DAStatsPlotCoordinator
 {
 public:
     DAStatsPlotCoordinator();
@@ -46,6 +47,20 @@ public:
     bool execute(const QString& plotType, const QJsonObject& params,
                  DA::DAFigureWidget* fig, DA::DAChartWidget* chart,
                  const DA::DAData& data);
+
+    /**
+     * @brief 把 compute_boxplot_stats 的返回结果渲染成箱线图
+     *
+     * 「Python 统计结果 → 箱体 + 离群点 + 类别轴」的唯一实现，统计向导与
+     * 快速绘图的箱线图都走这里，避免两套箱体构建逻辑。
+     * @param result Python 返回的统计字典（samples / hue_categories）
+     * @param renderer 目标图表的渲染器
+     * @param title 图表标题，空串时使用 "Boxplot"
+     * @return 是否成功渲染
+     */
+    static bool renderBoxplotResult(const pybind11::dict& result,
+                                    DAChartPlotRenderer& renderer,
+                                    const QString& title = QString());
 
 private:
     // Per-plot-type orchestration

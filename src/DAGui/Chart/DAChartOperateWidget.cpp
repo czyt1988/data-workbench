@@ -7,6 +7,7 @@
 #include <QMessageBox>
 #include <QVBoxLayout>
 #include <QPointer>
+#include <QSet>
 #include <QDebug>
 // ADS
 #include "DockManager.h"
@@ -43,6 +44,7 @@ public:
     QHash< DAFigureWidget*, DAFigureDockWidget* > mFigToFigureDock;    ///< figure -> figureDock
     QPointer< DAFigureWidget > mCurrentFigure;                         ///< 当前激活 figure
     bool mSuppressCurrentChanged { false };                            ///< 创建/加载期间抑制 currentFigureChanged
+    QSet< DAFigureWidget* > mDetachedFigures;                          ///< 已摘掉 dock 但保活（撤销转入）的 figure
 };
 
 DAChartOperateWidgetPrivate::DAChartOperateWidgetPrivate(DAChartOperateWidget* p) : q_ptr(p)
@@ -113,7 +115,7 @@ DAChartOperateWidget::~DAChartOperateWidget()
 // 获取窗口数量
 int DAChartOperateWidget::getFigureCount() const
 {
-    return d_ptr->mFigures.size();
+    return getFigureList().size();
 }
 
 /**
@@ -209,7 +211,15 @@ DAFigureWidget* DAChartOperateWidget::createFigure(const QString& name, const QS
  */
 QList< DAFigureWidget* > DAChartOperateWidget::getFigureList() const
 {
-    return d_ptr->mFigures;
+    // 撤销「转入绘图区」后 figure 仍保活（栈还在 QUndoGroup 里），但不再算作可见 figure
+    QList< DAFigureWidget* > res;
+    res.reserve(d_ptr->mFigures.size());
+    for (DAFigureWidget* f : std::as_const(d_ptr->mFigures)) {
+        if (!d_ptr->mDetachedFigures.contains(f)) {
+            res.append(f);
+        }
+    }
+    return res;
 }
 
 /**
@@ -219,12 +229,15 @@ QList< DAFigureWidget* > DAChartOperateWidget::getFigureList() const
 DAFigureWidget* DAChartOperateWidget::getCurrentFigure() const
 {
     // 返回追踪的当前 figure（QPointer 在 figure 销毁后自动置空）
-    if (d_ptr->mCurrentFigure) {
+    if (d_ptr->mCurrentFigure && !d_ptr->mDetachedFigures.contains(d_ptr->mCurrentFigure)) {
         return d_ptr->mCurrentFigure;
     }
-    // 回退到最近创建的 figure（不使用 focusedDockWidget，见 targetAreaForNewFigure 注释）
-    if (!d_ptr->mFigures.isEmpty()) {
-        return d_ptr->mFigures.constLast();
+    // 回退到最近创建的、仍挂着的 figure（不使用 focusedDockWidget，见 targetAreaForNewFigure 注释）
+    for (int i = d_ptr->mFigures.size() - 1; i >= 0; --i) {
+        DAFigureWidget* f = d_ptr->mFigures.at(i);
+        if (!d_ptr->mDetachedFigures.contains(f)) {
+            return f;
+        }
     }
     return nullptr;
 }
@@ -358,6 +371,7 @@ void DAChartOperateWidget::removeFigure(DAFigureWidget* f, bool deleteFigure)
         return;  // 不由本部件管理
     }
     Q_EMIT figureRemoving(f);  // 不变量：移除前发射，供监听者在此期间访问 figure
+    d_ptr->mDetachedFigures.remove(f);
     d_ptr->mFigures.removeAll(f);
     d_ptr->mFigToFigureDock.remove(f);
     d_ptr->mFigToDock.remove(f);
@@ -371,6 +385,72 @@ void DAChartOperateWidget::removeFigure(DAFigureWidget* f, bool deleteFigure)
         // 级联删除 figureDock + fig，延迟到事件循环（与原 f->deleteLater() 语义一致）
         dock->deleteLater();
     }
+}
+
+/**
+ * @brief 摘掉 figure 的 dock 但保活 figure（供「转入绘图区」的撤销命令使用）
+ *
+ * 与 removeFigure 的区别：不从 mFigures/映射表里移除，不销毁 figure 与 dock，
+ * 因此该 figure 自己的 QUndoStack 仍留在 QUndoGroup 里，命令与图元都还在，
+ * 重做时可以原样挂回去（实施方案 §6.4）。
+ * @param f 目标 figure
+ * @return 成功摘下返回 true
+ */
+bool DAChartOperateWidget::detachFigureDock(DAFigureWidget* f)
+{
+    if (!f) {
+        return false;
+    }
+    ads::CDockWidget* dock = d_ptr->dockOfFigure(f);
+    if (!dock || d_ptr->mDetachedFigures.contains(f)) {
+        return false;
+    }
+    d_ptr->mDetachedFigures.insert(f);
+    if (d_ptr->mCurrentFigure == f) {
+        d_ptr->mCurrentFigure = nullptr;
+    }
+    if (d_ptr->mDockManager) {
+        d_ptr->mDockManager->removeDockWidget(dock);
+    }
+    return true;
+}
+
+/**
+ * @brief 把保活的 figure 的 dock 重新挂回停靠区
+ * @param f 目标 figure
+ * @return 成功挂回返回 true
+ */
+bool DAChartOperateWidget::reattachFigureDock(DAFigureWidget* f)
+{
+    if (!f) {
+        return false;
+    }
+    ads::CDockWidget* dock = d_ptr->dockOfFigure(f);
+    if (!dock || !d_ptr->mDetachedFigures.contains(f)) {
+        return false;
+    }
+    d_ptr->mDetachedFigures.remove(f);
+    d_ptr->mSuppressCurrentChanged = true;
+    if (ads::CDockAreaWidget* area = d_ptr->targetAreaForNewFigure()) {
+        d_ptr->mDockManager->addDockWidgetTabToArea(dock, area);
+    } else {
+        d_ptr->mDockManager->addDockWidget(ads::CenterDockWidgetArea, dock);
+    }
+    d_ptr->mSuppressCurrentChanged = false;
+    d_ptr->mCurrentFigure          = f;
+    if (QUndoStack* un = f->getUndoStack()) {
+        un->setActive(true);
+    }
+    Q_EMIT currentFigureChanged(f, d_ptr->mFigures.indexOf(f));
+    return true;
+}
+
+/**
+ * @brief figure 的 dock 当前是否挂在停靠区（撤销转入后为 false）
+ */
+bool DAChartOperateWidget::isFigureDocked(DAFigureWidget* f) const
+{
+    return f && d_ptr->mFigToDock.contains(f) && !d_ptr->mDetachedFigures.contains(f);
 }
 
 /**

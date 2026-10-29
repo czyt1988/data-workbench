@@ -65,6 +65,12 @@ public:
     int getFigureIndex(DAFigureWidget* f) const;
     // 删除窗口
     void removeFigure(DAFigureWidget* f, bool deleteFigure = true);
+    // 摘掉 figure 的 dock 但不销毁 figure（撤销「转入绘图区」用；栈与图元保留）
+    bool detachFigureDock(DAFigureWidget* f);
+    // 把保活的 figure 的 dock 重新挂回停靠区（重做）
+    bool reattachFigureDock(DAFigureWidget* f);
+    // figure 的 dock 当前是否挂在停靠区
+    bool isFigureDocked(DAFigureWidget* f) const;
     // 获取当前的chart，如果没有返回nullptr
     DAChartWidget* getCurrentChart() const;
     DAChartWidget* gca() const;

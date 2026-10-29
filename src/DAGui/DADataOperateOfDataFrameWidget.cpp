@@ -55,6 +55,9 @@
 #include "DATableNoteEditDialog.h"
 #include "DADataHeaderView.h"
 #include "DATablePaneContainer.h"
+// 表内快速绘图
+#include "TableChart/DATableChartPlanner.h"
+#include "TableChart/DATableQuickPlotWindow.h"
 // Dialog
 #include "Dialog/DARenameColumnsNameDialog.h"
 #include "Dialog/DADialogDataframeColumnCastToNumeric.h"
@@ -6690,4 +6693,151 @@ int DADataOperateOfDataFrameWidget::clearAllNotes()
     }
     push(new DACommandTableNote_clearAll(mNoteStore));
     return n;
+}
+
+// ============================================================
+// 表内快速绘图（快速图表预览）
+// ============================================================
+
+/**
+ * @brief 有序选区：按视图顺序返回选区涉及的列（数据列号）
+ *
+ * 现有 getSelectedDataframeCoumns 走 QSet::values()，顺序不保证；快速绘图需要
+ * 「第 1 列当 X、第 2 列当 Y」这类稳定语义，因此按窗格容器的可见列顺序重排，
+ * 隐藏列按视图状态跳过（实施方案 §8.1）。
+ * @param ensureInDataframe 是否要求列号落在 dataframe 范围内（惰性源传 false）
+ */
+QList< int > DADataOperateOfDataFrameWidget::getSelectedDataColumnsInViewOrder(bool ensureInDataframe) const
+{
+    QList< int > selected = getSelectedDataframeCoumns(ensureInDataframe);
+    if (selected.isEmpty() && ensureInDataframe) {
+        // 非 pandas 数据源（惰性表）在 ensureInDataframe=true 时取不到，回退一次
+        selected = getSelectedDataframeCoumns(false);
+    }
+    if (selected.isEmpty()) {
+        return {};
+    }
+    QList< int > res;
+    if (mPaneContainer) {
+        const QVector< int > order = mPaneContainer->visibleColumnOrderLogical();
+        const QSet< int > selectedSet(selected.begin(), selected.end());
+        res.reserve(order.size());
+        for (int col : order) {
+            if (selectedSet.contains(col)) {
+                res.append(col);
+            }
+        }
+        return res;
+    }
+    // 没有窗格容器（极端场景）：退回数据列升序，至少保证顺序稳定
+    std::sort(selected.begin(), selected.end());
+    return selected;
+}
+
+/**
+ * @brief 用当前（有序）选区构造快速绘图请求
+ */
+DA::DATableChartRequest DADataOperateOfDataFrameWidget::buildQuickPlotRequest() const
+{
+    DA::DATableChartRequest request;
+    request.data = mData;
+    DAData dataCopy            = mData;  // 值语义共享底层指针，取非 const 接口
+    DATableDataSource* source  = dataCopy.tableSource();
+    if (source) {
+        request.rowCount = source->tableRowCount();
+        request.lazy     = source->isLazyLoaded();
+    }
+    const QList< int > columns = getSelectedDataColumnsInViewOrder(mData.isDataFrame());
+    for (int col : columns) {
+        int occurrence = 0;
+        if (source && col >= 0 && static_cast< std::size_t >(col) < source->tableColumnCount()) {
+            const QString name = source->tableColumnName(static_cast< std::size_t >(col));
+            for (int c = 0; c < col; ++c) {
+                if (source->tableColumnName(static_cast< std::size_t >(c)) == name) {
+                    ++occurrence;
+                }
+            }
+        }
+        request.columns.append(DA::DATableChartPlanner::makeColumn(mData, col, occurrence));
+    }
+    return request;
+}
+
+/**
+ * @brief 用当前选区打开/刷新快速绘图浮窗
+ *
+ * 没有可画图型时浮窗不出现，只在消息区给出原因（实施方案 §3.2 第 1 步）。
+ */
+bool DADataOperateOfDataFrameWidget::showQuickPlot()
+{
+    const DA::DATableChartRequest request = buildQuickPlotRequest();
+    const DA::DATableChartPlan plan       = DA::DATableChartPlanner::plan(request);
+    if (!plan.isPlottable()) {
+        daWarning << DA::DATableQuickPlotWindow::rejectReasonText(plan.reject);
+        return false;
+    }
+
+    if (!mQuickPlotWindow) {
+        mQuickPlotWindow = new DA::DATableQuickPlotWindow(this);
+        connect(mQuickPlotWindow, &DA::DATableQuickPlotWindow::closeRequested,
+                this, &DADataOperateOfDataFrameWidget::closeQuickPlot);
+        connect(mQuickPlotWindow, &DA::DATableQuickPlotWindow::currentSelectionRequested, this, [this]() {
+            if (mQuickPlotWindow) {
+                mQuickPlotWindow->updateRequest(buildQuickPlotRequest());
+            }
+        });
+        connect(mQuickPlotWindow, &DA::DATableQuickPlotWindow::transferRequested, this,
+                [this](const DA::DATableChartRequest& req, const DA::DATableChartSpec& spec, bool append) {
+                    if (!mQuickPlotTransfer) {
+                        daWarning << tr("The chart area is not available");  // cn:绘图区不可用
+                        return;
+                    }
+                    QString error;
+                    if (!mQuickPlotTransfer(req, spec, append, &error)) {
+                        daWarning << (error.isEmpty() ? tr("Failed to transfer to the chart area") : error);  // cn:转入绘图区失败
+                        return;
+                    }
+                    daInfo << tr("The chart has been transferred to the chart area");  // cn:已转入绘图区
+                    closeQuickPlot();
+                });
+        connect(this, &DADataOperateOfDataFrameWidget::dataModified,
+                mQuickPlotWindow, &DA::DATableQuickPlotWindow::notifyDataChanged);
+    }
+
+    // 锚点：表格视口右上角（浮窗落在表格上方附近，不遮挡当前行）
+    QRect anchor;
+    if (DADataTableView* view = getDataTableView()) {
+        if (QWidget* viewport = view->viewport()) {
+            const QPoint point = viewport->mapTo(this, QPoint(viewport->width() - 1, 0));
+            anchor             = QRect(point, QSize(1, 1));
+        }
+    }
+    mQuickPlotWindow->showForRequest(request, anchor);
+    return mQuickPlotWindow->isVisible();
+}
+
+/**
+ * @brief 关闭快速绘图浮窗（实例保留复用）
+ */
+void DADataOperateOfDataFrameWidget::closeQuickPlot()
+{
+    if (mQuickPlotWindow) {
+        mQuickPlotWindow->hide();
+    }
+}
+
+/**
+ * @brief 快速绘图浮窗是否正在显示
+ */
+bool DADataOperateOfDataFrameWidget::isQuickPlotVisible() const
+{
+    return mQuickPlotWindow && mQuickPlotWindow->isVisible();
+}
+
+/**
+ * @brief 设置转入绘图区的处理器（APP 注入：APP 才能拿到 DAChartOperateWidget）
+ */
+void DADataOperateOfDataFrameWidget::setQuickPlotTransferHandler(const QuickPlotTransferHandler& handler)
+{
+    mQuickPlotTransfer = handler;
 }

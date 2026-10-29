@@ -104,6 +104,7 @@ void DAAppActions::buildDataAction()
     actionGotoMax           = createAction(UiNames::Action::GotoMax, ":/app/bright/Icon/gotoMax.svg");
     actionGotoMin           = createAction(UiNames::Action::GotoMin, ":/app/bright/Icon/gotoMin.svg");
     actionShowColumnDescribe = createAction(UiNames::Action::ShowColumnDescribe, ":/app/bright/Icon/showInfomation.svg");
+    actionQuickPlot          = createAction(UiNames::Action::QuickPlot, ":/app/bright/Icon/showChart.svg");
     actionRemoveCell        = createAction(UiNames::Action::RemoveCell, ":/app/bright/Icon/removeCell.svg");
     actionCastToNum         = createAction(UiNames::Action::CastToNum, ":/app/bright/Icon/castToNum.svg");
     actionCastToString      = createAction(UiNames::Action::CastToString, ":/app/bright/Icon/castToString.svg");
@@ -685,6 +686,8 @@ void DAAppActions::retranslateUi()
     actionGotoMin->setToolTip(tr("Scroll to the minimum value of this column"));         // cn:滚动到此列最小值处
     actionShowColumnDescribe->setText(tr("Show Statistics"));                           // cn:显示统计信息
     actionShowColumnDescribe->setToolTip(tr("Show statistics of this column via pandas describe")); // cn:通过pandas describe显示此列的统计信息
+    actionQuickPlot->setText(tr("Quick Plot"));                                          // cn:快速绘图
+    actionQuickPlot->setToolTip(tr("Plot the selected columns in a floating chart preview"));  // cn:把选中列画成浮窗图表预览
     actionClearStyleSelected->setText(tr("Clear Selected Style"));      // cn:清除选中样式
     actionClearStyleSelected->setToolTip(tr("Clear styles in selected cells"));  // cn:清除选中单元格的样式
     actionClearStyleAll->setText(tr("Clear All Style"));               // cn:清除所有样式

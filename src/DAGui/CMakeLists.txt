@@ -202,6 +202,8 @@ set(DA_LIB_SUBDIR_Chart ${CMAKE_CURRENT_SOURCE_DIR}/Chart)
 set(DA_LIB_SUBDIR_ChartAddItem ${CMAKE_CURRENT_SOURCE_DIR}/ChartAddItem)
 set(DA_LIB_SUBDIR_Agent ${CMAKE_CURRENT_SOURCE_DIR}/Agent)
 set(DA_LIB_SUBDIR_MarkdownView ${CMAKE_CURRENT_SOURCE_DIR}/MarkdownView)
+set(DA_LIB_SUBDIR_Stats ${CMAKE_CURRENT_SOURCE_DIR}/Stats)
+set(DA_LIB_SUBDIR_TableChart ${CMAKE_CURRENT_SOURCE_DIR}/TableChart)
 
 # Models
 file(GLOB DA_LIB_HEADER_FILES_Models ${DA_LIB_SUBDIR_Models}/*.h)
@@ -336,6 +338,7 @@ set(DA_LIB_HEADER_FILES_Chart
     ${DA_LIB_SUBDIR_Chart}/DADataLinkTableTab.h
     ${DA_LIB_SUBDIR_Chart}/DADataLinkTableModel.h
     ${DA_LIB_SUBDIR_Chart}/DADataLinkTableDelegate.h
+    ${DA_LIB_SUBDIR_Chart}/DAChartOperateWidgetCommands.h
 )
 set(DA_LIB_SOURCE_FILES_Chart
     ${DA_LIB_SUBDIR_Chart}/DAChartOperateWidget.cpp
@@ -349,6 +352,7 @@ set(DA_LIB_SOURCE_FILES_Chart
     ${DA_LIB_SUBDIR_Chart}/DADataLinkTableTab.cpp
     ${DA_LIB_SUBDIR_Chart}/DADataLinkTableModel.cpp
     ${DA_LIB_SUBDIR_Chart}/DADataLinkTableDelegate.cpp
+    ${DA_LIB_SUBDIR_Chart}/DAChartOperateWidgetCommands.cpp
 )
 set(DA_LIB_QT_UI_FILES_Chart
     ${DA_LIB_SUBDIR_Chart}/DAChartManageWidget.ui
@@ -478,6 +482,14 @@ file(GLOB DA_LIB_HEADER_FILES_MarkdownView ${DA_LIB_SUBDIR_MarkdownView}/*.h)
 file(GLOB DA_LIB_SOURCE_FILES_MarkdownView ${DA_LIB_SUBDIR_MarkdownView}/*.cpp)
 file(GLOB DA_LIB_RC_FILES_MarkdownView ${DA_LIB_SUBDIR_MarkdownView}/*.qrc ${DA_LIB_SUBDIR_MarkdownView}/resources/*.qrc)
 
+#Stats（统计绘图核心：Python 聚合 + C++ 渲染管线，统计向导与快速绘图共用）
+file(GLOB DA_LIB_HEADER_FILES_Stats ${DA_LIB_SUBDIR_Stats}/*.h)
+file(GLOB DA_LIB_SOURCE_FILES_Stats ${DA_LIB_SUBDIR_Stats}/*.cpp)
+
+#TableChart（表内快速绘图：请求/规格/采样/图元构建/浮窗）
+file(GLOB DA_LIB_HEADER_FILES_TableChart ${DA_LIB_SUBDIR_TableChart}/*.h)
+file(GLOB DA_LIB_SOURCE_FILES_TableChart ${DA_LIB_SUBDIR_TableChart}/*.cpp)
+
 # Agent UI 需要 WebEngine/WebChannel/Network（DAGui/Agent 子目录的 DAAgentDockWidget 等）
 # Qt5 的一体化模块 QtWebEngine 在 Qt6 中拆分为 WebEngineCore/WebEngineQuick/WebEngineWidgets，
 # 官方 Qt6 安装不再提供 Qt6WebEngine 兼容包，组件名需按大版本区分
@@ -547,6 +559,12 @@ da_add_library(
             ${DA_LIB_HEADER_FILES_MarkdownView}
             ${DA_LIB_SOURCE_FILES_MarkdownView}
             ${DA_LIB_RC_FILES_MarkdownView}
+            #Stats
+            ${DA_LIB_HEADER_FILES_Stats}
+            ${DA_LIB_SOURCE_FILES_Stats}
+            #TableChart
+            ${DA_LIB_HEADER_FILES_TableChart}
+            ${DA_LIB_SOURCE_FILES_TableChart}
             ${CMAKE_CURRENT_SOURCE_DIR}/../DAGlobals.h
     QT_PUBLIC Core Gui Widgets Xml Svg ${DAGUI_WEBENGINE_COMPS}
     LINK_PUBLIC DAUtils DAMessageHandler DAData DAPyWorkFlow DAFigure
@@ -557,9 +575,9 @@ da_add_library(
     THIRDPARTY_PUBLIC DAWidgets ads qwt quazip
     THIRDPARTY python pybind11 SARibbonBar ctk
     # ui 文件进行窗口提升时需要找到这些子目录的头文件
-    PUBLIC_SUBDIRS Dialog ChartSetting Chart3DSetting NodeSetting Chart ChartAddItem Agent MarkdownView
+    PUBLIC_SUBDIRS Dialog ChartSetting Chart3DSetting NodeSetting Chart ChartAddItem Agent MarkdownView Stats TableChart
     # 头文件安装：根 + 各子目录
-    HEADERS_DIRS Models MimeData Commands ChartSetting Chart3DSetting NodeSetting Chart ChartAddItem Agent MarkdownView
+    HEADERS_DIRS Models MimeData Commands ChartSetting Chart3DSetting NodeSetting Chart ChartAddItem Agent MarkdownView Stats TableChart
     HEADERS ${DA_LIB_HEADER_FILES} ${DA_LIB_HEADER_FILES_Dialog}
 )
 

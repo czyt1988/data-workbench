@@ -19,6 +19,7 @@ class QItemSelectionModel;
 #include "DATableValidationRule.h"
 #include "DADataOperatePageWidget.h"
 #include "DADataHeaderView.h"
+#include "TableChart/DATableChartTypes.h"
 #include "Dialog/DADialogFindReplace.h"
 #include "Dialog/DADialogGotoCell.h"
 namespace Ui
@@ -133,9 +134,24 @@ public:
 
     // ===== 列视图（006）=====
     // 列视图直接入口（007 定位的对接面）：只写 store + 重投影，不入撤销栈
-    void setColumnHiddenDirectly(const QString& name, int occurrence, bool hidden);
-    // 打开列视图对话框（006d）：列名编辑 + 隐藏勾选 + 冻结勾选；确定按差异构造一个批量父命令
+    void setColumnHiddenDirectly(const QString& name, int occurrence, bool hidden);    // 打开列视图对话框（006d）：列名编辑 + 隐藏勾选 + 冻结勾选；确定按差异构造一个批量父命令
     void showColumnViewDialog();
+
+    // ===== 表内快速绘图（快速图表预览）=====
+    // 有序选区：按视图顺序返回选区涉及的列（数据列号），隐藏列跳过
+    QList< int > getSelectedDataColumnsInViewOrder(bool ensureInDataframe = true) const;
+    // 用当前（有序）选区构造快速绘图请求；列角色走 DATableChartPlanner
+    DA::DATableChartRequest buildQuickPlotRequest() const;
+    // 用当前选区打开/刷新快速绘图浮窗；无法出图时返回 false（已给用户可见提示）
+    bool showQuickPlot();
+    // 关闭快速绘图浮窗（实例保留复用）
+    void closeQuickPlot();
+    // 快速绘图浮窗是否正在显示
+    bool isQuickPlotVisible() const;
+    // 转入绘图区的处理器：APP 能拿到 DAChartOperateWidget，由 APP 注入
+    using QuickPlotTransferHandler =
+        std::function< bool(const DA::DATableChartRequest&, const DA::DATableChartSpec&, bool /*append*/, QString* /*error*/) >;
+    void setQuickPlotTransferHandler(const QuickPlotTransferHandler& handler);
     // 打开定位对话框（007 T1.7）：Ctrl+G / 滚动条右键 / Ribbon「定位」共用
     void showGotoDialog();
     // 解析定位请求并调定位单入口；返回 false = 未解析成功（已给用户可见提示、未改选区）
@@ -550,6 +566,8 @@ private:
     class DADialogTableColumnView* mDialogColumnView { nullptr };  ///< 列视图对话框（006d，懒建复用）
     class DADialogGotoCell* mGotoDialog { nullptr };               ///< 定位对话框（007，懒建复用）
     QPointer< DADialogValidationReport > mValidationReport;  ///< 非模态校验报告窗（005 T1.25，重跑前先关旧的）
+    class DATableQuickPlotWindow* mQuickPlotWindow { nullptr };  ///< 快速绘图浮窗（懒建，页内单实例）
+    QuickPlotTransferHandler mQuickPlotTransfer;                 ///< 转入绘图区处理器（APP 注入）
 
     // ===== 查找状态（002 T1.4）=====
     QVector< QPair< int, int > > mFindHits;  ///< 当前命中集（数据源绝对行列，行主序，≤上限）

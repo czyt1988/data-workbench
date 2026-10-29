@@ -91,6 +91,7 @@ public:
     QAction* actionGotoMax;            ///< 跳转到最大值（表头右键）
     QAction* actionGotoMin;            ///< 跳转到最小值（表头右键）
     QAction* actionShowColumnDescribe; ///< 显示列统计信息（表头右键）
+    QAction* actionQuickPlot;          ///< 快速绘图（表内图表浮窗）
     QAction* actionCastToString;       ///< 数据转换为文本
     QAction* actionCastToNum;          ///< 数据转换为数字
     QAction* actionCastToDatetime;     ///< 转换为日期

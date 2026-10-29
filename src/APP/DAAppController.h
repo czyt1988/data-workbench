@@ -320,6 +320,8 @@ private Q_SLOTS:
     void onActionGotoMinTriggered();
     // 显示列统计信息（表头右键）
     void onActionShowColumnDescribeTriggered();
+    // 快速绘图（Ribbon「列」面板 + 列头右键）：用当前选区打开表内图表浮窗
+    void onActionQuickPlotTriggered();
     // 表内查找/替换（002 T1.4，Ribbon「编辑」面板；唤出当前数据页浮动条）
     void onActionFindTriggered();
     void onActionReplaceTriggered();
@@ -572,6 +574,8 @@ private:
     bool ensureFigureChart(DA::DAFigureWidget*& fig, DA::DAChartWidget*& chart);
     // 根据widget激活对应的context category
     void activateContextCategoryForWidget(QWidget* widget);
+    // 刷新「快速绘图」动作的可用状态（有选区才可点）
+    void updateQuickPlotActionState();
     // 激活操作窗口当前的undo栈（焦点切到数据操作/绘图窗口时同步全局undo/redo action状态）
     void activateUndoStackForWidget(DAAbstractOperateWidget* w);
     // 注册 Agent 聊天窗口本地跳转链接处理器（da-figure:/da-data: 等协议，见 DAAgentLinkDispatcher）
