@@ -1447,7 +1447,7 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="../APP/DAAppActions.cpp" line="+476"/>
+        <location filename="../APP/DAAppActions.cpp" line="+477"/>
         <source>Open</source>
         <translation>Open</translation>
     </message>
@@ -1897,7 +1897,7 @@
         <translation>To Datetime</translation>
     </message>
     <message>
-        <location line="+89"/>
+        <location line="+91"/>
         <source>Grouping</source>
         <translation>Grouping</translation>
     </message>
@@ -1912,19 +1912,19 @@
         <translation>Show Information Window</translation>
     </message>
     <message>
-        <location line="-196"/>
+        <location line="-198"/>
         <source>Enable or disable legend in the chart</source>
         <translation>Enable or disable legend in the chart</translation>
     </message>
     <message>
         <location line="-142"/>
         <source>New Project</source>
-        <translation type="unfinished"></translation>
+        <translation>New Project</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Create a new empty project</source>
-        <translation type="unfinished"></translation>
+        <translation>Create a new empty project</translation>
     </message>
     <message>
         <location line="+9"/>
@@ -2428,6 +2428,16 @@
     </message>
     <message>
         <location line="+1"/>
+        <source>Quick Plot</source>
+        <translation>Quick Plot</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Plot the selected columns in a floating chart preview</source>
+        <translation>Plot the selected columns in a floating chart preview</translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Clear Selected Style</source>
         <translation>Clear Selected Style</translation>
     </message>
@@ -2724,22 +2734,22 @@
     <message>
         <location line="+1"/>
         <source>Show Data Link Table</source>
-        <translation type="unfinished"></translation>
+        <translation>Show Data Link Table</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Show the data link table (hidden by default, shown when data probes are used)</source>
-        <translation type="unfinished"></translation>
+        <translation>Show the data link table (hidden by default, shown when data probes are used)</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Show Markdown Viewer</source>
-        <translation type="unfinished"></translation>
+        <translation>Show Markdown Viewer</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Show the markdown viewer (opens a file dialog if no file is open)</source>
-        <translation type="unfinished"></translation>
+        <translation>Show the markdown viewer (opens a file dialog if no file is open)</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -2942,7 +2952,7 @@
         <translation>Unpivot wide columns into a long-format new dataset (in-place optional)</translation>
     </message>
     <message>
-        <location line="-66"/>
+        <location line="-68"/>
         <source>Data Probe</source>
         <translation>Data Probe</translation>
     </message>
@@ -2952,7 +2962,7 @@
         <translation>Data probe: click to create probes on all charts, values are listed in the data link table</translation>
     </message>
     <message>
-        <location line="+65"/>
+        <location line="+67"/>
         <source>Fill</source>
         <translation>Fill</translation>
     </message>
@@ -3162,116 +3172,116 @@
     <message>
         <location filename="../APP/DAAppApplicationWidget.cpp" line="+492"/>
         <source>(untitled project)</source>
-        <translation type="unfinished"></translation>
+        <translation>(untitled project)</translation>
     </message>
     <message>
         <location line="+16"/>
         <source>Information</source>
-        <translation type="unfinished">Information</translation>
+        <translation>Information</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>The file does not exist and has been removed from the recent list</source>
-        <translation type="unfinished"></translation>
+        <translation>The file does not exist and has been removed from the recent list</translation>
     </message>
     <message>
         <location line="+57"/>
         <location line="+10"/>
         <source>Open Project</source>
-        <translation type="unfinished"></translation>
+        <translation>Open Project</translation>
     </message>
     <message>
         <location line="-9"/>
         <location line="+17"/>
         <source>New Project</source>
-        <translation type="unfinished"></translation>
+        <translation>New Project</translation>
     </message>
     <message>
         <location line="-16"/>
         <location line="+21"/>
         <source>Import Data</source>
-        <translation type="unfinished">Import Data</translation>
+        <translation>Import Data</translation>
     </message>
     <message>
         <location line="-20"/>
         <location line="+26"/>
         <source>Save As</source>
-        <translation type="unfinished">Save As</translation>
+        <translation>Save As</translation>
     </message>
     <message>
         <location line="-24"/>
         <source>Save Project</source>
-        <translation type="unfinished">Save Project</translation>
+        <translation>Save Project</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Setting</source>
-        <translation type="unfinished">Setting</translation>
+        <translation>Setting</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>About</source>
-        <translation type="unfinished">About</translation>
+        <translation>About</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Exit</source>
-        <translation type="unfinished"></translation>
+        <translation>Exit</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Browse...</source>
-        <translation type="unfinished"></translation>
+        <translation>Browse...</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Recent Projects</source>
-        <translation type="unfinished"></translation>
+        <translation>Recent Projects</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>No recent projects</source>
-        <translation type="unfinished"></translation>
+        <translation>No recent projects</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Append To Project...</source>
-        <translation type="unfinished"></translation>
+        <translation>Append To Project...</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Open Markdown...</source>
-        <translation type="unfinished"></translation>
+        <translation>Open Markdown...</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Clear Recent List</source>
-        <translation type="unfinished"></translation>
+        <translation>Clear Recent List</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Create a new empty untitled project. You will be asked to save the current project if it has unsaved changes.</source>
-        <translation type="unfinished"></translation>
+        <translation>Create a new empty untitled project. You will be asked to save the current project if it has unsaved changes.</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Create Empty Project</source>
-        <translation type="unfinished"></translation>
+        <translation>Create Empty Project</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Import data files into the project (txt, csv, xls, xlsx, parquet, pickle; multiple files can be selected for batch import).</source>
-        <translation type="unfinished"></translation>
+        <translation>Import data files into the project (txt, csv, xls, xlsx, parquet, pickle; multiple files can be selected for batch import).</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Browse Files...</source>
-        <translation type="unfinished"></translation>
+        <translation>Browse Files...</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Choose Save Location...</source>
-        <translation type="unfinished"></translation>
+        <translation>Choose Save Location...</translation>
     </message>
 </context>
 <context>
@@ -3332,36 +3342,36 @@
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+848"/>
+        <location filename="../APP/DAAppController.cpp" line="+853"/>
         <source>Save Project</source>
         <translation>Save Project</translation>
     </message>
     <message>
         <location line="+19"/>
-        <location line="+1065"/>
+        <location line="+1105"/>
         <source>Warning</source>
         <translation>Warning</translation>
     </message>
     <message>
-        <location line="-1053"/>
+        <location line="-1093"/>
         <source>Failed to save project! Path: %1</source>
         <translation>Failed to save project! Path: %1</translation>
     </message>
     <message>
         <location line="+3"/>
-        <location line="+659"/>
+        <location line="+661"/>
         <source>Project saved successfully, path: %1</source>
         <translation>Project saved successfully, path: %1</translation>
     </message>
     <message>
         <location line="-155"/>
         <source>The current project has unsaved changes. Do you want to save before creating a new project?</source>
-        <translation type="unfinished"></translation>
+        <translation>The current project has unsaved changes. Do you want to save before creating a new project?</translation>
     </message>
     <message>
         <location line="+17"/>
         <source>New project created</source>
-        <translation type="unfinished"></translation>
+        <translation>New project created</translation>
     </message>
     <message>
         <location line="+165"/>
@@ -3369,7 +3379,17 @@
         <translation>Project loaded successfully, path: %1</translation>
     </message>
     <message>
-        <location line="+334"/>
+        <location line="+51"/>
+        <source>The chart area is not available</source>
+        <translation>The chart area is not available</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>There is no current chart to append to</source>
+        <translation>There is no current chart to append to</translation>
+    </message>
+    <message>
+        <location line="+315"/>
         <source>Image saved successfully to %1</source>
         <translation>Image saved successfully to %1</translation>
     </message>
@@ -3496,24 +3516,24 @@
         <translation>Before creating a new coordinate, you need to create a figure</translation>
     </message>
     <message>
-        <location line="-1830"/>
+        <location line="-1870"/>
         <source>Please select the data operation window</source>
         <translation>Please select the data operation window</translation>
     </message>
     <message>
         <location line="-51"/>
-        <location line="+569"/>
+        <location line="+571"/>
         <location line="+73"/>
         <source>Project File</source>
         <translation>Project File</translation>
     </message>
     <message>
-        <location line="-624"/>
+        <location line="-626"/>
         <source>Whether to overwrite the file: %1</source>
         <translation>Whether to overwrite the file: %1</translation>
     </message>
     <message>
-        <location line="+475"/>
+        <location line="+477"/>
         <location line="+20"/>
         <location line="+22"/>
         <source>Question</source>
@@ -3536,23 +3556,23 @@
         <translation>Failed to load project file: %1</translation>
     </message>
     <message>
-        <location line="+319"/>
+        <location line="+357"/>
         <source>Image files</source>
         <translation>Image files</translation>
     </message>
     <message>
-        <location line="-384"/>
-        <location line="+385"/>
+        <location line="-422"/>
+        <location line="+423"/>
         <source>Any files</source>
         <translation>Any files</translation>
     </message>
     <message>
-        <location line="-386"/>
+        <location line="-424"/>
         <source>Markdown files</source>
         <translation>Markdown files</translation>
     </message>
     <message>
-        <location line="+483"/>
+        <location line="+521"/>
         <source>Received null project interface</source>
         <translation>Received null project interface</translation>
     </message>
@@ -3563,12 +3583,12 @@
         <translation>No cells selected to copy</translation>
     </message>
     <message>
-        <location line="-1475"/>
+        <location line="-1515"/>
         <source>No active table</source>
         <translation>No active table</translation>
     </message>
     <message>
-        <location line="+1863"/>
+        <location line="+1903"/>
         <source>Cannot rename a series, please select a dataset</source>
         <translation>Cannot rename a series, please select a dataset</translation>
     </message>
@@ -3618,7 +3638,12 @@
         <translation>Column [%1] minimum value at row %2</translation>
     </message>
     <message>
-        <location line="+595"/>
+        <location line="+37"/>
+        <source>Select the columns to plot first</source>
+        <translation>Select the columns to plot first</translation>
+    </message>
+    <message>
+        <location line="+591"/>
         <source>Export</source>
         <translation>Export</translation>
     </message>
@@ -3658,12 +3683,12 @@
         <translation>The selected data source is empty</translation>
     </message>
     <message>
-        <location line="-2691"/>
+        <location line="-2724"/>
         <source>Before running the workflow, you need to save the project</source>
         <translation>Before running the workflow, you need to save the project</translation>
     </message>
     <message>
-        <location line="+1980"/>
+        <location line="+2013"/>
         <source>Please select a column first</source>
         <translation>Please select a column first</translation>
     </message>
@@ -4225,12 +4250,12 @@
     </message>
     <message>
         <location line="+29"/>
-        <location line="+401"/>
+        <location line="+402"/>
         <source>Workflow</source>
         <translation>Workflow</translation>
     </message>
     <message>
-        <location line="-428"/>
+        <location line="-429"/>
         <source>Dataset</source>
         <translation>Dataset</translation>
     </message>
@@ -4253,13 +4278,13 @@
         <location line="+2"/>
         <location line="+11"/>
         <location line="+21"/>
-        <location line="+272"/>
+        <location line="+273"/>
         <location line="+195"/>
         <source>View</source>
         <translation>View</translation>
     </message>
     <message>
-        <location line="-498"/>
+        <location line="-499"/>
         <source>Display</source>
         <translation>Display</translation>
     </message>
@@ -4282,12 +4307,12 @@
     </message>
     <message>
         <location line="-226"/>
-        <location line="+303"/>
+        <location line="+304"/>
         <source>Data Operations</source>
         <translation>Data Operations</translation>
     </message>
     <message>
-        <location line="-309"/>
+        <location line="-310"/>
         <location line="+235"/>
         <source>Axes</source>
         <translation>Axes</translation>
@@ -4301,64 +4326,64 @@
     <message>
         <location line="-246"/>
         <location line="+12"/>
-        <location line="+244"/>
+        <location line="+245"/>
         <location line="+5"/>
         <source>Type</source>
         <translation>Type</translation>
     </message>
     <message>
-        <location line="-260"/>
+        <location line="-261"/>
         <location line="+12"/>
-        <location line="+259"/>
+        <location line="+260"/>
         <location line="+4"/>
         <source>Format</source>
         <translation>Format</translation>
     </message>
     <message>
-        <location line="-269"/>
-        <location line="+327"/>
+        <location line="-270"/>
+        <location line="+328"/>
         <source>Table Style</source>
         <translation>Table Style</translation>
     </message>
     <message>
-        <location line="-326"/>
-        <location line="+330"/>
+        <location line="-327"/>
+        <location line="+331"/>
         <source>Fill</source>
         <translation>Fill</translation>
     </message>
     <message>
-        <location line="-329"/>
-        <location line="+337"/>
+        <location line="-330"/>
+        <location line="+338"/>
         <source>Font</source>
         <translation>Font</translation>
     </message>
     <message>
-        <location line="-336"/>
-        <location line="+342"/>
+        <location line="-337"/>
+        <location line="+343"/>
         <source>Clear</source>
         <translation>Clear</translation>
     </message>
     <message>
-        <location line="-335"/>
+        <location line="-336"/>
         <source>Fill Color</source>
         <translation>Fill Color</translation>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+411"/>
+        <location line="+412"/>
         <source>Workflow Edit</source>
         <translation>Workflow Edit</translation>
     </message>
     <message>
-        <location line="-446"/>
+        <location line="-447"/>
         <location line="+36"/>
-        <location line="+414"/>
+        <location line="+415"/>
         <source>Clipboard</source>
         <translation>Clipboard</translation>
     </message>
     <message>
-        <location line="-400"/>
-        <location line="+520"/>
+        <location line="-401"/>
+        <location line="+521"/>
         <source>Chart Style</source>
         <translation>Chart Style</translation>
     </message>
@@ -4430,43 +4455,43 @@
         <translation>Agent module is not ready</translation>
     </message>
     <message>
-        <location line="-1060"/>
-        <location line="+418"/>
+        <location line="-1061"/>
+        <location line="+419"/>
         <source>Item</source>
         <translation>Item</translation>
     </message>
     <message>
-        <location line="-417"/>
-        <location line="+426"/>
+        <location line="-418"/>
+        <location line="+427"/>
         <source>Text</source>
         <translation>Text</translation>
     </message>
     <message>
-        <location line="-425"/>
-        <location line="+430"/>
+        <location line="-426"/>
+        <location line="+431"/>
         <source>Background</source>
         <translation>Background</translation>
     </message>
     <message>
-        <location line="-427"/>
-        <location line="+509"/>
+        <location line="-428"/>
+        <location line="+510"/>
         <source>Workflow Run</source>
         <translation>Workflow Run</translation>
     </message>
     <message>
-        <location line="-508"/>
-        <location line="+511"/>
+        <location line="-509"/>
+        <location line="+512"/>
         <source>Run</source>
         <translation>Run</translation>
     </message>
     <message>
-        <location line="-509"/>
-        <location line="+342"/>
+        <location line="-510"/>
+        <location line="+343"/>
         <source>Figure</source>
         <translation>Figure</translation>
     </message>
     <message>
-        <location line="-336"/>
+        <location line="-337"/>
         <source>Figure Setting</source>
         <translation>Figure Setting</translation>
     </message>
@@ -4482,12 +4507,12 @@
     </message>
     <message>
         <location line="+5"/>
-        <location line="+574"/>
+        <location line="+575"/>
         <source>Chart Edit</source>
         <translation>Chart Edit</translation>
     </message>
     <message>
-        <location line="-576"/>
+        <location line="-577"/>
         <source>Chart Setting</source>
         <translation>Chart Setting</translation>
     </message>
@@ -4498,12 +4523,12 @@
     </message>
     <message>
         <location line="+2"/>
-        <location line="+583"/>
+        <location line="+584"/>
         <source>Select Tool</source>
         <translation>Select Tool</translation>
     </message>
     <message>
-        <location line="-582"/>
+        <location line="-583"/>
         <source>Chart Assist Tool</source>
         <translation>Chart Assist Tool</translation>
     </message>
@@ -4525,7 +4550,7 @@
     </message>
     <message>
         <location line="-15"/>
-        <location line="+366"/>
+        <location line="+367"/>
         <source>Stats Plot</source>
         <translation>Stats Plot</translation>
     </message>
@@ -4540,8 +4565,8 @@
         <translation>Workflow View</translation>
     </message>
     <message>
-        <location line="-499"/>
-        <location line="+536"/>
+        <location line="-500"/>
+        <location line="+537"/>
         <source>Export</source>
         <translation>Export</translation>
     </message>
@@ -4561,26 +4586,26 @@
         <translation>Assist Tools</translation>
     </message>
     <message>
-        <location line="-626"/>
-        <location line="+280"/>
+        <location line="-627"/>
+        <location line="+281"/>
         <source>Edit</source>
         <translation>Edit</translation>
     </message>
     <message>
-        <location line="-271"/>
-        <location line="+347"/>
+        <location line="-272"/>
+        <location line="+348"/>
         <source>Conditional</source>
         <translation>Conditional</translation>
     </message>
     <message>
-        <location line="-353"/>
-        <location line="+308"/>
+        <location line="-354"/>
+        <location line="+309"/>
         <source>Computed Column</source>
         <translation>Computed Column</translation>
     </message>
     <message>
-        <location line="-307"/>
-        <location line="+314"/>
+        <location line="-308"/>
+        <location line="+315"/>
         <source>Data Transform</source>
         <translation>Data Transform</translation>
     </message>
@@ -5555,7 +5580,7 @@
 <context>
     <name>DA::DAChartAdd3DSurfaceWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAdd3DSurfaceWidget.cpp" line="+122"/>
+        <location filename="../DAGui/ChartAddItem/DAChartAdd3DSurfaceWidget.cpp" line="+120"/>
         <source>Surface3D</source>
         <translation>Surface3D</translation>
     </message>
@@ -5652,7 +5677,7 @@
         <translation>Data</translation>
     </message>
     <message>
-        <location line="+39"/>
+        <location line="+48"/>
         <location line="+11"/>
         <source>Warning</source>
         <translation>Warning</translation>
@@ -6161,17 +6186,22 @@
     </message>
     <message>
         <location line="+11"/>
-        <location line="+198"/>
+        <location line="+213"/>
         <source>Warning</source>
         <translation>Warning</translation>
     </message>
     <message>
-        <location line="-197"/>
+        <location line="-212"/>
         <source>Only one series can be used as x, the extra series were ignored</source>
-        <translation type="unfinished"></translation>
+        <translation>Only one series can be used as x, the extra series were ignored</translation>
     </message>
     <message>
-        <location line="+155"/>
+        <location line="+111"/>
+        <source>y%1</source>
+        <translation>y%1</translation>
+    </message>
+    <message>
+        <location line="+59"/>
         <source>The initial value of x auto increment series must be a floating-point arithmetic number</source>
         <translation>The initial value of x auto increment series must be a floating-point arithmetic number</translation>
     </message>
@@ -6213,7 +6243,7 @@
     <message>
         <location line="-7"/>
         <source>The length of y series &apos;%1&apos; (%2) does not match the length of x series &apos;%3&apos; (%4). All y series must have the same length as x</source>
-        <translation type="unfinished"></translation>
+        <translation>The length of y series &apos;%1&apos; (%2) does not match the length of x series &apos;%3&apos; (%4). All y series must have the same length as x</translation>
     </message>
 </context>
 <context>
@@ -7782,7 +7812,7 @@
         <location line="+888"/>
         <location line="+20"/>
         <source>Remove Chart</source>
-        <translation type="unfinished"></translation>
+        <translation>Remove Chart</translation>
     </message>
     <message>
         <location line="-903"/>
@@ -7813,7 +7843,7 @@
         <location line="+465"/>
         <location line="+20"/>
         <source>Are you sure to remove chart &quot;%1&quot;? All its items will be removed.</source>
-        <translation type="unfinished"></translation>
+        <translation>Are you sure to remove chart &quot;%1&quot;? All its items will be removed.</translation>
     </message>
     <message>
         <location line="-784"/>
@@ -8052,12 +8082,12 @@
 <context>
     <name>DA::DAChartOperateWidget</name>
     <message>
-        <location filename="../DAGui/Chart/DAChartOperateWidget.cpp" line="+167"/>
+        <location filename="../DAGui/Chart/DAChartOperateWidget.cpp" line="+169"/>
         <source>figure-%1</source>
         <translation>figure-%1</translation>
     </message>
     <message>
-        <location line="+374"/>
+        <location line="+451"/>
         <source>Question</source>
         <translation>Question</translation>
     </message>
@@ -8562,12 +8592,12 @@
     <message>
         <location filename="../DAFigure/DAChartTextEditorPopup.cpp" line="+71"/>
         <source>Cancel</source>
-        <translation type="unfinished">Cancel</translation>
+        <translation>Cancel</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>OK</source>
-        <translation type="unfinished">OK</translation>
+        <translation>OK</translation>
     </message>
 </context>
 <context>
@@ -9059,7 +9089,7 @@
 <context>
     <name>DA::DADataHeaderView</name>
     <message>
-        <location filename="../DAGui/DADataHeaderView.cpp" line="+359"/>
+        <location filename="../DAGui/DADataHeaderView.cpp" line="+371"/>
         <source>Sort Ascending</source>
         <translation>Sort Ascending</translation>
     </message>
@@ -9109,7 +9139,12 @@
         <translation>Show Statistics</translation>
     </message>
     <message>
-        <location line="+39"/>
+        <location line="+2"/>
+        <source>Quick Plot</source>
+        <translation>Quick Plot</translation>
+    </message>
+    <message>
+        <location line="+42"/>
         <source>Edit Formula</source>
         <translation>Edit Formula</translation>
     </message>
@@ -9139,17 +9174,17 @@
         <translation>Show All Columns</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+7"/>
         <source>Freeze This Column</source>
         <translation>Freeze This Column</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="-1"/>
         <source>Unfreeze This Column</source>
         <translation>Unfreeze This Column</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+3"/>
         <source>Unfreeze All Columns</source>
         <translation>Unfreeze All Columns</translation>
     </message>
@@ -9349,7 +9384,7 @@
 <context>
     <name>DA::DADataOperateOfDataFrameWidget</name>
     <message>
-        <location filename="../DAGui/DADataOperateOfDataFrameWidget.cpp" line="+730"/>
+        <location filename="../DAGui/DADataOperateOfDataFrameWidget.cpp" line="+770"/>
         <source>Warning</source>
         <translation>Warning</translation>
     </message>
@@ -9365,25 +9400,25 @@
     </message>
     <message>
         <location line="+57"/>
-        <location line="+506"/>
+        <location line="+499"/>
         <location line="+40"/>
         <location line="+46"/>
         <location line="+47"/>
-        <location line="+2129"/>
+        <location line="+2275"/>
         <location line="+24"/>
         <source>Please select a valid column</source>
         <translation>Please select a valid column</translation>
     </message>
     <message>
-        <location line="-2621"/>
-        <location line="+2203"/>
+        <location line="-2767"/>
+        <location line="+2349"/>
         <location line="+63"/>
         <location line="+47"/>
         <source>Please select a valid cell</source>
         <translation>Please select a valid cell</translation>
     </message>
     <message>
-        <location line="-2249"/>
+        <location line="-2395"/>
         <source>Clipboard is empty</source>
         <translation>Clipboard is empty</translation>
     </message>
@@ -9434,7 +9469,7 @@
         <translation>Unable to get statistics for this column</translation>
     </message>
     <message>
-        <location line="+2262"/>
+        <location line="+2408"/>
         <source>This data source is read-only and cannot be sorted.</source>
         <translation>This data source is read-only and cannot be sorted.</translation>
     </message>
@@ -9510,12 +9545,12 @@
         <translation>The formula must not reference the target column itself</translation>
     </message>
     <message>
-        <location line="-4132"/>
+        <location line="-4278"/>
         <source>Computed column(s) %1 became invalid because their dependency column(s) were removed</source>
         <translation>Computed column(s) %1 became invalid because their dependency column(s) were removed</translation>
     </message>
     <message>
-        <location line="+4553"/>
+        <location line="+4699"/>
         <source>Computed column(s) %1 became invalid because their dependency column(s) were merged</source>
         <translation>Computed column(s) %1 became invalid because their dependency column(s) were merged</translation>
     </message>
@@ -9626,22 +9661,22 @@
         <translation>(no table metadata to clear)</translation>
     </message>
     <message>
-        <location line="-2871"/>
+        <location line="-2958"/>
         <source>Freeze the first N columns (added to already frozen columns, 0 = no change):</source>
-        <translation type="unfinished"></translation>
+        <translation>Freeze the first N columns (added to already frozen columns, 0 = no change):</translation>
     </message>
     <message>
-        <location line="+163"/>
+        <location line="+213"/>
         <source>Column names must be unique</source>
-        <translation type="unfinished"></translation>
+        <translation>Column names must be unique</translation>
     </message>
     <message>
-        <location line="+34"/>
+        <location line="+54"/>
         <source>Rename and update column view</source>
-        <translation type="unfinished"></translation>
+        <translation>Rename and update column view</translation>
     </message>
     <message>
-        <location line="+1254"/>
+        <location line="+1271"/>
         <source>The table has no conditional format rules</source>
         <translation>The table has no conditional format rules</translation>
     </message>
@@ -9971,28 +10006,43 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation>This table has no notes</translation>
     </message>
     <message>
-        <location line="-4242"/>
+        <location line="+101"/>
+        <source>The chart area is not available</source>
+        <translation>The chart area is not available</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Failed to transfer to the chart area</source>
+        <translation>Failed to transfer to the chart area</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>The chart has been transferred to the chart area</source>
+        <translation>The chart has been transferred to the chart area</translation>
+    </message>
+    <message>
+        <location line="-4497"/>
         <source>Some column view settings were dropped because the table columns have changed.</source>
         <translation>Some column view settings were dropped because the table columns have changed.</translation>
     </message>
     <message>
-        <location line="+448"/>
+        <location line="+578"/>
         <source>Freeze Columns</source>
         <translation>Freeze Columns</translation>
     </message>
     <message>
-        <location line="+126"/>
+        <location line="+176"/>
         <source>Column View...</source>
         <translation>Column View...</translation>
     </message>
     <message>
-        <location line="-1007"/>
+        <location line="-1116"/>
         <location line="+65"/>
         <source>The column &quot;%1&quot; was hidden and has been made visible</source>
         <translation>The column &quot;%1&quot; was hidden and has been made visible</translation>
     </message>
     <message>
-        <location line="+1059"/>
+        <location line="+1205"/>
         <source>Row number is out of range</source>
         <translation>Row number is out of range</translation>
     </message>
@@ -11558,47 +11608,47 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     <message>
         <location filename="../DAGui/Dialog/DADialogTableColumnView.cpp" line="+58"/>
         <source>Column View</source>
-        <translation type="unfinished">Column View</translation>
+        <translation>Column View</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Search...</source>
-        <translation type="unfinished">Search...</translation>
+        <translation>Search...</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Column</source>
-        <translation type="unfinished">Column</translation>
+        <translation>Column</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Hidden</source>
-        <translation type="unfinished"></translation>
+        <translation>Hidden</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Frozen</source>
-        <translation type="unfinished"></translation>
+        <translation>Frozen</translation>
     </message>
     <message>
         <location line="+15"/>
         <source>Show All</source>
-        <translation type="unfinished">Show All</translation>
+        <translation>Show All</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Unhide all columns</source>
-        <translation type="unfinished"></translation>
+        <translation>Unhide all columns</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Unfreeze All</source>
-        <translation type="unfinished"></translation>
+        <translation>Unfreeze All</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Remove column freezing</source>
-        <translation type="unfinished"></translation>
+        <translation>Remove column freezing</translation>
     </message>
 </context>
 <context>
@@ -12110,12 +12160,12 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     <message>
         <location line="+19"/>
         <source>Up</source>
-        <translation type="unfinished">Up</translation>
+        <translation>Up</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Down</source>
-        <translation type="unfinished">Down</translation>
+        <translation>Down</translation>
     </message>
     <message>
         <location line="+33"/>
@@ -13965,6 +14015,185 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     </message>
 </context>
 <context>
+    <name>DA::DATableQuickPlotWindow</name>
+    <message>
+        <location filename="../DAGui/TableChart/DATableQuickPlotWindow.cpp" line="+58"/>
+        <source>Select one or more columns first</source>
+        <translation>Select one or more columns first</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>The current data is not a table and cannot be plotted</source>
+        <translation>The current data is not a table and cannot be plotted</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>The selection has no numeric column</source>
+        <translation>The selection has no numeric column</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Select a numeric column together with the time column</source>
+        <translation>Select a numeric column together with the time column</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>This combination of columns is not supported yet. Select one category column plus one numeric column, or only numeric columns</source>
+        <translation>This combination of columns is not supported yet. Select one category column plus one numeric column, or only numeric columns</translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Line</source>
+        <translation>Line</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Scatter</source>
+        <translation>Scatter</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Histogram</source>
+        <translation>Histogram</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Box plot</source>
+        <translation>Box plot</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Bar</source>
+        <translation>Bar</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Multi-series line</source>
+        <translation>Multi-series line</translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>Mean</source>
+        <translation>Mean</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Median</source>
+        <translation>Median</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Sum</source>
+        <translation>Sum</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Count</source>
+        <translation>Count</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Std</source>
+        <translation>Std</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Var</source>
+        <translation>Var</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Min</source>
+        <translation>Min</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Max</source>
+        <translation>Max</translation>
+    </message>
+    <message>
+        <location line="+29"/>
+        <source>Close</source>
+        <translation>Close</translation>
+    </message>
+    <message>
+        <location line="+18"/>
+        <source>Aggregation:</source>
+        <translation>Aggregation:</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>X axis:</source>
+        <translation>X axis:</translation>
+    </message>
+    <message>
+        <location line="+35"/>
+        <source>Update to current selection</source>
+        <translation>Update to current selection</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Refresh</source>
+        <translation>Refresh</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Transfer to chart area</source>
+        <translation>Transfer to chart area</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>New figure tab</source>
+        <translation>New figure tab</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Append to current chart</source>
+        <translation>Append to current chart</translation>
+    </message>
+    <message>
+        <location line="+77"/>
+        <source>Row number</source>
+        <translation>Row number</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source> (as category)</source>
+        <translation> (as category)</translation>
+    </message>
+    <message>
+        <location line="+44"/>
+        <source>Based on %1 of %2 sampled rows</source>
+        <translation>Based on %1 of %2 sampled rows</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Aggregation uses the sample</source>
+        <translation>Aggregation uses the sample</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Ignored %1 rows with missing values</source>
+        <translation>Ignored %1 rows with missing values</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Showing top %1 of %2 categories</source>
+        <translation>Showing top %1 of %2 categories</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <location line="+125"/>
+        <source>The data has changed, click Refresh to redraw</source>
+        <translation>The data has changed, click Refresh to redraw</translation>
+    </message>
+    <message>
+        <location line="-19"/>
+        <source>The previous chart type is not available for the new selection, switched to the default type</source>
+        <translation>The previous chart type is not available for the new selection, switched to the default type</translation>
+    </message>
+</context>
+<context>
     <name>DA::DATableStatsWidget</name>
     <message>
         <location filename="../DAGui/DATableStatsWidget.cpp" line="+158"/>
@@ -14457,7 +14686,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-3785"/>
+        <location filename="../APP/DAAppController.cpp" line="-3859"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>
@@ -15772,6 +16001,153 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <location filename="../DAGui/Chart/DAChartManageWidget.ui" line="+14"/>
         <source>Chart Manage</source>
         <translation>Chart Manage</translation>
+    </message>
+</context>
+<context>
+    <name>DAChartQuickPlot</name>
+    <message>
+        <location filename="../DAGui/TableChart/DAChartQuickPlot.cpp" line="+148"/>
+        <source>mean</source>
+        <translation>mean</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>median</source>
+        <translation>median</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>sum</source>
+        <translation>sum</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <location line="+149"/>
+        <location line="+176"/>
+        <source>count</source>
+        <translation>count</translation>
+    </message>
+    <message>
+        <location line="-323"/>
+        <source>std</source>
+        <translation>std</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>var</source>
+        <translation>var</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>min</source>
+        <translation>min</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>max</source>
+        <translation>max</translation>
+    </message>
+    <message>
+        <location line="+53"/>
+        <source>row</source>
+        <translation>row</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <location line="+62"/>
+        <location line="+32"/>
+        <location line="+85"/>
+        <source>The selected columns cannot be plotted</source>
+        <translation>The selected columns cannot be plotted</translation>
+    </message>
+    <message>
+        <location line="-171"/>
+        <location line="+62"/>
+        <source>No valid numeric data in the selected column</source>
+        <translation>No valid numeric data in the selected column</translation>
+    </message>
+    <message>
+        <location line="-55"/>
+        <location line="+22"/>
+        <source>Failed to build the series</source>
+        <translation>Failed to build the series</translation>
+    </message>
+    <message>
+        <location line="-7"/>
+        <location line="+135"/>
+        <source>No valid numeric data in the selected columns</source>
+        <translation>No valid numeric data in the selected columns</translation>
+    </message>
+    <message>
+        <location line="-87"/>
+        <source>Failed to build the histogram</source>
+        <translation>Failed to build the histogram</translation>
+    </message>
+    <message>
+        <location line="+86"/>
+        <source>box plot</source>
+        <translation>box plot</translation>
+    </message>
+    <message>
+        <location line="+64"/>
+        <source>No valid data for the bar chart</source>
+        <translation>No valid data for the bar chart</translation>
+    </message>
+    <message>
+        <location line="+21"/>
+        <source>count of %1</source>
+        <translation>count of %1</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>%1 by %2</source>
+        <translation>%1 by %2</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Failed to build the bar chart</source>
+        <translation>Failed to build the bar chart</translation>
+    </message>
+    <message>
+        <location line="+24"/>
+        <source>There is no chart to draw on</source>
+        <translation>There is no chart to draw on</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>The current selection cannot be plotted</source>
+        <translation>The current selection cannot be plotted</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>The chart specification is incomplete</source>
+        <translation>The chart specification is incomplete</translation>
+    </message>
+    <message>
+        <location line="+59"/>
+        <source>The chart area is not available</source>
+        <translation>The chart area is not available</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Failed to create a figure</source>
+        <translation>Failed to create a figure</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <location line="+41"/>
+        <source>quick plot</source>
+        <translation>quick plot</translation>
+    </message>
+    <message>
+        <location line="-31"/>
+        <source>Failed to create a chart</source>
+        <translation>Failed to create a chart</translation>
+    </message>
+    <message>
+        <location line="+26"/>
+        <source>There is no current chart to append to</source>
+        <translation>There is no current chart to append to</translation>
     </message>
 </context>
 <context>
@@ -18912,7 +19288,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>cannot import DAWorkbench.DAStatistics</translation>
     </message>
     <message>
-        <location filename="../APP/DAStatsPlotCoordinator.cpp" line="+84"/>
+        <location filename="../DAGui/Stats/DAStatsPlotCoordinator.cpp" line="+84"/>
         <source>The selected data source is empty</source>
         <translation>The selected data source is empty</translation>
     </message>
@@ -19201,7 +19577,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>clear cells</translation>
     </message>
     <message>
-        <location filename="../DAGui/Commands/DACommandsTableColumnView.cpp" line="+35"/>
+        <location filename="../DAGui/Commands/DACommandsTableColumnView.cpp" line="+48"/>
         <source>Reorder columns</source>
         <translation>Reorder columns</translation>
     </message>
@@ -19218,27 +19594,27 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>Show all columns</translation>
     </message>
     <message>
-        <location line="+62"/>
+        <location line="+81"/>
         <source>Freeze column &quot;%1&quot;</source>
         <translation>Freeze column &quot;%1&quot;</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+6"/>
         <source>Freeze columns</source>
         <translation>Freeze columns</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="-4"/>
         <source>Unfreeze column &quot;%1&quot;</source>
         <translation>Unfreeze column &quot;%1&quot;</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+6"/>
         <source>Unfreeze columns</source>
         <translation>Unfreeze columns</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="-4"/>
         <source>Unfreeze all columns</source>
         <translation>Unfreeze all columns</translation>
     </message>
@@ -19371,6 +19747,11 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <location line="+2"/>
         <source>Custom Dash Line</source>
         <translation>Custom Dash Line</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/Chart/DAChartOperateWidgetCommands.cpp" line="+25"/>
+        <source>create figure</source>
+        <translation>create figure</translation>
     </message>
 </context>
 <context>

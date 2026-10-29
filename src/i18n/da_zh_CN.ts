@@ -1447,7 +1447,7 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="../APP/DAAppActions.cpp" line="+476"/>
+        <location filename="../APP/DAAppActions.cpp" line="+477"/>
         <source>Open</source>
         <translation>打开</translation>
     </message>
@@ -1899,7 +1899,7 @@
         <translation>转换为日期类型</translation>
     </message>
     <message>
-        <location line="+89"/>
+        <location line="+91"/>
         <source>Grouping</source>
         <translation>分组</translation>
     </message>
@@ -1914,7 +1914,7 @@
         <translation>信息窗口</translation>
     </message>
     <message>
-        <location line="-196"/>
+        <location line="-198"/>
         <source>Enable or disable legend in the chart</source>
         <translation>启用或禁用图表中的图例</translation>
     </message>
@@ -2441,6 +2441,16 @@
         <location line="+1"/>
         <source>Show statistics of this column via pandas describe</source>
         <translation>通过pandas describe显示此列的统计信息</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Quick Plot</source>
+        <translation>快速绘图</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Plot the selected columns in a floating chart preview</source>
+        <translation>把选中列画成浮窗图表预览</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -3348,24 +3358,24 @@
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+848"/>
+        <location filename="../APP/DAAppController.cpp" line="+853"/>
         <source>Save Project</source>
         <translation>保存工程</translation>
     </message>
     <message>
         <location line="+19"/>
-        <location line="+1065"/>
+        <location line="+1105"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location line="-1053"/>
+        <location line="-1093"/>
         <source>Failed to save project! Path: %1</source>
         <translation>工程保存失败！路径为:%1</translation>
     </message>
     <message>
         <location line="+3"/>
-        <location line="+659"/>
+        <location line="+661"/>
         <source>Project saved successfully, path: %1</source>
         <translation>工程保存成功，路径为:%1</translation>
     </message>
@@ -3385,7 +3395,17 @@
         <translation>工程加载成功，路径为:%1</translation>
     </message>
     <message>
-        <location line="+334"/>
+        <location line="+51"/>
+        <source>The chart area is not available</source>
+        <translation>绘图区不可用</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>There is no current chart to append to</source>
+        <translation>当前没有可追加的图表</translation>
+    </message>
+    <message>
+        <location line="+315"/>
         <source>Image saved successfully to %1</source>
         <translation>图片保存成功：%1</translation>
     </message>
@@ -3512,24 +3532,24 @@
         <translation>在创建一个坐标系之前，需要先创建一个绘图窗口</translation>
     </message>
     <message>
-        <location line="-1830"/>
+        <location line="-1870"/>
         <source>Please select the data operation window</source>
         <translation>请选中数据操作窗口</translation>
     </message>
     <message>
         <location line="-51"/>
-        <location line="+569"/>
+        <location line="+571"/>
         <location line="+73"/>
         <source>Project File</source>
         <translation>工程文件</translation>
     </message>
     <message>
-        <location line="-624"/>
+        <location line="-626"/>
         <source>Whether to overwrite the file: %1</source>
         <translation>是否覆盖文件:%1</translation>
     </message>
     <message>
-        <location line="+475"/>
+        <location line="+477"/>
         <location line="+20"/>
         <location line="+22"/>
         <source>Question</source>
@@ -3552,23 +3572,23 @@
         <translation>加载工程文件失败:%1</translation>
     </message>
     <message>
-        <location line="+319"/>
+        <location line="+357"/>
         <source>Image files</source>
         <translation>图片文件</translation>
     </message>
     <message>
-        <location line="-384"/>
-        <location line="+385"/>
+        <location line="-422"/>
+        <location line="+423"/>
         <source>Any files</source>
         <translation>任意文件</translation>
     </message>
     <message>
-        <location line="-386"/>
+        <location line="-424"/>
         <source>Markdown files</source>
         <translation>Markdown 文件</translation>
     </message>
     <message>
-        <location line="+483"/>
+        <location line="+521"/>
         <source>Received null project interface</source>
         <translation>获取到空工程接口</translation>
     </message>
@@ -3579,12 +3599,12 @@
         <translation>没有选中可复制的单元格</translation>
     </message>
     <message>
-        <location line="-1475"/>
+        <location line="-1515"/>
         <source>No active table</source>
         <translation>无活动表格</translation>
     </message>
     <message>
-        <location line="+1863"/>
+        <location line="+1903"/>
         <source>Cannot rename a series, please select a dataset</source>
         <translation>无法重命名series，请选中数据集</translation>
     </message>
@@ -3634,7 +3654,12 @@
         <translation>列[%1] 最小值位于第 %2 行</translation>
     </message>
     <message>
-        <location line="+595"/>
+        <location line="+37"/>
+        <source>Select the columns to plot first</source>
+        <translation>请先选择要绘图的列</translation>
+    </message>
+    <message>
+        <location line="+591"/>
         <source>Export</source>
         <translation>导出</translation>
     </message>
@@ -3674,12 +3699,12 @@
         <translation>选中的数据源为空</translation>
     </message>
     <message>
-        <location line="-2691"/>
+        <location line="-2724"/>
         <source>Before running the workflow, you need to save the project</source>
         <translation>在运行工作流之前，需要先保存工程</translation>
     </message>
     <message>
-        <location line="+1980"/>
+        <location line="+2013"/>
         <source>Please select a column first</source>
         <translation>请先选择列</translation>
     </message>
@@ -4241,12 +4266,12 @@
     </message>
     <message>
         <location line="+29"/>
-        <location line="+401"/>
+        <location line="+402"/>
         <source>Workflow</source>
         <translation>工作流</translation>
     </message>
     <message>
-        <location line="-428"/>
+        <location line="-429"/>
         <source>Dataset</source>
         <translation>数据集</translation>
     </message>
@@ -4269,13 +4294,13 @@
         <location line="+2"/>
         <location line="+11"/>
         <location line="+21"/>
-        <location line="+272"/>
+        <location line="+273"/>
         <location line="+195"/>
         <source>View</source>
         <translation>视图</translation>
     </message>
     <message>
-        <location line="-498"/>
+        <location line="-499"/>
         <source>Display</source>
         <translation>视图显示</translation>
     </message>
@@ -4298,12 +4323,12 @@
     </message>
     <message>
         <location line="-226"/>
-        <location line="+303"/>
+        <location line="+304"/>
         <source>Data Operations</source>
         <translation>数据操作</translation>
     </message>
     <message>
-        <location line="-309"/>
+        <location line="-310"/>
         <location line="+235"/>
         <source>Axes</source>
         <translation>坐标轴</translation>
@@ -4317,64 +4342,64 @@
     <message>
         <location line="-246"/>
         <location line="+12"/>
-        <location line="+244"/>
+        <location line="+245"/>
         <location line="+5"/>
         <source>Type</source>
         <translation>类型</translation>
     </message>
     <message>
-        <location line="-260"/>
+        <location line="-261"/>
         <location line="+12"/>
-        <location line="+259"/>
+        <location line="+260"/>
         <location line="+4"/>
         <source>Format</source>
         <translation>格式</translation>
     </message>
     <message>
-        <location line="-269"/>
-        <location line="+327"/>
+        <location line="-270"/>
+        <location line="+328"/>
         <source>Table Style</source>
         <translation>表格样式</translation>
     </message>
     <message>
-        <location line="-326"/>
-        <location line="+330"/>
+        <location line="-327"/>
+        <location line="+331"/>
         <source>Fill</source>
         <translation>底色</translation>
     </message>
     <message>
-        <location line="-329"/>
-        <location line="+337"/>
+        <location line="-330"/>
+        <location line="+338"/>
         <source>Font</source>
         <translation>字体</translation>
     </message>
     <message>
-        <location line="-336"/>
-        <location line="+342"/>
+        <location line="-337"/>
+        <location line="+343"/>
         <source>Clear</source>
         <translation>清除</translation>
     </message>
     <message>
-        <location line="-335"/>
+        <location line="-336"/>
         <source>Fill Color</source>
         <translation>填充颜色</translation>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+411"/>
+        <location line="+412"/>
         <source>Workflow Edit</source>
         <translation>工作流编辑</translation>
     </message>
     <message>
-        <location line="-446"/>
+        <location line="-447"/>
         <location line="+36"/>
-        <location line="+414"/>
+        <location line="+415"/>
         <source>Clipboard</source>
         <translation>剪贴板</translation>
     </message>
     <message>
-        <location line="-400"/>
-        <location line="+520"/>
+        <location line="-401"/>
+        <location line="+521"/>
         <source>Chart Style</source>
         <translation>图表样式</translation>
     </message>
@@ -4446,43 +4471,43 @@
         <translation>Agent 模块未就绪</translation>
     </message>
     <message>
-        <location line="-1060"/>
-        <location line="+418"/>
+        <location line="-1061"/>
+        <location line="+419"/>
         <source>Item</source>
         <translation>图元</translation>
     </message>
     <message>
-        <location line="-417"/>
-        <location line="+426"/>
+        <location line="-418"/>
+        <location line="+427"/>
         <source>Text</source>
         <translation>文本</translation>
     </message>
     <message>
-        <location line="-425"/>
-        <location line="+430"/>
+        <location line="-426"/>
+        <location line="+431"/>
         <source>Background</source>
         <translation>背景</translation>
     </message>
     <message>
-        <location line="-427"/>
-        <location line="+509"/>
+        <location line="-428"/>
+        <location line="+510"/>
         <source>Workflow Run</source>
         <translation>工作流运行</translation>
     </message>
     <message>
-        <location line="-508"/>
-        <location line="+511"/>
+        <location line="-509"/>
+        <location line="+512"/>
         <source>Run</source>
         <translation>运行</translation>
     </message>
     <message>
-        <location line="-509"/>
-        <location line="+342"/>
+        <location line="-510"/>
+        <location line="+343"/>
         <source>Figure</source>
         <translation>绘图</translation>
     </message>
     <message>
-        <location line="-336"/>
+        <location line="-337"/>
         <source>Figure Setting</source>
         <translation>绘图设置</translation>
     </message>
@@ -4498,12 +4523,12 @@
     </message>
     <message>
         <location line="+5"/>
-        <location line="+574"/>
+        <location line="+575"/>
         <source>Chart Edit</source>
         <translation>绘图编辑</translation>
     </message>
     <message>
-        <location line="-576"/>
+        <location line="-577"/>
         <source>Chart Setting</source>
         <translation>绘图设置</translation>
     </message>
@@ -4514,12 +4539,12 @@
     </message>
     <message>
         <location line="+2"/>
-        <location line="+583"/>
+        <location line="+584"/>
         <source>Select Tool</source>
         <translation>选区工具</translation>
     </message>
     <message>
-        <location line="-582"/>
+        <location line="-583"/>
         <source>Chart Assist Tool</source>
         <translation>图表辅助工具</translation>
     </message>
@@ -4541,7 +4566,7 @@
     </message>
     <message>
         <location line="-15"/>
-        <location line="+366"/>
+        <location line="+367"/>
         <source>Stats Plot</source>
         <translation>统计绘图</translation>
     </message>
@@ -4556,8 +4581,8 @@
         <translation>工作流视图</translation>
     </message>
     <message>
-        <location line="-499"/>
-        <location line="+536"/>
+        <location line="-500"/>
+        <location line="+537"/>
         <source>Export</source>
         <translation>导出</translation>
     </message>
@@ -4577,26 +4602,26 @@
         <translation>辅助工具</translation>
     </message>
     <message>
-        <location line="-626"/>
-        <location line="+280"/>
+        <location line="-627"/>
+        <location line="+281"/>
         <source>Edit</source>
         <translation>编辑</translation>
     </message>
     <message>
-        <location line="-271"/>
-        <location line="+347"/>
+        <location line="-272"/>
+        <location line="+348"/>
         <source>Conditional</source>
         <translation>条件格式</translation>
     </message>
     <message>
-        <location line="-353"/>
-        <location line="+308"/>
+        <location line="-354"/>
+        <location line="+309"/>
         <source>Computed Column</source>
         <translation>计算列</translation>
     </message>
     <message>
-        <location line="-307"/>
-        <location line="+314"/>
+        <location line="-308"/>
+        <location line="+315"/>
         <source>Data Transform</source>
         <translation>数据变换</translation>
     </message>
@@ -5571,7 +5596,7 @@
 <context>
     <name>DA::DAChartAdd3DSurfaceWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAdd3DSurfaceWidget.cpp" line="+122"/>
+        <location filename="../DAGui/ChartAddItem/DAChartAdd3DSurfaceWidget.cpp" line="+120"/>
         <source>Surface3D</source>
         <translation>3D曲面</translation>
     </message>
@@ -5668,7 +5693,7 @@
         <translation>数据</translation>
     </message>
     <message>
-        <location line="+39"/>
+        <location line="+48"/>
         <location line="+11"/>
         <source>Warning</source>
         <translation>警告</translation>
@@ -6177,17 +6202,22 @@
     </message>
     <message>
         <location line="+11"/>
-        <location line="+198"/>
+        <location line="+213"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location line="-197"/>
+        <location line="-212"/>
         <source>Only one series can be used as x, the extra series were ignored</source>
         <translation>x只能添加一个序列，多余的序列已被忽略</translation>
     </message>
     <message>
-        <location line="+155"/>
+        <location line="+111"/>
+        <source>y%1</source>
+        <translation>y%1</translation>
+    </message>
+    <message>
+        <location line="+59"/>
         <source>The initial value of x auto increment series must be a floating-point arithmetic number</source>
         <translation>x自增序列的初始值必须为浮点数</translation>
     </message>
@@ -7798,7 +7828,7 @@
         <location line="+888"/>
         <location line="+20"/>
         <source>Remove Chart</source>
-        <translation type="unfinished">删除坐标系</translation>
+        <translation>删除坐标系</translation>
     </message>
     <message>
         <location line="-903"/>
@@ -7829,7 +7859,7 @@
         <location line="+465"/>
         <location line="+20"/>
         <source>Are you sure to remove chart &quot;%1&quot;? All its items will be removed.</source>
-        <translation type="unfinished">确认删除坐标系“%1”吗？其全部图元将一并移除。</translation>
+        <translation>确认删除坐标系&quot;%1&quot;吗？其全部图元将一并移除。</translation>
     </message>
     <message>
         <location line="-784"/>
@@ -8068,12 +8098,12 @@
 <context>
     <name>DA::DAChartOperateWidget</name>
     <message>
-        <location filename="../DAGui/Chart/DAChartOperateWidget.cpp" line="+167"/>
+        <location filename="../DAGui/Chart/DAChartOperateWidget.cpp" line="+169"/>
         <source>figure-%1</source>
         <translation>图-%1</translation>
     </message>
     <message>
-        <location line="+374"/>
+        <location line="+451"/>
         <source>Question</source>
         <translation>疑问</translation>
     </message>
@@ -8578,12 +8608,12 @@
     <message>
         <location filename="../DAFigure/DAChartTextEditorPopup.cpp" line="+71"/>
         <source>Cancel</source>
-        <translation type="unfinished">取消</translation>
+        <translation>取消</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>OK</source>
-        <translation type="unfinished"></translation>
+        <translation>确定</translation>
     </message>
 </context>
 <context>
@@ -9075,7 +9105,7 @@
 <context>
     <name>DA::DADataHeaderView</name>
     <message>
-        <location filename="../DAGui/DADataHeaderView.cpp" line="+359"/>
+        <location filename="../DAGui/DADataHeaderView.cpp" line="+371"/>
         <source>Sort Ascending</source>
         <translation>升序排序</translation>
     </message>
@@ -9125,7 +9155,12 @@
         <translation>显示统计信息</translation>
     </message>
     <message>
-        <location line="+39"/>
+        <location line="+2"/>
+        <source>Quick Plot</source>
+        <translation>快速绘图</translation>
+    </message>
+    <message>
+        <location line="+42"/>
         <source>Edit Formula</source>
         <translation>编辑公式</translation>
     </message>
@@ -9155,17 +9190,17 @@
         <translation>显示所有列</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+7"/>
         <source>Freeze This Column</source>
         <translation>冻结此列</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="-1"/>
         <source>Unfreeze This Column</source>
         <translation>取消冻结此列</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+3"/>
         <source>Unfreeze All Columns</source>
         <translation>取消全部冻结</translation>
     </message>
@@ -9365,7 +9400,7 @@
 <context>
     <name>DA::DADataOperateOfDataFrameWidget</name>
     <message>
-        <location filename="../DAGui/DADataOperateOfDataFrameWidget.cpp" line="+730"/>
+        <location filename="../DAGui/DADataOperateOfDataFrameWidget.cpp" line="+770"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
@@ -9381,25 +9416,25 @@
     </message>
     <message>
         <location line="+57"/>
-        <location line="+506"/>
+        <location line="+499"/>
         <location line="+40"/>
         <location line="+46"/>
         <location line="+47"/>
-        <location line="+2129"/>
+        <location line="+2275"/>
         <location line="+24"/>
         <source>Please select a valid column</source>
         <translation>请选择正确的列</translation>
     </message>
     <message>
-        <location line="-2621"/>
-        <location line="+2203"/>
+        <location line="-2767"/>
+        <location line="+2349"/>
         <location line="+63"/>
         <location line="+47"/>
         <source>Please select a valid cell</source>
         <translation>请选择正确的单元格</translation>
     </message>
     <message>
-        <location line="-2249"/>
+        <location line="-2395"/>
         <source>Clipboard is empty</source>
         <translation>剪贴板为空</translation>
     </message>
@@ -9450,7 +9485,7 @@
         <translation>无法获取此列的统计信息</translation>
     </message>
     <message>
-        <location line="+2262"/>
+        <location line="+2408"/>
         <source>This data source is read-only and cannot be sorted.</source>
         <translation>该数据源为只读，无法排序</translation>
     </message>
@@ -9526,12 +9561,12 @@
         <translation>公式不得引用目标列自身</translation>
     </message>
     <message>
-        <location line="-4132"/>
+        <location line="-4278"/>
         <source>Computed column(s) %1 became invalid because their dependency column(s) were removed</source>
         <translation>计算列 %1 因依赖列被删除已失效</translation>
     </message>
     <message>
-        <location line="+4553"/>
+        <location line="+4699"/>
         <source>Computed column(s) %1 became invalid because their dependency column(s) were merged</source>
         <translation>计算列 %1 因依赖列被合并已失效</translation>
     </message>
@@ -9642,22 +9677,22 @@
         <translation>（无需要清除的表元数据）</translation>
     </message>
     <message>
-        <location line="-2871"/>
+        <location line="-2958"/>
         <source>Freeze the first N columns (added to already frozen columns, 0 = no change):</source>
         <translation>冻结前 N 列（追加到已冻结的列，0 = 不做修改）：</translation>
     </message>
     <message>
-        <location line="+163"/>
+        <location line="+213"/>
         <source>Column names must be unique</source>
         <translation>列名不能重复</translation>
     </message>
     <message>
-        <location line="+34"/>
+        <location line="+54"/>
         <source>Rename and update column view</source>
         <translation>重命名并更新列视图</translation>
     </message>
     <message>
-        <location line="+1254"/>
+        <location line="+1271"/>
         <source>The table has no conditional format rules</source>
         <translation>本表没有条件格式规则</translation>
     </message>
@@ -9987,28 +10022,43 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>本表没有批注</translation>
     </message>
     <message>
-        <location line="-4242"/>
+        <location line="+101"/>
+        <source>The chart area is not available</source>
+        <translation>绘图区不可用</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Failed to transfer to the chart area</source>
+        <translation>转入绘图区失败</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>The chart has been transferred to the chart area</source>
+        <translation>已转入绘图区</translation>
+    </message>
+    <message>
+        <location line="-4497"/>
         <source>Some column view settings were dropped because the table columns have changed.</source>
         <translation>表格的列已变化，部分列视图设置已被丢弃</translation>
     </message>
     <message>
-        <location line="+448"/>
+        <location line="+578"/>
         <source>Freeze Columns</source>
         <translation>冻结列</translation>
     </message>
     <message>
-        <location line="+126"/>
+        <location line="+176"/>
         <source>Column View...</source>
         <translation>列视图...</translation>
     </message>
     <message>
-        <location line="-1007"/>
+        <location line="-1116"/>
         <location line="+65"/>
         <source>The column &quot;%1&quot; was hidden and has been made visible</source>
         <translation>列&quot;%1&quot;已隐藏，现已显示</translation>
     </message>
     <message>
-        <location line="+1059"/>
+        <location line="+1205"/>
         <source>Row number is out of range</source>
         <translation>行号超出范围</translation>
     </message>
@@ -11574,17 +11624,17 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     <message>
         <location filename="../DAGui/Dialog/DADialogTableColumnView.cpp" line="+58"/>
         <source>Column View</source>
-        <translation type="unfinished">列视图</translation>
+        <translation>列视图</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Search...</source>
-        <translation type="unfinished">搜索</translation>
+        <translation>搜索</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Column</source>
-        <translation type="unfinished">列</translation>
+        <translation>列</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -12126,12 +12176,12 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     <message>
         <location line="+19"/>
         <source>Up</source>
-        <translation type="unfinished">上移</translation>
+        <translation>上移</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Down</source>
-        <translation type="unfinished">下移</translation>
+        <translation>下移</translation>
     </message>
     <message>
         <location line="+33"/>
@@ -13981,6 +14031,185 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     </message>
 </context>
 <context>
+    <name>DA::DATableQuickPlotWindow</name>
+    <message>
+        <location filename="../DAGui/TableChart/DATableQuickPlotWindow.cpp" line="+58"/>
+        <source>Select one or more columns first</source>
+        <translation>请先选择一列或多列</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>The current data is not a table and cannot be plotted</source>
+        <translation>当前数据不是表格型数据，无法快速绘图</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>The selection has no numeric column</source>
+        <translation>当前选区没有数值列</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Select a numeric column together with the time column</source>
+        <translation>请再选一列数值列</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>This combination of columns is not supported yet. Select one category column plus one numeric column, or only numeric columns</source>
+        <translation>当前列组合暂不支持，请选择「一个分类列 + 一个数值列」或纯数值列</translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Line</source>
+        <translation>折线</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Scatter</source>
+        <translation>散点图</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Histogram</source>
+        <translation>直方图</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Box plot</source>
+        <translation>箱线图</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Bar</source>
+        <translation>柱状</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Multi-series line</source>
+        <translation>多序列折线</translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>Mean</source>
+        <translation>平均值</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Median</source>
+        <translation>中位数线</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Sum</source>
+        <translation>求和</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Count</source>
+        <translation>计数</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Std</source>
+        <translation>标准差</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Var</source>
+        <translation>方差</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Min</source>
+        <translation>最小值</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Max</source>
+        <translation>最大值</translation>
+    </message>
+    <message>
+        <location line="+29"/>
+        <source>Close</source>
+        <translation>关闭</translation>
+    </message>
+    <message>
+        <location line="+18"/>
+        <source>Aggregation:</source>
+        <translation>聚合</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>X axis:</source>
+        <translation>X 轴</translation>
+    </message>
+    <message>
+        <location line="+35"/>
+        <source>Update to current selection</source>
+        <translation>更新为当前选区</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Refresh</source>
+        <translation>刷新</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Transfer to chart area</source>
+        <translation>转入绘图区</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>New figure tab</source>
+        <translation>新建绘图标签页</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Append to current chart</source>
+        <translation>追加到当前图表</translation>
+    </message>
+    <message>
+        <location line="+77"/>
+        <source>Row number</source>
+        <translation>行号</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source> (as category)</source>
+        <translation>（作为分类）</translation>
+    </message>
+    <message>
+        <location line="+44"/>
+        <source>Based on %1 of %2 sampled rows</source>
+        <translation>基于 %1 / %2 行采样</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Aggregation uses the sample</source>
+        <translation>聚合结果基于采样</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Ignored %1 rows with missing values</source>
+        <translation>已忽略 %1 行缺失值</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Showing top %1 of %2 categories</source>
+        <translation>显示前 %1 类 / 共 %2 类</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <location line="+125"/>
+        <source>The data has changed, click Refresh to redraw</source>
+        <translation>数据已变化，点击刷新</translation>
+    </message>
+    <message>
+        <location line="-19"/>
+        <source>The previous chart type is not available for the new selection, switched to the default type</source>
+        <translation>新选区不支持原来的图型，已切换为默认图型</translation>
+    </message>
+</context>
+<context>
     <name>DA::DATableStatsWidget</name>
     <message>
         <location filename="../DAGui/DATableStatsWidget.cpp" line="+158"/>
@@ -14473,7 +14702,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-3785"/>
+        <location filename="../APP/DAAppController.cpp" line="-3859"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>
@@ -15788,6 +16017,153 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <location filename="../DAGui/Chart/DAChartManageWidget.ui" line="+14"/>
         <source>Chart Manage</source>
         <translation>图表管理</translation>
+    </message>
+</context>
+<context>
+    <name>DAChartQuickPlot</name>
+    <message>
+        <location filename="../DAGui/TableChart/DAChartQuickPlot.cpp" line="+148"/>
+        <source>mean</source>
+        <translation>平均值</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>median</source>
+        <translation>中位数</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>sum</source>
+        <translation>求和</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <location line="+149"/>
+        <location line="+176"/>
+        <source>count</source>
+        <translation>计数</translation>
+    </message>
+    <message>
+        <location line="-323"/>
+        <source>std</source>
+        <translation>标准差</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>var</source>
+        <translation>方差</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>min</source>
+        <translation>最小值</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>max</source>
+        <translation>最大值</translation>
+    </message>
+    <message>
+        <location line="+53"/>
+        <source>row</source>
+        <translation>行号</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <location line="+62"/>
+        <location line="+32"/>
+        <location line="+85"/>
+        <source>The selected columns cannot be plotted</source>
+        <translation>当前选区无法绘图</translation>
+    </message>
+    <message>
+        <location line="-171"/>
+        <location line="+62"/>
+        <source>No valid numeric data in the selected column</source>
+        <translation>所选列没有可绘制的数值</translation>
+    </message>
+    <message>
+        <location line="-55"/>
+        <location line="+22"/>
+        <source>Failed to build the series</source>
+        <translation>构建序列失败</translation>
+    </message>
+    <message>
+        <location line="-7"/>
+        <location line="+135"/>
+        <source>No valid numeric data in the selected columns</source>
+        <translation>所选列没有可绘制的数值</translation>
+    </message>
+    <message>
+        <location line="-87"/>
+        <source>Failed to build the histogram</source>
+        <translation>构建直方图失败</translation>
+    </message>
+    <message>
+        <location line="+86"/>
+        <source>box plot</source>
+        <translation>箱线图</translation>
+    </message>
+    <message>
+        <location line="+64"/>
+        <source>No valid data for the bar chart</source>
+        <translation>没有可用于柱状图的数据</translation>
+    </message>
+    <message>
+        <location line="+21"/>
+        <source>count of %1</source>
+        <translation>%1 的计数</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>%1 by %2</source>
+        <translation>%1 按 %2 聚合</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Failed to build the bar chart</source>
+        <translation>构建柱状图失败</translation>
+    </message>
+    <message>
+        <location line="+24"/>
+        <source>There is no chart to draw on</source>
+        <translation>没有可用的图表</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>The current selection cannot be plotted</source>
+        <translation>当前选区无法绘图</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>The chart specification is incomplete</source>
+        <translation>绘图规格不完整</translation>
+    </message>
+    <message>
+        <location line="+59"/>
+        <source>The chart area is not available</source>
+        <translation>绘图区不可用</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Failed to create a figure</source>
+        <translation>创建绘图失败</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <location line="+41"/>
+        <source>quick plot</source>
+        <translation>快速绘图</translation>
+    </message>
+    <message>
+        <location line="-31"/>
+        <source>Failed to create a chart</source>
+        <translation>创建子图失败</translation>
+    </message>
+    <message>
+        <location line="+26"/>
+        <source>There is no current chart to append to</source>
+        <translation>当前没有可追加的图表</translation>
     </message>
 </context>
 <context>
@@ -18937,7 +19313,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>无法导入 DAWorkbench.DAStatistics 模块</translation>
     </message>
     <message>
-        <location filename="../APP/DAStatsPlotCoordinator.cpp" line="+84"/>
+        <location filename="../DAGui/Stats/DAStatsPlotCoordinator.cpp" line="+84"/>
         <source>The selected data source is empty</source>
         <translation>选中的数据源为空</translation>
     </message>
@@ -19226,7 +19602,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>清除单元格</translation>
     </message>
     <message>
-        <location filename="../DAGui/Commands/DACommandsTableColumnView.cpp" line="+35"/>
+        <location filename="../DAGui/Commands/DACommandsTableColumnView.cpp" line="+48"/>
         <source>Reorder columns</source>
         <translation>重排列序</translation>
     </message>
@@ -19243,27 +19619,27 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>显示所有列</translation>
     </message>
     <message>
-        <location line="+62"/>
+        <location line="+81"/>
         <source>Freeze column &quot;%1&quot;</source>
         <translation>冻结列&quot;%1&quot;</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+6"/>
         <source>Freeze columns</source>
         <translation>冻结列</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="-4"/>
         <source>Unfreeze column &quot;%1&quot;</source>
         <translation>取消冻结列&quot;%1&quot;</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+6"/>
         <source>Unfreeze columns</source>
         <translation>取消冻结列</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="-4"/>
         <source>Unfreeze all columns</source>
         <translation>取消全部冻结</translation>
     </message>
@@ -19396,6 +19772,11 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <location line="+2"/>
         <source>Custom Dash Line</source>
         <translation>自定义虚线</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/Chart/DAChartOperateWidgetCommands.cpp" line="+25"/>
+        <source>create figure</source>
+        <translation>创建绘图</translation>
     </message>
 </context>
 <context>
