@@ -8,6 +8,8 @@
 #include "qwt3d_types.h"
 // DAPyBindQt — 涉及 QString 传给 Python 时必须 include
 #include "DAPybind11QtCaster.hpp"
+// std::vector
+#include <vector>
 
 namespace DA
 {
@@ -68,27 +70,25 @@ Qwt3DPlotItem* DAChartAdd3DBarWidget::create3DPlotItem()
         if (rows < 1 || cols < 1) {
             return nullptr;
         }
-        // Qwt3DBar::setSamples 接受 double**（C 风格二维数组）
-        double** dataPtr = new double*[ static_cast< std::size_t >(rows) ];
+        // qwt3d 的网格约定是 z[column][row]（第 1 维是 x 方向列，第 2 维是 y 方向行），
+        // 而 zMatrix 来自 DataFrame，布局是 [row][column]，必须按列重排后再交给 qwt3d，
+        // 否则行列数不等时会越界读取（崩溃）。
+        Qwt3DFunctionData data;
+        data.columns = static_cast< unsigned int >(cols);
+        data.rows    = static_cast< unsigned int >(rows);
+        data.minx    = xCoords.first();
+        data.maxx    = xCoords.last();
+        data.miny    = yCoords.first();
+        data.maxy    = yCoords.last();
+        data.z.assign(static_cast< std::size_t >(cols),
+                      std::vector< double >(static_cast< std::size_t >(rows), 0.0));
         for (int r = 0; r < rows; ++r) {
-            dataPtr[ r ] = new double[ static_cast< std::size_t >(cols) ];
             for (int c = 0; c < cols; ++c) {
-                dataPtr[ r ][ c ] = zMatrix[ r ][ c ];
+                data.z[ static_cast< std::size_t >(c) ][ static_cast< std::size_t >(r) ] = zMatrix[ r ][ c ];
             }
         }
         Qwt3DBar* item = new Qwt3DBar();
-        // setSamples(z, columns, rows, minX, maxX, minY, maxY)
-        item->setSamples(dataPtr,
-                        cols,
-                        rows,
-                        xCoords.first(),
-                        xCoords.last(),
-                        yCoords.first(),
-                        yCoords.last());
-        for (int r = 0; r < rows; ++r) {
-            delete[] dataPtr[ r ];
-        }
-        delete[] dataPtr;
+        item->setSamples(data);
         item->setTitle(getNameHint());
         return item;
     }

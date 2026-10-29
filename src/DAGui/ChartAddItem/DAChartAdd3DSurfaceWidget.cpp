@@ -5,6 +5,7 @@
 #include "pandas/DAPySeries.h"
 // qwt3d
 #include "qwt3d_surface.h"
+#include "qwt3d_types.h"
 // DAPyBindQt — 涉及 QString 传给 Python 时必须 include
 #include "DAPybind11QtCaster.hpp"
 // daWarning 用户消息
@@ -78,30 +79,27 @@ Qwt3DPlotItem* DAChartAdd3DSurfaceWidget::create3DPlotItem()
     if (rows < 2 || cols < 2) {
         return nullptr;
     }
-    // Qwt3DSurface::loadFromData 接受 double**（C 风格二维数组），需要从
-    // QVector<QVector<double>> 转换为 double** 临时数组
-    double** dataPtr = new double*[ static_cast< std::size_t >(rows) ];
+    // qwt3d 的网格约定是 z[column][row]（第 1 维是 x 方向列，第 2 维是 y 方向行），
+    // 而 zMatrix 的布局是 [row][column]，必须按列重排后再交给 qwt3d，
+    // 否则行列数不等时会越界读取（崩溃）。
+    Qwt3DFunctionData data;
+    data.columns = static_cast< unsigned int >(cols);
+    data.rows    = static_cast< unsigned int >(rows);
+    data.minx    = xCoords.first();
+    data.maxx    = xCoords.last();
+    data.miny    = yCoords.first();
+    data.maxy    = yCoords.last();
+    data.z.assign(static_cast< std::size_t >(cols),
+                  std::vector< double >(static_cast< std::size_t >(rows), 0.0));
     for (int r = 0; r < rows; ++r) {
-        dataPtr[ r ] = new double[ static_cast< std::size_t >(cols) ];
         for (int c = 0; c < cols; ++c) {
-            dataPtr[ r ][ c ] = zMatrix[ r ][ c ];
+            data.z[ static_cast< std::size_t >(c) ][ static_cast< std::size_t >(r) ] = zMatrix[ r ][ c ];
         }
     }
     Qwt3DSurface* item = new Qwt3DSurface();
     // loadFromData(data, columns, rows, minx, maxx, miny, maxy)
     // columns 对应 x 方向（xCoords），rows 对应 y 方向（yCoords）
-    item->loadFromData(dataPtr,
-                       static_cast< unsigned int >(cols),
-                       static_cast< unsigned int >(rows),
-                       xCoords.first(),
-                       xCoords.last(),
-                       yCoords.first(),
-                       yCoords.last());
-    // Qwt3DSurface 内部拷贝数据，释放临时数组
-    for (int r = 0; r < rows; ++r) {
-        delete[] dataPtr[ r ];
-    }
-    delete[] dataPtr;
+    item->loadFromData(data);
     item->setTitle(getNameHint());
     return item;
 }
@@ -281,17 +279,20 @@ bool DAChartAdd3DSurfaceWidget::extractScatterDataAndInterpolate(
     pybind11::object resultObj = griddata(points, values, grid, "cubic");
     pybind11::array_t< double > result = resultObj.cast< pybind11::array_t< double > >();
     auto resultBuf = result.unchecked< 1 >();
-    // 填充zMatrix (rows=gridSize, cols=gridSize)
+    // 填充zMatrix，布局为 [row=y][col=x]，与网格模式保持一致
     // griddata 对凸包外的点返回 NaN，需替换为 0
     zMatrix.resize(gridSize);
+    for (int r = 0; r < gridSize; ++r) {
+        zMatrix[ r ].resize(gridSize);
+    }
     for (int i = 0; i < gridSize; ++i) {
-        zMatrix[ i ].resize(gridSize);
         for (int j = 0; j < gridSize; ++j) {
             double v = resultBuf(i * gridSize + j);
             if (std::isnan(v)) {
                 v = 0.0;  // 凸包外的点用0填充
             }
-            zMatrix[ i ][ j ] = v;
+            // i 是 x 方向列号，j 是 y 方向行号
+            zMatrix[ j ][ i ] = v;
         }
     }
     return true;

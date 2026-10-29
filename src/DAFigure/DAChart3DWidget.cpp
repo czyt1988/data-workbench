@@ -176,7 +176,7 @@ Qwt3DBar* DAChart3DWidget::addBar3D(const QVector< QwtPoint3D >& samples, const 
 
 /**
  * @brief 添加3D柱状图（2D grid）
- * @param z z 值矩阵
+ * @param z z 值矩阵，布局为 z[column][row]（第 1 维对应 x 方向列，第 2 维对应 y 方向行）
  * @param columns/rows 网格尺寸
  * @param minX/maxX/minY/maxY x/y 域范围
  * @param title 标题
