@@ -35,6 +35,33 @@ public:
     // 分块采样把全区间切成多少个窗口
     static constexpr int kSampleWindowCount = 20;
 
+    /**
+     * @brief 一次构建可用的取数预算（实施方案 §8.4）
+     *
+     * 按「取数调用次数 + 取数行数」设硬上限，避免一次点击在惰性/慢速源上做无限取数；
+     * 预算耗尽时采样器立即停止并置 SampleInfo::limited，界面据此标注「样本受限」。
+     * 同一次渲染的多个采样共用一个预算对象（各列取数一起计数）。
+     */
+    struct SampleBudget
+    {
+        int maxFetchCalls { 128 };  ///< 最多多少次取数调用
+        int maxFetchRows { 250000 };  ///< 最多取多少行
+        int fetchCalls { 0 };       ///< 已用调用次数
+        int fetchRows { 0 };        ///< 已取行数
+
+        bool isExhausted() const { return fetchCalls >= maxFetchCalls || fetchRows >= maxFetchRows; }
+        // 申请一次取数；预算不足返回 false，调用方应停止采样并标记受限
+        bool request(int rowCount)
+        {
+            if (fetchCalls + 1 > maxFetchCalls || fetchRows + rowCount > maxFetchRows) {
+                return false;
+            }
+            ++fetchCalls;
+            fetchRows += rowCount;
+            return true;
+        }
+    };
+
     /// 一次采样的统计信息
     struct SampleInfo
     {
@@ -77,7 +104,11 @@ public:
      * @param yDataColumn y 的数据列号
      * @param maxPoints 目标点数上限（小表仍全量）
      */
-    static XYSample sampleXY(const DATableChartRequest& request, int xDataColumn, int yDataColumn, int maxPoints);
+    static XYSample sampleXY(const DATableChartRequest& request,
+                             int xDataColumn,
+                             int yDataColumn,
+                             int maxPoints,
+                             SampleBudget* budget = nullptr);
 
     /**
      * @brief 采样多序列 xy（同一个 x，按行对齐）
@@ -85,7 +116,8 @@ public:
     static MultiXYSample sampleMultiXY(const DATableChartRequest& request,
                                        int xDataColumn,
                                        const QList< int >& yDataColumns,
-                                       int maxPoints);
+                                       int maxPoints,
+                                       SampleBudget* budget = nullptr);
 
     /**
      * @brief 采样单列数值（直方图/箱线图用，不需要行号对齐）
@@ -93,7 +125,8 @@ public:
     static QVector< double > sampleValues(const DATableChartRequest& request,
                                           int dataColumn,
                                           int maxValues,
-                                          SampleInfo* info = nullptr);
+                                          SampleInfo* info = nullptr,
+                                          SampleBudget* budget = nullptr);
 
     /**
      * @brief 采样分类列（可选数值列），返回逐行的标签 + 数值
@@ -102,7 +135,8 @@ public:
     static CategorySample sampleCategory(const DATableChartRequest& request,
                                          int categoryDataColumn,
                                          int valueDataColumn,
-                                         int maxPoints);
+                                         int maxPoints,
+                                         SampleBudget* budget = nullptr);
 };
 
 }  // namespace DA

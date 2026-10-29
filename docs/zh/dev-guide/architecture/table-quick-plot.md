@@ -74,6 +74,8 @@
 | 大表折线/散点 | 确定性分块均匀采样，约 2000 点（首尾都覆盖，不引入随机数） |
 | 大表直方图 | 约 2 万个值 |
 | 分类聚合 / 箱线图 | 内存 pandas 源且 ≤ 500 万行 → **全量精确**；惰性源或超阈值 → 采样并在浮窗底部标注近似 |
+| 取数预算 | `DAChartSeriesSampler::SampleBudget`：默认最多 128 次取数调用 / 25 万行，同一次构建的各列共用一个预算；耗尽即停止采样并置 `SampleInfo::limited`，`DATableChartBuildInfo::sampleLimited` 聚合后由浮窗标注「样本受限」 |
+| 忙碌状态 | `DAChartQuickPlot::render()` 全程持有等待光标；浮窗在取数前禁用交互并显示「正在取数…」，取数结束（含失败）后恢复 |
 
 精确路径走 `DAPyScriptsStatistics` 的 DataFrame 接口（按列序号取列，重名列不歧义）；
 采样路径把采样后的标签/数值交给 `aggregate_by_category_from_lists` / `compute_boxplot_stats_from_lists`，

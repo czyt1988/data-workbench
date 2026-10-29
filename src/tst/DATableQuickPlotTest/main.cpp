@@ -260,6 +260,10 @@ private Q_SLOTS:
     void testSamplerSmallTableFull();
     void testSamplerLargeTableDeterministic();
     void testSamplerDropsMissing();
+    // 方案 §8.4：取数预算耗尽时停止采样并标记「样本受限」
+    void testSamplerBudgetStopsSampling();
+    // 默认预算下正常采样不应被标记受限（避免误报）
+    void testSamplerDefaultBudgetNotLimited();
     void testSpecEquality();
     void testRenderLineAndHistogram();
     void testRenderBarSampled();
@@ -544,6 +548,61 @@ void DATableQuickPlotTest::testSamplerDropsMissing()
     QVERIFY(!info.sampled);
 }
 
+void DATableQuickPlotTest::testSamplerBudgetStopsSampling()
+{
+    constexpr int rows = 50000;
+    auto* source       = new DAQuickPlotTestSource;
+    source->columns.append({ QStringLiteral("v"), QMetaType::Double, makeNumeric(rows) });
+    const DA::DAData data = makeData(source);
+    const auto request    = requestFromColumns(data, { 0 });
+
+    // 只给 2 次取数机会：第 3 个窗口取不了 → 停止采样并标记受限
+    DA::DAChartSeriesSampler::SampleBudget budget;
+    budget.maxFetchCalls = 2;
+    const auto sample = DA::DAChartSeriesSampler::sampleXY(
+        request, -1, 0, DA::DAChartSeriesSampler::kMaxLinePoints, &budget);
+
+    QVERIFY(sample.info.limited);
+    QVERIFY(sample.info.sampled);
+    QCOMPARE(budget.fetchCalls, 2);
+    QVERIFY(!sample.points.isEmpty());  // 已经取到的窗口仍然画出
+    // 受限采样点数必然少于正常采样
+    const auto full = DA::DAChartSeriesSampler::sampleXY(
+        request, -1, 0, DA::DAChartSeriesSampler::kMaxLinePoints);
+    QVERIFY(sample.points.size() < full.points.size());
+
+    // 行数预算同样生效：一次窗口都不给
+    DA::DAChartSeriesSampler::SampleBudget rowBudget;
+    rowBudget.maxFetchRows = 10;
+    const auto blocked     = DA::DAChartSeriesSampler::sampleXY(
+        request, -1, 0, DA::DAChartSeriesSampler::kMaxLinePoints, &rowBudget);
+    QVERIFY(blocked.info.limited);
+    QVERIFY(blocked.points.isEmpty());
+
+    // 直方图路径共用同一预算语义
+    DA::DAChartSeriesSampler::SampleBudget valueBudget;
+    valueBudget.maxFetchCalls = 1;
+    DA::DAChartSeriesSampler::SampleInfo valueInfo;
+    const QVector< double > values = DA::DAChartSeriesSampler::sampleValues(
+        request, 0, DA::DAChartSeriesSampler::kMaxHistogramValues, &valueInfo, &valueBudget);
+    QVERIFY(valueInfo.limited);
+    QVERIFY(!values.isEmpty());
+}
+
+void DATableQuickPlotTest::testSamplerDefaultBudgetNotLimited()
+{
+    constexpr int rows = 50000;
+    auto* source       = new DAQuickPlotTestSource;
+    source->columns.append({ QStringLiteral("v"), QMetaType::Double, makeNumeric(rows) });
+    const DA::DAData data = makeData(source);
+    const auto request    = requestFromColumns(data, { 0 });
+
+    const auto sample = DA::DAChartSeriesSampler::sampleXY(
+        request, -1, 0, DA::DAChartSeriesSampler::kMaxLinePoints);
+    QVERIFY(!sample.info.limited);  // 正常采样不应被标成受限
+    QCOMPARE(DA::DAChartSeriesSampler::SampleBudget().maxFetchCalls, 128);
+}
+
 void DATableQuickPlotTest::testSpecEquality()
 {
     DA::DATableChartSpec a;
@@ -606,6 +665,8 @@ void DATableQuickPlotTest::testPageSelectPlotAndTransfer()
     auto* chart = window->findChild< DA::DAChartWidget* >();
     QVERIFY(chart);
     QVERIFY(!chart->itemList().isEmpty());
+    // 取数/构建结束后忙碌状态必须解除（浮窗恢复可交互）
+    QVERIFY(window->isEnabled());
 
     // 转入绘图区：走页面注入的处理器（与 APP 注入的是同一条编排路径）
     DA::DAChartOperateWidget chartOperate;

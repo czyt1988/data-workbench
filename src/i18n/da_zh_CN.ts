@@ -9400,7 +9400,7 @@
 <context>
     <name>DA::DADataOperateOfDataFrameWidget</name>
     <message>
-        <location filename="../DAGui/DADataOperateOfDataFrameWidget.cpp" line="+770"/>
+        <location filename="../DAGui/DADataOperateOfDataFrameWidget.cpp" line="+772"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
@@ -9416,7 +9416,7 @@
     </message>
     <message>
         <location line="+57"/>
-        <location line="+499"/>
+        <location line="+501"/>
         <location line="+40"/>
         <location line="+46"/>
         <location line="+47"/>
@@ -10022,7 +10022,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>本表没有批注</translation>
     </message>
     <message>
-        <location line="+104"/>
+        <location line="+106"/>
         <source>The chart area is not available</source>
         <translation>绘图区不可用</translation>
     </message>
@@ -10037,7 +10037,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>已转入绘图区</translation>
     </message>
     <message>
-        <location line="-4500"/>
+        <location line="-4502"/>
         <source>Some column view settings were dropped because the table columns have changed.</source>
         <translation>表格的列已变化，部分列视图设置已被丢弃</translation>
     </message>
@@ -14033,7 +14033,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DA::DATableQuickPlotWindow</name>
     <message>
-        <location filename="../DAGui/TableChart/DATableQuickPlotWindow.cpp" line="+60"/>
+        <location filename="../DAGui/TableChart/DATableQuickPlotWindow.cpp" line="+85"/>
         <source>Select one or more columns first</source>
         <translation>请先选择一列或多列</translation>
     </message>
@@ -14183,7 +14183,12 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>（作为分类）</translation>
     </message>
     <message>
-        <location line="+44"/>
+        <location line="+29"/>
+        <source>Loading data...</source>
+        <translation>正在取数…</translation>
+    </message>
+    <message>
+        <location line="+21"/>
         <source>Based on %1 of %2 sampled rows</source>
         <translation>基于 %1 / %2 行采样</translation>
     </message>
@@ -14204,6 +14209,11 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     </message>
     <message>
         <location line="+5"/>
+        <source>Sample limited: data fetching stopped at the budget limit</source>
+        <translation>样本受限：取数触及预算上限，图表只使用受限样本</translation>
+    </message>
+    <message>
+        <location line="+3"/>
         <location line="+125"/>
         <source>The data has changed, click Refresh to redraw</source>
         <translation>数据已变化，点击刷新</translation>
@@ -16027,7 +16037,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DAChartQuickPlot</name>
     <message>
-        <location filename="../DAGui/TableChart/DAChartQuickPlot.cpp" line="+148"/>
+        <location filename="../DAGui/TableChart/DAChartQuickPlot.cpp" line="+149"/>
         <source>mean</source>
         <translation>平均值</translation>
     </message>
@@ -16043,13 +16053,13 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+149"/>
-        <location line="+176"/>
+        <location line="+152"/>
+        <location line="+182"/>
         <source>count</source>
         <translation>计数</translation>
     </message>
     <message>
-        <location line="-323"/>
+        <location line="-332"/>
         <source>std</source>
         <translation>标准差</translation>
     </message>
@@ -16069,48 +16079,48 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>最大值</translation>
     </message>
     <message>
-        <location line="+53"/>
+        <location line="+55"/>
         <source>row</source>
         <translation>行号</translation>
     </message>
     <message>
         <location line="+6"/>
-        <location line="+62"/>
-        <location line="+32"/>
-        <location line="+85"/>
+        <location line="+63"/>
+        <location line="+33"/>
+        <location line="+89"/>
         <source>The selected columns cannot be plotted</source>
         <translation>当前选区无法绘图</translation>
     </message>
     <message>
-        <location line="-171"/>
-        <location line="+62"/>
+        <location line="-177"/>
+        <location line="+63"/>
         <source>No valid numeric data in the selected column</source>
         <translation>所选列没有可绘制的数值</translation>
     </message>
     <message>
-        <location line="-55"/>
+        <location line="-56"/>
         <location line="+22"/>
         <source>Failed to build the series</source>
         <translation>构建序列失败</translation>
     </message>
     <message>
         <location line="-7"/>
-        <location line="+135"/>
+        <location line="+140"/>
         <source>No valid numeric data in the selected columns</source>
         <translation>所选列没有可绘制的数值</translation>
     </message>
     <message>
-        <location line="-87"/>
+        <location line="-91"/>
         <source>Failed to build the histogram</source>
         <translation>构建直方图失败</translation>
     </message>
     <message>
-        <location line="+86"/>
+        <location line="+90"/>
         <source>box plot</source>
         <translation>箱线图</translation>
     </message>
     <message>
-        <location line="+64"/>
+        <location line="+66"/>
         <source>No valid data for the bar chart</source>
         <translation>没有可用于柱状图的数据</translation>
     </message>
@@ -16145,7 +16155,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>绘图规格不完整</translation>
     </message>
     <message>
-        <location line="+59"/>
+        <location line="+63"/>
         <source>The chart area is not available</source>
         <translation>绘图区不可用</translation>
     </message>

@@ -6,7 +6,9 @@
 // Qt
 #include <QButtonGroup>
 #include <QComboBox>
+#include <QCoreApplication>
 #include <QEvent>
+#include <QEventLoop>
 #include <QFrame>
 #include <QHBoxLayout>
 #include <QKeyEvent>
@@ -32,6 +34,29 @@ constexpr int kAnchorOffset = 12;
 
 // 图型按钮携带的枚举值
 const char* const kTypeValueProperty = "daQuickPlotType";
+
+// 忙碌期间的守卫：禁用浮窗交互，退出作用域时恢复（异常/提前 return 也能恢复）
+class QuickPlotBusyGuard
+{
+public:
+    explicit QuickPlotBusyGuard(QWidget* widget) : mWidget(widget)
+    {
+        if (mWidget) {
+            mWidget->setEnabled(false);
+        }
+    }
+    ~QuickPlotBusyGuard()
+    {
+        if (mWidget) {
+            mWidget->setEnabled(true);
+        }
+    }
+    QuickPlotBusyGuard(const QuickPlotBusyGuard&)            = delete;
+    QuickPlotBusyGuard& operator=(const QuickPlotBusyGuard&) = delete;
+
+private:
+    QPointer< QWidget > mWidget;
+};
 }  // namespace
 
 DATableQuickPlotWindow::DATableQuickPlotWindow(QWidget* parent) : QWidget(parent)
@@ -331,10 +356,16 @@ void DATableQuickPlotWindow::renderNow()
     const QString pendingNotice = mPendingNotice;
     mPendingNotice.clear();
 
+    // 取数与图元构建是同步的：先切忙碌状态并让界面刷出来，再开始取数（实施方案 §8.4）
+    QuickPlotBusyGuard busyGuard(this);
+    setNotice(tr("Loading data..."));  // cn:正在取数…
+    QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+
     DATableChartBuildInfo info;
     QString error;
     const bool ok = DAChartQuickPlot::render(mRequest, mSpec, mChart.data(), &info, &error, true, nullptr);
     if (!ok) {
+        setNotice(QString());
         setError(error);
         mLastMessage = error;
         if (mChart) {
@@ -362,6 +393,9 @@ void DATableQuickPlotWindow::renderNow()
         parts.append(tr("Showing top %1 of %2 categories")
                          .arg(info.displayedCategories)
                          .arg(info.totalCategories));  // cn:显示前 %1 类 / 共 %2 类
+    }
+    if (info.sampleLimited) {
+        parts.append(tr("Sample limited: data fetching stopped at the budget limit"));  // cn:样本受限：取数触及预算上限，图表只使用受限样本
     }
     if (mDataChanged) {
         parts.append(tr("The data has changed, click Refresh to redraw"));  // cn:数据已变化，点击刷新

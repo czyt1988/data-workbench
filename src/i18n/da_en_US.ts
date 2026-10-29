@@ -9384,7 +9384,7 @@
 <context>
     <name>DA::DADataOperateOfDataFrameWidget</name>
     <message>
-        <location filename="../DAGui/DADataOperateOfDataFrameWidget.cpp" line="+770"/>
+        <location filename="../DAGui/DADataOperateOfDataFrameWidget.cpp" line="+772"/>
         <source>Warning</source>
         <translation>Warning</translation>
     </message>
@@ -9400,7 +9400,7 @@
     </message>
     <message>
         <location line="+57"/>
-        <location line="+499"/>
+        <location line="+501"/>
         <location line="+40"/>
         <location line="+46"/>
         <location line="+47"/>
@@ -10006,7 +10006,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation>This table has no notes</translation>
     </message>
     <message>
-        <location line="+104"/>
+        <location line="+106"/>
         <source>The chart area is not available</source>
         <translation>The chart area is not available</translation>
     </message>
@@ -10021,7 +10021,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation>The chart has been transferred to the chart area</translation>
     </message>
     <message>
-        <location line="-4500"/>
+        <location line="-4502"/>
         <source>Some column view settings were dropped because the table columns have changed.</source>
         <translation>Some column view settings were dropped because the table columns have changed.</translation>
     </message>
@@ -14017,7 +14017,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DA::DATableQuickPlotWindow</name>
     <message>
-        <location filename="../DAGui/TableChart/DATableQuickPlotWindow.cpp" line="+60"/>
+        <location filename="../DAGui/TableChart/DATableQuickPlotWindow.cpp" line="+85"/>
         <source>Select one or more columns first</source>
         <translation>Select one or more columns first</translation>
     </message>
@@ -14167,7 +14167,12 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation> (as category)</translation>
     </message>
     <message>
-        <location line="+44"/>
+        <location line="+29"/>
+        <source>Loading data...</source>
+        <translation>Loading data...</translation>
+    </message>
+    <message>
+        <location line="+21"/>
         <source>Based on %1 of %2 sampled rows</source>
         <translation>Based on %1 of %2 sampled rows</translation>
     </message>
@@ -14188,6 +14193,11 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     </message>
     <message>
         <location line="+5"/>
+        <source>Sample limited: data fetching stopped at the budget limit</source>
+        <translation>Sample limited: data fetching stopped at the budget limit</translation>
+    </message>
+    <message>
+        <location line="+3"/>
         <location line="+125"/>
         <source>The data has changed, click Refresh to redraw</source>
         <translation>The data has changed, click Refresh to redraw</translation>
@@ -16011,7 +16021,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DAChartQuickPlot</name>
     <message>
-        <location filename="../DAGui/TableChart/DAChartQuickPlot.cpp" line="+148"/>
+        <location filename="../DAGui/TableChart/DAChartQuickPlot.cpp" line="+149"/>
         <source>mean</source>
         <translation>mean</translation>
     </message>
@@ -16027,13 +16037,13 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     </message>
     <message>
         <location line="+2"/>
-        <location line="+149"/>
-        <location line="+176"/>
+        <location line="+152"/>
+        <location line="+182"/>
         <source>count</source>
         <translation>count</translation>
     </message>
     <message>
-        <location line="-323"/>
+        <location line="-332"/>
         <source>std</source>
         <translation>std</translation>
     </message>
@@ -16053,48 +16063,48 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation>max</translation>
     </message>
     <message>
-        <location line="+53"/>
+        <location line="+55"/>
         <source>row</source>
         <translation>row</translation>
     </message>
     <message>
         <location line="+6"/>
-        <location line="+62"/>
-        <location line="+32"/>
-        <location line="+85"/>
+        <location line="+63"/>
+        <location line="+33"/>
+        <location line="+89"/>
         <source>The selected columns cannot be plotted</source>
         <translation>The selected columns cannot be plotted</translation>
     </message>
     <message>
-        <location line="-171"/>
-        <location line="+62"/>
+        <location line="-177"/>
+        <location line="+63"/>
         <source>No valid numeric data in the selected column</source>
         <translation>No valid numeric data in the selected column</translation>
     </message>
     <message>
-        <location line="-55"/>
+        <location line="-56"/>
         <location line="+22"/>
         <source>Failed to build the series</source>
         <translation>Failed to build the series</translation>
     </message>
     <message>
         <location line="-7"/>
-        <location line="+135"/>
+        <location line="+140"/>
         <source>No valid numeric data in the selected columns</source>
         <translation>No valid numeric data in the selected columns</translation>
     </message>
     <message>
-        <location line="-87"/>
+        <location line="-91"/>
         <source>Failed to build the histogram</source>
         <translation>Failed to build the histogram</translation>
     </message>
     <message>
-        <location line="+86"/>
+        <location line="+90"/>
         <source>box plot</source>
         <translation>box plot</translation>
     </message>
     <message>
-        <location line="+64"/>
+        <location line="+66"/>
         <source>No valid data for the bar chart</source>
         <translation>No valid data for the bar chart</translation>
     </message>
@@ -16129,7 +16139,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation>The chart specification is incomplete</translation>
     </message>
     <message>
-        <location line="+59"/>
+        <location line="+63"/>
         <source>The chart area is not available</source>
         <translation>The chart area is not available</translation>
     </message>

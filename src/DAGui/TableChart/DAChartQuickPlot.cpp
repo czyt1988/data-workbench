@@ -12,6 +12,7 @@
 #include "DAStatsPlotCoordinator.h"
 #include "DAPyScripts.h"
 #include "DAPybind11QtCaster.hpp"
+#include "DAWaitCursorScoped.h"
 #include "DALogCategory.h"
 #include "DAPlotDataTypes.h"
 // qwt
@@ -200,7 +201,8 @@ void fillSampleInfo(DATableChartBuildInfo* info, const DAChartSeriesSampler::Sam
     info->sampledRows    = sample.sampledRows;
     info->totalRows      = sample.totalRows;
     info->droppedMissing = sample.droppedMissing;
-    info->sampleLimited  = sample.limited;
+    // 同一次构建可能有多列采样，任一列触及预算就整体标注「样本受限」
+    info->sampleLimited = info->sampleLimited || sample.limited;
 }
 
 // 折线/散点：采样 → 复用 DAChartAddCurveWidget 的图元构建
@@ -208,7 +210,8 @@ bool buildLineLike(const DATableChartRequest& request,
                    const DATableChartSpec& spec,
                    DAChartWidget* chart,
                    DATableChartBuildInfo* info,
-                   QString* error)
+                   QString* error,
+                   DAChartSeriesSampler::SampleBudget* budget)
 {
     const int xDataColumn = dataColumnOf(request, spec.xColumn);
     const QString xTitle  = spec.xColumn >= 0 ? columnDisplayName(request, spec.xColumn)
@@ -222,8 +225,8 @@ bool buildLineLike(const DATableChartRequest& request,
             return false;
         }
         const QString yTitle = columnDisplayName(request, yIndex);
-        const DAChartSeriesSampler::XYSample sample =
-            DAChartSeriesSampler::sampleXY(request, xDataColumn, yData, DAChartSeriesSampler::kMaxLinePoints);
+        const DAChartSeriesSampler::XYSample sample = DAChartSeriesSampler::sampleXY(
+            request, xDataColumn, yData, DAChartSeriesSampler::kMaxLinePoints, budget);
         fillSampleInfo(info, sample.info);
         if (sample.points.isEmpty()) {
             setError(error, QCoreApplication::translate("DAChartQuickPlot", "No valid numeric data in the selected column"));  // cn:所选列没有可绘制的数值
@@ -245,7 +248,7 @@ bool buildLineLike(const DATableChartRequest& request,
         applyAxisTitles(chart, xTitle, yTitle);
     } else {
         const DAChartSeriesSampler::MultiXYSample sample = DAChartSeriesSampler::sampleMultiXY(
-            request, spec.xColumn, spec.valueColumns, DAChartSeriesSampler::kMaxLinePoints);
+            request, spec.xColumn, spec.valueColumns, DAChartSeriesSampler::kMaxLinePoints, budget);
         fillSampleInfo(info, sample.info);
         if (sample.series.isEmpty()) {
             setError(error, QCoreApplication::translate("DAChartQuickPlot", "No valid numeric data in the selected columns"));  // cn:所选列没有可绘制的数值
@@ -275,7 +278,8 @@ bool buildHistogram(const DATableChartRequest& request,
                     const DATableChartSpec& spec,
                     DAChartWidget* chart,
                     DATableChartBuildInfo* info,
-                    QString* error)
+                    QString* error,
+                    DAChartSeriesSampler::SampleBudget* budget)
 {
     const int yIndex = spec.valueColumns.value(0, -1);
     const int yData  = dataColumnOf(request, yIndex);
@@ -284,8 +288,8 @@ bool buildHistogram(const DATableChartRequest& request,
         return false;
     }
     DAChartSeriesSampler::SampleInfo sample;
-    const QVector< double > values =
-        DAChartSeriesSampler::sampleValues(request, yData, DAChartSeriesSampler::kMaxHistogramValues, &sample);
+    const QVector< double > values = DAChartSeriesSampler::sampleValues(
+        request, yData, DAChartSeriesSampler::kMaxHistogramValues, &sample, budget);
     fillSampleInfo(info, sample);
     if (values.isEmpty()) {
         setError(error, QCoreApplication::translate("DAChartQuickPlot", "No valid numeric data in the selected column"));  // cn:所选列没有可绘制的数值
@@ -309,7 +313,8 @@ bool buildBoxplot(const DATableChartRequest& request,
                   const DATableChartSpec& spec,
                   DAChartWidget* chart,
                   DATableChartBuildInfo* info,
-                  QString* error)
+                  QString* error,
+                  DAChartSeriesSampler::SampleBudget* budget)
 {
     if (spec.valueColumns.isEmpty()) {
         setError(error, QCoreApplication::translate("DAChartQuickPlot", "The selected columns cannot be plotted"));  // cn:当前选区无法绘图
@@ -346,7 +351,8 @@ bool buildBoxplot(const DATableChartRequest& request,
                 request,
                 dataColumnOf(request, spec.categoryColumn),
                 dataColumnOf(request, spec.valueColumns.first()),
-                DAChartSeriesSampler::kMaxHistogramValues);
+                DAChartSeriesSampler::kMaxHistogramValues,
+                budget);
             fillSampleInfo(info, sample.info);
             columns[ QStringLiteral("__hue") ] = toVariantList(sample.labels);
             columns[ QStringLiteral("__v0") ]  = toVariantList(sample.values);
@@ -361,11 +367,13 @@ bool buildBoxplot(const DATableChartRequest& request,
                     request,
                     dataColumnOf(request, spec.valueColumns.at(i)),
                     DAChartSeriesSampler::kMaxHistogramValues,
-                    &sample);
-                merged.totalRows      = sample.totalRows;
-                merged.sampled        = sample.sampled;
+                    &sample,
+                    budget);
+                merged.totalRows       = sample.totalRows;
+                merged.sampled         = sample.sampled;
                 merged.sampledRows += sample.sampledRows;
                 merged.droppedMissing += sample.droppedMissing;
+                merged.limited = merged.limited || sample.limited;
                 const QString key = QStringLiteral("__v%1").arg(i);
                 keys.append(key);
                 columns[ key ] = toVariantList(values);
@@ -394,7 +402,8 @@ bool buildBar(const DATableChartRequest& request,
               const DATableChartSpec& spec,
               DAChartWidget* chart,
               DATableChartBuildInfo* info,
-              QString* error)
+              QString* error,
+              DAChartSeriesSampler::SampleBudget* budget)
 {
     if (spec.categoryColumn < 0 || spec.categoryColumn >= request.columns.size()) {
         setError(error, QCoreApplication::translate("DAChartQuickPlot", "The selected columns cannot be plotted"));  // cn:当前选区无法绘图
@@ -426,7 +435,8 @@ bool buildBar(const DATableChartRequest& request,
             request,
             dataColumnOf(request, spec.categoryColumn),
             countMode ? -1 : dataColumnOf(request, valueIndex),
-            DAChartSeriesSampler::kMaxHistogramValues);
+            DAChartSeriesSampler::kMaxHistogramValues,
+            budget);
         fillSampleInfo(info, sample.info);
         QVariantMap columns;
         columns[ QStringLiteral("__cat") ] = toVariantList(sample.labels);
@@ -507,27 +517,31 @@ bool DAChartQuickPlot::render(const DATableChartRequest& request,
         return false;
     }
 
+    // 取数与图元构建是同步的，期间给用户一个等待光标（实施方案 §8.4）
+    DAWaitCursorScoped waitCursor;
     if (clearExisting) {
         chart->detachItems(QwtPlotItem::Rtti_PlotItem, true);
         resetAxes(chart);
     }
     const QwtPlotItemList itemsBefore = chart->itemList();
 
+    // 同一次渲染的各列取数共用一个预算：任一列触及上限即整体标注「样本受限」
+    DAChartSeriesSampler::SampleBudget budget;
     bool ok = false;
     switch (spec.type) {
     case DATableChartType::Line:
     case DATableChartType::Scatter:
     case DATableChartType::MultiLine:
-        ok = buildLineLike(request, spec, chart, info, error);
+        ok = buildLineLike(request, spec, chart, info, error, &budget);
         break;
     case DATableChartType::Histogram:
-        ok = buildHistogram(request, spec, chart, info, error);
+        ok = buildHistogram(request, spec, chart, info, error, &budget);
         break;
     case DATableChartType::Boxplot:
-        ok = buildBoxplot(request, spec, chart, info, error);
+        ok = buildBoxplot(request, spec, chart, info, error, &budget);
         break;
     case DATableChartType::Bar:
-        ok = buildBar(request, spec, chart, info, error);
+        ok = buildBar(request, spec, chart, info, error, &budget);
         break;
     case DATableChartType::None:
         break;

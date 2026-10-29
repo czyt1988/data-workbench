@@ -6774,6 +6774,8 @@ DA::DATableChartRequest DADataOperateOfDataFrameWidget::buildQuickPlotRequest() 
  */
 bool DADataOperateOfDataFrameWidget::showQuickPlot()
 {
+    // 构造请求与规划期间会探测列角色/基数（惰性源要取数），给一个等待光标（实施方案 §8.4）
+    DAWaitCursorScoped waitCursor;
     const DA::DATableChartRequest request = buildQuickPlotRequest();
     const DA::DATableChartPlan plan       = DA::DATableChartPlanner::plan(request);
     if (!plan.isPlottable()) {

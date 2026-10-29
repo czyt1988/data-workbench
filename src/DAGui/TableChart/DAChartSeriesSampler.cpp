@@ -173,9 +173,12 @@ bool DAChartSeriesSampler::canAggregateExactly(const DATableChartRequest& reques
 DAChartSeriesSampler::XYSample DAChartSeriesSampler::sampleXY(const DATableChartRequest& request,
                                                               int xDataColumn,
                                                               int yDataColumn,
-                                                              int maxPoints)
+                                                              int maxPoints,
+                                                              SampleBudget* budget)
 {
     XYSample result;
+    SampleBudget defaultBudget;
+    SampleBudget* usedBudget = budget ? budget : &defaultBudget;
     DAData dataCopy            = request.data;  // 值语义共享底层指针，取非 const 接口
     DATableDataSource* source  = dataCopy.tableSource();
     if (source == nullptr || yDataColumn < 0) {
@@ -187,6 +190,19 @@ DAChartSeriesSampler::XYSample DAChartSeriesSampler::sampleXY(const DATableChart
     result.info.sampled              = (ranges.size() != 1 || (ranges.size() == 1 && ranges.first().count < totalRows));
 
     for (const RowRange& range : ranges) {
+        // 预算：这一轮要取 1~2 块，任何一块取不了就停止采样并标记受限（实施方案 §8.4）
+        const int callsNeeded = (xDataColumn >= 0) ? 2 : 1;
+        bool budgetOk         = true;
+        for (int c = 0; c < callsNeeded; ++c) {
+            if (!usedBudget->request(range.count)) {
+                budgetOk = false;
+                break;
+            }
+        }
+        if (!budgetOk) {
+            result.info.limited = true;
+            break;
+        }
         const QVariantList ys = fetchColumn(source, yDataColumn, range.start, range.count);
         const QVariantList xs = (xDataColumn >= 0) ? fetchColumn(source, xDataColumn, range.start, range.count) : QVariantList();
         const int n           = ys.size();
@@ -219,9 +235,12 @@ DAChartSeriesSampler::XYSample DAChartSeriesSampler::sampleXY(const DATableChart
 DAChartSeriesSampler::MultiXYSample DAChartSeriesSampler::sampleMultiXY(const DATableChartRequest& request,
                                                                         int xDataColumn,
                                                                         const QList< int >& yDataColumns,
-                                                                        int maxPoints)
+                                                                        int maxPoints,
+                                                                        SampleBudget* budget)
 {
     MultiXYSample result;
+    SampleBudget defaultBudget;
+    SampleBudget* usedBudget = budget ? budget : &defaultBudget;
     DAData dataCopy            = request.data;  // 值语义共享底层指针，取非 const 接口
     DATableDataSource* source  = dataCopy.tableSource();
     if (source == nullptr || yDataColumns.isEmpty()) {
@@ -239,6 +258,19 @@ DAChartSeriesSampler::MultiXYSample DAChartSeriesSampler::sampleMultiXY(const DA
     result.info.sampled              = (ranges.size() != 1 || (ranges.size() == 1 && ranges.first().count < totalRows));
 
     for (const RowRange& range : ranges) {
+        // 每轮取 1(可选 x) + 每列 y 各一块；预算不足立即停止并标记受限
+        const int callsNeeded = static_cast< int >(yDataColumns.size()) + (xDataColumn >= 0 ? 1 : 0);
+        bool budgetOk         = true;
+        for (int c = 0; c < callsNeeded; ++c) {
+            if (!usedBudget->request(range.count)) {
+                budgetOk = false;
+                break;
+            }
+        }
+        if (!budgetOk) {
+            result.info.limited = true;
+            break;
+        }
         QList< QVariantList > columns;
         qsizetype minSize = -1;
         for (int colIdx : yDataColumns) {
@@ -295,10 +327,13 @@ DAChartSeriesSampler::MultiXYSample DAChartSeriesSampler::sampleMultiXY(const DA
 QVector< double > DAChartSeriesSampler::sampleValues(const DATableChartRequest& request,
                                                      int dataColumn,
                                                      int maxValues,
-                                                     SampleInfo* info)
+                                                     SampleInfo* info,
+                                                     SampleBudget* budget)
 {
     QVector< double > values;
     SampleInfo local;
+    SampleBudget defaultBudget;
+    SampleBudget* usedBudget = budget ? budget : &defaultBudget;
     DAData dataCopy            = request.data;  // 值语义共享底层指针，取非 const 接口
     DATableDataSource* source  = dataCopy.tableSource();
     if (source == nullptr || dataColumn < 0) {
@@ -313,6 +348,10 @@ QVector< double > DAChartSeriesSampler::sampleValues(const DATableChartRequest& 
     local.sampled                    = (ranges.size() != 1 || (ranges.size() == 1 && ranges.first().count < totalRows));
 
     for (const RowRange& range : ranges) {
+        if (!usedBudget->request(range.count)) {
+            local.limited = true;
+            break;
+        }
         const QVariantList cells = fetchColumn(source, dataColumn, range.start, range.count);
         for (const QVariant& v : cells) {
             double d = 0.0;
@@ -336,9 +375,12 @@ QVector< double > DAChartSeriesSampler::sampleValues(const DATableChartRequest& 
 DAChartSeriesSampler::CategorySample DAChartSeriesSampler::sampleCategory(const DATableChartRequest& request,
                                                                           int categoryDataColumn,
                                                                           int valueDataColumn,
-                                                                          int maxPoints)
+                                                                          int maxPoints,
+                                                                          SampleBudget* budget)
 {
     CategorySample result;
+    SampleBudget defaultBudget;
+    SampleBudget* usedBudget = budget ? budget : &defaultBudget;
     DAData dataCopy            = request.data;  // 值语义共享底层指针，取非 const 接口
     DATableDataSource* source  = dataCopy.tableSource();
     if (source == nullptr || categoryDataColumn < 0) {
@@ -350,6 +392,18 @@ DAChartSeriesSampler::CategorySample DAChartSeriesSampler::sampleCategory(const 
     result.info.sampled              = (ranges.size() != 1 || (ranges.size() == 1 && ranges.first().count < totalRows));
 
     for (const RowRange& range : ranges) {
+        const int callsNeeded = (valueDataColumn >= 0) ? 2 : 1;
+        bool budgetOk         = true;
+        for (int c = 0; c < callsNeeded; ++c) {
+            if (!usedBudget->request(range.count)) {
+                budgetOk = false;
+                break;
+            }
+        }
+        if (!budgetOk) {
+            result.info.limited = true;
+            break;
+        }
         const QVariantList cats   = fetchColumn(source, categoryDataColumn, range.start, range.count);
         const QVariantList values = (valueDataColumn >= 0) ? fetchColumn(source, valueDataColumn, range.start, range.count) : QVariantList();
         const int n               = cats.size();
