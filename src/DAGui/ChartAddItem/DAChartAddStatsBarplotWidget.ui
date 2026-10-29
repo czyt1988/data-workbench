@@ -113,6 +113,16 @@
           <string>var</string>
          </property>
         </item>
+        <item>
+         <property name="text">
+          <string>min</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>max</string>
+         </property>
+        </item>
        </widget>
       </item>
       <item row="1" column="0">

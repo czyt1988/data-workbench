@@ -5813,7 +5813,7 @@
 <context>
     <name>DA::DAChartAddStatsBarplotWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddStatsBarplotWidget.cpp" line="+20"/>
+        <location filename="../DAGui/ChartAddItem/DAChartAddStatsBarplotWidget.cpp" line="+21"/>
         <source>X axis (categorical)</source>
         <translation>X axis (categorical)</translation>
     </message>
@@ -5828,7 +5828,7 @@
         <translation>Hue</translation>
     </message>
     <message>
-        <location line="+67"/>
+        <location line="+83"/>
         <source>Please select an X-axis data column before plotting</source>
         <translation>Please select an X-axis data column before plotting</translation>
     </message>
@@ -15099,6 +15099,16 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <location line="+5"/>
         <source>var</source>
         <translation>var</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>min</source>
+        <translation>min</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>max</source>
+        <translation>max</translation>
     </message>
     <message>
         <location line="+8"/>

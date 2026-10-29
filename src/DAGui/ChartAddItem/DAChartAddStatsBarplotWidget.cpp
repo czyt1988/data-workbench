@@ -1,6 +1,7 @@
 #include "DAChartAddStatsBarplotWidget.h"
 #include "ui_DAChartAddStatsBarplotWidget.h"
 
+#include <QDebug>
 #include <QJsonObject>
 #include <QVariant>
 #include "DADataManager.h"
@@ -39,6 +40,20 @@ DAChartAddStatsBarplotWidget::DAChartAddStatsBarplotWidget(QWidget* parent)
     connect(ui->comboBoxCi, QOverload< int >::of(&QComboBox::currentIndexChanged),
             this, &DAChartAddStatsBarplotWidget::onCiChanged);
 
+    // 估计器下拉：显示文本会被翻译（中文界面是「均值」等），而 Python 的 ESTIMATOR_MAP
+    // 只认真实估计器名，因此把规范 key 写进 itemData，buildPlotParams 读 currentData。
+    // uic 不为 combo item 生成 setItemData，这里按下标写入；顺序必须与 .ui 一致。
+    static const char* const kEstimatorKeys[] = { "mean", "median", "sum", "count", "std", "var", "min", "max" };
+    const int estimatorCount = static_cast< int >(sizeof(kEstimatorKeys) / sizeof(kEstimatorKeys[ 0 ]));
+    if (ui->comboBoxEstimator->count() == estimatorCount) {
+        for (int i = 0; i < estimatorCount; ++i) {
+            ui->comboBoxEstimator->setItemData(i, QString::fromLatin1(kEstimatorKeys[ i ]));
+        }
+    } else {
+        qWarning() << "DAChartAddStatsBarplotWidget: estimator combo item count mismatch:"
+                   << ui->comboBoxEstimator->count() << "expected" << estimatorCount;
+    }
+
     // Estimator / CI controls are only active in barplot mode (Y column selected).
     // We check the Y selection widget on OK; the mode toggle is advisory here.
 }
@@ -60,8 +75,10 @@ QJsonObject DAChartAddStatsBarplotWidget::buildPlotParams() const
 {
     QJsonObject p;
 
-    // Estimator
-    p["estimator"] = ui->comboBoxEstimator->currentText();
+    // Estimator：估计器名字取自 itemData（界面文本会被翻译，currentText 在中文界面下
+    // 会变成「均值」等，传给 Python 会落到 ESTIMATOR_MAP 的默认值 mean）
+    const QString estimator = ui->comboBoxEstimator->currentData().toString();
+    p["estimator"]           = estimator.isEmpty() ? QStringLiteral("mean") : estimator;
 
     // CI
     int ciIdx = ui->comboBoxCi->currentIndex();

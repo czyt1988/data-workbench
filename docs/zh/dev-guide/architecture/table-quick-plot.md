@@ -81,6 +81,14 @@
 采样路径把采样后的标签/数值交给 `aggregate_by_category_from_lists` / `compute_boxplot_stats_from_lists`，
 仍然是同一套 Python 聚合/分位数实现，不存在第二套 group by。
 
+> **⚠️ 统计向导的估计器口径**
+>
+> 统计绘图向导的分组柱状图参数面板（`DAChartAddStatsBarplotWidget`）已同步补上 `min` / `max`
+> （默认仍是 `mean`）。该下拉的**显示文本会被翻译**，所以估计器 key 必须放在 item 的
+> `userData` 里、用 `currentData()` 读取；用 `currentText()` 会在中文界面把 median/sum/std/var
+> 全部落到 `ESTIMATOR_MAP` 的默认值 mean。uic 不为 combo item 生成 `setItemData`，因此 key
+> 在构造函数里按下标写入（顺序须与 `.ui` 一致），`DAStatsGuideTest` 对此有回归用例。
+
 ---
 
 ## 5. 转入绘图区的撤销模型

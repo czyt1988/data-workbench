@@ -5829,7 +5829,7 @@
 <context>
     <name>DA::DAChartAddStatsBarplotWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddStatsBarplotWidget.cpp" line="+20"/>
+        <location filename="../DAGui/ChartAddItem/DAChartAddStatsBarplotWidget.cpp" line="+21"/>
         <source>X axis (categorical)</source>
         <translation>X 轴（分类）</translation>
     </message>
@@ -5844,7 +5844,7 @@
         <translation>分组</translation>
     </message>
     <message>
-        <location line="+67"/>
+        <location line="+83"/>
         <source>Please select an X-axis data column before plotting</source>
         <translation>请先选择 X 轴数据列再绘图</translation>
     </message>
@@ -15115,6 +15115,16 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <location line="+5"/>
         <source>var</source>
         <translation>方差</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>min</source>
+        <translation>最小值</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>max</source>
+        <translation>最大值</translation>
     </message>
     <message>
         <location line="+8"/>
