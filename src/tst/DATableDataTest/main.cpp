@@ -471,6 +471,12 @@ private Q_SLOTS:
     void testFrozenAutoFitUnrecordedWidths();
     // 冻结分界条：拖动改末冻结列宽（容器几何跟随 + store 落库 + 表头联动）、双击自适应
     void testFrozenBoundarySeparatorDragAndAutoFit();
+    // 按列冻结：冻结中间列只冻结该列、解冻回到原位置
+    void testFreezeSingleMiddleColumn();
+    // 按列冻结：两个不相邻列进冻结区，顺序按全局列序
+    void testFreezeTwoNonAdjacentColumns();
+    // 冻结区内部拖动：只改冻结区顺序，全局列序不变，undo 可还原
+    void testFrozenPaneReorder();
     // 007a：定位单入口——隐藏列自动取消隐藏（不入栈）
     void testLocateActualCellHiddenColumn();
     // 007a：定位到冻结区列——主区横滚不动、目标格选中、焦点给冻结窗格
@@ -1761,8 +1767,8 @@ void DATableDataTest::testContextMenuComposition()
     const QStringList expectedColumnsMenu { QStringLiteral("Hide This Column"),
                                             QStringLiteral("Show All Columns"),
                                             QStringLiteral("<SEP>"),
-                                            QStringLiteral("Freeze to This Column"),
-                                            QStringLiteral("Unfreeze"),
+                                            QStringLiteral("Freeze This Column"),
+                                            QStringLiteral("Unfreeze All Columns"),
                                             QStringLiteral("<SEP>"),
                                             QStringLiteral("Column View...") };
     QStringList colSeq;
@@ -1967,9 +1973,11 @@ void DATableDataTest::testViewStateColumnViewXml()
     store.setColumnOrder(Idents({ qMakePair(QStringLiteral("f"), 0), qMakePair(QStringLiteral("g"), 0),
                                   qMakePair(QStringLiteral("value"), 1) }));
     store.setColumnHidden(QStringLiteral("h"), 0, true);
-    store.setFreezeColumnCount(2);
+    store.setFrozenColumns(Idents({ qMakePair(QStringLiteral("f"), 0), qMakePair(QStringLiteral("value"), 1) }));
     QVERIFY(!store.isEmpty());
-    QCOMPARE(store.freezeColumnCount(), 2);
+    QCOMPARE(store.frozenColumns().size(), 2);
+    QVERIFY(store.isColumnFrozen(QStringLiteral("f"), 0));
+    QVERIFY(!store.isColumnFrozen(QStringLiteral("g"), 0));
     QVERIFY(store.isColumnHidden(QStringLiteral("h"), 0));
     QVERIFY(!store.isColumnHidden(QStringLiteral("h"), 1));
 
@@ -1986,7 +1994,8 @@ void DATableDataTest::testViewStateColumnViewXml()
     QCOMPARE(store2.columnOrder(), expectOrder);
     QVERIFY(store2.isColumnHidden(QStringLiteral("h"), 0));
     QCOMPARE(store2.hiddenColumns().size(), 1);
-    QCOMPARE(store2.freezeColumnCount(), 2);
+    const Idents expectFrozen { qMakePair(QStringLiteral("f"), 0), qMakePair(QStringLiteral("value"), 1) };
+    QCOMPARE(store2.frozenColumns(), expectFrozen);  // 顺序 = 冻结区显示顺序
 
     // ② 重名消歧：两个 value 列的隐藏与列序各自独立
     store2.setColumnHidden(QStringLiteral("value"), 0, true);
@@ -2009,13 +2018,31 @@ void DATableDataTest::testViewStateColumnViewXml()
     QCOMPARE(store3.rowHeaderWidth(), 66);
     QVERIFY(store3.columnOrder().isEmpty());
     QVERIFY(store3.hiddenColumns().isEmpty());
-    QCOMPARE(store3.freezeColumnCount(), 0);
+    QVERIFY(store3.frozenColumns().isEmpty());
 
-    // ④ renameColumn 迁移三份键（列宽/列序/隐藏）
+    // ③b 旧格式 <freeze columns="2"/>：fromXml 只记计数，normalizeToColumns 按全局列序展开
+    QDomDocument legacyDoc;
+    legacyDoc.setContent(QStringLiteral("<table><view-state>"
+                                        "<column-order><column name=\"b\" occurrence=\"0\"/>"
+                                        "<column name=\"a\" occurrence=\"0\"/></column-order>"
+                                        "<freeze columns=\"2\"/>"
+                                        "</view-state></table>"));
+    QDomElement legacyVs
+        = legacyDoc.firstChildElement(QStringLiteral("table")).firstChildElement(QStringLiteral("view-state"));
+    DA::DATableViewStateStore legacy;
+    QVERIFY(legacy.fromXml(legacyVs));
+    QVERIFY(legacy.frozenColumns().isEmpty());  // 计数待收敛展开
+    QVERIFY(legacy.normalizeToColumns(
+        Idents({ qMakePair(QStringLiteral("a"), 0), qMakePair(QStringLiteral("b"), 0) })));
+    QCOMPARE(legacy.frozenColumns(),
+             Idents({ qMakePair(QStringLiteral("b"), 0), qMakePair(QStringLiteral("a"), 0) }));
+
+    // ④ renameColumn 迁移四份键（列宽/列序/隐藏/冻结）
     DA::DATableViewStateStore store4;
     store4.setColumnWidth(QStringLiteral("f"), 0, 137);
     store4.setColumnOrder(Idents({ qMakePair(QStringLiteral("f"), 0), qMakePair(QStringLiteral("g"), 0) }));
     store4.setColumnHidden(QStringLiteral("f"), 0, true);
+    store4.setFrozenColumns(Idents({ qMakePair(QStringLiteral("f"), 0), qMakePair(QStringLiteral("g"), 0) }));
     store4.renameColumn(QStringLiteral("f"), QStringLiteral("f2"));
     QCOMPARE(store4.columnWidth(QStringLiteral("f"), 0), -1);
     QCOMPARE(store4.columnWidth(QStringLiteral("f2"), 0), 137);
@@ -2023,28 +2050,29 @@ void DATableDataTest::testViewStateColumnViewXml()
              Idents({ qMakePair(QStringLiteral("f2"), 0), qMakePair(QStringLiteral("g"), 0) }));
     QVERIFY(!store4.isColumnHidden(QStringLiteral("f"), 0));
     QVERIFY(store4.isColumnHidden(QStringLiteral("f2"), 0));
+    QVERIFY(!store4.isColumnFrozen(QStringLiteral("f"), 0));
+    QCOMPARE(store4.frozenColumns(),
+             Idents({ qMakePair(QStringLiteral("f2"), 0), qMakePair(QStringLiteral("g"), 0) }));
 
-    // ⑤ removeColumn 移除三份
+    // ⑤ removeColumn 移除四份
     store4.removeColumn(QStringLiteral("f2"));
     QCOMPARE(store4.columnWidth(QStringLiteral("f2"), 0), -1);
     QCOMPARE(store4.columnOrder(), Idents({ qMakePair(QStringLiteral("g"), 0) }));
     QVERIFY(!store4.isColumnHidden(QStringLiteral("f2"), 0));
+    QVERIFY(!store4.isColumnFrozen(QStringLiteral("f2"), 0));
+    QCOMPARE(store4.frozenColumns(), Idents({ qMakePair(QStringLiteral("g"), 0) }));
 
-    // ⑥ 只设冻结列数（或只设隐藏）时 isEmpty() == false
+    // ⑥ 只设冻结列（或只设隐藏）时 isEmpty() == false
     DA::DATableViewStateStore freezeOnly;
-    freezeOnly.setFreezeColumnCount(3);
+    freezeOnly.setFrozenColumns(Idents({ qMakePair(QStringLiteral("x"), 0) }));
     QVERIFY(!freezeOnly.isEmpty());
-    freezeOnly.setFreezeColumnCount(0);
+    freezeOnly.setFrozenColumns(Idents());
     QVERIFY(freezeOnly.isEmpty());
     DA::DATableViewStateStore hiddenOnly;
     hiddenOnly.setColumnHidden(QStringLiteral("x"), 0, true);
     QVERIFY(!hiddenOnly.isEmpty());
     hiddenOnly.setColumnHidden(QStringLiteral("x"), 0, false);
     QVERIFY(hiddenOnly.isEmpty());
-    // setFreezeColumnCount 归一：负数归 0
-    freezeOnly.setFreezeColumnCount(-2);
-    QCOMPARE(freezeOnly.freezeColumnCount(), 0);
-    QVERIFY(freezeOnly.isEmpty());
 }
 
 // 006a：normalizeToColumns 收敛语义——孤儿剪除、新列追加末尾、空列序不填充、
@@ -2059,7 +2087,8 @@ void DATableDataTest::testViewStateNormalizeConvergence()
         store.setColumnOrder(Idents({ qMakePair(QStringLiteral("a"), 0), qMakePair(QStringLiteral("gone"), 0),
                                       qMakePair(QStringLiteral("b"), 0) }));
         store.setColumnHidden(QStringLiteral("gone"), 0, true);  // ③ 隐藏集合孤儿剪除
-        store.setFreezeColumnCount(3);                            // ⑥ 冻结计数不被写回
+        store.setFrozenColumns(Idents({ qMakePair(QStringLiteral("a"), 0), qMakePair(QStringLiteral("gone"), 0),
+                                        qMakePair(QStringLiteral("b"), 0) }));  // ⑥ 冻结集合孤儿剪除
         QVERIFY(!store.isColumnSetNormalized());
         const bool changed = store.normalizeToColumns(
             Idents({ qMakePair(QStringLiteral("a"), 0), qMakePair(QStringLiteral("b"), 0), qMakePair(QStringLiteral("c"), 0) }));
@@ -2069,7 +2098,8 @@ void DATableDataTest::testViewStateNormalizeConvergence()
                           qMakePair(QStringLiteral("c"), 0) }));
         QVERIFY(!store.isColumnHidden(QStringLiteral("gone"), 0));
         QCOMPARE(store.hiddenColumns().size(), 0);
-        QCOMPARE(store.freezeColumnCount(), 3);  // 冻结不参与收敛
+        QCOMPARE(store.frozenColumns(),
+                 Idents({ qMakePair(QStringLiteral("a"), 0), qMakePair(QStringLiteral("b"), 0) }));
         QVERIFY(store.isColumnSetNormalized());  // ⑦ 调用后置位
         // 再收敛一次（无变化）→ 返回 false
         QVERIFY(!store.normalizeToColumns(
@@ -2087,7 +2117,7 @@ void DATableDataTest::testViewStateNormalizeConvergence()
 }
 
 // 006a：entryCountsByCategory 覆盖列视图设置——只设列宽 1 + 列序 2 + 隐藏 1 + 冻结 3
-// → 视图状态那一项计数 == 1+2+1+1（冻结算 1 条）
+// → 视图状态那一项计数 == 1+2+1+3
 void DATableDataTest::testMetadataEntryCountsColumnView()
 {
     DA::DATableMetadata meta(nullptr);
@@ -2096,13 +2126,14 @@ void DATableDataTest::testMetadataEntryCountsColumnView()
     vs->setColumnWidth(QStringLiteral("f"), 0, 137);
     vs->setColumnOrder({ qMakePair(QStringLiteral("f"), 0), qMakePair(QStringLiteral("g"), 0) });
     vs->setColumnHidden(QStringLiteral("h"), 0, true);
-    vs->setFreezeColumnCount(3);
+    vs->setFrozenColumns({ qMakePair(QStringLiteral("a"), 0), qMakePair(QStringLiteral("b"), 0),
+                           qMakePair(QStringLiteral("c"), 0) });
     const QList< QPair< QString, int > > counts = meta.entryCountsByCategory();
     bool found = false;
     for (const QPair< QString, int >& c : counts) {
         if (c.first == QStringLiteral("Column view settings")) {
             found = true;
-            QCOMPARE(c.second, 5);  // 1 列宽 + 2 列序 + 1 隐藏 + 1 冻结
+            QCOMPARE(c.second, 7);  // 1 列宽 + 2 列序 + 1 隐藏 + 3 冻结
         }
     }
     QVERIFY(found);
@@ -2325,38 +2356,60 @@ void DATableDataTest::testColumnViewCommandsUndoRedo()
         cmd.undo();
         QCOMPARE(store.hiddenColumns().size(), 1);
     }
-    // ④ 冻结命令：两种文案 + redo/undo 往返
+    // ④ 冻结命令：单列/多列/全部取消文案 + redo/undo 往返
     {
-        DA::DACommandTableFreezeColumns cmd(&store, 0, 2, cb);
-        QCOMPARE(cmd.text(), QStringLiteral("Freeze columns to 2"));
+        const Idents frozen2 { qMakePair(QStringLiteral("a"), 0), qMakePair(QStringLiteral("b"), 0) };
+        DA::DACommandTableFreezeColumns cmd(&store, Idents(), frozen2, cb);
+        QCOMPARE(cmd.text(), QStringLiteral("Freeze columns"));
         cmd.redo();
-        QCOMPARE(store.freezeColumnCount(), 2);
+        QCOMPARE(store.frozenColumns(), frozen2);
         cmd.undo();
-        QCOMPARE(store.freezeColumnCount(), 0);
-        DA::DACommandTableFreezeColumns cmd2(&store, 2, 0, cb);
-        QCOMPARE(cmd2.text(), QStringLiteral("Unfreeze columns"));
-        cmd2.redo();
-        QCOMPARE(store.freezeColumnCount(), 0);
-        cmd2.undo();
-        QCOMPARE(store.freezeColumnCount(), 2);
+        QVERIFY(store.frozenColumns().isEmpty());
+        // 只多一项 → 单列文案
+        DA::DACommandTableFreezeColumns cmdOne(&store, Idents(), Idents({ qMakePair(QStringLiteral("b"), 0) }), cb);
+        QCOMPARE(cmdOne.text(), QStringLiteral("Freeze column \"b\""));
+        cmdOne.redo();
+        QCOMPARE(store.frozenColumns().size(), 1);
+        cmdOne.undo();
+        QVERIFY(store.frozenColumns().isEmpty());
+        // 只少一项 → 取消单列文案
+        DA::DACommandTableFreezeColumns cmdUnfreezeOne(&store, Idents({ qMakePair(QStringLiteral("b"), 0) }), Idents(), cb);
+        QCOMPARE(cmdUnfreezeOne.text(), QStringLiteral("Unfreeze column \"b\""));
+        cmdUnfreezeOne.redo();
+        QVERIFY(store.frozenColumns().isEmpty());
+        cmdUnfreezeOne.undo();
+        QCOMPARE(store.frozenColumns().size(), 1);
+        // 清空（多列）→ 全部取消文案
+        DA::DACommandTableFreezeColumns cmdAll(
+            &store, Idents({ qMakePair(QStringLiteral("a"), 0), qMakePair(QStringLiteral("b"), 0) }), Idents(), cb);
+        QCOMPARE(cmdAll.text(), QStringLiteral("Unfreeze all columns"));
+        cmdAll.redo();
+        QVERIFY(store.frozenColumns().isEmpty());
+        cmdAll.undo();
+        QCOMPARE(store.frozenColumns().size(), 2);
+        // 还原到两列（供 ⑤ 使用）
+        store.setFrozenColumns(frozen2);
     }
     // ⑤ 批量父命令：两个子命令一次 redo/undo 全生效/全还原
-    //（freeze 子命令旧值 = 进入⑤时 store 的现值 2，与页面批量构造方式一致）
+    //（freeze 子命令旧值 = 进入⑤时 store 的现值，与页面批量构造方式一致）
     {
+        const Idents oldFrozen { qMakePair(QStringLiteral("a"), 0), qMakePair(QStringLiteral("b"), 0) };
+        const Idents newFrozen { qMakePair(QStringLiteral("a"), 0), qMakePair(QStringLiteral("b"), 0),
+                                 qMakePair(QStringLiteral("c"), 0) };
         DA::DACommandTableColumnViewBatch* parent = new DA::DACommandTableColumnViewBatch(QStringLiteral("Column View..."));
         new DA::DACommandTableColumnVisibility(&store, IdentSet({ qMakePair(QStringLiteral("a"), 0) }),
                                                IdentSet({ qMakePair(QStringLiteral("a"), 0), qMakePair(QStringLiteral("x"), 0) }),
                                                cb, QString(), parent);
-        new DA::DACommandTableFreezeColumns(&store, 2, 3, cb, parent);
+        new DA::DACommandTableFreezeColumns(&store, oldFrozen, newFrozen, cb, QString(), parent);
         QVERIFY(!parent->text().isEmpty());
         parent->redo();
         QVERIFY(store.isColumnHidden(QStringLiteral("x"), 0));
         QVERIFY(store.isColumnHidden(QStringLiteral("a"), 0));
-        QCOMPARE(store.freezeColumnCount(), 3);
+        QCOMPARE(store.frozenColumns(), newFrozen);
         parent->undo();
         QVERIFY(!store.isColumnHidden(QStringLiteral("x"), 0));
         QVERIFY(store.isColumnHidden(QStringLiteral("a"), 0));  // 旧隐藏集合（④ 结束时的 {a}）还原
-        QCOMPARE(store.freezeColumnCount(), 2);                  // 旧冻结数还原
+        QCOMPARE(store.frozenColumns(), oldFrozen);             // 旧冻结集合还原
         delete parent;
     }
 }
@@ -2702,13 +2755,14 @@ void DATableDataTest::testHeaderColumnViewMenuActions()
     QVERIFY(store != nullptr);
     const int n0 = w.getUndoStack()->count();
 
-    // ① 冻结到此列（logical=1：可见列序序号 1，+1 = 冻结 2 个可见列）
-    triggerColumnViewMenuAction(hv, 1, QStringLiteral("Freeze to This Column"));
-    QCOMPARE(store->freezeColumnCount(), 2);
+    // ① 冻结此列（logical=1，列 b）：只冻结该列
+    triggerColumnViewMenuAction(hv, 1, QStringLiteral("Freeze This Column"));
+    QVERIFY(store->isColumnFrozen(QStringLiteral("b"), 0));
+    QCOMPARE(store->frozenColumns().size(), 1);
     QCOMPARE(w.getUndoStack()->count(), n0 + 1);
-    // ② 取消冻结
-    triggerColumnViewMenuAction(hv, 1, QStringLiteral("Unfreeze"));
-    QCOMPARE(store->freezeColumnCount(), 0);
+    // ② 取消冻结此列（同一列，菜单文案随状态切换）
+    triggerColumnViewMenuAction(hv, 1, QStringLiteral("Unfreeze This Column"));
+    QVERIFY(store->frozenColumns().isEmpty());
     QCOMPARE(w.getUndoStack()->count(), n0 + 2);
     // ③ 隐藏此列（logical=2，列 c）
     triggerColumnViewMenuAction(hv, 2, QStringLiteral("Hide This Column"));
@@ -2732,7 +2786,7 @@ void DATableDataTest::testHeaderColumnViewMenuActions()
     triggerColumnViewMenuAction(hv, 0, QStringLiteral("Column View..."));
     QVERIFY(opened);
     QVERIFY(store->hiddenColumns().isEmpty());
-    QCOMPARE(store->freezeColumnCount(), 0);
+    QVERIFY(store->frozenColumns().isEmpty());
     QCOMPARE(w.getUndoStack()->count(), n0 + 4);
 }
 
@@ -2753,7 +2807,7 @@ void DATableDataTest::testColumnViewDialogDiffAndUndo()
     QVERIFY(QTest::qWaitForWindowExposed(&w));
     DA::DADataTableView* tv = w.getDataTableView();
     QVERIFY(tv != nullptr);
-    w.freezeColumnsTo(1);  // 前置：冻结 1
+    w.setColumnFrozen(0, true);  // 前置：冻结 a
     const int n0 = w.getUndoStack()->count();
 
     // 打开对话框：表格里勾选 a 与 c 的 Hidden、冻结勾选保持 1 → 确定
@@ -2789,18 +2843,18 @@ void DATableDataTest::testColumnViewDialogDiffAndUndo()
     QVERIFY(w.viewStateStore()->isColumnHidden(QStringLiteral("c"), 0));
     QVERIFY(tv->isColumnHidden(0));
     QVERIFY(tv->isColumnHidden(2));
-    // ② 冻结数落库（冻结勾选未动 = 1）
-    QCOMPARE(w.viewStateStore()->freezeColumnCount(), 1);
+    // ② 冻结集合落库（冻结勾选未动 = 1 列）
+    QCOMPARE(w.viewStateStore()->frozenColumns().size(), 1);
     // ③ 一个撤销单元
     QCOMPARE(w.getUndoStack()->count(), n0 + 1);
     QCOMPARE(w.getUndoStack()->undoText(), QStringLiteral("Column View..."));
-    // ④ 一次 undo：隐藏集合与冻结数一起还原到前置值（a 归冻结区 → 冻结窗格可见）
+    // ④ 一次 undo：隐藏集合与冻结集合一起还原到前置值（a 归冻结区 → 冻结窗格可见）
     w.getUndoStack()->undo();
     QVERIFY(w.viewStateStore()->hiddenColumns().isEmpty());
     QVERIFY(!tv->isColumnHidden(1));
     QVERIFY(!tv->isColumnHidden(2));
-    QVERIFY(tv->isColumnHidden(0));  // a 在冻结区（前置 freeze=1），主窗格隐藏
-    QCOMPARE(w.viewStateStore()->freezeColumnCount(), 1);
+    QVERIFY(tv->isColumnHidden(0));  // a 在冻结区（前置冻结 a），主窗格隐藏
+    QCOMPARE(w.viewStateStore()->frozenColumns().size(), 1);
     // ⑤ 重开：显示全部按钮 + 取消全部冻结按钮 → 确定 → 全可见、冻结 0；undo 后
     // 重推会清掉已撤销的批命令（QUndoStack::push 语义），栈计数回到 n0+1
     bool opened2 = false;
@@ -2824,7 +2878,7 @@ void DATableDataTest::testColumnViewDialogDiffAndUndo()
     w.showColumnViewDialog();
     QVERIFY(opened2);
     QVERIFY(w.viewStateStore()->hiddenColumns().isEmpty());
-    QCOMPARE(w.viewStateStore()->freezeColumnCount(), 0);
+    QVERIFY(w.viewStateStore()->frozenColumns().isEmpty());
     QCOMPARE(w.getUndoStack()->count(), n0 + 1);  // 已撤销的批命令被新 push 清掉
 }
 
@@ -2843,7 +2897,8 @@ void DATableDataTest::testColumnViewDialogDuplicateNamesInitialAndCancel()
     w.resize(800, 400);
     w.show();
     QVERIFY(QTest::qWaitForWindowExposed(&w));
-    w.freezeColumnsTo(2);  // 前置：冻结 2
+    w.setColumnFrozen(0, true);  // 前置：冻结第一个 a
+    w.setColumnFrozen(1, true);  // 前置：冻结第二个 a
     const int n0 = w.getUndoStack()->count();
 
     // 打开：读初始状态（重名文本/冻结勾选数）后勾选 a(occ 0) 隐藏 + 改冻结勾选，再取消
@@ -2881,10 +2936,10 @@ void DATableDataTest::testColumnViewDialogDuplicateNamesInitialAndCancel()
     QCOMPARE(seenTexts.size(), 3);
     QCOMPARE(seenTexts.at(0), QStringLiteral("a"));
     QCOMPARE(seenTexts.at(1), QStringLiteral("a (2)"));
-    // ② 冻结勾选起始行数 = store 冻结数（隐藏列占名额口径）
+    // ② 冻结勾选起始数 = store 冻结列数
     QCOMPARE(seenFrozen, 2);
     QVERIFY(w.viewStateStore()->hiddenColumns().isEmpty());
-    QCOMPARE(w.viewStateStore()->freezeColumnCount(), 2);
+    QCOMPARE(w.viewStateStore()->frozenColumns().size(), 2);
     QCOMPARE(w.getUndoStack()->count(), n0);
     // ④ 确定路径：只勾选 a (2) 隐藏 → accept → 重名两项独立
     bool opened2 = false;
@@ -2928,7 +2983,7 @@ void DATableDataTest::testFrozenAndColumnViewCombination()
                                 qMakePair(QStringLiteral("f"), 0), qMakePair(QStringLiteral("d"), 0),
                                 qMakePair(QStringLiteral("b"), 0) });
         store->setColumnHidden(QStringLiteral("f"), 0, true);
-        store->setFreezeColumnCount(2);
+        store->setFrozenColumns({ qMakePair(QStringLiteral("s"), 0), qMakePair(QStringLiteral("i"), 0) });
         store->setColumnWidth(QStringLiteral("s"), 0, 101);
         store->setColumnWidth(QStringLiteral("i"), 0, 102);
         store->setColumnWidth(QStringLiteral("d"), 0, 103);
@@ -3039,10 +3094,11 @@ void DATableDataTest::testFrozenAndColumnViewCombination()
         QCOMPARE(actionSpy.count(), 1);
     }
     // ⑨ 解冻 → 冻结窗格隐藏；再冻结 → 顺序/宽度/可见集合全部还原（复用已有窗格）
-    w.freezeColumnsTo(0);
+    w.unfreezeAllColumns();
     QVERIFY(!frozen->isVisible());
     QCOMPARE(mh->sectionSize(colS), 101);  // 解冻后主窗格接管全部列宽
-    w.freezeColumnsTo(2);
+    w.setColumnFrozen(colS, true);
+    w.setColumnFrozen(colI, true);
     QVERIFY(frozen->isVisible());
     QCOMPARE(fh->sectionSize(colS), 101);
     QCOMPARE(fh->sectionSize(colI), 102);
@@ -3069,11 +3125,12 @@ void DATableDataTest::testColumnWidthSurvivesFreezeCycle()
     DA::DADataTableView* main   = w.getDataTableView();
     DA::DATablePaneContainer* container = w.paneContainer();
     const int colF = 1;  // f
-    // 冻结（默认列序 [i,f,s,d,b] + 冻结 2 → f 在冻结区）
+    // 冻结（默认列序 [i,f,s,d,b]：冻结 i、f → f 在冻结区）
     const int n0 = w.getUndoStack()->count();
-    w.freezeColumnsTo(2);
-    QCOMPARE(w.getUndoStack()->count(), n0 + 1);  // 冻结命令入栈 1 条
-    QCOMPARE(w.getUndoStack()->undoText(), QStringLiteral("Freeze columns to 2"));
+    w.setColumnFrozen(0, true);  // i
+    w.setColumnFrozen(colF, true);  // f
+    QCOMPARE(w.getUndoStack()->count(), n0 + 2);  // 每列一条冻结命令
+    QCOMPARE(w.getUndoStack()->undoText(), QStringLiteral("Freeze column \"f\""));
     DA::DADataTableView* frozen = container->frozenView();
     QVERIFY(frozen != nullptr);
     // ① 用户拖宽 f 到 137（程序化写宽度模拟拖拽结果；采集闸门不受影响——直接写 store）
@@ -3081,27 +3138,27 @@ void DATableDataTest::testColumnWidthSurvivesFreezeCycle()
     w.viewStateStore()->setColumnWidth(QStringLiteral("f"), 0, 137);
     QCOMPARE(frozen->horizontalHeader()->sectionSize(colF), 137);
     // ② 解冻后主窗格接管：宽度 137 保留
-    w.freezeColumnsTo(0);
+    w.unfreezeAllColumns();
     QCOMPARE(main->horizontalHeader()->sectionSize(colF), 137);
     // ③ 再冻结：f 归冻结区，冻结窗格 137；主窗格侧 f 隐藏（宽度记在
     // hiddenSectionSize，Qt 对隐藏段 sectionSize 恒 0——不能直接断言）
-    w.freezeColumnsTo(2);
+    w.setColumnFrozen(0, true);
+    w.setColumnFrozen(colF, true);
     QCOMPARE(frozen->horizontalHeader()->sectionSize(colF), 137);
     QVERIFY(main->horizontalHeader()->isSectionHidden(colF));
     // 再解冻一次：主窗格恢复 137（hiddenSectionSize 未回退的证明）
-    w.freezeColumnsTo(0);
+    w.unfreezeAllColumns();
     QApplication::processEvents();
     QCOMPARE(main->horizontalHeader()->sectionSize(colF), 137);
-    // ④ 列宽不入栈：全程只有 4 条冻结命令（冻/解/再冻/再解），无列宽命令
-    QCOMPARE(w.getUndoStack()->count(), n0 + 4);
+    // ④ 列宽不入栈：全程只有 6 条冻结命令（2 冻 / 1 解 / 2 再冻 / 1 再解），无列宽命令
+    QCOMPARE(w.getUndoStack()->count(), n0 + 6);
     const int nBeforeWidth = w.getUndoStack()->count();
     frozen->horizontalHeader()->resizeSection(colF, 150);
     w.viewStateStore()->setColumnWidth(QStringLiteral("f"), 0, 150);
     QCOMPARE(w.getUndoStack()->count(), nBeforeWidth);  // 宽度变化零命令
 }
 
-// 冻结语义修订（隐藏列占名额）：隐藏全部冻结列 → 冻结窗格隐藏、主区列不补位；
-// 恢复可见 → 窗格恢复
+// 冻结语义：隐藏全部冻结列 → 冻结窗格隐藏、主区列不补位；恢复可见 → 窗格恢复
 void DATableDataTest::testFrozenHiddenColumnsOccupyQuota()
 {
     if (!mPandasOk) {
@@ -3118,8 +3175,9 @@ void DATableDataTest::testFrozenHiddenColumnsOccupyQuota()
     QVERIFY(QTest::qWaitForWindowExposed(&w));
     DA::DATablePaneContainer* container = w.paneContainer();
     DA::DADataTableView* main = w.getDataTableView();
-    // 前置：冻结 2（a、b 进冻结区）
-    w.freezeColumnsTo(2);
+    // 前置：冻结 a、b（两列进冻结区）
+    w.setColumnFrozen(0, true);
+    w.setColumnFrozen(1, true);
     DA::DADataTableView* frozen = container->frozenView();
     QVERIFY(frozen != nullptr);
     QVERIFY(frozen->isVisible());
@@ -3128,14 +3186,14 @@ void DATableDataTest::testFrozenHiddenColumnsOccupyQuota()
     // ① 隐藏两个冻结列（经右键菜单入口同款管线）：主区列不得补位挤进冻结区
     w.hideColumnAt(0);  // 隐藏 a
     w.hideColumnAt(1);  // 隐藏 b
-    // 冻结名额仍是 2（store 不变），但生效冻结可见列数 = 0 → 冻结窗格隐藏
-    QCOMPARE(w.viewStateStore()->freezeColumnCount(), 2);
+    // 冻结集合仍是两列（store 不变），但生效冻结可见列数 = 0 → 冻结窗格隐藏
+    QCOMPARE(w.viewStateStore()->frozenColumns().size(), 2);
     QCOMPARE(w.effectiveFrozenColumnCount(), 0);
     QVERIFY(!frozen->isVisible());
     // 主区列 c/d 不在冻结集合里（不补位）
     QVERIFY(!w.isColumnInFrozenArea(2));
     QVERIFY(!w.isColumnInFrozenArea(3));
-    // 名额仍由隐藏的 a/b 占据
+    // 冻结身份仍由隐藏的 a/b 占据
     QVERIFY(w.isColumnInFrozenArea(0));
     QVERIFY(w.isColumnInFrozenArea(1));
     // ② undo 两次隐藏 → 窗格恢复
@@ -3173,8 +3231,9 @@ void DATableDataTest::testRemoveColumnAtDirectAndFrozenCollapse()
     w.show();
     QVERIFY(QTest::qWaitForWindowExposed(&w));
     DA::DATablePaneContainer* container = w.paneContainer();
-    // 前置：冻结 2（a、b），无选区（验证不依赖选区）
-    w.freezeColumnsTo(2);
+    // 前置：冻结 a、b，无选区（验证不依赖选区）
+    w.setColumnFrozen(0, true);
+    w.setColumnFrozen(1, true);
     DA::DADataTableView* frozen = container->frozenView();
     QVERIFY(frozen != nullptr && frozen->isVisible());
     w.getDataTableView()->clearSelection();
@@ -3185,7 +3244,7 @@ void DATableDataTest::testRemoveColumnAtDirectAndFrozenCollapse()
     // ① 删除冻结列 a：成功（无选区也生效）
     QVERIFY(w.removeColumnAt(0) > 0);
     QVERIFY(!df.columns().contains(QStringLiteral("a")));
-    QCOMPARE(w.viewStateStore()->freezeColumnCount(), 1);  // 名额缩减（b 仍是冻结列）
+    QCOMPARE(w.viewStateStore()->frozenColumns().size(), 1);  // 冻结集合同步剔除（b 仍冻结）
     QVERIFY(w.isColumnInFrozenArea(0));  // 删除后 0 号位 = b（列移位）
     QVERIFY(frozen->isVisible());
     // a 的列宽条目被清；c 的保留
@@ -3194,19 +3253,19 @@ void DATableDataTest::testRemoveColumnAtDirectAndFrozenCollapse()
     // ② 删除另一个冻结列 b（现在 0 号位）：全部冻结列删光 → 冻结窗格隐藏
     QVERIFY(w.removeColumnAt(0) > 0);
     QVERIFY(!df.columns().contains(QStringLiteral("b")));
-    QCOMPARE(w.viewStateStore()->freezeColumnCount(), 0);
+    QVERIFY(w.viewStateStore()->frozenColumns().isEmpty());
     QVERIFY(!frozen->isVisible());
-    // ③ undo 两次：列、冻结数、窗格全部恢复
+    // ③ undo 两次：列、冻结集合、窗格全部恢复
     w.getUndoStack()->undo();
     QVERIFY(df.columns().contains(QStringLiteral("b")));
     QVERIFY(frozen->isVisible());
-    QCOMPARE(w.viewStateStore()->freezeColumnCount(), 1);
+    QCOMPARE(w.viewStateStore()->frozenColumns().size(), 1);
     w.getUndoStack()->undo();
     QVERIFY(df.columns().contains(QStringLiteral("a")));
-    QCOMPARE(w.viewStateStore()->freezeColumnCount(), 2);
+    QCOMPARE(w.viewStateStore()->frozenColumns().size(), 2);
     QVERIFY(frozen->isVisible());
     QVERIFY(w.viewStateStore()->hasColumnWidth(QStringLiteral("a"), 0));  // 快照还原
-    QCOMPARE(w.getUndoStack()->count(), n0 + 2);  // 删除前 freeze 1 条 + 删除 2 条
+    QCOMPARE(w.getUndoStack()->count(), n0 + 2);  // 删除前冻结 2 条 + 删除 2 条
     w.hide();
 }
 
@@ -3286,8 +3345,8 @@ void DATableDataTest::testColumnViewDialogRenameAndBatchUndo()
         if (table && table->rowCount() == 3) {
             // 直接改列名 item 文本（等价编辑器提交；cellChanged 校验放行）
             table->item(0, 0)->setText(QStringLiteral("ax"));
-            table->item(1, 1)->setCheckState(Qt::Checked);   // 隐藏 b
-            table->item(0, 2)->setCheckState(Qt::Unchecked);  // 取消 a 冻结（前缀全清）
+            table->item(1, 1)->setCheckState(Qt::Checked);  // 隐藏 b
+            table->item(0, 2)->setCheckState(Qt::Checked);    // 冻结 a（逐列独立）
         }
         dlg->accept();
     });
@@ -3297,7 +3356,8 @@ void DATableDataTest::testColumnViewDialogRenameAndBatchUndo()
     QVERIFY(df.columns().contains(QStringLiteral("ax")));
     QCOMPARE(tv->model()->headerData(0, Qt::Horizontal).toString(), QStringLiteral("ax"));
     QVERIFY(w.viewStateStore()->isColumnHidden(QStringLiteral("b"), 0));
-    QCOMPARE(w.viewStateStore()->freezeColumnCount(), 0);
+    QCOMPARE(w.viewStateStore()->frozenColumns().size(), 1);
+    QVERIFY(w.viewStateStore()->isColumnFrozen(QStringLiteral("ax"), 0));
     // ② 一个撤销单元
     QCOMPARE(w.getUndoStack()->count(), n0 + 1);
     // ③ 一次 undo 全还原
@@ -3331,7 +3391,8 @@ void DATableDataTest::testPaneRowHeaderAndScrollSync()
     QVERIFY(QTest::qWaitForWindowExposed(&w));
     DA::DADataTableView* main = w.getDataTableView();
     DA::DATablePaneContainer* container = w.paneContainer();
-    w.freezeColumnsTo(2);
+    w.setColumnFrozen(0, true);  // i
+    w.setColumnFrozen(1, true);  // f
     DA::DADataTableView* frozen = container->frozenView();
     QVERIFY(frozen != nullptr);
     // ① 行头归属：冻结时行头归冻结窗格（frozen 可见、main 隐藏）
@@ -3371,10 +3432,10 @@ void DATableDataTest::testFrozenAutoFitUnrecordedWidths()
     DA::DAPyDataFrame df(obj);
     DA::DAData d(df);
     DA::DATableMetadataRegistry registry(nullptr);
-    // widget#1：只写冻结 2（不写任何列宽——模拟从未动过列宽的用户）
+    // widget#1：只冻结默认列序前两列 i、f（不写任何列宽——模拟从未动过列宽的用户）
     {
         DA::DADataOperateOfDataFrameWidget w1(d, &registry);
-        w1.viewStateStore()->setFreezeColumnCount(2);
+        w1.viewStateStore()->setFrozenColumns({ qMakePair(QStringLiteral("i"), 0), qMakePair(QStringLiteral("f"), 0) });
     }
     // 「重开」数据页：构造时投影 + 无记录列内容自适应
     DA::DADataOperateOfDataFrameWidget w(d, &registry);
@@ -3433,7 +3494,8 @@ void DATableDataTest::testFrozenBoundarySeparatorDragAndAutoFit()
     QVERIFY(QTest::qWaitForWindowExposed(&w));
     DA::DATablePaneContainer* container = w.paneContainer();
     DA::DADataTableView* main = w.getDataTableView();
-    w.freezeColumnsTo(2);  // 默认列序 [i,f,s,d,b] → 冻结区 = i、f（末冻结列 f）
+    w.setColumnFrozen(0, true);  // i
+    w.setColumnFrozen(1, true);  // f（默认列序 [i,f,s,d,b] → 冻结区 = i、f，末冻结列 f）
     DA::DADataTableView* frozen = container->frozenView();
     QVERIFY(frozen != nullptr);
     QHeaderView* fh = frozen->horizontalHeader();
@@ -3477,8 +3539,166 @@ void DATableDataTest::testFrozenBoundarySeparatorDragAndAutoFit()
     // ⑤ 主窗格表头同步同一列宽（两窗格同一 logical 段宽一致——Qt 按段存宽）
     QCOMPARE(main->horizontalHeader()->isSectionHidden(colF), true);
     // ⑥ 拖动期间撤销栈零变化（列宽不经撤销，与 T7 纪律一致）
-    //    （上面 ①-④ 只有一次 freezeColumnsTo 入栈）
-    QVERIFY(w.getUndoStack()->count() >= 1);
+    //    （上面 ①-④ 只有两次冻结命令入栈）
+    QVERIFY(w.getUndoStack()->count() >= 2);
+}
+
+// 按列冻结：冻结中间列只冻结该列、主区顺序不变；解冻后回到原位置
+void DATableDataTest::testFreezeSingleMiddleColumn()
+{
+    if (!mPandasOk) {
+        QSKIP("pandas not available");
+    }
+    pybind11::object obj
+        = makeDataFrameWithColumns({ QStringLiteral("a"), QStringLiteral("b"), QStringLiteral("c"), QStringLiteral("d") });
+    QVERIFY(!obj.is_none());
+    DA::DAPyDataFrame df(obj);
+    DA::DAData d(df);
+    DA::DATableMetadataRegistry registry(nullptr);
+    DA::DADataOperateOfDataFrameWidget w(d, &registry);
+    w.resize(800, 400);
+    w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+    DA::DADataTableView* main      = w.getDataTableView();
+    DA::DATablePaneContainer* c    = w.paneContainer();
+    QVERIFY(c != nullptr);
+    // 冻结第 3 列 c（logical=2）
+    w.setColumnFrozen(2, true);
+    DA::DADataTableView* frozen = c->frozenView();
+    QVERIFY(frozen != nullptr);
+    QVERIFY(frozen->isVisible());
+    QCOMPARE(w.effectiveFrozenColumnCount(), 1);
+    QVERIFY(w.isColumnInFrozenArea(2));
+    QVERIFY(!w.isColumnInFrozenArea(0));
+    QVERIFY(!w.isColumnInFrozenArea(1));
+    QVERIFY(!w.isColumnInFrozenArea(3));
+    // 冻结区顺序只含 c；主区仍是 a,b,d（顺序不变）
+    QCOMPARE(c->frozenColumnOrderLogical(), QVector< int >({ 2 }));
+    QHeaderView* fh = frozen->horizontalHeader();
+    QHeaderView* mh = main->horizontalHeader();
+    QVERIFY(!fh->isSectionHidden(2));
+    QVERIFY(mh->isSectionHidden(2));
+    QList< int > mainOrder;
+    for (int v = 0; v < mh->count(); ++v) {
+        const int logical = mh->logicalIndex(v);
+        if (!mh->isSectionHidden(logical) && logical != 4) {  // 4 = 尾部预留空白列
+            mainOrder.append(logical);
+        }
+    }
+    QCOMPARE(mainOrder, QList< int >({ 0, 1, 3 }));
+    // 解冻：列回到原位置（主区 a,b,c,d），冻结窗格隐藏
+    w.setColumnFrozen(2, false);
+    QVERIFY(!frozen->isVisible());
+    QVERIFY(!w.isColumnInFrozenArea(2));
+    mainOrder.clear();
+    for (int v = 0; v < mh->count(); ++v) {
+        const int logical = mh->logicalIndex(v);
+        if (!mh->isSectionHidden(logical) && logical != 4) {
+            mainOrder.append(logical);
+        }
+    }
+    QCOMPARE(mainOrder, QList< int >({ 0, 1, 2, 3 }));
+    w.hide();
+}
+
+// 按列冻结：两个不相邻列进冻结区，顺序按全局列序
+void DATableDataTest::testFreezeTwoNonAdjacentColumns()
+{
+    if (!mPandasOk) {
+        QSKIP("pandas not available");
+    }
+    pybind11::object obj
+        = makeDataFrameWithColumns({ QStringLiteral("a"), QStringLiteral("b"), QStringLiteral("c"), QStringLiteral("d") });
+    QVERIFY(!obj.is_none());
+    DA::DAPyDataFrame df(obj);
+    DA::DAData d(df);
+    DA::DATableMetadataRegistry registry(nullptr);
+    DA::DADataOperateOfDataFrameWidget w(d, &registry);
+    w.resize(800, 400);
+    w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+    DA::DADataTableView* main   = w.getDataTableView();
+    DA::DATablePaneContainer* c = w.paneContainer();
+    QVERIFY(c != nullptr);
+    // 先冻结 c 再冻结 a（插入位置按全局列序 → 冻结区仍是 a,c）
+    w.setColumnFrozen(2, true);
+    w.setColumnFrozen(0, true);
+    QCOMPARE(c->frozenColumnOrderLogical(), QVector< int >({ 0, 2 }));
+    QCOMPARE(w.effectiveFrozenColumnCount(), 2);
+    DA::DADataTableView* frozen = c->frozenView();
+    QVERIFY(frozen != nullptr && frozen->isVisible());
+    QHeaderView* fh = frozen->horizontalHeader();
+    QHeaderView* mh = main->horizontalHeader();
+    QVERIFY(!fh->isSectionHidden(0));
+    QVERIFY(!fh->isSectionHidden(2));
+    QVERIFY(mh->isSectionHidden(0));
+    QVERIFY(mh->isSectionHidden(2));
+    // 主区只剩 b,d
+    QList< int > mainOrder;
+    for (int v = 0; v < mh->count(); ++v) {
+        const int logical = mh->logicalIndex(v);
+        if (!mh->isSectionHidden(logical) && logical != 4) {
+            mainOrder.append(logical);
+        }
+    }
+    QCOMPARE(mainOrder, QList< int >({ 1, 3 }));
+    w.hide();
+}
+
+// 冻结区内部拖动：只改冻结区顺序，全局列序不变；undo 可还原
+void DATableDataTest::testFrozenPaneReorder()
+{
+    if (!mPandasOk) {
+        QSKIP("pandas not available");
+    }
+    pybind11::object obj
+        = makeDataFrameWithColumns({ QStringLiteral("a"), QStringLiteral("b"), QStringLiteral("c"), QStringLiteral("d") });
+    QVERIFY(!obj.is_none());
+    DA::DAPyDataFrame df(obj);
+    DA::DAData d(df);
+    DA::DATableMetadataRegistry registry(nullptr);
+    DA::DADataOperateOfDataFrameWidget w(d, &registry);
+    w.resize(800, 400);
+    w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+    DA::DATablePaneContainer* c = w.paneContainer();
+    QVERIFY(c != nullptr);
+    w.setColumnFrozen(0, true);  // a
+    w.setColumnFrozen(2, true);  // c
+    QCOMPARE(c->frozenColumnOrderLogical(), QVector< int >({ 0, 2 }));
+    DA::DADataTableView* frozen = c->frozenView();
+    QVERIFY(frozen != nullptr && frozen->isVisible());
+    QHeaderView* fh = frozen->horizontalHeader();
+    const int undoBefore = w.getUndoStack()->count();
+    // 在冻结窗格把 c 拖到 a 前面（moveSection 会 emit sectionMoved → 容器槽）
+    const int from = fh->visualIndex(2);
+    QVERIFY(from >= 0);
+    fh->moveSection(from, 0);
+    QApplication::processEvents();
+    // ① 冻结区顺序变为 c,a；全局列序不变（store 的 columnOrder 仍为空 = 默认列序）
+    QCOMPARE(c->frozenColumnOrderLogical(), QVector< int >({ 2, 0 }));
+    const QList< QPair< QString, int > > frozenCols = w.viewStateStore()->frozenColumns();
+    QCOMPARE(frozenCols.size(), 2);
+    QCOMPARE(frozenCols.at(0), qMakePair(QStringLiteral("c"), 0));
+    QCOMPARE(frozenCols.at(1), qMakePair(QStringLiteral("a"), 0));
+    QVERIFY(w.viewStateStore()->columnOrder().isEmpty());
+    // ② 拖动入栈一条冻结顺序命令，undo 还原为 a,c
+    QCOMPARE(w.getUndoStack()->count(), undoBefore + 1);
+    w.getUndoStack()->undo();
+    QApplication::processEvents();
+    QCOMPARE(c->frozenColumnOrderLogical(), QVector< int >({ 0, 2 }));
+    // ③ 解冻后主区恢复 a,b,c,d（冻结不改变列序）
+    w.unfreezeAllColumns();
+    QHeaderView* mh = w.getDataTableView()->horizontalHeader();
+    QList< int > mainOrder;
+    for (int v = 0; v < mh->count(); ++v) {
+        const int logical = mh->logicalIndex(v);
+        if (!mh->isSectionHidden(logical) && logical != 4) {
+            mainOrder.append(logical);
+        }
+    }
+    QCOMPARE(mainOrder, QList< int >({ 0, 1, 2, 3 }));
+    w.hide();
 }
 
 // 007a：定位到隐藏列——自动取消隐藏（不入撤销栈）并选中目标格
@@ -3534,8 +3754,9 @@ void DATableDataTest::testLocateActualCellFrozenColumn()
     DA::DADataTableView* main   = w.getDataTableView();
     DA::DATablePaneContainer* c = w.paneContainer();
     QVERIFY(c != nullptr);
-    // 冻结前 2 列（默认列序 i,f → 冻结区 = {i, f}）
-    w.freezeColumnsTo(2);
+    // 冻结默认列序前 2 列（i,f → 冻结区 = {i, f}）
+    w.setColumnFrozen(0, true);
+    w.setColumnFrozen(1, true);
     QVERIFY(w.isColumnInFrozenArea(1));  // f 在冻结区
     DA::DADataTableView* frozen = c->frozenView();
     QVERIFY(frozen != nullptr && frozen->isVisible());
