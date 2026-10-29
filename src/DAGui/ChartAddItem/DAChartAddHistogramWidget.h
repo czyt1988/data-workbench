@@ -2,6 +2,9 @@
 #define DACHARTADDHISTOGRAMWIDGET_H
 #include "DAGuiAPI.h"
 #include "DAAbstractChartAddItemWidget.h"
+#include <QVector>
+#include <QString>
+#include <vector>
 namespace Ui
 {
 class DAChartAddHistogramWidget;
@@ -35,10 +38,24 @@ public:
 	virtual void setDataManager(DADataManager* dmgr) override;
 	// 获取 Y 轴显示方案
 	YAxisMode getYAxisMode() const;
+	// 编程式数据入口：直接给定数值序列与分箱数，createPlotItem 优先使用它，
+	// 不再要求先在界面上选 DataFrame（供快速绘图等无界面路径复用同一套分箱实现）
+	void setProgrammaticValues(const QVector< double >& values, int binCount, const QString& title = QString());
+	// 清除编程式数据，回到界面取数路径
+	void clearProgrammaticValues();
+	// 是否处于编程式数据模式
+	bool hasProgrammaticValues() const;
 private Q_SLOTS:
 	void onDataManagerChanged(DADataManager* dmgr);
 private:
+	// 按当前 Y 轴方案把数值序列分箱成直方图图元（唯一的图元构建实现）
+	QwtPlotItem* buildHistogramItem(const std::vector< double >& raw, const QString& title, int binCount) const;
+private:
 	Ui::DAChartAddHistogramWidget* ui;
+	QVector< double > mProgrammaticValues;
+	QString mProgrammaticTitle;
+	int mProgrammaticBins { 10 };
+	bool mHasProgrammatic { false };
 };
 }  // namespace DA
 #endif  // DACHARTADDHISTOGRAMWIDGET_H

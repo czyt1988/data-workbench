@@ -120,6 +120,13 @@ QVector< QPointF > DAChartAddXYSeriesWidget::getSeries() const
  */
 DAChartSeriesResult DAChartAddXYSeriesWidget::extractSeries() const
 {
+    if (mHasProgrammatic) {
+        DAChartSeriesResult res;
+        if (!mProgrammaticSeries.isEmpty()) {
+            res.points = mProgrammaticSeries.first();
+        }
+        return res;
+    }
     DAChartXYSeriesSpec spec;
     DAChartSeriesDataError error;
     if (!buildSeriesSpec(spec, error)) {
@@ -136,6 +143,14 @@ DAChartSeriesResult DAChartAddXYSeriesWidget::extractSeries() const
  */
 DAChartMultiSeriesResult DAChartAddXYSeriesWidget::extractMultiSeries() const
 {
+    if (mHasProgrammatic) {
+        DAChartMultiSeriesResult res;
+        res.series = mProgrammaticSeries;
+        for (int i = 0; i < res.series.size(); ++i) {
+            res.names.append(mProgrammaticNames.value(i, tr("y%1").arg(i + 1)));  // cn:y%1
+        }
+        return res;
+    }
     DAChartXYSeriesSpec spec;
     DAChartSeriesDataError error;
     if (!buildSeriesSpec(spec, error)) {
@@ -243,7 +258,55 @@ void DAChartAddXYSeriesWidget::warnSeriesError(const DAChartSeriesDataError& err
  */
 QString DAChartAddXYSeriesWidget::getNameHint() const
 {
+    if (mHasProgrammatic) {
+        return mProgrammaticNames.value(0);
+    }
     return getY().second;
+}
+
+/**
+ * @brief 编程式数据入口（单序列）
+ * @param points 采样点列
+ * @param name 推荐名字（用于图例与轴标题）
+ */
+void DAChartAddXYSeriesWidget::setProgrammaticSeries(const QVector< QPointF >& points, const QString& name)
+{
+    mProgrammaticSeries.clear();
+    mProgrammaticSeries.append(points);
+    mProgrammaticNames.clear();
+    mProgrammaticNames.append(name);
+    mHasProgrammatic = true;
+}
+
+/**
+ * @brief 编程式数据入口（多序列）
+ * @param series 多组采样点列
+ * @param names 与 series 一一对应的名字，缺省时按 y1、y2… 命名
+ */
+void DAChartAddXYSeriesWidget::setProgrammaticMultiSeries(const QList< QVector< QPointF > >& series,
+                                                          const QStringList& names)
+{
+    mProgrammaticSeries = series;
+    mProgrammaticNames  = names;
+    mHasProgrammatic    = true;
+}
+
+/**
+ * @brief 清除编程式数据，回到界面取数路径
+ */
+void DAChartAddXYSeriesWidget::clearProgrammaticSeries()
+{
+    mProgrammaticSeries.clear();
+    mProgrammaticNames.clear();
+    mHasProgrammatic = false;
+}
+
+/**
+ * @brief 是否处于编程式数据模式
+ */
+bool DAChartAddXYSeriesWidget::hasProgrammaticSeries() const
+{
+    return mHasProgrammatic;
 }
 
 /**
@@ -561,6 +624,12 @@ bool DAChartAddXYSeriesWidget::getAxisTitleHint(QString& xTitle, QString& yTitle
 {
     xTitle = QStringLiteral("x");
     yTitle = QStringLiteral("y");
+    if (mHasProgrammatic) {
+        if (mProgrammaticSeries.size() == 1 && !mProgrammaticNames.value(0).isEmpty()) {
+            yTitle = mProgrammaticNames.value(0);
+        }
+        return true;
+    }
     if (!isXAutoincrement()) {
         QPair< DAData, QString > x = getX();
         if (!x.second.isEmpty()) {

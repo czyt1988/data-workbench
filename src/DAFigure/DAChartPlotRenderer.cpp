@@ -461,6 +461,17 @@ QwtPlotItem* DAChartPlotRenderer::renderBarChart(const DA::DABarChartData& data,
     QColor fillColor = defaultColor(style, "fillColor", QColor(70, 130, 180, 150));
     applyBrush(bar, fillColor);
 
+    // 类别轴：柱状图本身只吃 values，x 位置固定为 0..N-1；
+    // categories 非空时把位置映射成类别名，否则 x 轴只有序号没有类别标签
+    if (!data.categories.isEmpty() && data.categories.size() == data.values.size()) {
+        QVector<double> positions;
+        positions.reserve(data.values.size());
+        for (int i = 0; i < data.values.size(); ++i) {
+            positions.append(static_cast<double>(i));
+        }
+        setXBottomCategoryScale(positions, data.categories, -0.5, data.values.size() - 0.5);
+    }
+
     // If CI bounds are present, add error bars as interval curve
     if (!data.ciLower.isEmpty() && !data.ciUpper.isEmpty() &&
         data.ciLower.size() == data.values.size() &&

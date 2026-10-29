@@ -71,6 +71,16 @@ public:
     DAChartXYItemInfo getXYInfo() const;
     // 坐标轴标题推荐：x轴用x列名（自增时"x"），y轴单个y用列名、多个y用"y"（y自增时"y"）
     virtual bool getAxisTitleHint(QString& xTitle, QString& yTitle) const override;
+    // 编程式数据入口：直接给定采样点列，extractSeries()/extractMultiSeries() 优先返回它，
+    // 不再从界面列表取数（供快速绘图等无界面路径复用同一套图元构建实现）
+    void setProgrammaticSeries(const QVector< QPointF >& points, const QString& name = QString());
+    // 编程式数据入口（多序列）
+    void setProgrammaticMultiSeries(const QList< QVector< QPointF > >& series,
+                                    const QStringList& names = QStringList());
+    // 清除编程式数据，回到界面取数路径
+    void clearProgrammaticSeries();
+    // 是否处于编程式数据模式
+    bool hasProgrammaticSeries() const;
 private Q_SLOTS:
     void onGroupBoxXAutoincrementClicked(bool on);
     void onGroupBoxYAutoincrementClicked(bool on);
@@ -110,6 +120,9 @@ private:
     Ui::DAChartAddXYSeriesWidget* ui;
     DAChartSeriesPickerWidget* mPickerX { nullptr };
     DAChartSeriesPickerWidget* mPickerY { nullptr };
+    QList< QVector< QPointF > > mProgrammaticSeries;
+    QStringList mProgrammaticNames;
+    bool mHasProgrammatic { false };
 };
 }
 #endif  // DACHARTADDXYSERIESWIDGET_H

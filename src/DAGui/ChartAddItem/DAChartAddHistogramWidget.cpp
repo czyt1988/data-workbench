@@ -49,6 +49,15 @@ DAChartAddHistogramWidget::YAxisMode DAChartAddHistogramWidget::getYAxisMode() c
 
 QwtPlotItem* DAChartAddHistogramWidget::createPlotItem()
 {
+	if (mHasProgrammatic) {
+		std::vector< double > raw;
+		raw.reserve(static_cast< std::size_t >(mProgrammaticValues.size()));
+		for (double v : std::as_const(mProgrammaticValues)) {
+			raw.push_back(v);
+		}
+		return buildHistogramItem(raw, mProgrammaticTitle, mProgrammaticBins);
+	}
+
 	QPair< DAData, QString > sel = ui->selectWidgetData->getCurrentSeries();
 	DAData d = sel.first;
 	QString seriesName = sel.second;
@@ -78,6 +87,22 @@ QwtPlotItem* DAChartAddHistogramWidget::createPlotItem()
 		daCritical << tr("Exception occurred during extracting series:%1").arg(e.what());  // cn:提取序列过程中出现异常:%1
 		return nullptr;
 	}
+	return buildHistogramItem(raw, title, ui->spinBoxBins->value());
+}
+
+/**
+ * @brief 把数值序列分箱成直方图图元
+ *
+ * 界面取数与编程式取数共用这一份分箱实现，保证两条路径的图元完全一致。
+ * @param raw 数值序列（调用方已剔除 NaN）
+ * @param title 图元标题
+ * @param binCount 分箱数，小于 1 时按 1 处理
+ * @return 未 attach 的 QwtPlotHistogram；数据为空时返回 nullptr
+ */
+QwtPlotItem* DAChartAddHistogramWidget::buildHistogramItem(const std::vector< double >& raw,
+														   const QString& title,
+														   int binCount) const
+{
 	if (raw.empty()) {
 		return nullptr;
 	}
@@ -104,7 +129,6 @@ QwtPlotItem* DAChartAddHistogramWidget::createPlotItem()
 		item->setTitle(title);
 		return item;
 	}
-	int binCount = ui->spinBoxBins->value();
 	if (binCount < 1) binCount = 1;
 	double binWidth = (maxV - minV) / binCount;
 	// 初始化 bins
@@ -134,6 +158,39 @@ QwtPlotItem* DAChartAddHistogramWidget::createPlotItem()
 	item->setSamples(samples);
 	item->setTitle(title);
 	return item;
+}
+
+/**
+ * @brief 编程式数据入口
+ * @param values 数值序列
+ * @param binCount 分箱数
+ * @param title 图元标题（为空时使用 "histogram"）
+ */
+void DAChartAddHistogramWidget::setProgrammaticValues(const QVector< double >& values, int binCount, const QString& title)
+{
+	mProgrammaticValues = values;
+	mProgrammaticBins   = binCount;
+	mProgrammaticTitle  = title;
+	mHasProgrammatic    = true;
+}
+
+/**
+ * @brief 清除编程式数据，回到界面取数路径
+ */
+void DAChartAddHistogramWidget::clearProgrammaticValues()
+{
+	mProgrammaticValues.clear();
+	mProgrammaticTitle.clear();
+	mProgrammaticBins = 10;
+	mHasProgrammatic  = false;
+}
+
+/**
+ * @brief 是否处于编程式数据模式
+ */
+bool DAChartAddHistogramWidget::hasProgrammaticValues() const
+{
+	return mHasProgrammatic;
 }
 
 }  // namespace DA
