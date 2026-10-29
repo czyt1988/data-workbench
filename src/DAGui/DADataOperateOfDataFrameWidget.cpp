@@ -109,6 +109,39 @@ QSet< QPair< QString, int > > toIdentSet(const QList< QPair< QString, int > >& i
     return res;
 }
 
+// 冻结集合合并（唯一插入规则，单列冻结 / 冻结前 N 列 / 列视图对话框共用）：
+// 保留旧冻结列表中仍被选中的列及其相对顺序（用户可能在冻结区拖过顺序），
+// 新增列按全局列序插入到「它在全局列序中前一个已选列」之后；前面没有已选列
+// 时插到最前。
+QList< QPair< QString, int > > mergeFrozenOrder(const QList< QPair< QString, int > >& oldFrozen,
+                                                const QSet< QPair< QString, int > >& checked,
+                                                const QList< QPair< QString, int > >& globalOrder)
+{
+    QList< QPair< QString, int > > res;
+    res.reserve(checked.size());
+    for (const QPair< QString, int >& ident : oldFrozen) {
+        if (checked.contains(ident) && !res.contains(ident)) {
+            res.append(ident);  // 旧顺序保留（冻结区自定义顺序不丢）
+        }
+    }
+    for (int g = 0; g < globalOrder.size(); ++g) {
+        const QPair< QString, int >& ident = globalOrder.at(g);
+        if (!checked.contains(ident) || res.contains(ident)) {
+            continue;
+        }
+        int pos = 0;  // 前驱插入：前一个已选列之后
+        for (int i = g - 1; i >= 0; --i) {
+            const int idx = res.indexOf(globalOrder.at(i));
+            if (idx >= 0) {
+                pos = idx + 1;
+                break;
+            }
+        }
+        res.insert(pos, ident);
+    }
+    return res;
+}
+
 // 一维闭区间的合并覆盖长度（「整列/整行是否全选」判定用）：排序后归并相邻/重叠段再累加，
 // 对重叠选区段也不会重复计数。按值传入以便就地排序（段数 = 触及该列/行的选区段数，很小）
 int mergedSpanCoverage(QVector< QPair< int, int > > spans)
@@ -161,6 +194,8 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
     mPaneContainer->setMainView(ui->tableView);
     // 拖动落库（006c）：容器合并出全局列序后交页面入栈重投影（拖动 = 一个撤销单元）
     connect(mPaneContainer, &DATablePaneContainer::columnOrderChanged, this, &DADataOperateOfDataFrameWidget::applyColumnOrderFromView);
+    // 冻结区内部拖动落库：冻结列之间的先后顺序（不改全局列序），入栈重投影
+    connect(mPaneContainer, &DATablePaneContainer::frozenOrderChanged, this, &DADataOperateOfDataFrameWidget::applyFrozenOrderFromView);
     // 冻结分界条（宽随列宽改造）：拖动结束写 store（与表头拖拽同键 (名, occurrence)），
     // 双击对末冻结列做内容自适应；两信号均在容器已确定末冻结列的前提下发出
     connect(mPaneContainer, &DATablePaneContainer::frozenBoundaryResized, this,
@@ -472,6 +507,8 @@ void DADataOperateOfDataFrameWidget::configurePaneView(DADataTableView* pane)
     //    006c 在此追加 sectionMoved → 容器槽；006d 在此追加 columnViewActionRequested
     if (DADataHeaderView* hh = qobject_cast< DADataHeaderView* >(pane->horizontalHeader())) {
         hh->setComputedColumnStore(mComputedColumnStore);
+        // 冻结状态查询：列头菜单据此显示「冻结此列」或「取消冻结此列」
+        hh->setFrozenColumnChecker([ this ](int logical) { return isColumnInFrozenArea(logical); });
         connect(hh, &DADataHeaderView::clickedWithModifiers, this, &DADataOperateOfDataFrameWidget::onHeaderClickedWithModifiers);
         // 列宽采集：用触发信号的那个窗格的表头（不再写死 ui->tableView）
         connect(hh, &QHeaderView::sectionResized, this, [ this, pane ](int logicalIndex, int, int newSize) {
@@ -862,8 +899,8 @@ int DADataOperateOfDataFrameWidget::removeSelectColumn()
  * 与 removeSelectColumn 的差异：不依赖选区——右键菜单弹出瞬间焦点被菜单窗口
  * 抢走，APP 侧 getCurrentDataFrameOperateWidget 的焦点检查会失败，选区也不一定
  * 在目标列上；本入口直接按列号操作本页。
- * 冻结列被删除时冻结名额同步缩减（效果同隐藏：主区列不补位），全部冻结列
- * 删光后冻结窗格随之隐藏（removeColumns 内投影收敛）。
+ * 冻结列被删除时冻结集合同步剔除（主区列不补位），全部冻结列删光后
+ * 冻结窗格随之隐藏（removeColumns 内投影收敛）。
  * @param col 列位置索引
  * @return 成功移除的列数（0 = 失败/列号无效）
  */
@@ -881,7 +918,7 @@ int DADataOperateOfDataFrameWidget::removeColumnAt(int col)
  * 命令：DACommandDataFrame_dropIColumn（临时 pickle 快照，undo 整表还原）。
  * 联动（对照重命名路径补全）：
  * 1) 视图状态（列宽/列序/隐藏/冻结）：删除前整店 XML 快照，redo 清被删列条目
- *    并缩减冻结名额，undo 从快照整店还原（同一撤销单元）；
+ *    （冻结集合随 removeColumn 一并剔除），undo 从快照整店还原（同一撤销单元）；
  * 2) 数据管理器树：notifyDataChangedSignal(ChangeValue) 重建列子项；
  * 3) 样式/条件格式/批注/计算列重映射与失效提示：与旧 removeSelectColumn 一致。
  * @param columns 列位置索引列表
@@ -896,16 +933,12 @@ int DADataOperateOfDataFrameWidget::removeColumns(const QList< int >& columns)
     if (columns.isEmpty()) {
         return 0;
     }
-    // —— 删除前解析：被删列名（视图状态按名字清条目）+ 冻结名额内被删数 ——
+    // —— 删除前解析：被删列名（视图状态按名字清条目，冻结集合随之剔除） ——
     QStringList removedNames;
     const QList< QString > colNames = df.columns();
-    int frozenRemoved = 0;
     for (int c : columns) {
         if (c >= 0 && c < colNames.size()) {
             removedNames.append(colNames.at(c));
-        }
-        if (isColumnInFrozenArea(c)) {
-            ++frozenRemoved;
         }
     }
     // 视图状态整店快照（undo 还原；QDomDocument 按引用持有，lambda 里 shared_ptr 保活）
@@ -915,8 +948,6 @@ int DADataOperateOfDataFrameWidget::removeColumns(const QList< int >& columns)
     if (mViewStateStore) {
         mViewStateStore->toXml(*snapDoc, snapRoot);
     }
-    const int oldFreeze = mViewStateStore ? mViewStateStore->freezeColumnCount() : 0;
-    const int newFreeze = qMax(0, oldFreeze - frozenRemoved);
     std::unique_ptr< DACommandDataFrame_dropIColumn > cmd(new DACommandDataFrame_dropIColumn(mData.toDataFrame(), columns));
     QPointer< DADataTableModel > modle = mModel;
     cmd->setCallBack([ modle, columns ]() {
@@ -942,7 +973,7 @@ int DADataOperateOfDataFrameWidget::removeColumns(const QList< int >& columns)
     auto invalidatedTargets = std::make_shared< QStringList >();
     auto self = QPointer< DADataOperateOfDataFrameWidget >(this);
     cmd->setDirectionalCallBack([ styleMgr, cfStore, noteStore, ccStore, viewStore, snapDoc, columns,
-                                   removedNames, newFreeze, ccSnapshot, invalidatedTargets, self ](bool isUndo) {
+                                   removedNames, ccSnapshot, invalidatedTargets, self ](bool isUndo) {
         if (styleMgr) {
             if (isUndo) {
                 styleMgr->onColumnsInserted(columns);
@@ -973,7 +1004,7 @@ int DADataOperateOfDataFrameWidget::removeColumns(const QList< int >& columns)
                 ccStore->onColumnsRemoved(removedNames, nullptr, invalidatedTargets.get());
             }
         }
-        // 视图状态随命令往返：redo 清被删列条目 + 冻结名额缩减；undo 整店快照还原
+        // 视图状态随命令往返：redo 清被删列条目（含冻结集合）；undo 整店快照还原
         if (viewStore) {
             if (isUndo) {
                 const QDomElement vs = snapDoc->documentElement().firstChildElement(QStringLiteral("view-state"));
@@ -986,7 +1017,6 @@ int DADataOperateOfDataFrameWidget::removeColumns(const QList< int >& columns)
                 for (const QString& n : removedNames) {
                     viewStore->removeColumn(n);
                 }
-                viewStore->setFreezeColumnCount(newFreeze);
             }
         }
         if (self) {
@@ -2290,10 +2320,11 @@ void DADataOperateOfDataFrameWidget::applyViewStateFromStore()
     if (const int headH = mViewStateStore->horizontalHeaderHeight(); headH > 0) {
         applyHeaderHeightToPanes(headH);
     }
-    // 3) 列序 / 隐藏 / 冻结 → 容器投影（冻结集合 = ordered 前 freeze 个列，隐藏列占名额）
+    // 3) 列序 / 隐藏 / 冻结 → 容器投影（冻结列可来自列序任意位置；冻结不改变列序）
     const QList< QPair< QString, int > > actual       = actualColumnIdentities();
     const QList< QPair< QString, int > > storedOrder  = orderedColumnIdentities();  // 全局列序身份表
     const QList< QPair< QString, int > > storedHidden = mViewStateStore->hiddenColumns();
+    const QList< QPair< QString, int > > storedFrozen = mViewStateStore->frozenColumns();  // 冻结区顺序
     QList< int > actualLogical;                            // 身份 → logical：与 actualColumnIdentities() 同口径
     QHash< QPair< QString, int >, int > logicalOfIdent;    // 重扫列头（跳过空列名），与 actual 逐条对齐
     {
@@ -2335,21 +2366,20 @@ void DADataOperateOfDataFrameWidget::applyViewStateFromStore()
             hidden.insert(it.value());
         }
     }
-    const int freeze = qBound(0, mViewStateStore->freezeColumnCount(), ordered.size());
-    // 冻结被夹小时发一条用户可见提示（只在生效值变化时发，避免重复投影刷屏）
-    if (freeze < mViewStateStore->freezeColumnCount() && mLastProjectedFreeze != freeze) {
-        daWarning << tr("Frozen columns were reduced because visible columns changed.");
-        // cn:可见列已变化，冻结列数被自动缩减
-    }
-    mLastProjectedFreeze = freeze;
-    // 冻结列集合缓存（isColumnInFrozenArea 纯查表，唯一写入时机在这里）：
-    // 列序前 freeze 个列——隐藏列占名额（隐藏的冻结列也在集合里，不补位）
+    // 冻结列按身份匹配成 logical 有序列表（顺序 = 冻结区显示顺序；孤儿由 006a 收敛剪掉）；
+    // 集合缓存供 isColumnInFrozenArea 纯查表，唯一写入时机在这里
+    QVector< int > frozenOrder;
+    frozenOrder.reserve(storedFrozen.size());
     mFrozenColumnsLogical.clear();
-    for (int i = 0; i < ordered.size() && i < freeze; ++i) {
-        mFrozenColumnsLogical.insert(ordered.at(i));
+    for (const QPair< QString, int >& ident : storedFrozen) {
+        const auto it = logicalOfIdent.constFind(ident);
+        if (it != logicalOfIdent.constEnd() && !mFrozenColumnsLogical.contains(it.value())) {
+            frozenOrder.append(it.value());
+            mFrozenColumnsLogical.insert(it.value());
+        }
     }
     if (mPaneContainer) {
-        mPaneContainer->applyColumnState(ordered, hidden, freeze);
+        mPaneContainer->applyColumnState(ordered, hidden, frozenOrder);
     }
     mApplyingViewState = false;
     // 4) 投影落地后再补一轮内容自适应：懒建的冻结窗格在 frozenViewCreated 时刻
@@ -2757,46 +2787,117 @@ void DADataOperateOfDataFrameWidget::showAllColumns()
 }
 
 /**
- * @brief 冻结列序前 N 个列（0 = 取消冻结；隐藏列占名额）
+ * @brief 冻结 / 取消冻结指定列（表头右键「冻结此列/取消冻结此列」）
  *
- * 入撤销栈；与当前计数相同不推空命令。不动 mSortSpec。
- * @param count 冻结列数（列序前 N 个，含隐藏列）
+ * 冻结列可以来自列序任意位置：冻结不改变全局列序（解冻后列回到原位），只把该列
+ * 切进左侧固定区。入撤销栈；集合无差异不推空命令。不动 mSortSpec。
+ * @param logicalColumn 逻辑列号
+ * @param frozen true = 冻结，false = 取消冻结
  */
-void DADataOperateOfDataFrameWidget::freezeColumnsTo(int visibleCount)
+void DADataOperateOfDataFrameWidget::setColumnFrozen(int logicalColumn, bool frozen)
+{
+    if (!mViewStateStore || !mModel) {
+        return;
+    }
+    if (logicalColumn < 0 || logicalColumn >= dataColumnCount()) {
+        return;
+    }
+    const QString name = mModel->headerData(logicalColumn, Qt::Horizontal).toString();
+    if (name.isEmpty()) {
+        return;  // 尾部预留空白列不参与列视图
+    }
+    int occ = 0;
+    for (int c = 0; c < logicalColumn; ++c) {
+        if (mModel->headerData(c, Qt::Horizontal).toString() == name) {
+            ++occ;
+        }
+    }
+    const QPair< QString, int > ident         = qMakePair(name, occ);
+    const QList< QPair< QString, int > > oldFrozen = mViewStateStore->frozenColumns();
+    const QSet< QPair< QString, int > > oldSet     = toIdentSet(oldFrozen);
+    QSet< QPair< QString, int > > checked          = oldSet;
+    if (frozen) {
+        checked.insert(ident);
+    } else {
+        checked.remove(ident);
+    }
+    if (checked == oldSet) {
+        return;  // 无差异不推空命令
+    }
+    const QList< QPair< QString, int > > newFrozen = mergeFrozenOrder(oldFrozen, checked, orderedColumnIdentities());
+    push(new DACommandTableFreezeColumns(mViewStateStore, oldFrozen, newFrozen,
+                                         [ this ]() { applyViewStateFromStore(); }));
+}
+
+/**
+ * @brief 冻结全局列序第一个可见列（Ribbon「冻结首列」）
+ */
+void DADataOperateOfDataFrameWidget::freezeFirstColumn()
+{
+    const QVector< int > visible = mPaneContainer ? mPaneContainer->visibleColumnOrderLogical() : QVector< int >();
+    if (visible.isEmpty()) {
+        return;
+    }
+    setColumnFrozen(visible.first(), true);
+}
+
+/**
+ * @brief 取消全部冻结（Ribbon「取消全部冻结」）
+ */
+void DADataOperateOfDataFrameWidget::unfreezeAllColumns()
 {
     if (!mViewStateStore) {
         return;
     }
-    const int newCount = qMax(0, visibleCount);
-    if (newCount == mViewStateStore->freezeColumnCount()) {
+    const QList< QPair< QString, int > > oldFrozen = mViewStateStore->frozenColumns();
+    if (oldFrozen.isEmpty()) {
         return;
     }
-    push(new DACommandTableFreezeColumns(mViewStateStore, mViewStateStore->freezeColumnCount(), newCount,
+    push(new DACommandTableFreezeColumns(mViewStateStore, oldFrozen, QList< QPair< QString, int > >(),
                                          [ this ]() { applyViewStateFromStore(); }));
 }
 
 /**
  * @brief 弹「冻结前 N 列」输入框（Ribbon 冻结列主体入口）
+ *
+ * 语义是「追加」：把全局列序前 N 列并入已有冻结集合，不影响其它已冻结列；
+ * 0 = 不做修改（取消全部冻结走独立菜单项）。
  */
 void DADataOperateOfDataFrameWidget::promptFreezeColumns()
 {
     if (!mViewStateStore) {
         return;
     }
-    const int maxFreeze = qMax(0, dataColumnCount());  // 冻结名额含隐藏列，上限 = 全部数据列
-    bool ok    = false;
-    const int n = QInputDialog::getInt(this,
-                                      tr("Freeze Columns"),  // cn:冻结列
-                                      tr("Freeze the first N columns (0 = no freeze):"),  // cn:冻结前 N 列（0 = 不冻结）：
-                                      mViewStateStore->freezeColumnCount(),
-                                      0,
-                                      maxFreeze,
-                                      1,
-                                      &ok);
-    if (!ok) {
+    const QList< QPair< QString, int > > ordered = orderedColumnIdentities();
+    if (ordered.isEmpty()) {
         return;
     }
-    freezeColumnsTo(n);
+    bool ok    = false;
+    const int n = QInputDialog::getInt(
+        this,
+        tr("Freeze Columns"),  // cn:冻结列
+        tr("Freeze the first N columns (added to already frozen columns, 0 = no change):"),
+        // cn:冻结前 N 列（追加到已冻结的列，0 = 不做修改）：
+        1,
+        0,
+        ordered.size(),
+        1,
+        &ok);
+    if (!ok || n <= 0) {
+        return;
+    }
+    const QList< QPair< QString, int > > oldFrozen = mViewStateStore->frozenColumns();
+    const QSet< QPair< QString, int > > oldSet     = toIdentSet(oldFrozen);
+    QSet< QPair< QString, int > > checked          = oldSet;
+    for (int i = 0; i < ordered.size() && i < n; ++i) {
+        checked.insert(ordered.at(i));
+    }
+    if (checked == oldSet) {
+        return;  // 无差异不推空命令
+    }
+    const QList< QPair< QString, int > > newFrozen = mergeFrozenOrder(oldFrozen, checked, ordered);
+    push(new DACommandTableFreezeColumns(mViewStateStore, oldFrozen, newFrozen,
+                                         [ this ]() { applyViewStateFromStore(); }));
 }
 
 /**
@@ -2841,11 +2942,50 @@ void DADataOperateOfDataFrameWidget::applyColumnOrderFromView(const QVector< int
 }
 
 /**
+ * @brief 容器 frozenOrderChanged 驱动：冻结区内部拖动落库入栈
+ *
+ * 只改冻结列之间的先后顺序，不动全局列序（解冻后列仍回原位）。logical → 身份
+ * 换算按数据列序算 occurrence；顺序无变化不推命令。
+ * @param newFrozenOrderLogical 新冻结区顺序（logical，按冻结窗格 visualIndex）
+ */
+void DADataOperateOfDataFrameWidget::applyFrozenOrderFromView(const QVector< int >& newFrozenOrderLogical)
+{
+    if (!mViewStateStore || !mModel) {
+        return;
+    }
+    QList< QPair< QString, int > > newFrozen;
+    newFrozen.reserve(newFrozenOrderLogical.size());
+    for (int logical : newFrozenOrderLogical) {
+        if (logical < 0 || logical >= dataColumnCount()) {
+            continue;
+        }
+        const QString name = mModel->headerData(logical, Qt::Horizontal).toString();
+        if (name.isEmpty()) {
+            continue;
+        }
+        int occ = 0;
+        for (int c = 0; c < logical; ++c) {
+            if (mModel->headerData(c, Qt::Horizontal).toString() == name) {
+                ++occ;
+            }
+        }
+        const QPair< QString, int > ident = qMakePair(name, occ);
+        if (!newFrozen.contains(ident)) {
+            newFrozen.append(ident);
+        }
+    }
+    if (newFrozen == mViewStateStore->frozenColumns()) {
+        return;  // 顺序无变化不推命令
+    }
+    push(new DACommandTableFreezeColumns(mViewStateStore, mViewStateStore->frozenColumns(), newFrozen,
+                                         [ this ]() { applyViewStateFromStore(); }));
+}
+
+/**
  * @brief 「列」子菜单动作分发（006d）
  *
- * 「冻结到此列」的序号口径 = 该列在全局列序中的位置 + 1（容器
- * orderedColumnsLogical() 是"数据列全序"的唯一实现，页面不另写一份）；
- * 冻结名额含该列之前的隐藏列（隐藏列占名额，与 applyColumnState 分割法律同源）。
+ * 冻结动作按当前列状态切换：未冻结 → 冻结此列；已冻结 → 取消冻结此列。
+ * 「取消全部冻结」清空冻结集合。
  * @param logicalColumn 触发菜单的列（逻辑索引）
  * @param action 子菜单动作
  */
@@ -2859,17 +2999,11 @@ void DADataOperateOfDataFrameWidget::onHeaderColumnViewActionRequested(int logic
     case DADataHeaderView::ColumnViewAction::ShowAllColumns:
         showAllColumns();
         break;
-    case DADataHeaderView::ColumnViewAction::FreezeToColumn: {
-        const QVector< int > ordered
-            = mPaneContainer ? mPaneContainer->orderedColumnsLogical() : QVector< int >();
-        const int pos = ordered.indexOf(logicalColumn);  // 隐藏列的表头点不到，必 >= 0
-        if (pos >= 0) {
-            freezeColumnsTo(pos + 1);
-        }
+    case DADataHeaderView::ColumnViewAction::ToggleFreezeColumn:
+        setColumnFrozen(logicalColumn, !isColumnInFrozenArea(logicalColumn));
         break;
-    }
-    case DADataHeaderView::ColumnViewAction::Unfreeze:
-        freezeColumnsTo(0);
+    case DADataHeaderView::ColumnViewAction::UnfreezeAll:
+        unfreezeAllColumns();
         break;
     case DADataHeaderView::ColumnViewAction::OpenColumnViewDialog:
         showColumnViewDialog();
@@ -2899,16 +3033,21 @@ void DADataOperateOfDataFrameWidget::showColumnViewDialog()
         return;
     }
     QSet< QPair< QString, int > > oldHidden = toIdentSet(mViewStateStore->hiddenColumns());
-    mDialogColumnView->setup(ordered, oldHidden, mViewStateStore->freezeColumnCount());
+    const QList< QPair< QString, int > > oldFrozen = mViewStateStore->frozenColumns();
+    mDialogColumnView->setup(ordered, oldHidden, toIdentSet(oldFrozen));
     if (mDialogColumnView->exec() != QDialog::Accepted) {
         return;  // 取消不改动任何东西
     }
-    const QSet< QPair< QString, int > > newHidden = mDialogColumnView->hiddenColumns();
-    const int newFreeze = mDialogColumnView->frozenColumnCount();
-    const int oldFreeze = mViewStateStore->freezeColumnCount();
+    const QSet< QPair< QString, int > > newHidden       = mDialogColumnView->hiddenColumns();
+    const QSet< QPair< QString, int > > checkedFrozen   = mDialogColumnView->frozenColumns();
+    // 对话框只给勾选集合；顺序按统一插入规则合并（保住冻结区自定义顺序，新增列按全局列序落位）
+    const QList< QPair< QString, int > > newFrozen = mergeFrozenOrder(oldFrozen, checkedFrozen, ordered);
     // 改名对（对话框按行序给出 (旧身份 → 新名)）：换算成全表列名表（只改目标行）
     const QList< QPair< QPair< QString, int >, QString > > renames = mDialogColumnView->renamedColumns();
-    if (newHidden == oldHidden && newFreeze == oldFreeze && renames.isEmpty()) {
+    // 改名后身份映射：改名命令先于隐藏/冻结子命令执行，视图状态键已迁移到新列名，
+    // 子命令的 old/new 身份必须一并换成新键（否则写入孤儿身份，隐藏/冻结丢失）
+    QHash< QPair< QString, int >, QPair< QString, int > > identAfterRename;
+    if (newHidden == oldHidden && newFrozen == oldFrozen && renames.isEmpty()) {
         return;  // 无差异不推空命令
     }
     // 批量父命令先行（renameCmd 要以它为 parent 构造）
@@ -2959,6 +3098,26 @@ void DADataOperateOfDataFrameWidget::showColumnViewDialog()
         for (const auto& p : renames) {
             renamePairs.append(qMakePair(p.first.first, p.second));
         }
+        // 改名后身份映射（旧身份 → 新身份；occurrence 按新列名表重算）
+        {
+            QHash< QPair< QString, int >, int > posOfOld;
+            QHash< QString, int > seenOld;
+            for (int c = 0; c < oldcols.size(); ++c) {
+                const int occ = seenOld.value(oldcols.at(c), 0);
+                seenOld[ oldcols.at(c) ] = occ + 1;
+                posOfOld.insert(qMakePair(oldcols.at(c), occ), c);
+            }
+            QHash< int, QPair< QString, int > > identOfNewPos;
+            QHash< QString, int > seenNew;
+            for (int c = 0; c < newcols.size(); ++c) {
+                const int occ = seenNew.value(newcols.at(c), 0);
+                seenNew[ newcols.at(c) ] = occ + 1;
+                identOfNewPos.insert(c, qMakePair(newcols.at(c), occ));
+            }
+            for (auto it = posOfOld.constBegin(); it != posOfOld.constEnd(); ++it) {
+                identAfterRename.insert(it.key(), identOfNewPos.value(it.value(), it.key()));
+            }
+        }
         // 计算列/校验规则引用联动确认（与 renameColumns 同款）
         if (!confirmComputedColumnRename(renamePairs) || !confirmValidationRuleRename(renamePairs)) {
             delete batch;
@@ -2986,13 +3145,30 @@ void DADataOperateOfDataFrameWidget::showColumnViewDialog()
         }
         batch->setText(tr("Rename and update column view"));  // cn:重命名并更新列视图
     }
-    if (newHidden != oldHidden) {
-        new DACommandTableColumnVisibility(mViewStateStore, oldHidden, newHidden,
+    // 隐藏/冻结子命令的身份统一换到改名后的键（无改名时映射为空，原样透传）
+    QSet< QPair< QString, int > > finalOldHidden;
+    QSet< QPair< QString, int > > finalNewHidden;
+    QList< QPair< QString, int > > finalOldFrozen;
+    QList< QPair< QString, int > > finalNewFrozen;
+    for (const QPair< QString, int >& id : oldHidden) {
+        finalOldHidden.insert(identAfterRename.value(id, id));
+    }
+    for (const QPair< QString, int >& id : newHidden) {
+        finalNewHidden.insert(identAfterRename.value(id, id));
+    }
+    for (const QPair< QString, int >& id : oldFrozen) {
+        finalOldFrozen.append(identAfterRename.value(id, id));
+    }
+    for (const QPair< QString, int >& id : newFrozen) {
+        finalNewFrozen.append(identAfterRename.value(id, id));
+    }
+    if (finalNewHidden != finalOldHidden) {
+        new DACommandTableColumnVisibility(mViewStateStore, finalOldHidden, finalNewHidden,
                                            [ this ]() { applyViewStateFromStore(); }, QString(), batch);
     }
-    if (newFreeze != oldFreeze) {
-        new DACommandTableFreezeColumns(mViewStateStore, oldFreeze, newFreeze,
-                                        [ this ]() { applyViewStateFromStore(); }, batch);
+    if (finalNewFrozen != finalOldFrozen) {
+        new DACommandTableFreezeColumns(mViewStateStore, finalOldFrozen, finalNewFrozen,
+                                        [ this ]() { applyViewStateFromStore(); }, QString(), batch);
     }
     push(batch);
     // 数据管理器树重建（改名改变树内列子项显示）

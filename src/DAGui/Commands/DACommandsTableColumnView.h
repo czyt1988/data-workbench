@@ -13,7 +13,7 @@ namespace DA
 class DATableViewStateStore;
 
 /**
- * @brief 列视图（列序/隐藏/冻结列数）变更撤销命令族（006c，旧新值记录范式，D4）
+ * @brief 列视图（列序/隐藏/冻结列）变更撤销命令族（006c，旧新值记录范式，D4）
  *
  * 列视图是元数据——命令只写 DATableViewStateStore 与视图，不写 DataFrame。
  * 每条命令持有真源值旧/新值，redo 写新值、undo 写旧值，随后 callback() 重投影。
@@ -64,20 +64,26 @@ private:
 };
 
 /**
- * @brief 冻结列数变更命令：redo 写新计数，undo 写旧计数
+ * @brief 冻结列变更命令：redo 写新冻结列列表，undo 写旧列表（整体替换）
+ *
+ * 列表有序（顺序 = 冻结区显示顺序）；空列表 = 取消全部冻结。
  */
 class DAGUI_API DACommandTableFreezeColumns : public QUndoCommand, public DACallBackInterface
 {
 public:
-    DACommandTableFreezeColumns(DATableViewStateStore* store, int oldCount, int newCount,
-                                CallBack projectCallback, QUndoCommand* parent = nullptr);
+    DACommandTableFreezeColumns(DATableViewStateStore* store,
+                                const QList< QPair< QString, int > >& oldFrozen,
+                                const QList< QPair< QString, int > >& newFrozen,
+                                CallBack projectCallback,
+                                const QString& commandText = QString(),
+                                QUndoCommand* parent       = nullptr);
     void redo() override;
     void undo() override;
 
 private:
     DATableViewStateStore* mStore { nullptr };  ///< 非拥有
-    int mOldCount;
-    int mNewCount;
+    QList< QPair< QString, int > > mOldFrozen;
+    QList< QPair< QString, int > > mNewFrozen;
 };
 
 /**

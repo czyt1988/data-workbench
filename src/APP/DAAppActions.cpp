@@ -738,17 +738,17 @@ void DAAppActions::retranslateUi()
     actionClearNotes->setText(tr("Clear All Notes"));               // cn:清除本表批注
     actionClearNotes->setToolTip(tr("Remove all notes of the current table (undoable)"));  // cn:清除本表全部批注（可撤销）
     // 列视图（006 T1.8）
-    actionFreezeColumns->setText(tr("Freeze Columns"));                               // cn:冻结列
-    actionFreezeColumns->setToolTip(tr("Freeze the leftmost columns of the table"));  // cn:冻结表格左侧的列
+    actionFreezeColumns->setText(tr("Freeze Columns"));  // cn:冻结列
+    actionFreezeColumns->setToolTip(tr("Freeze columns so they stay visible while scrolling"));  // cn:冻结列，使其在滚动时保持可见
     actionHideColumn->setText(tr("Hide Column"));                                     // cn:隐藏列
     actionHideColumn->setToolTip(tr("Hide the selected columns"));                    // cn:隐藏选中的列
     actionShowAllColumns->setText(tr("Show All Columns"));                            // cn:显示所有列
     actionShowAllColumns->setToolTip(tr("Show all hidden columns"));                  // cn:显示所有被隐藏的列
     actionColumnViewDialog->setText(tr("Column View..."));                            // cn:列视图...
     actionColumnViewDialog->setToolTip(tr("Open the column view settings dialog"));   // cn:打开列视图设置对话框
-    actionFreezeFirstColumn->setText(tr("Freeze First Column"));                      // cn:冻结首列
-    actionFreezeColumnsPrompt->setText(tr("Freeze Columns..."));                      // cn:冻结前 N 列…
-    actionUnfreezeColumns->setText(tr("Unfreeze Columns"));                           // cn:取消冻结
+    actionFreezeFirstColumn->setText(tr("Freeze First Column"));  // cn:冻结首列
+    actionFreezeColumnsPrompt->setText(tr("Freeze First N Columns..."));  // cn:冻结前 N 列…
+    actionUnfreezeColumns->setText(tr("Unfreeze All Columns"));  // cn:取消全部冻结
     actionGotoCell->setText(tr("Go To..."));                                          // cn:定位...
     actionGotoCell->setToolTip(tr("Jump to a row / index label / column"));           // cn:跳转到指定行、索引标签或列
     //-----------------------------------------------------

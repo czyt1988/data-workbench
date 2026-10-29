@@ -9,6 +9,7 @@
 #include <QScrollBar>
 #include <QTimer>
 #include <QVBoxLayout>
+#include <utility>
 
 namespace DA
 {
@@ -251,33 +252,41 @@ void DATablePaneContainer::ensureFrozenView()
  * @brief 列状态投影（双窗格）
  *
  * 缓存 ordered/hidden/frozen（006c 合并全局列序、冻结区判定用）。冻结集合 =
- * ordered 中前 freeze 个列（**隐藏列占名额**：冻结的是"位置"而非"可见列"，
- * 隐藏一个冻结列不会让主区列补位挤进冻结区——Excel 冻结语义），其余列归主区；
- * 用户隐藏列两边都隐藏。全部冻结列被隐藏时冻结窗格整体隐藏（名额保留，
- * 任一冻结列恢复可见即恢复窗格）。主窗格显示集合额外追加尾部预留空白列
- * （不在 ordered 里的段：恒可见、恒排末尾，不参与列序/隐藏）；冻结窗格不显示
- * 空白列。投影全程置守卫：moveSection 自己也会 emit sectionMoved，不屏蔽会
- * "程序化重投影 → 又生成一条列序命令"死循环。
+ * 传入的冻结列列表（可来自列序任意位置；隐藏列仍占冻结身份，只是不显示，
+ * 主区列不会补位）。其余未隐藏列归主区，顺序按全局列序。用户隐藏列两边都隐藏。
+ * 全部冻结列被隐藏时冻结窗格整体隐藏（冻结身份保留，任一冻结列恢复可见即恢复
+ * 窗格）。主窗格显示集合额外追加尾部预留空白列（不在 ordered 里的段：恒可见、
+ * 恒排末尾，不参与列序/隐藏）；冻结窗格不显示空白列。投影全程置守卫：
+ * moveSection 自己也会 emit sectionMoved，不屏蔽会"程序化重投影 → 又生成一条
+ * 列序命令"死循环。
  * @param orderedLogical 全局列序（logical，含隐藏列）
  * @param hiddenLogical 用户隐藏集合
- * @param freezeCount 冻结列数（列序前 N 个，含隐藏列）
+ * @param frozenOrderLogical 冻结列（logical，有序 = 冻结区显示顺序）
  */
 void DATablePaneContainer::applyColumnState(const QVector< int >& orderedLogical,
-                                             const QSet< int >& hiddenLogical, int freezeCount)
+                                             const QSet< int >& hiddenLogical,
+                                             const QVector< int >& frozenOrderLogical)
 {
     mOrderedLogical = orderedLogical;
     mHiddenLogical  = hiddenLogical;
-    const int freeze = qBound(0, freezeCount, orderedLogical.size());
-    QVector< int > frozenSet, mainSet;
+    QVector< int > frozenSet;  // 冻结窗格要显示的可见冻结列（保持冻结区顺序）
+    mFrozenOrderLogical.clear();
     mFrozenLogical.clear();
-    for (int i = 0; i < orderedLogical.size(); ++i) {
-        const int logical = orderedLogical.at(i);
-        if (i < freeze) {
-            mFrozenLogical.insert(logical);  // 冻结名额：隐藏列也占位（不补位）
-            if (!hiddenLogical.contains(logical)) {
-                frozenSet.append(logical);  // 只有可见的冻结列进冻结窗格
-            }
-        } else if (!hiddenLogical.contains(logical)) {
+    mFrozenOrderLogical.reserve(frozenOrderLogical.size());
+    for (int logical : frozenOrderLogical) {
+        if (!orderedLogical.contains(logical)) {
+            continue;  // 防御：不在全局列序里的冻结列跳过
+        }
+        mFrozenOrderLogical.append(logical);
+        mFrozenLogical.insert(logical);
+        if (!hiddenLogical.contains(logical)) {
+            frozenSet.append(logical);  // 只有可见的冻结列进冻结窗格
+        }
+    }
+    QVector< int > mainSet;
+    mainSet.reserve(orderedLogical.size());
+    for (int logical : orderedLogical) {
+        if (!mFrozenLogical.contains(logical) && !hiddenLogical.contains(logical)) {
             mainSet.append(logical);
         }
     }
@@ -304,7 +313,7 @@ void DATablePaneContainer::applyColumnState(const QVector< int >& orderedLogical
     }
     projectPane(mMainView, mainVisible);
     mApplyingColumnState = false;
-    // 行头归属 + 冻结窗格宽（幂等；冻结数为 0 时隐藏行头分支无效）
+    // 行头归属 + 冻结窗格宽（幂等；无可见冻结列时不显示冻结窗格与分界条）
     if (mFrozenView) {
         mFrozenView->verticalHeader()->setVisible(mEffectiveFrozen > 0);
         mFrozenView->setVisible(mEffectiveFrozen > 0);
@@ -378,7 +387,7 @@ QVector< int > DATablePaneContainer::orderedColumnsLogical() const
  * @brief 可见列序
  *
  * 与 applyColumnState 的分割法律同源：ordered 顺序剔掉 hidden。
- * 冻结区判定与「冻结到此列」都取这一口径，调用点不要重算。
+ * 冻结区判定与定位都取这一口径，调用点不要重算。
  * @return 可见列序（logical，按视图顺序）
  */
 QVector< int > DATablePaneContainer::visibleColumnOrderLogical() const
@@ -391,6 +400,15 @@ QVector< int > DATablePaneContainer::visibleColumnOrderLogical() const
         }
     }
     return res;
+}
+
+/**
+ * @brief 本轮投影的冻结列（有序 = 冻结区显示顺序）
+ * @return 冻结列（logical，含被隐藏的冻结列）
+ */
+QVector< int > DATablePaneContainer::frozenColumnOrderLogical() const
+{
+    return mFrozenOrderLogical;
 }
 
 /**
@@ -433,8 +451,12 @@ QVector< int > DATablePaneContainer::visibleDataColumnsOf(DADataTableView* pane)
 /**
  * @brief 窗格表头 sectionMoved 落库槽（006c，006e 扩双窗格）
  *
- * 合并成全局列序：冻结区可见列（冻结窗格按 visualIndex 升序）++ 主区可见列 ++
- * 用户隐藏列（保持旧全局列序里的相对顺序），最后补齐漏掉的列（防御）。
+ * 按拖动来源分流：
+ * - 冻结窗格：只重排冻结区内部顺序（冻结列之间的先后），隐藏的冻结列按旧相对
+ *   顺序追加，emit frozenOrderChanged；
+ * - 主窗格：合并全局列序——冻结列**钉在全局列序原位**（冻结不改变列序，解冻
+ *   即回原位），主区拖动后的可见顺序依次填入非冻结槽位，隐藏的非冻结列追加
+ *   末尾，最后补齐漏列（防御），emit columnOrderChanged。
  * 程序化投影里的 moveSection 自己也会 emit sectionMoved——被 mApplyingColumnState
  * 守卫挡住（不回写，防死循环）。
  */
@@ -446,18 +468,46 @@ void DATablePaneContainer::onPaneSectionMoved(int logicalIndex, int oldVisualInd
     if (mApplyingColumnState || !mMainView) {
         return;  // 程序化投影不回写
     }
-    QVector< int > merged;
-    if (mFrozenView && mFrozenSide && mFrozenSide->isVisible()) {
-        merged << visibleDataColumnsOf(mFrozenView);  // 冻结区可见列插到最前
+    QHeaderView* movedHeader = qobject_cast< QHeaderView* >(sender());
+    // —— 冻结窗格拖动：只重排冻结区内部顺序 ——
+    if (mFrozenView && movedHeader == mFrozenView->horizontalHeader()) {
+        QVector< int > newFrozenOrder = visibleDataColumnsOf(mFrozenView);
+        if (newFrozenOrder.isEmpty()) {
+            return;
+        }
+        for (int logical : std::as_const(mFrozenOrderLogical)) {
+            if (!newFrozenOrder.contains(logical)) {
+                newFrozenOrder.append(logical);  // 隐藏的冻结列按旧相对顺序追加
+            }
+        }
+        if (newFrozenOrder != mFrozenOrderLogical) {
+            Q_EMIT frozenOrderChanged(newFrozenOrder);
+        }
+        return;
     }
-    merged << visibleDataColumnsOf(mMainView);
-    for (int logical : mOrderedLogical) {
-        if (mHiddenLogical.contains(logical)) {
-            merged.append(logical);  // 隐藏列钉住旧相对顺序
+    // —— 主窗格拖动：合并全局列序 ——
+    const QVector< int > mainVisible = visibleDataColumnsOf(mMainView);
+    QVector< int > merged;
+    merged.reserve(mOrderedLogical.size());
+    int mi = 0;
+    for (int logical : std::as_const(mOrderedLogical)) {
+        if (mFrozenLogical.contains(logical)) {
+            merged.append(logical);  // 冻结列钉在全局列序原位
+        } else if (!mHiddenLogical.contains(logical)) {
+            if (mi < mainVisible.size()) {
+                merged.append(mainVisible.at(mi++));  // 主区拖动后的顺序填非冻结槽位
+            } else {
+                merged.append(logical);  // 防御
+            }
+        }
+    }
+    for (int logical : std::as_const(mOrderedLogical)) {
+        if (!mFrozenLogical.contains(logical) && mHiddenLogical.contains(logical)) {
+            merged.append(logical);  // 隐藏的非冻结列钉住旧相对顺序（追加末尾）
         }
     }
     // 补齐：漏掉的列按旧全局列序追加（防御：绝不让某列从列序里消失）
-    for (int logical : mOrderedLogical) {
+    for (int logical : std::as_const(mOrderedLogical)) {
         if (!merged.contains(logical)) {
             merged.append(logical);
         }
@@ -483,7 +533,7 @@ bool DATablePaneContainer::eventFilter(QObject* watched, QEvent* event)
 /**
  * @brief 重算冻结窗格宽度与底部等高占位（幂等）
  *
- * 列宽拖拽、冻结数变化、行头宽变化、窗口缩放后各调一次。
+ * 列宽拖拽、冻结列变化、行头宽变化、窗口缩放后各调一次。
  */
 void DATablePaneContainer::updateFrozenGeometry()
 {
@@ -513,8 +563,7 @@ void DATablePaneContainer::updateFrozenWidth()
         return;
     }
     int w = 0;
-    const auto frozenList = mFrozenLogical.values();
-    for (int logical : frozenList) {
+    for (int logical : std::as_const(mFrozenOrderLogical)) {
         w += fh->sectionSize(logical);
     }
     if (QHeaderView* vh = mFrozenView->verticalHeader()) {
@@ -572,20 +621,19 @@ void DATablePaneContainer::syncScroll(int value)
 /**
  * @brief 视图顺序最后一个可见冻结列
  *
- * 与 applyColumnState 的分割法律同源：冻结名额 = mOrderedLogical 中落在
- * mFrozenLogical 集合里的前若干个；从后往前找第一个「在冻结名额里且未被
- * 隐藏」的列（末名额列可能被隐藏——分界条要对最后一个看得见的冻结列生效；
- * 全部冻结列隐藏时窗格已隐藏，本函数不会被触达）。
+ * 从冻结区显示顺序（mFrozenOrderLogical）末尾往前找第一个未被隐藏的列。
+ * 末位冻结列可能被隐藏——分界条要对最后一个看得见的冻结列生效；全部冻结列
+ * 隐藏时窗格已隐藏，本函数不会被触达。
  * @return 逻辑列号；无可见冻结列返回 -1
  */
 int DATablePaneContainer::lastFrozenLogical() const
 {
-    if (mFrozenLogical.isEmpty() || !mFrozenView) {
+    if (!mFrozenView) {
         return -1;
     }
-    for (int i = mOrderedLogical.size() - 1; i >= 0; --i) {
-        const int logical = mOrderedLogical.at(i);
-        if (mFrozenLogical.contains(logical) && !mHiddenLogical.contains(logical)) {
+    for (int i = mFrozenOrderLogical.size() - 1; i >= 0; --i) {
+        const int logical = mFrozenOrderLogical.at(i);
+        if (!mHiddenLogical.contains(logical)) {
             return logical;
         }
     }

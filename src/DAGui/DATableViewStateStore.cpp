@@ -189,21 +189,62 @@ QList< QPair< QString, int > > DATableViewStateStore::hiddenColumns() const
 }
 
 /**
- * @brief 查询冻结列数
- * @return 冻结列数（视图顺序前 m 个可见列）
+ * @brief 冻结列列表
+ * @return 冻结列身份（有序 = 冻结区显示顺序；空 = 未冻结）
  */
-int DATableViewStateStore::freezeColumnCount() const
+QList< QPair< QString, int > > DATableViewStateStore::frozenColumns() const
 {
-    return mFreezeColumnCount;
+    return mFrozenColumns;
 }
 
 /**
- * @brief 记录冻结列数
- * @param count 冻结列数，<=0 归一为 0
+ * @brief 整体替换冻结列列表
+ *
+ * 去重保序（同一身份只收一次），空表 = 取消全部冻结。
+ * @param frozen 冻结列身份（有序 = 冻结区显示顺序）
  */
-void DATableViewStateStore::setFreezeColumnCount(int count)
+void DATableViewStateStore::setFrozenColumns(const QList< QPair< QString, int > >& frozen)
 {
-    mFreezeColumnCount = (count > 0) ? count : 0;
+    mFrozenColumns.clear();
+    mFrozenColumns.reserve(frozen.size());
+    for (const QPair< QString, int >& ident : frozen) {
+        if (!mFrozenColumns.contains(ident)) {
+            mFrozenColumns.append(ident);
+        }
+    }
+}
+
+/**
+ * @brief 查询列是否冻结
+ * @param name 列名
+ * @param occurrence 第几次出现（重名列消歧位）
+ * @return 已冻结返回 true
+ */
+bool DATableViewStateStore::isColumnFrozen(const QString& name, int occurrence) const
+{
+    return mFrozenColumns.contains(qMakePair(name, occurrence));
+}
+
+/**
+ * @brief 记录列冻结状态
+ *
+ * frozen 为 true 时追加到冻结列表末尾（调用方按全局列序插入请用 setFrozenColumns）；
+ * false 时移除条目。
+ * @param name 列名
+ * @param occurrence 第几次出现
+ * @param frozen 是否冻结
+ */
+void DATableViewStateStore::setColumnFrozen(const QString& name, int occurrence, bool frozen)
+{
+    const QPair< QString, int > key = qMakePair(name, occurrence);
+    for (int i = mFrozenColumns.size() - 1; i >= 0; --i) {
+        if (mFrozenColumns.at(i) == key) {
+            mFrozenColumns.removeAt(i);
+        }
+    }
+    if (frozen) {
+        mFrozenColumns.append(key);
+    }
 }
 
 /**
@@ -221,10 +262,12 @@ bool DATableViewStateStore::isColumnSetNormalized() const
  * 列序为空时保持为空（空 = 未记录 = 数据列序——不用 actual 填充，否则每个工程
  * 都会被写出一条覆盖全列的列序，破坏「空=默认」语义）。非空时保序保留身份在
  * actual 里的条目，剪除其余，再按 actualColumns 的顺序把未出现的身份追加到末尾。
- * 隐藏集合剪除身份不在 actual 里的条目。冻结计数不参与收敛（列数临时变少时由
- * 投影夹紧、不写回，用户设置不丢）。一次调用即视为已收敛（改没改都置位）。
+ * 隐藏集合剪除身份不在 actual 里的条目。冻结列同理剪除孤儿条目；旧格式
+ * <freeze columns="N"/> 的计数在这一步展开为「全局列序（列序为空则实际列序）
+ * 前 N 个列身份」，保证旧工程打开后行为不变。一次调用即视为已收敛
+ * （改没改都置位）。
  * @param actualColumns 实际列身份表（数据列序升序）
- * @return true 表示列序或隐藏集合与进入时不同（调用方据此发一条用户可见提示）
+ * @return true 表示列序、隐藏集合或冻结列与进入时不同（调用方据此发一条用户可见提示）
  */
 bool DATableViewStateStore::normalizeToColumns(const QList< QPair< QString, int > >& actualColumns)
 {
@@ -263,6 +306,32 @@ bool DATableViewStateStore::normalizeToColumns(const QList< QPair< QString, int 
         mHiddenColumns = newHidden;
         changed        = true;
     }
+    // 旧格式冻结计数展开：按收敛后的全局列序（空 = 实际列序）取前 N 个身份
+    if (mLegacyFreezeCount > 0) {
+        const QList< QPair< QString, int > >& order = mColumnOrder.isEmpty() ? actualColumns : mColumnOrder;
+        QList< QPair< QString, int > > legacy;
+        legacy.reserve(qMin(mLegacyFreezeCount, order.size()));
+        for (int i = 0; i < order.size() && i < mLegacyFreezeCount; ++i) {
+            legacy.append(order.at(i));
+        }
+        if (legacy != mFrozenColumns) {
+            mFrozenColumns = legacy;
+            changed        = true;
+        }
+        mLegacyFreezeCount = -1;
+    }
+    // 冻结列剪除孤儿身份（保序去重）
+    QList< QPair< QString, int > > newFrozen;
+    newFrozen.reserve(mFrozenColumns.size());
+    for (const QPair< QString, int >& ident : std::as_const(mFrozenColumns)) {
+        if (actualSet.contains(ident) && !newFrozen.contains(ident)) {
+            newFrozen.append(ident);
+        }
+    }
+    if (newFrozen != mFrozenColumns) {
+        mFrozenColumns = newFrozen;
+        changed        = true;
+    }
     mColumnSetNormalized = true;
     return changed;
 }
@@ -270,9 +339,9 @@ bool DATableViewStateStore::normalizeToColumns(const QList< QPair< QString, int 
 /**
  * @brief 列改名迁移
  *
- * 只改键的列名部分，occurrence 不变（改名不改变列的位置序）。列宽、列序、隐藏
- * 三份键一并迁移（列序保持位置，只改名）。若目标 (newName, occurrence) 已有记录，
- * 以迁移过来的值覆盖（后到的改名生效）。
+ * 只改键的列名部分，occurrence 不变（改名不改变列的位置序）。列宽、列序、隐藏、
+ * 冻结四份键一并迁移（列序/冻结保持位置，只改名）。若目标 (newName, occurrence)
+ * 已有记录，以迁移过来的值覆盖（后到的改名生效）。
  * @param oldName 旧列名
  * @param newName 新列名
  */
@@ -301,6 +370,11 @@ void DATableViewStateStore::renameColumn(const QString& oldName, const QString& 
         newHidden.insert(ident.first == oldName ? qMakePair(newName, ident.second) : ident);
     }
     mHiddenColumns = newHidden;
+    for (int i = 0; i < mFrozenColumns.size(); ++i) {
+        if (mFrozenColumns[ i ].first == oldName) {
+            mFrozenColumns[ i ].first = newName;  // 保持冻结区顺序，只改名
+        }
+    }
 }
 
 /**
@@ -328,6 +402,11 @@ void DATableViewStateStore::removeColumn(const QString& name)
             ++it;
         }
     }
+    for (int i = mFrozenColumns.size() - 1; i >= 0; --i) {
+        if (mFrozenColumns[ i ].first == name) {
+            mFrozenColumns.removeAt(i);
+        }
+    }
 }
 
 /**
@@ -342,10 +421,15 @@ void DATableViewStateStore::removeColumn(const QString& name)
  *     <column name="g" occurrence="0"/>
  *   </column-order>
  *   <column name="h" occurrence="0" hidden="1"/>
- *   <freeze columns="2"/>
+ *   <freeze>
+ *     <column name="a" occurrence="0"/>
+ *     <column name="c" occurrence="0"/>
+ *   </freeze>
  * </view-state>
  * @endcode
  * 三个新子元素（006）没有内容就不写；既有 column-width 与 row-header-width 形态不变。
+ * <freeze> 的子元素顺序即冻结区显示顺序。旧格式 <freeze columns="N"/> 仍可读
+ * （由 normalizeToColumns 展开为前 N 列）。
  * @param doc QDomDocument
  * @param parent 目标父元素（table 元素）
  */
@@ -388,9 +472,14 @@ void DATableViewStateStore::toXml(QDomDocument& doc, QDomElement& parent) const
         c.setAttribute(QStringLiteral("hidden"), 1);
         vs.appendChild(c);
     }
-    if (mFreezeColumnCount > 0) {
+    if (!mFrozenColumns.isEmpty()) {
         QDomElement fz = doc.createElement(QStringLiteral("freeze"));
-        fz.setAttribute(QStringLiteral("columns"), mFreezeColumnCount);
+        for (const QPair< QString, int >& ident : mFrozenColumns) {
+            QDomElement c = doc.createElement(QStringLiteral("column"));
+            c.setAttribute(QStringLiteral("name"), ident.first);
+            c.setAttribute(QStringLiteral("occurrence"), ident.second);
+            fz.appendChild(c);
+        }
         vs.appendChild(fz);
     }
     parent.appendChild(vs);
@@ -449,9 +538,29 @@ bool DATableViewStateStore::fromXml(const QDomElement& e)
                     mHiddenColumns.insert(qMakePair(name, child.attribute(QStringLiteral("occurrence")).toInt()));
                 }
             } else if (child.tagName() == QLatin1String("freeze")) {
-                const int cols = child.attribute(QStringLiteral("columns")).toInt();
-                if (cols > 0) {
-                    mFreezeColumnCount = cols;
+                // 新格式：子元素 column 列表（顺序 = 冻结区显示顺序）；
+                // 旧格式 columns="N" 计数先记下，由 normalizeToColumns 展开
+                if (child.hasAttribute(QStringLiteral("columns"))) {
+                    const int cols = child.attribute(QStringLiteral("columns")).toInt();
+                    if (cols > 0) {
+                        mLegacyFreezeCount = cols;
+                    }
+                } else {
+                    QDomNode cn = child.firstChild();
+                    while (!cn.isNull()) {
+                        QDomElement ce = cn.toElement();
+                        if (!ce.isNull() && ce.tagName() == QLatin1String("column")) {
+                            const QString name = ce.attribute(QStringLiteral("name"));
+                            if (!name.isEmpty()) {
+                                const QPair< QString, int > ident
+                                    = qMakePair(name, ce.attribute(QStringLiteral("occurrence")).toInt());
+                                if (!mFrozenColumns.contains(ident)) {
+                                    mFrozenColumns.append(ident);
+                                }
+                            }
+                        }
+                        cn = cn.nextSibling();
+                    }
                 }
             }
         }
@@ -464,13 +573,14 @@ bool DATableViewStateStore::fromXml(const QDomElement& e)
 /**
  * @brief 是否没有任何记录
  *
- * 列宽、行头宽、列序（非空）、隐藏（非空）、冻结（>0）任一非空即不为空。
+ * 列宽、行头宽、列序（非空）、隐藏（非空）、冻结（非空）任一非空即不为空。
  * @return 全空返回 true
  */
 bool DATableViewStateStore::isEmpty() const
 {
     return mColumnWidths.isEmpty() && mRowHeaderWidth <= 0 && mRowHeight <= 0 && mHorizontalHeaderHeight <= 0
-           && mColumnOrder.isEmpty() && mHiddenColumns.isEmpty() && mFreezeColumnCount <= 0;
+           && mColumnOrder.isEmpty() && mHiddenColumns.isEmpty() && mFrozenColumns.isEmpty()
+           && mLegacyFreezeCount <= 0;
 }
 
 /**
@@ -486,7 +596,8 @@ void DATableViewStateStore::clear()
     mHorizontalHeaderHeight = -1;
     mColumnOrder.clear();
     mHiddenColumns.clear();
-    mFreezeColumnCount = 0;
+    mFrozenColumns.clear();
+    mLegacyFreezeCount = -1;
 }
 
 }  // end of namespace DA

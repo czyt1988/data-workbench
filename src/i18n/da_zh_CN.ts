@@ -3114,8 +3114,8 @@
     </message>
     <message>
         <location line="+1"/>
-        <source>Freeze the leftmost columns of the table</source>
-        <translation>冻结表格左侧的列</translation>
+        <source>Freeze columns so they stay visible while scrolling</source>
+        <translation>冻结列，使其在滚动时保持可见</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -3154,13 +3154,13 @@
     </message>
     <message>
         <location line="+1"/>
-        <source>Freeze Columns...</source>
+        <source>Freeze First N Columns...</source>
         <translation>冻结前 N 列…</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Unfreeze Columns</source>
-        <translation>取消冻结</translation>
+        <source>Unfreeze All Columns</source>
+        <translation>取消全部冻结</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -9156,13 +9156,18 @@
     </message>
     <message>
         <location line="+3"/>
-        <source>Freeze to This Column</source>
-        <translation>冻结到此列</translation>
+        <source>Freeze This Column</source>
+        <translation>冻结此列</translation>
     </message>
     <message>
-        <location line="+2"/>
-        <source>Unfreeze</source>
-        <translation>取消冻结</translation>
+        <location line="+1"/>
+        <source>Unfreeze This Column</source>
+        <translation>取消冻结此列</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Unfreeze All Columns</source>
+        <translation>取消全部冻结</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -9638,8 +9643,8 @@
     </message>
     <message>
         <location line="-2871"/>
-        <source>Freeze the first N columns (0 = no freeze):</source>
-        <translation>冻结前 N 列（0 = 不冻结）：</translation>
+        <source>Freeze the first N columns (added to already frozen columns, 0 = no change):</source>
+        <translation>冻结前 N 列（追加到已冻结的列，0 = 不做修改）：</translation>
     </message>
     <message>
         <location line="+163"/>
@@ -9985,11 +9990,6 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <location line="-4242"/>
         <source>Some column view settings were dropped because the table columns have changed.</source>
         <translation>表格的列已变化，部分列视图设置已被丢弃</translation>
-    </message>
-    <message>
-        <location line="+71"/>
-        <source>Frozen columns were reduced because visible columns changed.</source>
-        <translation>可见列已变化，冻结列数被自动缩减</translation>
     </message>
     <message>
         <location line="+448"/>
@@ -19244,13 +19244,28 @@ If a column name contains spaces or special characters, enclose it in backticks 
     </message>
     <message>
         <location line="+62"/>
-        <source>Freeze columns to %1</source>
-        <translation>冻结到第 %1 列</translation>
+        <source>Freeze column &quot;%1&quot;</source>
+        <translation>冻结列&quot;%1&quot;</translation>
     </message>
     <message>
-        <location line="-2"/>
+        <location line="+1"/>
+        <source>Freeze columns</source>
+        <translation>冻结列</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Unfreeze column &quot;%1&quot;</source>
+        <translation>取消冻结列&quot;%1&quot;</translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Unfreeze columns</source>
-        <translation>取消冻结</translation>
+        <translation>取消冻结列</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Unfreeze all columns</source>
+        <translation>取消全部冻结</translation>
     </message>
     <message>
         <location filename="../3rdparty/DAWidgets/src/DABrushStyleComboBox.cpp" line="+56"/>

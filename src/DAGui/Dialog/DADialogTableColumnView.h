@@ -23,9 +23,9 @@ namespace DA
  * （改名对走 DACommandDataFrame_renameColumns，同样支持 undo/redo），
  * 取消不改动。
  *
- * 冻结勾选语义：冻结的是表格前缀——用户勾选某行的冻结时，该行之前的
- * 所有行自动补勾（Excel 冻结语义），取消某行冻结时其后所有行的冻结
- * 一并取消（冻结名额必须连续）。
+ * 冻结勾选语义：逐列独立——勾选任意行即冻结该列，取消勾选即取消该列冻结，
+ * 不要求连续、不影响其它行（冻结区内部顺序由主界面拖动调整，此处只表达
+ * "哪些列被冻结"）。
  */
 class DAGUI_API DADialogTableColumnView : public QDialog
 {
@@ -36,15 +36,15 @@ public:
 
     // (re)初始化（堆建一次后复用）：
     // orderedColumns = 全局列序（含隐藏列）；hiddenColumns = 当前隐藏集合；
-    // frozenCount = 冻结列数（列序前 N 个，隐藏列占名额）
+    // frozenColumns = 当前冻结列集合
     void setup(const QList< QPair< QString, int > >& orderedColumns,
                const QSet< QPair< QString, int > >& hiddenColumns,
-               int frozenCount);
+               const QSet< QPair< QString, int > >& frozenColumns);
 
     // 确定后的新隐藏集合（调用方只在 Accepted 后取）
     QSet< QPair< QString, int > > hiddenColumns() const;
-    // 确定后的新冻结列数（= 冻结勾选的行数）
-    int frozenColumnCount() const;
+    // 确定后的冻结列集合（= 所有冻结勾选的行；顺序由调用方按全局列序合并）
+    QSet< QPair< QString, int > > frozenColumns() const;
     // 确定后的改名对：((旧列名, occurrence) → 新列名)，仅变化的行；
     // occurrence 是旧身份的消歧位，新列名由用户输入
     QList< QPair< QPair< QString, int >, QString > > renamedColumns() const;
@@ -53,9 +53,7 @@ private:
     // 重建表格内容（setup 时调用）
     void rebuildRows(const QList< QPair< QString, int > >& orderedColumns,
                      const QSet< QPair< QString, int > >& hiddenColumns,
-                     int frozenCount);
-    // 冻结勾选变化：把冻结名额规整为表格前缀（勾选行 → 前面全补；取消 → 后面全清）
-    void normalizeFrozenPrefix(int changedRow);
+                     const QSet< QPair< QString, int > >& frozenColumns);
     // 应用行背景色（隐藏=浅灰、冻结=浅蓝、双勾=蓝灰中间色；DESIGN.md 官方色板）
     void refreshRowBackgrounds();
     // 搜索文本变化：按列名过滤行（被过滤行的勾选状态保留）

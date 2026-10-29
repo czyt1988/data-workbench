@@ -14,7 +14,7 @@ class DADataTableView;
 /**
  * @brief 数据表格列轴窗格容器（006 计划 WP5）
  *
- * 包装主窗格并懒建冻结窗格（freezeCount > 0 时），把页面算出的列视图状态投影到
+ * 包装主窗格并懒建冻结窗格（存在冻结列时），把页面算出的列视图状态投影到
  * 各窗格：冻结列在左、主区在右，行头归属冻结窗格 → 布局 [行号][冻结列][主区]。
  * 容器不持模型/委托/store——页面是唯一真源操作方；懒建时序必须是：
  * emit frozenViewCreated（页面同步 configurePaneView 装配）→ 容器投影 → show()。
@@ -32,18 +32,23 @@ public:
     DADataTableView* frozenView() const;
 
     // 列状态投影：ordered = 全部数据列显示顺序（含隐藏列，logical 升序表）；
-    // hidden = 用户隐藏集合；freezeCount = 冻结列数（列序前 N 个，隐藏列占名额——
-    // 隐藏的冻结列不显示也不让主区列补位，全部冻结列隐藏时冻结窗格整体隐藏）
-    void applyColumnState(const QVector< int >& orderedLogical, const QSet< int >& hiddenLogical, int freezeCount);
+    // hidden = 用户隐藏集合；frozenOrder = 冻结列（有序 = 冻结区显示顺序，可任意列）。
+    // 冻结列可来自列序任意位置，冻结不改变全局列序（解冻回原位）；隐藏的冻结列
+    // 不显示也不让主区列补位，全部冻结列隐藏时冻结窗格整体隐藏。
+    void applyColumnState(const QVector< int >& orderedLogical,
+                          const QSet< int >& hiddenLogical,
+                          const QVector< int >& frozenOrderLogical);
     // 生效冻结列数（= 本轮投影实际切进冻结窗格的**可见**列数，全隐藏时为 0）
     int effectiveFrozenColumnCount() const;
     // 最近一次投影的全局列序 / 隐藏集合缓存（006c 合并全局列序用）
     QVector< int > cachedOrderedLogical() const;
     QSet< int > cachedHiddenLogical() const;
-    // 只读口径 getter（006d「冻结到此列」/ 006e/007 冻结区判定共用，调用点不要重算"列序剔隐藏"）
+    // 只读口径 getter（006d 列视图判定/006e/007 冻结区判定共用，调用点不要重算"列序剔隐藏"）
     QVector< int > orderedColumnsLogical() const;     // 数据列全序（logical，含隐藏列）
     QVector< int > visibleColumnOrderLogical() const; // 可见列序（logical，按视图顺序剔除隐藏列）
-    // 本轮投影视为冻结的列集合（logical，含被隐藏的冻结列——名额语义）
+    // 本轮投影的冻结列（logical，有序 = 冻结区显示顺序，含被隐藏的冻结列）
+    QVector< int > frozenColumnOrderLogical() const;
+    // 本轮投影视为冻结的列集合（logical，含被隐藏的冻结列）
     QSet< int > frozenColumnsLogical() const;
 
     // 重算冻结窗格宽度与底部等高占位（列宽/行头宽/滚动条可见性变化后调用，幂等）
@@ -59,9 +64,10 @@ public:
     void requestFrozenBoundaryAutoFit();
 
 public Q_SLOTS:
-    // 窗格表头 sectionMoved 落库槽（006c）：读回发起窗格可见列新顺序 →
-    // 合并全局列序（冻结区可见列 ++ 主区可见列 ++ 隐藏列保持旧相对顺序）→
-    // emit columnOrderChanged 交页面入栈；投影期间（mApplyingColumnState）不回写
+    // 窗格表头 sectionMoved 落库槽：按拖动来源分流——冻结窗格只重排冻结区内部顺序
+    // （emit frozenOrderChanged）；主窗格合并全局列序（冻结列钉在原位、主区可见列
+    // 填非冻结槽位、隐藏列保持旧相对顺序）后 emit columnOrderChanged。
+    // 投影期间（mApplyingColumnState）不回写
     void onPaneSectionMoved(int logicalIndex, int oldVisualIndex, int newVisualIndex);
 
 Q_SIGNALS:
@@ -69,6 +75,8 @@ Q_SIGNALS:
     void frozenViewCreated(DA::DADataTableView* frozenView);
     // 拖动落库后的全局列序（006c：页面入栈后统一重投影）
     void columnOrderChanged(const QVector< int >& newGlobalOrderLogical);
+    // 冻结区内部拖动后的冻结列顺序（logical，页面入栈后统一重投影）
+    void frozenOrderChanged(const QVector< int >& newFrozenOrderLogical);
     // 冻结分界条拖动结束：末冻结列新宽度落库（分界条路径不经表头拖拽采集闸门，页面承接写 store）
     void frozenBoundaryResized(int logicalColumn, int newWidth);
     // 双击冻结分界条：请求对末冻结列做内容自适应（页面承接）
@@ -92,7 +100,7 @@ private:
     void updateFrozenBottomSpacer();
     // 指定窗格的可见数据列按 visualIndex 升序读回（过滤尾部预留空白列）
     QVector< int > visibleDataColumnsOf(DADataTableView* pane) const;
-    // 视图顺序最后一个冻结列（无冻结/读不到返回 -1）
+    // 视图顺序最后一个可见冻结列（无可见冻结列返回 -1）
     int lastFrozenLogical() const;
 
 private:
@@ -103,7 +111,8 @@ private:
     QWidget* mSeparator { nullptr };          ///< 冻结分界条（容器拥有，随冻结显隐）
     QVector< int > mOrderedLogical;           ///< 全局列序缓存
     QSet< int > mHiddenLogical;               ///< 隐藏集合缓存
-    QSet< int > mFrozenLogical;               ///< 本轮投影的冻结列集合
+    QVector< int > mFrozenOrderLogical;       ///< 冻结列缓存（有序 = 冻结区显示顺序）
+    QSet< int > mFrozenLogical;               ///< 本轮投影的冻结列集合（查表用）
     int mEffectiveFrozen { 0 };               ///< 本轮投影实际冻结列数
     int mBoundaryDragStartWidth { -1 };       ///< 分界拖动起始时末冻结列宽（-1 = 非拖动态）
     bool mApplyingColumnState { false };      ///< 投影守卫（006c 屏蔽 sectionMoved 回写）

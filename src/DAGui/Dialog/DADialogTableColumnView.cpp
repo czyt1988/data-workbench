@@ -119,17 +119,17 @@ DADialogTableColumnView::~DADialogTableColumnView()
 /**
  * @brief (re)初始化表格
  *
- * 行 = 全局列序（含隐藏列，隐藏行留在原位勾选隐藏）；冻结勾选 = 前 N 行
- * （隐藏列占名额）。重开对话框时重建（用户上次的未确定编辑不保留）。
+ * 行 = 全局列序（含隐藏列，隐藏行留在原位勾选隐藏）；冻结勾选 = 该列是否在
+ * 冻结集合里（逐列独立）。重开对话框时重建（用户上次的未确定编辑不保留）。
  * @param orderedColumns 全局列序（含隐藏列）
  * @param hiddenColumns 当前隐藏集合
- * @param frozenCount 冻结列数（列序前 N 个）
+ * @param frozenColumns 当前冻结列集合
  */
 void DADialogTableColumnView::setup(const QList< QPair< QString, int > >& orderedColumns,
                                     const QSet< QPair< QString, int > >& hiddenColumns,
-                                    int frozenCount)
+                                    const QSet< QPair< QString, int > >& frozenColumns)
 {
-    rebuildRows(orderedColumns, hiddenColumns, frozenCount);
+    rebuildRows(orderedColumns, hiddenColumns, frozenColumns);
 }
 
 /**
@@ -137,7 +137,7 @@ void DADialogTableColumnView::setup(const QList< QPair< QString, int > >& ordere
  */
 void DADialogTableColumnView::rebuildRows(const QList< QPair< QString, int > >& orderedColumns,
                                           const QSet< QPair< QString, int > >& hiddenColumns,
-                                          int frozenCount)
+                                          const QSet< QPair< QString, int > >& frozenColumns)
 {
     mUpdating = true;
     mOrderedColumns = orderedColumns;
@@ -155,10 +155,10 @@ void DADialogTableColumnView::rebuildRows(const QList< QPair< QString, int > >& 
         hiddenItem->setCheckState(hiddenColumns.contains(id) ? Qt::Checked : Qt::Unchecked);
         hiddenItem->setTextAlignment(Qt::AlignCenter);
         mTable->setItem(r, c_colHidden, hiddenItem);
-        // 冻结勾选（前 frozenCount 行）
+        // 冻结勾选（逐列独立，不再强制前缀）
         QTableWidgetItem* frozenItem = new QTableWidgetItem();
         frozenItem->setFlags(Qt::ItemIsUserCheckable | Qt::ItemIsEnabled | Qt::ItemIsSelectable);
-        frozenItem->setCheckState(r < frozenCount ? Qt::Checked : Qt::Unchecked);
+        frozenItem->setCheckState(frozenColumns.contains(id) ? Qt::Checked : Qt::Unchecked);
         frozenItem->setTextAlignment(Qt::AlignCenter);
         mTable->setItem(r, c_colFrozen, frozenItem);
     }
@@ -183,20 +183,18 @@ QSet< QPair< QString, int > > DADialogTableColumnView::hiddenColumns() const
 }
 
 /**
- * @brief 确定后的新冻结列数
- * @return 冻结勾选的行数（冻结名额恒为表格前缀，规整在勾选变化时完成）
+ * @brief 确定后的冻结列集合
+ * @return 所有冻结勾选行的列身份（顺序由调用方按全局列序合并）
  */
-int DADialogTableColumnView::frozenColumnCount() const
+QSet< QPair< QString, int > > DADialogTableColumnView::frozenColumns() const
 {
-    int n = 0;
-    for (int r = 0; r < mTable->rowCount(); ++r) {
+    QSet< QPair< QString, int > > res;
+    for (int r = 0; r < mTable->rowCount() && r < mOrderedColumns.size(); ++r) {
         if (QTableWidgetItem* it = mTable->item(r, c_colFrozen); it && it->checkState() == Qt::Checked) {
-            ++n;
-        } else {
-            break;  // 前缀语义：遇到未勾选即止（防御，规整后不会出现断档）
+            res.insert(mOrderedColumns.at(r));
         }
     }
-    return n;
+    return res;
 }
 
 /**
@@ -226,7 +224,7 @@ QList< QPair< QPair< QString, int >, QString > > DADialogTableColumnView::rename
  * @brief 单元格变化统一入口
  *
  * 列名列：编辑提交（校验在 validateColumnName，非法回滚）；
- * 隐藏/冻结列：勾选变化——冻结变化先规整前缀，再刷新行背景色。
+ * 隐藏/冻结列：勾选变化——逐列独立，刷新行背景色即可。
  * @param row 行号
  * @param column 列号
  */
@@ -247,12 +245,7 @@ void DADialogTableColumnView::onCellChanged(int row, int column)
         }
         return;
     }
-    if (column == c_colHidden) {
-        refreshRowBackgrounds();
-        return;
-    }
-    if (column == c_colFrozen) {
-        normalizeFrozenPrefix(row);
+    if (column == c_colHidden || column == c_colFrozen) {
         refreshRowBackgrounds();
     }
 }
@@ -279,36 +272,6 @@ bool DADialogTableColumnView::validateColumnName(int row, const QString& newName
         }
     }
     return true;
-}
-
-/**
- * @brief 冻结名额规整为表格前缀
- *
- * 勾选第 r 行冻结 → 前 r-1 行全部补勾；取消第 r 行冻结 → 第 r+1 行起全部取消。
- * @param changedRow 变化的行号
- */
-void DADialogTableColumnView::normalizeFrozenPrefix(int changedRow)
-{
-    if (changedRow < 0 || changedRow >= mTable->rowCount()) {
-        return;
-    }
-    const bool checked = mTable->item(changedRow, c_colFrozen)
-                         && mTable->item(changedRow, c_colFrozen)->checkState() == Qt::Checked;
-    mUpdating = true;
-    if (checked) {
-        for (int r = 0; r < changedRow; ++r) {
-            if (QTableWidgetItem* it = mTable->item(r, c_colFrozen); it && it->checkState() != Qt::Checked) {
-                it->setCheckState(Qt::Checked);
-            }
-        }
-    } else {
-        for (int r = changedRow + 1; r < mTable->rowCount(); ++r) {
-            if (QTableWidgetItem* it = mTable->item(r, c_colFrozen); it && it->checkState() == Qt::Checked) {
-                it->setCheckState(Qt::Unchecked);
-            }
-        }
-    }
-    mUpdating = false;
 }
 
 /**

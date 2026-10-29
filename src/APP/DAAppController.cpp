@@ -3951,7 +3951,7 @@ void DAAppController::onActionFreezeFirstColumnTriggered()
     if (!dfopt) {
         return;
     }
-    dfopt->freezeColumnsTo(1);
+    dfopt->freezeFirstColumn();
 }
 
 /**
@@ -3967,7 +3967,7 @@ void DAAppController::onActionFreezeColumnsPromptTriggered()
 }
 
 /**
- * @brief 取消冻结（006 T1.8，冻结菜单项）
+ * @brief 取消全部冻结（006 T1.8，冻结菜单项）
  */
 void DAAppController::onActionUnfreezeColumnsTriggered()
 {
@@ -3975,7 +3975,7 @@ void DAAppController::onActionUnfreezeColumnsTriggered()
     if (!dfopt) {
         return;
     }
-    dfopt->freezeColumnsTo(0);
+    dfopt->unfreezeAllColumns();
 }
 
 /**

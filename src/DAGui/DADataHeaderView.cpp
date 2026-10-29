@@ -11,6 +11,7 @@
 #include <QApplication>
 #include <QPainter>
 #include <QPolygon>
+#include <utility>
 
 namespace DA
 {
@@ -163,6 +164,17 @@ void DADataHeaderView::setComputedColumnStore(DATableComputedColumnStore* store)
     }
     mComputedStore = store;
     viewport()->update();
+}
+
+/**
+ * @brief 设置冻结状态查询回调
+ *
+ * 列头菜单用它决定「冻结此列」与「取消冻结此列」的文案；未设置时按未冻结处理。
+ * @param checker 逻辑列号 → 是否已冻结
+ */
+void DADataHeaderView::setFrozenColumnChecker(std::function< bool(int) > checker)
+{
+    mFrozenColumnChecker = std::move(checker);
 }
 
 /**
@@ -437,7 +449,7 @@ QMenu* DADataHeaderView::buildColumnContextMenu(int logicalIndex)
             });
         }
     }
-    // 组6（006d）：列视图——「列」子菜单（隐藏 / 显示全部 ‖ 冻结 / 解冻 ‖ 列视图…）
+    // 组6（006d）：列视图——「列」子菜单（隐藏 / 显示全部 ‖ 冻结切换 / 取消全部冻结 ‖ 列视图…）
     menu->addSeparator();
     QMenu* columnMenu = menu->addMenu(tr("Columns"));  // cn:列
     QAction* actHideThis  = columnMenu->addAction(QIcon(QStringLiteral(":/DAGui/icon/hide-column.svg")),
@@ -445,10 +457,14 @@ QMenu* DADataHeaderView::buildColumnContextMenu(int logicalIndex)
     QAction* actShowAll   = columnMenu->addAction(QIcon(QStringLiteral(":/DAGui/icon/show-all-columns.svg")),
                                                   tr("Show All Columns"));  // cn:显示所有列
     columnMenu->addSeparator();
-    QAction* actFreezeTo  = columnMenu->addAction(QIcon(QStringLiteral(":/DAGui/icon/freeze-column.svg")),
-                                                  tr("Freeze to This Column"));  // cn:冻结到此列
-    QAction* actUnfreeze  = columnMenu->addAction(QIcon(QStringLiteral(":/DAGui/icon/freeze-column.svg")),
-                                                  tr("Unfreeze"));  // cn:取消冻结
+    // 冻结项按当前列状态切换文案（冻结此列 / 取消冻结此列）
+    const bool thisFrozen = mFrozenColumnChecker && mFrozenColumnChecker(logicalIndex);
+    QAction* actFreezeToggle
+        = columnMenu->addAction(QIcon(QStringLiteral(":/DAGui/icon/freeze-column.svg")),
+                                thisFrozen ? tr("Unfreeze This Column")   // cn:取消冻结此列
+                                           : tr("Freeze This Column"));   // cn:冻结此列
+    QAction* actUnfreezeAll = columnMenu->addAction(QIcon(QStringLiteral(":/DAGui/icon/freeze-column.svg")),
+                                                    tr("Unfreeze All Columns"));  // cn:取消全部冻结
     columnMenu->addSeparator();
     QAction* actColumnViewDlg = columnMenu->addAction(QIcon(QStringLiteral(":/DAGui/icon/column-view.svg")),
                                                       tr("Column View..."));  // cn:列视图…
@@ -458,11 +474,11 @@ QMenu* DADataHeaderView::buildColumnContextMenu(int logicalIndex)
     connect(actShowAll, &QAction::triggered, this, [ this, logicalIndex ]() {
         Q_EMIT columnViewActionRequested(logicalIndex, ColumnViewAction::ShowAllColumns);
     });
-    connect(actFreezeTo, &QAction::triggered, this, [ this, logicalIndex ]() {
-        Q_EMIT columnViewActionRequested(logicalIndex, ColumnViewAction::FreezeToColumn);
+    connect(actFreezeToggle, &QAction::triggered, this, [ this, logicalIndex ]() {
+        Q_EMIT columnViewActionRequested(logicalIndex, ColumnViewAction::ToggleFreezeColumn);
     });
-    connect(actUnfreeze, &QAction::triggered, this, [ this, logicalIndex ]() {
-        Q_EMIT columnViewActionRequested(logicalIndex, ColumnViewAction::Unfreeze);
+    connect(actUnfreezeAll, &QAction::triggered, this, [ this, logicalIndex ]() {
+        Q_EMIT columnViewActionRequested(logicalIndex, ColumnViewAction::UnfreezeAll);
     });
     connect(actColumnViewDlg, &QAction::triggered, this, [ this, logicalIndex ]() {
         Q_EMIT columnViewActionRequested(logicalIndex, ColumnViewAction::OpenColumnViewDialog);

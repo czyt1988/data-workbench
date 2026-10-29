@@ -3098,8 +3098,8 @@
     </message>
     <message>
         <location line="+1"/>
-        <source>Freeze the leftmost columns of the table</source>
-        <translation>Freeze the leftmost columns of the table</translation>
+        <source>Freeze columns so they stay visible while scrolling</source>
+        <translation>Freeze columns so they stay visible while scrolling</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -3138,13 +3138,13 @@
     </message>
     <message>
         <location line="+1"/>
-        <source>Freeze Columns...</source>
-        <translation>Freeze Columns...</translation>
+        <source>Freeze First N Columns...</source>
+        <translation>Freeze First N Columns...</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Unfreeze Columns</source>
-        <translation>Unfreeze Columns</translation>
+        <source>Unfreeze All Columns</source>
+        <translation>Unfreeze All Columns</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -9140,13 +9140,18 @@
     </message>
     <message>
         <location line="+3"/>
-        <source>Freeze to This Column</source>
-        <translation>Freeze to This Column</translation>
+        <source>Freeze This Column</source>
+        <translation>Freeze This Column</translation>
     </message>
     <message>
-        <location line="+2"/>
-        <source>Unfreeze</source>
-        <translation>Unfreeze</translation>
+        <location line="+1"/>
+        <source>Unfreeze This Column</source>
+        <translation>Unfreeze This Column</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Unfreeze All Columns</source>
+        <translation>Unfreeze All Columns</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -9622,7 +9627,7 @@
     </message>
     <message>
         <location line="-2871"/>
-        <source>Freeze the first N columns (0 = no freeze):</source>
+        <source>Freeze the first N columns (added to already frozen columns, 0 = no change):</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -9969,11 +9974,6 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <location line="-4242"/>
         <source>Some column view settings were dropped because the table columns have changed.</source>
         <translation>Some column view settings were dropped because the table columns have changed.</translation>
-    </message>
-    <message>
-        <location line="+71"/>
-        <source>Frozen columns were reduced because visible columns changed.</source>
-        <translation>Frozen columns were reduced because visible columns changed.</translation>
     </message>
     <message>
         <location line="+448"/>
@@ -19219,13 +19219,28 @@ If a column name contains spaces or special characters, enclose it in backticks 
     </message>
     <message>
         <location line="+62"/>
-        <source>Freeze columns to %1</source>
-        <translation>Freeze columns to %1</translation>
+        <source>Freeze column &quot;%1&quot;</source>
+        <translation>Freeze column &quot;%1&quot;</translation>
     </message>
     <message>
-        <location line="-2"/>
+        <location line="+1"/>
+        <source>Freeze columns</source>
+        <translation>Freeze columns</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Unfreeze column &quot;%1&quot;</source>
+        <translation>Unfreeze column &quot;%1&quot;</translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Unfreeze columns</source>
         <translation>Unfreeze columns</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Unfreeze all columns</source>
+        <translation>Unfreeze all columns</translation>
     </message>
     <message>
         <location filename="../3rdparty/DAWidgets/src/DABrushStyleComboBox.cpp" line="+56"/>

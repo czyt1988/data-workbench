@@ -134,7 +134,7 @@ public:
     // ===== 列视图（006）=====
     // 列视图直接入口（007 定位的对接面）：只写 store + 重投影，不入撤销栈
     void setColumnHiddenDirectly(const QString& name, int occurrence, bool hidden);
-    // 打开列视图对话框（006d）：勾选可见列 + 冻结列数；确定按差异构造一个批量父命令
+    // 打开列视图对话框（006d）：列名编辑 + 隐藏勾选 + 冻结勾选；确定按差异构造一个批量父命令
     void showColumnViewDialog();
     // 打开定位对话框（007 T1.7）：Ctrl+G / 滚动条右键 / Ribbon「定位」共用
     void showGotoDialog();
@@ -155,10 +155,9 @@ public:
     int selectedCellCount() const;
     // 当前单元格（数据源绝对坐标；声明在 public——007 状态栏统计用）：无有效当前格或越出数据范围返回 false
     bool currentActualCell(int* actualRow, int* actualCol) const;
-    // 目标列是否落在「视图顺序前 m 个可见列」的冻结区（007 判定要不要调 showColumn）；
-    // 本单恒 false（冻结投影 006e 收口）；freezeColumnCount()==0 时也恒 false
+    // 目标列是否已冻结（007 判定要不要调 showColumn）；查投影缓存的冻结集合
     bool isColumnInFrozenArea(int logicalColumn) const;
-    // 生效冻结列数（本单转发容器，恒 0）
+    // 生效冻结列数（= 冻结集合中当前可见的列数，转发容器）
     int effectiveFrozenColumnCount() const;
     // 只读访问器：列轴窗格容器（测试与页面内部接线用；APP 不使用、不改其调用点形状）
     DATablePaneContainer* paneContainer() const;
@@ -324,7 +323,7 @@ public Q_SLOTS:
     // 移除选择的列
     int removeSelectColumn();
     // 移除指定列（表头右键/树右键用，绕过选区与焦点依赖）；冻结列被删除时
-    // 冻结名额同步缩减（效果同隐藏），全部冻结列删光后冻结窗格隐藏
+    // 冻结集合同步剔除，全部冻结列删光后冻结窗格隐藏
     int removeColumnAt(int col);
     // 删列命令管线（上面两个入口共用）：视图状态整店快照随命令 undo/redo 往返
     int removeColumns(const QList< int >& columns);
@@ -350,12 +349,18 @@ public Q_SLOTS:
     void hideColumnAt(int logicalColumn);
     // 列头菜单「显示所有列」
     void showAllColumns();
-    // 冻结列序前 N 个列（0 = 取消冻结；隐藏列占名额，入撤销栈）
-    void freezeColumnsTo(int count);
-    // 弹「冻结前 N 列」输入框后走 freezeColumnsTo
+    // 冻结 / 取消冻结指定列（表头右键「冻结此列/取消冻结此列」；入撤销栈）
+    void setColumnFrozen(int logicalColumn, bool frozen);
+    // 冻结全局列序第一个可见列（Ribbon「冻结首列」）
+    void freezeFirstColumn();
+    // 取消全部冻结（Ribbon「取消全部冻结」）
+    void unfreezeAllColumns();
+    // 弹「冻结前 N 列」输入框：把全局列序前 N 列并入冻结集合（追加，0 = 不做修改）
     void promptFreezeColumns();
     // 容器 columnOrderChanged 驱动：把合并后的全局列序（含隐藏列）转成身份表入栈
     void applyColumnOrderFromView(const QVector< int >& newOrderLogical);
+    // 容器 frozenOrderChanged 驱动：冻结区内部拖动顺序入栈
+    void applyFrozenOrderFromView(const QVector< int >& newFrozenOrderLogical);
     // 粘贴剪贴板内容到当前选区左上角（仅填充选区，溢出丢弃），可撤销，返回写入单元格数
     int pasteFromClipboard();
     // 剪切选中区（复制 + 置nan），可撤销，返回受影响单元格数
@@ -537,7 +542,6 @@ private:
     bool mHeaderPickMode { false };     ///< 表头拾取模式（图表「选择序列」会话期间：表头点击只转发不排序）
     QVector< QPair< int, Qt::SortOrder > > mSortSpec;  ///< 多列排序规格（列逻辑索引+方向，顺序即优先级；不持久化 R13）
     QSet< int > mFrozenColumnsLogical;  ///< 本轮投影的冻结列集合（logical），仅作 isColumnInFrozenArea 查表用（006e）
-    int mLastProjectedFreeze { -1 };    ///< 上一轮投影的生效冻结数（夹紧提示去重，006e）
 
     DADialogDataframeColumnCastToNumeric* mDialogCastNumArgs { nullptr };
     DADialogDataframeColumnCastToDatetime* mDialogCastDatetimeArgs { nullptr };

@@ -166,7 +166,7 @@ void DAAppRibbonArea::buildMenu()
     mMenuNote->addAction(mActions->actionDeleteNote);
     mMenuNote->addSeparator();
     mMenuNote->addAction(mActions->actionClearNotes);
-    // 冻结列下拉菜单：冻结首列、冻结前 N 列、取消冻结，挂在 actionFreezeColumns 下
+    // 冻结列下拉菜单：冻结首列、冻结前 N 列（追加）、取消全部冻结，挂在 actionFreezeColumns 下
     mMenuFreezeColumns = new SARibbonMenu(mApp);
     mMenuFreezeColumns->setObjectName(QString::fromUtf8(UiNames::Menu::FreezeColumns));
     mMenuFreezeColumns->addAction(mActions->actionFreezeFirstColumn);

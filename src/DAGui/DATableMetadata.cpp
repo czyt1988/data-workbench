@@ -241,9 +241,9 @@ QList< QPair< QString, int > > DATableMetadata::entryCountsByCategory() const
         res.append(qMakePair(tr("Cell styles"), n));  // cn:样式
     }
     if (mViewState && !mViewState->isEmpty()) {
-        // 006：列视图设置（列宽 + 列序 + 隐藏 + 冻结计数一并计入，冻结算 1 条）
+        // 006：列视图设置（列宽 + 列序 + 隐藏 + 冻结列一并计入）
         const int n = mViewState->columnWidthEntries().size() + mViewState->columnOrder().size()
-                      + mViewState->hiddenColumns().size() + (mViewState->freezeColumnCount() > 0 ? 1 : 0);
+                      + mViewState->hiddenColumns().size() + mViewState->frozenColumns().size();
         res.append(qMakePair(tr("Column view settings"), n));  // cn:列视图设置
     }
     if (mConditionalFormat && !mConditionalFormat->isEmpty()) {

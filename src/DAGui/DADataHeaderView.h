@@ -4,6 +4,7 @@
 #include <QHeaderView>
 #include <QPair>
 #include <QVector>
+#include <functional>
 
 class QMenu;
 class QMouseEvent;
@@ -62,8 +63,8 @@ public:
     {
         HideColumn,           ///< 隐藏此列
         ShowAllColumns,       ///< 显示所有列
-        FreezeToColumn,       ///< 冻结到此列
-        Unfreeze,             ///< 取消冻结
+        ToggleFreezeColumn,   ///< 冻结此列 / 取消冻结此列（按当前状态切换文案）
+        UnfreezeAll,          ///< 取消全部冻结
         OpenColumnViewDialog  ///< 列视图…
     };
     Q_ENUM(ColumnViewAction)
@@ -73,6 +74,10 @@ public:
     // 设置计算列子存储（ƒx 角标三态绘制与列头菜单计算列组，非拥有，004 T1.23；
     // 浅蓝底色与公式 tooltip 走模型 BackgroundRole/ToolTipRole，本类只画角标）
     void setComputedColumnStore(DATableComputedColumnStore* store);
+
+    // 设置冻结状态查询回调（逻辑列号 → 是否已冻结）：列头菜单据此显示
+    // 「冻结此列」或「取消冻结此列」。页面在两个窗格的表头上都设置
+    void setFrozenColumnChecker(std::function< bool(int) > checker);
 
     // 构建列头右键菜单（排序 4 项 + 原 6 项 4 组；排序组在最前：升序/降序/追加次级升/追加次级降，
     // 2026-10-18 交互修订——点击表头不再排序；计算列追加「编辑公式/重新计算/移除公式（保留数据）」组，
@@ -152,6 +157,7 @@ private:
     void paintSectionOverlays(QPainter* painter, const QRect& rect, int logicalIndex) const;
 
     DATableComputedColumnStore* mComputedStore { nullptr };  ///< 计算列子存储（非拥有，004 T1.23）
+    std::function< bool(int) > mFrozenColumnChecker;  ///< 冻结状态查询回调（逻辑列号 → 是否已冻结）
     int mPressedLogicalIndex { -1 };   ///< 左键按下的 section（释放时同段且未拖动才发 clickedWithModifiers）
     QPoint mPressedPos;                ///< 左键按下的位置（拖动阈值比较基准，006c）
     bool mDragMoved { false };         ///< 本次按下-释放期间是否真正拖动过（等价于 Qt 的"拖动指示器已显示"，006c）

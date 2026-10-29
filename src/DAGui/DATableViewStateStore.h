@@ -13,12 +13,13 @@
 namespace DA
 {
 /**
- * @brief 表格视图状态子存储（列宽 / 行头宽 / 列序 / 隐藏 / 冻结列数）
+ * @brief 表格视图状态子存储（列宽 / 行头宽 / 列序 / 隐藏 / 冻结列）
  *
- * 列宽、列序、隐藏按「列名 + 第几次出现（occurrence）」存储——语义类列引用约定（R20）：
- * pandas 允许重名列且 da_insert_column 不做重名检查，键必须是 (列名, 出现序号)
- * 才能保证两个同名列各自的宽度互不串。行头宽为单值。冻结列数为计数
- * （视图顺序前 m 个可见列，006）。
+ * 列宽、列序、隐藏、冻结按「列名 + 第几次出现（occurrence）」存储——语义类列引用
+ * 约定（R20）：pandas 允许重名列且 da_insert_column 不做重名检查，键必须是
+ * (列名, 出现序号) 才能保证两个同名列各自的宽度互不串。行头宽为单值。
+ * 冻结列是有序列表（顺序 = 冻结区显示顺序，默认按全局列序；冻结不改变列序，
+ * 解冻后列回到原位，006）。
  *
  * 纪律（R6）：禁止用 QHeaderView::saveState() 持久化——滑动窗下段号=窗口行号，
  * 状态会随滚动互相污染；本存储只按列名与单值记录。
@@ -68,9 +69,11 @@ public:
     bool isColumnHidden(const QString& name, int occurrence = 0) const;
     void setColumnHidden(const QString& name, int occurrence, bool hidden);
     QList< QPair< QString, int > > hiddenColumns() const;
-    // 冻结列数（视图顺序前 m 个可见列，006）
-    int freezeColumnCount() const;
-    void setFreezeColumnCount(int count);
+    // 冻结列（有序 = 冻结区显示顺序；空 = 未冻结，006）
+    QList< QPair< QString, int > > frozenColumns() const;
+    void setFrozenColumns(const QList< QPair< QString, int > >& frozen);
+    bool isColumnFrozen(const QString& name, int occurrence = 0) const;
+    void setColumnFrozen(const QString& name, int occurrence, bool frozen);
     // 一次性加载收敛标志：fromXml 置 false（待收敛），normalizeToColumns 后置 true
     bool isColumnSetNormalized() const;
     // 加载收敛：按实际列身份表剪除孤儿条目、把新列追加到列序末尾；
@@ -98,8 +101,10 @@ private:
     QList< QPair< QString, int > > mColumnOrder;
     // 隐藏集合（列名 + occurrence）
     QSet< QPair< QString, int > > mHiddenColumns;
-    // 冻结列数（视图顺序前 m 个可见列）
-    int mFreezeColumnCount { 0 };
+    // 冻结列（有序 = 冻结区显示顺序）
+    QList< QPair< QString, int > > mFrozenColumns;
+    // 旧工程兼容：<freeze columns="N"/> 的计数，由 normalizeToColumns 展开为前 N 个列身份
+    int mLegacyFreezeCount { -1 };
     // 一次性加载收敛标志：fromXml 置 false（待收敛），normalizeToColumns 后置 true
     bool mColumnSetNormalized { false };
 };
