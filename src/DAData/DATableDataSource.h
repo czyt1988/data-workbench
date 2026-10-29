@@ -2,6 +2,7 @@
 #define DATABLEDATASOURCE_H
 #include <QString>
 #include <QVariant>
+#include <QVariantList>
 #include <cstddef>
 #include <optional>
 #include "DADataAPI.h"
@@ -37,6 +38,10 @@ public:
     virtual int tableColumnType(std::size_t column) const;
     // 批量取从startRow开始的rowCount行，失败返回无效的DATableDataBlock
     virtual DATableDataBlock fetchBlock(std::size_t startRow, std::size_t rowCount) = 0;
+    // 按列取一段值（只取目标列，避免宽表把整行宽的数据都搬一遍）
+    // 默认实现经 fetchBlock 抽取目标列；支持列切片的源（pandas 等）应重写走快路径。
+    // 返回长度不超过 rowCount，越界部分自然截断；失败返回空列表。
+    virtual QVariantList fetchColumnRange(std::size_t column, std::size_t startRow, std::size_t rowCount);
     // 是否为惰性加载数据源（数据不全量驻留内存，fetchBlock有IO开销）
     virtual bool isLazyLoaded() const;
     // 表格是否可编辑

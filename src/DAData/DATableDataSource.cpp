@@ -28,6 +28,30 @@ int DATableDataSource::tableColumnType(std::size_t column) const
 }
 
 /**
+ * @brief 按列取一段值（默认实现：取整块后抽取目标列）
+ *
+ * 宽表上这会搬运大量无关列；支持列切片的源应重写本方法走快路径。
+ * @param column 列号（从0开始）
+ * @param startRow 起始绝对行号
+ * @param rowCount 期望行数，越界部分自然截断
+ * @return 目标列的取值；数据源不可用或列越界返回空列表
+ */
+QVariantList DATableDataSource::fetchColumnRange(std::size_t column, std::size_t startRow, std::size_t rowCount)
+{
+    QVariantList res;
+    if (rowCount == 0 || column >= tableColumnCount()) {
+        return res;
+    }
+    const DATableDataBlock block = fetchBlock(startRow, rowCount);
+    const std::size_t totalRows  = block.rowCount();
+    res.reserve(static_cast< int >(totalRows));
+    for (std::size_t i = 0; i < totalRows; ++i) {
+        res.append(block.cell(startRow + i, column));
+    }
+    return res;
+}
+
+/**
  * @brief 是否为惰性加载数据源
  *
  * 惰性数据源的数据不全量驻留内存，fetchBlock存在IO开销，

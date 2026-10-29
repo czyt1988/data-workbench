@@ -172,6 +172,45 @@ DATableDataBlock DADataPyDataFrame::fetchBlock(std::size_t startRow, std::size_t
 }
 
 /**
+ * @brief 按列取一段值（pandas 列切片快路径）
+ *
+ * 只把目标列转换到 Qt 侧，宽表上不再搬运整行宽的数据。
+ * @param column 列号（从0开始）
+ * @param startRow 起始绝对行号
+ * @param rowCount 期望行数，超出实际行数时自动截断
+ * @return 目标列的取值；越界或 python 异常时返回空列表
+ */
+QVariantList DADataPyDataFrame::fetchColumnRange(std::size_t column, std::size_t startRow, std::size_t rowCount)
+{
+    DA_SLOW_LOG_SCOPE_DETAIL("dadata.pydataframe.fetchColumnRange", [column, startRow, rowCount]() {
+        return QStringLiteral("col=%1 start=%2 count=%3")
+            .arg(static_cast< qulonglong >(column))
+            .arg(static_cast< qulonglong >(startRow))
+            .arg(static_cast< qulonglong >(rowCount));
+    });
+    QVariantList res;
+    if (rowCount == 0) {
+        return res;
+    }
+    try {
+        DAPyDataFrame df                          = dataframe();
+        std::pair< std::size_t, std::size_t > sp  = df.shape();
+        if (startRow >= sp.first || column >= sp.second) {
+            return res;
+        }
+        const std::size_t n = std::min(rowCount, sp.first - startRow);
+        DAPySeries s        = df.iloc(column);
+        res                 = s.valuesToVariantList(startRow, n);
+    } catch (const std::exception& e) {
+        qWarning() << QString("DADataPyDataFrame::fetchColumnRange failed at row %1: %2")
+                          .arg(static_cast< qulonglong >(startRow))
+                          .arg(e.what());
+        res.clear();
+    }
+    return res;
+}
+
+/**
  * @brief 源侧列统计（007 T1.7）
  *
  * 走 DAPyScriptsDataFrame::columnStatsRange（da_column_stats 区间路径，numpy
