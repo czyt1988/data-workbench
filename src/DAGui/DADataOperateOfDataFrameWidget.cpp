@@ -6779,6 +6779,9 @@ bool DADataOperateOfDataFrameWidget::showQuickPlot()
 
     if (!mQuickPlotWindow) {
         mQuickPlotWindow = new DA::DATableQuickPlotWindow(this);
+        mQuickPlotWindow->setAppendAvailabilityProvider([this]() {
+            return mQuickPlotAppendAvailable ? mQuickPlotAppendAvailable() : false;
+        });
         connect(mQuickPlotWindow, &DA::DATableQuickPlotWindow::closeRequested,
                 this, &DADataOperateOfDataFrameWidget::closeQuickPlot);
         connect(mQuickPlotWindow, &DA::DATableQuickPlotWindow::currentSelectionRequested, this, [this]() {
@@ -6840,4 +6843,13 @@ bool DADataOperateOfDataFrameWidget::isQuickPlotVisible() const
 void DADataOperateOfDataFrameWidget::setQuickPlotTransferHandler(const QuickPlotTransferHandler& handler)
 {
     mQuickPlotTransfer = handler;
+}
+
+/**
+ * @brief 设置「追加到当前图表」的可用性提供者（APP 依绘图区当前图表注入）
+ */
+void DADataOperateOfDataFrameWidget::setQuickPlotAppendAvailabilityProvider(
+    const QuickPlotAppendAvailabilityProvider& provider)
+{
+    mQuickPlotAppendAvailable = provider;
 }

@@ -152,6 +152,9 @@ public:
     using QuickPlotTransferHandler =
         std::function< bool(const DA::DATableChartRequest&, const DA::DATableChartSpec&, bool /*append*/, QString* /*error*/) >;
     void setQuickPlotTransferHandler(const QuickPlotTransferHandler& handler);
+    // 「追加到当前图表」是否可用（APP 依绘图区当前图表注入；决定浮窗菜单项灰显）
+    using QuickPlotAppendAvailabilityProvider = std::function< bool() >;
+    void setQuickPlotAppendAvailabilityProvider(const QuickPlotAppendAvailabilityProvider& provider);
     // 打开定位对话框（007 T1.7）：Ctrl+G / 滚动条右键 / Ribbon「定位」共用
     void showGotoDialog();
     // 解析定位请求并调定位单入口；返回 false = 未解析成功（已给用户可见提示、未改选区）
@@ -567,7 +570,8 @@ private:
     class DADialogGotoCell* mGotoDialog { nullptr };               ///< 定位对话框（007，懒建复用）
     QPointer< DADialogValidationReport > mValidationReport;  ///< 非模态校验报告窗（005 T1.25，重跑前先关旧的）
     class DATableQuickPlotWindow* mQuickPlotWindow { nullptr };  ///< 快速绘图浮窗（懒建，页内单实例）
-    QuickPlotTransferHandler mQuickPlotTransfer;                 ///< 转入绘图区处理器（APP 注入）
+    QuickPlotTransferHandler mQuickPlotTransfer;                    ///< 转入绘图区处理器（APP 注入）
+    QuickPlotAppendAvailabilityProvider mQuickPlotAppendAvailable;  ///< 追加可用性（APP 注入）
 
     // ===== 查找状态（002 T1.4）=====
     QVector< QPair< int, int > > mFindHits;  ///< 当前命中集（数据源绝对行列，行主序，≤上限）

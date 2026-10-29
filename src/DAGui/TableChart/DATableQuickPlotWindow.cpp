@@ -14,6 +14,7 @@
 #include <QMenu>
 #include <QMouseEvent>
 #include <QPushButton>
+#include <QSizeGrip>
 #include <QToolButton>
 #include <QVBoxLayout>
 #include <QVariant>
@@ -38,6 +39,7 @@ DATableQuickPlotWindow::DATableQuickPlotWindow(QWidget* parent) : QWidget(parent
     setObjectName(QStringLiteral("DATableQuickPlotWindow"));
     setAutoFillBackground(true);
     setFocusPolicy(Qt::StrongFocus);
+    setMinimumSize(380, 300);
     buildUi();
     hide();
 }
@@ -211,8 +213,14 @@ void DATableQuickPlotWindow::buildUi()
     mTransferButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
     QMenu* transferMenu = new QMenu(mTransferButton);
     QAction* newFigureAction = transferMenu->addAction(tr("New figure tab"));  // cn:新建绘图标签页
-    QAction* appendAction    = transferMenu->addAction(tr("Append to current chart"));  // cn:追加到当前图表
+    mAppendAction            = transferMenu->addAction(tr("Append to current chart"));  // cn:追加到当前图表
     mTransferButton->setMenu(transferMenu);
+    // 没有当前图表时「追加到当前图表」置灰（实施方案 §6.1）
+    connect(transferMenu, &QMenu::aboutToShow, this, [ this ]() {
+        if (mAppendAction) {
+            mAppendAction->setEnabled(mAppendAvailability ? mAppendAvailability() : true);
+        }
+    });
     footerLayout->addWidget(updateButton);
     footerLayout->addWidget(mRefreshButton);
     footerLayout->addStretch(1);
@@ -222,7 +230,11 @@ void DATableQuickPlotWindow::buildUi()
     connect(mRefreshButton, &QPushButton::clicked, this, &DATableQuickPlotWindow::onRefreshClicked);
     connect(mTransferButton, &QToolButton::clicked, this, &DATableQuickPlotWindow::onTransferClicked);
     connect(newFigureAction, &QAction::triggered, this, &DATableQuickPlotWindow::onTransferNewFigure);
-    connect(appendAction, &QAction::triggered, this, &DATableQuickPlotWindow::onTransferAppendCurrent);
+    connect(mAppendAction, &QAction::triggered, this, &DATableQuickPlotWindow::onTransferAppendCurrent);
+
+    // 右下角尺寸夹点：浮窗是表格页内的子控件，没有窗口边框，需要显式的拖动把手
+    mSizeGrip = new QSizeGrip(this);
+    mSizeGrip->setToolTip(tr("Drag to resize"));  // cn:拖动以调整大小
 }
 
 /**
@@ -479,6 +491,26 @@ void DATableQuickPlotWindow::notifyDataChanged()
     parts.append(mNoticeLabel->text());
     parts.append(tr("The data has changed, click Refresh to redraw"));  // cn:数据已变化，点击刷新
     setNotice(parts.join(QStringLiteral("  \u00b7  ")));
+}
+
+/**
+ * @brief 设置「追加到当前图表」可用性提供者
+ */
+void DATableQuickPlotWindow::setAppendAvailabilityProvider(const AppendAvailabilityProvider& provider)
+{
+    mAppendAvailability = provider;
+}
+
+/**
+ * @brief 尺寸变化时把尺寸夹点贴到右下角
+ */
+void DATableQuickPlotWindow::resizeEvent(QResizeEvent* event)
+{
+    QWidget::resizeEvent(event);
+    if (mSizeGrip) {
+        mSizeGrip->move(width() - mSizeGrip->width(), height() - mSizeGrip->height());
+        mSizeGrip->raise();
+    }
 }
 
 /**

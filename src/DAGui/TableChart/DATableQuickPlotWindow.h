@@ -4,11 +4,14 @@
 #include "DATableChartTypes.h"
 #include <QWidget>
 #include <QPointer>
+#include <functional>
 
 class QLabel;
 class QComboBox;
 class QToolButton;
 class QPushButton;
+class QSizeGrip;
+class QAction;
 
 namespace DA
 {
@@ -44,6 +47,9 @@ public:
     const DATableChartSpec& spec() const { return mSpec; }
     // 提示文案（无法出图/错误），供宿主在状态栏或消息区展示
     QString lastMessage() const { return mLastMessage; }
+    // 「追加到当前图表」是否可用（由宿主注入：取决于绘图区有没有当前图表）
+    using AppendAvailabilityProvider = std::function< bool() >;
+    void setAppendAvailabilityProvider(const AppendAvailabilityProvider& provider);
 
     // 无法出图原因的中文/英文展示文案
     static QString rejectReasonText(DATableChartRejectReason reason);
@@ -62,6 +68,7 @@ Q_SIGNALS:
 
 protected:
     void keyPressEvent(QKeyEvent* event) override;
+    void resizeEvent(QResizeEvent* event) override;
     bool eventFilter(QObject* watched, QEvent* event) override;
 
 private Q_SLOTS:
@@ -104,6 +111,9 @@ private:
     QLabel* mErrorLabel { nullptr };
     QPushButton* mRefreshButton { nullptr };
     QToolButton* mTransferButton { nullptr };
+    QAction* mAppendAction { nullptr };
+    QSizeGrip* mSizeGrip { nullptr };
+    AppendAvailabilityProvider mAppendAvailability;
 
     // 拖拽
     bool mDragging { false };

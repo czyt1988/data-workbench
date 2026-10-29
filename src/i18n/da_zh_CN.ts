@@ -3364,12 +3364,12 @@
     </message>
     <message>
         <location line="+19"/>
-        <location line="+1105"/>
+        <location line="+1110"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location line="-1093"/>
+        <location line="-1098"/>
         <source>Failed to save project! Path: %1</source>
         <translation>工程保存失败！路径为:%1</translation>
     </message>
@@ -3405,7 +3405,7 @@
         <translation>当前没有可追加的图表</translation>
     </message>
     <message>
-        <location line="+315"/>
+        <location line="+320"/>
         <source>Image saved successfully to %1</source>
         <translation>图片保存成功：%1</translation>
     </message>
@@ -3532,7 +3532,7 @@
         <translation>在创建一个坐标系之前，需要先创建一个绘图窗口</translation>
     </message>
     <message>
-        <location line="-1870"/>
+        <location line="-1875"/>
         <source>Please select the data operation window</source>
         <translation>请选中数据操作窗口</translation>
     </message>
@@ -3572,23 +3572,23 @@
         <translation>加载工程文件失败:%1</translation>
     </message>
     <message>
-        <location line="+357"/>
+        <location line="+362"/>
         <source>Image files</source>
         <translation>图片文件</translation>
     </message>
     <message>
-        <location line="-422"/>
-        <location line="+423"/>
+        <location line="-427"/>
+        <location line="+428"/>
         <source>Any files</source>
         <translation>任意文件</translation>
     </message>
     <message>
-        <location line="-424"/>
+        <location line="-429"/>
         <source>Markdown files</source>
         <translation>Markdown 文件</translation>
     </message>
     <message>
-        <location line="+521"/>
+        <location line="+526"/>
         <source>Received null project interface</source>
         <translation>获取到空工程接口</translation>
     </message>
@@ -3599,12 +3599,12 @@
         <translation>没有选中可复制的单元格</translation>
     </message>
     <message>
-        <location line="-1515"/>
+        <location line="-1520"/>
         <source>No active table</source>
         <translation>无活动表格</translation>
     </message>
     <message>
-        <location line="+1903"/>
+        <location line="+1908"/>
         <source>Cannot rename a series, please select a dataset</source>
         <translation>无法重命名series，请选中数据集</translation>
     </message>
@@ -3659,7 +3659,7 @@
         <translation>请先选择要绘图的列</translation>
     </message>
     <message>
-        <location line="+591"/>
+        <location line="+593"/>
         <source>Export</source>
         <translation>导出</translation>
     </message>
@@ -3699,12 +3699,12 @@
         <translation>选中的数据源为空</translation>
     </message>
     <message>
-        <location line="-2724"/>
+        <location line="-2726"/>
         <source>Before running the workflow, you need to save the project</source>
         <translation>在运行工作流之前，需要先保存工程</translation>
     </message>
     <message>
-        <location line="+2013"/>
+        <location line="+2015"/>
         <source>Please select a column first</source>
         <translation>请先选择列</translation>
     </message>
@@ -8103,7 +8103,7 @@
         <translation>图-%1</translation>
     </message>
     <message>
-        <location line="+451"/>
+        <location line="+452"/>
         <source>Question</source>
         <translation>疑问</translation>
     </message>
@@ -10022,7 +10022,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>本表没有批注</translation>
     </message>
     <message>
-        <location line="+101"/>
+        <location line="+104"/>
         <source>The chart area is not available</source>
         <translation>绘图区不可用</translation>
     </message>
@@ -10037,7 +10037,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>已转入绘图区</translation>
     </message>
     <message>
-        <location line="-4497"/>
+        <location line="-4500"/>
         <source>Some column view settings were dropped because the table columns have changed.</source>
         <translation>表格的列已变化，部分列视图设置已被丢弃</translation>
     </message>
@@ -14033,7 +14033,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DA::DATableQuickPlotWindow</name>
     <message>
-        <location filename="../DAGui/TableChart/DATableQuickPlotWindow.cpp" line="+58"/>
+        <location filename="../DAGui/TableChart/DATableQuickPlotWindow.cpp" line="+60"/>
         <source>Select one or more columns first</source>
         <translation>请先选择一列或多列</translation>
     </message>
@@ -14168,7 +14168,12 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>追加到当前图表</translation>
     </message>
     <message>
-        <location line="+77"/>
+        <location line="+21"/>
+        <source>Drag to resize</source>
+        <translation>拖动以调整大小</translation>
+    </message>
+    <message>
+        <location line="+66"/>
         <source>Row number</source>
         <translation>行号</translation>
     </message>
@@ -14702,7 +14707,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-3859"/>
+        <location filename="../APP/DAAppController.cpp" line="-3866"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>

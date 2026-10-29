@@ -1635,6 +1635,11 @@ void DAAppController::onDataOperatePageCreated(DADataOperatePageWidget* page)
             }
             return DA::DAChartQuickPlot::transferToFigure(req, spec, cow, append, nullptr, error) != nullptr;
         });
+        // 没有当前图表时浮窗「追加到当前图表」置灰（实施方案 §6.1）
+        w->setQuickPlotAppendAvailabilityProvider([ this ]() -> bool {
+            DAChartOperateWidget* cow = mDock ? mDock->getChartOperateWidget() : nullptr;
+            return cow && cow->getCurrentChart() != nullptr;
+        });
         // 选区变化时刷新「快速绘图」动作的可用状态（无选区置灰）
         connect(w, &DADataOperateOfDataFrameWidget::tableSelectionChanged, this, [ this ]() {
             updateQuickPlotActionState();

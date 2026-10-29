@@ -3348,12 +3348,12 @@
     </message>
     <message>
         <location line="+19"/>
-        <location line="+1105"/>
+        <location line="+1110"/>
         <source>Warning</source>
         <translation>Warning</translation>
     </message>
     <message>
-        <location line="-1093"/>
+        <location line="-1098"/>
         <source>Failed to save project! Path: %1</source>
         <translation>Failed to save project! Path: %1</translation>
     </message>
@@ -3389,7 +3389,7 @@
         <translation>There is no current chart to append to</translation>
     </message>
     <message>
-        <location line="+315"/>
+        <location line="+320"/>
         <source>Image saved successfully to %1</source>
         <translation>Image saved successfully to %1</translation>
     </message>
@@ -3516,7 +3516,7 @@
         <translation>Before creating a new coordinate, you need to create a figure</translation>
     </message>
     <message>
-        <location line="-1870"/>
+        <location line="-1875"/>
         <source>Please select the data operation window</source>
         <translation>Please select the data operation window</translation>
     </message>
@@ -3556,23 +3556,23 @@
         <translation>Failed to load project file: %1</translation>
     </message>
     <message>
-        <location line="+357"/>
+        <location line="+362"/>
         <source>Image files</source>
         <translation>Image files</translation>
     </message>
     <message>
-        <location line="-422"/>
-        <location line="+423"/>
+        <location line="-427"/>
+        <location line="+428"/>
         <source>Any files</source>
         <translation>Any files</translation>
     </message>
     <message>
-        <location line="-424"/>
+        <location line="-429"/>
         <source>Markdown files</source>
         <translation>Markdown files</translation>
     </message>
     <message>
-        <location line="+521"/>
+        <location line="+526"/>
         <source>Received null project interface</source>
         <translation>Received null project interface</translation>
     </message>
@@ -3583,12 +3583,12 @@
         <translation>No cells selected to copy</translation>
     </message>
     <message>
-        <location line="-1515"/>
+        <location line="-1520"/>
         <source>No active table</source>
         <translation>No active table</translation>
     </message>
     <message>
-        <location line="+1903"/>
+        <location line="+1908"/>
         <source>Cannot rename a series, please select a dataset</source>
         <translation>Cannot rename a series, please select a dataset</translation>
     </message>
@@ -3643,7 +3643,7 @@
         <translation>Select the columns to plot first</translation>
     </message>
     <message>
-        <location line="+591"/>
+        <location line="+593"/>
         <source>Export</source>
         <translation>Export</translation>
     </message>
@@ -3683,12 +3683,12 @@
         <translation>The selected data source is empty</translation>
     </message>
     <message>
-        <location line="-2724"/>
+        <location line="-2726"/>
         <source>Before running the workflow, you need to save the project</source>
         <translation>Before running the workflow, you need to save the project</translation>
     </message>
     <message>
-        <location line="+2013"/>
+        <location line="+2015"/>
         <source>Please select a column first</source>
         <translation>Please select a column first</translation>
     </message>
@@ -8087,7 +8087,7 @@
         <translation>figure-%1</translation>
     </message>
     <message>
-        <location line="+451"/>
+        <location line="+452"/>
         <source>Question</source>
         <translation>Question</translation>
     </message>
@@ -10006,7 +10006,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation>This table has no notes</translation>
     </message>
     <message>
-        <location line="+101"/>
+        <location line="+104"/>
         <source>The chart area is not available</source>
         <translation>The chart area is not available</translation>
     </message>
@@ -10021,7 +10021,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation>The chart has been transferred to the chart area</translation>
     </message>
     <message>
-        <location line="-4497"/>
+        <location line="-4500"/>
         <source>Some column view settings were dropped because the table columns have changed.</source>
         <translation>Some column view settings were dropped because the table columns have changed.</translation>
     </message>
@@ -14017,7 +14017,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DA::DATableQuickPlotWindow</name>
     <message>
-        <location filename="../DAGui/TableChart/DATableQuickPlotWindow.cpp" line="+58"/>
+        <location filename="../DAGui/TableChart/DATableQuickPlotWindow.cpp" line="+60"/>
         <source>Select one or more columns first</source>
         <translation>Select one or more columns first</translation>
     </message>
@@ -14152,7 +14152,12 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation>Append to current chart</translation>
     </message>
     <message>
-        <location line="+77"/>
+        <location line="+21"/>
+        <source>Drag to resize</source>
+        <translation>Drag to resize</translation>
+    </message>
+    <message>
+        <location line="+66"/>
         <source>Row number</source>
         <translation>Row number</translation>
     </message>
@@ -14686,7 +14691,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-3859"/>
+        <location filename="../APP/DAAppController.cpp" line="-3866"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>
