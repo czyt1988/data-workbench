@@ -357,6 +357,62 @@ pybind11::dict DAPyScriptsStatistics::aggregateByCategory(const DAPyDataFrame& d
     return pybind11::dict();
 }
 
+/** @brief 按列序号聚合分类数据（重名列消歧） @param df 数据表 @param xIndex x 列序号 @param yIndex y 列序号（<0 为 countplot） @param args 计算参数 @param err 错误信息输出 @return 聚合结果字典 */
+pybind11::dict DAPyScriptsStatistics::aggregateByCategoryByIndex(const DAPyDataFrame& df,
+                                                                 int xIndex,
+                                                                 int yIndex,
+                                                                 const QVariantMap& args,
+                                                                 QString* err)
+{
+    try {
+        pybind11::object fn = attr("aggregate_by_category");
+        if (fn.is_none()) {
+            qDebug() << "DAStatistics have no attr aggregate_by_category";
+            return pybind11::dict();
+        }
+        pybind11::object yIndexObj = (yIndex < 0) ? pybind11::none() : pybind11::cast(yIndex);
+        pybind11::object v         = fn(df.object(), pybind11::cast(xIndex), yIndexObj, pybind11::cast(args));
+        if (v.is_none()) {
+            return pybind11::dict();
+        }
+        return v.cast< pybind11::dict >();
+    } catch (const std::exception& e) {
+        if (err) {
+            *err = e.what();
+        }
+        qDebug() << e.what();
+    }
+    return pybind11::dict();
+}
+
+/** @brief 用采样后的列表聚合分类数据（惰性源/超阈值大表路径） @param columns 内部列名到数值列表的映射 @param xCol x 列的内部名 @param yCol y 列的内部名（空为 countplot） @param args 计算参数 @param err 错误信息输出 @return 聚合结果字典 */
+pybind11::dict DAPyScriptsStatistics::aggregateByCategoryValueLists(const QVariantMap& columns,
+                                                                    const QString& xCol,
+                                                                    const QString& yCol,
+                                                                    const QVariantMap& args,
+                                                                    QString* err)
+{
+    try {
+        pybind11::object fn = attr("aggregate_by_category_from_lists");
+        if (fn.is_none()) {
+            qDebug() << "DAStatistics have no attr aggregate_by_category_from_lists";
+            return pybind11::dict();
+        }
+        pybind11::object yColObj = yCol.isEmpty() ? pybind11::none() : pybind11::cast(yCol);
+        pybind11::object v = fn(pybind11::cast(columns), pybind11::cast(xCol), yColObj, pybind11::cast(args));
+        if (v.is_none()) {
+            return pybind11::dict();
+        }
+        return v.cast< pybind11::dict >();
+    } catch (const std::exception& e) {
+        if (err) {
+            *err = e.what();
+        }
+        qDebug() << e.what();
+    }
+    return pybind11::dict();
+}
+
 /** @brief 计算置信区间 @param df 数据表 @param args 计算参数 @param err 错误信息输出 @return 置信区间结果字典 */
 pybind11::dict DAPyScriptsStatistics::computeCI(const DAPyDataFrame& df,
                                                 const QVariantMap& args,
@@ -398,6 +454,31 @@ pybind11::dict DAPyScriptsStatistics::computeBoxplotStats(const DAPyDataFrame& d
             return pybind11::dict();
         }
         pybind11::object v = fn(df.object(), pybind11::cast(args));
+        if (v.is_none()) {
+            return pybind11::dict();
+        }
+        return v.cast< pybind11::dict >();
+    } catch (const std::exception& e) {
+        if (err) {
+            *err = e.what();
+        }
+        qDebug() << e.what();
+    }
+    return pybind11::dict();
+}
+
+/** @brief 用采样后的列表计算箱线图统计量 @param columns 内部列名到数值列表的映射 @param args 计算参数 @param err 错误信息输出 @return 箱线图统计信息字典 */
+pybind11::dict DAPyScriptsStatistics::computeBoxplotStatsValueLists(const QVariantMap& columns,
+                                                                    const QVariantMap& args,
+                                                                    QString* err)
+{
+    try {
+        pybind11::object fn = attr("compute_boxplot_stats_from_lists");
+        if (fn.is_none()) {
+            qDebug() << "DAStatistics have no attr compute_boxplot_stats_from_lists";
+            return pybind11::dict();
+        }
+        pybind11::object v = fn(pybind11::cast(columns), pybind11::cast(args));
         if (v.is_none()) {
             return pybind11::dict();
         }

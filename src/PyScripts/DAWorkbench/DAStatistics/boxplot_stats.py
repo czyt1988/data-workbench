@@ -9,6 +9,8 @@ import numpy as np
 from DAWorkbench.DAStatistics._utils import (
     extract_series,
     drop_nan,
+    select_column,
+    to_label,
 )
 
 
@@ -60,14 +62,15 @@ def compute_boxplot_stats(df, params=None, **kwargs):
     columns = p.get("columns")
     if not columns:
         col = p.get("column")
-        columns = [col] if col else []
+        columns = [col] if col is not None and col != "" else []
     if isinstance(columns, str):
         columns = [columns]
 
     whis = p.get("whis", 1.5)
     hue = p.get("hue")
 
-    if hue:
+    # 注意：hue 可能是列序号 0，不能用真值判断（0 是合法列序号）
+    if hue is not None and hue != "":
         return _compute_grouped(df, columns, hue, whis, p)
     else:
         return _compute_simple(df, columns, whis, p)
@@ -119,8 +122,14 @@ def _compute_box_stats(data, whis=1.5):
 
 
 def _compute_simple(df, columns, whis, params):
-    """Compute one box per column."""
+    """Compute one box per column.
+
+    ``params["labels"]`` (optional, same length as ``columns``) overrides the
+    x-axis labels, which lets callers pass positional column indices for
+    duplicated names while still showing human-readable labels.
+    """
     samples = []
+    labels = params.get("labels")
 
     for i, col in enumerate(columns):
         data = drop_nan(extract_series(df, col))
@@ -128,8 +137,11 @@ def _compute_simple(df, columns, whis, params):
             continue
         stats = _compute_box_stats(data, whis)
         stats["position"] = float(i)
-        stats["column"] = col          # column name — x-axis category label
-        stats["hue"] = None            # no hue grouping in simple mode
+        if labels is not None and i < len(labels):
+            stats["column"] = labels[i]   # caller supplied label — x-axis category
+        else:
+            stats["column"] = to_label(col)  # column name / index — x-axis category label
+        stats["hue"] = None               # no hue grouping in simple mode
         samples.append(stats)
 
     if not samples:
@@ -143,14 +155,14 @@ def _compute_simple(df, columns, whis, params):
 
 def _compute_grouped(df, columns, hue, whis, params):
     """Compute boxes grouped by hue category within each column."""
-    hue_categories = list(df[hue].dropna().unique())
+    hue_categories = list(select_column(df, hue).dropna().unique())
 
     samples = []
     pos = 0
 
     for col_idx, col_name in enumerate(columns):
         for g_idx, cat in enumerate(hue_categories):
-            mask = df[hue] == cat
+            mask = select_column(df, hue) == cat
             sub_df = df[mask]
             data = drop_nan(extract_series(sub_df, col_name))
             if data.size == 0:
@@ -159,7 +171,7 @@ def _compute_grouped(df, columns, hue, whis, params):
 
             stats = _compute_box_stats(data, whis)
             stats["position"] = float(pos)
-            stats["column"] = col_name   # data column name — x-axis category label
+            stats["column"] = to_label(col_name)  # data column name / index — x-axis category label
             stats["hue"] = str(cat)      # hue category string — color group + legend
             samples.append(stats)
             pos += 1
@@ -172,3 +184,24 @@ def _compute_grouped(df, columns, hue, whis, params):
         "samples": samples,
         "hue_categories": hue_categories,
     }
+
+
+def compute_boxplot_stats_from_lists(columns, params=None, **kwargs):
+    """Compute box statistics from plain lists instead of a DataFrame.
+
+    Used by the quick-plot path when the source is lazy or too large to
+    aggregate exactly: the C++ layer samples the columns and the same
+    five-number computation runs on a small in-memory frame.
+
+    Parameters
+    ----------
+    columns : dict
+        ``{internal column name: list of float}``.
+    params : dict, optional
+        Same parameters as :func:`compute_boxplot_stats`; ``columns`` /
+        ``labels`` must refer to the keys of ``columns``.
+    """
+    import pandas as pd
+
+    frame = pd.DataFrame({key: pd.Series(values) for key, values in columns.items()})
+    return compute_boxplot_stats(frame, params, **kwargs)

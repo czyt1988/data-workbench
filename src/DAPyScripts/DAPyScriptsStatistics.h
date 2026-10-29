@@ -3,6 +3,7 @@
 #include "DAPyScriptsGlobal.h"
 #include "DAPyModule.h"
 #include <QVariant>
+#include <QVariantMap>
 #include <QString>
 #include "DAPyObjectWrapper.h"
 #include "pandas/DAPyDataFrame.h"
@@ -90,6 +91,22 @@ public:
                                        const QString& yCol,
                                        const QVariantMap& args,
                                        QString* err = nullptr);
+    // categorical.py — aggregate_by_category，按列序号取列（重名列消歧；yIndex<0 为 countplot）
+    pybind11::dict aggregateByCategoryByIndex(const DAPyDataFrame& df,
+                                              int xIndex,
+                                              int yIndex,
+                                              const QVariantMap& args,
+                                              QString* err = nullptr);
+    // categorical.py — aggregate_by_category_from_lists（惰性源/超阈值大表的采样路径）
+    pybind11::dict aggregateByCategoryValueLists(const QVariantMap& columns,
+                                                 const QString& xCol,
+                                                 const QString& yCol,
+                                                 const QVariantMap& args,
+                                                 QString* err = nullptr);
+    // boxplot_stats.py — compute_boxplot_stats_from_lists（采样路径）
+    pybind11::dict computeBoxplotStatsValueLists(const QVariantMap& columns,
+                                                 const QVariantMap& args,
+                                                 QString* err = nullptr);
     // categorical.py — compute_ci
     pybind11::dict computeCI(const DAPyDataFrame& df,
                              const QVariantMap& args,
