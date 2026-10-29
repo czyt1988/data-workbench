@@ -115,6 +115,15 @@ endMacro()
 - **新增图型**：在 `DATableChartType` 加枚举、`DATableChartPlanner::plan()` 的矩阵里登记、在
   `DAChartQuickPlot` 里加一个 `build*()` 分支；图元一律复用既有组件或 `DAChartPlotRenderer`，
   不要出现第二处 `new QwtPlot*`。
+
+> **📌 关于 `DATableChartType`**
+>
+> 它不是新的图表类型系统：`DA::DAChartTypes` 仍是图型身份的唯一枚举（决定用哪个添加页/渲染管线）。
+> `DATableChartType` 只描述「浮窗里用户能选的那几个预览图型」，是选层而非身份层；
+> 选中的每一项最终都落到既有管线：折线/散点/多序列走 `DAChartAddCurveWidget`，
+> 直方图走 `DAChartAddHistogramWidget`，分类柱状与箱线图走统计管线的 `DAChartPlotRenderer`。
+> 两者不能 1:1 映射（浮窗的「柱状」是统计 barplot 管线，而 `DAChartTypes::Bar` 是数值 X 的柱状），
+> 所以没有也不应该有转换函数。
 - **新增聚合口径**：`DATableChartAggregation` + `DATableChartPlanner::aggregationKey()` +
   Python `ESTIMATOR_MAP`。
 - **多序列分类柱状 / 2 分类交叉柱状**：统计管线已有 hue 能力，缺的是交互与基数守卫，留待后续。
