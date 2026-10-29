@@ -73,6 +73,7 @@ nav:
           - 表格视图: zh/use-guide/data/table.md
           - 表格编辑功能总览: zh/use-guide/data/table-editing.md
           - 表格样式: zh/use-guide/data/style.md
+          - 表内快速绘图: zh/use-guide/data/quick-plot.md
           - 导出数据: zh/use-guide/data/export.md
       - 第三部分 · 工作流:
           - 工作流: zh/use-guide/workflow/index.md
@@ -141,6 +142,7 @@ nav:
           - 数据模块: zh/dev-guide/architecture/data-module.md
           - 表格数据源抽象层: zh/dev-guide/architecture/table-data-source.md
           - 表格元数据架构: zh/dev-guide/architecture/table-metadata.md
+          - 表内快速绘图: zh/dev-guide/architecture/table-quick-plot.md
           - 滑动窗表格导航协议: zh/dev-guide/architecture/virtual-table-navigation.md
           - 工程文件结构: zh/dev-guide/architecture/project-file-structure.md
           - 工程序列化架构: zh/dev-guide/architecture/project-serialization-architecture.md
