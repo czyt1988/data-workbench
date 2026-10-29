@@ -643,6 +643,8 @@ const DAData& DADataOperateOfDataFrameWidget::data() const
 
 void DADataOperateOfDataFrameWidget::setDAData(const DA::DAData& d)
 {
+    // 切换数据集后浮窗绑定的列身份与数据快照都失效，直接关闭（实施方案 §5.3）
+    closeQuickPlot();
     mData = d;
     // 数据替换后旧排序规格（列位置+方向）失去意义，清除（排序规格不持久化，R13）
     mSortSpec.clear();
@@ -1030,6 +1032,8 @@ int DADataOperateOfDataFrameWidget::removeColumns(const QList< int >& columns)
         return 0;
     }
     push(cmd.release());
+    // 删列后浮窗绑定的列会被重排/消失，直接关闭（实施方案 §5.3）
+    closeQuickPlot();
     // 删列后提示失效的计算列（exec 内的 directional 回调已填充；不静默，R9）
     if (!invalidatedTargets->isEmpty()) {
         daWarning << tr("Computed column(s) %1 became invalid because their dependency column(s) were removed")

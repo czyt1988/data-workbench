@@ -8,12 +8,20 @@
 #endif
 #include <QDir>
 #include <QFileInfo>
+#include <QAbstractItemModel>
+#include <QItemSelectionModel>
+#include <QUndoStack>
 #include <QMetaType>
 #include <QVariant>
 #include <memory>
 
 #include "DAAbstractData.h"
 #include "DAChartWidget.h"
+#include "DAChartOperateWidget.h"
+#include "DADataOperateOfDataFrameWidget.h"
+#include "DAFigureWidget.h"
+#include "DATableMetadataRegistry.h"
+#include "DADataTableView.h"
 #include "DAPyInterpreter.h"
 #include "DAPyScripts.h"
 #include "DAPybind11InQt.h"
@@ -22,6 +30,7 @@
 #include "DATableDataBlock.h"
 #include "DATableDataSource.h"
 #include "TableChart/DAChartQuickPlot.h"
+#include "TableChart/DATableQuickPlotWindow.h"
 #include "TableChart/DAChartSeriesSampler.h"
 #include "TableChart/DATableChartPlanner.h"
 #include "TableChart/DATableChartTypes.h"
@@ -210,6 +219,20 @@ bool containsType(const QList< DA::DATableChartType >& types, DA::DATableChartTy
     return types.contains(type);
 }
 
+// 构造一个 pandas 背书的 DAData（走精确聚合路径）
+DA::DAData makePandasData()
+{
+    pybind11::exec(R"(
+import pandas as pd
+_da_quick_plot_df = pd.DataFrame({
+    'cat': ['a', 'b', 'a', 'c', 'b', 'a'],
+    'val': [1.0, 2.0, 3.0, 4.0, 5.0, 6.0],
+    'val2': [2.0, 4.0, 6.0, 8.0, 10.0, 12.0],
+})
+)");
+    pybind11::object obj = pybind11::globals()["_da_quick_plot_df"];
+    return DA::DAData(obj);
+}
 }  // namespace
 
 /**
@@ -242,6 +265,12 @@ private Q_SLOTS:
     void testRenderBarSampled();
     void testRenderBarExactWithTextCategory();
     void testRenderBoxplotExact();
+    // 页面级端到端：真实选区 → 浮窗出图（Python 聚合）→ 转入绘图区 → 撤销/重做
+    void testPageSelectPlotAndTransfer();
+    // 方案 §5.3：删除当前列时自动关闭浮窗
+    void testPageClosesOnColumnRemoval();
+    // 方案 §5.3：切换数据集时自动关闭浮窗
+    void testPageClosesOnDataSetChange();
 
     void initTestCase();
 };
@@ -530,6 +559,130 @@ void DATableQuickPlotTest::testSpecEquality()
 }
 
 
+
+namespace
+{
+// 选中 [firstCol, lastCol] 的整列范围（模拟用户选列）
+bool selectColumnRange(DA::DADataOperateOfDataFrameWidget& page, int firstCol, int lastCol)
+{
+    DA::DADataTableView* view = page.getDataTableView();
+    if (!view || !view->model()) {
+        return false;
+    }
+    QAbstractItemModel* model = view->model();
+    if (model->rowCount() <= 0 || lastCol >= model->columnCount()) {
+        return false;
+    }
+    const QItemSelection sel(model->index(0, firstCol), model->index(model->rowCount() - 1, lastCol));
+    page.tableSelectionModel()->select(sel, QItemSelectionModel::ClearAndSelect);
+    return page.isDataframeTableHaveSelection();
+}
+}  // namespace
+
+void DATableQuickPlotTest::testPageSelectPlotAndTransfer()
+{
+    if (!DA::DAPyScripts::isInitScripts()) {
+        QSKIP("DAPyScripts not initialized");
+    }
+    DA::DATableMetadataRegistry registry(nullptr);
+    const DA::DAData data = makePandasData();
+    DA::DADataOperateOfDataFrameWidget page(data, &registry);
+    page.resize(900, 520);
+    page.show();
+    QTest::qWait(50);
+
+    // cat + val 两列（分类 + 数值）→ 分类柱状图，走 Python 精确聚合
+    QVERIFY(selectColumnRange(page, 0, 1));
+    const DA::DATableChartRequest request = page.buildQuickPlotRequest();
+    QCOMPARE(request.columns.size(), 2);
+    QCOMPARE(request.columns.at(0).role, DA::DATableColumnRole::Categorical);
+    QCOMPARE(request.columns.at(1).role, DA::DATableColumnRole::Numeric);
+
+    QVERIFY2(page.showQuickPlot(), qPrintable(page.isQuickPlotVisible() ? QString() : QStringLiteral("window not shown")));
+    QVERIFY(page.isQuickPlotVisible());
+    auto* window = page.findChild< DA::DATableQuickPlotWindow* >();
+    QVERIFY(window);
+    QCOMPARE(window->spec().type, DA::DATableChartType::Bar);
+    auto* chart = window->findChild< DA::DAChartWidget* >();
+    QVERIFY(chart);
+    QVERIFY(!chart->itemList().isEmpty());
+
+    // 转入绘图区：走页面注入的处理器（与 APP 注入的是同一条编排路径）
+    DA::DAChartOperateWidget chartOperate;
+    QString transferError;
+    page.setQuickPlotTransferHandler([ &chartOperate, &transferError ](const DA::DATableChartRequest& req,
+                                                                      const DA::DATableChartSpec& spec,
+                                                                      bool append,
+                                                                      QString* error) -> bool {
+        const bool ok = DA::DAChartQuickPlot::transferToFigure(req, spec, &chartOperate, append, nullptr, error) != nullptr;
+        if (!ok && error) {
+            transferError = *error;
+        }
+        return ok;
+    });
+    window->transferRequested(window->request(), window->spec(), false);
+    QVERIFY2(transferError.isEmpty(), qPrintable(transferError));
+    QCOMPARE(chartOperate.getFigureCount(), 1);
+    DA::DAFigureWidget* figure = chartOperate.getCurrentFigure();
+    QVERIFY(figure);
+    DA::DAChartWidget* formalChart = chartOperate.getCurrentChart();
+    QVERIFY(formalChart);
+    QVERIFY(!formalChart->itemList().isEmpty());
+    // 转入成功后浮窗关闭
+    QVERIFY(!window->isVisible());
+
+    // 一次撤销 = 撤销整个转入（figure 摘 dock 但保活）
+    QUndoStack* stack = figure->getUndoStack();
+    QVERIFY(stack);
+    stack->undo();
+    QCOMPARE(chartOperate.getFigureList().size(), 0);
+    stack->redo();
+    QCOMPARE(chartOperate.getFigureCount(), 1);
+    QVERIFY(chartOperate.getCurrentChart());
+    QVERIFY(!chartOperate.getCurrentChart()->itemList().isEmpty());
+}
+
+void DATableQuickPlotTest::testPageClosesOnColumnRemoval()
+{
+    if (!DA::DAPyScripts::isInitScripts()) {
+        QSKIP("DAPyScripts not initialized");
+    }
+    DA::DATableMetadataRegistry registry(nullptr);
+    const DA::DAData data = makePandasData();
+    DA::DADataOperateOfDataFrameWidget page(data, &registry);
+    page.resize(900, 520);
+    page.show();
+    QTest::qWait(50);
+
+    QVERIFY(selectColumnRange(page, 0, 1));
+    QVERIFY(page.showQuickPlot());
+    QVERIFY(page.isQuickPlotVisible());
+
+    QVERIFY(page.removeColumnAt(0) > 0);
+    QVERIFY(!page.isQuickPlotVisible());  // 删除当前列 → 浮窗自动关闭
+}
+
+void DATableQuickPlotTest::testPageClosesOnDataSetChange()
+{
+    if (!DA::DAPyScripts::isInitScripts()) {
+        QSKIP("DAPyScripts not initialized");
+    }
+    DA::DATableMetadataRegistry registry(nullptr);
+    const DA::DAData data = makePandasData();
+    DA::DADataOperateOfDataFrameWidget page(data, &registry);
+    page.resize(900, 520);
+    page.show();
+    QTest::qWait(50);
+
+    QVERIFY(selectColumnRange(page, 0, 1));
+    QVERIFY(page.showQuickPlot());
+    QVERIFY(page.isQuickPlotVisible());
+
+    // 切换到另一个数据集 → 浮窗自动关闭
+    page.setDAData(makePandasData());
+    QVERIFY(!page.isQuickPlotVisible());
+}
+
 void DATableQuickPlotTest::initTestCase()
 {
     // 与 APP main.cpp / DATableDataTest 一致的 Python 初始化：
@@ -574,24 +727,6 @@ for _m in ("da_app", "da_interface", "da_data"):
         qWarning() << "DAPyScripts::initScripts failed";
     }
 }
-
-namespace
-{
-// 构造一个 pandas 背书的 DAData（走精确聚合路径）
-DA::DAData makePandasData()
-{
-    pybind11::exec(R"(
-import pandas as pd
-_da_quick_plot_df = pd.DataFrame({
-    'cat': ['a', 'b', 'a', 'c', 'b', 'a'],
-    'val': [1.0, 2.0, 3.0, 4.0, 5.0, 6.0],
-    'val2': [2.0, 4.0, 6.0, 8.0, 10.0, 12.0],
-})
-)");
-    pybind11::object obj = pybind11::globals()["_da_quick_plot_df"];
-    return DA::DAData(obj);
-}
-}  // namespace
 
 void DATableQuickPlotTest::testRenderLineAndHistogram()
 {
