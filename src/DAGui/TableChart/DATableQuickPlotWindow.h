@@ -86,6 +86,7 @@ private:
     void rebuildTypeButtons();
     void refreshOptionWidgets();
     void renderNow();
+    void scheduleRender();
     void setNotice(const QString& notice);
     void setError(const QString& error);
     void placeNearAnchor(const QRect& anchorInParent);
@@ -98,6 +99,7 @@ private:
     QString mPendingNotice;
     bool mDataChanged { false };
     bool mIgnoreTypeSignals { false };
+    bool mRenderPending { false };
 
     QWidget* mTitleBar { nullptr };
     QLabel* mTitleLabel { nullptr };

@@ -13,6 +13,11 @@
 #include <QUndoStack>
 #include <QMetaType>
 #include <QVariant>
+#include <QAction>
+#include <QElapsedTimer>
+#include <QMenu>
+#include <QMouseEvent>
+#include <QPointer>
 #include <memory>
 
 #include "DAAbstractData.h"
@@ -275,6 +280,9 @@ private Q_SLOTS:
     void testPageClosesOnColumnRemoval();
     // 方案 §5.3：切换数据集时自动关闭浮窗
     void testPageClosesOnDataSetChange();
+    // 回归：从「popup + aboutToHide→deleteLater」的列头菜单触发快速绘图时，
+    // 取数绘制必须延后到下一轮事件循环（不能在调用方的事件处理栈上同步跑）
+    void testShowQuickPlotDefersRenderFromMenuAction();
 
     void initTestCase();
 };
@@ -636,6 +644,25 @@ bool selectColumnRange(DA::DADataOperateOfDataFrameWidget& page, int firstCol, i
     page.tableSelectionModel()->select(sel, QItemSelectionModel::ClearAndSelect);
     return page.isDataframeTableHaveSelection();
 }
+
+// 浮窗改为「先出界面、下一轮事件循环再取数绘制」后，出图需要跑一下事件循环
+bool waitForQuickPlotChart(DA::DATableQuickPlotWindow* window, int timeoutMs = 5000)
+{
+    if (!window) {
+        return false;
+    }
+    QElapsedTimer timer;
+    timer.start();
+    while (timer.elapsed() < timeoutMs) {
+        if (DA::DAChartWidget* chart = window->findChild< DA::DAChartWidget* >()) {
+            if (!chart->itemList().isEmpty()) {
+                return true;
+            }
+        }
+        QTest::qWait(20);
+    }
+    return false;
+}
 }  // namespace
 
 void DATableQuickPlotTest::testPageSelectPlotAndTransfer()
@@ -662,6 +689,7 @@ void DATableQuickPlotTest::testPageSelectPlotAndTransfer()
     auto* window = page.findChild< DA::DATableQuickPlotWindow* >();
     QVERIFY(window);
     QCOMPARE(window->spec().type, DA::DATableChartType::Bar);
+    QVERIFY2(waitForQuickPlotChart(window), "quick plot chart was not rendered");
     auto* chart = window->findChild< DA::DAChartWidget* >();
     QVERIFY(chart);
     QVERIFY(!chart->itemList().isEmpty());
@@ -742,6 +770,75 @@ void DATableQuickPlotTest::testPageClosesOnDataSetChange()
     // 切换到另一个数据集 → 浮窗自动关闭
     page.setDAData(makePandasData());
     QVERIFY(!page.isQuickPlotVisible());
+}
+
+void DATableQuickPlotTest::testShowQuickPlotDefersRenderFromMenuAction()
+{
+    if (!DA::DAPyScripts::isInitScripts()) {
+        QSKIP("DAPyScripts not initialized");
+    }
+    DA::DATableMetadataRegistry registry(nullptr);
+    const DA::DAData data = makePandasData();
+    DA::DADataOperateOfDataFrameWidget page(data, &registry);
+    page.resize(900, 520);
+    page.show();
+    QTest::qWait(50);
+    QVERIFY(selectColumnRange(page, 0, 1));
+
+    // 复刻 DADataHeaderView 的列头右键菜单：popup + aboutToHide→deleteLater，
+    // 动作槽里调用页面的 showQuickPlot()。修复前 showQuickPlot 会在取数前执行
+    // 「同步取数 + QCoreApplication::processEvents()」，既在调用方（QMenu）自己的
+    // 事件处理栈上跑了重活，也会把已经排队删除的菜单当场销毁（真实工程里返回
+    // QMenu::mouseReleaseEvent 时即 use-after-free 崩溃）。
+    QMenu* menu = new QMenu(&page);
+    QAction* actQuickPlot = menu->addAction(QStringLiteral("Quick Plot"));
+    bool triggered        = false;
+    connect(actQuickPlot, &QAction::triggered, &page, [ &page, &triggered ]() {
+        triggered = true;
+        page.showQuickPlot();
+    });
+    connect(menu, &QMenu::aboutToHide, menu, &QMenu::deleteLater);
+    QPointer< QMenu > menuGuard(menu);
+    menu->popup(page.mapToGlobal(QPoint(40, 40)));
+    QTest::qWait(50);
+    QVERIFY(!menu->actions().isEmpty());
+
+    // 用 sendEvent 派发鼠标事件，与事件循环派发走同一条 notifyInternal2 路径
+    const QPoint clickPos = menu->actionGeometry(actQuickPlot).center();
+    QMouseEvent press(QEvent::MouseButtonPress,
+                      clickPos,
+                      menu->mapToGlobal(clickPos),
+                      Qt::LeftButton,
+                      Qt::LeftButton,
+                      Qt::NoModifier);
+    QApplication::sendEvent(menu, &press);
+    QMouseEvent release(QEvent::MouseButtonRelease,
+                        clickPos,
+                        menu->mapToGlobal(clickPos),
+                        Qt::LeftButton,
+                        Qt::LeftButton,
+                        Qt::NoModifier);
+    QApplication::sendEvent(menu, &release);
+
+    // 动作处理期间：浮窗已出来（带忙碌提示），但取数绘制还没开始——重活不能跑在
+    // 调用方的事件处理栈上；同时调用方的菜单必须仍然存活
+    QVERIFY(triggered);
+    QVERIFY2(!menuGuard.isNull(), "caller menu was destroyed inside the action handler");
+    QVERIFY(page.isQuickPlotVisible());
+    auto* window = page.findChild< DA::DATableQuickPlotWindow* >();
+    QVERIFY(window);
+    auto* chart = window->findChild< DA::DAChartWidget* >();
+    QVERIFY(chart);
+    QVERIFY2(chart->itemList().isEmpty(),
+             "quick plot must not fetch/render synchronously inside the caller's action handler");
+
+    // 出图照常完成（重活已挪到下一轮事件循环）
+    QVERIFY2(waitForQuickPlotChart(window), "quick plot chart was not rendered");
+    QVERIFY(!chart->itemList().isEmpty());
+
+    // 菜单最终仍应被 deleteLater 正常回收（只是不能在事件处理中途删）
+    QTest::qWait(50);
+    QVERIFY(menuGuard.isNull());
 }
 
 void DATableQuickPlotTest::initTestCase()

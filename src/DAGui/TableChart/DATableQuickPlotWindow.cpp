@@ -6,9 +6,7 @@
 // Qt
 #include <QButtonGroup>
 #include <QComboBox>
-#include <QCoreApplication>
 #include <QEvent>
-#include <QEventLoop>
 #include <QFrame>
 #include <QHBoxLayout>
 #include <QKeyEvent>
@@ -17,6 +15,7 @@
 #include <QMouseEvent>
 #include <QPushButton>
 #include <QSizeGrip>
+#include <QTimer>
 #include <QToolButton>
 #include <QVBoxLayout>
 #include <QVariant>
@@ -317,10 +316,10 @@ void DATableQuickPlotWindow::refreshOptionWidgets()
     mXAxisLabel->setVisible(showX);
     mXAxisCombo->setVisible(showX);
     if (showX) {
-        mIgnoreTypeSignals = true;
-        mXAxisCombo->clear();
         const bool wantCategory = (mSpec.type == DATableChartType::Bar);
         int currentIndex        = 0;
+        QStringList texts;
+        texts.reserve(options.size());
         for (int i = 0; i < options.size(); ++i) {
             const DATableChartXOption& option = options.at(i);
             QString text;
@@ -332,13 +331,27 @@ void DATableQuickPlotWindow::refreshOptionWidgets()
                     text += tr(" (as category)");  // cn:（作为分类）
                 }
             }
-            mXAxisCombo->addItem(text, i);
+            texts.append(text);
             if (wantCategory) {
                 if (option.asCategory && option.column == mSpec.categoryColumn) {
                     currentIndex = i;
                 }
             } else if (!option.asCategory && option.column == mSpec.xColumn) {
                 currentIndex = i;
+            }
+        }
+        // 本函数也会在下拉框自己的 currentIndexChanged 处理中被调用（onXAxisChanged）：
+        // 条目没变时只挪 currentIndex、不动模型——在信号处理中清空下拉模型会把它的
+        // 弹出层一起销毁，返回后即 use-after-free
+        bool sameItems = (mXAxisCombo->count() == texts.size());
+        for (int i = 0; sameItems && i < texts.size(); ++i) {
+            sameItems = (mXAxisCombo->itemText(i) == texts.at(i) && mXAxisCombo->itemData(i).toInt() == i);
+        }
+        mIgnoreTypeSignals = true;
+        if (!sameItems) {
+            mXAxisCombo->clear();
+            for (int i = 0; i < texts.size(); ++i) {
+                mXAxisCombo->addItem(texts.at(i), i);
             }
         }
         mXAxisCombo->setCurrentIndex(currentIndex);
@@ -348,18 +361,26 @@ void DATableQuickPlotWindow::refreshOptionWidgets()
 
 /**
  * @brief 按当前请求与规格重画
+ *
+ * 只做真正的取数与图元构建，不在里面重入事件派发：本函数可能由菜单/按钮的
+ * action 触发链进入，此时同一条调用栈上还有 Qt 自己的控件事件处理，
+ * 一旦重入派发（例如 QCoreApplication::processEvents）就可能把正在处理事件的
+ * 控件（如刚触发动作的 QMenu）当场销毁，返回后即 use-after-free。需要「先出
+ * 界面再取数」的地方走 scheduleRender()。
  */
 void DATableQuickPlotWindow::renderNow()
 {
+    mRenderPending = false;
+    if (!isVisible() || !mChart) {
+        // 排队期间浮窗已被关闭/销毁：丢弃这次重绘
+        return;
+    }
     mErrorLabel->hide();
     mErrorLabel->clear();
     const QString pendingNotice = mPendingNotice;
     mPendingNotice.clear();
 
-    // 取数与图元构建是同步的：先切忙碌状态并让界面刷出来，再开始取数（实施方案 §8.4）
     QuickPlotBusyGuard busyGuard(this);
-    setNotice(tr("Loading data..."));  // cn:正在取数…
-    QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
 
     DATableChartBuildInfo info;
     QString error;
@@ -416,6 +437,24 @@ void DATableQuickPlotWindow::renderNow()
 }
 
 /**
+ * @brief 排一次重绘：先把忙碌提示刷到界面上，真正的取数留到下一轮事件循环
+ *
+ * 这样既保留了「点开浮窗立刻看到正在取数」的观感，又保证重活永远不会在调用方
+ * （菜单动作、图型按钮、下拉框）自己的事件处理栈上执行——在那里同步取数时若
+ * 重入事件派发，正在处理点击的控件会被延迟删除事件当场销毁。
+ * 多次连续请求（例如快速连点图型）合并成一次绘制。
+ */
+void DATableQuickPlotWindow::scheduleRender()
+{
+    if (mRenderPending) {
+        return;
+    }
+    mRenderPending = true;
+    setNotice(tr("Loading data..."));  // cn:正在取数…
+    QTimer::singleShot(0, this, &DATableQuickPlotWindow::renderNow);
+}
+
+/**
  * @brief 设置提示文案
  */
 void DATableQuickPlotWindow::setNotice(const QString& notice)
@@ -455,7 +494,7 @@ void DATableQuickPlotWindow::showForRequest(const DATableChartRequest& request, 
     mRefreshButton->hide();
     rebuildTypeButtons();
     refreshOptionWidgets();
-    renderNow();
+    // 先让浮窗本体出来（带「正在取数…」提示），取数绘制交给下一轮事件循环
     if (!isVisible()) {
         resize(kDefaultWidth, kDefaultHeight);
         placeNearAnchor(anchorInParent);
@@ -463,6 +502,7 @@ void DATableQuickPlotWindow::showForRequest(const DATableChartRequest& request, 
     }
     raise();
     setFocus(Qt::OtherFocusReason);
+    scheduleRender();
 }
 
 /**
@@ -511,7 +551,7 @@ void DATableQuickPlotWindow::updateRequest(const DATableChartRequest& request)
     mRefreshButton->hide();
     rebuildTypeButtons();
     refreshOptionWidgets();
-    renderNow();
+    scheduleRender();
 }
 
 /**
@@ -575,7 +615,7 @@ void DATableQuickPlotWindow::switchToType(DATableChartType type)
     mSpec = next;
     refreshOptionWidgets();
     rebuildTypeButtons();
-    renderNow();
+    scheduleRender();
 }
 
 void DATableQuickPlotWindow::onChartTypeClicked(int typeValue)
@@ -593,7 +633,7 @@ void DATableQuickPlotWindow::onAggregationChanged(int index)
     }
     const int aggregationValue = mAggregationCombo->itemData(index).toInt();
     mSpec.aggregation          = static_cast< DATableChartAggregation >(aggregationValue);
-    renderNow();
+    scheduleRender();
 }
 
 void DATableQuickPlotWindow::onXAxisChanged(int index)
@@ -609,7 +649,7 @@ void DATableQuickPlotWindow::onXAxisChanged(int index)
     DATableChartPlanner::applyXOption(mRequest, mSpec, options.at(optionIndex));
     rebuildTypeButtons();
     refreshOptionWidgets();
-    renderNow();
+    scheduleRender();
 }
 
 void DATableQuickPlotWindow::onUpdateClicked()
@@ -621,7 +661,7 @@ void DATableQuickPlotWindow::onRefreshClicked()
 {
     mDataChanged = false;
     mRefreshButton->hide();
-    renderNow();
+    scheduleRender();
 }
 
 void DATableQuickPlotWindow::onTransferClicked()
