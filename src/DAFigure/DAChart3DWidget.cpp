@@ -123,9 +123,9 @@ QList< int > DAChart3DWidget::data3DRttis() const
  *
  * 参考 DAChartWidget::addCurve()（DAChartWidget.cpp:137-149）：
  * 创建 item → 设置数据 → 设置默认样式 → attach → 返回指针。
- * @param data z 值矩阵（data[col][row]）
- * @param columns 列数
- * @param rows 行数
+ * @param data z 值矩阵（data[row][column]，第 1 维是 y 方向的行，第 2 维是 x 方向的列）
+ * @param columns 列数（x 方向）
+ * @param rows 行数（y 方向）
  * @param minx/maxx/miny/maxy x/y 域范围
  * @param title 标题
  * @return 创建的 Qwt3DSurface 指针
@@ -176,8 +176,8 @@ Qwt3DBar* DAChart3DWidget::addBar3D(const QVector< QwtPoint3D >& samples, const 
 
 /**
  * @brief 添加3D柱状图（2D grid）
- * @param z z 值矩阵，布局为 z[column][row]（第 1 维对应 x 方向列，第 2 维对应 y 方向行）
- * @param columns/rows 网格尺寸
+ * @param z z 值矩阵，布局为 z[row][column]（第 1 维对应 y 方向的行，第 2 维对应 x 方向的列）
+ * @param columns/rows 网格尺寸（columns 为 x 方向列数，rows 为 y 方向行数）
  * @param minX/maxX/minY/maxY x/y 域范围
  * @param title 标题
  * @return 创建的 Qwt3DBar 指针

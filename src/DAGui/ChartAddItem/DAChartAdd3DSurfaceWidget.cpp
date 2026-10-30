@@ -79,9 +79,8 @@ Qwt3DPlotItem* DAChartAdd3DSurfaceWidget::create3DPlotItem()
     if (rows < 2 || cols < 2) {
         return nullptr;
     }
-    // qwt3d 的网格约定是 z[column][row]（第 1 维是 x 方向列，第 2 维是 y 方向行），
-    // 而 zMatrix 的布局是 [row][column]，必须按列重排后再交给 qwt3d，
-    // 否则行列数不等时会越界读取（崩溃）。
+    // qwt3d 的网格布局与 DataFrame 一致：z[row][column]（第 1 维是 y 方向的行，
+    // 第 2 维是 x 方向的列），zMatrix 可直接按行拷入，无需转置
     Qwt3DFunctionData data;
     data.columns = static_cast< unsigned int >(cols);
     data.rows    = static_cast< unsigned int >(rows);
@@ -89,15 +88,12 @@ Qwt3DPlotItem* DAChartAdd3DSurfaceWidget::create3DPlotItem()
     data.maxx    = xCoords.last();
     data.miny    = yCoords.first();
     data.maxy    = yCoords.last();
-    data.z.assign(static_cast< std::size_t >(cols),
-                  std::vector< double >(static_cast< std::size_t >(rows), 0.0));
+    data.z.resize(static_cast< std::size_t >(rows));
     for (int r = 0; r < rows; ++r) {
-        for (int c = 0; c < cols; ++c) {
-            data.z[ static_cast< std::size_t >(c) ][ static_cast< std::size_t >(r) ] = zMatrix[ r ][ c ];
-        }
+        const QVector< double >& row = zMatrix[ r ];
+        data.z[ static_cast< std::size_t >(r) ].assign(row.begin(), row.end());
     }
     Qwt3DSurface* item = new Qwt3DSurface();
-    // loadFromData(data, columns, rows, minx, maxx, miny, maxy)
     // columns 对应 x 方向（xCoords），rows 对应 y 方向（yCoords）
     item->loadFromData(data);
     item->setTitle(getNameHint());

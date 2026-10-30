@@ -80,7 +80,7 @@ public:
     /// 获取所有数据相关的3D RTTI
     QList< int > data3DRttis() const;
 
-    /// 添加曲面图
+    /// 添加曲面图（data 布局 data[row][column]）
     Qwt3DSurface* addSurface(double** data, unsigned int columns, unsigned int rows,
                              double minx, double maxx, double miny, double maxy,
                              const QString& title = QString());
@@ -89,7 +89,7 @@ public:
     Qwt3DBar* addBar3D(const QVector< QwtPoint3D >& samples,
                        const QString& title = QString());
 
-    /// 添加3D柱状图（2D grid）
+    /// 添加3D柱状图（2D grid，z 布局 z[row][column]）
     Qwt3DBar* addBar3D(double** z, int columns, int rows,
                        double minX, double maxX, double minY, double maxY,
                        const QString& title = QString());

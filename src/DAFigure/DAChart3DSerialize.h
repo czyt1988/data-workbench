@@ -25,7 +25,10 @@ namespace DA
 class DAChart3DWidget;
 
 // 3D 序列化版本和 magic marks
-const int gc_dachart3d_version                     = 1;
+// v1：网格数据按 z[column][row] 存储（qwt3d 旧约定，第 1 维是 x 方向列）
+// v2：网格数据按 z[row][column] 存储（与 DataFrame 一致，第 1 维是 y 方向行），
+//     读取 v1 工程文件时按列主序把它转置回 [row][column]
+const int gc_dachart3d_version                     = 2;
 const std::uint32_t gc_dachart3d_magic_mark        = 0x3D5A6B4C;  ///< 3D item header magic
 const std::uint32_t gc_dachart3d_magic_mark2       = 0x3DAA1234;  ///< 3D chart (Qwt3DPlot) magic
 const std::uint32_t gc_dachart3d_magic_mark4       = 0x3DB23498;  ///< 3D item header magic (header.isValid)

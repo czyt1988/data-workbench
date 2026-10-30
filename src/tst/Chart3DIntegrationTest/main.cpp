@@ -3,6 +3,8 @@
 #include <QSignalSpy>
 #include <QSurfaceFormat>
 #include <QUndoStack>
+#include <QByteArray>
+#include <QDataStream>
 
 // 测试目标
 #include "DAFigureWidget.h"
@@ -18,7 +20,11 @@
 #include "qwt3d_surface.h"
 #include "qwt3d_bar.h"
 #include "qwt3d_line3d.h"
+#include "qwt3d_function.h"
 #include "qwt3d_types.h"
+
+// std::vector
+#include <vector>
 
 /**
  * @brief 3D 绘图集成测试
@@ -57,6 +63,8 @@ private slots:
     void testMixed2D3DCharts();
     // 测试8：undo/redo 操作
     void testUndoRedo();
+    // 测试9：网格数据布局为 z[row][column]（行列不等也不能转置）
+    void testGridDataRowMajorLayout();
 
 private:
     DA::DAFigureWidget* mFigure { nullptr };
@@ -400,6 +408,146 @@ void Chart3DIntegrationTest::testUndoRedo()
     QVERIFY(stack->canRedo());
     stack->redo();
     QCOMPARE(chart3d->itemList().size(), 1);
+}
+
+/**
+ * @brief 测试9：网格数据布局为 z[row][column]
+ *
+ * 验证点：
+ * - Qwt3DSurface::loadFromData 把 data[row][column] 解释成 (x = column, y = row)
+ * - Qwt3DBar::setSamples 的 gridZValues() 原样保留 [row][column]
+ * - Qwt3DFunction::create() 输出的 z 也按 [row][column]
+ * 行列刻意取不相等（5 列 3 行），任何转置/列主序实现都会在这里失败。
+ */
+void Chart3DIntegrationTest::testGridDataRowMajorLayout()
+{
+    const int rows = 3;
+    const int cols = 5;
+    const double minX = 0.0;
+    const double maxX = 4.0;
+    const double minY = 0.0;
+    const double maxY = 2.0;
+
+    // z[row][column] = row * 10 + column
+    Qwt3DFunctionData data;
+    data.columns = static_cast<unsigned>(cols);
+    data.rows = static_cast<unsigned>(rows);
+    data.minx = minX;
+    data.maxx = maxX;
+    data.miny = minY;
+    data.maxy = maxY;
+    data.z.assign(static_cast<size_t>(rows), std::vector<double>(static_cast<size_t>(cols), 0.0));
+    for (int j = 0; j < rows; ++j) {
+        for (int i = 0; i < cols; ++i) {
+            data.z[ static_cast<size_t >(j) ][ static_cast<size_t >(i) ] = j * 10.0 + i;
+        }
+    }
+
+    // 1) Surface：内部网格必须沿用 [row][column]，坐标由 column/row 分别决定 x/y
+    Qwt3DSurface surface;
+    surface.loadFromData(data);
+    Qwt3DGridData* gd = surface.gridData();
+    QVERIFY(gd != nullptr);
+    // Qwt3DGridData 的成员函数未导出，直接读公有 vertices（布局 [row][column]）
+    QCOMPARE(static_cast<int>(gd->vertices.size()), rows);
+    QVERIFY(!gd->vertices.empty());
+    QCOMPARE(static_cast<int>(gd->vertices[ 0 ].size()), cols);
+    for (int j = 0; j < rows; ++j) {
+        for (int i = 0; i < cols; ++i) {
+            QCOMPARE(gd->vertices[ static_cast<size_t >(j) ][ static_cast<size_t >(i) ][ 0 ], minX + i);
+            QCOMPARE(gd->vertices[ static_cast<size_t >(j) ][ static_cast<size_t >(i) ][ 1 ], minY + j);
+            QCOMPARE(gd->vertices[ static_cast<size_t >(j) ][ static_cast<size_t >(i) ][ 2 ], j * 10.0 + i);
+        }
+    }
+
+    // 2) Bar：同一份数据，导出的 z 矩阵必须原样保持 [row][column]
+    Qwt3DBar bar;
+    bar.setSamples(data);
+    QCOMPARE(bar.gridColumns(), cols);
+    QCOMPARE(bar.gridRows(), rows);
+    const std::vector< std::vector< double > > zValues = bar.gridZValues();
+    QCOMPARE(static_cast<int>(zValues.size()), rows);
+    QVERIFY(!zValues.empty());
+    QCOMPARE(static_cast<int>(zValues[ 0 ].size()), cols);
+    for (int j = 0; j < rows; ++j) {
+        for (int i = 0; i < cols; ++i) {
+            QCOMPARE(zValues[ static_cast<size_t >(j) ][ static_cast<size_t >(i) ], j * 10.0 + i);
+        }
+    }
+
+    // 3) Qwt3DFunction::create()：z[row][column] = f(x_column, y_row)
+    class LinearFunction : public Qwt3DFunction
+    {
+    public:
+        double operator()(double x, double y) override
+        {
+            return x * 100.0 + y;
+        }
+    } func;
+    func.setMesh(static_cast<unsigned>(cols), static_cast<unsigned>(rows));
+    func.setDomain(minX, maxX, minY, maxY);
+    const Qwt3DFunctionData fdata = func.create();
+    QCOMPARE(static_cast<int>(fdata.columns), cols);
+    QCOMPARE(static_cast<int>(fdata.rows), rows);
+    QCOMPARE(static_cast<int>(fdata.z.size()), rows);
+    for (int j = 0; j < rows; ++j) {
+        for (int i = 0; i < cols; ++i) {
+            const double x = minX + (maxX - minX) * i / (cols - 1);
+            const double y = minY + (maxY - minY) * j / (rows - 1);
+            QCOMPARE(fdata.z[ static_cast<size_t >(j) ][ static_cast<size_t >(i) ], x * 100.0 + y);
+        }
+    }
+
+    // 4) 序列化往返：非方形网格写出再读回，行列不能翻转
+    {
+        QByteArray surfaceBuf;
+        {
+            QDataStream out(&surfaceBuf, QIODevice::WriteOnly);
+            out.setVersion(DA::gc_dachart3d_datastream_version);
+            out << &surface;
+        }
+        Qwt3DSurface restoredSurface;
+        {
+            QDataStream in(&surfaceBuf, QIODevice::ReadOnly);
+            in.setVersion(DA::gc_dachart3d_datastream_version);
+            in >> &restoredSurface;
+        }
+        Qwt3DGridData* rgd = restoredSurface.gridData();
+        QVERIFY(rgd != nullptr);
+        QCOMPARE(static_cast<int>(rgd->vertices.size()), rows);
+        QVERIFY(!rgd->vertices.empty());
+        QCOMPARE(static_cast<int>(rgd->vertices[ 0 ].size()), cols);
+        for (int j = 0; j < rows; ++j) {
+            for (int i = 0; i < cols; ++i) {
+                QCOMPARE(rgd->vertices[ static_cast<size_t >(j) ][ static_cast<size_t >(i) ][ 2 ],
+                         j * 10.0 + i);
+            }
+        }
+    }
+    {
+        QByteArray barBuf;
+        {
+            QDataStream out(&barBuf, QIODevice::WriteOnly);
+            out.setVersion(DA::gc_dachart3d_datastream_version);
+            out << &bar;
+        }
+        Qwt3DBar restoredBar;
+        {
+            QDataStream in(&barBuf, QIODevice::ReadOnly);
+            in.setVersion(DA::gc_dachart3d_datastream_version);
+            in >> &restoredBar;
+        }
+        QVERIFY(restoredBar.isGridData());
+        QCOMPARE(restoredBar.gridColumns(), cols);
+        QCOMPARE(restoredBar.gridRows(), rows);
+        const std::vector< std::vector< double > > rz = restoredBar.gridZValues();
+        QCOMPARE(static_cast<int>(rz.size()), rows);
+        for (int j = 0; j < rows; ++j) {
+            for (int i = 0; i < cols; ++i) {
+                QCOMPARE(rz[ static_cast<size_t >(j) ][ static_cast<size_t >(i) ], j * 10.0 + i);
+            }
+        }
+    }
 }
 
 QTEST_MAIN(Chart3DIntegrationTest)

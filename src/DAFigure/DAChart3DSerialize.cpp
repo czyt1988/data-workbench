@@ -538,18 +538,20 @@ QDataStream& operator<<(QDataStream& out, const Qwt3DSurface* item)
         Qwt3DGridData* gd = item->gridData();
         if (gd) {
             // 使用 vertices 公有成员获取维度（Qwt3DGridData::columns()/rows() 未从 DLL 导出）
-            int cols = static_cast<int>(gd->vertices.size());
-            int rows = (cols > 0) ? static_cast<int>(gd->vertices[0].size()) : 0;
+            // 布局为 vertices[row][column]：外层是 y 方向的行，内层是 x 方向的列
+            int rows = static_cast<int>(gd->vertices.size());
+            int cols = (rows > 0) ? static_cast<int>(gd->vertices[0].size()) : 0;
+            // 头部仍按 (columns, rows) 顺序写，v2 起矩阵体按 [row][column] 行主序排列
             out << cols << rows;
             // 写入 vertices 矩阵
             // DataMatrix = std::vector<DataRow>, DataRow = std::vector<double*>
             // 每个 Vertex 是 double[3] (x, y, z)
             // Vertex 由 Qwt3DGridData 拥有，生命周期与 Surface item 绑定，序列化过程中安全
-            for (int i = 0; i < cols; ++i) {
-                for (int j = 0; j < rows; ++j) {
-                    out << gd->vertices[static_cast<unsigned>(i)][static_cast<unsigned>(j)][0]
-                        << gd->vertices[static_cast<unsigned>(i)][static_cast<unsigned>(j)][1]
-                        << gd->vertices[static_cast<unsigned>(i)][static_cast<unsigned>(j)][2];
+            for (int j = 0; j < rows; ++j) {
+                for (int i = 0; i < cols; ++i) {
+                    out << gd->vertices[static_cast<unsigned>(j)][static_cast<unsigned>(i)][0]
+                        << gd->vertices[static_cast<unsigned>(j)][static_cast<unsigned>(i)][1]
+                        << gd->vertices[static_cast<unsigned>(j)][static_cast<unsigned>(i)][2];
                 }
             }
             // periodic 标志：uperiodic()/vperiodic() 未从 DLL 导出，写默认值 false
@@ -652,22 +654,32 @@ QDataStream& operator>>(QDataStream& in, Qwt3DSurface* item)
         int cols, rows;
         in >> cols >> rows;
         if (cols > 0 && rows > 0) {
-            // 读取 vertices 矩阵，构建 Triple 数组
-            std::vector<std::vector<Triple>> tripleMatrix(static_cast<size_t>(cols),
-                                                          std::vector<Triple>(static_cast<size_t>(rows)));
-            for (int i = 0; i < cols; ++i) {
+            // 统一重建为 tripleMatrix[row][column]（qwt3d 新约定，与 DataFrame 一致）
+            std::vector<std::vector<Triple>> tripleMatrix(static_cast<size_t>(rows),
+                                                          std::vector<Triple>(static_cast<size_t>(cols)));
+            if (version >= 2) {
+                // v2：矩阵体按 [row][column] 行主序写入
                 for (int j = 0; j < rows; ++j) {
-                    in >> tripleMatrix[static_cast<size_t>(i)][static_cast<size_t>(j)];
+                    for (int i = 0; i < cols; ++i) {
+                        in >> tripleMatrix[static_cast<size_t>(j)][static_cast<size_t>(i)];
+                    }
+                }
+            } else {
+                // v1：矩阵体按 [column][row] 列主序写入，读入时转置
+                for (int i = 0; i < cols; ++i) {
+                    for (int j = 0; j < rows; ++j) {
+                        in >> tripleMatrix[static_cast<size_t>(j)][static_cast<size_t>(i)];
+                    }
                 }
             }
             bool uperiodic, vperiodic;
             in >> uperiodic >> vperiodic;
-            // 转换为 Triple** 数组
-            std::vector<Triple*> ptrCols(static_cast<size_t>(cols));
-            for (int i = 0; i < cols; ++i) {
-                ptrCols[static_cast<size_t>(i)] = tripleMatrix[static_cast<size_t>(i)].data();
+            // 转换为 Triple** 数组（外层为行）
+            std::vector<Triple*> ptrRows(static_cast<size_t>(rows));
+            for (int j = 0; j < rows; ++j) {
+                ptrRows[static_cast<size_t>(j)] = tripleMatrix[static_cast<size_t>(j)].data();
             }
-            item->loadFromData(ptrCols.data(), static_cast<unsigned>(cols), static_cast<unsigned>(rows),
+            item->loadFromData(ptrRows.data(), static_cast<unsigned>(cols), static_cast<unsigned>(rows),
                                uperiodic, vperiodic);
         }
     } else if (dataType == 2) {
@@ -730,13 +742,13 @@ QDataStream& operator<<(QDataStream& out, const Qwt3DBar* item)
         double minY = item->gridMinY();
         double maxY = item->gridMaxY();
         out << cols << rows << minX << maxX << minY << maxY;
-        // 直接使用 gridZValues() 获取原始 z 矩阵
+        // 直接使用 gridZValues() 获取原始 z 矩阵（v2 起按 z[row][column] 行主序写出）
         std::vector<std::vector<double>> zValues = item->gridZValues();
-        for (int i = 0; i < cols; ++i) {
-            for (int j = 0; j < rows; ++j) {
-                if (static_cast<size_t>(i) < zValues.size()
-                    && static_cast<size_t>(j) < zValues[static_cast<size_t>(i)].size()) {
-                    out << zValues[static_cast<size_t>(i)][static_cast<size_t>(j)];
+        for (int j = 0; j < rows; ++j) {
+            for (int i = 0; i < cols; ++i) {
+                if (static_cast<size_t>(j) < zValues.size()
+                    && static_cast<size_t>(i) < zValues[static_cast<size_t>(j)].size()) {
+                    out << zValues[static_cast<size_t>(j)][static_cast<size_t>(i)];
                 } else {
                     out << 0.0;
                 }
@@ -812,7 +824,7 @@ QDataStream& operator>>(QDataStream& in, Qwt3DBar* item)
         int cols, rows;
         double minX, maxX, minY, maxY;
         in >> cols >> rows >> minX >> maxX >> minY >> maxY;
-        // 读取 z 矩阵
+        // 读取 z 矩阵，统一存成 z[row][column]（qwt3d 新约定，与 DataFrame 一致）
         Qwt3DFunctionData data;
         data.columns = static_cast<unsigned>(cols);
         data.rows = static_cast<unsigned>(rows);
@@ -820,11 +832,23 @@ QDataStream& operator>>(QDataStream& in, Qwt3DBar* item)
         data.maxx = maxX;
         data.miny = minY;
         data.maxy = maxY;
-        data.z.resize(static_cast<size_t>(cols));
-        for (int i = 0; i < cols; ++i) {
-            data.z[static_cast<size_t>(i)].resize(static_cast<size_t>(rows));
+        data.z.resize(static_cast<size_t>(rows));
+        for (int j = 0; j < rows; ++j) {
+            data.z[static_cast<size_t>(j)].resize(static_cast<size_t>(cols));
+        }
+        if (version >= 2) {
+            // v2：矩阵体按 [row][column] 行主序写入
             for (int j = 0; j < rows; ++j) {
-                in >> data.z[static_cast<size_t>(i)][static_cast<size_t>(j)];
+                for (int i = 0; i < cols; ++i) {
+                    in >> data.z[static_cast<size_t>(j)][static_cast<size_t>(i)];
+                }
+            }
+        } else {
+            // v1：矩阵体按 [column][row] 列主序写入，读入时按列转置
+            for (int i = 0; i < cols; ++i) {
+                for (int j = 0; j < rows; ++j) {
+                    in >> data.z[static_cast<size_t>(j)][static_cast<size_t>(i)];
+                }
             }
         }
         item->setSamples(data);
