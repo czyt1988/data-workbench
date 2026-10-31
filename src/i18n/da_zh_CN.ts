@@ -3364,12 +3364,12 @@
     </message>
     <message>
         <location line="+19"/>
-        <location line="+1110"/>
+        <location line="+1121"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location line="-1098"/>
+        <location line="-1109"/>
         <source>Failed to save project! Path: %1</source>
         <translation>工程保存失败！路径为:%1</translation>
     </message>
@@ -3405,7 +3405,7 @@
         <translation>当前没有可追加的图表</translation>
     </message>
     <message>
-        <location line="+320"/>
+        <location line="+331"/>
         <source>Image saved successfully to %1</source>
         <translation>图片保存成功：%1</translation>
     </message>
@@ -3431,13 +3431,13 @@
     </message>
     <message>
         <location line="+1"/>
-        <location line="+337"/>
-        <location line="+99"/>
+        <location line="+353"/>
+        <location line="+102"/>
         <source>Cancel</source>
         <translation>取消</translation>
     </message>
     <message>
-        <location line="-432"/>
+        <location line="-451"/>
         <source>Import Data</source>
         <translation>导入数据</translation>
     </message>
@@ -3495,47 +3495,54 @@
     </message>
     <message>
         <location line="+1"/>
-        <location line="+235"/>
+        <location line="+254"/>
         <source>Markdown File</source>
         <translation>Markdown 文件</translation>
     </message>
     <message>
-        <location line="-234"/>
-        <location line="+235"/>
+        <location line="-253"/>
+        <location line="+254"/>
         <source>HTML File</source>
         <translation>HTML 文件</translation>
     </message>
     <message>
-        <location line="-212"/>
-        <location line="+223"/>
+        <location line="-231"/>
+        <location line="+242"/>
         <location line="+21"/>
         <source>Export Data</source>
         <translation>导出数据</translation>
     </message>
     <message>
-        <location line="-202"/>
+        <location line="-221"/>
         <source>Cannot determine export format, please select a file suffix</source>
         <translation>无法确定导出格式，请选择带后缀的文件名</translation>
     </message>
     <message>
         <location line="+16"/>
-        <location line="+212"/>
+        <location line="+231"/>
         <source>Data exported successfully, path: %1</source>
         <translation>数据导出成功，路径:%1</translation>
     </message>
     <message>
-        <location line="-210"/>
-        <location line="+206"/>
+        <location line="-229"/>
+        <location line="+225"/>
         <source>Data export failed, path: %1, reason: %2</source>
         <translation>数据导出失败，路径:%1，原因:%2</translation>
     </message>
     <message>
-        <location line="-179"/>
+        <location line="-196"/>
+        <location line="+215"/>
+        <location line="+32"/>
+        <source>No open dataframe table</source>
+        <translation>当前没有打开的 dataframe 表格</translation>
+    </message>
+    <message>
+        <location line="-234"/>
         <source>Please select a dataset first</source>
         <translation>请先选中数据集</translation>
     </message>
     <message>
-        <location line="+42"/>
+        <location line="+43"/>
         <source>Copy Large Table</source>
         <translation>复制大表</translation>
     </message>
@@ -3560,7 +3567,7 @@
         <translation>表格已复制到剪贴板（%1 行 × %2 列）</translation>
     </message>
     <message>
-        <location line="+53"/>
+        <location line="+56"/>
         <source>Cannot open file for writing: %1</source>
         <translation>无法打开文件进行写入:%1</translation>
     </message>
@@ -3570,7 +3577,7 @@
         <translation>正在导出表格...</translation>
     </message>
     <message>
-        <location line="+79"/>
+        <location line="+142"/>
         <source>Unsupported link type: %1</source>
         <translation>不支持的链接类型：%1</translation>
     </message>
@@ -3590,7 +3597,7 @@
         <translation>在创建一个坐标系之前，需要先创建一个绘图窗口</translation>
     </message>
     <message>
-        <location line="-2105"/>
+        <location line="-2198"/>
         <source>Please select the data operation window</source>
         <translation>请选中数据操作窗口</translation>
     </message>
@@ -3630,23 +3637,23 @@
         <translation>加载工程文件失败:%1</translation>
     </message>
     <message>
-        <location line="+362"/>
+        <location line="+373"/>
         <source>Image files</source>
         <translation>图片文件</translation>
     </message>
     <message>
-        <location line="-427"/>
-        <location line="+428"/>
+        <location line="-438"/>
+        <location line="+439"/>
         <source>Any files</source>
         <translation>任意文件</translation>
     </message>
     <message>
-        <location line="-429"/>
+        <location line="-440"/>
         <source>Markdown files</source>
         <translation>Markdown 文件</translation>
     </message>
     <message>
-        <location line="+526"/>
+        <location line="+537"/>
         <source>Received null project interface</source>
         <translation>获取到空工程接口</translation>
     </message>
@@ -3657,17 +3664,17 @@
         <translation>没有选中可复制的单元格</translation>
     </message>
     <message>
-        <location line="-1520"/>
+        <location line="-1531"/>
         <source>No active table</source>
         <translation>无活动表格</translation>
     </message>
     <message>
-        <location line="+1908"/>
+        <location line="+1919"/>
         <source>Cannot rename a series, please select a dataset</source>
         <translation>无法重命名series，请选中数据集</translation>
     </message>
     <message>
-        <location line="+478"/>
+        <location line="+560"/>
         <source>Figure &apos;%1&apos; not found, it may have been closed or renamed</source>
         <translation>未找到绘图&quot;%1&quot;，可能已关闭或被重命名</translation>
     </message>
@@ -3762,7 +3769,9 @@
         <translation>新工作流名称</translation>
     </message>
     <message>
-        <location line="+177"/>
+        <location line="-1905"/>
+        <location line="+32"/>
+        <location line="+2050"/>
         <source>Please select a valid column</source>
         <translation>请选择正确的列</translation>
     </message>
@@ -3787,12 +3796,12 @@
         <translation>选中的数据源为空</translation>
     </message>
     <message>
-        <location line="-2980"/>
+        <location line="-3062"/>
         <source>Before running the workflow, you need to save the project</source>
         <translation>在运行工作流之前，需要先保存工程</translation>
     </message>
     <message>
-        <location line="+2245"/>
+        <location line="+2327"/>
         <source>Please select a column first</source>
         <translation>请先选择列</translation>
     </message>
@@ -9228,7 +9237,42 @@
         <translation>复制列名</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+6"/>
+        <source>Copy Selected Columns As</source>
+        <translation>复制选中列为</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Tab-separated Text</source>
+        <translation>Tab 分隔文本</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Markdown Table</source>
+        <translation>Markdown 表格</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>HTML Table (with styles)</source>
+        <translation>HTML 表格（含样式）</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Export Selected Columns</source>
+        <translation>导出选中列</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Markdown Document...</source>
+        <translation>Markdown 文档...</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>HTML Document (with styles)...</source>
+        <translation>HTML 文档（含样式）...</translation>
+    </message>
+    <message>
+        <location line="+11"/>
         <source>Goto Max</source>
         <translation>跳转到最大值</translation>
     </message>
@@ -9488,7 +9532,7 @@
 <context>
     <name>DA::DADataOperateOfDataFrameWidget</name>
     <message>
-        <location filename="../DAGui/DADataOperateOfDataFrameWidget.cpp" line="+772"/>
+        <location filename="../DAGui/DADataOperateOfDataFrameWidget.cpp" line="+775"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
@@ -10110,7 +10154,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>本表没有批注</translation>
     </message>
     <message>
-        <location line="+106"/>
+        <location line="+123"/>
         <source>The chart area is not available</source>
         <translation>绘图区不可用</translation>
     </message>
@@ -10125,7 +10169,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>已转入绘图区</translation>
     </message>
     <message>
-        <location line="-4502"/>
+        <location line="-4519"/>
         <source>Some column view settings were dropped because the table columns have changed.</source>
         <translation>表格的列已变化，部分列视图设置已被丢弃</translation>
     </message>
@@ -14805,7 +14849,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-4096"/>
+        <location filename="../APP/DAAppController.cpp" line="-4189"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>
@@ -17679,7 +17723,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DATableExporter</name>
     <message>
-        <location filename="../DAGui/DATableExporter.cpp" line="+272"/>
+        <location filename="../DAGui/DATableExporter.cpp" line="+293"/>
         <source>Failed to read data block from row %1</source>
         <translation>从第 %1 行读取数据块失败</translation>
     </message>
@@ -17689,7 +17733,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>操作已取消</translation>
     </message>
     <message>
-        <location line="+103"/>
+        <location line="+114"/>
         <source>Only table-shaped data can be exported</source>
         <translation>仅支持导出表格型数据</translation>
     </message>

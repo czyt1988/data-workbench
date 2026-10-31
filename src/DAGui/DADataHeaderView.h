@@ -70,6 +70,16 @@ public:
     };
     Q_ENUM(ColumnViewAction)
 
+    // 按选中列复制/导出的数据形态（与 DATableExporter::Format 一一对应；表头是
+    // 通用控件不直接耦合导出器类型，枚举值在消费方映射回 DATableExporter::Format）
+    enum class ColumnDataFormat
+    {
+        TabText,   ///< Tab 分隔纯文本
+        Markdown,  ///< Markdown 表格
+        Html       ///< HTML 表格（含样式）
+    };
+    Q_ENUM(ColumnDataFormat)
+
     explicit DADataHeaderView(Qt::Orientation orientation, QWidget* parent = nullptr);
 
     // 设置计算列子存储（ƒx 角标三态绘制与列头菜单计算列组，非拥有，004 T1.23；
@@ -109,6 +119,11 @@ Q_SIGNALS:
     void columnActionRequested(int logicalIndex, DA::DADataHeaderView::ColumnAction action);
     // 「列」子菜单动作被点击（006d：消费者是页面自身——列视图真源操作，不经 APP）
     void columnViewActionRequested(int logicalIndex, DA::DADataHeaderView::ColumnViewAction action);
+    // 列头菜单「复制为/导出」子菜单被点击：按当前选中列（无选中回退 logicalIndex
+    // 所在列）整列复制到剪贴板或导出文件；消费方是 APP（执行链路与数据管理树
+    // 的 dataframe 复制/导出共用 DATableExporter，只多一层列子集）
+    void columnDataCopyRequested(int logicalIndex, DA::DADataHeaderView::ColumnDataFormat format);
+    void columnDataExportRequested(int logicalIndex, DA::DADataHeaderView::ColumnDataFormat format);
     // 行头宽度拖拽结束（仅 vertical 实例发射，页面据此写视图状态）
     void rowHeaderWidthChanged(int width);
     // 行边界拖拽改统一行高结束（仅 vertical 实例发射；滑动窗下行高按单值语义持久化，

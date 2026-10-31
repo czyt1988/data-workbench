@@ -2,6 +2,7 @@
 #define DATABLEEXPORTER_H
 #include "DAGuiAPI.h"
 #include "DAData.h"
+#include <QList>
 #include <QString>
 #include <functional>
 
@@ -57,11 +58,20 @@ public:
     static bool isLargeForCopy(qint64 rows, qint64 cols);
 
     /**
-     * @brief 构造导出器
+     * @brief 构造导出器（整表）
      * @param d 数据（须为表格型 isTable()；Python DataFrame 或惰性表格数据源）
      * @param meta 表元数据束（可空：无则跳过显示格式与样式/条件格式渲染）
      */
     DATableExporter(const DAData& d, const DATableMetadata* meta = nullptr);
+    /**
+     * @brief 构造导出器（列子集；列头右键「按选中列复制/导出」入口）
+     * @param d 数据（须为表格型 isTable()）
+     * @param meta 表元数据束（可空）
+     * @param columns 要导出的数据列号（数据源列位置索引；空/全无效时回退整表）
+     * @note 列序按传入顺序渲染（调用方给「视图顺序」即所见即所得）；
+     *       样式/显示格式/条件格式/批注仍按原始列号解析，子集内外一致
+     */
+    DATableExporter(const DAData& d, const DATableMetadata* meta, const QList< int >& columns);
     ~DATableExporter();
 
     // 数据是否有效（非 DataFrame 型/无取数源返回 false；why 出参给用户可读原因）

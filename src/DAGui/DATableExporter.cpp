@@ -21,6 +21,7 @@
 #include <QTextStream>
 #include <QVector>
 #include <algorithm>
+#include <numeric>
 
 namespace DA
 {
@@ -160,7 +161,7 @@ QString htmlCellStyleDeclarations(const DATableCellStyle& style, bool hasBar, do
 class DATableExporter::PrivateData
 {
 public:
-    PrivateData(const DAData& d, const DATableMetadata* meta);
+    PrivateData(const DAData& d, const DATableMetadata* meta, const QList< int >& columns);
 
     // 分块取数（块边界钳制行数），成功填充 outRows（每元素为一行）
     bool fetchRows(qint64 start, int count, QList< QVariantList >& outRows, QString* err) const;
@@ -201,18 +202,25 @@ public:
     DATableStyleManager* styleManager { nullptr };
     DATableConditionalFormatStore* cfStore { nullptr };
     DATableNoteStore* noteStore { nullptr };
-    qint64 rows { 0 };
-    qint64 cols { 0 };
-    QStringList columnNames;
-    QVector< DATableDisplayFormat > colFormats;  ///< 列显示格式缓存（invalid = 未设置）
-    QVector< CfContext > cfContexts;              ///< 条件格式求值上下文（按列惰性填充）
+    qint64 rows { 0 };                  ///< 数据源总行数（导出全部行）
+    qint64 cols { 0 };                  ///< 本次导出的列数（整表=数据源列数；子集=映射条数）
+    qint64 srcCols { 0 };               ///< 数据源总列数（列子集判定用）
+    QVector< int > outToSrc;            ///< 输出列序 c → 数据源列号（整表为恒等映射）
+    QStringList columnNames;            ///< 输出列名（与 outToSrc 对齐）
+    QVector< DATableDisplayFormat > colFormats;  ///< 列显示格式缓存（invalid = 未设置；数据源列号索引）
+    QVector< CfContext > cfContexts;              ///< 条件格式求值上下文（按数据源列号惰性填充）
     bool valid { false };
 };
 
 /**
  * @brief 构造即解析数据与元数据（失败时 rows/cols 保持 0、valid=false）
+ *
+ * columns 为空/全无效时回退整表（恒等映射）。列序按传入顺序渲染——调用方传
+ * 「视图顺序的列号」即所见即所得；列子集只裁输出，样式/显示格式/条件格式/
+ * 批注仍按数据源原始列号解析（子集内外一致）。
  */
-DATableExporter::PrivateData::PrivateData(const DAData& d, const DATableMetadata* meta) : data(d)
+DATableExporter::PrivateData::PrivateData(const DAData& d, const DATableMetadata* meta, const QList< int >& columns)
+    : data(d)
 {
     // 判定口径：isTable()（DATableDataSource 非空）——覆盖 Python dataframe 与
     // 惰性表格源两条路径；series/数据包等非表格型拒绝
@@ -224,13 +232,25 @@ DATableExporter::PrivateData::PrivateData(const DAData& d, const DATableMetadata
     if (!ts) {
         return;
     }
-    rows = static_cast< qint64 >(ts->tableRowCount());
-    cols = static_cast< qint64 >(ts->tableColumnCount());
-    if (cols > 0) {
-        columnNames.reserve(static_cast< int >(cols));
-        for (qint64 c = 0; c < cols; ++c) {
-            columnNames.append(ts->tableColumnName(static_cast< std::size_t >(c)));
+    rows    = static_cast< qint64 >(ts->tableRowCount());
+    srcCols = static_cast< qint64 >(ts->tableColumnCount());
+    // 列映射：子集（去重 + 越界剔除，保留传入顺序）或整表恒等
+    for (int c : columns) {
+        if (c < 0 || c >= srcCols) {
+            continue;
         }
+        if (!outToSrc.contains(c)) {
+            outToSrc.append(c);
+        }
+    }
+    if (outToSrc.isEmpty()) {
+        outToSrc.resize(static_cast< int >(srcCols));
+        std::iota(outToSrc.begin(), outToSrc.end(), 0);
+    }
+    cols = outToSrc.size();
+    columnNames.reserve(static_cast< int >(cols));
+    for (int c : std::as_const(outToSrc)) {
+        columnNames.append(ts->tableColumnName(static_cast< std::size_t >(c)));
     }
     // 列统计/重复键求值用（dataframe 数据体）：仅当「有条件格式且为 Python
     // dataframe 且解释器已初始化」时才获取——DAPyDataFrame 默认构造会 import
@@ -241,17 +261,18 @@ DATableExporter::PrivateData::PrivateData(const DAData& d, const DATableMetadata
         df.reset(new DAPyDataFrame(data.toDataFrame()));
     }
     if (meta) {
-        // 元数据束只读借用（导出不改任何子存储）
+        // 元数据束只读借用（导出不改任何子存储）；显示格式/条件格式上下文按
+        // 数据源总列数建表（列子集按原始列号查，子集内外一致）
         styleManager = meta->styleManager();
         cfStore      = meta->conditionalFormat();
         noteStore    = meta->notes();
-        colFormats.resize(static_cast< int >(cols));
-        for (qint64 c = 0; c < cols; ++c) {
+        colFormats.resize(static_cast< int >(srcCols));
+        for (qint64 c = 0; c < srcCols; ++c) {
             if (styleManager->hasColumnFormat(static_cast< int >(c))) {
                 colFormats[ static_cast< int >(c) ] = styleManager->getColumnFormat(static_cast< int >(c));
             }
         }
-        cfContexts.resize(static_cast< int >(cols));
+        cfContexts.resize(static_cast< int >(srcCols));
     }
     valid = true;
 }
@@ -438,14 +459,16 @@ bool DATableExporter::PrivateData::render(Format fmt, QTextStream& out, QString*
                     if (c > 0) {
                         out << QLatin1Char('\t');
                     }
-                    out << displayText(c, c < row.size() ? row.at(c) : QVariant());
+                    const int src = outToSrc[ c ];
+                    out << displayText(src, src < row.size() ? row.at(src) : QVariant());
                 }
                 out << QLatin1Char('\n');
                 break;
             case Format::Markdown:
                 out << QLatin1Char('|');
                 for (int c = 0; c < colCount; ++c) {
-                    out << ' ' << markdownEscape(displayText(c, c < row.size() ? row.at(c) : QVariant())) << " |";
+                    const int src = outToSrc[ c ];
+                    out << ' ' << markdownEscape(displayText(src, src < row.size() ? row.at(src) : QVariant())) << " |";
                 }
                 out << QLatin1Char('\n');
                 break;
@@ -453,17 +476,18 @@ bool DATableExporter::PrivateData::render(Format fmt, QTextStream& out, QString*
                 const int actualRow = static_cast< int >(rowStart) + i;
                 out << "<tr>";
                 for (int c = 0; c < colCount; ++c) {
-                    const QVariant raw = (c < row.size()) ? row.at(c) : QVariant();
+                    const int src = outToSrc[ c ];
+                    const QVariant raw = (src < row.size()) ? row.at(src) : QVariant();
                     DATableCellStyle style;
                     bool hasBar    = false;
                     double barRatio = 0.0;
                     QColor barColor;
-                    cellDecorations(actualRow, c, raw, style, hasBar, barRatio, barColor);
+                    cellDecorations(actualRow, src, raw, style, hasBar, barRatio, barColor);
                     const QString styleDecl = htmlCellStyleDeclarations(style, hasBar, barRatio, barColor);
                     // 批注以悬停提示携带（层⑤角标在 HTML 无对应物）
                     QString noteTitle;
-                    if (noteStore && noteStore->hasNote(actualRow, c)) {
-                        noteTitle = noteStore->noteText(actualRow, c);
+                    if (noteStore && noteStore->hasNote(actualRow, src)) {
+                        noteTitle = noteStore->noteText(actualRow, src);
                     }
                     out << "<td";
                     if (!styleDecl.isEmpty()) {
@@ -472,7 +496,7 @@ bool DATableExporter::PrivateData::render(Format fmt, QTextStream& out, QString*
                     if (!noteTitle.isEmpty()) {
                         out << " title=\"" << htmlEscape(noteTitle) << "\"";
                     }
-                    out << ">" << htmlEscape(displayText(c, raw)) << "</td>";
+                    out << ">" << htmlEscape(displayText(src, raw)) << "</td>";
                 }
                 out << "</tr>\n";
                 break;
@@ -504,10 +528,18 @@ bool DATableExporter::isLargeForCopy(qint64 rows, qint64 cols)
 }
 
 /**
- * @brief 构造导出器（构造中解析数据与元数据，失败时 isValid()=false）
+ * @brief 构造导出器·整表（构造中解析数据与元数据，失败时 isValid()=false）
  */
 DATableExporter::DATableExporter(const DAData& d, const DATableMetadata* meta)
-    : d_ptr(std::make_unique< PrivateData >(d, meta))
+    : d_ptr(std::make_unique< PrivateData >(d, meta, QList< int >()))
+{
+}
+
+/**
+ * @brief 构造导出器·列子集（列头右键「按选中列复制/导出」入口）
+ */
+DATableExporter::DATableExporter(const DAData& d, const DATableMetadata* meta, const QList< int >& columns)
+    : d_ptr(std::make_unique< PrivateData >(d, meta, columns))
 {
 }
 

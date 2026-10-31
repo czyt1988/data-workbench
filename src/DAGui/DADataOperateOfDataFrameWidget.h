@@ -185,6 +185,10 @@ public:
     // columnHeaderClicked 信号、不排序（§4.1 模式互斥），由 DADataOperateWidget 转发
     void setHeaderPickMode(bool on);
     bool isHeaderPickMode() const;
+    // ===== 按选中列复制/导出（列头右键「复制选中列为/导出选中列」入口的解析面）=====
+    // 当前选中列（视图顺序、去重、剔除尾部预留列）；无选中回退 {fallbackColumn}。
+    // fallbackColumn 无效（<0 或越出数据列）且无选中时返回空列表（调用方提示）
+    QList< int > selectedColumnsForDataAction(int fallbackColumn) const;
     // 当前多列排序规格（列逻辑索引+方向，顺序即优先级；不持久化 R13）
     QVector< QPair< int, Qt::SortOrder > > sortSpec() const;
     // 按列排序（2026-10-18 交互修订：排序入口=列头右键菜单，点击表头不再排序）：

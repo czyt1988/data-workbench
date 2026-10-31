@@ -143,6 +143,8 @@ private slots:
     void testWriteToFile();
     void testLargeCopyThreshold();
     void testNoteTitle();
+    void testColumnSubset();
+    void testColumnSubsetWithStyles();
 };
 
 /**
@@ -395,6 +397,76 @@ void DATableExporterTest::testNoteTitle()
     QString out;
     QVERIFY(exp.toString(DA::DATableExporter::Format::Html, &out));
     QVERIFY(out.contains(QStringLiteral("title=\"note &lt;text&gt;\"")));
+}
+
+/**
+ * 列子集：指定列（含乱序/重复/越界）只导出这些列、按传入顺序；
+ * 空/全无效列表回退整表（与双参构造等价）
+ */
+void DATableExporterTest::testColumnSubset()
+{
+    auto t = std::make_shared< TestMemoryTable >(3, 4);
+    DA::DAData d(t);
+    // 乱序 + 重复 + 越界：{2, 0, 2, 9} → 输出列 [col2, col0]
+    DA::DATableExporter exp(d, nullptr, { 2, 0, 2, 9 });
+    QVERIFY(exp.isValid());
+    QCOMPARE(exp.columnCount(), qint64(2));
+    QCOMPARE(exp.cellCount(), qint64(6));  // 3 行 × 2 列
+    QString out;
+    QVERIFY(exp.toString(DA::DATableExporter::Format::TabText, &out));
+    QCOMPARE(out, QStringLiteral("col2\tcol0\n"
+                                 "0\t0\n"
+                                 "0.25\t1\n"
+                                 "0.5\t2\n"));
+    // Markdown 同一映射
+    QVERIFY(exp.toString(DA::DATableExporter::Format::Markdown, &out));
+    QVERIFY(out.startsWith(QStringLiteral("| col2 | col0 |")));
+    // 空列表回退整表（与双参构造同结果）
+    DA::DATableExporter whole(d, nullptr, {});
+    QCOMPARE(whole.columnCount(), qint64(4));
+    QString wholeOut, refOut;
+    QVERIFY(whole.toString(DA::DATableExporter::Format::TabText, &wholeOut));
+    DA::DATableExporter ref(d);
+    QVERIFY(ref.toString(DA::DATableExporter::Format::TabText, &refOut));
+    QCOMPARE(wholeOut, refOut);
+}
+
+/**
+ * 列子集样式：样式/显示格式/批注按原始列号解析——子集只裁输出列，
+ * 被选中列的样式与整表导出时完全一致
+ */
+void DATableExporterTest::testColumnSubsetWithStyles()
+{
+    auto t = std::make_shared< TestMemoryTable >(2, 4);
+    DA::DAData d(t);
+    DA::DATableMetadata meta;
+    // col3 黄底（不在子集内）+ col0 红底（在子集内）
+    DA::DATableCellStyle s0, s3;
+    s0.setBackground(QBrush(QColor(255, 0, 0)));
+    s3.setBackground(QBrush(QColor(255, 255, 0)));
+    meta.styleManager()->setColumnStyle(0, s0);
+    meta.styleManager()->setColumnStyle(3, s3);
+    // col2 显示格式 1 位小数（子集内）
+    DA::DATableDisplayFormat fmt(DA::DATableDisplayFormat::Category::Number);
+    fmt.setPrecision(1);
+    fmt.setValid(true);
+    meta.styleManager()->setColumnFormat(2, fmt);
+    // 批注 (1, 2)（子集内）
+    meta.notes()->setNote(1, 2, QStringLiteral("note"));
+
+    // 子集 {2, 0}：col3 的黄底不应出现，col0 红底与 col2 格式/批注应保留
+    DA::DATableExporter exp(d, &meta, { 2, 0 });
+    QString out;
+    QVERIFY(exp.toString(DA::DATableExporter::Format::Html, &out));
+    QVERIFY(out.contains(QStringLiteral("background-color:#ff0000")));  // col0 红底
+    QCOMPARE(out.count(QStringLiteral("background-color:#ffff00")), 0);  // col3 未选
+    QVERIFY(out.contains(QStringLiteral("title=\"note\"")));             // col2 批注
+    // 列序：子集顺序 col2 在前
+    QVERIFY(out.indexOf(QStringLiteral("<th>col2</th>")) < out.indexOf(QStringLiteral("<th>col0</th>")));
+    // 显示格式：col2 的 0.25 → 0.3（Tab 文本验证）
+    QString tabOut;
+    QVERIFY(exp.toString(DA::DATableExporter::Format::TabText, &tabOut));
+    QVERIFY(tabOut.contains(QStringLiteral("0.3\t")));
 }
 
 int main(int argc, char* argv[])

@@ -1793,6 +1793,17 @@ void DAAppController::onDataOperatePageCreated(DADataOperatePageWidget* page)
                                 break;
                             }
                         });
+                // 按选中列复制/导出（列头右键「复制选中列为/导出选中列」）：
+                // 列范围由处理器经页面解析（无选中回退右键列），执行链路与数据
+                // 管理树的 dataframe 复制/导出共用（只多一层列子集）
+                connect(hv,
+                        &DADataHeaderView::columnDataCopyRequested,
+                        this,
+                        &DAAppController::onHeaderColumnDataCopyRequested);
+                connect(hv,
+                        &DADataHeaderView::columnDataExportRequested,
+                        this,
+                        &DAAppController::onHeaderColumnDataExportRequested);
             }
             // 表体右键菜单（v1 骨架：剪切/复制/粘贴）信号接线：路由到既有槽逻辑
             // （与 onActionCut/Copy/PasteTriggered 的数据页分支一致），不新增执行逻辑
@@ -2638,21 +2649,36 @@ void DAAppController::exportSelectedData(const QString& format)
  * 数据选择口径与 exportSelectedData 一致：优先数据管理树选中，无选中回退当前
  * 操作数据。元数据束按数据查注册表（get：束随数据存在、页面关闭不销毁；无束
  * = 纯数据导出，不带样式）。exporter 有效性由调用方经 isValid() 复核。
+ * columns 非空时构造列子集导出器（表头右键「按选中列」入口，列序按传入顺序）。
  * @param exporter 出参（构造好的导出器）
  * @param dataOut 非空时回填所选数据（保存对话框默认文件名用）
+ * @param columns 列子集（数据源列号；空 = 整表）
  * @return 构造成功返回 true
  */
-bool DAAppController::makeExporterForSelection(std::unique_ptr< DATableExporter >* exporter, DAData* dataOut) const
+bool DAAppController::makeExporterForSelection(std::unique_ptr< DATableExporter >* exporter,
+                                                DAData* dataOut,
+                                                const QList< int >& columns) 
 {
     if (!exporter) {
         return false;
     }
-    QList< DAData > datas = mDatas->getSelectDatas();
+    // 列子集路径（表头右键入口）：数据来自发送信号的页面（w 固定），
+    // 不走数据管理树选中的口径——两口径混用会导错数据集
     DAData d;
-    if (!datas.isEmpty()) {
-        d = datas.first();
+    if (!columns.isEmpty()) {
+        DADataOperateOfDataFrameWidget* w = getCurrentDataFrameOperateWidget();
+        if (!w) {
+            daWarning << tr("No open dataframe table");  // cn:当前没有打开的 dataframe 表格
+            return false;
+        }
+        d = w->data();
     } else {
-        d = mDatas->getOperateData();
+        QList< DAData > datas = mDatas->getSelectDatas();
+        if (!datas.isEmpty()) {
+            d = datas.first();
+        } else {
+            d = mDatas->getOperateData();
+        }
     }
     if (d.isNull()) {
         daWarning << tr("Please select a dataset first");  // cn:请先选中数据集
@@ -2668,7 +2694,7 @@ bool DAAppController::makeExporterForSelection(std::unique_ptr< DATableExporter 
             meta = reg->get(d);
         }
     }
-    exporter->reset(new DATableExporter(d, meta));
+    exporter->reset(new DATableExporter(d, meta, columns));
     QString why;
     if (!(*exporter)->isValid(&why)) {
         daWarning << why;
@@ -2686,11 +2712,12 @@ bool DAAppController::makeExporterForSelection(std::unique_ptr< DATableExporter 
  * 超大表（isLargeForCopy 阈值）先弹确认，避免一次性构建大字符串卡界面；
  * 构建期间进度对话框可取消（块边界生效）。
  * @param fmt 目标形态
+ * @param columns 列子集（表头右键「复制选中列为」入口传入；空 = 整表）
  */
-void DAAppController::copySelectedDataAsTable(DATableExporter::Format fmt)
+void DAAppController::copySelectedDataAsTable(DATableExporter::Format fmt, const QList< int >& columns)
 {
     std::unique_ptr< DATableExporter > exporter;
-    if (!makeExporterForSelection(&exporter)) {
+    if (!makeExporterForSelection(&exporter, nullptr, columns)) {
         return;
     }
     // 大小确认：复制需把整表渲染成字符串驻留内存，超大表先提醒
@@ -2765,12 +2792,15 @@ void DAAppController::copySelectedDataAsTable(DATableExporter::Format fmt)
  * path 非空时跳过保存对话框（主导出按钮路径已选好路径，按 fmt 判定格式）。
  * @param fmt Markdown 或 HTML
  * @param path 已选定的目标路径（空 = 弹保存对话框）
+ * @param columns 列子集（表头右键「导出选中列」入口传入；空 = 整表）
  */
-void DAAppController::exportSelectedDataAsDocument(DATableExporter::Format fmt, const QString& path)
+void DAAppController::exportSelectedDataAsDocument(DATableExporter::Format fmt,
+                                                   const QString& path,
+                                                   const QList< int >& columns)
 {
     std::unique_ptr< DATableExporter > exporter;
     DAData d;
-    if (!makeExporterForSelection(&exporter, &d)) {
+    if (!makeExporterForSelection(&exporter, &d, columns)) {
         return;
     }
     QString targetPath = path;
@@ -2839,6 +2869,69 @@ void DAAppController::exportSelectedDataAsDocument(DATableExporter::Format fmt, 
         return;
     }
     daInfo << tr("Data exported successfully, path: %1").arg(targetPath);  // cn:数据导出成功，路径:%1
+}
+
+/**
+ * @brief 表头右键「复制选中列为」信号处理器
+ *
+ * 从当前 dataframe 页面解析选中列（无选中回退右键所在列），格式枚举映射后走
+ * 与数据管理树「复制为」共用的 copySelectedDataAsTable（列子集路径）。
+ * @param fallbackColumn 右键所在列（无选中列时的回退）
+ * @param format 表头声明的目标形态（映射 DATableExporter::Format）
+ */
+void DAAppController::onHeaderColumnDataCopyRequested(int fallbackColumn, DADataHeaderView::ColumnDataFormat format)
+{
+    DADataOperateOfDataFrameWidget* w = getCurrentDataFrameOperateWidget();
+    if (!w) {
+        daWarning << tr("No open dataframe table");  // cn:当前没有打开的 dataframe 表格
+        return;
+    }
+    const QList< int > columns = w->selectedColumnsForDataAction(fallbackColumn);
+    if (columns.isEmpty()) {
+        daWarning << tr("Please select a valid column");  // cn:请选择正确的列
+        return;
+    }
+    DATableExporter::Format fmt = DATableExporter::Format::TabText;
+    switch (format) {
+    case DADataHeaderView::ColumnDataFormat::Markdown:
+        fmt = DATableExporter::Format::Markdown;
+        break;
+    case DADataHeaderView::ColumnDataFormat::Html:
+        fmt = DATableExporter::Format::Html;
+        break;
+    default:
+        break;
+    }
+    copySelectedDataAsTable(fmt, columns);
+}
+
+/**
+ * @brief 表头右键「导出选中列」信号处理器（列子集版文档导出）
+ *
+ * 列解析与格式映射同 onHeaderColumnDataCopyRequested；执行走与数据管理树
+ * 「导出 Markdown/HTML 文档」共用的 exportSelectedDataAsDocument。
+ */
+void DAAppController::onHeaderColumnDataExportRequested(int fallbackColumn, DADataHeaderView::ColumnDataFormat format)
+{
+    DADataOperateOfDataFrameWidget* w = getCurrentDataFrameOperateWidget();
+    if (!w) {
+        daWarning << tr("No open dataframe table");  // cn:当前没有打开的 dataframe 表格
+        return;
+    }
+    const QList< int > columns = w->selectedColumnsForDataAction(fallbackColumn);
+    if (columns.isEmpty()) {
+        daWarning << tr("Please select a valid column");  // cn:请选择正确的列
+        return;
+    }
+    DATableExporter::Format fmt = DATableExporter::Format::Markdown;
+    switch (format) {
+    case DADataHeaderView::ColumnDataFormat::Html:
+        fmt = DATableExporter::Format::Html;
+        break;
+    default:
+        break;
+    }
+    exportSelectedDataAsDocument(fmt, QString(), columns);
 }
 
 /**

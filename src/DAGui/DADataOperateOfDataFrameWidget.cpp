@@ -228,6 +228,9 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
         DADataHeaderView* mh = qobject_cast< DADataHeaderView* >(ui->tableView->horizontalHeader());
         if (fh && mh) {
             connect(fh, &DADataHeaderView::columnActionRequested, mh, &DADataHeaderView::columnActionRequested);
+            // 按选中列复制/导出（冻结窗格表头触发 → 主窗格同名信号，APP 只连主窗格）
+            connect(fh, &DADataHeaderView::columnDataCopyRequested, mh, &DADataHeaderView::columnDataCopyRequested);
+            connect(fh, &DADataHeaderView::columnDataExportRequested, mh, &DADataHeaderView::columnDataExportRequested);
         }
         // 表体剪贴板三信号转发到主窗格同名信号
         connect(frozen, &DADataTableView::contextMenuCutRequested, ui->tableView, &DADataTableView::contextMenuCutRequested);
@@ -6736,6 +6739,23 @@ QList< int > DADataOperateOfDataFrameWidget::getSelectedDataColumnsInViewOrder(b
     // 没有窗格容器（极端场景）：退回数据列升序，至少保证顺序稳定
     std::sort(selected.begin(), selected.end());
     return selected;
+}
+
+/**
+ * @brief 按选中列复制/导出的列范围解析（列头右键「复制选中列为/导出选中列」入口）
+ *
+ * 有选中列 → 视图顺序返回（所见即所得：导出列序与用户看到的列序一致）；
+ * 无选中 → 回退右键所在列 {fallbackColumn}（菜单项文案虽写「选中列」，右键
+ * 在某列表头上本身就是明确的指向，Excel 同款语义）；两者皆无有效列返回空
+ * 列表（调用方提示用户）。
+ */
+QList< int > DADataOperateOfDataFrameWidget::selectedColumnsForDataAction(int fallbackColumn) const
+{
+    QList< int > columns = getSelectedDataColumnsInViewOrder(false);
+    if (columns.isEmpty() && fallbackColumn >= 0 && fallbackColumn < dataColumnCount()) {
+        columns.append(fallbackColumn);
+    }
+    return columns;
 }
 
 /**

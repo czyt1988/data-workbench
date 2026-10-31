@@ -386,6 +386,34 @@ QMenu* DADataHeaderView::buildColumnContextMenu(int logicalIndex)
     QAction* actCopyName = menu->addAction(QIcon(QStringLiteral(":/DAGui/icon/copy.svg")),
                                            tr("Copy Column Name"));  // cn:复制列名
     menu->addSeparator();
+    // 组2b：按选中列复制 / 导出（无选中列时作用于右键所在列；执行链路与数据
+    // 管理树的 dataframe 复制/导出共用 DATableExporter，只是列范围不同）
+    {
+        QMenu* copyAsMenu = menu->addMenu(QIcon(QStringLiteral(":/DAGui/icon/copy.svg")),
+                                          tr("Copy Selected Columns As"));  // cn:复制选中列为
+        QAction* actCopyTab = copyAsMenu->addAction(tr("Tab-separated Text"));  // cn:Tab 分隔文本
+        QAction* actCopyMd  = copyAsMenu->addAction(tr("Markdown Table"));      // cn:Markdown 表格
+        QAction* actCopyHtm = copyAsMenu->addAction(tr("HTML Table (with styles)"));  // cn:HTML 表格（含样式）
+        connect(actCopyTab, &QAction::triggered, this, [ this, logicalIndex ]() {
+            Q_EMIT columnDataCopyRequested(logicalIndex, ColumnDataFormat::TabText);
+        });
+        connect(actCopyMd, &QAction::triggered, this, [ this, logicalIndex ]() {
+            Q_EMIT columnDataCopyRequested(logicalIndex, ColumnDataFormat::Markdown);
+        });
+        connect(actCopyHtm, &QAction::triggered, this, [ this, logicalIndex ]() {
+            Q_EMIT columnDataCopyRequested(logicalIndex, ColumnDataFormat::Html);
+        });
+        QMenu* exportMenu = menu->addMenu(tr("Export Selected Columns"));  // cn:导出选中列
+        QAction* actExportMd  = exportMenu->addAction(tr("Markdown Document..."));  // cn:Markdown 文档...
+        QAction* actExportHtm = exportMenu->addAction(tr("HTML Document (with styles)..."));  // cn:HTML 文档（含样式）...
+        connect(actExportMd, &QAction::triggered, this, [ this, logicalIndex ]() {
+            Q_EMIT columnDataExportRequested(logicalIndex, ColumnDataFormat::Markdown);
+        });
+        connect(actExportHtm, &QAction::triggered, this, [ this, logicalIndex ]() {
+            Q_EMIT columnDataExportRequested(logicalIndex, ColumnDataFormat::Html);
+        });
+    }
+    menu->addSeparator();
     // 组3：定位最大 / 定位最小
     QAction* actGotoMax = menu->addAction(QIcon(QStringLiteral(":/DAGui/icon/gotoMax.svg")),
                                           tr("Goto Max"));  // cn:跳转到最大值
