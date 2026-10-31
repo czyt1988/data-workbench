@@ -67,6 +67,7 @@ set(DA_LIB_HEADER_FILES
     DASettingWidget.h
     DASpinBoxStyle.h
     DATableCellStyle.h
+    DATableExporter.h
     DATableDisplayFormat.h
     DATableDisplayFormatComboBox.h
     DATableStyleManager.h
@@ -141,6 +142,7 @@ set(DA_LIB_SOURCE_FILES
     DASettingWidget.cpp
     DASpinBoxStyle.cpp
     DATableCellStyle.cpp
+    DATableExporter.cpp
     DATableDisplayFormat.cpp
     DATableDisplayFormatComboBox.cpp
     DATableStyleManager.cpp

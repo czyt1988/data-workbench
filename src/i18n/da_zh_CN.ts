@@ -3358,7 +3358,7 @@
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+853"/>
+        <location filename="../APP/DAAppController.cpp" line="+855"/>
         <source>Save Project</source>
         <translation>保存工程</translation>
     </message>
@@ -3431,11 +3431,13 @@
     </message>
     <message>
         <location line="+1"/>
+        <location line="+337"/>
+        <location line="+99"/>
         <source>Cancel</source>
         <translation>取消</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="-432"/>
         <source>Import Data</source>
         <translation>导入数据</translation>
     </message>
@@ -3492,27 +3494,83 @@
         <translation>Parquet 文件</translation>
     </message>
     <message>
-        <location line="+19"/>
+        <location line="+1"/>
+        <location line="+235"/>
+        <source>Markdown File</source>
+        <translation>Markdown 文件</translation>
+    </message>
+    <message>
+        <location line="-234"/>
+        <location line="+235"/>
+        <source>HTML File</source>
+        <translation>HTML 文件</translation>
+    </message>
+    <message>
+        <location line="-212"/>
+        <location line="+223"/>
+        <location line="+21"/>
         <source>Export Data</source>
         <translation>导出数据</translation>
     </message>
     <message>
-        <location line="+33"/>
+        <location line="-202"/>
         <source>Cannot determine export format, please select a file suffix</source>
         <translation>无法确定导出格式，请选择带后缀的文件名</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location line="+16"/>
+        <location line="+212"/>
         <source>Data exported successfully, path: %1</source>
         <translation>数据导出成功，路径:%1</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="-210"/>
+        <location line="+206"/>
         <source>Data export failed, path: %1, reason: %2</source>
         <translation>数据导出失败，路径:%1，原因:%2</translation>
     </message>
     <message>
-        <location line="+49"/>
+        <location line="-179"/>
+        <source>Please select a dataset first</source>
+        <translation>请先选中数据集</translation>
+    </message>
+    <message>
+        <location line="+42"/>
+        <source>Copy Large Table</source>
+        <translation>复制大表</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>The table contains %1 rows x %2 columns. Copying it to the clipboard may take a while and use significant memory. Continue?</source>
+        <translation>表格共 %1 行 × %2 列，复制到剪贴板可能耗时较长并占用较多内存，是否继续？</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Copying table ...</source>
+        <translation>正在复制表格...</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Copy Table</source>
+        <translation>复制表格</translation>
+    </message>
+    <message>
+        <location line="+38"/>
+        <source>Table copied to clipboard (%1 rows x %2 columns)</source>
+        <translation>表格已复制到剪贴板（%1 行 × %2 列）</translation>
+    </message>
+    <message>
+        <location line="+53"/>
+        <source>Cannot open file for writing: %1</source>
+        <translation>无法打开文件进行写入:%1</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Exporting table ...</source>
+        <translation>正在导出表格...</translation>
+    </message>
+    <message>
+        <location line="+79"/>
         <source>Unsupported link type: %1</source>
         <translation>不支持的链接类型：%1</translation>
     </message>
@@ -3532,7 +3590,7 @@
         <translation>在创建一个坐标系之前，需要先创建一个绘图窗口</translation>
     </message>
     <message>
-        <location line="-1875"/>
+        <location line="-2105"/>
         <source>Please select the data operation window</source>
         <translation>请选中数据操作窗口</translation>
     </message>
@@ -3609,7 +3667,7 @@
         <translation>无法重命名series，请选中数据集</translation>
     </message>
     <message>
-        <location line="+248"/>
+        <location line="+478"/>
         <source>Figure &apos;%1&apos; not found, it may have been closed or renamed</source>
         <translation>未找到绘图&quot;%1&quot;，可能已关闭或被重命名</translation>
     </message>
@@ -3659,12 +3717,42 @@
         <translation>请先选择要绘图的列</translation>
     </message>
     <message>
-        <location line="+593"/>
+        <location line="+594"/>
+        <source>Copy As</source>
+        <translation>复制为</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Tab-separated Text</source>
+        <translation>Tab 分隔文本</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Markdown Table</source>
+        <translation>Markdown 表格</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>HTML Table (with styles)</source>
+        <translation>HTML 表格（含样式）</translation>
+    </message>
+    <message>
+        <location line="+11"/>
         <source>Export</source>
         <translation>导出</translation>
     </message>
     <message>
-        <location line="+156"/>
+        <location line="+7"/>
+        <source>Markdown Document...</source>
+        <translation>Markdown 文档...</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>HTML Document (with styles)...</source>
+        <translation>HTML 文档（含样式）...</translation>
+    </message>
+    <message>
+        <location line="+157"/>
         <source>New workflow name</source>
         <translation>新工作流名称</translation>
     </message>
@@ -3699,12 +3787,12 @@
         <translation>选中的数据源为空</translation>
     </message>
     <message>
-        <location line="-2726"/>
+        <location line="-2980"/>
         <source>Before running the workflow, you need to save the project</source>
         <translation>在运行工作流之前，需要先保存工程</translation>
     </message>
     <message>
-        <location line="+2015"/>
+        <location line="+2245"/>
         <source>Please select a column first</source>
         <translation>请先选择列</translation>
     </message>
@@ -5580,7 +5668,7 @@
 <context>
     <name>DA::DAChartAdd3DBarWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAdd3DBarWidget.cpp" line="+110"/>
+        <location filename="../DAGui/ChartAddItem/DAChartAdd3DBarWidget.cpp" line="+107"/>
         <source>Bar3D</source>
         <translation>3D柱状</translation>
     </message>
@@ -5596,7 +5684,7 @@
 <context>
     <name>DA::DAChartAdd3DSurfaceWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAdd3DSurfaceWidget.cpp" line="+120"/>
+        <location filename="../DAGui/ChartAddItem/DAChartAdd3DSurfaceWidget.cpp" line="+116"/>
         <source>Surface3D</source>
         <translation>3D曲面</translation>
     </message>
@@ -14033,7 +14121,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DA::DATableQuickPlotWindow</name>
     <message>
-        <location filename="../DAGui/TableChart/DATableQuickPlotWindow.cpp" line="+85"/>
+        <location filename="../DAGui/TableChart/DATableQuickPlotWindow.cpp" line="+84"/>
         <source>Select one or more columns first</source>
         <translation>请先选择一列或多列</translation>
     </message>
@@ -14183,12 +14271,12 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>（作为分类）</translation>
     </message>
     <message>
-        <location line="+29"/>
+        <location line="+122"/>
         <source>Loading data...</source>
         <translation>正在取数…</translation>
     </message>
     <message>
-        <location line="+21"/>
+        <location line="-50"/>
         <source>Based on %1 of %2 sampled rows</source>
         <translation>基于 %1 / %2 行采样</translation>
     </message>
@@ -14214,7 +14302,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     </message>
     <message>
         <location line="+3"/>
-        <location line="+125"/>
+        <location line="+144"/>
         <source>The data has changed, click Refresh to redraw</source>
         <translation>数据已变化，点击刷新</translation>
     </message>
@@ -14717,7 +14805,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-3866"/>
+        <location filename="../APP/DAAppController.cpp" line="-4096"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>
@@ -17586,6 +17674,29 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <location line="+27"/>
         <source>Fill</source>
         <translation>填充</translation>
+    </message>
+</context>
+<context>
+    <name>DATableExporter</name>
+    <message>
+        <location filename="../DAGui/DATableExporter.cpp" line="+272"/>
+        <source>Failed to read data block from row %1</source>
+        <translation>从第 %1 行读取数据块失败</translation>
+    </message>
+    <message>
+        <location line="+152"/>
+        <source>Operation canceled</source>
+        <translation>操作已取消</translation>
+    </message>
+    <message>
+        <location line="+103"/>
+        <source>Only table-shaped data can be exported</source>
+        <translation>仅支持导出表格型数据</translation>
+    </message>
+    <message>
+        <location line="+56"/>
+        <source>Output device is not open for writing</source>
+        <translation>输出设备未以写模式打开</translation>
     </message>
 </context>
 <context>

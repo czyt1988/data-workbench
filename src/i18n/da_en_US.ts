@@ -3342,7 +3342,7 @@
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+853"/>
+        <location filename="../APP/DAAppController.cpp" line="+855"/>
         <source>Save Project</source>
         <translation>Save Project</translation>
     </message>
@@ -3415,11 +3415,13 @@
     </message>
     <message>
         <location line="+1"/>
+        <location line="+337"/>
+        <location line="+99"/>
         <source>Cancel</source>
         <translation>Cancel</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="-432"/>
         <source>Import Data</source>
         <translation>Import Data</translation>
     </message>
@@ -3476,27 +3478,83 @@
         <translation>Parquet File</translation>
     </message>
     <message>
-        <location line="+19"/>
+        <location line="+1"/>
+        <location line="+235"/>
+        <source>Markdown File</source>
+        <translation>Markdown File</translation>
+    </message>
+    <message>
+        <location line="-234"/>
+        <location line="+235"/>
+        <source>HTML File</source>
+        <translation>HTML File</translation>
+    </message>
+    <message>
+        <location line="-212"/>
+        <location line="+223"/>
+        <location line="+21"/>
         <source>Export Data</source>
         <translation>Export Data</translation>
     </message>
     <message>
-        <location line="+33"/>
+        <location line="-202"/>
         <source>Cannot determine export format, please select a file suffix</source>
         <translation>Cannot determine export format, please select a file suffix</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location line="+16"/>
+        <location line="+212"/>
         <source>Data exported successfully, path: %1</source>
         <translation>Data exported successfully, path: %1</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="-210"/>
+        <location line="+206"/>
         <source>Data export failed, path: %1, reason: %2</source>
         <translation>Data export failed, path: %1, reason: %2</translation>
     </message>
     <message>
-        <location line="+49"/>
+        <location line="-179"/>
+        <source>Please select a dataset first</source>
+        <translation>Please select a dataset first</translation>
+    </message>
+    <message>
+        <location line="+42"/>
+        <source>Copy Large Table</source>
+        <translation>Copy Large Table</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>The table contains %1 rows x %2 columns. Copying it to the clipboard may take a while and use significant memory. Continue?</source>
+        <translation>The table contains %1 rows x %2 columns. Copying it to the clipboard may take a while and use significant memory. Continue?</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Copying table ...</source>
+        <translation>Copying table ...</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Copy Table</source>
+        <translation>Copy Table</translation>
+    </message>
+    <message>
+        <location line="+38"/>
+        <source>Table copied to clipboard (%1 rows x %2 columns)</source>
+        <translation>Table copied to clipboard (%1 rows x %2 columns)</translation>
+    </message>
+    <message>
+        <location line="+53"/>
+        <source>Cannot open file for writing: %1</source>
+        <translation>Cannot open file for writing: %1</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Exporting table ...</source>
+        <translation>Exporting table ...</translation>
+    </message>
+    <message>
+        <location line="+79"/>
         <source>Unsupported link type: %1</source>
         <translation>Unsupported link type: %1</translation>
     </message>
@@ -3516,7 +3574,7 @@
         <translation>Before creating a new coordinate, you need to create a figure</translation>
     </message>
     <message>
-        <location line="-1875"/>
+        <location line="-2105"/>
         <source>Please select the data operation window</source>
         <translation>Please select the data operation window</translation>
     </message>
@@ -3593,7 +3651,7 @@
         <translation>Cannot rename a series, please select a dataset</translation>
     </message>
     <message>
-        <location line="+248"/>
+        <location line="+478"/>
         <source>Figure &apos;%1&apos; not found, it may have been closed or renamed</source>
         <translation>Figure &apos;%1&apos; not found, it may have been closed or renamed</translation>
     </message>
@@ -3643,12 +3701,42 @@
         <translation>Select the columns to plot first</translation>
     </message>
     <message>
-        <location line="+593"/>
+        <location line="+594"/>
+        <source>Copy As</source>
+        <translation>Copy As</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Tab-separated Text</source>
+        <translation>Tab-separated Text</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Markdown Table</source>
+        <translation>Markdown Table</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>HTML Table (with styles)</source>
+        <translation>HTML Table (with styles)</translation>
+    </message>
+    <message>
+        <location line="+11"/>
         <source>Export</source>
         <translation>Export</translation>
     </message>
     <message>
-        <location line="+156"/>
+        <location line="+7"/>
+        <source>Markdown Document...</source>
+        <translation>Markdown Document...</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>HTML Document (with styles)...</source>
+        <translation>HTML Document (with styles)...</translation>
+    </message>
+    <message>
+        <location line="+157"/>
         <source>New workflow name</source>
         <translation>New workflow name</translation>
     </message>
@@ -3683,12 +3771,12 @@
         <translation>The selected data source is empty</translation>
     </message>
     <message>
-        <location line="-2726"/>
+        <location line="-2980"/>
         <source>Before running the workflow, you need to save the project</source>
         <translation>Before running the workflow, you need to save the project</translation>
     </message>
     <message>
-        <location line="+2015"/>
+        <location line="+2245"/>
         <source>Please select a column first</source>
         <translation>Please select a column first</translation>
     </message>
@@ -5564,7 +5652,7 @@
 <context>
     <name>DA::DAChartAdd3DBarWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAdd3DBarWidget.cpp" line="+110"/>
+        <location filename="../DAGui/ChartAddItem/DAChartAdd3DBarWidget.cpp" line="+107"/>
         <source>Bar3D</source>
         <translation>Bar3D</translation>
     </message>
@@ -5580,7 +5668,7 @@
 <context>
     <name>DA::DAChartAdd3DSurfaceWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAdd3DSurfaceWidget.cpp" line="+120"/>
+        <location filename="../DAGui/ChartAddItem/DAChartAdd3DSurfaceWidget.cpp" line="+116"/>
         <source>Surface3D</source>
         <translation>Surface3D</translation>
     </message>
@@ -14017,7 +14105,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DA::DATableQuickPlotWindow</name>
     <message>
-        <location filename="../DAGui/TableChart/DATableQuickPlotWindow.cpp" line="+85"/>
+        <location filename="../DAGui/TableChart/DATableQuickPlotWindow.cpp" line="+84"/>
         <source>Select one or more columns first</source>
         <translation>Select one or more columns first</translation>
     </message>
@@ -14167,12 +14255,12 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation> (as category)</translation>
     </message>
     <message>
-        <location line="+29"/>
+        <location line="+122"/>
         <source>Loading data...</source>
         <translation>Loading data...</translation>
     </message>
     <message>
-        <location line="+21"/>
+        <location line="-50"/>
         <source>Based on %1 of %2 sampled rows</source>
         <translation>Based on %1 of %2 sampled rows</translation>
     </message>
@@ -14198,7 +14286,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     </message>
     <message>
         <location line="+3"/>
-        <location line="+125"/>
+        <location line="+144"/>
         <source>The data has changed, click Refresh to redraw</source>
         <translation>The data has changed, click Refresh to redraw</translation>
     </message>
@@ -14701,7 +14789,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-3866"/>
+        <location filename="../APP/DAAppController.cpp" line="-4096"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>
@@ -17570,6 +17658,29 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <location line="+27"/>
         <source>Fill</source>
         <translation>Fill</translation>
+    </message>
+</context>
+<context>
+    <name>DATableExporter</name>
+    <message>
+        <location filename="../DAGui/DATableExporter.cpp" line="+272"/>
+        <source>Failed to read data block from row %1</source>
+        <translation>Failed to read data block from row %1</translation>
+    </message>
+    <message>
+        <location line="+152"/>
+        <source>Operation canceled</source>
+        <translation>Operation canceled</translation>
+    </message>
+    <message>
+        <location line="+103"/>
+        <source>Only table-shaped data can be exported</source>
+        <translation>Only table-shaped data can be exported</translation>
+    </message>
+    <message>
+        <location line="+56"/>
+        <source>Output device is not open for writing</source>
+        <translation>Output device is not open for writing</translation>
     </message>
 </context>
 <context>

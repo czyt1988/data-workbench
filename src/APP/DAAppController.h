@@ -5,6 +5,7 @@
 #include <QAction>
 #include <QUndoStack>
 #include <QScopedPointer>
+#include <memory>
 #include <QJsonObject>
 #include "DADataManageWidget.h"
 #include "DAPyWorkFlowGraphicsScene.h"
@@ -12,6 +13,7 @@
 #include "DAFigureWidget.h"
 #include "numpy/DAPyDType.h"
 #include "DATableDisplayFormat.h"
+#include "DATableExporter.h"
 #include "DAChart3DWidget.h"
 #include "qwt3d_plotitem.h"
 #include "DAAgentLinkDispatcher.h"
@@ -568,6 +570,17 @@ private:
     // 执行导出：取选中数据集 → 保存对话框 → exportToFile → daInfo/daWarning 反馈
     // format 非空时直接使用（子菜单路径），为空时由文件后缀判定（大按钮路径）
     void exportSelectedData(const QString& format);
+    // 把选中的 dataframe 数据集复制到剪贴板（数据管理树右键「复制为」入口）：
+    // fmt 决定目标形态（Tab 文本/Markdown/HTML），经 DATableExporter 构建；
+    // 超大表先确认（isLargeForCopy 阈值），构建期间进度对话框可取消
+    void copySelectedDataAsTable(DA::DATableExporter::Format fmt);
+    // 导出选中数据集为 Markdown/HTML（右键导出子菜单与主导出按钮共用）：
+    // 取数/渲染与复制共用 DATableExporter，增量写入文件；path 非空时跳过保存
+    // 对话框（主导出按钮已选好路径）
+    void exportSelectedDataAsDocument(DA::DATableExporter::Format fmt, const QString& path = QString());
+    // 取要操作的数据集（优先数据管理树选中，回退当前操作数据）与对应表元数据束，
+    // 成功构造 DATableExporter 返回 true（exporter/dataOut 为出参；束可为空=无样式）
+    bool makeExporterForSelection(std::unique_ptr< DA::DATableExporter >* exporter, DA::DAData* dataOut = nullptr) const;
     // 执行 Python 统计绘图的公共逻辑
     void executeStatsPlot(const QJsonObject& params, DA::DAFigureWidget* fig, DA::DAChartWidget* chart, const DAData& data);
     // 确保当前 Figure 和 Chart 存在（不存在则创建）

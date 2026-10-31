@@ -16,6 +16,8 @@
 #include <QItemSelectionModel>
 #include <QAbstractItemModel>
 #include <QClipboard>
+#include <QFile>
+#include <QMimeData>
 #include <QUrl>
 // qwt
 #include "qwt_figure.h"
@@ -2542,6 +2544,8 @@ void DAAppController::exportSelectedData(const QString& format)
     QString excelFilter   = tr("Excel File") + QStringLiteral(" (*.xlsx)");  // cn:Excel 文件
     QString pickleFilter  = tr("Pickle File") + QStringLiteral(" (*.pkl)");  // cn:Pickle 文件
     QString parquetFilter = tr("Parquet File") + QStringLiteral(" (*.parquet)");  // cn:Parquet 文件
+    QString mdFilter      = tr("Markdown File") + QStringLiteral(" (*.md)");  // cn:Markdown 文件
+    QString htmlFilter    = tr("HTML File") + QStringLiteral(" (*.html)");    // cn:HTML 文件
     QString selectedFilter;
     if (format == "csv") {
         selectedFilter = csvFilter;
@@ -2551,6 +2555,10 @@ void DAAppController::exportSelectedData(const QString& format)
         selectedFilter = pickleFilter;
     } else if (format == "parquet") {
         selectedFilter = parquetFilter;
+    } else if (format == "markdown") {
+        selectedFilter = mdFilter;
+    } else if (format == "html") {
+        selectedFilter = htmlFilter;
     }
     QString defaultSuffix;
     if (!selectedFilter.isEmpty()) {
@@ -2562,7 +2570,8 @@ void DAAppController::exportSelectedData(const QString& format)
     QString path = QFileDialog::getSaveFileName(app(),
                                                 tr("Export Data"),  // cn:导出数据
                                                 name,
-                                                csvFilter + ";;" + excelFilter + ";;" + pickleFilter + ";;" + parquetFilter,
+                                                csvFilter + ";;" + excelFilter + ";;" + pickleFilter + ";;" + parquetFilter + ";;"
+                                                    + mdFilter + ";;" + htmlFilter,
                                                 &selectedFilter);
     if (path.isEmpty()) {
         return;
@@ -2578,6 +2587,10 @@ void DAAppController::exportSelectedData(const QString& format)
             fmt = "pickle";
         } else if (selectedFilter == parquetFilter) {
             fmt = "parquet";
+        } else if (selectedFilter == mdFilter) {
+            fmt = "markdown";
+        } else if (selectedFilter == htmlFilter) {
+            fmt = "html";
         }
     }
     if (fmt.isEmpty()) {
@@ -2590,6 +2603,10 @@ void DAAppController::exportSelectedData(const QString& format)
             fmt = "pickle";
         } else if (suffix == "parquet") {
             fmt = "parquet";
+        } else if (suffix == "md" || suffix == "markdown") {
+            fmt = "markdown";
+        } else if (suffix == "html" || suffix == "htm") {
+            fmt = "html";
         }
     }
     if (fmt.isEmpty()) {
@@ -2600,6 +2617,12 @@ void DAAppController::exportSelectedData(const QString& format)
     if (QFileInfo(path).suffix().isEmpty() && !defaultSuffix.isEmpty()) {
         path += QStringLiteral(".") + defaultSuffix;
     }
+    // Markdown/HTML 文档格式走文档导出路径（DATableExporter，含样式增量写入），
+    // 其余格式走 Python io 导出；路径已选好，直接透传（不再弹保存对话框）
+    if (fmt == "markdown" || fmt == "html") {
+        exportSelectedDataAsDocument(fmt == "markdown" ? DATableExporter::Format::Markdown : DATableExporter::Format::Html, path);
+        return;
+    }
     QString err;
     DA_WAIT_CURSOR_SCOPED();
     if (mDatas->exportToFile(d, path, fmt, &err)) {
@@ -2607,6 +2630,215 @@ void DAAppController::exportSelectedData(const QString& format)
     } else {
         daWarning << tr("Data export failed, path: %1, reason: %2").arg(path, err);  // cn:数据导出失败，路径:%1，原因:%2
     }
+}
+
+/**
+ * @brief 取要操作的数据集并构造 DATableExporter（复制/导出 Markdown 与 HTML 共用）
+ *
+ * 数据选择口径与 exportSelectedData 一致：优先数据管理树选中，无选中回退当前
+ * 操作数据。元数据束按数据查注册表（get：束随数据存在、页面关闭不销毁；无束
+ * = 纯数据导出，不带样式）。exporter 有效性由调用方经 isValid() 复核。
+ * @param exporter 出参（构造好的导出器）
+ * @param dataOut 非空时回填所选数据（保存对话框默认文件名用）
+ * @return 构造成功返回 true
+ */
+bool DAAppController::makeExporterForSelection(std::unique_ptr< DATableExporter >* exporter, DAData* dataOut) const
+{
+    if (!exporter) {
+        return false;
+    }
+    QList< DAData > datas = mDatas->getSelectDatas();
+    DAData d;
+    if (!datas.isEmpty()) {
+        d = datas.first();
+    } else {
+        d = mDatas->getOperateData();
+    }
+    if (d.isNull()) {
+        daWarning << tr("Please select a dataset first");  // cn:请先选中数据集
+        return false;
+    }
+    if (dataOut) {
+        *dataOut = d;
+    }
+    // 元数据束（样式/条件格式/批注）：有则带样式导出，无则纯数据
+    DATableMetadata* meta = nullptr;
+    if (DADataOperateWidget* dow = getDataOperateWidget()) {
+        if (DATableMetadataRegistry* reg = dow->metadataRegistry()) {
+            meta = reg->get(d);
+        }
+    }
+    exporter->reset(new DATableExporter(d, meta));
+    QString why;
+    if (!(*exporter)->isValid(&why)) {
+        daWarning << why;
+        return false;
+    }
+    return true;
+}
+
+/**
+ * @brief 把选中的数据集整表复制到剪贴板（数据管理树右键「复制为」入口）
+ *
+ * Tab 文本与表格内选区复制同口径；HTML 经 text/html mime 富文本粘贴
+ * （Word/浏览器/邮件直接保留背景色与字体），纯文本回退为同内容的 Markdown
+ * 之外的兜底（这里用 Tab 文本，Word 里「选择性粘贴-无格式文本」得到同款表格）。
+ * 超大表（isLargeForCopy 阈值）先弹确认，避免一次性构建大字符串卡界面；
+ * 构建期间进度对话框可取消（块边界生效）。
+ * @param fmt 目标形态
+ */
+void DAAppController::copySelectedDataAsTable(DATableExporter::Format fmt)
+{
+    std::unique_ptr< DATableExporter > exporter;
+    if (!makeExporterForSelection(&exporter)) {
+        return;
+    }
+    // 大小确认：复制需把整表渲染成字符串驻留内存，超大表先提醒
+    if (DATableExporter::isLargeForCopy(exporter->rowCount(), exporter->columnCount())) {
+        QMessageBox::StandardButton btn = QMessageBox::question(
+            mMainWindow,
+            tr("Copy Large Table"),  // cn:复制大表
+            tr("The table contains %1 rows x %2 columns. Copying it to the clipboard may take a while and use "
+               "significant memory. Continue?")  // cn:表格共 %1 行 × %2 列，复制到剪贴板可能耗时较长并占用较多内存，是否继续？
+                .arg(exporter->rowCount())
+                .arg(exporter->columnCount()),
+            QMessageBox::Yes | QMessageBox::No,
+            QMessageBox::No);
+        if (btn != QMessageBox::Yes) {
+            return;
+        }
+    }
+    QProgressDialog progress(tr("Copying table ..."),  // cn:正在复制表格...
+                             tr("Cancel"),              // cn:取消
+                             0,
+                             100,
+                             mMainWindow);
+    progress.setWindowTitle(tr("Copy Table"));  // cn:复制表格
+    progress.setWindowModality(Qt::WindowModal);
+    progress.setMinimumDuration(0);
+    // 块边界推进进度并抽事件循环（进度可见 + 取消可点）
+    auto processEvents = [&progress]() {
+        QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
+        return progress.wasCanceled();
+    };
+    QString text;
+    QString err;
+    DA_WAIT_CURSOR_SCOPED();
+    const bool ok = exporter->toString(fmt, &text, &err,
+                                      [ &progress ](qint64 done, qint64 total) {
+                                          if (total > 0) {
+                                              progress.setValue(static_cast< int >(done * 100 / total));
+                                          }
+                                      },
+                                      processEvents);
+    progress.setValue(100);
+    if (!ok) {
+        if (!err.isEmpty()) {
+            daWarning << err;
+        }
+        return;
+    }
+    QClipboard* cb = QGuiApplication::clipboard();
+    if (!cb) {
+        return;
+    }
+    if (fmt == DATableExporter::Format::Html) {
+        // HTML mime + 纯文本回退：Word/Excel/浏览器按 text/html 富文本粘贴
+        QMimeData* mime = new QMimeData();
+        mime->setHtml(text);
+        mime->setText(text);
+        cb->setMimeData(mime);
+    } else {
+        cb->setText(text);
+    }
+    daInfo << tr("Table copied to clipboard (%1 rows x %2 columns)")  // cn:表格已复制到剪贴板（%1 行 × %2 列）
+                  .arg(exporter->rowCount())
+                  .arg(exporter->columnCount());
+}
+
+/**
+ * @brief 导出选中数据集为 Markdown/HTML 文档（右键导出子菜单与主导出按钮共用）
+ *
+ * 与复制共用 DATableExporter 的取数与渲染核心；文件路径增量写入
+ * （QTextStream），任意大表内存占用恒定，不做大小确认。
+ * 导出期间进度对话框可取消；取消时删除半成品文件。
+ * path 非空时跳过保存对话框（主导出按钮路径已选好路径，按 fmt 判定格式）。
+ * @param fmt Markdown 或 HTML
+ * @param path 已选定的目标路径（空 = 弹保存对话框）
+ */
+void DAAppController::exportSelectedDataAsDocument(DATableExporter::Format fmt, const QString& path)
+{
+    std::unique_ptr< DATableExporter > exporter;
+    DAData d;
+    if (!makeExporterForSelection(&exporter, &d)) {
+        return;
+    }
+    QString targetPath = path;
+    if (targetPath.isEmpty()) {
+        QString name = d.getName();
+        if (name.isEmpty()) {
+            name = QStringLiteral("data");
+        }
+        QString mdFilter   = tr("Markdown File") + QStringLiteral(" (*.md)");  // cn:Markdown 文件
+        QString htmlFilter = tr("HTML File") + QStringLiteral(" (*.html)");    // cn:HTML 文件
+        QString selectedFilter;
+        QString defaultSuffix;
+        if (fmt == DATableExporter::Format::Markdown) {
+            selectedFilter = mdFilter;
+            defaultSuffix  = QStringLiteral("md");
+        } else {
+            selectedFilter = htmlFilter;
+            defaultSuffix  = QStringLiteral("html");
+        }
+        targetPath = QFileDialog::getSaveFileName(app(),
+                                                  tr("Export Data"),  // cn:导出数据
+                                                  name,
+                                                  mdFilter + ";;" + htmlFilter,
+                                                  &selectedFilter);
+        if (targetPath.isEmpty()) {
+            return;
+        }
+        if (QFileInfo(targetPath).suffix().isEmpty()) {
+            targetPath += QStringLiteral(".") + defaultSuffix;
+        }
+    }
+    QFile file(targetPath);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+        daWarning << tr("Cannot open file for writing: %1").arg(targetPath);  // cn:无法打开文件进行写入:%1
+        return;
+    }
+    QProgressDialog progress(tr("Exporting table ..."),  // cn:正在导出表格...
+                             tr("Cancel"),                // cn:取消
+                             0,
+                             100,
+                             mMainWindow);
+    progress.setWindowTitle(tr("Export Data"));  // cn:导出数据
+    progress.setWindowModality(Qt::WindowModal);
+    progress.setMinimumDuration(0);
+    auto processEvents = [&progress]() {
+        QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
+        return progress.wasCanceled();
+    };
+    QString err;
+    DA_WAIT_CURSOR_SCOPED();
+    const bool ok = exporter->write(fmt, &file, &err,
+                                   [ &progress ](qint64 done, qint64 total) {
+                                       if (total > 0) {
+                                           progress.setValue(static_cast< int >(done * 100 / total));
+                                       }
+                                   },
+                                   processEvents);
+    progress.setValue(100);
+    file.close();
+    if (!ok) {
+        // 取消/失败不留半成品
+        QFile::remove(targetPath);
+        if (!err.isEmpty()) {
+            daWarning << tr("Data export failed, path: %1, reason: %2").arg(targetPath, err);  // cn:数据导出失败，路径:%1，原因:%2
+        }
+        return;
+    }
+    daInfo << tr("Data exported successfully, path: %1").arg(targetPath);  // cn:数据导出成功，路径:%1
 }
 
 /**
@@ -4281,18 +4513,42 @@ void DAAppController::setupDataManagerTreeContextMenu(DADataManagerTreeWidget* w
         if (!DADataManagerTreeModel::isDataframeItem(item)) {
             return;
         }
-        // ---- 数据集（dataframe）条目：重命名 / 移除数据 / 导出（复用 ribbon action）----
+        // ---- 数据集（dataframe）条目：重命名 / 移除数据 / 复制为 / 导出 ----
         // 右键先选中该条目，保证后续槽函数操作的就是此条目
         tv->setCurrentIndex(proxyIndex);
         QMenu menu(w);
         menu.addAction(mActions->actionRenameData);
         menu.addAction(mActions->actionRemoveData);
+        // 复制为（整表复制到剪贴板；Tab/Markdown/HTML，与导出共用 DATableExporter）
+        QMenu* copyMenu = menu.addMenu(mActions->actionCopy->icon(), tr("Copy As"));  // cn:复制为
+        QAction* actCopyTab = copyMenu->addAction(tr("Tab-separated Text"));  // cn:Tab 分隔文本
+        QAction* actCopyMd  = copyMenu->addAction(tr("Markdown Table"));      // cn:Markdown 表格
+        QAction* actCopyHtm = copyMenu->addAction(tr("HTML Table (with styles)"));  // cn:HTML 表格（含样式）
+        connect(actCopyTab, &QAction::triggered, this, [ this ]() {
+            copySelectedDataAsTable(DATableExporter::Format::TabText);
+        });
+        connect(actCopyMd, &QAction::triggered, this, [ this ]() {
+            copySelectedDataAsTable(DATableExporter::Format::Markdown);
+        });
+        connect(actCopyHtm, &QAction::triggered, this, [ this ]() {
+            copySelectedDataAsTable(DATableExporter::Format::Html);
+        });
+        // 导出（csv/excel/pickle/parquet 复用 ribbon action；Markdown/HTML 走文档导出）
         QMenu* exportMenu = menu.addMenu(tr("Export"));  // cn:导出
         exportMenu->setIcon(mActions->actionExportData->icon());
         exportMenu->addAction(mActions->actionExportDataCsv);
         exportMenu->addAction(mActions->actionExportDataExcel);
         exportMenu->addAction(mActions->actionExportDataPickle);
         exportMenu->addAction(mActions->actionExportDataParquet);
+        exportMenu->addSeparator();
+        QAction* actExportMd  = exportMenu->addAction(tr("Markdown Document..."));  // cn:Markdown 文档...
+        QAction* actExportHtm = exportMenu->addAction(tr("HTML Document (with styles)..."));  // cn:HTML 文档（含样式）...
+        connect(actExportMd, &QAction::triggered, this, [ this ]() {
+            exportSelectedDataAsDocument(DATableExporter::Format::Markdown);
+        });
+        connect(actExportHtm, &QAction::triggered, this, [ this ]() {
+            exportSelectedDataAsDocument(DATableExporter::Format::Html);
+        });
         menu.exec(tv->viewport()->mapToGlobal(pos));
     });
 }
