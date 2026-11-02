@@ -101,6 +101,8 @@ public:
     std::function< void() > notifyDataModified;
     // 表头拾取模式查询（图表「选择序列」会话期间排序入口不生效）；空 = 非拾取模式
     std::function< bool() > isHeaderPickMode;
+    // 就地替换生效后的整页刷新（模型 reset + 清排序规格；超大表降级路径用）；空 = 不刷新
+    std::function< void() > refreshAfterInplaceReplace;
 
 private:
     DAData mData;

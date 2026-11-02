@@ -21034,4 +21034,38 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>填充操作</translation>
     </message>
 </context>
+<context>
+    <name>DA::DATableResultOps</name>
+    <message>
+        <location filename="../DAGui/TableOps/DATableResultOps.cpp" line="+0"/>
+        <source>(no table metadata to clear)</source>
+        <translation>（无需要清除的表元数据）</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableResultOps.cpp" line="+1"/>
+        <source>Replace In Place</source>
+        <translation>就地替换</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableResultOps.cpp" line="+1"/>
+        <source>The table is very large (%1 cells). Keeping the old data for undo would double memory usage, so this in-place replacement will NOT be undoable. Continue?</source>
+        <translation>表格过大（%1 单元格）。保留旧数据用于撤销将使内存翻倍，本次就地替换将不可撤销。是否继续？</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableResultOps.cpp" line="+1"/>
+        <source>Result Operations</source>
+        <translation>结果落库</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableResultOps.cpp" line="+1"/>
+        <source>Replacing in place will clear the following table metadata:
+%1
+
+Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
+        <translation>就地替换将清除本表的以下元数据：
+%1
+
+数据与元数据共用一个撤销单元（Ctrl+Z 一并还原）。是否继续？</translation>
+    </message>
+</context>
 </TS>

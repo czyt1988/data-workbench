@@ -21009,4 +21009,38 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>Fill Operations</translation>
     </message>
 </context>
+<context>
+    <name>DA::DATableResultOps</name>
+    <message>
+        <location filename="../DAGui/TableOps/DATableResultOps.cpp" line="+0"/>
+        <source>(no table metadata to clear)</source>
+        <translation>(no table metadata to clear)</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableResultOps.cpp" line="+1"/>
+        <source>Replace In Place</source>
+        <translation>Replace In Place</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableResultOps.cpp" line="+1"/>
+        <source>The table is very large (%1 cells). Keeping the old data for undo would double memory usage, so this in-place replacement will NOT be undoable. Continue?</source>
+        <translation>The table is very large (%1 cells). Keeping the old data for undo would double memory usage, so this in-place replacement will NOT be undoable. Continue?</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableResultOps.cpp" line="+1"/>
+        <source>Result Operations</source>
+        <translation>Result Operations</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableResultOps.cpp" line="+1"/>
+        <source>Replacing in place will clear the following table metadata:
+%1
+
+Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
+        <translation>Replacing in place will clear the following table metadata:
+%1
+
+Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</translation>
+    </message>
+</context>
 </TS>
