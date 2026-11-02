@@ -61,6 +61,9 @@
 // 表格子窗口容器（快速绘图的承载框架，也可贴入其它窗口）
 #include "TableChildWindow/DATableChildWindow.h"
 #include "TableChildWindow/DATableChildWindowContainer.h"
+// 表格页核心（008 期1：页面上下文 + 选区服务）
+#include "TableCore/DATablePageContext.h"
+#include "TableCore/DATableSelectionService.h"
 // Dialog
 #include "Dialog/DARenameColumnsNameDialog.h"
 #include "Dialog/DADialogDataframeColumnCastToNumeric.h"
@@ -83,6 +86,36 @@
 #include "DAPyScripts.h"
 #include "DAPyScriptsDataFrame.h"
 #include <climits>
+
+//===================================================
+// 008 表格页重构 · 分区索引（迁移路线见 tmp/plan-表格页重构与职责拆分.md §5）
+//
+// 期1 已迁出（src/DAGui/TableCore/）：
+//   DATablePageContext      —— 依赖注入载体：模型/主窗格/元数据束聚合
+//   DATableSelectionService —— 选区/坐标纯查询（~20 个选区方法，本文件保留 public 一行转发）
+//
+// 本文件分区（自上而下，期号 = 计划迁出的目标归属）：
+//   匿名空间工具      —— toUniqueSorted/toIdentSet/mergeFrozenOrder（列视图与粘贴用）
+//   构造/析构         —— 窗格装配接线 + store→模型连接（期2 收口 DATableMutationCoordinator）
+//   数据操作          —— insertRow/removeColumns/paste/cut/rename/cast（期4 Strategy 算子）
+//   选区/坐标（转发） —— getSelected*/selection*/currentActualCell → DATableSelectionService
+//   导航             —— ensureColumnVisible/locateActualCell/showGotoDialog（期3 NavigationService）
+//   视图状态          —— applyViewStateFromStore/列宽/行高（期3 ViewStateController）
+//   列视图            —— 隐藏/冻结/列序/列视图对话框（期3 ColumnViewController）
+//   样式/显示格式      —— mergeStyleToSelection 等（期3 StyleController）
+//   排序             —— sortSpec/applySortAction（期3 SortController）
+//   查找/替换         —— showFindReplace/runFindScan/applyFindReplace（期3 FindController）
+//   条件格式          —— showConditionalFormatDialog/populateConditionalFormatMenu（期3 CF 控制器）
+//   ==== 计算列 ====        ——（期3 ComputedColumnController）
+//   ==== 分列 / 合并列 ====  ——（期4 算子）
+//   ==== 分组聚合 ====      ——（期4 算子）
+//   ==== 转置 / melt ====   ——（期4 算子）
+//   ==== 填充 ====          ——（期4 算子）
+//   ==== 数据校验 ====      ——（期3 ValidationController）
+//   ==== 单元格批注 ====    ——（期3 NoteController）
+//   ==== 表内快速绘图 ====  ——（期3 QuickPlotController）
+//   表格子窗口容器    —— tableChildWindowContainer/tableChildWindowBounds/closeQuickPlot
+//===================================================
 
 //===================================================
 // using DA namespace -- 禁止在头文件using!!
@@ -147,30 +180,7 @@ QList< QPair< QString, int > > mergeFrozenOrder(const QList< QPair< QString, int
     return res;
 }
 
-// 一维闭区间的合并覆盖长度（「整列/整行是否全选」判定用）：排序后归并相邻/重叠段再累加，
-// 对重叠选区段也不会重复计数。按值传入以便就地排序（段数 = 触及该列/行的选区段数，很小）
-int mergedSpanCoverage(QVector< QPair< int, int > > spans)
-{
-    if (spans.isEmpty()) {
-        return 0;
-    }
-    std::sort(spans.begin(), spans.end());
-    int covered  = 0;
-    int curStart = spans.first().first;
-    int curEnd   = spans.first().second;
-    for (int i = 1; i < spans.size(); ++i) {
-        const QPair< int, int >& s = spans.at(i);
-        if (s.first > curEnd + 1) {
-            covered += curEnd - curStart + 1;
-            curStart  = s.first;
-            curEnd    = s.second;
-        } else {
-            curEnd = qMax(curEnd, s.second);
-        }
-    }
-    covered += curEnd - curStart + 1;
-    return covered;
-}
+// 一维闭区间的合并覆盖长度已随选区查询迁入 DATableSelectionService（008 期1）
 }
 
 //===================================================
@@ -287,6 +297,16 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
             ui->tableView->viewport()->update();
         });
     }
+    // 表格页上下文（008 期1）：模型/主窗格/元数据束聚合为依赖注入载体；
+    // 选区/坐标查询全部收口到 DATableSelectionService（纯 const 查询，不持有窗口）
+    mContext = std::make_unique< DATablePageContext >();
+    mContext->setModel(mModel);
+    mContext->setMainView(ui->tableView);
+    mContext->setPaneContainer(mPaneContainer);
+    mContext->setMetadata(mMetadata);
+    mContext->setHighlightOverlay(mHighlightOverlay);
+    mContext->setData(d);
+    mSelection = std::make_unique< DATableSelectionService >(*mContext);
     // 窗格装配（006b 抽取的唯一装配点）：表头替换 → setModel → 委托 → 逐窗格连接；
     // 必须在 mStyleDelegate 创建之后（里面要用它），在 setDAData/applyViewStateFromStore 之前
     configurePaneView(ui->tableView);
@@ -659,6 +679,7 @@ void DADataOperateOfDataFrameWidget::setDAData(const DA::DAData& d)
     // 切换数据集后浮窗绑定的列身份与数据快照都失效，直接关闭（实施方案 §5.3）
     closeQuickPlot();
     mData = d;
+    mContext->setData(d);  // 上下文随宿主换数据（008 期1）
     // 数据替换后旧排序规格（列位置+方向）失去意义，清除（排序规格不持久化，R13）
     mSortSpec.clear();
     forEachPaneHeader([ this ](DADataHeaderView* hh) { hh->setSortSpec(mSortSpec); });
@@ -1580,11 +1601,7 @@ DAPyDataFrame DADataOperateOfDataFrameWidget::createDataDescribe()
  */
 bool DADataOperateOfDataFrameWidget::isDataframeTableHaveSelection() const
 {
-    const QItemSelectionModel* selectionModel = ui->tableView->selectionModel();
-    if (!selectionModel) {
-        return false;
-    }
-    return selectionModel->hasSelection();
+    return mSelection->haveSelection();
 }
 
 /**
@@ -1604,33 +1621,7 @@ DADataTableView* DADataOperateOfDataFrameWidget::getDataTableView() const
  */
 QList< int > DADataOperateOfDataFrameWidget::getSelectedDataframeCoumns(bool ensureInDataframe) const
 {
-    QList< int > res;
-    QItemSelectionModel* selModel = ui->tableView->selectionModel();
-    if (!selModel) {
-        return res;
-    }
-    // 按选区区间展开列号（全选卡顿修复：不再 selectedIndexes 物化整个选区，
-    // 全选时开销从 窗口行数×列数 降为 选中列数）
-    int dfCols = -1;
-    if (ensureInDataframe) {
-        // 确保返回的列数都在dataframe里
-        DAPyDataFrame df = getDataframe();
-        if (df.isNone()) {
-            return res;
-        }
-        dfCols = static_cast< int >(df.shape().second);
-    }
-    QSet< int > colSet;
-    const QItemSelection sel = selModel->selection();
-    for (const QItemSelectionRange& r : sel) {
-        for (int c = r.left(); c <= r.right(); ++c) {
-            if (dfCols >= 0 && c >= dfCols) {
-                continue;
-            }
-            colSet.insert(c);
-        }
-    }
-    return colSet.values();
+    return mSelection->selectedDataframeColumns(ensureInDataframe);
 }
 
 /**
@@ -1640,26 +1631,7 @@ QList< int > DADataOperateOfDataFrameWidget::getSelectedDataframeCoumns(bool ens
  */
 QList< int > DADataOperateOfDataFrameWidget::getSelectedDataframeRows(bool ensureInDataframe) const
 {
-    QList< int > res;
-    QItemSelectionModel* selModel = ui->tableView->selectionModel();
-    if (!selModel) {
-        return res;
-    }
-    // 按选区区间展开行号（全选卡顿修复：不再 selectedIndexes 物化整个选区）
-    const int rowCount = dataRowCount();
-    QSet< int > rowSet;
-    const QItemSelection sel = selModel->selection();
-    for (const QItemSelectionRange& r : sel) {
-        // 视图行号是滑动窗内的逻辑行，数据操作一律用数据源绝对行
-        for (int vr = r.top(); vr <= r.bottom(); ++vr) {
-            const int actualRow = toActualRow(vr);
-            if (ensureInDataframe && actualRow >= rowCount) {
-                continue;
-            }
-            rowSet.insert(actualRow);
-        }
-    }
-    return rowSet.values();
+    return mSelection->selectedDataframeRows(ensureInDataframe);
 }
 
 /**
@@ -1672,10 +1644,7 @@ QList< int > DADataOperateOfDataFrameWidget::getSelectedDataframeRows(bool ensur
  */
 int DADataOperateOfDataFrameWidget::toActualRow(int viewRow) const
 {
-    if (!ui->tableView) {
-        return viewRow;
-    }
-    return ui->tableView->toActualRow(viewRow);
+    return mContext->toActualRow(viewRow);
 }
 
 /**
@@ -1684,16 +1653,7 @@ int DADataOperateOfDataFrameWidget::toActualRow(int viewRow) const
  */
 int DADataOperateOfDataFrameWidget::dataRowCount() const
 {
-    if (mModel) {
-        // actualRowCount() 本就不含尾部预留空行（rowCount=窗口行数，total=actual+extra
-        // 仅用于滚动条上界）——此前误减 getExtraRowCount() 会把 N 行表算成 N-1 行（007 修复）
-        return qMax(0, mModel->actualRowCount());
-    }
-    DAPyDataFrame df = getDataframe();
-    if (df.isNone()) {
-        return 0;
-    }
-    return static_cast< int >(df.shape().first);
+    return mContext->dataRowCount();
 }
 
 /**
@@ -1706,44 +1666,7 @@ int DADataOperateOfDataFrameWidget::dataRowCount() const
  */
 QList< int > DADataOperateOfDataFrameWidget::getFullySelectedDataframeColumns(bool ensureInDataframe) const
 {
-    QList< int > res;
-    QItemSelectionModel* selModel = ui->tableView->selectionModel();
-    if (!selModel) {
-        return res;
-    }
-    QAbstractItemModel* m = ui->tableView->model();
-    if (!m) {
-        return res;
-    }
-    const int rowCount = m->rowCount();
-    const int colCount = m->columnCount();
-    if (rowCount <= 0 || colCount <= 0) {
-        return res;
-    }
-    int colLimit = colCount;
-    if (ensureInDataframe) {
-        // 确保返回的列数都在dataframe里
-        DAPyDataFrame df = getDataframe();
-        if (df.isNone()) {
-            return res;
-        }
-        colLimit = qMin(colCount, static_cast< int >(df.shape().second));
-    }
-    // 逐列收集选中的行闭区间（只收 colLimit 内的列）
-    QHash< int, QVector< QPair< int, int > > > colSpans;
-    const QItemSelection sel = selModel->selection();
-    for (const QItemSelectionRange& r : sel) {
-        for (int c = qMax(0, r.left()); c <= r.right() && c < colLimit; ++c) {
-            colSpans[ c ].append(qMakePair(r.top(), r.bottom()));
-        }
-    }
-    // 合并区间后覆盖满全部模型行 → 整列选中
-    for (auto it = colSpans.constBegin(); it != colSpans.constEnd(); ++it) {
-        if (mergedSpanCoverage(it.value()) >= rowCount) {
-            res.append(it.key());
-        }
-    }
-    return res;
+    return mSelection->fullySelectedDataframeColumns(ensureInDataframe);
 }
 
 /**
@@ -1755,88 +1678,17 @@ QList< int > DADataOperateOfDataFrameWidget::getFullySelectedDataframeColumns(bo
  */
 QList< int > DADataOperateOfDataFrameWidget::getFullySelectedDataframeRows(bool ensureInDataframe) const
 {
-    QList< int > res;
-    QItemSelectionModel* selModel = ui->tableView->selectionModel();
-    if (!selModel) {
-        return res;
-    }
-    QAbstractItemModel* m = ui->tableView->model();
-    if (!m) {
-        return res;
-    }
-    const int colCount = m->columnCount();
-    if (colCount <= 0) {
-        return res;
-    }
-    // 逐行（窗口内逻辑行）收集选中的列闭区间
-    QHash< int, QVector< QPair< int, int > > > rowSpans;
-    const QItemSelection sel = selModel->selection();
-    for (const QItemSelectionRange& r : sel) {
-        for (int vr = r.top(); vr <= r.bottom(); ++vr) {
-            rowSpans[ vr ].append(qMakePair(r.left(), r.right()));
-        }
-    }
-    const int dataRows = dataRowCount();
-    for (auto it = rowSpans.constBegin(); it != rowSpans.constEnd(); ++it) {
-        if (mergedSpanCoverage(it.value()) < colCount) {
-            continue;
-        }
-        // 视图行号是滑动窗内的逻辑行，返回值一律用数据源绝对行
-        const int actualRow = toActualRow(it.key());
-        if (ensureInDataframe && actualRow >= dataRows) {
-            continue;
-        }
-        res.append(actualRow);
-    }
-    return res;
+    return mSelection->fullySelectedDataframeRows(ensureInDataframe);
 }
 
 int DADataOperateOfDataFrameWidget::getSelectedOneDataframeRow(bool ensureInDataframe) const
 {
-    QItemSelectionModel* selModel = ui->tableView->selectionModel();
-    if (!selModel) {
-        return -1;
-    }
-    // 区间遍历（全选卡顿修复：不再 selectedIndexes 物化整个选区）。
-    // 旧实现按 selectedIndexes 的行主序取第一个满足过滤的行：区间内行号自顶向下
-    // 递增、toActualRow 单调，故区间首行不满足过滤时整个区间都不满足，直接跳下一段，
-    // 结果与逐格遍历逐位一致。
-    const int rowCount = ensureInDataframe ? dataRowCount() : 0;
-    const QItemSelection sel = selModel->selection();
-    for (const QItemSelectionRange& r : sel) {
-        const int actualRow = toActualRow(r.top());
-        if (!ensureInDataframe || actualRow < rowCount) {
-            return actualRow;
-        }
-    }
-    return -1;
+    return mSelection->oneSelectedDataframeRow(ensureInDataframe);
 }
 
 int DADataOperateOfDataFrameWidget::getSelectedOneDataframeColumn(bool ensureInDataframe) const
 {
-    QItemSelectionModel* selModel = ui->tableView->selectionModel();
-    if (!selModel) {
-        return -1;
-    }
-    // 区间遍历（全选卡顿修复：不再 selectedIndexes 物化整个选区）。
-    // 旧实现按 selectedIndexes 的行主序取第一个满足过滤的列：区间内列号自左向右
-    // 递增，故区间首列不满足过滤时整个区间都不满足，直接跳下一段，结果逐位一致。
-    int dfCols = -1;
-    if (ensureInDataframe) {
-        // 确保返回的列数都在dataframe里
-        DAPyDataFrame df = getDataframe();
-        if (df.isNone()) {
-            return -1;
-        }
-        dfCols = static_cast< int >(df.shape().second);
-    }
-    const QItemSelection sel = selModel->selection();
-    for (const QItemSelectionRange& r : sel) {
-        if (dfCols < 0 || r.left() < dfCols) {
-            return r.left();
-        }
-    }
-    return -1;
+    return mSelection->oneSelectedDataframeColumn(ensureInDataframe);
 }
 
 /**
@@ -1853,21 +1705,7 @@ int DADataOperateOfDataFrameWidget::getSelectedOneDataframeColumn(bool ensureInD
  */
 QList< DAData > DADataOperateOfDataFrameWidget::getSlectedSeries() const
 {
-    QList< DAData > res;
-    const QList< int > indexs = getSelectedDataframeCoumns(true);
-    if (indexs.isEmpty()) {
-        return res;
-    }
-    DAPyDataFrame df = mData.toDataFrame();
-    auto shape       = df.shape();
-    for (int i : indexs) {
-        if (i < shape.second) {
-            auto series = df[ i ];
-            DAData d(series);
-            res.append(d);
-        }
-    }
-    return res;
+    return mSelection->selectedSeries();
 }
 
 void DADataOperateOfDataFrameWidget::refreshTable()
@@ -2045,22 +1883,7 @@ void DADataOperateOfDataFrameWidget::locateActualCell(int actualRow, const QStri
 
 QList< QPoint > DADataOperateOfDataFrameWidget::getSelectedDataframeCells(bool ensureInDataframe) const
 {
-    QList< QPoint > res;
-    QItemSelectionModel* selModel = ui->tableView->selectionModel();
-    if (!selModel) {
-        return res;
-    }
-    const int rowCount    = dataRowCount();
-    const int columnCount = dataColumnCount();
-    const QModelIndexList selindexs = selModel->selectedIndexes();
-    for (const QModelIndex& index : selindexs) {
-        const int actualRow = toActualRow(index.row());
-        if (ensureInDataframe && (actualRow >= rowCount || index.column() >= columnCount)) {
-            continue;
-        }
-        res.append(QPoint(actualRow, index.column()));
-    }
-    return res;
+    return mSelection->selectedDataframeCells(ensureInDataframe);
 }
 
 /**
@@ -2069,14 +1892,7 @@ QList< QPoint > DADataOperateOfDataFrameWidget::getSelectedDataframeCells(bool e
  */
 int DADataOperateOfDataFrameWidget::dataColumnCount() const
 {
-    if (mModel) {
-        return qMax(0, mModel->columnCount() - mModel->getExtraColumnCount());
-    }
-    DAPyDataFrame df = getDataframe();
-    if (df.isNone()) {
-        return 0;
-    }
-    return static_cast< int >(df.shape().second);
+    return mContext->dataColumnCount();
 }
 
 /**
@@ -2090,23 +1906,7 @@ int DADataOperateOfDataFrameWidget::dataColumnCount() const
  */
 QList< QPair< QString, int > > DADataOperateOfDataFrameWidget::actualColumnIdentities() const
 {
-    QList< QPair< QString, int > > res;
-    if (!mModel) {
-        return res;
-    }
-    QHash< QString, int > seen;  // 列名 -> 已出现次数（= 下一列的 occurrence）
-    const int cols = dataColumnCount();
-    res.reserve(cols);
-    for (int c = 0; c < cols; ++c) {
-        const QString name = mModel->headerData(c, Qt::Horizontal).toString();
-        if (name.isEmpty()) {
-            continue;  // 空列名先判掉：不要让空名进 seen/occurrence 计数
-        }
-        const int occ = seen.value(name, 0);
-        seen[ name ]  = occ + 1;
-        res.append(qMakePair(name, occ));
-    }
-    return res;
+    return mSelection->actualColumnIdentities();
 }
 
 /**
@@ -2178,7 +1978,7 @@ DATableConditionalFormatStore* DADataOperateOfDataFrameWidget::conditionalFormat
  */
 QItemSelectionModel* DADataOperateOfDataFrameWidget::tableSelectionModel() const
 {
-    return ui->tableView->selectionModel();
+    return mSelection->selectionModel();
 }
 
 /**
@@ -2189,8 +1989,7 @@ QItemSelectionModel* DADataOperateOfDataFrameWidget::tableSelectionModel() const
  */
 int DADataOperateOfDataFrameWidget::selectionSegmentCount() const
 {
-    QItemSelectionModel* sm = tableSelectionModel();
-    return sm ? sm->selection().size() : 0;
+    return mSelection->selectionSegmentCount();
 }
 
 /**
@@ -2202,31 +2001,7 @@ int DADataOperateOfDataFrameWidget::selectionSegmentCount() const
  */
 bool DADataOperateOfDataFrameWidget::selectionBoundingBox(int* rowBegin, int* rowEnd, int* colBegin, int* colEnd) const
 {
-    QItemSelectionModel* sm = tableSelectionModel();
-    const QItemSelection sel = sm ? sm->selection() : QItemSelection();
-    if (sel.isEmpty()) {
-        return false;
-    }
-    int top = INT_MAX, bottom = -1, left = INT_MAX, right = -1;
-    for (const QItemSelectionRange& r : sel) {
-        top    = qMin(top, r.top());
-        bottom = qMax(bottom, r.bottom());
-        left   = qMin(left, r.left());
-        right  = qMax(right, r.right());
-    }
-    if (rowBegin) {
-        *rowBegin = toActualRow(top);
-    }
-    if (rowEnd) {
-        *rowEnd = toActualRow(bottom);
-    }
-    if (colBegin) {
-        *colBegin = left;
-    }
-    if (colEnd) {
-        *colEnd = right;
-    }
-    return bottom >= 0;
+    return mSelection->selectionBoundingBox(rowBegin, rowEnd, colBegin, colEnd);
 }
 
 /**
@@ -2238,16 +2013,7 @@ bool DADataOperateOfDataFrameWidget::selectionBoundingBox(int* rowBegin, int* ro
  */
 int DADataOperateOfDataFrameWidget::selectedCellCount() const
 {
-    QItemSelectionModel* sm = tableSelectionModel();
-    if (!sm) {
-        return 0;
-    }
-    qint64 count = 0;
-    const QItemSelection sel = sm->selection();
-    for (const QItemSelectionRange& r : sel) {
-        count += qint64(r.width()) * qint64(r.height());
-    }
-    return static_cast< int >(qMin< qint64 >(count, INT_MAX));
+    return mSelection->selectedCellCount();
 }
 
 /**
@@ -2575,20 +2341,7 @@ void DADataOperateOfDataFrameWidget::applyHeaderHeightToPanes(int height)
  */
 QString DADataOperateOfDataFrameWidget::currentSingleCellDisplayText() const
 {
-    QItemSelectionModel* sm = ui->tableView ? ui->tableView->selectionModel() : nullptr;
-    if (!sm || !mModel) {
-        return QString();
-    }
-    const QItemSelection sel = sm->selection();
-    if (sel.size() != 1) {
-        return QString();
-    }
-    const QItemSelectionRange& r = sel.first();
-    if (r.height() != 1 || r.width() != 1) {
-        return QString();
-    }
-    const QModelIndex idx = mModel->index(r.top(), r.left());
-    return idx.isValid() ? idx.data(Qt::DisplayRole).toString() : QString();
+    return mSelection->currentSingleCellDisplayText();
 }
 
 /**
@@ -2599,14 +2352,7 @@ QString DADataOperateOfDataFrameWidget::currentSingleCellDisplayText() const
  */
 QList< DADataTableView* > DADataOperateOfDataFrameWidget::paneViews() const
 {
-    QList< DADataTableView* > res;
-    res.append(ui->tableView);
-    if (mPaneContainer) {
-        if (DADataTableView* frozen = mPaneContainer->frozenView()) {
-            res.append(frozen);
-        }
-    }
-    return res;
+    return mContext->panes();
 }
 
 /**
@@ -3265,19 +3011,7 @@ bool DADataOperateOfDataFrameWidget::resolveGotoRequest(const DADialogGotoCell::
  */
 QModelIndex DADataOperateOfDataFrameWidget::currentOrSelectionTopLeftIndex() const
 {
-    QItemSelectionModel* sm = ui->tableView->selectionModel();
-    if (!sm) {
-        return QModelIndex();
-    }
-    const QModelIndex cur = sm->currentIndex();
-    if (cur.isValid()) {
-        return cur;
-    }
-    const QItemSelection sel = sm->selection();  // 段列表（不要 selectedIndexes 物化）
-    if (sel.isEmpty()) {
-        return QModelIndex();
-    }
-    return sel.first().topLeft();
+    return mSelection->currentOrSelectionTopLeftIndex();
 }
 
 /**
@@ -3693,22 +3427,7 @@ DATableCellStyle DADataOperateOfDataFrameWidget::getCurrentCellStyle() const
  */
 bool DADataOperateOfDataFrameWidget::selectionIntersectsRowStyles(const QItemSelection& sel, int windowStart) const
 {
-    if (!mStyleManager) {
-        return false;
-    }
-    const QList< int > styledRows = mStyleManager->styledRows();
-    for (int actualRow : styledRows) {
-        if (mStyleManager->getRowStyle(actualRow).isNull()) {
-            continue;
-        }
-        const int viewRow = actualRow - windowStart;
-        for (const QItemSelectionRange& r : sel) {
-            if (viewRow >= r.top() && viewRow <= r.bottom()) {
-                return true;
-            }
-        }
-    }
-    return false;
+    return mSelection->selectionIntersectsRowStyles(sel, windowStart);
 }
 
 /**
@@ -3719,22 +3438,7 @@ bool DADataOperateOfDataFrameWidget::selectionIntersectsRowStyles(const QItemSel
  */
 bool DADataOperateOfDataFrameWidget::selectionIntersectsCellStyles(const QItemSelection& sel, int windowStart) const
 {
-    if (!mStyleManager) {
-        return false;
-    }
-    const QList< QPair< int, int > > styledCells = mStyleManager->styledCells();
-    for (const QPair< int, int >& key : styledCells) {
-        if (mStyleManager->getCellStyle(key.first, key.second).isNull()) {
-            continue;
-        }
-        const int viewRow = key.first - windowStart;
-        for (const QItemSelectionRange& r : sel) {
-            if (viewRow >= r.top() && viewRow <= r.bottom() && key.second >= r.left() && key.second <= r.right()) {
-                return true;
-            }
-        }
-    }
-    return false;
+    return mSelection->selectionIntersectsCellStyles(sel, windowStart);
 }
 
 /**
@@ -5927,36 +5631,7 @@ void DADataOperateOfDataFrameWidget::refreshAfterInplaceReplace()
  */
 QHash< int, QVector< QPair< int, int > > > DADataOperateOfDataFrameWidget::selectedColumnRowRuns() const
 {
-    QHash< int, QVector< QPair< int, int > > > res;
-    const QList< QPoint > cells = getSelectedDataframeCells();
-    if (cells.isEmpty()) {
-        return res;
-    }
-    // col -> 升序去重行
-    QHash< int, QList< int > > colRows;
-    for (const QPoint& p : cells) {
-        colRows[ p.y() ].append(p.x());
-    }
-    for (auto it = colRows.constBegin(); it != colRows.constEnd(); ++it) {
-        QList< int > rows = it.value();
-        std::sort(rows.begin(), rows.end());
-        rows.erase(std::unique(rows.begin(), rows.end()), rows.end());
-        QVector< QPair< int, int > > runs;
-        int runStart = rows.first();
-        int prev     = rows.first();
-        for (int i = 1; i < rows.size(); ++i) {
-            if (rows[ i ] == prev + 1) {
-                prev = rows[ i ];
-                continue;
-            }
-            runs.append(qMakePair(runStart, prev));
-            runStart = rows[ i ];
-            prev     = rows[ i ];
-        }
-        runs.append(qMakePair(runStart, prev));
-        res.insert(it.key(), runs);
-    }
-    return res;
+    return mSelection->selectedColumnRowRuns();
 }
 
 /**
@@ -6516,29 +6191,7 @@ DATableNoteStore* DADataOperateOfDataFrameWidget::noteStore() const
  */
 bool DADataOperateOfDataFrameWidget::currentActualCell(int* actualRow, int* actualCol) const
 {
-    if (!ui || !ui->tableView) {
-        return false;
-    }
-    QItemSelectionModel* sm = ui->tableView->selectionModel();
-    if (!sm) {
-        return false;
-    }
-    const QModelIndex cur = sm->currentIndex();
-    if (!cur.isValid()) {
-        return false;
-    }
-    const int aRow = toActualRow(cur.row());
-    const int aCol = cur.column();
-    if (aRow < 0 || aRow >= dataRowCount() || aCol < 0 || aCol >= dataColumnCount()) {
-        return false;
-    }
-    if (actualRow) {
-        *actualRow = aRow;
-    }
-    if (actualCol) {
-        *actualCol = aCol;
-    }
-    return true;
+    return mSelection->currentActualCell(actualRow, actualCol);
 }
 
 /**
@@ -6679,29 +6332,7 @@ int DADataOperateOfDataFrameWidget::clearAllNotes()
  */
 QList< int > DADataOperateOfDataFrameWidget::getSelectedDataColumnsInViewOrder(bool ensureInDataframe) const
 {
-    QList< int > selected = getSelectedDataframeCoumns(ensureInDataframe);
-    if (selected.isEmpty() && ensureInDataframe) {
-        // 非 pandas 数据源（惰性表）在 ensureInDataframe=true 时取不到，回退一次
-        selected = getSelectedDataframeCoumns(false);
-    }
-    if (selected.isEmpty()) {
-        return {};
-    }
-    QList< int > res;
-    if (mPaneContainer) {
-        const QVector< int > order = mPaneContainer->visibleColumnOrderLogical();
-        const QSet< int > selectedSet(selected.begin(), selected.end());
-        res.reserve(order.size());
-        for (int col : order) {
-            if (selectedSet.contains(col)) {
-                res.append(col);
-            }
-        }
-        return res;
-    }
-    // 没有窗格容器（极端场景）：退回数据列升序，至少保证顺序稳定
-    std::sort(selected.begin(), selected.end());
-    return selected;
+    return mSelection->selectedDataColumnsInViewOrder(ensureInDataframe);
 }
 
 /**
@@ -6714,11 +6345,7 @@ QList< int > DADataOperateOfDataFrameWidget::getSelectedDataColumnsInViewOrder(b
  */
 QList< int > DADataOperateOfDataFrameWidget::selectedColumnsForDataAction(int fallbackColumn) const
 {
-    QList< int > columns = getSelectedDataColumnsInViewOrder(false);
-    if (columns.isEmpty() && fallbackColumn >= 0 && fallbackColumn < dataColumnCount()) {
-        columns.append(fallbackColumn);
-    }
-    return columns;
+    return mSelection->selectedColumnsForDataAction(fallbackColumn);
 }
 
 /**

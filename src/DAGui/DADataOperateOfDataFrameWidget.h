@@ -8,6 +8,7 @@
 #include <QPointer>
 #include <QVector>
 #include <optional>
+#include <memory>
 class QItemSelectionModel;
 #include "DAGuiAPI.h"
 #include "DAData.h"
@@ -50,6 +51,8 @@ class DATableNoteStore;
 class DATableConditionalFormatRule;
 class DATableChildWindowContainer;
 class DATableChildWindow;
+class DATablePageContext;
+class DATableSelectionService;
 
 
 /**
@@ -583,6 +586,10 @@ private:
     QuickPlotAppendAvailabilityProvider mQuickPlotAppendAvailable;  ///< 追加可用性（APP 注入）
     class DATableChildWindowContainer* mChildWindowContainer { nullptr };  ///< 表格子窗口容器（懒建）
     class DATableChildWindow* mQuickPlotFrame { nullptr };                  ///< 快速绘图子窗口框架（容器承载）
+
+    // ===== 表格页上下文与选区服务（008 期1）=====
+    std::unique_ptr< DATablePageContext > mContext;          ///< 依赖注入载体：模型/主窗格/元数据束聚合
+    std::unique_ptr< DATableSelectionService > mSelection;   ///< 选区/坐标纯查询服务（构造注入上下文）
 
     // ===== 查找状态（002 T1.4）=====
     QVector< QPair< int, int > > mFindHits;  ///< 当前命中集（数据源绝对行列，行主序，≤上限）
