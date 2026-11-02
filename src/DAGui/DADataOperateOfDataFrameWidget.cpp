@@ -87,6 +87,7 @@
 #include "TableOps/DATableOperationRegistry.h"
 #include "TableCore/DATablePaneAssembler.h"
 #include "TableNavigation/DATableNavigationService.h"
+#include "TableNavigation/DATableNavigationService.h"
 // Dialog
 #include "Dialog/DARenameColumnsNameDialog.h"
 #include "Dialog/DADialogDataframeColumnCastToNumeric.h"
@@ -353,13 +354,10 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
     mOpRegistry.add(mColumnOps);
     // 窗格装配器（008 期5：装配段收口；表意信号连接留在页面——消费方是页面自身的槽）
     mPaneAssembler = new DATablePaneAssembler(*mContext, mViewStateController, mStyleDelegate);
-    // 导航服务（008 期5：定位对话框/请求解析；定位执行经宿主桥回页面单入口）
-    mNavigation = new DATableNavigationService(
-        *mContext, *mSelection,
-        [ this ](int row, int col, bool select, bool keepHidden) {
-            locateActualCell(row, col, select, keepHidden);
-        },
-        this);
+    // 导航服务（008 期5：定位对话框/请求解析/定位执行/点击分发）
+    mNavigation = new DATableNavigationService(*mContext, *mSelection, mViewStateController, mColumnViewController, this);
+    connect(mNavigation, &DATableNavigationService::selectTypeChanged, this, &DADataOperateOfDataFrameWidget::selectTypeChanged);
+    connect(mNavigation, &DATableNavigationService::columnHeaderClicked, this, &DADataOperateOfDataFrameWidget::columnHeaderClicked);
     // 窗格装配（006b 抽取的唯一装配点）：表头替换 → setModel → 委托 → 逐窗格连接；
     // 必须在 mStyleDelegate 创建之后（里面要用它），在 setDAData/applyViewStateFromStore 之前
     configurePaneView(ui->tableView);
@@ -861,171 +859,29 @@ void DADataOperateOfDataFrameWidget::refreshTable()
 }
 
 /**
- * @brief 确保列可见
- * @param colName
+ * @brief 确保整列可见并滚动到位（转发导航服务；隐藏列先取消隐藏+提示）
+ * @param colName 列名
+ * @param selectCol true = 整列选中
  */
 void DADataOperateOfDataFrameWidget::ensureColumnVisible(const QString& colName, bool selectCol)
 {
-    if (colName.isEmpty()) {
-        return;
-    }
-    QTableView* tv = ui->tableView;
-    if (!tv || !tv->model()) {
-        return;
-    }
-
-    // 直接找列号
-    int col       = -1;
-    const auto* m = tv->model();
-    for (int c = 0, total = m->columnCount(); c < total; ++c) {
-        if (m->headerData(c, Qt::Horizontal).toString() == colName) {
-            col = c;
-            break;
-        }
-    }
-    if (col < 0)
-        return;
-
-    if (mViewStateStore && !colName.isEmpty()) {
-        // 隐藏列收口（007）：图表拾取/表头右键过来的"确保整列可见"若落在隐藏列上，
-        // 不处理会静默失效——先走 006 的不入栈入口取消隐藏（occ = 0，第一同名）再整列选中
-        if (mViewStateStore->isColumnHidden(colName, 0)) {
-            setColumnHiddenDirectly(colName, 0, false);
-            daInfo << tr("The column \"%1\" was hidden and has been made visible").arg(colName);  // cn:列"%1"已隐藏，现已显示（与 locateActualCell 复用同一句串，不造第二份）
-        }
-    }
-
-    tv->scrollTo(m->index(0, col), QAbstractItemView::EnsureVisible);
-    if (selectCol) {
-        QItemSelectionModel* sel = tv->selectionModel();
-        if (!sel) {
-            return;
-        }
-        QModelIndex topLeft     = m->index(0, col);
-        QModelIndex bottomRight = m->index(m->rowCount() - 1, col);
-        QItemSelection selection(topLeft, bottomRight);
-
-        sel->clearSelection();  // 去掉旧选区
-        sel->select(selection, QItemSelectionModel::Select | QItemSelectionModel::Columns);
-    }
+    mNavigation->ensureColumnVisible(colName, selectCol);
 }
-
 /**
- * @brief 定位单入口（007）：跳到「数据行 actualRow + 列 col」并选中
- *
- * 四步语义（顺序不可颠倒）：①越界夹取（无数据直接返回）→ ②隐藏列处置
- * （只有「要选中且不要求保持隐藏」才取消隐藏 + 提示，不入撤销栈）→ ③纵向一律
- * 主窗格 showActualRow（冻结窗格绝不调——placeViewportAt 会改模型窗口起始行，
- * 与主窗格抢窗口）→ ④横向按冻结区分流。
- * 两窗格共享同一个 selectionModel 时 setCurrentIndex 会同时惊动两个视图的
- * currentChanged → scrollTo；而 Qt 的 QTableView::scrollTo() 对本窗格隐藏的列
- * 直接 return（Qt 6.7.3 源码核对：函数开头 isColumnHidden 早退）——所以
- * "主区不为冻结列横滚""冻结区不为主区列横滚"天然成立，不需要额外守卫。
- * 只读：不写数据、不入撤销栈、不写工程；唯一例外是取消隐藏（setColumnHiddenDirectly）。
- * @param actualRow 数据源绝对行号（越界自动夹到数据范围）
- * @param col 列号
- * @param select false = 只摆位 + 移当前项（选区范围导航不收缩选区、不夺焦点）
- * @param keepHidden true = 保留目标列的隐藏状态（对话框勾选项）
+ * @brief 定位单入口（转发导航服务；007 语义：数据行 + 列 + 是否选中 + 是否保持隐藏）
  */
 void DADataOperateOfDataFrameWidget::locateActualCell(int actualRow, int col, bool select, bool keepHidden)
 {
-    // ① 越界夹取：无数据直接返回（用户可见提示走对话框侧，见 007b）
-    const int rows = dataRowCount();
-    const int cols = dataColumnCount();
-    if (rows <= 0 || cols <= 0) {
-        return;
-    }
-    actualRow = qBound(0, actualRow, rows - 1);
-    col       = qBound(0, col, cols - 1);
-
-    DADataTableView* mainView = getDataTableView();  // 006 约定 = 主窗格（模型窗口与滚动位置的唯一驱动者）
-    if (!mainView || !mainView->model()) {
-        return;
-    }
-
-    // ② 隐藏列处置：只有「要选中、且不要求保持隐藏」的定位才取消隐藏
-    //（select=false 的查找选区导航、keepHidden=true 的对话框勾选项都保持原可见性）
-    if (select && !keepHidden && mViewStateStore) {
-        const QString name = mainView->actualColumnName(col);
-        if (!name.isEmpty()) {  // 空列名（尾部预留空白列）无身份，先判掉再查 store
-            int occ = 0;        // occurrence = 该列之前同名列个数（数据列序中计，
-            for (int c = 0; c < col; ++c) {  // 与 applyViewStateFromStore/onHeaderSectionResized 同法，
-                if (mainView->model()->headerData(c, Qt::Horizontal).toString() == name) {
-                    ++occ;  // 不要按视图顺序算）
-                }
-            }
-            if (mViewStateStore->isColumnHidden(name, occ)) {
-                setColumnHiddenDirectly(name, occ, false);  // 006 的不入栈入口：写真源 + 统一重投影
-                daInfo << tr("The column \"%1\" was hidden and has been made visible").arg(name);  // cn:列"%1"已隐藏，现已显示
-            }
-        }
-    }
-
-    // ③ 纵向一律走主窗格：showActualRow = placeViewportAt（目标行落到视口首行，
-    //    贴数据两端时收紧）
-    mainView->showActualRow(actualRow);
-
-    // ④ 横向：冻结区判定用 006 的 isColumnInFrozenArea（真源唯一，不要自己重算）；
-    //    判定放在 ② 之后——取消隐藏会改变"视图顺序前 m 个可见列"，冻结集合随之变
-    if (isColumnInFrozenArea(col)) {
-        // 冻结区：不调 showColumn。QTableView::showColumn = horizontalHeader()->showSection()，
-        // 会静默解除该列在主窗格的隐藏（绕开真源与投影）→ 手动三步：摆位（已做）→
-        // 共享 selectionModel 的 setCurrentIndex（flags 随 select）→ 焦点给包含该列的窗格
-        //（设计稿 §3.4.4：焦点决定 Ctrl+C/编辑在哪个窗格生效）
-        mainView->selectionModel()->setCurrentIndex(
-            mainView->model()->index(mainView->toLogicalRow(actualRow), col),
-            select ? QItemSelectionModel::ClearAndSelect : QItemSelectionModel::NoUpdate);
-        if (select) {
-            if (DATablePaneContainer* c = paneContainer()) {
-                if (DADataTableView* frozen = c->frozenView()) {
-                    frozen->setFocus();
-                }
-            }
-        }
-    } else if (select) {
-        // 主区：复用既有语义（内部 showActualRow + showColumn + setCurrentIndex(ClearAndSelect)）；
-        // 此分支成立的前提是 ② 已把列解除隐藏。
-        // ⚠️ 已知边界：keepHidden=true 且列既隐藏又不在冻结区时，这里的 showColumn 会把
-        //    该列重新显示——勾选项的语义是"别主动解隐藏"，而主区定位本身要求列可见；
-        //    v1 接受这个结果，不要为此在主区分支手工改写可见性（那会变成第二条真源路径）
-        mainView->selectActualCell(actualRow, col);
-    } else {
-        // select=false（查找的"选区范围"导航）：不调 showColumn、不收缩选区，只移当前项；
-        // 焦点不动（与既有 gotoFindHit 的选区范围分支一致，查找条继续响应上下导航键）
-        mainView->selectionModel()->setCurrentIndex(
-            mainView->model()->index(mainView->toLogicalRow(actualRow), col),
-            QItemSelectionModel::NoUpdate);
-    }
+    mNavigation->locateActualCell(actualRow, col, select, keepHidden);
 }
-
 /**
- * @brief 定位单入口的列名重载：重名取第一个同名列（数据列序）
- *
- * 找不到列名时静默返回——用户可见提示归对话框路径（007b 的 resolveGotoRequest）。
- * @param actualRow 数据源绝对行号
- * @param columnName 列名
- * @param select 同列号重载
- * @param keepHidden 同列号重载
+ * @brief 定位单入口的列名重载（转发导航服务；重名取第一个同名列，数据列序）
  */
 void DADataOperateOfDataFrameWidget::locateActualCell(int actualRow, const QString& columnName, bool select,
                                                       bool keepHidden)
 {
-    if (columnName.isEmpty() || !mModel) {
-        return;
-    }
-    int col = -1;  // 重名取第一个同名列（数据列序）
-    for (int c = 0; c < dataColumnCount(); ++c) {
-        if (mModel->headerData(c, Qt::Horizontal).toString() == columnName) {
-            col = c;
-            break;
-        }
-    }
-    if (col < 0) {
-        return;
-    }
-    locateActualCell(actualRow, col, select, keepHidden);
+    mNavigation->locateActualCell(actualRow, columnName, select, keepHidden);
 }
-
 QList< QPoint > DADataOperateOfDataFrameWidget::getSelectedDataframeCells(bool ensureInDataframe) const
 {
     return mSelection->selectedDataframeCells(ensureInDataframe);
@@ -1055,30 +911,13 @@ QList< QPair< QString, int > > DADataOperateOfDataFrameWidget::actualColumnIdent
 }
 
 /**
- * @brief 表格点击
+ * @brief 表格点击（转发导航服务：类型上报）
  * @param index
  */
 void DADataOperateOfDataFrameWidget::onTableViewClicked(const QModelIndex& index)
 {
-    if (!mData.isDataFrame()) {
-        emit selectTypeChanged({ index.column() }, DAPyDType());
-        return;
-    }
-    DAPyDataFrame df = mData.toDataFrame();
-    if (index.column() >= (int)df.shape().second) {
-        emit selectTypeChanged({ index.column() }, DAPyDType());
-        return;
-    }
-    DAPyDType t;
-    try {
-        t = df.dtypeObject(index.column());
-    } catch (const std::exception& e) {
-        qCritical() << e.what();
-    }
-
-    emit selectTypeChanged({ index.column() }, t);
+    mNavigation->onTableViewClicked(index);
 }
-
 /**
  * @brief 获取样式管理器
  * @return 样式管理器指针
@@ -1468,24 +1307,14 @@ bool DADataOperateOfDataFrameWidget::isTableEditable() const
 }
 
 /**
- * @brief 表头带修饰键点击
- *
- * 2026-10-18 交互修订：**点击表头不再触发排序**（误触即整表重排、大表卡顿数秒，
- * 用户反馈修订；排序入口收敛到列头右键菜单）。本槽仅保留拾取模式转发：
- * - 拾取模式：转发 columnHeaderClicked（图表「选择序列」拾取链路零回归）；
- * - 非拾取模式：不做任何事（Qt 默认的列选中/高亮行为保留）。
+ * @brief 表头带修饰键点击（转发导航服务；2026-10-18 交互修订：点击表头不排序）
  * @param logicalIndex 列逻辑索引
  * @param modifiers 修饰键
  */
 void DADataOperateOfDataFrameWidget::onHeaderClickedWithModifiers(int logicalIndex, Qt::KeyboardModifiers modifiers)
 {
-    Q_UNUSED(modifiers);
-    if (mHeaderPickMode) {
-        // 拾取模式：只转发信号（修饰键不吞，拾取侧按列填充表达式）
-        Q_EMIT columnHeaderClicked(logicalIndex);
-    }
+    mNavigation->onHeaderClickedWithModifiers(logicalIndex, modifiers);
 }
-
 // ============================================================
 // 排序（实现迁入 DATableSortController，008 期3）
 // ============================================================

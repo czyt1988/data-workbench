@@ -21227,5 +21227,10 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <source>There are %1 columns with this name; used the first one</source>
         <translation>There are %1 columns with this name; used the first one</translation>
     </message>
+    <message>
+        <location filename="../DAGui/TableNavigation/DATableNavigationService.cpp" line="+0"/>
+        <source>The column &quot;%1&quot; was hidden and has been made visible</source>
+        <translation>The column &quot;%1&quot; was hidden and has been made visible</translation>
+    </message>
 </context>
 </TS>
