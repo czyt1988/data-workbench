@@ -19,6 +19,7 @@ class QItemSelectionModel;
 #include "DATableComputedColumnStore.h"
 #include "DATableValidationRule.h"
 #include "TableValidation/DATableValidationController.h"
+#include "TableOps/DATableFillOps.h"
 #include "DADataOperatePageWidget.h"
 #include "DADataHeaderView.h"
 #include "TableChart/DATableChartTypes.h"
@@ -68,6 +69,7 @@ class DATableColumnViewController;
 class DATableRowOps;
 class DATableCellOps;
 class DATableTypeOps;
+class DATableFillOps;
 
 
 /**
@@ -261,15 +263,10 @@ public:
     // 原表与其元数据完全不动。成功后发 newDataCreated 交 APP 激活新页面
     void showGroupByDialog();
 
-    // ===== 填充（005 T1.24）=====
-    // 填充模式（选区按列独立处理，与 Excel 一致；空值判定由 Python 算子完成）
-    enum class FillMode
-    {
-        Down,      ///< 向下填充（每列选区首行值填满其余行，Ctrl+D）
-        Up,        ///< 向上填充（每列选区末行值填满其余行）
-        Forward,   ///< 选区内向下传递最后一个非空值（ffill）
-        Backward   ///< 选区内向上传递下一个非空值（bfill）
-    };
+    // ===== 填充（005 T1.24；实现迁入 DATableFillOps，008 期4）=====
+    // 填充模式（选区按列独立处理，与 Excel 一致；空值判定由 Python 算子完成）；
+    // 枚举定义已随填充迁入算子，此处 using 别名保留旧 public 名
+    using FillMode = DATableFillOps::FillMode;
     // 选区填充：求值经 da_fill_selection（只返回变化清单），全部列组织成一条
     // DACommandDataFrame_paste（一次填充=一次撤销，D4）；返回写入单元格数
     int fillSelection(FillMode mode);
@@ -477,17 +474,11 @@ private:
     void registerNewDataset(const DAPyDataFrame& resultDf, const QString& name, const QString& describe);
     // 就地替换（004 T1.27）：确认框（列清除条目数）→ 超大表降级分支 / 发信号交 APP 建 Swap 命令
     void requestInplaceReplace(const DAPyDataFrame& newDf, const QString& text);
-    // ===== 填充私有辅助（005 T1.24）=====
+    // ===== 填充私有辅助（005 T1.24；实现已随填充迁入 DATableFillOps，008 期4）=====
     // 选区按列分组的连续行区间：col -> 若干 [rowStart,rowEnd] 闭区间（绝对行号，升序）。
     // 每列的选中行排序后按连续性切成 run（不规则多选也精确，不填未选中的行）
     QHash< int, QVector< QPair< int, int > > > selectedColumnRowRuns() const;
-    // 用填充清单构造一条 DACommandDataFrame_paste 并入栈（值记录，D4；含统计失效/
-    // 计算列标脏/模型刷新回调，与 pasteFromClipboard 同款）；返回写入单元格数
-    int pushFillPasteCommand(const DAPyDataFrame& df,
-                             const QList< int >& rows,
-                             const QList< int >& cols,
-                             const QList< QVariant >& values,
-                             const QString& text);
+    //（pushFillPasteCommand 已随填充迁入 DATableFillOps，008 期4）
     // ===== 校验私有辅助（005 T1.25）=====
     // 列改名确认：提示「有 N 条校验规则引用它」，返回是否继续（无引用直接 true）
     bool confirmValidationRuleRename(const QList< QPair< QString, QString > >& renames) const;
@@ -538,6 +529,7 @@ private:
     DATableRowOps* mRowOps { nullptr };  ///< 行操作算子（008 期4，页级持有）
     DATableCellOps* mCellOps { nullptr };  ///< 单元格操作算子（008 期4，页级持有）
     DATableTypeOps* mTypeOps { nullptr };  ///< 类型转换算子（008 期4，页级持有）
+    DATableFillOps* mFillOps { nullptr };  ///< 填充算子（008 期4，页级持有）
 };
 }  // end of namespace DA
 #endif  // DADATAOPERATEOFDATAFRAMEWIDGET_H

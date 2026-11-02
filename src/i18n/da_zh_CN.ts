@@ -20981,4 +20981,57 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>类型操作</translation>
     </message>
 </context>
+<context>
+    <name>DA::DATableFillOps</name>
+    <message>
+        <location filename="../DAGui/TableOps/DATableFillOps.cpp" line="+0"/>
+        <source>Fill down</source>
+        <translation>向下填充</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableFillOps.cpp" line="+1"/>
+        <source>Fill up</source>
+        <translation>向上填充</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableFillOps.cpp" line="+1"/>
+        <source>Fill forward (ffill)</source>
+        <translation>向下填充空值(ffill)</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableFillOps.cpp" line="+1"/>
+        <source>Fill backward (bfill)</source>
+        <translation>向上填充空值(bfill)</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableFillOps.cpp" line="+1"/>
+        <source>Cannot fill a read-only data source</source>
+        <translation>只读数据源不能填充</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableFillOps.cpp" line="+1"/>
+        <source>Please select cells to fill</source>
+        <translation>请先选中要填充的单元格</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableFillOps.cpp" line="+1"/>
+        <source>Failed to generate the fill series</source>
+        <translation>生成填充序列失败</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableFillOps.cpp" line="+1"/>
+        <source>Fill series</source>
+        <translation>序列填充</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableFillOps.cpp" line="+1"/>
+        <source>Fill failed: the content does not match the column data type</source>
+        <translation>填充失败：内容与列数据类型不匹配</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableFillOps.cpp" line="+1"/>
+        <source>Fill Operations</source>
+        <translation>填充操作</translation>
+    </message>
+</context>
 </TS>

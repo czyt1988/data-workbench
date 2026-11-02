@@ -20956,4 +20956,57 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>Type Operations</translation>
     </message>
 </context>
+<context>
+    <name>DA::DATableFillOps</name>
+    <message>
+        <location filename="../DAGui/TableOps/DATableFillOps.cpp" line="+0"/>
+        <source>Fill down</source>
+        <translation>Fill down</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableFillOps.cpp" line="+1"/>
+        <source>Fill up</source>
+        <translation>Fill up</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableFillOps.cpp" line="+1"/>
+        <source>Fill forward (ffill)</source>
+        <translation>Fill forward (ffill)</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableFillOps.cpp" line="+1"/>
+        <source>Fill backward (bfill)</source>
+        <translation>Fill backward (bfill)</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableFillOps.cpp" line="+1"/>
+        <source>Cannot fill a read-only data source</source>
+        <translation>Cannot fill a read-only data source</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableFillOps.cpp" line="+1"/>
+        <source>Please select cells to fill</source>
+        <translation>Please select cells to fill</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableFillOps.cpp" line="+1"/>
+        <source>Failed to generate the fill series</source>
+        <translation>Failed to generate the fill series</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableFillOps.cpp" line="+1"/>
+        <source>Fill series</source>
+        <translation>Fill series</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableFillOps.cpp" line="+1"/>
+        <source>Fill failed: the content does not match the column data type</source>
+        <translation>Fill failed: the content does not match the column data type</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableFillOps.cpp" line="+1"/>
+        <source>Fill Operations</source>
+        <translation>Fill Operations</translation>
+    </message>
+</context>
 </TS>
