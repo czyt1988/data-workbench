@@ -260,7 +260,7 @@ Agent 会话（`src/DAGui/Agent/resources/chat.css`）等内嵌 Web 界面的自
 轴线/边框：#727272（中灰）
 ```
 
-- 图表类型图标的**唯一存放位置**是 `DAGui/icon/chart-type/`（23 个 = 14 个 `chart-*` + 9 个 `stats-*`），资源前缀 `:/DAGui/ChartType/`。APP 层经该前缀引用（APP → DAGui 方向合法），不得在 `APP/Icon/` 下再建副本。
+- 图表类型图标的**唯一存放位置**是 `DAGui/icon/chart-type/`（24 个 = 14 个 `chart-*` + 10 个 `stats-*`），资源前缀 `:/DAGui/ChartType/`。APP 层经该前缀引用（APP → DAGui 方向合法），不得在 `APP/Icon/` 下再建副本。
 - `DAFigure/icon/` 保留 10 个与 `chart-type/` 同名同内容的图标（`chart-bar`/`chart-curve`/`chart-OHLC`/`chart-multibar`/`chart-scatter`/`chart-histogram`/`chart-intervalcurve`/`chart-spectrocurve`/`chart-spectrogram`/`chart-vectorfield`）：`DAChartUtil::plotItemIcon()` 属于 L2 功能层，不能反向依赖 L3 的 DAGui 资源，因此这份副本是层级约束下的必要重复，修改时两处同步。
 - 以 `chart-bar`/`chart-bar3d` 为代表的前 3 色（橙红/深蓝/绿）与 3D 图表是一类范本；`chart-scatter`（散点分类）、`chart-spectrocurve`（光谱曲线）按分类需要扩展使用紫/金。
 - **图表系列色必须从官方色板取色，不得引入新色**。
@@ -368,9 +368,10 @@ Debug：   #497CAD（蓝虫子，单色）
 
 | 子目录 | 内容 |
 |--------|------|
-| `chart-type/` | 23 个图表类型图标（14 个 `chart-*`：柱/曲/直方/区间曲/多柱/OHLC/散点/二维散点/光谱曲/光谱图/矢量场/3D 柱/3D 曲/3D 曲面；9 个 `stats-*`：barplot/boxplot/ecdfplot/heatmap/histplot/kdeplot/kdeplot-2d/regplot/scatterplot），统一 64×64。**全项目唯一存放位置** |
+| `chart-type/` | 24 个图表类型图标（14 个 `chart-*`：柱/曲/直方/区间曲/多柱/OHLC/散点/二维散点/光谱曲/光谱图/矢量场/3D 柱/3D 曲/3D 曲面；10 个 `stats-*`：barplot/boxplot/ecdfplot/heatmap/histplot/kdeplot/kdeplot-2d/pareto/regplot/scatterplot），统一 64×64。**全项目唯一存放位置** |
 | `data-type/` | 6 个数据类型图标（DataFrame/DateTime/Float/Int/Obj/Str），统一 200×200 蓝框白底 |
 | `messageType/` | 4 个消息级别图标（Debug/Info/Warning/Error），统一 32×32 |
+| `stats/` | 22 个统计动作图标（统计窗口「统计参数 / 检验 / 绘图」面板的动作），统一 200×200。语义前缀 `stats*`：count/missing/unique/sum/mean/std/var/sem/min/max/range/iqr/mad/mode/cv/skew/kurt/percentile/normality/confidence/outliers/transferToFigure。配色沿用「中性轮廓 + 语义色」双层结构：数据形状用主蓝 `#5280C1`/深蓝 `#497CAD`，辅助量用浅蓝 `#BDCDE8`，中性基线 `#727272`，离群点/累计分布用橙红 `#CE6043`，检验通过标记用绿 `#669E8B` |
 
 ### 5.3 `src/APP/Icon/`
 

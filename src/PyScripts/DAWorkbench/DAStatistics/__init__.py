@@ -7,7 +7,7 @@ all chart rendering is handled by the C++ layer.
 
 Submodules:
     _utils         — shared data extraction helpers
-    distribution   — histogram and ECDF computation
+    distribution   — histogram, ECDF and Pareto computation
     kde            — 1-D / 2-D kernel density estimation and contour extraction
     regression     — polynomial fitting and bootstrap confidence intervals
     categorical    — bar-plot aggregation and per-category CI
@@ -16,7 +16,12 @@ Submodules:
     describe       — descriptive statistics for one or more columns
 """
 
-from DAWorkbench.DAStatistics.distribution import compute_histogram, compute_histogram_by_hue, compute_ecdf
+from DAWorkbench.DAStatistics.distribution import (
+    compute_histogram,
+    compute_histogram_by_hue,
+    compute_ecdf,
+    compute_pareto,
+)
 from DAWorkbench.DAStatistics.kde import compute_kde_1d, compute_kde_1d_by_hue, compute_kde_2d, compute_contours
 from DAWorkbench.DAStatistics.regression import fit_polynomial, compute_bootstrap_ci
 from DAWorkbench.DAStatistics.categorical import (

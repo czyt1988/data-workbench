@@ -543,6 +543,35 @@ pybind11::dict DAPyScriptsStatistics::computeDescribeFromLists(const QVariantMap
 }
 
 //===================================================
+// distribution.py
+//===================================================
+
+/** @brief 计算单列分布率与累计分布（帕累托图数据） @param values 数值列表 @param args 计算参数 @param err 错误信息输出 @return 帕累托结果字典 */
+pybind11::dict DAPyScriptsStatistics::computePareto(const QVariantList& values,
+                                                    const QVariantMap& args,
+                                                    QString* err)
+{
+    try {
+        pybind11::object fn = attr("compute_pareto");
+        if (fn.is_none()) {
+            qDebug() << "DAStatistics have no attr compute_pareto";
+            return pybind11::dict();
+        }
+        pybind11::object v = fn(pybind11::cast(values), pybind11::cast(args));
+        if (v.is_none()) {
+            return pybind11::dict();
+        }
+        return v.cast< pybind11::dict >();
+    } catch (const std::exception& e) {
+        if (err) {
+            *err = e.what();
+        }
+        qDebug() << e.what();
+    }
+    return pybind11::dict();
+}
+
+//===================================================
 // matrix.py
 //===================================================
 

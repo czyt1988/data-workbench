@@ -677,6 +677,24 @@ void DAAppController::initConnection()
     connect(mDock->dockManager(), &ads::CDockManager::focusedDockWidgetChanged, this, &DAAppController::onFocusedDockWidgetChanged);
     // 程序化raise dock窗口时也激活context category
     connect(mDock, &DADockingAreaInterface::dockWidgetRaised, this, &DAAppController::onDockWidgetRaised);
+    //===================================================
+    // 统计窗口（DADataStatsWidget）
+    //===================================================
+    // 「统计」上下文标签页只跟随统计 dock 的可见性（不跟随焦点，否则点 Ribbon 上的
+    // 统计按钮会因焦点离开浮动 dock 而让标签页消失，动作根本点不到）
+    if (mRibbon) {
+        connect(mDock,
+                &DAAppDockingArea::dataStatsDockVisibilityChanged,
+                mRibbon,
+                &DAAppRibbonArea::setStatsContextCategoryVisible);
+    }
+    // 「转入绘图区」：DAGui 的统计窗口不持有绘图区，由 APP 注入绘图区容器
+    if (DADataStatsWidget* statsWidget = mDock->getDataStatsWidget()) {
+        connect(statsWidget,
+                &DADataStatsWidget::transferToFigureRequested,
+                this,
+                &DAAppController::onStatsTransferToFigureRequested);
+    }
     // DADataManageWidget 数据操作
     // DADataOperateWidget
     DADataOperateWidget* dow = mDock->getDataOperateWidget();
@@ -4016,6 +4034,28 @@ void DAAppController::onActionShowColumnDescribeTriggered()
     if (DADataStatsWidget* statsWidget = mDock->getDataStatsWidget()) {
         connect(dfopt, &DADataOperateOfDataFrameWidget::dataModified,
                 statsWidget, &DADataStatsWidget::notifyDataChanged, Qt::UniqueConnection);
+    }
+}
+
+/**
+ * @brief 统计窗口「转入绘图区」
+ *
+ * DAGui 的统计窗口不持有绘图区（分层约束：DAGui 不能反向依赖 APP 的窗口编排），
+ * 由 APP 在这里取出绘图区容器注入；建图与撤销宏都在统计窗口里完成。
+ */
+void DAAppController::onStatsTransferToFigureRequested()
+{
+    if (!mDock) {
+        return;
+    }
+    DADataStatsWidget* statsWidget = mDock->getDataStatsWidget();
+    DAChartOperateWidget* chartOperate = mDock->getChartOperateWidget();
+    if (!statsWidget || !chartOperate) {
+        return;
+    }
+    if (statsWidget->transferToFigure(chartOperate)) {
+        // 转入后把绘图区抬到前面，用户能立刻看到新生成的绘图
+        mDock->raiseDockingArea(DADockingAreaInterface::DockingAreaChartOperate);
     }
 }
 

@@ -140,7 +140,7 @@ public:
     // 显示数据统计分析浮动 dock（懒创建）并载入请求列的统计
     //（dock 悬浮类似对话框但非模态：可继续操作表格，也可拖入其它 dock 区域）
     void showDataStatsWidget(const DA::DATableChartRequest& request);
-    // 数据统计分析窗口（懒创建，未创建时为 nullptr）
+    // 数据统计分析窗口（随 dock 区一起创建，始终有效）
     DADataStatsWidget* getDataStatsWidget() const;
     // 数据统计分析 dock（懒创建，未创建时为 nullptr）
     ads::CDockWidget* getDataStatsDock() const;
@@ -154,6 +154,17 @@ public:
 public Q_SLOTS:
     // 显示数据
     void showDataOperateWidget(const DA::DAData& data, const QString& name = QString());
+
+Q_SIGNALS:
+    /**
+     * @brief 数据统计分析 dock 的显示状态变化
+     *
+     * Ribbon 的「统计」上下文标签页据此显示/隐藏：dock 显示时出现、关闭后隐藏。
+     * 注意不要绑到「焦点变化」上——点击 Ribbon 按钮会让焦点离开浮动 dock，
+     * 绑焦点会导致按钮一点就消失。
+     * @param visible dock 是否可见
+     */
+    void dataStatsDockVisibilityChanged(bool visible);
 
 private:
     // 构建界面
@@ -213,9 +224,9 @@ private:
     DAMarkdownView* mMarkdownView { nullptr };  ///< Markdown 查看窗口
     ads::CDockWidget* mMarkdownDock { nullptr };  ///< m_markdownView 对应的 dock
 
-    // 数据统计分析窗口（按需创建浮动 dock）
+    // 数据统计分析窗口（因 Ribbon 需要它的动作，随 dock 区一起创建）
     DADataStatsWidget* mDataStatsWidget { nullptr };  ///< 数据统计分析窗口
-    ads::CDockWidget* mDataStatsDock { nullptr };     ///< mDataStatsWidget 对应的浮动 dock
+    ads::CDockWidget* mDataStatsDock { nullptr };     ///< mDataStatsWidget 对应的浮动 dock（懒创建）
 };
 }  // namespace DA
 #endif  // DAAPPDOCKINGAREA_H

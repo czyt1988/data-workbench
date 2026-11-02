@@ -87,6 +87,9 @@ void DAAppDockingArea::resetText()
     mDataLinkTableDock->setWindowTitle(tr("Data Link Table"));  // cn:数据联动表
     if (mDataStatsDock) {
         mDataStatsDock->setWindowTitle(tr("Statistics"));  // cn:统计信息
+    }
+    if (mDataStatsWidget) {
+        // 统计窗口持有 Ribbon「统计」面板的动作，翻译要一直跟随
         mDataStatsWidget->retranslateUi();
     }
 }
@@ -349,6 +352,10 @@ void DAAppDockingArea::buildOtherWidgets()
     // 撤销历史面板（005 T1.21，widget 在 DAGui；QUndoGroup 绑定与深度配置接线在 DAAppController）
     mUndoHistoryWidget = new DAUndoHistoryWidget(mApp);
     mUndoHistoryWidget->setObjectName(QString::fromUtf8(UiNames::Dock::UndoHistoryWidget));
+    // 数据统计分析窗口：Ribbon「统计」上下文标签页直接挂它的动作，所以随 dock 区一起创建；
+    // 承载它的浮动 dock 仍然按需创建（见 showDataStatsWidget）
+    mDataStatsWidget = new DADataStatsWidget(mApp);
+    mDataStatsWidget->setObjectName(QString::fromUtf8(UiNames::Dock::DataStatsWidget));
 }
 
 /**
@@ -628,17 +635,16 @@ ads::CDockWidget* DAAppDockingArea::getMarkdownDock() const
 /**
  * @brief 显示数据统计分析浮动 dock（懒创建）并载入请求列的统计
  *
- * 首次调用创建 DADataStatsWidget 并包成 ADS 浮动 dock：默认悬浮类似对话框但
- * 非模态（可继续操作表格），用户可自由拖入其它 dock 区域停靠；
- * 关闭只隐藏不销毁（勾选的统计项在会话内保留），再次触发复用同一 dock。
+ * 统计控件随 dock 区一起创建（Ribbon「统计」上下文标签页要挂它的动作）；
+ * 浮动 dock 首次调用才创建：默认悬浮类似对话框但非模态（可继续操作表格），
+ * 用户可自由拖入其它 dock 区域停靠；关闭只隐藏不销毁（勾选的统计项在会话内
+ * 保留），再次触发复用同一 dock。
  * @param request 快速绘图请求（数据集句柄 + 有序选中列 + 角色 + 惰性标记）
  */
 void DAAppDockingArea::showDataStatsWidget(const DA::DATableChartRequest& request)
 {
-    // 首次：创建统计控件 + 浮动 dock
-    if (nullptr == mDataStatsWidget) {
-        mDataStatsWidget = new DADataStatsWidget(mApp);
-        mDataStatsWidget->setObjectName(QString::fromUtf8(UiNames::Dock::DataStatsWidget));
+    // 首次：把统计控件包成浮动 dock
+    if (nullptr == mDataStatsDock) {
         mDataStatsWidget->resize(960, 500);
         // 浮动位置：主窗口中上部
         const QRect g = mApp->geometry();
@@ -646,6 +652,13 @@ void DAAppDockingArea::showDataStatsWidget(const DA::DATableChartRequest& reques
         mDataStatsDock = createFloatingDockWidget(mDataStatsWidget, QString::fromUtf8(UiNames::Dock::DataStatsWidgetDock), pos);
         mDataStatsDock->setIcon(QIcon(":/app/bright/Icon/showInfomation.svg"));
         mDataStatsDock->setWindowTitle(tr("Statistics"));  // cn:统计信息
+        // dock 显示/关闭 → 「统计」上下文标签页显示/隐藏（Ribbon 侧在 DAAppController 接线）；
+        // 信号里的 bool 来自 ADS 的 Show 事件几何判断，浮动 dock 首次显示时可能为 false，
+        // 这里统一按 dock 的真实状态重算，避免标签页漏显示
+        connect(mDataStatsDock, &ads::CDockWidget::visibilityChanged, this, [ this ](bool) {
+            Q_EMIT dataStatsDockVisibilityChanged(mDataStatsDock && !mDataStatsDock->isClosed()
+                                                  && mDataStatsDock->isVisible());
+        });
     }
     // 载入统计并前抬（关闭过的 dock 先恢复显示）
     mDataStatsWidget->showForRequest(request);
@@ -653,11 +666,12 @@ void DAAppDockingArea::showDataStatsWidget(const DA::DATableChartRequest& reques
         mDataStatsDock->toggleView(true);
     }
     mDataStatsDock->raise();
+    // 显式同步一次：首次创建时 Show 事件可能早于几何生效，不依赖信号
+    Q_EMIT dataStatsDockVisibilityChanged(!mDataStatsDock->isClosed() && mDataStatsDock->isVisible());
 }
 
 /**
- * @brief 获取数据统计分析窗口（懒创建）
- * @return 尚未创建过时返回 nullptr
+ * @brief 获取数据统计分析窗口（随 dock 区一起创建，始终有效）
  */
 DADataStatsWidget* DAAppDockingArea::getDataStatsWidget() const
 {

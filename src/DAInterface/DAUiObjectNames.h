@@ -35,6 +35,7 @@ constexpr char AgentCategory[]  = "da-ribbon-category-agent";   ///< AI分析标
 constexpr char DataFrameContextCategory[] = "da-ribbon-contextcategory-dataframe";  ///< DataFrame上下文标签
 constexpr char WorkflowContextCategory[]  = "da-ribbon-contextcategory-workflow";   ///< 工作流上下文标签
 constexpr char ChartContextCategory[]     = "da-ribbon-contextcategory-chart";      ///< 图表上下文标签
+constexpr char StatsContextCategory[]     = "da-ribbon-contextcategory-stats";      ///< 统计上下文标签（统计窗口显示时出现）
 // ---- 上下文标签内部的 category ----
 constexpr char DataFrameOperateCategory[] = "da-ribbon-category-dataframe.operate";  ///< DataFrame表格操作category
 constexpr char DataFrameDataOperateCategory[] =
@@ -45,6 +46,7 @@ constexpr char WorkflowViewCategory[]     = "da-ribbon-category-workflow.view"; 
 constexpr char WorkflowRunCategory[]      = "da-ribbon-category-workflow.run";       ///< 工作流运行category
 constexpr char ChartStyleCategory[]       = "da-ribbon-category-chart.style";        ///< 图表样式category
 constexpr char ChartEditCategory[]        = "da-ribbon-category-chart.edit";         ///< 图表编辑category
+constexpr char StatsOperateCategory[]     = "da-ribbon-category-stats.operate";      ///< 统计操作category
 // ---- 主页标签下的 panel ----
 constexpr char MainCommonPanel[] =
     "da-ribbon-pannel-main.common";  ///< 主页文件操作pannel（历史命名，前缀与其他panel不一致，保持兼容）
@@ -87,6 +89,10 @@ constexpr char WorkflowRunPanel[]        = "da-pannel-context.workflow.run";    
 // ---- 图表上下文标签下的 panel ----
 constexpr char ChartEditFigureSettingPanel[] = "da-pannel-context-chartedit.fig_setting";    ///< 绘图窗口设置pannel
 constexpr char ChartEditChartSettingPanel[]  = "da-pannel-context-chartedit.chart_setting";  ///< 图表设置pannel
+// ---- 统计上下文标签下的 panel ----
+constexpr char StatsParamsPanel[] = "da-pannel-stats.params";  ///< 统计参数pannel（每个统计项一个动作）
+constexpr char StatsTestsPanel[]  = "da-pannel-stats.tests";   ///< 检验pannel（正态性/置信区间/离群点）
+constexpr char StatsPlotPanel[]   = "da-pannel-stats.plot";    ///< 绘图pannel（图型切换/帕累托选项/转入绘图区）
 }  // namespace Ribbon
 
 /**
