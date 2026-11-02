@@ -20925,4 +20925,47 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>行操作</translation>
     </message>
 </context>
+<context>
+    <name>DA::DATableCellOps</name>
+    <message>
+        <location filename="../DAGui/TableOps/DATableCellOps.cpp" line="+0"/>
+        <source>Please select a valid cell</source>
+        <translation>请选择正确的单元格</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableCellOps.cpp" line="+1"/>
+        <source>Clipboard is empty</source>
+        <translation>剪贴板为空</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableCellOps.cpp" line="+1"/>
+        <source>Please select a cell to paste into</source>
+        <translation>请先选中要粘贴的起始单元格</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableCellOps.cpp" line="+1"/>
+        <source>Nothing to paste: the clipboard content exceeds the table boundary</source>
+        <translation>无可粘贴内容：剪贴板内容超出表格边界</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableCellOps.cpp" line="+1"/>
+        <source>Paste partially dropped: %1 row(s) and %2 cell(s) outside the table were ignored</source>
+        <translation>粘贴部分丢弃：%1 行与 %2 个单元格超出表格范围被忽略</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableCellOps.cpp" line="+1"/>
+        <source>Paste failed: the content does not match the column data type</source>
+        <translation>粘贴失败：内容与列数据类型不匹配</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableCellOps.cpp" line="+1"/>
+        <source>No cells selected to cut</source>
+        <translation>没有选中可剪切的单元格</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableCellOps.cpp" line="+1"/>
+        <source>Cell Operations</source>
+        <translation>单元格操作</translation>
+    </message>
+</context>
 </TS>

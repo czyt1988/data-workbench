@@ -20900,4 +20900,47 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>Row Operations</translation>
     </message>
 </context>
+<context>
+    <name>DA::DATableCellOps</name>
+    <message>
+        <location filename="../DAGui/TableOps/DATableCellOps.cpp" line="+0"/>
+        <source>Please select a valid cell</source>
+        <translation>Please select a valid cell</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableCellOps.cpp" line="+1"/>
+        <source>Clipboard is empty</source>
+        <translation>Clipboard is empty</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableCellOps.cpp" line="+1"/>
+        <source>Please select a cell to paste into</source>
+        <translation>Please select a cell to paste into</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableCellOps.cpp" line="+1"/>
+        <source>Nothing to paste: the clipboard content exceeds the table boundary</source>
+        <translation>Nothing to paste: the clipboard content exceeds the table boundary</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableCellOps.cpp" line="+1"/>
+        <source>Paste partially dropped: %1 row(s) and %2 cell(s) outside the table were ignored</source>
+        <translation>Paste partially dropped: %1 row(s) and %2 cell(s) outside the table were ignored</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableCellOps.cpp" line="+1"/>
+        <source>Paste failed: the content does not match the column data type</source>
+        <translation>Paste failed: the content does not match the column data type</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableCellOps.cpp" line="+1"/>
+        <source>No cells selected to cut</source>
+        <translation>No cells selected to cut</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableCellOps.cpp" line="+1"/>
+        <source>Cell Operations</source>
+        <translation>Cell Operations</translation>
+    </message>
+</context>
 </TS>
