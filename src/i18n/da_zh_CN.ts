@@ -21225,4 +21225,32 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>列操作</translation>
     </message>
 </context>
+<context>
+    <name>DA::DATableNavigationService</name>
+    <message>
+        <location filename="../DAGui/TableNavigation/DATableNavigationService.cpp" line="+0"/>
+        <source>Row number is out of range</source>
+        <translation>行号超出范围</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableNavigation/DATableNavigationService.cpp" line="+1"/>
+        <source>Index label not found: %1</source>
+        <translation>未找到索引标签：%1</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableNavigation/DATableNavigationService.cpp" line="+1"/>
+        <source>There are %1 rows with this index label; jumped to the first one</source>
+        <translation>有 %1 行使用该索引标签，已跳到第一个</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableNavigation/DATableNavigationService.cpp" line="+1"/>
+        <source>Column not found: %1</source>
+        <translation>未找到列名：%1</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableNavigation/DATableNavigationService.cpp" line="+1"/>
+        <source>There are %1 columns with this name; used the first one</source>
+        <translation>有 %1 个同名列，已取第一个</translation>
+    </message>
+</context>
 </TS>

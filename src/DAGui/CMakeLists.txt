@@ -219,6 +219,7 @@ set(DA_LIB_SUBDIR_TableSort ${CMAKE_CURRENT_SOURCE_DIR}/TableSort)
 set(DA_LIB_SUBDIR_TableViewState ${CMAKE_CURRENT_SOURCE_DIR}/TableViewState)
 set(DA_LIB_SUBDIR_TableColumnView ${CMAKE_CURRENT_SOURCE_DIR}/TableColumnView)
 set(DA_LIB_SUBDIR_TableOps ${CMAKE_CURRENT_SOURCE_DIR}/TableOps)
+set(DA_LIB_SUBDIR_TableNavigation ${CMAKE_CURRENT_SOURCE_DIR}/TableNavigation)
 
 # Models
 file(GLOB DA_LIB_HEADER_FILES_Models ${DA_LIB_SUBDIR_Models}/*.h)
@@ -554,6 +555,10 @@ file(GLOB DA_LIB_SOURCE_FILES_TableColumnView ${DA_LIB_SUBDIR_TableColumnView}/*
 file(GLOB DA_LIB_HEADER_FILES_TableOps ${DA_LIB_SUBDIR_TableOps}/*.h)
 file(GLOB DA_LIB_SOURCE_FILES_TableOps ${DA_LIB_SUBDIR_TableOps}/*.cpp)
 
+#TableNavigation（表格导航服务，008 期5）
+file(GLOB DA_LIB_HEADER_FILES_TableNavigation ${DA_LIB_SUBDIR_TableNavigation}/*.h)
+file(GLOB DA_LIB_SOURCE_FILES_TableNavigation ${DA_LIB_SUBDIR_TableNavigation}/*.cpp)
+
 # Agent UI 需要 WebEngine/WebChannel/Network（DAGui/Agent 子目录的 DAAgentDockWidget 等）
 # Qt5 的一体化模块 QtWebEngine 在 Qt6 中拆分为 WebEngineCore/WebEngineQuick/WebEngineWidgets，
 # 官方 Qt6 安装不再提供 Qt6WebEngine 兼容包，组件名需按大版本区分
@@ -668,6 +673,9 @@ da_add_library(
             #TableOps
             ${DA_LIB_HEADER_FILES_TableOps}
             ${DA_LIB_SOURCE_FILES_TableOps}
+            #TableNavigation
+            ${DA_LIB_HEADER_FILES_TableNavigation}
+            ${DA_LIB_SOURCE_FILES_TableNavigation}
             ${CMAKE_CURRENT_SOURCE_DIR}/../DAGlobals.h
     QT_PUBLIC Core Gui Widgets Xml Svg ${DAGUI_WEBENGINE_COMPS}
     LINK_PUBLIC DAUtils DAMessageHandler DAData DAPyWorkFlow DAFigure
@@ -678,9 +686,9 @@ da_add_library(
     THIRDPARTY_PUBLIC DAWidgets ads qwt quazip
     THIRDPARTY python pybind11 SARibbonBar ctk
     # ui 文件进行窗口提升时需要找到这些子目录的头文件
-    PUBLIC_SUBDIRS Dialog ChartSetting Chart3DSetting NodeSetting Chart ChartAddItem Agent MarkdownView Stats TableChart TableChildWindow TableCore TableNote TableQuickPlot TableValidation TableComputedColumn TableConditionalFormat TableFind TableStyle TableSort TableViewState TableColumnView TableOps
+    PUBLIC_SUBDIRS Dialog ChartSetting Chart3DSetting NodeSetting Chart ChartAddItem Agent MarkdownView Stats TableChart TableChildWindow TableCore TableNote TableQuickPlot TableValidation TableComputedColumn TableConditionalFormat TableFind TableStyle TableSort TableViewState TableColumnView TableOps TableNavigation
     # 头文件安装：根 + 各子目录
-    HEADERS_DIRS Models MimeData Commands ChartSetting Chart3DSetting NodeSetting Chart ChartAddItem Agent MarkdownView Stats TableChart TableChildWindow TableCore TableNote TableQuickPlot TableValidation TableComputedColumn TableConditionalFormat TableFind TableStyle TableSort TableViewState TableColumnView TableOps
+    HEADERS_DIRS Models MimeData Commands ChartSetting Chart3DSetting NodeSetting Chart ChartAddItem Agent MarkdownView Stats TableChart TableChildWindow TableCore TableNote TableQuickPlot TableValidation TableComputedColumn TableConditionalFormat TableFind TableStyle TableSort TableViewState TableColumnView TableOps TableNavigation
     HEADERS ${DA_LIB_HEADER_FILES} ${DA_LIB_HEADER_FILES_Dialog}
 )
 

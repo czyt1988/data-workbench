@@ -77,6 +77,7 @@ class DATableColumnCombineOps;
 class DATableRenameOps;
 class DATableColumnOps;
 class DATablePaneAssembler;
+class DATableNavigationService;
 
 
 /**
@@ -514,7 +515,7 @@ private:
     //  迁入 DATableViewStateController，008 期3）
 
     //（两个类型转换对话框已随类型转换迁入 DATableTypeOps，008 期4）
-    class DADialogGotoCell* mGotoDialog { nullptr };               ///< 定位对话框（007，懒建复用）
+    //（定位对话框已随定位入口迁入 DATableNavigationService，008 期5）
     //（非模态校验报告窗已随校验迁入 DATableValidationController，008 期3）
     //（快速绘图窗/框架、转入处理器、追加可用性、表格子窗口容器已迁入 DATableQuickPlotController，008 期3）
     //（浮动查找/替换条与查找状态已随查找/替换迁入 DATableFindController，008 期3）
@@ -544,6 +545,7 @@ private:
     DATableColumnOps* mColumnOps { nullptr };  ///< 列增删算子（008 期4，页级持有）
     DATableOperationRegistry mOpRegistry;  ///< 算子注册表（008 期4：id → 唯一实例）
     DATablePaneAssembler* mPaneAssembler { nullptr };  ///< 窗格装配器（008 期5：装配段收口，页级持有）
+    DATableNavigationService* mNavigation { nullptr };  ///< 导航服务（008 期5：定位对话框/请求解析，页级持有）
 };
 }  // end of namespace DA
 #endif  // DADATAOPERATEOFDATAFRAMEWIDGET_H

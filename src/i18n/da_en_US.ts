@@ -21200,4 +21200,32 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation>Column Operations</translation>
     </message>
 </context>
+<context>
+    <name>DA::DATableNavigationService</name>
+    <message>
+        <location filename="../DAGui/TableNavigation/DATableNavigationService.cpp" line="+0"/>
+        <source>Row number is out of range</source>
+        <translation>Row number is out of range</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableNavigation/DATableNavigationService.cpp" line="+1"/>
+        <source>Index label not found: %1</source>
+        <translation>Index label not found: %1</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableNavigation/DATableNavigationService.cpp" line="+1"/>
+        <source>There are %1 rows with this index label; jumped to the first one</source>
+        <translation>There are %1 rows with this index label; jumped to the first one</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableNavigation/DATableNavigationService.cpp" line="+1"/>
+        <source>Column not found: %1</source>
+        <translation>Column not found: %1</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableNavigation/DATableNavigationService.cpp" line="+1"/>
+        <source>There are %1 columns with this name; used the first one</source>
+        <translation>There are %1 columns with this name; used the first one</translation>
+    </message>
+</context>
 </TS>

@@ -86,6 +86,7 @@
 #include "TableOps/DATableColumnOps.h"
 #include "TableOps/DATableOperationRegistry.h"
 #include "TableCore/DATablePaneAssembler.h"
+#include "TableNavigation/DATableNavigationService.h"
 // Dialog
 #include "Dialog/DARenameColumnsNameDialog.h"
 #include "Dialog/DADialogDataframeColumnCastToNumeric.h"
@@ -352,6 +353,13 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
     mOpRegistry.add(mColumnOps);
     // 窗格装配器（008 期5：装配段收口；表意信号连接留在页面——消费方是页面自身的槽）
     mPaneAssembler = new DATablePaneAssembler(*mContext, mViewStateController, mStyleDelegate);
+    // 导航服务（008 期5：定位对话框/请求解析；定位执行经宿主桥回页面单入口）
+    mNavigation = new DATableNavigationService(
+        *mContext, *mSelection,
+        [ this ](int row, int col, bool select, bool keepHidden) {
+            locateActualCell(row, col, select, keepHidden);
+        },
+        this);
     // 窗格装配（006b 抽取的唯一装配点）：表头替换 → setModel → 委托 → 逐窗格连接；
     // 必须在 mStyleDelegate 创建之后（里面要用它），在 setDAData/applyViewStateFromStore 之前
     configurePaneView(ui->tableView);
@@ -1313,107 +1321,13 @@ void DADataOperateOfDataFrameWidget::showColumnViewDialog()
 }
 
 /**
- * @brief 解析定位请求并调定位单入口（007 T1.7）
- *
- * 行解析 → 列解析 → 只调 locateActualCell（不自己写滚动/定位）。返回 false =
- * 未解析成功（已给用户可见提示、未改选区）。行列口径只用 dataRowCount()/
- * dataColumnCount()；currentIndex() 的行是滑动窗逻辑行，经 toActualRow 换算。
+ * @brief 解析定位请求并调定位单入口（转发导航服务；007 T1.7）
  * @param req 定位请求
  * @return 是否定位成功
  */
 bool DADataOperateOfDataFrameWidget::resolveGotoRequest(const DADialogGotoCell::Request& req)
 {
-    if (!mModel || dataRowCount() <= 0 || dataColumnCount() <= 0) {
-        return false;
-    }
-    // ① 行解析
-    int actualRow = 0;
-    switch (req.rowKind) {
-    case DADialogGotoCell::Request::RowKind::FirstRow:
-        actualRow = 0;
-        break;
-    case DADialogGotoCell::Request::RowKind::LastRow:
-        actualRow = dataRowCount() - 1;
-        break;
-    case DADialogGotoCell::Request::RowKind::Position:
-        if (req.rowPosition < 1 || req.rowPosition > dataRowCount()) {
-            daWarning << tr("Row number is out of range");  // cn:行号超出范围
-            return false;
-        }
-        actualRow = req.rowPosition - 1;
-        break;
-    case DADialogGotoCell::Request::RowKind::None: {
-        // 保持当前行（当前项无效 → 第 0 行）
-        const QModelIndex cur = currentOrSelectionTopLeftIndex();
-        actualRow = cur.isValid() ? toActualRow(cur.row()) : 0;
-        break;
-    }
-    case DADialogGotoCell::Request::RowKind::IndexLabel: {
-        DAPyIndex index                    = getDataframe().index();
-        DAPyIndex::IndexLabelLocations loc = index.findLabelLocations(DA::PY::toPyObject(req.indexLabel));
-        if (!loc.found) {  // 数值索引：字符串→整数/浮点再试一次（同一个查询路径）
-            bool ok = false;
-            const long long asInt = req.indexLabel.toLongLong(&ok);
-            if (ok) {
-                loc = index.findLabelLocations(pybind11::int_(asInt));
-            } else {
-                const double asDouble = req.indexLabel.toDouble(&ok);
-                if (ok) {
-                    loc = index.findLabelLocations(pybind11::float_(asDouble));
-                }
-            }
-        }
-        if (!loc.found) {
-            daWarning << tr("Index label not found: %1").arg(req.indexLabel);  // cn:未找到索引标签：%1
-            return false;
-        }
-        if (loc.count > 1) {
-            daInfo << tr("There are %1 rows with this index label; jumped to the first one").arg(loc.count);  // cn:有 %1 行使用该索引标签，已跳到第一个
-        }
-        actualRow = static_cast< int >(loc.firstPos);
-        break;
-    }
-    }
-    // ② 列解析
-    int col = 0;
-    switch (req.columnKind) {
-    case DADialogGotoCell::Request::ColumnKind::FirstColumn:
-        col = 0;
-        break;
-    case DADialogGotoCell::Request::ColumnKind::LastColumn:
-        col = dataColumnCount() - 1;
-        break;
-    case DADialogGotoCell::Request::ColumnKind::Name: {
-        int found    = -1;  // 重名取第一个（数据列序）
-        int nameHits = 0;
-        for (int c = 0; c < dataColumnCount(); ++c) {
-            if (mModel->headerData(c, Qt::Horizontal).toString() == req.columnName) {
-                if (found < 0) {
-                    found = c;
-                }
-                ++nameHits;
-            }
-        }
-        if (found < 0) {
-            daWarning << tr("Column not found: %1").arg(req.columnName);  // cn:未找到列名：%1
-            return false;
-        }
-        if (nameHits > 1) {
-            daInfo << tr("There are %1 columns with this name; used the first one").arg(nameHits);  // cn:有 %1 个同名列，已取第一个
-        }
-        col = found;
-        break;
-    }
-    case DADialogGotoCell::Request::ColumnKind::None: {
-        // 保持当前列（当前项无效 → 第 0 列）
-        const QModelIndex cur = currentOrSelectionTopLeftIndex();
-        col = cur.isValid() ? cur.column() : 0;
-        break;
-    }
-    }
-    // ③ 收尾：定位单入口（keepHidden 透传）
-    locateActualCell(actualRow, col, /*select=*/true, /*keepHidden=*/req.keepHidden);
-    return true;
+    return mNavigation->resolveGotoRequest(req);
 }
 
 /**
@@ -1428,32 +1342,11 @@ QModelIndex DADataOperateOfDataFrameWidget::currentOrSelectionTopLeftIndex() con
 }
 
 /**
- * @brief 打开定位对话框（007 T1.7）
- *
- * 懒建复用；setup 重置初值（不回显残留）；exec 模态，确定后解析请求。
- * 无数据页静默返回。
+ * @brief 打开定位对话框（转发导航服务；007 T1.7）
  */
 void DADataOperateOfDataFrameWidget::showGotoDialog()
 {
-    if (!mModel || dataRowCount() <= 0 || dataColumnCount() <= 0) {
-        return;
-    }
-    if (!mGotoDialog) {
-        mGotoDialog = new DADialogGotoCell(this);
-    }
-    QStringList columnNames;  // 重名列保留重复项（不做去重）
-    for (int c = 0; c < dataColumnCount(); ++c) {
-        columnNames.append(mModel->headerData(c, Qt::Horizontal).toString());
-    }
-    const QModelIndex cur        = currentOrSelectionTopLeftIndex();
-    const int currentRowPosition = cur.isValid() ? toActualRow(cur.row()) + 1 : 1;
-    const QString currentColName = cur.isValid() ? mModel->headerData(cur.column(), Qt::Horizontal).toString() : QString();
-    const bool hasHiddenColumns  = (mViewStateStore && !mViewStateStore->hiddenColumns().isEmpty());
-    mGotoDialog->setup(dataRowCount(), columnNames, currentRowPosition, currentColName, hasHiddenColumns);
-    if (mGotoDialog->exec() != QDialog::Accepted) {
-        return;
-    }
-    resolveGotoRequest(mGotoDialog->request());
+    mNavigation->showGotoDialog();
 }
 
 /**
