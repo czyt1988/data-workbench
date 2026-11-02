@@ -58,6 +58,9 @@
 // 表内快速绘图
 #include "TableChart/DATableChartPlanner.h"
 #include "TableChart/DATableQuickPlotWindow.h"
+// 表格子窗口容器（快速绘图的承载框架，也可贴入其它窗口）
+#include "TableChildWindow/DATableChildWindow.h"
+#include "TableChildWindow/DATableChildWindowContainer.h"
 // Dialog
 #include "Dialog/DARenameColumnsNameDialog.h"
 #include "Dialog/DADialogDataframeColumnCastToNumeric.h"
@@ -6740,9 +6743,11 @@ DA::DATableChartRequest DADataOperateOfDataFrameWidget::buildQuickPlotRequest() 
 }
 
 /**
- * @brief 用当前选区打开/刷新快速绘图浮窗
+ * @brief 用当前选区打开/刷新快速绘图子窗口
  *
- * 没有可画图型时浮窗不出现，只在消息区给出原因（实施方案 §3.2 第 1 步）。
+ * 没有可画图型时子窗口不出现，只在消息区给出原因（实施方案 §3.2 第 1 步）。
+ * 内容部件贴入表格子窗口容器（DATableChildWindow 框架承载）：可拖动移动、
+ * 8 向手柄缩放、最大化/还原，全程夹取在主视口内——不压表头与滚动条。
  */
 bool DADataOperateOfDataFrameWidget::showQuickPlot()
 {
@@ -6783,26 +6788,83 @@ bool DADataOperateOfDataFrameWidget::showQuickPlot()
                 });
         connect(this, &DADataOperateOfDataFrameWidget::dataModified,
                 mQuickPlotWindow, &DA::DATableQuickPlotWindow::notifyDataChanged);
-    }
-
-    // 锚点：表格视口右上角（浮窗落在表格上方附近，不遮挡当前行）
-    QRect anchor;
-    if (DADataTableView* view = getDataTableView()) {
-        if (QWidget* viewport = view->viewport()) {
-            const QPoint point = viewport->mapTo(this, QPoint(viewport->width() - 1, 0));
-            anchor             = QRect(point, QSize(1, 1));
+        // 贴入表格子窗口容器（Excel 式浮层）：首次贴在主视口右上角附近；
+        // 标题栏由框架绘制，列名摘要经 titleChanged 同步
+        const QSize preferred = DA::DATableQuickPlotWindow::recommendedSize();
+        const QRect bounds    = tableChildWindowBounds();
+        const QPoint preferredPos(bounds.right() - preferred.width() + 1 - 12, bounds.top() + 12);
+        mQuickPlotFrame = tableChildWindowContainer()->attach(mQuickPlotWindow, QString(), preferred, preferredPos);
+        if (mQuickPlotFrame) {
+            connect(mQuickPlotWindow, &DA::DATableQuickPlotWindow::titleChanged, this, [this](const QString& title) {
+                if (mQuickPlotFrame) {
+                    mQuickPlotFrame->setTitle(title);
+                }
+            });
         }
     }
-    mQuickPlotWindow->showForRequest(request, anchor);
+
+    // 再次打开保持用户上次移动/缩放出的位置与大小，只夹回当前允许区域
+    if (mQuickPlotFrame) {
+        mQuickPlotFrame->setVisible(true);
+        mQuickPlotFrame->raise();
+        mQuickPlotFrame->clampIntoBounds();
+    }
+    mQuickPlotWindow->showForRequest(request);
     return mQuickPlotWindow->isVisible();
 }
 
 /**
- * @brief 关闭快速绘图浮窗（实例保留复用）
+ * @brief 懒建表格子窗口容器
+ *
+ * 宿主=本页；允许区域=主视口（tableChildWindowBounds）；监听主视口与窗格容器
+ * 的移动/缩放/显隐（滚动条显隐、冻结分栏变化、页面缩放都会改变允许区域），
+ * 变化后容器自动把全部子窗口夹回允许区域。
+ */
+DATableChildWindowContainer* DADataOperateOfDataFrameWidget::tableChildWindowContainer()
+{
+    if (!mChildWindowContainer) {
+        mChildWindowContainer = new DA::DATableChildWindowContainer(this, this);
+        mChildWindowContainer->setBoundsProvider([this]() { return tableChildWindowBounds(); });
+        if (DADataTableView* view = getDataTableView()) {
+            if (QWidget* vp = view->viewport()) {
+                mChildWindowContainer->watchGeometrySource(vp);
+            }
+        }
+        if (mPaneContainer) {
+            mChildWindowContainer->watchGeometrySource(mPaneContainer);
+        }
+    }
+    return mChildWindowContainer;
+}
+
+/**
+ * @brief 子窗口允许区域（本页坐标系）
+ *
+ * 主视口 = 数据网格可视区（不含行头/列表头/滚动条）：子窗口夹取其中，
+ * 表头排序与滚动条交互永远不会被浮窗压住；取不到视图时回退窗格容器矩形。
+ */
+QRect DADataOperateOfDataFrameWidget::tableChildWindowBounds() const
+{
+    if (DADataTableView* view = getDataTableView()) {
+        if (QWidget* vp = view->viewport()) {
+            return QRect(vp->mapTo(this, QPoint(0, 0)), vp->size());
+        }
+    }
+    if (mPaneContainer) {
+        return QRect(mPaneContainer->mapTo(this, QPoint(0, 0)), mPaneContainer->size());
+    }
+    return rect();
+}
+
+/**
+ * @brief 关闭快速绘图子窗口（实例保留复用）
  */
 void DADataOperateOfDataFrameWidget::closeQuickPlot()
 {
-    if (mQuickPlotWindow) {
+    // 先隐藏承载框架（只藏内容会剩一个空标题栏）
+    if (mQuickPlotFrame) {
+        mQuickPlotFrame->hide();
+    } else if (mQuickPlotWindow) {
         mQuickPlotWindow->hide();
     }
 }

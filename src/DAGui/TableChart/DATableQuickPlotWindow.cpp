@@ -12,9 +12,7 @@
 #include <QKeyEvent>
 #include <QLabel>
 #include <QMenu>
-#include <QMouseEvent>
 #include <QPushButton>
-#include <QSizeGrip>
 #include <QTimer>
 #include <QToolButton>
 #include <QVBoxLayout>
@@ -26,15 +24,14 @@ namespace DA
 
 namespace
 {
-// 浮窗默认尺寸与边距
-constexpr int kDefaultWidth = 560;
-constexpr int kDefaultHeight = 430;
-constexpr int kAnchorOffset = 12;
+// 贴入框架时的推荐尺寸（与原浮窗尺寸一致，图表区面积基本不变）
+constexpr int kRecommendedWidth = 560;
+constexpr int kRecommendedHeight = 430;
 
 // 图型按钮携带的枚举值
 const char* const kTypeValueProperty = "daQuickPlotType";
 
-// 忙碌期间的守卫：禁用浮窗交互，退出作用域时恢复（异常/提前 return 也能恢复）
+// 忙碌期间的守卫：禁用内容交互，退出作用域时恢复（异常/提前 return 也能恢复）
 class QuickPlotBusyGuard
 {
 public:
@@ -70,6 +67,14 @@ DATableQuickPlotWindow::DATableQuickPlotWindow(QWidget* parent) : QWidget(parent
 
 DATableQuickPlotWindow::~DATableQuickPlotWindow()
 {
+}
+
+/**
+ * @brief 贴入框架时的推荐尺寸（宿主 attach 用）
+ */
+QSize DATableQuickPlotWindow::recommendedSize()
+{
+    return QSize(kRecommendedWidth, kRecommendedHeight);
 }
 
 /**
@@ -154,25 +159,8 @@ void DATableQuickPlotWindow::buildUi()
     root->setContentsMargins(6, 6, 6, 6);
     root->setSpacing(4);
 
-    // 标题行：列名摘要 + 关闭
-    mTitleBar = new QWidget(this);
-    mTitleBar->installEventFilter(this);
-    QHBoxLayout* titleLayout = new QHBoxLayout(mTitleBar);
-    titleLayout->setContentsMargins(2, 0, 0, 0);
-    titleLayout->setSpacing(4);
-    mTitleLabel = new QLabel(mTitleBar);
-    QFont titleFont = mTitleLabel->font();
-    titleFont.setBold(true);
-    mTitleLabel->setFont(titleFont);
-    mTitleLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
-    titleLayout->addWidget(mTitleLabel, 1);
-    QToolButton* closeButton = new QToolButton(mTitleBar);
-    closeButton->setText(QStringLiteral("\u2715"));
-    closeButton->setAutoRaise(true);
-    closeButton->setToolTip(tr("Close"));  // cn:关闭
-    titleLayout->addWidget(closeButton);
-    root->addWidget(mTitleBar);
-    connect(closeButton, &QToolButton::clicked, this, &DATableQuickPlotWindow::closeRequested);
+    // 标题栏（列名摘要 + 关闭）由承载框架 DATableChildWindow 绘制，
+    // 标题内容经 titleChanged 交给宿主设置
 
     // 图型切换
     mTypeBar = new QWidget(this);
@@ -255,10 +243,8 @@ void DATableQuickPlotWindow::buildUi()
     connect(mTransferButton, &QToolButton::clicked, this, &DATableQuickPlotWindow::onTransferClicked);
     connect(newFigureAction, &QAction::triggered, this, &DATableQuickPlotWindow::onTransferNewFigure);
     connect(mAppendAction, &QAction::triggered, this, &DATableQuickPlotWindow::onTransferAppendCurrent);
-
-    // 右下角尺寸夹点：浮窗是表格页内的子控件，没有窗口边框，需要显式的拖动把手
-    mSizeGrip = new QSizeGrip(this);
-    mSizeGrip->setToolTip(tr("Drag to resize"));  // cn:拖动以调整大小
+    // 缩放手柄由承载框架 DATableChildWindow 提供（QSizeGrip 只作用于顶层窗口，
+    // 子控件浮层用它缩不了自己——这也是本类原先「无法调整大小」的根因）
 }
 
 /**
@@ -423,16 +409,8 @@ void DATableQuickPlotWindow::renderNow()
     }
     setNotice(parts.join(QStringLiteral("  \u00b7  ")));
 
-    // 标题：列名摘要
-    QStringList names;
-    for (const DATableChartColumn& column : std::as_const(mRequest.columns)) {
-        QString name = column.name;
-        if (column.occurrence > 0) {
-            name += QStringLiteral(" (%1)").arg(column.occurrence + 1);
-        }
-        names.append(name);
-    }
-    mTitleLabel->setText(names.join(QStringLiteral(" + ")));
+    // 标题：列名摘要（承载框架标题栏显示）
+    Q_EMIT titleChanged(columnSummary());
     mLastMessage.clear();
 }
 
@@ -474,13 +452,13 @@ void DATableQuickPlotWindow::setError(const QString& error)
 }
 
 /**
- * @brief 打开/刷新浮窗
+ * @brief 打开/刷新内容（位置与尺寸由承载框架负责）
  */
-void DATableQuickPlotWindow::showForRequest(const DATableChartRequest& request, const QRect& anchorInParent)
+void DATableQuickPlotWindow::showForRequest(const DATableChartRequest& request)
 {
     const DATableChartPlan plan = DATableChartPlanner::plan(request);
     if (!plan.isPlottable()) {
-        // 浮窗还没打开时（首次触发）不出现，只把原因交给消息区；
+        // 未打开时（首次触发）不出现，只把原因交给消息区；
         // 已打开时保持当前请求与图不变，只显示可读原因
         mLastMessage = rejectReasonText(plan.reject);
         if (isVisible()) {
@@ -494,15 +472,29 @@ void DATableQuickPlotWindow::showForRequest(const DATableChartRequest& request, 
     mRefreshButton->hide();
     rebuildTypeButtons();
     refreshOptionWidgets();
-    // 先让浮窗本体出来（带「正在取数…」提示），取数绘制交给下一轮事件循环
-    if (!isVisible()) {
-        resize(kDefaultWidth, kDefaultHeight);
-        placeNearAnchor(anchorInParent);
-        show();
-    }
+    // 标题先上（列名摘要即时可见），取数绘制完成后 renderNow 再刷一次
+    Q_EMIT titleChanged(columnSummary());
+    // 先让内容出来（带「正在取数…」提示），取数绘制交给下一轮事件循环
+    show();
     raise();
     setFocus(Qt::OtherFocusReason);
     scheduleRender();
+}
+
+/**
+ * @brief 绑定列的名称摘要（titleChanged 载荷）
+ */
+QString DATableQuickPlotWindow::columnSummary() const
+{
+    QStringList names;
+    for (const DATableChartColumn& column : std::as_const(mRequest.columns)) {
+        QString name = column.name;
+        if (column.occurrence > 0) {
+            name += QStringLiteral(" (%1)").arg(column.occurrence + 1);
+        }
+        names.append(name);
+    }
+    return names.join(QStringLiteral(" + "));
 }
 
 /**
@@ -573,18 +565,6 @@ void DATableQuickPlotWindow::notifyDataChanged()
 void DATableQuickPlotWindow::setAppendAvailabilityProvider(const AppendAvailabilityProvider& provider)
 {
     mAppendAvailability = provider;
-}
-
-/**
- * @brief 尺寸变化时把尺寸夹点贴到右下角
- */
-void DATableQuickPlotWindow::resizeEvent(QResizeEvent* event)
-{
-    QWidget::resizeEvent(event);
-    if (mSizeGrip) {
-        mSizeGrip->move(width() - mSizeGrip->width(), height() - mSizeGrip->height());
-        mSizeGrip->raise();
-    }
 }
 
 /**
@@ -679,28 +659,6 @@ void DATableQuickPlotWindow::onTransferAppendCurrent()
     Q_EMIT transferRequested(mRequest, mSpec, true);
 }
 
-/**
- * @brief 把浮窗放到锚点附近（父控件坐标系），并夹在父控件范围内
- */
-void DATableQuickPlotWindow::placeNearAnchor(const QRect& anchorInParent)
-{
-    QWidget* host = parentWidget();
-    if (!host) {
-        return;
-    }
-    QPoint target;
-    if (anchorInParent.isValid()) {
-        target = anchorInParent.bottomLeft() + QPoint(kAnchorOffset, kAnchorOffset);
-    } else {
-        target = QPoint(host->width() - width() - 24, 24);
-    }
-    const int maxX = qMax(0, host->width() - width());
-    const int maxY = qMax(0, host->height() - height());
-    target.setX(qBound(0, target.x(), maxX));
-    target.setY(qBound(0, target.y(), maxY));
-    move(target);
-}
-
 void DATableQuickPlotWindow::keyPressEvent(QKeyEvent* event)
 {
     if (event->key() == Qt::Key_Escape) {
@@ -709,51 +667,6 @@ void DATableQuickPlotWindow::keyPressEvent(QKeyEvent* event)
         return;
     }
     QWidget::keyPressEvent(event);
-}
-
-/**
- * @brief 标题栏拖动（浮窗是表格页内的子控件，拖动即在父控件里移动）
- */
-bool DATableQuickPlotWindow::eventFilter(QObject* watched, QEvent* event)
-{
-    if (watched == mTitleBar) {
-        switch (event->type()) {
-        case QEvent::MouseButtonPress: {
-            QMouseEvent* me = static_cast< QMouseEvent* >(event);
-            if (me->button() == Qt::LeftButton) {
-                mDragging   = true;
-                mDragOffset = me->pos();
-                return true;
-            }
-            break;
-        }
-        case QEvent::MouseMove: {
-            if (mDragging) {
-                QWidget* host = parentWidget();
-                if (!host) {
-                    break;
-                }
-                QMouseEvent* me = static_cast< QMouseEvent* >(event);
-                QPoint target   = mTitleBar->mapTo(host, me->pos()) - mDragOffset;
-                target.setX(qBound(0, target.x(), qMax(0, host->width() - width())));
-                target.setY(qBound(0, target.y(), qMax(0, host->height() - height())));
-                move(target);
-                return true;
-            }
-            break;
-        }
-        case QEvent::MouseButtonRelease: {
-            if (mDragging) {
-                mDragging = false;
-                return true;
-            }
-            break;
-        }
-        default:
-            break;
-        }
-    }
-    return QWidget::eventFilter(watched, event);
 }
 
 }  // namespace DA

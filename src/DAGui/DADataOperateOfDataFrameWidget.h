@@ -48,6 +48,8 @@ class DATableValidationStore;
 class DADialogValidationReport;
 class DATableNoteStore;
 class DATableConditionalFormatRule;
+class DATableChildWindowContainer;
+class DATableChildWindow;
 
 
 /**
@@ -141,11 +143,12 @@ public:
     QList< int > getSelectedDataColumnsInViewOrder(bool ensureInDataframe = true) const;
     // 用当前（有序）选区构造快速绘图请求；列角色走 DATableChartPlanner
     DA::DATableChartRequest buildQuickPlotRequest() const;
-    // 用当前选区打开/刷新快速绘图浮窗；无法出图时返回 false（已给用户可见提示）
+    // 用当前选区打开/刷新快速绘图子窗口（贴入表格子窗口容器，可拖动/缩放）；
+    // 无法出图时返回 false（已给用户可见提示）
     bool showQuickPlot();
-    // 关闭快速绘图浮窗（实例保留复用）
+    // 关闭快速绘图子窗口（实例保留复用）
     void closeQuickPlot();
-    // 快速绘图浮窗是否正在显示
+    // 快速绘图子窗口是否正在显示
     bool isQuickPlotVisible() const;
     // 转入绘图区的处理器：APP 能拿到 DAChartOperateWidget，由 APP 注入
     using QuickPlotTransferHandler =
@@ -545,6 +548,12 @@ private:
     // 对给定格弹出编辑弹层并落地结果（插入/编辑共用：保存→增/改命令，删除→删除命令）
     void editNoteAtCell(int actualRow, int actualCol);
 
+    // ===== 表格子窗口容器（快速绘图承载，也可贴入其它窗口）=====
+    // 懒建容器（宿主=本页；允许区域=主视口；监听视口/窗格容器几何变化）
+    class DATableChildWindowContainer* tableChildWindowContainer();
+    // 子窗口允许区域（主视口在本页坐标系下的矩形；无视图回退窗格容器）
+    QRect tableChildWindowBounds() const;
+
     Ui::DADataOperateOfDataFrameWidget* ui;
     DAData mData;
     DADataTableModel* mModel { nullptr };
@@ -569,9 +578,11 @@ private:
     class DADialogTableColumnView* mDialogColumnView { nullptr };  ///< 列视图对话框（006d，懒建复用）
     class DADialogGotoCell* mGotoDialog { nullptr };               ///< 定位对话框（007，懒建复用）
     QPointer< DADialogValidationReport > mValidationReport;  ///< 非模态校验报告窗（005 T1.25，重跑前先关旧的）
-    class DATableQuickPlotWindow* mQuickPlotWindow { nullptr };  ///< 快速绘图浮窗（懒建，页内单实例）
+    class DATableQuickPlotWindow* mQuickPlotWindow { nullptr };  ///< 快速绘图内容部件（懒建，页内单实例）
     QuickPlotTransferHandler mQuickPlotTransfer;                    ///< 转入绘图区处理器（APP 注入）
     QuickPlotAppendAvailabilityProvider mQuickPlotAppendAvailable;  ///< 追加可用性（APP 注入）
+    class DATableChildWindowContainer* mChildWindowContainer { nullptr };  ///< 表格子窗口容器（懒建）
+    class DATableChildWindow* mQuickPlotFrame { nullptr };                  ///< 快速绘图子窗口框架（容器承载）
 
     // ===== 查找状态（002 T1.4）=====
     QVector< QPair< int, int > > mFindHits;  ///< 当前命中集（数据源绝对行列，行主序，≤上限）

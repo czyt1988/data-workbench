@@ -2,7 +2,7 @@
 
 > **📌 定位**
 >
-> 在看表的过程中选中一列/多列，立刻在表格页上弹出一个真正的图表浮窗；浮窗可以随手关掉，也可以一键转入绘图区变成正式图表。
+> 在看表的过程中选中一列/多列，立刻在表格页上弹出一个真正的图表子窗口；子窗口可以随手关掉，也可以一键转入绘图区变成正式图表。
 >
 > 方案来源：仓库根目录 `tmp/表格相关实施方案/表格快速图表预览实施方案.md`（方案文件，不在文档站导航内）。
 > 本文只写实现落位与扩展点，规则细节以方案文件为准。
@@ -14,20 +14,42 @@
 | 层 | 文件 | 职责 |
 |---|---|---|
 | L2 数据层 | `src/DAData/DATableDataSource.h` | `fetchColumnRange(column, startRow, rowCount)`：按列取一段值；pandas 源走列切片快路径，其它源默认经 `fetchBlock` 抽取 |
+| L3 界面层 | `src/DAGui/TableChildWindow/DATableChildWindow.*` | **表格子窗口框架**（Excel 式浮层）：标题栏拖动移动、4 角抓取块 + 4 边拖拽带缩放、双击最大化/还原、标题栏右键菜单 |
+| L3 界面层 | `src/DAGui/TableChildWindow/DATableChildWindowContainer.*` | **表格子窗口容器**：任意 QWidget 贴入成表格里的子窗口；允许区域夹取、几何源监听、关闭默认隐藏 |
 | L3 界面层 | `src/DAGui/TableChart/DATableChartTypes.h` | 请求/规格/规划结果/构建信息等纯数据结构 |
 | L3 界面层 | `src/DAGui/TableChart/DATableChartPlanner.*` | 列角色判定、图型能力矩阵、默认规格、X 轴候选 |
 | L3 界面层 | `src/DAGui/TableChart/DAChartSeriesSampler.*` | 列 → 采样点/值的唯一采样入口（小表全量、大表确定性分块） |
 | L3 界面层 | `src/DAGui/TableChart/DAChartQuickPlot.*` | **唯一图元编排器**：按规格构建图元并挂到图表；转入绘图区 |
-| L3 界面层 | `src/DAGui/TableChart/DATableQuickPlotWindow.*` | 浮窗：图型切换、聚合/X 轴下拉、更新选区、转入、关闭 |
+| L3 界面层 | `src/DAGui/TableChart/DATableQuickPlotWindow.*` | 内容部件：图型切换、聚合/X 轴下拉、更新选区、转入、关闭（位置/尺寸/标题由子窗口框架承载） |
 | L3 界面层 | `src/DAGui/Stats/DAStatsPlotCoordinator.*` | 统计绘图核心（原在 APP，下沉到 DAGui 供统计向导与快速绘图共用） |
 | L3 界面层 | `src/DAGui/Chart/DAChartOperateWidgetCommands.*` | 「转入」新建 Figure 的撤销命令（摘/挂 dock 但保活 figure） |
-| L3 界面层 | `src/DAGui/DADataOperateOfDataFrameWidget.*` | 表格页入口：有序选区 → 请求 → 浮窗；转入处理器由 APP 注入 |
+| L3 界面层 | `src/DAGui/DADataOperateOfDataFrameWidget.*` | 表格页入口：有序选区 → 请求 → 贴入子窗口；转入处理器由 APP 注入 |
 | L5 应用层 | `src/APP/DAAppController.cpp` | Ribbon/表头动作接线、`setQuickPlotTransferHandler` 注入、动作置灰 |
 
 > **⚠️ 依赖方向**
 >
 > 快速绘图全部落在 DAGui，不反向依赖 APP。转入绘图区需要 `DAChartOperateWidget`（也在 DAGui，但只有 APP 知道它属于哪个停靠区），因此由 APP 通过
 > `DADataOperateOfDataFrameWidget::setQuickPlotTransferHandler()` 注入一个处理器，页面只负责调用。
+
+---
+
+## 1.5 表格子窗口容器（DATableChildWindowContainer）
+
+快速绘图子窗口不再自管位置与尺寸，由通用子窗口容器承载——**任意**部件都能贴入表格变成子窗口：
+
+- **贴入/摘除**：`attach(content, title, preferredSize, preferredPos)` 把任意 QWidget 重父化进一个
+  `DATableChildWindow` 框架（框架接管内容所有权），`takeAndDetach` 取出内容并销毁框架；
+- **交互（Excel 式）**：标题栏拖动移动、双击最大化/还原（充满允许区域）、4 角抓取块 + 4 边拖拽带
+  缩放、标题栏右键菜单（最大化/还原/重置位置与大小/关闭）、Esc 请求关闭；
+- **允许区域夹取**：`setBoundsProvider` 给出允许矩形（页面用**主视口**：数据网格可视区，不含表头与
+  滚动条）——移动/缩放全程夹取其中，浮层永不压住滚动条与表头；`watchGeometrySource(视口/窗格容器)`
+  监听几何源，滚动条显隐、冻结分栏位移、页面缩放后全部子窗口自动夹回；
+- **关闭语义**：容器把 `closeRequested` 默认接到 `hide`（实例复用）；需要销毁的宿主自行接 `detach`；
+- **快速绘图的用法**：页内单实例，贴在主视口右上角；关闭 → 重开保持用户上次的位置与大小（不再重置），
+  标题栏由框架绘制（列名摘要经 `titleChanged` 同步）。
+
+> **📌 为什么不用 QSizeGrip**：QSizeGrip 只作用于顶层窗口（`startSystemResize` 作用于 `window()`），
+> 表格页内的子控件浮层用它拖不动自己（旧实现「无法调整大小」的根因）。子窗口框架必须自绘 8 向手柄。
 
 ---
 
@@ -40,10 +62,10 @@
   → DATableChartSpec（图型 / X / 数值列 / 分类列 / 聚合 / Top N）
   → DAChartSeriesSampler（采样）
   → DAChartQuickPlot::render()（构建图元 → attach 到目标 DAChartWidget）
-  → 浮窗显示，或 transferToFigure() 转入正式图表
+  → 子窗口显示（容器贴入框架），或 transferToFigure() 转入正式图表
 ```
 
-浮窗与正式图表**共用同一份**请求、采样与构建实现；转入不是把浮窗的 chart reparent 过去，而是用同一份规格再构建一次图元。
+子窗口与正式图表**共用同一份**请求、采样与构建实现；转入不是把子窗口的 chart reparent 过去，而是用同一份规格再构建一次图元。
 
 ---
 
@@ -132,7 +154,7 @@ endMacro()
 
 ## 7. 已知限制
 
-- 浮窗不随工程保存、不进撤销栈、不导出图片；这些能力在转入后由绘图区提供。
-- 浮窗不自动跟随选区与数据变化，只提供「更新为当前选区」与「刷新」。
+- 子窗口不随工程保存、不进撤销栈、不导出图片；这些能力在转入后由绘图区提供。
+- 子窗口不自动跟随选区与数据变化，只提供「更新为当前选区」与「刷新」；位置与大小也不持久化，页内关闭重开保持上次几何，数据页重建后回默认。
 - 惰性/数据库源目前只能采样聚合（无 SQL 聚合下推）。
 - 「低基数数值作为分类」用采样（起始 2000 行）估计基数，极端分布下可能误判；真正的 Top N 守卫按聚合结果执行。

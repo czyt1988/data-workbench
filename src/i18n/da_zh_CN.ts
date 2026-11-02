@@ -14398,6 +14398,34 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     </message>
 </context>
 <context>
+    <name>DA::DATableChildWindow</name>
+    <message>
+        <location filename="../DAGui/TableChildWindow/DATableChildWindow.cpp" line="+99"/>
+        <source>Drag to move</source>
+        <translation>拖动移动</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Close</source>
+        <translation>关闭</translation>
+    </message>
+    <message>
+        <location line="+427"/>
+        <source>Maximize</source>
+        <translation>最大化</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Restore</source>
+        <translation>还原</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Reset position and size</source>
+        <translation>重置位置与大小</translation>
+    </message>
+</context>
+<context>
     <name>DA::DATableQuickPlotWindow</name>
     <message>
         <location filename="../DAGui/TableChart/DATableQuickPlotWindow.cpp" line="+84"/>
@@ -14495,11 +14523,6 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>最大值</translation>
     </message>
     <message>
-        <location line="+29"/>
-        <source>Close</source>
-        <translation>关闭</translation>
-    </message>
-    <message>
         <location line="+18"/>
         <source>Aggregation:</source>
         <translation>聚合</translation>
@@ -14533,11 +14556,6 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <location line="+1"/>
         <source>Append to current chart</source>
         <translation>追加到当前图表</translation>
-    </message>
-    <message>
-        <location line="+21"/>
-        <source>Drag to resize</source>
-        <translation>拖动以调整大小</translation>
     </message>
     <message>
         <location line="+66"/>

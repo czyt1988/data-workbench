@@ -10,7 +10,6 @@ class QLabel;
 class QComboBox;
 class QToolButton;
 class QPushButton;
-class QSizeGrip;
 class QAction;
 
 namespace DA
@@ -18,14 +17,15 @@ namespace DA
 class DAChartWidget;
 
 /**
- * @brief 表内快速绘图浮窗
+ * @brief 表内快速绘图内容部件
  *
- * 表格页内的非模态子控件浮层（不是 Qt::Tool 顶层窗、不是模态对话框）：
- * 内部直接放一个 DAChartWidget，提供图型切换、聚合口径、X 轴选择、
- * 「更新为当前选区」「转入绘图区」与关闭。
+ * 表格页快速绘图的全部交互内容：图型切换、聚合口径、X 轴选择、
+ * 「更新为当前选区」「转入绘图区」与提示；由 DATableChildWindowContainer
+ * 贴入 DATableChildWindow 框架承载（框架负责拖动移动、手柄缩放、最大化、
+ * 关闭——本类不再自带标题栏与定位逻辑，标题经 titleChanged 交给框架显示）。
  *
  * 生命周期约定（实施方案 §5.3）：
- * - 每个表格页最多一个浮窗，再次触发复用同一实例；
+ * - 每个表格页最多一个实例，再次触发复用同一实例；
  * - 绑定触发时的选区，不随表里选区自动跟随；
  * - 不写工程数据、不进撤销栈；转入绘图区后由宿主关闭。
  */
@@ -36,8 +36,10 @@ public:
     explicit DATableQuickPlotWindow(QWidget* parent);
     ~DATableQuickPlotWindow() override;
 
-    // 用请求打开/刷新浮窗；首次调用即显示
-    void showForRequest(const DATableChartRequest& request, const QRect& anchorInParent = QRect());
+    // 贴入框架时的推荐尺寸（宿主 attach 用）
+    static QSize recommendedSize();
+    // 用请求打开/刷新内容；首次调用即显示（位置与尺寸由框架负责）
+    void showForRequest(const DATableChartRequest& request);
     // 按「更新为当前选区」的连续性规则换成新选区（保持图型，不支持才回落）
     void updateRequest(const DATableChartRequest& request);
     // 数据已变化：显示可点击刷新的提示（不自动重画）
@@ -59,17 +61,17 @@ public:
     static QString aggregationText(DATableChartAggregation aggregation);
 
 Q_SIGNALS:
+    // 列名摘要变化（框架标题栏显示用）
+    void titleChanged(const QString& title);
     // 用户点「更新为当前选区」：宿主回填表格页当前选区
     void currentSelectionRequested();
     // 用户要求转入绘图区（append=false 新建图，true 追加到当前 chart）
     void transferRequested(const DA::DATableChartRequest& request, const DA::DATableChartSpec& spec, bool appendToCurrent);
-    // 窗口请求关闭（Esc/关闭按钮）
+    // 窗口请求关闭（Esc）
     void closeRequested();
 
 protected:
     void keyPressEvent(QKeyEvent* event) override;
-    void resizeEvent(QResizeEvent* event) override;
-    bool eventFilter(QObject* watched, QEvent* event) override;
 
 private Q_SLOTS:
     void onChartTypeClicked(int typeValue);
@@ -89,7 +91,8 @@ private:
     void scheduleRender();
     void setNotice(const QString& notice);
     void setError(const QString& error);
-    void placeNearAnchor(const QRect& anchorInParent);
+    // 绑定列的名称摘要（titleChanged 载荷）
+    QString columnSummary() const;
     void switchToType(DATableChartType type);
 
 private:
@@ -101,8 +104,6 @@ private:
     bool mIgnoreTypeSignals { false };
     bool mRenderPending { false };
 
-    QWidget* mTitleBar { nullptr };
-    QLabel* mTitleLabel { nullptr };
     QWidget* mTypeBar { nullptr };
     QLabel* mAggregationLabel { nullptr };
     QComboBox* mAggregationCombo { nullptr };
@@ -114,12 +115,7 @@ private:
     QPushButton* mRefreshButton { nullptr };
     QToolButton* mTransferButton { nullptr };
     QAction* mAppendAction { nullptr };
-    QSizeGrip* mSizeGrip { nullptr };
     AppendAvailabilityProvider mAppendAvailability;
-
-    // 拖拽
-    bool mDragging { false };
-    QPoint mDragOffset;
 };
 
 }  // namespace DA

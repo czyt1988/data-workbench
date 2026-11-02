@@ -14382,6 +14382,34 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     </message>
 </context>
 <context>
+    <name>DA::DATableChildWindow</name>
+    <message>
+        <location filename="../DAGui/TableChildWindow/DATableChildWindow.cpp" line="+99"/>
+        <source>Drag to move</source>
+        <translation>Drag to move</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Close</source>
+        <translation>Close</translation>
+    </message>
+    <message>
+        <location line="+427"/>
+        <source>Maximize</source>
+        <translation>Maximize</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Restore</source>
+        <translation>Restore</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Reset position and size</source>
+        <translation>Reset position and size</translation>
+    </message>
+</context>
+<context>
     <name>DA::DATableQuickPlotWindow</name>
     <message>
         <location filename="../DAGui/TableChart/DATableQuickPlotWindow.cpp" line="+84"/>
@@ -14479,11 +14507,6 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation>Max</translation>
     </message>
     <message>
-        <location line="+29"/>
-        <source>Close</source>
-        <translation>Close</translation>
-    </message>
-    <message>
         <location line="+18"/>
         <source>Aggregation:</source>
         <translation>Aggregation:</translation>
@@ -14517,11 +14540,6 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <location line="+1"/>
         <source>Append to current chart</source>
         <translation>Append to current chart</translation>
-    </message>
-    <message>
-        <location line="+21"/>
-        <source>Drag to resize</source>
-        <translation>Drag to resize</translation>
     </message>
     <message>
         <location line="+66"/>

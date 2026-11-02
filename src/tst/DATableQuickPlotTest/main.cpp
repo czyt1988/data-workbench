@@ -39,6 +39,7 @@
 #include "TableChart/DAChartSeriesSampler.h"
 #include "TableChart/DATableChartPlanner.h"
 #include "TableChart/DATableChartTypes.h"
+#include "TableChildWindow/DATableChildWindow.h"
 
 namespace
 {
@@ -283,6 +284,9 @@ private Q_SLOTS:
     // 回归：从「popup + aboutToHide→deleteLater」的列头菜单触发快速绘图时，
     // 取数绘制必须延后到下一轮事件循环（不能在调用方的事件处理栈上同步跑）
     void testShowQuickPlotDefersRenderFromMenuAction();
+    // 子窗口承载：快速绘图贴入 DATableChildWindow 框架，完整落在主视口内
+    //（不压表头与滚动条），关闭重开保持上次几何，页面收缩自动夹回
+    void testQuickPlotChildWindowFrame();
 
     void initTestCase();
 };
@@ -839,6 +843,53 @@ void DATableQuickPlotTest::testShowQuickPlotDefersRenderFromMenuAction()
     // 菜单最终仍应被 deleteLater 正常回收（只是不能在事件处理中途删）
     QTest::qWait(50);
     QVERIFY(menuGuard.isNull());
+}
+
+void DATableQuickPlotTest::testQuickPlotChildWindowFrame()
+{
+    if (!DA::DAPyScripts::isInitScripts()) {
+        QSKIP("DAPyScripts not initialized");
+    }
+    DA::DATableMetadataRegistry registry(nullptr);
+    const DA::DAData data = makePandasData();
+    DA::DADataOperateOfDataFrameWidget page(data, &registry);
+    page.resize(900, 520);
+    page.show();
+    QTest::qWait(50);
+
+    QVERIFY(selectColumnRange(page, 0, 1));
+    QVERIFY(page.showQuickPlot());
+    QVERIFY(page.isQuickPlotVisible());
+
+    // 内容部件被贴入 DATableChildWindow 框架（表格子窗口容器承载）
+    auto* window = page.findChild< DA::DATableQuickPlotWindow* >();
+    QVERIFY(window);
+    auto* frame = page.findChild< DA::DATableChildWindow* >();
+    QVERIFY(frame);
+    QVERIFY(frame->isVisible());
+    QCOMPARE(window->parentWidget(), frame);
+
+    // 允许区域 = 主视口（页面坐标）：子窗口完整落在其中，永不压表头与滚动条
+    QWidget* vp = page.getDataTableView()->viewport();
+    QVERIFY(vp);
+    const auto viewportRect = [ &page, vp ]() {
+        return QRect(vp->mapTo(&page, QPoint(0, 0)), vp->size());
+    };
+    QVERIFY(viewportRect().contains(frame->geometry()));
+
+    // 关闭 → 重开：保持用户上次几何（贴入后位置不再重置）
+    const QRect geometryBefore = frame->geometry();
+    page.closeQuickPlot();
+    QVERIFY(!page.isQuickPlotVisible());
+    QVERIFY(selectColumnRange(page, 1, 1));
+    QVERIFY(page.showQuickPlot());
+    QVERIFY(page.isQuickPlotVisible());
+    QCOMPARE(frame->geometry(), geometryBefore);
+
+    // 页面收缩：容器把子窗口夹回新允许区域（仍完整在主视口内）
+    page.resize(520, 460);
+    QTest::qWait(30);
+    QVERIFY(viewportRect().contains(frame->geometry()));
 }
 
 void DATableQuickPlotTest::initTestCase()
