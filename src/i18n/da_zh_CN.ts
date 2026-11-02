@@ -21197,4 +21197,32 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>重命名列</translation>
     </message>
 </context>
+<context>
+    <name>DA::DATableColumnOps</name>
+    <message>
+        <location filename="../DAGui/TableOps/DATableColumnOps.cpp" line="+0"/>
+        <source>Please select a valid column</source>
+        <translation>请选择正确的列</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableColumnOps.cpp" line="+1"/>
+        <source>Computed column(s) %1 became invalid because their dependency column(s) were removed</source>
+        <translation>计算列 %1 因依赖列被删除已失效</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableColumnOps.cpp" line="+1"/>
+        <source>Warning</source>
+        <translation>警告</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableColumnOps.cpp" line="+1"/>
+        <source>The name of the new column to be inserted must be specified</source>
+        <translation>必须指定列的名字</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableColumnOps.cpp" line="+1"/>
+        <source>Column Operations</source>
+        <translation>列操作</translation>
+    </message>
+</context>
 </TS>
