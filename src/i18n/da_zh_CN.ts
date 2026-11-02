@@ -20863,4 +20863,17 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>请选择正确的列</translation>
     </message>
 </context>
+<context>
+    <name>DA::DATableSortController</name>
+    <message>
+        <location filename="../DAGui/TableSort/DATableSortController.cpp" line="+0"/>
+        <source>This data source is read-only and cannot be sorted.</source>
+        <translation>该数据源为只读，无法排序</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableSort/DATableSortController.cpp" line="+1"/>
+        <source>Cannot sort: the column contains values of incomparable mixed types.</source>
+        <translation>无法排序：该列包含不可比较的混合类型</translation>
+    </message>
+</context>
 </TS>

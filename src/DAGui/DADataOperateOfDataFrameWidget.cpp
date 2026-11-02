@@ -72,6 +72,7 @@
 #include "TableConditionalFormat/DATableConditionalFormatController.h"
 #include "TableFind/DATableFindController.h"
 #include "TableStyle/DATableStyleController.h"
+#include "TableSort/DATableSortController.h"
 // Dialog
 #include "Dialog/DARenameColumnsNameDialog.h"
 #include "Dialog/DADialogDataframeColumnCastToNumeric.h"
@@ -323,6 +324,8 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
     mContext->locateActualCell = [ this ](int row, int col, bool select) { locateActualCell(row, col, select); };
     // 脏标桥（计算列重算等改数据的操作经此发 dataModified，与页面信号同源）
     mContext->notifyDataModified = [ this ]() { Q_EMIT dataModified(); };
+    // 拾取模式查询桥（图表「选择序列」会话期间排序入口不生效）
+    mContext->isHeaderPickMode = [ this ]() -> bool { return mHeaderPickMode; };
     // 编辑后效协调器（008 期2）：commit() 是唯一的「编辑后」扇出点，
     // 此前 ~20 处手抄的 模型刷新→统计失效→计算列标脏→浮窗/宿主 收口于此；
     // attach() 一次性订阅批注/高亮层/样式/条件格式/校验缓存的「变更→失效/刷新」
@@ -345,6 +348,8 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
     connect(mFindController, &DATableFindController::replaceApplied, this, &DADataOperateOfDataFrameWidget::replaceApplied);
     // 样式/显示格式（构造注入上下文与选区服务）
     mStyleController = new DATableStyleController(*mContext, *mSelection, this);
+    // 排序（构造注入上下文；插删列/换数据集后规格清理由控制器 clearSpec 提供）
+    mSortController = new DATableSortController(*mContext, this);
     // 窗格装配（006b 抽取的唯一装配点）：表头替换 → setModel → 委托 → 逐窗格连接；
     // 必须在 mStyleDelegate 创建之后（里面要用它），在 setDAData/applyViewStateFromStore 之前
     configurePaneView(ui->tableView);
@@ -362,14 +367,12 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
     connect(mModel, &QAbstractItemModel::columnsInserted, this, [ this ]() {
         applyViewStateFromStore();
         // 插列后排序规格里的列位置失效，清除规格（数据顺序不变，只清指示器）
-        mSortSpec.clear();
-        forEachPaneHeader([ this ](DADataHeaderView* hh) { hh->setSortSpec(mSortSpec); });
+        mSortController->clearSpec();
     });
     connect(mModel, &QAbstractItemModel::columnsRemoved, this, [ this ]() {
         applyViewStateFromStore();
         // 删列后排序规格里的列位置失效，清除规格
-        mSortSpec.clear();
-        forEachPaneHeader([ this ](DADataHeaderView* hh) { hh->setSortSpec(mSortSpec); });
+        mSortController->clearSpec();
     });
     // 关闭不必要的绘制特性
     setDAData(d);
@@ -580,8 +583,7 @@ void DADataOperateOfDataFrameWidget::setDAData(const DA::DAData& d)
     mData = d;
     mContext->setData(d);  // 上下文随宿主换数据（008 期1）
     // 数据替换后旧排序规格（列位置+方向）失去意义，清除（排序规格不持久化，R13）
-    mSortSpec.clear();
-    forEachPaneHeader([ this ](DADataHeaderView* hh) { hh->setSortSpec(mSortSpec); });
+    mSortController->clearSpec();
     // 通用表格数据（DATableDataSource，如数据库惰性表）也可显示；series维持原语义
     if (d.isDataFrame() || (d.isTable() && !d.isSeries())) {
         ui->tableView->setData(d);
@@ -3034,7 +3036,7 @@ bool DADataOperateOfDataFrameWidget::isHeaderPickMode() const
  */
 QVector< QPair< int, Qt::SortOrder > > DADataOperateOfDataFrameWidget::sortSpec() const
 {
-    return mSortSpec;
+    return mSortController->sortSpec();
 }
 
 /**
@@ -3046,12 +3048,7 @@ QVector< QPair< int, Qt::SortOrder > > DADataOperateOfDataFrameWidget::sortSpec(
  */
 bool DADataOperateOfDataFrameWidget::isTableEditable() const
 {
-    if (mData.isNull()) {
-        return false;
-    }
-    DAData d                 = mData;
-    const DATableDataSource* ts = d.tableSource();
-    return !(ts && !ts->isTableEditable());
+    return mContext->isDataSourceEditable();
 }
 
 /**
@@ -3073,295 +3070,24 @@ void DADataOperateOfDataFrameWidget::onHeaderClickedWithModifiers(int logicalInd
     }
 }
 
+// ============================================================
+// 排序（实现迁入 DATableSortController，008 期3）
+// ============================================================
+
 /**
- * @brief 按列排序（重置排序规格为「仅该列」）
- *
- * 排序入口 = 列头右键菜单（DADataHeaderView::ColumnAction::SortAscending/SortDescending
- * → APP 接线到本方法）。只读/惰性源 daWarning 提示一次；拾取模式下不执行。
- * @param logicalIndex 列逻辑索引
- * @param order 排序方向
+ * @brief 按列排序（转发排序控制器）
  */
 void DADataOperateOfDataFrameWidget::sortColumn(int logicalIndex, Qt::SortOrder order)
 {
-    DA_SLOW_LOG_SCOPE_DETAIL("dagui.table.sort.column", [logicalIndex]() {
-        return QStringLiteral("column=%1").arg(logicalIndex);
-    });
-    applySortAction(logicalIndex, order, false);
+    mSortController->sortColumn(logicalIndex, order);
 }
 
 /**
- * @brief 追加为次级排序列（保留既有规格；该列已在规格中则切换其方向）
- * @param logicalIndex 列逻辑索引
- * @param order 排序方向
+ * @brief 追加为次级排序列（转发排序控制器）
  */
 void DADataOperateOfDataFrameWidget::addSecondarySortColumn(int logicalIndex, Qt::SortOrder order)
 {
-    DA_SLOW_LOG_SCOPE_DETAIL("dagui.table.sort.secondaryColumn", [logicalIndex]() {
-        return QStringLiteral("column=%1").arg(logicalIndex);
-    });
-    applySortAction(logicalIndex, order, true);
-}
-
-/**
- * @brief 排序动作统一入口（菜单驱动）：守卫 → 构造规格 → applySortSpec
- *
- * 规格构造规则（与原点击交互一致，入口改为菜单）：
- * - addKey=false：重置为「仅该列，指定方向」；
- * - addKey=true：该列不在规格中 → 追加（指定方向）；已在 → 切换其方向；
- * - 每次动作 = 一个撤销单元。
- * @param logicalIndex 列逻辑索引
- * @param order 排序方向
- * @param addKey 是否保留既有规格追加
- * @return 成功 push 返回 true
- */
-bool DADataOperateOfDataFrameWidget::applySortAction(int logicalIndex, Qt::SortOrder order, bool addKey)
-{
-    DA_SLOW_LOG_SCOPE_DETAIL("dagui.table.sort.action", [this]() {
-        return QStringLiteral("keys=%1").arg(mSortSpec.size());
-    });
-    if (mHeaderPickMode) {
-        return false;  // 拾取会话中不排序（与点击互斥语义一致）
-    }
-    if (logicalIndex < 0 || logicalIndex >= dataColumnCount()) {
-        return false;  // 尾部预留空白列不排序
-    }
-    if (!isTableEditable()) {
-        daWarning << tr("This data source is read-only and cannot be sorted.");  // cn:该数据源为只读，无法排序
-        return false;
-    }
-    DAPyDataFrame df = getDataframe();
-    if (df.isNone() || dataRowCount() <= 1) {
-        return false;  // 非 dataframe 或无可排序的行
-    }
-    QVector< QPair< int, Qt::SortOrder > > newSpec = mSortSpec;
-    if (addKey) {
-        int idx = -1;
-        for (int i = 0; i < newSpec.size(); ++i) {
-            if (newSpec.at(i).first == logicalIndex) {
-                idx = i;
-                break;
-            }
-        }
-        if (idx >= 0) {
-            newSpec[ idx ].second = (newSpec.at(idx).second == Qt::AscendingOrder) ? Qt::DescendingOrder : Qt::AscendingOrder;
-        } else {
-            newSpec.append(qMakePair(logicalIndex, order));
-        }
-    } else {
-        newSpec.clear();
-        newSpec.append(qMakePair(logicalIndex, order));
-    }
-    return applySortSpec(newSpec);
-}
-
-/**
- * @brief 应用排序规格（构造命令 + 回调接线 + push）
- *
- * 命令生效后按设计稿 §4.1 顺序联动：先样式键重映射（directionalCallback 里
- * styleManager()->onRowsReordered(最近应用置换)）→ 再模型刷新（notifyDataChanged
- * 清块缓存 + 行头 index 变更通知）→ 最后按置换修正选区、视口回顶。
- * 排序路径计时走慢日志嵌套作用域（超阈值才写 slow.log，验收口径：10 万行 ≤300 ms）。
- * @param newSpec 新排序规格
- * @return 成功 push 返回 true；算子失败（如混合类型列）提示并保持原规格返回 false
- */
-bool DADataOperateOfDataFrameWidget::applySortSpec(const QVector< QPair< int, Qt::SortOrder > >& newSpec)
-{
-    DA_SLOW_LOG_SCOPE_DETAIL("dagui.table.sort.applySpec", [this, &newSpec]() {
-        return QStringLiteral("rows=%1 keys=%2").arg(dataRowCount()).arg(newSpec.size());
-    });
-    DAPyDataFrame df = getDataframe();
-    if (df.isNone()) {
-        return false;
-    }
-    QVector< QPair< int, bool > > keys;
-    keys.reserve(newSpec.size());
-    for (const auto& k : newSpec) {
-        keys.append(qMakePair(k.first, k.second == Qt::AscendingOrder));
-    }
-    std::unique_ptr< DACommandDataFrame_sortRows > cmd(new DACommandDataFrame_sortRows(df, keys));
-    QPointer< DADataTableModel > modle          = mModel;
-    QPointer< DADataTableView > view            = ui->tableView;
-    DACommandDataFrame_sortRows* cmdRaw         = cmd.get();
-    DATableStyleManager* styleMgr               = mStyleManager;
-    DATableValidationStore* vaStore             = mValidationStore;
-    DATableNoteStore* noteStore                 = mNoteStore;
-    DADataOperateOfDataFrameWidget* self        = this;
-    // ① 样式键重映射（先于模型刷新；exec/undo 均传最近应用的置换，undo 传逆置换即等价按逆置换重映射）
-    cmd->setDirectionalCallBack([ styleMgr, vaStore, noteStore, cmdRaw ](bool isUndo) {
-        Q_UNUSED(isUndo);
-        if (styleMgr) {
-            styleMgr->onRowsReordered(cmdRaw->lastAppliedPermutation());
-        }
-        // 批注与样式同源（005 T1.26）：同一置换重映射，「批注跟着行走」
-        if (noteStore) {
-            noteStore->onRowsReordered(cmdRaw->lastAppliedPermutation());
-        }
-        // 排序移动行位置 → 唯一性违规缓存的行号失效（005 T1.25），保守全失效
-        if (vaStore) {
-            vaStore->invalidateUniqueCache();
-        }
-    });
-    // ② 模型刷新 → ③ 选区跟随 → 视口回顶（回调范式照 paste 的逐格 notifyDataChanged 写法）
-    cmd->setCallBack([ modle, view, cmdRaw, self ]() {
-        // 排序不改变列值集合 → 条件格式列统计不失效（003 性能决策）：
-        // 统计失效挂点走 cellValueChanged 精确信号，排序路径不发该信号，天然不失效
-        // 各阶段用嵌套慢日志作用域计时：只在超过各自阈值时写入 slow.log
-        if (modle) {
-            DA_SLOW_LOG_SCOPE("dagui.table.sort.notify");
-            const int rows = modle->actualRowCount();
-            const int cols = modle->columnCount();
-            modle->notifyDataChanged(0, 0, qMax(0, rows - 1), qMax(0, cols - 1));
-            // 行头显示 index 值，排序后 index 随行移动，需通知垂直表头重取
-            modle->notifyHeaderDataChanged(Qt::Vertical, 0, qMax(0, rows - 1));
-        }
-        if (view) {
-            {
-                DA_SLOW_LOG_SCOPE("dagui.table.sort.remap");
-                self->remapSelectionByPermutation(cmdRaw->lastAppliedPermutation());
-            }
-            DA_SLOW_LOG_SCOPE("dagui.table.sort.showRow");
-            view->showActualRow(0);  // 视口回顶（行位置整体变了，含 undo/redo）
-        }
-        // 排序是破坏式重排：置工程未保存标记（exec/undo 都发，与 004 dataModified 口径一致；
-        // 修复 002 遗留缺口——此前排序从不标脏，排序后关工程不提示保存）
-        Q_EMIT self->dataModified();
-    });
-    // 排序是整表操作（大表算子+刷新可达秒级）：全程忙等待光标（RAII 恢复），避免 UI 假死观感
-    DAWaitCursorScoped waitCursor;
-    bool execOk = false;
-    {
-        DA_SLOW_LOG_SCOPE("dagui.table.sort.exec");
-        execOk = cmd->exec();
-    }
-    if (!execOk) {
-        // 算子报错（如 object 列混合类型不可比较）：排序规格回滚到变更前
-        daWarning << tr("Cannot sort: the column contains values of incomparable mixed types.");  // cn:无法排序：该列包含不可比较的混合类型
-        return false;
-    }
-    {
-        DA_SLOW_LOG_SCOPE("dagui.table.sort.push");
-        push(cmd.release());
-    }
-    mSortSpec = newSpec;
-    forEachPaneHeader([ this ](DADataHeaderView* hh) { hh->setSortSpec(mSortSpec); });
-    return true;
-}
-
-/**
- * @brief 按最近应用的置换修正选区（选中行随排序跟随）
- *
- * appliedPerm 为新→旧置换（new[i]=old[appliedPerm[i]]），旧行号 old 的新位置 =
- * inv[old]（逆置换）。行数不变、滑动窗未平移，回调时视图选中的位置号即重排前的
- * 数据行号，直接按逆置换映射到新位置重建选区；映射出窗口的行跳过。
- *
- * **性能约束（2026-10-18 修复）**：禁止逐格重建——Qt 的「整列选择」本身就会产生
- * 每行一个 range 的选区（2 万行窗口 = 2 万个 range），逐格映射再 ClearAndSelect
- * 会让视图对上万散落 range 逐个做脏区合并，实测 3.2 万行表耗时 6~19 秒。
- * 这里的算法：先按列跨度 (left,right) 分组归并行区间，再分两条路径——
- * 1. 整窗快速路径：归并后覆盖全部模型行（典型=整列选择）→ 保持整列选中。
- *    置换是双射，「列仍被选中」与 Excel 排序后的视觉语义一致（滚出窗口的新位置
- *    本就不可见；换入窗口的行随列视为选中）；
- * 2. 一般路径：逐行映射 → 排序 → 游程压缩，每个连续段一个 range；总段数超过
- *    c_maxRemapSelRuns 时降级为只保留当前格映射（响应性优先，qDebug 说明）。
- * @param appliedPerm 最近应用的置换（exec=正置换 / undo=逆置换）
- */
-void DADataOperateOfDataFrameWidget::remapSelectionByPermutation(const QVector< int >& appliedPerm)
-{
-    // 游程压缩后的 range 数上限：超过则视为「巨大散落选区」，降级为只映射当前格
-    static constexpr int c_maxRemapSelRuns = 2048;
-    DADataTableView* view          = ui->tableView;
-    QItemSelectionModel* sm        = view ? view->selectionModel() : nullptr;
-    QAbstractItemModel* m          = view ? view->model() : nullptr;
-    if (!sm || !m || appliedPerm.isEmpty() || !sm->hasSelection()) {
-        return;
-    }
-    const QVector< int > inv = DATableKeyRemap::inversePermutation(appliedPerm);
-    const int modelRows      = m->rowCount();
-    auto mapRow              = [ this, view, &inv ](int viewRow) -> int {
-        const int oldActual = toActualRow(viewRow);
-        if (oldActual < 0 || oldActual >= inv.size() || inv.at(oldActual) < 0) {
-            return -1;
-        }
-        return view->toLogicalRow(inv.at(oldActual));  // 目标行不在当前滑动窗内时返回 -1
-    };
-    // 按列跨度分组收集行区间（const 引用迭代，不触发 COW）
-    const QItemSelection& oldSel = sm->selection();
-    QMap< QPair< int, int >, QVector< QPair< int, int > > > spanRows;
-    for (const QItemSelectionRange& r : oldSel) {
-        spanRows[ qMakePair(r.left(), r.right()) ].append(qMakePair(r.top(), r.bottom()));
-    }
-    QItemSelection newSel;
-    int totalRuns     = 0;
-    bool fallback     = false;
-    for (auto it = spanRows.constBegin(); it != spanRows.constEnd(); ++it) {
-        const int left  = it.key().first;
-        const int right = it.key().second;
-        // 行区间排序 + 归并
-        QVector< QPair< int, int > > iv = it.value();
-        std::sort(iv.begin(), iv.end());
-        QVector< QPair< int, int > > merged;
-        merged.reserve(iv.size());
-        for (int k = 0; k < iv.size(); ++k) {
-            const QPair< int, int >& p = iv.at(k);
-            if (!merged.isEmpty() && p.first <= merged.last().second + 1) {
-                merged.last().second = qMax(merged.last().second, p.second);
-            } else {
-                merged.append(p);
-            }
-        }
-        // 整窗快速路径：选区覆盖全部模型行（典型=整列选择）→ 保持整列
-        if (modelRows > 0 && merged.size() == 1 && merged.at(0).first == 0 && merged.at(0).second == modelRows - 1) {
-            newSel.select(m->index(0, left), m->index(modelRows - 1, right));
-            continue;
-        }
-        // 一般路径：逐行映射（出窗跳过）→ 排序 → 游程压缩
-        QVector< int > mapped;
-        for (int k = 0; k < merged.size(); ++k) {
-            for (int row = merged.at(k).first; row <= merged.at(k).second; ++row) {
-                const int nr = mapRow(row);
-                if (nr >= 0) {
-                    mapped.append(nr);
-                }
-            }
-        }
-        std::sort(mapped.begin(), mapped.end());
-        int i = 0;
-        while (i < mapped.size()) {
-            int j = i;
-            while (j + 1 < mapped.size() && mapped.at(j + 1) == mapped.at(j) + 1) {
-                ++j;
-            }
-            newSel.select(m->index(mapped.at(i), left), m->index(mapped.at(j), right));
-            ++totalRuns;
-            i = j + 1;
-            if (totalRuns > c_maxRemapSelRuns) {
-                fallback = true;
-                break;
-            }
-        }
-        if (fallback) {
-            break;
-        }
-    }
-    if (fallback) {
-        // 巨大散落选区降级：放弃细粒度保留（重建上万散落段会让视图卡死数秒），只保留当前格映射
-        newSel.clear();
-        qDebug().noquote() << QStringLiteral("DADataOperateOfDataFrameWidget::remapSelectionByPermutation: "
-                                             "selection too scattered (> %1 runs), only current index remapped")
-                                  .arg(c_maxRemapSelRuns);
-    }
-    QModelIndex newCur;
-    const QModelIndex cur = sm->currentIndex();
-    if (cur.isValid()) {
-        const int newLogical = mapRow(cur.row());
-        if (newLogical >= 0) {
-            newCur = m->index(newLogical, cur.column());
-        }
-    }
-    sm->select(newSel, QItemSelectionModel::ClearAndSelect);
-    if (newCur.isValid()) {
-        sm->setCurrentIndex(newCur, QItemSelectionModel::NoUpdate);
-    }
+    mSortController->addSecondarySortColumn(logicalIndex, order);
 }
 
 // ============================================================
@@ -3951,8 +3677,7 @@ void DADataOperateOfDataFrameWidget::showReshapeDialog(bool meltMode)
 void DADataOperateOfDataFrameWidget::refreshAfterInplaceReplace()
 {
     // 行列互换后旧排序规格（列位置+方向）失去意义，清除（同 setDAData 口径）
-    mSortSpec.clear();
-    forEachPaneHeader([ this ](DADataHeaderView* hh) { hh->setSortSpec(mSortSpec); });
+    mSortController->clearSpec();
     if (mModel) {
         mModel->refreshData();  // 全模型 reset（shape/列名/块缓存重建，滑窗回顶部）
     }

@@ -62,6 +62,7 @@ class DATableComputedColumnController;
 class DATableConditionalFormatController;
 class DATableFindController;
 class DATableStyleController;
+class DATableSortController;
 
 
 /**
@@ -431,15 +432,8 @@ private:
     QList< QPair< QString, int > > actualColumnIdentities() const;
     // 数据源是否可编辑（只读/惰性源上排序入口不生效，判定路径同 DADataTableModel::actualFlags）
     bool isTableEditable() const;
-    // 应用排序规格：构造 DACommandDataFrame_sortRows、接线样式/模型/选区/视口回调并 push；
-    // 算子失败（如混合类型不可比较）提示并保持原规格，返回 false
-    bool applySortSpec(const QVector< QPair< int, Qt::SortOrder > >& newSpec);
-    // 排序动作统一入口（菜单驱动）：守卫（拾取模式/边界/只读/空表）→ 构造规格 → applySortSpec；
-    // addKey=false 重置为「仅该列」，true 保留既有规格追加/切换该列
-    bool applySortAction(int logicalIndex, Qt::SortOrder order, bool addKey);
-    // 按最近应用的置换修正选区（选中行随排序跟随）：appliedPerm 为新→旧置换，
-    // 旧行号经逆置换映射到新位置（滑动窗未平移，选中位置号即重排前的数据行号）
-    void remapSelectionByPermutation(const QVector< int >& appliedPerm);
+    //（applySortAction/applySortSpec/remapSelectionByPermutation/mSortSpec 已随排序迁入
+    //  DATableSortController，008 期3；isTableEditable 转发上下文 isDataSourceEditable）
     //（查找/替换状态机：runFindScan/gotoFindHit/扫描范围/计数标签/applyFindReplace/
     //  notifyReplaceChanged 已随查找/替换迁入 DATableFindController，008 期3）
     //（条件格式差异命令/统计端点可用性已随条件格式迁入 DATableConditionalFormatController，
@@ -528,7 +522,7 @@ private:
     DATablePaneContainer* mPaneContainer { nullptr };  ///< 列轴窗格容器（页级拥有，006；主窗格运行时包装进容器）
     bool mApplyingViewState { false };  ///< 正在应用视图状态（屏蔽 sectionResized 采集）
     bool mHeaderPickMode { false };     ///< 表头拾取模式（图表「选择序列」会话期间：表头点击只转发不排序）
-    QVector< QPair< int, Qt::SortOrder > > mSortSpec;  ///< 多列排序规格（列逻辑索引+方向，顺序即优先级；不持久化 R13）
+    //（多列排序规格 mSortSpec 已随排序迁入 DATableSortController，008 期3）
     QSet< int > mFrozenColumnsLogical;  ///< 本轮投影的冻结列集合（logical），仅作 isColumnInFrozenArea 查表用（006e）
 
     DADialogDataframeColumnCastToNumeric* mDialogCastNumArgs { nullptr };
@@ -550,6 +544,7 @@ private:
     DATableConditionalFormatController* mConditionalFormatController { nullptr };  ///< 条件格式控制器（008 期3，QObject 父子持有）
     DATableFindController* mFindController { nullptr };  ///< 查找/替换控制器（008 期3，QObject 父子持有）
     DATableStyleController* mStyleController { nullptr };  ///< 样式/显示格式控制器（008 期3，QObject 父子持有）
+    DATableSortController* mSortController { nullptr };  ///< 排序控制器（008 期3，QObject 父子持有）
 };
 }  // end of namespace DA
 #endif  // DADATAOPERATEOFDATAFRAMEWIDGET_H

@@ -97,6 +97,8 @@ public:
     std::function< void(int, int, bool) > locateActualCell;
     // 数据脏标（页面 dataModified 信号；计算列重算等改数据的操作经此标脏）；空 = 不标
     std::function< void() > notifyDataModified;
+    // 表头拾取模式查询（图表「选择序列」会话期间排序入口不生效）；空 = 非拾取模式
+    std::function< bool() > isHeaderPickMode;
 
 private:
     DAData mData;
