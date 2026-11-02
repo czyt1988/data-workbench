@@ -1712,12 +1712,7 @@ void DATableDataTest::testLegacyTableStylesXmlCompat()
 // 表体菜单 v1 三项；无选区全部置灰。离屏构建 QMenu 断言 action 文本序列，不弹出。
 void DATableDataTest::testContextMenuComposition()
 {
-    // 已知失败（2026-11 测试套件拆分时隔离，待单独立项）：断言列头菜单的 action 序列时
-    // 报 "Compared lists have different sizes."，即实际菜单项数与用例期望列表不一致。
-    // 失败原因尚未定位（是本用例未跟上菜单改动，还是产品行为回归），因此先不臆断结论；
-    // 隔离目的只是让默认套件恢复可信的绿色，修复任务单独跟踪。
-    QSKIP("known failure: column context-menu action list size differs from expectation; tracked separately");
-    // ---- 列头菜单：重命名列/删除列 ‖ 复制列名 ‖ 定位最大/定位最小 ‖ 描述统计 ----
+    // ---- 列头菜单：排序(4) ‖ 重命名/删除 ‖ 复制列名 ‖ 复制/导出选中列 ‖ 定位最大·最小 ‖ 统计/快速绘图 ‖ 列 ----
     DA::DADataHeaderView hv(Qt::Horizontal, nullptr);
     QMenu* menu = hv.buildColumnContextMenu(0);
     QVERIFY(menu != nullptr);
@@ -1739,13 +1734,46 @@ void DATableDataTest::testContextMenuComposition()
                                        QStringLiteral("<SEP>"),
                                        QStringLiteral("Copy Column Name"),
                                        QStringLiteral("<SEP>"),
+                                       QStringLiteral("Copy Selected Columns As"),
+                                       QStringLiteral("Export Selected Columns"),
+                                       QStringLiteral("<SEP>"),
                                        QStringLiteral("Goto Max"),
                                        QStringLiteral("Goto Min"),
                                        QStringLiteral("<SEP>"),
                                        QStringLiteral("Show Statistics"),
+                                       QStringLiteral("Quick Plot"),
                                        QStringLiteral("<SEP>"),
                                        QStringLiteral("Columns") };
     QCOMPARE(seq, expectedHeader);
+    // 「复制选中列为」/「导出选中列」两个子菜单：列数据复制/导出入口（作用于选中列，
+    // 无选中时回落到右键所在列），与数据管理树的复制/导出共用 DATableExporter
+    auto findAction = [ &headerActions ](const QString& text) -> QAction* {
+        for (QAction* a : headerActions) {
+            if (a->text() == text) {
+                return a;
+            }
+        }
+        return nullptr;
+    };
+    QAction* copyAsAction = findAction(QStringLiteral("Copy Selected Columns As"));
+    QVERIFY(copyAsAction != nullptr);
+    QVERIFY(copyAsAction->menu() != nullptr);
+    QStringList copyAsSeq;
+    for (QAction* a : copyAsAction->menu()->actions()) {
+        copyAsSeq << a->text();
+    }
+    QCOMPARE(copyAsSeq, QStringList({ QStringLiteral("Tab-separated Text"),
+                                      QStringLiteral("Markdown Table"),
+                                      QStringLiteral("HTML Table (with styles)") }));
+    QAction* exportAction = findAction(QStringLiteral("Export Selected Columns"));
+    QVERIFY(exportAction != nullptr);
+    QVERIFY(exportAction->menu() != nullptr);
+    QStringList exportSeq;
+    for (QAction* a : exportAction->menu()->actions()) {
+        exportSeq << a->text();
+    }
+    QCOMPARE(exportSeq, QStringList({ QStringLiteral("Markdown Document..."),
+                                      QStringLiteral("HTML Document (with styles)...") }));
     // 「列」子菜单（006d）：5 项 2 分隔符，5 个图标齐全（冻结/取消冻结共用 freeze-column）
     QAction* columnsAction = nullptr;
     for (QAction* a : headerActions) {

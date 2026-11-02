@@ -7,8 +7,8 @@
 
 测试目录里现在有近 30 个独立测试可执行文件（一个 `src/tst/<Name>/` 一个 exe、一个 Qt Test 类）。全量跑一遍并不慢，**慢的是历史遗留的两个坑**：
 
-- `DATableDataTest` 一个文件里塞了 125 个用例，其中 7 个是 10 万/100 万行的性能用例。其中一个（`testSelectAllLargeSelectionPerf`）会撞穿 Qt Test 的 5 分钟看门狗 —— 实测该测试跑一次 **331 秒**，其中 300 秒耗在一个用例上，且**必然为红**。
-- `DATableUndoBenchmark` 同样是基准测试，运行 312 秒后超时。
+- `DATableDataTest` 一个文件里塞了 125 个用例，其中 7 个是 10 万/100 万行的性能用例。其中一个（`testSelectAllLargeSelectionPerf`）会撞穿 Qt Test 的 5 分钟看门狗 —— 实测该测试跑一次 **331 秒**，其中 300 秒耗在一个用例上，且**必然为红**（该用例的根因已在 2026-11 修复，见 §4）。
+- `DATableUndoBenchmark` 是真正的基准（1M 行 × 20 列 + 整表快照），本来就需要数分钟，用 5 分钟看门狗卡它只会得到"红 + 没有测量值"。
 
 后果是"跑一遍测试"变成 5 分钟起步且必红，于是没人跑，回归保护形同虚设。
 
@@ -56,14 +56,15 @@
 
 ## 4. bench：性能与基准用例
 
-- **判定规则**：测试目标名包含 `Perf` 或 `Benchmark` → 自动打上 `bench` 标签，并把 ctest `TIMEOUT` 放宽到 600 秒。规则在 `cmake/DAWorkbench.cmake` 的 `da_add_test` 里，改规则要同步改 `test.ps1`。
+- **判定规则**：测试目标名包含 `Perf` 或 `Benchmark` → 自动打上 `bench` 标签。规则在 `cmake/DAWorkbench.cmake` 的 `da_add_test` 里，改规则要同步改 `test.ps1`。
 - **默认不跑**：`test.ps1` 的 `-All` / `-Suite` / `-Changed` 都会排除 bench；`-Bench` 才纳入。裸 `ctest` 仍会跑全部（便于发现问题）。
-- **超时兜底**：所有测试统一带 ctest `TIMEOUT`（普通 120 秒、bench 600 秒）。将来再写出挂死的用例，代价是 2 分钟而不是 5 分钟。
+- **超时策略**：普通测试 ctest `TIMEOUT` 120 秒；bench 目标放宽到 **3600 秒**，并通过环境变量 `QTEST_FUNCTION_TIMEOUT=3600000` 同步放宽 Qt Test 的**单函数 5 分钟看门狗**。基准用例天生跑得久（百万行级夹具、整表 pickle 快照），被内部看门狗当"挂死"杀掉只会得到一条无法定位的红；真正兜底的是 ctest 超时。
+- **机器要求**：`DATableUndoBenchmark` 的夹具是 1M 行 × 20 列（约 160 MB）+ 整表快照，峰值占用 1 GB 以上，建议在机器空闲时跑，避免和并行构建抢内存（内存吃紧时会表现成"进程还活着但几乎不占 CPU"的假死）。
 
 表格性能用例集中在新拆出的 `src/tst/DATablePerfTest/`：7 个 10 万/100 万行用例，从 `DATableDataTest` 迁出。这样默认套件里的 118 个常规用例只需约 30 秒。
 
-> **⚠️ 已知：bench 里有一个用例会超时**
-> `DATablePerfTest::testSelectAllLargeSelectionPerf`（20000×200 = 402 万格全选守卫）在开发机上会撞穿 Qt Test 的 **300 秒单函数看门狗**，导致 `-Bench` 那一档整体报红（其余 7 个 bench 用例正常通过，约 12 秒）。这是拆分前就存在的状态，本次只把它移出默认套件、并未修好；修法（缩小夹具或定位到具体慢在哪一步）单独跟踪，不要把 `-Bench` 的红当成新回归。
+> **💡 `testSelectAllLargeSelectionPerf` 的 300 秒超时已修复**
+> 根因不在选区链路，而在**表格页面构造**：`contentFittedColumnWidth` 的列宽自适应按"遍历全部行 + `visualRect` 过滤"实现，20000 行 × 200 列 = 400 万次 `index()+visualRect()`，构造就要数十秒到数分钟，直接把用例拖过看门狗。2026-11 改为先由视口矩形换算出首/末可见行再取样，同一夹具构造 **173 ms**、整个用例约 **5 秒**通过；用例里也补了 `ctor < 5s` 的守卫，防止再退回全模型遍历。
 
 ## 5. `-Changed` 的映射规则
 
@@ -93,7 +94,9 @@
 - **陈旧 exe 会假红**：`0xc0000139`（找不到入口点）或启动即崩溃，通常是 exe 比 DLL 旧。重新构建即可；`-NoBuild` 会放大这个问题。
 - **嵌入式 Python 的 teardown 崩溃**：链接 Python 的测试不能在 `qExec` 返回后正常走进程退出，否则会在结果已打印后触发访问冲突、被 ctest 记为 SEGFAULT。规范做法见 `DADataFrameTest` / `DATableDataTest` / `DATableUndoBenchmark` / `DATablePerfTest` 里的自定义 `main()`：`qExec` 返回后 `std::fflush(nullptr)`，Windows 上用 `TerminateProcess` 直接结束进程。
 - **环境依赖**：没有安装 pandas 时，相关用例会 `QSKIP`（不是失败）。CI 目前**只构建、不跑测试**（`.github/workflows/build.yml`），所以回归保护只在本机生效。
-- **已知失败隔离**：`DATableDataTest::testContextMenuComposition` 目前以 `QSKIP` 形式隔离（列头菜单 action 数量与期望不一致，原因待定位）。修复任务单独跟踪，不要把它当作"测试本来就是红的"。
+- **已知不稳定（2026-11 记录，独立于套件改造）**：
+  - `DATableDataTest::testClipboardShortcuts` 在**同进程跑完整序列**时偶发卡死（单跑或只跑最后几个函数 4 秒通过；超时前 33 个函数全 PASS）。已确认与本轮改动无关（把改动 stash 掉同样复现）。
+  - 链接 Python 的用例偶发卡在 `DAPyScriptsDataFrame::sort` 的 `PyThread_acquire_lock_timed`（进程活着但 CPU 几乎为 0），单跑通常 5 秒内通过。两者都需要单独排查，看到"个别测试卡住"先怀疑它们，不要先怀疑自己的改动。
 
 ## 7. 新增测试检查清单
 

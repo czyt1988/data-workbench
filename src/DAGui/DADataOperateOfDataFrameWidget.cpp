@@ -474,6 +474,12 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
 
 DADataOperateOfDataFrameWidget::~DADataOperateOfDataFrameWidget()
 {
+    // 子窗口容器的事件过滤与允许区域提供者都指向本部件。必须在 ui 析构前解除：
+    // ~QWidget 期间子窗口隐藏会抛 Hide 事件 → 回调 tableChildWindowBounds()，
+    // 而此时本部件的 QWidget 部分已析构（QPointer 尚未清空），读 size() 会崩溃。
+    if (mChildWindowContainer) {
+        mChildWindowContainer->detachFromHost();
+    }
     // 条件格式子存储是会话级（借自注册表，比 widget 长寿）：清空统计提供者，
     // 避免持有已销毁页面的回调（QPointer 已防悬挂，此处彻底释放 lambda 捕获）
     if (mConditionalFormatStore) {
@@ -2454,15 +2460,20 @@ int DADataOperateOfDataFrameWidget::contentFittedColumnWidth(DADataTableView* pa
     int textWidth = hh->fontMetrics().horizontalAdvance(
         mModel->headerData(logicalColumn, Qt::Horizontal, Qt::DisplayRole).toString())
         + c_headerHMargin;
-    const int rows = mModel->rowCount();
-    for (int r = 0; r < rows; ++r) {
-        if (!pane->visualRect(pane->model()->index(r, logicalColumn)).isValid()) {
-            continue;  // 只采样视口可见行
+    // 只采样视口可见行：先由视口矩形换算出首/末可见行，再逐行取样。
+    // 曾按"全模型遍历 + visualRect 过滤"实现，20000 行 × 200 列 = 400 万次
+    // index()+visualRect()，打开宽表会冻结数十秒到数分钟（testSelectAllLargeSelectionPerf
+    // 就是被这一步拖过 Qt Test 的 300s 看门狗）。
+    if (pane->viewport()) {
+        const QRect viewportRect = pane->viewport()->rect();
+        const int firstVisibleRow = pane->rowAt(viewportRect.top());
+        const int lastVisibleRow  = pane->rowAt(viewportRect.bottom());
+        for (int r = qMax(0, firstVisibleRow); r <= lastVisibleRow; ++r) {
+            textWidth = qMax(textWidth,
+                             hh->fontMetrics().horizontalAdvance(
+                                 mModel->data(mModel->index(r, logicalColumn), Qt::DisplayRole).toString())
+                                 + c_cellHMargin);
         }
-        textWidth = qMax(textWidth,
-                         hh->fontMetrics().horizontalAdvance(
-                             mModel->data(mModel->index(r, logicalColumn), Qt::DisplayRole).toString())
-                             + c_cellHMargin);
     }
     return qBound(c_minAutoWidth, textWidth, c_maxAutoWidth);
 }
