@@ -75,6 +75,8 @@ public:
     DATableNoteStore* noteStore() const;
     // ===== 宿主桥（宿主页面注入的副作用回调；协作者经此触达页面级动作，
     //       不持窗口指针，见计划 §6.1 notifyDirty/notifyHost 同款设计）=====
+    // 撤销栈推入（push 即激活页面撤销栈）；空 = 无撤销栈（只读场景）
+    std::function< void(QUndoCommand*) > pushCommand;
     // DADataManager 树刷新（ChangeValue：删列后重建列子项等）；空 = 不通知
     std::function< void() > notifyHostValueChange;
     // 关闭页级浮窗（快速绘图子窗口等，结构变更后列身份失效）；空 = 不关闭

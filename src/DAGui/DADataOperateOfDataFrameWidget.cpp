@@ -65,6 +65,8 @@
 #include "TableCore/DATablePageContext.h"
 #include "TableCore/DATableSelectionService.h"
 #include "TableCore/DATableMutationCoordinator.h"
+// 表格页特性控制器（008 期3）
+#include "TableNote/DATableNoteController.h"
 // Dialog
 #include "Dialog/DARenameColumnsNameDialog.h"
 #include "Dialog/DADialogDataframeColumnCastToNumeric.h"
@@ -310,12 +312,16 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
         }
     };
     mContext->closeFloatingWindows = [ this ]() { closeQuickPlot(); };
+    // 撤销栈推入桥（push 即激活本页撤销栈；控制器经此入栈，不持窗口指针）
+    mContext->pushCommand = [ this ](QUndoCommand* cmd) { push(cmd); };
     // 编辑后效协调器（008 期2）：commit() 是唯一的「编辑后」扇出点，
     // 此前 ~20 处手抄的 模型刷新→统计失效→计算列标脏→浮窗/宿主 收口于此；
     // attach() 一次性订阅批注/高亮层/样式/条件格式/校验缓存的「变更→失效/刷新」
     // 连接（008 期2 Observer 收口，此前散在本构造里 ~160 行）
     mMutation = new DATableMutationCoordinator(*mContext, this);
     mMutation->attach();
+    // 特性控制器（008 期3）：批注（构造注入上下文与选区服务，QObject 父子持有）
+    mNoteController = new DATableNoteController(*mContext, *mSelection, this);
     // 窗格装配（006b 抽取的唯一装配点）：表头替换 → setModel → 委托 → 逐窗格连接；
     // 必须在 mStyleDelegate 创建之后（里面要用它），在 setDAData/applyViewStateFromStore 之前
     configurePaneView(ui->tableView);
@@ -6001,126 +6007,29 @@ bool DADataOperateOfDataFrameWidget::currentActualCell(int* actualRow, int* actu
 
 /**
  * @brief 打开当前单元格的批注编辑弹层（无批注=插入，有批注=编辑且弹层内可删除）
+ *（实现迁入 DATableNoteController，008 期3）
  */
 void DADataOperateOfDataFrameWidget::showNoteEditorForCurrentCell()
 {
-    if (!mNoteStore) {
-        return;
-    }
-    int row = -1, col = -1;
-    if (!currentActualCell(&row, &col)) {
-        daWarning << tr("Please select a cell to annotate");  // cn:请先选中要批注的单元格
-        return;
-    }
-    editNoteAtCell(row, col);
+    mNoteController->showNoteEditorForCurrentCell();
 }
 
 /**
- * @brief 对给定格弹出编辑弹层并落地结果（插入/编辑共用）
- *
- * 弹层跟随单元格右下角定位（先 showActualRow 保证行在滑动窗内，visualRect 转全局
- * 坐标，出屏由弹层回夹）。保存 → 新增/编辑命令（旧新条目含时间戳记录，D4）；
- * 弹层内点删除或文本清空 → 删除命令；文本未变不推命令。批注不进 DataFrame（红线3）。
- * @param actualRow 数据源绝对行
- * @param actualCol 列位置
- */
-void DADataOperateOfDataFrameWidget::editNoteAtCell(int actualRow, int actualCol)
-{
-    if (!mNoteStore) {
-        return;
-    }
-    DATableNoteEditDialog dlg(this);
-    const DATableNoteStore::Note oldNote = mNoteStore->note(actualRow, actualCol);
-    dlg.setNoteText(oldNote.text);
-    dlg.setExistingNote(!oldNote.text.isEmpty());
-    // 弹层位置跟随单元格右下角
-    QPoint corner;
-    if (DADataTableView* tv = ui->tableView) {
-        tv->showActualRow(actualRow);
-        QAbstractItemModel* m = tv->model();
-        int startRow          = 0;
-        if (auto* cm = qobject_cast< DAAbstractCacheWindowTableModel* >(m)) {
-            startRow = cm->getCacheWindowStartRow();
-        }
-        const QModelIndex idx = m ? m->index(actualRow - startRow, actualCol) : QModelIndex();
-        if (idx.isValid()) {
-            const QRect vr = tv->visualRect(idx);
-            corner         = tv->viewport()->mapToGlobal(vr.bottomRight());
-        }
-    }
-    if (corner.isNull()) {
-        corner = QCursor::pos();
-    }
-    dlg.popupNear(corner);
-    if (QDialog::Accepted != dlg.exec()) {
-        return;
-    }
-    if (dlg.isDeleteRequested()) {
-        if (oldNote.text.isEmpty()) {
-            return;  // 本来就没有批注
-        }
-        push(new DACommandTableNote_set(mNoteStore, actualRow, actualCol, oldNote, DATableNoteStore::Note()));
-        return;
-    }
-    const QString newText = dlg.noteText().trimmed();
-    if (newText == oldNote.text) {
-        return;  // 无变化不推命令
-    }
-    if (newText.isEmpty()) {
-        // 文本清空 = 删除批注（批注没有"空内容"状态）
-        if (oldNote.text.isEmpty()) {
-            return;
-        }
-        push(new DACommandTableNote_set(mNoteStore, actualRow, actualCol, oldNote, DATableNoteStore::Note()));
-        return;
-    }
-    DATableNoteStore::Note newNote;
-    newNote.text      = newText;
-    const QDateTime now = QDateTime::currentDateTime();
-    newNote.createdAt = oldNote.text.isEmpty() ? now : oldNote.createdAt;
-    newNote.updatedAt = now;
-    push(new DACommandTableNote_set(mNoteStore, actualRow, actualCol, oldNote, newNote));
-}
-
-/**
- * @brief 删除当前单元格批注（命令可撤销）
+ * @brief 删除当前单元格批注（命令可撤销；实现迁入 DATableNoteController，008 期3）
  * @return 成功入栈返回 true；无当前格或无批注返回 false
  */
 bool DADataOperateOfDataFrameWidget::deleteNoteAtCurrentCell()
 {
-    if (!mNoteStore) {
-        return false;
-    }
-    int row = -1, col = -1;
-    if (!currentActualCell(&row, &col)) {
-        daWarning << tr("Please select a cell whose note is to be deleted");  // cn:请先选中要删除批注的单元格
-        return false;
-    }
-    const DATableNoteStore::Note oldNote = mNoteStore->note(row, col);
-    if (oldNote.text.isEmpty()) {
-        daInfo << tr("The selected cell has no note");  // cn:选中单元格没有批注
-        return false;
-    }
-    push(new DACommandTableNote_set(mNoteStore, row, col, oldNote, DATableNoteStore::Note()));
-    return true;
+    return mNoteController->deleteNoteAtCurrentCell();
 }
 
 /**
- * @brief 清除本表全部批注（一次命令，可撤销）
+ * @brief 清除本表全部批注（一次命令，可撤销；实现迁入 DATableNoteController，008 期3）
  * @return 清除的批注数（无批注返回 0，不推空命令）
  */
 int DADataOperateOfDataFrameWidget::clearAllNotes()
 {
-    if (!mNoteStore) {
-        return 0;
-    }
-    const int n = mNoteStore->count();
-    if (n == 0) {
-        daInfo << tr("This table has no notes");  // cn:本表没有批注
-        return 0;
-    }
-    push(new DACommandTableNote_clearAll(mNoteStore));
-    return n;
+    return mNoteController->clearAllNotes();
 }
 
 // ============================================================

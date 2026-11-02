@@ -20477,4 +20477,27 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>禁用启动画面，适用于调试时避免启动窗口遮挡IDE</translation>
     </message>
 </context>
+<context>
+    <name>DA::DATableNoteController</name>
+    <message>
+        <location filename="../DAGui/TableNote/DATableNoteController.cpp" line="+33"/>
+        <source>Please select a cell to annotate</source>
+        <translation>请先选中要批注的单元格</translation>
+    </message>
+    <message>
+        <location line="+16"/>
+        <source>Please select a cell whose note is to be deleted</source>
+        <translation>请先选中要删除批注的单元格</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>The selected cell has no note</source>
+        <translation>选中单元格没有批注</translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>This table has no notes</source>
+        <translation>本表没有批注</translation>
+    </message>
+</context>
 </TS>

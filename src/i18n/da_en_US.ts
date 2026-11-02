@@ -20452,4 +20452,27 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>Disable the splash screen during startup, useful for debugging to avoid the splash window blocking the IDE</translation>
     </message>
 </context>
+<context>
+    <name>DA::DATableNoteController</name>
+    <message>
+        <location filename="../DAGui/TableNote/DATableNoteController.cpp" line="+33"/>
+        <source>Please select a cell to annotate</source>
+        <translation>Please select a cell to annotate</translation>
+    </message>
+    <message>
+        <location line="+16"/>
+        <source>Please select a cell whose note is to be deleted</source>
+        <translation>Please select a cell whose note is to be deleted</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>The selected cell has no note</source>
+        <translation>The selected cell has no note</translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>This table has no notes</source>
+        <translation>This table has no notes</translation>
+    </message>
+</context>
 </TS>

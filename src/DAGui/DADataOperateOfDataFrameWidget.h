@@ -54,6 +54,7 @@ class DATableChildWindow;
 class DATablePageContext;
 class DATableSelectionService;
 class DATableMutationCoordinator;
+class DATableNoteController;
 
 
 /**
@@ -548,9 +549,7 @@ private:
     // 把校验规则引用迁移挂进改名命令的 directional 回调（与改名同一撤销单元，R20）
     void wireValidationRuleRenameMigration(class DACommandDataFrame_renameColumns* cmd,
                                            const QList< QPair< QString, QString > >& renames) const;
-    // ===== 批注私有辅助（005 T1.26）=====
-    // 对给定格弹出编辑弹层并落地结果（插入/编辑共用：保存→增/改命令，删除→删除命令）
-    void editNoteAtCell(int actualRow, int actualCol);
+    //（批注私有辅助 editNoteAtCell 已随批注逻辑迁入 DATableNoteController，008 期3）
 
     // ===== 表格子窗口容器（快速绘图承载，也可贴入其它窗口）=====
     // 懒建容器（宿主=本页；允许区域=主视口；监听视口/窗格容器几何变化）
@@ -592,6 +591,7 @@ private:
     std::unique_ptr< DATablePageContext > mContext;          ///< 依赖注入载体：模型/主窗格/元数据束聚合
     std::unique_ptr< DATableSelectionService > mSelection;   ///< 选区/坐标纯查询服务（构造注入上下文）
     DATableMutationCoordinator* mMutation { nullptr };  ///< 编辑后效协调器（008 期2，QObject 父子持有）
+    DATableNoteController* mNoteController { nullptr };  ///< 批注控制器（008 期3，QObject 父子持有）
 
     // ===== 查找状态（002 T1.4）=====
     QVector< QPair< int, int > > mFindHits;  ///< 当前命中集（数据源绝对行列，行主序，≤上限）
