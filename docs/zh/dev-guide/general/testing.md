@@ -62,6 +62,9 @@
 
 表格性能用例集中在新拆出的 `src/tst/DATablePerfTest/`：7 个 10 万/100 万行用例，从 `DATableDataTest` 迁出。这样默认套件里的 118 个常规用例只需约 30 秒。
 
+> **⚠️ 已知：bench 里有一个用例会超时**
+> `DATablePerfTest::testSelectAllLargeSelectionPerf`（20000×200 = 402 万格全选守卫）在开发机上会撞穿 Qt Test 的 **300 秒单函数看门狗**，导致 `-Bench` 那一档整体报红（其余 7 个 bench 用例正常通过，约 12 秒）。这是拆分前就存在的状态，本次只把它移出默认套件、并未修好；修法（缩小夹具或定位到具体慢在哪一步）单独跟踪，不要把 `-Bench` 的红当成新回归。
+
 ## 5. `-Changed` 的映射规则
 
 脚本把改动文件路径映射到套件，规则在 `scripts/test.ps1` 的 `Get-SuitesForFile`：
