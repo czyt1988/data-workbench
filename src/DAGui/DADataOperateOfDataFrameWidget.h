@@ -493,59 +493,8 @@ private:
     // 把校验规则引用迁移挂进改名命令的 directional 回调（与改名同一撤销单元，R20）
     void wireValidationRuleRenameMigration(class DACommandDataFrame_renameColumns* cmd,
                                            const QList< QPair< QString, QString > >& renames) const;
-    //（批注私有辅助 editNoteAtCell 已随批注逻辑迁入 DATableNoteController，008 期3）
-    //（表格子窗口容器/允许区域已随快速绘图迁入 DATableQuickPlotController，008 期3）
-
-    Ui::DADataOperateOfDataFrameWidget* ui;
-    DAData mData;
-    DADataTableModel* mModel { nullptr };
-    DATableStyleManager* mStyleManager { nullptr };  ///< 借自 DATableMetadata 束，非拥有（随数据存在，widget 关闭不销毁）
-    DATableViewStateStore* mViewStateStore { nullptr };  ///< 借自 DATableMetadata 束，非拥有（视图状态：列宽/行头宽）
-    DATableHighlightOverlay* mHighlightOverlay { nullptr };  ///< 瞬态高亮层（页级持有，不序列化、不进撤销栈）
-    DATableConditionalFormatStore* mConditionalFormatStore { nullptr };  ///< 借自 DATableMetadata 束，非拥有（条件格式规则，003）
-    DATableComputedColumnStore* mComputedColumnStore { nullptr };        ///< 借自 DATableMetadata 束，非拥有（计算列定义，004 T1.23）
-    DATableValidationStore* mValidationStore { nullptr };                ///< 借自 DATableMetadata 束，非拥有（校验规则，005 T1.25）
-    DATableNoteStore* mNoteStore { nullptr };                            ///< 借自 DATableMetadata 束，非拥有（单元格批注，005 T1.26）
-    DATableMetadata* mMetadata { nullptr };                              ///< 元数据束（借自注册表，非拥有；就地形状变换整束快照/清理用，004 T1.27）
-    DATableStyleItemDelegate* mStyleDelegate { nullptr };
-    DATablePaneContainer* mPaneContainer { nullptr };  ///< 列轴窗格容器（页级拥有，006；主窗格运行时包装进容器）
-    bool mHeaderPickMode { false };     ///< 表头拾取模式（图表「选择序列」会话期间：表头点击只转发不排序）
-    //（多列排序规格 mSortSpec 已随排序迁入 DATableSortController，008 期3）
-    //（投影守卫 mApplyingViewState 与冻结列集合 mFrozenColumnsLogical 已随视图状态
-    //  迁入 DATableViewStateController，008 期3）
-
-    //（两个类型转换对话框已随类型转换迁入 DATableTypeOps，008 期4）
-    //（定位对话框已随定位入口迁入 DATableNavigationService，008 期5）
-    //（非模态校验报告窗已随校验迁入 DATableValidationController，008 期3）
-    //（快速绘图窗/框架、转入处理器、追加可用性、表格子窗口容器已迁入 DATableQuickPlotController，008 期3）
-    //（浮动查找/替换条与查找状态已随查找/替换迁入 DATableFindController，008 期3）
-
-    // ===== 表格页上下文与选区服务（008 期1）=====
-    std::unique_ptr< DATablePageContext > mContext;          ///< 依赖注入载体：模型/主窗格/元数据束聚合
-    std::unique_ptr< DATableSelectionService > mSelection;   ///< 选区/坐标纯查询服务（构造注入上下文）
-    DATableMutationCoordinator* mMutation { nullptr };  ///< 编辑后效协调器（008 期2，QObject 父子持有）
-    DATableNoteController* mNoteController { nullptr };  ///< 批注控制器（008 期3，QObject 父子持有）
-    DATableQuickPlotController* mQuickPlotController { nullptr };  ///< 快速绘图控制器（008 期3，QObject 父子持有）
-    DATableValidationController* mValidationController { nullptr };  ///< 数据校验控制器（008 期3，QObject 父子持有）
-    DATableComputedColumnController* mComputedColumnController { nullptr };  ///< 计算列控制器（008 期3，QObject 父子持有）
-    DATableConditionalFormatController* mConditionalFormatController { nullptr };  ///< 条件格式控制器（008 期3，QObject 父子持有）
-    DATableFindController* mFindController { nullptr };  ///< 查找/替换控制器（008 期3，QObject 父子持有）
-    DATableStyleController* mStyleController { nullptr };  ///< 样式/显示格式控制器（008 期3，QObject 父子持有）
-    DATableSortController* mSortController { nullptr };  ///< 排序控制器（008 期3，QObject 父子持有）
-    DATableViewStateController* mViewStateController { nullptr };  ///< 视图状态控制器（008 期3，QObject 父子持有）
-    DATableColumnViewController* mColumnViewController { nullptr };  ///< 列视图控制器（008 期3，QObject 父子持有）
-    DATableRowOps* mRowOps { nullptr };  ///< 行操作算子（008 期4，页级持有）
-    DATableCellOps* mCellOps { nullptr };  ///< 单元格操作算子（008 期4，页级持有）
-    DATableTypeOps* mTypeOps { nullptr };  ///< 类型转换算子（008 期4，页级持有）
-    DATableFillOps* mFillOps { nullptr };  ///< 填充算子（008 期4，页级持有）
-    DATableResultOps* mResultOps { nullptr };  ///< 结果落库算子（008 期4，页级持有）
-    DATableReshapeOps* mReshapeOps { nullptr };  ///< 形状变换算子（008 期4，页级持有）
-    DATableColumnCombineOps* mColumnCombineOps { nullptr };  ///< 分列/合并列算子（008 期4，页级持有）
-    DATableRenameOps* mRenameOps { nullptr };  ///< 列改名算子（008 期4，页级持有）
-    DATableColumnOps* mColumnOps { nullptr };  ///< 列增删算子（008 期4，页级持有）
-    DATableOperationRegistry mOpRegistry;  ///< 算子注册表（008 期4：id → 唯一实例）
-    DATablePaneAssembler* mPaneAssembler { nullptr };  ///< 窗格装配器（008 期5：装配段收口，页级持有）
-    DATableNavigationService* mNavigation { nullptr };  ///< 导航服务（008 期5：定位对话框/请求解析，页级持有）
+    // ===== PIMPL（008 期5）：全部数据成员已迁入 cpp 的 PrivateData（DA_DECLARE_PRIVATE 宏展开 d_ptr/d_func）=====
+    DA_DECLARE_PRIVATE(DADataOperateOfDataFrameWidget)
 };
 }  // end of namespace DA
 #endif  // DADATAOPERATEOFDATAFRAMEWIDGET_H

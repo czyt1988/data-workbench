@@ -144,6 +144,68 @@
 //===================================================
 
 using namespace DA;
+//===================================================
+// DADataOperateOfDataFrameWidget::PrivateData（008 期5 PIMPL）
+//===================================================
+class DADataOperateOfDataFrameWidget::PrivateData
+{
+    DA_DECLARE_PUBLIC(DADataOperateOfDataFrameWidget)
+
+public:
+    PrivateData(DADataOperateOfDataFrameWidget* q)
+        : q_ptr(q), ui(new Ui::DADataOperateOfDataFrameWidget)
+    {
+    }
+    ~PrivateData()
+    {
+        if (ui) {
+            delete ui;
+            ui = nullptr;
+        }
+    }
+
+public:
+    Ui::DADataOperateOfDataFrameWidget* ui;
+    DAData mData;
+    DADataTableModel* mModel { nullptr };
+    DATableStyleManager* mStyleManager { nullptr };  ///< 借自 DATableMetadata 束，非拥有（随数据存在，widget 关闭不销毁）
+    DATableViewStateStore* mViewStateStore { nullptr };  ///< 借自 DATableMetadata 束，非拥有（视图状态：列宽/行头宽）
+    DATableHighlightOverlay* mHighlightOverlay { nullptr };  ///< 瞬态高亮层（页级持有，不序列化、不进撤销栈）
+    DATableConditionalFormatStore* mConditionalFormatStore { nullptr };  ///< 借自 DATableMetadata 束，非拥有（条件格式规则，003）
+    DATableComputedColumnStore* mComputedColumnStore { nullptr };        ///< 借自 DATableMetadata 束，非拥有（计算列定义，004 T1.23）
+    DATableValidationStore* mValidationStore { nullptr };                ///< 借自 DATableMetadata 束，非拥有（校验规则，005 T1.25）
+    DATableNoteStore* mNoteStore { nullptr };                            ///< 借自 DATableMetadata 束，非拥有（单元格批注，005 T1.26）
+    DATableMetadata* mMetadata { nullptr };                              ///< 元数据束（借自注册表，非拥有；就地形状变换整束快照/清理用，004 T1.27）
+    DATableStyleItemDelegate* mStyleDelegate { nullptr };
+    DATablePaneContainer* mPaneContainer { nullptr };  ///< 列轴窗格容器（页级拥有，006；主窗格运行时包装进容器）
+    bool mHeaderPickMode { false };     ///< 表头拾取模式（图表「选择序列」会话期间：表头点击只转发不排序）
+    std::unique_ptr< DATablePageContext > mContext;          ///< 依赖注入载体：模型/主窗格/元数据束聚合
+    std::unique_ptr< DATableSelectionService > mSelection;   ///< 选区/坐标纯查询服务（构造注入上下文）
+    DATableMutationCoordinator* mMutation { nullptr };  ///< 编辑后效协调器（008 期2，QObject 父子持有）
+    DATableNoteController* mNoteController { nullptr };  ///< 批注控制器（008 期3，QObject 父子持有）
+    DATableQuickPlotController* mQuickPlotController { nullptr };  ///< 快速绘图控制器（008 期3，QObject 父子持有）
+    DATableValidationController* mValidationController { nullptr };  ///< 数据校验控制器（008 期3，QObject 父子持有）
+    DATableComputedColumnController* mComputedColumnController { nullptr };  ///< 计算列控制器（008 期3，QObject 父子持有）
+    DATableConditionalFormatController* mConditionalFormatController { nullptr };  ///< 条件格式控制器（008 期3，QObject 父子持有）
+    DATableFindController* mFindController { nullptr };  ///< 查找/替换控制器（008 期3，QObject 父子持有）
+    DATableStyleController* mStyleController { nullptr };  ///< 样式/显示格式控制器（008 期3，QObject 父子持有）
+    DATableSortController* mSortController { nullptr };  ///< 排序控制器（008 期3，QObject 父子持有）
+    DATableViewStateController* mViewStateController { nullptr };  ///< 视图状态控制器（008 期3，QObject 父子持有）
+    DATableColumnViewController* mColumnViewController { nullptr };  ///< 列视图控制器（008 期3，QObject 父子持有）
+    DATableRowOps* mRowOps { nullptr };  ///< 行操作算子（008 期4，页级持有）
+    DATableCellOps* mCellOps { nullptr };  ///< 单元格操作算子（008 期4，页级持有）
+    DATableTypeOps* mTypeOps { nullptr };  ///< 类型转换算子（008 期4，页级持有）
+    DATableFillOps* mFillOps { nullptr };  ///< 填充算子（008 期4，页级持有）
+    DATableResultOps* mResultOps { nullptr };  ///< 结果落库算子（008 期4，页级持有）
+    DATableReshapeOps* mReshapeOps { nullptr };  ///< 形状变换算子（008 期4，页级持有）
+    DATableColumnCombineOps* mColumnCombineOps { nullptr };  ///< 分列/合并列算子（008 期4，页级持有）
+    DATableRenameOps* mRenameOps { nullptr };  ///< 列改名算子（008 期4，页级持有）
+    DATableColumnOps* mColumnOps { nullptr };  ///< 列增删算子（008 期4，页级持有）
+    DATableOperationRegistry mOpRegistry;  ///< 算子注册表（008 期4：id → 唯一实例）
+    DATablePaneAssembler* mPaneAssembler { nullptr };  ///< 窗格装配器（008 期5：装配段收口，页级持有）
+    DATableNavigationService* mNavigation { nullptr };  ///< 导航服务（008 期5：定位对话框/请求解析，页级持有）
+};
+
 
 namespace
 {
@@ -161,51 +223,50 @@ int DADataOperateOfDataFrameWidget::getDataOperatePageType() const
 }
 
 DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, DATableMetadataRegistry* registry, QWidget* parent)
-    : DADataOperatePageWidget(parent)
-    , ui(new Ui::DADataOperateOfDataFrameWidget)
+    : DADataOperatePageWidget(parent), DA_PIMPL_CONSTRUCT
 {
-    ui->setupUi(this);
+    d_func()->ui->setupUi(this);
 
     // 运行时包装（006b）：把 .ui 里已嵌入的视图作为主窗格接管。.ui 不动；
     // getDataTableView() 返回值与语义不变（= 主窗格），APP/插件调用点零改动。
     // 必须在任何 configurePaneView() 之前（configurePaneView 里 006c/006d 要往
     // mPaneContainer 上连线；先装配后建容器 = 那些 if (mPaneContainer) 全部静默跳过）
-    ui->verticalLayout->removeWidget(ui->tableView);
-    mPaneContainer = new DATablePaneContainer(this);
-    ui->verticalLayout->addWidget(mPaneContainer);
-    mPaneContainer->setMainView(ui->tableView);
+    d_func()->ui->verticalLayout->removeWidget(d_func()->ui->tableView);
+    d_func()->mPaneContainer = new DATablePaneContainer(this);
+    d_func()->ui->verticalLayout->addWidget(d_func()->mPaneContainer);
+    d_func()->mPaneContainer->setMainView(d_func()->ui->tableView);
     // 拖动落库（006c）：容器合并出全局列序后交页面入栈重投影（拖动 = 一个撤销单元）
-    connect(mPaneContainer, &DATablePaneContainer::columnOrderChanged, this, &DADataOperateOfDataFrameWidget::applyColumnOrderFromView);
+    connect(d_func()->mPaneContainer, &DATablePaneContainer::columnOrderChanged, this, &DADataOperateOfDataFrameWidget::applyColumnOrderFromView);
     // 冻结区内部拖动落库：冻结列之间的先后顺序（不改全局列序），入栈重投影
-    connect(mPaneContainer, &DATablePaneContainer::frozenOrderChanged, this, &DADataOperateOfDataFrameWidget::applyFrozenOrderFromView);
+    connect(d_func()->mPaneContainer, &DATablePaneContainer::frozenOrderChanged, this, &DADataOperateOfDataFrameWidget::applyFrozenOrderFromView);
     // 冻结分界条（宽随列宽改造）：拖动结束写 store（与表头拖拽同键 (名, occurrence)），
     // 双击对末冻结列做内容自适应；两信号均在容器已确定末冻结列的前提下发出
     //（视图状态采集/投影经视图状态控制器，008 期3）
-    connect(mPaneContainer, &DATablePaneContainer::frozenBoundaryResized, this,
+    connect(d_func()->mPaneContainer, &DATablePaneContainer::frozenBoundaryResized, this,
             [ this ](int logicalColumn, int newWidth) {
-        mViewStateController->storeColumnWidthAt(logicalColumn, newWidth);
+        d_func()->mViewStateController->storeColumnWidthAt(logicalColumn, newWidth);
     });
-    connect(mPaneContainer, &DATablePaneContainer::frozenBoundaryAutoFitRequested, this, [ this ](int logicalColumn) {
-        if (!mPaneContainer || !mPaneContainer->frozenView()) {
+    connect(d_func()->mPaneContainer, &DATablePaneContainer::frozenBoundaryAutoFitRequested, this, [ this ](int logicalColumn) {
+        if (!d_func()->mPaneContainer || !d_func()->mPaneContainer->frozenView()) {
             return;
         }
-        const int w = mViewStateController->contentFittedColumnWidth(mPaneContainer->frozenView(), logicalColumn);
+        const int w = d_func()->mViewStateController->contentFittedColumnWidth(d_func()->mPaneContainer->frozenView(), logicalColumn);
         if (w <= 0) {
             return;
         }
-        mPaneContainer->frozenView()->horizontalHeader()->resizeSection(logicalColumn, w);
-        mViewStateController->storeColumnWidthAt(logicalColumn, w);
+        d_func()->mPaneContainer->frozenView()->horizontalHeader()->resizeSection(logicalColumn, w);
+        d_func()->mViewStateController->storeColumnWidthAt(logicalColumn, w);
     });
     // 冻结窗格懒建（006e）：容器建好窗格后交页面装配同一条 configurePaneView，
     // 装配完成后再补列宽/行头宽；转发契约（冻结 → 主）也在此接线（APP 只连主窗格）
-    connect(mPaneContainer, &DATablePaneContainer::frozenViewCreated, this, [ this ](DA::DADataTableView* frozen) {
+    connect(d_func()->mPaneContainer, &DATablePaneContainer::frozenViewCreated, this, [ this ](DA::DADataTableView* frozen) {
         configurePaneView(frozen);
-        mViewStateController->applyColumnWidthsToPane(frozen);
-        mViewStateController->autoFitUnrecordedColumnWidths(frozen);  // 无记录列内容自适应（冻结窗格首次懒建时视口可能还没行，靠投影尾轮兜底）
-        mViewStateController->applyRowHeaderWidthToOwner();
+        d_func()->mViewStateController->applyColumnWidthsToPane(frozen);
+        d_func()->mViewStateController->autoFitUnrecordedColumnWidths(frozen);  // 无记录列内容自适应（冻结窗格首次懒建时视口可能还没行，靠投影尾轮兜底）
+        d_func()->mViewStateController->applyRowHeaderWidthToOwner();
         // 表头动作转发：重命名/删除/定位最大最小/描述统计/计算列三项（APP 只连主窗格）
         DADataHeaderView* fh = qobject_cast< DADataHeaderView* >(frozen->horizontalHeader());
-        DADataHeaderView* mh = qobject_cast< DADataHeaderView* >(ui->tableView->horizontalHeader());
+        DADataHeaderView* mh = qobject_cast< DADataHeaderView* >(d_func()->ui->tableView->horizontalHeader());
         if (fh && mh) {
             connect(fh, &DADataHeaderView::columnActionRequested, mh, &DADataHeaderView::columnActionRequested);
             // 按选中列复制/导出（冻结窗格表头触发 → 主窗格同名信号，APP 只连主窗格）
@@ -213,181 +274,181 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
             connect(fh, &DADataHeaderView::columnDataExportRequested, mh, &DADataHeaderView::columnDataExportRequested);
         }
         // 表体剪贴板三信号转发到主窗格同名信号
-        connect(frozen, &DADataTableView::contextMenuCutRequested, ui->tableView, &DADataTableView::contextMenuCutRequested);
-        connect(frozen, &DADataTableView::contextMenuCopyRequested, ui->tableView, &DADataTableView::contextMenuCopyRequested);
-        connect(frozen, &DADataTableView::contextMenuPasteRequested, ui->tableView, &DADataTableView::contextMenuPasteRequested);
+        connect(frozen, &DADataTableView::contextMenuCutRequested, d_func()->ui->tableView, &DADataTableView::contextMenuCutRequested);
+        connect(frozen, &DADataTableView::contextMenuCopyRequested, d_func()->ui->tableView, &DADataTableView::contextMenuCopyRequested);
+        connect(frozen, &DADataTableView::contextMenuPasteRequested, d_func()->ui->tableView, &DADataTableView::contextMenuPasteRequested);
         // 列宽/冻结数变化都会触发容器重投影与几何重算
         connect(frozen->horizontalHeader(), &QHeaderView::sectionResized, this, [ this ]() {
-            if (mPaneContainer) {
-                mPaneContainer->updateFrozenGeometry();
+            if (d_func()->mPaneContainer) {
+                d_func()->mPaneContainer->updateFrozenGeometry();
             }
         });
         // 冻结窗格行头宽变化：行头归属冻结窗格，宽度变化要同步几何
         if (DADataHeaderView* fvh = qobject_cast< DADataHeaderView* >(frozen->verticalHeader())) {
             connect(fvh, &DADataHeaderView::rowHeaderWidthChanged, this, [ this ](int width) {
-                if (mViewStateStore) {
-                    mViewStateStore->setRowHeaderWidth(width);
+                if (d_func()->mViewStateStore) {
+                    d_func()->mViewStateStore->setRowHeaderWidth(width);
                 }
-                if (mPaneContainer) {
-                    mPaneContainer->updateFrozenGeometry();
+                if (d_func()->mPaneContainer) {
+                    d_func()->mPaneContainer->updateFrozenGeometry();
                 }
             });
         }
     });
 
-    mModel = new DADataTableModel(getUndoStack(), this);
+    d_func()->mModel = new DADataTableModel(getUndoStack(), this);
 
     // 表格元数据束与各子存储、delegate
     // 元数据束借自会话级 DATableMetadataRegistry（随数据存在，widget 关闭后保留，重开可见）。
     // 行列增删的样式键偏移同步在 §7 的回调中接入（onRowsInserted 等系列）。
     DATableMetadata* metadata = registry ? registry->getOrCreate(d) : nullptr;
-    mMetadata                 = metadata;
-    mStyleManager             = metadata ? metadata->styleManager() : nullptr;
-    mViewStateStore           = metadata ? metadata->viewState() : nullptr;
-    mConditionalFormatStore   = metadata ? metadata->conditionalFormat() : nullptr;
-    mComputedColumnStore      = metadata ? metadata->computedColumns() : nullptr;
-    mValidationStore          = metadata ? metadata->validations() : nullptr;
-    mNoteStore                = metadata ? metadata->notes() : nullptr;
+    d_func()->mMetadata                 = metadata;
+    d_func()->mStyleManager             = metadata ? metadata->styleManager() : nullptr;
+    d_func()->mViewStateStore           = metadata ? metadata->viewState() : nullptr;
+    d_func()->mConditionalFormatStore   = metadata ? metadata->conditionalFormat() : nullptr;
+    d_func()->mComputedColumnStore      = metadata ? metadata->computedColumns() : nullptr;
+    d_func()->mValidationStore          = metadata ? metadata->validations() : nullptr;
+    d_func()->mNoteStore                = metadata ? metadata->notes() : nullptr;
     // 瞬态高亮层：页级持有（查找/校验两个来源共用），不序列化、不进撤销栈；
     // 注入 delegate 绘制管线③（瞬态装饰）
-    mHighlightOverlay = new DATableHighlightOverlay(this);
-    mStyleDelegate    = new DATableStyleItemDelegate(mStyleManager, mHighlightOverlay, this);
+    d_func()->mHighlightOverlay = new DATableHighlightOverlay(this);
+    d_func()->mStyleDelegate    = new DATableStyleItemDelegate(d_func()->mStyleManager, d_func()->mHighlightOverlay, this);
     // 条件格式子存储注入 delegate 绘制管线②（持久装饰）与④（数据条），003 T1.5
-    mStyleDelegate->setConditionalFormatStore(mConditionalFormatStore);
+    d_func()->mStyleDelegate->setConditionalFormatStore(d_func()->mConditionalFormatStore);
     // 校验规则子存储注入 delegate（枚举列下拉编辑器 createEditor，005 T1.25）
-    mStyleDelegate->setValidationStore(mValidationStore);
+    d_func()->mStyleDelegate->setValidationStore(d_func()->mValidationStore);
     // 批注子存储注入 delegate（层⑤之后角标 + helpEvent tooltip，005 T1.26）
     //（视图侧 setNoteStore 在 configurePaneView 里，006b 起随窗格装配）
-    mStyleDelegate->setNoteStore(mNoteStore);
+    d_func()->mStyleDelegate->setNoteStore(d_func()->mNoteStore);
     // 表格页上下文（008 期1）：模型/主窗格/元数据束聚合为依赖注入载体；
     // 选区/坐标查询全部收口到 DATableSelectionService（纯 const 查询，不持有窗口）
-    mContext = std::make_unique< DATablePageContext >();
-    mContext->setModel(mModel);
-    mContext->setMainView(ui->tableView);
-    mContext->setPaneContainer(mPaneContainer);
-    mContext->setMetadata(mMetadata);
-    mContext->setHighlightOverlay(mHighlightOverlay);
-    mContext->setHostWidget(this);
-    mContext->setData(d);
-    mSelection = std::make_unique< DATableSelectionService >(*mContext);
+    d_func()->mContext = std::make_unique< DATablePageContext >();
+    d_func()->mContext->setModel(d_func()->mModel);
+    d_func()->mContext->setMainView(d_func()->ui->tableView);
+    d_func()->mContext->setPaneContainer(d_func()->mPaneContainer);
+    d_func()->mContext->setMetadata(d_func()->mMetadata);
+    d_func()->mContext->setHighlightOverlay(d_func()->mHighlightOverlay);
+    d_func()->mContext->setHostWidget(this);
+    d_func()->mContext->setData(d);
+    d_func()->mSelection = std::make_unique< DATableSelectionService >(*d_func()->mContext);
     // 宿主桥注入（008 期2）：协作者经上下文的 std::function 触达页面级动作，
     // 不持窗口指针（notifyHostValueChange/closeFloatingWindows 同款设计见计划 §6.1）
-    mContext->notifyHostValueChange = [ this ]() {
-        if (DADataManager* mgr = mData.getDataManager()) {
-            mgr->notifyDataChangedSignal(mData, DADataManager::ChangeValue);
+    d_func()->mContext->notifyHostValueChange = [ this ]() {
+        if (DADataManager* mgr = d_func()->mData.getDataManager()) {
+            mgr->notifyDataChangedSignal(d_func()->mData, DADataManager::ChangeValue);
         }
     };
-    mContext->notifyHostColumnRename = [ this ]() {
-        if (DADataManager* mgr = mData.getDataManager()) {
-            mgr->notifyDataChangedSignal(mData, DADataManager::ChangeDataframeColumnName);
+    d_func()->mContext->notifyHostColumnRename = [ this ]() {
+        if (DADataManager* mgr = d_func()->mData.getDataManager()) {
+            mgr->notifyDataChangedSignal(d_func()->mData, DADataManager::ChangeDataframeColumnName);
         }
     };
-    mContext->closeFloatingWindows = [ this ]() { closeQuickPlot(); };
+    d_func()->mContext->closeFloatingWindows = [ this ]() { closeQuickPlot(); };
     // 撤销栈推入桥（push 即激活本页撤销栈；控制器经此入栈，不持窗口指针）
-    mContext->pushCommand = [ this ](QUndoCommand* cmd) { push(cmd); };
+    d_func()->mContext->pushCommand = [ this ](QUndoCommand* cmd) { push(cmd); };
     // 定位桥（007 定位单入口：隐藏列自动取消隐藏 + 冻结区处置；select=false 只摆位
     // 不收缩选区；报告窗等控制器用）
-    mContext->locateActualCell = [ this ](int row, int col, bool select) { locateActualCell(row, col, select); };
+    d_func()->mContext->locateActualCell = [ this ](int row, int col, bool select) { locateActualCell(row, col, select); };
     // 脏标桥（计算列重算等改数据的操作经此发 dataModified，与页面信号同源）
-    mContext->notifyDataModified = [ this ]() { Q_EMIT dataModified(); };
+    d_func()->mContext->notifyDataModified = [ this ]() { Q_EMIT dataModified(); };
     // 拾取模式查询桥（图表「选择序列」会话期间排序入口不生效）
-    mContext->isHeaderPickMode = [ this ]() -> bool { return mHeaderPickMode; };
+    d_func()->mContext->isHeaderPickMode = [ this ]() -> bool { return d_func()->mHeaderPickMode; };
     // 编辑后效协调器（008 期2）：commit() 是唯一的「编辑后」扇出点，
     // 此前 ~20 处手抄的 模型刷新→统计失效→计算列标脏→浮窗/宿主 收口于此；
     // attach() 一次性订阅批注/高亮层/样式/条件格式/校验缓存的「变更→失效/刷新」
     // 连接（008 期2 Observer 收口，此前散在本构造里 ~160 行）
-    mMutation = new DATableMutationCoordinator(*mContext, this);
-    mMutation->attach();
+    d_func()->mMutation = new DATableMutationCoordinator(*d_func()->mContext, this);
+    d_func()->mMutation->attach();
     // 特性控制器（008 期3）：批注（构造注入上下文与选区服务，QObject 父子持有）
-    mNoteController = new DATableNoteController(*mContext, *mSelection, this);
+    d_func()->mNoteController = new DATableNoteController(*d_func()->mContext, *d_func()->mSelection, this);
     // 快速绘图（构造注入上下文与选区服务；数据变更经本页 dataModified 信号转发）
-    mQuickPlotController = new DATableQuickPlotController(*mContext, *mSelection, this);
-    connect(this, &DADataOperateOfDataFrameWidget::dataModified, mQuickPlotController, &DATableQuickPlotController::notifyDataChanged);
+    d_func()->mQuickPlotController = new DATableQuickPlotController(*d_func()->mContext, *d_func()->mSelection, this);
+    connect(this, &DADataOperateOfDataFrameWidget::dataModified, d_func()->mQuickPlotController, &DATableQuickPlotController::notifyDataChanged);
     // 数据校验（构造注入上下文；报告窗定位经上下文定位桥回本页单入口）
-    mValidationController = new DATableValidationController(*mContext, this);
+    d_func()->mValidationController = new DATableValidationController(*d_func()->mContext, this);
     // 计算列（构造注入上下文；定义/状态变更→表头重绘的连接在控制器构造内订阅）
-    mComputedColumnController = new DATableComputedColumnController(*mContext, this);
+    d_func()->mComputedColumnController = new DATableComputedColumnController(*d_func()->mContext, this);
     // 条件格式（构造注入上下文与选区服务；WPS 式菜单/规则对话框/差异命令）
-    mConditionalFormatController = new DATableConditionalFormatController(*mContext, *mSelection, this);
+    d_func()->mConditionalFormatController = new DATableConditionalFormatController(*d_func()->mContext, *d_func()->mSelection, this);
     // 查找/替换（构造注入上下文/选区服务/编辑后效协调器；替换生效经 replaceApplied 转发）
-    mFindController = new DATableFindController(*mContext, *mSelection, mMutation, this);
-    connect(mFindController, &DATableFindController::replaceApplied, this, &DADataOperateOfDataFrameWidget::replaceApplied);
+    d_func()->mFindController = new DATableFindController(*d_func()->mContext, *d_func()->mSelection, d_func()->mMutation, this);
+    connect(d_func()->mFindController, &DATableFindController::replaceApplied, this, &DADataOperateOfDataFrameWidget::replaceApplied);
     // 样式/显示格式（构造注入上下文与选区服务）
-    mStyleController = new DATableStyleController(*mContext, *mSelection, this);
+    d_func()->mStyleController = new DATableStyleController(*d_func()->mContext, *d_func()->mSelection, this);
     // 排序（构造注入上下文；插删列/换数据集后规格清理由控制器 clearSpec 提供）
-    mSortController = new DATableSortController(*mContext, this);
+    d_func()->mSortController = new DATableSortController(*d_func()->mContext, this);
     // 视图状态（构造注入上下文与选区服务；列宽采集/投影/冻结集合查表）
-    mViewStateController = new DATableViewStateController(*mContext, *mSelection, this);
+    d_func()->mViewStateController = new DATableViewStateController(*d_func()->mContext, *d_func()->mSelection, this);
     // 列视图（构造注入上下文/选区服务 + 视图状态/计算列/校验控制器；列视图真源操作）
-    mColumnViewController = new DATableColumnViewController(*mContext, *mSelection, mViewStateController,
-                                                            mComputedColumnController, mValidationController, this);
+    d_func()->mColumnViewController = new DATableColumnViewController(*d_func()->mContext, *d_func()->mSelection, d_func()->mViewStateController,
+                                                            d_func()->mComputedColumnController, d_func()->mValidationController, this);
     // 数据操作算子（008 期4：一个操作一个文件；参数化入口由 Facade 直调具体算子）
-    mRowOps = new DATableRowOps(*mContext, *mSelection, mMutation, this);
-    mCellOps = new DATableCellOps(*mContext, *mSelection, mMutation, this);
-    mTypeOps = new DATableTypeOps(*mContext, *mSelection, mMutation, this);
-    connect(mTypeOps, &DATableTypeOps::selectTypeChanged, this, &DADataOperateOfDataFrameWidget::selectTypeChanged);
-    mFillOps = new DATableFillOps(*mContext, *mSelection, mMutation, this);
+    d_func()->mRowOps = new DATableRowOps(*d_func()->mContext, *d_func()->mSelection, d_func()->mMutation, this);
+    d_func()->mCellOps = new DATableCellOps(*d_func()->mContext, *d_func()->mSelection, d_func()->mMutation, this);
+    d_func()->mTypeOps = new DATableTypeOps(*d_func()->mContext, *d_func()->mSelection, d_func()->mMutation, this);
+    connect(d_func()->mTypeOps, &DATableTypeOps::selectTypeChanged, this, &DADataOperateOfDataFrameWidget::selectTypeChanged);
+    d_func()->mFillOps = new DATableFillOps(*d_func()->mContext, *d_func()->mSelection, d_func()->mMutation, this);
     // 结果落库（新数据集注册/就地替换；三类信号转发回页面同名信号 → APP 连接点零改动）
-    mResultOps = new DATableResultOps(*mContext, this);
-    connect(mResultOps, &DATableResultOps::newDataCreated, this, &DADataOperateOfDataFrameWidget::newDataCreated);
-    connect(mResultOps, &DATableResultOps::inplaceDataReplaceRequested, this, &DADataOperateOfDataFrameWidget::inplaceDataReplaceRequested);
-    connect(mResultOps, &DATableResultOps::dataModified, this, &DADataOperateOfDataFrameWidget::dataModified);
+    d_func()->mResultOps = new DATableResultOps(*d_func()->mContext, this);
+    connect(d_func()->mResultOps, &DATableResultOps::newDataCreated, this, &DADataOperateOfDataFrameWidget::newDataCreated);
+    connect(d_func()->mResultOps, &DATableResultOps::inplaceDataReplaceRequested, this, &DADataOperateOfDataFrameWidget::inplaceDataReplaceRequested);
+    connect(d_func()->mResultOps, &DATableResultOps::dataModified, this, &DADataOperateOfDataFrameWidget::dataModified);
     // 就地替换降级路径的整页刷新桥（清排序规格 + 模型 reset）
-    mContext->refreshAfterInplaceReplace = [ this ]() { refreshAfterInplaceReplace(); };
+    d_func()->mContext->refreshAfterInplaceReplace = [ this ]() { refreshAfterInplaceReplace(); };
     // 形状变换（分组聚合/转置/melt；落库经结果算子）
-    mReshapeOps = new DATableReshapeOps(*mContext, mResultOps, this);
+    d_func()->mReshapeOps = new DATableReshapeOps(*d_func()->mContext, d_func()->mResultOps, this);
     // 分列/合并列（列级撤销记录 + 计算列联动失效）
-    mColumnCombineOps = new DATableColumnCombineOps(*mContext, *mSelection, mMutation, this);
+    d_func()->mColumnCombineOps = new DATableColumnCombineOps(*d_func()->mContext, *d_func()->mSelection, d_func()->mMutation, this);
     // 列改名（影响面确认/引用迁移经计算列+校验控制器，Mediator-light）
-    mRenameOps = new DATableRenameOps(*mContext, mViewStateController, mComputedColumnController, mValidationController, this);
+    d_func()->mRenameOps = new DATableRenameOps(*d_func()->mContext, d_func()->mViewStateController, d_func()->mComputedColumnController, d_func()->mValidationController, this);
     // 列增删（插列对话框/删列视图状态快照重映射；删列后重投影经视图状态控制器）
-    mColumnOps = new DATableColumnOps(*mContext, *mSelection, mMutation, mViewStateController, this);
+    d_func()->mColumnOps = new DATableColumnOps(*d_func()->mContext, *d_func()->mSelection, d_func()->mMutation, d_func()->mViewStateController, this);
     // 算子注册表（008 期4：id → 唯一实例；Agent/插件的 id 驱动入口与菜单启用规则共用）
-    mOpRegistry.add(mRowOps);
-    mOpRegistry.add(mCellOps);
-    mOpRegistry.add(mTypeOps);
-    mOpRegistry.add(mFillOps);
-    mOpRegistry.add(mResultOps);
-    mOpRegistry.add(mReshapeOps);
-    mOpRegistry.add(mColumnCombineOps);
-    mOpRegistry.add(mRenameOps);
-    mOpRegistry.add(mColumnOps);
+    d_func()->mOpRegistry.add(d_func()->mRowOps);
+    d_func()->mOpRegistry.add(d_func()->mCellOps);
+    d_func()->mOpRegistry.add(d_func()->mTypeOps);
+    d_func()->mOpRegistry.add(d_func()->mFillOps);
+    d_func()->mOpRegistry.add(d_func()->mResultOps);
+    d_func()->mOpRegistry.add(d_func()->mReshapeOps);
+    d_func()->mOpRegistry.add(d_func()->mColumnCombineOps);
+    d_func()->mOpRegistry.add(d_func()->mRenameOps);
+    d_func()->mOpRegistry.add(d_func()->mColumnOps);
     // 窗格装配器（008 期5：装配段收口；表意信号连接留在页面——消费方是页面自身的槽）
-    mPaneAssembler = new DATablePaneAssembler(*mContext, mViewStateController, mStyleDelegate);
+    d_func()->mPaneAssembler = new DATablePaneAssembler(*d_func()->mContext, d_func()->mViewStateController, d_func()->mStyleDelegate);
     // 导航服务（008 期5：定位对话框/请求解析/定位执行/点击分发）
-    mNavigation = new DATableNavigationService(*mContext, *mSelection, mViewStateController, mColumnViewController, this);
-    connect(mNavigation, &DATableNavigationService::selectTypeChanged, this, &DADataOperateOfDataFrameWidget::selectTypeChanged);
-    connect(mNavigation, &DATableNavigationService::columnHeaderClicked, this, &DADataOperateOfDataFrameWidget::columnHeaderClicked);
+    d_func()->mNavigation = new DATableNavigationService(*d_func()->mContext, *d_func()->mSelection, d_func()->mViewStateController, d_func()->mColumnViewController, this);
+    connect(d_func()->mNavigation, &DATableNavigationService::selectTypeChanged, this, &DADataOperateOfDataFrameWidget::selectTypeChanged);
+    connect(d_func()->mNavigation, &DATableNavigationService::columnHeaderClicked, this, &DADataOperateOfDataFrameWidget::columnHeaderClicked);
     // 窗格装配（006b 抽取的唯一装配点）：表头替换 → setModel → 委托 → 逐窗格连接；
     // 必须在 mStyleDelegate 创建之后（里面要用它），在 setDAData/applyViewStateFromStore 之前
-    configurePaneView(ui->tableView);
+    configurePaneView(d_func()->ui->tableView);
     // 模型读取列显示格式（actualData 的 DisplayRole 分支）
-    mModel->setStyleManager(mStyleManager);
+    d_func()->mModel->setStyleManager(d_func()->mStyleManager);
     // 计算列子存储注入模型（表头浅蓝底色 BackgroundRole + 公式 tooltip ToolTipRole，004 T1.23）
-    mModel->setComputedColumnStore(mComputedColumnStore);
+    d_func()->mModel->setComputedColumnStore(d_func()->mComputedColumnStore);
     // 视图状态（列宽按列名 + 行头宽，R6）：
     // 结构变化（模型重置/插删列）后按列名重新应用，保证列宽不随位置错位；
     // 采集只认用户拖拽（sectionResized + 左键按住在表头上），程序化改动不写 store
     //（期3 ViewStateController 迁移候选，暂留 Facade）
-    connect(mModel, &QAbstractItemModel::modelReset, this, [ this ]() {
+    connect(d_func()->mModel, &QAbstractItemModel::modelReset, this, [ this ]() {
         applyViewStateFromStore();
     });
-    connect(mModel, &QAbstractItemModel::columnsInserted, this, [ this ]() {
+    connect(d_func()->mModel, &QAbstractItemModel::columnsInserted, this, [ this ]() {
         applyViewStateFromStore();
         // 插列后排序规格里的列位置失效，清除规格（数据顺序不变，只清指示器）
-        mSortController->clearSpec();
+        d_func()->mSortController->clearSpec();
     });
-    connect(mModel, &QAbstractItemModel::columnsRemoved, this, [ this ]() {
+    connect(d_func()->mModel, &QAbstractItemModel::columnsRemoved, this, [ this ]() {
         applyViewStateFromStore();
         // 删列后排序规格里的列位置失效，清除规格
-        mSortController->clearSpec();
+        d_func()->mSortController->clearSpec();
     });
     // 关闭不必要的绘制特性
     setDAData(d);
     // 构造完成后应用一次视图状态（工程加载的宽度回填在注册表里，此时已可借用）
     applyViewStateFromStore();
     // 选中变化时反向同步 ribbon 控件（只在主窗格连：006e 冻结窗格共享同一 selection model）
-    if (auto sm = ui->tableView->selectionModel()) {
+    if (auto sm = d_func()->ui->tableView->selectionModel()) {
         connect(sm, &QItemSelectionModel::selectionChanged, this, [ this ]() {
             DA_SLOW_LOG_SCOPE_DETAIL("dagui.table.selectionChanged", [this]() {
                 return QStringLiteral("rows=%1 cols=%2").arg(dataRowCount()).arg(dataColumnCount());
@@ -396,7 +457,7 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
             Q_EMIT currentDisplayFormatChanged(getCurrentColumnDisplayFormat());
             // 查找条处于「当前选区」范围时，选区变化经去抖触发重扫（范围基准随选区更新；
             // 实现迁入 DATableFindController，008 期3）
-            mFindController->restartDebounceIfVisible();
+            d_func()->mFindController->restartDebounceIfVisible();
             Q_EMIT tableSelectionChanged();  // 007：状态栏统计触发源
         });
     }
@@ -406,22 +467,22 @@ DADataOperateOfDataFrameWidget::~DADataOperateOfDataFrameWidget()
 {
     // 条件格式子存储是会话级（借自注册表，比 widget 长寿）：清空统计提供者，
     // 避免持有已销毁页面的回调（QPointer 已防悬挂，此处彻底释放 lambda 捕获）
-    if (mConditionalFormatStore) {
-        mConditionalFormatStore->setStatsProvider(nullptr);
-        mConditionalFormatStore->setDuplicatesProvider(nullptr);
+    if (d_func()->mConditionalFormatStore) {
+        d_func()->mConditionalFormatStore->setStatsProvider(nullptr);
+        d_func()->mConditionalFormatStore->setDuplicatesProvider(nullptr);
     }
     // 子窗口容器先断回调（008 期0 基线修复，随快速绘图迁入控制器）：容器的
     // boundsProvider 回调读 ui->tableView，delete ui 之后页面仍在析构（~QWidget 阶段），
     // 被监听部件（主视口等）的 Hide 事件会触发 eventFilter → clampAllWindows → 回调 →
     // 读已释放的 ui（use-after-free，DATableQuickPlotTest 在页面析构路径偶现 0xC0000005 崩溃）
-    if (mQuickPlotController) {
-        mQuickPlotController->detach();
+    if (d_func()->mQuickPlotController) {
+        d_func()->mQuickPlotController->detach();
     }
     // 窗格装配器（008 期5）：表头接线引用本页成员，先于 delete ui 释放
-    delete mPaneAssembler;
-    mPaneAssembler = nullptr;
-    delete ui;
-    ui = nullptr;
+    delete d_func()->mPaneAssembler;
+    d_func()->mPaneAssembler = nullptr;
+    delete d_func()->ui;
+    d_func()->ui = nullptr;
 }
 
 /**
@@ -440,7 +501,7 @@ void DADataOperateOfDataFrameWidget::configurePaneView(DADataTableView* pane)
     }
     // 1)~5) 装配段（表头替换 → setModel/selectionModel 共享 → 委托 → 批注/计算列
     // store 注入 → 表头接线到视图状态控制器/窗格容器/store）——收口到装配器，008 期5
-    mPaneAssembler->assemble(pane);
+    d_func()->mPaneAssembler->assemble(pane);
     // 6) 视图表意入口（快捷键/右键菜单共用）：每装一个窗格连一份（消费方是页面自身的槽）
     connect(pane, &QTableView::clicked, this, &DADataOperateOfDataFrameWidget::onTableViewClicked);
     // 表头表意入口（页面自身的槽）：带修饰键点击 + 「列」子菜单动作（006d）
@@ -517,7 +578,7 @@ void DADataOperateOfDataFrameWidget::configurePaneView(DADataTableView* pane)
 bool DADataOperateOfDataFrameWidget::haveData() const
 {
     // dataframe与通用表格数据（如数据库惰性表）都视为有数据；series维持原语义不开数据页
-    return mData.isDataFrame() || (mData.isTable() && !mData.isSeries());
+    return d_func()->mData.isDataFrame() || (d_func()->mData.isTable() && !d_func()->mData.isSeries());
 }
 
 /**
@@ -526,7 +587,7 @@ bool DADataOperateOfDataFrameWidget::haveData() const
  */
 DAPyDataFrame DADataOperateOfDataFrameWidget::getDataframe() const
 {
-    return mData.toDataFrame();
+    return d_func()->mData.toDataFrame();
 }
 
 /**
@@ -535,20 +596,20 @@ DAPyDataFrame DADataOperateOfDataFrameWidget::getDataframe() const
  */
 const DAData& DADataOperateOfDataFrameWidget::data() const
 {
-    return mData;
+    return d_func()->mData;
 }
 
 void DADataOperateOfDataFrameWidget::setDAData(const DA::DAData& d)
 {
     // 切换数据集后浮窗绑定的列身份与数据快照都失效，直接关闭（实施方案 §5.3）
     closeQuickPlot();
-    mData = d;
-    mContext->setData(d);  // 上下文随宿主换数据（008 期1）
+    d_func()->mData = d;
+    d_func()->mContext->setData(d);  // 上下文随宿主换数据（008 期1）
     // 数据替换后旧排序规格（列位置+方向）失去意义，清除（排序规格不持久化，R13）
-    mSortController->clearSpec();
+    d_func()->mSortController->clearSpec();
     // 通用表格数据（DATableDataSource，如数据库惰性表）也可显示；series维持原语义
     if (d.isDataFrame() || (d.isTable() && !d.isSeries())) {
-        ui->tableView->setData(d);
+        d_func()->ui->tableView->setData(d);
     }
 }
 
@@ -576,7 +637,7 @@ void DADataOperateOfDataFrameWidget::insertRowBelowBySelect()
  */
 void DADataOperateOfDataFrameWidget::insertRowAt(int row)
 {
-    mRowOps->insertRowAt(row);
+    d_func()->mRowOps->insertRowAt(row);
 }
 
 // ============================================================
@@ -587,7 +648,7 @@ void DADataOperateOfDataFrameWidget::insertRowAt(int row)
  */
 void DADataOperateOfDataFrameWidget::insertColumnRightBySelect()
 {
-    mColumnOps->insertColumnRightBySelect();
+    d_func()->mColumnOps->insertColumnRightBySelect();
 }
 
 /**
@@ -595,7 +656,7 @@ void DADataOperateOfDataFrameWidget::insertColumnRightBySelect()
  */
 void DADataOperateOfDataFrameWidget::insertColumnLeftBySelect()
 {
-    mColumnOps->insertColumnLeftBySelect();
+    d_func()->mColumnOps->insertColumnLeftBySelect();
 }
 
 /**
@@ -604,7 +665,7 @@ void DADataOperateOfDataFrameWidget::insertColumnLeftBySelect()
  */
 void DADataOperateOfDataFrameWidget::insertColumnAt(int col)
 {
-    mColumnOps->insertColumnAt(col);
+    d_func()->mColumnOps->insertColumnAt(col);
 }
 
 /**
@@ -613,7 +674,7 @@ void DADataOperateOfDataFrameWidget::insertColumnAt(int col)
  */
 int DADataOperateOfDataFrameWidget::removeSelectColumn()
 {
-    return mColumnOps->removeSelectColumn();
+    return d_func()->mColumnOps->removeSelectColumn();
 }
 
 /**
@@ -623,7 +684,7 @@ int DADataOperateOfDataFrameWidget::removeSelectColumn()
  */
 int DADataOperateOfDataFrameWidget::removeColumnAt(int col)
 {
-    return mColumnOps->removeColumnAt(col);
+    return d_func()->mColumnOps->removeColumnAt(col);
 }
 
 /**
@@ -633,7 +694,7 @@ int DADataOperateOfDataFrameWidget::removeColumnAt(int col)
  */
 int DADataOperateOfDataFrameWidget::removeColumns(const QList< int >& columns)
 {
-    return mColumnOps->removeColumns(columns);
+    return d_func()->mColumnOps->removeColumns(columns);
 }
 
 /**
@@ -642,7 +703,7 @@ int DADataOperateOfDataFrameWidget::removeColumns(const QList< int >& columns)
  */
 int DADataOperateOfDataFrameWidget::removeSelectRow()
 {
-    return mRowOps->removeSelectedRows();
+    return d_func()->mRowOps->removeSelectedRows();
 }
 
 /**
@@ -651,7 +712,7 @@ int DADataOperateOfDataFrameWidget::removeSelectRow()
  */
 int DADataOperateOfDataFrameWidget::removeSelectCell()
 {
-    return mCellOps->removeSelectedCells();
+    return d_func()->mCellOps->removeSelectedCells();
 }
 
 /**
@@ -660,7 +721,7 @@ int DADataOperateOfDataFrameWidget::removeSelectCell()
  */
 int DADataOperateOfDataFrameWidget::pasteFromClipboard()
 {
-    return mCellOps->pasteFromClipboard();
+    return d_func()->mCellOps->pasteFromClipboard();
 }
 
 /**
@@ -669,7 +730,7 @@ int DADataOperateOfDataFrameWidget::pasteFromClipboard()
  */
 int DADataOperateOfDataFrameWidget::cutSelection()
 {
-    return mCellOps->cutSelection();
+    return d_func()->mCellOps->cutSelection();
 }
 
 /**
@@ -677,7 +738,7 @@ int DADataOperateOfDataFrameWidget::cutSelection()
  */
 void DADataOperateOfDataFrameWidget::renameColumns()
 {
-    mRenameOps->renameColumns();
+    d_func()->mRenameOps->renameColumns();
 }
 /**
  * @brief 重命名单列（转发列改名算子）
@@ -687,7 +748,7 @@ void DADataOperateOfDataFrameWidget::renameColumns()
  */
 bool DADataOperateOfDataFrameWidget::renameColumn(int col, const QString& newName)
 {
-    return mRenameOps->renameColumn(col, newName);
+    return d_func()->mRenameOps->renameColumn(col, newName);
 }
 
 /**
@@ -697,7 +758,7 @@ bool DADataOperateOfDataFrameWidget::renameColumn(int col, const QString& newNam
  */
 bool DADataOperateOfDataFrameWidget::changeSelectColumnType(const DAPyDType& dt)
 {
-    return mTypeOps->changeSelectColumnType(dt);
+    return d_func()->mTypeOps->changeSelectColumnType(dt);
 }
 
 /**
@@ -705,7 +766,7 @@ bool DADataOperateOfDataFrameWidget::changeSelectColumnType(const DAPyDType& dt)
  */
 void DADataOperateOfDataFrameWidget::castSelectToNum()
 {
-    mTypeOps->castSelectToNum();
+    d_func()->mTypeOps->castSelectToNum();
 }
 
 /**
@@ -713,7 +774,7 @@ void DADataOperateOfDataFrameWidget::castSelectToNum()
  */
 void DADataOperateOfDataFrameWidget::castSelectToDatetime()
 {
-    mTypeOps->castSelectToDatetime();
+    d_func()->mTypeOps->castSelectToDatetime();
 }
 
 /**
@@ -722,7 +783,7 @@ void DADataOperateOfDataFrameWidget::castSelectToDatetime()
  */
 bool DADataOperateOfDataFrameWidget::changeSelectColumnToIndex()
 {
-    return mTypeOps->changeSelectColumnToIndex();
+    return d_func()->mTypeOps->changeSelectColumnToIndex();
 }
 
 /**
@@ -731,10 +792,10 @@ bool DADataOperateOfDataFrameWidget::changeSelectColumnToIndex()
  */
 DAPyDataFrame DADataOperateOfDataFrameWidget::createDataDescribe()
 {
-    if (!mData.isDataFrame()) {
+    if (!d_func()->mData.isDataFrame()) {
         return DAPyDataFrame();
     }
-    DAPyDataFrame df_describe = mData.toDataFrame().describe();
+    DAPyDataFrame df_describe = d_func()->mData.toDataFrame().describe();
     return df_describe;
 }
 
@@ -744,7 +805,7 @@ DAPyDataFrame DADataOperateOfDataFrameWidget::createDataDescribe()
  */
 bool DADataOperateOfDataFrameWidget::isDataframeTableHaveSelection() const
 {
-    return mSelection->haveSelection();
+    return d_func()->mSelection->haveSelection();
 }
 
 /**
@@ -754,7 +815,7 @@ bool DADataOperateOfDataFrameWidget::isDataframeTableHaveSelection() const
  */
 DADataTableView* DADataOperateOfDataFrameWidget::getDataTableView() const
 {
-    return ui ? ui->tableView : nullptr;
+    return d_func()->ui ? d_func()->ui->tableView : nullptr;
 }
 
 /**
@@ -764,7 +825,7 @@ DADataTableView* DADataOperateOfDataFrameWidget::getDataTableView() const
  */
 QList< int > DADataOperateOfDataFrameWidget::getSelectedDataframeCoumns(bool ensureInDataframe) const
 {
-    return mSelection->selectedDataframeColumns(ensureInDataframe);
+    return d_func()->mSelection->selectedDataframeColumns(ensureInDataframe);
 }
 
 /**
@@ -774,7 +835,7 @@ QList< int > DADataOperateOfDataFrameWidget::getSelectedDataframeCoumns(bool ens
  */
 QList< int > DADataOperateOfDataFrameWidget::getSelectedDataframeRows(bool ensureInDataframe) const
 {
-    return mSelection->selectedDataframeRows(ensureInDataframe);
+    return d_func()->mSelection->selectedDataframeRows(ensureInDataframe);
 }
 
 /**
@@ -787,7 +848,7 @@ QList< int > DADataOperateOfDataFrameWidget::getSelectedDataframeRows(bool ensur
  */
 int DADataOperateOfDataFrameWidget::toActualRow(int viewRow) const
 {
-    return mContext->toActualRow(viewRow);
+    return d_func()->mContext->toActualRow(viewRow);
 }
 
 /**
@@ -796,7 +857,7 @@ int DADataOperateOfDataFrameWidget::toActualRow(int viewRow) const
  */
 int DADataOperateOfDataFrameWidget::dataRowCount() const
 {
-    return mContext->dataRowCount();
+    return d_func()->mContext->dataRowCount();
 }
 
 /**
@@ -809,7 +870,7 @@ int DADataOperateOfDataFrameWidget::dataRowCount() const
  */
 QList< int > DADataOperateOfDataFrameWidget::getFullySelectedDataframeColumns(bool ensureInDataframe) const
 {
-    return mSelection->fullySelectedDataframeColumns(ensureInDataframe);
+    return d_func()->mSelection->fullySelectedDataframeColumns(ensureInDataframe);
 }
 
 /**
@@ -821,17 +882,17 @@ QList< int > DADataOperateOfDataFrameWidget::getFullySelectedDataframeColumns(bo
  */
 QList< int > DADataOperateOfDataFrameWidget::getFullySelectedDataframeRows(bool ensureInDataframe) const
 {
-    return mSelection->fullySelectedDataframeRows(ensureInDataframe);
+    return d_func()->mSelection->fullySelectedDataframeRows(ensureInDataframe);
 }
 
 int DADataOperateOfDataFrameWidget::getSelectedOneDataframeRow(bool ensureInDataframe) const
 {
-    return mSelection->oneSelectedDataframeRow(ensureInDataframe);
+    return d_func()->mSelection->oneSelectedDataframeRow(ensureInDataframe);
 }
 
 int DADataOperateOfDataFrameWidget::getSelectedOneDataframeColumn(bool ensureInDataframe) const
 {
-    return mSelection->oneSelectedDataframeColumn(ensureInDataframe);
+    return d_func()->mSelection->oneSelectedDataframeColumn(ensureInDataframe);
 }
 
 /**
@@ -848,13 +909,13 @@ int DADataOperateOfDataFrameWidget::getSelectedOneDataframeColumn(bool ensureInD
  */
 QList< DAData > DADataOperateOfDataFrameWidget::getSlectedSeries() const
 {
-    return mSelection->selectedSeries();
+    return d_func()->mSelection->selectedSeries();
 }
 
 void DADataOperateOfDataFrameWidget::refreshTable()
 {
-    if (mModel) {
-        mModel->refreshData();
+    if (d_func()->mModel) {
+        d_func()->mModel->refreshData();
     }
 }
 
@@ -865,14 +926,14 @@ void DADataOperateOfDataFrameWidget::refreshTable()
  */
 void DADataOperateOfDataFrameWidget::ensureColumnVisible(const QString& colName, bool selectCol)
 {
-    mNavigation->ensureColumnVisible(colName, selectCol);
+    d_func()->mNavigation->ensureColumnVisible(colName, selectCol);
 }
 /**
  * @brief 定位单入口（转发导航服务；007 语义：数据行 + 列 + 是否选中 + 是否保持隐藏）
  */
 void DADataOperateOfDataFrameWidget::locateActualCell(int actualRow, int col, bool select, bool keepHidden)
 {
-    mNavigation->locateActualCell(actualRow, col, select, keepHidden);
+    d_func()->mNavigation->locateActualCell(actualRow, col, select, keepHidden);
 }
 /**
  * @brief 定位单入口的列名重载（转发导航服务；重名取第一个同名列，数据列序）
@@ -880,11 +941,11 @@ void DADataOperateOfDataFrameWidget::locateActualCell(int actualRow, int col, bo
 void DADataOperateOfDataFrameWidget::locateActualCell(int actualRow, const QString& columnName, bool select,
                                                       bool keepHidden)
 {
-    mNavigation->locateActualCell(actualRow, columnName, select, keepHidden);
+    d_func()->mNavigation->locateActualCell(actualRow, columnName, select, keepHidden);
 }
 QList< QPoint > DADataOperateOfDataFrameWidget::getSelectedDataframeCells(bool ensureInDataframe) const
 {
-    return mSelection->selectedDataframeCells(ensureInDataframe);
+    return d_func()->mSelection->selectedDataframeCells(ensureInDataframe);
 }
 
 /**
@@ -893,7 +954,7 @@ QList< QPoint > DADataOperateOfDataFrameWidget::getSelectedDataframeCells(bool e
  */
 int DADataOperateOfDataFrameWidget::dataColumnCount() const
 {
-    return mContext->dataColumnCount();
+    return d_func()->mContext->dataColumnCount();
 }
 
 /**
@@ -907,7 +968,7 @@ int DADataOperateOfDataFrameWidget::dataColumnCount() const
  */
 QList< QPair< QString, int > > DADataOperateOfDataFrameWidget::actualColumnIdentities() const
 {
-    return mSelection->actualColumnIdentities();
+    return d_func()->mSelection->actualColumnIdentities();
 }
 
 /**
@@ -916,7 +977,7 @@ QList< QPair< QString, int > > DADataOperateOfDataFrameWidget::actualColumnIdent
  */
 void DADataOperateOfDataFrameWidget::onTableViewClicked(const QModelIndex& index)
 {
-    mNavigation->onTableViewClicked(index);
+    d_func()->mNavigation->onTableViewClicked(index);
 }
 /**
  * @brief 获取样式管理器
@@ -924,7 +985,7 @@ void DADataOperateOfDataFrameWidget::onTableViewClicked(const QModelIndex& index
  */
 DATableStyleManager* DADataOperateOfDataFrameWidget::styleManager() const
 {
-    return mStyleManager;
+    return d_func()->mStyleManager;
 }
 
 /**
@@ -933,7 +994,7 @@ DATableStyleManager* DADataOperateOfDataFrameWidget::styleManager() const
  */
 DATableViewStateStore* DADataOperateOfDataFrameWidget::viewStateStore() const
 {
-    return mViewStateStore;
+    return d_func()->mViewStateStore;
 }
 
 /**
@@ -942,7 +1003,7 @@ DATableViewStateStore* DADataOperateOfDataFrameWidget::viewStateStore() const
  */
 DATableHighlightOverlay* DADataOperateOfDataFrameWidget::highlightOverlay() const
 {
-    return mHighlightOverlay;
+    return d_func()->mHighlightOverlay;
 }
 
 /**
@@ -951,7 +1012,7 @@ DATableHighlightOverlay* DADataOperateOfDataFrameWidget::highlightOverlay() cons
  */
 DATableConditionalFormatStore* DADataOperateOfDataFrameWidget::conditionalFormatStore() const
 {
-    return mConditionalFormatStore;
+    return d_func()->mConditionalFormatStore;
 }
 
 /**
@@ -962,7 +1023,7 @@ DATableConditionalFormatStore* DADataOperateOfDataFrameWidget::conditionalFormat
  */
 QItemSelectionModel* DADataOperateOfDataFrameWidget::tableSelectionModel() const
 {
-    return mSelection->selectionModel();
+    return d_func()->mSelection->selectionModel();
 }
 
 /**
@@ -973,7 +1034,7 @@ QItemSelectionModel* DADataOperateOfDataFrameWidget::tableSelectionModel() const
  */
 int DADataOperateOfDataFrameWidget::selectionSegmentCount() const
 {
-    return mSelection->selectionSegmentCount();
+    return d_func()->mSelection->selectionSegmentCount();
 }
 
 /**
@@ -985,7 +1046,7 @@ int DADataOperateOfDataFrameWidget::selectionSegmentCount() const
  */
 bool DADataOperateOfDataFrameWidget::selectionBoundingBox(int* rowBegin, int* rowEnd, int* colBegin, int* colEnd) const
 {
-    return mSelection->selectionBoundingBox(rowBegin, rowEnd, colBegin, colEnd);
+    return d_func()->mSelection->selectionBoundingBox(rowBegin, rowEnd, colBegin, colEnd);
 }
 
 /**
@@ -997,7 +1058,7 @@ bool DADataOperateOfDataFrameWidget::selectionBoundingBox(int* rowBegin, int* ro
  */
 int DADataOperateOfDataFrameWidget::selectedCellCount() const
 {
-    return mSelection->selectedCellCount();
+    return d_func()->mSelection->selectedCellCount();
 }
 
 /**
@@ -1005,7 +1066,7 @@ int DADataOperateOfDataFrameWidget::selectedCellCount() const
  */
 void DADataOperateOfDataFrameWidget::applyViewStateFromStore()
 {
-    mViewStateController->applyFromStore();
+    d_func()->mViewStateController->applyFromStore();
 }
 
 /**
@@ -1014,7 +1075,7 @@ void DADataOperateOfDataFrameWidget::applyViewStateFromStore()
  */
 QString DADataOperateOfDataFrameWidget::currentSingleCellDisplayText() const
 {
-    return mSelection->currentSingleCellDisplayText();
+    return d_func()->mSelection->currentSingleCellDisplayText();
 }
 
 /**
@@ -1025,7 +1086,7 @@ QString DADataOperateOfDataFrameWidget::currentSingleCellDisplayText() const
  */
 QList< DADataTableView* > DADataOperateOfDataFrameWidget::paneViews() const
 {
-    return mContext->panes();
+    return d_func()->mContext->panes();
 }
 
 /**
@@ -1051,7 +1112,7 @@ void DADataOperateOfDataFrameWidget::forEachPaneHeader(const std::function< void
  */
 bool DADataOperateOfDataFrameWidget::isColumnInFrozenArea(int logicalColumn) const
 {
-    return mViewStateController->isColumnInFrozenArea(logicalColumn);
+    return d_func()->mViewStateController->isColumnInFrozenArea(logicalColumn);
 }
 
 /**
@@ -1059,7 +1120,7 @@ bool DADataOperateOfDataFrameWidget::isColumnInFrozenArea(int logicalColumn) con
  */
 DATablePaneContainer* DADataOperateOfDataFrameWidget::paneContainer() const
 {
-    return mPaneContainer;
+    return d_func()->mPaneContainer;
 }
 
 /**
@@ -1067,7 +1128,7 @@ DATablePaneContainer* DADataOperateOfDataFrameWidget::paneContainer() const
  */
 void DADataOperateOfDataFrameWidget::setColumnHiddenDirectly(const QString& name, int occurrence, bool hidden)
 {
-    mColumnViewController->setColumnHiddenDirectly(name, occurrence, hidden);
+    d_func()->mColumnViewController->setColumnHiddenDirectly(name, occurrence, hidden);
 }
 
 /**
@@ -1075,7 +1136,7 @@ void DADataOperateOfDataFrameWidget::setColumnHiddenDirectly(const QString& name
  */
 int DADataOperateOfDataFrameWidget::effectiveFrozenColumnCount() const
 {
-    return mColumnViewController->effectiveFrozenColumnCount();
+    return d_func()->mColumnViewController->effectiveFrozenColumnCount();
 }
 
 /**
@@ -1083,7 +1144,7 @@ int DADataOperateOfDataFrameWidget::effectiveFrozenColumnCount() const
  */
 void DADataOperateOfDataFrameWidget::hideColumnAt(int logicalColumn)
 {
-    mColumnViewController->hideColumnAt(logicalColumn);
+    d_func()->mColumnViewController->hideColumnAt(logicalColumn);
 }
 
 /**
@@ -1091,7 +1152,7 @@ void DADataOperateOfDataFrameWidget::hideColumnAt(int logicalColumn)
  */
 void DADataOperateOfDataFrameWidget::showAllColumns()
 {
-    mColumnViewController->showAllColumns();
+    d_func()->mColumnViewController->showAllColumns();
 }
 
 /**
@@ -1099,7 +1160,7 @@ void DADataOperateOfDataFrameWidget::showAllColumns()
  */
 void DADataOperateOfDataFrameWidget::setColumnFrozen(int logicalColumn, bool frozen)
 {
-    mColumnViewController->setColumnFrozen(logicalColumn, frozen);
+    d_func()->mColumnViewController->setColumnFrozen(logicalColumn, frozen);
 }
 
 /**
@@ -1107,7 +1168,7 @@ void DADataOperateOfDataFrameWidget::setColumnFrozen(int logicalColumn, bool fro
  */
 void DADataOperateOfDataFrameWidget::freezeFirstColumn()
 {
-    mColumnViewController->freezeFirstColumn();
+    d_func()->mColumnViewController->freezeFirstColumn();
 }
 
 /**
@@ -1115,7 +1176,7 @@ void DADataOperateOfDataFrameWidget::freezeFirstColumn()
  */
 void DADataOperateOfDataFrameWidget::unfreezeAllColumns()
 {
-    mColumnViewController->unfreezeAllColumns();
+    d_func()->mColumnViewController->unfreezeAllColumns();
 }
 
 /**
@@ -1123,7 +1184,7 @@ void DADataOperateOfDataFrameWidget::unfreezeAllColumns()
  */
 void DADataOperateOfDataFrameWidget::promptFreezeColumns()
 {
-    mColumnViewController->promptFreezeColumns();
+    d_func()->mColumnViewController->promptFreezeColumns();
 }
 
 /**
@@ -1131,7 +1192,7 @@ void DADataOperateOfDataFrameWidget::promptFreezeColumns()
  */
 void DADataOperateOfDataFrameWidget::applyColumnOrderFromView(const QVector< int >& newOrderLogical)
 {
-    mColumnViewController->applyColumnOrderFromView(newOrderLogical);
+    d_func()->mColumnViewController->applyColumnOrderFromView(newOrderLogical);
 }
 
 /**
@@ -1139,7 +1200,7 @@ void DADataOperateOfDataFrameWidget::applyColumnOrderFromView(const QVector< int
  */
 void DADataOperateOfDataFrameWidget::applyFrozenOrderFromView(const QVector< int >& newFrozenOrderLogical)
 {
-    mColumnViewController->applyFrozenOrderFromView(newFrozenOrderLogical);
+    d_func()->mColumnViewController->applyFrozenOrderFromView(newFrozenOrderLogical);
 }
 
 /**
@@ -1148,7 +1209,7 @@ void DADataOperateOfDataFrameWidget::applyFrozenOrderFromView(const QVector< int
 void DADataOperateOfDataFrameWidget::onHeaderColumnViewActionRequested(int logicalColumn,
                                                                         DA::DADataHeaderView::ColumnViewAction action)
 {
-    mColumnViewController->onHeaderActionRequested(logicalColumn, static_cast< int >(action));
+    d_func()->mColumnViewController->onHeaderActionRequested(logicalColumn, static_cast< int >(action));
 }
 
 /**
@@ -1156,7 +1217,7 @@ void DADataOperateOfDataFrameWidget::onHeaderColumnViewActionRequested(int logic
  */
 void DADataOperateOfDataFrameWidget::showColumnViewDialog()
 {
-    mColumnViewController->showDialog();
+    d_func()->mColumnViewController->showDialog();
 }
 
 /**
@@ -1166,7 +1227,7 @@ void DADataOperateOfDataFrameWidget::showColumnViewDialog()
  */
 bool DADataOperateOfDataFrameWidget::resolveGotoRequest(const DADialogGotoCell::Request& req)
 {
-    return mNavigation->resolveGotoRequest(req);
+    return d_func()->mNavigation->resolveGotoRequest(req);
 }
 
 /**
@@ -1177,7 +1238,7 @@ bool DADataOperateOfDataFrameWidget::resolveGotoRequest(const DADialogGotoCell::
  */
 QModelIndex DADataOperateOfDataFrameWidget::currentOrSelectionTopLeftIndex() const
 {
-    return mSelection->currentOrSelectionTopLeftIndex();
+    return d_func()->mSelection->currentOrSelectionTopLeftIndex();
 }
 
 /**
@@ -1185,7 +1246,7 @@ QModelIndex DADataOperateOfDataFrameWidget::currentOrSelectionTopLeftIndex() con
  */
 void DADataOperateOfDataFrameWidget::showGotoDialog()
 {
-    mNavigation->showGotoDialog();
+    d_func()->mNavigation->showGotoDialog();
 }
 
 /**
@@ -1193,7 +1254,7 @@ void DADataOperateOfDataFrameWidget::showGotoDialog()
  */
 void DADataOperateOfDataFrameWidget::onHeaderSectionResized(DADataTableView* source, int logicalIndex, int newSize)
 {
-    mViewStateController->onHeaderSectionResized(source, logicalIndex, newSize);
+    d_func()->mViewStateController->onHeaderSectionResized(source, logicalIndex, newSize);
 }
 
 // ============================================================
@@ -1205,7 +1266,7 @@ void DADataOperateOfDataFrameWidget::onHeaderSectionResized(DADataTableView* sou
  */
 void DADataOperateOfDataFrameWidget::mergeStyleToSelection(const DATableCellStyle& fragment)
 {
-    mStyleController->mergeStyleToSelection(fragment);
+    d_func()->mStyleController->mergeStyleToSelection(fragment);
 }
 
 /**
@@ -1213,7 +1274,7 @@ void DADataOperateOfDataFrameWidget::mergeStyleToSelection(const DATableCellStyl
  */
 void DADataOperateOfDataFrameWidget::applyStyleToSelection(const DATableCellStyle& style)
 {
-    mStyleController->applyStyleToSelection(style);
+    d_func()->mStyleController->applyStyleToSelection(style);
 }
 
 /**
@@ -1221,7 +1282,7 @@ void DADataOperateOfDataFrameWidget::applyStyleToSelection(const DATableCellStyl
  */
 void DADataOperateOfDataFrameWidget::clearStyleSelection()
 {
-    mStyleController->clearStyleSelection();
+    d_func()->mStyleController->clearStyleSelection();
 }
 
 /**
@@ -1229,7 +1290,7 @@ void DADataOperateOfDataFrameWidget::clearStyleSelection()
  */
 void DADataOperateOfDataFrameWidget::clearStyleAll()
 {
-    mStyleController->clearStyleAll();
+    d_func()->mStyleController->clearStyleAll();
 }
 
 /**
@@ -1237,7 +1298,7 @@ void DADataOperateOfDataFrameWidget::clearStyleAll()
  */
 DATableCellStyle DADataOperateOfDataFrameWidget::getCurrentCellStyle() const
 {
-    return mStyleController->getCurrentCellStyle();
+    return d_func()->mStyleController->getCurrentCellStyle();
 }
 
 /**
@@ -1245,7 +1306,7 @@ DATableCellStyle DADataOperateOfDataFrameWidget::getCurrentCellStyle() const
  */
 void DADataOperateOfDataFrameWidget::setDisplayFormatToSelection(const DATableDisplayFormat& fmt)
 {
-    mStyleController->setDisplayFormatToSelection(fmt);
+    d_func()->mStyleController->setDisplayFormatToSelection(fmt);
 }
 
 /**
@@ -1253,7 +1314,7 @@ void DADataOperateOfDataFrameWidget::setDisplayFormatToSelection(const DATableDi
  */
 void DADataOperateOfDataFrameWidget::clearDisplayFormatFromSelection()
 {
-    mStyleController->clearDisplayFormatFromSelection();
+    d_func()->mStyleController->clearDisplayFormatFromSelection();
 }
 
 /**
@@ -1261,7 +1322,7 @@ void DADataOperateOfDataFrameWidget::clearDisplayFormatFromSelection()
  */
 DATableDisplayFormat DADataOperateOfDataFrameWidget::getCurrentColumnDisplayFormat() const
 {
-    return mStyleController->getCurrentColumnDisplayFormat();
+    return d_func()->mStyleController->getCurrentColumnDisplayFormat();
 }
 
 /**
@@ -1273,7 +1334,7 @@ DATableDisplayFormat DADataOperateOfDataFrameWidget::getCurrentColumnDisplayForm
  */
 void DADataOperateOfDataFrameWidget::setHeaderPickMode(bool on)
 {
-    mHeaderPickMode = on;
+    d_func()->mHeaderPickMode = on;
 }
 
 /**
@@ -1282,7 +1343,7 @@ void DADataOperateOfDataFrameWidget::setHeaderPickMode(bool on)
  */
 bool DADataOperateOfDataFrameWidget::isHeaderPickMode() const
 {
-    return mHeaderPickMode;
+    return d_func()->mHeaderPickMode;
 }
 
 /**
@@ -1291,7 +1352,7 @@ bool DADataOperateOfDataFrameWidget::isHeaderPickMode() const
  */
 QVector< QPair< int, Qt::SortOrder > > DADataOperateOfDataFrameWidget::sortSpec() const
 {
-    return mSortController->sortSpec();
+    return d_func()->mSortController->sortSpec();
 }
 
 /**
@@ -1303,7 +1364,7 @@ QVector< QPair< int, Qt::SortOrder > > DADataOperateOfDataFrameWidget::sortSpec(
  */
 bool DADataOperateOfDataFrameWidget::isTableEditable() const
 {
-    return mContext->isDataSourceEditable();
+    return d_func()->mContext->isDataSourceEditable();
 }
 
 /**
@@ -1313,7 +1374,7 @@ bool DADataOperateOfDataFrameWidget::isTableEditable() const
  */
 void DADataOperateOfDataFrameWidget::onHeaderClickedWithModifiers(int logicalIndex, Qt::KeyboardModifiers modifiers)
 {
-    mNavigation->onHeaderClickedWithModifiers(logicalIndex, modifiers);
+    d_func()->mNavigation->onHeaderClickedWithModifiers(logicalIndex, modifiers);
 }
 // ============================================================
 // 排序（实现迁入 DATableSortController，008 期3）
@@ -1324,7 +1385,7 @@ void DADataOperateOfDataFrameWidget::onHeaderClickedWithModifiers(int logicalInd
  */
 void DADataOperateOfDataFrameWidget::sortColumn(int logicalIndex, Qt::SortOrder order)
 {
-    mSortController->sortColumn(logicalIndex, order);
+    d_func()->mSortController->sortColumn(logicalIndex, order);
 }
 
 /**
@@ -1332,7 +1393,7 @@ void DADataOperateOfDataFrameWidget::sortColumn(int logicalIndex, Qt::SortOrder 
  */
 void DADataOperateOfDataFrameWidget::addSecondarySortColumn(int logicalIndex, Qt::SortOrder order)
 {
-    mSortController->addSecondarySortColumn(logicalIndex, order);
+    d_func()->mSortController->addSecondarySortColumn(logicalIndex, order);
 }
 
 // ============================================================
@@ -1344,7 +1405,7 @@ void DADataOperateOfDataFrameWidget::addSecondarySortColumn(int logicalIndex, Qt
  */
 void DADataOperateOfDataFrameWidget::showFindReplace(bool expandReplace, bool prefillFromCurrentCell)
 {
-    mFindController->showFindBar(expandReplace, prefillFromCurrentCell);
+    d_func()->mFindController->showFindBar(expandReplace, prefillFromCurrentCell);
 }
 
 /**
@@ -1352,7 +1413,7 @@ void DADataOperateOfDataFrameWidget::showFindReplace(bool expandReplace, bool pr
  */
 void DADataOperateOfDataFrameWidget::closeFindReplace()
 {
-    mFindController->closeFindBar();
+    d_func()->mFindController->closeFindBar();
 }
 
 /**
@@ -1360,7 +1421,7 @@ void DADataOperateOfDataFrameWidget::closeFindReplace()
  */
 int DADataOperateOfDataFrameWidget::findHitCount() const
 {
-    return mFindController->hitCount();
+    return d_func()->mFindController->hitCount();
 }
 
 /**
@@ -1368,7 +1429,7 @@ int DADataOperateOfDataFrameWidget::findHitCount() const
  */
 int DADataOperateOfDataFrameWidget::currentFindHitIndex() const
 {
-    return mFindController->currentHitIndex();
+    return d_func()->mFindController->currentHitIndex();
 }
 
 // ============================================================
@@ -1380,7 +1441,7 @@ int DADataOperateOfDataFrameWidget::currentFindHitIndex() const
  */
 void DADataOperateOfDataFrameWidget::showConditionalFormatDialog(int initialType)
 {
-    mConditionalFormatController->showDialog(initialType);
+    d_func()->mConditionalFormatController->showDialog(initialType);
 }
 
 /**
@@ -1388,7 +1449,7 @@ void DADataOperateOfDataFrameWidget::showConditionalFormatDialog(int initialType
  */
 void DADataOperateOfDataFrameWidget::clearConditionalFormatFromSelection()
 {
-    mConditionalFormatController->clearFromSelection();
+    d_func()->mConditionalFormatController->clearFromSelection();
 }
 
 /**
@@ -1396,7 +1457,7 @@ void DADataOperateOfDataFrameWidget::clearConditionalFormatFromSelection()
  */
 void DADataOperateOfDataFrameWidget::populateConditionalFormatMenu(QMenu* menu)
 {
-    mConditionalFormatController->populateMenu(menu);
+    d_func()->mConditionalFormatController->populateMenu(menu);
 }
 
 void DADataOperateOfDataFrameWidget::changeEvent(QEvent* e)
@@ -1404,7 +1465,7 @@ void DADataOperateOfDataFrameWidget::changeEvent(QEvent* e)
     QWidget::changeEvent(e);
     switch (e->type()) {
     case QEvent::LanguageChange:
-        ui->retranslateUi(this);
+        d_func()->ui->retranslateUi(this);
         break;
     default:
         break;
@@ -1420,7 +1481,7 @@ void DADataOperateOfDataFrameWidget::changeEvent(QEvent* e)
  */
 DATableComputedColumnStore* DADataOperateOfDataFrameWidget::computedColumnStore() const
 {
-    return mComputedColumnStore;
+    return d_func()->mComputedColumnStore;
 }
 
 /**
@@ -1432,7 +1493,7 @@ DATableComputedColumnStore* DADataOperateOfDataFrameWidget::computedColumnStore(
  */
 void DADataOperateOfDataFrameWidget::markComputedColumnsStaleForColumns(const QList< int >& actualCols)
 {
-    mMutation->markComputedColumnsStale(actualCols);
+    d_func()->mMutation->markComputedColumnsStale(actualCols);
 }
 
 //（以下计算列能力转发 DATableComputedColumnController，008 期3；实现已迁入控制器）
@@ -1441,7 +1502,7 @@ void DADataOperateOfDataFrameWidget::markComputedColumnsStaleForColumns(const QL
  */
 void DADataOperateOfDataFrameWidget::showComputedColumnDialog(int col)
 {
-    mComputedColumnController->showDialog(col);
+    d_func()->mComputedColumnController->showDialog(col);
 }
 
 /**
@@ -1449,7 +1510,7 @@ void DADataOperateOfDataFrameWidget::showComputedColumnDialog(int col)
  */
 bool DADataOperateOfDataFrameWidget::recomputeComputedColumn(int col)
 {
-    return mComputedColumnController->recompute(col);
+    return d_func()->mComputedColumnController->recompute(col);
 }
 
 /**
@@ -1457,7 +1518,7 @@ bool DADataOperateOfDataFrameWidget::recomputeComputedColumn(int col)
  */
 int DADataOperateOfDataFrameWidget::recomputeAllStaleComputedColumns()
 {
-    return mComputedColumnController->recomputeAllStale();
+    return d_func()->mComputedColumnController->recomputeAllStale();
 }
 
 /**
@@ -1465,7 +1526,7 @@ int DADataOperateOfDataFrameWidget::recomputeAllStaleComputedColumns()
  */
 bool DADataOperateOfDataFrameWidget::removeComputedColumnFormula(int col)
 {
-    return mComputedColumnController->removeFormula(col);
+    return d_func()->mComputedColumnController->removeFormula(col);
 }
 
 /**
@@ -1473,7 +1534,7 @@ bool DADataOperateOfDataFrameWidget::removeComputedColumnFormula(int col)
  */
 bool DADataOperateOfDataFrameWidget::confirmComputedColumnRename(const QList< QPair< QString, QString > >& renames) const
 {
-    return mComputedColumnController->confirmRename(renames);
+    return d_func()->mComputedColumnController->confirmRename(renames);
 }
 
 /**
@@ -1482,7 +1543,7 @@ bool DADataOperateOfDataFrameWidget::confirmComputedColumnRename(const QList< QP
 void DADataOperateOfDataFrameWidget::wireComputedColumnRenameMigration(
     DACommandDataFrame_renameColumns* cmd, const QList< QPair< QString, QString > >& renames) const
 {
-    mComputedColumnController->wireRenameMigration(cmd, renames);
+    d_func()->mComputedColumnController->wireRenameMigration(cmd, renames);
 }
 
 // ============================================================
@@ -1495,7 +1556,7 @@ void DADataOperateOfDataFrameWidget::wireComputedColumnRenameMigration(
  */
 void DADataOperateOfDataFrameWidget::showSplitColumnDialog(int col)
 {
-    mColumnCombineOps->showSplitColumnDialog(col);
+    d_func()->mColumnCombineOps->showSplitColumnDialog(col);
 }
 
 /**
@@ -1503,7 +1564,7 @@ void DADataOperateOfDataFrameWidget::showSplitColumnDialog(int col)
  */
 void DADataOperateOfDataFrameWidget::showMergeColumnsDialog()
 {
-    mColumnCombineOps->showMergeColumnsDialog();
+    d_func()->mColumnCombineOps->showMergeColumnsDialog();
 }
 
 //===================================================
@@ -1523,7 +1584,7 @@ bool DADataOperateOfDataFrameWidget::isInplaceUndoTooLarge(qint64 rows, qint64 c
  */
 void DADataOperateOfDataFrameWidget::registerNewDataset(const DAPyDataFrame& resultDf, const QString& name, const QString& describe)
 {
-    mResultOps->registerNewDataset(resultDf, name, describe);
+    d_func()->mResultOps->registerNewDataset(resultDf, name, describe);
 }
 
 /**
@@ -1531,7 +1592,7 @@ void DADataOperateOfDataFrameWidget::registerNewDataset(const DAPyDataFrame& res
  */
 void DADataOperateOfDataFrameWidget::requestInplaceReplace(const DAPyDataFrame& newDf, const QString& text)
 {
-    mResultOps->requestInplaceReplace(newDf, text);
+    d_func()->mResultOps->requestInplaceReplace(newDf, text);
 }
 
 /**
@@ -1539,7 +1600,7 @@ void DADataOperateOfDataFrameWidget::requestInplaceReplace(const DAPyDataFrame& 
  */
 void DADataOperateOfDataFrameWidget::showGroupByDialog()
 {
-    mReshapeOps->showGroupByDialog();
+    d_func()->mReshapeOps->showGroupByDialog();
 }
 
 /**
@@ -1548,7 +1609,7 @@ void DADataOperateOfDataFrameWidget::showGroupByDialog()
  */
 void DADataOperateOfDataFrameWidget::showReshapeDialog(bool meltMode)
 {
-    mReshapeOps->showReshapeDialog(meltMode);
+    d_func()->mReshapeOps->showReshapeDialog(meltMode);
 }
 
 /**
@@ -1557,9 +1618,9 @@ void DADataOperateOfDataFrameWidget::showReshapeDialog(bool meltMode)
 void DADataOperateOfDataFrameWidget::refreshAfterInplaceReplace()
 {
     // 行列互换后旧排序规格（列位置+方向）失去意义，清除（同 setDAData 口径）
-    mSortController->clearSpec();
-    if (mModel) {
-        mModel->refreshData();  // 全模型 reset（shape/列名/块缓存重建，滑窗回顶部）
+    d_func()->mSortController->clearSpec();
+    if (d_func()->mModel) {
+        d_func()->mModel->refreshData();  // 全模型 reset（shape/列名/块缓存重建，滑窗回顶部）
     }
 }
 
@@ -1578,7 +1639,7 @@ void DADataOperateOfDataFrameWidget::refreshAfterInplaceReplace()
  */
 QHash< int, QVector< QPair< int, int > > > DADataOperateOfDataFrameWidget::selectedColumnRowRuns() const
 {
-    return mSelection->selectedColumnRowRuns();
+    return d_func()->mSelection->selectedColumnRowRuns();
 }
 
 /**
@@ -1588,7 +1649,7 @@ QHash< int, QVector< QPair< int, int > > > DADataOperateOfDataFrameWidget::selec
  */
 int DADataOperateOfDataFrameWidget::fillSelection(FillMode mode)
 {
-    return mFillOps->fillSelection(mode);
+    return d_func()->mFillOps->fillSelection(mode);
 }
 /**
  * @brief 打开序列填充对话框（转发填充算子）
@@ -1596,7 +1657,7 @@ int DADataOperateOfDataFrameWidget::fillSelection(FillMode mode)
  */
 int DADataOperateOfDataFrameWidget::showFillSeriesDialog()
 {
-    return mFillOps->showFillSeriesDialog();
+    return d_func()->mFillOps->showFillSeriesDialog();
 }
 
 /**
@@ -1605,7 +1666,7 @@ int DADataOperateOfDataFrameWidget::showFillSeriesDialog()
  */
 DATableValidationStore* DADataOperateOfDataFrameWidget::validationStore() const
 {
-    return mValidationStore;
+    return d_func()->mValidationStore;
 }
 
 /**
@@ -1613,7 +1674,7 @@ DATableValidationStore* DADataOperateOfDataFrameWidget::validationStore() const
  */
 QString DADataOperateOfDataFrameWidget::validationRuleDisplayText(const DATableValidationRule& rule) const
 {
-    return mValidationController->validationRuleDisplayText(rule);
+    return d_func()->mValidationController->validationRuleDisplayText(rule);
 }
 
 /**
@@ -1621,7 +1682,7 @@ QString DADataOperateOfDataFrameWidget::validationRuleDisplayText(const DATableV
  */
 void DADataOperateOfDataFrameWidget::showValidationRulesDialog()
 {
-    mValidationController->showRulesDialog();
+    d_func()->mValidationController->showRulesDialog();
 }
 
 /**
@@ -1629,7 +1690,7 @@ void DADataOperateOfDataFrameWidget::showValidationRulesDialog()
  */
 QList< DADataOperateOfDataFrameWidget::ValidationRuleOutcome > DADataOperateOfDataFrameWidget::evaluateValidationRules(int* elapsedMs)
 {
-    return mValidationController->evaluateRules(elapsedMs);
+    return d_func()->mValidationController->evaluateRules(elapsedMs);
 }
 
 /**
@@ -1637,7 +1698,7 @@ QList< DADataOperateOfDataFrameWidget::ValidationRuleOutcome > DADataOperateOfDa
  */
 void DADataOperateOfDataFrameWidget::runValidationAndShowReport()
 {
-    mValidationController->runAndShowReport();
+    d_func()->mValidationController->runAndShowReport();
 }
 
 /**
@@ -1645,7 +1706,7 @@ void DADataOperateOfDataFrameWidget::runValidationAndShowReport()
  */
 void DADataOperateOfDataFrameWidget::clearValidationHighlights()
 {
-    mValidationController->clearHighlights();
+    d_func()->mValidationController->clearHighlights();
 }
 
 /**
@@ -1653,7 +1714,7 @@ void DADataOperateOfDataFrameWidget::clearValidationHighlights()
  */
 bool DADataOperateOfDataFrameWidget::confirmValidationRuleRename(const QList< QPair< QString, QString > >& renames) const
 {
-    return mValidationController->confirmRuleRename(renames);
+    return d_func()->mValidationController->confirmRuleRename(renames);
 }
 
 /**
@@ -1662,7 +1723,7 @@ bool DADataOperateOfDataFrameWidget::confirmValidationRuleRename(const QList< QP
 void DADataOperateOfDataFrameWidget::wireValidationRuleRenameMigration(
     DACommandDataFrame_renameColumns* cmd, const QList< QPair< QString, QString > >& renames) const
 {
-    mValidationController->wireRuleRenameMigration(cmd, renames);
+    d_func()->mValidationController->wireRuleRenameMigration(cmd, renames);
 }
 
 
@@ -1676,7 +1737,7 @@ void DADataOperateOfDataFrameWidget::wireValidationRuleRenameMigration(
  */
 DATableNoteStore* DADataOperateOfDataFrameWidget::noteStore() const
 {
-    return mNoteStore;
+    return d_func()->mNoteStore;
 }
 
 /**
@@ -1689,7 +1750,7 @@ DATableNoteStore* DADataOperateOfDataFrameWidget::noteStore() const
  */
 bool DADataOperateOfDataFrameWidget::currentActualCell(int* actualRow, int* actualCol) const
 {
-    return mSelection->currentActualCell(actualRow, actualCol);
+    return d_func()->mSelection->currentActualCell(actualRow, actualCol);
 }
 
 /**
@@ -1698,7 +1759,7 @@ bool DADataOperateOfDataFrameWidget::currentActualCell(int* actualRow, int* actu
  */
 void DADataOperateOfDataFrameWidget::showNoteEditorForCurrentCell()
 {
-    mNoteController->showNoteEditorForCurrentCell();
+    d_func()->mNoteController->showNoteEditorForCurrentCell();
 }
 
 /**
@@ -1707,7 +1768,7 @@ void DADataOperateOfDataFrameWidget::showNoteEditorForCurrentCell()
  */
 bool DADataOperateOfDataFrameWidget::deleteNoteAtCurrentCell()
 {
-    return mNoteController->deleteNoteAtCurrentCell();
+    return d_func()->mNoteController->deleteNoteAtCurrentCell();
 }
 
 /**
@@ -1716,7 +1777,7 @@ bool DADataOperateOfDataFrameWidget::deleteNoteAtCurrentCell()
  */
 int DADataOperateOfDataFrameWidget::clearAllNotes()
 {
-    return mNoteController->clearAllNotes();
+    return d_func()->mNoteController->clearAllNotes();
 }
 
 // ============================================================
@@ -1728,7 +1789,7 @@ int DADataOperateOfDataFrameWidget::clearAllNotes()
  */
 DA::DATableChartRequest DADataOperateOfDataFrameWidget::buildQuickPlotRequest() const
 {
-    return mQuickPlotController->buildQuickPlotRequest();
+    return d_func()->mQuickPlotController->buildQuickPlotRequest();
 }
 
 /**
@@ -1736,7 +1797,7 @@ DA::DATableChartRequest DADataOperateOfDataFrameWidget::buildQuickPlotRequest() 
  */
 bool DADataOperateOfDataFrameWidget::showQuickPlot()
 {
-    return mQuickPlotController->showQuickPlot();
+    return d_func()->mQuickPlotController->showQuickPlot();
 }
 
 /**
@@ -1744,7 +1805,7 @@ bool DADataOperateOfDataFrameWidget::showQuickPlot()
  */
 void DADataOperateOfDataFrameWidget::closeQuickPlot()
 {
-    mQuickPlotController->closeQuickPlot();
+    d_func()->mQuickPlotController->closeQuickPlot();
 }
 
 /**
@@ -1752,7 +1813,7 @@ void DADataOperateOfDataFrameWidget::closeQuickPlot()
  */
 bool DADataOperateOfDataFrameWidget::isQuickPlotVisible() const
 {
-    return mQuickPlotController->isQuickPlotVisible();
+    return d_func()->mQuickPlotController->isQuickPlotVisible();
 }
 
 /**
@@ -1760,7 +1821,7 @@ bool DADataOperateOfDataFrameWidget::isQuickPlotVisible() const
  */
 void DADataOperateOfDataFrameWidget::setQuickPlotTransferHandler(const QuickPlotTransferHandler& handler)
 {
-    mQuickPlotController->setTransferHandler(handler);
+    d_func()->mQuickPlotController->setTransferHandler(handler);
 }
 
 /**
@@ -1769,7 +1830,7 @@ void DADataOperateOfDataFrameWidget::setQuickPlotTransferHandler(const QuickPlot
 void DADataOperateOfDataFrameWidget::setQuickPlotAppendAvailabilityProvider(
     const QuickPlotAppendAvailabilityProvider& provider)
 {
-    mQuickPlotController->setAppendAvailabilityProvider(provider);
+    d_func()->mQuickPlotController->setAppendAvailabilityProvider(provider);
 }
 
 /**
@@ -1782,7 +1843,7 @@ void DADataOperateOfDataFrameWidget::setQuickPlotAppendAvailabilityProvider(
  */
 QList< int > DADataOperateOfDataFrameWidget::getSelectedDataColumnsInViewOrder(bool ensureInDataframe) const
 {
-    return mSelection->selectedDataColumnsInViewOrder(ensureInDataframe);
+    return d_func()->mSelection->selectedDataColumnsInViewOrder(ensureInDataframe);
 }
 
 /**
@@ -1795,6 +1856,6 @@ QList< int > DADataOperateOfDataFrameWidget::getSelectedDataColumnsInViewOrder(b
  */
 QList< int > DADataOperateOfDataFrameWidget::selectedColumnsForDataAction(int fallbackColumn) const
 {
-    return mSelection->selectedColumnsForDataAction(fallbackColumn);
+    return d_func()->mSelection->selectedColumnsForDataAction(fallbackColumn);
 }
 
