@@ -82,12 +82,16 @@ std::function< void() > DATableMutationCoordinator::callbackFor(const DATableMut
 /**
  * @brief 值变更后效（收口自 removeSelectCell/pasteFromClipboard/pushFillPasteCommand 的手抄回调）
  *
- * 顺序与旧实现逐行一致：模型逐格 notifyDataChanged → 受影响列统计失效 → 计算列标脏。
+ * 顺序与旧实现逐行一致：模型通知（modelRefresh 给出更高效形状时优先，否则逐格
+ * notifyDataChanged）→ 受影响列统计失效 → 计算列标脏。
  * @param m 变更描述（changedRows/changedCols 一一对应）
  */
 void DATableMutationCoordinator::commitValues(const DATableMutation& m)
 {
-    if (DADataTableModel* model = mCtx.model()) {
+    if (m.modelRefresh) {
+        // 命令侧给出整列级通知形状（如类型转换的 notifyColumnChanged 循环）
+        m.modelRefresh();
+    } else if (DADataTableModel* model = mCtx.model()) {
         const auto size = qMin(m.changedRows.size(), m.changedCols.size());
         for (int i = 0; i < size; ++i) {
             model->notifyDataChanged(m.changedRows[ i ], m.changedCols[ i ]);

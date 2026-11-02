@@ -731,22 +731,16 @@ void DADataOperateOfDataFrameWidget::insertRowAt(int row)
         return;
     }
     std::unique_ptr< DACommandDataFrame_insertNanRow > cmd(new DACommandDataFrame_insertNanRow(df, row));
+    // 编辑后效（008 期2）：插行拿不到列信息 → 全量统计失效 + 计算列全标脏，收口到 commit
     QPointer< DADataTableModel > modle = mModel;
-    // 统计失效挂点（003 WP2 步骤 5）：插行保守失效全部列统计（exec/undo 都触发）
-    DATableConditionalFormatStore* cfStore = mConditionalFormatStore;
-    // 计算列挂点（004 T1.23）：插行是拿不到列信息的整表操作 → 保守全标 Stale
-    QPointer< DADataOperateOfDataFrameWidget > self(this);
-    cmd->setCallBack([ modle, row, cfStore, self ]() {
+    DATableMutation mutation;
+    mutation.kind        = DATableMutation::Structure;
+    mutation.modelRefresh = [ modle, row ]() {
         if (modle) {
             modle->notifyRowsInserted({ row });
         }
-        if (cfStore) {
-            cfStore->invalidateAllStats();
-        }
-        if (self) {
-            self->markAllComputedColumnsStale();
-        }
-    });
+    };
+    cmd->setCallBack(mMutation->callbackFor(mutation));
     // 行列增删样式键同步：插入行时 >=row 的键 +1；撤销时按删除处理（>=row 的键 -1）
     DATableStyleManager* styleMgr = mStyleManager;
     DATableNoteStore* noteStore   = mNoteStore;
@@ -828,12 +822,16 @@ void DADataOperateOfDataFrameWidget::insertColumnAt(int col)
         cmd.reset(new DACommandDataFrame_insertColumn(mData.toDataFrame(), col, name, dlg.getDefaultValue()));
     }
     QPointer< DADataTableModel > modle = mModel;
-    cmd->setCallBack([ modle, col ]() {
+    // 编辑后效（008 期2）：插列使列位置整体后移 → 全量统计失效 + 计算列全标脏（策略表：列增删）
+    DATableMutation mutation;
+    mutation.kind        = DATableMutation::Structure;
+    mutation.modelRefresh = [ modle, col ]() {
         if (modle) {
-            // 此操作会删除一列，添加一列，整个modelreflash
+            // 此操作会删除一列，添加一列，整个modelreflash（沿用旧通知形状）
             modle->notifyColumnsRemoved({ col });
         }
-    });
+    };
+    cmd->setCallBack(mMutation->callbackFor(mutation));
     // 行列增删样式键同步：插入列时 >=col 的键 +1；撤销时按删除处理
     // 条件格式规则同为装饰类位置键（R20），随列插删同款重映射（003）
     DATableStyleManager* styleMgr = mStyleManager;
@@ -885,22 +883,16 @@ int DADataOperateOfDataFrameWidget::removeSelectRow()
         return 0;
     }
     std::unique_ptr< DACommandDataFrame_dropIRow > cmd(new DACommandDataFrame_dropIRow(mData.toDataFrame(), rows));
+    // 编辑后效（008 期2）：删行拿不到列信息 → 全量统计失效 + 计算列全标脏，收口到 commit
     QPointer< DADataTableModel > modle = mModel;
-    // 统计失效挂点（003）：删行可能改变列 min/max，保守失效全部列统计
-    DATableConditionalFormatStore* cfStore = mConditionalFormatStore;
-    // 计算列挂点（004 T1.23）：删行是整表操作 → 保守全标 Stale
-    QPointer< DADataOperateOfDataFrameWidget > self(this);
-    cmd->setCallBack([ modle, rows, cfStore, self ]() {
+    DATableMutation mutation;
+    mutation.kind        = DATableMutation::Structure;
+    mutation.modelRefresh = [ modle, rows ]() {
         if (modle) {
             modle->notifyRowsInserted(rows);
         }
-        if (cfStore) {
-            cfStore->invalidateAllStats();
-        }
-        if (self) {
-            self->markAllComputedColumnsStale();
-        }
-    });
+    };
+    cmd->setCallBack(mMutation->callbackFor(mutation));
     // 行列增删样式键同步：删除行时 ==row 的键删除，>row 的键 -1；撤销时按插入处理
     // 注意：被删除行的样式在删除时丢失，撤销(load恢复dataframe)无法恢复样式（已知限制，见 spec §7.3）
     DATableStyleManager* styleMgr = mStyleManager;
@@ -1415,19 +1407,19 @@ bool DADataOperateOfDataFrameWidget::changeSelectColumnType(const DAPyDType& dt)
         return false;
     }
     std::unique_ptr< DACommandDataFrame_astype > cmd(new DACommandDataFrame_astype(df, selColumns, dt));
+    // 编辑后效（008 期2）：类型转换改整列值 → 受影响列统计失效 + 计算列标脏，收口到 commit
     QPointer< DADataTableModel > modle = mModel;
-    // 计算列挂点（004 T1.23）：类型转换改变列值 → 依赖该列的计算列标 Stale
-    QPointer< DADataOperateOfDataFrameWidget > self(this);
-    cmd->setCallBack([ modle, selColumns, self ]() {
+    DATableMutation mutation;
+    mutation.kind        = DATableMutation::Values;
+    mutation.changedCols = selColumns;
+    mutation.modelRefresh = [ modle, selColumns ]() {
         if (modle) {
             for (int c : std::as_const(selColumns)) {
                 modle->notifyColumnChanged(c);
             }
         }
-        if (self) {
-            self->markComputedColumnsStaleForColumns(selColumns);
-        }
-    });
+    };
+    cmd->setCallBack(mMutation->callbackFor(mutation));
     if (!cmd->exec()) {
         // 说明没有设置成功
         emit selectTypeChanged({ }, DAPyDType());
@@ -1462,19 +1454,19 @@ void DADataOperateOfDataFrameWidget::castSelectToNum()
     DAPyDType dt        = df.dtypeObject(colsIndex.first());
     pybind11::dict args = mDialogCastNumArgs->getArgs();
     std::unique_ptr< DACommandDataFrame_castNum > cmd(new DACommandDataFrame_castNum(df, colsIndex, args));
+    // 编辑后效（008 期2）：数值转换改整列值 → 受影响列统计失效 + 计算列标脏，收口到 commit
     QPointer< DADataTableModel > modle = mModel;
-    // 计算列挂点（004 T1.23）：数值转换改变列值 → 依赖该列的计算列标 Stale
-    QPointer< DADataOperateOfDataFrameWidget > self(this);
-    cmd->setCallBack([ modle, colsIndex, self ]() {
+    DATableMutation mutation;
+    mutation.kind        = DATableMutation::Values;
+    mutation.changedCols = colsIndex;
+    mutation.modelRefresh = [ modle, colsIndex ]() {
         if (modle) {
             for (int c : std::as_const(colsIndex)) {
                 modle->notifyColumnChanged(c);
             }
         }
-        if (self) {
-            self->markComputedColumnsStaleForColumns(colsIndex);
-        }
-    });
+    };
+    cmd->setCallBack(mMutation->callbackFor(mutation));
     if (!cmd->exec()) {
         return;
     }
@@ -1508,19 +1500,19 @@ void DADataOperateOfDataFrameWidget::castSelectToDatetime()
     DAPyDType dt        = df.dtypeObject(colsIndex.first());
     pybind11::dict args = mDialogCastDatetimeArgs->getArgs();
     std::unique_ptr< DACommandDataFrame_castDatetime > cmd(new DACommandDataFrame_castDatetime(df, colsIndex, args));
+    // 编辑后效（008 期2）：日期转换改整列值 → 受影响列统计失效 + 计算列标脏，收口到 commit
     QPointer< DADataTableModel > modle = mModel;
-    // 计算列挂点（004 T1.23）：日期转换改变列值 → 依赖该列的计算列标 Stale
-    QPointer< DADataOperateOfDataFrameWidget > self(this);
-    cmd->setCallBack([ modle, colsIndex, self ]() {
+    DATableMutation mutation;
+    mutation.kind        = DATableMutation::Values;
+    mutation.changedCols = colsIndex;
+    mutation.modelRefresh = [ modle, colsIndex ]() {
         if (modle) {
             for (int c : std::as_const(colsIndex)) {
                 modle->notifyColumnChanged(c);
             }
         }
-        if (self) {
-            self->markComputedColumnsStaleForColumns(colsIndex);
-        }
-    });
+    };
+    cmd->setCallBack(mMutation->callbackFor(mutation));
     if (!cmd->exec()) {
         return;
     }
@@ -1547,17 +1539,11 @@ bool DADataOperateOfDataFrameWidget::changeSelectColumnToIndex()
         return false;
     }
     std::unique_ptr< DACommandDataFrame_setIndex > cmd = std::make_unique< DACommandDataFrame_setIndex >(df, colsIndex);
-    DADataTableModel* modle                            = mModel;
-    // 计算列挂点（004 T1.23）：列转索引是结构性整表操作 → 保守全标 Stale
-    QPointer< DADataOperateOfDataFrameWidget > self(this);
-    cmd->setCallBack([ modle, self ]() {
-        if (modle) {
-            modle->refreshData();
-        }
-        if (self) {
-            self->markAllComputedColumnsStale();
-        }
-    });
+    // 编辑后效（008 期2）：列转索引是结构性整表操作 → 模型 reset + 全量失效 +
+    // 计算列全标脏，收口到 commit（FullReset）
+    DATableMutation mutation;
+    mutation.kind = DATableMutation::FullReset;
+    cmd->setCallBack(mMutation->callbackFor(mutation));
     if (!cmd->exec()) {
         return false;
     }

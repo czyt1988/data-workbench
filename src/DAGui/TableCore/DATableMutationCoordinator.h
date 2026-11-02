@@ -30,8 +30,8 @@ struct DATableMutation
     Kind kind { Values };
     QList< int > changedRows;  ///< 受影响行（数据源绝对行号；与 changedCols 一一对应）
     QList< int > changedCols;  ///< 受影响列（位置索引）
-    // 结构变更的模型通知形状（命令侧给出，如 notifyColumnsRemoved(cols)）；
-    // 值变更无需提供（commit 按行列逐格通知）。空 = 不做结构通知
+    // 模型通知形状（命令侧给出更高效/准确的形状：结构通知如 notifyColumnsRemoved(cols)、
+    // 整列值通知如 notifyColumnChanged 循环）。空 = 值变更按行列逐格通知、结构变更不做结构通知
     std::function< void() > modelRefresh;
     bool closeQuickPlot { false };         ///< 关闭快速绘图浮窗（列被删/整表重排后列身份失效）
     bool notifyHostValueChange { false };   ///< DADataManager 树刷新（ChangeValue：删列后重建列子项）
