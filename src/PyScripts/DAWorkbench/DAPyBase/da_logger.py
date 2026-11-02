@@ -59,9 +59,28 @@ class LoguruWriter:
     def __init__(self, level):
         self._level = level
 
+    @staticmethod
+    def _in_loguru_worker():
+        """当前线程是否为 loguru 的入队写线程（enqueue=True 时名为 loguru-writer-N）"""
+        return threading.current_thread().name.startswith("loguru-")
+
     def write(self, buf):
         # 已经在 loguru 调用链内时直接丢弃，避免 print→log→print 递归
         if getattr(self._reentry_guard, "active", False):
+            return
+        # 写线程自反写守卫（死锁修复）：enqueue=True 的队列消费者就是 loguru-writer 线程，
+        # 若它经 _error_interceptor 回写 stderr/stdout（日志文件写失败/轮转失败时必然发生），
+        # 该输出再走 logger.log → put 回同一队列 → 管道满后 send_bytes 永久阻塞，
+        # 写线程握着 handler 锁不释放 → 所有线程的下一次日志调用全部挂死
+        # （复现：da_pyscript.log 到达 10MB 轮转点 + 多个测试进程并行写同一日志文件）。
+        # 此时改写原始 stderr：诊断信息不丢，且不回环 loguru。
+        if self._in_loguru_worker():
+            if _original_stderr is not None:
+                try:
+                    _original_stderr.write(buf)
+                    _original_stderr.flush()
+                except Exception:
+                    pass
             return
         self._reentry_guard.active = True
         try:
