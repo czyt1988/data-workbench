@@ -41,6 +41,8 @@
 #include "DAMarkdownView.h"
 // 数据联动表
 #include "Chart/DADataLinkTableWidget.h"
+// 数据统计分析窗口
+#include "Stats/DADataStatsWidget.h"
 
 //===================================================
 // using DA namespace -- 禁止在头文件using！！
@@ -83,6 +85,10 @@ void DAAppDockingArea::resetText()
     }
     mAgentDock->setWindowTitle(tr("Agent Assistant"));  // cn:Agent 助手
     mDataLinkTableDock->setWindowTitle(tr("Data Link Table"));  // cn:数据联动表
+    if (mDataStatsDock) {
+        mDataStatsDock->setWindowTitle(tr("Statistics"));  // cn:统计信息
+        mDataStatsWidget->retranslateUi();
+    }
 }
 
 /**
@@ -617,4 +623,52 @@ bool DAAppDockingArea::showMarkdownFile(const QString& filePath)
 ads::CDockWidget* DAAppDockingArea::getMarkdownDock() const
 {
     return mMarkdownDock;
+}
+
+/**
+ * @brief 显示数据统计分析浮动 dock（懒创建）并载入请求列的统计
+ *
+ * 首次调用创建 DADataStatsWidget 并包成 ADS 浮动 dock：默认悬浮类似对话框但
+ * 非模态（可继续操作表格），用户可自由拖入其它 dock 区域停靠；
+ * 关闭只隐藏不销毁（勾选的统计项在会话内保留），再次触发复用同一 dock。
+ * @param request 快速绘图请求（数据集句柄 + 有序选中列 + 角色 + 惰性标记）
+ */
+void DAAppDockingArea::showDataStatsWidget(const DA::DATableChartRequest& request)
+{
+    // 首次：创建统计控件 + 浮动 dock
+    if (nullptr == mDataStatsWidget) {
+        mDataStatsWidget = new DADataStatsWidget(mApp);
+        mDataStatsWidget->setObjectName(QString::fromUtf8(UiNames::Dock::DataStatsWidget));
+        mDataStatsWidget->resize(960, 500);
+        // 浮动位置：主窗口中上部
+        const QRect g = mApp->geometry();
+        const QPoint pos(g.center().x() - 480, g.y() + qMax(60, g.height() / 8));
+        mDataStatsDock = createFloatingDockWidget(mDataStatsWidget, QString::fromUtf8(UiNames::Dock::DataStatsWidgetDock), pos);
+        mDataStatsDock->setIcon(QIcon(":/app/bright/Icon/showInfomation.svg"));
+        mDataStatsDock->setWindowTitle(tr("Statistics"));  // cn:统计信息
+    }
+    // 载入统计并前抬（关闭过的 dock 先恢复显示）
+    mDataStatsWidget->showForRequest(request);
+    if (mDataStatsDock->isClosed()) {
+        mDataStatsDock->toggleView(true);
+    }
+    mDataStatsDock->raise();
+}
+
+/**
+ * @brief 获取数据统计分析窗口（懒创建）
+ * @return 尚未创建过时返回 nullptr
+ */
+DADataStatsWidget* DAAppDockingArea::getDataStatsWidget() const
+{
+    return mDataStatsWidget;
+}
+
+/**
+ * @brief 获取数据统计分析 dock（懒创建）
+ * @return 尚未创建过时返回 nullptr
+ */
+ads::CDockWidget* DAAppDockingArea::getDataStatsDock() const
+{
+    return mDataStatsDock;
 }

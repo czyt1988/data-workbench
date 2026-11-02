@@ -1897,7 +1897,12 @@
         <translation>To Datetime</translation>
     </message>
     <message>
-        <location line="+91"/>
+        <location line="+14"/>
+        <source>Show statistics of the selected columns in a dockable analysis window</source>
+        <translation>Show statistics of the selected columns in a dockable analysis window</translation>
+    </message>
+    <message>
+        <location line="+77"/>
         <source>Grouping</source>
         <translation>Grouping</translation>
     </message>
@@ -2422,12 +2427,7 @@
         <translation>Show Statistics</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Show statistics of this column via pandas describe</source>
-        <translation>Show statistics of this column via pandas describe</translation>
-    </message>
-    <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Quick Plot</source>
         <translation>Quick Plot</translation>
     </message>
@@ -3342,18 +3342,18 @@
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+855"/>
+        <location filename="../APP/DAAppController.cpp" line="+857"/>
         <source>Save Project</source>
         <translation>Save Project</translation>
     </message>
     <message>
         <location line="+19"/>
-        <location line="+1121"/>
+        <location line="+1124"/>
         <source>Warning</source>
         <translation>Warning</translation>
     </message>
     <message>
-        <location line="-1109"/>
+        <location line="-1112"/>
         <source>Failed to save project! Path: %1</source>
         <translation>Failed to save project! Path: %1</translation>
     </message>
@@ -3389,7 +3389,7 @@
         <translation>There is no current chart to append to</translation>
     </message>
     <message>
-        <location line="+331"/>
+        <location line="+334"/>
         <source>Image saved successfully to %1</source>
         <translation>Image saved successfully to %1</translation>
     </message>
@@ -3581,7 +3581,7 @@
         <translation>Before creating a new coordinate, you need to create a figure</translation>
     </message>
     <message>
-        <location line="-2198"/>
+        <location line="-2201"/>
         <source>Please select the data operation window</source>
         <translation>Please select the data operation window</translation>
     </message>
@@ -3621,23 +3621,23 @@
         <translation>Failed to load project file: %1</translation>
     </message>
     <message>
-        <location line="+373"/>
+        <location line="+376"/>
         <source>Image files</source>
         <translation>Image files</translation>
     </message>
     <message>
-        <location line="-438"/>
-        <location line="+439"/>
+        <location line="-441"/>
+        <location line="+442"/>
         <source>Any files</source>
         <translation>Any files</translation>
     </message>
     <message>
-        <location line="-440"/>
+        <location line="-443"/>
         <source>Markdown files</source>
         <translation>Markdown files</translation>
     </message>
     <message>
-        <location line="+537"/>
+        <location line="+540"/>
         <source>Received null project interface</source>
         <translation>Received null project interface</translation>
     </message>
@@ -3648,12 +3648,12 @@
         <translation>No cells selected to copy</translation>
     </message>
     <message>
-        <location line="-1531"/>
+        <location line="-1534"/>
         <source>No active table</source>
         <translation>No active table</translation>
     </message>
     <message>
-        <location line="+1919"/>
+        <location line="+1922"/>
         <source>Cannot rename a series, please select a dataset</source>
         <translation>Cannot rename a series, please select a dataset</translation>
     </message>
@@ -3703,7 +3703,7 @@
         <translation>Column [%1] minimum value at row %2</translation>
     </message>
     <message>
-        <location line="+37"/>
+        <location line="+45"/>
         <source>Select the columns to plot first</source>
         <translation>Select the columns to plot first</translation>
     </message>
@@ -3753,9 +3753,10 @@
         <translation>New workflow name:</translation>
     </message>
     <message>
-        <location line="-1905"/>
+        <location line="-1913"/>
         <location line="+32"/>
-        <location line="+2050"/>
+        <location line="+1083"/>
+        <location line="+975"/>
         <source>Please select a valid column</source>
         <translation>Please select a valid column</translation>
     </message>
@@ -3780,12 +3781,12 @@
         <translation>The selected data source is empty</translation>
     </message>
     <message>
-        <location line="-3062"/>
+        <location line="-3070"/>
         <source>Before running the workflow, you need to save the project</source>
         <translation>Before running the workflow, you need to save the project</translation>
     </message>
     <message>
-        <location line="+2327"/>
+        <location line="+2335"/>
         <source>Please select a column first</source>
         <translation>Please select a column first</translation>
     </message>
@@ -3832,7 +3833,7 @@
 <context>
     <name>DA::DAAppDockingArea</name>
     <message>
-        <location filename="../APP/DAAppDockingArea.cpp" line="+73"/>
+        <location filename="../APP/DAAppDockingArea.cpp" line="+75"/>
         <source>Workflow Node</source>
         <translation>Workflow Node</translation>
     </message>
@@ -3877,7 +3878,13 @@
         <translation>Agent Assistant</translation>
     </message>
     <message>
-        <location line="+515"/>
+        <location line="+3"/>
+        <location line="+559"/>
+        <source>Statistics</source>
+        <translation>Statistics</translation>
+    </message>
+    <message>
+        <location line="-43"/>
         <source>Markdown Viewer</source>
         <translation>Markdown Viewer</translation>
     </message>
@@ -3887,7 +3894,7 @@
         <translation>Failed to open markdown file: %1</translation>
     </message>
     <message>
-        <location line="-521"/>
+        <location line="-525"/>
         <source>Undo History</source>
         <translation>Undo History</translation>
     </message>
@@ -9516,7 +9523,7 @@
 <context>
     <name>DA::DADataOperateOfDataFrameWidget</name>
     <message>
-        <location filename="../DAGui/DADataOperateOfDataFrameWidget.cpp" line="+775"/>
+        <location filename="../DAGui/DADataOperateOfDataFrameWidget.cpp" line="+774"/>
         <source>Warning</source>
         <translation>Warning</translation>
     </message>
@@ -9536,21 +9543,21 @@
         <location line="+40"/>
         <location line="+46"/>
         <location line="+47"/>
-        <location line="+2275"/>
+        <location line="+2228"/>
         <location line="+24"/>
         <source>Please select a valid column</source>
         <translation>Please select a valid column</translation>
     </message>
     <message>
-        <location line="-2767"/>
-        <location line="+2349"/>
+        <location line="-2720"/>
+        <location line="+2302"/>
         <location line="+63"/>
         <location line="+47"/>
         <source>Please select a valid cell</source>
         <translation>Please select a valid cell</translation>
     </message>
     <message>
-        <location line="-2395"/>
+        <location line="-2348"/>
         <source>Clipboard is empty</source>
         <translation>Clipboard is empty</translation>
     </message>
@@ -9595,13 +9602,7 @@
         <translation>Column name &quot;%1&quot; already exists, please use another name</translation>
     </message>
     <message>
-        <location line="+247"/>
-        <location line="+4"/>
-        <source>Unable to get statistics for this column</source>
-        <translation>Unable to get statistics for this column</translation>
-    </message>
-    <message>
-        <location line="+2408"/>
+        <location line="+2612"/>
         <source>This data source is read-only and cannot be sorted.</source>
         <translation>This data source is read-only and cannot be sorted.</translation>
     </message>
@@ -9677,12 +9678,12 @@
         <translation>The formula must not reference the target column itself</translation>
     </message>
     <message>
-        <location line="-4278"/>
+        <location line="-4231"/>
         <source>Computed column(s) %1 became invalid because their dependency column(s) were removed</source>
         <translation>Computed column(s) %1 became invalid because their dependency column(s) were removed</translation>
     </message>
     <message>
-        <location line="+4699"/>
+        <location line="+4652"/>
         <source>Computed column(s) %1 became invalid because their dependency column(s) were merged</source>
         <translation>Computed column(s) %1 became invalid because their dependency column(s) were merged</translation>
     </message>
@@ -10220,6 +10221,263 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <location line="+1"/>
         <source>Whether to close the data table widget</source>
         <translation>Whether to close the data table widget</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADataStatsWidget</name>
+    <message>
+        <location filename="../DAGui/Stats/DADataStatsWidget.cpp" line="+145"/>
+        <location line="+514"/>
+        <source>Statistics</source>
+        <translation>Statistics</translation>
+    </message>
+    <message>
+        <location line="-508"/>
+        <location line="+509"/>
+        <source>Analysis</source>
+        <translation>Analysis</translation>
+    </message>
+    <message>
+        <location line="-503"/>
+        <location line="+504"/>
+        <source>Refresh</source>
+        <translation>Refresh</translation>
+    </message>
+    <message>
+        <location line="-502"/>
+        <location line="+503"/>
+        <source>Recompute with the current data</source>
+        <translation>Recompute with the current data</translation>
+    </message>
+    <message>
+        <location line="-491"/>
+        <location line="+398"/>
+        <location line="+79"/>
+        <location line="+17"/>
+        <location line="+5"/>
+        <source>Statistic</source>
+        <translation>Statistic</translation>
+    </message>
+    <message>
+        <location line="-442"/>
+        <source>Normality Test</source>
+        <translation>Normality Test</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Mean 95% CI</source>
+        <translation>Mean 95% CI</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Outlier Analysis</source>
+        <translation>Outlier Analysis</translation>
+    </message>
+    <message>
+        <location line="+84"/>
+        <source>Count</source>
+        <translation>Count</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Mean</source>
+        <translation>Mean</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Std Dev</source>
+        <translation>Std Dev</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Min</source>
+        <translation>Min</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Q1 (25%)</source>
+        <translation>Q1 (25%)</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Median (50%)</source>
+        <translation>Median (50%)</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Q3 (75%)</source>
+        <translation>Q3 (75%)</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Max</source>
+        <translation>Max</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Missing</source>
+        <translation>Missing</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Unique</source>
+        <translation>Unique</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Sum</source>
+        <translation>Sum</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Variance</source>
+        <translation>Variance</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Std Error</source>
+        <translation>Std Error</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>MAD</source>
+        <translation>MAD</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Range</source>
+        <translation>Range</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>IQR</source>
+        <translation>IQR</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Mode</source>
+        <translation>Mode</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>CV</source>
+        <translation>CV</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>5th Percentile</source>
+        <translation>5th Percentile</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>95th Percentile</source>
+        <translation>95th Percentile</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Skewness</source>
+        <translation>Skewness</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Kurtosis</source>
+        <translation>Kurtosis</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Outlier Count</source>
+        <translation>Outlier Count</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Lower Fence</source>
+        <translation>Lower Fence</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Upper Fence</source>
+        <translation>Upper Fence</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Normality Statistic</source>
+        <translation>Normality Statistic</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Normality p-value</source>
+        <translation>Normality p-value</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Normal Distribution</source>
+        <translation>Normal Distribution</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Normality Test Method</source>
+        <translation>Normality Test Method</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Mean CI Lower</source>
+        <translation>Mean CI Lower</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Mean CI Upper</source>
+        <translation>Mean CI Upper</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>yes</source>
+        <translation>yes</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>no</source>
+        <translation>no</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Shapiro-Wilk</source>
+        <translation>Shapiro-Wilk</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>D&apos;Agostino-Pearson K²</source>
+        <translation>D&apos;Agostino-Pearson K²</translation>
+    </message>
+    <message>
+        <location line="+30"/>
+        <source>No numeric column in the current selection</source>
+        <translation>No numeric column in the current selection</translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>The data has changed. Click Refresh to recompute.</source>
+        <translation>The data has changed. Click Refresh to recompute.</translation>
+    </message>
+    <message>
+        <location line="+100"/>
+        <location line="+45"/>
+        <source>Unable to get statistics for the selected columns</source>
+        <translation>Unable to get statistics for the selected columns</translation>
+    </message>
+    <message>
+        <location line="+59"/>
+        <source>Boxplot</source>
+        <translation>Boxplot</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Sampling stopped early due to the data size limit (%1 of %2 rows sampled)</source>
+        <translation>Sampling stopped early due to the data size limit (%1 of %2 rows sampled)</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Statistics are based on a sampled subset (%1 of %2 rows)</source>
+        <translation>Statistics are based on a sampled subset (%1 of %2 rows)</translation>
     </message>
 </context>
 <context>
@@ -11098,29 +11356,6 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <location line="+1"/>
         <source>Orange-red text</source>
         <translation>Orange-red text</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DADialogDataframeColumnDescribe</name>
-    <message>
-        <location filename="../DAGui/Dialog/DADialogDataframeColumnDescribe.cpp" line="+29"/>
-        <source>Column: %1</source>
-        <translation>Column: %1</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>Type: %1</source>
-        <translation>Type: %1</translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>Statistic</source>
-        <translation>Statistic</translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>Value</source>
-        <translation>Value</translation>
     </message>
 </context>
 <context>
@@ -14833,7 +15068,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-4189"/>
+        <location filename="../APP/DAAppController.cpp" line="-4200"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>
@@ -16180,12 +16415,12 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     <message>
         <location line="+2"/>
         <location line="+152"/>
-        <location line="+182"/>
+        <location line="+185"/>
         <source>count</source>
         <translation>count</translation>
     </message>
     <message>
-        <location line="-332"/>
+        <location line="-335"/>
         <source>std</source>
         <translation>std</translation>
     </message>
@@ -16213,12 +16448,12 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <location line="+6"/>
         <location line="+63"/>
         <location line="+33"/>
-        <location line="+89"/>
+        <location line="+92"/>
         <source>The selected columns cannot be plotted</source>
         <translation>The selected columns cannot be plotted</translation>
     </message>
     <message>
-        <location line="-177"/>
+        <location line="-180"/>
         <location line="+63"/>
         <source>No valid numeric data in the selected column</source>
         <translation>No valid numeric data in the selected column</translation>
@@ -16231,17 +16466,17 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     </message>
     <message>
         <location line="-7"/>
-        <location line="+140"/>
+        <location line="+143"/>
         <source>No valid numeric data in the selected columns</source>
         <translation>No valid numeric data in the selected columns</translation>
     </message>
     <message>
-        <location line="-91"/>
+        <location line="-94"/>
         <source>Failed to build the histogram</source>
         <translation>Failed to build the histogram</translation>
     </message>
     <message>
-        <location line="+90"/>
+        <location line="+93"/>
         <source>box plot</source>
         <translation>box plot</translation>
     </message>
@@ -16758,39 +16993,6 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <location line="+11"/>
         <source>Cancel</source>
         <translation>Cancel</translation>
-    </message>
-</context>
-<context>
-    <name>DADialogDataframeColumnDescribe</name>
-    <message>
-        <location filename="../DAGui/Dialog/DADialogDataframeColumnDescribe.ui" line="+14"/>
-        <source>Column Statistics</source>
-        <translation>Column Statistics</translation>
-    </message>
-    <message>
-        <location line="+11"/>
-        <source>Column:</source>
-        <translation>Column:</translation>
-    </message>
-    <message>
-        <location line="+20"/>
-        <source>Type:</source>
-        <translation>Type:</translation>
-    </message>
-    <message>
-        <location line="+22"/>
-        <source>Statistic</source>
-        <translation>Statistic</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>Value</source>
-        <translation>Value</translation>
-    </message>
-    <message>
-        <location line="+23"/>
-        <source>Close</source>
-        <translation>Close</translation>
     </message>
 </context>
 <context>

@@ -38,6 +38,10 @@ class DAAgentDockWidget;
 class DADataLinkTableWidget;
 // Markdown 查看窗口
 class DAMarkdownView;
+// 数据统计分析窗口（浮动 dock 内容控件）
+class DADataStatsWidget;
+// 快速绘图请求（数据集句柄 + 有序选中列 + 角色 + 惰性标记）
+class DATableChartRequest;
 
 /**
  * @brief 负责docking窗口区域的管理，APP分两大区域-RibbonArea和DockArea
@@ -132,6 +136,14 @@ public:
     bool showMarkdownFile(const QString& filePath) override;
     // Markdown 查看 dock（懒创建，未创建时为 nullptr），供视图开关 raise 使用
     ads::CDockWidget* getMarkdownDock() const;
+
+    // 显示数据统计分析浮动 dock（懒创建）并载入请求列的统计
+    //（dock 悬浮类似对话框但非模态：可继续操作表格，也可拖入其它 dock 区域）
+    void showDataStatsWidget(const DA::DATableChartRequest& request);
+    // 数据统计分析窗口（懒创建，未创建时为 nullptr）
+    DADataStatsWidget* getDataStatsWidget() const;
+    // 数据统计分析 dock（懒创建，未创建时为 nullptr）
+    ads::CDockWidget* getDataStatsDock() const;
     // 切换左侧边栏（工作流节点、图表管理、数据管理）的显示/隐藏
     void toggleLeftSidebar(bool show);
     // 切换右侧边栏（设置、日志）的显示/隐藏
@@ -200,6 +212,10 @@ private:
     // Markdown 查看窗口（按需创建）
     DAMarkdownView* mMarkdownView { nullptr };  ///< Markdown 查看窗口
     ads::CDockWidget* mMarkdownDock { nullptr };  ///< m_markdownView 对应的 dock
+
+    // 数据统计分析窗口（按需创建浮动 dock）
+    DADataStatsWidget* mDataStatsWidget { nullptr };  ///< 数据统计分析窗口
+    ads::CDockWidget* mDataStatsDock { nullptr };     ///< mDataStatsWidget 对应的浮动 dock
 };
 }  // namespace DA
 #endif  // DAAPPDOCKINGAREA_H

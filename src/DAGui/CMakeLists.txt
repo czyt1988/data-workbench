@@ -1,4 +1,4 @@
-﻿
+
 # Cmake的命令不区分打下写，例如message，set等命令；但Cmake的变量区分大小写
 # 为统一风格，本项目的Cmake命令全部采用小写，变量全部采用大写加下划线组合。
 # DAGui 库
@@ -229,7 +229,6 @@ list(APPEND DA_LIB_HEADER_FILES_Dialog
     ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnCastToNumeric.h
     ${DA_LIB_SUBDIR_Dialog}/DADialogInsertNewColumn.h
     ${DA_LIB_SUBDIR_Dialog}/DADialogPythonArgs.h
-    ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnDescribe.h
     ${DA_LIB_SUBDIR_Dialog}/DADialogAgentSessionManager.h
     ${DA_LIB_SUBDIR_Dialog}/DADialogTableDisplayFormat.h
     ${DA_LIB_SUBDIR_Dialog}/DADialogFindReplace.h
@@ -254,7 +253,6 @@ list(APPEND DA_LIB_SOURCE_FILES_Dialog
     ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnCastToNumeric.cpp
     ${DA_LIB_SUBDIR_Dialog}/DADialogInsertNewColumn.cpp
     ${DA_LIB_SUBDIR_Dialog}/DADialogPythonArgs.cpp
-    ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnDescribe.cpp
     ${DA_LIB_SUBDIR_Dialog}/DADialogAgentSessionManager.cpp
     ${DA_LIB_SUBDIR_Dialog}/DADialogTableDisplayFormat.cpp
     ${DA_LIB_SUBDIR_Dialog}/DADialogFindReplace.cpp
@@ -278,7 +276,6 @@ list(APPEND DA_LIB_QT_UI_FILES_Dialog
     ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnCastToDatetime.ui
     ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnCastToNumeric.ui
     ${DA_LIB_SUBDIR_Dialog}/DADialogInsertNewColumn.ui
-    ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnDescribe.ui
     ${DA_LIB_SUBDIR_Dialog}/DADialogFindReplace.ui
 )
 #MimeData

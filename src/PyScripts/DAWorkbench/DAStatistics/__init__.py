@@ -13,6 +13,7 @@ Submodules:
     categorical    — bar-plot aggregation and per-category CI
     boxplot_stats  — five-number summary and outlier detection
     matrix         — pivot-table matrix computation for heatmaps
+    describe       — descriptive statistics for one or more columns
 """
 
 from DAWorkbench.DAStatistics.distribution import compute_histogram, compute_histogram_by_hue, compute_ecdf
@@ -28,3 +29,7 @@ from DAWorkbench.DAStatistics.boxplot_stats import (
     compute_boxplot_stats_from_lists,
 )
 from DAWorkbench.DAStatistics.matrix import compute_pivot_matrix
+from DAWorkbench.DAStatistics.describe import (
+    compute_describe,
+    compute_describe_from_lists,
+)

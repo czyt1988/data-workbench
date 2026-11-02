@@ -356,7 +356,9 @@ bool buildBoxplot(const DATableChartRequest& request,
             fillSampleInfo(info, sample.info);
             columns[ QStringLiteral("__hue") ] = toVariantList(sample.labels);
             columns[ QStringLiteral("__v0") ]  = toVariantList(sample.values);
-            args[ QStringLiteral("columns") ]  = QStringList { QStringLiteral("__v0") };
+            // 注意：传给 Python 的列表必须是 QVariantList——QStringList 值的 QVariant
+            // 在 QtCaster 里没有对应分支，会退化成 toString() 的空串（列名丢失）
+            args[ QStringLiteral("columns") ]  = toVariantList(QStringList { QStringLiteral("__v0") });
             args[ QStringLiteral("hue") ]      = QStringLiteral("__hue");
         } else {
             QStringList keys;
@@ -379,7 +381,8 @@ bool buildBoxplot(const DATableChartRequest& request,
                 columns[ key ] = toVariantList(values);
             }
             fillSampleInfo(info, merged);
-            args[ QStringLiteral("columns") ] = keys;
+            // 同上：列键必须以 QVariantList 传给 Python（QStringList 会退化为空串）
+            args[ QStringLiteral("columns") ] = toVariantList(keys);
         }
         args[ QStringLiteral("labels") ] = toVariantList(labels);
         result = DAPyScripts::getStatistics().computeBoxplotStatsValueLists(columns, args);

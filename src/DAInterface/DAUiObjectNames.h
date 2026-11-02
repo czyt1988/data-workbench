@@ -312,6 +312,7 @@ constexpr char UndoHistoryWidget[]      = "da_undoHistoryWidget";  ///< 撤销�
 constexpr char AgentDockWidget[]        = "da_agentDockWidget";
 constexpr char MarkdownView[]           = "da_markdownView";
 constexpr char DataLinkTableWidget[]    = "da_dataLinkTableWidget";
+constexpr char DataStatsWidget[]        = "da_dataStatsWidget";  ///< 数据统计分析窗口（懒创建浮动 dock 的内容 widget）
 // ---- dock 窗口 ----
 constexpr char WorkFlowOperateWidgetDock[]  = "da_workFlowOperateWidgetDock";
 constexpr char ChartOperateWidgetDock[]     = "da_chartOperateWidgetDock";
@@ -325,6 +326,7 @@ constexpr char MessageLogViewWidgetDock[]   = "da_messageLogViewWidgetDock";
 constexpr char UndoHistoryWidgetDock[]      = "da_undoHistoryWidgetDock";
 constexpr char MarkdownViewDock[]           = "da_markdownViewDock";
 constexpr char DataLinkTableWidgetDock[]    = "da_dataLinkTableWidgetDock";
+constexpr char DataStatsWidgetDock[]       = "da_dataStatsWidgetDock";  ///< 数据统计分析浮动 dock（懒创建）
 }  // namespace Dock
 
 /**

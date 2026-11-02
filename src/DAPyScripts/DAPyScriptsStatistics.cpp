@@ -492,6 +492,56 @@ pybind11::dict DAPyScriptsStatistics::computeBoxplotStatsValueLists(const QVaria
     return pybind11::dict();
 }
 
+/** @brief 计算列描述统计（含箱线图五数概括） @param df 数据表 @param args 计算参数 @param err 错误信息输出 @return 描述统计结果字典 */
+pybind11::dict DAPyScriptsStatistics::computeDescribe(const DAPyDataFrame& df,
+                                                      const QVariantMap& args,
+                                                      QString* err)
+{
+    try {
+        pybind11::object fn = attr("compute_describe");
+        if (fn.is_none()) {
+            qDebug() << "DAStatistics have no attr compute_describe";
+            return pybind11::dict();
+        }
+        pybind11::object v = fn(df.object(), pybind11::cast(args));
+        if (v.is_none()) {
+            return pybind11::dict();
+        }
+        return v.cast< pybind11::dict >();
+    } catch (const std::exception& e) {
+        if (err) {
+            *err = e.what();
+        }
+        qDebug() << e.what();
+    }
+    return pybind11::dict();
+}
+
+/** @brief 用采样后的列表计算列描述统计 @param columns 内部列名到数值列表的映射 @param args 计算参数 @param err 错误信息输出 @return 描述统计结果字典 */
+pybind11::dict DAPyScriptsStatistics::computeDescribeFromLists(const QVariantMap& columns,
+                                                                const QVariantMap& args,
+                                                                QString* err)
+{
+    try {
+        pybind11::object fn = attr("compute_describe_from_lists");
+        if (fn.is_none()) {
+            qDebug() << "DAStatistics have no attr compute_describe_from_lists";
+            return pybind11::dict();
+        }
+        pybind11::object v = fn(pybind11::cast(columns), pybind11::cast(args));
+        if (v.is_none()) {
+            return pybind11::dict();
+        }
+        return v.cast< pybind11::dict >();
+    } catch (const std::exception& e) {
+        if (err) {
+            *err = e.what();
+        }
+        qDebug() << e.what();
+    }
+    return pybind11::dict();
+}
+
 //===================================================
 // matrix.py
 //===================================================

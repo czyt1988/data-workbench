@@ -35,7 +35,6 @@ class DADataTableView;
 class DATablePaneContainer;
 class DADialogDataframeColumnCastToNumeric;
 class DADialogDataframeColumnCastToDatetime;
-class DADialogDataframeColumnDescribe;
 class DATableStyleManager;
 class DATableStyleItemDelegate;
 class DATableMetadataRegistry;
@@ -365,8 +364,6 @@ public Q_SLOTS:
     void castSelectToDatetime();
     // 把选择的列转换为索引
     bool changeSelectColumnToIndex();
-    // 显示列统计信息（表头右键），通过 pandas describe 获取
-    void showColumnDescribe(int col);
     // ===== 列视图真源操作（006c）：构造命令入栈后由回调重投影，均不动 mSortSpec =====
     // 列头菜单「隐藏此列」（logicalColumn 为逻辑列号）
     void hideColumnAt(int logicalColumn);
@@ -568,7 +565,6 @@ private:
 
     DADialogDataframeColumnCastToNumeric* mDialogCastNumArgs { nullptr };
     DADialogDataframeColumnCastToDatetime* mDialogCastDatetimeArgs { nullptr };
-    DADialogDataframeColumnDescribe* mDialogColumnDescribe { nullptr };
     DADialogFindReplace* mFindReplaceDialog { nullptr };  ///< 非模态浮动查找/替换条（懒建，页级持有）
     class DADialogTableColumnView* mDialogColumnView { nullptr };  ///< 列视图对话框（006d，懒建复用）
     class DADialogGotoCell* mGotoDialog { nullptr };               ///< 定位对话框（007，懒建复用）

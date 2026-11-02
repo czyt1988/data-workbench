@@ -7,6 +7,7 @@
 #include <QTranslator>
 #include <QJsonObject>
 #include <QVariantMap>
+#include <cmath>
 #include <cstdio>
 #include <cstdlib>
 #ifdef Q_OS_WIN
@@ -87,6 +88,8 @@ private Q_SLOTS:
     void testMinMaxAggregation();
     // 统计向导 barplot 编排链路：每个估计器（默认/mean/min/max）都能渲染出柱状图
     void testCoordinatorBarplotRendersEachEstimator();
+    // compute_describe：多列描述统计 + 箱线图五数概括（统计窗口的数据源）
+    void testComputeDescribe();
 
     void initPython();
 
@@ -262,6 +265,190 @@ _da_stats_guide_df2 = pd.DataFrame({
         }
         QCOMPARE(barCount, 1);  // 每个估计器都渲染出一根柱状图元
     }
+}
+
+/**
+ * @brief compute_describe 回归：默认集 + 扩展统计 + 文本统计 + 箱线图五数概括
+ *
+ * 数据刻意设计成可手算验证：
+ * - a = 1..8 + 一个 NaN：count=8 / missing=1，mean=4.5，std=√6，Q1=2.75，中位=4.5，Q3=6.25
+ * - b = [10, 20] + 7 个 NaN：count=2 / missing=7 的边界样本——skew/kurt/正态性均为 None
+ * - s = 字符串列：非数值列被跳过（labels 只剩 a/b）
+ */
+void DAStatsGuideTest::testComputeDescribe()
+{
+    if (!DA::DAPyScripts::isInitScripts()) {
+        QSKIP("DAPyScripts not initialized");
+    }
+    pybind11::exec(R"(
+import numpy as np
+import pandas as pd
+_da_describe_df = pd.DataFrame({
+    'a': [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, np.nan],
+    'b': [10.0, 20.0] + [np.nan] * 7,
+    's': ['x', 'y', 'x', 'y', 'x', 'y', 'x', 'y', 'x'],
+})
+)");
+    DA::DAData data(pybind11::globals()["_da_describe_df"]);
+    DA::DAPyScriptsStatistics& stats = DA::DAPyScripts::getStatistics();
+
+    QVariantMap args;
+    QVariantList columnsArg;
+    columnsArg << 0 << 1 << 2;  // 按位置传列（a, b, s）
+    args[ QStringLiteral("columns") ] = columnsArg;
+    QVariantList labelsArg;
+    labelsArg << QStringLiteral("a") << QStringLiteral("b") << QStringLiteral("s");
+    args[ QStringLiteral("labels") ] = labelsArg;
+    QVariantList statsArg;
+    statsArg << QStringLiteral("count") << QStringLiteral("missing") << QStringLiteral("unique") << QStringLiteral("sum")
+             << QStringLiteral("mean") << QStringLiteral("std") << QStringLiteral("var") << QStringLiteral("sem")
+             << QStringLiteral("min") << QStringLiteral("max") << QStringLiteral("range") << QStringLiteral("q05")
+             << QStringLiteral("q1") << QStringLiteral("median") << QStringLiteral("q3") << QStringLiteral("q95")
+             << QStringLiteral("iqr") << QStringLiteral("mode") << QStringLiteral("cv") << QStringLiteral("mad")
+             << QStringLiteral("skew") << QStringLiteral("kurt")
+             << QStringLiteral("norm_stat") << QStringLiteral("norm_p") << QStringLiteral("norm_verdict")
+             << QStringLiteral("norm_test")
+             << QStringLiteral("ci_low") << QStringLiteral("ci_high")
+             << QStringLiteral("outliers") << QStringLiteral("outlier_low") << QStringLiteral("outlier_high");
+    args[ QStringLiteral("stats") ] = statsArg;
+
+    pybind11::dict result = stats.computeDescribe(data.toDataFrame(), args);
+    QVERIFY(!result.is_none() && pybind11::len(result) > 0);
+
+    // 非数值列 s 被跳过：labels 只剩 a/b
+    QCOMPARE(dictStringList(result, "labels"), QStringList({ QStringLiteral("a"), QStringLiteral("b") }));
+
+    // 某个统计键的数值行（None → NaN）
+    const auto statRowNumbers = [](const pybind11::dict& d, const char* key) {
+        QVector< double > res;
+        pybind11::str statsKey("stats");
+        for (pybind11::handle item : pybind11::reinterpret_borrow< pybind11::iterable >(d[ statsKey ])) {
+            auto sd = pybind11::cast< pybind11::dict >(item);
+            if (pybind11::cast< QString >(sd[ "key" ]) == QLatin1String(key)) {
+                for (pybind11::handle v : pybind11::reinterpret_borrow< pybind11::iterable >(sd[ "values" ])) {
+                    res.append(v.is_none() ? qQNaN() : pybind11::cast< double >(v));
+                }
+                break;
+            }
+        }
+        return res;
+    };
+    // 某个统计键的文本行（None → 空串）
+    const auto statRowTexts = [](const pybind11::dict& d, const char* key) {
+        QStringList res;
+        pybind11::str statsKey("stats");
+        for (pybind11::handle item : pybind11::reinterpret_borrow< pybind11::iterable >(d[ statsKey ])) {
+            auto sd = pybind11::cast< pybind11::dict >(item);
+            if (pybind11::cast< QString >(sd[ "key" ]) == QLatin1String(key)) {
+                for (pybind11::handle v : pybind11::reinterpret_borrow< pybind11::iterable >(sd[ "values" ])) {
+                    res.append(v.is_none() ? QString() : pybind11::cast< QString >(v));
+                }
+                break;
+            }
+        }
+        return res;
+    };
+
+    // ---- 默认集：a=1..8（缺 1），b=[10,20] ----
+    QCOMPARE(statRowNumbers(result, "count"), QVector< double >({ 8, 2 }));
+    QCOMPARE(statRowNumbers(result, "missing"), QVector< double >({ 1, 7 }));
+    QCOMPARE(statRowNumbers(result, "unique"), QVector< double >({ 8, 2 }));
+    QCOMPARE(statRowNumbers(result, "sum"), QVector< double >({ 36, 30 }));
+    QCOMPARE(statRowNumbers(result, "mean"), QVector< double >({ 4.5, 15.0 }));
+    QVERIFY(qFuzzyCompare(statRowNumbers(result, "std").at(0), std::sqrt(6.0)));   // a: √6
+    QVERIFY(qFuzzyCompare(statRowNumbers(result, "std").at(1), std::sqrt(50.0)));  // b: √50
+    QCOMPARE(statRowNumbers(result, "var"), QVector< double >({ 6.0, 50.0 }));
+    QCOMPARE(statRowNumbers(result, "min"), QVector< double >({ 1.0, 10.0 }));
+    QCOMPARE(statRowNumbers(result, "q1"), QVector< double >({ 2.75, 12.5 }));
+    QCOMPARE(statRowNumbers(result, "median"), QVector< double >({ 4.5, 15.0 }));
+    QCOMPARE(statRowNumbers(result, "q3"), QVector< double >({ 6.25, 17.5 }));
+    QCOMPARE(statRowNumbers(result, "max"), QVector< double >({ 8.0, 20.0 }));
+
+    // ---- 扩展统计 ----
+    QCOMPARE(statRowNumbers(result, "range"), QVector< double >({ 7.0, 10.0 }));
+    QCOMPARE(statRowNumbers(result, "iqr"), QVector< double >({ 3.5, 5.0 }));
+    QCOMPARE(statRowNumbers(result, "mode"), QVector< double >({ 1.0, 10.0 }));
+    QCOMPARE(statRowNumbers(result, "mad"), QVector< double >({ 2.0, 5.0 }));
+    QCOMPARE(statRowNumbers(result, "q05").at(0), 1.35);
+    QCOMPARE(statRowNumbers(result, "q05").at(1), 10.5);
+    QVERIFY(qFuzzyCompare(statRowNumbers(result, "q95").at(0), 7.65));  // 浮点插值，模糊比较
+    QCOMPARE(statRowNumbers(result, "q95").at(1), 19.5);
+    QVERIFY(qFuzzyCompare(statRowNumbers(result, "sem").at(0), std::sqrt(6.0) / std::sqrt(8.0)));
+    QVERIFY(qFuzzyCompare(statRowNumbers(result, "cv").at(0), std::sqrt(6.0) / 4.5));
+
+    // ---- 分析组：小样本边界 + 正态性 ----
+    QVERIFY(!std::isnan(statRowNumbers(result, "skew").at(0)));   // a (n=8)：偏度有值
+    QVERIFY(std::isnan(statRowNumbers(result, "skew").at(1)));    // b (n=2)：偏度未定义
+    QVERIFY(!std::isnan(statRowNumbers(result, "kurt").at(0)));   // a (n=8)：峰度有值
+    QVERIFY(std::isnan(statRowNumbers(result, "kurt").at(1)));    // b (n=4 以下)：峰度未定义
+    // a (n=8)：3<=n<=5000 → Shapiro-Wilk；b (n=2)：无可用检验（机器键 "none"，界面翻译为 —）
+    QCOMPARE(statRowTexts(result, "norm_test"), QStringList({ QStringLiteral("shapiro"), QStringLiteral("none") }));
+    QVERIFY(!std::isnan(statRowNumbers(result, "norm_stat").at(0)));
+    QVERIFY(std::isnan(statRowNumbers(result, "norm_stat").at(1)));
+    QVERIFY(!std::isnan(statRowNumbers(result, "norm_p").at(0)));
+    QVERIFY(statRowTexts(result, "norm_verdict").at(0) == QStringLiteral("yes")
+            || statRowTexts(result, "norm_verdict").at(0) == QStringLiteral("no"));
+    // 均值 95% CI：对称包住均值（b 的 t 分布 df=1 区间极宽，只验证对称与包含关系）
+    const double meanB = 15.0;
+    const double ciLowB = statRowNumbers(result, "ci_low").at(1);
+    const double ciHighB = statRowNumbers(result, "ci_high").at(1);
+    QVERIFY(ciLowB < meanB && meanB < ciHighB);
+    QVERIFY(qFuzzyCompare(meanB - ciLowB, ciHighB - meanB));
+
+    // ---- 离群点分析（1.5×IQR）----
+    QCOMPARE(statRowNumbers(result, "outliers"), QVector< double >({ 0, 0 }));
+    QCOMPARE(statRowNumbers(result, "outlier_low"), QVector< double >({ 2.75 - 5.25, 12.5 - 7.5 }));
+    QCOMPARE(statRowNumbers(result, "outlier_high"), QVector< double >({ 6.25 + 5.25, 17.5 + 7.5 }));
+
+    // ---- 箱线图五数概括（与 compute_boxplot_stats 同构，供共用渲染管线）----
+    pybind11::str boxKey("boxplot");
+    QVERIFY(result.contains(boxKey));
+    auto box = pybind11::cast< pybind11::dict >(result[ boxKey ]);
+    pybind11::str samplesKey("samples");
+    QVERIFY(box.contains(samplesKey));
+    auto samples = pybind11::cast< pybind11::list >(box[ samplesKey ]);
+    QCOMPARE((int)pybind11::len(samples), 2);  // 每列一个箱体
+    {
+        auto s0 = pybind11::cast< pybind11::dict >(samples[ 0 ]);
+        QCOMPARE(pybind11::cast< QString >(s0[ "column" ]).toStdString(), std::string("a"));
+        QCOMPARE(pybind11::cast< double >(s0[ "position" ]), 0.0);
+        QCOMPARE(pybind11::cast< double >(s0[ "q1" ]), 2.75);
+        QCOMPARE(pybind11::cast< double >(s0[ "median" ]), 4.5);
+        QCOMPARE(pybind11::cast< double >(s0[ "q3" ]), 6.25);
+        QCOMPARE(pybind11::cast< double >(s0[ "whisker_lower" ]), 1.0);
+        QCOMPARE(pybind11::cast< double >(s0[ "whisker_upper" ]), 8.0);
+        QVERIFY(pybind11::cast< pybind11::list >(s0[ "outliers" ]).empty());
+        auto s1 = pybind11::cast< pybind11::dict >(samples[ 1 ]);
+        QCOMPARE(pybind11::cast< QString >(s1[ "column" ]).toStdString(), std::string("b"));
+        QCOMPARE(pybind11::cast< double >(s1[ "whisker_lower" ]), 10.0);
+        QCOMPARE(pybind11::cast< double >(s1[ "whisker_upper" ]), 20.0);
+    }
+
+    // ---- 采样口径：compute_describe_from_lists（统计窗口的惰性/超大表路径）----
+    QVariantMap columns;
+    QVariantList v0;
+    v0 << 1.0 << 2.0 << 3.0 << 4.0;
+    QVariantList v1;
+    v1 << 5.0 << 6.0;
+    columns[ QStringLiteral("__v0") ] = v0;
+    columns[ QStringLiteral("__v1") ] = v1;
+    // 传给 Python 的列表一律用 QVariantList（QStringList 值的 QVariant 会退化为空串）
+    QVariantMap args2;
+    QVariantList columnsArg2;
+    columnsArg2 << QStringLiteral("__v0") << QStringLiteral("__v1");
+    args2[ QStringLiteral("columns") ] = columnsArg2;
+    QVariantList labelsArg2;
+    labelsArg2 << QStringLiteral("x") << QStringLiteral("y");
+    args2[ QStringLiteral("labels") ] = labelsArg2;
+    QVariantList statsArg2;
+    statsArg2 << QStringLiteral("count") << QStringLiteral("mean") << QStringLiteral("std");
+    args2[ QStringLiteral("stats") ] = statsArg2;
+    pybind11::dict result2 = stats.computeDescribeFromLists(columns, args2);
+    QVERIFY(!result2.is_none() && pybind11::len(result2) > 0);
+    QCOMPARE(dictStringList(result2, "labels"), QStringList({ QStringLiteral("x"), QStringLiteral("y") }));
+    QCOMPARE(statRowNumbers(result2, "count"), QVector< double >({ 4, 2 }));
+    QCOMPARE(statRowNumbers(result2, "mean"), QVector< double >({ 2.5, 5.5 }));
+    QVERIFY(qFuzzyCompare(statRowNumbers(result2, "std").at(0), std::sqrt(5.0 / 3.0)));
 }
 
 /**

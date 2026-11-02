@@ -117,6 +117,15 @@ public:
                                        const QVariantMap& args,
                                        QString* err = nullptr);
 
+    // describe.py — compute_describe（列描述统计 + 箱线图五数概括，一次遍历完成）
+    pybind11::dict computeDescribe(const DAPyDataFrame& df,
+                                   const QVariantMap& args,
+                                   QString* err = nullptr);
+    // describe.py — compute_describe_from_lists（采样路径：{内部列名: 数值列表}）
+    pybind11::dict computeDescribeFromLists(const QVariantMap& columns,
+                                            const QVariantMap& args,
+                                            QString* err = nullptr);
+
     // matrix.py — compute_pivot_matrix
     // @param valuesCol  value column name; empty string for count matrix (values_col=None in Python)
     pybind11::dict computePivotMatrix(const DAPyDataFrame& df,

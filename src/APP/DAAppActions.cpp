@@ -685,7 +685,7 @@ void DAAppActions::retranslateUi()
     actionGotoMin->setText(tr("Goto Min"));                                              // cn:跳转到最小值
     actionGotoMin->setToolTip(tr("Scroll to the minimum value of this column"));         // cn:滚动到此列最小值处
     actionShowColumnDescribe->setText(tr("Show Statistics"));                           // cn:显示统计信息
-    actionShowColumnDescribe->setToolTip(tr("Show statistics of this column via pandas describe")); // cn:通过pandas describe显示此列的统计信息
+    actionShowColumnDescribe->setToolTip(tr("Show statistics of the selected columns in a dockable analysis window")); // cn:在可停靠的统计窗口中分析选中列（支持多列对比/箱线图）
     actionQuickPlot->setText(tr("Quick Plot"));                                          // cn:快速绘图
     actionQuickPlot->setToolTip(tr("Plot the selected columns in a floating chart preview"));  // cn:把选中列画成浮窗图表预览
     actionClearStyleSelected->setText(tr("Clear Selected Style"));      // cn:清除选中样式

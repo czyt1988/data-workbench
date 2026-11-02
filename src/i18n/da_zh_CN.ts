@@ -1899,7 +1899,12 @@
         <translation>转换为日期类型</translation>
     </message>
     <message>
-        <location line="+91"/>
+        <location line="+14"/>
+        <source>Show statistics of the selected columns in a dockable analysis window</source>
+        <translation>在可停靠的统计窗口中分析选中列（支持多列对比/箱线图）</translation>
+    </message>
+    <message>
+        <location line="+77"/>
         <source>Grouping</source>
         <translation>分组</translation>
     </message>
@@ -2438,12 +2443,7 @@
         <translation>显示统计信息</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Show statistics of this column via pandas describe</source>
-        <translation>通过pandas describe显示此列的统计信息</translation>
-    </message>
-    <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Quick Plot</source>
         <translation>快速绘图</translation>
     </message>
@@ -3358,18 +3358,18 @@
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+855"/>
+        <location filename="../APP/DAAppController.cpp" line="+857"/>
         <source>Save Project</source>
         <translation>保存工程</translation>
     </message>
     <message>
         <location line="+19"/>
-        <location line="+1121"/>
+        <location line="+1124"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location line="-1109"/>
+        <location line="-1112"/>
         <source>Failed to save project! Path: %1</source>
         <translation>工程保存失败！路径为:%1</translation>
     </message>
@@ -3405,7 +3405,7 @@
         <translation>当前没有可追加的图表</translation>
     </message>
     <message>
-        <location line="+331"/>
+        <location line="+334"/>
         <source>Image saved successfully to %1</source>
         <translation>图片保存成功：%1</translation>
     </message>
@@ -3597,7 +3597,7 @@
         <translation>在创建一个坐标系之前，需要先创建一个绘图窗口</translation>
     </message>
     <message>
-        <location line="-2198"/>
+        <location line="-2201"/>
         <source>Please select the data operation window</source>
         <translation>请选中数据操作窗口</translation>
     </message>
@@ -3637,23 +3637,23 @@
         <translation>加载工程文件失败:%1</translation>
     </message>
     <message>
-        <location line="+373"/>
+        <location line="+376"/>
         <source>Image files</source>
         <translation>图片文件</translation>
     </message>
     <message>
-        <location line="-438"/>
-        <location line="+439"/>
+        <location line="-441"/>
+        <location line="+442"/>
         <source>Any files</source>
         <translation>任意文件</translation>
     </message>
     <message>
-        <location line="-440"/>
+        <location line="-443"/>
         <source>Markdown files</source>
         <translation>Markdown 文件</translation>
     </message>
     <message>
-        <location line="+537"/>
+        <location line="+540"/>
         <source>Received null project interface</source>
         <translation>获取到空工程接口</translation>
     </message>
@@ -3664,12 +3664,12 @@
         <translation>没有选中可复制的单元格</translation>
     </message>
     <message>
-        <location line="-1531"/>
+        <location line="-1534"/>
         <source>No active table</source>
         <translation>无活动表格</translation>
     </message>
     <message>
-        <location line="+1919"/>
+        <location line="+1922"/>
         <source>Cannot rename a series, please select a dataset</source>
         <translation>无法重命名series，请选中数据集</translation>
     </message>
@@ -3719,7 +3719,7 @@
         <translation>列[%1] 最小值位于第 %2 行</translation>
     </message>
     <message>
-        <location line="+37"/>
+        <location line="+45"/>
         <source>Select the columns to plot first</source>
         <translation>请先选择要绘图的列</translation>
     </message>
@@ -3769,9 +3769,10 @@
         <translation>新工作流名称</translation>
     </message>
     <message>
-        <location line="-1905"/>
+        <location line="-1913"/>
         <location line="+32"/>
-        <location line="+2050"/>
+        <location line="+1083"/>
+        <location line="+975"/>
         <source>Please select a valid column</source>
         <translation>请选择正确的列</translation>
     </message>
@@ -3796,12 +3797,12 @@
         <translation>选中的数据源为空</translation>
     </message>
     <message>
-        <location line="-3062"/>
+        <location line="-3070"/>
         <source>Before running the workflow, you need to save the project</source>
         <translation>在运行工作流之前，需要先保存工程</translation>
     </message>
     <message>
-        <location line="+2327"/>
+        <location line="+2335"/>
         <source>Please select a column first</source>
         <translation>请先选择列</translation>
     </message>
@@ -3848,7 +3849,7 @@
 <context>
     <name>DA::DAAppDockingArea</name>
     <message>
-        <location filename="../APP/DAAppDockingArea.cpp" line="+73"/>
+        <location filename="../APP/DAAppDockingArea.cpp" line="+75"/>
         <source>Workflow Node</source>
         <translation>节点</translation>
     </message>
@@ -3898,7 +3899,13 @@
         <translation>数据联动表</translation>
     </message>
     <message>
-        <location line="+514"/>
+        <location line="+2"/>
+        <location line="+559"/>
+        <source>Statistics</source>
+        <translation>统计信息</translation>
+    </message>
+    <message>
+        <location line="-43"/>
         <source>Markdown Viewer</source>
         <translation>Markdown 查看器</translation>
     </message>
@@ -3908,7 +3915,7 @@
         <translation>打开 Markdown 文件失败:%1</translation>
     </message>
     <message>
-        <location line="-521"/>
+        <location line="-525"/>
         <source>Undo History</source>
         <translation>撤销历史</translation>
     </message>
@@ -9532,7 +9539,7 @@
 <context>
     <name>DA::DADataOperateOfDataFrameWidget</name>
     <message>
-        <location filename="../DAGui/DADataOperateOfDataFrameWidget.cpp" line="+775"/>
+        <location filename="../DAGui/DADataOperateOfDataFrameWidget.cpp" line="+774"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
@@ -9552,21 +9559,21 @@
         <location line="+40"/>
         <location line="+46"/>
         <location line="+47"/>
-        <location line="+2275"/>
+        <location line="+2228"/>
         <location line="+24"/>
         <source>Please select a valid column</source>
         <translation>请选择正确的列</translation>
     </message>
     <message>
-        <location line="-2767"/>
-        <location line="+2349"/>
+        <location line="-2720"/>
+        <location line="+2302"/>
         <location line="+63"/>
         <location line="+47"/>
         <source>Please select a valid cell</source>
         <translation>请选择正确的单元格</translation>
     </message>
     <message>
-        <location line="-2395"/>
+        <location line="-2348"/>
         <source>Clipboard is empty</source>
         <translation>剪贴板为空</translation>
     </message>
@@ -9611,13 +9618,7 @@
         <translation>列名&quot;%1&quot;已存在，请使用其他名称</translation>
     </message>
     <message>
-        <location line="+247"/>
-        <location line="+4"/>
-        <source>Unable to get statistics for this column</source>
-        <translation>无法获取此列的统计信息</translation>
-    </message>
-    <message>
-        <location line="+2408"/>
+        <location line="+2612"/>
         <source>This data source is read-only and cannot be sorted.</source>
         <translation>该数据源为只读，无法排序</translation>
     </message>
@@ -9693,12 +9694,12 @@
         <translation>公式不得引用目标列自身</translation>
     </message>
     <message>
-        <location line="-4278"/>
+        <location line="-4231"/>
         <source>Computed column(s) %1 became invalid because their dependency column(s) were removed</source>
         <translation>计算列 %1 因依赖列被删除已失效</translation>
     </message>
     <message>
-        <location line="+4699"/>
+        <location line="+4652"/>
         <source>Computed column(s) %1 became invalid because their dependency column(s) were merged</source>
         <translation>计算列 %1 因依赖列被合并已失效</translation>
     </message>
@@ -10236,6 +10237,263 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <location line="+1"/>
         <source>Whether to close the data table widget</source>
         <translation>是否关闭数据表窗口</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DADataStatsWidget</name>
+    <message>
+        <location filename="../DAGui/Stats/DADataStatsWidget.cpp" line="+145"/>
+        <location line="+514"/>
+        <source>Statistics</source>
+        <translation>统计量</translation>
+    </message>
+    <message>
+        <location line="-508"/>
+        <location line="+509"/>
+        <source>Analysis</source>
+        <translation>分析</translation>
+    </message>
+    <message>
+        <location line="-503"/>
+        <location line="+504"/>
+        <source>Refresh</source>
+        <translation>刷新</translation>
+    </message>
+    <message>
+        <location line="-502"/>
+        <location line="+503"/>
+        <source>Recompute with the current data</source>
+        <translation>按当前数据重新计算</translation>
+    </message>
+    <message>
+        <location line="-491"/>
+        <location line="+398"/>
+        <location line="+79"/>
+        <location line="+17"/>
+        <location line="+5"/>
+        <source>Statistic</source>
+        <translation>统计量</translation>
+    </message>
+    <message>
+        <location line="-442"/>
+        <source>Normality Test</source>
+        <translation>正态性检验</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Mean 95% CI</source>
+        <translation>均值 95% 置信区间</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Outlier Analysis</source>
+        <translation>离群点分析</translation>
+    </message>
+    <message>
+        <location line="+84"/>
+        <source>Count</source>
+        <translation>数值个数</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Mean</source>
+        <translation>均值</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Std Dev</source>
+        <translation>标准差</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Min</source>
+        <translation>最小值</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Q1 (25%)</source>
+        <translation>下四分位数 (25%)</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Median (50%)</source>
+        <translation>中位数 (50%)</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Q3 (75%)</source>
+        <translation>上四分位数 (75%)</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Max</source>
+        <translation>最大值</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Missing</source>
+        <translation>缺失值数</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Unique</source>
+        <translation>唯一值数</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Sum</source>
+        <translation>总和</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Variance</source>
+        <translation>方差</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Std Error</source>
+        <translation>标准误</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>MAD</source>
+        <translation>绝对中位差</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Range</source>
+        <translation>极差</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>IQR</source>
+        <translation>四分位距</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Mode</source>
+        <translation>众数</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>CV</source>
+        <translation>变异系数</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>5th Percentile</source>
+        <translation>5% 分位数</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>95th Percentile</source>
+        <translation>95% 分位数</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Skewness</source>
+        <translation>偏度</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Kurtosis</source>
+        <translation>峰度</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Outlier Count</source>
+        <translation>离群点数</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Lower Fence</source>
+        <translation>离群下界</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Upper Fence</source>
+        <translation>离群上界</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Normality Statistic</source>
+        <translation>正态性统计量</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Normality p-value</source>
+        <translation>正态性 p 值</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Normal Distribution</source>
+        <translation>正态分布</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Normality Test Method</source>
+        <translation>正态性检验方法</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Mean CI Lower</source>
+        <translation>均值置信下限</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Mean CI Upper</source>
+        <translation>均值置信上限</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>yes</source>
+        <translation>是</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>no</source>
+        <translation>否</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Shapiro-Wilk</source>
+        <translation>Shapiro-Wilk</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>D&apos;Agostino-Pearson K²</source>
+        <translation>D&apos;Agostino-Pearson K²</translation>
+    </message>
+    <message>
+        <location line="+30"/>
+        <source>No numeric column in the current selection</source>
+        <translation>当前选区没有数值列</translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>The data has changed. Click Refresh to recompute.</source>
+        <translation>数据已变化，点击「刷新」重新计算</translation>
+    </message>
+    <message>
+        <location line="+100"/>
+        <location line="+45"/>
+        <source>Unable to get statistics for the selected columns</source>
+        <translation>无法获取所选列的统计信息</translation>
+    </message>
+    <message>
+        <location line="+59"/>
+        <source>Boxplot</source>
+        <translation>箱线图</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Sampling stopped early due to the data size limit (%1 of %2 rows sampled)</source>
+        <translation>数据量达到采样上限提前停止（已采样 %1 / 共 %2 行）</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Statistics are based on a sampled subset (%1 of %2 rows)</source>
+        <translation>统计基于采样数据（%1 / 共 %2 行）</translation>
     </message>
 </context>
 <context>
@@ -11114,29 +11372,6 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <location line="+1"/>
         <source>Orange-red text</source>
         <translation>仅橙红文本</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DADialogDataframeColumnDescribe</name>
-    <message>
-        <location filename="../DAGui/Dialog/DADialogDataframeColumnDescribe.cpp" line="+29"/>
-        <source>Column: %1</source>
-        <translation>列：%1</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>Type: %1</source>
-        <translation>类型：%1</translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>Statistic</source>
-        <translation>统计量</translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>Value</source>
-        <translation>值</translation>
     </message>
 </context>
 <context>
@@ -14849,7 +15084,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-4189"/>
+        <location filename="../APP/DAAppController.cpp" line="-4200"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>
@@ -16196,12 +16431,12 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     <message>
         <location line="+2"/>
         <location line="+152"/>
-        <location line="+182"/>
+        <location line="+185"/>
         <source>count</source>
         <translation>计数</translation>
     </message>
     <message>
-        <location line="-332"/>
+        <location line="-335"/>
         <source>std</source>
         <translation>标准差</translation>
     </message>
@@ -16229,12 +16464,12 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <location line="+6"/>
         <location line="+63"/>
         <location line="+33"/>
-        <location line="+89"/>
+        <location line="+92"/>
         <source>The selected columns cannot be plotted</source>
         <translation>当前选区无法绘图</translation>
     </message>
     <message>
-        <location line="-177"/>
+        <location line="-180"/>
         <location line="+63"/>
         <source>No valid numeric data in the selected column</source>
         <translation>所选列没有可绘制的数值</translation>
@@ -16247,17 +16482,17 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     </message>
     <message>
         <location line="-7"/>
-        <location line="+140"/>
+        <location line="+143"/>
         <source>No valid numeric data in the selected columns</source>
         <translation>所选列没有可绘制的数值</translation>
     </message>
     <message>
-        <location line="-91"/>
+        <location line="-94"/>
         <source>Failed to build the histogram</source>
         <translation>构建直方图失败</translation>
     </message>
     <message>
-        <location line="+90"/>
+        <location line="+93"/>
         <source>box plot</source>
         <translation>箱线图</translation>
     </message>
@@ -16774,39 +17009,6 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <location line="+11"/>
         <source>Cancel</source>
         <translation>取消</translation>
-    </message>
-</context>
-<context>
-    <name>DADialogDataframeColumnDescribe</name>
-    <message>
-        <location filename="../DAGui/Dialog/DADialogDataframeColumnDescribe.ui" line="+14"/>
-        <source>Column Statistics</source>
-        <translation>列统计</translation>
-    </message>
-    <message>
-        <location line="+11"/>
-        <source>Column:</source>
-        <translation>列：</translation>
-    </message>
-    <message>
-        <location line="+20"/>
-        <source>Type:</source>
-        <translation>类型：</translation>
-    </message>
-    <message>
-        <location line="+22"/>
-        <source>Statistic</source>
-        <translation>统计量</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>Value</source>
-        <translation>值</translation>
-    </message>
-    <message>
-        <location line="+23"/>
-        <source>Close</source>
-        <translation>收盘</translation>
     </message>
 </context>
 <context>

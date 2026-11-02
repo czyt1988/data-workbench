@@ -116,6 +116,8 @@
 #include "ChartAddItem/DAChartSeriesSelectWidget.h"
 #include "ChartAddItem/DAAbstractStatsChartAddWidget.h"
 #include "Stats/DAStatsPlotCoordinator.h"
+// 数据统计分析浮动 dock（PMF connect notifyDataChanged 需完整类型）
+#include "Stats/DADataStatsWidget.h"
 // 表内快速绘图（转入绘图区的编排器）
 #include "TableChart/DAChartQuickPlot.h"
 #include "TableChart/DATableChartTypes.h"
@@ -1747,13 +1749,18 @@ void DAAppController::onDataOperatePageCreated(DADataOperatePageWidget* page)
                                 }
                                 return;
                             }
-                            // 快速绘图：右键列已在多选内则保留整个选区，否则只选该列再出图
-                            if (action == ColumnAction::QuickPlot) {
+                            // 快速绘图/统计信息：右键列已在多选内则保留整个选区
+                            // （统计窗口支持多列对比），否则只选该列再执行
+                            if (action == ColumnAction::QuickPlot || action == ColumnAction::ShowColumnDescribe) {
                                 const QList< int > selected = w->getSelectedDataframeCoumns();
                                 if (!selected.contains(col)) {
                                     selectColumnInDataFrameWidget(w, col);
                                 }
-                                w->showQuickPlot();
+                                if (action == ColumnAction::QuickPlot) {
+                                    w->showQuickPlot();
+                                } else {
+                                    onActionShowColumnDescribeTriggered();
+                                }
                                 return;
                             }
                             selectColumnInDataFrameWidget(w, col);
@@ -1767,9 +1774,6 @@ void DAAppController::onDataOperatePageCreated(DADataOperatePageWidget* page)
                             case ColumnAction::GotoMin:
                                 onActionGotoMinTriggered();
                                 break;
-                            case ColumnAction::ShowColumnDescribe:
-                                onActionShowColumnDescribeTriggered();
-                                break;
                             // 计算列三项（004 T1.23）：页面方法按列位置解析列名后执行
                             case ColumnAction::EditComputedFormula:
                                 w->showComputedColumnDialog(col);
@@ -1780,8 +1784,9 @@ void DAAppController::onDataOperatePageCreated(DADataOperatePageWidget* page)
                             case ColumnAction::RemoveComputedFormula:
                                 w->removeComputedColumnFormula(col);
                                 break;
-                            // 快速绘图已在前置分支处理（保留 case 保证枚举全覆盖）
+                            // 快速绘图/统计信息已在前面前置分支处理（保留 case 保证枚举全覆盖）
                             case ColumnAction::QuickPlot:
+                            case ColumnAction::ShowColumnDescribe:
                             // 重命名/删除列已在前置分支处理（保留 case 保证枚举全覆盖）
                             case ColumnAction::RenameColumn:
                             case ColumnAction::RemoveColumn:
@@ -3988,10 +3993,12 @@ void DAAppController::onActionGotoMinTriggered()
 }
 
 /**
- * @brief 显示列统计信息（表头右键）
+ * @brief 显示统计信息（Ribbon「列」面板 + 列头右键）
  *
- * 通过 DADataOperateOfDataFrameWidget::showColumnDescribe 调用 pandas describe
- * 获取当前列的统计信息并弹窗展示。
+ * 用当前页选区构造快速绘图请求（数据集句柄 + 有序选中列 + 角色），交给
+ * DAAppDockingArea::showDataStatsWidget 在浮动 dock 里做深度统计分析
+ * （多列统计表格 + 箱线图，支持正态性检验/置信区间/离群点等扩展分析）；
+ * 支持多选列：选中几列就统计并对比几列。
  */
 void DAAppController::onActionShowColumnDescribeTriggered()
 {
@@ -3999,11 +4006,17 @@ void DAAppController::onActionShowColumnDescribeTriggered()
     if (!dfopt) {
         return;
     }
-    int col = dfopt->getSelectedOneDataframeColumn();
-    if (col < 0) {
+    const DA::DATableChartRequest request = dfopt->buildQuickPlotRequest();
+    if (!request.isValid() || request.columns.isEmpty()) {
+        daWarning << tr("Please select a valid column");  // cn:请选择正确的列
         return;
     }
-    dfopt->showColumnDescribe(col);
+    mDock->showDataStatsWidget(request);
+    // 绑定当前页的数据变化通知（刷新提示条不自动重算；重复触发防重复连接）
+    if (DADataStatsWidget* statsWidget = mDock->getDataStatsWidget()) {
+        connect(dfopt, &DADataOperateOfDataFrameWidget::dataModified,
+                statsWidget, &DADataStatsWidget::notifyDataChanged, Qt::UniqueConnection);
+    }
 }
 
 /**
