@@ -480,7 +480,15 @@ DADataOperateOfDataFrameWidget::~DADataOperateOfDataFrameWidget()
         mConditionalFormatStore->setStatsProvider(nullptr);
         mConditionalFormatStore->setDuplicatesProvider(nullptr);
     }
+    // 子窗口容器先断回调（008 期0 基线修复）：容器的 boundsProvider 回调读 ui->tableView，
+    // delete ui 之后页面仍在析构（~QWidget 阶段），被监听部件（主视口等）的 Hide 事件
+    // 会触发 eventFilter → clampAllWindows → 回调 → 读已释放的 ui（use-after-free，
+    // DATableQuickPlotTest 在页面析构路径偶现 0xC0000005 崩溃）
+    if (mChildWindowContainer) {
+        mChildWindowContainer->setBoundsProvider(nullptr);
+    }
     delete ui;
+    ui = nullptr;
 }
 
 /**
@@ -1586,7 +1594,7 @@ bool DADataOperateOfDataFrameWidget::isDataframeTableHaveSelection() const
  */
 DADataTableView* DADataOperateOfDataFrameWidget::getDataTableView() const
 {
-    return ui->tableView;
+    return ui ? ui->tableView : nullptr;
 }
 
 /**
