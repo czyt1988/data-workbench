@@ -53,6 +53,8 @@ public:
                                const QPoint& preferredPos = QPoint());
     // 摘除并销毁子窗口（连同内容部件）；无效窗口安全返回
     void detach(DATableChildWindow* w);
+    // 解除对宿主的依赖（移除事件过滤 + 清空允许区域提供者）；宿主析构早期必须调用
+    void detachFromHost();
     // 摘除子窗口但把内容部件归还（重父化到 nullptr，调用方接管所有权）
     QWidget* takeAndDetach(DATableChildWindow* w);
     // 当前全部子窗口

@@ -227,16 +227,18 @@ void DATableQuickPlotController::notifyDataChanged()
 }
 
 /**
- * @brief 页面析构前断开子窗口容器的回调（use-after-free 防护）
+ * @brief 页面析构前断开子窗口容器与宿主的全部依赖（use-after-free 防护）
  *
  * boundsProvider 经上下文读主视口；页面析构期间（delete ui 之后、~QObject 阶段）
  * 被监听部件的 Hide 事件仍会触发 eventFilter → clampAllWindows → 回调，必须先于
  * 上下文销毁断开（DATableQuickPlotTest 在页面析构路径偶现 0xC0000005 的教训）。
+ * detachFromHost（dev 0c87de48）：事件过滤与允许区域提供者也一并解除——
+ * ~QWidget 期间子窗口隐藏抛 Hide 事件 → 回调读已析构 QWidget 部分的 size() 崩溃。
  */
 void DATableQuickPlotController::detach()
 {
     if (mChildWindowContainer) {
-        mChildWindowContainer->setBoundsProvider(nullptr);
+        mChildWindowContainer->detachFromHost();
     }
 }
 }  // end of namespace DA

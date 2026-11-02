@@ -260,15 +260,20 @@ int DATableViewStateController::contentFittedColumnWidth(DADataTableView* pane, 
     int textWidth = hh->fontMetrics().horizontalAdvance(
         model->headerData(logicalColumn, Qt::Horizontal, Qt::DisplayRole).toString())
         + c_headerHMargin;
-    const int rows = model->rowCount();
-    for (int r = 0; r < rows; ++r) {
-        if (!pane->visualRect(pane->model()->index(r, logicalColumn)).isValid()) {
-            continue;  // 只采样视口可见行
+    // 只采样视口可见行：先由视口矩形换算出首/末可见行，再逐行取样。
+    // 曾按"全模型遍历 + visualRect 过滤"实现，20000 行 × 200 列 = 400 万次
+    // index()+visualRect()，打开宽表会冻结数十秒到数分钟（testSelectAllLargeSelectionPerf
+    // 就是被这一步拖过 Qt Test 的 300s 看门狗；dev 6be9b15b 同款修复随迁）。
+    if (pane->viewport()) {
+        const QRect viewportRect   = pane->viewport()->rect();
+        const int firstVisibleRow = pane->rowAt(viewportRect.top());
+        const int lastVisibleRow  = pane->rowAt(viewportRect.bottom());
+        for (int r = qMax(0, firstVisibleRow); r <= lastVisibleRow; ++r) {
+            textWidth = qMax(textWidth,
+                            hh->fontMetrics().horizontalAdvance(
+                                model->data(model->index(r, logicalColumn), Qt::DisplayRole).toString())
+                                + c_cellHMargin);
         }
-        textWidth = qMax(textWidth,
-                        hh->fontMetrics().horizontalAdvance(
-                            model->data(model->index(r, logicalColumn), Qt::DisplayRole).toString())
-                            + c_cellHMargin);
     }
     return qBound(c_minAutoWidth, textWidth, c_maxAutoWidth);
 }

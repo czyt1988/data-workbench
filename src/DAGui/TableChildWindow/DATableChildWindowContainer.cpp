@@ -40,6 +40,25 @@ DATableChildWindowContainer::~DATableChildWindowContainer()
 }
 
 /**
+ * @brief 解除对宿主的依赖（宿主析构早期调用）
+ *
+ * 宿主的 QPointer 要等它自己的 ~QObject 才清空，而 ~QWidget 期间 ui 子部件析构会抛出
+ * 子窗口的 Hide 事件；此时事件过滤仍会经 boundsProvider 回调宿主的
+ * tableChildWindowBounds()，在已析构一半的宿主上调 size() 就是读野指针
+ * （实测 DATableQuickPlotTest 在 QWidget::~QWidget 里 0xC0000005）。
+ * 宿主析构函数一开始就调本函数，把事件过滤与允许区域提供者一起断掉，
+ * 之后 clampAllWindows 因 bounds 无效而自然空转。
+ */
+void DATableChildWindowContainer::detachFromHost()
+{
+    if (mHost) {
+        mHost->removeEventFilter(this);
+    }
+    mHost = nullptr;
+    mBoundsProvider = nullptr;
+}
+
+/**
  * @brief 宿主部件
  */
 QWidget* DATableChildWindowContainer::host() const
@@ -214,6 +233,9 @@ void DATableChildWindowContainer::clampAllWindows()
  */
 bool DATableChildWindowContainer::eventFilter(QObject* watched, QEvent* event)
 {
+    if (!mHost) {
+        return QObject::eventFilter(watched, event);  // 宿主已解除（析构中）：不再收敛
+    }
     if (event) {
         switch (event->type()) {
         case QEvent::Resize:

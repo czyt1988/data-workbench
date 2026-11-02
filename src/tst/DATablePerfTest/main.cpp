@@ -826,7 +826,14 @@ df = pd.DataFrame(np.arange(20000 * 200, dtype="int64").reshape(20000, 200),
     QVERIFY(!df.isNone());
     DA::DAData d(df);
     DA::DATableMetadataRegistry registry(nullptr);
+    // 构造耗时守卫（2026-11 修复回归）：列宽自适应曾对每列遍历全模型（20000 行 × 200 列
+    // = 400 万次 index()+visualRect()），构造函数要跑数十秒到数分钟，直接把本用例拖过
+    // Qt Test 的 300s 看门狗。现在只采样视口可见行，构造应在百毫秒级；上限放到 5s 以
+    // 容忍慢机器，但只要退回全模型遍历就必然触线。
+    QElapsedTimer ctorTimer;
+    ctorTimer.start();
     DA::DADataOperateOfDataFrameWidget w(d, &registry);
+    const qint64 msCtor = ctorTimer.elapsed();
     w.resize(800, 400);
     w.show();
     QVERIFY(QTest::qWaitForWindowExposed(&w));
@@ -874,15 +881,18 @@ df = pd.DataFrame(np.arange(20000 * 200, dtype="int64").reshape(20000, 200),
     const qint64 msStyle = t.elapsed();
 
     qDebug().noquote() << QStringLiteral("DATablePerfTest::testSelectAllLargeSelectionPerf: cells=%1 "
-                                         "selectAll=%2ms geometry=%3ms fullSpan=%4ms format=%5ms style=%6ms")
+                                         "ctor=%2ms selectAll=%3ms geometry=%4ms fullSpan=%5ms format=%6ms style=%7ms")
                               .arg(w.selectedCellCount())
+                              .arg(msCtor)
                               .arg(msSelectAll)
                               .arg(msGeometry)
                               .arg(msFullSpan)
                               .arg(msFormat)
                               .arg(msStyle);
+
     // 防劣化上限：单步 < 200ms（新实现实测均为毫秒级；旧实现在同夹具下
     // selectAll 1079ms / geometry 524ms / style 935ms，会全部触线）
+    QVERIFY2(msCtor < 5000, qPrintable(QStringLiteral("widget construction too slow: %1 ms").arg(msCtor)));
     QVERIFY2(msSelectAll < 200, qPrintable(QStringLiteral("selectAll too slow: %1 ms").arg(msSelectAll)));
     QVERIFY2(msGeometry < 200, qPrintable(QStringLiteral("selection geometry too slow: %1 ms").arg(msGeometry)));
     QVERIFY2(msFullSpan < 200, qPrintable(QStringLiteral("full row/column span too slow: %1 ms").arg(msFullSpan)));

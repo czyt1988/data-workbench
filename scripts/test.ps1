@@ -393,16 +393,42 @@ if ($Jobs -le 0) {
     if ($Jobs -lt 1) { $Jobs = 1 }
 }
 
-$pattern = '^(' + (($selected | ForEach-Object { [regex]::Escape($_) }) -join '|') + ')$'
+# 基准用例与普通测试分两阶段跑，基准阶段强制串行：
+# 1) 并行会让测量值失真（同一台机器上并排跑 1M 行夹具，耗时没有可比性）；
+# 2) 基准的峰值内存 1 GB 起步，和别的测试并行会被内存压力拖成"进程活着但几乎不占 CPU"
+#    的假死（实测 -j8 时 DATableUndoBenchmark 卡住十分钟以上，单跑 4.6 秒）。
+$benchSelected  = @($selected | Where-Object { $benchTests -contains $_ })
+$normalSelected = @($selected | Where-Object { $benchTests -notcontains $_ })
 
-Write-Host "`n[TEST] ctest -j$Jobs（$($selected.Count) 个测试）" -ForegroundColor Cyan
-Push-Location $BuildDir
-try {
-    & $script:CtestExe -C $Config -j $Jobs --output-on-failure --no-tests=error -R $pattern
-    $testExitCode = $LASTEXITCODE
+function Invoke-CtestSelection {
+    param([string[]]$Names, [int]$Parallelism, [string]$Title)
+
+    if ($Names.Count -eq 0) {
+        return 0
+    }
+    $pat = '^(' + (($Names | ForEach-Object { [regex]::Escape($_) }) -join '|') + ')$'
+    Write-Host "`n[TEST] $Title：ctest -j$Parallelism（$($Names.Count) 个）" -ForegroundColor Cyan
+    Push-Location $BuildDir
+    try {
+        # Out-Host：把 ctest 的输出直接送到控制台，不要让它进入本函数的返回值
+        # （原生命令的 stdout 属于成功流，会被一并当成函数返回值收集，导致 $LASTEXITCODE
+        # 变成一个「输出行 + 退出码」的数组，后续 -ne 0 判断永远为真）
+        & $script:CtestExe -C $Config -j $Parallelism --output-on-failure --no-tests=error -R $pat | Out-Host
+        return $LASTEXITCODE
+    }
+    finally {
+        Pop-Location
+    }
 }
-finally {
-    Pop-Location
+
+$testExitCode = 0
+
+$code = Invoke-CtestSelection -Names $normalSelected -Parallelism $Jobs -Title '普通测试'
+if ($code -ne 0) { $testExitCode = $code }
+
+if ($testExitCode -eq 0 -and $benchSelected.Count -gt 0) {
+    $code = Invoke-CtestSelection -Names $benchSelected -Parallelism 1 -Title '基准测试（串行）'
+    if ($code -ne 0) { $testExitCode = $code }
 }
 
 if ($testExitCode -ne 0) {
