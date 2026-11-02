@@ -65,6 +65,10 @@ public:
     // 给 QUndoCommand 的 setCallBack 用：exec 与 undo/redo 共用一次后效；
     // 捕获 QPointer 防悬挂（宿主页面销毁后命令仍在撤销栈时静默丢弃）
     std::function< void() > callbackFor(const DATableMutation& m) const;
+    // 一次性订阅（Observer）：元数据束各子存储/模型的「变更→失效/刷新」接线，
+    // 此前散在页面构造里 ~160 行；宿主页面构造时调用（context 装配完成之后）。
+    // 视图状态/计算列表头/排序规格清除的连接归对应控制器（期3），不在此处
+    void attach();
     // 数据变更列（位置索引）→ 计算列待重算标记（按列名依赖比对，空列表无操作）。
     // 公开给计算列专项路径（重算/编辑）用；一般编辑入口经 commit() 间接触达
     void markComputedColumnsStale(const QList< int >& actualCols);

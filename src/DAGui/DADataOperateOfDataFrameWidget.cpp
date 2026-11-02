@@ -292,12 +292,6 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
     // 批注子存储注入 delegate（层⑤之后角标 + helpEvent tooltip，005 T1.26）
     //（视图侧 setNoteStore 在 configurePaneView 里，006b 起随窗格装配）
     mStyleDelegate->setNoteStore(mNoteStore);
-    if (mNoteStore) {
-        // 批注变更只影响角标（不经模型 dataChanged 链路），重绘视口即可
-        connect(mNoteStore, &DATableNoteStore::notesChanged, this, [ this ]() {
-            ui->tableView->viewport()->update();
-        });
-    }
     // 表格页上下文（008 期1）：模型/主窗格/元数据束聚合为依赖注入载体；
     // 选区/坐标查询全部收口到 DATableSelectionService（纯 const 查询，不持有窗口）
     mContext = std::make_unique< DATablePageContext >();
@@ -317,160 +311,33 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
     };
     mContext->closeFloatingWindows = [ this ]() { closeQuickPlot(); };
     // 编辑后效协调器（008 期2）：commit() 是唯一的「编辑后」扇出点，
-    // 此前 ~20 处手抄的 模型刷新→统计失效→计算列标脏→浮窗/宿主 收口于此
+    // 此前 ~20 处手抄的 模型刷新→统计失效→计算列标脏→浮窗/宿主 收口于此；
+    // attach() 一次性订阅批注/高亮层/样式/条件格式/校验缓存的「变更→失效/刷新」
+    // 连接（008 期2 Observer 收口，此前散在本构造里 ~160 行）
     mMutation = new DATableMutationCoordinator(*mContext, this);
+    mMutation->attach();
     // 窗格装配（006b 抽取的唯一装配点）：表头替换 → setModel → 委托 → 逐窗格连接；
     // 必须在 mStyleDelegate 创建之后（里面要用它），在 setDAData/applyViewStateFromStore 之前
     configurePaneView(ui->tableView);
-    // 高亮层变更时重绘两窗格视口（瞬态装饰不经模型 dataChanged 链路，006e 扩冻结窗格）
-    connect(mHighlightOverlay, &DATableHighlightOverlay::changed, this, [ this ]() {
-        for (DADataTableView* pane : paneViews()) {
-            pane->viewport()->update();
-        }
-    });
     // 模型读取列显示格式（actualData 的 DisplayRole 分支）
     mModel->setStyleManager(mStyleManager);
     // 计算列子存储注入模型（表头浅蓝底色 BackgroundRole + 公式 tooltip ToolTipRole，004 T1.23）
     mModel->setComputedColumnStore(mComputedColumnStore);
     if (mComputedColumnStore) {
         // 定义/状态变更 → 表头重绘（底色经模型 headerDataChanged，角标经视口 update）
+        //（期3 ComputedColumnController 迁移候选，暂留 Facade）
         connect(mComputedColumnStore, &DATableComputedColumnStore::definitionsChanged, this, &DADataOperateOfDataFrameWidget::refreshComputedColumnHeaders);
         connect(mComputedColumnStore, &DATableComputedColumnStore::stateChanged, this, [ this ](const QString&, DATableComputedColumnStore::State) {
             refreshComputedColumnHeaders();
         });
     }
-    // 样式变更时触发 view 刷新（actualRow 转回 logical row 通知 model）
-    connect(mStyleManager, &DATableStyleManager::styleChanged, this, [ this ](int actualRow, int actualCol) {
-        if (!mModel) {
-            return;
-        }
-        mModel->notifyDataChanged(actualRow, actualCol);
-    });
-    connect(mStyleManager, &DATableStyleManager::styleRangeChanged, this, [ this ](int rowStart, int colStart, int rowEnd, int colEnd) {
-        if (!mModel) {
-            return;
-        }
-        // -1 表示整个维度；行号统一用数据源绝对行，由 model 换算到窗口内
-        const int rStart = (rowStart < 0) ? 0 : rowStart;
-        const int rEnd   = (rowEnd < 0) ? qMax(0, mModel->actualRowCount() - 1) : rowEnd;
-        const int cStart = (colStart < 0) ? 0 : colStart;
-        const int cEnd   = (colEnd < 0) ? mModel->columnCount() - 1 : colEnd;
-        mModel->notifyDataChanged(rStart, cStart, rEnd, cEnd);
-    });
-    connect(mStyleManager, &DATableStyleManager::styleReset, this, [ this ]() {
-        if (mModel) {
-            // 全表刷新
-            mModel->notifyDataChanged(0, 0, qMax(0, mModel->actualRowCount() - 1), mModel->columnCount() - 1);
-        }
-    });
-    // 条件格式（003 T1.5）：规则变更 → 重绘对应列（-1 整表）；重映射 → 整表刷新
-    if (mConditionalFormatStore) {
-        connect(mConditionalFormatStore, &DATableConditionalFormatStore::rulesChanged, this, [ this ](int column) {
-            if (!mModel) {
-                return;
-            }
-            const int rEnd = qMax(0, mModel->actualRowCount() - 1);
-            if (column < 0) {
-                mModel->notifyDataChanged(0, 0, rEnd, qMax(0, mModel->columnCount() - 1));
-            } else {
-                mModel->notifyDataChanged(0, column, rEnd, column);
-            }
-        });
-        connect(mConditionalFormatStore, &DATableConditionalFormatStore::ruleReset, this, [ this ]() {
-            if (mModel) {
-                mModel->notifyDataChanged(0, 0, qMax(0, mModel->actualRowCount() - 1), qMax(0, mModel->columnCount() - 1));
-            }
-        });
-        // 列统计提供者（色阶/数据条端点）：store 是会话级（比 widget 长寿），
-        // lambda 用 QPointer 防悬挂，widget 析构时另行清空提供者
-        QPointer< DADataOperateOfDataFrameWidget > self(this);
-        mConditionalFormatStore->setStatsProvider([ self ](int column, DATableConditionalFormatStore::ColumnStats& out) {
-            if (!self) {
-                return false;
-            }
-            DAPyDataFrame df = self->getDataframe();
-            if (df.isNone()) {
-                return false;
-            }
-            DAPyScriptsDataFrame& py = DAPyScripts::getDataFrame();
-            const DAPyScriptsDataFrame::ColumnStatsResult r = py.columnStats(df, column);
-            if (!r.ok) {
-                return false;
-            }
-            out.minValue    = r.minValue;
-            out.maxValue    = r.maxValue;
-            out.medianValue = r.medianValue;
-            return true;
-        });
-        // 重复键提供者（重复/唯一条件）：与统计同款 QPointer 防悬挂 + 惰性缓存语义
-        mConditionalFormatStore->setDuplicatesProvider([ self ](int column, QSet< QString >& out) {
-            if (!self) {
-                return false;
-            }
-            DAPyDataFrame df = self->getDataframe();
-            if (df.isNone()) {
-                return false;
-            }
-            DAPyScriptsDataFrame& py = DAPyScripts::getDataFrame();
-            QList< QVariant > values;
-            if (!py.columnDuplicateValues(df, column, values)) {
-                return false;
-            }
-            for (const QVariant& v : std::as_const(values)) {
-                const QString key = DATableConditionalFormatRule::duplicateKey(v);
-                if (!key.isEmpty()) {
-                    out.insert(key);
-                }
-            }
-            return true;
-        });
-        // 统计失效挂点（widget 侧，计划 WP2 步骤 5）：单元格编辑命令在模型内部创建，
-        // 不走 widget 命令回调，用模型的 cellValueChanged 精确信号失效对应列。
-        // 不用 dataChanged：滑窗滚动（setCacheWindowStartRow）与样式刷新也发整窗
-        // dataChanged，会在滚动时每步误失效统计（破坏"滚动千行无卡顿"验收）；
-        // 排序不发本信号（不改列值集合，不失效——性能决策）
-        connect(mModel, &DADataTableModel::cellValueChanged, this, [ this ](int actualRow, int actualColumn) {
-            Q_UNUSED(actualRow);
-            if (mConditionalFormatStore) {
-                mConditionalFormatStore->invalidateColumnStats(actualColumn);
-            }
-        });
-    }
-    // 计算列待重算标记（004 T1.23 R8 手动重算）：单元格编辑走 cellValueChanged 精确信号，
-    // 只把依赖该列（或目标列自身被改）的计算列标 Stale；排序不发本信号（R13 不触发）
-    connect(mModel, &DADataTableModel::cellValueChanged, this, [ this ](int actualRow, int actualColumn) {
-        Q_UNUSED(actualRow);
-        markComputedColumnsStaleForColumns({ actualColumn });
-    });
     // 视图状态（列宽按列名 + 行头宽，R6）：
     // 结构变化（模型重置/插删列）后按列名重新应用，保证列宽不随位置错位；
     // 采集只认用户拖拽（sectionResized + 左键按住在表头上），程序化改动不写 store
+    //（期3 ViewStateController 迁移候选，暂留 Facade）
     connect(mModel, &QAbstractItemModel::modelReset, this, [ this ]() {
         applyViewStateFromStore();
     });
-    // 唯一性违规缓存失效挂点（005 T1.25 §4.9）：数据/结构变更后重复集合可能变化，
-    // 保守全失效（缓存只为「同一份数据重复点校验」省算，正确性优先）
-    if (mValidationStore) {
-        DATableValidationStore* vaStore = mValidationStore;
-        connect(mModel, &QAbstractItemModel::modelReset, this, [ vaStore ]() {
-            vaStore->invalidateUniqueCache();
-        });
-        connect(mModel, &QAbstractItemModel::rowsInserted, this, [ vaStore ]() {
-            vaStore->invalidateUniqueCache();
-        });
-        connect(mModel, &QAbstractItemModel::rowsRemoved, this, [ vaStore ]() {
-            vaStore->invalidateUniqueCache();
-        });
-        connect(mModel, &QAbstractItemModel::columnsInserted, this, [ vaStore ]() {
-            vaStore->invalidateUniqueCache();
-        });
-        connect(mModel, &QAbstractItemModel::columnsRemoved, this, [ vaStore ]() {
-            vaStore->invalidateUniqueCache();
-        });
-        connect(mModel, &DADataTableModel::cellValueChanged, this, [ vaStore ](int, int) {
-            vaStore->invalidateUniqueCache();
-        });
-    }
     connect(mModel, &QAbstractItemModel::columnsInserted, this, [ this ]() {
         applyViewStateFromStore();
         // 插列后排序规格里的列位置失效，清除规格（数据顺序不变，只清指示器）

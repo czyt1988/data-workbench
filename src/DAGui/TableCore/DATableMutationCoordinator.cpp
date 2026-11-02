@@ -6,8 +6,17 @@
 #include <QPointer>
 // DAGui
 #include "Models/DADataTableModel.h"
+#include "DADataTableView.h"
+#include "DATableConditionalFormatRule.h"
 #include "DATableConditionalFormatStore.h"
 #include "DATableComputedColumnStore.h"
+#include "DATableHighlightOverlay.h"
+#include "DATableNoteStore.h"
+#include "DATableStyleManager.h"
+#include "DATableValidationStore.h"
+// DAPyScripts 算子封装（条件格式统计/重复键提供者，色阶/数据条端点）
+#include "DAPyScripts.h"
+#include "DAPyScriptsDataFrame.h"
 
 namespace DA
 {
@@ -30,6 +39,157 @@ QList< int > toUniqueSorted(const QList< int >& in)
 DATableMutationCoordinator::DATableMutationCoordinator(const DATablePageContext& ctx, QObject* parent)
     : QObject(parent), mCtx(ctx)
 {
+}
+
+/**
+ * @brief 一次性订阅：各子存储/模型的「变更→失效/刷新」接线
+ *
+ * 收口此前散在页面构造里的 store→model 连接（Observer，构造时一次性订阅）。
+ * 全部只依赖上下文（模型/子存储/窗格），不持窗口指针；会话级子存储
+ * （styleManager/validationStore 等借自注册表，比页面长寿）以本对象为
+ * 连接上下文，页面析构时随子对象销毁自动断开。
+ */
+void DATableMutationCoordinator::attach()
+{
+    DADataTableModel* model = mCtx.model();
+    // —— 批注变更只影响角标（不经模型 dataChanged 链路），重绘主窗格视口即可 ——
+    if (DATableNoteStore* noteStore = mCtx.noteStore()) {
+        if (DADataTableView* view = mCtx.mainView()) {
+            connect(noteStore, &DATableNoteStore::notesChanged, this, [ view ]() {
+                view->viewport()->update();
+            });
+        }
+    }
+    // —— 瞬态高亮层变更 → 全部窗格视口重绘（瞬态装饰不经模型 dataChanged 链路）——
+    if (DATableHighlightOverlay* overlay = mCtx.highlightOverlay()) {
+        connect(overlay, &DATableHighlightOverlay::changed, this, [ this ]() {
+            for (DADataTableView* pane : mCtx.panes()) {
+                pane->viewport()->update();
+            }
+        });
+    }
+    // —— 样式变更 → view 刷新（actualRow 转回 logical row 通知 model）——
+    if (DATableStyleManager* styleMgr = mCtx.styleManager()) {
+        connect(styleMgr, &DATableStyleManager::styleChanged, this, [ model ](int actualRow, int actualCol) {
+            if (model) {
+                model->notifyDataChanged(actualRow, actualCol);
+            }
+        });
+        connect(styleMgr, &DATableStyleManager::styleRangeChanged, this, [ model ](int rowStart, int colStart, int rowEnd, int colEnd) {
+            if (!model) {
+                return;
+            }
+            // -1 表示整个维度；行号统一用数据源绝对行，由 model 换算到窗口内
+            const int rStart = (rowStart < 0) ? 0 : rowStart;
+            const int rEnd   = (rowEnd < 0) ? qMax(0, model->actualRowCount() - 1) : rowEnd;
+            const int cStart = (colStart < 0) ? 0 : colStart;
+            const int cEnd   = (colEnd < 0) ? model->columnCount() - 1 : colEnd;
+            model->notifyDataChanged(rStart, cStart, rEnd, cEnd);
+        });
+        connect(styleMgr, &DATableStyleManager::styleReset, this, [ model ]() {
+            if (model) {
+                // 全表刷新
+                model->notifyDataChanged(0, 0, qMax(0, model->actualRowCount() - 1), model->columnCount() - 1);
+            }
+        });
+    }
+    // —— 条件格式（003 T1.5）：规则变更 → 重绘对应列（-1 整表）；统计/重复键提供者注入 ——
+    if (DATableConditionalFormatStore* cfStore = mCtx.conditionalFormatStore()) {
+        connect(cfStore, &DATableConditionalFormatStore::rulesChanged, this, [ model ](int column) {
+            if (!model) {
+                return;
+            }
+            const int rEnd = qMax(0, model->actualRowCount() - 1);
+            if (column < 0) {
+                model->notifyDataChanged(0, 0, rEnd, qMax(0, model->columnCount() - 1));
+            } else {
+                model->notifyDataChanged(0, column, rEnd, column);
+            }
+        });
+        connect(cfStore, &DATableConditionalFormatStore::ruleReset, this, [ model ]() {
+            if (model) {
+                model->notifyDataChanged(0, 0, qMax(0, model->actualRowCount() - 1), qMax(0, model->columnCount() - 1));
+            }
+        });
+        // 列统计提供者（色阶/数据条端点）：store 是会话级（比页面长寿），
+        // lambda 用 QPointer 防悬挂，页面析构时另行清空提供者
+        QPointer< DATableMutationCoordinator > self(this);
+        cfStore->setStatsProvider([ self ](int column, DATableConditionalFormatStore::ColumnStats& out) {
+            if (!self) {
+                return false;
+            }
+            DAPyDataFrame df = self->mCtx.df();
+            if (df.isNone()) {
+                return false;
+            }
+            DAPyScriptsDataFrame& py = DAPyScripts::getDataFrame();
+            const DAPyScriptsDataFrame::ColumnStatsResult r = py.columnStats(df, column);
+            if (!r.ok) {
+                return false;
+            }
+            out.minValue    = r.minValue;
+            out.maxValue    = r.maxValue;
+            out.medianValue = r.medianValue;
+            return true;
+        });
+        // 重复键提供者（重复/唯一条件）：与统计同款 QPointer 防悬挂 + 惰性缓存语义
+        cfStore->setDuplicatesProvider([ self ](int column, QSet< QString >& out) {
+            if (!self) {
+                return false;
+            }
+            DAPyDataFrame df = self->mCtx.df();
+            if (df.isNone()) {
+                return false;
+            }
+            DAPyScriptsDataFrame& py = DAPyScripts::getDataFrame();
+            QList< QVariant > values;
+            if (!py.columnDuplicateValues(df, column, values)) {
+                return false;
+            }
+            for (const QVariant& v : std::as_const(values)) {
+                const QString key = DATableConditionalFormatRule::duplicateKey(v);
+                if (!key.isEmpty()) {
+                    out.insert(key);
+                }
+            }
+            return true;
+        });
+        // 统计失效挂点（widget 侧，计划 WP2 步骤 5）：单元格编辑命令在模型内部创建，
+        // 不走命令回调，用模型的 cellValueChanged 精确信号失效对应列。
+        // 不用 dataChanged：滑窗滚动（setCacheWindowStartRow）与样式刷新也发整窗
+        // dataChanged，会在滚动时每步误失效统计（破坏"滚动千行无卡顿"验收）；
+        // 排序不发本信号（不改列值集合，不失效——性能决策）
+        connect(model, &DADataTableModel::cellValueChanged, this, [ cfStore ](int, int actualColumn) {
+            cfStore->invalidateColumnStats(actualColumn);
+        });
+    }
+    // 计算列待重算标记（004 T1.23 R8 手动重算）：单元格编辑走 cellValueChanged 精确信号，
+    // 只把依赖该列（或目标列自身被改）的计算列标 Stale；排序不发本信号（R13 不触发）
+    connect(model, &DADataTableModel::cellValueChanged, this, [ this ](int, int actualColumn) {
+        markComputedColumnsStale({ actualColumn });
+    });
+    // —— 唯一性违规缓存失效挂点（005 T1.25 §4.9）：数据/结构变更后重复集合可能变化，
+    //    保守全失效（缓存只为「同一份数据重复点校验」省算，正确性优先）——
+    if (DATableValidationStore* vaStore = mCtx.validationStore()) {
+        connect(model, &QAbstractItemModel::modelReset, this, [ vaStore ]() {
+            vaStore->invalidateUniqueCache();
+        });
+        connect(model, &QAbstractItemModel::rowsInserted, this, [ vaStore ]() {
+            vaStore->invalidateUniqueCache();
+        });
+        connect(model, &QAbstractItemModel::rowsRemoved, this, [ vaStore ]() {
+            vaStore->invalidateUniqueCache();
+        });
+        connect(model, &QAbstractItemModel::columnsInserted, this, [ vaStore ]() {
+            vaStore->invalidateUniqueCache();
+        });
+        connect(model, &QAbstractItemModel::columnsRemoved, this, [ vaStore ]() {
+            vaStore->invalidateUniqueCache();
+        });
+        connect(model, &DADataTableModel::cellValueChanged, this, [ vaStore ](int, int) {
+            vaStore->invalidateUniqueCache();
+        });
+    }
 }
 
 /**
