@@ -634,7 +634,11 @@ function(da_add_test)
     set(_timeout 120)
     if(_name MATCHES "Perf|Benchmark")
         list(APPEND _labels bench)
-        set(_timeout 600)
+        # 基准用例天生跑得久（1M 行 × 20 列、整表 pickle 快照等），Qt Test 默认的
+        # 单函数 5 分钟看门狗会把它当"挂死"直接判红。放宽到 1 小时，真正的上限交给
+        # 下面的 ctest TIMEOUT（同样 1 小时），避免出现"进程还活着但被内部看门狗杀掉"。
+        set(_timeout 3600)
+        set_tests_properties(${_name} PROPERTIES ENVIRONMENT "QTEST_FUNCTION_TIMEOUT=3600000")
     endif()
     set_tests_properties(${_name} PROPERTIES TIMEOUT ${_timeout})
     if(_labels)
