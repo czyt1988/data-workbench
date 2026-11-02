@@ -20851,4 +20851,12 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>Cannot sort: the column contains values of incomparable mixed types.</translation>
     </message>
 </context>
+<context>
+    <name>DA::DATableViewStateController</name>
+    <message>
+        <location filename="../DAGui/TableViewState/DATableViewStateController.cpp" line="+0"/>
+        <source>Some column view settings were dropped because the table columns have changed.</source>
+        <translation>Some column view settings were dropped because the table columns have changed.</translation>
+    </message>
+</context>
 </TS>

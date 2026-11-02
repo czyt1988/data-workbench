@@ -63,6 +63,7 @@ class DATableConditionalFormatController;
 class DATableFindController;
 class DATableStyleController;
 class DATableSortController;
+class DATableViewStateController;
 
 
 /**
@@ -439,7 +440,7 @@ private:
     //（条件格式差异命令/统计端点可用性已随条件格式迁入 DATableConditionalFormatController，
     //  可用性判定经上下文 isColumnStatsSourceAvailable，008 期3）
     // 按列名（+重名消歧 occurrence）从视图状态子存储应用列宽与行头宽；
-    // 应用期间置守卫标志屏蔽采集，避免把「应用」当「用户改动」
+    // 应用期间置守卫标志屏蔽采集，避免把「应用」当「用户改动」（转发视图状态控制器）
     void applyViewStateFromStore();
     // 窗格装配唯一路径（006b）：表头替换 → setModel → 委托 → 逐窗格连接；
     // 主窗格与 006e 懒建的冻结窗格都走这里，漏装即该窗格某操作没反应
@@ -448,20 +449,8 @@ private:
     QList< DADataTableView* > paneViews() const;
     // 遍历全部窗格的水平表头（排序角标/ƒx 角标等按实例刷新用，006e）
     void forEachPaneHeader(const std::function< void(DADataHeaderView*) >& fn);
-    // 把 store 里的列宽套到指定窗格（列宽段唯一实现，主/冻结窗格都调，006e）
-    void applyColumnWidthsToPane(DADataTableView* pane);
-    // store 无记录的列做内容自适应列宽（表头文本 + 视口采样单元格文本，钳制上下限）
-    void autoFitUnrecordedColumnWidths(DADataTableView* pane);
-    // 指定列的内容自适应宽度（表头 + 视口采样单元格文本，钳制上下限；分界条双击用）
-    int contentFittedColumnWidth(DADataTableView* pane, int logicalColumn) const;
-    // 按 (名, occurrence) 写一条列宽进 store（分界条拖动/双击的落库公共段）
-    void storeColumnWidthAt(int logicalColumn, int width);
-    // 行头宽只设给归属方（冻结时归属冻结窗格，否则主窗格，006e）
-    void applyRowHeaderWidthToOwner();
-    // 统一行高套到全部窗格垂直表头（默认行高+全部可见段；拖拽落库与加载回填共用）
-    void applyRowHeightToPanes(int height);
-    // 水平表头高套到全部窗格（setFixedHeight；拖拽落库与加载回填共用）
-    void applyHeaderHeightToPanes(int height);
+    //（列宽套用/内容自适应/自适应宽度/列宽落库/行头宽归属/行高/表头高已随视图状态
+    //  迁入 DATableViewStateController，008 期3）
     // 当前选区为单格时取其显示文本（Qt::DisplayRole），否则空串（D9 预填用）
     QString currentSingleCellDisplayText() const;
     // 全局列序（含隐藏列）的身份表：store 的 columnOrder 按 (名, occurrence) 精确匹配
@@ -520,10 +509,10 @@ private:
     DATableMetadata* mMetadata { nullptr };                              ///< 元数据束（借自注册表，非拥有；就地形状变换整束快照/清理用，004 T1.27）
     DATableStyleItemDelegate* mStyleDelegate { nullptr };
     DATablePaneContainer* mPaneContainer { nullptr };  ///< 列轴窗格容器（页级拥有，006；主窗格运行时包装进容器）
-    bool mApplyingViewState { false };  ///< 正在应用视图状态（屏蔽 sectionResized 采集）
     bool mHeaderPickMode { false };     ///< 表头拾取模式（图表「选择序列」会话期间：表头点击只转发不排序）
     //（多列排序规格 mSortSpec 已随排序迁入 DATableSortController，008 期3）
-    QSet< int > mFrozenColumnsLogical;  ///< 本轮投影的冻结列集合（logical），仅作 isColumnInFrozenArea 查表用（006e）
+    //（投影守卫 mApplyingViewState 与冻结列集合 mFrozenColumnsLogical 已随视图状态
+    //  迁入 DATableViewStateController，008 期3）
 
     DADialogDataframeColumnCastToNumeric* mDialogCastNumArgs { nullptr };
     DADialogDataframeColumnCastToDatetime* mDialogCastDatetimeArgs { nullptr };
@@ -545,6 +534,7 @@ private:
     DATableFindController* mFindController { nullptr };  ///< 查找/替换控制器（008 期3，QObject 父子持有）
     DATableStyleController* mStyleController { nullptr };  ///< 样式/显示格式控制器（008 期3，QObject 父子持有）
     DATableSortController* mSortController { nullptr };  ///< 排序控制器（008 期3，QObject 父子持有）
+    DATableViewStateController* mViewStateController { nullptr };  ///< 视图状态控制器（008 期3，QObject 父子持有）
 };
 }  // end of namespace DA
 #endif  // DADATAOPERATEOFDATAFRAMEWIDGET_H

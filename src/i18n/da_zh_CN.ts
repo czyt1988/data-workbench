@@ -20876,4 +20876,12 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>无法排序：该列包含不可比较的混合类型</translation>
     </message>
 </context>
+<context>
+    <name>DA::DATableViewStateController</name>
+    <message>
+        <location filename="../DAGui/TableViewState/DATableViewStateController.cpp" line="+0"/>
+        <source>Some column view settings were dropped because the table columns have changed.</source>
+        <translation>表格的列已变化，部分列视图设置已被丢弃</translation>
+    </message>
+</context>
 </TS>
