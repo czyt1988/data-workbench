@@ -94,7 +94,9 @@
 - **陈旧 exe 会假红**：`0xc0000139`（找不到入口点）或启动即崩溃，通常是 exe 比 DLL 旧。重新构建即可；`-NoBuild` 会放大这个问题。
 - **嵌入式 Python 的 teardown 崩溃**：链接 Python 的测试不能在 `qExec` 返回后正常走进程退出，否则会在结果已打印后触发访问冲突、被 ctest 记为 SEGFAULT。规范做法见 `DADataFrameTest` / `DATableDataTest` / `DATableUndoBenchmark` / `DATablePerfTest` 里的自定义 `main()`：`qExec` 返回后 `std::fflush(nullptr)`，Windows 上用 `TerminateProcess` 直接结束进程。
 - **环境依赖**：没有安装 pandas 时，相关用例会 `QSKIP`（不是失败）。CI 目前**只构建、不跑测试**（`.github/workflows/build.yml`），所以回归保护只在本机生效。
-- **已知失败隔离**：`DATableDataTest::testContextMenuComposition` 目前以 `QSKIP` 形式隔离（列头菜单 action 数量与期望不一致，原因待定位）。修复任务单独跟踪，不要把它当作"测试本来就是红的"。
+- **已知不稳定（2026-11 记录，独立于套件改造）**：
+  - `DATableDataTest::testClipboardShortcuts` 在**同进程跑完整序列**时偶发卡死（单跑或只跑最后几个函数 4 秒通过；超时前 33 个函数全 PASS）。已确认与本轮改动无关（把改动 stash 掉同样复现）。
+  - 链接 Python 的用例偶发卡在 `DAPyScriptsDataFrame::sort` 的 `PyThread_acquire_lock_timed`（进程活着但 CPU 几乎为 0），单跑通常 5 秒内通过。两者都需要单独排查，看到"个别测试卡住"先怀疑它们，不要先怀疑自己的改动。
 
 ## 7. 新增测试检查清单
 
