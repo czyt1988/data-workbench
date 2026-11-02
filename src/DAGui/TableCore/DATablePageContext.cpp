@@ -49,6 +49,11 @@ void DATablePageContext::setHighlightOverlay(DATableHighlightOverlay* o)
     mHighlightOverlay = o;
 }
 
+void DATablePageContext::setHostWidget(QWidget* w)
+{
+    mHostWidget = w;
+}
+
 void DATablePageContext::setData(const DAData& d)
 {
     mData = d;
@@ -155,6 +160,11 @@ DADataTableModel* DATablePageContext::model() const
 DADataTableView* DATablePageContext::mainView() const
 {
     return mMainView;
+}
+
+QWidget* DATablePageContext::hostWidget() const
+{
+    return mHostWidget;
 }
 
 /**

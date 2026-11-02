@@ -55,6 +55,7 @@ class DATablePageContext;
 class DATableSelectionService;
 class DATableMutationCoordinator;
 class DATableNoteController;
+class DATableQuickPlotController;
 
 
 /**
@@ -550,12 +551,7 @@ private:
     void wireValidationRuleRenameMigration(class DACommandDataFrame_renameColumns* cmd,
                                            const QList< QPair< QString, QString > >& renames) const;
     //（批注私有辅助 editNoteAtCell 已随批注逻辑迁入 DATableNoteController，008 期3）
-
-    // ===== 表格子窗口容器（快速绘图承载，也可贴入其它窗口）=====
-    // 懒建容器（宿主=本页；允许区域=主视口；监听视口/窗格容器几何变化）
-    class DATableChildWindowContainer* tableChildWindowContainer();
-    // 子窗口允许区域（主视口在本页坐标系下的矩形；无视图回退窗格容器）
-    QRect tableChildWindowBounds() const;
+    //（表格子窗口容器/允许区域已随快速绘图迁入 DATableQuickPlotController，008 期3）
 
     Ui::DADataOperateOfDataFrameWidget* ui;
     DAData mData;
@@ -581,17 +577,14 @@ private:
     class DADialogTableColumnView* mDialogColumnView { nullptr };  ///< 列视图对话框（006d，懒建复用）
     class DADialogGotoCell* mGotoDialog { nullptr };               ///< 定位对话框（007，懒建复用）
     QPointer< DADialogValidationReport > mValidationReport;  ///< 非模态校验报告窗（005 T1.25，重跑前先关旧的）
-    class DATableQuickPlotWindow* mQuickPlotWindow { nullptr };  ///< 快速绘图内容部件（懒建，页内单实例）
-    QuickPlotTransferHandler mQuickPlotTransfer;                    ///< 转入绘图区处理器（APP 注入）
-    QuickPlotAppendAvailabilityProvider mQuickPlotAppendAvailable;  ///< 追加可用性（APP 注入）
-    class DATableChildWindowContainer* mChildWindowContainer { nullptr };  ///< 表格子窗口容器（懒建）
-    class DATableChildWindow* mQuickPlotFrame { nullptr };                  ///< 快速绘图子窗口框架（容器承载）
+    //（快速绘图窗/框架、转入处理器、追加可用性、表格子窗口容器已迁入 DATableQuickPlotController，008 期3）
 
     // ===== 表格页上下文与选区服务（008 期1）=====
     std::unique_ptr< DATablePageContext > mContext;          ///< 依赖注入载体：模型/主窗格/元数据束聚合
     std::unique_ptr< DATableSelectionService > mSelection;   ///< 选区/坐标纯查询服务（构造注入上下文）
     DATableMutationCoordinator* mMutation { nullptr };  ///< 编辑后效协调器（008 期2，QObject 父子持有）
     DATableNoteController* mNoteController { nullptr };  ///< 批注控制器（008 期3，QObject 父子持有）
+    DATableQuickPlotController* mQuickPlotController { nullptr };  ///< 快速绘图控制器（008 期3，QObject 父子持有）
 
     // ===== 查找状态（002 T1.4）=====
     QVector< QPair< int, int > > mFindHits;  ///< 当前命中集（数据源绝对行列，行主序，≤上限）

@@ -20453,6 +20453,24 @@ If a column name contains spaces or special characters, enclose it in backticks 
     </message>
 </context>
 <context>
+    <name>DA::DATableQuickPlotController</name>
+    <message>
+        <location filename="../DAGui/TableQuickPlot/DATableQuickPlotController.cpp" line="+96"/>
+        <source>The chart area is not available</source>
+        <translation>The chart area is not available</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Failed to transfer to the chart area</source>
+        <translation>Failed to transfer to the chart area</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>The chart has been transferred to the chart area</source>
+        <translation>The chart has been transferred to the chart area</translation>
+    </message>
+</context>
+<context>
     <name>DA::DATableNoteController</name>
     <message>
         <location filename="../DAGui/TableNote/DATableNoteController.cpp" line="+33"/>

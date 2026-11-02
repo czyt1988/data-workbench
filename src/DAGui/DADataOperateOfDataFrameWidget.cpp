@@ -67,6 +67,7 @@
 #include "TableCore/DATableMutationCoordinator.h"
 // 表格页特性控制器（008 期3）
 #include "TableNote/DATableNoteController.h"
+#include "TableQuickPlot/DATableQuickPlotController.h"
 // Dialog
 #include "Dialog/DARenameColumnsNameDialog.h"
 #include "Dialog/DADialogDataframeColumnCastToNumeric.h"
@@ -302,6 +303,7 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
     mContext->setPaneContainer(mPaneContainer);
     mContext->setMetadata(mMetadata);
     mContext->setHighlightOverlay(mHighlightOverlay);
+    mContext->setHostWidget(this);
     mContext->setData(d);
     mSelection = std::make_unique< DATableSelectionService >(*mContext);
     // 宿主桥注入（008 期2）：协作者经上下文的 std::function 触达页面级动作，
@@ -322,6 +324,9 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
     mMutation->attach();
     // 特性控制器（008 期3）：批注（构造注入上下文与选区服务，QObject 父子持有）
     mNoteController = new DATableNoteController(*mContext, *mSelection, this);
+    // 快速绘图（构造注入上下文与选区服务；数据变更经本页 dataModified 信号转发）
+    mQuickPlotController = new DATableQuickPlotController(*mContext, *mSelection, this);
+    connect(this, &DADataOperateOfDataFrameWidget::dataModified, mQuickPlotController, &DATableQuickPlotController::notifyDataChanged);
     // 窗格装配（006b 抽取的唯一装配点）：表头替换 → setModel → 委托 → 逐窗格连接；
     // 必须在 mStyleDelegate 创建之后（里面要用它），在 setDAData/applyViewStateFromStore 之前
     configurePaneView(ui->tableView);
@@ -385,12 +390,12 @@ DADataOperateOfDataFrameWidget::~DADataOperateOfDataFrameWidget()
         mConditionalFormatStore->setStatsProvider(nullptr);
         mConditionalFormatStore->setDuplicatesProvider(nullptr);
     }
-    // 子窗口容器先断回调（008 期0 基线修复）：容器的 boundsProvider 回调读 ui->tableView，
-    // delete ui 之后页面仍在析构（~QWidget 阶段），被监听部件（主视口等）的 Hide 事件
-    // 会触发 eventFilter → clampAllWindows → 回调 → 读已释放的 ui（use-after-free，
-    // DATableQuickPlotTest 在页面析构路径偶现 0xC0000005 崩溃）
-    if (mChildWindowContainer) {
-        mChildWindowContainer->setBoundsProvider(nullptr);
+    // 子窗口容器先断回调（008 期0 基线修复，随快速绘图迁入控制器）：容器的
+    // boundsProvider 回调读 ui->tableView，delete ui 之后页面仍在析构（~QWidget 阶段），
+    // 被监听部件（主视口等）的 Hide 事件会触发 eventFilter → clampAllWindows → 回调 →
+    // 读已释放的 ui（use-after-free，DATableQuickPlotTest 在页面析构路径偶现 0xC0000005 崩溃）
+    if (mQuickPlotController) {
+        mQuickPlotController->detach();
     }
     delete ui;
     ui = nullptr;
@@ -6033,8 +6038,57 @@ int DADataOperateOfDataFrameWidget::clearAllNotes()
 }
 
 // ============================================================
-// 表内快速绘图（快速图表预览）
+// 表内快速绘图（快速图表预览；实现迁入 DATableQuickPlotController，008 期3）
 // ============================================================
+
+/**
+ * @brief 用当前（有序）选区构造快速绘图请求（转发快速绘图控制器）
+ */
+DA::DATableChartRequest DADataOperateOfDataFrameWidget::buildQuickPlotRequest() const
+{
+    return mQuickPlotController->buildQuickPlotRequest();
+}
+
+/**
+ * @brief 用当前选区打开/刷新快速绘图子窗口（转发快速绘图控制器）
+ */
+bool DADataOperateOfDataFrameWidget::showQuickPlot()
+{
+    return mQuickPlotController->showQuickPlot();
+}
+
+/**
+ * @brief 关闭快速绘图子窗口（实例保留复用；转发快速绘图控制器）
+ */
+void DADataOperateOfDataFrameWidget::closeQuickPlot()
+{
+    mQuickPlotController->closeQuickPlot();
+}
+
+/**
+ * @brief 快速绘图浮窗是否正在显示（转发快速绘图控制器）
+ */
+bool DADataOperateOfDataFrameWidget::isQuickPlotVisible() const
+{
+    return mQuickPlotController->isQuickPlotVisible();
+}
+
+/**
+ * @brief 设置转入绘图区的处理器（APP 注入；转发快速绘图控制器）
+ */
+void DADataOperateOfDataFrameWidget::setQuickPlotTransferHandler(const QuickPlotTransferHandler& handler)
+{
+    mQuickPlotController->setTransferHandler(handler);
+}
+
+/**
+ * @brief 设置「追加到当前图表」的可用性提供者（APP 注入；转发快速绘图控制器）
+ */
+void DADataOperateOfDataFrameWidget::setQuickPlotAppendAvailabilityProvider(
+    const QuickPlotAppendAvailabilityProvider& provider)
+{
+    mQuickPlotController->setAppendAvailabilityProvider(provider);
+}
 
 /**
  * @brief 有序选区：按视图顺序返回选区涉及的列（数据列号）
@@ -6062,183 +6116,3 @@ QList< int > DADataOperateOfDataFrameWidget::selectedColumnsForDataAction(int fa
     return mSelection->selectedColumnsForDataAction(fallbackColumn);
 }
 
-/**
- * @brief 用当前（有序）选区构造快速绘图请求
- */
-DA::DATableChartRequest DADataOperateOfDataFrameWidget::buildQuickPlotRequest() const
-{
-    DA::DATableChartRequest request;
-    request.data = mData;
-    DAData dataCopy            = mData;  // 值语义共享底层指针，取非 const 接口
-    DATableDataSource* source  = dataCopy.tableSource();
-    if (source) {
-        request.rowCount = source->tableRowCount();
-        request.lazy     = source->isLazyLoaded();
-    }
-    const QList< int > columns = getSelectedDataColumnsInViewOrder(mData.isDataFrame());
-    for (int col : columns) {
-        int occurrence = 0;
-        if (source && col >= 0 && static_cast< std::size_t >(col) < source->tableColumnCount()) {
-            const QString name = source->tableColumnName(static_cast< std::size_t >(col));
-            for (int c = 0; c < col; ++c) {
-                if (source->tableColumnName(static_cast< std::size_t >(c)) == name) {
-                    ++occurrence;
-                }
-            }
-        }
-        request.columns.append(DA::DATableChartPlanner::makeColumn(mData, col, occurrence));
-    }
-    return request;
-}
-
-/**
- * @brief 用当前选区打开/刷新快速绘图子窗口
- *
- * 没有可画图型时子窗口不出现，只在消息区给出原因（实施方案 §3.2 第 1 步）。
- * 内容部件贴入表格子窗口容器（DATableChildWindow 框架承载）：可拖动移动、
- * 8 向手柄缩放、最大化/还原，全程夹取在主视口内——不压表头与滚动条。
- */
-bool DADataOperateOfDataFrameWidget::showQuickPlot()
-{
-    // 构造请求与规划期间会探测列角色/基数（惰性源要取数），给一个等待光标（实施方案 §8.4）
-    DAWaitCursorScoped waitCursor;
-    const DA::DATableChartRequest request = buildQuickPlotRequest();
-    const DA::DATableChartPlan plan       = DA::DATableChartPlanner::plan(request);
-    if (!plan.isPlottable()) {
-        daWarning << DA::DATableQuickPlotWindow::rejectReasonText(plan.reject);
-        return false;
-    }
-
-    if (!mQuickPlotWindow) {
-        mQuickPlotWindow = new DA::DATableQuickPlotWindow(this);
-        mQuickPlotWindow->setAppendAvailabilityProvider([this]() {
-            return mQuickPlotAppendAvailable ? mQuickPlotAppendAvailable() : false;
-        });
-        connect(mQuickPlotWindow, &DA::DATableQuickPlotWindow::closeRequested,
-                this, &DADataOperateOfDataFrameWidget::closeQuickPlot);
-        connect(mQuickPlotWindow, &DA::DATableQuickPlotWindow::currentSelectionRequested, this, [this]() {
-            if (mQuickPlotWindow) {
-                mQuickPlotWindow->updateRequest(buildQuickPlotRequest());
-            }
-        });
-        connect(mQuickPlotWindow, &DA::DATableQuickPlotWindow::transferRequested, this,
-                [this](const DA::DATableChartRequest& req, const DA::DATableChartSpec& spec, bool append) {
-                    if (!mQuickPlotTransfer) {
-                        daWarning << tr("The chart area is not available");  // cn:绘图区不可用
-                        return;
-                    }
-                    QString error;
-                    if (!mQuickPlotTransfer(req, spec, append, &error)) {
-                        daWarning << (error.isEmpty() ? tr("Failed to transfer to the chart area") : error);  // cn:转入绘图区失败
-                        return;
-                    }
-                    daInfo << tr("The chart has been transferred to the chart area");  // cn:已转入绘图区
-                    closeQuickPlot();
-                });
-        connect(this, &DADataOperateOfDataFrameWidget::dataModified,
-                mQuickPlotWindow, &DA::DATableQuickPlotWindow::notifyDataChanged);
-        // 贴入表格子窗口容器（Excel 式浮层）：首次贴在主视口右上角附近；
-        // 标题栏由框架绘制，列名摘要经 titleChanged 同步
-        const QSize preferred = DA::DATableQuickPlotWindow::recommendedSize();
-        const QRect bounds    = tableChildWindowBounds();
-        const QPoint preferredPos(bounds.right() - preferred.width() + 1 - 12, bounds.top() + 12);
-        mQuickPlotFrame = tableChildWindowContainer()->attach(mQuickPlotWindow, QString(), preferred, preferredPos);
-        if (mQuickPlotFrame) {
-            connect(mQuickPlotWindow, &DA::DATableQuickPlotWindow::titleChanged, this, [this](const QString& title) {
-                if (mQuickPlotFrame) {
-                    mQuickPlotFrame->setTitle(title);
-                }
-            });
-        }
-    }
-
-    // 再次打开保持用户上次移动/缩放出的位置与大小，只夹回当前允许区域
-    if (mQuickPlotFrame) {
-        mQuickPlotFrame->setVisible(true);
-        mQuickPlotFrame->raise();
-        mQuickPlotFrame->clampIntoBounds();
-    }
-    mQuickPlotWindow->showForRequest(request);
-    return mQuickPlotWindow->isVisible();
-}
-
-/**
- * @brief 懒建表格子窗口容器
- *
- * 宿主=本页；允许区域=主视口（tableChildWindowBounds）；监听主视口与窗格容器
- * 的移动/缩放/显隐（滚动条显隐、冻结分栏变化、页面缩放都会改变允许区域），
- * 变化后容器自动把全部子窗口夹回允许区域。
- */
-DATableChildWindowContainer* DADataOperateOfDataFrameWidget::tableChildWindowContainer()
-{
-    if (!mChildWindowContainer) {
-        mChildWindowContainer = new DA::DATableChildWindowContainer(this, this);
-        mChildWindowContainer->setBoundsProvider([this]() { return tableChildWindowBounds(); });
-        if (DADataTableView* view = getDataTableView()) {
-            if (QWidget* vp = view->viewport()) {
-                mChildWindowContainer->watchGeometrySource(vp);
-            }
-        }
-        if (mPaneContainer) {
-            mChildWindowContainer->watchGeometrySource(mPaneContainer);
-        }
-    }
-    return mChildWindowContainer;
-}
-
-/**
- * @brief 子窗口允许区域（本页坐标系）
- *
- * 主视口 = 数据网格可视区（不含行头/列表头/滚动条）：子窗口夹取其中，
- * 表头排序与滚动条交互永远不会被浮窗压住；取不到视图时回退窗格容器矩形。
- */
-QRect DADataOperateOfDataFrameWidget::tableChildWindowBounds() const
-{
-    if (DADataTableView* view = getDataTableView()) {
-        if (QWidget* vp = view->viewport()) {
-            return QRect(vp->mapTo(this, QPoint(0, 0)), vp->size());
-        }
-    }
-    if (mPaneContainer) {
-        return QRect(mPaneContainer->mapTo(this, QPoint(0, 0)), mPaneContainer->size());
-    }
-    return rect();
-}
-
-/**
- * @brief 关闭快速绘图子窗口（实例保留复用）
- */
-void DADataOperateOfDataFrameWidget::closeQuickPlot()
-{
-    // 先隐藏承载框架（只藏内容会剩一个空标题栏）
-    if (mQuickPlotFrame) {
-        mQuickPlotFrame->hide();
-    } else if (mQuickPlotWindow) {
-        mQuickPlotWindow->hide();
-    }
-}
-
-/**
- * @brief 快速绘图浮窗是否正在显示
- */
-bool DADataOperateOfDataFrameWidget::isQuickPlotVisible() const
-{
-    return mQuickPlotWindow && mQuickPlotWindow->isVisible();
-}
-
-/**
- * @brief 设置转入绘图区的处理器（APP 注入：APP 才能拿到 DAChartOperateWidget）
- */
-void DADataOperateOfDataFrameWidget::setQuickPlotTransferHandler(const QuickPlotTransferHandler& handler)
-{
-    mQuickPlotTransfer = handler;
-}
-
-/**
- * @brief 设置「追加到当前图表」的可用性提供者（APP 依绘图区当前图表注入）
- */
-void DADataOperateOfDataFrameWidget::setQuickPlotAppendAvailabilityProvider(
-    const QuickPlotAppendAvailabilityProvider& provider)
-{
-    mQuickPlotAppendAvailable = provider;
-}

@@ -10,6 +10,7 @@
 
 class QAbstractItemModel;
 class QUndoCommand;
+class QWidget;
 
 namespace DA
 {
@@ -47,6 +48,9 @@ public:
     void setMetadata(DATableMetadata* md);
     void setHighlightOverlay(DATableHighlightOverlay* o);
     void setData(const DAData& d);
+    // 宿主部件（不透明 QWidget：弹层父级/子窗口视觉宿主/页面坐标系锚点，
+    // 协作者不得经此回访页面类型）
+    void setHostWidget(QWidget* w);
     // ===== 数据 =====
     const DAData& data() const;
     DAPyDataFrame df() const;
@@ -61,6 +65,7 @@ public:
     // ===== 视图 =====
     DADataTableModel* model() const;
     DADataTableView* mainView() const;
+    QWidget* hostWidget() const;
     // 本页所有需要投影的窗格（主窗格在前；冻结窗格懒建后追加）
     QList< DADataTableView* > panes() const;
     DATablePaneContainer* paneContainer() const;
@@ -86,6 +91,7 @@ private:
     DAData mData;
     DADataTableModel* mModel { nullptr };
     DADataTableView* mMainView { nullptr };
+    QWidget* mHostWidget { nullptr };
     DATablePaneContainer* mPaneContainer { nullptr };
     DATableMetadata* mMetadata { nullptr };
     DATableHighlightOverlay* mHighlightOverlay { nullptr };
