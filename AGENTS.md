@@ -195,6 +195,7 @@ AI 编写代码时，日志宏的选择直接影响日志是否进入 UI 消息�
 | | [module-breakdown.md](docs/zh/dev-guide/architecture/module-breakdown.md) | 各模块业务逻辑详解 |
 | | [table-data-source.md](docs/zh/dev-guide/architecture/table-data-source.md) | 表格数据源抽象层（惰性/数据库表接入、块级取数、引用式持久化） |
 | | [table-metadata.md](docs/zh/dev-guide/architecture/table-metadata.md) | 表格元数据架构（注册表/元数据束/子存储、table-metadata.xml、五层绘制管线） |
+| | [table-page.md](docs/zh/dev-guide/architecture/table-page.md) | **表格页架构（008 重构后）**：`DADataOperateOfDataFrameWidget` Facade + `src/DAGui/TableCore/`（页面上下文/选区服务/编辑后效协调器）+ 十个特性控制器（`src/DAGui/Table<X>/`）的分层；三条硬规则、编辑后效策略表、新增表内功能的 3 步模板——**改表格页任何代码前必读** |
 | | [table-quick-plot.md](docs/zh/dev-guide/architecture/table-quick-plot.md) | 表内快速绘图（`src/DAGui/TableChart/`：请求/规格/规划器/采样/唯一图元编排器；`src/DAGui/TableChildWindow/`：表格子窗口容器——任意部件贴入表格变可移动/可缩放子窗口；转入绘图区的撤销宏） |
 | | [i18n.md](docs/zh/dev-guide/general/i18n.md) / [python-i18n.md](docs/zh/dev-guide/general/python-i18n.md) | 国际化规范 |
 | | [workflow-overview.md](docs/zh/dev-guide/workflow/workflow-overview.md) | 工作流系统架构 |
