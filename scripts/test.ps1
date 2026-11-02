@@ -94,7 +94,15 @@ function Get-TestNames {
     return $names
 }
 
-# 改动文件 → 套件。返回空数组表示"已知无测试覆盖"，返回 $null 表示"规则未命中"。
+# 改动文件 → 套件。
+# 返回 [pscustomobject]@{ Kind = 'suites' | 'none' | 'unmapped'; Suites = <string[]> }。
+# 用对象而不是裸数组返回：PowerShell 会把空数组 unroll 成 $null，调用方无法区分
+# "已知无测试覆盖"（可以放心跳过）与"规则未命中"（必须保守地全跑）。
+function New-SuiteResult {
+    param([string]$Kind, [string[]]$Suites = @())
+    return [pscustomobject]@{ Kind = $Kind; Suites = $Suites }
+}
+
 function Get-SuitesForFile {
     param([string]$Path)
 
@@ -102,54 +110,81 @@ function Get-SuitesForFile {
 
     # 测试自身 / 构建脚本改动：全跑（保守）
     if ($p -match '^src/tst/' -or $p -match '^cmake/' -or $p -match '^CMakeLists\.txt$' -or $p -match '^src/CMakeLists\.txt$') {
-        return $ActiveSuites
+        return New-SuiteResult -Kind 'suites' -Suites $ActiveSuites
     }
     # 已知无测试覆盖的区域
     if ($p -match '^(docs|scripts|requirements\.txt|\.github)/' -or $p -match '^plugins/' -or
         $p -match '^src/(DAPyWorkFlow|DAGraphicsView|DAPluginSupport|DAInterface|DAAxOfficeWrapper)/' -or
         $p -match '^src/3rdparty/') {
-        return @()
+        return New-SuiteResult -Kind 'none'
+    }
+    # 翻译资源与配置生成物：不参与测试选择。
+    # 工作树里 src/DAConfigs.h 与 src/i18n/backup-da_zh_CN.ts 是**固定噪声**（配置期重新生成 /
+    # 换行符差异），若把它们当"未命中"处理，-Changed 会永远回落到全量，套件选择形同虚设。
+    if ($p -match '^src/i18n/' -or $p -eq 'src/DAConfigs.h' -or $p -match '\.(ts|qm|po)$') {
+        return New-SuiteResult -Kind 'none'
     }
     # 基础层：上层全都依赖，全跑
     if ($p -match '^src/(DAShared|DAUtils|DAMessageHandler|DAPyBindQt|DAPyScripts)/') {
-        return $ActiveSuites
+        return New-SuiteResult -Kind 'suites' -Suites $ActiveSuites
     }
     if ($p -match '^src/DAData/') {
-        return @('data', 'table', 'chart')
+        return New-SuiteResult -Kind 'suites' -Suites @('data', 'table', 'chart')
     }
     if ($p -match '^src/DAFigure/') {
-        return @('chart', 'table')
+        return New-SuiteResult -Kind 'suites' -Suites @('chart', 'table')
     }
     if ($p -match '^src/DAAgent/' -or $p -match '^src/DAGui/Agent/' -or $p -match '^src/PyScripts/DAWorkbench/agent/') {
-        return @('agent')
+        return New-SuiteResult -Kind 'suites' -Suites @('agent')
     }
     if ($p -match '^src/DAGui/(Chart|Chart3DSetting|ChartAddItem|ChartSetting)/') {
-        return @('chart')
+        return New-SuiteResult -Kind 'suites' -Suites @('chart')
     }
     if ($p -match '^src/DAGui/TableChart/') {
-        return @('table')
+        return New-SuiteResult -Kind 'suites' -Suites @('table')
     }
     # 表格：文件名即可判定（表格是寄居在 DAGui 里的子系统）
     if ($p -match '^src/DAGui/(DATable|DADataTable|DADataHeaderView|DADataTableView|DADataOperateOfDataFrameWidget)') {
-        return @('table')
+        return New-SuiteResult -Kind 'suites' -Suites @('table')
     }
     if ($p -match '^src/DAGui/Dialog/DADialog(Table|FindReplace|SplitColumn|MergeColumns|GroupBy|Reshape|FillSeries|Validation|ComputedColumn|ConditionalFormat|Note|GotoCell)') {
-        return @('table')
+        return New-SuiteResult -Kind 'suites' -Suites @('table')
     }
     if ($p -match '^src/DAGui/(Commands|Models)/') {
         if ($p -match 'Table|Column|Sort|Search|Find|Conditional|Computed|Validat|Note') {
-            return @('table')
+            return New-SuiteResult -Kind 'suites' -Suites @('table')
         }
-        return @('table', 'chart')
+        return New-SuiteResult -Kind 'suites' -Suites @('table', 'chart')
     }
     if ($p -match '^src/DAGui/Dialog/') {
-        return @('table', 'chart', 'agent')
+        return New-SuiteResult -Kind 'suites' -Suites @('table', 'chart', 'agent')
     }
     # 其余 DAGui 代码：三个上层套件都可能用到，全部跑（保守兜底）
     if ($p -match '^src/DAGui/') {
-        return @('table', 'chart', 'agent')
+        return New-SuiteResult -Kind 'suites' -Suites @('table', 'chart', 'agent')
     }
-    return $null
+    return New-SuiteResult -Kind 'unmapped'
+}
+
+# 调用 git 并返回 @{ Ok = <bool>; Lines = <string[]> }。
+# 用对象而不是裸数组返回：PowerShell 会把空数组 unroll 成 $null，调用方无法区分
+# "命令失败" 和 "命令成功但没有输出"（-Changed 的基线探测正需要这个区分）。
+# 另外 Windows PowerShell 5.1 下 $ErrorActionPreference='Stop' 会把原生命令的 stderr
+# （例如 git 的 CRLF 警告）当成终止性错误，这里必须临时降级为 Continue。
+function Invoke-GitLines {
+    param([string[]]$GitArgs)
+
+    $prev = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    try {
+        $out = & git -C $projectRoot @GitArgs 2>$null
+        $ok = ($LASTEXITCODE -eq 0)
+        $lines = @($out | Where-Object { $_ })
+        return [pscustomobject]@{ Ok = $ok; Lines = $lines }
+    }
+    finally {
+        $ErrorActionPreference = $prev
+    }
 }
 
 function Get-ChangedFiles {
@@ -158,16 +193,16 @@ function Get-ChangedFiles {
     $files = New-Object System.Collections.Generic.List[string]
 
     if ($BaseRef) {
-        $diffOut = git -C $projectRoot diff --name-only "$BaseRef...HEAD" 2>$null
-        if ($LASTEXITCODE -eq 0) {
-            foreach ($f in $diffOut) { if ($f) { $files.Add($f) } }
-        }
-        else {
+        $diffRes = Invoke-GitLines -GitArgs @('diff', '--name-only', "$BaseRef...HEAD")
+        if (-not $diffRes.Ok) {
             Write-Host "[WARN] 基线 '$BaseRef' 不可用，只比较工作区改动" -ForegroundColor Yellow
         }
+        else {
+            foreach ($f in $diffRes.Lines) { $files.Add($f) }
+        }
     }
-    foreach ($f in (git -C $projectRoot diff --name-only 2>$null)) { if ($f) { $files.Add($f) } }
-    foreach ($f in (git -C $projectRoot ls-files --others --exclude-standard 2>$null)) { if ($f) { $files.Add($f) } }
+    foreach ($f in (Invoke-GitLines -GitArgs @('diff', '--name-only')).Lines) { $files.Add($f) }
+    foreach ($f in (Invoke-GitLines -GitArgs @('ls-files', '--others', '--exclude-standard')).Lines) { $files.Add($f) }
 
     return ($files | Select-Object -Unique)
 }
@@ -247,16 +282,16 @@ if ($Changed) {
         $unmapped = @()
         $uncovered = @()
         foreach ($f in $changedFiles) {
-            $suites = Get-SuitesForFile -Path $f
-            if ($null -eq $suites) {
+            $res = Get-SuitesForFile -Path $f
+            if ($res.Kind -eq 'unmapped') {
                 $unmapped += $f
                 continue
             }
-            if ($suites.Count -eq 0) {
+            if ($res.Kind -eq 'none') {
                 $uncovered += $f
                 continue
             }
-            foreach ($s in $suites) {
+            foreach ($s in $res.Suites) {
                 if (-not $selectedSuites.Contains($s)) { $selectedSuites.Add($s) }
             }
         }
