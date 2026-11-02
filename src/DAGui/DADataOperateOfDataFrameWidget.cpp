@@ -84,6 +84,7 @@
 #include "TableOps/DATableColumnCombineOps.h"
 #include "TableOps/DATableRenameOps.h"
 #include "TableOps/DATableColumnOps.h"
+#include "TableOps/DATableOperationRegistry.h"
 // Dialog
 #include "Dialog/DARenameColumnsNameDialog.h"
 #include "Dialog/DADialogDataframeColumnCastToNumeric.h"
@@ -338,6 +339,16 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
     mRenameOps = new DATableRenameOps(*mContext, mViewStateController, mComputedColumnController, mValidationController, this);
     // 列增删（插列对话框/删列视图状态快照重映射；删列后重投影经视图状态控制器）
     mColumnOps = new DATableColumnOps(*mContext, *mSelection, mMutation, mViewStateController, this);
+    // 算子注册表（008 期4：id → 唯一实例；Agent/插件的 id 驱动入口与菜单启用规则共用）
+    mOpRegistry.add(mRowOps);
+    mOpRegistry.add(mCellOps);
+    mOpRegistry.add(mTypeOps);
+    mOpRegistry.add(mFillOps);
+    mOpRegistry.add(mResultOps);
+    mOpRegistry.add(mReshapeOps);
+    mOpRegistry.add(mColumnCombineOps);
+    mOpRegistry.add(mRenameOps);
+    mOpRegistry.add(mColumnOps);
     // 窗格装配（006b 抽取的唯一装配点）：表头替换 → setModel → 委托 → 逐窗格连接；
     // 必须在 mStyleDelegate 创建之后（里面要用它），在 setDAData/applyViewStateFromStore 之前
     configurePaneView(ui->tableView);

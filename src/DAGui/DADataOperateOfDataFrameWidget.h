@@ -20,6 +20,7 @@ class QItemSelectionModel;
 #include "DATableValidationRule.h"
 #include "TableValidation/DATableValidationController.h"
 #include "TableOps/DATableFillOps.h"
+#include "TableOps/DATableOperationRegistry.h"
 #include "DADataOperatePageWidget.h"
 #include "DADataHeaderView.h"
 #include "TableChart/DATableChartTypes.h"
@@ -540,6 +541,7 @@ private:
     DATableColumnCombineOps* mColumnCombineOps { nullptr };  ///< 分列/合并列算子（008 期4，页级持有）
     DATableRenameOps* mRenameOps { nullptr };  ///< 列改名算子（008 期4，页级持有）
     DATableColumnOps* mColumnOps { nullptr };  ///< 列增删算子（008 期4，页级持有）
+    DATableOperationRegistry mOpRegistry;  ///< 算子注册表（008 期4：id → 唯一实例）
 };
 }  // end of namespace DA
 #endif  // DADATAOPERATEOFDATAFRAMEWIDGET_H
