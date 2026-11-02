@@ -474,6 +474,12 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
 
 DADataOperateOfDataFrameWidget::~DADataOperateOfDataFrameWidget()
 {
+    // 子窗口容器的事件过滤与允许区域提供者都指向本部件。必须在 ui 析构前解除：
+    // ~QWidget 期间子窗口隐藏会抛 Hide 事件 → 回调 tableChildWindowBounds()，
+    // 而此时本部件的 QWidget 部分已析构（QPointer 尚未清空），读 size() 会崩溃。
+    if (mChildWindowContainer) {
+        mChildWindowContainer->detachFromHost();
+    }
     // 条件格式子存储是会话级（借自注册表，比 widget 长寿）：清空统计提供者，
     // 避免持有已销毁页面的回调（QPointer 已防悬挂，此处彻底释放 lambda 捕获）
     if (mConditionalFormatStore) {
