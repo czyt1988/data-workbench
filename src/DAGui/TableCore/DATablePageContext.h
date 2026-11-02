@@ -86,6 +86,9 @@ public:
     std::function< void() > notifyHostValueChange;
     // 关闭页级浮窗（快速绘图子窗口等，结构变更后列身份失效）；空 = 不关闭
     std::function< void() > closeFloatingWindows;
+    // 定位单入口（007 语义：数据源绝对行 + 列位置，隐藏列自动取消隐藏 + 冻结区处置）；
+    // 报告窗等控制器经此触达页面的定位能力；空 = 不定位
+    std::function< void(int, int) > locateActualCell;
 
 private:
     DAData mData;

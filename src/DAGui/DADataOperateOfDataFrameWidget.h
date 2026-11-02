@@ -18,6 +18,7 @@ class QItemSelectionModel;
 #include "DATableConditionalFormatRule.h"
 #include "DATableComputedColumnStore.h"
 #include "DATableValidationRule.h"
+#include "TableValidation/DATableValidationController.h"
 #include "DADataOperatePageWidget.h"
 #include "DADataHeaderView.h"
 #include "TableChart/DATableChartTypes.h"
@@ -56,6 +57,7 @@ class DATableSelectionService;
 class DATableMutationCoordinator;
 class DATableNoteController;
 class DATableQuickPlotController;
+class DATableValidationController;
 
 
 /**
@@ -265,15 +267,10 @@ public:
     // 每一列各生成一个序列，一条 paste 命令入栈；返回写入单元格数（取消返回 0）
     int showFillSeriesDialog();
 
-    // ===== 数据校验（005 T1.25）=====
-    // 单条规则的校验结果（evaluateValidationRules 输出，报告对话框消费）
-    struct ValidationRuleOutcome
-    {
-        DATableValidationRule rule;   ///< 规则定义
-        int columnPosition { -1 };    ///< 解析出的列位置（-1 = 列不存在）
-        bool columnMissing { false }; ///< 规则引用的列不存在（跳过求值）
-        QVector< int > rows;          ///< 违规行（数据源绝对行号，升序）
-    };
+    // ===== 数据校验（005 T1.25；实现迁入 DATableValidationController，008 期3）=====
+    // 单条规则的校验结果（evaluateValidationRules 输出，报告对话框消费）；
+    // 结构随实现迁入 DATableValidationOutcome，此处 using 别名保留旧 public 名
+    using ValidationRuleOutcome = DATableValidationOutcome;
     // 获取校验规则子存储（借自元数据束，可能为 nullptr）
     DATableValidationStore* validationStore() const;
     // 打开校验规则编辑对话框；确定后按差异生成 setRules 命令入页撤销栈（D4）
@@ -576,7 +573,7 @@ private:
     DADialogFindReplace* mFindReplaceDialog { nullptr };  ///< 非模态浮动查找/替换条（懒建，页级持有）
     class DADialogTableColumnView* mDialogColumnView { nullptr };  ///< 列视图对话框（006d，懒建复用）
     class DADialogGotoCell* mGotoDialog { nullptr };               ///< 定位对话框（007，懒建复用）
-    QPointer< DADialogValidationReport > mValidationReport;  ///< 非模态校验报告窗（005 T1.25，重跑前先关旧的）
+    //（非模态校验报告窗已随校验迁入 DATableValidationController，008 期3）
     //（快速绘图窗/框架、转入处理器、追加可用性、表格子窗口容器已迁入 DATableQuickPlotController，008 期3）
 
     // ===== 表格页上下文与选区服务（008 期1）=====
@@ -585,6 +582,7 @@ private:
     DATableMutationCoordinator* mMutation { nullptr };  ///< 编辑后效协调器（008 期2，QObject 父子持有）
     DATableNoteController* mNoteController { nullptr };  ///< 批注控制器（008 期3，QObject 父子持有）
     DATableQuickPlotController* mQuickPlotController { nullptr };  ///< 快速绘图控制器（008 期3，QObject 父子持有）
+    DATableValidationController* mValidationController { nullptr };  ///< 数据校验控制器（008 期3，QObject 父子持有）
 
     // ===== 查找状态（002 T1.4）=====
     QVector< QPair< int, int > > mFindHits;  ///< 当前命中集（数据源绝对行列，行主序，≤上限）

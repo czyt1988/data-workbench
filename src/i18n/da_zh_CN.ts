@@ -20518,4 +20518,67 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>本表没有批注</translation>
     </message>
 </context>
+<context>
+    <name>DA::DATableValidationController</name>
+    <message>
+        <location filename="../DAGui/TableValidation/DATableValidationController.cpp" line="+0"/>
+        <source>Numeric range</source>
+        <translation>数值区间</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableValidation/DATableValidationController.cpp" line="+1"/>
+        <source>Date range</source>
+        <translation>日期区间</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableValidation/DATableValidationController.cpp" line="+1"/>
+        <source>Allowed values (enum)</source>
+        <translation>枚举集合</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableValidation/DATableValidationController.cpp" line="+1"/>
+        <source>Not empty</source>
+        <translation>非空</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableValidation/DATableValidationController.cpp" line="+1"/>
+        <source>Unique</source>
+        <translation>唯一</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableValidation/DATableValidationController.cpp" line="+1"/>
+        <source>Regex (full match)</source>
+        <translation>正则（整格匹配）</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableValidation/DATableValidationController.cpp" line="+1"/>
+        <source>%1 (occurrence %2)</source>
+        <translation>%1（第 %2 个同名列）</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableValidation/DATableValidationController.cpp" line="+1"/>
+        <source>Validation failed: %1</source>
+        <translation>数据校验失败：%1</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableValidation/DATableValidationController.cpp" line="+1"/>
+        <source>No enabled validation rules yet — add rules first</source>
+        <translation>暂无启用的校验规则——请先添加规则</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableValidation/DATableValidationController.cpp" line="+1"/>
+        <source>Row %1: %2</source>
+        <translation>行 %1：%2</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableValidation/DATableValidationController.cpp" line="+1"/>
+        <source>Rename Column</source>
+        <translation>重命名列</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableValidation/DATableValidationController.cpp" line="+1"/>
+        <source>%1 validation rule(s) reference the renamed column(s): %2. Their references will be updated automatically. Continue?</source>
+        <translation>有 %1 条校验规则引用被改名的列：%2。其引用将自动批量更新，是否继续？</translation>
+    </message>
+</context>
 </TS>

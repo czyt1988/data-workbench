@@ -20493,4 +20493,67 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>This table has no notes</translation>
     </message>
 </context>
+<context>
+    <name>DA::DATableValidationController</name>
+    <message>
+        <location filename="../DAGui/TableValidation/DATableValidationController.cpp" line="+0"/>
+        <source>Numeric range</source>
+        <translation>Numeric range</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableValidation/DATableValidationController.cpp" line="+1"/>
+        <source>Date range</source>
+        <translation>Date range</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableValidation/DATableValidationController.cpp" line="+1"/>
+        <source>Allowed values (enum)</source>
+        <translation>Allowed values (enum)</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableValidation/DATableValidationController.cpp" line="+1"/>
+        <source>Not empty</source>
+        <translation>Not empty</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableValidation/DATableValidationController.cpp" line="+1"/>
+        <source>Unique</source>
+        <translation>Unique</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableValidation/DATableValidationController.cpp" line="+1"/>
+        <source>Regex (full match)</source>
+        <translation>Regex (full match)</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableValidation/DATableValidationController.cpp" line="+1"/>
+        <source>%1 (occurrence %2)</source>
+        <translation>%1 (occurrence %2)</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableValidation/DATableValidationController.cpp" line="+1"/>
+        <source>Validation failed: %1</source>
+        <translation>Validation failed: %1</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableValidation/DATableValidationController.cpp" line="+1"/>
+        <source>No enabled validation rules yet — add rules first</source>
+        <translation>No enabled validation rules yet — add rules first</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableValidation/DATableValidationController.cpp" line="+1"/>
+        <source>Row %1: %2</source>
+        <translation>Row %1: %2</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableValidation/DATableValidationController.cpp" line="+1"/>
+        <source>Rename Column</source>
+        <translation>Rename Column</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableValidation/DATableValidationController.cpp" line="+1"/>
+        <source>%1 validation rule(s) reference the renamed column(s): %2. Their references will be updated automatically. Continue?</source>
+        <translation>%1 validation rule(s) reference the renamed column(s): %2. Their references will be updated automatically. Continue?</translation>
+    </message>
+</context>
 </TS>
