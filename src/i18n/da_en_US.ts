@@ -21096,4 +21096,57 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation>Reshape Operations</translation>
     </message>
 </context>
+<context>
+    <name>DA::DATableColumnCombineOps</name>
+    <message>
+        <location filename="../DAGui/TableOps/DATableColumnCombineOps.cpp" line="+0"/>
+        <source>Split Column requires an editable table</source>
+        <translation>Split Column requires an editable table</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableColumnCombineOps.cpp" line="+1"/>
+        <source>Please select exactly one column to split</source>
+        <translation>Please select exactly one column to split</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableColumnCombineOps.cpp" line="+1"/>
+        <source>Failed to snapshot the source column</source>
+        <translation>Failed to snapshot the source column</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableColumnCombineOps.cpp" line="+1"/>
+        <source>Split column failed: %1</source>
+        <translation>Split column failed: %1</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableColumnCombineOps.cpp" line="+1"/>
+        <source>Merge Columns requires an editable table</source>
+        <translation>Merge Columns requires an editable table</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableColumnCombineOps.cpp" line="+1"/>
+        <source>Please select at least two columns to merge</source>
+        <translation>Please select at least two columns to merge</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableColumnCombineOps.cpp" line="+1"/>
+        <source>Failed to snapshot the source columns</source>
+        <translation>Failed to snapshot the source columns</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableColumnCombineOps.cpp" line="+1"/>
+        <source>Merge columns failed: %1</source>
+        <translation>Merge columns failed: %1</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableColumnCombineOps.cpp" line="+1"/>
+        <source>Computed column(s) %1 became invalid because their dependency column(s) were merged</source>
+        <translation>Computed column(s) %1 became invalid because their dependency column(s) were merged</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableColumnCombineOps.cpp" line="+1"/>
+        <source>Split / Merge Columns</source>
+        <translation>Split / Merge Columns</translation>
+    </message>
+</context>
 </TS>
