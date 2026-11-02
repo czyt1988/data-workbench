@@ -1,6 +1,8 @@
 #include "DATablePageContext.h"
 // qt
 #include <QAbstractItemModel>
+// DAData
+#include "DATableDataSource.h"
 // DAGui
 #include "Models/DADataTableModel.h"
 #include "DADataTableView.h"
@@ -150,6 +152,23 @@ int DATablePageContext::toActualRow(int viewRow) const
         return viewRow;
     }
     return mMainView->toActualRow(viewRow);
+}
+
+/**
+ * @brief 数据源是否可编辑
+ *
+ * 判定路径同 DADataTableModel::actualFlags 的只读源分支：tableSource 非空且
+ * isTableEditable() 为假（如数据库惰性表）→ 只读。
+ * @return 可编辑返回 true
+ */
+bool DATablePageContext::isDataSourceEditable() const
+{
+    if (mData.isNull()) {
+        return false;
+    }
+    DAData d                    = mData;
+    const DATableDataSource* ts = d.tableSource();
+    return !(ts && !ts->isTableEditable());
 }
 
 DADataTableModel* DATablePageContext::model() const

@@ -58,6 +58,7 @@ class DATableMutationCoordinator;
 class DATableNoteController;
 class DATableQuickPlotController;
 class DATableValidationController;
+class DATableComputedColumnController;
 
 
 /**
@@ -507,10 +508,7 @@ private:
     // 采集用户拖拽的列宽写入视图状态子存储（程序化/布局触发的 sectionResized 不记录）；
     // source = 触发信号的那个窗格的表头（006b 起不再写死 ui->tableView）
     void onHeaderSectionResized(DADataTableView* source, int logicalIndex, int newSize);
-    // ===== 计算列私有辅助（004 T1.23）=====
-    // 求值 def 并入栈重算命令：isNewColumn=true 走创建路径（undo 删列），
-    // false 走重算路径（undo 还原旧列）；成功返回 true（求值失败标失效并提示）
-    bool applyComputedColumnEval(const DAComputedColumn& def, bool isNewColumn);
+    // ===== 计算列私有辅助（004 T1.23；主体迁入 DATableComputedColumnController，008 期3）=====
     // 列改名确认：提示「有 N 个计算列引用它」，返回是否继续（无引用直接 true）
     bool confirmComputedColumnRename(const QList< QPair< QString, QString > >& renames) const;
     // 把计算列定义迁移挂进改名命令的 directional 回调（exec 旧→新 / undo 新→旧，
@@ -518,14 +516,10 @@ private:
     void wireComputedColumnRenameMigration(class DACommandDataFrame_renameColumns* cmd,
                                            const QList< QPair< QString, QString > >& renames) const;
     // 数据变更后把依赖这些列（或目标列自身被改）的计算列标待重算（actualCols 为变更
-    // 列位置；空列表 = 无操作）
+    // 列位置；空列表 = 无操作；实现转发协调器）
     void markComputedColumnsStaleForColumns(const QList< int >& actualCols);
-    // 拿不到列信息的整表操作（插删行/列转索引等）保守把全部计算列标待重算（R8）
-    void markAllComputedColumnsStale();
-    // store 变更后刷新表头（底色/角标/tooltip 重绘）
-    void refreshComputedColumnHeaders();
-    // 列位置索引 → 列名（越界返回空串）
-    QString columnNameAt(int actualCol) const;
+    //（applyEval/refreshHeaders/columnNameAt/markAllComputedColumnsStale 已随计算列
+    //  迁入 DATableComputedColumnController，008 期3）
     // 注册新数据集（004 T1.22/T1.27 共用：命名 + addData_ 可撤销注册 + newDataCreated）
     void registerNewDataset(const DAPyDataFrame& resultDf, const QString& name, const QString& describe);
     // 就地替换（004 T1.27）：确认框（列清除条目数）→ 超大表降级分支 / 发信号交 APP 建 Swap 命令
@@ -583,6 +577,7 @@ private:
     DATableNoteController* mNoteController { nullptr };  ///< 批注控制器（008 期3，QObject 父子持有）
     DATableQuickPlotController* mQuickPlotController { nullptr };  ///< 快速绘图控制器（008 期3，QObject 父子持有）
     DATableValidationController* mValidationController { nullptr };  ///< 数据校验控制器（008 期3，QObject 父子持有）
+    DATableComputedColumnController* mComputedColumnController { nullptr };  ///< 计算列控制器（008 期3，QObject 父子持有）
 
     // ===== 查找状态（002 T1.4）=====
     QVector< QPair< int, int > > mFindHits;  ///< 当前命中集（数据源绝对行列，行主序，≤上限）

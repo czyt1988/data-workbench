@@ -211,6 +211,7 @@ set(DA_LIB_SUBDIR_TableCore ${CMAKE_CURRENT_SOURCE_DIR}/TableCore)
 set(DA_LIB_SUBDIR_TableNote ${CMAKE_CURRENT_SOURCE_DIR}/TableNote)
 set(DA_LIB_SUBDIR_TableQuickPlot ${CMAKE_CURRENT_SOURCE_DIR}/TableQuickPlot)
 set(DA_LIB_SUBDIR_TableValidation ${CMAKE_CURRENT_SOURCE_DIR}/TableValidation)
+set(DA_LIB_SUBDIR_TableComputedColumn ${CMAKE_CURRENT_SOURCE_DIR}/TableComputedColumn)
 
 # Models
 file(GLOB DA_LIB_HEADER_FILES_Models ${DA_LIB_SUBDIR_Models}/*.h)
@@ -514,6 +515,10 @@ file(GLOB DA_LIB_SOURCE_FILES_TableQuickPlot ${DA_LIB_SUBDIR_TableQuickPlot}/*.c
 file(GLOB DA_LIB_HEADER_FILES_TableValidation ${DA_LIB_SUBDIR_TableValidation}/*.h)
 file(GLOB DA_LIB_SOURCE_FILES_TableValidation ${DA_LIB_SUBDIR_TableValidation}/*.cpp)
 
+#TableComputedColumn（计算列控制器，008 期3）
+file(GLOB DA_LIB_HEADER_FILES_TableComputedColumn ${DA_LIB_SUBDIR_TableComputedColumn}/*.h)
+file(GLOB DA_LIB_SOURCE_FILES_TableComputedColumn ${DA_LIB_SUBDIR_TableComputedColumn}/*.cpp)
+
 # Agent UI 需要 WebEngine/WebChannel/Network（DAGui/Agent 子目录的 DAAgentDockWidget 等）
 # Qt5 的一体化模块 QtWebEngine 在 Qt6 中拆分为 WebEngineCore/WebEngineQuick/WebEngineWidgets，
 # 官方 Qt6 安装不再提供 Qt6WebEngine 兼容包，组件名需按大版本区分
@@ -604,6 +609,9 @@ da_add_library(
             #TableValidation
             ${DA_LIB_HEADER_FILES_TableValidation}
             ${DA_LIB_SOURCE_FILES_TableValidation}
+            #TableComputedColumn
+            ${DA_LIB_HEADER_FILES_TableComputedColumn}
+            ${DA_LIB_SOURCE_FILES_TableComputedColumn}
             ${CMAKE_CURRENT_SOURCE_DIR}/../DAGlobals.h
     QT_PUBLIC Core Gui Widgets Xml Svg ${DAGUI_WEBENGINE_COMPS}
     LINK_PUBLIC DAUtils DAMessageHandler DAData DAPyWorkFlow DAFigure
@@ -614,9 +622,9 @@ da_add_library(
     THIRDPARTY_PUBLIC DAWidgets ads qwt quazip
     THIRDPARTY python pybind11 SARibbonBar ctk
     # ui 文件进行窗口提升时需要找到这些子目录的头文件
-    PUBLIC_SUBDIRS Dialog ChartSetting Chart3DSetting NodeSetting Chart ChartAddItem Agent MarkdownView Stats TableChart TableChildWindow TableCore TableNote TableQuickPlot TableValidation
+    PUBLIC_SUBDIRS Dialog ChartSetting Chart3DSetting NodeSetting Chart ChartAddItem Agent MarkdownView Stats TableChart TableChildWindow TableCore TableNote TableQuickPlot TableValidation TableComputedColumn
     # 头文件安装：根 + 各子目录
-    HEADERS_DIRS Models MimeData Commands ChartSetting Chart3DSetting NodeSetting Chart ChartAddItem Agent MarkdownView Stats TableChart TableChildWindow TableCore TableNote TableQuickPlot TableValidation
+    HEADERS_DIRS Models MimeData Commands ChartSetting Chart3DSetting NodeSetting Chart ChartAddItem Agent MarkdownView Stats TableChart TableChildWindow TableCore TableNote TableQuickPlot TableValidation TableComputedColumn
     HEADERS ${DA_LIB_HEADER_FILES} ${DA_LIB_HEADER_FILES_Dialog}
 )
 

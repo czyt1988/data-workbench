@@ -62,6 +62,8 @@ public:
     QStringList columnNames() const;
     // 视图行（滑动窗内逻辑行）→ 数据源绝对行（唯一换算点；无主窗格时原样返回）
     int toActualRow(int viewRow) const;
+    // 数据源是否可编辑（tableSource 非空且只读——如数据库惰性表——为假）
+    bool isDataSourceEditable() const;
     // ===== 视图 =====
     DADataTableModel* model() const;
     DADataTableView* mainView() const;
@@ -89,6 +91,8 @@ public:
     // 定位单入口（007 语义：数据源绝对行 + 列位置，隐藏列自动取消隐藏 + 冻结区处置）；
     // 报告窗等控制器经此触达页面的定位能力；空 = 不定位
     std::function< void(int, int) > locateActualCell;
+    // 数据脏标（页面 dataModified 信号；计算列重算等改数据的操作经此标脏）；空 = 不标
+    std::function< void() > notifyDataModified;
 
 private:
     DAData mData;

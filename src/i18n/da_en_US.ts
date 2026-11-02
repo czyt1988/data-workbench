@@ -20556,4 +20556,42 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>%1 validation rule(s) reference the renamed column(s): %2. Their references will be updated automatically. Continue?</translation>
     </message>
 </context>
+<context>
+    <name>DA::DATableComputedColumnController</name>
+    <message>
+        <location filename="../DAGui/TableComputedColumn/DATableComputedColumnController.cpp" line="+0"/>
+        <source>The table is read-only and does not support computed columns</source>
+        <translation>The table is read-only and does not support computed columns</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableComputedColumn/DATableComputedColumnController.cpp" line="+1"/>
+        <source>The formula must not reference the target column itself</source>
+        <translation>The formula must not reference the target column itself</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableComputedColumn/DATableComputedColumnController.cpp" line="+1"/>
+        <source>Rename Column</source>
+        <translation>Rename Column</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableComputedColumn/DATableComputedColumnController.cpp" line="+1"/>
+        <source>%1 computed column(s) reference the renamed column(s): %2. Their references will be updated automatically. Continue?</source>
+        <translation>%1 computed column(s) reference the renamed column(s): %2. Their references will be updated automatically. Continue?</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableComputedColumn/DATableComputedColumnController.cpp" line="+1"/>
+        <source>Recompute All Computed Columns</source>
+        <translation>Recompute All Computed Columns</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableComputedColumn/DATableComputedColumnController.cpp" line="+1"/>
+        <source>Failed to evaluate the formula of computed column &quot;%1&quot;: %2</source>
+        <translation>Failed to evaluate the formula of computed column &quot;%1&quot;: %2</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableComputedColumn/DATableComputedColumnController.cpp" line="+1"/>
+        <source>Column &quot;%1&quot; has no computed formula</source>
+        <translation>Column &quot;%1&quot; has no computed formula</translation>
+    </message>
+</context>
 </TS>
