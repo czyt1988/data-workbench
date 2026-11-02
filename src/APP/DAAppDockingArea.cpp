@@ -356,6 +356,10 @@ void DAAppDockingArea::buildOtherWidgets()
     // 承载它的浮动 dock 仍然按需创建（见 showDataStatsWidget）
     mDataStatsWidget = new DADataStatsWidget(mApp);
     mDataStatsWidget->setObjectName(QString::fromUtf8(UiNames::Dock::DataStatsWidget));
+    // 还没挂进 dock 之前它只是主窗口的一个无布局子控件，父窗口 show 时会被自动显示，
+    // 于是启动时会在主窗口左上角（Ribbon 应用按钮上方）露出一块残片；显式隐藏，
+    // 等 showDataStatsWidget 把它包进 dock 后再显示
+    mDataStatsWidget->hide();
 }
 
 /**
@@ -665,6 +669,8 @@ void DAAppDockingArea::showDataStatsWidget(const DA::DATableChartRequest& reques
     if (mDataStatsDock->isClosed()) {
         mDataStatsDock->toggleView(true);
     }
+    // 创建时显式隐藏过（见 buildOtherWidgets），不会被 dock 的 show 带出来，这里手动显示
+    mDataStatsWidget->show();
     mDataStatsDock->raise();
     // 显式同步一次：首次创建时 Show 事件可能早于几何生效，不依赖信号
     Q_EMIT dataStatsDockVisibilityChanged(!mDataStatsDock->isClosed() && mDataStatsDock->isVisible());
