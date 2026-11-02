@@ -3358,7 +3358,7 @@
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+857"/>
+        <location filename="../APP/DAAppController.cpp" line="+875"/>
         <source>Save Project</source>
         <translation>保存工程</translation>
     </message>
@@ -3664,12 +3664,12 @@
         <translation>没有选中可复制的单元格</translation>
     </message>
     <message>
-        <location line="-1534"/>
+        <location line="-1552"/>
         <source>No active table</source>
         <translation>无活动表格</translation>
     </message>
     <message>
-        <location line="+1922"/>
+        <location line="+1940"/>
         <source>Cannot rename a series, please select a dataset</source>
         <translation>无法重命名series，请选中数据集</translation>
     </message>
@@ -3719,7 +3719,7 @@
         <translation>列[%1] 最小值位于第 %2 行</translation>
     </message>
     <message>
-        <location line="+45"/>
+        <location line="+67"/>
         <source>Select the columns to plot first</source>
         <translation>请先选择要绘图的列</translation>
     </message>
@@ -3769,10 +3769,10 @@
         <translation>新工作流名称</translation>
     </message>
     <message>
-        <location line="-1913"/>
+        <location line="-1935"/>
         <location line="+32"/>
         <location line="+1083"/>
-        <location line="+975"/>
+        <location line="+997"/>
         <source>Please select a valid column</source>
         <translation>请选择正确的列</translation>
     </message>
@@ -3797,12 +3797,12 @@
         <translation>选中的数据源为空</translation>
     </message>
     <message>
-        <location line="-3070"/>
+        <location line="-3092"/>
         <source>Before running the workflow, you need to save the project</source>
         <translation>在运行工作流之前，需要先保存工程</translation>
     </message>
     <message>
-        <location line="+2335"/>
+        <location line="+2357"/>
         <source>Please select a column first</source>
         <translation>请先选择列</translation>
     </message>
@@ -3900,12 +3900,12 @@
     </message>
     <message>
         <location line="+2"/>
-        <location line="+559"/>
+        <location line="+565"/>
         <source>Statistics</source>
         <translation>统计信息</translation>
     </message>
     <message>
-        <location line="-43"/>
+        <location line="-42"/>
         <source>Markdown Viewer</source>
         <translation>Markdown 查看器</translation>
     </message>
@@ -3915,7 +3915,7 @@
         <translation>打开 Markdown 文件失败:%1</translation>
     </message>
     <message>
-        <location line="-525"/>
+        <location line="-532"/>
         <source>Undo History</source>
         <translation>撤销历史</translation>
     </message>
@@ -4353,7 +4353,7 @@
 <context>
     <name>DA::DAAppRibbonArea</name>
     <message>
-        <location filename="../APP/DAAppRibbonArea.cpp" line="+219"/>
+        <location filename="../APP/DAAppRibbonArea.cpp" line="+222"/>
         <location line="+3"/>
         <source>File</source>
         <translation>文件</translation>
@@ -4370,12 +4370,12 @@
     </message>
     <message>
         <location line="+29"/>
-        <location line="+402"/>
+        <location line="+411"/>
         <source>Workflow</source>
         <translation>工作流</translation>
     </message>
     <message>
-        <location line="-429"/>
+        <location line="-438"/>
         <source>Dataset</source>
         <translation>数据集</translation>
     </message>
@@ -4398,13 +4398,13 @@
         <location line="+2"/>
         <location line="+11"/>
         <location line="+21"/>
-        <location line="+273"/>
+        <location line="+282"/>
         <location line="+195"/>
         <source>View</source>
         <translation>视图</translation>
     </message>
     <message>
-        <location line="-499"/>
+        <location line="-508"/>
         <source>Display</source>
         <translation>视图显示</translation>
     </message>
@@ -4415,100 +4415,130 @@
     </message>
     <message>
         <location line="+2"/>
-        <location line="+232"/>
+        <location line="+241"/>
         <source>DataFrame</source>
         <translation>DataFrame</translation>
     </message>
     <message>
-        <location line="-231"/>
-        <location line="+233"/>
+        <location line="-240"/>
+        <location line="+242"/>
         <source>Table Operations</source>
         <translation>表格操作</translation>
     </message>
     <message>
-        <location line="-226"/>
-        <location line="+304"/>
+        <location line="-235"/>
+        <location line="+313"/>
         <source>Data Operations</source>
         <translation>数据操作</translation>
     </message>
     <message>
-        <location line="-310"/>
-        <location line="+235"/>
+        <location line="-319"/>
+        <location line="+244"/>
         <source>Axes</source>
         <translation>坐标轴</translation>
     </message>
     <message>
-        <location line="-234"/>
-        <location line="+247"/>
+        <location line="-243"/>
+        <location line="+256"/>
         <source>Column</source>
         <translation>列</translation>
     </message>
     <message>
-        <location line="-246"/>
+        <location line="-255"/>
         <location line="+12"/>
-        <location line="+245"/>
+        <location line="+254"/>
         <location line="+5"/>
         <source>Type</source>
         <translation>类型</translation>
     </message>
     <message>
-        <location line="-261"/>
+        <location line="-270"/>
         <location line="+12"/>
-        <location line="+260"/>
+        <location line="+269"/>
         <location line="+4"/>
         <source>Format</source>
         <translation>格式</translation>
     </message>
     <message>
-        <location line="-270"/>
-        <location line="+328"/>
+        <location line="-279"/>
+        <location line="+337"/>
         <source>Table Style</source>
         <translation>表格样式</translation>
     </message>
     <message>
-        <location line="-327"/>
-        <location line="+331"/>
+        <location line="-336"/>
+        <location line="+340"/>
         <source>Fill</source>
         <translation>底色</translation>
     </message>
     <message>
-        <location line="-330"/>
-        <location line="+338"/>
+        <location line="-339"/>
+        <location line="+347"/>
         <source>Font</source>
         <translation>字体</translation>
     </message>
     <message>
-        <location line="-337"/>
-        <location line="+343"/>
+        <location line="-346"/>
+        <location line="+352"/>
         <source>Clear</source>
         <translation>清除</translation>
     </message>
     <message>
-        <location line="-336"/>
+        <location line="-345"/>
         <source>Fill Color</source>
         <translation>填充颜色</translation>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+412"/>
+        <location line="+421"/>
         <source>Workflow Edit</source>
         <translation>工作流编辑</translation>
     </message>
     <message>
-        <location line="-447"/>
+        <location line="-456"/>
         <location line="+36"/>
-        <location line="+415"/>
+        <location line="+424"/>
         <source>Clipboard</source>
         <translation>剪贴板</translation>
     </message>
     <message>
-        <location line="-401"/>
-        <location line="+521"/>
+        <location line="-410"/>
+        <location line="+530"/>
         <source>Chart Style</source>
         <translation>图表样式</translation>
     </message>
     <message>
-        <location line="+377"/>
+        <location line="-521"/>
+        <location line="+627"/>
+        <source>Statistics</source>
+        <translation>统计</translation>
+    </message>
+    <message>
+        <location line="-626"/>
+        <location line="+628"/>
+        <source>Statistics Operations</source>
+        <translation>统计操作</translation>
+    </message>
+    <message>
+        <location line="-627"/>
+        <location line="+631"/>
+        <source>Statistics Parameters</source>
+        <translation>统计参数</translation>
+    </message>
+    <message>
+        <location line="-630"/>
+        <location line="+653"/>
+        <source>Tests</source>
+        <translation>检验</translation>
+    </message>
+    <message>
+        <location line="-652"/>
+        <location line="+659"/>
+        <source>Plots</source>
+        <translation>绘图</translation>
+    </message>
+    <message>
+        <location line="+336"/>
         <location line="+2"/>
         <source>AI Agent</source>
         <translation>AI智能体</translation>
@@ -4575,43 +4605,43 @@
         <translation>Agent 模块未就绪</translation>
     </message>
     <message>
-        <location line="-1061"/>
-        <location line="+419"/>
+        <location line="-1171"/>
+        <location line="+428"/>
         <source>Item</source>
         <translation>图元</translation>
     </message>
     <message>
-        <location line="-418"/>
-        <location line="+427"/>
+        <location line="-427"/>
+        <location line="+436"/>
         <source>Text</source>
         <translation>文本</translation>
     </message>
     <message>
-        <location line="-426"/>
-        <location line="+431"/>
+        <location line="-435"/>
+        <location line="+440"/>
         <source>Background</source>
         <translation>背景</translation>
     </message>
     <message>
-        <location line="-428"/>
-        <location line="+510"/>
+        <location line="-437"/>
+        <location line="+519"/>
         <source>Workflow Run</source>
         <translation>工作流运行</translation>
     </message>
     <message>
-        <location line="-509"/>
-        <location line="+512"/>
+        <location line="-518"/>
+        <location line="+521"/>
         <source>Run</source>
         <translation>运行</translation>
     </message>
     <message>
-        <location line="-510"/>
-        <location line="+343"/>
+        <location line="-519"/>
+        <location line="+352"/>
         <source>Figure</source>
         <translation>绘图</translation>
     </message>
     <message>
-        <location line="-337"/>
+        <location line="-346"/>
         <source>Figure Setting</source>
         <translation>绘图设置</translation>
     </message>
@@ -4627,12 +4657,12 @@
     </message>
     <message>
         <location line="+5"/>
-        <location line="+575"/>
+        <location line="+584"/>
         <source>Chart Edit</source>
         <translation>绘图编辑</translation>
     </message>
     <message>
-        <location line="-577"/>
+        <location line="-586"/>
         <source>Chart Setting</source>
         <translation>绘图设置</translation>
     </message>
@@ -4643,17 +4673,17 @@
     </message>
     <message>
         <location line="+2"/>
-        <location line="+584"/>
+        <location line="+593"/>
         <source>Select Tool</source>
         <translation>选区工具</translation>
     </message>
     <message>
-        <location line="-583"/>
+        <location line="-592"/>
         <source>Chart Assist Tool</source>
         <translation>图表辅助工具</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+10"/>
         <location line="+1"/>
         <source>View Marker</source>
         <translation>视图标记</translation>
@@ -4669,8 +4699,8 @@
         <translation>把工作流的场景导出为图片</translation>
     </message>
     <message>
-        <location line="-15"/>
-        <location line="+367"/>
+        <location line="-23"/>
+        <location line="+376"/>
         <source>Stats Plot</source>
         <translation>统计绘图</translation>
     </message>
@@ -4685,8 +4715,8 @@
         <translation>工作流视图</translation>
     </message>
     <message>
-        <location line="-500"/>
-        <location line="+537"/>
+        <location line="-509"/>
+        <location line="+546"/>
         <source>Export</source>
         <translation>导出</translation>
     </message>
@@ -4706,26 +4736,26 @@
         <translation>辅助工具</translation>
     </message>
     <message>
-        <location line="-627"/>
-        <location line="+281"/>
+        <location line="-636"/>
+        <location line="+290"/>
         <source>Edit</source>
         <translation>编辑</translation>
     </message>
     <message>
-        <location line="-272"/>
-        <location line="+348"/>
+        <location line="-281"/>
+        <location line="+357"/>
         <source>Conditional</source>
         <translation>条件格式</translation>
     </message>
     <message>
-        <location line="-354"/>
-        <location line="+309"/>
+        <location line="-363"/>
+        <location line="+318"/>
         <source>Computed Column</source>
         <translation>计算列</translation>
     </message>
     <message>
-        <location line="-308"/>
-        <location line="+315"/>
+        <location line="-317"/>
+        <location line="+324"/>
         <source>Data Transform</source>
         <translation>数据变换</translation>
     </message>
@@ -10242,40 +10272,26 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DA::DADataStatsWidget</name>
     <message>
-        <location filename="../DAGui/Stats/DADataStatsWidget.cpp" line="+145"/>
-        <location line="+514"/>
-        <source>Statistics</source>
-        <translation>统计量</translation>
-    </message>
-    <message>
-        <location line="-508"/>
-        <location line="+509"/>
-        <source>Analysis</source>
-        <translation>分析</translation>
-    </message>
-    <message>
-        <location line="-503"/>
-        <location line="+504"/>
+        <location filename="../DAGui/Stats/DADataStatsWidget.cpp" line="+1233"/>
         <source>Refresh</source>
         <translation>刷新</translation>
     </message>
     <message>
-        <location line="-502"/>
-        <location line="+503"/>
+        <location line="+1"/>
         <source>Recompute with the current data</source>
         <translation>按当前数据重新计算</translation>
     </message>
     <message>
-        <location line="-491"/>
-        <location line="+398"/>
-        <location line="+79"/>
-        <location line="+17"/>
+        <location line="-1008"/>
+        <location line="+819"/>
+        <location line="+75"/>
+        <location line="+147"/>
         <location line="+5"/>
         <source>Statistic</source>
         <translation>统计量</translation>
     </message>
     <message>
-        <location line="-442"/>
+        <location line="-649"/>
         <source>Normality Test</source>
         <translation>正态性检验</translation>
     </message>
@@ -10290,12 +10306,43 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>离群点分析</translation>
     </message>
     <message>
-        <location line="+84"/>
+        <location line="-71"/>
         <source>Count</source>
         <translation>数值个数</translation>
     </message>
     <message>
+        <location line="-200"/>
+        <source>5%</source>
+        <translation>5%</translation>
+    </message>
+    <message>
         <location line="+1"/>
+        <source>25%</source>
+        <translation>25%</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>50% (Median)</source>
+        <translation>50%（中位数）</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>75%</source>
+        <translation>75%</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>95%</source>
+        <translation>95%</translation>
+    </message>
+    <message>
+        <location line="+163"/>
+        <location line="+618"/>
+        <source>There is no statistics plot to transfer</source>
+        <translation>没有可转入绘图区的统计图</translation>
+    </message>
+    <message>
+        <location line="-584"/>
         <source>Mean</source>
         <translation>均值</translation>
     </message>
@@ -10445,7 +10492,127 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>均值置信上限</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location line="+9"/>
+        <source>Number of non-missing values</source>
+        <translation>非空取值个数</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Arithmetic mean of the values</source>
+        <translation>取值算术平均</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Standard deviation (sample, ddof=1)</source>
+        <translation>标准差（样本，ddof=1）</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Minimum value</source>
+        <translation>最小值</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Maximum value</source>
+        <translation>最大值</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Number of missing (NaN) values</source>
+        <translation>缺失值（NaN）个数</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Number of distinct values</source>
+        <translation>不同取值个数</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Sum of the values</source>
+        <translation>取值总和</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Variance (sample, ddof=1)</source>
+        <translation>方差（样本，ddof=1）</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Standard error of the mean</source>
+        <translation>均值标准误</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Maximum minus minimum</source>
+        <translation>极差（最大值减最小值）</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Interquartile range (Q3 - Q1)</source>
+        <translation>四分位距（Q3-Q1）</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Median absolute deviation</source>
+        <translation>绝对中位差</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Coefficient of variation (std / mean)</source>
+        <translation>变异系数（标准差/均值）</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Skewness of the distribution</source>
+        <translation>分布偏度</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Excess kurtosis of the distribution</source>
+        <translation>分布超额峰度</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>5% percentile</source>
+        <translation>5% 分位数</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>25% percentile (Q1)</source>
+        <translation>25% 分位数（Q1）</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>50% percentile (median)</source>
+        <translation>50% 分位数（中位数）</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>75% percentile (Q3)</source>
+        <translation>75% 分位数（Q3）</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>95% percentile</source>
+        <translation>95% 分位数</translation>
+    </message>
+    <message>
+        <location line="+24"/>
+        <source>Add Shapiro-Wilk / D&apos;Agostino K2 normality test rows</source>
+        <translation>追加 Shapiro-Wilk / D&apos;Agostino K² 正态性检验行</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Add the 95% confidence interval rows of the mean</source>
+        <translation>追加均值的 95% 置信区间行</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Add 1.5x IQR outlier count and fence rows</source>
+        <translation>追加 1.5×IQR 离群点数与上下界行</translation>
+    </message>
+    <message>
+        <location line="+11"/>
         <source>yes</source>
         <translation>是</translation>
     </message>
@@ -10475,23 +10642,131 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>数据已变化，点击「刷新」重新计算</translation>
     </message>
     <message>
-        <location line="+100"/>
-        <location line="+45"/>
+        <location line="+217"/>
+        <location line="+330"/>
+        <source>Distribution Rate</source>
+        <translation>分布率</translation>
+    </message>
+    <message>
+        <location line="-316"/>
+        <source>Cumulative Distribution</source>
+        <translation>累计分布</translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>Proportion</source>
+        <translation>比例</translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>Select at least one statistic in the ribbon</source>
+        <translation>请在 Ribbon 的统计参数中选择至少一个统计量</translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <location line="+44"/>
         <source>Unable to get statistics for the selected columns</source>
         <translation>无法获取所选列的统计信息</translation>
     </message>
     <message>
-        <location line="+59"/>
+        <location line="+109"/>
+        <source>The chart area is not available</source>
+        <translation>绘图区不可用</translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>Failed to create a figure</source>
+        <translation>创建绘图失败</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>statistics plot</source>
+        <translation>统计绘图</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Failed to create a chart</source>
+        <translation>创建子图失败</translation>
+    </message>
+    <message>
+        <location line="+36"/>
+        <source>The statistics plot has been transferred to the chart area</source>
+        <translation>统计图已转入绘图区</translation>
+    </message>
+    <message>
+        <location line="+21"/>
+        <source>Percentile</source>
+        <translation>分位数</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Show the selected percentile rows</source>
+        <translation>显示选中的分位数行</translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>Plot one box per selected column</source>
+        <translation>每个选中列一个箱体</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Pareto</source>
+        <translation>帕累托图</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Distribution rate and cumulative distribution of the first numeric column</source>
+        <translation>首个数值列的分布率与累计分布</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Show the distribution rate bars</source>
+        <translation>显示分布率柱</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Cumulative</source>
+        <translation>累计分布</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Show the cumulative distribution curve</source>
+        <translation>显示累计分布折线</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Transfer to Chart Area</source>
+        <translation>转入绘图区</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Create a new figure with the current statistics plot</source>
+        <translation>用当前统计图新建一个绘图</translation>
+    </message>
+    <message>
+        <location line="-411"/>
+        <location line="+388"/>
         <source>Boxplot</source>
         <translation>箱线图</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location line="-152"/>
+        <location line="+95"/>
+        <source>The selected columns cannot be plotted</source>
+        <translation>当前选区无法绘图</translation>
+    </message>
+    <message>
+        <location line="-93"/>
+        <source>Select distribution rate or cumulative distribution in the ribbon</source>
+        <translation>请在 Ribbon 中选择分布率或累计分布</translation>
+    </message>
+    <message>
+        <location line="+2"/>
         <source>Sampling stopped early due to the data size limit (%1 of %2 rows sampled)</source>
         <translation>数据量达到采样上限提前停止（已采样 %1 / 共 %2 行）</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+4"/>
         <source>Statistics are based on a sampled subset (%1 of %2 rows)</source>
         <translation>统计基于采样数据（%1 / 共 %2 行）</translation>
     </message>
@@ -15084,7 +15359,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-4200"/>
+        <location filename="../APP/DAAppController.cpp" line="-4240"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>
