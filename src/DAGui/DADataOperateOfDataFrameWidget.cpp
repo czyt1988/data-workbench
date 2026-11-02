@@ -82,6 +82,7 @@
 #include "TableOps/DATableResultOps.h"
 #include "TableOps/DATableReshapeOps.h"
 #include "TableOps/DATableColumnCombineOps.h"
+#include "TableOps/DATableRenameOps.h"
 // Dialog
 #include "Dialog/DARenameColumnsNameDialog.h"
 #include "Dialog/DADialogDataframeColumnCastToNumeric.h"
@@ -332,6 +333,8 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
     mReshapeOps = new DATableReshapeOps(*mContext, mResultOps, this);
     // 分列/合并列（列级撤销记录 + 计算列联动失效）
     mColumnCombineOps = new DATableColumnCombineOps(*mContext, *mSelection, mMutation, this);
+    // 列改名（影响面确认/引用迁移经计算列+校验控制器，Mediator-light）
+    mRenameOps = new DATableRenameOps(*mContext, mViewStateController, mComputedColumnController, mValidationController, this);
     // 窗格装配（006b 抽取的唯一装配点）：表头替换 → setModel → 委托 → 逐窗格连接；
     // 必须在 mStyleDelegate 创建之后（里面要用它），在 setDAData/applyViewStateFromStore 之前
     configurePaneView(ui->tableView);
@@ -901,134 +904,21 @@ int DADataOperateOfDataFrameWidget::cutSelection()
 }
 
 /**
- * @brief 更改列名
+ * @brief 更改列名（转发列改名算子）
  */
 void DADataOperateOfDataFrameWidget::renameColumns()
 {
-    DAPyDataFrame df = getDataframe();
-    if (df.isNone()) {
-        return;
-    }
-    QList< QString > oldcols = df.columns();
-    if (oldcols.size() <= 0) {
-        daWarning << tr("Table has no columns");  // cn:表格没有列
-        return;
-    }
-    DARenameColumnsNameDialog dlg(this);
-    dlg.setDataName(mData.getName());
-    dlg.setColumnsName(oldcols);
-    if (QDialog::Accepted != dlg.exec()) {
-        return;
-    }
-    QList< QString > cols = dlg.getColumnsName();
-    // 唯一判断在DARenameColumnsNameDialog里进行
-    // 改名对（old→new，仅变化的）
-    QList< QPair< QString, QString > > renames;
-    const int n = qMin(cols.size(), oldcols.size());
-    for (int i = 0; i < n; ++i) {
-        if (cols[ i ] != oldcols[ i ]) {
-            renames.append(qMakePair(oldcols[ i ], cols[ i ]));
-        }
-    }
-    // 计算列引用联动（004 T1.23 R20）：先提示影响面，确认后随改名命令同一撤销单元批量迁移
-    if (!confirmComputedColumnRename(renames)) {
-        return;
-    }
-    // 校验规则引用联动（005 T1.25 R20）：同款提示与迁移
-    if (!confirmValidationRuleRename(renames)) {
-        return;
-    }
-    // 表头刷新走模型通知入口（命令不再持有 QHeaderView*）
-    DACommandDataFrame_renameColumns* cmd = new DACommandDataFrame_renameColumns(df, cols, oldcols, mModel);
-    wireComputedColumnRenameMigration(cmd, renames);
-    wireValidationRuleRenameMigration(cmd, renames);
-    if (!cmd->exec()) {
-        delete cmd;
-        return;
-    }
-    // 列改名迁移：视图状态按列名引用（R20），宽度记录随改名同步迁移
-    if (mViewStateStore) {
-        for (const auto& p : std::as_const(renames)) {
-            mViewStateStore->renameColumn(p.first, p.second);
-        }
-    }
-    //! 通知datamanager
-    if (DADataManager* mgr = mData.getDataManager()) {
-        mgr->notifyDataChangedSignal(mData, DADataManager::ChangeDataframeColumnName);
-    }
-
-    push(cmd);
+    mRenameOps->renameColumns();
 }
-
 /**
- * @brief 重命名单列
- *
- * 构造"全表列名列表，仅修改目标列"传给 DACommandDataFrame_renameColumns，
- * 复用现有命令的 undo/redo 与 headerDataChanged 通知机制。
+ * @brief 重命名单列（转发列改名算子）
  * @param col 列位置索引
  * @param newName 新列名
  * @return 成功返回 true；列为空/重名/越界/exec 失败返回 false
  */
 bool DADataOperateOfDataFrameWidget::renameColumn(int col, const QString& newName)
 {
-    DAPyDataFrame df = getDataframe();
-    if (df.isNone()) {
-        return false;
-    }
-    QList< QString > oldcols = df.columns();
-    if (col < 0 || col >= oldcols.size()) {
-        return false;
-    }
-    if (newName.isEmpty()) {
-        daWarning << tr("Column name cannot be empty");  // cn:列名不能为空
-        return false;
-    }
-    if (oldcols.contains(newName)) {
-        daWarning << tr("Column name \"%1\" already exists, please use another name").arg(newName);  // cn:列名"%1"已存在，请使用其他名称
-        return false;
-    }
-    QList< QString > newcols = oldcols;
-    newcols[ col ]           = newName;
-    // 计算列引用联动（004 T1.23 R20）：先提示影响面，确认后随改名命令同一撤销单元批量迁移
-    const QList< QPair< QString, QString > > renames { qMakePair(oldcols[ col ], newName) };
-    if (!confirmComputedColumnRename(renames)) {
-        return false;
-    }
-    // 校验规则引用联动（005 T1.25 R20）
-    if (!confirmValidationRuleRename(renames)) {
-        return false;
-    }
-    std::unique_ptr< DACommandDataFrame_renameColumns > cmd(
-        new DACommandDataFrame_renameColumns(df, newcols, oldcols, mModel));
-    wireComputedColumnRenameMigration(cmd.get(), renames);
-    wireValidationRuleRenameMigration(cmd.get(), renames);
-    // 视图状态迁移（列宽/列序/隐藏按列名键）：挂 directional 回调 redo/undo 双向
-    // 迁移（链式包裹前两个迁移，同 wireValidationRuleRenameMigration 手法）——
-    // 旧实现只在页面 exec 后单向迁移，undo 后 store 里还是新列名，后续投影按
-    // 孤儿键跳过，列宽/隐藏/冻结状态错位
-    if (mViewStateStore) {
-        DATableViewStateStore* vsStore = mViewStateStore;
-        DACallBackInterface::DirectionalCallBack prev = cmd->getDirectionalCallBack();
-        cmd->setDirectionalCallBack([ prev, vsStore, renames ](bool isUndo) {
-            if (prev) {
-                prev(isUndo);
-            }
-            for (const auto& p : std::as_const(renames)) {
-                vsStore->renameColumn(isUndo ? p.second : p.first, isUndo ? p.first : p.second);
-            }
-        });
-    }
-    if (!cmd->exec()) {
-        return false;
-    }
-    // 列改名后模型列名缓存随命令 exec/undo 的 refreshData 重建（命令内完成），
-    // 这里补视图状态投影（模型 reset 触发的 applyViewStateFromStore 用新键命中）
-    if (DADataManager* mgr = mData.getDataManager()) {
-        mgr->notifyDataChangedSignal(mData, DADataManager::ChangeDataframeColumnName);
-    }
-    push(cmd.release());
-    applyViewStateFromStore();
-    return true;
+    return mRenameOps->renameColumn(col, newName);
 }
 
 /**

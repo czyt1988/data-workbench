@@ -21174,4 +21174,27 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>分列/合并列</translation>
     </message>
 </context>
+<context>
+    <name>DA::DATableRenameOps</name>
+    <message>
+        <location filename="../DAGui/TableOps/DATableRenameOps.cpp" line="+0"/>
+        <source>Table has no columns</source>
+        <translation>表格没有列</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableRenameOps.cpp" line="+1"/>
+        <source>Column name cannot be empty</source>
+        <translation>列名不能为空</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableRenameOps.cpp" line="+1"/>
+        <source>Column name &quot;%1&quot; already exists, please use another name</source>
+        <translation>列名&quot;%1&quot;已存在，请使用其他名称</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableRenameOps.cpp" line="+1"/>
+        <source>Rename Columns</source>
+        <translation>重命名列</translation>
+    </message>
+</context>
 </TS>
