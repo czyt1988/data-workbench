@@ -1,8 +1,9 @@
-﻿# DASharedTest 的 CMakeLists.txt
+# DASharedTest 的 CMakeLists.txt
 # 这个文件管理 DAShared 的单元测试
 
 da_add_test(
     NAME DASharedTest
+    SUITE core
     SOURCES main.cpp
     QT_COMPONENTS Test
     LINK_PRIVATE

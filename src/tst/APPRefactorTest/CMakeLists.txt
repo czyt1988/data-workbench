@@ -2,6 +2,7 @@
 
 da_add_test(
     NAME APPRefactorTest
+    SUITE core
     SOURCES main.cpp
     QT_COMPONENTS Core Widgets Test
     LINK_PRIVATE

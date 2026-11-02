@@ -7,6 +7,7 @@ find_package(qwt CONFIG REQUIRED)
 
 da_add_test(
     NAME Chart3DIntegrationTest
+    SUITE chart
     SOURCES main.cpp
     QT_COMPONENTS Core Widgets Test OpenGL
     LINK_PRIVATE

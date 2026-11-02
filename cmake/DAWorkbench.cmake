@@ -1,4 +1,4 @@
-﻿#
+#
 # DAWorkbench 声明式构建 API
 #
 # 一个函数调用完成模块的 target 创建、Qt 组件查找链接、DA 模块链接、第三方库导入、
@@ -518,6 +518,7 @@ endfunction()
 #
 # da_add_test(
 #     NAME <name>
+#     SUITE <core|data|table|chart|agent|workflow>   # 归属的领域套件（ctest -L suite:xxx）
 #     SOURCES <src...>                  # 通常为 main.cpp
 #     [QT_COMPONENTS <comp...>]         # find_package + 链接（Test 等）
 #     [LINK_PUBLIC <target...>]         # 完整目标名（DAWorkbench::DAAgent、Qt5::Test）
@@ -526,15 +527,21 @@ endfunction()
 #     [DEPLOY_QT]                       # 构建后 windeployqt 部署 Qt DLL
 #     [DEPLOY_TARGETS <t...>]           # 传给 windeployqt 额外扫描的 target（捕获 DA DLL 的 Qt 传递依赖）
 #     [COPY_DLL_TARGETS <t...>]         # 复制第三方 DLL（SHARED_LIBRARY imported target）
+#     [LABELS <label...>]               # 额外的 ctest 标签（SUITE/bench 之外）
 # )
 # 附带行为：exe 输出到 build/bin（与 DA DLL 同目录）、WIN32_EXECUTABLE OFF（保留控制台输出）、
 # add_test 注册、生成 run_<name> 目标、登记到全局属性 DA_TEST_TARGETS（供 run_all_tests 聚合）
+#
+# 标签规则（scripts/test.ps1 依赖，改这里要同步改脚本）：
+#   suite:<SUITE>  —— 由 SUITE 生成；缺省时登记到 DA_TESTS_WITHOUT_SUITE，配置期告警
+#   bench          —— 目标名含 Perf / Benchmark 时自动打上，默认套件不跑（TIMEOUT 放宽到 600s）
+# 所有测试统一带 TIMEOUT（默认 120s）：挂死的用例最多拖 2 分钟，而不是 Qt Test 的 5 分钟看门狗。
 # ===========================================================================
 function(da_add_test)
     set(_opts DEPLOY_QT)
-    set(_one NAME)
+    set(_one NAME SUITE)
     set(_multi SOURCES QT_COMPONENTS LINK_PUBLIC LINK_PRIVATE INCLUDE_PRIVATE
-        DEPLOY_TARGETS COPY_DLL_TARGETS)
+        DEPLOY_TARGETS COPY_DLL_TARGETS LABELS)
     cmake_parse_arguments(DA_AT "${_opts}" "${_one}" "${_multi}" ${ARGN})
 
     if(NOT DA_AT_NAME)
@@ -615,6 +622,25 @@ function(da_add_test)
     endif()
 
     add_test(NAME ${_name} COMMAND ${_name})
+
+    # 标签与超时：套件标签供 test.ps1/ctest -L 选择；bench 由命名约定自动判定，
+    # 避免"新写一个性能用例忘了标记，默认套件又被拖慢/拖红"。
+    set(_labels ${DA_AT_LABELS})
+    if(DA_AT_SUITE)
+        list(APPEND _labels "suite:${DA_AT_SUITE}")
+    else()
+        set_property(GLOBAL APPEND PROPERTY DA_TESTS_WITHOUT_SUITE ${_name})
+    endif()
+    set(_timeout 120)
+    if(_name MATCHES "Perf|Benchmark")
+        list(APPEND _labels bench)
+        set(_timeout 600)
+    endif()
+    set_tests_properties(${_name} PROPERTIES TIMEOUT ${_timeout})
+    if(_labels)
+        list(REMOVE_DUPLICATES _labels)
+        set_tests_properties(${_name} PROPERTIES LABELS "${_labels}")
+    endif()
 
     # 登记到全局属性，src/tst/CMakeLists.txt 据此聚合 run_all_tests
     set_property(GLOBAL APPEND PROPERTY DA_TEST_TARGETS ${_name})

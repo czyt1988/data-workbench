@@ -15,6 +15,7 @@ find_package(spdlog CONFIG QUIET)
 
 da_add_test(
     NAME DAMarkdownExporterTest
+    SUITE chart
     SOURCES main.cpp
     QT_COMPONENTS Test WebEngineWidgets
     LINK_PRIVATE

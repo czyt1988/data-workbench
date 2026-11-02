@@ -6,6 +6,7 @@ find_package(qwt CONFIG REQUIRED)
 
 da_add_test(
     NAME Qwt3DRTTITest
+    SUITE chart
     SOURCES main.cpp
     QT_COMPONENTS Test
     LINK_PRIVATE
