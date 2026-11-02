@@ -20912,4 +20912,17 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>重命名并更新列视图</translation>
     </message>
 </context>
+<context>
+    <name>DA::DATableRowOps</name>
+    <message>
+        <location filename="../DAGui/TableOps/DATableRowOps.cpp" line="+0"/>
+        <source>Please select valid data cells</source>
+        <translation>请选择正确的行</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableRowOps.cpp" line="+1"/>
+        <source>Row Operations</source>
+        <translation>行操作</translation>
+    </message>
+</context>
 </TS>

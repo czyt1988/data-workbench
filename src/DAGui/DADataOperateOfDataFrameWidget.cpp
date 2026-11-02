@@ -75,6 +75,7 @@
 #include "TableSort/DATableSortController.h"
 #include "TableViewState/DATableViewStateController.h"
 #include "TableColumnView/DATableColumnViewController.h"
+#include "TableOps/DATableRowOps.h"
 // Dialog
 #include "Dialog/DARenameColumnsNameDialog.h"
 #include "Dialog/DADialogDataframeColumnCastToNumeric.h"
@@ -310,6 +311,8 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
     // 列视图（构造注入上下文/选区服务 + 视图状态/计算列/校验控制器；列视图真源操作）
     mColumnViewController = new DATableColumnViewController(*mContext, *mSelection, mViewStateController,
                                                             mComputedColumnController, mValidationController, this);
+    // 数据操作算子（008 期4：一个操作一个文件；参数化入口由 Facade 直调具体算子）
+    mRowOps = new DATableRowOps(*mContext, *mSelection, mMutation, this);
     // 窗格装配（006b 抽取的唯一装配点）：表头替换 → setModel → 委托 → 逐窗格连接；
     // 必须在 mStyleDelegate 创建之后（里面要用它），在 setDAData/applyViewStateFromStore 之前
     configurePaneView(ui->tableView);
@@ -569,51 +572,12 @@ void DADataOperateOfDataFrameWidget::insertRowBelowBySelect()
 }
 
 /**
- * @brief 在所选位置插入行
+ * @brief 在所选位置插入行（转发行算子）
  * @param row
  */
 void DADataOperateOfDataFrameWidget::insertRowAt(int row)
 {
-    DAPyDataFrame df = mData.toDataFrame();
-    if (df.isNone()) {
-        // 非dataframe数据（如只读的数据库惰性表）不支持插入行
-        return;
-    }
-    std::unique_ptr< DACommandDataFrame_insertNanRow > cmd(new DACommandDataFrame_insertNanRow(df, row));
-    // 编辑后效（008 期2）：插行拿不到列信息 → 全量统计失效 + 计算列全标脏，收口到 commit
-    QPointer< DADataTableModel > modle = mModel;
-    DATableMutation mutation;
-    mutation.kind        = DATableMutation::Structure;
-    mutation.modelRefresh = [ modle, row ]() {
-        if (modle) {
-            modle->notifyRowsInserted({ row });
-        }
-    };
-    cmd->setCallBack(mMutation->callbackFor(mutation));
-    // 行列增删样式键同步：插入行时 >=row 的键 +1；撤销时按删除处理（>=row 的键 -1）
-    DATableStyleManager* styleMgr = mStyleManager;
-    DATableNoteStore* noteStore   = mNoteStore;
-    cmd->setDirectionalCallBack([ styleMgr, noteStore, row ](bool isUndo) {
-        if (styleMgr) {
-            if (isUndo) {
-                styleMgr->onRowsRemoved({ row });
-            } else {
-                styleMgr->onRowsInserted({ row });
-            }
-        }
-        // 批注与样式同源位置键，插删行同款重映射（005 T1.26「批注跟着行走」）
-        if (noteStore) {
-            if (isUndo) {
-                noteStore->onRowsRemoved({ row });
-            } else {
-                noteStore->onRowsInserted({ row });
-            }
-        }
-    });
-    if (!cmd->exec()) {
-        return;
-    }
-    push(cmd.release());
+    mRowOps->insertRowAt(row);
 }
 
 /**
@@ -717,58 +681,12 @@ void DADataOperateOfDataFrameWidget::insertColumnAt(int col)
 }
 
 /**
- * @brief 移除选中的行
+ * @brief 移除选中的行（转发行算子）
  * @return 返回成功移除的行数
  */
 int DADataOperateOfDataFrameWidget::removeSelectRow()
 {
-    DAPyDataFrame df = getDataframe();
-    if (df.isNone()) {
-        return 0;
-    }
-    QList< int > rows = getSelectedDataframeRows();
-    if (rows.size() <= 0) {
-        daWarning << tr("Please select valid data cells");  // cn:请选择正确的行
-        return 0;
-    }
-    std::unique_ptr< DACommandDataFrame_dropIRow > cmd(new DACommandDataFrame_dropIRow(mData.toDataFrame(), rows));
-    // 编辑后效（008 期2）：删行拿不到列信息 → 全量统计失效 + 计算列全标脏，收口到 commit
-    QPointer< DADataTableModel > modle = mModel;
-    DATableMutation mutation;
-    mutation.kind        = DATableMutation::Structure;
-    mutation.modelRefresh = [ modle, rows ]() {
-        if (modle) {
-            modle->notifyRowsInserted(rows);
-        }
-    };
-    cmd->setCallBack(mMutation->callbackFor(mutation));
-    // 行列增删样式键同步：删除行时 ==row 的键删除，>row 的键 -1；撤销时按插入处理
-    // 注意：被删除行的样式在删除时丢失，撤销(load恢复dataframe)无法恢复样式（已知限制，见 spec §7.3）
-    DATableStyleManager* styleMgr = mStyleManager;
-    DATableNoteStore* noteStore   = mNoteStore;
-    cmd->setDirectionalCallBack([ styleMgr, noteStore, rows ](bool isUndo) {
-        if (styleMgr) {
-            if (isUndo) {
-                styleMgr->onRowsInserted(rows);
-            } else {
-                styleMgr->onRowsRemoved(rows);
-            }
-        }
-        // 批注同款重映射（005 T1.26）：被删行的批注在删除时丢失（与样式同一已知限制，
-        // undo 走 load 恢复 dataframe 无法恢复位置键元数据，见 spec §7.3）
-        if (noteStore) {
-            if (isUndo) {
-                noteStore->onRowsInserted(rows);
-            } else {
-                noteStore->onRowsRemoved(rows);
-            }
-        }
-    });
-    if (!cmd->exec()) {
-        return 0;
-    }
-    push(cmd.release());
-    return rows.size();
+    return mRowOps->removeSelectedRows();
 }
 
 /**

@@ -20887,4 +20887,17 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>Rename and update column view</translation>
     </message>
 </context>
+<context>
+    <name>DA::DATableRowOps</name>
+    <message>
+        <location filename="../DAGui/TableOps/DATableRowOps.cpp" line="+0"/>
+        <source>Please select valid data cells</source>
+        <translation>Please select valid data cells</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableRowOps.cpp" line="+1"/>
+        <source>Row Operations</source>
+        <translation>Row Operations</translation>
+    </message>
+</context>
 </TS>

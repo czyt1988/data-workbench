@@ -65,6 +65,7 @@ class DATableStyleController;
 class DATableSortController;
 class DATableViewStateController;
 class DATableColumnViewController;
+class DATableRowOps;
 
 
 /**
@@ -533,6 +534,7 @@ private:
     DATableSortController* mSortController { nullptr };  ///< 排序控制器（008 期3，QObject 父子持有）
     DATableViewStateController* mViewStateController { nullptr };  ///< 视图状态控制器（008 期3，QObject 父子持有）
     DATableColumnViewController* mColumnViewController { nullptr };  ///< 列视图控制器（008 期3，QObject 父子持有）
+    DATableRowOps* mRowOps { nullptr };  ///< 行操作算子（008 期4，页级持有）
 };
 }  // end of namespace DA
 #endif  // DADATAOPERATEOFDATAFRAMEWIDGET_H
