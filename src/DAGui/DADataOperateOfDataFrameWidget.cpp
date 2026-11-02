@@ -85,6 +85,7 @@
 #include "TableOps/DATableRenameOps.h"
 #include "TableOps/DATableColumnOps.h"
 #include "TableOps/DATableOperationRegistry.h"
+#include "TableCore/DATablePaneAssembler.h"
 // Dialog
 #include "Dialog/DARenameColumnsNameDialog.h"
 #include "Dialog/DADialogDataframeColumnCastToNumeric.h"
@@ -349,6 +350,8 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
     mOpRegistry.add(mColumnCombineOps);
     mOpRegistry.add(mRenameOps);
     mOpRegistry.add(mColumnOps);
+    // 窗格装配器（008 期5：装配段收口；表意信号连接留在页面——消费方是页面自身的槽）
+    mPaneAssembler = new DATablePaneAssembler(*mContext, mViewStateController, mStyleDelegate);
     // 窗格装配（006b 抽取的唯一装配点）：表头替换 → setModel → 委托 → 逐窗格连接；
     // 必须在 mStyleDelegate 创建之后（里面要用它），在 setDAData/applyViewStateFromStore 之前
     configurePaneView(ui->tableView);
@@ -408,6 +411,9 @@ DADataOperateOfDataFrameWidget::~DADataOperateOfDataFrameWidget()
     if (mQuickPlotController) {
         mQuickPlotController->detach();
     }
+    // 窗格装配器（008 期5）：表头接线引用本页成员，先于 delete ui 释放
+    delete mPaneAssembler;
+    mPaneAssembler = nullptr;
     delete ui;
     ui = nullptr;
 }
@@ -426,66 +432,17 @@ void DADataOperateOfDataFrameWidget::configurePaneView(DADataTableView* pane)
     if (!pane) {
         return;
     }
-    // 1) 表头替换：用 DADataHeaderView（列头右键菜单/带修饰键点击信号/行头宽拖拽）。
-    //    行高/Interactive 设置在 DADataHeaderView(Vertical) 构造内重建
-    //    （参照 DACacheWindowTableView 构造对默认行头的同款设置）
-    pane->setHorizontalHeader(new DADataHeaderView(Qt::Horizontal, pane));
-    pane->setVerticalHeader(new DADataHeaderView(Qt::Vertical, pane));
-    // 2) 模型与委托（同一 delegate 实例注入多个视图，delegate 属页面）；
-    //    冻结窗格共享主窗格的 selectionModel（006e，顺序：先 setModel 再共享）
-    pane->setModel(mModel);
-    if (pane != ui->tableView) {
-        pane->setSelectionModel(ui->tableView->selectionModel());
-    }
-    pane->setItemDelegate(mStyleDelegate);
-    // 3) 批注子存储注入视图（右键菜单「插入/编辑/删除批注」的启用规则查当前格）
-    pane->setNoteStore(mNoteStore);
-    // 4) 水平表头：计算列 store 注入（ƒx 角标 + 列头菜单计算列组）+ 信号。
-    //    006c 在此追加 sectionMoved → 容器槽；006d 在此追加 columnViewActionRequested
+    // 1)~5) 装配段（表头替换 → setModel/selectionModel 共享 → 委托 → 批注/计算列
+    // store 注入 → 表头接线到视图状态控制器/窗格容器/store）——收口到装配器，008 期5
+    mPaneAssembler->assemble(pane);
+    // 6) 视图表意入口（快捷键/右键菜单共用）：每装一个窗格连一份（消费方是页面自身的槽）
+    connect(pane, &QTableView::clicked, this, &DADataOperateOfDataFrameWidget::onTableViewClicked);
+    // 表头表意入口（页面自身的槽）：带修饰键点击 + 「列」子菜单动作（006d）
     if (DADataHeaderView* hh = qobject_cast< DADataHeaderView* >(pane->horizontalHeader())) {
-        hh->setComputedColumnStore(mComputedColumnStore);
-        // 冻结状态查询：列头菜单据此显示「冻结此列」或「取消冻结此列」
-        hh->setFrozenColumnChecker([ this ](int logical) { return isColumnInFrozenArea(logical); });
         connect(hh, &DADataHeaderView::clickedWithModifiers, this, &DADataOperateOfDataFrameWidget::onHeaderClickedWithModifiers);
-        // 列宽采集：用触发信号的那个窗格的表头（不再写死 ui->tableView；采集经视图状态控制器，008 期3）
-        connect(hh, &QHeaderView::sectionResized, this, [ this, pane ](int logicalIndex, int, int newSize) {
-            mViewStateController->onHeaderSectionResized(pane, logicalIndex, newSize);
-        });
-        // 列序拖动落库（006c）：必须在表头替换之后（hh 是新表头）；每装一个窗格连一份
-        if (mPaneContainer) {
-            connect(hh, &QHeaderView::sectionMoved, mPaneContainer, &DATablePaneContainer::onPaneSectionMoved);
-        }
-        // 「列」子菜单动作（006d）：列视图真源操作，消费方是页面自身（不经 APP）
         connect(hh, &DADataHeaderView::columnViewActionRequested,
                 this, &DADataOperateOfDataFrameWidget::onHeaderColumnViewActionRequested);
-        // 表头高拖拽落库（底边热区）：写视图状态 + 套到各窗格（冻结窗格行对齐要求同高）
-        connect(hh, &DADataHeaderView::horizontalHeaderHeightChanged, this, [ this ](int height) {
-            if (mViewStateStore) {
-                mViewStateStore->setHorizontalHeaderHeight(height);
-            }
-            mViewStateController->applyHeaderHeightToPanes(height);
-        });
     }
-    // 5) 垂直表头：行头宽拖拽 → 写视图状态 + 冻结几何重算（006e）
-    if (DADataHeaderView* vh = qobject_cast< DADataHeaderView* >(pane->verticalHeader())) {
-        connect(vh, &DADataHeaderView::rowHeaderWidthChanged, this, [ this ](int width) {
-            if (mViewStateStore) {
-                mViewStateStore->setRowHeaderWidth(width);
-            }
-            if (mPaneContainer) {
-                mPaneContainer->updateFrozenGeometry();
-            }
-        });
-        // 统一行高拖拽落库（行边界热区）：写视图状态 + 套到各窗格
-        connect(vh, &DADataHeaderView::rowHeightChanged, this, [ this ](int height) {
-            if (mViewStateStore) {
-                mViewStateStore->setRowHeight(height);
-            }
-            mViewStateController->applyRowHeightToPanes(height);
-        });
-    }
-    // 6) 视图表意入口（快捷键/右键菜单共用）：每装一个窗格连一份
-    connect(pane, &QTableView::clicked, this, &DADataOperateOfDataFrameWidget::onTableViewClicked);
     // 查找/替换入口（002 T1.4）：视图快捷键 Ctrl+F/Ctrl+H 与表体右键菜单共用表意信号；
     // 右键菜单入口带 prefill=true（查找框预填当前单格内容，D9）
     connect(pane, &DADataTableView::findRequested, this, [ this ](bool prefill) {

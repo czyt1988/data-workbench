@@ -76,6 +76,7 @@ class DATableReshapeOps;
 class DATableColumnCombineOps;
 class DATableRenameOps;
 class DATableColumnOps;
+class DATablePaneAssembler;
 
 
 /**
@@ -542,6 +543,7 @@ private:
     DATableRenameOps* mRenameOps { nullptr };  ///< 列改名算子（008 期4，页级持有）
     DATableColumnOps* mColumnOps { nullptr };  ///< 列增删算子（008 期4，页级持有）
     DATableOperationRegistry mOpRegistry;  ///< 算子注册表（008 期4：id → 唯一实例）
+    DATablePaneAssembler* mPaneAssembler { nullptr };  ///< 窗格装配器（008 期5：装配段收口，页级持有）
 };
 }  // end of namespace DA
 #endif  // DADATAOPERATEOFDATAFRAMEWIDGET_H
