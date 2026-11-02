@@ -53,6 +53,7 @@ class DATableChildWindowContainer;
 class DATableChildWindow;
 class DATablePageContext;
 class DATableSelectionService;
+class DATableMutationCoordinator;
 
 
 /**
@@ -590,6 +591,7 @@ private:
     // ===== 表格页上下文与选区服务（008 期1）=====
     std::unique_ptr< DATablePageContext > mContext;          ///< 依赖注入载体：模型/主窗格/元数据束聚合
     std::unique_ptr< DATableSelectionService > mSelection;   ///< 选区/坐标纯查询服务（构造注入上下文）
+    DATableMutationCoordinator* mMutation { nullptr };  ///< 编辑后效协调器（008 期2，QObject 父子持有）
 
     // ===== 查找状态（002 T1.4）=====
     QVector< QPair< int, int > > mFindHits;  ///< 当前命中集（数据源绝对行列，行主序，≤上限）

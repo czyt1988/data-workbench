@@ -61,9 +61,10 @@
 // 表格子窗口容器（快速绘图的承载框架，也可贴入其它窗口）
 #include "TableChildWindow/DATableChildWindow.h"
 #include "TableChildWindow/DATableChildWindowContainer.h"
-// 表格页核心（008 期1：页面上下文 + 选区服务）
+// 表格页核心（008 期1：页面上下文 + 选区服务；期2：编辑后效协调器）
 #include "TableCore/DATablePageContext.h"
 #include "TableCore/DATableSelectionService.h"
+#include "TableCore/DATableMutationCoordinator.h"
 // Dialog
 #include "Dialog/DARenameColumnsNameDialog.h"
 #include "Dialog/DADialogDataframeColumnCastToNumeric.h"
@@ -307,6 +308,17 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
     mContext->setHighlightOverlay(mHighlightOverlay);
     mContext->setData(d);
     mSelection = std::make_unique< DATableSelectionService >(*mContext);
+    // 宿主桥注入（008 期2）：协作者经上下文的 std::function 触达页面级动作，
+    // 不持窗口指针（notifyHostValueChange/closeFloatingWindows 同款设计见计划 §6.1）
+    mContext->notifyHostValueChange = [ this ]() {
+        if (DADataManager* mgr = mData.getDataManager()) {
+            mgr->notifyDataChangedSignal(mData, DADataManager::ChangeValue);
+        }
+    };
+    mContext->closeFloatingWindows = [ this ]() { closeQuickPlot(); };
+    // 编辑后效协调器（008 期2）：commit() 是唯一的「编辑后」扇出点，
+    // 此前 ~20 处手抄的 模型刷新→统计失效→计算列标脏→浮窗/宿主 收口于此
+    mMutation = new DATableMutationCoordinator(*mContext, this);
     // 窗格装配（006b 抽取的唯一装配点）：表头替换 → setModel → 委托 → 逐窗格连接；
     // 必须在 mStyleDelegate 创建之后（里面要用它），在 setDAData/applyViewStateFromStore 之前
     configurePaneView(ui->tableView);
@@ -988,12 +1000,20 @@ int DADataOperateOfDataFrameWidget::removeColumns(const QList< int >& columns)
         mViewStateStore->toXml(*snapDoc, snapRoot);
     }
     std::unique_ptr< DACommandDataFrame_dropIColumn > cmd(new DACommandDataFrame_dropIColumn(mData.toDataFrame(), columns));
+    // 编辑后效（008 期2）：结构通知 + 全量统计失效 + 计算列全标脏 + 关浮窗 + 宿主树刷新，
+    // 收口到 commit（undo/redo 同走此回调；宿主树刷新随 undo 同步，与旧「仅 exec 后通知」
+    // 相比把撤销后的树也刷新了——列子项随 undo 一致重建）
+    DATableMutation mutation;
+    mutation.kind               = DATableMutation::Structure;
+    mutation.closeQuickPlot      = true;   // 删列后浮窗绑定的列身份失效，直接关闭（实施方案 §5.3）
+    mutation.notifyHostValueChange = true;  // 数据管理器树重建列子项
     QPointer< DADataTableModel > modle = mModel;
-    cmd->setCallBack([ modle, columns ]() {
+    mutation.modelRefresh        = [ modle, columns ]() {
         if (modle) {
             modle->notifyColumnsRemoved(columns);
         }
-    });
+    };
+    cmd->setCallBack(mMutation->callbackFor(mutation));
     // 行列增删样式键同步：删除列时 ==col 的键删除，>col 的键 -1；撤销时按插入处理
     // 注意：被删除列的样式在删除时丢失，撤销(load恢复dataframe)无法恢复样式（已知限制，见 spec §7.3）
     // 条件格式规则同为装饰类位置键（R20），随列删除同款重映射（被删列的规则一并丢弃，003）
@@ -1066,16 +1086,11 @@ int DADataOperateOfDataFrameWidget::removeColumns(const QList< int >& columns)
         return 0;
     }
     push(cmd.release());
-    // 删列后浮窗绑定的列会被重排/消失，直接关闭（实施方案 §5.3）
-    closeQuickPlot();
+    // 浮窗关闭与宿主树刷新已随 commit（exec 内）执行；此处只剩用户提示
     // 删列后提示失效的计算列（exec 内的 directional 回调已填充；不静默，R9）
     if (!invalidatedTargets->isEmpty()) {
         daWarning << tr("Computed column(s) %1 became invalid because their dependency column(s) were removed")
                          .arg(invalidatedTargets->join(QStringLiteral(", ")));  // cn:计算列 %1 因依赖列被删除已失效
-    }
-    // 数据管理器树重建列子项（对照重命名路径的通知）
-    if (DADataManager* mgr = mData.getDataManager()) {
-        mgr->notifyDataChangedSignal(mData, DADataManager::ChangeValue);
     }
     return columns.size();
 }
@@ -1103,28 +1118,12 @@ int DADataOperateOfDataFrameWidget::removeSelectCell()
         cols.append(p.y());
     }
     std::unique_ptr< DACommandDataFrame_setnan > cmd(new DACommandDataFrame_setnan(df, rows, cols));
-    QPointer< DADataTableModel > modle = mModel;
-    // 统计失效挂点（003）：置 nan 改变列值集合，失效受影响列的统计
-    DATableConditionalFormatStore* cfStore = mConditionalFormatStore;
-    // 计算列挂点（004 T1.23）：按变更列比对依赖集合标 Stale
-    QPointer< DADataOperateOfDataFrameWidget > self(this);
-    cmd->setCallBack([ modle, rows, cols, cfStore, self ]() {
-        if (modle) {
-            const auto size = qMin(rows.size(), cols.size());
-            for (int i = 0; i < size; ++i) {
-                modle->notifyDataChanged(rows[ i ], cols[ i ]);
-            }
-        }
-        if (cfStore) {
-            const QList< int > uniqueCols = toUniqueSorted(cols);
-            for (int c : uniqueCols) {
-                cfStore->invalidateColumnStats(c);
-            }
-        }
-        if (self) {
-            self->markComputedColumnsStaleForColumns(cols);
-        }
-    });
+    // 编辑后效（008 期2）：模型逐格刷新 + 受影响列统计失效 + 计算列标脏，收口到 commit
+    DATableMutation mutation;
+    mutation.kind        = DATableMutation::Values;
+    mutation.changedRows = rows;
+    mutation.changedCols = cols;
+    cmd->setCallBack(mMutation->callbackFor(mutation));
     if (!cmd->exec()) {
         return 0;
     }
@@ -1230,28 +1229,12 @@ int DADataOperateOfDataFrameWidget::pasteFromClipboard()
                         .arg(droppedCols);  // cn:粘贴部分丢弃：%1 行与 %2 个单元格超出表格范围被忽略
     }
     std::unique_ptr< DACommandDataFrame_paste > cmd(new DACommandDataFrame_paste(df, rows, cols, values));
-    QPointer< DADataTableModel > modle = mModel;
-    // 统计失效挂点（003）：粘贴改变列值集合，失效受影响列的统计
-    DATableConditionalFormatStore* cfStore = mConditionalFormatStore;
-    // 计算列挂点（004 T1.23）：按变更列比对依赖集合标 Stale
-    QPointer< DADataOperateOfDataFrameWidget > self(this);
-    cmd->setCallBack([ modle, rows, cols, cfStore, self ]() {
-        if (modle) {
-            const auto size = qMin(rows.size(), cols.size());
-            for (int i = 0; i < size; ++i) {
-                modle->notifyDataChanged(rows[ i ], cols[ i ]);
-            }
-        }
-        if (cfStore) {
-            const QList< int > uniqueCols = toUniqueSorted(cols);
-            for (int c : uniqueCols) {
-                cfStore->invalidateColumnStats(c);
-            }
-        }
-        if (self) {
-            self->markComputedColumnsStaleForColumns(cols);
-        }
-    });
+    // 编辑后效（008 期2）：模型逐格刷新 + 受影响列统计失效 + 计算列标脏，收口到 commit
+    DATableMutation mutation;
+    mutation.kind        = DATableMutation::Values;
+    mutation.changedRows = rows;
+    mutation.changedCols = cols;
+    cmd->setCallBack(mMutation->callbackFor(mutation));
     if (!cmd->exec()) {
         // 数值列写入非数值等场景：整条命令回滚
         daWarning << tr("Paste failed: the content does not match the column data type");  // cn:粘贴失败：内容与列数据类型不匹配
@@ -4817,33 +4800,16 @@ QString DADataOperateOfDataFrameWidget::columnNameAt(int actualCol) const
  */
 void DADataOperateOfDataFrameWidget::markComputedColumnsStaleForColumns(const QList< int >& actualCols)
 {
-    if (!mComputedColumnStore || mComputedColumnStore->isEmpty() || actualCols.isEmpty()) {
-        return;
-    }
-    DAPyDataFrame df = getDataframe();
-    if (df.isNone()) {
-        return;
-    }
-    const QList< QString > cols = df.columns();
-    QStringList names;
-    names.reserve(actualCols.size());
-    for (int c : actualCols) {
-        if (c >= 0 && c < cols.size()) {
-            names.append(cols.at(c));
-        }
-    }
-    mComputedColumnStore->markStaleForChangedColumns(names);
+    // 收口到 DATableMutationCoordinator（008 期2，唯一实现点）
+    mMutation->markComputedColumnsStale(actualCols);
 }
 
 /**
- * @brief 整表操作保守把全部计算列标待重算（拿不到变更列信息时用，R8）
+ * @brief 拿不到列信息的整表操作（插删行/列转索引等）保守把全部计算列标待重算（R8）
  */
 void DADataOperateOfDataFrameWidget::markAllComputedColumnsStale()
 {
-    if (!mComputedColumnStore || mComputedColumnStore->isEmpty()) {
-        return;
-    }
-    mComputedColumnStore->markAllStale();
+    mMutation->markAllComputedColumnsStale();
 }
 
 /**
@@ -5657,26 +5623,12 @@ int DADataOperateOfDataFrameWidget::pushFillPasteCommand(const DAPyDataFrame& df
     }
     std::unique_ptr< DACommandDataFrame_paste > cmd(new DACommandDataFrame_paste(df, rows, cols, values));
     cmd->setText(text);
-    QPointer< DADataTableModel > modle = mModel;
-    DATableConditionalFormatStore* cfStore = mConditionalFormatStore;
-    QPointer< DADataOperateOfDataFrameWidget > self(this);
-    cmd->setCallBack([ modle, rows, cols, cfStore, self ]() {
-        if (modle) {
-            const auto size = qMin(rows.size(), cols.size());
-            for (int i = 0; i < size; ++i) {
-                modle->notifyDataChanged(rows[ i ], cols[ i ]);
-            }
-        }
-        if (cfStore) {
-            const QList< int > uniqueCols = toUniqueSorted(cols);
-            for (int c : uniqueCols) {
-                cfStore->invalidateColumnStats(c);
-            }
-        }
-        if (self) {
-            self->markComputedColumnsStaleForColumns(cols);
-        }
-    });
+    // 编辑后效（008 期2）：模型逐格刷新 + 受影响列统计失效 + 计算列标脏，收口到 commit
+    DATableMutation mutation;
+    mutation.kind        = DATableMutation::Values;
+    mutation.changedRows = rows;
+    mutation.changedCols = cols;
+    cmd->setCallBack(mMutation->callbackFor(mutation));
     if (!cmd->exec()) {
         daWarning << tr("Fill failed: the content does not match the column data type");  // cn:填充失败：内容与列数据类型不匹配
         return 0;
