@@ -71,6 +71,7 @@ class DATableCellOps;
 class DATableTypeOps;
 class DATableFillOps;
 class DATableResultOps;
+class DATableReshapeOps;
 
 
 /**
@@ -532,6 +533,7 @@ private:
     DATableTypeOps* mTypeOps { nullptr };  ///< 类型转换算子（008 期4，页级持有）
     DATableFillOps* mFillOps { nullptr };  ///< 填充算子（008 期4，页级持有）
     DATableResultOps* mResultOps { nullptr };  ///< 结果落库算子（008 期4，页级持有）
+    DATableReshapeOps* mReshapeOps { nullptr };  ///< 形状变换算子（008 期4，页级持有）
 };
 }  // end of namespace DA
 #endif  // DADATAOPERATEOFDATAFRAMEWIDGET_H

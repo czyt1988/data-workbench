@@ -21043,4 +21043,57 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</translation>
     </message>
 </context>
+<context>
+    <name>DA::DATableReshapeOps</name>
+    <message>
+        <location filename="../DAGui/TableOps/DATableReshapeOps.cpp" line="+0"/>
+        <source>%1_GroupBy</source>
+        <translation>%1_GroupBy</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableReshapeOps.cpp" line="+1"/>
+        <source>Group-by aggregation of %1</source>
+        <translation>Group-by aggregation of %1</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableReshapeOps.cpp" line="+1"/>
+        <source>Reshape failed: %1</source>
+        <translation>Reshape failed: %1</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableReshapeOps.cpp" line="+1"/>
+        <source>Melt table in place</source>
+        <translation>Melt table in place</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableReshapeOps.cpp" line="+1"/>
+        <source>Transpose table in place</source>
+        <translation>Transpose table in place</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableReshapeOps.cpp" line="+1"/>
+        <source>%1_Melted</source>
+        <translation>%1_Melted</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableReshapeOps.cpp" line="+1"/>
+        <source>Melt (wide to long) of %1</source>
+        <translation>Melt (wide to long) of %1</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableReshapeOps.cpp" line="+1"/>
+        <source>%1_Transposed</source>
+        <translation>%1_Transposed</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableReshapeOps.cpp" line="+1"/>
+        <source>Transpose of %1</source>
+        <translation>Transpose of %1</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableReshapeOps.cpp" line="+1"/>
+        <source>Reshape Operations</source>
+        <translation>Reshape Operations</translation>
+    </message>
+</context>
 </TS>

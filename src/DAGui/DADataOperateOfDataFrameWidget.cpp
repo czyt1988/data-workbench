@@ -80,6 +80,7 @@
 #include "TableOps/DATableTypeOps.h"
 #include "TableOps/DATableFillOps.h"
 #include "TableOps/DATableResultOps.h"
+#include "TableOps/DATableReshapeOps.h"
 // Dialog
 #include "Dialog/DARenameColumnsNameDialog.h"
 #include "Dialog/DADialogDataframeColumnCastToNumeric.h"
@@ -326,6 +327,8 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
     connect(mResultOps, &DATableResultOps::dataModified, this, &DADataOperateOfDataFrameWidget::dataModified);
     // 就地替换降级路径的整页刷新桥（清排序规格 + 模型 reset）
     mContext->refreshAfterInplaceReplace = [ this ]() { refreshAfterInplaceReplace(); };
+    // 形状变换（分组聚合/转置/melt；落库经结果算子）
+    mReshapeOps = new DATableReshapeOps(*mContext, mResultOps, this);
     // 窗格装配（006b 抽取的唯一装配点）：表头替换 → setModel → 委托 → 逐窗格连接；
     // 必须在 mStyleDelegate 创建之后（里面要用它），在 setDAData/applyViewStateFromStore 之前
     configurePaneView(ui->tableView);
@@ -2347,41 +2350,6 @@ void DADataOperateOfDataFrameWidget::showMergeColumnsDialog()
 //===================================================
 
 /**
- * @brief 打开分组聚合对话框并产出新数据集（004 T1.22，v1 只出长格式结果表）
- *
- * 产出流程照透视表的真实流程（DataframeOperateWorker::createPivotTable）：
- * 聚合结果封装为 DAData → 命名 xxx_GroupBy（重名由 addData_ 的既有唯一化策略处理）→
- * DADataManager::addData_ 注册（可撤销：注册命令进 DADataManager 自己的撤销栈，
- * 该栈已由 APP 接入统一撤销组）→ 发 newDataCreated 交 APP 抬起数据区并激活新页面。
- * 原表与其元数据完全不动（非破坏，R14 同款口径）；不做折叠视图（R15）。
- */
-void DADataOperateOfDataFrameWidget::showGroupByDialog()
-{
-    DAPyDataFrame df = getDataframe();
-    if (df.isNone()) {
-        // 开发诊断：非 dataframe（只读惰性表无 python 数据体）
-        qWarning() << "DADataOperateOfDataFrameWidget::showGroupByDialog: dataframe unavailable";
-        return;
-    }
-    DADialogGroupBy dlg(df, this);
-    if (QDialog::Accepted != dlg.exec()) {
-        return;
-    }
-    DAPyDataFrame result = dlg.result();
-    if (result.isNone()) {
-        return;
-    }
-    // 注册新数据集（addData_ 可撤销 + newDataCreated 交 APP 激活新页面，与转置/melt 共用管线）
-    registerNewDataset(result,
-                       tr("%1_GroupBy").arg(mData.getName()),                      // cn:%1_分组聚合
-                       tr("Group-by aggregation of %1").arg(mData.getName()));      // cn:生成%1的分组聚合结果
-}
-
-//===================================================
-// 转置 / melt 形状变换（004 T1.27）
-//===================================================
-
-/**
  * @brief 就地替换撤销内存判定（转发结果落库算子的静态纯函数）
  */
 bool DADataOperateOfDataFrameWidget::isInplaceUndoTooLarge(qint64 rows, qint64 cols)
@@ -2406,48 +2374,20 @@ void DADataOperateOfDataFrameWidget::requestInplaceReplace(const DAPyDataFrame& 
 }
 
 /**
- * @brief 打开形状变换对话框并执行（004 T1.27）
+ * @brief 打开分组聚合对话框（转发形状变换算子）
+ */
+void DADataOperateOfDataFrameWidget::showGroupByDialog()
+{
+    mReshapeOps->showGroupByDialog();
+}
+
+/**
+ * @brief 打开形状变换对话框并执行（转发形状变换算子）
  * @param meltMode true=宽转长（melt）初始模式，false=转置初始模式（对话框内可切换）
  */
 void DADataOperateOfDataFrameWidget::showReshapeDialog(bool meltMode)
 {
-    DAPyDataFrame df = getDataframe();
-    if (df.isNone()) {
-        // 开发诊断：非 dataframe（只读惰性表无 python 数据体）
-        qWarning() << "DADataOperateOfDataFrameWidget::showReshapeDialog: dataframe unavailable";
-        return;
-    }
-    DADialogReshape dlg(df, meltMode, this);
-    if (QDialog::Accepted != dlg.exec()) {
-        return;
-    }
-    DAPyScriptsDataFrame& py = DAPyScripts::getDataFrame();
-    QString err;
-    DAPyDataFrame result;
-    {
-        DAWaitCursorScoped waitCursor;  // 全表变换忙等待
-        if (dlg.isMeltMode()) {
-            result = py.melt(df, dlg.idVars(), dlg.valueVars(), dlg.varName(), dlg.valueName(), &err);
-        } else {
-            result = py.transpose(df, &err);
-        }
-    }
-    if (result.isNone()) {
-        daWarning << tr("Reshape failed: %1").arg(err);  // cn:形状变换失败：%1
-        return;
-    }
-    if (dlg.isInplace()) {
-        requestInplaceReplace(result,
-                              dlg.isMeltMode() ? tr("Melt table in place")    // cn:就地宽转长
-                                               : tr("Transpose table in place"));  // cn:就地转置
-        return;
-    }
-    // 默认产出新数据集（R14），命名 xxx_Transposed / xxx_Melted（与 _PivotTable/_GroupBy 对称）
-    if (dlg.isMeltMode()) {
-        registerNewDataset(result, tr("%1_Melted").arg(mData.getName()), tr("Melt (wide to long) of %1").arg(mData.getName()));  // cn:%1_宽转长 / 生成%1的宽转长结果
-    } else {
-        registerNewDataset(result, tr("%1_Transposed").arg(mData.getName()), tr("Transpose of %1").arg(mData.getName()));  // cn:%1_转置 / 生成%1的转置结果
-    }
+    mReshapeOps->showReshapeDialog(meltMode);
 }
 
 /**

@@ -21068,4 +21068,57 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 数据与元数据共用一个撤销单元（Ctrl+Z 一并还原）。是否继续？</translation>
     </message>
 </context>
+<context>
+    <name>DA::DATableReshapeOps</name>
+    <message>
+        <location filename="../DAGui/TableOps/DATableReshapeOps.cpp" line="+0"/>
+        <source>%1_GroupBy</source>
+        <translation>%1_分组聚合</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableReshapeOps.cpp" line="+1"/>
+        <source>Group-by aggregation of %1</source>
+        <translation>生成%1的分组聚合结果</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableReshapeOps.cpp" line="+1"/>
+        <source>Reshape failed: %1</source>
+        <translation>形状变换失败：%1</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableReshapeOps.cpp" line="+1"/>
+        <source>Melt table in place</source>
+        <translation>就地宽转长</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableReshapeOps.cpp" line="+1"/>
+        <source>Transpose table in place</source>
+        <translation>就地转置</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableReshapeOps.cpp" line="+1"/>
+        <source>%1_Melted</source>
+        <translation>%1_宽转长</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableReshapeOps.cpp" line="+1"/>
+        <source>Melt (wide to long) of %1</source>
+        <translation>生成%1的宽转长结果</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableReshapeOps.cpp" line="+1"/>
+        <source>%1_Transposed</source>
+        <translation>%1_转置</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableReshapeOps.cpp" line="+1"/>
+        <source>Transpose of %1</source>
+        <translation>生成%1的转置结果</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableReshapeOps.cpp" line="+1"/>
+        <source>Reshape Operations</source>
+        <translation>形状变换</translation>
+    </message>
+</context>
 </TS>
