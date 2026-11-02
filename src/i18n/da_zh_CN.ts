@@ -20884,4 +20884,32 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>表格的列已变化，部分列视图设置已被丢弃</translation>
     </message>
 </context>
+<context>
+    <name>DA::DATableColumnViewController</name>
+    <message>
+        <location filename="../DAGui/TableColumnView/DATableColumnViewController.cpp" line="+0"/>
+        <source>Freeze Columns</source>
+        <translation>冻结列</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableColumnView/DATableColumnViewController.cpp" line="+1"/>
+        <source>Freeze the first N columns (added to already frozen columns, 0 = no change):</source>
+        <translation>冻结前 N 列（追加到已冻结的列，0 = 不做修改）：</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableColumnView/DATableColumnViewController.cpp" line="+1"/>
+        <source>Column names must be unique</source>
+        <translation>列名不能重复</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableColumnView/DATableColumnViewController.cpp" line="+1"/>
+        <source>Column View...</source>
+        <translation>列视图...</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableColumnView/DATableColumnViewController.cpp" line="+1"/>
+        <source>Rename and update column view</source>
+        <translation>重命名并更新列视图</translation>
+    </message>
+</context>
 </TS>

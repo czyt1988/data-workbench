@@ -20859,4 +20859,32 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>Some column view settings were dropped because the table columns have changed.</translation>
     </message>
 </context>
+<context>
+    <name>DA::DATableColumnViewController</name>
+    <message>
+        <location filename="../DAGui/TableColumnView/DATableColumnViewController.cpp" line="+0"/>
+        <source>Freeze Columns</source>
+        <translation>Freeze Columns</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableColumnView/DATableColumnViewController.cpp" line="+1"/>
+        <source>Freeze the first N columns (added to already frozen columns, 0 = no change):</source>
+        <translation>Freeze the first N columns (added to already frozen columns, 0 = no change):</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableColumnView/DATableColumnViewController.cpp" line="+1"/>
+        <source>Column names must be unique</source>
+        <translation>Column names must be unique</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableColumnView/DATableColumnViewController.cpp" line="+1"/>
+        <source>Column View...</source>
+        <translation>Column View...</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableColumnView/DATableColumnViewController.cpp" line="+1"/>
+        <source>Rename and update column view</source>
+        <translation>Rename and update column view</translation>
+    </message>
+</context>
 </TS>

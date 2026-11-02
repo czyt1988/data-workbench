@@ -64,6 +64,7 @@ class DATableFindController;
 class DATableStyleController;
 class DATableSortController;
 class DATableViewStateController;
+class DATableColumnViewController;
 
 
 /**
@@ -408,7 +409,7 @@ Q_SIGNALS:
 private Q_SLOTS:
     // 表格点击
     void onTableViewClicked(const QModelIndex& index);
-    // 「列」子菜单动作分发（006d）：列视图真源操作
+    // 「列」子菜单动作分发（006d）：列视图真源操作（转发列视图控制器，008 期3）
     void onHeaderColumnViewActionRequested(int logicalColumn, DA::DADataHeaderView::ColumnViewAction action);
     // 表头带修饰键点击（DADataHeaderView::clickedWithModifiers）：
     // 仅拾取模式下转发 columnHeaderClicked；**点击不排序**（2026-10-18 交互修订，
@@ -453,10 +454,7 @@ private:
     //  迁入 DATableViewStateController，008 期3）
     // 当前选区为单格时取其显示文本（Qt::DisplayRole），否则空串（D9 预填用）
     QString currentSingleCellDisplayText() const;
-    // 全局列序（含隐藏列）的身份表：store 的 columnOrder 按 (名, occurrence) 精确匹配
-    // actualColumnIdentities()，每条只匹配一次，未匹配的实际列按 logical 升序追加末尾；
-    // store 为空 = logical 升序。任何地方要"全局列序身份表"都调这里（006d 对话框的输入）
-    QList< QPair< QString, int > > orderedColumnIdentities() const;
+    //（全局列序身份表 orderedColumnIdentities 已随列视图迁入 DATableColumnViewController，008 期3）
     // 采集用户拖拽的列宽写入视图状态子存储（程序化/布局触发的 sectionResized 不记录）；
     // source = 触发信号的那个窗格的表头（006b 起不再写死 ui->tableView）
     void onHeaderSectionResized(DADataTableView* source, int logicalIndex, int newSize);
@@ -516,7 +514,6 @@ private:
 
     DADialogDataframeColumnCastToNumeric* mDialogCastNumArgs { nullptr };
     DADialogDataframeColumnCastToDatetime* mDialogCastDatetimeArgs { nullptr };
-    class DADialogTableColumnView* mDialogColumnView { nullptr };  ///< 列视图对话框（006d，懒建复用）
     class DADialogGotoCell* mGotoDialog { nullptr };               ///< 定位对话框（007，懒建复用）
     //（非模态校验报告窗已随校验迁入 DATableValidationController，008 期3）
     //（快速绘图窗/框架、转入处理器、追加可用性、表格子窗口容器已迁入 DATableQuickPlotController，008 期3）
@@ -535,6 +532,7 @@ private:
     DATableStyleController* mStyleController { nullptr };  ///< 样式/显示格式控制器（008 期3，QObject 父子持有）
     DATableSortController* mSortController { nullptr };  ///< 排序控制器（008 期3，QObject 父子持有）
     DATableViewStateController* mViewStateController { nullptr };  ///< 视图状态控制器（008 期3，QObject 父子持有）
+    DATableColumnViewController* mColumnViewController { nullptr };  ///< 列视图控制器（008 期3，QObject 父子持有）
 };
 }  // end of namespace DA
 #endif  // DADATAOPERATEOFDATAFRAMEWIDGET_H

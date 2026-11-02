@@ -89,6 +89,8 @@ public:
     std::function< void(QUndoCommand*) > pushCommand;
     // DADataManager 树刷新（ChangeValue：删列后重建列子项等）；空 = 不通知
     std::function< void() > notifyHostValueChange;
+    // DADataManager 树刷新（ChangeDataframeColumnName：改列名后重建列子项）；空 = 不通知
+    std::function< void() > notifyHostColumnRename;
     // 关闭页级浮窗（快速绘图子窗口等，结构变更后列身份失效）；空 = 不关闭
     std::function< void() > closeFloatingWindows;
     // 定位单入口（007 语义：数据源绝对行 + 列位置 + 是否选中命中格；隐藏列自动
