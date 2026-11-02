@@ -9,6 +9,7 @@ find_package(qwt CONFIG REQUIRED)
 
 da_add_test(
     NAME DAFigurePointerToolTest
+    SUITE chart
     SOURCES main.cpp
     QT_COMPONENTS Test Widgets
     LINK_PRIVATE

@@ -10,6 +10,7 @@ find_package(spdlog CONFIG QUIET)
 
 da_add_test(
     NAME DATableExporterTest
+    SUITE table
     SOURCES main.cpp
     QT_COMPONENTS Test Widgets
     LINK_PRIVATE

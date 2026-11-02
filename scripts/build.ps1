@@ -236,7 +236,7 @@ Options:
   -Target <name>          Build a specific CMake target (e.g. DAPyWorkFlow)
   -Full                   Build all targets (default if no target is specified)
   -Clean                  Remove the build directory and rebuild from scratch
-  -Test                   Run tests after the build (via ctest)
+  -Test                   Run all tests after the build (via scripts/test.ps1, excludes bench)
   -QtPath <path>          Qt installation path (auto-detect if omitted)
   -VSVersion <2019|2022>  Visual Studio version (auto-detect if omitted)
   -Config <Release|Debug|RelWithDebInfo|MinSizeRel>  Build configuration
@@ -245,7 +245,8 @@ Options:
 Examples:
   .\build.ps1                           # Full build (configure + build Release)
   .\build.ps1 -Target DAPyWorkFlow      # Build one module only
-  .\build.ps1 -Target DAPyWorkFlow -Test   # Build module and run tests
+  .\build.ps1 -Target DAPyWorkFlow -Test   # Build module, then run the full test suite
+  .\scripts\test.ps1 -Suite table          # Build + run only the table suite
   .\build.ps1 -Clean                    # Clean rebuild
   .\build.ps1 -Full -Config Debug       # Full debug build
 
@@ -389,42 +390,24 @@ Write-Host "[OK] Build succeeded" -ForegroundColor Green
 if ($Test) {
     Write-Host "[TEST] Running tests ($Config)..." -ForegroundColor Cyan
 
-    # ctest 必须在构建目录里运行：在别处运行它找不到 CTestTestfile.cmake，
-    # 会以「没有找到测试」退出且退出码为 0，表现为假绿。
-    # $cmakeExe 可能是 PATH 里的裸命令名（不是文件路径），此时交给 PATH 找 ctest；
-    # 注意用 -PathType Leaf 判断：裸名会和当前目录下的同名目录（如仓库根的 cmake/）混淆。
-    $ctestExe = 'ctest'
-    if (Test-Path -PathType Leaf -LiteralPath $cmakeExe -ErrorAction SilentlyContinue) {
-        $ctestDir = Split-Path -LiteralPath $cmakeExe -Parent
-        foreach ($candidate in @('ctest.exe', 'ctest')) {
-            $ctestPath = Join-Path $ctestDir $candidate
-            if (Test-Path -PathType Leaf -LiteralPath $ctestPath) {
-                $ctestExe = $ctestPath
-                break
-            }
-        }
+    # 测试选择统一交给 scripts/test.ps1：它按 ctest 的套件标签（suite:xxx）选测试，
+    # 并在运行前构建选中的测试目标。注意 -Target 只作用于构建阶段，不影响测试选择；
+    # 想只跑某个领域请用：.\scripts\test.ps1 -Suite <core|data|table|chart|agent>
+    #
+    # 历史实现用 `ctest -R $Target` 把目标名当正则：DAGui / DAUtils / DAPyWorkFlow 等
+    # 模块名在测试名里根本不存在，配合 --no-tests=error 会让 `-Target DAGui -Test` 直接报失败。
+    $testScript = Join-Path $PSScriptRoot 'test.ps1'
+    if (-not (Test-Path -LiteralPath $testScript)) {
+        Write-Host "[ERROR] 找不到 $testScript" -ForegroundColor Red
+        exit 1
     }
-
-    $testArgs = @(
-        '-C', $Config,
-        '--output-on-failure',
-        # 过滤后一个测试都没有时按失败处理，避免「零测试」被当成通过
-        '--no-tests=error'
-    )
     if ($Target) {
-        # Map a target to a CTest regex when possible; otherwise run all
-        $testArgs += @('-R', $Target)
+        Write-Host "  Note: -Target only scopes the build; tests are selected by suite (see scripts/test.ps1 -Suite)" -ForegroundColor Yellow
     }
 
-    Write-Host "  Command: $ctestExe $($testArgs -join ' ') (in $buildDir)" -ForegroundColor Gray
-    Push-Location $buildDir
-    try {
-        & $ctestExe $testArgs
-        $testExitCode = $LASTEXITCODE
-    }
-    finally {
-        Pop-Location
-    }
+    & $testScript -All -Config $Config -BuildDir $buildDir
+    $testExitCode = $LASTEXITCODE
+
     if ($testExitCode -ne 0) {
         Write-Host "[ERROR] Tests failed (exit code $testExitCode)" -ForegroundColor Red
         exit $testExitCode

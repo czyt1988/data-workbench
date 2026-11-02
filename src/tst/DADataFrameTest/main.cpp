@@ -1,7 +1,13 @@
-﻿#include <QtTest/QtTest>
+#include <QtTest/QtTest>
 #include <QCoreApplication>
 #include <QDebug>
 #include <QFile>
+#include <cstdio>
+#include <cstdlib>
+
+#ifdef Q_OS_WIN
+#    include <windows.h>
+#endif
 
 #include "DAPyInterpreter.h"
 #include "DAPyModulePandas.h"
@@ -120,5 +126,22 @@ void DADataFrameTest::testIlocAndColumnAccess()
     }
 }
 
-QTEST_MAIN(DADataFrameTest)
+// 不用 QTEST_MAIN：嵌入式 Python 的静态对象（解释器句柄、pybind11 类型缓存）在进程
+// teardown 阶段析构顺序不可控，会在结果输出后被判定为 SEGFAULT（测试全 PASS 但退出码
+// 非零，被 ctest 记为失败）。这里沿用 DATableDataTest / DATableUndoBenchmark 的做法：
+// qExec 返回后结果已落盘，直接结束进程跳过 teardown，保证退出码可信。
+int main(int argc, char* argv[])
+{
+    QCoreApplication app(argc, argv);
+    QTEST_SET_MAIN_SOURCE_PATH
+    DADataFrameTest tc;
+    int ret = QTest::qExec(&tc, argc, argv);
+    std::fflush(nullptr);
+#ifdef Q_OS_WIN
+    ::TerminateProcess(::GetCurrentProcess(), static_cast< UINT >(ret));
+#else
+    ::_exit(ret);
+#endif
+    return ret;
+}
 #include "main.moc"

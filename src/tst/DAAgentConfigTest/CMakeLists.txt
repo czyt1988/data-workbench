@@ -9,6 +9,7 @@ find_package(spdlog CONFIG QUIET)
 
 da_add_test(
     NAME DAAgentConfigTest
+    SUITE agent
     SOURCES main.cpp
     QT_COMPONENTS Test
     LINK_PRIVATE

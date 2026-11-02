@@ -9,9 +9,13 @@
 ```powershell
 # 一键构建（推荐，自动探测 Qt/VS 路径）
 .\scripts\build.ps1 -Target DAPyWorkFlow       # 编译指定模块
-.\scripts\build.ps1 -Target DAPyWorkFlow -Test # 编译并运行测试
+.\scripts\build.ps1 -Target DAPyWorkFlow -Test # 编译该模块，然后跑全量测试套件（不含 bench）
 .\scripts\build.ps1 -Full                      # 完整构建
 .\scripts\build.ps1 -Clean                     # 清理后重新配置+编译
+
+# 按领域跑测试（只构建并运行相关套件）
+.\scripts\test.ps1 -Suite table    # core | data | table | chart | agent
+.\scripts\test.ps1 -Changed        # 按 git 改动自动挑套件
 ```
 
 > **务必使用 Visual Studio 生成器**，不要用 Ninja。PowerShell 中 `vcvars64.bat` 无法注入 MSVC 环境，`scripts/build.ps1` 已自动处理此问题。
@@ -59,7 +63,7 @@ sudo apt install qt6-base-dev qt6-base-dev-tools qt6-svg-dev \
 # 编译指定模块（最常用）
 .\scripts\build.ps1 -Target DAPyWorkFlow
 
-# 编译指定模块并运行测试
+# 编译指定模块，然后运行全量测试套件（不含 bench）
 .\scripts\build.ps1 -Target DAPyWorkFlow -Test
 
 # 完整构建（所有模块）
@@ -81,7 +85,7 @@ sudo apt install qt6-base-dev qt6-base-dev-tools qt6-svg-dev \
 | `-Target` | 模块名（可选） | 仅构建指定目标，省略时构建全部 |
 | `-Full` | 开关 | 完整构建（所有模块） |
 | `-Clean` | 开关 | 清理后重新配置+编译 |
-| `-Test` | 开关 | 构建后通过 `ctest` 运行测试（测试目标需 `DA_ENABLE_TESTING=ON` 才会编译） |
+| `-Test` | 开关 | 构建后运行**全量测试套件**（不含 bench，转调 `scripts/test.ps1 -All`；测试目标需 `DA_ENABLE_TESTING=ON` 才会编译）。只跑某个领域请用 `.\scripts\test.ps1 -Suite <域名>` |
 | `-QtPath` | 路径 | 手动指定 Qt 安装路径，覆盖自动检测 |
 | `-VSVersion` | `2019` / `2022` | 手动指定 Visual Studio 版本，覆盖根据 Qt 自动推断的结果 |
 | `-Config` | `Release` / `Debug` / `RelWithDebInfo` / `MinSizeRel` | 构建配置，默认 `Release` |
@@ -154,14 +158,22 @@ cmake --build build-linux --parallel
 
 ## 运行测试
 
+> 测试按套件分组，日常按改动范围只跑相关套件；完整规则见 [测试体系与按套件运行](docs/zh/dev-guide/general/testing.md)。
+
 ### Windows
 
 ```powershell
-# 使用脚本（推荐，自动定位 exe 并捕获输出）
+# 按套件跑（推荐）：-Changed 按 git 改动自动挑，-All 跑全量（仍不含 bench）
+.\scripts\test.ps1 -Suite table
+.\scripts\test.ps1 -Changed
+.\scripts\test.ps1 -All
+.\scripts\test.ps1 -All -Bench      # 连性能/基准用例一起跑
+
+# 构建后跑全量套件（-Target 只作用于构建阶段）
 .\scripts\build.ps1 -Target DAPyWorkFlow -Test
 
 # 手动运行（Qt Test 在 Windows 上 stdout 不可见，必须用 -o 输出到文件）
-.\build\src\tst\<测试模块>\Release\<测试模块>.exe -o test_result.txt
+.\build\bin\Release\<测试模块>.exe -o test_result.txt
 Get-Content test_result.txt
 ```
 
@@ -174,9 +186,10 @@ cat test_result.txt
 
 | 注意事项 | Windows | Linux |
 |----------|---------|-------|
-| 测试 exe 路径 | VS: `build\src\tst\<模块>\<Config>\` | Ninja: `build-linux/src/tst/<模块>/` |
+| 测试 exe 路径 | VS: `build\bin\<Config>\`（与 DA DLL 同目录） | Ninja: `build-linux/bin/` |
 | 输出捕获 | **必须**用 `-o file.txt` | 可直接 stdout 或 `-o file.txt` |
 | 退出码 | `$LASTEXITCODE` | `$?` 或 `echo $?` |
+| 并发构建 | **不要在测试运行时构建**（DLL 被占用会 `LNK1104`） | 同左 |
 
 ---
 

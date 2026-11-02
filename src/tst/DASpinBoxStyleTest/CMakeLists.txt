@@ -3,6 +3,7 @@
 
 da_add_test(
     NAME DASpinBoxStyleTest
+    SUITE chart
     SOURCES main.cpp
     QT_COMPONENTS Test Widgets
     LINK_PRIVATE

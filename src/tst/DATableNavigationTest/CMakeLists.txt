@@ -6,6 +6,7 @@ find_package(pybind11 PATHS ${DAWorkbench_INSTALL_DIR}/share/cmake)
 
 da_add_test(
     NAME DATableNavigationTest
+    SUITE table
     SOURCES main.cpp
     QT_COMPONENTS Test Widgets
     LINK_PRIVATE
