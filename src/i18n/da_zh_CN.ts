@@ -20850,4 +20850,17 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>改动量过大（%1 格），本次替换将不可撤销，是否继续？</translation>
     </message>
 </context>
+<context>
+    <name>DA::DATableStyleController</name>
+    <message>
+        <location filename="../DAGui/TableStyle/DATableStyleController.cpp" line="+0"/>
+        <source>Please select a valid cell</source>
+        <translation>请选择正确的单元格</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableStyle/DATableStyleController.cpp" line="+1"/>
+        <source>Please select a valid column</source>
+        <translation>请选择正确的列</translation>
+    </message>
+</context>
 </TS>

@@ -61,6 +61,7 @@ class DATableValidationController;
 class DATableComputedColumnController;
 class DATableConditionalFormatController;
 class DATableFindController;
+class DATableStyleController;
 
 
 /**
@@ -420,11 +421,8 @@ private:
     // ===== 条件格式菜单（WPS 式预设入口；实现迁入 DATableConditionalFormatController，008 期3）=====
     // 视图行号（滑动窗内逻辑行）转数据源绝对行号：数据操作唯一换算点
     int toActualRow(int viewRow) const;
-    // 选区是否与行级/单元格级样式相交（样式键是稀疏表且为数据源绝对行号，
-    // windowStart 用于换算回窗口内逻辑行；全选卡顿修复的快路径判定用，
-    // 条目数远小于选区格数，避免把整个选区物化成逐格列表）
-    bool selectionIntersectsRowStyles(const QItemSelection& sel, int windowStart) const;
-    bool selectionIntersectsCellStyles(const QItemSelection& sel, int windowStart) const;
+    //（选区是否与行级/单元格级样式相交已随样式迁入 DATableStyleController，008 期3；
+    //  判定实现在选区服务 selectionIntersectsRowStyles/CellStyles）
     // 数据源真实数据行数/列数（不含尾部预留的空白行列）
     int dataRowCount() const;
     int dataColumnCount() const;
@@ -551,6 +549,7 @@ private:
     DATableComputedColumnController* mComputedColumnController { nullptr };  ///< 计算列控制器（008 期3，QObject 父子持有）
     DATableConditionalFormatController* mConditionalFormatController { nullptr };  ///< 条件格式控制器（008 期3，QObject 父子持有）
     DATableFindController* mFindController { nullptr };  ///< 查找/替换控制器（008 期3，QObject 父子持有）
+    DATableStyleController* mStyleController { nullptr };  ///< 样式/显示格式控制器（008 期3，QObject 父子持有）
 };
 }  // end of namespace DA
 #endif  // DADATAOPERATEOFDATAFRAMEWIDGET_H

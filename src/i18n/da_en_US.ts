@@ -20825,4 +20825,17 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>Too many cells will be changed (%1). This operation cannot be undone. Continue?</translation>
     </message>
 </context>
+<context>
+    <name>DA::DATableStyleController</name>
+    <message>
+        <location filename="../DAGui/TableStyle/DATableStyleController.cpp" line="+0"/>
+        <source>Please select a valid cell</source>
+        <translation>Please select a valid cell</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableStyle/DATableStyleController.cpp" line="+1"/>
+        <source>Please select a valid column</source>
+        <translation>Please select a valid column</translation>
+    </message>
+</context>
 </TS>
