@@ -77,6 +77,7 @@
 #include "TableColumnView/DATableColumnViewController.h"
 #include "TableOps/DATableRowOps.h"
 #include "TableOps/DATableCellOps.h"
+#include "TableOps/DATableTypeOps.h"
 // Dialog
 #include "Dialog/DARenameColumnsNameDialog.h"
 #include "Dialog/DADialogDataframeColumnCastToNumeric.h"
@@ -152,8 +153,6 @@ int DADataOperateOfDataFrameWidget::getDataOperatePageType() const
 DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, DATableMetadataRegistry* registry, QWidget* parent)
     : DADataOperatePageWidget(parent)
     , ui(new Ui::DADataOperateOfDataFrameWidget)
-    , mDialogCastNumArgs(nullptr)
-    , mDialogCastDatetimeArgs(nullptr)
 {
     ui->setupUi(this);
 
@@ -315,6 +314,8 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
     // 数据操作算子（008 期4：一个操作一个文件；参数化入口由 Facade 直调具体算子）
     mRowOps = new DATableRowOps(*mContext, *mSelection, mMutation, this);
     mCellOps = new DATableCellOps(*mContext, *mSelection, mMutation, this);
+    mTypeOps = new DATableTypeOps(*mContext, *mSelection, mMutation, this);
+    connect(mTypeOps, &DATableTypeOps::selectTypeChanged, this, &DADataOperateOfDataFrameWidget::selectTypeChanged);
     // 窗格装配（006b 抽取的唯一装配点）：表头替换 → setModel → 委托 → 逐窗格连接；
     // 必须在 mStyleDelegate 创建之后（里面要用它），在 setDAData/applyViewStateFromStore 之前
     configurePaneView(ui->tableView);
@@ -1015,166 +1016,38 @@ bool DADataOperateOfDataFrameWidget::renameColumn(int col, const QString& newNam
 }
 
 /**
- * @brief 设置选择列的数据类型
+ * @brief 设置选择列的数据类型（转发类型算子）
  * @param dtypeName
  * @return 成功改变类型返回true
  */
 bool DADataOperateOfDataFrameWidget::changeSelectColumnType(const DAPyDType& dt)
 {
-    DAPyDataFrame df = getDataframe();
-    if (df.isNone()) {
-        emit selectTypeChanged({ }, DAPyDType());
-        return false;
-    }
-    QList< int > selColumns = getSelectedDataframeCoumns();
-    if (selColumns.size() <= 0) {
-        daWarning << tr("Please select a valid column");  // cn:请选择正确的列
-        emit selectTypeChanged({ }, DAPyDType());
-        return false;
-    }
-    std::unique_ptr< DACommandDataFrame_astype > cmd(new DACommandDataFrame_astype(df, selColumns, dt));
-    // 编辑后效（008 期2）：类型转换改整列值 → 受影响列统计失效 + 计算列标脏，收口到 commit
-    QPointer< DADataTableModel > modle = mModel;
-    DATableMutation mutation;
-    mutation.kind        = DATableMutation::Values;
-    mutation.changedCols = selColumns;
-    mutation.modelRefresh = [ modle, selColumns ]() {
-        if (modle) {
-            for (int c : std::as_const(selColumns)) {
-                modle->notifyColumnChanged(c);
-            }
-        }
-    };
-    cmd->setCallBack(mMutation->callbackFor(mutation));
-    if (!cmd->exec()) {
-        // 说明没有设置成功
-        emit selectTypeChanged({ }, DAPyDType());
-        return false;
-    }
-    push(cmd.release());  // 成功，push会执行redo但会跳过
-    emit selectTypeChanged(selColumns, dt);
-    // 这里说明设置成功了
-    return true;
+    return mTypeOps->changeSelectColumnType(dt);
 }
 
 /**
- * @brief 把选择的列转换为数值
+ * @brief 把选择的列转换为数值（转发类型算子）
  */
 void DADataOperateOfDataFrameWidget::castSelectToNum()
 {
-    DAPyDataFrame df = getDataframe();
-    if (df.isNone()) {
-        return;
-    }
-    QList< int > colsIndex = getSelectedDataframeCoumns();
-    if (colsIndex.size() <= 0) {
-        daWarning << tr("Please select a valid column");  // cn:请选择正确的列
-        return;
-    }
-    if (mDialogCastNumArgs == nullptr) {
-        mDialogCastNumArgs = new DADialogDataframeColumnCastToNumeric(this);
-    }
-    if (QDialog::Accepted != mDialogCastNumArgs->exec()) {
-        return;
-    }
-    DAPyDType dt        = df.dtypeObject(colsIndex.first());
-    pybind11::dict args = mDialogCastNumArgs->getArgs();
-    std::unique_ptr< DACommandDataFrame_castNum > cmd(new DACommandDataFrame_castNum(df, colsIndex, args));
-    // 编辑后效（008 期2）：数值转换改整列值 → 受影响列统计失效 + 计算列标脏，收口到 commit
-    QPointer< DADataTableModel > modle = mModel;
-    DATableMutation mutation;
-    mutation.kind        = DATableMutation::Values;
-    mutation.changedCols = colsIndex;
-    mutation.modelRefresh = [ modle, colsIndex ]() {
-        if (modle) {
-            for (int c : std::as_const(colsIndex)) {
-                modle->notifyColumnChanged(c);
-            }
-        }
-    };
-    cmd->setCallBack(mMutation->callbackFor(mutation));
-    if (!cmd->exec()) {
-        return;
-    }
-    push(cmd.release());  // 推入后不会执行redo逻辑部分
-    DAPyDType dt2 = df.dtypeObject(colsIndex.first());
-    if (dt != dt2) {
-        emit selectTypeChanged(colsIndex, dt2);
-    }
+    mTypeOps->castSelectToNum();
 }
 
 /**
- * @brief 把选择的列转换为日期
+ * @brief 把选择的列转换为日期（转发类型算子）
  */
 void DADataOperateOfDataFrameWidget::castSelectToDatetime()
 {
-    DAPyDataFrame df = getDataframe();
-    if (df.isNone()) {
-        return;
-    }
-    QList< int > colsIndex = getSelectedDataframeCoumns();
-    if (colsIndex.size() <= 0) {
-        daWarning << tr("Please select a valid column");  // cn:请选择正确的列
-        return;
-    }
-    if (mDialogCastDatetimeArgs == nullptr) {
-        mDialogCastDatetimeArgs = new DADialogDataframeColumnCastToDatetime(this);
-    }
-    if (QDialog::Accepted != mDialogCastDatetimeArgs->exec()) {
-        return;
-    }
-    DAPyDType dt        = df.dtypeObject(colsIndex.first());
-    pybind11::dict args = mDialogCastDatetimeArgs->getArgs();
-    std::unique_ptr< DACommandDataFrame_castDatetime > cmd(new DACommandDataFrame_castDatetime(df, colsIndex, args));
-    // 编辑后效（008 期2）：日期转换改整列值 → 受影响列统计失效 + 计算列标脏，收口到 commit
-    QPointer< DADataTableModel > modle = mModel;
-    DATableMutation mutation;
-    mutation.kind        = DATableMutation::Values;
-    mutation.changedCols = colsIndex;
-    mutation.modelRefresh = [ modle, colsIndex ]() {
-        if (modle) {
-            for (int c : std::as_const(colsIndex)) {
-                modle->notifyColumnChanged(c);
-            }
-        }
-    };
-    cmd->setCallBack(mMutation->callbackFor(mutation));
-    if (!cmd->exec()) {
-        return;
-    }
-    push(cmd.release());
-    DAPyDType dt2 = df.dtypeObject(colsIndex.first());
-    if (dt != dt2) {
-        emit selectTypeChanged(colsIndex, dt2);
-    }
+    mTypeOps->castSelectToDatetime();
 }
 
 /**
- * @brief 把选择的列转换为索引
+ * @brief 把选择的列转换为索引（转发类型算子）
  * @return
  */
 bool DADataOperateOfDataFrameWidget::changeSelectColumnToIndex()
 {
-    DAPyDataFrame df = getDataframe();
-    if (df.isNone()) {
-        return false;
-    }
-    QList< int > colsIndex = getSelectedDataframeCoumns();
-    if (colsIndex.size() <= 0) {
-        daWarning << tr("Please select a valid column");  // cn:请选择正确的列
-        return false;
-    }
-    std::unique_ptr< DACommandDataFrame_setIndex > cmd = std::make_unique< DACommandDataFrame_setIndex >(df, colsIndex);
-    // 编辑后效（008 期2）：列转索引是结构性整表操作 → 模型 reset + 全量失效 +
-    // 计算列全标脏，收口到 commit（FullReset）
-    DATableMutation mutation;
-    mutation.kind = DATableMutation::FullReset;
-    cmd->setCallBack(mMutation->callbackFor(mutation));
-    if (!cmd->exec()) {
-        return false;
-    }
-    push(cmd.release());  // 推入后不会执行redo逻辑部分
-    return true;
+    return mTypeOps->changeSelectColumnToIndex();
 }
 
 /**

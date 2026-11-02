@@ -67,6 +67,7 @@ class DATableViewStateController;
 class DATableColumnViewController;
 class DATableRowOps;
 class DATableCellOps;
+class DATableTypeOps;
 
 
 /**
@@ -514,8 +515,7 @@ private:
     //（投影守卫 mApplyingViewState 与冻结列集合 mFrozenColumnsLogical 已随视图状态
     //  迁入 DATableViewStateController，008 期3）
 
-    DADialogDataframeColumnCastToNumeric* mDialogCastNumArgs { nullptr };
-    DADialogDataframeColumnCastToDatetime* mDialogCastDatetimeArgs { nullptr };
+    //（两个类型转换对话框已随类型转换迁入 DATableTypeOps，008 期4）
     class DADialogGotoCell* mGotoDialog { nullptr };               ///< 定位对话框（007，懒建复用）
     //（非模态校验报告窗已随校验迁入 DATableValidationController，008 期3）
     //（快速绘图窗/框架、转入处理器、追加可用性、表格子窗口容器已迁入 DATableQuickPlotController，008 期3）
@@ -537,6 +537,7 @@ private:
     DATableColumnViewController* mColumnViewController { nullptr };  ///< 列视图控制器（008 期3，QObject 父子持有）
     DATableRowOps* mRowOps { nullptr };  ///< 行操作算子（008 期4，页级持有）
     DATableCellOps* mCellOps { nullptr };  ///< 单元格操作算子（008 期4，页级持有）
+    DATableTypeOps* mTypeOps { nullptr };  ///< 类型转换算子（008 期4，页级持有）
 };
 }  // end of namespace DA
 #endif  // DADATAOPERATEOFDATAFRAMEWIDGET_H

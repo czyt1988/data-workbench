@@ -20968,4 +20968,17 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>单元格操作</translation>
     </message>
 </context>
+<context>
+    <name>DA::DATableTypeOps</name>
+    <message>
+        <location filename="../DAGui/TableOps/DATableTypeOps.cpp" line="+0"/>
+        <source>Please select a valid column</source>
+        <translation>请选择正确的列</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableOps/DATableTypeOps.cpp" line="+1"/>
+        <source>Type Operations</source>
+        <translation>类型操作</translation>
+    </message>
+</context>
 </TS>
