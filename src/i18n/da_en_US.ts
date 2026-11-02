@@ -3342,7 +3342,7 @@
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+857"/>
+        <location filename="../APP/DAAppController.cpp" line="+875"/>
         <source>Save Project</source>
         <translation>Save Project</translation>
     </message>
@@ -3648,12 +3648,12 @@
         <translation>No cells selected to copy</translation>
     </message>
     <message>
-        <location line="-1534"/>
+        <location line="-1552"/>
         <source>No active table</source>
         <translation>No active table</translation>
     </message>
     <message>
-        <location line="+1922"/>
+        <location line="+1940"/>
         <source>Cannot rename a series, please select a dataset</source>
         <translation>Cannot rename a series, please select a dataset</translation>
     </message>
@@ -3703,7 +3703,7 @@
         <translation>Column [%1] minimum value at row %2</translation>
     </message>
     <message>
-        <location line="+45"/>
+        <location line="+67"/>
         <source>Select the columns to plot first</source>
         <translation>Select the columns to plot first</translation>
     </message>
@@ -3753,10 +3753,10 @@
         <translation>New workflow name:</translation>
     </message>
     <message>
-        <location line="-1913"/>
+        <location line="-1935"/>
         <location line="+32"/>
         <location line="+1083"/>
-        <location line="+975"/>
+        <location line="+997"/>
         <source>Please select a valid column</source>
         <translation>Please select a valid column</translation>
     </message>
@@ -3781,12 +3781,12 @@
         <translation>The selected data source is empty</translation>
     </message>
     <message>
-        <location line="-3070"/>
+        <location line="-3092"/>
         <source>Before running the workflow, you need to save the project</source>
         <translation>Before running the workflow, you need to save the project</translation>
     </message>
     <message>
-        <location line="+2335"/>
+        <location line="+2357"/>
         <source>Please select a column first</source>
         <translation>Please select a column first</translation>
     </message>
@@ -3879,12 +3879,12 @@
     </message>
     <message>
         <location line="+3"/>
-        <location line="+559"/>
+        <location line="+565"/>
         <source>Statistics</source>
         <translation>Statistics</translation>
     </message>
     <message>
-        <location line="-43"/>
+        <location line="-42"/>
         <source>Markdown Viewer</source>
         <translation>Markdown Viewer</translation>
     </message>
@@ -3894,7 +3894,7 @@
         <translation>Failed to open markdown file: %1</translation>
     </message>
     <message>
-        <location line="-525"/>
+        <location line="-532"/>
         <source>Undo History</source>
         <translation>Undo History</translation>
     </message>
@@ -4337,7 +4337,7 @@
 <context>
     <name>DA::DAAppRibbonArea</name>
     <message>
-        <location filename="../APP/DAAppRibbonArea.cpp" line="+219"/>
+        <location filename="../APP/DAAppRibbonArea.cpp" line="+222"/>
         <location line="+3"/>
         <source>File</source>
         <translation>File</translation>
@@ -4354,12 +4354,12 @@
     </message>
     <message>
         <location line="+29"/>
-        <location line="+402"/>
+        <location line="+411"/>
         <source>Workflow</source>
         <translation>Workflow</translation>
     </message>
     <message>
-        <location line="-429"/>
+        <location line="-438"/>
         <source>Dataset</source>
         <translation>Dataset</translation>
     </message>
@@ -4382,13 +4382,13 @@
         <location line="+2"/>
         <location line="+11"/>
         <location line="+21"/>
-        <location line="+273"/>
+        <location line="+282"/>
         <location line="+195"/>
         <source>View</source>
         <translation>View</translation>
     </message>
     <message>
-        <location line="-499"/>
+        <location line="-508"/>
         <source>Display</source>
         <translation>Display</translation>
     </message>
@@ -4399,100 +4399,130 @@
     </message>
     <message>
         <location line="+2"/>
-        <location line="+232"/>
+        <location line="+241"/>
         <source>DataFrame</source>
         <translation>DataFrame</translation>
     </message>
     <message>
-        <location line="-231"/>
-        <location line="+233"/>
+        <location line="-240"/>
+        <location line="+242"/>
         <source>Table Operations</source>
         <translation>Table Operations</translation>
     </message>
     <message>
-        <location line="-226"/>
-        <location line="+304"/>
+        <location line="-235"/>
+        <location line="+313"/>
         <source>Data Operations</source>
         <translation>Data Operations</translation>
     </message>
     <message>
-        <location line="-310"/>
-        <location line="+235"/>
+        <location line="-319"/>
+        <location line="+244"/>
         <source>Axes</source>
         <translation>Axes</translation>
     </message>
     <message>
-        <location line="-234"/>
-        <location line="+247"/>
+        <location line="-243"/>
+        <location line="+256"/>
         <source>Column</source>
         <translation>Column</translation>
     </message>
     <message>
-        <location line="-246"/>
+        <location line="-255"/>
         <location line="+12"/>
-        <location line="+245"/>
+        <location line="+254"/>
         <location line="+5"/>
         <source>Type</source>
         <translation>Type</translation>
     </message>
     <message>
-        <location line="-261"/>
+        <location line="-270"/>
         <location line="+12"/>
-        <location line="+260"/>
+        <location line="+269"/>
         <location line="+4"/>
         <source>Format</source>
         <translation>Format</translation>
     </message>
     <message>
-        <location line="-270"/>
-        <location line="+328"/>
+        <location line="-279"/>
+        <location line="+337"/>
         <source>Table Style</source>
         <translation>Table Style</translation>
     </message>
     <message>
-        <location line="-327"/>
-        <location line="+331"/>
+        <location line="-336"/>
+        <location line="+340"/>
         <source>Fill</source>
         <translation>Fill</translation>
     </message>
     <message>
-        <location line="-330"/>
-        <location line="+338"/>
+        <location line="-339"/>
+        <location line="+347"/>
         <source>Font</source>
         <translation>Font</translation>
     </message>
     <message>
-        <location line="-337"/>
-        <location line="+343"/>
+        <location line="-346"/>
+        <location line="+352"/>
         <source>Clear</source>
         <translation>Clear</translation>
     </message>
     <message>
-        <location line="-336"/>
+        <location line="-345"/>
         <source>Fill Color</source>
         <translation>Fill Color</translation>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+412"/>
+        <location line="+421"/>
         <source>Workflow Edit</source>
         <translation>Workflow Edit</translation>
     </message>
     <message>
-        <location line="-447"/>
+        <location line="-456"/>
         <location line="+36"/>
-        <location line="+415"/>
+        <location line="+424"/>
         <source>Clipboard</source>
         <translation>Clipboard</translation>
     </message>
     <message>
-        <location line="-401"/>
-        <location line="+521"/>
+        <location line="-410"/>
+        <location line="+530"/>
         <source>Chart Style</source>
         <translation>Chart Style</translation>
     </message>
     <message>
-        <location line="+377"/>
+        <location line="-521"/>
+        <location line="+627"/>
+        <source>Statistics</source>
+        <translation>Statistics</translation>
+    </message>
+    <message>
+        <location line="-626"/>
+        <location line="+628"/>
+        <source>Statistics Operations</source>
+        <translation>Statistics Operations</translation>
+    </message>
+    <message>
+        <location line="-627"/>
+        <location line="+631"/>
+        <source>Statistics Parameters</source>
+        <translation>Statistics Parameters</translation>
+    </message>
+    <message>
+        <location line="-630"/>
+        <location line="+653"/>
+        <source>Tests</source>
+        <translation>Tests</translation>
+    </message>
+    <message>
+        <location line="-652"/>
+        <location line="+659"/>
+        <source>Plots</source>
+        <translation>Plots</translation>
+    </message>
+    <message>
+        <location line="+336"/>
         <location line="+2"/>
         <source>AI Agent</source>
         <translation>AI Agent</translation>
@@ -4559,43 +4589,43 @@
         <translation>Agent module is not ready</translation>
     </message>
     <message>
-        <location line="-1061"/>
-        <location line="+419"/>
+        <location line="-1171"/>
+        <location line="+428"/>
         <source>Item</source>
         <translation>Item</translation>
     </message>
     <message>
-        <location line="-418"/>
-        <location line="+427"/>
+        <location line="-427"/>
+        <location line="+436"/>
         <source>Text</source>
         <translation>Text</translation>
     </message>
     <message>
-        <location line="-426"/>
-        <location line="+431"/>
+        <location line="-435"/>
+        <location line="+440"/>
         <source>Background</source>
         <translation>Background</translation>
     </message>
     <message>
-        <location line="-428"/>
-        <location line="+510"/>
+        <location line="-437"/>
+        <location line="+519"/>
         <source>Workflow Run</source>
         <translation>Workflow Run</translation>
     </message>
     <message>
-        <location line="-509"/>
-        <location line="+512"/>
+        <location line="-518"/>
+        <location line="+521"/>
         <source>Run</source>
         <translation>Run</translation>
     </message>
     <message>
-        <location line="-510"/>
-        <location line="+343"/>
+        <location line="-519"/>
+        <location line="+352"/>
         <source>Figure</source>
         <translation>Figure</translation>
     </message>
     <message>
-        <location line="-337"/>
+        <location line="-346"/>
         <source>Figure Setting</source>
         <translation>Figure Setting</translation>
     </message>
@@ -4611,12 +4641,12 @@
     </message>
     <message>
         <location line="+5"/>
-        <location line="+575"/>
+        <location line="+584"/>
         <source>Chart Edit</source>
         <translation>Chart Edit</translation>
     </message>
     <message>
-        <location line="-577"/>
+        <location line="-586"/>
         <source>Chart Setting</source>
         <translation>Chart Setting</translation>
     </message>
@@ -4627,17 +4657,17 @@
     </message>
     <message>
         <location line="+2"/>
-        <location line="+584"/>
+        <location line="+593"/>
         <source>Select Tool</source>
         <translation>Select Tool</translation>
     </message>
     <message>
-        <location line="-583"/>
+        <location line="-592"/>
         <source>Chart Assist Tool</source>
         <translation>Chart Assist Tool</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+10"/>
         <location line="+1"/>
         <source>View Marker</source>
         <translation>View Marker</translation>
@@ -4653,8 +4683,8 @@
         <translation>Export Workflow Graphics Scene To Image</translation>
     </message>
     <message>
-        <location line="-15"/>
-        <location line="+367"/>
+        <location line="-23"/>
+        <location line="+376"/>
         <source>Stats Plot</source>
         <translation>Stats Plot</translation>
     </message>
@@ -4669,8 +4699,8 @@
         <translation>Workflow View</translation>
     </message>
     <message>
-        <location line="-500"/>
-        <location line="+537"/>
+        <location line="-509"/>
+        <location line="+546"/>
         <source>Export</source>
         <translation>Export</translation>
     </message>
@@ -4690,26 +4720,26 @@
         <translation>Assist Tools</translation>
     </message>
     <message>
-        <location line="-627"/>
-        <location line="+281"/>
+        <location line="-636"/>
+        <location line="+290"/>
         <source>Edit</source>
         <translation>Edit</translation>
     </message>
     <message>
-        <location line="-272"/>
-        <location line="+348"/>
+        <location line="-281"/>
+        <location line="+357"/>
         <source>Conditional</source>
         <translation>Conditional</translation>
     </message>
     <message>
-        <location line="-354"/>
-        <location line="+309"/>
+        <location line="-363"/>
+        <location line="+318"/>
         <source>Computed Column</source>
         <translation>Computed Column</translation>
     </message>
     <message>
-        <location line="-308"/>
-        <location line="+315"/>
+        <location line="-317"/>
+        <location line="+324"/>
         <source>Data Transform</source>
         <translation>Data Transform</translation>
     </message>
@@ -10226,40 +10256,26 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DA::DADataStatsWidget</name>
     <message>
-        <location filename="../DAGui/Stats/DADataStatsWidget.cpp" line="+145"/>
-        <location line="+514"/>
-        <source>Statistics</source>
-        <translation>Statistics</translation>
-    </message>
-    <message>
-        <location line="-508"/>
-        <location line="+509"/>
-        <source>Analysis</source>
-        <translation>Analysis</translation>
-    </message>
-    <message>
-        <location line="-503"/>
-        <location line="+504"/>
+        <location filename="../DAGui/Stats/DADataStatsWidget.cpp" line="+1233"/>
         <source>Refresh</source>
         <translation>Refresh</translation>
     </message>
     <message>
-        <location line="-502"/>
-        <location line="+503"/>
+        <location line="+1"/>
         <source>Recompute with the current data</source>
         <translation>Recompute with the current data</translation>
     </message>
     <message>
-        <location line="-491"/>
-        <location line="+398"/>
-        <location line="+79"/>
-        <location line="+17"/>
+        <location line="-1008"/>
+        <location line="+819"/>
+        <location line="+75"/>
+        <location line="+147"/>
         <location line="+5"/>
         <source>Statistic</source>
         <translation>Statistic</translation>
     </message>
     <message>
-        <location line="-442"/>
+        <location line="-649"/>
         <source>Normality Test</source>
         <translation>Normality Test</translation>
     </message>
@@ -10274,12 +10290,43 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation>Outlier Analysis</translation>
     </message>
     <message>
-        <location line="+84"/>
+        <location line="-71"/>
         <source>Count</source>
         <translation>Count</translation>
     </message>
     <message>
+        <location line="-200"/>
+        <source>5%</source>
+        <translation>5%</translation>
+    </message>
+    <message>
         <location line="+1"/>
+        <source>25%</source>
+        <translation>25%</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>50% (Median)</source>
+        <translation>50% (Median)</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>75%</source>
+        <translation>75%</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>95%</source>
+        <translation>95%</translation>
+    </message>
+    <message>
+        <location line="+163"/>
+        <location line="+618"/>
+        <source>There is no statistics plot to transfer</source>
+        <translation>There is no statistics plot to transfer</translation>
+    </message>
+    <message>
+        <location line="-584"/>
         <source>Mean</source>
         <translation>Mean</translation>
     </message>
@@ -10429,7 +10476,127 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation>Mean CI Upper</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location line="+9"/>
+        <source>Number of non-missing values</source>
+        <translation>Number of non-missing values</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Arithmetic mean of the values</source>
+        <translation>Arithmetic mean of the values</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Standard deviation (sample, ddof=1)</source>
+        <translation>Standard deviation (sample, ddof=1)</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Minimum value</source>
+        <translation>Minimum value</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Maximum value</source>
+        <translation>Maximum value</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Number of missing (NaN) values</source>
+        <translation>Number of missing (NaN) values</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Number of distinct values</source>
+        <translation>Number of distinct values</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Sum of the values</source>
+        <translation>Sum of the values</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Variance (sample, ddof=1)</source>
+        <translation>Variance (sample, ddof=1)</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Standard error of the mean</source>
+        <translation>Standard error of the mean</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Maximum minus minimum</source>
+        <translation>Maximum minus minimum</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Interquartile range (Q3 - Q1)</source>
+        <translation>Interquartile range (Q3 - Q1)</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Median absolute deviation</source>
+        <translation>Median absolute deviation</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Coefficient of variation (std / mean)</source>
+        <translation>Coefficient of variation (std / mean)</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Skewness of the distribution</source>
+        <translation>Skewness of the distribution</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Excess kurtosis of the distribution</source>
+        <translation>Excess kurtosis of the distribution</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>5% percentile</source>
+        <translation>5% percentile</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>25% percentile (Q1)</source>
+        <translation>25% percentile (Q1)</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>50% percentile (median)</source>
+        <translation>50% percentile (median)</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>75% percentile (Q3)</source>
+        <translation>75% percentile (Q3)</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>95% percentile</source>
+        <translation>95% percentile</translation>
+    </message>
+    <message>
+        <location line="+24"/>
+        <source>Add Shapiro-Wilk / D&apos;Agostino K2 normality test rows</source>
+        <translation>Add Shapiro-Wilk / D&apos;Agostino K2 normality test rows</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Add the 95% confidence interval rows of the mean</source>
+        <translation>Add the 95% confidence interval rows of the mean</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Add 1.5x IQR outlier count and fence rows</source>
+        <translation>Add 1.5x IQR outlier count and fence rows</translation>
+    </message>
+    <message>
+        <location line="+11"/>
         <source>yes</source>
         <translation>yes</translation>
     </message>
@@ -10459,23 +10626,131 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation>The data has changed. Click Refresh to recompute.</translation>
     </message>
     <message>
-        <location line="+100"/>
-        <location line="+45"/>
+        <location line="+217"/>
+        <location line="+330"/>
+        <source>Distribution Rate</source>
+        <translation>Distribution Rate</translation>
+    </message>
+    <message>
+        <location line="-316"/>
+        <source>Cumulative Distribution</source>
+        <translation>Cumulative Distribution</translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>Proportion</source>
+        <translation>Proportion</translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>Select at least one statistic in the ribbon</source>
+        <translation>Select at least one statistic in the ribbon</translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <location line="+44"/>
         <source>Unable to get statistics for the selected columns</source>
         <translation>Unable to get statistics for the selected columns</translation>
     </message>
     <message>
-        <location line="+59"/>
+        <location line="+109"/>
+        <source>The chart area is not available</source>
+        <translation>The chart area is not available</translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>Failed to create a figure</source>
+        <translation>Failed to create a figure</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>statistics plot</source>
+        <translation>statistics plot</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Failed to create a chart</source>
+        <translation>Failed to create a chart</translation>
+    </message>
+    <message>
+        <location line="+36"/>
+        <source>The statistics plot has been transferred to the chart area</source>
+        <translation>The statistics plot has been transferred to the chart area</translation>
+    </message>
+    <message>
+        <location line="+21"/>
+        <source>Percentile</source>
+        <translation>Percentile</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Show the selected percentile rows</source>
+        <translation>Show the selected percentile rows</translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>Plot one box per selected column</source>
+        <translation>Plot one box per selected column</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Pareto</source>
+        <translation>Pareto</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Distribution rate and cumulative distribution of the first numeric column</source>
+        <translation>Distribution rate and cumulative distribution of the first numeric column</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Show the distribution rate bars</source>
+        <translation>Show the distribution rate bars</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Cumulative</source>
+        <translation>Cumulative</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Show the cumulative distribution curve</source>
+        <translation>Show the cumulative distribution curve</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Transfer to Chart Area</source>
+        <translation>Transfer to Chart Area</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Create a new figure with the current statistics plot</source>
+        <translation>Create a new figure with the current statistics plot</translation>
+    </message>
+    <message>
+        <location line="-411"/>
+        <location line="+388"/>
         <source>Boxplot</source>
         <translation>Boxplot</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location line="-152"/>
+        <location line="+95"/>
+        <source>The selected columns cannot be plotted</source>
+        <translation>The selected columns cannot be plotted</translation>
+    </message>
+    <message>
+        <location line="-93"/>
+        <source>Select distribution rate or cumulative distribution in the ribbon</source>
+        <translation>Select distribution rate or cumulative distribution in the ribbon</translation>
+    </message>
+    <message>
+        <location line="+2"/>
         <source>Sampling stopped early due to the data size limit (%1 of %2 rows sampled)</source>
         <translation>Sampling stopped early due to the data size limit (%1 of %2 rows sampled)</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+4"/>
         <source>Statistics are based on a sampled subset (%1 of %2 rows)</source>
         <translation>Statistics are based on a sampled subset (%1 of %2 rows)</translation>
     </message>
@@ -15086,7 +15361,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-4200"/>
+        <location filename="../APP/DAAppController.cpp" line="-4240"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>

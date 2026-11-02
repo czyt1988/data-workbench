@@ -112,7 +112,7 @@ cmake -DDA_BUILD_PLUGINS=OFF ...
 - **默认值**：`OFF`
 - **作用**：开启时调用 `enable_testing()` 并 `add_subdirectory(src/tst)`，构建 `src/tst` 下的各测试工程
 - **影响范围**：`src/tst` 子目录（如 `DAPyWorkFlowTests`、`DADataFrameTest` 等）
-- **配套工具**：`scripts/build.ps1 -Test` 在构建完成后调用 `ctest` 运行测试。注意 `-Test` 仅负责执行 `ctest`，测试目标本身需在配置阶段通过 `DA_ENABLE_TESTING=ON` 才会参与编译
+- **配套工具**：测试按套件分组，`scripts/test.ps1` 按改动范围构建并运行相关套件（`-Suite table|chart|agent|core|data`、`-Changed`、`-All`），性能/基准用例默认跳过（`-Bench` 才跑）。`scripts/build.ps1 -Test` 等价于"构建后跑全量套件（不含 bench）"。注意 `-Test` 不负责编译测试目标，测试目标本身需在配置阶段通过 `DA_ENABLE_TESTING=ON` 才会参与编译。详见 [测试体系与按套件运行](../dev-guide/general/testing.md)
 
 ```bash
 # 启用测试构建

@@ -166,6 +166,7 @@ Python层: DAUtils → DAPyBindQt → DAPyScripts → DAPyCommonWidgets → DAPy
 | Python 工作流节点开发 | `plugins/DASystemNodes/AGENTS.md` | @NodeDef 节点开发规范、**init**/paint() 等核心陷阱 |
 | 插件模板 | `plugins/plugin-template/` | 新插件脚手架 |
 | 文档源码 | `docs/zh/` | Doxygen Wiki 中文 |
+| 测试体系（按套件跑） | `src/tst/`、`scripts/test.ps1` | **改完先跑对应套件**：`.\scripts\test.ps1 -Changed`（或 `-Suite table/chart/agent/core/data`）；bench 用例默认不跑；详见 [testing.md](docs/zh/dev-guide/general/testing.md) |
 
 ## 日志输出规范
 
@@ -201,6 +202,7 @@ AI 编写代码时，日志宏的选择直接影响日志是否进入 UI 消息�
 | | [dapybind11-qt-caster.md](docs/zh/dev-guide/python-binding/dapybind11-qt-caster.md) | pybind11↔Qt 类型转换 |
 | | [chart-dock-nesting.md](docs/zh/dev-guide/graphics/chart-dock-nesting.md) | 绘图窗口 ADS 嵌套停靠区、FocusHighlighting 焦点陷阱 |
 | | [logging.md](docs/zh/dev-guide/general/logging.md) | 日志系统、故障排查 |
+| | [testing.md](docs/zh/dev-guide/general/testing.md) | 测试体系：套件分组、`test.ps1` 按改动/按领域跑、bench 约定、Python 退出崩溃模板 |
 | | [creating-setting-panel.md](docs/zh/dev-guide/ui/creating-setting-panel.md) | 创建设置面板 |
 | | [DESIGN.md](DESIGN.md) | 统一视觉设计规范：UI 设计 + 图标设计 + 色系（界面/图标设计必读） |
 | **构建** | [build-instructions.md](docs/zh/build/build-instructions.md) | 完整构建指南 |
@@ -367,7 +369,7 @@ bash scripts/worktree-add.sh --remove feat-chart-xyz   # 删除工作树（保�
 
 ### 在工作树里干活
 
-- 构建、测试与主工作树完全一致：`.\scripts\build.ps1 -Target <模块>`、`.\scripts\build.ps1 -Target <模块> -Test`（`-Test` 已能在构建目录里正确跑到 ctest，并会把「一个测试都没跑到」视为失败）。
+- 构建、测试与主工作树完全一致：`.\scripts\build.ps1 -Target <模块>`、`.\scripts\build.ps1 -Target <模块> -Test`。按领域只跑相关测试用 `.\scripts\test.ps1 -Suite <core|data|table|chart|agent>` 或 `-Changed`（详见 [testing.md](docs/zh/dev-guide/general/testing.md)）；`-Test` 等价于"构建后跑全量套件（不含 bench）"，`-Target` 只作用于构建阶段。
 - 新工作树第一次构建是**全量**（没有可复用的构建目录），只构建需要的模块目标（`-Target`）比 `-Full` 快得多。
 - 未合并的构建目录、`bin_*` 联接、子模块检出都是工作树私有的，删除工作树不影响主工作树。
 - 新工作树里 `git status` 会固定显示一些「噪声」文件（创建时脚本会实测列出来），**不要提交、也不要 checkout 掉**：
@@ -454,11 +456,17 @@ cmake --install build-linux-3rdparty
 #### Windows
 
 ```powershell
-# 使用脚本（推荐）
+# 按套件跑（推荐）：只构建并运行相关领域，-Changed 按 git 改动自动挑
+.\scripts\test.ps1 -Suite table
+.\scripts\test.ps1 -Changed
+.\scripts\test.ps1 -All          # 全量（不含 bench）；加 -Bench 才跑性能/基准用例
+.\scripts\test.ps1 -List         # 查看套件与测试清单
+
+# 构建后跑全量套件（-Target 只影响构建阶段，不影响测试选择）
 .\scripts\build.ps1 -Target DAPyWorkFlow -Test
 
 # 手动（Qt Test 在 Windows 上 stdout 不可见，必须用 -o）
-.\build\src\tst\<测试模块>\Release\<测试模块>.exe -o test_result.txt
+.\build\bin\Release\<测试模块>.exe -o test_result.txt
 Get-Content test_result.txt
 ```
 

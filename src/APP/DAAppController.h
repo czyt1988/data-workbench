@@ -323,6 +323,8 @@ private Q_SLOTS:
     void onActionGotoMinTriggered();
     // 显示列统计信息（表头右键）
     void onActionShowColumnDescribeTriggered();
+    // 统计窗口「转入绘图区」：把当前统计图转成绘图区里的一个新绘图
+    void onStatsTransferToFigureRequested();
     // 快速绘图（Ribbon「列」面板 + 列头右键）：用当前选区打开表内图表浮窗
     void onActionQuickPlotTriggered();
     // 表内查找/替换（002 T1.4，Ribbon「编辑」面板；唤出当前数据页浮动条）

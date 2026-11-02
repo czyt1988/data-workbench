@@ -128,6 +128,7 @@ nav:
           - 国际化规范: zh/dev-guide/general/i18n.md
           - Python 脚本国际化: zh/dev-guide/general/python-i18n.md
           - 日志系统: zh/dev-guide/general/logging.md
+          - 测试体系与按套件运行: zh/dev-guide/general/testing.md
           - 枚举字符串工具: zh/dev-guide/general/da-enum-string-utils.md
           - 配置文件: zh/dev-guide/general/config-files.md
           - 撤销成本基准报告: zh/dev-guide/general/undo-cost-benchmark.md

@@ -118,6 +118,8 @@ public:
     void showContextCategory(ContextCategoryType type);
     // 隐藏上下文
     void hideContextCategory(ContextCategoryType type);
+    // 显示/隐藏「统计」上下文标签页（只由统计窗口 dock 的可见性驱动，不参与上面的互斥切换）
+    void setStatsContextCategoryVisible(bool on);
 
 public:
     //===================================================
@@ -167,6 +169,8 @@ private:
     void buildContextCategoryWorkflowRun_();
     // 构建chart上下文
     void buildContextCategoryChartEdit();
+    // 构建「统计」上下文标签页（统计窗口 dock 显示时才出现）
+    void buildContextCategoryStats();
     // 构建应用面板（应用按钮弹出的 Backstage 面板）
     void buildApplicationWidget();
     // 构建右工具栏
@@ -336,6 +340,14 @@ private:
     SARibbonCategory* mCategoryChartEdit { nullptr };                        ///< Chart编辑标签
     SARibbonPanel* mPannelChartSelectTool { nullptr };                       ///< 图表选区
     SARibbonPanel* mPannelChartAssistTool { nullptr };                       ///< 辅助工具
+    //----------------------------------------------------
+    // Context - stats（统计窗口 dock 可见时出现）
+    //----------------------------------------------------
+    SARibbonContextCategory* mContextStats { nullptr };   ///< 对应统计窗口的上下文
+    SARibbonCategory* mCategoryStats { nullptr };         ///< 统计操作标签
+    SARibbonPanel* mPannelStatsParams { nullptr };        ///< 统计参数面板
+    SARibbonPanel* mPannelStatsTests { nullptr };         ///< 检验面板
+    SARibbonPanel* mPannelContextStatsPlot { nullptr };   ///< 绘图面板
     //----------------------------------------------------
     // AI分析（agent 提示词库）
     //----------------------------------------------------

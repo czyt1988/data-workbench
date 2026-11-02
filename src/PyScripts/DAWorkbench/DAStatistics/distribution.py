@@ -95,6 +95,75 @@ def compute_histogram(series, params=None, **kwargs):
     }
 
 
+def compute_pareto(values, params=None, **kwargs):
+    """Compute the Pareto breakdown of one numeric column.
+
+    The column is binned with ``np.histogram`` (same binning rules as
+    :func:`compute_histogram`), the bins are sorted by descending frequency and
+    converted to a distribution rate plus the running (cumulative) rate. This is
+    the data behind the statistics window's Pareto chart.
+
+    Parameters
+    ----------
+    values : sequence of float | numpy.ndarray | pandas.Series
+        Numeric values of the analyzed column (missing values are dropped).
+    params : dict, optional
+        Supported keys:
+
+        - ``bins`` : int — number of bins (default 10)
+        - ``binwidth`` : float — bin width; takes precedence over ``bins``
+        - ``binrange`` : [lo, hi] — data range; ``[None, None]`` or ``None`` for auto
+
+    **kwargs :
+        Alternative way to pass parameters. Merged on top of ``params``.
+
+    Returns
+    -------
+    dict
+        Keys:
+        - ``bin_lower``: list of float — lower edge of each bin (sorted by count)
+        - ``bin_upper``: list of float — upper edge of each bin (sorted by count)
+        - ``counts``: list of int — value count per bin (sorted by count)
+        - ``rates``: list of float — count / total, in [0, 1]
+        - ``cumulative``: list of float — running sum of ``rates``
+        - ``total``: int — number of valid values
+        - ``bins``: int — number of bins returned
+    """
+    p = dict(params) if params else {}
+    p.update(kwargs)
+
+    data = drop_nan(extract_series(values, None))
+    if data.size == 0:
+        raise ValueError("No valid (non-NaN) data for Pareto")
+
+    hist = compute_histogram(data, {"bins": p.get("bins", 10),
+                                    "binwidth": p.get("binwidth", 0),
+                                    "binrange": p.get("binrange", [None, None])})
+    counts = np.asarray(hist["counts"], dtype=float)
+    edges = np.asarray(hist["edges"], dtype=float)
+    if counts.size == 0 or edges.size != counts.size + 1:
+        raise ValueError("Empty histogram for Pareto")
+
+    # 降序（稳定排序：频数相同的箱保持原始取值顺序，结果可复现）
+    order = np.argsort(-counts, kind="stable")
+    counts = counts[order]
+    bin_lower = edges[:-1][order]
+    bin_upper = edges[1:][order]
+    total = float(counts.sum())
+    rates = counts / total if total > 0 else np.zeros_like(counts)
+    cumulative = np.cumsum(rates)
+
+    return {
+        "bin_lower": bin_lower.tolist(),
+        "bin_upper": bin_upper.tolist(),
+        "counts": counts.tolist(),
+        "rates": rates.tolist(),
+        "cumulative": cumulative.tolist(),
+        "total": int(total),
+        "bins": int(counts.size),
+    }
+
+
 def compute_ecdf(series, params=None, **kwargs):
     """Compute the empirical cumulative distribution function.
 

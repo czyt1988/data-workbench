@@ -3,6 +3,7 @@
 
 da_add_test(
     NAME DAShortcutManagerTest
+    SUITE core
     SOURCES main.cpp
     QT_COMPONENTS Test Widgets
     LINK_PRIVATE

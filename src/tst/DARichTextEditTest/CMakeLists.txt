@@ -1,5 +1,6 @@
 da_add_test(
     NAME DARichTextEditTest
+    SUITE chart
     SOURCES main.cpp
     QT_COMPONENTS Test Widgets
     LINK_PRIVATE

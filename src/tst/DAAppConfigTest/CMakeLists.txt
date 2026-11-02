@@ -9,6 +9,7 @@ find_package(spdlog CONFIG QUIET)
 
 da_add_test(
     NAME DAAppConfigTest
+    SUITE core
     SOURCES main.cpp
             ${CMAKE_SOURCE_DIR}/src/APP/SettingPages/DAAppConfig.cpp
     QT_COMPONENTS Test Xml

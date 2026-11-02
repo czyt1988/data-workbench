@@ -98,6 +98,29 @@
         <file>icon/freeze-column.svg</file>
         <file>icon/column-view.svg</file>
         <file>icon/goto-cell.svg</file>
+        <!-- 统计窗口「统计参数 / 检验 / 绘图」面板的动作图标（200x200） -->
+        <file>icon/stats/statsCount.svg</file>
+        <file>icon/stats/statsMissing.svg</file>
+        <file>icon/stats/statsUnique.svg</file>
+        <file>icon/stats/statsSum.svg</file>
+        <file>icon/stats/statsMean.svg</file>
+        <file>icon/stats/statsStd.svg</file>
+        <file>icon/stats/statsVar.svg</file>
+        <file>icon/stats/statsSem.svg</file>
+        <file>icon/stats/statsMin.svg</file>
+        <file>icon/stats/statsMax.svg</file>
+        <file>icon/stats/statsRange.svg</file>
+        <file>icon/stats/statsIqr.svg</file>
+        <file>icon/stats/statsMad.svg</file>
+        <file>icon/stats/statsMode.svg</file>
+        <file>icon/stats/statsCv.svg</file>
+        <file>icon/stats/statsSkew.svg</file>
+        <file>icon/stats/statsKurt.svg</file>
+        <file>icon/stats/statsPercentile.svg</file>
+        <file>icon/stats/statsNormality.svg</file>
+        <file>icon/stats/statsConfidence.svg</file>
+        <file>icon/stats/statsOutliers.svg</file>
+        <file>icon/stats/statsTransferToFigure.svg</file>
     </qresource>
     <qresource prefix="/DAGui/MessageType">
         <file>icon/messageType/messageTypeDebug.svg</file>
@@ -129,6 +152,7 @@
         <file>icon/chart-type/stats-barplot.svg</file>
         <file>icon/chart-type/stats-regplot.svg</file>
         <file>icon/chart-type/stats-ecdfplot.svg</file>
+        <file>icon/chart-type/stats-pareto.svg</file>
     </qresource>
     <qresource prefix="/DAGui/ChartSetting">
         <file>icon/axisLeftBottom.svg</file>

@@ -9,6 +9,7 @@
 
 da_add_test(
     NAME DADataLinkTableTest
+    SUITE data
     SOURCES main.cpp
     QT_COMPONENTS Test Widgets
     LINK_PRIVATE

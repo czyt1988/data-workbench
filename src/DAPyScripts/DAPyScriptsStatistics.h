@@ -126,6 +126,11 @@ public:
                                             const QVariantMap& args,
                                             QString* err = nullptr);
 
+    // distribution.py — compute_pareto（单列分布率 + 累计分布，值列表口径）
+    pybind11::dict computePareto(const QVariantList& values,
+                                 const QVariantMap& args,
+                                 QString* err = nullptr);
+
     // matrix.py — compute_pivot_matrix
     // @param valuesCol  value column name; empty string for count matrix (values_col=None in Python)
     pybind11::dict computePivotMatrix(const DAPyDataFrame& df,

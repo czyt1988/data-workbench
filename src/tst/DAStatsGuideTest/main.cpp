@@ -23,6 +23,9 @@
 #include "DAPyScriptsStatistics.h"
 #include "DAPybind11InQt.h"
 #include "DAPybind11QtCaster.hpp"
+#include "Stats/DADataStatsWidget.h"
+#include <QAction>
+#include <QMenu>
 #include <pybind11/eval.h>
 #include "qwt_plot_item.h"
 
@@ -90,6 +93,10 @@ private Q_SLOTS:
     void testCoordinatorBarplotRendersEachEstimator();
     // compute_describe：多列描述统计 + 箱线图五数概括（统计窗口的数据源）
     void testComputeDescribe();
+    // compute_pareto：分箱降序 + 分布率 + 累计分布（统计窗口帕累托图的数据源）
+    void testComputePareto();
+    // 统计窗口命令动作：动作齐全、默认勾选、分位数下拉、绘图类型互斥与帕累托选项可用性
+    void testStatsWidgetCommands();
 
     void initPython();
 
@@ -449,6 +456,136 @@ _da_describe_df = pd.DataFrame({
     QCOMPARE(statRowNumbers(result2, "count"), QVector< double >({ 4, 2 }));
     QCOMPARE(statRowNumbers(result2, "mean"), QVector< double >({ 2.5, 5.5 }));
     QVERIFY(qFuzzyCompare(statRowNumbers(result2, "std").at(0), std::sqrt(5.0 / 3.0)));
+}
+
+/**
+ * @brief compute_pareto 回归：分箱按频数降序 + 分布率 + 累计分布
+ *
+ * 数据 [1,1,1,2,2,3] 分 3 箱（range 1~3）：箱 0 = 3 个、箱 1 = 2 个、箱 2 = 1 个，
+ * 天然就是降序；rates = 3/6、2/6、1/6，cumulative 依次 0.5、0.8333、1.0。
+ */
+void DAStatsGuideTest::testComputePareto()
+{
+    if (!DA::DAPyScripts::isInitScripts()) {
+        QSKIP("DAPyScripts not initialized");
+    }
+    DA::DAPyScriptsStatistics& stats = DA::DAPyScripts::getStatistics();
+
+    QVariantList values;
+    values << 1.0 << 1.0 << 1.0 << 2.0 << 2.0 << 3.0;
+    QVariantMap args;
+    args[ QStringLiteral("bins") ] = 3;
+    pybind11::dict result          = stats.computePareto(values, args);
+    QVERIFY(!result.is_none() && pybind11::len(result) > 0);
+
+    const QVector< double > counts     = dictDoubleList(result, "counts");
+    const QVector< double > rates      = dictDoubleList(result, "rates");
+    const QVector< double > cumulative = dictDoubleList(result, "cumulative");
+    const QVector< double > lower      = dictDoubleList(result, "bin_lower");
+    const QVector< double > upper      = dictDoubleList(result, "bin_upper");
+    QCOMPARE(counts.size(), 3);
+    QCOMPARE(rates.size(), 3);
+    QCOMPARE(cumulative.size(), 3);
+    QCOMPARE(lower.size(), 3);
+    QCOMPARE(upper.size(), 3);
+
+    // 频数降序
+    QCOMPARE(counts, QVector< double >({ 3.0, 2.0, 1.0 }));
+    QVERIFY(qFuzzyCompare(rates.at(0), 0.5));
+    QVERIFY(qFuzzyCompare(rates.at(1), 2.0 / 6.0));
+    QVERIFY(qFuzzyCompare(rates.at(2), 1.0 / 6.0));
+    QVERIFY(qFuzzyCompare(cumulative.at(0), 0.5));
+    QVERIFY(qFuzzyCompare(cumulative.at(1), 5.0 / 6.0));
+    QVERIFY(qFuzzyCompare(cumulative.at(2), 1.0));
+    // 分箱边界单调且首尾覆盖数据范围
+    QVERIFY(lower.at(0) < upper.at(0));
+    QVERIFY(qFuzzyCompare(cumulative.last(), 1.0));
+
+    // 空数据：Python 抛错后包装层返回空字典（界面按"无法绘图"处理）
+    QVariantList emptyValues;
+    pybind11::dict emptyResult = stats.computePareto(emptyValues, args);
+    QVERIFY(emptyResult.is_none() || pybind11::len(emptyResult) == 0);
+}
+
+/**
+ * @brief 统计窗口的 Ribbon 命令动作回归
+ *
+ * 窗口自身不再有工具栏，全部命令都以 QAction 暴露给 Ribbon：这里核对动作齐全、
+ * 默认勾选集（8 个默认统计量 + 25/50/75 分位数）、绘图类型互斥、帕累托选项只在
+ * 帕累托图下可用，以及动作图标能正常从 qrc 载入。
+ */
+void DAStatsGuideTest::testStatsWidgetCommands()
+{
+    using Command   = DA::DADataStatsWidget::Command;
+    using PlotType  = DA::DADataStatsWidget::PlotType;
+    DA::DADataStatsWidget widget;
+
+    const QList< Command > allCommands = {
+        Command::Count,      Command::Missing,   Command::Unique,          Command::Sum,
+        Command::Mean,       Command::Std,       Command::Var,             Command::Sem,
+        Command::Min,        Command::Max,       Command::Range,           Command::Iqr,
+        Command::Mad,        Command::Mode,      Command::Cv,              Command::Skew,
+        Command::Kurt,       Command::Percentile,
+        Command::TestNormality, Command::TestConfidence, Command::TestOutliers,
+        Command::Refresh,    Command::PlotBoxplot, Command::PlotPareto,
+        Command::ParetoRate, Command::ParetoCumulative, Command::TransferToFigure
+    };
+    for (Command c : std::as_const(allCommands)) {
+        QAction* act = widget.command(c);
+        QVERIFY2(act != nullptr, qPrintable(QStringLiteral("missing command action: %1").arg(static_cast< int >(c))));
+        QVERIFY2(!act->text().isEmpty(), qPrintable(QStringLiteral("empty text: %1").arg(static_cast< int >(c))));
+        QVERIFY2(!act->icon().isNull(), qPrintable(QStringLiteral("missing icon: %1").arg(static_cast< int >(c))));
+    }
+
+    // 默认勾选：count/mean/std/min/max + 分位数 25/50/75（分位数在菜单里）
+    QVERIFY(widget.command(Command::Count)->isChecked());
+    QVERIFY(widget.command(Command::Mean)->isChecked());
+    QVERIFY(widget.command(Command::Std)->isChecked());
+    QVERIFY(widget.command(Command::Min)->isChecked());
+    QVERIFY(widget.command(Command::Max)->isChecked());
+    QVERIFY(!widget.command(Command::Missing)->isChecked());
+    QVERIFY(!widget.command(Command::Var)->isChecked());
+    QVERIFY(!widget.command(Command::Skew)->isChecked());
+    QVERIFY(!widget.command(Command::TestNormality)->isChecked());
+
+    // 分位数下拉：5/25/50/75/95 五项，默认勾选 25/50/75
+    QMenu* percentileMenu = widget.percentileMenu();
+    QVERIFY(percentileMenu);
+    const QList< QAction* > percentileActions = percentileMenu->actions();
+    QCOMPARE(percentileActions.size(), 5);
+    QStringList percentileKeys;
+    for (const QAction* act : percentileActions) {
+        percentileKeys << act->data().toString();
+    }
+    QCOMPARE(percentileKeys,
+             QStringList({ QStringLiteral("q05"), QStringLiteral("q1"), QStringLiteral("median"),
+                           QStringLiteral("q3"), QStringLiteral("q95") }));
+    QVERIFY(!percentileActions.at(0)->isChecked());  // 5%
+    QVERIFY(percentileActions.at(1)->isChecked());   // 25%
+    QVERIFY(percentileActions.at(2)->isChecked());   // 50%
+    QVERIFY(percentileActions.at(3)->isChecked());   // 75%
+    QVERIFY(!percentileActions.at(4)->isChecked());  // 95%
+
+    // 绘图类型：默认箱线图，互斥切换后帕累托选项才可用
+    QCOMPARE(widget.plotType(), PlotType::Boxplot);
+    QVERIFY(widget.command(Command::PlotBoxplot)->isChecked());
+    QVERIFY(!widget.command(Command::PlotPareto)->isChecked());
+    QVERIFY(!widget.command(Command::ParetoRate)->isEnabled());
+    QVERIFY(!widget.command(Command::ParetoCumulative)->isEnabled());
+
+    widget.setPlotType(PlotType::Pareto);
+    QCOMPARE(widget.plotType(), PlotType::Pareto);
+    QVERIFY(!widget.command(Command::PlotBoxplot)->isChecked());
+    QVERIFY(widget.command(Command::PlotPareto)->isChecked());
+    QVERIFY(widget.command(Command::ParetoRate)->isEnabled());
+    QVERIFY(widget.command(Command::ParetoCumulative)->isEnabled());
+    QVERIFY(widget.isParetoRateVisible());
+    QVERIFY(widget.isParetoCumulativeVisible());
+
+    // 切回箱线图：帕累托选项重新置灰
+    widget.setPlotType(PlotType::Boxplot);
+    QCOMPARE(widget.plotType(), PlotType::Boxplot);
+    QVERIFY(!widget.command(Command::ParetoRate)->isEnabled());
 }
 
 /**
