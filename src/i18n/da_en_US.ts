@@ -20594,4 +20594,212 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>Column &quot;%1&quot; has no computed formula</translation>
     </message>
 </context>
+<context>
+    <name>DA::DATableConditionalFormatController</name>
+    <message>
+        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+0"/>
+        <source>Please select a column first</source>
+        <translation>Please select a column first</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
+        <source>Clear Conditional Format Rules</source>
+        <translation>Clear Conditional Format Rules</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
+        <source>The selected columns have no conditional format rules</source>
+        <translation>The selected columns have no conditional format rules</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
+        <source>The table has no conditional format rules</source>
+        <translation>The table has no conditional format rules</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
+        <source>Blue</source>
+        <translation>Blue</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
+        <source>Green</source>
+        <translation>Green</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
+        <source>Red</source>
+        <translation>Red</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
+        <source>Yellow</source>
+        <translation>Yellow</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
+        <source>Cyan</source>
+        <translation>Cyan</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
+        <source>Purple</source>
+        <translation>Purple</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
+        <source>Data Bars</source>
+        <translation>Data Bars</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
+        <source>Gradient Fill</source>
+        <translation>Gradient Fill</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
+        <source>%1 Gradient Fill</source>
+        <translation>%1 Gradient Fill</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
+        <source>Solid Fill</source>
+        <translation>Solid Fill</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
+        <source>%1 Solid Fill</source>
+        <translation>%1 Solid Fill</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
+        <source>Other Rules...</source>
+        <translation>Other Rules...</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
+        <source>Color Scales</source>
+        <translation>Color Scales</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
+        <source>%1-Color Scale</source>
+        <translation>%1-Color Scale</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
+        <source>Highlight Cells Rules</source>
+        <translation>Highlight Cells Rules</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
+        <source>Greater Than...</source>
+        <translation>Greater Than...</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
+        <source>Less Than...</source>
+        <translation>Less Than...</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
+        <source>Between...</source>
+        <translation>Between...</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
+        <source>Equal To...</source>
+        <translation>Equal To...</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
+        <source>Text Contains...</source>
+        <translation>Text Contains...</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
+        <source>A Date Occurring</source>
+        <translation>A Date Occurring</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
+        <source>Yesterday</source>
+        <translation>Yesterday</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
+        <source>Today</source>
+        <translation>Today</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
+        <source>Tomorrow</source>
+        <translation>Tomorrow</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
+        <source>In the Last 7 Days</source>
+        <translation>In the Last 7 Days</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
+        <source>Last Week</source>
+        <translation>Last Week</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
+        <source>This Week</source>
+        <translation>This Week</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
+        <source>Next Week</source>
+        <translation>Next Week</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
+        <source>Last Month</source>
+        <translation>Last Month</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
+        <source>This Month</source>
+        <translation>This Month</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
+        <source>Next Month</source>
+        <translation>Next Month</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
+        <source>Duplicate Values...</source>
+        <translation>Duplicate Values...</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
+        <source>Clear Rules</source>
+        <translation>Clear Rules</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
+        <source>Clear Rules from Selected Columns</source>
+        <translation>Clear Rules from Selected Columns</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
+        <source>Clear Rules from Entire Sheet</source>
+        <translation>Clear Rules from Entire Sheet</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
+        <source>Custom Rules...</source>
+        <translation>Custom Rules...</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
+        <source>Change Conditional Format Rules</source>
+        <translation>Change Conditional Format Rules</translation>
+    </message>
+</context>
 </TS>

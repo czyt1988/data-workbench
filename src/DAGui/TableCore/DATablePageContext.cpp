@@ -171,6 +171,24 @@ bool DATablePageContext::isDataSourceEditable() const
     return !(ts && !ts->isTableEditable());
 }
 
+/**
+ * @brief 色阶/数据条的数据源可用性（§1.4-2）
+ *
+ * 判定走 DAData 持有的 DATableDataSource（不新造平行接口）：惰性加载
+ * （isLazyLoaded，无法全量列统计）或不可编辑（isTableEditable 为假，数据库表）
+ * 均不可用；无 tableSource 的普通 dataframe 可用。
+ * @return 色阶/数据条可用返回 true
+ */
+bool DATablePageContext::isColumnStatsSourceAvailable() const
+{
+    if (mData.isNull()) {
+        return false;
+    }
+    DAData d                    = mData;
+    const DATableDataSource* ts = d.tableSource();
+    return !(ts && (ts->isLazyLoaded() || !ts->isTableEditable()));
+}
+
 DADataTableModel* DATablePageContext::model() const
 {
     return mModel;

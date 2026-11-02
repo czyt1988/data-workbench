@@ -59,6 +59,7 @@ class DATableNoteController;
 class DATableQuickPlotController;
 class DATableValidationController;
 class DATableComputedColumnController;
+class DATableConditionalFormatController;
 
 
 /**
@@ -421,15 +422,7 @@ protected:
     void changeEvent(QEvent* e) override;
 
 private:
-    // ===== 条件格式菜单（WPS 式预设入口）=====
-    // 条件格式入口作用列：选区覆盖列；无选区回退当前格所在列；空=无有效列
-    QList< int > conditionalFormatScopeColumns() const;
-    // 给每个作用列追加一条规则（与落库值差异生成撤销命令入栈）
-    void applyConditionalFormatRuleToScope(const DATableConditionalFormatRule& rule);
-    // 突出显示单元格规则/重复值快速对话框：确定后施加到作用列
-    void showQuickCellRuleDialog(DATableConditionalFormatRule::Condition cond);
-    // 清除全表条件格式规则（一次命令，可撤销）
-    void clearAllConditionalFormatRules();
+    // ===== 条件格式菜单（WPS 式预设入口；实现迁入 DATableConditionalFormatController，008 期3）=====
     // 视图行号（滑动窗内逻辑行）转数据源绝对行号：数据操作唯一换算点
     int toActualRow(int viewRow) const;
     // 选区是否与行级/单元格级样式相交（样式键是稀疏表且为数据源绝对行号，
@@ -469,12 +462,8 @@ private:
     void applyFindReplace(bool all);
     // 替换生效后刷新模型（按变更范围一次性通知）
     void notifyReplaceChanged(const QVector< int >& rows, const QVector< int >& cols);
-    // 条件格式（003）：规则集与 store 现值差异 → 生成增/删/改/移子命令的父命令；
-    // 无差异返回 nullptr（不推空命令）
-    QUndoCommand* buildConditionalFormatCommands(const QHash< int, QVector< DATableConditionalFormatRule > >& newRules) const;
-    // 色阶/数据条的数据源可用性：惰性加载或不可编辑源无法全列统计 → false（§1.4-2，
-    // 判定走模型持有的 DATableDataSource，不新造平行接口）
-    bool isColumnStatsSourceAvailable() const;
+    //（条件格式差异命令/统计端点可用性已随条件格式迁入 DATableConditionalFormatController，
+    //  可用性判定经上下文 isColumnStatsSourceAvailable，008 期3）
     // 按列名（+重名消歧 occurrence）从视图状态子存储应用列宽与行头宽；
     // 应用期间置守卫标志屏蔽采集，避免把「应用」当「用户改动」
     void applyViewStateFromStore();
@@ -578,6 +567,7 @@ private:
     DATableQuickPlotController* mQuickPlotController { nullptr };  ///< 快速绘图控制器（008 期3，QObject 父子持有）
     DATableValidationController* mValidationController { nullptr };  ///< 数据校验控制器（008 期3，QObject 父子持有）
     DATableComputedColumnController* mComputedColumnController { nullptr };  ///< 计算列控制器（008 期3，QObject 父子持有）
+    DATableConditionalFormatController* mConditionalFormatController { nullptr };  ///< 条件格式控制器（008 期3，QObject 父子持有）
 
     // ===== 查找状态（002 T1.4）=====
     QVector< QPair< int, int > > mFindHits;  ///< 当前命中集（数据源绝对行列，行主序，≤上限）

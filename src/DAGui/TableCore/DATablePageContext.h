@@ -64,6 +64,9 @@ public:
     int toActualRow(int viewRow) const;
     // 数据源是否可编辑（tableSource 非空且只读——如数据库惰性表——为假）
     bool isDataSourceEditable() const;
+    // 色阶/数据条的数据源可用性：惰性加载（无法全量列统计）或只读为假；
+    // 无 tableSource 的普通 dataframe 可用（条件格式的统计端点判定）
+    bool isColumnStatsSourceAvailable() const;
     // ===== 视图 =====
     DADataTableModel* model() const;
     DADataTableView* mainView() const;
