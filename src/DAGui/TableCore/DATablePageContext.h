@@ -91,9 +91,10 @@ public:
     std::function< void() > notifyHostValueChange;
     // 关闭页级浮窗（快速绘图子窗口等，结构变更后列身份失效）；空 = 不关闭
     std::function< void() > closeFloatingWindows;
-    // 定位单入口（007 语义：数据源绝对行 + 列位置，隐藏列自动取消隐藏 + 冻结区处置）；
+    // 定位单入口（007 语义：数据源绝对行 + 列位置 + 是否选中命中格；隐藏列自动
+    // 取消隐藏 + 冻结区处置；select=false 只摆位不收缩选区——查找「选区范围」导航用）；
     // 报告窗等控制器经此触达页面的定位能力；空 = 不定位
-    std::function< void(int, int) > locateActualCell;
+    std::function< void(int, int, bool) > locateActualCell;
     // 数据脏标（页面 dataModified 信号；计算列重算等改数据的操作经此标脏）；空 = 不标
     std::function< void() > notifyDataModified;
 

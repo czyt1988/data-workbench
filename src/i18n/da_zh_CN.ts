@@ -20827,4 +20827,27 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>更改条件格式规则</translation>
     </message>
 </context>
+<context>
+    <name>DA::DATableFindController</name>
+    <message>
+        <location filename="../DAGui/TableFind/DATableFindController.cpp" line="+0"/>
+        <source>This data source is read-only and cannot be modified.</source>
+        <translation>该数据源为只读，无法修改</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableFind/DATableFindController.cpp" line="+1"/>
+        <source>No matches found</source>
+        <translation>未找到匹配项</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableFind/DATableFindController.cpp" line="+1"/>
+        <source>Replace All</source>
+        <translation>全部替换</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/TableFind/DATableFindController.cpp" line="+1"/>
+        <source>Too many cells will be changed (%1). This operation cannot be undone. Continue?</source>
+        <translation>改动量过大（%1 格），本次替换将不可撤销，是否继续？</translation>
+    </message>
+</context>
 </TS>

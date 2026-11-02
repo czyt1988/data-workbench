@@ -293,9 +293,9 @@ void DATableValidationController::runAndShowReport()
     mValidationReport = dlg;
     dlg->setResults(entries, vaStore->enabledRuleIndexes().size(), elapsedMs);
     connect(dlg, &DADialogValidationReport::locateCellRequested, this, [ this ](int row, int col) {
-        // 007：报告样例行定位走定位桥（隐藏列自动取消隐藏 + 冻结区处置）
+        // 007：报告样例行定位走定位桥（隐藏列自动取消隐藏 + 冻结区处置；选中命中格）
         if (col >= 0 && mCtx.locateActualCell) {
-            mCtx.locateActualCell(row, col);
+            mCtx.locateActualCell(row, col, true);
         }
     });
     connect(dlg, &DADialogValidationReport::clearHighlightsRequested, this, &DATableValidationController::clearHighlights);

@@ -60,6 +60,7 @@ class DATableQuickPlotController;
 class DATableValidationController;
 class DATableComputedColumnController;
 class DATableConditionalFormatController;
+class DATableFindController;
 
 
 /**
@@ -410,13 +411,7 @@ private Q_SLOTS:
     // 仅拾取模式下转发 columnHeaderClicked；**点击不排序**（2026-10-18 交互修订，
     // 排序入口=列头右键菜单 sortColumn/addSecondarySortColumn）
     void onHeaderClickedWithModifiers(int logicalIndex, Qt::KeyboardModifiers modifiers);
-    // 查找条：扫描请求（去抖到期）、上一个/下一个导航、替换当前、全部替换、关闭清高亮
-    void onFindSearchRequested();
-    void onFindPrevRequested();
-    void onFindNextRequested();
-    void onFindReplaceRequested();
-    void onFindReplaceAllRequested();
-    void onFindDialogClosed();
+    //（查找条六个槽 onFind* 已随查找/替换迁入 DATableFindController，008 期3）
 
 protected:
     void changeEvent(QEvent* e) override;
@@ -447,21 +442,8 @@ private:
     // 按最近应用的置换修正选区（选中行随排序跟随）：appliedPerm 为新→旧置换，
     // 旧行号经逆置换映射到新位置（滑动窗未平移，选中位置号即重排前的数据行号）
     void remapSelectionByPermutation(const QVector< int >& appliedPerm);
-    // 执行一次查找扫描（同步 + 忙等待光标 + 请求序号丢弃过期结果，硬约束②），
-    // 命中灌入 overlay(Source::Find, Level::Hit) 并导航到首条
-    void runFindScan();
-    // 导航到第 idx 条命中（循环）：更新 Level::CurrentHit + showActualRow 定位 + 选中
-    void gotoFindHit(int idx);
-    // 解析扫描范围：全表 → nullopt；选区 → 行/列包围盒（数据源绝对坐标）
-    std::optional< QPair< int, int > > findScanRowRange(bool selectionOnly) const;
-    std::optional< QPair< int, int > > findScanColRange(bool selectionOnly) const;
-    // 更新计数标签（含截断提示）
-    void updateFindCountLabel();
-    // 应用替换：all=false 替换当前命中这一格，true 替换扫描范围全部；
-    // 变更格数 > c_replaceUndoCellLimit 时提示不可撤销并走降级路径（不入栈，§4.11）
-    void applyFindReplace(bool all);
-    // 替换生效后刷新模型（按变更范围一次性通知）
-    void notifyReplaceChanged(const QVector< int >& rows, const QVector< int >& cols);
+    //（查找/替换状态机：runFindScan/gotoFindHit/扫描范围/计数标签/applyFindReplace/
+    //  notifyReplaceChanged 已随查找/替换迁入 DATableFindController，008 期3）
     //（条件格式差异命令/统计端点可用性已随条件格式迁入 DATableConditionalFormatController，
     //  可用性判定经上下文 isColumnStatsSourceAvailable，008 期3）
     // 按列名（+重名消歧 occurrence）从视图状态子存储应用列宽与行头宽；
@@ -553,11 +535,11 @@ private:
 
     DADialogDataframeColumnCastToNumeric* mDialogCastNumArgs { nullptr };
     DADialogDataframeColumnCastToDatetime* mDialogCastDatetimeArgs { nullptr };
-    DADialogFindReplace* mFindReplaceDialog { nullptr };  ///< 非模态浮动查找/替换条（懒建，页级持有）
     class DADialogTableColumnView* mDialogColumnView { nullptr };  ///< 列视图对话框（006d，懒建复用）
     class DADialogGotoCell* mGotoDialog { nullptr };               ///< 定位对话框（007，懒建复用）
     //（非模态校验报告窗已随校验迁入 DATableValidationController，008 期3）
     //（快速绘图窗/框架、转入处理器、追加可用性、表格子窗口容器已迁入 DATableQuickPlotController，008 期3）
+    //（浮动查找/替换条与查找状态已随查找/替换迁入 DATableFindController，008 期3）
 
     // ===== 表格页上下文与选区服务（008 期1）=====
     std::unique_ptr< DATablePageContext > mContext;          ///< 依赖注入载体：模型/主窗格/元数据束聚合
@@ -568,13 +550,7 @@ private:
     DATableValidationController* mValidationController { nullptr };  ///< 数据校验控制器（008 期3，QObject 父子持有）
     DATableComputedColumnController* mComputedColumnController { nullptr };  ///< 计算列控制器（008 期3，QObject 父子持有）
     DATableConditionalFormatController* mConditionalFormatController { nullptr };  ///< 条件格式控制器（008 期3，QObject 父子持有）
-
-    // ===== 查找状态（002 T1.4）=====
-    QVector< QPair< int, int > > mFindHits;  ///< 当前命中集（数据源绝对行列，行主序，≤上限）
-    int mFindHitIndex { -1 };                ///< 当前命中序号（-1=无当前项）
-    int mFindTotalHits { 0 };                ///< 真实命中总数（截断时 > mFindHits.size()）
-    int mFindRequestSerial { 0 };            ///< 扫描请求序号（硬约束②：结果返回时非最新即丢弃）
-    DADialogFindReplace::FindOptions mLastFindOptions;  ///< 最近一次扫描的参数（范围解析用）
+    DATableFindController* mFindController { nullptr };  ///< 查找/替换控制器（008 期3，QObject 父子持有）
 };
 }  // end of namespace DA
 #endif  // DADATAOPERATEOFDATAFRAMEWIDGET_H
