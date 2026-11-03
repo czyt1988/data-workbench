@@ -131,6 +131,66 @@ bool DATableConditionalFormatStore::needsColumnDuplicates(int column) const
 }
 
 /**
+ * @brief 规则种类键（覆盖式合并的去重口径）
+ *
+ * 色阶/数据条按类型分种（每列各至多一条）；单元格规则按条件分种
+ * （大于/小于/介于…各自独立覆盖，不同条件可共存）。同种规则的重复
+ * 设置视为属性调整，不产生第二条规则。
+ * @param rule 规则
+ * @return 种类键（不同种类的规则互不冲突）
+ */
+int DATableConditionalFormatStore::ruleKind(const DATableConditionalFormatRule& rule)
+{
+    if (rule.type == DATableConditionalFormatRule::Type::CellRule) {
+        // 单元格规则：+1000 与类型键错开，按条件分种
+        return 1000 + static_cast< int >(rule.condition);
+    }
+    return static_cast< int >(rule.type);
+}
+
+/**
+ * @brief 覆盖式合并：新规则并入列规则集（同类规则唯一）
+ *
+ * 同种规则存在时原位替换首条（保留其优先级位置），其余同种规则清除
+ * （历史叠加数据一次收拢）；不存在时追加到末尾。调用方（预设一键施加/
+ * 对话框添加/列迁移）一律经此入口保证"每列每种种规则至多一条"。
+ * @param existing 列内现有规则
+ * @param rule 新规则
+ * @param mergedIndex 出参：合并后新规则所在位置（可空）
+ * @return 合并后的规则列表
+ */
+QVector< DATableConditionalFormatRule > DATableConditionalFormatStore::mergedColumnRules(
+    const QVector< DATableConditionalFormatRule >& existing, const DATableConditionalFormatRule& rule, int* mergedIndex)
+{
+    QVector< DATableConditionalFormatRule > res = existing;
+    const int kind                              = ruleKind(rule);
+    bool replaced                              = false;
+    for (int i = 0; i < res.size();) {
+        if (ruleKind(res.at(i)) != kind) {
+            ++i;
+            continue;
+        }
+        if (!replaced) {
+            res[ i ] = rule;  // 首条同种规则原位替换（保留优先级位置）
+            if (mergedIndex) {
+                *mergedIndex = i;
+            }
+            replaced = true;
+            ++i;
+        } else {
+            res.removeAt(i);  // 历史叠加的同种规则清除（一次收拢成一条）
+        }
+    }
+    if (!replaced) {
+        res.append(rule);
+        if (mergedIndex) {
+            *mergedIndex = res.size() - 1;
+        }
+    }
+    return res;
+}
+
+/**
  * @brief 追加/插入规则
  * @param column 列索引
  * @param rule 规则

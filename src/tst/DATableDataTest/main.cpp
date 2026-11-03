@@ -72,8 +72,12 @@
 // 条件格式（003 计划 §4.1）
 #include "Table/Metadata/DATableConditionalFormatRule.h"
 #include "Table/Metadata/DATableConditionalFormatStore.h"
+#include "Table/Metadata/DAConditionalFormatPresets.h"
 #include "Table/Commands/DACommandsConditionalFormat.h"
 #include "Table/Dialogs/DADialogConditionalFormat.h"
+#include "Table/Core/DATablePageContext.h"
+#include "Table/Core/DATableSelectionService.h"
+#include "Table/Controllers/DATableConditionalFormatController.h"
 #include <QDomDocument>
 #include <QStandardItemModel>
 #include <QElapsedTimer>
@@ -520,6 +524,7 @@ private Q_SLOTS:
     void testConditionalStoreXmlAndRemap();
     void testConditionalStoreStatsCache();
     void testConditionalCommands();
+    void testConditionalOverlayMerge();
     void testColumnStatsOperator();
     void testConditionalPaintWidgetFlow();
     void testConditionalDialogSourceRestriction();
@@ -5691,6 +5696,147 @@ void DATableDataTest::testConditionalCommands()
     QVERIFY(cfRulesEqual(store.columnRules(0), bThenA));
     stack.redo();
     QVERIFY(!store.hasRules(0));
+}
+
+/**
+ * @brief 覆盖式合并（同类规则唯一）：ruleKind 分种口径、mergedColumnRules
+ * 同种原位替换/历史叠加收拢/异种共存、预设应用链路（populateMenu 触发 →
+ * applyRuleToScope → 差异命令入栈）重复设置预设 = 参数调整不再叠加、undo 还原
+ */
+void DATableDataTest::testConditionalOverlayMerge()
+{
+    using CfRule = DATableConditionalFormatRule;
+    // —— ruleKind：色阶/数据条按类型、单元格规则按条件（分种互不冲突）——
+    CfRule scaleRule;
+    scaleRule.type = CfType::ColorScale;
+    CfRule barRule;
+    barRule.type = CfType::DataBar;
+    const CfRule greaterRule = makeBgRule(CfCond::Greater, QVariant(10), QColor(0xCE, 0x60, 0x43));
+    const CfRule lessRule    = makeBgRule(CfCond::Less, QVariant(5), QColor(0x66, 0x9E, 0x8B));
+    QCOMPARE(DATableConditionalFormatStore::ruleKind(scaleRule), static_cast< int >(CfType::ColorScale));
+    QCOMPARE(DATableConditionalFormatStore::ruleKind(barRule), static_cast< int >(CfType::DataBar));
+    QVERIFY(DATableConditionalFormatStore::ruleKind(greaterRule) != DATableConditionalFormatStore::ruleKind(scaleRule));
+    QVERIFY(DATableConditionalFormatStore::ruleKind(greaterRule) != DATableConditionalFormatStore::ruleKind(lessRule));
+
+    // —— mergedColumnRules：无同种 → 追加末尾 ——
+    int idx = -1;
+    QVector< CfRule > rules;
+    rules = DATableConditionalFormatStore::mergedColumnRules(rules, greaterRule, &idx);
+    QCOMPARE(rules.size(), 1);
+    QCOMPARE(idx, 0);
+    QVERIFY(rules.at(0) == greaterRule);
+    // —— 同种原位替换（保留优先级位置），历史叠加的多余同种一次收拢 ——
+    rules               = { greaterRule, scaleRule, greaterRule };  // 历史叠加（两条"大于"）
+    const CfRule greater2 = makeBgRule(CfCond::Greater, QVariant(20), QColor(0xE6, 0xC2, 0x7C));
+    rules                 = DATableConditionalFormatStore::mergedColumnRules(rules, greater2, &idx);
+    QCOMPARE(rules.size(), 2);
+    QCOMPARE(idx, 0);
+    QVERIFY(rules.at(0) == greater2);
+    QVERIFY(rules.at(1) == scaleRule);
+    // —— 不同种类共存：单元格规则 + 色阶 + 数据条 ——
+    rules = DATableConditionalFormatStore::mergedColumnRules(rules, barRule, &idx);
+    QCOMPARE(rules.size(), 3);
+    QCOMPARE(idx, 2);
+    QVERIFY(rules.at(2) == barRule);
+    rules = DATableConditionalFormatStore::mergedColumnRules(rules, lessRule, &idx);
+    QCOMPARE(rules.size(), 4);
+    QVERIFY(rules.at(3) == lessRule);
+
+    // —— 预设应用链路：populateMenu 触发 → applyRuleToScope（同类覆盖语义）——
+    if (!mPandasOk || !mPyScriptsOk) {
+        QSKIP("pandas/DAPyScripts not available");
+    }
+    pybind11::dict scope;
+    pybind11::exec(R"(
+import numpy as np
+import pandas as pd
+odf = pd.DataFrame({
+    "v": np.arange(10, dtype=float),
+    "b": np.arange(10, dtype=float),
+})
+)",
+                    pybind11::globals(),
+                    scope);
+    DA::DAPyDataFrame df(scope[ "odf" ]);
+    DA::DAData d(df);
+    DA::DATableMetadataRegistry registry(nullptr);
+    DA::DADataOperateOfDataFrameWidget w(d, &registry);
+    w.resize(700, 400);
+    w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+    DA::DADataTableView* tv = w.getDataTableView();
+    QVERIFY(tv != nullptr);
+    tv->clearSelection();
+    tv->selectColumn(0);
+    // 手工装配 ctx/sel/控制器（页面内部装配的控制器不对外暴露；装配口径与页面一致）
+    DA::DATablePageContext ctx;
+    ctx.setModel(qobject_cast< DA::DADataTableModel* >(tv->model()));
+    ctx.setMainView(tv);
+    ctx.setMetadata(registry.get(d));
+    ctx.setData(d);
+    ctx.setHostWidget(&w);
+    QUndoStack stack;
+    ctx.pushCommand = [ &stack ](QUndoCommand* c) { stack.push(c); };
+    DA::DATableSelectionService sel(ctx);
+    DA::DATableConditionalFormatController ctl(ctx, sel, nullptr);
+    DATableConditionalFormatStore* store = w.conditionalFormatStore();
+    QVERIFY(store != nullptr);
+    // 预设规则构造（与 populateMenu 的触发 lambda 同口径）
+    auto expectedScaleRule = [](const DA::DACFColorScalePreset& ps) {
+        CfRule r;
+        r.type            = CfType::ColorScale;
+        r.threeColorScale = (ps.colors.size() >= 3);
+        if (ps.colors.size() >= 3) {
+            r.scaleMinColor = ps.colors.at(0);
+            r.scaleMidColor = ps.colors.at(1);
+            r.scaleMaxColor = ps.colors.at(2);
+        } else {
+            r.scaleMinColor = ps.colors.at(0);
+            r.scaleMaxColor = ps.colors.at(1);
+        }
+        return r;
+    };
+    const QList< DA::DACFColorScalePreset > scalePresets = DA::DAConditionalFormatPresets::colorScalePresets();
+    const QList< DA::DACFDataBarPreset > barPresets       = DA::DAConditionalFormatPresets::dataBarPresets();
+    QVERIFY(scalePresets.size() >= 7 && barPresets.size() >= 7);
+    // 菜单结构：acts[0]=数据条▸，acts[1]=色阶▸
+    QMenu menu;
+    ctl.populateMenu(&menu);
+    QMenu* scaleMenu = menu.actions().at(1)->menu();
+    QMenu* barMenu   = menu.actions().at(0)->menu();
+    QVERIFY(scaleMenu != nullptr && barMenu != nullptr);
+    // 色阶预设 0 → 列 0 得一条色阶规则
+    scaleMenu->actions().at(0)->trigger();
+    QCOMPARE(store->columnRules(0).size(), 1);
+    QVERIFY(store->columnRules(0).at(0) == expectedScaleRule(scalePresets.at(0)));
+    // 换预设 1（另一种颜色）→ 覆盖不叠加，仍一条（= 参数调整）
+    scaleMenu->actions().at(1)->trigger();
+    QCOMPARE(store->columnRules(0).size(), 1);
+    QVERIFY(store->columnRules(0).at(0) == expectedScaleRule(scalePresets.at(1)));
+    // undo → 回到预设 0；redo → 预设 1
+    stack.undo();
+    QVERIFY(store->columnRules(0).at(0) == expectedScaleRule(scalePresets.at(0)));
+    stack.redo();
+    QVERIFY(store->columnRules(0).at(0) == expectedScaleRule(scalePresets.at(1)));
+    // 数据条预设 → 与色阶共存（两条：色阶在前保位，数据条追加）
+    barMenu->actions().at(1)->trigger();  // 渐变预设 0（组头之后第一条）
+    QCOMPARE(store->columnRules(0).size(), 2);
+    QVERIFY(store->columnRules(0).at(0) == expectedScaleRule(scalePresets.at(1)));
+    QCOMPARE(store->columnRules(0).at(1).type, CfType::DataBar);
+    QCOMPARE(store->columnRules(0).at(1).barColor, barPresets.at(0).color);
+    QCOMPARE(store->columnRules(0).at(1).barGradient, true);
+    // 换数据条预设（实心，预设 6）→ 数据条那条被替换，色阶保留
+    barMenu->actions().at(9)->trigger();  // 实心预设 6（组头/分隔符之后第一条）
+    QCOMPARE(store->columnRules(0).size(), 2);
+    QVERIFY(store->columnRules(0).at(0) == expectedScaleRule(scalePresets.at(1)));
+    QCOMPARE(store->columnRules(0).at(1).barColor, barPresets.at(6).color);
+    QCOMPARE(store->columnRules(0).at(1).barGradient, false);
+    // undo → 回到渐变数据条
+    stack.undo();
+    QCOMPARE(store->columnRules(0).size(), 2);
+    QCOMPARE(store->columnRules(0).at(1).barGradient, true);
+    stack.redo();
+    QCOMPARE(store->columnRules(0).at(1).barGradient, false);
 }
 
 /**

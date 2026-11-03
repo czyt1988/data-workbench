@@ -75,6 +75,14 @@ public:
     // 某列是否含重复/唯一条件规则（delegate 借此决定是否取重复键集合）
     bool needsColumnDuplicates(int column) const;
 
+    // ===== 覆盖式合并（同类规则唯一：新设置覆盖旧设置，其余视为属性调整）=====
+    // 规则种类键：色阶/数据条按类型、单元格规则按条件（同种规则每列至多一条）
+    static int ruleKind(const DATableConditionalFormatRule& rule);
+    // 新规则并入列规则集：同种规则原位替换（保留优先级位置）、多余同种清除、无同种追加末尾
+    static QVector< DATableConditionalFormatRule > mergedColumnRules(const QVector< DATableConditionalFormatRule >& existing,
+                                                                     const DATableConditionalFormatRule& rule,
+                                                                     int* mergedIndex = nullptr);
+
     // 增删改移（全部发 rulesChanged(column)；命令层调用，本类不入撤销栈）
     void addRule(int column, const DATableConditionalFormatRule& rule, int index = -1);
     void removeRule(int column, int index);

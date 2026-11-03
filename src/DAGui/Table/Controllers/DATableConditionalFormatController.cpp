@@ -158,10 +158,12 @@ QList< int > DATableConditionalFormatController::scopeColumns() const
 }
 
 /**
- * @brief 给每个作用列追加一条规则（预设一键施加）
+ * @brief 给每个作用列施加一条规则（预设一键施加，覆盖式合并）
  *
- * 新规则集 = 落库规则 + 追加项，经 buildCommands 差异生成撤销命令入栈
- * （D4：一切写操作入栈；条件格式不写 DataFrame，红线3）。
+ * 新规则经 mergedColumnRules 覆盖式并入各作用列：同种规则（色阶/数据条
+ * 按类型、单元格规则按条件）原位替换成新参数，不同种规则共存——重复
+ * 设置预设是属性调整，不再叠加出第二条规则。经 buildCommands 差异生成
+ * 撤销命令入栈（D4：一切写操作入栈；条件格式不写 DataFrame，红线3）。
  * @param rule 预设规则
  */
 void DATableConditionalFormatController::applyRuleToScope(const DATableConditionalFormatRule& rule)
@@ -177,9 +179,7 @@ void DATableConditionalFormatController::applyRuleToScope(const DATableCondition
     }
     QHash< int, QVector< DATableConditionalFormatRule > > newRules;
     for (int c : cols) {
-        QVector< DATableConditionalFormatRule > v = cfStore->columnRules(c);
-        v.append(rule);
-        newRules.insert(c, v);
+        newRules.insert(c, DATableConditionalFormatStore::mergedColumnRules(cfStore->columnRules(c), rule));
     }
     if (QUndoCommand* cmd = buildCommands(newRules)) {
         if (mCtx.pushCommand) {

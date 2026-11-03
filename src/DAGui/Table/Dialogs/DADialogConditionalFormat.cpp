@@ -772,20 +772,26 @@ void DADialogConditionalFormat::onColumnsChanged()
     }
     mEditCol   = -1;
     mEditIndex = -1;
+    // 覆盖式合并：迁移/复制到新的列集合时同种规则原位替换（不叠加），绑定首列合并位置
     const QList< int > cols = selectedColumns();
-    for (int c : cols) {
-        mWorking[ c ].append(r);
-        if (mEditCol < 0) {
-            mEditCol   = c;
-            mEditIndex = mWorking[ c ].size() - 1;
+    int bindIdx             = -1;
+    for (int c : std::as_const(cols)) {
+        int i = -1;
+        mWorking[ c ] = DATableConditionalFormatStore::mergedColumnRules(mWorking.value(c), r, &i);
+        if (bindIdx < 0) {
+            bindIdx = i;
         }
+    }
+    if (!cols.isEmpty()) {
+        mEditCol   = cols.first();
+        mEditIndex = bindIdx;
     }
     rebuildRuleList();
     refreshPreview();
 }
 
 /**
- * @brief 添加规则：把当前编辑器定义施加到所选各列（追加末尾），并绑定首列新规则
+ * @brief 添加规则：把当前编辑器定义施加到所选各列（覆盖式合并），并绑定首列新规则
  */
 void DADialogConditionalFormat::onAddRule()
 {
@@ -800,11 +806,18 @@ void DADialogConditionalFormat::onAddRule()
     if (!mScaleBarAvailable && r.type != DATableConditionalFormatRule::Type::CellRule) {
         return;  // 惰性/只读源防御（正常已被置灰拦截）
     }
-    for (int c : cols) {
-        mWorking[ c ].append(r);
+    // 覆盖式合并：同种规则（色阶/数据条按类型、单元格规则按条件）原位替换成新参数，
+    // 不再叠加出第二条；绑定首列合并后的位置（同种替换保位、无同种在末尾）
+    int bindIdx = -1;
+    for (int c : std::as_const(cols)) {
+        int i = -1;
+        mWorking[ c ] = DATableConditionalFormatStore::mergedColumnRules(mWorking.value(c), r, &i);
+        if (bindIdx < 0) {
+            bindIdx = i;
+        }
     }
     mEditCol   = cols.first();
-    mEditIndex = mWorking.value(cols.first()).size() - 1;
+    mEditIndex = bindIdx;
     rebuildRuleList();
     refreshPreview();
 }
@@ -919,8 +932,19 @@ void DADialogConditionalFormat::onEditorChanged()
     if (!commitEditorToWorking()) {
         return;
     }
-    // 刷新列表摘要（不重建，保持选中与滚动位置）
-    if (QListWidgetItem* item = mListRules->currentItem()) {
+    // 覆盖式合并：编辑后的规则与同列其它同种规则冲突时，编辑中的规则优先
+    //（同类唯一不变量；编辑把类型/条件改成与既有规则同种 = 覆盖那条规则）
+    const int beforeCount = mWorking.value(col).size();
+    int mergedIdx         = -1;
+    mWorking[ col ]       = DATableConditionalFormatStore::mergedColumnRules(mWorking.value(col),
+                                                                        mWorking.value(col).at(mEditIndex),
+                                                                        &mergedIdx);
+    if (mergedIdx != mEditIndex || mWorking.value(col).size() != beforeCount) {
+        // 同种规则被并入/清除：位置或数量变化，重建列表（选中跟随 mEditCol/mEditIndex）
+        mEditIndex = mergedIdx;
+        rebuildRuleList();
+    } else if (QListWidgetItem* item = mListRules->currentItem()) {
+        // 仅参数调整：刷新列表摘要（不重建，保持选中与滚动位置）
         item->setText(ruleSummary(mEditCol, mWorking.value(mEditCol).at(mEditIndex)));
     }
     refreshPreview();
