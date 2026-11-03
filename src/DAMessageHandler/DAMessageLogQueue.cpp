@@ -22,6 +22,7 @@ public:
     std::deque< DAMessageLogItem > mMessages;          ///< 消息缓冲（O(1) 头尾操作）
     int mCapacity { 1000 };                            ///< 容量
     std::atomic_int mCachedSize { 0 };                 ///< 缓存的队列大小（供 onTimeout 等无锁读取）
+    std::atomic< qint64 > mTotalPushed { 0 };           ///< 累计推送总数（单调递增，不随 clear/环形覆写回退）
 
     std::unique_ptr< QTimer > mTimer;                 ///< 惰性发射定时器
     int mEmitIntervalMs { 1000 };                     ///< 发射间隔
@@ -114,6 +115,7 @@ void DAMessageLogQueue::push(DAMessageLogItem&& item)
         newSize = static_cast< int >(d->mMessages.size());
         d->mCachedSize.store(newSize, std::memory_order_release);
     }
+    d->mTotalPushed.fetch_add(1, std::memory_order_acq_rel);
     // 标记信号（惰性模式由 timer 发射，非惰性模式立即发射）
     if (sizeChanged) {
         d->mNeedEmitSizeChanged.store(true, std::memory_order_release);
@@ -228,6 +230,19 @@ int DAMessageLogQueue::capacity() const
     DA_DC(dc);
     QMutexLocker lc(&dc->mMutex);
     return dc->mCapacity;
+}
+
+/**
+ * @brief 获取自进程启动以来的累计推送消息总数
+ *
+ * 计数单调递增，不随 clear() / 环形覆写回退，供 UI 侧计算"累计推送数 - 已读水位"
+ * 得到精确的未读条数（size() 在环形缓冲写满后不再变化，无法用于增量计算）。
+ * @return
+ */
+qint64 DAMessageLogQueue::totalPushed() const
+{
+    DA_DC(dc);
+    return dc->mTotalPushed.load(std::memory_order_acquire);
 }
 
 /**

@@ -57,6 +57,9 @@ public:
     // 获取队列容量
     int capacity() const;
 
+    // 获取自进程启动以来的累计推送消息总数（不随 clear/环形覆写回退，线程安全）
+    qint64 totalPushed() const;
+
     // 设置惰性信号发射
     void setLazyEmit(bool on, int intervalMs = 1000);
 

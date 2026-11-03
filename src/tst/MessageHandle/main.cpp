@@ -1,4 +1,4 @@
-﻿#include <QtTest/QtTest>
+#include <QtTest/QtTest>
 #include <QDateTime>
 #include <QDir>
 #include <QElapsedTimer>
@@ -20,6 +20,8 @@ private Q_SLOTS:
     void testBusinessLogEntersUiQueue();
     void testSystemLogNotInUiQueue();
     void testMultiThreadConcurrent();
+    void testTotalPushedMonotonic();
+    void testTotalPushedSurvivesRingOverwrite();
 
 private:
     // 轮询等待队列大小稳定（连续 stableCount 次不变），最多等待 timeoutMs
@@ -147,6 +149,49 @@ void MessageHandleTest::testMultiThreadConcurrent()
     int finalSize = waitForStableQueueSize();
     qDebug() << "Final queue size (expect" << expectedTotal << "):" << finalSize;
     QCOMPARE(finalSize, expectedTotal);
+}
+
+/**
+ * 累计推送总数单调递增：业务日志进入后递增，clear 不回退
+ */
+void MessageHandleTest::testTotalPushedMonotonic()
+{
+    DA::DAMessageLogQueue& queue = DA::DAMessageLogQueue::instance();
+    queue.clear();
+    const qint64 base = queue.totalPushed();
+
+    daInfo << "totalPushed test message 1";
+    daWarning << "totalPushed test message 2";
+    // 等待 spdlog 异步 sink 推送完成（不校验队列 size）
+    waitForStableQueueSize();
+
+    QVERIFY(queue.totalPushed() >= base + 2);
+    const qint64 afterPush = queue.totalPushed();
+
+    // clear 只清空缓冲，不回退累计总数（未读水位依赖此语义）
+    queue.clear();
+    QCOMPARE(queue.totalPushed(), afterPush);
+}
+
+/**
+ * 环形缓冲写满后：size 封顶不再变化，totalPushed 依然精确递增
+ * （未读数 = totalPushed - 已读水位 依赖此语义）
+ */
+void MessageHandleTest::testTotalPushedSurvivesRingOverwrite()
+{
+    DA::DAMessageLogQueue& queue = DA::DAMessageLogQueue::instance();
+    const int oldCapacity = queue.capacity();
+    queue.setCapacity(3);
+    const qint64 base = queue.totalPushed();
+
+    const DA::DAMessageLogItem item(QtInfoMsg, "totalPushedTest.cpp", "testTotalPushedSurvivesRingOverwrite", 1,
+                                    "ring overwrite message", QDateTime::currentDateTime());
+    for (int i = 0; i < 5; ++i) {
+        queue.push(item);  // 直接 push（主线程），不经 spdlog
+    }
+    QCOMPARE(queue.size(), 3);  // 环形覆写：尺寸封顶
+    QCOMPARE(queue.totalPushed(), base + 5);  // 累计数不受覆写影响
+    queue.setCapacity(oldCapacity);
 }
 
 QTEST_MAIN(MessageHandleTest)
