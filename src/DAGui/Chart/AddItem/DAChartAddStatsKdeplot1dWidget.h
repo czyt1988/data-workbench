@@ -32,11 +32,10 @@ public:
     /// Re-implemented to forward the data manager to the series-select widgets.
     virtual void setDataManager(DADataManager* dmgr) override;
 
-    /// Collect every UI field into a JSON object suitable for Python.
-    virtual QJsonObject buildPlotParams() const override;
+    /// Collect every UI field into a typed DAStatsKdeplot1dRequest.
+    virtual DAStatsPlotRequest* createPlotRequest() const override;
 
 private Q_SLOTS:
-    void onButtonBoxAccepted();
     /// Enable/disable bw_value spin box depending on bw_method selection
     void onBwMethodChanged(int index);
     /// Enable/disable threshold controls depending on fill

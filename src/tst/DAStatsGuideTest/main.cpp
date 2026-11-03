@@ -5,18 +5,21 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QTranslator>
-#include <QJsonObject>
 #include <QVariantMap>
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
+#include <memory>
 #ifdef Q_OS_WIN
 #include <windows.h>
 #endif
 
 #include "Chart/AddItem/DAChartAddStatsBarplotWidget.h"
 #include "DAChartWidget.h"
+#include "DAFigureWidget.h"
 #include "Chart/DAStatsPlotCoordinator.h"
+#include "Chart/DAStatsPlotRequest.h"
+#include "Chart/DAStatsPlotRequests.h"
 #include "DAData.h"
 #include "DAPyInterpreter.h"
 #include "DAPyScripts.h"
@@ -91,6 +94,12 @@ private Q_SLOTS:
     void testMinMaxAggregation();
     // 统计向导 barplot 编排链路：每个估计器（默认/mean/min/max）都能渲染出柱状图
     void testCoordinatorBarplotRendersEachEstimator();
+    // toPythonParams 键集白名单：每类型一个用例，锁死 C++↔Python 契约
+    void testToPythonParamsKeyWhitelist();
+    // isValid()/errorString()：空列、空 data、空 figure 各一例（错误消息非空）
+    void testIsValidErrorString();
+    // heatmap 死链修复回归：indexColumn/columnsColumn/valueColumn → 渲染出谱图图元
+    void testHeatmapRendersSpectrogram();
     // compute_describe：多列描述统计 + 箱线图五数概括（统计窗口的数据源）
     void testComputeDescribe();
     // compute_pareto：分箱降序 + 分布率 + 累计分布（统计窗口帕累托图的数据源）
@@ -171,12 +180,16 @@ void DAStatsGuideTest::testEstimatorItemDataAndDefault()
     }
     // 默认仍是 mean（列表第一项）
     QCOMPARE(combo->currentIndex(), 0);
-    QCOMPARE(widget.buildPlotParams().value(QStringLiteral("estimator")).toString(), QStringLiteral("mean"));
+    {
+        std::unique_ptr< DA::DAStatsPlotRequest > req(widget.createPlotRequest());
+        QCOMPARE(static_cast< DA::DAStatsBarplotRequest* >(req.get())->estimator, QStringLiteral("mean"));
+    }
 
-    // 逐项切换：buildPlotParams 必须给出对应 key
+    // 逐项切换：createPlotRequest 必须给出对应 key
     for (int i = 0; i < kEstimatorKeys.size(); ++i) {
         combo->setCurrentIndex(i);
-        QCOMPARE(widget.buildPlotParams().value(QStringLiteral("estimator")).toString(), kEstimatorKeys.at(i));
+        std::unique_ptr< DA::DAStatsPlotRequest > req(widget.createPlotRequest());
+        QCOMPARE(static_cast< DA::DAStatsBarplotRequest* >(req.get())->estimator, kEstimatorKeys.at(i));
     }
 }
 
@@ -192,12 +205,16 @@ void DAStatsGuideTest::testEstimatorKeySurvivesTranslation()
     // 翻译生效：显示文本不再是英文 key（这正是不能用 currentText 的原因）
     QVERIFY(combo->itemText(0) != QStringLiteral("mean"));
 
+    const auto estimatorOf = [ &widget ]() -> QString {
+        std::unique_ptr< DA::DAStatsPlotRequest > req(widget.createPlotRequest());
+        return static_cast< DA::DAStatsBarplotRequest* >(req.get())->estimator;
+    };
     combo->setCurrentIndex(combo->findData(QStringLiteral("min")));
-    QCOMPARE(widget.buildPlotParams().value(QStringLiteral("estimator")).toString(), QStringLiteral("min"));
+    QCOMPARE(estimatorOf(), QStringLiteral("min"));
     combo->setCurrentIndex(combo->findData(QStringLiteral("max")));
-    QCOMPARE(widget.buildPlotParams().value(QStringLiteral("estimator")).toString(), QStringLiteral("max"));
+    QCOMPARE(estimatorOf(), QStringLiteral("max"));
     combo->setCurrentIndex(combo->findData(QStringLiteral("median")));
-    QCOMPARE(widget.buildPlotParams().value(QStringLiteral("estimator")).toString(), QStringLiteral("median"));
+    QCOMPARE(estimatorOf(), QStringLiteral("median"));
 }
 
 void DAStatsGuideTest::testMinMaxAggregation()
@@ -254,14 +271,16 @@ _da_stats_guide_df2 = pd.DataFrame({
     const QStringList estimators = { QString(), QStringLiteral("mean"), QStringLiteral("min"), QStringLiteral("max") };
     for (const QString& estimator : estimators) {
         DA::DAChartWidget chart;
-        QJsonObject params;
-        params[QStringLiteral("column")]   = QStringLiteral("cat");
-        params[QStringLiteral("y_column")] = QStringLiteral("val");
+        DA::DAStatsBarplotRequest req;
+        req.data    = data;
+        req.chart   = &chart;
+        req.xColumn = QStringLiteral("cat");
+        req.yColumn = QStringLiteral("val");
         if (!estimator.isEmpty()) {
-            params[QStringLiteral("estimator")] = estimator;
+            req.estimator = estimator;
         }
         DAStatsPlotCoordinator coordinator;
-        QVERIFY2(coordinator.execute(QStringLiteral("barplot"), params, nullptr, &chart, data),
+        QVERIFY2(coordinator.execute(req),
                  qPrintable(QStringLiteral("estimator=%1").arg(estimator)));
 
         int barCount = 0;
@@ -272,6 +291,178 @@ _da_stats_guide_df2 = pd.DataFrame({
         }
         QCOMPARE(barCount, 1);  // 每个估计器都渲染出一根柱状图元
     }
+}
+
+/**
+ * @brief toPythonParams 键集白名单：每类型一个用例，锁死 C++↔Python 契约
+ *
+ * 键集与 src/PyScripts/DAWorkbench/DAStatistics 各函数实际读取的 params 键一一对应
+ * （见重构方案 §3.4 审计表）；QVariantMap::keys() 按字母序返回，断言即排序后精确相等。
+ * 可选键（binrange/bw_value/hue/vmin 等）只在有值时出现，此处同时断言两种形态。
+ */
+void DAStatsGuideTest::testToPythonParamsKeyWhitelist()
+{
+    using DA::DAStatsPlotRequest;
+    // histplot：bins/binwidth/stat/cumulative；binrange 有值才出现；kde 为 C++ 键不进 params
+    {
+        std::unique_ptr< DA::DAStatsPlotRequest > req(new DA::DAStatsHistplotRequest);
+        QCOMPARE(req->toPythonParams().keys(),
+                 QStringList({ QStringLiteral("bins"), QStringLiteral("binwidth"), QStringLiteral("cumulative"), QStringLiteral("stat") }));
+        static_cast< DA::DAStatsHistplotRequest* >(req.get())->binrange = qMakePair(0.0, 4.0);
+        QCOMPARE(req->toPythonParams().keys(),
+                 QStringList({ QStringLiteral("binrange"), QStringLiteral("bins"), QStringLiteral("binwidth"),
+                               QStringLiteral("cumulative"), QStringLiteral("stat") }));
+    }
+    // kdeplot_1d：bw_method/grid_size/cumulative；bw_value 仅 custom 时出现
+    {
+        std::unique_ptr< DA::DAStatsPlotRequest > req(new DA::DAStatsKdeplot1dRequest);
+        QCOMPARE(req->toPythonParams().keys(),
+                 QStringList({ QStringLiteral("bw_method"), QStringLiteral("cumulative"), QStringLiteral("grid_size") }));
+        static_cast< DA::DAStatsKdeplot1dRequest* >(req.get())->bwValue = 0.5;
+        QCOMPARE(req->toPythonParams().keys(),
+                 QStringList({ QStringLiteral("bw_method"), QStringLiteral("bw_value"), QStringLiteral("cumulative"),
+                               QStringLiteral("grid_size") }));
+    }
+    // kdeplot_2d：bw_method/grid_size/levels/thresh；fillContours 为 C++ 键不进 params
+    {
+        std::unique_ptr< DA::DAStatsPlotRequest > req(new DA::DAStatsKdeplot2dRequest);
+        QCOMPARE(req->toPythonParams().keys(),
+                 QStringList({ QStringLiteral("bw_method"), QStringLiteral("grid_size"), QStringLiteral("levels"), QStringLiteral("thresh") }));
+    }
+    // boxplot：columns/whis；hue 非空才出现；width/showfliers/showmeans 为死键不进 params
+    {
+        std::unique_ptr< DA::DAStatsPlotRequest > req(new DA::DAStatsBoxplotRequest);
+        QCOMPARE(req->toPythonParams().keys(),
+                 QStringList({ QStringLiteral("columns"), QStringLiteral("whis") }));
+        static_cast< DA::DAStatsBoxplotRequest* >(req.get())->hue = QStringLiteral("g");
+        QCOMPARE(req->toPythonParams().keys(),
+                 QStringList({ QStringLiteral("columns"), QStringLiteral("hue"), QStringLiteral("whis") }));
+    }
+    // heatmap：aggfunc；standard_scale/vmin/vmax/center 有值才出现；annot/fmt 为死键不进 params
+    {
+        std::unique_ptr< DA::DAStatsPlotRequest > req(new DA::DAStatsHeatmapRequest);
+        QCOMPARE(req->toPythonParams().keys(), QStringList({ QStringLiteral("aggfunc") }));
+        auto* hm = static_cast< DA::DAStatsHeatmapRequest* >(req.get());
+        hm->standardScale = QStringLiteral("row");
+        hm->vmin = 0.0;
+        hm->vmax = 1.0;
+        hm->center = 0.5;
+        QCOMPARE(req->toPythonParams().keys(),
+                 QStringList({ QStringLiteral("aggfunc"), QStringLiteral("center"), QStringLiteral("standard_scale"),
+                               QStringLiteral("vmax"), QStringLiteral("vmin") }));
+    }
+    // scatterplot：纯 C++ 提取绘制，不调 Python → 空 map
+    {
+        std::unique_ptr< DA::DAStatsPlotRequest > req(new DA::DAStatsScatterplotRequest);
+        QVERIFY(req->toPythonParams().isEmpty());
+    }
+    // barplot：estimator/n_boot；hue 非空才出现；ci 为 C++ 键（computeCI 时补 ciArgs）；orient/width/legend 为死键
+    {
+        std::unique_ptr< DA::DAStatsPlotRequest > req(new DA::DAStatsBarplotRequest);
+        QCOMPARE(req->toPythonParams().keys(),
+                 QStringList({ QStringLiteral("estimator"), QStringLiteral("n_boot") }));
+        static_cast< DA::DAStatsBarplotRequest* >(req.get())->hue = QStringLiteral("g");
+        QCOMPARE(req->toPythonParams().keys(),
+                 QStringList({ QStringLiteral("estimator"), QStringLiteral("hue"), QStringLiteral("n_boot") }));
+    }
+    // regplot：order/n_boot；ci>0 才出现；scatter/fitReg/scatter_kws/reg_kws 为死键
+    {
+        std::unique_ptr< DA::DAStatsPlotRequest > req(new DA::DAStatsRegplotRequest);
+        QCOMPARE(req->toPythonParams().keys(),
+                 QStringList({ QStringLiteral("n_boot"), QStringLiteral("order") }));
+        static_cast< DA::DAStatsRegplotRequest* >(req.get())->ci = 95;
+        QCOMPARE(req->toPythonParams().keys(),
+                 QStringList({ QStringLiteral("ci"), QStringLiteral("n_boot"), QStringLiteral("order") }));
+    }
+    // ecdfplot：stat/complementary；weights 非空才出现；line_width/legend/hue 为死键
+    {
+        std::unique_ptr< DA::DAStatsPlotRequest > req(new DA::DAStatsEcdfplotRequest);
+        QCOMPARE(req->toPythonParams().keys(),
+                 QStringList({ QStringLiteral("complementary"), QStringLiteral("stat") }));
+        static_cast< DA::DAStatsEcdfplotRequest* >(req.get())->weights = QStringLiteral("w");
+        QCOMPARE(req->toPythonParams().keys(),
+                 QStringList({ QStringLiteral("complementary"), QStringLiteral("stat"), QStringLiteral("weights") }));
+    }
+}
+
+/**
+ * @brief isValid()/errorString() 回归：空 figure、空 data、空列逐一拦截且消息非空
+ */
+void DAStatsGuideTest::testIsValidErrorString()
+{
+    if (!DA::DAPyScripts::isInitScripts()) {
+        QSKIP("DAPyScripts not initialized");
+    }
+    pybind11::exec(R"(
+import pandas as pd
+_da_stats_valid_df = pd.DataFrame({'a': [1.0, 2.0, 3.0]})
+)");
+    DA::DAData data(pybind11::globals()["_da_stats_valid_df"]);
+
+    DA::DAChartWidget chart;
+    DA::DAFigureWidget figure;
+    DA::DAStatsHistplotRequest req;
+    req.chart = &chart;
+
+    // 无 figure
+    QVERIFY(!req.isValid());
+    QVERIFY(!req.errorString().isEmpty());
+
+    req.figure = &figure;
+    // 无 data
+    QVERIFY(!req.isValid());
+    QVERIFY(!req.errorString().isEmpty());
+
+    req.data = data;
+    // 无 column
+    QVERIFY(!req.isValid());
+    QVERIFY(!req.errorString().isEmpty());
+
+    req.column = QStringLiteral("a");
+    QVERIFY(req.isValid());
+    QVERIFY(req.errorString().isEmpty());
+}
+
+/**
+ * @brief heatmap 死链修复回归：indexColumn/columnsColumn/valueColumn → 渲染出谱图图元
+ *
+ * 修复前 widget 写 column/y_column/value_column、coordinator 读 index_col/columns_col/values_col，
+ * 键名三元组断裂导致热力图点确定后静默无图。
+ */
+void DAStatsGuideTest::testHeatmapRendersSpectrogram()
+{
+    if (!DA::DAPyScripts::isInitScripts()) {
+        QSKIP("DAPyScripts not initialized");
+    }
+    pybind11::exec(R"(
+import pandas as pd
+_da_stats_heatmap_df = pd.DataFrame({
+    'cat': ['a', 'b', 'a', 'b'],
+    's': ['x', 'x', 'y', 'y'],
+    'val': [1.0, 2.0, 3.0, 4.0],
+})
+)");
+    DA::DAData data(pybind11::globals()["_da_stats_heatmap_df"]);
+
+    DA::DAChartWidget chart;
+    DA::DAStatsHeatmapRequest req;
+    req.data = data;
+    req.chart = &chart;
+    req.indexColumn = QStringLiteral("s");       // 行方向（Y 轴）
+    req.columnsColumn = QStringLiteral("cat");  // 列方向（X 轴）
+    req.valueColumn = QStringLiteral("val");
+    req.aggfunc = QStringLiteral("mean");
+
+    DAStatsPlotCoordinator coordinator;
+    QVERIFY2(coordinator.execute(req), "heatmap execute failed");
+
+    int spectrogramCount = 0;
+    for (QwtPlotItem* item : chart.itemList()) {
+        if (item && item->rtti() == QwtPlotItem::Rtti_PlotSpectrogram) {
+            ++spectrogramCount;
+        }
+    }
+    QCOMPARE(spectrogramCount, 1);  // 修复前：plotHeatmap 开头即 return，渲染不出任何图元
 }
 
 /**

@@ -4,7 +4,6 @@
 #include "DAFigureAPI.h"
 #include "DAData.h"
 #include <QDialog>
-#include <QJsonObject>
 
 namespace Ui
 {
@@ -18,6 +17,7 @@ class DADataManager;
 class DAAbstractStatsChartAddWidget;
 class DAFigureWidget;
 class DAChartWidget;
+class DAStatsPlotRequest;
 
 /**
  * @brief 统计绘图引导对话框
@@ -66,13 +66,10 @@ public:
 
 Q_SIGNALS:
     /**
-     * @brief 用户确认绘图参数后发射此信号
-     * @param params 绘图参数 JSON
-     * @param data 数据源，随信号一起传递
-     * @param fig 目标 Figure 窗口
-     * @param chart 目标 Chart 窗口
+     * @brief 用户确认绘图参数后发射此信号（转发当前页 widget 的同名信号）
+     * @param req 类型化绘图请求（携带参数、数据源与目标 figure/chart）
      */
-    void plotRequested(const QJsonObject& params, const DA::DAData& data, DA::DAFigureWidget* fig, DA::DAChartWidget* chart);
+    void plotRequested(const DA::DAStatsPlotRequest& req);
 
 private Q_SLOTS:
     void onListWidgetCurrentItemChanged(QListWidgetItem* current, QListWidgetItem* previous);

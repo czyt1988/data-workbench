@@ -1,13 +1,12 @@
 #include "Chart/AddItem/DAChartAddStatsKdeplot1dWidget.h"
 #include "ui_DAChartAddStatsKdeplot1dWidget.h"
 
-#include <QJsonArray>
-#include <QJsonObject>
 #include <QVariant>
 #include "DADataManager.h"
+#include "Chart/DAStatsPlotRequest.h"
+#include "Chart/DAStatsPlotRequests.h"
 #include "Chart/AddItem/DAChartSeriesSelectWidget.h"
 #include "Table/Views/DAPySeriesListView.h"  // for AcceptMode
-#include "DALogCategory.h"
 
 namespace DA
 {
@@ -59,69 +58,51 @@ void DAChartAddStatsKdeplot1dWidget::setDataManager(DADataManager* dmgr)
     ui->selectWidgetHue->setDataManager(dmgr);
 }
 
-QJsonObject DAChartAddStatsKdeplot1dWidget::buildPlotParams() const
+DAStatsPlotRequest* DAChartAddStatsKdeplot1dWidget::createPlotRequest() const
 {
-    QJsonObject p;
+    auto* req = new DAStatsKdeplot1dRequest;
+
+    // Data column (single-series selection)
+    QPair< DAData, QString > sel = ui->selectWidgetData->getCurrentSeries();
+    req->data    = sel.first;
+    req->figure  = getFigureWidget();
+    req->chart   = getChartWidget();
+    req->column  = sel.second;
+
+    // Hue column (only if the groupbox is checked and a column is selected)
+    if (ui->groupBoxHue->isChecked()) {
+        QPair< DAData, QString > hueSel = ui->selectWidgetHue->getCurrentSeries();
+        if (hueSel.first.isDataFrame() && !hueSel.second.isEmpty()) {
+            req->hue = hueSel.second;
+        }
+    }
 
     // Bandwidth
-    p["bw_method"] = ui->comboBoxBwMethod->currentText();
-    if (ui->comboBoxBwMethod->currentText() == QStringLiteral("custom")) {
-        p["bw_value"] = ui->doubleSpinBoxBwValue->value();
+    req->bwMethod = ui->comboBoxBwMethod->currentText();
+    if (req->bwMethod == QStringLiteral("custom")) {
+        req->bwValue = ui->doubleSpinBoxBwValue->value();
     }
 
     // Grid size
-    p["grid_size"] = ui->spinBoxGridSize->value();
+    req->gridSize = ui->spinBoxGridSize->value();
 
     // Fill / shade / cumulative / common_norm
-    p["fill"]      = ui->checkBoxFill->isChecked();
-    p["shade"]     = ui->checkBoxShade->isChecked();
-    p["cumulative"] = ui->checkBoxCumulative->isChecked();
-    p["common_norm"] = ui->checkBoxCommonNorm->isChecked();
+    req->fill       = ui->checkBoxFill->isChecked();
+    req->shade      = ui->checkBoxShade->isChecked();
+    req->cumulative = ui->checkBoxCumulative->isChecked();
+    req->commonNorm = ui->checkBoxCommonNorm->isChecked();
 
     // Threshold clipping (only when fill is enabled and the threshold is active)
     if (ui->checkBoxFill->isChecked()) {
         if (ui->checkBoxBelow->isChecked()) {
-            p["below"] = ui->doubleSpinBoxBelow->value();
+            req->below = ui->doubleSpinBoxBelow->value();
         }
         if (ui->checkBoxAbove->isChecked()) {
-            p["above"] = ui->doubleSpinBoxAbove->value();
+            req->above = ui->doubleSpinBoxAbove->value();
         }
     }
 
-    // Hue grouping
-    p["use_hue"] = ui->groupBoxHue->isChecked();
-
-    return p;
-}
-
-void DAChartAddStatsKdeplot1dWidget::onButtonBoxAccepted()
-{
-    // Validate: a data series must be selected
-    QPair< DAData, QString > sel = ui->selectWidgetData->getCurrentSeries();
-    if (!sel.first.isDataFrame()) {
-        daWarning << tr("Please select a data column before plotting");  // cn: 请先选择数据列再绘图
-        return;
-    }
-    if (sel.second.isEmpty()) {
-        daWarning << tr("Please select a data column before plotting");  // cn: 请先选择数据列再绘图
-        return;
-    }
-
-    QJsonObject params = buildPlotParams();
-    // Stash the selected column name into params so the controller can read it
-    params["column"] = sel.second;
-    // Identify which Python module the controller should import
-    params["__plot_type__"] = QStringLiteral("kdeplot_1d");
-
-    // Hue column name (if enabled)
-    if (ui->groupBoxHue->isChecked()) {
-        QPair< DAData, QString > hueSel = ui->selectWidgetHue->getCurrentSeries();
-        if (hueSel.first.isDataFrame() && !hueSel.second.isEmpty()) {
-            params["hue"] = hueSel.second;
-        }
-    }
-
-    Q_EMIT plotRequested(params, sel.first, getFigureWidget(), getChartWidget());
+    return req;
 }
 
 void DAChartAddStatsKdeplot1dWidget::onBwMethodChanged(int index)

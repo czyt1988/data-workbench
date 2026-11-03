@@ -1,12 +1,12 @@
 #include "Chart/AddItem/DAChartAddStatsRegplotWidget.h"
 #include "ui_DAChartAddStatsRegplotWidget.h"
 
-#include <QJsonObject>
 #include <QVariant>
 #include "DADataManager.h"
+#include "Chart/DAStatsPlotRequest.h"
+#include "Chart/DAStatsPlotRequests.h"
 #include "Chart/AddItem/DAChartSeriesSelectWidget.h"
 #include "Table/Views/DAPySeriesListView.h"  // for AcceptMode
-#include "DALogCategory.h"
 
 namespace DA
 {
@@ -57,65 +57,45 @@ void DAChartAddStatsRegplotWidget::setDataManager(DADataManager* dmgr)
     ui->selectWidgetYData->setDataManager(dmgr);
 }
 
-QJsonObject DAChartAddStatsRegplotWidget::buildPlotParams() const
+DAStatsPlotRequest* DAChartAddStatsRegplotWidget::createPlotRequest() const
 {
-    QJsonObject p;
+    auto* req = new DAStatsRegplotRequest;
+
+    // X / Y columns (single-series selection)
+    QPair< DAData, QString > selX = ui->selectWidgetXData->getCurrentSeries();
+    req->data    = selX.first;
+    req->figure  = getFigureWidget();
+    req->chart   = getChartWidget();
+    req->xColumn = selX.second;
+    req->yColumn = ui->selectWidgetYData->getCurrentSeries().second;
 
     // Polynomial order
-    p["order"] = ui->spinBoxOrder->value();
+    req->order = ui->spinBoxOrder->value();
 
-    // CI
-    int ciIdx = ui->comboBoxCi->currentIndex();
-    if (ciIdx == 0) {
-        p["ci"] = QJsonValue::Null;
-    } else {
+    // CI — index 0 = "None" (ci stays 0)
+    const int ciIdx = ui->comboBoxCi->currentIndex();
+    if (ciIdx > 0) {
         static const int ciValues[] = { 0, 68, 95, 99 };
-        p["ci"] = ciValues[ciIdx];
+        req->ci = ciValues[ ciIdx ];
     }
-    p["n_boot"] = ui->spinBoxNBoot->value();
+    req->nBoot = ui->spinBoxNBoot->value();
 
     // Toggles
-    p["scatter"]  = ui->checkBoxScatter->isChecked();
-    p["fit_reg"] = ui->checkBoxFitReg->isChecked();
+    req->scatter = ui->checkBoxScatter->isChecked();
+    req->fitReg   = ui->checkBoxFitReg->isChecked();
 
     // scatter_kws
-    QJsonObject scatterKws;
-    scatterKws["marker_size"] = ui->spinBoxMarkerSize->value();
-    scatterKws["alpha"]       = ui->doubleSpinBoxAlpha->value();
-    p["scatter_kws"] = scatterKws;
+    QVariantMap scatterKws;
+    scatterKws[ "marker_size" ] = ui->spinBoxMarkerSize->value();
+    scatterKws[ "alpha" ]        = ui->doubleSpinBoxAlpha->value();
+    req->scatterKws = scatterKws;
 
     // reg_kws
-    QJsonObject regKws;
-    regKws["line_width"] = ui->doubleSpinBoxLineWidth->value();
-    p["reg_kws"] = regKws;
+    QVariantMap regKws;
+    regKws[ "line_width" ] = ui->doubleSpinBoxLineWidth->value();
+    req->regKws = regKws;
 
-    return p;
-}
-
-void DAChartAddStatsRegplotWidget::onButtonBoxAccepted()
-{
-    // Validate: both X and Y series must be selected
-    QPair< DAData, QString > selX = ui->selectWidgetXData->getCurrentSeries();
-    if (!selX.first.isDataFrame() || selX.second.isEmpty()) {
-        daWarning << tr("Please select an X-axis data column before plotting");  // cn: 请先选择 X 轴数据列再绘图
-        return;
-    }
-
-    QPair< DAData, QString > selY = ui->selectWidgetYData->getCurrentSeries();
-    if (!selY.first.isDataFrame() || selY.second.isEmpty()) {
-        daWarning << tr("Please select a Y-axis data column before plotting");  // cn: 请先选择 Y 轴数据列再绘图
-        return;
-    }
-
-    QJsonObject params = buildPlotParams();
-    // Stash the selected X column name (controller reads "column" positionally)
-    params["column"] = selX.second;
-    // Stash the Y column name for the Python side
-    params["y_column"] = selY.second;
-    // Identify which Python module the controller should import
-    params["__plot_type__"] = QStringLiteral("regplot");
-
-    Q_EMIT plotRequested(params, selX.first, getFigureWidget(), getChartWidget());
+    return req;
 }
 
 void DAChartAddStatsRegplotWidget::onCiChanged(int index)

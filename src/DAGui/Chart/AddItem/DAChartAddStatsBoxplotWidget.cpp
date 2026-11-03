@@ -1,13 +1,12 @@
 #include "Chart/AddItem/DAChartAddStatsBoxplotWidget.h"
 #include "ui_DAChartAddStatsBoxplotWidget.h"
 
-#include <QJsonArray>
-#include <QJsonObject>
 #include <QVariant>
 #include "DADataManager.h"
+#include "Chart/DAStatsPlotRequest.h"
+#include "Chart/DAStatsPlotRequests.h"
 #include "Chart/AddItem/DAChartSeriesSelectWidget.h"
 #include "Table/Views/DAPySeriesListView.h"  // for AcceptMode
-#include "DALogCategory.h"
 
 namespace DA
 {
@@ -39,79 +38,43 @@ void DAChartAddStatsBoxplotWidget::setDataManager(DADataManager* dmgr)
     ui->selectWidgetHue->setDataManager(dmgr);
 }
 
-QJsonObject DAChartAddStatsBoxplotWidget::buildPlotParams() const
+DAStatsPlotRequest* DAChartAddStatsBoxplotWidget::createPlotRequest() const
 {
-    QJsonObject p;
+    auto* req = new DAStatsBoxplotRequest;
 
-    // Whisker multiplier
-    p["whis"] = ui->doubleSpinBoxWhis->value();
+    req->figure = getFigureWidget();
+    req->chart  = getChartWidget();
 
-    // Box width
-    p["width"] = ui->doubleSpinBoxWidth->value();
-
-    // Display options
-    p["showfliers"] = ui->checkBoxShowFliers->isChecked();
-    p["showmeans"] = ui->checkBoxShowMeans->isChecked();
-
-    // Hue grouping
-    p["use_hue"] = ui->groupBoxHue->isChecked();
-
-    return p;
-}
-
-void DAChartAddStatsBoxplotWidget::onButtonBoxAccepted()
-{
-    // Validate: at least one data series must be selected
-    QList< QPair< DAData, QStringList > > series = ui->selectWidgetData->getSeries();
-    if (series.isEmpty()) {
-        daWarning << tr("Please select one or more data columns before plotting");  // cn: 请先选择数据列再绘图
-        return;
-    }
-
-    // Collect all column names from all (DAData, QStringList) pairs
-    QStringList columnNames;
-    DAData firstData;
+    // Multi-series selection (one dataframe, multiple columns)
+    const QList< QPair< DAData, QStringList > > series = ui->selectWidgetData->getSeries();
     for (const auto& pair : series) {
-        if (!firstData.isDataFrame()) {
-            firstData = pair.first;
+        if (!req->data.isDataFrame()) {
+            req->data = pair.first;
         }
-        columnNames.append(pair.second);
+        req->columns.append(pair.second);
     }
-
     // Remove empty entries
-    columnNames.removeAll(QString());
+    req->columns.removeAll(QString());
 
-    if (columnNames.isEmpty()) {
-        daWarning << tr("Please select one or more data columns before plotting");  // cn: 请先选择数据列再绘图
-        return;
-    }
-
-    if (!firstData.isDataFrame()) {
-        daWarning << tr("Please select a data column before plotting");  // cn: 请先选择数据列再绘图
-        return;
-    }
-
-    QJsonObject params = buildPlotParams();
-    // Stash the first column name (controller reads "column" positionally)
-    params["column"] = columnNames.first();
-    // Stash the full column list as a JSON array
-    QJsonArray colArray;
-    for (const QString& col : columnNames) {
-        colArray.append(col);
-    }
-    params["columns"] = colArray;
-    // Identify which Python module the controller should import
-    params["__plot_type__"] = QStringLiteral("boxplot");
-
-    // Hue column name (if enabled)
+    // Hue column (only if the groupbox is checked and a column is selected)
     if (ui->groupBoxHue->isChecked()) {
         QPair< DAData, QString > hueSel = ui->selectWidgetHue->getCurrentSeries();
         if (hueSel.first.isDataFrame() && !hueSel.second.isEmpty()) {
-            params["hue"] = hueSel.second;
+            req->hue = hueSel.second;
         }
     }
 
-    Q_EMIT plotRequested(params, firstData, getFigureWidget(), getChartWidget());
+    // Whisker multiplier
+    req->whis = ui->doubleSpinBoxWhis->value();
+
+    // Box width
+    req->width = ui->doubleSpinBoxWidth->value();
+
+    // Display options
+    req->showfliers = ui->checkBoxShowFliers->isChecked();
+    req->showmeans  = ui->checkBoxShowMeans->isChecked();
+
+    return req;
 }
 
 }  // namespace DA

@@ -12,6 +12,9 @@
 #include "pandas/DAPyDataFrame.h"
 #include "pandas/DAPySeries.h"
 
+#include "Chart/DAStatsPlotRequest.h"
+#include "Chart/DAStatsPlotRequests.h"
+
 #include <QDebug>
 #include <QColor>
 #include <QVector>
@@ -64,53 +67,25 @@ DAStatsPlotCoordinator::DAStatsPlotCoordinator() {}
 DAStatsPlotCoordinator::~DAStatsPlotCoordinator() {}
 
 // ============================================================
-// Public entry point
+// Public entry point — double dispatch via req.dispatchTo
 // ============================================================
 
-bool DAStatsPlotCoordinator::execute(const QString& plotType,
-                                      const QJsonObject& params,
-                                      DA::DAFigureWidget* fig,
-                                      DA::DAChartWidget* chart,
-                                      const DA::DAData& data)
+bool DAStatsPlotCoordinator::execute(const DA::DAStatsPlotRequest& req)
 {
-    Q_UNUSED(fig);
-
-    if (!chart || !data) {
+    if (nullptr == req.chart || !req.data) {
         return false;
     }
 
-    DA::DAPyDataFrame df = data.toDataFrame();
+    DA::DAPyDataFrame df = req.data.toDataFrame();
     if (df.isNone()) {
         daWarning << QObject::tr("The selected data source is empty");  // cn: 选中的数据源为空
         return false;
     }
 
-    DAChartPlotRenderer renderer(chart);
+    DAChartPlotRenderer renderer(req.chart);
 
     try {
-        if (plotType == "histplot") {
-            plotHistplot(params, renderer, df);
-        } else if (plotType == "kdeplot_1d") {
-            plotKdeplot1d(params, renderer, df);
-        } else if (plotType == "kdeplot_2d") {
-            plotKdeplot2d(params, renderer, df);
-        } else if (plotType == "boxplot") {
-            plotBoxplot(params, renderer, df);
-        } else if (plotType == "heatmap") {
-            plotHeatmap(params, renderer, df);
-        } else if (plotType == "scatterplot") {
-            plotScatterplot(params, renderer, df);
-        } else if (plotType == "barplot") {
-            plotBarplot(params, renderer, df);
-        } else if (plotType == "regplot") {
-            plotRegplot(params, renderer, df);
-        } else if (plotType == "ecdfplot") {
-            plotEcdfplot(params, renderer, df);
-        } else {
-            daWarning << QObject::tr("Unknown plot type: %1").arg(plotType);  // cn: 未知的绘图类型: %1
-            return false;
-        }
-
+        req.dispatchTo(*this, renderer, df);   // 双分派：无 switch / 无字符串 / 无 downcast
         renderer.replot();
         return true;
     } catch (const pybind11::error_already_set& e) {
@@ -126,15 +101,15 @@ bool DAStatsPlotCoordinator::execute(const QString& plotType,
 //           if kde=true → computeKde1d → renderCurve
 // ============================================================
 
-void DAStatsPlotCoordinator::plotHistplot(const QJsonObject& params,
-                                           DAChartPlotRenderer& renderer,
-                                           const DA::DAPyDataFrame& df)
+void DAStatsPlotCoordinator::plotHistplot(const DA::DAStatsHistplotRequest& req,
+                                          DAChartPlotRenderer& renderer,
+                                          const DA::DAPyDataFrame& df)
 {
-    QString column = params.value("column").toString();
+    const QString column = req.column;
     if (column.isEmpty()) return;
 
-    QString hueCol = params.value("hue").toString();
-    QVariantMap args = toVariantMap(params);
+    const QString hueCol = req.hue;
+    QVariantMap args = req.toPythonParams();
 
     if (hueCol.isEmpty()) {
         // === No hue: single histogram (existing behaviour) ===
@@ -163,7 +138,7 @@ void DAStatsPlotCoordinator::plotHistplot(const QJsonObject& params,
         renderer.renderHistogram(edges, counts, histStyle);
 
         // Optional KDE overlay (atomic: separate statistics call)
-        if (params.value("kde").toBool(false)) {
+        if (req.kde) {
             QString kdeErr;
             pybind11::dict kdeResult = DA::DAPyScripts::getStatistics().computeKde1d(series, args, &kdeErr);
             if (!kdeResult.is_none() && pybind11::len(kdeResult) > 0) {
@@ -228,7 +203,7 @@ void DAStatsPlotCoordinator::plotHistplot(const QJsonObject& params,
     }
 
     // Optional KDE overlay per group (atomic: separate statistics call)
-    if (params.value("kde").toBool(false)) {
+    if (req.kde) {
         QString kdeErr;
         pybind11::dict kdeResult = DA::DAPyScripts::getStatistics().computeKde1dByHue(
             df, column, hueCol, args, &kdeErr);
@@ -282,17 +257,17 @@ void DAStatsPlotCoordinator::plotHistplot(const QJsonObject& params,
 //             if fill=true → construct closed polygon → renderShape
 // ============================================================
 
-void DAStatsPlotCoordinator::plotKdeplot1d(const QJsonObject& params,
-                                            DAChartPlotRenderer& renderer,
-                                            const DA::DAPyDataFrame& df)
+void DAStatsPlotCoordinator::plotKdeplot1d(const DA::DAStatsKdeplot1dRequest& req,
+                                           DAChartPlotRenderer& renderer,
+                                           const DA::DAPyDataFrame& df)
 {
-    QString column = params.value("column").toString();
+    const QString column = req.column;
     if (column.isEmpty()) return;
 
     DA::DAPySeries series = df[column];
     if (series.isNone()) return;
 
-    QVariantMap args = toVariantMap(params);
+    QVariantMap args = req.toPythonParams();
 
     pybind11::dict result = DA::DAPyScripts::getStatistics().computeKde1d(series, args);
     if (result.is_none() || pybind11::len(result) == 0) return;
@@ -306,7 +281,7 @@ void DAStatsPlotCoordinator::plotKdeplot1d(const QJsonObject& params,
     renderer.renderCurve(curve, style);
 
     // Optional fill: construct a closed polygon (baseline → curve → baseline)
-    if (params.value("fill").toBool(false)) {
+    if (req.fill) {
         QPolygonF fillPoly;
         fillPoly.append(QPointF(curve.first().x(), 0.0));
         fillPoly.append(curve);
@@ -321,22 +296,22 @@ void DAStatsPlotCoordinator::plotKdeplot1d(const QJsonObject& params,
 
 // ============================================================
 // kdeplot_2d: computeKde2d → renderSpectrogram
-//             if contour=true → computeContours → renderContours
+//             if fillContours=true → computeContours → renderContours
 // ============================================================
 
-void DAStatsPlotCoordinator::plotKdeplot2d(const QJsonObject& params,
-                                            DAChartPlotRenderer& renderer,
-                                            const DA::DAPyDataFrame& df)
+void DAStatsPlotCoordinator::plotKdeplot2d(const DA::DAStatsKdeplot2dRequest& req,
+                                           DAChartPlotRenderer& renderer,
+                                           const DA::DAPyDataFrame& df)
 {
-    QString xCol = params.value("column").toString();
-    QString yCol = params.value("y_column").toString();
+    const QString xCol = req.xColumn;
+    const QString yCol = req.yColumn;
     if (xCol.isEmpty() || yCol.isEmpty()) return;
 
     DA::DAPySeries xSeries = df[xCol];
     DA::DAPySeries ySeries = df[yCol];
     if (xSeries.isNone() || ySeries.isNone()) return;
 
-    QVariantMap args = toVariantMap(params);
+    QVariantMap args = req.toPythonParams();
 
     pybind11::dict result = DA::DAPyScripts::getStatistics().computeKde2d(xSeries, ySeries, args);
     if (result.is_none() || pybind11::len(result) == 0) return;
@@ -384,9 +359,21 @@ void DAStatsPlotCoordinator::plotKdeplot2d(const QJsonObject& params,
     renderer.renderSpectrogram(specData, specStyle);
 
     // Optional contour overlay (atomic: separate computeContours call)
-    if (params.value("contour").toBool(false)) {
+    // 修复：原实现读字符串键 "contour"（widget 写 "fill_contours"），叠加分支从未触发
+    if (req.fillContours) {
+        // compute_contours 的 levels 参数必须是 list：从 KDE 结果 dict 提取，
+        // 不直接透传 toPythonParams（其 levels 为 int，range(len(levels)-1) 会抛错）
+        QVariantMap contourArgs;
+        QVector<double> levelsVec = dictToDoubleVector(result, "levels");
+        if (!levelsVec.isEmpty()) {
+            QVariantList levelsList;
+            for (double lv : levelsVec) {
+                levelsList << lv;
+            }
+            contourArgs["levels"] = levelsList;
+        }
         DA::DAContourData contourData =
-            DA::DAPyScripts::getStatistics().computeContours(result, args);
+            DA::DAPyScripts::getStatistics().computeContours(result, contourArgs);
         if (!contourData.polygons.isEmpty()) {
             QVariantMap contourStyle;
             contourStyle["title"] = QStringLiteral("Contours: %1 vs %2").arg(xCol, yCol);
@@ -400,11 +387,11 @@ void DAStatsPlotCoordinator::plotKdeplot2d(const QJsonObject& params,
 //          outliers → renderScatter
 // ============================================================
 
-void DAStatsPlotCoordinator::plotBoxplot(const QJsonObject& params,
-                                          DAChartPlotRenderer& renderer,
-                                          const DA::DAPyDataFrame& df)
+void DAStatsPlotCoordinator::plotBoxplot(const DA::DAStatsBoxplotRequest& req,
+                                         DAChartPlotRenderer& renderer,
+                                         const DA::DAPyDataFrame& df)
 {
-    QVariantMap args = toVariantMap(params);
+    QVariantMap args = req.toPythonParams();
 
     pybind11::dict result = DA::DAPyScripts::getStatistics().computeBoxplotStats(df, args);
     renderBoxplotResult(result, renderer, QStringLiteral("Boxplot"));
@@ -476,7 +463,7 @@ bool DAStatsPlotCoordinator::renderBoxplotResult(const pybind11::dict& result,
         // x 轴标签：有 hue 时标注 hue 类别名，否则标注列名
         axisPositions.append(pos);
         axisLabels.append(hasHue ? sd["hue"].cast<QString>()
-                                 : sd["column"].cast<QString>());
+                                  : sd["column"].cast<QString>());
 
         // outliers — collected for separate scatter rendering
         QVector<QPointF> boxOutliers = extractBoxOutliers(sd, pos);
@@ -510,16 +497,16 @@ bool DAStatsPlotCoordinator::renderBoxplotResult(const pybind11::dict& result,
 // heatmap: computePivotMatrix → construct DASpectrogramData → renderSpectrogram
 // ============================================================
 
-void DAStatsPlotCoordinator::plotHeatmap(const QJsonObject& params,
+void DAStatsPlotCoordinator::plotHeatmap(const DA::DAStatsHeatmapRequest& req,
                                           DAChartPlotRenderer& renderer,
                                           const DA::DAPyDataFrame& df)
 {
-    QString indexCol   = params.value("index_col").toString();
-    QString columnsCol = params.value("columns_col").toString();
-    QString valuesCol  = params.value("values_col").toString();
+    const QString indexCol   = req.indexColumn;
+    const QString columnsCol = req.columnsColumn;
+    const QString valuesCol  = req.valueColumn;
     if (indexCol.isEmpty() || columnsCol.isEmpty()) return;
 
-    QVariantMap args = toVariantMap(params);
+    QVariantMap args = req.toPythonParams();
 
     pybind11::dict result = DA::DAPyScripts::getStatistics().computePivotMatrix(
         df, indexCol, columnsCol, valuesCol, args);
@@ -582,8 +569,8 @@ void DAStatsPlotCoordinator::plotHeatmap(const QJsonObject& params,
             style["vmax"] = pybind11::cast<double>(vmaxObj);
         }
     }
-    if (params.contains("cmap")) {
-        style["cmap"] = params.value("cmap").toString();
+    if (!req.cmap.isEmpty()) {
+        style["cmap"] = req.cmap;
     }
 
     renderer.renderSpectrogram(specData, style);
@@ -594,12 +581,12 @@ void DAStatsPlotCoordinator::plotHeatmap(const QJsonObject& params,
 //              hue groups → multiple renderScatter calls
 // ============================================================
 
-void DAStatsPlotCoordinator::plotScatterplot(const QJsonObject& params,
+void DAStatsPlotCoordinator::plotScatterplot(const DA::DAStatsScatterplotRequest& req,
                                               DAChartPlotRenderer& renderer,
                                               const DA::DAPyDataFrame& df)
 {
-    QString xCol = params.value("column").toString();
-    QString yCol = params.value("y_column").toString();
+    const QString xCol = req.xColumn;
+    const QString yCol = req.yColumn;
     if (xCol.isEmpty() || yCol.isEmpty()) return;
 
     DA::DAPySeries xSeries = df[xCol];
@@ -609,7 +596,7 @@ void DAStatsPlotCoordinator::plotScatterplot(const QJsonObject& params,
     QVector<double> xVals = DA::toQVectorDouble(xSeries);
     QVector<double> yVals = DA::toQVectorDouble(ySeries);
 
-    QString hueCol = params.value("hue").toString();
+    const QString hueCol = req.hue;
 
     if (hueCol.isEmpty()) {
         // Simple scatter — no grouping
@@ -654,15 +641,15 @@ void DAStatsPlotCoordinator::plotScatterplot(const QJsonObject& params,
 //          if ci>0 → computeCI → renderBarChart
 // ============================================================
 
-void DAStatsPlotCoordinator::plotBarplot(const QJsonObject& params,
+void DAStatsPlotCoordinator::plotBarplot(const DA::DAStatsBarplotRequest& req,
                                           DAChartPlotRenderer& renderer,
                                           const DA::DAPyDataFrame& df)
 {
-    QString xCol = params.value("column").toString();
-    QString yCol = params.value("y_column").toString();  // empty for count plot
+    const QString xCol = req.xColumn;
+    const QString yCol = req.yColumn;  // empty for count plot
     if (xCol.isEmpty()) return;
 
-    QVariantMap args = toVariantMap(params);
+    QVariantMap args = req.toPythonParams();
 
     pybind11::dict result = DA::DAPyScripts::getStatistics().aggregateByCategory(
         df, xCol, yCol, args);
@@ -686,11 +673,11 @@ void DAStatsPlotCoordinator::plotBarplot(const QJsonObject& params,
         if (barData.values.isEmpty()) return;
 
         // Optional CI (atomic: separate computeCI call)
-        int ci = params.value("ci").toInt(0);
-        if (ci > 0 && !yCol.isEmpty()) {
+        if (req.ci > 0 && !yCol.isEmpty()) {
             QVariantMap ciArgs  = args;
-            ciArgs["x_col"]     = xCol;
-            ciArgs["y_col"]     = yCol;
+            ciArgs[ "x_col" ]   = xCol;
+            ciArgs[ "y_col" ]   = yCol;
+            ciArgs[ "ci" ]      = req.ci;
             pybind11::dict ciResult = DA::DAPyScripts::getStatistics().computeCI(df, ciArgs);
             if (!ciResult.is_none() && pybind11::len(ciResult) > 0) {
                 barData.ciLower = dictToDoubleVector(ciResult, "ci_lower");
@@ -742,19 +729,19 @@ void DAStatsPlotCoordinator::plotBarplot(const QJsonObject& params,
 //          if ci>0 → computeBootstrapCI → renderIntervalCurve
 // ============================================================
 
-void DAStatsPlotCoordinator::plotRegplot(const QJsonObject& params,
-                                          DAChartPlotRenderer& renderer,
-                                          const DA::DAPyDataFrame& df)
+void DAStatsPlotCoordinator::plotRegplot(const DA::DAStatsRegplotRequest& req,
+                                         DAChartPlotRenderer& renderer,
+                                         const DA::DAPyDataFrame& df)
 {
-    QString xCol = params.value("column").toString();
-    QString yCol = params.value("y_column").toString();
+    const QString xCol = req.xColumn;
+    const QString yCol = req.yColumn;
     if (xCol.isEmpty() || yCol.isEmpty()) return;
 
     DA::DAPySeries xSeries = df[xCol];
     DA::DAPySeries ySeries = df[yCol];
     if (xSeries.isNone() || ySeries.isNone()) return;
 
-    QVariantMap args = toVariantMap(params);
+    QVariantMap args = req.toPythonParams();
 
     // 1. Scatter (directly from DataFrame — no statistics function needed)
     QVector<double> xVals = DA::toQVectorDouble(xSeries);
@@ -785,8 +772,9 @@ void DAStatsPlotCoordinator::plotRegplot(const QJsonObject& params,
     }
 
     // 3. Optional confidence interval (independent atomic function)
-    int ci = params.value("ci").toInt(95);
-    if (ci > 0) {
+    // 修复：原实现 params.value("ci").toInt(95) 对 Null 返回默认 95，
+    // UI 选 "None" 时仍恒画 CI；类型化后 ci=0 表示"无"
+    if (req.ci > 0) {
         pybind11::dict ciResult =
             DA::DAPyScripts::getStatistics().computeBootstrapCI(xSeries, ySeries, args);
         if (!ciResult.is_none() && pybind11::len(ciResult) > 0) {
@@ -800,7 +788,7 @@ void DAStatsPlotCoordinator::plotRegplot(const QJsonObject& params,
                 ciData.yLower  = ciLower;
                 ciData.yUpper  = ciUpper;
                 QVariantMap ciStyle;
-                ciStyle["title"] = QStringLiteral("%1% CI").arg(ci);
+                ciStyle["title"] = QStringLiteral("%1% CI").arg(req.ci);
                 renderer.renderIntervalCurve(ciData, ciStyle);
             }
         }
@@ -811,17 +799,17 @@ void DAStatsPlotCoordinator::plotRegplot(const QJsonObject& params,
 // ecdfplot: computeECDF → extractPolygon → renderCurve (step style)
 // ============================================================
 
-void DAStatsPlotCoordinator::plotEcdfplot(const QJsonObject& params,
-                                           DAChartPlotRenderer& renderer,
-                                           const DA::DAPyDataFrame& df)
+void DAStatsPlotCoordinator::plotEcdfplot(const DA::DAStatsEcdfplotRequest& req,
+                                          DAChartPlotRenderer& renderer,
+                                          const DA::DAPyDataFrame& df)
 {
-    QString column = params.value("column").toString();
+    const QString column = req.column;
     if (column.isEmpty()) return;
 
     DA::DAPySeries series = df[column];
     if (series.isNone()) return;
 
-    QVariantMap args = toVariantMap(params);
+    QVariantMap args = req.toPythonParams();
 
     pybind11::dict result = DA::DAPyScripts::getStatistics().computeECDF(series, args);
     if (result.is_none() || pybind11::len(result) == 0) return;
@@ -839,16 +827,6 @@ void DAStatsPlotCoordinator::plotEcdfplot(const QJsonObject& params,
 // ============================================================
 // Helper methods
 // ============================================================
-
-QVariantMap DAStatsPlotCoordinator::toVariantMap(const QJsonObject& params, bool skipPrivate) const
-{
-    QVariantMap result;
-    for (auto it = params.begin(); it != params.end(); ++it) {
-        if (skipPrivate && it.key().startsWith("__")) continue;
-        result[it.key()] = it.value().toVariant();
-    }
-    return result;
-}
 
 QVector<double> DAStatsPlotCoordinator::dictToDoubleVector(const pybind11::dict& d,
                                                             const QString& key)

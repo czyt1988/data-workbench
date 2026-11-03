@@ -33,11 +33,10 @@ public:
     /// Re-implemented to forward the data manager to the series-select widgets.
     virtual void setDataManager(DADataManager* dmgr) override;
 
-    /// Collect every UI field into a JSON object suitable for Python.
-    virtual QJsonObject buildPlotParams() const override;
+    /// Collect every UI field into a typed DAStatsRegplotRequest.
+    virtual DAStatsPlotRequest* createPlotRequest() const override;
 
 private Q_SLOTS:
-    void onButtonBoxAccepted();
     /// Enable/disable n_boot when CI changes
     void onCiChanged(int index);
     /// Enable/disable scatter_kws panel

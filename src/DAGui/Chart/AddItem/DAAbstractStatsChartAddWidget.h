@@ -3,19 +3,19 @@
 #include "DAGuiAPI.h"
 #include "Chart/AddItem/DAAbstractChartAddWidgetBase.h"
 #include "DAData.h"
-#include <QJsonObject>
 
 namespace DA
 {
 class DAFigureWidget;
 class DAChartWidget;
+class DAStatsPlotRequest;
 
 /**
  * @brief 统计绘图设置窗口基类
  *
- * 统计绘图不返回 QwtPlotItem，而是把参数收集为 JSON、连同数据源一起
- * 通过 plotRequested 信号交给 Controller，由 Controller 调用 Python
- * 统计绘图函数完成计算和绘制。
+ * 统计绘图不返回 QwtPlotItem，而是把参数收集为类型化的 DAStatsPlotRequest、
+ * 连同数据源一起通过 plotRequested 信号交给 Controller，由 Controller 调用
+ * Python 统计绘图函数完成计算和绘制。
  *
  * 它与 DAAbstractChartAddItemWidget 是并列的两种输出契约，
  * 不继承「必须返回 QwtPlotItem*」的接口。
@@ -28,16 +28,16 @@ public:
     virtual ~DAAbstractStatsChartAddWidget();
 
     /**
-     * @brief 收集当前窗口中的参数为 JSON 对象
-     * @return 参数 JSON
+     * @brief 从当前 UI 收集类型化绘图请求（工厂方法）
+     * @return 新建的请求对象，所有权移交基类 onButtonBoxAccepted 的 unique_ptr
      */
-    virtual QJsonObject buildPlotParams() const = 0;
+    virtual DAStatsPlotRequest* createPlotRequest() const = 0;
 
     /**
-     * @brief 用户确认时的处理逻辑（校验数据、发射绘图请求）
-     * @note 子类必须实现此方法，由引导对话框在 accept 时调用
+     * @brief 用户确认时的处理逻辑（非虚模板方法：校验请求并发射绘图信号）
+     * @note 由引导对话框在 accept 时调用，子类不得重写
      */
-    virtual void onButtonBoxAccepted() = 0;
+    void onButtonBoxAccepted();
 
     // 设置/获取 Figure 窗口
     void setFigureWidget(DAFigureWidget* fig);
@@ -49,13 +49,11 @@ public:
 
 Q_SIGNALS:
     /**
-     * @brief 绘图请求信号，子类在用户确认参数后发射此信号
-     * @param params 绘图参数 JSON
-     * @param data 数据源，直接随信号传递，避免用动态属性做隐式通道
-     * @param fig 目标 Figure 窗口
-     * @param chart 目标 Chart 窗口
+     * @brief 绘图请求信号，基类在用户确认且请求有效后发射
+     * @param req 类型化绘图请求（携带参数、数据源与目标 figure/chart）
+     * @note 同步直连；请求对象生命周期仅限信号链内，不得在槽中保存引用
      */
-    void plotRequested(const QJsonObject& params, const DA::DAData& data, DA::DAFigureWidget* fig, DA::DAChartWidget* chart);
+    void plotRequested(const DA::DAStatsPlotRequest& req);
 
 protected:
     DAFigureWidget* mFigureWidget { nullptr };

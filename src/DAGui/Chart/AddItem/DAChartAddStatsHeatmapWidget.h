@@ -33,11 +33,10 @@ public:
     /// Re-implemented to forward the data manager to the series-select widgets.
     virtual void setDataManager(DADataManager* dmgr) override;
 
-    /// Collect every UI field into a JSON object suitable for Python.
-    virtual QJsonObject buildPlotParams() const override;
+    /// Collect every UI field into a typed DAStatsHeatmapRequest.
+    virtual DAStatsPlotRequest* createPlotRequest() const override;
 
 private Q_SLOTS:
-    void onButtonBoxAccepted();
     /// Enable/disable aggfunc when value column groupbox is toggled
     void onValueColumnToggled(bool checked);
     /// Enable/disable fmt edit when annot is toggled

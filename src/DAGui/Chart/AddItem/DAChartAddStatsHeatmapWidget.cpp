@@ -1,12 +1,12 @@
 #include "Chart/AddItem/DAChartAddStatsHeatmapWidget.h"
 #include "ui_DAChartAddStatsHeatmapWidget.h"
 
-#include <QJsonObject>
 #include <QVariant>
 #include "DADataManager.h"
+#include "Chart/DAStatsPlotRequest.h"
+#include "Chart/DAStatsPlotRequests.h"
 #include "Chart/AddItem/DAChartSeriesSelectWidget.h"
 #include "Table/Views/DAPySeriesListView.h"  // for AcceptMode
-#include "DALogCategory.h"
 
 namespace DA
 {
@@ -53,89 +53,58 @@ void DAChartAddStatsHeatmapWidget::setDataManager(DADataManager* dmgr)
     ui->selectWidgetValue->setDataManager(dmgr);
 }
 
-QJsonObject DAChartAddStatsHeatmapWidget::buildPlotParams() const
+DAStatsPlotRequest* DAChartAddStatsHeatmapWidget::createPlotRequest() const
 {
-    QJsonObject p;
+    auto* req = new DAStatsHeatmapRequest;
 
-    // Aggregation function (only meaningful when value column is selected)
-    if (ui->groupBoxValueColumn->isChecked()) {
-        p["aggfunc"] = ui->comboBoxAggfunc->currentText();
-    }
-
-    // Colour map
-    p["cmap"] = ui->comboBoxCmap->currentText();
-
-    // Standardisation
-    QString scale = ui->comboBoxStandardScale->currentText();
-    if (scale != QStringLiteral("None")) {
-        p["standard_scale"] = scale;
-    }
-
-    // Value range — 0 means auto (NaN on the Python side)
-    double vmin = ui->doubleSpinBoxVmin->value();
-    double vmax = ui->doubleSpinBoxVmax->value();
-    if (vmin != 0.0) {
-        p["vmin"] = vmin;
-    }
-    if (vmax != 0.0) {
-        p["vmax"] = vmax;
-    }
-
-    // Center — 0 means no centering (NaN on the Python side)
-    double center = ui->doubleSpinBoxCenter->value();
-    if (center != 0.0) {
-        p["center"] = center;
-    }
-
-    // Annotations
-    p["annot"] = ui->checkBoxAnnot->isChecked();
-    if (ui->checkBoxAnnot->isChecked()) {
-        p["fmt"] = ui->lineEditFmt->text();
-    }
-
-    return p;
-}
-
-void DAChartAddStatsHeatmapWidget::onButtonBoxAccepted()
-{
-    // Validate: both X and Y series must be selected
+    // X / Y columns (single-series selection)
+    // 字段命名对齐 compute_pivot_matrix 的位置参数语义（index_col/columns_col/values_col），
+    // 修复原实现「widget 写 column/y_column/value_column、coordinator 读 index_col/columns_col/values_col」的键名断裂
     QPair< DAData, QString > selX = ui->selectWidgetXData->getCurrentSeries();
-    if (!selX.first.isDataFrame()) {
-        daWarning << tr("Please select an X-axis data column before plotting");  // cn: 请先选择 X 轴数据列再绘图
-        return;
-    }
-    if (selX.second.isEmpty()) {
-        daWarning << tr("Please select an X-axis data column before plotting");  // cn: 请先选择 X 轴数据列再绘图
-        return;
-    }
+    req->data          = selX.first;
+    req->figure        = getFigureWidget();
+    req->chart         = getChartWidget();
+    req->indexColumn   = selX.second;
+    req->columnsColumn = ui->selectWidgetYData->getCurrentSeries().second;
 
-    QPair< DAData, QString > selY = ui->selectWidgetYData->getCurrentSeries();
-    if (!selY.first.isDataFrame()) {
-        daWarning << tr("Please select a Y-axis data column before plotting");  // cn: 请先选择 Y 轴数据列再绘图
-        return;
-    }
-    if (selY.second.isEmpty()) {
-        daWarning << tr("Please select a Y-axis data column before plotting");  // cn: 请先选择 Y 轴数据列再绘图
-        return;
-    }
-
-    QJsonObject params = buildPlotParams();
-    // Stash the selected X column name (controller reads "column" positionally)
-    params["column"] = selX.second;
-    // Stash the Y column name for the Python side
-    params["y_column"] = selY.second;
-    // Identify which Python module the controller should import
-    params["__plot_type__"] = QStringLiteral("heatmap");
-
-    // Value column name (if enabled)
+    // Value column + aggregation function (only meaningful when the groupbox is checked)
     if (ui->groupBoxValueColumn->isChecked()) {
         QPair< DAData, QString > valSel = ui->selectWidgetValue->getCurrentSeries();
         if (valSel.first.isDataFrame() && !valSel.second.isEmpty()) {
-            params["value_column"] = valSel.second;
+            req->valueColumn = valSel.second;
         }
+        req->aggfunc = ui->comboBoxAggfunc->currentText();
     }
 
-    Q_EMIT plotRequested(params, selX.first, getFigureWidget(), getChartWidget());
+    // Colour map
+    req->cmap = ui->comboBoxCmap->currentText();
+
+    // Standardisation
+    const QString scale = ui->comboBoxStandardScale->currentText();
+    if (scale != QStringLiteral("None")) {
+        req->standardScale = scale;
+    }
+
+    // Value range — 0 means auto
+    if (ui->doubleSpinBoxVmin->value() != 0.0) {
+        req->vmin = ui->doubleSpinBoxVmin->value();
+    }
+    if (ui->doubleSpinBoxVmax->value() != 0.0) {
+        req->vmax = ui->doubleSpinBoxVmax->value();
+    }
+
+    // Center — 0 means no centering
+    if (ui->doubleSpinBoxCenter->value() != 0.0) {
+        req->center = ui->doubleSpinBoxCenter->value();
+    }
+
+    // Annotations
+    req->annot = ui->checkBoxAnnot->isChecked();
+    if (ui->checkBoxAnnot->isChecked()) {
+        req->fmt = ui->lineEditFmt->text();
+    }
+
+    return req;
 }
 
 void DAChartAddStatsHeatmapWidget::onValueColumnToggled(bool checked)

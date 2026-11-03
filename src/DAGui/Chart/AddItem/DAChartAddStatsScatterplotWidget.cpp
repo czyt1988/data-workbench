@@ -1,12 +1,12 @@
 #include "Chart/AddItem/DAChartAddStatsScatterplotWidget.h"
 #include "ui_DAChartAddStatsScatterplotWidget.h"
 
-#include <QJsonObject>
 #include <QVariant>
 #include "DADataManager.h"
+#include "Chart/DAStatsPlotRequest.h"
+#include "Chart/DAStatsPlotRequests.h"
 #include "Chart/AddItem/DAChartSeriesSelectWidget.h"
 #include "Table/Views/DAPySeriesListView.h"  // for AcceptMode
-#include "DALogCategory.h"
 
 namespace DA
 {
@@ -43,62 +43,33 @@ void DAChartAddStatsScatterplotWidget::setDataManager(DADataManager* dmgr)
     ui->selectWidgetHue->setDataManager(dmgr);
 }
 
-QJsonObject DAChartAddStatsScatterplotWidget::buildPlotParams() const
+DAStatsPlotRequest* DAChartAddStatsScatterplotWidget::createPlotRequest() const
 {
-    QJsonObject p;
+    auto* req = new DAStatsScatterplotRequest;
 
-    // Marker options
-    p["size"]   = ui->spinBoxSize->value();
-    p["style"]  = ui->comboBoxStyle->currentText();
-    p["alpha"]  = ui->doubleSpinBoxAlpha->value();
-    p["legend"] = ui->checkBoxLegend->isChecked();
-
-    // Hue grouping
-    p["use_hue"] = ui->groupBoxHue->isChecked();
-
-    return p;
-}
-
-void DAChartAddStatsScatterplotWidget::onButtonBoxAccepted()
-{
-    // Validate: both X and Y series must be selected
+    // X / Y columns (single-series selection)
     QPair< DAData, QString > selX = ui->selectWidgetXData->getCurrentSeries();
-    if (!selX.first.isDataFrame()) {
-        daWarning << tr("Please select an X-axis data column before plotting");  // cn: 请先选择 X 轴数据列再绘图
-        return;
-    }
-    if (selX.second.isEmpty()) {
-        daWarning << tr("Please select an X-axis data column before plotting");  // cn: 请先选择 X 轴数据列再绘图
-        return;
-    }
+    req->data    = selX.first;
+    req->figure  = getFigureWidget();
+    req->chart   = getChartWidget();
+    req->xColumn = selX.second;
+    req->yColumn = ui->selectWidgetYData->getCurrentSeries().second;
 
-    QPair< DAData, QString > selY = ui->selectWidgetYData->getCurrentSeries();
-    if (!selY.first.isDataFrame()) {
-        daWarning << tr("Please select a Y-axis data column before plotting");  // cn: 请先选择 Y 轴数据列再绘图
-        return;
-    }
-    if (selY.second.isEmpty()) {
-        daWarning << tr("Please select a Y-axis data column before plotting");  // cn: 请先选择 Y 轴数据列再绘图
-        return;
-    }
-
-    QJsonObject params = buildPlotParams();
-    // Stash the selected X column name (controller reads "column" positionally)
-    params["column"] = selX.second;
-    // Stash the Y column name for the Python side
-    params["y_column"] = selY.second;
-    // Identify which Python module the controller should import
-    params["__plot_type__"] = QStringLiteral("scatterplot");
-
-    // Hue column name (if enabled)
+    // Hue column (only if the groupbox is checked and a column is selected)
     if (ui->groupBoxHue->isChecked()) {
         QPair< DAData, QString > hueSel = ui->selectWidgetHue->getCurrentSeries();
         if (hueSel.first.isDataFrame() && !hueSel.second.isEmpty()) {
-            params["hue"] = hueSel.second;
+            req->hue = hueSel.second;
         }
     }
 
-    Q_EMIT plotRequested(params, selX.first, getFigureWidget(), getChartWidget());
+    // Marker options
+    req->size   = ui->spinBoxSize->value();
+    req->style  = ui->comboBoxStyle->currentText();
+    req->alpha  = ui->doubleSpinBoxAlpha->value();
+    req->legend = ui->checkBoxLegend->isChecked();
+
+    return req;
 }
 
 }  // namespace DA

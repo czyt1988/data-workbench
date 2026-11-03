@@ -2,12 +2,12 @@
 #include "ui_DAChartAddStatsBarplotWidget.h"
 
 #include <QDebug>
-#include <QJsonObject>
 #include <QVariant>
 #include "DADataManager.h"
+#include "Chart/DAStatsPlotRequest.h"
+#include "Chart/DAStatsPlotRequests.h"
 #include "Chart/AddItem/DAChartSeriesSelectWidget.h"
 #include "Table/Views/DAPySeriesListView.h"  // for AcceptMode
-#include "DALogCategory.h"
 
 namespace DA
 {
@@ -41,7 +41,7 @@ DAChartAddStatsBarplotWidget::DAChartAddStatsBarplotWidget(QWidget* parent)
             this, &DAChartAddStatsBarplotWidget::onCiChanged);
 
     // 估计器下拉：显示文本会被翻译（中文界面是「均值」等），而 Python 的 ESTIMATOR_MAP
-    // 只认真实估计器名，因此把规范 key 写进 itemData，buildPlotParams 读 currentData。
+    // 只认真实估计器名，因此把规范 key 写进 itemData，createPlotRequest 读 currentData。
     // uic 不为 combo item 生成 setItemData，这里按下标写入；顺序必须与 .ui 一致。
     static const char* const kEstimatorKeys[] = { "mean", "median", "sum", "count", "std", "var", "min", "max" };
     const int estimatorCount = static_cast< int >(sizeof(kEstimatorKeys) / sizeof(kEstimatorKeys[ 0 ]));
@@ -71,69 +71,53 @@ void DAChartAddStatsBarplotWidget::setDataManager(DADataManager* dmgr)
     ui->selectWidgetHue->setDataManager(dmgr);
 }
 
-QJsonObject DAChartAddStatsBarplotWidget::buildPlotParams() const
+DAStatsPlotRequest* DAChartAddStatsBarplotWidget::createPlotRequest() const
 {
-    QJsonObject p;
+    auto* req = new DAStatsBarplotRequest;
+
+    // X column (categorical, single-series selection)
+    QPair< DAData, QString > selX = ui->selectWidgetXData->getCurrentSeries();
+    req->data    = selX.first;
+    req->figure  = getFigureWidget();
+    req->chart   = getChartWidget();
+    req->xColumn = selX.second;
+
+    // Y column (numeric, optional — empty means countplot mode)
+    QPair< DAData, QString > selY = ui->selectWidgetYData->getCurrentSeries();
+    if (selY.first.isDataFrame() && !selY.second.isEmpty()) {
+        req->yColumn = selY.second;
+    }
+
+    // Hue column (only if the groupbox is checked and a column is selected)
+    if (ui->groupBoxHue->isChecked()) {
+        QPair< DAData, QString > hueSel = ui->selectWidgetHue->getCurrentSeries();
+        if (hueSel.first.isDataFrame() && !hueSel.second.isEmpty()) {
+            req->hue = hueSel.second;
+        }
+    }
 
     // Estimator：估计器名字取自 itemData（界面文本会被翻译，currentText 在中文界面下
     // 会变成「均值」等，传给 Python 会落到 ESTIMATOR_MAP 的默认值 mean）
     const QString estimator = ui->comboBoxEstimator->currentData().toString();
-    p["estimator"]           = estimator.isEmpty() ? QStringLiteral("mean") : estimator;
+    req->estimator = estimator.isEmpty() ? QStringLiteral("mean") : estimator;
 
-    // CI
-    int ciIdx = ui->comboBoxCi->currentIndex();
-    if (ciIdx == 0) {
-        p["ci"] = QJsonValue::Null;  // None
-    } else {
+    // CI — index 0 = "None" (ci stays 0)
+    const int ciIdx = ui->comboBoxCi->currentIndex();
+    if (ciIdx > 0) {
         // Items: None, 68, 95, 99 — index maps to the percentage value
         static const int ciValues[] = { 0, 68, 95, 99 };
-        p["ci"] = ciValues[ciIdx];
+        req->ci = ciValues[ ciIdx ];
     }
-    p["n_boot"] = ui->spinBoxNBoot->value();
+    req->nBoot = ui->spinBoxNBoot->value();
 
     // Orientation
-    p["orient"] = ui->comboBoxOrient->currentText();
-
-    // Hue grouping
-    p["use_hue"] = ui->groupBoxHue->isChecked();
+    req->orient = ui->comboBoxOrient->currentText();
 
     // Bar width
-    p["width"]   = ui->doubleSpinBoxWidth->value();
-    p["legend"]  = ui->checkBoxLegend->isChecked();
+    req->width  = ui->doubleSpinBoxWidth->value();
+    req->legend = ui->checkBoxLegend->isChecked();
 
-    return p;
-}
-
-void DAChartAddStatsBarplotWidget::onButtonBoxAccepted()
-{
-    // Validate: X column must be selected
-    QPair< DAData, QString > selX = ui->selectWidgetXData->getCurrentSeries();
-    if (!selX.first.isDataFrame() || selX.second.isEmpty()) {
-        daWarning << tr("Please select an X-axis data column before plotting");  // cn: 请先选择 X 轴数据列再绘图
-        return;
-    }
-
-    // Y column is optional (empty = countplot mode)
-    QPair< DAData, QString > selY = ui->selectWidgetYData->getCurrentSeries();
-    bool hasY = selY.first.isDataFrame() && !selY.second.isEmpty();
-
-    QJsonObject params = buildPlotParams();
-    // Stash the selected X column name (controller reads "column" positionally)
-    params["column"] = selX.second;
-    // Stash the Y column name for the Python side (empty string = countplot)
-    params["y_column"] = hasY ? selY.second : QString();
-    // Identify which Python module the controller should import
-    params["__plot_type__"] = QStringLiteral("barplot");
-
-    // Hue column name (if enabled)
-    if (ui->groupBoxHue->isChecked()) {
-        QPair< DAData, QString > hueSel = ui->selectWidgetHue->getCurrentSeries();
-        if (hueSel.first.isDataFrame() && !hueSel.second.isEmpty()) {
-            params["hue"] = hueSel.second;
-        }
-    }
-
-    Q_EMIT plotRequested(params, selX.first, getFigureWidget(), getChartWidget());
+    return req;
 }
 
 void DAChartAddStatsBarplotWidget::onYColumnChanged()

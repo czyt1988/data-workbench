@@ -1,13 +1,12 @@
 #include "Chart/AddItem/DAChartAddStatsKdeplot2dWidget.h"
 #include "ui_DAChartAddStatsKdeplot2dWidget.h"
 
-#include <QJsonArray>
-#include <QJsonObject>
 #include <QVariant>
 #include "DADataManager.h"
+#include "Chart/DAStatsPlotRequest.h"
+#include "Chart/DAStatsPlotRequests.h"
 #include "Chart/AddItem/DAChartSeriesSelectWidget.h"
 #include "Table/Views/DAPySeriesListView.h"  // for AcceptMode
-#include "DALogCategory.h"
 
 namespace DA
 {
@@ -44,65 +43,39 @@ void DAChartAddStatsKdeplot2dWidget::setDataManager(DADataManager* dmgr)
     ui->selectWidgetYData->setDataManager(dmgr);
 }
 
-QJsonObject DAChartAddStatsKdeplot2dWidget::buildPlotParams() const
+DAStatsPlotRequest* DAChartAddStatsKdeplot2dWidget::createPlotRequest() const
 {
-    QJsonObject p;
+    auto* req = new DAStatsKdeplot2dRequest;
+
+    // X / Y columns (single-series selection)
+    QPair< DAData, QString > selX = ui->selectWidgetXData->getCurrentSeries();
+    req->data     = selX.first;
+    req->figure   = getFigureWidget();
+    req->chart    = getChartWidget();
+    req->xColumn  = selX.second;
+    req->yColumn  = ui->selectWidgetYData->getCurrentSeries().second;
 
     // Bandwidth
-    p["bw_method"] = ui->comboBoxBwMethod->currentText();
-    if (ui->comboBoxBwMethod->currentText() == QStringLiteral("custom")) {
-        p["bw_value"] = ui->doubleSpinBoxBwValue->value();
+    req->bwMethod = ui->comboBoxBwMethod->currentText();
+    if (req->bwMethod == QStringLiteral("custom")) {
+        req->bwValue = ui->doubleSpinBoxBwValue->value();
     }
 
     // Grid size
-    p["grid_size"] = ui->spinBoxGridSize->value();
+    req->gridSize = ui->spinBoxGridSize->value();
 
     // Contour levels
-    p["levels"] = ui->spinBoxLevels->value();
+    req->levels = ui->spinBoxLevels->value();
 
     // Threshold
-    p["thresh"] = ui->doubleSpinBoxThresh->value();
+    req->thresh = ui->doubleSpinBoxThresh->value();
 
     // Display options
-    p["fill_contours"] = ui->checkBoxFillContours->isChecked();
-    p["show_heatmap"] = ui->checkBoxShowHeatmap->isChecked();
-    p["common_norm"] = ui->checkBoxCommonNorm->isChecked();
+    req->fillContours = ui->checkBoxFillContours->isChecked();
+    req->showHeatmap  = ui->checkBoxShowHeatmap->isChecked();
+    req->commonNorm   = ui->checkBoxCommonNorm->isChecked();
 
-    return p;
-}
-
-void DAChartAddStatsKdeplot2dWidget::onButtonBoxAccepted()
-{
-    // Validate: both X and Y series must be selected
-    QPair< DAData, QString > selX = ui->selectWidgetXData->getCurrentSeries();
-    if (!selX.first.isDataFrame()) {
-        daWarning << tr("Please select an X-axis data column before plotting");  // cn: 请先选择 X 轴数据列再绘图
-        return;
-    }
-    if (selX.second.isEmpty()) {
-        daWarning << tr("Please select an X-axis data column before plotting");  // cn: 请先选择 X 轴数据列再绘图
-        return;
-    }
-
-    QPair< DAData, QString > selY = ui->selectWidgetYData->getCurrentSeries();
-    if (!selY.first.isDataFrame()) {
-        daWarning << tr("Please select a Y-axis data column before plotting");  // cn: 请先选择 Y 轴数据列再绘图
-        return;
-    }
-    if (selY.second.isEmpty()) {
-        daWarning << tr("Please select a Y-axis data column before plotting");  // cn: 请先选择 Y 轴数据列再绘图
-        return;
-    }
-
-    QJsonObject params = buildPlotParams();
-    // Stash the selected X column name into params so the controller can read it
-    params["column"] = selX.second;
-    // Stash the Y column name for the Python side
-    params["y_column"] = selY.second;
-    // Identify which Python module the controller should import
-    params["__plot_type__"] = QStringLiteral("kdeplot_2d");
-
-    Q_EMIT plotRequested(params, selX.first, getFigureWidget(), getChartWidget());
+    return req;
 }
 
 void DAChartAddStatsKdeplot2dWidget::onBwMethodChanged(int index)

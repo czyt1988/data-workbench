@@ -116,6 +116,9 @@
 #include "Chart/AddItem/DAChartSeriesSelectWidget.h"
 #include "Chart/AddItem/DAAbstractStatsChartAddWidget.h"
 #include "Chart/DAStatsPlotCoordinator.h"
+// 类型化统计绘图请求（onStatsGuideAccepted 消费字段，需完整类型）
+#include "Chart/DAStatsPlotRequest.h"
+#include "Chart/DAStatsPlotRequests.h"
 // 数据统计分析浮动 dock（PMF connect notifyDataChanged 需完整类型）
 #include "Chart/DADataStatsWidget.h"
 // 表内快速绘图（转入绘图区的编排器）
@@ -5067,66 +5070,29 @@ void DAAppController::onTableDisplayFormatCurrentChanged(const DA::DATableDispla
 /**
  * @brief 统计绘图引导对话框确认后的处理槽
  *
- * 参数与数据源都由信号携带，不需要再从 widget 的动态属性或 sender() 反查。
+ * 类型化请求由信号携带（含参数、数据源与目标 figure/chart），widget 侧
+ * isValid 已完成校验；这里执行编排并做事后 UI（提升绘图区 / 更新 ribbon /
+ * 重设坐标轴）。
  */
-void DAAppController::onStatsGuideAccepted(const QJsonObject& params,
-                                           const DA::DAData& data,
-                                           DA::DAFigureWidget* fig,
-                                           DA::DAChartWidget* chart)
+void DAAppController::onStatsGuideAccepted(const DA::DAStatsPlotRequest& req)
 {
-    if (!fig || !chart) {
-        daWarning << tr("No figure/chart available for statistical plot");  //cn:没有可用于统计绘图的图表窗口
+    if (nullptr == req.chart || nullptr == req.figure) {
         return;
     }
-
-    if (!data.isDataFrame()) {
-        daWarning << tr("Cannot resolve the data source for statistical plot; "
-                        "please ensure a dataframe is selected in the settings window");  //cn:无法确定统计绘图的数据源，请确保在设置窗口中已选择数据表
-        return;
-    }
-
-    executeStatsPlot(params, fig, chart, data);
-}
-
-/**
- * @brief 执行统计绘图的公共逻辑
- * @param params 绘图参数 JSON
- * @param fig 目标 Figure 窗口
- * @param chart 目标 Chart 窗口
- * @param data 数据源 DAData
- */
-void DAAppController::executeStatsPlot(const QJsonObject& params,
-                                       DA::DAFigureWidget* fig,
-                                       DA::DAChartWidget* chart,
-                                       const DAData& data)
-{
-    QString columnName = params.value("column").toString();
-    if (columnName.isEmpty()) {
-        daWarning << tr("No data column selected");  // cn: 未选择数据列
-        return;
-    }
-
-    DAPyDataFrame df = data.toDataFrame();
-    if (df.isNone()) {
-        daWarning << tr("The selected data source is empty");  // cn: 选中的数据源为空
-        return;
-    }
-
-    QString plotType = params.value("__plot_type__").toString("histplot");
 
     DAWaitCursorScoped wait;
     Q_UNUSED(wait);
 
     DAStatsPlotCoordinator coordinator;
-    coordinator.execute(plotType, params, fig, chart, data);
+    coordinator.execute(req);
 
     mDock->raiseDockingArea(DAAppDockingArea::DockingAreaChartOperate);
-    mRibbon->updateFigureAboutRibbon(fig);
+    mRibbon->updateFigureAboutRibbon(req.figure);
     if (DAAppChartOperateWidget* chartopt = getChartOperateWidget()) {
-        chartopt->setCurrentFigure(fig);
+        chartopt->setCurrentFigure(req.figure);
     }
     // 让坐标轴显示正常
-    chart->rescaleAxes();
+    req.chart->rescaleAxes();
 }
 
 }  // end DA

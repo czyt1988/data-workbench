@@ -54,6 +54,7 @@ class DAPyWorkFlowOperateWidget;
 class DADataOperateWidget;
 class DAAppChartOperateWidget;
 class DADialogStatsChartGuide;
+class DAStatsPlotRequest;
 class DADataManageWidget;
 class DAChartWidget;
 class DADataOperatePageWidget;
@@ -504,8 +505,8 @@ private Q_SLOTS:
     void onPlotItemCreated(DA::DAFigureWidget* f, DA::DAChartWidget* plot, QwtPlotItem* item);
     // 3D绘图项创建完成，提升绘图 dock 显示新3D绘图
     void onPlot3DItemCreated(DA::DAFigureWidget* f, DA::DAChart3DWidget* plot, Qwt3DPlotItem* item);
-    // 统计绘图引导对话框确认槽：参数与数据源随信号一起传入
-    void onStatsGuideAccepted(const QJsonObject& params, const DA::DAData& data, DA::DAFigureWidget* fig, DA::DAChartWidget* chart);
+    // 统计绘图引导对话框确认槽：类型化请求随信号一起传入，执行编排并提升绘图区
+    void onStatsGuideAccepted(const DA::DAStatsPlotRequest& req);
     //===================================================
     // project
     //===================================================
@@ -594,8 +595,6 @@ private:
     // 选中列（无选中回退 fallbackColumn），映射格式枚举后走共用复制/导出链路
     void onHeaderColumnDataCopyRequested(int fallbackColumn, DA::DADataHeaderView::ColumnDataFormat format);
     void onHeaderColumnDataExportRequested(int fallbackColumn, DA::DADataHeaderView::ColumnDataFormat format);
-    // 执行 Python 统计绘图的公共逻辑
-    void executeStatsPlot(const QJsonObject& params, DA::DAFigureWidget* fig, DA::DAChartWidget* chart, const DAData& data);
     // 确保当前 Figure 和 Chart 存在（不存在则创建）
     bool ensureFigureChart(DA::DAFigureWidget*& fig, DA::DAChartWidget*& chart);
     // 根据widget激活对应的context category

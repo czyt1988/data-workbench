@@ -36,11 +36,10 @@ public:
     /// Re-implemented to forward the data manager to the series-select widgets.
     virtual void setDataManager(DADataManager* dmgr) override;
 
-    /// Collect every UI field into a JSON object suitable for Python.
-    virtual QJsonObject buildPlotParams() const override;
+    /// Collect every UI field into a typed DAStatsBarplotRequest.
+    virtual DAStatsPlotRequest* createPlotRequest() const override;
 
 private Q_SLOTS:
-    void onButtonBoxAccepted();
     /// Toggle barplot/countplot mode based on Y-column selection
     void onYColumnChanged();
     /// Enable/disable CI-related controls
