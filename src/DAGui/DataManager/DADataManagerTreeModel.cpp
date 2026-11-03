@@ -1,4 +1,4 @@
-#include "Table/DataManager/DADataManagerTreeModel.h"
+#include "DataManager/DADataManagerTreeModel.h"
 // Qt
 #include <QHash>
 #include <QDebug>
@@ -6,7 +6,7 @@
 // DAData
 #include "DADataManager.h"
 #include "DAData.h"
-#include "Table/DataManager/DADataManagerTableModel.h"
+#include "DataManager/DADataManagerTableModel.h"
 #include "DACommandsDataManager.h"
 #include "Common/DAMimeDataForData.h"
 #include "Common/DAMimeDataFormats.h"

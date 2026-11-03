@@ -4,7 +4,7 @@
 #include "DAGuiAPI.h"
 #include "DAData.h"
 #include "DADataManager.h"
-#include "Table/DataManager/DADataManagerTreeWidget.h"
+#include "DataManager/DADataManagerTreeWidget.h"
 class QAction;
 class QActionGroup;
 

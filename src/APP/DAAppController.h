@@ -7,7 +7,7 @@
 #include <QScopedPointer>
 #include <memory>
 #include <QJsonObject>
-#include "Table/DataManager/DADataManageWidget.h"
+#include "DataManager/DADataManageWidget.h"
 #include "Workflow/DAPyWorkFlowGraphicsScene.h"
 #include "DAFigureElementSelection.h"
 #include "DAFigureWidget.h"

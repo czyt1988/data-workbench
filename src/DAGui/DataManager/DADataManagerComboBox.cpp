@@ -1,7 +1,7 @@
-﻿#include "Table/DataManager/DADataManagerComboBox.h"
+﻿#include "DataManager/DADataManagerComboBox.h"
 #include <QTreeView>
 #include "DADataManager.h"
-#include "Table/DataManager/DADataManagerTreeModel.h"
+#include "DataManager/DADataManagerTreeModel.h"
 namespace DA
 {
 class DADataManagerComboBox::PrivateData

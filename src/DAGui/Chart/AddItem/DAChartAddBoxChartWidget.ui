@@ -70,7 +70,7 @@
   <customwidget>
    <class>DA::DADataManagerComboBox</class>
    <extends>QComboBox</extends>
-   <header>Table/DataManager/DADataManagerComboBox.h</header>
+   <header>DataManager/DADataManagerComboBox.h</header>
   </customwidget>
   <customwidget>
    <class>DA::DACheckListWidget</class>

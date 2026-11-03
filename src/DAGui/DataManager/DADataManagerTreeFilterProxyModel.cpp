@@ -1,4 +1,4 @@
-#include "Table/DataManager/DADataManagerTreeFilterProxyModel.h"
+#include "DataManager/DADataManagerTreeFilterProxyModel.h"
 namespace DA
 {
 DADataManagerTreeFilterProxyModel::DADataManagerTreeFilterProxyModel(QObject* par) : DAStringFilterProxyModel(par)

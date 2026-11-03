@@ -1,4 +1,4 @@
-﻿#include "Table/DataManager/DADataManagerTreeWidget.h"
+﻿#include "DataManager/DADataManagerTreeWidget.h"
 #include "ui_DADataManagerTreeWidget.h"
 // Qt
 #include <QTimer>
@@ -9,9 +9,9 @@
 // stl
 #include <algorithm>
 // DA
-#include "Table/DataManager/DADataManagerTreeModel.h"
+#include "DataManager/DADataManagerTreeModel.h"
 #include "DADataManager.h"
-#include "Table/DataManager/DADataManagerTreeFilterProxyModel.h"
+#include "DataManager/DADataManagerTreeFilterProxyModel.h"
 #include "pandas/DAPyDataFrame.h"
 namespace DA
 {

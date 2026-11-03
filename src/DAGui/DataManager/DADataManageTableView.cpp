@@ -1,4 +1,4 @@
-﻿#include "Table/DataManager/DADataManageTableView.h"
+﻿#include "DataManager/DADataManageTableView.h"
 #include <QHeaderView>
 #include <QDebug>
 #include "DALogCategory.h"
@@ -7,7 +7,7 @@
 #include <QDragLeaveEvent>
 #include <QDragMoveEvent>
 #include <QDropEvent>
-#include "Table/DataManager/DADataManagerTableModel.h"
+#include "DataManager/DADataManagerTableModel.h"
 #include "DADataManager.h"
 #include "Common/DAMimeDataForData.h"
 //===================================================

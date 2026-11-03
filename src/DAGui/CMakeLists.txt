@@ -32,6 +32,7 @@ set(DA_GUI_DOMAINS
     Workflow
     Agent
     Archive
+    DataManager
     Common
 )
 
@@ -62,7 +63,6 @@ set(DA_GUI_HEADER_DIRS
     Table/Controllers
     Table/Views
     Table/Models
-    Table/DataManager
     Table/Metadata
     Table/Ops
     Table/Chart
@@ -76,6 +76,7 @@ set(DA_GUI_HEADER_DIRS
     Workflow/NodeSetting
     Agent
     Archive
+    DataManager
     Common
     Common/Settings
     Common/MarkdownView

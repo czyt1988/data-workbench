@@ -24,7 +24,7 @@
 #include "Chart/DAChartSettingWidget.h"
 // Data相关
 #include "Table/DADataOperateWidget.h"
-#include "Table/DataManager/DADataManageWidget.h"
+#include "DataManager/DADataManageWidget.h"
 // message相关
 #include "Common/DAMessageLogViewWidget.h"
 #include "DAUndoHistoryWidget.h"

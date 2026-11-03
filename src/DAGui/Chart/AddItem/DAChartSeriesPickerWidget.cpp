@@ -12,7 +12,7 @@
 #include "DockWidget.h"
 // DA
 #include "DADataManager.h"
-#include "Table/DataManager/DADataManageWidget.h"
+#include "DataManager/DADataManageWidget.h"
 #include "Table/DADataOperateWidget.h"
 #include "Table/DADataOperateOfDataFrameWidget.h"
 #include "DALogCategory.h"

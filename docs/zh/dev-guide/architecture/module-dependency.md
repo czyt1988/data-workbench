@@ -380,7 +380,8 @@ graph BT
 职责：整合所有模块的 GUI 组件，提供完整用户界面。
 
 子目录（按领域划分，源文件数 .h/.hpp/.cpp/.ui）：
-- `Table/` (~206)：表格域。`Core/`（页面上下文/选区服务/编辑后效协调器/窗格装配）、`Controllers/`（11 个特性控制器）、`Views/`（主视图/惰性视图/表头/冻结窗格/委托 + 表格模型）、`DataManager/`（数据管理树/表/下拉）、`Metadata/`（元数据束 + 样式/条件格式/校验/批注/计算列/视图状态 Store + 撤销命令）、`Ops/`（数据算子 + DataFrame 命令）、`Chart/`（表内快速绘图）、`Dialogs/`（表格域对话框）
+- `Table/` (~206)：表格域。`Core/`（页面上下文/选区服务/编辑后效协调器/窗格装配）、`Controllers/`（11 个特性控制器）、`Views/`（主视图/惰性视图/表头/冻结窗格/委托 + 表格模型）、`Metadata/`（元数据束 + 样式/条件格式/校验/批注/计算列/视图状态 Store + 撤销命令）、`Ops/`（数据算子 + DataFrame 命令）、`Chart/`（表内快速绘图）、`Dialogs/`（表格域对话框）
+- `DataManager/` (~16)：数据管理面板（独立停靠窗口，服务表格页与图表添加向导）：数据树/表/下拉 + 3 个模型
 - `Chart/` (~218)：图表域。根级操作容器 `DAChartOperateWidget`/`DAChartManageWidget`/`DAChartSettingWidget` + `Setting/`（2D 属性面板）、`Setting3D/`（3D 属性面板）、`AddItem/`（添加图元向导）；统计绘图与图表向导在根级
 - `Workflow/` (~30)：工作流编辑 UI（`DAPyWorkFlowEditWidget/GraphicsView/Scene`、节点列表、操作窗口）+ `NodeSetting/`（通用节点参数面板）
 - `Agent/` (~9)：Agent 会话停靠 UI（WebEngine）

@@ -4,8 +4,8 @@
 #include <QWidget>
 #include <QTreeView>
 #include "DAGuiAPI.h"
-#include "Table/DataManager/DADataManagerTreeModel.h"
-#include "Table/DataManager/DADataManagerTreeFilterProxyModel.h"
+#include "DataManager/DADataManagerTreeModel.h"
+#include "DataManager/DADataManagerTreeFilterProxyModel.h"
 namespace Ui
 {
 class DADataManagerTreeWidget;

@@ -3,7 +3,7 @@
 #include <QMessageBox>
 #include "Chart/AddItem/DAChartAutoincrementSeriesWidget.h"
 #include "DADataManager.h"
-#include "Table/DataManager/DADataManagerTreeModel.h"
+#include "DataManager/DADataManagerTreeModel.h"
 #include "DALogCategory.h"
 #include "Chart/AddItem/DAChartSeriesSelectWidget.h"
 #include "qwt_samples.h"

@@ -1,4 +1,4 @@
-#include "Table/DataManager/DADataManagerTableModel.h"
+#include "DataManager/DADataManagerTableModel.h"
 #include <QIcon>
 
 //===================================================

@@ -92,7 +92,7 @@ DAAgent 是 L4 中的纯 Agent 框架库，暴露 `DAAgentInterface` 契约（�
 
 - **职责**：GUI 整合、用户交互、Model/View 模型
 - **包含模块**：DAGui（405 文件，最大模块）
-- **核心子目录**：按领域划分——`Table/`（表格域：页面入口 + `Core/Controllers/Views/Models/DataManager/Metadata/Ops/Chart/Commands/Dialogs`）、`Chart/`（图表域：操作容器 + `Setting/`、`Setting3D/`、`AddItem/`）、`Workflow/`（工作流编辑 + `NodeSetting/`）、`Agent/`、`Archive/`、`Common/`（通用 UI：`Settings/` 设置与属性面板、`MarkdownView/`、状态栏/日志视图等）
+- **核心子目录**：按领域划分——`Table/`（表格域：页面入口 + `Core/Controllers/Views/Models/Metadata/Ops/Chart/Commands/Dialogs`）、`Chart/`（图表域：操作容器 + `Setting/`、`Setting3D/`、`AddItem/`）、`Workflow/`（工作流编辑 + `NodeSetting/`）、`DataManager/`（数据管理面板，独立停靠窗口）、`Agent/`、`Archive/`、`Common/`（通用 UI：`Settings/` 设置与属性面板、`MarkdownView/`、状态栏/日志视图等）
 - **向下依赖**：所有 L1/L2 模块 + SARibbon/ADS/qwt/DALiteCtk/quazip
 
 DAGui 是项目中最庞大的模块，承担了工作流 UI、图表设置、数据管理 UI 等所有界面整合工作。为避免过度膨胀，内部**按领域分包**（Table/Chart/Workflow/Agent/Archive/Common），领域内再按角色分层；其中 `Table/` 与 `Chart/` 各自另有二级目录，`Workflow/NodeSetting/` 采用三层架构（基类→面板→具体面板 + 单例工厂 + QStackedWidget 调度器）。

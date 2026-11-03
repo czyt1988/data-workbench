@@ -6,7 +6,7 @@
 #include "DACoreInterface.h"
 #include "DAUIInterface.h"
 #include "DADockingAreaInterface.h"
-#include "Table/DataManager/DADataManageWidget.h"
+#include "DataManager/DADataManageWidget.h"
 #include "Table/DADataOperateWidget.h"
 #include "Table/DADataOperateOfDataFrameWidget.h"
 // DAUtils

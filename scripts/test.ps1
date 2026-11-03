@@ -144,6 +144,10 @@ function Get-SuitesForFile {
     if ($p -match '^src/DAGui/Table/') {
         return New-SuiteResult -Kind 'suites' -Suites @('table')
     }
+    # 数据管理面板是独立窗口，同时服务表格页与图表添加向导
+    if ($p -match '^src/DAGui/DataManager/') {
+        return New-SuiteResult -Kind 'suites' -Suites @('table', 'chart')
+    }
     # 其余 DAGui 代码（Workflow/Common/Archive 等）：三个上层套件都可能用到，全部跑（保守兜底）
     if ($p -match '^src/DAGui/') {
         return New-SuiteResult -Kind 'suites' -Suites @('table', 'chart', 'agent')

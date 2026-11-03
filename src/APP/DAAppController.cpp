@@ -50,7 +50,7 @@
 #include "Table/DADataOperateWidget.h"
 #include "Table/DADataOperatePageWidget.h"
 #include "Common/DAAbstractOperateWidget.h"
-#include "Table/DataManager/DADataManageWidget.h"
+#include "DataManager/DADataManageWidget.h"
 #include "DAAppChartOperateWidget.h"
 #include "DAFigureWidget.h"
 #include "DAChartWidget.h"

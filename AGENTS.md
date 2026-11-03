@@ -34,9 +34,10 @@ data-workbench/
 │   ├── DAGraphicsView/ # 图形视图框架 (54 files)
 │   ├── DAFigure/       # 图表/Figure 容器 (103 files)
 │   ├── DAGui/          # GUI Widgets/面板/对话框 (最大模块，按领域分目录)
-│   │   ├── Table/      # 表格域：页面入口 + Core/Controllers/Views/Models/DataManager/Metadata/Ops/Chart/Commands/Dialogs
+│   │   ├── Table/      # 表格域：页面入口 + Core/Controllers/Views/Models/Metadata/Ops/Chart/Commands/Dialogs
 │   │   ├── Chart/      # 图表域：操作容器 + Setting/Setting3D/AddItem
 │   │   ├── Workflow/   # 工作流编辑 + NodeSetting/ 节点参数表单
+│   │   ├── DataManager/ # 数据管理面板（独立停靠窗口，服务表格与图表）
 │   │   ├── Agent/      # AI 会话停靠
 │   │   ├── Archive/    # 工程压缩包/XML 任务
 │   │   └── Common/     # 通用 UI：Settings/ 属性面板、MarkdownView/、状态栏/日志视图等

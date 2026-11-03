@@ -13,7 +13,7 @@
 //  这个头文件需要存在，ui()->mainWindow()获取的窗口需要这个头文件，不要移除
 #include "SARibbonMainWindow.h"
 //
-#include "Table/DataManager/DADataManageWidget.h"
+#include "DataManager/DADataManageWidget.h"
 #include "Table/DADataOperateWidget.h"
 #include "Workflow/DAPyWorkFlowOperateWidget.h"
 #include "Workflow/DAPyWorkFlowGraphicsScene.h"

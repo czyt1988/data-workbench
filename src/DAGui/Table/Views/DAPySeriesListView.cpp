@@ -9,7 +9,7 @@
 // DA
 #include "Common/DAMimeDataForData.h"
 #include "Common/DAMimeDataFormats.h"
-#include "Table/DataManager/DADataManagerTreeModel.h"
+#include "DataManager/DADataManagerTreeModel.h"
 namespace DA
 {
 

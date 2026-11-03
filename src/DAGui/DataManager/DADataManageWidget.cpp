@@ -1,4 +1,4 @@
-﻿#include "Table/DataManager/DADataManageWidget.h"
+﻿#include "DataManager/DADataManageWidget.h"
 #include "ui_DADataManageWidget.h"
 // qt
 #include <QAction>

@@ -535,11 +535,14 @@ src/DAGui/
 │   ├── Views/                             # 表格视图（DADataTableView/DAPyDataFrameTableView/
 │   │                                       # DADataHeaderView/DACacheWindowTableView/冻结窗格/
 │   │                                       # 高亮层/委托/子窗口）+ 5 个表格模型
-│   ├── DataManager/                       # 数据管理树/表/下拉 + 3 个模型
 │   ├── Metadata/                          # 元数据束/注册表 + 各 Store + 表格撤销命令
 │   ├── Ops/                               # 数据算子族 + DACommandsDataFrame
 │   ├── Chart/                             # 表内快速绘图（规划器/采样器/图元/浮窗）
 │   └── Dialogs/                           # 表格域对话框
+│
+├── DataManager/ (~16 文件)                # 数据管理面板（独立停靠窗口，服务表格与图表）
+│   └── DADataManageWidget / DADataManagerTreeWidget / DADataManageTableView /
+│       DADataManagerComboBox + 3 个模型
 │
 ├── Chart/ (~226 文件)                     # 图表域
 │   ├── (根)                               # DAChartOperateWidget / DAChartManageWidget /

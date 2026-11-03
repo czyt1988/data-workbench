@@ -6,7 +6,7 @@
 #include <QSpinBox>
 #include <QWidgetAction>
 #include "DARibbonAreaInterface.h"
-#include "Table/DataManager/DADataManageWidget.h"
+#include "DataManager/DADataManageWidget.h"
 #include "Workflow/DAPyWorkFlowGraphicsScene.h"
 #include "SARibbonColorToolButton.h"
 #include "DAFontEditPannelWidget.h"

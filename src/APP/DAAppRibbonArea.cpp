@@ -62,7 +62,7 @@
 #include "DockAreaWidget.h"
 // command
 // Widget
-#include "Table/DataManager/DADataManageWidget.h"
+#include "DataManager/DADataManageWidget.h"
 #include "DAFigureWidget.h"
 #include "DAChartWidget.h"
 // Dialog
