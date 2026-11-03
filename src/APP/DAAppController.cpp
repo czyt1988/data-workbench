@@ -1821,15 +1821,22 @@ void DAAppController::onDataOperatePageCreated(DADataOperatePageWidget* page)
                         });
                 // 按选中列复制/导出（列头右键「复制选中列为/导出选中列」）：
                 // 列范围由处理器经页面解析（无选中回退右键列），执行链路与数据
-                // 管理树的 dataframe 复制/导出共用（只多一层列子集）
+                // 管理树的 dataframe 复制/导出共用（只多一层列子集）。
+                // 右键菜单是独立窗口会抢走停靠区焦点——处理器经捕获的页面 w 取数，
+                // 不走 getCurrentDataFrameOperateWidget 的焦点检查（触发时焦点
+                // 尚未归还表格页，焦点检查会失败导致复制静默不执行）
                 connect(hv,
                         &DADataHeaderView::columnDataCopyRequested,
                         this,
-                        &DAAppController::onHeaderColumnDataCopyRequested);
+                        [ this, w ](int col, DA::DADataHeaderView::ColumnDataFormat format) {
+                            onHeaderColumnDataCopyRequested(w, col, format);
+                        });
                 connect(hv,
                         &DADataHeaderView::columnDataExportRequested,
                         this,
-                        &DAAppController::onHeaderColumnDataExportRequested);
+                        [ this, w ](int col, DA::DADataHeaderView::ColumnDataFormat format) {
+                            onHeaderColumnDataExportRequested(w, col, format);
+                        });
             }
             // 表体右键菜单（v1 骨架：剪切/复制/粘贴）信号接线：路由到既有槽逻辑
             // （与 onActionCut/Copy/PasteTriggered 的数据页分支一致），不新增执行逻辑
@@ -2675,24 +2682,29 @@ void DAAppController::exportSelectedData(const QString& format)
  * 数据选择口径与 exportSelectedData 一致：优先数据管理树选中，无选中回退当前
  * 操作数据。元数据束按数据查注册表（get：束随数据存在、页面关闭不销毁；无束
  * = 纯数据导出，不带样式）。exporter 有效性由调用方经 isValid() 复核。
- * columns 非空时构造列子集导出器（表头右键「按选中列」入口，列序按传入顺序）。
+ * columns 非空时构造列子集导出器（表头右键「按选中列」入口，列序按传入顺序）；
+ * sourcePage 非空时列子集取数固定用该页面（表头右键菜单触发时停靠区焦点
+ * 尚未归还，不能走焦点检查；空 = 回退当前页，同样不做焦点检查）。
  * @param exporter 出参（构造好的导出器）
  * @param dataOut 非空时回填所选数据（保存对话框默认文件名用）
  * @param columns 列子集（数据源列号；空 = 整表）
+ * @param sourcePage 列子集路径的数据来源页面（空 = 当前页）
  * @return 构造成功返回 true
  */
 bool DAAppController::makeExporterForSelection(std::unique_ptr< DATableExporter >* exporter,
-                                                DAData* dataOut,
-                                                const QList< int >& columns) 
+                                               DAData* dataOut,
+                                               const QList< int >& columns,
+                                               DADataOperateOfDataFrameWidget* sourcePage)
 {
     if (!exporter) {
         return false;
     }
-    // 列子集路径（表头右键入口）：数据来自发送信号的页面（w 固定），
-    // 不走数据管理树选中的口径——两口径混用会导错数据集
+    // 列子集路径（表头右键入口）：数据来自发送信号的页面（sourcePage 固定，
+    // 缺省回退当前页，均不做焦点检查——表头右键菜单是独立窗口，触发时
+    // 停靠区焦点尚未归还表格页），不走数据管理树选中的口径——两口径混用会导错数据集
     DAData d;
     if (!columns.isEmpty()) {
-        DADataOperateOfDataFrameWidget* w = getCurrentDataFrameOperateWidget();
+        DADataOperateOfDataFrameWidget* w = sourcePage ? sourcePage : getCurrentDataFrameOperateWidget(false, false);
         if (!w) {
             daWarning << tr("No open dataframe table");  // cn:当前没有打开的 dataframe 表格
             return false;
@@ -2739,11 +2751,14 @@ bool DAAppController::makeExporterForSelection(std::unique_ptr< DATableExporter 
  * 构建期间进度对话框可取消（块边界生效）。
  * @param fmt 目标形态
  * @param columns 列子集（表头右键「复制选中列为」入口传入；空 = 整表）
+ * @param sourcePage 列子集取数的来源页面（表头右键入口传入；空 = 整表路径不用）
  */
-void DAAppController::copySelectedDataAsTable(DATableExporter::Format fmt, const QList< int >& columns)
+void DAAppController::copySelectedDataAsTable(DATableExporter::Format fmt,
+                                              const QList< int >& columns,
+                                              DADataOperateOfDataFrameWidget* sourcePage)
 {
     std::unique_ptr< DATableExporter > exporter;
-    if (!makeExporterForSelection(&exporter, nullptr, columns)) {
+    if (!makeExporterForSelection(&exporter, nullptr, columns, sourcePage)) {
         return;
     }
     // 大小确认：复制需把整表渲染成字符串驻留内存，超大表先提醒
@@ -2819,14 +2834,16 @@ void DAAppController::copySelectedDataAsTable(DATableExporter::Format fmt, const
  * @param fmt Markdown 或 HTML
  * @param path 已选定的目标路径（空 = 弹保存对话框）
  * @param columns 列子集（表头右键「导出选中列」入口传入；空 = 整表）
+ * @param sourcePage 列子集取数的来源页面（表头右键入口传入；空 = 整表路径不用）
  */
 void DAAppController::exportSelectedDataAsDocument(DATableExporter::Format fmt,
                                                    const QString& path,
-                                                   const QList< int >& columns)
+                                                   const QList< int >& columns,
+                                                   DADataOperateOfDataFrameWidget* sourcePage)
 {
     std::unique_ptr< DATableExporter > exporter;
     DAData d;
-    if (!makeExporterForSelection(&exporter, &d, columns)) {
+    if (!makeExporterForSelection(&exporter, &d, columns, sourcePage)) {
         return;
     }
     QString targetPath = path;
@@ -2900,14 +2917,19 @@ void DAAppController::exportSelectedDataAsDocument(DATableExporter::Format fmt,
 /**
  * @brief 表头右键「复制选中列为」信号处理器
  *
- * 从当前 dataframe 页面解析选中列（无选中回退右键所在列），格式枚举映射后走
- * 与数据管理树「复制为」共用的 copySelectedDataAsTable（列子集路径）。
+ * page 固定为发送信号表头所在的页面（右键菜单是独立窗口，触发时停靠区
+ * 焦点尚未归还表格页，不能经焦点检查取当前页）。从该页面解析选中列
+ * （无选中回退右键所在列），格式枚举映射后走与数据管理树「复制为」
+ * 共用的 copySelectedDataAsTable（列子集路径）。
+ * @param page 发送信号的表头所在页面
  * @param fallbackColumn 右键所在列（无选中列时的回退）
  * @param format 表头声明的目标形态（映射 DATableExporter::Format）
  */
-void DAAppController::onHeaderColumnDataCopyRequested(int fallbackColumn, DADataHeaderView::ColumnDataFormat format)
+void DAAppController::onHeaderColumnDataCopyRequested(DADataOperateOfDataFrameWidget* page,
+                                                      int fallbackColumn,
+                                                      DADataHeaderView::ColumnDataFormat format)
 {
-    DADataOperateOfDataFrameWidget* w = getCurrentDataFrameOperateWidget();
+    DADataOperateOfDataFrameWidget* w = page;
     if (!w) {
         daWarning << tr("No open dataframe table");  // cn:当前没有打开的 dataframe 表格
         return;
@@ -2928,18 +2950,21 @@ void DAAppController::onHeaderColumnDataCopyRequested(int fallbackColumn, DAData
     default:
         break;
     }
-    copySelectedDataAsTable(fmt, columns);
+    copySelectedDataAsTable(fmt, columns, w);
 }
 
 /**
  * @brief 表头右键「导出选中列」信号处理器（列子集版文档导出）
  *
- * 列解析与格式映射同 onHeaderColumnDataCopyRequested；执行走与数据管理树
- * 「导出 Markdown/HTML 文档」共用的 exportSelectedDataAsDocument。
+ * 列解析与格式映射同 onHeaderColumnDataCopyRequested（page 固定为发送
+ * 信号的页面，同样不做焦点检查）；执行走与数据管理树「导出 Markdown/HTML
+ * 文档」共用的 exportSelectedDataAsDocument。
  */
-void DAAppController::onHeaderColumnDataExportRequested(int fallbackColumn, DADataHeaderView::ColumnDataFormat format)
+void DAAppController::onHeaderColumnDataExportRequested(DADataOperateOfDataFrameWidget* page,
+                                                        int fallbackColumn,
+                                                        DADataHeaderView::ColumnDataFormat format)
 {
-    DADataOperateOfDataFrameWidget* w = getCurrentDataFrameOperateWidget();
+    DADataOperateOfDataFrameWidget* w = page;
     if (!w) {
         daWarning << tr("No open dataframe table");  // cn:当前没有打开的 dataframe 表格
         return;
@@ -2957,7 +2982,7 @@ void DAAppController::onHeaderColumnDataExportRequested(int fallbackColumn, DADa
     default:
         break;
     }
-    exportSelectedDataAsDocument(fmt, QString(), columns);
+    exportSelectedDataAsDocument(fmt, QString(), columns, w);
 }
 
 /**

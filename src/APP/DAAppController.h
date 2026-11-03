@@ -577,24 +577,36 @@ private:
     // 把选中的 dataframe 数据集复制到剪贴板（数据管理树右键「复制为」与表头右键
     // 「复制选中列为」共用）：fmt 决定目标形态（Tab 文本/Markdown/HTML），经
     // DATableExporter 构建；超大表先确认（isLargeForCopy 阈值），构建期间进度
-    // 对话框可取消。columns 非空时只复制这些列（表头右键入口），空 = 整表
-    void copySelectedDataAsTable(DA::DATableExporter::Format fmt, const QList< int >& columns = QList< int >());
+    // 对话框可取消。columns 非空时只复制这些列（表头右键入口），空 = 整表；
+    // sourcePage 非空时列子集取数固定用该页面（表头右键菜单是独立窗口，
+    // 触发时停靠区焦点尚未归还，不能走焦点检查取当前页）
+    void copySelectedDataAsTable(DA::DATableExporter::Format fmt,
+                                 const QList< int >& columns = QList< int >(),
+                                 DADataOperateOfDataFrameWidget* sourcePage = nullptr);
     // 导出选中数据集为 Markdown/HTML（右键导出子菜单、主导出按钮与表头右键
     // 「导出选中列」共用）：取数/渲染与复制共用 DATableExporter，增量写入文件；
-    // path 非空时跳过保存对话框（主导出按钮已选好路径）。columns 语义同上
+    // path 非空时跳过保存对话框（主导出按钮已选好路径）。columns/sourcePage 语义同上
     void exportSelectedDataAsDocument(DA::DATableExporter::Format fmt,
                                       const QString& path = QString(),
-                                      const QList< int >& columns = QList< int >());
+                                      const QList< int >& columns = QList< int >(),
+                                      DADataOperateOfDataFrameWidget* sourcePage = nullptr);
     // 取要操作的数据集（优先数据管理树选中，回退当前操作数据）与对应表元数据束，
     // 成功构造 DATableExporter 返回 true（exporter/dataOut 为出参；束可为空=无样式）；
-    // columns 非空时构造列子集导出器（表头右键「按选中列」入口）
+    // columns 非空时构造列子集导出器（表头右键「按选中列」入口）；
+    // sourcePage 非空时列子集取数固定用该页面（空 = 焦点检查取当前页）
     bool makeExporterForSelection(std::unique_ptr< DA::DATableExporter >* exporter,
                                   DA::DAData* dataOut = nullptr,
-                                  const QList< int >& columns = QList< int >()) ;
-    // 表头右键「复制选中列为/导出选中列」信号处理器：从发送者表头所在页面解析
-    // 选中列（无选中回退 fallbackColumn），映射格式枚举后走共用复制/导出链路
-    void onHeaderColumnDataCopyRequested(int fallbackColumn, DA::DADataHeaderView::ColumnDataFormat format);
-    void onHeaderColumnDataExportRequested(int fallbackColumn, DA::DADataHeaderView::ColumnDataFormat format);
+                                  const QList< int >& columns = QList< int >(),
+                                  DADataOperateOfDataFrameWidget* sourcePage = nullptr) ;
+    // 表头右键「复制选中列为/导出选中列」信号处理器：page 固定为发送信号表头
+    // 所在页面（菜单窗口抢焦点，不能经焦点检查取当前页），从页面解析选中列
+    // （无选中回退 fallbackColumn），映射格式枚举后走共用复制/导出链路
+    void onHeaderColumnDataCopyRequested(DADataOperateOfDataFrameWidget* page,
+                                          int fallbackColumn,
+                                          DA::DADataHeaderView::ColumnDataFormat format);
+    void onHeaderColumnDataExportRequested(DADataOperateOfDataFrameWidget* page,
+                                           int fallbackColumn,
+                                           DA::DADataHeaderView::ColumnDataFormat format);
     // 确保当前 Figure 和 Chart 存在（不存在则创建）
     bool ensureFigureChart(DA::DAFigureWidget*& fig, DA::DAChartWidget*& chart);
     // 根据widget激活对应的context category
