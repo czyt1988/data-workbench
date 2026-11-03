@@ -1,0 +1,385 @@
+﻿#include "Chart/Setting/DAChartAxisSettingPanel.h"
+#include "Common/Settings/DAPropertyPanelContainerWidget.h"
+#include "DAChartUtil.h"
+#include "DAChartWidget.h"
+#include "qwt_plot.h"
+#include "qwt_scale_widget.h"
+#include "qwt_scale_draw.h"
+#include "qwt_date_scale_draw.h"
+#include <QSignalBlocker>
+#include <QRadioButton>
+#include <QButtonGroup>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include "DASignalBlockers.hpp"
+
+namespace DA
+{
+
+/**
+ * @brief 构造函数
+ * @param axisId 坐标轴ID
+ * @param parent 父控件
+ */
+DAChartAxisSettingPanel::DAChartAxisSettingPanel(QwtAxis::Position axisId, QWidget* parent)
+    : QWidget(parent), mPanel(nullptr), mPlot(nullptr), mAxisId(axisId), mScaleStyleButtonGroup(nullptr)
+{
+    // 创建DAPropertyPanelWidget并设为自身主布局
+    mPanel              = new DAPropertyPanelContainerWidget(this);
+    QVBoxLayout* layout = new QVBoxLayout(this);
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->addWidget(mPanel);
+    setLayout(layout);
+
+    // 连接propertyValueChanged信号
+    connect(mPanel, &DAPropertyPanelContainerWidget::propertyValueChanged, this, &DAChartAxisSettingPanel::onPanelPropertyValueChanged);
+    connect(this, &DAChartAxisSettingPanel::propertyValueChanged, this, &DAChartAxisSettingPanel::onPropertyValueChanged);
+
+    buildPropertyPanel();
+}
+
+/**
+ * @brief 析构函数
+ */
+DAChartAxisSettingPanel::~DAChartAxisSettingPanel()
+{
+}
+
+/**
+ * @brief 获取通用属性面板指针
+ * @return DAPropertyPanelWidget指针
+ */
+DAPropertyPanelContainerWidget* DAChartAxisSettingPanel::propertyPanel() const
+{
+    return mPanel;
+}
+
+/**
+ * @brief 设置目标QwtPlot
+ * @param plot 目标图表
+ */
+void DAChartAxisSettingPanel::setTarget(QwtPlot* plot)
+{
+    if (mPlot == plot) {
+        return;
+    }
+    mPlot = plot;
+    updateUI();
+}
+
+/**
+ * @brief 获取目标QwtPlot
+ * @return QwtPlot指针
+ */
+QwtPlot* DAChartAxisSettingPanel::target() const
+{
+    return mPlot.data();
+}
+
+/**
+ * @brief 获取当前坐标轴ID
+ * @return 坐标轴位置
+ */
+QwtAxis::Position DAChartAxisSettingPanel::axisId() const
+{
+    return mAxisId;
+}
+
+/**
+ * @brief 更新界面显示
+ *
+ * 从QwtPlot和QwtScaleWidget读取坐标轴状态写入面板。
+ */
+void DAChartAxisSettingPanel::updateUI()
+{
+    DASignalBlockers block(mPanel);
+
+    if (!mPlot) {
+        mPanel->setBoolValue(PID_EnableAxis, false);
+        mPanel->setStringValue(PID_LabelText, QString());
+        mPanel->setFontValue(PID_LabelFont, QFont());
+        mPanel->setColorValue(PID_LabelFontColor, Qt::black);
+        mPanel->setDoubleValue(PID_MinScale, 0.0);
+        mPanel->setDoubleValue(PID_MaxScale, 0.0);
+        mPanel->setIntValue(PID_Margin, 0);
+        mPanel->setDoubleValue(PID_LabelRotation, 0.0);
+        mPanel->setBoolValue(PID_TicksInside, false);
+        return;
+    }
+
+    QwtScaleWidget* scaleWidget = mPlot->axisWidget(mAxisId);
+
+    mPanel->setBoolValue(PID_EnableAxis, mPlot->axisEnabled(mAxisId));
+    mPanel->setStringValue(PID_LabelText, mPlot->axisTitle(mAxisId).text());
+    mPanel->setFontValue(PID_LabelFont, mPlot->axisFont(mAxisId));
+
+    if (scaleWidget) {
+        mPanel->setColorValue(PID_LabelFontColor, scaleWidget->textColor());
+    } else {
+        mPanel->setColorValue(PID_LabelFontColor, Qt::black);
+    }
+
+    // 刻度范围
+    QwtInterval inv = mPlot->axisInterval(mAxisId);
+    mPanel->setDoubleValue(PID_MinScale, inv.minValue());
+    mPanel->setDoubleValue(PID_MaxScale, inv.maxValue());
+
+    if (scaleWidget) {
+        // 边距
+        mPanel->setIntValue(PID_Margin, scaleWidget->margin());
+
+        // 对齐和旋转
+        QwtScaleDraw* sd = scaleWidget->scaleDraw();
+        if (sd) {
+            mPanel->setDoubleValue(PID_LabelRotation, sd->labelRotation());
+        }
+    }
+
+    // 刻度样式
+    bool isDateTime = false;
+    if (scaleWidget && scaleWidget->scaleDraw()) {
+        isDateTime = (dynamic_cast< QwtDateScaleDraw* >(scaleWidget->scaleDraw()) != nullptr);
+    }
+    setScaleStyleValue(isDateTime ? DateTimeScale : NormalScale);
+
+    // 刻度线朝内
+    mPanel->setBoolValue(PID_TicksInside, mPlot->axisTickDirection(mAxisId) == QwtPlot::TickInside);
+}
+
+/**
+ * @brief 触发重绘
+ */
+void DAChartAxisSettingPanel::replot()
+{
+    if (mPlot) {
+        mPlot->replot();
+    }
+}
+
+/**
+ * @brief 设置刻度样式值
+ * @param style 刻度样式
+ */
+void DAChartAxisSettingPanel::setScaleStyleValue(int style)
+{
+    if (!mScaleStyleButtonGroup) {
+        return;
+    }
+    bool wasBlocked = mScaleStyleButtonGroup->blockSignals(true);
+    auto buttons    = mScaleStyleButtonGroup->buttons();
+    for (auto btn : std::as_const(buttons)) {
+        int btnId = mScaleStyleButtonGroup->id(btn);
+        if (btnId == style) {
+            btn->setChecked(true);
+            break;
+        }
+    }
+    mScaleStyleButtonGroup->blockSignals(wasBlocked);
+}
+
+/**
+ * @brief 构建属性面板
+ *
+ * 添加以下属性：
+ * - 启用组: 坐标轴启用开关
+ * - 标签组: 标签文本、字体、颜色、对齐、旋转
+ * - 刻度组: 边距、最小刻度、最大刻度、刻度样式
+ */
+void DAChartAxisSettingPanel::buildPropertyPanel()
+{
+    auto panel = propertyPanel();
+
+    panel->addCollapsibleGroup(tr("Enable")  // cn:启用
+    );
+    panel->addBoolProperty(PID_EnableAxis, tr("Enable Axis")  // cn:启用坐标轴
+    );
+    panel->endGroup();
+
+    panel->addCollapsibleGroup(tr("Label")  // cn:标签
+    );
+    panel->addStringProperty(PID_LabelText, tr("Label Text")  // cn:标签文本
+    );
+    panel->addFontProperty(PID_LabelFont, tr("Label Font")  // cn:标签字体
+    );
+    panel->addColorProperty(PID_LabelFontColor, tr("Label Font Color")  // cn:标签字体颜色
+    );
+    panel->linkFontColorProperty(PID_LabelFont, PID_LabelFontColor);
+    panel->addAlignmentProperty(PID_LabelAlignment, tr("Label Alignment")  // cn:标签对齐
+    );
+    panel->addDoubleProperty(PID_LabelRotation, tr("Label Rotation")  // cn:标签旋转
+                             ,
+                             0.0, -360.0, 360.0, 1);
+    panel->endGroup();
+
+    panel->addCollapsibleGroup(tr("Scale")  // cn:刻度
+    );
+    panel->addIntProperty(PID_Margin, tr("Margin")  // cn:边距
+                          ,
+                          0, -20, 100);
+    panel->addDoubleProperty(PID_MinScale, tr("Min Scale")  // cn:最小刻度
+                             ,
+                             0.0, -1e15, 1e15, 5);
+    panel->addDoubleProperty(PID_MaxScale, tr("Max Scale")  // cn:最大刻度
+                             ,
+                             0.0, -1e15, 1e15, 5);
+    panel->addBoolProperty(PID_TicksInside, tr("Ticks Inside")  // cn:刻度线朝内
+    );
+    panel->endGroup();
+
+    // 刻度样式: Normal/DateTime 两个RadioButton
+    QWidget* scaleStyleContainer = new QWidget(this);
+    QHBoxLayout* hLayout         = new QHBoxLayout(scaleStyleContainer);
+    hLayout->setContentsMargins(0, 0, 0, 0);
+    hLayout->setSpacing(8);
+
+    QRadioButton* rbNormal   = new QRadioButton(tr("Normal")  // cn:普通
+                                                , scaleStyleContainer);
+    QRadioButton* rbDateTime = new QRadioButton(tr("DateTime")  // cn:日期时间
+                                                , scaleStyleContainer);
+    rbNormal->setChecked(true);
+
+    mScaleStyleButtonGroup = new QButtonGroup(scaleStyleContainer);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    mScaleStyleButtonGroup->addButton(rbNormal, NormalScale);
+    mScaleStyleButtonGroup->addButton(rbDateTime, DateTimeScale);
+#else
+    mScaleStyleButtonGroup->setId(rbNormal, NormalScale);
+    mScaleStyleButtonGroup->setId(rbDateTime, DateTimeScale);
+    mScaleStyleButtonGroup->addButton(rbNormal);
+    mScaleStyleButtonGroup->addButton(rbDateTime);
+#endif
+
+    hLayout->addWidget(rbNormal);
+    hLayout->addWidget(rbDateTime);
+    hLayout->addStretch();
+
+#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
+    connect(mScaleStyleButtonGroup, &QButtonGroup::idClicked, this, [ this ](int) {
+        onPanelPropertyValueChanged(PID_ScaleStyle);
+    });
+#else
+    connect(mScaleStyleButtonGroup, QOverload< int >::of(&QButtonGroup::buttonClicked), this, [ this ](int) {
+        onPanelPropertyValueChanged(PID_ScaleStyle);
+    });
+#endif
+
+    panel->addProperty(PID_ScaleStyle, tr("Scale Style")  // cn:刻度样式
+                       , scaleStyleContainer);
+}
+
+/**
+ * @brief 转发属性值变化信号
+ * @param propertyId 属性ID
+ */
+void DAChartAxisSettingPanel::onPanelPropertyValueChanged(int propertyId)
+{
+    emit propertyValueChanged(propertyId);
+}
+
+/**
+ * @brief 属性值变化处理
+ * @param propertyId 属性ID
+ */
+void DAChartAxisSettingPanel::onPropertyValueChanged(int propertyId)
+{
+    if (!mPlot) {
+        return;
+    }
+
+    auto panel = propertyPanel();
+
+    switch (propertyId) {
+    case PID_EnableAxis: {
+        bool enabled = panel->getBoolValue(PID_EnableAxis);
+        // 优先走 DAChartWidget::setAxisVisible（发 AxisVisibilityChanged 通知），非 DAChartWidget 的 plot 回退原生接口
+        if (DAChartWidget* dacw = qobject_cast< DAChartWidget* >(mPlot)) {
+            dacw->setAxisVisible(mAxisId, enabled);
+        } else {
+            mPlot->enableAxis(mAxisId, enabled);
+        }
+        // 通知外部刷新树形控件的可见性列
+        Q_EMIT axisVisibilityChanged(mAxisId, enabled);
+        break;
+    }
+    case PID_LabelText: {
+        QString text  = panel->getStringValue(PID_LabelText);
+        QwtText title = mPlot->axisTitle(mAxisId);
+        title.setText(text);
+        mPlot->setAxisTitle(mAxisId, title);
+        break;
+    }
+    case PID_LabelFont: {
+        QFont font = panel->getFontValue(PID_LabelFont);
+        mPlot->setAxisFont(mAxisId, font);
+        break;
+    }
+    case PID_LabelFontColor: {
+        QColor color                = panel->getColorValue(PID_LabelFontColor);
+        QwtScaleWidget* scaleWidget = mPlot->axisWidget(mAxisId);
+        if (scaleWidget) {
+            scaleWidget->setTextColor(color);
+        }
+        break;
+    }
+    case PID_LabelAlignment: {
+        Qt::Alignment alignment     = panel->getAlignmentValue(PID_LabelAlignment);
+        QwtScaleWidget* scaleWidget = mPlot->axisWidget(mAxisId);
+        if (scaleWidget && scaleWidget->scaleDraw()) {
+            scaleWidget->scaleDraw()->setLabelAlignment(alignment);
+        }
+        break;
+    }
+    case PID_LabelRotation: {
+        double rotation             = panel->getDoubleValue(PID_LabelRotation);
+        QwtScaleWidget* scaleWidget = mPlot->axisWidget(mAxisId);
+        if (scaleWidget && scaleWidget->scaleDraw()) {
+            scaleWidget->scaleDraw()->setLabelRotation(rotation);
+        }
+        break;
+    }
+    case PID_Margin: {
+        int margin                  = panel->getIntValue(PID_Margin);
+        QwtScaleWidget* scaleWidget = mPlot->axisWidget(mAxisId);
+        if (scaleWidget) {
+            scaleWidget->setMargin(margin);
+        }
+        break;
+    }
+    case PID_MinScale: {
+        QwtInterval inv = mPlot->axisInterval(mAxisId);
+        double min      = panel->getDoubleValue(PID_MinScale);
+        mPlot->setAxisScale(mAxisId, min, inv.maxValue());
+        break;
+    }
+    case PID_MaxScale: {
+        QwtInterval inv = mPlot->axisInterval(mAxisId);
+        double max      = panel->getDoubleValue(PID_MaxScale);
+        mPlot->setAxisScale(mAxisId, inv.minValue(), max);
+        break;
+    }
+    case PID_ScaleStyle: {
+        if (mScaleStyleButtonGroup) {
+            int style = mScaleStyleButtonGroup->checkedId();
+            if (style == DateTimeScale) {
+                // DateTime刻度 - 使用默认格式（可扩展）
+                DAChartUtil::setAxisDateTimeScale(mPlot, mAxisId, "yyyy-MM-dd");
+            } else {
+                // 设置普通刻度
+                DAChartUtil::setAxisNormalScale(mPlot, mAxisId);
+            }
+        }
+        break;
+    }
+    case PID_TicksInside: {
+        bool inside = panel->getBoolValue(PID_TicksInside);
+        mPlot->setAxisTickDirection(mAxisId, inside ? QwtPlot::TickInside : QwtPlot::TickOutside);
+        break;
+    }
+    default:
+        break;
+    }
+
+    replot();
+}
+
+}  // end namespace DA

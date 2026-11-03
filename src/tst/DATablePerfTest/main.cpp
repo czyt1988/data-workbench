@@ -30,8 +30,8 @@
 // DAPyScripts 算子封装（002：da_sort 多键置换 / da_reorder_rows / 查找替换）
 #include "DAPyScripts.h"
 #include "DAPyScriptsDataFrame.h"
-#include "Commands/DACommandsDataFrame.h"
-#include "Dialog/DADialogFindReplace.h"
+#include "Table/Ops/DACommandsDataFrame.h"
+#include "Table/Dialogs/DADialogFindReplace.h"
 #include <QElapsedTimer>
 #include <QSet>
 #include <QDate>
@@ -55,36 +55,36 @@
 #include "DADataFactory.h"
 
 // 表格元数据基础设施（001 计划 §4.1）
-#include "DATableHighlightOverlay.h"
-#include "DATableKeyRemap.h"
-#include "DATableMetadata.h"
-#include "DATableMetadataRegistry.h"
-#include "DATableStyleManager.h"
-#include "DATableViewStateStore.h"
-#include "DATablePaneContainer.h"
-#include "DATableStatsWidget.h"
-#include "Commands/DACommandsTableColumnView.h"
-#include "Dialog/DADialogTableColumnView.h"
-#include "Dialog/DADialogGotoCell.h"
+#include "Table/Views/DATableHighlightOverlay.h"
+#include "Table/Metadata/DATableKeyRemap.h"
+#include "Table/Metadata/DATableMetadata.h"
+#include "Table/Metadata/DATableMetadataRegistry.h"
+#include "Table/Metadata/DATableStyleManager.h"
+#include "Table/Metadata/DATableViewStateStore.h"
+#include "Table/Views/DATablePaneContainer.h"
+#include "Table/Views/DATableStatsWidget.h"
+#include "Table/Commands/DACommandsTableColumnView.h"
+#include "Table/Dialogs/DADialogTableColumnView.h"
+#include "Table/Dialogs/DADialogGotoCell.h"
 #include <QWindow>
 #include <QScrollBar>
 #include <QSpinBox>
-#include "DADataHeaderView.h"
-#include "DADataTableView.h"
-#include "DADataOperateOfDataFrameWidget.h"
+#include "Table/Views/DADataHeaderView.h"
+#include "Table/Views/DADataTableView.h"
+#include "Table/DADataOperateOfDataFrameWidget.h"
 #include <QSignalSpy>
 #include <QMenu>
 #include <QHeaderView>
 #include <QTest>
 
-#include "Models/DADataTableModel.h"
+#include "Table/Models/DADataTableModel.h"
 #include <QUndoStack>
 
 // 条件格式（003 计划 §4.1）
-#include "DATableConditionalFormatRule.h"
-#include "DATableConditionalFormatStore.h"
-#include "Commands/DACommandsConditionalFormat.h"
-#include "Dialog/DADialogConditionalFormat.h"
+#include "Table/Metadata/DATableConditionalFormatRule.h"
+#include "Table/Metadata/DATableConditionalFormatStore.h"
+#include "Table/Commands/DACommandsConditionalFormat.h"
+#include "Table/Dialogs/DADialogConditionalFormat.h"
 #include <QDomDocument>
 #include <QStandardItemModel>
 #include <QElapsedTimer>
@@ -93,8 +93,8 @@
 
 // 计算列（004 计划 §3，T1.23）
 #include "DAComputedColumn.h"
-#include "DATableComputedColumnStore.h"
-#include "Dialog/DADialogComputedColumn.h"
+#include "Table/Metadata/DATableComputedColumnStore.h"
+#include "Table/Dialogs/DADialogComputedColumn.h"
 #include <QDialogButtonBox>
 #include <QMessageBox>
 #include <QListWidget>
@@ -102,9 +102,9 @@
 #include <QTableWidget>
 
 // 分列/合并列（004 计划 §4，T1.9）
-#include "Dialog/DADialogSplitColumn.h"
-#include "Dialog/DADialogMergeColumns.h"
-#include "Dialog/DADialogGroupBy.h"
+#include "Table/Dialogs/DADialogSplitColumn.h"
+#include "Table/Dialogs/DADialogMergeColumns.h"
+#include "Table/Dialogs/DADialogGroupBy.h"
 #include "DADataManager.h"
 #include <QRadioButton>
 #include <QSpinBox>
@@ -112,28 +112,28 @@
 #include <QItemSelection>
 
 // 转置/melt 形状变换（004 计划 §6，T1.27）
-#include "Dialog/DADialogReshape.h"
+#include "Table/Dialogs/DADialogReshape.h"
 #include "DADataUndoCommand.h"
 #include <QCheckBox>
 
 // 填充（005 计划 §3，T1.24）
-#include "Dialog/DADialogFillSeries.h"
+#include "Table/Dialogs/DADialogFillSeries.h"
 
 // 数据校验（005 计划 §4，T1.25）
 #include "DATableValidationRule.h"
-#include "DATableValidationStore.h"
-#include "Commands/DACommandsTableValidation.h"
-#include "Dialog/DADialogValidationRules.h"
-#include "Dialog/DADialogValidationReport.h"
-#include "DATableStyleItemDelegate.h"
+#include "Table/Metadata/DATableValidationStore.h"
+#include "Table/Commands/DACommandsTableValidation.h"
+#include "Table/Dialogs/DADialogValidationRules.h"
+#include "Table/Dialogs/DADialogValidationReport.h"
+#include "Table/Views/DATableStyleItemDelegate.h"
 #include <QTreeWidget>
 #include <QPlainTextEdit>
 #include <DATextEditWidget.h>
 
 // 单元格批注（005 计划 §5，T1.26）
-#include "DATableNoteStore.h"
-#include "DATableNoteEditDialog.h"
-#include "Commands/DACommandsTableStyle.h"
+#include "Table/Metadata/DATableNoteStore.h"
+#include "Table/Dialogs/DATableNoteEditDialog.h"
+#include "Table/Commands/DACommandsTableStyle.h"
 #include <QToolTip>
 #include <QHelpEvent>
 #include <QFile>

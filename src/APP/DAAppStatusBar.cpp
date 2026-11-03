@@ -1,12 +1,12 @@
 #include "DAAppStatusBar.h"
-#include "DAStatusBarWidget.h"
+#include "Common/DAStatusBarWidget.h"
 #include "DAAppUI.h"
 #include "AppMainWindow.h"
 #include "DAAppDockingArea.h"
 #include "DAAppActions.h"
-#include "DATableStatsWidget.h"
-#include "DADataOperateWidget.h"
-#include "DADataOperateOfDataFrameWidget.h"
+#include "Table/Views/DATableStatsWidget.h"
+#include "Table/DADataOperateWidget.h"
+#include "Table/DADataOperateOfDataFrameWidget.h"
 #include <QStatusBar>
 #include <QToolButton>
 namespace DA

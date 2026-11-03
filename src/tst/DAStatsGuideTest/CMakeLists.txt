@@ -23,7 +23,7 @@ da_add_test(
         ${Python3_INCLUDE_DIRS}
         ${CMAKE_SOURCE_DIR}/src/DAData
         ${CMAKE_SOURCE_DIR}/src/DAGui
-        ${CMAKE_SOURCE_DIR}/src/DAGui/ChartAddItem
+        ${CMAKE_SOURCE_DIR}/src/DAGui/Chart/AddItem
         ${CMAKE_SOURCE_DIR}/src/DAPyBindQt
         ${CMAKE_SOURCE_DIR}/src/DAPyBindQt/pandas
         ${CMAKE_SOURCE_DIR}/src/DAPyScripts

@@ -5,10 +5,10 @@
 #include "DAPyModule.h"
 #include "DAUIInterface.h"
 #include "DADockingAreaInterface.h"
-#include "DADataOperateWidget.h"
+#include "Table/DADataOperateWidget.h"
 #include "DADataUndoCommand.h"
 #include "DACommandInterface.h"
-#include "DADataOperateOfDataFrameWidget.h"
+#include "Table/DADataOperateOfDataFrameWidget.h"
 
 /**
  * @brief 构造函数

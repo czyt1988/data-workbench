@@ -16,8 +16,8 @@
 #include "DAPyWorkFlowManager.h"
 #include "DAUIInterface.h"
 #include "DADockingAreaInterface.h"
-#include "DAPyWorkFlowOperateWidget.h"
-#include "DAPyWorkFlowEditWidget.h"
+#include "Workflow/DAPyWorkFlowOperateWidget.h"
+#include "Workflow/DAPyWorkFlowEditWidget.h"
 #include "DAAgentInterface.h"
 
 //===================================================

@@ -11,18 +11,18 @@
 #include <pybind11/eval.h>
 
 #include "DAData.h"
-#include "Models/DADataTableModel.h"
-#include "DADataTableView.h"
-#include "DATablePaneContainer.h"
-#include "DATableMetadataRegistry.h"
-#include "DADataOperateOfDataFrameWidget.h"
+#include "Table/Models/DADataTableModel.h"
+#include "Table/Views/DADataTableView.h"
+#include "Table/Views/DATablePaneContainer.h"
+#include "Table/Metadata/DATableMetadataRegistry.h"
+#include "Table/DADataOperateOfDataFrameWidget.h"
 #include <QUndoStack>
 #include <QItemSelection>
 #include <QItemSelectionModel>
 
 // 表格页核心（008 期1）
-#include "TableCore/DATablePageContext.h"
-#include "TableCore/DATableSelectionService.h"
+#include "Table/Core/DATablePageContext.h"
+#include "Table/Core/DATableSelectionService.h"
 
 #ifdef Q_OS_WIN
 #include <windows.h>

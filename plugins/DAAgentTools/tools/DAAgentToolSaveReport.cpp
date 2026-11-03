@@ -7,7 +7,7 @@
 #include <QUrl>
 #include "DAUIInterface.h"
 #include "DADockingAreaInterface.h"
-#include "DAMarkdownExporter.h"
+#include "Common/MarkdownView/DAMarkdownExporter.h"
 
 namespace DA
 {

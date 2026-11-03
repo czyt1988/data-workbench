@@ -1,6 +1,6 @@
 // DAAgentChatWebPage.cpp
 #include "DAAgentChatWebPage.h"
-#include "DAWebExternalOpenPage.h"
+#include "Common/DAWebExternalOpenPage.h"
 #include <QUrl>
 #include <QDesktopServices>
 

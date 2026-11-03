@@ -5,7 +5,7 @@
  * 编辑器控件的水平拉伸行为是否正确。
  */
 
-#include "DAPropertyPanelWidget.h"
+#include "Common/Settings/DAPropertyPanelWidget.h"
 #include <QApplication>
 #include <QMainWindow>
 #include <QScrollArea>

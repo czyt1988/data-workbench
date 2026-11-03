@@ -10,7 +10,7 @@
 #include "DADockingAreaInterface.h"
 #include "Chart/DAChartOperateWidget.h"
 #include "DAPyWorkFlowScene.h"
-#include "DAPyWorkFlowGraphicsScene.h"
+#include "Workflow/DAPyWorkFlowGraphicsScene.h"
 #include "DAData.h"
 #include "DADataManager.h"
 #include "DAPythonSignalHandler.h"

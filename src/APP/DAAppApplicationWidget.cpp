@@ -2,7 +2,7 @@
 #include "DAAppActions.h"
 #include "DAAppCore.h"
 #include "DAAppProject.h"
-#include "DARecentFilesManager.h"
+#include "Common/DARecentFilesManager.h"
 #include "SARibbonMainWindow.h"
 #include <QAction>
 #include <QDateTime>

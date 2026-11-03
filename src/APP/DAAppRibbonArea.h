@@ -6,8 +6,8 @@
 #include <QSpinBox>
 #include <QWidgetAction>
 #include "DARibbonAreaInterface.h"
-#include "DADataManageWidget.h"
-#include "DAPyWorkFlowGraphicsScene.h"
+#include "Table/DataManager/DADataManageWidget.h"
+#include "Workflow/DAPyWorkFlowGraphicsScene.h"
 #include "SARibbonColorToolButton.h"
 #include "DAFontEditPannelWidget.h"
 // Py

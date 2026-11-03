@@ -1,6 +1,6 @@
 #ifndef DASETTINGPAGESHORTCUTS_H
 #define DASETTINGPAGESHORTCUTS_H
-#include "DAAbstractSettingPage.h"
+#include "Common/Settings/DAAbstractSettingPage.h"
 #include <QKeySequence>
 #include <QHash>
 

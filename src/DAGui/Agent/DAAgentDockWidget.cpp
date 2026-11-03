@@ -3,7 +3,7 @@
 #include "DAAgentSessionChatWidget.h"
 #include "DAAgentSessionComponentsFactory.h"
 #include "DAAgentWebChannel.h"
-#include "Dialog/DADialogAgentSessionManager.h"
+#include "Agent/DADialogAgentSessionManager.h"
 // ADS
 #include "DockManager.h"
 #include "DockWidget.h"

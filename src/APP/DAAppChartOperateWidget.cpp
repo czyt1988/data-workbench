@@ -3,7 +3,7 @@
 #include "DAWaitCursorScoped.h"
 #include "DAChartUtil.h"
 #include "DAEvenFilterDragPlotWithGuide.h"
-#include "Dialog/DADialogChartGuide.h"
+#include "Chart/DADialogChartGuide.h"
 #include "DAFigureWidget.h"
 #include "DAChart3DWidget.h"
 namespace DA

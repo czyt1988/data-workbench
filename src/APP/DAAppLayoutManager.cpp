@@ -1,7 +1,7 @@
 #include "DAAppLayoutManager.h"
 #include "AppMainWindow.h"
 #include "DAAppDockingArea.h"
-#include "DAAbstractSettingPage.h"
+#include "Common/Settings/DAAbstractSettingPage.h"
 #include "DALogCategory.h"
 // Qt
 #include <QDir>

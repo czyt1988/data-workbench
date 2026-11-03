@@ -11,7 +11,7 @@
 //===================================================
 // using DA namespace -- 禁止在头文件using！！
 //===================================================
-#include "DARecentFilesManager.h"
+#include "Common/DARecentFilesManager.h"
 using namespace DA;
 
 //===================================================

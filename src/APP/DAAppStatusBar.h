@@ -3,7 +3,7 @@
 #include "DAStatusBarInterface.h"
 class QStatusBar;
 class QToolButton;
-#include "DAStatusBarWidget.h"
+#include "Common/DAStatusBarWidget.h"
 namespace DA
 {
 class AppMainWindow;

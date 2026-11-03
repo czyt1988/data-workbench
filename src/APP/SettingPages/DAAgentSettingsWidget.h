@@ -1,5 +1,5 @@
 #pragma once
-#include "DAAbstractSettingPage.h"
+#include "Common/Settings/DAAbstractSettingPage.h"
 #include "DAAgentInterface.h"
 #include <QLineEdit>
 #include <QPushButton>

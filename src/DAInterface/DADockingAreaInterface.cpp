@@ -13,10 +13,10 @@
 //  这个头文件需要存在，ui()->mainWindow()获取的窗口需要这个头文件，不要移除
 #include "SARibbonMainWindow.h"
 //
-#include "DADataManageWidget.h"
-#include "DADataOperateWidget.h"
-#include "DAPyWorkFlowOperateWidget.h"
-#include "DAPyWorkFlowGraphicsScene.h"
+#include "Table/DataManager/DADataManageWidget.h"
+#include "Table/DADataOperateWidget.h"
+#include "Workflow/DAPyWorkFlowOperateWidget.h"
+#include "Workflow/DAPyWorkFlowGraphicsScene.h"
 namespace DA
 {
 class DADockingAreaInterface::PrivateData

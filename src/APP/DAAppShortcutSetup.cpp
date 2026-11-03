@@ -2,7 +2,7 @@
 #include "DAShortcutManager.h"
 #include "DAAppActions.h"
 #include "DAUiObjectNames.h"
-#include "DAPyWorkFlowOperateWidget.h"
+#include "Workflow/DAPyWorkFlowOperateWidget.h"
 #include <QAction>
 #include <QHash>
 

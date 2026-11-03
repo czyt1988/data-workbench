@@ -37,8 +37,8 @@
 #include "numpy/DAPyDType.h"
 // Widget
 #include "DAPyDTypeComboBox.h"
-#include "DATableDisplayFormatComboBox.h"
-#include "DADataOperateOfDataFrameWidget.h"
+#include "Table/Views/DATableDisplayFormatComboBox.h"
+#include "Table/DADataOperateOfDataFrameWidget.h"
 // Agent 提示词库（AI分析 标签页）
 #include "DAAgentInterface.h"
 #include "DACoreInterface.h"
@@ -48,7 +48,7 @@
 // Agent 助手会话标签页宿主（session-tabs：新建会话/会话管理按钮入口）
 #include "Agent/DAAgentDockWidget.h"
 // 统计窗口（动作由窗口持有，Ribbon 只负责布局）
-#include "Stats/DADataStatsWidget.h"
+#include "Chart/DADataStatsWidget.h"
 
 // api
 #include "DAAppUI.h"
@@ -56,13 +56,13 @@
 #include "DAAppCore.h"
 #include "DAAppDockingArea.h"
 #include "DAAppActions.h"
-#include "DARecentFilesManager.h"
+#include "Common/DARecentFilesManager.h"
 // Qt-Advanced-Docking-System
 #include "DockManager.h"
 #include "DockAreaWidget.h"
 // command
 // Widget
-#include "DADataManageWidget.h"
+#include "Table/DataManager/DADataManageWidget.h"
 #include "DAFigureWidget.h"
 #include "DAChartWidget.h"
 // Dialog
@@ -70,9 +70,9 @@
 #include "DAFontEditPannelWidget.h"
 #include "DAShapeEditPannelWidget.h"
 // Workflow
-#include "DAPyWorkFlowOperateWidget.h"
-#include "DAPyWorkFlowEditWidget.h"
-#include "DAPyWorkFlowGraphicsView.h"
+#include "Workflow/DAPyWorkFlowOperateWidget.h"
+#include "Workflow/DAPyWorkFlowEditWidget.h"
+#include "Workflow/DAPyWorkFlowGraphicsView.h"
 // project
 
 // 快速链接信号槽

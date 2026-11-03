@@ -7,15 +7,15 @@
 #include <QTemporaryDir>
 
 // 被测对象
-#include "DATableExporter.h"
+#include "Table/DATableExporter.h"
 // 依赖的值类型与存储
-#include "DATableMetadata.h"
-#include "DATableStyleManager.h"
-#include "DATableConditionalFormatStore.h"
-#include "DATableConditionalFormatRule.h"
-#include "DATableNoteStore.h"
-#include "DATableCellStyle.h"
-#include "DATableDisplayFormat.h"
+#include "Table/Metadata/DATableMetadata.h"
+#include "Table/Metadata/DATableStyleManager.h"
+#include "Table/Metadata/DATableConditionalFormatStore.h"
+#include "Table/Metadata/DATableConditionalFormatRule.h"
+#include "Table/Metadata/DATableNoteStore.h"
+#include "Table/Metadata/DATableCellStyle.h"
+#include "Table/Metadata/DATableDisplayFormat.h"
 // 数据层
 #include "DAData.h"
 #include "DAAbstractData.h"

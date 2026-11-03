@@ -2,7 +2,7 @@
 #define DAAPPSETTINGDIALOG_H
 #include "DAGuiAPI.h"
 #include <QDialog>
-#include "DASettingDialog.h"
+#include "Common/Settings/DASettingDialog.h"
 
 namespace DA
 {

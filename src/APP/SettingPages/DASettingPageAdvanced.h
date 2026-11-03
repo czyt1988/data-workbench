@@ -1,6 +1,6 @@
 #ifndef DASETTINGPAGEADVANCED_H
 #define DASETTINGPAGEADVANCED_H
-#include "DAAbstractSettingPage.h"
+#include "Common/Settings/DAAbstractSettingPage.h"
 #include <QWidget>
 #include "DAGuiAPI.h"
 

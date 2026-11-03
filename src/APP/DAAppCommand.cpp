@@ -2,8 +2,8 @@
 #include "DADataUndoCommand.h"
 #include "DAUIInterface.h"
 #include "DAAppDockingArea.h"
-#include "DADataOperateWidget.h"
-#include "Commands/DACommandWithTemporaryData.h"
+#include "Table/DADataOperateWidget.h"
+#include "Common/DACommandWithTemporaryData.h"
 //===================================================
 // using DA namespace -- 禁止在头文件using！！
 //===================================================

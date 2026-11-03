@@ -6,11 +6,11 @@
 #include <QTimer>
 #include "DAFigureWidget.h"
 #include "DAAppChartOperateWidget.h"
-#include "MimeData/DAMimeDataForData.h"
-#include "MimeData/DAMimeDataFormats.h"
-#include "Dialog/DADialogChartGuide.h"
-#include "ChartAddItem/DAAbstractChartAddItemWidget.h"
-#include "ChartAddItem/DAChartAddCurveWidget.h"
+#include "Common/DAMimeDataForData.h"
+#include "Common/DAMimeDataFormats.h"
+#include "Chart/DADialogChartGuide.h"
+#include "Chart/AddItem/DAAbstractChartAddItemWidget.h"
+#include "Chart/AddItem/DAChartAddCurveWidget.h"
 #include "DAChartWidget.h"
 #include "da_qt5qt6_compat.hpp"
 namespace DA

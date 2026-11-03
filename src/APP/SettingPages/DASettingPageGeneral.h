@@ -1,6 +1,6 @@
 #ifndef DASETTINGPAGEGENERAL_H
 #define DASETTINGPAGEGENERAL_H
-#include "DAAbstractSettingPage.h"
+#include "Common/Settings/DAAbstractSettingPage.h"
 #include <QWidget>
 #include "DAGuiAPI.h"
 #include <QButtonGroup>

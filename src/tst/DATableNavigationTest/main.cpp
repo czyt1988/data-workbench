@@ -11,10 +11,10 @@
 #include "DAData.h"
 #include "DATableDataBlock.h"
 #include "DATableDataSource.h"
-#include "DACacheWindowTableView.h"
-#include "DADataTableView.h"
-#include "DAVirtualScrollBar.h"
-#include "Models/DADataTableModel.h"
+#include "Table/Views/DACacheWindowTableView.h"
+#include "Table/Views/DADataTableView.h"
+#include "Table/Views/DAVirtualScrollBar.h"
+#include "Table/Models/DADataTableModel.h"
 
 namespace
 {

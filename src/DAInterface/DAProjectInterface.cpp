@@ -2,7 +2,7 @@
 #include <QFileInfo>
 #include <QSysInfo>
 #include "DAStringUtil.h"
-#include "DAXmlHelper.h"
+#include "Archive/DAXmlHelper.h"
 #include "DAQtContainerUtil.hpp"
 #include "DADataManagerInterface.h"
 #include "DADockingAreaInterface.h"

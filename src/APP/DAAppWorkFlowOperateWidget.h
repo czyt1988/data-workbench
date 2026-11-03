@@ -1,6 +1,6 @@
 #ifndef DAAPPWORKFLOWOPERATEWIDGET_H
 #define DAAPPWORKFLOWOPERATEWIDGET_H
-#include "DAPyWorkFlowOperateWidget.h"
+#include "Workflow/DAPyWorkFlowOperateWidget.h"
 #include <QPointer>
 namespace DA
 {

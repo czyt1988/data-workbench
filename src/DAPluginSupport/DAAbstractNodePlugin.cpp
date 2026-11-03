@@ -2,7 +2,7 @@
 #include "DACoreInterface.h"
 #include "DAUIInterface.h"
 #include "DADockingAreaInterface.h"
-#include "DAPyWorkFlowOperateWidget.h"
+#include "Workflow/DAPyWorkFlowOperateWidget.h"
 namespace DA
 {
 DAAbstractNodePlugin::DAAbstractNodePlugin() : DAAbstractPlugin()

@@ -9,8 +9,8 @@
 #include "DAGlobals.h"
 #include "DAPyLinkGraphicsItem.h"
 #include <QThread>
-#include "DAXmlHelper.h"
-#include "DAZipArchiveThreadWrapper.h"
+#include "Archive/DAXmlHelper.h"
+#include "Archive/DAZipArchiveThreadWrapper.h"
 #include "Chart/DAChartItemsManager.h"
 
 namespace DA

@@ -35,8 +35,8 @@
 
 //
 #include "DAGraphicsItemFactory.h"
-#include "DAPyWorkFlowNodeListWidget.h"
-#include "DAPyWorkFlowOperateWidget.h"
+#include "Workflow/DAPyWorkFlowNodeListWidget.h"
+#include "Workflow/DAPyWorkFlowOperateWidget.h"
 //
 #include "DAAppSettingDialog.h"
 #include "SettingPages/DAAppConfig.h"

@@ -4,7 +4,7 @@
 #include <QtPlugin>
 #include <QObject>
 #include "DAPluginSupportGlobal.h"
-#include "DAAbstractSettingPage.h"
+#include "Common/Settings/DAAbstractSettingPage.h"
 namespace DA
 {
 class DACoreInterface;

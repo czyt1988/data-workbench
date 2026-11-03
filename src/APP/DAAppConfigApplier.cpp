@@ -5,17 +5,17 @@
 #include "AppMainWindow.h"
 #include "SARibbonBar.h"
 #include "DAAppActions.h"
-#include "DARecentFilesManager.h"
+#include "Common/DARecentFilesManager.h"
 #include "DAMessageLogQueue.h"
 #include "DALogger.h"
 #include "DADumpCapture.h"
 #include "DAPyScriptRunner.h"
 #include "DAAppDockingArea.h"
 #include "DAUndoHistoryWidget.h"
-#include "DADataOperateOfDataFrameWidget.h"
-#include "DAPyWorkFlowOperateWidget.h"
+#include "Table/DADataOperateOfDataFrameWidget.h"
+#include "Workflow/DAPyWorkFlowOperateWidget.h"
 #include "Chart/DAChartOperateWidget.h"
-#include "DADataOperateWidget.h"
+#include "Table/DADataOperateWidget.h"
 
 namespace DA
 {

@@ -23,26 +23,26 @@
 #include "DAAppChartManageWidget.h"
 #include "Chart/DAChartSettingWidget.h"
 // Data相关
-#include "DADataOperateWidget.h"
-#include "DADataManageWidget.h"
+#include "Table/DADataOperateWidget.h"
+#include "Table/DataManager/DADataManageWidget.h"
 // message相关
-#include "DAMessageLogViewWidget.h"
+#include "Common/DAMessageLogViewWidget.h"
 #include "DAUndoHistoryWidget.h"
 // workflow相关
 #include "DAPyNodeGraphicsItem.h"
-#include "DAPyWorkFlowNodeListWidget.h"
-#include "DAPyWorkFlowEditWidget.h"
-#include "DASettingContainerWidget.h"
-#include "DAPyWorkFlowNodeItemSettingWidget.h"
+#include "Workflow/DAPyWorkFlowNodeListWidget.h"
+#include "Workflow/DAPyWorkFlowEditWidget.h"
+#include "Common/Settings/DASettingContainerWidget.h"
+#include "Workflow/NodeSetting/DAPyWorkFlowNodeItemSettingWidget.h"
 #include "DAAppWorkFlowOperateWidget.h"
 // Agent 相关
 #include "DAAgentDockWidget.h"
 // Markdown 查看相关
-#include "DAMarkdownView.h"
+#include "Common/MarkdownView/DAMarkdownView.h"
 // 数据联动表
 #include "Chart/DADataLinkTableWidget.h"
 // 数据统计分析窗口
-#include "Stats/DADataStatsWidget.h"
+#include "Chart/DADataStatsWidget.h"
 
 //===================================================
 // using DA namespace -- 禁止在头文件using！！

@@ -1,6 +1,6 @@
 #ifndef DASETTINGPAGEPYTHON_H
 #define DASETTINGPAGEPYTHON_H
-#include "DAAbstractSettingPage.h"
+#include "Common/Settings/DAAbstractSettingPage.h"
 #include <QWidget>
 #include "DAGuiAPI.h"
 

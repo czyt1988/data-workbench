@@ -14,13 +14,13 @@
 
 #include "DAPyScripts.h"
 #include "DAPyScriptsDataFrame.h"
-#include "Commands/DACommandsDataFrame.h"
+#include "Table/Ops/DACommandsDataFrame.h"
 
 #include "DAData.h"
 #include "DAAbstractData.h"
 #include "DATableDataSource.h"
 #include "DATableDataBlock.h"
-#include "Models/DADataTableModel.h"
+#include "Table/Models/DADataTableModel.h"
 
 #include <algorithm>
 #ifdef Q_OS_WIN

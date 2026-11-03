@@ -9,7 +9,7 @@
 #include <QStyleOptionComboBox>
 #include <QStyleOptionSpinBox>
 
-#include "DASpinBoxStyle.h"
+#include "Common/DASpinBoxStyle.h"
 
 /**
  * @brief SpinBox 代理样式的回归测试

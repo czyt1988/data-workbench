@@ -14,16 +14,16 @@
 #include <windows.h>
 #endif
 
-#include "DAChartAddStatsBarplotWidget.h"
+#include "Chart/AddItem/DAChartAddStatsBarplotWidget.h"
 #include "DAChartWidget.h"
-#include "DAStatsPlotCoordinator.h"
+#include "Chart/DAStatsPlotCoordinator.h"
 #include "DAData.h"
 #include "DAPyInterpreter.h"
 #include "DAPyScripts.h"
 #include "DAPyScriptsStatistics.h"
 #include "DAPybind11InQt.h"
 #include "DAPybind11QtCaster.hpp"
-#include "Stats/DADataStatsWidget.h"
+#include "Chart/DADataStatsWidget.h"
 #include <QAction>
 #include <QMenu>
 #include <pybind11/eval.h>

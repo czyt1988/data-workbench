@@ -1,0 +1,219 @@
+#include "Workflow/DAToolBox.h"
+#include "Workflow/DANodeListWidget.h"
+#include <QToolBox>
+#include <QDebug>
+//===================================================
+// using DA namespace -- 禁止在头文件using！！
+//===================================================
+
+namespace DA
+{
+
+//===================================================
+// DAToolBox
+//===================================================
+DAToolBox::DAToolBox(QWidget* parent) : QScrollArea(parent), mFavoriteList(nullptr)
+{
+    mToolBox = new QToolBox(this);
+    setWidget(mToolBox);
+    setWidgetResizable(true);
+    setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+}
+/**
+ * @brief 添加items
+ * @param datas
+ * @note 注意已淘汰
+ */
+void DAToolBox::addItems(const QMap< QString, QList< DAPyNodeMetaData > >& datas)
+{
+    for (auto i = datas.begin(); i != datas.end(); ++i) {
+        DANodeListWidget* nlw = new DANodeListWidget(this);
+        nlw->addItems(i.value());
+        mToolBox->addItem(nlw, i.key());
+    }
+    adjustMinItemHight(300);
+}
+
+/**
+ * @brief 添加items
+ * @param datas
+ */
+void DAToolBox::addItems(const QList< DAPyNodeMetaData >& datas)
+{
+    // 先提取分组，确认分组都建立
+    QList< QString > orderGroup;
+    QHash< QString, QList< DAPyNodeMetaData > > groupOrderNodes;
+    for (const DAPyNodeMetaData& md : std::as_const(datas)) {
+        // 每个md的分组按顺序去重归集
+        if (!orderGroup.contains(md.getCategory())) {
+            orderGroup.append(md.getCategory());
+        }
+        groupOrderNodes[ md.getCategory() ].append(md);
+    }
+    // 创建分组的topitem
+    for (const QString& g : std::as_const(orderGroup)) {
+        DANodeListWidget* gitem = new DANodeListWidget(this);
+        mToolBox->addItem(gitem, g);
+        gitem->addItems(groupOrderNodes[ g ]);
+    }
+    adjustMinItemHight(300);
+}
+
+/**
+ * @brief 清空所有分组页
+ *
+ * 收藏页保留不动，用于插件热插拔后重建节点分组
+ */
+void DAToolBox::clear()
+{
+    for (int i = mToolBox->count() - 1; i >= 0; --i) {
+        QWidget* w = mToolBox->widget(i);
+        if (w == mFavoriteList) {
+            continue;
+        }
+        mToolBox->removeItem(i);
+        if (w) {
+            w->deleteLater();
+        }
+    }
+    mToolBox->setMinimumHeight(0);
+}
+
+/**
+ * @brief 获取收藏list，如果没有就创建
+ * @return
+ */
+DANodeListWidget* DAToolBox::getFavoriteList()
+{
+    if (nullptr == mFavoriteList) {
+        return createFavoriteList();
+    }
+    return mFavoriteList;
+}
+
+/**
+ * @brief 创建一个收藏列表
+ *
+ * 收藏列表只允许有一个，重复调用不会重复创建
+ * @return
+ */
+DANodeListWidget* DAToolBox::createFavoriteList()
+{
+    if (mFavoriteList) {
+        return mFavoriteList;
+    }
+    mFavoriteList = new DANodeListWidget(this);
+    mFavoriteList->setProperty("isFavoriteListWidget", true);
+    mToolBox->addItem(mFavoriteList, QIcon(":/DAGui/icon/favorite.svg"), tr("Favorite"));  // cn:收藏
+    return mFavoriteList;
+}
+
+/**
+ * @brief 添加到收藏
+ * @param md
+ */
+void DAToolBox::addToFavorite(const DAPyNodeMetaData& md)
+{
+    DANodeListWidget* fav = getFavoriteList();
+    fav->addItem(md);
+}
+
+/**
+ * @brief 移除收藏
+ * @param md
+ */
+void DAToolBox::removeFavorite(const DAPyNodeMetaData& md)
+{
+    DANodeListWidget* fav = getFavoriteList();
+    int c                 = fav->count();
+    QList< QListWidgetItem* > needRemove;
+    for (int i = 0; i < c; ++i) {
+        QListWidgetItem* item = fav->item(i);
+        if (item->type() == DANodeListWidgetItem::ThisItemType) {
+            DANodeListWidgetItem* nitem = static_cast< DANodeListWidgetItem* >(item);
+            if (md == nitem->getNodeMetaData()) {
+                needRemove.append(item);
+            }
+        }
+    }
+    for (QListWidgetItem* i : needRemove) {
+        delete i;
+    }
+}
+
+/**
+ * @brief 通过位置获取对应的md
+ * @param p
+ * @return
+ */
+DAPyNodeMetaData DAToolBox::getNodeMetaData(const QPoint& p) const
+{
+    DANodeListWidget* nl = qobject_cast< DANodeListWidget* >(mToolBox->currentWidget());
+    if (!nl) {
+        return DAPyNodeMetaData();
+    }
+    return nl->getNodeMetaData(nl->mapFromGlobal(mapToGlobal(p)));
+}
+
+/**
+ * @brief 自适应item的最小高度
+ *
+ * 如果发现item的高度小于传入设置的最小值，则会根据最小值自动计算QToolBox的最小高度，保证item能达到最小值
+ * @param minHeight
+ */
+void DAToolBox::adjustMinItemHight(int minHeight)
+{
+    QWidget* w = mToolBox->currentWidget();
+    if (w == nullptr) {
+        // 没有设置窗口返回
+        return;
+    }
+    int curheight = w->height();
+    if (curheight >= minHeight) {
+        return;
+    }
+    // 由于QToolBox没有获取item标签高度的接口，因此只能估算标签高度为文字高度的1.5倍,或者icon的1.1
+    int itemTitleHeight = mToolBox->fontMetrics().lineSpacing();
+    QIcon icon          = mToolBox->itemIcon(mToolBox->currentIndex());
+    if (!icon.isNull()) {
+        QList< QSize > avas = icon.availableSizes();
+        for (const QSize& s : std::as_const(avas)) {
+            if (s.height() * 1.1 > itemTitleHeight) {
+                itemTitleHeight = s.height() * 1.1;
+            }
+        }
+    }
+    // 计算最大的高度
+    int willSetMinHeight = mToolBox->count() * itemTitleHeight;
+    willSetMinHeight += minHeight;
+    //
+    mToolBox->setMinimumHeight(willSetMinHeight);
+}
+
+int DAToolBox::addItem(QWidget* w, const QIcon& iconSet, const QString& text)
+{
+    return mToolBox->addItem(w, iconSet, text);
+}
+
+int DAToolBox::addItem(QWidget* w, const QString& text)
+{
+    return mToolBox->addItem(w, text);
+}
+
+int DAToolBox::count() const
+{
+    return mToolBox->count();
+}
+
+int DAToolBox::currentIndex() const
+{
+    return mToolBox->currentIndex();
+}
+
+QWidget* DAToolBox::currentWidget() const
+{
+    return mToolBox->currentWidget();
+}
+
+}

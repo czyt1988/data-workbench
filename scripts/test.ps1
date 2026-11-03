@@ -137,29 +137,14 @@ function Get-SuitesForFile {
     if ($p -match '^src/DAAgent/' -or $p -match '^src/DAGui/Agent/' -or $p -match '^src/PyScripts/DAWorkbench/agent/') {
         return New-SuiteResult -Kind 'suites' -Suites @('agent')
     }
-    if ($p -match '^src/DAGui/(Chart|Chart3DSetting|ChartAddItem|ChartSetting)/') {
+    # DAGui 已按领域收敛：Chart/ 跑图表套件，Table/ 跑表格套件
+    if ($p -match '^src/DAGui/Chart/') {
         return New-SuiteResult -Kind 'suites' -Suites @('chart')
     }
-    if ($p -match '^src/DAGui/TableChart/') {
+    if ($p -match '^src/DAGui/Table/') {
         return New-SuiteResult -Kind 'suites' -Suites @('table')
     }
-    # 表格：文件名即可判定（表格是寄居在 DAGui 里的子系统）
-    if ($p -match '^src/DAGui/(DATable|DADataTable|DADataHeaderView|DADataTableView|DADataOperateOfDataFrameWidget)') {
-        return New-SuiteResult -Kind 'suites' -Suites @('table')
-    }
-    if ($p -match '^src/DAGui/Dialog/DADialog(Table|FindReplace|SplitColumn|MergeColumns|GroupBy|Reshape|FillSeries|Validation|ComputedColumn|ConditionalFormat|Note|GotoCell)') {
-        return New-SuiteResult -Kind 'suites' -Suites @('table')
-    }
-    if ($p -match '^src/DAGui/(Commands|Models)/') {
-        if ($p -match 'Table|Column|Sort|Search|Find|Conditional|Computed|Validat|Note') {
-            return New-SuiteResult -Kind 'suites' -Suites @('table')
-        }
-        return New-SuiteResult -Kind 'suites' -Suites @('table', 'chart')
-    }
-    if ($p -match '^src/DAGui/Dialog/') {
-        return New-SuiteResult -Kind 'suites' -Suites @('table', 'chart', 'agent')
-    }
-    # 其余 DAGui 代码：三个上层套件都可能用到，全部跑（保守兜底）
+    # 其余 DAGui 代码（Workflow/Common/Archive 等）：三个上层套件都可能用到，全部跑（保守兜底）
     if ($p -match '^src/DAGui/') {
         return New-SuiteResult -Kind 'suites' -Suites @('table', 'chart', 'agent')
     }

@@ -1,6 +1,6 @@
 #ifndef DASETTINGPAGELOG_H
 #define DASETTINGPAGELOG_H
-#include "DAAbstractSettingPage.h"
+#include "Common/Settings/DAAbstractSettingPage.h"
 #include <QWidget>
 #include <QComboBox>
 #include "DAGuiAPI.h"

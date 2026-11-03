@@ -14,10 +14,10 @@
 #include "DockWidget.h"
 #include "DockAreaWidget.h"
 // DAFigure
-#include "DAFigureFactory.h"
+#include "Chart/DAFigureFactory.h"
 #include "DAFigureDockWidget.h"
 #include "DAFigureComponentsFactory.h"
-#include "DADockAreaTabPosition.h"
+#include "Common/DADockAreaTabPosition.h"
 namespace DA
 {
 int g_figure_cnt = 0;  ///< 绘图的数量，仅限当前程序创建计数

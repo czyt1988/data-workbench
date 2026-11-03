@@ -15,7 +15,7 @@
 #include <QFileInfo>
 #include <QTemporaryDir>
 
-#include "DAMarkdownExporter.h"
+#include "Common/MarkdownView/DAMarkdownExporter.h"
 
 using DA::DAMarkdownExporter;
 

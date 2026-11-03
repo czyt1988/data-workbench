@@ -6,8 +6,8 @@
 #include <QMouseEvent>
 #include <memory>
 
-#include "TableChildWindow/DATableChildWindow.h"
-#include "TableChildWindow/DATableChildWindowContainer.h"
+#include "Table/Views/DATableChildWindow.h"
+#include "Table/Views/DATableChildWindowContainer.h"
 
 namespace
 {

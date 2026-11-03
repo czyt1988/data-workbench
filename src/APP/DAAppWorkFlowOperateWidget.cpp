@@ -1,7 +1,7 @@
 #include "DAAppWorkFlowOperateWidget.h"
 #include "DADataWorkFlow.h"
 #include "DAPyWorkFlowManager.h"
-#include "DAPyWorkFlowEditWidget.h"
+#include "Workflow/DAPyWorkFlowEditWidget.h"
 #include "DAAppCore.h"
 #include "DAAppCommand.h"
 #include "DAAppPluginManager.h"

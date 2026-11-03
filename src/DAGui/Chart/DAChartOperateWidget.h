@@ -4,7 +4,7 @@
 #include <QByteArray>
 #include "DAGuiAPI.h"
 #include "DAFigureWidget.h"
-#include "DAAbstractOperateWidget.h"
+#include "Common/DAAbstractOperateWidget.h"
 namespace ads
 {
 class CDockManager;

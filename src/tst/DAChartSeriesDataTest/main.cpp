@@ -9,10 +9,10 @@
 #include "DAPybind11InQt.h"
 #include "pandas/DAPyDataFrame.h"
 #include "DAData.h"
-#include "ChartAddItem/DAChartSeriesDataResult.h"
-#include "ChartAddItem/DAChartAddItemWidgetFactory.h"
-#include "ChartAddItem/DAChartAddCurveWidget.h"
-#include "Dialog/DADialogChartGuide.h"
+#include "Chart/AddItem/DAChartSeriesDataResult.h"
+#include "Chart/AddItem/DAChartAddItemWidgetFactory.h"
+#include "Chart/AddItem/DAChartAddCurveWidget.h"
+#include "Chart/DADialogChartGuide.h"
 // qwt
 #include "qwt_plot_curve.h"
 // pybind11

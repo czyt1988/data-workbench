@@ -1,6 +1,6 @@
 #ifndef DAAPPFIGUREFACTORY_H
 #define DAAPPFIGUREFACTORY_H
-#include "DAFigureFactory.h"
+#include "Chart/DAFigureFactory.h"
 namespace DA
 {
 class DADataManager;

@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>DAChartAddMultiBarWidget</class>
+ <widget class="QWidget" name="DAChartAddMultiBarWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>657</width>
+    <height>500</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Add Multi Bar Chart</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout_2">
+   <item>
+    <widget class="QGroupBox" name="groupBoxX">
+     <property name="title">
+      <string>X</string>
+     </property>
+     <property name="flat">
+      <bool>true</bool>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_4">
+      <item row="0" column="1" rowspan="2">
+       <widget class="DA::DAPySeriesListView" name="listViewX"/>
+      </item>
+      <item row="1" column="0">
+       <widget class="QToolButton" name="toolButtonRemoveFromX">
+        <property name="text">
+         <string/>
+        </property>
+        <property name="icon">
+         <iconset resource="icon.qrc">
+          <normaloff>:/DAGui/icon/left-remove.svg</normaloff>:/DAGui/icon/left-remove.svg</iconset>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0" colspan="2">
+       <widget class="DA::DAChartAutoincrementSeriesWidget" name="widgetXAutoincrement"/>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBoxY">
+     <property name="title">
+      <string>Y (Multiple)</string>
+     </property>
+     <property name="flat">
+      <bool>true</bool>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_3">
+      <item row="0" column="1" rowspan="2">
+       <widget class="DA::DAPySeriesListView" name="listViewY"/>
+      </item>
+      <item row="1" column="0">
+       <widget class="QToolButton" name="toolButtonRemoveFromY">
+        <property name="text">
+         <string/>
+        </property>
+        <property name="icon">
+         <iconset resource="icon.qrc">
+          <normaloff>:/DAGui/icon/left-remove.svg</normaloff>:/DAGui/icon/left-remove.svg</iconset>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item>
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>Drag the data into the corresponding list. Multiple Y series will be grouped as bar sets.</string>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>DA::DAPySeriesListView</class>
+   <extends>QListView</extends>
+   <header>Table/Views/DAPySeriesListView.h</header>
+  </customwidget>
+  <customwidget>
+   <class>DA::DAChartAutoincrementSeriesWidget</class>
+   <extends>QGroupBox</extends>
+   <header>Chart/AddItem/DAChartAutoincrementSeriesWidget.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="icon.qrc"/>
+ </resources>
+ <connections>
+ </connections>
+</ui>

@@ -5,13 +5,13 @@
 #include "DAData.h"
 #include "DAPyModule.h"
 #include "DADockingAreaInterface.h"
-#include "DADataOperateWidget.h"
-#include "DADataOperateOfDataFrameWidget.h"
-#include "DADataTableView.h"
+#include "Table/DADataOperateWidget.h"
+#include "Table/DADataOperateOfDataFrameWidget.h"
+#include "Table/Views/DADataTableView.h"
 #include "DAPyScripts.h"
 #include "DACoreInterface.h"
 #include "SARibbonMainWindow.h"
-#include "Models/DADataTableModel.h"
+#include "Table/Models/DADataTableModel.h"
 // Commands
 #include "Commands.h"
 // Dialogs

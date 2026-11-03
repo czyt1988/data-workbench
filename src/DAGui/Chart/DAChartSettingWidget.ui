@@ -33,7 +33,7 @@
    <customwidget>
     <class>DA::DAChartCommonItemsSettingWidget</class>
     <extends>QWidget</extends>
-    <header>DAChartCommonItemsSettingWidget.h</header>
+    <header>Chart/Setting/DAChartCommonItemsSettingWidget.h</header>
     <container>1</container>
    </customwidget>
   </customwidgets>

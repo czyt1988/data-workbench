@@ -9,13 +9,13 @@
 #include "AppMainWindow.h"
 #include "DAAppStatusBar.h"
 #include "DALog.h"
-#include "DAPropertyFormDialog.h"
+#include "Common/Settings/DAPropertyFormDialog.h"
 // SARibbon
 #include "SARibbonPanel.h"
 // 以下两个头文件用于让编译器获知 DAPyWorkFlowOperateWidget/DAPyWorkFlowNodeListWidget
 // 继承自 QWidget，从而可隐式转换为 hideDockWidget(QWidget*) 的参数。
-#include "DAPyWorkFlowOperateWidget.h"
-#include "DAPyWorkFlowNodeListWidget.h"
+#include "Workflow/DAPyWorkFlowOperateWidget.h"
+#include "Workflow/DAPyWorkFlowNodeListWidget.h"
 
 //===================================================
 // using DA namespace -- 禁止在头文件using！！

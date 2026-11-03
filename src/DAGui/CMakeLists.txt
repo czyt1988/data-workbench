@@ -7,557 +7,79 @@ cmake_minimum_required(VERSION 3.16)
 
 ########################################################
 # 文件加载
-# 根目录与部分子目录用显式清单（防漏编），简单目录用 file(GLOB)
+# 目录约定：一级目录 = 领域（Table/Chart/Workflow/Agent/Archive/Common），
+# 领域内按角色再分子目录（如 Table/Core、Chart/Setting）。
+# 各领域用 GLOB_RECURSE + CONFIGURE_DEPENDS 自动收集，领域内新增文件无需手工登记。
+# 根目录只保留 API 头、枚举工具与图标 qrc。
 ########################################################
 set(DA_LIB_HEADER_FILES
     DAGuiAPI.h
-    DAAbstractNodeSettingWidget.h
-    DAAbstractOperateWidget.h
-    DACacheWindowTableView.h
-    DAVirtualScrollBar.h
-    DADataHeaderView.h
-    DADataManagerComboBox.h
-    DADataOperatePageWidget.h
-    DADataTableView.h
-    DATablePaneContainer.h
-    DATableStatsWidget.h
-    DAFigureFactory.h
-    DAGraphicsPixmapItemSettingWidget.h
-    DADataManageTableView.h
-    DADataManageWidget.h
-    DADataManagerTreeWidget.h
-    DADataOperateWidget.h
-    DADockAreaTabPosition.h
     DAGuiEnumStringUtils.h
-    DAMessageLogViewWidget.h
-    DANodeItemSettingWidget.h
-    DANodeLinkItemSettingWidget.h
-    DANodeMimeData.h
-    DAWebExternalOpenPage.h
-    DANodeSettingWidget.h
-    DANodeTreeWidget.h
-    DARecentFilesManager.h
-    DAToolBox.h
-    DAPyWorkFlowEditWidget.h
-    DAPyWorkFlowEditWidgetDockWidget.h
-    DAPyWorkFlowGraphicsScene.h
-    DAPyWorkFlowGraphicsView.h
-    DAPyWorkFlowNodeListWidget.h
-    DAPyWorkFlowNodeItemSettingWidget.h
-    DAPyWorkFlowOperateWidget.h
-    DASettingContainerWidget.h
-    DAStatusBarWidget.h
-    DAAbstractArchive.h
-    DAAbstractArchiveTask.h
-    DAZipArchive.h
-    DAZipArchiveThreadWrapper.h
-    DAZipArchiveTask_ByteArray.h
-    DAZipArchiveTask_Xml.h
-    DAZipArchiveTask_ArchiveFile.h
-    DAZipArchiveTask_ChartItem.h
-    DAXmlHelper.h
-    DASplashScreen.h
-    DAAbstractSettingPage.h
-    DAFormEditorRegistry.h
-    DAPropertyFormDialog.h
-    DAPropertyFormWidget.h
-    DAPropertyPanelContainerWidget.h
-    DAPropertyPanelWidget.h
-    DASettingDialog.h
-    DASettingWidget.h
-    DASpinBoxStyle.h
-    DATableCellStyle.h
-    DATableExporter.h
-    DATableDisplayFormat.h
-    DATableDisplayFormatComboBox.h
-    DATableStyleManager.h
-    DATableMetadata.h
-    DATableMetadataRegistry.h
-    DATableKeyRemap.h
-    DATableViewStateStore.h
-    DATableHighlightOverlay.h
-    DATableConditionalFormatRule.h
-    DATableConditionalFormatStore.h
-    DAConditionalFormatPresets.h
-    DATableComputedColumnStore.h
-    DATableValidationStore.h
-    DATableNoteStore.h
-    DATableNoteEditDialog.h
-    DATableStyleItemDelegate.h
 )
 set(DA_LIB_SOURCE_FILES
-    DAAbstractNodeSettingWidget.cpp
-    DAAbstractOperateWidget.cpp
-    DACacheWindowTableView.cpp
-    DAVirtualScrollBar.cpp
-    DADataHeaderView.cpp
-    DADataManageTableView.cpp
-    DADataManagerTreeWidget.cpp
-    DADataManageWidget.cpp
-    DADataManagerComboBox.cpp
-    DADataOperatePageWidget.cpp
-    DADataOperateWidget.cpp
-    DADataTableView.cpp
-    DATablePaneContainer.cpp
-    DATableStatsWidget.cpp
-    DADockAreaTabPosition.cpp
-    DAFigureFactory.cpp
-    DAGraphicsPixmapItemSettingWidget.cpp
     DAGuiEnumStringUtils.cpp
-    DAMessageLogViewWidget.cpp
-    DANodeItemSettingWidget.cpp
-    DANodeLinkItemSettingWidget.cpp
-    DANodeListWidget.cpp
-    DANodeMimeData.cpp
-    DANodeSettingWidget.cpp
-    DANodeTreeWidget.cpp
-    DARecentFilesManager.cpp
-    DAToolBox.cpp
-    DAPyWorkFlowEditWidget.cpp
-    DAPyWorkFlowEditWidgetDockWidget.cpp
-    DAPyWorkFlowGraphicsScene.cpp
-    DAPyWorkFlowGraphicsView.cpp
-    DAPyWorkFlowNodeListWidget.cpp
-    DAPyWorkFlowNodeItemSettingWidget.cpp
-    DAPyWorkFlowOperateWidget.cpp
-    DASettingContainerWidget.cpp
-    DAStatusBarWidget.cpp
-    DAAbstractArchive.cpp
-    DAAbstractArchiveTask.cpp
-    DAZipArchive.cpp
-    DAZipArchiveThreadWrapper.cpp
-    DAZipArchiveTask_ByteArray.cpp
-    DAZipArchiveTask_Xml.cpp
-    DAZipArchiveTask_ArchiveFile.cpp
-    DAZipArchiveTask_ChartItem.cpp
-    DAXmlHelper.cpp
-    DASplashScreen.cpp
-    DAAbstractSettingPage.cpp
-    DAFormEditorRegistry.cpp
-    DAPropertyFormDialog.cpp
-    DAPropertyFormWidget.cpp
-    DAPropertyPanelContainerWidget.cpp
-    DAPropertyPanelWidget.cpp
-    DASettingDialog.cpp
-    DASettingWidget.cpp
-    DASpinBoxStyle.cpp
-    DATableCellStyle.cpp
-    DATableExporter.cpp
-    DATableDisplayFormat.cpp
-    DATableDisplayFormatComboBox.cpp
-    DATableStyleManager.cpp
-    DATableMetadata.cpp
-    DATableMetadataRegistry.cpp
-    DATableViewStateStore.cpp
-    DATableHighlightOverlay.cpp
-    DATableConditionalFormatRule.cpp
-    DATableConditionalFormatStore.cpp
-    DAConditionalFormatPresets.cpp
-    DATableComputedColumnStore.cpp
-    DATableValidationStore.cpp
-    DATableNoteStore.cpp
-    DATableNoteEditDialog.cpp
-    DATableStyleItemDelegate.cpp
 )
 set(DA_LIB_QT_UI_FILES
-    DADataManageWidget.ui
-    DADataManagerTreeWidget.ui
-    DAGraphicsPixmapItemSettingWidget.ui
-    DAMessageLogViewWidget.ui
-    DANodeItemSettingWidget.ui
-    DANodeLinkItemSettingWidget.ui
-    DANodeSettingWidget.ui
-    DAPyWorkFlowEditWidget.ui
-    DAPyWorkFlowNodeListWidget.ui
-    DAPyWorkFlowNodeItemSettingWidget.ui
-    DASettingDialog.ui
-    DASettingWidget.ui
 )
 set(DA_LIB_QT_RC_FILES
     icon.qrc
 )
-# python about
-list(APPEND DA_LIB_HEADER_FILES
-    DADataOperateOfDataFrameWidget.h
-    DAPyDataFrameTableView.h
-    DAPySeriesTableView.h
-    DAPySeriesListView.h
-)
-list(APPEND DA_LIB_SOURCE_FILES
-    DADataOperateOfDataFrameWidget.cpp
-    DAPyDataFrameTableView.cpp
-    DAPySeriesTableView.cpp
-    DAPySeriesListView.cpp
-)
-list(APPEND DA_LIB_QT_UI_FILES
-    DADataOperateOfDataFrameWidget.ui
-)
-# 子目录
-set(DA_LIB_SUBDIR_Models ${CMAKE_CURRENT_SOURCE_DIR}/Models)
-set(DA_LIB_SUBDIR_Dialog ${CMAKE_CURRENT_SOURCE_DIR}/Dialog)
-set(DA_LIB_SUBDIR_MimeData ${CMAKE_CURRENT_SOURCE_DIR}/MimeData)
-set(DA_LIB_SUBDIR_Commands ${CMAKE_CURRENT_SOURCE_DIR}/Commands)
-set(DA_LIB_SUBDIR_ChartSetting ${CMAKE_CURRENT_SOURCE_DIR}/ChartSetting)
-set(DA_LIB_SUBDIR_Chart3DSetting ${CMAKE_CURRENT_SOURCE_DIR}/Chart3DSetting)
-set(DA_LIB_SUBDIR_NodeSetting ${CMAKE_CURRENT_SOURCE_DIR}/NodeSetting)
-set(DA_LIB_SUBDIR_Chart ${CMAKE_CURRENT_SOURCE_DIR}/Chart)
-set(DA_LIB_SUBDIR_ChartAddItem ${CMAKE_CURRENT_SOURCE_DIR}/ChartAddItem)
-set(DA_LIB_SUBDIR_Agent ${CMAKE_CURRENT_SOURCE_DIR}/Agent)
-set(DA_LIB_SUBDIR_MarkdownView ${CMAKE_CURRENT_SOURCE_DIR}/MarkdownView)
-set(DA_LIB_SUBDIR_Stats ${CMAKE_CURRENT_SOURCE_DIR}/Stats)
-set(DA_LIB_SUBDIR_TableChart ${CMAKE_CURRENT_SOURCE_DIR}/TableChart)
-set(DA_LIB_SUBDIR_TableChildWindow ${CMAKE_CURRENT_SOURCE_DIR}/TableChildWindow)
-set(DA_LIB_SUBDIR_TableCore ${CMAKE_CURRENT_SOURCE_DIR}/TableCore)
-set(DA_LIB_SUBDIR_TableNote ${CMAKE_CURRENT_SOURCE_DIR}/TableNote)
-set(DA_LIB_SUBDIR_TableQuickPlot ${CMAKE_CURRENT_SOURCE_DIR}/TableQuickPlot)
-set(DA_LIB_SUBDIR_TableValidation ${CMAKE_CURRENT_SOURCE_DIR}/TableValidation)
-set(DA_LIB_SUBDIR_TableComputedColumn ${CMAKE_CURRENT_SOURCE_DIR}/TableComputedColumn)
-set(DA_LIB_SUBDIR_TableConditionalFormat ${CMAKE_CURRENT_SOURCE_DIR}/TableConditionalFormat)
-set(DA_LIB_SUBDIR_TableFind ${CMAKE_CURRENT_SOURCE_DIR}/TableFind)
-set(DA_LIB_SUBDIR_TableStyle ${CMAKE_CURRENT_SOURCE_DIR}/TableStyle)
-set(DA_LIB_SUBDIR_TableSort ${CMAKE_CURRENT_SOURCE_DIR}/TableSort)
-set(DA_LIB_SUBDIR_TableViewState ${CMAKE_CURRENT_SOURCE_DIR}/TableViewState)
-set(DA_LIB_SUBDIR_TableColumnView ${CMAKE_CURRENT_SOURCE_DIR}/TableColumnView)
-set(DA_LIB_SUBDIR_TableOps ${CMAKE_CURRENT_SOURCE_DIR}/TableOps)
-set(DA_LIB_SUBDIR_TableNavigation ${CMAKE_CURRENT_SOURCE_DIR}/TableNavigation)
 
-# Models
-file(GLOB DA_LIB_HEADER_FILES_Models ${DA_LIB_SUBDIR_Models}/*.h)
-file(GLOB DA_LIB_SOURCE_FILES_Models ${DA_LIB_SUBDIR_Models}/*.cpp)
-
-#Dialog
-set(DA_LIB_HEADER_FILES_Dialog
-    ${DA_LIB_SUBDIR_Dialog}/DARenameColumnsNameDialog.h
-)
-set(DA_LIB_SOURCE_FILES_Dialog
-    ${DA_LIB_SUBDIR_Dialog}/DARenameColumnsNameDialog.cpp
-)
-set(DA_LIB_QT_UI_FILES_Dialog
-    ${DA_LIB_SUBDIR_Dialog}/DARenameColumnsNameDialog.ui
-)
-list(APPEND DA_LIB_HEADER_FILES_Dialog
-    ${DA_LIB_SUBDIR_Dialog}/DATxtFileImportDialog.h
-    ${DA_LIB_SUBDIR_Dialog}/DADialogChartGuide.h
-    ${DA_LIB_SUBDIR_Dialog}/DADialogStatsChartGuide.h
-    ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnCastToDatetime.h
-    ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnCastToNumeric.h
-    ${DA_LIB_SUBDIR_Dialog}/DADialogInsertNewColumn.h
-    ${DA_LIB_SUBDIR_Dialog}/DADialogPythonArgs.h
-    ${DA_LIB_SUBDIR_Dialog}/DADialogAgentSessionManager.h
-    ${DA_LIB_SUBDIR_Dialog}/DADialogTableDisplayFormat.h
-    ${DA_LIB_SUBDIR_Dialog}/DADialogFindReplace.h
-    ${DA_LIB_SUBDIR_Dialog}/DADialogConditionalFormat.h
-    ${DA_LIB_SUBDIR_Dialog}/DADialogConditionalFormatQuickRule.h
-    ${DA_LIB_SUBDIR_Dialog}/DADialogComputedColumn.h
-    ${DA_LIB_SUBDIR_Dialog}/DADialogSplitColumn.h
-    ${DA_LIB_SUBDIR_Dialog}/DADialogMergeColumns.h
-    ${DA_LIB_SUBDIR_Dialog}/DADialogGroupBy.h
-    ${DA_LIB_SUBDIR_Dialog}/DADialogReshape.h
-    ${DA_LIB_SUBDIR_Dialog}/DADialogFillSeries.h
-    ${DA_LIB_SUBDIR_Dialog}/DADialogValidationRules.h
-    ${DA_LIB_SUBDIR_Dialog}/DADialogValidationReport.h
-    ${DA_LIB_SUBDIR_Dialog}/DADialogTableColumnView.h
-    ${DA_LIB_SUBDIR_Dialog}/DADialogGotoCell.h
-)
-list(APPEND DA_LIB_SOURCE_FILES_Dialog
-    ${DA_LIB_SUBDIR_Dialog}/DATxtFileImportDialog.cpp
-    ${DA_LIB_SUBDIR_Dialog}/DADialogChartGuide.cpp
-    ${DA_LIB_SUBDIR_Dialog}/DADialogStatsChartGuide.cpp
-    ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnCastToDatetime.cpp
-    ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnCastToNumeric.cpp
-    ${DA_LIB_SUBDIR_Dialog}/DADialogInsertNewColumn.cpp
-    ${DA_LIB_SUBDIR_Dialog}/DADialogPythonArgs.cpp
-    ${DA_LIB_SUBDIR_Dialog}/DADialogAgentSessionManager.cpp
-    ${DA_LIB_SUBDIR_Dialog}/DADialogTableDisplayFormat.cpp
-    ${DA_LIB_SUBDIR_Dialog}/DADialogFindReplace.cpp
-    ${DA_LIB_SUBDIR_Dialog}/DADialogConditionalFormat.cpp
-    ${DA_LIB_SUBDIR_Dialog}/DADialogConditionalFormatQuickRule.cpp
-    ${DA_LIB_SUBDIR_Dialog}/DADialogComputedColumn.cpp
-    ${DA_LIB_SUBDIR_Dialog}/DADialogSplitColumn.cpp
-    ${DA_LIB_SUBDIR_Dialog}/DADialogMergeColumns.cpp
-    ${DA_LIB_SUBDIR_Dialog}/DADialogGroupBy.cpp
-    ${DA_LIB_SUBDIR_Dialog}/DADialogReshape.cpp
-    ${DA_LIB_SUBDIR_Dialog}/DADialogFillSeries.cpp
-    ${DA_LIB_SUBDIR_Dialog}/DADialogValidationRules.cpp
-    ${DA_LIB_SUBDIR_Dialog}/DADialogValidationReport.cpp
-    ${DA_LIB_SUBDIR_Dialog}/DADialogTableColumnView.cpp
-    ${DA_LIB_SUBDIR_Dialog}/DADialogGotoCell.cpp
-)
-list(APPEND DA_LIB_QT_UI_FILES_Dialog
-    ${DA_LIB_SUBDIR_Dialog}/DATxtFileImportDialog.ui
-    ${DA_LIB_SUBDIR_Dialog}/DADialogChartGuide.ui
-    ${DA_LIB_SUBDIR_Dialog}/DADialogStatsChartGuide.ui
-    ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnCastToDatetime.ui
-    ${DA_LIB_SUBDIR_Dialog}/DADialogDataframeColumnCastToNumeric.ui
-    ${DA_LIB_SUBDIR_Dialog}/DADialogInsertNewColumn.ui
-    ${DA_LIB_SUBDIR_Dialog}/DADialogFindReplace.ui
-)
-#MimeData
-file(GLOB DA_LIB_HEADER_FILES_MimeData ${DA_LIB_SUBDIR_MimeData}/*.h)
-file(GLOB DA_LIB_SOURCE_FILES_MimeData ${DA_LIB_SUBDIR_MimeData}/*.cpp)
-
-#Commands
-set(DA_LIB_HEADER_FILES_Commands
-    ${DA_LIB_SUBDIR_Commands}/DACommandWithRedoCount.h
-    ${DA_LIB_SUBDIR_Commands}/DACommandsForWorkFlow.h
-    ${DA_LIB_SUBDIR_Commands}/DACommandsTableStyle.h
-    ${DA_LIB_SUBDIR_Commands}/DACommandsTableColumnFormat.h
-    ${DA_LIB_SUBDIR_Commands}/DACommandsConditionalFormat.h
-    ${DA_LIB_SUBDIR_Commands}/DACommandsTableValidation.h
-    ${DA_LIB_SUBDIR_Commands}/DACommandsTableColumnView.h
-)
-set(DA_LIB_SOURCE_FILES_Commands
-    ${DA_LIB_SUBDIR_Commands}/DACommandWithRedoCount.cpp
-    ${DA_LIB_SUBDIR_Commands}/DACommandsForWorkFlow.cpp
-    ${DA_LIB_SUBDIR_Commands}/DACommandsTableStyle.cpp
-    ${DA_LIB_SUBDIR_Commands}/DACommandsTableColumnFormat.cpp
-    ${DA_LIB_SUBDIR_Commands}/DACommandsConditionalFormat.cpp
-    ${DA_LIB_SUBDIR_Commands}/DACommandsTableValidation.cpp
-    ${DA_LIB_SUBDIR_Commands}/DACommandsTableColumnView.cpp
-)
-list(APPEND DA_LIB_HEADER_FILES_Commands
-    ${DA_LIB_SUBDIR_Commands}/DACommandWithTemporaryData.h
-    ${DA_LIB_SUBDIR_Commands}/DACommandsDataFrame.h
-)
-list(APPEND DA_LIB_SOURCE_FILES_Commands
-    ${DA_LIB_SUBDIR_Commands}/DACommandWithTemporaryData.cpp
-    ${DA_LIB_SUBDIR_Commands}/DACommandsDataFrame.cpp
+# 领域列表：新增领域时在此追加一级目录名
+set(DA_GUI_DOMAINS
+    Table
+    Chart
+    Workflow
+    Agent
+    Archive
+    Common
 )
 
-#ChartSetting（直接遍历，不需要区分）
-file(GLOB DA_LIB_HEADER_FILES_ChartSetting ${DA_LIB_SUBDIR_ChartSetting}/*.h)
-file(GLOB DA_LIB_SOURCE_FILES_ChartSetting ${DA_LIB_SUBDIR_ChartSetting}/*.cpp)
-file(GLOB DA_LIB_UI_FILES_ChartSetting ${DA_LIB_SUBDIR_ChartSetting}/*.ui)
+set(DA_LIB_HEADER_FILES_Domain)
+set(DA_LIB_SOURCE_FILES_Domain)
+set(DA_LIB_QT_UI_FILES_Domain)
+set(DA_LIB_QT_RC_FILES_Domain)
+foreach(_domain IN LISTS DA_GUI_DOMAINS)
+    file(GLOB_RECURSE _domain_headers CONFIGURE_DEPENDS
+        ${CMAKE_CURRENT_SOURCE_DIR}/${_domain}/*.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/${_domain}/*.hpp)
+    file(GLOB_RECURSE _domain_sources CONFIGURE_DEPENDS
+        ${CMAKE_CURRENT_SOURCE_DIR}/${_domain}/*.cpp)
+    file(GLOB_RECURSE _domain_uis CONFIGURE_DEPENDS
+        ${CMAKE_CURRENT_SOURCE_DIR}/${_domain}/*.ui)
+    file(GLOB_RECURSE _domain_rcs CONFIGURE_DEPENDS
+        ${CMAKE_CURRENT_SOURCE_DIR}/${_domain}/*.qrc)
+    list(APPEND DA_LIB_HEADER_FILES_Domain ${_domain_headers})
+    list(APPEND DA_LIB_SOURCE_FILES_Domain ${_domain_sources})
+    list(APPEND DA_LIB_QT_UI_FILES_Domain ${_domain_uis})
+    list(APPEND DA_LIB_QT_RC_FILES_Domain ${_domain_rcs})
+endforeach()
 
-#Chart3DSetting
-file(GLOB DA_LIB_HEADER_FILES_Chart3DSetting ${DA_LIB_SUBDIR_Chart3DSetting}/*.h)
-file(GLOB DA_LIB_SOURCE_FILES_Chart3DSetting ${DA_LIB_SUBDIR_Chart3DSetting}/*.cpp)
-file(GLOB DA_LIB_UI_FILES_Chart3DSetting ${DA_LIB_SUBDIR_Chart3DSetting}/*.ui)
-
-#NodeSetting
-file(GLOB DA_LIB_HEADER_FILES_NodeSetting ${DA_LIB_SUBDIR_NodeSetting}/*.h)
-file(GLOB DA_LIB_SOURCE_FILES_NodeSetting ${DA_LIB_SUBDIR_NodeSetting}/*.cpp)
-
-#Chart
-set(DA_LIB_HEADER_FILES_Chart
-    ${DA_LIB_SUBDIR_Chart}/DAChartOperateWidget.h
-    ${DA_LIB_SUBDIR_Chart}/DAChartManageWidget.h
-    ${DA_LIB_SUBDIR_Chart}/DAChartSettingWidget.h
-    ${DA_LIB_SUBDIR_Chart}/DAChartItemsManager.h
-    ${DA_LIB_SUBDIR_Chart}/DAFigureDockWidget.h
-    ${DA_LIB_SUBDIR_Chart}/DAFigureDockWidgetTab.h
-    ${DA_LIB_SUBDIR_Chart}/DAFigureComponentsFactory.h
-    ${DA_LIB_SUBDIR_Chart}/DADataLinkTableWidget.h
-    ${DA_LIB_SUBDIR_Chart}/DADataLinkTableTab.h
-    ${DA_LIB_SUBDIR_Chart}/DADataLinkTableModel.h
-    ${DA_LIB_SUBDIR_Chart}/DADataLinkTableDelegate.h
-    ${DA_LIB_SUBDIR_Chart}/DAChartOperateWidgetCommands.h
+# 领域内子目录：用于头文件安装（include 统一写 "领域/子目录/头文件.h"）
+set(DA_GUI_HEADER_DIRS
+    Table
+    Table/Core
+    Table/Controllers
+    Table/Views
+    Table/Models
+    Table/DataManager
+    Table/Metadata
+    Table/Ops
+    Table/Chart
+    Table/Commands
+    Table/Dialogs
+    Chart
+    Chart/Setting
+    Chart/Setting3D
+    Chart/AddItem
+    Workflow
+    Workflow/NodeSetting
+    Agent
+    Archive
+    Common
+    Common/Settings
+    Common/MarkdownView
 )
-set(DA_LIB_SOURCE_FILES_Chart
-    ${DA_LIB_SUBDIR_Chart}/DAChartOperateWidget.cpp
-    ${DA_LIB_SUBDIR_Chart}/DAChartManageWidget.cpp
-    ${DA_LIB_SUBDIR_Chart}/DAChartSettingWidget.cpp
-    ${DA_LIB_SUBDIR_Chart}/DAChartItemsManager.cpp
-    ${DA_LIB_SUBDIR_Chart}/DAFigureDockWidget.cpp
-    ${DA_LIB_SUBDIR_Chart}/DAFigureDockWidgetTab.cpp
-    ${DA_LIB_SUBDIR_Chart}/DAFigureComponentsFactory.cpp
-    ${DA_LIB_SUBDIR_Chart}/DADataLinkTableWidget.cpp
-    ${DA_LIB_SUBDIR_Chart}/DADataLinkTableTab.cpp
-    ${DA_LIB_SUBDIR_Chart}/DADataLinkTableModel.cpp
-    ${DA_LIB_SUBDIR_Chart}/DADataLinkTableDelegate.cpp
-    ${DA_LIB_SUBDIR_Chart}/DAChartOperateWidgetCommands.cpp
-)
-set(DA_LIB_QT_UI_FILES_Chart
-    ${DA_LIB_SUBDIR_Chart}/DAChartManageWidget.ui
-    ${DA_LIB_SUBDIR_Chart}/DAChartSettingWidget.ui
-)
-
-#ChartAddItem
-# 非 Python 部分（保持原门控语义：两个基类 .cpp 不依赖 Python）
-set(DA_LIB_HEADER_FILES_ChartAddItem
-    ${DA_LIB_SUBDIR_ChartAddItem}/DAAbstractChartAddItemWidget.h
-    ${DA_LIB_SUBDIR_ChartAddItem}/DAAbstractChartAddWidgetBase.h
-    ${DA_LIB_SUBDIR_ChartAddItem}/DAAbstractStatsChartAddWidget.h
-)
-set(DA_LIB_SOURCE_FILES_ChartAddItem
-    ${DA_LIB_SUBDIR_ChartAddItem}/DAAbstractChartAddItemWidget.cpp
-    ${DA_LIB_SUBDIR_ChartAddItem}/DAAbstractChartAddWidgetBase.cpp
-    ${DA_LIB_SUBDIR_ChartAddItem}/DAAbstractStatsChartAddWidget.cpp
-)
-# Python 部分（DAAbstractChart3DAddItemWidget 等）
-list(APPEND DA_LIB_HEADER_FILES_ChartAddItem
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAAbstractChart3DAddItemWidget.h
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddItemWidgetFactory.h
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartSeriesDataResult.h
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartSeriesPickerWidget.h
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartSeriesSelectWidget.h
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddXYSeriesWidget.h
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddXYESeriesWidget.h
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAutoincrementSeriesWidget.h
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddtGridRasterDataWidget.h
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddOHLCSeriesWidget.h
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddCurveWidget.h
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddBarWidget.h
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddIntervalCurveWidget.h
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddTradingCurveWidget.h
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddErrorBarWidget.h
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddBoxChartWidget.h
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddMultiBarWidget.h
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddHistogramWidget.h
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddContourWidget.h
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddVectorFieldWidget.h
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddSpectrogramWidget.h
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAdd3DSurfaceWidget.h
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAdd3DBarWidget.h
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAdd3DLineWidget.h
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddStatsHistplotWidget.h
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddStatsKdeplot1dWidget.h
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddStatsKdeplot2dWidget.h
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddStatsBoxplotWidget.h
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddStatsHeatmapWidget.h
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddStatsScatterplotWidget.h
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddStatsBarplotWidget.h
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddStatsRegplotWidget.h
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddStatsEcdfplotWidget.h
-    )
-    list(APPEND DA_LIB_SOURCE_FILES_ChartAddItem
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAAbstractChart3DAddItemWidget.cpp
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddItemWidgetFactory.cpp
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartSeriesDataResult.cpp
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartSeriesPickerWidget.cpp
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartSeriesSelectWidget.cpp
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddXYSeriesWidget.cpp
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddXYESeriesWidget.cpp
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAutoincrementSeriesWidget.cpp
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddtGridRasterDataWidget.cpp
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddOHLCSeriesWidget.cpp
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddCurveWidget.cpp
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddBarWidget.cpp
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddIntervalCurveWidget.cpp
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddSpectrogramWidget.cpp
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddTradingCurveWidget.cpp
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddErrorBarWidget.cpp
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddBoxChartWidget.cpp
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddMultiBarWidget.cpp
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddHistogramWidget.cpp
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddContourWidget.cpp
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddVectorFieldWidget.cpp
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAdd3DSurfaceWidget.cpp
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAdd3DBarWidget.cpp
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAdd3DLineWidget.cpp
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddStatsHistplotWidget.cpp
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddStatsKdeplot1dWidget.cpp
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddStatsKdeplot2dWidget.cpp
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddStatsBoxplotWidget.cpp
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddStatsHeatmapWidget.cpp
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddStatsScatterplotWidget.cpp
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddStatsBarplotWidget.cpp
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddStatsRegplotWidget.cpp
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddStatsEcdfplotWidget.cpp
-    )
-    list(APPEND DA_LIB_QT_UI_FILES_ChartAddItem
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartSeriesPickerWidget.ui
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartSeriesSelectWidget.ui
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddXYSeriesWidget.ui
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddXYESeriesWidget.ui
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddOHLCSeriesWidget.ui
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddtGridRasterDataWidget.ui
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddBoxChartWidget.ui
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddMultiBarWidget.ui
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddHistogramWidget.ui
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddContourWidget.ui
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddVectorFieldWidget.ui
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAdd3DSurfaceWidget.ui
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAdd3DBarWidget.ui
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAdd3DLineWidget.ui
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddStatsHistplotWidget.ui
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddStatsKdeplot1dWidget.ui
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddStatsKdeplot2dWidget.ui
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddStatsBoxplotWidget.ui
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddStatsHeatmapWidget.ui
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddStatsScatterplotWidget.ui
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddStatsBarplotWidget.ui
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddStatsRegplotWidget.ui
-        ${DA_LIB_SUBDIR_ChartAddItem}/DAChartAddStatsEcdfplotWidget.ui
-        # 注：DAChartAddBarWidget / DAChartAddErrorBarWidget / DAChartAddIntervalCurveWidget /
-        #     DAChartAddTradingCurveWidget 复用基类 .ui，无独立 .ui 文件
-        # 注：DAChartAddCurveWidget.ui / DAChartAddSpectrogramWidget.ui 存在于磁盘但当前未纳入
-        #     构建（其 .cpp 未 include 对应 ui_ 头），保持原有构建行为不纳入 CMake UI 列表
-    )
-
-#Agent
-file(GLOB DA_LIB_HEADER_FILES_Agent ${DA_LIB_SUBDIR_Agent}/*.h)
-file(GLOB DA_LIB_SOURCE_FILES_Agent ${DA_LIB_SUBDIR_Agent}/*.cpp)
-file(GLOB DA_LIB_RC_FILES_Agent ${DA_LIB_SUBDIR_Agent}/*.qrc ${DA_LIB_SUBDIR_Agent}/resources/*.qrc)
-
-#MarkdownView
-file(GLOB DA_LIB_HEADER_FILES_MarkdownView ${DA_LIB_SUBDIR_MarkdownView}/*.h)
-file(GLOB DA_LIB_SOURCE_FILES_MarkdownView ${DA_LIB_SUBDIR_MarkdownView}/*.cpp)
-file(GLOB DA_LIB_RC_FILES_MarkdownView ${DA_LIB_SUBDIR_MarkdownView}/*.qrc ${DA_LIB_SUBDIR_MarkdownView}/resources/*.qrc)
-
-#Stats（统计绘图核心：Python 聚合 + C++ 渲染管线，统计向导与快速绘图共用）
-file(GLOB DA_LIB_HEADER_FILES_Stats ${DA_LIB_SUBDIR_Stats}/*.h)
-file(GLOB DA_LIB_SOURCE_FILES_Stats ${DA_LIB_SUBDIR_Stats}/*.cpp)
-
-#TableChart（表内快速绘图：请求/规格/采样/图元构建/浮窗）
-file(GLOB DA_LIB_HEADER_FILES_TableChart ${DA_LIB_SUBDIR_TableChart}/*.h)
-file(GLOB DA_LIB_SOURCE_FILES_TableChart ${DA_LIB_SUBDIR_TableChart}/*.cpp)
-
-#TableChildWindow（表格子窗口容器：任意部件贴入表格变成可移动/可缩放子窗口）
-file(GLOB DA_LIB_HEADER_FILES_TableChildWindow ${DA_LIB_SUBDIR_TableChildWindow}/*.h)
-file(GLOB DA_LIB_SOURCE_FILES_TableChildWindow ${DA_LIB_SUBDIR_TableChildWindow}/*.cpp)
-
-#TableCore（表格页核心：页面上下文与选区服务等，008 表格页重构）
-file(GLOB DA_LIB_HEADER_FILES_TableCore ${DA_LIB_SUBDIR_TableCore}/*.h)
-file(GLOB DA_LIB_SOURCE_FILES_TableCore ${DA_LIB_SUBDIR_TableCore}/*.cpp)
-
-#TableNote（单元格批注控制器，008 期3）
-file(GLOB DA_LIB_HEADER_FILES_TableNote ${DA_LIB_SUBDIR_TableNote}/*.h)
-file(GLOB DA_LIB_SOURCE_FILES_TableNote ${DA_LIB_SUBDIR_TableNote}/*.cpp)
-
-#TableQuickPlot（表内快速绘图控制器，008 期3）
-file(GLOB DA_LIB_HEADER_FILES_TableQuickPlot ${DA_LIB_SUBDIR_TableQuickPlot}/*.h)
-file(GLOB DA_LIB_SOURCE_FILES_TableQuickPlot ${DA_LIB_SUBDIR_TableQuickPlot}/*.cpp)
-
-#TableValidation（数据校验控制器，008 期3）
-file(GLOB DA_LIB_HEADER_FILES_TableValidation ${DA_LIB_SUBDIR_TableValidation}/*.h)
-file(GLOB DA_LIB_SOURCE_FILES_TableValidation ${DA_LIB_SUBDIR_TableValidation}/*.cpp)
-
-#TableComputedColumn（计算列控制器，008 期3）
-file(GLOB DA_LIB_HEADER_FILES_TableComputedColumn ${DA_LIB_SUBDIR_TableComputedColumn}/*.h)
-file(GLOB DA_LIB_SOURCE_FILES_TableComputedColumn ${DA_LIB_SUBDIR_TableComputedColumn}/*.cpp)
-
-#TableConditionalFormat（条件格式控制器，008 期3）
-file(GLOB DA_LIB_HEADER_FILES_TableConditionalFormat ${DA_LIB_SUBDIR_TableConditionalFormat}/*.h)
-file(GLOB DA_LIB_SOURCE_FILES_TableConditionalFormat ${DA_LIB_SUBDIR_TableConditionalFormat}/*.cpp)
-
-#TableFind（查找/替换控制器，008 期3）
-file(GLOB DA_LIB_HEADER_FILES_TableFind ${DA_LIB_SUBDIR_TableFind}/*.h)
-file(GLOB DA_LIB_SOURCE_FILES_TableFind ${DA_LIB_SUBDIR_TableFind}/*.cpp)
-
-#TableStyle（样式与列显示格式控制器，008 期3）
-file(GLOB DA_LIB_HEADER_FILES_TableStyle ${DA_LIB_SUBDIR_TableStyle}/*.h)
-file(GLOB DA_LIB_SOURCE_FILES_TableStyle ${DA_LIB_SUBDIR_TableStyle}/*.cpp)
-
-#TableSort（排序控制器，008 期3）
-file(GLOB DA_LIB_HEADER_FILES_TableSort ${DA_LIB_SUBDIR_TableSort}/*.h)
-file(GLOB DA_LIB_SOURCE_FILES_TableSort ${DA_LIB_SUBDIR_TableSort}/*.cpp)
-
-#TableViewState（视图状态控制器，008 期3）
-file(GLOB DA_LIB_HEADER_FILES_TableViewState ${DA_LIB_SUBDIR_TableViewState}/*.h)
-file(GLOB DA_LIB_SOURCE_FILES_TableViewState ${DA_LIB_SUBDIR_TableViewState}/*.cpp)
-
-#TableColumnView（列视图控制器，008 期3）
-file(GLOB DA_LIB_HEADER_FILES_TableColumnView ${DA_LIB_SUBDIR_TableColumnView}/*.h)
-file(GLOB DA_LIB_SOURCE_FILES_TableColumnView ${DA_LIB_SUBDIR_TableColumnView}/*.cpp)
-
-#TableOps（表格数据操作算子族，008 期4）
-file(GLOB DA_LIB_HEADER_FILES_TableOps ${DA_LIB_SUBDIR_TableOps}/*.h)
-file(GLOB DA_LIB_SOURCE_FILES_TableOps ${DA_LIB_SUBDIR_TableOps}/*.cpp)
-
-#TableNavigation（表格导航服务，008 期5）
-file(GLOB DA_LIB_HEADER_FILES_TableNavigation ${DA_LIB_SUBDIR_TableNavigation}/*.h)
-file(GLOB DA_LIB_SOURCE_FILES_TableNavigation ${DA_LIB_SUBDIR_TableNavigation}/*.cpp)
 
 # Agent UI 需要 WebEngine/WebChannel/Network（DAGui/Agent 子目录的 DAAgentDockWidget 等）
 # Qt5 的一体化模块 QtWebEngine 在 Qt6 中拆分为 WebEngineCore/WebEngineQuick/WebEngineWidgets，
@@ -588,108 +110,24 @@ da_add_library(
             ${DA_LIB_SOURCE_FILES}
             ${DA_LIB_QT_UI_FILES}
             ${DA_LIB_QT_RC_FILES}
-            #Models
-            ${DA_LIB_HEADER_FILES_Models}
-            ${DA_LIB_SOURCE_FILES_Models}
-            #Dialog
-            ${DA_LIB_HEADER_FILES_Dialog}
-            ${DA_LIB_SOURCE_FILES_Dialog}
-            ${DA_LIB_QT_UI_FILES_Dialog}
-            #MimeData
-            ${DA_LIB_HEADER_FILES_MimeData}
-            ${DA_LIB_SOURCE_FILES_MimeData}
-            #Commands
-            ${DA_LIB_HEADER_FILES_Commands}
-            ${DA_LIB_SOURCE_FILES_Commands}
-            #ChartSetting
-            ${DA_LIB_HEADER_FILES_ChartSetting}
-            ${DA_LIB_SOURCE_FILES_ChartSetting}
-            ${DA_LIB_UI_FILES_ChartSetting}
-            #Chart3DSetting
-            ${DA_LIB_HEADER_FILES_Chart3DSetting}
-            ${DA_LIB_SOURCE_FILES_Chart3DSetting}
-            ${DA_LIB_UI_FILES_Chart3DSetting}
-            #NodeSetting
-            ${DA_LIB_HEADER_FILES_NodeSetting}
-            ${DA_LIB_SOURCE_FILES_NodeSetting}
-            #Chart
-            ${DA_LIB_HEADER_FILES_Chart}
-            ${DA_LIB_SOURCE_FILES_Chart}
-            ${DA_LIB_QT_UI_FILES_Chart}
-            #ChartAddItem
-            ${DA_LIB_HEADER_FILES_ChartAddItem}
-            ${DA_LIB_SOURCE_FILES_ChartAddItem}
-            ${DA_LIB_QT_UI_FILES_ChartAddItem}
-            #Agent
-            ${DA_LIB_HEADER_FILES_Agent}
-            ${DA_LIB_SOURCE_FILES_Agent}
-            ${DA_LIB_RC_FILES_Agent}
-            #MarkdownView
-            ${DA_LIB_HEADER_FILES_MarkdownView}
-            ${DA_LIB_SOURCE_FILES_MarkdownView}
-            ${DA_LIB_RC_FILES_MarkdownView}
-            #Stats
-            ${DA_LIB_HEADER_FILES_Stats}
-            ${DA_LIB_SOURCE_FILES_Stats}
-            #TableChart
-            ${DA_LIB_HEADER_FILES_TableChart}
-            ${DA_LIB_SOURCE_FILES_TableChart}
-            #TableChildWindow
-            ${DA_LIB_HEADER_FILES_TableChildWindow}
-            ${DA_LIB_SOURCE_FILES_TableChildWindow}
-            #TableCore
-            ${DA_LIB_HEADER_FILES_TableCore}
-            ${DA_LIB_SOURCE_FILES_TableCore}
-            #TableNote
-            ${DA_LIB_HEADER_FILES_TableNote}
-            ${DA_LIB_SOURCE_FILES_TableNote}
-            #TableQuickPlot
-            ${DA_LIB_HEADER_FILES_TableQuickPlot}
-            ${DA_LIB_SOURCE_FILES_TableQuickPlot}
-            #TableValidation
-            ${DA_LIB_HEADER_FILES_TableValidation}
-            ${DA_LIB_SOURCE_FILES_TableValidation}
-            #TableComputedColumn
-            ${DA_LIB_HEADER_FILES_TableComputedColumn}
-            ${DA_LIB_SOURCE_FILES_TableComputedColumn}
-            #TableConditionalFormat
-            ${DA_LIB_HEADER_FILES_TableConditionalFormat}
-            ${DA_LIB_SOURCE_FILES_TableConditionalFormat}
-            #TableFind
-            ${DA_LIB_HEADER_FILES_TableFind}
-            ${DA_LIB_SOURCE_FILES_TableFind}
-            #TableStyle
-            ${DA_LIB_HEADER_FILES_TableStyle}
-            ${DA_LIB_SOURCE_FILES_TableStyle}
-            #TableSort
-            ${DA_LIB_HEADER_FILES_TableSort}
-            ${DA_LIB_SOURCE_FILES_TableSort}
-            #TableViewState
-            ${DA_LIB_HEADER_FILES_TableViewState}
-            ${DA_LIB_SOURCE_FILES_TableViewState}
-            #TableColumnView
-            ${DA_LIB_HEADER_FILES_TableColumnView}
-            ${DA_LIB_SOURCE_FILES_TableColumnView}
-            #TableOps
-            ${DA_LIB_HEADER_FILES_TableOps}
-            ${DA_LIB_SOURCE_FILES_TableOps}
-            #TableNavigation
-            ${DA_LIB_HEADER_FILES_TableNavigation}
-            ${DA_LIB_SOURCE_FILES_TableNavigation}
+            ${DA_LIB_HEADER_FILES_Domain}
+            ${DA_LIB_SOURCE_FILES_Domain}
+            ${DA_LIB_QT_UI_FILES_Domain}
+            ${DA_LIB_QT_RC_FILES_Domain}
             ${CMAKE_CURRENT_SOURCE_DIR}/../DAGlobals.h
     QT_PUBLIC Core Gui Widgets Xml Svg ${DAGUI_WEBENGINE_COMPS}
     LINK_PUBLIC DAUtils DAMessageHandler DAData DAPyWorkFlow DAFigure
                 DAPyBindQt DAPyScripts DAPyCommonWidgets
     # DAWidgets 提供基础 UI 控件（DAColorPickerButton/DAPenEditWidget/DAPropertyItemWidget 等），
-    # 迁移自 DACommonWidgets 的 DAFormEditorRegistry/DAPropertyPanelWidget 等依赖这些控件。
     # DAGui 的头文件暴露 DAWidgets/ADS/qwt 的头（ui 提升与图表接口），需 PUBLIC
     THIRDPARTY_PUBLIC DAWidgets ads qwt quazip
     THIRDPARTY python pybind11 SARibbonBar ctk
-    # ui 文件进行窗口提升时需要找到这些子目录的头文件
-    PUBLIC_SUBDIRS Dialog ChartSetting Chart3DSetting NodeSetting Chart ChartAddItem Agent MarkdownView Stats TableChart TableChildWindow TableCore TableNote TableQuickPlot TableValidation TableComputedColumn TableConditionalFormat TableFind TableStyle TableSort TableViewState TableColumnView TableOps TableNavigation
-    # 头文件安装：根 + 各子目录
-    HEADERS_DIRS Models MimeData Commands ChartSetting Chart3DSetting NodeSetting Chart ChartAddItem Agent MarkdownView Stats TableChart TableChildWindow TableCore TableNote TableQuickPlot TableValidation TableComputedColumn TableConditionalFormat TableFind TableStyle TableSort TableViewState TableColumnView TableOps TableNavigation
-    HEADERS ${DA_LIB_HEADER_FILES} ${DA_LIB_HEADER_FILES_Dialog}
+    # Chart/Agent 目录内仍有同目录短名 include 与外部短名引用，保留这两个 include 路径；
+    # 其余目录统一使用 "领域/子目录/头文件" 全路径（从 DAGui 根解析）
+    PUBLIC_SUBDIRS Chart Agent
+    # 头文件安装：根 + 各领域子目录
+    HEADERS_DIRS ${DA_GUI_HEADER_DIRS}
+    HEADERS ${DA_LIB_HEADER_FILES}
 )
 
 if(${QT_VERSION_MAJOR} EQUAL 6)
