@@ -94,10 +94,10 @@ W' = W + Δ    v' = v - Δ    ⇒    T' = W' + v' = T
 
 | 关注点 | 位置 |
 | --- | --- |
-| 视图导航、缓冲区搬家、键位 | `src/DAGui/DACacheWindowTableView.h/.cpp` |
-| 整表坐标滚动条 | `src/DAGui/DAVirtualScrollBar.h/.cpp` |
-| 窗口起始行与合法上界、绝对行通知 | `src/DAGui/Models/DAAbstractCacheWindowTableModel.h/.cpp` |
-| 块级取数 | `src/DAGui/Models/DADataTableModel.cpp`（`ensureBlockCached`） |
+| 视图导航、缓冲区搬家、键位 | `src/DAGui/Table/Views/DACacheWindowTableView.h/.cpp` |
+| 整表坐标滚动条 | `src/DAGui/Table/Views/DAVirtualScrollBar.h/.cpp` |
+| 窗口起始行与合法上界、绝对行通知 | `src/DAGui/Table/Models/DAAbstractCacheWindowTableModel.h/.cpp` |
+| 块级取数 | `src/DAGui/Table/Models/DADataTableModel.cpp`（`ensureBlockCached`） |
 | 导航协议回归测试 | `src/tst/DATableNavigationTest/`（窗口不变量、逐行遍历、翻页、滚轮、定位、拖动、搬窗后视图状态、行号口径、结构变化自愈） |
 
 ```bash

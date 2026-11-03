@@ -181,25 +181,25 @@ classDiagram
 
 | 文件 | 说明 |
 |------|------|
-| `src/DAGui/DATableMetadataRegistry.h/.cpp` | 会话级注册表（按 DAData 键控） |
-| `src/DAGui/DATableMetadata.h/.cpp` | 元数据束（聚合子存储 + 统一序列化） |
-| `src/DAGui/DATableViewStateStore.h/.cpp` | 视图状态子存储（列宽/行头宽/列序/隐藏/冻结列） |
-| `src/DAGui/DATablePaneContainer.h/.cpp` | 列轴窗格容器（主窗格 + 冻结窗格投影，006） |
-| `src/DAGui/DATableConditionalFormatRule.h/.cpp` | 条件格式规则（纯数据类 + 求值/插值/归一化纯函数） |
-| `src/DAGui/DATableConditionalFormatStore.h/.cpp` | 条件格式子存储（列桶/统计缓存/预览/`<conditional-format>` 段） |
+| `src/DAGui/Table/Metadata/DATableMetadataRegistry.h/.cpp` | 会话级注册表（按 DAData 键控） |
+| `src/DAGui/Table/Metadata/DATableMetadata.h/.cpp` | 元数据束（聚合子存储 + 统一序列化） |
+| `src/DAGui/Table/Metadata/DATableViewStateStore.h/.cpp` | 视图状态子存储（列宽/行头宽/列序/隐藏/冻结列） |
+| `src/DAGui/Table/Views/DATablePaneContainer.h/.cpp` | 列轴窗格容器（主窗格 + 冻结窗格投影，006） |
+| `src/DAGui/Table/Metadata/DATableConditionalFormatRule.h/.cpp` | 条件格式规则（纯数据类 + 求值/插值/归一化纯函数） |
+| `src/DAGui/Table/Metadata/DATableConditionalFormatStore.h/.cpp` | 条件格式子存储（列桶/统计缓存/预览/`<conditional-format>` 段） |
 | `src/DAData/DAComputedColumn.h/.cpp` | 计算列定义（纯数据类，无 GUI 依赖，004 T1.23） |
-| `src/DAGui/DATableComputedColumnStore.h/.cpp` | 计算列子存储（三态状态机/依赖联动/`<computed-column>` 段） |
-| `src/DAGui/Dialog/DADialogComputedColumn.h/.cpp` | 计算列对话框（表达式编辑 + 列名点选 + 头部实时预览） |
-| `src/DAGui/Dialog/DADialogSplitColumn.h/.cpp`、`DADialogMergeColumns.h/.cpp` | 分列/合并列对话框（预览与执行同一算子，004 T1.9） |
-| `src/DAGui/Dialog/DADialogGroupBy.h/.cpp` | 分组聚合对话框（全表预览 + 分组数，004 T1.22） |
-| `src/DAGui/Dialog/DADialogReshape.h/.cpp` | 转置/宽转长对话框（melt 规模守卫 + 就地勾选，004 T1.27） |
-| `src/DAGui/DATableKeyRemap.h` | 位置键重映射模板工具（置换 + 列插删位移） |
-| `src/DAGui/DATableHighlightOverlay.h/.cpp` | 瞬态高亮层 |
-| `src/DAGui/DATableStyleItemDelegate.h/.cpp` | 五层绘制管线 delegate |
-| `src/DAGui/Dialog/DADialogConditionalFormat.h/.cpp/.ui` | 条件格式规则编辑对话框（两栏 + 实时预览） |
-| `src/DAGui/Commands/DACommandsConditionalFormat.h/.cpp` | 规则增/删/改/移/清列撤销命令 |
-| `src/DAGui/Commands/DACommandsDataFrame.h/.cpp` | 计算列求值/移除公式、分列/合并列命令（列级记录撤销，004） |
-| `src/DAGui/DADataHeaderView.h/.cpp` | 数据表格头（列头菜单/修饰键点击/行头宽拖拽） |
-| `src/DAGui/DADataTableView.h/.cpp` | 表体右键菜单与快捷键挂点 |
+| `src/DAGui/Table/Metadata/DATableComputedColumnStore.h/.cpp` | 计算列子存储（三态状态机/依赖联动/`<computed-column>` 段） |
+| `src/DAGui/Table/Dialogs/DADialogComputedColumn.h/.cpp` | 计算列对话框（表达式编辑 + 列名点选 + 头部实时预览） |
+| `src/DAGui/Table/Dialogs/DADialogSplitColumn.h/.cpp`、`DADialogMergeColumns.h/.cpp` | 分列/合并列对话框（预览与执行同一算子，004 T1.9） |
+| `src/DAGui/Table/Dialogs/DADialogGroupBy.h/.cpp` | 分组聚合对话框（全表预览 + 分组数，004 T1.22） |
+| `src/DAGui/Table/Dialogs/DADialogReshape.h/.cpp` | 转置/宽转长对话框（melt 规模守卫 + 就地勾选，004 T1.27） |
+| `src/DAGui/Table/Metadata/DATableKeyRemap.h` | 位置键重映射模板工具（置换 + 列插删位移） |
+| `src/DAGui/Table/Views/DATableHighlightOverlay.h/.cpp` | 瞬态高亮层 |
+| `src/DAGui/Table/Views/DATableStyleItemDelegate.h/.cpp` | 五层绘制管线 delegate |
+| `src/DAGui/Table/Dialogs/DADialogConditionalFormat.h/.cpp/.ui` | 条件格式规则编辑对话框（两栏 + 实时预览） |
+| `src/DAGui/Table/Commands/DACommandsConditionalFormat.h/.cpp` | 规则增/删/改/移/清列撤销命令 |
+| `src/DAGui/Table/Ops/DACommandsDataFrame.h/.cpp` | 计算列求值/移除公式、分列/合并列命令（列级记录撤销，004） |
+| `src/DAGui/Table/Views/DADataHeaderView.h/.cpp` | 数据表格头（列头菜单/修饰键点击/行头宽拖拽） |
+| `src/DAGui/Table/Views/DADataTableView.h/.cpp` | 表体右键菜单与快捷键挂点 |
 | `src/PyScripts/DAWorkbench/DAPyBase/dataframe.py` | `da_column_stats` 列统计、`da_eval_column`/`da_expr_depends`/`da_needs_backtick` 计算列、`da_split_column`/`da_merge_columns` 分列合列、`da_groupby_aggregate`/`da_group_count` 分组聚合、`da_transpose`/`da_melt` 形状变换、`da_head_copy`/`da_get_column_copy`/`da_set_column` 辅助算子（`DAPyScriptsDataFrame` 封装） |
 | `src/APP/DAAppProject.cpp` | `table-metadata.xml` 保存/加载（含旧文件回退） |

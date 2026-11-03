@@ -379,24 +379,15 @@ graph BT
 
 职责：整合所有模块的 GUI 组件，提供完整用户界面。
 
-子目录（源文件数 .h/.hpp/.cpp/.ui）：
-- `Chart/` (12)：图表管理容器：`DAChartOperateWidget`(图表操作总控)/`DAChartManageWidget`(对象树)/`DAChartSettingWidget`(设置宿主) + `DAChartItemsManager`(序列化 key↔item 映射)；**非 Python 门控**
-- `ChartAddItem/` (89)：图表添加向导面板体系：2D/3D/Stats 三组抽象基类 + 27 个 `DAChartAdd*` 派生 Widget + `DAChartSeriesPickerWidget`/`DAChartSeriesSelectWidget`。**不可整目录 GLOB**，应显式列出源文件，否则会改变构建行为
-- `ChartSetting/` (64)：每种图表类型的属性设置面板 + 工厂
-- `Chart3DSetting/` (26)：3D 图表属性设置面板
-- `NodeSetting/` (8，Python only)：通用节点参数面板系统（参数类型注册+SceneB 模式）
-- `Commands/` (10)：工作流/DataFrame 撤销命令
-- `Dialog/` (31)：对话框（图表向导、导入、列类型转换、Python 参数等）
-- `MimeData/` (3)：拖放 MIME 数据类型
-- `Models/` (22)：Qt Model/View 模型（数据树、表格、消息日志、Python 数据）
-- `Agent/` (4，Python only)：Agent 聊天 UI（`DAAgentDockWidget`）
-- `MarkdownView/` (2，Python only)：Markdown 预览视图
+子目录（按领域划分，源文件数 .h/.hpp/.cpp/.ui）：
+- `Table/` (~206)：表格域。`Core/`（页面上下文/选区服务/编辑后效协调器/窗格装配）、`Controllers/`（11 个特性控制器）、`Views/`（主视图/惰性视图/表头/冻结窗格/委托 + 表格模型）、`DataManager/`（数据管理树/表/下拉）、`Metadata/`（元数据束 + 样式/条件格式/校验/批注/计算列/视图状态 Store + 撤销命令）、`Ops/`（数据算子 + DataFrame 命令）、`Chart/`（表内快速绘图）、`Dialogs/`（表格域对话框）
+- `Chart/` (~218)：图表域。根级操作容器 `DAChartOperateWidget`/`DAChartManageWidget`/`DAChartSettingWidget` + `Setting/`（2D 属性面板）、`Setting3D/`（3D 属性面板）、`AddItem/`（添加图元向导）；统计绘图与图表向导在根级
+- `Workflow/` (~30)：工作流编辑 UI（`DAPyWorkFlowEditWidget/GraphicsView/Scene`、节点列表、操作窗口）+ `NodeSetting/`（通用节点参数面板）
+- `Agent/` (~9)：Agent 会话停靠 UI（WebEngine）
+- `Archive/` (~10)：工程压缩包/XML 任务
+- `Common/` (~27)：跨域通用 UI：`Settings/`（设置页与属性表单框架）、`MarkdownView/`（Markdown 渲染/导出）、状态栏/启动画面/日志视图/最近文件/MIME 数据/通用模型
 
-根级 (134)：
-- 工作流 UI：`DAPyWorkFlowEditWidget/GraphicsView/Scene` 等
-- 数据 UI：`DADataManageWidget/OperateWidget`、`DAPyDataFrameTableView` 等
-- 通用基类：`DAAbstractOperateWidget`（被 Chart/Data/PyWorkFlow 三家继承，留顶层）
-- 工具：`DASplashScreen`、`DAZipArchive`、`DARecentFilesManager`
+根级：`DAGuiAPI.h`、`DAGuiEnumStringUtils`、`icon.qrc`（图标资源在 `icon/`）
 
 外部依赖：**所有下层模块** + SARibbon/ADS/qwt/DALiteCtk/quazip
 
@@ -488,7 +479,7 @@ graph BT
 | 已迁移类 | 原位置 | 现位置 | 说明 |
 |---------|--------|--------|------|
 | `DAPyGILGuard` / `DAPyGILRelease` / `DAPySafePyObjectHolder` | `DAPyWorkFlow/DAPyGILGuard.*` | `DAPyBindQt/DAPyGILGuard.h` | 通用 pybind11 GIL RAII 工具，已迁移至基础层 |
-| `DAParameterDescriptor` | `DAPyWorkFlow/DAParameterDescriptor.h` | `DAGui/NodeSetting/ParameterDescriptor.h` | 参数描述符已重构至 DAGui/NodeSetting/ 下 |
+| `DAParameterDescriptor` | `DAPyWorkFlow/DAParameterDescriptor.h` | `DAGui/Workflow/NodeSetting/ParameterDescriptor.h` | 参数描述符已重构至 DAGui/Workflow/NodeSetting/ 下 |
 | `DAPortDescriptor` | `DAPyWorkFlow/DAPortDescriptor.h` | 已移除 | 端口描述符已不再需要，端口信息通过 `DAPyLinkPoint` 管理 |
 
 仍待评估的类：

@@ -508,7 +508,7 @@ DAFigure 提供两套接口：
 >
 > - **可以修改**：新增 `DAAbstractChartEditor` 的子类；在 `DAChartSerialize` 中注册新的 `QwtPlotItem` 类型序列化支持；扩展 `DAFigureWidget::ChartEditorType` 枚举（`UserDefineEditor = 1000` 起步）
 > - **不可修改**：`DAChartWidget` 对 `QwtPlot` 的继承关系；`QwtPlotItem` 相关类不能继承 QObject；三个接口（Data/Style/Interaction）的方法签名
-> - **修改后需同步更新**：`DAGui/ChartSetting/` 中对应的属性面板
+> - **修改后需同步更新**：`DAGui/Chart/Setting/` 中对应的属性面板
 
 ---
 
@@ -524,68 +524,45 @@ DAFigure 提供两套接口：
 
 ```
 src/DAGui/
-├── Chart/ (12 文件)
-│   └── 图表管理容器：DAChartOperateWidget/DAChartManageWidget/DAChartSettingWidget + DAChartItemsManager
+├── Table/ (~206 文件)                     # 表格域
+│   ├── (根)                               # DADataOperateWidget / DADataOperatePageWidget /
+│   │                                       # DADataOperateOfDataFrameWidget / DATableExporter
+│   ├── Core/                              # DATablePageContext / DATableSelectionService /
+│   │                                       # DATableMutationCoordinator / DATablePaneAssembler
+│   ├── Controllers/                       # 11 个特性控制器（Sort/Find/ViewState/ColumnView/Style/
+│   │                                       # ConditionalFormat/ComputedColumn/Validation/Note/
+│   │                                       # QuickPlot/Navigation）
+│   ├── Views/                             # 表格视图（DADataTableView/DAPyDataFrameTableView/
+│   │                                       # DADataHeaderView/DACacheWindowTableView/冻结窗格/
+│   │                                       # 高亮层/委托/子窗口）+ 5 个表格模型
+│   ├── DataManager/                       # 数据管理树/表/下拉 + 3 个模型
+│   ├── Metadata/                          # 元数据束/注册表 + 各 Store + 表格撤销命令
+│   ├── Ops/                               # 数据算子族 + DACommandsDataFrame
+│   ├── Chart/                             # 表内快速绘图（规划器/采样器/图元/浮窗）
+│   └── Dialogs/                           # 表格域对话框
 │
-├── ChartAddItem/ (89 文件)
-│   └── 图表添加向导面板体系：2D/3D/Stats 三组抽象基类 + 27 个 DAChartAdd* 派生 Widget + 序列选择器
-│      注：不可整目录 GLOB，应显式列出源文件，否则会改变构建行为
+├── Chart/ (~226 文件)                     # 图表域
+│   ├── (根)                               # DAChartOperateWidget / DAChartManageWidget /
+│   │                                       # DAChartSettingWidget / 数据联动表 / 统计绘图 / 图表向导
+│   ├── Setting/                           # 2D 图表属性面板 + 工厂
+│   ├── Setting3D/                         # 3D 图表属性面板
+│   └── AddItem/                           # 添加图元向导（2D/3D/Stats）
 │
-├── ChartSetting/ (64 文件)
-│   ├── DAAbstractChartItemSettingWidget.h   # 图表项设置基类（d_cast/s_cast）
-│   ├── DAChartItemSettingPanel.h/.cpp       # ChartItem 面板基类（Qwt 专有方法）
-│   ├── DAChartCurveSettingPanel.h/.cpp      # 曲线设置面板
-│   ├── DAChartBarSettingPanel.h/.cpp        # 柱状图设置面板
-│   ├── DAChartGridSettingPanel.h/.cpp       # 网格设置面板
-│   ├── DAChartLegendSettingPanel.h/.cpp     # 图例设置面板
-│   ├── DAChartAxisSettingPanel.h/.cpp       # 坐标轴设置面板
-│   └── DAChartItemSettingPanelFactory.h/.cpp # 面板工厂（RTTI 注册）
+├── Workflow/ (~51 文件)                   # 工作流编辑 UI
+│   ├── (根)                               # DAPyWorkFlowEditWidget/GraphicsView/Scene、节点列表、
+│   │                                       # 操作窗口、工作流命令、Python 参数对话框
+│   └── NodeSetting/                       # 通用节点参数面板（Python）
 │
-├── Chart3DSetting/ (26 文件)
-│   └── 3D 图表属性设置面板
-│
-├── NodeSetting/ (8 文件, Python only)
-│   ├── DANodeParamSettingPanel.h/.cpp        # 通用节点参数面板
-│   ├── DANodeParamSettingPanelFactory.h     # 参数面板工厂
-│   ├── DANodeParamSettingPanelWidget.h       # QStackedWidget 调度器
-│   ├── DANodeParameterFormAdapter.h           # DAPyNodeParameter -> DAFormSpec 适配器
-│   └── ParameterDescriptor.h                # 参数描述符
-│
-├── Commands/ (10 文件)
-│   └── 工作流/DataFrame 撤销命令
-│
-├── Dialog/ (31 文件)
-│   ├── DAChartWizardDialog                  # 图表向导
-│   ├── DADataImportDialog                     # 数据导入
-│   └── ... (其他对话框)
-│
-├── MimeData/ (3 文件)
-│   └── 拖放 MIME 数据类型
-│
-├── Models/ (22 文件)
-│   ├── DADataTreeModel                      # 数据树模型
-│   ├── DAMessageLogsModel                   # 消息日志模型
-│   └── ... (其他 Model/View)
-│
-├── Agent/ (4 文件, Python only)
-│   └── DAAgentDockWidget                    # Agent 聊天 UI（与 DAAgent 接口信号链对接）
-│
-├── MarkdownView/ (2 文件, Python only)
-│   └── Markdown 预览视图
-│
-├── (根级 134 文件)
-│   ├── DAPyWorkFlowEditWidget.h/.cpp         # 工作流编辑控件
-│   ├── DAPyWorkFlowGraphicsView.h/.cpp       # 工作流图形视图
-│   ├── DAPyWorkFlowGraphicsScene.h/.cpp      # 工作流图形场景
-│   ├── DAChartOperateWidget.h/.cpp           # 图表操作窗口
-│   ├── DAChartManageWidget.h/.cpp            # 图表管理窗口
-│   ├── DADataManageWidget.h/.cpp             # 数据管理窗口
-│   ├── DADataOperateWidget.h/.cpp            # 数据操作窗口
-│   ├── DAPyDataFrameTableView.h/.cpp        # DataFrame 表格视图
-│   ├── DAAbstractNodeSettingWidget.h         # 节点设置抽象基类
-│   ├── DASplashScreen.h/.cpp                 # 启动画面
-│   ├── DAZipArchive.h/.cpp                   # ZIP 存档
-│   └── DARecentFilesManager.h/.cpp          # 最近文件管理
+├── Agent/ (~18 文件)                      # Agent 会话停靠（WebEngine/WebChannel）
+├── Archive/ (~18 文件)                    # 工程压缩包 / XML 任务
+├── Common/ (~55 文件)                     # 跨域通用 UI
+│   ├── (根)                               # 状态栏/启动画面/日志视图/最近文件/外链页面/
+│   │                                       # 操作页基类/命令基类/MIME 数据/通用模型
+│   ├── Settings/                          # 设置页框架 + 属性表单框架
+│   └── MarkdownView/                      # Markdown 渲染/导出
+├── icon/                                  # SVG 资源
+├── DAGuiAPI.h / DAGuiEnumStringUtils.h/.cpp
+└── icon.qrc
 ```
 
 ### 核心类关系
@@ -699,7 +676,7 @@ flowchart TD
 
 > **💡 修改此模块时**
 >
-> - **可以修改**：在 `ChartSetting/` 中新增面板类；在 `NodeSetting/` 中注册自定义节点参数面板；在 `Models/` 中新增 Model/View 模型；在 `Dialog/` 中新增对话框
+> - **可以修改**：在 `Chart/Setting/` 中新增面板类；在 `Workflow/NodeSetting/` 中注册自定义节点参数面板；在 `Models/` 中新增 Model/View 模型；在 `Dialog/` 中新增对话框
 > - **不可修改**：`DAChartItemSettingPanel` 的 `buildPropertyPanel()` 纯虚函数签名；`DAAbstractChartItemSettingWidget` 的 `d_cast()`/`s_cast()`/`checkItemRTTI()` 机制
 > - **修改后需同步更新**：翻译文件（`.ts`）中的新增 tr() 字符串
 

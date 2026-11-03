@@ -36,7 +36,7 @@
 
 ### 参数定义层耦合
 
-`DAGui/NodeSetting/DAParamDef` 虽然已经是轻量定义结构，但仍放在节点设置模块中，并通过 `toParamDef(const DAPyNodeParameter&)` 直接绑定 Python 节点参数来源。这导致：
+`DAGui/Workflow/NodeSetting/DAParamDef` 虽然已经是轻量定义结构，但仍放在节点设置模块中，并通过 `toParamDef(const DAPyNodeParameter&)` 直接绑定 Python 节点参数来源。这导致：
 
 - 语义仍是“节点参数定义”
 - 难以作为通用 C++ 设置表单模型复用
@@ -450,8 +450,8 @@ spec = (
 - `src/DACommonWidgets/DACommonPropertySettingDialog.cpp`
 - `src/DACommonWidgets/DACommonPropertySettingDialog.ui`
 - `src/PyScripts/DAWorkbench/DAPyBase/property_config_builder.py`
-- `src/DAGui/NodeSetting/DAParamDef.h`
-- `src/DAGui/NodeSetting/DAParamDef.cpp`
+- `src/DAGui/Workflow/NodeSetting/DAParamDef.h`
+- `src/DAGui/Workflow/NodeSetting/DAParamDef.cpp`
 
 ### Add
 
@@ -475,8 +475,8 @@ spec = (
 
 #### DAGui / NodeSetting
 
-- `src/DAGui/NodeSetting/DANodeParameterFormAdapter.h`
-- `src/DAGui/NodeSetting/DANodeParameterFormAdapter.cpp`
+- `src/DAGui/Workflow/NodeSetting/DANodeParameterFormAdapter.h`
+- `src/DAGui/Workflow/NodeSetting/DANodeParameterFormAdapter.cpp`
 
 #### Python
 

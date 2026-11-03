@@ -33,13 +33,13 @@ data-workbench/
 │   ├── DAData/         # 数据管理/结构 (22 files)
 │   ├── DAGraphicsView/ # 图形视图框架 (54 files)
 │   ├── DAFigure/       # 图表/Figure 容器 (103 files)
-│   ├── DAGui/          # GUI Widgets/面板/对话框 (334 files, 最大模块)
-│   │   ├── ChartSetting/  # 图表属性设置面板
-│   │   ├── NodeSetting/   # 工作流节点通用设置面板 (DAFormSpec 统一表单)
-│   │   ├── Commands/      # QUndoCommand 子类
-│   │   ├── Dialog/        # 各种对话框
-│   │   ├── MimeData/      # 拖放 MIME 数据
-│   │   └── Models/        # Qt Model/View 模型
+│   ├── DAGui/          # GUI Widgets/面板/对话框 (最大模块，按领域分目录)
+│   │   ├── Table/      # 表格域：页面入口 + Core/Controllers/Views/Models/DataManager/Metadata/Ops/Chart/Commands/Dialogs
+│   │   ├── Chart/      # 图表域：操作容器 + Setting/Setting3D/AddItem
+│   │   ├── Workflow/   # 工作流编辑 + NodeSetting/ 节点参数表单
+│   │   ├── Agent/      # AI 会话停靠
+│   │   ├── Archive/    # 工程压缩包/XML 任务
+│   │   └── Common/     # 通用 UI：Settings/ 属性面板、MarkdownView/、状态栏/日志视图等
 │   ├── DAInterface/    # 核心接口定义 (28 files)
 │   ├── DAPluginSupport/ # 插件框架 (10 files)
 │   ├── APP/            # 应用主程序 (190 files)
@@ -138,8 +138,8 @@ Python层: DAUtils → DAPyBindQt → DAPyScripts → DAPyCommonWidgets → DAPy
 | 插件管理 | `src/APP/DAAppPluginManager.h/.cpp` | 加载/卸载插件 |
 | 项目管理 | `src/APP/DAAppProject.h/.cpp` | 工程文件读写 |
 | 数据处理接口 | `src/DAData/` | 数据容器, DataFrame 封装 |
-| 工作流节点通用设置 | `src/DAGui/NodeSetting/` | 基于 DAFormSpec/DAPropertyFormWidget 的统一表单参数面板, PIMPL |
-| 图表创建/编辑 | `src/DAFigure/`, `src/DAGui/ChartSetting/` | QwtFigure 容器 + 属性面板 |
+| 工作流节点通用设置 | `src/DAGui/Workflow/NodeSetting/` | 基于 DAFormSpec/DAPropertyFormWidget 的统一表单参数面板, PIMPL |
+| 图表创建/编辑 | `src/DAFigure/`, `src/DAGui/Chart/Setting/` | QwtFigure 容器 + 属性面板 |
 | 图形视图交互 | `src/DAGraphicsView/` | QGraphicsView 子类, 节点/连线编辑 |
 | Python 绑定 | `src/DAPyBindQt/` | pybind11 胶水代码 |
 | pybind11↔Qt 类型转换 | `src/DAPyBindQt/DAPybind11QtCaster.hpp` | **重要**：QString/QVariant/QDateTime 等自动双向转换，详见`docs/zh/dev-guide/python-binding/dapybind11-qt-caster.md` |
@@ -195,8 +195,8 @@ AI 编写代码时，日志宏的选择直接影响日志是否进入 UI 消息�
 | | [module-breakdown.md](docs/zh/dev-guide/architecture/module-breakdown.md) | 各模块业务逻辑详解 |
 | | [table-data-source.md](docs/zh/dev-guide/architecture/table-data-source.md) | 表格数据源抽象层（惰性/数据库表接入、块级取数、引用式持久化） |
 | | [table-metadata.md](docs/zh/dev-guide/architecture/table-metadata.md) | 表格元数据架构（注册表/元数据束/子存储、table-metadata.xml、五层绘制管线） |
-| | [table-page.md](docs/zh/dev-guide/architecture/table-page.md) | **表格页架构（008 重构后）**：`DADataOperateOfDataFrameWidget` Facade + `src/DAGui/TableCore/`（页面上下文/选区服务/编辑后效协调器）+ 十个特性控制器（`src/DAGui/Table<X>/`）的分层；三条硬规则、编辑后效策略表、新增表内功能的 3 步模板——**改表格页任何代码前必读** |
-| | [table-quick-plot.md](docs/zh/dev-guide/architecture/table-quick-plot.md) | 表内快速绘图（`src/DAGui/TableChart/`：请求/规格/规划器/采样/唯一图元编排器；`src/DAGui/TableChildWindow/`：表格子窗口容器——任意部件贴入表格变可移动/可缩放子窗口；转入绘图区的撤销宏） |
+| | [table-page.md](docs/zh/dev-guide/architecture/table-page.md) | **表格页架构（008 重构后）**：`DADataOperateOfDataFrameWidget` Facade + `src/DAGui/Table/Core/`（页面上下文/选区服务/编辑后效协调器）+ 十个特性控制器（`src/DAGui/Table/Controllers/`）的分层；三条硬规则、编辑后效策略表、新增表内功能的 3 步模板——**改表格页任何代码前必读** |
+| | [table-quick-plot.md](docs/zh/dev-guide/architecture/table-quick-plot.md) | 表内快速绘图（`src/DAGui/Table/Chart/`：请求/规格/规划器/采样/唯一图元编排器；`src/DAGui/Table/Views/`：表格子窗口容器——任意部件贴入表格变可移动/可缩放子窗口；转入绘图区的撤销宏） |
 | | [i18n.md](docs/zh/dev-guide/general/i18n.md) / [python-i18n.md](docs/zh/dev-guide/general/python-i18n.md) | 国际化规范 |
 | | [workflow-overview.md](docs/zh/dev-guide/workflow/workflow-overview.md) | 工作流系统架构 |
 | | [workflow-python-node-dev.md](docs/zh/dev-guide/workflow/workflow-python-node-dev.md) | Python 节点开发 |
@@ -515,7 +515,7 @@ Linux GCC 下 `uint64_t` 是 `unsigned long`，MSVC 下是 `unsigned long long`�
 - QwtPlotItem相关的类不继承QObject，不要使用Qt的信号槽机制，继承 Qwt 非 QObject 类时**不能使用 Q_OBJECT 宏**
 - 禁止使用 `slot`、`signal` 小写命名的宏，统一使用 `Q_SLOTS`、`Q_SIGNALS`
 - 禁止在头文件中写入类成员函数的 Doxygen 块注释（仅限类的注释、信号注释、枚举注释）
-- **设置类窗口**统一使用 `src/DAGui/NodeSetting/` 中基于 `DAPropertyFormWidget` 的通用参数面板
+- **设置类窗口**统一使用 `src/DAGui/Workflow/NodeSetting/` 中基于 `DAPropertyFormWidget` 的通用参数面板
 - **禁止在错误的模块创建类** — 创建新类前必须对照 § MODULE DEPENDENCY 确定它属于哪个模块（典型反面：通用工具放进 DAPyWorkFlow）
 - **禁止对非 const Qt 容器直接使用范围迭代** — `for(T& v : container)` 和 `for(const T& v : container)` 对非 const 容器都会触发 COW 深拷贝。必须用 `const` 声明容器或 `std::as_const()` 包裹（详见 § Qt 容器范围迭代）
 - **禁止在 `.cpp` 中使用 Qt↔Python 类型转换而未 `#include "DAPybind11QtCaster.hpp"`** — pybind11 的 `type_caster` 是 **per-translation-unit** 生效的，仅 include `DAPybind11InQt.h` 不够。每个 `.cpp` 文件只要出现以下任意调用形式，就必须在该文件顶部 include `src/DAPyBindQt/DAPybind11QtCaster.hpp`：
@@ -551,7 +551,7 @@ Linux GCC 下 `uint64_t` 是 `unsigned long`，MSVC 下是 `unsigned long long`�
 - 崩溃转储 (.dmp) 生成在 `dumps/` 目录，由 `DADumpCapture` 管理
 - 翻译文件通过 CMake option `DA_ENABLE_AUTO_TRANSLATE` 自动生成
 - 构建请优先阅读 root `build.md`（包含 PowerShell 专用说明），或直接使用 `scripts/build.ps1`
-- `src/DAGui/NodeSetting/` 为工作流节点通用设置面板模块，遵循 ChartSetting 的三层架构 (基类→面板→具体面板 + 单例工厂 + QStackedWidget 调度器)
+- `src/DAGui/Workflow/NodeSetting/` 为工作流节点通用设置面板模块，遵循 ChartSetting 的三层架构 (基类→面板→具体面板 + 单例工厂 + QStackedWidget 调度器)
 - 如果你首次编译或者首次使用`git worktree`命令,你需要先拉取第三方库：`git submodule update --init --recursive`
 - 第三方库有如下几个库也是我维护，你在此项目中是可用改动的：`src\3rdparty\SARibbon`、`src\3rdparty\qwt`、`src\3rdparty\DAWidgets`,除了这三个库，其它第三方库禁止改动其代码
 - 在涉及界面的开发时，需要思考这个界面的控件是否可以放到`src\3rdparty\DAWidgets`作为通用模块，可以在其他模块复用，是否能想到第二个、与当前业务无关的复用场景？只有一个使用点的控件不进，API 是否能稳定下来、是否能写 QtTest？一次性业务弹窗不进。只依赖 Qt / DAWidgets？只要 include 了项目内其它模块，就不能进 DAWidgets。如果适合，则可放到DAWidgets；

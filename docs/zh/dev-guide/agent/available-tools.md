@@ -298,7 +298,7 @@ Agent 的标准开场动作：先 `list_data` 了解有哪些数据，再用 `ge
 | `format` | string | | `md` / `html` / `pdf` / `docx`，默认 `md` |
 | `open_after_save` | boolean | | 保存后是否打开，默认 `true` |
 
-html/pdf/docx 三种格式经 `DAMarkdownExporter`（`src/DAGui/MarkdownView/`）导出，与内置 Markdown 查看器同一渲染管线（markdown-it + highlight.js + KaTeX），公式（`$...$`/`$$...$$`）、代码高亮、表格均正常渲染；本地图片以 data URI 内嵌进 HTML/PDF（单一离线文件），docx 中图片由 Word 按文件路径抓取后内嵌。docx 公式以 MathML（Word 原生公式格式）输出。
+html/pdf/docx 三种格式经 `DAMarkdownExporter`（`src/DAGui/Common/MarkdownView/`）导出，与内置 Markdown 查看器同一渲染管线（markdown-it + highlight.js + KaTeX），公式（`$...$`/`$$...$$`）、代码高亮、表格均正常渲染；本地图片以 data URI 内嵌进 HTML/PDF（单一离线文件），docx 中图片由 Word 按文件路径抓取后内嵌。docx 公式以 MathML（Word 原生公式格式）输出。
 
 > **📝 docx 仅 Windows**
 >

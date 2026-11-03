@@ -205,11 +205,11 @@ DAPyWorkFlow 是原 `DAWorkFlow` 模块的完全重构版本，主要区别如�
 | `DAPyLinkPointStyle` | 连接点样式配置（独立头文件，包含 `PortShape` 枚举） | `DAPyLinkPointStyle.h/cpp` |
 | `DAPyWorkFlowEnumStringUtils` | 枚举↔字符串映射实现（`DA_ENUM_STRING_INSENSITIVE_DEFINE`） | `DAPyWorkFlowEnumStringUtils.h/cpp` |
 | `DAPyWorkFlowAPI` | DLL 导出/导入宏定义（`DAPYWORKFLOW_API`） | `DAPyWorkFlowAPI.h` |
-| `DAAbstractNodeSettingWidget` | 节点设置抽象基类，持有 `DAPyNode*` | `DAGui/DAAbstractNodeSettingWidget.h` |
-| `DANodeParamSettingPanel` | 通用参数设置面板，基于 DAPropertyFormWidget | `DAGui/NodeSetting/DANodeParamSettingPanel.h` |
-| `DANodeParamSettingPanelFactory` | 参数面板单例工厂 | `DAGui/NodeSetting/DANodeParamSettingPanelFactory.h` |
-| `DANodeParamSettingPanelWidget` | QStackedWidget 调度器 | `DAGui/NodeSetting/DANodeParamSettingPanelWidget.h` |
-| `DAFormEditorRegistry` | 11 种字段类型编辑器注册表 | `DAGui/DAFormEditorRegistry.h` |
+| `DAAbstractNodeSettingWidget` | 节点设置抽象基类，持有 `DAPyNode*` | `DAGui/Workflow/NodeSetting/DAAbstractNodeSettingWidget.h` |
+| `DANodeParamSettingPanel` | 通用参数设置面板，基于 DAPropertyFormWidget | `DAGui/Workflow/NodeSetting/DANodeParamSettingPanel.h` |
+| `DANodeParamSettingPanelFactory` | 参数面板单例工厂 | `DAGui/Workflow/NodeSetting/DANodeParamSettingPanelFactory.h` |
+| `DANodeParamSettingPanelWidget` | QStackedWidget 调度器 | `DAGui/Workflow/NodeSetting/DANodeParamSettingPanelWidget.h` |
+| `DAFormEditorRegistry` | 11 种字段类型编辑器注册表 | `DAGui/Common/Settings/DAFormEditorRegistry.h` |
 
 > **📝 桥接层基础设施（位于 DAPyBindQt 模块）**
 >

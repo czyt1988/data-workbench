@@ -1056,5 +1056,5 @@ in >> item;  // 如果后续不使用，会泄漏
 | `src/DAFigure/DAChartPlotItemFactory.cpp` | 工厂模式实现 |
 | `src/DAGui/Chart/DAChartItemsManager.h` | 图表项管理器 |
 | `src/DAGui/DAGuiEnumStringUtils.h` | 枚举字符串转换 |
-| `src/DAGui/DAZipArchiveTask_ChartItem.h` | 图表项归档任务 |
-| `src/DAGui/DAZipArchiveTask_ChartItem.cpp` | 图表项归档任务实现 |
+| `src/DAGui/Archive/DAZipArchiveTask_ChartItem.h` | 图表项归档任务 |
+| `src/DAGui/Archive/DAZipArchiveTask_ChartItem.cpp` | 图表项归档任务实现 |

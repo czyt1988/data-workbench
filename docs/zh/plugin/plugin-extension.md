@@ -473,7 +473,7 @@ bool MyPlugin::initialize()
 
 ### 添加插件配置面板
 
-设置页通过重载 `DAAbstractPlugin::createSettingPage()` 返回一个 `DAAbstractSettingPage*` 注册，**不是** `ui->addSettingsPage(...)`。`DAAbstractSettingPage`（`src/DAGui/DAAbstractSettingPage.h`）是抽象基类，需实现 `apply()` / `getSettingPageTitle()` / `getSettingPageIcon()`：
+设置页通过重载 `DAAbstractPlugin::createSettingPage()` 返回一个 `DAAbstractSettingPage*` 注册，**不是** `ui->addSettingsPage(...)`。`DAAbstractSettingPage`（`src/DAGui/Common/Settings/DAAbstractSettingPage.h`）是抽象基类，需实现 `apply()` / `getSettingPageTitle()` / `getSettingPageIcon()`：
 
 ```cpp
 // MySettingPage.h —— 继承 DAAbstractSettingPage

@@ -106,7 +106,7 @@ graph TB
 | `DAAgentWebChannel` | DAGui | C++↔JS 桥（QWebChannel） |
 | `DAAgentSettingsWidget` | APP | LLM 设置页（经 `setAgentInterface` 注入接口） |
 | `DAAgentManagerDialog` / `DAAgentEditorDialog` | APP | 提示词库管理对话框 / 提示词编辑对话框 |
-| `DAMarkdownView` | DAGui | 通用 Markdown 渲染器（`src/DAGui/MarkdownView/`），用于报告查看等 |
+| `DAMarkdownView` | DAGui | 通用 Markdown 渲染器（`src/DAGui/Common/MarkdownView/`），用于报告查看等 |
 | `DAAgentToolsPlugin` | 插件 | 注册 21 个内置工具 + `figure_reference` 系统提示词 |
 | `DAAgentChartToolBase` | 插件 | 图表工具基类（继承瘦 `DAAgentToolBase`，提供图表访问方法） |
 | `StdioProtocol` | Python | JSON Lines 协议收发（后台线程读 stdin → asyncio.Queue） |

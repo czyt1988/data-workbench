@@ -76,8 +76,8 @@
 | `src/DAData` | `data` + `table` + `chart` |
 | `src/DAFigure` | `chart` + `table` |
 | `src/DAAgent`、`src/DAGui/Agent`、`src/PyScripts/DAWorkbench/agent` | `agent` |
-| `src/DAGui/Chart*`、`Chart3DSetting`、`ChartAddItem`、`ChartSetting` | `chart` |
-| `src/DAGui/TableChart`、`DATable*`、`DADataTableModel`、表格相关对话框/命令 | `table` |
+| `src/DAGui/Chart/`（含 `Setting/`、`Setting3D/`、`AddItem/`） | `chart` |
+| `src/DAGui/Table/`（含页面入口、`Core/`、`Controllers/`、`Views/`、`Metadata/`、`Ops/`、`Dialogs/` 等） | `table` |
 | 其余 `src/DAGui` 代码 | `table` + `chart` + `agent`（保守兜底） |
 | `src/tst`、`cmake/`、顶层 `CMakeLists.txt` | 全部套件 |
 | `docs/`、`scripts/`、`plugins/`、`src/3rdparty`、`src/DAPyWorkFlow`、`src/DAGraphicsView`、`src/DAInterface` 等 | 无测试覆盖，跳过（打印 INFO） |

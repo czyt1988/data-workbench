@@ -50,8 +50,8 @@ DAMessageLogViewWidget (UI 日志窗口)
 | `src/DAMessageHandler/DAMessageLogQueue.h/.cpp` | 线程安全日志队列（spdlog 后台线程 → UI 主线程的桥梁），QTimer 惰性信号发射 |
 | `src/DAMessageHandler/DAMessageLogSink.h/.cpp` | spdlog 自定义 sink，从 `log_msg` 重建 `DAMessageLogItem` 推入队列 |
 | `src/DAMessageHandler/DAMessageLogItem.h/.cpp` | 单条日志数据结构（类型/时间/文件/函数/行号/消息） |
-| `src/DAGui/DAMessageLogViewWidget.h/.cpp` | UI 日志窗口 Widget |
-| `src/DAGui/Models/DAMessageLogsModel.h/.cpp` | 日志 TableModel |
+| `src/DAGui/Common/DAMessageLogViewWidget.h/.cpp` | UI 日志窗口 Widget |
+| `src/DAGui/Common/DAMessageLogsModel.h/.cpp` | 日志 TableModel |
 
 ---
 
@@ -535,8 +535,8 @@ daInfo << tr("Project saved successfully, path: %1").arg(path);  // cn:工程保
 | `src/DAMessageHandler/DAMessageLogQueue.h` | 线程安全日志队列 |
 | `src/DAMessageHandler/DAMessageLogSink.h` | spdlog 自定义 sink |
 | `src/DAMessageHandler/DAMessageLogItem.h` | 日志数据结构 |
-| `src/DAGui/DAMessageLogViewWidget.h` | UI 日志窗口 |
-| `src/DAGui/Models/DAMessageLogsModel.h` | 日志 TableModel |
+| `src/DAGui/Common/DAMessageLogViewWidget.h` | UI 日志窗口 |
+| `src/DAGui/Common/DAMessageLogsModel.h` | 日志 TableModel |
 | `src/APP/DAApplication.h/.cpp` | 应用类：事件循环计时（notify 重写）+ 聚合定时器 + 心跳 |
 | `src/APP/DASlowLogWatchdog.h/.cpp` | 主线程卡顿看门狗 |
 | `src/PyScripts/DAWorkbench/DAPyBase/da_logger.py` | Python 侧 `@log_function_call(slow=True)` 慢调用装饰器 |

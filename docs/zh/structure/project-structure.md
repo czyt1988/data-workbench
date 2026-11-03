@@ -142,7 +142,7 @@ graph TB
 | **DAGraphicsView** | 可缩放图形视图、redo/undo | DAUtils |
 | **DAPyWorkFlow** | Python 工作流核心：节点代理、工厂、场景、执行引擎、图形项、序列化 | DAUtils, DAGraphicsView, DAPyBindQt |
 | **DAFigure** | 科学图表绘制（基于 qwt） | DAUtils, qwt |
-| **DAGui** | 界面整合、Ribbon、Dock 管理（含 `ChartSetting/` 图表属性面板和 `NodeSetting/` 工作流节点通用设置面板） | 所有业务模块 |
+| **DAGui** | 界面整合、Ribbon、Dock 管理（含 `Chart/Setting/` 图表属性面板和 `Workflow/NodeSetting/` 工作流节点通用设置面板） | 所有业务模块 |
 | **DAInterface** | 插件接口定义 | DAGui |
 | **DAPluginSupport** | 插件加载、管理 | DAInterface |
 | **DAAgent** | L4 接口层 Agent 框架：多供应商大语言模型（LLM）调用、提示词库、工具注册与持久化会话（无图形界面依赖，暴露 `DAAgentInterface`） | DAInterface, DAData, DAPyBindQt, DAPyScripts |

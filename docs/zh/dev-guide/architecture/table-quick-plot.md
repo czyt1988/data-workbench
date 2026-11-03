@@ -14,16 +14,16 @@
 | 层 | 文件 | 职责 |
 |---|---|---|
 | L2 数据层 | `src/DAData/DATableDataSource.h` | `fetchColumnRange(column, startRow, rowCount)`：按列取一段值；pandas 源走列切片快路径，其它源默认经 `fetchBlock` 抽取 |
-| L3 界面层 | `src/DAGui/TableChildWindow/DATableChildWindow.*` | **表格子窗口框架**（Excel 式浮层）：标题栏拖动移动、4 角抓取块 + 4 边拖拽带缩放、双击最大化/还原、标题栏右键菜单 |
-| L3 界面层 | `src/DAGui/TableChildWindow/DATableChildWindowContainer.*` | **表格子窗口容器**：任意 QWidget 贴入成表格里的子窗口；允许区域夹取、几何源监听、关闭默认隐藏 |
-| L3 界面层 | `src/DAGui/TableChart/DATableChartTypes.h` | 请求/规格/规划结果/构建信息等纯数据结构 |
-| L3 界面层 | `src/DAGui/TableChart/DATableChartPlanner.*` | 列角色判定、图型能力矩阵、默认规格、X 轴候选 |
-| L3 界面层 | `src/DAGui/TableChart/DAChartSeriesSampler.*` | 列 → 采样点/值的唯一采样入口（小表全量、大表确定性分块） |
-| L3 界面层 | `src/DAGui/TableChart/DAChartQuickPlot.*` | **唯一图元编排器**：按规格构建图元并挂到图表；转入绘图区 |
-| L3 界面层 | `src/DAGui/TableChart/DATableQuickPlotWindow.*` | 内容部件：图型切换、聚合/X 轴下拉、更新选区、转入、关闭（位置/尺寸/标题由子窗口框架承载） |
-| L3 界面层 | `src/DAGui/Stats/DAStatsPlotCoordinator.*` | 统计绘图核心（原在 APP，下沉到 DAGui 供统计向导与快速绘图共用） |
+| L3 界面层 | `src/DAGui/Table/Views/DATableChildWindow.*` | **表格子窗口框架**（Excel 式浮层）：标题栏拖动移动、4 角抓取块 + 4 边拖拽带缩放、双击最大化/还原、标题栏右键菜单 |
+| L3 界面层 | `src/DAGui/Table/Views/DATableChildWindowContainer.*` | **表格子窗口容器**：任意 QWidget 贴入成表格里的子窗口；允许区域夹取、几何源监听、关闭默认隐藏 |
+| L3 界面层 | `src/DAGui/Table/Chart/DATableChartTypes.h` | 请求/规格/规划结果/构建信息等纯数据结构 |
+| L3 界面层 | `src/DAGui/Table/Chart/DATableChartPlanner.*` | 列角色判定、图型能力矩阵、默认规格、X 轴候选 |
+| L3 界面层 | `src/DAGui/Table/Chart/DAChartSeriesSampler.*` | 列 → 采样点/值的唯一采样入口（小表全量、大表确定性分块） |
+| L3 界面层 | `src/DAGui/Table/Chart/DAChartQuickPlot.*` | **唯一图元编排器**：按规格构建图元并挂到图表；转入绘图区 |
+| L3 界面层 | `src/DAGui/Table/Chart/DATableQuickPlotWindow.*` | 内容部件：图型切换、聚合/X 轴下拉、更新选区、转入、关闭（位置/尺寸/标题由子窗口框架承载） |
+| L3 界面层 | `src/DAGui/Chart/DAStatsPlotCoordinator.*` | 统计绘图核心（原在 APP，下沉到 DAGui 供统计向导与快速绘图共用） |
 | L3 界面层 | `src/DAGui/Chart/DAChartOperateWidgetCommands.*` | 「转入」新建 Figure 的撤销命令（摘/挂 dock 但保活 figure） |
-| L3 界面层 | `src/DAGui/DADataOperateOfDataFrameWidget.*` | 表格页入口：有序选区 → 请求 → 贴入子窗口；转入处理器由 APP 注入 |
+| L3 界面层 | `src/DAGui/Table/DADataOperateOfDataFrameWidget.*` | 表格页入口：有序选区 → 请求 → 贴入子窗口；转入处理器由 APP 注入 |
 | L5 应用层 | `src/APP/DAAppController.cpp` | Ribbon/表头动作接线、`setQuickPlotTransferHandler` 注入、动作置灰 |
 
 > **⚠️ 依赖方向**

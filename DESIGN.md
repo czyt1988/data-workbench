@@ -180,8 +180,8 @@ data-workbench 的视觉语言围绕「**科研工程工具**」定位展开：�
 
 | 位置 | 用色 | 语义 |
 |------|------|------|
-| 表头多列规格角标（`src/DAGui/DADataHeaderView.cpp`） | 主蓝 `#5280C1` 圆底 + 白字 | 主操作/强调 |
-| 条件格式色阶与数据条（`src/DAGui/DATableConditionalFormatRule.h`） | 色阶低端 `#BDCDE8` → 高端 `#5280C1`；数据条 `#BDCDE8` | 浅蓝底 → 主蓝强调 |
+| 表头多列规格角标（`src/DAGui/Table/Views/DADataHeaderView.cpp`） | 主蓝 `#5280C1` 圆底 + 白字 | 主操作/强调 |
+| 条件格式色阶与数据条（`src/DAGui/Table/Metadata/DATableConditionalFormatRule.h`） | 色阶低端 `#BDCDE8` → 高端 `#5280C1`；数据条 `#BDCDE8` | 浅蓝底 → 主蓝强调 |
 | 图表指针框选（`src/DAFigure/DAFigurePointerSelectorOverlay.cpp`） | 橙红 `#CE6043` | 危险/删除指向 |
 | Markdown 高亮（`src/DAUtils/DAMarkdownHighlighter.cpp`） | 标题/链接 `#5280C1`、列表 `#497CAD` | 主蓝强调 / 深蓝次级 |
 | 设置页状态提示（`src/APP/SettingPages/DASettingPageShortcuts.cpp` 等） | 错误 `#CE6043`、正文 `#5D6D7E`；连接成功 `#669E8B` | 语义色直用 |

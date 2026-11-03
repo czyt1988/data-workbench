@@ -167,7 +167,7 @@ d->updateDockWidgetFocus(DockWidget);  // 直接设置本管理器的 FocusedDoc
 | `src/DAGui/Chart/DAChartOperateWidget.h/.cpp` | 嵌套 `CDockManager` 宿主，figure 生命周期/布局/序列化 |
 | `src/DAGui/Chart/DAFigureDockWidget.h/.cpp` | figure 的停靠封装层（纯 `QWidget`） |
 | `src/DAGui/Chart/DAChartManageWidget.cpp` | 图表管理面板，通过信号观察 `DAChartOperateWidget`（不依赖停靠布局 index） |
-| `src/DAGui/DAXmlHelper.cpp` | `makeElement`/`loadElement` 保存/恢复 figure 内容 + `<chart-layout>` 布局 |
+| `src/DAGui/Archive/DAXmlHelper.cpp` | `makeElement`/`loadElement` 保存/恢复 figure 内容 + `<chart-layout>` 布局 |
 | `src/APP/DAAppChartOperateWidget.h/.cpp` | App 特化，`createFigure(name, id)` 转发 id 供反序列化 |
 | `src/3rdparty/ADS/` | ADS 4.4.1 源码，`dockindock` 示例位于 `examples/dockindock/` |
 

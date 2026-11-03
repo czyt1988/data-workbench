@@ -83,7 +83,7 @@ classDiagram
 
 > **📝 DANodeParamSettingPanel 是工作流节点参数面板的实际实现**
 >
-> `DANodeParamSettingPanel` 位于 `src/DAGui/NodeSetting/`，继承自 `DAAbstractNodeSettingWidget`（持有 `DAPyNode*`），内部使用 `DAPropertyFormWidget` 构建通用参数编辑界面。通过 `DANodeParameterFormAdapter` 将 `DAPyNodeParameter` 转换为 `DAFormSpec`，由 `DAFormEditorRegistry` 注册的 11 种编辑器适配器自动渲染（str/int/float/bool/enum/list/file/folder/color/font/code），字段变化通过 `fieldValueChanged` 信号实时写入代理配置。配合 `DANodeParamSettingPanelFactory`（单例工厂）和 `DANodeParamSettingPanelWidget`（QStackedWidget 调度器 + 惰性缓存），构成完整的三层架构。
+> `DANodeParamSettingPanel` 位于 `src/DAGui/Workflow/NodeSetting/`，继承自 `DAAbstractNodeSettingWidget`（持有 `DAPyNode*`），内部使用 `DAPropertyFormWidget` 构建通用参数编辑界面。通过 `DANodeParameterFormAdapter` 将 `DAPyNodeParameter` 转换为 `DAFormSpec`，由 `DAFormEditorRegistry` 注册的 11 种编辑器适配器自动渲染（str/int/float/bool/enum/list/file/folder/color/font/code），字段变化通过 `fieldValueChanged` 信号实时写入代理配置。配合 `DANodeParamSettingPanelFactory`（单例工厂）和 `DANodeParamSettingPanelWidget`（QStackedWidget 调度器 + 惰性缓存），构成完整的三层架构。
 
 ## 三类面板创建指南
 
@@ -211,7 +211,7 @@ DAChartItemSettingPanelFactory::instance().registerPanel(
 
 #### 适用场景
 
-适用于任何非 `QwtPlotItem` 目标对象（工作流节点、数据过滤器、一维仿真参数等）。工作流节点参数面板的实际实现为 `DANodeParamSettingPanel`（`src/DAGui/NodeSetting/`），继承 `DAAbstractNodeSettingWidget`，持有 `DAPyNodeProxy*`。以下为其架构的简化示意。
+适用于任何非 `QwtPlotItem` 目标对象（工作流节点、数据过滤器、一维仿真参数等）。工作流节点参数面板的实际实现为 `DANodeParamSettingPanel`（`src/DAGui/Workflow/NodeSetting/`），继承 `DAAbstractNodeSettingWidget`，持有 `DAPyNodeProxy*`。以下为其架构的简化示意。
 
 #### 骨架代码
 
@@ -243,7 +243,7 @@ protected:
 ```
 
 ```cpp
-// DANodeParamSettingPanel.cpp（简化示意，完整实现见 src/DAGui/NodeSetting/）
+// DANodeParamSettingPanel.cpp（简化示意，完整实现见 src/DAGui/Workflow/NodeSetting/）
 #include "DANodeParamSettingPanel.h"
 #include "DANodeParameterFormAdapter.h"
 #include "DAPyNode.h"
@@ -281,7 +281,7 @@ void DANodeParamSettingPanel::setNode(const DAPyNode& proxy)
 } // namespace DA
 ```
 
-完整实现包含：PIMPL 模式、`DAPyNode::setParameterValue()` 实时写入、`QSignalBlocker` 阻断回写（`DAPropertyFormWidget::setValues` 内部已封装）、`testCollectConfig()` 测试辅助方法。参见 `src/DAGui/NodeSetting/DANodeParamSettingPanel.h/.cpp`。
+完整实现包含：PIMPL 模式、`DAPyNode::setParameterValue()` 实时写入、`QSignalBlocker` 阻断回写（`DAPropertyFormWidget::setValues` 内部已封装）、`testCollectConfig()` 测试辅助方法。参见 `src/DAGui/Workflow/NodeSetting/DANodeParamSettingPanel.h/.cpp`。
 
 > **ℹ️ 信号冒泡转发机制**
 >
@@ -733,21 +733,21 @@ void DAChartCurveSettingPanel::buildPropertyPanel()
 
 | 文件路径 | 功能说明 |
 |---------|---------|
-| `src/DAGui/DAPropertyPanelWidget.h` | 属性面板核心控件，所有 add/set 便捷方法，分组与子面板管理 |
-| `src/DAGui/DAPropertyPanelContainerWidget.h` | 属性面板容器控件，QScrollArea + API 代理 |
+| `src/DAGui/Common/Settings/DAPropertyPanelWidget.h` | 属性面板核心控件，所有 add/set 便捷方法，分组与子面板管理 |
+| `src/DAGui/Common/Settings/DAPropertyPanelContainerWidget.h` | 属性面板容器控件，QScrollArea + API 代理 |
 | `src/DAGui/DACollapsiblePanel.h` | 可折叠面板控件，展开/收起机制 |
-| `src/DAGui/DAAbstractSettingPage.h` | 应用级设置页面基类 |
-| `src/DAGui/ChartSetting/DAAbstractChartItemSettingWidget.h` | 图表项设置基类，d_cast/s_cast/ReturnWhenItemNull |
-| `src/DAGui/ChartSetting/DAChartItemSettingPanel.h` | ChartItem 面板基类，Qwt 专有方法，纯虚 buildPropertyPanel |
-| `src/DAGui/ChartSetting/DAChartItemSettingPanel.cpp` | ChartItem 面板基类实现 |
-| `src/DAGui/ChartSetting/DAChartCurveSettingPanel.h/.cpp` | 曲线面板完整示例 |
-| `src/DAGui/ChartSetting/DAChartAxisSettingPanel.h/.cpp` | 独立属性面板完整示例（3-hop 信号链） |
-| `src/DAGui/ChartSetting/DAChartItemSettingPanelFactory.h/.cpp` | 工厂类，RTTI 注册与创建 |
-| `src/DAGui/NodeSetting/DANodeParamSettingPanel.h` | 工作流节点参数面板完整示例（基于 DAPropertyFormWidget、PIMPL） |
-| `src/DAGui/NodeSetting/DANodeParamSettingPanelFactory.h` | 工厂类，qualifiedName 路由与创建 |
-| `src/DAGui/NodeSetting/DANodeParameterFormAdapter.h` | DAPyNodeParameter → DAFormSpec 适配器 |
-| `src/DAGui/DAFormEditorRegistry.h` | 11 种字段类型编辑器注册表 |
-| `src/DAGui/DAPropertyFormWidget.h` | 统一表单渲染容器 |
-| `src/DAGui/DAAbstractNodeSettingWidget.h` | 节点设置基类，持有 DAPyNode* |
-| `src/DAGui/DAPyWorkFlowNodeItemSettingWidget.h` | 工作流节点设置容器，嵌入参数面板作为主标签页 |
+| `src/DAGui/Common/Settings/DAAbstractSettingPage.h` | 应用级设置页面基类 |
+| `src/DAGui/Chart/Setting/DAAbstractChartItemSettingWidget.h` | 图表项设置基类，d_cast/s_cast/ReturnWhenItemNull |
+| `src/DAGui/Chart/Setting/DAChartItemSettingPanel.h` | ChartItem 面板基类，Qwt 专有方法，纯虚 buildPropertyPanel |
+| `src/DAGui/Chart/Setting/DAChartItemSettingPanel.cpp` | ChartItem 面板基类实现 |
+| `src/DAGui/Chart/Setting/DAChartCurveSettingPanel.h/.cpp` | 曲线面板完整示例 |
+| `src/DAGui/Chart/Setting/DAChartAxisSettingPanel.h/.cpp` | 独立属性面板完整示例（3-hop 信号链） |
+| `src/DAGui/Chart/Setting/DAChartItemSettingPanelFactory.h/.cpp` | 工厂类，RTTI 注册与创建 |
+| `src/DAGui/Workflow/NodeSetting/DANodeParamSettingPanel.h` | 工作流节点参数面板完整示例（基于 DAPropertyFormWidget、PIMPL） |
+| `src/DAGui/Workflow/NodeSetting/DANodeParamSettingPanelFactory.h` | 工厂类，qualifiedName 路由与创建 |
+| `src/DAGui/Workflow/NodeSetting/DANodeParameterFormAdapter.h` | DAPyNodeParameter → DAFormSpec 适配器 |
+| `src/DAGui/Common/Settings/DAFormEditorRegistry.h` | 11 种字段类型编辑器注册表 |
+| `src/DAGui/Common/Settings/DAPropertyFormWidget.h` | 统一表单渲染容器 |
+| `src/DAGui/Workflow/NodeSetting/DAAbstractNodeSettingWidget.h` | 节点设置基类，持有 DAPyNode* |
+| `src/DAGui/Workflow/NodeSetting/DAPyWorkFlowNodeItemSettingWidget.h` | 工作流节点设置容器，嵌入参数面板作为主标签页 |
 | `docs/zh/dev-guide/ui/settingwidget-standard.md` | 设置类窗口规范（6 函数生命周期） |

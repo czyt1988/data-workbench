@@ -303,7 +303,7 @@ flowchart TD
 
 **具体步骤**：
 
-1. **创建面板类**：在 `src/DAGui/NodeSetting/` 中创建面板类，继承 `DANodeParamSettingPanel`
+1. **创建面板类**：在 `src/DAGui/Workflow/NodeSetting/` 中创建面板类，继承 `DANodeParamSettingPanel`
 2. **定义 DAFormSpec**：使用 `DAFormSpec` 描述表单结构（字段、分组、联动规则）
 3. **实现参数读写**：`readFromNode()` 从 `DAPyNode` 读取参数到表单，`writeToNode()` 将表单值写回节点
 4. **注册到工厂**：在 `DANodeParamSettingPanelFactory` 中添加 qualifiedName → 面板类的映射
@@ -365,8 +365,8 @@ flowchart TD
 | **单例** | DAAppCore | 全局唯一的子系统管理器 | `DAAppCore::getInstance()` |
 | **工厂** | DAPyNodeFactory, DANodeParamSettingPanelFactory | 根据类型标识动态创建对象 | qualifiedName 路由 |
 | **观察者** | 全项目（Qt 信号槽） | 模块间松耦合通讯 | `Q_SIGNALS`, `Q_SLOT`, `connect()` |
-| **命令** | DAGui/Commands/ | 支持撤销/重做操作 | QUndoCommand 子类 |
-| **MVC** | DAAppController + Models/ | 分离数据和视图 | DAGui/Models/ |
+| **命令** | 各领域目录（如 `Table/Metadata`、`Table/Ops`、`Workflow`） | 支持撤销/重做操作 | QUndoCommand 子类 |
+| **MVC** | DAAppController + 各领域的 `Views/`/`Models` | 分离数据和视图 | `DAGui/Table/Views`、`DAGui/Table/Models` |
 | **适配器** | DANodeParameterFormAdapter | DAPyNodeParameter → DAFormSpec | 接口转换 |
 
 ### 命名约定速查

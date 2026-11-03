@@ -2,7 +2,7 @@
 
 > **这份文档是什么**
 >
-> `src/DAGui/DADataOperateOfDataFrameWidget.*`（表格页）在 008 重构后的目标架构与开发规约：
+> `src/DAGui/Table/DADataOperateOfDataFrameWidget.*`（表格页）在 008 重构后的目标架构与开发规约：
 > 谁负责什么、后效在哪里收口、新增一个表内功能要动哪几个文件。
 > 重构方案与迁移过程见 `tmp/plan-表格页重构与职责拆分.md`（体检 → 根因 → 分期迁移）。
 
@@ -33,19 +33,19 @@
 
 | 类 | 目录 | 职责（一句话） |
 | --- | --- | --- |
-| `DATablePageContext` | `TableCore/` | 依赖注入载体：模型、主窗格、窗格容器、元数据束与各子存储、数据与撤销栈桥、宿主桥 |
-| `DATableSelectionService` | `TableCore/` | 选区/坐标纯查询：选区→数据源绝对行列、整列/整行判定、包围盒、身份表 |
-| `DATableMutationCoordinator` | `TableCore/` | 编辑后效唯一实现点：模型刷新 → 统计失效 → 计算列标脏 → 浮窗/宿主；`attach()` 一次性订阅各子存储变更 |
-| `DATableNoteController` | `TableNote/` | 单元格批注：编辑弹层定位、增删改、清空 |
-| `DATableQuickPlotController` | `TableQuickPlot/` | 表内快速绘图：选区→请求、浮窗生命周期、转入绘图区处理器注入 |
-| `DATableValidationController` | `TableValidation/` | 数据校验：规则对话框、求值（只读）、报告窗、违规高亮、改名迁移 |
-| `DATableComputedColumnController` | `TableComputedColumn/` | 计算列：公式求值管线、三态维护、全部重算（宏命令）、表头角标 |
-| `DATableConditionalFormatController` | `TableConditionalFormat/` | 条件格式：规则对话框、WPS 式菜单、差异→命令（增/删/改/移父命令） |
-| `DATableFindController` | `TableFind/` | 查找/替换状态机：命中集/序号/请求串号、扫描、循环导航、替换（含降级） |
-| `DATableStyleController` | `TableStyle/` | 样式与列显示格式：读写/清除、选区层级判定、代表样式一致性（三级策略） |
-| `DATableSortController` | `TableSort/` | 排序：多列规格、动作统一入口、选区置换重映射、表头角标 |
-| `DATableViewStateController` | `TableViewState/` | 视图状态投影：列宽/行头宽/行高/表头高采集与投影、冻结集合查表 |
-| `DATableColumnViewController` | `TableColumnView/` | 列视图真源操作：隐藏/冻结/列序/列视图对话框（Mediator-light） |
+| `DATablePageContext` | `Table/Core/` | 依赖注入载体：模型、主窗格、窗格容器、元数据束与各子存储、数据与撤销栈桥、宿主桥 |
+| `DATableSelectionService` | `Table/Core/` | 选区/坐标纯查询：选区→数据源绝对行列、整列/整行判定、包围盒、身份表 |
+| `DATableMutationCoordinator` | `Table/Core/` | 编辑后效唯一实现点：模型刷新 → 统计失效 → 计算列标脏 → 浮窗/宿主；`attach()` 一次性订阅各子存储变更 |
+| `DATableNoteController` | `Table/Controllers/` | 单元格批注：编辑弹层定位、增删改、清空 |
+| `DATableQuickPlotController` | `Table/Controllers/` | 表内快速绘图：选区→请求、浮窗生命周期、转入绘图区处理器注入 |
+| `DATableValidationController` | `Table/Controllers/` | 数据校验：规则对话框、求值（只读）、报告窗、违规高亮、改名迁移 |
+| `DATableComputedColumnController` | `Table/Controllers/` | 计算列：公式求值管线、三态维护、全部重算（宏命令）、表头角标 |
+| `DATableConditionalFormatController` | `Table/Controllers/` | 条件格式：规则对话框、WPS 式菜单、差异→命令（增/删/改/移父命令） |
+| `DATableFindController` | `Table/Controllers/` | 查找/替换状态机：命中集/序号/请求串号、扫描、循环导航、替换（含降级） |
+| `DATableStyleController` | `Table/Controllers/` | 样式与列显示格式：读写/清除、选区层级判定、代表样式一致性（三级策略） |
+| `DATableSortController` | `Table/Controllers/` | 排序：多列规格、动作统一入口、选区置换重映射、表头角标 |
+| `DATableViewStateController` | `Table/Controllers/` | 视图状态投影：列宽/行头宽/行高/表头高采集与投影、冻结集合查表 |
+| `DATableColumnViewController` | `Table/Controllers/` | 列视图真源操作：隐藏/冻结/列序/列视图对话框（Mediator-light） |
 
 ## 2. 三条硬规则（拆分成果的守卫）
 
@@ -124,11 +124,11 @@ bool DATableXxxController::runXxx(...)
 
 | 文件 | 说明 |
 |------|------|
-| `src/DAGui/DADataOperateOfDataFrameWidget.h/.cpp` | 表格页 Facade（生命周期/装配/信号转发/对外委托/宿主桥） |
-| `src/DAGui/TableCore/` | 页面上下文 + 选区服务 + 编辑后效协调器 |
-| `src/DAGui/TableNote/` `TableQuickPlot/` `TableValidation/` `TableComputedColumn/` | 批注 / 快速绘图 / 校验 / 计算列控制器 |
-| `src/DAGui/TableConditionalFormat/` `TableFind/` `TableStyle/` `TableSort/` | 条件格式 / 查找替换 / 样式 / 排序控制器 |
-| `src/DAGui/TableViewState/` `TableColumnView/` | 视图状态投影 / 列视图真源操作控制器 |
+| `src/DAGui/Table/DADataOperateOfDataFrameWidget.h/.cpp` | 表格页 Facade（生命周期/装配/信号转发/对外委托/宿主桥） |
+| `src/DAGui/Table/Core/` | 页面上下文 + 选区服务 + 编辑后效协调器 |
+| `src/DAGui/Table/Controllers/` `Table/Controllers/` `Table/Controllers/` `Table/Controllers/` | 批注 / 快速绘图 / 校验 / 计算列控制器 |
+| `src/DAGui/Table/Controllers/` `Table/Controllers/` `Table/Controllers/` `Table/Controllers/` | 条件格式 / 查找替换 / 样式 / 排序控制器 |
+| `src/DAGui/Table/Controllers/` `Table/Controllers/` | 视图状态投影 / 列视图真源操作控制器 |
 | `tmp/plan-表格页重构与职责拆分.md` | 重构方案全文（体检/根因/分期迁移/度量） |
 
 > **📖 相邻主题**：[表格元数据架构](table-metadata.md)（子存储与序列化）、[表内快速绘图](table-quick-plot.md)（请求/规格/规划器）、[滑动窗表格导航协议](virtual-table-navigation.md)（行号口径）。
