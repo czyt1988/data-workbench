@@ -20,8 +20,9 @@ namespace DA
  * ADS 创建侧边栏 tab 时传给工厂的 dock 指针为 nullptr，无法在构造期区分 dock，
  * 因此延迟到 tab 首帧绘制、绑定 dock 后按名单激活；未命中名单时绘制行为与基类完全一致。
  *
- * 未读数数据源为 DAMessageLogQueue 的累计推送总数（totalPushed）：
- * 未读数 = 累计总数 - 已读水位；auto-hide 面板展开（dock 可见）时清零水位。
+ * 未读数只统计警告/错误级消息（QtWarningMsg/QtCriticalMsg/QtFatalMsg），
+ * 普通 info/debug 不打扰用户；未读数 = 累计告警数 - 已读水位，
+ * auto-hide 面板展开（dock 可见）时清零水位。
  */
 class DAGUI_API DABadgeAutoHideTab : public ads::CAutoHideTab
 {

@@ -7,6 +7,7 @@
 // Qt-Advanced-Docking-System
 #include "DockManager.h"
 #include "DockAreaWidget.h"
+#include "DockComponentsFactory.h"
 // API相关
 #include "DAAppCore.h"
 #include "DAAppProject.h"
@@ -199,11 +200,15 @@ void DAAppDockingArea::showDataOperateWidget(const DA::DAData& data, const QStri
  */
 void DAAppDockingArea::buildDockingArea()
 {
-    // 注册带徽章能力的组件工厂（须先于任何 dock 创建）：侧边栏选项卡统一换成
-    // DABadgeAutoHideTab，未命中名单时行为与 ADS 原生 tab 完全一致
-    dockManager()->setComponentsFactory(new DABadgeDockComponentsFactory());
-    // 日志窗口的侧边栏 tab 启用未读徽章：有新日志时右上角显示"红点 + 未读数（99+ 封顶）"，
-    // 面板展开（用户看到日志）即清零
+    // 注册带徽章能力的组件工厂（须先于任何 dock 创建）。
+    // 必须走全局工厂：ADS 创建 auto-hide 侧栏 tab 时 dock 尚未绑定
+    // （CAutoHideDockContainer 构造中传入的是 nullptr），
+    // AutoHideDockContainerPrivate::componentsFactory() 会回退到
+    // CDockComponentsFactory::factory()，注册到 dock manager 的 per-manager 工厂不会被查询。
+    // 未命中徽章名单的侧栏 tab 绘制行为与 ads::CAutoHideTab 完全一致。
+    ads::CDockComponentsFactory::setFactory(new DABadgeDockComponentsFactory());
+    // 日志窗口的侧边栏 tab 启用未读徽章：产生警告/错误日志时右上角显示
+    // "红点 + 未读数（99+ 封顶）"，面板展开（用户看到日志）即清零
     DABadgeAutoHideTab::setBadgeEnabled(QString::fromUtf8(UiNames::Dock::MessageLogViewWidgetDock), true);
 
     // 中央操作区

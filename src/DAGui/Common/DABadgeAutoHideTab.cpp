@@ -85,6 +85,19 @@ void DABadgeAutoHideTab::setBadgeCount(int count)
 }
 
 /**
+ * @brief 警告 + 错误（含致命）的累计推送总数
+ *
+ * 徽章只对警告/错误级消息计数（普通 info 不打扰用户），
+ * 未读数 = 该累计数 - 已读水位。
+ * @return
+ */
+static qint64 warnOrErrorPushedTotal()
+{
+    const DAMessageLogQueue& queue = DAMessageLogQueue::instance();
+    return queue.totalWarningPushed() + queue.totalCriticalPushed();
+}
+
+/**
  * @brief 首帧绘制时尝试激活徽章
  *
  * ADS 工厂创建侧边栏 tab 时拿不到 dock 指针（传 nullptr），因此延后到
@@ -101,8 +114,8 @@ void DABadgeAutoHideTab::tryActivateBadge()
     if (!isBadgeEnabled(dw->objectName())) {
         return;  // 未命中名单：不激活，绘制行为与基类完全一致
     }
-    mBadgeActive    = true;
-    mReadWatermark  = DAMessageLogQueue::instance().totalPushed();
+    mBadgeActive   = true;
+    mReadWatermark = warnOrErrorPushedTotal();
     // 有新消息（1s 聚合信号）→ 刷新未读数
     connect(&DAMessageLogQueue::instance(), &DAMessageLogQueue::messageQueueAppended, this,
             &DABadgeAutoHideTab::onMessageQueueAppended);
@@ -119,14 +132,14 @@ void DABadgeAutoHideTab::tryActivateBadge()
  */
 void DABadgeAutoHideTab::markAsRead()
 {
-    mReadWatermark = DAMessageLogQueue::instance().totalPushed();
+    mReadWatermark = warnOrErrorPushedTotal();
     setBadgeCount(0);
 }
 
 /**
  * @brief 消息队列有新消息到达，刷新未读数
  *
- * 未读数 = DAMessageLogQueue 累计推送总数 - 已读水位；
+ * 未读数 = 警告/错误累计数 - 已读水位（info/debug 不计入）；
  * 面板展开期间到达的消息即时视为已读。
  */
 void DABadgeAutoHideTab::onMessageQueueAppended()
@@ -135,7 +148,7 @@ void DABadgeAutoHideTab::onMessageQueueAppended()
         markAsRead();  // 面板展开：用户正在看日志，即时已读
         return;
     }
-    const qint64 total = DAMessageLogQueue::instance().totalPushed();
+    const qint64 total = warnOrErrorPushedTotal();
     if (total > mReadWatermark) {
         setBadgeCount(static_cast< int >(total - mReadWatermark));
     }

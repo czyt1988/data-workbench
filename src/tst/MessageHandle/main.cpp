@@ -22,6 +22,7 @@ private Q_SLOTS:
     void testMultiThreadConcurrent();
     void testTotalPushedMonotonic();
     void testTotalPushedSurvivesRingOverwrite();
+    void testSeverityCounters();
 
 private:
     // 轮询等待队列大小稳定（连续 stableCount 次不变），最多等待 timeoutMs
@@ -192,6 +193,38 @@ void MessageHandleTest::testTotalPushedSurvivesRingOverwrite()
     QCOMPARE(queue.size(), 3);  // 环形覆写：尺寸封顶
     QCOMPARE(queue.totalPushed(), base + 5);  // 累计数不受覆写影响
     queue.setCapacity(oldCapacity);
+}
+
+/**
+ * 按严重级别累计：仅警告计入警告计数，critical/fatal 计入错误计数，info/debug 不计
+ */
+void MessageHandleTest::testSeverityCounters()
+{
+    DA::DAMessageLogQueue& queue = DA::DAMessageLogQueue::instance();
+    // 等待上一用例通过 spdlog 异步推送的日志落地，避免计数快照漂移
+    waitForStableQueueSize();
+    queue.clear();
+    const qint64 w0 = queue.totalWarningPushed();
+    const qint64 c0 = queue.totalCriticalPushed();
+    const qint64 t0 = queue.totalPushed();
+
+    const QDateTime now = QDateTime::currentDateTime();
+    auto push           = [ &queue, &now ](QtMsgType type) {
+        queue.push(DA::DAMessageLogItem(type, QStringLiteral("severityTest.cpp"),
+                                        QStringLiteral("testSeverityCounters"), 1,
+                                        QStringLiteral("severity message"), now));
+    };
+    push(QtInfoMsg);
+    push(QtDebugMsg);
+    push(QtWarningMsg);
+    push(QtCriticalMsg);
+    push(QtFatalMsg);
+    push(QtWarningMsg);
+
+    QCOMPARE(queue.totalPushed() - t0, qint64(6));
+    QCOMPARE(queue.totalWarningPushed() - w0, qint64(2));
+    // critical + fatal 均计入错误
+    QCOMPARE(queue.totalCriticalPushed() - c0, qint64(2));
 }
 
 QTEST_MAIN(MessageHandleTest)

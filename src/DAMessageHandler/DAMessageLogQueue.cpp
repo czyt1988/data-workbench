@@ -23,6 +23,8 @@ public:
     int mCapacity { 1000 };                            ///< 容量
     std::atomic_int mCachedSize { 0 };                 ///< 缓存的队列大小（供 onTimeout 等无锁读取）
     std::atomic< qint64 > mTotalPushed { 0 };           ///< 累计推送总数（单调递增，不随 clear/环形覆写回退）
+    std::atomic< qint64 > mTotalWarning { 0 };          ///< 累计警告数（QtWarningMsg）
+    std::atomic< qint64 > mTotalCritical { 0 };         ///< 累计错误数（QtCriticalMsg/QtFatalMsg）
 
     std::unique_ptr< QTimer > mTimer;                 ///< 惰性发射定时器
     int mEmitIntervalMs { 1000 };                     ///< 发射间隔
@@ -102,6 +104,8 @@ void DAMessageLogQueue::push(const DAMessageLogItem& item)
 void DAMessageLogQueue::push(DAMessageLogItem&& item)
 {
     DA_D(d);
+    // 消息被移动进缓冲前先取出类型，用于按严重级别累计
+    const QtMsgType msgType = item.getMsgType();
     bool sizeChanged = false;
     int newSize = 0;
     {
@@ -116,6 +120,12 @@ void DAMessageLogQueue::push(DAMessageLogItem&& item)
         d->mCachedSize.store(newSize, std::memory_order_release);
     }
     d->mTotalPushed.fetch_add(1, std::memory_order_acq_rel);
+    // 按严重级别累计（供 UI 只对警告/错误做未读提示）
+    if (QtWarningMsg == msgType) {
+        d->mTotalWarning.fetch_add(1, std::memory_order_acq_rel);
+    } else if (QtCriticalMsg == msgType || QtFatalMsg == msgType) {
+        d->mTotalCritical.fetch_add(1, std::memory_order_acq_rel);
+    }
     // 标记信号（惰性模式由 timer 发射，非惰性模式立即发射）
     if (sizeChanged) {
         d->mNeedEmitSizeChanged.store(true, std::memory_order_release);
@@ -243,6 +253,31 @@ qint64 DAMessageLogQueue::totalPushed() const
 {
     DA_DC(dc);
     return dc->mTotalPushed.load(std::memory_order_acquire);
+}
+
+/**
+ * @brief 获取自进程启动以来的累计警告（QtWarningMsg）推送数
+ *
+ * 与 totalPushed() 同语义：单调递增，不随 clear()/环形覆写回退，
+ * 供 UI 对"警告"类消息做未读提示时计算增量。
+ * @return
+ */
+qint64 DAMessageLogQueue::totalWarningPushed() const
+{
+    DA_DC(dc);
+    return dc->mTotalWarning.load(std::memory_order_acquire);
+}
+
+/**
+ * @brief 获取自进程启动以来的累计错误（QtCriticalMsg/QtFatalMsg）推送数
+ *
+ * 与 totalPushed() 同语义：单调递增，不随 clear()/环形覆写回退。
+ * @return
+ */
+qint64 DAMessageLogQueue::totalCriticalPushed() const
+{
+    DA_DC(dc);
+    return dc->mTotalCritical.load(std::memory_order_acquire);
 }
 
 /**
