@@ -27,6 +27,8 @@
 #include "DataManager/DADataManageWidget.h"
 // message相关
 #include "Common/DAMessageLogViewWidget.h"
+#include "Common/DABadgeAutoHideTab.h"
+#include "Common/DABadgeDockComponentsFactory.h"
 #include "DAUndoHistoryWidget.h"
 // workflow相关
 #include "DAPyNodeGraphicsItem.h"
@@ -197,6 +199,13 @@ void DAAppDockingArea::showDataOperateWidget(const DA::DAData& data, const QStri
  */
 void DAAppDockingArea::buildDockingArea()
 {
+    // 注册带徽章能力的组件工厂（须先于任何 dock 创建）：侧边栏选项卡统一换成
+    // DABadgeAutoHideTab，未命中名单时行为与 ADS 原生 tab 完全一致
+    dockManager()->setComponentsFactory(new DABadgeDockComponentsFactory());
+    // 日志窗口的侧边栏 tab 启用未读徽章：有新日志时右上角显示"红点 + 未读数（99+ 封顶）"，
+    // 面板展开（用户看到日志）即清零
+    DABadgeAutoHideTab::setBadgeEnabled(QString::fromUtf8(UiNames::Dock::MessageLogViewWidgetDock), true);
+
     // 中央操作区
     buildWorkflowAboutWidgets();
     buildChartAboutWidgets();
