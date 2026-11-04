@@ -16,7 +16,7 @@
  * @def 版本号-minor（数字）
  */
 #ifndef DA_VERSION_MINOR
-#define DA_VERSION_MINOR 1
+#define DA_VERSION_MINOR 2
 #endif
 
 /**
@@ -30,14 +30,14 @@
  * @def 版本号（字符串）
  */
 #ifndef DA_VERSION
-#define DA_VERSION "0.1.1"
+#define DA_VERSION "0.2.1"
 #endif
 
 /**
  * @def 编译的日期（字符串）
  */
 #ifndef DA_COMPILE_DATETIME
-#define DA_COMPILE_DATETIME "261103"
+#define DA_COMPILE_DATETIME "261104"
 #endif
 
 /**
@@ -58,7 +58,7 @@
  * @def 编译的日期（字符串）
  */
 #ifndef DA_COMPILE_DATETIME_DAY
-#define DA_COMPILE_DATETIME_DAY "03"
+#define DA_COMPILE_DATETIME_DAY "04"
 #endif
 
 /**
