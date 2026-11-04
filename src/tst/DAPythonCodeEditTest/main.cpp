@@ -133,6 +133,10 @@ void DAPythonCodeEditTest::testEditorCompletion()
     edit.resize(600, 320);
     edit.show();
     QVERIFY(QTest::qWaitForWindowExposed(&edit));
+    edit.activateWindow();
+    edit.raise();
+    edit.setFocus();
+    QTRY_VERIFY_WITH_TIMEOUT(edit.hasFocus(), 2000);
     QList< DA::DAPythonCompletionEntry > entries;
     DA::DAPythonCompletionEntry col1;
     col1.text       = QStringLiteral("my col");
@@ -142,7 +146,6 @@ void DAPythonCodeEditTest::testEditorCompletion()
     col2.insertText = QStringLiteral("amount");
     entries << col1 << col2;
     edit.setExtraEntries(entries);
-    edit.setFocus();
 
     QAbstractItemView* popup = edit.completionPopup();
     QVERIFY(popup != nullptr);
@@ -153,8 +156,7 @@ void DAPythonCodeEditTest::testEditorCompletion()
     cur.movePosition(QTextCursor::End);
     edit.setTextCursor(cur);
     QTest::keyClicks(&edit, QStringLiteral("D"));
-    QTest::qWait(80);
-    QVERIFY(popup->isVisible());
+    QTRY_VERIFY_WITH_TIMEOUT(popup->isVisible(), 3000);
     QVERIFY(popup->model()->rowCount() > 0);
     QTest::keyClick(&edit, Qt::Key_Return);
     QVERIFY(!popup->isVisible());
@@ -167,9 +169,8 @@ void DAPythonCodeEditTest::testEditorCompletion()
     cur.movePosition(QTextCursor::End);
     edit.setTextCursor(cur);
     QTest::keyClick(&edit, Qt::Key_Space, Qt::ControlModifier);
-    QTest::qWait(80);
-    QVERIFY(popup->isVisible());
-    QCOMPARE(popup->model()->rowCount(), 1);  // 只有 my col 匹配前缀 my
+    QTRY_VERIFY_WITH_TIMEOUT(popup->isVisible(), 3000);
+    QTRY_COMPARE_WITH_TIMEOUT(popup->model()->rowCount(), 1, 3000);  // 只有 my col 匹配前缀 my
     QTest::keyClick(&edit, Qt::Key_Return);
     QCOMPARE(edit.toPlainText(), QStringLiteral("`my col`"));
 
