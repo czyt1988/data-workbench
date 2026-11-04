@@ -35,6 +35,10 @@ public:
     int actualRowForPosition(int pos) const;
     // 整数行号换算为滑块顶边所在的控件内 y 坐标
     int positionForActualRow(int actualRow) const;
+    // 滑块矩形（与绘制一致，供测试/叠加层使用）
+    QRect sliderRect() const;
+    // 轨道矩形（与绘制一致，供测试/叠加层使用）
+    QRect grooveRect() const;
     // 是否正在拖动滑块
     bool isSeeking() const;
 Q_SIGNALS:
@@ -65,7 +69,7 @@ private:
     // 按整表坐标构造样式选项（绘制与命中判定共用）
     QStyleOptionSlider datasetStyleOption() const;
     // 轨道矩形
-    QRect grooveRect(const QStyleOptionSlider& opt) const;
+    QRect grooveRectOf(const QStyleOptionSlider& opt) const;
     // 更新鼠标悬停的子控件
     void updateHoverSubControl(const QPoint& pos);
     // 拖动过程中显示「第 N 行 / 共 M 行」提示

@@ -173,6 +173,8 @@ private Q_SLOTS:
     void testPlaceViewportExact();
     // 整表坐标滚动条：位置换算与拖动定位
     void testVirtualScrollBarSeek();
+    // 整表坐标滚动条：滑块能拉到轨道底部（末屏贴底，无死区）
+    void testVirtualScrollBarReachesBottom();
     // 窗口平移后当前项仍指向同一绝对行
     void testCurrentRowSurvivesWindowShift();
     // notify* 行号口径为绝对行
@@ -493,6 +495,45 @@ void DATableNavigationTest::testVirtualScrollBarSeek()
     QCOMPARE(cursorActualRow(), before + 1);
     QTest::keyClick(m_fx.view, Qt::Key_Up);
     QCOMPARE(cursorActualRow(), before);
+}
+
+/**
+ * @brief 滑块能拉到轨道底部：滚到最后一屏时滑块贴住轨道底端
+ *
+ * 回归：整表坐标若按「总行数-1」放置滑块，而视图最多只能停到「总行数-一屏行数」，
+ * 滚到数据末尾时滑块离轨道底还差一屏的比例（300 行表约 40px），轨道末端也因此
+ * 多出一段拖了不动的死区——用户看到的就是「滚动条拉不到最底部」。
+ */
+void DATableNavigationTest::testVirtualScrollBarReachesBottom()
+{
+    DA::DAVirtualScrollBar bar;
+    bar.resize(16, 600);
+    const int total = 300;  // 中等规模表：偏差放大到肉眼可见
+    const int vp    = 23;
+    // 首行：滑块贴住轨道顶部
+    bar.setDatasetPosition(0, total, vp);
+    QCOMPARE(bar.sliderRect().top(), bar.grooveRect().top());
+    // 最后一屏：滑块贴住轨道底部（修复前这里差约 40px）
+    bar.setDatasetPosition(total - vp, total, vp);
+    QCOMPARE(bar.sliderRect().bottom(), bar.grooveRect().bottom());
+    // 轨道最底端像素对应「最后一屏的首行」，不是最后一行（否则末端是死区）
+    QCOMPARE(bar.actualRowForPosition(bar.height() - 1), total - vp);
+    // 滑块顶边 + 滑块高度 = 轨道底部 + 1，与上面的取值一致
+    QCOMPARE(bar.positionForActualRow(total - vp) + bar.sliderRect().height(), bar.grooveRect().bottom() + 1);
+    // 传入最后一行也要夹到轨道底部，不能算到轨道外
+    QCOMPARE(bar.positionForActualRow(total - 1), bar.positionForActualRow(total - vp));
+
+    // 端到端：真实表格视图滚到末行后，滑块同样贴住轨道底部
+    m_fx.source->mRows = total;
+    m_fx.model->notifyRowsRemoved({ 0 });
+    QApplication::processEvents();
+    m_fx.view->showActualRow(m_fx.model->actualRowCount() - 1);
+    QApplication::processEvents();
+    DA::DAVirtualScrollBar* vbar = m_fx.view->getVirtualScrollBar();
+    QVERIFY(vbar);
+    QCOMPARE(vbar->getDatasetFirstVisibleRow(),
+             m_fx.model->actualRowCount() - vbar->getDatasetViewportRows());
+    QCOMPARE(vbar->sliderRect().bottom(), vbar->grooveRect().bottom());
 }
 
 /**
