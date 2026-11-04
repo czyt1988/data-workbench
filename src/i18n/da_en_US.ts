@@ -1488,13 +1488,13 @@
     </message>
     <message>
         <location line="+4"/>
-        <source>Rename Columns</source>
-        <translation>Rename Columns</translation>
+        <source>Manage Columns</source>
+        <translation>Manage Columns</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Rename columns in the selected table</source>
-        <translation>Rename columns in the selected table</translation>
+        <source>Manage column names, order, hidden and frozen states</source>
+        <translation>Manage column names, order, hidden and frozen states</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -12256,11 +12256,11 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     </message>
 </context>
 <context>
-    <name>DA::DADialogTableColumnView</name>
+    <name>DA::DADialogManageColumns</name>
     <message>
-        <location filename="../DAGui/Dialog/DADialogTableColumnView.cpp" line="+58"/>
-        <source>Column View</source>
-        <translation>Column View</translation>
+        <location filename="../DAGui/Table/Dialogs/DADialogManageColumns.cpp" line="+40"/>
+        <source>Manage Columns</source>
+        <translation>Manage Columns</translation>
     </message>
     <message>
         <location line="+7"/>
@@ -12268,7 +12268,12 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation>Search...</translation>
     </message>
     <message>
-        <location line="+9"/>
+        <location line="+3"/>
+        <source>Rows are shown in column order. Drag rows or use Move Up/Down to reorder columns.</source>
+        <translation>Rows are shown in column order. Drag rows or use Move Up/Down to reorder columns.</translation>
+    </message>
+    <message>
+        <location line="+8"/>
         <source>Column</source>
         <translation>Column</translation>
     </message>
@@ -12284,11 +12289,31 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     </message>
     <message>
         <location line="+15"/>
+        <source>Move Up</source>
+        <translation>Move Up</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Move the selected column forward</source>
+        <translation>Move the selected column forward</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Move Down</source>
+        <translation>Move Down</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Move the selected column backward</source>
+        <translation>Move the selected column backward</translation>
+    </message>
+    <message>
+        <location line="+3"/>
         <source>Show All</source>
         <translation>Show All</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+1"/>
         <source>Unhide all columns</source>
         <translation>Unhide all columns</translation>
     </message>
@@ -12296,6 +12321,16 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <location line="+1"/>
         <source>Unfreeze All</source>
         <translation>Unfreeze All</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Column name cannot be empty</source>
+        <translation>Column name cannot be empty</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Column name &quot;%1&quot; already exists, please use another name</source>
+        <translation>Column name &quot;%1&quot; already exists, please use another name</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -14122,24 +14157,6 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <location filename="../DAGui/DARecentFilesManager.h" line="+24"/>
         <source>Recent files</source>
         <translation>Recent files</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DARenameColumnsNameDialog</name>
-    <message>
-        <location filename="../DAGui/Dialog/DARenameColumnsNameDialog.cpp" line="+59"/>
-        <source>name</source>
-        <translation>name</translation>
-    </message>
-    <message>
-        <location line="+55"/>
-        <source>Warning</source>
-        <translation>Warning</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Duplicate column name &quot;%1&quot;, please reset the column name of column %2</source>
-        <translation>Duplicate column name &quot;%1&quot;, please reset the column name of column %2</translation>
     </message>
 </context>
 <context>
@@ -17893,29 +17910,6 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     </message>
 </context>
 <context>
-    <name>DARenameColumnsNameDialog</name>
-    <message>
-        <location filename="../DAGui/Dialog/DARenameColumnsNameDialog.ui" line="+14"/>
-        <source>Rename Table</source>
-        <translation>Rename Table</translation>
-    </message>
-    <message>
-        <location line="+12"/>
-        <source>Table Name:</source>
-        <translation>Table Name:</translation>
-    </message>
-    <message>
-        <location line="+38"/>
-        <source>OK</source>
-        <translation>OK</translation>
-    </message>
-    <message>
-        <location line="+11"/>
-        <source>Cancel</source>
-        <translation>Cancel</translation>
-    </message>
-</context>
-<context>
     <name>DASettingContainerWidget</name>
     <message>
         <location filename="../DAGui/DASettingContainerWidget.ui" line="+20"/>
@@ -20888,8 +20882,8 @@ If a column name contains spaces or special characters, enclose it in backticks 
     </message>
     <message>
         <location filename="../DAGui/TableColumnView/DATableColumnViewController.cpp" line="+1"/>
-        <source>Column View...</source>
-        <translation>Column View...</translation>
+        <source>Manage Columns</source>
+        <translation>Manage Columns</translation>
     </message>
     <message>
         <location filename="../DAGui/TableColumnView/DATableColumnViewController.cpp" line="+1"/>
@@ -21178,7 +21172,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     </message>
     <message>
         <location filename="../DAGui/TableOps/DATableRenameOps.cpp" line="+1"/>
-        <source>Rename Columns</source>
+        <source>Rename Column</source>
         <translation>Rename Columns</translation>
     </message>
 </context>

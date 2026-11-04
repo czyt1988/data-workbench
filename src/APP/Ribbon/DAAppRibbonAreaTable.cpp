@@ -64,7 +64,7 @@ void DAAppRibbonArea::buildContextCategoryTableOperate(SARibbonContextCategory* 
 {
     mCategoryDataframeTableOperate = contextTable->addCategoryPage(tr("Table Operations"));  // cn:表格操作
     mCategoryDataframeTableOperate->setObjectName(QString::fromUtf8(UiNames::Ribbon::DataFrameOperateCategory));
-    // 坐标轴面板：插入行（下拉含插入行到上方）、插入列（下拉含向左插入列）、删除单元格、删除行、删除列、更改列名、列转索引
+    // 坐标轴面板：插入行（下拉含插入行到上方）、插入列（下拉含向左插入列）、删除单元格、删除行、删除列、列名管理、列转索引
     mPannelDataframeOperateAxes = mCategoryDataframeTableOperate->addPanel(tr("Axes"));  // cn:坐标轴
     mPannelDataframeOperateAxes->setObjectName(QString::fromUtf8(UiNames::Ribbon::DataFrameOperateAxesPanel));
     mActions->actionInsertRow->setMenu(menus.insertRow);
@@ -75,7 +75,7 @@ void DAAppRibbonArea::buildContextCategoryTableOperate(SARibbonContextCategory* 
     mPannelDataframeOperateAxes->addMediumAction(mActions->actionRemoveRow);
     mPannelDataframeOperateAxes->addMediumAction(mActions->actionRemoveColumn);
     mPannelDataframeOperateAxes->addSeparator();
-    mPannelDataframeOperateAxes->addLargeAction(mActions->actionRenameColumns);
+    mPannelDataframeOperateAxes->addLargeAction(mActions->actionManageColumns);
     mPannelDataframeOperateAxes->addLargeAction(mActions->actionChangeToIndex);
     // 列面板：重命名列、复制列名、定位最大、定位最小、描述统计、快速绘图
     mPannelDataframeOperateColumn = mCategoryDataframeTableOperate->addPanel(tr("Column"));  // cn:列

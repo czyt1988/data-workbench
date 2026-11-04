@@ -312,8 +312,8 @@ private Q_SLOTS:
     void onActionInsertColumnRightTriggered();
     // 在选中位置左边插入一列
     void onActionInsertColumnLeftTriggered();
-    // dataframe列重命名
-    void onActionRenameColumnsTriggered();
+    // 列名管理（列名/顺序/隐藏/冻结，打开列管理对话框）
+    void onActionManageColumnsTriggered();
     // dataframe单列重命名（表头右键）
     void onActionRenameColumnTriggered();
     // 复制列名到剪贴板（表头右键）

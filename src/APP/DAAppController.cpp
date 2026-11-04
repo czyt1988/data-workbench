@@ -506,7 +506,7 @@ void DAAppController::initConnection()
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionRemoveRow, onActionRemoveRowTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionRemoveColumn, onActionRemoveColumnTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionRemoveCell, onActionRemoveCellTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionRenameColumns, onActionRenameColumnsTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionManageColumns, onActionManageColumnsTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionRenameColumn, onActionRenameColumnTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionCopyColumnName, onActionCopyColumnNameTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionGotoMax, onActionGotoMaxTriggered);
@@ -3876,20 +3876,19 @@ void DAAppController::onActionInsertColumnRightTriggered()
  */
 void DAAppController::onActionInsertColumnLeftTriggered()
 {
-    if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
+    if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false)) {
         dfopt->insertColumnLeftBySelect();
         setDirty();
     }
 }
 
 /**
- * @brief dataframe列重命名
+ * @brief 列名管理（改名/调整顺序/隐藏/冻结，打开列管理对话框）
  */
-void DAAppController::onActionRenameColumnsTriggered()
+void DAAppController::onActionManageColumnsTriggered()
 {
-    if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
-        dfopt->renameColumns();
-        setDirty();
+    if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false)) {
+        dfopt->showManageColumnsDialog();
     }
 }
 
@@ -4451,7 +4450,7 @@ void DAAppController::onActionColumnViewDialogTriggered()
     if (!dfopt) {
         return;
     }
-    dfopt->showColumnViewDialog();
+    dfopt->showManageColumnsDialog();
 }
 
 /**

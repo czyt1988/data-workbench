@@ -19,7 +19,7 @@
 #include "DACallBackInterface.h"
 #include "Table/Views/DATablePaneContainer.h"
 #include "Table/Metadata/DATableViewStateStore.h"
-#include "Table/Dialogs/DADialogTableColumnView.h"
+#include "Table/Dialogs/DADialogManageColumns.h"
 // DAData
 #include "DADataPyDataFrame.h"
 // 日志（用户可见提示必须走 da* 宏并翻译）
@@ -450,29 +450,31 @@ void DATableColumnViewController::onHeaderActionRequested(int logicalColumn, int
         unfreezeAllColumns();
         break;
     case DADataHeaderView::ColumnViewAction::OpenColumnViewDialog:
-        showDialog();
+        showManageColumnsDialog();
         break;
     }
 }
 
 /**
- * @brief 打开列视图对话框（006d；表格化改版：列名编辑/隐藏/冻结三列表格）
+ * @brief 打开列管理对话框（列名 / 顺序 / 隐藏 / 冻结）
  *
  * 输入 = 全局列序（含隐藏列）的身份表（orderedColumnIdentities 唯一实现）；
- * 确定后按差异构造一个批量父命令（改名 + 隐藏集合变更 + 冻结数变更 =
- * 一个撤销单元），取消不改动；冻结数比较基准用 store 真源旧值。
+ * 确定后按差异构造一个批量父命令（改名 + 列序变更 + 隐藏集合变更 + 冻结集合
+ * 变更 = 一个撤销单元），取消不改动；比较基准用 store 真源旧值（列序旧值原样
+ * 保留"空 = 未记录"，undo 后投影自然回到数据列序）。
  * 改名对经 DACommandDataFrame_renameColumns 入批（列名缓存重建 + 视图状态
- * 键迁移 + 数据管理器通知均在命令/控制器接线里完成）。
+ * 键迁移 + 数据管理器通知均在命令/控制器接线里完成）；列序/隐藏/冻结走
+ * DATableViewStateStore 真源命令（显示列序语义，不改 DataFrame 列顺序）。
  */
-void DATableColumnViewController::showDialog()
+void DATableColumnViewController::showManageColumnsDialog()
 {
     DATableViewStateStore* vsStore = mCtx.viewStateStore();
     DADataTableModel* model        = mCtx.model();
     if (!vsStore || !model) {
         return;
     }
-    if (!mDialogColumnView) {
-        mDialogColumnView = new DADialogTableColumnView(mCtx.hostWidget());
+    if (!mDialogManageColumns) {
+        mDialogManageColumns = new DADialogManageColumns(mCtx.hostWidget());
     }
     const QList< QPair< QString, int > > ordered = orderedColumnIdentities();
     if (ordered.isEmpty()) {
@@ -480,24 +482,29 @@ void DATableColumnViewController::showDialog()
     }
     QSet< QPair< QString, int > > oldHidden = toIdentSet(vsStore->hiddenColumns());
     const QList< QPair< QString, int > > oldFrozen = vsStore->frozenColumns();
-    mDialogColumnView->setup(ordered, oldHidden, toIdentSet(oldFrozen));
-    if (mDialogColumnView->exec() != QDialog::Accepted) {
+    mDialogManageColumns->setup(ordered, oldHidden, toIdentSet(oldFrozen));
+    if (mDialogManageColumns->exec() != QDialog::Accepted) {
         return;  // 取消不改动任何东西
     }
-    const QSet< QPair< QString, int > > newHidden       = mDialogColumnView->hiddenColumns();
-    const QSet< QPair< QString, int > > checkedFrozen   = mDialogColumnView->frozenColumns();
+    const QSet< QPair< QString, int > > newHidden       = mDialogManageColumns->hiddenColumns();
+    const QSet< QPair< QString, int > > checkedFrozen   = mDialogManageColumns->frozenColumns();
     // 对话框只给勾选集合；顺序按统一插入规则合并（保住冻结区自定义顺序，新增列按全局列序落位）
     const QList< QPair< QString, int > > newFrozen = mergeFrozenOrder(oldFrozen, checkedFrozen, ordered);
     // 改名对（对话框按行序给出 (旧身份 → 新名)）
-    const QList< QPair< QPair< QString, int >, QString > > renames = mDialogColumnView->renamedColumns();
-    // 改名后身份映射：改名命令先于隐藏/冻结子命令执行，视图状态键已迁移到新列名，
-    // 子命令的 old/new 身份必须一并换成新键（否则写入孤儿身份，隐藏/冻结丢失）
+    const QList< QPair< QPair< QString, int >, QString > > renames = mDialogManageColumns->renamedColumns();
+    // 列序：对话框行序 = 新全局列序；旧值取 store 真源原样（含"空 = 未记录 = 数据列序"，
+    // 这样 undo 能把列序还原成"未记录"，投影自然回到数据列序）
+    const QList< QPair< QString, int > > oldOrder = vsStore->columnOrder();
+    // 顺序是否被用户调整（与对话框输入列序比较；改名不影响该判定）
+    const bool orderChanged = (mDialogManageColumns->columnOrder() != ordered);
+    // 改名后身份映射：改名命令先于列序/隐藏/冻结子命令执行，视图状态键已迁移到新列名，
+    // 子命令的 old/new 身份必须一并换成新键（否则写入孤儿身份，列序/隐藏/冻结丢失）
     QHash< QPair< QString, int >, QPair< QString, int > > identAfterRename;
-    if (newHidden == oldHidden && newFrozen == oldFrozen && renames.isEmpty()) {
+    if (newHidden == oldHidden && newFrozen == oldFrozen && renames.isEmpty() && !orderChanged) {
         return;  // 无差异不推空命令
     }
     // 批量父命令先行（renameCmd 要以它为 parent 构造）
-    DACommandTableColumnViewBatch* batch = new DACommandTableColumnViewBatch(tr("Column View..."));  // cn:列视图
+    DACommandTableColumnViewBatch* batch = new DACommandTableColumnViewBatch(tr("Manage Columns"));  // cn:列管理
     if (!renames.isEmpty()) {
         DAPyDataFrame df = mCtx.df();
         if (df.isNone()) {
@@ -599,6 +606,13 @@ void DATableColumnViewController::showDialog()
         }
         batch->setText(tr("Rename and update column view"));  // cn:重命名并更新列视图
     }
+    // 列序子命令的新列序（身份换到改名后的键；无改名时映射为空，原样透传）
+    const QList< QPair< QString, int > > dialogOrder = mDialogManageColumns->columnOrder();
+    QList< QPair< QString, int > > finalNewOrder;
+    finalNewOrder.reserve(dialogOrder.size());
+    for (const QPair< QString, int >& id : dialogOrder) {
+        finalNewOrder.append(identAfterRename.value(id, id));
+    }
     // 隐藏/冻结子命令的身份统一换到改名后的键（无改名时映射为空，原样透传）
     QSet< QPair< QString, int > > finalOldHidden;
     QSet< QPair< QString, int > > finalNewHidden;
@@ -616,6 +630,10 @@ void DATableColumnViewController::showDialog()
     for (const QPair< QString, int >& id : newFrozen) {
         finalNewFrozen.append(identAfterRename.value(id, id));
     }
+    if (orderChanged && finalNewOrder != oldOrder) {
+        new DACommandTableColumnOrder(vsStore, oldOrder, finalNewOrder,
+                                      [ this ]() { mViewState->applyFromStore(); }, batch);
+    }
     if (finalNewHidden != finalOldHidden) {
         new DACommandTableColumnVisibility(vsStore, finalOldHidden, finalNewHidden,
                                            [ this ]() { mViewState->applyFromStore(); }, QString(), batch);
@@ -627,10 +645,14 @@ void DATableColumnViewController::showDialog()
     if (mCtx.pushCommand) {
         mCtx.pushCommand(batch);
     }
-    // 数据管理器树重建（改名改变树内列子项显示）
+    // 数据管理器树重建（改名改变树内列子项显示）+ 脏标记（改名属于数据变更；
+    // 列序/隐藏/冻结是视图属性，与表头拖动同口径不置脏）
     if (!renames.isEmpty()) {
         if (mCtx.notifyHostColumnRename) {
             mCtx.notifyHostColumnRename();
+        }
+        if (mCtx.notifyDataModified) {
+            mCtx.notifyDataModified();
         }
         if (mViewState) {
             mViewState->applyFromStore();

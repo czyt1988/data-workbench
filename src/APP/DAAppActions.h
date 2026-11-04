@@ -85,7 +85,7 @@ public:
     QAction* actionInsertRowAbove;     ///< 向上插入 一行
     QAction* actionInsertColumnLeft;   ///< 在左边插入列
     QAction* actionInsertColumnRight;  ///< 在右边插入列
-    QAction* actionRenameColumns;      ///< 更改列名
+    QAction* actionManageColumns;      ///< 列名管理（改列名/调顺序/隐藏/冻结）
     QAction* actionRenameColumn;       ///< 更改单列名（表头右键）
     QAction* actionCopyColumnName;     ///< 复制列名到剪贴板（表头右键）
     QAction* actionGotoMax;            ///< 跳转到最大值（表头右键）

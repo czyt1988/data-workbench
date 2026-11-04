@@ -64,7 +64,7 @@
 #include "Table/Views/DATablePaneContainer.h"
 #include "Table/Views/DATableStatsWidget.h"
 #include "Table/Commands/DACommandsTableColumnView.h"
-#include "Table/Dialogs/DADialogTableColumnView.h"
+#include "Table/Dialogs/DADialogManageColumns.h"
 #include "Table/Dialogs/DADialogGotoCell.h"
 #include <QWindow>
 #include <QScrollBar>

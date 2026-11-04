@@ -89,11 +89,10 @@
 #include "Table/Controllers/DATableNavigationService.h"
 #include "Table/Controllers/DATableNavigationService.h"
 // Dialog
-#include "Table/Dialogs/DARenameColumnsNameDialog.h"
 #include "Table/Dialogs/DADialogDataframeColumnCastToNumeric.h"
 #include "Table/Dialogs/DADialogDataframeColumnCastToDatetime.h"
 #include "Table/Dialogs/DADialogInsertNewColumn.h"
-#include "Table/Dialogs/DADialogTableColumnView.h"
+#include "Table/Dialogs/DADialogManageColumns.h"
 #include "Table/Dialogs/DADialogFindReplace.h"
 #include "Table/Dialogs/DADialogConditionalFormat.h"
 #include "Table/Dialogs/DADialogConditionalFormatQuickRule.h"
@@ -736,13 +735,6 @@ int DADataOperateOfDataFrameWidget::cutSelection()
 }
 
 /**
- * @brief 更改列名（转发列改名算子）
- */
-void DADataOperateOfDataFrameWidget::renameColumns()
-{
-    d_func()->mRenameOps->renameColumns();
-}
-/**
  * @brief 重命名单列（转发列改名算子）
  * @param col 列位置索引
  * @param newName 新列名
@@ -1215,11 +1207,11 @@ void DADataOperateOfDataFrameWidget::onHeaderColumnViewActionRequested(int logic
 }
 
 /**
- * @brief 打开列视图对话框（转发列视图控制器）
+ * @brief 打开列管理对话框（列名/顺序/隐藏/冻结，转发列视图控制器）
  */
-void DADataOperateOfDataFrameWidget::showColumnViewDialog()
+void DADataOperateOfDataFrameWidget::showManageColumnsDialog()
 {
-    d_func()->mColumnViewController->showDialog();
+    d_func()->mColumnViewController->showManageColumnsDialog();
 }
 
 /**

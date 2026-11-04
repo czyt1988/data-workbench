@@ -1488,13 +1488,13 @@
     </message>
     <message>
         <location line="+4"/>
-        <source>Rename Columns</source>
-        <translation>重命名列</translation>
+        <source>Manage Columns</source>
+        <translation>列名管理</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Rename columns in the selected table</source>
-        <translation>重命名选中表格的列</translation>
+        <source>Manage column names, order, hidden and frozen states</source>
+        <translation>管理列名、列顺序、隐藏与冻结状态</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -12342,11 +12342,11 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     </message>
 </context>
 <context>
-    <name>DA::DADialogTableColumnView</name>
+    <name>DA::DADialogManageColumns</name>
     <message>
-        <location filename="../DAGui/Dialog/DADialogTableColumnView.cpp" line="+58"/>
-        <source>Column View</source>
-        <translation>列视图</translation>
+        <location filename="../DAGui/Table/Dialogs/DADialogManageColumns.cpp" line="+40"/>
+        <source>Manage Columns</source>
+        <translation>列管理</translation>
     </message>
     <message>
         <location line="+7"/>
@@ -12354,7 +12354,12 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>搜索</translation>
     </message>
     <message>
-        <location line="+9"/>
+        <location line="+3"/>
+        <source>Rows are shown in column order. Drag rows or use Move Up/Down to reorder columns.</source>
+        <translation>行序即列序，拖动行或使用上移/下移调整列顺序。</translation>
+    </message>
+    <message>
+        <location line="+8"/>
         <source>Column</source>
         <translation>列</translation>
     </message>
@@ -12370,11 +12375,31 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     </message>
     <message>
         <location line="+15"/>
+        <source>Move Up</source>
+        <translation>上移</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Move the selected column forward</source>
+        <translation>把选中列向前移动</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Move Down</source>
+        <translation>下移</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Move the selected column backward</source>
+        <translation>把选中列向后移动</translation>
+    </message>
+    <message>
+        <location line="+3"/>
         <source>Show All</source>
         <translation>显示全部</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+1"/>
         <source>Unhide all columns</source>
         <translation>取消所有列的隐藏</translation>
     </message>
@@ -12382,6 +12407,16 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <location line="+1"/>
         <source>Unfreeze All</source>
         <translation>取消全部冻结</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Column name cannot be empty</source>
+        <translation>列名不能为空</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Column name &quot;%1&quot; already exists, please use another name</source>
+        <translation>列名&quot;%1&quot;已存在，请使用其他名称</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -14208,24 +14243,6 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <location filename="../DAGui/DARecentFilesManager.h" line="+24"/>
         <source>Recent files</source>
         <translation>最近打开文件</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DARenameColumnsNameDialog</name>
-    <message>
-        <location filename="../DAGui/Dialog/DARenameColumnsNameDialog.cpp" line="+59"/>
-        <source>name</source>
-        <translation>名称</translation>
-    </message>
-    <message>
-        <location line="+55"/>
-        <source>Warning</source>
-        <translation>警告</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Duplicate column name &quot;%1&quot;, please reset the column name of column %2</source>
-        <translation>列名“%1”存在重复，请重新设置第%2列的列名</translation>
     </message>
 </context>
 <context>
@@ -17979,29 +17996,6 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     </message>
 </context>
 <context>
-    <name>DARenameColumnsNameDialog</name>
-    <message>
-        <location filename="../DAGui/Dialog/DARenameColumnsNameDialog.ui" line="+14"/>
-        <source>Rename Table</source>
-        <translation>重命名表</translation>
-    </message>
-    <message>
-        <location line="+12"/>
-        <source>Table Name:</source>
-        <translation>表名：</translation>
-    </message>
-    <message>
-        <location line="+38"/>
-        <source>OK</source>
-        <translation>确定</translation>
-    </message>
-    <message>
-        <location line="+11"/>
-        <source>Cancel</source>
-        <translation>取消</translation>
-    </message>
-</context>
-<context>
     <name>DASettingContainerWidget</name>
     <message>
         <location filename="../DAGui/DASettingContainerWidget.ui" line="+20"/>
@@ -20983,8 +20977,8 @@ If a column name contains spaces or special characters, enclose it in backticks 
     </message>
     <message>
         <location filename="../DAGui/TableColumnView/DATableColumnViewController.cpp" line="+1"/>
-        <source>Column View...</source>
-        <translation>列视图...</translation>
+        <source>Manage Columns</source>
+        <translation>列管理</translation>
     </message>
     <message>
         <location filename="../DAGui/TableColumnView/DATableColumnViewController.cpp" line="+1"/>
@@ -21273,7 +21267,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     </message>
     <message>
         <location filename="../DAGui/TableOps/DATableRenameOps.cpp" line="+1"/>
-        <source>Rename Columns</source>
+        <source>Rename Column</source>
         <translation>重命名列</translation>
     </message>
 </context>
