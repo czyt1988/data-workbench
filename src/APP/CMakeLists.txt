@@ -27,6 +27,10 @@ file(GLOB DA_APP_QT_RC_FILES_Dialog ${CMAKE_CURRENT_SOURCE_DIR}/Dialog/*.qrc)
 file(GLOB DA_APP_HEADER_FILES_Ribbon "${CMAKE_CURRENT_SOURCE_DIR}/Ribbon/*.h")
 file(GLOB DA_APP_SOURCE_FILES_Ribbon "${CMAKE_CURRENT_SOURCE_DIR}/Ribbon/*.cpp")
 
+# Controller 域：DAAppController 的协调者声明，与按职责拆分的实现（核心/连接装配/工程/视图/页面/智能体）
+file(GLOB DA_APP_HEADER_FILES_Controller "${CMAKE_CURRENT_SOURCE_DIR}/Controller/*.h")
+file(GLOB DA_APP_SOURCE_FILES_Controller "${CMAKE_CURRENT_SOURCE_DIR}/Controller/*.cpp")
+
 # python binding
 list(APPEND DA_APP_HEADER_FILES
     PythonBinding/DAAppPythonBinding.h
@@ -55,6 +59,9 @@ da_add_executable(
             #Ribbon
             ${DA_APP_HEADER_FILES_Ribbon}
             ${DA_APP_SOURCE_FILES_Ribbon}
+            #Controller
+            ${DA_APP_HEADER_FILES_Controller}
+            ${DA_APP_SOURCE_FILES_Controller}
             # Global
             ${CMAKE_CURRENT_SOURCE_DIR}/../DAGlobals.h
     # onTestConnection 用 QNetworkAccessManager——Network 在顶层 find_package 未声明，
