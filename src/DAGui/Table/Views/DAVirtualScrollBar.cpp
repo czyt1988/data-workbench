@@ -71,18 +71,24 @@ bool DAVirtualScrollBar::isSeeking() const
 /**
  * @brief 按整表坐标构造样式选项
  *
- * 用「最大值=总行数-1、页步=一屏行数、滑块位置=视口首行」的假坐标喂给样式，
+ * 用「最大值=最后一屏的首行、页步=一屏行数、滑块位置=视口首行」的假坐标喂给样式，
  * 让原生样式算出诚实的滑块长度与位置。
+ *
+ * 最大值取 mTotalRows - mViewportRows 而不是 mTotalRows - 1：视图真正能停驻的
+ * 视口首行最多只到「最后一屏的首行」（再往后 Qt 只能把目标行贴到最后一屏），滑块的
+ * 可行程必须与这段范围一致。若仍用总行数-1，滚到数据末尾时滑块离轨道底部会差一屏
+ * 的比例（300 行表约 40px），轨道末端也因此多出一段「拖了不动」的死区——肉眼看到的
+ * 就是「滚动条拉不到最底部」。
  * @return 样式选项
  */
 QStyleOptionSlider DAVirtualScrollBar::datasetStyleOption() const
 {
     QStyleOptionSlider opt;
     opt.initFrom(this);
-    opt.orientation   = Qt::Vertical;
-    opt.minimum       = 0;
-    opt.maximum       = qMax(0, mTotalRows - 1);
-    opt.pageStep      = qMax(1, mViewportRows);
+    opt.orientation    = Qt::Vertical;
+    opt.minimum        = 0;
+    opt.maximum        = qMax(0, mTotalRows - qMax(1, mViewportRows));
+    opt.pageStep       = qMax(1, mViewportRows);
     opt.singleStep    = 1;
     opt.sliderPosition = qBound(opt.minimum, mFirstVisibleRow, opt.maximum);
     opt.sliderValue    = opt.sliderPosition;
@@ -108,13 +114,32 @@ QStyleOptionSlider DAVirtualScrollBar::datasetStyleOption() const
  * @param opt 样式选项
  * @return 轨道矩形
  */
-QRect DAVirtualScrollBar::grooveRect(const QStyleOptionSlider& opt) const
+QRect DAVirtualScrollBar::grooveRectOf(const QStyleOptionSlider& opt) const
 {
     QRect gr = style()->subControlRect(QStyle::CC_ScrollBar, &opt, QStyle::SC_ScrollBarGroove, this);
     if (!gr.isValid() || gr.isEmpty()) {
         return rect();
     }
     return gr;
+}
+
+/**
+ * @brief 滑块矩形（与绘制使用同一份整表坐标样式选项）
+ * @return 滑块矩形
+ */
+QRect DAVirtualScrollBar::sliderRect() const
+{
+    const QStyleOptionSlider opt = datasetStyleOption();
+    return style()->subControlRect(QStyle::CC_ScrollBar, &opt, QStyle::SC_ScrollBarSlider, this);
+}
+
+/**
+ * @brief 轨道矩形（与绘制使用同一份整表坐标样式选项）
+ * @return 轨道矩形
+ */
+QRect DAVirtualScrollBar::grooveRect() const
+{
+    return grooveRectOf(datasetStyleOption());
 }
 
 void DAVirtualScrollBar::paintEvent(QPaintEvent* e)
@@ -138,7 +163,7 @@ int DAVirtualScrollBar::actualRowForPosition(int pos) const
     if (opt.maximum <= opt.minimum) {
         return 0;
     }
-    const QRect gr = grooveRect(opt);
+    const QRect gr = grooveRectOf(opt);
     const QRect sr = style()->subControlRect(QStyle::CC_ScrollBar, &opt, QStyle::SC_ScrollBarSlider, this);
     const int sliderLength = qMax(0, sr.height());
     const int sliderMin    = gr.top();
@@ -161,11 +186,14 @@ int DAVirtualScrollBar::actualRowForPosition(int pos) const
 int DAVirtualScrollBar::positionForActualRow(int actualRow) const
 {
     const QStyleOptionSlider opt = datasetStyleOption();
-    const QRect gr               = grooveRect(opt);
+    const QRect gr               = grooveRectOf(opt);
     const QRect sr = style()->subControlRect(QStyle::CC_ScrollBar, &opt, QStyle::SC_ScrollBarSlider, this);
     const int sliderLength = qMax(0, sr.height());
     const int span         = qMax(0, gr.bottom() - sliderLength + 1 - gr.top());
-    const int offset       = QStyle::sliderPositionFromValue(opt.minimum, opt.maximum, actualRow, span, opt.upsideDown);
+    // 行号先夹到整表坐标范围内：调用方可能传入最后一行（超出滑块可行程），
+    // 此时应贴在轨道底部而不是算到轨道外面去
+    const int value  = qBound(opt.minimum, actualRow, opt.maximum);
+    const int offset = QStyle::sliderPositionFromValue(opt.minimum, opt.maximum, value, span, opt.upsideDown);
     return gr.top() + offset;
 }
 

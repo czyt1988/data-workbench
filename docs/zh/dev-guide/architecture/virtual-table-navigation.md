@@ -58,7 +58,8 @@ W' = W + Δ    v' = v - Δ    ⇒    T' = W' + v' = T
 `DAVirtualScrollBar` 解决的矛盾是：Qt 需要 value 是窗口内行号，用户需要滑块表示整表位置。做法是让**同一个控件承担两层语义**：
 
 - 继承来的 `value` / `range` / `pageStep` 保持窗口内语义（Qt 的滚动机制照旧工作，`setVerticalScrollBar` 替换实例即可）。
-- **绘制与鼠标/键盘交互**按整表坐标：构造一份「假坐标」的 `QStyleOptionSlider`（最大值 = 总行数 - 1、页步 = 一屏行数、滑块位置 = `T`）交给 `QStyle::drawComplexControl`，于是原生样式画出的就是诚实的整表位置；命中判定用 `hitTestComplexControl` 配同一份假坐标，于是「滑块 / 上箭头 / 下箭头 / 轨道」的点击区域也和画出来的一致。
+- **绘制与鼠标/键盘交互**按整表坐标：构造一份「假坐标」的 `QStyleOptionSlider`（最大值 = 总行数 - 一屏行数、页步 = 一屏行数、滑块位置 = `T`）交给 `QStyle::drawComplexControl`，于是原生样式画出的就是诚实的整表位置；命中判定用 `hitTestComplexControl` 配同一份假坐标，于是「滑块 / 上箭头 / 下箭头 / 轨道」的点击区域也和画出来的一致。
+  - 上界取「总行数 - 一屏行数」而不是「总行数 - 1」：视图真正能停驻的视口首行最多只到最后一屏的首行（再往后 Qt 只能把目标行贴到最后一屏）。取值若比它大，滚到数据末尾时滑块离轨道底部会差一屏的比例（300 行表约 40px），轨道末端还会多出一段「拖了不动」的死区——看起来就是「滚动条拉不到最底部」。
 - 交互结果通过信号交给视图执行：`seekRequested(目标行)`（拖动滑块，目标行置顶）、`stepRowsRequested(±1)`、`pageRowsRequested(±屏)`、`gotoRowRequested()`（右键菜单「定位到行」）。拖动过程用 `QToolTip` 显示「第 N 行 / 共 M 行」，拖动时记录抓取点偏移，滑块不会跳。
 - 滚动条**自己不改窗口位置**，只发请求；定位一律经视图的 `placeViewportAt()`。
 
