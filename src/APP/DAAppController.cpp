@@ -1932,7 +1932,7 @@ void DAAppController::onDataOperateDataFrameWidgetSelectTypeChanged(const QList<
  */
 void DAAppController::onComboxColumnTypesCurrentDTypeChanged(const DA::DAPyDType& dt)
 {
-    if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
+    if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false)) {
         dfopt->changeSelectColumnType(dt);
     }
 }
@@ -3812,7 +3812,7 @@ void DAAppController::onActionGroupChartEditorTriggered(QAction* a)
  */
 void DAAppController::onActionRemoveRowTriggered()
 {
-    if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
+    if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false)) {
         dfopt->removeSelectRow();
         setDirty();
     }
@@ -3823,7 +3823,7 @@ void DAAppController::onActionRemoveRowTriggered()
  */
 void DAAppController::onActionRemoveColumnTriggered()
 {
-    if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
+    if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false)) {
         dfopt->removeSelectColumn();
         setDirty();
     }
@@ -3834,7 +3834,7 @@ void DAAppController::onActionRemoveColumnTriggered()
  */
 void DAAppController::onActionRemoveCellTriggered()
 {
-    if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
+    if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false)) {
         dfopt->removeSelectCell();
         setDirty();
     }
@@ -3845,7 +3845,7 @@ void DAAppController::onActionRemoveCellTriggered()
  */
 void DAAppController::onActionInsertRowTriggered()
 {
-    if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
+    if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false)) {
         dfopt->insertRowBelowBySelect();
         setDirty();
     }
@@ -3856,7 +3856,7 @@ void DAAppController::onActionInsertRowTriggered()
  */
 void DAAppController::onActionInsertRowAboveTriggered()
 {
-    if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
+    if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false)) {
         dfopt->insertRowAboveBySelect();
         setDirty();
     }
@@ -3866,7 +3866,7 @@ void DAAppController::onActionInsertRowAboveTriggered()
  */
 void DAAppController::onActionInsertColumnRightTriggered()
 {
-    if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
+    if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false)) {
         dfopt->insertColumnRightBySelect();
         setDirty();
     }
@@ -4839,7 +4839,7 @@ void DAAppController::setupDataManagerTreeContextMenu(DADataManagerTreeWidget* w
  */
 void DAAppController::onActionCastToNumTriggered()
 {
-    if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
+    if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false)) {
         dfopt->castSelectToNum();
         setDirty();
     }
@@ -4858,7 +4858,7 @@ void DAAppController::onActionCastToStringTriggered()
  */
 void DAAppController::onActionCastToDatetimeTriggered()
 {
-    if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
+    if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false)) {
         dfopt->castSelectToDatetime();
         setDirty();
     }
@@ -4869,7 +4869,7 @@ void DAAppController::onActionCastToDatetimeTriggered()
  */
 void DAAppController::onActionChangeToIndexTriggered()
 {
-    if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget()) {
+    if (DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false)) {
         dfopt->changeSelectColumnToIndex();
         setDirty();
     }
