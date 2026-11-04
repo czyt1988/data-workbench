@@ -80,6 +80,7 @@ set(DA_GUI_HEADER_DIRS
     Common
     Common/Settings
     Common/MarkdownView
+    Common/CodeEditor
 )
 
 # Agent UI 需要 WebEngine/WebChannel/Network（DAGui/Agent 子目录的 DAAgentDockWidget 等）
