@@ -187,68 +187,7 @@ void DAAppController::initConnection()
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionExportDataExcel, onActionExportDataAsTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionExportDataPickle, onActionExportDataAsTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionExportDataParquet, onActionExportDataAsTriggered);
-    // Chart Category
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionAddFigure, onActionAddFigureTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionFigureNewXYAxis, onActionFigureNewXYAxisTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartAddCurve, onActionChartAddCurveTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartAddScatter2D, onActionChartAddScatterTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartAddBar, onActionChartAddBarTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartAddErrorBar, onActionactionChartAddErrorBarTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartAddBoxPlot, onActionChartAddBoxPlotTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartAddCloudMap, onActionChartAddCloudMapTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartAddMultiBar, onActionChartAddMultiBarTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartAddHistogramBar, onActionChartAddHistogramTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartAddContourMap, onActionChartAddContourMapTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartAddVectorfield, onActionChartAddVectorfieldTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartAdd3DSurface, onActionChartAdd3DSurfaceTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartAdd3DBar, onActionChartAdd3DBarTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartAdd3DLine, onActionChartAdd3DLineTriggered);
 
-    // Stats Plot
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionStatsHistplot, onActionStatsHistplotTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionStatsKdeplot1d, onActionStatsKdeplot1dTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionStatsKdeplot2d, onActionStatsKdeplot2dTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionStatsBoxplot, onActionStatsBoxplotTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionStatsHeatmap, onActionStatsHeatmapTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionStatsScatterplot, onActionStatsScatterplotTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionStatsBarplot, onActionStatsBarplotTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionStatsRegplot, onActionStatsRegplotTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionStatsECDFplot, onActionStatsECDFplotTriggered);
-
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnableGrid, onActionChartEnableGridTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnableGridX, onActionChartEnableGridXTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnableGridY, onActionChartEnableGridYTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnableGridXMin, onActionChartEnableGridXMinEnableTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnableGridYMin, onActionChartEnableGridYMinTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnableZoom, onActionChartEnableZoomTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartZoomIn, onActionChartZoomInTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartZoomOut, onActionChartZoomOutTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartZoomAll, onActionChartZoomAllTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnablePan, onActionChartEnablePanTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartDisableZoomX, onActionChartDisableZoomXTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartDisableZoomY, onActionChartDisableZoomYTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnablePickerCross, onActionChartEnablePickerCrossTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnablePickerY, onActionChartEnablePickerYTriggered);
-    connect(mActions->actionGroupChartPickerTextRegion,
-            &QActionGroup::triggered,
-            this,
-            &DAAppController::onActionGroupChartPickerTextRegionTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartYPickerShowXValueEnabled,
-                                onActionChartYPickerShowXValueEnabledTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnablePickerXY, onActionChartEnablePickerXYTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartLinkAllPickerEnabled, onActionChartLinkAllPickerEnabledTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartEnableLegend, onActionChartEnableLegendTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionCopyFigureInClipboard, onActionCopyFigureToClipboardTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionChartDataPickerSetting, onActionChartDataPickerSettingTriggered);
-    // 图例位置菜单（挂在actionChartEnableLegend下）
-    connect(mActions->actionGroupChartLegendPosition,
-            &QActionGroup::triggered,
-            this,
-            &DAAppController::onActionGroupChartLegendPositionTriggered);
-    for (QAction* act : std::as_const(mActions->actionListOfColorTheme)) {
-        connect(act, &QAction::triggered, this, [ this, act ]() { onActionGroupFigureThemeTriggered(act); });
-    }
-    connect(mActions->actionGroupChartEditor, &QActionGroup::triggered, this, &DAAppController::onActionGroupChartEditorTriggered);
 
     // View Category
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowWorkFlowArea, onActionShowWorkFlowAreaTriggered);
@@ -339,13 +278,6 @@ void DAAppController::initConnection()
                 mRibbon,
                 &DAAppRibbonArea::setStatsContextCategoryVisible);
     }
-    // 「转入绘图区」：DAGui 的统计窗口不持有绘图区，由 APP 注入绘图区容器
-    if (DADataStatsWidget* statsWidget = mDock->getDataStatsWidget()) {
-        connect(statsWidget,
-                &DADataStatsWidget::transferToFigureRequested,
-                this,
-                &DAAppController::onStatsTransferToFigureRequested);
-    }
     // DADataManageWidget 数据操作
     // DADataOperateWidget
     DADataOperateWidget* dow = mDock->getDataOperateWidget();
@@ -364,44 +296,16 @@ void DAAppController::initConnection()
         }
         connect(uh, &DAUndoHistoryWidget::undoLimitChangeRequested, this, &DAAppController::onUndoHistoryLimitChangeRequested);
     }
-    // DAChartManager
+    // DAChartManager：元素点击/双击与 figure 设置按钮信号由图表域分发器接线
     DAChartManageWidget* cmw = mDock->getChartManageWidget();
-    connect(cmw, &DAChartManageWidget::figureElementClicked, this, &DAAppController::onFigureElementClicked);
-    connect(cmw, &DAChartManageWidget::figureElementDbClicked, this, &DAAppController::onFigureElementDbClicked);
-    // figure 窗口设置按钮信号
-    connect(cmw, &DAChartManageWidget::requestFigureSetting, this, [ this ](DA::DAFigureWidget* fig) {
-        DASettingContainerWidget* setting = getSettingContainerWidget();
-        if (setting) {
-            DAFigureWidgetSettingPanel* panel = setting->getFigureWidgetSettingWidget();
-            if (panel) {
-                panel->setTarget(fig);
-                setting->showFigureWidgetSettingWidget();
-            }
-        }
-        // 显示设置窗口 dock
-        mDock->raiseDockByWidget((QWidget*)(mDock->getSettingContainerWidget()));
-    });
     // 坐标轴设置面板的可见性变化 -> 刷新DAChartManageWidget树形控件的可见性列
     if (DASettingContainerWidget* setting = getSettingContainerWidget()) {
         if (DAChartSettingWidget* chartSetting = setting->getChartSettingWidget()) {
             connect(chartSetting, &DAChartSettingWidget::axisVisibilityChanged, cmw, &DAChartManageWidget::refreshAxisVisibility);
         }
     }
-    // DAChartOperateWidget
-    DAChartOperateWidget* cow = mDock->getChartOperateWidget();
-    connect(cow, &DAChartOperateWidget::figureCreated, this, &DAAppController::onFigureCreated);
-    connect(cow, &DAChartOperateWidget::currentFigureChanged, this, &DAAppController::onCurrentFigureChanged);
-    // 工程加载图表恢复完成 -> 数据联动表按探针重建（纯视图架构：探针已由图表序列化恢复）
-    connect(cow, &DAChartOperateWidget::figureCreated, this, [this](DAFigureWidget* fig) {
-        if (DADataLinkTableWidget* dlt = mDock->getDataLinkTableWidget()) {
-            dlt->refreshFigure(fig);
-        }
-    });
-    // 绘图项创建完成时提升绘图 dock，让用户能看到新绘图
-    if (DAAppChartOperateWidget* appCow = qobject_cast< DAAppChartOperateWidget* >(cow)) {
-        connect(appCow, &DAAppChartOperateWidget::plotItemCreated, this, &DAAppController::onPlotItemCreated);
-        connect(appCow, &DAAppChartOperateWidget::plot3DItemCreated, this, &DAAppController::onPlot3DItemCreated);
-    }
+    // DAChartOperateWidget 的 figureCreated/currentFigureChanged 与绘图项创建信号
+    // 由图表域分发器接线
     //
     DAPyWorkFlowOperateWidget* workflowOpt = mDock->getWorkFlowOperateWidget();
     // 鼠标动作完成的触发

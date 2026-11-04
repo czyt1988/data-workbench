@@ -1,5 +1,6 @@
 #include "DAAppController.h"
 #include "DAAppTableActionHandler.h"
+#include "DAAppChartActionHandler.h"
 // Qt
 #include <QDebug>
 #include <QFileDialog>
@@ -396,8 +397,10 @@ void DAAppController::initialize()
     setupAgentLinkHandlers();
     // 动作分发器：按业务域装配，控制器只做装配与跨域协调
     mTableHandler = new DAAppTableActionHandler(makeActionHandlerDeps(), this);
+    mChartHandler = new DAAppChartActionHandler(makeActionHandlerDeps(), this);
     initConnection();
     mTableHandler->initConnections();
+    mChartHandler->initConnections();
     initScripts();
     initPyWorkflowConnections();
     // 数据管理树右键菜单：series 节点=列操作菜单（与表头右键共用 action）；
@@ -868,7 +871,7 @@ void DAAppController::onActionCopyTriggered()
         }
     } else if (isLastFocusedOnChartOptWidget()) {
         // 图表焦点：复制绘图到剪贴板
-        onActionCopyFigureToClipboardTriggered();
+        mChartHandler->onActionCopyFigureToClipboardTriggered();
     }
 }
 
