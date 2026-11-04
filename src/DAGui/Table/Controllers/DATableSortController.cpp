@@ -3,6 +3,7 @@
 // stl
 #include <algorithm>
 #include <memory>
+#include <utility>
 // qt
 #include <QAbstractItemModel>
 #include <QItemSelection>
@@ -52,8 +53,9 @@ QVector< QPair< int, Qt::SortOrder > > DATableSortController::sortSpec() const
 /**
  * @brief 按列排序（重置排序规格为「仅该列」）
  *
- * 排序入口 = 列头右键菜单。只读/惰性源 daWarning 提示一次；拾取模式下不执行。
- * @param logicalIndex 列逻辑索引
+ * 排序入口 = 列头右键菜单 / Ribbon「排序」面板。只读/惰性源 daWarning 提示一次；
+ * 拾取模式下不执行。
+ * @param logicalIndex 列逻辑索引（c_indexSortColumn 表示按索引排序）
  * @param order 排序方向
  */
 void DATableSortController::sortColumn(int logicalIndex, Qt::SortOrder order)
@@ -75,6 +77,60 @@ void DATableSortController::addSecondarySortColumn(int logicalIndex, Qt::SortOrd
         return QStringLiteral("column=%1").arg(logicalIndex);
     });
     applySortAction(logicalIndex, order, true);
+}
+
+/**
+ * @brief 按索引升序恢复原始行顺序（Ribbon「清除排序」入口）
+ *
+ * 行头显示的是 DataFrame 的 index 标签，排序后标签随行移动、看上去变成乱序；
+ * 按索引升序把行按原始行号还原（默认 RangeIndex 即排序前的顺序）。
+ * 与其它排序一样是一条可撤销命令；规格记为「仅索引列升序」（表头无箭头可画）。
+ */
+void DATableSortController::restoreOriginalOrder()
+{
+    DA_SLOW_LOG_SCOPE("dagui.table.sort.restoreOriginalOrder");
+    applySortAction(c_indexSortColumn, Qt::AscendingOrder, false);
+}
+
+/**
+ * @brief 应用完整排序规格（自定义排序对话框入口）
+ *
+ * 规格清洗：剔除越界列号（索引哨兵除外）、同列只保留首次出现（列名组合框天然去重，
+ * 这里再兜一层）；与当前规格完全相同则不执行，避免推入一条数据无变化的撤销命令。
+ * 空规格不执行——「清除排序」是独立入口（restoreOriginalOrder），对话框确定按钮
+ * 在无有效条件时置灰。
+ * @param spec 列逻辑索引（或 c_indexSortColumn）+ 方向，顺序即优先级
+ * @return 成功 push 返回 true
+ */
+bool DATableSortController::applySpec(const QVector< QPair< int, Qt::SortOrder > >& spec)
+{
+    DA_SLOW_LOG_SCOPE_DETAIL("dagui.table.sort.applySpecFromDialog", [ &spec ]() {
+        return QStringLiteral("keys=%1").arg(spec.size());
+    });
+    QVector< QPair< int, Qt::SortOrder > > cleaned;
+    cleaned.reserve(spec.size());
+    for (const auto& k : spec) {
+        if (k.first != c_indexSortColumn && (k.first < 0 || k.first >= mCtx.dataColumnCount())) {
+            continue;  // 尾部预留空白列/越界列不入规格
+        }
+        bool duplicated = false;
+        for (const auto& c : std::as_const(cleaned)) {
+            if (c.first == k.first) {
+                duplicated = true;
+                break;
+            }
+        }
+        if (!duplicated) {
+            cleaned.append(k);
+        }
+    }
+    if (cleaned.isEmpty()) {
+        return false;
+    }
+    if (cleaned == mSortSpec) {
+        return false;  // 规格未变：不重复推命令（数据顺序已是该规格）
+    }
+    return applySortSpec(cleaned);
 }
 
 /**
@@ -118,8 +174,8 @@ bool DATableSortController::applySortAction(int logicalIndex, Qt::SortOrder orde
     if (mCtx.isHeaderPickMode && mCtx.isHeaderPickMode()) {
         return false;  // 拾取会话中不排序（与点击互斥语义一致）
     }
-    if (logicalIndex < 0 || logicalIndex >= mCtx.dataColumnCount()) {
-        return false;  // 尾部预留空白列不排序
+    if (logicalIndex != c_indexSortColumn && (logicalIndex < 0 || logicalIndex >= mCtx.dataColumnCount())) {
+        return false;  // 尾部预留空白列不排序（索引哨兵 -1 例外：它不对应任何列）
     }
     if (!mCtx.isDataSourceEditable()) {
         daWarning << tr("This data source is read-only and cannot be sorted.");  // cn:该数据源为只读，无法排序

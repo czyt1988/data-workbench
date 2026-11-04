@@ -385,6 +385,11 @@ private Q_SLOTS:
     void onActionUnfreezeColumnsTriggered();
     // 定位（007 T1.7，Ribbon「View」面板；Ctrl+G 在 DADataTableView 红线5）
     void onActionGotoCellTriggered();
+    // 排序（Ribbon「Sort」面板；与列头右键排序组共用页面入口）
+    void onActionSortTriggered();           // 打开自定义排序对话框
+    void onActionSortAscendingTriggered();  // 按当前列升序
+    void onActionSortDescendingTriggered(); // 按当前列降序
+    void onActionSortClearTriggered();      // 清除排序（按索引恢复原始行序）
     // 撤销历史面板（005 T1.21，Ribbon「视图」页；入口选 (a) 点击即 raise，与现有交互一致）
     void onActionShowUndoHistoryTriggered();
     // 历史面板调整撤销深度：写回配置（ui.undo-stack-limit）并施加到全部已打开数据页
@@ -613,6 +618,8 @@ private:
     void activateContextCategoryForWidget(QWidget* widget);
     // 刷新「快速绘图」动作的可用状态（有选区才可点）
     void updateQuickPlotActionState();
+    // 刷新「排序」动作（面板大按钮与下拉各项）的可用状态（有可编辑表格页才可点）
+    void updateSortActionState();
     // 激活操作窗口当前的undo栈（焦点切到数据操作/绘图窗口时同步全局undo/redo action状态）
     void activateUndoStackForWidget(DAAbstractOperateWidget* w);
     // 注册 Agent 聊天窗口本地跳转链接处理器（da-figure:/da-data: 等协议，见 DAAgentLinkDispatcher）

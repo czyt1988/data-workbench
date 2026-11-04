@@ -70,6 +70,7 @@ constexpr char DataFrameOperateDTypePanel[]  = "da-pannel-dataframe.operate.type
 constexpr char DataFrameOperateFormatPanel[] = "da-pannel-dataframe.operate.format";  ///< 显示格式pannel
 constexpr char DataFrameOperateEditPanel[]   = "da-pannel-dataframe.operate.edit";    ///< 编辑pannel（查找/替换，005 填充也进此面板）
 constexpr char DataFrameOperateViewPanel[]   = "da-pannel-dataframe.operate.view";    ///< 视图pannel（006 T1.8：冻结列/隐藏列/列视图）
+constexpr char DataFrameOperateSortPanel[]   = "da-pannel-dataframe.operate.sort";    ///< 排序pannel（排序大按钮 + 清除排序）
 constexpr char DataFrameDataOperateComputedPanel[] =
     "da-pannel-dataframe.data-operate.computed";  ///< 数据操作-计算列pannel（计算列/全部重算）
 constexpr char DataFrameDataOperateTransformPanel[] =
@@ -154,6 +155,12 @@ constexpr char TableFormatCells[]   = "actionTableFormatCells";
 constexpr char Find[]               = "actionFind";     ///< 表内查找（002 T1.4，快捷键在 DADataTableView，action 不设 shortcut 红线5）
 constexpr char Replace[]            = "actionReplace";  ///< 表内替换（002 T1.4）
 constexpr char ConditionalFormat[]  = "actionConditionalFormat";  ///< 条件格式（003 T1.5，Ribbon Table Style 面板 + 表体右键同入口，R16）
+// ---- 排序（Ribbon「Sort」面板 + 列头右键排序组同入口；面板大按钮主体 = 自定义排序对话框）----
+constexpr char Sort[]                       = "actionSort";                       ///< 排序（下拉根，主体 = 自定义排序对话框）
+constexpr char SortAscending[]              = "actionSortAscending";              ///< 升序排序（按当前列）
+constexpr char SortDescending[]             = "actionSortDescending";             ///< 降序排序（按当前列）
+constexpr char SortCustom[]                 = "actionSortCustom";                 ///< 自定义排序…
+constexpr char SortClear[]                  = "actionSortClear";                  ///< 清除排序（按索引恢复原始行序）
 // ---- 数据工具（004，Ribbon「Data Tools」面板 + 表体右键同入口）----
 constexpr char ComputedColumn[]             = "actionComputedColumn";             ///< 计算列（004 T1.23）
 constexpr char RecomputeAllComputedColumns[] = "actionRecomputeAllComputedColumns";  ///< 全部重算计算列（004 T1.23）
@@ -345,6 +352,7 @@ constexpr char InsertColumn[]               = "menuInsertColumn";
 constexpr char Fill[]                       = "menuFill";  ///< 填充下拉子菜单（005 T1.24）
 constexpr char Note[]                       = "menuNote";  ///< 批注下拉子菜单（005 T1.26）
 constexpr char FreezeColumns[]              = "menuFreezeColumns";  ///< 冻结列下拉子菜单（006 T1.8，挂在 actionFreezeColumns 下）
+constexpr char Sort[]                       = "menuSort";  ///< 排序下拉子菜单（挂在 actionSort 下）
 constexpr char ExportData[]                 = "menuExportData";
 constexpr char ExportWorkflowSceneToImage[] = "exportWorkflowSceneToImageMenu";
 constexpr char ChartPickSetting[]           = "mMenuChartPickSetting";  ///< 历史命名，保留

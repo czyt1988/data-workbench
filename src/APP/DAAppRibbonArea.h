@@ -285,6 +285,8 @@ private:
     SARibbonPanel* mPannelDataframeOperateEdit { nullptr };                  ///< 编辑面板
     SARibbonPanel* mPannelDataframeOperateView { nullptr };                   ///< 视图面板（006 T1.8：冻结/隐藏/显示所有列/列视图）
     QMenu* mMenuFreezeColumns { nullptr };                                    ///< 冻结列下拉子菜单（挂在 actionFreezeColumns 下）
+    SARibbonPanel* mPannelDataframeOperateSort { nullptr };                   ///< 排序面板（排序大按钮 + 清除排序）
+    QMenu* mMenuSort { nullptr };                                             ///< 排序下拉子菜单（挂在 actionSort 下）
     // 数据操作 category（核心数据加工入口；插件的数据清洗/过滤/统计面板在加载时追加到本页）
     SARibbonCategory* mCategoryDataframeDataOperate { nullptr };          ///< 数据操作category
     SARibbonPanel* mPannelDataframeDataOperateComputed { nullptr };       ///< 计算列面板（计算列/全部重算）

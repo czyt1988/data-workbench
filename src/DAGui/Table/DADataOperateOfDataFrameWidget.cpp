@@ -104,6 +104,7 @@
 #include "Table/Dialogs/DADialogGroupBy.h"
 #include "Table/Dialogs/DADialogReshape.h"
 #include "Table/Dialogs/DADialogFillSeries.h"
+#include "Table/Dialogs/DATableSortDialog.h"
 // python operator wrapper（查找/替换）
 #include "DAPyScripts.h"
 #include "DAPyScriptsDataFrame.h"
@@ -1395,6 +1396,90 @@ void DADataOperateOfDataFrameWidget::sortColumn(int logicalIndex, Qt::SortOrder 
 void DADataOperateOfDataFrameWidget::addSecondarySortColumn(int logicalIndex, Qt::SortOrder order)
 {
     d_func()->mSortController->addSecondarySortColumn(logicalIndex, order);
+}
+
+/**
+ * @brief 排序面板的目标列：当前单元格所在列 > 选区首列 > -1
+ *
+ * Ribbon「升序/降序」按钮作用于「当前列」（与 Excel 一致：光标在哪一列就排哪一列），
+ * 不预选整列（整列选择会产生上万 range，拖慢排序的选区重映射）。
+ * @return 数据列号；无有效目标返回 -1
+ */
+int DADataOperateOfDataFrameWidget::currentDataColumnForSort() const
+{
+    const int selCol = getSelectedOneDataframeColumn();
+    if (selCol >= 0) {
+        return selCol;
+    }
+    int actualRow = -1;
+    int actualCol = -1;
+    if (currentActualCell(&actualRow, &actualCol) && actualCol >= 0) {
+        return actualCol;
+    }
+    return -1;
+}
+
+/**
+ * @brief 应用完整排序规格（自定义排序对话框确定后转发排序控制器）
+ * @param spec 列逻辑索引（或 c_indexSortColumn）+ 方向，顺序即优先级
+ * @return 成功入栈返回 true
+ */
+bool DADataOperateOfDataFrameWidget::applySortSpec(const QVector< QPair< int, Qt::SortOrder > >& spec)
+{
+    return d_func()->mSortController->applySpec(spec);
+}
+
+/**
+ * @brief 按索引升序恢复原始行顺序（「清除排序」；转发排序控制器，一条可撤销命令）
+ */
+void DADataOperateOfDataFrameWidget::restoreOriginalSortOrder()
+{
+    d_func()->mSortController->restoreOriginalOrder();
+}
+
+/**
+ * @brief 打开自定义排序对话框（多条件；确定后整份规格一条撤销命令）
+ *
+ * presetColumn>=0（表头右键入口）时以该列为唯一主键预置，否则按当前规格预填
+ * （再次打开可继续调整，与 Excel 的习惯一致）。只读源直接提示、不弹窗。
+ * @param presetColumn 预置的主键列（-1 = 用当前排序规格）
+ */
+void DADataOperateOfDataFrameWidget::showSortDialog(int presetColumn)
+{
+    DAPyDataFrame frame = getDataframe();
+    if (frame.isNone()) {
+        return;
+    }
+    if (!isTableEditable()) {
+        daWarning << tr("This data source is read-only and cannot be sorted.");  // cn:该数据源为只读，无法排序
+        return;
+    }
+    const QStringList columnNames = frame.columns();
+    if (columnNames.isEmpty()) {
+        return;
+    }
+    QVector< QPair< int, Qt::SortOrder > > initial;
+    if (presetColumn >= 0 && presetColumn < columnNames.size()) {
+        initial.append(qMakePair(presetColumn, Qt::AscendingOrder));
+    } else {
+        initial = sortSpec();
+        if (initial.isEmpty()) {
+            // 没有既有规格：以当前列为唯一主键预置（与「升序/降序」按钮的作用列一致）
+            const int currentCol = currentDataColumnForSort();
+            if (currentCol >= 0 && currentCol < columnNames.size()) {
+                initial.append(qMakePair(currentCol, Qt::AscendingOrder));
+            }
+        }
+    }
+    DATableSortDialog dlg(columnNames, initial, this);
+    if (dlg.exec() != QDialog::Accepted) {
+        return;
+    }
+    const QVector< QPair< int, Qt::SortOrder > > spec = dlg.sortSpec();
+    if (spec.isEmpty() || spec == sortSpec()) {
+        return;  // 无有效条件 / 与当前规格相同：不重复执行
+    }
+    d_func()->mSortController->applySpec(spec);
 }
 
 // ============================================================

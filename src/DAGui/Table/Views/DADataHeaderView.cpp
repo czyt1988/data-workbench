@@ -280,7 +280,7 @@ void DADataHeaderView::paintSectionOverlays(QPainter* painter, const QRect& rect
         f.setPixelSize(qBound(9, rect.height() * 2 / 3, 14));
         painter->setFont(f);
         painter->setPen(badgeColor);
-        const bool hasOrderBadge = (order >= 0 && mSortSpec.size() > 1);
+        const bool hasOrderBadge = (order >= 0 && columnKeyCount() > 1);
         const QRect badgeRect    = hasOrderBadge
                                        ? QRect(rect.left() + 3, rect.center().y() + 1, rect.width() / 2, rect.height() / 2)
                                        : QRect(rect.left() + 3, rect.top(), rect.width() / 2, rect.height());
@@ -309,7 +309,9 @@ void DADataHeaderView::paintSectionOverlays(QPainter* painter, const QRect& rect
     painter->setBrush(QColor(0x5D, 0x6D, 0x7E));
     painter->drawPolygon(arrow);
     // 多列规格：左上角序号角标（主蓝 #5280C1 圆底 + 白字）
-    if (mSortSpec.size() > 1) {
+    // 序号按「列键」计，索引键（-1，无列可画）不占号
+    const int visibleRank = columnKeyRank(logicalIndex);
+    if (visibleRank >= 0 && columnKeyCount() > 1) {
         const int r = 7;
         const QPoint center(rect.left() + r + 2, rect.top() + r + 2);
         painter->setBrush(QColor(0x52, 0x80, 0xC1));
@@ -319,9 +321,43 @@ void DADataHeaderView::paintSectionOverlays(QPainter* painter, const QRect& rect
         f.setBold(true);
         painter->setFont(f);
         painter->setPen(Qt::white);
-        painter->drawText(QRect(center.x() - r, center.y() - r, 2 * r, 2 * r), Qt::AlignCenter, QString::number(order + 1));
+        painter->drawText(QRect(center.x() - r, center.y() - r, 2 * r, 2 * r), Qt::AlignCenter, QString::number(visibleRank + 1));
     }
     painter->restore();
+}
+
+/**
+ * @brief 规格中的「列键」数量（索引键 -1 不计，表头上没有它的位置）
+ * @return 可画角标的键数量
+ */
+int DADataHeaderView::columnKeyCount() const
+{
+    int n = 0;
+    for (const auto& k : mSortSpec) {
+        if (k.first >= 0) {
+            ++n;
+        }
+    }
+    return n;
+}
+
+/**
+ * @brief 该列在「列键」序列中的序号（索引键不计；不在规格中返回 -1）
+ * @param logicalIndex 列逻辑索引
+ * @return 0 起的序号，不在规格中返回 -1
+ */
+int DADataHeaderView::columnKeyRank(int logicalIndex) const
+{
+    int rank = 0;
+    for (const auto& k : mSortSpec) {
+        if (k.first == logicalIndex) {
+            return k.first >= 0 ? rank : -1;
+        }
+        if (k.first >= 0) {
+            ++rank;
+        }
+    }
+    return -1;
 }
 
 /**
@@ -353,7 +389,8 @@ bool DADataHeaderView::isColumnMenuAvailable(int logicalIndex) const
  * @brief 构建列头右键菜单
  *
  * 排序组在最前（2026-10-18 交互修订：**点击表头不再排序**，排序入口收敛到本菜单）：
- * 升序 / 降序 / 追加次级升 / 追加次级降；其后为迁移前现状 **6 项 4 组**
+ * 升序 / 降序 / 追加次级升 / 追加次级降 ‖ 自定义排序… / 清除排序（按索引恢复原始行序）；
+ * 其后为迁移前现状 **6 项 4 组**
  * （DAAppController::populateColumnContextMenu）：重命名列 / 删除列 ‖ 复制列名 ‖
  * 定位最大 / 定位最小 ‖ 描述统计。
  * QAction 由 DAGui 自建（不共享 APP 的 action 对象，避免 Ribbon 与右键的 enabled
@@ -366,7 +403,8 @@ bool DADataHeaderView::isColumnMenuAvailable(int logicalIndex) const
 QMenu* DADataHeaderView::buildColumnContextMenu(int logicalIndex)
 {
     QMenu* menu = new QMenu(this);
-    // 组0：排序（升/降 = 重置规格为仅该列；追加次级 = 保留既有规格追加/切换该列）
+    // 组0：排序（升/降 = 重置规格为仅该列；追加次级 = 保留既有规格追加/切换该列；
+    // 自定义排序 = 打开多条件对话框；清除排序 = 按索引升序还原原始行顺序）
     QAction* actSortAsc = menu->addAction(QIcon(QStringLiteral(":/DAGui/icon/sort-ascending.svg")),
                                           tr("Sort Ascending"));  // cn:升序排序
     QAction* actSortDesc = menu->addAction(QIcon(QStringLiteral(":/DAGui/icon/sort-descending.svg")),
@@ -375,6 +413,11 @@ QMenu* DADataHeaderView::buildColumnContextMenu(int logicalIndex)
                                              tr("Add Secondary Sort (Ascending)"));  // cn:追加为次级排序（升序）
     QAction* actAddSortDesc = menu->addAction(QIcon(QStringLiteral(":/DAGui/icon/sort-descending.svg")),
                                               tr("Add Secondary Sort (Descending)"));  // cn:追加为次级排序（降序）
+    menu->addSeparator();
+    QAction* actCustomSort = menu->addAction(QIcon(QStringLiteral(":/DAGui/icon/sort.svg")),
+                                             tr("Custom Sort..."));  // cn:自定义排序...
+    QAction* actClearSort = menu->addAction(QIcon(QStringLiteral(":/DAGui/icon/sort-clear.svg")),
+                                            tr("Clear Sort"));  // cn:清除排序（恢复原始顺序）
     menu->addSeparator();
     // 组1：重命名列 / 删除列
     QAction* actRename = menu->addAction(QIcon(QStringLiteral(":/DAGui/icon/rename-column.svg")),
@@ -437,6 +480,12 @@ QMenu* DADataHeaderView::buildColumnContextMenu(int logicalIndex)
     });
     connect(actAddSortDesc, &QAction::triggered, this, [ this, logicalIndex ]() {
         Q_EMIT columnActionRequested(logicalIndex, ColumnAction::AddSecondarySortDescending);
+    });
+    connect(actCustomSort, &QAction::triggered, this, [ this, logicalIndex ]() {
+        Q_EMIT columnActionRequested(logicalIndex, ColumnAction::CustomSort);
+    });
+    connect(actClearSort, &QAction::triggered, this, [ this, logicalIndex ]() {
+        Q_EMIT columnActionRequested(logicalIndex, ColumnAction::ClearSort);
     });
 
     connect(actRename, &QAction::triggered, this, [ this, logicalIndex ]() {

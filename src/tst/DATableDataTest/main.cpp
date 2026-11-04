@@ -63,6 +63,9 @@
 #include "Table/Views/DADataHeaderView.h"
 #include "Table/Views/DADataTableView.h"
 #include "Table/DADataOperateOfDataFrameWidget.h"
+#include "Table/Controllers/DATableSortController.h"
+#include "Table/Dialogs/DATableSortDialog.h"
+#include <QToolButton>
 #include <QSignalSpy>
 #include <QMenu>
 #include <QHeaderView>
@@ -448,6 +451,10 @@ private Q_SLOTS:
     void testClipboardShortcuts();
     // 表格 UX 修订：排序后列头方向箭头与多列序号角标真实绘制（像素级）
     void testSortIndicatorPixels();
+    // 排序面板：按索引排序（恢复原始行顺序）+ 「清除排序」还原排序前顺序
+    void testSortByIndexAndClearSort();
+    // 排序面板：自定义排序对话框规格 + 页面 applySortSpec（多键/去重/重复规格不执行）
+    void testSortDialogSpecAndApply();
     // 表格 UX 修订：右键「替换...」预填当前单格内容到查找框
     void testFindReplacePrefillFromContextMenu();
     // 006d：「列」子菜单 5 项逐项生效（隐藏/显示全部/冻结/解冻/对话框）
@@ -1719,7 +1726,7 @@ void DATableDataTest::testLegacyTableStylesXmlCompat()
 // 表体菜单 v1 三项；无选区全部置灰。离屏构建 QMenu 断言 action 文本序列，不弹出。
 void DATableDataTest::testContextMenuComposition()
 {
-    // ---- 列头菜单：排序(4) ‖ 重命名/删除 ‖ 复制列名 ‖ 复制/导出选中列 ‖ 定位最大·最小 ‖ 统计/快速绘图 ‖ 列 ----
+    // ---- 列头菜单：排序(6) ‖ 重命名/删除 ‖ 复制列名 ‖ 复制/导出选中列 ‖ 定位最大·最小 ‖ 统计/快速绘图 ‖ 列 ----
     DA::DADataHeaderView hv(Qt::Horizontal, nullptr);
     QMenu* menu = hv.buildColumnContextMenu(0);
     QVERIFY(menu != nullptr);
@@ -1735,6 +1742,9 @@ void DATableDataTest::testContextMenuComposition()
                                        QStringLiteral("Sort Descending"),
                                        QStringLiteral("Add Secondary Sort (Ascending)"),
                                        QStringLiteral("Add Secondary Sort (Descending)"),
+                                       QStringLiteral("<SEP>"),
+                                       QStringLiteral("Custom Sort..."),
+                                       QStringLiteral("Clear Sort"),
                                        QStringLiteral("<SEP>"),
                                        QStringLiteral("Rename Column"),
                                        QStringLiteral("Remove Column"),
@@ -2661,6 +2671,129 @@ void DATableDataTest::testSortIndicatorPixels()
     // 清规格：角标全部消失
     w.sortColumn(2, Qt::DescendingOrder);
     QCOMPARE(countPixelsNear(hh->viewport()->grab().toImage(), badgeColor, 10), 0);
+}
+
+// 排序面板（用户反馈）：排序后行头的 index 变成乱序，需要「按索引排序」把行还原；
+// Ribbon「清除排序」= 按索引升序恢复排序前的行顺序（一条可撤销命令，表头无角标可画）
+void DATableDataTest::testSortByIndexAndClearSort()
+{
+    if (!mPandasOk || !mPyScriptsOk) {
+        QSKIP("pandas/DAPyScripts not available");
+    }
+    pybind11::object obj = makeTestDataFrame();
+    QVERIFY(!obj.is_none());
+    DA::DAPyDataFrame df(obj);
+    DA::DAData d(df);
+    DA::DATableMetadataRegistry registry(nullptr);
+    DA::DADataOperateOfDataFrameWidget w(d, &registry);
+    w.resize(900, 400);
+    w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+    DA::DADataHeaderView* hh = qobject_cast< DA::DADataHeaderView* >(w.getDataTableView()->horizontalHeader());
+    QVERIFY(hh != nullptr);
+    const int colI = 0;
+    const int colS = 2;
+    const QColor arrowColor(0x5D, 0x6D, 0x7E);  // 方向箭头（DESIGN.md 深蓝灰）
+
+    // 排序前：i 列 1..10
+    QCOMPARE(df.iat(0, colI).toInt(), 1);
+    QCOMPARE(df.iat(0, colS).toString(), QStringLiteral("a"));
+    // 按 s 降序 → 行序反转（行头 index 随行移动，看上去变成 9、8…）
+    w.sortColumn(colS, Qt::DescendingOrder);
+    QCOMPARE(df.iat(0, colS).toString(), QStringLiteral("j"));
+    QCOMPARE(df.iat(0, colI).toInt(), 10);
+    // 「清除排序」：按索引升序把行还原成排序前的顺序
+    w.restoreOriginalSortOrder();
+    QCOMPARE(df.iat(0, colI).toInt(), 1);
+    QCOMPARE(df.iat(9, colI).toInt(), 10);
+    QCOMPARE(df.iat(0, colS).toString(), QStringLiteral("a"));
+    // 规格记为「仅索引列升序」；索引不是真实列 → 表头上不画方向箭头/序号角标
+    QCOMPARE(w.sortSpec().size(), 1);
+    QCOMPARE(w.sortSpec().at(0).first, DA::DATableSortController::c_indexSortColumn);
+    QCOMPARE(w.sortSpec().at(0).second, Qt::AscendingOrder);
+    QCOMPARE(hh->sortSpec(), w.sortSpec());
+    QCOMPARE(countPixelsNear(hh->viewport()->grab().toImage(), arrowColor, 10), 0);
+
+    // 索引键可用作次级键（虚拟列在规格里排第 2 位时序号角标从 1 起算，不给索引占号）
+    QVERIFY(w.applySortSpec({ qMakePair(colS, Qt::AscendingOrder),
+                              qMakePair(DA::DATableSortController::c_indexSortColumn, Qt::AscendingOrder) }));
+    QCOMPARE(w.sortSpec().size(), 2);
+    QCOMPARE(w.sortSpec().at(1).first, DA::DATableSortController::c_indexSortColumn);
+
+    // 每一步都是一条撤销命令：连撤三次回到排序前的行顺序
+    w.getUndoStack()->undo();  // 撤销「s 升序 + 索引」混合规格
+    QVERIFY(w.getUndoStack()->canUndo());
+    w.getUndoStack()->undo();  // 撤销「清除排序」
+    QVERIFY(w.getUndoStack()->canUndo());
+    w.getUndoStack()->undo();  // 撤销「按 s 降序」
+    QCOMPARE(df.iat(0, colS).toString(), QStringLiteral("a"));
+    QCOMPARE(df.iat(0, colI).toInt(), 1);
+}
+
+// 排序面板：自定义排序对话框（列/次序/增删行）+ 页面 applySortSpec（多键顺序即优先级、
+// 越界列剔除、同列去重、与当前规格相同不重复执行）
+void DATableDataTest::testSortDialogSpecAndApply()
+{
+    // ---- 对话框：规格往返（顺序即优先级）----
+    DA::DATableSortDialog dlg({ QStringLiteral("i"), QStringLiteral("s") },
+                              { qMakePair(1, Qt::DescendingOrder), qMakePair(0, Qt::AscendingOrder) });
+    QCOMPARE(dlg.sortSpec().size(), 2);
+    QCOMPARE(dlg.sortSpec().at(0).first, 1);
+    QCOMPARE(dlg.sortSpec().at(0).second, Qt::DescendingOrder);
+    QCOMPARE(dlg.sortSpec().at(1).first, 0);
+    QCOMPARE(dlg.sortSpec().at(1).second, Qt::AscendingOrder);
+    // 无预置规格 → 默认一行「第一列升序」（打开即可直接确定）
+    DA::DATableSortDialog dlgDefault({ QStringLiteral("i"), QStringLiteral("s") });
+    QCOMPARE(dlgDefault.sortSpec().size(), 1);
+    QCOMPARE(dlgDefault.sortSpec().at(0).first, 0);
+    QCOMPARE(dlgDefault.sortSpec().at(0).second, Qt::AscendingOrder);
+    // 「添加条件」追加一行且默认取第一个未被占用的列（不与已有条件重复）
+    QToolButton* addBtn = dlgDefault.findChild< QToolButton* >(QStringLiteral("toolButtonSortAddCondition"));
+    QVERIFY(addBtn != nullptr);
+    addBtn->click();
+    QCOMPARE(dlgDefault.sortSpec().size(), 2);
+    QCOMPARE(dlgDefault.sortSpec().at(1).first, 1);
+    QCOMPARE(dlgDefault.sortSpec().at(1).second, Qt::AscendingOrder);
+
+    if (!mPandasOk || !mPyScriptsOk) {
+        QSKIP("pandas/DAPyScripts not available");
+    }
+    // ---- 页面应用：多键（主键 s 降序，次键 i 升序）----
+    pybind11::object obj = makeTestDataFrame();
+    QVERIFY(!obj.is_none());
+    DA::DAPyDataFrame df(obj);
+    DA::DAData d(df);
+    DA::DATableMetadataRegistry registry(nullptr);
+    DA::DADataOperateOfDataFrameWidget w(d, &registry);
+    w.resize(900, 400);
+    w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+    const int colI = 0;
+    const int colS = 2;
+    QVERIFY(w.applySortSpec({ qMakePair(colS, Qt::DescendingOrder), qMakePair(colI, Qt::AscendingOrder) }));
+    QCOMPARE(w.sortSpec().size(), 2);
+    QCOMPARE(w.sortSpec().at(0).first, colS);
+    QCOMPARE(w.sortSpec().at(0).second, Qt::DescendingOrder);
+    QCOMPARE(df.iat(0, colS).toString(), QStringLiteral("j"));
+    QCOMPARE(df.iat(9, colS).toString(), QStringLiteral("a"));
+    // 与当前规格相同 → 不执行、不推撤销命令
+    const int undoCount = w.getUndoStack()->count();
+    QVERIFY(!w.applySortSpec({ qMakePair(colS, Qt::DescendingOrder), qMakePair(colI, Qt::AscendingOrder) }));
+    QCOMPARE(w.getUndoStack()->count(), undoCount);
+    // 越界列（含尾部预留空白列）剔除后规格为空 → 不执行、原规格不变
+    QVERIFY(!w.applySortSpec({ qMakePair(999, Qt::AscendingOrder) }));
+    QCOMPARE(w.sortSpec().size(), 2);
+    // 同列重复 → 只保留首次出现的方向
+    QVERIFY(w.applySortSpec({ qMakePair(colI, Qt::DescendingOrder), qMakePair(colI, Qt::AscendingOrder) }));
+    QCOMPARE(w.sortSpec().size(), 1);
+    QCOMPARE(w.sortSpec().at(0).second, Qt::DescendingOrder);
+    QCOMPARE(df.iat(0, colI).toInt(), 10);
+    // 索引键参与多键排序：索引升序为主键 → 行回到原始顺序，次键不再起作用
+    QVERIFY(w.applySortSpec({ qMakePair(DA::DATableSortController::c_indexSortColumn, Qt::AscendingOrder),
+                              qMakePair(colS, Qt::DescendingOrder) }));
+    QCOMPARE(w.sortSpec().size(), 2);
+    QCOMPARE(df.iat(0, colI).toInt(), 1);
+    QCOMPARE(df.iat(0, colS).toString(), QStringLiteral("a"));
 }
 
 // 表格 UX 修订：表体右键「替换...」打开浮动条时查找框预填当前单格显示文本；

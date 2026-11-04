@@ -176,6 +176,16 @@ void DAAppRibbonArea::buildMenu()
     mMenuFreezeColumns->addAction(mActions->actionFreezeColumnsPrompt);
     mMenuFreezeColumns->addSeparator();
     mMenuFreezeColumns->addAction(mActions->actionUnfreezeColumns);
+    // 排序下拉菜单：升序、降序、自定义排序…、清除排序，挂在 actionSort 下
+    // （面板大按钮主体直接打开自定义排序对话框，与 Excel 的「排序」按钮一致）
+    mMenuSort = new SARibbonMenu(mApp);
+    mMenuSort->setObjectName(QString::fromUtf8(UiNames::Menu::Sort));
+    mMenuSort->addAction(mActions->actionSortAscending);
+    mMenuSort->addAction(mActions->actionSortDescending);
+    mMenuSort->addSeparator();
+    mMenuSort->addAction(mActions->actionSortCustom);
+    mMenuSort->addSeparator();
+    mMenuSort->addAction(mActions->actionSortClear);
     //
     mExportWorkflowSceneToImageMenu = new SARibbonMenu(mApp);
     mExportWorkflowSceneToImageMenu->setObjectName(QString::fromUtf8(UiNames::Menu::ExportWorkflowSceneToImage));
@@ -529,6 +539,15 @@ void DAAppRibbonArea::buildContextCategoryDataFrame()
     mComboxDisplayFormatContainer->setWidget(mComboxDisplayFormat);
     mPannelDataframeOperateFormat->addWidget(mComboxDisplayFormatContainer, SARibbonPanelItem::Medium);
     mPannelDataframeOperateFormat->addMediumAction(mActions->actionTableFormatCells);
+
+    // 排序面板（Excel/WPS 式）：大按钮主体 = 自定义排序对话框，下拉含升序/降序/自定义/清除排序；
+    // 右侧中按钮「清除排序」= 按索引升序恢复原始行顺序（排序后行头的 index 变乱序时的回退口）
+    // setMenu 必须在 addLargeAction 之前（mMenuInsertRow 同款顺序）
+    mActions->actionSort->setMenu(mMenuSort);
+    mPannelDataframeOperateSort = mCategoryDataframeTableOperate->addPanel(tr("Sort"));  // cn:排序
+    mPannelDataframeOperateSort->setObjectName(QString::fromUtf8(UiNames::Ribbon::DataFrameOperateSortPanel));
+    mPannelDataframeOperateSort->addLargeAction(mActions->actionSort, QToolButton::MenuButtonPopup);
+    mPannelDataframeOperateSort->addMediumAction(mActions->actionSortClear);
 
     // 编辑面板：查找、替换、填充（下拉）、批注（下拉）
     mPannelDataframeOperateEdit = mCategoryDataframeTableOperate->addPanel(tr("Edit"));  // cn:编辑
