@@ -64,7 +64,7 @@ void DAAppRibbonArea::buildContextCategoryTableOperate(SARibbonContextCategory* 
 {
     mCategoryDataframeTableOperate = contextTable->addCategoryPage(tr("Table Operations"));  // cn:表格操作
     mCategoryDataframeTableOperate->setObjectName(QString::fromUtf8(UiNames::Ribbon::DataFrameOperateCategory));
-    // 坐标轴面板：插入行（下拉含插入行到上方）、插入列（下拉含向左插入列）、删除单元格、删除行、删除列、列名管理、列转索引
+    // 坐标轴面板：插入行（下拉含插入行到上方）、插入列（下拉含向左插入列）、删除单元格、删除行、删除列、列转索引
     mPannelDataframeOperateAxes = mCategoryDataframeTableOperate->addPanel(tr("Axes"));  // cn:坐标轴
     mPannelDataframeOperateAxes->setObjectName(QString::fromUtf8(UiNames::Ribbon::DataFrameOperateAxesPanel));
     mActions->actionInsertRow->setMenu(menus.insertRow);
@@ -75,7 +75,6 @@ void DAAppRibbonArea::buildContextCategoryTableOperate(SARibbonContextCategory* 
     mPannelDataframeOperateAxes->addMediumAction(mActions->actionRemoveRow);
     mPannelDataframeOperateAxes->addMediumAction(mActions->actionRemoveColumn);
     mPannelDataframeOperateAxes->addSeparator();
-    mPannelDataframeOperateAxes->addLargeAction(mActions->actionManageColumns);
     mPannelDataframeOperateAxes->addLargeAction(mActions->actionChangeToIndex);
     // 列面板：重命名列、复制列名、定位最大、定位最小、描述统计、快速绘图
     mPannelDataframeOperateColumn = mCategoryDataframeTableOperate->addPanel(tr("Column"));  // cn:列
@@ -136,7 +135,7 @@ void DAAppRibbonArea::buildContextCategoryTableOperate(SARibbonContextCategory* 
     mActions->actionNote->setMenu(menus.note);
     mPannelDataframeOperateEdit->addLargeAction(mActions->actionNote, QToolButton::MenuButtonPopup);
 
-    // 视图面板：冻结列（下拉）、隐藏列、显示所有列、列视图、定位
+    // 视图面板：冻结列（下拉）、隐藏列、显示所有列、列管理、定位
     // setMenu 必须在 addLargeAction 之前（与插入行/插入列同款顺序）
     mActions->actionFreezeColumns->setMenu(menus.freezeColumns);
     mPannelDataframeOperateView = mCategoryDataframeTableOperate->addPanel(tr("View"));  // cn:视图
@@ -144,7 +143,7 @@ void DAAppRibbonArea::buildContextCategoryTableOperate(SARibbonContextCategory* 
     mPannelDataframeOperateView->addLargeAction(mActions->actionFreezeColumns, QToolButton::MenuButtonPopup);
     mPannelDataframeOperateView->addLargeAction(mActions->actionHideColumn);
     mPannelDataframeOperateView->addLargeAction(mActions->actionShowAllColumns);
-    mPannelDataframeOperateView->addLargeAction(mActions->actionColumnViewDialog);
+    mPannelDataframeOperateView->addLargeAction(mActions->actionManageColumns);
     // 定位：跳转到指定行、索引标签或列；快捷键在 DADataTableView 中处理，action 本身不设快捷键
     mPannelDataframeOperateView->addMediumAction(mActions->actionGotoCell);
 }

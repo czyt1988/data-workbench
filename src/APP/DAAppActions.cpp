@@ -98,7 +98,7 @@ void DAAppActions::buildDataAction()
     actionInsertRowAbove    = createAction(UiNames::Action::InsertRowAbove, ":/app/bright/Icon/insertRowAbove.svg");
     actionInsertColumnRight = createAction(UiNames::Action::InsertColumnRight, ":/app/bright/Icon/insertColumnRight.svg");
     actionInsertColumnLeft  = createAction(UiNames::Action::InsertColumnLeft, ":/app/bright/Icon/insertColumnLeft.svg");
-    actionManageColumns     = createAction(UiNames::Action::ManageColumns, ":/app/bright/Icon/renameColumns.svg");
+    actionManageColumns     = createAction(UiNames::Action::ManageColumns, ":/DAGui/icon/column-view.svg");
     actionRenameColumn      = createAction(UiNames::Action::RenameColumn, ":/app/bright/Icon/renameColumn.svg");
     actionCopyColumnName    = createAction(UiNames::Action::CopyColumnName, ":/app/bright/Icon/copyColumnName.svg");
     actionGotoMax           = createAction(UiNames::Action::GotoMax, ":/app/bright/Icon/gotoMax.svg");
@@ -146,11 +146,10 @@ void DAAppActions::buildDataAction()
     actionEditNote                    = createAction(UiNames::Action::EditNote, ":/DAGui/icon/cell-note.svg");
     actionDeleteNote                  = createAction(UiNames::Action::DeleteNote, ":/DAGui/icon/delete.svg");
     actionClearNotes                  = createAction(UiNames::Action::ClearNotes, ":/DAGui/icon/note-clear.svg");
-    // 列视图 action（006 T1.8；图标取 DAGui 图标库，不设快捷键——表格快捷键唯一挂点在 DADataTableView 红线5）
+    // 视图类 action（006 T1.8；冻结/隐藏/显示全部；图标取 DAGui 图标库，不设快捷键——表格快捷键唯一挂点在 DADataTableView 红线5）
     actionFreezeColumns               = createAction(UiNames::Action::FreezeColumns, ":/DAGui/icon/freeze-column.svg");
     actionHideColumn                  = createAction(UiNames::Action::HideColumn, ":/DAGui/icon/hide-column.svg");
     actionShowAllColumns              = createAction(UiNames::Action::ShowAllColumns, ":/DAGui/icon/show-all-columns.svg");
-    actionColumnViewDialog            = createAction(UiNames::Action::ColumnViewDialog, ":/DAGui/icon/column-view.svg");
     // 冻结菜单三项（无图标，照 actionInsertRowAbove 先例单参 createAction）
     actionFreezeFirstColumn           = createAction(UiNames::Action::FreezeFirstColumn);
     actionFreezeColumnsPrompt         = createAction(UiNames::Action::FreezeColumnsPrompt);
@@ -492,7 +491,7 @@ void DAAppActions::retranslateUi()
     actionOpenMarkdown->setText(tr("Open Markdown"));  // cn:打开 Markdown
     actionOpenMarkdown->setToolTip(tr("Open a Markdown file and display it in the central area"));  // cn:打开 Markdown 文件并在中央区显示
 
-    actionManageColumns->setText(tr("Manage Columns"));                           // cn:列名管理
+    actionManageColumns->setText(tr("Manage Columns"));                           // cn:列管理
     actionManageColumns->setToolTip(tr("Manage column names, order, hidden and frozen states"));  // cn:管理列名、列顺序、隐藏与冻结状态
     actionSetting->setText(tr("Setting"));                                        // cn:设置
     actionSetting->setToolTip(tr("Setting for the application"));                 // cn:应用程序设置
@@ -754,8 +753,6 @@ void DAAppActions::retranslateUi()
     actionHideColumn->setToolTip(tr("Hide the selected columns"));                    // cn:隐藏选中的列
     actionShowAllColumns->setText(tr("Show All Columns"));                            // cn:显示所有列
     actionShowAllColumns->setToolTip(tr("Show all hidden columns"));                  // cn:显示所有被隐藏的列
-    actionColumnViewDialog->setText(tr("Column View..."));                            // cn:列视图...
-    actionColumnViewDialog->setToolTip(tr("Open the column view settings dialog"));   // cn:打开列视图设置对话框
     actionFreezeFirstColumn->setText(tr("Freeze First Column"));  // cn:冻结首列
     actionFreezeColumnsPrompt->setText(tr("Freeze First N Columns..."));  // cn:冻结前 N 列…
     actionUnfreezeColumns->setText(tr("Unfreeze All Columns"));  // cn:取消全部冻结

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 下移：三条中性行条 + 主蓝向下箭头，表示把当前行（列）向后移动一位。
+     与 move-up 仅箭头方向不同。官方色板：#727272、#5280C1；
+     禁渐变/阴影/文字元素（DESIGN.md §4） -->
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+	<rect x="20" y="44" width="92" height="18" rx="9" fill="#727272"/>
+	<rect x="20" y="90" width="92" height="18" rx="9" fill="#727272"/>
+	<rect x="20" y="136" width="92" height="18" rx="9" fill="#727272"/>
+	<polygon points="151,176 116,124 138,124 138,42 164,42 164,124 186,124" fill="#5280C1"/>
+</svg>

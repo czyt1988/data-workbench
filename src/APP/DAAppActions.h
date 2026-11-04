@@ -85,7 +85,7 @@ public:
     QAction* actionInsertRowAbove;     ///< 向上插入 一行
     QAction* actionInsertColumnLeft;   ///< 在左边插入列
     QAction* actionInsertColumnRight;  ///< 在右边插入列
-    QAction* actionManageColumns;      ///< 列名管理（改列名/调顺序/隐藏/冻结）
+    QAction* actionManageColumns;      ///< 列管理（改列名/调顺序/隐藏/冻结）
     QAction* actionRenameColumn;       ///< 更改单列名（表头右键）
     QAction* actionCopyColumnName;     ///< 复制列名到剪贴板（表头右键）
     QAction* actionGotoMax;            ///< 跳转到最大值（表头右键）
@@ -112,7 +112,6 @@ public:
     QAction* actionFreezeColumns { nullptr };               ///< 冻结列（006 T1.8，View 面板，菜单主体 = 弹输入框）
     QAction* actionHideColumn { nullptr };                  ///< 隐藏列（006 T1.8）
     QAction* actionShowAllColumns { nullptr };              ///< 显示所有列（006 T1.8）
-    QAction* actionColumnViewDialog { nullptr };            ///< 列视图…（006 T1.8）
     QAction* actionFreezeFirstColumn { nullptr };           ///< 冻结首列（006，冻结菜单项）
     QAction* actionFreezeColumnsPrompt { nullptr };         ///< 冻结前 N 列…（006，冻结菜单项）
     QAction* actionUnfreezeColumns { nullptr };             ///< 取消冻结（006，冻结菜单项）

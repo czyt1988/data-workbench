@@ -68,7 +68,7 @@ public:
         ShowAllColumns,       ///< 显示所有列
         ToggleFreezeColumn,   ///< 冻结此列 / 取消冻结此列（按当前状态切换文案）
         UnfreezeAll,          ///< 取消全部冻结
-        OpenColumnViewDialog  ///< 列视图…
+        OpenManageColumns     ///< 列管理…
     };
     Q_ENUM(ColumnViewAction)
 

@@ -114,7 +114,6 @@ private Q_SLOTS:
     void onActionFreezeColumnsTriggered();
     void onActionHideColumnTriggered();
     void onActionShowAllColumnsTriggered();
-    void onActionColumnViewDialogTriggered();
     void onActionFreezeFirstColumnTriggered();
     void onActionFreezeColumnsPromptTriggered();
     void onActionUnfreezeColumnsTriggered();

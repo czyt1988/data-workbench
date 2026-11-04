@@ -449,7 +449,7 @@ void DATableColumnViewController::onHeaderActionRequested(int logicalColumn, int
     case DADataHeaderView::ColumnViewAction::UnfreezeAll:
         unfreezeAllColumns();
         break;
-    case DADataHeaderView::ColumnViewAction::OpenColumnViewDialog:
+    case DADataHeaderView::ColumnViewAction::OpenManageColumns:
         showManageColumnsDialog();
         break;
     }

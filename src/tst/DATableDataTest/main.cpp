@@ -69,6 +69,7 @@
 #include <QSignalSpy>
 #include <QMenu>
 #include <QHeaderView>
+#include <QMouseEvent>
 #include <QTest>
 
 #include "Table/Models/DADataTableModel.h"
@@ -465,6 +466,8 @@ private Q_SLOTS:
     void testColumnViewDialogDuplicateNamesInitialAndCancel();
     // 列管理对话框：上移/下移调整显示列序 → 一个撤销单元；undo 还原列序
     void testManageColumnsDialogReorder();
+    // 列管理对话框：行号垂直表头可见、列宽可拖动、按住行号拖动调整列顺序
+    void testManageColumnsRowHeaderDrag();
     // 006e T6：冻结 + 列视图叠加（双窗格投影互补、宽度、policy、滚动同步、转发、往返）
     void testFrozenAndColumnViewCombination();
     // 006e T7：列宽在冻结/解冻往返中不回退、不入撤销栈
@@ -1809,7 +1812,7 @@ void DATableDataTest::testContextMenuComposition()
                                             QStringLiteral("Freeze This Column"),
                                             QStringLiteral("Unfreeze All Columns"),
                                             QStringLiteral("<SEP>"),
-                                            QStringLiteral("Column View...") };
+                                            QStringLiteral("Manage Columns...") };
     QStringList colSeq;
     const auto colActs = columnsAction->menu()->actions();
     for (QAction* a : colActs) {
@@ -2945,7 +2948,7 @@ void DATableDataTest::testHeaderColumnViewMenuActions()
             }
         }
     });
-    triggerColumnViewMenuAction(hv, 0, QStringLiteral("Column View..."));
+    triggerColumnViewMenuAction(hv, 0, QStringLiteral("Manage Columns..."));
     QVERIFY(opened);
     QVERIFY(store->hiddenColumns().isEmpty());
     QVERIFY(store->frozenColumns().isEmpty());
@@ -3603,6 +3606,66 @@ void DATableDataTest::testManageColumnsDialogReorder()
     w.getUndoStack()->redo();
     QCOMPARE(w.viewStateStore()->columnOrder().size(), 3);
     QCOMPARE(hh->visualIndex(2), 0);
+    w.hide();
+}
+
+// 列管理对话框：行号垂直表头可见、列名/隐藏两列可拖动列宽、按住行号拖动调整列顺序
+void DATableDataTest::testManageColumnsRowHeaderDrag()
+{
+    if (!mPandasOk) {
+        QSKIP("pandas not available");
+    }
+    pybind11::object obj = makeDataFrameWithColumns({ QStringLiteral("a"), QStringLiteral("b"), QStringLiteral("c") });
+    QVERIFY(!obj.is_none());
+    DA::DAPyDataFrame df(obj);
+    DA::DAData d(df);
+    DA::DATableMetadataRegistry registry(nullptr);
+    DA::DADataOperateOfDataFrameWidget w(d, &registry);
+    w.resize(800, 400);
+    w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+    bool opened   = false;
+    bool headerOk = false;
+    bool resizable = false;
+    bool draggedOk = false;
+    QTimer::singleShot(0, &w, [ &opened, &headerOk, &resizable, &draggedOk ]() {
+        DA::DADialogManageColumns* dlg
+            = qobject_cast< DA::DADialogManageColumns* >(QApplication::activeModalWidget());
+        if (!dlg) {
+            return;
+        }
+        opened = true;
+        QTableWidget* table = dlg->findChild< QTableWidget* >(QStringLiteral("columnTable"));
+        if (!table) {
+            return;
+        }
+        // ① 行号垂直表头可见，段数与列数一致
+        QHeaderView* vh = table->verticalHeader();
+        headerOk        = vh && vh->isVisible() && vh->count() == 3;
+        // ② 列名 / 隐藏两列可按列宽拖动（Interactive）
+        QHeaderView* hh = table->horizontalHeader();
+        resizable       = hh->sectionResizeMode(0) == QHeaderView::Interactive
+                    && hh->sectionResizeMode(1) == QHeaderView::Interactive;
+        // ③ 按住行号 1 拖到行号 3：列序 a,b,c → b,c,a
+        if (headerOk && vh->sectionSize(0) > 0) {
+            QWidget* vp    = vh->viewport();
+            const QPoint from(6, vh->sectionViewportPosition(0) + vh->sectionSize(0) / 2);
+            const QPoint to(6, vh->sectionViewportPosition(2) + vh->sectionSize(2) / 2);
+            sendWindowMouse(vp, QEvent::MouseMove, from, Qt::NoButton);
+            sendWindowMouse(vp, QEvent::MouseButtonPress, from, Qt::LeftButton);
+            sendWindowMouse(vp, QEvent::MouseMove, to, Qt::NoButton);
+            sendWindowMouse(vp, QEvent::MouseButtonRelease, to, Qt::LeftButton);
+            draggedOk = table->item(0, 0) && table->item(0, 0)->text() == QStringLiteral("b")
+                        && table->item(1, 0) && table->item(1, 0)->text() == QStringLiteral("c")
+                        && table->item(2, 0) && table->item(2, 0)->text() == QStringLiteral("a");
+        }
+        dlg->reject();
+    });
+    w.showManageColumnsDialog();
+    QVERIFY(opened);
+    QVERIFY(headerOk);
+    QVERIFY(resizable);
+    QVERIFY(draggedOk);
     w.hide();
 }
 

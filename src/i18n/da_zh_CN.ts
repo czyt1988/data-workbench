@@ -1489,7 +1489,7 @@
     <message>
         <location line="+4"/>
         <source>Manage Columns</source>
-        <translation>列名管理</translation>
+        <translation>列管理</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -3146,16 +3146,6 @@
         <location line="+1"/>
         <source>Show all hidden columns</source>
         <translation>显示所有被隐藏的列</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Column View...</source>
-        <translation>列视图...</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Open the column view settings dialog</source>
-        <translation>打开列视图设置对话框</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -9435,8 +9425,8 @@
     </message>
     <message>
         <location line="+3"/>
-        <source>Column View...</source>
-        <translation>列视图...</translation>
+        <source>Manage Columns...</source>
+        <translation>列管理…</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -10278,11 +10268,6 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <location line="+578"/>
         <source>Freeze Columns</source>
         <translation>冻结列</translation>
-    </message>
-    <message>
-        <location line="+176"/>
-        <source>Column View...</source>
-        <translation>列视图...</translation>
     </message>
     <message>
         <location line="-1116"/>
@@ -12355,8 +12340,13 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     </message>
     <message>
         <location line="+3"/>
-        <source>Rows are shown in column order. Drag rows or use Move Up/Down to reorder columns.</source>
-        <translation>行序即列序，拖动行或使用上移/下移调整列顺序。</translation>
+        <source>Rows are listed in column order. Drag a row number on the left or use Move Up/Down to reorder columns.</source>
+        <translation>行序即列序，拖动左侧行号或使用上移/下移调整列顺序</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Drag a row number to reorder columns</source>
+        <translation>拖动行号调整列顺序</translation>
     </message>
     <message>
         <location line="+8"/>

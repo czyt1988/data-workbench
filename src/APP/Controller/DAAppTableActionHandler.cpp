@@ -231,7 +231,6 @@ void DAAppTableActionHandler::initConnections()
     DAAPPTABLE_ACTION_BIND(mDeps.actions->actionFreezeColumns, onActionFreezeColumnsTriggered);
     DAAPPTABLE_ACTION_BIND(mDeps.actions->actionHideColumn, onActionHideColumnTriggered);
     DAAPPTABLE_ACTION_BIND(mDeps.actions->actionShowAllColumns, onActionShowAllColumnsTriggered);
-    DAAPPTABLE_ACTION_BIND(mDeps.actions->actionColumnViewDialog, onActionColumnViewDialogTriggered);
     DAAPPTABLE_ACTION_BIND(mDeps.actions->actionFreezeFirstColumn, onActionFreezeFirstColumnTriggered);
     DAAPPTABLE_ACTION_BIND(mDeps.actions->actionFreezeColumnsPrompt, onActionFreezeColumnsPromptTriggered);
     DAAPPTABLE_ACTION_BIND(mDeps.actions->actionUnfreezeColumns, onActionUnfreezeColumnsTriggered);
@@ -394,7 +393,7 @@ void DAAppTableActionHandler::onActionInsertColumnLeftTriggered()
 }
 
 /**
- * @brief 列名管理（Ribbon「Axes」面板；列名/顺序/隐藏/冻结合一）
+ * @brief 列管理（Ribbon「View」面板；列名/顺序/隐藏/冻结合一）
  */
 void DAAppTableActionHandler::onActionManageColumnsTriggered()
 {
@@ -928,18 +927,6 @@ void DAAppTableActionHandler::onActionShowAllColumnsTriggered()
         return;
     }
     dfopt->showAllColumns();
-}
-
-/**
- * @brief 列视图对话框（006 T1.8）
- */
-void DAAppTableActionHandler::onActionColumnViewDialogTriggered()
-{
-    DADataOperateOfDataFrameWidget* dfopt = mDeps.controller->getCurrentDataFrameOperateWidget(false, false);
-    if (!dfopt) {
-        return;
-    }
-    dfopt->showManageColumnsDialog();
 }
 
 /**

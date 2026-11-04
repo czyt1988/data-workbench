@@ -3133,16 +3133,6 @@
     </message>
     <message>
         <location line="+1"/>
-        <source>Column View...</source>
-        <translation>Column View...</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Open the column view settings dialog</source>
-        <translation>Open the column view settings dialog</translation>
-    </message>
-    <message>
-        <location line="+1"/>
         <source>Freeze First Column</source>
         <translation>Freeze First Column</translation>
     </message>
@@ -9359,8 +9349,8 @@
     </message>
     <message>
         <location line="+3"/>
-        <source>Column View...</source>
-        <translation>Column View...</translation>
+        <source>Manage Columns...</source>
+        <translation>Manage Columns...</translation>
     </message>
 </context>
 <context>
@@ -10192,11 +10182,6 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <location line="+578"/>
         <source>Freeze Columns</source>
         <translation>Freeze Columns</translation>
-    </message>
-    <message>
-        <location line="+176"/>
-        <source>Column View...</source>
-        <translation>Column View...</translation>
     </message>
     <message>
         <location line="-1116"/>
@@ -12269,8 +12254,13 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     </message>
     <message>
         <location line="+3"/>
-        <source>Rows are shown in column order. Drag rows or use Move Up/Down to reorder columns.</source>
-        <translation>Rows are shown in column order. Drag rows or use Move Up/Down to reorder columns.</translation>
+        <source>Rows are listed in column order. Drag a row number on the left or use Move Up/Down to reorder columns.</source>
+        <translation>Rows are listed in column order. Drag a row number on the left or use Move Up/Down to reorder columns.</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Drag a row number to reorder columns</source>
+        <translation>Drag a row number to reorder columns</translation>
     </message>
     <message>
         <location line="+8"/>

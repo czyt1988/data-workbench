@@ -136,7 +136,7 @@ constexpr char InsertRow[]          = "actionInsertRow";
 constexpr char InsertRowAbove[]     = "actionInsertRowAbove";
 constexpr char InsertColumnRight[]  = "actionInsertColumnRight";
 constexpr char InsertColumnLeft[]   = "actionInsertColumnLeft";
-constexpr char ManageColumns[]      = "actionManageColumns";  ///< 列名管理（改名/顺序/隐藏/冻结）
+constexpr char ManageColumns[]      = "actionManageColumns";  ///< 列管理（改名/顺序/隐藏/冻结）
 constexpr char RenameColumn[]       = "actionRenameColumn";
 constexpr char CopyColumnName[]     = "actionCopyColumnName";
 constexpr char GotoMax[]            = "actionGotoMax";
@@ -173,7 +173,6 @@ constexpr char Melt[]                       = "actionMelt";                     
 constexpr char FreezeColumns[]              = "actionFreezeColumns";              ///< 冻结列（菜单主体 = 弹输入框）
 constexpr char HideColumn[]                 = "actionHideColumn";                 ///< 隐藏列
 constexpr char ShowAllColumns[]             = "actionShowAllColumns";             ///< 显示所有列
-constexpr char ColumnViewDialog[]           = "actionColumnViewDialog";           ///< 列视图…
 // 冻结菜单三项（照 mMenuInsertRow 先例：菜单项必须是 DAAppActions 的 action 才能进控制器绑定表）
 constexpr char FreezeFirstColumn[]          = "actionFreezeFirstColumn";          ///< 冻结首列
 constexpr char FreezeColumnsPrompt[]        = "actionFreezeColumnsPrompt";        ///< 冻结前 N 列…

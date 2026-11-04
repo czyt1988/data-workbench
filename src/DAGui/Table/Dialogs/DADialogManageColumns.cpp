@@ -1,13 +1,16 @@
 #include "Table/Dialogs/DADialogManageColumns.h"
 // qt
 #include <QAbstractItemView>
+#include <QApplication>
 #include <QDialogButtonBox>
 #include <QDropEvent>
 #include <QHBoxLayout>
 #include <QHeaderView>
+#include <QIcon>
 #include <QLabel>
 #include <QLineEdit>
 #include <QModelIndex>
+#include <QMouseEvent>
 #include <QPushButton>
 #include <QTableWidget>
 #include <QVBoxLayout>
@@ -74,13 +77,20 @@ public:
     }
 
 protected:
+    void mousePressEvent(QMouseEvent* e) override
+    {
+        // 记下按下的行：勾选列的点击不一定更新 currentRow，拖动时不能靠它当源行
+        mPressRow = rowAt(e->pos().y());
+        QTableWidget::mousePressEvent(e);
+    }
+
     void dropEvent(QDropEvent* e) override
     {
         if (!mMoveHandler || e->source() != this) {
             QTableWidget::dropEvent(e);
             return;
         }
-        const int from = currentRow();
+        const int from = mPressRow >= 0 ? mPressRow : currentRow();
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
         const QPoint pos = e->pos();
 #else
@@ -108,6 +118,83 @@ protected:
 
 private:
     MoveHandler mMoveHandler;
+    int mPressRow { -1 };  ///< 最近一次按下的行（拖动源行）
+};
+
+/**
+ * @brief 带序号的垂直表头：按住行号上下拖动即可调整列顺序
+ *
+ * 序号由 QTableWidget 默认的表头数据给出（1..N，与当前全局列序一致）。拖动不走
+ * Qt 的表头段移动（那只是移动表头显示，行数据不会跟着换），而是把「按下的行 →
+ * 当前指到的行」换算成一次行移动回调（与上移/下移、表内拖动共用 moveRow），
+ * 支持边拖边换位、按住行号跨多行拖动。
+ */
+class DAColumnOrderHeader : public QHeaderView
+{
+public:
+    using MoveHandler = std::function< void(int from, int to) >;
+    explicit DAColumnOrderHeader(QWidget* parent = nullptr) : QHeaderView(Qt::Vertical, parent)
+    {
+        setSectionsClickable(true);
+        setHighlightSections(false);
+        // 行高固定，避免拖动行号时误触发行高调整
+        setSectionResizeMode(QHeaderView::Fixed);
+    }
+    // 设置行移动回调（from = 按下的行号，to = 拖到的行号）
+    void setMoveHandler(MoveHandler handler)
+    {
+        mMoveHandler = std::move(handler);
+    }
+
+protected:
+    void mousePressEvent(QMouseEvent* e) override
+    {
+        if (e->button() == Qt::LeftButton) {
+            const int section = logicalIndexAt(e->pos());
+            if (section >= 0) {
+                mDragFrom = section;
+                mPressPos = e->pos();
+                mDragging = false;
+                setCursor(Qt::OpenHandCursor);
+            }
+        }
+        QHeaderView::mousePressEvent(e);
+    }
+
+    void mouseMoveEvent(QMouseEvent* e) override
+    {
+        if (mDragFrom >= 0 && (e->buttons() & Qt::LeftButton)) {
+            if (!mDragging && (e->pos() - mPressPos).manhattanLength() >= QApplication::startDragDistance()) {
+                mDragging = true;
+                setCursor(Qt::ClosedHandCursor);
+            }
+            if (mDragging) {
+                const int to = logicalIndexAt(e->pos());
+                if (to >= 0 && to != mDragFrom && mMoveHandler) {
+                    mMoveHandler(mDragFrom, to);
+                    mDragFrom = to;  // 换位后继续跟手
+                }
+                return;  // 拖动期间不交给基类，避免触发段拖动/滚动
+            }
+        }
+        QHeaderView::mouseMoveEvent(e);
+    }
+
+    void mouseReleaseEvent(QMouseEvent* e) override
+    {
+        if (mDragFrom >= 0) {
+            mDragFrom = -1;
+            mDragging = false;
+            unsetCursor();
+        }
+        QHeaderView::mouseReleaseEvent(e);
+    }
+
+private:
+    MoveHandler mMoveHandler;
+    int mDragFrom { -1 };   ///< 拖动源行（-1 = 未按下）
+    QPoint mPressPos;       ///< 按下位置（判定起拖距离）
+    bool mDragging { false };  ///< 已越过起拖距离
 };
 }  // namespace
 
@@ -128,12 +215,12 @@ DADialogManageColumns::DADialogManageColumns(QWidget* parent) : QDialog(parent)
     mSearchEdit->setClearButtonEnabled(true);
     root->addWidget(mSearchEdit);
 
-    // 操作提示：行序即列序（拖动或上移/下移）
-    QLabel* hint = new QLabel(tr("Rows are shown in column order. Drag rows or use Move Up/Down to reorder columns."));  // cn:行序即列序，拖动行或使用上移/下移调整列顺序
+    // 操作提示：行序即列序（拖动行号或上移/下移）
+    QLabel* hint = new QLabel(tr("Rows are listed in column order. Drag a row number on the left or use Move Up/Down to reorder columns."));  // cn:行序即列序，拖动左侧行号或使用上移/下移调整列顺序
     hint->setWordWrap(true);
     root->addWidget(hint);
 
-    // 中部：三列表格
+    // 中部：三列表格（列宽可拖动调整；行号垂直表头 = 列序，可直接拖动行号调整列顺序）
     mTable = new DAColumnManageTable(this);
     mTable->setObjectName(QStringLiteral("columnTable"));
     mTable->setColumnCount(3);
@@ -142,11 +229,30 @@ DADialogManageColumns::DADialogManageColumns(QWidget* parent) : QDialog(parent)
             << tr("Hidden")   // cn:隐藏
             << tr("Frozen");  // cn:冻结
     mTable->setHorizontalHeaderLabels(headers);
-    mTable->verticalHeader()->setVisible(false);
-    mTable->horizontalHeader()->setStretchLastSection(false);
-    mTable->horizontalHeader()->setSectionResizeMode(c_colName, QHeaderView::Stretch);
-    mTable->horizontalHeader()->setSectionResizeMode(c_colHidden, QHeaderView::ResizeToContents);
-    mTable->horizontalHeader()->setSectionResizeMode(c_colFrozen, QHeaderView::ResizeToContents);
+    // 隐藏/冻结两列的表头配图标，与文字一起说明勾选含义（DESIGN.md §5.1 现有图标）
+    mTable->setHorizontalHeaderItem(
+        c_colHidden,
+        new QTableWidgetItem(QIcon(QStringLiteral(":/DAGui/icon/hide-column.svg")), tr("Hidden")));  // cn:隐藏
+    mTable->setHorizontalHeaderItem(
+        c_colFrozen,
+        new QTableWidgetItem(QIcon(QStringLiteral(":/DAGui/icon/freeze-column.svg")), tr("Frozen")));  // cn:冻结
+    // 列宽：列名/隐藏两列可拖动列边界调整；末列（冻结）拉伸吸收剩余宽度，避免右侧留白
+    QHeaderView* headerBar = mTable->horizontalHeader();
+    headerBar->setStretchLastSection(false);
+    headerBar->setSectionResizeMode(c_colName, QHeaderView::Interactive);
+    headerBar->setSectionResizeMode(c_colHidden, QHeaderView::Interactive);
+    headerBar->setSectionResizeMode(c_colFrozen, QHeaderView::Stretch);
+    mTable->setColumnWidth(c_colName, 280);
+    mTable->setColumnWidth(c_colHidden, 96);
+    // 行号垂直表头：序号 = 列序，按住行号上下拖动即可调整列顺序
+    const int rowHeight = mTable->verticalHeader()->defaultSectionSize();
+    DAColumnOrderHeader* orderHeader = new DAColumnOrderHeader(mTable);
+    orderHeader->setObjectName(QStringLiteral("orderHeader"));
+    orderHeader->setDefaultAlignment(Qt::AlignCenter);
+    orderHeader->setDefaultSectionSize(rowHeight);
+    orderHeader->setToolTip(tr("Drag a row number to reorder columns"));  // cn:拖动行号调整列顺序
+    mTable->setVerticalHeader(orderHeader);
+    mTable->verticalHeader()->setVisible(true);
     mTable->setSelectionBehavior(QAbstractItemView::SelectRows);
     mTable->setSelectionMode(QAbstractItemView::SingleSelection);
     mTable->setEditTriggers(QAbstractItemView::DoubleClicked | QAbstractItemView::EditKeyPressed);
@@ -158,19 +264,19 @@ DADialogManageColumns::DADialogManageColumns(QWidget* parent) : QDialog(parent)
     mTable->setDragDropMode(QAbstractItemView::InternalMove);
     root->addWidget(mTable, 1);
 
-    // 底部：上移/下移 + 两个快捷按钮
+    // 底部：上移/下移 + 两个快捷按钮（均配图标，见 DESIGN.md §4）
     QHBoxLayout* btnRow = new QHBoxLayout();
     btnRow->setContentsMargins(0, 0, 0, 0);
-    mBtnMoveUp = new QPushButton(tr("Move Up"), this);  // cn:上移
+    mBtnMoveUp = new QPushButton(QIcon(QStringLiteral(":/DAGui/icon/move-up.svg")), tr("Move Up"), this);  // cn:上移
     mBtnMoveUp->setObjectName(QStringLiteral("btnMoveUp"));
     mBtnMoveUp->setToolTip(tr("Move the selected column forward"));  // cn:把选中列向前移动
-    mBtnMoveDown = new QPushButton(tr("Move Down"), this);  // cn:下移
+    mBtnMoveDown = new QPushButton(QIcon(QStringLiteral(":/DAGui/icon/move-down.svg")), tr("Move Down"), this);  // cn:下移
     mBtnMoveDown->setObjectName(QStringLiteral("btnMoveDown"));
     mBtnMoveDown->setToolTip(tr("Move the selected column backward"));  // cn:把选中列向后移动
-    mBtnShowAll = new QPushButton(tr("Show All"), this);  // cn:显示全部
+    mBtnShowAll = new QPushButton(QIcon(QStringLiteral(":/DAGui/icon/show-all-columns.svg")), tr("Show All"), this);  // cn:显示全部
     mBtnShowAll->setObjectName(QStringLiteral("btnShowAll"));
     mBtnShowAll->setToolTip(tr("Unhide all columns"));  // cn:取消所有列的隐藏
-    mBtnUnfreeze = new QPushButton(tr("Unfreeze All"), this);  // cn:取消全部冻结
+    mBtnUnfreeze = new QPushButton(QIcon(QStringLiteral(":/DAGui/icon/unfreeze-column.svg")), tr("Unfreeze All"), this);  // cn:取消全部冻结
     mBtnUnfreeze->setObjectName(QStringLiteral("btnUnfreeze"));
     mBtnUnfreeze->setToolTip(tr("Remove column freezing"));  // cn:取消所有列的冻结
     btnRow->addWidget(mBtnMoveUp);
@@ -205,6 +311,15 @@ DADialogManageColumns::DADialogManageColumns(QWidget* parent) : QDialog(parent)
     connect(mTable, &QTableWidget::itemSelectionChanged, this, &DADialogManageColumns::updateMoveButtons);
     // 拖动落点由表格子类换算成行移动
     static_cast< DAColumnManageTable* >(mTable)->setMoveHandler([ this ](int from, int to) { moveRow(from, to); });
+    // 垂直表头：按住行号拖动 = 调整列顺序；点行号 = 选中该行
+    orderHeader->setMoveHandler([ this ](int from, int to) { moveRow(from, to); });
+    connect(orderHeader, &QHeaderView::sectionPressed, this, [ this ](int section) {
+        if (section >= 0 && section < mRows.size()) {
+            mTable->selectRow(section);
+            mTable->setCurrentCell(section, c_colName);
+            updateMoveButtons();
+        }
+    });
 }
 
 /**
