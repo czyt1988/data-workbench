@@ -47,6 +47,7 @@ data-workbench/
 │   │   ├── Dialog/     # 应用级对话框
 │   │   ├── Icon/       # 图标资源
 │   │   ├── PythonBinding/ # Python 绑定初始化
+│   │   ├── Ribbon/     # Ribbon 区域（DAAppRibbonArea：协调者 + 按标签页拆分的实现）
 │   │   └── SettingPages/  # 设置页面
 │   ├── PyScripts/      # 内置 Python 脚本 (23 files)
 │   ├── i18n/           # 国际化翻译
