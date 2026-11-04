@@ -64,7 +64,7 @@ const QHash< QString, QString >& actionCategoryTable()
         put(UiNames::Action::InsertRowAbove, kCatData);
         put(UiNames::Action::InsertColumnRight, kCatData);
         put(UiNames::Action::InsertColumnLeft, kCatData);
-        put(UiNames::Action::RenameColumns, kCatData);
+        put(UiNames::Action::ManageColumns, kCatData);
         put(UiNames::Action::RenameColumn, kCatData);
         put(UiNames::Action::CopyColumnName, kCatData);
         put(UiNames::Action::GotoMax, kCatData);

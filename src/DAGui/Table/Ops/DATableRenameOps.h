@@ -16,11 +16,12 @@ class DATableValidationController;
 /**
  * @brief 列改名算子（008 期4）
  *
- * renameColumns：全表列名对话框（唯一判断在对话框）；renameColumn：单列重命名
- * （列头菜单/列视图对话框用）。两者共用 DACommandDataFrame_renameColumns。
+ * renameColumn：单列重命名（列头菜单/列管理对话框用），走
+ * DACommandDataFrame_renameColumns 命令；全表列名/列序/隐藏/冻结统一由
+ * 列管理对话框（DADialogManageColumns）承载，不在本算子内。
  * 改名影响面确认与引用迁移经计算列/校验控制器（Mediator-light，与全表改名
  * 同款）；视图状态键迁移挂 directional 回调（undo 双向回迁）。
- * 生命周期：宿主页面构造并持有（QObject 父子持有对话框）。
+ * 生命周期：宿主页面构造并持有。
  */
 class DAGUI_API DATableRenameOps : public QObject, public DATableDataOperation
 {
@@ -38,8 +39,6 @@ public:
     bool isAvailable() const override;
 
 public:
-    // 打开全表列名对话框（改名对确认 → 计算列/校验规则引用迁移 → 命令入栈）
-    void renameColumns();
     // 重命名单列；成功返回 true（空名/重名/越界/exec 失败返回 false）
     bool renameColumn(int col, const QString& newName);
 

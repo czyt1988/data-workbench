@@ -98,7 +98,7 @@ void DAAppActions::buildDataAction()
     actionInsertRowAbove    = createAction(UiNames::Action::InsertRowAbove, ":/app/bright/Icon/insertRowAbove.svg");
     actionInsertColumnRight = createAction(UiNames::Action::InsertColumnRight, ":/app/bright/Icon/insertColumnRight.svg");
     actionInsertColumnLeft  = createAction(UiNames::Action::InsertColumnLeft, ":/app/bright/Icon/insertColumnLeft.svg");
-    actionRenameColumns     = createAction(UiNames::Action::RenameColumns, ":/app/bright/Icon/renameColumns.svg");
+    actionManageColumns     = createAction(UiNames::Action::ManageColumns, ":/app/bright/Icon/renameColumns.svg");
     actionRenameColumn      = createAction(UiNames::Action::RenameColumn, ":/app/bright/Icon/renameColumn.svg");
     actionCopyColumnName    = createAction(UiNames::Action::CopyColumnName, ":/app/bright/Icon/copyColumnName.svg");
     actionGotoMax           = createAction(UiNames::Action::GotoMax, ":/app/bright/Icon/gotoMax.svg");
@@ -492,8 +492,8 @@ void DAAppActions::retranslateUi()
     actionOpenMarkdown->setText(tr("Open Markdown"));  // cn:打开 Markdown
     actionOpenMarkdown->setToolTip(tr("Open a Markdown file and display it in the central area"));  // cn:打开 Markdown 文件并在中央区显示
 
-    actionRenameColumns->setText(tr("Rename Columns"));                           // cn:重命名列
-    actionRenameColumns->setToolTip(tr("Rename columns in the selected table"));  // cn:重命名选中表格的列
+    actionManageColumns->setText(tr("Manage Columns"));                           // cn:列名管理
+    actionManageColumns->setToolTip(tr("Manage column names, order, hidden and frozen states"));  // cn:管理列名、列顺序、隐藏与冻结状态
     actionSetting->setText(tr("Setting"));                                        // cn:设置
     actionSetting->setToolTip(tr("Setting for the application"));                 // cn:应用程序设置
     actionAbout->setText(tr("About"));                                            // cn:关于

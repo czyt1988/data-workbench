@@ -55,7 +55,7 @@
 #include "Table/Views/DATablePaneContainer.h"
 #include "Table/Views/DATableStatsWidget.h"
 #include "Table/Commands/DACommandsTableColumnView.h"
-#include "Table/Dialogs/DADialogTableColumnView.h"
+#include "Table/Dialogs/DADialogManageColumns.h"
 #include "Table/Dialogs/DADialogGotoCell.h"
 #include <QWindow>
 #include <QScrollBar>
@@ -463,6 +463,8 @@ private Q_SLOTS:
     void testColumnViewDialogDiffAndUndo();
     // 006d：重名列 a / a (2) 独立勾选、取消不改动
     void testColumnViewDialogDuplicateNamesInitialAndCancel();
+    // 列管理对话框：上移/下移调整显示列序 → 一个撤销单元；undo 还原列序
+    void testManageColumnsDialogReorder();
     // 006e T6：冻结 + 列视图叠加（双窗格投影互补、宽度、policy、滚动同步、转发、往返）
     void testFrozenAndColumnViewCombination();
     // 006e T7：列宽在冻结/解冻往返中不回退、不入撤销栈
@@ -2433,7 +2435,7 @@ void DATableDataTest::testColumnViewCommandsUndoRedo()
         const Idents oldFrozen { qMakePair(QStringLiteral("a"), 0), qMakePair(QStringLiteral("b"), 0) };
         const Idents newFrozen { qMakePair(QStringLiteral("a"), 0), qMakePair(QStringLiteral("b"), 0),
                                  qMakePair(QStringLiteral("c"), 0) };
-        DA::DACommandTableColumnViewBatch* parent = new DA::DACommandTableColumnViewBatch(QStringLiteral("Column View..."));
+        DA::DACommandTableColumnViewBatch* parent = new DA::DACommandTableColumnViewBatch(QStringLiteral("Manage Columns"));
         new DA::DACommandTableColumnVisibility(&store, IdentSet({ qMakePair(QStringLiteral("a"), 0) }),
                                                IdentSet({ qMakePair(QStringLiteral("a"), 0), qMakePair(QStringLiteral("x"), 0) }),
                                                cb, QString(), parent);
@@ -2976,8 +2978,8 @@ void DATableDataTest::testColumnViewDialogDiffAndUndo()
     bool opened   = false;
     int seenCount = -1;
     QTimer::singleShot(0, &w, [ &opened, &seenCount ]() {
-        DA::DADialogTableColumnView* dlg
-            = qobject_cast< DA::DADialogTableColumnView* >(QApplication::activeModalWidget());
+        DA::DADialogManageColumns* dlg
+            = qobject_cast< DA::DADialogManageColumns* >(QApplication::activeModalWidget());
         if (!dlg) {
             return;
         }
@@ -2995,7 +2997,7 @@ void DATableDataTest::testColumnViewDialogDiffAndUndo()
         }
         dlg->accept();
     });
-    w.showColumnViewDialog();
+    w.showManageColumnsDialog();
     QVERIFY(opened);
     QCOMPARE(seenCount, 3);
     // ① 两列隐藏且主窗格投影生效（006b）
@@ -3007,7 +3009,7 @@ void DATableDataTest::testColumnViewDialogDiffAndUndo()
     QCOMPARE(w.viewStateStore()->frozenColumns().size(), 1);
     // ③ 一个撤销单元
     QCOMPARE(w.getUndoStack()->count(), n0 + 1);
-    QCOMPARE(w.getUndoStack()->undoText(), QStringLiteral("Column View..."));
+    QCOMPARE(w.getUndoStack()->undoText(), QStringLiteral("Manage Columns"));
     // ④ 一次 undo：隐藏集合与冻结集合一起还原到前置值（a 归冻结区 → 冻结窗格可见）
     w.getUndoStack()->undo();
     QVERIFY(w.viewStateStore()->hiddenColumns().isEmpty());
@@ -3019,8 +3021,8 @@ void DATableDataTest::testColumnViewDialogDiffAndUndo()
     // 重推会清掉已撤销的批命令（QUndoStack::push 语义），栈计数回到 n0+1
     bool opened2 = false;
     QTimer::singleShot(0, &w, [ &opened2 ]() {
-        DA::DADialogTableColumnView* dlg
-            = qobject_cast< DA::DADialogTableColumnView* >(QApplication::activeModalWidget());
+        DA::DADialogManageColumns* dlg
+            = qobject_cast< DA::DADialogManageColumns* >(QApplication::activeModalWidget());
         if (!dlg) {
             return;
         }
@@ -3035,7 +3037,7 @@ void DATableDataTest::testColumnViewDialogDiffAndUndo()
         }
         dlg->accept();
     });
-    w.showColumnViewDialog();
+    w.showManageColumnsDialog();
     QVERIFY(opened2);
     QVERIFY(w.viewStateStore()->hiddenColumns().isEmpty());
     QVERIFY(w.viewStateStore()->frozenColumns().isEmpty());
@@ -3066,8 +3068,8 @@ void DATableDataTest::testColumnViewDialogDuplicateNamesInitialAndCancel()
     QStringList seenTexts;
     int seenFrozen = -1;
     QTimer::singleShot(0, &w, [ &opened, &seenTexts, &seenFrozen ]() {
-        DA::DADialogTableColumnView* dlg
-            = qobject_cast< DA::DADialogTableColumnView* >(QApplication::activeModalWidget());
+        DA::DADialogManageColumns* dlg
+            = qobject_cast< DA::DADialogManageColumns* >(QApplication::activeModalWidget());
         if (!dlg) {
             return;
         }
@@ -3090,7 +3092,7 @@ void DATableDataTest::testColumnViewDialogDuplicateNamesInitialAndCancel()
         }
         dlg->reject();
     });
-    w.showColumnViewDialog();
+    w.showManageColumnsDialog();
     QVERIFY(opened);
     // ① 重名显示（occurrence 0 不带后缀）
     QCOMPARE(seenTexts.size(), 3);
@@ -3104,8 +3106,8 @@ void DATableDataTest::testColumnViewDialogDuplicateNamesInitialAndCancel()
     // ④ 确定路径：只勾选 a (2) 隐藏 → accept → 重名两项独立
     bool opened2 = false;
     QTimer::singleShot(0, &w, [ &opened2 ]() {
-        DA::DADialogTableColumnView* dlg
-            = qobject_cast< DA::DADialogTableColumnView* >(QApplication::activeModalWidget());
+        DA::DADialogManageColumns* dlg
+            = qobject_cast< DA::DADialogManageColumns* >(QApplication::activeModalWidget());
         if (!dlg) {
             return;
         }
@@ -3116,7 +3118,7 @@ void DATableDataTest::testColumnViewDialogDuplicateNamesInitialAndCancel()
         }
         dlg->accept();
     });
-    w.showColumnViewDialog();
+    w.showManageColumnsDialog();
     QVERIFY(opened2);
     QVERIFY(!w.viewStateStore()->isColumnHidden(QStringLiteral("a"), 0));
     QVERIFY(w.viewStateStore()->isColumnHidden(QStringLiteral("a"), 1));
@@ -3495,8 +3497,8 @@ void DATableDataTest::testColumnViewDialogRenameAndBatchUndo()
     // 打开对话框：改 a → ax、勾 b 隐藏、冻结勾选取消到 0 → 确定
     bool opened = false;
     QTimer::singleShot(0, &w, [ &opened ]() {
-        DA::DADialogTableColumnView* dlg
-            = qobject_cast< DA::DADialogTableColumnView* >(QApplication::activeModalWidget());
+        DA::DADialogManageColumns* dlg
+            = qobject_cast< DA::DADialogManageColumns* >(QApplication::activeModalWidget());
         if (!dlg) {
             return;
         }
@@ -3510,7 +3512,7 @@ void DATableDataTest::testColumnViewDialogRenameAndBatchUndo()
         }
         dlg->accept();
     });
-    w.showColumnViewDialog();
+    w.showManageColumnsDialog();
     QVERIFY(opened);
     // ① 三项差异全生效
     QVERIFY(df.columns().contains(QStringLiteral("ax")));
@@ -3533,6 +3535,78 @@ void DATableDataTest::testColumnViewDialogRenameAndBatchUndo()
     QVERIFY(w.viewStateStore()->isColumnHidden(QStringLiteral("b"), 0));
     w.hide();
 }
+
+// 列管理对话框：行序即列序——上移/下移按钮调整显示列序，确定后一个撤销单元落库，
+// undo 还原列序（表头 visualIndex 归位）
+void DATableDataTest::testManageColumnsDialogReorder()
+{
+    if (!mPandasOk) {
+        QSKIP("pandas not available");
+    }
+    pybind11::object obj = makeDataFrameWithColumns({ QStringLiteral("a"), QStringLiteral("b"), QStringLiteral("c") });
+    QVERIFY(!obj.is_none());
+    DA::DAPyDataFrame df(obj);
+    DA::DAData d(df);
+    DA::DATableMetadataRegistry registry(nullptr);
+    DA::DADataOperateOfDataFrameWidget w(d, &registry);
+    w.resize(800, 400);
+    w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+    DA::DADataTableView* tv = w.getDataTableView();
+    QHeaderView* hh        = tv->horizontalHeader();
+    const int n0           = w.getUndoStack()->count();
+    // 打开对话框：选中第 3 行（c）→ 连续点两次「上移」→ 确定（新列序 c,a,b）
+    bool opened  = false;
+    bool movedOk = false;
+    QTimer::singleShot(0, &w, [ &opened, &movedOk ]() {
+        DA::DADialogManageColumns* dlg
+            = qobject_cast< DA::DADialogManageColumns* >(QApplication::activeModalWidget());
+        if (!dlg) {
+            return;
+        }
+        opened = true;
+        QTableWidget* table = dlg->findChild< QTableWidget* >(QStringLiteral("columnTable"));
+        QPushButton* up     = dlg->findChild< QPushButton* >(QStringLiteral("btnMoveUp"));
+        if (table && up && table->rowCount() == 3) {
+            table->setCurrentCell(2, 0);  // 选中 c
+            up->click();
+            up->click();
+            movedOk = (table->item(0, 0)->text() == QStringLiteral("c")
+                       && table->item(1, 0)->text() == QStringLiteral("a")
+                       && table->item(2, 0)->text() == QStringLiteral("b"));
+        }
+        dlg->accept();
+    });
+    w.showManageColumnsDialog();
+    QVERIFY(opened);
+    QVERIFY(movedOk);
+    // ① store 列序落库（行序 = 新列序）且表头投影跟随
+    using Idents = QList< QPair< QString, int > >;
+    const QList< QPair< QString, int > > order = w.viewStateStore()->columnOrder();
+    QCOMPARE(order,
+             Idents({ qMakePair(QStringLiteral("c"), 0),
+                      qMakePair(QStringLiteral("a"), 0),
+                      qMakePair(QStringLiteral("b"), 0) }));
+    QCOMPARE(hh->visualIndex(2), 0);
+    QCOMPARE(hh->visualIndex(0), 1);
+    QCOMPARE(hh->visualIndex(1), 2);
+    // ② 只改列序：数据列顺序不变，且只入一个撤销单元
+    QCOMPARE(df.columns(), QStringList({ QStringLiteral("a"), QStringLiteral("b"), QStringLiteral("c") }));
+    QCOMPARE(w.getUndoStack()->count(), n0 + 1);
+    QCOMPARE(w.getUndoStack()->undoText(), QStringLiteral("Manage Columns"));
+    // ③ undo 还原列序（身份表清空 = 数据列序）
+    w.getUndoStack()->undo();
+    QVERIFY(w.viewStateStore()->columnOrder().isEmpty());
+    QCOMPARE(hh->visualIndex(0), 0);
+    QCOMPARE(hh->visualIndex(2), 2);
+    // ④ redo 重新落库
+    w.getUndoStack()->redo();
+    QCOMPARE(w.viewStateStore()->columnOrder().size(), 3);
+    QCOMPARE(hh->visualIndex(2), 0);
+    w.hide();
+}
+
+// 006e T8：行头归属与宽、双向纵向滚动同步、两窗格共享同一 selectionModel/model
 
 // 006e T8：行头归属与宽、双向纵向滚动同步、两窗格共享同一 selectionModel/model
 void DATableDataTest::testPaneRowHeaderAndScrollSync()

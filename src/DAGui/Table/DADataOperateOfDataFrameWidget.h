@@ -163,8 +163,10 @@ public:
 
     // ===== 列视图（006）=====
     // 列视图直接入口（007 定位的对接面）：只写 store + 重投影，不入撤销栈
-    void setColumnHiddenDirectly(const QString& name, int occurrence, bool hidden);    // 打开列视图对话框（006d）：列名编辑 + 隐藏勾选 + 冻结勾选；确定按差异构造一个批量父命令
-    void showColumnViewDialog();
+    void setColumnHiddenDirectly(const QString& name, int occurrence, bool hidden);
+    // 打开列管理对话框：列名编辑 + 列顺序调整 + 隐藏勾选 + 冻结勾选；
+    // 确定按差异构造一个批量父命令
+    void showManageColumnsDialog();
 
     // ===== 表内快速绘图（快速图表预览）=====
     // 有序选区：按视图顺序返回选区涉及的列（数据列号），隐藏列跳过
@@ -384,8 +386,6 @@ public Q_SLOTS:
     int removeColumns(const QList< int >& columns);
     // 设置选中单元格为nan,返回设置成功的个数
     int removeSelectCell();
-    // 列更名
-    void renameColumns();
     // 重命名单列（表头右键用），col 为列位置索引，newName 为新列名
     // 复用 DACommandDataFrame_renameColumns 命令，支持 undo/redo
     // @return 成功返回 true（列为空/重名/越界返回 false）

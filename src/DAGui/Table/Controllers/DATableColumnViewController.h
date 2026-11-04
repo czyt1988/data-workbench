@@ -60,8 +60,8 @@ public:
     void applyColumnOrderFromView(const QVector< int >& newOrderLogical);
     // 容器 frozenOrderChanged 驱动：冻结区内部拖动落库入栈
     void applyFrozenOrderFromView(const QVector< int >& newFrozenOrderLogical);
-    // 打开列视图对话框（列名编辑/隐藏/冻结三列表格）：确定按差异构造一个批量父命令
-    void showDialog();
+    // 打开列管理对话框（列名/顺序/隐藏/冻结）：确定按差异构造一个批量父命令
+    void showManageColumnsDialog();
     // 「列」子菜单动作分发（006d）；action 为 DADataHeaderView::ColumnViewAction 整数值
     void onHeaderActionRequested(int logicalColumn, int action);
 
@@ -75,7 +75,7 @@ private:
     DATableViewStateController* mViewState { nullptr };              ///< 视图状态控制器（重投影）
     DATableComputedColumnController* mComputedColumn { nullptr };     ///< 计算列控制器（改名影响面确认/迁移）
     DATableValidationController* mValidation { nullptr };             ///< 校验控制器（改名影响面确认/迁移）
-    class DADialogTableColumnView* mDialogColumnView { nullptr };  ///< 列视图对话框（006d，懒建复用）
+    class DADialogManageColumns* mDialogManageColumns { nullptr };  ///< 列管理对话框（懒建复用）
 };
 }  // end of namespace DA
 #endif  // DATABLECOLUMNVIEWCONTROLLER_H
