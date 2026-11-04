@@ -1,5 +1,6 @@
 #include "DAAppController.h"
 #include "DAAppTableActionHandler.h"
+#include "DAAppDataActionHandler.h"
 // Qt
 #include <QDebug>
 #include <QFileDialog>
@@ -410,13 +411,13 @@ void DAAppController::onDataOperatePageCreated(DADataOperatePageWidget* page)
                         &DADataHeaderView::columnDataCopyRequested,
                         this,
                         [ this, w ](int col, DA::DADataHeaderView::ColumnDataFormat format) {
-                            onHeaderColumnDataCopyRequested(w, col, format);
+                            mDataHandler->onHeaderColumnDataCopyRequested(w, col, format);
                         });
                 connect(hv,
                         &DADataHeaderView::columnDataExportRequested,
                         this,
                         [ this, w ](int col, DA::DADataHeaderView::ColumnDataFormat format) {
-                            onHeaderColumnDataExportRequested(w, col, format);
+                            mDataHandler->onHeaderColumnDataExportRequested(w, col, format);
                         });
             }
             // 表体右键菜单（v1 骨架：剪切/复制/粘贴）信号接线：路由到既有槽逻辑

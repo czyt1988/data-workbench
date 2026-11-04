@@ -1,0 +1,792 @@
+#include "DAAppDataActionHandler.h"
+#include "DAAppController.h"
+// Qt
+#include <QDebug>
+#include <QFileDialog>
+#include <QFileInfo>
+#include <QMessageBox>
+#include <QProgressDialog>
+#include <QSignalBlocker>
+#include <QStandardPaths>
+#include <QTimer>
+#include <QFontComboBox>
+#include <QInputDialog>
+#include <QMenu>
+#include <QApplication>
+#include <QActionGroup>
+#include <QItemSelectionModel>
+#include <QAbstractItemModel>
+#include <QClipboard>
+#include <QFile>
+#include <QMimeData>
+#include <QUrl>
+// qwt
+#include "qwt_figure.h"
+#include "qwt_plot_series_data_picker.h"
+#include <QwtPlotMarker>
+#include <QwtPlotTextLabel>
+#include <QwtText>
+// SARibbon
+#include "SARibbonGlobal.h"
+#include "SARibbonMainWindow.h"
+
+// API
+#include "AppMainWindow.h"
+#include "DAAppCore.h"
+#include "Ribbon/DAAppRibbonArea.h"
+#include "DAAppDockingArea.h"
+#include "DAChartOperateWidget.h"
+#include "DAAppCommand.h"
+#include "DAUndoHistoryWidget.h"
+#include "DAAppActions.h"
+#include "DAAppDataManager.h"
+#include "DAProjectInterface.h"
+// plugin
+// Qt-Advanced-Docking-System
+#include "DockManager.h"
+#include "DockAreaWidget.h"
+// command
+// Widget
+#include "DAWaitCursorScoped.h"
+#include "Table/DADataOperateWidget.h"
+#include "Table/DADataOperatePageWidget.h"
+#include "Common/DAAbstractOperateWidget.h"
+#include "DataManager/DADataManageWidget.h"
+#include "DAAppChartOperateWidget.h"
+#include "DAFigureWidget.h"
+#include "DAChartWidget.h"
+#include "Chart/Setting/DAChartAxisSettingPanel.h"
+#include "DAAppChartManageWidget.h"
+#include "SettingPages/DASettingPageGeneral.h"
+#include "Common/Settings/DASettingContainerWidget.h"
+#include "Common/DARecentFilesManager.h"
+#include "Chart/DAChartSettingWidget.h"
+#include "Chart/DADataLinkTableWidget.h"
+#include "DAColorTheme.h"
+#include "Chart/Setting/DAFigureWidgetSettingPanel.h"
+#include "Chart/Setting3D/DAChart3DSettingWidget.h"
+// Dialog
+#include "DAPluginManagerDialog.h"
+#include "DAAppSettingDialog.h"
+#include "Dialog/DAExportToPngSettingDialog.h"
+#include "Dialog/DALayoutManagerDialog.h"
+#include "Dialog/DAWorkbenchAboutDialog.h"
+// DAWidgets
+#include "DAFontEditPannelWidget.h"
+#include "SARibbonColorToolButton.h"
+#include "DAShapeEditPannelWidget.h"
+// Table style
+#include "Table/Metadata/DATableCellStyle.h"
+// 表格元数据与数据撤销命令（004 T1.27 就地形状变换：Swap 命令 + 元数据束快照/清理）
+#include "Table/Metadata/DATableMetadata.h"
+#include "Table/Metadata/DATableMetadataRegistry.h"
+#include "DADataUndoCommand.h"
+// Workflow
+#include "Workflow/DAPyWorkFlowOperateWidget.h"
+#include "Workflow/DAPyWorkFlowGraphicsView.h"
+#include "DAGraphicsDrawRectSceneAction.h"
+#include "DAGraphicsDrawTextItemSceneAction.h"
+// project
+#include "DAAppProject.h"
+#include "DAAppProjectActionPolicy.h"
+// Py
+#include "DAPybind11QtCaster.hpp"
+#include "Table/Dialogs/DATxtFileImportDialog.h"
+#include "DAPyDTypeComboBox.h"
+#include "DAPyScripts.h"
+#include "pandas/DAPyDataFrame.h"
+#include "numpy/DAPyDType.h"
+// Widget
+#include "Table/DADataOperateOfDataFrameWidget.h"
+#include "Table/Views/DADataHeaderView.h"
+#include "Table/Views/DATableDisplayFormatComboBox.h"
+#include "Table/Dialogs/DADialogTableDisplayFormat.h"
+#include "Table/Views/DADataTableView.h"
+// Python workflow
+#include "DAPyWorkFlowScene.h"
+// Stats plot widgets
+#include "Chart/DADialogStatsChartGuide.h"
+#include "Chart/AddItem/DAChartAddStatsHistplotWidget.h"
+#include "Chart/AddItem/DAChartAddStatsKdeplot1dWidget.h"
+#include "Chart/AddItem/DAChartAddStatsKdeplot2dWidget.h"
+#include "Chart/AddItem/DAChartAddStatsBoxplotWidget.h"
+#include "Chart/AddItem/DAChartAddStatsHeatmapWidget.h"
+#include "Chart/AddItem/DAChartAddStatsScatterplotWidget.h"
+#include "Chart/AddItem/DAChartAddStatsBarplotWidget.h"
+#include "Chart/AddItem/DAChartAddStatsRegplotWidget.h"
+#include "Chart/AddItem/DAChartAddStatsEcdfplotWidget.h"
+#include "Chart/AddItem/DAChartSeriesSelectWidget.h"
+#include "Chart/AddItem/DAAbstractStatsChartAddWidget.h"
+#include "Chart/DAStatsPlotCoordinator.h"
+// 类型化统计绘图请求（onStatsGuideAccepted 消费字段，需完整类型）
+#include "Chart/DAStatsPlotRequest.h"
+#include "Chart/DAStatsPlotRequests.h"
+// 数据统计分析浮动 dock（PMF connect notifyDataChanged 需完整类型）
+#include "Chart/DADataStatsWidget.h"
+// 表内快速绘图（转入绘图区的编排器）
+#include "Table/Chart/DAChartQuickPlot.h"
+#include "Table/Chart/DATableChartTypes.h"
+// Agent
+#include "DAAgentModule.h"
+#include "DAAgentInterface.h"        // PMF connect 到接口信号/方法需完整类型
+#include "DAAgentDockWidget.h"       // DAAppDockingArea 仅前向声明；PMF connect 需完整类型（plan-02）
+#include "DAAgentLinkDispatcher.h"   // Agent 本地跳转链接分发（da-<kind>: 协议注册表）
+#include "DADataManagerInterface.h"  // da-data: 链接按名字/id 查找数据集
+//
+#include "SettingPages/DAAppConfig.h"
+#include "DAAppLayoutManager.h"
+#include "DALogCategory.h"
+
+#ifndef DAAPPRIBBONAREA_WINDOW_NAME
+#define DAAPPRIBBONAREA_WINDOW_NAME QCoreApplication::translate("DAAppController", "DA", nullptr)
+#endif
+
+// #ifndef DAAPPRIBBONAREA_WINDOW_NAME
+// #define DAAPPRIBBONAREA_WINDOW_NAME QCoreApplication::translate("DAAppController", u8"试验数据分析系统", nullptr)
+// #endif
+
+// 未实现的功能标记
+#define DAAPPCONTROLLER_PASS()                                                                                         \
+    QMessageBox::warning(                                                                                              \
+        app(),                                                                                                         \
+        QCoreApplication::translate("DAAppRibbonArea", "Warning", nullptr),                                             \
+        QCoreApplication::translate("DAAppRibbonArea",                                                                 \
+                                    "The current function is not implemented, only the UI is reserved, "               \
+                                    "please pay attention: https://gitee.com/czyt1988/data-work-flow",                 \
+                                    nullptr))
+
+// 快速链接信号槽
+#define DAAPPCONTROLLER_ACTION_BIND(actionname, functionname)                                                          \
+    connect(actionname, &QAction::triggered, this, &DAAppController::functionname)
+
+// 数据域动作分发器：数据集增删改、导入、导出与复制为表格
+#define DAAPP_DATA_BIND(actionname, functionname) \
+    connect(actionname, &QAction::triggered, this, &DAAppDataActionHandler::functionname)
+
+namespace DA
+{
+
+DAAppDataActionHandler::DAAppDataActionHandler(const DAAppActionHandlerDeps& deps, QObject* par)
+    : QObject(par), mDeps(deps)
+{
+}
+
+void DAAppDataActionHandler::initConnections()
+{
+    // Data Category
+    DAAPP_DATA_BIND(mDeps.actions->actionAddData, onActionAddDataTriggered);
+    DAAPP_DATA_BIND(mDeps.actions->actionRemoveData, onActionRemoveDataTriggered);
+    DAAPP_DATA_BIND(mDeps.actions->actionRenameData, onActionRenameDataTriggered);
+    DAAPP_DATA_BIND(mDeps.actions->actionExportData, onActionExportDataTriggered);
+    DAAPP_DATA_BIND(mDeps.actions->actionExportDataCsv, onActionExportDataAsTriggered);
+    DAAPP_DATA_BIND(mDeps.actions->actionExportDataExcel, onActionExportDataAsTriggered);
+    DAAPP_DATA_BIND(mDeps.actions->actionExportDataPickle, onActionExportDataAsTriggered);
+    DAAPP_DATA_BIND(mDeps.actions->actionExportDataParquet, onActionExportDataAsTriggered);
+}
+/**
+ * @brief 添加数据
+ *
+ * 支持一次选择多个文件批量导入；选中 txt 时在导入前弹一次解析设置对话框，
+ * 同一批 txt 共用此设置；多文件时显示可取消的进度对话框，结束后汇总失败原因
+ */
+void DAAppDataActionHandler::onActionAddDataTriggered()
+{
+    QFileDialog dialog(mDeps.controller->app());
+    dialog.setNameFilters(mDeps.controller->fileReadFilters());
+    dialog.setFileMode(QFileDialog::ExistingFiles);
+    if (QDialog::Accepted != dialog.exec()) {
+        return;
+    }
+    const QStringList fileNames = dialog.selectedFiles();
+    if (fileNames.empty()) {
+        return;
+    }
+    const int total = static_cast< int >(fileNames.size());
+    // 对txt要弹出对话框进行指引，批量选择时只弹一次，同一批txt共用此解析设置
+    QVariantMap txtArgs;
+    bool hasTxt = false;
+    for (const QString& fileName : fileNames) {
+        if (QFileInfo(fileName).suffix().toLower() == "txt") {
+            DATxtFileImportDialog dlg(mDeps.mainWindow);
+            dlg.setTextFilePath(fileName);
+            if (QDialog::Accepted != dlg.exec()) {
+                return;
+            }
+            // 获取导入txt的配置
+            txtArgs = dlg.getSetting();
+            hasTxt = true;
+            qDebug() << "da_read:args->" << txtArgs;
+            break;
+        }
+    }
+    // 多文件时显示进度对话框（可在文件之间取消），单文件保持原有仅等待光标的行为
+    QProgressDialog progress(QCoreApplication::translate("DA::DAAppController", "Importing data files ..."),  // cn:正在导入数据文件...
+                             QCoreApplication::translate("DA::DAAppController", "Cancel"),                     // cn:取消
+                             0,
+                             total,
+                             mDeps.mainWindow);
+    progress.setWindowTitle(QCoreApplication::translate("DA::DAAppController", "Import Data"));  // cn:导入数据
+    progress.setWindowModality(Qt::WindowModal);
+    if (total > 1) {
+        progress.setMinimumDuration(0);
+        progress.show();
+    }
+    int successCnt = 0;
+    QStringList failedFiles;
+    DA_WAIT_CURSOR_SCOPED();
+    for (int i = 0; i < total; ++i) {
+        const QString& fileName = fileNames.at(i);
+        progress.setLabelText(QCoreApplication::translate("DA::DAAppController", "Importing (%1/%2): %3")  // cn:正在导入（%1/%2）：%3
+                                  .arg(i + 1)
+                                  .arg(total)
+                                  .arg(QFileInfo(fileName).fileName()));
+        progress.setValue(i);
+        if (progress.wasCanceled()) {
+            break;
+        }
+        QVariantMap args;
+        if (hasTxt && QFileInfo(fileName).suffix().toLower() == "txt") {
+            args = txtArgs;
+        }
+        QString err;
+        if (mDeps.controller->importData(fileName, args, &err)) {
+            ++successCnt;
+        } else {
+            // 压平Python异常信息里的换行，保证汇总列表每个文件占一行
+            QString item = QFileInfo(fileName).fileName();
+            if (!err.isEmpty()) {
+                item += QStringLiteral(": ") + err.simplified();
+            }
+            failedFiles << item;
+        }
+    }
+    const bool canceled = progress.wasCanceled() && successCnt < total;
+    progress.setValue(total);  // 到达最大值，让进度对话框自动关闭
+    // 汇总导入结果（单文件成功保持原有静默行为，不额外提示）
+    if (successCnt == total) {
+        if (total > 1) {
+            daInfo << QCoreApplication::translate("DA::DAAppController", "Imported %1 file(s) successfully").arg(total);  // cn:成功导入 %1 个文件
+        }
+        return;
+    }
+    QString msg;
+    if (canceled) {
+        msg = QCoreApplication::translate("DA::DAAppController", "Import canceled, %1 of %2 file(s) imported").arg(successCnt).arg(total);  // cn:导入已取消，%2 个文件中已导入 %1 个
+        if (!failedFiles.isEmpty()) {
+            msg += QStringLiteral("\n");
+        }
+    }
+    if (!failedFiles.isEmpty()) {
+        msg += QCoreApplication::translate("DA::DAAppController", "%1 of %2 file(s) failed to import:\n%3")  // cn:%2 个文件中有 %1 个导入失败：\n%3
+                  .arg(failedFiles.size())
+                  .arg(total)
+                  .arg(failedFiles.join('\n'));
+    }
+    daWarning << msg;
+}
+
+/**
+ * @brief 移除数据
+ */
+void DAAppDataActionHandler::onActionRemoveDataTriggered()
+{
+    DADataManageWidget* dmw = mDeps.dock->getDataManageWidget();
+    dmw->removeSelectData();
+    mDeps.controller->setDirty();
+}
+
+/**
+ * @brief 重命名数据集
+ *
+ * 定位数据管理树当前选中项，触发视图编辑（QTreeView::edit），
+ * 提交经 DADataManagerTreeModel::setData 落 DAData::setName（拒绝重名/空名）
+ */
+void DAAppDataActionHandler::onActionRenameDataTriggered()
+{
+    DADataManageWidget* dmw = mDeps.dock->getDataManageWidget();
+    if (!dmw) {
+        return;
+    }
+    DADataManagerTreeWidget* tree = dmw->getTreeWidget();
+    if (!tree) {
+        return;
+    }
+    if (tree->isSelectDataframeSeries()) {
+        // series 子项不支持重命名（模型 flags 已限制其编辑位）
+        daWarning << QCoreApplication::translate("DA::DAAppController", "Cannot rename a series, please select a dataset");  // cn:无法重命名series，请选中数据集
+        return;
+    }
+    QTreeView* tv = tree->getTreeView();
+    if (!tv) {
+        return;
+    }
+    QModelIndex cur = tv->currentIndex();
+    if (!cur.isValid()) {
+        daWarning << QCoreApplication::translate("DA::DAAppController", "Please select a dataset to rename");  // cn:请先选中要重命名的数据集
+        return;
+    }
+    // 属性列（第二列）选中时映射回名称列
+    if (cur.column() != 0) {
+        cur = cur.siblingAtColumn(0);
+    }
+    // 先确保数据管理窗口在前端，再进入编辑
+    mDeps.dock->raiseDockByWidget((QWidget*)(dmw));
+    tv->edit(cur);
+}
+
+/**
+ * @brief 导出数据（大按钮：弹出保存对话框，格式按所选过滤器/后缀判定）
+ */
+void DAAppDataActionHandler::onActionExportDataTriggered()
+{
+    exportSelectedData(QString());
+}
+
+/**
+ * @brief 按指定格式导出（子菜单路径：csv/excel/pickle/parquet）
+ */
+void DAAppDataActionHandler::onActionExportDataAsTriggered()
+{
+    QString format;
+    QAction* act = qobject_cast< QAction* >(sender());
+    if (act == mDeps.actions->actionExportDataCsv) {
+        format = "csv";
+    } else if (act == mDeps.actions->actionExportDataExcel) {
+        format = "excel";
+    } else if (act == mDeps.actions->actionExportDataPickle) {
+        format = "pickle";
+    } else if (act == mDeps.actions->actionExportDataParquet) {
+        format = "parquet";
+    }
+    if (!format.isEmpty()) {
+        exportSelectedData(format);
+    }
+}
+
+/**
+ * @brief 导出当前选中的数据集
+ *
+ * 取数据管理器选中数据（getSelectDatas，无选中回退当前操作数据），弹保存对话框，
+ * 委托 DAAppDataManager::exportToFile 完成（io.py 的 da_to_*），结果 daInfo/daWarning 反馈
+ * @param format 指定格式（csv/excel/pickle/parquet）；为空时按保存对话框后缀判定
+ */
+void DAAppDataActionHandler::exportSelectedData(const QString& format)
+{
+    // 优先取数据管理器选中数据，无选中时回退当前操作数据
+    QList< DAData > datas = mDeps.datas->getSelectDatas();
+    DAData d;
+    if (!datas.isEmpty()) {
+        d = datas.first();
+    } else {
+        d = mDeps.datas->getOperateData();
+    }
+    if (d.isNull()) {
+        daWarning << QCoreApplication::translate("DA::DAAppController", "Please select a dataset to export");  // cn:请先选中要导出的数据
+        return;
+    }
+    QString name = d.getName();
+    if (name.isEmpty()) {
+        name = QStringLiteral("data");
+    }
+    // 过滤器与默认后缀
+    QString csvFilter     = QCoreApplication::translate("DA::DAAppController", "CSV File") + QStringLiteral(" (*.csv)");    // cn:CSV 文件
+    QString excelFilter   = QCoreApplication::translate("DA::DAAppController", "Excel File") + QStringLiteral(" (*.xlsx)");  // cn:Excel 文件
+    QString pickleFilter  = QCoreApplication::translate("DA::DAAppController", "Pickle File") + QStringLiteral(" (*.pkl)");  // cn:Pickle 文件
+    QString parquetFilter = QCoreApplication::translate("DA::DAAppController", "Parquet File") + QStringLiteral(" (*.parquet)");  // cn:Parquet 文件
+    QString mdFilter      = QCoreApplication::translate("DA::DAAppController", "Markdown File") + QStringLiteral(" (*.md)");  // cn:Markdown 文件
+    QString htmlFilter    = QCoreApplication::translate("DA::DAAppController", "HTML File") + QStringLiteral(" (*.html)");    // cn:HTML 文件
+    QString selectedFilter;
+    if (format == "csv") {
+        selectedFilter = csvFilter;
+    } else if (format == "excel") {
+        selectedFilter = excelFilter;
+    } else if (format == "pickle") {
+        selectedFilter = pickleFilter;
+    } else if (format == "parquet") {
+        selectedFilter = parquetFilter;
+    } else if (format == "markdown") {
+        selectedFilter = mdFilter;
+    } else if (format == "html") {
+        selectedFilter = htmlFilter;
+    }
+    QString defaultSuffix;
+    if (!selectedFilter.isEmpty()) {
+        int i = selectedFilter.lastIndexOf(QLatin1String("*."));
+        if (i >= 0) {
+            defaultSuffix = selectedFilter.mid(i + 2, selectedFilter.indexOf(')', i) - i - 2);
+        }
+    }
+    QString path = QFileDialog::getSaveFileName(mDeps.controller->app(),
+                                                QCoreApplication::translate("DA::DAAppController", "Export Data"),  // cn:导出数据
+                                                name,
+                                                csvFilter + ";;" + excelFilter + ";;" + pickleFilter + ";;" + parquetFilter + ";;"
+                                                    + mdFilter + ";;" + htmlFilter,
+                                                &selectedFilter);
+    if (path.isEmpty()) {
+        return;
+    }
+    // 确定格式：优先显式 format，其次按过滤器，最后按后缀
+    QString fmt = format;
+    if (fmt.isEmpty()) {
+        if (selectedFilter == csvFilter) {
+            fmt = "csv";
+        } else if (selectedFilter == excelFilter) {
+            fmt = "excel";
+        } else if (selectedFilter == pickleFilter) {
+            fmt = "pickle";
+        } else if (selectedFilter == parquetFilter) {
+            fmt = "parquet";
+        } else if (selectedFilter == mdFilter) {
+            fmt = "markdown";
+        } else if (selectedFilter == htmlFilter) {
+            fmt = "html";
+        }
+    }
+    if (fmt.isEmpty()) {
+        QString suffix = QFileInfo(path).suffix().toLower();
+        if (suffix == "csv") {
+            fmt = "csv";
+        } else if (suffix == "xlsx" || suffix == "xls") {
+            fmt = "excel";
+        } else if (suffix == "pkl" || suffix == "pickle") {
+            fmt = "pickle";
+        } else if (suffix == "parquet") {
+            fmt = "parquet";
+        } else if (suffix == "md" || suffix == "markdown") {
+            fmt = "markdown";
+        } else if (suffix == "html" || suffix == "htm") {
+            fmt = "html";
+        }
+    }
+    if (fmt.isEmpty()) {
+        daWarning << QCoreApplication::translate("DA::DAAppController", "Cannot determine export format, please select a file suffix");  // cn:无法确定导出格式，请选择带后缀的文件名
+        return;
+    }
+    // 补默认后缀
+    if (QFileInfo(path).suffix().isEmpty() && !defaultSuffix.isEmpty()) {
+        path += QStringLiteral(".") + defaultSuffix;
+    }
+    // Markdown/HTML 文档格式走文档导出路径（DATableExporter，含样式增量写入），
+    // 其余格式走 Python io 导出；路径已选好，直接透传（不再弹保存对话框）
+    if (fmt == "markdown" || fmt == "html") {
+        exportSelectedDataAsDocument(fmt == "markdown" ? DATableExporter::Format::Markdown : DATableExporter::Format::Html, path);
+        return;
+    }
+    QString err;
+    DA_WAIT_CURSOR_SCOPED();
+    if (mDeps.datas->exportToFile(d, path, fmt, &err)) {
+        daInfo << QCoreApplication::translate("DA::DAAppController", "Data exported successfully, path: %1").arg(path);  // cn:数据导出成功，路径:%1
+    } else {
+        daWarning << QCoreApplication::translate("DA::DAAppController", "Data export failed, path: %1, reason: %2").arg(path, err);  // cn:数据导出失败，路径:%1，原因:%2
+    }
+}
+
+/**
+ * @brief 取要操作的数据集并构造 DATableExporter（复制/导出 Markdown 与 HTML 共用）
+ *
+ * 数据选择口径与 exportSelectedData 一致：优先数据管理树选中，无选中回退当前
+ * 操作数据。元数据束按数据查注册表（get：束随数据存在、页面关闭不销毁；无束
+ * = 纯数据导出，不带样式）。exporter 有效性由调用方经 isValid() 复核。
+ * columns 非空时构造列子集导出器（表头右键「按选中列」入口，列序按传入顺序）；
+ * sourcePage 非空时列子集取数固定用该页面（表头右键菜单触发时停靠区焦点
+ * 尚未归还，不能走焦点检查；空 = 回退当前页，同样不做焦点检查）。
+ * @param exporter 出参（构造好的导出器）
+ * @param dataOut 非空时回填所选数据（保存对话框默认文件名用）
+ * @param columns 列子集（数据源列号；空 = 整表）
+ * @param sourcePage 列子集路径的数据来源页面（空 = 当前页）
+ * @return 构造成功返回 true
+ */
+bool DAAppDataActionHandler::makeExporterForSelection(std::unique_ptr< DATableExporter >* exporter,
+                                               DAData* dataOut,
+                                               const QList< int >& columns,
+                                               DADataOperateOfDataFrameWidget* sourcePage)
+{
+    if (!exporter) {
+        return false;
+    }
+    // 列子集路径（表头右键入口）：数据来自发送信号的页面（sourcePage 固定，
+    // 缺省回退当前页，均不做焦点检查——表头右键菜单是独立窗口，触发时
+    // 停靠区焦点尚未归还表格页），不走数据管理树选中的口径——两口径混用会导错数据集
+    DAData d;
+    if (!columns.isEmpty()) {
+        DADataOperateOfDataFrameWidget* w = sourcePage ? sourcePage : mDeps.controller->getCurrentDataFrameOperateWidget(false, false);
+        if (!w) {
+            daWarning << QCoreApplication::translate("DA::DAAppController", "No open dataframe table");  // cn:当前没有打开的 dataframe 表格
+            return false;
+        }
+        d = w->data();
+    } else {
+        QList< DAData > datas = mDeps.datas->getSelectDatas();
+        if (!datas.isEmpty()) {
+            d = datas.first();
+        } else {
+            d = mDeps.datas->getOperateData();
+        }
+    }
+    if (d.isNull()) {
+        daWarning << QCoreApplication::translate("DA::DAAppController", "Please select a dataset first");  // cn:请先选中数据集
+        return false;
+    }
+    if (dataOut) {
+        *dataOut = d;
+    }
+    // 元数据束（样式/条件格式/批注）：有则带样式导出，无则纯数据
+    DATableMetadata* meta = nullptr;
+    if (DADataOperateWidget* dow = mDeps.controller->getDataOperateWidget()) {
+        if (DATableMetadataRegistry* reg = dow->metadataRegistry()) {
+            meta = reg->get(d);
+        }
+    }
+    exporter->reset(new DATableExporter(d, meta, columns));
+    QString why;
+    if (!(*exporter)->isValid(&why)) {
+        daWarning << why;
+        return false;
+    }
+    return true;
+}
+
+/**
+ * @brief 把选中的数据集整表复制到剪贴板（数据管理树右键「复制为」入口）
+ *
+ * Tab 文本与表格内选区复制同口径；HTML 经 text/html mime 富文本粘贴
+ * （Word/浏览器/邮件直接保留背景色与字体），纯文本回退为同内容的 Markdown
+ * 之外的兜底（这里用 Tab 文本，Word 里「选择性粘贴-无格式文本」得到同款表格）。
+ * 超大表（isLargeForCopy 阈值）先弹确认，避免一次性构建大字符串卡界面；
+ * 构建期间进度对话框可取消（块边界生效）。
+ * @param fmt 目标形态
+ * @param columns 列子集（表头右键「复制选中列为」入口传入；空 = 整表）
+ * @param sourcePage 列子集取数的来源页面（表头右键入口传入；空 = 整表路径不用）
+ */
+void DAAppDataActionHandler::copySelectedDataAsTable(DATableExporter::Format fmt,
+                                              const QList< int >& columns,
+                                              DADataOperateOfDataFrameWidget* sourcePage)
+{
+    std::unique_ptr< DATableExporter > exporter;
+    if (!makeExporterForSelection(&exporter, nullptr, columns, sourcePage)) {
+        return;
+    }
+    // 大小确认：复制需把整表渲染成字符串驻留内存，超大表先提醒
+    if (DATableExporter::isLargeForCopy(exporter->rowCount(), exporter->columnCount())) {
+        QMessageBox::StandardButton btn = QMessageBox::question(
+            mDeps.mainWindow,
+            QCoreApplication::translate("DA::DAAppController", "Copy Large Table"),  // cn:复制大表
+            QCoreApplication::translate("DA::DAAppController", "The table contains %1 rows x %2 columns. Copying it to the clipboard may take a while and use "
+               "significant memory. Continue?")  // cn:表格共 %1 行 × %2 列，复制到剪贴板可能耗时较长并占用较多内存，是否继续？
+                .arg(exporter->rowCount())
+                .arg(exporter->columnCount()),
+            QMessageBox::Yes | QMessageBox::No,
+            QMessageBox::No);
+        if (btn != QMessageBox::Yes) {
+            return;
+        }
+    }
+    QProgressDialog progress(QCoreApplication::translate("DA::DAAppController", "Copying table ..."),  // cn:正在复制表格...
+                             QCoreApplication::translate("DA::DAAppController", "Cancel"),              // cn:取消
+                             0,
+                             100,
+                             mDeps.mainWindow);
+    progress.setWindowTitle(QCoreApplication::translate("DA::DAAppController", "Copy Table"));  // cn:复制表格
+    progress.setWindowModality(Qt::WindowModal);
+    progress.setMinimumDuration(0);
+    // 块边界推进进度并抽事件循环（进度可见 + 取消可点）
+    auto processEvents = [&progress]() {
+        QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
+        return progress.wasCanceled();
+    };
+    QString text;
+    QString err;
+    DA_WAIT_CURSOR_SCOPED();
+    const bool ok = exporter->toString(fmt, &text, &err,
+                                      [ &progress ](qint64 done, qint64 total) {
+                                          if (total > 0) {
+                                              progress.setValue(static_cast< int >(done * 100 / total));
+                                          }
+                                      },
+                                      processEvents);
+    progress.setValue(100);
+    if (!ok) {
+        if (!err.isEmpty()) {
+            daWarning << err;
+        }
+        return;
+    }
+    QClipboard* cb = QGuiApplication::clipboard();
+    if (!cb) {
+        return;
+    }
+    if (fmt == DATableExporter::Format::Html) {
+        // HTML mime + 纯文本回退：Word/Excel/浏览器按 text/html 富文本粘贴
+        QMimeData* mime = new QMimeData();
+        mime->setHtml(text);
+        mime->setText(text);
+        cb->setMimeData(mime);
+    } else {
+        cb->setText(text);
+    }
+    daInfo << QCoreApplication::translate("DA::DAAppController", "Table copied to clipboard (%1 rows x %2 columns)")  // cn:表格已复制到剪贴板（%1 行 × %2 列）
+                  .arg(exporter->rowCount())
+                  .arg(exporter->columnCount());
+}
+
+/**
+ * @brief 导出选中数据集为 Markdown/HTML 文档（右键导出子菜单与主导出按钮共用）
+ *
+ * 与复制共用 DATableExporter 的取数与渲染核心；文件路径增量写入
+ * （QTextStream），任意大表内存占用恒定，不做大小确认。
+ * 导出期间进度对话框可取消；取消时删除半成品文件。
+ * path 非空时跳过保存对话框（主导出按钮路径已选好路径，按 fmt 判定格式）。
+ * @param fmt Markdown 或 HTML
+ * @param path 已选定的目标路径（空 = 弹保存对话框）
+ * @param columns 列子集（表头右键「导出选中列」入口传入；空 = 整表）
+ * @param sourcePage 列子集取数的来源页面（表头右键入口传入；空 = 整表路径不用）
+ */
+void DAAppDataActionHandler::exportSelectedDataAsDocument(DATableExporter::Format fmt,
+                                                   const QString& path,
+                                                   const QList< int >& columns,
+                                                   DADataOperateOfDataFrameWidget* sourcePage)
+{
+    std::unique_ptr< DATableExporter > exporter;
+    DAData d;
+    if (!makeExporterForSelection(&exporter, &d, columns, sourcePage)) {
+        return;
+    }
+    QString targetPath = path;
+    if (targetPath.isEmpty()) {
+        QString name = d.getName();
+        if (name.isEmpty()) {
+            name = QStringLiteral("data");
+        }
+        QString mdFilter   = QCoreApplication::translate("DA::DAAppController", "Markdown File") + QStringLiteral(" (*.md)");  // cn:Markdown 文件
+        QString htmlFilter = QCoreApplication::translate("DA::DAAppController", "HTML File") + QStringLiteral(" (*.html)");    // cn:HTML 文件
+        QString selectedFilter;
+        QString defaultSuffix;
+        if (fmt == DATableExporter::Format::Markdown) {
+            selectedFilter = mdFilter;
+            defaultSuffix  = QStringLiteral("md");
+        } else {
+            selectedFilter = htmlFilter;
+            defaultSuffix  = QStringLiteral("html");
+        }
+        targetPath = QFileDialog::getSaveFileName(mDeps.controller->app(),
+                                                  QCoreApplication::translate("DA::DAAppController", "Export Data"),  // cn:导出数据
+                                                  name,
+                                                  mdFilter + ";;" + htmlFilter,
+                                                  &selectedFilter);
+        if (targetPath.isEmpty()) {
+            return;
+        }
+        if (QFileInfo(targetPath).suffix().isEmpty()) {
+            targetPath += QStringLiteral(".") + defaultSuffix;
+        }
+    }
+    QFile file(targetPath);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+        daWarning << QCoreApplication::translate("DA::DAAppController", "Cannot open file for writing: %1").arg(targetPath);  // cn:无法打开文件进行写入:%1
+        return;
+    }
+    QProgressDialog progress(QCoreApplication::translate("DA::DAAppController", "Exporting table ..."),  // cn:正在导出表格...
+                             QCoreApplication::translate("DA::DAAppController", "Cancel"),                // cn:取消
+                             0,
+                             100,
+                             mDeps.mainWindow);
+    progress.setWindowTitle(QCoreApplication::translate("DA::DAAppController", "Export Data"));  // cn:导出数据
+    progress.setWindowModality(Qt::WindowModal);
+    progress.setMinimumDuration(0);
+    auto processEvents = [&progress]() {
+        QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
+        return progress.wasCanceled();
+    };
+    QString err;
+    DA_WAIT_CURSOR_SCOPED();
+    const bool ok = exporter->write(fmt, &file, &err,
+                                   [ &progress ](qint64 done, qint64 total) {
+                                       if (total > 0) {
+                                           progress.setValue(static_cast< int >(done * 100 / total));
+                                       }
+                                   },
+                                   processEvents);
+    progress.setValue(100);
+    file.close();
+    if (!ok) {
+        // 取消/失败不留半成品
+        QFile::remove(targetPath);
+        if (!err.isEmpty()) {
+            daWarning << QCoreApplication::translate("DA::DAAppController", "Data export failed, path: %1, reason: %2").arg(targetPath, err);  // cn:数据导出失败，路径:%1，原因:%2
+        }
+        return;
+    }
+    daInfo << QCoreApplication::translate("DA::DAAppController", "Data exported successfully, path: %1").arg(targetPath);  // cn:数据导出成功，路径:%1
+}
+
+/**
+ * @brief 表头右键「复制选中列为」信号处理器
+ *
+ * page 固定为发送信号表头所在的页面（右键菜单是独立窗口，触发时停靠区
+ * 焦点尚未归还表格页，不能经焦点检查取当前页）。从该页面解析选中列
+ * （无选中回退右键所在列），格式枚举映射后走与数据管理树「复制为」
+ * 共用的 copySelectedDataAsTable（列子集路径）。
+ * @param page 发送信号的表头所在页面
+ * @param fallbackColumn 右键所在列（无选中列时的回退）
+ * @param format 表头声明的目标形态（映射 DATableExporter::Format）
+ */
+void DAAppDataActionHandler::onHeaderColumnDataCopyRequested(DADataOperateOfDataFrameWidget* page,
+                                                      int fallbackColumn,
+                                                      DADataHeaderView::ColumnDataFormat format)
+{
+    DADataOperateOfDataFrameWidget* w = page;
+    if (!w) {
+        daWarning << QCoreApplication::translate("DA::DAAppController", "No open dataframe table");  // cn:当前没有打开的 dataframe 表格
+        return;
+    }
+    const QList< int > columns = w->selectedColumnsForDataAction(fallbackColumn);
+    if (columns.isEmpty()) {
+        daWarning << QCoreApplication::translate("DA::DAAppController", "Please select a valid column");  // cn:请选择正确的列
+        return;
+    }
+    DATableExporter::Format fmt = DATableExporter::Format::TabText;
+    switch (format) {
+    case DADataHeaderView::ColumnDataFormat::Markdown:
+        fmt = DATableExporter::Format::Markdown;
+        break;
+    case DADataHeaderView::ColumnDataFormat::Html:
+        fmt = DATableExporter::Format::Html;
+        break;
+    default:
+        break;
+    }
+    copySelectedDataAsTable(fmt, columns, w);
+}
+
+/**
+ * @brief 表头右键「导出选中列」信号处理器（列子集版文档导出）
+ *
+ * 列解析与格式映射同 onHeaderColumnDataCopyRequested（page 固定为发送
+ * 信号的页面，同样不做焦点检查）；执行走与数据管理树「导出 Markdown/HTML
+ * 文档」共用的 exportSelectedDataAsDocument。
+ */
+void DAAppDataActionHandler::onHeaderColumnDataExportRequested(DADataOperateOfDataFrameWidget* page,
+                                                        int fallbackColumn,
+                                                        DADataHeaderView::ColumnDataFormat format)
+{
+    DADataOperateOfDataFrameWidget* w = page;
+    if (!w) {
+        daWarning << QCoreApplication::translate("DA::DAAppController", "No open dataframe table");  // cn:当前没有打开的 dataframe 表格
+        return;
+    }
+    const QList< int > columns = w->selectedColumnsForDataAction(fallbackColumn);
+    if (columns.isEmpty()) {
+        daWarning << QCoreApplication::translate("DA::DAAppController", "Please select a valid column");  // cn:请选择正确的列
+        return;
+    }
+    DATableExporter::Format fmt = DATableExporter::Format::Markdown;
+    switch (format) {
+    case DADataHeaderView::ColumnDataFormat::Html:
+        fmt = DATableExporter::Format::Html;
+        break;
+    default:
+        break;
+    }
+    exportSelectedDataAsDocument(fmt, QString(), columns, w);
+}
+}  // namespace DA

@@ -2,6 +2,7 @@
 #include "DAAppTableActionHandler.h"
 #include "DAAppChartActionHandler.h"
 #include "DAAppWorkflowActionHandler.h"
+#include "DAAppDataActionHandler.h"
 // Qt
 #include <QDebug>
 #include <QFileDialog>
@@ -261,6 +262,11 @@ AppMainWindow* DAAppController::app() const
     return mMainWindow;
 }
 
+const QStringList& DAAppController::fileReadFilters() const
+{
+    return mFileReadFilters;
+}
+
 /**
  * @brief 组装动作分发器共享的应用上下文依赖
  *
@@ -279,6 +285,27 @@ DAAppActionHandlerDeps DAAppController::makeActionHandlerDeps()
     d.config     = mConfig;
     d.mainWindow = mMainWindow;
     return d;
+}
+
+/**
+ * @brief 复制选中数据集为表格（转发到数据域分发器）
+ */
+void DAAppController::copySelectedDataAsTable(DA::DATableExporter::Format fmt,
+                                              const QList< int >& columns,
+                                              DADataOperateOfDataFrameWidget* sourcePage)
+{
+    mDataHandler->copySelectedDataAsTable(fmt, columns, sourcePage);
+}
+
+/**
+ * @brief 导出选中数据集为文档（转发到数据域分发器）
+ */
+void DAAppController::exportSelectedDataAsDocument(DA::DATableExporter::Format fmt,
+                                                   const QString& path,
+                                                   const QList< int >& columns,
+                                                   DADataOperateOfDataFrameWidget* sourcePage)
+{
+    mDataHandler->exportSelectedDataAsDocument(fmt, path, columns, sourcePage);
 }
 
 /**
@@ -400,10 +427,12 @@ void DAAppController::initialize()
     mTableHandler = new DAAppTableActionHandler(makeActionHandlerDeps(), this);
     mChartHandler = new DAAppChartActionHandler(makeActionHandlerDeps(), this);
     mWorkflowHandler = new DAAppWorkflowActionHandler(makeActionHandlerDeps(), this);
+    mDataHandler = new DAAppDataActionHandler(makeActionHandlerDeps(), this);
     initConnection();
     mTableHandler->initConnections();
     mChartHandler->initConnections();
     mWorkflowHandler->initConnections();
+    mDataHandler->initConnections();
     initScripts();
     // 数据管理树右键菜单：series 节点=列操作菜单（与表头右键共用 action）；
     // 数据集条目=重命名/移除/导出菜单（复用 ribbon 数据标签页 action）

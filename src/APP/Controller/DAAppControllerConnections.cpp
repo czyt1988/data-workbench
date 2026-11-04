@@ -178,15 +178,6 @@ void DAAppController::initConnection()
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionSetting, onActionSettingTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionPluginManager, onActionPluginManagerTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionAbout, onActionAboutTriggered);
-    // Data Category
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionAddData, onActionAddDataTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionRemoveData, onActionRemoveDataTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionRenameData, onActionRenameDataTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionExportData, onActionExportDataTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionExportDataCsv, onActionExportDataAsTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionExportDataExcel, onActionExportDataAsTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionExportDataPickle, onActionExportDataAsTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionExportDataParquet, onActionExportDataAsTriggered);
 
 
     // View Category

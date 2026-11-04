@@ -51,6 +51,7 @@ class DAAppDataManager;
 class DAAppTableActionHandler;
 class DAAppChartActionHandler;
 class DAAppWorkflowActionHandler;
+class DAAppDataActionHandler;
 class DASettingContainerWidget;
 class DADataOperateOfDataFrameWidget;
 class DAAbstractOperateWidget;
@@ -110,6 +111,8 @@ public:
     DAAppController& setAppDataManager(DAAppDataManager* d);
     // 获取app
     AppMainWindow* app() const;
+    // 导入对话框的文件过滤器（由 initScripts 从 Python 侧读取）
+    const QStringList& fileReadFilters() const;
     // 初始化--必须初始化才能生效
     void initialize();
     // 插件加载后调用：推送模型选择 + 预启动 agent（确保工具已注册）
@@ -158,7 +161,18 @@ public:
     static QString makeWindowTitle(DAProjectInterface* proj);
     // 是否应用到所有绘图
     bool isApplyToAllCharts() const;
+public:
+    // 数据导出/复制：转发到数据域分发器（主导出按钮、数据管理树右键与表头右键共用；
+    // 表格域分发器亦经此门面调用，避免分发器之间互相持有）
+    void copySelectedDataAsTable(DA::DATableExporter::Format fmt,
+                                 const QList< int >& columns = QList< int >(),
+                                 DADataOperateOfDataFrameWidget* sourcePage = nullptr);
+    void exportSelectedDataAsDocument(DA::DATableExporter::Format fmt,
+                                      const QString& path = QString(),
+                                      const QList< int >& columns = QList< int >(),
+                                      DADataOperateOfDataFrameWidget* sourcePage = nullptr);
 public Q_SLOTS:
+
     // 保存
     bool save();
     // 另存为
@@ -190,16 +204,6 @@ private Q_SLOTS:
     //===================================================
     // 数据标签 Data Category
     //===================================================
-    // 添加数据
-    void onActionAddDataTriggered();
-    // 移除数据
-    void onActionRemoveDataTriggered();
-    // 重命名数据集（树视图选中项进入编辑）
-    void onActionRenameDataTriggered();
-    // 导出数据（大按钮，format 为空则按保存对话框后缀判定）
-    void onActionExportDataTriggered();
-    // 按指定格式导出（csv/excel/pickle/parquet）
-    void onActionExportDataAsTriggered();
     //===================================================
     // 绘图标签 Chart Category
     //===================================================
@@ -314,45 +318,6 @@ private:
     void initConnection();
     // 初始化脚本信息
     void initScripts();
-    // 初始化Python工作流信号槽
-    // 执行导出：取选中数据集 → 保存对话框 → exportToFile → daInfo/daWarning 反馈
-    // format 非空时直接使用（子菜单路径），为空时由文件后缀判定（大按钮路径）
-    void exportSelectedData(const QString& format);
-public:
-    // 把选中的 dataframe 数据集复制到剪贴板（数据管理树右键「复制为」与表头右键
-    // 「复制选中列为」共用）：fmt 决定目标形态（Tab 文本/Markdown/HTML），经
-    // DATableExporter 构建；超大表先确认（isLargeForCopy 阈值），构建期间进度
-    // 对话框可取消。columns 非空时只复制这些列（表头右键入口），空 = 整表；
-    // sourcePage 非空时列子集取数固定用该页面（表头右键菜单是独立窗口，
-    // 触发时停靠区焦点尚未归还，不能走焦点检查取当前页）
-    void copySelectedDataAsTable(DA::DATableExporter::Format fmt,
-                                 const QList< int >& columns = QList< int >(),
-                                 DADataOperateOfDataFrameWidget* sourcePage = nullptr);
-    // 导出选中数据集为 Markdown/HTML（右键导出子菜单、主导出按钮与表头右键
-    // 「导出选中列」共用）：取数/渲染与复制共用 DATableExporter，增量写入文件；
-    // path 非空时跳过保存对话框（主导出按钮已选好路径）。columns/sourcePage 语义同上
-    void exportSelectedDataAsDocument(DA::DATableExporter::Format fmt,
-                                      const QString& path = QString(),
-                                      const QList< int >& columns = QList< int >(),
-                                      DADataOperateOfDataFrameWidget* sourcePage = nullptr);
-private:
-    // 取要操作的数据集（优先数据管理树选中，回退当前操作数据）与对应表元数据束，
-    // 成功构造 DATableExporter 返回 true（exporter/dataOut 为出参；束可为空=无样式）；
-    // columns 非空时构造列子集导出器（表头右键「按选中列」入口）；
-    // sourcePage 非空时列子集取数固定用该页面（空 = 焦点检查取当前页）
-    bool makeExporterForSelection(std::unique_ptr< DA::DATableExporter >* exporter,
-                                  DA::DAData* dataOut = nullptr,
-                                  const QList< int >& columns = QList< int >(),
-                                  DADataOperateOfDataFrameWidget* sourcePage = nullptr) ;
-    // 表头右键「复制选中列为/导出选中列」信号处理器：page 固定为发送信号表头
-    // 所在页面（菜单窗口抢焦点，不能经焦点检查取当前页），从页面解析选中列
-    // （无选中回退 fallbackColumn），映射格式枚举后走共用复制/导出链路
-    void onHeaderColumnDataCopyRequested(DADataOperateOfDataFrameWidget* page,
-                                          int fallbackColumn,
-                                          DA::DADataHeaderView::ColumnDataFormat format);
-    void onHeaderColumnDataExportRequested(DADataOperateOfDataFrameWidget* page,
-                                           int fallbackColumn,
-                                           DA::DADataHeaderView::ColumnDataFormat format);
     // 根据widget激活对应的context category
     void activateContextCategoryForWidget(QWidget* widget);
     // 激活操作窗口当前的undo栈（焦点切到数据操作/绘图窗口时同步全局undo/redo action状态）
@@ -376,6 +341,7 @@ private:
     DAAppTableActionHandler* mTableHandler { nullptr };  ///< 表格域动作分发器（随控制器销毁）
     DAAppChartActionHandler* mChartHandler { nullptr };  ///< 图表域动作分发器（随控制器销毁）
     DAAppWorkflowActionHandler* mWorkflowHandler { nullptr };  ///< 工作流域动作分发器（随控制器销毁）
+    DAAppDataActionHandler* mDataHandler { nullptr };          ///< 数据域动作分发器（随控制器销毁）
     // 组装分发器依赖（各分发器共用）
     DAAppActionHandlerDeps makeActionHandlerDeps();
 
