@@ -18,6 +18,7 @@
 #include "DAChart3DWidget.h"
 #include "qwt3d_plotitem.h"
 #include "DAAgentLinkDispatcher.h"
+#include "Controller/DAAppActionHandlerDeps.h"
 // Qt
 class QComboBox;
 class QToolBar;
@@ -47,6 +48,7 @@ class DAAppDockingArea;
 class DAAppCommand;
 class DAAppActions;
 class DAAppDataManager;
+class DAAppTableActionHandler;
 class DASettingContainerWidget;
 class DADataOperateOfDataFrameWidget;
 class DAAbstractOperateWidget;
@@ -298,109 +300,12 @@ private Q_SLOTS:
     //===================================================
     // 数据操作的上下文标签 Data Operate Context Category
     //===================================================
-    // 移除选中行
-    void onActionRemoveRowTriggered();
-    // 移除选中列
-    void onActionRemoveColumnTriggered();
-    // 移除单元格内容
-    void onActionRemoveCellTriggered();
-    // 插入一行
-    void onActionInsertRowTriggered();
-    // 在选中位置上面插入一行
-    void onActionInsertRowAboveTriggered();
-    // 在选中位置右边插入一列
-    void onActionInsertColumnRightTriggered();
-    // 在选中位置左边插入一列
-    void onActionInsertColumnLeftTriggered();
-    // dataframe列重命名
-    void onActionRenameColumnsTriggered();
-    // dataframe单列重命名（表头右键）
-    void onActionRenameColumnTriggered();
-    // 复制列名到剪贴板（表头右键）
-    void onActionCopyColumnNameTriggered();
-    // 跳转到最大值（表头右键）
-    void onActionGotoMaxTriggered();
-    // 跳转到最小值（表头右键）
-    void onActionGotoMinTriggered();
-    // 显示列统计信息（表头右键）
-    void onActionShowColumnDescribeTriggered();
     // 统计窗口「转入绘图区」：把当前统计图转成绘图区里的一个新绘图
     void onStatsTransferToFigureRequested();
-    // 快速绘图（Ribbon「列」面板 + 列头右键）：用当前选区打开表内图表浮窗
-    void onActionQuickPlotTriggered();
-    // 表内查找/替换（002 T1.4，Ribbon「编辑」面板；唤出当前数据页浮动条）
-    void onActionFindTriggered();
-    void onActionReplaceTriggered();
-    // 列数据类型改变
-    void onComboxColumnTypesCurrentDTypeChanged(const DA::DAPyDType& dt);
-    void onDataOperateDataFrameWidgetSelectTypeChanged(const QList< int >& column, DA::DAPyDType dt);
-    // 选中列转换为数值
-    void onActionCastToNumTriggered();
-    // 选中列转换为文字
-    void onActionCastToStringTriggered();
-    // 选中列转换为日期
-    void onActionCastToDatetimeTriggered();
-    // 选中列转换为索引
-    void onActionChangeToIndexTriggered();
-    // 表格样式
-    void onTableStyleFillColorChanged(const QColor& c);
-    void onTableStyleFontChanged(const QFont& f);
-    void onTableStyleFontColorChanged(const QColor& c);
-    void onActionClearStyleSelectedTriggered();
-    void onActionClearStyleAllTriggered();
-    // 条件格式（003 T1.5，Ribbon「Table Style」面板；与表体右键菜单共用页面入口）
-    void onActionConditionalFormatTriggered();
-    // 计算列（004 T1.23，Ribbon「Data Tools」面板；与表体右键菜单共用页面入口）
-    void onActionComputedColumnTriggered();
-    // 全部重算计算列（004 T1.23，Ribbon「Data Tools」面板）
-    void onActionRecomputeAllComputedColumnsTriggered();
-    // 分列 / 合并列（004 T1.9，Ribbon「Data Tools」面板；与表体右键菜单共用页面入口）
-    void onActionSplitColumnTriggered();
-    void onActionMergeColumnsTriggered();
-    // 分组聚合（004 T1.22，Ribbon「Data Tools」面板；与表体右键菜单共用页面入口）
-    void onActionGroupByTriggered();
-    // 转置 / 宽转长（004 T1.27，Ribbon「Data Tools」面板；与表体右键菜单共用页面入口）
-    void onActionTransposeTriggered();
-    void onActionMeltTriggered();
-    // 填充（005 T1.24，Ribbon「Edit」面板下拉；与表体右键「填充」子菜单、Ctrl+D 共用页面入口）
-    void onActionFillDownTriggered();
-    void onActionFillUpTriggered();
-    void onActionFillForwardTriggered();
-    void onActionFillBackwardTriggered();
-    void onActionFillSeriesTriggered();
-    // 数据校验（005 T1.25，Ribbon「Data Tools」面板；与表体右键菜单共用页面入口）
-    void onActionValidationRulesTriggered();
-    void onActionRunValidationTriggered();
-    // 单元格批注（005 T1.26，Ribbon「Edit」面板下拉；与表体右键菜单共用页面入口）
-    void onActionNoteTriggered();
-    void onActionDeleteNoteTriggered();
-    void onActionClearNotesTriggered();
-    // 列视图（006 T1.8，Ribbon「View」面板；与列头右键「列」子菜单共用页面入口）
-    void onActionFreezeColumnsTriggered();
-    void onActionHideColumnTriggered();
-    void onActionShowAllColumnsTriggered();
-    void onActionColumnViewDialogTriggered();
-    void onActionFreezeFirstColumnTriggered();
-    void onActionFreezeColumnsPromptTriggered();
-    void onActionUnfreezeColumnsTriggered();
-    // 定位（007 T1.7，Ribbon「View」面板；Ctrl+G 在 DADataTableView 红线5）
-    void onActionGotoCellTriggered();
-    // 排序（Ribbon「Sort」面板；与列头右键排序组共用页面入口）
-    void onActionSortTriggered();           // 打开自定义排序对话框
-    void onActionSortAscendingTriggered();  // 按当前列升序
-    void onActionSortDescendingTriggered(); // 按当前列降序
-    void onActionSortClearTriggered();      // 清除排序（按索引恢复原始行序）
     // 撤销历史面板（005 T1.21，Ribbon「视图」页；入口选 (a) 点击即 raise，与现有交互一致）
     void onActionShowUndoHistoryTriggered();
     // 历史面板调整撤销深度：写回配置（ui.undo-stack-limit）并施加到全部已打开数据页
     void onUndoHistoryLimitChangeRequested(int limit);
-    // 选中区样式反向同步 ribbon 控件
-    void onTableStyleCurrentChanged(const DATableCellStyle& style);
-    // 表格列显示格式
-    void onTableDisplayFormatCategoryChanged(DATableDisplayFormat::Category c);
-    void onActionTableFormatCellsTriggered();
-    // 选中列显示格式反向同步 ribbon 格式下拉框
-    void onTableDisplayFormatCurrentChanged(const DATableDisplayFormat& fmt);
 
     //===================================================
     // 视图标签 View Category
@@ -562,23 +467,12 @@ private:
     void initScripts();
     // 初始化Python工作流信号槽
     void initPyWorkflowConnections();
-    // 为数据管理树注入右键菜单（series 节点=列操作菜单，共用列操作 action；
-    // 数据集条目=重命名/移除/导出菜单，复用 ribbon 数据标签页 action）
-    // 注：DataFrame 列头右键菜单已迁入 DAGui 的 DADataHeaderView（R12），
-    // controller 只保留 columnActionRequested 信号接线（见 onDataOperatePageCreated）
-    void setupDataManagerTreeContextMenu(DADataManagerTreeWidget* w);
-    // 填充共用的列右键菜单项（数据管理树 series 节点右键用）
-    void populateColumnContextMenu(QMenu& menu);
-    // 在 DataFrame 操作窗口中选中指定列（replace 语义，供树右键与列头菜单信号接线共用）
-    void selectColumnInDataFrameWidget(DADataOperateOfDataFrameWidget* w, int col);
-    // 在指定页面重命名列（表头右键直入口）：弹输入框 → w->renameColumn；
-    // 与 onActionRenameColumnTriggered 的差异：不经焦点检查、不依赖选区
-    void renameColumnOnPage(DADataOperateOfDataFrameWidget* w, int col);
     // 显示统计绘图引导对话框并预选指定类型
     void showStatsChartGuide(DA::DAChartTypes type);
     // 执行导出：取选中数据集 → 保存对话框 → exportToFile → daInfo/daWarning 反馈
     // format 非空时直接使用（子菜单路径），为空时由文件后缀判定（大按钮路径）
     void exportSelectedData(const QString& format);
+public:
     // 把选中的 dataframe 数据集复制到剪贴板（数据管理树右键「复制为」与表头右键
     // 「复制选中列为」共用）：fmt 决定目标形态（Tab 文本/Markdown/HTML），经
     // DATableExporter 构建；超大表先确认（isLargeForCopy 阈值），构建期间进度
@@ -595,6 +489,7 @@ private:
                                       const QString& path = QString(),
                                       const QList< int >& columns = QList< int >(),
                                       DADataOperateOfDataFrameWidget* sourcePage = nullptr);
+private:
     // 取要操作的数据集（优先数据管理树选中，回退当前操作数据）与对应表元数据束，
     // 成功构造 DATableExporter 返回 true（exporter/dataOut 为出参；束可为空=无样式）；
     // columns 非空时构造列子集导出器（表头右键「按选中列」入口）；
@@ -616,10 +511,6 @@ private:
     bool ensureFigureChart(DA::DAFigureWidget*& fig, DA::DAChartWidget*& chart);
     // 根据widget激活对应的context category
     void activateContextCategoryForWidget(QWidget* widget);
-    // 刷新「快速绘图」动作的可用状态（有选区才可点）
-    void updateQuickPlotActionState();
-    // 刷新「排序」动作（面板大按钮与下拉各项）的可用状态（有可编辑表格页才可点）
-    void updateSortActionState();
     // 激活操作窗口当前的undo栈（焦点切到数据操作/绘图窗口时同步全局undo/redo action状态）
     void activateUndoStackForWidget(DAAbstractOperateWidget* w);
     // 注册 Agent 聊天窗口本地跳转链接处理器（da-figure:/da-data: 等协议，见 DAAgentLinkDispatcher）
@@ -638,6 +529,9 @@ private:
     DAAppCommand* mCommand { nullptr };
     DAAppActions* mActions { nullptr };
     DAAppDataManager* mDatas { nullptr };
+    DAAppTableActionHandler* mTableHandler { nullptr };  ///< 表格域动作分发器（随控制器销毁）
+    // 组装分发器依赖（各分发器共用）
+    DAAppActionHandlerDeps makeActionHandlerDeps();
 
     QStringList mFileReadFilters;  ///< 包含支持的文件[Images (*.png *.xpm *.jpg)] [Text files (*.txt)]
     //
@@ -646,7 +540,6 @@ private:
     DAAppSettingDialog* mSettingDialog { nullptr };         ///< 设置窗口
     DAAppConfig* mConfig { nullptr };                                   ///< 设置类
     DADialogStatsChartGuide* mStatsChartGuideDlg { nullptr };  ///< 统计绘图引导对话框
-    DADialogTableDisplayFormat* mDialogTableDisplayFormat { nullptr };  ///< 表格显示格式对话框（堆分配复用）
     DAAgentLinkDispatcher mAgentLinkDispatcher;  ///< Agent 本地跳转链接分发器（da-<kind>: 协议注册表）
 };
 }

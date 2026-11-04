@@ -1,4 +1,5 @@
 #include "DAAppController.h"
+#include "DAAppTableActionHandler.h"
 // Qt
 #include <QDebug>
 #include <QFileDialog>
@@ -184,12 +185,18 @@ void DAAppController::onDataOperatePageCreated(DADataOperatePageWidget* page)
         DADataOperateOfDataFrameWidget* w = static_cast< DADataOperateOfDataFrameWidget* >(page);
         connect(w,
                 &DADataOperateOfDataFrameWidget::selectTypeChanged,
-                this,
-                &DAAppController::onDataOperateDataFrameWidgetSelectTypeChanged);
+                mTableHandler,
+                &DAAppTableActionHandler::onDataOperateDataFrameWidgetSelectTypeChanged);
         // 选中变化时反向同步 ribbon 样式控件
-        connect(w, &DADataOperateOfDataFrameWidget::currentStyleChanged, this, &DAAppController::onTableStyleCurrentChanged);
+        connect(w,
+                &DADataOperateOfDataFrameWidget::currentStyleChanged,
+                mTableHandler,
+                &DAAppTableActionHandler::onTableStyleCurrentChanged);
         // 选中列变化时反向同步 ribbon 显示格式下拉框
-        connect(w, &DADataOperateOfDataFrameWidget::currentDisplayFormatChanged, this, &DAAppController::onTableDisplayFormatCurrentChanged);
+        connect(w,
+                &DADataOperateOfDataFrameWidget::currentDisplayFormatChanged,
+                mTableHandler,
+                &DAAppTableActionHandler::onTableDisplayFormatCurrentChanged);
         // 替换生效后置工程未保存标记（002 T1.4；含超阈值不可撤销降级路径，与剪切/粘贴同口径）
         connect(w, &DADataOperateOfDataFrameWidget::replaceApplied, this, [ this ](int changedCells) {
             if (changedCells > 0) {
@@ -229,10 +236,10 @@ void DAAppController::onDataOperatePageCreated(DADataOperatePageWidget* page)
         });
         // 选区变化时刷新「快速绘图」动作的可用状态（无选区置灰）
         connect(w, &DADataOperateOfDataFrameWidget::tableSelectionChanged, this, [ this ]() {
-            updateQuickPlotActionState();
+            mTableHandler->updateQuickPlotActionState();
         });
-        updateQuickPlotActionState();
-        updateSortActionState();
+        mTableHandler->updateQuickPlotActionState();
+        mTableHandler->updateSortActionState();
         // 新数据集产出（004 T1.22 分组聚合等）：置脏 + 抬起数据操作区 + 激活新页面
         //（照 DataframeOperateWorker::createPivotTable 的产出流程；注册已由页面走 addData_ 完成）
         connect(w, &DADataOperateOfDataFrameWidget::newDataCreated, this, [ this ](const DAData& newData) {
@@ -333,7 +340,7 @@ void DAAppController::onDataOperatePageCreated(DADataOperatePageWidget* page)
                             }
                             // 重命名/删除列：直传 (页面, 列号)，不依赖焦点与选区
                             if (action == ColumnAction::RenameColumn) {
-                                renameColumnOnPage(w, col);
+                                mTableHandler->renameColumnOnPage(w, col);
                                 return;
                             }
                             if (action == ColumnAction::RemoveColumn) {
@@ -347,25 +354,25 @@ void DAAppController::onDataOperatePageCreated(DADataOperatePageWidget* page)
                             if (action == ColumnAction::QuickPlot || action == ColumnAction::ShowColumnDescribe) {
                                 const QList< int > selected = w->getSelectedDataframeCoumns();
                                 if (!selected.contains(col)) {
-                                    selectColumnInDataFrameWidget(w, col);
+                                    mTableHandler->selectColumnInDataFrameWidget(w, col);
                                 }
                                 if (action == ColumnAction::QuickPlot) {
                                     w->showQuickPlot();
                                 } else {
-                                    onActionShowColumnDescribeTriggered();
+                                    mTableHandler->onActionShowColumnDescribeTriggered();
                                 }
                                 return;
                             }
-                            selectColumnInDataFrameWidget(w, col);
+                            mTableHandler->selectColumnInDataFrameWidget(w, col);
                             switch (action) {
                             case ColumnAction::CopyColumnName:
-                                onActionCopyColumnNameTriggered();
+                                mTableHandler->onActionCopyColumnNameTriggered();
                                 break;
                             case ColumnAction::GotoMax:
-                                onActionGotoMaxTriggered();
+                                mTableHandler->onActionGotoMaxTriggered();
                                 break;
                             case ColumnAction::GotoMin:
-                                onActionGotoMinTriggered();
+                                mTableHandler->onActionGotoMinTriggered();
                                 break;
                             // 计算列三项（004 T1.23）：页面方法按列位置解析列名后执行
                             case ColumnAction::EditComputedFormula:

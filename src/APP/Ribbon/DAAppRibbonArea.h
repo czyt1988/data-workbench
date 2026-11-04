@@ -86,6 +86,7 @@ class DAAppRibbonArea : public DARibbonAreaInterface
     friend class AppMainWindow;
     friend class DAAppUI;
     friend class DAAppController;
+    friend class DAAppTableActionHandler;
 
 public:
     /**

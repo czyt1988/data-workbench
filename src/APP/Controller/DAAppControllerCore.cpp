@@ -1,4 +1,5 @@
 #include "DAAppController.h"
+#include "DAAppTableActionHandler.h"
 // Qt
 #include <QDebug>
 #include <QFileDialog>
@@ -259,6 +260,26 @@ AppMainWindow* DAAppController::app() const
 }
 
 /**
+ * @brief 组装动作分发器共享的应用上下文依赖
+ *
+ * 分发器只通过这份依赖拿到协作者，不反向持有其他分发器，
+ * 依赖图保持以控制器为中心的星形。
+ */
+DAAppActionHandlerDeps DAAppController::makeActionHandlerDeps()
+{
+    DAAppActionHandlerDeps d;
+    d.controller = this;
+    d.actions    = mActions;
+    d.ribbon     = mRibbon;
+    d.dock       = mDock;
+    d.command    = mCommand;
+    d.datas      = mDatas;
+    d.config     = mConfig;
+    d.mainWindow = mMainWindow;
+    return d;
+}
+
+/**
  * @brief 控制层初始化
  */
 void DAAppController::initialize()
@@ -373,14 +394,17 @@ void DAAppController::initialize()
     }
     // Agent 本地跳转链接处理器注册（da-figure:/da-data: 等协议）
     setupAgentLinkHandlers();
+    // 动作分发器：按业务域装配，控制器只做装配与跨域协调
+    mTableHandler = new DAAppTableActionHandler(makeActionHandlerDeps(), this);
     initConnection();
+    mTableHandler->initConnections();
     initScripts();
     initPyWorkflowConnections();
     // 数据管理树右键菜单：series 节点=列操作菜单（与表头右键共用 action）；
     // 数据集条目=重命名/移除/导出菜单（复用 ribbon 数据标签页 action）
     if (DADataManageWidget* dmw = getDataManageWidget()) {
         if (DADataManagerTreeWidget* tree = dmw->getTreeWidget()) {
-            setupDataManagerTreeContextMenu(tree);
+            mTableHandler->setupDataManagerTreeContextMenu(tree);
         }
     }
 
@@ -715,9 +739,11 @@ void DAAppController::onActionSettingTriggered()
 void DAAppController::activateContextCategoryForWidget(QWidget* widget)
 {
     // 当前窗口切换后同步「快速绘图」按钮可用状态（无数据表页/无选区时置灰）
-    updateQuickPlotActionState();
-    // 同步「排序」面板可用状态（无表格页/只读源时置灰）
-    updateSortActionState();
+    if (mTableHandler) {
+        mTableHandler->updateQuickPlotActionState();
+        // 同步「排序」面板可用状态（无表格页/只读源时置灰）
+        mTableHandler->updateSortActionState();
+    }
     if (nullptr == widget) {
         mRibbon->hideContextCategory(DAAppRibbonArea::AllContextCategory);
         return;
