@@ -50,6 +50,7 @@ class DAAppActions;
 class DAAppDataManager;
 class DAAppTableActionHandler;
 class DAAppChartActionHandler;
+class DAAppWorkflowActionHandler;
 class DASettingContainerWidget;
 class DADataOperateOfDataFrameWidget;
 class DAAbstractOperateWidget;
@@ -235,8 +236,6 @@ private Q_SLOTS:
     void onActionShowMessageLogViewTriggered();
     // 显示设置区域
     void onActionSettingWidgetTriggered();
-    // 显示标记线 - 此action有个menu，menu的action选中会设置当前action的图标，具体实现放在DAAppRibbonArea::buildContextCategoryWorkflowView函数中
-    void onActionWorkflowViewMarkerTriggered(bool on);
     // 显示右侧边栏
     void onActionShowRightSideBarTriggered(bool on);
     // 显示左侧边栏
@@ -245,14 +244,7 @@ private Q_SLOTS:
     // workflow上下文
     //===================================================
 
-    void onActionNewWorkflowTriggered();
 
-    // 绘制矩形
-    void onActionStartDrawRectTriggered(bool on);
-    // 绘制文本框
-    void onActionStartDrawTextTriggered(bool on);
-    // 允许连线
-    void onActionWorkflowLinkEnableTriggered(bool on);
 
     //===================================================
     // 主页剪贴板（按焦点路由：工作流→inner action；表格→复制/粘贴；图表→复制绘图）
@@ -263,35 +255,7 @@ private Q_SLOTS:
     void onActionDeleteTriggered();
     void onActionSelectAllTriggered();
 
-    // 当前工作流的字体变更
-    void onCurrentWorkflowFontChanged(const QFont& f);
-    void onCurrentWorkflowFontColorChanged(const QColor& c);
-    // 图元的背景和框线变更
-    void onCurrentWorkflowShapeBackgroundBrushChanged(const QBrush& b);
-    void onCurrentWorkflowShapeBorderPenChanged(const QPen& p);
-    // 添加背景图
-    void onActionAddBackgroundPixmapTriggered();
-    // 锁定背景图
-    void onActionLockBackgroundPixmapTriggered(bool on);
-    // 跟随背景图
-    void onActionEnableItemMoveWithBackgroundTriggered(bool on);
-    // 允许移动图元时，其它和此图元链接起来的图元跟随移动
-    void onActionWorkflowEnableItemLinkageMoveTriggered(bool on);
-    // 分组
-    void onActionItemGroupingTriggered();
-    // 取消分组
-    void onActionItemUngroupTriggered();
 
-    /////////---视图------
-    // 导出png
-    void onActionExportWorkflowScenePNGTriggered();
-    // 锁定视图
-    void onActionWorkflowViewReadOnlyTriggered(bool on);
-    /////////---运行------
-    // 运行
-    void onActionRunCurrentWorkflowTriggered();
-    // 终止
-    void onActionTerminateCurrentWorkflowTriggered();
     //===================================================
     // 其他
     //===================================================
@@ -306,12 +270,6 @@ private Q_SLOTS:
     //===================================================
     // DAPyWorkFlowOperateWidget的槽
     //===================================================
-    void onWorkflowSceneSelectionItemChanged(QGraphicsItem* lastSelectItem);
-    void onWorkflowStartExecute(DA::DAPyWorkFlowEditWidget* wfw);
-    void onWorkflowFinished(DA::DAPyWorkFlowEditWidget* wfw, bool success);
-    void onWorkflowSceneitemsAdded(DA::DAGraphicsScene* sc, const QList< QGraphicsItem* >& its);
-    void onWorkflowSceneitemsRemoved(DA::DAGraphicsScene* sc, const QList< QGraphicsItem* >& its);
-    void onCurrentWorkflowWidgetChanged(DA::DAPyWorkFlowEditWidget* wfw);
     //===================================================
     // DAChartOperateWidget
     //===================================================
@@ -343,10 +301,6 @@ private Q_SLOTS:
     //===================================================
     // DAPyWorkFlowGraphicsScene
     //===================================================
-    // 鼠标动作结束
-    void onWorkFlowGraphicsSceneActionDeactive(DA::DAAbstractGraphicsSceneAction* scAction);
-    // 工作流页面创建槽
-    void onWorkflowCreated(DA::DAPyWorkFlowEditWidget* wfw);
 
     //===================================================
     //   其它
@@ -361,7 +315,6 @@ private:
     // 初始化脚本信息
     void initScripts();
     // 初始化Python工作流信号槽
-    void initPyWorkflowConnections();
     // 执行导出：取选中数据集 → 保存对话框 → exportToFile → daInfo/daWarning 反馈
     // format 非空时直接使用（子菜单路径），为空时由文件后缀判定（大按钮路径）
     void exportSelectedData(const QString& format);
@@ -422,6 +375,7 @@ private:
     DAAppDataManager* mDatas { nullptr };
     DAAppTableActionHandler* mTableHandler { nullptr };  ///< 表格域动作分发器（随控制器销毁）
     DAAppChartActionHandler* mChartHandler { nullptr };  ///< 图表域动作分发器（随控制器销毁）
+    DAAppWorkflowActionHandler* mWorkflowHandler { nullptr };  ///< 工作流域动作分发器（随控制器销毁）
     // 组装分发器依赖（各分发器共用）
     DAAppActionHandlerDeps makeActionHandlerDeps();
 

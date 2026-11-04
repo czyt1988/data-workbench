@@ -203,28 +203,6 @@ void DAAppController::initConnection()
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowLeftSideBar, onActionShowLeftSideBarTriggered);
     // Markdown 查看器（懒创建 dock：已创建时 raise；未打开过文件时弹文件选择框）
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowMarkdownView, onActionShowMarkdownViewTriggered);
-    // workflow view 工作流视图
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowViewReadOnly, onActionWorkflowViewReadOnlyTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowViewMarker, onActionWorkflowViewMarkerTriggered);
-    // workflow edit 工作流编辑
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowNew, onActionNewWorkflowTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowEnableItemLinkageMove,
-                                onActionWorkflowEnableItemLinkageMoveTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowLinkEnable, onActionWorkflowLinkEnableTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionItemGrouping, onActionItemGroupingTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionItemUngroup, onActionItemUngroupTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowRun, onActionRunCurrentWorkflowTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowTerminate, onActionTerminateCurrentWorkflowTriggered);
-    // workflow edit 工作流编辑/data edit 绘图编辑
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowStartDrawRect, onActionStartDrawRectTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowStartDrawText, onActionStartDrawTextTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowAddBackgroundPixmap, onActionAddBackgroundPixmapTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowLockBackgroundPixmap, onActionLockBackgroundPixmapTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionWorkflowEnableItemMoveWithBackground,
-                                onActionEnableItemMoveWithBackgroundTriggered);
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionExportWorkflowSceneToPNG, onActionExportWorkflowScenePNGTriggered);
-    // 导出图片大按钮（默认 action）绑定同一个 PNG 导出槽，避免点击无反应
-    DAAPPCONTROLLER_ACTION_BIND(mActions->actionExportWorkflowSceneToImage, onActionExportWorkflowScenePNGTriggered);
     //===================================================
     // 主页剪贴板（按焦点路由）
     //===================================================
@@ -250,16 +228,8 @@ void DAAppController::initConnection()
     }
 
     //===================================================
-    // workflow窗口字体相关信号槽
+    // workflow窗口字体/画笔信号由工作流域分发器接线
     //===================================================
-
-    connect(mRibbon, &DAAppRibbonArea::selectedWorkflowItemFont, this, &DAAppController::onCurrentWorkflowFontChanged);
-    connect(mRibbon, &DAAppRibbonArea::selectedWorkflowItemFontColor, this, &DAAppController::onCurrentWorkflowFontColorChanged);
-    connect(mRibbon,
-            &DAAppRibbonArea::selectedWorkflowItemBrush,
-            this,
-            &DAAppController::onCurrentWorkflowShapeBackgroundBrushChanged);
-    connect(mRibbon, &DAAppRibbonArea::selectedWorkflowItemPen, this, &DAAppController::onCurrentWorkflowShapeBorderPenChanged);
 
     //===================================================
     // name
@@ -306,45 +276,9 @@ void DAAppController::initConnection()
     }
     // DAChartOperateWidget 的 figureCreated/currentFigureChanged 与绘图项创建信号
     // 由图表域分发器接线
-    //
-    DAPyWorkFlowOperateWidget* workflowOpt = mDock->getWorkFlowOperateWidget();
-    // 鼠标动作完成的触发
-    connect(workflowOpt,
-            &DAPyWorkFlowOperateWidget::sceneActionDeactived,
-            this,
-            &DAAppController::onWorkFlowGraphicsSceneActionDeactive);
-    connect(workflowOpt,
-            &DAPyWorkFlowOperateWidget::selectionItemChanged,
-            this,
-            &DAAppController::onWorkflowSceneSelectionItemChanged);
-    connect(workflowOpt,
-            &DAPyWorkFlowOperateWidget::currentWorkFlowWidgetChanged,
-            this,
-            &DAAppController::onCurrentWorkflowWidgetChanged);
-    connect(workflowOpt, &DAPyWorkFlowOperateWidget::workflowStartExecute, this, &DAAppController::onWorkflowStartExecute);
-    connect(workflowOpt, &DAPyWorkFlowOperateWidget::workflowFinished, this, &DAAppController::onWorkflowFinished);
-    connect(workflowOpt, &DAPyWorkFlowOperateWidget::itemsAdded, this, &DAAppController::onWorkflowSceneitemsAdded);
-    connect(workflowOpt, &DAPyWorkFlowOperateWidget::itemsRemoved, this, &DAAppController::onWorkflowSceneitemsRemoved);
-    connect(mActions->actionWorkflowShowGrid,
-            &QAction::triggered,
-            workflowOpt,
-            &DAPyWorkFlowOperateWidget::setCurrentWorkflowShowGrid);
-    connect(workflowOpt, &DAPyWorkFlowOperateWidget::workflowCreated, this, &DAAppController::onWorkflowCreated);
+    // 工作流操作窗口的场景、运行与「显示网格」信号由工作流域分发器接线
 
     connect(mActions->recentFilesManager, &DARecentFilesManager::fileSelected, this, &DAAppController::onRecentFileSelected);
-}
-
-/**
- * @brief 初始化Python工作流信号槽连接
- *
- * 此函数在initialize()中调用，用于设置Python工作流相关的
- * 信号槽连接。当前为占位实现，待DAPyWorkFlowScene完整集成后添加具体连接逻辑。
- */
-void DAAppController::initPyWorkflowConnections()
-{
-    // TODO: 在DAPyWorkFlowScene编辑器集成后完善信号槽连接
-    // 当前Action的信号槽已在initConnection中通过DAAPPCONTROLLER_ACTION_BIND宏绑定
-    qDebug() << "Python workflow connections initialized (placeholder)";
 }
 
 }  // end DA

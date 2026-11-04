@@ -1,6 +1,7 @@
 #include "DAAppController.h"
 #include "DAAppTableActionHandler.h"
 #include "DAAppChartActionHandler.h"
+#include "DAAppWorkflowActionHandler.h"
 // Qt
 #include <QDebug>
 #include <QFileDialog>
@@ -398,11 +399,12 @@ void DAAppController::initialize()
     // 动作分发器：按业务域装配，控制器只做装配与跨域协调
     mTableHandler = new DAAppTableActionHandler(makeActionHandlerDeps(), this);
     mChartHandler = new DAAppChartActionHandler(makeActionHandlerDeps(), this);
+    mWorkflowHandler = new DAAppWorkflowActionHandler(makeActionHandlerDeps(), this);
     initConnection();
     mTableHandler->initConnections();
     mChartHandler->initConnections();
+    mWorkflowHandler->initConnections();
     initScripts();
-    initPyWorkflowConnections();
     // 数据管理树右键菜单：series 节点=列操作菜单（与表头右键共用 action）；
     // 数据集条目=重命名/移除/导出菜单（复用 ribbon 数据标签页 action）
     if (DADataManageWidget* dmw = getDataManageWidget()) {
