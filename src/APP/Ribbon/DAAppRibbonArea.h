@@ -189,11 +189,11 @@ private:
     //===================================================
     // 构建表格上下文标签，并把三张页面分派给下面的函数
     void buildContextCategoryTable(SARibbonBar* ribbon);
-    // 构建「表格操作」页：坐标轴、列、类型、格式、排序、编辑、视图
+    // 构建「表格操作」页：行与列、列、类型与格式、编辑、视图
     void buildContextCategoryTableOperate(SARibbonContextCategory* contextTable, const Menus& menus);
-    // 构建「数据操作」页：计算列、数据变换（插件加载后会向本页追加面板）
-    void buildContextCategoryTableDataOperate(SARibbonContextCategory* contextTable);
-    // 构建「表格样式」页：底色、字体、清除、条件格式
+    // 构建「数据操作」页：排序与筛选、计算列、数据变换、数据校验（插件加载后会向本页追加面板）
+    void buildContextCategoryTableDataOperate(SARibbonContextCategory* contextTable, const Menus& menus);
+    // 构建「表格样式」页：字体、底色、条件格式、清除
     void buildContextCategoryTableStyle(SARibbonContextCategory* contextTable);
     //===================================================
     // Context - 工作流（objectName: da-ribbon-category-workflow*）
@@ -331,24 +331,24 @@ private:
     //----------------------------------------------------
     SARibbonContextCategory* mContextDataFrame { nullptr };               ///< 对应dataframe的上下文
     SARibbonCategory* mCategoryDataframeTableOperate { nullptr };         ///< 表格操作category
-    SARibbonPanel* mPannelDataframeOperateAxes { nullptr };               ///< 坐标轴（插入/删除行与列、改列名、列转索引）
+    SARibbonPanel* mPannelDataframeOperateAxes { nullptr };               ///< 行与列（插入/删除行与列、列名管理、列转索引）
     SARibbonPanel* mPannelDataframeOperateColumn { nullptr };             ///< 列级操作（五件套，与表头右键共用）
-    SARibbonPanel* mPannelDataframeOperateDType { nullptr };              ///< 数据类型的编辑
+    SARibbonPanel* mPannelDataframeOperateDType { nullptr };              ///< 类型与格式（列类型 + 显示格式）
     SARibbonLineWidgetContainer* mComboxColumnTypesContainer { nullptr };  ///< 列类型选择器的container
     DAPyDTypeComboBox* mComboxColumnTypes { nullptr };                     ///< 列类型选择器（Controller 连接其信号）
     SARibbonButtonGroupWidget* mCastActionsButtonGroup { nullptr };        ///< 管理强制转换的action的工具栏
-    // 显示格式 panel
-    SARibbonPanel* mPannelDataframeOperateFormat { nullptr };                ///< 显示格式面板
+    // 显示格式（已并入「类型与格式」面板，不再单独建面板）
     SARibbonLineWidgetContainer* mComboxDisplayFormatContainer { nullptr };  ///< 显示格式选择器container
     DATableDisplayFormatComboBox* mComboxDisplayFormat { nullptr };          ///< 列显示格式选择器（Controller 连接其信号）
-    // 编辑 panel（002 T1.4：查找/替换；005 填充也进此面板）
+    // 编辑 panel（002 T1.4：查找/替换；005 填充也进此面板；清空单元格也在此）
     SARibbonPanel* mPannelDataframeOperateEdit { nullptr };  ///< 编辑面板
     SARibbonPanel* mPannelDataframeOperateView { nullptr };  ///< 视图面板（006 T1.8：冻结/隐藏/显示所有列/列视图）
-    SARibbonPanel* mPannelDataframeOperateSort { nullptr };  ///< 排序面板（排序大按钮 + 清除排序）
-    // 数据操作 category（核心数据加工入口；插件的数据清洗/过滤/统计面板在加载时追加到本页）
-    SARibbonCategory* mCategoryDataframeDataOperate { nullptr };      ///< 数据操作category
-    SARibbonPanel* mPannelDataframeDataOperateComputed { nullptr };   ///< 计算列面板（计算列/全部重算）
-    SARibbonPanel* mPannelDataframeDataOperateTransform { nullptr };  ///< 数据变换面板（分列/合列/分组/转置/melt/校验）
+    // 数据操作 category（核心数据加工入口；插件的数据清洗/统计面板在加载时追加到本页）
+    SARibbonCategory* mCategoryDataframeDataOperate { nullptr };         ///< 数据操作category
+    SARibbonPanel* mPannelDataframeDataOperateSortFilter { nullptr };    ///< 排序与筛选面板（插件的数据过滤动作也挂此面板）
+    SARibbonPanel* mPannelDataframeDataOperateComputed { nullptr };      ///< 计算列面板（计算列/全部重算）
+    SARibbonPanel* mPannelDataframeDataOperateTransform { nullptr };     ///< 数据变换面板（分列/合列/分组/转置/melt）
+    SARibbonPanel* mPannelDataframeDataOperateValidation { nullptr };    ///< 数据校验面板（校验规则/执行校验）
     // 表格样式 category
     SARibbonCategory* mCategoryDataframeStyle { nullptr };        ///< dataframe表格样式category
     SARibbonPanel* mPannelDataframeStyleFill { nullptr };         ///< 底色面板

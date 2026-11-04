@@ -55,10 +55,9 @@ public:
     //===================================================
     // 数据操作 category（Dataframe 上下文标签内）
     //===================================================
-    // 数据清洗 panel 拆分为「缺失值」「异常与重复」两个面板
-    SARibbonPanel* panelDataCleanerMissing { nullptr };
-    SARibbonPanel* panelDataCleanerOutliers { nullptr };
-    // 数据清洗 panel
+    // 数据清洗 panel：缺失值 + 异常与重复合并在一个面板，压缩占用宽度
+    SARibbonPanel* panelDataCleaner { nullptr };
+    // 数据清洗 action
     QAction* actionDataFrameDropNone { nullptr };              ///< 删除Nan值
     QAction* actionDropDuplicates { nullptr };                 ///< 重复值处理
     QAction* actionDataFrameFillNone { nullptr };              ///< 填充缺失值
@@ -66,8 +65,7 @@ public:
     QAction* actionDataFrameRemoveOutlierIQR { nullptr };      ///< 基于IQR方法移除异常值
     QAction* actionDataFrameRemoveOutliersZScore { nullptr };  ///< 基于Z-score替换异常值
     QAction* actionDataFrameTransformSkewedData { nullptr };   ///< 转换偏态数值数据以改善分布
-    // Data Filtering Panel 数据过滤panel
-    SARibbonPanel* pannelDataFiltering { nullptr };
+    // 数据过滤：不再自建面板，动作挂进核心创建的「排序与筛选」面板（筛选与排序同组）
     QAction* actionDataFrameQueryDatas { nullptr };        ///< 列数据过滤
     QAction* actionDataFrameDataFilterColumn { nullptr };  ///< 过滤范围外的数据
     // 排序/检索入口已按 002 计划收口移除（内核 DADataOperateOfDataFrameWidget 表头点击排序 +

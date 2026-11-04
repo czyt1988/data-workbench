@@ -3166,6 +3166,14 @@
         <source>Jump to a row / index label / column</source>
         <translation>Jump to a row / index label / column</translation>
     </message>
+    <message>
+        <source>Clear Cells</source>
+        <translation>Clear Cells</translation>
+    </message>
+    <message>
+        <source>Set the selected cells to empty (nan)</source>
+        <translation>Set the selected cells to empty (nan)</translation>
+    </message>
 </context>
 <context>
     <name>DA::DAAppApplicationWidget</name>
@@ -4742,6 +4750,22 @@
         <location line="+324"/>
         <source>Data Transform</source>
         <translation>Data Transform</translation>
+    </message>
+    <message>
+        <source>Rows &amp; Columns</source>
+        <translation>Rows &amp; Columns</translation>
+    </message>
+    <message>
+        <source>Type &amp; Format</source>
+        <translation>Type &amp; Format</translation>
+    </message>
+    <message>
+        <source>Sort &amp; Filter</source>
+        <translation>Sort &amp; Filter</translation>
+    </message>
+    <message>
+        <source>Data Validation</source>
+        <translation>Data Validation</translation>
     </message>
 </context>
 <context>
@@ -18531,6 +18555,10 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <location line="+1"/>
         <source>Create Pivot Table</source>
         <translation>Create Pivot Table</translation>
+    </message>
+    <message>
+        <source>Missing &amp; Outliers</source>
+        <translation>Missing &amp; Outliers</translation>
     </message>
 </context>
 <context>

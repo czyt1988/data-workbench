@@ -92,21 +92,21 @@ void DataAnalysisUI::finalize()
     removeActionFromPanel(panelDataOperate, actionExportIndividualData);
     removeActionFromPanel(panelDataOperate, actionExportMultipleData);
     removeActionFromPanel(panelDataOperate, actionExportToOneExcel);
-    // 数据操作 category 中插件自建的 panel
+    // 数据操作 category 中插件自建的 panel，以及插件挂进核心「排序与筛选」面板的过滤动作
     SARibbonCategory* dataframeDataOperateCategory = nullptr;
+    SARibbonPanel* panelSortFilter                 = nullptr;
     if (mUi && mUi->getRibbonArea()) {
         dataframeDataOperateCategory = mUi->getRibbonArea()->getCategoryByObjectName(
             QString::fromUtf8(DA::UiNames::Ribbon::DataFrameDataOperateCategory));
+        panelSortFilter = mUi->getRibbonArea()->getPanelByObjectName(
+            QString::fromUtf8(DA::UiNames::Ribbon::DataFrameDataOperateSortFilterPanel));
     }
+    // 过滤动作挂在核心面板上，卸载时只摘按钮，不删宿主面板
+    removeActionFromPanel(panelSortFilter, actionDataFrameQueryDatas);
+    removeActionFromPanel(panelSortFilter, actionDataFrameDataFilterColumn);
     if (dataframeDataOperateCategory) {
-        if (panelDataCleanerMissing) {
-            dataframeDataOperateCategory->removePanel(panelDataCleanerMissing);
-        }
-        if (panelDataCleanerOutliers) {
-            dataframeDataOperateCategory->removePanel(panelDataCleanerOutliers);
-        }
-        if (pannelDataFiltering) {
-            dataframeDataOperateCategory->removePanel(pannelDataFiltering);
+        if (panelDataCleaner) {
+            dataframeDataOperateCategory->removePanel(panelDataCleaner);
         }
         if (panelDataStatistic) {
             dataframeDataOperateCategory->removePanel(panelDataStatistic);
@@ -134,8 +134,7 @@ void DataAnalysisUI::finalize()
     actionExportIndividualData       = nullptr;
     actionExportMultipleData         = nullptr;
     actionExportToOneExcel           = nullptr;
-    panelDataCleanerMissing        = nullptr;
-    panelDataCleanerOutliers       = nullptr;
+    panelDataCleaner                 = nullptr;
     actionDataFrameDropNone          = nullptr;
     actionDropDuplicates             = nullptr;
     actionDataFrameFillNone          = nullptr;
@@ -143,7 +142,6 @@ void DataAnalysisUI::finalize()
     actionDataFrameRemoveOutlierIQR  = nullptr;
     actionDataFrameRemoveOutliersZScore = nullptr;
     actionDataFrameTransformSkewedData  = nullptr;
-    pannelDataFiltering              = nullptr;
     actionDataFrameQueryDatas        = nullptr;
     actionDataFrameDataFilterColumn  = nullptr;
     panelDataStatistic               = nullptr;
@@ -179,15 +177,10 @@ void DataAnalysisUI::buildDataCategory()
         QString::fromUtf8(DA::UiNames::Ribbon::DataFrameDataOperateCategory));
     if (dataframeDataOperateCategory) {
         //----------------------------------------------------
-        // 缺失值 panel
+        // 数据清洗 panel（缺失值 + 异常与重复合并，减少一个面板占位）
         //----------------------------------------------------
-        panelDataCleanerMissing = dataframeDataOperateCategory->addPanel(tr("Missing Values"));  // cn:缺失值
-        panelDataCleanerMissing->setObjectName(QStringLiteral("da-pannel-dataframe.data-operate.clean-missing"));
-        //----------------------------------------------------
-        // 异常与重复 panel
-        //----------------------------------------------------
-        panelDataCleanerOutliers = dataframeDataOperateCategory->addPanel(tr("Outliers & Duplicates"));  // cn:异常与重复
-        panelDataCleanerOutliers->setObjectName(QStringLiteral("da-pannel-dataframe.data-operate.clean-outlier"));
+        panelDataCleaner = dataframeDataOperateCategory->addPanel(tr("Missing & Outliers"));  // cn:缺失与异常
+        panelDataCleaner->setObjectName(QStringLiteral("da-pannel-dataframe.data-operate.clean"));
         // 删除Nan值
         actionDataFrameDropNone =
             mActions->createAction("actionDataFrameDropNone", ":/DataAnalysisPluginIcon/icon/dataframe-drop-none.svg");
@@ -209,25 +202,29 @@ void DataAnalysisUI::buildDataCategory()
         // 转换偏态数值数据以改善分布
         actionDataFrameTransformSkewedData =
             mActions->createAction("actionDataFrameTransformSkewedData", ":/DataAnalysisPluginIcon/icon/dataframe-clip-outlier.svg");
-        panelDataCleanerMissing->addLargeAction(actionDataFrameDropNone);
-        panelDataCleanerMissing->addLargeAction(actionDataFrameFillNone);
-        panelDataCleanerMissing->addLargeAction(actionDataFrameFillInterpolate);
-        panelDataCleanerOutliers->addLargeAction(actionDropDuplicates);
-        panelDataCleanerOutliers->addLargeAction(actionDataFrameRemoveOutlierIQR);
-        panelDataCleanerOutliers->addLargeAction(actionDataFrameRemoveOutliersZScore);
-        panelDataCleanerOutliers->addLargeAction(actionDataFrameTransformSkewedData);
+        panelDataCleaner->addLargeAction(actionDataFrameDropNone);
+        panelDataCleaner->addLargeAction(actionDataFrameFillNone);
+        panelDataCleaner->addLargeAction(actionDataFrameFillInterpolate);
+        panelDataCleaner->addLargeAction(actionDropDuplicates);
+        panelDataCleaner->addLargeAction(actionDataFrameRemoveOutlierIQR);
+        panelDataCleaner->addLargeAction(actionDataFrameRemoveOutliersZScore);
+        panelDataCleaner->addLargeAction(actionDataFrameTransformSkewedData);
         //----------------------------------------------------
-        // Data Filtering Panel 数据过滤panel
+        // 数据过滤：挂进核心「排序与筛选」面板（筛选与排序同组，不再单占一个面板）
         //----------------------------------------------------
-        pannelDataFiltering = dataframeDataOperateCategory->addPanel(tr("Data Filtering"));  // cn:数据过滤
-        pannelDataFiltering->setObjectName(QStringLiteral("DataAnalysisPlugin.pannelDataFiltering"));
+        SARibbonPanel* panelSortFilter = ribbonArea->getPanelByObjectName(
+            QString::fromUtf8(DA::UiNames::Ribbon::DataFrameDataOperateSortFilterPanel));
         // 公式（Eval Data）action 已按 004 计划收口移除（内核计算列替代，D0/R2）
         actionDataFrameQueryDatas =
             mActions->createAction("actionDataFrameQueryDatas", ":/DataAnalysisPluginIcon/icon/dataframe-query-datas.svg");
         actionDataFrameDataFilterColumn =
             mActions->createAction("actionDataFrameDataSelect", ":/DataAnalysisPluginIcon/icon/dataframe-data-select.svg");
-        pannelDataFiltering->addLargeAction(actionDataFrameQueryDatas);
-        pannelDataFiltering->addMediumAction(actionDataFrameDataFilterColumn);
+        if (panelSortFilter) {
+            panelSortFilter->addLargeAction(actionDataFrameQueryDatas);
+            panelSortFilter->addMediumAction(actionDataFrameDataFilterColumn);
+        } else {
+            qWarning() << "DataAnalysisUI: sort-filter panel not found, data filtering actions are not shown";
+        }
         //----------------------------------------------------
         // Statistic Panel 数据统计panel
         //----------------------------------------------------
@@ -261,14 +258,11 @@ void DataAnalysisUI::retranslateUi()
             tr("Export all data from the data management area to an Excel file, with each dataset as a separate sheet.")
         );  // cn:把数据管理区所有数据导出到一个excel文件中，每个数据将作为excel的一个sheet
     }
-    if (panelDataCleanerMissing) {
+    if (panelDataCleaner) {
         //----------------------------------------------------
-        // 缺失值 / 异常与重复 panel
+        // 数据清洗 panel（缺失值 + 异常与重复）
         //----------------------------------------------------
-        panelDataCleanerMissing->setPanelName(tr("Missing Values"));  // cn:缺失值
-        if (panelDataCleanerOutliers) {
-            panelDataCleanerOutliers->setPanelName(tr("Outliers & Duplicates"));  // cn:异常与重复
-        }
+        panelDataCleaner->setPanelName(tr("Missing & Outliers"));  // cn:缺失与异常
         actionDataFrameDropNone->setText(tr("Drop None"));                                  // cn:删除\n缺失值
         actionDataFrameDropNone->setToolTip(tr("Drop rows which contain missing values"));  // cn:删除包含缺失值的行
         actionDropDuplicates->setText(tr("Drop Duplicates"));                               // cn:删除\n重复值
@@ -295,9 +289,8 @@ void DataAnalysisUI::retranslateUi()
         actionDataFrameTransformSkewedData->setToolTip(tr("Transform skewed numerical data to improve distribution")
         );  // cn:转换偏态数值数据以改善分布
         //----------------------------------------------------
-        // Data Filtering Panel 数据过滤panel
+        // 数据过滤 action（挂在核心「排序与筛选」面板，不设独立面板）
         //----------------------------------------------------
-        pannelDataFiltering->setPanelName(tr("Data Filtering"));  // cn:数据过滤
         actionDataFrameQueryDatas->setText(tr("Query Data"));                                   // cn:条件筛选
         actionDataFrameQueryDatas->setToolTip(tr("Filter data outside of the given criteria"));  // cn:过滤给定条件外的数据
         actionDataFrameDataFilterColumn->setText(tr("Filter by Column"));                       // cn:列数据过滤
