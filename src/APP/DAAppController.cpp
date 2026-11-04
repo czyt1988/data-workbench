@@ -32,7 +32,7 @@
 // API
 #include "AppMainWindow.h"
 #include "DAAppCore.h"
-#include "DAAppRibbonArea.h"
+#include "Ribbon/DAAppRibbonArea.h"
 #include "DAAppDockingArea.h"
 #include "DAChartOperateWidget.h"
 #include "DAAppCommand.h"
@@ -72,6 +72,7 @@
 #include "Dialog/DAWorkbenchAboutDialog.h"
 // DAWidgets
 #include "DAFontEditPannelWidget.h"
+#include "SARibbonColorToolButton.h"
 #include "DAShapeEditPannelWidget.h"
 // Table style
 #include "Table/Metadata/DATableCellStyle.h"
@@ -4935,9 +4936,9 @@ void DAAppController::onActionSettingWidgetTriggered()
 /**
  * @brief 显示标记线
  *
- * 此action有个menu，menu的action选中会设置当前action的图标，具体实现放在@ref DAAppRibbonArea::buildContextCategoryWorkflowView_ 函数中
+ * 此action有个menu，menu的action选中会设置当前action的图标，具体实现放在@ref DAAppRibbonArea::buildContextCategoryWorkflowView 函数中
  * @param on
- * @sa DAAppRibbonArea::buildContextCategoryWorkflowView_
+ * @sa DAAppRibbonArea::buildContextCategoryWorkflowView
  */
 void DAAppController::onActionWorkflowViewMarkerTriggered(bool on)
 {

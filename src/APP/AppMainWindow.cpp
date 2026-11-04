@@ -25,7 +25,7 @@
 #include "DAAppCore.h"
 #include "DAAppUI.h"
 #include "DAAppDockingArea.h"
-#include "DAAppRibbonArea.h"
+#include "Ribbon/DAAppRibbonArea.h"
 #include "DAAppWorkFlowOperateWidget.h"
 #include "DAAppProject.h"
 // 对话框

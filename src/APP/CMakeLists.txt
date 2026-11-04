@@ -23,6 +23,10 @@ file(GLOB DA_APP_SOURCE_FILES_Dialog "${CMAKE_CURRENT_SOURCE_DIR}/Dialog/*.cpp")
 file(GLOB DA_APP_QT_UI_FILES_Dialog ${CMAKE_CURRENT_SOURCE_DIR}/Dialog/*.ui)
 file(GLOB DA_APP_QT_RC_FILES_Dialog ${CMAKE_CURRENT_SOURCE_DIR}/Dialog/*.qrc)
 
+# Ribbon 域：DAAppRibbonArea 的声明与按标签页拆分的实现（协调者 + 表格/工作流/绘图/统计/智能体）
+file(GLOB DA_APP_HEADER_FILES_Ribbon "${CMAKE_CURRENT_SOURCE_DIR}/Ribbon/*.h")
+file(GLOB DA_APP_SOURCE_FILES_Ribbon "${CMAKE_CURRENT_SOURCE_DIR}/Ribbon/*.cpp")
+
 # python binding
 list(APPEND DA_APP_HEADER_FILES
     PythonBinding/DAAppPythonBinding.h
@@ -48,6 +52,9 @@ da_add_executable(
             ${DA_APP_SOURCE_FILES_Dialog}
             ${DA_APP_QT_UI_FILES_Dialog}
             ${DA_APP_QT_RC_FILES_Dialog}
+            #Ribbon
+            ${DA_APP_HEADER_FILES_Ribbon}
+            ${DA_APP_SOURCE_FILES_Ribbon}
             # Global
             ${CMAKE_CURRENT_SOURCE_DIR}/../DAGlobals.h
     # onTestConnection 用 QNetworkAccessManager——Network 在顶层 find_package 未声明，

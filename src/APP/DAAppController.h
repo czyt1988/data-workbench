@@ -418,7 +418,7 @@ private Q_SLOTS:
     void onActionShowMessageLogViewTriggered();
     // 显示设置区域
     void onActionSettingWidgetTriggered();
-    // 显示标记线 - 此action有个menu，menu的action选中会设置当前action的图标，具体实现放在DAAppRibbonArea::buildContextCategoryWorkflowView_函数中
+    // 显示标记线 - 此action有个menu，menu的action选中会设置当前action的图标，具体实现放在DAAppRibbonArea::buildContextCategoryWorkflowView函数中
     void onActionWorkflowViewMarkerTriggered(bool on);
     // 显示右侧边栏
     void onActionShowRightSideBarTriggered(bool on);

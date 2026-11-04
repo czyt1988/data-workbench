@@ -1,7 +1,7 @@
 #include "DAAppUI.h"
 #include <QDebug>
 #include "DAAppDockingArea.h"
-#include "DAAppRibbonArea.h"
+#include "Ribbon/DAAppRibbonArea.h"
 #include "DAAppActions.h"
 #include "DAAppCommand.h"
 #include "DAAppCore.h"

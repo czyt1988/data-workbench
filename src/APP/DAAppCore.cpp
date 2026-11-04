@@ -6,7 +6,7 @@
 #include <QProcess>
 // API
 #include "DAAppUI.h"
-#include "DAAppRibbonArea.h"
+#include "Ribbon/DAAppRibbonArea.h"
 #include "DAAppDataManager.h"
 #include "DACommandInterface.h"
 #include "DAAppProject.h"
