@@ -3222,6 +3222,14 @@
         <source>Restore the original row order (sort by row index ascending, undoable)</source>
         <translation>恢复原始行顺序（按索引升序，可撤销）</translation>
     </message>
+    <message>
+        <source>Clear Cells</source>
+        <translation>清空单元格</translation>
+    </message>
+    <message>
+        <source>Set the selected cells to empty (nan)</source>
+        <translation>把选中单元格置为空值</translation>
+    </message>
 </context>
 <context>
     <name>DA::DAAppApplicationWidget</name>
@@ -4808,6 +4816,22 @@
         <location line="+1"/>
         <source>Sort</source>
         <translation>排序</translation>
+    </message>
+    <message>
+        <source>Rows &amp; Columns</source>
+        <translation>行与列</translation>
+    </message>
+    <message>
+        <source>Type &amp; Format</source>
+        <translation>类型与格式</translation>
+    </message>
+    <message>
+        <source>Sort &amp; Filter</source>
+        <translation>排序与筛选</translation>
+    </message>
+    <message>
+        <source>Data Validation</source>
+        <translation>数据校验</translation>
     </message>
 </context>
 <context>
@@ -18615,6 +18639,10 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <location line="+1"/>
         <source>Create Pivot Table</source>
         <translation>创建数据透视表</translation>
+    </message>
+    <message>
+        <source>Missing &amp; Outliers</source>
+        <translation>缺失与异常</translation>
     </message>
 </context>
 <context>

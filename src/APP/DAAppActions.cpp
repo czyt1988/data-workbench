@@ -663,8 +663,8 @@ void DAAppActions::retranslateUi()
     actionRemoveRow->setToolTip(tr("Remove a row from the table"));              // cn:从表中删除行
     actionRemoveColumn->setText(tr("Remove Column"));                            // cn:删除列
     actionRemoveColumn->setToolTip(tr("Remove a column from the table"));        // cn:从表中删除列
-    actionRemoveCell->setText(tr("Remove Cell"));                                // cn:删除单元格
-    actionRemoveCell->setToolTip(tr("Remove a cell from the table"));            // cn:从表中移除单元格
+    actionRemoveCell->setText(tr("Clear Cells"));                                // cn:清空单元格
+    actionRemoveCell->setToolTip(tr("Set the selected cells to empty (nan)"));   // cn:把选中单元格置为空值
     actionInsertRow->setText(tr("Insert Row"));                                // cn:插入行
     actionInsertRow->setToolTip(tr("Insert a row into the table"));              // cn:插入行
     actionInsertRowAbove->setText(tr("Insert Row(Above)"));                      // cn:插入行(上)

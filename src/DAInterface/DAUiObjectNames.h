@@ -64,17 +64,21 @@ constexpr char ViewAppearancePanel[] = "da-pannel-view.appearance";  ///< 视图
 constexpr char FigureChartAddPanel[]  = "da-pannel-figure.chart-add";   ///< 添加绘图pannel
 constexpr char FigureStatsPlotPanel[] = "da-pannel-figure.stats-plot";  ///< 统计绘图pannel
 // ---- DataFrame上下文标签下的 panel ----
-constexpr char DataFrameOperateAxesPanel[]   = "da-pannel-dataframe.operate.axes";    ///< 坐标设置pannel
+constexpr char DataFrameOperateAxesPanel[]   = "da-pannel-dataframe.operate.axes";    ///< 行与列pannel（objectName 沿用 axes）
 constexpr char DataFrameOperateColumnPanel[] = "da-pannel-dataframe.operate.column";  ///< 列操作pannel
-constexpr char DataFrameOperateDTypePanel[]  = "da-pannel-dataframe.operate.type";    ///< 类型设置pannel
-constexpr char DataFrameOperateFormatPanel[] = "da-pannel-dataframe.operate.format";  ///< 显示格式pannel
-constexpr char DataFrameOperateEditPanel[]   = "da-pannel-dataframe.operate.edit";    ///< 编辑pannel（查找/替换，005 填充也进此面板）
+constexpr char DataFrameOperateDTypePanel[]  = "da-pannel-dataframe.operate.type";    ///< 类型与格式pannel（显示格式已并入本面板）
+constexpr char DataFrameOperateFormatPanel[] = "da-pannel-dataframe.operate.format";  ///< 已废弃：显示格式并入 type 面板，保留常量兼容外部插件
+constexpr char DataFrameOperateEditPanel[]   = "da-pannel-dataframe.operate.edit";    ///< 编辑pannel（查找/替换/填充/批注/清空单元格）
 constexpr char DataFrameOperateViewPanel[]   = "da-pannel-dataframe.operate.view";    ///< 视图pannel（006 T1.8：冻结列/隐藏列/列视图）
-constexpr char DataFrameOperateSortPanel[]   = "da-pannel-dataframe.operate.sort";    ///< 排序pannel（排序大按钮 + 清除排序）
+constexpr char DataFrameOperateSortPanel[]   = "da-pannel-dataframe.operate.sort";    ///< 已废弃：排序迁到 data-operate.sort-filter，保留常量兼容外部插件
+constexpr char DataFrameDataOperateSortFilterPanel[] =
+    "da-pannel-dataframe.data-operate.sort-filter";  ///< 数据操作-排序与筛选pannel（插件的数据过滤动作也挂此面板）
 constexpr char DataFrameDataOperateComputedPanel[] =
     "da-pannel-dataframe.data-operate.computed";  ///< 数据操作-计算列pannel（计算列/全部重算）
 constexpr char DataFrameDataOperateTransformPanel[] =
-    "da-pannel-dataframe.data-operate.transform";  ///< 数据操作-数据变换pannel（分列/合列/分组/转置/melt/校验）
+    "da-pannel-dataframe.data-operate.transform";  ///< 数据操作-数据变换pannel（分列/合列/分组/转置/melt）
+constexpr char DataFrameDataOperateValidationPanel[] =
+    "da-pannel-dataframe.data-operate.validation";  ///< 数据操作-数据校验pannel（校验规则/执行校验）
 constexpr char DataFrameStyleFillPanel[]     = "da-pannel-dataframe.style.fill";      ///< 填充样式pannel
 constexpr char DataFrameStyleFontPanel[]     = "da-pannel-dataframe.style.font";      ///< 字体样式pannel
 constexpr char DataFrameStyleClearPanel[]    = "da-pannel-dataframe.style.clear";     ///< 样式清除pannel

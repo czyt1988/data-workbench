@@ -186,15 +186,16 @@ void DAAppRibbonArea::resetText()
 
     mContextDataFrame->setContextTitle(tr("DataFrame"));                      // cn:DataFrame
     mCategoryDataframeTableOperate->setCategoryName(tr("Table Operations"));  // cn:表格操作
-    mPannelDataframeOperateAxes->setPanelName(tr("Axes"));                    // cn:坐标轴
+    mPannelDataframeOperateAxes->setPanelName(tr("Rows & Columns"));           // cn:行与列
     mPannelDataframeOperateColumn->setPanelName(tr("Column"));                // cn:列
-    mPannelDataframeOperateDType->setPanelName(tr("Type"));                   // cn:类型
-    mPannelDataframeOperateFormat->setPanelName(tr("Format"));                // cn:格式
+    mPannelDataframeOperateDType->setPanelName(tr("Type & Format"));          // cn:类型与格式
     mPannelDataframeOperateEdit->setPanelName(tr("Edit"));                    // cn:编辑
     mPannelDataframeOperateView->setPanelName(tr("View"));                    // cn:视图
     mCategoryDataframeDataOperate->setCategoryName(tr("Data Operations"));    // cn:数据操作
+    mPannelDataframeDataOperateSortFilter->setPanelName(tr("Sort & Filter"));   // cn:排序与筛选
     mPannelDataframeDataOperateComputed->setPanelName(tr("Computed Column"));  // cn:计算列
     mPannelDataframeDataOperateTransform->setPanelName(tr("Data Transform"));  // cn:数据变换
+    mPannelDataframeDataOperateValidation->setPanelName(tr("Data Validation"));  // cn:数据校验
     mCategoryDataframeStyle->setCategoryName(tr("Table Style"));               // cn:表格样式
     mPannelDataframeStyleFill->setPanelName(tr("Fill"));                       // cn:底色
     mPannelDataframeStyleFont->setPanelName(tr("Font"));                       // cn:字体
