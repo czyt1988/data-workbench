@@ -77,7 +77,7 @@ private Q_SLOTS:
     // 在选中位置左边插入一列
     void onActionInsertColumnLeftTriggered();
     // dataframe列重命名
-    void onActionRenameColumnsTriggered();
+    void onActionManageColumnsTriggered();
     // dataframe单列重命名（表头右键）
     void onActionRenameColumnTriggered();
     // 快速绘图（Ribbon「列」面板 + 列头右键）：用当前选区打开表内图表浮窗
