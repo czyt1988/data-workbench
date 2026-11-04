@@ -130,6 +130,11 @@ public:
     QAction* actionEditNote { nullptr };                    ///< 编辑批注（005 T1.26）
     QAction* actionDeleteNote { nullptr };                  ///< 删除批注（005 T1.26）
     QAction* actionClearNotes { nullptr };                  ///< 清除本表批注（005 T1.26）
+    QAction* actionSort { nullptr };                        ///< 排序下拉根（主体 = 自定义排序对话框，Sort 面板）
+    QAction* actionSortAscending { nullptr };               ///< 升序排序（按当前列）
+    QAction* actionSortDescending { nullptr };              ///< 降序排序（按当前列）
+    QAction* actionSortCustom { nullptr };                  ///< 自定义排序…
+    QAction* actionSortClear { nullptr };                   ///< 清除排序（按索引恢复原始行序）
 
     //===================================================
     // workflow的上下文标签

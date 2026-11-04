@@ -3182,6 +3182,56 @@
         <source>Jump to a row / index label / column</source>
         <translation>跳转到指定行、索引标签或列</translation>
     </message>
+    <message>
+        <location line="+1"/>
+        <source>Sort</source>
+        <translation>排序</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Sort the current column, or open the custom sort dialog for multiple conditions</source>
+        <translation>对当前列排序，或打开自定义排序对话框按多个条件排序</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Sort Ascending</source>
+        <translation>升序排序</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Sort all rows by the current column in ascending order</source>
+        <translation>按当前列升序排列全部行</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Sort Descending</source>
+        <translation>降序排序</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Sort all rows by the current column in descending order</source>
+        <translation>按当前列降序排列全部行</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Custom Sort...</source>
+        <translation>自定义排序...</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Sort by multiple columns with a chosen priority order</source>
+        <translation>按多个列及指定优先级排序</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Clear Sort</source>
+        <translation>清除排序</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Restore the original row order (sort by row index ascending, undoable)</source>
+        <translation>恢复原始行顺序（按索引升序，可撤销）</translation>
+    </message>
 </context>
 <context>
     <name>DA::DAAppApplicationWidget</name>
@@ -3805,6 +3855,11 @@
         <location line="+2357"/>
         <source>Please select a column first</source>
         <translation>请先选择列</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Please select a column to sort first</source>
+        <translation>请先选择要排序的列</translation>
     </message>
 </context>
 <context>
@@ -4758,6 +4813,11 @@
         <location line="+324"/>
         <source>Data Transform</source>
         <translation>数据变换</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Sort</source>
+        <translation>排序</translation>
     </message>
 </context>
 <context>
@@ -9377,6 +9437,16 @@
         <location line="+3"/>
         <source>Column View...</source>
         <translation>列视图...</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Custom Sort...</source>
+        <translation>自定义排序...</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Clear Sort</source>
+        <translation>清除排序</translation>
     </message>
 </context>
 <context>
@@ -21256,6 +21326,94 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <location filename="../DAGui/TableNavigation/DATableNavigationService.cpp" line="+0"/>
         <source>The column &quot;%1&quot; was hidden and has been made visible</source>
         <translation>列&quot;%1&quot;已隐藏，现已显示</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DATableSortDialog</name>
+    <message>
+        <location line="+1"/>
+        <source>Sort</source>
+        <translation>排序</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add Condition</source>
+        <translation>添加条件</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Column</source>
+        <translation>列</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Sort On</source>
+        <translation>排序依据</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Order</source>
+        <translation>次序</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Values</source>
+        <translation>数值</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Sorting always compares cell values (dates/numbers/text by their natural order)</source>
+        <translation>排序始终比较单元格的值（日期/数值/文本按其自然顺序）</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Ascending</source>
+        <translation>升序</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Descending</source>
+        <translation>降序</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Move up</source>
+        <translation>上移</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Move down</source>
+        <translation>下移</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Duplicate condition</source>
+        <translation>复制条件</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Delete condition</source>
+        <translation>删除条件</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Index (Row Number)</source>
+        <translation>索引（行号）</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Tip: sorting does not renumber rows. Use "Clear Sort" to restore the original row order.</source>
+        <translation>提示：排序不会重新编号行，可用「清除排序」按索引恢复原始行顺序。</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>OK</source>
+        <translation>确定</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Cancel</source>
+        <translation>取消</translation>
     </message>
 </context>
 </TS>

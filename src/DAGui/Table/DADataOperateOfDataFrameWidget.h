@@ -219,13 +219,25 @@ public:
     // 当前选中列（视图顺序、去重、剔除尾部预留列）；无选中回退 {fallbackColumn}。
     // fallbackColumn 无效（<0 或越出数据列）且无选中时返回空列表（调用方提示）
     QList< int > selectedColumnsForDataAction(int fallbackColumn) const;
-    // 当前多列排序规格（列逻辑索引+方向，顺序即优先级；不持久化 R13）
+    // 当前多列排序规格（列逻辑索引+方向，顺序即优先级；不持久化 R13）。
+    // 列号 DATableSortController::c_indexSortColumn(-1) 表示「索引」键
     QVector< QPair< int, Qt::SortOrder > > sortSpec() const;
-    // 按列排序（2026-10-18 交互修订：排序入口=列头右键菜单，点击表头不再排序）：
+    // 按列排序（2026-10-18 交互修订：排序入口=列头右键菜单/Ribbon「排序」面板，点击表头不再排序）：
     // sortColumn 重置规格为「仅该列」；addSecondarySortColumn 保留既有规格追加/切换该列。
     // 只读/惰性源与拾取模式下不执行（只读源 daWarning 提示一次）
     void sortColumn(int logicalIndex, Qt::SortOrder order);
     void addSecondarySortColumn(int logicalIndex, Qt::SortOrder order);
+    // 排序面板的目标列：当前单元格所在列 > 选区首列 > -1（无目标）
+    int currentDataColumnForSort() const;
+    // 应用完整排序规格（自定义排序对话框：多条件、顺序即优先级）；成功 push 返回 true
+    bool applySortSpec(const QVector< QPair< int, Qt::SortOrder > >& spec);
+    // 按索引升序恢复原始行顺序（「清除排序」入口；可撤销）
+    void restoreOriginalSortOrder();
+    // 打开自定义排序对话框：presetColumn>=0 时以该列为唯一主键预置（表头右键入口），
+    // 否则按当前排序规格预填；确定后整份规格作为一条撤销命令入栈
+    void showSortDialog(int presetColumn = -1);
+    // 数据源是否可编辑（只读/惰性源上排序入口不生效；Ribbon「排序」面板据此置灰）
+    bool isTableEditable() const;
 
     // 打开条件格式规则编辑对话框（003 T1.5）：作用于当前选区所在列；
     // 编辑期预览叠加，确定后按差异生成增/删/改/移命令入页撤销栈（D4）；
@@ -440,10 +452,8 @@ private:
     // 实际数据列的身份表（数据列序升序；尾部预留的空白列——列名为空——跳过）。
     // occurrence = 该列之前同名列的个数（数据列序中计，006 列视图键的统一口径）
     QList< QPair< QString, int > > actualColumnIdentities() const;
-    // 数据源是否可编辑（只读/惰性源上排序入口不生效，判定路径同 DADataTableModel::actualFlags）
-    bool isTableEditable() const;
     //（applySortAction/applySortSpec/remapSelectionByPermutation/mSortSpec 已随排序迁入
-    //  DATableSortController，008 期3；isTableEditable 转发上下文 isDataSourceEditable）
+    //  DATableSortController，008 期3；isTableEditable 转发上下文 isDataSourceEditable，已置 public）
     //（查找/替换状态机：runFindScan/gotoFindHit/扫描范围/计数标签/applyFindReplace/
     //  notifyReplaceChanged 已随查找/替换迁入 DATableFindController，008 期3）
     //（条件格式差异命令/统计端点可用性已随条件格式迁入 DATableConditionalFormatController，

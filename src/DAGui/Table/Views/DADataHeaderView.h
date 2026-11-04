@@ -45,6 +45,8 @@ public:
         SortDescending,            ///< 降序排序（重置排序规格为仅该列）
         AddSecondarySortAscending,   ///< 追加为次级排序列（升序，保留既有规格）
         AddSecondarySortDescending,  ///< 追加为次级排序列（降序，保留既有规格）
+        CustomSort,                  ///< 自定义排序…（打开多条件排序对话框，按该列预置主键）
+        ClearSort,                   ///< 清除排序（按索引升序恢复原始行顺序）
         RenameColumn,          ///< 重命名列
         RemoveColumn,          ///< 删除列
         CopyColumnName,        ///< 复制列名
@@ -171,6 +173,10 @@ private:
     QColor computedColumnBadgeColor(int logicalIndex) const;
     // 单段角标叠加绘制（排序方向箭头 + 多列序号角标 + 计算列 ƒx 角标）
     void paintSectionOverlays(QPainter* painter, const QRect& rect, int logicalIndex) const;
+    // 排序规格中「列键」数量（索引键 -1 不计，表头上没有它的位置）
+    int columnKeyCount() const;
+    // 该列在「列键」序列中的序号（索引键不计；不在规格中返回 -1）
+    int columnKeyRank(int logicalIndex) const;
 
     DATableComputedColumnStore* mComputedStore { nullptr };  ///< 计算列子存储（非拥有，004 T1.23）
     std::function< bool(int) > mFrozenColumnChecker;  ///< 冻结状态查询回调（逻辑列号 → 是否已冻结）

@@ -602,6 +602,12 @@ void DAAppController::initConnection()
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionUnfreezeColumns, onActionUnfreezeColumnsTriggered);
     // 定位（007 T1.7，Ribbon「View」面板；快捷键 Ctrl+G 在 DADataTableView 红线5）
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionGotoCell, onActionGotoCellTriggered);
+    // 排序（Ribbon「Sort」面板；升/降作用于当前列，大按钮主体与「自定义排序…」同一入口）
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionSort, onActionSortTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionSortAscending, onActionSortAscendingTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionSortDescending, onActionSortDescendingTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionSortCustom, onActionSortTriggered);
+    DAAPPCONTROLLER_ACTION_BIND(mActions->actionSortClear, onActionSortClearTriggered);
     // View Category
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowWorkFlowArea, onActionShowWorkFlowAreaTriggered);
     DAAPPCONTROLLER_ACTION_BIND(mActions->actionShowWorkFlowManagerArea, onActionShowWorkFlowManagerAreaTriggered);
@@ -1291,6 +1297,8 @@ void DAAppController::activateContextCategoryForWidget(QWidget* widget)
 {
     // 当前窗口切换后同步「快速绘图」按钮可用状态（无数据表页/无选区时置灰）
     updateQuickPlotActionState();
+    // 同步「排序」面板可用状态（无表格页/只读源时置灰）
+    updateSortActionState();
     if (nullptr == widget) {
         mRibbon->hideContextCategory(DAAppRibbonArea::AllContextCategory);
         return;
@@ -1670,6 +1678,7 @@ void DAAppController::onDataOperatePageCreated(DADataOperatePageWidget* page)
             updateQuickPlotActionState();
         });
         updateQuickPlotActionState();
+        updateSortActionState();
         // 新数据集产出（004 T1.22 分组聚合等）：置脏 + 抬起数据操作区 + 激活新页面
         //（照 DataframeOperateWorker::createPivotTable 的产出流程；注册已由页面走 addData_ 完成）
         connect(w, &DADataOperateOfDataFrameWidget::newDataCreated, this, [ this ](const DAData& newData) {
@@ -1759,6 +1768,15 @@ void DAAppController::onDataOperatePageCreated(DADataOperatePageWidget* page)
                                 // 置脏由页面 dataModified 信号驱动（排序命令回调里发，exec/undo 全覆盖）
                                 return;
                             }
+                            // 自定义排序（以右键列为唯一主键预置）/ 清除排序（按索引恢复原始行序）
+                            if (action == ColumnAction::CustomSort) {
+                                w->showSortDialog(col);
+                                return;
+                            }
+                            if (action == ColumnAction::ClearSort) {
+                                w->restoreOriginalSortOrder();
+                                return;
+                            }
                             // 重命名/删除列：直传 (页面, 列号)，不依赖焦点与选区
                             if (action == ColumnAction::RenameColumn) {
                                 renameColumnOnPage(w, col);
@@ -1816,6 +1834,8 @@ void DAAppController::onDataOperatePageCreated(DADataOperatePageWidget* page)
                             case ColumnAction::SortDescending:
                             case ColumnAction::AddSecondarySortAscending:
                             case ColumnAction::AddSecondarySortDescending:
+                            case ColumnAction::CustomSort:
+                            case ColumnAction::ClearSort:
                                 break;
                             }
                         });
@@ -4480,6 +4500,92 @@ void DAAppController::onActionGotoCellTriggered()
     }
     dfopt->showGotoDialog();
 }
+
+// ============================================================
+// 排序（Ribbon「Sort」面板；与列头右键排序组共用页面入口）
+// ============================================================
+
+/**
+ * @brief 刷新「排序」动作的可用状态
+ *
+ * 没有数据表页、或当前表为只读源（惰性/数据库表）时整组置灰——面板大按钮禁用同时
+ * 也让下拉菜单不可展开。菜单项与面板按钮共用同一批 QAction，状态自然同步。
+ */
+void DAAppController::updateSortActionState()
+{
+    if (!mActions || !mActions->actionSort || !mDock) {
+        return;
+    }
+    DADataOperateWidget* dataWidget        = mDock->getDataOperateWidget();
+    DADataOperateOfDataFrameWidget* dfopt  = dataWidget ? dataWidget->getCurrentDataFrameWidget() : nullptr;
+    const bool enabled                     = dfopt && dfopt->haveData() && dfopt->isTableEditable();
+    mActions->actionSort->setEnabled(enabled);
+    mActions->actionSortAscending->setEnabled(enabled);
+    mActions->actionSortDescending->setEnabled(enabled);
+    mActions->actionSortCustom->setEnabled(enabled);
+    mActions->actionSortClear->setEnabled(enabled);
+}
+
+/**
+ * @brief 排序大按钮 / 自定义排序…：打开自定义排序对话框
+ *
+ * 预置规则由页面决定：已有排序规格时按规格预填，否则以当前列为唯一主键。
+ */
+void DAAppController::onActionSortTriggered()
+{
+    DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false);
+    if (!dfopt) {
+        return;
+    }
+    dfopt->showSortDialog();
+}
+
+/**
+ * @brief 升序排序（按当前列；无当前列时提示先选列）
+ */
+void DAAppController::onActionSortAscendingTriggered()
+{
+    DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false);
+    if (!dfopt) {
+        return;
+    }
+    const int col = dfopt->currentDataColumnForSort();
+    if (col < 0) {
+        daWarning << tr("Please select a column to sort first");  // cn:请先选择要排序的列
+        return;
+    }
+    dfopt->sortColumn(col, Qt::AscendingOrder);
+}
+
+/**
+ * @brief 降序排序（按当前列；无当前列时提示先选列）
+ */
+void DAAppController::onActionSortDescendingTriggered()
+{
+    DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false);
+    if (!dfopt) {
+        return;
+    }
+    const int col = dfopt->currentDataColumnForSort();
+    if (col < 0) {
+        daWarning << tr("Please select a column to sort first");  // cn:请先选择要排序的列
+        return;
+    }
+    dfopt->sortColumn(col, Qt::DescendingOrder);
+}
+
+/**
+ * @brief 清除排序：按索引升序恢复原始行顺序（行头的 index 从乱序还原，可撤销）
+ */
+void DAAppController::onActionSortClearTriggered()
+{
+    DADataOperateOfDataFrameWidget* dfopt = getCurrentDataFrameOperateWidget(false, false);
+    if (!dfopt) {
+        return;
+    }
+    dfopt->restoreOriginalSortOrder();
+}
+
 
 /**
  * @brief 删除当前格批注（005 T1.26）

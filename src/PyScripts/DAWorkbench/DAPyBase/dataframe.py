@@ -1194,22 +1194,59 @@ def _column_position(df: pd.DataFrame, col):
     return matches[0]
 
 
+# 排序键「索引」哨兵：C++ 侧传 -1 表示按 index 排序（表格的「索引」伪列 / 恢复原始行序）
+INDEX_SORT_KEY = -1
+
+
+def _is_index_sort_key(col) -> bool:
+    '''
+    判断排序键是否为「索引」哨兵（None 或 -1；-1 是非法列位置，不会与真实列冲突）
+    '''
+    if col is None:
+        return True
+    if isinstance(col, (bool, np.bool_)):
+        return False
+    return isinstance(col, (int, np.integer)) and int(col) == INDEX_SORT_KEY
+
+
 def _resolve_sort_keys(df: pd.DataFrame, keys, by, ascending: bool):
     '''
-    归一化排序键为 [(列位置, 升序bool)]；keys 优先于 by/ascending
+    归一化排序键为 [(列位置或 None(=索引), 升序bool)]；keys 优先于 by/ascending
     '''
     resolved = []
     if keys is not None:
         for item in keys:
             col, asc = item[0], bool(item[1])
-            resolved.append((_column_position(df, col), asc))
+            if _is_index_sort_key(col):
+                resolved.append((None, asc))
+            else:
+                resolved.append((_column_position(df, col), asc))
     elif by is not None:
-        resolved.append((_column_position(df, by), bool(ascending)))
+        if _is_index_sort_key(by):
+            resolved.append((None, bool(ascending)))
+        else:
+            resolved.append((_column_position(df, by), bool(ascending)))
     else:
         raise ValueError("da_sort requires either keys or by")
     if not resolved:
         raise ValueError("da_sort requires at least one sort key")
     return resolved
+
+
+def _sort_key_values(df: pd.DataFrame, pos):
+    '''
+    取排序键的一维取值数组：pos=None 时取 index 标签（表格「按索引排序」），
+    否则取该位置列的值。MultiIndex 无法当一维键比较，显式报错
+    :param df: pd.DataFrame
+    :param pos: 列位置(int) 或 None(=index)
+    :return: 一维 np.ndarray
+    :raises ValueError: index 为 MultiIndex（不支持按索引排序）
+    '''
+    if pos is not None:
+        return df.iloc[:, pos].to_numpy()
+    if isinstance(df.index, pd.MultiIndex):
+        raise ValueError("cannot sort by index: the index is a MultiIndex")
+    return np.asarray(df.index)
 
 
 def _stable_descending_argsort(values: np.ndarray) -> np.ndarray:
@@ -1302,12 +1339,15 @@ def da_sort(df: pd.DataFrame, keys=None, by=None, ascending: bool = True):
     多键按 keys 列表顺序为优先级（第一个是主键），通过"从次键到主键逐键稳定排序"
     实现；NaN/NaT 恒排最后。
 
+    键可以是列位置/列名，也可以是 INDEX_SORT_KEY(-1)——表示按 index 标签排序
+    （表格的「索引」伪列：「按索引升序」即把行按原始行号还原）。
+
     :param df: pd.DataFrame，就地重排（行数据与 index 一起移动）
-    :param keys: [(列位置int或列名str, ascending bool)] 列表，优先于 by/ascending
-    :param by: 单键兼容入口：列位置或列名
+    :param keys: [(列位置int / 列名str / -1(=index), ascending bool)] 列表，优先于 by/ascending
+    :param by: 单键兼容入口：列位置、列名或 -1(=index)
     :param ascending: 单键兼容入口：是否升序
     :return: perm（Python int 列表）；空表返回空列表
-    :raises ValueError: 键列不存在/越界，或列值类型混合不可比较（消息含 "not comparable"）
+    :raises ValueError: 键列不存在/越界、index 为 MultiIndex，或列值类型混合不可比较（消息含 "not comparable"）
     '''
     resolved = _resolve_sort_keys(df, keys, by, ascending)
     n = len(df)
@@ -1316,8 +1356,8 @@ def da_sort(df: pd.DataFrame, keys=None, by=None, ascending: bool = True):
     perm = np.arange(n)
     # 从最后一个键（最低优先级）到第一个键（主键）逐键稳定排序
     for pos, asc in reversed(resolved):
-        col_values = df.iloc[:, pos].to_numpy()
-        order = _single_key_permutation(col_values[perm], asc)
+        key_values = _sort_key_values(df, pos)
+        order = _single_key_permutation(key_values[perm], asc)
         perm = perm[order]
     _apply_row_permutation(df, perm)
     return perm.tolist()

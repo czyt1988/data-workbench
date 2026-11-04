@@ -157,6 +157,13 @@ void DAAppActions::buildDataAction()
     actionUnfreezeColumns             = createAction(UiNames::Action::UnfreezeColumns);
     // 定位 action（007 T1.7；快捷键 Ctrl+G 在 DADataTableView，action 不设 shortcut 红线5）
     actionGotoCell                    = createAction(UiNames::Action::GotoCell, ":/DAGui/icon/goto-cell.svg");
+    // 排序 action（Ribbon「Sort」面板 + 列头右键排序组；图标取 DAGui 图标库，
+    // 快捷键不设——表格快捷键唯一挂点在 DADataTableView，红线5）
+    actionSort          = createAction(UiNames::Action::Sort, ":/DAGui/icon/sort.svg");
+    actionSortAscending = createAction(UiNames::Action::SortAscending, ":/DAGui/icon/sort-ascending.svg");
+    actionSortDescending = createAction(UiNames::Action::SortDescending, ":/DAGui/icon/sort-descending.svg");
+    actionSortCustom    = createAction(UiNames::Action::SortCustom, ":/DAGui/icon/sort.svg");
+    actionSortClear     = createAction(UiNames::Action::SortClear, ":/DAGui/icon/sort-clear.svg");
 }
 
 void DAAppActions::buildChartAction()
@@ -754,6 +761,22 @@ void DAAppActions::retranslateUi()
     actionUnfreezeColumns->setText(tr("Unfreeze All Columns"));  // cn:取消全部冻结
     actionGotoCell->setText(tr("Go To..."));                                          // cn:定位...
     actionGotoCell->setToolTip(tr("Jump to a row / index label / column"));           // cn:跳转到指定行、索引标签或列
+    // 排序（Ribbon「Sort」面板；面板大按钮主体 = 自定义排序对话框）
+    actionSort->setText(tr("Sort"));  // cn:排序
+    actionSort->setToolTip(tr("Sort the current column, or open the custom sort dialog for multiple conditions"));
+    // cn:对当前列排序，或打开自定义排序对话框按多个条件排序
+    actionSortAscending->setText(tr("Sort Ascending"));  // cn:升序排序
+    actionSortAscending->setToolTip(tr("Sort all rows by the current column in ascending order"));
+    // cn:按当前列升序排列全部行
+    actionSortDescending->setText(tr("Sort Descending"));  // cn:降序排序
+    actionSortDescending->setToolTip(tr("Sort all rows by the current column in descending order"));
+    // cn:按当前列降序排列全部行
+    actionSortCustom->setText(tr("Custom Sort..."));  // cn:自定义排序...
+    actionSortCustom->setToolTip(tr("Sort by multiple columns with a chosen priority order"));
+    // cn:按多个列及指定优先级排序
+    actionSortClear->setText(tr("Clear Sort"));  // cn:清除排序
+    actionSortClear->setToolTip(tr("Restore the original row order (sort by row index ascending, undoable)"));
+    // cn:恢复原始行顺序（按索引升序，可撤销）
     //-----------------------------------------------------
     // workflow 编辑
     //-----------------------------------------------------

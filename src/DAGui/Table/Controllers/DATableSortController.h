@@ -26,6 +26,10 @@ class DAGUI_API DATableSortController : public QObject
 {
     Q_OBJECT
 public:
+    /// 排序键「索引」哨兵：规格里用该列号表示按 index 标签排序（即行头显示的原始行号），
+    /// 「按索引升序」= 把行按原始位置还原（默认 RangeIndex 下等价于排序前的顺序）
+    static constexpr int c_indexSortColumn = -1;
+
     explicit DATableSortController(const DATablePageContext& ctx, QObject* parent = nullptr);
 
 public:
@@ -35,6 +39,11 @@ public:
     void sortColumn(int logicalIndex, Qt::SortOrder order);
     // 追加为次级排序列（保留既有规格；该列已在规格中则切换其方向）
     void addSecondarySortColumn(int logicalIndex, Qt::SortOrder order);
+    // 按索引升序恢复原始行顺序（Ribbon「清除排序」入口）
+    void restoreOriginalOrder();
+    // 应用完整排序规格（自定义排序对话框入口）：非法列号剔除、同列去重（保留首次）、
+    // 与当前规格相同则不执行；空规格不执行（返回 false）
+    bool applySpec(const QVector< QPair< int, Qt::SortOrder > >& spec);
     // 清除排序规格并刷新全部窗格角标（插删列/换数据集后列位置失效时用；数据顺序不变）
     void clearSpec();
 
