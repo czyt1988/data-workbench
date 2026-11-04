@@ -132,6 +132,10 @@ void DAActionsInterface::recordAction(QAction* act)
 
 /**
  * @brief 实例化的接口需要继承此函数实现语言切换的文本变更
+ *
+ * 本实现保持为空：经 createAction() 创建的 action 文本由创建者（插件）设置，
+ * 重译约定为插件在 DAAbstractPlugin::retranslate() 中统一 setText，
+ * 本接口不做任何文本操作，避免动作文本出现两个来源。
  */
 void DAActionsInterface::retranslateUi()
 {
