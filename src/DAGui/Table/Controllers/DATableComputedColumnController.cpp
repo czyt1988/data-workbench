@@ -20,6 +20,9 @@
 #include "DALogCategory.h"
 // 忙等待光标（求值可能长）
 #include "DAWaitCursorScoped.h"
+// 列改名时重写公式文本（da_rename_column_refs）
+#include "DAPyScripts.h"
+#include "DAPyScriptsDataFrame.h"
 
 namespace DA
 {
@@ -383,11 +386,20 @@ void DATableComputedColumnController::wireRenameMigration(DACommandDataFrame_ren
     }
     cmd->setDirectionalCallBack([ ccStore, renames ](bool isUndo) {
         for (const auto& p : renames) {
-            if (isUndo) {
-                ccStore->renameColumnReferences(p.second, p.first);
-            } else {
-                ccStore->renameColumnReferences(p.first, p.second);
-            }
+            // 正向 old→new；undo 反向 new→old
+            const QString from = isUndo ? p.second : p.first;
+            const QString to   = isUndo ? p.first : p.second;
+            // 公式文本与 dependsOn 一起迁移：只改真实列引用（裸名/反引号/df[...]/df.attr）
+            DATableComputedColumnStore::ExpressionRewriter rewrite =
+                [ from, to ](const QString& expression) {
+                    if (!DAPyScripts::isInitScripts()) {
+                        return expression;
+                    }
+                    bool ok = false;
+                    const QString rewritten = DAPyScripts::getDataFrame().renameColumnRefs(expression, from, to, &ok);
+                    return ok ? rewritten : expression;
+                };
+            ccStore->renameColumnReferences(from, to, rewrite);
         }
     });
 }

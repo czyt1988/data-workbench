@@ -1107,6 +1107,42 @@ bool DAPyScriptsDataFrame::needsBacktick(const QString& name) noexcept
 }
 
 /**
+ * @brief 列改名时重写代码段列引用的wrapper（004 T1.23 R20）
+ *
+ * 对应 da_dataframe.da_rename_column_refs(code, old, new)：用 tokenize 精确识别
+ * 裸列名 / 反引号列名 / df["col"] / df.col，只改真实引用（字符串、注释、其它对象的
+ * 属性与局部赋值目标保持原样）；新列名非法时自动写成反引号或 df["..."]。
+ * @param code 原代码段
+ * @param oldName 旧列名
+ * @param newName 新列名
+ * @param ok 非空时输出是否成功（解析失败/异常为 false，返回原文）
+ * @return 重写后的代码段
+ */
+QString DAPyScriptsDataFrame::renameColumnRefs(const QString& code, const QString& oldName, const QString& newName, bool* ok) noexcept
+{
+    if (ok) {
+        *ok = false;
+    }
+    if (code.isEmpty()) {
+        if (ok) {
+            *ok = true;
+        }
+        return code;
+    }
+    try {
+        pybind11::object da_rename = attr("da_rename_column_refs");
+        pybind11::object ret       = da_rename(DA::PY::toPyObject(code), DA::PY::toPyObject(oldName), DA::PY::toPyObject(newName));
+        if (ok) {
+            *ok = true;
+        }
+        return ret.cast< QString >();
+    } catch (const std::exception& e) {
+        dealException(e);
+    }
+    return code;
+}
+
+/**
  * @brief 取头部副本的wrapper（004：对话框预览与执行同一算子）
  * @param df 数据（只读）
  * @param n 行数

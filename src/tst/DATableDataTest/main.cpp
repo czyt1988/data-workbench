@@ -6164,16 +6164,26 @@ void DATableDataTest::testComputedColumnDefinitionAndStore()
     marked = store.markAllStale();
     QCOMPARE(marked, QStringList({ QStringLiteral("D") }));
     QCOMPARE(store.stateOf(QStringLiteral("C")), State::Invalid);
-    // 改名迁移（R20）：依赖列改名 / 目标列自身改名
+    // 改名迁移（R20）：依赖列改名 / 目标列自身改名；公式文本仅依赖命中时重写
     store.setState(QStringLiteral("C"), State::Valid);
     store.setState(QStringLiteral("D"), State::Valid);
-    int n = store.renameColumnReferences(QStringLiteral("A"), QStringLiteral("A2"));
+    int rewriteCalls = 0;
+    DA::DATableComputedColumnStore::ExpressionRewriter rewriter = [ &rewriteCalls ](const QString& expr) {
+        ++rewriteCalls;
+        return expr + QStringLiteral("  # rewritten");
+    };
+    int n = store.renameColumnReferences(QStringLiteral("A"), QStringLiteral("A2"), rewriter);
     QCOMPARE(n, 1);
+    QCOMPARE(rewriteCalls, 1);  // 只有依赖 A 的 C 被重写
+    QCOMPARE(store.definition(QStringLiteral("C")).expr, QStringLiteral("A + B  # rewritten"));
     QCOMPARE(store.definition(QStringLiteral("C")).dependsOn, QStringList({ QStringLiteral("A2"), QStringLiteral("B") }));
-    n = store.renameColumnReferences(QStringLiteral("C"), QStringLiteral("C2"));
-    QCOMPARE(n, 2);  // c1 目标 + c2 依赖
+    n = store.renameColumnReferences(QStringLiteral("C"), QStringLiteral("C2"), rewriter);
+    QCOMPARE(n, 2);         // c1 目标 + c2 依赖
+    QCOMPARE(rewriteCalls, 2);  // 只有 D 依赖 C 触发；C 自身目标改名不改公式
     QVERIFY(store.hasDefinition(QStringLiteral("C2")));
     QVERIFY(!store.hasDefinition(QStringLiteral("C")));
+    QCOMPARE(store.definition(QStringLiteral("C2")).expr, QStringLiteral("A + B  # rewritten"));
+    QCOMPARE(store.definition(QStringLiteral("D")).expr, QStringLiteral("C * 2  # rewritten"));
     QCOMPARE(store.definition(QStringLiteral("D")).dependsOn, QStringList({ QStringLiteral("C2") }));
     // definitionsReferencing：引用 C2 作依赖的定义（不含自身）
     QCOMPARE(store.definitionsReferencing(QStringLiteral("C2")), QStringList({ QStringLiteral("D") }));
@@ -6286,6 +6296,21 @@ df = pd.DataFrame({"A":[1,2],"B":[3,4],"my col":[5,6]})
     QVERIFY(py.needsBacktick(QStringLiteral("my col")));
     QVERIFY(py.needsBacktick(QStringLiteral("2024")));
     QVERIFY(py.needsBacktick(QStringLiteral("in")));
+    // 列改名重写（R20）：裸列名/反引号/df[...]/df.attr 都改写；字符串、注释、局部目标不动
+    QCOMPARE(py.renameColumnRefs(QStringLiteral("A + B"), QStringLiteral("A"), QStringLiteral("A2"), &ok),
+             QStringLiteral("A2 + B"));
+    QVERIFY(ok);
+    QCOMPARE(py.renameColumnRefs(QStringLiteral("`my col` * 2"), QStringLiteral("my col"), QStringLiteral("C"), &ok),
+             QStringLiteral("C * 2"));
+    QCOMPARE(py.renameColumnRefs(QStringLiteral("df[\"A\"] + df.B"), QStringLiteral("B"), QStringLiteral("x y"), &ok),
+             QStringLiteral("df[\"A\"] + df[\"x y\"]"));
+    QCOMPARE(py.renameColumnRefs(QStringLiteral("df.A + df.B"), QStringLiteral("A"), QStringLiteral("A2"), &ok),
+             QStringLiteral("df.A2 + df.B"));
+    QCOMPARE(py.renameColumnRefs(QStringLiteral("s = \"A\"  # A\nA + 1"), QStringLiteral("A"), QStringLiteral("A2"), &ok),
+             QStringLiteral("s = \"A\"  # A\nA2 + 1"));
+    // 新列名非法 → 自动反引号
+    QCOMPARE(py.renameColumnRefs(QStringLiteral("A + 1"), QStringLiteral("A"), QStringLiteral("my col"), &ok),
+             QStringLiteral("`my col` + 1"));
 }
 
 // 004 §7.1：计算列求值算子（新建/重算快照/失败不动数据/空格目标列/预览副本/还原）
@@ -6755,11 +6780,23 @@ df = pd.DataFrame({"A":[1,2,3],"B":[4,5,6],"K":[3,1,2]})
     const int undoCnt = w.getUndoStack()->count();
     QVERIFY(w.renameColumn(colA, QStringLiteral("A2")));
     QCOMPARE(store->definition(QStringLiteral("C")).dependsOn, QStringList({ QStringLiteral("A2"), QStringLiteral("B") }));
-    // undo 改名 → 依赖迁移回 A
+    QCOMPARE(store->definition(QStringLiteral("C")).expr, QStringLiteral("A2 + B"));  // 公式文本同步重写
+    // undo 改名 → 依赖与公式文本一起回退
     w.getUndoStack()->undo();
     QCOMPARE(store->definition(QStringLiteral("C")).dependsOn, QStringList({ QStringLiteral("A"), QStringLiteral("B") }));
+    QCOMPARE(store->definition(QStringLiteral("C")).expr, QStringLiteral("A + B"));
     w.getUndoStack()->redo();  // 回到 A2 状态便于后续（依赖 A2）
+    QCOMPARE(store->definition(QStringLiteral("C")).expr, QStringLiteral("A2 + B"));
     QCOMPARE(w.getUndoStack()->count(), undoCnt + 1);
+    // 重写后的公式可直接求值（证明改名后重算不会因旧列名而失效）
+    {
+        DA::DAPyDataFrame head = DA::DAPyScripts::getDataFrame().headCopy(df, 10);
+        const auto evalRes =
+            DA::DAPyScripts::getDataFrame().evalColumn(head, QStringLiteral("C"), store->definition(QStringLiteral("C")).expr);
+        QVERIFY(evalRes.ok);
+        // 前面按 K 升序排过，首行是原第 2 行（A2=2,B=5）→ C=7
+        QCOMPARE(head.iat(0, head.columns().indexOf(QStringLiteral("C"))).toInt(), 7);
+    }
     // —— 删除被依赖列 B → C 失效（定义保留，不静默清空）；undo 恢复 Valid ——
     int colB = -1;
     for (int c = 0; c < hh->count(); ++c) {

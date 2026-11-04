@@ -7,6 +7,7 @@
 #include <QStringList>
 #include <QDomDocument>
 #include <QDomElement>
+#include <functional>
 
 namespace DA
 {
@@ -77,6 +78,8 @@ public:
     void setState(const QString& target, State state);   ///< 发 stateChanged
 
     // ===== 依赖联动（R20 列名引用）=====
+    // 列改名时重写公式文本的回调（返回改写后的代码段；未提供则只迁移 dependsOn）
+    using ExpressionRewriter = std::function< QString(const QString& expression) >;
     // 引用了 columnName 作依赖列的定义目标（不含目标列自身就是 columnName 的定义）
     QStringList definitionsReferencing(const QString& columnName) const;
     // 数据变更标记：依赖列或目标列自身被改 → Valid 转 Stale（Stale/Invalid 不降级）；
@@ -84,8 +87,9 @@ public:
     QStringList markStaleForChangedColumns(const QStringList& changedColumns);
     // 整表操作拿不到列信息时保守全标（Valid → Stale），返回被标记的目标列
     QStringList markAllStale();
-    // 列改名批量迁移：依赖列引用与目标列自身一并改名，返回受影响的定义个数
-    int renameColumnReferences(const QString& oldName, const QString& newName);
+    // 列改名批量迁移：依赖列引用、目标列自身与公式文本一并改名，返回受影响的定义个数
+    int renameColumnReferences(const QString& oldName, const QString& newName,
+                               const ExpressionRewriter& rewriteExpr = ExpressionRewriter());
     // 删列联动：目标列被删 → 定义移除（removedTargets 输出，供命令 undo 恢复）；
     // 依赖列被删 → 置 Invalid（invalidatedTargets 输出，供提示，不静默清空数据）
     void onColumnsRemoved(const QStringList& removedNames, QStringList* removedTargets = nullptr, QStringList* invalidatedTargets = nullptr);

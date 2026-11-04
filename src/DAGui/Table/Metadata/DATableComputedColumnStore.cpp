@@ -235,28 +235,37 @@ QStringList DATableComputedColumnStore::markAllStale()
 }
 
 /**
- * @brief 列改名批量迁移：依赖列引用与目标列自身一并改名（R20）
+ * @brief 列改名批量迁移：依赖列引用、目标列自身与公式文本一并改名（R20）
  * @param oldName 旧列名
  * @param newName 新列名
+ * @param rewriteExpr 公式文本重写回调（依赖命中时调用；为空则只迁移列名元数据）
  * @return 受影响的定义个数
  */
-int DATableComputedColumnStore::renameColumnReferences(const QString& oldName, const QString& newName)
+int DATableComputedColumnStore::renameColumnReferences(const QString& oldName,
+                                                       const QString& newName,
+                                                       const ExpressionRewriter& rewriteExpr)
 {
     if (oldName == newName || oldName.isEmpty()) {
         return 0;
     }
     int affected = 0;
     for (Entry& e : mEntries) {
-        bool touched = false;
+        bool touched        = false;
+        bool dependsTouched = false;
         if (e.def.targetColumnName == oldName) {
             e.def.targetColumnName = newName;
             touched                = true;
         }
         for (QString& dep : e.def.dependsOn) {
             if (dep == oldName) {
-                dep    = newName;
-                touched = true;
+                dep            = newName;
+                touched        = true;
+                dependsTouched = true;
             }
+        }
+        // 公式文本只在依赖命中时重写（目标列自身改名不需要改表达式）
+        if (dependsTouched && rewriteExpr) {
+            e.def.expr = rewriteExpr(e.def.expr);
         }
         if (touched) {
             ++affected;

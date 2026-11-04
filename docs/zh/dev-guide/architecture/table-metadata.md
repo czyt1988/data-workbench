@@ -161,7 +161,7 @@ classDiagram
 - **一切写操作入栈**（D4）：创建/重算走 `DACommandDataFrame_evalColumn`（列级记录：首次 exec 捕获旧列快照，undo 还原旧列或删除新建列，内存=一列）；定义与状态的增删改**不入栈**，由命令的 directional 回调联动（创建 undo 移除定义、重算 undo 回原状态），与数据同一撤销单元；「移除公式（保留数据）」是纯元数据命令 `DACommandComputedColumn_removeDefinition`。
 - **禁止自覆盖**（R7）：目标列必须是新列名且表达式不得引用目标列（对话框 + 存储双重校验）；「删公式、留数据」的退路永远成立。
 - **打开工程不重算**（R7）：`<computed-column>` 段持久化 expr+engine+version+state（磁盘契约 R10），加载只恢复定义与状态、零求值；引擎/语法不兼容的最坏结果 = 普通列 + 标失效 + 提示，不损坏数据。
-- **列联动**（R20 列名引用）：改名 → `renameColumnReferences` 批量迁移（依赖与目标自身，改名前提示「有 N 个计算列引用它」）；删列 → `onColumnsRemoved`（目标被删=定义移除、依赖被删=置失效不静默清空）；`snapshot/restore` 整店快照供删列/合并命令的 undo 恢复。
+- **列联动**（R20 列名引用）：改名 → `renameColumnReferences` 批量迁移（依赖、目标自身与公式文本，改名前提示「有 N 个计算列引用它」；公式文本由 `da_rename_column_refs` 按 token 精确改写裸列名/反引号/`df["col"]`/`df.col`）；删列 → `onColumnsRemoved`（目标被删=定义移除、依赖被删=置失效不静默清空）；`snapshot/restore` 整店快照供删列/合并命令的 undo 恢复。
 - **表头三态标识**（R9）：浅蓝 `#BDCDE8` 底色经**模型** `actualHeaderData(BackgroundRole)` 提供（`QHeaderView::paintSection` 原生消费）、公式+状态 tooltip 经 `ToolTipRole`；`DADataHeaderView::paintSection` 只叠加左侧前导 `ƒx` 角标（状态色：主蓝/金黄/橙红，有多列排序序号角标时移到左下避让）。**单元格区域不染色**（D2 管线没有"公式列底纹"层）。
 - 入口：Ribbon「Data Tools」面板（新建计算列/全部重算）+ 表体右键「New Computed Column...」+ 计算列列头右键三项（编辑公式/重新计算/移除公式）。
 

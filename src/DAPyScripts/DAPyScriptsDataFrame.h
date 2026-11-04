@@ -200,6 +200,9 @@ public:
 	QStringList exprDepends(const DAPyDataFrame& df, const QString& body, bool* ok = nullptr, QString* errorMessage = nullptr) noexcept;
 	// 列名在 eval 表达式里是否需要反引号包裹（对应 da_dataframe.da_needs_backtick，R20）
 	bool needsBacktick(const QString& name) noexcept;
+	// 列改名时重写代码段里的列引用（裸列名/反引号/df["col"]/df.col，对应 da_dataframe.da_rename_column_refs）；
+	// 只改真正的列引用，字符串/注释/其它对象属性不动；失败时原样返回且 *ok=false
+	QString renameColumnRefs(const QString& code, const QString& oldName, const QString& newName, bool* ok = nullptr) noexcept;
 	// 取头部前 n 行的独立副本（对话框预览与执行同一算子，对应 da_dataframe.da_head_copy）
 	DAPyDataFrame headCopy(const DAPyDataFrame& df, int n) noexcept;
 	// 取某列的独立副本（分列/合列命令列级快照，对应 da_dataframe.da_get_column_copy）；越界返回 none

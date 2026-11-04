@@ -379,6 +379,154 @@ def da_needs_backtick(name: str) -> bool:
 
 
 @log_function_call(slow=True)
+def da_rename_column_refs(code: str, old_name: str, new_name: str) -> str:
+    '''
+    重写代码段里的列名引用（列改名联动，004 T1.23 R20）
+
+    支持四种引用形式：裸列名 A、反引号列名 `my col`、df["col"] / df['col']、df.col。
+    只改真正的列引用：字符串字面量、注释、其它对象的属性（如 A.str）与局部赋值目标
+    保持原样。新列名不是合法标识符（或命中保留名）时自动落成反引号 / df["..."] 形式。
+    代码无法 tokenize（语法错误）时原样返回，交给求值校验给出提示。
+
+    :param code: Python 代码段
+    :param old_name: 旧列名
+    :param new_name: 新列名
+    :return: 重写后的代码段（无引用时返回原文）
+    '''
+    import io
+    import json
+    import tokenize
+
+    old = str(old_name)
+    new = str(new_name)
+    if not code or old == new:
+        return code
+    new_ref = ('`%s`' % new) if da_needs_backtick(new) else new
+    new_json = json.dumps(new, ensure_ascii=False)
+
+    try:
+        tokens = list(tokenize.generate_tokens(io.StringIO(code).readline))
+    except (tokenize.TokenError, IndentationError, SyntaxError):
+        return code
+
+    # 行列位置 -> 原文字符偏移
+    line_starts = []
+    offset = 0
+    for line in code.splitlines(keepends=True):
+        line_starts.append(offset)
+        offset += len(line)
+
+    def abs_pos(pos):
+        row, col = pos
+        if row - 1 >= len(line_starts):
+            return offset
+        return line_starts[row - 1] + col
+
+    # 参与上下文判断的有效 token（跳过注释/换行/缩进）
+    sig_types = {tokenize.NAME, tokenize.OP, tokenize.STRING, tokenize.NUMBER}
+    sig = [i for i, t in enumerate(tokens) if t.type in sig_types]
+
+    replacements = []  # (start, end, text)
+    covered = []       # 反引号列名段，内部 token 不再参与裸列名替换
+
+    # 1) 反引号列名：`old` -> 新引用
+    i = 0
+    while i < len(tokens):
+        t = tokens[i]
+        if t.type == tokenize.ERRORTOKEN and t.string == '`':
+            j = i + 1
+            while j < len(tokens):
+                u = tokens[j]
+                if u.type == tokenize.ERRORTOKEN and u.string == '`':
+                    break
+                j += 1
+            if j >= len(tokens):
+                i += 1
+                continue
+            start = abs_pos(t.start)
+            end = abs_pos(tokens[j].end)
+            if code[start + 1:end - 1] == old:
+                replacements.append((start, end, new_ref))
+            covered.append((start, end))
+            i = j + 1
+            continue
+        i += 1
+
+    def inside_covered(start, end):
+        for s, e in covered:
+            if start >= s and end <= e:
+                return True
+        return False
+
+    # 2) df["old"] / df['old'] 与 df.old（df 是代码段命名空间保留名）
+    for si, ti in enumerate(sig):
+        t = tokens[ti]
+        if t.type != tokenize.NAME or t.string != 'df' or si + 1 >= len(sig):
+            continue
+        nxt = tokens[sig[si + 1]]
+        if nxt.type == tokenize.OP and nxt.string == '[' and si + 3 < len(sig):
+            str_tok = tokens[sig[si + 2]]
+            close_tok = tokens[sig[si + 3]]
+            if str_tok.type == tokenize.STRING and close_tok.type == tokenize.OP and close_tok.string == ']':
+                try:
+                    value = ast.literal_eval(str_tok.string)
+                except (ValueError, SyntaxError):
+                    value = None
+                if isinstance(value, str) and value == old:
+                    replacements.append((abs_pos(str_tok.start), abs_pos(str_tok.end), new_json))
+        elif nxt.type == tokenize.OP and nxt.string == '.' and si + 2 < len(sig):
+            attr_tok = tokens[sig[si + 2]]
+            if attr_tok.type == tokenize.NAME and attr_tok.string == old:
+                if da_needs_backtick(new):
+                    # 新名不能写属性访问：df.old -> df["new"]
+                    replacements.append((abs_pos(t.start), abs_pos(attr_tok.end), 'df[%s]' % new_json))
+                else:
+                    replacements.append((abs_pos(attr_tok.start), abs_pos(attr_tok.end), new))
+
+    # 3) 裸列名（old 本身必须可裸写，且不是关键字/保留名）
+    if old.isidentifier() and (not keyword.iskeyword(old)) and (old not in _DA_EVAL_RESERVED_NAMES):
+        binding_prev = {'for', 'as', 'def', 'class', 'import', 'lambda', 'global', 'nonlocal'}
+        for si, ti in enumerate(sig):
+            t = tokens[ti]
+            if t.type != tokenize.NAME or t.string != old:
+                continue
+            start = abs_pos(t.start)
+            end = abs_pos(t.end)
+            if inside_covered(start, end):
+                continue
+            prev = tokens[sig[si - 1]] if si > 0 else None
+            nxt = tokens[sig[si + 1]] if si + 1 < len(sig) else None
+            # 其它对象的属性：obj.old（df.old 已在第 2 步处理）
+            if prev is not None and prev.type == tokenize.OP and prev.string == '.':
+                continue
+            # 局部绑定目标：for old in / as old / def old ...
+            if prev is not None and prev.type == tokenize.NAME and prev.string in binding_prev:
+                continue
+            # 赋值目标 / 关键字参数：old = ...
+            if nxt is not None and nxt.type == tokenize.OP and nxt.string == '=':
+                continue
+            # 字典键：{old: ...}
+            if (nxt is not None and nxt.type == tokenize.OP and nxt.string == ':'
+                    and prev is not None and prev.type == tokenize.OP and prev.string in ('{', ',')):
+                continue
+            replacements.append((start, end, new_ref))
+
+    if not replacements:
+        return code
+
+    # 从后往前替换，避免前面的替换改变后面 token 的偏移
+    replacements.sort(key=lambda item: item[0], reverse=True)
+    out = code
+    last_start = None
+    for start, end, text in replacements:
+        if last_start is not None and end > last_start:
+            continue  # 重叠替换（理论上不会出现）
+        out = out[:start] + text + out[end:]
+        last_start = start
+    return out
+
+
+@log_function_call(slow=True)
 def da_make_eval_expr(target: str, body: str) -> str:
     '''
     构建 pandas eval 完整赋值表达式："目标列 = 表达式体"（004 T1.23）
