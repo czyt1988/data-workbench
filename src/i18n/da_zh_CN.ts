@@ -2909,13 +2909,13 @@
     </message>
     <message>
         <location line="+1"/>
-        <source>Computed Column</source>
-        <translation>计算列</translation>
+        <source>New Computed Column...</source>
+        <translation>新建计算列...</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Create a column computed from a formula of other columns</source>
-        <translation>用表达式基于其他列创建计算列</translation>
+        <source>Create a new column computed from a Python expression or code snippet of other columns</source>
+        <translation>用 Python 表达式/代码段基于其他列创建新列</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -10823,8 +10823,8 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     </message>
     <message>
         <location line="+11"/>
-        <source>Computed Column...</source>
-        <translation>计算列...</translation>
+        <source>New Computed Column...</source>
+        <translation>新建计算列...</translation>
     </message>
     <message>
         <location line="+7"/>
@@ -11097,23 +11097,33 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     </message>
     <message>
         <location line="+4"/>
-        <source>e.g. A + B (column names can be inserted from the list below)</source>
-        <translation>如 A + B（列名可从下方列表点选插入）</translation>
+        <source>Write a Python expression or code block. The last expression is the result, or assign it to `result`. Column names can be inserted from the menu.</source>
+        <translation>写 Python 表达式或代码段；最后一行表达式为结果，或赋值给 result；列名可从菜单插入</translation>
     </message>
     <message>
         <location line="-3"/>
-        <source>Target Column:</source>
+        <source>Target column:</source>
         <translation>目标列名：</translation>
     </message>
     <message>
         <location line="+4"/>
-        <source>Expression:</source>
-        <translation>表达式：</translation>
+        <source>Python expression / code</source>
+        <translation>Python 表达式 / 代码段</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Columns (click to insert)</source>
-        <translation>列名（点选插入）</translation>
+        <source>Insert Column</source>
+        <translation>插入列名</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Insert a column name at the cursor</source>
+        <translation>在光标处插入列名</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>(no columns)</source>
+        <translation>（无列）</translation>
     </message>
     <message>
         <location line="+13"/>
@@ -11147,8 +11157,8 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     </message>
     <message>
         <location line="+5"/>
-        <source>Please input the expression</source>
-        <translation>请输入表达式</translation>
+        <source>Please input the Python expression or code</source>
+        <translation>请输入 Python 表达式或代码</translation>
     </message>
     <message>
         <location line="+9"/>
@@ -21256,6 +21266,13 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <location filename="../DAGui/TableNavigation/DATableNavigationService.cpp" line="+0"/>
         <source>The column &quot;%1&quot; was hidden and has been made visible</source>
         <translation>列&quot;%1&quot;已隐藏，现已显示</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAPythonCodeEdit</name>
+    <message>
+        <source>e.g. tmp = A * 2, then np.where(tmp &gt; 0, tmp, 0)</source>
+        <translation>示例：tmp = A * 2，然后 np.where(tmp &gt; 0, tmp, 0)</translation>
     </message>
 </context>
 </TS>

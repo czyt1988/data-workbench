@@ -417,7 +417,7 @@ QMenu* DADataTableView::buildContextMenu(const QModelIndex& at)
     // 计算列写数据，只读/惰性源置灰（isTableEditable 为假）
     menu->addSeparator();
     QAction* actComputedColumn = menu->addAction(QIcon(QStringLiteral(":/DAGui/icon/computed-column.svg")),
-                                                 tr("Computed Column..."));  // cn:计算列...
+                                                 tr("New Computed Column..."));  // cn:新建计算列...
     actComputedColumn->setEnabled(editable);
     connect(actComputedColumn, &QAction::triggered, this, &DADataTableView::computedColumnRequested);
     // 分列/合并列（004 T1.9）：按选区列数决定启用哪一项——单列选区启用分列，

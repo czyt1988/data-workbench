@@ -1,22 +1,35 @@
 #include "Table/Dialogs/DADialogComputedColumn.h"
+#include "Common/CodeEditor/DAPythonCodeEdit.h"
 #include "DAPyScripts.h"
 #include "DAPyScriptsDataFrame.h"
 #include "DAWaitCursorScoped.h"
-#include <QLineEdit>
-#include <QListWidget>
-#include <QTableWidget>
-#include <QLabel>
-#include <QPushButton>
-#include <QTimer>
-#include <QHBoxLayout>
-#include <QVBoxLayout>
-#include <QFormLayout>
-#include <QGroupBox>
-#include <QHeaderView>
+// Qt
+#include <QAction>
 #include <QDialogButtonBox>
+#include <QGroupBox>
+#include <QHBoxLayout>
+#include <QHeaderView>
+#include <QLabel>
+#include <QLineEdit>
+#include <QMenu>
+#include <QPushButton>
+#include <QSplitter>
+#include <QTableWidget>
+#include <QTextCursor>
+#include <QTimer>
+#include <QToolButton>
+#include <QVBoxLayout>
 
 namespace DA
 {
+namespace
+{
+// 判断字符是否可组成标识符（插入列名时决定是否补空格）
+bool isWordChar(const QChar& c)
+{
+    return c.isLetterOrNumber() || c == QLatin1Char('_') || c == QLatin1Char('`');
+}
+}  // namespace
 
 /**
  * @brief 构造（创建模式）
@@ -37,47 +50,97 @@ DADialogComputedColumn::~DADialogComputedColumn()
 /**
  * @brief 界面搭建（代码构建，无 .ui）
  *
- * 左侧：目标列名 + 表达式 + 列名点选列表；右侧：状态标签 + 头部预览表。
+ * 布局：顶部目标列名；中部左右分割（左 2/3 代码编辑区，右 1/3 预览）；
+ * 底部确定/取消。列名不占独立列表，改由编辑区上方的「插入列名」菜单注入。
  */
 void DADialogComputedColumn::setupUI()
 {
     setModal(true);
-    QWidget* leftPanel = new QWidget(this);
-    QFormLayout* form  = new QFormLayout(leftPanel);
-    form->setContentsMargins(0, 0, 0, 0);
-    mEditTarget = new QLineEdit(leftPanel);
+
+    // —— 目标列名 ——
+    QWidget* targetPanel    = new QWidget(this);
+    QHBoxLayout* targetLay  = new QHBoxLayout(targetPanel);
+    targetLay->setContentsMargins(0, 0, 0, 0);
+    QLabel* targetLabel = new QLabel(tr("Target column:"), targetPanel);  // cn:目标列名：
+    mEditTarget         = new QLineEdit(targetPanel);
     mEditTarget->setObjectName(QStringLiteral("lineEditComputedTarget"));
     mEditTarget->setPlaceholderText(tr("New column name"));  // cn:新列名
-    form->addRow(tr("Target Column:"), mEditTarget);  // cn:目标列名：
-    mEditExpr = new QLineEdit(leftPanel);
-    mEditExpr->setObjectName(QStringLiteral("lineEditComputedExpr"));
-    mEditExpr->setPlaceholderText(tr("e.g. A + B (column names can be inserted from the list below)"));  // cn:如 A + B（列名可从下方列表点选插入）
-    form->addRow(tr("Expression:"), mEditExpr);  // cn:表达式：
-    QGroupBox* colGroup = new QGroupBox(tr("Columns (click to insert)"), leftPanel);  // cn:列名（点选插入）
-    QVBoxLayout* colLayout = new QVBoxLayout(colGroup);
-    colLayout->setContentsMargins(4, 4, 4, 4);
-    mListColumns = new QListWidget(colGroup);
-    colLayout->addWidget(mListColumns);
-    form->addRow(colGroup);
+    targetLay->addWidget(targetLabel);
+    targetLay->addWidget(mEditTarget, 1);
 
-    QWidget* rightPanel  = new QWidget(this);
-    QVBoxLayout* rightLay = new QVBoxLayout(rightPanel);
-    rightLay->setContentsMargins(0, 0, 0, 0);
-    mLabelStatus = new QLabel(rightPanel);
+    // —— 左侧：代码编辑区 ——
+    QWidget* editorPanel    = new QWidget(this);
+    QVBoxLayout* editorLay  = new QVBoxLayout(editorPanel);
+    editorLay->setContentsMargins(0, 0, 0, 0);
+    editorLay->setSpacing(4);
+    QHBoxLayout* editorHeader = new QHBoxLayout();
+    QLabel* exprLabel         = new QLabel(tr("Python expression / code"), editorPanel);  // cn:Python 表达式 / 代码段
+    mButtonInsertColumn       = new QToolButton(editorPanel);
+    mButtonInsertColumn->setObjectName(QStringLiteral("toolButtonInsertComputedColumn"));
+    mButtonInsertColumn->setText(tr("Insert Column"));  // cn:插入列名
+    mButtonInsertColumn->setToolTip(tr("Insert a column name at the cursor"));  // cn:在光标处插入列名
+    mButtonInsertColumn->setPopupMode(QToolButton::InstantPopup);
+    mButtonInsertColumn->setToolButtonStyle(Qt::ToolButtonTextOnly);
+    QMenu* columnMenu = new QMenu(mButtonInsertColumn);
+    const QList< QString > cols = mDf.columns();
+    for (const QString& c : cols) {
+        QAction* act = columnMenu->addAction(c);
+        connect(act, &QAction::triggered, this, [ this, c ]() { insertColumnName(c); });
+    }
+    if (columnMenu->isEmpty()) {
+        columnMenu->addAction(tr("(no columns)"))->setEnabled(false);  // cn:（无列）
+    }
+    mButtonInsertColumn->setMenu(columnMenu);
+    editorHeader->addWidget(exprLabel);
+    editorHeader->addStretch();
+    editorHeader->addWidget(mButtonInsertColumn);
+    editorLay->addLayout(editorHeader);
+
+    mEditExpr = new DAPythonCodeEdit(editorPanel);
+    mEditExpr->setObjectName(QStringLiteral("plainTextEditComputedExpr"));
+    mEditExpr->setToolTip(
+        tr("Write a Python expression or code block. The last expression is the result, or assign it to `result`. "
+           "Column names can be inserted from the menu."));  // cn:写 Python 表达式或代码段；最后一行表达式为结果，或赋值给 result；列名可从菜单插入
+    QList< DAPythonCompletionEntry > entries;
+    entries.reserve(cols.size());
+    DAPyScriptsDataFrame& py = DAPyScripts::getDataFrame();
+    for (const QString& c : cols) {
+        DAPythonCompletionEntry e;
+        e.text       = c;
+        e.insertText = py.needsBacktick(c) ? (QStringLiteral("`") + c + QStringLiteral("`")) : c;
+        entries.append(e);
+    }
+    mEditExpr->setExtraEntries(entries);
+    editorLay->addWidget(mEditExpr, 1);
+
+    // —— 右侧：校验状态 + 头部预览 ——
+    QWidget* previewPanel   = new QWidget(this);
+    QVBoxLayout* previewLay = new QVBoxLayout(previewPanel);
+    previewLay->setContentsMargins(0, 0, 0, 0);
+    mLabelStatus            = new QLabel(previewPanel);
+    mLabelStatus->setObjectName(QStringLiteral("labelComputedStatus"));
     mLabelStatus->setWordWrap(true);
-    rightLay->addWidget(mLabelStatus);
-    QGroupBox* previewGroup = new QGroupBox(tr("Preview (first %1 rows)").arg(c_previewRows), rightPanel);  // cn:预览（前 %1 行）
-    QVBoxLayout* previewLay = new QVBoxLayout(previewGroup);
-    previewLay->setContentsMargins(4, 4, 4, 4);
+    mLabelStatus->setTextInteractionFlags(Qt::TextSelectableByMouse);
+    mLabelStatus->setMinimumHeight(40);
+    previewLay->addWidget(mLabelStatus);
+    QGroupBox* previewGroup = new QGroupBox(tr("Preview (first %1 rows)").arg(c_previewRows), previewPanel);  // cn:预览（前 %1 行）
+    QVBoxLayout* previewBoxLay = new QVBoxLayout(previewGroup);
+    previewBoxLay->setContentsMargins(4, 4, 4, 4);
     mTablePreview = new QTableWidget(previewGroup);
     mTablePreview->setEditTriggers(QAbstractItemView::NoEditTriggers);
     mTablePreview->verticalHeader()->setVisible(false);
-    previewLay->addWidget(mTablePreview);
-    rightLay->addWidget(previewGroup, 1);
+    previewBoxLay->addWidget(mTablePreview);
+    previewLay->addWidget(previewGroup, 1);
 
-    QHBoxLayout* bodyLay = new QHBoxLayout();
-    bodyLay->addWidget(leftPanel, 2);
-    bodyLay->addWidget(rightPanel, 3);
+    // —— 左右分割：编辑 2/3，预览 1/3 ——
+    QSplitter* splitter = new QSplitter(Qt::Horizontal, this);
+    splitter->setObjectName(QStringLiteral("splitterComputed"));
+    splitter->setChildrenCollapsible(false);
+    splitter->addWidget(editorPanel);
+    splitter->addWidget(previewPanel);
+    splitter->setStretchFactor(0, 2);
+    splitter->setStretchFactor(1, 1);
+    splitter->setSizes({ 660, 330 });
 
     QDialogButtonBox* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
     mButtonOk                 = buttons->button(QDialogButtonBox::Ok);
@@ -85,21 +148,11 @@ void DADialogComputedColumn::setupUI()
     mButtonOk->setText(tr("OK"));                                      // cn:确定
     mButtonOk->setEnabled(false);
     QVBoxLayout* mainLay = new QVBoxLayout(this);
-    mainLay->addLayout(bodyLay, 1);
+    mainLay->addWidget(targetPanel);
+    mainLay->addWidget(splitter, 1);
     mainLay->addWidget(buttons);
     connect(buttons, &QDialogButtonBox::accepted, this, &QDialog::accept);
     connect(buttons, &QDialogButtonBox::rejected, this, &QDialog::reject);
-
-    // 列名列表填充（点选插入用 itemClicked：同一行可重复点击插入）
-    const QList< QString > cols = mDf.columns();
-    for (const QString& c : cols) {
-        mListColumns->addItem(c);
-    }
-    connect(mListColumns, &QListWidget::itemClicked, this, [ this ](QListWidgetItem* item) {
-        if (item) {
-            onColumnItemClicked(mListColumns->row(item));
-        }
-    });
 
     // 去抖校验（300ms）
     mDebounceTimer = new QTimer(this);
@@ -107,13 +160,19 @@ void DADialogComputedColumn::setupUI()
     mDebounceTimer->setInterval(300);
     connect(mDebounceTimer, &QTimer::timeout, this, &DADialogComputedColumn::runValidationAndPreview);
     connect(mEditTarget, &QLineEdit::textChanged, this, &DADialogComputedColumn::onInputChanged);
-    connect(mEditExpr, &QLineEdit::textChanged, this, &DADialogComputedColumn::onInputChanged);
+    connect(mEditExpr, &QPlainTextEdit::textChanged, this, &DADialogComputedColumn::onInputChanged);
+    // Ctrl+Enter：校验通过时直接确定
+    connect(mEditExpr, &DAPythonCodeEdit::submitRequested, this, [ this ]() {
+        if (mButtonOk->isEnabled()) {
+            accept();
+        }
+    });
 
-    resize(760, 420);
+    resize(1060, 640);
 }
 
 /**
- * @brief 编辑模式（列头右键「编辑公式」）：目标列名固定只读，表达式预填
+ * @brief 编辑模式（列头右键「编辑公式」）：目标列名固定只读，代码段预填
  * @param def 既有定义
  */
 void DADialogComputedColumn::setEditMode(const DAComputedColumn& def)
@@ -122,7 +181,7 @@ void DADialogComputedColumn::setEditMode(const DAComputedColumn& def)
     setWindowTitle(tr("Edit Formula"));  // cn:编辑公式
     mEditTarget->setText(def.targetColumnName);
     mEditTarget->setReadOnly(true);
-    mEditExpr->setText(def.expr);
+    mEditExpr->setPlainText(def.expr);
     runValidationAndPreview();
 }
 
@@ -138,7 +197,7 @@ QString DADialogComputedColumn::targetColumnName() const
 
 QString DADialogComputedColumn::expressionBody() const
 {
-    return mEditExpr->text().trimmed();
+    return mEditExpr->toPlainText().trimmed();
 }
 
 QStringList DADialogComputedColumn::dependencies() const
@@ -147,18 +206,25 @@ QStringList DADialogComputedColumn::dependencies() const
 }
 
 /**
- * @brief 列名点选插入：在表达式光标处插入列名（含空格/特殊字符自动加反引号，R20）
- * @param row 列表行
+ * @brief 在代码编辑器光标处插入列名（按需加反引号与空格）
+ * @param name 列名
  */
-void DADialogComputedColumn::onColumnItemClicked(int row)
+void DADialogComputedColumn::insertColumnName(const QString& name)
 {
-    if (row < 0 || !mListColumns->item(row)) {
-        return;
-    }
-    const QString name = mListColumns->item(row)->text();
     DAPyScriptsDataFrame& py = DAPyScripts::getDataFrame();
-    QString ref              = py.needsBacktick(name) ? (QLatin1Char('`') + name + QLatin1Char('`')) : name;
-    mEditExpr->insert(ref);
+    QString ref              = py.needsBacktick(name) ? (QStringLiteral("`") + name + QStringLiteral("`")) : name;
+    // 光标两侧都是标识符字符时补空格，避免粘成新标识符
+    const QString text = mEditExpr->toPlainText();
+    const int pos      = mEditExpr->textCursor().position();
+    const QChar prev   = (pos > 0) ? text.at(pos - 1) : QChar();
+    const QChar next   = (pos < text.size()) ? text.at(pos) : QChar();
+    if (!ref.isEmpty() && isWordChar(prev) && isWordChar(ref.at(0))) {
+        ref.prepend(QLatin1Char(' '));
+    }
+    if (!ref.isEmpty() && isWordChar(next) && isWordChar(ref.at(ref.size() - 1))) {
+        ref.append(QLatin1Char(' '));
+    }
+    mEditExpr->insertCodeAtCursor(ref);
 }
 
 void DADialogComputedColumn::onInputChanged()
@@ -184,8 +250,8 @@ void DADialogComputedColumn::setStatusOk(const QString& msg)
  * @brief 校验 + 头部预览（预览与执行同一算子：da_head_copy + da_eval_column）
  *
  * 校验链（任一失败 → 红字提示 + OK 置灰，不写任何数据）：
- * 目标列名非空 → 创建模式目标不存在（禁止自覆盖 R7）→ 表达式非空 →
- * 表达式可解析（ast）→ 依赖不含目标列（禁止自覆盖）→ head 副本求值成功。
+ * 目标列名非空 → 创建模式目标不存在（禁止自覆盖 R7）→ 代码非空 →
+ * 代码可解析（ast）→ 依赖不含目标列（禁止自覆盖）→ head 副本求值成功。
  */
 void DADialogComputedColumn::runValidationAndPreview()
 {
@@ -215,7 +281,7 @@ void DADialogComputedColumn::runValidationAndPreview()
         return;
     }
     if (body.isEmpty()) {
-        setStatusError(tr("Please input the expression"));  // cn:请输入表达式
+        setStatusError(tr("Please input the Python expression or code"));  // cn:请输入 Python 表达式或代码
         return;
     }
     DAPyScriptsDataFrame& py = DAPyScripts::getDataFrame();

@@ -2883,13 +2883,13 @@
     </message>
     <message>
         <location line="+1"/>
-        <source>Computed Column</source>
-        <translation>Computed Column</translation>
+        <source>New Computed Column...</source>
+        <translation>New Computed Column...</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Create a column computed from a formula of other columns</source>
-        <translation>Create a column computed from a formula of other columns</translation>
+        <source>Create a new column computed from a Python expression or code snippet of other columns</source>
+        <translation>Create a new column computed from a Python expression or code snippet of other columns</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -10807,8 +10807,8 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     </message>
     <message>
         <location line="+11"/>
-        <source>Computed Column...</source>
-        <translation>Computed Column...</translation>
+        <source>New Computed Column...</source>
+        <translation>New Computed Column...</translation>
     </message>
     <message>
         <location line="+7"/>
@@ -11081,23 +11081,33 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     </message>
     <message>
         <location line="+4"/>
-        <source>e.g. A + B (column names can be inserted from the list below)</source>
-        <translation>e.g. A + B (column names can be inserted from the list below)</translation>
+        <source>Write a Python expression or code block. The last expression is the result, or assign it to `result`. Column names can be inserted from the menu.</source>
+        <translation>Write a Python expression or code block. The last expression is the result, or assign it to `result`. Column names can be inserted from the menu.</translation>
     </message>
     <message>
         <location line="-3"/>
-        <source>Target Column:</source>
-        <translation>Target Column:</translation>
+        <source>Target column:</source>
+        <translation>Target column:</translation>
     </message>
     <message>
         <location line="+4"/>
-        <source>Expression:</source>
-        <translation>Expression:</translation>
+        <source>Python expression / code</source>
+        <translation>Python expression / code</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Columns (click to insert)</source>
-        <translation>Columns (click to insert)</translation>
+        <source>Insert Column</source>
+        <translation>Insert Column</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Insert a column name at the cursor</source>
+        <translation>Insert a column name at the cursor</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>(no columns)</source>
+        <translation>(no columns)</translation>
     </message>
     <message>
         <location line="+13"/>
@@ -11131,8 +11141,8 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     </message>
     <message>
         <location line="+5"/>
-        <source>Please input the expression</source>
-        <translation>Please input the expression</translation>
+        <source>Please input the Python expression or code</source>
+        <translation>Please input the Python expression or code</translation>
     </message>
     <message>
         <location line="+9"/>
@@ -21231,6 +21241,13 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <location filename="../DAGui/TableNavigation/DATableNavigationService.cpp" line="+0"/>
         <source>The column &quot;%1&quot; was hidden and has been made visible</source>
         <translation>The column &quot;%1&quot; was hidden and has been made visible</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAPythonCodeEdit</name>
+    <message>
+        <source>e.g. tmp = A * 2, then np.where(tmp &gt; 0, tmp, 0)</source>
+        <translation>e.g. tmp = A * 2, then np.where(tmp &gt; 0, tmp, 0)</translation>
     </message>
 </context>
 </TS>

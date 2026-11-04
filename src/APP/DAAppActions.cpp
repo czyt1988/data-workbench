@@ -700,8 +700,8 @@ void DAAppActions::retranslateUi()
     actionReplace->setToolTip(tr("Find and replace cells (Ctrl+H)"));  // cn:查找并替换单元格（Ctrl+H）
     actionConditionalFormat->setText(tr("Conditional Formatting"));   // cn:条件格式
     actionConditionalFormat->setToolTip(tr("Manage conditional formatting rules (cell rules / color scale / data bar) of the selected columns"));  // cn:管理选中列的条件格式规则（单元格规则/色阶/数据条）
-    actionComputedColumn->setText(tr("Computed Column"));             // cn:计算列
-    actionComputedColumn->setToolTip(tr("Create a column computed from a formula of other columns"));  // cn:用表达式基于其他列创建计算列
+    actionComputedColumn->setText(tr("New Computed Column..."));      // cn:新建计算列...
+    actionComputedColumn->setToolTip(tr("Create a new column computed from a Python expression or code snippet of other columns"));  // cn:用 Python 表达式/代码段基于其他列创建新列
     actionRecomputeAllComputedColumns->setText(tr("Recompute All"));  // cn:全部重算
     actionRecomputeAllComputedColumns->setToolTip(tr("Recompute all stale/invalid computed columns of the current table"));  // cn:重算当前表全部待重算/失效的计算列
     actionSplitColumn->setText(tr("Split Column"));                 // cn:分列
