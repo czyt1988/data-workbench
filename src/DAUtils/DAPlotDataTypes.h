@@ -4,6 +4,7 @@
 #include <QPolygonF>
 #include <QPointF>
 #include <QList>
+#include <limits>
 
 namespace DA {
 
@@ -47,6 +48,9 @@ struct DASpectrogramData {
     double xmin, xmax, ymin, ymax;
     QStringList rowLabels;
     QStringList colLabels;
+    // 色标（Z轴）上下限；NaN 表示由数据自动确定
+    double zmin { std::numeric_limits< double >::quiet_NaN() };
+    double zmax { std::numeric_limits< double >::quiet_NaN() };
 };
 
 } // namespace DA

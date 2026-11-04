@@ -26,6 +26,9 @@
 #include "qwt_plot_intervalcurve.h"
 #include "qwt_plot_histogram.h"
 #include "qwt_plot_spectrogram.h"
+#include "qwt_grid_raster_data.h"
+#include "qwt_matrix_raster_data.h"
+#include "qwt_raster_data.h"
 #include "qwt_plot_graphicitem.h"
 #include "qwt_plot_tradingcurve.h"
 #include "qwt_plot_barchart.h"
@@ -46,7 +49,8 @@ namespace {
 /// v1: 仅 alignment/length/labelAlignment/labelRotation 等基类几何属性
 /// v2: 在 isSD 后增加 scaleDrawType(0=normal,1=QwtTextScaleDraw)，
 ///     若为 QwtTextScaleDraw 额外持久化 labelMap 与显式 scaleDiv 的 bounds
-constexpr int gcScaleWidgetBlockVersion = 2;
+/// v3: 在块尾增加色标条色带段（v3 之前重开工程色带丢失）
+constexpr int gcScaleWidgetBlockVersion = 3;
 
 /// serialize_out/in_scale_widge 坐标轴外层块版本号
 /// v1(=gc_dachart_version): 无刻度方向字段
@@ -457,6 +461,8 @@ DECLARE_INITCHARTITEMSERIALIZE_FUN(QwtPlotItem::Rtti_PlotMarker, QwtPlotMarker)
 DECLARE_INITCHARTITEMSERIALIZE_FUN(DA::DADataProbeMarker::Rtti_DataProbeMarker, DA::DADataProbeMarker)
 DECLARE_INITCHARTITEMSERIALIZE_FUN(DA::DAChartTextMarker::Rtti_TextMarker, DA::DAChartTextMarker)
 DECLARE_INITCHARTITEMSERIALIZE_FUN(QwtPlotItem::Rtti_PlotSpectroCurve, QwtPlotSpectroCurve)
+DECLARE_INITCHARTITEMSERIALIZE_FUN(QwtPlotItem::Rtti_PlotSpectrogram, QwtPlotSpectrogram)
+DECLARE_INITCHARTITEMSERIALIZE_FUN(QwtPlotItem::Rtti_PlotZone, QwtPlotZoneItem)
 DECLARE_INITCHARTITEMSERIALIZE_FUN(QwtPlotItem::Rtti_PlotBarChart, QwtPlotBarChart)
 DECLARE_INITCHARTITEMSERIALIZE_FUN(QwtPlotItem::Rtti_PlotIntervalCurve, QwtPlotIntervalCurve)
 DECLARE_INITCHARTITEMSERIALIZE_FUN(QwtPlotItem::Rtti_PlotShape, QwtPlotShapeItem)
@@ -482,6 +488,10 @@ QHash< int, std::pair< DAChartItemSerialize::FpSerializeIn, DAChartItemSerialize
         INITCHARTITEMSERIALIZE_MAKE_IN_OUT_PAIR(DA::DAChartTextMarker::Rtti_TextMarker, DA::DAChartTextMarker);
     res[ QwtPlotItem::Rtti_PlotSpectroCurve ] =
         INITCHARTITEMSERIALIZE_MAKE_IN_OUT_PAIR(QwtPlotItem::Rtti_PlotSpectroCurve, QwtPlotSpectroCurve);
+    res[ QwtPlotItem::Rtti_PlotSpectrogram ] =
+        INITCHARTITEMSERIALIZE_MAKE_IN_OUT_PAIR(QwtPlotItem::Rtti_PlotSpectrogram, QwtPlotSpectrogram);
+    res[ QwtPlotItem::Rtti_PlotZone ] =
+        INITCHARTITEMSERIALIZE_MAKE_IN_OUT_PAIR(QwtPlotItem::Rtti_PlotZone, QwtPlotZoneItem);
     res[ QwtPlotItem::Rtti_PlotBarChart ] =
         INITCHARTITEMSERIALIZE_MAKE_IN_OUT_PAIR(QwtPlotItem::Rtti_PlotBarChart, QwtPlotBarChart);
     res[ QwtPlotItem::Rtti_PlotIntervalCurve ] =
@@ -1210,6 +1220,279 @@ QDataStream& operator>>(QDataStream& in, QwtPlotSpectroCurve* item)
 }
 
 //============================================
+// QwtPlotSpectrogram（含栅格数据与色带）
+//============================================
+
+namespace {
+/// 色图多态类型标签（QwtPlotSpectrogram 与 QwtScaleWidget 的色图序列化共用）
+enum SpectroColorMapTag
+{
+    ColorMapTagNone     = 0,  // 无色图/未知类型
+    ColorMapTagLinear   = 1,
+    ColorMapTagAlpha    = 2,
+    ColorMapTagHue      = 3,
+    ColorMapTagSatValue = 4
+};
+
+/// 栅格数据类型标签
+enum RasterDataTag
+{
+    RasterTagNone   = 0,  // 无数据/未知类型（读回后不携带栅格数据）
+    RasterTagGrid   = 1,  // QwtGridRasterData
+    RasterTagMatrix = 2   // QwtMatrixRasterData
+};
+
+/**
+ * @brief 色图多态序列化输出：写「类型标签 + 具体色图」
+ *
+ * 未知色图类型降级为 None（读回方按无色图处理，保持工程可打开）
+ */
+void spectroColorMapOut(QDataStream& out, const QwtColorMap* cmap)
+{
+    if (cmap == nullptr) {
+        out << static_cast< int >(ColorMapTagNone);
+        return;
+    }
+    if (const QwtLinearColorMap* m = dynamic_cast< const QwtLinearColorMap* >(cmap)) {
+        out << static_cast< int >(ColorMapTagLinear) << m;
+    } else if (const QwtAlphaColorMap* m = dynamic_cast< const QwtAlphaColorMap* >(cmap)) {
+        out << static_cast< int >(ColorMapTagAlpha) << m;
+    } else if (const QwtHueColorMap* m = dynamic_cast< const QwtHueColorMap* >(cmap)) {
+        out << static_cast< int >(ColorMapTagHue) << m;
+    } else if (const QwtSaturationValueColorMap* m = dynamic_cast< const QwtSaturationValueColorMap* >(cmap)) {
+        out << static_cast< int >(ColorMapTagSatValue) << m;
+    } else {
+        qWarning() << "serializeColorMap: unknown QwtColorMap type, fallback to none";
+        out << static_cast< int >(ColorMapTagNone);
+    }
+}
+
+/**
+ * @brief 色图多态序列化输入：按类型标签读回并新建色图对象
+ * @return 新建的色图（调用方接管所有权），None 标签返回 nullptr
+ */
+QwtColorMap* spectroColorMapIn(QDataStream& in)
+{
+    int tag = ColorMapTagNone;
+    in >> tag;
+    switch (tag) {
+    case ColorMapTagLinear: {
+        QwtLinearColorMap* m = new QwtLinearColorMap();
+        in >> m;
+        return m;
+    }
+    case ColorMapTagAlpha: {
+        QwtAlphaColorMap* m = new QwtAlphaColorMap();
+        in >> m;
+        return m;
+    }
+    case ColorMapTagHue: {
+        QwtHueColorMap* m = new QwtHueColorMap();
+        in >> m;
+        return m;
+    }
+    case ColorMapTagSatValue: {
+        QwtSaturationValueColorMap* m = new QwtSaturationValueColorMap();
+        in >> m;
+        return m;
+    }
+    default:
+        break;
+    }
+    return nullptr;
+}
+
+/**
+ * @brief 栅格数据多态序列化输出
+ *
+ * 支持 QwtGridRasterData 与 QwtMatrixRasterData；其它类型（含插件私有子类）
+ * 写 None 标签并警告（数据丢失但工程可打开）
+ */
+void rasterDataOut(QDataStream& out, const QwtRasterData* rd)
+{
+    if (rd == nullptr) {
+        out << static_cast< int >(RasterTagNone);
+        return;
+    }
+    if (const QwtGridRasterData* grid = dynamic_cast< const QwtGridRasterData* >(rd)) {
+        const int nx = grid->xSize();
+        const int ny = grid->ySize();
+        QVector< double > x(nx), y(ny);
+        for (int i = 0; i < nx; ++i) {
+            x[ i ] = grid->atX(i);
+        }
+        for (int j = 0; j < ny; ++j) {
+            y[ j ] = grid->atY(j);
+        }
+        // QwtGridRasterData::setValue 的矩阵布局为 v[xIndex][yIndex]
+        QVector< QVector< double > > v(nx);
+        for (int i = 0; i < nx; ++i) {
+            v[ i ].resize(ny);
+            for (int j = 0; j < ny; ++j) {
+                v[ i ][ j ] = grid->atValue(i, j);
+            }
+        }
+        out << static_cast< int >(RasterTagGrid) << x << y << v << static_cast< int >(grid->resampleMode());
+        return;
+    }
+    if (const QwtMatrixRasterData* mat = dynamic_cast< const QwtMatrixRasterData* >(rd)) {
+        out << static_cast< int >(RasterTagMatrix) << mat->valueMatrix() << mat->numColumns() << mat->interval(Qt::XAxis)
+            << mat->interval(Qt::YAxis) << mat->interval(Qt::ZAxis) << static_cast< int >(mat->resampleMode());
+        return;
+    }
+    qWarning() << "rasterDataOut: unknown QwtRasterData type, data will be lost after reload";
+    out << static_cast< int >(RasterTagNone);
+}
+
+/**
+ * @brief 栅格数据多态序列化输入
+ * @return 新建的栅格数据（调用方接管所有权），None 标签返回 nullptr
+ */
+QwtRasterData* rasterDataIn(QDataStream& in)
+{
+    int tag = RasterTagNone;
+    in >> tag;
+    switch (tag) {
+    case RasterTagGrid: {
+        QVector< double > x, y;
+        QVector< QVector< double > > v;
+        int resample = 0;
+        in >> x >> y >> v >> resample;
+        QwtGridRasterData* grid = new QwtGridRasterData();
+        grid->setValue(x, y, v);
+        grid->setResampleMode(static_cast< QwtGridRasterData::ResampleMode >(resample));
+        return grid;
+    }
+    case RasterTagMatrix: {
+        QVector< double > values;
+        int numColumns = 0, resample = 0;
+        QwtInterval ix, iy, iz;
+        in >> values >> numColumns >> ix >> iy >> iz >> resample;
+        QwtMatrixRasterData* mat = new QwtMatrixRasterData();
+        mat->setValueMatrix(values, numColumns);
+        mat->setInterval(Qt::XAxis, ix);
+        mat->setInterval(Qt::YAxis, iy);
+        mat->setInterval(Qt::ZAxis, iz);
+        mat->setResampleMode(static_cast< QwtMatrixRasterData::ResampleMode >(resample));
+        return mat;
+    }
+    default:
+        break;
+    }
+    return nullptr;
+}
+}  // namespace
+
+/**
+ * @brief QwtPlotSpectrogram(Rtti_PlotSpectrogram)指针的序列化
+ * @param out
+ * @param item
+ * @return
+ */
+QDataStream& operator<<(QDataStream& out, const QwtPlotSpectrogram* item)
+{
+    out << DA::gc_dachart_version << DA::gc_dachart_magic_mark;
+    out << static_cast< const QwtPlotItem* >(item);
+    // 栅格数据 + 色带
+    rasterDataOut(out, item->data());
+    spectroColorMapOut(out, item->colorMap());
+    // 显示模式（图像/等高线）
+    const int displayFlags = (item->testDisplayMode(QwtPlotSpectrogram::ImageMode) ? 0x01 : 0x00)
+                             | (item->testDisplayMode(QwtPlotSpectrogram::ContourMode) ? 0x02 : 0x00);
+    out << displayFlags;
+    // 等高线等级与默认画笔
+    const QList< double > levels = item->contourLevels();
+    out << levels << item->defaultContourPen();
+    // conrec 标志（等高线算法修饰）
+    const int conrecFlags = (item->testConrecFlag(QwtRasterData::IgnoreAllVerticesOnLevel) ? 0x01 : 0x00)
+                            | (item->testConrecFlag(QwtRasterData::IgnoreOutOfRange) ? 0x02 : 0x00);
+    out << conrecFlags;
+    return out;
+}
+
+/**
+ * @brief QwtPlotSpectrogram(Rtti_PlotSpectrogram)指针的反序列化
+ * @param in 输入数据流
+ * @param item QwtPlotSpectrogram指针
+ * @return 输入数据流
+ */
+QDataStream& operator>>(QDataStream& in, QwtPlotSpectrogram* item)
+{
+    int version;
+    std::uint32_t magic;
+    in >> version >> magic;
+    if (DA::gc_dachart_magic_mark != magic) {
+        throw DA::DABadSerializeExpection();
+        return in;
+    }
+    in >> static_cast< QwtPlotItem* >(item);
+    // 栅格数据 + 色带
+    if (QwtRasterData* rd = rasterDataIn(in)) {
+        item->setData(rd);
+    }
+    if (QwtColorMap* cmap = spectroColorMapIn(in)) {
+        item->setColorMap(cmap);
+    }
+    int displayFlags = 0x01;  // 旧数据无此字段时按默认（仅数据）处理不会发生：此字段随版本引入
+    in >> displayFlags;
+    item->setDisplayMode(QwtPlotSpectrogram::ImageMode, displayFlags & 0x01);
+    item->setDisplayMode(QwtPlotSpectrogram::ContourMode, displayFlags & 0x02);
+    QList< double > levels;
+    QPen contourPen;
+    in >> levels >> contourPen;
+    item->setContourLevels(levels);
+    item->setDefaultContourPen(contourPen);
+    int conrecFlags = 0;
+    in >> conrecFlags;
+    item->setConrecFlag(QwtRasterData::IgnoreAllVerticesOnLevel, conrecFlags & 0x01);
+    item->setConrecFlag(QwtRasterData::IgnoreOutOfRange, conrecFlags & 0x02);
+    return in;
+}
+
+//============================================
+// QwtPlotZoneItem
+//============================================
+/**
+ * @brief QwtPlotZoneItem(Rtti_PlotZone)指针的序列化
+ * @param out
+ * @param item
+ * @return
+ */
+QDataStream& operator<<(QDataStream& out, const QwtPlotZoneItem* item)
+{
+    out << DA::gc_dachart_version << DA::gc_dachart_magic_mark;
+    out << static_cast< const QwtPlotItem* >(item);
+    out << item->interval() << item->pen() << item->brush();
+    return out;
+}
+
+/**
+ * @brief QwtPlotZoneItem(Rtti_PlotZone)指针的反序列化
+ * @param in 输入数据流
+ * @param item QwtPlotZoneItem指针
+ * @return 输入数据流
+ */
+QDataStream& operator>>(QDataStream& in, QwtPlotZoneItem* item)
+{
+    int version;
+    std::uint32_t magic;
+    in >> version >> magic;
+    if (DA::gc_dachart_magic_mark != magic) {
+        throw DA::DABadSerializeExpection();
+        return in;
+    }
+    in >> static_cast< QwtPlotItem* >(item);
+    QwtInterval interval;
+    QPen pen;
+    QBrush brush;
+    in >> interval >> pen >> brush;
+    item->setInterval(interval);
+    item->setPen(pen);
+    item->setBrush(brush);
+    return in;
+}
+
+//============================================
 // QwtPlotBarChart
 //============================================
 ///
@@ -1748,6 +2031,8 @@ QDataStream& operator<<(QDataStream& out, const QwtScaleWidget* w)
             out << div.lowerBound() << div.upperBound();
         }
     }
+    // v3: 色标条色带（v3 之前重开工程色带丢失）
+    spectroColorMapOut(out, w->colorMap());
     return out;
 }
 
@@ -1835,6 +2120,13 @@ QDataStream& operator>>(QDataStream& in, QwtScaleWidget* w)
                 sd = w->scaleDraw();
             }
             in >> sd;
+        }
+    }
+    // v3: 色标条色带（v3 之前无此段）
+    if (version >= gcScaleWidgetBlockVersion) {
+        if (QwtColorMap* cmap = spectroColorMapIn(in)) {
+            // setColorMap 同步重设色标条区间与色带
+            w->setColorMap(w->colorBarInterval(), cmap);
         }
     }
     return in;

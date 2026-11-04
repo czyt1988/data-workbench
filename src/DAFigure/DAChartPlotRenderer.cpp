@@ -31,12 +31,14 @@
 #include "qwt_point_3d.h"
 #include "qwt_interval.h"
 #include "qwt_grid_raster_data.h"
+#include "qwt_matrix_raster_data.h"
 #include "qwt_colormap_preset.h"
 
 // Qt headers
 #include <QPainterPath>
 #include <QBrush>
 #include <QPen>
+#include <cmath>
 
 // ==================== Static style conversion helpers ====================
 
@@ -500,37 +502,25 @@ QwtPlotItem* DAChartPlotRenderer::renderSpectrogram(const DA::DASpectrogramData&
 
     QString title = defaultString(style, "title", QString());
 
-    // Build axis vectors (evenly spaced between min and max)
-    QVector<double> xVec(data.ncols), yVec(data.nrows);
-    for (int i = 0; i < data.ncols; ++i) {
-        if (data.ncols > 1)
-            xVec[i] = data.xmin + (data.xmax - data.xmin) * i / (data.ncols - 1);
-        else
-            xVec[i] = data.xmin;
-    }
-    for (int i = 0; i < data.nrows; ++i) {
-        if (data.nrows > 1)
-            yVec[i] = data.ymin + (data.ymax - data.ymin) * i / (data.nrows - 1);
-        else
-            yVec[i] = data.ymin;
+    // QwtMatrixRasterData：values[row * numColumns + col]，行=Y（nrows）、列=X（ncols），
+    // 与 DASpectrogramData 的行主序布局一致，可直接使用
+    // 数据不足处以 NaN 填充（避免越界访问；渲染时 NaN 单元不着色）
+    QVector<double> values(data.nrows * data.ncols, 0.0);
+    const int nCopy = qMin(values.size(), data.values.size());
+    for (int i = 0; i < nCopy; ++i) {
+        values[i] = data.values[i];
     }
 
-    // Build value matrix: QwtGridRasterData expects v[x][y] = z
-    // DASpectrogramData.values is flat, assumed row-major: values[row * ncols + col]
-    // Transpose: v[col][row] = values[row * ncols + col]
-    QVector<QVector<double>> v(data.ncols);
-    for (int col = 0; col < data.ncols; ++col) {
-        v[col].resize(data.nrows);
-        for (int row = 0; row < data.nrows; ++row) {
-            int idx = row * data.ncols + col;
-            v[col][row] = (idx < data.values.size()) ? data.values[idx] : 0.0;
-        }
+    QwtMatrixRasterData* rasterData = new QwtMatrixRasterData();
+    rasterData->setValueMatrix(values, data.ncols);
+    rasterData->setInterval(Qt::XAxis, QwtInterval(data.xmin, data.xmax));
+    rasterData->setInterval(Qt::YAxis, QwtInterval(data.ymin, data.ymax));
+    // Z 轴（色标）范围：zmin/zmax 有效时显式压动态范围，否则由矩阵数据自动确定
+    if (!std::isnan(data.zmin) && !std::isnan(data.zmax) && data.zmin < data.zmax) {
+        rasterData->setInterval(Qt::ZAxis, QwtInterval(data.zmin, data.zmax));
     }
 
-    QwtGridRasterData* rasterData = new QwtGridRasterData();
-    rasterData->setValue(xVec, yVec, v);
-
-    QwtPlotSpectrogram* spectro = mChart->addSpectrogram(rasterData, title);
+    QwtPlotSpectrogram* spectro = mChart->addSpectrogram(static_cast< QwtRasterData* >(rasterData), title);
     if (!spectro) {
         delete rasterData;
         return nullptr;
