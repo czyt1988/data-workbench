@@ -192,11 +192,11 @@ public:
 		DAPySeries oldColumn;      ///< hadColumn=true 时为求值前旧列快照（列级撤销记录，D4）
 		QString errorMessage;      ///< 失败时的异常信息（英文诊断，对话框提示用）
 	};
-	// 计算列求值：把 body（RHS 表达式，列引用可含反引号）求值结果写入 targetColumn 列，
-	// 返回旧列快照（对应 da_dataframe.da_eval_column；目标列名可含空格，健壮路径见算子注释）
+	// 计算列求值：执行代码段 body（最后一行表达式为结果，或赋值给 result）并写入 targetColumn 列，
+	// 返回旧列快照（对应 da_dataframe.da_eval_column；目标列名可含空格，列引用可含反引号）
 	EvalColumnResult evalColumn(DAPyDataFrame& df, const QString& targetColumn, const QString& body) noexcept;
-	// 提取表达式体引用的列名（与 df 实际列的交集，按列序返回，对应 da_dataframe.da_expr_depends）；
-	// 表达式无法解析（语法错误）返回空列表且 *ok=false（errorMessage 输出异常诊断）
+	// 提取代码段引用的列名（裸列名/反引号/df["col"]/df.col，与 df 实际列的交集，按列序返回）；
+	// 代码段无法解析（语法错误）返回空列表且 *ok=false（errorMessage 输出异常诊断）
 	QStringList exprDepends(const DAPyDataFrame& df, const QString& body, bool* ok = nullptr, QString* errorMessage = nullptr) noexcept;
 	// 列名在 eval 表达式里是否需要反引号包裹（对应 da_dataframe.da_needs_backtick，R20）
 	bool needsBacktick(const QString& name) noexcept;

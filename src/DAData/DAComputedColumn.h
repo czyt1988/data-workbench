@@ -9,8 +9,9 @@ namespace DA
 /**
  * @brief 计算列定义（纯数据类，无 GUI 依赖，004 T1.23）
  *
- * 「列级公式」的定义记录：某一列（targetColumnName）的取值由表达式（expr）针对
- * 其他列求值得到。本类只承载定义，不含状态与求值逻辑——三态状态机与重算调度在
+ * 「列级公式」的定义记录：某一列（targetColumnName）的取值由 Python 代码段（expr）
+ * 针对其他列求值得到（最后一行表达式为结果，或赋值给 result）。本类只承载定义，
+ * 不含状态与求值逻辑——三态状态机与重算调度在
  * DAGui 的 DATableComputedColumnStore（元数据束成员），求值走 DAPyScriptsDataFrame
  * 的 da_eval_column 算子。定义类放 src/DAData 是为将来被非 GUI 消费（工作流节点、
  * agent 触发重算）留位（设计稿 §4.4 落位说明 / D3 语义类归属）。
@@ -23,15 +24,15 @@ namespace DA
  * - 禁止自覆盖：expr 不得引用 targetColumnName（只能写新列，重算幂等）；
  * - 依赖用列名引用（dependsOn），列插删/改名时不易错位（重名以「第 n 个同名列」消歧
  *   由存储层处理）；
- * - expr 存赋值右侧表达式体（RHS），目标列名单独存 targetColumnName，求值时经
- *   da_eval_column 组装（目标列名可含空格，不依赖 eval 赋值语法）。
+ * - expr 存 Python 代码段，目标列名单独存 targetColumnName，求值时经
+ *   da_eval_column 执行（目标列名可含空格，不依赖赋值语句）。
  */
 class DADATA_API DAComputedColumn
 {
 public:
     // 磁盘契约版本号（当前定义结构为 1；结构变更时递增，加载侧按版本兼容）
     static constexpr int c_currentVersion = 1;
-    // 求值引擎标识（v1 只有 pandas eval 单表达式；随定义持久化，R10）
+    // 求值引擎标识（默认 "pandas.eval"；为兼容旧工程保留，代码段语义见 expr）
     static const QString& pandasEvalEngine();
 
 public:
@@ -39,8 +40,8 @@ public:
     DAComputedColumn(const QString& target, const QString& expression);
 
     QString targetColumnName;  ///< 目标列名（计算结果物化到的列）
-    QString expr;              ///< 表达式体（赋值右侧 RHS，列引用可含反引号）
-    QString engine;            ///< 求值引擎标识（默认 "pandas.eval"，磁盘契约 R10）
+    QString expr;              ///< Python 代码段（最后一行表达式为结果，或赋值给 result；列引用可含反引号）
+    QString engine;            ///< 求值引擎标识（默认 "pandas.eval"，磁盘契约 R10，兼容旧工程）
     int version { c_currentVersion };  ///< 定义结构版本（磁盘契约 R10）
     QStringList dependsOn;     ///< 依赖列名列表（R20 列名引用；由 da_expr_depends 提取）
     bool enabled { true };     ///< 启用开关（停用后不参与重算调度，定义保留）

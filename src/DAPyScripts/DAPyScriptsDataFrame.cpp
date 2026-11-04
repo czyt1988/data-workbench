@@ -1019,12 +1019,13 @@ bool DAPyScriptsDataFrame::evalDatas(DAPyDataFrame& df, const QString& expr) noe
 /**
  * @brief 计算列求值的wrapper（004 T1.23）
  *
- * 对应 da_dataframe.da_eval_column(df, target_column, body)：把 RHS 表达式 body
- * 求值结果写入 target_column 列（目标列名可含空格，走 df[col]=result 赋值路径），
- * 返回求值前的旧列快照 (had_column, old_series)，供列级撤销记录（D4）。
+ * 对应 da_dataframe.da_eval_column(df, target_column, body)：执行 Python 代码段 body
+ *（最后一行表达式为结果，或赋值给 result），把结果写入 target_column 列
+ *（目标列名可含空格，走 df[col]=result 赋值路径），返回求值前的旧列快照
+ * (had_column, old_series)，供列级撤销记录（D4）。
  * @param df 数据（就地写入目标列）
  * @param targetColumn 目标列名
- * @param body RHS 表达式体（列引用可含反引号）
+ * @param body Python 代码段（列引用可为裸列名/反引号/df["col"]）
  * @return ok=false 表示求值抛错（语法错误/引用不存在列），df 不变；
  *         ok=true 时 hadColumn/oldColumn 描述旧列快照（新建列 hadColumn=false）
  */

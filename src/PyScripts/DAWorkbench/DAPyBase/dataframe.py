@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
+import ast
+import keyword
 import os
+import re
 import sys
 from typing import List, Dict, Tuple, Optional, Union
 # 根据Python版本动态导入Literal
@@ -244,24 +247,103 @@ def da_eval_datas(df: pd.DataFrame, expr: str, parser: str = "pandas", engine: O
                 resolvers=resolvers, level=level, target=target)
 
 
+# 计算列代码段：注入命名空间的 pandas eval 数学函数（保持旧公式兼容）
+_DA_EVAL_MATH_FUNCS = ("sin", "cos", "tan", "arcsin", "arccos", "arctan", "exp", "log", "log10", "sqrt")
+# 命名空间保留名：不能被列名覆盖（列名为这些名字时列引用需用反引号）
+_DA_EVAL_RESERVED_NAMES = ("df", "pd", "np", "result")
+# pandas eval 的反引号列名（如 `my col`）
+_DA_BACKTICK_RE = re.compile(r"`([^`]*)`")
+
+
+def _da_column_series(df: pd.DataFrame, name: str) -> pd.Series:
+    '''
+    按列名取列（同名列取第一列）；列不存在时抛 KeyError（错误信息带列名）
+    '''
+    for i, c in enumerate(df.columns):
+        if str(c) == str(name):
+            return df.iloc[:, i]
+    raise KeyError("column %r not found" % (name, ))
+
+
+def _da_sanitize_backticks(code: str) -> Tuple[str, Dict[str, str]]:
+    '''
+    把反引号列名替换成合法临时标识符（旧 pandas eval 公式兼容），返回 (code, {临时名: 列名})
+    '''
+    mapping = {}
+
+    def _repl(m):
+        key = "_dabt%d_" % len(mapping)
+        mapping[key] = m.group(1)
+        return key
+
+    return _DA_BACKTICK_RE.sub(_repl, str(code)), mapping
+
+
+def _da_build_eval_namespace(df: pd.DataFrame) -> dict:
+    '''
+    代码段执行命名空间：df/pd/np + pandas eval 数学函数 + 所有列名（列名 → Series）
+
+    列名后注入，可覆盖同名数学函数（列引用优先）；df/pd/np/result 保留给框架，
+    同名列只能通过反引号引用。
+    '''
+    ns = {"df": df, "pd": pd, "np": np}
+    for fn in _DA_EVAL_MATH_FUNCS:
+        ns[fn] = getattr(np, fn)
+    for i, c in enumerate(df.columns):
+        name = str(c)
+        if name.isidentifier() and not keyword.iskeyword(name) and name not in _DA_EVAL_RESERVED_NAMES:
+            ns[name] = df.iloc[:, i]
+    return ns
+
+
+def _da_run_column_code(tree: ast.Module, ns: dict):
+    '''
+    执行计算列代码段：最后一条语句是表达式 → 取该表达式的值；
+    否则执行全部语句并取 result 变量（未赋值 result 时抛 ValueError）
+    '''
+    body = tree.body
+    if not body:
+        raise ValueError("the code is empty")
+    if isinstance(body[-1], ast.Expr):
+        if len(body) > 1:
+            prefix = ast.Module(body=body[:-1], type_ignores=[])
+            ast.fix_missing_locations(prefix)
+            exec(compile(prefix, "<computed-column>", "exec"), ns)
+        expr = ast.Expression(body=body[-1].value)
+        ast.fix_missing_locations(expr)
+        return eval(compile(expr, "<computed-column>", "eval"), ns)
+    module = ast.Module(body=body, type_ignores=[])
+    ast.fix_missing_locations(module)
+    exec(compile(module, "<computed-column>", "exec"), ns)
+    if "result" not in ns:
+        raise ValueError("the code must end with an expression or assign the result to 'result'")
+    return ns["result"]
+
+
 @log_function_call(slow=True)
 def da_eval_column(df: pd.DataFrame, target_column: str, body: str, parser: str = "pandas", engine: Optional[str] = None):
     '''
-    计算列求值（004 T1.23）：把 RHS 表达式 body 求值后写入 target_column 列
+    计算列求值（004 T1.23 / 代码段升级）：执行代码段 body，把结果写入 target_column 列
 
-    与 da_eval_datas 的赋值语法不同——本函数用 df.eval(body) 只求值 RHS（不做
-    赋值），再按列名 df[target_column] = 结果 赋值。这样目标列名可含空格/特殊字符
-    （pandas 3.x 下 df.eval 的反引号赋值 LHS 会产出 BACKTICK_QUOTED_STRING_* 损坏列名，
-    故不走赋值语法）。body 里对含空格列的引用仍用反引号（读取路径正常）。
+    语义（按顺序）：
+    - 代码段是 Python 代码块：可写 import / 赋值 / if / for 等语句；
+    - 最后一条语句是表达式时，该表达式的值即结果；
+    - 最后一条语句不是表达式时，执行完整代码并取 result 变量；
+    - 结果须为 Series 或标量（DataFrame 无法写入单列，直接报错）。
+    命名空间注入 df/pd/np、pandas eval 的数学函数，以及所有列名（列名 → Series），
+    因此 `A + B`、`np.where(A > 0, A, 0)`、`` `my col` * 2 `` 都可直接写；反引号列名
+    在解析前映射成临时标识符（旧公式兼容）。
 
-    求值前对目标列做旧值快照，返回 (had_column, old_series)，供 C++ 侧构建列级撤销
-    记录（D4 值记录）：
+    与 da_eval_datas 的赋值语法不同——这里把结果按列名写回（目标列名可含空格/特殊字符）。
+    求值前对目标列做旧值快照，返回 (had_column, old_series)，供 C++ 侧构建列级撤销记录（D4）：
     - had_column=True: old_series 为求值前的列数据副本（重算场景，undo 还原旧列）
     - had_column=False: old_series 为 None（新建列场景，undo 删除该列）
     求值失败（语法错误/引用不存在的列）抛异常，快照不返回，数据不变（不静默清空）。
 
     :param target_column: 目标列名（重名时快照/赋值第一个同名列位置）
-    :param body: RHS 表达式体（不含 "目标列 ="）
+    :param body: Python 代码段（结果协议见上）
+    :param parser: 兼容旧签名，已不使用
+    :param engine: 兼容旧签名，已不使用
     :return: (had_column, old_series)
     '''
     locs = [i for i, c in enumerate(df.columns) if str(c) == str(target_column)]
@@ -269,8 +351,14 @@ def da_eval_column(df: pd.DataFrame, target_column: str, body: str, parser: str 
         snapshot = (True, df.iloc[:, locs[0]].copy())
     else:
         snapshot = (False, None)
-    # 只求值 RHS（inplace=False 返回 Series/标量），再按列名赋值
-    result = df.eval(body, inplace=False, parser=parser, engine=engine)
+    ns = _da_build_eval_namespace(df)
+    sanitized, backtick_mapping = _da_sanitize_backticks(body)
+    for key, column_name in backtick_mapping.items():
+        ns[key] = _da_column_series(df, column_name)
+    tree = ast.parse(sanitized, mode="exec")
+    result = _da_run_column_code(tree, ns)
+    if isinstance(result, pd.DataFrame):
+        raise ValueError("the code returned a DataFrame; it must return a Series or a scalar")
     if locs:
         df.iloc[:, locs[0]] = result
     else:
@@ -280,14 +368,14 @@ def da_eval_column(df: pd.DataFrame, target_column: str, body: str, parser: str 
 
 def da_needs_backtick(name: str) -> bool:
     '''
-    列名在 pandas eval 表达式里是否需要反引号包裹（004 T1.23 R20）
+    列名在计算列代码段里是否需要反引号包裹（004 T1.23 R20）
 
     合法 Python 标识符且非关键字可直接裸写；含空格/特殊字符/以数字开头/关键字
-    （如 "my col"、"a-b"、"2024"、"in"）必须用反引号，否则 eval 解析失败或语义错误
+    （如 "my col"、"a-b"、"2024"、"in"）必须用反引号。另外 df/pd/np/result 是
+    代码段命名空间的保留名，同名列也必须用反引号，否则会引用到框架对象。
     '''
-    import keyword
     s = str(name)
-    return not (s.isidentifier() and not keyword.iskeyword(s))
+    return (not s.isidentifier()) or keyword.iskeyword(s) or (s in _DA_EVAL_RESERVED_NAMES)
 
 
 @log_function_call(slow=True)
@@ -305,32 +393,36 @@ def da_make_eval_expr(target: str, body: str) -> str:
 @log_function_call(slow=True)
 def da_expr_depends(expr: str, columns):
     '''
-    提取表达式引用的列名（与实际列的交集，按 columns 顺序返回，004 T1.23 依赖追踪）
+    提取代码段引用的列名（与实际列的交集，按 columns 顺序返回，004 T1.23 依赖追踪）
 
-    实现：反引号段先替换为合成标识符，再用 ast 提取 Name 节点（字符串字面量、
-    数字常量不会误报），合成标识符映射回原列名后与 columns 求交集。
-    函数名（如 abs、sin）不在 columns 里，天然被交集过滤。
-    表达式无法解析（ast SyntaxError）时抛 SyntaxError，C++ 侧转校验失败提示。
+    支持三种引用：裸列名（A）、反引号列名（`my col`）、df["col"] / df.col。
+    实现：反引号段先替换为合成标识符，再用 ast 遍历 Name / Subscript / Attribute；
+    df[...] 里的字符串常量与 df.attr 属性名按列名处理，映射后与 columns 求交集。
+    函数名（如 abs、np）不在 columns 里，天然被交集过滤。
+    代码段无法解析（ast SyntaxError）时抛 SyntaxError，C++ 侧转校验失败提示。
 
-    :param expr: 表达式体（赋值右侧，不含 "目标列 ="）
+    :param expr: Python 代码段
     :param columns: 实际列名序列
     :return: 被引用的列名列表（按 columns 顺序，去重）
     '''
-    import re
-    import ast
-    mapping = {}
-
-    def _repl(m):
-        key = '_dabt%d_' % len(mapping)
-        mapping[key] = m.group(1)
-        return key
-
-    sanitized = re.sub(r'`([^`]*)`', _repl, str(expr))
-    tree = ast.parse(sanitized, mode='eval')  # SyntaxError 由调用方捕获
+    sanitized, backtick_mapping = _da_sanitize_backticks(expr)
+    tree = ast.parse(sanitized, mode="exec")  # SyntaxError 由调用方捕获
     names = set()
     for node in ast.walk(tree):
         if isinstance(node, ast.Name):
-            names.add(mapping.get(node.id, node.id))
+            names.add(backtick_mapping.get(node.id, node.id))
+        elif isinstance(node, ast.Subscript):
+            # df["col"] / df['col']（df 是命名空间保留名）
+            if isinstance(node.value, ast.Name) and node.value.id == "df":
+                sl = node.slice
+                if hasattr(ast, "Index") and isinstance(sl, ast.Index):
+                    sl = sl.value
+                if isinstance(sl, ast.Constant) and isinstance(sl.value, str):
+                    names.add(sl.value)
+        elif isinstance(node, ast.Attribute):
+            # df.col
+            if isinstance(node.value, ast.Name) and node.value.id == "df":
+                names.add(node.attr)
     return [str(c) for c in columns if str(c) in names]
 
 
