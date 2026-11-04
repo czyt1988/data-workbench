@@ -47,8 +47,6 @@ public Q_SLOTS:
     void onChartEditorStatusChanged(DA::DAFigureWidget::ChartEditorStatus status);
     // 绘图项创建完成（DADialogChartGuide 确认后），提升绘图 dock 显示新绘图
     void onPlotItemCreated(DA::DAFigureWidget* f, DA::DAChartWidget* plot, QwtPlotItem* item);
-    // 3D绘图项创建完成，提升绘图 dock 显示新3D绘图
-    void onPlot3DItemCreated(DA::DAFigureWidget* f, DA::DAChart3DWidget* plot, Qwt3DPlotItem* item);
     // 统计窗口「转入绘图区」：把当前统计图转成绘图区里的一个新绘图
     void onStatsTransferToFigureRequested();
     // 复制到剪切板

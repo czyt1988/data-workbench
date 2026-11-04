@@ -7,6 +7,8 @@
 #include <QScopedPointer>
 #include <memory>
 #include <QJsonObject>
+// 以下头文件的传递包含被 DAGui 表格页/图表页依赖（保持原有 include 链，
+// 收窄会触发 DAGui 侧对传递包含的隐式依赖）
 #include "DataManager/DADataManageWidget.h"
 #include "Workflow/DAPyWorkFlowGraphicsScene.h"
 #include "DAFigureElementSelection.h"
@@ -186,6 +188,8 @@ public Q_SLOTS:
     // 打开工程文件
     bool openProjectFile(const QString& projectFilePath);
 private Q_SLOTS:
+    // 3D绘图项创建完成，提升绘图 dock 显示新3D绘图（3D 类型在 moc 下跨命名空间解析不稳，保留在控制器）
+    void onPlot3DItemCreated(DA::DAFigureWidget* f, DA::DAChart3DWidget* plot, Qwt3DPlotItem* item);
     // 工程的胀状态改变槽
     void onProjectDirtyStateChanged(bool isdirty);
     //===================================================

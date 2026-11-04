@@ -266,7 +266,14 @@ void DAAppController::initConnection()
         }
     }
     // DAChartOperateWidget 的 figureCreated/currentFigureChanged 与绘图项创建信号
-    // 由图表域分发器接线
+    // 由图表域分发器接线；3D 绘图项创建仍由控制器处理（跨域提升 dock）
+    if (DAAppChartOperateWidget* appCow = qobject_cast< DAAppChartOperateWidget* >(mDock->getChartOperateWidget())) {
+        // 用 lambda 转发：3D 绘图项类型在 PMF 直连下会触发元类型完整定义检查
+        connect(appCow,
+                &DAAppChartOperateWidget::plot3DItemCreated,
+                this,
+                [ this ](DAFigureWidget* f, DAChart3DWidget* p, Qwt3DPlotItem* i) { onPlot3DItemCreated(f, p, i); });
+    }
     // 工作流操作窗口的场景、运行与「显示网格」信号由工作流域分发器接线
 
     connect(mActions->recentFilesManager, &DARecentFilesManager::fileSelected, this, &DAAppController::onRecentFileSelected);

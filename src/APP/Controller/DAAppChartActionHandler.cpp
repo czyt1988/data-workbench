@@ -270,7 +270,6 @@ void DAAppChartActionHandler::initConnections()
     // 绘图项创建完成时提升绘图 dock，让用户能看到新绘图
     if (DAAppChartOperateWidget* appCow = qobject_cast< DAAppChartOperateWidget* >(cow)) {
         connect(appCow, &DAAppChartOperateWidget::plotItemCreated, this, &DAAppChartActionHandler::onPlotItemCreated);
-        connect(appCow, &DAAppChartOperateWidget::plot3DItemCreated, this, &DAAppChartActionHandler::onPlot3DItemCreated);
     }
 
     // 「转入绘图区」：DAGui 的统计窗口不持有绘图区，由 APP 注入绘图区容器
@@ -489,17 +488,6 @@ void DAAppChartActionHandler::onPlotItemCreated(DAFigureWidget* f, DAChartWidget
     mDeps.dock->raiseDockingArea(DAAppDockingArea::DockingAreaChartOperate);
 }
 
-/**
- * @brief 3D绘图项创建完成，提升绘图 dock 显示新3D绘图
- */
-void DAAppChartActionHandler::onPlot3DItemCreated(DA::DAFigureWidget* f, DA::DAChart3DWidget* plot, Qwt3DPlotItem* item)
-{
-    Q_UNUSED(f);
-    Q_UNUSED(plot);
-    Q_UNUSED(item);
-    // 提升绘图操作区域到前台
-    mDeps.dock->raiseDockingArea(DAAppDockingArea::DockingAreaChartOperate);
-}
 
 /**
  * @brief 添加一个figure
