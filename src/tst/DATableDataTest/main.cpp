@@ -27,6 +27,8 @@
 #include <QBrush>
 #include <QLineEdit>
 #include <QPushButton>
+#include <QToolButton>
+#include <QTextCursor>
 #include <QCheckBox>
 #include <QComboBox>
 #include <QClipboard>
@@ -1843,7 +1845,7 @@ void DATableDataTest::testContextMenuComposition()
                                      QStringLiteral("<SEP>"),
                                      QStringLiteral("Conditional Format"),
                                      QStringLiteral("<SEP>"),
-                                     QStringLiteral("Computed Column..."),
+                                     QStringLiteral("New Computed Column..."),
                                      QStringLiteral("Split Column..."),
                                      QStringLiteral("Merge Columns..."),
                                      QStringLiteral("Group By..."),
@@ -1872,7 +1874,7 @@ void DATableDataTest::testContextMenuComposition()
     QVERIFY(!byText.value(QStringLiteral("Conditional Format"))->isEnabled());
     QVERIFY(byText.value(QStringLiteral("Conditional Format"))->menu() != nullptr);
     // 计算列（004）：无模型=只读源置灰
-    QVERIFY(!byText.value(QStringLiteral("Computed Column..."))->isEnabled());
+    QVERIFY(!byText.value(QStringLiteral("New Computed Column..."))->isEnabled());
     // 分列/合并列（004 T1.9）：无模型=只读置灰；且无选区时分列（需单列）/合并（需多列）都置灰
     QVERIFY(!byText.value(QStringLiteral("Split Column..."))->isEnabled());
     QVERIFY(!byText.value(QStringLiteral("Merge Columns..."))->isEnabled());
@@ -6559,11 +6561,11 @@ df = pd.DataFrame({"A":[1,2,3],"B":[4,5,6]})
         return box ? box->button(QDialogButtonBox::Ok) : nullptr;
     };
     auto setInputs = [](DA::DADialogComputedColumn& dlg, const QString& target, const QString& expr) {
-        QLineEdit* targetEdit = dlg.findChild< QLineEdit* >(QStringLiteral("lineEditComputedTarget"));
-        QLineEdit* exprEdit   = dlg.findChild< QLineEdit* >(QStringLiteral("lineEditComputedExpr"));
+        QLineEdit* targetEdit    = dlg.findChild< QLineEdit* >(QStringLiteral("lineEditComputedTarget"));
+        QPlainTextEdit* exprEdit = dlg.findChild< QPlainTextEdit* >(QStringLiteral("plainTextEditComputedExpr"));
         QVERIFY(targetEdit != nullptr && exprEdit != nullptr);
         targetEdit->setText(target);
-        exprEdit->setText(expr);
+        exprEdit->setPlainText(expr);
     };
     // 合法创建：目标新列 + 引用现有列 → OK 可用，依赖 = {A,B}
     {
@@ -6575,6 +6577,88 @@ df = pd.DataFrame({"A":[1,2,3],"B":[4,5,6]})
         QCOMPARE(dlg.dependencies(), QStringList({ QStringLiteral("A"), QStringLiteral("B") }));
         QCOMPARE(dlg.targetColumnName(), QStringLiteral("C"));
         QCOMPARE(dlg.expressionBody(), QStringLiteral("A + B"));
+    }
+    // 代码段：多行 + 中间变量（最后一行表达式为结果）→ OK，依赖 = {A,B}
+    {
+        DA::DADialogComputedColumn dlg(df);
+        setInputs(dlg, QStringLiteral("C"), QStringLiteral("t = A * 2\nt + B"));
+        QTest::qWait(450);
+        QPushButton* ok = okButton(dlg);
+        QVERIFY(ok && ok->isEnabled());
+        QCOMPARE(dlg.dependencies(), QStringList({ QStringLiteral("A"), QStringLiteral("B") }));
+    }
+    // 代码段：result 变量协议（最后一条语句不是表达式）
+    {
+        DA::DADialogComputedColumn dlg(df);
+        setInputs(dlg, QStringLiteral("C"),
+                  QStringLiteral("if A.sum() > 0:\n    result = A + B\nelse:\n    result = B"));
+        QTest::qWait(450);
+        QPushButton* ok = okButton(dlg);
+        QVERIFY(ok && ok->isEnabled());
+    }
+    // 代码段：df["col"] / df.col 引用也计入依赖
+    {
+        DA::DADialogComputedColumn dlg(df);
+        setInputs(dlg, QStringLiteral("C"), QStringLiteral("df[\"A\"] + df.B"));
+        QTest::qWait(450);
+        QPushButton* ok = okButton(dlg);
+        QVERIFY(ok && ok->isEnabled());
+        QCOMPARE(dlg.dependencies(), QStringList({ QStringLiteral("A"), QStringLiteral("B") }));
+    }
+    // 代码段：缺少结果协议（无 result 且最后一条不是表达式）→ 拒绝
+    {
+        DA::DADialogComputedColumn dlg(df);
+        setInputs(dlg, QStringLiteral("C"), QStringLiteral("t = A + B"));
+        QTest::qWait(450);
+        QPushButton* ok = okButton(dlg);
+        QVERIFY(ok && !ok->isEnabled());
+    }
+    // 反引号列名（旧公式兼容）
+    {
+        pybind11::dict scope2;
+        pybind11::exec(R"(
+import pandas as pd
+df = pd.DataFrame({"A":[1,2,3],"my col":[7,8,9]})
+)",
+                       pybind11::globals(),
+                       scope2);
+        DA::DAPyDataFrame df2(scope2[ "df" ]);
+        DA::DADialogComputedColumn dlg(df2);
+        setInputs(dlg, QStringLiteral("C"), QStringLiteral("`my col` * 2"));
+        QTest::qWait(450);
+        QPushButton* ok = okButton(dlg);
+        QVERIFY(ok && ok->isEnabled());
+        QCOMPARE(dlg.dependencies(), QStringList({ QStringLiteral("my col") }));
+    }
+    // 插入列名菜单：点选含空格列名 → 光标处插入反引号包裹的列名
+    {
+        pybind11::dict scope3;
+        pybind11::exec(R"(
+import pandas as pd
+df = pd.DataFrame({"A":[1,2,3],"my col":[7,8,9]})
+)",
+                       pybind11::globals(),
+                       scope3);
+        DA::DAPyDataFrame df3(scope3[ "df" ]);
+        DA::DADialogComputedColumn dlg(df3);
+        setInputs(dlg, QStringLiteral("C"), QStringLiteral("A + "));
+        QPlainTextEdit* exprEdit = dlg.findChild< QPlainTextEdit* >(QStringLiteral("plainTextEditComputedExpr"));
+        QTextCursor cur = exprEdit->textCursor();
+        cur.movePosition(QTextCursor::End);
+        exprEdit->setTextCursor(cur);
+        QToolButton* insertBtn = dlg.findChild< QToolButton* >(QStringLiteral("toolButtonInsertComputedColumn"));
+        QVERIFY(insertBtn != nullptr && insertBtn->menu() != nullptr);
+        QAction* insertAct = nullptr;
+        const QList< QAction* > acts = insertBtn->menu()->actions();
+        for (QAction* a : acts) {
+            if (a->text() == QLatin1String("my col")) {
+                insertAct = a;
+                break;
+            }
+        }
+        QVERIFY(insertAct != nullptr);
+        insertAct->trigger();
+        QCOMPARE(exprEdit->toPlainText(), QStringLiteral("A + `my col`"));
     }
     // 目标列已存在（创建模式）→ 拒绝（禁止覆盖已有列，R7）
     {
@@ -6606,11 +6690,11 @@ df = pd.DataFrame({"A":[1,2,3],"B":[4,5,6]})
         DA::DAComputedColumn def(QStringLiteral("A"), QStringLiteral("B * 2"));
         dlg.setEditMode(def);
         QVERIFY(dlg.isEditMode());
-        QLineEdit* targetEdit = dlg.findChild< QLineEdit* >(QStringLiteral("lineEditComputedTarget"));
-        QLineEdit* exprEdit   = dlg.findChild< QLineEdit* >(QStringLiteral("lineEditComputedExpr"));
+        QLineEdit* targetEdit    = dlg.findChild< QLineEdit* >(QStringLiteral("lineEditComputedTarget"));
+        QPlainTextEdit* exprEdit = dlg.findChild< QPlainTextEdit* >(QStringLiteral("plainTextEditComputedExpr"));
         QVERIFY(targetEdit->isReadOnly());
         QCOMPARE(targetEdit->text(), QStringLiteral("A"));
-        exprEdit->setText(QStringLiteral("A + 1"));  // A 是目标 → 自覆盖
+        exprEdit->setPlainText(QStringLiteral("A + 1"));  // A 是目标 → 自覆盖
         QTest::qWait(450);
         QPushButton* ok = okButton(dlg);
         QVERIFY(ok && !ok->isEnabled());
@@ -6646,11 +6730,11 @@ df = pd.DataFrame({"A":[1,2,3],"B":[4,5,6]})
         if (!dlg) {
             return;
         }
-        QLineEdit* targetEdit = dlg->findChild< QLineEdit* >(QStringLiteral("lineEditComputedTarget"));
-        QLineEdit* exprEdit   = dlg->findChild< QLineEdit* >(QStringLiteral("lineEditComputedExpr"));
+        QLineEdit* targetEdit    = dlg->findChild< QLineEdit* >(QStringLiteral("lineEditComputedTarget"));
+        QPlainTextEdit* exprEdit = dlg->findChild< QPlainTextEdit* >(QStringLiteral("plainTextEditComputedExpr"));
         if (targetEdit && exprEdit) {
             targetEdit->setText(QStringLiteral("C"));
-            exprEdit->setText(QStringLiteral("A + B"));
+            exprEdit->setPlainText(QStringLiteral("A + B"));
         }
         QTimer::singleShot(500, [ dlg ]() {
             QDialogButtonBox* box = dlg->findChild< QDialogButtonBox* >();
@@ -6754,11 +6838,11 @@ df = pd.DataFrame({"A":[1,2,3],"B":[4,5,6],"K":[3,1,2]})
         if (!dlg) {
             return;
         }
-        QLineEdit* targetEdit = dlg->findChild< QLineEdit* >(QStringLiteral("lineEditComputedTarget"));
-        QLineEdit* exprEdit   = dlg->findChild< QLineEdit* >(QStringLiteral("lineEditComputedExpr"));
+        QLineEdit* targetEdit    = dlg->findChild< QLineEdit* >(QStringLiteral("lineEditComputedTarget"));
+        QPlainTextEdit* exprEdit = dlg->findChild< QPlainTextEdit* >(QStringLiteral("plainTextEditComputedExpr"));
         if (targetEdit && exprEdit) {
             targetEdit->setText(QStringLiteral("C"));
-            exprEdit->setText(QStringLiteral("A + B"));
+            exprEdit->setPlainText(QStringLiteral("A + B"));
         }
         QTimer::singleShot(500, [ dlg ]() {
             QDialogButtonBox* box = dlg->findChild< QDialogButtonBox* >();

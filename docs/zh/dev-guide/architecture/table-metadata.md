@@ -163,7 +163,7 @@ classDiagram
 - **打开工程不重算**（R7）：`<computed-column>` 段持久化 expr+engine+version+state（磁盘契约 R10），加载只恢复定义与状态、零求值；引擎/语法不兼容的最坏结果 = 普通列 + 标失效 + 提示，不损坏数据。
 - **列联动**（R20 列名引用）：改名 → `renameColumnReferences` 批量迁移（依赖与目标自身，改名前提示「有 N 个计算列引用它」）；删列 → `onColumnsRemoved`（目标被删=定义移除、依赖被删=置失效不静默清空）；`snapshot/restore` 整店快照供删列/合并命令的 undo 恢复。
 - **表头三态标识**（R9）：浅蓝 `#BDCDE8` 底色经**模型** `actualHeaderData(BackgroundRole)` 提供（`QHeaderView::paintSection` 原生消费）、公式+状态 tooltip 经 `ToolTipRole`；`DADataHeaderView::paintSection` 只叠加左侧前导 `ƒx` 角标（状态色：主蓝/金黄/橙红，有多列排序序号角标时移到左下避让）。**单元格区域不染色**（D2 管线没有"公式列底纹"层）。
-- 入口：Ribbon「Data Tools」面板（计算列/全部重算）+ 表体右键「Computed Column...」+ 计算列列头右键三项（编辑公式/重新计算/移除公式）。
+- 入口：Ribbon「Data Tools」面板（新建计算列/全部重算）+ 表体右键「New Computed Column...」+ 计算列列头右键三项（编辑公式/重新计算/移除公式）。
 
 ## 右键菜单与快捷键的落位约定
 
@@ -189,7 +189,7 @@ classDiagram
 | `src/DAGui/Table/Metadata/DATableConditionalFormatStore.h/.cpp` | 条件格式子存储（列桶/统计缓存/预览/`<conditional-format>` 段） |
 | `src/DAData/DAComputedColumn.h/.cpp` | 计算列定义（纯数据类，无 GUI 依赖，004 T1.23） |
 | `src/DAGui/Table/Metadata/DATableComputedColumnStore.h/.cpp` | 计算列子存储（三态状态机/依赖联动/`<computed-column>` 段） |
-| `src/DAGui/Table/Dialogs/DADialogComputedColumn.h/.cpp` | 计算列对话框（表达式编辑 + 列名点选 + 头部实时预览） |
+| `src/DAGui/Table/Dialogs/DADialogComputedColumn.h/.cpp` | 计算列对话框（左右分栏：Python 代码编辑器 + 头部实时预览；插入列名菜单） |
 | `src/DAGui/Table/Dialogs/DADialogSplitColumn.h/.cpp`、`DADialogMergeColumns.h/.cpp` | 分列/合并列对话框（预览与执行同一算子，004 T1.9） |
 | `src/DAGui/Table/Dialogs/DADialogGroupBy.h/.cpp` | 分组聚合对话框（全表预览 + 分组数，004 T1.22） |
 | `src/DAGui/Table/Dialogs/DADialogReshape.h/.cpp` | 转置/宽转长对话框（melt 规模守卫 + 就地勾选，004 T1.27） |

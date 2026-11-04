@@ -154,6 +154,7 @@ Python层: DAUtils → DAPyBindQt → DAPyScripts → DAPyCommonWidgets → DAPy
 | PIMPL 宏定义 | `src/DAGlobals.h` | DA_DECLARE_PRIVATE, DA_D, DA_DC 等 |
 | Qt5/Qt6 兼容宏 | `src/DAGlobals.h` | Qt5Qt6Compat_* 系列宏 |
 | 通用 Widgets（L1） | `src/3rdparty/DAWidgets/` | 纯 Qt/Svg 通用控件：选择器、折叠、属性编辑器、文件路径、勾选/字符串列表、文本编辑器、撤销面板、遮罩基类 |
+| Python 代码高亮/补全/编辑器 | `src/DAUtils/DAPythonSyntax` + `DAPythonHighlighter`（纯 Qt 词表与高亮）、`src/DAPyBindQt/DAPyPythonCompletion`（关键字/内置/`pd`/`np`/`DataFrame`/`Series` 成员，惰性 `dir()` 缓存）、`src/DAGui/Common/CodeEditor/DAPythonCodeEdit`（QPlainTextEdit + 高亮 + QCompleter 弹窗 + 上下文词注入） | 任何需要 Python 代码编辑的界面（计算列、工作流节点、Agent 代码框）都复用这三层：纯 Qt → Python 数据源 → 可复用编辑器；业务词（列名）经 `setExtraEntries` 注入，不污染通用控件 |
 | 项目级 UI 框架（L2） | `src/DAGui/` | `DAFormSpec`/`DAPropertyFormWidget`、属性面板、设置框架、图表设置基类 |
 | 枚举/字符串转换 | `src/DAShared/DAEnumStringUtils.hpp` | 通用枚举↔字符串映射宏，详见`docs/zh/dev-guide/general/da-enum-string-utils.md` |
 | 插件开发参考 | `plugins/DataAnalysis/` | 最完整的插件示例 |
