@@ -43,7 +43,7 @@
 | `DATableConditionalFormatController` | `Table/Controllers/` | 条件格式：规则对话框、WPS 式菜单、差异→命令（增/删/改/移父命令） |
 | `DATableFindController` | `Table/Controllers/` | 查找/替换状态机：命中集/序号/请求串号、扫描、循环导航、替换（含降级） |
 | `DATableStyleController` | `Table/Controllers/` | 样式与列显示格式：读写/清除、选区层级判定、代表样式一致性（三级策略） |
-| `DATableSortController` | `Table/Controllers/` | 排序：多列规格、动作统一入口、选区置换重映射、表头角标 |
+| `DATableSortController` | `Table/Controllers/` | 排序：多列规格、动作统一入口、完整规格应用（自定义排序对话框）、按索引排序/恢复原始行序、选区置换重映射、表头角标 |
 | `DATableViewStateController` | `Table/Controllers/` | 视图状态投影：列宽/行头宽/行高/表头高采集与投影、冻结集合查表 |
 | `DATableColumnViewController` | `Table/Controllers/` | 列视图真源操作：隐藏/冻结/列序/列视图对话框（Mediator-light） |
 
@@ -67,6 +67,8 @@
 | 整表替换（`FullReset`） | `refreshData` | 全失效 | 全标脏 | 关闭 | 可选 |
 
 排序是特例：**不**失效统计（列值集合不变，003 性能决策）、**不**标脏计算列（R13）——选区置换重映射在 Sort 控制器内完成。
+
+排序对外有三个入口，最终都汇聚到控制器：`sortColumn` / `addSecondarySortColumn`（列头右键、Ribbon 升/降序）、`applySpec`（自定义排序对话框 `DATableSortDialog` 产出的完整规格）、`restoreOriginalOrder`（「清除排序」= 按索引升序还原原始行序）。规格里的列号 `DATableSortController::c_indexSortColumn`（-1）是「索引」伪列：它不对应任何真实列，表头不画角标，算子侧由 `da_sort` 的索引键分支处理（C++ 传 -1 → Python 取 `df.index`）。
 
 ## 4. 新增一个表内功能的 3 步模板
 

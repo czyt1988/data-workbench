@@ -345,11 +345,12 @@ Debug：   #497CAD（蓝虫子，单色）
 > 新增图标前**先查本节与目录**：能复用现有图标就复用，能沿用现有模板（如 `data-type/` 蓝框白底）就沿用。
 > 以下清单核对于 2026-10-17；**目录为准**，调整图标后同步更新本节。
 
-### 5.1 `src/DAGui/icon/` 根目录（84 个功能性图标）
+### 5.1 `src/DAGui/icon/` 根目录（108 个功能性图标）
 
 | 类别 | 文件 |
 |------|------|
 | 操作类 | `accept.svg`、`cancel.svg`、`copy.svg`、`cut.svg`、`paste.svg`、`delete.svg`、`delete-column.svg`、`delete-all-columns.svg`、`insertColumnRight.svg`、`rename-column.svg`、`renameColumns.svg`、`replace.svg`、`find.svg`、`refresh.svg`、`refresh-all.svg` |
+| 排序 | `sort-ascending.svg`、`sort-descending.svg`（列头方向箭头/菜单项）、`sort.svg`（排序按钮：灰排序条 + 主蓝双向箭头）、`sort-clear.svg`（清除排序：灰排序条 + 橙红斜杠） |
 | 条件格式 | `conditional-format.svg` |
 | 视图缩放 | `zoomIn.svg`、`zoomOut.svg`、`viewAll.svg`、`gotoMax.svg`、`gotoMin.svg` |
 | 展开/折叠、列显隐 | `expand-all.svg`、`collapse.svg`、`show-column.svg`、`show-all-columns.svg`、`hide-column.svg`、`hide-all-columns.svg` |
