@@ -86,6 +86,17 @@ QString DASignalAnalysisPlugin::getDescription() const
 }
 
 /**
+ * @brief 工程存档任务：保存来源引用/参数/视图状态，加载时重建信号
+ */
+std::shared_ptr< DA::DAAbstractArchiveTask > DASignalAnalysisPlugin::createArchiveTask(bool isSave)
+{
+    if (mUI) {
+        return mUI->createArchiveTask(isSave);
+    }
+    return DAAbstractPlugin::createArchiveTask(isSave);
+}
+
+/**
  * @brief 语言变更：由宿主 AppMainWindow::retranslateUi 遍历插件调用
  */
 void DASignalAnalysisPlugin::retranslate()

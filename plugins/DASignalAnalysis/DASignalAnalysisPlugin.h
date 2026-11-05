@@ -3,6 +3,10 @@
 #include <QObject>
 #include "DAAbstractPlugin.h"
 #include "DASignalAnalysisGlobal.h"
+namespace DA
+{
+class DAAbstractArchiveTask;
+}
 
 namespace DA
 {
@@ -34,6 +38,9 @@ public:
 
     // 语言变更：由宿主 AppMainWindow::retranslateUi 遍历插件调用
     void retranslate() override;
+
+    // 工程存档任务（只存来源引用与参数，方案 §10.1）
+    std::shared_ptr< DA::DAAbstractArchiveTask > createArchiveTask(bool isSave) override;
 
 private:
     DASignalAnalysisUI* mUI { nullptr };

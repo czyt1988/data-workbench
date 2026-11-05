@@ -308,3 +308,38 @@ def test_export_column_to_wav(tmp_path):
     # NaN 按 0 处理
     data = importer.read_channel_all(out, 0)
     assert data[3] == pytest.approx(0.0)
+
+
+# ---------------------------------------------------------------- 导出（M10）
+
+
+def test_exporter_peaks_and_csv(tmp_path):
+    from DASignalAnalysis import exporter
+
+    freqs = [1000.0, 2000.0]
+    mags = [0.5, 0.2]
+    rel = [0.0, -8.0]
+    share = [80.0, 20.0]
+    df = exporter.peaks_to_dataframe(freqs, mags, rel, share)
+    assert list(df.columns) == exporter.PEAK_COLUMNS
+    assert len(df) == 2
+
+    csv_path = tmp_path / "peaks.csv"
+    assert exporter.write_peaks_csv(str(csv_path), freqs, mags, rel, share)
+    lines = csv_path.read_text(encoding="utf-8").strip().splitlines()
+    assert len(lines) == 3  # 表头 + 2 行
+
+    spec_path = tmp_path / "spectrum.csv"
+    assert exporter.write_spectrum_csv(str(spec_path), [0.0, 1000.0], [0.0, 0.5], "Amplitude")
+    spec_lines = spec_path.read_text(encoding="utf-8").strip().splitlines()
+    assert spec_lines[0].startswith("Frequency (Hz)")
+
+    heat_path = tmp_path / "heat.csv"
+    times = [0.01, 0.02]
+    freqs_h = [0.0, 1000.0]
+    values = list(range(4))  # 2 行 × 2 列
+    assert exporter.write_heatmap_csv(str(heat_path), times, freqs_h, values, 2, 2)
+    heat_lines = heat_path.read_text(encoding="utf-8").strip().splitlines()
+    # 表头 + 2 行；首列是 Frequency (Hz)
+    assert len(heat_lines) == 3
+    assert heat_lines[0].startswith("Frequency (Hz)")

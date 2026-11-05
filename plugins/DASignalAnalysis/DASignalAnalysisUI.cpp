@@ -3,6 +3,18 @@
 #include <QMenu>
 #include <QActionGroup>
 #include <QDebug>
+#include <QFileDialog>
+#include <QFileInfo>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QStandardPaths>
+#include "DAPybind11InQt.h"
+#include "DAPyModule.h"
+#include "DAPyObjectWrapper.h"
+#include "DAPybind11QtCaster.hpp"
+#include "pandas/DAPyDataFrame.h"
+#include "Signal/DADataFrameSignalSource.h"
 // SARibbon
 #include "SARibbonBar.h"
 #include "SARibbonCategory.h"
@@ -28,6 +40,7 @@
 #include "Signal/DASignalImporter.h"
 #include "Analysis/DASignalAnalysisWorker.h"
 #include "Playback/DASignalPlayer.h"
+#include "Archive/DASignalArchiveTask.h"
 
 namespace DA
 {
@@ -93,6 +106,20 @@ bool DASignalAnalysisUI::initialize(DACoreInterface* core)
     }
     if (actionAnalysisSetting) {
         connect(actionAnalysisSetting, &QAction::triggered, this, &DASignalAnalysisUI::openAnalysisSettings);
+    }
+    // 导出菜单：峰值表 CSV / 频谱 CSV / 热图矩阵 CSV
+    if (actionExportPeaks) {
+        mExportMenu = new QMenu();
+        mExportMenu->addAction(tr("Peak table (CSV)"), this, &DASignalAnalysisUI::exportPeaksCsv);
+        // cn:峰值表（CSV）
+        mExportMenu->addAction(tr("Spectrum curve (CSV)"), this, &DASignalAnalysisUI::exportSpectrumCsv);
+        // cn:频谱曲线（CSV）
+        mExportMenu->addAction(tr("Heatmap matrix (CSV)"), this, &DASignalAnalysisUI::exportHeatmapCsv);
+        // cn:热图矩阵（CSV）
+        actionExportPeaks->setMenu(mExportMenu);
+    }
+    if (actionExportImage) {
+        connect(actionExportImage, &QAction::triggered, this, &DASignalAnalysisUI::exportImage);
     }
     // 瀑布模式切换（二维 / 三维 / 隐藏）
     if (actionWaterfall2D) {
@@ -456,14 +483,8 @@ void DASignalAnalysisUI::buildPeakDock()
             }
         });
     }
-    connect(mPeakPanel, &DAPeakDockWidget::sendToTableRequested, this, [this]() {
-        mUI->addInfoLogMessage(tr("Peak table export is available after the export milestone."));
-        // cn:峰值表导出在导出里程碑后可用。
-    });
-    connect(mPeakPanel, &DAPeakDockWidget::exportCsvRequested, this, [this]() {
-        mUI->addInfoLogMessage(tr("Peak table export is available after the export milestone."));
-        // cn:峰值表导出在导出里程碑后可用。
-    });
+    connect(mPeakPanel, &DAPeakDockWidget::sendToTableRequested, this, &DASignalAnalysisUI::sendPeaksToTable);
+    connect(mPeakPanel, &DAPeakDockWidget::exportCsvRequested, this, &DASignalAnalysisUI::exportPeaksCsv);
 }
 
 /**
@@ -535,6 +556,381 @@ void DASignalAnalysisUI::buildAmplitudeModeMenu()
     connect(actionAmpDbRef1, &QAction::triggered, this, &DASignalAnalysisUI::onAmplitudeModeChanged);
 }
 
+// ---------------------------------------------------------------- 导出与工程保存
+
+namespace {
+/// 调 Python 导出模块并执行一个返回 bool 的导出函数
+bool callPythonExport(const char* funcName, pybind11::tuple args)
+{
+    try {
+        DAPyModule exporter = DAPyModule("DASignalAnalysis.exporter");
+        pybind11::object res = exporter.attr(funcName)(*args);
+        return res.cast< bool >();
+    } catch (const std::exception& e) {
+        qWarning() << "signal export failed:" << e.what();
+        return false;
+    }
+}
+
+pybind11::tuple doubleTuple(const QVector< double >& v)
+{
+    pybind11::list lst;
+    for (double x : v) {
+        lst.append(x);
+    }
+    pybind11::module_ np = pybind11::module_::import("numpy");
+    return pybind11::tuple(np.attr("asarray")(lst, pybind11::arg("dtype") = "float64"));
+}
+
+QString askSavePath(QWidget* parent, const QString& title, const QString& filter)
+{
+    return QFileDialog::getSaveFileName(parent, title, QString(), filter);
+}
+}  // namespace
+
+/**
+ * @brief 导出峰值表 CSV
+ */
+void DASignalAnalysisUI::exportPeaksCsv()
+{
+    if (!mCurrentPeaks.isValid()) {
+        mUI->addWarningLogMessage(tr("No peak data to export."));  // cn:没有可导出的峰值数据。
+        return;
+    }
+    const QString path =
+        askSavePath(mPage, tr("Export Peak Table"), tr("CSV Files (*.csv)"));  // cn:导出峰值表
+    if (path.isEmpty()) {
+        return;
+    }
+    pybind11::tuple args = pybind11::make_tuple(path.toStdString(),
+                                                doubleTuple(mCurrentPeaks.frequencies),
+                                                doubleTuple(mCurrentPeaks.magnitudes),
+                                                doubleTuple(mCurrentPeaks.relDb),
+                                                doubleTuple(mCurrentPeaks.share));
+    if (callPythonExport("write_peaks_csv", args)) {
+        mUI->addInfoLogMessage(tr("Peak table exported: %1").arg(path));  // cn:峰值表已导出：%1
+    } else {
+        mUI->addWarningLogMessage(tr("Failed to export the peak table."));  // cn:峰值表导出失败。
+    }
+}
+
+/**
+ * @brief 导出频谱曲线 CSV（两列：频率、当前幅值模式下的幅值）
+ */
+void DASignalAnalysisUI::exportSpectrumCsv()
+{
+    DASignalPtr sig = mPage ? mPage->currentSignal() : DASignalPtr();
+    if (!sig) {
+        mUI->addWarningLogMessage(tr("No signal is selected."));  // cn:未选中信号。
+        return;
+    }
+    const DASpectrumResult spec = spectrumForSignal(sig);
+    if (!spec.isValid()) {
+        mUI->addWarningLogMessage(tr("No spectrum data to export."));  // cn:没有可导出的频谱数据。
+        return;
+    }
+    const QString path =
+        askSavePath(mPage, tr("Export Spectrum"), tr("CSV Files (*.csv)"));  // cn:导出频谱
+    if (path.isEmpty()) {
+        return;
+    }
+    // 按当前幅值模式换算（与显示口径一致）
+    const DASignalAnalysisParams params = paramsForSignal(sig);
+    QVector< double > values;
+    values.reserve(spec.amplitudes.size());
+    const bool isDb = (params.amplitudeMode == QLatin1String("dbFS")
+                       || params.amplitudeMode == QLatin1String("dbRef1"));
+    double peak = 0.0;
+    for (double a : spec.amplitudes) {
+        peak = qMax(peak, std::fabs(a));
+    }
+    for (double a : spec.amplitudes) {
+        if (isDb) {
+            const double ref = (params.dbReference == QLatin1String("one")) ? 1.0 : qMax(peak, 1e-30);
+            values.append(20.0 * std::log10(qMax(std::fabs(a * params.calibration), 1e-30) / ref));
+        } else {
+            values.append(a * params.calibration);
+        }
+    }
+    QString yLabel = (params.amplitudeMode == QLatin1String("rms")) ? QStringLiteral("RMS") : QStringLiteral("Amplitude");
+    if (isDb) {
+        yLabel = QStringLiteral("dB");
+    }
+    pybind11::tuple args = pybind11::make_tuple(path.toStdString(),
+                                                doubleTuple(spec.freqs),
+                                                doubleTuple(values),
+                                                yLabel.toStdString());
+    if (callPythonExport("write_spectrum_csv", args)) {
+        mUI->addInfoLogMessage(tr("Spectrum exported: %1").arg(path));  // cn:频谱已导出：%1
+    } else {
+        mUI->addWarningLogMessage(tr("Failed to export the spectrum."));  // cn:频谱导出失败。
+    }
+}
+
+/**
+ * @brief 导出热图矩阵 CSV（行 = 频率、列 = 时间；导出前给体积提示）
+ */
+void DASignalAnalysisUI::exportHeatmapCsv()
+{
+    DASignalPtr sig = mPage ? mPage->currentSignal() : DASignalPtr();
+    if (!sig || !mPage) {
+        mUI->addWarningLogMessage(tr("No signal is selected."));  // cn:未选中信号。
+        return;
+    }
+    DASignalAnalysisView* view = mPage->viewForSignal(sig.get());
+    if (!view) {
+        return;
+    }
+    const DAStftResult stft = view->stftResult();
+    if (!stft.isValid()) {
+        mUI->addWarningLogMessage(tr("No time-frequency data to export."));  // cn:没有可导出的时频数据。
+        return;
+    }
+    const qint64 cells = qint64(stft.rows) * stft.columns;
+    mUI->addInfoLogMessage(tr("Heatmap matrix: %1 x %2 = %3 cells, the CSV may be large.")
+                               .arg(stft.rows)
+                               .arg(stft.columns)
+                               .arg(cells));
+    // cn:热图矩阵：%1 x %2 = %3 个单元，CSV 可能较大
+    const QString path =
+        askSavePath(mPage, tr("Export Heatmap Matrix"), tr("CSV Files (*.csv)"));  // cn:导出热图矩阵
+    if (path.isEmpty()) {
+        return;
+    }
+    pybind11::tuple args = pybind11::make_tuple(path.toStdString(),
+                                                doubleTuple(stft.times),
+                                                doubleTuple(stft.freqs),
+                                                doubleTuple(stft.values),
+                                                stft.rows,
+                                                stft.columns);
+    if (callPythonExport("write_heatmap_csv", args)) {
+        mUI->addInfoLogMessage(tr("Heatmap matrix exported: %1").arg(path));  // cn:热图矩阵已导出：%1
+    } else {
+        mUI->addWarningLogMessage(tr("Failed to export the heatmap matrix."));  // cn:热图矩阵导出失败。
+    }
+}
+
+/**
+ * @brief 导出当前视图为位图（三维 GL 内容不保证被抓取，见 T7）
+ */
+void DASignalAnalysisUI::exportImage()
+{
+    DASignalPtr sig = mPage ? mPage->currentSignal() : DASignalPtr();
+    if (!sig || !mPage) {
+        mUI->addWarningLogMessage(tr("No signal is selected."));  // cn:未选中信号。
+        return;
+    }
+    DASignalAnalysisView* view = mPage->viewForSignal(sig.get());
+    if (!view) {
+        return;
+    }
+    const QString path =
+        askSavePath(mPage, tr("Export Image"), tr("PNG Image (*.png)"));  // cn:导出图片
+    if (path.isEmpty()) {
+        return;
+    }
+    const QPixmap pixmap = view->grab();
+    if (pixmap.save(path, "PNG")) {
+        mUI->addInfoLogMessage(tr("Image exported: %1").arg(path));  // cn:图片已导出：%1
+    } else {
+        mUI->addWarningLogMessage(tr("Failed to export the image."));  // cn:图片导出失败。
+    }
+}
+
+/**
+ * @brief 峰值表送表格页（转成数据帧加入数据管理器）
+ */
+void DASignalAnalysisUI::sendPeaksToTable()
+{
+    if (!mCurrentPeaks.isValid()) {
+        mUI->addWarningLogMessage(tr("No peak data to send."));  // cn:没有可发送的峰值数据。
+        return;
+    }
+    if (!mCore) {
+        return;
+    }
+    DADataManagerInterface* dataMgr = mCore->getDataManagerInterface();
+    if (!dataMgr) {
+        return;
+    }
+    try {
+        DAPyModule exporter = DAPyModule("DASignalAnalysis.exporter");
+        pybind11::object df  = exporter.attr("peaks_to_dataframe")(doubleTuple(mCurrentPeaks.frequencies),
+                                                                  doubleTuple(mCurrentPeaks.magnitudes),
+                                                                  doubleTuple(mCurrentPeaks.relDb),
+                                                                  doubleTuple(mCurrentPeaks.share));
+        DAPyDataFrame pyDf(df);
+        const QString signalName = (mPage && mPage->currentSignal()) ? mPage->currentSignal()->name() : QString();
+        QString tableName        = tr("Peaks - %1").arg(signalName);  // cn:峰值 - %1
+        DA::DAData data(pyDf);
+        data.setName(tableName);
+        dataMgr->addData(data);
+        mUI->addInfoLogMessage(tr("Peak table added to the data manager as \"%1\".").arg(tableName));
+        // cn:峰值表已作为「%1」加入数据管理器。
+    } catch (const std::exception& e) {
+        qWarning() << "sendPeaksToTable failed:" << e.what();
+        mUI->addWarningLogMessage(tr("Failed to send the peak table: %1").arg(QString::fromUtf8(e.what())));
+        // cn:峰值表发送失败：%1
+    }
+}
+
+/**
+ * @brief 序列化当前状态（信号来源引用 + 参数 + 视图状态）
+ */
+QByteArray DASignalAnalysisUI::serializeState() const
+{
+    QJsonArray arr;
+    if (mPage) {
+        for (const DASignalPtr& sig : mPage->allSignals()) {
+            if (!sig) {
+                continue;
+            }
+            QJsonObject o;
+            o[ QStringLiteral("name") ] = sig->name();
+            switch (sig->sourceType()) {
+            case DASignalSource::DataFrameSource: {
+                auto dfSrc = std::dynamic_pointer_cast< DADataFrameSignalSource >(sig->source());
+                o[ QStringLiteral("sourceType") ]    = QStringLiteral("dataframe");
+                o[ QStringLiteral("dataframeName") ] = dfSrc ? dfSrc->data().getName() : QString();
+                o[ QStringLiteral("timeColumn") ]    = dfSrc ? dfSrc->timeColumn() : QString();
+                QJsonArray cols;
+                if (dfSrc) {
+                    for (const QString& c : dfSrc->valueColumns()) {
+                        cols.append(c);
+                    }
+                }
+                o[ QStringLiteral("valueColumns") ] = cols;
+                break;
+            }
+            case DASignalSource::VideoSource:
+                o[ QStringLiteral("sourceType") ] = QStringLiteral("video");
+                o[ QStringLiteral("path") ]       = sig->source() ? sig->source()->sourceDescription() : QString();
+                break;
+            case DASignalSource::FileSource:
+            default:
+                o[ QStringLiteral("sourceType") ] = QStringLiteral("file");
+                o[ QStringLiteral("path") ]       = sig->source() ? sig->source()->sourceDescription() : QString();
+                break;
+            }
+            o[ QStringLiteral("sampleRate") ]  = sig->sampleRate();
+            o[ QStringLiteral("timeOrigin") ]  = sig->timeOrigin();
+            o[ QStringLiteral("calibration") ] = sig->calibration();
+            o[ QStringLiteral("unit") ]        = sig->unit();
+            o[ QStringLiteral("params") ]      = paramsForSignal(sig).toJson();
+            QJsonObject view;
+            view[ QStringLiteral("amplitudeMode") ] = mAmplitudeMode;
+            view[ QStringLiteral("dbReference") ]   = mDbReference;
+            o[ QStringLiteral("view") ]             = view;
+            arr.append(o);
+        }
+    }
+    QJsonObject root;
+    root[ QStringLiteral("signals") ] = arr;
+    return QJsonDocument(root).toJson(QJsonDocument::Compact);
+}
+
+/**
+ * @brief 从 JSON 重建信号（主线程；文件缺失时提示信号源缺失并跳过）
+ */
+void DASignalAnalysisUI::restoreState(const QByteArray& json)
+{
+    const QJsonDocument doc = QJsonDocument::fromJson(json);
+    if (!doc.isObject()) {
+        return;
+    }
+    const QJsonArray arr        = doc.object().value(QStringLiteral("signals")).toArray();
+    DADataManagerInterface* mgr = mCore ? mCore->getDataManagerInterface() : nullptr;
+    for (const QJsonValue& v : arr) {
+        const QJsonObject o = v.toObject();
+        const QString type  = o.value(QStringLiteral("sourceType")).toString();
+        const QString name  = o.value(QStringLiteral("name")).toString();
+        DASignalPtr sig;
+        QString error;
+        if (type == QLatin1String("dataframe")) {
+            const QString dfName = o.value(QStringLiteral("dataframeName")).toString();
+            DAData data;
+            if (mgr) {
+                const QList< DAData > all = mgr->getAllDatas();
+                for (const DAData& d : all) {
+                    if (d.isDataFrame() && d.getName() == dfName) {
+                        data = d;
+                        break;
+                    }
+                }
+            }
+            if (!data.isDataFrame()) {
+                mUI->addWarningLogMessage(tr("Signal source missing: dataframe \"%1\".").arg(dfName));
+                // cn:信号源缺失：数据帧「%1」。
+                continue;
+            }
+            QStringList cols;
+            const QJsonArray colsArr = o.value(QStringLiteral("valueColumns")).toArray();
+            for (const QJsonValue& c : colsArr) {
+                cols.append(c.toString());
+            }
+            sig = DASignalImporter::importDataFrame(data,
+                                                    o.value(QStringLiteral("timeColumn")).toString(),
+                                                    cols,
+                                                    o.value(QStringLiteral("sampleRate")).toDouble(),
+                                                    name,
+                                                    &error);
+        } else {
+            const QString path = o.value(QStringLiteral("path")).toString();
+            if (!QFileInfo::exists(path)) {
+                mUI->addWarningLogMessage(tr("Signal source missing: %1").arg(path));
+                // cn:信号源缺失：%1
+                continue;
+            }
+            sig = (type == QLatin1String("video")) ? DASignalImporter::importVideoFile(path, &error)
+                                                   : DASignalImporter::importAudioFile(path, &error);
+            if (sig) {
+                // 用保存时确认过的采样率（不再回读文件头，方案 §4.4）
+                const double savedFs = o.value(QStringLiteral("sampleRate")).toDouble();
+                if (savedFs > 0) {
+                    sig->setSampleRate(savedFs);
+                }
+            }
+        }
+        if (!sig) {
+            mUI->addWarningLogMessage(tr("Failed to restore signal \"%1\": %2").arg(name, error));
+            // cn:恢复信号「%1」失败：%2
+            continue;
+        }
+        sig->setName(name);
+        sig->setTimeOrigin(o.value(QStringLiteral("timeOrigin")).toDouble());
+        sig->setCalibration(o.value(QStringLiteral("calibration")).toDouble(1.0));
+        sig->setUnit(o.value(QStringLiteral("unit")).toString());
+        mParamsPerSignal[ sig.get() ] = DASignalAnalysisParams::fromJson(o.value(QStringLiteral("params")).toObject());
+        const QJsonObject view        = o.value(QStringLiteral("view")).toObject();
+        if (view.contains(QStringLiteral("amplitudeMode"))) {
+            mAmplitudeMode = view.value(QStringLiteral("amplitudeMode")).toString(mAmplitudeMode);
+        }
+        if (view.contains(QStringLiteral("dbReference"))) {
+            mDbReference = view.value(QStringLiteral("dbReference")).toString(mDbReference);
+        }
+        addSignalAndActivate(sig);
+    }
+}
+
+/**
+ * @brief 创建工程存档任务（isSave 时收集状态；加载时在回调里重建信号）
+ */
+std::shared_ptr< DAAbstractArchiveTask > DASignalAnalysisUI::createArchiveTask(bool isSave)
+{
+    if (isSave) {
+        auto task = std::make_shared< DASignalArchiveTask >(serializeState());
+        return task;
+    }
+    auto task = std::make_shared< DASignalArchiveTask >();
+    task->setLoadedCallBack([this](std::shared_ptr< DAAbstractArchiveTask > t) {
+        auto sigTask = std::static_pointer_cast< DASignalArchiveTask >(t);
+        if (sigTask) {
+            restoreState(sigTask->loadedData());
+        }
+    });
+    return task;
+}
+
 /**
  * @brief 清理界面资源（插件热卸载前调用）
  *
@@ -556,6 +952,13 @@ void DASignalAnalysisUI::finalize()
     if (mAmplitudeModeMenu) {
         delete mAmplitudeModeMenu;
         mAmplitudeModeMenu = nullptr;
+    }
+    if (actionExportPeaks) {
+        actionExportPeaks->setMenu(nullptr);
+    }
+    if (mExportMenu) {
+        delete mExportMenu;
+        mExportMenu = nullptr;
     }
     // 丝带标签页
     if (nullptr == mUI || nullptr == mCategory) {

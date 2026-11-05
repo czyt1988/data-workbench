@@ -351,6 +351,11 @@ void DASignalAnalysisView::rebuildSpectrumPlot()
 /**
  * @brief 时频显示栅格回填并重绘
  */
+DAStftResult DASignalAnalysisView::stftResult() const
+{
+    return mStft;
+}
+
 void DASignalAnalysisView::setStft(const DAStftResult& result)
 {
     mStft = result;

@@ -3,6 +3,7 @@
 #include <QObject>
 #include <QAction>
 #include <QHash>
+#include <memory>
 #include "Signal/DASignal.h"
 #include "Analysis/DASignalAnalysisParams.h"
 #include "Analysis/DASpectrumResult.h"
@@ -27,6 +28,7 @@ class DASignalAnalysisPage;
 class DASignalAnalysisView;
 class DAPeakDockWidget;
 class DASignalPlayer;
+class DAAbstractArchiveTask;
 
 /**
  * @brief 信号分析插件的界面层：中央页面 + 丝带标签页 + 动作管理
@@ -60,6 +62,14 @@ public:
     DA::DASignalAnalysisParams paramsForSignal(const DA::DASignalPtr& sig) const;
     // 最近一次频谱结果（无结果返回无效对象）
     DA::DASpectrumResult spectrumForSignal(const DA::DASignalPtr& sig) const;
+
+    // 工程保存/加载（经插件 createArchiveTask，任务在后台线程只做文件读写）
+    std::shared_ptr< DA::DAAbstractArchiveTask > createArchiveTask(bool isSave);
+    // 序列化当前状态为 JSON（保存用）
+    QByteArray serializeState() const;
+    // 从 JSON 重建信号（加载用，主线程）
+    void restoreState(const QByteArray& json);
+
 
 Q_SIGNALS:
     // 频谱结果更新（显示层订阅）
@@ -95,6 +105,12 @@ private Q_SLOTS:
     void onPeakTopNChanged();
     void onPlayerPositionChanged(qint64 ms);
     void onViewTimeChanged(double seconds);
+    // 导出：峰值表 CSV / 频谱 CSV / 热图矩阵 CSV / 整页位图 / 峰值表送表格页
+    void exportPeaksCsv();
+    void exportSpectrumCsv();
+    void exportHeatmapCsv();
+    void exportImage();
+    void sendPeaksToTable();
 
 private:
     void buildCenterPage();
@@ -117,6 +133,7 @@ private:
     ads::CDockWidget* mPageDock { nullptr };
     DASignalAnalysisPage* mPage { nullptr };
     QMenu* mPeakTopNMenu { nullptr };
+    QMenu* mExportMenu { nullptr };
     QMenu* mAmplitudeModeMenu { nullptr };
     QActionGroup* mWaterfallModeGroup { nullptr };
     QActionGroup* mPeakTopNGroup { nullptr };

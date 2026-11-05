@@ -56,6 +56,8 @@ public:
     void setEnvelope(const QVector< double >& xs, const QVector< double >& mins, const QVector< double >& maxs);
     // 时频显示栅格回填（外部计算完成后调用）
     void setStft(const DAStftResult& result);
+    // 当前时频显示栅格（导出热图矩阵用）
+    DAStftResult stftResult() const;
     // 峰值表数据回填（在频谱图上标出峰位）
     void setPeaks(const DAPeakResult& peaks);
     // 峰值标记显隐（丝带「峰值标记」开关）
