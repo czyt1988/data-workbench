@@ -123,6 +123,10 @@ private:
     void buildPeakDock();
     // 触发当前信号的峰值表与峰值曲线计算
     void requestPeaks(bool withCurves);
+    // 统一错误上报：进界面消息队列（da.user）+ 唤起界面日志窗口，避免功能静默缺失
+    void reportError(const QString& text);
+    // 按 FFmpeg 可用性刷新入口状态（未检测到时视频导入置灰并说明原因）
+    void refreshFFmpegAvailability();
     // 当前信号的播放源切换（信号标签切换时调用）
     void syncPlayerSource();
     // 导入成功后加入页面并激活依赖动作

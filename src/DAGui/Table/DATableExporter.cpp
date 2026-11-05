@@ -171,8 +171,8 @@ QString htmlCellStyleDeclarations(const DATableCellStyle& style, bool hasBar, do
     }
     if (style.borderValid() && style.borderSides() != DATableCellStyle::BorderNone) {
         // 边框（A2/A5）：表样式带 border-collapse:collapse，相邻格同色边会合并为 1px；
-        // 未设颜色时与 delegate 同口径回落默认中灰（DESIGN.md §2 普通边框色）
-        const QColor bc = style.borderColor().isValid() ? style.borderColor() : QColor(0x72, 0x72, 0x72);
+        // 未设颜色时与 delegate 同口径回落 DATableCellStyle::defaultBorderColor
+        const QColor bc = style.borderColor().isValid() ? style.borderColor() : DATableCellStyle::defaultBorderColor();
         const QString spec =
             QStringLiteral("%1px solid %2").arg(qBound(1, style.borderWidth(), 3)).arg(cssColor(bc));
         if (style.borderSides() & DATableCellStyle::BorderLeft) {

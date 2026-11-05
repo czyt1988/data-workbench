@@ -67,8 +67,10 @@ public:
     int borderWidth() const;
     void setBorderWidth(int w);
     bool borderValid() const;
-    // 一次性设置边框（预设用）：sides 置 valid；color 无效表示绘制用默认中灰；width <= 0 按 1
+    // 一次性设置边框（预设用）：sides 置 valid；color 无效表示绘制用默认色；width <= 0 按 1
     void setBorder(quint8 sides, const QColor& color = QColor(), int width = 1);
+    // 未显式设色时的默认边框色（绘制与导出共用）
+    static QColor defaultBorderColor();
 
     // 所有 valid 全 false 时返回 true
     bool isNull() const;
