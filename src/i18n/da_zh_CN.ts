@@ -5813,6 +5813,24 @@
         <source>scipy is not available, cannot perform scatter interpolation. Please install scipy: pip install scipy</source>
         <translation>scipy 不可用，无法进行散点插值。请安装 scipy：pip install scipy</translation>
     </message>
+
+    <message>
+        <location line="+119"/>
+        <source>Not enough valid points for surface interpolation</source>
+        <translation>散点数量不足，无法插值成曲面</translation>
+        </message>
+
+    <message>
+        <location line="+11"/>
+        <source>The X or Y column has no variation, cannot build a surface</source>
+        <translation>X 或 Y 列没有变化范围，无法生成曲面</translation>
+        </message>
+
+    <message>
+        <location line="+57"/>
+        <source>Failed to interpolate the surface: %1</source>
+        <translation>曲面插值失败：%1</translation>
+        </message>
 </context>
 <context>
     <name>DA::DAChartAddBoxChartWidget</name>
@@ -14994,6 +15012,127 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <source>The previous chart type is not available for the new selection, switched to the default type</source>
         <translation>新选区不支持原来的图型，已切换为默认图型</translation>
     </message>
+
+    <message>
+        <location line="+2"/>
+        <source>Contour</source>
+        <translation>等高线</translation>
+        </message>
+
+    <message>
+        <location line="+2"/>
+        <source>Error bar</source>
+        <translation>误差棒</translation>
+        </message>
+
+    <message>
+        <location line="+2"/>
+        <source>Vector field</source>
+        <translation>向量场</translation>
+        </message>
+
+    <message>
+        <location line="+2"/>
+        <source>Multi-bar</source>
+        <translation>多重柱状</translation>
+        </message>
+
+    <message>
+        <location line="+2"/>
+        <source>3D surface</source>
+        <translation>3D 曲面</translation>
+        </message>
+
+    <message>
+        <location line="+2"/>
+        <source>3D line</source>
+        <translation>3D 线图</translation>
+        </message>
+
+    <message>
+        <location line="+13"/>
+        <source>Bar (count)</source>
+        <translation>柱状（计数）</translation>
+        </message>
+
+    <message>
+        <location line="+1"/>
+        <source>Bar (aggregate)</source>
+        <translation>柱状（聚合）</translation>
+        </message>
+
+    <message>
+        <location line="+12"/>
+        <location line="+6"/>
+        <source>Requires at least 1 numeric column</source>
+        <translation>需要至少 1 列数值</translation>
+        </message>
+
+    <message>
+        <location line="-4"/>
+        <source>Requires 2 numeric columns</source>
+        <translation>需要 2 列数值</translation>
+        </message>
+
+    <message>
+        <location line="+2"/>
+        <source>Requires 1 numeric column</source>
+        <translation>需要 1 列数值</translation>
+        </message>
+
+    <message>
+        <location line="+4"/>
+        <source>Requires 1 category column, or a low-cardinality numeric column</source>
+        <translation>需要 1 列分类，或低基数数值列</translation>
+        </message>
+
+    <message>
+        <location line="+2"/>
+        <source>Requires 3 numeric columns, or 1 time column and 2 numeric columns</source>
+        <translation>需要 3 列数值，或 1 列时间 + 2 列数值</translation>
+        </message>
+
+    <message>
+        <location line="+5"/>
+        <source>Requires 3 numeric columns</source>
+        <translation>需要 3 列数值</translation>
+        </message>
+
+    <message>
+        <location line="+2"/>
+        <source>Requires 4 numeric columns</source>
+        <translation>需要 4 列数值</translation>
+        </message>
+
+    <message>
+        <location line="+2"/>
+        <source>Requires 1 category column and at least 2 numeric columns</source>
+        <translation>需要 1 列分类 + 至少 2 列数值</translation>
+        </message>
+
+    <message>
+        <location line="-210"/>
+        <source>Chart type (unavailable types are disabled with the reason)</source>
+        <translation>图型（不满足当前选区的置灰并给出原因）</translation>
+        </message>
+
+    <message>
+        <location line="+17"/>
+        <source>Settings</source>
+        <translation>设置</translation>
+        </message>
+
+    <message>
+        <location line="+4"/>
+        <source>Show or hide the role settings</source>
+        <translation>显示/隐藏角色设置</translation>
+        </message>
+
+    <message>
+        <location line="-66"/>
+        <source>%1 (manual)</source>
+        <translation>%1（手动配置）</translation>
+        </message>
 </context>
 <context>
     <name>DA::DATableStatsWidget</name>
@@ -16961,6 +17100,84 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <source>There is no current chart to append to</source>
         <translation>当前没有可追加的图表</translation>
     </message>
+
+    <message>
+        <location line="+103"/>
+        <source>Failed to build the contour plot</source>
+        <translation>构建等高线图失败</translation>
+        </message>
+
+    <message>
+        <location line="+41"/>
+        <source>Failed to build the error bar chart</source>
+        <translation>构建误差棒图失败</translation>
+        </message>
+
+    <message>
+        <location line="+42"/>
+        <source>Failed to build the vector field chart</source>
+        <translation>构建向量场图失败</translation>
+        </message>
+
+    <message>
+        <location line="+54"/>
+        <source>No valid data for the multi-bar chart</source>
+        <translation>没有可用于多重柱状图的数据</translation>
+        </message>
+
+    <message>
+        <location line="+93"/>
+        <source>Failed to build the multi-bar chart</source>
+        <translation>构建多重柱状图失败</translation>
+        </message>
+
+    <message>
+        <location line="+30"/>
+        <source>Not enough valid rows for the 3D chart</source>
+        <translation>有效数据行不足以绘制 3D 图</translation>
+        </message>
+
+    <message>
+        <location line="-44"/>
+        <source>The 3D chart must be drawn on a 3D chart widget</source>
+        <translation>3D 图需要绘制在 3D 图表控件上</translation>
+        </message>
+
+    <message>
+        <location line="+61"/>
+        <source>Failed to build the 3D surface</source>
+        <translation>构建 3D 曲面失败</translation>
+        </message>
+
+    <message>
+        <location line="+18"/>
+        <source>Failed to build the 3D line chart</source>
+        <translation>构建 3D 线图失败</translation>
+        </message>
+
+    <message>
+        <location line="+18"/>
+        <source>There is no 3D chart to draw on</source>
+        <translation>没有可用的 3D 图表</translation>
+        </message>
+
+    <message>
+        <location line="+14"/>
+        <source>%1 · %2 · %3</source>
+        <translation>%1 · %2 · %3</translation>
+        </message>
+
+    <message>
+        <location line="-9"/>
+        <source>The chart type is not a 3D chart</source>
+        <translation>当前图型不是 3D 图型</translation>
+        </message>
+
+    <message>
+        <location line="+34"/>
+        <source>Failed to create a 3D chart</source>
+        <translation>创建 3D 子图失败</translation>
+        </message>
 </context>
 <context>
     <name>DAChartSeriesPickerWidget</name>
@@ -21459,5 +21676,148 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <source>e.g. tmp = A * 2, then np.where(tmp &gt; 0, tmp, 0)</source>
         <translation>示例：tmp = A * 2，然后 np.where(tmp &gt; 0, tmp, 0)</translation>
     </message>
+</context>
+<context>
+    <name>DA::DATableChartRolePanel</name>
+    <message>
+        <location filename="../DAGui/Table/Chart/DATableChartRolePanel.cpp" line="+126"/>
+        <source>Row number</source>
+        <translation>行号</translation>
+        </message>
+    <message>
+        <location line="+3"/>
+        <source>(none)</source>
+        <translation>（无）</translation>
+        </message>
+    <message>
+        <location line="+96"/>
+        <source>Remove this series</source>
+        <translation>移除此序列</translation>
+        </message>
+    <message>
+        <location line="+18"/>
+        <source>Add series</source>
+        <translation>添加序列</translation>
+        </message>
+    <message>
+        <location line="+40"/>
+        <source>Aggregation</source>
+        <translation>聚合</translation>
+        </message>
+    <message>
+        <location line="+28"/>
+        <source>Bins</source>
+        <translation>分箱</translation>
+        </message>
+    <message>
+        <location line="+23"/>
+        <source>Mean</source>
+        <translation>平均值</translation>
+        </message>
+    <message>
+        <location line="+2"/>
+        <source>Median</source>
+        <translation>中位数</translation>
+        </message>
+    <message>
+        <location line="+2"/>
+        <source>Sum</source>
+        <translation>求和</translation>
+        </message>
+    <message>
+        <location line="+2"/>
+        <source>Count</source>
+        <translation>计数</translation>
+        </message>
+    <message>
+        <location line="+2"/>
+        <source>Std</source>
+        <translation>标准差</translation>
+        </message>
+    <message>
+        <location line="+2"/>
+        <source>Var</source>
+        <translation>方差</translation>
+        </message>
+    <message>
+        <location line="+2"/>
+        <source>Min</source>
+        <translation>最小值</translation>
+        </message>
+    <message>
+        <location line="+2"/>
+        <source>Max</source>
+        <translation>最大值</translation>
+        </message>
+    <message>
+        <location line="+99"/>
+        <location line="+35"/>
+        <source>X axis</source>
+        <translation>X 轴</translation>
+        </message>
+    <message>
+        <location line="-29"/>
+        <location line="+17"/>
+        <location line="+18"/>
+        <location line="+101"/>
+        <location line="+17"/>
+        <location line="+17"/>
+        <location line="+23"/>
+        <source>Y</source>
+        <translation>Y</translation>
+        </message>
+    <message>
+        <location line="-181"/>
+        <location line="+119"/>
+        <location line="+17"/>
+        <location line="+17"/>
+        <location line="+23"/>
+        <source>X</source>
+        <translation>X</translation>
+        </message>
+    <message>
+        <location line="-141"/>
+        <location line="+52"/>
+        <location line="+42"/>
+        <source>Value</source>
+        <translation>值</translation>
+        </message>
+    <message>
+        <location line="-81"/>
+        <location line="+58"/>
+        <source>Values</source>
+        <translation>数值</translation>
+        </message>
+    <message>
+        <location line="-47"/>
+        <source>Group</source>
+        <translation>分组</translation>
+        </message>
+    <message>
+        <location line="+22"/>
+        <location line="+20"/>
+        <source>Category</source>
+        <translation>分类</translation>
+        </message>
+    <message>
+        <location line="+45"/>
+        <source>Error</source>
+        <translation>误差</translation>
+        </message>
+    <message>
+        <location line="+17"/>
+        <source>U</source>
+        <translation>U</translation>
+        </message>
+    <message>
+        <location line="+5"/>
+        <source>V</source>
+        <translation>V</translation>
+        </message>
+    <message>
+        <location line="+18"/>
+        <source>Z</source>
+        <translation>Z</translation>
+        </message>
 </context>
 </TS>

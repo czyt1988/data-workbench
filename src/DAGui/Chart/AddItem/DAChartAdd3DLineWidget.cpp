@@ -40,8 +40,11 @@ void DAChartAdd3DLineWidget::setDataManager(DADataManager* dmgr)
  */
 Qwt3DPlotItem* DAChartAdd3DLineWidget::create3DPlotItem()
 {
-    QVector< QwtPoint3D > points;
-    if (!extractLineData(points)) {
+    QVector< QwtPoint3D > points = mProgrammaticPoints;
+    if (points.isEmpty() && !extractLineData(points)) {
+        return nullptr;
+    }
+    if (points.size() < 2) {
         return nullptr;
     }
     Qwt3DLine* item = new Qwt3DLine();
@@ -56,6 +59,22 @@ Qwt3DPlotItem* DAChartAdd3DLineWidget::create3DPlotItem()
 QString DAChartAdd3DLineWidget::getNameHint() const
 {
     return tr("Line3D");  // cn:3D线图
+}
+
+/**
+ * @brief 设置编程式轨迹点（快速绘图路径）
+ */
+void DAChartAdd3DLineWidget::setProgrammaticPoints(const QVector< QwtPoint3D >& points)
+{
+    mProgrammaticPoints = points;
+}
+
+/**
+ * @brief 是否已设置编程式数据
+ */
+bool DAChartAdd3DLineWidget::hasProgrammaticPoints() const
+{
+    return !mProgrammaticPoints.isEmpty();
 }
 
 void DAChartAdd3DLineWidget::onComboBoxDataframeCurrentIndexChanged(int index)

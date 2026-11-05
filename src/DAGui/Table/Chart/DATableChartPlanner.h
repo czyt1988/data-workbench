@@ -35,7 +35,11 @@ public:
     // 判定单列角色：优先走 DATableDataSource::tableColumnType，类型不可判定时取少量样本推断
     static DATableColumnRole detectRole(const DAData& data, int dataColumn, int sampleRowLimit = 50);
     // 组装一个请求需要的列信息（按传入的数据列号顺序）
-    static DATableChartColumn makeColumn(const DAData& data, int dataColumn, int occurrence = 0);
+    // sampleRowLimit=0 表示只按静态类型判定角色（整表列清单用，避免逐列取样本）
+    static DATableChartColumn makeColumn(const DAData& data,
+                                         int dataColumn,
+                                         int occurrence     = 0,
+                                         int sampleRowLimit = 50);
     // 按能力矩阵规划可选图型与默认规格
     static DATableChartPlan plan(const DATableChartRequest& request);
     // 给定图型生成默认规格（表格侧/浮窗切图型时使用）

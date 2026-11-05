@@ -1,6 +1,8 @@
 #include "Table/Views/DADataHeaderView.h"
 #include "Table/Models/DADataTableModel.h"
 #include "Table/Metadata/DATableComputedColumnStore.h"
+#include "Table/Chart/DATableChartPlanner.h"
+#include "Table/Chart/DATableQuickPlotWindow.h"
 #include "DAData.h"
 #include <QMenu>
 #include <QAction>
@@ -175,6 +177,64 @@ void DADataHeaderView::setComputedColumnStore(DATableComputedColumnStore* store)
 void DADataHeaderView::setFrozenColumnChecker(std::function< bool(int) > checker)
 {
     mFrozenColumnChecker = std::move(checker);
+}
+
+/**
+ * @brief 设置快速绘图规划提供者（右键子菜单按当前能力动态出项）
+ */
+void DADataHeaderView::setQuickPlotPlanProvider(const QuickPlotPlanProvider& provider)
+{
+    mQuickPlotPlanProvider = provider;
+}
+
+/**
+ * @brief 构建「快速绘图」子菜单
+ *
+ * 按规划结果只列当前选区能画的图型（严格门槛）；直接绘图段在前、聚合绘图段
+ * （柱状/多重柱状）用分隔线分组；一个都不可画时整个子菜单置灰并给出原因。
+ */
+void DADataHeaderView::buildQuickPlotMenu(QMenu* menu, int logicalIndex)
+{
+    if (!menu) {
+        return;
+    }
+    // 未注入提供者时退回单入口旧行为（仍发 ColumnAction::QuickPlot）
+    if (!mQuickPlotPlanProvider) {
+        QAction* action = menu->addAction(tr("Quick Plot"));  // cn:快速绘图
+        connect(action, &QAction::triggered, this, [ this, logicalIndex ]() {
+            Q_EMIT columnActionRequested(logicalIndex, ColumnAction::QuickPlot);
+        });
+        return;
+    }
+    const DATableChartPlan plan = mQuickPlotPlanProvider(logicalIndex);
+    if (!plan.isPlottable()) {
+        menu->setEnabled(false);
+        const QString reason = DATableQuickPlotWindow::rejectReasonText(plan.reject);
+        menu->setToolTip(reason);
+        if (QAction* menuAction = menu->menuAction()) {
+            menuAction->setToolTip(reason);
+        }
+        return;
+    }
+    bool aggregateSectionStarted = false;
+    for (int i = 0; i < plan.types.size(); ++i) {
+        const DATableChartType type = plan.types.at(i);
+        const bool aggregate         = (type == DATableChartType::Bar || type == DATableChartType::MultiBar);
+        if (aggregate && !aggregateSectionStarted && i > 0) {
+            menu->addSeparator();
+        }
+        aggregateSectionStarted = aggregateSectionStarted || aggregate;
+
+        DATableChartSpec spec;
+        spec.type = type;
+        if (i < plan.typeSpecs.size()) {
+            spec = plan.typeSpecs.at(i);
+        }
+        QAction* action = menu->addAction(DATableQuickPlotWindow::chartTypeText(type, spec));
+        connect(action, &QAction::triggered, this, [ this, logicalIndex, type ]() {
+            Q_EMIT quickPlotRequested(logicalIndex, static_cast< int >(type));
+        });
+    }
 }
 
 /**
@@ -466,8 +526,9 @@ QMenu* DADataHeaderView::buildColumnContextMenu(int logicalIndex)
     // 组4：描述统计 / 快速绘图
     QAction* actDescribe = menu->addAction(QIcon(QStringLiteral(":/DAGui/icon/showDataInList.svg")),
                                            tr("Show Statistics"));  // cn:显示统计信息
-    QAction* actQuickPlot = menu->addAction(QIcon(QStringLiteral(":/DAGui/icon/chart.svg")),
-                                            tr("Quick Plot"));  // cn:快速绘图
+    QMenu* quickPlotMenu = menu->addMenu(QIcon(QStringLiteral(":/DAGui/icon/chart.svg")),
+                                         tr("Quick Plot"));  // cn:快速绘图
+    buildQuickPlotMenu(quickPlotMenu, logicalIndex);
 
     connect(actSortAsc, &QAction::triggered, this, [ this, logicalIndex ]() {
         Q_EMIT columnActionRequested(logicalIndex, ColumnAction::SortAscending);
@@ -505,9 +566,6 @@ QMenu* DADataHeaderView::buildColumnContextMenu(int logicalIndex)
     });
     connect(actDescribe, &QAction::triggered, this, [ this, logicalIndex ]() {
         Q_EMIT columnActionRequested(logicalIndex, ColumnAction::ShowColumnDescribe);
-    });
-    connect(actQuickPlot, &QAction::triggered, this, [ this, logicalIndex ]() {
-        Q_EMIT columnActionRequested(logicalIndex, ColumnAction::QuickPlot);
     });
     // 组5（004 T1.23）：计算列——仅当该列是计算列时追加「编辑公式 / 重新计算 / 移除公式（保留数据）」
     if (mComputedStore && orientation() == Qt::Horizontal && model()) {

@@ -35,6 +35,15 @@ public:
     SurfaceDataMode getDataMode() const;
     // 获取推荐的名称
     QString getNameHint() const;
+    // 编程式入口（快速绘图等无界面调用方）：三列散点数据，创建时内部用 scipy 插值成
+    // 30×30 网格；scipy 不可用时 create3DPlotItem 返回 nullptr，原因见 programmaticError()
+    void setProgrammaticScatterData(const QVector< double >& xs,
+                                    const QVector< double >& ys,
+                                    const QVector< double >& zs);
+    // 是否已设置编程式数据
+    bool hasProgrammaticData() const;
+    // 编程式路径的失败原因（已翻译；成功时为空）
+    QString programmaticError() const;
 
 private Q_SLOTS:
     void onComboBoxModeCurrentIndexChanged(int index);
@@ -51,7 +60,14 @@ private:
     // 从三列散点数据插值为规则网格（散点插值模式）
     bool extractScatterDataAndInterpolate(QVector< double >& xCoords,
                                            QVector< double >& yCoords,
-                                           QVector< QVector< double > >& zMatrix) const;
+                                           QVector< QVector< double > >& zMatrix);
+    // 三列散点向量 → 规则网格（UI 路径与编程式路径共用）
+    bool interpolateScatter(const QVector< double >& xs,
+                            const QVector< double >& ys,
+                            const QVector< double >& zs,
+                            QVector< double >& xCoords,
+                            QVector< double >& yCoords,
+                            QVector< QVector< double > >& zMatrix);
     // 刷新DataFrame下拉框
     void refreshDataframeCombo();
     // 刷新列下拉框（散点模式）
@@ -62,6 +78,10 @@ private:
 private:
     Ui::DAChartAdd3DSurfaceWidget* ui;
     DADataManager* mDataMgr { nullptr };
+    QVector< double > mProgrammaticX;
+    QVector< double > mProgrammaticY;
+    QVector< double > mProgrammaticZ;
+    QString mProgrammaticError;
 };
 }  // end DA
 #endif  // DACHARTADD3DSURFACEWIDGET_H

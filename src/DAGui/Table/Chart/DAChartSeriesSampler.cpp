@@ -428,4 +428,174 @@ DAChartSeriesSampler::CategorySample DAChartSeriesSampler::sampleCategory(const 
     return result;
 }
 
+/**
+ * @brief 分类 + 多列数值的按行对齐采样（分组多列箱线图）
+ *
+ * 与 sampleCategory 的区别：一次取一个分类列和多个数值列，任一行任一列缺失
+ * 都整行剔除，保证 hue 标签与每个数值序列严格对齐（否则分组箱线图会错行）。
+ */
+DAChartSeriesSampler::CategoryMultiSample DAChartSeriesSampler::sampleCategoryMulti(
+    const DATableChartRequest& request,
+    int categoryDataColumn,
+    const QList< int >& valueDataColumns,
+    int maxPoints,
+    SampleBudget* budget)
+{
+    CategoryMultiSample result;
+    SampleBudget defaultBudget;
+    SampleBudget* usedBudget = budget ? budget : &defaultBudget;
+    DAData dataCopy            = request.data;  // 值语义共享底层指针，取非 const 接口
+    DATableDataSource* source  = dataCopy.tableSource();
+    if (source == nullptr || categoryDataColumn < 0 || valueDataColumns.isEmpty()) {
+        return result;
+    }
+    for (int i = 0; i < valueDataColumns.size(); ++i) {
+        result.columns.append(QVector< double >());
+    }
+    const qint64 totalRows = static_cast< qint64 >(request.rowCount);
+    result.info.totalRows  = static_cast< int >(std::min< qint64 >(totalRows, std::numeric_limits< int >::max()));
+    const QVector< RowRange > ranges = buildRanges(totalRows, maxPoints);
+    result.info.sampled              = (ranges.size() != 1 || (ranges.size() == 1 && ranges.first().count < totalRows));
+
+    for (const RowRange& range : ranges) {
+        const int callsNeeded = 1 + static_cast< int >(valueDataColumns.size());
+        bool budgetOk         = true;
+        for (int c = 0; c < callsNeeded; ++c) {
+            if (!usedBudget->request(range.count)) {
+                budgetOk = false;
+                break;
+            }
+        }
+        if (!budgetOk) {
+            result.info.limited = true;
+            break;
+        }
+        const QVariantList categories = fetchColumn(source, categoryDataColumn, range.start, range.count);
+        QList< QVariantList > values;
+        qsizetype minSize = categories.size();
+        for (int dataCol : valueDataColumns) {
+            const QVariantList column = fetchColumn(source, dataCol, range.start, range.count);
+            values.append(column);
+            minSize = std::min(minSize, static_cast< qsizetype >(column.size()));
+        }
+        if (minSize <= 0) {
+            continue;
+        }
+        for (qsizetype i = 0; i < minSize; ++i) {
+            QString label;
+            if (!cellToLabel(categories.at(i), label)) {
+                ++result.info.droppedMissing;
+                continue;
+            }
+            QVector< double > row;
+            row.reserve(values.size());
+            bool rowOk = true;
+            for (const QVariantList& column : std::as_const(values)) {
+                double v = 0.0;
+                if (!cellToDouble(column.at(i), v)) {
+                    rowOk = false;
+                    break;
+                }
+                row.append(v);
+            }
+            if (!rowOk) {
+                ++result.info.droppedMissing;
+                continue;
+            }
+            result.labels.append(label);
+            for (int c = 0; c < row.size(); ++c) {
+                result.columns[ c ].append(row.at(c));
+            }
+        }
+    }
+    result.info.sampledRows = result.labels.size();
+    return result;
+}
+
+/**
+ * @brief 多列按行对齐采样（等高线/误差棒/向量场/3D）
+ *
+ * 与 sampleMultiXY 的区别：这里没有 x 轴角色，所有列都是等权坐标（例如 x/y/z），
+ * 任一行在任一列上缺失就整行剔除，保证各列长度始终一致、行与行不被错位。
+ */
+DAChartSeriesSampler::ColumnsSample DAChartSeriesSampler::sampleColumns(const DATableChartRequest& request,
+                                                                        const QList< int >& dataColumns,
+                                                                        int maxPoints,
+                                                                        SampleBudget* budget)
+{
+    ColumnsSample result;
+    SampleBudget defaultBudget;
+    SampleBudget* usedBudget = budget ? budget : &defaultBudget;
+    DAData dataCopy            = request.data;  // 值语义共享底层指针，取非 const 接口
+    DATableDataSource* source  = dataCopy.tableSource();
+    if (source == nullptr || dataColumns.isEmpty()) {
+        return result;
+    }
+    for (int i = 0; i < dataColumns.size(); ++i) {
+        result.columns.append(QVector< double >());
+    }
+    const qint64 totalRows = static_cast< qint64 >(request.rowCount);
+    result.info.totalRows  = static_cast< int >(std::min< qint64 >(totalRows, std::numeric_limits< int >::max()));
+
+    QVector< RowRange > ranges;
+    if (maxPoints == kFullDataPoints) {
+        // 全量重建：一个窗口覆盖全表（转入绘图区用，不再受采样预算限制）
+        if (totalRows > 0) {
+            ranges.append(RowRange { 0, static_cast< int >(totalRows) });
+        }
+    } else {
+        ranges = buildRanges(totalRows, maxPoints);
+    }
+    result.info.sampled = (ranges.size() != 1 || (ranges.size() == 1 && ranges.first().count < totalRows));
+
+    for (const RowRange& range : ranges) {
+        bool budgetOk = true;
+        if (maxPoints != kFullDataPoints) {
+            for (int c = 0; c < dataColumns.size(); ++c) {
+                if (!usedBudget->request(range.count)) {
+                    budgetOk = false;
+                    break;
+                }
+            }
+        }
+        if (!budgetOk) {
+            result.info.limited = true;
+            break;
+        }
+        QList< QVariantList > fetched;
+        qsizetype minSize = -1;
+        for (int dataCol : dataColumns) {
+            const QVariantList values = fetchColumn(source, dataCol, range.start, range.count);
+            fetched.append(values);
+            const qsizetype n = values.size();
+            minSize = (minSize < 0) ? n : std::min(minSize, n);
+        }
+        if (minSize <= 0) {
+            continue;
+        }
+        for (qsizetype i = 0; i < minSize; ++i) {
+            QVector< double > row;
+            row.reserve(fetched.size());
+            bool rowOk = true;
+            for (const QVariantList& values : std::as_const(fetched)) {
+                double v = 0.0;
+                if (!cellToDouble(values.at(i), v)) {
+                    rowOk = false;
+                    break;
+                }
+                row.append(v);
+            }
+            if (!rowOk) {
+                ++result.info.droppedMissing;
+                continue;
+            }
+            for (int c = 0; c < row.size(); ++c) {
+                result.columns[ c ].append(row.at(c));
+            }
+        }
+    }
+    result.info.sampledRows = result.rowCount();
+    return result;
+}
+
 }  // namespace DA

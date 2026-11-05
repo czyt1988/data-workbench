@@ -14,6 +14,7 @@
 #include <QMetaType>
 #include <QVariant>
 #include <QAction>
+#include <QComboBox>
 #include <QElapsedTimer>
 #include <QMenu>
 #include <QMouseEvent>
@@ -22,6 +23,7 @@
 
 #include "DAAbstractData.h"
 #include "DAChartWidget.h"
+#include "DAChart3DWidget.h"
 #include "DAChartOperateWidget.h"
 #include "Table/DADataOperateOfDataFrameWidget.h"
 #include "DAFigureWidget.h"
@@ -36,6 +38,7 @@
 #include "DATableDataSource.h"
 #include "Table/Chart/DAChartQuickPlot.h"
 #include "Table/Chart/DATableQuickPlotWindow.h"
+#include "Table/Chart/DATableChartRolePanel.h"
 #include "Table/Chart/DAChartSeriesSampler.h"
 #include "Table/Chart/DATableChartPlanner.h"
 #include "Table/Chart/DATableChartTypes.h"
@@ -260,6 +263,9 @@ private Q_SLOTS:
     void testPlanCategoryAndNumeric();
     void testPlanTimeAndNumeric();
     void testPlanMultiNumeric();
+    void testPlanThreeNumericNewTypes();
+    void testPlanFourNumericVectorField();
+    void testPlanCategoryTwoNumericMultiBar();
     void testPlanUnsupportedCombinations();
     void testXAxisCandidates();
     void testApplyXOptionAsCategory();
@@ -275,6 +281,11 @@ private Q_SLOTS:
     void testRenderBarSampled();
     void testRenderBarExactWithTextCategory();
     void testRenderBoxplotExact();
+    void testRenderContourErrorBarVectorField();
+    void testRenderMultiBar();
+    void testCreate3DLineItem();
+    void testWindowRecommendedSize();
+    void testRolePanelManualMode();
     // 页面级端到端：真实选区 → 浮窗出图（Python 聚合）→ 转入绘图区 → 撤销/重做
     void testPageSelectPlotAndTransfer();
     // 方案 §5.3：删除当前列时自动关闭浮窗
@@ -412,10 +423,77 @@ void DATableQuickPlotTest::testPlanMultiNumeric()
     const auto plan                 = DA::DATableChartPlanner::plan(requestFromColumns(data, { 0, 1, 2 }));
 
     QVERIFY(plan.isPlottable());
-    QCOMPARE(plan.types.first(), DA::DATableChartType::MultiLine);
+    // v3 能力矩阵：3 列数值首项为散点（实施方案 §2.2）
+    QCOMPARE(plan.types.first(), DA::DATableChartType::Scatter);
+    QCOMPARE(plan.defaultSpec.xColumn, 0);
+    QCOMPARE(plan.defaultSpec.valueColumns, QList< int > { 1 });
+    QVERIFY(containsType(plan.types, DA::DATableChartType::MultiLine));
     QVERIFY(containsType(plan.types, DA::DATableChartType::Boxplot));
-    QCOMPARE(plan.defaultSpec.xColumn, -1);
-    QCOMPARE(plan.defaultSpec.valueColumns, QList< int >({ 0, 1, 2 }));
+    QCOMPARE(plan.typeSpecs.size(), plan.types.size());
+}
+
+void DATableQuickPlotTest::testPlanThreeNumericNewTypes()
+{
+    auto* source = new DAQuickPlotTestSource;
+    source->columns.append({ QStringLiteral("x"), QMetaType::Double, makeNumeric(20) });
+    source->columns.append({ QStringLiteral("y"), QMetaType::Double, makeNumeric(20, 10.0) });
+    source->columns.append({ QStringLiteral("z"), QMetaType::Double, makeNumeric(20, 20.0) });
+    const DA::DAData data           = makeData(source);
+    const DA::DATableChartPlan plan = DA::DATableChartPlanner::plan(requestFromColumns(data, { 0, 1, 2 }));
+
+    QVERIFY(plan.isPlottable());
+    QVERIFY(containsType(plan.types, DA::DATableChartType::Contour));
+    QVERIFY(containsType(plan.types, DA::DATableChartType::ErrorBar));
+    QVERIFY(containsType(plan.types, DA::DATableChartType::Surface3D));
+    QVERIFY(containsType(plan.types, DA::DATableChartType::Line3D));
+    QVERIFY(!containsType(plan.types, DA::DATableChartType::VectorField));  // 四列才出向量场
+
+    const DA::DATableChartSpec contour = DA::DATableChartPlanner::defaultSpec(
+        requestFromColumns(data, { 0, 1, 2 }), DA::DATableChartType::Contour);
+    QCOMPARE(contour.xColumn, 0);
+    QCOMPARE(contour.yColumn, 1);
+    QCOMPARE(contour.zColumn, 2);
+
+    const DA::DATableChartSpec errorBar = DA::DATableChartPlanner::defaultSpec(
+        requestFromColumns(data, { 0, 1, 2 }), DA::DATableChartType::ErrorBar);
+    QCOMPARE(errorBar.errorColumn, 2);
+}
+
+void DATableQuickPlotTest::testPlanFourNumericVectorField()
+{
+    auto* source = new DAQuickPlotTestSource;
+    for (int i = 0; i < 4; ++i) {
+        source->columns.append({ QStringLiteral("n%1").arg(i), QMetaType::Double, makeNumeric(20, i * 10.0) });
+    }
+    const DA::DAData data           = makeData(source);
+    const auto request              = requestFromColumns(data, { 0, 1, 2, 3 });
+    const DA::DATableChartPlan plan = DA::DATableChartPlanner::plan(request);
+
+    QVERIFY(plan.isPlottable());
+    QVERIFY(containsType(plan.types, DA::DATableChartType::VectorField));
+    const DA::DATableChartSpec spec =
+        DA::DATableChartPlanner::defaultSpec(request, DA::DATableChartType::VectorField);
+    QCOMPARE(spec.xColumn, 0);
+    QCOMPARE(spec.yColumn, 1);
+    QCOMPARE(spec.uColumn, 2);
+    QCOMPARE(spec.vColumn, 3);
+}
+
+void DATableQuickPlotTest::testPlanCategoryTwoNumericMultiBar()
+{
+    auto* source = new DAQuickPlotTestSource;
+    source->columns.append({ QStringLiteral("cat"), QMetaType::QString, makeCategory(20) });
+    source->columns.append({ QStringLiteral("v1"), QMetaType::Double, makeNumeric(20) });
+    source->columns.append({ QStringLiteral("v2"), QMetaType::Double, makeNumeric(20, 5.0) });
+    const DA::DAData data           = makeData(source);
+    const auto request              = requestFromColumns(data, { 0, 1, 2 });
+    const DA::DATableChartPlan plan = DA::DATableChartPlanner::plan(request);
+
+    QVERIFY(plan.isPlottable());
+    QCOMPARE(plan.types.first(), DA::DATableChartType::MultiBar);
+    QVERIFY(containsType(plan.types, DA::DATableChartType::Boxplot));
+    QCOMPARE(plan.defaultSpec.categoryColumn, 0);
+    QCOMPARE(plan.defaultSpec.valueColumns, QList< int >({ 1, 2 }));
 }
 
 void DATableQuickPlotTest::testPlanUnsupportedCombinations()
@@ -437,15 +515,25 @@ void DATableQuickPlotTest::testPlanUnsupportedCombinations()
     QVERIFY(!catPlan.isPlottable());
     QCOMPARE(catPlan.reject, DA::DATableChartRejectReason::UnsupportedCombination);
 
-    // 分类 + 2 数值（v1 不做分组柱状）
+    // 分类 + 2 数值（v3 起可画多重柱状，不再是拒绝组合）
     auto* mixed = new DAQuickPlotTestSource;
     mixed->columns.append({ QStringLiteral("cat"), QMetaType::QString, makeCategory(20) });
     mixed->columns.append({ QStringLiteral("v1"), QMetaType::Double, makeNumeric(20) });
     mixed->columns.append({ QStringLiteral("v2"), QMetaType::Double, makeNumeric(20, 5.0) });
     const DA::DAData mixedData = makeData(mixed);
     const auto mixedPlan       = DA::DATableChartPlanner::plan(requestFromColumns(mixedData, { 0, 1, 2 }));
-    QVERIFY(!mixedPlan.isPlottable());
-    QCOMPARE(mixedPlan.reject, DA::DATableChartRejectReason::UnsupportedCombination);
+    QVERIFY(mixedPlan.isPlottable());
+    QVERIFY(containsType(mixedPlan.types, DA::DATableChartType::MultiBar));
+
+    // 2 分类 + 1 数值：仍维持拒绝（统计管线 hue 能力缺交互与基数守卫，留后续）
+    auto* twoCats = new DAQuickPlotTestSource;
+    twoCats->columns.append({ QStringLiteral("c1"), QMetaType::QString, makeCategory(20) });
+    twoCats->columns.append({ QStringLiteral("c2"), QMetaType::QString, makeCategory(20) });
+    twoCats->columns.append({ QStringLiteral("v"), QMetaType::Double, makeNumeric(20) });
+    const auto twoCatPlan = DA::DATableChartPlanner::plan(
+        requestFromColumns(makeData(twoCats), { 0, 1, 2 }));
+    QVERIFY(!twoCatPlan.isPlottable());
+    QCOMPARE(twoCatPlan.reject, DA::DATableChartRejectReason::UnsupportedCombination);
 }
 
 void DATableQuickPlotTest::testXAxisCandidates()
@@ -1012,6 +1100,124 @@ void DATableQuickPlotTest::testRenderBoxplotExact()
         DA::DATableChartPlanner::defaultSpec(hueRequest, DA::DATableChartType::Boxplot);
     QVERIFY2(DA::DAChartQuickPlot::render(hueRequest, hueSpec, &chart, &info, &error), qPrintable(error));
     QVERIFY(!chart.itemList().isEmpty());
+}
+
+void DATableQuickPlotTest::testRenderContourErrorBarVectorField()
+{
+    auto* source = new DAQuickPlotTestSource;
+    for (int i = 0; i < 4; ++i) {
+        source->columns.append({ QStringLiteral("n%1").arg(i), QMetaType::Double, makeNumeric(80, i * 3.0) });
+    }
+    const DA::DAData data = makeData(source);
+    const auto request    = requestFromColumns(data, { 0, 1, 2, 3 });
+
+    DA::DAChartWidget chart;
+    DA::DATableChartBuildInfo info;
+    QString error;
+
+    const DA::DATableChartSpec contour =
+        DA::DATableChartPlanner::defaultSpec(request, DA::DATableChartType::Contour);
+    QVERIFY2(DA::DAChartQuickPlot::render(request, contour, &chart, &info, &error), qPrintable(error));
+    QVERIFY(!chart.itemList().isEmpty());
+
+    const DA::DATableChartSpec errorBar =
+        DA::DATableChartPlanner::defaultSpec(request, DA::DATableChartType::ErrorBar);
+    QVERIFY2(DA::DAChartQuickPlot::render(request, errorBar, &chart, &info, &error), qPrintable(error));
+    QVERIFY(!chart.itemList().isEmpty());
+
+    const DA::DATableChartSpec vectorField =
+        DA::DATableChartPlanner::defaultSpec(request, DA::DATableChartType::VectorField);
+    QVERIFY2(DA::DAChartQuickPlot::render(request, vectorField, &chart, &info, &error), qPrintable(error));
+    QVERIFY(!chart.itemList().isEmpty());
+}
+
+void DATableQuickPlotTest::testRenderMultiBar()
+{
+    const DA::DAData data = makePandasData();
+    const auto request    = requestFromColumns(data, { 0, 1, 2 });
+
+    DA::DAChartWidget chart;
+    DA::DATableChartBuildInfo info;
+    QString error;
+    const DA::DATableChartSpec spec =
+        DA::DATableChartPlanner::defaultSpec(request, DA::DATableChartType::MultiBar);
+    QVERIFY2(DA::DAChartQuickPlot::render(request, spec, &chart, &info, &error), qPrintable(error));
+    QVERIFY(!chart.itemList().isEmpty());
+    QCOMPARE(info.totalCategories, 3);  // a/b/c
+    QVERIFY(!info.approximate);         // pandas 源走精确聚合
+
+    // 分类 + 2 数值的箱线图：默认按类别分组（精确与采样两条路径）
+    const DA::DATableChartSpec boxSpec =
+        DA::DATableChartPlanner::defaultSpec(request, DA::DATableChartType::Boxplot);
+    QCOMPARE(boxSpec.categoryColumn, 0);
+    QCOMPARE(boxSpec.valueColumns, QList< int >({ 1, 2 }));
+    QVERIFY2(DA::DAChartQuickPlot::render(request, boxSpec, &chart, &info, &error), qPrintable(error));
+    QVERIFY(!chart.itemList().isEmpty());
+
+    auto* sampledSource = new DAQuickPlotTestSource;
+    sampledSource->columns.append({ QStringLiteral("cat"), QMetaType::QString, makeCategory(300) });
+    sampledSource->columns.append({ QStringLiteral("v1"), QMetaType::Double, makeNumeric(300) });
+    sampledSource->columns.append({ QStringLiteral("v2"), QMetaType::Double, makeNumeric(300, 5.0) });
+    const DA::DAData sampledData = makeData(sampledSource);
+    const auto sampledRequest    = requestFromColumns(sampledData, { 0, 1, 2 });
+    const DA::DATableChartSpec sampledBox =
+        DA::DATableChartPlanner::defaultSpec(sampledRequest, DA::DATableChartType::Boxplot);
+    QVERIFY2(DA::DAChartQuickPlot::render(sampledRequest, sampledBox, &chart, &info, &error), qPrintable(error));
+    QVERIFY(!chart.itemList().isEmpty());
+    QVERIFY(info.approximate);  // 非 pandas 源走采样
+}
+
+void DATableQuickPlotTest::testCreate3DLineItem()
+{
+    auto* source = new DAQuickPlotTestSource;
+    source->columns.append({ QStringLiteral("x"), QMetaType::Double, makeNumeric(40) });
+    source->columns.append({ QStringLiteral("y"), QMetaType::Double, makeNumeric(40, 5.0) });
+    source->columns.append({ QStringLiteral("z"), QMetaType::Double, makeNumeric(40, 9.0) });
+    const DA::DAData data = makeData(source);
+    const auto request    = requestFromColumns(data, { 0, 1, 2 });
+
+    DA::DATableChartBuildInfo info;
+    QString error;
+    const DA::DATableChartSpec spec =
+        DA::DATableChartPlanner::defaultSpec(request, DA::DATableChartType::Line3D);
+    QVERIFY(DA::DAChartQuickPlot::is3DType(spec.type));
+    Qwt3DPlotItem* item = DA::DAChartQuickPlot::create3DItem(request, spec, &info, &error);
+    QVERIFY2(item != nullptr, qPrintable(error));
+    delete item;
+}
+
+void DATableQuickPlotTest::testWindowRecommendedSize()
+{
+    QCOMPARE(DA::DATableQuickPlotWindow::recommendedSize(), QSize(640, 560));
+}
+
+void DATableQuickPlotTest::testRolePanelManualMode()
+{
+    auto* source = new DAQuickPlotTestSource;
+    source->columns.append({ QStringLiteral("a"), QMetaType::Double, makeNumeric(30) });
+    source->columns.append({ QStringLiteral("b"), QMetaType::Double, makeNumeric(30, 7.0) });
+    const DA::DAData data = makeData(source);
+    const auto request    = requestFromColumns(data, { 0, 1 });
+
+    DA::DATableQuickPlotWindow window(nullptr);
+    window.showForRequest(request);
+    QTest::qWait(50);
+    QVERIFY(window.isVisible());
+    QVERIFY(!window.isManualMode());
+
+    auto* panel = window.findChild< DA::DATableChartRolePanel* >();
+    QVERIFY(panel != nullptr);
+    const QList< QComboBox* > combos = panel->findChildren< QComboBox* >();
+    QVERIFY(combos.size() >= 2);  // 散点：X / Y
+    QComboBox* xCombo = combos.first();
+    const int target  = xCombo->findData(1);
+    QVERIFY(target >= 0);
+    xCombo->setCurrentIndex(target);
+    QTest::qWait(50);
+
+    QVERIFY(window.isManualMode());
+    QCOMPARE(window.spec().xColumn, 1);
+    window.close();
 }
 
 /**

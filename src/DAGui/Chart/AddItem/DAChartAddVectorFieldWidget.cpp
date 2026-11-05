@@ -44,6 +44,9 @@ void DAChartAddVectorFieldWidget::onDataManagerChanged(DADataManager* dmgr)
 
 QwtPlotItem* DAChartAddVectorFieldWidget::createPlotItem()
 {
+	if (hasProgrammaticSamples()) {
+		return buildItem(mProgrammaticSamples, mProgrammaticTitle);
+	}
 	QPair< DAData, QString > xSel = ui->selectWidgetX->getCurrentSeries();
 	QPair< DAData, QString > ySel = ui->selectWidgetY->getCurrentSeries();
 	QPair< DAData, QString > uSel = ui->selectWidgetU->getCurrentSeries();
@@ -93,14 +96,44 @@ QwtPlotItem* DAChartAddVectorFieldWidget::createPlotItem()
 		for (std::size_t i = 0; i < n; ++i) {
 			samples.append(QwtVectorFieldSample(vx[ i ], vy[ i ], vu[ i ], vv[ i ]));
 		}
-		QwtPlotVectorField* item = new QwtPlotVectorField();
-		item->setSamples(samples);
-		item->setTitle(uSel.second);
-		return item;
+		return buildItem(samples, uSel.second);
 	} catch (const std::exception& e) {
 		daCritical << tr("Exception occurred during extracting vector field data:%1").arg(e.what());  // cn:提取向量场数据过程中出现异常:%1
 		return nullptr;
 	}
+}
+
+/**
+ * @brief 由向量样本构建图元
+ */
+QwtPlotItem* DAChartAddVectorFieldWidget::buildItem(const QVector< QwtVectorFieldSample >& samples,
+                                                    const QString& title)
+{
+	if (samples.isEmpty()) {
+		return nullptr;
+	}
+	QwtPlotVectorField* item = new QwtPlotVectorField();
+	item->setSamples(samples);
+	item->setTitle(title);
+	return item;
+}
+
+/**
+ * @brief 设置编程式向量样本（快速绘图路径）
+ */
+void DAChartAddVectorFieldWidget::setProgrammaticSamples(const QVector< QwtVectorFieldSample >& samples,
+                                                         const QString& title)
+{
+	mProgrammaticSamples = samples;
+	mProgrammaticTitle   = title;
+}
+
+/**
+ * @brief 是否已设置编程式数据
+ */
+bool DAChartAddVectorFieldWidget::hasProgrammaticSamples() const
+{
+	return !mProgrammaticSamples.isEmpty();
 }
 
 }  // namespace DA

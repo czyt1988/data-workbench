@@ -41,7 +41,9 @@ class DAMarkdownView;
 // 数据统计分析窗口（浮动 dock 内容控件）
 class DADataStatsWidget;
 // 快速绘图请求（数据集句柄 + 有序选中列 + 角色 + 惰性标记）
-class DATableChartRequest;
+// 必须与 DATableChartTypes.h 的 struct 定义一致：class/struct 混用会生成不同
+// 修饰名，表现为链接期 unresolved external
+struct DATableChartRequest;
 
 /**
  * @brief 负责docking窗口区域的管理，APP分两大区域-RibbonArea和DockArea

@@ -1,10 +1,11 @@
 #include "Table/Chart/DATableQuickPlotWindow.h"
 #include "Table/Chart/DATableChartPlanner.h"
+#include "Table/Chart/DATableChartRolePanel.h"
 #include "Table/Chart/DAChartQuickPlot.h"
 #include "DAChartWidget.h"
+#include "DAChart3DWidget.h"
 #include "DALogCategory.h"
 // Qt
-#include <QButtonGroup>
 #include <QComboBox>
 #include <QEvent>
 #include <QFrame>
@@ -13,6 +14,9 @@
 #include <QLabel>
 #include <QMenu>
 #include <QPushButton>
+#include <QStackedWidget>
+#include <QStandardItem>
+#include <QStandardItemModel>
 #include <QTimer>
 #include <QToolButton>
 #include <QVBoxLayout>
@@ -24,12 +28,9 @@ namespace DA
 
 namespace
 {
-// 贴入框架时的推荐尺寸（与原浮窗尺寸一致，图表区面积基本不变）
-constexpr int kRecommendedWidth = 560;
-constexpr int kRecommendedHeight = 430;
-
-// 图型按钮携带的枚举值
-const char* const kTypeValueProperty = "daQuickPlotType";
+// 贴入框架时的推荐尺寸（设置区展开后图表区保底约 260 高，实施方案 D16）
+constexpr int kRecommendedWidth  = 640;
+constexpr int kRecommendedHeight = 560;
 
 // 忙碌期间的守卫：禁用内容交互，退出作用域时恢复（异常/提前 return 也能恢复）
 class QuickPlotBusyGuard
@@ -53,6 +54,26 @@ public:
 private:
     QPointer< QWidget > mWidget;
 };
+
+// 图型下拉/右键子菜单的固定顺序（聚合类放最后，界面用分隔线分组）
+const DATableChartType kTypeOrder[] = { DATableChartType::Line,
+                                        DATableChartType::Scatter,
+                                        DATableChartType::Histogram,
+                                        DATableChartType::Boxplot,
+                                        DATableChartType::MultiLine,
+                                        DATableChartType::Contour,
+                                        DATableChartType::ErrorBar,
+                                        DATableChartType::VectorField,
+                                        DATableChartType::Surface3D,
+                                        DATableChartType::Line3D,
+                                        DATableChartType::Bar,
+                                        DATableChartType::MultiBar };
+
+bool isAggregateType(DATableChartType type)
+{
+    return type == DATableChartType::Bar || type == DATableChartType::MultiBar;
+}
+
 }  // namespace
 
 DATableQuickPlotWindow::DATableQuickPlotWindow(QWidget* parent) : QWidget(parent)
@@ -60,7 +81,7 @@ DATableQuickPlotWindow::DATableQuickPlotWindow(QWidget* parent) : QWidget(parent
     setObjectName(QStringLiteral("DATableQuickPlotWindow"));
     setAutoFillBackground(true);
     setFocusPolicy(Qt::StrongFocus);
-    setMinimumSize(380, 300);
+    setMinimumSize(420, 360);
     buildUi();
     hide();
 }
@@ -118,6 +139,63 @@ QString DATableQuickPlotWindow::chartTypeText(DATableChartType type)
         return tr("Bar");  // cn:柱状
     case DATableChartType::MultiLine:
         return tr("Multi-series line");  // cn:多序列折线
+    case DATableChartType::Contour:
+        return tr("Contour");  // cn:等高线
+    case DATableChartType::ErrorBar:
+        return tr("Error bar");  // cn:误差棒
+    case DATableChartType::VectorField:
+        return tr("Vector field");  // cn:向量场
+    case DATableChartType::MultiBar:
+        return tr("Multi-bar");  // cn:多重柱状
+    case DATableChartType::Surface3D:
+        return tr("3D surface");  // cn:3D 曲面
+    case DATableChartType::Line3D:
+        return tr("3D line");  // cn:3D 线图
+    case DATableChartType::None:
+        break;
+    }
+    return QString();
+}
+
+/**
+ * @brief 图型显示名（柱状图按规格区分计数/聚合文案）
+ */
+QString DATableQuickPlotWindow::chartTypeText(DATableChartType type, const DATableChartSpec& spec)
+{
+    if (type == DATableChartType::Bar) {
+        return spec.valueColumns.isEmpty() ? tr("Bar (count)")  // cn:柱状（计数）
+                                           : tr("Bar (aggregate)");  // cn:柱状（聚合）
+    }
+    return chartTypeText(type);
+}
+
+/**
+ * @brief 图型对选区的要求（置灰时的悬浮提示）
+ */
+QString DATableQuickPlotWindow::chartTypeRequirementText(DATableChartType type)
+{
+    switch (type) {
+    case DATableChartType::Line:
+        return tr("Requires at least 1 numeric column");  // cn:需要至少 1 列数值
+    case DATableChartType::Scatter:
+        return tr("Requires 2 numeric columns");  // cn:需要 2 列数值
+    case DATableChartType::Histogram:
+        return tr("Requires 1 numeric column");  // cn:需要 1 列数值
+    case DATableChartType::Boxplot:
+        return tr("Requires at least 1 numeric column");  // cn:需要至少 1 列数值
+    case DATableChartType::Bar:
+        return tr("Requires 1 category column, or a low-cardinality numeric column");  // cn:需要 1 列分类，或低基数数值列
+    case DATableChartType::MultiLine:
+        return tr("Requires 3 numeric columns, or 1 time column and 2 numeric columns");  // cn:需要 3 列数值，或 1 列时间 + 2 列数值
+    case DATableChartType::Contour:
+    case DATableChartType::ErrorBar:
+    case DATableChartType::Surface3D:
+    case DATableChartType::Line3D:
+        return tr("Requires 3 numeric columns");  // cn:需要 3 列数值
+    case DATableChartType::VectorField:
+        return tr("Requires 4 numeric columns");  // cn:需要 4 列数值
+    case DATableChartType::MultiBar:
+        return tr("Requires 1 category column and at least 2 numeric columns");  // cn:需要 1 列分类 + 至少 2 列数值
     case DATableChartType::None:
         break;
     }
@@ -162,45 +240,82 @@ void DATableQuickPlotWindow::buildUi()
     // 标题栏（列名摘要 + 关闭）由承载框架 DATableChildWindow 绘制，
     // 标题内容经 titleChanged 交给宿主设置
 
-    // 图型切换
-    mTypeBar = new QWidget(this);
-    QHBoxLayout* typeLayout = new QHBoxLayout(mTypeBar);
-    typeLayout->setContentsMargins(0, 0, 0, 0);
-    typeLayout->setSpacing(2);
-    typeLayout->addStretch(1);
-    root->addWidget(mTypeBar);
+    // 工具栏：[图型 ▼] │ [设置] │ [更新为当前选区] [刷新] │ [转入绘图区 ▾]
+    QWidget* toolbar        = new QWidget(this);
+    QHBoxLayout* toolLayout = new QHBoxLayout(toolbar);
+    toolLayout->setContentsMargins(0, 0, 0, 0);
+    toolLayout->setSpacing(4);
 
-    // 数据口径：聚合 + X 轴
-    QWidget* optionBar = new QWidget(this);
-    QHBoxLayout* optionLayout = new QHBoxLayout(optionBar);
-    optionLayout->setContentsMargins(0, 0, 0, 0);
-    optionLayout->setSpacing(4);
-    mAggregationLabel = new QLabel(tr("Aggregation:"), optionBar);  // cn:聚合
-    mAggregationCombo = new QComboBox(optionBar);
-    const QList< DATableChartAggregation > aggregations = DATableChartPlanner::allAggregations();
-    for (DATableChartAggregation agg : aggregations) {
-        mAggregationCombo->addItem(aggregationText(agg), static_cast< int >(agg));
+    mTypeCombo = new QComboBox(toolbar);
+    mTypeCombo->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
+    mTypeCombo->setMinimumWidth(150);
+    mTypeCombo->setToolTip(tr("Chart type (unavailable types are disabled with the reason)"));  // cn:图型（不满足当前选区的置灰并给出原因）
+    bool insertedSeparator = false;
+    for (DATableChartType type : kTypeOrder) {
+        if (!insertedSeparator && isAggregateType(type)) {
+            mTypeCombo->insertSeparator(mTypeCombo->count());
+            insertedSeparator = true;
+        }
+        mTypeCombo->addItem(chartTypeText(type), static_cast< int >(type));
     }
-    mXAxisLabel = new QLabel(tr("X axis:"), optionBar);  // cn:X 轴
-    mXAxisCombo  = new QComboBox(optionBar);
-    optionLayout->addWidget(mAggregationLabel);
-    optionLayout->addWidget(mAggregationCombo);
-    optionLayout->addSpacing(8);
-    optionLayout->addWidget(mXAxisLabel);
-    optionLayout->addWidget(mXAxisCombo);
-    optionLayout->addStretch(1);
-    root->addWidget(optionBar);
-    connect(mAggregationCombo, QOverload< int >::of(&QComboBox::currentIndexChanged),
-            this, &DATableQuickPlotWindow::onAggregationChanged);
-    connect(mXAxisCombo, QOverload< int >::of(&QComboBox::currentIndexChanged),
-            this, &DATableQuickPlotWindow::onXAxisChanged);
+    toolLayout->addWidget(mTypeCombo);
 
-    // 图表区
-    mChart = new DAChartWidget(this);
-    mChart->setMinimumHeight(200);
-    root->addWidget(mChart, 1);
+    QFrame* separator = new QFrame(toolbar);
+    separator->setFrameShape(QFrame::VLine);
+    separator->setFrameShadow(QFrame::Sunken);
+    toolLayout->addWidget(separator);
 
-    // 说明与错误
+    mSettingsButton = new QToolButton(toolbar);
+    mSettingsButton->setText(tr("Settings"));  // cn:设置
+    mSettingsButton->setCheckable(true);
+    mSettingsButton->setChecked(true);
+    mSettingsButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
+    mSettingsButton->setToolTip(tr("Show or hide the role settings"));  // cn:显示/隐藏角色设置
+    toolLayout->addWidget(mSettingsButton);
+
+    QPushButton* updateButton = new QPushButton(tr("Update to current selection"), toolbar);  // cn:更新为当前选区
+    mRefreshButton            = new QPushButton(tr("Refresh"), toolbar);  // cn:刷新
+    mRefreshButton->hide();
+    toolLayout->addWidget(updateButton);
+    toolLayout->addWidget(mRefreshButton);
+    toolLayout->addStretch(1);
+
+    mTransferButton = new QToolButton(toolbar);
+    mTransferButton->setText(tr("Transfer to chart area"));  // cn:转入绘图区
+    mTransferButton->setPopupMode(QToolButton::MenuButtonPopup);
+    mTransferButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
+    QMenu* transferMenu      = new QMenu(mTransferButton);
+    QAction* newFigureAction = transferMenu->addAction(tr("New figure tab"));  // cn:新建绘图标签页
+    mAppendAction            = transferMenu->addAction(tr("Append to current chart"));  // cn:追加到当前图表
+    mTransferButton->setMenu(transferMenu);
+    connect(transferMenu, &QMenu::aboutToShow, this, [ this ]() {
+        if (mAppendAction) {
+            mAppendAction->setEnabled(mAppendAvailability ? mAppendAvailability() : true);
+        }
+    });
+    toolLayout->addWidget(mTransferButton);
+    root->addWidget(toolbar);
+
+    // 设置区（默认展开，可折叠；图型感知角色行）
+    QFrame* settingsFrame = new QFrame(this);
+    settingsFrame->setFrameShape(QFrame::StyledPanel);
+    settingsFrame->setFrameShadow(QFrame::Plain);
+    mSettingsContainer          = settingsFrame;
+    QVBoxLayout* settingsLayout = new QVBoxLayout(mSettingsContainer);
+    settingsLayout->setContentsMargins(4, 2, 4, 2);
+    settingsLayout->setSpacing(2);
+    mRolePanel = new DATableChartRolePanel(mSettingsContainer);
+    settingsLayout->addWidget(mRolePanel);
+    root->addWidget(mSettingsContainer);
+
+    // 图表区：2D 与 3D 堆叠切换（3D 懒创建）
+    mStack   = new QStackedWidget(this);
+    mChart2D = new DAChartWidget(mStack);
+    mChart2D->setMinimumHeight(200);
+    mStack->addWidget(mChart2D);
+    root->addWidget(mStack, 1);
+
+    // 状态文字行（只读，不放按钮）
     mNoticeLabel = new QLabel(this);
     mNoticeLabel->setWordWrap(true);
     mNoticeLabel->setStyleSheet(QStringLiteral("color: palette(dark);"));
@@ -211,137 +326,93 @@ void DATableQuickPlotWindow::buildUi()
     mErrorLabel->hide();
     root->addWidget(mErrorLabel);
 
-    // 底部：更新选区 / 刷新 / 转入绘图区
-    QWidget* footer = new QWidget(this);
-    QHBoxLayout* footerLayout = new QHBoxLayout(footer);
-    footerLayout->setContentsMargins(0, 0, 0, 0);
-    footerLayout->setSpacing(4);
-    QPushButton* updateButton = new QPushButton(tr("Update to current selection"), footer);  // cn:更新为当前选区
-    mRefreshButton            = new QPushButton(tr("Refresh"), footer);  // cn:刷新
-    mRefreshButton->hide();
-    mTransferButton = new QToolButton(footer);
-    mTransferButton->setText(tr("Transfer to chart area"));  // cn:转入绘图区
-    mTransferButton->setPopupMode(QToolButton::MenuButtonPopup);
-    mTransferButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
-    QMenu* transferMenu = new QMenu(mTransferButton);
-    QAction* newFigureAction = transferMenu->addAction(tr("New figure tab"));  // cn:新建绘图标签页
-    mAppendAction            = transferMenu->addAction(tr("Append to current chart"));  // cn:追加到当前图表
-    mTransferButton->setMenu(transferMenu);
-    // 没有当前图表时「追加到当前图表」置灰（实施方案 §6.1）
-    connect(transferMenu, &QMenu::aboutToShow, this, [ this ]() {
-        if (mAppendAction) {
-            mAppendAction->setEnabled(mAppendAvailability ? mAppendAvailability() : true);
-        }
-    });
-    footerLayout->addWidget(updateButton);
-    footerLayout->addWidget(mRefreshButton);
-    footerLayout->addStretch(1);
-    footerLayout->addWidget(mTransferButton);
-    root->addWidget(footer);
+    connect(mTypeCombo,
+            QOverload< int >::of(&QComboBox::currentIndexChanged),
+            this,
+            &DATableQuickPlotWindow::onChartTypeChanged);
+    connect(mSettingsButton, &QToolButton::toggled, this, &DATableQuickPlotWindow::onSettingsToggled);
+    connect(mRolePanel, &DATableChartRolePanel::specEdited, this, &DATableQuickPlotWindow::onRolePanelEdited);
     connect(updateButton, &QPushButton::clicked, this, &DATableQuickPlotWindow::onUpdateClicked);
     connect(mRefreshButton, &QPushButton::clicked, this, &DATableQuickPlotWindow::onRefreshClicked);
     connect(mTransferButton, &QToolButton::clicked, this, &DATableQuickPlotWindow::onTransferClicked);
     connect(newFigureAction, &QAction::triggered, this, &DATableQuickPlotWindow::onTransferNewFigure);
     connect(mAppendAction, &QAction::triggered, this, &DATableQuickPlotWindow::onTransferAppendCurrent);
-    // 缩放手柄由承载框架 DATableChildWindow 提供（QSizeGrip 只作用于顶层窗口，
-    // 子控件浮层用它缩不了自己——这也是本类原先「无法调整大小」的根因）
 }
 
 /**
- * @brief 按图型计划重建图型切换按钮
+ * @brief 刷新图型下拉的可用状态与文案（不重建条目，避免在自身信号栈上销毁模型）
  */
-void DATableQuickPlotWindow::rebuildTypeButtons()
+void DATableQuickPlotWindow::refreshTypeCombo()
 {
-    if (!mTypeBar) {
+    if (!mTypeCombo) {
         return;
-    }
-    // 清掉旧按钮（保留末尾的 stretch）；先移出布局再延迟删除，避免在按钮自身
-    // 的 clicked 信号处理流程里立刻销毁它
-    QHBoxLayout* layout = qobject_cast< QHBoxLayout* >(mTypeBar->layout());
-    if (!layout) {
-        return;
-    }
-    const QList< QToolButton* > oldButtons = mTypeBar->findChildren< QToolButton* >();
-    for (QToolButton* button : oldButtons) {
-        layout->removeWidget(button);
-        button->hide();
-        button->deleteLater();
     }
     const DATableChartPlan plan = DATableChartPlanner::plan(mRequest);
-    mIgnoreTypeSignals           = true;
-    for (DATableChartType type : std::as_const(plan.types)) {
-        QToolButton* button = new QToolButton(mTypeBar);
-        button->setText(chartTypeText(type));
-        button->setCheckable(true);
-        button->setAutoRaise(true);
-        button->setProperty(kTypeValueProperty, static_cast< int >(type));
-        button->setChecked(type == mSpec.type);
-        connect(button, &QToolButton::clicked, this, [this, type]() { onChartTypeClicked(static_cast< int >(type)); });
-        layout->insertWidget(layout->count() - 1, button);
+    QStandardItemModel* model   = qobject_cast< QStandardItemModel* >(mTypeCombo->model());
+    mIgnoreSignals              = true;
+    for (int i = 0; i < mTypeCombo->count(); ++i) {
+        const int typeValue = mTypeCombo->itemData(i).toInt();
+        if (typeValue <= 0) {
+            continue;  // 分隔线
+        }
+        const DATableChartType type = static_cast< DATableChartType >(typeValue);
+        const int typeIndex         = plan.types.indexOf(type);
+        DATableChartSpec specForLabel;
+        if (typeIndex >= 0 && typeIndex < plan.typeSpecs.size()) {
+            specForLabel = plan.typeSpecs.at(typeIndex);
+        } else {
+            specForLabel = DATableChartPlanner::defaultSpec(mRequest, type);
+        }
+        const QString label = chartTypeText(type, specForLabel);
+        if (mTypeCombo->itemText(i) != label) {
+            mTypeCombo->setItemText(i, label);
+        }
+        mTypeCombo->setItemData(i, chartTypeRequirementText(type), Qt::ToolTipRole);
+        if (model) {
+            if (QStandardItem* item = model->item(i)) {
+                item->setEnabled(plan.types.contains(type));
+            }
+        }
     }
-    mIgnoreTypeSignals = false;
+    const int currentIndex = mTypeCombo->findData(static_cast< int >(mSpec.type));
+    if (currentIndex >= 0) {
+        mTypeCombo->setCurrentIndex(currentIndex);
+    }
+    mIgnoreSignals = false;
 }
 
 /**
- * @brief 按当前规格刷新数据口径控件（聚合/X 轴）
+ * @brief 把当前请求/规格同步给设置区
  */
-void DATableQuickPlotWindow::refreshOptionWidgets()
+void DATableQuickPlotWindow::refreshSettingsPanel()
 {
-    const bool showAggregation = (mSpec.type == DATableChartType::Bar) && !mSpec.valueColumns.isEmpty();
-    mAggregationLabel->setVisible(showAggregation);
-    mAggregationCombo->setVisible(showAggregation);
-    if (showAggregation) {
-        mIgnoreTypeSignals = true;
-        mAggregationCombo->setCurrentIndex(
-            mAggregationCombo->findData(static_cast< int >(mSpec.aggregation)));
-        mIgnoreTypeSignals = false;
+    if (mRolePanel) {
+        mRolePanel->setContext(mRequest, mSpec);
     }
+}
 
-    const QList< DATableChartXOption > options = DATableChartPlanner::xAxisCandidates(mRequest, mSpec.type);
-    const bool showX                           = !options.isEmpty();
-    mXAxisLabel->setVisible(showX);
-    mXAxisCombo->setVisible(showX);
-    if (showX) {
-        const bool wantCategory = (mSpec.type == DATableChartType::Bar);
-        int currentIndex        = 0;
-        QStringList texts;
-        texts.reserve(options.size());
-        for (int i = 0; i < options.size(); ++i) {
-            const DATableChartXOption& option = options.at(i);
-            QString text;
-            if (option.isRowIndex()) {
-                text = tr("Row number");  // cn:行号
-            } else {
-                text = mRequest.columns.value(option.column).name;
-                if (option.asCategory) {
-                    text += tr(" (as category)");  // cn:（作为分类）
-                }
-            }
-            texts.append(text);
-            if (wantCategory) {
-                if (option.asCategory && option.column == mSpec.categoryColumn) {
-                    currentIndex = i;
-                }
-            } else if (!option.asCategory && option.column == mSpec.xColumn) {
-                currentIndex = i;
-            }
-        }
-        // 本函数也会在下拉框自己的 currentIndexChanged 处理中被调用（onXAxisChanged）：
-        // 条目没变时只挪 currentIndex、不动模型——在信号处理中清空下拉模型会把它的
-        // 弹出层一起销毁，返回后即 use-after-free
-        bool sameItems = (mXAxisCombo->count() == texts.size());
-        for (int i = 0; sameItems && i < texts.size(); ++i) {
-            sameItems = (mXAxisCombo->itemText(i) == texts.at(i) && mXAxisCombo->itemData(i).toInt() == i);
-        }
-        mIgnoreTypeSignals = true;
-        if (!sameItems) {
-            mXAxisCombo->clear();
-            for (int i = 0; i < texts.size(); ++i) {
-                mXAxisCombo->addItem(texts.at(i), i);
-            }
-        }
-        mXAxisCombo->setCurrentIndex(currentIndex);
-        mIgnoreTypeSignals = false;
+/**
+ * @brief 3D 图表懒创建（首次切到 3D 才建 GL 上下文）
+ */
+DAChart3DWidget* DATableQuickPlotWindow::ensureChart3D()
+{
+    if (!mChart3D) {
+        mChart3D = new DAChart3DWidget(mStack);
+        mChart3D->setMinimumHeight(200);
+        mStack->addWidget(mChart3D);
+    }
+    return mChart3D;
+}
+
+/**
+ * @brief 按当前图型切换 2D/3D 图表页
+ */
+void DATableQuickPlotWindow::ensureChartForType()
+{
+    if (DAChartQuickPlot::is3DType(mSpec.type)) {
+        mStack->setCurrentWidget(ensureChart3D());
+    } else if (mChart2D) {
+        mStack->setCurrentWidget(mChart2D);
     }
 }
 
@@ -357,7 +428,7 @@ void DATableQuickPlotWindow::refreshOptionWidgets()
 void DATableQuickPlotWindow::renderNow()
 {
     mRenderPending = false;
-    if (!isVisible() || !mChart) {
+    if (!isVisible()) {
         // 排队期间浮窗已被关闭/销毁：丢弃这次重绘
         return;
     }
@@ -370,13 +441,18 @@ void DATableQuickPlotWindow::renderNow()
 
     DATableChartBuildInfo info;
     QString error;
-    const bool ok = DAChartQuickPlot::render(mRequest, mSpec, mChart.data(), &info, &error, true, nullptr);
+    bool ok = false;
+    if (DAChartQuickPlot::is3DType(mSpec.type)) {
+        ok = DAChartQuickPlot::render3D(mRequest, mSpec, ensureChart3D(), &info, &error, false);
+    } else if (mChart2D) {
+        ok = DAChartQuickPlot::render(mRequest, mSpec, mChart2D.data(), &info, &error, true, nullptr);
+    }
     if (!ok) {
         setNotice(QString());
         setError(error);
         mLastMessage = error;
-        if (mChart) {
-            mChart->replot();
+        if (mChart2D) {
+            mChart2D->replot();
         }
         return;
     }
@@ -386,9 +462,7 @@ void DATableQuickPlotWindow::renderNow()
         parts.append(pendingNotice);
     }
     if (info.sampled) {
-        parts.append(tr("Based on %1 of %2 sampled rows")
-                         .arg(info.sampledRows)
-                         .arg(info.totalRows));  // cn:基于 %1 / %2 行采样
+        parts.append(tr("Based on %1 of %2 sampled rows").arg(info.sampledRows).arg(info.totalRows));  // cn:基于 %1 / %2 行采样
     }
     if (info.approximate) {
         parts.append(tr("Aggregation uses the sample"));  // cn:聚合结果基于采样
@@ -397,9 +471,7 @@ void DATableQuickPlotWindow::renderNow()
         parts.append(tr("Ignored %1 rows with missing values").arg(info.droppedMissing));  // cn:已忽略 %1 行缺失值
     }
     if (info.displayedCategories > 0 && info.totalCategories > info.displayedCategories) {
-        parts.append(tr("Showing top %1 of %2 categories")
-                         .arg(info.displayedCategories)
-                         .arg(info.totalCategories));  // cn:显示前 %1 类 / 共 %2 类
+        parts.append(tr("Showing top %1 of %2 categories").arg(info.displayedCategories).arg(info.totalCategories));  // cn:显示前 %1 类 / 共 %2 类
     }
     if (info.sampleLimited) {
         parts.append(tr("Sample limited: data fetching stopped at the budget limit"));  // cn:样本受限：取数触及预算上限，图表只使用受限样本
@@ -409,18 +481,12 @@ void DATableQuickPlotWindow::renderNow()
     }
     setNotice(parts.join(QStringLiteral("  \u00b7  ")));
 
-    // 标题：列名摘要（承载框架标题栏显示）
-    Q_EMIT titleChanged(columnSummary());
+    Q_EMIT titleChanged(windowTitle());
     mLastMessage.clear();
 }
 
 /**
  * @brief 排一次重绘：先把忙碌提示刷到界面上，真正的取数留到下一轮事件循环
- *
- * 这样既保留了「点开浮窗立刻看到正在取数」的观感，又保证重活永远不会在调用方
- * （菜单动作、图型按钮、下拉框）自己的事件处理栈上执行——在那里同步取数时若
- * 重入事件派发，正在处理点击的控件会被延迟删除事件当场销毁。
- * 多次连续请求（例如快速连点图型）合并成一次绘制。
  */
 void DATableQuickPlotWindow::scheduleRender()
 {
@@ -442,7 +508,7 @@ void DATableQuickPlotWindow::setNotice(const QString& notice)
 }
 
 /**
- * @brief 设置错误文案（浮窗保持打开，不弹模态框）
+ * @brief 设置错误文案（浮窗保持打开，不弹模态框；关闭按钮始终可用）
  */
 void DATableQuickPlotWindow::setError(const QString& error)
 {
@@ -454,7 +520,7 @@ void DATableQuickPlotWindow::setError(const QString& error)
 /**
  * @brief 打开/刷新内容（位置与尺寸由承载框架负责）
  */
-void DATableQuickPlotWindow::showForRequest(const DATableChartRequest& request)
+void DATableQuickPlotWindow::showForRequest(const DATableChartRequest& request, DATableChartType preferredType)
 {
     const DATableChartPlan plan = DATableChartPlanner::plan(request);
     if (!plan.isPlottable()) {
@@ -467,34 +533,46 @@ void DATableQuickPlotWindow::showForRequest(const DATableChartRequest& request)
         return;
     }
     mRequest     = request;
-    mSpec        = plan.defaultSpec;
     mDataChanged = false;
+    mManual      = false;
     mRefreshButton->hide();
-    rebuildTypeButtons();
-    refreshOptionWidgets();
-    // 标题先上（列名摘要即时可见），取数绘制完成后 renderNow 再刷一次
-    Q_EMIT titleChanged(columnSummary());
-    // 先让内容出来（带「正在取数…」提示），取数绘制交给下一轮事件循环
+    DATableChartType type = DATableChartType::None;
+    if (preferredType != DATableChartType::None && plan.types.contains(preferredType)) {
+        type = preferredType;
+    } else {
+        type = plan.types.first();
+    }
+    const int typeIndex = plan.types.indexOf(type);
+    if (typeIndex >= 0 && typeIndex < plan.typeSpecs.size()) {
+        mSpec = plan.typeSpecs.at(typeIndex);
+    } else {
+        mSpec = DATableChartPlanner::defaultSpec(request, type);
+    }
+    refreshTypeCombo();
+    refreshSettingsPanel();
+    Q_EMIT titleChanged(windowTitle());
     show();
     raise();
     setFocus(Qt::OtherFocusReason);
+    // 先显示再切 3D：DAChart3DWidget 是 QOpenGLWidget，避免在隐藏态提前建 GL 上下文
+    ensureChartForType();
     scheduleRender();
 }
 
 /**
- * @brief 绑定列的名称摘要（titleChanged 载荷）
+ * @brief 浮窗标题：列名摘要 +（手动配置）后缀
  */
-QString DATableQuickPlotWindow::columnSummary() const
+QString DATableQuickPlotWindow::windowTitle() const
 {
     QStringList names;
     for (const DATableChartColumn& column : std::as_const(mRequest.columns)) {
-        QString name = column.name;
-        if (column.occurrence > 0) {
-            name += QStringLiteral(" (%1)").arg(column.occurrence + 1);
-        }
-        names.append(name);
+        names.append(DATableChartRolePanel::columnDisplayName(column));
     }
-    return names.join(QStringLiteral(" + "));
+    const QString summary = names.join(QStringLiteral(" + "));
+    if (mManual) {
+        return tr("%1 (manual)").arg(summary);  // cn:%1（手动配置）
+    }
+    return summary;
 }
 
 /**
@@ -517,19 +595,22 @@ void DATableQuickPlotWindow::updateRequest(const DATableChartRequest& request)
     const int previousTopN = mSpec.categoryTopN;
     const int previousX    = mSpec.xColumn;
 
-    mRequest = request;
+    mRequest     = request;
+    mManual      = false;
+    mDataChanged = false;
+    mRefreshButton->hide();
     if (plan.types.contains(previousType)) {
         // 保持当前图型，尽量保留聚合/Top N/X 选择
         mSpec = DATableChartPlanner::defaultSpec(request, previousType);
-        if (mSpec.type == DATableChartType::Bar && !mSpec.valueColumns.isEmpty()) {
+        if ((mSpec.type == DATableChartType::Bar && !mSpec.valueColumns.isEmpty())
+            || mSpec.type == DATableChartType::MultiBar) {
             mSpec.aggregation = previousAgg;
         }
         mSpec.categoryTopN = previousTopN;
-        const QList< DATableChartXOption > options = DATableChartPlanner::xAxisCandidates(request, mSpec.type);
-        for (const DATableChartXOption& option : options) {
-            if (option.column == previousX && !option.asCategory) {
+        if (previousX >= 0 && previousX < request.columns.size()) {
+            const DATableChartColumn& column = request.columns.at(previousX);
+            if (column.isNumeric() || column.isDateTime()) {
                 mSpec.xColumn = previousX;
-                break;
             }
         }
         mPendingNotice.clear();
@@ -539,10 +620,10 @@ void DATableQuickPlotWindow::updateRequest(const DATableChartRequest& request)
         mPendingNotice = tr("The previous chart type is not available for the new selection, "
                             "switched to the default type");  // cn:新选区不支持原来的图型，已切换为默认图型
     }
-    mDataChanged = false;
-    mRefreshButton->hide();
-    rebuildTypeButtons();
-    refreshOptionWidgets();
+    refreshTypeCombo();
+    refreshSettingsPanel();
+    ensureChartForType();
+    Q_EMIT titleChanged(windowTitle());
     scheduleRender();
 }
 
@@ -575,60 +656,71 @@ void DATableQuickPlotWindow::switchToType(DATableChartType type)
     if (type == DATableChartType::None || type == mSpec.type) {
         return;
     }
+    const DATableChartPlan plan = DATableChartPlanner::plan(mRequest);
+    const int typeIndex         = plan.types.indexOf(type);
+    if (typeIndex < 0) {
+        return;  // 当前选区不支持该图型（下拉项应已置灰）
+    }
     const DATableChartAggregation previousAgg = mSpec.aggregation;
     const int previousTopN = mSpec.categoryTopN;
     const int previousX    = mSpec.xColumn;
 
-    DATableChartSpec next     = DATableChartPlanner::defaultSpec(mRequest, type);
-    next.aggregation          = previousAgg;
-    next.categoryTopN         = previousTopN;
-    const QList< DATableChartXOption > options = DATableChartPlanner::xAxisCandidates(mRequest, type);
-    for (const DATableChartXOption& option : options) {
-        if (option.column == previousX && !option.asCategory) {
-            next.xColumn = previousX;
-            break;
-        }
+    DATableChartSpec next;
+    if (typeIndex < plan.typeSpecs.size()) {
+        next = plan.typeSpecs.at(typeIndex);
+    } else {
+        next = DATableChartPlanner::defaultSpec(mRequest, type);
     }
     if (!next.isValid()) {
-        return;  // 该图型在当前选区缺必要列（如柱状图没有分类轴）时保持原图型
+        return;
+    }
+    if ((type == DATableChartType::Bar && !next.valueColumns.isEmpty())
+        || type == DATableChartType::MultiBar) {
+        next.aggregation = previousAgg;
+    }
+    next.categoryTopN = previousTopN;
+    if (previousX >= 0 && previousX < mRequest.columns.size()) {
+        const DATableChartColumn& column = mRequest.columns.at(previousX);
+        if ((next.type == DATableChartType::Line || next.type == DATableChartType::Scatter
+             || next.type == DATableChartType::MultiLine)
+            && (column.isNumeric() || column.isDateTime())) {
+            next.xColumn = previousX;
+        }
     }
     mSpec = next;
-    refreshOptionWidgets();
-    rebuildTypeButtons();
+    refreshTypeCombo();
+    refreshSettingsPanel();
+    ensureChartForType();
+    Q_EMIT titleChanged(windowTitle());
     scheduleRender();
 }
 
-void DATableQuickPlotWindow::onChartTypeClicked(int typeValue)
+void DATableQuickPlotWindow::onChartTypeChanged(int index)
 {
-    if (mIgnoreTypeSignals) {
+    if (mIgnoreSignals || index < 0) {
         return;
     }
-    switchToType(static_cast< DATableChartType >(typeValue));
+    switchToType(static_cast< DATableChartType >(mTypeCombo->itemData(index).toInt()));
 }
 
-void DATableQuickPlotWindow::onAggregationChanged(int index)
+void DATableQuickPlotWindow::onSettingsToggled(bool on)
 {
-    if (mIgnoreTypeSignals || index < 0) {
-        return;
+    mSettingsVisible = on;
+    if (mSettingsContainer) {
+        mSettingsContainer->setVisible(on);
     }
-    const int aggregationValue = mAggregationCombo->itemData(index).toInt();
-    mSpec.aggregation          = static_cast< DATableChartAggregation >(aggregationValue);
-    scheduleRender();
 }
 
-void DATableQuickPlotWindow::onXAxisChanged(int index)
+void DATableQuickPlotWindow::onRolePanelEdited()
 {
-    if (mIgnoreTypeSignals || index < 0) {
+    if (!mRolePanel) {
         return;
     }
-    const QList< DATableChartXOption > options = DATableChartPlanner::xAxisCandidates(mRequest, mSpec.type);
-    const int optionIndex                      = mXAxisCombo->itemData(index).toInt();
-    if (optionIndex < 0 || optionIndex >= options.size()) {
-        return;
-    }
-    DATableChartPlanner::applyXOption(mRequest, mSpec, options.at(optionIndex));
-    rebuildTypeButtons();
-    refreshOptionWidgets();
+    mRequest = mRolePanel->request();
+    mSpec    = mRolePanel->spec();
+    mManual  = true;
+    refreshTypeCombo();
+    Q_EMIT titleChanged(windowTitle());
     scheduleRender();
 }
 

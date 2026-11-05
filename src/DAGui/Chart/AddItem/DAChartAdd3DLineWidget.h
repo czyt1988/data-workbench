@@ -25,6 +25,10 @@ public:
     virtual Qwt3DPlotItem* create3DPlotItem() override;
     // 获取推荐的名称
     QString getNameHint() const;
+    // 编程式入口（快速绘图等无界面调用方）：直接给采样后的 (x, y, z) 轨迹点
+    void setProgrammaticPoints(const QVector< QwtPoint3D >& points);
+    // 是否已设置编程式数据
+    bool hasProgrammaticPoints() const;
 
 private Q_SLOTS:
     void onComboBoxDataframeCurrentIndexChanged(int index);
@@ -42,6 +46,7 @@ private:
 private:
     Ui::DAChartAdd3DLineWidget* ui;
     DADataManager* mDataMgr { nullptr };
+    QVector< QwtPoint3D > mProgrammaticPoints;
 };
 }  // end DA
 #endif  // DACHARTADD3DLINEWIDGET_H

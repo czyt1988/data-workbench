@@ -146,6 +146,9 @@ bool DAChartAddMultiBarWidget::extractYSeriesList(QVector< std::vector< double >
 
 QwtPlotItem* DAChartAddMultiBarWidget::createPlotItem()
 {
+	if (hasProgrammaticSamples()) {
+		return buildProgrammaticItem();
+	}
 	std::vector< double > xValues;
 	if (!extractXSeries(xValues)) {
 		return nullptr;
@@ -199,6 +202,56 @@ QwtPlotItem* DAChartAddMultiBarWidget::createPlotItem()
 	item->setBarTitles(barTitles);
 	item->setTitle(yNames.join("|"));
 	return item;
+}
+
+/**
+ * @brief 由编程式样本构建多重柱状图元
+ */
+QwtPlotItem* DAChartAddMultiBarWidget::buildProgrammaticItem() const
+{
+	if (mProgrammaticSamples.isEmpty()) {
+		return nullptr;
+	}
+	QwtPlotMultiBarChart* item = new QwtPlotMultiBarChart();
+	item->setSamples(mProgrammaticSamples);
+	QList< QwtText > barTitles;
+	for (const QString& name : mProgrammaticBarTitles) {
+		barTitles.append(QwtText(name));
+	}
+	item->setBarTitles(barTitles);
+	item->setTitle(mProgrammaticTitle.isEmpty() ? mProgrammaticBarTitles.join(QStringLiteral("|"))
+	                                            : mProgrammaticTitle);
+	return item;
+}
+
+/**
+ * @brief 设置编程式样本（快速绘图路径）
+ */
+void DAChartAddMultiBarWidget::setProgrammaticSamples(const QVector< QwtSetSample >& samples,
+                                                      const QStringList& barTitles,
+                                                      const QStringList& categoryLabels,
+                                                      const QString& title)
+{
+	mProgrammaticSamples        = samples;
+	mProgrammaticBarTitles      = barTitles;
+	mProgrammaticCategoryLabels = categoryLabels;
+	mProgrammaticTitle          = title;
+}
+
+/**
+ * @brief 是否已设置编程式数据
+ */
+bool DAChartAddMultiBarWidget::hasProgrammaticSamples() const
+{
+	return !mProgrammaticSamples.isEmpty();
+}
+
+/**
+ * @brief 编程式类别轴文字
+ */
+QStringList DAChartAddMultiBarWidget::programmaticCategoryLabels() const
+{
+	return mProgrammaticCategoryLabels;
 }
 
 }  // namespace DA

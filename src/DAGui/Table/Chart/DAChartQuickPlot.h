@@ -6,10 +6,12 @@
 #include <QString>
 
 class QwtPlotItem;
+class Qwt3DPlotItem;
 
 namespace DA
 {
 class DAChartWidget;
+class DAChart3DWidget;
 class DAChartOperateWidget;
 
 /**
@@ -48,6 +50,32 @@ public:
                        QList< QwtPlotItem* >* createdItems = nullptr);
 
     /**
+     * @brief 图型是否走 3D 视图（浮窗用 QStackedWidget 切换到 DAChart3DWidget）
+     */
+    static bool is3DType(DATableChartType type);
+
+    /**
+     * @brief 构建 3D 图元（不挂载，调用方负责 attach / add3DItem_）
+     * @param fullData true 时不采样（转入绘图区的全量重建）
+     * @return 新建图元，失败返回 nullptr（error 给出可读原因）
+     */
+    static Qwt3DPlotItem* create3DItem(const DATableChartRequest& request,
+                                       const DATableChartSpec& spec,
+                                       DATableChartBuildInfo* info = nullptr,
+                                       QString* error          = nullptr,
+                                       bool fullData           = false);
+
+    /**
+     * @brief 把规格渲染到 3D 图表（浮窗预览用；先清空旧数据再挂新图元）
+     */
+    static bool render3D(const DATableChartRequest& request,
+                         const DATableChartSpec& spec,
+                         DAChart3DWidget* chart3d,
+                         DATableChartBuildInfo* info = nullptr,
+                         QString* error              = nullptr,
+                         bool fullData               = false);
+
+    /**
      * @brief 转入绘图区
      *
      * appendToCurrent=false：新建 Figure 标签页（默认），「创建 figure + 建 chart + 挂图元」
@@ -62,6 +90,17 @@ public:
                                            bool appendToCurrent,
                                            DATableChartBuildInfo* info = nullptr,
                                            QString* error = nullptr);
+
+    /**
+     * @brief 3D 图型转入绘图区（新建 Figure 或追加到当前 Figure 的 3D 图表）
+     * @return 成功返回 true；失败时 error 给出可读原因
+     */
+    static bool transferToFigure3D(const DATableChartRequest& request,
+                                   const DATableChartSpec& spec,
+                                   DAChartOperateWidget* chartOperate,
+                                   bool appendToCurrent,
+                                   DATableChartBuildInfo* info = nullptr,
+                                   QString* error              = nullptr);
 };
 
 }  // namespace DA

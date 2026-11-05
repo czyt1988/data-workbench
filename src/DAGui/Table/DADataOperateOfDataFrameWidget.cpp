@@ -269,6 +269,8 @@ DADataOperateOfDataFrameWidget::DADataOperateOfDataFrameWidget(const DAData& d, 
         DADataHeaderView* mh = qobject_cast< DADataHeaderView* >(d_func()->ui->tableView->horizontalHeader());
         if (fh && mh) {
             connect(fh, &DADataHeaderView::columnActionRequested, mh, &DADataHeaderView::columnActionRequested);
+            // 快速绘图子菜单（冻结窗格表头触发 → 主窗格同名信号，APP 只连主窗格）
+            connect(fh, &DADataHeaderView::quickPlotRequested, mh, &DADataHeaderView::quickPlotRequested);
             // 按选中列复制/导出（冻结窗格表头触发 → 主窗格同名信号，APP 只连主窗格）
             connect(fh, &DADataHeaderView::columnDataCopyRequested, mh, &DADataHeaderView::columnDataCopyRequested);
             connect(fh, &DADataHeaderView::columnDataExportRequested, mh, &DADataHeaderView::columnDataExportRequested);
@@ -510,6 +512,8 @@ void DADataOperateOfDataFrameWidget::configurePaneView(DADataTableView* pane)
         connect(hh, &DADataHeaderView::clickedWithModifiers, this, &DADataOperateOfDataFrameWidget::onHeaderClickedWithModifiers);
         connect(hh, &DADataHeaderView::columnViewActionRequested,
                 this, &DADataOperateOfDataFrameWidget::onHeaderColumnViewActionRequested);
+        // 快速绘图右键子菜单：按「右键列是否在选区」实时规划可选图型（v3）
+        hh->setQuickPlotPlanProvider([ this ](int logicalIndex) { return quickPlotPlanForColumn(logicalIndex); });
     }
     // 查找/替换入口（002 T1.4）：视图快捷键 Ctrl+F/Ctrl+H 与表体右键菜单共用表意信号；
     // 右键菜单入口带 prefill=true（查找框预填当前单格内容，D9）
@@ -1871,11 +1875,19 @@ DA::DATableChartRequest DADataOperateOfDataFrameWidget::buildQuickPlotRequest() 
 }
 
 /**
+ * @brief 按右键列规划快速绘图能力（转发快速绘图控制器）
+ */
+DA::DATableChartPlan DADataOperateOfDataFrameWidget::quickPlotPlanForColumn(int logicalIndex) const
+{
+    return d_func()->mQuickPlotController->quickPlotPlanForColumn(logicalIndex);
+}
+
+/**
  * @brief 用当前选区打开/刷新快速绘图子窗口（转发快速绘图控制器）
  */
-bool DADataOperateOfDataFrameWidget::showQuickPlot()
+bool DADataOperateOfDataFrameWidget::showQuickPlot(DA::DATableChartType preferredType)
 {
-    return d_func()->mQuickPlotController->showQuickPlot();
+    return d_func()->mQuickPlotController->showQuickPlot(preferredType);
 }
 
 /**

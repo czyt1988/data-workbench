@@ -39,8 +39,13 @@ public:
 public:
     // 用当前（有序）选区构造快速绘图请求；列角色走 DATableChartPlanner
     DA::DATableChartRequest buildQuickPlotRequest() const;
+    // 按右键列构造请求：该列在多选内时用整个选区，否则只用该列
+    DA::DATableChartRequest buildQuickPlotRequestForColumn(int logicalIndex) const;
+    // 按右键列规划可选图型（右键子菜单用）
+    DA::DATableChartPlan quickPlotPlanForColumn(int logicalIndex) const;
     // 用当前选区打开/刷新快速绘图子窗口；无法出图时返回 false（已给用户可见提示）
-    bool showQuickPlot();
+    // preferredType 非 None 且当前选区支持时按该图型出图（右键子菜单点击路径）
+    bool showQuickPlot(DA::DATableChartType preferredType = DA::DATableChartType::None);
     // 关闭快速绘图子窗口（实例保留复用）
     void closeQuickPlot();
     // 快速绘图子窗口是否正在显示
@@ -57,6 +62,8 @@ public:
     void detach();
 
 private:
+    // 按数据列清单构造请求（含整表列清单）
+    DA::DATableChartRequest buildRequestFromDataColumns(const QList< int >& dataColumns) const;
     // 懒建表格子窗口容器（宿主=hostWidget；允许区域=主视口）
     DATableChildWindowContainer* tableChildWindowContainer();
     // 子窗口允许区域（主视口在宿主部件坐标系下的矩形；无视图回退窗格容器）

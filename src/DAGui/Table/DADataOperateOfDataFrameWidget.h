@@ -173,9 +173,12 @@ public:
     QList< int > getSelectedDataColumnsInViewOrder(bool ensureInDataframe = true) const;
     // 用当前（有序）选区构造快速绘图请求；列角色走 DATableChartPlanner
     DA::DATableChartRequest buildQuickPlotRequest() const;
+    // 按右键列规划快速绘图能力（右键子菜单只列能画的图型）
+    DA::DATableChartPlan quickPlotPlanForColumn(int logicalIndex) const;
     // 用当前选区打开/刷新快速绘图子窗口（贴入表格子窗口容器，可拖动/缩放）；
+    // preferredType 非 None 且当前选区支持时按该图型出图（右键子菜单点击路径）；
     // 无法出图时返回 false（已给用户可见提示）
-    bool showQuickPlot();
+    bool showQuickPlot(DA::DATableChartType preferredType = DA::DATableChartType::None);
     // 关闭快速绘图子窗口（实例保留复用）
     void closeQuickPlot();
     // 快速绘图子窗口是否正在显示
@@ -353,6 +356,9 @@ Q_SIGNALS:
      * @note 用于"选择序列"窗口拾取表格列
      */
     void columnHeaderClicked(int logicalIndex);
+    // 列头右键「快速绘图」子菜单项被点击（chartType = DATableChartType 整数值；
+    // APP 接线：先处理右键列是否在选区，再按指定图型打开浮窗）
+    void quickPlotRequested(int logicalIndex, int chartType);
     // 替换已生效（含超阈值不可撤销降级路径），changedCells=变更格数；APP 接线 setDirty
     void replaceApplied(int changedCells);
     // 表格工具改动了数据（计算列重算等，004）；APP 接线 setDirty

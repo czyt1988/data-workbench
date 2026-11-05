@@ -3,6 +3,8 @@
 #include "DAGuiAPI.h"
 #include "Chart/AddItem/DAAbstractChartAddItemWidget.h"
 #include "DAData.h"
+#include "qwt_samples.h"
+#include <QVector>
 namespace Ui
 {
 class DAChartAddMultiBarWidget;
@@ -26,6 +28,16 @@ public:
 	~DAChartAddMultiBarWidget();
 	virtual QwtPlotItem* createPlotItem() override;
 	virtual void setDataManager(DADataManager* dmgr) override;
+	// 编程式入口（快速绘图等无界面调用方）：samples 的 x 为类别序号（0 起），
+	// set 为各数值列在该类别上的聚合值；barTitles 为各序列名，categoryLabels 为类别轴文字
+	void setProgrammaticSamples(const QVector< QwtSetSample >& samples,
+	                            const QStringList& barTitles,
+	                            const QStringList& categoryLabels = QStringList(),
+	                            const QString& title              = QString());
+	// 是否已设置编程式数据
+	bool hasProgrammaticSamples() const;
+	// 编程式类别轴文字（无则空）
+	QStringList programmaticCategoryLabels() const;
 private Q_SLOTS:
 	void onXSeriesChanged();
 	void onYSeriesChanged();
@@ -37,7 +49,13 @@ private:
 	bool extractXSeries(std::vector< double >& res);
 	bool extractYSeriesList(QVector< std::vector< double > >& res, QStringList& names);
 private:
+	QwtPlotItem* buildProgrammaticItem() const;
+private:
 	Ui::DAChartAddMultiBarWidget* ui;
+	QVector< QwtSetSample > mProgrammaticSamples;
+	QStringList mProgrammaticBarTitles;
+	QStringList mProgrammaticCategoryLabels;
+	QString mProgrammaticTitle;
 };
 }  // namespace DA
 #endif  // DACHARTADDMULTIBARWIDGET_H

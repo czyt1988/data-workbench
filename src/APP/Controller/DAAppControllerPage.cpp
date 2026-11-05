@@ -222,6 +222,15 @@ void DAAppController::onDataOperatePageCreated(DADataOperatePageWidget* page)
                 }
                 return false;
             }
+            if (DA::DAChartQuickPlot::is3DType(spec.type)) {
+                if (append && !cow->getCurrentFigure()) {
+                    if (error) {
+                        *error = tr("There is no current chart to append to");  // cn:当前没有可追加的图表
+                    }
+                    return false;
+                }
+                return DA::DAChartQuickPlot::transferToFigure3D(req, spec, cow, append, nullptr, error);
+            }
             if (append && !cow->getCurrentChart()) {
                 if (error) {
                     *error = tr("There is no current chart to append to");  // cn:当前没有可追加的图表
@@ -230,10 +239,18 @@ void DAAppController::onDataOperatePageCreated(DADataOperatePageWidget* page)
             }
             return DA::DAChartQuickPlot::transferToFigure(req, spec, cow, append, nullptr, error) != nullptr;
         });
-        // 没有当前图表时浮窗「追加到当前图表」置灰（实施方案 §6.1）
+        // 没有当前图表时浮窗「追加到当前图表」置灰（实施方案 §6.1）；
+        // 3D 图型追加到当前 Figure 的 3D 图表，所以有 Figure 即可
         w->setQuickPlotAppendAvailabilityProvider([ this ]() -> bool {
             DAChartOperateWidget* cow = mDock ? mDock->getChartOperateWidget() : nullptr;
-            return cow && cow->getCurrentChart() != nullptr;
+            if (!cow) {
+                return false;
+            }
+            if (cow->getCurrentChart() != nullptr) {
+                return true;
+            }
+            DAFigureWidget* fig = cow->getCurrentFigure();
+            return fig && fig->getCurrent3DChart() != nullptr;
         });
         // 选区变化时刷新「快速绘图」动作的可用状态（无选区置灰）
         connect(w, &DADataOperateOfDataFrameWidget::tableSelectionChanged, this, [ this ]() {
@@ -418,6 +435,18 @@ void DAAppController::onDataOperatePageCreated(DADataOperatePageWidget* page)
                         this,
                         [ this, w ](int col, DA::DADataHeaderView::ColumnDataFormat format) {
                             mDataHandler->onHeaderColumnDataExportRequested(w, col, format);
+                        });
+                // 「快速绘图」子菜单项：与右键列动作同一选区口径——右键列已在多选内
+                // 则保留整个选区，否则只选该列；然后按子菜单指定的图型立即出图（v3）
+                connect(hv,
+                        &DADataHeaderView::quickPlotRequested,
+                        this,
+                        [ this, w ](int col, int chartType) {
+                            const QList< int > selected = w->getSelectedDataframeCoumns();
+                            if (!selected.contains(col)) {
+                                mTableHandler->selectColumnInDataFrameWidget(w, col);
+                            }
+                            w->showQuickPlot(static_cast< DA::DATableChartType >(chartType));
                         });
             }
             // 表体右键菜单（v1 骨架：剪切/复制/粘贴）信号接线：路由到既有槽逻辑

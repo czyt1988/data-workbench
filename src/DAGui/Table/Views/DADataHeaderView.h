@@ -1,6 +1,7 @@
 #ifndef DADATAHEADERVIEW_H
 #define DADATAHEADERVIEW_H
 #include "DAGuiAPI.h"
+#include "Table/Chart/DATableChartTypes.h"
 #include <QHeaderView>
 #include <QPair>
 #include <QVector>
@@ -92,6 +93,11 @@ public:
     // 「冻结此列」或「取消冻结此列」。页面在两个窗格的表头上都设置
     void setFrozenColumnChecker(std::function< bool(int) > checker);
 
+    // 快速绘图规划提供者（逻辑列号 → 当前选区/该列的能力规划）
+    // 右键「快速绘图」子菜单据此只列能画的图型；未设置时退回单入口旧行为
+    using QuickPlotPlanProvider = std::function< DA::DATableChartPlan(int) >;
+    void setQuickPlotPlanProvider(const QuickPlotPlanProvider& provider);
+
     // 构建列头右键菜单（排序 4 项 + 原 6 项 4 组；排序组在最前：升序/降序/追加次级升/追加次级降，
     // 2026-10-18 交互修订——点击表头不再排序；计算列追加「编辑公式/重新计算/移除公式（保留数据）」组，
     // 004 T1.23；调用方负责弹出与销毁）
@@ -119,6 +125,9 @@ Q_SIGNALS:
     void clickedWithModifiers(int logicalIndex, Qt::KeyboardModifiers modifiers);
     // 列头右键菜单项被点击（APP 接线：排序类动作直接执行；其余先选中该列再执行既有槽逻辑）
     void columnActionRequested(int logicalIndex, DA::DADataHeaderView::ColumnAction action);
+    // 快速绘图子菜单项被点击（chartType 是 DATableChartType 的整数值；
+    // APP 先按「右键列是否在选区」处理选区，再按指定图型打开浮窗）
+    void quickPlotRequested(int logicalIndex, int chartType);
     // 「列」子菜单动作被点击（006d：消费者是页面自身——列视图真源操作，不经 APP）
     void columnViewActionRequested(int logicalIndex, DA::DADataHeaderView::ColumnViewAction action);
     // 列头菜单「复制为/导出」子菜单被点击：按当前选中列（无选中回退 logicalIndex
@@ -168,6 +177,8 @@ private:
     void restoreHotZoneCursor();
     // 该列是否允许弹出列头菜单（数据边界判定，保持迁移前行为）
     bool isColumnMenuAvailable(int logicalIndex) const;
+    // 「快速绘图」子菜单：按规划结果只列能画的图型（聚合类用分隔线分组）
+    void buildQuickPlotMenu(QMenu* menu, int logicalIndex);
 
     // 计算列 ƒx 角标状态查询（logicalIndex → 状态色）；非计算列返回无效 QColor
     QColor computedColumnBadgeColor(int logicalIndex) const;
@@ -180,6 +191,7 @@ private:
 
     DATableComputedColumnStore* mComputedStore { nullptr };  ///< 计算列子存储（非拥有，004 T1.23）
     std::function< bool(int) > mFrozenColumnChecker;  ///< 冻结状态查询回调（逻辑列号 → 是否已冻结）
+    QuickPlotPlanProvider mQuickPlotPlanProvider;      ///< 快速绘图规划提供者（非拥有回调）
     int mPressedLogicalIndex { -1 };   ///< 左键按下的 section（释放时同段且未拖动才发 clickedWithModifiers）
     QPoint mPressedPos;                ///< 左键按下的位置（拖动阈值比较基准，006c）
     bool mDragMoved { false };         ///< 本次按下-释放期间是否真正拖动过（等价于 Qt 的"拖动指示器已显示"，006c）

@@ -23,20 +23,26 @@ enum class DATableColumnRole
 };
 
 /**
- * @brief 快速绘图支持的图型（v1）
+ * @brief 快速绘图支持的图型（v3：12 种）
  *
  * 图型身份沿用 DA::DAChartTypes 的既有含义，这里只表达「浮窗可选图型」这一层选择，
- * 不新建一套图表类型系统。
+ * 不新建一套图表类型系统。新增图型一律追加在尾部，避免改变已有枚举值。
  */
 enum class DATableChartType
 {
     None = 0,
-    Line,       ///< 折线（单列 / 时间+数值 / 多序列）
-    Scatter,    ///< 散点（两列数值）
-    Histogram,  ///< 直方图（单列数值）
-    Boxplot,    ///< 箱线图（每列一个箱 / 分类+数值按类别分箱）
-    Bar,        ///< 分类柱状（分组聚合或类别计数）
-    MultiLine   ///< 多序列折线（3+ 数值列）
+    Line,         ///< 折线（单列 / 时间+数值 / 多序列）
+    Scatter,      ///< 散点（两列数值）
+    Histogram,    ///< 直方图（单列数值）
+    Boxplot,      ///< 箱线图（每列一个箱 / 分类+数值按类别分箱）
+    Bar,          ///< 分类柱状（分组聚合或类别计数）
+    MultiLine,    ///< 多序列折线（3+ 数值列）
+    Contour,      ///< 等高线（x/y/值 三列数值）
+    ErrorBar,     ///< 误差棒（x/y/误差 三列数值）
+    VectorField,  ///< 向量场（x/y/u/v 四列数值）
+    MultiBar,     ///< 多重柱状（分类 + 2+ 数值列，按类别聚合分组展示）
+    Surface3D,    ///< 3D 曲面（x/y/z 三列数值，仅散点插值模式）
+    Line3D        ///< 3D 线图（x/y/z 三列数值）
 };
 
 /**
@@ -80,6 +86,9 @@ struct DAGUI_API DATableChartRequest
 {
     DAData data;                    ///< 数据集句柄
     QList<DATableChartColumn> columns;  ///< 有序选中列（按视图顺序）
+    /// 整表列信息（按数据列号顺序；设置区列下拉可换整表任意列）。
+    /// 只填静态可判定的角色，避免为宽表逐列取样本；缺省时列下拉退回 columns。
+    QList<DATableChartColumn> allColumns;
     std::size_t rowCount { 0 };     ///< 数据行数
     bool lazy { false };            ///< 数据源是否为惰性加载
 
@@ -106,8 +115,13 @@ struct DAGUI_API DATableChartSpec
 {
     DATableChartType type { DATableChartType::None };
     int xColumn { -1 };             ///< X 列下标；-1 表示行号
-    QList< int > valueColumns;      ///< 数值列下标（折线/散点/箱线/多序列/柱状）
-    int categoryColumn { -1 };      ///< 分类列下标（柱状/按类别箱线）
+    int yColumn { -1 };             ///< Y 列下标（散点/等高线/误差棒/向量场/3D 的角色列）
+    int zColumn { -1 };             ///< Z 列下标（等高线值 / 3D 曲面与 3D 线图的 Z）
+    int errorColumn { -1 };         ///< 误差列下标（误差棒）
+    int uColumn { -1 };             ///< U 列下标（向量场）
+    int vColumn { -1 };             ///< V 列下标（向量场）
+    QList< int > valueColumns;      ///< 数值列下标（折线/散点/箱线/多序列/多重柱状）
+    int categoryColumn { -1 };      ///< 分类列下标（柱状/按类别箱线/多重柱状）
     DATableChartAggregation aggregation { DATableChartAggregation::Mean };
     int categoryTopN { 30 };        ///< 类别数超限时保留的数量（0 表示不截取）
     int histogramBins { 20 };       ///< 直方图分箱数
@@ -137,6 +151,7 @@ enum class DATableChartRejectReason
 struct DAGUI_API DATableChartPlan
 {
     QList< DATableChartType > types;  ///< 可选图型；首个即默认图型
+    QList< DATableChartSpec > typeSpecs;  ///< 与 types 平行：每种图型在该选区下的默认规格
     DATableChartSpec defaultSpec;     ///< 默认图型的规格
     DATableChartRejectReason reject { DATableChartRejectReason::None };  ///< 无法出图的原因
 

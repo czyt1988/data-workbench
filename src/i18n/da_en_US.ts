@@ -5737,6 +5737,24 @@
         <source>scipy is not available, cannot perform scatter interpolation. Please install scipy: pip install scipy</source>
         <translation>scipy is not available, cannot perform scatter interpolation. Please install scipy: pip install scipy</translation>
     </message>
+
+    <message>
+        <location line="+119"/>
+        <source>Not enough valid points for surface interpolation</source>
+        <translation>Not enough valid points for surface interpolation</translation>
+        </message>
+
+    <message>
+        <location line="+11"/>
+        <source>The X or Y column has no variation, cannot build a surface</source>
+        <translation>The X or Y column has no variation, cannot build a surface</translation>
+        </message>
+
+    <message>
+        <location line="+57"/>
+        <source>Failed to interpolate the surface: %1</source>
+        <translation>Failed to interpolate the surface: %1</translation>
+        </message>
 </context>
 <context>
     <name>DA::DAChartAddBoxChartWidget</name>
@@ -14908,6 +14926,127 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <source>The previous chart type is not available for the new selection, switched to the default type</source>
         <translation>The previous chart type is not available for the new selection, switched to the default type</translation>
     </message>
+
+    <message>
+        <location line="+2"/>
+        <source>Contour</source>
+        <translation>Contour</translation>
+        </message>
+
+    <message>
+        <location line="+2"/>
+        <source>Error bar</source>
+        <translation>Error bar</translation>
+        </message>
+
+    <message>
+        <location line="+2"/>
+        <source>Vector field</source>
+        <translation>Vector field</translation>
+        </message>
+
+    <message>
+        <location line="+2"/>
+        <source>Multi-bar</source>
+        <translation>Multi-bar</translation>
+        </message>
+
+    <message>
+        <location line="+2"/>
+        <source>3D surface</source>
+        <translation>3D surface</translation>
+        </message>
+
+    <message>
+        <location line="+2"/>
+        <source>3D line</source>
+        <translation>3D line</translation>
+        </message>
+
+    <message>
+        <location line="+13"/>
+        <source>Bar (count)</source>
+        <translation>Bar (count)</translation>
+        </message>
+
+    <message>
+        <location line="+1"/>
+        <source>Bar (aggregate)</source>
+        <translation>Bar (aggregate)</translation>
+        </message>
+
+    <message>
+        <location line="+12"/>
+        <location line="+6"/>
+        <source>Requires at least 1 numeric column</source>
+        <translation>Requires at least 1 numeric column</translation>
+        </message>
+
+    <message>
+        <location line="-4"/>
+        <source>Requires 2 numeric columns</source>
+        <translation>Requires 2 numeric columns</translation>
+        </message>
+
+    <message>
+        <location line="+2"/>
+        <source>Requires 1 numeric column</source>
+        <translation>Requires 1 numeric column</translation>
+        </message>
+
+    <message>
+        <location line="+4"/>
+        <source>Requires 1 category column, or a low-cardinality numeric column</source>
+        <translation>Requires 1 category column, or a low-cardinality numeric column</translation>
+        </message>
+
+    <message>
+        <location line="+2"/>
+        <source>Requires 3 numeric columns, or 1 time column and 2 numeric columns</source>
+        <translation>Requires 3 numeric columns, or 1 time column and 2 numeric columns</translation>
+        </message>
+
+    <message>
+        <location line="+5"/>
+        <source>Requires 3 numeric columns</source>
+        <translation>Requires 3 numeric columns</translation>
+        </message>
+
+    <message>
+        <location line="+2"/>
+        <source>Requires 4 numeric columns</source>
+        <translation>Requires 4 numeric columns</translation>
+        </message>
+
+    <message>
+        <location line="+2"/>
+        <source>Requires 1 category column and at least 2 numeric columns</source>
+        <translation>Requires 1 category column and at least 2 numeric columns</translation>
+        </message>
+
+    <message>
+        <location line="-210"/>
+        <source>Chart type (unavailable types are disabled with the reason)</source>
+        <translation>Chart type (unavailable types are disabled with the reason)</translation>
+        </message>
+
+    <message>
+        <location line="+17"/>
+        <source>Settings</source>
+        <translation>Settings</translation>
+        </message>
+
+    <message>
+        <location line="+4"/>
+        <source>Show or hide the role settings</source>
+        <translation>Show or hide the role settings</translation>
+        </message>
+
+    <message>
+        <location line="-66"/>
+        <source>%1 (manual)</source>
+        <translation>%1 (manual)</translation>
+        </message>
 </context>
 <context>
     <name>DA::DATableStatsWidget</name>
@@ -16875,6 +17014,84 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <source>There is no current chart to append to</source>
         <translation>There is no current chart to append to</translation>
     </message>
+
+    <message>
+        <location line="+103"/>
+        <source>Failed to build the contour plot</source>
+        <translation>Failed to build the contour plot</translation>
+        </message>
+
+    <message>
+        <location line="+41"/>
+        <source>Failed to build the error bar chart</source>
+        <translation>Failed to build the error bar chart</translation>
+        </message>
+
+    <message>
+        <location line="+42"/>
+        <source>Failed to build the vector field chart</source>
+        <translation>Failed to build the vector field chart</translation>
+        </message>
+
+    <message>
+        <location line="+54"/>
+        <source>No valid data for the multi-bar chart</source>
+        <translation>No valid data for the multi-bar chart</translation>
+        </message>
+
+    <message>
+        <location line="+93"/>
+        <source>Failed to build the multi-bar chart</source>
+        <translation>Failed to build the multi-bar chart</translation>
+        </message>
+
+    <message>
+        <location line="+30"/>
+        <source>Not enough valid rows for the 3D chart</source>
+        <translation>Not enough valid rows for the 3D chart</translation>
+        </message>
+
+    <message>
+        <location line="-44"/>
+        <source>The 3D chart must be drawn on a 3D chart widget</source>
+        <translation>The 3D chart must be drawn on a 3D chart widget</translation>
+        </message>
+
+    <message>
+        <location line="+61"/>
+        <source>Failed to build the 3D surface</source>
+        <translation>Failed to build the 3D surface</translation>
+        </message>
+
+    <message>
+        <location line="+18"/>
+        <source>Failed to build the 3D line chart</source>
+        <translation>Failed to build the 3D line chart</translation>
+        </message>
+
+    <message>
+        <location line="+18"/>
+        <source>There is no 3D chart to draw on</source>
+        <translation>There is no 3D chart to draw on</translation>
+        </message>
+
+    <message>
+        <location line="+14"/>
+        <source>%1 · %2 · %3</source>
+        <translation>%1 · %2 · %3</translation>
+        </message>
+
+    <message>
+        <location line="-9"/>
+        <source>The chart type is not a 3D chart</source>
+        <translation>The chart type is not a 3D chart</translation>
+        </message>
+
+    <message>
+        <location line="+34"/>
+        <source>Failed to create a 3D chart</source>
+        <translation>Failed to create a 3D chart</translation>
+        </message>
 </context>
 <context>
     <name>DAChartSeriesPickerWidget</name>
@@ -21281,5 +21498,148 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <source>e.g. tmp = A * 2, then np.where(tmp &gt; 0, tmp, 0)</source>
         <translation>e.g. tmp = A * 2, then np.where(tmp &gt; 0, tmp, 0)</translation>
     </message>
+</context>
+<context>
+    <name>DA::DATableChartRolePanel</name>
+    <message>
+        <location filename="../DAGui/Table/Chart/DATableChartRolePanel.cpp" line="+126"/>
+        <source>Row number</source>
+        <translation>Row number</translation>
+        </message>
+    <message>
+        <location line="+3"/>
+        <source>(none)</source>
+        <translation>(none)</translation>
+        </message>
+    <message>
+        <location line="+96"/>
+        <source>Remove this series</source>
+        <translation>Remove this series</translation>
+        </message>
+    <message>
+        <location line="+18"/>
+        <source>Add series</source>
+        <translation>Add series</translation>
+        </message>
+    <message>
+        <location line="+40"/>
+        <source>Aggregation</source>
+        <translation>Aggregation</translation>
+        </message>
+    <message>
+        <location line="+28"/>
+        <source>Bins</source>
+        <translation>Bins</translation>
+        </message>
+    <message>
+        <location line="+23"/>
+        <source>Mean</source>
+        <translation>Mean</translation>
+        </message>
+    <message>
+        <location line="+2"/>
+        <source>Median</source>
+        <translation>Median</translation>
+        </message>
+    <message>
+        <location line="+2"/>
+        <source>Sum</source>
+        <translation>Sum</translation>
+        </message>
+    <message>
+        <location line="+2"/>
+        <source>Count</source>
+        <translation>Count</translation>
+        </message>
+    <message>
+        <location line="+2"/>
+        <source>Std</source>
+        <translation>Std</translation>
+        </message>
+    <message>
+        <location line="+2"/>
+        <source>Var</source>
+        <translation>Var</translation>
+        </message>
+    <message>
+        <location line="+2"/>
+        <source>Min</source>
+        <translation>Min</translation>
+        </message>
+    <message>
+        <location line="+2"/>
+        <source>Max</source>
+        <translation>Max</translation>
+        </message>
+    <message>
+        <location line="+99"/>
+        <location line="+35"/>
+        <source>X axis</source>
+        <translation>X axis</translation>
+        </message>
+    <message>
+        <location line="-29"/>
+        <location line="+17"/>
+        <location line="+18"/>
+        <location line="+101"/>
+        <location line="+17"/>
+        <location line="+17"/>
+        <location line="+23"/>
+        <source>Y</source>
+        <translation>Y</translation>
+        </message>
+    <message>
+        <location line="-181"/>
+        <location line="+119"/>
+        <location line="+17"/>
+        <location line="+17"/>
+        <location line="+23"/>
+        <source>X</source>
+        <translation>X</translation>
+        </message>
+    <message>
+        <location line="-141"/>
+        <location line="+52"/>
+        <location line="+42"/>
+        <source>Value</source>
+        <translation>Value</translation>
+        </message>
+    <message>
+        <location line="-81"/>
+        <location line="+58"/>
+        <source>Values</source>
+        <translation>Values</translation>
+        </message>
+    <message>
+        <location line="-47"/>
+        <source>Group</source>
+        <translation>Group</translation>
+        </message>
+    <message>
+        <location line="+22"/>
+        <location line="+20"/>
+        <source>Category</source>
+        <translation>Category</translation>
+        </message>
+    <message>
+        <location line="+45"/>
+        <source>Error</source>
+        <translation>Error</translation>
+        </message>
+    <message>
+        <location line="+17"/>
+        <source>U</source>
+        <translation>U</translation>
+        </message>
+    <message>
+        <location line="+5"/>
+        <source>V</source>
+        <translation>V</translation>
+        </message>
+    <message>
+        <location line="+18"/>
+        <source>Z</source>
+        <translation>Z</translation>
+        </message>
 </context>
 </TS>

@@ -95,6 +95,23 @@ public:
         QVector< double > values;
     };
 
+    /// 多列按行对齐的数值采样结果（等高线/误差棒/向量场/3D 用）
+    struct ColumnsSample
+    {
+        SampleInfo info;
+        QList< QVector< double > > columns;  ///< 与请求的 dataColumns 顺序一致
+        int rowCount() const { return columns.isEmpty() ? 0 : columns.first().size(); }
+    };
+
+    /// 分类 + 多列数值的按行对齐采样结果（按类别分组的多列箱线图用）
+    struct CategoryMultiSample
+    {
+        SampleInfo info;
+        QStringList labels;
+        QList< QVector< double > > columns;  ///< 与 valueDataColumns 顺序一致
+        int rowCount() const { return labels.size(); }
+    };
+
     // 是否可以对全量数据做精确聚合/分位数
     static bool canAggregateExactly(const DATableChartRequest& request);
 
@@ -137,6 +154,27 @@ public:
                                          int valueDataColumn,
                                          int maxPoints,
                                          SampleBudget* budget = nullptr);
+
+    /**
+     * @brief 分类 + 多列数值的按行对齐采样（分组多列箱线图用）
+     * @note 任一行在分类列或任一数值列上缺失都会整行剔除，保证 hue 与各列对齐
+     */
+    static CategoryMultiSample sampleCategoryMulti(const DATableChartRequest& request,
+                                                   int categoryDataColumn,
+                                                   const QList< int >& valueDataColumns,
+                                                   int maxPoints,
+                                                   SampleBudget* budget = nullptr);
+
+    /**
+     * @brief 多列按行对齐采样（每行所有列都必须可转数值，否则整行剔除）
+     * @param dataColumns 数据列号列表（不是 request.columns 下标）
+     * @param maxPoints 目标行数上限；传 kFullDataPoints(-1) 表示不限行数（转入全量重建用）
+     */
+    static constexpr int kFullDataPoints = -1;
+    static ColumnsSample sampleColumns(const DATableChartRequest& request,
+                                       const QList< int >& dataColumns,
+                                       int maxPoints,
+                                       SampleBudget* budget = nullptr);
 };
 
 }  // namespace DA

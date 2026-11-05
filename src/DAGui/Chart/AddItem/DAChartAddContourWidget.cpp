@@ -43,6 +43,9 @@ void DAChartAddContourWidget::onDataManagerChanged(DADataManager* dmgr)
 
 QwtPlotItem* DAChartAddContourWidget::createPlotItem()
 {
+	if (hasProgrammaticSamples()) {
+		return buildItem(mProgrammaticSamples, mProgrammaticTitle);
+	}
 	QPair< DAData, QString > xSel = ui->selectWidgetX->getCurrentSeries();
 	QPair< DAData, QString > ySel = ui->selectWidgetY->getCurrentSeries();
 	QPair< DAData, QString > vSel = ui->selectWidgetValue->getCurrentSeries();
@@ -84,28 +87,62 @@ QwtPlotItem* DAChartAddContourWidget::createPlotItem()
 		vs.castTo< double >(std::back_inserter(vv));
 		QVector< QwtPoint3D > samples;
 		samples.reserve(static_cast< int >(n));
-		double zMin = std::numeric_limits< double >::max();
-		double zMax = std::numeric_limits< double >::lowest();
 		for (std::size_t i = 0; i < n; ++i) {
-			double z = vv[ i ];
-			if (z < zMin) zMin = z;
-			if (z > zMax) zMax = z;
-			samples.append(QwtPoint3D(vx[ i ], vy[ i ], z));
+			samples.append(QwtPoint3D(vx[ i ], vy[ i ], vv[ i ]));
 		}
-		QwtPlotSpectroCurve* item = new QwtPlotSpectroCurve();
-		item->setSamples(samples);
-		// 根据 z 值范围设置颜色区间
-		if (zMin < zMax) {
-			item->setColorRange(QwtInterval(zMin, zMax));
-		} else {
-			item->setColorRange(QwtInterval(0.0, 1.0));
-		}
-		item->setTitle(vSel.second);
-		return item;
+		return buildItem(samples, vSel.second);
 	} catch (const std::exception& e) {
 		daCritical << tr("Exception occurred during extracting contour data:%1").arg(e.what());  // cn:提取等高线数据过程中出现异常:%1
 		return nullptr;
 	}
+}
+
+/**
+ * @brief 由 (x, y, value) 点集构建等高线图元
+ */
+QwtPlotItem* DAChartAddContourWidget::buildItem(const QVector<QwtPoint3D>& samples, const QString& title)
+{
+	if (samples.isEmpty()) {
+		return nullptr;
+	}
+	double zMin = std::numeric_limits< double >::max();
+	double zMax = std::numeric_limits< double >::lowest();
+	for (const QwtPoint3D& p : samples) {
+		const double z = p.z();
+		if (z < zMin) {
+			zMin = z;
+		}
+		if (z > zMax) {
+			zMax = z;
+		}
+	}
+	QwtPlotSpectroCurve* item = new QwtPlotSpectroCurve();
+	item->setSamples(samples);
+	// 根据 z 值范围设置颜色区间
+	if (zMin < zMax) {
+		item->setColorRange(QwtInterval(zMin, zMax));
+	} else {
+		item->setColorRange(QwtInterval(0.0, 1.0));
+	}
+	item->setTitle(title);
+	return item;
+}
+
+/**
+ * @brief 设置编程式点集（快速绘图路径）
+ */
+void DAChartAddContourWidget::setProgrammaticSamples(const QVector<QwtPoint3D>& samples, const QString& title)
+{
+	mProgrammaticSamples = samples;
+	mProgrammaticTitle   = title;
+}
+
+/**
+ * @brief 是否已设置编程式数据
+ */
+bool DAChartAddContourWidget::hasProgrammaticSamples() const
+{
+	return !mProgrammaticSamples.isEmpty();
 }
 
 }  // namespace DA

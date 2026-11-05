@@ -6,6 +6,7 @@
 #include <QRect>
 #include <QSize>
 #include <QWidget>
+#include <utility>
 // DAGui
 #include "Table/Views/DADataTableView.h"
 #include "Table/Views/DATablePaneContainer.h"
@@ -40,17 +41,41 @@ DATableQuickPlotController::DATableQuickPlotController(const DATablePageContext&
  */
 DA::DATableChartRequest DATableQuickPlotController::buildQuickPlotRequest() const
 {
+    const DAData d = mCtx.data();
+    return buildRequestFromDataColumns(mSel.selectedDataColumnsInViewOrder(d.isDataFrame()));
+}
+
+/**
+ * @brief 按若干数据列构造请求（选区列 + 整表列清单）
+ *
+ * 整表列清单只按静态类型判定角色（不逐列取样本），供设置区列下拉换整表任意列。
+ */
+DA::DATableChartRequest DATableQuickPlotController::buildRequestFromDataColumns(
+    const QList< int >& dataColumns) const
+{
     DA::DATableChartRequest request;
-    request.data = mCtx.data();
-    DAData dataCopy            = mCtx.data();  // 值语义共享底层指针，取非 const 接口
-    DATableDataSource* source  = dataCopy.tableSource();
+    request.data              = mCtx.data();
+    DAData dataCopy           = mCtx.data();  // 值语义共享底层指针，取非 const 接口
+    DATableDataSource* source = dataCopy.tableSource();
     if (source) {
         request.rowCount = source->tableRowCount();
         request.lazy     = source->isLazyLoaded();
     }
-    const DAData d = mCtx.data();
-    const QList< int > columns = mSel.selectedDataColumnsInViewOrder(d.isDataFrame());
-    for (int col : columns) {
+    // 整表列清单（列号顺序；重名列记录 occurrence）
+    if (source) {
+        const int columnCount = static_cast< int >(source->tableColumnCount());
+        for (int col = 0; col < columnCount; ++col) {
+            int occurrence     = 0;
+            const QString name = source->tableColumnName(static_cast< std::size_t >(col));
+            for (int c = 0; c < col; ++c) {
+                if (source->tableColumnName(static_cast< std::size_t >(c)) == name) {
+                    ++occurrence;
+                }
+            }
+            request.allColumns.append(DA::DATableChartPlanner::makeColumn(mCtx.data(), col, occurrence, 0));
+        }
+    }
+    for (int col : dataColumns) {
         int occurrence = 0;
         if (source && col >= 0 && static_cast< std::size_t >(col) < source->tableColumnCount()) {
             const QString name = source->tableColumnName(static_cast< std::size_t >(col));
@@ -62,7 +87,40 @@ DA::DATableChartRequest DATableQuickPlotController::buildQuickPlotRequest() cons
         }
         request.columns.append(DA::DATableChartPlanner::makeColumn(mCtx.data(), col, occurrence));
     }
+    // 选中列的角色是带样本判定的（更准），覆盖到整表清单里同名列，避免设置区
+    // 因静态类型不可判定而把实际可画的列显示为不可用
+    for (const DA::DATableChartColumn& selected : std::as_const(request.columns)) {
+        for (DA::DATableChartColumn& column : request.allColumns) {
+            if (column.dataIndex == selected.dataIndex) {
+                column.name       = selected.name;
+                column.role       = selected.role;
+                column.occurrence = selected.occurrence;
+                break;
+            }
+        }
+    }
     return request;
+}
+
+/**
+ * @brief 按右键列构造请求：该列在多选内时用整个选区，否则只用该列
+ */
+DA::DATableChartRequest DATableQuickPlotController::buildQuickPlotRequestForColumn(int logicalIndex) const
+{
+    const DAData d              = mCtx.data();
+    const QList< int > selected = mSel.selectedDataColumnsInViewOrder(d.isDataFrame());
+    if (selected.contains(logicalIndex)) {
+        return buildRequestFromDataColumns(selected);
+    }
+    return buildRequestFromDataColumns({ logicalIndex });
+}
+
+/**
+ * @brief 按右键列规划可选图型（右键子菜单用）
+ */
+DA::DATableChartPlan DATableQuickPlotController::quickPlotPlanForColumn(int logicalIndex) const
+{
+    return DA::DATableChartPlanner::plan(buildQuickPlotRequestForColumn(logicalIndex));
 }
 
 /**
@@ -72,7 +130,7 @@ DA::DATableChartRequest DATableQuickPlotController::buildQuickPlotRequest() cons
  * 内容部件贴入表格子窗口容器（DATableChildWindow 框架承载）：可拖动移动、
  * 8 向手柄缩放、最大化/还原，全程夹取在主视口内——不压表头与滚动条。
  */
-bool DATableQuickPlotController::showQuickPlot()
+bool DATableQuickPlotController::showQuickPlot(DA::DATableChartType preferredType)
 {
     // 构造请求与规划期间会探测列角色/基数（惰性源要取数），给一个等待光标（实施方案 §8.4）
     DAWaitCursorScoped waitCursor;
@@ -129,7 +187,7 @@ bool DATableQuickPlotController::showQuickPlot()
         mQuickPlotFrame->raise();
         mQuickPlotFrame->clampIntoBounds();
     }
-    mQuickPlotWindow->showForRequest(request);
+    mQuickPlotWindow->showForRequest(request, preferredType);
     return mQuickPlotWindow->isVisible();
 }
 

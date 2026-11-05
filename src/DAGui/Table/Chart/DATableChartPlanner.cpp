@@ -8,6 +8,7 @@
 #include <QVariant>
 #include <QSet>
 #include <algorithm>
+#include <utility>
 
 namespace DA
 {
@@ -71,7 +72,9 @@ DATableColumnRole roleFromSample(const QVariantList& values)
 
 bool specValuesEqual(const DATableChartSpec& a, const DATableChartSpec& b)
 {
-    return a.type == b.type && a.xColumn == b.xColumn && a.valueColumns == b.valueColumns
+    return a.type == b.type && a.xColumn == b.xColumn && a.yColumn == b.yColumn
+           && a.zColumn == b.zColumn && a.errorColumn == b.errorColumn && a.uColumn == b.uColumn
+           && a.vColumn == b.vColumn && a.valueColumns == b.valueColumns
            && a.categoryColumn == b.categoryColumn && a.aggregation == b.aggregation
            && a.categoryTopN == b.categoryTopN && a.histogramBins == b.histogramBins
            && a.sortByValueDesc == b.sortByValueDesc;
@@ -184,6 +187,16 @@ bool DATableChartSpec::isValid() const
         return !valueColumns.isEmpty();
     case DATableChartType::Boxplot:
         return !valueColumns.isEmpty();
+    case DATableChartType::Contour:
+    case DATableChartType::Surface3D:
+    case DATableChartType::Line3D:
+        return xColumn >= 0 && yColumn >= 0 && zColumn >= 0;
+    case DATableChartType::ErrorBar:
+        return xColumn >= 0 && yColumn >= 0 && errorColumn >= 0;
+    case DATableChartType::VectorField:
+        return xColumn >= 0 && yColumn >= 0 && uColumn >= 0 && vColumn >= 0;
+    case DATableChartType::MultiBar:
+        return categoryColumn >= 0 && !valueColumns.isEmpty();
     }
     return false;
 }
@@ -231,7 +244,10 @@ DATableColumnRole DATableChartPlanner::detectRole(const DAData& data, int dataCo
 /**
  * @brief 组装请求中的一列
  */
-DATableChartColumn DATableChartPlanner::makeColumn(const DAData& data, int dataColumn, int occurrence)
+DATableChartColumn DATableChartPlanner::makeColumn(const DAData& data,
+                                                   int dataColumn,
+                                                   int occurrence,
+                                                   int sampleRowLimit)
 {
     DATableChartColumn c;
     c.dataIndex  = dataColumn;
@@ -243,15 +259,15 @@ DATableChartColumn DATableChartPlanner::makeColumn(const DAData& data, int dataC
             c.name = source->tableColumnName(static_cast< std::size_t >(dataColumn));
         }
     }
-    c.role = detectRole(data, dataColumn);
+    c.role = detectRole(data, dataColumn, sampleRowLimit);
     return c;
 }
 
 /**
  * @brief 按能力矩阵规划可选图型与默认规格
  *
- * 规则见实施方案 §4.2：v1 只覆盖「1 分类 + 1 数值」及纯数值/时间组合，
- * 分类+多数值、2 分类交叉等组合明确拒绝并给出原因。
+ * 规则见实施方案 v3 §2.2：v3 覆盖 12 种图型（含分类+多数值的多重柱状与 3D 类），
+ * 2 分类交叉仍明确拒绝并给出原因。
  */
 DATableChartPlan DATableChartPlanner::plan(const DATableChartRequest& request)
 {
@@ -302,11 +318,28 @@ DATableChartPlan DATableChartPlanner::plan(const DATableChartRequest& request)
             return result;
         }
     } else {
-        // 3 列及以上：纯数值或多序列（时间 + 2+ 数值）；分类 + 2+ 数值 v1 不做
+        // 3 列及以上（v3 能力矩阵，实施方案 §2.2）
         if (numCnt == total) {
-            result.types = { DATableChartType::MultiLine, DATableChartType::Boxplot };
+            // 纯数值：散点/多序列/箱线图为通用项；3 列数值起开放等高线/误差棒/3D，
+            // 4 列起开放向量场（严格角色门槛：三列数值才出 3D 类，四列才出向量场）
+            result.types = { DATableChartType::Scatter,
+                             DATableChartType::MultiLine,
+                             DATableChartType::Boxplot };
+            if (numCnt >= 3) {
+                result.types.append(DATableChartType::Contour);
+                result.types.append(DATableChartType::ErrorBar);
+                result.types.append(DATableChartType::Surface3D);
+                result.types.append(DATableChartType::Line3D);
+            }
+            if (numCnt >= 4) {
+                result.types.append(DATableChartType::VectorField);
+            }
         } else if (dtCnt == 1 && numCnt == total - 1) {
+            // 时间 + 2+ 数值：多序列折线（时间列不作为 3D/等高线的坐标轴）
             result.types = { DATableChartType::MultiLine };
+        } else if (catCnt == 1 && numCnt == total - 1 && numCnt >= 2) {
+            // 分类 + 2+ 数值：多重柱状（v3 新增，原为拒绝）+ 按类别箱线图
+            result.types = { DATableChartType::MultiBar, DATableChartType::Boxplot };
         } else if (numCnt == 0) {
             result.reject = (catCnt >= 2) ? DATableChartRejectReason::UnsupportedCombination
                                           : DATableChartRejectReason::NoNumericColumn;
@@ -317,6 +350,9 @@ DATableChartPlan DATableChartPlanner::plan(const DATableChartRequest& request)
         }
     }
     result.defaultSpec = defaultSpec(request, result.types.first());
+    for (DATableChartType type : std::as_const(result.types)) {
+        result.typeSpecs.append(defaultSpec(request, type));
+    }
     return result;
 }
 
@@ -362,7 +398,8 @@ DATableChartSpec DATableChartPlanner::defaultSpec(const DATableChartRequest& req
         break;
     case DATableChartType::Boxplot:
         spec.valueColumns = nums;
-        if (catIdx >= 0 && nums.size() == 1) {
+        if (catIdx >= 0) {
+            // 分类 + 数值：默认按类别分组（分类 + 2+ 数值时每个数值列一组）
             spec.categoryColumn = catIdx;
         }
         break;
@@ -399,6 +436,45 @@ DATableChartSpec DATableChartPlanner::defaultSpec(const DATableChartRequest& req
     case DATableChartType::MultiLine:
         spec.xColumn      = (dtIdx >= 0) ? dtIdx : -1;
         spec.valueColumns = nums;
+        break;
+    case DATableChartType::Contour:
+        if (nums.size() >= 3) {
+            spec.xColumn = nums.at(0);
+            spec.yColumn = nums.at(1);
+            spec.zColumn = nums.at(2);
+        }
+        break;
+    case DATableChartType::ErrorBar:
+        if (nums.size() >= 3) {
+            spec.xColumn     = nums.at(0);
+            spec.yColumn     = nums.at(1);
+            spec.errorColumn = nums.at(2);
+        }
+        break;
+    case DATableChartType::VectorField:
+        if (nums.size() >= 4) {
+            spec.xColumn = nums.at(0);
+            spec.yColumn = nums.at(1);
+            spec.uColumn = nums.at(2);
+            spec.vColumn = nums.at(3);
+        }
+        break;
+    case DATableChartType::MultiBar:
+        if (catIdx >= 0 && nums.size() >= 2) {
+            spec.categoryColumn  = catIdx;
+            spec.valueColumns    = nums;
+            spec.aggregation     = DATableChartAggregation::Mean;
+            spec.sortByValueDesc = false;  // 多序列按类别名顺序展示，便于横向对照
+            spec.categoryTopN    = 30;
+        }
+        break;
+    case DATableChartType::Surface3D:
+    case DATableChartType::Line3D:
+        if (nums.size() >= 3) {
+            spec.xColumn = nums.at(0);
+            spec.yColumn = nums.at(1);
+            spec.zColumn = nums.at(2);
+        }
         break;
     }
     return spec;

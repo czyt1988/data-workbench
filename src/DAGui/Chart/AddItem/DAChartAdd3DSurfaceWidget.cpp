@@ -65,7 +65,13 @@ Qwt3DPlotItem* DAChartAdd3DSurfaceWidget::create3DPlotItem()
     QVector< double > xCoords;
     QVector< double > yCoords;
     QVector< QVector< double > > zMatrix;
-    if (getDataMode() == GridMode) {
+    mProgrammaticError.clear();
+    if (hasProgrammaticData()) {
+        // 编程式入口固定走散点插值模式（快速绘图只提供 x/y/z 三列）
+        if (!interpolateScatter(mProgrammaticX, mProgrammaticY, mProgrammaticZ, xCoords, yCoords, zMatrix)) {
+            return nullptr;
+        }
+    } else if (getDataMode() == GridMode) {
         if (!extractGridData(xCoords, yCoords, zMatrix)) {
             return nullptr;
         }
@@ -195,7 +201,7 @@ bool DAChartAdd3DSurfaceWidget::extractGridData(QVector< double >& xCoords,
 bool DAChartAdd3DSurfaceWidget::extractScatterDataAndInterpolate(
     QVector< double >& xCoords,
     QVector< double >& yCoords,
-    QVector< QVector< double > >& zMatrix) const
+    QVector< QVector< double > >& zMatrix)
 {
     // 获取选中的三列数据
     DAData dfData = getCurrentDataframe();
@@ -213,17 +219,39 @@ bool DAChartAdd3DSurfaceWidget::extractScatterDataAndInterpolate(
     DAPySeries xs = df[ xCol ];
     DAPySeries ys = df[ yCol ];
     DAPySeries zs = df[ zCol ];
-    int n = static_cast< int >(xs.size());
-    if (n < 3) {
-        return false;
-    }
-    // DAPySeries 无 min()/max() 成员，用 toQVectorDouble 转换后 std::min/max_element
+    // DAPySeries 无 min()/max() 成员，用 toQVectorDouble 转换后交给插值
     QVector< double > xVec = toQVectorDouble(xs);
     QVector< double > yVec = toQVectorDouble(ys);
+    QVector< double > zVec = toQVectorDouble(zs);
+    return interpolateScatter(xVec, yVec, zVec, xCoords, yCoords, zMatrix);
+}
+
+/**
+ * @brief 三列散点向量 → 30×30 规则网格（调用 scipy.interpolate.griddata）
+ */
+bool DAChartAdd3DSurfaceWidget::interpolateScatter(const QVector< double >& xs,
+                                                   const QVector< double >& ys,
+                                                   const QVector< double >& zs,
+                                                   QVector< double >& xCoords,
+                                                   QVector< double >& yCoords,
+                                                   QVector< QVector< double > >& zMatrix)
+{
+    const int n = std::min({ xs.size(), ys.size(), zs.size() });
+    if (n < 3) {
+        mProgrammaticError = tr("Not enough valid points for surface interpolation");  // cn:散点数量不足，无法插值成曲面
+        return false;
+    }
+    const QVector< double > xVec = xs.mid(0, n);
+    const QVector< double > yVec = ys.mid(0, n);
+    const QVector< double > zVec = zs.mid(0, n);
     double xMin = *std::min_element(xVec.begin(), xVec.end());
     double xMax = *std::max_element(xVec.begin(), xVec.end());
     double yMin = *std::min_element(yVec.begin(), yVec.end());
     double yMax = *std::max_element(yVec.begin(), yVec.end());
+    if (!(xMin < xMax) || !(yMin < yMax)) {
+        mProgrammaticError = tr("The X or Y column has no variation, cannot build a surface");  // cn:X 或 Y 列没有变化范围，无法生成曲面
+        return false;
+    }
     int gridSize = 30;  // 默认30x30网格
     xCoords.resize(gridSize);
     yCoords.resize(gridSize);
@@ -237,59 +265,66 @@ bool DAChartAdd3DSurfaceWidget::extractScatterDataAndInterpolate(
     try {
         pybind11::module_::import("scipy");
     } catch (const pybind11::error_already_set&) {
-        daWarning << tr("scipy is not available, cannot perform scatter interpolation. "
-                        "Please install scipy: pip install scipy");  // cn:scipy 不可用，无法进行散点插值。请安装 scipy：pip install scipy
+        mProgrammaticError = tr("scipy is not available, cannot perform scatter interpolation. "
+                                "Please install scipy: pip install scipy");  // cn:scipy 不可用，无法进行散点插值。请安装 scipy：pip install scipy
+        daWarning << mProgrammaticError;
         return false;
     }
-    // 使用Python调用scipy.interpolate.griddata
-    // 注意必须包含DAPybind11QtCaster.hpp
-    pybind11::module_ scipyInterp = pybind11::module_::import("scipy.interpolate");
-    pybind11::object griddata = scipyInterp.attr("griddata");
-    // 构建points数组 (n, 2)
-    std::vector< pybind11::ssize_t > ptShape = { static_cast< pybind11::ssize_t >(n),
-                                                  static_cast< pybind11::ssize_t >(2) };
-    pybind11::array_t< double > points(ptShape);
-    auto pointsBuf = points.mutable_unchecked< 2 >();
-    for (int i = 0; i < n; ++i) {
-        pointsBuf(i, 0) = xVec[ i ];
-        pointsBuf(i, 1) = yVec[ i ];
-    }
-    // 构建values数组 (n,)
-    pybind11::array_t< double > values(static_cast< pybind11::ssize_t >(n));
-    auto valuesBuf = values.mutable_unchecked< 1 >();
-    for (int i = 0; i < n; ++i) {
-        valuesBuf(i) = zs.value(static_cast< std::size_t >(i)).toDouble();
-    }
-    // 构建网格坐标 (gridSize*gridSize, 2)
-    std::vector< pybind11::ssize_t > gridShape = { static_cast< pybind11::ssize_t >(gridSize * gridSize),
-                                                    static_cast< pybind11::ssize_t >(2) };
-    pybind11::array_t< double > grid(gridShape);
-    auto gridBuf = grid.mutable_unchecked< 2 >();
-    for (int i = 0; i < gridSize; ++i) {
-        for (int j = 0; j < gridSize; ++j) {
-            gridBuf(i * gridSize + j, 0) = xCoords[ i ];
-            gridBuf(i * gridSize + j, 1) = yCoords[ j ];
+    try {
+        // 使用Python调用scipy.interpolate.griddata
+        // 注意必须包含DAPybind11QtCaster.hpp
+        pybind11::module_ scipyInterp = pybind11::module_::import("scipy.interpolate");
+        pybind11::object griddata = scipyInterp.attr("griddata");
+        // 构建points数组 (n, 2)
+        std::vector< pybind11::ssize_t > ptShape = { static_cast< pybind11::ssize_t >(n),
+                                                      static_cast< pybind11::ssize_t >(2) };
+        pybind11::array_t< double > points(ptShape);
+        auto pointsBuf = points.mutable_unchecked< 2 >();
+        for (int i = 0; i < n; ++i) {
+            pointsBuf(i, 0) = xVec[ i ];
+            pointsBuf(i, 1) = yVec[ i ];
         }
-    }
-    // 调用griddata
-    pybind11::object resultObj = griddata(points, values, grid, "cubic");
-    pybind11::array_t< double > result = resultObj.cast< pybind11::array_t< double > >();
-    auto resultBuf = result.unchecked< 1 >();
-    // 填充zMatrix，布局为 [row=y][col=x]，与网格模式保持一致
-    // griddata 对凸包外的点返回 NaN，需替换为 0
-    zMatrix.resize(gridSize);
-    for (int r = 0; r < gridSize; ++r) {
-        zMatrix[ r ].resize(gridSize);
-    }
-    for (int i = 0; i < gridSize; ++i) {
-        for (int j = 0; j < gridSize; ++j) {
-            double v = resultBuf(i * gridSize + j);
-            if (std::isnan(v)) {
-                v = 0.0;  // 凸包外的点用0填充
+        // 构建values数组 (n,)
+        pybind11::array_t< double > values(static_cast< pybind11::ssize_t >(n));
+        auto valuesBuf = values.mutable_unchecked< 1 >();
+        for (int i = 0; i < n; ++i) {
+            valuesBuf(i) = zVec[ i ];
+        }
+        // 构建网格坐标 (gridSize*gridSize, 2)
+        std::vector< pybind11::ssize_t > gridShape = { static_cast< pybind11::ssize_t >(gridSize * gridSize),
+                                                        static_cast< pybind11::ssize_t >(2) };
+        pybind11::array_t< double > grid(gridShape);
+        auto gridBuf = grid.mutable_unchecked< 2 >();
+        for (int i = 0; i < gridSize; ++i) {
+            for (int j = 0; j < gridSize; ++j) {
+                gridBuf(i * gridSize + j, 0) = xCoords[ i ];
+                gridBuf(i * gridSize + j, 1) = yCoords[ j ];
             }
-            // i 是 x 方向列号，j 是 y 方向行号
-            zMatrix[ j ][ i ] = v;
         }
+        // 调用griddata
+        pybind11::object resultObj     = griddata(points, values, grid, "cubic");
+        pybind11::array_t< double > result = resultObj.cast< pybind11::array_t< double > >();
+        auto resultBuf                     = result.unchecked< 1 >();
+        // 填充zMatrix，布局为 [row=y][col=x]，与网格模式保持一致
+        // griddata 对凸包外的点返回 NaN，需替换为 0
+        zMatrix.resize(gridSize);
+        for (int r = 0; r < gridSize; ++r) {
+            zMatrix[ r ].resize(gridSize);
+        }
+        for (int i = 0; i < gridSize; ++i) {
+            for (int j = 0; j < gridSize; ++j) {
+                double v = resultBuf(i * gridSize + j);
+                if (std::isnan(v)) {
+                    v = 0.0;  // 凸包外的点用0填充
+                }
+                // i 是 x 方向列号，j 是 y 方向行号
+                zMatrix[ j ][ i ] = v;
+            }
+        }
+    } catch (const std::exception& e) {
+        mProgrammaticError = tr("Failed to interpolate the surface: %1").arg(QString::fromUtf8(e.what()));  // cn:曲面插值失败：%1
+        daWarning << mProgrammaticError;
+        return false;
     }
     return true;
 }
@@ -347,6 +382,35 @@ DAData DAChartAdd3DSurfaceWidget::getCurrentDataframe() const
         return DAData();
     }
     return ui->comboBoxDataframe->itemData(idx).value< DAData >();
+}
+
+/**
+ * @brief 设置编程式三列散点数据（快速绘图路径）
+ */
+void DAChartAdd3DSurfaceWidget::setProgrammaticScatterData(const QVector< double >& xs,
+                                                           const QVector< double >& ys,
+                                                           const QVector< double >& zs)
+{
+    mProgrammaticX = xs;
+    mProgrammaticY = ys;
+    mProgrammaticZ = zs;
+    mProgrammaticError.clear();
+}
+
+/**
+ * @brief 是否已设置编程式数据
+ */
+bool DAChartAdd3DSurfaceWidget::hasProgrammaticData() const
+{
+    return !mProgrammaticX.isEmpty() && !mProgrammaticY.isEmpty() && !mProgrammaticZ.isEmpty();
+}
+
+/**
+ * @brief 编程式路径的失败原因
+ */
+QString DAChartAdd3DSurfaceWidget::programmaticError() const
+{
+    return mProgrammaticError;
 }
 
 }  // end DA

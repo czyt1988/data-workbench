@@ -17,6 +17,13 @@ public:
 	explicit DAChartAddErrorBarWidget(QWidget* parent = nullptr);
 	~DAChartAddErrorBarWidget();
 	virtual QwtPlotItem* createPlotItem() override;
+	// 编程式入口（快速绘图等无界面调用方）：直接给 x + [y-error, y+error] 区间样本
+	void setProgrammaticSeries(const QVector< QwtIntervalSample >& samples, const QString& title = QString());
+	// 是否已设置编程式数据
+	bool hasProgrammaticSeries() const;
+private:
+	QVector< QwtIntervalSample > mProgrammaticSeries;
+	QString mProgrammaticTitle;
 };
 }  // namespace DA
 #endif  // DACHARTADDERRORBARWIDGET_H
