@@ -12,6 +12,20 @@ DATableCellStyle::DATableCellStyle()
 }
 
 /**
+ * @brief 未显式设色时使用的默认边框色
+ *
+ * 取官方色板「深色边框与深色线条」深蓝灰 #5D6D7E（DESIGN.md §2）。不能用
+ * 「普通边框 / 分隔线」的中灰 #727272：单元格边框就画在表格网格线旁边，
+ * 同色系 1px 线条在视觉上与网格线无法区分，用户会误以为「边框没生效」。
+ * 绘制（delegate）与导出（HTML）共用此函数，避免两处回落色漂移。
+ * @return 默认边框颜色
+ */
+QColor DATableCellStyle::defaultBorderColor()
+{
+    return QColor(0x5D, 0x6D, 0x7E);
+}
+
+/**
  * @brief 获取底色画刷
  * @return 底色画刷，未设置时返回默认 QBrush
  */
@@ -150,7 +164,7 @@ void DATableCellStyle::setBorderSides(quint8 sides)
 
 /**
  * @brief 获取边框颜色
- * @return 边框颜色；未设置时返回无效 QColor（绘制时回落到默认中灰）
+ * @return 边框颜色；未设置时返回无效 QColor（绘制时回落到 defaultBorderColor）
  */
 QColor DATableCellStyle::borderColor() const
 {
@@ -196,7 +210,7 @@ bool DATableCellStyle::borderValid() const
 /**
  * @brief 一次性设置边框（预设入口）
  * @param sides BorderSide 位组合（0 = 无框线）
- * @param color 边框颜色（无效表示绘制时用默认中灰）
+ * @param color 边框颜色（无效表示绘制时用 defaultBorderColor）
  * @param width 宽度（<=0 按 1）
  */
 void DATableCellStyle::setBorder(quint8 sides, const QColor& color, int width)

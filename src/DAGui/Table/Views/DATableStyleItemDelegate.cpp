@@ -5,8 +5,10 @@
 #include "Table/Metadata/DATableValidationStore.h"
 #include "Table/Metadata/DATableNoteStore.h"
 #include "Table/Models/DAAbstractCacheWindowTableModel.h"
+#include <QApplication>
 #include <QPainter>
 #include <QPalette>
+#include <QStyle>
 #include <QLinearGradient>
 #include <QComboBox>
 #include <QStringList>
@@ -28,8 +30,7 @@ constexpr int c_dataBarPadding = 2;
 // 批注角标（右上角小三角）边长上限（px）；小格按比例收缩，最小 3px 不画
 constexpr int c_noteMarkerSize = 8;
 
-// 边框默认色：DESIGN.md §2 官方色板「普通边框 / 分隔线」中灰（与表格网格线同色）
-const QColor c_defaultBorderColor(0x72, 0x72, 0x72);
+// 默认边框色取 DESIGN.md §2「深色边框与深色线条」的深蓝灰（见 DATableCellStyle::defaultBorderColor）
 
 // 邻居格是否已经画了与本格相邻的那条边（相邻两格共用一条边时只由一侧绘制，避免叠成 2px）
 bool neighborHasRightEdge(DATableStyleManager* mgr, int actualRow, int col)
@@ -67,7 +68,7 @@ void paintCellBorder(QPainter* painter, const QRect& rect, int actualRow, int co
                      const DATableCellStyle& style, DATableStyleManager* mgr)
 {
     const quint8 sides = style.borderSides();
-    const QColor color = style.borderColor().isValid() ? style.borderColor() : c_defaultBorderColor;
+    const QColor color = style.borderColor().isValid() ? style.borderColor() : DATableCellStyle::defaultBorderColor();
     painter->save();
     // 1px 直线走整数像素：关掉抗锯齿，避免半像素扩散糊成两像素
     painter->setRenderHint(QPainter::Antialiasing, false);
@@ -313,7 +314,16 @@ void DATableStyleItemDelegate::paint(QPainter* painter, const QStyleOptionViewIt
     }
 
     // ⑤ 绘制文字（基类 CE_ItemViewItem 路径，数据条在文字之下不遮字）
-    QStyledItemDelegate::paint(painter, opt, index);
+    //
+    // 红线：不能调用 QStyledItemDelegate::paint 来画文字——它内部会再调一次
+    // initStyleOption()，而数据模型对 Qt::TextAlignmentRole 固定返回
+    // Qt::AlignLeft | Qt::AlignVCenter（DADataTableModel / DAPyDataFrameTableModel），
+    // 会把①层设置好的 opt.displayAlignment 覆盖回左对齐，表现为「对齐按钮点了没反应」。
+    // 这里直接走样式绘制路径，复用上面已填充的 opt（对齐/字体/换行都保留）。
+    // 与 QStyledItemDelegate::paint 的差别仅在于不做第二次 initStyleOption。
+    const QWidget* widget = opt.widget;
+    QStyle* stylePtr      = widget ? widget->style() : QApplication::style();
+    stylePtr->drawControl(QStyle::CE_ItemViewItem, &opt, painter, widget);
 
     // ⑤之后：单元格边框（A2）——文字之上、批注角标之下；
     // 相邻边去重规则见 paintCellBorder 注释（右侧/下侧本格画，左侧/上侧邻居没画才补）

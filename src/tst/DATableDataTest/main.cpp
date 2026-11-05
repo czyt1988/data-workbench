@@ -431,6 +431,8 @@ private Q_SLOTS:
     void testCellStyleAlignmentBorderMerge();
     void testCellStyleAlignmentBorderCommandUndo();
     void testStyleDelegateAlignmentAndBorderPixels();
+    // 真实表格页像素回归：模型 TextAlignmentRole 固定左对齐时，对齐/边框仍必须生效
+    void testStyleOnRealPagePixels();
     // A3：列宽自适应/设置列宽/设置行高（落库 + 投影一致，不进撤销栈）
     void testCellSizeCommands();
     // A4 轻量：自动换行（XML 往返/merge/委派像素：折行后文字纵向范围明显变大）
@@ -1729,7 +1731,7 @@ void DATableDataTest::testStyleDelegateAlignmentAndBorderPixels()
 
     // 边框：左右两格都设了全边框，共享边只画一条（x=cellW-1 是边框，x=cellW 不是）。
     // 统计纵向内部区（跳过顶/底边框行），只看竖边是否重复
-    const QColor borderColor(0x72, 0x72, 0x72);
+    const QColor borderColor = DA::DATableCellStyle::defaultBorderColor();
     auto columnHasBorder = [ &img, borderColor ](int x) {
         int n = 0;
         for (int y = 2; y < img.height() - 2; ++y) {
@@ -1746,6 +1748,92 @@ void DATableDataTest::testStyleDelegateAlignmentAndBorderPixels()
     // 外沿边存在
     QVERIFY2(columnHasBorder(0) > cellH / 2, "outer left border not painted");
     QVERIFY2(columnHasBorder(cellW * 2 - 1) > cellH / 2, "outer right border not painted");
+}
+
+// A1/A2 回归：真实表格页上的对齐与边框像素
+//
+// 背景：真实模型（DADataTableModel / DAPyDataFrameTableModel）对 Qt::TextAlignmentRole
+// 固定返回 AlignLeft|AlignVCenter。旧实现在⑤用 QStyledItemDelegate::paint 画文字，
+// 它内部会再调一次 initStyleOption，用该 role 覆盖 delegate 设置好的 displayAlignment，
+// 表现为「对齐按钮点了没效果」。此用例在真实页面上走页面入口设样式，再断言绘制像素。
+void DATableDataTest::testStyleOnRealPagePixels()
+{
+    if (!mPandasOk) {
+        QSKIP("pandas not available");
+    }
+    qRegisterMetaType< DA::DAData >("DA::DAData");
+    pybind11::dict scope;
+    pybind11::exec(R"(
+import pandas as pd
+df = pd.DataFrame({"a": [1111.0, 2222.0, 3333.0], "b": [1.0, 2.0, 3.0]})
+)",
+                   pybind11::globals(),
+                   scope);
+    DA::DAPyDataFrame df(scope[ "df" ]);
+    DA::DADataManager mgr;
+    DA::DAData d(df);
+    d.setName(QStringLiteral("style-real-pixels"));
+    mgr.addData(d);
+    DA::DATableMetadataRegistry registry(nullptr);
+    DA::DADataOperateOfDataFrameWidget w(d, &registry);
+    w.resize(700, 400);
+    w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+    DA::DADataTableView* tv = w.getDataTableView();
+    QVERIFY(tv != nullptr);
+    const QModelIndex idx = tv->model()->index(0, 0);
+    QVERIFY(idx.isValid());
+    // 选中单格后走页面入口（与 Ribbon 对齐/边框按钮同一路径）应用「右对齐 + 全框线」
+    tv->selectionModel()->select(QItemSelection(idx, idx), QItemSelectionModel::ClearAndSelect);
+    DA::DATableCellStyle alignFrag;
+    alignFrag.setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+    w.mergeStyleToSelection(alignFrag);
+    DA::DATableCellStyle borderFrag;
+    borderFrag.setBorder(DA::DATableCellStyle::BorderAll);
+    w.mergeStyleToSelection(borderFrag);
+    // 清选区（样式已落库，与选区无关），避免选中底色/焦点框干扰像素判定
+    tv->selectionModel()->clear();
+    QApplication::processEvents();
+    tv->viewport()->repaint();
+    QImage img(tv->viewport()->size(), QImage::Format_ARGB32);
+    tv->viewport()->render(&img);
+    const QRect r = tv->visualRect(idx);
+    QVERIFY(r.isValid() && r.width() > 20 && r.height() > 10);
+
+    // 1) 对齐：文字像素重心必须落在右半区（内缩 3px 避开边框与网格线）
+    qint64 sum = 0;
+    qint64 cnt = 0;
+    for (int y = r.top() + 3; y < r.bottom() - 2; ++y) {
+        for (int x = r.left() + 3; x < r.right() - 2; ++x) {
+            const QColor c = img.pixelColor(x, y);
+            // 深色文字像素；#727272 边框（114）被阈值排除，避免把边框算进重心
+            if (c.red() < 100 && c.green() < 100) {
+                sum += x;
+                ++cnt;
+            }
+        }
+    }
+    QVERIFY2(cnt > 0, "cell text not painted");
+    const double centroid = double(sum) / double(cnt);
+    QVERIFY2(centroid > r.center().x(),
+             qPrintable(QStringLiteral("alignment not applied on real page: text centroid=%1, cell center=%2")
+                            .arg(centroid)
+                            .arg(r.center().x())));
+
+    // 2) 边框：格子右边线必须出现默认边框色（与网格线浅灰不同，避免把网格误判成边框）
+    const QColor defBorder = DA::DATableCellStyle::defaultBorderColor();
+    const QRgb borderRgb   = defBorder.rgb();
+    int borderHits      = 0;
+    for (int y = r.top() + 2; y < r.bottom() - 1; ++y) {
+        if (img.pixel(r.right(), y) == borderRgb) {
+            ++borderHits;
+        }
+    }
+    QVERIFY2(borderHits > (r.height() - 4) / 2,
+             qPrintable(QStringLiteral("border not painted on real page: hits=%1 of %2")
+                            .arg(borderHits)
+                            .arg(r.height())));
+    w.hide();
 }
 
 // A3：列宽自适应 / 设置列宽 / 设置行高——视图状态落库与投影一致，且不进撤销栈

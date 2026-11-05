@@ -287,7 +287,7 @@ void DATableExporterTest::testHtmlAlignmentAndBorder()
     sm->setColumnStyle(0, alignStyle);
 
     DA::DATableCellStyle borderStyle;
-    borderStyle.setBorder(DA::DATableCellStyle::BorderAll);  // 未设色 → 默认中灰 #727272
+    borderStyle.setBorder(DA::DATableCellStyle::BorderAll);  // 未设色 → 默认深蓝灰（defaultBorderColor）
     sm->setColumnStyle(1, borderStyle);
 
     DA::DATableExporter exp(d, &meta);
@@ -295,10 +295,11 @@ void DATableExporterTest::testHtmlAlignmentAndBorder()
     QVERIFY(exp.toString(DA::DATableExporter::Format::Html, &out));
     QVERIFY2(out.contains(QStringLiteral("text-align:right")), "horizontal alignment lost in HTML");
     QVERIFY2(out.contains(QStringLiteral("vertical-align:bottom")), "vertical alignment lost in HTML");
-    QVERIFY2(out.contains(QStringLiteral("border-left:1px solid #727272")), "border-left lost in HTML");
-    QVERIFY2(out.contains(QStringLiteral("border-right:1px solid #727272")), "border-right lost in HTML");
-    QVERIFY2(out.contains(QStringLiteral("border-top:1px solid #727272")), "border-top lost in HTML");
-    QVERIFY2(out.contains(QStringLiteral("border-bottom:1px solid #727272")), "border-bottom lost in HTML");
+    const QString defBorderCss = QStringLiteral("1px solid ") + DA::DATableCellStyle::defaultBorderColor().name();
+    QVERIFY2(out.contains(QStringLiteral("border-left:") + defBorderCss), "border-left lost in HTML");
+    QVERIFY2(out.contains(QStringLiteral("border-right:") + defBorderCss), "border-right lost in HTML");
+    QVERIFY2(out.contains(QStringLiteral("border-top:") + defBorderCss), "border-top lost in HTML");
+    QVERIFY2(out.contains(QStringLiteral("border-bottom:") + defBorderCss), "border-bottom lost in HTML");
 }
 
 /**
