@@ -464,8 +464,10 @@ private Q_SLOTS:
     void testColumnViewCommandsUndoRedo();
     // 006c：真实列宽拖拽写 store、不入撤销栈（可拖动表头回归点）
     void testColumnWidthNotOnUndoStack();
-    // 表格 UX 修订：宽热区拖拽（列宽/统一行高/表头高/角格行头宽）与落库
+    // 表格 UX 修订：宽热区拖拽（列宽/单行行高/表头高/角格行头宽）与落库
     void testHeaderResizeHotZones();
+    // 行高改造（2026-11）：单行覆盖/整表设置/紧凑普通/最小 4px/XML/迁移/搬窗
+    void testRowHeightOverrides();
     // 表格 UX 修订：Ctrl+C/X/V 快捷键走视图→页面既有剪切/复制/粘贴链
     void testClipboardShortcuts();
     // 表格 UX 修订：排序后列头方向箭头与多列序号角标真实绘制（像素级）
@@ -3043,7 +3045,7 @@ void DATableDataTest::testHeaderResizeHotZones()
     QCOMPARE(hh->sectionSize(colF), colWidthBefore + 20);
     QCOMPARE(w.viewStateStore()->columnWidth(QStringLiteral("f"), 0), colWidthBefore + 20);
 
-    // —— 统一行高：第 2 行下边界内偏 5px 起手拖 +12（全部行同高 + 落库单值）——
+    // —— 单行行高：第 2 行下边界内偏 5px 起手拖 +12（只改该行 + 落逐行覆盖）——
     // x 取「右缘热区以左」的中点：行头窄时 width/2 会落进右缘行头宽热区
     const int rowHeightBefore = vh->sectionSize(2);
     const int rowSafeX        = qMax(2, (vh->width() - DA::DADataHeaderView::rowHeaderResizeHotZoneWidth()) / 2);
@@ -3055,8 +3057,9 @@ void DATableDataTest::testHeaderResizeHotZones()
     sendWindowMouse(vvp, QEvent::MouseButtonRelease, pRow + QPoint(0, 12), Qt::LeftButton);
     const int rowHeightAfter = vh->sectionSize(2);
     QCOMPARE(rowHeightAfter, rowHeightBefore + 12);
-    QCOMPARE(vh->sectionSize(5), rowHeightAfter);  // 统一行高：其它行同高
-    QCOMPARE(w.viewStateStore()->rowHeight(), rowHeightAfter);
+    QCOMPARE(vh->sectionSize(5), rowHeightBefore);  // 单行：其它行保持原高
+    QCOMPARE(w.viewStateStore()->rowHeightOverride(tv->toActualRow(2)), rowHeightAfter);
+    QCOMPARE(w.viewStateStore()->rowHeight(), -1);  // 默认行高未被拖动改动
 
     // —— 水平表头高：底边热区起手拖 +10 ——
     const int headHeightBefore = hh->height();
@@ -3079,6 +3082,101 @@ void DATableDataTest::testHeaderResizeHotZones()
     sendWindowMouse(corner, QEvent::MouseButtonRelease, pCorner + QPoint(15, 0), Qt::LeftButton);
     QCOMPARE(vh->width(), rowHeaderWidthBefore + 15);
     QCOMPARE(w.viewStateStore()->rowHeaderWidth(), vh->width());
+}
+
+// 行高改造（2026-11）：单行覆盖 / 整表设置清覆盖 / 紧凑普通 / 最小 4px /
+// XML 往返 / 插删行迁移 / 排序跟随 / 滑动窗搬窗后覆盖仍落在正确绝对行
+void DATableDataTest::testRowHeightOverrides()
+{
+    if (!mPandasOk) {
+        QSKIP("pandas not available");
+    }
+    pybind11::object obj = makeTestDataFrame();
+    QVERIFY(!obj.is_none());
+    DA::DAPyDataFrame df(obj);
+    DA::DAData d(df);
+    DA::DATableMetadataRegistry registry(nullptr);
+    DA::DADataOperateOfDataFrameWidget w(d, &registry);
+    w.resize(900, 400);
+    w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+    DA::DADataTableView* tv       = w.getDataTableView();
+    DA::DATableViewStateStore* vs = w.viewStateStore();
+    DA::DADataTableModel* model   = tv ? tv->getDataModel() : nullptr;
+    QVERIFY(tv && vs && model);
+    QHeaderView* vh = tv->verticalHeader();
+    QVERIFY(vh);
+
+    // 1) 单行拖动：只改该行，默认行高不变
+    const int h0       = vh->sectionSize(2);
+    const int rowSafeX = qMax(2, (vh->width() - DA::DADataHeaderView::rowHeaderResizeHotZoneWidth()) / 2);
+    const QPoint pRow(rowSafeX, vh->sectionViewportPosition(2) + h0 + 5);
+    QWidget* vvp = vh->viewport();
+    sendEnter(vvp, pRow);
+    sendWindowMouse(vvp, QEvent::MouseButtonPress, pRow, Qt::LeftButton);
+    sendWindowMouse(vvp, QEvent::MouseMove, pRow + QPoint(0, 12), Qt::NoButton);
+    sendWindowMouse(vvp, QEvent::MouseButtonRelease, pRow + QPoint(0, 12), Qt::LeftButton);
+    const int actual2 = tv->toActualRow(2);
+    QCOMPARE(vh->sectionSize(2), h0 + 12);
+    QCOMPARE(vh->sectionSize(3), h0);
+    QCOMPARE(vs->rowHeightOverride(actual2), h0 + 12);
+    QCOMPARE(vs->rowHeight(), -1);
+
+    // 2) 整表设置 30：写默认行高、清空逐行覆盖、全部段同步
+    w.setTableRowHeight(30);
+    QCOMPARE(vs->rowHeight(), 30);
+    QVERIFY(vs->rowHeightOverrides().isEmpty());
+    QCOMPARE(vh->sectionSize(2), 30);
+    QCOMPARE(vh->sectionSize(3), 30);
+
+    // 3) 最小行高 4px 可设（Qt 默认下限约 20px 已放宽）
+    w.setTableRowHeight(4);
+    QCOMPARE(vs->rowHeight(), 4);
+    QCOMPARE(vh->sectionSize(2), 4);
+
+    // 4) 紧凑 = 字体高度 + 2；普通恢复进入紧凑前的常规行高
+    w.setTableRowHeight(30);
+    w.setCompactRowHeight();
+    QCOMPARE(vh->defaultSectionSize(), tv->fontMetrics().height() + 2);
+    w.setNormalRowHeight();
+    QCOMPARE(vh->defaultSectionSize(), 30);
+
+    // 5) XML 往返：默认行高 + 逐行覆盖
+    w.setTableRowHeight(24);
+    vs->setRowHeightOverride(3, 40);
+    vs->setRowHeightOverride(7, 12);
+    QDomDocument doc;
+    QDomElement root = doc.createElement(QStringLiteral("table"));
+    doc.appendChild(root);
+    vs->toXml(doc, root);
+    DA::DATableViewStateStore other;
+    QVERIFY(other.fromXml(root.firstChildElement(QStringLiteral("view-state"))));
+    QCOMPARE(other.rowHeight(), 24);
+    QCOMPARE(other.rowHeightOverride(3), 40);
+    QCOMPARE(other.rowHeightOverride(7), 12);
+
+    // 6) 插删行迁移：插 2 → 3/7 变 4/8；删 2 → 还原
+    other.onRowsInserted({ 2 });
+    QCOMPARE(other.rowHeightOverride(4), 40);
+    QCOMPARE(other.rowHeightOverride(8), 12);
+    other.onRowsRemoved({ 2 });
+    QCOMPARE(other.rowHeightOverride(3), 40);
+    QCOMPARE(other.rowHeightOverride(7), 12);
+
+    // 7) 排序跟随：置换 {7,6,5,4,3,2,1,0} → 旧 3 到新 4、旧 7 到新 0
+    other.onRowsReordered(QVector< int >{ 7, 6, 5, 4, 3, 2, 1, 0 });
+    QCOMPARE(other.rowHeightOverride(4), 40);
+    QCOMPARE(other.rowHeightOverride(0), 12);
+
+    // 8) 滑动窗搬窗：覆盖按绝对行号重投影，滚出再滚回仍正确
+    model->setCacheWindowSize(8);
+    tv->showActualRow(8);
+    vs->setRowHeightOverride(8, 33);
+    QCOMPARE(vh->sectionSize(tv->toLogicalRow(8)), 33);
+    tv->showActualRow(0);
+    QCOMPARE(vh->sectionSize(6), 24);  // 段 6 回到无覆盖的默认行高
+    tv->showActualRow(8);
+    QCOMPARE(vh->sectionSize(tv->toLogicalRow(8)), 33);
 }
 
 // 表格 UX 修订：Ctrl+C/X/V 在表格视图内生效（视图发表意信号、页面既有槽执行，
