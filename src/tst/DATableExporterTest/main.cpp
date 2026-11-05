@@ -137,6 +137,8 @@ private slots:
     void testMarkdown();
     void testHtmlBasic();
     void testHtmlWithStyles();
+    // 底色/字色「无」：不填充、不写 CSS（回归：曾按黑色实心填充）
+    void testNoneFillAndColor();
     // A5：对齐/边框（A1/A2）→ text-align/vertical-align 与 border-* 声明
     void testHtmlAlignmentAndBorder();
     void testDisplayFormat();
@@ -270,6 +272,55 @@ void DATableExporterTest::testHtmlWithStyles()
     QVERIFY(out.contains(QStringLiteral("color:#ffffff")));
     // 条件格式命中：行 1 col2 = 0.25 > 0.1 → 绿底；行 0 col2 = 0 不命中
     QCOMPARE(out.count(QStringLiteral("background-color:#00c800")), 1);
+}
+
+/**
+ * 底色/字色「无」：值对象归一为 NoBrush / 无效字色，导出不写 background-color / color
+ *
+ * 回归背景：颜色菜单的「无」传入无效 QColor()，而 QBrush(QColor()) 在 Qt 里 style 仍是
+ * SolidPattern，历史行为是「黑色实心填充」（浅色主题下整片变黑、文字看不见）。
+ */
+void DATableExporterTest::testNoneFillAndColor()
+{
+    // 值对象归一化：无效颜色 → NoBrush，仍算「已设置」（用于覆盖列级底色），但不填充
+    DA::DATableCellStyle noneStyle;
+    noneStyle.setBackground(QBrush(QColor()));
+    QVERIFY(noneStyle.backgroundValid());
+    QVERIFY(noneStyle.background().style() == Qt::NoBrush);
+    QVERIFY(!noneStyle.hasFill());
+
+    // 显式 QBrush() 同样是「已设置但不填充」
+    DA::DATableCellStyle explicitNone;
+    explicitNone.setBackground(QBrush());
+    QVERIFY(explicitNone.backgroundValid());
+    QVERIFY(!explicitNone.hasFill());
+
+    // 有效颜色仍然参与填充
+    DA::DATableCellStyle solidStyle;
+    solidStyle.setBackground(QBrush(QColor(255, 255, 0)));
+    QVERIFY(solidStyle.hasFill());
+
+    // 导出：列级黄底 + 单元格「无」覆盖 → 该格不写 background-color/color
+    auto t = std::make_shared< TestMemoryTable >(1, 2);
+    DA::DAData d(t);
+    DA::DATableMetadata meta;
+    DA::DATableStyleManager* sm = meta.styleManager();
+    DA::DATableCellStyle colStyle;
+    colStyle.setBackground(QBrush(QColor(255, 255, 0)));
+    sm->setColumnStyle(0, colStyle);
+    DA::DATableCellStyle noneCell;
+    noneCell.setBackground(QBrush(QColor()));  // 「无」底色
+    noneCell.setForeground(QColor());          // 「无」字色
+    sm->setCellStyle(0, 0, noneCell);
+
+    DA::DATableExporter exp(d, &meta);
+    QString out;
+    QVERIFY(exp.toString(DA::DATableExporter::Format::Html, &out));
+    // 列级黄底被「无」覆盖；也不再出现历史行为的黑色实心底色
+    // （文档骨架自带的表头 background-color 不计入这两条断言）
+    QCOMPARE(out.count(QStringLiteral("background-color:#ffff00")), 0);
+    QCOMPARE(out.count(QStringLiteral("background-color:#000000")), 0);
+    QCOMPARE(out.count(QStringLiteral("color:#000000")), 0);     // 「无」字色不写黑色
 }
 
 /**
