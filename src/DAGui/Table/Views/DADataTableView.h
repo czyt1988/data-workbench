@@ -87,6 +87,11 @@ Q_SIGNALS:
     void noteEditRequested();
     void noteDeleteRequested();
     void noteClearAllRequested();
+    // 单元格大小入口（A3）：表体右键「单元格大小」子菜单与 Ribbon「视图」面板同入口；
+    // 三个动作均直接改视图状态（不进撤销栈），页面弹输入框/内容自适应
+    void columnWidthAutoFitRequested();
+    void columnWidthPromptRequested();
+    void rowHeightPromptRequested();
 
 protected:
     // Ctrl+C/Ctrl+X/Ctrl+V/Ctrl+F/Ctrl+H/Esc 在本类处理；未处理的键一律转发基类（恢复整表语义键

@@ -27,7 +27,70 @@ constexpr int c_highlightAlpha = 160;
 constexpr int c_dataBarPadding = 2;
 // 批注角标（右上角小三角）边长上限（px）；小格按比例收缩，最小 3px 不画
 constexpr int c_noteMarkerSize = 8;
+
+// 边框默认色：DESIGN.md §2 官方色板「普通边框 / 分隔线」中灰（与表格网格线同色）
+const QColor c_defaultBorderColor(0x72, 0x72, 0x72);
+
+// 邻居格是否已经画了与本格相邻的那条边（相邻两格共用一条边时只由一侧绘制，避免叠成 2px）
+bool neighborHasRightEdge(DATableStyleManager* mgr, int actualRow, int col)
+{
+    if (!mgr || col <= 0) {
+        return false;
+    }
+    const DATableCellStyle s = mgr->resolveCellStyle(actualRow, col - 1);
+    return s.borderValid() && (s.borderSides() & DATableCellStyle::BorderRight) != 0;
 }
+
+bool neighborHasBottomEdge(DATableStyleManager* mgr, int actualRow, int col)
+{
+    if (!mgr || actualRow <= 0) {
+        return false;
+    }
+    const DATableCellStyle s = mgr->resolveCellStyle(actualRow - 1, col);
+    return s.borderValid() && (s.borderSides() & DATableCellStyle::BorderBottom) != 0;
+}
+
+/**
+ * @brief 画单元格边框（A2）
+ *
+ * 绘制约定（与文档一致，勿改）：本格无条件画「右边 + 下边」；「左边 + 上边」只在
+ * 邻居没有画对应边时补画。相邻两格都设了同一条边时，由左侧/上侧那一格负责，
+ * 因此任意相邻格之间始终只有一条 1px 线，不会叠成 2px。
+ * @param painter 画笔
+ * @param rect 单元格矩形
+ * @param actualRow 数据源绝对行（查邻居样式用）
+ * @param col 列号
+ * @param style 该格合并后的静态样式（只取边框字段）
+ * @param mgr 样式管理器（查邻居边，非拥有，可空）
+ */
+void paintCellBorder(QPainter* painter, const QRect& rect, int actualRow, int col,
+                     const DATableCellStyle& style, DATableStyleManager* mgr)
+{
+    const quint8 sides = style.borderSides();
+    const QColor color = style.borderColor().isValid() ? style.borderColor() : c_defaultBorderColor;
+    painter->save();
+    // 1px 直线走整数像素：关掉抗锯齿，避免半像素扩散糊成两像素
+    painter->setRenderHint(QPainter::Antialiasing, false);
+    painter->setPen(QPen(color, style.borderWidth()));
+    const int l = rect.left();
+    const int r = rect.right();
+    const int t = rect.top();
+    const int b = rect.bottom();
+    if (sides & DATableCellStyle::BorderRight) {
+        painter->drawLine(r, t, r, b);
+    }
+    if (sides & DATableCellStyle::BorderBottom) {
+        painter->drawLine(l, b, r, b);
+    }
+    if ((sides & DATableCellStyle::BorderLeft) && !neighborHasRightEdge(mgr, actualRow, col)) {
+        painter->drawLine(l, t, l, b);
+    }
+    if ((sides & DATableCellStyle::BorderTop) && !neighborHasBottomEdge(mgr, actualRow, col)) {
+        painter->drawLine(l, t, r, t);
+    }
+    painter->restore();
+}
+}  // namespace
 
 /**
  * @brief 构造函数
@@ -109,12 +172,13 @@ QWidget* DATableStyleItemDelegate::createEditor(QWidget* parent, const QStyleOpt
 /**
  * @brief 绘制单元格（五层装饰管线，层序钉死，勿调换）
  *
- * ① 静态样式：DATableStyleManager 三层 merge（列→行→单元格）后的 bg/fg/font 叠加；
+ * ① 静态样式：DATableStyleManager 三层 merge（列→行→单元格）后的 bg/fg/font 叠加，
+ *    对齐在 ⑤ 之前写入样式选项；
  * ② 持久装饰（条件格式）：【插入点，003 在此求值规则并叠加背景/前景，勿另开虚钩子】；
  * ③ 瞬态装饰：DATableHighlightOverlay 查找命中/校验违规，半透明覆盖背景；
  * ④ 数据条：【插入点，003 在背景之上、文字之下按列 min/max 归一化画条】；
  * ⑤ 绘制文字：沿用基类 QStyle::drawControl(CE_ItemViewItem) 路径；
- *    批注角标【插入点，005 在文字之后画右上角小三角】。
+ *    之后依次：单元格边框（A2）、批注角标（005 在文字之后画右上角小三角）。
  *
  * 快速路径：样式管理器为空且高亮层无内容 → 直接走父类（10 万行滚动性能保障）。
  * 样式与高亮查询一律用 actualRow（getCacheWindowStartRow 偏移后的数据源绝对行）。
@@ -147,8 +211,9 @@ void DATableStyleItemDelegate::paint(QPainter* painter, const QStyleOptionViewIt
     initStyleOption(&opt, index);  // 先让父类填充文本/默认字体
 
     // ① 静态样式（原三层 merge 叠加逻辑，行为与改造前一致）
+    DATableCellStyle style;  // 提出作用域：⑤ 之后画边框还要用
     if (mStyleManager) {
-        DATableCellStyle style = mStyleManager->resolveCellStyle(actualRow, actualCol);
+        style = mStyleManager->resolveCellStyle(actualRow, actualCol);
         if (!style.isNull()) {
             if (style.backgroundValid()) {
                 // 直接用 painter 填充背景色，不依赖 backgroundBrush（Qt style 在某些情况下
@@ -161,6 +226,11 @@ void DATableStyleItemDelegate::paint(QPainter* painter, const QStyleOptionViewIt
             if (style.fontValid()) {
                 opt.font = style.font();
                 opt.fontMetrics = fontMetricsFor(style.font());
+            }
+            if (style.alignmentValid()) {
+                // 对齐必须在 ⑤ 之前写进样式选项（⑤ 的文字绘制读 displayAlignment）；
+                // 条件格式只改底色/字色/字体，不改对齐（见风险清单）
+                opt.displayAlignment = style.alignment();
             }
         }
     }
@@ -235,6 +305,12 @@ void DATableStyleItemDelegate::paint(QPainter* painter, const QStyleOptionViewIt
 
     // ⑤ 绘制文字（基类 CE_ItemViewItem 路径，数据条在文字之下不遮字）
     QStyledItemDelegate::paint(painter, opt, index);
+
+    // ⑤之后：单元格边框（A2）——文字之上、批注角标之下；
+    // 相邻边去重规则见 paintCellBorder 注释（右侧/下侧本格画，左侧/上侧邻居没画才补）
+    if (style.borderValid() && style.borderSides() != DATableCellStyle::BorderNone) {
+        paintCellBorder(painter, opt.rect, actualRow, actualCol, style, mStyleManager);
+    }
 
     // ⑤之后：批注角标（005 T1.26）——右上角小三角，金黄 #E6C27C（官方色板"标记"语义，
     // DESIGN.md §2），与数据条/命中色互不影响（画在最上层，只占角落不遮文字主体）

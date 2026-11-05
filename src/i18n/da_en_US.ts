@@ -2883,6 +2883,16 @@
     </message>
     <message>
         <location line="+1"/>
+        <source>Borders</source>
+        <translation>Borders</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Apply or clear cell borders of the selected area</source>
+        <translation>Apply or clear cell borders of the selected area</translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>New Computed Column...</source>
         <translation>New Computed Column...</translation>
     </message>
@@ -3163,6 +3173,16 @@
     <message>
         <source>Set the selected cells to empty (nan)</source>
         <translation>Set the selected cells to empty (nan)</translation>
+    </message>
+    <message>
+        <location filename="../APP/DAAppActions.cpp"/>
+        <source>Cell Size</source>
+        <translation>Cell Size</translation>
+    </message>
+    <message>
+        <location filename="../APP/DAAppActions.cpp"/>
+        <source>Adjust column width or row height (auto-fit / set value)</source>
+        <translation>Adjust column width or row height (auto-fit / set value)</translation>
     </message>
 </context>
 <context>
@@ -3651,6 +3671,41 @@
         <translation>No active table</translation>
     </message>
     <message>
+        <location line="+1"/>
+        <source>All Borders</source>
+        <translation>All Borders</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Outside Borders</source>
+        <translation>Outside Borders</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>No Border</source>
+        <translation>No Border</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Top Border</source>
+        <translation>Top Border</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Bottom Border</source>
+        <translation>Bottom Border</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Left Border</source>
+        <translation>Left Border</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Right Border</source>
+        <translation>Right Border</translation>
+    </message>
+    <message>
         <location line="+1940"/>
         <source>Cannot rename a series, please select a dataset</source>
         <translation>Cannot rename a series, please select a dataset</translation>
@@ -3787,6 +3842,21 @@
         <location line="+2357"/>
         <source>Please select a column first</source>
         <translation>Please select a column first</translation>
+    </message>
+    <message>
+        <location filename="../APP/Controller/DAAppTableActionHandler.cpp"/>
+        <source>AutoFit Column Width</source>
+        <translation>AutoFit Column Width</translation>
+    </message>
+    <message>
+        <location filename="../APP/Controller/DAAppTableActionHandler.cpp"/>
+        <source>Set Column Width...</source>
+        <translation>Set Column Width...</translation>
+    </message>
+    <message>
+        <location filename="../APP/Controller/DAAppTableActionHandler.cpp"/>
+        <source>Set Row Height...</source>
+        <translation>Set Row Height...</translation>
     </message>
 </context>
 <context>
@@ -4458,6 +4528,16 @@
         <location line="+347"/>
         <source>Font</source>
         <translation>Font</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Alignment</source>
+        <translation>Alignment</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Borders</source>
+        <translation>Borders</translation>
     </message>
     <message>
         <location line="-346"/>
@@ -10256,6 +10336,26 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <source>There are %1 columns with this name; used the first one</source>
         <translation>There are %1 columns with this name; used the first one</translation>
     </message>
+    <message>
+        <location filename="../DAGui/Table/DADataOperateOfDataFrameWidget.cpp"/>
+        <source>Set Column Width</source>
+        <translation>Set Column Width</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/Table/DADataOperateOfDataFrameWidget.cpp"/>
+        <source>Width (pixels):</source>
+        <translation>Width (pixels):</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/Table/DADataOperateOfDataFrameWidget.cpp"/>
+        <source>Set Row Height</source>
+        <translation>Set Row Height</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/Table/DADataOperateOfDataFrameWidget.cpp"/>
+        <source>Height (pixels):</source>
+        <translation>Height (pixels):</translation>
+    </message>
 </context>
 <context>
     <name>DA::DADataOperateWidget</name>
@@ -10921,6 +11021,26 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <location line="+1"/>
         <source>Clear All Notes</source>
         <translation>Clear All Notes</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/Table/Views/DADataTableView.cpp"/>
+        <source>Cell Size</source>
+        <translation>Cell Size</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/Table/Views/DADataTableView.cpp"/>
+        <source>AutoFit Column Width</source>
+        <translation>AutoFit Column Width</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/Table/Views/DADataTableView.cpp"/>
+        <source>Set Column Width...</source>
+        <translation>Set Column Width...</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/Table/Views/DADataTableView.cpp"/>
+        <source>Set Row Height...</source>
+        <translation>Set Row Height...</translation>
     </message>
 </context>
 <context>
@@ -21642,4 +21762,38 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation>Z</translation>
         </message>
 </context>
+<context>
+    <name>DA::DATextAlignmentEditWidget</name>
+    <message>
+        <location filename="../3rdparty/DAWidgets/src/DATextAlignmentEditWidget.cpp"/>
+        <source>Align Left</source>
+        <translation>Align Left</translation>
+    </message>
+    <message>
+        <location filename="../3rdparty/DAWidgets/src/DATextAlignmentEditWidget.cpp"/>
+        <source>Align Center</source>
+        <translation>Align Center</translation>
+    </message>
+    <message>
+        <location filename="../3rdparty/DAWidgets/src/DATextAlignmentEditWidget.cpp"/>
+        <source>Align Right</source>
+        <translation>Align Right</translation>
+    </message>
+    <message>
+        <location filename="../3rdparty/DAWidgets/src/DATextAlignmentEditWidget.cpp"/>
+        <source>Align Top</source>
+        <translation>Align Top</translation>
+    </message>
+    <message>
+        <location filename="../3rdparty/DAWidgets/src/DATextAlignmentEditWidget.cpp"/>
+        <source>Align Middle</source>
+        <translation>Align Middle</translation>
+    </message>
+    <message>
+        <location filename="../3rdparty/DAWidgets/src/DATextAlignmentEditWidget.cpp"/>
+        <source>Align Bottom</source>
+        <translation>Align Bottom</translation>
+    </message>
+</context>
+
 </TS>

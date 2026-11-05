@@ -17,6 +17,7 @@
 // Qt
 #include <QSignalBlocker>
 #include <QToolButton>
+#include <QMenu>
 // SARibbon
 #include "SARibbonBar.h"
 #include "SARibbonCategory.h"
@@ -29,6 +30,7 @@
 #include "DAPyDTypeComboBox.h"
 #include "Table/Views/DATableDisplayFormatComboBox.h"
 #include "DAFontEditPannelWidget.h"
+#include "DATextAlignmentEditWidget.h"
 // Py
 #include "numpy/DAPyDType.h"
 // api
@@ -140,6 +142,12 @@ void DAAppRibbonArea::buildContextCategoryTableOperate(SARibbonContextCategory* 
     mPannelDataframeOperateView->addLargeAction(mActions->actionHideColumn);
     mPannelDataframeOperateView->addLargeAction(mActions->actionShowAllColumns);
     mPannelDataframeOperateView->addLargeAction(mActions->actionManageColumns);
+    // 单元格大小（A3）：大按钮主体 = 列宽自适应，下拉含设置列宽…/设置行高…
+    // （菜单在 DAAppTableActionHandler 里按 aboutToShow 重填；此处先建空菜单，
+    //  保证 setMenu 早于 addLargeAction 的下拉箭头出现顺序）
+    QMenu* cellSizeMenu = new QMenu(mPannelDataframeOperateView);
+    mActions->actionCellSize->setMenu(cellSizeMenu);
+    mPannelDataframeOperateView->addLargeAction(mActions->actionCellSize, QToolButton::MenuButtonPopup);
     // 定位：跳转到指定行、索引标签或列；快捷键在 DADataTableView 中处理，action 本身不设快捷键
     mPannelDataframeOperateView->addMediumAction(mActions->actionGotoCell);
 }
@@ -199,7 +207,7 @@ void DAAppRibbonArea::buildContextCategoryTableDataOperate(SARibbonContextCatego
  * @brief 构建「表格样式」页
  * objectname=da-ribbon-category-dataframe.style
  *
- * 面板顺序：字体、底色、条件格式、清除。
+ * 面板顺序：字体、对齐、边框、底色、条件格式、清除。
  * @param contextTable 表格上下文（由 buildContextCategoryTable 创建）
  */
 void DAAppRibbonArea::buildContextCategoryTableStyle(SARibbonContextCategory* contextTable)
@@ -207,13 +215,26 @@ void DAAppRibbonArea::buildContextCategoryTableStyle(SARibbonContextCategory* co
     mCategoryDataframeStyle = contextTable->addCategoryPage(tr("Table Style"));  // cn:表格样式
     mCategoryDataframeStyle->setObjectName(QString::fromUtf8(UiNames::Ribbon::DataFrameStyleCategory));
 
-    // 面板顺序对齐 Excel「开始→字体」的习惯：字体在前、底色其次，条件格式在清除之前。
+    // 面板顺序对齐 Excel「开始→字体」的习惯：字体在前、对齐/边框其次，底色、条件格式在清除之前。
 
     // 字体面板：设置字体、字号、颜色等
     mPannelDataframeStyleFont = mCategoryDataframeStyle->addPanel(tr("Font"));  // cn:字体
     mPannelDataframeStyleFont->setObjectName(QString::fromUtf8(UiNames::Ribbon::DataFrameStyleFontPanel));
     mWidgetTableFont = new DAFontEditPannelWidget(mPannelDataframeStyleFont);
     mPannelDataframeStyleFont->addWidget(mWidgetTableFont, SARibbonPanelItem::Large);
+
+    // 对齐面板（A1）：水平（左/居中/右）+ 垂直（顶端/居中/底端）两组独立互斥按钮，
+    // 点击即对选中区应用（单条命令，一次 Ctrl+Z 全撤）
+    mPannelDataframeStyleAlign = mCategoryDataframeStyle->addPanel(tr("Alignment"));  // cn:对齐
+    mPannelDataframeStyleAlign->setObjectName(QString::fromUtf8(UiNames::Ribbon::DataFrameStyleAlignPanel));
+    mWidgetTableAlign = new DATextAlignmentEditWidget(mPannelDataframeStyleAlign);
+    mPannelDataframeStyleAlign->addWidget(mWidgetTableAlign, SARibbonPanelItem::Large);
+
+    // 边框面板（A2）：大按钮下拉预设（全框线/外框线/无框线/上/下/左/右框线），
+    // 菜单在 DAAppTableActionHandler 构建（aboutToShow 重填，随语言刷新）
+    mPannelDataframeStyleBorder = mCategoryDataframeStyle->addPanel(tr("Borders"));  // cn:边框
+    mPannelDataframeStyleBorder->setObjectName(QString::fromUtf8(UiNames::Ribbon::DataFrameStyleBorderPanel));
+    mPannelDataframeStyleBorder->addLargeAction(mActions->actionTableBorder, QToolButton::InstantPopup);
 
     // 底色面板：设置选中单元格或区域的填充颜色
     mPannelDataframeStyleFill = mCategoryDataframeStyle->addPanel(tr("Fill"));  // cn:底色

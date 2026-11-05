@@ -81,6 +81,8 @@ constexpr char DataFrameDataOperateValidationPanel[] =
     "da-pannel-dataframe.data-operate.validation";  ///< 数据操作-数据校验pannel（校验规则/执行校验）
 constexpr char DataFrameStyleFillPanel[]     = "da-pannel-dataframe.style.fill";      ///< 填充样式pannel
 constexpr char DataFrameStyleFontPanel[]     = "da-pannel-dataframe.style.font";      ///< 字体样式pannel
+constexpr char DataFrameStyleAlignPanel[]    = "da-pannel-dataframe.style.align";     ///< 对齐样式pannel（A1）
+constexpr char DataFrameStyleBorderPanel[]   = "da-pannel-dataframe.style.border";    ///< 边框样式pannel（A2）
 constexpr char DataFrameStyleClearPanel[]    = "da-pannel-dataframe.style.clear";     ///< 样式清除pannel
 constexpr char DataFrameStyleConditionalPanel[] = "da-pannel-dataframe.style.conditional";  ///< 条件格式pannel（003 T1.5）
 // ---- 工作流上下文标签下的 panel ----
@@ -159,6 +161,8 @@ constexpr char TableFormatCells[]   = "actionTableFormatCells";
 constexpr char Find[]               = "actionFind";     ///< 表内查找（002 T1.4，快捷键在 DADataTableView，action 不设 shortcut 红线5）
 constexpr char Replace[]            = "actionReplace";  ///< 表内替换（002 T1.4）
 constexpr char ConditionalFormat[]  = "actionConditionalFormat";  ///< 条件格式（003 T1.5，Ribbon Table Style 面板 + 表体右键同入口，R16）
+constexpr char TableBorder[]        = "actionTableBorder";        ///< 单元格边框（A2，Ribbon Table Style 面板，下拉预设）
+constexpr char CellSize[]           = "actionCellSize";           ///< 单元格大小（A3，Ribbon View 面板，下拉：列宽自适应/设置列宽/设置行高）
 // ---- 排序（Ribbon「Sort」面板 + 列头右键排序组同入口；面板大按钮主体 = 自定义排序对话框）----
 constexpr char Sort[]                       = "actionSort";                       ///< 排序（下拉根，主体 = 自定义排序对话框）
 constexpr char SortAscending[]              = "actionSortAscending";              ///< 升序排序（按当前列）

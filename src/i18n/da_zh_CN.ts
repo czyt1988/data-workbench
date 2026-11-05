@@ -2909,6 +2909,16 @@
     </message>
     <message>
         <location line="+1"/>
+        <source>Borders</source>
+        <translation>边框</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Apply or clear cell borders of the selected area</source>
+        <translation>对选中区应用或清除单元格边框</translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>New Computed Column...</source>
         <translation>新建计算列...</translation>
     </message>
@@ -3229,6 +3239,16 @@
     <message>
         <source>Set the selected cells to empty (nan)</source>
         <translation>把选中单元格置为空值</translation>
+    </message>
+    <message>
+        <location filename="../APP/DAAppActions.cpp"/>
+        <source>Cell Size</source>
+        <translation>单元格大小</translation>
+    </message>
+    <message>
+        <location filename="../APP/DAAppActions.cpp"/>
+        <source>Adjust column width or row height (auto-fit / set value)</source>
+        <translation>调整列宽或行高（自适应/设置数值）</translation>
     </message>
 </context>
 <context>
@@ -3717,6 +3737,41 @@
         <translation>无活动表格</translation>
     </message>
     <message>
+        <location line="+1"/>
+        <source>All Borders</source>
+        <translation>全框线</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Outside Borders</source>
+        <translation>外框线</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>No Border</source>
+        <translation>无框线</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Top Border</source>
+        <translation>上框线</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Bottom Border</source>
+        <translation>下框线</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Left Border</source>
+        <translation>左框线</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Right Border</source>
+        <translation>右框线</translation>
+    </message>
+    <message>
         <location line="+1940"/>
         <source>Cannot rename a series, please select a dataset</source>
         <translation>无法重命名series，请选中数据集</translation>
@@ -3858,6 +3913,21 @@
         <location line="+1"/>
         <source>Please select a column to sort first</source>
         <translation>请先选择要排序的列</translation>
+    </message>
+    <message>
+        <location filename="../APP/Controller/DAAppTableActionHandler.cpp"/>
+        <source>AutoFit Column Width</source>
+        <translation>列宽自适应</translation>
+    </message>
+    <message>
+        <location filename="../APP/Controller/DAAppTableActionHandler.cpp"/>
+        <source>Set Column Width...</source>
+        <translation>设置列宽...</translation>
+    </message>
+    <message>
+        <location filename="../APP/Controller/DAAppTableActionHandler.cpp"/>
+        <source>Set Row Height...</source>
+        <translation>设置行高...</translation>
     </message>
 </context>
 <context>
@@ -4529,6 +4599,16 @@
         <location line="+347"/>
         <source>Font</source>
         <translation>字体</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Alignment</source>
+        <translation>对齐</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Borders</source>
+        <translation>边框</translation>
     </message>
     <message>
         <location line="-346"/>
@@ -10342,6 +10422,26 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <source>There are %1 columns with this name; used the first one</source>
         <translation>有 %1 个同名列，已取第一个</translation>
     </message>
+    <message>
+        <location filename="../DAGui/Table/DADataOperateOfDataFrameWidget.cpp"/>
+        <source>Set Column Width</source>
+        <translation>设置列宽</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/Table/DADataOperateOfDataFrameWidget.cpp"/>
+        <source>Width (pixels):</source>
+        <translation>列宽（像素）：</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/Table/DADataOperateOfDataFrameWidget.cpp"/>
+        <source>Set Row Height</source>
+        <translation>设置行高</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/Table/DADataOperateOfDataFrameWidget.cpp"/>
+        <source>Height (pixels):</source>
+        <translation>行高（像素）：</translation>
+    </message>
 </context>
 <context>
     <name>DA::DADataOperateWidget</name>
@@ -11007,6 +11107,26 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <location line="+1"/>
         <source>Clear All Notes</source>
         <translation>清除本表批注</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/Table/Views/DADataTableView.cpp"/>
+        <source>Cell Size</source>
+        <translation>单元格大小</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/Table/Views/DADataTableView.cpp"/>
+        <source>AutoFit Column Width</source>
+        <translation>列宽自适应</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/Table/Views/DADataTableView.cpp"/>
+        <source>Set Column Width...</source>
+        <translation>设置列宽...</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/Table/Views/DADataTableView.cpp"/>
+        <source>Set Row Height...</source>
+        <translation>设置行高...</translation>
     </message>
 </context>
 <context>
@@ -21820,4 +21940,38 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>Z</translation>
         </message>
 </context>
+<context>
+    <name>DA::DATextAlignmentEditWidget</name>
+    <message>
+        <location filename="../3rdparty/DAWidgets/src/DATextAlignmentEditWidget.cpp"/>
+        <source>Align Left</source>
+        <translation>左对齐</translation>
+    </message>
+    <message>
+        <location filename="../3rdparty/DAWidgets/src/DATextAlignmentEditWidget.cpp"/>
+        <source>Align Center</source>
+        <translation>居中</translation>
+    </message>
+    <message>
+        <location filename="../3rdparty/DAWidgets/src/DATextAlignmentEditWidget.cpp"/>
+        <source>Align Right</source>
+        <translation>右对齐</translation>
+    </message>
+    <message>
+        <location filename="../3rdparty/DAWidgets/src/DATextAlignmentEditWidget.cpp"/>
+        <source>Align Top</source>
+        <translation>顶端对齐</translation>
+    </message>
+    <message>
+        <location filename="../3rdparty/DAWidgets/src/DATextAlignmentEditWidget.cpp"/>
+        <source>Align Middle</source>
+        <translation>垂直居中</translation>
+    </message>
+    <message>
+        <location filename="../3rdparty/DAWidgets/src/DATextAlignmentEditWidget.cpp"/>
+        <source>Align Bottom</source>
+        <translation>底端对齐</translation>
+    </message>
+</context>
+
 </TS>

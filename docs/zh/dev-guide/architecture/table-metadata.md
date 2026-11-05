@@ -104,6 +104,15 @@ classDiagram
 </table-metadata>
 ```
 
+样式内层（`column-style` / `row-style` / `cell` 的子元素）除 `background` / `foreground` / `font` 外，A1/A2 起新增两个可缺标签：
+
+```xml
+<alignment horizontal="right" vertical="bottom"/>   <!-- 缺属性 = 该轴未设置 -->
+<border sides="lrtb" color="#ff727272" width="1"/>  <!-- sides 为 l/r/t/b 子集；空串 = 显式无框线 -->
+```
+
+缺失即「未设置」，与旧工程完全兼容，不升 schema 版本（`fromXml` 忽略未知标签，旧版本读新文件时忽略新标签）。
+
 匹配主键是 `data-id`（跨会话稳定，持久化于 data-manager.xml），`data-name` 作人类可读与旧工程回退。加载由 `DAAppProject::loadedTableMetadata`（新）/`loadedTableStyles`（旧回退）完成，两者共用 `applyLoadedTableElement` 回填路径。
 
 ## 列引用约定（R20）
@@ -134,13 +143,15 @@ classDiagram
 
 | 层 | 内容 | 状态 |
 |----|------|------|
-| ① 静态样式 | `DATableStyleManager` 三层 merge（列→行→单元格）后叠加 bg/fg/font | 已实现 |
-| ② 持久装饰 | 条件格式规则求值 → 背景/前景（`DATableConditionalFormatStore::evaluate` 静态纯函数） | 已实现（003） |
+| ① 静态样式 | `DATableStyleManager` 三层 merge（列→行→单元格）后叠加 bg/fg/font，对齐写入 `opt.displayAlignment` | 已实现（对齐 A1） |
+| ② 持久装饰 | 条件格式规则求值 → 背景/前景（`DATableConditionalFormatStore::evaluate` 静态纯函数）；不改对齐/边框 | 已实现（003） |
 | ③ 瞬态装饰 | `DATableHighlightOverlay` 查找命中/校验违规，语义色半透明覆盖背景 | 已实现 |
 | ④ 数据条 | 背景之上、文字之下按列 min/max 归一化画条（`fillRect`，2px 内边距） | 已实现（003） |
-| ⑤ 文字 | 基类 `QStyle::drawControl(CE_ItemViewItem)`；批注角标在其后 | 已实现（角标 005） |
+| ⑤ 文字 | 基类 `QStyle::drawControl(CE_ItemViewItem)`；之后依次：单元格边框（A2）、批注角标（005） | 已实现（角标 005，边框 A2） |
 
 瞬态高亮层 `DATableHighlightOverlay`：两来源（Find/Validation）× 五级别，两级索引 + 打包键 `(row<<32)|col`，O(1) 查询；`levelAt` 固定优先级 `CurrentHit > Hit > ViolationError > ViolationWarning`，**同格命中+违规时以查找为准**（查找是用户当前操作焦点，单测钉住此语义）。不序列化、不进撤销栈。样式与高亮查询一律用 actualRow（滑动窗偏移后的数据源绝对行）。无装饰快速路径保留：样式、条件格式、高亮都空时直接走父类 paint（10 万行滚动性能保障）。
+
+边框去重约定（A2，`paintCellBorder`）：本格无条件画右边/下边，左边/上边只在邻居没有画对应边时补画——相邻两格共用一条边时始终只有 1px，不会叠成 2px；「外框线」预设按选区形态（单元格包围矩形/整列/整行）在 `DATableStyleController::applyBorderOutlineToSelection` 里生成逐格边位。
 
 ## 条件格式子存储（DATableConditionalFormatStore，003 T1.5）
 
