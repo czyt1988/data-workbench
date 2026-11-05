@@ -3174,6 +3174,16 @@
         <source>Set the selected cells to empty (nan)</source>
         <translation>Set the selected cells to empty (nan)</translation>
     </message>
+    <message>
+        <location filename="../APP/DAAppActions.cpp"/>
+        <source>Cell Size</source>
+        <translation>Cell Size</translation>
+    </message>
+    <message>
+        <location filename="../APP/DAAppActions.cpp"/>
+        <source>Adjust column width or row height (auto-fit / set value)</source>
+        <translation>Adjust column width or row height (auto-fit / set value)</translation>
+    </message>
 </context>
 <context>
     <name>DA::DAAppApplicationWidget</name>
@@ -3832,6 +3842,21 @@
         <location line="+2357"/>
         <source>Please select a column first</source>
         <translation>Please select a column first</translation>
+    </message>
+    <message>
+        <location filename="../APP/Controller/DAAppTableActionHandler.cpp"/>
+        <source>AutoFit Column Width</source>
+        <translation>AutoFit Column Width</translation>
+    </message>
+    <message>
+        <location filename="../APP/Controller/DAAppTableActionHandler.cpp"/>
+        <source>Set Column Width...</source>
+        <translation>Set Column Width...</translation>
+    </message>
+    <message>
+        <location filename="../APP/Controller/DAAppTableActionHandler.cpp"/>
+        <source>Set Row Height...</source>
+        <translation>Set Row Height...</translation>
     </message>
 </context>
 <context>
@@ -10293,6 +10318,26 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <source>There are %1 columns with this name; used the first one</source>
         <translation>There are %1 columns with this name; used the first one</translation>
     </message>
+    <message>
+        <location filename="../DAGui/Table/DADataOperateOfDataFrameWidget.cpp"/>
+        <source>Set Column Width</source>
+        <translation>Set Column Width</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/Table/DADataOperateOfDataFrameWidget.cpp"/>
+        <source>Width (pixels):</source>
+        <translation>Width (pixels):</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/Table/DADataOperateOfDataFrameWidget.cpp"/>
+        <source>Set Row Height</source>
+        <translation>Set Row Height</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/Table/DADataOperateOfDataFrameWidget.cpp"/>
+        <source>Height (pixels):</source>
+        <translation>Height (pixels):</translation>
+    </message>
 </context>
 <context>
     <name>DA::DADataOperateWidget</name>
@@ -10958,6 +11003,26 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <location line="+1"/>
         <source>Clear All Notes</source>
         <translation>Clear All Notes</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/Table/Views/DADataTableView.cpp"/>
+        <source>Cell Size</source>
+        <translation>Cell Size</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/Table/Views/DADataTableView.cpp"/>
+        <source>AutoFit Column Width</source>
+        <translation>AutoFit Column Width</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/Table/Views/DADataTableView.cpp"/>
+        <source>Set Column Width...</source>
+        <translation>Set Column Width...</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/Table/Views/DADataTableView.cpp"/>
+        <source>Set Row Height...</source>
+        <translation>Set Row Height...</translation>
     </message>
 </context>
 <context>

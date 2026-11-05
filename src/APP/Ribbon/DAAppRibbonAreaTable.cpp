@@ -17,6 +17,7 @@
 // Qt
 #include <QSignalBlocker>
 #include <QToolButton>
+#include <QMenu>
 // SARibbon
 #include "SARibbonBar.h"
 #include "SARibbonCategory.h"
@@ -141,6 +142,12 @@ void DAAppRibbonArea::buildContextCategoryTableOperate(SARibbonContextCategory* 
     mPannelDataframeOperateView->addLargeAction(mActions->actionHideColumn);
     mPannelDataframeOperateView->addLargeAction(mActions->actionShowAllColumns);
     mPannelDataframeOperateView->addLargeAction(mActions->actionManageColumns);
+    // 单元格大小（A3）：大按钮主体 = 列宽自适应，下拉含设置列宽…/设置行高…
+    // （菜单在 DAAppTableActionHandler 里按 aboutToShow 重填；此处先建空菜单，
+    //  保证 setMenu 早于 addLargeAction 的下拉箭头出现顺序）
+    QMenu* cellSizeMenu = new QMenu(mPannelDataframeOperateView);
+    mActions->actionCellSize->setMenu(cellSizeMenu);
+    mPannelDataframeOperateView->addLargeAction(mActions->actionCellSize, QToolButton::MenuButtonPopup);
     // 定位：跳转到指定行、索引标签或列；快捷键在 DADataTableView 中处理，action 本身不设快捷键
     mPannelDataframeOperateView->addMediumAction(mActions->actionGotoCell);
 }

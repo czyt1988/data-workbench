@@ -124,6 +124,8 @@ void DAAppActions::buildDataAction()
     actionConditionalFormat  = createAction(UiNames::Action::ConditionalFormat, ":/DAGui/icon/conditional-format.svg");
     // 单元格边框 action（A2；图标取 DAGui 图标库，菜单在 DAAppTableActionHandler 构建）
     actionTableBorder        = createAction(UiNames::Action::TableBorder, ":/DAGui/icon/cellBorders.svg");
+    // 单元格大小 action（A3；图标取 DAGui 图标库，菜单在 DAAppTableActionHandler 构建）
+    actionCellSize           = createAction(UiNames::Action::CellSize, ":/DAGui/icon/cellSize.svg");
     // 数据工具 action（004；图标取 DAGui 图标库，不引用 APP 资源）
     actionComputedColumn              = createAction(UiNames::Action::ComputedColumn, ":/DAGui/icon/computed-column.svg");
     actionRecomputeAllComputedColumns = createAction(UiNames::Action::RecomputeAllComputedColumns, ":/DAGui/icon/refresh-all.svg");
@@ -710,6 +712,8 @@ void DAAppActions::retranslateUi()
     actionConditionalFormat->setToolTip(tr("Manage conditional formatting rules (cell rules / color scale / data bar) of the selected columns"));  // cn:管理选中列的条件格式规则（单元格规则/色阶/数据条）
     actionTableBorder->setText(tr("Borders"));                        // cn:边框
     actionTableBorder->setToolTip(tr("Apply or clear cell borders of the selected area"));  // cn:对选中区应用或清除单元格边框
+    actionCellSize->setText(tr("Cell Size"));                         // cn:单元格大小
+    actionCellSize->setToolTip(tr("Adjust column width or row height (auto-fit / set value)"));  // cn:调整列宽或行高（自适应/设置数值）
     actionComputedColumn->setText(tr("New Computed Column..."));      // cn:新建计算列...
     actionComputedColumn->setToolTip(tr("Create a new column computed from a Python expression or code snippet of other columns"));  // cn:用 Python 表达式/代码段基于其他列创建新列
     actionRecomputeAllComputedColumns->setText(tr("Recompute All"));  // cn:全部重算

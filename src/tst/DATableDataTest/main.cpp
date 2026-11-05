@@ -431,6 +431,8 @@ private Q_SLOTS:
     void testCellStyleAlignmentBorderMerge();
     void testCellStyleAlignmentBorderCommandUndo();
     void testStyleDelegateAlignmentAndBorderPixels();
+    // A3：列宽自适应/设置列宽/设置行高（落库 + 投影一致，不进撤销栈）
+    void testCellSizeCommands();
     // 视图状态子存储与元数据注册表
     void testViewStateStore();
     void testMetadataRegistry();
@@ -1743,6 +1745,60 @@ void DATableDataTest::testStyleDelegateAlignmentAndBorderPixels()
     QVERIFY2(columnHasBorder(cellW * 2 - 1) > cellH / 2, "outer right border not painted");
 }
 
+// A3：列宽自适应 / 设置列宽 / 设置行高——视图状态落库与投影一致，且不进撤销栈
+void DATableDataTest::testCellSizeCommands()
+{
+    if (!mPandasOk || !mPyScriptsOk) {
+        QSKIP("pandas/DAPyScripts not available");
+    }
+    pybind11::object obj = makeTestDataFrame();
+    QVERIFY(!obj.is_none());
+    DA::DAPyDataFrame df(obj);
+    DA::DAData d(df);
+    DA::DATableMetadataRegistry registry(nullptr);
+    DA::DADataOperateOfDataFrameWidget w(d, &registry);
+    w.resize(900, 400);
+    w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+    DA::DADataTableView* tv = w.getDataTableView();
+    DA::DATableViewStateStore* vs = w.viewStateStore();
+    QVERIFY(tv);
+    QVERIFY(vs);
+    DA::DADataTableModel* model = tv->getDataModel();
+    QVERIFY(model);
+    const int col = 1;
+    const QString name = model->headerData(col, Qt::Horizontal).toString();
+    QVERIFY(!name.isEmpty());
+
+    // 未选中任何列：三个命令都拒绝（不落库）
+    QVERIFY(!w.autoFitSelectedColumnWidths());
+    QVERIFY(!w.setSelectedColumnWidth(150));
+    QCOMPARE(vs->columnWidth(name, 0), -1);
+
+    // 选中整列后：列宽自适应 → store 记录与表头投影一致，且位于合理区间
+    tv->selectColumn(col);
+    const int undoBefore = w.getUndoStack() ? w.getUndoStack()->count() : 0;
+    QVERIFY(w.autoFitSelectedColumnWidths());
+    const int autoW = vs->columnWidth(name, 0);
+    QVERIFY2(autoW >= 40 && autoW <= 400, "auto-fit width out of expected range");
+    QCOMPARE(tv->horizontalHeader()->sectionSize(col), autoW);
+
+    // 设置列宽：store 与表头都变为目标值
+    QVERIFY(w.setSelectedColumnWidth(150));
+    QCOMPARE(vs->columnWidth(name, 0), 150);
+    QCOMPARE(tv->horizontalHeader()->sectionSize(col), 150);
+
+    // 设置行高：store 与垂直表头一致（单值约束：默认行高同步）
+    w.setTableRowHeight(30);
+    QCOMPARE(vs->rowHeight(), 30);
+    QCOMPARE(tv->verticalHeader()->defaultSectionSize(), 30);
+
+    // 三个命令都不进撤销栈（与拖拽改列宽/行高一致）
+    if (w.getUndoStack()) {
+        QCOMPARE(w.getUndoStack()->count(), undoBefore);
+    }
+}
+
 // DATableViewStateStore：XML round-trip（列宽按名/行头宽）、renameColumn 迁移、
 // removeColumn 后重新插入同名不限、重名列 occurrence 消歧互不影响
 void DATableDataTest::testViewStateStore()
@@ -2053,7 +2109,9 @@ void DATableDataTest::testContextMenuComposition()
                                      QStringLiteral("Insert Note"),
                                      QStringLiteral("Edit Note"),
                                      QStringLiteral("Delete Note"),
-                                     QStringLiteral("Clear All Notes") };
+                                     QStringLiteral("Clear All Notes"),
+                                     QStringLiteral("<SEP>"),
+                                     QStringLiteral("Cell Size") };
     QCOMPARE(bodySeq, expectedBody);
     // 剪贴板组无选区置灰
     QVERIFY(!byText.value(QStringLiteral("Cut"))->isEnabled());
@@ -2110,6 +2168,19 @@ void DATableDataTest::testContextMenuComposition()
         QVERIFY(!a->isEnabled());
         QVERIFY2(!a->icon().isNull(), qPrintable(QStringLiteral("icon empty for %1").arg(t)));
     }
+    // 单元格大小（A3）：子菜单 3 项；无数据（无模型）时全部置灰
+    QAction* actCellSize = byText.value(QStringLiteral("Cell Size"));
+    QVERIFY(actCellSize != nullptr);
+    QVERIFY(actCellSize->menu() != nullptr);
+    QVERIFY(!actCellSize->icon().isNull());
+    QStringList cellSizeSeq;
+    for (QAction* a : actCellSize->menu()->actions()) {
+        cellSizeSeq << a->text();
+        QVERIFY(!a->isEnabled());
+    }
+    QCOMPARE(cellSizeSeq, QStringList({ QStringLiteral("AutoFit Column Width"),
+                                        QStringLiteral("Set Column Width..."),
+                                        QStringLiteral("Set Row Height...") }));
     delete body;
 }
 

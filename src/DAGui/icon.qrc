@@ -47,6 +47,7 @@
         <file>icon/sort-clear.svg</file>
         <file>icon/conditional-format.svg</file>
         <file>icon/cellBorders.svg</file>
+        <file>icon/cellSize.svg</file>
         <file>icon/computed-column.svg</file>
         <file>icon/split-column.svg</file>
         <file>icon/merge-columns.svg</file>

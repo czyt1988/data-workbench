@@ -199,6 +199,8 @@ void DAAppTableActionHandler::initConnections()
     DAAPPTABLE_ACTION_BIND(mDeps.actions->actionClearStyleAll, onActionClearStyleAllTriggered);
     // 表格列显示格式
     DAAPPTABLE_ACTION_BIND(mDeps.actions->actionTableFormatCells, onActionTableFormatCellsTriggered);
+    // 单元格大小（A3）：主体 = 列宽自适应（下拉项挂在 Ribbon 侧预建的菜单上）
+    DAAPPTABLE_ACTION_BIND(mDeps.actions->actionCellSize, onActionCellSizeTriggered);
     // 表内查找/替换（002 T1.4，Ribbon「编辑」面板；快捷键在 DADataTableView::keyPressEvent，action 不设 shortcut 红线5）
     DAAPPTABLE_ACTION_BIND(mDeps.actions->actionFind, onActionFindTriggered);
     DAAPPTABLE_ACTION_BIND(mDeps.actions->actionReplace, onActionReplaceTriggered);
@@ -296,6 +298,32 @@ void DAAppTableActionHandler::initConnections()
                       DA::DATableCellStyle::BorderLeft, false);
             addPreset(QCoreApplication::translate("DA::DAAppController", "Right Border"),  // cn:右框线
                       DA::DATableCellStyle::BorderRight, false);
+        });
+    }
+    // 单元格大小（A3）：菜单由 Ribbon 侧先建好（保证下拉箭头），这里 aboutToShow 重填，
+    // 与边框/条件格式菜单同款模式（随语言刷新）
+    if (QMenu* cellSizeMenu = mDeps.actions->actionCellSize->menu()) {
+        connect(cellSizeMenu, &QMenu::aboutToShow, this, [ this, cellSizeMenu ]() {
+            cellSizeMenu->clear();
+            QAction* actAutoFit =
+                cellSizeMenu->addAction(QCoreApplication::translate("DA::DAAppController", "AutoFit Column Width"));  // cn:列宽自适应
+            connect(actAutoFit, &QAction::triggered, this, &DAAppTableActionHandler::onActionCellSizeTriggered);
+            QAction* actSetWidth =
+                cellSizeMenu->addAction(QCoreApplication::translate("DA::DAAppController", "Set Column Width..."));  // cn:设置列宽...
+            connect(actSetWidth, &QAction::triggered, this, [ this ]() {
+                if (DADataOperateOfDataFrameWidget* w =
+                        mDeps.controller->getCurrentDataFrameOperateWidget(false, false)) {
+                    w->showSetColumnWidthDialog();
+                }
+            });
+            QAction* actSetHeight =
+                cellSizeMenu->addAction(QCoreApplication::translate("DA::DAAppController", "Set Row Height..."));  // cn:设置行高...
+            connect(actSetHeight, &QAction::triggered, this, [ this ]() {
+                if (DADataOperateOfDataFrameWidget* w =
+                        mDeps.controller->getCurrentDataFrameOperateWidget(false, false)) {
+                    w->showSetRowHeightDialog();
+                }
+            });
         });
     }
     // 表格列显示格式
@@ -1441,6 +1469,17 @@ void DAAppTableActionHandler::applyBorderPreset(quint8 sides, bool outline)
     DA::DATableCellStyle fragment;
     fragment.setBorder(sides);
     w->mergeStyleToSelection(fragment);
+}
+
+/**
+ * @brief 单元格大小大按钮主体：选中列宽自适应（A3，直接改视图状态、不进撤销栈）
+ */
+void DAAppTableActionHandler::onActionCellSizeTriggered()
+{
+    DADataOperateOfDataFrameWidget* w = mDeps.controller->getCurrentDataFrameOperateWidget(false, false);
+    if (w) {
+        w->autoFitSelectedColumnWidths();
+    }
 }
 
 /**

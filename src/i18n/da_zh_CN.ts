@@ -3240,6 +3240,16 @@
         <source>Set the selected cells to empty (nan)</source>
         <translation>把选中单元格置为空值</translation>
     </message>
+    <message>
+        <location filename="../APP/DAAppActions.cpp"/>
+        <source>Cell Size</source>
+        <translation>单元格大小</translation>
+    </message>
+    <message>
+        <location filename="../APP/DAAppActions.cpp"/>
+        <source>Adjust column width or row height (auto-fit / set value)</source>
+        <translation>调整列宽或行高（自适应/设置数值）</translation>
+    </message>
 </context>
 <context>
     <name>DA::DAAppApplicationWidget</name>
@@ -3903,6 +3913,21 @@
         <location line="+1"/>
         <source>Please select a column to sort first</source>
         <translation>请先选择要排序的列</translation>
+    </message>
+    <message>
+        <location filename="../APP/Controller/DAAppTableActionHandler.cpp"/>
+        <source>AutoFit Column Width</source>
+        <translation>列宽自适应</translation>
+    </message>
+    <message>
+        <location filename="../APP/Controller/DAAppTableActionHandler.cpp"/>
+        <source>Set Column Width...</source>
+        <translation>设置列宽...</translation>
+    </message>
+    <message>
+        <location filename="../APP/Controller/DAAppTableActionHandler.cpp"/>
+        <source>Set Row Height...</source>
+        <translation>设置行高...</translation>
     </message>
 </context>
 <context>
@@ -10379,6 +10404,26 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <source>There are %1 columns with this name; used the first one</source>
         <translation>有 %1 个同名列，已取第一个</translation>
     </message>
+    <message>
+        <location filename="../DAGui/Table/DADataOperateOfDataFrameWidget.cpp"/>
+        <source>Set Column Width</source>
+        <translation>设置列宽</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/Table/DADataOperateOfDataFrameWidget.cpp"/>
+        <source>Width (pixels):</source>
+        <translation>列宽（像素）：</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/Table/DADataOperateOfDataFrameWidget.cpp"/>
+        <source>Set Row Height</source>
+        <translation>设置行高</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/Table/DADataOperateOfDataFrameWidget.cpp"/>
+        <source>Height (pixels):</source>
+        <translation>行高（像素）：</translation>
+    </message>
 </context>
 <context>
     <name>DA::DADataOperateWidget</name>
@@ -11044,6 +11089,26 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <location line="+1"/>
         <source>Clear All Notes</source>
         <translation>清除本表批注</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/Table/Views/DADataTableView.cpp"/>
+        <source>Cell Size</source>
+        <translation>单元格大小</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/Table/Views/DADataTableView.cpp"/>
+        <source>AutoFit Column Width</source>
+        <translation>列宽自适应</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/Table/Views/DADataTableView.cpp"/>
+        <source>Set Column Width...</source>
+        <translation>设置列宽...</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/Table/Views/DADataTableView.cpp"/>
+        <source>Set Row Height...</source>
+        <translation>设置行高...</translation>
     </message>
 </context>
 <context>

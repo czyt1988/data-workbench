@@ -147,6 +147,8 @@ private Q_SLOTS:
     // 表格列显示格式
     void onTableDisplayFormatCategoryChanged(DATableDisplayFormat::Category c);
     void onActionTableFormatCellsTriggered();
+    // 单元格大小（A3）：大按钮主体 = 列宽自适应（下拉项在 initConnections 构建的菜单里）
+    void onActionCellSizeTriggered();
 
 private:
     DAAppActionHandlerDeps mDeps;
