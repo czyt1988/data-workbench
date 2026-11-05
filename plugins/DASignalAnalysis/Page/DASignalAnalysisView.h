@@ -22,9 +22,11 @@ class QwtPlotIntervalCurve;
 class QwtPlotMarker;
 class QwtPlotShapeItem;
 class QwtPlotSpectrogram;
+class Qwt3DWaterfall;
 
 namespace DA
 {
+class DAChart3DWidget;
 class DASignalChartPanel;
 class DAStftRasterData;
 
@@ -58,6 +60,8 @@ public:
     void setPeaks(const DAPeakResult& peaks);
     // 峰值标记显隐（丝带「峰值标记」开关）
     void setPeakMarkersVisible(bool on);
+    // 瀑布模式：0=二维热图 / 1=三维曲面 / 2=隐藏（D12 / D25）
+    void setWaterfallMode(int mode);
     // 当前时间（秒）
     double currentTime() const;
     // 幅值显示模式（不重算，只重绘）
@@ -90,6 +94,7 @@ private Q_SLOTS:
 
 private:
     void buildUI();
+    void rebuildWaterfall();
     void rebuildWavePlot();
     void rebuildSpectrumPlot();
     void rebuildHeatmap();
@@ -145,6 +150,10 @@ private:
     QComboBox* mColormapCombo { nullptr };
     QDoubleSpinBox* mDbFloorSpin { nullptr };
     QCheckBox* mFollowSliderCheck { nullptr };
+    // 三维瀑布
+    DA::DAChart3DWidget* mWaterfallChart { nullptr };
+    Qwt3DWaterfall* mWaterfallItem { nullptr };
+    int mWaterfallMode { 0 };  ///< 0=二维 / 1=三维 / 2=隐藏
 
     // 频率轴模式：false 线性 / true 对数
     bool mLogFrequency { false };

@@ -33,6 +33,9 @@
 #include "DAChartWidget.h"
 #include "DASignalChartPanel.h"
 #include "Render/DAStftRasterData.h"
+#include "Render/DAWaterfallBuilder.h"
+#include "DAChart3DWidget.h"
+#include "qwt3d_waterfall.h"
 
 namespace DA
 {
@@ -222,6 +225,9 @@ void DASignalAnalysisView::buildUI()
         applyHeatmapColors();
     });
     mRightStack->addWidget(mHeatmapPanel);
+    // 三维曲面瀑布（qwt 现成 Qwt3DWaterfall，叠置第 2 页）
+    mWaterfallChart = new DAChart3DWidget(mRightStack);
+    mRightStack->addWidget(mWaterfallChart);
 
     mHorizontalSplitter->addWidget(mSpectrumPanel);
     mHorizontalSplitter->addWidget(mRightStack);
@@ -349,7 +355,56 @@ void DASignalAnalysisView::setStft(const DAStftResult& result)
 {
     mStft = result;
     rebuildHeatmap();
+    if (mWaterfallMode == 1) {
+        rebuildWaterfall();
+    }
     updateStftWindowRect();
+}
+
+/**
+ * @brief 瀑布模式切换：0=二维 / 1=三维 / 2=隐藏（D12 / D25）
+ */
+void DASignalAnalysisView::setWaterfallMode(int mode)
+{
+    mWaterfallMode = qBound(0, mode, 2);
+    if (!mRightStack) {
+        return;
+    }
+    if (mWaterfallMode == 2) {
+        mRightStack->setVisible(false);
+        return;
+    }
+    mRightStack->setVisible(true);
+    mRightStack->setCurrentIndex(mWaterfallMode);
+    if (mWaterfallMode == 1) {
+        rebuildWaterfall();
+    }
+}
+
+/**
+ * @brief 重建三维瀑布（抽帧抽频点后逐帧 pushTrace）
+ */
+void DASignalAnalysisView::rebuildWaterfall()
+{
+    if (!mWaterfallChart) {
+        return;
+    }
+    QVector< QVector< double > > traces;
+    QVector< double > binValues;
+    // 时间方向 200 条迹线、频率方向最多 512 频点（方案 §7.4）
+    if (!DAWaterfallBuilder::build(mStft, 200, 512, traces, binValues)) {
+        return;
+    }
+    if (mWaterfallItem) {
+        mWaterfallItem->detach();
+        delete mWaterfallItem;
+        mWaterfallItem = nullptr;
+    }
+    mWaterfallItem = mWaterfallChart->addWaterfall(traces, binValues, tr("Waterfall"));  // cn:三维瀑布
+    if (mWaterfallItem) {
+        mWaterfallItem->setColorMode(Qwt3DWaterfall::ByAmplitude);
+        mWaterfallItem->setPlotStyle(Qwt3DWaterfall::RibbonMesh);
+    }
 }
 
 /**

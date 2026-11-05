@@ -93,6 +93,34 @@ bool DASignalAnalysisUI::initialize(DACoreInterface* core)
     if (actionAnalysisSetting) {
         connect(actionAnalysisSetting, &QAction::triggered, this, &DASignalAnalysisUI::openAnalysisSettings);
     }
+    // 瀑布模式切换（二维 / 三维 / 隐藏）
+    if (actionWaterfall2D) {
+        connect(actionWaterfall2D, &QAction::triggered, this, [this]() {
+            if (mPage) {
+                if (DASignalAnalysisView* v = mPage->viewForSignal(mPage->currentSignal().get())) {
+                    v->setWaterfallMode(0);
+                }
+            }
+        });
+    }
+    if (actionWaterfall3D) {
+        connect(actionWaterfall3D, &QAction::triggered, this, [this]() {
+            if (mPage) {
+                if (DASignalAnalysisView* v = mPage->viewForSignal(mPage->currentSignal().get())) {
+                    v->setWaterfallMode(1);
+                }
+            }
+        });
+    }
+    if (actionWaterfallHide) {
+        connect(actionWaterfallHide, &QAction::triggered, this, [this]() {
+            if (mPage) {
+                if (DASignalAnalysisView* v = mPage->viewForSignal(mPage->currentSignal().get())) {
+                    v->setWaterfallMode(2);
+                }
+            }
+        });
+    }
     // 峰值停靠窗口（右侧停靠区，与设置/智能体同区做标签页，D24）
     buildPeakDock();
     // 后台计算协调器（Python 守护线程 + 定时轮询）

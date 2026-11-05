@@ -9,6 +9,7 @@
 #include "qwt3d_surface.h"
 #include "qwt3d_bar.h"
 #include "qwt3d_line3d.h"
+#include "qwt3d_waterfall.h"
 #include "qwt3d_plot.h"
 #include "qwt3d_color.h"
 #include "qwt3d_colormap_color.h"
@@ -241,6 +242,7 @@ int DAChart3DItemSerialize::getRtti(const QByteArray& byte) const noexcept
 DECLARE_INITCHART3DITEMSERIALIZE_FUN(Rtti_Plot3DSurface, Qwt3DSurface)
 DECLARE_INITCHART3DITEMSERIALIZE_FUN(Rtti_Plot3DBar, Qwt3DBar)
 DECLARE_INITCHART3DITEMSERIALIZE_FUN(Rtti_Plot3DLine, Qwt3DLine)
+DECLARE_INITCHART3DITEMSERIALIZE_FUN(Rtti_Plot3DWaterfall, Qwt3DWaterfall)
 
 /**
  * @brief 初始化 3D 绘图项的序列化函数映射表
@@ -254,6 +256,8 @@ initChart3DItemSerialize()
     res[Rtti_Plot3DSurface] = INITCHART3DITEMSERIALIZE_MAKE_IN_OUT_PAIR(Rtti_Plot3DSurface, Qwt3DSurface);
     res[Rtti_Plot3DBar] = INITCHART3DITEMSERIALIZE_MAKE_IN_OUT_PAIR(Rtti_Plot3DBar, Qwt3DBar);
     res[Rtti_Plot3DLine] = INITCHART3DITEMSERIALIZE_MAKE_IN_OUT_PAIR(Rtti_Plot3DLine, Qwt3DLine);
+    res[Rtti_Plot3DWaterfall] =
+        INITCHART3DITEMSERIALIZE_MAKE_IN_OUT_PAIR(Rtti_Plot3DWaterfall, Qwt3DWaterfall);
     return res;
 }
 
@@ -1160,6 +1164,77 @@ QDataStream& operator>>(QDataStream& in, Qwt3DPlot* plot)
         if (item) {
             item->attach(plot);
         }
+    }
+    return in;
+}
+
+// ============================================================
+// Qwt3DWaterfall
+// ============================================================
+/**
+ * @brief 从数据流序列化 Qwt3DWaterfall 指针
+ *
+ * 只写样式参数与 binValues：迹线数据不存（工程只存来源引用与参数，
+ * 重开工程后由业务层按参数重算后重新 pushTrace，见方案 §10.1）。
+ * @param out 输出数据流
+ * @param item 三维瀑布指针
+ * @return 输出数据流引用
+ */
+QDataStream& operator<<(QDataStream& out, const Qwt3DWaterfall* item)
+{
+    out << DA::gc_dachart3d_version << DA::gc_dachart3d_magic_mark;
+    out << static_cast< const Qwt3DPlotItem* >(item);
+    out << item->traceCapacity() << static_cast< int >(item->plotStyle()) << static_cast< int >(item->colorMode())
+        << static_cast< int >(item->depthOrder()) << item->baseline();
+    out << item->binValues();
+    const Qwt3DColor* colorFunc = item->dataColor();
+    const bool hasDataColor     = (colorFunc != nullptr);
+    out << hasDataColor;
+    if (hasDataColor) {
+        out << colorFunc;
+    } else {
+        RGBA solidColor = item->color();
+        out << solidColor;
+    }
+    return out;
+}
+
+/**
+ * @brief 从数据流反序列化 Qwt3DWaterfall 指针
+ * @param in 输入数据流
+ * @param item 接收反序列化数据的瀑布指针
+ * @return 输入数据流引用
+ */
+QDataStream& operator>>(QDataStream& in, Qwt3DWaterfall* item)
+{
+    int version;
+    std::uint32_t magic;
+    in >> version >> magic;
+    if (DA::gc_dachart3d_magic_mark != magic) {
+        throw DA::DABadSerializeExpection("Qwt3DWaterfall: invalid magic mark");
+    }
+    in >> static_cast< Qwt3DPlotItem* >(item);
+    int capacity, plotStyle, colorMode, depthOrder;
+    double baseline;
+    in >> capacity >> plotStyle >> colorMode >> depthOrder >> baseline;
+    item->setTraceCapacity(qMax(1, capacity));
+    item->setPlotStyle(static_cast< Qwt3DWaterfall::PlotStyle >(plotStyle));
+    item->setColorMode(static_cast< Qwt3DWaterfall::ColorMode >(colorMode));
+    item->setDepthOrder(static_cast< Qwt3DWaterfall::DepthOrder >(depthOrder));
+    item->setBaseline(baseline);
+    QVector< double > binValues;
+    in >> binValues;
+    item->setBinValues(binValues);
+    bool hasDataColor;
+    in >> hasDataColor;
+    if (hasDataColor) {
+        Qwt3DColor* colorFunc = nullptr;
+        in >> colorFunc;
+        item->setDataColor(colorFunc);
+    } else {
+        RGBA solidColor;
+        in >> solidColor;
+        item->setColor(solidColor);
     }
     return in;
 }

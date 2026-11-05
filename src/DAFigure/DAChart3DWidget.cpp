@@ -202,6 +202,41 @@ Qwt3DBar* DAChart3DWidget::addBar3D(double** z, int columns, int rows,
 }
 
 /**
+ * @brief 添加三维瀑布（逐帧迹线）
+ *
+ * 用于信号的时频瀑布：每条 trace 是一帧在抽频点上的幅值，pushTrace 依次追加；
+ * 默认按幅值着色（ByAmplitude）、RibbonMesh 几何样式。
+ * @param traces 迹线集合（每条长度一致）
+ * @param binValues 每条迹线的横坐标（如频率），空表示 0..n-1
+ * @param title 标题
+ * @return 创建的 Qwt3DWaterfall 指针，数据为空返回 nullptr
+ */
+Qwt3DWaterfall* DAChart3DWidget::addWaterfall(const QVector< QVector< double > >& traces,
+                                              const QVector< double >& binValues,
+                                              const QString& title)
+{
+    if (traces.isEmpty()) {
+        qWarning() << "Empty traces for 3D waterfall:" << title;
+        return nullptr;
+    }
+    Qwt3DWaterfall* waterfall = new Qwt3DWaterfall();
+    if (!title.isEmpty()) {
+        waterfall->setTitle(title);
+    }
+    waterfall->setTraceCapacity(traces.size());
+    for (const QVector< double >& trace : std::as_const(traces)) {
+        waterfall->pushTrace(trace);
+    }
+    if (!binValues.isEmpty()) {
+        waterfall->setBinValues(binValues);
+    }
+    waterfall->setPlotStyle(Qwt3DWaterfall::RibbonMesh);
+    waterfall->setColorMode(Qwt3DWaterfall::ByAmplitude);
+    waterfall->attach(this);
+    return waterfall;
+}
+
+/**
  * @brief 添加3D线图
  *
  * 参考 DAChartWidget::addCurve()（DAChartWidget.cpp:137-149）。
@@ -224,6 +259,21 @@ Qwt3DLine* DAChart3DWidget::addLine3D(const QVector< QwtPoint3D >& samples, cons
     line->setLineStyle(Qwt3DLine::Tube);
     line->attach(this);
     return line;
+}
+
+/**
+ * @brief 获取所有三维瀑布 item
+ */
+QList< Qwt3DWaterfall* > DAChart3DWidget::getWaterfalls() const
+{
+    QList< Qwt3DWaterfall* > waterfalls;
+    const QList< Qwt3DPlotItem* > items = itemList();
+    for (Qwt3DPlotItem* item : items) {
+        if (item->rtti() == Rtti_Plot3DWaterfall) {
+            waterfalls.append(static_cast< Qwt3DWaterfall* >(item));
+        }
+    }
+    return waterfalls;
 }
 
 /**

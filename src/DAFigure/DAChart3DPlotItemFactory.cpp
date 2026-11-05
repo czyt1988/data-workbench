@@ -4,6 +4,7 @@
 #include "qwt3d_surface.h"
 #include "qwt3d_bar.h"
 #include "qwt3d_line3d.h"
+#include "qwt3d_waterfall.h"
 #include "qwt3d_types.h"
 
 namespace DA
@@ -20,6 +21,7 @@ static QHash< int, DAChart3DPlotItemFactory::Fp3DItemCreate > initDAChart3DPlotI
     res[ Rtti_Plot3DSurface ] = []() -> Qwt3DPlotItem* { return new Qwt3DSurface(); };
     res[ Rtti_Plot3DBar ]     = []() -> Qwt3DPlotItem* { return new Qwt3DBar(); };
     res[ Rtti_Plot3DLine ]    = []() -> Qwt3DPlotItem* { return new Qwt3DLine(); };
+    res[ Rtti_Plot3DWaterfall ] = []() -> Qwt3DPlotItem* { return new Qwt3DWaterfall(); };
     return res;
 }
 
