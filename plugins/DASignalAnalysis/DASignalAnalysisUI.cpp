@@ -1236,6 +1236,18 @@ void DASignalAnalysisUI::onViewRequestHeatmap(int columns, int rows)
     if (!mWorker || !view || !view->signal()) {
         return;
     }
+    // 内存预算（方案 §11）：float32 全量超过 1.5 吉字节时提示一次，热图按显示精度降级
+    constexpr qint64 cLargeSignalBytes = qint64(1.5 * 1024 * 1024 * 1024);
+    if (view->signal()->sampleCount() * qint64(sizeof(float)) > cLargeSignalBytes) {
+        const DA::DASignal* key = view->signal().get();
+        if (!mLargeSignalWarned.contains(key)) {
+            mLargeSignalWarned.insert(key);
+            mUI->addWarningLogMessage(
+                tr("Signal is very large (> 1.5 GB as float32); the heatmap uses display-precision data.")
+                // cn:信号非常大（按 float32 计超过 1.5 吉字节），热图按显示精度降级计算。
+            );
+        }
+    }
     mPendingHeatmapView = view;
     mWorker->computeHeatmap(view->signal(), 0, view->params(), columns, rows);
 }

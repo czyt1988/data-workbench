@@ -3,6 +3,7 @@
 #include <QObject>
 #include <QAction>
 #include <QHash>
+#include <QSet>
 #include <memory>
 #include "Signal/DASignal.h"
 #include "Analysis/DASignalAnalysisParams.h"
@@ -211,6 +212,8 @@ private:
     DA::DAPeakCurveResult mCurrentCurves;
     // 播放控制器（方案 D26）
     DASignalPlayer* mPlayer { nullptr };
+    // 已提示过「信号过大」的信号（避免重复提示）
+    QSet< const DA::DASignal* > mLargeSignalWarned;
     bool mSyncingFromPlayer { false };
     // 每个信号标签页记住上次生效参数（D21）
     QHash< const DA::DASignal*, DA::DASignalAnalysisParams > mParamsPerSignal;
