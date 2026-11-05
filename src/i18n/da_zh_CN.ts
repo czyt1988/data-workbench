@@ -18537,8 +18537,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     <message>
         <location line="+11"/>
         <source>Drop None</source>
-        <translation>删除
-缺失值</translation>
+        <translation>删除缺失值</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -18548,13 +18547,32 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     <message>
         <location line="+1"/>
         <source>Drop Duplicates</source>
-        <translation>删除
-重复值</translation>
+        <translation>删除重复值</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Drop duplicate data</source>
         <translation>删除数据中的重复记录</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Missing Values</source>
+        <translation>缺失值</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Missing value handling: drop, fill or interpolate</source>
+        <translation>缺失值处理：删除、填充或插值</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Outliers</source>
+        <translation>异常值</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Outlier handling: IQR, Z-Score or skewed data transform</source>
+        <translation>异常值处理：IQR、Z-Score 或偏态转换</translation>
     </message>
     <message>
         <location line="+4"/>
@@ -18584,8 +18602,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     <message>
         <location line="-33"/>
         <source>Fill None</source>
-        <translation>填充
-缺失值</translation>
+        <translation>填充缺失值</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -18600,8 +18617,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     <message>
         <location line="+3"/>
         <source>IQR Outlier Handling</source>
-        <translation>IQR
-异常值处理</translation>
+        <translation>IQR 异常值处理</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -18611,8 +18627,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     <message>
         <location line="+4"/>
         <source>Z-Score Outlier Handling</source>
-        <translation>Z-Score
-异常值处理</translation>
+        <translation>Z-Score 异常值处理</translation>
     </message>
     <message>
         <location line="+8"/>

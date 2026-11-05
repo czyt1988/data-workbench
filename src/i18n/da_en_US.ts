@@ -18467,6 +18467,26 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation>Drop duplicate data</translation>
     </message>
     <message>
+        <location line="+1"/>
+        <source>Missing Values</source>
+        <translation>Missing Values</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Missing value handling: drop, fill or interpolate</source>
+        <translation>Missing value handling: drop, fill or interpolate</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Outliers</source>
+        <translation>Outliers</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Outlier handling: IQR, Z-Score or skewed data transform</source>
+        <translation>Outlier handling: IQR, Z-Score or skewed data transform</translation>
+    </message>
+    <message>
         <location line="+4"/>
         <source>Fill rows which contain missing values by interpolation</source>
         <translation>Fill rows which contain missing values by interpolation</translation>
