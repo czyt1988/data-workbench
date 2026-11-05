@@ -101,6 +101,7 @@ public:
     QAction* actionTableFormatCells { nullptr };    ///< 设置选中列的显示格式
     QAction* actionTableBorder { nullptr };         ///< 单元格边框（A2，下拉预设；菜单在 DAAppTableActionHandler 构建）
     QAction* actionCellSize { nullptr };            ///< 单元格大小（A3，下拉：列宽自适应/设置列宽/设置行高；菜单在 DAAppTableActionHandler 构建）
+    QAction* actionTableRowHeight { nullptr };      ///< 行高（Table Style 视图面板，主体弹设置对话框，下拉：紧凑/普通）
     QAction* actionWrapText { nullptr };            ///< 自动换行（A4 轻量，可勾选开关，作用于选中区）
     QAction* actionFind { nullptr };                ///< 表内查找（002 T1.4；快捷键在 DADataTableView，此处不设 shortcut 红线5）
     QAction* actionReplace { nullptr };             ///< 表内替换（002 T1.4）

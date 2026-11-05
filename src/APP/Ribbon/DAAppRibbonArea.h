@@ -358,6 +358,7 @@ private:
     SARibbonPanel* mPannelDataframeStyleBorder { nullptr };       ///< 边框面板（A2）
     SARibbonPanel* mPannelDataframeStyleClear { nullptr };        ///< 清除面板
     SARibbonPanel* mPannelDataframeStyleConditional { nullptr };  ///< 条件格式面板（003 T1.5）
+    SARibbonPanel* mPannelDataframeStyleView { nullptr };         ///< 视图面板（行高设置，2026-11）
     SARibbonColorToolButton* mBtnTableFillColor { nullptr };      ///< 表格底色按钮（Controller 连接其信号）
     DAFontEditPannelWidget* mWidgetTableFont { nullptr };         ///< 表格字体编辑面板（Controller 连接其信号）
     DATextAlignmentEditWidget* mWidgetTableAlign { nullptr };     ///< 表格对齐按钮组（Controller 连接其信号，A1）

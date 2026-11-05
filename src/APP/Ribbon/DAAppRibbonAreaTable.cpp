@@ -257,6 +257,14 @@ void DAAppRibbonArea::buildContextCategoryTableStyle(SARibbonContextCategory* co
     mPannelDataframeStyleClear->setObjectName(QString::fromUtf8(UiNames::Ribbon::DataFrameStyleClearPanel));
     mPannelDataframeStyleClear->addLargeAction(mActions->actionClearStyleSelected);
     mPannelDataframeStyleClear->addLargeAction(mActions->actionClearStyleAll);
+
+    // 视图面板（2026-11）：行高按钮主体 = 弹设置对话框，下拉 = 紧凑/普通。
+    // setMenu 必须在 addLargeAction 之前，否则下拉箭头不出现（与其它 split 按钮同款顺序）
+    mPannelDataframeStyleView = mCategoryDataframeStyle->addPanel(tr("View"));  // cn:视图
+    mPannelDataframeStyleView->setObjectName(QString::fromUtf8(UiNames::Ribbon::DataFrameStyleViewPanel));
+    QMenu* rowHeightMenu = new QMenu(mPannelDataframeStyleView);
+    mActions->actionTableRowHeight->setMenu(rowHeightMenu);
+    mPannelDataframeStyleView->addLargeAction(mActions->actionTableRowHeight, QToolButton::MenuButtonPopup);
 }
 
 /**

@@ -126,6 +126,8 @@ void DAAppActions::buildDataAction()
     actionTableBorder        = createAction(UiNames::Action::TableBorder, ":/DAGui/icon/cellBorders.svg");
     // 单元格大小 action（A3；图标取 DAGui 图标库，菜单在 DAAppTableActionHandler 构建）
     actionCellSize           = createAction(UiNames::Action::CellSize, ":/DAGui/icon/cellSize.svg");
+    // 行高 action（Table Style 视图面板；主体弹设置对话框，下拉紧凑/普通在 DAAppTableActionHandler 构建）
+    actionTableRowHeight     = createAction(UiNames::Action::TableRowHeight, ":/DAGui/icon/row-height.svg");
     // 自动换行 action（A4 轻量；可勾选开关，Ribbon「对齐」面板）
     actionWrapText           = createAction(UiNames::Action::WrapText, ":/DAGui/icon/wrapText.svg");
     actionWrapText->setCheckable(true);
@@ -717,6 +719,8 @@ void DAAppActions::retranslateUi()
     actionTableBorder->setToolTip(tr("Apply or clear cell borders of the selected area"));  // cn:对选中区应用或清除单元格边框
     actionCellSize->setText(tr("Cell Size"));                         // cn:单元格大小
     actionCellSize->setToolTip(tr("Adjust column width or row height (auto-fit / set value)"));  // cn:调整列宽或行高（自适应/设置数值）
+    actionTableRowHeight->setText(tr("Row Height"));                  // cn:行高
+    actionTableRowHeight->setToolTip(tr("Set the row height of the whole table, or switch between compact and normal height"));  // cn:设置整表行高，或在紧凑/普通行高之间切换
     actionWrapText->setText(tr("Wrap Text"));                         // cn:自动换行
     actionWrapText->setToolTip(tr("Wrap the text of selected cells (raise row height manually if needed)"));  // cn:选中单元格文字自动换行（需要时用「单元格大小」手动调高行高）
     actionComputedColumn->setText(tr("New Computed Column..."));      // cn:新建计算列...

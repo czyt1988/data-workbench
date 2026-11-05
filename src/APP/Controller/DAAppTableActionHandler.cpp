@@ -202,6 +202,8 @@ void DAAppTableActionHandler::initConnections()
     DAAPPTABLE_ACTION_BIND(mDeps.actions->actionTableFormatCells, onActionTableFormatCellsTriggered);
     // 单元格大小（A3）：主体 = 列宽自适应（下拉项挂在 Ribbon 侧预建的菜单上）
     DAAPPTABLE_ACTION_BIND(mDeps.actions->actionCellSize, onActionCellSizeTriggered);
+    // 行高（Table Style 视图面板）：主体 = 弹设置对话框（下拉紧凑/普通在下方构建）
+    DAAPPTABLE_ACTION_BIND(mDeps.actions->actionTableRowHeight, onActionRowHeightTriggered);
     // 表内查找/替换（002 T1.4，Ribbon「编辑」面板；快捷键在 DADataTableView::keyPressEvent，action 不设 shortcut 红线5）
     DAAPPTABLE_ACTION_BIND(mDeps.actions->actionFind, onActionFindTriggered);
     DAAPPTABLE_ACTION_BIND(mDeps.actions->actionReplace, onActionReplaceTriggered);
@@ -338,6 +340,29 @@ void DAAppTableActionHandler::initConnections()
                 if (DADataOperateOfDataFrameWidget* w =
                         mDeps.controller->getCurrentDataFrameOperateWidget(false, false)) {
                     w->showSetRowHeightDialog();
+                }
+            });
+        });
+    }
+    // 行高（Table Style 视图面板）：菜单由 Ribbon 侧先建好（保证下拉箭头），这里 aboutToShow
+    // 重填「紧凑/普通」，与边框/单元格大小菜单同款模式（随语言刷新）
+    if (QMenu* rowHeightMenu = mDeps.actions->actionTableRowHeight->menu()) {
+        connect(rowHeightMenu, &QMenu::aboutToShow, this, [ this, rowHeightMenu ]() {
+            rowHeightMenu->clear();
+            QAction* actCompact =
+                rowHeightMenu->addAction(QCoreApplication::translate("DA::DAAppController", "Compact"));  // cn:紧凑
+            connect(actCompact, &QAction::triggered, this, [ this ]() {
+                if (DADataOperateOfDataFrameWidget* w =
+                        mDeps.controller->getCurrentDataFrameOperateWidget(false, false)) {
+                    w->setCompactRowHeight();
+                }
+            });
+            QAction* actNormal =
+                rowHeightMenu->addAction(QCoreApplication::translate("DA::DAAppController", "Normal"));  // cn:普通
+            connect(actNormal, &QAction::triggered, this, [ this ]() {
+                if (DADataOperateOfDataFrameWidget* w =
+                        mDeps.controller->getCurrentDataFrameOperateWidget(false, false)) {
+                    w->setNormalRowHeight();
                 }
             });
         });
@@ -1513,6 +1538,17 @@ void DAAppTableActionHandler::onActionCellSizeTriggered()
     DADataOperateOfDataFrameWidget* w = mDeps.controller->getCurrentDataFrameOperateWidget(false, false);
     if (w) {
         w->autoFitSelectedColumnWidths();
+    }
+}
+
+/**
+ * @brief 行高按钮主体：弹「设置整表行高」输入框（下拉紧凑/普通走各自 lambda）
+ */
+void DAAppTableActionHandler::onActionRowHeightTriggered()
+{
+    DADataOperateOfDataFrameWidget* w = mDeps.controller->getCurrentDataFrameOperateWidget(false, false);
+    if (w) {
+        w->showSetRowHeightDialog();
     }
 }
 

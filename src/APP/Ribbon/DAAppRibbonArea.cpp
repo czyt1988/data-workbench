@@ -201,6 +201,7 @@ void DAAppRibbonArea::resetText()
     mPannelDataframeStyleFont->setPanelName(tr("Font"));                       // cn:字体
     mPannelDataframeStyleClear->setPanelName(tr("Clear"));                     // cn:清除
     mPannelDataframeStyleConditional->setPanelName(tr("Conditional"));         // cn:条件格式
+    mPannelDataframeStyleView->setPanelName(tr("View"));                       // cn:视图
     mComboxColumnTypesContainer->setPrefix(tr("Type"));                        // cn:类型
     mComboxDisplayFormatContainer->setPrefix(tr("Format"));                    // cn:格式
 
