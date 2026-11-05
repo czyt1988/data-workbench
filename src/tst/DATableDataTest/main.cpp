@@ -34,6 +34,7 @@
 #include <QClipboard>
 #include <QGuiApplication>
 #include <QImage>
+#include <QIcon>
 #include <QMenu>
 #include <QItemSelectionModel>
 #include <QAbstractButton>
@@ -433,6 +434,8 @@ private Q_SLOTS:
     void testStyleDelegateAlignmentAndBorderPixels();
     // 真实表格页像素回归：模型 TextAlignmentRole 固定左对齐时，对齐/边框仍必须生效
     void testStyleOnRealPagePixels();
+    // A2：边框预设图标资源（Ribbon 按钮 + 菜单项）存在且可渲染
+    void testBorderPresetIconsAvailable();
     // A3：列宽自适应/设置列宽/设置行高（落库 + 投影一致，不进撤销栈）
     void testCellSizeCommands();
     // A4 轻量：自动换行（XML 往返/merge/委派像素：折行后文字纵向范围明显变大）
@@ -1834,6 +1837,41 @@ df = pd.DataFrame({"a": [1111.0, 2222.0, 3333.0], "b": [1.0, 2.0, 3.0]})
                             .arg(borderHits)
                             .arg(r.height())));
     w.hide();
+}
+
+// A2：边框预设图标资源（Ribbon 大按钮 + 菜单项）必须存在且可渲染
+//
+// 路径与 DAAppActions.cpp（按钮图标）、DAAppTableActionHandler.cpp（菜单项图标）一致；
+// 资源漏登记到 src/DAGui/icon.qrc 时 QIcon 为空，按钮/菜单项会显示成空白。
+void DATableDataTest::testBorderPresetIconsAvailable()
+{
+    const QStringList iconPaths = {
+        QStringLiteral(":/DAGui/icon/cellBorders.svg"),         // 按钮 + 全框线
+        QStringLiteral(":/DAGui/icon/cellBordersOutside.svg"),  // 外框线
+        QStringLiteral(":/DAGui/icon/cellBordersNone.svg"),     // 无框线
+        QStringLiteral(":/DAGui/icon/cellBordersTop.svg"),      // 上框线
+        QStringLiteral(":/DAGui/icon/cellBordersBottom.svg"),   // 下框线
+        QStringLiteral(":/DAGui/icon/cellBordersLeft.svg"),     // 左框线
+        QStringLiteral(":/DAGui/icon/cellBordersRight.svg"),    // 右框线
+    };
+    for (const QString& path : iconPaths) {
+        const QIcon icon(path);
+        QVERIFY2(!icon.isNull(), qPrintable(QStringLiteral("missing border icon: ") + path));
+        // 实际渲染一次（16px 菜单项 / 32px 大按钮两种尺寸都要非空）
+        QVERIFY2(!icon.pixmap(16, 16).isNull(), qPrintable(QStringLiteral("unrenderable 16px icon: ") + path));
+        QVERIFY2(!icon.pixmap(32, 32).isNull(), qPrintable(QStringLiteral("unrenderable 32px icon: ") + path));
+        // 有非透明像素才算真的画出内容（防止空 SVG 或画到可视区外）
+        const QImage iconImg = icon.pixmap(32, 32).toImage();
+        int opaqueCount = 0;
+        for (int y = 0; y < iconImg.height(); ++y) {
+            for (int x = 0; x < iconImg.width(); ++x) {
+                if (qAlpha(iconImg.pixel(x, y)) > 0) {
+                    ++opaqueCount;
+                }
+            }
+        }
+        QVERIFY2(opaqueCount > 0, qPrintable(QStringLiteral("blank icon: ") + path));
+    }
 }
 
 // A3：列宽自适应 / 设置列宽 / 设置行高——视图状态落库与投影一致，且不进撤销栈

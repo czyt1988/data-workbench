@@ -12,6 +12,7 @@
 #include <QFontComboBox>
 #include <QInputDialog>
 #include <QMenu>
+#include <QIcon>
 #include <QApplication>
 #include <QActionGroup>
 #include <QItemSelectionModel>
@@ -282,26 +283,36 @@ void DAAppTableActionHandler::initConnections()
         mDeps.actions->actionTableBorder->setMenu(borderMenu);
         connect(borderMenu, &QMenu::aboutToShow, this, [ this, borderMenu ]() {
             borderMenu->clear();
-            auto addPreset = [ this, borderMenu ](const QString& text, quint8 sides, bool outline) {
-                QAction* act = borderMenu->addAction(text);
+            // 每项配一个「单元格网格 + 高亮边」示意图标（样式对齐 Excel 的边框菜单）：
+            // 浅灰 #B2B2B2 网格表示未设置的线，深蓝灰 #5D6D7E 表示本次设置的线。
+            auto addPreset = [ this, borderMenu ](const QString& text, const QString& iconPath,
+                                                 quint8 sides, bool outline) {
+                QAction* act = borderMenu->addAction(QIcon(iconPath), text);
                 connect(act, &QAction::triggered, this, [ this, sides, outline ]() {
                     applyBorderPreset(sides, outline);
                 });
             };
             addPreset(QCoreApplication::translate("DA::DAAppController", "All Borders"),  // cn:全框线
+                      QStringLiteral(":/DAGui/icon/cellBorders.svg"),
                       DA::DATableCellStyle::BorderAll, false);
             addPreset(QCoreApplication::translate("DA::DAAppController", "Outside Borders"),  // cn:外框线
+                      QStringLiteral(":/DAGui/icon/cellBordersOutside.svg"),
                       0, true);
             borderMenu->addSeparator();
             addPreset(QCoreApplication::translate("DA::DAAppController", "No Border"),  // cn:无框线
+                      QStringLiteral(":/DAGui/icon/cellBordersNone.svg"),
                       0, false);
             addPreset(QCoreApplication::translate("DA::DAAppController", "Top Border"),  // cn:上框线
+                      QStringLiteral(":/DAGui/icon/cellBordersTop.svg"),
                       DA::DATableCellStyle::BorderTop, false);
             addPreset(QCoreApplication::translate("DA::DAAppController", "Bottom Border"),  // cn:下框线
+                      QStringLiteral(":/DAGui/icon/cellBordersBottom.svg"),
                       DA::DATableCellStyle::BorderBottom, false);
             addPreset(QCoreApplication::translate("DA::DAAppController", "Left Border"),  // cn:左框线
+                      QStringLiteral(":/DAGui/icon/cellBordersLeft.svg"),
                       DA::DATableCellStyle::BorderLeft, false);
             addPreset(QCoreApplication::translate("DA::DAAppController", "Right Border"),  // cn:右框线
+                      QStringLiteral(":/DAGui/icon/cellBordersRight.svg"),
                       DA::DATableCellStyle::BorderRight, false);
         });
     }

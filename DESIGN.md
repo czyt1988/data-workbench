@@ -352,6 +352,7 @@ Debug：   #497CAD（蓝虫子，单色）
 | 操作类 | `accept.svg`、`cancel.svg`、`copy.svg`、`cut.svg`、`paste.svg`、`delete.svg`、`delete-column.svg`、`delete-all-columns.svg`、`insertColumnRight.svg`、`rename-column.svg`、`renameColumns.svg`、`replace.svg`、`find.svg`、`refresh.svg`、`refresh-all.svg` |
 | 排序 | `sort-ascending.svg`、`sort-descending.svg`（列头方向箭头/菜单项）、`sort.svg`（排序按钮：灰排序条 + 主蓝双向箭头）、`sort-clear.svg`（清除排序：灰排序条 + 橙红斜杠） |
 | 条件格式 | `conditional-format.svg` |
+| 单元格边框 | `cellBorders.svg`（按钮 + 全框线）、`cellBordersOutside.svg`、`cellBordersNone.svg`、`cellBordersTop.svg`、`cellBordersBottom.svg`、`cellBordersLeft.svg`、`cellBordersRight.svg`（菜单项）：浅灰 `#B2B2B2` 网格示意未设置的线，深蓝灰 `#5D6D7E` 示意本次设置的线 |
 | 视图缩放 | `zoomIn.svg`、`zoomOut.svg`、`viewAll.svg`、`gotoMax.svg`、`gotoMin.svg` |
 | 展开/折叠、列显隐 | `expand-all.svg`、`collapse.svg`、`show-column.svg`、`show-all-columns.svg`、`hide-column.svg`、`hide-all-columns.svg` |
 | 选择 | `select-all.svg`、`showDataInList.svg`、`showDataInTree.svg` |
