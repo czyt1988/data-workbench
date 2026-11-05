@@ -110,7 +110,8 @@ QString cssColor(const QColor& c)
 QString htmlCellStyleDeclarations(const DATableCellStyle& style, bool hasBar, double barRatio, const QColor& barColor)
 {
     QStringList decls;
-    if (style.backgroundValid() && style.background().color().alpha() > 0) {
+    // 「无」底色（NoBrush / 无效颜色）不写 background-color，保留表格默认底色
+    if (style.hasFill() && style.background().color().alpha() > 0) {
         decls << QStringLiteral("background-color:") + cssColor(style.background().color());
     }
     if (hasBar) {
@@ -122,7 +123,8 @@ QString htmlCellStyleDeclarations(const DATableCellStyle& style, bool hasBar, do
                      .arg(c.blue())
                      .arg(pct, 0, 'f', 1);
     }
-    if (style.foregroundValid()) {
+    // 「无」字色（无效 QColor）不写 color，保留导出目标的默认文字色
+    if (style.foregroundValid() && style.foreground().isValid()) {
         decls << QStringLiteral("color:") + cssColor(style.foreground());
     }
     if (style.fontValid()) {

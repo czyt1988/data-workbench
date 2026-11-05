@@ -22,12 +22,31 @@ QBrush DATableCellStyle::background() const
 
 /**
  * @brief 设置底色画刷，同时置 backgroundValid=true
+ *
+ * 颜色菜单的「无」传入的是 QBrush(无效 QColor())，这种画刷在 Qt 里 style 仍是
+ * SolidPattern，绘制时按黑色实心填充；这里统一归一为 Qt::NoBrush，表示「显式不填充」，
+ * 绘制/导出层据此保留控件默认底色（亮色主题即白色）。
  * @param b 底色画刷
  */
 void DATableCellStyle::setBackground(const QBrush& b)
 {
     mBackground      = b;
+    if (mBackground.style() == Qt::SolidPattern && !mBackground.color().isValid()) {
+        mBackground = QBrush(Qt::NoBrush);
+    }
     mBackgroundValid = true;
+}
+
+/**
+ * @brief 底色是否真的会画出颜色
+ *
+ * 已设置且不是 NoBrush、颜色有效才参与绘制；「无」（setBackground(QBrush())）
+ * 返回 false，绘制层据此跳过填充、露出控件默认底色。
+ * @return 需要填充返回 true
+ */
+bool DATableCellStyle::hasFill() const
+{
+    return mBackgroundValid && mBackground.style() != Qt::NoBrush && mBackground.color().isValid();
 }
 
 /**

@@ -215,12 +215,14 @@ void DATableStyleItemDelegate::paint(QPainter* painter, const QStyleOptionViewIt
     if (mStyleManager) {
         style = mStyleManager->resolveCellStyle(actualRow, actualCol);
         if (!style.isNull()) {
-            if (style.backgroundValid()) {
+            if (style.hasFill()) {
                 // 直接用 painter 填充背景色，不依赖 backgroundBrush（Qt style 在某些情况下
-                // 不使用 backgroundBrush 绘制背景，fillRect 更可靠）
+                // 不使用 backgroundBrush 绘制背景，fillRect 更可靠）。
+                // 「无」底色是 NoBrush，跳过填充 → 保留控件默认底色（亮色主题即白色）
                 painter->fillRect(opt.rect, style.background());
             }
-            if (style.foregroundValid()) {
+            if (style.foregroundValid() && style.foreground().isValid()) {
+                // 「无」字色是无效 QColor，跳过 → 用默认调色板文字色
                 opt.palette.setColor(QPalette::Text, style.foreground());
             }
             if (style.fontValid()) {
@@ -268,10 +270,10 @@ void DATableStyleItemDelegate::paint(QPainter* painter, const QStyleOptionViewIt
                 DATableConditionalFormatStore::evaluate(*cfRules, index.data(Qt::EditRole), statsValid, stats, dupKeysPtr);
             const DATableCellStyle& cfStyle = cfResult.style;
             if (!cfStyle.isNull()) {
-                if (cfStyle.backgroundValid()) {
+                if (cfStyle.hasFill()) {
                     painter->fillRect(opt.rect, cfStyle.background());
                 }
-                if (cfStyle.foregroundValid()) {
+                if (cfStyle.foregroundValid() && cfStyle.foreground().isValid()) {
                     opt.palette.setColor(QPalette::Text, cfStyle.foreground());
                 }
                 if (cfStyle.fontValid()) {

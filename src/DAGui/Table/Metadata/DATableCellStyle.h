@@ -36,6 +36,8 @@ public:
     QBrush background() const;
     void setBackground(const QBrush& b);
     bool backgroundValid() const;
+    // 底色是否真的会画出颜色（已设置 + 非 NoBrush + 颜色有效）
+    bool hasFill() const;
 
     // 字体颜色
     QColor foreground() const;
