@@ -55,6 +55,7 @@ public:
     void requestImportDataFrame();  // 请求从数据帧导入
     void requestImportVideo();      // 请求导入视频（抽取音频轨）
     void currentSignalChanged();    // 当前信号标签页切换
+    void signalRemoved(const DA::DASignalPtr& signal);  // 某信号标签页已关闭（外部清理相关缓存）
 
 public:
     // 重译界面文本（插件的 retranslate 与页面自身的 LanguageChange 都调用）
@@ -66,6 +67,8 @@ protected:
 private:
     void buildUI();
     void updateEmptyState();
+    // 关闭指定索引的信号：移除标签页与视图并通知外部
+    void removeSignalAt(int index);
 
 private:
     QStackedWidget* mRootStack { nullptr };   ///< 空状态页 / 信号视图页

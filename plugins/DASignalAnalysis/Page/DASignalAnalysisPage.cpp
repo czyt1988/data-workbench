@@ -71,6 +71,35 @@ void DASignalAnalysisPage::addSignal(const DASignalPtr& signal)
 }
 
 /**
+ * @brief 关闭指定索引的信号：移除标签页、销毁视图并通知外部清理缓存
+ *
+ * 标签栏与视图堆叠按索引一一对应。移除期间屏蔽标签栏信号，避免 removeTab
+ * 自动切换当前页的中间态让两个容器索引错位；移除后手动同步堆叠页当前索引。
+ */
+void DASignalAnalysisPage::removeSignalAt(int index)
+{
+    if (index < 0 || index >= mSignals.size()) {
+        return;
+    }
+    const DASignalPtr signal   = mSignals.takeAt(index);
+    DASignalAnalysisView* view = mViews.take(signal.get());
+    const bool oldBlocked      = mTabBar->blockSignals(true);
+    mTabBar->removeTab(index);
+    mTabBar->blockSignals(oldBlocked);
+    if (view) {
+        mSignalStack->removeWidget(view);
+        // 关闭动作来自标签栏信号链，延后销毁，避免在信号发射过程中析构视图
+        view->deleteLater();
+    }
+    if (mSignalStack->count() > 0) {
+        mSignalStack->setCurrentIndex(mTabBar->currentIndex());
+    }
+    updateEmptyState();
+    Q_EMIT signalRemoved(signal);
+    Q_EMIT currentSignalChanged();
+}
+
+/**
  * @brief 当前信号（无信号返回空指针）
  */
 DASignalPtr DASignalAnalysisPage::currentSignal() const
@@ -172,6 +201,8 @@ void DASignalAnalysisPage::buildUI()
     contentLayout->addWidget(mSignalStack, 1);
     connect(mTabBar, &QTabBar::currentChanged, mSignalStack, &QStackedWidget::setCurrentIndex);
     connect(mTabBar, &QTabBar::currentChanged, this, &DASignalAnalysisPage::currentSignalChanged);
+    // 标签上的关闭按钮：移除信号与视图（页面不自行删除信号对象，由外部缓存失效后释放）
+    connect(mTabBar, &QTabBar::tabCloseRequested, this, &DASignalAnalysisPage::removeSignalAt);
 
     mRootStack->addWidget(mEmptyPage);
     mRootStack->addWidget(mContentPage);
