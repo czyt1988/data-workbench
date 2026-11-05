@@ -35,6 +35,7 @@ struct DAPeakCurveResult
 {
     QVector< double > times;      ///< 帧中心时间（秒），长度 = nFrames
     QVector< double > freqByRank; ///< N × nFrames 频率（NaN 表示缺失）
+    QVector< double > magByRank;  ///< N × nFrames 幅值（NaN 表示缺失；「跟随滑块」峰值表用）
     int topN { 0 };
     int nFrames { 0 };
     int nperseg { 0 };
@@ -50,6 +51,14 @@ struct DAPeakCurveResult
             return std::nan("");
         }
         return freqByRank[ rank * nFrames + frame ];
+    }
+
+    double magnitudeAt(int rank, int frame) const
+    {
+        if (rank < 0 || rank >= topN || frame < 0 || frame >= nFrames || magByRank.size() != topN * nFrames) {
+            return std::nan("");
+        }
+        return magByRank[ rank * nFrames + frame ];
     }
 };
 }  // namespace DA

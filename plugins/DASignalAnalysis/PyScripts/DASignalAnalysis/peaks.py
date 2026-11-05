@@ -110,6 +110,7 @@ def compute_peak_curves_sync(source, params, progress_cb=None):
     freqs = np.fft.rfftfreq(nperseg, d=1.0 / fs)
 
     freq_by_rank = np.full((top_n, n_frames), np.nan, dtype=np.float64)
+    mag_by_rank = np.full((top_n, n_frames), np.nan, dtype=np.float64)
     total_blocks = (n_frames + _BLOCK_FRAMES - 1) // _BLOCK_FRAMES
     for block_idx in range(total_blocks):
         f0 = block_idx * _BLOCK_FRAMES

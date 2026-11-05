@@ -2,6 +2,7 @@
 // Qt
 #include <QMenu>
 #include <QActionGroup>
+#include <cmath>
 #include <QDebug>
 #include <QFileDialog>
 #include <QFileInfo>
@@ -288,6 +289,12 @@ void DASignalAnalysisUI::addSignalAndActivate(const DASignalPtr& sig)
         connect(view, &DASignalAnalysisView::envelopeRequested, this, &DASignalAnalysisUI::onViewRequestEnvelope);
         connect(view, &DASignalAnalysisView::heatmapRequested, this, &DASignalAnalysisUI::onViewRequestHeatmap);
         connect(view, &DASignalAnalysisView::currentTimeChanged, this, &DASignalAnalysisUI::onViewTimeChanged);
+        connect(view, &DASignalAnalysisView::channelChanged, this, [this](int) {
+            // 通道变了：峰值与曲线需要按新通道重算
+            mPeakCurvesRequested = false;
+            mCurrentCurves       = DAPeakCurveResult();
+            requestPeaks(true);
+        });
     }
     mUI->addInfoLogMessage(tr("Signal imported: %1 (%2 Hz, %3 s)")
                                .arg(sig->name())
@@ -500,10 +507,11 @@ void DASignalAnalysisUI::requestPeaks(bool withCurves)
         return;
     }
     const DASignalAnalysisParams params = paramsForSignal(sig);
-    mWorker->computePeaks(sig, 0, params);
+    const int channel = (mPage && mPage->viewForSignal(sig.get())) ? mPage->viewForSignal(sig.get())->currentChannel() : 0;
+    mWorker->computePeaks(sig, channel, params);
     if (withCurves && !mPeakCurvesRequested) {
         mPeakCurvesRequested = true;
-        mWorker->computePeakCurves(sig, 0, params);
+        mWorker->computePeakCurves(sig, channel, params);
     }
 }
 
@@ -1148,13 +1156,13 @@ void DASignalAnalysisUI::onWorkerFailed(const QString& error)
 /**
  * @brief 视图请求计算频谱
  */
-void DASignalAnalysisUI::onViewRequestSpectrum(const DASignalPtr& signal)
+void DASignalAnalysisUI::onViewRequestSpectrum(const DASignalPtr& signal, int channel)
 {
     if (!mWorker || !signal) {
         return;
     }
     mPendingSignal = signal.get();
-    mWorker->computeSpectrum(signal, 0, paramsForSignal(signal));
+    mWorker->computeSpectrum(signal, channel, paramsForSignal(signal));
 }
 
 /**
@@ -1167,7 +1175,7 @@ void DASignalAnalysisUI::onViewRequestEnvelope(qint64 start, qint64 end, int wid
         return;
     }
     mPendingEnvelopeView = view;
-    mWorker->computeEnvelope(view->signal(), 0, start, end, width);
+    mWorker->computeEnvelope(view->signal(), view->currentChannel(), start, end, width);
 }
 
 /**
@@ -1209,6 +1217,9 @@ void DASignalAnalysisUI::onPlayerPositionChanged(qint64 ms)
     mSyncingFromPlayer = true;
     if (DASignalAnalysisView* v = mPage->viewForSignal(mPage->currentSignal().get())) {
         v->setCurrentTime(ms / 1000.0);
+        if (v->isFollowSlider()) {
+            updatePeaksForCurrentFrame();
+        }
     }
     mSyncingFromPlayer = false;
 }
@@ -1225,6 +1236,13 @@ void DASignalAnalysisUI::onViewTimeChanged(double seconds)
         mPlayer->pause();
     }
     mPlayer->seekMs(qint64(seconds * 1000.0));
+    if (mPage && mPage->currentSignal()) {
+        if (DASignalAnalysisView* view = mPage->viewForSignal(mPage->currentSignal().get())) {
+            if (view->isFollowSlider()) {
+                updatePeaksForCurrentFrame();
+            }
+        }
+    }
 }
 
 /**
@@ -1249,7 +1267,7 @@ void DASignalAnalysisUI::onViewRequestHeatmap(int columns, int rows)
         }
     }
     mPendingHeatmapView = view;
-    mWorker->computeHeatmap(view->signal(), 0, view->params(), columns, rows);
+    mWorker->computeHeatmap(view->signal(), view->currentChannel(), view->params(), columns, rows);
 }
 
 /**
@@ -1292,6 +1310,64 @@ void DASignalAnalysisUI::onWorkerPeakCurvesReady(const DAPeakCurveResult& result
     if (mPeakPanel) {
         mPeakPanel->setPeakCurves(result);
     }
+}
+
+/**
+ * @brief 跟随滑块时按当前帧刷新峰值表与峰值标记（D13）
+ *
+ * 用每帧前 N 扫描结果里当前时间最近的一帧重建峰值表（幅值、相对主峰、占比现场算）。
+ */
+void DASignalAnalysisUI::updatePeaksForCurrentFrame()
+{
+    if (!mPage || !mCurrentCurves.isValid()) {
+        return;
+    }
+    DASignalPtr sig = mPage->currentSignal();
+    if (!sig) {
+        return;
+    }
+    DASignalAnalysisView* view = mPage->viewForSignal(sig.get());
+    if (!view) {
+        return;
+    }
+    // 找当前时间最近的帧
+    const double t = view->currentTime();
+    int frame      = 0;
+    double bestD   = std::numeric_limits< double >::infinity();
+    for (int i = 0; i < mCurrentCurves.times.size(); ++i) {
+        const double d = std::fabs(mCurrentCurves.times.at(i) - t);
+        if (d < bestD) {
+            bestD = d;
+            frame = i;
+        }
+    }
+    DAPeakResult peaks;
+    QVector< double > mags;
+    for (int rank = 0; rank < mCurrentCurves.topN; ++rank) {
+        const double f = mCurrentCurves.at(rank, frame);
+        const double m = mCurrentCurves.magnitudeAt(rank, frame);
+        if (std::isfinite(f) && std::isfinite(m)) {
+            peaks.frequencies.append(f);
+            mags.append(m);
+        }
+    }
+    if (peaks.frequencies.isEmpty()) {
+        return;
+    }
+    peaks.magnitudes = mags;
+    const double ref = mags.first();
+    double powerSum  = 0.0;
+    for (double m : mags) {
+        powerSum += m * m;
+    }
+    for (double m : mags) {
+        peaks.relDb.append(20.0 * std::log10(qMax(m, 1e-30) / qMax(ref, 1e-30)));
+        peaks.share.append(powerSum > 0.0 ? (m * m / powerSum * 100.0) : 0.0);
+    }
+    if (mPeakPanel) {
+        mPeakPanel->setPeaks(peaks);
+    }
+    view->setPeaks(peaks);
 }
 
 /**
