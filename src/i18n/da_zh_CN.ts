@@ -3260,6 +3260,14 @@
         <source>Wrap the text of selected cells (raise row height manually if needed)</source>
         <translation>选中单元格文字自动换行（需要时用「单元格大小」手动调高行高）</translation>
     </message>
+    <message>
+        <source>Row Height</source>
+        <translation>行高</translation>
+    </message>
+    <message>
+        <source>Set the row height of the whole table, or switch between compact and normal height</source>
+        <translation>设置整表行高，或在紧凑/普通行高之间切换</translation>
+    </message>
 </context>
 <context>
     <name>DA::DAAppApplicationWidget</name>
@@ -3938,6 +3946,14 @@
         <location filename="../APP/Controller/DAAppTableActionHandler.cpp"/>
         <source>Set Row Height...</source>
         <translation>设置行高...</translation>
+    </message>
+    <message>
+        <source>Compact</source>
+        <translation>紧凑</translation>
+    </message>
+    <message>
+        <source>Normal</source>
+        <translation>普通</translation>
     </message>
 </context>
 <context>
@@ -9569,6 +9585,10 @@
         <location line="+1"/>
         <source>Clear Sort</source>
         <translation>清除排序</translation>
+    </message>
+    <message>
+        <source>Set Row Height...</source>
+        <translation>设置整表行高...</translation>
     </message>
 </context>
 <context>

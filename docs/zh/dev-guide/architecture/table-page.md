@@ -109,12 +109,18 @@ bool DATableXxxController::runXxx(...)
 | `notifyDataModified` | 数据脏标（页面 `dataModified` 信号同源） | Facade |
 | `isHeaderPickMode` | 表头拾取模式查询（排序守卫） | Facade |
 
-## 6. 冻结/隐藏/列序的真源
+## 6. 冻结/隐藏/列序/行高的真源
 
-视图状态子存储（`DATableViewStateStore`，借自元数据束）是列视图的**唯一真源**：
-`DATableViewStateController::applyFromStore()` 是唯一投影路径（列宽 → 行头宽 → 行高/表头高
-→ 列序/隐藏/冻结进窗格容器 → 末轮内容自适应）。`isColumnInFrozenArea` 纯查表，写入时机只在投影内。
+视图状态子存储（`DATableViewStateStore`，借自元数据束）是列视图与行高的**唯一真源**：
+`DATableViewStateController::applyFromStore()` 是唯一投影路径（列宽 → 行头宽 → 默认行高/表头高
+→ 逐行行高覆盖 → 列序/隐藏/冻结进窗格容器 → 末轮内容自适应）。`isColumnInFrozenArea` 纯查表，写入时机只在投影内。
 任何「让某列可见/冻结」的需求都写 store 再重投影，**禁止**直接操作窗格。
+
+行高分两层：`rowHeight`（默认单值）+ `mRowHeights`（绝对行号 → 像素的逐行覆盖）。
+单行拖动只写覆盖；整表设置（对话框/右键/紧凑/普通）写默认值并清空覆盖。
+滑动窗搬窗时，`DATablePaneAssembler` 连接模型的 `cacheWindowChanged` / `tableStructureChanged`，
+由控制器做**差异重投影**——只遍历「已应用段」与覆盖表，不遍历 20000 段。
+插删行/排序复用 `DATableKeyRemap`（与样式/批注同源），行高跟着行走。
 
 ## 7. 已知边界与不变量
 

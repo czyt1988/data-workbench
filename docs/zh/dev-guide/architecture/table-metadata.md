@@ -71,8 +71,11 @@ classDiagram
       <row-style row="..."/>
       <cell row="..." col="..."/>
       <col-format index="..."/>
-      <view-state row-header-width="60">   <!-- 视图状态兄弟段 -->
+      <view-state row-header-width="60" row-height="24">   <!-- 视图状态兄弟段；row-height 是默认行高 -->
         <column-width name="value" occurrence="0" width="120"/>
+        <row-heights>                     <!-- 逐行行高覆盖（绝对行号 → 像素） -->
+          <row row="3" height="40"/>
+        </row-heights>
         <column-order>                      <!-- 列序（006，列名有序表） -->
           <column name="s" occurrence="0"/>
           <column name="value" occurrence="0"/>

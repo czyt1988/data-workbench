@@ -3194,6 +3194,14 @@
         <source>Wrap the text of selected cells (raise row height manually if needed)</source>
         <translation>Wrap the text of selected cells (raise row height manually if needed)</translation>
     </message>
+    <message>
+        <source>Row Height</source>
+        <translation>Row Height</translation>
+    </message>
+    <message>
+        <source>Set the row height of the whole table, or switch between compact and normal height</source>
+        <translation>Set the row height of the whole table, or switch between compact and normal height</translation>
+    </message>
 </context>
 <context>
     <name>DA::DAAppApplicationWidget</name>
@@ -3867,6 +3875,14 @@
         <location filename="../APP/Controller/DAAppTableActionHandler.cpp"/>
         <source>Set Row Height...</source>
         <translation>Set Row Height...</translation>
+    </message>
+    <message>
+        <source>Compact</source>
+        <translation>Compact</translation>
+    </message>
+    <message>
+        <source>Normal</source>
+        <translation>Normal</translation>
     </message>
 </context>
 <context>
@@ -9483,6 +9499,10 @@
         <location line="+3"/>
         <source>Manage Columns...</source>
         <translation>Manage Columns...</translation>
+    </message>
+    <message>
+        <source>Set Row Height...</source>
+        <translation>Set Row Height...</translation>
     </message>
 </context>
 <context>
