@@ -11,6 +11,7 @@ class QMenu;
 class QMouseEvent;
 class QContextMenuEvent;
 class QPainter;
+class QFontMetrics;
 
 namespace DA
 {
@@ -102,6 +103,11 @@ public:
     // 2026-10-18 交互修订——点击表头不再排序；计算列追加「编辑公式/重新计算/移除公式（保留数据）」组，
     // 004 T1.23；调用方负责弹出与销毁）
     QMenu* buildColumnContextMenu(int logicalIndex);
+    // 构建行头右键菜单（整表行高设置；仅 vertical 实例使用，调用方负责弹出与销毁）
+    QMenu* buildRowHeaderContextMenu();
+
+    // 默认行高（字体行距 ×1.2）：视图构造与表头构造共用，避免魔法数散落
+    static int defaultRowHeightFor(const QFontMetrics& fm);
 
     // 行头宽拖拽的最小宽度（像素）
     static int minimumRowHeaderWidth();
@@ -137,9 +143,11 @@ Q_SIGNALS:
     void columnDataExportRequested(int logicalIndex, DA::DADataHeaderView::ColumnDataFormat format);
     // 行头宽度拖拽结束（仅 vertical 实例发射，页面据此写视图状态）
     void rowHeaderWidthChanged(int width);
-    // 行边界拖拽改统一行高结束（仅 vertical 实例发射；滑动窗下行高按单值语义持久化，
-    // 页面据此写视图状态并套到各窗格）
-    void rowHeightChanged(int height);
+    // 行边界拖拽改「该行」行高结束（仅 vertical 实例发射；logicalIndex 是窗口内行号，
+    // 页面经窗格 toActualRow 换算成绝对行号后写逐行覆盖）
+    void rowHeightChanged(int logicalIndex, int height);
+    // 行头右键「设置整表行高…」被点击（仅 vertical 实例发射；消费方弹输入框做批量设置）
+    void rowHeightPromptRequested();
     // 水平表头底边拖拽改表头高结束（仅 horizontal 实例发射；页面据此写视图状态并套到各窗格）
     void horizontalHeaderHeightChanged(int height);
 
@@ -157,7 +165,7 @@ protected:
     void paintSection(QPainter* painter, const QRect& rect, int logicalIndex) const override;
 
 private:
-    // 自定义段边界拖拽类别（列宽/统一行高/水平表头高；None=未拖拽）
+    // 自定义段边界拖拽类别（列宽/单行行高/水平表头高；None=未拖拽）
     enum class ResizeKind
     {
         None,

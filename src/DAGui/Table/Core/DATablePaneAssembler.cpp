@@ -10,6 +10,7 @@
 #include "Table/Metadata/DATableNoteStore.h"
 #include "Table/Metadata/DATableComputedColumnStore.h"
 #include "Table/Metadata/DATableViewStateStore.h"
+#include "Table/Models/DAAbstractCacheWindowTableModel.h"
 #include "Table/Views/DATablePaneContainer.h"
 
 namespace DA
@@ -59,9 +60,9 @@ void DATablePaneAssembler::assemble(DADataTableView* pane) const
     if (DADataHeaderView* hh = qobject_cast< DADataHeaderView* >(pane->horizontalHeader())) {
         wireHorizontalHeader(hh, pane);
     }
-    // 5) 垂直表头接线
+    // 5) 垂直表头接线（需要窗格做「窗口内行号 → 绝对行号」换算）
     if (DADataHeaderView* vh = qobject_cast< DADataHeaderView* >(pane->verticalHeader())) {
-        wireVerticalHeader(vh);
+        wireVerticalHeader(vh, pane);
     }
 }
 
@@ -100,11 +101,12 @@ void DATablePaneAssembler::wireHorizontalHeader(DADataHeaderView* hh, DADataTabl
 }
 
 /**
- * @brief 垂直表头接线（行头宽拖拽/统一行高）
+ * @brief 垂直表头接线（行头宽拖拽/单行行高/行头右键/搬窗重投影）
  *
  * @param vh 垂直表头
+ * @param pane 归属窗格（窗口内行号 → 绝对行号换算）
  */
-void DATablePaneAssembler::wireVerticalHeader(DADataHeaderView* vh) const
+void DATablePaneAssembler::wireVerticalHeader(DADataHeaderView* vh, DADataTableView* pane) const
 {
     // 行头宽拖拽 → 写视图状态 + 冻结几何重算（006e）
     QObject::connect(vh, &DADataHeaderView::rowHeaderWidthChanged, vh, [ this ](int width) {
@@ -115,14 +117,32 @@ void DATablePaneAssembler::wireVerticalHeader(DADataHeaderView* vh) const
             pc->updateFrozenGeometry();
         }
     });
-    // 统一行高拖拽落库（行边界热区）：写视图状态 + 套到各窗格
-    QObject::connect(vh, &DADataHeaderView::rowHeightChanged, vh, [ this ](int height) {
+    // 单行行高拖拽落库：窗口内行号 → 绝对行号，写逐行覆盖（store 信号驱动重投影）
+    QObject::connect(vh, &DADataHeaderView::rowHeightChanged, vh, [ this, pane ](int logicalIndex, int height) {
         if (DATableViewStateStore* vsStore = mCtx.viewStateStore()) {
-            vsStore->setRowHeight(height);
-        }
-        if (mViewState) {
-            mViewState->applyRowHeightToPanes(height);
+            vsStore->setRowHeightOverride(pane->toActualRow(logicalIndex), height);
         }
     });
+    // 行头右键「设置整表行高…」：转发到窗格的既有表意信号（页面弹输入框）
+    QObject::connect(vh, &DADataHeaderView::rowHeightPromptRequested, pane, &DADataTableView::rowHeightPromptRequested);
+    // 滑动窗搬窗 / 插删行列后：段号与绝对行号的映射变了，把逐行覆盖重新落到正确的段
+    if (DAAbstractCacheWindowTableModel* cacheModel = pane->getCacheModel()) {
+        QObject::connect(cacheModel,
+                         &DAAbstractCacheWindowTableModel::cacheWindowChanged,
+                         pane,
+                         [ this, pane ](int, int) {
+                             if (mViewState) {
+                                 mViewState->applyRowHeightOverridesToPane(pane);
+                             }
+                         });
+        QObject::connect(cacheModel,
+                         &DAAbstractCacheWindowTableModel::tableStructureChanged,
+                         pane,
+                         [ this, pane ]() {
+                             if (mViewState) {
+                                 mViewState->applyRowHeightOverridesToPane(pane);
+                             }
+                         });
+    }
 }
 }  // end of namespace DA

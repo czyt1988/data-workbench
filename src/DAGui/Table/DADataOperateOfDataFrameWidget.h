@@ -154,8 +154,12 @@ public:
     bool autoFitSelectedColumnWidths();
     // 设置选中列列宽（A3，像素，钳制 20..2000）；无选中列返回 false；不进撤销栈
     bool setSelectedColumnWidth(int width);
-    // 设置行高（A3，像素，全表统一——滑动窗下行高单值约束 R6）；不进撤销栈
+    // 设置行高（A3，像素，整表统一：写默认行高并清除全部逐行覆盖）；不进撤销栈
     void setTableRowHeight(int height);
+    // 紧凑行高：行高 = 字体高度 + 2px（Ribbon「视图」面板下拉「紧凑」）
+    void setCompactRowHeight();
+    // 普通行高：恢复进入紧凑前的常规行高（未记录时回退程序默认行高）
+    void setNormalRowHeight();
     // 当前行高（设置行高对话框的默认值）
     int currentRowHeight() const;
     // 当前选中列的代表列宽（设置列宽对话框的默认值；无选中列返回 -1）
@@ -464,6 +468,8 @@ protected:
     void changeEvent(QEvent* e) override;
 
 private:
+    // 整表行高落地（不更新「常规行高」记忆；紧凑/普通与显式设置共用）
+    void setTableRowHeightNoRemember(int height);
     // ===== 条件格式菜单（WPS 式预设入口；实现迁入 DATableConditionalFormatController，008 期3）=====
     // 视图行号（滑动窗内逻辑行）转数据源绝对行号：数据操作唯一换算点
     int toActualRow(int viewRow) const;

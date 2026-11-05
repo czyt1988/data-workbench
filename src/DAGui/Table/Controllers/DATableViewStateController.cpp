@@ -25,6 +25,14 @@ DATableViewStateController::DATableViewStateController(const DATablePageContext&
                                                        QObject* parent)
     : QObject(parent), mCtx(ctx), mSel(sel)
 {
+    // 逐行行高覆盖的任何变更（单行拖动/插删行/排序/清空）→ 差异重投影。
+    // store 是会话级对象、比页面长寿，连接随本对象析构自动断开。
+    if (DATableViewStateStore* vsStore = mCtx.viewStateStore()) {
+        connect(vsStore,
+                &DATableViewStateStore::rowHeightsChanged,
+                this,
+                &DATableViewStateController::applyRowHeightOverridesToPanes);
+    }
 }
 
 /**
@@ -64,10 +72,12 @@ void DATableViewStateController::applyFromStore()
     }
     // 2) 行头宽：设给行头归属方（冻结时归属冻结窗格，否则主窗格）
     applyRowHeaderWidthToOwner();
-    // 2.5) 统一行高 / 水平表头高（单值设置，套到各窗格；滑动窗下段号=窗口行号，
-    //      逐行行高无稳定语义，故行高按单值，R6 同纪律）
+    // 2.5) 默认行高 / 逐行覆盖 / 水平表头高：默认值套到各窗格后，
+    //      再把「绝对行号 → 高度」的覆盖落到当前窗口内的段（搬窗时由窗格信号重投影）
     if (const int rowH = vsStore->rowHeight(); rowH > 0) {
         applyRowHeightToPanes(rowH);
+    } else {
+        applyRowHeightOverridesToPanes();
     }
     if (const int headH = vsStore->horizontalHeaderHeight(); headH > 0) {
         applyHeaderHeightToPanes(headH);
@@ -381,10 +391,11 @@ void DATableViewStateController::applyRowHeaderWidthToOwner()
 }
 
 /**
- * @brief 统一行高套到全部窗格垂直表头
+ * @brief 默认行高套到全部窗格垂直表头
  *
- * 滑动窗下段号=窗口行号，逐行行高无稳定语义（R6 同纪律）：行高按单值——默认行高
- * + 全部可见段一并设齐，滚动换入的新段随默认行高保持一致。拖拽落库与加载回填共用。
+ * 整表统一行高（对话框/右键/紧凑/普通）：默认行高 + 全部可见段一并设齐，
+ * 滚动换入的新段随默认行高保持一致。段被统一成默认值后，之前的逐行覆盖记录
+ * 全部失效，末尾按 store 重新套用仍然存在的覆盖（加载回填路径）。
  * @param height 行高（像素，<=0 忽略）
  */
 void DATableViewStateController::applyRowHeightToPanes(int height)
@@ -405,6 +416,84 @@ void DATableViewStateController::applyRowHeightToPanes(int height)
                 }
             }
         }
+    }
+    mAppliedRowHeights.clear();
+    applyRowHeightOverridesToPanes();
+}
+
+/**
+ * @brief 逐行行高覆盖套到全部窗格
+ *
+ * 差异增量实现：只遍历「已应用段」与「store 覆盖」两张小表，
+ * 不遍历滑动窗 20000 段。窗口平移/结构变化后由窗格信号单窗格调用。
+ */
+void DATableViewStateController::applyRowHeightOverridesToPanes()
+{
+    const QList< DADataTableView* > panes = mCtx.panes();
+    // 清理已销毁窗格的残留键（指针值不 dereference，但避免地址复用误判）
+    for (auto it = mAppliedRowHeights.begin(); it != mAppliedRowHeights.end();) {
+        if (!panes.contains(it.key())) {
+            it = mAppliedRowHeights.erase(it);
+        } else {
+            ++it;
+        }
+    }
+    for (DADataTableView* pane : panes) {
+        applyRowHeightOverridesToPane(pane);
+    }
+}
+
+/**
+ * @brief 逐行行高覆盖套到指定窗格（差异增量）
+ *
+ * 段号是「窗口内行号」，覆盖按「数据源绝对行号」存：窗口平移后同一段代表的行变了，
+ * 所以先按 store 校验已应用记录（不再匹配的恢复默认），再把落在当前窗口内的覆盖
+ * 重新设到对应段。复杂度 O(覆盖数)，与窗口大小无关。
+ * @param pane 目标窗格
+ */
+void DATableViewStateController::applyRowHeightOverridesToPane(DADataTableView* pane)
+{
+    DATableViewStateStore* vsStore = mCtx.viewStateStore();
+    if (!pane || !vsStore) {
+        return;
+    }
+    QHeaderView* vh = pane->verticalHeader();
+    if (!vh) {
+        return;
+    }
+    const int sectionCount = vh->count();
+    // 恢复默认值：优先 store 记录的默认行高，否则用表头当前默认
+    const int storedDefault = vsStore->rowHeight();
+    const int fallback      = (storedDefault > 0) ? storedDefault : vh->defaultSectionSize();
+    if (storedDefault > 0 && vh->defaultSectionSize() != storedDefault) {
+        vh->setDefaultSectionSize(storedDefault);
+    }
+    QHash< int, int >& applied = mAppliedRowHeights[ pane ];
+    // 1) 已应用段：对应绝对行不再有覆盖（或高度变了）→ 恢复默认
+    for (auto it = applied.begin(); it != applied.end();) {
+        const int logical = it.key();
+        const int actual  = pane->toActualRow(logical);
+        const int want    = vsStore->rowHeightOverride(actual);
+        if (logical < 0 || logical >= sectionCount || want != it.value()) {
+            if (logical >= 0 && logical < sectionCount && !vh->isSectionHidden(logical)) {
+                vh->resizeSection(logical, fallback);
+            }
+            it = applied.erase(it);
+        } else {
+            ++it;
+        }
+    }
+    // 2) store 覆盖落到当前窗口内的段
+    const QHash< int, int > overrides = vsStore->rowHeightOverrides();
+    for (auto it = overrides.constBegin(); it != overrides.constEnd(); ++it) {
+        const int logical = pane->toLogicalRow(it.key());
+        if (logical < 0 || logical >= sectionCount || vh->isSectionHidden(logical)) {
+            continue;
+        }
+        if (vh->sectionSize(logical) != it.value()) {
+            vh->resizeSection(logical, it.value());
+        }
+        applied.insert(logical, it.value());
     }
 }
 

@@ -17,6 +17,7 @@
 // qt
 #include <QTableView>
 #include <QHeaderView>
+#include <QSignalBlocker>
 #include <QSet>
 #include <QHash>
 #include <QMap>
@@ -180,6 +181,7 @@ public:
     DATableStyleItemDelegate* mStyleDelegate { nullptr };
     DATablePaneContainer* mPaneContainer { nullptr };  ///< 列轴窗格容器（页级拥有，006；主窗格运行时包装进容器）
     bool mHeaderPickMode { false };     ///< 表头拾取模式（图表「选择序列」会话期间：表头点击只转发不排序）
+    int mNormalRowHeight { -1 };        ///< 常规行高记忆（紧凑/普通切换恢复用；-1 = 未记录）
     std::unique_ptr< DATablePageContext > mContext;          ///< 依赖注入载体：模型/主窗格/元数据束聚合
     std::unique_ptr< DATableSelectionService > mSelection;   ///< 选区/坐标纯查询服务（构造注入上下文）
     DATableMutationCoordinator* mMutation { nullptr };  ///< 编辑后效协调器（008 期2，QObject 父子持有）
@@ -1084,8 +1086,8 @@ namespace
 // 设置列宽允许范围（像素）：下限保证可读，上限防误操作把列拉爆
 constexpr int c_minColumnWidth = 20;
 constexpr int c_maxColumnWidth = 2000;
-// 设置行高允许范围（像素）
-constexpr int c_minRowHeight = 10;
+// 设置行高允许范围（像素）：下限放宽到 4px，允许「紧凑」级别的手动设置
+constexpr int c_minRowHeight = 4;
 constexpr int c_maxRowHeight = 500;
 }  // namespace
 
@@ -1151,20 +1153,73 @@ bool DADataOperateOfDataFrameWidget::setSelectedColumnWidth(int width)
 }
 
 /**
- * @brief 设置行高（像素，全表统一；落库 + 套到全部窗格；不进撤销栈）
+ * @brief 设置行高（像素，整表统一；落库 + 套到全部窗格；不进撤销栈）
+ *
+ * 整表设置 = 写默认行高 + 清除全部逐行覆盖（与 Excel「设置行高」一致：
+ * 单行例外被整表设置覆盖掉）。用户显式设定的高度记为「常规行高」，
+ * 供「紧凑/普通」切换时恢复。
  * @param height 目标行高（像素，钳制后应用）
  */
 void DADataOperateOfDataFrameWidget::setTableRowHeight(int height)
 {
+    d_func()->mNormalRowHeight = qBound(c_minRowHeight, height, c_maxRowHeight);
+    setTableRowHeightNoRemember(height);
+}
+
+/**
+ * @brief 整表行高落地（不改「常规行高」记忆）
+ *
+ * 写默认行高 + 清除全部逐行覆盖，然后统一投影到所有窗格并重算冻结区几何。
+ * @param height 目标行高（像素，钳制后应用）
+ */
+void DADataOperateOfDataFrameWidget::setTableRowHeightNoRemember(int height)
+{
     const int h = qBound(c_minRowHeight, height, c_maxRowHeight);
     if (d_func()->mViewStateStore) {
+        // 屏蔽中间态：默认值与覆盖一起改完后由 applyRowHeightToPanes 统一投影
+        QSignalBlocker blocker(d_func()->mViewStateStore);
         d_func()->mViewStateStore->setRowHeight(h);
+        d_func()->mViewStateStore->clearRowHeightOverrides();
     }
     d_func()->mViewStateController->applyRowHeightToPanes(h);
     // 行高变化会改变行头与冻结区几何，重算一次
     if (d_func()->mPaneContainer) {
         d_func()->mPaneContainer->updateFrozenGeometry();
     }
+}
+
+/**
+ * @brief 紧凑行高：行高 = 视图字体高度 + 2px（Ribbon「视图」面板下拉「紧凑」）
+ *
+ * 首次进入紧凑时把当时的行高记为「常规行高」，切回「普通」时恢复。
+ * 与整表设置一样会清除逐行覆盖（紧凑是整表视图状态）。
+ */
+void DADataOperateOfDataFrameWidget::setCompactRowHeight()
+{
+    DADataTableView* pane = getDataTableView();
+    if (!pane) {
+        return;
+    }
+    if (d_func()->mNormalRowHeight <= 0) {
+        d_func()->mNormalRowHeight = currentRowHeight();
+    }
+    const int h = qBound(c_minRowHeight, pane->fontMetrics().height() + 2, c_maxRowHeight);
+    // 不覆盖「常规行高」：普通模式要恢复的是进入紧凑前的高度
+    setTableRowHeightNoRemember(h);
+}
+
+/**
+ * @brief 普通行高：恢复进入紧凑前的常规行高（未记录时回退程序默认行高）
+ */
+void DADataOperateOfDataFrameWidget::setNormalRowHeight()
+{
+    int h = d_func()->mNormalRowHeight;
+    if (h <= 0) {
+        DADataTableView* pane = getDataTableView();
+        h = pane ? DADataHeaderView::defaultRowHeightFor(pane->fontMetrics()) : 24;
+    }
+    d_func()->mNormalRowHeight = h;
+    setTableRowHeightNoRemember(h);
 }
 
 /**

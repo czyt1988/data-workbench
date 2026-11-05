@@ -1,6 +1,7 @@
 #ifndef DATABLEVIEWSTATECONTROLLER_H
 #define DATABLEVIEWSTATECONTROLLER_H
 #include "DAGuiAPI.h"
+#include <QHash>
 #include <QList>
 #include <QObject>
 #include <QSet>
@@ -46,8 +47,12 @@ public:
     void storeColumnWidthAt(int logicalColumn, int width);
     // 指定列的内容自适应宽度（表头 + 视口采样单元格文本，钳制上下限；分界条双击用）
     int contentFittedColumnWidth(DADataTableView* pane, int logicalColumn) const;
-    // 统一行高套到全部窗格垂直表头（默认行高+全部可见段；拖拽落库与加载回填共用）
+    // 默认行高套到全部窗格垂直表头（默认行高+全部可见段；整表设置与加载回填共用）
     void applyRowHeightToPanes(int height);
+    // 逐行行高覆盖套到全部窗格（差异增量：只处理已应用段与 store 覆盖，不遍历窗口全部段）
+    void applyRowHeightOverridesToPanes();
+    // 逐行行高覆盖套到指定窗格（滑动窗搬窗/结构变化后重新落到正确的窗口段）
+    void applyRowHeightOverridesToPane(DADataTableView* pane);
     // 水平表头高套到全部窗格（setFixedHeight；拖拽落库与加载回填共用）
     void applyHeaderHeightToPanes(int height);
     // 把 store 里的列宽套到指定窗格（列宽段唯一实现，主/冻结窗格共用；冻结窗格懒建回填用）
@@ -63,6 +68,8 @@ private:
 
     bool mApplyingViewState { false };       ///< 正在投影（屏蔽 sectionResized 采集）
     QSet< int > mFrozenColumnsLogical;  ///< 本轮投影的冻结列集合（logical），isColumnInFrozenArea 查表用
+    // 每个窗格已应用的逐行行高（窗口内段号 → 高度）；差异重投影只遍历这两张表
+    QHash< DADataTableView*, QHash< int, int > > mAppliedRowHeights;
 };
 }  // end of namespace DA
 #endif  // DATABLEVIEWSTATECONTROLLER_H

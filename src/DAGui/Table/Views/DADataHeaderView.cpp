@@ -27,6 +27,8 @@ constexpr int c_rowHeaderResizeHotZone = 8;
 constexpr int c_sectionResizeHotZone = 6;
 // 行头最小宽度（像素）
 constexpr int c_minRowHeaderWidth = 24;
+// 行高下限（像素）：Qt 默认 minimumSectionSize 约 20px，拖不小；用户要求可调到更紧凑
+constexpr int c_minRowHeight = 4;
 
 // 鼠标事件的全局坐标（Qt5/Qt6 兼容）
 QPoint globalPosOf(const QMouseEvent* event)
@@ -57,8 +59,9 @@ DADataHeaderView::DADataHeaderView(Qt::Orientation orientation, QWidget* parent)
     if (orientation == Qt::Vertical) {
         // 行高/Interactive 设置沿用 DACacheWindowTableView 构造对默认行头的同款设置
         // （替换默认表头后这些设置不会自动带过来，必须在此重建）
-        QFontMetrics fm = fontMetrics();
-        setDefaultSectionSize(fm.lineSpacing() * 1.2);
+        setDefaultSectionSize(defaultRowHeightFor(fontMetrics()));
+        // 松开 Qt 的默认行高下限（约 20px）：允许拖到 4px 的紧凑行高
+        setMinimumSectionSize(c_minRowHeight);
         setSectionResizeMode(QHeaderView::Interactive);
         setMouseTracking(true);  // 行头宽热区光标切换需要无按键移动事件
     } else {
@@ -73,6 +76,18 @@ DADataHeaderView::DADataHeaderView(Qt::Orientation orientation, QWidget* parent)
     // 热区光标反馈依赖无按键移动事件：viewport 追踪显式打开（QHeaderView::initialize
     // 已设一次，这里对替换/重父化等路径再保险）
     viewport()->setMouseTracking(true);
+}
+
+/**
+ * @brief 默认行高（字体行距 ×1.2）
+ *
+ * 视图构造与垂直表头构造共用，避免「默认行高」的魔法数散落在多处。
+ * @param fm 目标部件字体度量
+ * @return 像素
+ */
+int DADataHeaderView::defaultRowHeightFor(const QFontMetrics& fm)
+{
+    return qMax(1, int(fm.lineSpacing() * 1.2));
 }
 
 /**
@@ -718,18 +733,21 @@ void DADataHeaderView::restoreHotZoneCursor()
 }
 
 /**
- * @brief 右键菜单（水平实例）：列头右键菜单已迁入本类（R12）
+ * @brief 右键菜单：水平实例弹列头菜单，垂直实例弹行头菜单
  *
- * 垂直实例（行头）右键不弹菜单并 accept 事件——QWidget 默认的 contextMenuEvent
- * 会 ignore 使事件冒泡到父级表格视图，导致表体菜单在行头上弹出；迁移前行头
- * 右键无任何菜单，此处保持该行为。水平实例命中空白列（尾部预留列/非 dataframe）
- * 时同样不弹菜单。
+ * 行头（垂直实例）菜单只有「设置整表行高…」一项：输入像素做整表批量设置
+ * （单行行高由拖动行边界完成）。两个分支都 accept 事件，阻止冒泡到表体菜单。
+ * 水平实例命中空白列（尾部预留列/非 dataframe）时不弹菜单。
  * @param event 上下文菜单事件
  */
 void DADataHeaderView::contextMenuEvent(QContextMenuEvent* event)
 {
     if (orientation() != Qt::Horizontal) {
-        event->accept();  // 行头右键：不弹菜单，阻止冒泡到表体（保持迁移前行为）
+        QMenu* menu = buildRowHeaderContextMenu();
+        menu->popup(event->globalPos());
+        // 弹出后菜单独立生命周期，关闭即销毁
+        connect(menu, &QMenu::aboutToHide, menu, &QMenu::deleteLater);
+        event->accept();
         return;
     }
     const int logical = logicalIndexAt(event->pos());
@@ -742,6 +760,23 @@ void DADataHeaderView::contextMenuEvent(QContextMenuEvent* event)
     // 弹出后菜单独立生命周期，关闭即销毁
     connect(menu, &QMenu::aboutToHide, menu, &QMenu::deleteLater);
     event->accept();
+}
+
+/**
+ * @brief 构建行头右键菜单（整表行高设置）
+ *
+ * 行头右键作用于整表（用户口径：整表批量设置，单行调整走拖拽）。
+ * 菜单项点击后只发信号，弹输入框与落库由页面负责。
+ * @return 菜单对象（调用方负责弹出与销毁）
+ */
+QMenu* DADataHeaderView::buildRowHeaderContextMenu()
+{
+    QMenu* menu     = new QMenu(this);
+    QAction* actSet = menu->addAction(tr("Set Row Height..."));  // cn:设置整表行高...
+    connect(actSet, &QAction::triggered, this, [ this ]() {
+        Q_EMIT rowHeightPromptRequested();
+    });
+    return menu;
 }
 
 /**
@@ -808,16 +843,10 @@ void DADataHeaderView::mouseMoveEvent(QMouseEvent* event)
             resizeSection(mResizeLogical, qMax(minimumSectionSize(), mResizeStartSize + g.x() - mResizeStartPos));
             break;
         case ResizeKind::RowHeight: {
-            // 滑动窗下段号=窗口行号，逐行行高无稳定语义（R6）：行边界拖拽按「统一行高」
-            // 应用（默认行高 + 全部可见段），滚动/重开均一致
+            // 单行行高：只改拖拽命中的那一段，其它行保持原高（Excel 行号边界语义）。
+            // 整表统一行高走「设置行高」（右键行头 / Ribbon 视图面板），不在拖拽路径做。
             const int h = qMax(minimumSectionSize(), mResizeStartSize + g.y() - mResizeStartPos);
-            setDefaultSectionSize(h);
-            const int n = count();
-            for (int i = 0; i < n; ++i) {
-                if (!isSectionHidden(i)) {
-                    resizeSection(i, h);
-                }
-            }
+            resizeSection(mResizeLogical, h);
             break;
         }
         case ResizeKind::HeaderHeight:
@@ -863,7 +892,8 @@ void DADataHeaderView::mouseReleaseEvent(QMouseEvent* event)
         const ResizeKind kind = mResizeKind;
         mResizeKind           = ResizeKind::None;
         if (kind == ResizeKind::RowHeight && mResizeLogical >= 0) {
-            Q_EMIT rowHeightChanged(sectionSize(mResizeLogical));
+            // 带窗口内行号：页面换算成绝对行号后写「逐行覆盖」
+            Q_EMIT rowHeightChanged(mResizeLogical, sectionSize(mResizeLogical));
         } else if (kind == ResizeKind::HeaderHeight) {
             Q_EMIT horizontalHeaderHeightChanged(height());
         }

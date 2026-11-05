@@ -1,4 +1,5 @@
 #include "Table/Metadata/DATableViewStateStore.h"
+#include "Table/Metadata/DATableKeyRemap.h"
 
 namespace DA
 {
@@ -97,7 +98,7 @@ void DATableViewStateStore::setRowHeaderWidth(int width)
 }
 
 /**
- * @brief 查询统一行高
+ * @brief 查询默认行高
  * @return 高度（像素），未记录返回 -1
  */
 int DATableViewStateStore::rowHeight() const
@@ -106,12 +107,108 @@ int DATableViewStateStore::rowHeight() const
 }
 
 /**
- * @brief 记录统一行高
+ * @brief 记录默认行高
  * @param height 高度（像素），<=0 视为清除
  */
 void DATableViewStateStore::setRowHeight(int height)
 {
+    // 默认行高的投影由调用方（页面 setTableRowHeight）统一做全量套用；
+    // 这里不发射 rowHeightsChanged，避免「默认值已改、段还没改」的中间态被差异投影看到
     mRowHeight = (height > 0) ? height : -1;
+}
+
+/**
+ * @brief 查询某绝对行的行高覆盖
+ * @param actualRow 数据源绝对行号
+ * @return 高度（像素），无覆盖返回 -1
+ */
+int DATableViewStateStore::rowHeightOverride(int actualRow) const
+{
+    auto it = mRowHeights.constFind(actualRow);
+    return (it != mRowHeights.constEnd()) ? it.value() : -1;
+}
+
+/**
+ * @brief 记录某绝对行的行高覆盖
+ * @param actualRow 数据源绝对行号
+ * @param height 高度（像素），<=0 视为清除该行覆盖
+ */
+void DATableViewStateStore::setRowHeightOverride(int actualRow, int height)
+{
+    if (actualRow < 0) {
+        return;
+    }
+    if (height <= 0) {
+        if (mRowHeights.remove(actualRow) > 0) {
+            Q_EMIT rowHeightsChanged();
+        }
+        return;
+    }
+    if (mRowHeights.value(actualRow, -1) == height) {
+        return;
+    }
+    mRowHeights.insert(actualRow, height);
+    Q_EMIT rowHeightsChanged();
+}
+
+/**
+ * @brief 清空全部逐行行高覆盖（整表统一行高时调用）
+ */
+void DATableViewStateStore::clearRowHeightOverrides()
+{
+    if (mRowHeights.isEmpty()) {
+        return;
+    }
+    mRowHeights.clear();
+    Q_EMIT rowHeightsChanged();
+}
+
+/**
+ * @brief 全部逐行行高覆盖
+ * @return 绝对行号 → 高度（像素）
+ */
+QHash< int, int > DATableViewStateStore::rowHeightOverrides() const
+{
+    return mRowHeights;
+}
+
+/**
+ * @brief 行插入同步：>= 插入位置的覆盖行号 +1（与样式/批注同源）
+ * @param actualRows 插入的真实行号列表
+ */
+void DATableViewStateStore::onRowsInserted(const QList< int >& actualRows)
+{
+    if (actualRows.isEmpty() || mRowHeights.isEmpty()) {
+        return;
+    }
+    DATableKeyRemap::shiftKeysOnInserted(mRowHeights, actualRows);
+    Q_EMIT rowHeightsChanged();
+}
+
+/**
+ * @brief 行删除同步：删除行的覆盖丢弃，> 删除位置的覆盖行号 -1
+ * @param actualRows 删除的真实行号列表
+ */
+void DATableViewStateStore::onRowsRemoved(const QList< int >& actualRows)
+{
+    if (actualRows.isEmpty() || mRowHeights.isEmpty()) {
+        return;
+    }
+    DATableKeyRemap::shiftKeysOnRemoved(mRowHeights, actualRows);
+    Q_EMIT rowHeightsChanged();
+}
+
+/**
+ * @brief 行重排同步：行高覆盖按正置换跟随行走（与样式/批注同源）
+ * @param perm 正置换（perm[i] = 新表第 i 行在旧表中的行号）；空视为无操作
+ */
+void DATableViewStateStore::onRowsReordered(const QVector< int >& perm)
+{
+    if (perm.isEmpty() || mRowHeights.isEmpty()) {
+        return;
+    }
+    DATableKeyRemap::remapKeys(mRowHeights, perm);
+    Q_EMIT rowHeightsChanged();
 }
 
 /**
@@ -414,7 +511,7 @@ void DATableViewStateStore::removeColumn(const QString& name)
  *
  * 结构：
  * @code
- * <view-state row-header-width="60">
+ * <view-state row-header-width="60" row-height="24">
  *   <column-width name="value" occurrence="0" width="120"/>
  *   <column-order>
  *     <column name="f" occurrence="0"/>
@@ -425,6 +522,9 @@ void DATableViewStateStore::removeColumn(const QString& name)
  *     <column name="a" occurrence="0"/>
  *     <column name="c" occurrence="0"/>
  *   </freeze>
+ *   <row-heights>
+ *     <row row="3" height="40"/>
+ *   </row-heights>
  * </view-state>
  * @endcode
  * 三个新子元素（006）没有内容就不写；既有 column-width 与 row-header-width 形态不变。
@@ -482,6 +582,17 @@ void DATableViewStateStore::toXml(QDomDocument& doc, QDomElement& parent) const
         }
         vs.appendChild(fz);
     }
+    // 逐行行高覆盖（绝对行号 → 高度）
+    if (!mRowHeights.isEmpty()) {
+        QDomElement rhs = doc.createElement(QStringLiteral("row-heights"));
+        for (auto it = mRowHeights.constBegin(); it != mRowHeights.constEnd(); ++it) {
+            QDomElement r = doc.createElement(QStringLiteral("row"));
+            r.setAttribute(QStringLiteral("row"), it.key());
+            r.setAttribute(QStringLiteral("height"), it.value());
+            rhs.appendChild(r);
+        }
+        vs.appendChild(rhs);
+    }
     parent.appendChild(vs);
 }
 
@@ -537,6 +648,21 @@ bool DATableViewStateStore::fromXml(const QDomElement& e)
                 if (!name.isEmpty() && !hiddenAttr.isEmpty() && hiddenAttr != QLatin1String("0")) {
                     mHiddenColumns.insert(qMakePair(name, child.attribute(QStringLiteral("occurrence")).toInt()));
                 }
+            } else if (child.tagName() == QLatin1String("row-heights")) {
+                // 逐行行高覆盖：子元素 row（row=绝对行号，height=像素）
+                QDomNode rn = child.firstChild();
+                while (!rn.isNull()) {
+                    QDomElement re = rn.toElement();
+                    if (!re.isNull() && re.tagName() == QLatin1String("row")) {
+                        const QString rowAttr = re.attribute(QStringLiteral("row"));
+                        const int row         = rowAttr.isEmpty() ? -1 : rowAttr.toInt();
+                        const int height      = re.attribute(QStringLiteral("height")).toInt();
+                        if (row >= 0 && height > 0) {
+                            mRowHeights.insert(row, height);
+                        }
+                    }
+                    rn = rn.nextSibling();
+                }
             } else if (child.tagName() == QLatin1String("freeze")) {
                 // 新格式：子元素 column 列表（顺序 = 冻结区显示顺序）；
                 // 旧格式 columns="N" 计数先记下，由 normalizeToColumns 展开
@@ -573,14 +699,15 @@ bool DATableViewStateStore::fromXml(const QDomElement& e)
 /**
  * @brief 是否没有任何记录
  *
- * 列宽、行头宽、列序（非空）、隐藏（非空）、冻结（非空）任一非空即不为空。
+ * 列宽、行头宽、行高（默认或逐行覆盖）、列序（非空）、隐藏（非空）、冻结（非空）
+ * 任一非空即不为空。
  * @return 全空返回 true
  */
 bool DATableViewStateStore::isEmpty() const
 {
-    return mColumnWidths.isEmpty() && mRowHeaderWidth <= 0 && mRowHeight <= 0 && mHorizontalHeaderHeight <= 0
-           && mColumnOrder.isEmpty() && mHiddenColumns.isEmpty() && mFrozenColumns.isEmpty()
-           && mLegacyFreezeCount <= 0;
+    return mColumnWidths.isEmpty() && mRowHeaderWidth <= 0 && mRowHeight <= 0 && mRowHeights.isEmpty()
+           && mHorizontalHeaderHeight <= 0 && mColumnOrder.isEmpty() && mHiddenColumns.isEmpty()
+           && mFrozenColumns.isEmpty() && mLegacyFreezeCount <= 0;
 }
 
 /**
@@ -593,6 +720,7 @@ void DATableViewStateStore::clear()
     mColumnWidths.clear();
     mRowHeaderWidth         = -1;
     mRowHeight              = -1;
+    mRowHeights.clear();
     mHorizontalHeaderHeight = -1;
     mColumnOrder.clear();
     mHiddenColumns.clear();

@@ -9,6 +9,7 @@
 #include "Table/Ops/DACommandsDataFrame.h"
 #include "Table/Metadata/DATableNoteStore.h"
 #include "Table/Metadata/DATableStyleManager.h"
+#include "Table/Metadata/DATableViewStateStore.h"
 // 日志（用户可见提示必须走 da* 宏并翻译）
 #include "DALogCategory.h"
 
@@ -70,9 +71,10 @@ void DATableRowOps::insertRowAt(int row)
     };
     cmd->setCallBack(mMutation->callbackFor(mutation));
     // 行列增删样式键同步：插入行时 >=row 的键 +1；撤销时按删除处理（>=row 的键 -1）
-    DATableStyleManager* styleMgr = mCtx.styleManager();
-    DATableNoteStore* noteStore   = mCtx.noteStore();
-    cmd->setDirectionalCallBack([ styleMgr, noteStore, row ](bool isUndo) {
+    DATableStyleManager* styleMgr       = mCtx.styleManager();
+    DATableNoteStore* noteStore         = mCtx.noteStore();
+    DATableViewStateStore* vsStore      = mCtx.viewStateStore();
+    cmd->setDirectionalCallBack([ styleMgr, noteStore, vsStore, row ](bool isUndo) {
         if (styleMgr) {
             if (isUndo) {
                 styleMgr->onRowsRemoved({ row });
@@ -86,6 +88,14 @@ void DATableRowOps::insertRowAt(int row)
                 noteStore->onRowsRemoved({ row });
             } else {
                 noteStore->onRowsInserted({ row });
+            }
+        }
+        // 逐行行高覆盖同为位置键：插行后 >=row 的覆盖行号 +1（undo 按删除处理）
+        if (vsStore) {
+            if (isUndo) {
+                vsStore->onRowsRemoved({ row });
+            } else {
+                vsStore->onRowsInserted({ row });
             }
         }
     });
@@ -128,9 +138,10 @@ int DATableRowOps::removeSelectedRows()
     };
     cmd->setCallBack(mMutation->callbackFor(mutation));
     // 行列增删样式键同步：删除行时 ==row 的键删除，>row 的键 -1；撤销时按插入处理
-    DATableStyleManager* styleMgr = mCtx.styleManager();
-    DATableNoteStore* noteStore   = mCtx.noteStore();
-    cmd->setDirectionalCallBack([ styleMgr, noteStore, rows ](bool isUndo) {
+    DATableStyleManager* styleMgr       = mCtx.styleManager();
+    DATableNoteStore* noteStore         = mCtx.noteStore();
+    DATableViewStateStore* vsStore      = mCtx.viewStateStore();
+    cmd->setDirectionalCallBack([ styleMgr, noteStore, vsStore, rows ](bool isUndo) {
         if (styleMgr) {
             if (isUndo) {
                 styleMgr->onRowsInserted(rows);
@@ -145,6 +156,14 @@ int DATableRowOps::removeSelectedRows()
                 noteStore->onRowsInserted(rows);
             } else {
                 noteStore->onRowsRemoved(rows);
+            }
+        }
+        // 逐行行高覆盖同款：删除行的覆盖丢弃，> 删除位置的覆盖行号 -1
+        if (vsStore) {
+            if (isUndo) {
+                vsStore->onRowsInserted(rows);
+            } else {
+                vsStore->onRowsRemoved(rows);
             }
         }
     });

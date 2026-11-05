@@ -19,6 +19,7 @@
 #include "Table/Metadata/DATableNoteStore.h"
 #include "Table/Metadata/DATableStyleManager.h"
 #include "Table/Metadata/DATableValidationStore.h"
+#include "Table/Metadata/DATableViewStateStore.h"
 // 日志（用户可见提示必须走 da* 宏并翻译）
 #include "DALogCategory.h"
 // 忙等待光标（排序是整表操作）
@@ -237,9 +238,10 @@ bool DATableSortController::applySortSpec(const QVector< QPair< int, Qt::SortOrd
     DATableStyleManager* styleMgr               = mCtx.styleManager();
     DATableValidationStore* vaStore              = mCtx.validationStore();
     DATableNoteStore* noteStore                 = mCtx.noteStore();
+    DATableViewStateStore* vsStore              = mCtx.viewStateStore();
     QPointer< DATableSortController > self(this);
     // ① 样式键重映射（先于模型刷新；exec/undo 均传最近应用的置换，undo 传逆置换即等价按逆置换重映射）
-    cmd->setDirectionalCallBack([ styleMgr, vaStore, noteStore, cmdRaw ](bool isUndo) {
+    cmd->setDirectionalCallBack([ styleMgr, vaStore, noteStore, vsStore, cmdRaw ](bool isUndo) {
         Q_UNUSED(isUndo);
         if (styleMgr) {
             styleMgr->onRowsReordered(cmdRaw->lastAppliedPermutation());
@@ -247,6 +249,10 @@ bool DATableSortController::applySortSpec(const QVector< QPair< int, Qt::SortOrd
         // 批注与样式同源（005 T1.26）：同一置换重映射，「批注跟着行走」
         if (noteStore) {
             noteStore->onRowsReordered(cmdRaw->lastAppliedPermutation());
+        }
+        // 逐行行高覆盖同为位置键：同一置换重映射，行高跟着行走
+        if (vsStore) {
+            vsStore->onRowsReordered(cmdRaw->lastAppliedPermutation());
         }
         // 排序移动行位置 → 唯一性违规缓存的行号失效（005 T1.25），保守全失效
         if (vaStore) {

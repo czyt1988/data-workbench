@@ -39,8 +39,8 @@ public:
 private:
     // 水平表头接线（计算列 store/冻结查询/列宽采集/列序拖动/表头高）
     void wireHorizontalHeader(DADataHeaderView* hh, DADataTableView* pane) const;
-    // 垂直表头接线（行头宽拖拽/统一行高）
-    void wireVerticalHeader(DADataHeaderView* vh) const;
+    // 垂直表头接线（行头宽拖拽/单行行高/行头右键/搬窗重投影）
+    void wireVerticalHeader(DADataHeaderView* vh, DADataTableView* pane) const;
 
 private:
     const DATablePageContext& mCtx;          ///< 依赖注入的上下文（构造注入，非拥有）

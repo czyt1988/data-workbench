@@ -6,15 +6,15 @@
 #include <QKeyEvent>
 #include <QScrollBar>
 #include "Table/Views/DAVirtualScrollBar.h"
+#include "Table/Views/DADataHeaderView.h"
 #include "Table/Models/DAAbstractCacheWindowTableModel.h"
 namespace DA
 {
 DACacheWindowTableView::DACacheWindowTableView(QWidget* parent) : QTableView(parent)
 {
 	setAlternatingRowColors(false);
-	QFontMetrics fm = fontMetrics();
 	if (QHeaderView* vheader = verticalHeader()) {
-		vheader->setDefaultSectionSize(fm.lineSpacing() * 1.2);
+		vheader->setDefaultSectionSize(DADataHeaderView::defaultRowHeightFor(fontMetrics()));
 		vheader->setSectionResizeMode(QHeaderView::Interactive);
 	}
 	// 用整表坐标滚动条替换默认纵向滚动条：QScrollBar 的 value/range 仍保持「窗口内行号」

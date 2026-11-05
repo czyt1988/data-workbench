@@ -7,6 +7,7 @@
 #include <QPair>
 #include <QSet>
 #include <QString>
+#include <QVector>
 #include <QDomDocument>
 #include <QDomElement>
 
@@ -22,7 +23,11 @@ namespace DA
  * 解冻后列回到原位，006）。
  *
  * 纪律（R6）：禁止用 QHeaderView::saveState() 持久化——滑动窗下段号=窗口行号，
- * 状态会随滚动互相污染；本存储只按列名与单值记录。
+ * 状态会随滚动互相污染；本存储只按列名、绝对行号与单值记录。
+ *
+ * 行高语义：默认行高为单值（rowHeight），单行调整记录在「绝对行号 → 像素」的
+ * 覆盖表里（rowHeightOverride 系列）。窗口平移由 DATableViewStateController
+ * 重投影覆盖；插删行/排序经 DATableKeyRemap 迁移（与样式/批注同源范式）。
  *
  * 列改名由页面在命令 exec 后调用 renameColumn 迁移；列删除调用 removeColumn。
  * 加载后由页面调一次 normalizeToColumns 收敛（孤儿剪除 + 新列追加列序末尾）。
@@ -54,10 +59,21 @@ public:
     // 行头宽：未记录返回 -1
     int rowHeaderWidth() const;
     void setRowHeaderWidth(int width);
-    // 统一行高（行边界拖拽语义；滑动窗下段号=窗口行号，逐行行高无稳定语义，故单值，R6）：
-    // 未记录返回 -1
+    // 默认行高（全表统一值；未记录返回 -1）
     int rowHeight() const;
     void setRowHeight(int height);
+    // 逐行行高覆盖（绝对行号 → 像素）：未记录返回 -1；设置 <=0 视为清除该行
+    int rowHeightOverride(int actualRow) const;
+    void setRowHeightOverride(int actualRow, int height);
+    // 清空全部逐行覆盖（整表设置行高时调用）
+    void clearRowHeightOverrides();
+    // 全部逐行覆盖（绝对行号 → 像素；投影与序列化用）
+    QHash< int, int > rowHeightOverrides() const;
+    // 行结构同步（与 DATableStyleManager/DATableNoteStore 同源范式）：
+    // 插行/删行位移绝对行号，排序按正置换跟随行走
+    void onRowsInserted(const QList< int >& actualRows);
+    void onRowsRemoved(const QList< int >& actualRows);
+    void onRowsReordered(const QVector< int >& perm);
     // 水平表头高（表头底边拖拽语义）：未记录返回 -1
     int horizontalHeaderHeight() const;
     void setHorizontalHeaderHeight(int height);
@@ -91,12 +107,18 @@ public:
     bool isEmpty() const;
     void clear();
 
+Q_SIGNALS:
+    // 行高（默认值或逐行覆盖）发生变化：视图状态控制器据此重投影
+    void rowHeightsChanged();
+
 private:
     // (列名, occurrence) -> 宽度
     QHash< QPair< QString, int >, int > mColumnWidths;
     int mRowHeaderWidth { -1 };  ///< 行头宽（像素），-1 表示未记录
-    int mRowHeight { -1 };       ///< 统一行高（像素），-1 表示未记录
+    int mRowHeight { -1 };       ///< 默认行高（像素），-1 表示未记录
     int mHorizontalHeaderHeight { -1 };  ///< 水平表头高（像素），-1 表示未记录
+    // 逐行行高覆盖：数据源绝对行号 → 高度（像素）；空 = 无覆盖
+    QHash< int, int > mRowHeights;
     // 列序：列名的有序表（空 = 未记录 = 数据列序）
     QList< QPair< QString, int > > mColumnOrder;
     // 隐藏集合（列名 + occurrence）
