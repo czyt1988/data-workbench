@@ -250,6 +250,19 @@ def infer_sample_rate_from_column(dataframe, column_name):
     return infer_sample_rate(column_as_array(dataframe, column_name))
 
 
+def export_column_to_wav(dataframe, column_name, path, sample_rate):
+    """把数据帧某列导出为 32 位浮点 WAV（数据帧来源播放前调用，T8）。
+
+    NaN 按 0 处理；返回 True 表示写盘成功。
+    """
+    import soundfile as sf
+
+    values = np.asarray(dataframe[column_name].to_numpy(), dtype=np.float32)
+    values = np.nan_to_num(values, nan=0.0, posinf=0.0, neginf=0.0)
+    sf.write(str(path), values, int(round(float(sample_rate))), subtype="FLOAT")
+    return True
+
+
 def dataframe_columns(dataframe):
     """返回 DataFrame 的列名列表（字符串）"""
     return [str(c) for c in dataframe.columns]

@@ -26,6 +26,7 @@ class DAActionsInterface;
 class DASignalAnalysisPage;
 class DASignalAnalysisView;
 class DAPeakDockWidget;
+class DASignalPlayer;
 
 /**
  * @brief 信号分析插件的界面层：中央页面 + 丝带标签页 + 动作管理
@@ -92,6 +93,8 @@ private Q_SLOTS:
     void onPeakWindowToggled(bool on);
     void onPeakMarkerToggled(bool on);
     void onPeakTopNChanged();
+    void onPlayerPositionChanged(qint64 ms);
+    void onViewTimeChanged(double seconds);
 
 private:
     void buildCenterPage();
@@ -101,6 +104,8 @@ private:
     void buildPeakDock();
     // 触发当前信号的峰值表与峰值曲线计算
     void requestPeaks(bool withCurves);
+    // 当前信号的播放源切换（信号标签切换时调用）
+    void syncPlayerSource();
     // 导入成功后加入页面并激活依赖动作
     void addSignalAndActivate(const DA::DASignalPtr& sig);
 
@@ -187,6 +192,9 @@ private:
     bool mPeakCurvesRequested { false };
     DA::DAPeakResult mCurrentPeaks;
     DA::DAPeakCurveResult mCurrentCurves;
+    // 播放控制器（方案 D26）
+    DASignalPlayer* mPlayer { nullptr };
+    bool mSyncingFromPlayer { false };
     // 每个信号标签页记住上次生效参数（D21）
     QHash< const DA::DASignal*, DA::DASignalAnalysisParams > mParamsPerSignal;
     // 频谱结果缓存（随信号对象存活，参数变化才重算）

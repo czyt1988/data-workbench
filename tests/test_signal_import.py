@@ -288,3 +288,23 @@ def test_peak_curves_frequency_sweep(tmp_path):
     # 严格单调比例足够高
     diffs = np.diff(valid)
     assert np.mean(diffs >= 0) > 0.9
+
+
+# ---------------------------------------------------------------- 数据帧播放导出
+
+
+def test_export_column_to_wav(tmp_path):
+    pd = pytest.importorskip("pandas")
+
+    df = pd.DataFrame({"v": [0.1, -0.2, 0.3, float("nan"), 0.0]})
+    out = tmp_path / "export.wav"
+    ok = importer.export_column_to_wav(df, "v", str(out), 48000)
+    assert ok and out.exists()
+    probe = importer.probe_audio(out)
+    assert probe["ok"]
+    assert probe["sample_rate"] == pytest.approx(48000.0)
+    assert probe["channels"] == 1
+    assert probe["frames"] == 5
+    # NaN 按 0 处理
+    data = importer.read_channel_all(out, 0)
+    assert data[3] == pytest.approx(0.0)

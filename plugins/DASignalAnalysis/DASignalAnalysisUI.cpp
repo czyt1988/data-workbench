@@ -27,6 +27,7 @@
 #include "Dialogs/DASignalAnalysisSettingDialog.h"
 #include "Signal/DASignalImporter.h"
 #include "Analysis/DASignalAnalysisWorker.h"
+#include "Playback/DASignalPlayer.h"
 
 namespace DA
 {
@@ -120,6 +121,31 @@ bool DASignalAnalysisUI::initialize(DACoreInterface* core)
                 }
             }
         });
+    }
+    // 播放控制器（D26）
+    mPlayer = new DASignalPlayer(this);
+    connect(mPlayer, &DASignalPlayer::positionChanged, this, &DASignalAnalysisUI::onPlayerPositionChanged);
+    connect(mPlayer, &DASignalPlayer::errorOccurred, this, [this](const QString& err) {
+        mUI->addWarningLogMessage(tr("Playback failed: %1").arg(err));  // cn:播放失败：%1
+    });
+    if (actionPlay) {
+        connect(actionPlay, &QAction::triggered, this, [this]() { mPlayer->play(); });
+    }
+    if (actionPause) {
+        connect(actionPause, &QAction::triggered, this, [this]() { mPlayer->pause(); });
+    }
+    if (actionStop) {
+        connect(actionStop, &QAction::triggered, this, [this]() {
+            mPlayer->stop();
+            if (mPage) {
+                if (DASignalAnalysisView* v = mPage->viewForSignal(mPage->currentSignal().get())) {
+                    v->setCurrentTime(0.0);
+                }
+            }
+        });
+    }
+    if (mPage) {
+        connect(mPage, &DASignalAnalysisPage::currentSignalChanged, this, &DASignalAnalysisUI::syncPlayerSource);
     }
     // 峰值停靠窗口（右侧停靠区，与设置/智能体同区做标签页，D24）
     buildPeakDock();
@@ -228,11 +254,13 @@ void DASignalAnalysisUI::addSignalAndActivate(const DASignalPtr& sig)
     }
     mPage->addSignal(sig);
     setSignalDependentActionsEnabled(true);
+    syncPlayerSource();
     if (DASignalAnalysisView* view = mPage->viewForSignal(sig.get())) {
         view->setParams(paramsForSignal(sig));
         connect(view, &DASignalAnalysisView::spectrumRequested, this, &DASignalAnalysisUI::onViewRequestSpectrum);
         connect(view, &DASignalAnalysisView::envelopeRequested, this, &DASignalAnalysisUI::onViewRequestEnvelope);
         connect(view, &DASignalAnalysisView::heatmapRequested, this, &DASignalAnalysisUI::onViewRequestHeatmap);
+        connect(view, &DASignalAnalysisView::currentTimeChanged, this, &DASignalAnalysisUI::onViewTimeChanged);
     }
     mUI->addInfoLogMessage(tr("Signal imported: %1 (%2 Hz, %3 s)")
                                .arg(sig->name())
@@ -546,6 +574,11 @@ void DASignalAnalysisUI::finalize()
         }
         mPageDock = nullptr;
     }
+    if (mPlayer) {
+        mPlayer->stop();
+        delete mPlayer;
+        mPlayer = nullptr;
+    }
     if (mWorker) {
         mWorker->cancel();
         delete mWorker;
@@ -732,6 +765,63 @@ void DASignalAnalysisUI::onViewRequestEnvelope(qint64 start, qint64 end, int wid
     }
     mPendingEnvelopeView = view;
     mWorker->computeEnvelope(view->signal(), 0, start, end, width);
+}
+
+/**
+ * @brief 当前信号的播放源切换（数据帧来源会先导出临时 WAV）
+ */
+void DASignalAnalysisUI::syncPlayerSource()
+{
+    if (!mPlayer || !mPage) {
+        return;
+    }
+    DASignalPtr sig = mPage->currentSignal();
+    if (!sig) {
+        mPlayer->clearSignal();
+        return;
+    }
+    QString error;
+    if (!mPlayer->setSignal(sig, 0, &error)) {
+        if (actionPlay) {
+            actionPlay->setEnabled(false);
+        }
+        if (!error.isEmpty()) {
+            mUI->addWarningLogMessage(error);
+        }
+        return;
+    }
+    if (actionPlay) {
+        actionPlay->setEnabled(true);
+    }
+}
+
+/**
+ * @brief 播放位置 → 视图播放头（播放头跟随，D27）
+ */
+void DASignalAnalysisUI::onPlayerPositionChanged(qint64 ms)
+{
+    if (!mPage) {
+        return;
+    }
+    mSyncingFromPlayer = true;
+    if (DASignalAnalysisView* v = mPage->viewForSignal(mPage->currentSignal().get())) {
+        v->setCurrentTime(ms / 1000.0);
+    }
+    mSyncingFromPlayer = false;
+}
+
+/**
+ * @brief 用户拖动滑块 / 点击波形：暂停播放并跳转（方案 §8.4）
+ */
+void DASignalAnalysisUI::onViewTimeChanged(double seconds)
+{
+    if (mSyncingFromPlayer || !mPlayer) {
+        return;
+    }
+    if (mPlayer->isPlaying()) {
+        mPlayer->pause();
+    }
+    mPlayer->seekMs(qint64(seconds * 1000.0));
 }
 
 /**
