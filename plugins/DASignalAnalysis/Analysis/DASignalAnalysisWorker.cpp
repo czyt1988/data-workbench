@@ -398,6 +398,7 @@ void DASignalAnalysisWorker::poll()
                 DAPeakCurveResult curves;
                 curves.times      = toDoubleVector(r[ "times" ]);
                 curves.freqByRank = toDoubleVector(r[ "freq_by_rank" ]);
+                curves.magByRank  = toDoubleVector(r[ "mag_by_rank" ]);
                 curves.topN       = r[ "top_n" ].cast< int >();
                 curves.nFrames    = r[ "n_frames" ].cast< int >();
                 curves.nperseg    = r[ "nperseg" ].cast< int >();

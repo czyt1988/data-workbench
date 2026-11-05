@@ -95,7 +95,7 @@ private Q_SLOTS:
                                const QVector< double >& mins,
                                const QVector< double >& maxs);
     void onWorkerFailed(const QString& error);
-    void onViewRequestSpectrum(const DA::DASignalPtr& signal);
+    void onViewRequestSpectrum(const DA::DASignalPtr& signal, int channel);
     void onViewRequestEnvelope(qint64 start, qint64 end, int width);
     void onViewRequestHeatmap(int columns, int rows);
     void onWorkerHeatmapReady(const DA::DAStftResult& result);
@@ -105,6 +105,8 @@ private Q_SLOTS:
     void onPeakMarkerToggled(bool on);
     void onPeakTopNChanged();
     void onPlayerPositionChanged(qint64 ms);
+    // 跟随滑块时按当前帧刷新峰值表与峰值标记（D13）
+    void updatePeaksForCurrentFrame();
     void onViewTimeChanged(double seconds);
     // 导出：峰值表 CSV / 频谱 CSV / 热图矩阵 CSV / 整页位图 / 峰值表送表格页
     void exportPeaksCsv();

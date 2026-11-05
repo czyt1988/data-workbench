@@ -146,6 +146,29 @@ void DASignalAnalysisView::buildUI()
 
     // ---------- 上半：波形 ----------
     mWavePanel = new DASignalChartPanel(QStringLiteral("Waveform"), mVerticalSplitter);  // cn:波形
+    // 多通道下拉：一次分析一个通道（方案 §2.1）
+    mChannelCombo = new QComboBox(mWavePanel);
+    mChannelCombo->setObjectName(QStringLiteral("da-signal-channel-combo"));
+    const QStringList chNames = (mSignal ? mSignal->channelNamesOrDefaults() : QStringList());
+    for (int i = 0; i < chNames.size(); ++i) {
+        mChannelCombo->addItem(chNames.at(i), i);
+    }
+    mChannelCombo->setEnabled(chNames.size() > 1);
+    mWavePanel->addTitleBarWidget(mChannelCombo);
+    connect(mChannelCombo, QOverload< int >::of(&QComboBox::currentIndexChanged), this, [this](int) {
+        // 通道切换：清空缓存并重新请求包络/频谱/热图
+        mEnvelopeValid = false;
+        mEnvXs.clear();
+        mEnvMins.clear();
+        mEnvMaxs.clear();
+        mStft = DAStftResult();
+        requestEnvelopeRefresh();
+        if (mSignal) {
+            Q_EMIT spectrumRequested(mSignal, currentChannel());
+        }
+        requestHeatmapRefresh();
+        Q_EMIT channelChanged(currentChannel());
+    });
     mTimeSlider = new QSlider(Qt::Horizontal, mWavePanel);
     mTimeSlider->setRange(0, 1000);
     mTimeSlider->setValue(0);
@@ -187,6 +210,14 @@ void DASignalAnalysisView::buildUI()
     mFreqAxisCombo->addItem(QStringLiteral("Linear"), false);  // cn:线性
     mFreqAxisCombo->addItem(QStringLiteral("Log"), true);      // cn:对数
     mSpectrumPanel->addTitleBarWidget(mFreqAxisCombo);
+    // 整段 / 跟随滑块（D13：默认整段）
+    mFollowSliderCheck = new QCheckBox(mSpectrumPanel);
+    mSpectrumPanel->addTitleBarWidget(mFollowSliderCheck);
+    connect(mFollowSliderCheck, &QCheckBox::toggled, this, [this](bool on) {
+        mFollowSlider = on;
+        rebuildSpectrumPlot();
+        Q_EMIT currentTimeChanged(currentTime());  // 让外部刷新峰值表（跟随模式下按当前帧）
+    });
     connect(mFreqAxisCombo, QOverload< int >::of(&QComboBox::currentIndexChanged), this, [this](int idx) {
         mLogFrequency = mFreqAxisCombo->itemData(idx).toBool();
         if (mLogFrequency) {
@@ -302,19 +333,43 @@ void DASignalAnalysisView::rebuildSpectrumPlot()
         mSpectrumCurve->setPen(pen);
         mSpectrumCurve->attach(chart);
     }
-    const QVector< double > amps = displayAmplitudes();
+    // 跟随滑块：用 STFT 当前时间所在列的幅值谱（D13）；未算 STFT 时回退整段频谱
+    QVector< double > srcFreqs = mSpectrum.freqs;
+    QVector< double > srcAmps  = displayAmplitudes();
+    if (mFollowSlider && mStft.isValid() && mStft.columns > 0) {
+        const int col = currentStftColumn();
+        QVector< double > colAmps(mStft.rows);
+        for (int r = 0; r < mStft.rows; ++r) {
+            const double v = mStft.values.value(r * mStft.columns + col);
+            colAmps[ r ]   = std::isfinite(v) ? v : 0.0;
+        }
+        srcFreqs = mStft.freqs;
+        // 复用显示口径换算（标定 / dB）
+        const double calib = mParams.calibration;
+        const bool isDb    = (mParams.amplitudeMode == QLatin1String("dbFS")
+                              || mParams.amplitudeMode == QLatin1String("dbRef1"));
+        srcAmps.resize(colAmps.size());
+        const double ref = dbReferenceValue();
+        for (int i = 0; i < colAmps.size(); ++i) {
+            if (isDb) {
+                srcAmps[ i ] = 20.0 * std::log10(qMax(std::fabs(colAmps[ i ] * calib), cEps) / qMax(ref, cEps));
+            } else {
+                srcAmps[ i ] = colAmps[ i ] * calib;
+            }
+        }
+    }
     // 对数频率轴从第一个正频率点开始（0 赫兹在对数轴下无意义）
     int startIdx = 0;
     if (mLogFrequency) {
-        while (startIdx < mSpectrum.freqs.size() && mSpectrum.freqs[ startIdx ] <= 0.0) {
+        while (startIdx < srcFreqs.size() && srcFreqs[ startIdx ] <= 0.0) {
             ++startIdx;
         }
     }
-    QVector< double > freqs(mSpectrum.freqs.size() - startIdx);
-    QVector< double > values(amps.size() - startIdx);
-    for (int i = startIdx; i < mSpectrum.freqs.size(); ++i) {
-        freqs[ i - startIdx ]  = mSpectrum.freqs[ i ];
-        values[ i - startIdx ] = (i < amps.size()) ? amps[ i ] : 0.0;
+    QVector< double > freqs(srcFreqs.size() - startIdx);
+    QVector< double > values(qMax(0, srcAmps.size() - startIdx));
+    for (int i = startIdx; i < srcFreqs.size(); ++i) {
+        freqs[ i - startIdx ]  = srcFreqs[ i ];
+        values[ i - startIdx ] = (i < srcAmps.size()) ? srcAmps[ i ] : 0.0;
     }
     mSpectrumCurve->setSamples(freqs, values);
     // 峰值标记（按当前幅值口径定位；第 1 名橙红，其余主蓝）
@@ -625,6 +680,47 @@ void DASignalAnalysisView::setAmplitudeDisplay(const QString& amplitudeMode, con
     rebuildSpectrumPlot();
 }
 
+/**
+ * @brief 当前时间对应的 STFT 列索引（取最近的列中心）
+ */
+int DASignalAnalysisView::currentStftColumn() const
+{
+    if (!mStft.isValid() || mStft.columns <= 0) {
+        return 0;
+    }
+    const double t = currentTime();
+    int best       = 0;
+    double bestD   = std::numeric_limits< double >::infinity();
+    for (int c = 0; c < mStft.times.size(); ++c) {
+        const double d = std::fabs(mStft.times.at(c) - t);
+        if (d < bestD) {
+            bestD = d;
+            best  = c;
+        }
+    }
+    return best;
+}
+
+int DASignalAnalysisView::currentChannel() const
+{
+    if (!mChannelCombo) {
+        return 0;
+    }
+    return qMax(0, mChannelCombo->currentData().toInt());
+}
+
+void DASignalAnalysisView::setCurrentChannel(int channel)
+{
+    if (mChannelCombo && channel >= 0 && channel < mChannelCombo->count()) {
+        mChannelCombo->setCurrentIndex(channel);
+    }
+}
+
+bool DASignalAnalysisView::isFollowSlider() const
+{
+    return mFollowSlider;
+}
+
 double DASignalAnalysisView::currentTime() const
 {
     if (!mSignal || mSignal->duration() <= 0.0) {
@@ -671,6 +767,9 @@ void DASignalAnalysisView::updatePlayhead()
     const double t = currentTime() + mSignal->timeOrigin();
     mPlayhead->setXValue(t);
     updateStftWindowRect();
+    if (mFollowSlider) {
+        rebuildSpectrumPlot();  // 跟随模式下频谱随滑块更新
+    }
     mWavePanel->chart()->replot();
 }
 
@@ -700,7 +799,7 @@ void DASignalAnalysisView::showEvent(QShowEvent* e)
     QWidget::showEvent(e);
     if (!mEnvelopeValid && mSignal && mSignal->isValid()) {
         requestEnvelopeRefresh();
-        Q_EMIT spectrumRequested(mSignal);
+        Q_EMIT spectrumRequested(mSignal, currentChannel());
         requestHeatmapRefresh();
     }
 }
@@ -724,6 +823,11 @@ void DASignalAnalysisView::retranslateUi()
     if (mFreqAxisCombo) {
         mFreqAxisCombo->setItemText(0, tr("Linear"));  // cn:线性
         mFreqAxisCombo->setItemText(1, tr("Log"));     // cn:对数
+    }
+    if (mFollowSliderCheck) {
+        mFollowSliderCheck->setText(tr("Follow slider"));  // cn:跟随滑块
+        mFollowSliderCheck->setToolTip(tr("Show the current frame instead of the whole signal"));
+        // cn:显示当前帧而不是整段信号
     }
     if (mEnvelopeCurve) {
         mEnvelopeCurve->setTitle(tr("Envelope"));  // cn:包络

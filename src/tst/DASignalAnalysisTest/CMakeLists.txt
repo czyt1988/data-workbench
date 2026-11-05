@@ -6,6 +6,10 @@
 
 set(_signal_plugin_dir ${CMAKE_CURRENT_LIST_DIR}/../../../plugins/DASignalAnalysis)
 
+# STFT 栅格继承 QwtMatrixRasterData（qwt::core），显式导入 qwt 依赖
+# （插件以 PRIVATE 链接 qwt，不会传递到测试）
+find_package(qwt CONFIG REQUIRED)
+
 da_add_test(
     NAME DASignalAnalysisTest
     SUITE data

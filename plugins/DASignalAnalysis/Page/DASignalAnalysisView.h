@@ -66,6 +66,11 @@ public:
     void setWaterfallMode(int mode);
     // 当前时间（秒）
     double currentTime() const;
+    // 当前通道（多通道信号一次分析一个通道）
+    int currentChannel() const;
+    void setCurrentChannel(int channel);
+    // 是否「跟随滑块」显示当前帧（D13：默认整段）
+    bool isFollowSlider() const;
     // 幅值显示模式（不重算，只重绘）
     void setAmplitudeDisplay(const QString& amplitudeMode, const QString& dbReference);
     // 请求一次包络计算（视图显示/尺寸变化时调用）
@@ -73,7 +78,9 @@ public:
 
 Q_SIGNALS:
     // 请求外部计算频谱（参数变化或首次显示）
-    void spectrumRequested(const DA::DASignalPtr& signal);
+    void spectrumRequested(const DA::DASignalPtr& signal, int channel);
+    // 通道切换（外部重新发起全部分析）
+    void channelChanged(int channel);
     // 请求外部计算包络（start/end 为采样点，width 为目标列数）
     void envelopeRequested(qint64 start, qint64 end, int width);
     // 请求外部计算时频热图（columns/rows 为显示栅格目标尺寸）
@@ -105,6 +112,8 @@ private:
     void updateStftWindowRect();
     void updateAxisTitles();
     void applyHeatmapColors();
+    // 当前时间对应的 STFT 列索引（跟随滑块用）
+    int currentStftColumn() const;
     // 幅值 → 显示口径（乘标定系数；dB 时换算对数）
     QVector< double > displayAmplitudes() const;
     // dB 参考值（满量程 = 信号峰值，1.0 = 固定 1.0）
@@ -129,6 +138,7 @@ private:
     DASignalChartPanel* mSpectrumPanel { nullptr };
     QStackedWidget* mRightStack { nullptr };
     QComboBox* mFreqAxisCombo { nullptr };
+    QComboBox* mChannelCombo { nullptr };
     QSlider* mTimeSlider { nullptr };
     QTimer* mResizeDebounce { nullptr };
 
