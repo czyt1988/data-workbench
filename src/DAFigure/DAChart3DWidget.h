@@ -9,6 +9,7 @@
 #include "qwt3d_surface.h"
 #include "qwt3d_bar.h"
 #include "qwt3d_line3d.h"
+#include "qwt3d_waterfall.h"
 #include "qwt3d_theme.h"
 #include "qwt3d_types.h"
 #include "qwt3d_coordsys.h"
@@ -98,11 +99,19 @@ public:
     Qwt3DLine* addLine3D(const QVector< QwtPoint3D >& samples,
                          const QString& title = QString());
 
+    /// 添加三维瀑布（逐帧迹线；binValues 为每条迹线的横坐标，空表示 0..n-1）
+    Qwt3DWaterfall* addWaterfall(const QVector< QVector< double > >& traces,
+                                 const QVector< double >& binValues = QVector< double >(),
+                                 const QString& title = QString());
+
     /// 获取所有曲面item
     QList< Qwt3DSurface* > getSurfaces() const;
 
     /// 获取所有3D柱状图item
     QList< Qwt3DBar* > getBars3D() const;
+
+    /// 获取所有三维瀑布item
+    QList< Qwt3DWaterfall* > getWaterfalls() const;
 
     /// 获取所有3D线图item
     QList< Qwt3DLine* > getLines3D() const;

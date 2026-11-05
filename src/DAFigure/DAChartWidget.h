@@ -124,6 +124,8 @@ public:
 
     // 高级图表
     QwtPlotSpectrogram* addSpectrogram(QwtGridRasterData* gridData, const QString& title = QString()) override;
+    // 通用栅格数据谱图入口（含 QwtMatrixRasterData，允许显式 Z 轴色标范围）
+    QwtPlotSpectrogram* addSpectrogram(QwtRasterData* rasterData, const QString& title = QString()) override;
 
     // 箱线图
     QwtPlotBoxChart* addBoxChart(const QVector< QwtBoxSample >& samples, const QString& title = QString()) override;

@@ -21,6 +21,7 @@
 #include "qwt_date_scale_draw.h"
 #include "qwt_column_symbol.h"
 #include "qwt_grid_raster_data.h"
+#include "qwt_raster_data.h"
 #include "qwt_scale_draw.h"
 #include "qwt_scale_widget.h"
 #include "qwt_figure.h"
@@ -399,6 +400,25 @@ QwtPlotSpectrogram* DAChartWidget::addSpectrogram(QwtGridRasterData* gridData, c
 
     QwtPlotSpectrogram* spectrogram = new QwtPlotSpectrogram(title);
     spectrogram->setData(gridData);
+    spectrogram->attach(this);
+    return spectrogram;
+}
+
+/**
+ * @brief 添加光谱图（通用栅格数据入口）
+ * @param rasterData 任意 QwtRasterData（含 QwtMatrixRasterData，允许显式指定 Z 轴色标范围）
+ * @param title 光谱图标题
+ * @return 创建的光谱图指针，如果数据为空返回nullptr
+ */
+QwtPlotSpectrogram* DAChartWidget::addSpectrogram(QwtRasterData* rasterData, const QString& title)
+{
+    if (!rasterData) {
+        qWarning() << "Null raster data for spectrogram:" << title;
+        return nullptr;
+    }
+
+    QwtPlotSpectrogram* spectrogram = new QwtPlotSpectrogram(title);
+    spectrogram->setData(rasterData);
     spectrogram->attach(this);
     return spectrogram;
 }

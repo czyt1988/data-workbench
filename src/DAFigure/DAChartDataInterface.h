@@ -18,6 +18,7 @@ class QwtPlotIntervalCurve;
 class QwtPlotMarker;
 class QwtPlotSpectrogram;
 class QwtGridRasterData;
+class QwtRasterData;
 class QwtPlotBoxChart;
 class QwtPlotHistogram;
 class QwtPlotMultiBarChart;
@@ -67,6 +68,8 @@ public:
 
     // ==================== 高级图表 ====================
     virtual QwtPlotSpectrogram* addSpectrogram(QwtGridRasterData* gridData, const QString& title = QString()) = 0;
+    // 通用栅格数据谱图入口（接受任意 QwtRasterData，含 QwtMatrixRasterData，允许显式指定 Z 轴色标范围）
+    virtual QwtPlotSpectrogram* addSpectrogram(QwtRasterData* rasterData, const QString& title = QString()) = 0;
 
     // ==================== 箱线图 ====================
     virtual QwtPlotBoxChart* addBoxChart(const QVector< QwtBoxSample >& samples,

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- data-workbench 官方色板：#5280C1/#497CAD/#BDCDE8/#727272/#B2B2B2/#5D6D7E/#669E8B/#CE6043/#E6C27C/#80559F/#3CAED5/#FFFFFF -->
+  <path d="M22 156 L178 156" stroke="#727272" stroke-width="7" stroke-linecap="round"/>
+  <rect x="36" y="118" width="22" height="38" fill="#BDCDE8"/>
+  <rect x="72" y="82" width="22" height="74" fill="#5280C1"/>
+  <rect x="108" y="58" width="22" height="98" fill="#5280C1"/>
+  <rect x="144" y="102" width="22" height="54" fill="#BDCDE8"/>
+</svg>

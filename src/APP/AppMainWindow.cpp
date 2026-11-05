@@ -137,6 +137,15 @@ void AppMainWindow::retranslateUi()
     // [*]为改变标记占位符
     mController->updateWindowTitle();
     mUI->retranslateUi();
+    // 遍历已加载插件，触发插件自身的重译（插件重写 DAAbstractPlugin::retranslate）
+    if (mPluginMgr) {
+        const QList< DAPluginOption > opts = mPluginMgr->getPluginOptions();
+        for (const DAPluginOption& o : opts) {
+            if (DAAbstractPlugin* p = o.plugin()) {
+                p->retranslate();
+            }
+        }
+    }
 }
 
 void AppMainWindow::changeEvent(QEvent* e)

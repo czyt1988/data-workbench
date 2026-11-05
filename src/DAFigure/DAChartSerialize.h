@@ -251,6 +251,12 @@ DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtPlotBoxChart* item);
 // QwtPlotShapeItem的序列化
 DAFIGURE_API QDataStream& operator<<(QDataStream& out, const QwtPlotShapeItem* item);
 DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtPlotShapeItem* item);
+// QwtPlotSpectrogram(Rtti_PlotSpectrogram)指针的序列化
+DAFIGURE_API QDataStream& operator<<(QDataStream& out, const QwtPlotSpectrogram* item);
+DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtPlotSpectrogram* item);
+// QwtPlotZoneItem(Rtti_PlotZone)指针的序列化
+DAFIGURE_API QDataStream& operator<<(QDataStream& out, const QwtPlotZoneItem* item);
+DAFIGURE_API QDataStream& operator>>(QDataStream& in, QwtPlotZoneItem* item);
 
 // QwtPlotCanvas的序列化
 DAFIGURE_API QDataStream& operator<<(QDataStream& out, const QwtPlotCanvas* c);

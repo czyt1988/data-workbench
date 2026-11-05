@@ -87,3 +87,5 @@ add_subdirectory(DAAgentTools)
 # search_literature/verify_doi 文献工具），开发指南见
 # docs/zh/dev-guide/agent/register-builtin-agent-via-plugin.md
 add_subdirectory(DAPaperAgent)
+# DASignalAnalysis：通用时序信号分析插件（频谱/时频热图/三维瀑布/峰值/播放）
+add_subdirectory(DASignalAnalysis)

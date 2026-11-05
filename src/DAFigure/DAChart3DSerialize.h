@@ -14,6 +14,7 @@ class Qwt3DPlot;
 class Qwt3DSurface;
 class Qwt3DBar;
 class Qwt3DLine;
+class Qwt3DWaterfall;
 class Qwt3DColor;
 class Qwt3DStandardColor;
 class Qwt3DColorMapColor;
@@ -175,6 +176,10 @@ DAFIGURE_API QDataStream& operator>>(QDataStream& in, Qwt3DSurface* item);
 // Qwt3DBar 指针序列化
 DAFIGURE_API QDataStream& operator<<(QDataStream& out, const Qwt3DBar* item);
 DAFIGURE_API QDataStream& operator>>(QDataStream& in, Qwt3DBar* item);
+
+// Qwt3DWaterfall 指针序列化（只存样式与 binValues；迹线数据由业务层按参数重算）
+DAFIGURE_API QDataStream& operator<<(QDataStream& out, const Qwt3DWaterfall* item);
+DAFIGURE_API QDataStream& operator>>(QDataStream& in, Qwt3DWaterfall* item);
 
 // Qwt3DLine 指针序列化
 DAFIGURE_API QDataStream& operator<<(QDataStream& out, const Qwt3DLine* item);
