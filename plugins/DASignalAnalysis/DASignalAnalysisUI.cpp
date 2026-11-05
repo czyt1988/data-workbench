@@ -95,6 +95,7 @@ bool DASignalAnalysisUI::initialize(DACoreInterface* core)
         connect(mPage, &DASignalAnalysisPage::requestImportAudio, this, &DASignalAnalysisUI::importAudioFile);
         connect(mPage, &DASignalAnalysisPage::requestImportDataFrame, this, &DASignalAnalysisUI::importDataFrame);
         connect(mPage, &DASignalAnalysisPage::requestImportVideo, this, &DASignalAnalysisUI::importVideoFile);
+        connect(mPage, &DASignalAnalysisPage::signalRemoved, this, &DASignalAnalysisUI::onSignalRemoved);
     }
     if (actionImportAudio) {
         connect(actionImportAudio, &QAction::triggered, this, &DASignalAnalysisUI::importAudioFile);
@@ -357,6 +358,49 @@ void DASignalAnalysisUI::addSignalAndActivate(const DASignalPtr& sig)
                                .arg(sig->sampleRate(), 0, 'f', 3)
                                .arg(sig->duration(), 0, 'f', 3));
     // cn:信号已导入：%1（%2 赫兹，%3 秒）
+}
+
+/**
+ * @brief 信号标签页已关闭：清理该信号的缓存与待回填目标
+ *
+ * 页面已摘除视图并延后销毁，这里必须在同一轮事件循环内清掉待回填指针，
+ * 否则后台任务回填时会写进即将销毁的视图。峰值表/曲线只属于当前信号，
+ * 信号一走就清空；还有其它信号时按新的当前信号重算。
+ */
+void DASignalAnalysisUI::onSignalRemoved(const DASignalPtr& signal)
+{
+    if (!signal) {
+        return;
+    }
+    const DASignal* key = signal.get();
+    if (mPendingSignal == key) {
+        mPendingSignal = nullptr;
+    }
+    if (mPendingEnvelopeView && mPendingEnvelopeView->signal().get() == key) {
+        mPendingEnvelopeView = nullptr;
+    }
+    if (mPendingHeatmapView && mPendingHeatmapView->signal().get() == key) {
+        mPendingHeatmapView = nullptr;
+    }
+    mParamsPerSignal.remove(key);
+    mSpectrumCache.remove(key);
+    mLargeSignalWarned.remove(key);
+
+    mCurrentPeaks          = DAPeakResult();
+    mCurrentCurves         = DAPeakCurveResult();
+    mPeakCurvesRequested   = false;
+    if (mPeakPanel) {
+        mPeakPanel->setPeaks(mCurrentPeaks);
+        mPeakPanel->setPeakCurves(mCurrentCurves);
+    }
+
+    const bool hasSignal = (mPage && mPage->signalCount() > 0);
+    setSignalDependentActionsEnabled(hasSignal);
+    if (hasSignal) {
+        // 剩余信号接替为当前信号：峰值按它重算（峰值窗口还开着时连曲线一起）
+        const bool peakViewOpen = (mPeakDock && !mPeakDock->isClosed());
+        requestPeaks(peakViewOpen);
+    }
 }
 
 /**

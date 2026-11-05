@@ -105,6 +105,8 @@ private Q_SLOTS:
     void onPeakMarkerToggled(bool on);
     void onPeakTopNChanged();
     void onPlayerPositionChanged(qint64 ms);
+    // 信号标签页关闭：清理该信号的参数/结果缓存与待回填目标
+    void onSignalRemoved(const DA::DASignalPtr& signal);
     // 跟随滑块时按当前帧刷新峰值表与峰值标记（D13）
     void updatePeaksForCurrentFrame();
     void onViewTimeChanged(double seconds);
