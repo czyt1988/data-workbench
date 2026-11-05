@@ -21984,4 +21984,1079 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     </message>
 </context>
 
+<context>
+    <name>DA::DAPeakDockWidget</name>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Page/DAPeakDockWidget.cpp" line="54" />
+        <location filename="../plugins/DASignalAnalysis/Page/DAPeakDockWidget.cpp" line="177" />
+        <source>Run the short-time Fourier transform first</source>
+        <translation>需先计算短时傅里叶变换</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Page/DAPeakDockWidget.cpp" line="154" />
+        <source>Rank %1</source>
+        <translation>第 N 名</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Page/DAPeakDockWidget.cpp" line="161" />
+        <source>Time (s)</source>
+        <translation>时间（秒）</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Page/DAPeakDockWidget.cpp" line="162" />
+        <source>Frequency (Hz)</source>
+        <translation>频率（赫兹）</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Page/DAPeakDockWidget.cpp" line="181" />
+        <source>Send to Table</source>
+        <translation>送到表格页</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Page/DAPeakDockWidget.cpp" line="184" />
+        <source>Export CSV</source>
+        <translation>导出 CSV</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAPeakTableModel</name>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Analysis/DAPeakTableModel.cpp" line="144" />
+        <source>No.</source>
+        <translation>序号</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Analysis/DAPeakTableModel.cpp" line="146" />
+        <source>Frequency (Hz)</source>
+        <translation>频率（赫兹）</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Analysis/DAPeakTableModel.cpp" line="148" />
+        <source>Amplitude</source>
+        <translation>幅值</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Analysis/DAPeakTableModel.cpp" line="155" />
+        <source>Rel. peak (dB)</source>
+        <translation>相对主峰（dB）</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Analysis/DAPeakTableModel.cpp" line="157" />
+        <source>Share (%)</source>
+        <translation>占比（%）</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DASignalAnalysisPage</name>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisPage.cpp" line="65" />
+        <source>%1
+Sample rate: %2 Hz | Channels: %3 | Duration: %4 s</source>
+        <translation>%1
+采样率：%2 赫兹 | 通道数：%3 | 时长：%4 秒</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisPage.cpp" line="217" />
+        <source>No signal loaded</source>
+        <translation>尚未载入信号</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisPage.cpp" line="218" />
+        <source>Import an audio file, a video, or columns from an existing data frame to begin analysis.</source>
+        <translation>导入音频文件、视频，或从已有数据帧指定列，开始分析。</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisPage.cpp" line="220" />
+        <source>Import Audio...</source>
+        <translation>导入音频</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisPage.cpp" line="221" />
+        <source>Import Data Frame...</source>
+        <translation>导入数据帧</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisPage.cpp" line="222" />
+        <source>Import Video...</source>
+        <translation>导入视频</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DASignalAnalysisPlugin</name>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisPlugin.cpp" line="84" />
+        <source>General purpose time-series signal analysis (spectrum, spectrogram, peaks, playback)</source>
+        <translation>通用时序信号分析（频谱、时频图、峰值、播放）</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DASignalAnalysisSettingDialog</name>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalAnalysisSettingDialog.cpp" line="131" />
+        <source>Segment length: unknown (sample rate is invalid)</source>
+        <translation>段长：未知（采样率无效）</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalAnalysisSettingDialog.cpp" line="139" />
+        <source>Segment length = %1 samples (%2 ms), actual resolution = %3 Hz</source>
+        <translation>段长 = %1 点（%2 毫秒）、实际分辨率 = %3 赫兹</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalAnalysisSettingDialog.cpp" line="156" />
+        <source>Signal Analysis Settings</source>
+        <translation>信号分析设置</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalAnalysisSettingDialog.cpp" line="158" />
+        <source>Restore Defaults</source>
+        <translation>恢复默认</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalAnalysisSettingDialog.cpp" line="161" />
+        <source>OK</source>
+        <translation>确定</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalAnalysisSettingDialog.cpp" line="162" />
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DASignalAnalysisUI</name>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="114" />
+        <source>Peak table (CSV)</source>
+        <translation>峰值表（CSV）</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="116" />
+        <source>Spectrum curve (CSV)</source>
+        <translation>频谱曲线（CSV）</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="118" />
+        <source>Heatmap matrix (CSV)</source>
+        <translation>热图矩阵（CSV）</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="157" />
+        <source>Playback failed: %1</source>
+        <translation>播放失败：%1</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="226" />
+        <source>Failed to import audio: %1</source>
+        <translation>导入音频失败：%1</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="250" />
+        <source>Failed to import data frame: %1</source>
+        <translation>导入数据帧失败：%1</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="269" />
+        <source>Failed to import video: %1</source>
+        <translation>导入视频失败：%1</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="299" />
+        <source>Signal imported: %1 (%2 Hz, %3 s)</source>
+        <translation>信号已导入：%1（%2 赫兹，%3 秒）</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="318" />
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="321" />
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="339" />
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1504" />
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1507" />
+        <source>Signal Analysis</source>
+        <translation>信号分析</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="347" />
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1511" />
+        <source>Signal</source>
+        <translation>信号</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="363" />
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1514" />
+        <source>Playback</source>
+        <translation>播放</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="379" />
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1517" />
+        <source>Analysis</source>
+        <translation>分析</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="387" />
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="478" />
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="480" />
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="485" />
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1520" />
+        <source>Peaks</source>
+        <translation>峰值</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="410" />
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1523" />
+        <source>Display</source>
+        <translation>显示</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="447" />
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1526" />
+        <source>Export</source>
+        <translation>导出</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="551" />
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1585" />
+        <source>Peak amplitude</source>
+        <translation>峰值幅度</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="552" />
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1588" />
+        <source>RMS</source>
+        <translation>均方根</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="553" />
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1591" />
+        <source>dB (FS)</source>
+        <translation>dB（满量程）</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="554" />
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1594" />
+        <source>dB (re 1.0)</source>
+        <translation>dB（相对 1.0）</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="605" />
+        <source>No peak data to export.</source>
+        <translation>没有可导出的峰值数据。</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="609" />
+        <source>Export Peak Table</source>
+        <translation>导出峰值表</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="609" />
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="641" />
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="704" />
+        <source>CSV Files (*.csv)</source>
+        <translation>CSV 文件 (*.csv)</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="619" />
+        <source>Peak table exported: %1</source>
+        <translation>峰值表已导出：%1</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="621" />
+        <source>Failed to export the peak table.</source>
+        <translation>峰值表导出失败。</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="632" />
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="685" />
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="728" />
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1084" />
+        <source>No signal is selected.</source>
+        <translation>未选中信号。</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="637" />
+        <source>No spectrum data to export.</source>
+        <translation>没有可导出的频谱数据。</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="641" />
+        <source>Export Spectrum</source>
+        <translation>导出频谱</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="672" />
+        <source>Spectrum exported: %1</source>
+        <translation>频谱已导出：%1</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="674" />
+        <source>Failed to export the spectrum.</source>
+        <translation>频谱导出失败。</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="694" />
+        <source>No time-frequency data to export.</source>
+        <translation>没有可导出的时频数据。</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="698" />
+        <source>Heatmap matrix: %1 x %2 = %3 cells, the CSV may be large.</source>
+        <translation>热图矩阵：%1 x %2 = %3 个单元，CSV 可能较大。</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="704" />
+        <source>Export Heatmap Matrix</source>
+        <translation>导出热图矩阵</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="715" />
+        <source>Heatmap matrix exported: %1</source>
+        <translation>热图矩阵已导出：%1</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="717" />
+        <source>Failed to export the heatmap matrix.</source>
+        <translation>热图矩阵导出失败。</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="736" />
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1601" />
+        <source>Export Image</source>
+        <translation>导出图片</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="736" />
+        <source>PNG Image (*.png)</source>
+        <translation>PNG 图片 (*.png)</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="742" />
+        <source>Image exported: %1</source>
+        <translation>图片已导出：%1</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="744" />
+        <source>Failed to export the image.</source>
+        <translation>图片导出失败。</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="754" />
+        <source>No peak data to send.</source>
+        <translation>没有可发送的峰值数据。</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="772" />
+        <source>Peaks - %1</source>
+        <translation>峰值 - %1</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="776" />
+        <source>Peak table added to the data manager as "%1".</source>
+        <translation>峰值表已作为「%1」加入数据管理器。</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="780" />
+        <source>Failed to send the peak table: %1</source>
+        <translation>峰值表发送失败：%1</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="870" />
+        <source>Signal source missing: dataframe "%1".</source>
+        <translation>信号源缺失：数据帧「%1」。</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="888" />
+        <source>Signal source missing: %1</source>
+        <translation>信号源缺失：%1</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="903" />
+        <source>Failed to restore signal "%1": %2</source>
+        <translation>恢复信号「%1」失败：%2</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1117" />
+        <source>Signal analysis: %1 (%2%)</source>
+        <translation>信号分析：%1（%2%）</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1136" />
+        <source>Spectrum ready: resolution %1 Hz, %2 bins</source>
+        <translation>频谱计算完成：分辨率 %1 赫兹，%2 个频点</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1152" />
+        <source>Signal analysis failed: %1</source>
+        <translation>信号分析失败：%1</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1264" />
+        <source>Signal is very large (&gt; 1.5 GB as float32); the heatmap uses display-precision data.</source>
+        <translation>信号非常大（按 float32 计超过 1.5 吉字节），热图按显示精度降级计算。</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1530" />
+        <source>Import Audio</source>
+        <translation>导入音频</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1531" />
+        <source>Import an audio file (WAV/AIFF/FLAC/OGG)</source>
+        <translation>导入音频文件</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1534" />
+        <source>Import Data Frame</source>
+        <translation>导入数据帧</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1535" />
+        <source>Import columns from an existing data frame</source>
+        <translation>从已有数据帧指定列导入</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1538" />
+        <source>Import Video</source>
+        <translation>导入视频</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1539" />
+        <source>Extract the audio track of a video file (requires FFmpeg)</source>
+        <translation>抽取视频音频轨（需 FFmpeg）</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1543" />
+        <source>Play</source>
+        <translation>播放</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1546" />
+        <source>Pause</source>
+        <translation>暂停</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1549" />
+        <source>Stop</source>
+        <translation>停止</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1553" />
+        <source>Analysis Settings</source>
+        <translation>分析设置</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1554" />
+        <source>Open the unified analysis parameter dialog</source>
+        <translation>打开统一参数对话框</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1558" />
+        <source>Peak Markers</source>
+        <translation>峰值标记</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1561" />
+        <source>Top N</source>
+        <translation>前 N 个</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1562" />
+        <source>Number of peaks to keep (10/20/50)</source>
+        <translation>保留的峰值数量</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1565" />
+        <source>Peak Window</source>
+        <translation>峰值窗口</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1566" />
+        <source>Show or hide the peak dock window</source>
+        <translation>显示或隐藏峰值停靠窗口</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1570" />
+        <source>2D</source>
+        <translation>二维</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1571" />
+        <source>Show the 2D time-frequency heatmap</source>
+        <translation>显示二维时频热图</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1574" />
+        <source>3D</source>
+        <translation>三维</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1575" />
+        <source>Show the 3D surface waterfall</source>
+        <translation>显示三维曲面瀑布</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1578" />
+        <source>Hide</source>
+        <translation>隐藏</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1579" />
+        <source>Hide the waterfall view</source>
+        <translation>隐藏瀑布视图</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1582" />
+        <source>Amplitude</source>
+        <translation>幅值模式</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1598" />
+        <source>Export Peaks</source>
+        <translation>导出峰值表</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DASignalAnalysisView</name>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="298" />
+        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="833" />
+        <source>Envelope</source>
+        <translation>包络</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="331" />
+        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="836" />
+        <source>Amplitude spectrum</source>
+        <translation>幅值谱</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="463" />
+        <source>Waterfall</source>
+        <translation>三维瀑布</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="512" />
+        <source>Spectrogram</source>
+        <translation>时频图</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="525" />
+        <source>dB</source>
+        <translation>分贝</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="527" />
+        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="650" />
+        <source>Time (s)</source>
+        <translation>时间（秒）</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="528" />
+        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="658" />
+        <source>Frequency (Hz)</source>
+        <translation>频率（赫兹）</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="651" />
+        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="659" />
+        <source>Amplitude</source>
+        <translation>幅值</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="661" />
+        <source>dB (FS)</source>
+        <translation>dB（满量程）</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="663" />
+        <source>dB (re 1.0)</source>
+        <translation>dB（相对 1.0）</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="665" />
+        <source>RMS</source>
+        <translation>均方根</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="818" />
+        <source>Waveform</source>
+        <translation>波形</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="821" />
+        <source>Spectrum</source>
+        <translation>频谱</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="824" />
+        <source>Linear</source>
+        <translation>线性</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="825" />
+        <source>Log</source>
+        <translation>对数</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="828" />
+        <source>Follow slider</source>
+        <translation>跟随滑块</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="829" />
+        <source>Show the current frame instead of the whole signal</source>
+        <translation>显示当前帧而不是整段信号</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DASignalAnalysisWorker</name>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Analysis/DASignalAnalysisWorker.cpp" line="130" />
+        <location filename="../plugins/DASignalAnalysis/Analysis/DASignalAnalysisWorker.cpp" line="198" />
+        <location filename="../plugins/DASignalAnalysis/Analysis/DASignalAnalysisWorker.cpp" line="231" />
+        <location filename="../plugins/DASignalAnalysis/Analysis/DASignalAnalysisWorker.cpp" line="263" />
+        <source>Signal is invalid or not loaded.</source>
+        <translation>信号无效或未载入。</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Analysis/DASignalAnalysisWorker.cpp" line="142" />
+        <source>Failed to start the spectrum task.</source>
+        <translation>频谱任务启动失败。</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Analysis/DASignalAnalysisWorker.cpp" line="147" />
+        <source>Computing spectrum...</source>
+        <translation>正在计算频谱...</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Analysis/DASignalAnalysisWorker.cpp" line="210" />
+        <source>Failed to start the time-frequency task.</source>
+        <translation>时频任务启动失败。</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Analysis/DASignalAnalysisWorker.cpp" line="326" />
+        <source>Background task disappeared.</source>
+        <translation>后台任务丢失。</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Analysis/DASignalAnalysisWorker.cpp" line="341" />
+        <source>Computation was cancelled.</source>
+        <translation>计算已取消。</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Analysis/DASignalAnalysisWorker.cpp" line="346" />
+        <source>Computation failed.</source>
+        <translation>计算失败。</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Analysis/DASignalAnalysisWorker.cpp" line="353" />
+        <source>Spectrum result is empty.</source>
+        <translation>频谱结果为空。</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DASignalImportDialog</name>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="66" />
+        <source>File</source>
+        <translation>文件</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="85" />
+        <source>Data Frame</source>
+        <translation>源数据帧</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="88" />
+        <source>Time Column</source>
+        <translation>时间列</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="93" />
+        <source>Value Columns</source>
+        <translation>幅值列（可多选）</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="100" />
+        <source>Sample Rate (Hz)</source>
+        <translation>采样率（赫兹）</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="108" />
+        <source>Signal Name</source>
+        <translation>信号名</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="147" />
+        <source>No data frame is available. Import data first.</source>
+        <translation>没有可用的数据帧，请先导入数据。</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="172" />
+        <source>No time column</source>
+        <translation>无时间列</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="227" />
+        <source>Please enter a positive sample rate.</source>
+        <translation>请输入合法的正数采样率。</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="251" />
+        <source>No time column: enter the sample rate manually.</source>
+        <translation>无时间列：请手动填写采样率。</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="261" />
+        <source>Inferred sample rate = %1 Hz, duration = %2 s</source>
+        <translation>推断采样率 = %1 赫兹，时长 = %2 秒</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="268" />
+        <source>Cannot infer the sample rate from the time column: %1</source>
+        <translation>无法从时间列推断采样率：%1</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="318" />
+        <source>Video Files (*.mp4 *.mov *.m4v *.avi *.mkv *.webm *.flv *.wmv *.ts *.mts);;All Files (*)</source>
+        <translation>视频文件</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="321" />
+        <source>Audio Files (*.wav *.aiff *.aif *.flac *.ogg *.oga *.mp3 *.m4a *.aac *.wma *.opus);;All Files (*)</source>
+        <translation>音频文件</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="324" />
+        <source>Select File</source>
+        <translation>选择文件</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="394" />
+        <source>Import Audio</source>
+        <translation>导入音频</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="397" />
+        <source>Import Video</source>
+        <translation>导入视频</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="401" />
+        <source>Import Data Frame</source>
+        <translation>导入数据帧</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="405" />
+        <source>Browse...</source>
+        <translation>浏览</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="408" />
+        <source>Import</source>
+        <translation>导入</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="409" />
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="412" />
+        <source>FFmpeg was not detected. Specify its path in the signal analysis settings.</source>
+        <translation>未检测到 FFmpeg，请在分析设置里指定路径。</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DASignalPlayer</name>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Playback/DASignalPlayer.cpp" line="116" />
+        <source>Signal is invalid.</source>
+        <translation>信号无效。</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Playback/DASignalPlayer.cpp" line="132" />
+        <source>No playable audio file for this signal.</source>
+        <translation>该信号没有可播放的音频文件。</translation>
+    </message>
+</context>
+<context>
+    <name>DASignalFormSpecBuilder</name>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="70" />
+        <source>Remove DC</source>
+        <translation>去直流</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="74" />
+        <source>Detrend</source>
+        <translation>去趋势</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="76" />
+        <source>None</source>
+        <translation>无</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="77" />
+        <source>Constant</source>
+        <translation>常数</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="78" />
+        <source>Linear</source>
+        <translation>线性</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="80" />
+        <source>Signal Preprocessing</source>
+        <translation>信号预处理</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="88" />
+        <source>Window</source>
+        <translation>窗函数</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="90" />
+        <source>Rectangular</source>
+        <translation>矩形</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="91" />
+        <source>Hann</source>
+        <translation>汉宁</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="92" />
+        <source>Hamming</source>
+        <translation>汉明</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="93" />
+        <source>Blackman</source>
+        <translation>布莱克曼</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="94" />
+        <source>Flat top</source>
+        <translation>平顶</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="99" />
+        <source>Amplitude</source>
+        <translation>幅值口径</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="101" />
+        <source>Peak amplitude</source>
+        <translation>峰值幅度</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="102" />
+        <source>RMS</source>
+        <translation>均方根</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="107" />
+        <source>dB reference</source>
+        <translation>dB 参考</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="109" />
+        <source>Full scale (dBFS)</source>
+        <translation>满量程</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="110" />
+        <source>Relative to 1.0</source>
+        <translation>相对 1.0</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="115" />
+        <source>Frequency resolution (Hz)</source>
+        <translation>频率分辨率（赫兹）</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="123" />
+        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="174" />
+        <source>Zero padding points (advanced)</source>
+        <translation>零填充点数（高级）</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="129" />
+        <source>Spectrum</source>
+        <translation>频谱</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="137" />
+        <source>Averaging</source>
+        <translation>平均方式</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="139" />
+        <source>Mean</source>
+        <translation>均值</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="140" />
+        <source>Median</source>
+        <translation>中位数</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="144" />
+        <source>Overlap (%)</source>
+        <translation>重叠率（%）</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="150" />
+        <source>Power Spectrum</source>
+        <translation>功率谱</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="158" />
+        <source>Window length (ms)</source>
+        <translation>窗长（毫秒）</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="166" />
+        <source>Hop overlap (%)</source>
+        <translation>跳步重叠率（%）</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="180" />
+        <source>Short-Time Fourier Transform</source>
+        <translation>短时傅里叶变换</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="189" />
+        <source>Mode</source>
+        <translation>模式</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="191" />
+        <source>Simple</source>
+        <translation>简单</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="192" />
+        <source>Advanced</source>
+        <translation>高级</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="197" />
+        <source>Top N</source>
+        <translation>前 N 个</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="204" />
+        <source>Relative threshold (dB)</source>
+        <translation>相对门限（dB）</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="216" />
+        <source>Prominence</source>
+        <translation>突出度</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="231" />
+        <source>Minimum spacing (Hz)</source>
+        <translation>最小间距（赫兹）</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="241" />
+        <source>Minimum height</source>
+        <translation>绝对高度门限</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="248" />
+        <source>Peak Search</source>
+        <translation>峰值查找</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="256" />
+        <source>Calibration factor</source>
+        <translation>标定系数</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="262" />
+        <source>Amplitude unit</source>
+        <translation>幅值单位</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="264" />
+        <source>Calibration</source>
+        <translation>标定</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="269" />
+        <source>Signal Analysis Settings</source>
+        <translation>信号分析设置</translation>
+    </message>
+</context>
+<context>
+    <name>DASignalImporter</name>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Signal/DASignalImporter.cpp" line="114" />
+        <location filename="../plugins/DASignalAnalysis/Signal/DASignalImporter.cpp" line="335" />
+        <source>FFmpeg is not available. Specify its path in the signal analysis settings.</source>
+        <translation>未检测到 FFmpeg，请在分析设置里指定路径。</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Signal/DASignalImporter.cpp" line="127" />
+        <source>FFmpeg failed to convert the file. Last output lines:
+%1</source>
+        <translation>FFmpeg 执行失败，最后输出：
+%1</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Signal/DASignalImporter.cpp" line="158" />
+        <source>Cannot read audio file: %1</source>
+        <translation>无法读取音频文件：%1</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Signal/DASignalImporter.cpp" line="168" />
+        <source>Audio file contains no samples.</source>
+        <translation>音频文件不包含采样数据。</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Signal/DASignalImporter.cpp" line="295" />
+        <location filename="../plugins/DASignalAnalysis/Signal/DASignalImporter.cpp" line="327" />
+        <source>File does not exist: %1</source>
+        <translation>文件不存在：%1</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Signal/DASignalImporter.cpp" line="311" />
+        <source>The converted file could not be read: %1</source>
+        <translation>转码后的文件无法读取：%1</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Signal/DASignalImporter.cpp" line="347" />
+        <source>The file does not contain an audio track.</source>
+        <translation>文件不含音频轨。</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Signal/DASignalImporter.cpp" line="379" />
+        <source>The source data is not a dataframe.</source>
+        <translation>源数据不是数据帧。</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Signal/DASignalImporter.cpp" line="386" />
+        <source>Please select at least one value column.</source>
+        <translation>请至少选择一个幅值列。</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Signal/DASignalImporter.cpp" line="393" />
+        <source>Sample rate must be a positive number.</source>
+        <translation>采样率必须是正数。</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Signal/DASignalImporter.cpp" line="405" />
+        <source>The dataframe is empty.</source>
+        <translation>数据帧为空。</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/Signal/DASignalImporter.cpp" line="454" />
+        <source>No time column selected.</source>
+        <translation>未选择时间列。</translation>
+    </message>
+</context>
 </TS>

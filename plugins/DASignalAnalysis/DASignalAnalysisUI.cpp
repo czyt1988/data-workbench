@@ -296,6 +296,18 @@ void DASignalAnalysisUI::addSignalAndActivate(const DASignalPtr& sig)
             requestPeaks(true);
         });
     }
+    // 切到「信号分析」页面标签（导入后用户应立刻看到信号视图，而不是停在原页面）
+    if (auto* dockingArea = mUI->getDockingArea()) {
+        dockingArea->raiseDockByWidget(mPage);
+    }
+    // 首次导入信号成功后自动切到峰值窗口一次（D24），之后尊重用户开关
+    if (!mFirstSignalActivated) {
+        mFirstSignalActivated = true;
+        if (mPeakDock) {
+            mPeakDock->toggleView(true);
+            mPeakDock->setAsCurrentTab();
+        }
+    }
     mUI->addInfoLogMessage(tr("Signal imported: %1 (%2 Hz, %3 s)")
                                .arg(sig->name())
                                .arg(sig->sampleRate(), 0, 'f', 3)

@@ -343,3 +343,45 @@ def test_exporter_peaks_and_csv(tmp_path):
     # 表头 + 2 行；首列是 Frequency (Hz)
     assert len(heat_lines) == 3
     assert heat_lines[0].startswith("Frequency (Hz)")
+
+
+# ---------------------------------------------------------------- 数据帧来源（fake da_app）
+
+
+def test_dataframe_source_uses_da_app(monkeypatch):
+    """数据帧来源经宿主注入的顶层 da_app 访问数据管理器（回归：曾误用 from DAWorkbench import da_app）。"""
+    import sys
+    import types
+
+    pd = pytest.importorskip("pandas")
+    from DASignalAnalysis import envelope, spectrum
+
+    fs = 1000.0
+    t = np.arange(1000) / fs
+    df = pd.DataFrame({"t": t, "y": np.sin(2 * np.pi * 100.0 * t)})
+
+    class FakeDM:
+        def getAllDataframes(self):
+            return {"df1": df}
+
+    class FakeCore:
+        def getDataManagerInterface(self):
+            return FakeDM()
+
+    fake = types.ModuleType("da_app")
+    fake.getCore = lambda: FakeCore()
+    monkeypatch.setitem(sys.modules, "da_app", fake)
+
+    src = {"type": "dataframe", "dataframeName": "df1", "column": "y", "sampleRate": fs}
+    r = spectrum.compute_spectrum_sync_from_source(src, {"window": "hann", "resolutionHz": 10.0})
+    idx = int(np.argmax(r["amplitudes"]))
+    assert abs(r["freqs"][idx] - 100.0) <= 10.0
+
+    env = envelope.compute_envelope_sync(src, 0, 0, 1000, 100)
+    assert env["mins"].size == 100
+
+    # 缺数据帧时给出明确错误（而不是 ImportError）
+    with pytest.raises(RuntimeError):
+        spectrum.compute_spectrum_sync_from_source(
+            {"type": "dataframe", "dataframeName": "nope", "column": "y", "sampleRate": fs}, {}
+        )

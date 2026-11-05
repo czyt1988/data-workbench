@@ -57,10 +57,11 @@ def _load_range(source, start, end):
     stype = str(source.get("type", "file"))
     channel = int(source.get("channel", 0))
     if stype == "dataframe":
-        from DAWorkbench import da_app  # noqa: F401  (宿主注入的全局对象)
+        import da_app
 
         datamanager = da_app.getCore().getDataManagerInterface()
-        df = datamanager.getDataframeByName(source.get("dataframeName", ""))
+        frames = datamanager.getAllDataframes()
+        df = frames.get(source.get("dataframeName", ""))
         if df is None:
             raise RuntimeError("dataframe not found: %s" % source.get("dataframeName", ""))
         values = np.asarray(df[source.get("column", "")].to_numpy())
