@@ -7,6 +7,7 @@
 #include "Signal/DASignal.h"
 #include "Analysis/DASignalAnalysisParams.h"
 #include "Analysis/DASpectrumResult.h"
+#include "Analysis/DAStftResult.h"
 
 class QTimer;
 
@@ -32,6 +33,12 @@ public:
     bool computeSpectrum(const DASignalPtr& signal, int channel, const DASignalAnalysisParams& params);
     // 发起波形包络计算（异步）；start/end 为采样点，width 为目标列数
     bool computeEnvelope(const DASignalPtr& signal, int channel, qint64 start, qint64 end, int width);
+    // 发起时频热图计算（异步）；columns/rows 为显示栅格的目标列数与行数
+    bool computeHeatmap(const DASignalPtr& signal,
+                        int channel,
+                        const DASignalAnalysisParams& params,
+                        int columns,
+                        int rows);
     // 取消全部任务
     void cancel();
     // 是否有任务在跑
@@ -42,6 +49,8 @@ Q_SIGNALS:
     void spectrumReady(const DA::DASpectrumResult& result);
     // 包络结果（x 为采样点下标，mins/maxs 为每列极值）
     void envelopeReady(const QVector< double >& xs, const QVector< double >& mins, const QVector< double >& maxs);
+    // 时频显示栅格结果
+    void heatmapReady(const DA::DAStftResult& result);
     void failed(const QString& error);
 
 private Q_SLOTS:
@@ -51,7 +60,8 @@ private:
     enum TaskKind
     {
         SpectrumTask,
-        EnvelopeTask
+        EnvelopeTask,
+        HeatmapTask
     };
     struct TaskEntry
     {

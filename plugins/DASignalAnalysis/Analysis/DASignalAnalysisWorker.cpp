@@ -186,6 +186,41 @@ bool DASignalAnalysisWorker::computeEnvelope(const DASignalPtr& signal,
 }
 
 /**
+ * @brief 发起时频热图计算（显示栅格，Python 侧分块计算并池化）
+ */
+bool DASignalAnalysisWorker::computeHeatmap(const DASignalPtr& signal,
+                                            int channel,
+                                            const DASignalAnalysisParams& params,
+                                            int columns,
+                                            int rows)
+{
+    if (!signal || !signal->isValid()) {
+        Q_EMIT failed(tr("Signal is invalid or not loaded."));  // cn:信号无效或未载入。
+        return false;
+    }
+    try {
+        DAPyModule stft      = namedModule("DASignalAnalysis.stft");
+        pybind11::dict source = buildSourceDict(signal, channel);
+        pybind11::dict p      = paramsToDict(params);
+        pybind11::object res  = stft.attr("compute_heatmap_async")(source, p, columns, rows);
+        TaskEntry entry;
+        entry.id   = QString::fromStdString(res.cast< std::string >());
+        entry.kind = HeatmapTask;
+        if (entry.id.isEmpty()) {
+            Q_EMIT failed(tr("Failed to start the time-frequency task."));  // cn:时频任务启动失败。
+            return false;
+        }
+        mTasks[ entry.id ] = entry;
+        updateTimer();
+        return true;
+    } catch (const std::exception& e) {
+        qWarning() << "DASignalAnalysisWorker::computeHeatmap:" << e.what();
+        Q_EMIT failed(QString::fromUtf8(e.what()));
+        return false;
+    }
+}
+
+/**
  * @brief 取消全部任务
  */
 void DASignalAnalysisWorker::cancel()
@@ -265,7 +300,7 @@ void DASignalAnalysisWorker::poll()
                 result.window       = QString::fromStdString(r[ "window" ].cast< std::string >());
                 result.rms          = r[ "rms" ].cast< bool >();
                 Q_EMIT spectrumReady(result);
-            } else {
+            } else if (entry.kind == EnvelopeTask) {
                 DAPyModule envelope  = namedModule("DASignalAnalysis.envelope");
                 pybind11::object raw = envelope.attr("take_result")(entry.id.toStdString());
                 if (raw.is_none()) {
@@ -275,6 +310,23 @@ void DASignalAnalysisWorker::poll()
                 Q_EMIT envelopeReady(toDoubleVector(r[ "x" ]),
                                      toDoubleVector(r[ "mins" ]),
                                      toDoubleVector(r[ "maxs" ]));
+            } else {
+                DAPyModule stft      = namedModule("DASignalAnalysis.stft");
+                pybind11::object raw = stft.attr("take_result")(entry.id.toStdString());
+                if (raw.is_none()) {
+                    continue;
+                }
+                pybind11::dict r = pybind11::cast< pybind11::dict >(raw);
+                DAStftResult result;
+                result.times          = toDoubleVector(r[ "times" ]);
+                result.freqs          = toDoubleVector(r[ "freqs" ]);
+                result.values         = toDoubleVector(r[ "values" ]);
+                result.rows           = r[ "rows" ].cast< int >();
+                result.columns        = r[ "columns" ].cast< int >();
+                result.nperseg        = r[ "nperseg" ].cast< int >();
+                result.hop            = r[ "hop" ].cast< int >();
+                result.windowSeconds  = r[ "window_seconds" ].cast< double >();
+                Q_EMIT heatmapReady(result);
             }
         }
         for (const QString& id : finishedIds) {

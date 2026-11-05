@@ -96,6 +96,7 @@ bool DASignalAnalysisUI::initialize(DACoreInterface* core)
     connect(mWorker, &DASignalAnalysisWorker::progressChanged, this, &DASignalAnalysisUI::onWorkerProgress);
     connect(mWorker, &DASignalAnalysisWorker::spectrumReady, this, &DASignalAnalysisUI::onWorkerSpectrumReady);
     connect(mWorker, &DASignalAnalysisWorker::envelopeReady, this, &DASignalAnalysisUI::onWorkerEnvelopeReady);
+    connect(mWorker, &DASignalAnalysisWorker::heatmapReady, this, &DASignalAnalysisUI::onWorkerHeatmapReady);
     connect(mWorker, &DASignalAnalysisWorker::failed, this, &DASignalAnalysisUI::onWorkerFailed);
     return true;
 }
@@ -186,6 +187,7 @@ void DASignalAnalysisUI::addSignalAndActivate(const DASignalPtr& sig)
         view->setParams(paramsForSignal(sig));
         connect(view, &DASignalAnalysisView::spectrumRequested, this, &DASignalAnalysisUI::onViewRequestSpectrum);
         connect(view, &DASignalAnalysisView::envelopeRequested, this, &DASignalAnalysisUI::onViewRequestEnvelope);
+        connect(view, &DASignalAnalysisView::heatmapRequested, this, &DASignalAnalysisUI::onViewRequestHeatmap);
     }
     mUI->addInfoLogMessage(tr("Signal imported: %1 (%2 Hz, %3 s)")
                                .arg(sig->name())
@@ -619,6 +621,29 @@ void DASignalAnalysisUI::onViewRequestEnvelope(qint64 start, qint64 end, int wid
     }
     mPendingEnvelopeView = view;
     mWorker->computeEnvelope(view->signal(), 0, start, end, width);
+}
+
+/**
+ * @brief 视图请求计算时频热图
+ */
+void DASignalAnalysisUI::onViewRequestHeatmap(int columns, int rows)
+{
+    auto* view = qobject_cast< DASignalAnalysisView* >(sender());
+    if (!mWorker || !view || !view->signal()) {
+        return;
+    }
+    mPendingHeatmapView = view;
+    mWorker->computeHeatmap(view->signal(), 0, view->params(), columns, rows);
+}
+
+/**
+ * @brief 时频栅格结果回填到请求它的视图
+ */
+void DASignalAnalysisUI::onWorkerHeatmapReady(const DAStftResult& result)
+{
+    if (mPendingHeatmapView) {
+        mPendingHeatmapView->setStft(result);
+    }
 }
 
 /**

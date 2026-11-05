@@ -1,5 +1,6 @@
 #include "DASignalAnalysisView.h"
 #include <cmath>
+#include <limits>
 #include <QComboBox>
 #include <QEvent>
 #include <QHBoxLayout>
@@ -7,6 +8,8 @@
 #include <QResizeEvent>
 #include <QShowEvent>
 #include <QSlider>
+#include <QCheckBox>
+#include <QDoubleSpinBox>
 #include <QSplitter>
 #include <QStackedWidget>
 #include <QTimer>
@@ -14,6 +17,11 @@
 #include <QDebug>
 // qwt
 #include "qwt_plot_curve.h"
+#include "qwt_plot_spectrogram.h"
+#include "qwt_scale_widget.h"
+#include "qwt_colormap.h"
+#include "qwt_colormap_preset.h"
+#include "qwt_raster_data.h"
 #include "qwt_plot_intervalcurve.h"
 #include "qwt_plot_marker.h"
 #include "qwt_plot_shapeitem.h"
@@ -24,11 +32,31 @@
 // DA
 #include "DAChartWidget.h"
 #include "DASignalChartPanel.h"
+#include "Render/DAStftRasterData.h"
 
 namespace DA
 {
 namespace
 {
+/**
+ * @brief 深拷贝线性色图（QwtLinearColorMap 拷贝构造被删除）
+ */
+QwtColorMap* cloneLinearColorMap(const QwtLinearColorMap* src)
+{
+    if (!src) {
+        return nullptr;
+    }
+    auto* dst = new QwtLinearColorMap(src->format());
+    dst->setMode(src->mode());
+    const QVector< double > pos   = src->stopPos();
+    const QVector< QColor > cols  = src->stopColors();
+    const int n                   = qMin(pos.size(), cols.size());
+    for (int i = 0; i < n; ++i) {
+        dst->addColorStop(pos[ i ], cols[ i ]);
+    }
+    return dst;
+}
+
 constexpr double cEps = 1e-30;
 constexpr int cEnvelopeDebounceMs = 200;
 }  // namespace
@@ -155,12 +183,33 @@ void DASignalAnalysisView::buildUI()
     });
 
     // 右侧叠置：二维热图（M6）/ 三维瀑布（M8）/ 隐藏
-    mRightStack       = new QStackedWidget(mHorizontalSplitter);
-    QLabel* rightPlaceholder = new QLabel(mRightStack);
-    rightPlaceholder->setAlignment(Qt::AlignCenter);
-    rightPlaceholder->setObjectName(QStringLiteral("da-signal-right-placeholder"));
-    rightPlaceholder->setText(tr("Time-frequency view"));  // cn:时频视图
-    mRightStack->addWidget(rightPlaceholder);
+    mRightStack   = new QStackedWidget(mHorizontalSplitter);
+    mHeatmapPanel = new DASignalChartPanel(QStringLiteral("Time-Frequency"), mRightStack);  // cn:时频
+    // 色带选择（默认 Viridis）与 dB 动态范围下限
+    mColormapCombo = new QComboBox(mHeatmapPanel);
+    const QStringList presets = QwtColorMapPreset::availablePresets();
+    for (const QString& names : presets) {
+        mColormapCombo->addItem(names, names);
+    }
+    const int viridisIdx = mColormapCombo->findData(QStringLiteral("viridis"));
+    if (viridisIdx >= 0) {
+        mColormapCombo->setCurrentIndex(viridisIdx);
+    }
+    mHeatmapPanel->addTitleBarWidget(mColormapCombo);
+    mDbFloorSpin = new QDoubleSpinBox(mHeatmapPanel);
+    mDbFloorSpin->setRange(-200.0, 0.0);
+    mDbFloorSpin->setDecimals(0);
+    mDbFloorSpin->setSingleStep(5.0);
+    mDbFloorSpin->setValue(mDbFloor);
+    mHeatmapPanel->addTitleBarWidget(mDbFloorSpin);
+    connect(mColormapCombo, QOverload< int >::of(&QComboBox::currentIndexChanged), this, [this](int) {
+        applyHeatmapColors();
+    });
+    connect(mDbFloorSpin, QOverload< double >::of(&QDoubleSpinBox::valueChanged), this, [this](double v) {
+        mDbFloor = v;
+        applyHeatmapColors();
+    });
+    mRightStack->addWidget(mHeatmapPanel);
 
     mHorizontalSplitter->addWidget(mSpectrumPanel);
     mHorizontalSplitter->addWidget(mRightStack);
@@ -180,7 +229,10 @@ void DASignalAnalysisView::buildUI()
     mResizeDebounce = new QTimer(this);
     mResizeDebounce->setSingleShot(true);
     mResizeDebounce->setInterval(cEnvelopeDebounceMs);
-    connect(mResizeDebounce, &QTimer::timeout, this, &DASignalAnalysisView::requestEnvelopeRefresh);
+    connect(mResizeDebounce, &QTimer::timeout, this, [this]() {
+        requestEnvelopeRefresh();
+        requestHeatmapRefresh();
+    });
 }
 
 /**
@@ -250,6 +302,137 @@ void DASignalAnalysisView::rebuildSpectrumPlot()
     updateAxisTitles();
     chart->setAxisAutoScale(QwtPlot::yLeft, true);
     chart->replot();
+}
+
+/**
+ * @brief 时频显示栅格回填并重绘
+ */
+void DASignalAnalysisView::setStft(const DAStftResult& result)
+{
+    mStft = result;
+    rebuildHeatmap();
+    updateStftWindowRect();
+}
+
+/**
+ * @brief 重绘时频热图（线性幅值 → dB，色标范围 = [下限, 0]）
+ */
+void DASignalAnalysisView::rebuildHeatmap()
+{
+    if (!mHeatmapPanel) {
+        return;
+    }
+    DAChartWidget* chart = mHeatmapPanel->chart();
+    if (!mStft.isValid()) {
+        chart->replot();
+        return;
+    }
+    double peak = 0.0;
+    for (double v : mStft.values) {
+        if (std::isfinite(v)) {
+            peak = qMax(peak, std::fabs(v));
+        }
+    }
+    if (peak <= 0.0) {
+        peak = 1.0;
+    }
+    QVector< double > dbValues(mStft.values.size());
+    for (int i = 0; i < mStft.values.size(); ++i) {
+        const double v = mStft.values[ i ];
+        dbValues[ i ]  = std::isfinite(v) ? 20.0 * std::log10(qMax(v / peak, 1e-30))
+                                         : std::numeric_limits< double >::quiet_NaN();
+    }
+    if (!mStftRaster) {
+        mStftRaster = new DAStftRasterData();
+    }
+    mStftRaster->setGrid(dbValues,
+                         mStft.rows,
+                         mStft.columns,
+                         mStft.times.first(),
+                         mStft.times.last(),
+                         mStft.freqs.first(),
+                         mStft.freqs.last());
+    mStftRaster->setValueRange(mDbFloor, 0.0);
+
+    if (!mSpectrogramItem) {
+        mSpectrogramItem = chart->addSpectrogram(static_cast< QwtRasterData* >(mStftRaster),
+                                                 tr("Spectrogram"));  // cn:时频图
+        if (mSpectrogramItem) {
+            mSpectrogramItem->setRenderThreadCount(0);
+            mSpectrogramItem->setCachePolicy(QwtPlotRasterItem::PaintCache);
+        }
+    } else {
+        mSpectrogramItem->setData(static_cast< QwtRasterData* >(mStftRaster));
+        mSpectrogramItem->attach(chart);
+    }
+    chart->enableAxis(QwtPlot::yRight);
+    if (QwtScaleWidget* colorBar = chart->axisWidget(QwtPlot::yRight)) {
+        colorBar->setColorBarEnabled(true);
+        colorBar->setColorBarWidth(18);
+        colorBar->setTitle(tr("dB"));  // cn:分贝
+    }
+    chart->setAxisTitle(QwtPlot::xBottom, tr("Time (s)"));      // cn:时间（秒）
+    chart->setAxisTitle(QwtPlot::yLeft, tr("Frequency (Hz)"));  // cn:频率（赫兹）
+    applyHeatmapColors();
+    chart->replot();
+}
+
+/**
+ * @brief 应用色带与色标范围（色带或 dB 下限变化时调用）
+ */
+void DASignalAnalysisView::applyHeatmapColors()
+{
+    if (!mHeatmapPanel || !mSpectrogramItem) {
+        return;
+    }
+    DAChartWidget* chart  = mHeatmapPanel->chart();
+    const QString cmapName = mColormapCombo ? mColormapCombo->currentData().toString() : QStringLiteral("viridis");
+    auto cmap              = QwtColorMapPreset::create(cmapName);
+    if (cmap) {
+        mSpectrogramItem->setColorMap(cloneLinearColorMap(cmap.get()));
+        if (QwtScaleWidget* colorBar = chart->axisWidget(QwtPlot::yRight)) {
+            // setColorMap 同时设定色标区间与色带（接管所有权）
+            colorBar->setColorMap(QwtInterval(mDbFloor, 0.0), cloneLinearColorMap(cmap.get()));
+        }
+    }
+    if (mStftRaster) {
+        mStftRaster->setValueRange(mDbFloor, 0.0);
+    }
+    chart->replot();
+}
+
+/**
+ * @brief 请求外部计算时频热图（目标尺寸按绘图区像素）
+ */
+void DASignalAnalysisView::requestHeatmapRefresh()
+{
+    if (!mSignal || !mSignal->isValid() || !mHeatmapPanel) {
+        return;
+    }
+    const int columns = qMax(64, mHeatmapPanel->chart()->canvas()->width());
+    const int rows    = qMax(64, mHeatmapPanel->chart()->canvas()->height());
+    Q_EMIT heatmapRequested(columns, rows);
+}
+
+/**
+ * @brief 更新 STFT 窗口矩形（波形上）：宽 = 窗长、中心 = 当前时间（D30）
+ */
+void DASignalAnalysisView::updateStftWindowRect()
+{
+    if (!mStftWindow || !mSignal) {
+        return;
+    }
+    if (!mStft.isValid() || mStft.windowSeconds <= 0.0) {
+        mStftWindow->setVisible(false);
+        return;
+    }
+    const double center = currentTime() + mSignal->timeOrigin();
+    const double half   = mStft.windowSeconds / 2.0;
+    const double yTop   = qMax(std::fabs(mSignalPeak), 1e-3);
+    const QRectF rect(center - half, -yTop, mStft.windowSeconds, 2.0 * yTop);
+    mStftWindow->setRect(rect);
+    mStftWindow->setVisible(true);
+    mWavePanel->chart()->replot();
 }
 
 /**
@@ -371,6 +554,7 @@ void DASignalAnalysisView::updatePlayhead()
     }
     const double t = currentTime() + mSignal->timeOrigin();
     mPlayhead->setXValue(t);
+    updateStftWindowRect();
     mWavePanel->chart()->replot();
 }
 
@@ -401,6 +585,7 @@ void DASignalAnalysisView::showEvent(QShowEvent* e)
     if (!mEnvelopeValid && mSignal && mSignal->isValid()) {
         requestEnvelopeRefresh();
         Q_EMIT spectrumRequested(mSignal);
+        requestHeatmapRefresh();
     }
 }
 

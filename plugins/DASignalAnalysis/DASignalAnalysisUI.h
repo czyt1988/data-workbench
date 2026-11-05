@@ -83,6 +83,8 @@ private Q_SLOTS:
     void onWorkerFailed(const QString& error);
     void onViewRequestSpectrum(const DA::DASignalPtr& signal);
     void onViewRequestEnvelope(qint64 start, qint64 end, int width);
+    void onViewRequestHeatmap(int columns, int rows);
+    void onWorkerHeatmapReady(const DA::DAStftResult& result);
 
 private:
     void buildCenterPage();
@@ -175,6 +177,8 @@ private:
     const DA::DASignal* mPendingSignal { nullptr };
     // 最近一次请求包络的视图（包络结果回填目标）
     DA::DASignalAnalysisView* mPendingEnvelopeView { nullptr };
+    // 最近一次请求时频热图的视图
+    DA::DASignalAnalysisView* mPendingHeatmapView { nullptr };
     // 当前幅值显示模式（D14）
     QString mAmplitudeMode { QStringLiteral("peak") };
     QString mDbReference { QStringLiteral("fullScale") };

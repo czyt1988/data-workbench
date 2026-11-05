@@ -196,3 +196,51 @@ def test_envelope_empty_and_short_ranges():
     r2 = envelope.envelope_of_window(np.arange(10.0), 3, 6, 100)
     assert r2["mins"].size == 3
     assert r2["x"][0] == pytest.approx(3.5)
+
+
+# ---------------------------------------------------------------- STFT 显示栅格
+
+
+def test_stft_heatmap_grid_and_pooling(tmp_path):
+    from DASignalAnalysis import stft
+
+    wav = tmp_path / "tone.wav"
+    fs = 48000
+    _write_wav(wav, fs=fs, seconds=0.5, freq=1000.0, amp=0.5)
+    params = {
+        "stftWindowMs": 50.0,
+        "stftOverlap": 50.0,
+        "stftZeroPadding": 0,
+        "window": "hann",
+        "removeDc": False,
+        "detrend": "none",
+    }
+    src = {"type": "file", "path": str(wav), "sampleRate": fs}
+    r = stft.compute_heatmap_sync(src, params, 120, 60)
+    # 列数受实际帧数限制（0.5 秒 / 25 毫秒跳步 → 19 帧）
+    assert r["rows"] == 60
+    assert r["columns"] == r["n_frames"] == 19
+    assert len(r["values"]) == 60 * r["columns"]
+    # 段长 = 50 毫秒 × 48 千赫 = 2400 点
+    assert r["nperseg"] == 2400
+    # 峰值行频率接近 1 千赫
+    grid = np.asarray(r["values"]).reshape(60, r["columns"])
+    row_of_peak = int(np.nanargmax(np.nanmax(grid, axis=1)))
+    assert abs(r["freqs"][row_of_peak] - 1000.0) < 60.0
+    # 时间轴单调递增，首列中心时间 = nperseg/2/fs
+    assert np.all(np.diff(r["times"]) > 0)
+    assert r["times"][0] == pytest.approx(2400 / 2.0 / fs, rel=1e-6)
+    assert r["window_seconds"] == pytest.approx(0.05, rel=1e-6)
+
+
+def test_stft_window_truncated_to_signal_length(tmp_path):
+    from DASignalAnalysis import stft
+
+    wav = tmp_path / "short.wav"
+    _write_wav(wav, fs=48000, seconds=0.01, freq=1000.0)
+    src = {"type": "file", "path": str(wav), "sampleRate": 48000}
+    # 窗长超过信号时被截断到信号长度，仍得到至少 1 帧
+    r = stft.compute_heatmap_sync(src, {"stftWindowMs": 500.0}, 50, 30)
+    assert r["nperseg"] == 480
+    assert r["n_frames"] == 1
+    assert r["columns"] == 1

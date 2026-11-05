@@ -5,9 +5,12 @@
 #include "Signal/DASignal.h"
 #include "Analysis/DASignalAnalysisParams.h"
 #include "Analysis/DASpectrumResult.h"
+#include "Analysis/DAStftResult.h"
 
 class QSlider;
 class QComboBox;
+class QCheckBox;
+class QDoubleSpinBox;
 class QSplitter;
 class QStackedWidget;
 class QTimer;
@@ -22,6 +25,7 @@ class QwtPlotSpectrogram;
 namespace DA
 {
 class DASignalChartPanel;
+class DAStftRasterData;
 
 /**
  * @brief 单个信号的分析视图（方案 §8.2 / D25）
@@ -47,6 +51,8 @@ public:
     void setSpectrum(const DASpectrumResult& result);
     // 包络结果回填（外部计算完成后调用）
     void setEnvelope(const QVector< double >& xs, const QVector< double >& mins, const QVector< double >& maxs);
+    // 时频显示栅格回填（外部计算完成后调用）
+    void setStft(const DAStftResult& result);
     // 当前时间（秒）
     double currentTime() const;
     // 幅值显示模式（不重算，只重绘）
@@ -59,6 +65,8 @@ Q_SIGNALS:
     void spectrumRequested(const DA::DASignalPtr& signal);
     // 请求外部计算包络（start/end 为采样点，width 为目标列数）
     void envelopeRequested(qint64 start, qint64 end, int width);
+    // 请求外部计算时频热图（columns/rows 为显示栅格目标尺寸）
+    void heatmapRequested(int columns, int rows);
     // 当前时间变化（滑块/点击/播放头）
     void currentTimeChanged(double seconds);
 
@@ -79,8 +87,12 @@ private:
     void buildUI();
     void rebuildWavePlot();
     void rebuildSpectrumPlot();
+    void rebuildHeatmap();
+    void requestHeatmapRefresh();
     void updatePlayhead();
+    void updateStftWindowRect();
     void updateAxisTitles();
+    void applyHeatmapColors();
     // 幅值 → 显示口径（乘标定系数；dB 时换算对数）
     QVector< double > displayAmplitudes() const;
     // dB 参考值（满量程 = 信号峰值，1.0 = 固定 1.0）
@@ -114,6 +126,16 @@ private:
     QwtPlotShapeItem* mStftWindow { nullptr };
     QwtPlotCurve* mSpectrumCurve { nullptr };
     QwtPlotSpectrogram* mSpectrogramItem { nullptr };
+    DAStftRasterData* mStftRaster { nullptr };
+
+    // 时频热图结果与显示设置
+    DAStftResult mStft;
+    bool mFollowSlider { false };
+    double mDbFloor { -80.0 };
+    DASignalChartPanel* mHeatmapPanel { nullptr };
+    QComboBox* mColormapCombo { nullptr };
+    QDoubleSpinBox* mDbFloorSpin { nullptr };
+    QCheckBox* mFollowSliderCheck { nullptr };
 
     // 频率轴模式：false 线性 / true 对数
     bool mLogFrequency { false };
