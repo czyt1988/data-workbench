@@ -2,6 +2,7 @@
 #define DASIGNALANALYSISUI_H
 #include <QObject>
 #include <QAction>
+#include "Signal/DASignal.h"
 
 class QMenu;
 class QActionGroup;
@@ -47,11 +48,19 @@ public:
     // 无信号时置灰全部依赖信号的动作（导入动作始终保持可用）
     void setSignalDependentActionsEnabled(bool on);
 
+public Q_SLOTS:
+    // 导入三入口（丝带按钮与空状态按钮共用）
+    void importAudioFile();
+    void importDataFrame();
+    void importVideoFile();
+
 private:
     void buildCenterPage();
     void buildSignalCategory();
     void buildPeakTopNMenu();
     void buildAmplitudeModeMenu();
+    // 导入成功后加入页面并激活依赖动作
+    void addSignalAndActivate(const DA::DASignalPtr& sig);
 
 private:
     DACoreInterface* mCore { nullptr };

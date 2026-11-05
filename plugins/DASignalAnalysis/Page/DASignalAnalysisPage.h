@@ -1,6 +1,8 @@
 #ifndef DASIGNALANALYSISPAGE_H
 #define DASIGNALANALYSISPAGE_H
 #include <QWidget>
+#include <QList>
+#include "Signal/DASignal.h"
 
 class QLabel;
 class QTabBar;
@@ -31,11 +33,21 @@ public:
     QTabBar* signalTabBar() const;
     QStackedWidget* signalStack() const;
 
+    // 添加一个信号：新增标签页与视图（M3 阶段为占位视图，M5 接入完整信号视图）
+    void addSignal(const DA::DASignalPtr& signal);
+    // 当前信号（无信号返回空指针）
+    DA::DASignalPtr currentSignal() const;
+    // 全部信号
+    QList< DA::DASignalPtr > allSignals() const;
+    // 信号数量
+    int signalCount() const;
+
     // 空状态下点击导入按钮时，由外部（UI 层）接管实际导入流程
     Q_SIGNALS:
     void requestImportAudio();      // 请求导入音频文件
     void requestImportDataFrame();  // 请求从数据帧导入
     void requestImportVideo();      // 请求导入视频（抽取音频轨）
+    void currentSignalChanged();    // 当前信号标签页切换
 
 public:
     // 重译界面文本（插件的 retranslate 与页面自身的 LanguageChange 都调用）
@@ -59,6 +71,7 @@ private:
     QPushButton* mBtnImportAudio { nullptr };
     QPushButton* mBtnImportDataFrame { nullptr };
     QPushButton* mBtnImportVideo { nullptr };
+    QList< DA::DASignalPtr > mSignals;  ///< 已导入信号（与标签页索引一一对应）
 };
 }  // namespace DA
 

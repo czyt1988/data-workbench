@@ -46,6 +46,63 @@ QStackedWidget* DASignalAnalysisPage::signalStack() const
 }
 
 /**
+ * @brief 添加一个信号：新增标签页与视图
+ *
+ * M3 阶段视图为信息占位页（显示采样率/时长/通道数），M5 换成完整信号视图。
+ */
+void DASignalAnalysisPage::addSignal(const DASignalPtr& signal)
+{
+    if (!signal) {
+        return;
+    }
+    mSignals.append(signal);
+    const int idx = mTabBar->addTab(signal->name());
+    mTabBar->setTabToolTip(idx, signal->source() ? signal->source()->sourceDescription() : QString());
+    // 占位视图：信号元信息（M5 替换为完整视图）
+    QLabel* info = new QLabel(mSignalStack);
+    info->setAlignment(Qt::AlignCenter);
+    info->setText(tr("%1\nSample rate: %2 Hz | Channels: %3 | Duration: %4 s")
+                      .arg(signal->name())
+                      .arg(signal->sampleRate(), 0, 'f', 3)
+                      .arg(signal->channelCount())
+                      .arg(signal->duration(), 0, 'f', 3));
+    // cn:%1\n采样率：%2 赫兹 | 通道数：%3 | 时长：%4 秒
+    mSignalStack->addWidget(info);
+    mTabBar->setCurrentIndex(idx);
+    mSignalStack->setCurrentIndex(idx);
+    updateEmptyState();
+    Q_EMIT currentSignalChanged();
+}
+
+/**
+ * @brief 当前信号（无信号返回空指针）
+ */
+DASignalPtr DASignalAnalysisPage::currentSignal() const
+{
+    const int idx = mTabBar->currentIndex();
+    if (idx < 0 || idx >= mSignals.size()) {
+        return DASignalPtr();
+    }
+    return mSignals.at(idx);
+}
+
+/**
+ * @brief 全部信号
+ */
+QList< DASignalPtr > DASignalAnalysisPage::allSignals() const
+{
+    return mSignals;
+}
+
+/**
+ * @brief 信号数量
+ */
+int DASignalAnalysisPage::signalCount() const
+{
+    return mSignals.size();
+}
+
+/**
  * @brief 构建界面：根堆叠 = 空状态页 + 信号视图页（标签栏 + 视图堆叠）
  */
 void DASignalAnalysisPage::buildUI()
@@ -110,6 +167,7 @@ void DASignalAnalysisPage::buildUI()
     contentLayout->addWidget(mTabBar);
     contentLayout->addWidget(mSignalStack, 1);
     connect(mTabBar, &QTabBar::currentChanged, mSignalStack, &QStackedWidget::setCurrentIndex);
+    connect(mTabBar, &QTabBar::currentChanged, this, &DASignalAnalysisPage::currentSignalChanged);
 
     mRootStack->addWidget(mEmptyPage);
     mRootStack->addWidget(mContentPage);

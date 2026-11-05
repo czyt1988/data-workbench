@@ -16,8 +16,11 @@
 #include "DARibbonAreaInterface.h"
 #include "DADockingAreaInterface.h"
 #include "DAActionsInterface.h"
+#include "DADataManagerInterface.h"
 // DASignalAnalysis
 #include "Page/DASignalAnalysisPage.h"
+#include "Dialogs/DASignalImportDialog.h"
+#include "Signal/DASignalImporter.h"
 
 namespace DA
 {
@@ -65,6 +68,22 @@ bool DASignalAnalysisUI::initialize(DACoreInterface* core)
     retranslateUi();
     // 无信号阶段：依赖信号的动作全部置灰（方案 §8.1）
     setSignalDependentActionsEnabled(false);
+
+    // 导入入口：丝带按钮与空状态按钮共用同一槽
+    if (mPage) {
+        connect(mPage, &DASignalAnalysisPage::requestImportAudio, this, &DASignalAnalysisUI::importAudioFile);
+        connect(mPage, &DASignalAnalysisPage::requestImportDataFrame, this, &DASignalAnalysisUI::importDataFrame);
+        connect(mPage, &DASignalAnalysisPage::requestImportVideo, this, &DASignalAnalysisUI::importVideoFile);
+    }
+    if (actionImportAudio) {
+        connect(actionImportAudio, &QAction::triggered, this, &DASignalAnalysisUI::importAudioFile);
+    }
+    if (actionImportDataFrame) {
+        connect(actionImportDataFrame, &QAction::triggered, this, &DASignalAnalysisUI::importDataFrame);
+    }
+    if (actionImportVideo) {
+        connect(actionImportVideo, &QAction::triggered, this, &DASignalAnalysisUI::importVideoFile);
+    }
     return true;
 }
 
@@ -74,6 +93,87 @@ bool DASignalAnalysisUI::initialize(DACoreInterface* core)
 DASignalAnalysisPage* DASignalAnalysisUI::page() const
 {
     return mPage;
+}
+
+// ---------------------------------------------------------------- 导入
+
+/**
+ * @brief 导入音频文件（WAV/AIFF/FLAC/OGG 直读；MP3/M4A/AAC 经 FFmpeg）
+ */
+void DASignalAnalysisUI::importAudioFile()
+{
+    DADataManagerInterface* dataMgr = mCore ? mCore->getDataManagerInterface() : nullptr;
+    DASignalImportDialog dlg(DASignalImportDialog::AudioMode, dataMgr, mPage);
+    if (dlg.exec() != QDialog::Accepted) {
+        return;
+    }
+    QString error;
+    DASignalPtr sig = DASignalImporter::importAudioFile(dlg.filePath(), &error);
+    if (!sig) {
+        mUI->addWarningLogMessage(tr("Failed to import audio: %1").arg(error));  // cn:导入音频失败：%1
+        return;
+    }
+    addSignalAndActivate(sig);
+}
+
+/**
+ * @brief 从数据帧导入（时间列 + 幅值列 + 采样率）
+ */
+void DASignalAnalysisUI::importDataFrame()
+{
+    DADataManagerInterface* dataMgr = mCore ? mCore->getDataManagerInterface() : nullptr;
+    DASignalImportDialog dlg(DASignalImportDialog::DataFrameMode, dataMgr, mPage);
+    if (dlg.exec() != QDialog::Accepted) {
+        return;
+    }
+    QString error;
+    DASignalPtr sig = DASignalImporter::importDataFrame(dlg.selectedData(),
+                                                        dlg.selectedTimeColumn(),
+                                                        dlg.selectedValueColumns(),
+                                                        dlg.sampleRate(),
+                                                        dlg.signalName(),
+                                                        &error);
+    if (!sig) {
+        mUI->addWarningLogMessage(tr("Failed to import data frame: %1").arg(error));  // cn:导入数据帧失败：%1
+        return;
+    }
+    addSignalAndActivate(sig);
+}
+
+/**
+ * @brief 导入视频（FFmpeg 抽取音频轨到临时 WAV）
+ */
+void DASignalAnalysisUI::importVideoFile()
+{
+    DADataManagerInterface* dataMgr = mCore ? mCore->getDataManagerInterface() : nullptr;
+    DASignalImportDialog dlg(DASignalImportDialog::VideoMode, dataMgr, mPage);
+    if (dlg.exec() != QDialog::Accepted) {
+        return;
+    }
+    QString error;
+    DASignalPtr sig = DASignalImporter::importVideoFile(dlg.filePath(), &error);
+    if (!sig) {
+        mUI->addWarningLogMessage(tr("Failed to import video: %1").arg(error));  // cn:导入视频失败：%1
+        return;
+    }
+    addSignalAndActivate(sig);
+}
+
+/**
+ * @brief 导入成功：加入页面并激活依赖信号的动作
+ */
+void DASignalAnalysisUI::addSignalAndActivate(const DASignalPtr& sig)
+{
+    if (nullptr == mPage || !sig) {
+        return;
+    }
+    mPage->addSignal(sig);
+    setSignalDependentActionsEnabled(true);
+    mUI->addInfoLogMessage(tr("Signal imported: %1 (%2 Hz, %3 s)")
+                               .arg(sig->name())
+                               .arg(sig->sampleRate(), 0, 'f', 3)
+                               .arg(sig->duration(), 0, 'f', 3));
+    // cn:信号已导入：%1（%2 赫兹，%3 秒）
 }
 
 /**

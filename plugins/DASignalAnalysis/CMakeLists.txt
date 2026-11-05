@@ -16,6 +16,10 @@ file(GLOB DA_PLUGIN_HEADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
 file(GLOB DA_PLUGIN_SOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 file(GLOB DA_PLUGIN_PAGE_HEADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/Page/*.h")
 file(GLOB DA_PLUGIN_PAGE_SOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/Page/*.cpp")
+file(GLOB DA_PLUGIN_SIGNAL_HEADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/Signal/*.h")
+file(GLOB DA_PLUGIN_SIGNAL_SOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/Signal/*.cpp")
+file(GLOB DA_PLUGIN_DIALOG_HEADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/Dialogs/*.h")
+file(GLOB DA_PLUGIN_DIALOG_SOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/Dialogs/*.cpp")
 file(GLOB DA_PLUGIN_QT_RC_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.qrc")
 
 # -------------link DAWorkBench--------------------------
@@ -39,14 +43,35 @@ da_add_plugin(
             ${DA_PLUGIN_SOURCE_FILES}
             ${DA_PLUGIN_PAGE_HEADER_FILES}
             ${DA_PLUGIN_PAGE_SOURCE_FILES}
+            ${DA_PLUGIN_SIGNAL_HEADER_FILES}
+            ${DA_PLUGIN_SIGNAL_SOURCE_FILES}
+            ${DA_PLUGIN_DIALOG_HEADER_FILES}
+            ${DA_PLUGIN_DIALOG_SOURCE_FILES}
             ${DA_PLUGIN_QT_RC_FILES}
     # Multimedia：播放控制（QMediaPlayer）在 M9 接入
     QT_PRIVATE Core Gui Widgets Multimedia
     LINK_PRIVATE DAUtils
                 DAMessageHandler
+                DAPyBindQt
+                DAData
                 DAFigure
                 DAInterface
                 DAPluginSupport
     THIRDPARTY SARibbonBar ctk ads qwt python
     INCLUDE_PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
 )
+
+# DASignalAnalysis Python 包（导入/取数/频谱/STFT/峰值/包络编排）
+install(DIRECTORY
+    ${CMAKE_CURRENT_LIST_DIR}/PyScripts/DASignalAnalysis
+    DESTINATION ${CMAKE_INSTALL_BINDIR}/PyScripts
+    PATTERN "__pycache__" EXCLUDE
+    PATTERN "*.pyc" EXCLUDE
+    PATTERN "*.pyo" EXCLUDE
+)
+# 构建期复制（用于调试运行）
+file(COPY "${CMAKE_CURRENT_LIST_DIR}/PyScripts/DASignalAnalysis"
+     DESTINATION ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}/PyScripts
+     PATTERN "__pycache__" EXCLUDE
+     PATTERN "*.pyc" EXCLUDE
+     PATTERN "*.pyo" EXCLUDE)
