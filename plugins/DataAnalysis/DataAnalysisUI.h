@@ -5,6 +5,7 @@
 
 // SARibbon
 class SARibbonPanel;
+class SARibbonMenu;
 
 // DA
 namespace DA
@@ -55,9 +56,15 @@ public:
     //===================================================
     // 数据操作 category（Dataframe 上下文标签内）
     //===================================================
-    // 数据清洗 panel：缺失值 + 异常与重复合并在一个面板，压缩占用宽度
+    // 数据清洗 panel：7 条动作压缩为 3 个大按钮（缺失值▾ / 删除重复值 / 异常值▾），
+    // 6 条动作收进 2 个下拉菜单，面板宽度从约 700px 压缩到约 300px
     SARibbonPanel* panelDataCleaner { nullptr };
-    // 数据清洗 action
+    // 缺失值/异常值分组按钮（点开弹菜单）与菜单本体（finalize 显式销毁）
+    QAction* actionDataFrameCleanMissingGroup { nullptr };  ///< 缺失值分组按钮（InstantPopup 菜单：删除/填充/插值）
+    QAction* actionDataFrameCleanOutlierGroup { nullptr };  ///< 异常值分组按钮（InstantPopup 菜单：IQR/Z-Score/偏态转换）
+    SARibbonMenu* menuCleanMissing { nullptr };             ///< 缺失值下拉菜单（objectName 纳入插件契约）
+    SARibbonMenu* menuCleanOutlier { nullptr };              ///< 异常值下拉菜单（objectName 纳入插件契约）
+    // 数据清洗 action（菜单条目复用，worker 槽不变）
     QAction* actionDataFrameDropNone { nullptr };              ///< 删除Nan值
     QAction* actionDropDuplicates { nullptr };                 ///< 重复值处理
     QAction* actionDataFrameFillNone { nullptr };              ///< 填充缺失值

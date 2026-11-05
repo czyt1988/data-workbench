@@ -510,6 +510,21 @@ QMenu* DADataTableView::buildContextMenu(const QModelIndex& at)
     connect(actEditNote, &QAction::triggered, this, &DADataTableView::noteEditRequested);
     connect(actDeleteNote, &QAction::triggered, this, &DADataTableView::noteDeleteRequested);
     connect(actClearNotes, &QAction::triggered, this, &DADataTableView::noteClearAllRequested);
+    // —— A3：单元格大小（列宽自适应 / 设置列宽… / 设置行高…）——
+    // 与 Ribbon「视图」面板的「单元格大小」同入口；三者都直接改视图状态（不进撤销栈，
+    // 与拖拽列宽/行高一致）。列宽两项需要选中列，行高对全表生效（单值约束 R6）
+    menu->addSeparator();
+    QMenu* cellSizeMenu = menu->addMenu(QIcon(QStringLiteral(":/DAGui/icon/cellSize.svg")),
+                                        tr("Cell Size"));  // cn:单元格大小
+    QAction* actAutoFitWidth = cellSizeMenu->addAction(tr("AutoFit Column Width"));  // cn:列宽自适应
+    actAutoFitWidth->setEnabled(hasSel);
+    connect(actAutoFitWidth, &QAction::triggered, this, &DADataTableView::columnWidthAutoFitRequested);
+    QAction* actSetWidth = cellSizeMenu->addAction(tr("Set Column Width..."));  // cn:设置列宽...
+    actSetWidth->setEnabled(hasSel);
+    connect(actSetWidth, &QAction::triggered, this, &DADataTableView::columnWidthPromptRequested);
+    QAction* actSetHeight = cellSizeMenu->addAction(tr("Set Row Height..."));  // cn:设置行高...
+    actSetHeight->setEnabled(getData().isDataFrame() || getData().isTable());
+    connect(actSetHeight, &QAction::triggered, this, &DADataTableView::rowHeightPromptRequested);
     // —— 后续计划的分组插入点在菜单底部（见函数注释），插入时组间加分隔符 ——
     return menu;
 }

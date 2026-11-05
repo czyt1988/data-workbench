@@ -54,7 +54,10 @@
 #include "Table/Metadata/DATableViewStateStore.h"
 #include "Table/Views/DATablePaneContainer.h"
 #include "Table/Views/DATableStatsWidget.h"
+#include "Table/Views/DATableStyleItemDelegate.h"
 #include "Table/Commands/DACommandsTableColumnView.h"
+#include "Table/Commands/DACommandsTableStyle.h"
+#include <QPainter>
 #include "Table/Dialogs/DADialogManageColumns.h"
 #include "Table/Dialogs/DADialogGotoCell.h"
 #include <QWindow>
@@ -423,6 +426,13 @@ private Q_SLOTS:
     // 位置键重映射工具与 DATableStyleManager::onRowsReordered
     void testKeyRemapUtility();
     void testStyleManagerRowsReordered();
+    // A1/A2：样式模型对齐/边框（XML 往返、merge 优先级、命令撤销、委派像素）
+    void testCellStyleAlignmentBorderXml();
+    void testCellStyleAlignmentBorderMerge();
+    void testCellStyleAlignmentBorderCommandUndo();
+    void testStyleDelegateAlignmentAndBorderPixels();
+    // A3：列宽自适应/设置列宽/设置行高（落库 + 投影一致，不进撤销栈）
+    void testCellSizeCommands();
     // 视图状态子存储与元数据注册表
     void testViewStateStore();
     void testMetadataRegistry();
@@ -1555,6 +1565,240 @@ void DATableDataTest::testStyleManagerRowsReordered()
     QCOMPARE(mgr.getCellStyle(0, 1).background().color(), green);
 }
 
+// A1/A2：对齐/边框 XML 往返（含显式无框线、旧 XML 缺标签回落）
+void DATableDataTest::testCellStyleAlignmentBorderXml()
+{
+    DA::DATableCellStyle s;
+    s.setAlignment(Qt::AlignRight | Qt::AlignBottom);
+    s.setBorder(DA::DATableCellStyle::BorderLeft | DA::DATableCellStyle::BorderBottom, QColor(0x5D, 0x6D, 0x7E), 2);
+    QDomDocument doc;
+    QDomElement root = doc.createElement(QStringLiteral("style"));
+    doc.appendChild(root);
+    s.toXml(doc, root);
+
+    DA::DATableCellStyle r;
+    QVERIFY(r.isNull());
+    QVERIFY(r.fromXml(root));
+    QVERIFY(r.alignmentValid());
+    QCOMPARE(r.alignment(), Qt::Alignment(Qt::AlignRight | Qt::AlignBottom));
+    QVERIFY(r.borderValid());
+    QCOMPARE(int(r.borderSides()),
+             int(DA::DATableCellStyle::BorderLeft | DA::DATableCellStyle::BorderBottom));
+    QCOMPARE(r.borderColor(), QColor(0x5D, 0x6D, 0x7E));
+    QCOMPARE(r.borderWidth(), 2);
+
+    // 显式无框线：sides=0 但 valid=true，往返后仍是显式无框线（不是未设置）
+    DA::DATableCellStyle none;
+    none.setBorder(DA::DATableCellStyle::BorderNone);
+    QDomDocument doc2;
+    QDomElement root2 = doc2.createElement(QStringLiteral("style"));
+    doc2.appendChild(root2);
+    none.toXml(doc2, root2);
+    DA::DATableCellStyle r2;
+    QVERIFY(r2.fromXml(root2));
+    QVERIFY(r2.borderValid());
+    QCOMPARE(int(r2.borderSides()), int(DA::DATableCellStyle::BorderNone));
+
+    // 旧工程 XML（只有 font 标签）不产生 alignment/border valid
+    QDomDocument doc3;
+    QDomElement root3 = doc3.createElement(QStringLiteral("style"));
+    doc3.appendChild(root3);
+    QDomElement fontEl = doc3.createElement(QStringLiteral("font"));
+    fontEl.setAttribute(QStringLiteral("family"), QStringLiteral("Arial"));
+    fontEl.setAttribute(QStringLiteral("size"), 10);
+    root3.appendChild(fontEl);
+    DA::DATableCellStyle r3;
+    QVERIFY(r3.fromXml(root3));
+    QVERIFY(r3.fontValid());
+    QVERIFY(!r3.alignmentValid());
+    QVERIFY(!r3.borderValid());
+}
+
+// A1/A2：mergeFrom 优先级——other 已设置的属性覆盖，未设置的属性保留
+void DATableDataTest::testCellStyleAlignmentBorderMerge()
+{
+    DA::DATableCellStyle base;
+    base.setAlignment(Qt::AlignLeft);
+    base.setBorder(DA::DATableCellStyle::BorderTop);
+
+    DA::DATableCellStyle overlay;
+    overlay.setAlignment(Qt::AlignRight | Qt::AlignTop);
+    base.mergeFrom(overlay);
+    QCOMPARE(base.alignment(), Qt::Alignment(Qt::AlignRight | Qt::AlignTop));
+    // overlay 没设边框 → base 的边框保留
+    QVERIFY(base.borderValid());
+    QCOMPARE(int(base.borderSides()), int(DA::DATableCellStyle::BorderTop));
+
+    // 边框被 overlay 覆盖（含显式无框线）
+    DA::DATableCellStyle clearBorder;
+    clearBorder.setBorder(DA::DATableCellStyle::BorderNone);
+    base.mergeFrom(clearBorder);
+    QVERIFY(base.borderValid());
+    QCOMPARE(int(base.borderSides()), int(DA::DATableCellStyle::BorderNone));
+    // clearBorder 没设对齐 → 对齐保留
+    QCOMPARE(base.alignment(), Qt::Alignment(Qt::AlignRight | Qt::AlignTop));
+}
+
+// A1/A2：DACommandTableStyle 对齐/边框一步撤销、一步重做
+void DATableDataTest::testCellStyleAlignmentBorderCommandUndo()
+{
+    DA::DATableStyleManager mgr;
+    QUndoStack stack;
+    const DA::DATableCellStyle oldStyle = mgr.getCellStyle(0, 0);
+    DA::DATableCellStyle newStyle        = oldStyle;
+    newStyle.setAlignment(Qt::AlignHCenter | Qt::AlignTop);
+    newStyle.setBorder(DA::DATableCellStyle::BorderAll, QColor(0x72, 0x72, 0x72), 1);
+
+    auto* cmd = new DA::DACommandTableStyle(&mgr);
+    cmd->addChange(DA::DACommandTableStyle::Cell, 0, 0, oldStyle, newStyle, true);
+    stack.push(cmd);
+
+    QVERIFY(mgr.getCellStyle(0, 0).alignmentValid());
+    QVERIFY(mgr.getCellStyle(0, 0).borderValid());
+    QCOMPARE(mgr.getCellStyle(0, 0).alignment(), Qt::Alignment(Qt::AlignHCenter | Qt::AlignTop));
+
+    stack.undo();
+    QVERIFY(!mgr.getCellStyle(0, 0).alignmentValid());
+    QVERIFY(!mgr.getCellStyle(0, 0).borderValid());
+
+    stack.redo();
+    QVERIFY(mgr.getCellStyle(0, 0).alignmentValid());
+    QVERIFY(mgr.getCellStyle(0, 0).borderValid());
+    QCOMPARE(int(mgr.getCellStyle(0, 0).borderSides()), int(DA::DATableCellStyle::BorderAll));
+}
+
+// A1/A2：委派绘制像素断言——右对齐文本落在右半边；相邻两格的共享边只有 1px
+void DATableDataTest::testStyleDelegateAlignmentAndBorderPixels()
+{
+    const int cellW = 120;
+    const int cellH = 40;
+    DA::DATableStyleManager mgr;
+    DA::DATableStyleItemDelegate dlg(&mgr, nullptr);
+    QStandardItemModel model(1, 2);
+    model.setData(model.index(0, 0), QStringLiteral("MMMM"));
+    model.setData(model.index(0, 1), QStringLiteral("MMMM"));
+
+    // 左格：左对齐 + 全边框；右格：右对齐 + 全边框
+    DA::DATableCellStyle leftStyle;
+    leftStyle.setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+    leftStyle.setBorder(DA::DATableCellStyle::BorderAll);
+    DA::DATableCellStyle rightStyle;
+    rightStyle.setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+    rightStyle.setBorder(DA::DATableCellStyle::BorderAll);
+    mgr.setCellStyle(0, 0, leftStyle);
+    mgr.setCellStyle(0, 1, rightStyle);
+
+    QImage img(cellW * 2, cellH, QImage::Format_ARGB32);
+    img.fill(Qt::white);
+    {
+        QPainter p(&img);
+        QStyleOptionViewItem opt;
+        opt.rect  = QRect(0, 0, cellW, cellH);
+        opt.font  = QApplication::font();
+        opt.state = QStyle::State_Enabled;
+        dlg.paint(&p, opt, model.index(0, 0));
+        opt.rect = QRect(cellW, 0, cellW, cellH);
+        dlg.paint(&p, opt, model.index(0, 1));
+    }
+
+    // 文本像素水平重心：左格应在左半区，右格应在右半区
+    auto textCentroidX = [ &img ](int x0, int x1) {
+        qint64 sum = 0;
+        qint64 cnt = 0;
+        for (int y = 2; y < img.height() - 2; ++y) {
+            for (int x = x0 + 2; x < x1 - 2; ++x) {
+                const QColor c = img.pixelColor(x, y);
+                // 深色像素（文字），排除边框（边框贴边，已用 +2 内缩避开）
+                if (c.red() < 120 && c.green() < 120 && c.blue() < 120) {
+                    sum += x;
+                    ++cnt;
+                }
+            }
+        }
+        return cnt > 0 ? double(sum) / double(cnt) : -1.0;
+    };
+    const double leftCentroid  = textCentroidX(0, cellW);
+    const double rightCentroid = textCentroidX(cellW, cellW * 2);
+    QVERIFY2(leftCentroid >= 0.0, "left cell text not painted");
+    QVERIFY2(rightCentroid >= 0.0, "right cell text not painted");
+    QVERIFY2(leftCentroid < cellW * 0.5, "left-aligned text should stay in the left half");
+    QVERIFY2(rightCentroid > cellW * 1.5, "right-aligned text should stay in the right half");
+
+    // 边框：左右两格都设了全边框，共享边只画一条（x=cellW-1 是边框，x=cellW 不是）。
+    // 统计纵向内部区（跳过顶/底边框行），只看竖边是否重复
+    const QColor borderColor(0x72, 0x72, 0x72);
+    auto columnHasBorder = [ &img, borderColor ](int x) {
+        int n = 0;
+        for (int y = 2; y < img.height() - 2; ++y) {
+            const QColor c = img.pixelColor(x, y);
+            if (qAbs(c.red() - borderColor.red()) <= 10 && qAbs(c.green() - borderColor.green()) <= 10
+                && qAbs(c.blue() - borderColor.blue()) <= 10) {
+                ++n;
+            }
+        }
+        return n;
+    };
+    QVERIFY2(columnHasBorder(cellW - 1) > cellH / 2, "shared border line not painted");
+    QCOMPARE(columnHasBorder(cellW), 0);  // 相邻格不再重复画一条，避免 2px 叠粗
+    // 外沿边存在
+    QVERIFY2(columnHasBorder(0) > cellH / 2, "outer left border not painted");
+    QVERIFY2(columnHasBorder(cellW * 2 - 1) > cellH / 2, "outer right border not painted");
+}
+
+// A3：列宽自适应 / 设置列宽 / 设置行高——视图状态落库与投影一致，且不进撤销栈
+void DATableDataTest::testCellSizeCommands()
+{
+    if (!mPandasOk || !mPyScriptsOk) {
+        QSKIP("pandas/DAPyScripts not available");
+    }
+    pybind11::object obj = makeTestDataFrame();
+    QVERIFY(!obj.is_none());
+    DA::DAPyDataFrame df(obj);
+    DA::DAData d(df);
+    DA::DATableMetadataRegistry registry(nullptr);
+    DA::DADataOperateOfDataFrameWidget w(d, &registry);
+    w.resize(900, 400);
+    w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+    DA::DADataTableView* tv = w.getDataTableView();
+    DA::DATableViewStateStore* vs = w.viewStateStore();
+    QVERIFY(tv);
+    QVERIFY(vs);
+    DA::DADataTableModel* model = tv->getDataModel();
+    QVERIFY(model);
+    const int col = 1;
+    const QString name = model->headerData(col, Qt::Horizontal).toString();
+    QVERIFY(!name.isEmpty());
+
+    // 未选中任何列：三个命令都拒绝（不落库）
+    QVERIFY(!w.autoFitSelectedColumnWidths());
+    QVERIFY(!w.setSelectedColumnWidth(150));
+    QCOMPARE(vs->columnWidth(name, 0), -1);
+
+    // 选中整列后：列宽自适应 → store 记录与表头投影一致，且位于合理区间
+    tv->selectColumn(col);
+    const int undoBefore = w.getUndoStack() ? w.getUndoStack()->count() : 0;
+    QVERIFY(w.autoFitSelectedColumnWidths());
+    const int autoW = vs->columnWidth(name, 0);
+    QVERIFY2(autoW >= 40 && autoW <= 400, "auto-fit width out of expected range");
+    QCOMPARE(tv->horizontalHeader()->sectionSize(col), autoW);
+
+    // 设置列宽：store 与表头都变为目标值
+    QVERIFY(w.setSelectedColumnWidth(150));
+    QCOMPARE(vs->columnWidth(name, 0), 150);
+    QCOMPARE(tv->horizontalHeader()->sectionSize(col), 150);
+
+    // 设置行高：store 与垂直表头一致（单值约束：默认行高同步）
+    w.setTableRowHeight(30);
+    QCOMPARE(vs->rowHeight(), 30);
+    QCOMPARE(tv->verticalHeader()->defaultSectionSize(), 30);
+
+    // 三个命令都不进撤销栈（与拖拽改列宽/行高一致）
+    if (w.getUndoStack()) {
+        QCOMPARE(w.getUndoStack()->count(), undoBefore);
+    }
+}
+
 // DATableViewStateStore：XML round-trip（列宽按名/行头宽）、renameColumn 迁移、
 // removeColumn 后重新插入同名不限、重名列 occurrence 消歧互不影响
 void DATableDataTest::testViewStateStore()
@@ -1865,7 +2109,9 @@ void DATableDataTest::testContextMenuComposition()
                                      QStringLiteral("Insert Note"),
                                      QStringLiteral("Edit Note"),
                                      QStringLiteral("Delete Note"),
-                                     QStringLiteral("Clear All Notes") };
+                                     QStringLiteral("Clear All Notes"),
+                                     QStringLiteral("<SEP>"),
+                                     QStringLiteral("Cell Size") };
     QCOMPARE(bodySeq, expectedBody);
     // 剪贴板组无选区置灰
     QVERIFY(!byText.value(QStringLiteral("Cut"))->isEnabled());
@@ -1922,6 +2168,19 @@ void DATableDataTest::testContextMenuComposition()
         QVERIFY(!a->isEnabled());
         QVERIFY2(!a->icon().isNull(), qPrintable(QStringLiteral("icon empty for %1").arg(t)));
     }
+    // 单元格大小（A3）：子菜单 3 项；无数据（无模型）时全部置灰
+    QAction* actCellSize = byText.value(QStringLiteral("Cell Size"));
+    QVERIFY(actCellSize != nullptr);
+    QVERIFY(actCellSize->menu() != nullptr);
+    QVERIFY(!actCellSize->icon().isNull());
+    QStringList cellSizeSeq;
+    for (QAction* a : actCellSize->menu()->actions()) {
+        cellSizeSeq << a->text();
+        QVERIFY(!a->isEnabled());
+    }
+    QCOMPARE(cellSizeSeq, QStringList({ QStringLiteral("AutoFit Column Width"),
+                                        QStringLiteral("Set Column Width..."),
+                                        QStringLiteral("Set Row Height...") }));
     delete body;
 }
 

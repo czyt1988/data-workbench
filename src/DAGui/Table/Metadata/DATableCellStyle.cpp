@@ -96,12 +96,123 @@ bool DATableCellStyle::fontValid() const
 }
 
 /**
- * @brief 三个属性是否全部未设置
+ * @brief 获取对齐方式（水平位 + 垂直位）
+ * @return 对齐方式，未设置时返回空对齐
+ */
+Qt::Alignment DATableCellStyle::alignment() const
+{
+    return mAlignment;
+}
+
+/**
+ * @brief 设置对齐方式，同时置 alignmentValid=true
+ *
+ * 只保留水平位（AlignLeft/AlignHCenter/AlignRight）与垂直位（AlignTop/AlignVCenter/AlignBottom），
+ * 其余位（如 AlignJustify、AlignAbsolute）一律丢弃——绘制与导出只认这两组。
+ * @param a 对齐方式（Qt::AlignCenter 等价于 AlignHCenter|AlignVCenter）
+ */
+void DATableCellStyle::setAlignment(Qt::Alignment a)
+{
+    mAlignment      = (a & (Qt::AlignLeft | Qt::AlignHCenter | Qt::AlignRight))
+                 | (a & (Qt::AlignTop | Qt::AlignVCenter | Qt::AlignBottom));
+    mAlignmentValid = true;
+}
+
+/**
+ * @brief 对齐方式是否已设置
+ * @return 已设置返回 true
+ */
+bool DATableCellStyle::alignmentValid() const
+{
+    return mAlignmentValid;
+}
+
+/**
+ * @brief 获取边框边位掩码
+ * @return 位掩码（BorderSide 组合）；未设置时为 0
+ */
+quint8 DATableCellStyle::borderSides() const
+{
+    return mBorderSides;
+}
+
+/**
+ * @brief 设置边框边位掩码，同时置 borderValid=true
+ *
+ * sides=0 表示显式无框线（覆盖下层继承的边框），与"未设置"不同。
+ * @param sides BorderSide 位组合
+ */
+void DATableCellStyle::setBorderSides(quint8 sides)
+{
+    mBorderSides = sides;
+    mBorderValid = true;
+}
+
+/**
+ * @brief 获取边框颜色
+ * @return 边框颜色；未设置时返回无效 QColor（绘制时回落到默认中灰）
+ */
+QColor DATableCellStyle::borderColor() const
+{
+    return mBorderColor;
+}
+
+/**
+ * @brief 设置边框颜色（不单独改变 valid，边框是否生效由 setBorderSides/setBorder 决定）
+ * @param c 边框颜色
+ */
+void DATableCellStyle::setBorderColor(const QColor& c)
+{
+    mBorderColor = c;
+}
+
+/**
+ * @brief 获取边框宽度（像素）
+ * @return 宽度，默认 1
+ */
+int DATableCellStyle::borderWidth() const
+{
+    return mBorderWidth;
+}
+
+/**
+ * @brief 设置边框宽度（像素，1..3，越界钳制）
+ * @param w 宽度
+ */
+void DATableCellStyle::setBorderWidth(int w)
+{
+    mBorderWidth = qBound(1, w, 3);
+}
+
+/**
+ * @brief 边框是否已设置（sides=0 + valid=true 表示显式无框线）
+ * @return 已设置返回 true
+ */
+bool DATableCellStyle::borderValid() const
+{
+    return mBorderValid;
+}
+
+/**
+ * @brief 一次性设置边框（预设入口）
+ * @param sides BorderSide 位组合（0 = 无框线）
+ * @param color 边框颜色（无效表示绘制时用默认中灰）
+ * @param width 宽度（<=0 按 1）
+ */
+void DATableCellStyle::setBorder(quint8 sides, const QColor& color, int width)
+{
+    setBorderSides(sides);
+    mBorderColor = color;
+    mBorderWidth = qBound(1, width <= 0 ? 1 : width, 3);
+}
+
+/**
+ * @brief 所有属性是否全部未设置
  * @return 全部 valid 为 false 时返回 true
  */
 bool DATableCellStyle::isNull() const
 {
-    return !mBackgroundValid && !mForegroundValid && !mFontValid;
+    return !mBackgroundValid && !mForegroundValid && !mFontValid && !mAlignmentValid && !mBorderValid;
 }
 
 /**
@@ -122,6 +233,16 @@ DATableCellStyle& DATableCellStyle::mergeFrom(const DATableCellStyle& other)
     if (other.mFontValid) {
         mFont      = other.mFont;
         mFontValid = true;
+    }
+    if (other.mAlignmentValid) {
+        mAlignment      = other.mAlignment;
+        mAlignmentValid = true;
+    }
+    if (other.mBorderValid) {
+        mBorderSides = other.mBorderSides;
+        mBorderColor = other.mBorderColor;
+        mBorderWidth = other.mBorderWidth;
+        mBorderValid = true;
     }
     return *this;
 }
@@ -160,6 +281,48 @@ void DATableCellStyle::toXml(QDomDocument& doc, QDomElement& e) const
         f.setAttribute(QStringLiteral("italic"), mFont.italic() ? 1 : 0);
         f.setAttribute(QStringLiteral("underline"), mFont.underline() ? 1 : 0);
         e.appendChild(f);
+    }
+    if (mAlignmentValid) {
+        // 缺属性 = 该轴未设置（读取方各自回落默认）
+        QDomElement al = doc.createElement(QStringLiteral("alignment"));
+        if (mAlignment & Qt::AlignLeft) {
+            al.setAttribute(QStringLiteral("horizontal"), QStringLiteral("left"));
+        } else if (mAlignment & Qt::AlignHCenter) {
+            al.setAttribute(QStringLiteral("horizontal"), QStringLiteral("center"));
+        } else if (mAlignment & Qt::AlignRight) {
+            al.setAttribute(QStringLiteral("horizontal"), QStringLiteral("right"));
+        }
+        if (mAlignment & Qt::AlignTop) {
+            al.setAttribute(QStringLiteral("vertical"), QStringLiteral("top"));
+        } else if (mAlignment & Qt::AlignVCenter) {
+            al.setAttribute(QStringLiteral("vertical"), QStringLiteral("vcenter"));
+        } else if (mAlignment & Qt::AlignBottom) {
+            al.setAttribute(QStringLiteral("vertical"), QStringLiteral("bottom"));
+        }
+        e.appendChild(al);
+    }
+    if (mBorderValid) {
+        // sides 用字母串 l/r/t/b 子集；空串表示显式无框线
+        QString sides;
+        if (mBorderSides & BorderLeft) {
+            sides += QLatin1Char('l');
+        }
+        if (mBorderSides & BorderRight) {
+            sides += QLatin1Char('r');
+        }
+        if (mBorderSides & BorderTop) {
+            sides += QLatin1Char('t');
+        }
+        if (mBorderSides & BorderBottom) {
+            sides += QLatin1Char('b');
+        }
+        QDomElement bd = doc.createElement(QStringLiteral("border"));
+        bd.setAttribute(QStringLiteral("sides"), sides);
+        if (mBorderColor.isValid()) {
+            bd.setAttribute(QStringLiteral("color"), mBorderColor.name(QColor::HexArgb));
+        }
+        bd.setAttribute(QStringLiteral("width"), mBorderWidth);
+        e.appendChild(bd);
     }
 }
 
@@ -213,6 +376,46 @@ bool DATableCellStyle::fromXml(const QDomElement& e)
             f.setItalic(child.attribute(QStringLiteral("italic"), "0").toInt() != 0);
             f.setUnderline(child.attribute(QStringLiteral("underline"), "0").toInt() != 0);
             setFont(f);
+        } else if (tag == QLatin1String("alignment")) {
+            const QString hz = child.attribute(QStringLiteral("horizontal"));
+            const QString vt = child.attribute(QStringLiteral("vertical"));
+            Qt::Alignment al;
+            if (hz == QLatin1String("left")) {
+                al |= Qt::AlignLeft;
+            } else if (hz == QLatin1String("center")) {
+                al |= Qt::AlignHCenter;
+            } else if (hz == QLatin1String("right")) {
+                al |= Qt::AlignRight;
+            }
+            if (vt == QLatin1String("top")) {
+                al |= Qt::AlignTop;
+            } else if (vt == QLatin1String("vcenter")) {
+                al |= Qt::AlignVCenter;
+            } else if (vt == QLatin1String("bottom")) {
+                al |= Qt::AlignBottom;
+            }
+            // 两个属性都缺视为未设置（旧工程/异常 XML 不产生空 valid 样式）
+            if (!hz.isEmpty() || !vt.isEmpty()) {
+                setAlignment(al);
+            }
+        } else if (tag == QLatin1String("border")) {
+            const QString sidesStr = child.attribute(QStringLiteral("sides"));
+            quint8 sides          = BorderNone;
+            if (sidesStr.contains(QLatin1Char('l'))) {
+                sides |= BorderLeft;
+            }
+            if (sidesStr.contains(QLatin1Char('r'))) {
+                sides |= BorderRight;
+            }
+            if (sidesStr.contains(QLatin1Char('t'))) {
+                sides |= BorderTop;
+            }
+            if (sidesStr.contains(QLatin1Char('b'))) {
+                sides |= BorderBottom;
+            }
+            QColor c;
+            compat::setNamedColor(c, child.attribute(QStringLiteral("color")));
+            setBorder(sides, c, child.attribute(QStringLiteral("width"), "1").toInt());
         }
         // 未知标签忽略（前向兼容）
         n = n.nextSibling();

@@ -13,6 +13,7 @@
 // stl
 #include <memory>
 #include <algorithm>
+#include <utility>
 // qt
 #include <QTableView>
 #include <QHeaderView>
@@ -570,6 +571,12 @@ void DADataOperateOfDataFrameWidget::configurePaneView(DADataTableView* pane)
     connect(pane, &DADataTableView::noteEditRequested, this, &DADataOperateOfDataFrameWidget::showNoteEditorForCurrentCell);
     connect(pane, &DADataTableView::noteDeleteRequested, this, &DADataOperateOfDataFrameWidget::deleteNoteAtCurrentCell);
     connect(pane, &DADataTableView::noteClearAllRequested, this, &DADataOperateOfDataFrameWidget::clearAllNotes);
+    // 单元格大小入口（A3）：表体右键「单元格大小」子菜单 → 页面命令（不进撤销栈）
+    connect(pane, &DADataTableView::columnWidthAutoFitRequested, this, [ this ]() {
+        autoFitSelectedColumnWidths();
+    });
+    connect(pane, &DADataTableView::columnWidthPromptRequested, this, &DADataOperateOfDataFrameWidget::showSetColumnWidthDialog);
+    connect(pane, &DADataTableView::rowHeightPromptRequested, this, &DADataOperateOfDataFrameWidget::showSetRowHeightDialog);
 }
 
 /**
@@ -1063,6 +1070,165 @@ void DADataOperateOfDataFrameWidget::applyViewStateFromStore()
     d_func()->mViewStateController->applyFromStore();
 }
 
+// ============================================================
+// 单元格大小（A3）：列宽自适应 / 设置列宽 / 设置行高
+// 三者都直接改视图状态并重投影，不进撤销栈（与拖拽列宽/行高一致）
+// ============================================================
+
+namespace
+{
+// 设置列宽允许范围（像素）：下限保证可读，上限防误操作把列拉爆
+constexpr int c_minColumnWidth = 20;
+constexpr int c_maxColumnWidth = 2000;
+// 设置行高允许范围（像素）
+constexpr int c_minRowHeight = 10;
+constexpr int c_maxRowHeight = 500;
+}  // namespace
+
+/**
+ * @brief 选区覆盖的列（整列选中优先，否则取选中单元格涉及列）
+ * @param sel 选区服务
+ * @return 逻辑列号列表（可空）
+ */
+static QList< int > selectedColumnsForCellSize(const DATableSelectionService& sel)
+{
+    QList< int > cols = sel.fullySelectedDataframeColumns(false);
+    if (cols.isEmpty()) {
+        cols = sel.selectedDataframeColumns(false);
+    }
+    return cols;
+}
+
+/**
+ * @brief 列宽自适应：选中列按内容宽度落库并重投影（不进撤销栈）
+ * @return 至少改了一列返回 true；无选中列返回 false
+ */
+bool DADataOperateOfDataFrameWidget::autoFitSelectedColumnWidths()
+{
+    const QList< int > cols = selectedColumnsForCellSize(*d_func()->mSelection);
+    if (cols.isEmpty()) {
+        daWarning << tr("Please select a valid column");  // cn:请选择正确的列
+        return false;
+    }
+    DATableViewStateController* vc = d_func()->mViewStateController;
+    DADataTableView* pane          = getDataTableView();
+    bool changed                   = false;
+    for (int col : std::as_const(cols)) {
+        const int w = vc->contentFittedColumnWidth(pane, col);
+        if (w > 0) {
+            vc->storeColumnWidthAt(col, w);
+            changed = true;
+        }
+    }
+    if (changed) {
+        applyViewStateFromStore();  // 唯一投影路径（含冻结窗格几何重算）
+    }
+    return changed;
+}
+
+/**
+ * @brief 设置选中列列宽（像素，钳制后落库并重投影；不进撤销栈）
+ * @param width 目标宽度（像素）
+ * @return 至少改了一列返回 true；无选中列返回 false
+ */
+bool DADataOperateOfDataFrameWidget::setSelectedColumnWidth(int width)
+{
+    const QList< int > cols = selectedColumnsForCellSize(*d_func()->mSelection);
+    if (cols.isEmpty()) {
+        daWarning << tr("Please select a valid column");  // cn:请选择正确的列
+        return false;
+    }
+    const int w = qBound(c_minColumnWidth, width, c_maxColumnWidth);
+    for (int col : std::as_const(cols)) {
+        d_func()->mViewStateController->storeColumnWidthAt(col, w);
+    }
+    applyViewStateFromStore();
+    return true;
+}
+
+/**
+ * @brief 设置行高（像素，全表统一；落库 + 套到全部窗格；不进撤销栈）
+ * @param height 目标行高（像素，钳制后应用）
+ */
+void DADataOperateOfDataFrameWidget::setTableRowHeight(int height)
+{
+    const int h = qBound(c_minRowHeight, height, c_maxRowHeight);
+    if (d_func()->mViewStateStore) {
+        d_func()->mViewStateStore->setRowHeight(h);
+    }
+    d_func()->mViewStateController->applyRowHeightToPanes(h);
+    // 行高变化会改变行头与冻结区几何，重算一次
+    if (d_func()->mPaneContainer) {
+        d_func()->mPaneContainer->updateFrozenGeometry();
+    }
+}
+
+/**
+ * @brief 当前行高（设置行高对话框默认值）
+ * @return 行高（像素）；取不到返回默认行高
+ */
+int DADataOperateOfDataFrameWidget::currentRowHeight() const
+{
+    if (DADataTableView* pane = const_cast< DADataOperateOfDataFrameWidget* >(this)->getDataTableView()) {
+        if (QHeaderView* vh = pane->verticalHeader()) {
+            return vh->defaultSectionSize();
+        }
+    }
+    return 24;
+}
+
+/**
+ * @brief 当前选中列的代表列宽（设置列宽对话框默认值）
+ * @return 列宽（像素）；无选中列返回 -1
+ */
+int DADataOperateOfDataFrameWidget::currentSelectedColumnWidth() const
+{
+    const QList< int > cols = selectedColumnsForCellSize(*d_func()->mSelection);
+    if (cols.isEmpty()) {
+        return -1;
+    }
+    DADataTableView* pane = const_cast< DADataOperateOfDataFrameWidget* >(this)->getDataTableView();
+    if (!pane || !pane->horizontalHeader()) {
+        return -1;
+    }
+    return pane->horizontalHeader()->sectionSize(cols.first());
+}
+
+/**
+ * @brief 右键菜单「设置列宽…」：弹输入框（默认当前宽度），确定后应用
+ */
+void DADataOperateOfDataFrameWidget::showSetColumnWidthDialog()
+{
+    const int cur = currentSelectedColumnWidth();
+    if (cur < 0) {
+        daWarning << tr("Please select a valid column");  // cn:请选择正确的列
+        return;
+    }
+    bool ok = false;
+    const int w = QInputDialog::getInt(this,
+                                       tr("Set Column Width"),  // cn:设置列宽
+                                       tr("Width (pixels):"),    // cn:列宽（像素）：
+                                       cur, c_minColumnWidth, c_maxColumnWidth, 1, &ok);
+    if (ok) {
+        setSelectedColumnWidth(w);
+    }
+}
+
+/**
+ * @brief 右键菜单「设置行高…」：弹输入框（默认当前行高），确定后应用到全表
+ */
+void DADataOperateOfDataFrameWidget::showSetRowHeightDialog()
+{
+    bool ok = false;
+    const int h = QInputDialog::getInt(this,
+                                       tr("Set Row Height"),  // cn:设置行高
+                                       tr("Height (pixels):"),  // cn:行高（像素）：
+                                       currentRowHeight(), c_minRowHeight, c_maxRowHeight, 1, &ok);
+    if (ok) {
+        setTableRowHeight(h);
+    }
+}
+
 /**
  * @brief 当前选区为单格时取其显示文本（D9 预填用）
  * @return 单格显示文本（Qt::DisplayRole）；选区非单格/无选区返回空串
@@ -1261,6 +1427,14 @@ void DADataOperateOfDataFrameWidget::onHeaderSectionResized(DADataTableView* sou
 void DADataOperateOfDataFrameWidget::mergeStyleToSelection(const DATableCellStyle& fragment)
 {
     d_func()->mStyleController->mergeStyleToSelection(fragment);
+}
+
+/**
+ * @brief 外框线：对选中区包围矩形四边应用边框（转发样式控制器）
+ */
+void DADataOperateOfDataFrameWidget::applyBorderOutlineToSelection()
+{
+    d_func()->mStyleController->applyBorderOutlineToSelection();
 }
 
 /**

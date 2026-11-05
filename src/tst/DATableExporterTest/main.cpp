@@ -137,6 +137,8 @@ private slots:
     void testMarkdown();
     void testHtmlBasic();
     void testHtmlWithStyles();
+    // A5：对齐/边框（A1/A2）→ text-align/vertical-align 与 border-* 声明
+    void testHtmlAlignmentAndBorder();
     void testDisplayFormat();
     void testBlockFetchAndProgress();
     void testCancel();
@@ -268,6 +270,35 @@ void DATableExporterTest::testHtmlWithStyles()
     QVERIFY(out.contains(QStringLiteral("color:#ffffff")));
     // 条件格式命中：行 1 col2 = 0.25 > 0.1 → 绿底；行 0 col2 = 0 不命中
     QCOMPARE(out.count(QStringLiteral("background-color:#00c800")), 1);
+}
+
+/**
+ * A5：对齐/边框样式 → CSS（text-align / vertical-align / border-*），复制到 Excel 保留效果
+ */
+void DATableExporterTest::testHtmlAlignmentAndBorder()
+{
+    auto t = std::make_shared< TestMemoryTable >(1, 2);
+    DA::DAData d(t);
+    DA::DATableMetadata meta;
+    DA::DATableStyleManager* sm = meta.styleManager();
+
+    DA::DATableCellStyle alignStyle;
+    alignStyle.setAlignment(Qt::AlignRight | Qt::AlignBottom);
+    sm->setColumnStyle(0, alignStyle);
+
+    DA::DATableCellStyle borderStyle;
+    borderStyle.setBorder(DA::DATableCellStyle::BorderAll);  // 未设色 → 默认中灰 #727272
+    sm->setColumnStyle(1, borderStyle);
+
+    DA::DATableExporter exp(d, &meta);
+    QString out;
+    QVERIFY(exp.toString(DA::DATableExporter::Format::Html, &out));
+    QVERIFY2(out.contains(QStringLiteral("text-align:right")), "horizontal alignment lost in HTML");
+    QVERIFY2(out.contains(QStringLiteral("vertical-align:bottom")), "vertical alignment lost in HTML");
+    QVERIFY2(out.contains(QStringLiteral("border-left:1px solid #727272")), "border-left lost in HTML");
+    QVERIFY2(out.contains(QStringLiteral("border-right:1px solid #727272")), "border-right lost in HTML");
+    QVERIFY2(out.contains(QStringLiteral("border-top:1px solid #727272")), "border-top lost in HTML");
+    QVERIFY2(out.contains(QStringLiteral("border-bottom:1px solid #727272")), "border-bottom lost in HTML");
 }
 
 /**

@@ -10,24 +10,24 @@
 
 打开一份数据集后，Ribbon 上会多出一个「DataFrame」上下文标签页，数据加工相关的面板都在页内的「Data Operations」/ 数据操作 页上。数据分析插件往这里加了两个面板：
 
-- 数据清洗面板，标题「Missing & Outliers」/ 缺失与异常，七个按钮，本章逐个说明。
+- 数据清洗面板，标题「Missing & Outliers」/ 缺失与异常，三个按钮，本章逐个说明。
 - 统计面板，标题「Statistics」/ 统计，两个按钮，见[描述统计与透视表](statistics.md)。
 
 数据过滤的两个按钮（条件筛选、列数据过滤）不再单占面板，而是挂在核心的「Sort & Filter」/ 排序与筛选 面板里，见[筛选、计算与排序](query.md)。
 
 上下文标签页只在数据操作面板里打开着数据表时出现。数据管理面板里列出的数据集要先双击打开成表格，按钮才能用；没有打开的表时，点按钮会收到一条提示，要求先选择一个数据集。
 
-面板里七个按钮和它们弹出的对话框对应如下：
+面板里三个按钮的形式如下：左边「Missing Values」/ 缺失值 带下拉箭头，点开是一个菜单，里面收着删除缺失值、填充缺失值、插值填充三个动作；中间「Drop Duplicates」/ 删除重复值 是普通按钮，点击直接执行；右边「Outliers」/ 异常值 同样带下拉箭头，菜单里收着 IQR 异常值处理、Z-Score 异常值处理、转换偏态数据三个动作。七个动作与它们弹出的对话框对应如下：
 
-| 按钮 | 对话框标题 | 对数据的改动 |
+| 动作 | 对话框标题 | 对数据的改动 |
 |---|---|---|
-| 「Drop None」/ 删除缺失值 | 「Remove Missing Values」/ 删除缺失值 | 删掉含空值的行 |
-| 「Drop Duplicates」/ 删除重复值 | 「Remove Duplicate Rows」/ 删除重复行 | 删掉内容重复的行 |
-| 「Fill None」/ 填充缺失值 | 「Fill Missing Values」/ 填充缺失值 | 把空值换成指定值或统计量 |
-| 「Fill Interpolate」/ 插值填充 | 「Interpolate Values Parameter Settings」/ 插值参数设置 | 用插值推算出的值填空 |
-| 「IQR Outlier Handling」/ IQR 异常值处理 | 「Remove Outliers (IQR Method)」/ 移除异常值（IQR 方法） | 按四分位距判断并处理离群值 |
-| 「Z-Score Outlier Handling」/ Z-Score 异常值处理 | 「Remove Outliers (Z-score)」/ 移除异常值（Z-score 方法） | 按标准分数判断并处理离群值 |
-| 「Transform Skewed」/ 转换偏态数据 | 「Transform Skewed Data」/ 变换偏态数据 | 用函数变换把偏斜的分布拉正 |
+| 「Drop None」/ 删除缺失值（缺失值菜单） | 「Remove Missing Values」/ 删除缺失值 | 删掉含空值的行 |
+| 「Fill None」/ 填充缺失值（缺失值菜单） | 「Fill Missing Values」/ 填充缺失值 | 把空值换成指定值或统计量 |
+| 「Fill Interpolate」/ 插值填充（缺失值菜单） | 「Interpolate Values Parameter Settings」/ 插值参数设置 | 用插值推算出的值填空 |
+| 「Drop Duplicates」/ 删除重复值（直接执行） | 「Remove Duplicate Rows」/ 删除重复行 | 删掉内容重复的行 |
+| 「IQR Outlier Handling」/ IQR 异常值处理（异常值菜单） | 「Remove Outliers (IQR Method)」/ 移除异常值（IQR 方法） | 按四分位距判断并处理离群值 |
+| 「Z-Score Outlier Handling」/ Z-Score 异常值处理（异常值菜单） | 「Remove Outliers (Z-score)」/ 移除异常值（Z-score 方法） | 按标准分数判断并处理离群值 |
+| 「Transform Skewed」/ 转换偏态数据（异常值菜单） | 「Transform Skewed Data」/ 变换偏态数据 | 用函数变换把偏斜的分布拉正 |
 
 清洗用的 Python 模块里还有五个函数：替换指定值、上下限过滤、数据缩放、文本清洗、标签编码。界面上没有对应的按钮，只能从脚本工作区调用，本章不再展开。
 

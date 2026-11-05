@@ -47,6 +47,7 @@ class DAPyDTypeComboBox;
 class DATableDisplayFormatComboBox;
 // 窗口
 class DAFontEditPannelWidget;
+class DATextAlignmentEditWidget;
 class DAShapeEditPannelWidget;
 class DAFigureWidget;
 class DAChartWidget;
@@ -353,10 +354,13 @@ private:
     SARibbonCategory* mCategoryDataframeStyle { nullptr };        ///< dataframe表格样式category
     SARibbonPanel* mPannelDataframeStyleFill { nullptr };         ///< 底色面板
     SARibbonPanel* mPannelDataframeStyleFont { nullptr };         ///< 字体面板
+    SARibbonPanel* mPannelDataframeStyleAlign { nullptr };        ///< 对齐面板（A1）
+    SARibbonPanel* mPannelDataframeStyleBorder { nullptr };       ///< 边框面板（A2）
     SARibbonPanel* mPannelDataframeStyleClear { nullptr };        ///< 清除面板
     SARibbonPanel* mPannelDataframeStyleConditional { nullptr };  ///< 条件格式面板（003 T1.5）
     SARibbonColorToolButton* mBtnTableFillColor { nullptr };      ///< 表格底色按钮（Controller 连接其信号）
     DAFontEditPannelWidget* mWidgetTableFont { nullptr };         ///< 表格字体编辑面板（Controller 连接其信号）
+    DATextAlignmentEditWidget* mWidgetTableAlign { nullptr };     ///< 表格对齐按钮组（Controller 连接其信号，A1）
 
     //----------------------------------------------------
     // Context - 工作流（DAAppRibbonAreaWorkflow.cpp）

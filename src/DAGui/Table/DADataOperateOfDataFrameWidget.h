@@ -130,6 +130,8 @@ public:
     // 合并样式片段到选中区（fragment 只设部分属性，merge 到目标已有样式）
     // 自动判定层级：整列→列级，整行→行级，否则单元格级
     void mergeStyleToSelection(const DATableCellStyle& fragment);
+    // 外框线：对选中区包围矩形四边应用边框（单元格选区=逐格外边；整列/整行选区有轻量语义）
+    void applyBorderOutlineToSelection();
     // 设置完整样式到选中区（传入什么就设置什么，整体替换，为格式刷准备）
     // 自动判定层级：整列→列级，整行→行级，否则单元格级
     void applyStyleToSelection(const DATableCellStyle& style);
@@ -146,6 +148,21 @@ public:
     void clearDisplayFormatFromSelection();
     // 获取选中列代表的显示格式（不一致返回 invalid）
     DATableDisplayFormat getCurrentColumnDisplayFormat() const;
+
+    // 列宽自适应（A3）：选中列按内容宽度落库并重投影；无选中列返回 false。
+    // 与拖拽列宽一致，直接改视图状态、不进撤销栈
+    bool autoFitSelectedColumnWidths();
+    // 设置选中列列宽（A3，像素，钳制 20..2000）；无选中列返回 false；不进撤销栈
+    bool setSelectedColumnWidth(int width);
+    // 设置行高（A3，像素，全表统一——滑动窗下行高单值约束 R6）；不进撤销栈
+    void setTableRowHeight(int height);
+    // 当前行高（设置行高对话框的默认值）
+    int currentRowHeight() const;
+    // 当前选中列的代表列宽（设置列宽对话框的默认值；无选中列返回 -1）
+    int currentSelectedColumnWidth() const;
+    // 右键菜单入口：设置列宽… / 设置行高…（页内弹输入框，确定后走上面的命令）
+    void showSetColumnWidthDialog();
+    void showSetRowHeightDialog();
 
     // 获取选中的序列，如果用户打开一个表格，选中了其中一列，那么将返回那一列pd.Series作为数据，如果用户选中了多列，那么每列作为一个DAData并组成list返回
     QList< DAData > getSlectedSeries() const;

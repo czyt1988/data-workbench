@@ -104,6 +104,8 @@ QString cssColor(const QColor& c)
  *
  * 数据条以 CSS 线性渐变近似 delegate 的画法（条长 = (v-min)/(max-min) 归一化，
  * 沿条长方向 alpha 110→255 递增渐变，起点透明度 110/255≈0.43）。
+ * 对齐与边框（A5）按 A1/A2 的模型属性翻译为 text-align/vertical-align 与 border-* 声明，
+ * 让「复制为 HTML → 粘贴到 Excel」保留这些效果。
  */
 QString htmlCellStyleDeclarations(const DATableCellStyle& style, bool hasBar, double barRatio, const QColor& barColor)
 {
@@ -145,6 +147,43 @@ QString htmlCellStyleDeclarations(const DATableCellStyle& style, bool hasBar, do
         // pointSizeF() < 0 表示按像素指定，浏览器换算口径不同，跳过
         if (f.pointSizeF() > 0) {
             decls << QStringLiteral("font-size:%1pt").arg(f.pointSizeF(), 0, 'f', 1);
+        }
+    }
+    if (style.alignmentValid()) {
+        // 对齐（A1/A5）：text-align 管水平、vertical-align 管表格单元格的垂直（粘贴到 Excel 时保留）
+        const Qt::Alignment al = style.alignment();
+        if (al & Qt::AlignRight) {
+            decls << QStringLiteral("text-align:right");
+        } else if (al & Qt::AlignHCenter) {
+            decls << QStringLiteral("text-align:center");
+        } else if (al & Qt::AlignLeft) {
+            decls << QStringLiteral("text-align:left");
+        }
+        if (al & Qt::AlignBottom) {
+            decls << QStringLiteral("vertical-align:bottom");
+        } else if (al & Qt::AlignVCenter) {
+            decls << QStringLiteral("vertical-align:middle");
+        } else if (al & Qt::AlignTop) {
+            decls << QStringLiteral("vertical-align:top");
+        }
+    }
+    if (style.borderValid() && style.borderSides() != DATableCellStyle::BorderNone) {
+        // 边框（A2/A5）：表样式带 border-collapse:collapse，相邻格同色边会合并为 1px；
+        // 未设颜色时与 delegate 同口径回落默认中灰（DESIGN.md §2 普通边框色）
+        const QColor bc = style.borderColor().isValid() ? style.borderColor() : QColor(0x72, 0x72, 0x72);
+        const QString spec =
+            QStringLiteral("%1px solid %2").arg(qBound(1, style.borderWidth(), 3)).arg(cssColor(bc));
+        if (style.borderSides() & DATableCellStyle::BorderLeft) {
+            decls << QStringLiteral("border-left:") + spec;
+        }
+        if (style.borderSides() & DATableCellStyle::BorderRight) {
+            decls << QStringLiteral("border-right:") + spec;
+        }
+        if (style.borderSides() & DATableCellStyle::BorderTop) {
+            decls << QStringLiteral("border-top:") + spec;
+        }
+        if (style.borderSides() & DATableCellStyle::BorderBottom) {
+            decls << QStringLiteral("border-bottom:") + spec;
         }
     }
     return decls.isEmpty() ? QString() : decls.join(QLatin1Char(';'));
