@@ -51,6 +51,8 @@ public:
                 && (!mFirst.borderValid()
                     || (s.borderSides() == mFirst.borderSides() && s.borderColor() == mFirst.borderColor()
                         && s.borderWidth() == mFirst.borderWidth()));
+        mWrapOK = mWrapOK && (s.wrapWordValid() == mFirst.wrapWordValid())
+                && (!mFirst.wrapWordValid() || s.wrapWord() == mFirst.wrapWord());
     }
 
     DATableCellStyle take()
@@ -74,6 +76,9 @@ public:
         if (mBorderOK && mFirst.borderValid()) {
             result.setBorder(mFirst.borderSides(), mFirst.borderColor(), mFirst.borderWidth());
         }
+        if (mWrapOK && mFirst.wrapWordValid()) {
+            result.setWrapWord(mFirst.wrapWord());
+        }
         return result;
     }
 
@@ -85,6 +90,7 @@ private:
     bool mFontOK { true };
     bool mAlignOK { true };
     bool mBorderOK { true };
+    bool mWrapOK { true };
 };
 }  // namespace
 

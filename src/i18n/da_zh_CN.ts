@@ -3250,6 +3250,16 @@
         <source>Adjust column width or row height (auto-fit / set value)</source>
         <translation>调整列宽或行高（自适应/设置数值）</translation>
     </message>
+    <message>
+        <location filename="../APP/DAAppActions.cpp"/>
+        <source>Wrap Text</source>
+        <translation>自动换行</translation>
+    </message>
+    <message>
+        <location filename="../APP/DAAppActions.cpp"/>
+        <source>Wrap the text of selected cells (raise row height manually if needed)</source>
+        <translation>选中单元格文字自动换行（需要时用「单元格大小」手动调高行高）</translation>
+    </message>
 </context>
 <context>
     <name>DA::DAAppApplicationWidget</name>

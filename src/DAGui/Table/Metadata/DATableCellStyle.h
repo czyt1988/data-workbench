@@ -52,6 +52,11 @@ public:
     void setAlignment(Qt::Alignment a);
     bool alignmentValid() const;
 
+    // 自动换行（A4 轻量：只改绘制，行高不随内容增长——需要行高配合时用「单元格大小→设置行高」）
+    bool wrapWord() const;
+    void setWrapWord(bool on);
+    bool wrapWordValid() const;
+
     // 边框（单色，四边用位掩码组合；sides=0 且 borderValid=true 表示显式无框线）
     quint8 borderSides() const;
     void setBorderSides(quint8 sides);
@@ -82,6 +87,8 @@ private:
     bool mFontValid { false };
     Qt::Alignment mAlignment { Qt::Alignment() };
     bool mAlignmentValid { false };
+    bool mWrapWord { false };
+    bool mWrapWordValid { false };
     quint8 mBorderSides { 0 };
     QColor mBorderColor;
     int mBorderWidth { 1 };

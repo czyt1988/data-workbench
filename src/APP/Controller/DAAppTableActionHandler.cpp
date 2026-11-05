@@ -271,6 +271,11 @@ void DAAppTableActionHandler::initConnections()
             &DATextAlignmentEditWidget::alignmentChanged,
             this,
             &DAAppTableActionHandler::onTableStyleAlignmentChanged);
+    // 自动换行（A4 轻量）：勾选开关切换即应用（反向同步时用 QSignalBlocker 防循环）
+    connect(mDeps.actions->actionWrapText,
+            &QAction::toggled,
+            this,
+            &DAAppTableActionHandler::onTableStyleWrapTextToggled);
     // 边框（A2）：预设菜单（aboutToShow 重填，随语言刷新；与条件格式菜单同款模式）
     {
         QMenu* borderMenu = new QMenu(mDeps.mainWindow);
@@ -1452,6 +1457,24 @@ void DAAppTableActionHandler::onTableStyleAlignmentChanged(Qt::Alignment al)
 }
 
 /**
+ * @brief 自动换行开关切换：对选中区应用换行样式位（单条命令，一次撤销）
+ *
+ * 轻量方案（A4）：只改绘制（Qt::TextWordWrap），行高不随内容增长；
+ * 需要更高行高时用「单元格大小 → 设置行高」手动调整。
+ * @param on 是否换行
+ */
+void DAAppTableActionHandler::onTableStyleWrapTextToggled(bool on)
+{
+    DADataOperateOfDataFrameWidget* w = mDeps.controller->getCurrentDataFrameOperateWidget(false, false);
+    if (!w) {
+        return;
+    }
+    DA::DATableCellStyle fragment;
+    fragment.setWrapWord(on);
+    w->mergeStyleToSelection(fragment);
+}
+
+/**
  * @brief 边框预设：外框线走专用路径，其余按边位组合应用（0 = 无框线）
  * @param sides BorderSide 位组合（outline=true 时忽略）
  * @param outline true=外框线（对选区包围矩形）
@@ -1514,6 +1537,13 @@ void DAAppTableActionHandler::onTableStyleCurrentChanged(const DA::DATableCellSt
         QSignalBlocker block(mDeps.ribbon->mWidgetTableAlign);
         if (style.alignmentValid()) {
             mDeps.ribbon->mWidgetTableAlign->setAlignment(style.alignment());
+        }
+    }
+    // 自动换行开关（A4 轻量）：不一致时不调整（与其它属性同口径）
+    if (mDeps.actions->actionWrapText) {
+        QSignalBlocker block(mDeps.actions->actionWrapText);
+        if (style.wrapWordValid()) {
+            mDeps.actions->actionWrapText->setChecked(style.wrapWord());
         }
     }
 }

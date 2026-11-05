@@ -142,6 +142,8 @@ private Q_SLOTS:
     void onTableStyleFontColorChanged(const QColor& c);
     // 对齐（A1）：水平/垂直按钮组点击 → 对选中区应用对齐（单条命令）
     void onTableStyleAlignmentChanged(Qt::Alignment al);
+    // 自动换行（A4 轻量）：开关切换 → 对选中区应用换行样式位（单条命令）
+    void onTableStyleWrapTextToggled(bool on);
     void onActionClearStyleSelectedTriggered();
     void onActionClearStyleAllTriggered();
     // 表格列显示格式

@@ -3184,6 +3184,16 @@
         <source>Adjust column width or row height (auto-fit / set value)</source>
         <translation>Adjust column width or row height (auto-fit / set value)</translation>
     </message>
+    <message>
+        <location filename="../APP/DAAppActions.cpp"/>
+        <source>Wrap Text</source>
+        <translation>Wrap Text</translation>
+    </message>
+    <message>
+        <location filename="../APP/DAAppActions.cpp"/>
+        <source>Wrap the text of selected cells (raise row height manually if needed)</source>
+        <translation>Wrap the text of selected cells (raise row height manually if needed)</translation>
+    </message>
 </context>
 <context>
     <name>DA::DAAppApplicationWidget</name>

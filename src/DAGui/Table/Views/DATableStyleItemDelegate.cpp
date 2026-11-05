@@ -232,6 +232,15 @@ void DATableStyleItemDelegate::paint(QPainter* painter, const QStyleOptionViewIt
                 // 条件格式只改底色/字色/字体，不改对齐（见风险清单）
                 opt.displayAlignment = style.alignment();
             }
+            if (style.wrapWordValid()) {
+                // 自动换行（A4 轻量）：只改绘制（WrapText 特性 → 文字按宽度折行），
+                // 行高仍为单值、不随内容增长——需要更高行高时用「单元格大小 → 设置行高」手动调
+                if (style.wrapWord()) {
+                    opt.features |= QStyleOptionViewItem::WrapText;
+                } else {
+                    opt.features &= ~QStyleOptionViewItem::WrapText;
+                }
+            }
         }
     }
 

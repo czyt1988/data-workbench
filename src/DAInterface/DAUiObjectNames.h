@@ -163,6 +163,7 @@ constexpr char Replace[]            = "actionReplace";  ///< 表内替换（002 
 constexpr char ConditionalFormat[]  = "actionConditionalFormat";  ///< 条件格式（003 T1.5，Ribbon Table Style 面板 + 表体右键同入口，R16）
 constexpr char TableBorder[]        = "actionTableBorder";        ///< 单元格边框（A2，Ribbon Table Style 面板，下拉预设）
 constexpr char CellSize[]           = "actionCellSize";           ///< 单元格大小（A3，Ribbon View 面板，下拉：列宽自适应/设置列宽/设置行高）
+constexpr char WrapText[]           = "actionWrapText";           ///< 自动换行（A4 轻量，Ribbon Table Style 对齐面板，可勾选开关）
 // ---- 排序（Ribbon「Sort」面板 + 列头右键排序组同入口；面板大按钮主体 = 自定义排序对话框）----
 constexpr char Sort[]                       = "actionSort";                       ///< 排序（下拉根，主体 = 自定义排序对话框）
 constexpr char SortAscending[]              = "actionSortAscending";              ///< 升序排序（按当前列）
