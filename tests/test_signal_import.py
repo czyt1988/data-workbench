@@ -125,3 +125,44 @@ def test_infer_sample_rate_from_dataframe():
     r = importer.infer_sample_rate_from_column(df, "t")
     assert r["ok"]
     assert abs(r["sample_rate"] - fs) / fs < 1e-6
+
+
+# ---------------------------------------------------------------- 编排层（频谱）
+
+
+def test_compute_spectrum_sync_orchestration():
+    from DASignalAnalysis import spectrum
+
+    fs = 48000.0
+    t = np.arange(int(fs * 0.5)) / fs
+    x = 0.5 * np.sin(2 * np.pi * 1000.0 * t)
+    params = {
+        "removeDc": False,
+        "detrend": "none",
+        "window": "hann",
+        "amplitudeMode": "peak",
+        "resolutionHz": 10.0,
+        "overlap": 50.0,
+        "average": "mean",
+    }
+    r = spectrum.compute_spectrum_sync(x, fs, params)
+    # 幅值谱峰值在 1 千赫、幅度约 0.5
+    idx = int(np.argmax(r["amplitudes"]))
+    assert abs(r["freqs"][idx] - 1000.0) < 2.0
+    assert r["amplitudes"][idx] == pytest.approx(0.5, rel=0.05)
+    # 段长由分辨率反推：fs/10 = 4800 点
+    assert r["seg_len"] == 4800
+    assert r["resolution_hz"] == pytest.approx(10.0)
+    # 功率谱峰值位置一致
+    pidx = int(np.argmax(r["psd_values"]))
+    assert abs(r["psd_freqs"][pidx] - 1000.0) <= 10.0
+
+
+def test_compute_spectrum_sync_remove_dc():
+    from DASignalAnalysis import spectrum
+
+    x = np.ones(48000) * 3.0
+    params = {"removeDc": True, "detrend": "none", "window": "hann", "resolutionHz": 10.0}
+    r = spectrum.compute_spectrum_sync(x, 48000.0, params)
+    # 去直流后幅值谱在非 DC 处应接近 0
+    assert np.max(r["amplitudes"][1:]) < 1e-6

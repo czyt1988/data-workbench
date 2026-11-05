@@ -4,4 +4,4 @@ M3 阶段只提供导入与分块取数（importer），后续里程碑在此包
 spectrum / stft / peaks / envelope 模块。
 """
 
-__all__ = ["importer"]
+__all__ = ["importer", "spectrum"]

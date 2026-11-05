@@ -1,0 +1,30 @@
+#ifndef DASIGNALFORMSPECBUILDER_H
+#define DASIGNALFORMSPECBUILDER_H
+#include <QJsonObject>
+#include "Analysis/DASignalAnalysisParams.h"
+
+namespace DA
+{
+/**
+ * @brief 用 DAFormSpec 构造分析参数表单与联动规则（方案 §8.6 / D20）
+ *
+ * 分组用可折叠分组而非页签；联动用框架的 visible_when 表达（不手写信号槽）：
+ * - 峰值模式选「简单」时，高级三个字段隐藏；
+ * - 窗函数只暴露一个字段（频谱与 STFT 共用口径，避免两个真相）。
+ *
+ * 字段名与 DASignalAnalysisParams 的 JSON 键名一一对应。
+ */
+class DASignalFormSpecBuilder
+{
+public:
+    /**
+     * @brief 构造完整表单 JSON
+     * @param current 当前参数（作为字段默认值，实现「对话框记住上次值」）
+     * @param derivedResolutionHz 当前频率分辨率（用于「最小间距」默认值 = 5 倍分辨率）
+     * @return 符合 DAFormSchemaIO v2 的表单 JSON
+     */
+    static QJsonObject build(const DASignalAnalysisParams& current, double derivedResolutionHz = 0.0);
+};
+}  // namespace DA
+
+#endif  // DASIGNALFORMSPECBUILDER_H

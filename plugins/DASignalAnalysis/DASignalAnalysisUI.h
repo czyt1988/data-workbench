@@ -2,7 +2,10 @@
 #define DASIGNALANALYSISUI_H
 #include <QObject>
 #include <QAction>
+#include <QHash>
 #include "Signal/DASignal.h"
+#include "Analysis/DASignalAnalysisParams.h"
+#include "Analysis/DASpectrumResult.h"
 
 class QMenu;
 class QActionGroup;
@@ -19,6 +22,7 @@ class DACoreInterface;
 class DAUIInterface;
 class DAActionsInterface;
 class DASignalAnalysisPage;
+class DASignalAnalysisWorker;
 
 /**
  * @brief 信号分析插件的界面层：中央页面 + 丝带标签页 + 动作管理
@@ -48,11 +52,29 @@ public:
     // 无信号时置灰全部依赖信号的动作（导入动作始终保持可用）
     void setSignalDependentActionsEnabled(bool on);
 
+    // 当前信号的参数（无记录时返回默认参数）
+    DA::DASignalAnalysisParams paramsForSignal(const DA::DASignalPtr& sig) const;
+    // 最近一次频谱结果（无结果返回无效对象）
+    DA::DASpectrumResult spectrumForSignal(const DA::DASignalPtr& sig) const;
+
+Q_SIGNALS:
+    // 频谱结果更新（显示层订阅）
+    void spectrumUpdated();
+
 public Q_SLOTS:
     // 导入三入口（丝带按钮与空状态按钮共用）
     void importAudioFile();
     void importDataFrame();
     void importVideoFile();
+    // 打开统一参数对话框（D20），确定后立即重算一次（D21）
+    void openAnalysisSettings();
+    // 重新计算当前信号的频谱（参数变化后调用）
+    void recomputeCurrentSignal();
+
+private Q_SLOTS:
+    void onWorkerProgress(double percent, const QString& stage);
+    void onWorkerSpectrumReady(const DA::DASpectrumResult& result);
+    void onWorkerFailed(const QString& error);
 
 private:
     void buildCenterPage();
@@ -135,6 +157,14 @@ public:
     //===================================================
     QAction* actionExportPeaks { nullptr };  ///< 导出峰值表
     QAction* actionExportImage { nullptr };  ///< 导出图片
+
+private:
+    DASignalAnalysisWorker* mWorker { nullptr };
+    // 每个信号标签页记住上次生效参数（D21）
+    QHash< const DA::DASignal*, DA::DASignalAnalysisParams > mParamsPerSignal;
+    // 频谱结果缓存（随信号对象存活，参数变化才重算）
+    QHash< const DA::DASignal*, DA::DASpectrumResult > mSpectrumCache;
+    const DA::DASignal* mPendingSignal { nullptr };
 };
 }  // namespace DA
 

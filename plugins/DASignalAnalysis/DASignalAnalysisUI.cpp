@@ -17,10 +17,13 @@
 #include "DADockingAreaInterface.h"
 #include "DAActionsInterface.h"
 #include "DADataManagerInterface.h"
+#include "DAStatusBarInterface.h"
 // DASignalAnalysis
 #include "Page/DASignalAnalysisPage.h"
 #include "Dialogs/DASignalImportDialog.h"
+#include "Dialogs/DASignalAnalysisSettingDialog.h"
 #include "Signal/DASignalImporter.h"
+#include "Analysis/DASignalAnalysisWorker.h"
 
 namespace DA
 {
@@ -84,6 +87,14 @@ bool DASignalAnalysisUI::initialize(DACoreInterface* core)
     if (actionImportVideo) {
         connect(actionImportVideo, &QAction::triggered, this, &DASignalAnalysisUI::importVideoFile);
     }
+    if (actionAnalysisSetting) {
+        connect(actionAnalysisSetting, &QAction::triggered, this, &DASignalAnalysisUI::openAnalysisSettings);
+    }
+    // 后台计算协调器（Python 守护线程 + 定时轮询）
+    mWorker = new DASignalAnalysisWorker(this);
+    connect(mWorker, &DASignalAnalysisWorker::progressChanged, this, &DASignalAnalysisUI::onWorkerProgress);
+    connect(mWorker, &DASignalAnalysisWorker::spectrumReady, this, &DASignalAnalysisUI::onWorkerSpectrumReady);
+    connect(mWorker, &DASignalAnalysisWorker::failed, this, &DASignalAnalysisUI::onWorkerFailed);
     return true;
 }
 
@@ -413,6 +424,11 @@ void DASignalAnalysisUI::finalize()
         }
         mPageDock = nullptr;
     }
+    if (mWorker) {
+        mWorker->cancel();
+        delete mWorker;
+        mWorker = nullptr;
+    }
     if (mPage) {
         delete mPage;
         mPage = nullptr;
@@ -463,6 +479,105 @@ void DASignalAnalysisUI::finalize()
     mPanelPeaks             = nullptr;
     mPanelDisplay           = nullptr;
     mPanelExport            = nullptr;
+}
+
+// ---------------------------------------------------------------- 分析
+
+/**
+ * @brief 当前信号的参数（无记录时返回默认参数）
+ */
+DASignalAnalysisParams DASignalAnalysisUI::paramsForSignal(const DASignalPtr& sig) const
+{
+    if (!sig) {
+        return DASignalAnalysisParams::defaults();
+    }
+    return mParamsPerSignal.value(sig.get(), DASignalAnalysisParams::defaults());
+}
+
+/**
+ * @brief 最近一次频谱结果（无结果返回无效对象）
+ */
+DASpectrumResult DASignalAnalysisUI::spectrumForSignal(const DASignalPtr& sig) const
+{
+    if (!sig) {
+        return DASpectrumResult();
+    }
+    return mSpectrumCache.value(sig.get(), DASpectrumResult());
+}
+
+/**
+ * @brief 打开统一参数对话框，确定后立即重算一次（D20 / D21）
+ */
+void DASignalAnalysisUI::openAnalysisSettings()
+{
+    if (nullptr == mPage) {
+        return;
+    }
+    DASignalPtr sig = mPage->currentSignal();
+    if (!sig) {
+        mUI->addWarningLogMessage(tr("No signal is selected."));  // cn:未选中信号。
+        return;
+    }
+    DASignalAnalysisParams params = paramsForSignal(sig);
+    if (!DASignalAnalysisSettingDialog::edit(&params, sig->sampleRate(), mPage)) {
+        return;
+    }
+    mParamsPerSignal[ sig.get() ] = params;
+    recomputeCurrentSignal();
+}
+
+/**
+ * @brief 重新计算当前信号的频谱（参数变化后调用）
+ */
+void DASignalAnalysisUI::recomputeCurrentSignal()
+{
+    if (nullptr == mPage || nullptr == mWorker) {
+        return;
+    }
+    DASignalPtr sig = mPage->currentSignal();
+    if (!sig || !sig->isValid()) {
+        return;
+    }
+    mPendingSignal = sig.get();
+    mWorker->computeSpectrum(sig, 0, paramsForSignal(sig));
+}
+
+/**
+ * @brief 后台进度 → 状态栏
+ */
+void DASignalAnalysisUI::onWorkerProgress(double percent, const QString& stage)
+{
+    if (mUI) {
+        mUI->getStatusBar()->showMessage(tr("Signal analysis: %1 (%2%)").arg(stage).arg(percent, 0, 'f', 0));
+        // cn:信号分析：%1（%2%）
+    }
+}
+
+/**
+ * @brief 频谱计算完成：缓存结果（显示层在后续里程碑接入）
+ */
+void DASignalAnalysisUI::onWorkerSpectrumReady(const DASpectrumResult& result)
+{
+    if (mPendingSignal && result.isValid()) {
+        mSpectrumCache[ mPendingSignal ] = result;
+    }
+    if (mUI) {
+        mUI->addInfoLogMessage(tr("Spectrum ready: resolution %1 Hz, %2 bins")
+                                   .arg(result.resolutionHz, 0, 'f', 4)
+                                   .arg(result.freqs.size()));
+        // cn:频谱计算完成：分辨率 %1 赫兹，%2 个频点
+    }
+    Q_EMIT spectrumUpdated();
+}
+
+/**
+ * @brief 后台任务失败
+ */
+void DASignalAnalysisUI::onWorkerFailed(const QString& error)
+{
+    if (mUI) {
+        mUI->addWarningLogMessage(tr("Signal analysis failed: %1").arg(error));  // cn:信号分析失败：%1
+    }
 }
 
 /**
