@@ -1442,6 +1442,14 @@ void DADataOperateOfDataFrameWidget::applyBorderOutlineToSelection()
 }
 
 /**
+ * @brief 单侧边框：只作用于选区外沿（转发样式控制器）
+ */
+void DADataOperateOfDataFrameWidget::applyBorderSidesToSelection(quint8 sides)
+{
+    d_func()->mStyleController->applyBorderSidesToSelection(sides);
+}
+
+/**
  * @brief 设置完整样式到选中区（转发样式控制器）
  */
 void DADataOperateOfDataFrameWidget::applyStyleToSelection(const DATableCellStyle& style)

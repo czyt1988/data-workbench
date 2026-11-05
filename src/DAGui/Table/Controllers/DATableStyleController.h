@@ -33,6 +33,9 @@ public:
     // 外框线：对选中区包围矩形四边应用边框（单元格选区=逐格外边；整列选区=列级左右+
     // 首末数据行上下；整行选区=行级上下+首末列左右），单条命令一次撤销
     void applyBorderOutlineToSelection();
+    // 单侧边框：只作用于选区外沿（Excel 语义，如 3x3 选区应用上框线只影响最上一行）；
+    // 全框线/无框线仍作用于整个选区；单条命令一次撤销
+    void applyBorderSidesToSelection(quint8 sides);
     // 设置完整样式到选中区（整体替换，为格式刷准备；自动判定层级）
     void applyStyleToSelection(const DATableCellStyle& style);
     // 清除选中区样式（自动判定层级，仅清除有样式的目标；无样式不推空命令）

@@ -6,6 +6,7 @@
 #include <QItemSelectionModel>
 #include <QSet>
 // stl
+#include <algorithm>
 #include <limits>
 #include <memory>
 // DAGui
@@ -255,6 +256,160 @@ void DATableStyleController::applyBorderOutlineToSelection()
             }
             if (sides != DATableCellStyle::BorderNone) {
                 addCellBorder(p.x(), p.y(), sides);
+            }
+        }
+    }
+    if (cmd->isEmpty()) {
+        return;
+    }
+    if (mCtx.pushCommand) {
+        mCtx.pushCommand(cmd.release());
+    }
+}
+
+/**
+ * @brief 单侧边框：只作用于选区外沿（Excel 语义）
+ *
+ * 选中 3x3 区域应用「上框线」时，只有最上一行 3 个单元格加上框线，选区内其它格不受
+ * 影响；下/左/右同理。全框线（BorderAll）与无框线（BorderNone=0）仍作用于整个选区，
+ * 直接复用 mergeStyleToSelection。
+ *
+ * 选区层级：
+ * - 整列选区：左右落在首/末列（列级），上/下落在首/末数据行（单元格级）；
+ * - 整行选区：上下落在首/末行（行级），左/右落在首/末数据列（单元格级）；
+ * - 单元格选区：按包围矩形外沿，逐格只加命中外沿的那一侧。
+ * 已有边框按位并集保留（应用上框线不会抹掉原有左/右边），单条命令一次撤销。
+ * @param sides BorderSide 位组合（通常为单个边；BorderAll/0 走全选区语义）
+ */
+void DATableStyleController::applyBorderSidesToSelection(quint8 sides)
+{
+    DATableStyleManager* styleMgr = mCtx.styleManager();
+    if (!styleMgr) {
+        return;
+    }
+    // 全框线 / 无框线：所有选中目标整体处理，保持既有语义
+    if (sides == DATableCellStyle::BorderNone
+        || (sides & DATableCellStyle::BorderAll) == DATableCellStyle::BorderAll) {
+        DATableCellStyle fragment;
+        fragment.setBorder(sides);
+        mergeStyleToSelection(fragment);
+        return;
+    }
+    QList< int > fullCols = mSel.fullySelectedDataframeColumns(false);
+    QList< int > fullRows = mSel.fullySelectedDataframeRows(false);
+    const QList< QPoint > cells = mSel.selectedDataframeCells(false);
+    if (cells.isEmpty() && fullCols.isEmpty() && fullRows.isEmpty()) {
+        daWarning << tr("Please select a valid cell");  // cn:请选择正确的单元格
+        return;
+    }
+
+    std::unique_ptr< DACommandTableStyle > cmd(new DACommandTableStyle(styleMgr));
+    // 在已有边框上并集追加，保留颜色/宽度及其它边
+    auto unionBorder = [](const DATableCellStyle& oldStyle, quint8 addSides) {
+        DATableCellStyle newStyle = oldStyle;
+        const quint8 oldSides =
+            oldStyle.borderValid() ? oldStyle.borderSides() : quint8(DATableCellStyle::BorderNone);
+        newStyle.setBorder(oldSides | addSides, oldStyle.borderColor(), oldStyle.borderWidth());
+        return newStyle;
+    };
+    auto addCellBorder = [ & ](int actualRow, int col, quint8 addSides) {
+        DATableCellStyle oldStyle = styleMgr->getCellStyle(actualRow, col);
+        cmd->addChange(DACommandTableStyle::Cell, actualRow, col, oldStyle, unionBorder(oldStyle, addSides), true);
+    };
+    auto addColumnBorder = [ & ](int col, quint8 addSides) {
+        DATableCellStyle oldStyle = styleMgr->getColumnStyle(col);
+        cmd->addChange(DACommandTableStyle::Column, col, 0, oldStyle, unionBorder(oldStyle, addSides), true);
+    };
+    auto addRowBorder = [ & ](int actualRow, quint8 addSides) {
+        DATableCellStyle oldStyle = styleMgr->getRowStyle(actualRow);
+        cmd->addChange(DACommandTableStyle::Row, actualRow, 0, oldStyle, unionBorder(oldStyle, addSides), true);
+    };
+    // 升序去重后切成连续区间（Ctrl 多选不相邻列/行时各自保留自己的外沿）
+    auto contiguousRuns = [](QList< int > lines) {
+        std::sort(lines.begin(), lines.end());
+        lines.erase(std::unique(lines.begin(), lines.end()), lines.end());
+        QList< QPair< int, int > > runs;
+        for (int line : std::as_const(lines)) {
+            if (!runs.isEmpty() && line == runs.last().second + 1) {
+                runs.last().second = line;
+            } else {
+                runs.append(qMakePair(line, line));
+            }
+        }
+        return runs;
+    };
+    if (!fullCols.isEmpty()) {
+        // 整列选区：左右落在首/末列，上下落在首/末数据行
+        const int lastRow = mCtx.model() ? mCtx.model()->actualRowCount() - 1 : -1;
+        const QList< QPair< int, int > > runs = contiguousRuns(fullCols);
+        for (const QPair< int, int >& run : runs) {
+            if (sides & DATableCellStyle::BorderLeft) {
+                addColumnBorder(run.first, DATableCellStyle::BorderLeft);
+            }
+            if (sides & DATableCellStyle::BorderRight) {
+                addColumnBorder(run.second, DATableCellStyle::BorderRight);
+            }
+        }
+        if (sides & DATableCellStyle::BorderTop) {
+            for (int col : std::as_const(fullCols)) {
+                addCellBorder(0, col, DATableCellStyle::BorderTop);
+            }
+        }
+        if ((sides & DATableCellStyle::BorderBottom) && lastRow >= 0) {
+            for (int col : std::as_const(fullCols)) {
+                addCellBorder(lastRow, col, DATableCellStyle::BorderBottom);
+            }
+        }
+    } else if (!fullRows.isEmpty()) {
+        // 整行选区：上下落在首/末行，左右落在首/末数据列
+        const int lastCol = mCtx.model() ? mCtx.model()->columnCount() - 1 : -1;
+        const QList< QPair< int, int > > runs = contiguousRuns(fullRows);
+        for (const QPair< int, int >& run : runs) {
+            if (sides & DATableCellStyle::BorderTop) {
+                addRowBorder(run.first, DATableCellStyle::BorderTop);
+            }
+            if (sides & DATableCellStyle::BorderBottom) {
+                addRowBorder(run.second, DATableCellStyle::BorderBottom);
+            }
+        }
+        if (sides & DATableCellStyle::BorderLeft) {
+            for (int row : std::as_const(fullRows)) {
+                addCellBorder(row, 0, DATableCellStyle::BorderLeft);
+            }
+        }
+        if ((sides & DATableCellStyle::BorderRight) && lastCol >= 0) {
+            for (int row : std::as_const(fullRows)) {
+                addCellBorder(row, lastCol, DATableCellStyle::BorderRight);
+            }
+        }
+    } else {
+        // 单元格选区：包围矩形外沿，逐格只加命中外沿的那一侧（QPoint(actualRow, column)）
+        int minRow = std::numeric_limits< int >::max();
+        int maxRow = std::numeric_limits< int >::min();
+        int minCol = std::numeric_limits< int >::max();
+        int maxCol = std::numeric_limits< int >::min();
+        for (const QPoint& p : cells) {
+            minRow = qMin(minRow, p.x());
+            maxRow = qMax(maxRow, p.x());
+            minCol = qMin(minCol, p.y());
+            maxCol = qMax(maxCol, p.y());
+        }
+        for (const QPoint& p : cells) {
+            quint8 addSides = DATableCellStyle::BorderNone;
+            if ((sides & DATableCellStyle::BorderTop) && p.x() == minRow) {
+                addSides |= DATableCellStyle::BorderTop;
+            }
+            if ((sides & DATableCellStyle::BorderBottom) && p.x() == maxRow) {
+                addSides |= DATableCellStyle::BorderBottom;
+            }
+            if ((sides & DATableCellStyle::BorderLeft) && p.y() == minCol) {
+                addSides |= DATableCellStyle::BorderLeft;
+            }
+            if ((sides & DATableCellStyle::BorderRight) && p.y() == maxCol) {
+                addSides |= DATableCellStyle::BorderRight;
+            }
+            if (addSides != DATableCellStyle::BorderNone) {
+                addCellBorder(p.x(), p.y(), addSides);
             }
         }
     }

@@ -1486,8 +1486,8 @@ void DAAppTableActionHandler::onTableStyleWrapTextToggled(bool on)
 }
 
 /**
- * @brief 边框预设：外框线走专用路径，其余按边位组合应用（0 = 无框线）
- * @param sides BorderSide 位组合（outline=true 时忽略）
+ * @brief 边框预设：外框线走专用路径，其余按边位组合应用（单侧只作用于选区外沿）
+ * @param sides BorderSide 位组合（outline=true 时忽略；0 = 无框线）
  * @param outline true=外框线（对选区包围矩形）
  */
 void DAAppTableActionHandler::applyBorderPreset(quint8 sides, bool outline)
@@ -1500,9 +1500,8 @@ void DAAppTableActionHandler::applyBorderPreset(quint8 sides, bool outline)
         w->applyBorderOutlineToSelection();
         return;
     }
-    DA::DATableCellStyle fragment;
-    fragment.setBorder(sides);
-    w->mergeStyleToSelection(fragment);
+    // 单侧边框（上/下/左/右）与 Excel 一致：只落在选区外沿；全框线/无框线作用于整个选区
+    w->applyBorderSidesToSelection(sides);
 }
 
 /**

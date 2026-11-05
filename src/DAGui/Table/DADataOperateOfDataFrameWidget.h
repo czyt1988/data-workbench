@@ -132,6 +132,8 @@ public:
     void mergeStyleToSelection(const DATableCellStyle& fragment);
     // 外框线：对选中区包围矩形四边应用边框（单元格选区=逐格外边；整列/整行选区有轻量语义）
     void applyBorderOutlineToSelection();
+    // 单侧边框：只作用于选区外沿（Excel 语义）；全框线/无框线仍作用于整个选区
+    void applyBorderSidesToSelection(quint8 sides);
     // 设置完整样式到选中区（传入什么就设置什么，整体替换，为格式刷准备）
     // 自动判定层级：整列→列级，整行→行级，否则单元格级
     void applyStyleToSelection(const DATableCellStyle& style);
