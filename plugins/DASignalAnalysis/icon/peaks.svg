@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- data-workbench 官方色板：#5280C1/#497CAD/#BDCDE8/#727272/#B2B2B2/#5D6D7E/#669E8B/#CE6043/#E6C27C/#80559F/#3CAED5/#FFFFFF -->
+  <path d="M26 132 L50 132 L62 98 L74 132 L96 132 L110 64 L124 132 L146 132 L158 106 L172 132" fill="none" stroke="#727272" stroke-width="8" stroke-linejoin="round"/>
+  <circle cx="110" cy="64" r="13" fill="#CE6043"/>
+  <circle cx="62" cy="98" r="10" fill="#5280C1"/>
+</svg>

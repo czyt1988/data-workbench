@@ -1,0 +1,19 @@
+<RCC>
+    <qresource prefix="/DASignalAnalysis">
+        <file>icon/importAudio.svg</file>
+        <file>icon/importDataframe.svg</file>
+        <file>icon/importVideo.svg</file>
+        <file>icon/play.svg</file>
+        <file>icon/pause.svg</file>
+        <file>icon/stop.svg</file>
+        <file>icon/analysisSetting.svg</file>
+        <file>icon/peaks.svg</file>
+        <file>icon/peaksWindow.svg</file>
+        <file>icon/waterfall2d.svg</file>
+        <file>icon/waterfall3d.svg</file>
+        <file>icon/waterfallHide.svg</file>
+        <file>icon/amplitude.svg</file>
+        <file>icon/exportTable.svg</file>
+        <file>icon/exportImage.svg</file>
+    </qresource>
+</RCC>

@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- data-workbench 官方色板：#5280C1/#497CAD/#BDCDE8/#727272/#B2B2B2/#5D6D7E/#669E8B/#CE6043/#E6C27C/#80559F/#3CAED5/#FFFFFF -->
+  <rect x="24" y="46" width="30" height="26" fill="#BDCDE8"/>
+  <rect x="55" y="46" width="30" height="26" fill="#8FAAD6"/>
+  <rect x="86" y="46" width="30" height="26" fill="#497CAD"/>
+  <rect x="117" y="46" width="30" height="26" fill="#5280C1"/>
+  <rect x="24" y="73" width="30" height="26" fill="#8FAAD6"/>
+  <rect x="55" y="73" width="30" height="26" fill="#497CAD"/>
+  <rect x="86" y="73" width="30" height="26" fill="#5280C1"/>
+  <rect x="117" y="73" width="30" height="26" fill="#497CAD"/>
+  <rect x="24" y="100" width="30" height="26" fill="#BDCDE8"/>
+  <rect x="55" y="100" width="30" height="26" fill="#5280C1"/>
+  <rect x="86" y="100" width="30" height="26" fill="#497CAD"/>
+  <rect x="117" y="100" width="30" height="26" fill="#8FAAD6"/>
+  <rect x="24" y="127" width="30" height="26" fill="#8FAAD6"/>
+  <rect x="55" y="127" width="30" height="26" fill="#BDCDE8"/>
+  <rect x="86" y="127" width="30" height="26" fill="#8FAAD6"/>
+  <rect x="117" y="127" width="30" height="26" fill="#BDCDE8"/>
+  <path d="M42 170 L162 30" stroke="#CE6043" stroke-width="13" stroke-linecap="round"/>
+</svg>
