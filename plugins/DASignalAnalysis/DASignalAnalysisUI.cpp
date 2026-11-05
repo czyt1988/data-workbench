@@ -337,6 +337,8 @@ void DASignalAnalysisUI::addSignalAndActivate(const DASignalPtr& sig)
             mCurrentCurves       = DAPeakCurveResult();
             requestPeaks(true);
         });
+        // 连接就绪后再发起首次计算（视图显示早于 connect，showEvent 里的请求会丢）
+        view->requestInitialAnalysis();
     }
     // 切到「信号分析」页面标签（导入后用户应立刻看到信号视图，而不是停在原页面）
     if (auto* dockingArea = mUI->getDockingArea()) {

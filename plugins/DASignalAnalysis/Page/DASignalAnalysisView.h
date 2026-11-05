@@ -75,6 +75,8 @@ public:
     void setAmplitudeDisplay(const QString& amplitudeMode, const QString& dbReference);
     // 请求一次包络计算（视图显示/尺寸变化时调用）
     void requestEnvelopeRefresh();
+    // 首次分析：发起包络、整段频谱与时频热图三类计算（外部信号连接完成后调用）
+    void requestInitialAnalysis();
 
 Q_SIGNALS:
     // 请求外部计算频谱（参数变化或首次显示）

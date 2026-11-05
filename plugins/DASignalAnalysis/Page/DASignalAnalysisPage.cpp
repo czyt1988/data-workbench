@@ -47,9 +47,10 @@ QStackedWidget* DASignalAnalysisPage::signalStack() const
 }
 
 /**
- * @brief 添加一个信号：新增标签页与视图
+ * @brief 添加一个信号：新增标签页与完整信号视图
  *
- * M3 阶段视图为信息占位页（显示采样率/时长/通道数），M5 换成完整信号视图。
+ * 视图必须在这里真正创建并登记到 mViews：外部（DASignalAnalysisUI）通过
+ * viewForSignal() 取视图来连接包络/频谱/热图请求，缺了它整个页面只剩空白。
  */
 void DASignalAnalysisPage::addSignal(const DASignalPtr& signal)
 {
@@ -59,16 +60,10 @@ void DASignalAnalysisPage::addSignal(const DASignalPtr& signal)
     mSignals.append(signal);
     const int idx = mTabBar->addTab(signal->name());
     mTabBar->setTabToolTip(idx, signal->source() ? signal->source()->sourceDescription() : QString());
-    // 占位视图：信号元信息（M5 替换为完整视图）
-    QLabel* info = new QLabel(mSignalStack);
-    info->setAlignment(Qt::AlignCenter);
-    info->setText(tr("%1\nSample rate: %2 Hz | Channels: %3 | Duration: %4 s")
-                      .arg(signal->name())
-                      .arg(signal->sampleRate(), 0, 'f', 3)
-                      .arg(signal->channelCount())
-                      .arg(signal->duration(), 0, 'f', 3));
-    // cn:%1\n采样率：%2 赫兹 | 通道数：%3 | 时长：%4 秒
-    mSignalStack->addWidget(info);
+    // 每个信号一个完整视图（波形 + 频谱 + 时频），按信号指针登记供结果回填与视图查找
+    DASignalAnalysisView* view = new DASignalAnalysisView(signal, mSignalStack);
+    mSignalStack->addWidget(view);
+    mViews.insert(signal.get(), view);
     mTabBar->setCurrentIndex(idx);
     mSignalStack->setCurrentIndex(idx);
     updateEmptyState();

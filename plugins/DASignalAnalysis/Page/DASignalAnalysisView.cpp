@@ -786,6 +786,22 @@ void DASignalAnalysisView::requestEnvelopeRefresh()
     Q_EMIT envelopeRequested(0, total, width);
 }
 
+/**
+ * @brief 首次分析：请求包络、整段频谱与时频热图
+ *
+ * 视图加入页面时 showEvent 早于外部 connect，此时发出的请求会丢失，
+ * 因此由外部在连接完成后显式调用一次。
+ */
+void DASignalAnalysisView::requestInitialAnalysis()
+{
+    if (!mSignal || !mSignal->isValid()) {
+        return;
+    }
+    requestEnvelopeRefresh();
+    Q_EMIT spectrumRequested(mSignal, currentChannel());
+    requestHeatmapRefresh();
+}
+
 void DASignalAnalysisView::resizeEvent(QResizeEvent* e)
 {
     QWidget::resizeEvent(e);
@@ -797,10 +813,8 @@ void DASignalAnalysisView::resizeEvent(QResizeEvent* e)
 void DASignalAnalysisView::showEvent(QShowEvent* e)
 {
     QWidget::showEvent(e);
-    if (!mEnvelopeValid && mSignal && mSignal->isValid()) {
-        requestEnvelopeRefresh();
-        Q_EMIT spectrumRequested(mSignal, currentChannel());
-        requestHeatmapRefresh();
+    if (!mEnvelopeValid) {
+        requestInitialAnalysis();
     }
 }
 
