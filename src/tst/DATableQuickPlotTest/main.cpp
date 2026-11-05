@@ -284,6 +284,7 @@ private Q_SLOTS:
     void testRenderContourErrorBarVectorField();
     void testRenderMultiBar();
     void testCreate3DLineItem();
+    void testTransferNewTypes();
     void testWindowRecommendedSize();
     void testRolePanelManualMode();
     // 页面级端到端：真实选区 → 浮窗出图（Python 聚合）→ 转入绘图区 → 撤销/重做
@@ -1186,6 +1187,42 @@ void DATableQuickPlotTest::testCreate3DLineItem()
     delete item;
 }
 
+void DATableQuickPlotTest::testTransferNewTypes()
+{
+    auto* source = new DAQuickPlotTestSource;
+    for (int i = 0; i < 3; ++i) {
+        source->columns.append({ QStringLiteral("n%1").arg(i), QMetaType::Double, makeNumeric(40, i * 2.0) });
+    }
+    const DA::DAData data = makeData(source);
+    const auto request    = requestFromColumns(data, { 0, 1, 2 });
+
+    // 2D 新图型（多重柱状需要分类列，这里用等高线验证新渲染分支的转入）
+    DA::DAChartOperateWidget chartOperate2D;
+    QString error;
+    const DA::DATableChartSpec contour =
+        DA::DATableChartPlanner::defaultSpec(request, DA::DATableChartType::Contour);
+    DA::DAChartWidget* chart = DA::DAChartQuickPlot::transferToFigure(
+        request, contour, &chartOperate2D, false, nullptr, &error);
+    QVERIFY2(chart != nullptr, qPrintable(error));
+    QVERIFY(!chart->itemList().isEmpty());
+
+    // 3D 线图转入：新建 Figure + 3D 图表 + 图元
+    // 3D GL 图表在测试进程内析构容易卡住（无事件循环的 GL 上下文销毁），
+    // 测试进程最后走 TerminateProcess，这里故意不回收该容器
+    auto* chartOperate3D = new DA::DAChartOperateWidget;
+    const DA::DATableChartSpec line3D =
+        DA::DATableChartPlanner::defaultSpec(request, DA::DATableChartType::Line3D);
+    QVERIFY2(DA::DAChartQuickPlot::transferToFigure3D(
+                 request, line3D, chartOperate3D, false, nullptr, &error),
+             qPrintable(error));
+    QCOMPARE(chartOperate3D->getFigureCount(), 1);
+    DA::DAFigureWidget* figure = chartOperate3D->getCurrentFigure();
+    QVERIFY(figure != nullptr);
+    DA::DAChart3DWidget* chart3d = figure->getCurrent3DChart();
+    QVERIFY(chart3d != nullptr);
+    QCOMPARE(chart3d->itemList().size(), 1);
+}
+
 void DATableQuickPlotTest::testWindowRecommendedSize()
 {
     QCOMPARE(DA::DATableQuickPlotWindow::recommendedSize(), QSize(640, 560));
@@ -1217,6 +1254,11 @@ void DATableQuickPlotTest::testRolePanelManualMode()
 
     QVERIFY(window.isManualMode());
     QCOMPARE(window.spec().xColumn, 1);
+
+    // 「更新为当前选区」回归选区跟随，撤销手动模式
+    window.updateRequest(request);
+    QTest::qWait(30);
+    QVERIFY(!window.isManualMode());
     window.close();
 }
 

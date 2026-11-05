@@ -1207,6 +1207,9 @@ bool DAChartQuickPlot::transferToFigure3D(const DATableChartRequest& request,
                  QCoreApplication::translate("DAChartQuickPlot", "Failed to create a 3D chart"));  // cn:创建 3D 子图失败
         return false;
     }
+    // 新建的 3D 图表不会自动成为 Figure 的当前 3D 图（只有用户点击/反序列化才会设），
+    // 显式设一次，后续「追加到当前图表」与设置面板才能命中它
+    figure->setCurrent3DChart(chart3d);
     Qwt3DPlotItem* item = create3DItem(request, spec, info, error, true);
     if (!item) {
         if (stack) {
@@ -1225,6 +1228,7 @@ bool DAChartQuickPlot::transferToFigure3D(const DATableChartRequest& request,
     // 登记撤销命令（undo 时 detach + 标记删除）
     chart3d->attach(item);
     figure->add3DItem_(chart3d, item, true);
+    chart3d->update();
     if (stack) {
         stack->endMacro();
     }
