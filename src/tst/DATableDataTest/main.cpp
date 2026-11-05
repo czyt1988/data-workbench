@@ -436,6 +436,8 @@ private Q_SLOTS:
     void testStyleOnRealPagePixels();
     // A2：边框预设图标资源（Ribbon 按钮 + 菜单项）存在且可渲染
     void testBorderPresetIconsAvailable();
+    // A2 修复：单侧边框（上/下/左/右）只作用于选区外沿（Excel 语义）
+    void testBorderSidesApplyToSelectionEdge();
     // A3：列宽自适应/设置列宽/设置行高（落库 + 投影一致，不进撤销栈）
     void testCellSizeCommands();
     // A4 轻量：自动换行（XML 往返/merge/委派像素：折行后文字纵向范围明显变大）
@@ -1874,6 +1876,108 @@ void DATableDataTest::testBorderPresetIconsAvailable()
         }
         QVERIFY2(opaqueCount > 0, qPrintable(QStringLiteral("blank icon: ") + path));
     }
+}
+
+// A2 修复：单侧边框（上/下/左/右）只作用于选区外沿，与 Excel 一致
+//
+// 旧实现把单侧边框 merge 到选区内每一个单元格；Excel 语义是只给外沿那一侧
+// （3x3 选区应用上框线，只有最上一行 3 格加线）。同时验证已有边按位并集保留、
+// 全框线/无框线仍作用于整个选区、一次操作只产生一条撤销命令。
+void DATableDataTest::testBorderSidesApplyToSelectionEdge()
+{
+    if (!mPandasOk) {
+        QSKIP("pandas not available");
+    }
+    qRegisterMetaType< DA::DAData >("DA::DAData");
+    pybind11::dict scope;
+    pybind11::exec(R"(
+import pandas as pd
+df = pd.DataFrame({"a": [1.0, 2.0, 3.0, 4.0], "b": [5.0, 6.0, 7.0, 8.0],
+                   "c": [9.0, 10.0, 11.0, 12.0], "d": [13.0, 14.0, 15.0, 16.0]})
+)",
+                   pybind11::globals(),
+                   scope);
+    DA::DAPyDataFrame df(scope[ "df" ]);
+    DA::DADataManager mgr;
+    DA::DAData d(df);
+    d.setName(QStringLiteral("border-edge"));
+    mgr.addData(d);
+    DA::DATableMetadataRegistry registry(nullptr);
+    DA::DADataOperateOfDataFrameWidget w(d, &registry);
+    w.resize(700, 400);
+    w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+    DA::DADataTableView* tv = w.getDataTableView();
+    QVERIFY(tv != nullptr);
+    DA::DATableStyleManager* styleMgr = w.styleManager();
+    QVERIFY(styleMgr != nullptr);
+    QUndoStack* stack = w.getUndoStack();
+    QVERIFY(stack != nullptr);
+
+    // 选中 3x3（行 0..2 × 列 0..2）
+    const QModelIndex topLeft     = tv->model()->index(0, 0);
+    const QModelIndex bottomRight = tv->model()->index(2, 2);
+    tv->selectionModel()->select(QItemSelection(topLeft, bottomRight), QItemSelectionModel::ClearAndSelect);
+
+    auto sidesAt = [ styleMgr ](int row, int col) {
+        return int(styleMgr->getCellStyle(row, col).borderSides());
+    };
+    const int Top    = int(DA::DATableCellStyle::BorderTop);
+    const int Bottom = int(DA::DATableCellStyle::BorderBottom);
+    const int Left   = int(DA::DATableCellStyle::BorderLeft);
+    const int Right  = int(DA::DATableCellStyle::BorderRight);
+
+    // 上框线：只有最上一行 3 格，且整体只产生一条撤销命令
+    const int undoBefore = stack->count();
+    w.applyBorderSidesToSelection(DA::DATableCellStyle::BorderTop);
+    QCOMPARE(stack->count(), undoBefore + 1);
+    for (int col = 0; col < 3; ++col) {
+        QVERIFY2(sidesAt(0, col) == Top, qPrintable(QStringLiteral("top edge missing at (0,%1)").arg(col)));
+    }
+    QVERIFY(!styleMgr->hasCellStyle(1, 0));
+    QVERIFY(!styleMgr->hasCellStyle(1, 1));
+    QVERIFY(!styleMgr->hasCellStyle(2, 2));
+    QVERIFY(!styleMgr->hasCellStyle(0, 3));  // 选区外不受影响
+    // 一次撤销整体回退
+    stack->undo();
+    QVERIFY(!styleMgr->hasCellStyle(0, 0));
+    stack->redo();
+
+    // 下框线：只有最下一行；上一行的上框线保留
+    w.applyBorderSidesToSelection(DA::DATableCellStyle::BorderBottom);
+    for (int col = 0; col < 3; ++col) {
+        QCOMPARE(sidesAt(2, col), Bottom);
+        QCOMPARE(sidesAt(0, col), Top);
+    }
+    QVERIFY(!styleMgr->hasCellStyle(1, 0));
+
+    // 左框线：只有最左列；角格与已有边按位并集
+    w.applyBorderSidesToSelection(DA::DATableCellStyle::BorderLeft);
+    QCOMPARE(sidesAt(0, 0), Top | Left);
+    QCOMPARE(sidesAt(1, 0), Left);
+    QVERIFY(!styleMgr->hasCellStyle(1, 1));
+
+    // 右框线：只有最右列
+    w.applyBorderSidesToSelection(DA::DATableCellStyle::BorderRight);
+    QCOMPARE(sidesAt(0, 2), Top | Right);
+    QCOMPARE(sidesAt(1, 2), Right);
+    QVERIFY(!styleMgr->hasCellStyle(1, 1));
+
+    // 全框线仍作用于整个选区（回归）
+    w.applyBorderSidesToSelection(DA::DATableCellStyle::BorderAll);
+    for (int row = 0; row < 3; ++row) {
+        for (int col = 0; col < 3; ++col) {
+            QCOMPARE(sidesAt(row, col), int(DA::DATableCellStyle::BorderAll));
+        }
+    }
+    // 无框线清空整个选区
+    w.applyBorderSidesToSelection(DA::DATableCellStyle::BorderNone);
+    for (int row = 0; row < 3; ++row) {
+        for (int col = 0; col < 3; ++col) {
+            QCOMPARE(sidesAt(row, col), int(DA::DATableCellStyle::BorderNone));
+        }
+    }
+    w.hide();
 }
 
 // A3：列宽自适应 / 设置列宽 / 设置行高——视图状态落库与投影一致，且不进撤销栈
