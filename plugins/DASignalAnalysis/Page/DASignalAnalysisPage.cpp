@@ -9,6 +9,7 @@
 #include <QHBoxLayout>
 #include <QStyle>
 #include <QDebug>
+#include "DASignalAnalysisView.h"
 
 namespace DA
 {
@@ -100,6 +101,14 @@ QList< DASignalPtr > DASignalAnalysisPage::allSignals() const
 int DASignalAnalysisPage::signalCount() const
 {
     return mSignals.size();
+}
+
+/**
+ * @brief 某信号对应的视图（无对应视图返回 nullptr）
+ */
+DASignalAnalysisView* DASignalAnalysisPage::viewForSignal(const DASignal* sig) const
+{
+    return mViews.value(sig, nullptr);
 }
 
 /**

@@ -2,6 +2,7 @@
 #define DASIGNALANALYSISPAGE_H
 #include <QWidget>
 #include <QList>
+#include <QHash>
 #include "Signal/DASignal.h"
 
 class QLabel;
@@ -10,6 +11,10 @@ class QStackedWidget;
 class QPushButton;
 class QVBoxLayout;
 class QHBoxLayout;
+namespace DA
+{
+class DASignalAnalysisView;
+}
 
 namespace DA
 {
@@ -41,6 +46,8 @@ public:
     QList< DA::DASignalPtr > allSignals() const;
     // 信号数量
     int signalCount() const;
+    // 某信号对应的视图（无对应视图返回 nullptr）
+    DA::DASignalAnalysisView* viewForSignal(const DA::DASignal* sig) const;
 
     // 空状态下点击导入按钮时，由外部（UI 层）接管实际导入流程
     Q_SIGNALS:
@@ -72,6 +79,7 @@ private:
     QPushButton* mBtnImportDataFrame { nullptr };
     QPushButton* mBtnImportVideo { nullptr };
     QList< DA::DASignalPtr > mSignals;  ///< 已导入信号（与标签页索引一一对应）
+    QHash< const DA::DASignal*, DA::DASignalAnalysisView* > mViews;  ///< 信号 → 视图
 };
 }  // namespace DA
 

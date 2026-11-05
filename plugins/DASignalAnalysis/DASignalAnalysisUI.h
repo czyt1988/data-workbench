@@ -6,6 +6,7 @@
 #include "Signal/DASignal.h"
 #include "Analysis/DASignalAnalysisParams.h"
 #include "Analysis/DASpectrumResult.h"
+#include "Analysis/DASignalAnalysisWorker.h"
 
 class QMenu;
 class QActionGroup;
@@ -22,7 +23,7 @@ class DACoreInterface;
 class DAUIInterface;
 class DAActionsInterface;
 class DASignalAnalysisPage;
-class DASignalAnalysisWorker;
+class DASignalAnalysisView;
 
 /**
  * @brief 信号分析插件的界面层：中央页面 + 丝带标签页 + 动作管理
@@ -68,13 +69,20 @@ public Q_SLOTS:
     void importVideoFile();
     // 打开统一参数对话框（D20），确定后立即重算一次（D21）
     void openAnalysisSettings();
+    // 幅值显示模式切换（只重绘，不重算）
+    void onAmplitudeModeChanged();
     // 重新计算当前信号的频谱（参数变化后调用）
     void recomputeCurrentSignal();
 
 private Q_SLOTS:
     void onWorkerProgress(double percent, const QString& stage);
     void onWorkerSpectrumReady(const DA::DASpectrumResult& result);
+    void onWorkerEnvelopeReady(const QVector< double >& xs,
+                               const QVector< double >& mins,
+                               const QVector< double >& maxs);
     void onWorkerFailed(const QString& error);
+    void onViewRequestSpectrum(const DA::DASignalPtr& signal);
+    void onViewRequestEnvelope(qint64 start, qint64 end, int width);
 
 private:
     void buildCenterPage();
@@ -165,6 +173,11 @@ private:
     // 频谱结果缓存（随信号对象存活，参数变化才重算）
     QHash< const DA::DASignal*, DA::DASpectrumResult > mSpectrumCache;
     const DA::DASignal* mPendingSignal { nullptr };
+    // 最近一次请求包络的视图（包络结果回填目标）
+    DA::DASignalAnalysisView* mPendingEnvelopeView { nullptr };
+    // 当前幅值显示模式（D14）
+    QString mAmplitudeMode { QStringLiteral("peak") };
+    QString mDbReference { QStringLiteral("fullScale") };
 };
 }  // namespace DA
 

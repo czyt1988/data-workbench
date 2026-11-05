@@ -20,6 +20,7 @@
 #include "DAStatusBarInterface.h"
 // DASignalAnalysis
 #include "Page/DASignalAnalysisPage.h"
+#include "Page/DASignalAnalysisView.h"
 #include "Dialogs/DASignalImportDialog.h"
 #include "Dialogs/DASignalAnalysisSettingDialog.h"
 #include "Signal/DASignalImporter.h"
@@ -94,6 +95,7 @@ bool DASignalAnalysisUI::initialize(DACoreInterface* core)
     mWorker = new DASignalAnalysisWorker(this);
     connect(mWorker, &DASignalAnalysisWorker::progressChanged, this, &DASignalAnalysisUI::onWorkerProgress);
     connect(mWorker, &DASignalAnalysisWorker::spectrumReady, this, &DASignalAnalysisUI::onWorkerSpectrumReady);
+    connect(mWorker, &DASignalAnalysisWorker::envelopeReady, this, &DASignalAnalysisUI::onWorkerEnvelopeReady);
     connect(mWorker, &DASignalAnalysisWorker::failed, this, &DASignalAnalysisUI::onWorkerFailed);
     return true;
 }
@@ -180,6 +182,11 @@ void DASignalAnalysisUI::addSignalAndActivate(const DASignalPtr& sig)
     }
     mPage->addSignal(sig);
     setSignalDependentActionsEnabled(true);
+    if (DASignalAnalysisView* view = mPage->viewForSignal(sig.get())) {
+        view->setParams(paramsForSignal(sig));
+        connect(view, &DASignalAnalysisView::spectrumRequested, this, &DASignalAnalysisUI::onViewRequestSpectrum);
+        connect(view, &DASignalAnalysisView::envelopeRequested, this, &DASignalAnalysisUI::onViewRequestEnvelope);
+    }
     mUI->addInfoLogMessage(tr("Signal imported: %1 (%2 Hz, %3 s)")
                                .arg(sig->name())
                                .arg(sig->sampleRate(), 0, 'f', 3)
@@ -383,6 +390,10 @@ void DASignalAnalysisUI::buildAmplitudeModeMenu()
     }
     actionAmpPeak->setChecked(true);  // 默认峰值幅度（D14）
     actionAmplitudeMode->setMenu(mAmplitudeModeMenu);
+    connect(actionAmpPeak, &QAction::triggered, this, &DASignalAnalysisUI::onAmplitudeModeChanged);
+    connect(actionAmpRms, &QAction::triggered, this, &DASignalAnalysisUI::onAmplitudeModeChanged);
+    connect(actionAmpDbFs, &QAction::triggered, this, &DASignalAnalysisUI::onAmplitudeModeChanged);
+    connect(actionAmpDbRef1, &QAction::triggered, this, &DASignalAnalysisUI::onAmplitudeModeChanged);
 }
 
 /**
@@ -560,6 +571,11 @@ void DASignalAnalysisUI::onWorkerSpectrumReady(const DASpectrumResult& result)
 {
     if (mPendingSignal && result.isValid()) {
         mSpectrumCache[ mPendingSignal ] = result;
+        if (mPage) {
+            if (DASignalAnalysisView* view = mPage->viewForSignal(mPendingSignal)) {
+                view->setSpectrum(result);
+            }
+        }
     }
     if (mUI) {
         mUI->addInfoLogMessage(tr("Spectrum ready: resolution %1 Hz, %2 bins")
@@ -577,6 +593,76 @@ void DASignalAnalysisUI::onWorkerFailed(const QString& error)
 {
     if (mUI) {
         mUI->addWarningLogMessage(tr("Signal analysis failed: %1").arg(error));  // cn:信号分析失败：%1
+    }
+}
+
+/**
+ * @brief 视图请求计算频谱
+ */
+void DASignalAnalysisUI::onViewRequestSpectrum(const DASignalPtr& signal)
+{
+    if (!mWorker || !signal) {
+        return;
+    }
+    mPendingSignal = signal.get();
+    mWorker->computeSpectrum(signal, 0, paramsForSignal(signal));
+}
+
+/**
+ * @brief 视图请求计算波形包络
+ */
+void DASignalAnalysisUI::onViewRequestEnvelope(qint64 start, qint64 end, int width)
+{
+    auto* view = qobject_cast< DASignalAnalysisView* >(sender());
+    if (!mWorker || !view) {
+        return;
+    }
+    mPendingEnvelopeView = view;
+    mWorker->computeEnvelope(view->signal(), 0, start, end, width);
+}
+
+/**
+ * @brief 包络结果回填到请求它的视图
+ */
+void DASignalAnalysisUI::onWorkerEnvelopeReady(const QVector< double >& xs,
+                                               const QVector< double >& mins,
+                                               const QVector< double >& maxs)
+{
+    if (mPendingEnvelopeView) {
+        mPendingEnvelopeView->setEnvelope(xs, mins, maxs);
+    }
+}
+
+/**
+ * @brief 幅值显示模式切换：更新当前信号参数并只重绘（D14）
+ */
+void DASignalAnalysisUI::onAmplitudeModeChanged()
+{
+    if (actionAmpPeak && actionAmpPeak->isChecked()) {
+        mAmplitudeMode = QStringLiteral("peak");
+        mDbReference   = QStringLiteral("fullScale");
+    } else if (actionAmpRms && actionAmpRms->isChecked()) {
+        mAmplitudeMode = QStringLiteral("rms");
+    } else if (actionAmpDbFs && actionAmpDbFs->isChecked()) {
+        mAmplitudeMode = QStringLiteral("dbFS");
+        mDbReference   = QStringLiteral("fullScale");
+    } else if (actionAmpDbRef1 && actionAmpDbRef1->isChecked()) {
+        mAmplitudeMode = QStringLiteral("dbRef1");
+        mDbReference   = QStringLiteral("one");
+    }
+    if (!mPage) {
+        return;
+    }
+    DASignalPtr sig = mPage->currentSignal();
+    if (!sig) {
+        return;
+    }
+    DASignalAnalysisParams params = paramsForSignal(sig);
+    params.amplitudeMode          = mAmplitudeMode;
+    params.dbReference            = mDbReference;
+    mParamsPerSignal[ sig.get() ] = params;
+    if (DASignalAnalysisView* view = mPage->viewForSignal(sig.get())) {
+        view->setAmplitudeDisplay(mAmplitudeMode, mDbReference);
     }
 }
 

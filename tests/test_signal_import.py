@@ -166,3 +166,33 @@ def test_compute_spectrum_sync_remove_dc():
     r = spectrum.compute_spectrum_sync(x, 48000.0, params)
     # 去直流后幅值谱在非 DC 处应接近 0
     assert np.max(r["amplitudes"][1:]) < 1e-6
+
+
+# ---------------------------------------------------------------- 波形包络
+
+
+def test_envelope_downsampling_keeps_extremes():
+    from DASignalAnalysis import envelope
+
+    rng = np.random.default_rng(3)
+    x = rng.normal(size=100000)
+    width = 500
+    r = envelope.envelope_of_window(x, 0, x.size, width)
+    assert r["mins"].size <= width
+    assert r["mins"].size == r["maxs"].size == r["x"].size
+    # 与原始数据同规则分段比对，确认每段极值不丢失
+    edges = np.linspace(0, x.size, width + 1, dtype=np.int64)
+    for i in (0, 1, width // 2, width - 1):
+        s, e = edges[i], edges[i + 1]
+        assert r["mins"][i] == pytest.approx(np.min(x[s:e]), abs=1e-5)
+        assert r["maxs"][i] == pytest.approx(np.max(x[s:e]), abs=1e-5)
+
+
+def test_envelope_empty_and_short_ranges():
+    from DASignalAnalysis import envelope
+
+    r = envelope.envelope_of_window(np.zeros(0), 0, 0, 100)
+    assert r["mins"].size == 0
+    r2 = envelope.envelope_of_window(np.arange(10.0), 3, 6, 100)
+    assert r2["mins"].size == 3
+    assert r2["x"][0] == pytest.approx(3.5)

@@ -15,14 +15,49 @@ namespace
 /// 轮询间隔（毫秒）
 constexpr int cPollIntervalMs = 100;
 
-DAPyModule spectrumModule()
+DAPyModule namedModule(const char* name)
 {
-    return DAPyModule("DASignalAnalysis.spectrum");
+    return DAPyModule(name);
 }
 
 DAPyModule statusModule()
 {
     return DAPyModule("DAWorkbench.DAPyBase.thread_status_manager");
+}
+
+/**
+ * @brief numpy 一维数组 → QVector<double>
+ */
+QVector< double > toDoubleVector(pybind11::object arr)
+{
+    pybind11::array_t< double, pybind11::array::c_style | pybind11::array::forcecast > a(arr);
+    QVector< double > v(static_cast< int >(a.size()));
+    if (a.size() > 0) {
+        std::memcpy(v.data(), a.data(), sizeof(double) * static_cast< size_t >(a.size()));
+    }
+    return v;
+}
+
+/**
+ * @brief 构造 Python 编排需要的来源描述
+ */
+pybind11::dict buildSourceDict(const DASignalPtr& signal, int channel)
+{
+    pybind11::dict source;
+    if (signal->sourceType() == DASignalSource::DataFrameSource) {
+        auto dfSource = std::dynamic_pointer_cast< DADataFrameSignalSource >(signal->source());
+        source[ "type" ]          = "dataframe";
+        source[ "dataframeName" ] = dfSource ? dfSource->data().getName().toStdString() : std::string();
+        const QStringList cols    = dfSource ? dfSource->valueColumns() : QStringList();
+        source[ "column" ] = (channel >= 0 && channel < cols.size()) ? cols.at(channel).toStdString() : std::string();
+    } else {
+        source[ "type" ] = "file";
+        source[ "path" ] = signal->source()->playbackFilePath().toStdString();
+    }
+    source[ "channel" ]     = channel;
+    source[ "sampleRate" ]  = signal->sampleRate();
+    source[ "sampleCount" ] = signal->sampleCount();
+    return source;
 }
 
 /**
@@ -53,42 +88,6 @@ pybind11::dict paramsToDict(const DASignalAnalysisParams& params)
     p[ "unit" ]             = params.unit.toStdString();
     return p;
 }
-
-/**
- * @brief numpy 一维数组 → QVector<double>
- */
-QVector< double > toDoubleVector(pybind11::object arr)
-{
-    pybind11::array_t< double, pybind11::array::c_style | pybind11::array::forcecast > a(arr);
-    QVector< double > v(static_cast< int >(a.size()));
-    if (a.size() > 0) {
-        std::memcpy(v.data(), a.data(), sizeof(double) * static_cast< size_t >(a.size()));
-    }
-    return v;
-}
-
-/**
- * @brief 构造 Python 编排需要的来源描述
- */
-pybind11::dict buildSourceDict(const DASignalPtr& signal, int channel)
-{
-    pybind11::dict source;
-    const double fs = signal->sampleRate();
-    if (signal->sourceType() == DASignalSource::DataFrameSource) {
-        auto dfSource = std::dynamic_pointer_cast< DADataFrameSignalSource >(signal->source());
-        source[ "type" ]          = "dataframe";
-        source[ "dataframeName" ] = dfSource ? dfSource->data().getName().toStdString() : std::string();
-        const QStringList cols    = dfSource ? dfSource->valueColumns() : QStringList();
-        source[ "column" ] = (channel >= 0 && channel < cols.size()) ? cols.at(channel).toStdString() : std::string();
-    } else {
-        source[ "type" ] = "file";
-        source[ "path" ] = signal->source()->playbackFilePath().toStdString();
-    }
-    source[ "channel" ]    = channel;
-    source[ "sampleRate" ] = fs;
-    source[ "sampleCount" ] = signal->sampleCount();
-    return source;
-}
 }  // namespace
 
 DASignalAnalysisWorker::DASignalAnalysisWorker(QObject* par) : QObject(par)
@@ -100,14 +99,24 @@ DASignalAnalysisWorker::DASignalAnalysisWorker(QObject* par) : QObject(par)
 
 DASignalAnalysisWorker::~DASignalAnalysisWorker()
 {
-    if (mRunning) {
-        cancel();
-    }
+    cancel();
 }
 
 bool DASignalAnalysisWorker::isRunning() const
 {
-    return mRunning;
+    return !mTasks.isEmpty();
+}
+
+/**
+ * @brief 更新轮询定时器状态（有任务就跑，没任务就停）
+ */
+void DASignalAnalysisWorker::updateTimer()
+{
+    if (mTasks.isEmpty()) {
+        mTimer->stop();
+    } else if (!mTimer->isActive()) {
+        mTimer->start();
+    }
 }
 
 /**
@@ -121,23 +130,22 @@ bool DASignalAnalysisWorker::computeSpectrum(const DASignalPtr& signal,
         Q_EMIT failed(tr("Signal is invalid or not loaded."));  // cn:信号无效或未载入。
         return false;
     }
-    if (mRunning) {
-        cancel();
-    }
     try {
-        DAPyModule spectrum  = spectrumModule();
+        DAPyModule spectrum   = namedModule("DASignalAnalysis.spectrum");
         pybind11::dict source = buildSourceDict(signal, channel);
         pybind11::dict p      = paramsToDict(params);
         pybind11::object res  = spectrum.attr("compute_spectrum_async")(source, p);
-        mTaskId               = QString::fromStdString(res.cast< std::string >());
-        mRunning              = !mTaskId.isEmpty();
-        if (mRunning) {
-            mTimer->start();
-            Q_EMIT progressChanged(0.0, tr("Computing spectrum..."));  // cn:正在计算频谱...
-        } else {
+        TaskEntry entry;
+        entry.id   = QString::fromStdString(res.cast< std::string >());
+        entry.kind = SpectrumTask;
+        if (entry.id.isEmpty()) {
             Q_EMIT failed(tr("Failed to start the spectrum task."));  // cn:频谱任务启动失败。
+            return false;
         }
-        return mRunning;
+        mTasks[ entry.id ] = entry;
+        updateTimer();
+        Q_EMIT progressChanged(0.0, tr("Computing spectrum..."));  // cn:正在计算频谱...
+        return true;
     } catch (const std::exception& e) {
         qWarning() << "DASignalAnalysisWorker::computeSpectrum:" << e.what();
         Q_EMIT failed(QString::fromUtf8(e.what()));
@@ -146,88 +154,136 @@ bool DASignalAnalysisWorker::computeSpectrum(const DASignalPtr& signal,
 }
 
 /**
- * @brief 取消当前任务
+ * @brief 发起波形包络计算
  */
-void DASignalAnalysisWorker::cancel()
+bool DASignalAnalysisWorker::computeEnvelope(const DASignalPtr& signal,
+                                             int channel,
+                                             qint64 start,
+                                             qint64 end,
+                                             int width)
 {
-    if (!mRunning) {
-        return;
+    if (!signal || !signal->isValid()) {
+        return false;
     }
     try {
-        DAPyModule spectrum = spectrumModule();
-        spectrum.attr("cancel_task")(mTaskId.toStdString());
+        DAPyModule envelope   = namedModule("DASignalAnalysis.envelope");
+        pybind11::dict source = buildSourceDict(signal, channel);
+        pybind11::object res  = envelope.attr("compute_envelope_async")(source, channel, start, end, width);
+        TaskEntry entry;
+        entry.id   = QString::fromStdString(res.cast< std::string >());
+        entry.kind = EnvelopeTask;
+        if (entry.id.isEmpty()) {
+            return false;
+        }
+        mTasks[ entry.id ] = entry;
+        updateTimer();
+        return true;
     } catch (const std::exception& e) {
-        qWarning() << "DASignalAnalysisWorker::cancel:" << e.what();
+        qWarning() << "DASignalAnalysisWorker::computeEnvelope:" << e.what();
+        Q_EMIT failed(QString::fromUtf8(e.what()));
+        return false;
     }
-    mTimer->stop();
-    mRunning = false;
-    mTaskId.clear();
 }
 
 /**
- * @brief 轮询任务的运行状态
+ * @brief 取消全部任务
+ */
+void DASignalAnalysisWorker::cancel()
+{
+    if (mTasks.isEmpty()) {
+        return;
+    }
+    try {
+        DAPyModule spectrum = namedModule("DASignalAnalysis.spectrum");
+        for (const TaskEntry& entry : mTasks) {
+            if (entry.kind == SpectrumTask) {
+                spectrum.attr("cancel_task")(entry.id.toStdString());
+            }
+            // 包络任务结果很小，交给 task 自然结束即可
+        }
+    } catch (const std::exception& e) {
+        qWarning() << "DASignalAnalysisWorker::cancel:" << e.what();
+    }
+    mTasks.clear();
+    mTimer->stop();
+}
+
+/**
+ * @brief 轮询所有任务的运行状态
  */
 void DASignalAnalysisWorker::poll()
 {
-    if (!mRunning || mTaskId.isEmpty()) {
+    if (mTasks.isEmpty()) {
         mTimer->stop();
         return;
     }
     try {
         DAPyModule statusMgr = statusModule();
-        pybind11::object info = statusMgr.attr("get_task_status")(mTaskId.toStdString());
-        if (info.is_none()) {
-            mTimer->stop();
-            mRunning = false;
-            mTaskId.clear();
-            Q_EMIT failed(tr("Spectrum task disappeared."));  // cn:频谱任务丢失。
-            return;
+        QVector< QString > finishedIds;
+        for (const TaskEntry& entry : mTasks) {
+            pybind11::object info = statusMgr.attr("get_task_status")(entry.id.toStdString());
+            if (info.is_none()) {
+                finishedIds.append(entry.id);
+                Q_EMIT failed(tr("Background task disappeared."));  // cn:后台任务丢失。
+                continue;
+            }
+            pybind11::dict d     = pybind11::cast< pybind11::dict >(info);
+            const bool isRunning = d[ "is_running" ].cast< bool >();
+            if (isRunning) {
+                const double percent = d[ "progress" ].cast< double >();
+                const QString stage  = QString::fromStdString(d[ "current_stage" ].cast< std::string >());
+                Q_EMIT progressChanged(percent, stage);
+                continue;
+            }
+            finishedIds.append(entry.id);
+            const bool isCanceled = d[ "is_canceled" ].cast< bool >();
+            const bool isSuccess  = d[ "is_success" ].cast< bool >();
+            if (isCanceled) {
+                Q_EMIT failed(tr("Computation was cancelled."));  // cn:计算已取消。
+                continue;
+            }
+            if (!isSuccess) {
+                const QString msg = QString::fromStdString(d[ "message" ].cast< std::string >());
+                Q_EMIT failed(msg.isEmpty() ? tr("Computation failed.") : msg);  // cn:计算失败。
+                continue;
+            }
+            if (entry.kind == SpectrumTask) {
+                DAPyModule spectrum  = namedModule("DASignalAnalysis.spectrum");
+                pybind11::object raw = spectrum.attr("take_result")(entry.id.toStdString());
+                if (raw.is_none()) {
+                    Q_EMIT failed(tr("Spectrum result is empty."));  // cn:频谱结果为空。
+                    continue;
+                }
+                pybind11::dict r = pybind11::cast< pybind11::dict >(raw);
+                DASpectrumResult result;
+                result.freqs        = toDoubleVector(r[ "freqs" ]);
+                result.amplitudes   = toDoubleVector(r[ "amplitudes" ]);
+                result.psdFreqs     = toDoubleVector(r[ "psd_freqs" ]);
+                result.psdValues    = toDoubleVector(r[ "psd_values" ]);
+                result.segLen       = r[ "seg_len" ].cast< int >();
+                result.resolutionHz = r[ "resolution_hz" ].cast< double >();
+                result.window       = QString::fromStdString(r[ "window" ].cast< std::string >());
+                result.rms          = r[ "rms" ].cast< bool >();
+                Q_EMIT spectrumReady(result);
+            } else {
+                DAPyModule envelope  = namedModule("DASignalAnalysis.envelope");
+                pybind11::object raw = envelope.attr("take_result")(entry.id.toStdString());
+                if (raw.is_none()) {
+                    continue;
+                }
+                pybind11::dict r = pybind11::cast< pybind11::dict >(raw);
+                Q_EMIT envelopeReady(toDoubleVector(r[ "x" ]),
+                                     toDoubleVector(r[ "mins" ]),
+                                     toDoubleVector(r[ "maxs" ]));
+            }
         }
-        pybind11::dict d      = pybind11::cast< pybind11::dict >(info);
-        const double percent  = d[ "progress" ].cast< double >();
-        const bool isRunning  = d[ "is_running" ].cast< bool >();
-        const bool isCanceled = d[ "is_canceled" ].cast< bool >();
-        const bool isSuccess  = d[ "is_success" ].cast< bool >();
-        const QString stage   = QString::fromStdString(d[ "current_stage" ].cast< std::string >());
-        Q_EMIT progressChanged(percent, stage);
-        if (isRunning) {
-            return;
+        for (const QString& id : finishedIds) {
+            mTasks.remove(id);
         }
-        mTimer->stop();
-        mRunning = false;
-        const QString taskId = mTaskId;
-        mTaskId.clear();
-        if (isCanceled) {
-            Q_EMIT failed(tr("Spectrum computation was cancelled."));  // cn:频谱计算已取消。
-            return;
-        }
-        if (!isSuccess) {
-            const QString msg = QString::fromStdString(d[ "message" ].cast< std::string >());
-            Q_EMIT failed(msg.isEmpty() ? tr("Spectrum computation failed.") : msg);  // cn:频谱计算失败。
-            return;
-        }
-        // 取走结果（大数组不在状态里，避免轮询反复拷贝）
-        DAPyModule spectrum = spectrumModule();
-        pybind11::object raw = spectrum.attr("take_result")(taskId.toStdString());
-        if (raw.is_none()) {
-            Q_EMIT failed(tr("Spectrum result is empty."));  // cn:频谱结果为空。
-            return;
-        }
-        pybind11::dict r = pybind11::cast< pybind11::dict >(raw);
-        DASpectrumResult result;
-        result.freqs        = toDoubleVector(r[ "freqs" ]);
-        result.amplitudes   = toDoubleVector(r[ "amplitudes" ]);
-        result.psdFreqs     = toDoubleVector(r[ "psd_freqs" ]);
-        result.psdValues    = toDoubleVector(r[ "psd_values" ]);
-        result.segLen       = r[ "seg_len" ].cast< int >();
-        result.resolutionHz = r[ "resolution_hz" ].cast< double >();
-        result.window       = QString::fromStdString(r[ "window" ].cast< std::string >());
-        result.rms          = r[ "rms" ].cast< bool >();
-        Q_EMIT spectrumReady(result);
+        updateTimer();
     } catch (const std::exception& e) {
+        mTasks.clear();
         mTimer->stop();
-        mRunning = false;
-        mTaskId.clear();
         qWarning() << "DASignalAnalysisWorker::poll:" << e.what();
         Q_EMIT failed(QString::fromUtf8(e.what()));
     }
