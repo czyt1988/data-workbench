@@ -154,7 +154,7 @@ bool DASignalAnalysisUI::initialize(DACoreInterface* core)
     mPlayer = new DASignalPlayer(this);
     connect(mPlayer, &DASignalPlayer::positionChanged, this, &DASignalAnalysisUI::onPlayerPositionChanged);
     connect(mPlayer, &DASignalPlayer::errorOccurred, this, [this](const QString& err) {
-        mUI->addWarningLogMessage(tr("Playback failed: %1").arg(err));  // cn:播放失败：%1
+        reportError(tr("Playback failed: %1").arg(err));  // cn:播放失败：%1
     });
     if (actionPlay) {
         connect(actionPlay, &QAction::triggered, this, [this]() { mPlayer->play(); });
@@ -197,6 +197,12 @@ bool DASignalAnalysisUI::initialize(DACoreInterface* core)
         connect(actionPeakTop50, &QAction::triggered, this, &DASignalAnalysisUI::onPeakTopNChanged);
     }
     connect(mWorker, &DASignalAnalysisWorker::failed, this, &DASignalAnalysisUI::onWorkerFailed);
+    refreshFFmpegAvailability();
+    if (!DASignalImporter::isFFmpegAvailable()) {
+        // 不是错误，只是能力提示：用普通消息，避免一启动就弹告警
+        mUI->addInfoLogMessage(tr("FFmpeg was not detected; video import is unavailable until a path is specified."));
+        // cn:未检测到 FFmpeg，视频导入在指定路径前不可用。
+    }
     return true;
 }
 
@@ -211,6 +217,42 @@ DASignalAnalysisPage* DASignalAnalysisUI::page() const
 // ---------------------------------------------------------------- 导入
 
 /**
+ * @brief 统一错误上报
+ *
+ * 除了写入界面消息队列（da.user，用户可见），还主动唤起界面日志窗口——
+ * 后台任务失败、导入失败、导出失败都必须让用户当场看到原因，不能只剩空白视图。
+ */
+void DASignalAnalysisUI::reportError(const QString& text)
+{
+    if (!mUI) {
+        return;
+    }
+    mUI->addWarningLogMessage(text);
+    if (auto* dockingArea = mUI->getDockingArea()) {
+        dockingArea->raiseDockingArea(DADockingAreaInterface::DockingAreaMessageLog);
+    }
+}
+
+/**
+ * @brief 按 FFmpeg 可用性刷新入口状态（方案 §5.4）
+ *
+ * 未检测到时视频导入置灰并给出「在分析设置里指定路径」的悬浮提示；
+ * 检测到后恢复可用。MP3/M4A/AAC 与音频共用同一入口，按钮保持可用，
+ * 选中需转码的格式时在导入阶段给出明确错误。
+ */
+void DASignalAnalysisUI::refreshFFmpegAvailability()
+{
+    const bool available = DASignalImporter::isFFmpegAvailable();
+    if (actionImportVideo) {
+        actionImportVideo->setEnabled(available);
+        actionImportVideo->setToolTip(
+            available ? tr("Extract the audio track of a video file")  // cn:抽取视频音频轨
+                      : tr("FFmpeg was not detected. Specify its path in the signal analysis settings."));
+        // cn:未检测到 FFmpeg，请在分析设置里指定路径。
+    }
+}
+
+/**
  * @brief 导入音频文件（WAV/AIFF/FLAC/OGG 直读；MP3/M4A/AAC 经 FFmpeg）
  */
 void DASignalAnalysisUI::importAudioFile()
@@ -223,7 +265,7 @@ void DASignalAnalysisUI::importAudioFile()
     QString error;
     DASignalPtr sig = DASignalImporter::importAudioFile(dlg.filePath(), &error);
     if (!sig) {
-        mUI->addWarningLogMessage(tr("Failed to import audio: %1").arg(error));  // cn:导入音频失败：%1
+        reportError(tr("Failed to import audio: %1").arg(error));  // cn:导入音频失败：%1
         return;
     }
     addSignalAndActivate(sig);
@@ -247,7 +289,7 @@ void DASignalAnalysisUI::importDataFrame()
                                                         dlg.signalName(),
                                                         &error);
     if (!sig) {
-        mUI->addWarningLogMessage(tr("Failed to import data frame: %1").arg(error));  // cn:导入数据帧失败：%1
+        reportError(tr("Failed to import data frame: %1").arg(error));  // cn:导入数据帧失败：%1
         return;
     }
     addSignalAndActivate(sig);
@@ -266,7 +308,7 @@ void DASignalAnalysisUI::importVideoFile()
     QString error;
     DASignalPtr sig = DASignalImporter::importVideoFile(dlg.filePath(), &error);
     if (!sig) {
-        mUI->addWarningLogMessage(tr("Failed to import video: %1").arg(error));  // cn:导入视频失败：%1
+        reportError(tr("Failed to import video: %1").arg(error));  // cn:导入视频失败：%1
         return;
     }
     addSignalAndActivate(sig);
@@ -614,7 +656,7 @@ QString askSavePath(QWidget* parent, const QString& title, const QString& filter
 void DASignalAnalysisUI::exportPeaksCsv()
 {
     if (!mCurrentPeaks.isValid()) {
-        mUI->addWarningLogMessage(tr("No peak data to export."));  // cn:没有可导出的峰值数据。
+        reportError(tr("No peak data to export."));  // cn:没有可导出的峰值数据。
         return;
     }
     const QString path =
@@ -630,7 +672,7 @@ void DASignalAnalysisUI::exportPeaksCsv()
     if (callPythonExport("write_peaks_csv", args)) {
         mUI->addInfoLogMessage(tr("Peak table exported: %1").arg(path));  // cn:峰值表已导出：%1
     } else {
-        mUI->addWarningLogMessage(tr("Failed to export the peak table."));  // cn:峰值表导出失败。
+        reportError(tr("Failed to export the peak table."));  // cn:峰值表导出失败。
     }
 }
 
@@ -641,12 +683,12 @@ void DASignalAnalysisUI::exportSpectrumCsv()
 {
     DASignalPtr sig = mPage ? mPage->currentSignal() : DASignalPtr();
     if (!sig) {
-        mUI->addWarningLogMessage(tr("No signal is selected."));  // cn:未选中信号。
+        reportError(tr("No signal is selected."));  // cn:未选中信号。
         return;
     }
     const DASpectrumResult spec = spectrumForSignal(sig);
     if (!spec.isValid()) {
-        mUI->addWarningLogMessage(tr("No spectrum data to export."));  // cn:没有可导出的频谱数据。
+        reportError(tr("No spectrum data to export."));  // cn:没有可导出的频谱数据。
         return;
     }
     const QString path =
@@ -683,7 +725,7 @@ void DASignalAnalysisUI::exportSpectrumCsv()
     if (callPythonExport("write_spectrum_csv", args)) {
         mUI->addInfoLogMessage(tr("Spectrum exported: %1").arg(path));  // cn:频谱已导出：%1
     } else {
-        mUI->addWarningLogMessage(tr("Failed to export the spectrum."));  // cn:频谱导出失败。
+        reportError(tr("Failed to export the spectrum."));  // cn:频谱导出失败。
     }
 }
 
@@ -694,7 +736,7 @@ void DASignalAnalysisUI::exportHeatmapCsv()
 {
     DASignalPtr sig = mPage ? mPage->currentSignal() : DASignalPtr();
     if (!sig || !mPage) {
-        mUI->addWarningLogMessage(tr("No signal is selected."));  // cn:未选中信号。
+        reportError(tr("No signal is selected."));  // cn:未选中信号。
         return;
     }
     DASignalAnalysisView* view = mPage->viewForSignal(sig.get());
@@ -703,7 +745,7 @@ void DASignalAnalysisUI::exportHeatmapCsv()
     }
     const DAStftResult stft = view->stftResult();
     if (!stft.isValid()) {
-        mUI->addWarningLogMessage(tr("No time-frequency data to export."));  // cn:没有可导出的时频数据。
+        reportError(tr("No time-frequency data to export."));  // cn:没有可导出的时频数据。
         return;
     }
     const qint64 cells = qint64(stft.rows) * stft.columns;
@@ -726,7 +768,7 @@ void DASignalAnalysisUI::exportHeatmapCsv()
     if (callPythonExport("write_heatmap_csv", args)) {
         mUI->addInfoLogMessage(tr("Heatmap matrix exported: %1").arg(path));  // cn:热图矩阵已导出：%1
     } else {
-        mUI->addWarningLogMessage(tr("Failed to export the heatmap matrix."));  // cn:热图矩阵导出失败。
+        reportError(tr("Failed to export the heatmap matrix."));  // cn:热图矩阵导出失败。
     }
 }
 
@@ -737,7 +779,7 @@ void DASignalAnalysisUI::exportImage()
 {
     DASignalPtr sig = mPage ? mPage->currentSignal() : DASignalPtr();
     if (!sig || !mPage) {
-        mUI->addWarningLogMessage(tr("No signal is selected."));  // cn:未选中信号。
+        reportError(tr("No signal is selected."));  // cn:未选中信号。
         return;
     }
     DASignalAnalysisView* view = mPage->viewForSignal(sig.get());
@@ -753,7 +795,7 @@ void DASignalAnalysisUI::exportImage()
     if (pixmap.save(path, "PNG")) {
         mUI->addInfoLogMessage(tr("Image exported: %1").arg(path));  // cn:图片已导出：%1
     } else {
-        mUI->addWarningLogMessage(tr("Failed to export the image."));  // cn:图片导出失败。
+        reportError(tr("Failed to export the image."));  // cn:图片导出失败。
     }
 }
 
@@ -763,7 +805,7 @@ void DASignalAnalysisUI::exportImage()
 void DASignalAnalysisUI::sendPeaksToTable()
 {
     if (!mCurrentPeaks.isValid()) {
-        mUI->addWarningLogMessage(tr("No peak data to send."));  // cn:没有可发送的峰值数据。
+        reportError(tr("No peak data to send."));  // cn:没有可发送的峰值数据。
         return;
     }
     if (!mCore) {
@@ -789,7 +831,7 @@ void DASignalAnalysisUI::sendPeaksToTable()
         // cn:峰值表已作为「%1」加入数据管理器。
     } catch (const std::exception& e) {
         qWarning() << "sendPeaksToTable failed:" << e.what();
-        mUI->addWarningLogMessage(tr("Failed to send the peak table: %1").arg(QString::fromUtf8(e.what())));
+        reportError(tr("Failed to send the peak table: %1").arg(QString::fromUtf8(e.what())));
         // cn:峰值表发送失败：%1
     }
 }
@@ -879,7 +921,7 @@ void DASignalAnalysisUI::restoreState(const QByteArray& json)
                 }
             }
             if (!data.isDataFrame()) {
-                mUI->addWarningLogMessage(tr("Signal source missing: dataframe \"%1\".").arg(dfName));
+                reportError(tr("Signal source missing: dataframe \"%1\".").arg(dfName));
                 // cn:信号源缺失：数据帧「%1」。
                 continue;
             }
@@ -897,7 +939,7 @@ void DASignalAnalysisUI::restoreState(const QByteArray& json)
         } else {
             const QString path = o.value(QStringLiteral("path")).toString();
             if (!QFileInfo::exists(path)) {
-                mUI->addWarningLogMessage(tr("Signal source missing: %1").arg(path));
+                reportError(tr("Signal source missing: %1").arg(path));
                 // cn:信号源缺失：%1
                 continue;
             }
@@ -912,7 +954,7 @@ void DASignalAnalysisUI::restoreState(const QByteArray& json)
             }
         }
         if (!sig) {
-            mUI->addWarningLogMessage(tr("Failed to restore signal \"%1\": %2").arg(name, error));
+            reportError(tr("Failed to restore signal \"%1\": %2").arg(name, error));
             // cn:恢复信号「%1」失败：%2
             continue;
         }
@@ -1093,7 +1135,7 @@ void DASignalAnalysisUI::openAnalysisSettings()
     }
     DASignalPtr sig = mPage->currentSignal();
     if (!sig) {
-        mUI->addWarningLogMessage(tr("No signal is selected."));  // cn:未选中信号。
+        reportError(tr("No signal is selected."));  // cn:未选中信号。
         return;
     }
     DASignalAnalysisParams params = paramsForSignal(sig);
@@ -1161,7 +1203,7 @@ void DASignalAnalysisUI::onWorkerSpectrumReady(const DASpectrumResult& result)
 void DASignalAnalysisUI::onWorkerFailed(const QString& error)
 {
     if (mUI) {
-        mUI->addWarningLogMessage(tr("Signal analysis failed: %1").arg(error));  // cn:信号分析失败：%1
+        reportError(tr("Signal analysis failed: %1").arg(error));  // cn:信号分析失败：%1
     }
 }
 
@@ -1209,7 +1251,7 @@ void DASignalAnalysisUI::syncPlayerSource()
             actionPlay->setEnabled(false);
         }
         if (!error.isEmpty()) {
-            mUI->addWarningLogMessage(error);
+            reportError(error);
         }
         return;
     }
@@ -1272,7 +1314,7 @@ void DASignalAnalysisUI::onViewRequestHeatmap(int columns, int rows)
         const DA::DASignal* key = view->signal().get();
         if (!mLargeSignalWarned.contains(key)) {
             mLargeSignalWarned.insert(key);
-            mUI->addWarningLogMessage(
+            reportError(
                 tr("Signal is very large (> 1.5 GB as float32); the heatmap uses display-precision data.")
                 // cn:信号非常大（按 float32 计超过 1.5 吉字节），热图按显示精度降级计算。
             );
@@ -1548,7 +1590,7 @@ void DASignalAnalysisUI::retranslateUi()
     }
     if (actionImportVideo) {
         actionImportVideo->setText(tr("Import Video"));  // cn:导入视频
-        actionImportVideo->setToolTip(tr("Extract the audio track of a video file (requires FFmpeg)"));  // cn:抽取视频音频轨（需 FFmpeg）
+        refreshFFmpegAvailability();  // tooltip 按 FFmpeg 是否可用给出不同说明
     }
     // 播放
     if (actionPlay) {

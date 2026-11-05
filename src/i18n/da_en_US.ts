@@ -21947,6 +21947,10 @@ Sample rate: %2 Hz | Channels: %3 | Duration: %4 s</translation>
 <context>
     <name>DA::DASignalAnalysisUI</name>
     <message>
+        <source>FFmpeg was not detected; video import is unavailable until a path is specified.</source>
+        <translation>FFmpeg was not detected; video import is unavailable until a path is specified.</translation>
+    </message>
+    <message>
         <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="114" />
         <source>Peak table (CSV)</source>
         <translation>Peak table (CSV)</translation>
