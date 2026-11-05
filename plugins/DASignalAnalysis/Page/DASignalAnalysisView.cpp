@@ -57,6 +57,18 @@ QwtColorMap* cloneLinearColorMap(const QwtLinearColorMap* src)
     return dst;
 }
 
+/**
+ * @brief 清理峰值标记图元
+ */
+void clearPeakMarkers(QVector< QwtPlotMarker* >& markers)
+{
+    for (QwtPlotMarker* m : markers) {
+        m->detach();
+        delete m;
+    }
+    markers.clear();
+}
+
 constexpr double cEps = 1e-30;
 constexpr int cEnvelopeDebounceMs = 200;
 }  // namespace
@@ -299,6 +311,32 @@ void DASignalAnalysisView::rebuildSpectrumPlot()
         values[ i - startIdx ] = (i < amps.size()) ? amps[ i ] : 0.0;
     }
     mSpectrumCurve->setSamples(freqs, values);
+    // 峰值标记（按当前幅值口径定位；第 1 名橙红，其余主蓝）
+    clearPeakMarkers(mPeakMarkers);
+    if (mPeakMarkersVisible && mPeaks.isValid()) {
+        const QVector< double > amps = displayAmplitudes();
+        const bool isDb              = (mParams.amplitudeMode == QLatin1String("dbFS")
+                                        || mParams.amplitudeMode == QLatin1String("dbRef1"));
+        for (int i = 0; i < mPeaks.frequencies.size(); ++i) {
+            double y = 0.0;
+            if (isDb) {
+                y = 20.0 * std::log10(qMax(std::fabs(mPeaks.magnitudes.value(i) * mParams.calibration), cEps)
+                                     / qMax(dbReferenceValue(), cEps));
+            } else {
+                y = mPeaks.magnitudes.value(i) * mParams.calibration;
+            }
+            Q_UNUSED(amps)
+            auto* marker = new QwtPlotMarker();
+            marker->setXValue(mPeaks.frequencies.at(i));
+            marker->setYValue(y);
+            marker->setSymbol(new QwtSymbol(QwtSymbol::Ellipse,
+                                            QBrush(i == 0 ? QColor(206, 96, 67) : QColor(82, 128, 193)),
+                                            QPen(Qt::NoPen),
+                                            QSize(7, 7)));
+            marker->attach(chart);
+            mPeakMarkers.append(marker);
+        }
+    }
     updateAxisTitles();
     chart->setAxisAutoScale(QwtPlot::yLeft, true);
     chart->replot();
@@ -433,6 +471,24 @@ void DASignalAnalysisView::updateStftWindowRect()
     mStftWindow->setRect(rect);
     mStftWindow->setVisible(true);
     mWavePanel->chart()->replot();
+}
+
+/**
+ * @brief 峰值表数据回填（频谱图上标记峰位）
+ */
+void DASignalAnalysisView::setPeaks(const DAPeakResult& peaks)
+{
+    mPeaks = peaks;
+    rebuildSpectrumPlot();
+}
+
+/**
+ * @brief 峰值标记显隐（丝带「峰值标记」快捷开关）
+ */
+void DASignalAnalysisView::setPeakMarkersVisible(bool on)
+{
+    mPeakMarkersVisible = on;
+    rebuildSpectrumPlot();
 }
 
 /**

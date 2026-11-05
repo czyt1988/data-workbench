@@ -244,3 +244,47 @@ def test_stft_window_truncated_to_signal_length(tmp_path):
     assert r["nperseg"] == 480
     assert r["n_frames"] == 1
     assert r["columns"] == 1
+
+
+# ---------------------------------------------------------------- 峰值曲线（单趟扫描）
+
+
+def test_peak_curves_frequency_sweep(tmp_path):
+    from DASignalAnalysis import peaks
+
+    fs = 48000
+    seconds = 1.0
+    t = np.arange(int(fs * seconds)) / fs
+    # 线性上扫：频率从 500 赫兹到 2500 赫兹
+    f0, f1 = 500.0, 2500.0
+    phase = 2 * np.pi * (f0 * t + 0.5 * (f1 - f0) / seconds * t * t)
+    x = 0.5 * np.sin(phase)
+    wav = tmp_path / "sweep.wav"
+    import soundfile as sf
+
+    sf.write(str(wav), x.astype(np.float32), fs)
+
+    src = {"type": "file", "path": str(wav), "sampleRate": fs}
+    params = {
+        "stftWindowMs": 20.0,
+        "stftOverlap": 50.0,
+        "window": "hann",
+        "peakTopN": 1,
+        "peakRelDb": 40.0,
+        "peakMode": "simple",
+        "removeDc": False,
+        "detrend": "none",
+    }
+    r = peaks.compute_peak_curves_sync(src, params)
+    assert r["top_n"] == 1
+    curve = r["freq_by_rank"][0]
+    valid = curve[np.isfinite(curve)]
+    assert valid.size > 10
+    # 第 1 名频率随时间单调上升（允许个别帧抖动：整体趋势用分位比较）
+    n = valid.size
+    first_quarter = np.median(valid[: n // 4])
+    last_quarter = np.median(valid[-n // 4 :])
+    assert last_quarter > first_quarter + 1000.0
+    # 严格单调比例足够高
+    diffs = np.diff(valid)
+    assert np.mean(diffs >= 0) > 0.9

@@ -7,6 +7,7 @@
 #include "Analysis/DASignalAnalysisParams.h"
 #include "Analysis/DASpectrumResult.h"
 #include "Analysis/DASignalAnalysisWorker.h"
+#include "Analysis/DAPeakResult.h"
 
 class QMenu;
 class QActionGroup;
@@ -24,6 +25,7 @@ class DAUIInterface;
 class DAActionsInterface;
 class DASignalAnalysisPage;
 class DASignalAnalysisView;
+class DAPeakDockWidget;
 
 /**
  * @brief 信号分析插件的界面层：中央页面 + 丝带标签页 + 动作管理
@@ -85,12 +87,20 @@ private Q_SLOTS:
     void onViewRequestEnvelope(qint64 start, qint64 end, int width);
     void onViewRequestHeatmap(int columns, int rows);
     void onWorkerHeatmapReady(const DA::DAStftResult& result);
+    void onWorkerPeaksReady(const DA::DAPeakResult& result);
+    void onWorkerPeakCurvesReady(const DA::DAPeakCurveResult& result);
+    void onPeakWindowToggled(bool on);
+    void onPeakMarkerToggled(bool on);
+    void onPeakTopNChanged();
 
 private:
     void buildCenterPage();
     void buildSignalCategory();
     void buildPeakTopNMenu();
     void buildAmplitudeModeMenu();
+    void buildPeakDock();
+    // 触发当前信号的峰值表与峰值曲线计算
+    void requestPeaks(bool withCurves);
     // 导入成功后加入页面并激活依赖动作
     void addSignalAndActivate(const DA::DASignalPtr& sig);
 
@@ -170,6 +180,13 @@ public:
 
 private:
     DASignalAnalysisWorker* mWorker { nullptr };
+    // 峰值停靠窗口（右侧停靠区第三个标签页，D24）
+    DAPeakDockWidget* mPeakPanel { nullptr };
+    ads::CDockWidget* mPeakDock { nullptr };
+    bool mFirstSignalActivated { false };
+    bool mPeakCurvesRequested { false };
+    DA::DAPeakResult mCurrentPeaks;
+    DA::DAPeakCurveResult mCurrentCurves;
     // 每个信号标签页记住上次生效参数（D21）
     QHash< const DA::DASignal*, DA::DASignalAnalysisParams > mParamsPerSignal;
     // 频谱结果缓存（随信号对象存活，参数变化才重算）

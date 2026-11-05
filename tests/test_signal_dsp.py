@@ -157,3 +157,46 @@ def test_stft_parameter_mapping_helpers():
     assert spectral.hop_from_overlap(4800, 0.5) == 2400
     assert spectral.frame_count(10000, 1000, 500) == 19  # (10000-1000)//500 + 1
     assert spectral.frame_count(500, 1000, 500) == 0
+
+
+# ---------------------------------------------------------------- 峰值查找
+
+
+def test_find_peaks_three_tones_order():
+    t = np.arange(48000) / FS
+    x = (
+        0.5 * np.sin(2 * np.pi * 1000.0 * t)
+        + 0.3 * np.sin(2 * np.pi * 1500.0 * t)
+        + 0.2 * np.sin(2 * np.pi * 3000.0 * t)
+    )
+    f, a = spectral.amplitude_spectrum(x, FS, window="hann")
+    res = spectral.find_peaks_topn(a, f, n=3, rel_db=80.0)
+    freqs = res["frequencies"]
+    mags = res["magnitudes"]
+    # 按幅值降序：1 千赫（0.5）→ 1.5 千赫（0.3）→ 3 千赫（0.2）
+    assert freqs.size == 3
+    assert abs(freqs[0] - 1000.0) < 10.0
+    assert abs(freqs[1] - 1500.0) < 10.0
+    assert abs(freqs[2] - 3000.0) < 10.0
+    assert mags[0] > mags[1] > mags[2]
+
+
+def test_find_peaks_relative_threshold_filters_skirt():
+    t = np.arange(48000) / FS
+    # 强峰 + -60 dB 的小峰：相对门限 40 dB 应排除小峰
+    x = np.sin(2 * np.pi * 1000.0 * t) + 0.001 * np.sin(2 * np.pi * 5000.0 * t)
+    f, a = spectral.amplitude_spectrum(x, FS, window="hann")
+    res = spectral.find_peaks_topn(a, f, n=10, rel_db=40.0)
+    assert res["frequencies"].size == 1
+    assert abs(res["frequencies"][0] - 1000.0) < 10.0
+
+
+def test_find_peaks_prominence_filters_noise_bumps():
+    rng = np.random.default_rng(11)
+    t = np.arange(48000) / FS
+    x = 0.6 * np.sin(2 * np.pi * 1000.0 * t) + rng.normal(0, 0.05, t.size)
+    f, a = spectral.amplitude_spectrum(x, FS, window="hann")
+    res = spectral.find_peaks_topn(a, f, n=10, prominence=0.2, rel_db=80.0)
+    # 只应留下主峰（噪声起伏的突出度远小于 0.2）
+    assert res["frequencies"].size >= 1
+    assert abs(res["frequencies"][0] - 1000.0) < 10.0

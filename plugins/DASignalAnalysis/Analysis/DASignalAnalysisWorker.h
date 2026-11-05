@@ -8,6 +8,7 @@
 #include "Analysis/DASignalAnalysisParams.h"
 #include "Analysis/DASpectrumResult.h"
 #include "Analysis/DAStftResult.h"
+#include "Analysis/DAPeakResult.h"
 
 class QTimer;
 
@@ -39,6 +40,10 @@ public:
                         const DASignalAnalysisParams& params,
                         int columns,
                         int rows);
+    // 发起整段峰值表计算（异步）
+    bool computePeaks(const DASignalPtr& signal, int channel, const DASignalAnalysisParams& params);
+    // 发起每帧前 N 峰值曲线扫描（异步，单趟扫描，可能耗时几十秒）
+    bool computePeakCurves(const DASignalPtr& signal, int channel, const DASignalAnalysisParams& params);
     // 取消全部任务
     void cancel();
     // 是否有任务在跑
@@ -51,6 +56,10 @@ Q_SIGNALS:
     void envelopeReady(const QVector< double >& xs, const QVector< double >& mins, const QVector< double >& maxs);
     // 时频显示栅格结果
     void heatmapReady(const DA::DAStftResult& result);
+    // 峰值表结果
+    void peaksReady(const DA::DAPeakResult& result);
+    // 每帧前 N 峰值曲线结果
+    void peakCurvesReady(const DA::DAPeakCurveResult& result);
     void failed(const QString& error);
 
 private Q_SLOTS:
@@ -61,7 +70,9 @@ private:
     {
         SpectrumTask,
         EnvelopeTask,
-        HeatmapTask
+        HeatmapTask,
+        PeaksTask,
+        PeakCurvesTask
     };
     struct TaskEntry
     {

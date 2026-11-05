@@ -18,9 +18,11 @@
 #include "DAActionsInterface.h"
 #include "DADataManagerInterface.h"
 #include "DAStatusBarInterface.h"
+#include "DockAreaWidget.h"
 // DASignalAnalysis
 #include "Page/DASignalAnalysisPage.h"
 #include "Page/DASignalAnalysisView.h"
+#include "Page/DAPeakDockWidget.h"
 #include "Dialogs/DASignalImportDialog.h"
 #include "Dialogs/DASignalAnalysisSettingDialog.h"
 #include "Signal/DASignalImporter.h"
@@ -91,12 +93,27 @@ bool DASignalAnalysisUI::initialize(DACoreInterface* core)
     if (actionAnalysisSetting) {
         connect(actionAnalysisSetting, &QAction::triggered, this, &DASignalAnalysisUI::openAnalysisSettings);
     }
+    // 峰值停靠窗口（右侧停靠区，与设置/智能体同区做标签页，D24）
+    buildPeakDock();
     // 后台计算协调器（Python 守护线程 + 定时轮询）
     mWorker = new DASignalAnalysisWorker(this);
     connect(mWorker, &DASignalAnalysisWorker::progressChanged, this, &DASignalAnalysisUI::onWorkerProgress);
     connect(mWorker, &DASignalAnalysisWorker::spectrumReady, this, &DASignalAnalysisUI::onWorkerSpectrumReady);
     connect(mWorker, &DASignalAnalysisWorker::envelopeReady, this, &DASignalAnalysisUI::onWorkerEnvelopeReady);
     connect(mWorker, &DASignalAnalysisWorker::heatmapReady, this, &DASignalAnalysisUI::onWorkerHeatmapReady);
+    connect(mWorker, &DASignalAnalysisWorker::peaksReady, this, &DASignalAnalysisUI::onWorkerPeaksReady);
+    connect(mWorker, &DASignalAnalysisWorker::peakCurvesReady, this, &DASignalAnalysisUI::onWorkerPeakCurvesReady);
+    if (actionPeakWindow) {
+        connect(actionPeakWindow, &QAction::toggled, this, &DASignalAnalysisUI::onPeakWindowToggled);
+    }
+    if (actionPeakMarker) {
+        connect(actionPeakMarker, &QAction::toggled, this, &DASignalAnalysisUI::onPeakMarkerToggled);
+    }
+    if (actionPeakTop10) {
+        connect(actionPeakTop10, &QAction::triggered, this, &DASignalAnalysisUI::onPeakTopNChanged);
+        connect(actionPeakTop20, &QAction::triggered, this, &DASignalAnalysisUI::onPeakTopNChanged);
+        connect(actionPeakTop50, &QAction::triggered, this, &DASignalAnalysisUI::onPeakTopNChanged);
+    }
     connect(mWorker, &DASignalAnalysisWorker::failed, this, &DASignalAnalysisUI::onWorkerFailed);
     return true;
 }
@@ -350,6 +367,70 @@ void DASignalAnalysisUI::buildSignalCategory()
 }
 
 /**
+ * @brief 构建峰值停靠窗口（右侧停靠区，与设置/智能体同区做标签页）
+ */
+void DASignalAnalysisUI::buildPeakDock()
+{
+    if (nullptr == mUI) {
+        return;
+    }
+    DADockingAreaInterface* dockingArea = mUI->getDockingArea();
+    if (nullptr == dockingArea) {
+        return;
+    }
+    mPeakPanel = new DAPeakDockWidget();
+    mPeakPanel->setObjectName(QStringLiteral("da-signal-peak-panel"));
+    // 与「设置」同区作为标签页
+    ads::CDockWidget* settingDock =
+        dockingArea->dockingAreaToDockWidget(DADockingAreaInterface::DockingAreaSetting);
+    ads::CDockAreaWidget* settingArea = settingDock ? settingDock->dockAreaWidget() : nullptr;
+    if (settingArea) {
+        mPeakDock = dockingArea->createDockWidgetAsTab(mPeakPanel, tr("Peaks"), settingArea);  // cn:峰值
+    } else {
+        mPeakDock = dockingArea->createDockWidget(mPeakPanel, ads::RightDockWidgetArea, tr("Peaks"));
+        // cn:峰值
+    }
+    if (mPeakDock) {
+        mPeakDock->setObjectName(QStringLiteral("da-dock-signal-peaks"));
+        mPeakDock->setWindowTitle(tr("Peaks"));  // cn:峰值
+        // 首次显示峰值窗口时按需计算每帧前 N 峰值曲线
+        connect(mPeakDock, &ads::CDockWidget::visibilityChanged, this, [this](bool visible) {
+            if (visible && !mPeakCurvesRequested) {
+                requestPeaks(true);
+            }
+        });
+    }
+    connect(mPeakPanel, &DAPeakDockWidget::sendToTableRequested, this, [this]() {
+        mUI->addInfoLogMessage(tr("Peak table export is available after the export milestone."));
+        // cn:峰值表导出在导出里程碑后可用。
+    });
+    connect(mPeakPanel, &DAPeakDockWidget::exportCsvRequested, this, [this]() {
+        mUI->addInfoLogMessage(tr("Peak table export is available after the export milestone."));
+        // cn:峰值表导出在导出里程碑后可用。
+    });
+}
+
+/**
+ * @brief 触发当前信号的峰值表（与可选峰值曲线）计算
+ */
+void DASignalAnalysisUI::requestPeaks(bool withCurves)
+{
+    if (nullptr == mPage || nullptr == mWorker) {
+        return;
+    }
+    DASignalPtr sig = mPage->currentSignal();
+    if (!sig || !sig->isValid()) {
+        return;
+    }
+    const DASignalAnalysisParams params = paramsForSignal(sig);
+    mWorker->computePeaks(sig, 0, params);
+    if (withCurves && !mPeakCurvesRequested) {
+        mPeakCurvesRequested = true;
+        mWorker->computePeakCurves(sig, 0, params);
+    }
+}
+
+/**
  * @brief 构建「前 N 个峰值」下拉菜单（10/20/50，互斥）
  */
 void DASignalAnalysisUI::buildPeakTopNMenu()
@@ -586,6 +667,8 @@ void DASignalAnalysisUI::onWorkerSpectrumReady(const DASpectrumResult& result)
         // cn:频谱计算完成：分辨率 %1 赫兹，%2 个频点
     }
     Q_EMIT spectrumUpdated();
+    // 同时刷新峰值表（整段频谱的前 N 峰）
+    requestPeaks(false);
 }
 
 /**
@@ -644,6 +727,91 @@ void DASignalAnalysisUI::onWorkerHeatmapReady(const DAStftResult& result)
     if (mPendingHeatmapView) {
         mPendingHeatmapView->setStft(result);
     }
+}
+
+/**
+ * @brief 峰值表结果回填（表模型 + 频谱图标记）
+ */
+void DASignalAnalysisUI::onWorkerPeaksReady(const DAPeakResult& result)
+{
+    mCurrentPeaks = result;
+    if (mPeakPanel) {
+        const DASignalAnalysisParams params =
+            (mPage && mPage->currentSignal()) ? paramsForSignal(mPage->currentSignal())
+                                              : DASignalAnalysisParams::defaults();
+        mPeakPanel->setAmplitudeDisplay(mAmplitudeMode, mDbReference, params.calibration, params.unit);
+        mPeakPanel->setPeaks(result);
+        mPeakPanel->setPeakCurves(mCurrentCurves);
+    }
+    if (mPage) {
+        if (DASignalAnalysisView* view = mPage->viewForSignal(mPendingSignal)) {
+            view->setPeaks(result);
+        }
+    }
+}
+
+/**
+ * @brief 每帧前 N 峰值曲线结果回填
+ */
+void DASignalAnalysisUI::onWorkerPeakCurvesReady(const DAPeakCurveResult& result)
+{
+    mCurrentCurves = result;
+    if (mPeakPanel) {
+        mPeakPanel->setPeakCurves(result);
+    }
+}
+
+/**
+ * @brief 峰值窗口显隐切换（丝带「峰值窗口」按钮）
+ */
+void DASignalAnalysisUI::onPeakWindowToggled(bool on)
+{
+    if (!mPeakDock) {
+        return;
+    }
+    mPeakDock->toggleView(on);
+    if (on && !mPeakCurvesRequested) {
+        requestPeaks(true);
+    }
+}
+
+/**
+ * @brief 峰值标记显隐（丝带快捷键开关）
+ */
+void DASignalAnalysisUI::onPeakMarkerToggled(bool on)
+{
+    if (mPage) {
+        if (DASignalAnalysisView* view = mPage->viewForSignal(mPage->currentSignal().get())) {
+            view->setPeakMarkersVisible(on);
+        }
+    }
+    if (on && mCurrentPeaks.frequencies.isEmpty()) {
+        requestPeaks(false);
+    }
+}
+
+/**
+ * @brief 前 N 改变（10/20/50）：更新参数并重算峰值表与曲线
+ */
+void DASignalAnalysisUI::onPeakTopNChanged()
+{
+    int topN = 10;
+    if (actionPeakTop20 && actionPeakTop20->isChecked()) {
+        topN = 20;
+    } else if (actionPeakTop50 && actionPeakTop50->isChecked()) {
+        topN = 50;
+    }
+    if (mPage) {
+        DASignalPtr sig = mPage->currentSignal();
+        if (!sig) {
+            return;
+        }
+        DASignalAnalysisParams params = paramsForSignal(sig);
+        params.peakTopN               = topN;
+        mParamsPerSignal[ sig.get() ] = params;
+    }
+    mPeakCurvesRequested = false;  // 名次数改变后需要重扫曲线
+    requestPeaks(true);
 }
 
 /**

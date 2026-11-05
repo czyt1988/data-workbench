@@ -6,6 +6,7 @@
 #include "Analysis/DASignalAnalysisParams.h"
 #include "Analysis/DASpectrumResult.h"
 #include "Analysis/DAStftResult.h"
+#include "Analysis/DAPeakResult.h"
 
 class QSlider;
 class QComboBox;
@@ -53,6 +54,10 @@ public:
     void setEnvelope(const QVector< double >& xs, const QVector< double >& mins, const QVector< double >& maxs);
     // 时频显示栅格回填（外部计算完成后调用）
     void setStft(const DAStftResult& result);
+    // 峰值表数据回填（在频谱图上标出峰位）
+    void setPeaks(const DAPeakResult& peaks);
+    // 峰值标记显隐（丝带「峰值标记」开关）
+    void setPeakMarkersVisible(bool on);
     // 当前时间（秒）
     double currentTime() const;
     // 幅值显示模式（不重算，只重绘）
@@ -133,6 +138,10 @@ private:
     bool mFollowSlider { false };
     double mDbFloor { -80.0 };
     DASignalChartPanel* mHeatmapPanel { nullptr };
+    // 峰值标记
+    DAPeakResult mPeaks;
+    bool mPeakMarkersVisible { false };
+    QVector< QwtPlotMarker* > mPeakMarkers;
     QComboBox* mColormapCombo { nullptr };
     QDoubleSpinBox* mDbFloorSpin { nullptr };
     QCheckBox* mFollowSliderCheck { nullptr };

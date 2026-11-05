@@ -221,6 +221,70 @@ bool DASignalAnalysisWorker::computeHeatmap(const DASignalPtr& signal,
 }
 
 /**
+ * @brief 发起整段峰值表计算
+ */
+bool DASignalAnalysisWorker::computePeaks(const DASignalPtr& signal,
+                                          int channel,
+                                          const DASignalAnalysisParams& params)
+{
+    if (!signal || !signal->isValid()) {
+        Q_EMIT failed(tr("Signal is invalid or not loaded."));  // cn:信号无效或未载入。
+        return false;
+    }
+    try {
+        DAPyModule peaks      = namedModule("DASignalAnalysis.peaks");
+        pybind11::dict source = buildSourceDict(signal, channel);
+        pybind11::dict p      = paramsToDict(params);
+        pybind11::object res  = peaks.attr("compute_peaks_async")(source, p);
+        TaskEntry entry;
+        entry.id   = QString::fromStdString(res.cast< std::string >());
+        entry.kind = PeaksTask;
+        if (entry.id.isEmpty()) {
+            return false;
+        }
+        mTasks[ entry.id ] = entry;
+        updateTimer();
+        return true;
+    } catch (const std::exception& e) {
+        qWarning() << "DASignalAnalysisWorker::computePeaks:" << e.what();
+        Q_EMIT failed(QString::fromUtf8(e.what()));
+        return false;
+    }
+}
+
+/**
+ * @brief 发起每帧前 N 峰值曲线扫描
+ */
+bool DASignalAnalysisWorker::computePeakCurves(const DASignalPtr& signal,
+                                               int channel,
+                                               const DASignalAnalysisParams& params)
+{
+    if (!signal || !signal->isValid()) {
+        Q_EMIT failed(tr("Signal is invalid or not loaded."));  // cn:信号无效或未载入。
+        return false;
+    }
+    try {
+        DAPyModule peaks      = namedModule("DASignalAnalysis.peaks");
+        pybind11::dict source = buildSourceDict(signal, channel);
+        pybind11::dict p      = paramsToDict(params);
+        pybind11::object res  = peaks.attr("compute_peak_curves_async")(source, p);
+        TaskEntry entry;
+        entry.id   = QString::fromStdString(res.cast< std::string >());
+        entry.kind = PeakCurvesTask;
+        if (entry.id.isEmpty()) {
+            return false;
+        }
+        mTasks[ entry.id ] = entry;
+        updateTimer();
+        return true;
+    } catch (const std::exception& e) {
+        qWarning() << "DASignalAnalysisWorker::computePeakCurves:" << e.what();
+        Q_EMIT failed(QString::fromUtf8(e.what()));
+        return false;
+    }
+}
+
+/**
  * @brief 取消全部任务
  */
 void DASignalAnalysisWorker::cancel()
@@ -310,6 +374,34 @@ void DASignalAnalysisWorker::poll()
                 Q_EMIT envelopeReady(toDoubleVector(r[ "x" ]),
                                      toDoubleVector(r[ "mins" ]),
                                      toDoubleVector(r[ "maxs" ]));
+            } else if (entry.kind == PeaksTask) {
+                DAPyModule peaks     = namedModule("DASignalAnalysis.peaks");
+                pybind11::object raw = peaks.attr("take_result")(entry.id.toStdString());
+                if (raw.is_none()) {
+                    continue;
+                }
+                pybind11::dict r = pybind11::cast< pybind11::dict >(raw);
+                DAPeakResult peakResult;
+                peakResult.frequencies  = toDoubleVector(r[ "frequencies" ]);
+                peakResult.magnitudes   = toDoubleVector(r[ "magnitudes" ]);
+                peakResult.relDb        = toDoubleVector(r[ "rel_db" ]);
+                peakResult.share        = toDoubleVector(r[ "share" ]);
+                peakResult.resolutionHz = r[ "resolution_hz" ].cast< double >();
+                Q_EMIT peaksReady(peakResult);
+            } else if (entry.kind == PeakCurvesTask) {
+                DAPyModule peaks     = namedModule("DASignalAnalysis.peaks");
+                pybind11::object raw = peaks.attr("take_result")(entry.id.toStdString());
+                if (raw.is_none()) {
+                    continue;
+                }
+                pybind11::dict r = pybind11::cast< pybind11::dict >(raw);
+                DAPeakCurveResult curves;
+                curves.times      = toDoubleVector(r[ "times" ]);
+                curves.freqByRank = toDoubleVector(r[ "freq_by_rank" ]);
+                curves.topN       = r[ "top_n" ].cast< int >();
+                curves.nFrames    = r[ "n_frames" ].cast< int >();
+                curves.nperseg    = r[ "nperseg" ].cast< int >();
+                Q_EMIT peakCurvesReady(curves);
             } else {
                 DAPyModule stft      = namedModule("DASignalAnalysis.stft");
                 pybind11::object raw = stft.attr("take_result")(entry.id.toStdString());
