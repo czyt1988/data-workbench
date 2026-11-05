@@ -126,6 +126,9 @@ void DAAppActions::buildDataAction()
     actionTableBorder        = createAction(UiNames::Action::TableBorder, ":/DAGui/icon/cellBorders.svg");
     // 单元格大小 action（A3；图标取 DAGui 图标库，菜单在 DAAppTableActionHandler 构建）
     actionCellSize           = createAction(UiNames::Action::CellSize, ":/DAGui/icon/cellSize.svg");
+    // 自动换行 action（A4 轻量；可勾选开关，Ribbon「对齐」面板）
+    actionWrapText           = createAction(UiNames::Action::WrapText, ":/DAGui/icon/wrapText.svg");
+    actionWrapText->setCheckable(true);
     // 数据工具 action（004；图标取 DAGui 图标库，不引用 APP 资源）
     actionComputedColumn              = createAction(UiNames::Action::ComputedColumn, ":/DAGui/icon/computed-column.svg");
     actionRecomputeAllComputedColumns = createAction(UiNames::Action::RecomputeAllComputedColumns, ":/DAGui/icon/refresh-all.svg");
@@ -714,6 +717,8 @@ void DAAppActions::retranslateUi()
     actionTableBorder->setToolTip(tr("Apply or clear cell borders of the selected area"));  // cn:对选中区应用或清除单元格边框
     actionCellSize->setText(tr("Cell Size"));                         // cn:单元格大小
     actionCellSize->setToolTip(tr("Adjust column width or row height (auto-fit / set value)"));  // cn:调整列宽或行高（自适应/设置数值）
+    actionWrapText->setText(tr("Wrap Text"));                         // cn:自动换行
+    actionWrapText->setToolTip(tr("Wrap the text of selected cells (raise row height manually if needed)"));  // cn:选中单元格文字自动换行（需要时用「单元格大小」手动调高行高）
     actionComputedColumn->setText(tr("New Computed Column..."));      // cn:新建计算列...
     actionComputedColumn->setToolTip(tr("Create a new column computed from a Python expression or code snippet of other columns"));  // cn:用 Python 表达式/代码段基于其他列创建新列
     actionRecomputeAllComputedColumns->setText(tr("Recompute All"));  // cn:全部重算

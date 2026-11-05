@@ -104,11 +104,12 @@ classDiagram
 </table-metadata>
 ```
 
-样式内层（`column-style` / `row-style` / `cell` 的子元素）除 `background` / `foreground` / `font` 外，A1/A2 起新增两个可缺标签：
+样式内层（`column-style` / `row-style` / `cell` 的子元素）除 `background` / `foreground` / `font` 外，A1/A2/A4 起新增三个可缺标签：
 
 ```xml
 <alignment horizontal="right" vertical="bottom"/>   <!-- 缺属性 = 该轴未设置 -->
 <border sides="lrtb" color="#ff727272" width="1"/>  <!-- sides 为 l/r/t/b 子集；空串 = 显式无框线 -->
+<wrap on="1"/>                                     <!-- 自动换行（A4 轻量：只改绘制，不改行高），缺标签 = 未设置 -->
 ```
 
 缺失即「未设置」，与旧工程完全兼容，不升 schema 版本（`fromXml` 忽略未知标签，旧版本读新文件时忽略新标签）。
@@ -143,7 +144,7 @@ classDiagram
 
 | 层 | 内容 | 状态 |
 |----|------|------|
-| ① 静态样式 | `DATableStyleManager` 三层 merge（列→行→单元格）后叠加 bg/fg/font，对齐写入 `opt.displayAlignment` | 已实现（对齐 A1） |
+| ① 静态样式 | `DATableStyleManager` 三层 merge（列→行→单元格）后叠加 bg/fg/font，对齐写入 `opt.displayAlignment`，换行置 `opt.features` 的 `WrapText` 位 | 已实现（对齐 A1、换行 A4） |
 | ② 持久装饰 | 条件格式规则求值 → 背景/前景（`DATableConditionalFormatStore::evaluate` 静态纯函数）；不改对齐/边框 | 已实现（003） |
 | ③ 瞬态装饰 | `DATableHighlightOverlay` 查找命中/校验违规，语义色半透明覆盖背景 | 已实现 |
 | ④ 数据条 | 背景之上、文字之下按列 min/max 归一化画条（`fillRect`，2px 内边距） | 已实现（003） |

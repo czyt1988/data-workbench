@@ -207,12 +207,44 @@ void DATableCellStyle::setBorder(quint8 sides, const QColor& color, int width)
 }
 
 /**
+ * @brief 是否自动换行
+ * @return 换行返回 true
+ */
+bool DATableCellStyle::wrapWord() const
+{
+    return mWrapWord;
+}
+
+/**
+ * @brief 设置自动换行，同时置 wrapWordValid=true
+ *
+ * 轻量方案（A4）：只改绘制（Qt::TextWordWrap），行高不随内容增长；
+ * 需要更高行高时用「单元格大小 → 设置行高」手动调整。
+ * @param on 是否换行
+ */
+void DATableCellStyle::setWrapWord(bool on)
+{
+    mWrapWord      = on;
+    mWrapWordValid = true;
+}
+
+/**
+ * @brief 自动换行是否已设置
+ * @return 已设置返回 true
+ */
+bool DATableCellStyle::wrapWordValid() const
+{
+    return mWrapWordValid;
+}
+
+/**
  * @brief 所有属性是否全部未设置
  * @return 全部 valid 为 false 时返回 true
  */
 bool DATableCellStyle::isNull() const
 {
-    return !mBackgroundValid && !mForegroundValid && !mFontValid && !mAlignmentValid && !mBorderValid;
+    return !mBackgroundValid && !mForegroundValid && !mFontValid && !mAlignmentValid && !mBorderValid
+        && !mWrapWordValid;
 }
 
 /**
@@ -243,6 +275,10 @@ DATableCellStyle& DATableCellStyle::mergeFrom(const DATableCellStyle& other)
         mBorderColor = other.mBorderColor;
         mBorderWidth = other.mBorderWidth;
         mBorderValid = true;
+    }
+    if (other.mWrapWordValid) {
+        mWrapWord      = other.mWrapWord;
+        mWrapWordValid = true;
     }
     return *this;
 }
@@ -323,6 +359,11 @@ void DATableCellStyle::toXml(QDomDocument& doc, QDomElement& e) const
         }
         bd.setAttribute(QStringLiteral("width"), mBorderWidth);
         e.appendChild(bd);
+    }
+    if (mWrapWordValid) {
+        QDomElement wr = doc.createElement(QStringLiteral("wrap"));
+        wr.setAttribute(QStringLiteral("on"), mWrapWord ? 1 : 0);
+        e.appendChild(wr);
     }
 }
 
@@ -416,6 +457,8 @@ bool DATableCellStyle::fromXml(const QDomElement& e)
             QColor c;
             compat::setNamedColor(c, child.attribute(QStringLiteral("color")));
             setBorder(sides, c, child.attribute(QStringLiteral("width"), "1").toInt());
+        } else if (tag == QLatin1String("wrap")) {
+            setWrapWord(child.attribute(QStringLiteral("on"), "1").toInt() != 0);
         }
         // 未知标签忽略（前向兼容）
         n = n.nextSibling();

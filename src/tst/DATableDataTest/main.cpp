@@ -433,6 +433,9 @@ private Q_SLOTS:
     void testStyleDelegateAlignmentAndBorderPixels();
     // A3：列宽自适应/设置列宽/设置行高（落库 + 投影一致，不进撤销栈）
     void testCellSizeCommands();
+    // A4 轻量：自动换行（XML 往返/merge/委派像素：折行后文字纵向范围明显变大）
+    void testCellStyleWrapWord();
+    void testStyleDelegateWrapTextPixels();
     // 视图状态子存储与元数据注册表
     void testViewStateStore();
     void testMetadataRegistry();
@@ -1797,6 +1800,102 @@ void DATableDataTest::testCellSizeCommands()
     if (w.getUndoStack()) {
         QCOMPARE(w.getUndoStack()->count(), undoBefore);
     }
+}
+
+// A4 轻量：自动换行样式位——XML 往返（含显式关闭）与 merge 语义
+void DATableDataTest::testCellStyleWrapWord()
+{
+    DA::DATableCellStyle s;
+    s.setWrapWord(true);
+    QDomDocument doc;
+    QDomElement root = doc.createElement(QStringLiteral("style"));
+    doc.appendChild(root);
+    s.toXml(doc, root);
+    DA::DATableCellStyle r;
+    QVERIFY(r.fromXml(root));
+    QVERIFY(r.wrapWordValid());
+    QVERIFY(r.wrapWord());
+
+    // 显式关闭：valid=true 且 wrapWord=false（与"未设置"区分）
+    DA::DATableCellStyle off;
+    off.setWrapWord(false);
+    QDomDocument doc2;
+    QDomElement root2 = doc2.createElement(QStringLiteral("style"));
+    doc2.appendChild(root2);
+    off.toXml(doc2, root2);
+    DA::DATableCellStyle r2;
+    QVERIFY(r2.fromXml(root2));
+    QVERIFY(r2.wrapWordValid());
+    QVERIFY(!r2.wrapWord());
+
+    // merge：未设置不覆盖，已设置才覆盖
+    DA::DATableCellStyle base;
+    base.setWrapWord(true);
+    DA::DATableCellStyle emptyOverlay;
+    base.mergeFrom(emptyOverlay);
+    QVERIFY(base.wrapWord());
+    base.mergeFrom(off);
+    QVERIFY(base.wrapWordValid());
+    QVERIFY(!base.wrapWord());
+
+    // isNull 计入 wrapWord
+    QVERIFY(DA::DATableCellStyle().isNull());
+    DA::DATableCellStyle onlyWrap;
+    onlyWrap.setWrapWord(true);
+    QVERIFY(!onlyWrap.isNull());
+}
+
+// A4 轻量：委派像素断言——同一长文本，换行后文字纵向范围明显变大（折成多行）
+void DATableDataTest::testStyleDelegateWrapTextPixels()
+{
+    const int cellW = 70;
+    const int cellH = 80;
+    DA::DATableStyleManager mgr;
+    DA::DATableStyleItemDelegate dlg(&mgr, nullptr);
+    QStandardItemModel model(1, 2);
+    // 需用带空格的多词文本：QCommonStyle 的 WrapText 是词边界折行（WordWrap），
+    // 无空格的超长单词不会断行（与 Excel 一致）
+    const QString longText = QStringLiteral("alpha beta gamma delta epsilon zeta eta theta");
+    model.setData(model.index(0, 0), longText);
+    model.setData(model.index(0, 1), longText);
+
+    DA::DATableCellStyle noWrap;  // 未设置 = 默认不换行
+    DA::DATableCellStyle wrap;
+    wrap.setWrapWord(true);
+    mgr.setCellStyle(0, 0, noWrap);
+    mgr.setCellStyle(0, 1, wrap);
+
+    QImage img(cellW * 2, cellH, QImage::Format_ARGB32);
+    img.fill(Qt::white);
+    {
+        QPainter p(&img);
+        QStyleOptionViewItem opt;
+        opt.rect  = QRect(0, 0, cellW, cellH);
+        opt.font  = QApplication::font();
+        opt.state = QStyle::State_Enabled;
+        dlg.paint(&p, opt, model.index(0, 0));
+        opt.rect = QRect(cellW, 0, cellW, cellH);
+        dlg.paint(&p, opt, model.index(0, 1));
+    }
+    // 每半区的深色文字像素纵向跨度
+    auto darkExtent = [ &img ](int x0, int x1) {        int minY = img.height();
+        int maxY = -1;
+        for (int y = 0; y < img.height(); ++y) {
+            for (int x = x0 + 2; x < x1 - 2; ++x) {
+                const QColor c = img.pixelColor(x, y);
+                if (c.red() < 120 && c.green() < 120 && c.blue() < 120) {
+                    minY = qMin(minY, y);
+                    maxY = qMax(maxY, y);
+                }
+            }
+        }
+        return maxY >= 0 ? maxY - minY : -1;
+    };
+    const int noWrapExtent = darkExtent(0, cellW);
+    const int wrapExtent   = darkExtent(cellW, cellW * 2);
+    QVERIFY2(noWrapExtent > 0, "no-wrap cell text not painted");
+    QVERIFY2(wrapExtent > 0, "wrap cell text not painted");
+    QVERIFY2(wrapExtent > noWrapExtent + 6, "wrapped text should span more vertical space than a single line");
 }
 
 // DATableViewStateStore：XML round-trip（列宽按名/行头宽）、renameColumn 迁移、

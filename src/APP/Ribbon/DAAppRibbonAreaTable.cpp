@@ -224,11 +224,13 @@ void DAAppRibbonArea::buildContextCategoryTableStyle(SARibbonContextCategory* co
     mPannelDataframeStyleFont->addWidget(mWidgetTableFont, SARibbonPanelItem::Large);
 
     // 对齐面板（A1）：水平（左/居中/右）+ 垂直（顶端/居中/底端）两组独立互斥按钮，
-    // 点击即对选中区应用（单条命令，一次 Ctrl+Z 全撤）
+    // 点击即对选中区应用（单条命令，一次 Ctrl+Z 全撤）；
+    // 右侧可勾选「自动换行」（A4 轻量：只改绘制，需配合手动行高）
     mPannelDataframeStyleAlign = mCategoryDataframeStyle->addPanel(tr("Alignment"));  // cn:对齐
     mPannelDataframeStyleAlign->setObjectName(QString::fromUtf8(UiNames::Ribbon::DataFrameStyleAlignPanel));
     mWidgetTableAlign = new DATextAlignmentEditWidget(mPannelDataframeStyleAlign);
     mPannelDataframeStyleAlign->addWidget(mWidgetTableAlign, SARibbonPanelItem::Large);
+    mPannelDataframeStyleAlign->addMediumAction(mActions->actionWrapText);
 
     // 边框面板（A2）：大按钮下拉预设（全框线/外框线/无框线/上/下/左/右框线），
     // 菜单在 DAAppTableActionHandler 构建（aboutToShow 重填，随语言刷新）
