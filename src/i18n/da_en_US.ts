@@ -2883,6 +2883,16 @@
     </message>
     <message>
         <location line="+1"/>
+        <source>Borders</source>
+        <translation>Borders</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Apply or clear cell borders of the selected area</source>
+        <translation>Apply or clear cell borders of the selected area</translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>New Computed Column...</source>
         <translation>New Computed Column...</translation>
     </message>
@@ -3649,6 +3659,41 @@
         <location line="-1552"/>
         <source>No active table</source>
         <translation>No active table</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>All Borders</source>
+        <translation>All Borders</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Outside Borders</source>
+        <translation>Outside Borders</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>No Border</source>
+        <translation>No Border</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Top Border</source>
+        <translation>Top Border</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Bottom Border</source>
+        <translation>Bottom Border</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Left Border</source>
+        <translation>Left Border</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Right Border</source>
+        <translation>Right Border</translation>
     </message>
     <message>
         <location line="+1940"/>
@@ -4458,6 +4503,16 @@
         <location line="+347"/>
         <source>Font</source>
         <translation>Font</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Alignment</source>
+        <translation>Alignment</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Borders</source>
+        <translation>Borders</translation>
     </message>
     <message>
         <location line="-346"/>
@@ -21282,4 +21337,38 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation>e.g. tmp = A * 2, then np.where(tmp &gt; 0, tmp, 0)</translation>
     </message>
 </context>
+<context>
+    <name>DA::DATextAlignmentEditWidget</name>
+    <message>
+        <location filename="../3rdparty/DAWidgets/src/DATextAlignmentEditWidget.cpp"/>
+        <source>Align Left</source>
+        <translation>Align Left</translation>
+    </message>
+    <message>
+        <location filename="../3rdparty/DAWidgets/src/DATextAlignmentEditWidget.cpp"/>
+        <source>Align Center</source>
+        <translation>Align Center</translation>
+    </message>
+    <message>
+        <location filename="../3rdparty/DAWidgets/src/DATextAlignmentEditWidget.cpp"/>
+        <source>Align Right</source>
+        <translation>Align Right</translation>
+    </message>
+    <message>
+        <location filename="../3rdparty/DAWidgets/src/DATextAlignmentEditWidget.cpp"/>
+        <source>Align Top</source>
+        <translation>Align Top</translation>
+    </message>
+    <message>
+        <location filename="../3rdparty/DAWidgets/src/DATextAlignmentEditWidget.cpp"/>
+        <source>Align Middle</source>
+        <translation>Align Middle</translation>
+    </message>
+    <message>
+        <location filename="../3rdparty/DAWidgets/src/DATextAlignmentEditWidget.cpp"/>
+        <source>Align Bottom</source>
+        <translation>Align Bottom</translation>
+    </message>
+</context>
+
 </TS>

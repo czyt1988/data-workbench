@@ -73,6 +73,7 @@
 #include "Dialog/DAWorkbenchAboutDialog.h"
 // DAWidgets
 #include "DAFontEditPannelWidget.h"
+#include "DATextAlignmentEditWidget.h"
 #include "SARibbonColorToolButton.h"
 #include "DAShapeEditPannelWidget.h"
 // Table style
@@ -263,6 +264,40 @@ void DAAppTableActionHandler::initConnections()
             &DAFontEditPannelWidget::currentFontColorChanged,
             this,
             &DAAppTableActionHandler::onTableStyleFontColorChanged);
+    // 对齐（A1）：水平/垂直按钮组点击即应用
+    connect(mDeps.ribbon->mWidgetTableAlign,
+            &DATextAlignmentEditWidget::alignmentChanged,
+            this,
+            &DAAppTableActionHandler::onTableStyleAlignmentChanged);
+    // 边框（A2）：预设菜单（aboutToShow 重填，随语言刷新；与条件格式菜单同款模式）
+    {
+        QMenu* borderMenu = new QMenu(mDeps.mainWindow);
+        mDeps.actions->actionTableBorder->setMenu(borderMenu);
+        connect(borderMenu, &QMenu::aboutToShow, this, [ this, borderMenu ]() {
+            borderMenu->clear();
+            auto addPreset = [ this, borderMenu ](const QString& text, quint8 sides, bool outline) {
+                QAction* act = borderMenu->addAction(text);
+                connect(act, &QAction::triggered, this, [ this, sides, outline ]() {
+                    applyBorderPreset(sides, outline);
+                });
+            };
+            addPreset(QCoreApplication::translate("DA::DAAppController", "All Borders"),  // cn:全框线
+                      DA::DATableCellStyle::BorderAll, false);
+            addPreset(QCoreApplication::translate("DA::DAAppController", "Outside Borders"),  // cn:外框线
+                      0, true);
+            borderMenu->addSeparator();
+            addPreset(QCoreApplication::translate("DA::DAAppController", "No Border"),  // cn:无框线
+                      0, false);
+            addPreset(QCoreApplication::translate("DA::DAAppController", "Top Border"),  // cn:上框线
+                      DA::DATableCellStyle::BorderTop, false);
+            addPreset(QCoreApplication::translate("DA::DAAppController", "Bottom Border"),  // cn:下框线
+                      DA::DATableCellStyle::BorderBottom, false);
+            addPreset(QCoreApplication::translate("DA::DAAppController", "Left Border"),  // cn:左框线
+                      DA::DATableCellStyle::BorderLeft, false);
+            addPreset(QCoreApplication::translate("DA::DAAppController", "Right Border"),  // cn:右框线
+                      DA::DATableCellStyle::BorderRight, false);
+        });
+    }
     // 表格列显示格式
     connect(mDeps.ribbon->mComboxDisplayFormat,
             &DATableDisplayFormatComboBox::currentFormatCategoryChanged,
@@ -1374,9 +1409,44 @@ void DAAppTableActionHandler::onActionClearStyleAllTriggered()
 }
 
 /**
+ * @brief 对齐按钮组点击：对选中区应用对齐（单条命令，一次撤销）
+ * @param al 水平位 + 垂直位组合
+ */
+void DAAppTableActionHandler::onTableStyleAlignmentChanged(Qt::Alignment al)
+{
+    DADataOperateOfDataFrameWidget* w = mDeps.controller->getCurrentDataFrameOperateWidget(false, false);
+    if (!w) {
+        return;
+    }
+    DA::DATableCellStyle fragment;
+    fragment.setAlignment(al);
+    w->mergeStyleToSelection(fragment);
+}
+
+/**
+ * @brief 边框预设：外框线走专用路径，其余按边位组合应用（0 = 无框线）
+ * @param sides BorderSide 位组合（outline=true 时忽略）
+ * @param outline true=外框线（对选区包围矩形）
+ */
+void DAAppTableActionHandler::applyBorderPreset(quint8 sides, bool outline)
+{
+    DADataOperateOfDataFrameWidget* w = mDeps.controller->getCurrentDataFrameOperateWidget(false, false);
+    if (!w) {
+        return;
+    }
+    if (outline) {
+        w->applyBorderOutlineToSelection();
+        return;
+    }
+    DA::DATableCellStyle fragment;
+    fragment.setBorder(sides);
+    w->mergeStyleToSelection(fragment);
+}
+
+/**
  * @brief 选中区样式反向同步 ribbon 控件
  *
- * 根据选中区代表样式更新 ribbon 的底色按钮/字体面板。
+ * 根据选中区代表样式更新 ribbon 的底色按钮/字体面板/对齐按钮组。
  * 各属性独立判断：valid 的属性更新对应控件，invalid 的不调整。
  * 用 blockSignals 避免控件信号触发循环。
  * @param style 选中区代表样式
@@ -1398,6 +1468,13 @@ void DAAppTableActionHandler::onTableStyleCurrentChanged(const DA::DATableCellSt
         }
         if (style.foregroundValid()) {
             mDeps.ribbon->mWidgetTableFont->setCurrentFontColor(style.foreground());
+        }
+    }
+    // 对齐按钮组（A1）
+    if (mDeps.ribbon && mDeps.ribbon->mWidgetTableAlign) {
+        QSignalBlocker block(mDeps.ribbon->mWidgetTableAlign);
+        if (style.alignmentValid()) {
+            mDeps.ribbon->mWidgetTableAlign->setAlignment(style.alignment());
         }
     }
 }

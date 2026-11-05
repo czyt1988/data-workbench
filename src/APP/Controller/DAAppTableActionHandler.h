@@ -140,6 +140,8 @@ private Q_SLOTS:
     void onTableStyleFillColorChanged(const QColor& c);
     void onTableStyleFontChanged(const QFont& f);
     void onTableStyleFontColorChanged(const QColor& c);
+    // 对齐（A1）：水平/垂直按钮组点击 → 对选中区应用对齐（单条命令）
+    void onTableStyleAlignmentChanged(Qt::Alignment al);
     void onActionClearStyleSelectedTriggered();
     void onActionClearStyleAllTriggered();
     // 表格列显示格式
@@ -148,6 +150,8 @@ private Q_SLOTS:
 
 private:
     DAAppActionHandlerDeps mDeps;
+    // 边框预设（A2）：outline=true 走外框线专用路径；否则按 sides 位组合应用（0 = 无框线）
+    void applyBorderPreset(quint8 sides, bool outline);
     DADialogTableDisplayFormat* mDialogTableDisplayFormat { nullptr };  ///< 表格显示格式对话框（堆分配复用）
 };
 }  // namespace DA

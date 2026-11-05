@@ -1264,6 +1264,14 @@ void DADataOperateOfDataFrameWidget::mergeStyleToSelection(const DATableCellStyl
 }
 
 /**
+ * @brief 外框线：对选中区包围矩形四边应用边框（转发样式控制器）
+ */
+void DADataOperateOfDataFrameWidget::applyBorderOutlineToSelection()
+{
+    d_func()->mStyleController->applyBorderOutlineToSelection();
+}
+
+/**
  * @brief 设置完整样式到选中区（转发样式控制器）
  */
 void DADataOperateOfDataFrameWidget::applyStyleToSelection(const DATableCellStyle& style)

@@ -6,6 +6,7 @@
 #include <QItemSelectionModel>
 #include <QSet>
 // stl
+#include <limits>
 #include <memory>
 // DAGui
 #include "Table/Models/DADataTableModel.h"
@@ -27,7 +28,7 @@ constexpr qint64 c_styleExactScanCellLimit = 10000;
 
 // 逐属性一致性流式累加器：不物化选区样式列表（全选时是 窗口行数×列数 的
 // QList<DATableCellStyle>，宽表下千万级堆分配直接冻结界面），只保留首项样式
-// 与三个属性的一致标志；判定语义与旧实现的逐属性全量扫描一致
+// 与各属性的一致标志；判定语义与旧实现的逐属性全量扫描一致
 class CellStyleConsensus
 {
 public:
@@ -44,6 +45,12 @@ public:
                 && (!mFirst.foregroundValid() || s.foreground() == mFirst.foreground());
         mFontOK = mFontOK && (s.fontValid() == mFirst.fontValid())
                 && (!mFirst.fontValid() || s.font() == mFirst.font());
+        mAlignOK = mAlignOK && (s.alignmentValid() == mFirst.alignmentValid())
+                && (!mFirst.alignmentValid() || s.alignment() == mFirst.alignment());
+        mBorderOK = mBorderOK && (s.borderValid() == mFirst.borderValid())
+                && (!mFirst.borderValid()
+                    || (s.borderSides() == mFirst.borderSides() && s.borderColor() == mFirst.borderColor()
+                        && s.borderWidth() == mFirst.borderWidth()));
     }
 
     DATableCellStyle take()
@@ -61,6 +68,12 @@ public:
         if (mFontOK && mFirst.fontValid()) {
             result.setFont(mFirst.font());
         }
+        if (mAlignOK && mFirst.alignmentValid()) {
+            result.setAlignment(mFirst.alignment());
+        }
+        if (mBorderOK && mFirst.borderValid()) {
+            result.setBorder(mFirst.borderSides(), mFirst.borderColor(), mFirst.borderWidth());
+        }
         return result;
     }
 
@@ -70,6 +83,8 @@ private:
     bool mBgOK { true };
     bool mFgOK { true };
     bool mFontOK { true };
+    bool mAlignOK { true };
+    bool mBorderOK { true };
 };
 }  // namespace
 
@@ -145,6 +160,101 @@ void DATableStyleController::mergeStyleToSelection(const DATableCellStyle& fragm
         }
     }
 
+    if (mCtx.pushCommand) {
+        mCtx.pushCommand(cmd.release());
+    }
+}
+
+/**
+ * @brief 外框线：对选中区包围矩形四边应用边框（单条命令，一次撤销）
+ *
+ * 语义按选区形态分三档：
+ * - 单元格选区：包围矩形四边，逐格只给落在包围矩形外沿的边（内部格无框线）；
+ * - 整列选区：列级左右边 + 首/末数据行各补上下边（不逐行枚举，10 万行也 O(列数)）；
+ * - 整行选区：行级上下边 + 首/末列各补左右边。
+ * 边界只画一次由委派层的相邻边去重保证（见 DATableStyleItemDelegate::paintCellBorder）。
+ */
+void DATableStyleController::applyBorderOutlineToSelection()
+{
+    DATableStyleManager* styleMgr = mCtx.styleManager();
+    if (!styleMgr) {
+        return;
+    }
+    QList< int > fullCols = mSel.fullySelectedDataframeColumns(false);
+    QList< int > fullRows = mSel.fullySelectedDataframeRows(false);
+    const QList< QPoint > cells = mSel.selectedDataframeCells(false);
+    if (cells.isEmpty() && fullCols.isEmpty() && fullRows.isEmpty()) {
+        daWarning << tr("Please select a valid cell");  // cn:请选择正确的单元格
+        return;
+    }
+    std::unique_ptr< DACommandTableStyle > cmd(new DACommandTableStyle(styleMgr));
+    // 单元格级加一条边（merge 语义，保留该格其它属性）
+    auto addCellBorder = [ & ](int actualRow, int col, quint8 sides) {
+        DATableCellStyle oldStyle = styleMgr->getCellStyle(actualRow, col);
+        DATableCellStyle newStyle = oldStyle;
+        newStyle.setBorder(sides);
+        cmd->addChange(DACommandTableStyle::Cell, actualRow, col, oldStyle, newStyle, true);
+    };
+    if (!fullCols.isEmpty()) {
+        // 整列选区：列级左右 + 首/末数据行上下
+        const int lastRow = mCtx.model() ? mCtx.model()->actualRowCount() - 1 : -1;
+        for (int col : std::as_const(fullCols)) {
+            DATableCellStyle oldStyle = styleMgr->getColumnStyle(col);
+            DATableCellStyle newStyle = oldStyle;
+            newStyle.setBorder(DATableCellStyle::BorderLeft | DATableCellStyle::BorderRight);
+            cmd->addChange(DACommandTableStyle::Column, col, 0, oldStyle, newStyle, true);
+            if (lastRow >= 0) {
+                addCellBorder(0, col, DATableCellStyle::BorderTop);
+                addCellBorder(lastRow, col, DATableCellStyle::BorderBottom);
+            }
+        }
+    } else if (!fullRows.isEmpty()) {
+        // 整行选区：行级上下 + 首/末列左右
+        const int lastCol = mCtx.model() ? mCtx.model()->columnCount() - 1 : -1;
+        for (int row : std::as_const(fullRows)) {
+            DATableCellStyle oldStyle = styleMgr->getRowStyle(row);
+            DATableCellStyle newStyle = oldStyle;
+            newStyle.setBorder(DATableCellStyle::BorderTop | DATableCellStyle::BorderBottom);
+            cmd->addChange(DACommandTableStyle::Row, row, 0, oldStyle, newStyle, true);
+            if (lastCol >= 0) {
+                addCellBorder(row, 0, DATableCellStyle::BorderLeft);
+                addCellBorder(row, lastCol, DATableCellStyle::BorderRight);
+            }
+        }
+    } else {
+        // 单元格选区：包围矩形四边，逐格只给外沿边（QPoint(actualRow, column)）
+        int minRow = std::numeric_limits< int >::max();
+        int maxRow = std::numeric_limits< int >::min();
+        int minCol = std::numeric_limits< int >::max();
+        int maxCol = std::numeric_limits< int >::min();
+        for (const QPoint& p : cells) {
+            minRow = qMin(minRow, p.x());
+            maxRow = qMax(maxRow, p.x());
+            minCol = qMin(minCol, p.y());
+            maxCol = qMax(maxCol, p.y());
+        }
+        for (const QPoint& p : cells) {
+            quint8 sides = DATableCellStyle::BorderNone;
+            if (p.y() == minCol) {
+                sides |= DATableCellStyle::BorderLeft;
+            }
+            if (p.y() == maxCol) {
+                sides |= DATableCellStyle::BorderRight;
+            }
+            if (p.x() == minRow) {
+                sides |= DATableCellStyle::BorderTop;
+            }
+            if (p.x() == maxRow) {
+                sides |= DATableCellStyle::BorderBottom;
+            }
+            if (sides != DATableCellStyle::BorderNone) {
+                addCellBorder(p.x(), p.y(), sides);
+            }
+        }
+    }
+    if (cmd->isEmpty()) {
+        return;
+    }
     if (mCtx.pushCommand) {
         mCtx.pushCommand(cmd.release());
     }

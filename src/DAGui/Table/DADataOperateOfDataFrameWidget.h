@@ -130,6 +130,8 @@ public:
     // 合并样式片段到选中区（fragment 只设部分属性，merge 到目标已有样式）
     // 自动判定层级：整列→列级，整行→行级，否则单元格级
     void mergeStyleToSelection(const DATableCellStyle& fragment);
+    // 外框线：对选中区包围矩形四边应用边框（单元格选区=逐格外边；整列/整行选区有轻量语义）
+    void applyBorderOutlineToSelection();
     // 设置完整样式到选中区（传入什么就设置什么，整体替换，为格式刷准备）
     // 自动判定层级：整列→列级，整行→行级，否则单元格级
     void applyStyleToSelection(const DATableCellStyle& style);

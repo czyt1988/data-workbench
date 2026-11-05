@@ -2909,6 +2909,16 @@
     </message>
     <message>
         <location line="+1"/>
+        <source>Borders</source>
+        <translation>边框</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Apply or clear cell borders of the selected area</source>
+        <translation>对选中区应用或清除单元格边框</translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>New Computed Column...</source>
         <translation>新建计算列...</translation>
     </message>
@@ -3715,6 +3725,41 @@
         <location line="-1552"/>
         <source>No active table</source>
         <translation>无活动表格</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>All Borders</source>
+        <translation>全框线</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Outside Borders</source>
+        <translation>外框线</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>No Border</source>
+        <translation>无框线</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Top Border</source>
+        <translation>上框线</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Bottom Border</source>
+        <translation>下框线</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Left Border</source>
+        <translation>左框线</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Right Border</source>
+        <translation>右框线</translation>
     </message>
     <message>
         <location line="+1940"/>
@@ -4529,6 +4574,16 @@
         <location line="+347"/>
         <source>Font</source>
         <translation>字体</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Alignment</source>
+        <translation>对齐</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Borders</source>
+        <translation>边框</translation>
     </message>
     <message>
         <location line="-346"/>
@@ -21460,4 +21515,38 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>示例：tmp = A * 2，然后 np.where(tmp &gt; 0, tmp, 0)</translation>
     </message>
 </context>
+<context>
+    <name>DA::DATextAlignmentEditWidget</name>
+    <message>
+        <location filename="../3rdparty/DAWidgets/src/DATextAlignmentEditWidget.cpp"/>
+        <source>Align Left</source>
+        <translation>左对齐</translation>
+    </message>
+    <message>
+        <location filename="../3rdparty/DAWidgets/src/DATextAlignmentEditWidget.cpp"/>
+        <source>Align Center</source>
+        <translation>居中</translation>
+    </message>
+    <message>
+        <location filename="../3rdparty/DAWidgets/src/DATextAlignmentEditWidget.cpp"/>
+        <source>Align Right</source>
+        <translation>右对齐</translation>
+    </message>
+    <message>
+        <location filename="../3rdparty/DAWidgets/src/DATextAlignmentEditWidget.cpp"/>
+        <source>Align Top</source>
+        <translation>顶端对齐</translation>
+    </message>
+    <message>
+        <location filename="../3rdparty/DAWidgets/src/DATextAlignmentEditWidget.cpp"/>
+        <source>Align Middle</source>
+        <translation>垂直居中</translation>
+    </message>
+    <message>
+        <location filename="../3rdparty/DAWidgets/src/DATextAlignmentEditWidget.cpp"/>
+        <source>Align Bottom</source>
+        <translation>底端对齐</translation>
+    </message>
+</context>
+
 </TS>
