@@ -1,12 +1,21 @@
-name: Spike / Qt 6.11.3 + MSVC 2022 + Python 3.12 (compile only)
+name: Spike / Qt 6.10.3 + MSVC 2022 + Python 3.12 (compile only)
 
 # ==============================================================================
 # 目的：在写任何打包逻辑之前，用最小成本先证伪三个假设
-#   1) Qt 6.11.3 (msvc2022_64) 能编过当前代码（本地一直用的是 6.7.3/MSVC2019）
+#   1) Qt 6.10.3 (msvc2022_64) 能编过当前代码（本地一直用的是 6.7.3/MSVC2019）
 #   2) 编译期 Python 3.12 能满足 find_package(Python3 COMPONENTS Development)
 #      —— 这是 "Python 3.12+" 需求的真正卡点：exe 直接 import python3XX.dll，
 #         ABI 在编译期就定死了，打包阶段再换解释器是无效的
 #   3) 10 个 gitee 子模块能全部从 GitHub 镜像拉下来（CI 侧 URL 重写）
+#
+# 为什么不是 6.11.3 / 6.12.0（已核实，2026-11）：
+#   官方 Windows 包清单里 qt6_6113 共 138 个 PackageUpdate、34 个 addon，
+#   没有 qtwebengine；6.12.0 同样没有。aqt list-qt 查 6.10.3 有 qtwebengine，
+#   6.11.3 起就没了。本项目 DAGui 硬依赖 WebEngine，所以 6.10.3 是可用的最新版。
+#   详见：download.qt.io/online/qtsdkrepository/windows_x86/desktop/qt6_<ver>/
+#
+# 另外 Qt6 的 qt5compat / qtactiveqt / qtmultimedia / qtwebengine 都是独立
+# addon 包，不在 qtbase 里——不显式装，配置阶段就会挂在 find_package 上。
 #
 # 本工作流只编译：不 install、不 windeployqt、不打包、不发 Release。
 # 验证通过后它会被真正的 release.yml 取代，不要长期保留。
@@ -19,8 +28,10 @@ permissions:
   contents: read
 
 env:
-  QT_VERSION: '6.11.3'
+  QT_VERSION: '6.10.3'
   PYTHON_VERSION: '3.12'
+  # qtbase 只带 Core/Gui/Widgets/Svg/Xml/... 这些基础模块，其余必须显式装
+  QT_MODULES: 'qt5compat qtactiveqt qtmultimedia qtwebengine'
 
 jobs:
   spike:
@@ -99,6 +110,7 @@ jobs:
         with:
           version: ${{ env.QT_VERSION }}
           arch: win64_msvc2022_64
+          modules: ${{ env.QT_MODULES }}
           cache: true
 
       - name: Install Python ${{ env.PYTHON_VERSION }}
@@ -123,7 +135,31 @@ jobs:
           & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -property catalog_productDisplayVersion
           Write-Host '--- lupdate（翻译用，本 spike 已关闭翻译）---'
           $lu = Get-Command lupdate -ErrorAction SilentlyContinue
-          if ($lu) { Write-Host "found: $($lu.Source)" } else { Write-Host 'not found (DA_ENABLE_AUTO_TRANSLATE=OFF)' }
+          if ($lu) { Write-Host "found: $($lu.Source)" } else { Write-Host '::warning::没找到 lupdate' }
+
+      # 早失败：WebEngine / addon 模块缺一个，后面 20 分钟的编译都是白跑
+      - name: Verify Qt modules really installed
+        shell: pwsh
+        run: |
+          $need = @(
+            'bin\Qt6WebEngineCore.dll',
+            'bin\Qt6WebEngineWidgets.dll',
+            'bin\Qt6WebChannel.dll',
+            'bin\Qt6Multimedia.dll',
+            'bin\Qt6Core5Compat.dll',
+            'lib\Qt6AxContainer.lib',
+            'bin\lrelease.exe',
+            'bin\windeployqt.exe'
+          )
+          $missing = @()
+          foreach ($n in $need) {
+            if (-not (Test-Path (Join-Path $env:QT_ROOT_DIR $n))) { $missing += $n }
+          }
+          if ($missing.Count -gt 0) {
+            Write-Host "::error::Qt 安装缺少: $($missing -join ', ')"
+            exit 1
+          }
+          Write-Host 'Qt 模块齐全（WebEngine / Multimedia / Core5Compat / AxContainer / lrelease）'
 
       # ------------------------------------------------------------------------
       # 5. zlib：沿用现有 CI 的 vcpkg 方案（先跑通，缓存优化留到正式工作流）
@@ -170,8 +206,8 @@ jobs:
       # 7. 主工程：这一步就是整场 spike 的答案
       #    -DPython3_EXECUTABLE 显式指向 3.12，否则 find_package(Python3)
       #    很可能摸到 runner 上的其它解释器，测出来的就不是我们要的 ABI
-      #    -DDA_ENABLE_AUTO_TRANSLATE=OFF 是因为 QUiLoader/LinguistTools 不在
-      #    qtbase 里，先排除这个变量（lupdate 是否存在上面已经打印过）
+      #    翻译保持开启（lrelease/lupdate 在 qtbase/bin 里，和本地一致），
+      #    这样测的是真实发版路径，而不是一条被削过的路径
       # ------------------------------------------------------------------------
       - name: Configure main project
         shell: pwsh
@@ -183,7 +219,6 @@ jobs:
             -DCMAKE_TOOLCHAIN_FILE="$env:GITHUB_WORKSPACE/vcpkg/scripts/buildsystems/vcpkg.cmake" `
             -DDA_INSTALL_CONFIG_TYPE=Release `
             -DDA_ENABLE_TESTING=OFF `
-            -DDA_ENABLE_AUTO_TRANSLATE=OFF `
             -DPython3_EXECUTABLE="$env:pythonLocation\python.exe"
           if ($LASTEXITCODE -ne 0) { throw '主工程配置失败' }
 
