@@ -129,12 +129,16 @@ void DASignalAnalysisSettingDialog::buildUI()
 void DASignalAnalysisSettingDialog::onFieldValueChanged(const QString& fieldName, const QVariant& value)
 {
     Q_UNUSED(value)
-    if (fieldName == QLatin1String("resolutionHz") || fieldName == QLatin1String("stftWindowMs")) {
-        refreshDerivedInfo();
-    }
     if (fieldName == QLatin1String("resolutionHz")) {
+        // 分辨率与 STFT 窗长二选一联动：改分辨率时热图窗口同步变化（方案 §6.3 / 评审 C4）
+        syncStftWindowWithResolution();
+        refreshDerivedInfo();
         // 用户没手改过最小间距时，跟随实际分辨率联动（D17）
         syncPeakSpacingWithResolution();
+    } else if (fieldName == QLatin1String("stftWindowMs")) {
+        // 反过来改 STFT 窗长时，频谱分辨率同步（同一组 STFT 布局参数）
+        syncResolutionWithStftWindow();
+        refreshDerivedInfo();
     } else if (fieldName == QLatin1String("peakMinSpacingHz")) {
         mAutoSpacing = -1.0;  // 用户手改后不再跟随分辨率
     }
@@ -167,6 +171,45 @@ void DASignalAnalysisSettingDialog::syncPeakSpacingWithResolution()
     }
     mAutoSpacing = 5.0 * derived;
     mForm->setValue(QStringLiteral("peakMinSpacingHz"), mAutoSpacing);  // 程序化写入不触发 fieldValueChanged
+}
+
+/**
+ * @brief 频率分辨率 → STFT 窗长联动（方案 §6.3：Δf = 1 / 窗长(秒)）
+ *
+ * 改分辨率时同步更新 STFT 窗长（毫秒），确保热图与频谱口径一致（评审 C4）。
+ */
+void DASignalAnalysisSettingDialog::syncStftWindowWithResolution()
+{
+    if (!mForm) {
+        return;
+    }
+    const double derived = currentDerivedResolution();
+    if (derived <= 0.0) {
+        return;
+    }
+    const double windowMs = signalStftWindowMsFromResolution(derived);
+    if (windowMs >= 1.0 && windowMs <= 10000.0) {
+        mForm->setValue(QStringLiteral("stftWindowMs"), windowMs);
+    }
+}
+
+/**
+ * @brief STFT 窗长 → 频率分辨率联动（与上一条互为反向，二选一输入）
+ */
+void DASignalAnalysisSettingDialog::syncResolutionWithStftWindow()
+{
+    if (!mForm) {
+        return;
+    }
+    const double windowMs = mForm->value(QStringLiteral("stftWindowMs")).toDouble();
+    if (windowMs <= 0.0) {
+        return;
+    }
+    const double resolution = signalResolutionFromStftWindowMs(windowMs);
+    if (resolution >= 0.001 && resolution <= 1.0e6) {
+        mForm->setValue(QStringLiteral("resolutionHz"), resolution);
+        syncPeakSpacingWithResolution();
+    }
 }
 
 /**

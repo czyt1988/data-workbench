@@ -51,6 +51,8 @@ private Q_SLOTS:
     void formSpecTopNAndSpacing();
     // 老表单字符串值兼容（peakTopN 曾是 "10"/"20"/"50"）
     void paramsPeakTopNStringCompat();
+    // 频率分辨率 ↔ STFT 窗长联动换算（方案 §6.3 / 评审 C4）
+    void stftResolutionLinkage();
 };
 
 /**
@@ -233,6 +235,28 @@ void DASignalAnalysisTest::paramsPeakTopNStringCompat()
     QCOMPARE(DA::DASignalAnalysisParams::fromJson(obj).peakTopN, 20);
     obj[ QStringLiteral("peakTopN") ] = 50;
     QCOMPARE(DA::DASignalAnalysisParams::fromJson(obj).peakTopN, 50);
+}
+
+/**
+ * @brief 频率分辨率 ↔ STFT 窗长联动换算：Δf = 1 / 窗长(秒)
+ *
+ * 改分辨率必须同时改变 STFT 窗长（热图随分辨率变化，评审 C4），
+ * 两者互逆且非法输入返回 0（不在对话框里写入无效值）。
+ */
+void DASignalAnalysisTest::stftResolutionLinkage()
+{
+    // 10 赫兹分辨率 → 100 毫秒窗长
+    QCOMPARE(DA::signalStftWindowMsFromResolution(10.0), 100.0);
+    // 100 毫秒窗长 → 10 赫兹分辨率（互逆）
+    QCOMPARE(DA::signalResolutionFromStftWindowMs(100.0), 10.0);
+    // 20 赫兹 → 50 毫秒；50 毫秒 → 20 赫兹
+    QCOMPARE(DA::signalStftWindowMsFromResolution(20.0), 50.0);
+    QCOMPARE(DA::signalResolutionFromStftWindowMs(50.0), 20.0);
+    // 非法输入返回 0，调用方据此跳过写入
+    QCOMPARE(DA::signalStftWindowMsFromResolution(0.0), 0.0);
+    QCOMPARE(DA::signalStftWindowMsFromResolution(-1.0), 0.0);
+    QCOMPARE(DA::signalResolutionFromStftWindowMs(0.0), 0.0);
+    QCOMPARE(DA::signalResolutionFromStftWindowMs(-5.0), 0.0);
 }
 
 /**

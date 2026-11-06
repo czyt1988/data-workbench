@@ -50,6 +50,9 @@ private:
     void refreshDerivedInfo();
     // 用户未手改最小间距时，跟随分辨率联动（D17）
     void syncPeakSpacingWithResolution();
+    // 频率分辨率 ↔ STFT 窗长二选一联动（方案 §6.3 / 评审 C4）
+    void syncStftWindowWithResolution();
+    void syncResolutionWithStftWindow();
     double currentDerivedResolution() const;
     // FFmpeg 路径行状态（可用/无效的内联提示，不用模态消息框）
     bool applyFFmpegPath();

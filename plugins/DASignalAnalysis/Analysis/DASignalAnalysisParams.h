@@ -56,6 +56,12 @@ struct DASignalAnalysisParams
     // 恢复默认
     static DASignalAnalysisParams defaults();
 };
+
+// 频率分辨率（赫兹）→ STFT 窗长（毫秒）：Δf = 1 / 窗长(秒)，故窗长(ms) = 1000/Δf
+// （方案 §6.3「窗长或频率分辨率二选一联动」；<=0 的输入返回 0）
+double signalStftWindowMsFromResolution(double resolutionHz);
+// STFT 窗长（毫秒）→ 频率分辨率（赫兹），与上一条互逆（<=0 的输入返回 0）
+double signalResolutionFromStftWindowMs(double windowMs);
 }  // namespace DA
 
 #endif  // DASIGNALANALYSISPARAMS_H

@@ -105,4 +105,29 @@ DASignalAnalysisParams DASignalAnalysisParams::defaults()
 {
     return DASignalAnalysisParams();
 }
+
+/**
+ * @brief 频率分辨率 → STFT 窗长（毫秒）
+ *
+ * 方案 §6.3：STFT 的段长由目标频率分辨率反推（nperseg = fs/Δf），
+ * 对应窗长(秒) = 1/Δf，因此窗长(ms) = 1000/Δf。
+ */
+double signalStftWindowMsFromResolution(double resolutionHz)
+{
+    if (!(resolutionHz > 0.0)) {
+        return 0.0;
+    }
+    return 1000.0 / resolutionHz;
+}
+
+/**
+ * @brief STFT 窗长（毫秒）→ 频率分辨率（赫兹）
+ */
+double signalResolutionFromStftWindowMs(double windowMs)
+{
+    if (!(windowMs > 0.0)) {
+        return 0.0;
+    }
+    return 1000.0 / windowMs;
+}
 }  // namespace DA
