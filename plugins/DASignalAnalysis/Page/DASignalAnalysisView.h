@@ -16,6 +16,7 @@ class QSplitter;
 class QStackedWidget;
 class QTimer;
 class QResizeEvent;
+class QPixmap;
 
 class QwtPlotCurve;
 class QwtPlotIntervalCurve;
@@ -101,6 +102,8 @@ public:
     void requestHeatmapRefresh();
     // 首次分析：发起包络、整段频谱与时频热图三类计算（外部信号连接完成后调用）
     void requestInitialAnalysis();
+    // 导出用整页位图：三维瀑布可见时把 OpenGL 帧缓冲合成到页面位图中（评审 I11）
+    QPixmap grabForExport();
 
 Q_SIGNALS:
     // 请求外部计算频谱（参数变化或首次显示）

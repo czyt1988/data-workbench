@@ -52,6 +52,8 @@ Q_SIGNALS:
     void sendToTableRequested();
     // 用户请求导出峰值表 CSV
     void exportCsvRequested();
+    // 用户请求打开分析参数对话框（峰值窗口的齿轮，评审 §七-8）
+    void settingsRequested();
 
 protected:
     void changeEvent(QEvent* e) override;
@@ -77,6 +79,7 @@ private:
     QSplitter* mSplitter { nullptr };
     QPushButton* mSendButton { nullptr };
     QPushButton* mExportButton { nullptr };
+    QPushButton* mSettingsButton { nullptr };
     QVector< QwtPlotCurve* > mCurveItems;
 };
 }  // namespace DA

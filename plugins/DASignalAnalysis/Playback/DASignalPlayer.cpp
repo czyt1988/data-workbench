@@ -59,6 +59,7 @@ QString exportDataFrameChannelToWav(const DASignalPtr& signal, int channel, QStr
             if (error) {
                 *error = QStringLiteral("failed to export dataframe column to WAV");
             }
+            QFile::remove(outPath);  // 失败不留半成品临时文件（评审 I12）
             return QString();
         }
         return outPath;
@@ -67,6 +68,7 @@ QString exportDataFrameChannelToWav(const DASignalPtr& signal, int channel, QStr
             *error = QString::fromUtf8(e.what());
         }
         qWarning() << "DASignalPlayer: export dataframe column failed:" << e.what();
+        QFile::remove(outPath);  // 失败不留半成品临时文件（评审 I12）
         return QString();
     }
 }

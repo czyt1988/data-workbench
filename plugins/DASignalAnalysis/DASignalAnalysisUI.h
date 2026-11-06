@@ -109,6 +109,8 @@ private Q_SLOTS:
     void onPlayerPositionChanged(qint64 ms);
     // 信号标签页关闭：清理该信号的参数/结果缓存
     void onSignalRemoved(const DA::DASignalPtr& signal);
+    // 当前信号标签页切换：播放源、峰值表与曲线随当前信号重置（评审 U4）
+    void onCurrentSignalChanged();
     // 跟随滑块时按当前帧刷新峰值表与峰值标记（D13）
     void updatePeaksForCurrentFrame();
     void onViewTimeChanged(double seconds);
@@ -117,6 +119,7 @@ private Q_SLOTS:
     // 导出：峰值表 CSV / 频谱 CSV / 热图矩阵 CSV / 整页位图 / 峰值表送表格页
     void exportPeaksCsv();
     void exportSpectrumCsv();
+    void exportPsdCsv();
     void exportHeatmapCsv();
     void exportImage();
     void sendPeaksToTable();
@@ -162,6 +165,11 @@ private:
     QMenu* mPeakTopNMenu { nullptr };
     QMenu* mExportMenu { nullptr };
     QMenu* mAmplitudeModeMenu { nullptr };
+    // 导出菜单项（retranslateUi 需要逐条刷新文本，评审 §七-5）
+    QAction* mActionExportPeaksCsv { nullptr };
+    QAction* mActionExportSpectrumCsv { nullptr };
+    QAction* mActionExportPsdCsv { nullptr };
+    QAction* mActionExportHeatmapCsv { nullptr };
     QActionGroup* mWaterfallModeGroup { nullptr };
     QActionGroup* mPeakTopNGroup { nullptr };
     QActionGroup* mAmplitudeModeGroup { nullptr };

@@ -130,12 +130,14 @@ QString transcodeWithFFmpeg(const QString& inputPath, QString* error)
                              // cn:FFmpeg 执行失败（附最后 10 行输出）
                              .arg(pythonString(res, "message"));
             }
+            QFile::remove(outPath);  // 转码失败不留半成品（评审 I12）
             return QString();
         }
     } catch (const std::exception& e) {
         if (error) {
             *error = QString::fromUtf8(e.what());
         }
+        QFile::remove(outPath);  // 转码异常不留半成品（评审 I12）
         return QString();
     }
     return outPath;

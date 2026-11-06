@@ -6,6 +6,8 @@
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QMouseEvent>
+#include <QPainter>
+#include <QPixmap>
 #include <QResizeEvent>
 #include <QShowEvent>
 #include <QSlider>
@@ -244,7 +246,7 @@ void DASignalAnalysisView::buildUI()
 
     // 右侧叠置：二维热图（M6）/ 三维瀑布（M8）/ 隐藏
     mRightStack   = new QStackedWidget(mHorizontalSplitter);
-    mHeatmapPanel = new DASignalChartPanel(QStringLiteral("Time-Frequency"), mRightStack);  // cn:时频
+    mHeatmapPanel = new DASignalChartPanel(tr("Time-Frequency"), mRightStack);  // cn:时频
     // 色带选择（默认 Viridis）与 dB 动态范围下限
     mColormapCombo = new QComboBox(mHeatmapPanel);
     const QStringList presets = QwtColorMapPreset::availablePresets();
@@ -1076,6 +1078,29 @@ void DASignalAnalysisView::requestInitialAnalysis()
     requestEnvelopeRefresh();
     Q_EMIT spectrumRequested(mSignal, currentChannel());
     requestHeatmapRefresh();
+}
+
+/**
+ * @brief 导出用整页位图：三维瀑布可见时把 OpenGL 帧缓冲合成到页面位图中（评审 I11）
+ *
+ * QWidget::grab() 拿不到 QOpenGLWidget 的内容，必须用 Qwt3DPlot::renderPixmap()
+ * 单独取帧缓冲再按控件位置贴回页面位图。
+ */
+QPixmap DASignalAnalysisView::grabForExport()
+{
+    QPixmap page = grab();
+    if (mWaterfallMode != 1 || !mWaterfallChart || !mWaterfallChart->isVisible()) {
+        return page;
+    }
+    const QPixmap gl = mWaterfallChart->renderPixmap(mWaterfallChart->width(), mWaterfallChart->height());
+    if (gl.isNull() || page.isNull()) {
+        return page;
+    }
+    QPainter painter(&page);
+    const QPoint topLeft = mWaterfallChart->mapTo(this, QPoint(0, 0));
+    painter.drawPixmap(topLeft, gl);
+    painter.end();
+    return page;
 }
 
 void DASignalAnalysisView::resizeEvent(QResizeEvent* e)

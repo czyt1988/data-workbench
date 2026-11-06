@@ -9,6 +9,7 @@
 #include <QTableView>
 #include <QVBoxLayout>
 #include <cmath>
+#include <utility>
 #include "qwt_plot_curve.h"
 // DA
 #include "DAChartWidget.h"
@@ -64,12 +65,15 @@ void DAPeakDockWidget::buildUI()
 
     // 按钮行
     QHBoxLayout* btnLay = new QHBoxLayout;
-    mSendButton        = new QPushButton(this);
-    mExportButton      = new QPushButton(this);
+    mSettingsButton     = new QPushButton(this);
+    mSendButton         = new QPushButton(this);
+    mExportButton       = new QPushButton(this);
+    btnLay->addWidget(mSettingsButton);
     btnLay->addStretch();
     btnLay->addWidget(mSendButton);
     btnLay->addWidget(mExportButton);
     rootLay->addLayout(btnLay);
+    connect(mSettingsButton, &QPushButton::clicked, this, &DAPeakDockWidget::settingsRequested);
     connect(mSendButton, &QPushButton::clicked, this, &DAPeakDockWidget::sendToTableRequested);
     connect(mExportButton, &QPushButton::clicked, this, &DAPeakDockWidget::exportCsvRequested);
 
@@ -211,6 +215,10 @@ void DAPeakDockWidget::retranslateUi()
     }
     if (mSendButton) {
         mSendButton->setText(tr("Send to Table"));  // cn:送到表格页
+    }
+    if (mSettingsButton) {
+        mSettingsButton->setText(tr("Settings..."));  // cn:参数设置...
+        mSettingsButton->setToolTip(tr("Open the analysis parameter dialog"));  // cn:打开分析参数对话框
     }
     if (mExportButton) {
         mExportButton->setText(tr("Export CSV"));  // cn:导出 CSV

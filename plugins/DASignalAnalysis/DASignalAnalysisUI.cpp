@@ -3,6 +3,7 @@
 #include <QMenu>
 #include <QActionGroup>
 #include <cmath>
+#include <utility>
 #include <QDebug>
 #include <QFileDialog>
 #include <QFileInfo>
@@ -112,14 +113,19 @@ bool DASignalAnalysisUI::initialize(DACoreInterface* core)
     if (actionAnalysisSetting) {
         connect(actionAnalysisSetting, &QAction::triggered, this, &DASignalAnalysisUI::openAnalysisSettings);
     }
-    // 导出菜单：峰值表 CSV / 频谱 CSV / 热图矩阵 CSV
+    // 导出菜单：峰值表 CSV / 频谱 CSV / 功率谱 CSV / 热图矩阵 CSV
     if (actionExportPeaks) {
         mExportMenu = new QMenu();
-        mExportMenu->addAction(tr("Peak table (CSV)"), this, &DASignalAnalysisUI::exportPeaksCsv);
+        mActionExportPeaksCsv = mExportMenu->addAction(tr("Peak table (CSV)"), this, &DASignalAnalysisUI::exportPeaksCsv);
         // cn:峰值表（CSV）
-        mExportMenu->addAction(tr("Spectrum curve (CSV)"), this, &DASignalAnalysisUI::exportSpectrumCsv);
+        mActionExportSpectrumCsv =
+            mExportMenu->addAction(tr("Spectrum curve (CSV)"), this, &DASignalAnalysisUI::exportSpectrumCsv);
         // cn:频谱曲线（CSV）
-        mExportMenu->addAction(tr("Heatmap matrix (CSV)"), this, &DASignalAnalysisUI::exportHeatmapCsv);
+        // 韦尔奇功率谱密度导出（评审 C10）：v1 至少给出口，面板保持只显示幅值谱
+        mActionExportPsdCsv = mExportMenu->addAction(tr("Power spectral density (CSV)"), this, &DASignalAnalysisUI::exportPsdCsv);
+        // cn:功率谱密度（CSV）
+        mActionExportHeatmapCsv =
+            mExportMenu->addAction(tr("Heatmap matrix (CSV)"), this, &DASignalAnalysisUI::exportHeatmapCsv);
         // cn:热图矩阵（CSV）
         actionExportPeaks->setMenu(mExportMenu);
     }
@@ -158,7 +164,10 @@ bool DASignalAnalysisUI::initialize(DACoreInterface* core)
     mPlayer = new DASignalPlayer(this);
     connect(mPlayer, &DASignalPlayer::positionChanged, this, &DASignalAnalysisUI::onPlayerPositionChanged);
     connect(mPlayer, &DASignalPlayer::errorOccurred, this, [this](const QString& err) {
-        reportError(tr("Playback failed: %1").arg(err));  // cn:播放失败：%1
+        // 播放器原始错误是 Qt 的英文诊断信息：只写日志，界面显示翻译后的可理解提示（评审 §七-9）
+        qWarning() << "DASignalAnalysisUI: playback error:" << err;
+        reportError(tr("Playback failed. See the message log for details."));
+        // cn:播放失败，详情见消息日志。
     });
     if (actionPlay) {
         connect(actionPlay, &QAction::triggered, this, [this]() { mPlayer->play(); });
@@ -177,7 +186,7 @@ bool DASignalAnalysisUI::initialize(DACoreInterface* core)
         });
     }
     if (mPage) {
-        connect(mPage, &DASignalAnalysisPage::currentSignalChanged, this, &DASignalAnalysisUI::syncPlayerSource);
+        connect(mPage, &DASignalAnalysisPage::currentSignalChanged, this, &DASignalAnalysisUI::onCurrentSignalChanged);
     }
     // 峰值停靠窗口（右侧停靠区，与设置/智能体同区做标签页，D24）
     buildPeakDock();
@@ -202,6 +211,10 @@ bool DASignalAnalysisUI::initialize(DACoreInterface* core)
     connect(mWorker, &DASignalAnalysisWorker::peakCurvesReady, this, &DASignalAnalysisUI::onWorkerPeakCurvesReady);
     if (actionPeakWindow) {
         connect(actionPeakWindow, &QAction::toggled, this, &DASignalAnalysisUI::onPeakWindowToggled);
+    }
+    if (actionPeakTable) {
+        // 峰值表按钮与该停靠窗口显隐同步（评审 U14/§七-8）
+        connect(actionPeakTable, &QAction::toggled, this, &DASignalAnalysisUI::onPeakWindowToggled);
     }
     if (actionPeakMarker) {
         connect(actionPeakMarker, &QAction::toggled, this, &DASignalAnalysisUI::onPeakMarkerToggled);
@@ -422,6 +435,37 @@ void DASignalAnalysisUI::onSignalRemoved(const DASignalPtr& signal)
 }
 
 /**
+ * @brief 当前信号标签页切换：峰值数据只属于当前信号，切走后必须清空重算（评审 U4）
+ *
+ * 峰值表与曲线是由「当时的当前信号」算出来的；不发请求时旧表会停在新信号名下，
+ * 数值与信号错配且没有任何提示。这里统一：同步播放源 → 若峰值数据不属于新信号
+ * 则清空 → 峰值窗口可见时按新信号重算表与曲线；同时刷新时间原点与幅值口径。
+ */
+void DASignalAnalysisUI::onCurrentSignalChanged()
+{
+    syncPlayerSource();
+    if (!mPage || !mPeakPanel) {
+        return;
+    }
+    DASignalPtr sig     = mPage->currentSignal();
+    const DASignal* key = sig.get();
+    if (!sig) {
+        clearPeakState();
+        return;
+    }
+    if (mCurrentPeaksSignal != key) {
+        clearPeakState();
+        // 峰值窗口可见时立即按新信号重算（表 2/3 + 曲线 1/3 同一停靠窗口，D23）
+        if (mPeakDock && !mPeakDock->isClosed()) {
+            requestPeaks(true);
+        }
+    }
+    mPeakPanel->setTimeOrigin(sig->timeOrigin());
+    const DASignalAnalysisParams params = paramsForSignal(sig);
+    mPeakPanel->setAmplitudeDisplay(mAmplitudeMode, mDbReference, params.calibration, params.unit);
+}
+
+/**
  * @brief 构建中央页面（与绘图/表格/工作流并列的标签页）
  */
 void DASignalAnalysisUI::buildCenterPage()
@@ -559,6 +603,14 @@ void DASignalAnalysisUI::buildSignalCategory()
         "actionSignalAmplitudeMode",
         (QString::fromUtf8(cIconPrefix) + QStringLiteral("amplitude.svg")).toUtf8().constData());
     mPanelDisplay->addLargeAction(actionAmplitudeMode);
+    // 峰值表显隐（Display 面板；评审 §七-8：actionPeakTable 之前是死成员）
+    actionPeakTable = mActions->createAction(
+        "actionSignalPeakTable",
+        (QString::fromUtf8(cIconPrefix) + QStringLiteral("peaksWindow.svg")).toUtf8().constData(),
+        true,
+        false,
+        nullptr);
+    mPanelDisplay->addMediumAction(actionPeakTable);
     buildAmplitudeModeMenu();
 
     // ---------- Export：峰值表 / 图片 ----------
@@ -607,6 +659,10 @@ void DASignalAnalysisUI::buildPeakDock()
                 const QSignalBlocker blocker(actionPeakWindow);
                 actionPeakWindow->setChecked(visible);
             }
+            if (actionPeakTable) {
+                const QSignalBlocker blocker(actionPeakTable);
+                actionPeakTable->setChecked(visible);
+            }
             if (visible && !mPeakCurvesRequested) {
                 requestPeaks(true);
             }
@@ -617,6 +673,7 @@ void DASignalAnalysisUI::buildPeakDock()
     }
     connect(mPeakPanel, &DAPeakDockWidget::sendToTableRequested, this, &DASignalAnalysisUI::sendPeaksToTable);
     connect(mPeakPanel, &DAPeakDockWidget::exportCsvRequested, this, &DASignalAnalysisUI::exportPeaksCsv);
+    connect(mPeakPanel, &DAPeakDockWidget::settingsRequested, this, &DASignalAnalysisUI::openAnalysisSettings);
 }
 
 /**
@@ -635,6 +692,19 @@ void DASignalAnalysisUI::requestPeaks(bool withCurves)
     DASignalAnalysisView* view         = mPage->viewForSignal(sig.get());
     const int channel                  = view ? view->currentChannel() : 0;
     mWorker->computePeaks(makeTaskContext(sig, channel), params);
+    if (withCurves) {
+        // 大信号的全帧扫描内存/耗时过高：明确跳过并提示（评审 D5；局部扫描留 v2）
+        constexpr qint64 cCurveBudgetBytes = qint64(1.5 * 1024 * 1024 * 1024);
+        if (sig->sampleCount() * qint64(sizeof(double)) * 2 > cCurveBudgetBytes) {
+            if (mUI) {
+                mUI->addInfoLogMessage(
+                    tr("Signal is too large for the full per-frame peak curve scan; peak curves were skipped."));
+                // cn:信号过大，已跳过全帧峰值曲线扫描。
+            }
+            mPeakCurvesRequested = false;
+            return;
+        }
+    }
     if (withCurves && !mPeakCurvesRequested) {
         mPeakCurvesRequested = true;
         mWorker->computePeakCurves(makeTaskContext(sig, channel), params);
@@ -964,6 +1034,50 @@ void DASignalAnalysisUI::exportSpectrumCsv()
 }
 
 /**
+ * @brief 导出韦尔奇功率谱密度 CSV（频率、PSD(dB re 1.0/Hz)）
+ *
+ * D5 把韦尔奇功率谱列入 v1 算法边界，但此前算完没有任何显示或导出入口（评审 C10）。
+ * v1 不为 PSD 单独加一张图，先把结果以 CSV 导出打通，口径与计算层一致：
+ * P[f] 为单边功率谱密度，转 dB 用 10·log10（功率量）。
+ */
+void DASignalAnalysisUI::exportPsdCsv()
+{
+    DASignalPtr sig = mPage ? mPage->currentSignal() : DASignalPtr();
+    if (!sig) {
+        reportError(tr("No signal is selected."));  // cn:未选中信号。
+        return;
+    }
+    const DASpectrumResult spec = spectrumForSignal(sig, channelOfSignal(sig));
+    if (!spec.isValid() || spec.psdFreqs.isEmpty() || spec.psdValues.isEmpty()) {
+        reportError(tr("No power spectral density data to export."));  // cn:没有可导出的功率谱密度数据。
+        return;
+    }
+    const QString path = askSavePath(mPage,
+                                     tr("Export Power Spectral Density"),  // cn:导出功率谱密度
+                                     tr("CSV Files (*.csv)"));
+    if (path.isEmpty()) {
+        return;
+    }
+    constexpr double cEps = 1e-30;
+    QVector< double > values;
+    values.reserve(spec.psdValues.size());
+    for (double p : std::as_const(spec.psdValues)) {
+        values.append(10.0 * std::log10(qMax(p, cEps)));
+    }
+    const QString yLabel = tr("PSD (dB re 1.0/Hz)");  // cn:功率谱密度（dB，相对 1.0/赫兹）
+    pybind11::tuple args = pybind11::make_tuple(path.toStdString(),
+                                                doubleTuple(spec.psdFreqs),
+                                                doubleTuple(values),
+                                                yLabel.toStdString());
+    if (callPythonExport("write_spectrum_csv", args)) {
+        mUI->addInfoLogMessage(tr("Power spectral density exported: %1").arg(path));
+        // cn:功率谱密度已导出：%1
+    } else {
+        reportError(tr("Failed to export the power spectral density."));  // cn:功率谱密度导出失败。
+    }
+}
+
+/**
  * @brief 导出热图矩阵 CSV（行 = 频率、列 = 时间；导出前给体积提示）
  */
 void DASignalAnalysisUI::exportHeatmapCsv()
@@ -1089,7 +1203,8 @@ void DASignalAnalysisUI::exportImage()
     if (path.isEmpty()) {
         return;
     }
-    const QPixmap pixmap = view->grab();
+    // 三维瀑布可见时把 OpenGL 帧缓冲合成进页面位图（评审 I11）
+    const QPixmap pixmap = view->grabForExport();
     if (pixmap.save(path, "PNG")) {
         mUI->addInfoLogMessage(tr("Image exported: %1").arg(path));  // cn:图片已导出：%1
     } else {
@@ -1230,6 +1345,8 @@ void DASignalAnalysisUI::restoreState(const QByteArray& json)
     }
     // 打开新工程/快照回滚前先清空旧信号与缓存，避免两个工程的信号叠加（评审 U15/P4）
     clearAllSignals();
+    // 旧信号的临时抽取 WAV 随旧工程一起清理（评审 P5/I12）：此时信号与播放器均已清空
+    DASignalImporter::cleanupTempFiles();
     const QJsonArray arr        = doc.object().value(QStringLiteral("signals")).toArray();
     DADataManagerInterface* mgr = mCore ? mCore->getDataManagerInterface() : nullptr;
     for (const QJsonValue& v : arr) {
@@ -1251,8 +1368,9 @@ void DASignalAnalysisUI::restoreState(const QByteArray& json)
                 }
             }
             if (!data.isDataFrame()) {
-                reportError(tr("Signal source missing: dataframe \"%1\".").arg(dfName));
-                // cn:信号源缺失：数据帧「%1」。
+                reportError(tr("Failed to restore signal \"%1\": data frame \"%2\" was not found.")
+                                // cn:恢复信号「%1」失败：找不到数据帧「%2」。
+                                .arg(name, dfName));
                 continue;
             }
             QStringList cols;
@@ -1267,11 +1385,34 @@ void DASignalAnalysisUI::restoreState(const QByteArray& json)
                                                     name,
                                                     &error);
         } else {
-            const QString path = o.value(QStringLiteral("path")).toString();
+            QString path = o.value(QStringLiteral("path")).toString();
             if (!QFileInfo::exists(path)) {
-                reportError(tr("Signal source missing: %1").arg(path));
-                // cn:信号源缺失：%1
-                continue;
+                // 信号源缺失（评审 U16）：给「重新指定」入口，参数与采样率仍按工程里的记录恢复
+                QMessageBox box(QMessageBox::Question,
+                                tr("Signal Source Missing"),  // cn:信号源缺失
+                                tr("Signal \"%1\" refers to a missing file:\n%2\n\nLocate the file again?")
+                                    // cn:信号「%1」引用的文件不存在：%2。要重新指定文件吗？
+                                    .arg(name, path),
+                                QMessageBox::NoButton,
+                                mPage);
+                QPushButton* locateBtn =
+                    box.addButton(tr("Locate..."), QMessageBox::AcceptRole);  // cn:重新指定...
+                box.addButton(tr("Skip"), QMessageBox::RejectRole);          // cn:跳过
+                box.setDefaultButton(locateBtn);
+                box.exec();
+                if (box.clickedButton() != locateBtn) {
+                    continue;
+                }
+                const QString located = QFileDialog::getOpenFileName(
+                    mPage,
+                    tr("Locate Signal Source"),  // cn:重新指定信号源
+                    QFileInfo(path).absolutePath(),
+                    tr("Audio/Video files (*.wav *.aiff *.aif *.flac *.ogg *.mp3 *.m4a *.mp4 *.mkv *.avi);;All files (*)"));
+                // cn:音频/视频文件
+                if (located.isEmpty()) {
+                    continue;  // 用户取消：保持缺失状态，不创建半成品信号
+                }
+                path = located;
             }
             sig = (type == QLatin1String("video")) ? DASignalImporter::importVideoFile(path, &error)
                                                    : DASignalImporter::importAudioFile(path, &error);
@@ -1402,6 +1543,10 @@ void DASignalAnalysisUI::finalize()
         delete mExportMenu;
         mExportMenu = nullptr;
     }
+    mActionExportPeaksCsv    = nullptr;
+    mActionExportSpectrumCsv = nullptr;
+    mActionExportPsdCsv      = nullptr;
+    mActionExportHeatmapCsv  = nullptr;
     // 后台任务先停：后续删视图/页面时不再有结果回填
     if (mWorker) {
         mWorker->cancel();
@@ -1457,7 +1602,7 @@ void DASignalAnalysisUI::finalize()
             actionAnalysisSetting, actionPeakMarker,     actionPeakTopN,
             actionPeakWindow,     actionWaterfall2D,     actionWaterfall3D,
             actionWaterfallHide,  actionAmplitudeMode,   actionExportPeaks,
-            actionExportImage
+            actionExportImage,    actionPeakTable
         };
         for (QAction* act : allActions) {
             if (act) {
@@ -1489,6 +1634,7 @@ void DASignalAnalysisUI::finalize()
     actionAmpDbRef1         = nullptr;
     actionExportPeaks       = nullptr;
     actionExportImage       = nullptr;
+    actionPeakTable         = nullptr;
     mPanelSignal            = nullptr;
     mPanelPlayback          = nullptr;
     mPanelAnalysis          = nullptr;
@@ -1514,7 +1660,11 @@ DASignalAnalysisParams DASignalAnalysisUI::paramsForSignal(const DASignalPtr& si
     if (!sig) {
         return DASignalAnalysisParams::defaults();
     }
-    return mParamsPerSignal.value(sig.get(), DASignalAnalysisParams::defaults());
+    DASignalAnalysisParams p = mParamsPerSignal.value(sig.get(), DASignalAnalysisParams::defaults());
+    // 标定系数与单位以信号对象为唯一真相（评审 P3）：参数里的同名字段只作为表单回显
+    p.calibration = sig->calibration();
+    p.unit        = sig->unit();
+    return p;
 }
 
 /**
@@ -1549,6 +1699,10 @@ void DASignalAnalysisUI::openAnalysisSettings()
         return;
     }
     mParamsPerSignal[ sig.get() ] = params;
+    // 标定/单位写回信号对象（唯一真相，评审 P3），参数里的同名字段仅用于表单回显
+    sig->setCalibration(params.calibration);
+    sig->setUnit(params.unit);
+    bumpParamsVersion(sig);
     refreshFFmpegAvailability();  // 对话框里可能改了 FFmpeg 路径（D7）
     recomputeCurrentSignal();
 }
@@ -1710,7 +1864,8 @@ void DASignalAnalysisUI::syncPlayerSource()
             actionPlay->setEnabled(false);
         }
         if (!error.isEmpty()) {
-            reportError(error);
+            qWarning() << "DASignalAnalysisUI: cannot prepare playback source:" << error;
+            reportError(tr("Cannot start playback for this signal."));  // cn:无法开始播放该信号。
         }
         return;
     }
@@ -1771,16 +1926,41 @@ void DASignalAnalysisUI::onViewRequestHeatmap(int columns, int rows)
     if (!mWorker || !view || !view->signal()) {
         return;
     }
-    // 内存预算（方案 §11）：float32 全量超过 1.5 吉字节时提示一次，热图按显示精度降级
-    constexpr qint64 cLargeSignalBytes = qint64(1.5 * 1024 * 1024 * 1024);
-    if (view->signal()->sampleCount() * qint64(sizeof(float)) > cLargeSignalBytes) {
-        const DA::DASignal* key = view->signal().get();
-        if (!mLargeSignalWarned.contains(key)) {
-            mLargeSignalWarned.insert(key);
-            reportError(
-                tr("Signal is very large (> 1.5 GB as float32); the heatmap uses display-precision data.")
-                // cn:信号非常大（按 float32 计超过 1.5 吉字节），热图按显示精度降级计算。
-            );
+    // 内存预算（方案 §11 / 评审 D5）：按真实峰值估算（float64 副本 × 并发任务 + 显示栅格），
+    // 超预算时让用户选择降低热图精度或取消，而不是继续分配
+    constexpr qint64 cBudgetBytes = qint64(1.5 * 1024 * 1024 * 1024);
+    const qint64 samples         = view->signal()->sampleCount();
+    const qint64 estimatedBytes  = samples * qint64(sizeof(double)) * 3
+                                  + qint64(columns) * qint64(rows) * qint64(sizeof(double));
+    if (estimatedBytes > cBudgetBytes) {
+        const double estimatedGb = double(estimatedBytes) / (1024.0 * 1024.0 * 1024.0);
+        QMessageBox box(QMessageBox::Question,
+                        tr("Large Signal"),  // cn:大信号
+                        tr("The estimated peak memory is about %1 GB, above the 1.5 GB budget.\n"
+                           "Reduce the heatmap precision or cancel?")
+                            // cn:预计峰值内存约 %1 GB，超过 1.5 GB 预算。降低热图精度还是取消？
+                            .arg(estimatedGb, 0, 'f', 2),
+                        QMessageBox::NoButton,
+                        mPage);
+        QPushButton* reduceBtn =
+            box.addButton(tr("Reduce precision"), QMessageBox::ActionRole);  // cn:降低精度
+        QPushButton* continueBtn =
+            box.addButton(tr("Continue"), QMessageBox::AcceptRole);  // cn:继续
+        QPushButton* cancelBtn = box.addButton(QMessageBox::Cancel);
+        box.setDefaultButton(cancelBtn);
+        box.exec();
+        if (box.clickedButton() == cancelBtn) {
+            return;
+        }
+        if (box.clickedButton() == reduceBtn) {
+            columns = qMax(64, columns / 2);
+            rows    = qMax(64, rows / 2);
+            if (mUI) {
+                mUI->addInfoLogMessage(tr("Heatmap precision reduced to %1 x %2.").arg(columns).arg(rows));
+                // cn:热图精度已降至 %1 x %2。
+            }
+        } else if (box.clickedButton() != continueBtn) {
+            return;
         }
     }
     mWorker->computeHeatmap(makeTaskContext(view->signal(), view->currentChannel()), view->params(), columns, rows);
@@ -2041,7 +2221,7 @@ void DASignalAnalysisUI::setSignalDependentActionsEnabled(bool on)
         actionAnalysisSetting, actionPeakMarker,   actionPeakTopN,
         actionPeakWindow,    actionWaterfall2D,    actionWaterfall3D,
         actionWaterfallHide, actionAmplitudeMode,  actionExportPeaks,
-        actionExportImage
+        actionExportImage,   actionPeakTable
     };
     for (QAction* act : acts) {
         if (act) {
@@ -2159,8 +2339,25 @@ void DASignalAnalysisUI::retranslateUi()
     if (actionExportPeaks) {
         actionExportPeaks->setText(tr("Export Peaks"));  // cn:导出峰值表
     }
+    // 导出菜单项文本也随语言切换（评审 §七-5）
+    if (mActionExportPeaksCsv) {
+        mActionExportPeaksCsv->setText(tr("Peak table (CSV)"));  // cn:峰值表（CSV）
+    }
+    if (mActionExportSpectrumCsv) {
+        mActionExportSpectrumCsv->setText(tr("Spectrum curve (CSV)"));  // cn:频谱曲线（CSV）
+    }
+    if (mActionExportPsdCsv) {
+        mActionExportPsdCsv->setText(tr("Power spectral density (CSV)"));  // cn:功率谱密度（CSV）
+    }
+    if (mActionExportHeatmapCsv) {
+        mActionExportHeatmapCsv->setText(tr("Heatmap matrix (CSV)"));  // cn:热图矩阵（CSV）
+    }
     if (actionExportImage) {
         actionExportImage->setText(tr("Export Image"));  // cn:导出图片
+    }
+    if (actionPeakTable) {
+        actionPeakTable->setText(tr("Peak Table"));  // cn:峰值表
+        actionPeakTable->setToolTip(tr("Show or hide the peak table window"));  // cn:显示或隐藏峰值表窗口
     }
     // 页面
     if (mPage) {
