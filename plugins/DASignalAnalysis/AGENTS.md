@@ -104,4 +104,7 @@ python -I -m pytest tests/test_signal_dsp.py tests/test_signal_import.py -q   # 
 - **Qt 运行时**：插件私有的 `Multimedia` 不在主程序 exe 依赖链里。插件 CMake 在构建后以插件 DLL 为扫描目标
   调 `windeployqt` 补齐 `build/bin`；安装目录由顶层 `dafun_install_deploy_qt_runtime(... REQUIRED_QT_MODULES Multimedia)`
   在安装期校验，缺 DLL 直接安装失败（评审 D1）。
+- **音频解码降级**：运行时缺 `soundfile` 时，WAV 由 `scipy.io.wavfile` 兜底；AIFF/FLAC/OGG 在
+  `DASignalImporter::importAudioFile()` 里自动改走 FFmpeg 转码，没有 FFmpeg 才给出明确错误，
+  不允许静默失败（评审 I1）。
 - **测试选择**：`plugins/DASignalAnalysis/` 的改动在 `scripts/test.ps1 -Changed` 下会选中 `data` 套件。

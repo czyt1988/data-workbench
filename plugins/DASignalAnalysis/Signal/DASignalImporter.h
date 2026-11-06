@@ -40,6 +40,10 @@ public:
     static DASignalPtr importVideoFile(const QString& path, QString* error);
     // 文件是否需要 FFmpeg（压缩音频或视频）
     static bool fileNeedsFFmpeg(const QString& path);
+    // 运行时是否可用 soundfile（缺失时直读格式降级，评审 I1）
+    static bool isSoundFileAvailable();
+    // 文件是否属于 soundfile 直读格式（wav/aiff/flac/ogg）
+    static bool isDirectAudioFile(const QString& path);
     // 文件是否为视频
     static bool isVideoFile(const QString& path);
     // 探测音频文件元信息（导入对话框只读展示采样率/通道/时长）；成功返回 true

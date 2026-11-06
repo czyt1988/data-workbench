@@ -289,6 +289,36 @@ bool DASignalImporter::fileNeedsFFmpeg(const QString& path)
 }
 
 /**
+ * @brief 运行时是否可用 soundfile（供导入流程做降级判断，评审 I1）
+ */
+bool DASignalImporter::isSoundFileAvailable()
+{
+    try {
+        DAPyModule importer = importerModule();
+        pybind11::object res = importer.attr("soundfile_available")();
+        return res.cast< bool >();
+    } catch (const std::exception& e) {
+        qWarning() << "DASignalImporter::isSoundFileAvailable:" << e.what();
+        return false;
+    }
+}
+
+/**
+ * @brief 文件是否属于 soundfile 直读格式（wav/aiff/flac/ogg）
+ */
+bool DASignalImporter::isDirectAudioFile(const QString& path)
+{
+    try {
+        DAPyModule importer = importerModule();
+        pybind11::object res = importer.attr("is_direct_audio")(path.toStdString());
+        return res.cast< bool >();
+    } catch (const std::exception& e) {
+        qWarning() << "DASignalImporter::isDirectAudioFile:" << e.what();
+        return false;
+    }
+}
+
+/**
  * @brief 探测音频文件元信息（导入对话框只读展示采样率/通道/时长）
  *
  * 直读格式走 Python importer.probe_audio；需要转码的格式此处不实际转码，返回失败并给出原因，
@@ -394,6 +424,19 @@ DASignalPtr DASignalImporter::importAudioFile(const QString& path, QString* erro
             // cn:转码后的文件无法读取：%1
         }
         return sig;
+    }
+    // 运行时缺 soundfile 时，AIFF/FLAC/OGG 等直读格式退化为 FFmpeg 转码（评审 I1）：
+    // WAV 已由 Python 侧用 scipy.io.wavfile 兜底，这里只处理非 WAV 的直读格式。
+    if (!isSoundFileAvailable() && isDirectAudioFile(path)
+        && QFileInfo(path).suffix().compare(QStringLiteral("wav"), Qt::CaseInsensitive) != 0) {
+        if (!ffmpegPath().isEmpty()) {
+            const QString wav = transcodeWithFFmpeg(path, error);
+            if (wav.isEmpty()) {
+                return nullptr;  // 转码失败，错误已由 transcodeWithFFmpeg 写入
+            }
+            return buildFileSignal(wav, path, true, DASignalSource::FileSource, error);
+        }
+        // 没有 FFmpeg：继续走直读路径，由 Python 侧给出「soundfile 缺失」的明确错误
     }
     return buildFileSignal(path, path, false, DASignalSource::FileSource, error);
 }
