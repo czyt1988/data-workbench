@@ -40,6 +40,8 @@ public:
 
     // 添加一个信号：新增标签页与完整信号视图（视图登记在 mViews，供结果回填与查找）
     void addSignal(const DA::DASignalPtr& signal);
+    // 清空全部信号标签页与视图（工程加载前调用，避免旧工程信号叠加）
+    void clearAll();
     // 当前信号（无信号返回空指针）
     DA::DASignalPtr currentSignal() const;
     // 全部信号

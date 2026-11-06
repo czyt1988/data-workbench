@@ -1,6 +1,7 @@
 #ifndef DASIGNALPLAYER_H
 #define DASIGNALPLAYER_H
 #include <QObject>
+#include <QHash>
 #include <QString>
 #include "Signal/DASignal.h"
 
@@ -57,7 +58,9 @@ private:
     QAudioOutput* mAudioOutput { nullptr };
 #endif
     QString mMediaPath;        ///< 当前播放的本地文件
-    QString mTempWavPath;      ///< 数据帧来源导出的临时 WAV（清理用）
+    QString mTempWavPath;      ///< 数据帧来源导出的临时 WAV（当前）
+    /// 数据帧通道临时 WAV 缓存：键 = 信号指针:通道，避免切回同一信号时重复整列导出（评审 C8）
+    QHash< QString, QString > mTempWavCache;
 };
 }  // namespace DA
 

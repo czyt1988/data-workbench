@@ -80,3 +80,18 @@ python -I -m pytest tests/test_signal_dsp.py tests/test_signal_import.py -q   # 
 ```
 
 新增源文件放在上表的子目录后，需要重新 `cmake -S . -B build`（各目录用 `file(GLOB)` 收集）。
+
+## v1.1 修正要点（评审整改后新增约定）
+
+- **后台结果路由**：任务上下文统一用 `Analysis/DASignalTaskContext.h`（信号 + 通道 + 参数版本），
+  worker 的 `*Ready` 信号首参都是它，界面层 `isContextCurrent()` 校验后才回填；
+  不要再用 `mPendingSignal` 之类的单值回填槽（评审 U3/B4）。
+- **参数版本**：参数变化（对话框确定、Top N、通道切换）时 `bumpParamsVersion()`，迟到结果直接丢弃；
+  `poll()` 必须先摘除已完成任务再发信号，遍历 `mTasks` 用快照（评审 B2）。
+- **幅值口径**：Python 计算层始终返回峰值幅度，均方根/dB 只在显示与导出层换算，
+  唯一入口是 `Analysis/DASignalAmplitude.h`（频谱图、峰值表、CSV 共用，评审 C2/C4/I9）。
+- **参数语义**：`zeroPadding` 是「额外点数」（频谱/峰值表/STFT 一致）；频率分辨率决定频谱与峰值表段长，
+  STFT 窗长由 `stftWindowMs` 决定（评审 C3/C4）。
+- **卸载清理**：`finalize()` 必须清理峰值停靠窗口、页面停靠窗口、播放器、worker、丝带标签页与动作；
+  `mUI`/`mCategory` 为空时不能提前 return（评审 B5）。
+- **测试选择**：`plugins/DASignalAnalysis/` 的改动在 `scripts/test.ps1 -Changed` 下会选中 `data` 套件。

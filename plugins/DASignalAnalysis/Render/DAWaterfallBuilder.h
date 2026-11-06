@@ -14,15 +14,8 @@ namespace DA
 class DAWaterfallBuilder
 {
 public:
-    /**
-     * @brief 从 STFT 显示栅格构造瀑布迹线
-     * @param stft 时频显示栅格（行=频率、列=时间）
-     * @param maxTraces 时间方向最大迹线数
-     * @param maxBins 频率方向最大频点数
-     * @param traces 输出迹线集合（每条为一条时间切片的频率幅值）
-     * @param binValues 输出每条迹线的横坐标（频率）
-     * @return 成功返回 true；栅格无效返回 false
-     */
+    // 从 STFT 显示栅格构造瀑布迹线：maxTraces 时间方向最大迹线数、maxBins 频率方向最大频点数；
+    // traces/binValues 为输出（binValues 是每条迹线的横坐标/频率）。栅格无效返回 false。
     static bool build(const DAStftResult& stft,
                       int maxTraces,
                       int maxBins,

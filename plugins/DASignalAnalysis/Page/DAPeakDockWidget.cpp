@@ -51,8 +51,8 @@ void DAPeakDockWidget::buildUI()
 
     // 峰值曲线
     mCurveChart = new DAChartWidget(mSplitter);
-    mCurvePlaceholder = new QLabel(tr("Run the short-time Fourier transform first"), mCurveChart);
-    // cn:需先计算短时傅里叶变换
+    mCurvePlaceholder = new QLabel(tr("Open this window to compute the per-frame peak curves"), mCurveChart);
+    // cn:打开本窗口后计算每帧前 N 峰值曲线
     mCurvePlaceholder->setAlignment(Qt::AlignCenter);
     mCurvePlaceholder->setStyleSheet(QStringLiteral("color:#727272;"));
     QVBoxLayout* curveLay = new QVBoxLayout(mCurveChart);
@@ -118,6 +118,38 @@ void DAPeakDockWidget::setCurvePlaceholderVisible(bool visible)
 }
 
 /**
+ * @brief 设置曲线时间原点（秒）：数据帧时间列首值非 0 时与波形/热图对齐
+ */
+void DAPeakDockWidget::setTimeOrigin(double seconds)
+{
+    if (qFuzzyCompare(mTimeOrigin + 1.0, seconds + 1.0)) {
+        return;
+    }
+    mTimeOrigin = seconds;
+    rebuildCurves();
+}
+
+/**
+ * @brief 设置 dBFS 参考信号峰值（标定后），与频谱图口径一致
+ */
+void DAPeakDockWidget::setSignalPeak(double calibratedPeak)
+{
+    if (mModel) {
+        mModel->setSignalPeak(calibratedPeak);
+    }
+}
+
+/**
+ * @brief 显示/隐藏峰值表的时间列（STFT/跟随滑块模式）
+ */
+void DAPeakDockWidget::setShowTimeColumn(bool on)
+{
+    if (mModel) {
+        mModel->setShowTimeColumn(on);
+    }
+}
+
+/**
  * @brief 重绘峰值曲线：每条曲线 = 某名次的频率随时间（颜色按名次固定）
  */
 void DAPeakDockWidget::rebuildCurves()
@@ -147,7 +179,7 @@ void DAPeakDockWidget::rebuildCurves()
         ys.reserve(mCurves.nFrames);
         for (int i = 0; i < mCurves.nFrames; ++i) {
             const double f = mCurves.at(rank, i);
-            xs.append(mCurves.times.at(i));
+            xs.append(mCurves.times.at(i) + mTimeOrigin);
             // 缺失帧写 NaN，让曲线断开（不用 0 补点）
             ys.append(std::isfinite(f) ? f : std::nan(""));
         }
@@ -174,8 +206,8 @@ void DAPeakDockWidget::changeEvent(QEvent* e)
 void DAPeakDockWidget::retranslateUi()
 {
     if (mCurvePlaceholder) {
-        mCurvePlaceholder->setText(tr("Run the short-time Fourier transform first"));
-        // cn:需先计算短时傅里叶变换
+        mCurvePlaceholder->setText(tr("Open this window to compute the per-frame peak curves"));
+        // cn:打开本窗口后计算每帧前 N 峰值曲线
     }
     if (mSendButton) {
         mSendButton->setText(tr("Send to Table"));  // cn:送到表格页

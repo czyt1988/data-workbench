@@ -8,6 +8,20 @@ QJsonObject variantMapToJson(const QVariantMap& v)
 {
     return QJsonObject::fromVariantMap(v);
 }
+
+/// 兼容老表单的字符串数值（如 peakTopN 曾是 "10"/"20"/"50"）
+int jsonToInt(const QJsonValue& v, int fallback)
+{
+    if (v.isString()) {
+        bool ok = false;
+        const int n = v.toString().toInt(&ok);
+        return ok ? n : fallback;
+    }
+    if (v.isDouble()) {
+        return v.toInt(fallback);
+    }
+    return fallback;
+}
 }  // namespace
 
 /**
@@ -58,7 +72,7 @@ DASignalAnalysisParams DASignalAnalysisParams::fromJson(const QJsonObject& obj)
     p.stftOverlap     = obj.value(QStringLiteral("stftOverlap")).toDouble(p.stftOverlap);
     p.stftZeroPadding = obj.value(QStringLiteral("stftZeroPadding")).toInt(p.stftZeroPadding);
     p.peakMode        = obj.value(QStringLiteral("peakMode")).toString(p.peakMode);
-    p.peakTopN        = obj.value(QStringLiteral("peakTopN")).toInt(p.peakTopN);
+    p.peakTopN        = jsonToInt(obj.value(QStringLiteral("peakTopN")), p.peakTopN);
     p.peakRelDb       = obj.value(QStringLiteral("peakRelDb")).toDouble(p.peakRelDb);
     p.peakProminence  = obj.value(QStringLiteral("peakProminence")).toDouble(p.peakProminence);
     p.peakMinSpacingHz = obj.value(QStringLiteral("peakMinSpacingHz")).toDouble(p.peakMinSpacingHz);

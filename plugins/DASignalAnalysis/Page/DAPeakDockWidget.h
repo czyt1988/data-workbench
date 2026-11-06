@@ -38,8 +38,14 @@ public:
     // 幅值显示模式与标定（与频谱图共用）
     void setAmplitudeDisplay(const QString& amplitudeMode, const QString& dbReference, double calibration,
                              const QString& unit);
-    // 曲线区占位文案（无 STFT 数据时）
+    // 曲线区占位文案（无峰值曲线数据时）
     void setCurvePlaceholderVisible(bool visible);
+    // 时间原点（秒）：与波形/热图横向对齐（评审 U12）
+    void setTimeOrigin(double seconds);
+    // dBFS 参考信号峰值（标定后），与频谱图同一参考
+    void setSignalPeak(double calibratedPeak);
+    // STFT/跟随滑块模式：峰值表显示时间列（评审 U11）
+    void setShowTimeColumn(bool on);
 
 Q_SIGNALS:
     // 用户请求把峰值表送到表格页
@@ -63,6 +69,7 @@ private:
     QString mDbReference { QStringLiteral("fullScale") };
     double mCalibration { 1.0 };
     QString mUnit;
+    double mTimeOrigin { 0.0 };
 
     QTableView* mTable { nullptr };
     DAChartWidget* mCurveChart { nullptr };

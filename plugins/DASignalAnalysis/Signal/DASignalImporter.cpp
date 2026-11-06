@@ -271,6 +271,69 @@ bool DASignalImporter::fileNeedsFFmpeg(const QString& path)
 }
 
 /**
+ * @brief 探测音频文件元信息（导入对话框只读展示采样率/通道/时长）
+ *
+ * 直读格式走 Python importer.probe_audio；需要转码的格式此处不实际转码，返回失败并给出原因，
+ * 由导入流程在真正导入时再走 FFmpeg。
+ */
+bool DASignalImporter::probeAudioFile(const QString& path,
+                                      double* sampleRate,
+                                      int* channels,
+                                      double* durationSec,
+                                      QString* error)
+{
+    if (sampleRate) {
+        *sampleRate = 0.0;
+    }
+    if (channels) {
+        *channels = 0;
+    }
+    if (durationSec) {
+        *durationSec = 0.0;
+    }
+    if (path.isEmpty()) {
+        if (error) {
+            *error = QCoreApplication::translate("DASignalImporter", "No file selected.");  // cn:未选择文件。
+        }
+        return false;
+    }
+    if (fileNeedsFFmpeg(path)) {
+        if (error) {
+            *error = QCoreApplication::translate(
+                "DASignalImporter",
+                "This format is decoded through FFmpeg; the sample rate is shown after import.");
+            // cn:该格式经 FFmpeg 解码，采样率在导入后显示。
+        }
+        return false;
+    }
+    try {
+        DAPyModule importer = importerModule();
+        pybind11::dict probe = importer.attr("probe_audio")(path);
+        if (!pythonBool(probe, "ok")) {
+            if (error) {
+                *error = pythonString(probe, "error");
+            }
+            return false;
+        }
+        if (sampleRate) {
+            *sampleRate = pythonDouble(probe, "sample_rate");
+        }
+        if (channels) {
+            *channels = int(pythonInt64(probe, "channels"));
+        }
+        if (durationSec) {
+            *durationSec = pythonDouble(probe, "duration");
+        }
+        return true;
+    } catch (const std::exception& e) {
+        if (error) {
+            *error = QString::fromUtf8(e.what());
+        }
+        return false;
+    }
+}
+
+/**
  * @brief 文件是否为视频
  */
 bool DASignalImporter::isVideoFile(const QString& path)

@@ -11,23 +11,23 @@ import numpy as np
 PEAK_COLUMNS = ["Frequency (Hz)", "Amplitude", "Rel. peak (dB)", "Share (%)"]
 
 
-def peaks_to_dataframe(frequencies, amplitudes, rel_db, share):
+def peaks_to_dataframe(frequencies, amplitudes, rel_db, share, amplitude_label="Amplitude"):
     """峰值表 → pandas.DataFrame（送表格页用）。"""
     import pandas as pd
 
     return pd.DataFrame(
         {
             PEAK_COLUMNS[0]: np.asarray(frequencies, dtype=np.float64),
-            PEAK_COLUMNS[1]: np.asarray(amplitudes, dtype=np.float64),
+            str(amplitude_label): np.asarray(amplitudes, dtype=np.float64),
             PEAK_COLUMNS[2]: np.asarray(rel_db, dtype=np.float64),
             PEAK_COLUMNS[3]: np.asarray(share, dtype=np.float64),
         }
     )
 
 
-def write_peaks_csv(path, frequencies, amplitudes, rel_db, share):
-    """峰值表 → CSV（列同上）。"""
-    df = peaks_to_dataframe(frequencies, amplitudes, rel_db, share)
+def write_peaks_csv(path, frequencies, amplitudes, rel_db, share, amplitude_label="Amplitude"):
+    """峰值表 → CSV（列同上；amp 口径由调用方换算后传入，列名随之变化）。"""
+    df = peaks_to_dataframe(frequencies, amplitudes, rel_db, share, amplitude_label)
     df.to_csv(path, index=False, encoding="utf-8-sig")
     return True
 

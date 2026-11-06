@@ -7,10 +7,10 @@ namespace DA
 {
 namespace
 {
-QJsonObject enumOption(const QString& value, const QString& label)
+QJsonObject enumOption(const QVariant& value, const QString& label)
 {
     QJsonObject o;
-    o[ "value" ] = value;
+    o[ "value" ] = QJsonValue::fromVariant(value);
     o[ "label" ] = label;
     return o;
 }
@@ -99,7 +99,9 @@ QJsonObject DASignalFormSpecBuilder::build(const DASignalAnalysisParams& current
                                         QCoreApplication::translate("DASignalFormSpecBuilder", "Amplitude"),  // cn:幅值口径
                                         current.amplitudeMode);
         ampMode[ "options" ] = QJsonArray { enumOption("peak", QCoreApplication::translate("DASignalFormSpecBuilder", "Peak amplitude")),  // cn:峰值幅度
-                                            enumOption("rms", QCoreApplication::translate("DASignalFormSpecBuilder", "RMS")) };            // cn:均方根
+                                            enumOption("rms", QCoreApplication::translate("DASignalFormSpecBuilder", "RMS")),             // cn:均方根
+                                            enumOption("dbFS", QCoreApplication::translate("DASignalFormSpecBuilder", "dB (FS)")),        // cn:dB（满量程）
+                                            enumOption("dbRef1", QCoreApplication::translate("DASignalFormSpecBuilder", "dB (re 1.0)")) };// cn:dB（相对 1.0）
         items.append(ampMode);
 
         QJsonObject dbRef = makeField(QStringLiteral("dbReference"),
@@ -195,8 +197,11 @@ QJsonObject DASignalFormSpecBuilder::build(const DASignalAnalysisParams& current
         QJsonObject topN = makeField(QStringLiteral("peakTopN"),
                                      QStringLiteral("enum"),
                                      QCoreApplication::translate("DASignalFormSpecBuilder", "Top N"),  // cn:前 N 个
-                                     QString::number(current.peakTopN));
-        topN[ "options" ] = QJsonArray { enumOption("10", "10"), enumOption("20", "20"), enumOption("50", "50") };
+                                     current.peakTopN);
+        // 选项值必须是整数：字符串值在 QJsonValue::toInt(default) 下会退回默认值（评审 U5）
+        topN[ "options" ] = QJsonArray { enumOption(10, QStringLiteral("10")),
+                                         enumOption(20, QStringLiteral("20")),
+                                         enumOption(50, QStringLiteral("50")) };
         items.append(topN);
 
         items.append(withRange(makeField(QStringLiteral("peakRelDb"),

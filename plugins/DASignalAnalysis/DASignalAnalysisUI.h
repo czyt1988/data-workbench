@@ -8,6 +8,7 @@
 #include "Signal/DASignal.h"
 #include "Analysis/DASignalAnalysisParams.h"
 #include "Analysis/DASpectrumResult.h"
+#include "Analysis/DASignalTaskContext.h"
 #include "Analysis/DASignalAnalysisWorker.h"
 #include "Analysis/DAPeakResult.h"
 
@@ -49,7 +50,7 @@ public:
 
     // 初始化：创建中央页面与丝带标签页
     bool initialize(DACoreInterface* core);
-    // 清理：移除丝带标签页、动作与页面停靠窗口（插件热卸载前调用）
+    // 清理：移除丝带标签页、动作与页面/峰值停靠窗口（插件热卸载前调用）
     void finalize();
     // 重译界面文本
     void retranslateUi();
@@ -61,14 +62,14 @@ public:
 
     // 当前信号的参数（无记录时返回默认参数）
     DA::DASignalAnalysisParams paramsForSignal(const DA::DASignalPtr& sig) const;
-    // 最近一次频谱结果（无结果返回无效对象）
-    DA::DASpectrumResult spectrumForSignal(const DA::DASignalPtr& sig) const;
+    // 指定信号/通道最近一次频谱结果（无结果返回无效对象）
+    DA::DASpectrumResult spectrumForSignal(const DA::DASignalPtr& sig, int channel) const;
 
     // 工程保存/加载（经插件 createArchiveTask，任务在后台线程只做文件读写）
     std::shared_ptr< DA::DAAbstractArchiveTask > createArchiveTask(bool isSave);
     // 序列化当前状态为 JSON（保存用）
     QByteArray serializeState() const;
-    // 从 JSON 重建信号（加载用，主线程）
+    // 从 JSON 重建信号（加载用，主线程；先清空当前工程残留的信号与缓存）
     void restoreState(const QByteArray& json);
 
 
@@ -85,31 +86,34 @@ public Q_SLOTS:
     void openAnalysisSettings();
     // 幅值显示模式切换（只重绘，不重算）
     void onAmplitudeModeChanged();
-    // 重新计算当前信号的频谱（参数变化后调用）
+    // 重新计算当前信号（参数变化后调用）：频谱、热图、峰值表与曲线统一提交
     void recomputeCurrentSignal();
 
 private Q_SLOTS:
     void onWorkerProgress(double percent, const QString& stage);
-    void onWorkerSpectrumReady(const DA::DASpectrumResult& result);
-    void onWorkerEnvelopeReady(const QVector< double >& xs,
+    void onWorkerSpectrumReady(const DA::DASignalTaskContext& ctx, const DA::DASpectrumResult& result);
+    void onWorkerEnvelopeReady(const DA::DASignalTaskContext& ctx,
+                               const QVector< double >& xs,
                                const QVector< double >& mins,
                                const QVector< double >& maxs);
     void onWorkerFailed(const QString& error);
     void onViewRequestSpectrum(const DA::DASignalPtr& signal, int channel);
     void onViewRequestEnvelope(qint64 start, qint64 end, int width);
     void onViewRequestHeatmap(int columns, int rows);
-    void onWorkerHeatmapReady(const DA::DAStftResult& result);
-    void onWorkerPeaksReady(const DA::DAPeakResult& result);
-    void onWorkerPeakCurvesReady(const DA::DAPeakCurveResult& result);
+    void onWorkerHeatmapReady(const DA::DASignalTaskContext& ctx, const DA::DAStftResult& result);
+    void onWorkerPeaksReady(const DA::DASignalTaskContext& ctx, const DA::DAPeakResult& result);
+    void onWorkerPeakCurvesReady(const DA::DASignalTaskContext& ctx, const DA::DAPeakCurveResult& result);
     void onPeakWindowToggled(bool on);
     void onPeakMarkerToggled(bool on);
     void onPeakTopNChanged();
     void onPlayerPositionChanged(qint64 ms);
-    // 信号标签页关闭：清理该信号的参数/结果缓存与待回填目标
+    // 信号标签页关闭：清理该信号的参数/结果缓存
     void onSignalRemoved(const DA::DASignalPtr& signal);
     // 跟随滑块时按当前帧刷新峰值表与峰值标记（D13）
     void updatePeaksForCurrentFrame();
     void onViewTimeChanged(double seconds);
+    // 通道切换：峰值与曲线按新通道重算
+    void onViewChannelChanged(int channel);
     // 导出：峰值表 CSV / 频谱 CSV / 热图矩阵 CSV / 整页位图 / 峰值表送表格页
     void exportPeaksCsv();
     void exportSpectrumCsv();
@@ -125,6 +129,20 @@ private:
     void buildPeakDock();
     // 触发当前信号的峰值表与峰值曲线计算
     void requestPeaks(bool withCurves);
+    // 构造后台任务上下文（信号 + 当前视图通道 + 参数版本号）
+    DA::DASignalTaskContext makeTaskContext(const DA::DASignalPtr& sig, int channel) const;
+    // 参数版本 +1（参数变化后旧结果失效）
+    void bumpParamsVersion(const DA::DASignalPtr& sig);
+    // 校验后台结果是否仍属于当前信号/通道/参数版本
+    bool isContextCurrent(const DA::DASignalTaskContext& ctx, bool checkChannel) const;
+    // 清空页面上全部信号与相关缓存（工程加载前调用）
+    void clearAllSignals();
+    // 清空峰值表/曲线缓存
+    void clearPeakState();
+    // 信号的当前视图通道（无视图时 0）
+    int channelOfSignal(const DA::DASignalPtr& sig) const;
+    // 后台任务全部结束时清空状态栏进度（评审 §七-4）
+    void clearProgressIfIdle();
     // 统一错误上报：进界面消息队列（da.user）+ 唤起界面日志窗口，避免功能静默缺失
     void reportError(const QString& text);
     // 按 FFmpeg 可用性刷新入口状态（未检测到时视频导入置灰并说明原因）
@@ -196,7 +214,7 @@ public:
     QAction* actionWaterfall3D { nullptr };    ///< 三维曲面瀑布
     QAction* actionWaterfallHide { nullptr };  ///< 隐藏瀑布
     QAction* actionAmplitudeMode { nullptr };  ///< 幅值模式（带菜单）
-    QAction* actionPeakTable { nullptr };      ///< 频谱/峰值表页面切换（占位）
+    QAction* actionPeakTable { nullptr };      ///< 峰值表页面切换（占位）
     // 幅值模式菜单项
     QAction* actionAmpPeak { nullptr };     ///< 峰值幅度
     QAction* actionAmpRms { nullptr };      ///< 均方根
@@ -218,6 +236,9 @@ private:
     bool mPeakCurvesRequested { false };
     DA::DAPeakResult mCurrentPeaks;
     DA::DAPeakCurveResult mCurrentCurves;
+    // 当前峰值数据所属的信号与通道（切信号/通道后旧数据不再显示，评审 U4）
+    const DA::DASignal* mCurrentPeaksSignal { nullptr };
+    int mCurrentPeaksChannel { 0 };
     // 播放控制器（方案 D26）
     DASignalPlayer* mPlayer { nullptr };
     // 已提示过「信号过大」的信号（避免重复提示）
@@ -225,13 +246,12 @@ private:
     bool mSyncingFromPlayer { false };
     // 每个信号标签页记住上次生效参数（D21）
     QHash< const DA::DASignal*, DA::DASignalAnalysisParams > mParamsPerSignal;
-    // 频谱结果缓存（随信号对象存活，参数变化才重算）
+    // 参数版本号：参数变化即 +1，迟到的后台结果按版本丢弃（评审 U3 / v2 方案 B4）
+    quint64 mParamsVersionCounter { 0 };
+    QHash< const DA::DASignal*, quint64 > mParamsVersion;
+    // 频谱结果缓存（随信号对象存活，参数或通道变化才重算）
     QHash< const DA::DASignal*, DA::DASpectrumResult > mSpectrumCache;
-    const DA::DASignal* mPendingSignal { nullptr };
-    // 最近一次请求包络的视图（包络结果回填目标）
-    DA::DASignalAnalysisView* mPendingEnvelopeView { nullptr };
-    // 最近一次请求时频热图的视图
-    DA::DASignalAnalysisView* mPendingHeatmapView { nullptr };
+    QHash< const DA::DASignal*, int > mSpectrumCacheChannel;
     // 当前幅值显示模式（D14）
     QString mAmplitudeMode { QStringLiteral("peak") };
     QString mDbReference { QStringLiteral("fullScale") };

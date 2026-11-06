@@ -17,12 +17,7 @@ namespace DA
 class DASignalFormSpecBuilder
 {
 public:
-    /**
-     * @brief 构造完整表单 JSON
-     * @param current 当前参数（作为字段默认值，实现「对话框记住上次值」）
-     * @param derivedResolutionHz 当前频率分辨率（用于「最小间距」默认值 = 5 倍分辨率）
-     * @return 符合 DAFormSchemaIO v2 的表单 JSON
-     */
+    // 构造完整表单 JSON：current 作为字段默认值（记住上次值）；derivedResolutionHz 用于最小间距默认值 = 5 倍分辨率
     static QJsonObject build(const DASignalAnalysisParams& current, double derivedResolutionHz = 0.0);
 };
 }  // namespace DA

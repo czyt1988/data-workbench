@@ -1,4 +1,4 @@
-﻿# DAWorkbench 测试运行脚本 —— 按套件 / 按改动范围选择测试
+# DAWorkbench 测试运行脚本 —— 按套件 / 按改动范围选择测试
 #
 # 测试按"套件"分组（套件标签在 src/tst/<Name>/CMakeLists.txt 的 da_add_test(... SUITE x) 里声明）：
 #   core     —— 基础层（DAShared/DAUtils/DAMessageHandler/DAPyBindQt/DAPyScripts）与 APP
@@ -111,6 +111,10 @@ function Get-SuitesForFile {
     # 测试自身 / 构建脚本改动：全跑（保守）
     if ($p -match '^src/tst/' -or $p -match '^cmake/' -or $p -match '^CMakeLists\.txt$' -or $p -match '^src/CMakeLists\.txt$') {
         return New-SuiteResult -Kind 'suites' -Suites $ActiveSuites
+    }
+    # 信号分析插件有 C++ 测试（SUITE data）与 Python 测试；改动必须选中 data 套件
+    if ($p -match '^plugins/DASignalAnalysis/') {
+        return New-SuiteResult -Kind 'suites' -Suites @('data')
     }
     # 已知无测试覆盖的区域
     if ($p -match '^(docs|scripts|requirements\.txt|\.github)/' -or $p -match '^plugins/' -or

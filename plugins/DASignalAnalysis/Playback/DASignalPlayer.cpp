@@ -5,6 +5,7 @@
 #include <QUrl>
 #include <QUuid>
 #include <QDebug>
+#include <utility>
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 #include <QAudioOutput>
 #endif
@@ -80,8 +81,10 @@ DASignalPlayer::DASignalPlayer(QObject* parent) : QObject(parent)
     mAudioOutput->setVolume(1.0);
     mPlayer->setAudioOutput(mAudioOutput);
 #endif
-    // 位置通知间隔调到 50 毫秒（T4）
+    // 位置通知间隔调到 50 毫秒（T4）；Qt6 的 QMediaPlayer 已移除该属性，按版本条件编译（评审 D8/C8）
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     mPlayer->setNotifyInterval(50);
+#endif
     connect(mPlayer, &QMediaPlayer::positionChanged, this, &DASignalPlayer::positionChanged);
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     connect(mPlayer, &QMediaPlayer::errorOccurred, this, [this](QMediaPlayer::Error, const QString& msg) {
@@ -98,9 +101,11 @@ DASignalPlayer::~DASignalPlayer()
     if (mPlayer) {
         mPlayer->stop();
     }
-    if (!mTempWavPath.isEmpty()) {
-        QFile::remove(mTempWavPath);  // 数据帧导出的临时 WAV 随控制器清理（T8）
+    // 数据帧导出的临时 WAV 随控制器清理（T8）
+    for (const QString& path : std::as_const(mTempWavCache)) {
+        QFile::remove(path);
     }
+    mTempWavCache.clear();
 }
 
 /**
@@ -119,11 +124,21 @@ bool DASignalPlayer::setSignal(const DASignalPtr& signal, int channel, QString* 
     }
     QString path;
     if (signal->sourceType() == DASignalSource::DataFrameSource) {
-        path = exportDataFrameChannelToWav(signal, channel, error);
-        if (path.isEmpty()) {
-            return false;
+        // 以「信号 + 通道」为键缓存导出结果，切回同一通道不再重复整列导出（评审 C8/U9）
+        const QString cacheKey =
+            QString::number(reinterpret_cast< quintptr >(signal.get())) + QLatin1Char(':') + QString::number(channel);
+        const QString cached = mTempWavCache.value(cacheKey);
+        if (!cached.isEmpty() && QFileInfo::exists(cached)) {
+            path         = cached;
+            mTempWavPath = cached;
+        } else {
+            path = exportDataFrameChannelToWav(signal, channel, error);
+            if (path.isEmpty()) {
+                return false;
+            }
+            mTempWavCache.insert(cacheKey, path);
+            mTempWavPath = path;
         }
-        mTempWavPath = path;
     } else {
         path = signal->source()->playbackFilePath();
     }
@@ -143,7 +158,7 @@ bool DASignalPlayer::setSignal(const DASignalPtr& signal, int channel, QString* 
 }
 
 /**
- * @brief 清除播放源（同时清理数据帧导出的临时 WAV）
+ * @brief 清除播放源（临时 WAV 保留在缓存中，切回同一信号可复用；析构时统一清理）
  */
 void DASignalPlayer::clearSignal()
 {
@@ -155,10 +170,7 @@ void DASignalPlayer::clearSignal()
         mPlayer->setMedia(QMediaContent());
 #endif
     }
-    if (!mTempWavPath.isEmpty()) {
-        QFile::remove(mTempWavPath);
-        mTempWavPath.clear();
-    }
+    mTempWavPath.clear();
     mMediaPath.clear();
 }
 

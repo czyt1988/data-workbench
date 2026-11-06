@@ -18,6 +18,9 @@ struct DAPeakResult
     QVector< double > relDb;        ///< 相对主峰（分贝，主峰为 0）
     QVector< double > share;        ///< 功率占比（%，该峰幅值² / 全部峰幅值² 之和）
     double resolutionHz { 0.0 };
+    /// STFT/跟随滑块模式下该组峰所属帧的中心时间（秒）；hasFrameTime=false 表示整段频谱
+    double frameTime { 0.0 };
+    bool hasFrameTime { false };
 
     bool isValid() const
     {

@@ -1,9 +1,36 @@
 #include <QtTest>
 #include <QCoreApplication>
+#include <QJsonArray>
+#include <QJsonObject>
+#include <QJsonValue>
 #include "Analysis/DASignalAnalysisParams.h"
 #include "Analysis/DAPeakTableModel.h"
+#include "Form/DASignalFormSpecBuilder.h"
 #include "Render/DAStftRasterData.h"
 #include "qwt_interval.h"
+
+namespace
+{
+/// 在表单规格里按字段名查找字段对象（遍历 group 的 items）
+QJsonObject findFormField(const QJsonObject& spec, const QString& fieldName)
+{
+    const QJsonArray groups = spec.value(QStringLiteral("items")).toArray();
+    for (const QJsonValue& gv : groups) {
+        const QJsonObject group = gv.toObject();
+        if (group.value(QStringLiteral("kind")).toString() != QLatin1String("group")) {
+            continue;
+        }
+        const QJsonArray fields = group.value(QStringLiteral("items")).toArray();
+        for (const QJsonValue& fv : fields) {
+            const QJsonObject field = fv.toObject();
+            if (field.value(QStringLiteral("name")).toString() == fieldName) {
+                return field;
+            }
+        }
+    }
+    return QJsonObject();
+}
+}  // namespace
 
 /**
  * @brief DASignalAnalysis 插件单元测试（方案 §13.2）
@@ -20,6 +47,10 @@ private Q_SLOTS:
     void peakModelColumnsAndData();
     void peakModelAmplitudeMode();
     void stftRasterGrid();
+    // 表单口径：Top N 选项值是整数、最小间距默认 5 倍实际分辨率（评审 U5/U7）
+    void formSpecTopNAndSpacing();
+    // 老表单字符串值兼容（peakTopN 曾是 "10"/"20"/"50"）
+    void paramsPeakTopNStringCompat();
 };
 
 /**
@@ -107,15 +138,24 @@ void DASignalAnalysisTest::peakModelColumnsAndData()
     DA::DAPeakTableModel model;
     model.setPeaks(peaks);
     QCOMPARE(model.rowCount(), 3);
-    QCOMPARE(model.columnCount(), int(DA::DAPeakTableModel::ColumnCount));
+    // 默认（整段频谱）不显示时间列：总列数 = ColumnCount - 1
+    QCOMPARE(model.columnCount(), int(DA::DAPeakTableModel::ColumnCount) - 1);
     // 序号列从 1 开始
-    QCOMPARE(model.data(model.index(0, DA::DAPeakTableModel::ColumnIndex)).toInt(), 1);
-    // 频率列
-    QCOMPARE(model.data(model.index(1, DA::DAPeakTableModel::ColumnFrequency)).toString(),
-             QStringLiteral("2000.00"));
+    QCOMPARE(model.data(model.index(0, 0)).toInt(), 1);
+    // 频率列（隐藏时间列时视图列左移一列）
+    const int freqViewColumn = int(DA::DAPeakTableModel::ColumnFrequency) - 1;
+    QCOMPARE(model.data(model.index(1, freqViewColumn)).toString(), QStringLiteral("2000.00"));
     // 表头（频率列）
-    QCOMPARE(model.headerData(DA::DAPeakTableModel::ColumnFrequency, Qt::Horizontal).toString(),
-             QStringLiteral("Frequency (Hz)"));
+    QCOMPARE(model.headerData(freqViewColumn, Qt::Horizontal).toString(), QStringLiteral("Frequency (Hz)"));
+    // STFT/跟随滑块模式：多一列帧时间（评审 U11）
+    model.setShowTimeColumn(true);
+    QCOMPARE(model.columnCount(), int(DA::DAPeakTableModel::ColumnCount));
+    QCOMPARE(model.headerData(DA::DAPeakTableModel::ColumnTime, Qt::Horizontal).toString(),
+             QStringLiteral("Time (s)"));
+    QCOMPARE(model.data(model.index(0, DA::DAPeakTableModel::ColumnTime)).toString(),
+             QStringLiteral("0.000"));
+    model.setShowTimeColumn(false);
+    QCOMPARE(model.columnCount(), int(DA::DAPeakTableModel::ColumnCount) - 1);
     // 清空
     model.clear();
     QCOMPARE(model.rowCount(), 0);
@@ -134,10 +174,65 @@ void DASignalAnalysisTest::peakModelAmplitudeMode()
 
     DA::DAPeakTableModel model;
     model.setPeaks(peaks);
+    model.setSignalPeak(1.0);  // dBFS 参考 = 信号峰值（标定后），与频谱图同一参考
     model.setAmplitudeMode(QStringLiteral("dbFS"), QStringLiteral("fullScale"));
-    const QString top = model.data(model.index(0, DA::DAPeakTableModel::ColumnAmplitude)).toString();
+    const int ampViewColumn = int(DA::DAPeakTableModel::ColumnAmplitude) - 1;
+    const QString top        = model.data(model.index(0, ampViewColumn)).toString();
     QVERIFY(top.contains(QStringLiteral("dB")));
     QVERIFY(qAbs(top.split(QLatin1Char(' ')).first().toDouble()) < 0.01);
+    // 均方根口径：0.5 峰值幅值 → 0.353553（直流/零频不换算）
+    model.setAmplitudeMode(QStringLiteral("rms"), QStringLiteral("fullScale"));
+    QVERIFY(qAbs(model.data(model.index(1, ampViewColumn)).toString().toDouble() - 0.3535533906) < 1e-5);
+}
+
+/**
+ * @brief 表单口径：Top N 选项值是整数、最小间距默认 5 倍实际分辨率
+ */
+void DASignalAnalysisTest::formSpecTopNAndSpacing()
+{
+    const DA::DASignalAnalysisParams params = DA::DASignalAnalysisParams::defaults();
+    const QJsonObject spec                  = DA::DASignalFormSpecBuilder::build(params, 10.0);
+
+    const QJsonObject topN = findFormField(spec, QStringLiteral("peakTopN"));
+    QVERIFY2(!topN.isEmpty(), "peakTopN field not found");
+    // 默认值/选项值都必须是数值：字符串会让 QJsonValue::toInt(default) 静默退回默认值（评审 U5）
+    QCOMPARE(topN.value(QStringLiteral("default")).toInt(), 10);
+    const QJsonArray options = topN.value(QStringLiteral("options")).toArray();
+    QCOMPARE(options.size(), 3);
+    QVector< int > values;
+    for (const QJsonValue& ov : options) {
+        const QJsonObject opt = ov.toObject();
+        QVERIFY2(opt.value(QStringLiteral("value")).isDouble(), "Top N option value must be an integer");
+        values.append(opt.value(QStringLiteral("value")).toInt());
+    }
+    QCOMPARE(values, QVector< int >({ 10, 20, 50 }));
+
+    // 最小间距默认 = 5 × 实际分辨率（10 赫兹 → 50 赫兹，评审 U7）
+    const QJsonObject spacing = findFormField(spec, QStringLiteral("peakMinSpacingHz"));
+    QVERIFY2(!spacing.isEmpty(), "peakMinSpacingHz field not found");
+    QCOMPARE(spacing.value(QStringLiteral("default")).toDouble(), 50.0);
+
+    // 幅值口径支持四种显示状态（评审 U8）
+    const QJsonObject ampMode = findFormField(spec, QStringLiteral("amplitudeMode"));
+    QVERIFY2(!ampMode.isEmpty(), "amplitudeMode field not found");
+    QStringList ampValues;
+    for (const QJsonValue& ov : ampMode.value(QStringLiteral("options")).toArray()) {
+        ampValues.append(ov.toObject().value(QStringLiteral("value")).toString());
+    }
+    QCOMPARE(ampValues, QStringList({ QStringLiteral("peak"), QStringLiteral("rms"),
+                                      QStringLiteral("dbFS"), QStringLiteral("dbRef1") }));
+}
+
+/**
+ * @brief 老工程/老表单里的 peakTopN 字符串值仍能读回
+ */
+void DASignalAnalysisTest::paramsPeakTopNStringCompat()
+{
+    QJsonObject obj;
+    obj[ QStringLiteral("peakTopN") ] = QStringLiteral("20");
+    QCOMPARE(DA::DASignalAnalysisParams::fromJson(obj).peakTopN, 20);
+    obj[ QStringLiteral("peakTopN") ] = 50;
+    QCOMPARE(DA::DASignalAnalysisParams::fromJson(obj).peakTopN, 50);
 }
 
 /**

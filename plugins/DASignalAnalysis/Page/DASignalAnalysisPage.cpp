@@ -71,6 +71,16 @@ void DASignalAnalysisPage::addSignal(const DASignalPtr& signal)
 }
 
 /**
+ * @brief 清空全部信号：逐个关闭标签页并通知外部清理缓存（工程加载前调用）
+ */
+void DASignalAnalysisPage::clearAll()
+{
+    while (!mSignals.isEmpty()) {
+        removeSignalAt(mSignals.size() - 1);
+    }
+}
+
+/**
  * @brief 关闭指定索引的信号：移除标签页、销毁视图并通知外部清理缓存
  *
  * 标签栏与视图堆叠按索引一一对应。移除期间屏蔽标签栏信号，避免 removeTab

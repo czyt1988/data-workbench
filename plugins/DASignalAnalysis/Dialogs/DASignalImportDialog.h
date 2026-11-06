@@ -70,6 +70,7 @@ private:
     void refreshDataFrameList();
     void refreshColumnLists();
     void refreshInference();
+    void updateFileInfo();
     void setStatusMessage(const QString& msg, bool isError);
 
 private:
@@ -79,6 +80,7 @@ private:
     // 音频/视频
     QLineEdit* mFilePathEdit { nullptr };
     QPushButton* mBrowseButton { nullptr };
+    QLabel* mFileInfoLabel { nullptr };
 
     // 数据帧
     QComboBox* mDataCombo { nullptr };
@@ -87,6 +89,13 @@ private:
     QDoubleSpinBox* mSampleRateSpin { nullptr };
     QLineEdit* mNameEdit { nullptr };
     QLabel* mInferenceLabel { nullptr };
+    // 表单行标签（语言切换时需要重译）
+    QLabel* mFileLabel { nullptr };
+    QLabel* mDataLabel { nullptr };
+    QLabel* mTimeLabel { nullptr };
+    QLabel* mValueLabel { nullptr };
+    QLabel* mSampleRateLabel { nullptr };
+    QLabel* mNameLabel { nullptr };
 
     // 公共
     QLabel* mStatusLabel { nullptr };

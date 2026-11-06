@@ -51,25 +51,63 @@ DASignalImportDialog::Mode DASignalImportDialog::mode() const
 // ---------------------------------------------------------------- UI 构建
 
 /**
- * @brief 音频/视频模式界面：文件路径 + 浏览按钮
+ * @brief 音频/视频模式界面：文件路径 + 浏览按钮 + 文件信息（只读采样率）
  */
 void DASignalImportDialog::buildAudioVideoUI()
 {
-    QVBoxLayout* lay = new QVBoxLayout(this);
+    QVBoxLayout* lay  = new QVBoxLayout(this);
     QFormLayout* form = new QFormLayout;
-    mFilePathEdit    = new QLineEdit(this);
+    mFilePathEdit     = new QLineEdit(this);
     mFilePathEdit->setObjectName(QStringLiteral("da-signal-import-file-path"));
     mBrowseButton = new QPushButton(this);
     QHBoxLayout* fileRow = new QHBoxLayout;
     fileRow->addWidget(mFilePathEdit, 1);
     fileRow->addWidget(mBrowseButton);
-    form->addRow(tr("File"), fileRow);  // cn:文件
+    mFileLabel = new QLabel(this);
+    form->addRow(mFileLabel, fileRow);
+    // 文件采样率只读展示（评审 I4）：直读格式探测文件头，需转码格式提示导入后显示
+    mFileInfoLabel = new QLabel(this);
+    mFileInfoLabel->setWordWrap(true);
+    mFileInfoLabel->setStyleSheet(QStringLiteral("color:#727272;"));
+    form->addRow(QString(), mFileInfoLabel);
     mStatusLabel = new QLabel(this);
     mStatusLabel->setWordWrap(true);
     form->addRow(QString(), mStatusLabel);
     lay->addLayout(form);
     connect(mBrowseButton, &QPushButton::clicked, this, &DASignalImportDialog::onBrowseFile);
-    connect(mFilePathEdit, &QLineEdit::textChanged, this, &DASignalImportDialog::updateOkEnabled);
+    connect(mFilePathEdit, &QLineEdit::textChanged, this, [this](const QString&) {
+        updateFileInfo();
+        updateOkEnabled();
+    });
+}
+
+/**
+ * @brief 探测所选文件的采样率/通道/时长并只读展示
+ */
+void DASignalImportDialog::updateFileInfo()
+{
+    if (!mFileInfoLabel) {
+        return;
+    }
+    const QString path = mFilePathEdit ? mFilePathEdit->text().trimmed() : QString();
+    if (path.isEmpty() || !QFileInfo::exists(path)) {
+        mFileInfoLabel->clear();
+        return;
+    }
+    double fs = 0.0, duration = 0.0;
+    int channels = 0;
+    QString err;
+    if (DASignalImporter::probeAudioFile(path, &fs, &channels, &duration, &err)) {
+        mFileInfoLabel->setStyleSheet(QStringLiteral("color:#727272;"));
+        mFileInfoLabel->setText(tr("Sample rate: %1 Hz, channels: %2, duration: %3 s")
+                                    .arg(fs, 0, 'f', 3)
+                                    .arg(channels)
+                                    .arg(duration, 0, 'f', 3));
+        // cn:采样率：%1 赫兹，通道数：%2，时长：%3 秒
+    } else {
+        mFileInfoLabel->setStyleSheet(QStringLiteral("color:#727272;"));
+        mFileInfoLabel->setText(err);
+    }
 }
 
 /**
@@ -82,30 +120,35 @@ void DASignalImportDialog::buildDataFrameUI()
 
     mDataCombo = new QComboBox(this);
     mDataCombo->setObjectName(QStringLiteral("da-signal-import-datacombo"));
-    form->addRow(tr("Data Frame"), mDataCombo);  // cn:源数据帧
+    mDataLabel = new QLabel(this);
+    form->addRow(mDataLabel, mDataCombo);
 
     mTimeColumnCombo = new QComboBox(this);
-    form->addRow(tr("Time Column"), mTimeColumnCombo);  // cn:时间列
+    mTimeLabel       = new QLabel(this);
+    form->addRow(mTimeLabel, mTimeColumnCombo);
 
     mValueColumnList = new QListWidget(this);
     mValueColumnList->setSelectionMode(QAbstractItemView::ExtendedSelection);
     mValueColumnList->setMinimumHeight(110);
-    form->addRow(tr("Value Columns"), mValueColumnList);  // cn:幅值列（可多选）
+    mValueLabel = new QLabel(this);
+    form->addRow(mValueLabel, mValueColumnList);
 
     mSampleRateSpin = new QDoubleSpinBox(this);
     mSampleRateSpin->setDecimals(3);
     mSampleRateSpin->setRange(0.0, 1.0e9);
     mSampleRateSpin->setSingleStep(1000.0);
     mSampleRateSpin->setSpecialValueText(QStringLiteral(""));
-    form->addRow(tr("Sample Rate (Hz)"), mSampleRateSpin);  // cn:采样率（赫兹）
+    mSampleRateLabel = new QLabel(this);
+    form->addRow(mSampleRateLabel, mSampleRateSpin);
 
     mInferenceLabel = new QLabel(this);
     mInferenceLabel->setWordWrap(true);
     mInferenceLabel->setStyleSheet(QStringLiteral("color:#727272;"));  // 中性次要文字
     form->addRow(QString(), mInferenceLabel);
 
-    mNameEdit = new QLineEdit(this);
-    form->addRow(tr("Signal Name"), mNameEdit);  // cn:信号名
+    mNameEdit  = new QLineEdit(this);
+    mNameLabel = new QLabel(this);
+    form->addRow(mNameLabel, mNameEdit);
 
     mStatusLabel = new QLabel(this);
     mStatusLabel->setWordWrap(true);
@@ -403,6 +446,28 @@ void DASignalImportDialog::retranslateUi()
     }
     if (mBrowseButton) {
         mBrowseButton->setText(tr("Browse..."));  // cn:浏览
+    }
+    // 表单行标签随语言切换（评审 I7）
+    if (mFileLabel) {
+        mFileLabel->setText(tr("File"));  // cn:文件
+    }
+    if (mDataLabel) {
+        mDataLabel->setText(tr("Data Frame"));  // cn:源数据帧
+    }
+    if (mTimeLabel) {
+        mTimeLabel->setText(tr("Time Column"));  // cn:时间列
+    }
+    if (mValueLabel) {
+        mValueLabel->setText(tr("Value Columns"));  // cn:幅值列（可多选）
+    }
+    if (mSampleRateLabel) {
+        mSampleRateLabel->setText(tr("Sample Rate (Hz)"));  // cn:采样率（赫兹）
+    }
+    if (mNameLabel) {
+        mNameLabel->setText(tr("Signal Name"));  // cn:信号名
+    }
+    if (mMode != DataFrameMode) {
+        updateFileInfo();  // 文件信息提示随语言刷新
     }
     if (mButtonBox) {
         mButtonBox->button(QDialogButtonBox::Ok)->setText(tr("Import"));  // cn:导入

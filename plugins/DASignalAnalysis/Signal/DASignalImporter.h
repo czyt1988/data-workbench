@@ -38,6 +38,12 @@ public:
     static bool fileNeedsFFmpeg(const QString& path);
     // 文件是否为视频
     static bool isVideoFile(const QString& path);
+    // 探测音频文件元信息（导入对话框只读展示采样率/通道/时长）；成功返回 true
+    static bool probeAudioFile(const QString& path,
+                               double* sampleRate,
+                               int* channels,
+                               double* durationSec,
+                               QString* error);
 
     // ---------------- 数据帧 ----------------
     // 由数据帧创建信号（timeColumn 可为空；采样率由用户确认）

@@ -16,6 +16,7 @@ da_add_test(
     SOURCES main.cpp
             ${_signal_plugin_dir}/Analysis/DASignalAnalysisParams.cpp
             ${_signal_plugin_dir}/Analysis/DAPeakTableModel.cpp
+            ${_signal_plugin_dir}/Form/DASignalFormSpecBuilder.cpp
             ${_signal_plugin_dir}/Render/DAStftRasterData.cpp
     QT_COMPONENTS Test Widgets
     LINK_PRIVATE

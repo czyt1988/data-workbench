@@ -80,7 +80,8 @@
 | `src/DAGui/Table/`（含页面入口、`Core/`、`Controllers/`、`Views/`、`Metadata/`、`Ops/`、`Dialogs/` 等） | `table` |
 | 其余 `src/DAGui` 代码 | `table` + `chart` + `agent`（保守兜底） |
 | `src/tst`、`cmake/`、顶层 `CMakeLists.txt` | 全部套件 |
-| `docs/`、`scripts/`、`plugins/`、`src/3rdparty`、`src/DAPyWorkFlow`、`src/DAGraphicsView`、`src/DAInterface` 等 | 无测试覆盖，跳过（打印 INFO） |
+| `plugins/DASignalAnalysis/`（有 `DASignalAnalysisTest`，SUITE data，另有 Python 测试） | `data` |
+| `docs/`、`scripts/`、其它 `plugins/`、`src/3rdparty`、`src/DAPyWorkFlow`、`src/DAGraphicsView`、`src/DAInterface` 等 | 无测试覆盖，跳过（打印 INFO） |
 | 规则未命中 | 全部套件 + `WARN`（宁可多跑，不能漏跑） |
 
 默认基线与 `dev` 比较（`git diff dev...HEAD` + 工作区改动 + 未跟踪文件），可用 `-Base <ref>` 指定别的基线。

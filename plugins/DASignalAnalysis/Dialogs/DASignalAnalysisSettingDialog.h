@@ -5,6 +5,7 @@
 
 class QLabel;
 class QPushButton;
+class QLineEdit;
 class QDialogButtonBox;
 
 namespace DA
@@ -21,13 +22,7 @@ class DASignalAnalysisSettingDialog : public QDialog
 {
     Q_OBJECT
 public:
-    /**
-     * @brief 弹出参数对话框
-     * @param params 输入输出参数（作为上次值预填，确定后被新值覆盖）
-     * @param sampleRate 信号采样率（用于反显段长与毫秒数）
-     * @param parent 父窗口（必须是插件页面，避免卸载后残留）
-     * @return 用户点确定返回 true
-     */
+    // 弹出参数对话框：params 作为上次值预填，确定后被新值覆盖；sampleRate 用于反显段长
     static bool edit(DASignalAnalysisParams* params, double sampleRate, QWidget* parent);
 
     explicit DASignalAnalysisSettingDialog(const DASignalAnalysisParams& params,
@@ -40,20 +35,34 @@ public:
 
 protected:
     void changeEvent(QEvent* e) override;
+    // 确定前校验 FFmpeg 路径（路径指向不存在的文件时不关闭对话框）
+    void accept() override;
 
 private Q_SLOTS:
     void onFieldValueChanged(const QString& fieldName, const QVariant& value);
     void onRestoreDefaults();
+    void onBrowseFFmpeg();
+    void onFFmpegPathEdited();
 
 private:
     void buildUI();
     void retranslateUi();
     void refreshDerivedInfo();
+    // 用户未手改最小间距时，跟随分辨率联动（D17）
+    void syncPeakSpacingWithResolution();
+    double currentDerivedResolution() const;
+    // FFmpeg 路径行状态（可用/无效的内联提示，不用模态消息框）
+    bool applyFFmpegPath();
 
 private:
     double mSampleRate { 0.0 };
+    double mAutoSpacing { -1.0 };  ///< 当前自动跟随行距；-1 表示用户已手改
     DAPropertyFormWidget* mForm { nullptr };
     QLabel* mDerivedLabel { nullptr };
+    QLabel* mFFmpegLabel { nullptr };
+    QLineEdit* mFFmpegEdit { nullptr };
+    QPushButton* mFFmpegBrowse { nullptr };
+    QLabel* mFFmpegStatus { nullptr };
     QPushButton* mRestoreButton { nullptr };
     QDialogButtonBox* mButtonBox { nullptr };
 };

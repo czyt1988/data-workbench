@@ -20,14 +20,7 @@ public:
     DAStftRasterData();
     ~DAStftRasterData() override;
 
-    /**
-     * @brief 填充栅格数据
-     * @param flatRowMajor 行主序矩阵（values[row * cols + col]，行 0 = 最低频率，列 0 = 最早时间）
-     * @param rows 行数（频率方向）
-     * @param cols 列数（时间方向）
-     * @param timeMin/timeMax 时间轴区间（秒）
-     * @param freqMin/freqMax 频率轴区间（赫兹）
-     */
+    // 填充栅格：flatRowMajor 为行主序矩阵（values[row*cols+col]，行 0 = 最低频率，列 0 = 最早时间）
     void setGrid(const QVector< double >& flatRowMajor,
                  int rows,
                  int cols,

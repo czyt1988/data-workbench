@@ -9,6 +9,8 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QMessageBox>
+#include <QPushButton>
 #include <QStandardPaths>
 #include "DAPybind11InQt.h"
 #include "DAPyModule.h"
@@ -39,6 +41,7 @@
 #include "Dialogs/DASignalImportDialog.h"
 #include "Dialogs/DASignalAnalysisSettingDialog.h"
 #include "Signal/DASignalImporter.h"
+#include "Analysis/DASignalAmplitude.h"
 #include "Analysis/DASignalAnalysisWorker.h"
 #include "Playback/DASignalPlayer.h"
 #include "Archive/DASignalArchiveTask.h"
@@ -204,6 +207,18 @@ bool DASignalAnalysisUI::initialize(DACoreInterface* core)
         mUI->addInfoLogMessage(tr("FFmpeg was not detected; video import is unavailable until a path is specified."));
         // cn:未检测到 FFmpeg，视频导入在指定路径前不可用。
     }
+    // 音频解码依赖自检（I1）：soundfile 缺失时非 WAV 直读格式给出明确提示而不是运行时崩溃
+    try {
+        DAPyModule importer = DAPyModule("DASignalAnalysis.importer");
+        const bool available = importer.attr("soundfile_available")().cast< bool >();
+        if (!available) {
+            mUI->addInfoLogMessage(
+                tr("soundfile is not available; only WAV files can be read directly. Install soundfile or use FFmpeg."));
+            // cn:未安装 soundfile，只能直接读取 WAV；可安装 soundfile 或改用 FFmpeg。
+        }
+    } catch (const std::exception& e) {
+        qWarning() << "DASignalAnalysisUI: soundfile self-check failed:" << e.what();
+    }
     return true;
 }
 
@@ -328,15 +343,15 @@ void DASignalAnalysisUI::addSignalAndActivate(const DASignalPtr& sig)
     syncPlayerSource();
     if (DASignalAnalysisView* view = mPage->viewForSignal(sig.get())) {
         view->setParams(paramsForSignal(sig));
+        view->setTimeOrigin(sig->timeOrigin());
         connect(view, &DASignalAnalysisView::spectrumRequested, this, &DASignalAnalysisUI::onViewRequestSpectrum);
         connect(view, &DASignalAnalysisView::envelopeRequested, this, &DASignalAnalysisUI::onViewRequestEnvelope);
         connect(view, &DASignalAnalysisView::heatmapRequested, this, &DASignalAnalysisUI::onViewRequestHeatmap);
         connect(view, &DASignalAnalysisView::currentTimeChanged, this, &DASignalAnalysisUI::onViewTimeChanged);
-        connect(view, &DASignalAnalysisView::channelChanged, this, [this](int) {
-            // 通道变了：峰值与曲线需要按新通道重算
-            mPeakCurvesRequested = false;
-            mCurrentCurves       = DAPeakCurveResult();
-            requestPeaks(true);
+        connect(view, &DASignalAnalysisView::channelChanged, this, &DASignalAnalysisUI::onViewChannelChanged);
+        // 「跟随滑块」只刷新峰值表显示，不触发 seek
+        connect(view, &DASignalAnalysisView::followSliderToggled, this, [this](bool) {
+            updatePeaksForCurrentFrame();
         });
         // 连接就绪后再发起首次计算（视图显示早于 connect，showEvent 里的请求会丢）
         view->requestInitialAnalysis();
@@ -373,25 +388,13 @@ void DASignalAnalysisUI::onSignalRemoved(const DASignalPtr& signal)
         return;
     }
     const DASignal* key = signal.get();
-    if (mPendingSignal == key) {
-        mPendingSignal = nullptr;
-    }
-    if (mPendingEnvelopeView && mPendingEnvelopeView->signal().get() == key) {
-        mPendingEnvelopeView = nullptr;
-    }
-    if (mPendingHeatmapView && mPendingHeatmapView->signal().get() == key) {
-        mPendingHeatmapView = nullptr;
-    }
     mParamsPerSignal.remove(key);
+    mParamsVersion.remove(key);
     mSpectrumCache.remove(key);
+    mSpectrumCacheChannel.remove(key);
     mLargeSignalWarned.remove(key);
-
-    mCurrentPeaks          = DAPeakResult();
-    mCurrentCurves         = DAPeakCurveResult();
-    mPeakCurvesRequested   = false;
-    if (mPeakPanel) {
-        mPeakPanel->setPeaks(mCurrentPeaks);
-        mPeakPanel->setPeakCurves(mCurrentCurves);
+    if (mCurrentPeaksSignal == key) {
+        clearPeakState();
     }
 
     const bool hasSignal = (mPage && mPage->signalCount() > 0);
@@ -401,6 +404,7 @@ void DASignalAnalysisUI::onSignalRemoved(const DASignalPtr& signal)
         const bool peakViewOpen = (mPeakDock && !mPeakDock->isClosed());
         requestPeaks(peakViewOpen);
     }
+    syncPlayerSource();
 }
 
 /**
@@ -583,12 +587,19 @@ void DASignalAnalysisUI::buildPeakDock()
     if (mPeakDock) {
         mPeakDock->setObjectName(QStringLiteral("da-dock-signal-peaks"));
         mPeakDock->setWindowTitle(tr("Peaks"));  // cn:峰值
-        // 首次显示峰值窗口时按需计算每帧前 N 峰值曲线
+        // 首次显示峰值窗口时按需计算每帧前 N 峰值曲线；显隐状态同步丝带按钮（评审 U14）
         connect(mPeakDock, &ads::CDockWidget::visibilityChanged, this, [this](bool visible) {
+            if (actionPeakWindow) {
+                const QSignalBlocker blocker(actionPeakWindow);
+                actionPeakWindow->setChecked(visible);
+            }
             if (visible && !mPeakCurvesRequested) {
                 requestPeaks(true);
             }
         });
+        // 创建即激活会让插件加载后右侧直接跳到空的峰值页（评审 D24/U14）：先隐藏，
+        // 首次导入成功后再自动切一次（见 addSignalAndActivate）
+        mPeakDock->toggleView(false);
     }
     connect(mPeakPanel, &DAPeakDockWidget::sendToTableRequested, this, &DASignalAnalysisUI::sendPeaksToTable);
     connect(mPeakPanel, &DAPeakDockWidget::exportCsvRequested, this, &DASignalAnalysisUI::exportPeaksCsv);
@@ -607,12 +618,124 @@ void DASignalAnalysisUI::requestPeaks(bool withCurves)
         return;
     }
     const DASignalAnalysisParams params = paramsForSignal(sig);
-    const int channel = (mPage && mPage->viewForSignal(sig.get())) ? mPage->viewForSignal(sig.get())->currentChannel() : 0;
-    mWorker->computePeaks(sig, channel, params);
+    DASignalAnalysisView* view         = mPage->viewForSignal(sig.get());
+    const int channel                  = view ? view->currentChannel() : 0;
+    mWorker->computePeaks(makeTaskContext(sig, channel), params);
     if (withCurves && !mPeakCurvesRequested) {
         mPeakCurvesRequested = true;
-        mWorker->computePeakCurves(sig, channel, params);
+        mWorker->computePeakCurves(makeTaskContext(sig, channel), params);
     }
+}
+
+/**
+ * @brief 构造后台任务上下文：信号 + 通道 + 当前参数版本
+ */
+DASignalTaskContext DASignalAnalysisUI::makeTaskContext(const DASignalPtr& sig, int channel) const
+{
+    DASignalTaskContext ctx;
+    ctx.signal        = sig;
+    ctx.channel       = channel;
+    ctx.paramsVersion = mParamsVersion.value(sig.get(), 0);
+    return ctx;
+}
+
+/**
+ * @brief 参数版本 +1：迟到的旧参数结果会因版本不一致被丢弃（评审 U3）
+ */
+void DASignalAnalysisUI::bumpParamsVersion(const DASignalPtr& sig)
+{
+    if (!sig) {
+        return;
+    }
+    ++mParamsVersionCounter;
+    mParamsVersion[ sig.get() ] = mParamsVersionCounter;
+}
+
+/**
+ * @brief 校验后台结果是否仍属于当前信号/通道/参数版本
+ * @param ctx 任务上下文
+ * @param checkChannel true 时还要求视图当前通道与任务通道一致
+ */
+bool DASignalAnalysisUI::isContextCurrent(const DASignalTaskContext& ctx, bool checkChannel) const
+{
+    if (!ctx.signal || !mPage) {
+        return false;
+    }
+    if (!mPage->viewForSignal(ctx.signal.get())) {
+        return false;  // 信号标签已关闭，结果丢弃
+    }
+    if (mParamsVersion.value(ctx.signal.get(), 0) != ctx.paramsVersion) {
+        return false;  // 参数已变化，旧结果丢弃
+    }
+    if (checkChannel) {
+        if (DASignalAnalysisView* view = mPage->viewForSignal(ctx.signal.get())) {
+            if (view->currentChannel() != ctx.channel) {
+                return false;  // 已切到别的通道
+            }
+        }
+    }
+    return true;
+}
+
+/**
+ * @brief 后台任务全部结束时清空状态栏进度（评审 §七-4）
+ */
+void DASignalAnalysisUI::clearProgressIfIdle()
+{
+    if (mUI && mWorker && !mWorker->isRunning()) {
+        mUI->getStatusBar()->clearMessage();
+    }
+}
+
+/**
+ * @brief 信号的当前视图通道（无视图时 0）
+ */
+int DASignalAnalysisUI::channelOfSignal(const DASignalPtr& sig) const
+{
+    if (mPage && sig) {
+        if (DASignalAnalysisView* view = mPage->viewForSignal(sig.get())) {
+            return view->currentChannel();
+        }
+    }
+    return 0;
+}
+
+/**
+ * @brief 清空峰值表/曲线缓存（切信号、加载工程时调用）
+ */void DASignalAnalysisUI::clearPeakState()
+{
+    mCurrentPeaks        = DAPeakResult();
+    mCurrentCurves       = DAPeakCurveResult();
+    mCurrentPeaksSignal  = nullptr;
+    mCurrentPeaksChannel = 0;
+    mPeakCurvesRequested = false;
+    if (mPeakPanel) {
+        mPeakPanel->setShowTimeColumn(false);
+        mPeakPanel->setPeaks(mCurrentPeaks);
+        mPeakPanel->setPeakCurves(mCurrentCurves);
+    }
+}
+
+/**
+ * @brief 清空页面上全部信号与相关缓存（工程加载前调用，评审 U15/P4）
+ */
+void DASignalAnalysisUI::clearAllSignals()
+{
+    if (mPlayer) {
+        mPlayer->stop();
+        mPlayer->clearSignal();
+    }
+    if (mPage) {
+        mPage->clearAll();
+    }
+    mParamsPerSignal.clear();
+    mParamsVersion.clear();
+    mSpectrumCache.clear();
+    mSpectrumCacheChannel.clear();
+    mLargeSignalWarned.clear();
+    clearPeakState();
+    setSignalDependentActionsEnabled(false);
+    mFirstSignalActivated = false;
 }
 
 /**
@@ -694,6 +817,39 @@ QString askSavePath(QWidget* parent, const QString& title, const QString& filter
 {
     return QFileDialog::getSaveFileName(parent, title, QString(), filter);
 }
+
+/// 当前幅值模式的英文列名（CSV 表头，保持英文便于二次处理）
+QString dasignalAmplitudeLabel(const DASignalAnalysisParams& params)
+{
+    if (params.amplitudeMode == QLatin1String("rms")) {
+        return QStringLiteral("RMS");
+    }
+    if (params.amplitudeMode == QLatin1String("dbFS")) {
+        return QStringLiteral("dB (FS)");
+    }
+    if (params.amplitudeMode == QLatin1String("dbRef1")) {
+        return QStringLiteral("dB (re 1.0)");
+    }
+    return QStringLiteral("Amplitude");
+}
+
+/// 峰值幅值列表 → 当前显示口径（与频谱图/峰值表同一换算函数）
+QVector< double > peakMagnitudesForDisplay(const DAPeakResult& peaks,
+                                           const DASignalAnalysisParams& params,
+                                           double calibratedSignalPeak)
+{
+    QVector< double > out;
+    out.reserve(peaks.magnitudes.size());
+    for (int i = 0; i < peaks.magnitudes.size(); ++i) {
+        out.append(DASignalAmplitude::toDisplay(peaks.magnitudes.at(i),
+                                               peaks.frequencies.value(i) <= 0.0,
+                                               params.amplitudeMode,
+                                               params.dbReference,
+                                               params.calibration,
+                                               calibratedSignalPeak));
+    }
+    return out;
+}
 }  // namespace
 
 /**
@@ -710,11 +866,32 @@ void DASignalAnalysisUI::exportPeaksCsv()
     if (path.isEmpty()) {
         return;
     }
+    // 与屏幕一致：幅值列按当前显示口径换算（评审 I9）
+    DASignalPtr sig      = mPage ? mPage->currentSignal() : DASignalPtr();
+    const DASignalAnalysisParams params = paramsForSignal(sig);
+    double signalPeak    = 0.0;
+    if (mPage) {
+        if (DASignalAnalysisView* v = mPage->viewForSignal(sig.get())) {
+            signalPeak = v->signalPeak();
+        }
+    }
+    const double peakCal = signalPeak * params.calibration;
+    QVector< double > magnitudes;
+    magnitudes.reserve(mCurrentPeaks.magnitudes.size());
+    for (int i = 0; i < mCurrentPeaks.magnitudes.size(); ++i) {
+        magnitudes.append(DASignalAmplitude::toDisplay(mCurrentPeaks.magnitudes.at(i),
+                                                       mCurrentPeaks.frequencies.value(i) <= 0.0,
+                                                       params.amplitudeMode,
+                                                       params.dbReference,
+                                                       params.calibration,
+                                                       peakCal));
+    }
     pybind11::tuple args = pybind11::make_tuple(path.toStdString(),
                                                 doubleTuple(mCurrentPeaks.frequencies),
-                                                doubleTuple(mCurrentPeaks.magnitudes),
+                                                doubleTuple(magnitudes),
                                                 doubleTuple(mCurrentPeaks.relDb),
-                                                doubleTuple(mCurrentPeaks.share));
+                                                doubleTuple(mCurrentPeaks.share),
+                                                dasignalAmplitudeLabel(params).toStdString());
     if (callPythonExport("write_peaks_csv", args)) {
         mUI->addInfoLogMessage(tr("Peak table exported: %1").arg(path));  // cn:峰值表已导出：%1
     } else {
@@ -732,7 +909,7 @@ void DASignalAnalysisUI::exportSpectrumCsv()
         reportError(tr("No signal is selected."));  // cn:未选中信号。
         return;
     }
-    const DASpectrumResult spec = spectrumForSignal(sig);
+    const DASpectrumResult spec = spectrumForSignal(sig, channelOfSignal(sig));
     if (!spec.isValid()) {
         reportError(tr("No spectrum data to export."));  // cn:没有可导出的频谱数据。
         return;
@@ -742,28 +919,25 @@ void DASignalAnalysisUI::exportSpectrumCsv()
     if (path.isEmpty()) {
         return;
     }
-    // 按当前幅值模式换算（与显示口径一致）
+    // 按当前幅值模式换算（与显示口径一致，评审 I9）
     const DASignalAnalysisParams params = paramsForSignal(sig);
-    QVector< double > values;
-    values.reserve(spec.amplitudes.size());
-    const bool isDb = (params.amplitudeMode == QLatin1String("dbFS")
-                       || params.amplitudeMode == QLatin1String("dbRef1"));
-    double peak = 0.0;
-    for (double a : spec.amplitudes) {
-        peak = qMax(peak, std::fabs(a));
-    }
-    for (double a : spec.amplitudes) {
-        if (isDb) {
-            const double ref = (params.dbReference == QLatin1String("one")) ? 1.0 : qMax(peak, 1e-30);
-            values.append(20.0 * std::log10(qMax(std::fabs(a * params.calibration), 1e-30) / ref));
-        } else {
-            values.append(a * params.calibration);
+    double signalPeak                   = 0.0;
+    if (mPage) {
+        if (DASignalAnalysisView* v = mPage->viewForSignal(sig.get())) {
+            signalPeak = v->signalPeak();
         }
     }
-    QString yLabel = (params.amplitudeMode == QLatin1String("rms")) ? QStringLiteral("RMS") : QStringLiteral("Amplitude");
-    if (isDb) {
-        yLabel = QStringLiteral("dB");
+    QVector< double > values;
+    values.reserve(spec.amplitudes.size());
+    for (int i = 0; i < spec.amplitudes.size(); ++i) {
+        values.append(DASignalAmplitude::toDisplay(spec.amplitudes.at(i),
+                                                   i == 0,
+                                                   params.amplitudeMode,
+                                                   params.dbReference,
+                                                   params.calibration,
+                                                   signalPeak * params.calibration));
     }
+    const QString yLabel = dasignalAmplitudeLabel(params);
     pybind11::tuple args = pybind11::make_tuple(path.toStdString(),
                                                 doubleTuple(spec.freqs),
                                                 doubleTuple(values),
@@ -795,6 +969,37 @@ void DASignalAnalysisUI::exportHeatmapCsv()
         return;
     }
     const qint64 cells = qint64(stft.rows) * stft.columns;
+    // 大矩阵导出前给体积确认，并提供 2 倍降采样（方案 §10.2 / 评审 I10）
+    int downsample = 1;
+    if (cells > 2000000) {
+        const double estimatedMb = double(cells) * 8.0 / (1024.0 * 1024.0);
+        QMessageBox box(QMessageBox::Question,
+                        tr("Export Heatmap Matrix"),  // cn:导出热图矩阵
+                        tr("The heatmap matrix is %1 x %2 = %3 cells (about %4 MB as CSV).\n"
+                           "Export the full matrix or downsample by 2?")
+                            // cn:热图矩阵为 %1 x %2 = %3 个单元（CSV 约 %4 兆字节）。导出完整矩阵还是 2 倍降采样？
+                            .arg(stft.rows)
+                            .arg(stft.columns)
+                            .arg(cells)
+                            .arg(estimatedMb, 0, 'f', 1),
+                        QMessageBox::NoButton,
+                        mPage);
+        QPushButton* fullBtn =
+            box.addButton(tr("Export full"), QMessageBox::AcceptRole);  // cn:导出完整矩阵
+        QPushButton* downBtn =
+            box.addButton(tr("Downsample x2"), QMessageBox::ActionRole);  // cn:2 倍降采样
+        QPushButton* cancelBtn = box.addButton(QMessageBox::Cancel);
+        box.setDefaultButton(cancelBtn);  // 安全默认：不误触大文件导出
+        box.exec();
+        if (box.clickedButton() == cancelBtn) {
+            return;
+        }
+        if (box.clickedButton() == downBtn) {
+            downsample = 2;
+        } else if (box.clickedButton() != fullBtn) {
+            return;
+        }
+    }
     mUI->addInfoLogMessage(tr("Heatmap matrix: %1 x %2 = %3 cells, the CSV may be large.")
                                .arg(stft.rows)
                                .arg(stft.columns)
@@ -805,12 +1010,45 @@ void DASignalAnalysisUI::exportHeatmapCsv()
     if (path.isEmpty()) {
         return;
     }
+    QVector< double > outTimes = stft.times;
+    QVector< double > outFreqs = stft.freqs;
+    QVector< double > outValues = stft.values;
+    int outRows                  = stft.rows;
+    int outCols                  = stft.columns;
+    if (downsample > 1) {
+        // 块最大值降采样（保留峰值，不丢窄峰）
+        outRows = (stft.rows + downsample - 1) / downsample;
+        outCols = (stft.columns + downsample - 1) / downsample;
+        QVector< double > reduced(outRows * outCols, std::numeric_limits< double >::quiet_NaN());
+        for (int r = 0; r < stft.rows; ++r) {
+            const int rr = r / downsample;
+            for (int c = 0; c < stft.columns; ++c) {
+                const double v = stft.values.value(r * stft.columns + c);
+                if (!std::isfinite(v)) {
+                    continue;
+                }
+                double& dst = reduced[ rr * outCols + (c / downsample) ];
+                dst         = std::isfinite(dst) ? qMax(dst, v) : v;
+            }
+        }
+        QVector< double > t(outCols);
+        for (int c = 0; c < outCols; ++c) {
+            t[ c ] = stft.times.value(qMin(stft.columns - 1, c * downsample + downsample / 2));
+        }
+        QVector< double > f(outRows);
+        for (int r = 0; r < outRows; ++r) {
+            f[ r ] = stft.freqs.value(qMin(stft.rows - 1, r * downsample + downsample / 2));
+        }
+        outTimes  = t;
+        outFreqs  = f;
+        outValues = reduced;
+    }
     pybind11::tuple args = pybind11::make_tuple(path.toStdString(),
-                                                doubleTuple(stft.times),
-                                                doubleTuple(stft.freqs),
-                                                doubleTuple(stft.values),
-                                                stft.rows,
-                                                stft.columns);
+                                                doubleTuple(outTimes),
+                                                doubleTuple(outFreqs),
+                                                doubleTuple(outValues),
+                                                outRows,
+                                                outCols);
     if (callPythonExport("write_heatmap_csv", args)) {
         mUI->addInfoLogMessage(tr("Heatmap matrix exported: %1").arg(path));  // cn:热图矩阵已导出：%1
     } else {
@@ -863,10 +1101,22 @@ void DASignalAnalysisUI::sendPeaksToTable()
     }
     try {
         DAPyModule exporter = DAPyModule("DASignalAnalysis.exporter");
-        pybind11::object df  = exporter.attr("peaks_to_dataframe")(doubleTuple(mCurrentPeaks.frequencies),
-                                                                  doubleTuple(mCurrentPeaks.magnitudes),
-                                                                  doubleTuple(mCurrentPeaks.relDb),
-                                                                  doubleTuple(mCurrentPeaks.share));
+        DASignalPtr sig     = (mPage && mPage->currentSignal()) ? mPage->currentSignal() : DASignalPtr();
+        const DASignalAnalysisParams params = paramsForSignal(sig);
+        double signalPeak                   = 0.0;
+        if (mPage) {
+            if (DASignalAnalysisView* v = mPage->viewForSignal(sig.get())) {
+                signalPeak = v->signalPeak();
+            }
+        }
+        // 与屏幕一致：幅值列按当前显示口径换算（评审 I9）
+        const QVector< double > magnitudes =
+            peakMagnitudesForDisplay(mCurrentPeaks, params, signalPeak * params.calibration);
+        pybind11::object df = exporter.attr("peaks_to_dataframe")(doubleTuple(mCurrentPeaks.frequencies),
+                                                                   doubleTuple(magnitudes),
+                                                                   doubleTuple(mCurrentPeaks.relDb),
+                                                                   doubleTuple(mCurrentPeaks.share),
+                                                                   dasignalAmplitudeLabel(params).toStdString());
         DAPyDataFrame pyDf(df);
         const QString signalName = (mPage && mPage->currentSignal()) ? mPage->currentSignal()->name() : QString();
         QString tableName        = tr("Peaks - %1").arg(signalName);  // cn:峰值 - %1
@@ -928,7 +1178,25 @@ QByteArray DASignalAnalysisUI::serializeState() const
             QJsonObject view;
             view[ QStringLiteral("amplitudeMode") ] = mAmplitudeMode;
             view[ QStringLiteral("dbReference") ]   = mDbReference;
-            o[ QStringLiteral("view") ]             = view;
+            // 视图状态（P1）：瀑布模式、对数轴、色带/色标、分割比例、热图跟随
+            if (DASignalAnalysisView* v = mPage ? mPage->viewForSignal(sig.get()) : nullptr) {
+                view[ QStringLiteral("waterfallMode") ] = v->waterfallMode();
+                view[ QStringLiteral("logFrequency") ]  = v->isLogFrequency();
+                view[ QStringLiteral("colormap") ]      = v->colormapName();
+                view[ QStringLiteral("dbFloor") ]       = v->dbFloor();
+                view[ QStringLiteral("autoScroll") ]    = v->isHeatmapAutoScroll();
+                QJsonArray vArr;
+                for (int s : v->verticalSplitterSizes()) {
+                    vArr.append(s);
+                }
+                QJsonArray hArr;
+                for (int s : v->horizontalSplitterSizes()) {
+                    hArr.append(s);
+                }
+                view[ QStringLiteral("splitterVertical") ]   = vArr;
+                view[ QStringLiteral("splitterHorizontal") ] = hArr;
+            }
+            o[ QStringLiteral("view") ] = view;
             arr.append(o);
         }
     }
@@ -946,6 +1214,8 @@ void DASignalAnalysisUI::restoreState(const QByteArray& json)
     if (!doc.isObject()) {
         return;
     }
+    // 打开新工程/快照回滚前先清空旧信号与缓存，避免两个工程的信号叠加（评审 U15/P4）
+    clearAllSignals();
     const QJsonArray arr        = doc.object().value(QStringLiteral("signals")).toArray();
     DADataManagerInterface* mgr = mCore ? mCore->getDataManagerInterface() : nullptr;
     for (const QJsonValue& v : arr) {
@@ -1017,6 +1287,45 @@ void DASignalAnalysisUI::restoreState(const QByteArray& json)
             mDbReference = view.value(QStringLiteral("dbReference")).toString(mDbReference);
         }
         addSignalAndActivate(sig);
+        // 恢复视图状态（P1）
+        if (DASignalAnalysisView* v = mPage ? mPage->viewForSignal(sig.get()) : nullptr) {
+            v->setWaterfallMode(view.value(QStringLiteral("waterfallMode")).toInt(0));
+            v->setLogFrequency(view.value(QStringLiteral("logFrequency")).toBool(false));
+            const QString cmap = view.value(QStringLiteral("colormap")).toString();
+            if (!cmap.isEmpty()) {
+                v->setColormapName(cmap);
+            }
+            if (view.contains(QStringLiteral("dbFloor"))) {
+                v->setDbFloor(view.value(QStringLiteral("dbFloor")).toDouble(v->dbFloor()));
+            }
+            v->setHeatmapAutoScroll(view.value(QStringLiteral("autoScroll")).toBool(false));
+            QList< int > vs;
+            for (const QJsonValue& s : view.value(QStringLiteral("splitterVertical")).toArray()) {
+                vs.append(s.toInt());
+            }
+            QList< int > hs;
+            for (const QJsonValue& s : view.value(QStringLiteral("splitterHorizontal")).toArray()) {
+                hs.append(s.toInt());
+            }
+            v->setSplitterSizes(vs, hs);
+            v->setAmplitudeDisplay(mAmplitudeMode, mDbReference);
+        }
+    }
+    // 丝带瀑布模式勾选与当前视图同步
+    if (mPage && mWaterfallModeGroup) {
+        if (DASignalAnalysisView* v = mPage->viewForSignal(mPage->currentSignal().get())) {
+            switch (v->waterfallMode()) {
+            case 1:
+                if (actionWaterfall3D) actionWaterfall3D->setChecked(true);
+                break;
+            case 2:
+                if (actionWaterfallHide) actionWaterfallHide->setChecked(true);
+                break;
+            default:
+                if (actionWaterfall2D) actionWaterfall2D->setChecked(true);
+                break;
+            }
+        }
     }
 }
 
@@ -1068,37 +1377,53 @@ void DASignalAnalysisUI::finalize()
         delete mExportMenu;
         mExportMenu = nullptr;
     }
-    // 丝带标签页
-    if (nullptr == mUI || nullptr == mCategory) {
-        return;
-    }
-    DARibbonAreaInterface* ribbonArea = mUI->getRibbonArea();
-    if (ribbonArea && ribbonArea->ribbonBar()) {
-        ribbonArea->ribbonBar()->removeCategory(mCategory);
-    }
-    mCategory = nullptr;
-    // 中央页面停靠窗口
-    if (mPageDock) {
-        DADockingAreaInterface* dockingArea = mUI->getDockingArea();
-        if (dockingArea && dockingArea->dockManager()) {
-            dockingArea->dockManager()->removeDockWidget(mPageDock);
-        }
-        mPageDock = nullptr;
+    // 后台任务先停：后续删视图/页面时不再有结果回填
+    if (mWorker) {
+        mWorker->cancel();
+        delete mWorker;
+        mWorker = nullptr;
     }
     if (mPlayer) {
         mPlayer->stop();
         delete mPlayer;
         mPlayer = nullptr;
     }
-    if (mWorker) {
-        mWorker->cancel();
-        delete mWorker;
-        mWorker = nullptr;
+    // 峰值停靠窗口：创建点见 buildPeakDock，必须在这里显式移除并销毁，否则禁用插件后右侧残留
+    // 「Peaks」标签页（评审 B5，M2 验收「禁用后干净移除」）
+    if (mPeakDock) {
+        if (mUI) {
+            if (DADockingAreaInterface* dockingArea = mUI->getDockingArea()) {
+                if (dockingArea->dockManager()) {
+                    dockingArea->dockManager()->removeDockWidget(mPeakDock);
+                }
+            }
+        }
+        mPeakDock->deleteLater();  // CDockWidget 拥有 panel，随之一并销毁
+        mPeakDock = nullptr;
     }
-    if (mPage) {
-        delete mPage;
-        mPage = nullptr;
+    mPeakPanel = nullptr;
+    // 中央页面停靠窗口（dock 拥有页面部件，统一 deleteLater，不能再 delete mPage）
+    if (mPageDock) {
+        if (mUI) {
+            if (DADockingAreaInterface* dockingArea = mUI->getDockingArea()) {
+                if (dockingArea->dockManager()) {
+                    dockingArea->dockManager()->removeDockWidget(mPageDock);
+                }
+            }
+        }
+        mPageDock->deleteLater();
+        mPageDock = nullptr;
     }
+    mPage = nullptr;
+    // 丝带标签页（mUI/mCategory 任一为空时不能提前 return，后面的动作清理必须执行）
+    if (mUI && mCategory) {
+        if (DARibbonAreaInterface* ribbonArea = mUI->getRibbonArea()) {
+            if (ribbonArea->ribbonBar()) {
+                ribbonArea->ribbonBar()->removeCategory(mCategory);
+            }
+        }
+    }
+    mCategory = nullptr;
     // 经宿主接口销毁全部动作
     if (mActions) {
         const QList< QAction* > allActions = {
@@ -1145,6 +1470,11 @@ void DASignalAnalysisUI::finalize()
     mPanelPeaks             = nullptr;
     mPanelDisplay           = nullptr;
     mPanelExport            = nullptr;
+    mParamsPerSignal.clear();
+    mParamsVersion.clear();
+    mSpectrumCache.clear();
+    mSpectrumCacheChannel.clear();
+    mLargeSignalWarned.clear();
 }
 
 // ---------------------------------------------------------------- 分析
@@ -1161,11 +1491,14 @@ DASignalAnalysisParams DASignalAnalysisUI::paramsForSignal(const DASignalPtr& si
 }
 
 /**
- * @brief 最近一次频谱结果（无结果返回无效对象）
+ * @brief 指定信号/通道最近一次频谱结果（通道不匹配视为无缓存）
  */
-DASpectrumResult DASignalAnalysisUI::spectrumForSignal(const DASignalPtr& sig) const
+DASpectrumResult DASignalAnalysisUI::spectrumForSignal(const DASignalPtr& sig, int channel) const
 {
     if (!sig) {
+        return DASpectrumResult();
+    }
+    if (mSpectrumCacheChannel.value(sig.get(), -1) != channel) {
         return DASpectrumResult();
     }
     return mSpectrumCache.value(sig.get(), DASpectrumResult());
@@ -1189,11 +1522,12 @@ void DASignalAnalysisUI::openAnalysisSettings()
         return;
     }
     mParamsPerSignal[ sig.get() ] = params;
+    refreshFFmpegAvailability();  // 对话框里可能改了 FFmpeg 路径（D7）
     recomputeCurrentSignal();
 }
 
 /**
- * @brief 重新计算当前信号的频谱（参数变化后调用）
+ * @brief 重新计算当前信号：频谱、热图、峰值表（必要时连曲线）统一按新参数提交一次（D21）
  */
 void DASignalAnalysisUI::recomputeCurrentSignal()
 {
@@ -1204,8 +1538,26 @@ void DASignalAnalysisUI::recomputeCurrentSignal()
     if (!sig || !sig->isValid()) {
         return;
     }
-    mPendingSignal = sig.get();
-    mWorker->computeSpectrum(sig, 0, paramsForSignal(sig));
+    DASignalAnalysisView* view          = mPage->viewForSignal(sig.get());
+    const int channel                   = view ? view->currentChannel() : 0;
+    const DASignalAnalysisParams params = paramsForSignal(sig);
+    // 参数已变化：版本 +1（迟到结果丢弃），峰值曲线标志重置，旧峰值清空
+    bumpParamsVersion(sig);
+    clearPeakState();
+    if (view) {
+        view->setParams(params);
+    }
+    mWorker->computeSpectrum(makeTaskContext(sig, channel), params);
+    if (view) {
+        view->requestEnvelopeRefresh();
+        view->requestHeatmapRefresh();
+    }
+    const bool peakCurves = (mPeakDock && !mPeakDock->isClosed());
+    requestPeaks(peakCurves);
+    if (mUI) {
+        mUI->getStatusBar()->showMessage(tr("Signal analysis: parameters applied, recomputing."));
+        // cn:信号分析：参数已应用，正在重算。
+    }
 }
 
 /**
@@ -1220,17 +1572,21 @@ void DASignalAnalysisUI::onWorkerProgress(double percent, const QString& stage)
 }
 
 /**
- * @brief 频谱计算完成：缓存结果（显示层在后续里程碑接入）
+ * @brief 频谱计算完成：按任务上下文校验后缓存并回填到对应信号视图（评审 U3）
  */
-void DASignalAnalysisUI::onWorkerSpectrumReady(const DASpectrumResult& result)
+void DASignalAnalysisUI::onWorkerSpectrumReady(const DASignalTaskContext& ctx, const DASpectrumResult& result)
 {
-    if (mPendingSignal && result.isValid()) {
-        mSpectrumCache[ mPendingSignal ] = result;
-        if (mPage) {
-            if (DASignalAnalysisView* view = mPage->viewForSignal(mPendingSignal)) {
-                view->setSpectrum(result);
-            }
-        }
+    if (!result.isValid()) {
+        return;
+    }
+    if (!isContextCurrent(ctx, true)) {
+        return;  // 信号已关闭 / 已切通道 / 参数已过期：丢弃迟到结果
+    }
+    const DASignal* key = ctx.signal.get();
+    mSpectrumCache[ key ]        = result;
+    mSpectrumCacheChannel[ key ] = ctx.channel;
+    if (DASignalAnalysisView* view = mPage->viewForSignal(key)) {
+        view->setSpectrum(result);
     }
     if (mUI) {
         mUI->addInfoLogMessage(tr("Spectrum ready: resolution %1 Hz, %2 bins")
@@ -1239,8 +1595,12 @@ void DASignalAnalysisUI::onWorkerSpectrumReady(const DASpectrumResult& result)
         // cn:频谱计算完成：分辨率 %1 赫兹，%2 个频点
     }
     Q_EMIT spectrumUpdated();
-    // 同时刷新峰值表（整段频谱的前 N 峰）
-    requestPeaks(false);
+    // 只有当前信号才刷新峰值表（整段频谱的前 N 峰）
+    DASignalPtr current = mPage->currentSignal();
+    if (current && current.get() == key) {
+        requestPeaks(false);
+    }
+    clearProgressIfIdle();
 }
 
 /**
@@ -1251,6 +1611,7 @@ void DASignalAnalysisUI::onWorkerFailed(const QString& error)
     if (mUI) {
         reportError(tr("Signal analysis failed: %1").arg(error));  // cn:信号分析失败：%1
     }
+    clearProgressIfIdle();
 }
 
 /**
@@ -1261,8 +1622,7 @@ void DASignalAnalysisUI::onViewRequestSpectrum(const DASignalPtr& signal, int ch
     if (!mWorker || !signal) {
         return;
     }
-    mPendingSignal = signal.get();
-    mWorker->computeSpectrum(signal, channel, paramsForSignal(signal));
+    mWorker->computeSpectrum(makeTaskContext(signal, channel), paramsForSignal(signal));
 }
 
 /**
@@ -1271,11 +1631,36 @@ void DASignalAnalysisUI::onViewRequestSpectrum(const DASignalPtr& signal, int ch
 void DASignalAnalysisUI::onViewRequestEnvelope(qint64 start, qint64 end, int width)
 {
     auto* view = qobject_cast< DASignalAnalysisView* >(sender());
-    if (!mWorker || !view) {
+    if (!mWorker || !view || !view->signal()) {
         return;
     }
-    mPendingEnvelopeView = view;
-    mWorker->computeEnvelope(view->signal(), view->currentChannel(), start, end, width);
+    mWorker->computeEnvelope(makeTaskContext(view->signal(), view->currentChannel()), start, end, width);
+}
+
+/**
+ * @brief 通道切换：失效频谱缓存与峰值，按新通道重算峰值
+ *
+ * 包络/频谱/热图的重新请求由视图自己发出（顺序在 channelChanged 之前），
+ * 因此这里不能再改参数版本号，否则那几次请求的迟到结果会被误判为过期。
+ */
+void DASignalAnalysisUI::onViewChannelChanged(int channel)
+{
+    auto* view = qobject_cast< DASignalAnalysisView* >(sender());
+    if (!view || !view->signal()) {
+        return;
+    }
+    const DASignal* key = view->signal().get();
+    mSpectrumCache.remove(key);
+    mSpectrumCacheChannel.remove(key);
+    if (mCurrentPeaksSignal == key) {
+        clearPeakState();
+    }
+    DASignalPtr current = mPage ? mPage->currentSignal() : DASignalPtr();
+    if (current && current.get() == key) {
+        const bool peakViewOpen = (mPeakDock && !mPeakDock->isClosed());
+        requestPeaks(peakViewOpen);
+    }
+    Q_UNUSED(channel)
 }
 
 /**
@@ -1292,7 +1677,8 @@ void DASignalAnalysisUI::syncPlayerSource()
         return;
     }
     QString error;
-    if (!mPlayer->setSignal(sig, 0, &error)) {
+    // 播放当前查看的通道（评审 U9）；数据帧来源的临时 WAV 由播放器按「信号+通道」缓存
+    if (!mPlayer->setSignal(sig, channelOfSignal(sig), &error)) {
         if (actionPlay) {
             actionPlay->setEnabled(false);
         }
@@ -1303,6 +1689,9 @@ void DASignalAnalysisUI::syncPlayerSource()
     }
     if (actionPlay) {
         actionPlay->setEnabled(true);
+    }
+    if (mPeakPanel) {
+        mPeakPanel->setTimeOrigin(sig->timeOrigin());  // 峰值曲线时间轴与波形/热图对齐（U12）
     }
 }
 
@@ -1316,7 +1705,8 @@ void DASignalAnalysisUI::onPlayerPositionChanged(qint64 ms)
     }
     mSyncingFromPlayer = true;
     if (DASignalAnalysisView* v = mPage->viewForSignal(mPage->currentSignal().get())) {
-        v->setCurrentTime(ms / 1000.0);
+        // 播放头回写只更新显示，不再反发 currentTimeChanged（避免 seek 循环）
+        v->setPlayheadFromPlayback(ms / 1000.0);
         if (v->isFollowSlider()) {
             updatePeaksForCurrentFrame();
         }
@@ -1366,50 +1756,75 @@ void DASignalAnalysisUI::onViewRequestHeatmap(int columns, int rows)
             );
         }
     }
-    mPendingHeatmapView = view;
-    mWorker->computeHeatmap(view->signal(), view->currentChannel(), view->params(), columns, rows);
+    mWorker->computeHeatmap(makeTaskContext(view->signal(), view->currentChannel()), view->params(), columns, rows);
 }
 
 /**
- * @brief 时频栅格结果回填到请求它的视图
+ * @brief 时频栅格结果回填到发起请求的信号视图（按上下文校验）
  */
-void DASignalAnalysisUI::onWorkerHeatmapReady(const DAStftResult& result)
+void DASignalAnalysisUI::onWorkerHeatmapReady(const DASignalTaskContext& ctx, const DAStftResult& result)
 {
-    if (mPendingHeatmapView) {
-        mPendingHeatmapView->setStft(result);
+    if (!isContextCurrent(ctx, true)) {
+        return;
     }
+    if (DASignalAnalysisView* view = mPage->viewForSignal(ctx.signal.get())) {
+        view->setStft(result);
+    }
+    clearProgressIfIdle();
 }
 
 /**
- * @brief 峰值表结果回填（表模型 + 频谱图标记）
+ * @brief 峰值表结果回填（表模型 + 频谱图标记）；只接受当前信号/通道的结果
  */
-void DASignalAnalysisUI::onWorkerPeaksReady(const DAPeakResult& result)
+void DASignalAnalysisUI::onWorkerPeaksReady(const DASignalTaskContext& ctx, const DAPeakResult& result)
 {
-    mCurrentPeaks = result;
+    if (!isContextCurrent(ctx, false)) {
+        return;
+    }
+    DASignalPtr current = mPage ? mPage->currentSignal() : DASignalPtr();
+    if (!current || current.get() != ctx.signal.get()) {
+        return;  // 峰值表/标记只属于当前信号
+    }
+    if (DASignalAnalysisView* view = mPage->viewForSignal(ctx.signal.get())) {
+        if (view->currentChannel() != ctx.channel) {
+            return;
+        }
+    }
+    mCurrentPeaks         = result;
+    mCurrentPeaksSignal   = ctx.signal.get();
+    mCurrentPeaksChannel  = ctx.channel;
     if (mPeakPanel) {
-        const DASignalAnalysisParams params =
-            (mPage && mPage->currentSignal()) ? paramsForSignal(mPage->currentSignal())
-                                              : DASignalAnalysisParams::defaults();
+        const DASignalAnalysisParams params = paramsForSignal(current);
         mPeakPanel->setAmplitudeDisplay(mAmplitudeMode, mDbReference, params.calibration, params.unit);
+        if (DASignalAnalysisView* v = mPage->viewForSignal(ctx.signal.get())) {
+            mPeakPanel->setSignalPeak(v->signalPeak() * params.calibration);
+        }
         mPeakPanel->setPeaks(result);
         mPeakPanel->setPeakCurves(mCurrentCurves);
     }
-    if (mPage) {
-        if (DASignalAnalysisView* view = mPage->viewForSignal(mPendingSignal)) {
-            view->setPeaks(result);
-        }
+    if (DASignalAnalysisView* view = mPage->viewForSignal(ctx.signal.get())) {
+        view->setPeaks(result);
     }
+    clearProgressIfIdle();
 }
 
 /**
- * @brief 每帧前 N 峰值曲线结果回填
+ * @brief 每帧前 N 峰值曲线结果回填（只接受当前信号/通道）
  */
-void DASignalAnalysisUI::onWorkerPeakCurvesReady(const DAPeakCurveResult& result)
+void DASignalAnalysisUI::onWorkerPeakCurvesReady(const DASignalTaskContext& ctx, const DAPeakCurveResult& result)
 {
+    if (!isContextCurrent(ctx, false)) {
+        return;
+    }
+    DASignalPtr current = mPage ? mPage->currentSignal() : DASignalPtr();
+    if (!current || current.get() != ctx.signal.get()) {
+        return;
+    }
     mCurrentCurves = result;
     if (mPeakPanel) {
         mPeakPanel->setPeakCurves(result);
     }
+    clearProgressIfIdle();
 }
 
 /**
@@ -1455,6 +1870,9 @@ void DASignalAnalysisUI::updatePeaksForCurrentFrame()
         return;
     }
     peaks.magnitudes = mags;
+    // STFT 模式峰值表带时间列（帧中心时间 + 时间原点，评审 U11/U12）
+    peaks.frameTime    = mCurrentCurves.times.value(frame) + sig->timeOrigin();
+    peaks.hasFrameTime = true;
     const double ref = mags.first();
     double powerSum  = 0.0;
     for (double m : mags) {
@@ -1465,6 +1883,7 @@ void DASignalAnalysisUI::updatePeaksForCurrentFrame()
         peaks.share.append(powerSum > 0.0 ? (m * m / powerSum * 100.0) : 0.0);
     }
     if (mPeakPanel) {
+        mPeakPanel->setShowTimeColumn(true);  // 跟随模式：峰值表带帧时间列（U11）
         mPeakPanel->setPeaks(peaks);
     }
     view->setPeaks(peaks);
@@ -1518,21 +1937,28 @@ void DASignalAnalysisUI::onPeakTopNChanged()
         DASignalAnalysisParams params = paramsForSignal(sig);
         params.peakTopN               = topN;
         mParamsPerSignal[ sig.get() ] = params;
+        bumpParamsVersion(sig);
     }
     mPeakCurvesRequested = false;  // 名次数改变后需要重扫曲线
+    clearPeakState();
     requestPeaks(true);
 }
 
 /**
- * @brief 包络结果回填到请求它的视图
+ * @brief 包络结果回填到发起请求的信号视图（按上下文校验）
  */
-void DASignalAnalysisUI::onWorkerEnvelopeReady(const QVector< double >& xs,
+void DASignalAnalysisUI::onWorkerEnvelopeReady(const DASignalTaskContext& ctx,
+                                               const QVector< double >& xs,
                                                const QVector< double >& mins,
                                                const QVector< double >& maxs)
 {
-    if (mPendingEnvelopeView) {
-        mPendingEnvelopeView->setEnvelope(xs, mins, maxs);
+    if (!isContextCurrent(ctx, true)) {
+        return;
     }
+    if (DASignalAnalysisView* view = mPage->viewForSignal(ctx.signal.get())) {
+        view->setEnvelope(xs, mins, maxs);
+    }
+    clearProgressIfIdle();
 }
 
 /**
@@ -1565,6 +1991,15 @@ void DASignalAnalysisUI::onAmplitudeModeChanged()
     mParamsPerSignal[ sig.get() ] = params;
     if (DASignalAnalysisView* view = mPage->viewForSignal(sig.get())) {
         view->setAmplitudeDisplay(mAmplitudeMode, mDbReference);
+    }
+    // 峰值表/曲线的显示口径也要跟着切换（只重绘，不重算；评审 §七-3）
+    if (mPeakPanel) {
+        if (DASignalAnalysisView* view = mPage->viewForSignal(sig.get())) {
+            mPeakPanel->setSignalPeak(view->signalPeak() * params.calibration);
+        }
+        mPeakPanel->setAmplitudeDisplay(mAmplitudeMode, mDbReference, params.calibration, params.unit);
+        mPeakPanel->setPeaks(mCurrentPeaks);
+        mPeakPanel->setPeakCurves(mCurrentCurves);
     }
 }
 

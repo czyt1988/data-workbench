@@ -12,11 +12,8 @@ namespace DA
 class DAFileSignalSource : public DASignalSource
 {
 public:
-    /**
-     * @param readPath 实际读取路径（视频为抽取出的临时 WAV）
-     * @param originalPath 用户选择的原始文件路径（工程保存与重新指定用）
-     * @param isTemporary readPath 是临时抽取文件（信号销毁时清理）
-     */
+    // readPath 实际读取路径（视频为抽取出的临时 WAV）；originalPath 用户选择的原始路径；
+    // isTemporary 表示 readPath 为临时抽取文件（信号销毁时清理）
     DAFileSignalSource(const QString& readPath,
                        const QString& originalPath,
                        bool isTemporary = false,

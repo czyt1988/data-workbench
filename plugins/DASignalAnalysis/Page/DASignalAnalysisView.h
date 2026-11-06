@@ -64,6 +64,28 @@ public:
     void setPeakMarkersVisible(bool on);
     // 瀑布模式：0=二维热图 / 1=三维曲面 / 2=隐藏（D12 / D25）
     void setWaterfallMode(int mode);
+    int waterfallMode() const;
+    // 频率轴线性/对数（D16）
+    bool isLogFrequency() const;
+    void setLogFrequency(bool on);
+    // 色带与 dB 动态范围下限（视图状态持久化用）
+    QString colormapName() const;
+    void setColormapName(const QString& name);
+    double dbFloor() const;
+    void setDbFloor(double dbFloor);
+    // 分割比例（视图状态持久化用；空列表表示不恢复）
+    QList< int > verticalSplitterSizes() const;
+    QList< int > horizontalSplitterSizes() const;
+    void setSplitterSizes(const QList< int >& vertical, const QList< int >& horizontal);
+    // 时间轴原点（秒）：数据帧时间列首值非 0 时三张图横向对齐用（评审 U12）
+    void setTimeOrigin(double seconds);
+    // 信号峰值幅度（包络回填时统计；dBFS 参考与峰值表共用）
+    double signalPeak() const;
+    // 热图随播放自动滚动开关（D27，默认关）
+    void setHeatmapAutoScroll(bool on);
+    bool isHeatmapAutoScroll() const;
+    // 播放头跟随（外部按播放位置调用，避免与用户 seek 混淆）
+    void setPlayheadFromPlayback(double seconds);
     // 当前时间（秒）
     double currentTime() const;
     // 当前通道（多通道信号一次分析一个通道）
@@ -75,6 +97,8 @@ public:
     void setAmplitudeDisplay(const QString& amplitudeMode, const QString& dbReference);
     // 请求一次包络计算（视图显示/尺寸变化时调用）
     void requestEnvelopeRefresh();
+    // 请求一次时频热图计算（外部参数变化后调用）
+    void requestHeatmapRefresh();
     // 首次分析：发起包络、整段频谱与时频热图三类计算（外部信号连接完成后调用）
     void requestInitialAnalysis();
 
@@ -89,6 +113,8 @@ Q_SIGNALS:
     void heatmapRequested(int columns, int rows);
     // 当前时间变化（滑块/点击/播放头）
     void currentTimeChanged(double seconds);
+    // 「跟随滑块」开关变化（只影响显示与峰值表刷新，不触发 seek）
+    void followSliderToggled(bool on);
 
 public Q_SLOTS:
     // 设置当前时间（秒），同步滑块与播放头
@@ -98,6 +124,7 @@ protected:
     void resizeEvent(QResizeEvent* e) override;
     void showEvent(QShowEvent* e) override;
     void changeEvent(QEvent* e) override;
+    bool eventFilter(QObject* watched, QEvent* e) override;
 
 private Q_SLOTS:
     void onSliderMoved(int value);
@@ -109,7 +136,6 @@ private:
     void rebuildWavePlot();
     void rebuildSpectrumPlot();
     void rebuildHeatmap();
-    void requestHeatmapRefresh();
     void updatePlayhead();
     void updateStftWindowRect();
     void updateAxisTitles();
@@ -156,6 +182,8 @@ private:
     DAStftResult mStft;
     bool mFollowSlider { false };
     double mDbFloor { -80.0 };
+    // 显示用时间原点（秒）：数据帧时间列首值非 0 时三图横向对齐
+    double mTimeOrigin { 0.0 };
     DASignalChartPanel* mHeatmapPanel { nullptr };
     // 峰值标记
     DAPeakResult mPeaks;
@@ -164,6 +192,13 @@ private:
     QComboBox* mColormapCombo { nullptr };
     QDoubleSpinBox* mDbFloorSpin { nullptr };
     QCheckBox* mFollowSliderCheck { nullptr };
+    // 热图随播放滚动（D27，默认关）
+    QCheckBox* mAutoScrollCheck { nullptr };
+    bool mHeatmapAutoScroll { false };
+    // STFT 窗口矩形拖动（D30：整体可拖、不可拖边）
+    bool mDraggingWindow { false };
+    QPoint mDragPressPos;
+    double mDragPressTime { 0.0 };
     // 三维瀑布
     DA::DAChart3DWidget* mWaterfallChart { nullptr };
     Qwt3DWaterfall* mWaterfallItem { nullptr };

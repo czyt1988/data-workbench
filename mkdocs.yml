@@ -89,6 +89,7 @@ nav:
           - 筛选、计算与排序: zh/use-guide/analysis/query.md
           - 描述统计与透视表: zh/use-guide/analysis/statistics.md
           - 统计绘图: zh/use-guide/analysis/stats-plots.md
+          - 信号分析: zh/use-guide/analysis/signal-analysis.md
       - 第五部分 · 绘图:
           - 绘图: zh/use-guide/chart/index.md
           - 创建图表: zh/use-guide/chart/create.md
