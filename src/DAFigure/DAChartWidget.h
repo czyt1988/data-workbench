@@ -1,4 +1,4 @@
-﻿#ifndef DACHARTWIDGET_H
+#ifndef DACHARTWIDGET_H
 #define DACHARTWIDGET_H
 
 
@@ -124,7 +124,9 @@ public:
 
     // 高级图表
     QwtPlotSpectrogram* addSpectrogram(QwtGridRasterData* gridData, const QString& title = QString()) override;
-    // 通用栅格数据谱图入口（含 QwtMatrixRasterData，允许显式 Z 轴色标范围）
+    // 通用栅格数据谱图入口（含 QwtMatrixRasterData，允许显式 Z 轴色标范围）。
+    // 所有权：栅格数据交给 QwtPlotSpectrogram 接管（setData 会 delete 旧数据、析构时 delete 当前数据），
+    // 调用方不得再 delete 该指针，谱图 setData/图表销毁后原指针失效。
     QwtPlotSpectrogram* addSpectrogram(QwtRasterData* rasterData, const QString& title = QString()) override;
 
     // 箱线图

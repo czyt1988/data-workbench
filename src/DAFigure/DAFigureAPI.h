@@ -42,6 +42,7 @@ enum class DAChartTypes
     Surface3D,    ///< 3D 曲面图
     Bar3D,        ///< 3D 柱状图
     Line3D,       ///< 3D 线图
+    Waterfall3D,  ///< 3D 瀑布图（由信号分析页创建，绘图添加向导暂不提供）
 
     Unknow = 1000
 };

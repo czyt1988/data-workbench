@@ -1,4 +1,4 @@
-﻿#ifndef DACHARTDATAINTERFACE_H
+#ifndef DACHARTDATAINTERFACE_H
 #define DACHARTDATAINTERFACE_H
 
 #include "DAFigureAPI.h"
@@ -68,7 +68,8 @@ public:
 
     // ==================== 高级图表 ====================
     virtual QwtPlotSpectrogram* addSpectrogram(QwtGridRasterData* gridData, const QString& title = QString()) = 0;
-    // 通用栅格数据谱图入口（接受任意 QwtRasterData，含 QwtMatrixRasterData，允许显式指定 Z 轴色标范围）
+    // 通用栅格数据谱图入口（接受任意 QwtRasterData，含 QwtMatrixRasterData，允许显式指定 Z 轴色标范围）。
+    // 所有权：栅格数据被 QwtPlotSpectrogram 接管，调用方不得 delete，谱图 setData/图表销毁后指针失效。
     virtual QwtPlotSpectrogram* addSpectrogram(QwtRasterData* rasterData, const QString& title = QString()) = 0;
 
     // ==================== 箱线图 ====================

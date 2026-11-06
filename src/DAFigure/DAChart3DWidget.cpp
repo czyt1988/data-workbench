@@ -114,7 +114,7 @@ void DAChart3DWidget::detach(Qwt3DPlotItem* item)
 QList< int > DAChart3DWidget::data3DRttis() const
 {
     QList< int > rttis;
-    rttis << Rtti_Plot3DSurface << Rtti_Plot3DBar << Rtti_Plot3DLine;
+    rttis << Rtti_Plot3DSurface << Rtti_Plot3DBar << Rtti_Plot3DLine << Rtti_Plot3DWaterfall;
     return rttis;
 }
 

@@ -39,6 +39,8 @@
 #include <QBrush>
 #include <QPen>
 #include <cmath>
+#include <limits>
+#include <utility>
 
 // ==================== Static style conversion helpers ====================
 
@@ -504,21 +506,45 @@ QwtPlotItem* DAChartPlotRenderer::renderSpectrogram(const DA::DASpectrogramData&
 
     // QwtMatrixRasterData：values[row * numColumns + col]，行=Y（nrows）、列=X（ncols），
     // 与 DASpectrogramData 的行主序布局一致，可直接使用
-    // 数据不足处以 NaN 填充（避免越界访问；渲染时 NaN 单元不着色）
-    QVector<double> values(data.nrows * data.ncols, 0.0);
+    // 数据不足处以 NaN 填充（避免越界访问；渲染时 NaN 单元不着色，不能填 0，否则缺测被当成 0 着色）
+    const double nanValue = std::numeric_limits< double >::quiet_NaN();
+    QVector<double> values(data.nrows * data.ncols, nanValue);
     const int nCopy = qMin(values.size(), data.values.size());
     for (int i = 0; i < nCopy; ++i) {
         values[i] = data.values[i];
+    }
+
+    // Z 轴（色标）区间优先级：style["vmin"]/["vmax"] > data.zmin/zmax > 有效数据最小/最大值。
+    // 注意：QwtMatrixRasterData::update() 只计算行列步长，不会推导 Z 区间；Z 区间无效时
+    // QwtPlotSpectrogram::renderImage 直接返回空图（统计热图/二维核密度图会整片空白），
+    // 因此这里必须无条件给出一个有效区间。
+    double zmin = defaultDouble(style, "vmin", data.zmin);
+    double zmax = defaultDouble(style, "vmax", data.zmax);
+    if (!std::isfinite(zmin) || !std::isfinite(zmax) || !(zmin < zmax)) {
+        double dataMin = std::numeric_limits< double >::infinity();
+        double dataMax = -std::numeric_limits< double >::infinity();
+        for (double v : std::as_const(values)) {
+            if (std::isfinite(v)) {
+                dataMin = qMin(dataMin, v);
+                dataMax = qMax(dataMax, v);
+            }
+        }
+        if (std::isfinite(dataMin) && std::isfinite(dataMax) && dataMin < dataMax) {
+            zmin = dataMin;
+            zmax = dataMax;
+        }
+    }
+    if (!std::isfinite(zmin) || !std::isfinite(zmax) || !(zmin < zmax)) {
+        // 常量矩阵/全 NaN：给一个零宽区间之外的兜底区间，避免空图
+        zmin = 0.0;
+        zmax = 1.0;
     }
 
     QwtMatrixRasterData* rasterData = new QwtMatrixRasterData();
     rasterData->setValueMatrix(values, data.ncols);
     rasterData->setInterval(Qt::XAxis, QwtInterval(data.xmin, data.xmax));
     rasterData->setInterval(Qt::YAxis, QwtInterval(data.ymin, data.ymax));
-    // Z 轴（色标）范围：zmin/zmax 有效时显式压动态范围，否则由矩阵数据自动确定
-    if (!std::isnan(data.zmin) && !std::isnan(data.zmax) && data.zmin < data.zmax) {
-        rasterData->setInterval(Qt::ZAxis, QwtInterval(data.zmin, data.zmax));
-    }
+    rasterData->setInterval(Qt::ZAxis, QwtInterval(zmin, zmax));
 
     QwtPlotSpectrogram* spectro = mChart->addSpectrogram(static_cast< QwtRasterData* >(rasterData), title);
     if (!spectro) {

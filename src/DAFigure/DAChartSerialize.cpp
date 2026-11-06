@@ -51,11 +51,19 @@ namespace {
 ///     若为 QwtTextScaleDraw 额外持久化 labelMap 与显式 scaleDiv 的 bounds
 /// v3: 在块尾增加色标条色带段（v3 之前重开工程色带丢失）
 constexpr int gcScaleWidgetBlockVersion = 3;
+/// scaleDrawType 字段从 v2 起存在，读取闸门必须用这个独立常量（不能用 v3 总版本号，
+/// 否则读 v2 存量工程时会跳过该字段，后续字节流整体错位）
+constexpr int gcScaleWidgetBlockVersionV2 = 2;
 
 /// serialize_out/in_scale_widge 坐标轴外层块版本号
 /// v1(=gc_dachart_version): 无刻度方向字段
 /// v3: 在 magic_mark3 后增加 tickDirection(0=朝外,1=朝内)
 constexpr int gcScaleWidgetAxisBlockVersion = 3;
+
+/// QwtPlotZoneItem 区间高亮块版本号
+/// v1: interval/pen/brush
+/// v2: interval 后增加 orientation（否则水平区间重开后变垂直）
+constexpr int gcZoneItemBlockVersion = 2;
 }  // namespace
 
 #ifndef INITCHARTITEMSERIALIZE_MAKE_IN_OUT_PAIR
@@ -1460,9 +1468,10 @@ QDataStream& operator>>(QDataStream& in, QwtPlotSpectrogram* item)
  */
 QDataStream& operator<<(QDataStream& out, const QwtPlotZoneItem* item)
 {
-    out << DA::gc_dachart_version << DA::gc_dachart_magic_mark;
+    // v2: 在 interval 之后追加 orientation（v1 旧文件没有该字段，读侧按 Vertical 兼容）
+    out << gcZoneItemBlockVersion << DA::gc_dachart_magic_mark;
     out << static_cast< const QwtPlotItem* >(item);
-    out << item->interval() << item->pen() << item->brush();
+    out << item->interval() << static_cast< int >(item->orientation()) << item->pen() << item->brush();
     return out;
 }
 
@@ -1485,8 +1494,17 @@ QDataStream& operator>>(QDataStream& in, QwtPlotZoneItem* item)
     QwtInterval interval;
     QPen pen;
     QBrush brush;
-    in >> interval >> pen >> brush;
+    Qt::Orientation orientation = Qt::Vertical;
+    if (version >= gcZoneItemBlockVersion) {
+        int orientationInt = static_cast< int >(Qt::Vertical);
+        in >> interval >> orientationInt >> pen >> brush;
+        orientation = static_cast< Qt::Orientation >(orientationInt);
+    } else {
+        // v1 旧文件无 orientation 字段（当时只有垂直区间才会被序列化）
+        in >> interval >> pen >> brush;
+    }
     item->setInterval(interval);
+    item->setOrientation(orientation);
     item->setPen(pen);
     item->setBrush(brush);
     return in;
@@ -2083,7 +2101,7 @@ QDataStream& operator>>(QDataStream& in, QwtScaleWidget* w)
     in >> isSD;
     if (isSD) {
         int scaleDrawType = 0;
-        if (version >= gcScaleWidgetBlockVersion) {
+        if (version >= gcScaleWidgetBlockVersionV2) {
             in >> scaleDrawType;  // v2 起存在子类类型标记
         }
         QwtScaleDraw* sd = w->scaleDraw();
@@ -2124,10 +2142,14 @@ QDataStream& operator>>(QDataStream& in, QwtScaleWidget* w)
     }
     // v3: 色标条色带（v3 之前无此段）
     if (version >= gcScaleWidgetBlockVersion) {
-        if (QwtColorMap* cmap = spectroColorMapIn(in)) {
-            // setColorMap 同步重设色标条区间与色带
-            w->setColorMap(w->colorBarInterval(), cmap);
+        QwtColorMap* cmap = spectroColorMapIn(in);
+        if (nullptr == cmap) {
+            // 无显式色带（None 标签）：保留轴部件当前的默认色图，避免绘制时空指针
+            cmap = const_cast< QwtColorMap* >(w->colorMap());
         }
+        // 用刚读出的区间回填：反序列化时轴部件是新建的，默认区间无效，
+        // 若不传会沿用默认无效区间，QwtScaleWidget 会跳过色标条绘制（重开工程后色标条消失）
+        w->setColorMap(colorBarInterval, cmap);
     }
     return in;
 }
