@@ -452,8 +452,14 @@ endif()
 # 扫描构建树中的 exe、DAGui.dll（WebEngine/Qml 是它的传递依赖）和插件 DLL，
 # 通过 --dir 部署到安装目录，与安装规则的执行顺序无关。
 if(WIN32)
+    # 插件私有的 Qt 模块不会出现在主程序 exe 的直接依赖里，安装期需显式要求（评审 D1）。
+    set(_da_required_qt_modules)
+    if(DA_BUILD_PLUGINS AND TARGET DASignalAnalysis)
+        list(APPEND _da_required_qt_modules Multimedia)  # 信号分析插件播放（QMediaPlayer）
+    endif()
     dafun_install_deploy_qt_runtime(${DA_APP_NAME}
         SCAN_TARGETS DAWorkbench::DAGui
         PLUGIN_DIR bin/plugins
+        REQUIRED_QT_MODULES ${_da_required_qt_modules}
     )
 endif()

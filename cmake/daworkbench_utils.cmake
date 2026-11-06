@@ -202,9 +202,10 @@ endfunction()
 #   dafun_install_deploy_qt_runtime(${DA_APP_NAME}
 #       SCAN_TARGETS DAWorkbench::DAGui   # 额外扫描的库（捕获其 Qt 传递依赖）
 #       PLUGIN_DIR bin/plugins            # 插件目录（相对构建目录，自动适配 <CONFIG> 子目录）
+#       REQUIRED_QT_MODULES Multimedia    # 安装后必须存在的 Qt 模块（缺失即安装失败）
 #   )
 function(dafun_install_deploy_qt_runtime _target_name)
-    cmake_parse_arguments(_arg "" "PLUGIN_DIR" "SCAN_TARGETS" ${ARGN})
+    cmake_parse_arguments(_arg "" "PLUGIN_DIR" "SCAN_TARGETS;REQUIRED_QT_MODULES" ${ARGN})
 
     if(NOT WIN32)
         return()
@@ -258,6 +259,16 @@ function(dafun_install_deploy_qt_runtime _target_name)
         endif()
     endforeach()")
 
+    # 安装后必须存在的 Qt 运行时 DLL：新增 Qt 模块（如信号分析插件的 Multimedia）若被
+    # windeployqt 漏扫，打包阶段不会报错、只在运行时缺 DLL（评审 D1），因此安装期显式校验。
+    set(_required_qt_dlls
+        "Qt${QT_VERSION_MAJOR}Core"
+        "Qt${QT_VERSION_MAJOR}Gui"
+        "Qt${QT_VERSION_MAJOR}Widgets")
+    foreach(_qm ${_arg_REQUIRED_QT_MODULES})
+        list(APPEND _required_qt_dlls "Qt${QT_VERSION_MAJOR}${_qm}")
+    endforeach()
+
     cmake_policy(SET CMP0087 NEW)
     install(CODE "
     set(_wdq_scan_files ${_scan_files})${_glob_script}
@@ -284,6 +295,22 @@ function(dafun_install_deploy_qt_runtime _target_name)
         if(NOT _wdq_result EQUAL 0)
             message(WARNING \"windeployqt exited with code \${_wdq_result}, Qt runtime in install dir may be incomplete\")
         endif()
+    endif()
+    # 校验关键 Qt DLL 是否真的落盘（Debug 产物带 d 后缀）
+    if(\"\${CMAKE_INSTALL_CONFIG_NAME}\" STREQUAL \"Debug\")
+        set(_qt_dll_suffix \"d\")
+    else()
+        set(_qt_dll_suffix \"\")
+    endif()
+    set(_qt_missing)
+    foreach(_qm ${_required_qt_dlls})
+        if(NOT EXISTS \"\${CMAKE_INSTALL_PREFIX}/bin/\${_qm}\${_qt_dll_suffix}.dll\")
+            list(APPEND _qt_missing \"\${_qm}\${_qt_dll_suffix}.dll\")
+        endif()
+    endforeach()
+    if(_qt_missing)
+        string(JOIN \", \" _qt_missing_txt \${_qt_missing})
+        message(FATAL_ERROR \"Qt runtime deployment incomplete, missing in install dir: \${_qt_missing_txt}\")
     endif()
 ")
 

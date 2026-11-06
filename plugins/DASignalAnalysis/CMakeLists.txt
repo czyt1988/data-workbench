@@ -81,6 +81,31 @@ da_add_plugin(
     INCLUDE_PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
+# 构建期补齐本插件引入的 Qt 运行时模块（评审 D1）
+# 主程序 exe 的依赖链不含插件私有的 Qt 模块（播放用到 Multimedia），而开发时通常直接从
+# build/bin 运行，缺 DLL 会表现为无声/播放失败。这里以插件 DLL 为扫描目标，把
+# Multimedia 及其依赖部署到主程序输出目录。安装目录由顶层
+# dafun_install_deploy_qt_runtime() 统一处理（它会扫描插件目录）。
+if(WIN32)
+    get_target_property(_signal_qmake_exe Qt${QT_VERSION_MAJOR}::qmake IMPORTED_LOCATION)
+    if(_signal_qmake_exe)
+        get_filename_component(_signal_qt_bin_dir "${_signal_qmake_exe}" DIRECTORY)
+        find_program(_signal_windeployqt windeployqt HINTS "${_signal_qt_bin_dir}")
+        if(_signal_windeployqt)
+            add_custom_command(TARGET DASignalAnalysis POST_BUILD
+                COMMAND "${_signal_windeployqt}"
+                        $<IF:$<CONFIG:Debug>,--debug,--release>
+                        --no-translations
+                        --no-system-d3d-compiler
+                        --no-opengl-sw
+                        --dir "${CMAKE_BINARY_DIR}/bin/$<CONFIG>"
+                        "$<TARGET_FILE:DASignalAnalysis>"
+                COMMENT "Deploying Qt runtime DLLs required by DASignalAnalysis (Multimedia)"
+            )
+        endif()
+    endif()
+endif()
+
 # DASignalAnalysis Python 包（导入/取数/频谱/STFT/峰值/包络编排）
 install(DIRECTORY
     ${CMAKE_CURRENT_LIST_DIR}/PyScripts/DASignalAnalysis

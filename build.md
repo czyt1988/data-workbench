@@ -231,4 +231,7 @@ cat test_result.txt
    部署到安装目录 `bin/`，打包 `bin_<Config>_qt<X>_...` 目录时无需再手工运行 windeployqt。
    实现见 `cmake/daworkbench_utils.cmake` 的 `dafun_install_deploy_qt_runtime()`。
    注意：WebEngine/Qml 是 `DAGui.dll` 的传递依赖而非主程序的直接依赖，手工运行
-   windeployqt 时必须把 `DAGui.dll` 一并传入，否则会漏掉整条依赖链
+   windeployqt 时必须把 `DAGui.dll` 一并传入，否则会漏掉整条依赖链。
+   新增 Qt 模块后（例如信号分析插件的 `Multimedia`）必须重新执行 `cmake --install`：
+   安装期会用 `REQUIRED_QT_MODULES` 校验关键 Qt DLL，缺失会直接安装失败而不是静默打包。
+   构建目录（`build/bin`）由插件 CMake 的 POST_BUILD `windeployqt` 自行补齐插件私有的 Qt 模块。
