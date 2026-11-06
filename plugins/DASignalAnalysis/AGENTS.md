@@ -91,7 +91,17 @@ python -I -m pytest tests/test_signal_dsp.py tests/test_signal_import.py -q   # 
 - **幅值口径**：Python 计算层始终返回峰值幅度，均方根/dB 只在显示与导出层换算，
   唯一入口是 `Analysis/DASignalAmplitude.h`（频谱图、峰值表、CSV 共用，评审 C2/C4/I9）。
 - **参数语义**：`zeroPadding` 是「额外点数」（频谱/峰值表/STFT 一致）；频率分辨率决定频谱与峰值表段长，
-  STFT 窗长由 `stftWindowMs` 决定（评审 C3/C4）。
+  STFT 计算仍按 `stftWindowMs` 取窗，但参数对话框里两者**二选一联动**（Δf = 1/窗长，换算函数
+  `signalStftWindowMsFromResolution` / `signalResolutionFromStftWindowMs`），保证改分辨率时热图同步变化（评审 C3/C4）。
 - **卸载清理**：`finalize()` 必须清理峰值停靠窗口、页面停靠窗口、播放器、worker、丝带标签页与动作；
   `mUI`/`mCategory` 为空时不能提前 return（评审 B5）。
+- **峰值归属**：峰值表/曲线缓存带 `mCurrentPeaksSignal`/`mCurrentPeaksChannel`；切信号走
+  `onCurrentSignalChanged()` 先清空再按新信号重算，禁止把上一个信号的峰值停在新标签页下（评审 U4）。
+- **缺失信号源**：`restoreState()` 遇到文件不存在时弹「重新指定」，恢复后保留采样率与参数；数据帧缺失只能报错跳过
+  （数据帧由工程数据决定，需宿主生命周期回调才能更干净处理，评审 U16/Q7）。
+- **PSD 出口**：韦尔奇功率谱密度已提供 CSV 导出（导出下拉里的「功率谱密度（CSV）」），
+  换算口径为 10·log10（功率量），不随幅值模式变化（评审 C10）。
+- **Qt 运行时**：插件私有的 `Multimedia` 不在主程序 exe 依赖链里。插件 CMake 在构建后以插件 DLL 为扫描目标
+  调 `windeployqt` 补齐 `build/bin`；安装目录由顶层 `dafun_install_deploy_qt_runtime(... REQUIRED_QT_MODULES Multimedia)`
+  在安装期校验，缺 DLL 直接安装失败（评审 D1）。
 - **测试选择**：`plugins/DASignalAnalysis/` 的改动在 `scripts/test.ps1 -Changed` 下会选中 `data` 套件。
