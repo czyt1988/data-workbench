@@ -2,6 +2,9 @@
 #include "Table/Views/DADataHeaderView.h"
 #include "Table/Views/DADataTableView.h"
 #include <QEvent>
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#    include <QEnterEvent>
+#endif
 #include <QHBoxLayout>
 #include <QLayout>
 #include <QMouseEvent>
@@ -50,7 +53,11 @@ protected:
         p.drawLine(width() / 2, 0, width() / 2, height());
     }
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    void enterEvent(QEnterEvent* event) override
+#else
     void enterEvent(QEvent* event) override
+#endif
     {
         QWidget::enterEvent(event);
         mHovered = true;

@@ -219,7 +219,11 @@ qint64 DASignalPlayer::durationMs() const
 
 bool DASignalPlayer::isPlaying() const
 {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    return mPlayer && mPlayer->playbackState() == QMediaPlayer::PlayingState;
+#else
     return mPlayer && mPlayer->state() == QMediaPlayer::PlayingState;
+#endif
 }
 
 /**
