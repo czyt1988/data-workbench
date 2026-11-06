@@ -23,6 +23,11 @@ name: Spike / Qt 6.10.3 + MSVC 2022 + Python 3.12 (compile only)
 
 on:
   workflow_dispatch:
+  # 首次推送这个分支就自动跑一轮，省掉"先在页面上点 Run workflow"的一步
+  # （workflow_dispatch 要求工作流已存在于默认分支才出现在 UI 里）
+  push:
+    branches:
+      - 'ci/release-spike'
 
 permissions:
   contents: read
