@@ -15,9 +15,27 @@ if _PLUGIN_PY not in sys.path:
     sys.path.insert(0, _PLUGIN_PY)
 
 from DASignalAnalysis import importer  # noqa: E402
+from DAWorkbench.DAPyBase import thread_status_manager as tsm  # noqa: E402
 
 
 pytestmark = pytest.mark.signal_import
+
+
+def _params(**overrides):
+    """默认参数字典（键名与 DASignalAnalysisParams::toJson 一致）。"""
+    params = {
+        "removeDc": False,
+        "detrend": "none",
+        "window": "hann",
+        "amplitudeMode": "peak",
+        "dbReference": "fullScale",
+        "resolutionHz": 10.0,
+        "zeroPadding": 0,
+        "average": "mean",
+        "overlap": 50.0,
+    }
+    params.update(overrides)
+    return params
 
 
 # ---------------------------------------------------------------- 格式判断
@@ -326,12 +344,14 @@ def test_exporter_peaks_and_csv(tmp_path):
 
     csv_path = tmp_path / "peaks.csv"
     assert exporter.write_peaks_csv(str(csv_path), freqs, mags, rel, share)
-    lines = csv_path.read_text(encoding="utf-8").strip().splitlines()
+    # CSV 用 utf-8-sig 写盘：带 BOM，便于表格软件直接打开中文内容
+    assert csv_path.read_bytes()[:3] == b"\xef\xbb\xbf"
+    lines = csv_path.read_text(encoding="utf-8-sig").strip().splitlines()
     assert len(lines) == 3  # 表头 + 2 行
 
     spec_path = tmp_path / "spectrum.csv"
     assert exporter.write_spectrum_csv(str(spec_path), [0.0, 1000.0], [0.0, 0.5], "Amplitude")
-    spec_lines = spec_path.read_text(encoding="utf-8").strip().splitlines()
+    spec_lines = spec_path.read_text(encoding="utf-8-sig").strip().splitlines()
     assert spec_lines[0].startswith("Frequency (Hz)")
 
     heat_path = tmp_path / "heat.csv"
@@ -339,7 +359,7 @@ def test_exporter_peaks_and_csv(tmp_path):
     freqs_h = [0.0, 1000.0]
     values = list(range(4))  # 2 行 × 2 列
     assert exporter.write_heatmap_csv(str(heat_path), times, freqs_h, values, 2, 2)
-    heat_lines = heat_path.read_text(encoding="utf-8").strip().splitlines()
+    heat_lines = heat_path.read_text(encoding="utf-8-sig").strip().splitlines()
     # 表头 + 2 行；首列是 Frequency (Hz)
     assert len(heat_lines) == 3
     assert heat_lines[0].startswith("Frequency (Hz)")
@@ -385,3 +405,244 @@ def test_dataframe_source_uses_da_app(monkeypatch):
         spectrum.compute_spectrum_sync_from_source(
             {"type": "dataframe", "dataframeName": "nope", "column": "y", "sampleRate": fs}, {}
         )
+
+
+# ---------------------------------------------------------------- 频谱编排口径（C2/C3/C4/C6/C7）
+
+
+def test_spectrum_zero_padding_is_extra_points():
+    """C3：频谱侧 zeroPadding 为「额外点数」（与 STFT 侧一致）。"""
+    from DASignalAnalysis import spectrum
+
+    fs = 48000.0
+    t = np.arange(int(fs * 0.5)) / fs
+    x = 0.5 * np.sin(2 * np.pi * 1000.0 * t)
+    r0 = spectrum.compute_spectrum_sync(x, fs, _params())
+    r1 = spectrum.compute_spectrum_sync(x, fs, _params(zeroPadding=4800))
+
+    # 段长与实际分辨率不因零填充改变
+    assert r0["seg_len"] == r1["seg_len"] == 4800
+    assert r0["resolution_hz"] == pytest.approx(10.0)
+    assert r1["resolution_hz"] == pytest.approx(10.0)
+    # 段长 4800 + 额外 4800 → nfft 9600 → 4801 个频点；默认 nfft 为 4801 个
+    assert r0["freqs"].size == 4800 // 2 + 1
+    assert r1["freqs"].size == 9600 // 2 + 1
+    assert r1["freqs"][1] - r1["freqs"][0] == pytest.approx(48000.0 / 9600)
+    # 峰值频率不变，只是频点变密
+    assert r0["freqs"][int(np.argmax(r0["amplitudes"]))] == pytest.approx(1000.0)
+    assert r1["freqs"][int(np.argmax(r1["amplitudes"]))] == pytest.approx(1000.0)
+
+
+def test_spectrum_resolution_controls_segment_and_bins():
+    """C4：频率分辨率决定段长与 Δf，进而改变频点与峰值 bin。"""
+    from DASignalAnalysis import spectrum
+
+    fs = 48000.0
+    t = np.arange(int(fs * 0.5)) / fs
+    x = 0.5 * np.sin(2 * np.pi * 1000.0 * t)
+    coarse = spectrum.compute_spectrum_sync(x, fs, _params(resolutionHz=100.0))
+    fine = spectrum.compute_spectrum_sync(x, fs, _params(resolutionHz=10.0))
+
+    assert coarse["seg_len"] == 480
+    assert fine["seg_len"] == 4800
+    assert coarse["resolution_hz"] == pytest.approx(100.0)
+    assert fine["resolution_hz"] == pytest.approx(10.0)
+    assert coarse["freqs"][1] - coarse["freqs"][0] == pytest.approx(100.0)
+    assert fine["freqs"][1] - fine["freqs"][0] == pytest.approx(10.0)
+    # 1 千赫分别落在第 10 / 第 100 个 bin
+    assert int(np.argmax(coarse["amplitudes"])) == 10
+    assert int(np.argmax(fine["amplitudes"])) == 100
+    # 分段平均不改变单音峰值幅度
+    assert coarse["amplitudes"][10] == pytest.approx(0.5, rel=0.05)
+    assert fine["amplitudes"][100] == pytest.approx(0.5, rel=0.05)
+
+
+def test_spectrum_amplitude_mode_is_display_only():
+    """C2：amplitudeMode 不参与计算层，始终返回峰值幅度（rms 字段固定 False）。"""
+    from DASignalAnalysis import spectrum
+
+    fs = 48000.0
+    t = np.arange(int(fs * 0.5)) / fs
+    x = 0.5 * np.sin(2 * np.pi * 1000.0 * t)
+    peak = spectrum.compute_spectrum_sync(x, fs, _params(amplitudeMode="peak"))
+    rms = spectrum.compute_spectrum_sync(x, fs, _params(amplitudeMode="rms"))
+
+    assert peak["rms"] is False
+    assert rms["rms"] is False
+    assert np.allclose(peak["amplitudes"], rms["amplitudes"])
+    # 峰值口径：正弦峰值幅度 ≈ 0.5（而不是均方根 0.354）
+    idx = int(np.argmax(rms["amplitudes"]))
+    assert rms["amplitudes"][idx] == pytest.approx(0.5, rel=0.05)
+
+
+def test_spectrum_nan_inf_sanitized(monkeypatch):
+    """C6：数据帧列里的 NaN/Inf 在读取时归零，不污染 FFT 与包络。"""
+    import sys
+    import types
+
+    pd = pytest.importorskip("pandas")
+    from DASignalAnalysis import envelope, spectrum
+
+    fs = 1000.0
+    t = np.arange(1000) / fs
+    y = np.sin(2 * np.pi * 100.0 * t).copy()
+    y[10] = np.nan
+    y[11] = np.inf
+    y[12] = -np.inf
+    df = pd.DataFrame({"t": t, "y": y})
+
+    class FakeDM:
+        def getAllDataframes(self):
+            return {"df1": df}
+
+    class FakeCore:
+        def getDataManagerInterface(self):
+            return FakeDM()
+
+    fake = types.ModuleType("da_app")
+    fake.getCore = lambda: FakeCore()
+    monkeypatch.setitem(sys.modules, "da_app", fake)
+
+    src = {"type": "dataframe", "dataframeName": "df1", "column": "y", "sampleRate": fs}
+    values = spectrum._load_channel(src)
+    assert np.all(np.isfinite(values))
+    assert values[10] == pytest.approx(0.0)
+    assert values[11] == pytest.approx(0.0)
+    assert values[12] == pytest.approx(0.0)
+
+    r = spectrum.compute_spectrum_sync_from_source(src, _params(resolutionHz=10.0))
+    assert np.all(np.isfinite(r["amplitudes"]))
+    assert np.all(np.isfinite(r["psd_values"]))
+
+    env = envelope.compute_envelope_sync(src, 0, 0, 1000, 100)
+    assert np.all(np.isfinite(env["mins"]))
+    assert np.all(np.isfinite(env["maxs"]))
+
+
+def test_spectrum_cancellation_aborts():
+    """C7：频谱分块循环命中取消标志时抛 TaskCanceledError。"""
+    from DASignalAnalysis import spectrum
+
+    task_id, _status = tsm.create_task_with_status("cancel spectrum")
+    assert tsm.cancel_task(task_id)
+    assert tsm.is_task_canceled(task_id)
+    fs = 48000.0
+    t = np.arange(int(fs * 0.5)) / fs
+    x = 0.5 * np.sin(2 * np.pi * 1000.0 * t)
+    with pytest.raises(tsm.TaskCanceledError):
+        spectrum.compute_spectrum_sync(x, fs, _params(), task_id=task_id)
+
+
+def test_stft_cancellation_aborts(tmp_path):
+    """C7：STFT 分块循环命中取消标志时抛 TaskCanceledError。"""
+    from DASignalAnalysis import stft
+
+    wav = tmp_path / "tone.wav"
+    _write_wav(wav, fs=48000, seconds=0.5)
+    task_id, _status = tsm.create_task_with_status("cancel stft")
+    assert tsm.cancel_task(task_id)
+    src = {"type": "file", "path": str(wav), "sampleRate": 48000}
+    with pytest.raises(tsm.TaskCanceledError):
+        stft.compute_heatmap_sync(src, {"stftWindowMs": 20.0}, 100, 50, task_id=task_id)
+
+
+# ---------------------------------------------------------------- 导入降级与 dtype 分派（I1/I5）
+
+
+def test_soundfile_available_selfcheck():
+    """D3：依赖可用性自检入口（当前测试环境已安装 soundfile）。"""
+    assert importer.soundfile_available() is True
+
+
+def test_column_as_array_datetime64():
+    """I5：datetime64 时间列转秒后可直接推断采样率。"""
+    pd = pytest.importorskip("pandas")
+
+    stamps = pd.date_range("2024-01-01 00:00:00", periods=200, freq="1ms")
+    df = pd.DataFrame({"t": stamps, "v": np.arange(200, dtype=float)})
+    arr = importer.column_as_array(df, "t")
+    assert arr.dtype == np.float64
+    # float64 秒（绝对时间戳）在 2024 年附近分辨率约 0.24 微秒，毫秒间隔的相对误差 ~1e-4
+    assert np.allclose(np.diff(arr), 0.001, rtol=1e-3)
+    r = importer.infer_sample_rate_from_column(df, "t")
+    assert r["ok"]
+    assert r["sample_rate"] == pytest.approx(1000.0, rel=1e-3)
+
+
+def test_soundfile_missing_wav_scipy_fallback(tmp_path, monkeypatch):
+    """I1：soundfile 缺失时 WAV 走 scipy.io.wavfile 兜底（读取路径）。"""
+    wav = tmp_path / "tone.wav"
+    _write_wav(wav, fs=48000, seconds=0.5, freq=1000.0, amp=0.5, channels=1)
+    # 写盘后再模拟运行时缺 soundfile
+    monkeypatch.setitem(sys.modules, "soundfile", None)
+    assert importer.soundfile_available() is False
+
+    probe = importer.probe_audio(wav)
+    assert probe["ok"]
+    assert probe["sample_rate"] == pytest.approx(48000.0)
+    assert probe["channels"] == 1
+    assert probe["frames"] == 24000
+    assert probe["duration"] == pytest.approx(0.5, rel=1e-9)
+
+    chunk = importer.read_range(wav, 0, 100, 500)
+    assert chunk.dtype == np.float32
+    assert chunk.size == 500
+    full = importer.read_channel_all(wav, 0)
+    assert full.size == 24000
+    assert np.allclose(chunk, full[100:600], atol=1e-7)
+    # 与写入的正弦一致（PCM16 量化误差以内）
+    t = np.arange(24000) / 48000.0
+    expected = 0.5 * np.sin(2 * np.pi * 1000.0 * t)
+    assert np.max(np.abs(full - expected)) < 1e-2
+    # 越界与通道越界仍返回空数组
+    assert importer.read_range(wav, 0, 10**9, 100).size == 0
+    assert importer.read_range(wav, 3, 0, 100).size == 0
+
+
+def test_soundfile_missing_other_format_reports_error(tmp_path, monkeypatch):
+    """I1：soundfile 缺失且非 WAV 时给出明确错误信息，不静默失败。"""
+    monkeypatch.setitem(sys.modules, "soundfile", None)
+    fake = tmp_path / "tone.flac"
+    fake.write_bytes(b"not a flac")
+
+    probe = importer.probe_audio(fake)
+    assert not probe["ok"]
+    assert "soundfile is not available" in probe["error"]
+
+    with pytest.raises(RuntimeError, match="soundfile is not available"):
+        importer.read_range(fake, 0, 0, 10)
+    with pytest.raises(RuntimeError, match="soundfile is not available"):
+        importer.read_channel_all(fake, 0)
+
+
+def test_soundfile_missing_export_wav_fallback(tmp_path, monkeypatch):
+    """I1：soundfile 缺失时导出数据帧列走 scipy.io.wavfile（float32 WAV）。"""
+    pd = pytest.importorskip("pandas")
+    from scipy.io import wavfile
+
+    df = pd.DataFrame({"v": [0.1, -0.2, 0.3, float("nan"), 0.0]})
+    out = tmp_path / "export.wav"
+    monkeypatch.setitem(sys.modules, "soundfile", None)
+    assert importer.export_column_to_wav(df, "v", str(out), 48000)
+    assert out.exists()
+
+    rate, data = wavfile.read(str(out))
+    assert rate == 48000
+    assert data.dtype == np.float32
+    assert data.size == 5
+    assert data[3] == pytest.approx(0.0)
+    assert data[0] == pytest.approx(0.1, abs=1e-6)
+
+
+# ---------------------------------------------------------------- 包导出清单（D7）
+
+
+def test_package_all_lists_all_modules():
+    import importlib
+
+    import DASignalAnalysis
+
+    expected = {"importer", "spectrum", "stft", "peaks", "envelope", "exporter"}
+    assert set(DASignalAnalysis.__all__) == expected
+    for name in expected:
+        assert importlib.import_module("DASignalAnalysis." + name) is not None

@@ -1,6 +1,8 @@
 """导出编排：峰值表 → DataFrame/CSV、频谱 CSV、热图矩阵 CSV。
 
 C++ 侧只负责取文件名与状态提示；表头文本由参数传入（保持英文列名，便于送表格页）。
+
+CSV 统一用 utf-8-sig 写盘（带 BOM），便于 Excel 等表格软件直接打开中文内容（C10/D2）。
 """
 
 import numpy as np
@@ -26,7 +28,7 @@ def peaks_to_dataframe(frequencies, amplitudes, rel_db, share):
 def write_peaks_csv(path, frequencies, amplitudes, rel_db, share):
     """峰值表 → CSV（列同上）。"""
     df = peaks_to_dataframe(frequencies, amplitudes, rel_db, share)
-    df.to_csv(path, index=False, encoding="utf-8")
+    df.to_csv(path, index=False, encoding="utf-8-sig")
     return True
 
 
@@ -40,7 +42,7 @@ def write_spectrum_csv(path, frequencies, values, y_label="Amplitude"):
             str(y_label): np.asarray(values, dtype=np.float64),
         }
     )
-    df.to_csv(path, index=False, encoding="utf-8")
+    df.to_csv(path, index=False, encoding="utf-8-sig")
     return True
 
 
@@ -51,5 +53,5 @@ def write_heatmap_csv(path, times, freqs, values, rows, columns):
     matrix = np.asarray(values, dtype=np.float64).reshape(int(rows), int(columns))
     df = pd.DataFrame(matrix, columns=np.asarray(times, dtype=np.float64))
     df.insert(0, "Frequency (Hz)", np.asarray(freqs, dtype=np.float64))
-    df.to_csv(path, index=False, encoding="utf-8")
+    df.to_csv(path, index=False, encoding="utf-8-sig")
     return True

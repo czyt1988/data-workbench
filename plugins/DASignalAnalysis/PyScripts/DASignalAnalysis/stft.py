@@ -58,13 +58,15 @@ def _freq_pool_index(n_freqs, rows):
     return out
 
 
-def compute_heatmap_sync(source, params, columns, rows, progress_cb=None):
+def compute_heatmap_sync(source, params, columns, rows, progress_cb=None, task_id=None):
     """计算显示用 STFT 栅格（线性幅值）。
 
     :param source: 来源描述（type/path 或 dataframeName/column）
     :param params: 参数（stftWindowMs/stftOverlap/stftZeroPadding/window/removeDc/detrend）
     :param columns: 时间方向目标列数
     :param rows: 频率方向目标行数
+    :param progress_cb: 可选进度回调（0~100）
+    :param task_id: 可选任务 id；传入时每个分块检查取消标志（C7）
     :return: dict{times, freqs, values(flat row-major, 行=频率), shape=(rows,cols), nperseg, hop, n_frames}
     """
     fs = float(source.get("sampleRate", 0.0))
@@ -91,6 +93,8 @@ def compute_heatmap_sync(source, params, columns, rows, progress_cb=None):
 
     total_blocks = (n_frames + _BLOCK_FRAMES - 1) // _BLOCK_FRAMES
     for block_idx in range(total_blocks):
+        if task_id is not None:
+            tsm.raise_if_canceled(task_id)
         f0 = block_idx * _BLOCK_FRAMES
         f1 = min(n_frames, f0 + _BLOCK_FRAMES)
         segs = np.empty((f1 - f0, nperseg), dtype=np.float64)
@@ -151,10 +155,18 @@ def compute_heatmap_async(source, params, columns, rows):
 
     def worker():
         try:
-            result = compute_heatmap_sync(source, params, columns, rows, progress_cb=progress)
+            result = compute_heatmap_sync(source, params, columns, rows, progress_cb=progress, task_id=task_id)
+            if tsm.is_task_canceled(task_id):
+                # 取消后不写结果表，避免大数组滞留（C7）
+                return
             _RESULT_STORE[task_id] = result
             status.finish(True, "")
+        except tsm.TaskCanceledError:
+            status.finish(False, "cancelled")
         except Exception as e:  # noqa: BLE001
+            if tsm.is_task_canceled(task_id):
+                status.finish(False, "cancelled")
+                return
             status.finish(False, "%s\n%s" % (str(e), traceback.format_exc()))
 
     threading.Thread(target=worker, daemon=True).start()

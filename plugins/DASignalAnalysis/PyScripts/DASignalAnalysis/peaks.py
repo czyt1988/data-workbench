@@ -6,6 +6,18 @@
 
 内存策略：峰值曲线不保留整张 STFT 矩阵——分块（512 帧）计算、逐帧取前 N、
 丢弃块矩阵，最终只留 N × 帧数 的排名序列。
+
+返回字典的键（C++ 侧 DASignalAnalysisWorker.cpp 按这些键读取，不得增删改名）：
+- compute_peaks_sync: {frequencies, magnitudes, rel_db, share, resolution_hz}
+- compute_peak_curves_sync: {times, freq_by_rank, mag_by_rank, top_n, n_frames, nperseg, hop}
+  其中 freq_by_rank / mag_by_rank 均为 top_n × n_frames 的行主序矩阵（rank * n_frames + frame），
+  某帧不足 N 个峰时对应位置为 NaN。
+
+口径：
+- 峰值表与峰值曲线的段长都由各自时间窗口参数决定，最小间距默认值统一按「实际频率分辨率
+  fs/nperseg」× 5 计算，不用参数里的目标分辨率（C5）；
+- 峰值表段长由 resolutionHz 反推（v2 C2/C4），改分辨率后峰值表与频谱同步变化；
+- 频谱侧零填充语义为「额外点数」：nfft = 段长 + zeroPadding（C3）。
 """
 
 import threading
@@ -24,7 +36,10 @@ _BLOCK_FRAMES = 512
 
 
 def _peak_kwargs(params, resolution_hz):
-    """把参数结构体量纲转成 find_peaks_topn 的关键字参数（§6.4）。"""
+    """把参数结构体量纲转成 find_peaks_topn 的关键字参数（§6.4）。
+
+    :param resolution_hz: 实际频率分辨率（赫兹），未指定最小间距时按 5 倍取默认值
+    """
     advanced = str(params.get("peakMode", "simple")).lower() == "advanced"
     min_spacing = float(params.get("peakMinSpacingHz", -1.0) or -1.0)
     if min_spacing <= 0.0:
@@ -40,18 +55,63 @@ def _peak_kwargs(params, resolution_hz):
     }
 
 
-def compute_peaks_sync(source, params):
-    """整段频谱的前 N 个峰（峰值表）。"""
+def compute_peaks_sync(source, params, task_id=None):
+    """整段频谱的前 N 个峰（峰值表，v2 C2/C4 口径）。
+
+    段长由 resolutionHz 反推：nperseg = clamp(round(fs/Δf), 2, N)，段间按 overlap
+    （百分比）重叠；按 ``amplitude_spectrum_segmented`` 对单边峰值幅度谱做
+    mean/median 平均，使实际频率分辨率 Δf = fs/nperseg；N <= nperseg 时退化为
+    整段单次 FFT。默认最小间距按 5 × 实际 Δf（C5），并以 resolution_hz 返回，
+    从而「改分辨率 → 峰值表同步变化」（v2 C2）。
+
+    :param source: 来源描述（type/path 或 dataframeName/column）
+    :param params: 参数字典（键名见 DASignalAnalysisParams::toJson）
+    :param task_id: 可选任务 id；传入时每个分块检查取消标志（C7）
+    :return: dict{frequencies, magnitudes, rel_db, share, resolution_hz}
+    """
     fs = float(source.get("sampleRate", 0.0))
     if fs <= 0:
         raise RuntimeError("invalid sample rate")
     x = spectrum._load_channel(source).astype(np.float64)
     y = spectrum._preprocess(x, params)
+    if task_id is not None:
+        tsm.raise_if_canceled(task_id)
     window = str(params.get("window", "hann"))
-    nfft = int(params.get("zeroPadding", 0) or 0)
-    freqs, amps = spectral.amplitude_spectrum(y, fs, window=window, nfft=(nfft or None), rms=False)
+    zero_padding = int(params.get("zeroPadding", 0) or 0)
     resolution = float(params.get("resolutionHz", 10.0) or 10.0)
-    kw = _peak_kwargs(params, resolution)
+    # 重叠率按百分比传入（C++ 侧 50 表示 50%），与 spectrum.py 同口径
+    overlap = float(params.get("overlap", 50.0) or 0.0) / 100.0
+    # 段长由目标分辨率反推并 clamp 到 [2, N]；N 很小（<2）时直接用数据长度
+    if y.size >= 2:
+        nperseg = int(max(2, min(spectral.seg_len_from_resolution(fs, resolution), y.size)))
+    else:
+        nperseg = int(y.size)
+    # 零填充语义统一为「额外点数」（C3）
+    nfft = (nperseg + zero_padding) if zero_padding > 0 else None
+
+    cancel_hook = None
+    if task_id is not None:
+
+        def _cancel_hook():
+            """每个分块调用一次，命中取消即抛 TaskCanceledError。"""
+            tsm.raise_if_canceled(task_id)
+
+        cancel_hook = _cancel_hook
+
+    freqs, amps = spectral.amplitude_spectrum_segmented(
+        y,
+        fs,
+        nperseg=nperseg,
+        overlap=overlap,
+        window=window,
+        nfft=nfft,
+        average=str(params.get("average", "mean")),
+        rms=False,
+        cancel_hook=cancel_hook,
+    )
+    # 实际分辨率由所用段长决定，而不是参数里的目标分辨率（C5）
+    actual_resolution = float(fs) / float(nperseg) if nperseg > 0 else 0.0
+    kw = _peak_kwargs(params, actual_resolution)
     res = spectral.find_peaks_topn(
         amps,
         freqs,
@@ -77,14 +137,19 @@ def compute_peaks_sync(source, params):
         "magnitudes": np.asarray(mags, dtype=np.float64),
         "rel_db": np.asarray(rel_db, dtype=np.float64),
         "share": np.asarray(share, dtype=np.float64),
-        "resolution_hz": float(resolution),
+        "resolution_hz": float(actual_resolution),
     }
 
 
-def compute_peak_curves_sync(source, params, progress_cb=None):
+def compute_peak_curves_sync(source, params, progress_cb=None, task_id=None):
     """单趟扫描：每帧前 N 峰，返回排名曲线（§6.5）。
 
-    :return: dict{times, freq_by_rank(N×frames, 缺失为 NaN), n_perseg, hop}
+    :param source: 来源描述（type/path 或 dataframeName/column）
+    :param params: 参数字典（键名见 DASignalAnalysisParams::toJson）
+    :param progress_cb: 可选进度回调（0~100）
+    :param task_id: 可选任务 id；传入时每个分块检查取消标志（C7）
+    :return: dict{times, freq_by_rank(N×frames, 缺失为 NaN), mag_by_rank(N×frames, 缺失为 NaN),
+                  top_n, n_frames, nperseg, hop}
     """
     fs = float(source.get("sampleRate", 0.0))
     if fs <= 0:
@@ -101,7 +166,8 @@ def compute_peak_curves_sync(source, params, progress_cb=None):
         raise RuntimeError("signal is shorter than one STFT window")
 
     top_n = int(params.get("peakTopN", 10) or 10)
-    resolution_hz = fs / float(nperseg)
+    # 峰值曲线的实际频率分辨率由段长决定（Δf = fs/nperseg），两处默认间距口径一致（C5）
+    resolution_hz = float(fs) / float(max(1, nperseg))
     kw = _peak_kwargs(params, resolution_hz)
     w = spectral.window_values(str(params.get("window", "hann")), nperseg)
     u = float(np.sum(w))
@@ -113,6 +179,8 @@ def compute_peak_curves_sync(source, params, progress_cb=None):
     mag_by_rank = np.full((top_n, n_frames), np.nan, dtype=np.float64)
     total_blocks = (n_frames + _BLOCK_FRAMES - 1) // _BLOCK_FRAMES
     for block_idx in range(total_blocks):
+        if task_id is not None:
+            tsm.raise_if_canceled(task_id)
         f0 = block_idx * _BLOCK_FRAMES
         f1 = min(n_frames, f0 + _BLOCK_FRAMES)
         segs = np.empty((f1 - f0, nperseg), dtype=np.float64)
@@ -138,6 +206,7 @@ def compute_peak_curves_sync(source, params, progress_cb=None):
             m = res["frequencies"].size
             if m > 0:
                 freq_by_rank[:m, k] = res["frequencies"]
+                mag_by_rank[:m, k] = res["magnitudes"]
         if progress_cb:
             progress_cb(100.0 * (block_idx + 1) / total_blocks)
         del mag, spec, segs
@@ -146,6 +215,7 @@ def compute_peak_curves_sync(source, params, progress_cb=None):
     return {
         "times": times,
         "freq_by_rank": freq_by_rank,
+        "mag_by_rank": mag_by_rank,
         "top_n": top_n,
         "n_frames": int(n_frames),
         "nperseg": int(nperseg),
@@ -162,9 +232,18 @@ def _async(kind, compute, progress_stage):
 
     def worker():
         try:
-            _RESULT_STORE[task_id] = compute(progress)
+            result = compute(progress, task_id)
+            if tsm.is_task_canceled(task_id):
+                # 取消后不写结果表，避免大数组滞留（C7）
+                return
+            _RESULT_STORE[task_id] = result
             status.finish(True, "")
+        except tsm.TaskCanceledError:
+            status.finish(False, "cancelled")
         except Exception as e:  # noqa: BLE001
+            if tsm.is_task_canceled(task_id):
+                status.finish(False, "cancelled")
+                return
             status.finish(False, "%s\n%s" % (str(e), traceback.format_exc()))
 
     threading.Thread(target=worker, daemon=True).start()
@@ -172,16 +251,32 @@ def _async(kind, compute, progress_stage):
 
 
 def compute_peaks_async(source, params):
-    return _async("signal peaks", lambda progress: compute_peaks_sync(source, params), "peaks")
+    return _async(
+        "signal peaks",
+        lambda progress, task_id: compute_peaks_sync(source, params, task_id=task_id),
+        "peaks",
+    )
 
 
 def compute_peak_curves_async(source, params):
     return _async(
         "signal peak curves",
-        lambda progress: compute_peak_curves_sync(source, params, progress_cb=progress),
+        lambda progress, task_id: compute_peak_curves_sync(
+            source, params, progress_cb=progress, task_id=task_id
+        ),
         "peak curves",
     )
 
 
 def take_result(task_id):
     return _RESULT_STORE.pop(task_id, None)
+
+
+def cancel_task(task_id):
+    """请求取消任务（线程在下一个分块检查点抛出 TaskCanceledError）。"""
+    return tsm.cancel_task(task_id, "cancelled by user")
+
+
+def is_cancelled(task_id):
+    """任务是否已被取消。"""
+    return tsm.is_task_canceled(task_id)

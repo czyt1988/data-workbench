@@ -5,7 +5,9 @@
 
 口径（方案 §6.2）：
 - 单边峰值幅度谱：A[0] = |X[0]|/U，A[k] = 2|X[k]|/U（k ≥ 1），U = Σw[n]
-- 均方根谱：A_rms = A/√2
+- 均方根谱：A_rms[k] = A[k]/√2（k ≥ 1）；直流分量的均方根等于其幅值，不除 √2
+- 分块平均幅度谱：段长由目标分辨率反推（Δf = fs/nperseg），逐段单边峰值幅度谱再按
+  mean/median 平均（方案 C4）
 - 韦尔奇功率谱密度：P[f] = 2/(fs·Σw²)·mean(|X_f|²)（单边，scipy.signal.welch 的 density 口径）
 - dB：幅值类 20·log10(A/ref)，功率类 10·log10(P/ref)，ref=1.0 即 dBFS
 """
@@ -28,17 +30,20 @@ WINDOW_LIST = ["rectangular", "hann", "hamming", "blackman", "flattop"]
 
 _EPS = 1e-30
 
+# 分块平均幅度谱每块帧数（只限制临时内存，不影响结果）
+_SEG_BLOCK_FRAMES = 256
+
 
 def window_values(name, length):
     """返回窗函数数组。
 
     :param name: 窗函数名（rectangular/hann/hamming/blackman/flattop，大小写不敏感）
     :param length: 窗长（采样点数）
-    :return: float64 一维数组，长度 length；未知名称回退矩形窗
+    :return: float64 一维数组，长度 length；未知名称回退矩形窗（全 1）
     """
     length = int(max(1, length))
     key = str(name or "hann").strip().lower()
-    scipy_name = WINDOW_NAMES.get(key, "hann")
+    scipy_name = WINDOW_NAMES.get(key)  # 未知名称得到 None，即回退矩形窗
     if scipy_name is None or length == 1:
         return np.ones(length, dtype=np.float64)
     from scipy.signal import windows
@@ -81,14 +86,40 @@ def to_db(a, ref=1.0, kind="amplitude"):
     return scale * np.log10(np.maximum(np.abs(arr), _EPS) / max(abs(float(ref)), _EPS))
 
 
+def _amplitude_from_spec(spec, window_sum, n_fft, rms):
+    """FFT 结果 → 单边峰值幅度谱（一维/批量共用）。
+
+    - DC 不乘 2；偶数点数时最后一个频点（Nyquist）不乘 2；
+    - rms=True 时仅 k ≥ 1 的频点除以 √2：直流分量的均方根等于其幅值（C2/C9）。
+
+    :param spec: np.fft.rfft 的结果（一维或二维，最后一维为频点）
+    :param window_sum: 窗函数之和 U = Σw[n]
+    :param n_fft: FFT 点数（用于判断 Nyquist 频点）
+    :param rms: 是否输出均方根谱
+    :return: 幅度数组（与 spec 同形状）
+    """
+    u = float(window_sum)
+    if u <= 0.0:
+        u = 1.0
+    mag = np.abs(spec) / u
+    if mag.shape[-1] > 1:
+        mag[..., 1:] *= 2.0
+        if n_fft % 2 == 0:
+            # 偶数点时最后一个频点是 Nyquist，不应乘 2
+            mag[..., -1] /= 2.0
+    if rms:
+        mag[..., 1:] /= np.sqrt(2.0)
+    return mag
+
+
 def amplitude_spectrum(x, fs, window="hann", nfft=None, rms=False):
     """单边峰值幅度谱（方案 §6.2）。
 
     :param x: 一维序列
     :param fs: 采样率（赫兹）
-    :param window: 窗函数名
-    :param nfft: FFT 点数（大于段长即零填充；None 表示等于段长）
-    :param rms: True 返回均方根谱（A/√2）
+    :param window: 窗函数名（未知名称回退矩形窗）
+    :param nfft: FFT 总点数（大于段长即零填充；None 表示等于段长）
+    :param rms: True 返回均方根谱（k ≥ 1 除 √2，直流分量不除）
     :return: (freqs, amplitudes)
     """
     arr = np.asarray(x, dtype=np.float64)
@@ -98,21 +129,72 @@ def amplitude_spectrum(x, fs, window="hann", nfft=None, rms=False):
     n = int(nfft) if nfft else seg_len
     n = max(n, seg_len)
     w = window_values(window, seg_len)
-    u = float(np.sum(w))
-    if u <= 0.0:
-        u = 1.0
     spec = np.fft.rfft(arr * w, n=n)
-    mag = np.abs(spec) / u
-    # 单边修正：除 DC 与 Nyquist 外乘 2
-    if mag.size > 1:
-        mag[1:] *= 2.0
-        if n % 2 == 0 and mag.size > 1:
-            # 偶数点时最后一个频点是 Nyquist，不应乘 2
-            mag[-1] /= 2.0
-    if rms:
-        mag = mag / np.sqrt(2.0)
+    mag = _amplitude_from_spec(spec, float(np.sum(w)), n, rms)
     freqs = np.fft.rfftfreq(n, d=1.0 / float(fs))
     return freqs, mag
+
+
+def amplitude_spectrum_segmented(
+    x, fs, nperseg, overlap=0.5, window="hann", nfft=None, average="mean", rms=False, cancel_hook=None
+):
+    """分块平均的单边峰值幅度谱（方案 C4）。
+
+    段长 nperseg 由目标频率分辨率反推（Δf = fs/nperseg），段间按 overlap 重叠；
+    逐段按 amplitude_spectrum 的口径算单边峰值幅度谱，再逐频点按 average 平均。
+    当 nperseg >= 数据长度时退化为整段单次 FFT（与 amplitude_spectrum 完全一致）。
+
+    :param x: 一维序列
+    :param fs: 采样率（赫兹）
+    :param nperseg: 段长（采样点数）
+    :param overlap: 段间重叠率 0~1（0.5 表示 50%）
+    :param window: 窗函数名（未知名称回退矩形窗）
+    :param nfft: FFT 总点数（段长 + 零填充额外点数；None 表示等于段长）
+    :param average: mean / median（中位数需要保存全部段谱，内存 O(帧数 × 频点数)）
+    :param rms: True 返回均方根谱（k ≥ 1 除 √2，直流分量不除）
+    :param cancel_hook: 可选无参回调，每个分块调用一次；回调抛异常即中止计算（供编排层取消）
+    :return: (freqs, amplitudes)
+    """
+    arr = np.asarray(x, dtype=np.float64)
+    nperseg = int(max(1, nperseg))
+    if arr.size == 0 or nperseg >= arr.size:
+        return amplitude_spectrum(arr, fs, window=window, nfft=nfft, rms=rms)
+    hop = hop_from_overlap(nperseg, max(0.0, min(0.99, float(overlap))))
+    n_frames = frame_count(arr.size, nperseg, hop)
+    if n_frames <= 0:
+        return amplitude_spectrum(arr, fs, window=window, nfft=nfft, rms=rms)
+    n = int(nfft) if nfft else nperseg
+    n = max(n, nperseg)
+    w = window_values(window, nperseg)
+    u = float(np.sum(w))
+    use_median = str(average or "mean").strip().lower() == "median"
+    accum = None
+    median_frames = []
+    for f0 in range(0, n_frames, _SEG_BLOCK_FRAMES):
+        if cancel_hook is not None:
+            cancel_hook()
+        f1 = min(n_frames, f0 + _SEG_BLOCK_FRAMES)
+        segs = np.empty((f1 - f0, nperseg), dtype=np.float64)
+        for k in range(f0, f1):
+            start = k * hop
+            segs[k - f0, :] = arr[start : start + nperseg]
+        spec = np.fft.rfft(segs * w, n=n, axis=1)
+        mag = _amplitude_from_spec(spec, u, n, rms)
+        if use_median:
+            # float32 保存段谱，控制中位数路径的内存占用
+            median_frames.append(mag.astype(np.float32, copy=False))
+        else:
+            block_sum = mag.sum(axis=0)
+            accum = block_sum if accum is None else accum + block_sum
+        del mag, spec, segs
+    if use_median:
+        stacked = np.concatenate(median_frames, axis=0) if len(median_frames) > 1 else median_frames[0]
+        amps = np.median(stacked, axis=0).astype(np.float64, copy=False)
+        del median_frames, stacked
+    else:
+        amps = accum / float(n_frames)
+    freqs = np.fft.rfftfreq(n, d=1.0 / float(fs))
+    return freqs, amps
 
 
 def welch_psd(x, fs, nperseg, overlap=0.5, window="hann", average="mean"):

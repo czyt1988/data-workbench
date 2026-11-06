@@ -32,9 +32,9 @@ def _tone(fs=FS, seconds=1.0, freq=FREQ, amp=AMP):
     return amp * np.sin(2 * np.pi * freq * t)
 
 
-def _peak_near(freqs, mags, f0):
+def _peak_near(freqs, mags, f0, tol=1.0):
     idx = int(np.argmax(mags))
-    assert abs(freqs[idx] - f0) < 1.0, f"peak at {freqs[idx]} Hz, expected {f0} Hz"
+    assert abs(freqs[idx] - f0) < tol, f"peak at {freqs[idx]} Hz, expected {f0} Hz"
     return mags[idx]
 
 
@@ -130,7 +130,10 @@ def test_window_values_lengths():
         assert w.size == 64
         assert np.all(np.isfinite(w))
     assert np.all(spectral.window_values("rectangular", 32) == 1.0)
-    assert np.all(spectral.window_values("unknown", 8) == 1.0) or True  # 未知名称回退，不抛异常
+    # C8：未知名称回退矩形窗（与文档一致，不再回退汉宁窗）
+    unknown = spectral.window_values("unknown", 8)
+    assert np.all(unknown == 1.0)
+    assert not np.allclose(spectral.window_values("hann", 8), 1.0)
 
 
 # ---------------------------------------------------------------- STFT 参数映射
@@ -200,3 +203,90 @@ def test_find_peaks_prominence_filters_noise_bumps():
     # 只应留下主峰（噪声起伏的突出度远小于 0.2）
     assert res["frequencies"].size >= 1
     assert abs(res["frequencies"][0] - 1000.0) < 10.0
+
+
+# ---------------------------------------------------------------- RMS 直流口径（C2/C9）
+
+
+def test_amplitude_spectrum_rms_dc_not_divided():
+    """常量信号的均方根等于其幅值：DC 频点不应除以 √2。"""
+    x = np.full(4096, 2.0)
+    f, peak = spectral.amplitude_spectrum(x, FS, window="rectangular", rms=False)
+    f2, rms = spectral.amplitude_spectrum(x, FS, window="rectangular", rms=True)
+    assert f.size == f2.size
+    assert peak[0] == pytest.approx(2.0, rel=1e-9)
+    assert rms[0] == pytest.approx(2.0, rel=1e-9)  # 直流不除 √2
+    # k >= 1 的频点仍按 RMS 换算
+    assert np.allclose(rms[1:], peak[1:] / np.sqrt(2.0))
+
+
+# ------------------------------------------------ 分块平均幅度谱（C4 / 零填充语义）
+
+
+def test_amplitude_spectrum_segmented_short_signal_matches_whole():
+    """nperseg >= 数据长度时退化为整段单次 FFT，与 amplitude_spectrum 完全一致。"""
+    x = _tone(seconds=0.1)
+    f1, a1 = spectral.amplitude_spectrum(x, FS, window="hann")
+    f2, a2 = spectral.amplitude_spectrum_segmented(x, FS, nperseg=x.size, overlap=0.5, window="hann")
+    assert np.allclose(f1, f2)
+    assert np.allclose(a1, a2)
+
+
+def test_amplitude_spectrum_segmented_mean_tone():
+    """分段平均后 Δf = fs/nperseg，单音峰值幅度仍在 ±5% 内。"""
+    x = _tone()
+    nperseg = 4800  # 0.1 秒：1000 赫兹刚好 100 个整周期，避免扇贝损失
+    freqs, amps = spectral.amplitude_spectrum_segmented(
+        x, FS, nperseg=nperseg, overlap=0.5, window="hann", average="mean"
+    )
+    assert freqs.size == nperseg // 2 + 1
+    assert freqs[1] - freqs[0] == pytest.approx(FS / nperseg, rel=1e-9)
+    peak = _peak_near(freqs, amps, FREQ, tol=FS / nperseg)
+    assert peak == pytest.approx(AMP, rel=0.05)
+
+
+def test_amplitude_spectrum_segmented_median_tone():
+    x = _tone()
+    nperseg = 4800
+    f_mean, a_mean = spectral.amplitude_spectrum_segmented(
+        x, FS, nperseg=nperseg, overlap=0.5, window="hann", average="mean"
+    )
+    f_med, a_med = spectral.amplitude_spectrum_segmented(
+        x, FS, nperseg=nperseg, overlap=0.5, window="hann", average="median"
+    )
+    assert np.allclose(f_mean, f_med)
+    assert a_mean.shape == a_med.shape
+    assert _peak_near(f_med, a_med, FREQ, tol=FS / nperseg) == pytest.approx(AMP, rel=0.05)
+
+
+def test_amplitude_spectrum_segmented_zero_padding_is_extra_points():
+    """分块路径同样按「额外点数」理解 nfft（C3）：频点变密但段长/分辨率不变。"""
+    x = _tone()
+    nperseg = 4800
+    extra = 4800
+    f0, a0 = spectral.amplitude_spectrum_segmented(x, FS, nperseg=nperseg, window="hann")
+    f1, a1 = spectral.amplitude_spectrum_segmented(
+        x, FS, nperseg=nperseg, window="hann", nfft=nperseg + extra
+    )
+    assert f1.size == (nperseg + extra) // 2 + 1
+    assert f1[1] - f1[0] == pytest.approx(FS / (nperseg + extra), rel=1e-9)
+    assert f0.size == nperseg // 2 + 1
+    assert _peak_near(f1, a1, FREQ, tol=FS / (nperseg + extra)) == pytest.approx(
+        _peak_near(f0, a0, FREQ, tol=FS / nperseg), rel=0.05
+    )
+
+
+def test_amplitude_spectrum_segmented_cancel_hook_aborts():
+    """分块循环每块调用 cancel_hook，回调抛异常即中止计算（C7）。"""
+    x = _tone(seconds=1.0)
+    calls = []
+
+    def cancel_hook():
+        calls.append(1)
+        raise RuntimeError("cancelled")
+
+    with pytest.raises(RuntimeError, match="cancelled"):
+        spectral.amplitude_spectrum_segmented(
+            x, FS, nperseg=4096, overlap=0.5, window="hann", cancel_hook=cancel_hook
+        )
+    assert len(calls) == 1

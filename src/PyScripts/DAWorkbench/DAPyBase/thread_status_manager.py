@@ -5,6 +5,17 @@ from typing import Dict, Optional, List, Any, Tuple
 from datetime import datetime
 from collections import OrderedDict
 
+
+class TaskCanceledError(RuntimeError):
+    """任务取消异常：长任务在分块循环中命中取消标志时抛出。
+
+    编排层捕获本异常后按「已取消」结束任务，且不写结果表（避免大数组滞留）。
+    """
+
+    def __init__(self, message: str = "cancelled"):
+        super().__init__(message)
+
+
 class ProcessingStatus:
     """通用的线程任务状态管理器"""
     
@@ -452,6 +463,34 @@ def cancel_task(task_id: str, message: str = "") -> bool:
         status.cancel(message)
         return True
     return False
+
+
+def is_task_canceled(task_id: str) -> bool:
+    """
+    查询任务是否已被请求取消（供长任务分块循环中的检查点使用）
+
+    Args:
+        task_id: 任务ID
+
+    Returns:
+        bool: True 表示已请求取消（任务不存在时返回 False）
+    """
+    info = global_status_manager.get_status_info(task_id)
+    return bool(info and info.get("is_canceled"))
+
+
+def raise_if_canceled(task_id: str) -> None:
+    """
+    命中取消标志时抛出 TaskCanceledError
+
+    Args:
+        task_id: 任务ID
+
+    Raises:
+        TaskCanceledError: 任务已被请求取消
+    """
+    if is_task_canceled(task_id):
+        raise TaskCanceledError("cancelled")
 
 
 def pause_task(task_id: str) -> bool:

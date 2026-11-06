@@ -53,7 +53,10 @@ def envelope_of_window(x, start, end, width):
 
 
 def _load_range(source, start, end):
-    """读取来源的某段单通道数据。"""
+    """读取来源的某段单通道数据。
+
+    NaN/Inf 统一归零（C6）：否则 min/max 包络与峰值会被缺失值污染。
+    """
     stype = str(source.get("type", "file"))
     channel = int(source.get("channel", 0))
     if stype == "dataframe":
@@ -65,8 +68,10 @@ def _load_range(source, start, end):
         if df is None:
             raise RuntimeError("dataframe not found: %s" % source.get("dataframeName", ""))
         values = np.asarray(df[source.get("column", "")].to_numpy())
-        return np.asarray(values[int(start) : int(end)], dtype=np.float32)
-    return importer.read_range(source.get("path", ""), channel, start, end - start)
+        arr = np.asarray(values[int(start) : int(end)], dtype=np.float32)
+    else:
+        arr = importer.read_range(source.get("path", ""), channel, start, end - start)
+    return np.nan_to_num(arr, nan=0.0, posinf=0.0, neginf=0.0)
 
 
 def compute_envelope_sync(source, channel, start, end, width):
