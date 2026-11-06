@@ -181,6 +181,17 @@ bool DASignalAnalysisUI::initialize(DACoreInterface* core)
     }
     // 峰值停靠窗口（右侧停靠区，与设置/智能体同区做标签页，D24）
     buildPeakDock();
+    // 恢复插件偏好：停靠窗口显隐与上次色带（P2）
+    {
+        const QJsonObject cfg = DASignalImporter::loadPluginConfig();
+        mLastColormap         = cfg.value(QStringLiteral("colormap")).toString();
+        if (mPeakDock && cfg.value(QStringLiteral("peakDockVisible")).toBool(false)) {
+            if (actionPeakWindow) {
+                actionPeakWindow->setChecked(true);
+            }
+            mPeakDock->toggleView(true);
+        }
+    }
     // 后台计算协调器（Python 守护线程 + 定时轮询）
     mWorker = new DASignalAnalysisWorker(this);
     connect(mWorker, &DASignalAnalysisWorker::progressChanged, this, &DASignalAnalysisUI::onWorkerProgress);
@@ -344,6 +355,9 @@ void DASignalAnalysisUI::addSignalAndActivate(const DASignalPtr& sig)
     if (DASignalAnalysisView* view = mPage->viewForSignal(sig.get())) {
         view->setParams(paramsForSignal(sig));
         view->setTimeOrigin(sig->timeOrigin());
+        if (!mLastColormap.isEmpty()) {
+            view->setColormapName(mLastColormap);  // 插件偏好：上次色带（P2）
+        }
         connect(view, &DASignalAnalysisView::spectrumRequested, this, &DASignalAnalysisUI::onViewRequestSpectrum);
         connect(view, &DASignalAnalysisView::envelopeRequested, this, &DASignalAnalysisUI::onViewRequestEnvelope);
         connect(view, &DASignalAnalysisView::heatmapRequested, this, &DASignalAnalysisUI::onViewRequestHeatmap);
@@ -1355,6 +1369,17 @@ std::shared_ptr< DAAbstractArchiveTask > DASignalAnalysisUI::createArchiveTask(b
  */
 void DASignalAnalysisUI::finalize()
 {
+    // 保存插件偏好：峰值窗口显隐与上次色带（P2）；FFmpeg 路径等其它键原样保留
+    if (mUI) {
+        QJsonObject cfg      = DASignalImporter::loadPluginConfig();
+        cfg[ QStringLiteral("peakDockVisible") ] = (mPeakDock && !mPeakDock->isClosed());
+        if (mPage) {
+            if (DASignalAnalysisView* v = mPage->viewForSignal(mPage->currentSignal().get())) {
+                cfg[ QStringLiteral("colormap") ] = v->colormapName();
+            }
+        }
+        DASignalImporter::savePluginConfig(cfg);
+    }
     // 菜单先与动作解绑（QMenu 不随 QAction 销毁）
     if (actionPeakTopN) {
         actionPeakTopN->setMenu(nullptr);
@@ -1475,6 +1500,8 @@ void DASignalAnalysisUI::finalize()
     mSpectrumCache.clear();
     mSpectrumCacheChannel.clear();
     mLargeSignalWarned.clear();
+    // 插件卸载时清理本插件的临时音频文件（P5）
+    DASignalImporter::cleanupTempFiles();
 }
 
 // ---------------------------------------------------------------- 分析

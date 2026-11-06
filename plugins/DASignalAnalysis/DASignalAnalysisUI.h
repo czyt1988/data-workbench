@@ -255,6 +255,8 @@ private:
     // 当前幅值显示模式（D14）
     QString mAmplitudeMode { QStringLiteral("peak") };
     QString mDbReference { QStringLiteral("fullScale") };
+    // 插件偏好：上次使用的色带（P2）
+    QString mLastColormap;
 };
 }  // namespace DA
 

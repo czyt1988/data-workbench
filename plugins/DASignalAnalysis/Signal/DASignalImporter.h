@@ -1,5 +1,6 @@
 #ifndef DASIGNALIMPORTER_H
 #define DASIGNALIMPORTER_H
+#include <QJsonObject>
 #include <QString>
 #include <QStringList>
 #include "DASignal.h"
@@ -28,6 +29,9 @@ public:
     static bool isFFmpegAvailable();
     // 配置文件的路径（DADir::getConfigPath()/signal-analysis-config.json）
     static QString configFilePath();
+    // 插件配置读写（FFmpeg 路径、停靠窗口显隐、色带等偏好共用一份 JSON，评审 P2）
+    static QJsonObject loadPluginConfig();
+    static void savePluginConfig(const QJsonObject& config);
 
     // ---------------- 音频/视频 ----------------
     // 导入音频文件（自动选择直读或 FFmpeg 转码路径）

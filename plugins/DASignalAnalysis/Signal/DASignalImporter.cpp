@@ -192,6 +192,22 @@ QString DASignalImporter::configFilePath()
 }
 
 /**
+ * @brief 读取插件配置（与 FFmpeg 路径共用一份 JSON）
+ */
+QJsonObject DASignalImporter::loadPluginConfig()
+{
+    return loadConfigObject();
+}
+
+/**
+ * @brief 保存插件配置（与 FFmpeg 路径共用一份 JSON）
+ */
+void DASignalImporter::savePluginConfig(const QJsonObject& config)
+{
+    saveConfigObject(config);
+}
+
+/**
  * @brief 当前可用的 FFmpeg 路径：配置路径优先，其次系统 PATH（方案 §5.4）
  */
 QString DASignalImporter::ffmpegPath()
