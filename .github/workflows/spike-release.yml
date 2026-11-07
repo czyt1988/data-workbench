@@ -267,14 +267,19 @@ jobs:
         shell: pwsh
         run: |
           Write-Host '--- CMake 实际选中的 Python ---'
-          Select-String -Path build\CMakeCache.txt -Pattern '^Python3_(EXECUTABLE|LIBRARY|INCLUDE_DIR)' |
-            ForEach-Object { Write-Host $_.Line }
-          $expected = 'python3' + ($env:PYTHON_VERSION -replace '\.','') + '.lib'
-          $hit = Select-String -Path build\CMakeCache.txt -Pattern $expected -SimpleMatch
+          Select-String -Path build\CMakeCache.txt -Pattern '^Python3_[A-Z_]+:' |
+            ForEach-Object { Write-Host ($_.Line -replace '^\d{4}-\d\d-\d\dT[\d:.]+Z ', '') }
+          # 不同 CMake 版本存的变量名不一样（Python3_LIBRARY / Python3_LIBRARY_RELEASE），
+          # 所以别认变量名，直接在缓存里找 "python3XX.lib" 这个具体文件名。
+          # 注意拼串：版本号 "3.12" 去掉点就是 "312"，前缀是 "python" 不是 "python3"
+          $digits = $env:PYTHON_VERSION -replace '\.', ''
+          $pattern = "python$digits\.lib"
+          $hit = Select-String -Path build\CMakeCache.txt -Pattern $pattern
           if (-not $hit) {
-            Write-Host "::error::Python3_LIBRARY 不是 $expected，ABI 没切到 3.12"
+            Write-Host "::error::CMakeCache 里找不到 $pattern，Python ABI 没切过去"
             exit 1
           }
+          Write-Host "已确认链接 $pattern"
 
       - name: Build main project
         shell: pwsh
