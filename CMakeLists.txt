@@ -17,6 +17,18 @@ cmake_minimum_required(VERSION 3.16)
 set(DA_VERSION_MAJOR 0 CACHE STRING "主版本号")
 set(DA_VERSION_MINOR 2 CACHE STRING "次版本号")
 set(DA_VERSION_PATCH 1 CACHE STRING "补丁号")
+# 防御：CMakeCache 里可能残留非数字值（例如历史上用 -DDA_VERSION_MAJOR=$env:XXX 这种
+# 未展开的写法传过）。set(... CACHE) 不会覆盖已有缓存项，坏值会一路带到 project()，
+# 报 "VERSION ... format invalid"，指向的还是 project() 而不是根因，极难排查。
+# 这里提前失败，并直接给出修复命令。
+foreach(_ver_var DA_VERSION_MAJOR DA_VERSION_MINOR DA_VERSION_PATCH)
+    if(NOT "${${_ver_var}}" MATCHES "^[0-9]+$")
+        message(FATAL_ERROR
+            "${_ver_var} 必须是纯数字，当前值是 '${${_ver_var}}'。"
+            "多半是 CMakeCache 里残留了旧值（缓存项不会被 set(... CACHE) 覆盖）。"
+            "修复：cmake -U \"DA_VERSION_*\" -S . -B <build-dir>")
+    endif()
+endforeach()
 set(DA_VERSION "${DA_VERSION_MAJOR}.${DA_VERSION_MINOR}.${DA_VERSION_PATCH}")
 string(TIMESTAMP DA_COMPILE_DATETIME %y%m%d)
 string(TIMESTAMP DA_COMPILE_DATETIME_YEAR %y)
