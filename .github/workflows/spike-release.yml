@@ -50,9 +50,11 @@ jobs:
       #    - 只写进 runner 的临时全局 .gitconfig，随 job 销毁
       #    - 仓库里的 .gitmodules 与本地开发环境完全不受影响
       #    - 必须放在 checkout 之前：checkout 内部调用的就是 git
-      #    - 左侧逐字照抄 .gitmodules（8 个带 .git、2 个不带）
+      #    - 左侧逐字照抄 .gitmodules（父仓 8 个带 .git、2 个不带）
       #    - 右侧一律【不带】.git：insteadOf 是字符串前缀替换，git 有时会把
       #      .git 补在 URL 上，右侧再带一次就会拼出 `xxx.git.git`（真实踩过）
+      #    - 最后一条是 qwt 里嵌套的子模块（examples/bench/chartbench/qim），
+      #      只在跑 qwt 示例时用得上，但 submodules: recursive 会一并克隆
       # ------------------------------------------------------------------------
       - name: Rewrite gitee submodules to GitHub mirrors (CI only)
         shell: pwsh
@@ -69,6 +71,7 @@ jobs:
             'https://gitee.com/czyt1988/zlib'                           = 'https://github.com/madler/zlib'
             'https://gitee.com/czyt1988/ordered-map.git'                = 'https://github.com/Tessil/ordered-map'
             'https://gitee.com/czyt1988/Qt-Advanced-Docking-System.git' = 'https://github.com/githubuser0xFFFF/Qt-Advanced-Docking-System'
+            'https://gitee.com/czyt1988/qim.git'                        = 'https://github.com/czyt1988/qim'
           }
           foreach ($k in $map.Keys) {
             git config --global "url.$($map[$k]).insteadOf" $k
