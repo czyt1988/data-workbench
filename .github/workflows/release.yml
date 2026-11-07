@@ -303,7 +303,61 @@ jobs:
           Write-Host "Python 运行时大小: $sizeMB MB"
 
       # ------------------------------------------------------------------------
-      # 7. 自检（文件清单 + 启动冒烟）——这一步是"包能不能用"的唯一证据
+      # 7. 补齐运行时 DLL
+      #    安装期的 windeployqt 只扫 exe / DAGui / 插件，扫不到 3rdparty 的 DLL
+      #    间接引入的 Qt 模块（qwtplot 依赖 Qt6Concurrent 就是这样漏的）；
+      #    --compiler-runtime 在 install(CODE) 里因为没有 VCINSTALLDIR 会静默跳过；
+      #    vcpkg 的 zlib 走 imported target，src/3rdparty 里取 LOCATION 拿不到，
+      #    那段复制逻辑会被 EXISTS 判假后静默跳过。三件事一起在这里兜底。
+      # ------------------------------------------------------------------------
+      - name: Complete runtime DLLs
+        shell: pwsh
+        run: |
+          $stage = $env:STAGE_DIR
+          $added = @()
+
+          # 1) 对整个目录重跑一次 windeployqt，让 3rdparty DLL 的 Qt 依赖也进来
+          $wdq = Join-Path $env:QT_ROOT_DIR 'bin\windeployqt.exe'
+          $targets = @(Get-ChildItem $stage -Include *.exe, *.dll -File -Recurse | Where-Object { $_.DirectoryName -eq $stage })
+          Write-Host "windeployqt 扫描 $($targets.Count) 个文件"
+          & $wdq --release --compiler-runtime --dir $stage @($targets.FullName)
+          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::windeployqt 退出码 $LASTEXITCODE（继续，后面自检会兜底）" }
+
+          # 2) VC++ 运行库：从 VS 的 Redist 目录直接拷，不依赖 windeployqt
+          $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe'
+          $vsPath = if (Test-Path $vswhere) { & $vswhere -latest -products * -property installationPath } else { $null }
+          if ($vsPath) {
+            $crt = Get-ChildItem (Join-Path $vsPath 'VC\Redist\MSVC\*\x64\Microsoft.VC*.CRT') -Directory -ErrorAction SilentlyContinue |
+              Sort-Object FullName | Select-Object -Last 1
+            if ($crt) {
+              foreach ($dll in (Get-ChildItem $crt.FullName -Filter *.dll)) {
+                Copy-Item $dll.FullName (Join-Path $stage $dll.Name) -Force
+                $added += $dll.Name
+              }
+              Write-Host "从 $($crt.FullName) 拷入 VC++ 运行库"
+            } else {
+              Write-Host '::warning::没找到 VC Redist 目录'
+            }
+          } else {
+            Write-Host '::warning::没找到 vswhere'
+          }
+
+          # 3) vcpkg 的 zlib（src/3rdparty 里的复制逻辑对 imported target 失效）
+          $vcpkgBin = Join-Path $env:GITHUB_WORKSPACE 'vcpkg\installed\x64-windows\bin'
+          if (Test-Path $vcpkgBin) {
+            foreach ($dll in (Get-ChildItem $vcpkgBin -Filter *.dll)) {
+              if (-not (Test-Path (Join-Path $stage $dll.Name))) {
+                Copy-Item $dll.FullName $stage
+                $added += $dll.Name
+                Write-Host "补入 vcpkg DLL: $($dll.Name)"
+              }
+            }
+          }
+
+          Write-Host "补齐清单: $([string]::Join(', ', ($added | Select-Object -Unique)))"
+
+      # ------------------------------------------------------------------------
+      # 8. 自检（按导入表推导 + 启动冒烟）——这一步是"包能不能用"的唯一证据
       # ------------------------------------------------------------------------
       - name: Verify package
         shell: pwsh
