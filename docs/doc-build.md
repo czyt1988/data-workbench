@@ -178,7 +178,7 @@ data-workbench/
 │       ├── dev-guide/        # 开发指南（按主题分子目录）
 │       ├── plugin/           # 插件开发
 │       ├── use-guide/        # 使用指南
-│       ├── reference/        # 最佳实践、FAQ、术语表、更新日志
+│       ├── reference/        # 最佳实践、FAQ、术语表
 │       └── ...
 ```
 

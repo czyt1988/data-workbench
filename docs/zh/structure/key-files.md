@@ -338,7 +338,7 @@ python make-plugin.py
 - `dev-guide/` - 开发指南（`general/` 规范、`architecture/` 架构、`workflow/` 工作流、`python-binding/` Python 集成、`graphics/` 图形绘图、`agent/` Agent、`ui/` 界面开发）
 - `plugin/` - 插件开发
 - `use-guide/` - 使用指南（按功能分目录的完整手册：`getting-started/` 入门、`data/` 数据、`workflow/` 工作流、`analysis/` 数据分析、`chart/` 绘图、`agent/` 智能体、`script/` 脚本、`plugin/` 插件、`reference/` 参考）
-- `reference/` - 最佳实践、FAQ、术语表、更新日志
+- `reference/` - 最佳实践、FAQ、术语表
 
 ---
 

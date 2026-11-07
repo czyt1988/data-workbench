@@ -206,7 +206,6 @@ nav:
           - Doxygen 首页: doxygen/index.html
           - 类索引: doxygen/classes.html
           - 文件列表: doxygen/files.html
-      - 更新日志: zh/reference/changelog.md
 
 markdown_extensions:
   - meta
