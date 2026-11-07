@@ -94,18 +94,22 @@ jobs:
       - name: Verify submodules came from GitHub
         shell: pwsh
         run: |
-          git submodule status --recursive | Tee-Object -FilePath submodules.txt
-          $uninitialized = Select-String -Path submodules.txt -Pattern '^-'
-          if ($uninitialized) {
-            Write-Host '::error::存在未检出的子模块'
+          $status = git submodule status --recursive
+          $status | Write-Host
+          # '-' = 未初始化，'+' = 检出的提交与父仓记录不一致，都不能接受
+          $bad = $status | Select-String -Pattern '^[+-]'
+          if ($bad) {
+            Write-Host '::error::有子模块未检出，或检出的提交与父仓记录的不一致'
             exit 1
           }
-          Write-Host '--- 各子模块实际使用的远端地址 ---'
-          $urls = git submodule foreach --recursive 'git config --get remote.origin.url' 2>&1
-          $urls
+          Write-Host '--- 各子模块实际会访问的地址（ls-remote --get-url 会解析 insteadOf）---'
+          # 注意：不能用 remote.origin.url 判断——它记录的是 .gitmodules 里的原始
+          # gitee 地址，URL 重写只发生在传输层，所以那样查永远是 gitee
+          $urls = git submodule foreach --recursive "git ls-remote --get-url origin" 2>&1
+          $urls | Write-Host
           $gitee = $urls | Select-String 'gitee\.com'
           if ($gitee) {
-            Write-Host '::error::仍有子模块在走 gitee，重写规则未覆盖'
+            Write-Host '::error::仍有子模块实际访问 gitee，重写规则未覆盖'
             exit 1
           }
 
