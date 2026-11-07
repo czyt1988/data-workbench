@@ -37,7 +37,8 @@ env:
   PYTHON_VERSION: '3.12'
   # qtbase 只带 Core/Gui/Widgets/Svg/Xml/... 这些基础模块，其余必须显式装。
   # qtwebchannel 单独一条：qtwebengine 不会自动带它，而 DAGui 直接链了 WebChannel
-  QT_MODULES: 'qt5compat qtactiveqt qtmultimedia qtwebchannel qtwebengine'
+  # qtpositioning 同理：Qt6WebEngineCoreConfig 校验依赖时会要求它
+  QT_MODULES: 'qt5compat qtactiveqt qtmultimedia qtpositioning qtwebchannel qtwebengine'
 
 jobs:
   spike:
@@ -175,6 +176,28 @@ jobs:
             exit 1
           }
           Write-Host 'Qt 模块齐全（WebEngine / Multimedia / Core5Compat / AxContainer / lrelease）'
+
+      # 20 秒的探针：把主工程要用的整套 Qt 组件一次性 find_package 一遍。
+      # 缺哪个依赖它会直接点名，不用等 3rdparty 编完 6 分钟才发现 configure 挂了
+      - name: Probe the whole Qt component set
+        shell: pwsh
+        run: |
+          $probe = Join-Path $env:RUNNER_TEMP 'qtprobe'
+          New-Item -ItemType Directory -Force $probe | Out-Null
+          @'
+cmake_minimum_required(VERSION 3.16)
+project(qtprobe LANGUAGES CXX)
+# 与主工程 CMakeLists 的组件集合保持一致，外加 DAGui 的 WebEngine 依赖链
+find_package(Qt6 REQUIRED COMPONENTS
+    Core Gui Widgets Svg Xml PrintSupport Concurrent OpenGL OpenGLWidgets
+    Core5Compat AxContainer Network
+    WebEngineCore WebEngineWidgets WebChannel Positioning Multimedia
+    LinguistTools)
+message(STATUS "QT_PROBE_OK")
+'@ | Set-Content -Path (Join-Path $probe 'CMakeLists.txt') -Encoding UTF8
+          cmake -S $probe -B "$probe\build" -G "Visual Studio 17 2022" -A x64 `
+            -DCMAKE_PREFIX_PATH="$env:QT_ROOT_DIR"
+          if ($LASTEXITCODE -ne 0) { throw 'Qt 组件探针失败：上面列出的就是缺的组件' }
 
       # ------------------------------------------------------------------------
       # 5. zlib：沿用现有 CI 的 vcpkg 方案（先跑通，缓存优化留到正式工作流）
