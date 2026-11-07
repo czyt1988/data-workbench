@@ -82,6 +82,14 @@ def main() -> int:
     if failures:
         return 1
 
+    # workflow 里引用的独立脚本也要查：它们同样只在 CI 上才会被解析，
+    # 一个多余的括号就能让整步 ParserError（真实踩过）
+    scripts_dir = root.parent.parent / "scripts"
+    if scripts_dir.is_dir():
+        for ps1 in sorted(scripts_dir.glob("*.ps1")):
+            fragments.append((f"script-{ps1.stem}", f"scripts/{ps1.name}", ps1.read_text(encoding="utf-8")))
+        print(f"[OK]   scripts/: {len(list(scripts_dir.glob('*.ps1')))} 个独立脚本")
+
     pwsh = shutil.which("pwsh")
     if not pwsh:
         print("[SKIP] 没找到 pwsh，跳过 PowerShell 语法校验")

@@ -106,7 +106,11 @@ foreach ($pe in $peFiles) {
 foreach ($dep in ($imports.Keys | Sort-Object)) {
     if ($present -contains $dep) { continue }                    # 包里已有
     if ($dep -like 'api-ms-win-*') { continue }                  # API set 转发
-    if ($mustBundle -contains $dep) { Add-Missing "$dep（VC++ 运行库必须随包，被 $($imports[$dep]) 依赖）"); continue }
+    if ($mustBundle -contains $dep) {
+        # VC++ 运行库必须随包，不能指望目标机器装过 redist
+        Add-Missing "$dep（VC++ 运行库必须随包，被 $($imports[$dep]) 依赖）"
+        continue
+    }
     if (Test-Path (Join-Path $system32 $dep)) { continue }       # 系统自带
     Add-Missing "$dep（被 $($imports[$dep]) 依赖，包内和系统里都没有）"
 }
