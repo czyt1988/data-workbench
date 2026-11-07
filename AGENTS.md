@@ -16,7 +16,7 @@ AI Agent 驱动的数据分析工作平台 — C++17/Qt 有向图工作流引擎
 
 ```
 data-workbench/
-├── .github/workflows/  # CI (release.yml, page.yml)
+├── .github/workflows/  # CI (release.yml, page.yml, sync-gitee.yml)
 ├── cmake/              # CMake 工具链 (daworkbench_utils.cmake, 3rdparty.cmake, plugin_utils.cmake)
 ├── docs/zh/            # 中文技术文档 (dev-guide/, use-guide/, build/)
 ├── plugins/            # 插件 (DataAnalysis, CrewAIAdapter, DAAgentTools, plugin-template)
@@ -551,6 +551,7 @@ Linux GCC 下 `uint64_t` 是 `unsigned long`，MSVC 下是 `unsigned long long`�
 - 第三方库 (SARibbon, qwt, Qt-Advanced-Docking-System 等) 需先通过 `src/3rdparty/CMakeLists.txt` 编译安装
 - `src/3rdparty/qwt/` 是 Qwt 7.x 维护分支, 有自己的 AGENTS.md
 - CI 只有一条构建流水线 `.github/workflows/release.yml`：tag `v*.*.*` 出草稿 Release；`master` push 跑全量构建+打包自检（不发版）；PR 默认只跑翻译校验，需要全量时给 PR 打 `ci-run` 标签
+- 草稿 Release 发布（publish）后会由 `.github/workflows/sync-gitee.yml` 自动同步到 Gitee：缺 tag 则推 tag、建/更新 Gitee 发行版（说明追加同步标记）、同步附件（>90MB 的便携包自动 7z 分卷上传，Gitee 单附件上限 100MB），并只保留最近 3 个 Gitee 发行版（旧版先删附件再删发行版以释放 1GB 配额）。依赖仓库 secrets `GITEE_USERNAME` / `GITEE_TOKEN`；`release` 事件用的是默认分支上的工作流定义，所以该工作流需先合入 `master` 才会自动触发，也可以 `workflow_dispatch` 指定 tag 手动补同步
 - 崩溃转储 (.dmp) 生成在 `dumps/` 目录，由 `DADumpCapture` 管理
 - 翻译文件通过 CMake option `DA_ENABLE_AUTO_TRANSLATE` 自动生成
 - 构建请优先阅读 root `build.md`（包含 PowerShell 专用说明），或直接使用 `scripts/build.ps1`

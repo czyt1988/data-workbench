@@ -1,0 +1,635 @@
+name: Sync Release To Gitee
+
+# ==============================================================================
+# 把 GitHub 上已发布的 Release 同步到 Gitee：
+#   1) tag：Gitee 上没有就推过去，已存在就跳过（Gitee 是本项目的主开发远端，分支可能
+#      比 GitHub 领先，所以只保证发版所需的 tag 存在，绝不推分支）
+#   2) 发行版：创建或更新 Gitee 发行版，标题/发布说明与 GitHub Release 保持一致
+#   3) 附件：≤90MB 直接上传；更大的（便携包约 235MB）用 7z 做「存储模式」分卷后逐卷上传，
+#      并在发行说明里追加分卷解压说明
+#   4) 清理：Gitee 只保留最新 keep_latest（默认 3）个由本工作流管理的发行版；删发行版前
+#      先删它的附件，确保附件配额真正释放
+#
+# 为什么必须分卷（改这里之前先读）：
+#   - Gitee 发行版附件硬限制：单个 ≤100MB、单仓库附件总量 ≤1GB（GVP 项目 200MB / 5GB）
+#     https://help.gitee.com/repository/release/create
+#   - 本项目便携包 DAWorkbench-<版本>-win64-qt<Qt>.7z 约 235MB，直接上传必被拒
+#   - 分卷阈值 90MB：7z 的 m 后缀是 1024 进制，90m = 90MiB ≈ 94.4MB，离 100MB 留余量
+#   - 分卷用 `7z a -t7z -mx=0 -v90m`：把整个包以「存储（不压缩）」方式放进多卷 7z，
+#     只需拷贝 I/O（分钟级），不需要重新压缩几百 MB；用户下载全部 .001/.002/... 后，
+#     右键第一卷解压得到完整 .7z，再解压一次即可
+#   - 保留 3 版：3 × 235MB ≈ 705MB，仍在 1GB 配额内；旧版本先清理再上传，避免配额耗尽
+#
+# 幂等与安全：
+#   - 重跑同一 tag：发行版走 PATCH；同名且大小一致的附件直接跳过（不重复传 200MB+）
+#   - 只清理「本工作流管理」的 Gitee 发行版（发布说明里带 sync-gitee.yml 标记），
+#     手工在 Gitee 上创建的发行版不会被自动删除
+#   - 绝不推分支、不删 tag：清理只针对 Gitee 的发行版对象，代码历史不受影响
+#
+# 触发：
+#   - release: published —— release.yml 产出的是草稿 Release，人工 publish 后触发
+#   - workflow_dispatch  —— 补同步历史版本 / 验证 secrets 与分卷链路
+#
+# 需要的仓库 secrets（Settings → Secrets and variables → Actions）：
+#   - GITEE_USERNAME：Gitee 用户名，git push 的账号
+#   - GITEE_TOKEN：Gitee 私人令牌（git push 密码 + OpenAPI access_token 共用）
+#     建议勾选 projects 权限；勾了 user_info 还能在本工作流开头预校验账号是否一致
+# ==============================================================================
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: '要同步的 GitHub Release tag（如 v0.2.1，该 Release 必须已发布）'
+        required: true
+        type: string
+      keep_latest:
+        description: 'Gitee 上保留最新几个版本（默认 3）'
+        required: false
+        type: string
+        default: '3'
+
+# 只需要读 GitHub 的 Release / 附件；写 Gitee 用 GITEE_TOKEN
+permissions:
+  contents: read
+
+# 同一 tag 的同步串行执行；发版场景不因新运行取消旧运行
+concurrency:
+  group: sync-gitee-${{ github.event.release.tag_name || inputs.tag }}
+  cancel-in-progress: false
+
+env:
+  GITEE_REPO: czyt1988/data-workbench
+  GITEE_GIT_URL: https://gitee.com/czyt1988/data-workbench.git
+  GITEE_API: https://gitee.com/api/v5
+  # tag 来源：release 事件取 Release 的 tag；手动触发取输入
+  RELEASE_TAG: ${{ github.event.release.tag_name || inputs.tag }}
+  KEEP_LATEST: ${{ inputs.keep_latest || '3' }}
+  # Gitee 单附件上限 100MB，分卷阈值取 90MB（见文件头说明）
+  SPLIT_LIMIT_MB: '90'
+
+jobs:
+  sync:
+    name: sync release to Gitee
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      # ------------------------------------------------------------------------
+      # 0. 前置检查：secrets 与输入（早失败，别等构建/下载完才发现没配）
+      # ------------------------------------------------------------------------
+      - name: Validate secrets and inputs
+        env:
+          GITEE_USER: ${{ secrets.GITEE_USERNAME }}
+          GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
+        run: |
+          set -euo pipefail
+          missing=0
+          if [ -z "${GITEE_USER:-}" ]; then
+            echo "::error::缺少仓库 secret GITEE_USERNAME（Settings → Secrets and variables → Actions）"
+            missing=1
+          fi
+          if [ -z "${GITEE_TOKEN:-}" ]; then
+            echo "::error::缺少仓库 secret GITEE_TOKEN（Settings → Secrets and variables → Actions）"
+            missing=1
+          fi
+          [ "${missing}" -eq 0 ] || exit 1
+
+          if [ -z "${RELEASE_TAG:-}" ]; then
+            echo "::error::没有拿到要同步的 tag（release 事件取 tag_name，手动触发取 inputs.tag）"
+            exit 1
+          fi
+          case "${KEEP_LATEST:-}" in
+            '' | *[!0-9]*)
+              echo "::error::keep_latest 必须是正整数，实际是 '${KEEP_LATEST}'"
+              exit 1
+              ;;
+            0)
+              echo "::error::keep_latest 不能是 0"
+              exit 1
+              ;;
+          esac
+
+          echo "待同步：GitHub Release ${RELEASE_TAG} -> Gitee ${GITEE_REPO}"
+          echo "Gitee 保留最新 ${KEEP_LATEST} 个版本；附件分卷阈值 ${SPLIT_LIMIT_MB}MB"
+
+      # ------------------------------------------------------------------------
+      # 0.1 令牌预校验：GET /user 需要 user_info 权限，没勾就只告警；
+      #     真正的权限/写入问题会在创建发行版那一步以明确错误暴露
+      # ------------------------------------------------------------------------
+      - name: Verify the Gitee token
+        env:
+          GITEE_USER: ${{ secrets.GITEE_USERNAME }}
+          GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
+        run: |
+          set -euo pipefail
+          user_json="${RUNNER_TEMP}/gitee-user.json"
+          code=$(curl -sS -o "${user_json}" -w '%{http_code}' \
+                 --connect-timeout 20 --max-time 60 \
+                 "${GITEE_API}/user?access_token=${GITEE_TOKEN}") || code=000
+          case "${code}" in '' | *[!0-9]*) code=000 ;; esac
+          if [ "${code}" = "200" ]; then
+            login=$(jq -r '.login // empty' "${user_json}" 2>/dev/null || true)
+            echo "Gitee 令牌有效，账号：${login}"
+            if [ -n "${login}" ] && [ "${login}" != "${GITEE_USER}" ]; then
+              echo "::error::GITEE_TOKEN 属于 '${login}'，与 GITEE_USERNAME='${GITEE_USER}' 不一致，git push 会失败"
+              exit 1
+            fi
+          else
+            echo "::warning::无法预校验 Gitee 令牌（GET /user 返回 HTTP ${code}，常见原因是令牌没勾 user_info 权限）。继续执行，写入失败会在对应步骤报错。"
+          fi
+
+      # ------------------------------------------------------------------------
+      # 1. 检出 release tag：只为拿到 tag 对象（远端 Gitee 缺 tag 时要推过去）
+      #    子模块用不到，不检出；persist-credentials 关掉，发版不用默认 token 留在 config 里
+      # ------------------------------------------------------------------------
+      - name: Checkout the release tag
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name || inputs.tag }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      # ------------------------------------------------------------------------
+      # 2. 推 tag（缺了才推）：Gitee 是主开发远端，绝大多数情况下 tag 已存在；
+      #    credential.helper store + ~/.git-credentials 提供 https 认证，
+      #    不把 token 写进 remote URL（否则会出现在日志/错误信息里）
+      # ------------------------------------------------------------------------
+      - name: Push the release tag to Gitee (only when missing)
+        env:
+          GITEE_USER: ${{ secrets.GITEE_USERNAME }}
+          GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
+          GIT_TERMINAL_PROMPT: '0'   # 无 tty，禁止 git 交互式等密码
+        run: |
+          set -euo pipefail
+          umask 077
+          git config --global credential.helper store
+          printf 'https://%s:%s@gitee.com\n' "${GITEE_USER}" "${GITEE_TOKEN}" > ~/.git-credentials
+
+          git remote add gitee "${GITEE_GIT_URL}" 2>/dev/null \
+            || git remote set-url gitee "${GITEE_GIT_URL}"
+
+          # 先读远端 tag 列表再决定推不推；ls-remote 失败（网络/权限）要明确报错，
+          # 不能当成「tag 不存在」然后让 push 报一个更难懂的错
+          if ! tag_refs=$(git ls-remote --tags gitee "refs/tags/${RELEASE_TAG}"); then
+            echo "::error::无法访问 Gitee 仓库 ${GITEE_GIT_URL}（检查 GITEE_USERNAME / GITEE_TOKEN 与仓库地址）"
+            exit 1
+          fi
+          if [ -n "${tag_refs}" ]; then
+            echo "Gitee 已有 tag ${RELEASE_TAG}，跳过推送（本轮只同步发行版与附件）"
+          else
+            echo "Gitee 缺 tag ${RELEASE_TAG}，从 GitHub 推送"
+            git push gitee "refs/tags/${RELEASE_TAG}:refs/tags/${RELEASE_TAG}"
+          fi
+
+      # ------------------------------------------------------------------------
+      # 3. 读取 GitHub Release：标题 / 发布说明 / 是否预发布 / 基线分支 / 附件清单
+      #    统一用 gh 读取（release 事件与手动触发的数据源一致）
+      # ------------------------------------------------------------------------
+      - name: Read GitHub release metadata and notes
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          work="${RUNNER_TEMP}/gitee-sync"
+          rm -rf "${work}"
+          mkdir -p "${work}/assets"
+
+          if ! gh release view "${RELEASE_TAG}" --repo "${GITHUB_REPOSITORY}" \
+              --json tagName,name,body,isPrerelease,targetCommitish,assets \
+              > "${work}/release.json"; then
+            echo "::error::读取 GitHub Release '${RELEASE_TAG}' 失败（tag 必须对应一个已发布的 Release）"
+            exit 1
+          fi
+
+          jq -r '.body // ""' "${work}/release.json" > "${work}/body-github.md"
+          asset_count=$(jq -r '.assets | length' "${work}/release.json")
+          total_bytes=$(jq -r '[.assets[].size] | add // 0' "${work}/release.json")
+          echo "GitHub Release: tag=$(jq -r '.tagName' "${work}/release.json") name=$(jq -r '.name // ""' "${work}/release.json")"
+          echo "附件 ${asset_count} 个，合计 ${total_bytes} 字节"
+          jq -r '.assets[]? | "  - \(.name)  \(.size) bytes  state=\(.state // "uploaded")"' "${work}/release.json"
+
+      # ------------------------------------------------------------------------
+      # 4. 下载附件并按大小制定上传计划：
+      #    - ≤90MB：原样上传
+      #    - >90MB：7z 存储模式分卷成 <原名>.001/.002/... 逐卷上传
+      #    产物：
+      #      plan.tsv        每行「本地路径 \t Gitee 附件名」= 待上传清单
+      #      split-info.tsv  每行「主包名 \t 分卷数 \t 分卷总字节」= 写进发行说明用
+      # ------------------------------------------------------------------------
+      - name: Download attachments and split the oversized ones
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          work="${RUNNER_TEMP}/gitee-sync"
+          assets_dir="${work}/assets"
+          plan="${work}/plan.tsv"
+          split_info="${work}/split-info.tsv"
+          : > "${plan}"
+          : > "${split_info}"
+
+          mapfile -t asset_names < <(jq -r '.assets[]? | .name' "${work}/release.json")
+          if [ "${#asset_names[@]}" -eq 0 ]; then
+            echo "GitHub Release 没有附件，本轮只同步发行版说明"
+            exit 0
+          fi
+
+          echo "下载 ${#asset_names[@]} 个附件到 ${assets_dir}"
+          gh release download "${RELEASE_TAG}" --repo "${GITHUB_REPOSITORY}" \
+            --dir "${assets_dir}" --clobber
+
+          # 7z 按需安装：ubuntu 镜像不保证自带；新版 apt 包里命令是 7zz，老版是 7z
+          ensure_7z() {
+            local bin
+            bin=$(command -v 7z || command -v 7zz || command -v 7za || true)
+            if [ -n "${bin}" ]; then
+              printf '%s\n' "${bin}"
+              return 0
+            fi
+            echo "安装 7z 用于分卷 ..." >&2
+            sudo apt-get update -qq
+            sudo apt-get install -y --no-install-recommends 7zip >/dev/null 2>&1 \
+              || sudo apt-get install -y --no-install-recommends p7zip-full >/dev/null
+            bin=$(command -v 7z || command -v 7zz || command -v 7za || true)
+            if [ -z "${bin}" ]; then
+              echo "::error::安装后仍找不到 7z/7zz/7za 命令，无法分卷" >&2
+              return 1
+            fi
+            printf '%s\n' "${bin}"
+          }
+
+          limit=$(( SPLIT_LIMIT_MB * 1024 * 1024 ))
+          split_dir="${work}/split"
+          rm -rf "${split_dir}"
+          mkdir -p "${split_dir}"
+
+          seven_zip=""
+          split_count=0
+          # -print0 + sort -z：文件名里即使有空格/中文也不担心
+          while IFS= read -r -d '' f; do
+            name=$(basename "${f}")
+            size=$(stat -c%s "${f}")
+            if [ "${size}" -le "${limit}" ]; then
+              printf '%s\t%s\n' "${f}" "${name}" >> "${plan}"
+              continue
+            fi
+
+            [ -n "${seven_zip}" ] || seven_zip=$(ensure_7z)
+            echo "分卷 ${name}（${size} 字节 > ${SPLIT_LIMIT_MB}MB）"
+            # 输出到 split/、以原名做多卷 7z：产物是 <name>.001、<name>.002 ...
+            # -mx=0 存储模式：只搬运压缩包，不重新压缩，分钟级完成
+            ( cd "${assets_dir}" && "${seven_zip}" a -t7z -mx=0 "-v${SPLIT_LIMIT_MB}m" "${split_dir}/${name}" "${name}" >/dev/null )
+
+            parts=( "${split_dir}/${name}".??? )
+            if [ ! -e "${parts[0]}" ]; then
+              echo "::error::${name} 分卷失败（没有生成 ${name}.001）"
+              exit 1
+            fi
+            part_count=0
+            parts_total=0
+            for part in "${parts[@]}"; do
+              [ -e "${part}" ] || continue
+              part_size=$(stat -c%s "${part}")
+              if [ "${part_size}" -gt "${limit}" ]; then
+                echo "::error::分卷 $(basename "${part}") 仍超过 ${SPLIT_LIMIT_MB}MB（${part_size} 字节）"
+                exit 1
+              fi
+              printf '%s\t%s\n' "${part}" "$(basename "${part}")" >> "${plan}"
+              part_count=$(( part_count + 1 ))
+              parts_total=$(( parts_total + part_size ))
+            done
+            printf '%s\t%s\t%s\n' "${name}" "${part_count}" "${parts_total}" >> "${split_info}"
+            split_count=$(( split_count + 1 ))
+            echo "  已生成 ${part_count} 个分卷（合计 ${parts_total} 字节），单卷上限 $(( limit / 1024 / 1024 ))MB"
+          done < <(find "${assets_dir}" -maxdepth 1 -type f -print0 | sort -z)
+
+          echo "上传计划：$(wc -l < "${plan}") 个附件，其中 ${split_count} 个主包被分卷"
+
+      # ------------------------------------------------------------------------
+      # 5. 创建或更新 Gitee 发行版
+      #    发布说明 = GitHub 说明 + （有分卷时）分卷解压说明 + 同步标记
+      #    「sync-gitee.yml」标记同时用于清理阶段识别「本工作流管理的发行版」
+      # ------------------------------------------------------------------------
+      - name: Create or update the Gitee release
+        env:
+          GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
+        run: |
+          set -euo pipefail
+          work="${RUNNER_TEMP}/gitee-sync"
+          body_file="${work}/body-gitee.md"
+
+          {
+            cat "${work}/body-github.md"
+            printf '\n\n---\n\n'
+            if [ -s "${work}/split-info.tsv" ]; then
+              printf '### Gitee 附件说明\n\n'
+              printf 'Gitee 限制单个附件不超过 100 MB，所以主包已经拆成多个分卷。下载**全部分卷**放到同一个目录，然后：\n\n'
+              printf '1. 用 7-Zip / WinRAR 右键第一个分卷（`.001`）解压，得到完整的主包 `.7z`\n'
+              printf '2. 再解压一次这个 `.7z` 即可使用\n\n'
+              printf '| 主包 | 分卷数 |\n| --- | --- |\n'
+              while IFS=$'\t' read -r base part_count _parts_total; do
+                [ -n "${base}" ] || continue
+                printf '| `%s` | %s |\n' "${base}" "${part_count}"
+              done < "${work}/split-info.tsv"
+              printf '\n'
+            fi
+            if jq -e '[.assets[]? | select(.name | endswith(".sha256"))] | length > 0' "${work}/release.json" >/dev/null 2>&1; then
+              printf 'SHA256 校验和见附件 `*.sha256`（Windows 可用 `certutil -hashfile <文件> SHA256` 核对）。\n\n'
+            fi
+            printf '> 本发行版由 GitHub Release 自动同步（工作流 `.github/workflows/sync-gitee.yml`），发布说明与主包以 GitHub 为准。\n'
+          } > "${body_file}"
+
+          api_repo="${GITEE_API}/repos/${GITEE_REPO}"
+          tag_enc=$(jq -rn --arg t "${RELEASE_TAG}" '$t|@uri')
+          existing_json="${work}/gitee-release-existing.json"
+          code=$(curl -sS -o "${existing_json}" -w '%{http_code}' \
+                 --connect-timeout 20 --max-time 120 \
+                 "${api_repo}/releases/tags/${tag_enc}?access_token=${GITEE_TOKEN}") || code=000
+          case "${code}" in '' | *[!0-9]*) code=000 ;; esac
+          release_id=""
+          if [ "${code}" = "200" ]; then
+            release_id=$(jq -r '.id // empty' "${existing_json}" 2>/dev/null || true)
+          elif [ "${code}" != "404" ]; then
+            echo "::error::查询 Gitee 发行版失败（HTTP ${code}）"
+            cat "${existing_json}" 2>/dev/null || true
+            exit 1
+          fi
+
+          release_name=$(jq -r '.name // empty' "${work}/release.json")
+          [ -n "${release_name}" ] || release_name="DAWorkbench ${RELEASE_TAG}"
+          prerelease=$(jq -r '.isPrerelease // false' "${work}/release.json")
+          target_commitish=$(jq -r '.targetCommitish // empty' "${work}/release.json")
+          if [ -z "${target_commitish}" ] || [ "${target_commitish}" = "null" ]; then
+            target_commitish=master
+          fi
+
+          if [ -n "${release_id}" ]; then
+            echo "Gitee 发行版 ${RELEASE_TAG} 已存在（id=${release_id}），更新标题与说明"
+            code=$(curl -sS -o "${work}/gitee-release-patch.json" -w '%{http_code}' \
+                   --connect-timeout 20 --max-time 120 -X PATCH \
+                   "${api_repo}/releases/${release_id}" \
+                   --data-urlencode "access_token=${GITEE_TOKEN}" \
+                   --data-urlencode "tag_name=${RELEASE_TAG}" \
+                   --data-urlencode "name=${release_name}" \
+                   --data-urlencode "body@${body_file}" \
+                   --data-urlencode "prerelease=${prerelease}") || code=000
+            case "${code}" in '' | *[!0-9]*) code=000 ;; esac
+            if [ "${code}" -lt 200 ] || [ "${code}" -ge 300 ]; then
+              echo "::error::更新 Gitee 发行版失败（HTTP ${code}）"
+              cat "${work}/gitee-release-patch.json" 2>/dev/null || true
+              exit 1
+            fi
+          else
+            echo "在 Gitee 创建发行版 ${RELEASE_TAG}"
+            code=$(curl -sS -o "${work}/gitee-release-create.json" -w '%{http_code}' \
+                   --connect-timeout 20 --max-time 120 -X POST \
+                   "${api_repo}/releases" \
+                   --data-urlencode "access_token=${GITEE_TOKEN}" \
+                   --data-urlencode "tag_name=${RELEASE_TAG}" \
+                   --data-urlencode "name=${release_name}" \
+                   --data-urlencode "body@${body_file}" \
+                   --data-urlencode "target_commitish=${target_commitish}" \
+                   --data-urlencode "prerelease=${prerelease}") || code=000
+            case "${code}" in '' | *[!0-9]*) code=000 ;; esac
+            if [ "${code}" -lt 200 ] || [ "${code}" -ge 300 ]; then
+              echo "::error::创建 Gitee 发行版失败（HTTP ${code}）。常见原因：GITEE_TOKEN 没有该仓库写权限，或 tag 在 Gitee 不存在（本工作流会先推 tag）"
+              cat "${work}/gitee-release-create.json" 2>/dev/null || true
+              exit 1
+            fi
+            release_id=$(jq -r '.id // empty' "${work}/gitee-release-create.json")
+          fi
+          if [ -z "${release_id}" ]; then
+            echo "::error::没有拿到 Gitee 发行版 id"
+            exit 1
+          fi
+          printf '%s\n' "${release_id}" > "${work}/release-id"
+          echo "RELEASE_ID=${release_id}" >> "${GITHUB_ENV}"
+          echo "Gitee 发行版已就绪：id=${release_id}"
+
+      # ------------------------------------------------------------------------
+      # 6. 清理旧发行版（放在上传之前：先腾出 1GB 附件配额，再传新包）
+      #    - 只清理本工作流管理的（说明里带 sync-gitee.yml 标记）且 tag 形如 vX.Y.Z
+      #    - 按版本号倒序保留：当前同步的 tag + 最新 keep-1 个，合计 keep 个
+      #    - 先删附件再删发行版，确保配额真正释放
+      # ------------------------------------------------------------------------
+      - name: Prune old Gitee releases (keep latest N)
+        env:
+          GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
+        run: |
+          set -euo pipefail
+          work="${RUNNER_TEMP}/gitee-sync"
+          api_repo="${GITEE_API}/repos/${GITEE_REPO}"
+          keep=$(( 10#${KEEP_LATEST} ))
+          keep_others=$(( keep - 1 ))
+
+          code=$(curl -sS -o "${work}/gitee-releases.json" -w '%{http_code}' \
+                 --connect-timeout 20 --max-time 120 \
+                 "${api_repo}/releases?access_token=${GITEE_TOKEN}&per_page=100&direction=desc") || code=000
+          case "${code}" in '' | *[!0-9]*) code=000 ;; esac
+          if [ "${code}" != "200" ] || ! jq -e 'type == "array"' "${work}/gitee-releases.json" >/dev/null 2>&1; then
+            echo "::warning::读取 Gitee 发行版列表失败（HTTP ${code}），跳过旧版本清理"
+            echo "PRUNED_COUNT=0" >> "${GITHUB_ENV}"
+            exit 0
+          fi
+
+          # 只认本工作流管理的发行版：body 里带 sync-gitee.yml 标记 + tag 形如 vX.Y.Z
+          # sort -rV 按版本号倒序（v0.2.10 > v0.2.9），不依赖 Gitee 返回顺序
+          jq -r '.[]? | select((.body // "") | contains("sync-gitee.yml")) | select(.tag_name | test("^v[0-9]+\\.[0-9]+\\.[0-9]+$")) | "\(.tag_name)\t\(.id)"' \
+            "${work}/gitee-releases.json" | sort -rV > "${work}/managed-releases.tsv"
+
+          : > "${work}/prune.tsv"
+          kept=0
+          while IFS=$'\t' read -r tag rid; do
+            [ -n "${tag}" ] || continue
+            if [ "${tag}" = "${RELEASE_TAG}" ]; then
+              echo "保留当前同步版本 ${tag}（id=${rid}）"
+              continue
+            fi
+            if [ "${kept}" -lt "${keep_others}" ]; then
+              echo "保留 ${tag}（id=${rid}）"
+              kept=$(( kept + 1 ))
+              continue
+            fi
+            printf '%s\t%s\n' "${tag}" "${rid}" >> "${work}/prune.tsv"
+          done < "${work}/managed-releases.tsv"
+
+          deleted=0
+          if [ -s "${work}/prune.tsv" ]; then
+            while IFS=$'\t' read -r tag rid; do
+              [ -n "${rid}" ] || continue
+              echo "清理旧发行版 ${tag}（id=${rid}）：先删附件再删发行版，释放附件配额"
+              curl -sS -o "${work}/old-attachments.json" \
+                "${api_repo}/releases/${rid}/attach_files?access_token=${GITEE_TOKEN}&per_page=100" || true
+              for aid in $(jq -r '.[]?.id // empty' "${work}/old-attachments.json" 2>/dev/null || true); do
+                [ -n "${aid}" ] || continue
+                curl -sS -o /dev/null -X DELETE \
+                  "${api_repo}/releases/${rid}/attach_files/${aid}?access_token=${GITEE_TOKEN}" || true
+              done
+              code=$(curl -sS -o /dev/null -w '%{http_code}' -X DELETE \
+                     --connect-timeout 20 --max-time 120 \
+                     "${api_repo}/releases/${rid}?access_token=${GITEE_TOKEN}") || code=000
+              case "${code}" in '' | *[!0-9]*) code=000 ;; esac
+              if [ "${code}" = "200" ] || [ "${code}" = "204" ]; then
+                echo "  已删除 ${tag}"
+                deleted=$(( deleted + 1 ))
+              else
+                echo "::warning::删除旧发行版 ${tag} 失败（HTTP ${code}），跳过"
+              fi
+            done < "${work}/prune.tsv"
+          fi
+          echo "清理完成：删除 ${deleted} 个旧发行版；Gitee 上保留最新 ${keep} 个（含本次 ${RELEASE_TAG}）"
+          echo "PRUNED_COUNT=${deleted}" >> "${GITHUB_ENV}"
+
+      # ------------------------------------------------------------------------
+      # 7. 上传附件
+      #    幂等：同名且大小一致 → 跳过；大小不同 → 删旧传新
+      #    分卷数变化时（比如包变小少了一卷）把上次残留的 .001/.002/... 清掉
+      # ------------------------------------------------------------------------
+      - name: Upload attachments to the Gitee release
+        env:
+          GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
+        run: |
+          set -euo pipefail
+          work="${RUNNER_TEMP}/gitee-sync"
+          plan="${work}/plan.tsv"
+          release_id=$(cat "${work}/release-id")
+          api="${GITEE_API}/repos/${GITEE_REPO}/releases/${release_id}"
+
+          if [ ! -s "${plan}" ]; then
+            echo "没有需要上传的附件"
+            echo "UPLOADED_COUNT=0" >> "${GITHUB_ENV}"
+            echo "SKIPPED_COUNT=0" >> "${GITHUB_ENV}"
+            echo "FAILED_COUNT=0" >> "${GITHUB_ENV}"
+            exit 0
+          fi
+
+          # 计划清单：附件名 -> 本地字节数；分卷主包名集合（用于识别历史分卷）
+          declare -A planned_size=()
+          declare -A split_base=()
+          while IFS=$'\t' read -r local_path attach_name; do
+            [ -n "${local_path}" ] || continue
+            planned_size["${attach_name}"]=$(stat -c%s "${local_path}")
+          done < "${plan}"
+          if [ -s "${work}/split-info.tsv" ]; then
+            while IFS=$'\t' read -r base _part_count _parts_total; do
+              [ -n "${base}" ] || continue
+              split_base["${base}"]=1
+            done < "${work}/split-info.tsv"
+          fi
+
+          # 现有附件清单（重跑幂等用）
+          existing_json="${work}/existing-attachments.json"
+          curl -sS -o "${existing_json}" \
+            "${api}/attach_files?access_token=${GITEE_TOKEN}&per_page=100" || true
+          if ! jq -e 'type == "array"' "${existing_json}" >/dev/null 2>&1; then
+            echo '[]' > "${existing_json}"
+          fi
+          jq -r '.[]? | "\(.id)\t\(.name)\t\(.size // 0)"' "${existing_json}" > "${work}/existing.tsv"
+
+          declare -A existing_ok=()
+          deleted_attachments=0
+          while IFS=$'\t' read -r aid name size; do
+            [ -n "${aid}" ] || continue
+            need_delete=0
+            if [ -n "${planned_size[${name}]:-}" ]; then
+              if [ "${planned_size[${name}]}" != "${size}" ]; then
+                need_delete=1
+              fi
+            else
+              # 不在本次计划里：若是指定主包的历史分卷（<主包>.<3位数字>），删掉
+              for base in "${!split_base[@]}"; do
+                case "${name}" in
+                  "${base}".???) need_delete=1 ;;
+                esac
+              done
+            fi
+            if [ "${need_delete}" = "1" ]; then
+              echo "清理旧附件：${name}（id=${aid}）"
+              curl -sS -o /dev/null -X DELETE "${api}/attach_files/${aid}?access_token=${GITEE_TOKEN}" || true
+              deleted_attachments=$(( deleted_attachments + 1 ))
+            elif [ -n "${planned_size[${name}]:-}" ]; then
+              existing_ok["${name}"]=1
+            fi
+          done < "${work}/existing.tsv"
+          echo "旧附件清理 ${deleted_attachments} 个"
+
+          uploaded=0
+          skipped=0
+          failed=0
+          while IFS=$'\t' read -r local_path attach_name; do
+            [ -n "${local_path}" ] || continue
+            if [ -n "${existing_ok[${attach_name}]:-}" ]; then
+              echo "已存在且大小一致，跳过：${attach_name}"
+              skipped=$(( skipped + 1 ))
+              continue
+            fi
+            size=$(stat -c%s "${local_path}")
+            echo "上传 ${attach_name}（${size} 字节）"
+            http=$(curl -sS -o "${work}/attach-resp.json" -w '%{http_code}' \
+                   --connect-timeout 30 --max-time 1800 \
+                   --retry 3 --retry-delay 15 \
+                   -X POST "${api}/attach_files" \
+                   -F "access_token=${GITEE_TOKEN}" \
+                   -F "file=@${local_path}") || http=000
+            case "${http}" in '' | *[!0-9]*) http=000 ;; esac
+            if [ "${http}" -ge 200 ] && [ "${http}" -lt 300 ]; then
+              uploaded=$(( uploaded + 1 ))
+            else
+              failed=$(( failed + 1 ))
+              echo "::error::上传附件失败：${attach_name}（HTTP ${http}）"
+              head -c 800 "${work}/attach-resp.json" 2>/dev/null || true
+              echo
+            fi
+          done < "${plan}"
+
+          echo "附件同步完成：上传 ${uploaded}，跳过 ${skipped}，失败 ${failed}"
+          echo "UPLOADED_COUNT=${uploaded}" >> "${GITHUB_ENV}"
+          echo "SKIPPED_COUNT=${skipped}" >> "${GITHUB_ENV}"
+          echo "FAILED_COUNT=${failed}" >> "${GITHUB_ENV}"
+          [ "${failed}" -eq 0 ] || exit 1
+
+      # ------------------------------------------------------------------------
+      # 8. 结果摘要（失败也执行，方便在 Actions 页面一眼看到同步了什么）
+      # ------------------------------------------------------------------------
+      - name: Write job summary
+        if: always()
+        run: |
+          work="${RUNNER_TEMP}/gitee-sync"
+          {
+            echo "## Gitee 同步结果"
+            echo ""
+            echo "| 项 | 值 |"
+            echo "| --- | --- |"
+            echo "| tag | \`${RELEASE_TAG}\` |"
+            echo "| Gitee 仓库 | \`${GITEE_REPO}\` |"
+            echo "| 保留版本数 | ${KEEP_LATEST} |"
+            echo "| 附件上传 | ${UPLOADED_COUNT:-0} |"
+            echo "| 附件跳过（已存在） | ${SKIPPED_COUNT:-0} |"
+            echo "| 附件失败 | ${FAILED_COUNT:-0} |"
+            echo "| 清理旧版本 | ${PRUNED_COUNT:-0} |"
+            echo ""
+            if [ -s "${work}/split-info.tsv" ]; then
+              echo "### 分卷附件"
+              echo ""
+              echo "| 主包 | 分卷数 |"
+              echo "| --- | --- |"
+              while IFS=$'\t' read -r base part_count _parts_total; do
+                [ -n "${base}" ] || continue
+                echo "| \`${base}\` | ${part_count} |"
+              done < "${work}/split-info.tsv"
+              echo ""
+            fi
+            if [ -s "${work}/plan.tsv" ]; then
+              echo "### 附件清单"
+              echo ""
+              echo "| 附件 | 字节 |"
+              echo "| --- | --- |"
+              while IFS=$'\t' read -r local_path attach_name; do
+                [ -n "${local_path}" ] || continue
+                size=$(stat -c%s "${local_path}" 2>/dev/null || echo '?')
+                echo "| \`${attach_name}\` | ${size} |"
+              done < "${work}/plan.tsv"
+            fi
+          } >> "${GITHUB_STEP_SUMMARY}"

@@ -117,7 +117,7 @@ cmake --build build-linux --target DAPyWorkFlow --parallel
 
 ```
 data-workbench/
-├── .github/workflows/     # CI (release.yml, page.yml)
+├── .github/workflows/     # CI (release.yml, page.yml, sync-gitee.yml)
 ├── cmake/                 # CMake 工具链模块
 │   ├── daworkbench_utils.cmake        # 工具函数
 │   ├── daworkbench_3rdparty.cmake     # 第三方库查找
