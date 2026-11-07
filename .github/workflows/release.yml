@@ -40,8 +40,9 @@ env:
   QT_VERSION: '6.10.3'
   PYTHON_VERSION: '3.12'
   QT_MODULES: 'qt5compat qtactiveqt qtmultimedia qtpositioning qtwebchannel qtwebengine'
-  # push tag 时用 ref_name，手动触发时用输入的 tag
-  RELEASE_TAG: ${{ github.event_name == 'push' && github.ref_name || inputs.tag }}
+  # 版本号来源：tag push 用 ref_name；手动触发用输入的 tag；
+  # 分支上试跑（dry run）时两者都不成立，退回一个占位版本，只为验证打包链路
+  RELEASE_TAG: ${{ github.ref_type == 'tag' && github.ref_name || (inputs.tag || 'v0.2.1') }}
 
 jobs:
   release:
