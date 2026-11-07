@@ -1,4 +1,4 @@
-﻿#
+#
 # DAWorkbench 构建工具（部署相关）
 #
 # 历史上本文件还包含 damacro_lib_setting / damacro_set_lib_properties / damacro_lib_install /
@@ -98,8 +98,11 @@ function(dafun_deploy_3rdparty_dlls _target_name)
     # 匹配规则：文件名（去扩展名）等于 <基名>（Release）或 <基名>d（Debug，CMAKE_DEBUG_POSTFIX）。
     # 注意：
     # - DAWidgets / DALiteCtk 虽以 DA 开头，但属第三方库（src/3rdparty 编译安装），必须列入
-    # - zlib 同时有 zlib.dll 和 zlibd.dll，基名 "zlib" 匹配 zlib + zlibd，正好覆盖两个文件
-    # - python311 不区分 Debug/Release，基名 "python311" 仅匹配自身
+    # - zlib 的实际产物是 zlib1.dll（Release）和 zd.dll（Debug），不是 zlib/zlibd，
+    #   所以必须按真实文件名 zlib1 / zd 列；quazip1-qt6.dll 直接 import zd.dll，
+    #   漏掉的话构建树里 quazip 加载不起来
+    # - python312 的实际文件名随 Python 版本变，这里列当前使用的 3.12，
+    #   换版本时同步改（安装期由 top-level CMakeLists 的 install(FILES) 兜底）
     # - 带 Qt 版本号的库用 ${QT_VERSION_MAJOR} 适配 Qt5/Qt6
     # - spdlog 默认构建为动态库（SPDLOG_BUILD_SHARED 默认 ON），DAMessageHandler
     #   链接后运行期依赖 spdlog.dll，必须列入；pybind11/ordered-map 是头文件库，无 DLL，不列入
@@ -113,9 +116,11 @@ function(dafun_deploy_3rdparty_dlls _target_name)
         qwtplot3d
         qtadvanceddocking-qt${QT_VERSION_MAJOR}
         quazip1-qt${QT_VERSION_MAJOR}
-        zlib
+        zlib1
+        zd
         spdlog
-        python311)
+        python311
+        python312)
 
     # 按白名单筛选：只复制基名匹配的 DLL
     set(_3rdparty_dlls)
@@ -288,8 +293,11 @@ function(dafun_install_deploy_qt_runtime _target_name)
             set(_wdq_mode --release)
         endif()
         message(STATUS \"Deploying Qt runtime (\${_wdq_mode}) to \${CMAKE_INSTALL_PREFIX}/bin ...\")
+        # --compiler-runtime: 把 msvcp140/vcruntime140/vcruntime140_1/concrt140 一起拷进安装目录。
+        # 不加这一项，windeployqt 只处理 Qt6*.dll，装出来的包在没装 VC++ 运行库的机器上
+        # 会直接 0xc000007b / STATUS_DLL_NOT_FOUND（实测 exe 依赖 MSVCP140/VCRUNTIME140）。
         execute_process(
-            COMMAND \"${WINDEPLOYQT_EXE}\" \${_wdq_mode} --dir \"\${CMAKE_INSTALL_PREFIX}/bin\" \${_wdq_existing}
+            COMMAND \"${WINDEPLOYQT_EXE}\" \${_wdq_mode} --compiler-runtime --dir \"\${CMAKE_INSTALL_PREFIX}/bin\" \${_wdq_existing}
             RESULT_VARIABLE _wdq_result
         )
         if(NOT _wdq_result EQUAL 0)

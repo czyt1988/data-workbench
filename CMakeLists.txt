@@ -11,9 +11,12 @@ cmake_minimum_required(VERSION 3.16)
 ########################################################
 # 版本定义
 ########################################################
-set(DA_VERSION_MAJOR 0)
-set(DA_VERSION_MINOR 2)
-set(DA_VERSION_PATCH 1)
+# 用 CACHE STRING，允许 CI 从 tag 注入（-DDA_VERSION_MAJOR=1 …），
+# 否则 tag 和程序里 --version 打印的版本会各说各话。
+# 注意：改了这里要保证与 tag 一致，release workflow 会校验。
+set(DA_VERSION_MAJOR 0 CACHE STRING "主版本号")
+set(DA_VERSION_MINOR 2 CACHE STRING "次版本号")
+set(DA_VERSION_PATCH 1 CACHE STRING "补丁号")
 set(DA_VERSION "${DA_VERSION_MAJOR}.${DA_VERSION_MINOR}.${DA_VERSION_PATCH}")
 string(TIMESTAMP DA_COMPILE_DATETIME %y%m%d)
 string(TIMESTAMP DA_COMPILE_DATETIME_YEAR %y)

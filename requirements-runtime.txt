@@ -1,0 +1,25 @@
+# 发布包内置的 Python 运行时依赖（和开发用的 requirements.txt 分开）
+#
+# 与 requirements.txt 的差异只有三个，都是实证结论（不是猜）：
+#   - seaborn      : 随包 PyScripts 里一次 import 都没有
+#   - statsmodels  : 同上
+#   - langgraph-cli[inmem] : 开发期起本地服务的 CLI，其 [inmem] extra 会拖进
+#                    uvicorn/fastapi/starlette 整套 web 栈，程序运行时不 import
+#
+# 注意：用户如果习惯在自定义 Python 节点里 import seaborn/statsmodels，
+# 删掉它们就是功能回退。要恢复只需把名字加回本文件。
+numpy
+loguru
+pandas
+scipy
+openpyxl
+chardet
+PyWavelets
+pyarrow
+typing_extensions
+matplotlib
+langgraph
+langchain-openai
+pydantic>=2.0
+tiktoken
+soundfile

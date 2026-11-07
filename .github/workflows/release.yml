@@ -1,0 +1,388 @@
+name: Release
+
+# ==============================================================================
+# 打 tag 即出包：编译 → 安装 → 组包（Qt/Python/MSVC 运行库）→ 自检 → 7z → 草稿 Release
+#
+# 关键设计（都是前面 spike 实测出来的，别随手改）：
+#   - Qt 锁 6.10.3：6.11/6.12 的 Windows 官方包没有 qtwebengine，本项目 DAGui 硬依赖它
+#   - QT_MODULES 必须显式列：qt5compat/qtactiveqt/qtmultimedia/qtpositioning/
+#     qtwebchannel/qtwebengine 都是独立 addon，不在 qtbase 里
+#   - 子模块地址在 CI 侧用 git url.insteadOf 重写到 GitHub 镜像，仓库 .gitmodules 不动，
+#     本地开发环境完全不受影响；替换值一律不带 .git（否则会拼出 xxx.git.git）
+#   - 编译期 Python 3.12 决定 ABI（exe/DLL 直接 import python3XX.dll），
+#     打包阶段再换解释器是无效的
+#   - 产物只出便携包（解压即用），安装器留到后续版本
+# ==============================================================================
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: '要发布的 tag，例如 v0.2.1（该 tag 必须已存在）'
+        required: true
+        type: string
+      dry_run:
+        description: '只打包不上传 Release（首次验证用）'
+        required: false
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+
+env:
+  QT_VERSION: '6.10.3'
+  PYTHON_VERSION: '3.12'
+  QT_MODULES: 'qt5compat qtactiveqt qtmultimedia qtpositioning qtwebchannel qtwebengine'
+  # push tag 时用 ref_name，手动触发时用输入的 tag
+  RELEASE_TAG: ${{ github.event_name == 'push' && github.ref_name || inputs.tag }}
+
+jobs:
+  release:
+    name: build & package
+    runs-on: windows-2022
+    timeout-minutes: 180
+
+    steps:
+      # ------------------------------------------------------------------------
+      # 1. 子模块地址重写（只影响本次 job 的临时全局 gitconfig）
+      # ------------------------------------------------------------------------
+      - name: Rewrite gitee submodules to GitHub mirrors (CI only)
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $map = [ordered]@{
+            'https://gitee.com/czyt1988/SARibbon.git'                   = 'https://github.com/czyt1988/SARibbon'
+            'https://gitee.com/czyt1988/DAWidgets'                      = 'https://github.com/czyt1988/DAWidgets'
+            'https://gitee.com/czyt1988/QWT.git'                        = 'https://github.com/czyt1988/QWT'
+            'https://gitee.com/czyt1988/quazip.git'                     = 'https://github.com/czyt1988/quazip'
+            'https://gitee.com/czyt1988/QtPropertyBrowser.git'          = 'https://github.com/czyt1988/QtPropertyBrowser'
+            'https://gitee.com/czyt1988/spdlog.git'                     = 'https://github.com/gabime/spdlog'
+            'https://gitee.com/czyt1988/pybind11.git'                   = 'https://github.com/pybind/pybind11'
+            'https://gitee.com/czyt1988/zlib'                           = 'https://github.com/madler/zlib'
+            'https://gitee.com/czyt1988/ordered-map.git'                = 'https://github.com/Tessil/ordered-map'
+            'https://gitee.com/czyt1988/Qt-Advanced-Docking-System.git' = 'https://github.com/githubuser0xFFFF/Qt-Advanced-Docking-System'
+            'https://gitee.com/czyt1988/qim.git'                        = 'https://github.com/czyt1988/qim'
+          }
+          foreach ($k in $map.Keys) {
+            git config --global "url.$($map[$k]).insteadOf" $k
+            if ($LASTEXITCODE -ne 0) { throw "git config 失败: $k" }
+          }
+
+      - name: Checkout with submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 1
+
+      - name: Verify submodules came from GitHub
+        shell: pwsh
+        run: |
+          $status = git submodule status --recursive
+          $bad = $status | Select-String -Pattern '^[+-]'
+          if ($bad) { Write-Host '::error::有子模块未检出或与父仓记录不一致'; exit 1 }
+          # remote.origin.url 记的是 .gitmodules 原文，重写只在传输层生效，
+          # 所以要问 ls-remote --get-url 才看得到真实地址
+          $urls = git submodule foreach --recursive "git ls-remote --get-url origin" 2>&1
+          if ($urls | Select-String 'gitee\.com') {
+            Write-Host '::error::仍有子模块实际访问 gitee'
+            exit 1
+          }
+
+      # ------------------------------------------------------------------------
+      # 2. tag → 版本号（唯一真相源），并校验格式
+      # ------------------------------------------------------------------------
+      - name: Resolve version from tag
+        shell: pwsh
+        run: |
+          $tag = $env:RELEASE_TAG
+          if ([string]::IsNullOrWhiteSpace($tag)) { throw '没有拿到 tag' }
+          if ($tag -notmatch '^v(\d+)\.(\d+)\.(\d+)$') {
+            throw "tag 必须形如 v<major>.<minor>.<patch>，实际是 '$tag'"
+          }
+          $major = $Matches[1]; $minor = $Matches[2]; $patch = $Matches[3]
+          Write-Host "版本: $major.$minor.$patch（来自 tag $tag）"
+          "VER_MAJOR=$major" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "VER_MINOR=$minor" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "VER_PATCH=$patch" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "VER_FULL=$major.$minor.$patch" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+      # ------------------------------------------------------------------------
+      # 3. 工具链
+      # ------------------------------------------------------------------------
+      - name: Install Qt ${{ env.QT_VERSION }}
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: ${{ env.QT_VERSION }}
+          arch: win64_msvc2022_64
+          modules: ${{ env.QT_MODULES }}
+          cache: true
+
+      - name: Install Python ${{ env.PYTHON_VERSION }} (build-time ABI)
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          architecture: x64
+
+      - name: Verify Qt modules really installed
+        shell: pwsh
+        run: |
+          $need = @(
+            'bin\Qt6WebEngineCore.dll', 'bin\Qt6WebEngineWidgets.dll', 'bin\Qt6WebChannel.dll',
+            'bin\Qt6Multimedia.dll', 'bin\Qt6Core5Compat.dll', 'lib\Qt6AxContainer.lib',
+            'bin\lrelease.exe', 'bin\windeployqt.exe'
+          )
+          $missing = @()
+          foreach ($n in $need) {
+            if (-not (Test-Path (Join-Path $env:QT_ROOT_DIR $n))) { $missing += $n }
+          }
+          if ($missing.Count -gt 0) {
+            Write-Host "::error::Qt 安装缺少: $($missing -join ', ')"
+            exit 1
+          }
+
+      # 20 秒探针：整套组件一次性 find_package，缺依赖会点名，别等 3rdparty 编完才发现
+      - name: Probe the whole Qt component set
+        shell: pwsh
+        run: |
+          $probe = Join-Path $env:RUNNER_TEMP 'qtprobe'
+          New-Item -ItemType Directory -Force $probe | Out-Null
+          # 不能用 here-string：结束符必须顶格，而顶格会跳出 YAML 块标量
+          $cmakeLines = @(
+            'cmake_minimum_required(VERSION 3.16)',
+            'project(qtprobe LANGUAGES CXX)',
+            'find_package(Qt6 REQUIRED COMPONENTS',
+            '    Core Gui Widgets Svg Xml PrintSupport Concurrent OpenGL OpenGLWidgets',
+            '    Core5Compat AxContainer Network',
+            '    WebEngineCore WebEngineWidgets WebChannel Positioning Multimedia',
+            '    LinguistTools)',
+            'message(STATUS "QT_PROBE_OK")'
+          )
+          $cmakeLines -join "`n" | Set-Content -Path (Join-Path $probe 'CMakeLists.txt') -Encoding UTF8
+          cmake -S $probe -B "$probe\build" -G "Visual Studio 17 2022" -A x64 `
+            -DCMAKE_PREFIX_PATH="$env:QT_ROOT_DIR"
+          if ($LASTEXITCODE -ne 0) { throw 'Qt 组件探针失败：上面列出的就是缺的组件' }
+
+      - name: Install zlib via vcpkg
+        shell: pwsh
+        run: |
+          git clone --depth 1 https://github.com/microsoft/vcpkg.git
+          .\vcpkg\bootstrap-vcpkg.bat -disableMetrics
+          if ($LASTEXITCODE -ne 0) { throw 'vcpkg bootstrap 失败' }
+          .\vcpkg\vcpkg.exe install zlib:x64-windows
+          if ($LASTEXITCODE -ne 0) { throw 'vcpkg 安装 zlib 失败' }
+
+      # ------------------------------------------------------------------------
+      # 4. 第三方库（安装目录由 CMake 自动算成 bin_Release_qt<版本>_MSVC_x64）
+      # ------------------------------------------------------------------------
+      - name: Configure 3rdparty
+        shell: pwsh
+        run: |
+          cmake -S src/3rdparty -B build-3rdparty `
+            -G "Visual Studio 17 2022" -A x64 `
+            -DCMAKE_PREFIX_PATH="$env:QT_ROOT_DIR" `
+            -DCMAKE_TOOLCHAIN_FILE="$env:GITHUB_WORKSPACE/vcpkg/scripts/buildsystems/vcpkg.cmake" `
+            -DDA_INSTALL_CONFIG_TYPE=Release
+          if ($LASTEXITCODE -ne 0) { throw '3rdparty 配置失败' }
+
+      - name: Build & install 3rdparty
+        shell: pwsh
+        run: |
+          $sw = [Diagnostics.Stopwatch]::StartNew()
+          cmake --build build-3rdparty --config Release --parallel
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+          cmake --install build-3rdparty --config Release
+          if ($LASTEXITCODE -ne 0) { throw '3rdparty 安装失败' }
+          Write-Host ("::notice::3rdparty 耗时 {0:N1} 分钟" -f $sw.Elapsed.TotalMinutes)
+
+      # ------------------------------------------------------------------------
+      # 5. 主工程：版本从 tag 注入，装到 bin_Release_qt<版本>_MSVC_x64\bin
+      # ------------------------------------------------------------------------
+      - name: Configure main project
+        shell: pwsh
+        run: |
+          if (-not $env:pythonLocation) { throw 'pythonLocation 未设置' }
+          cmake -S . -B build `
+            -G "Visual Studio 17 2022" -A x64 `
+            -DCMAKE_PREFIX_PATH="$env:QT_ROOT_DIR" `
+            -DCMAKE_TOOLCHAIN_FILE="$env:GITHUB_WORKSPACE/vcpkg/scripts/buildsystems/vcpkg.cmake" `
+            -DDA_INSTALL_CONFIG_TYPE=Release `
+            -DDA_ENABLE_TESTING=OFF `
+            -DPython3_EXECUTABLE="$env:pythonLocation\python.exe" `
+            -DDA_VERSION_MAJOR=$env:VER_MAJOR `
+            -DDA_VERSION_MINOR=$env:VER_MINOR `
+            -DDA_VERSION_PATCH=$env:VER_PATCH
+          if ($LASTEXITCODE -ne 0) { throw '主工程配置失败' }
+
+      - name: Verify linked Python ABI
+        shell: pwsh
+        run: |
+          $digits = $env:PYTHON_VERSION -replace '\.', ''
+          $pattern = "python$digits\.lib"
+          if (-not (Select-String -Path build\CMakeCache.txt -Pattern $pattern)) {
+            Write-Host "::error::CMakeCache 里找不到 $pattern，Python ABI 没切过去"
+            exit 1
+          }
+          Write-Host "已确认链接 $pattern"
+
+      - name: Build main project
+        shell: pwsh
+        run: |
+          $sw = [Diagnostics.Stopwatch]::StartNew()
+          cmake --build build --config Release --parallel
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+          Write-Host ("::notice::主工程编译耗时 {0:N1} 分钟" -f $sw.Elapsed.TotalMinutes)
+
+      - name: Install main project
+        shell: pwsh
+        run: |
+          cmake --install build --config Release
+          if ($LASTEXITCODE -ne 0) { throw '主工程安装失败' }
+          $stage = Join-Path $env:GITHUB_WORKSPACE "bin_Release_qt$($env:QT_VERSION)_MSVC_x64\bin"
+          if (-not (Test-Path $stage)) { throw "安装目录不存在: $stage" }
+          "STAGE_DIR=$stage" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          Get-ChildItem $stage -Filter *.dll | Measure-Object | ForEach-Object { Write-Host "安装目录 DLL 数: $($_.Count)" }
+
+      # ------------------------------------------------------------------------
+      # 6. 组包：Python 运行时 + python-config.json
+      #    直接复用编译期那个 3.12，保证 python312.dll 与编译时 ABI 完全一致
+      # ------------------------------------------------------------------------
+      - name: Stage bundled Python runtime
+        shell: pwsh
+        run: |
+          $stage = $env:STAGE_DIR
+          $pyDest = Join-Path $stage 'python'
+          if (Test-Path $pyDest) { Remove-Item $pyDest -Recurse -Force }
+          Copy-Item -Path $env:pythonLocation -Destination $pyDest -Recurse -Force
+          Write-Host "已复制 Python 运行时 -> $pyDest"
+
+          & "$pyDest\python.exe" -m pip install --no-warn-script-location --no-cache-dir --disable-pip-version-check -r requirements-runtime.txt
+          if ($LASTEXITCODE -ne 0) { throw 'pip 安装运行时依赖失败' }
+
+          # 瘦身：测试套件/头文件/import lib/tcl 对运行没用
+          foreach ($p in @('Lib\test', 'Lib\idlelib', 'Include', 'libs', 'tcl')) {
+            $full = Join-Path $pyDest $p
+            if (Test-Path $full) { Remove-Item $full -Recurse -Force }
+          }
+
+          # python-config.json：${current-app-dir} 由 DAPyInterpreter 替换成 exe 所在目录，
+          # 这样免注册表、免 PATH，解压即用
+          $cfgLines = @(
+            '{',
+            '  "config": {',
+            '    "interpreter": "${current-app-dir}/python/python.exe"',
+            '  }',
+            '}'
+          )
+          $cfgLines -join "`n" | Set-Content -Path (Join-Path $stage 'python-config.json') -Encoding UTF8
+
+          $sizeMB = [math]::Round(((Get-ChildItem $pyDest -Recurse -File | Measure-Object Length -Sum).Sum / 1MB), 1)
+          Write-Host "Python 运行时大小: $sizeMB MB"
+
+      # ------------------------------------------------------------------------
+      # 7. 自检（文件清单 + 启动冒烟）——这一步是"包能不能用"的唯一证据
+      # ------------------------------------------------------------------------
+      - name: Verify package
+        shell: pwsh
+        run: |
+          .\scripts\verify_package.ps1 -Stage $env:STAGE_DIR -RunSmoke
+          if ($LASTEXITCODE -ne 0) { throw '发布包自检未通过' }
+
+      # ------------------------------------------------------------------------
+      # 8. 压缩（7z LZMA2 最高等级）
+      # ------------------------------------------------------------------------
+      - name: Pack with 7z
+        shell: pwsh
+        run: |
+          $pkgName = "DAWorkbench-$($env:VER_FULL)-win64-qt$($env:QT_VERSION)"
+          $pkgRoot = Join-Path $env:RUNNER_TEMP 'pkg'
+          $pkgDir = Join-Path $pkgRoot $pkgName
+          New-Item -ItemType Directory -Force $pkgRoot | Out-Null
+          if (Test-Path $pkgDir) { Remove-Item $pkgDir -Recurse -Force }
+
+          # 复制成带版本号的目录名，这样解压出来是一个文件夹而不是散落一堆 DLL
+          robocopy $env:STAGE_DIR $pkgDir /E /MT:16 /NFL /NDL /NJH /NJS /NP | Out-Null
+          if ($LASTEXITCODE -ge 8) { throw "robocopy 失败，退出码 $LASTEXITCODE" }
+
+          $sevenZip = Join-Path $env:ProgramFiles '7-Zip\7z.exe'
+          if (-not (Test-Path $sevenZip)) { throw "找不到 7-Zip: $sevenZip" }
+          $out = Join-Path $env:GITHUB_WORKSPACE "$pkgName.7z"
+          if (Test-Path $out) { Remove-Item $out -Force }
+
+          $sw = [Diagnostics.Stopwatch]::StartNew()
+          Push-Location $pkgRoot
+          & $sevenZip a -t7z -mx=9 -mmt=on "$out" $pkgName
+          $code = $LASTEXITCODE
+          Pop-Location
+          if ($code -ne 0) { throw "7z 压缩失败，退出码 $code" }
+
+          $mb = [math]::Round((Get-Item $out).Length / 1MB, 1)
+          Write-Host ("::notice::{0}  {1} MB  压缩耗时 {2:N1} 分钟" -f (Split-Path $out -Leaf), $mb, $sw.Elapsed.TotalMinutes)
+
+          $hash = (Get-FileHash $out -Algorithm SHA256).Hash.ToLower()
+          "$hash  $pkgName.7z" | Set-Content -Path "$out.sha256" -Encoding ascii
+          Write-Host "SHA256: $hash"
+
+          "ASSET_PATH=$out" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "ASSET_HASH_FILE=$out.sha256" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "ASSET_HASH=$hash" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "ASSET_NAME=$pkgName.7z" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+      # ------------------------------------------------------------------------
+      # 9. 草稿 Release（人工确认后再 publish）
+      #    - 只有 tag 触发或手动触发且 dry_run=false 才真的发 Release
+      #    - 其它情况（分支上试跑）只把包传成 workflow artifact
+      # ------------------------------------------------------------------------
+      - name: Upload package as workflow artifact
+        if: ${{ github.ref_type != 'tag' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: DAWorkbench-portable
+          path: |
+            *.7z
+            *.7z.sha256
+          retention-days: 7
+
+      - name: Create draft release
+        if: ${{ github.ref_type == 'tag' || (github.event_name == 'workflow_dispatch' && inputs.dry_run == false) }}
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = $env:RELEASE_TAG
+          $notes = Join-Path $env:RUNNER_TEMP 'release-notes.md'
+          $sizeMB = [math]::Round((Get-Item $env:ASSET_PATH).Length / 1MB, 1)
+          $body = @(
+            "便携版，解压即用（需要 7-Zip 或 WinRAR 解压）。",
+            "",
+            "| 项 | 值 |",
+            "| --- | --- |",
+            "| 版本 | $($env:VER_FULL) |",
+            "| Qt | $($env:QT_VERSION) (MSVC 2022 x64) |",
+            "| Python | $($env:PYTHON_VERSION)（随包内置） |",
+            "| 压缩包 | $($env:ASSET_NAME)（$sizeMB MB） |",
+            "| SHA256 | ``$($env:ASSET_HASH)`` |",
+            "",
+            "## 使用说明",
+            "",
+            "1. 解压到任意目录（路径不要有中文以外的特殊字符问题不大，但建议短路径）",
+            "2. 双击 ``DAWorkBench.exe`` 启动，无需安装 Python / Qt / VC++ 运行库",
+            "3. 首次启动若被 SmartScreen 拦截，选择「更多信息 → 仍要运行」（本包未做代码签名）"
+          )
+          $body -join "`n" | Set-Content -Path $notes -Encoding UTF8
+
+          # 已存在同名 release（重跑场景）就直接补传资产，否则新建草稿
+          gh release view $tag --repo $env:GITHUB_REPOSITORY 2>$null | Out-Null
+          if ($LASTEXITCODE -eq 0) {
+            Write-Host "release $tag 已存在，改为补传资产"
+            gh release upload $tag $env:ASSET_PATH $env:ASSET_HASH_FILE --clobber --repo $env:GITHUB_REPOSITORY
+          } else {
+            gh release create $tag $env:ASSET_PATH $env:ASSET_HASH_FILE `
+              --draft --title "DAWorkbench $($env:VER_FULL)" `
+              --notes-file $notes --repo $env:GITHUB_REPOSITORY
+          }
+          if ($LASTEXITCODE -ne 0) { throw '创建/更新 Release 失败' }
+          Write-Host "::notice::草稿 Release 已就绪：$env:GITHUB_SERVER_URL/$env:GITHUB_REPOSITORY/releases"
