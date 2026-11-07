@@ -35,8 +35,9 @@ permissions:
 env:
   QT_VERSION: '6.10.3'
   PYTHON_VERSION: '3.12'
-  # qtbase 只带 Core/Gui/Widgets/Svg/Xml/... 这些基础模块，其余必须显式装
-  QT_MODULES: 'qt5compat qtactiveqt qtmultimedia qtwebengine'
+  # qtbase 只带 Core/Gui/Widgets/Svg/Xml/... 这些基础模块，其余必须显式装。
+  # qtwebchannel 单独一条：qtwebengine 不会自动带它，而 DAGui 直接链了 WebChannel
+  QT_MODULES: 'qt5compat qtactiveqt qtmultimedia qtwebchannel qtwebengine'
 
 jobs:
   spike:
