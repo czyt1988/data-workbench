@@ -50,23 +50,25 @@ jobs:
       #    - 只写进 runner 的临时全局 .gitconfig，随 job 销毁
       #    - 仓库里的 .gitmodules 与本地开发环境完全不受影响
       #    - 必须放在 checkout 之前：checkout 内部调用的就是 git
-      #    - 左侧 URL 逐字照抄 .gitmodules（有 4 个带 .git、3 个不带）
+      #    - 左侧逐字照抄 .gitmodules（8 个带 .git、2 个不带）
+      #    - 右侧一律【不带】.git：insteadOf 是字符串前缀替换，git 有时会把
+      #      .git 补在 URL 上，右侧再带一次就会拼出 `xxx.git.git`（真实踩过）
       # ------------------------------------------------------------------------
       - name: Rewrite gitee submodules to GitHub mirrors (CI only)
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
           $map = [ordered]@{
-            'https://gitee.com/czyt1988/SARibbon.git'                 = 'https://github.com/czyt1988/SARibbon.git'
-            'https://gitee.com/czyt1988/DAWidgets'                    = 'https://github.com/czyt1988/DAWidgets.git'
-            'https://gitee.com/czyt1988/QWT.git'                      = 'https://github.com/czyt1988/QWT.git'
-            'https://gitee.com/czyt1988/quazip'                       = 'https://github.com/czyt1988/quazip.git'
-            'https://gitee.com/czyt1988/QtPropertyBrowser.git'        = 'https://github.com/czyt1988/QtPropertyBrowser.git'
-            'https://gitee.com/czyt1988/spdlog.git'                   = 'https://github.com/gabime/spdlog.git'
-            'https://gitee.com/czyt1988/pybind11.git'                 = 'https://github.com/pybind/pybind11.git'
-            'https://gitee.com/czyt1988/zlib'                         = 'https://github.com/madler/zlib.git'
-            'https://gitee.com/czyt1988/ordered-map.git'              = 'https://github.com/Tessil/ordered-map.git'
-            'https://gitee.com/czyt1988/Qt-Advanced-Docking-System.git' = 'https://github.com/githubuser0xFFFF/Qt-Advanced-Docking-System.git'
+            'https://gitee.com/czyt1988/SARibbon.git'                   = 'https://github.com/czyt1988/SARibbon'
+            'https://gitee.com/czyt1988/DAWidgets'                      = 'https://github.com/czyt1988/DAWidgets'
+            'https://gitee.com/czyt1988/QWT.git'                        = 'https://github.com/czyt1988/QWT'
+            'https://gitee.com/czyt1988/quazip.git'                     = 'https://github.com/czyt1988/quazip'
+            'https://gitee.com/czyt1988/QtPropertyBrowser.git'          = 'https://github.com/czyt1988/QtPropertyBrowser'
+            'https://gitee.com/czyt1988/spdlog.git'                     = 'https://github.com/gabime/spdlog'
+            'https://gitee.com/czyt1988/pybind11.git'                   = 'https://github.com/pybind/pybind11'
+            'https://gitee.com/czyt1988/zlib'                           = 'https://github.com/madler/zlib'
+            'https://gitee.com/czyt1988/ordered-map.git'                = 'https://github.com/Tessil/ordered-map'
+            'https://gitee.com/czyt1988/Qt-Advanced-Docking-System.git' = 'https://github.com/githubuser0xFFFF/Qt-Advanced-Docking-System'
           }
           foreach ($k in $map.Keys) {
             git config --global "url.$($map[$k]).insteadOf" $k
