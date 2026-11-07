@@ -184,17 +184,20 @@ jobs:
         run: |
           $probe = Join-Path $env:RUNNER_TEMP 'qtprobe'
           New-Item -ItemType Directory -Force $probe | Out-Null
-          @'
-cmake_minimum_required(VERSION 3.16)
-project(qtprobe LANGUAGES CXX)
-# 与主工程 CMakeLists 的组件集合保持一致，外加 DAGui 的 WebEngine 依赖链
-find_package(Qt6 REQUIRED COMPONENTS
-    Core Gui Widgets Svg Xml PrintSupport Concurrent OpenGL OpenGLWidgets
-    Core5Compat AxContainer Network
-    WebEngineCore WebEngineWidgets WebChannel Positioning Multimedia
-    LinguistTools)
-message(STATUS "QT_PROBE_OK")
-'@ | Set-Content -Path (Join-Path $probe 'CMakeLists.txt') -Encoding UTF8
+          # 注意：这里不能用 here-string——PowerShell 的 '@ 结束符必须顶格，
+          # 而 YAML 块标量里顶格就等于跳出块，会把 workflow 写成非法 YAML
+          $cmakeLines = @(
+            'cmake_minimum_required(VERSION 3.16)',
+            'project(qtprobe LANGUAGES CXX)',
+            '# 与主工程 CMakeLists 的组件集合一致，外加 DAGui 的 WebEngine 依赖链',
+            'find_package(Qt6 REQUIRED COMPONENTS',
+            '    Core Gui Widgets Svg Xml PrintSupport Concurrent OpenGL OpenGLWidgets',
+            '    Core5Compat AxContainer Network',
+            '    WebEngineCore WebEngineWidgets WebChannel Positioning Multimedia',
+            '    LinguistTools)',
+            'message(STATUS "QT_PROBE_OK")'
+          )
+          $cmakeLines -join "`n" | Set-Content -Path (Join-Path $probe 'CMakeLists.txt') -Encoding UTF8
           cmake -S $probe -B "$probe\build" -G "Visual Studio 17 2022" -A x64 `
             -DCMAKE_PREFIX_PATH="$env:QT_ROOT_DIR"
           if ($LASTEXITCODE -ne 0) { throw 'Qt 组件探针失败：上面列出的就是缺的组件' }
