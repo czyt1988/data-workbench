@@ -306,15 +306,21 @@ jobs:
           $f = Get-Item $exe
           Write-Host "::notice::产物 $exe  $([math]::Round($f.Length/1MB,2)) MB"
 
-          # dumpbin 不在普通 shell 的 PATH 里，从 VS 安装目录里找
-          $dumpbin = Get-Command dumpbin.exe -ErrorAction SilentlyContinue
-          if (-not $dumpbin) {
-            $dumpbin = Get-ChildItem "${env:ProgramFiles}\Microsoft Visual Studio\2022\*\VC\Tools\MSVC\*\bin\Hostx64\x64\dumpbin.exe" -ErrorAction SilentlyContinue |
+          # dumpbin 不在普通 shell 的 PATH 里。注意两种取法的属性名不同：
+          # Get-Command 返回 CommandInfo（用 .Source），Get-ChildItem 返回
+          # FileInfo（用 .FullName）——混用会拿到 null，然后 & $null 直接报错
+          $dumpbinPath = $null
+          $cmd = Get-Command dumpbin.exe -ErrorAction SilentlyContinue
+          if ($cmd) {
+            $dumpbinPath = $cmd.Source
+          } else {
+            $fi = Get-ChildItem "${env:ProgramFiles}\Microsoft Visual Studio\2022\*\VC\Tools\MSVC\*\bin\Hostx64\x64\dumpbin.exe" -ErrorAction SilentlyContinue |
               Select-Object -First 1
+            if ($fi) { $dumpbinPath = $fi.FullName }
           }
-          if ($dumpbin) {
+          if ($dumpbinPath) {
             Write-Host '--- exe 依赖里的 python / MSVC 运行时 ---'
-            & $dumpbin.Source /dependents $exe | Select-String 'python|MSVCP|VCRUNTIME'
+            & $dumpbinPath /dependents $exe | Select-String 'python|MSVCP|VCRUNTIME'
             Write-Host '--- 构建产物目录里的运行库 ---'
             Get-ChildItem 'build\bin\Release\*.dll' -ErrorAction SilentlyContinue |
               Where-Object { $_.Name -match 'python|MSVCP|VCRUNTIME|zd\.dll|zlib1' } |
@@ -323,12 +329,19 @@ jobs:
             Write-Host '::warning::没找到 dumpbin，跳过依赖检查'
           }
 
-          # 冒烟只做参考：构建树的 Qt DLL 还没部署，缺 DLL 属于预期，
-          # 真正的启动验证放在打包阶段（那时 PATH 和目录都是完整的）
-          Write-Host '--- 尝试 --version（构建树可能缺 Qt DLL，失败属预期）---'
-          try {
-            $out = & $exe --version 2>&1
-            Write-Host ($out | Out-String)
-          } catch {
-            Write-Host "跳过: $($_.Exception.Message)"
+          # 冒烟只作参考：构建树的 Qt DLL 尚未部署，缺 DLL 属预期。
+          # 必须带超时——GUI 子系统程序在 CI 里万一弹窗/等事件循环就会挂死整条流水线
+          Write-Host '--- 尝试 --version（缺 DLL 属预期，且不据此判失败）---'
+          $outFile = Join-Path $env:RUNNER_TEMP 'exe-version.out'
+          $errFile = Join-Path $env:RUNNER_TEMP 'exe-version.err'
+          $proc = Start-Process -FilePath $exe -ArgumentList '--version' -NoNewWindow -PassThru `
+            -RedirectStandardOutput $outFile -RedirectStandardError $errFile
+          if (-not $proc.WaitForExit(30000)) {
+            $proc.Kill()
+            Write-Host '::warning::--version 30 秒未退出，已强制结束'
+          } else {
+            Write-Host "exit=$($proc.ExitCode)"
+            if (Test-Path $outFile) { Get-Content $outFile | ForEach-Object { Write-Host $_ } }
+            if (Test-Path $errFile) { Get-Content $errFile | ForEach-Object { Write-Host $_ } }
           }
+          exit 0
