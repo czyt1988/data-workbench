@@ -185,11 +185,15 @@ jobs:
       - name: Configure 3rdparty
         shell: pwsh
         run: |
-          cmake -S src/3rdparty -B build-3rdparty `
-            -G "Visual Studio 17 2022" -A x64 `
-            -DCMAKE_PREFIX_PATH="$env:QT_ROOT_DIR" `
-            -DCMAKE_TOOLCHAIN_FILE="$env:GITHUB_WORKSPACE/vcpkg/scripts/buildsystems/vcpkg.cmake" `
-            -DDA_INSTALL_CONFIG_TYPE=Release
+          $cmakeArgs = @(
+            '-S', 'src/3rdparty',
+            '-B', 'build-3rdparty',
+            '-G', 'Visual Studio 17 2022', '-A', 'x64',
+            "-DCMAKE_PREFIX_PATH=$($env:QT_ROOT_DIR)",
+            "-DCMAKE_TOOLCHAIN_FILE=$($env:GITHUB_WORKSPACE)/vcpkg/scripts/buildsystems/vcpkg.cmake",
+            '-DDA_INSTALL_CONFIG_TYPE=Release'
+          )
+          & cmake @cmakeArgs
           if ($LASTEXITCODE -ne 0) { throw '3rdparty 配置失败' }
 
       - name: Build & install 3rdparty
@@ -209,16 +213,28 @@ jobs:
         shell: pwsh
         run: |
           if (-not $env:pythonLocation) { throw 'pythonLocation 未设置' }
-          cmake -S . -B build `
-            -G "Visual Studio 17 2022" -A x64 `
-            -DCMAKE_PREFIX_PATH="$env:QT_ROOT_DIR" `
-            -DCMAKE_TOOLCHAIN_FILE="$env:GITHUB_WORKSPACE/vcpkg/scripts/buildsystems/vcpkg.cmake" `
-            -DDA_INSTALL_CONFIG_TYPE=Release `
-            -DDA_ENABLE_TESTING=OFF `
-            -DPython3_EXECUTABLE="$env:pythonLocation\python.exe" `
-            -DDA_VERSION_MAJOR=$env:VER_MAJOR `
-            -DDA_VERSION_MINOR=$env:VER_MINOR `
-            -DDA_VERSION_PATCH=$env:VER_PATCH
+          # 显式打出来：CI 上曾出现过 $env:VER_* 没被展开、CMake 收到字面量的情况，
+          # 有了这行日志能一眼看出是"环境变量没传进来"还是"参数拼错"
+          Write-Host "版本参数: major=[$($env:VER_MAJOR)] minor=[$($env:VER_MINOR)] patch=[$($env:VER_PATCH)]"
+          if ([string]::IsNullOrWhiteSpace($env:VER_MAJOR)) { throw 'VER_MAJOR 为空' }
+
+          # 用参数数组而不是行继续符：每项都是带 $() 的双引号字符串，
+          # 展开行为确定，也不会因为反引号/换行被拆开
+          $cmakeArgs = @(
+            '-S', '.',
+            '-B', 'build',
+            '-G', 'Visual Studio 17 2022', '-A', 'x64',
+            "-DCMAKE_PREFIX_PATH=$($env:QT_ROOT_DIR)",
+            "-DCMAKE_TOOLCHAIN_FILE=$($env:GITHUB_WORKSPACE)/vcpkg/scripts/buildsystems/vcpkg.cmake",
+            '-DDA_INSTALL_CONFIG_TYPE=Release',
+            '-DDA_ENABLE_TESTING=OFF',
+            "-DPython3_EXECUTABLE=$($env:pythonLocation)\python.exe",
+            "-DDA_VERSION_MAJOR=$($env:VER_MAJOR)",
+            "-DDA_VERSION_MINOR=$($env:VER_MINOR)",
+            "-DDA_VERSION_PATCH=$($env:VER_PATCH)"
+          )
+          Write-Host ($cmakeArgs -join ' ')
+          & cmake @cmakeArgs
           if ($LASTEXITCODE -ne 0) { throw '主工程配置失败' }
 
       - name: Verify linked Python ABI
