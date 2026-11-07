@@ -18,6 +18,9 @@ on:
   push:
     tags:
       - 'v*.*.*'
+    # TODO(合并前删除): 临时分支触发器，用于在默认分支还没有本工作流时跑 dry run
+    branches:
+      - 'ci/release-spike'
   workflow_dispatch:
     inputs:
       tag:
