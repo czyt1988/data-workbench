@@ -94,7 +94,7 @@
 - **测试 exe 与库 DLL 在同一个输出目录**（`build/bin/<Config>`）。测试运行期间 DLL 被占用，此时构建会报 `LNK1104`。`test.ps1` 总是先构建再运行，不要在测试跑着的时候手工构建。
 - **陈旧 exe 会假红**：`0xc0000139`（找不到入口点）或启动即崩溃，通常是 exe 比 DLL 旧。重新构建即可；`-NoBuild` 会放大这个问题。
 - **嵌入式 Python 的 teardown 崩溃**：链接 Python 的测试不能在 `qExec` 返回后正常走进程退出，否则会在结果已打印后触发访问冲突、被 ctest 记为 SEGFAULT。规范做法见 `DADataFrameTest` / `DATableDataTest` / `DATableUndoBenchmark` / `DATablePerfTest` 里的自定义 `main()`：`qExec` 返回后 `std::fflush(nullptr)`，Windows 上用 `TerminateProcess` 直接结束进程。
-- **环境依赖**：没有安装 pandas 时，相关用例会 `QSKIP`（不是失败）。CI 目前**只构建、不跑测试**（`.github/workflows/build.yml`），所以回归保护只在本机生效。
+- **环境依赖**：没有安装 pandas 时，相关用例会 `QSKIP`（不是失败）。CI（`.github/workflows/release.yml`）目前**只构建、不跑测试**：打包阶段由 `scripts/verify_package.ps1` 做导入表校验 + 启动冒烟，构建阶段 `-DDA_ENABLE_TESTING=OFF`，所以回归保护只在本机生效。
 - **已知不稳定（2026-11 记录，独立于套件改造）**：
   - `DATableDataTest::testClipboardShortcuts` 在**同进程跑完整序列**时偶发卡死（单跑或只跑最后几个函数 4 秒通过；超时前 33 个函数全 PASS）。已确认与本轮改动无关（把改动 stash 掉同样复现）。
   - 链接 Python 的用例偶发卡在 `DAPyScriptsDataFrame::sort` 的 `PyThread_acquire_lock_timed`（进程活着但 CPU 几乎为 0），单跑通常 5 秒内通过。两者都需要单独排查，看到"个别测试卡住"先怀疑它们，不要先怀疑自己的改动。

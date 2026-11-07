@@ -13,7 +13,7 @@
 
 <div align="center">
 <p>
-<img src="https://github.com/czyt1988/data-workbench/actions/workflows/build.yml/badge.svg"/>
+<img src="https://github.com/czyt1988/data-workbench/actions/workflows/release.yml/badge.svg"/>
 </p>
 </div>
 
