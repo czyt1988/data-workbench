@@ -22015,7 +22015,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     <message>
         <location filename="../plugins/DASignalAnalysis/Page/DAPeakDockWidget.cpp" line="154" />
         <source>Rank %1</source>
-        <translation>第 N 名</translation>
+        <translation>第 %1 名</translation>
     </message>
     <message>
         <location filename="../plugins/DASignalAnalysis/Page/DAPeakDockWidget.cpp" line="161" />
@@ -22741,12 +22741,12 @@ Sample rate: %2 Hz | Channels: %3 | Duration: %4 s</source>
     <message>
         <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="318" />
         <source>Video Files (*.mp4 *.mov *.m4v *.avi *.mkv *.webm *.flv *.wmv *.ts *.mts);;All Files (*)</source>
-        <translation>视频文件</translation>
+        <translation>视频文件 (*.mp4 *.mov *.m4v *.avi *.mkv *.webm *.flv *.wmv *.ts *.mts);;所有文件 (*)</translation>
     </message>
     <message>
         <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="321" />
         <source>Audio Files (*.wav *.aiff *.aif *.flac *.ogg *.oga *.mp3 *.m4a *.aac *.wma *.opus);;All Files (*)</source>
-        <translation>音频文件</translation>
+        <translation>音频文件 (*.wav *.aiff *.aif *.flac *.ogg *.oga *.mp3 *.m4a *.aac *.wma *.opus);;所有文件 (*)</translation>
     </message>
     <message>
         <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="324" />
