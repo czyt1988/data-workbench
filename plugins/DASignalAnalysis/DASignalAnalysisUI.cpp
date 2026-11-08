@@ -7,6 +7,7 @@
 #include <QDebug>
 #include <QFileDialog>
 #include <QFileInfo>
+#include <QIcon>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -53,6 +54,7 @@ namespace
 {
 /// 丝带标签页 / 面板 / 动作的 object name（唯一名，供样式与查找使用）
 const char* const cCategoryObjectName      = "da-category-signal-analysis";
+const char* const cPanelOpenName           = "da-panel-signal.open";
 const char* const cPanelSignalName         = "da-panel-signal.signal";
 const char* const cPanelPlaybackName       = "da-panel-signal.playback";
 const char* const cPanelAnalysisName       = "da-panel-signal.analysis";
@@ -88,18 +90,15 @@ bool DASignalAnalysisUI::initialize(DACoreInterface* core)
     mUI      = core->getUiInterface();
     mActions = mUI->getActionInterface();
 
-    buildCenterPage();
+    // 注意：页面不在这里创建（惰性加载），见 ensurePageCreated()
     buildSignalCategory();
     retranslateUi();
     // 无信号阶段：依赖信号的动作全部置灰（方案 §8.1）
     setSignalDependentActionsEnabled(false);
 
-    // 导入入口：丝带按钮与空状态按钮共用同一槽
-    if (mPage) {
-        connect(mPage, &DASignalAnalysisPage::requestImportAudio, this, &DASignalAnalysisUI::importAudioFile);
-        connect(mPage, &DASignalAnalysisPage::requestImportDataFrame, this, &DASignalAnalysisUI::importDataFrame);
-        connect(mPage, &DASignalAnalysisPage::requestImportVideo, this, &DASignalAnalysisUI::importVideoFile);
-        connect(mPage, &DASignalAnalysisPage::signalRemoved, this, &DASignalAnalysisUI::onSignalRemoved);
+    // 打开信号分析窗口：首次调用创建页面，已关闭时恢复显示
+    if (actionOpenSignalPage) {
+        connect(actionOpenSignalPage, &QAction::triggered, this, &DASignalAnalysisUI::openSignalAnalysisPage);
     }
     if (actionImportAudio) {
         connect(actionImportAudio, &QAction::triggered, this, &DASignalAnalysisUI::importAudioFile);
@@ -185,22 +184,8 @@ bool DASignalAnalysisUI::initialize(DACoreInterface* core)
             }
         });
     }
-    if (mPage) {
-        connect(mPage, &DASignalAnalysisPage::currentSignalChanged, this, &DASignalAnalysisUI::onCurrentSignalChanged);
-    }
-    // 峰值停靠窗口（右侧停靠区，与设置/智能体同区做标签页，D24）
-    buildPeakDock();
-    // 恢复插件偏好：停靠窗口显隐与上次色带（P2）
-    {
-        const QJsonObject cfg = DASignalImporter::loadPluginConfig();
-        mLastColormap         = cfg.value(QStringLiteral("colormap")).toString();
-        if (mPeakDock && cfg.value(QStringLiteral("peakDockVisible")).toBool(false)) {
-            if (actionPeakWindow) {
-                actionPeakWindow->setChecked(true);
-            }
-            mPeakDock->toggleView(true);
-        }
-    }
+    // 峰值停靠窗口（右侧停靠区，与设置/智能体同区做标签页，D24）随页面一起惰性创建，
+    // 页面创建前没有信号可显示，这里不建；创建逻辑见 ensurePageCreated()
     // 后台计算协调器（Python 守护线程 + 定时轮询）
     mWorker = new DASignalAnalysisWorker(this);
     connect(mWorker, &DASignalAnalysisWorker::progressChanged, this, &DASignalAnalysisUI::onWorkerProgress);
@@ -248,6 +233,8 @@ bool DASignalAnalysisUI::initialize(DACoreInterface* core)
 
 /**
  * @brief 获取信号分析页面
+ *
+ * 页面惰性创建，未打开过（且没有导入过信号）时返回 nullptr。
  */
 DASignalAnalysisPage* DASignalAnalysisUI::page() const
 {
@@ -297,6 +284,10 @@ void DASignalAnalysisUI::refreshFFmpegAvailability()
  */
 void DASignalAnalysisUI::importAudioFile()
 {
+    // 导入即代表用户要用信号分析：先惰性创建页面（对话框也以页面为父）
+    if (!ensurePageCreated()) {
+        return;
+    }
     DADataManagerInterface* dataMgr = mCore ? mCore->getDataManagerInterface() : nullptr;
     DASignalImportDialog dlg(DASignalImportDialog::AudioMode, dataMgr, mPage);
     if (dlg.exec() != QDialog::Accepted) {
@@ -316,6 +307,10 @@ void DASignalAnalysisUI::importAudioFile()
  */
 void DASignalAnalysisUI::importDataFrame()
 {
+    // 导入即代表用户要用信号分析：先惰性创建页面（对话框也以页面为父）
+    if (!ensurePageCreated()) {
+        return;
+    }
     DADataManagerInterface* dataMgr = mCore ? mCore->getDataManagerInterface() : nullptr;
     DASignalImportDialog dlg(DASignalImportDialog::DataFrameMode, dataMgr, mPage);
     if (dlg.exec() != QDialog::Accepted) {
@@ -340,6 +335,10 @@ void DASignalAnalysisUI::importDataFrame()
  */
 void DASignalAnalysisUI::importVideoFile()
 {
+    // 导入即代表用户要用信号分析：先惰性创建页面（对话框也以页面为父）
+    if (!ensurePageCreated()) {
+        return;
+    }
     DADataManagerInterface* dataMgr = mCore ? mCore->getDataManagerInterface() : nullptr;
     DASignalImportDialog dlg(DASignalImportDialog::VideoMode, dataMgr, mPage);
     if (dlg.exec() != QDialog::Accepted) {
@@ -359,7 +358,11 @@ void DASignalAnalysisUI::importVideoFile()
  */
 void DASignalAnalysisUI::addSignalAndActivate(const DASignalPtr& sig)
 {
-    if (nullptr == mPage || !sig) {
+    if (!sig) {
+        return;
+    }
+    // 工程恢复等路径可能绕过导入入口，这里兜底惰性创建页面
+    if (!ensurePageCreated()) {
         return;
     }
     mPage->addSignal(sig);
@@ -467,6 +470,8 @@ void DASignalAnalysisUI::onCurrentSignalChanged()
 
 /**
  * @brief 构建中央页面（与绘图/表格/工作流并列的标签页）
+ *
+ * 只在 ensurePageCreated() 中调用：页面惰性创建，插件初始化时不存在。
  */
 void DASignalAnalysisUI::buildCenterPage()
 {
@@ -481,8 +486,63 @@ void DASignalAnalysisUI::buildCenterPage()
     if (mPageDock) {
         mPageDock->setObjectName(QString::fromUtf8(cPageDockObjectName));
         mPageDock->setWindowTitle(tr("Signal Analysis"));  // cn:信号分析
+        // 中央区各页面 dock 都带图标（绘图/表格/工作流同款），信号分析页保持一致
+        mPageDock->setIcon(QIcon(QString::fromUtf8(cIconPrefix) + QStringLiteral("showSignalAnalysis.svg")));
     } else {
         qWarning() << "DASignalAnalysisUI::buildCenterPage: failed to create center dock for signal page";
+    }
+}
+
+/**
+ * @brief 惰性创建页面（首次打开/导入/工程恢复时调用）
+ *
+ * 插件初始化只建丝带标签与动作：大部分用户用不到信号分析，不应让程序一启动就多出
+ * 一个空的中央停靠标签页。页面创建时一并建好页面内的导入连接与峰值停靠窗口，
+ * 并恢复插件偏好（上次使用的色带）。
+ * @return 页面可用返回 true
+ */
+bool DASignalAnalysisUI::ensurePageCreated()
+{
+    if (mPage) {
+        return true;
+    }
+    buildCenterPage();
+    if (nullptr == mPage) {
+        return false;
+    }
+    // 页面内的导入入口与页面事件（页面创建前这些连接不存在）
+    connect(mPage, &DASignalAnalysisPage::requestImportAudio, this, &DASignalAnalysisUI::importAudioFile);
+    connect(mPage, &DASignalAnalysisPage::requestImportDataFrame, this, &DASignalAnalysisUI::importDataFrame);
+    connect(mPage, &DASignalAnalysisPage::requestImportVideo, this, &DASignalAnalysisUI::importVideoFile);
+    connect(mPage, &DASignalAnalysisPage::signalRemoved, this, &DASignalAnalysisUI::onSignalRemoved);
+    connect(mPage, &DASignalAnalysisPage::currentSignalChanged, this, &DASignalAnalysisUI::onCurrentSignalChanged);
+    // 峰值停靠窗口与页面同批创建（创建后保持隐藏，首次导入信号成功时再自动切到前面一次）
+    buildPeakDock();
+    // 恢复插件偏好：上次使用的色带（P2）。
+    // 峰值窗口显隐不在这里恢复：创建页面时通常还没有信号，空峰值窗口没有意义；
+    // 首次导入信号成功时 addSignalAndActivate() 会按既有逻辑自动显示一次。
+    const QJsonObject cfg = DASignalImporter::loadPluginConfig();
+    mLastColormap         = cfg.value(QStringLiteral("colormap")).toString();
+    setSignalDependentActionsEnabled(mPage->signalCount() > 0);
+    return true;
+}
+
+/**
+ * @brief 打开信号分析页面（首次调用时惰性创建）
+ *
+ * 丝带「打开信号分析窗口」入口。页面关闭后再次触发会重新显示并唤起到前台，
+ * 与首次打开的路径一致。
+ */
+void DASignalAnalysisUI::openSignalAnalysisPage()
+{
+    if (!ensurePageCreated()) {
+        return;
+    }
+    if (nullptr == mUI) {
+        return;
+    }
+    if (DADockingAreaInterface* dockingArea = mUI->getDockingArea()) {
+        dockingArea->raiseDockByWidget(mPage);
     }
 }
 
@@ -504,6 +564,14 @@ void DASignalAnalysisUI::buildSignalCategory()
         return;
     }
     mCategory->setObjectName(QString::fromUtf8(cCategoryObjectName));
+
+    // ---------- Window：打开信号分析窗口（页面惰性创建，未打开/被关闭时从这里进入） ----------
+    mPanelOpen = mCategory->addPanel(tr("Window"));  // cn:窗口
+    mPanelOpen->setObjectName(QString::fromUtf8(cPanelOpenName));
+    actionOpenSignalPage = mActions->createAction(
+        "actionSignalOpenPage",
+        (QString::fromUtf8(cIconPrefix) + QStringLiteral("showSignalAnalysis.svg")).toUtf8().constData());
+    mPanelOpen->addLargeAction(actionOpenSignalPage);
 
     // ---------- Signal：导入三入口 ----------
     mPanelSignal = mCategory->addPanel(tr("Signal"));  // cn:信号
@@ -1343,11 +1411,24 @@ void DASignalAnalysisUI::restoreState(const QByteArray& json)
     if (!doc.isObject()) {
         return;
     }
+    const QJsonArray arr = doc.object().value(QStringLiteral("signals")).toArray();
+    if (arr.isEmpty()) {
+        // 工程里没有信号：保持页面惰性（从未打开过就不创建，避免打开普通工程时多出空页面）；
+        // 之前打开过页面的话，清掉上一工程残留的信号与临时文件
+        if (mPage) {
+            clearAllSignals();
+            DASignalImporter::cleanupTempFiles();
+        }
+        return;
+    }
+    // 工程里可能有信号记录：惰性创建页面后才能重建信号标签页
+    if (!ensurePageCreated()) {
+        return;
+    }
     // 打开新工程/快照回滚前先清空旧信号与缓存，避免两个工程的信号叠加（评审 U15/P4）
     clearAllSignals();
     // 旧信号的临时抽取 WAV 随旧工程一起清理（评审 P5/I12）：此时信号与播放器均已清空
     DASignalImporter::cleanupTempFiles();
-    const QJsonArray arr        = doc.object().value(QStringLiteral("signals")).toArray();
     DADataManagerInterface* mgr = mCore ? mCore->getDataManagerInterface() : nullptr;
     for (const QJsonValue& v : arr) {
         const QJsonObject o = v.toObject();
@@ -1510,14 +1591,13 @@ std::shared_ptr< DAAbstractArchiveTask > DASignalAnalysisUI::createArchiveTask(b
  */
 void DASignalAnalysisUI::finalize()
 {
-    // 保存插件偏好：峰值窗口显隐与上次色带（P2）；FFmpeg 路径等其它键原样保留
-    if (mUI) {
+    // 保存插件偏好：峰值窗口显隐与上次色带（P2）；FFmpeg 路径等其它键原样保留。
+    // 页面从未创建过的会话没有可保存的偏好（不能把其它会话的 peakDockVisible 覆盖掉）
+    if (mUI && mPage) {
         QJsonObject cfg      = DASignalImporter::loadPluginConfig();
         cfg[ QStringLiteral("peakDockVisible") ] = (mPeakDock && !mPeakDock->isClosed());
-        if (mPage) {
-            if (DASignalAnalysisView* v = mPage->viewForSignal(mPage->currentSignal().get())) {
-                cfg[ QStringLiteral("colormap") ] = v->colormapName();
-            }
+        if (DASignalAnalysisView* v = mPage->viewForSignal(mPage->currentSignal().get())) {
+            cfg[ QStringLiteral("colormap") ] = v->colormapName();
         }
         DASignalImporter::savePluginConfig(cfg);
     }
@@ -1597,11 +1677,11 @@ void DASignalAnalysisUI::finalize()
     // 经宿主接口销毁全部动作
     if (mActions) {
         const QList< QAction* > allActions = {
-            actionImportAudio,    actionImportDataFrame, actionImportVideo,
-            actionPlay,           actionPause,           actionStop,
-            actionAnalysisSetting, actionPeakMarker,     actionPeakTopN,
-            actionPeakWindow,     actionWaterfall2D,     actionWaterfall3D,
-            actionWaterfallHide,  actionAmplitudeMode,   actionExportPeaks,
+            actionOpenSignalPage, actionImportAudio,    actionImportDataFrame, actionImportVideo,
+            actionPlay,           actionPause,          actionStop,
+            actionAnalysisSetting, actionPeakMarker,    actionPeakTopN,
+            actionPeakWindow,     actionWaterfall2D,    actionWaterfall3D,
+            actionWaterfallHide,  actionAmplitudeMode,  actionExportPeaks,
             actionExportImage,    actionPeakTable
         };
         for (QAction* act : allActions) {
@@ -1611,6 +1691,7 @@ void DASignalAnalysisUI::finalize()
         }
     }
     // 全部置空，防止悬空访问
+    actionOpenSignalPage    = nullptr;
     actionImportAudio       = nullptr;
     actionImportDataFrame   = nullptr;
     actionImportVideo       = nullptr;
@@ -1635,6 +1716,7 @@ void DASignalAnalysisUI::finalize()
     actionExportPeaks       = nullptr;
     actionExportImage       = nullptr;
     actionPeakTable         = nullptr;
+    mPanelOpen              = nullptr;
     mPanelSignal            = nullptr;
     mPanelPlayback          = nullptr;
     mPanelAnalysis          = nullptr;
@@ -2249,6 +2331,9 @@ void DASignalAnalysisUI::retranslateUi()
         mPageDock->setWindowTitle(tr("Signal Analysis"));  // cn:信号分析
     }
     // 面板
+    if (mPanelOpen) {
+        mPanelOpen->setPanelName(tr("Window"));  // cn:窗口
+    }
     if (mPanelSignal) {
         mPanelSignal->setPanelName(tr("Signal"));  // cn:信号
     }
@@ -2266,6 +2351,12 @@ void DASignalAnalysisUI::retranslateUi()
     }
     if (mPanelExport) {
         mPanelExport->setPanelName(tr("Export"));  // cn:导出
+    }
+    // 窗口
+    if (actionOpenSignalPage) {
+        actionOpenSignalPage->setText(tr("Open Signal Analysis Window"));  // cn:打开信号分析窗口
+        actionOpenSignalPage->setToolTip(tr("Show the signal analysis workspace; it is created on first use"));
+        // cn:显示信号分析界面（首次使用时创建）
     }
     // 信号
     if (actionImportAudio) {

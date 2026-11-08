@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Signal analysis workspace: analysis window (waveform + spectrum bars).
+     Palette (DESIGN.md §2.1): #5280C1 primary blue, #497CAD deep blue,
+     #BDCDE8 light blue, #727272 neutral gray, #FFFFFF white. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+  <!-- Window frame: primary blue outline, white interior -->
+  <rect x="16" y="32" width="168" height="136" fill="#5280C1"/>
+  <rect x="24" y="48" width="152" height="112" fill="#FFFFFF"/>
+  <!-- Title bar: light blue background with three indicator blocks -->
+  <rect x="24" y="32" width="152" height="16" fill="#BDCDE8"/>
+  <rect x="30" y="36" width="8" height="8" fill="#5280C1"/>
+  <rect x="42" y="36" width="8" height="8" fill="#727272"/>
+  <rect x="54" y="36" width="8" height="8" fill="#727272"/>
+  <!-- Axes: neutral gray -->
+  <rect x="34" y="56" width="5" height="94" fill="#727272"/>
+  <rect x="34" y="145" width="130" height="5" fill="#727272"/>
+  <!-- Waveform: deep blue -->
+  <path d="M46,120 L58,120 L64,84 L72,140 L80,96 L88,122 L96,106 L104,106 L112,76 L120,144 L128,100 L136,120 L146,120"
+        fill="none" stroke="#497CAD" stroke-width="7" stroke-linecap="square" stroke-linejoin="round"/>
+  <!-- Spectrum bars: light blue body with primary blue accent -->
+  <rect x="154" y="118" width="10" height="32" fill="#BDCDE8"/>
+  <rect x="168" y="100" width="10" height="50" fill="#5280C1"/>
+</svg>
