@@ -22,6 +22,7 @@
 #include <QPointer>
 #include <QPushButton>
 #include <QStringList>
+#include <QToolButton>
 #include <memory>
 #include <utility>
 
@@ -44,6 +45,7 @@
 #include "Table/Chart/DATableQuickPlotWindow.h"
 #include "Table/Chart/DATableQuickPlotSettingWidget.h"
 #include "Common/Settings/DASettingContainerWidget.h"
+#include "Common/Settings/DAPropertyPanelContainerWidget.h"
 #include "Table/Chart/DATableChartRolePanel.h"
 #include "Table/Chart/DAChartSeriesSampler.h"
 #include "Table/Chart/DATableChartPlanner.h"
@@ -1411,11 +1413,31 @@ void DATableQuickPlotTest::testSettingWidgetBindsTarget()
     panel.setTarget(&window);
     QCOMPARE(panel.target(), &window);
 
+    // 设置页复用与图表设置页同一套通用属性面板（可折叠分组 + 属性行）
+    QVERIFY(panel.findChild< DA::DAPropertyPanelContainerWidget* >() != nullptr);
+    // 底栏动作按钮带图标（不再是纯文字按钮）
+    auto* updateBtn = panel.findChild< QPushButton* >(QStringLiteral("DAQuickPlotUpdateButton"));
+    auto* refreshBtn = panel.findChild< QPushButton* >(QStringLiteral("DAQuickPlotRefreshButton"));
+    auto* transferBtn = panel.findChild< QToolButton* >(QStringLiteral("DAQuickPlotTransferButton"));
+    QVERIFY(updateBtn != nullptr);
+    QVERIFY(refreshBtn != nullptr);
+    QVERIFY(transferBtn != nullptr);
+    QVERIFY(!updateBtn->icon().isNull());
+    QVERIFY(!refreshBtn->icon().isNull());
+    QVERIFY(!transferBtn->icon().isNull());
+
     auto* rolePanel = panel.findChild< DA::DATableChartRolePanel* >();
     QVERIFY(rolePanel != nullptr);
-    const QList< QComboBox* > combos = rolePanel->findChildren< QComboBox* >();
-    QVERIFY(combos.size() >= 2);  // 散点：X / Y
-    QComboBox* xCombo = combos.first();
+    // 角色行写进「数据角色」分组的通用属性面板：从设置页的组合框里挑出非图型下拉的角色下拉
+    QComboBox* xCombo = nullptr;
+    const QList< QComboBox* > combos = panel.findChildren< QComboBox* >();
+    for (QComboBox* combo : combos) {
+        if (combo->objectName() != QStringLiteral("DAQuickPlotTypeCombo")) {
+            xCombo = combo;
+            break;
+        }
+    }
+    QVERIFY(xCombo != nullptr);
     const int target  = xCombo->findData(1);
     QVERIFY(target >= 0);
     xCombo->setCurrentIndex(target);
