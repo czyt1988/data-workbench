@@ -25,7 +25,7 @@
 | L3 界面层 | `src/DAGui/Table/Chart/DATableQuickPlotWindow.*` | **绘图区部件**：只承载 2D/3D 图表堆叠区（位置/尺寸/标题由子窗口框架承载）；负责取数绘制、把状态回推设置页、接收设置页回写的请求/规格 |
 | L3 界面层 | `src/DAGui/Common/Settings/DASettingContainerWidget.*` | 右侧「设置」Dock 的页面容器（QStackedWidget）：挂工作流节点/绘图/3D/Figure/快速绘图设置页，按当前编辑对象切页 |
 | L3 界面层 | `src/DAGui/Table/Chart/DATableQuickPlotSettingWidget.*` | **快速绘图设置页**（右侧「设置」Dock 内）：图型下拉、按图型动态生成的角色行、更新为当前选区/刷新/转入绘图区、只读采样/错误提示；单实例绑定一个绘图区 |
-| L3 界面层 | `src/DAGui/Table/Chart/DATableChartRolePanel.*` | 轻量角色设置面板：按 12 种图型生成「角色标签 + 列下拉」（2D/3D 统一），换列即时重绘、可换整表任意列；被设置页复用 |
+| L3 界面层 | `src/DAGui/Table/Chart/DATableChartRolePanel.*` | 角色行生成器（QObject）：按 12 种图型把「角色名 + 列下拉」行写进设置页「数据角色」分组的通用属性面板（`setRowPanel()`），换列即时重绘、可换整表任意列 |
 | L3 界面层 | `src/DAGui/Table/Controllers/DATableQuickPlotController.*` | 选区→请求、绘图区与子窗口生命周期、设置页绑定/解绑时机（经 APP 注入的 binder/releaser）、转入处理与关闭 |
 | L3 界面层 | `src/DAGui/Chart/DAStatsPlotCoordinator.*` | 统计绘图核心（原在 APP，下沉到 DAGui 供统计向导与快速绘图共用） |
 | L3 界面层 | `src/DAGui/Chart/DAChartOperateWidgetCommands.*` | 「转入」新建 Figure 的撤销命令（摘/挂 dock 但保活 figure） |
@@ -125,21 +125,26 @@ v3 起请求额外携带 `allColumns`（整表列清单，只按静态类型判�
 └ 绘图区：2D（DAChartWidget）/ 3D（DAChart3DWidget）堆叠，占满内容区  ┘
 
 右侧「设置」Dock：DATableQuickPlotSettingWidget
-├ 标题：快速绘图 + 列摘要（与浮窗标题同文案）
-├ 图型（折叠组）：[图型 ▼] 12 种图型，不可用项置灰
-├ 数据角色（折叠组）：按图型动态生成的角色行（列/聚合/分箱，多序列可增删）
-└ 底栏：[更新为当前选区] [刷新] [转入绘图区 ▾] + 采样/错误只读提示
+└ 通用属性面板（DAPropertyPanelContainerWidget，与图表设置页同一套）
+   ├ 图表（折叠组）：[图型 ▼]（12 种图型，不可用项置灰）、列摘要（只读）
+   ├ 数据角色（折叠组）：按图型动态生成的角色行（列/聚合/分箱，多序列可增删）
+   └ 底栏：采样/错误只读提示 + [⭮ 更新为当前选区] [↻ 刷新] [□→ 转入绘图区 ▾]
 ```
 
 - 绘图窗口只保留绘图区（标题栏由子窗口框架绘制）：原工具栏、设置区与状态行全部移入设置页；
   推荐尺寸 560×420（原 640×560）、最小 320×220，图表铺满整个内容区；
 - 点在绘图区（图表画布/3D 视图）或子窗口框架（标题栏/缩放手柄/内容区）上会触发 `activated()`，
   宿主随即把右侧设置 Dock 抬到顶层并切到快速绘图设置页——不需要用户先去右侧找设置；
+- 设置页主体复用图表/工作流设置页的通用属性面板（`DAPropertyPanelContainerWidget`：可折叠分组 +
+  `DAPropertyItemWidget` 属性行），行高、属性名列宽、分组样式与图表设置页完全一致；
 - 设置页图型下拉列全部 12 种；不满足当前选区的置灰，悬浮提示缺什么；
 - 聚合、X 轴等角色配置只在设置页出现；角色行换列即重绘，并进入**手动模式**：标题后缀「（手动配置）」；
 - 点「更新为当前选区」让绘图区回填表格当前选区（窗口发 `currentSelectionRequested` 给控制器）并退出手动模式；
-  「刷新」按当前数据立即重画，「转入绘图区」新建 Figure 或追加到当前图表；
-- 设置页角色区复用轻量的 `DATableChartRolePanel`，不嵌入添加绘图向导页面（向导页没有配置变化信号且按对话框尺寸设计）。
+  「刷新」按当前数据立即重画，「转入绘图区」新建 Figure 或追加到当前图表；底栏按钮均带图标
+  （更新选区用新增的 `updateSelection.svg`，刷新复用 `refresh.svg`，转入复用统计窗口的
+  `stats/statsTransferToFigure.svg`，菜单项复用 `chart.svg` / `right-add.svg`）；
+- 角色行仍由轻量的 `DATableChartRolePanel` 生成，但它只负责把「角色名 + 列下拉」行写进「数据角色」分组的
+  内嵌属性面板（`setRowPanel()`），不嵌入添加绘图向导页面（向导页没有配置变化信号且按对话框尺寸设计）。
 
 ### 3.2 3D 图型
 
@@ -160,7 +165,15 @@ v3 起请求额外携带 `allColumns`（整表列清单，只按静态类型判�
 - **绑定**：`setTarget(window)` 断开旧目标、连上新目标；重复绑定同一窗口只重新同步一次（宿主每次抬起页面都会调用，保证显示的是最新状态）；
 - **解绑**：`releaseTarget(window)` 仅当传入窗口就是当前目标时清空（避免别的表格页误清当前绑定）；目标被销毁时 `destroyed` 也会自动清空；
 - **空态**：没有目标或目标不可见时显示「请先在数据表格中打开快速绘图，再在此处设置」，设置内容整体隐藏；
-- **同步契约**：绑定后监听绘图区两个信号——`contextChanged()` 做整体同步（标题摘要、图型下拉的可用状态与当前项、角色行），
+- **界面组成**：主体是 `DAPropertyPanelContainerWidget`（与图表设置页同一套属性面板：可滚动、可折叠分组、
+  `DAPropertyItemWidget` 属性行，行高/属性名列宽/分组样式由面板统一）；两个分组——
+  「图表」放图型下拉与只读列摘要，「数据角色」放角色行；底部固定底栏放只读提示与三个动作按钮（带图标）；
+- **图型下拉**：自定义 `QComboBox`（条目不可用置灰 + 悬浮原因），因此用 `addProperty()` 作为属性行编辑器加入，
+  而不是 `addEnumProperty()`；
+- **角色行**：`DATableChartRolePanel` 在设置页创建「数据角色」分组后拿到该分组的内嵌属性面板
+  （`DAPropertyPanelContainerWidget::getGroupPanel()`），通过 `setRowPanel()` 把「角色名 + 列下拉」行
+  `addProperty()` 进去；换图型时先按记录的属性 ID 逐个 `removeProperty()` 再重建（`deleteLater`，可在下拉框自己的信号栈上安全调用）；
+- **同步契约**：绑定后监听绘图区两个信号——`contextChanged()` 做整体同步（列摘要、图型下拉的可用状态与当前项、角色行），
   `statusChanged()` 只刷新状态文字与按钮；解绑时断开全部连接。设置页自身的编辑（图型、角色行）经窗口公开 API 回写并触发重绘，
   回写期间不重建角色行，避免正在操作的下拉框被销毁；
 - **驱动信号**：绘图区本体、图表子控件或子窗口框架被按下时发 `activated()` → 控制器 `activateSetting()` → APP binder；
@@ -171,9 +184,10 @@ v3 起请求额外携带 `allColumns`（整表列清单，只按静态类型判�
 
 > **📌 为什么不用 DAFormSpec/DAPropertyFormWidget**
 >
-> 角色行随图型动态变化（多序列折线/多重柱状要增删行，每行还有列、聚合、分箱等不同控件），静态表单规格表达不了。
-> 因此沿用快速绘图原有的 `DATableChartRolePanel`（按 12 种图型生成角色行），折叠分组复用 DAWidgets 的
-> `DACollapseWidget`/`DACollapseItem`（与图表、工作流设置页同一套通用控件），外观与其它设置页保持一致。
+> 角色行随图型动态变化（多序列折线/多重柱状要增删行，每行还有列、聚合、分箱等不同控件，
+> 列候选还依赖当前请求的运行期数据），静态表单规格表达不了。因此角色行由 `DATableChartRolePanel`
+> 按图型动态生成，但**行本身写进通用属性面板**（`DAPropertyPanelWidget` 的 `addProperty()`），
+> 折叠分组与属性行都是图表设置页同款封装，不做自绘行、不自造控件外观；固定表单项（图型、列摘要）同样走 `addProperty()`。
 
 ## 4. 采样与精确性
 
@@ -224,7 +238,9 @@ endMacro()
 
 ## 6. 扩展点
 
-- **新增设置项**：控件一律加在设置页 `DATableQuickPlotSettingWidget`（折叠分组复用 `DACollapseWidget`/`DACollapseItem`），
+- **新增设置项**：控件一律加在设置页 `DATableQuickPlotSettingWidget` 的通用属性面板里
+  （`mPanel->addCollapsibleGroup()` → `mPanel->addProperty(name, editor)` → `endGroup()`，
+  与图表设置页写法一致；编辑器记得 `setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed)` 才会横向填满），
   **不要**把控件加回绘图区 `DATableQuickPlotWindow`；设置页只调用绘图区的公开 API 驱动（`setChartType()` /
   `applyEditedContext()` / `refresh()` / `requestTransfer()` 这类），不要直接操作窗口内部的图表。
   绘图区状态改完必须发 `contextChanged()`（图型/角色/手动模式等结构变化）或 `statusChanged()`（采样提示/错误/数据变化），
