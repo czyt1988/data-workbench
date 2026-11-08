@@ -11,12 +11,15 @@
 // API相关
 #include "DAAppCore.h"
 #include "DAAppProject.h"
+#include "DAAppActions.h"
 #include "DALogCategory.h"
 #include "DAUIInterface.h"
 #include "DAUiObjectNames.h"
 #include "DACommandInterface.h"
 #include "DAAppCommand.h"
 #include "DAAppDataManager.h"
+// 操作窗口基类（无数据引导页的入口信号）
+#include "Common/DAAbstractOperateWidget.h"
 // chart相关
 #include "Chart/DAChartOperateWidget.h"
 #include "DAAppFigureFactory.h"
@@ -387,6 +390,27 @@ void DAAppDockingArea::initConnection()
             &DADataManageWidget::dataSeriesDbClicked,
             this,
             &DAAppDockingArea::onDataManageWidgetDataSeriesDbClicked);
+    // 数据/绘图操作窗口的空状态引导页：两个入口直接复用主程序的「打开工程」「导入数据」动作，
+    // 视图层只发请求、由 APP 接线，保持 DAGui 不反向依赖 APP
+    if (DAAppActions* actions = qobject_cast< DAAppActions* >(ui()->getActionInterface())) {
+        const auto bindNoDataGuide = [this, actions](DAAbstractOperateWidget* operateWidget) {
+            if (nullptr == operateWidget) {
+                return;
+            }
+            connect(operateWidget, &DAAbstractOperateWidget::openProjectRequested, this, [actions]() {
+                if (actions->actionOpen) {
+                    actions->actionOpen->trigger();
+                }
+            });
+            connect(operateWidget, &DAAbstractOperateWidget::importDataRequested, this, [actions]() {
+                if (actions->actionAddData) {
+                    actions->actionAddData->trigger();
+                }
+            });
+        };
+        bindNoDataGuide(mDataOperateWidget);
+        bindNoDataGuide(mChartOperateWidget);
+    }
     // 设置窗口的绑定
     mSettingContainerWidget->getWorkFlowNodeItemSettingWidget()->setWorkFlowOperateWidget(mWorkFlowOperateWidget);
 }

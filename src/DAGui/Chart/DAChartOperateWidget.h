@@ -101,6 +101,8 @@ private Q_SLOTS:
 private:
     // dock 关闭请求处理（经 closeRequested 信号触发，传入对应的 figure）
     void onFigureCloseRequested(DAFigureWidget* fig);
+    // 按已挂载绘图数量切换「无数据引导页」/内容页
+    void updateEmptyState();
 Q_SIGNALS:
     /**
      * @brief 绘图即将关闭
