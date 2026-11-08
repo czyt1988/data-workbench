@@ -7,6 +7,7 @@
         <file>icon/pause.svg</file>
         <file>icon/stop.svg</file>
         <file>icon/analysisSetting.svg</file>
+        <file>icon/showSignalAnalysis.svg</file>
         <file>icon/peaks.svg</file>
         <file>icon/peaksWindow.svg</file>
         <file>icon/waterfall2d.svg</file>

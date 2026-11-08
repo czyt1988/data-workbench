@@ -1,8 +1,9 @@
 # DASignalAnalysis 插件开发指南
 
-通用时序信号分析插件。主工作区新增「信号分析」页面（与绘图/表格/工作流并列），
+通用时序信号分析插件。主工作区可打开「信号分析」页面（惰性创建，与绘图/表格/工作流并列），
 页面内每个信号一个标签页；丝带新增「信号分析」标签页。开发方案见
-`tmp/信号分析插件开发方案.md`（决策记录 D1–D31 为定稿口径，不得擅自更改）。
+`tmp/信号分析插件开发方案.md`（决策记录 D1–D31 为定稿口径；**D11 已按用户要求修订为惰性创建**，
+见 §页面惰性加载，其余不得擅自更改）。
 
 ## 目录结构
 
@@ -69,6 +70,18 @@ plugins/DASignalAnalysis/
 11. **信号来源干净**：文件来源读块、数据帧来源引用式（按块转换）；临时 WAV 随信号/控制器生命周期清理。
 12. **工程只存来源引用、参数与视图状态**（`Archive/DASignalArchiveTask`），不存分析结果/STFT 矩阵/峰值数据；
     任务在后台线程只做文件读写，界面重建走 `loadedCallBack`。
+
+## 页面惰性加载（修订 D11）
+
+- `DASignalAnalysisUI::initialize()` 只创建丝带标签页、动作与后台 worker，**不创建**中央页面和峰值停靠窗口：
+  大部分用户用不到信号分析，程序启动时不应多出一个空的中央标签页。
+- 页面创建统一走 `ensurePageCreated()`：创建页面 + 页面内导入/标签事件连接 + 峰值停靠窗口 + 上次色带偏好；
+  所有依赖页面的入口（三个导入槽、`addSignalAndActivate`、`restoreState`、丝带「打开信号分析窗口」）先调用它。
+- `openSignalAnalysisPage()` 由丝带「窗口」面板的「打开信号分析窗口」大按钮触发：首次调用创建页面，
+  页面已关闭时恢复显示并 raise（相当于 PPT 的「编辑模板」入口）。
+- `serializeState()` / `finalize()` / `retranslateUi()` / 各后台结果回填必须容忍 `mPage == nullptr`
+  （页面从未打开过的会话）；`DASignalAnalysisUI::page()` 未创建时返回 nullptr。
+- 页面 dock 图标为 `icon/showSignalAnalysis.svg`（与绘图/表格/工作流中央页图标同一「窗口」语义）。
 
 ## 构建与测试
 

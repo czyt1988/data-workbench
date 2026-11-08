@@ -1,7 +1,6 @@
 #include "Table/DADataOperateWidget.h"
 #include <QDebug>
 #include <QMessageBox>
-#include <QVBoxLayout>
 #include <QPointer>
 #include "DALogCategory.h"
 // ADS
@@ -12,6 +11,7 @@
 #include "DADataManager.h"
 #include "Table/DADataOperatePageWidget.h"
 #include "Common/DADockAreaTabPosition.h"
+#include "Common/DANoDataGuideWidget.h"
 #include <QUndoStack>
 // table metadata registry
 #include "Table/Metadata/DATableMetadataRegistry.h"
@@ -117,17 +117,23 @@ DADataOperateWidget::DADataOperateWidget(QWidget* parent)
 
 void DADataOperateWidget::init()
 {
-    QVBoxLayout* lay = new QVBoxLayout(this);
-    lay->setContentsMargins(0, 0, 0, 0);
-    lay->setSpacing(0);
     d_ptr->_dockManager = new ads::CDockManager(this);
-    lay->addWidget(d_ptr->_dockManager);
     // 禁止数据页 dock 浮动为独立窗口（全局锁，对所有当前及后续 dock 生效），保留分屏/并栏/拖拽
     d_ptr->_dockManager->lockDockWidgetFeaturesGlobally(ads::CDockWidget::DockWidgetFloatable);
+    // 无数据时显示统一引导页（「打开已有工程」/「导入数据」入口），避免启动后一片空白
+    setupNoDataGuide(d_ptr->_dockManager, new DANoDataGuideWidget(DANoDataGuideWidget::DataOperateRole));
     // 嵌套停靠区聚焦改变：onFocusedDockChanged 内部会过滤掉非本管理器的 dock，
     // 规避 FocusHighlighting 下嵌套焦点控制器跨管理器回调顶层 dock 的问题
     connect(d_ptr->_dockManager, &ads::CDockManager::focusedDockWidgetChanged,
             this, &DADataOperateWidget::onFocusedDockChanged);
+}
+
+/**
+ * @brief 按已打开数据页数量切换「无数据引导页」/内容页
+ */
+void DADataOperateWidget::updateEmptyState()
+{
+    setNoDataGuideVisible(d_ptr->_pages.isEmpty());
 }
 
 DADataOperateWidget::~DADataOperateWidget()
@@ -444,6 +450,7 @@ bool DADataOperateWidget::removeTabWidget(QWidget* w)
     }
     // 级联删除 page（page 为 dock->widget()，setWidget 时 reparent 进 dock），延迟到事件循环
     dock->deleteLater();
+    updateEmptyState();
     return true;
 }
 
@@ -475,6 +482,7 @@ void DADataOperateWidget::clear()
     d_ptr->_pageToDock.clear();
     d_ptr->_dataToWidget.clear();
     d_ptr->_currentPage = nullptr;
+    updateEmptyState();
     // 数据清除
     getDataManger()->clear();
 }
@@ -664,6 +672,7 @@ void DADataOperateWidget::showDataframeData(const DA::DAData& d)
         d_ptr->_suppressCurrentChanged = false;
         // 主动同步当前页（addDockWidget 可能不触发 focusedDockWidgetChanged）
         setCurrentPage(w);
+        updateEmptyState();
     } else {
         // 已存在，唤起对应的 dock
         ads::CDockWidget* dock = d_ptr->dockOfPage(w);

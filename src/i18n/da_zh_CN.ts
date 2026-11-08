@@ -22536,6 +22536,21 @@ Sample rate: %2 Hz | Channels: %3 | Duration: %4 s</source>
         <source>Export Peaks</source>
         <translation>导出峰值表</translation>
     </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" />
+        <source>Window</source>
+        <translation>窗口</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" />
+        <source>Open Signal Analysis Window</source>
+        <translation>打开信号分析窗口</translation>
+    </message>
+    <message>
+        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" />
+        <source>Show the signal analysis workspace; it is created on first use</source>
+        <translation>显示信号分析界面（首次使用时创建）</translation>
+    </message>
 </context>
 <context>
     <name>DA::DASignalAnalysisView</name>
@@ -23140,6 +23155,34 @@ Sample rate: %2 Hz | Channels: %3 | Duration: %4 s</source>
     <message>
         <source>Append to current chart</source>
         <translation>追加到当前图表</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DANoDataGuideWidget</name>
+    <message>
+        <location filename="../DAGui/Common/DANoDataGuideWidget.cpp" />
+        <source>No data loaded</source>
+        <translation>尚未载入数据</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/Common/DANoDataGuideWidget.cpp" />
+        <source>Open an existing project or import data, then create a chart to start plotting.</source>
+        <translation>打开已有工程或导入数据，然后新建绘图开始绘图。</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/Common/DANoDataGuideWidget.cpp" />
+        <source>Open an existing project or import data to start working with data.</source>
+        <translation>打开已有工程或导入数据，开始处理数据。</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/Common/DANoDataGuideWidget.cpp" />
+        <source>Open Existing Project</source>
+        <translation>打开已有工程</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/Common/DANoDataGuideWidget.cpp" />
+        <source>Import Data</source>
+        <translation>导入数据</translation>
     </message>
 </context>
 </TS>

@@ -39,6 +39,10 @@ class DAAbstractArchiveTask;
  * （与绘图/表格/工作流并列，方案 D11）；丝带用 SARibbonBar::addCategoryPage 新建顶级标签页
  * （方案 §8.1，注意不是文档里的 addCategory）。
  *
+ * 页面惰性创建：大部分用户不会用到信号分析，插件初始化只建丝带标签与动作，
+ * 首次打开（丝带「打开信号分析窗口」）、导入信号或工程恢复时才创建中央页面与峰值窗口，
+ * 避免程序一启动就多出一个空的停靠标签页。
+ *
  * 所有动作经宿主 DAActionsInterface 创建与销毁（动作 parent 是宿主接口，不随插件卸载销毁）。
  */
 class DASignalAnalysisUI : public QObject
@@ -78,6 +82,8 @@ Q_SIGNALS:
     void spectrumUpdated();
 
 public Q_SLOTS:
+    // 打开（首次创建）信号分析页面并唤起到前台；页面关闭后再点可恢复显示
+    void openSignalAnalysisPage();
     // 导入三入口（丝带按钮与空状态按钮共用）
     void importAudioFile();
     void importDataFrame();
@@ -130,6 +136,8 @@ private:
     void buildPeakTopNMenu();
     void buildAmplitudeModeMenu();
     void buildPeakDock();
+    // 惰性创建页面（首次打开/导入/工程恢复时调用），已创建返回 true
+    bool ensurePageCreated();
     // 触发当前信号的峰值表与峰值曲线计算
     void requestPeaks(bool withCurves);
     // 构造后台任务上下文（信号 + 当前视图通道 + 参数版本号）
@@ -178,12 +186,18 @@ public:
     //===================================================
     // 丝带面板
     //===================================================
+    SARibbonPanel* mPanelOpen { nullptr };      ///< 窗口（打开信号分析窗口）
     SARibbonPanel* mPanelSignal { nullptr };    ///< 信号（导入）
     SARibbonPanel* mPanelPlayback { nullptr };  ///< 播放
     SARibbonPanel* mPanelAnalysis { nullptr };  ///< 分析
     SARibbonPanel* mPanelPeaks { nullptr };     ///< 峰值
     SARibbonPanel* mPanelDisplay { nullptr };   ///< 显示
     SARibbonPanel* mPanelExport { nullptr };    ///< 导出
+
+    //===================================================
+    // 窗口（Window）
+    //===================================================
+    QAction* actionOpenSignalPage { nullptr };  ///< 打开信号分析窗口（页面惰性创建，关闭后可恢复）
 
     //===================================================
     // 信号（Signal）

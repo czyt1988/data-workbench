@@ -20,6 +20,7 @@
 #include <QMenu>
 #include <QMouseEvent>
 #include <QPointer>
+#include <QPushButton>
 #include <memory>
 
 #include "DAAbstractData.h"
@@ -46,6 +47,8 @@
 #include "Table/Chart/DATableChartPlanner.h"
 #include "Table/Chart/DATableChartTypes.h"
 #include "Table/Views/DATableChildWindow.h"
+#include "Table/DADataOperateWidget.h"
+#include "Common/DANoDataGuideWidget.h"
 
 namespace
 {
@@ -311,6 +314,8 @@ private Q_SLOTS:
     void testQuickPlotChildWindowFrame();
     // 页面注入的设置页绑定/解绑器：打开、点击绘图区、关闭、页面析构四条路径
     void testPageSettingBinderOnOpenClickAndClose();
+    // 操作窗口「无数据引导页」：空内容时显示、新建内容后隐藏、清空后恢复，入口发请求信号
+    void testNoDataGuide();
 
     void initTestCase();
 };
@@ -1456,6 +1461,44 @@ void DATableQuickPlotTest::testSettingWidgetDrivesChartType()
     panel.releaseTarget(&singleWindow);
     singleWindow.close();
     window.close();
+}
+
+/**
+ * @brief 操作窗口「无数据引导页」回归
+ *
+ * 数据/绘图操作窗口在没有任何内容时显示引导页（尚未载入数据 + 打开已有工程/导入数据），
+ * 新建内容后隐藏、清空后恢复；引导页两个入口分别发出请求信号，由 APP 层接到主程序动作。
+ */
+void DATableQuickPlotTest::testNoDataGuide()
+{
+    // 数据操作窗口：没有任何数据页时显示引导页
+    DA::DADataOperateWidget dataOperate;
+    QVERIFY(dataOperate.isNoDataGuideVisible());
+
+    // 绘图操作窗口：空时显示；新建绘图后隐藏；关掉最后一个绘图后恢复
+    DA::DAChartOperateWidget chartOperate;
+    QVERIFY(chartOperate.isNoDataGuideVisible());
+    DA::DAFigureWidget* fig = chartOperate.createFigure();
+    QVERIFY(nullptr != fig);
+    QVERIFY(!chartOperate.isNoDataGuideVisible());
+    chartOperate.removeFigure(fig);
+    QVERIFY(chartOperate.isNoDataGuideVisible());
+
+    // 引导页入口信号：两个按钮分别发出「打开已有工程」「导入数据」请求
+    DA::DANoDataGuideWidget guide(DA::DANoDataGuideWidget::ChartOperateRole);
+    const QList< QPushButton* > buttons = guide.findChildren< QPushButton* >();
+    QCOMPARE(buttons.size(), 2);
+    QSignalSpy openSpy(&guide, &DA::DANoDataGuideWidget::openProjectRequested);
+    QSignalSpy importSpy(&guide, &DA::DANoDataGuideWidget::importDataRequested);
+    for (QPushButton* button : buttons) {
+        if (button->text() == QStringLiteral("Open Existing Project")) {
+            button->click();
+        } else if (button->text() == QStringLiteral("Import Data")) {
+            button->click();
+        }
+    }
+    QCOMPARE(openSpy.count(), 1);
+    QCOMPARE(importSpy.count(), 1);
 }
 
 /**

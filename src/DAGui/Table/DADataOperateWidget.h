@@ -127,6 +127,8 @@ private:
     void setCurrentPage(DADataOperatePageWidget* page);
     void showDataframeData(const DA::DAData& d);
     void init();
+    // 按已打开数据页数量切换「无数据引导页」/内容页
+    void updateEmptyState();
 
 private:
     DADataOperateWidget(const DADataOperateWidget&) = delete;

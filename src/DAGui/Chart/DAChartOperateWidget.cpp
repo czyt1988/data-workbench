@@ -5,7 +5,6 @@
 // Qt
 #include <QUndoStack>
 #include <QMessageBox>
-#include <QVBoxLayout>
 #include <QPointer>
 #include <QSet>
 #include <QDebug>
@@ -18,6 +17,7 @@
 #include "DAFigureDockWidget.h"
 #include "DAFigureComponentsFactory.h"
 #include "Common/DADockAreaTabPosition.h"
+#include "Common/DANoDataGuideWidget.h"
 namespace DA
 {
 int g_figure_cnt = 0;  ///< 绘图的数量，仅限当前程序创建计数
@@ -91,20 +91,29 @@ ads::CDockAreaWidget* DAChartOperateWidgetPrivate::targetAreaForNewFigure() cons
 DAChartOperateWidget::DAChartOperateWidget(QWidget* parent)
     : DAAbstractOperateWidget(parent), d_ptr(new DAChartOperateWidgetPrivate(this))
 {
-    QVBoxLayout* lay = new QVBoxLayout(this);
-    lay->setContentsMargins(0, 0, 0, 0);
-    lay->setSpacing(0);
     d_ptr->mDockManager = new ads::CDockManager(this);
-    lay->addWidget(d_ptr->mDockManager);
     // 注入自定义组件工厂：绘图 dock 选项卡右键菜单携带重命名等自定义 action，
     // 仅影响本嵌套管理器内的 dock（即绘图 dock），不影响顶层停靠区
     d_ptr->mDockManager->setComponentsFactory(new DAFigureComponentsFactory());
     // 禁止 figure dock 浮动为独立窗口（全局锁，对所有当前及后续 dock 生效），保留分屏/并栏/拖拽
     d_ptr->mDockManager->lockDockWidgetFeaturesGlobally(ads::CDockWidget::DockWidgetFloatable);
+    // 无绘图时显示统一引导页（「打开已有工程」/「导入数据」入口），避免启动后一片空白
+    setupNoDataGuide(d_ptr->mDockManager, new DANoDataGuideWidget(DANoDataGuideWidget::ChartOperateRole));
     // 嵌套停靠区聚焦改变：onFocusedDockChanged 内部会过滤掉非本管理器的 dock，
     // 规避 FocusHighlighting 下嵌套焦点控制器跨管理器回调顶层 dock 的问题
     connect(d_ptr->mDockManager, &ads::CDockManager::focusedDockWidgetChanged,
             this, &DAChartOperateWidget::onFocusedDockChanged);
+}
+
+/**
+ * @brief 按已挂载绘图数量切换「无数据引导页」/内容页
+ *
+ * 已摘掉 dock 待撤销恢复的 figure（mDetachedFigures）不算可见内容，
+ * 全部 figure 都摘下时引导页重新出现。
+ */
+void DAChartOperateWidget::updateEmptyState()
+{
+    setNoDataGuideVisible(getFigureList().isEmpty());
 }
 
 DAChartOperateWidget::~DAChartOperateWidget()
@@ -201,6 +210,7 @@ DAFigureWidget* DAChartOperateWidget::createFigure(const QString& name, const QS
     }
     d_ptr->mSuppressCurrentChanged = false;
     initFigureConnect(fig);
+    updateEmptyState();
     Q_EMIT figureCreated(fig);
     return fig;
 }
@@ -385,6 +395,7 @@ void DAChartOperateWidget::removeFigure(DAFigureWidget* f, bool deleteFigure)
         // 级联删除 figureDock + fig，延迟到事件循环（与原 f->deleteLater() 语义一致）
         dock->deleteLater();
     }
+    updateEmptyState();
 }
 
 /**
@@ -412,6 +423,7 @@ bool DAChartOperateWidget::detachFigureDock(DAFigureWidget* f)
     if (d_ptr->mDockManager) {
         d_ptr->mDockManager->removeDockWidget(dock);
     }
+    updateEmptyState();
     return true;
 }
 
@@ -441,6 +453,7 @@ bool DAChartOperateWidget::reattachFigureDock(DAFigureWidget* f)
     if (QUndoStack* un = f->getUndoStack()) {
         un->setActive(true);
     }
+    updateEmptyState();
     Q_EMIT currentFigureChanged(f, d_ptr->mFigures.indexOf(f));
     return true;
 }
@@ -558,6 +571,7 @@ void DAChartOperateWidget::clear()
     for (DAFigureWidget* fig : std::as_const(figs)) {
         removeFigure(fig, true);
     }
+    updateEmptyState();
 }
 
 /**
