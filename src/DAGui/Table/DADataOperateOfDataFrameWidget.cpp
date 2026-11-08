@@ -2161,6 +2161,30 @@ void DADataOperateOfDataFrameWidget::setQuickPlotAppendAvailabilityProvider(
 }
 
 /**
+ * @brief 设置快速绘图设置页的绑定器（APP 注入；转发快速绘图控制器）
+ */
+void DADataOperateOfDataFrameWidget::setQuickPlotSettingBinder(const QuickPlotSettingBinder& binder)
+{
+    d_func()->mQuickPlotController->setSettingBinder(binder);
+}
+
+/**
+ * @brief 设置快速绘图设置页的解绑器（APP 注入；转发快速绘图控制器）
+ */
+void DADataOperateOfDataFrameWidget::setQuickPlotSettingReleaser(const QuickPlotSettingReleaser& releaser)
+{
+    d_func()->mQuickPlotController->setSettingReleaser(releaser);
+}
+
+/**
+ * @brief 快速绘图绘图区部件（未创建返回 nullptr；转发快速绘图控制器）
+ */
+DA::DATableQuickPlotWindow* DADataOperateOfDataFrameWidget::quickPlotWindow() const
+{
+    return d_func()->mQuickPlotController->quickPlotWindow();
+}
+
+/**
  * @brief 有序选区：按视图顺序返回选区涉及的列（数据列号）
  *
  * 现有 getSelectedDataframeCoumns 走 QSet::values()，顺序不保证；快速绘图需要

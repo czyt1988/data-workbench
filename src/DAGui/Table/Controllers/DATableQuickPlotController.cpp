@@ -32,6 +32,12 @@ DATableQuickPlotController::DATableQuickPlotController(const DATablePageContext&
 {
 }
 
+DATableQuickPlotController::~DATableQuickPlotController()
+{
+    // 页面析构：先把设置页从本页的快速绘图窗口解绑，避免设置页持有一会儿就要销毁的指针
+    releaseSetting();
+}
+
 /**
  * @brief 用当前（有序）选区构造快速绘图请求
  *
@@ -152,6 +158,10 @@ bool DATableQuickPlotController::showQuickPlot(DA::DATableChartType preferredTyp
                 mQuickPlotWindow->updateRequest(buildQuickPlotRequest());
             }
         });
+        // 用户点击绘图区：把右侧「设置」Dock 抬到顶层并切到快速绘图设置页
+        connect(mQuickPlotWindow, &DA::DATableQuickPlotWindow::activated, this, &DATableQuickPlotController::activateSetting);
+        // 绘图区隐藏（关闭/切到别的表格页）：设置页解绑
+        connect(mQuickPlotWindow, &DA::DATableQuickPlotWindow::hidden, this, &DATableQuickPlotController::releaseSetting);
         connect(mQuickPlotWindow, &DA::DATableQuickPlotWindow::transferRequested, this,
                 [ this ](const DA::DATableChartRequest& req, const DA::DATableChartSpec& spec, bool append) {
                     if (!mTransfer) {
@@ -178,6 +188,8 @@ bool DATableQuickPlotController::showQuickPlot(DA::DATableChartType preferredTyp
                     mQuickPlotFrame->setTitle(title);
                 }
             });
+            // 点标题栏/缩放手柄也算「点中了快速绘图窗口」：同样抬起设置 Dock
+            connect(mQuickPlotFrame, &DA::DATableChildWindow::activated, this, &DATableQuickPlotController::activateSetting);
         }
     }
 
@@ -188,8 +200,43 @@ bool DATableQuickPlotController::showQuickPlot(DA::DATableChartType preferredTyp
         mQuickPlotFrame->clampIntoBounds();
     }
     mQuickPlotWindow->showForRequest(request, preferredType);
+    // 打开即把设置页绑到本窗口并抬起，用户不用先去右侧找设置
+    activateSetting();
     return mQuickPlotWindow->isVisible();
 }
+
+/**
+ * @brief 把设置页绑到快速绘图窗口并唤起
+ *
+ * 设置页在右侧「设置」Dock 里（DAGui 的 DASettingContainerWidget），但 Dock 归 APP 管，
+ * 因此具体动作由 APP 注入的绑定器完成：设置页 setTarget(窗口) + 切到快速绘图设置页 +
+ * raiseDockByWidget 把 Dock 抬到顶层。
+ */
+void DATableQuickPlotController::activateSetting()
+{
+    if (mSettingBinder && mQuickPlotWindow && mQuickPlotWindow->isVisible()) {
+        mSettingBinder(mQuickPlotWindow);
+    }
+}
+
+/**
+ * @brief 把设置页从快速绘图窗口解绑
+ */
+void DATableQuickPlotController::releaseSetting()
+{
+    if (mSettingReleaser && mQuickPlotWindow) {
+        mSettingReleaser(mQuickPlotWindow);
+    }
+}
+
+/**
+ * @brief 快速绘图绘图区部件（未创建返回 nullptr）
+ */
+DATableQuickPlotWindow* DATableQuickPlotController::quickPlotWindow() const
+{
+    return mQuickPlotWindow;
+}
+
 
 /**
  * @brief 懒建表格子窗口容器
@@ -246,6 +293,8 @@ void DATableQuickPlotController::closeQuickPlot()
     } else if (mQuickPlotWindow) {
         mQuickPlotWindow->hide();
     }
+    // 关闭后设置页回到空态（隐藏事件已解绑一次，这里兜底：框架隐藏不一定逐级发 hideEvent）
+    releaseSetting();
 }
 
 /**
@@ -273,6 +322,22 @@ void DATableQuickPlotController::setAppendAvailabilityProvider(const QuickPlotAp
 }
 
 /**
+ * @brief 设置设置页绑定器（APP 注入：把右侧设置 Dock 的设置页指向快速绘图窗口并抬起）
+ */
+void DATableQuickPlotController::setSettingBinder(const QuickPlotSettingBinder& binder)
+{
+    mSettingBinder = binder;
+}
+
+/**
+ * @brief 设置设置页解绑器（APP 注入：窗口关闭/切页/销毁时把设置页解绑）
+ */
+void DATableQuickPlotController::setSettingReleaser(const QuickPlotSettingReleaser& releaser)
+{
+    mSettingReleaser = releaser;
+}
+
+/**
  * @brief 数据变更通知（宿主页面的 dataModified 信号接线到这里）
  *
  * 浮窗已创建时转发（内容部件重取数据刷新图表）；未创建时无操作。
@@ -295,6 +360,7 @@ void DATableQuickPlotController::notifyDataChanged()
  */
 void DATableQuickPlotController::detach()
 {
+    releaseSetting();
     if (mChildWindowContainer) {
         mChildWindowContainer->detachFromHost();
     }

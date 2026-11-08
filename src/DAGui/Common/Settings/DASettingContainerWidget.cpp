@@ -3,6 +3,7 @@
 #include "Chart/DAChartSettingWidget.h"
 #include "Chart/Setting3D/DAChart3DSettingWidget.h"
 #include "Chart/Setting/DAFigureWidgetSettingPanel.h"
+#include "Table/Chart/DATableQuickPlotSettingWidget.h"
 //===================================================
 // using DA namespace -- 禁止在头文件using！！
 //===================================================
@@ -47,6 +48,8 @@ void DASettingContainerWidget::initWorkFlowSettingWidgets()
 	addWidget(mChart3DSettingWidget);
 	mFigureWidgetSettingWidget = new DAFigureWidgetSettingPanel();
 	addWidget(mFigureWidgetSettingWidget);
+	mQuickPlotSettingWidget = new DATableQuickPlotSettingWidget();
+	addWidget(mQuickPlotSettingWidget);
 }
 
 /**
@@ -116,4 +119,21 @@ DAFigureWidgetSettingPanel* DASettingContainerWidget::getFigureWidgetSettingWidg
 void DASettingContainerWidget::showFigureWidgetSettingWidget()
 {
     setCurrentWidget(mFigureWidgetSettingWidget);
+}
+
+/**
+ * @brief 获取表内快速绘图设置窗口
+ * @return
+ */
+DATableQuickPlotSettingWidget* DASettingContainerWidget::getQuickPlotSettingWidget()
+{
+    return mQuickPlotSettingWidget;
+}
+
+/**
+ * @brief 显示表内快速绘图设置窗口
+ */
+void DASettingContainerWidget::showQuickPlotSettingWidget()
+{
+    setCurrentWidget(mQuickPlotSettingWidget);
 }

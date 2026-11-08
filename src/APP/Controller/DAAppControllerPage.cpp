@@ -6,6 +6,7 @@
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QMessageBox>
+#include <QPointer>
 #include <QProgressDialog>
 #include <QSignalBlocker>
 #include <QStandardPaths>
@@ -60,6 +61,8 @@
 #include "DAAppChartManageWidget.h"
 #include "SettingPages/DASettingPageGeneral.h"
 #include "Common/Settings/DASettingContainerWidget.h"
+#include "Table/Chart/DATableQuickPlotSettingWidget.h"
+#include "Table/Chart/DATableQuickPlotWindow.h"
 #include "Common/DARecentFilesManager.h"
 #include "Chart/DAChartSettingWidget.h"
 #include "Chart/DADataLinkTableWidget.h"
@@ -251,6 +254,34 @@ void DAAppController::onDataOperatePageCreated(DADataOperatePageWidget* page)
             }
             DAFigureWidget* fig = cow->getCurrentFigure();
             return fig && fig->getCurrent3DChart() != nullptr;
+        });
+        // 快速绘图设置页在右侧「设置」Dock 里：打开/点击绘图区时把设置页绑到该窗口、
+        // 切到快速绘图设置页并把 Dock 抬到顶层（Dock 归 APP 管，故由 APP 注入动作）。
+        // 捕获 QPointer 而不是裸 mDock：解绑器会在页面析构路径被调用，关闭程序时
+        // 停靠区可能先于页面被销毁（deleteLater），裸指针会悬空。
+        const QPointer< DAAppDockingArea > dockPtr = mDock;
+        const QPointer< DASettingContainerWidget > settingPtr = mDock ? mDock->getSettingContainerWidget() : nullptr;
+        w->setQuickPlotSettingBinder([ this, dockPtr, settingPtr ](DA::DATableQuickPlotWindow* window) {
+            if (!window || !dockPtr || !settingPtr) {
+                return;
+            }
+            DASettingContainerWidget* setting = settingPtr.data();
+            DATableQuickPlotSettingWidget* panel = setting->getQuickPlotSettingWidget();
+            if (!panel) {
+                return;
+            }
+            panel->setTarget(window);
+            setting->showQuickPlotSettingWidget();
+            dockPtr->raiseDockByWidget(setting);
+        });
+        // 绘图区关闭/切页/页面析构：设置页解绑回空态（只解绑与当前目标一致的那个窗口）
+        w->setQuickPlotSettingReleaser([ settingPtr ](DA::DATableQuickPlotWindow* window) {
+            if (!settingPtr) {
+                return;
+            }
+            if (DATableQuickPlotSettingWidget* panel = settingPtr->getQuickPlotSettingWidget()) {
+                panel->releaseTarget(window);
+            }
         });
         // 选区变化时刷新「快速绘图」动作的可用状态（无选区置灰）
         connect(w, &DADataOperateOfDataFrameWidget::tableSelectionChanged, this, [ this ]() {

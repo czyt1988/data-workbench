@@ -19,7 +19,7 @@ class DATableSelectionService;
 /**
  * @brief 表内快速绘图控制器（008 期3）
  *
- * 选区→请求、快速绘图子窗口生命周期、转入绘图区处理器注入、关闭。
+ * 选区→请求、快速绘图子窗口生命周期、设置页绑定、转入绘图区处理器注入、关闭。
  * 构造注入上下文与选区服务；子窗口容器懒建（宿主=上下文的 hostWidget，
  * 允许区域=主视口），浮窗全程夹取在主视口内。
  * 生命周期：宿主页面构造并持有（QObject 父子持有快速绘图窗与子窗口容器）。
@@ -31,10 +31,15 @@ public:
     // 转入绘图区的处理器（APP 能拿到 DAChartOperateWidget，由 APP 注入）
     using QuickPlotTransferHandler =
         std::function< bool(const DA::DATableChartRequest&, const DA::DATableChartSpec&, bool /*append*/, QString* /*error*/) >;
-    // 「追加到当前图表」是否可用（APP 依绘图区当前图表注入；决定浮窗菜单项灰显）
+    // 「追加到当前图表」是否可用（APP 依绘图区当前图表注入；决定设置页菜单项灰显）
     using QuickPlotAppendAvailabilityProvider = std::function< bool() >;
+    // 设置页绑定器（APP 注入：DAGui 拿不到右侧设置 Dock，由 APP 把设置页指向窗口并抬起 Dock）
+    using QuickPlotSettingBinder = std::function< void(DA::DATableQuickPlotWindow*) >;
+    // 设置页解绑器（APP 注入：窗口关闭/切页/销毁时把设置页从该窗口解绑）
+    using QuickPlotSettingReleaser = std::function< void(DA::DATableQuickPlotWindow*) >;
 
     explicit DATableQuickPlotController(const DATablePageContext& ctx, const DATableSelectionService& sel, QObject* parent = nullptr);
+    ~DATableQuickPlotController() override;
 
 public:
     // 用当前（有序）选区构造快速绘图请求；列角色走 DATableChartPlanner
@@ -50,10 +55,15 @@ public:
     void closeQuickPlot();
     // 快速绘图子窗口是否正在显示
     bool isQuickPlotVisible() const;
+    // 快速绘图绘图区部件（未创建返回 nullptr；设置页绑定/测试用）
+    DATableQuickPlotWindow* quickPlotWindow() const;
     // 转入绘图区处理器（APP 注入）
     void setTransferHandler(const QuickPlotTransferHandler& handler);
     // 「追加到当前图表」可用性提供者（APP 注入）
     void setAppendAvailabilityProvider(const QuickPlotAppendAvailabilityProvider& provider);
+    // 设置页绑定/解绑器（APP 注入；设置页在 DAGui 的 DASettingContainerWidget 里，但 Dock 归 APP 管）
+    void setSettingBinder(const QuickPlotSettingBinder& binder);
+    void setSettingReleaser(const QuickPlotSettingReleaser& releaser);
     // 数据变更通知（宿主页面的 dataModified 信号接线到这里，转发给浮窗重取数）
     void notifyDataChanged();
     // 页面析构前调用：断开子窗口容器的 boundsProvider 回调
@@ -68,15 +78,21 @@ private:
     DATableChildWindowContainer* tableChildWindowContainer();
     // 子窗口允许区域（主视口在宿主部件坐标系下的矩形；无视图回退窗格容器）
     QRect tableChildWindowBounds() const;
+    // 把设置页绑到快速绘图窗口并唤起（打开/点击绘图区时调用）
+    void activateSetting();
+    // 把设置页从快速绘图窗口解绑（关闭/隐藏/页面析构时调用）
+    void releaseSetting();
 
 private:
     const DATablePageContext& mCtx;      ///< 依赖注入的上下文（构造注入，非拥有）
     const DATableSelectionService& mSel;  ///< 选区/坐标查询服务（构造注入，非拥有）
-    DATableQuickPlotWindow* mQuickPlotWindow { nullptr };       ///< 快速绘图内容部件（懒建，单实例）
+    DATableQuickPlotWindow* mQuickPlotWindow { nullptr };       ///< 快速绘图绘图区（懒建，单实例）
     DATableChildWindow* mQuickPlotFrame { nullptr };             ///< 快速绘图子窗口框架（容器承载）
     DATableChildWindowContainer* mChildWindowContainer { nullptr };  ///< 表格子窗口容器（懒建）
     QuickPlotTransferHandler mTransfer;                          ///< 转入绘图区处理器（APP 注入）
     QuickPlotAppendAvailabilityProvider mAppendAvailable;         ///< 追加可用性（APP 注入）
+    QuickPlotSettingBinder mSettingBinder;                        ///< 设置页绑定器（APP 注入）
+    QuickPlotSettingReleaser mSettingReleaser;                    ///< 设置页解绑器（APP 注入）
 };
 }  // end of namespace DA
 #endif  // DATABLEQUICKPLOTCONTROLLER_H

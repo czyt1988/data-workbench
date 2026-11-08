@@ -59,6 +59,7 @@ class DATableSelectionService;
 class DATableMutationCoordinator;
 class DATableNoteController;
 class DATableQuickPlotController;
+class DATableQuickPlotWindow;
 class DATableValidationController;
 class DATableComputedColumnController;
 class DATableConditionalFormatController;
@@ -210,9 +211,17 @@ public:
     using QuickPlotTransferHandler =
         std::function< bool(const DA::DATableChartRequest&, const DA::DATableChartSpec&, bool /*append*/, QString* /*error*/) >;
     void setQuickPlotTransferHandler(const QuickPlotTransferHandler& handler);
-    // 「追加到当前图表」是否可用（APP 依绘图区当前图表注入；决定浮窗菜单项灰显）
+    // 「追加到当前图表」是否可用（APP 依绘图区当前图表注入；决定设置页菜单项灰显）
     using QuickPlotAppendAvailabilityProvider = std::function< bool() >;
     void setQuickPlotAppendAvailabilityProvider(const QuickPlotAppendAvailabilityProvider& provider);
+    // 设置页绑定/解绑器：快速绘图设置页在右侧「设置」Dock（DAGui 的 DASettingContainerWidget），
+    // 但抬起 Dock 属于 APP，故由 APP 注入「绑定设置页 + 切页 + 抬起 Dock」的动作
+    using QuickPlotSettingBinder = std::function< void(DA::DATableQuickPlotWindow*) >;
+    using QuickPlotSettingReleaser = std::function< void(DA::DATableQuickPlotWindow*) >;
+    void setQuickPlotSettingBinder(const QuickPlotSettingBinder& binder);
+    void setQuickPlotSettingReleaser(const QuickPlotSettingReleaser& releaser);
+    // 快速绘图绘图区部件（未创建返回 nullptr）
+    DA::DATableQuickPlotWindow* quickPlotWindow() const;
     // 打开定位对话框（007 T1.7）：Ctrl+G / 滚动条右键 / Ribbon「定位」共用
     void showGotoDialog();
     // 解析定位请求并调定位单入口；返回 false = 未解析成功（已给用户可见提示、未改选区）

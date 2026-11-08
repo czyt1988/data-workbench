@@ -10,6 +10,7 @@ class DAPyWorkFlowNodeItemSettingWidget;
 class DAChartSettingWidget;
 class DAChart3DSettingWidget;
 class DAFigureWidgetSettingPanel;
+class DATableQuickPlotSettingWidget;
 /**
  * @brief 这是一个类似QStackedWidget的窗体，只内部有一个scallview
  */
@@ -38,6 +39,10 @@ public:
     DAFigureWidgetSettingPanel* getFigureWidgetSettingWidget();
     // 显示 Figure 设置窗口
     void showFigureWidgetSettingWidget();
+    // 表内快速绘图设置（右侧 Dock 里的快速绘图设置页，单例）
+    DATableQuickPlotSettingWidget* getQuickPlotSettingWidget();
+    // 显示快速绘图设置窗口
+    void showQuickPlotSettingWidget();
 
 protected:
     void initWorkFlowSettingWidgets();
@@ -47,6 +52,7 @@ private:
 	DAChartSettingWidget* mChartSettingWidget { nullptr };
     DAChart3DSettingWidget* mChart3DSettingWidget { nullptr };
     DAFigureWidgetSettingPanel* mFigureWidgetSettingWidget { nullptr };
+    DATableQuickPlotSettingWidget* mQuickPlotSettingWidget { nullptr };
 };
 }  // namespace DA
 #endif  // DASETTINGCONTAINERWIDGET_H

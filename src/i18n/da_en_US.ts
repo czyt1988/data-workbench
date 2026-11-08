@@ -22905,4 +22905,63 @@ Sample rate: %2 Hz | Channels: %3 | Duration: %4 s</translation>
         <translation>No time column selected.</translation>
     </message>
 </context>
+<context>
+    <name>DA::DATableQuickPlotSettingWidget</name>
+    <message>
+        <source>Quick plot</source>
+        <translation>Quick plot</translation>
+    </message>
+    <message>
+        <source>Open a quick plot from the data table to configure it here</source>
+        <translation>Open a quick plot from the data table to configure it here</translation>
+    </message>
+    <message>
+        <source>Chart</source>
+        <translation>Chart</translation>
+    </message>
+    <message>
+        <source>Type</source>
+        <translation>Type</translation>
+    </message>
+    <message>
+        <source>Chart type (unavailable types are disabled with the reason)</source>
+        <translation>Chart type (unavailable types are disabled with the reason)</translation>
+    </message>
+    <message>
+        <source>Data roles</source>
+        <translation>Data roles</translation>
+    </message>
+    <message>
+        <source>Update to current selection</source>
+        <translation>Update to current selection</translation>
+    </message>
+    <message>
+        <source>Re-bind the chart to the current column selection</source>
+        <translation>Re-bind the chart to the current column selection</translation>
+    </message>
+    <message>
+        <source>Refresh</source>
+        <translation>Refresh</translation>
+    </message>
+    <message>
+        <source>Redraw with the current data</source>
+        <translation>Redraw with the current data</translation>
+    </message>
+    <message>
+        <source>Transfer to chart area</source>
+        <translation>Transfer to chart area</translation>
+    </message>
+    <message>
+        <source>Create a formal chart from this quick plot</source>
+        <translation>Create a formal chart from this quick plot</translation>
+    </message>
+    <message>
+        <source>New figure tab</source>
+        <translation>New figure tab</translation>
+    </message>
+    <message>
+        <source>Append to current chart</source>
+        <translation>Append to current chart</translation>
+    </message>
+</context>
 </TS>

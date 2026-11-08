@@ -119,6 +119,7 @@ protected:
     {
         if (event->button() == Qt::LeftButton && mFrame) {
             mFrame->raise();
+            Q_EMIT mFrame->activated();
             if (mFrame->isMaximized()) {
                 // 最大化状态下拖动：先还原，并让光标落在标题栏同一比例位置（Excel 同款语义）
                 const QPoint global = globalPosOf(event);
@@ -267,6 +268,7 @@ protected:
     {
         if (event->button() == Qt::LeftButton && mFrame && !mFrame->isMaximized()) {
             mFrame->raise();
+            Q_EMIT mFrame->activated();
             mDragging     = true;
             mPressGlobal  = globalPosOf(event);
             mStartGeometry = mFrame->geometry();
@@ -746,6 +748,7 @@ bool DATableChildWindow::event(QEvent* event)
 {
     if (event->type() == QEvent::MouseButtonPress) {
         raise();
+        Q_EMIT activated();
     }
     return QWidget::event(event);
 }
@@ -757,6 +760,7 @@ bool DATableChildWindow::eventFilter(QObject* watched, QEvent* event)
 {
     if (watched == mContent.data() && event->type() == QEvent::MouseButtonPress) {
         raise();
+        Q_EMIT activated();
     }
     return QWidget::eventFilter(watched, event);
 }

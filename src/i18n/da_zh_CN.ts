@@ -23083,4 +23083,63 @@ Sample rate: %2 Hz | Channels: %3 | Duration: %4 s</source>
         <translation>未选择时间列。</translation>
     </message>
 </context>
+<context>
+    <name>DA::DATableQuickPlotSettingWidget</name>
+    <message>
+        <source>Quick plot</source>
+        <translation>快速绘图</translation>
+    </message>
+    <message>
+        <source>Open a quick plot from the data table to configure it here</source>
+        <translation>请先在数据表格中打开快速绘图，再在此处设置</translation>
+    </message>
+    <message>
+        <source>Chart</source>
+        <translation>图表</translation>
+    </message>
+    <message>
+        <source>Type</source>
+        <translation>图型</translation>
+    </message>
+    <message>
+        <source>Chart type (unavailable types are disabled with the reason)</source>
+        <translation>图型（不满足当前选区的置灰并给出原因）</translation>
+    </message>
+    <message>
+        <source>Data roles</source>
+        <translation>数据角色</translation>
+    </message>
+    <message>
+        <source>Update to current selection</source>
+        <translation>更新为当前选区</translation>
+    </message>
+    <message>
+        <source>Re-bind the chart to the current column selection</source>
+        <translation>按当前表格选区重新绑定绘图</translation>
+    </message>
+    <message>
+        <source>Refresh</source>
+        <translation>刷新</translation>
+    </message>
+    <message>
+        <source>Redraw with the current data</source>
+        <translation>按当前数据重绘</translation>
+    </message>
+    <message>
+        <source>Transfer to chart area</source>
+        <translation>转入绘图区</translation>
+    </message>
+    <message>
+        <source>Create a formal chart from this quick plot</source>
+        <translation>把当前快速绘图转成正式图表</translation>
+    </message>
+    <message>
+        <source>New figure tab</source>
+        <translation>新建绘图标签页</translation>
+    </message>
+    <message>
+        <source>Append to current chart</source>
+        <translation>追加到当前图表</translation>
+    </message>
+</context>
 </TS>

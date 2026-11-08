@@ -56,6 +56,8 @@ public:
 Q_SIGNALS:
     // 用户点关闭（标题栏按钮/右键菜单/Esc）；框架自身不隐藏，由宿主处理
     void closeRequested();
+    // 用户按下了子窗口（本体/标题栏/缩放手柄/内容）：宿主可据此抬起相关设置面板
+    void activated();
     // 最大化状态切换
     void maximizedChanged(bool maximized);
     // 用户拖动/缩放/最大化/重置结束后的最终几何
