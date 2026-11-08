@@ -21,7 +21,9 @@
 #include <QMouseEvent>
 #include <QPointer>
 #include <QPushButton>
+#include <QStringList>
 #include <memory>
+#include <utility>
 
 #include "DAAbstractData.h"
 #include "DAChartWidget.h"
@@ -48,6 +50,7 @@
 #include "Table/Chart/DATableChartTypes.h"
 #include "Table/Views/DATableChildWindow.h"
 #include "Table/DADataOperateWidget.h"
+#include "Common/DAAbstractOperateWidget.h"
 #include "Common/DANoDataGuideWidget.h"
 
 namespace
@@ -248,6 +251,32 @@ _da_quick_plot_df = pd.DataFrame({
     pybind11::object obj = pybind11::globals()["_da_quick_plot_df"];
     return DA::DAData(obj);
 }
+
+// 引导页当前显示（未被显式隐藏）的按钮文本，用于断言不同数据状态下的入口
+QStringList visibleGuideButtonTexts(const DA::DANoDataGuideWidget* guide)
+{
+    QStringList texts;
+    const QList< QPushButton* > buttons = guide->findChildren< QPushButton* >();
+    for (QPushButton* button : std::as_const(buttons)) {
+        if (!button->isHidden()) {
+            texts.append(button->text());
+        }
+    }
+    return texts;
+}
+
+// 点击引导页上指定文本的按钮；按钮不存在或被隐藏时返回 false
+bool clickGuideButton(DA::DANoDataGuideWidget* guide, const QString& text)
+{
+    const QList< QPushButton* > buttons = guide->findChildren< QPushButton* >();
+    for (QPushButton* button : std::as_const(buttons)) {
+        if (!button->isHidden() && button->text() == text) {
+            button->click();
+            return true;
+        }
+    }
+    return false;
+}
 }  // namespace
 
 /**
@@ -314,7 +343,8 @@ private Q_SLOTS:
     void testQuickPlotChildWindowFrame();
     // 页面注入的设置页绑定/解绑器：打开、点击绘图区、关闭、页面析构四条路径
     void testPageSettingBinderOnOpenClickAndClose();
-    // 操作窗口「无数据引导页」：空内容时显示、新建内容后隐藏、清空后恢复，入口发请求信号
+    // 操作窗口「无数据引导页」：按数据状态切换入口（导入数据/添加绘图/数据表提示），
+    // 空内容时显示、新建内容后隐藏、清空后恢复
     void testNoDataGuide();
 
     void initTestCase();
@@ -1466,39 +1496,51 @@ void DATableQuickPlotTest::testSettingWidgetDrivesChartType()
 /**
  * @brief 操作窗口「无数据引导页」回归
  *
- * 数据/绘图操作窗口在没有任何内容时显示引导页（尚未载入数据 + 打开已有工程/导入数据），
- * 新建内容后隐藏、清空后恢复；引导页两个入口分别发出请求信号，由 APP 层接到主程序动作。
+ * 引导内容随数据状态变化：
+ * - 没有数据：两个操作窗口都显示「打开已有工程」「导入数据」；
+ * - 已有数据：数据窗口提示双击数据管理区打开数据表（无按钮），绘图窗口显示「添加绘图」并发出请求；
+ * 新建内容后引导页隐藏、清空后恢复；数据清空后回到「导入数据」状态。
  */
 void DATableQuickPlotTest::testNoDataGuide()
 {
-    // 数据操作窗口：没有任何数据页时显示引导页
+    // 没有数据：两个操作窗口都显示「打开已有工程」「导入数据」，不显示「添加绘图」
     DA::DADataOperateWidget dataOperate;
     QVERIFY(dataOperate.isNoDataGuideVisible());
+    DA::DANoDataGuideWidget* dataGuide = dataOperate.findChild< DA::DANoDataGuideWidget* >();
+    QVERIFY(nullptr != dataGuide);
+    QVERIFY(!dataGuide->isDataAvailable());
+    QCOMPARE(visibleGuideButtonTexts(dataGuide),
+             QStringList({ QStringLiteral("Open Existing Project"), QStringLiteral("Import Data") }));
 
-    // 绘图操作窗口：空时显示；新建绘图后隐藏；关掉最后一个绘图后恢复
     DA::DAChartOperateWidget chartOperate;
     QVERIFY(chartOperate.isNoDataGuideVisible());
+    DA::DANoDataGuideWidget* chartGuide = chartOperate.findChild< DA::DANoDataGuideWidget* >();
+    QVERIFY(nullptr != chartGuide);
+    QCOMPARE(visibleGuideButtonTexts(chartGuide),
+             QStringList({ QStringLiteral("Open Existing Project"), QStringLiteral("Import Data") }));
+
+    // 已有数据（例如在另一个窗口导入后）：数据窗口提示双击数据管理区，绘图窗口给「添加绘图」
+    dataOperate.setNoDataGuideDataAvailable(true);
+    chartOperate.setNoDataGuideDataAvailable(true);
+    QVERIFY(dataGuide->isDataAvailable());
+    QVERIFY(visibleGuideButtonTexts(dataGuide).isEmpty());
+    QCOMPARE(visibleGuideButtonTexts(chartGuide), QStringList({ QStringLiteral("Add Figure") }));
+    QSignalSpy addFigureSpy(&chartOperate, &DA::DAAbstractOperateWidget::addFigureRequested);
+    QVERIFY(clickGuideButton(chartGuide, QStringLiteral("Add Figure")));
+    QCOMPARE(addFigureSpy.count(), 1);
+
+    // 绘图窗口：建图后引导页隐藏，关掉最后一个绘图后恢复
     DA::DAFigureWidget* fig = chartOperate.createFigure();
     QVERIFY(nullptr != fig);
     QVERIFY(!chartOperate.isNoDataGuideVisible());
     chartOperate.removeFigure(fig);
     QVERIFY(chartOperate.isNoDataGuideVisible());
 
-    // 引导页入口信号：两个按钮分别发出「打开已有工程」「导入数据」请求
-    DA::DANoDataGuideWidget guide(DA::DANoDataGuideWidget::ChartOperateRole);
-    const QList< QPushButton* > buttons = guide.findChildren< QPushButton* >();
-    QCOMPARE(buttons.size(), 2);
-    QSignalSpy openSpy(&guide, &DA::DANoDataGuideWidget::openProjectRequested);
-    QSignalSpy importSpy(&guide, &DA::DANoDataGuideWidget::importDataRequested);
-    for (QPushButton* button : buttons) {
-        if (button->text() == QStringLiteral("Open Existing Project")) {
-            button->click();
-        } else if (button->text() == QStringLiteral("Import Data")) {
-            button->click();
-        }
-    }
-    QCOMPARE(openSpy.count(), 1);
-    QCOMPARE(importSpy.count(), 1);
+    // 数据清空后回到「导入数据」状态
+    dataOperate.setNoDataGuideDataAvailable(false);
+    chartOperate.setNoDataGuideDataAvailable(false);
+    QCOMPARE(visibleGuideButtonTexts(chartGuide),
+             QStringList({ QStringLiteral("Open Existing Project"), QStringLiteral("Import Data") }));
 }
 
 /**

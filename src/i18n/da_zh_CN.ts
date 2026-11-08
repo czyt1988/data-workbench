@@ -23184,5 +23184,30 @@ Sample rate: %2 Hz | Channels: %3 | Duration: %4 s</source>
         <source>Import Data</source>
         <translation>导入数据</translation>
     </message>
+    <message>
+        <location filename="../DAGui/Common/DANoDataGuideWidget.cpp" />
+        <source>No figure created</source>
+        <translation>尚未创建绘图</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/Common/DANoDataGuideWidget.cpp" />
+        <source>Data is ready. Click Add Figure to start plotting.</source>
+        <translation>数据已就绪，点击「添加绘图」新建绘图。</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/Common/DANoDataGuideWidget.cpp" />
+        <source>No data table open</source>
+        <translation>尚未打开数据表</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/Common/DANoDataGuideWidget.cpp" />
+        <source>Double-click data in the Data Manager to open its table.</source>
+        <translation>双击数据管理区的数据来打开数据表。</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/Common/DANoDataGuideWidget.cpp" />
+        <source>Add Figure</source>
+        <translation>添加绘图</translation>
+    </message>
 </context>
 </TS>

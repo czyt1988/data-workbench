@@ -37,8 +37,26 @@ void DAAbstractOperateWidget::setupNoDataGuide(QWidget* content, DANoDataGuideWi
 	lay->addWidget(mOperateStack);
 	connect(mNoDataGuide, &DANoDataGuideWidget::openProjectRequested, this, &DAAbstractOperateWidget::openProjectRequested);
 	connect(mNoDataGuide, &DANoDataGuideWidget::importDataRequested, this, &DAAbstractOperateWidget::importDataRequested);
+	connect(mNoDataGuide, &DANoDataGuideWidget::addFigureRequested, this, &DAAbstractOperateWidget::addFigureRequested);
+	// 宿主可能在引导页创建前就设置了数据状态，这里补一次
+	mNoDataGuide->setDataAvailable(mDataAvailable);
 	// 初始没有内容，先显示引导页（子类创建出首个内容后再切走）
 	mOperateStack->setCurrentWidget(mNoDataGuide);
+}
+
+/**
+ * @brief 设置数据管理器是否已有数据
+ *
+ * 引导内容随之切换：没有数据时给「打开已有工程/导入数据」，已有数据时
+ * 数据操作窗口提示如何打开数据表、绘图操作窗口提供「添加绘图」。
+ * @param available true=数据管理器里已有数据
+ */
+void DAAbstractOperateWidget::setNoDataGuideDataAvailable(bool available)
+{
+	mDataAvailable = available;
+	if (mNoDataGuide) {
+		mNoDataGuide->setDataAvailable(available);
+	}
 }
 
 /**

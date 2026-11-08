@@ -18,6 +18,7 @@
 #include "DACommandInterface.h"
 #include "DAAppCommand.h"
 #include "DAAppDataManager.h"
+#include "DADataManager.h"
 // 操作窗口基类（无数据引导页的入口信号）
 #include "Common/DAAbstractOperateWidget.h"
 // chart相关
@@ -390,7 +391,7 @@ void DAAppDockingArea::initConnection()
             &DADataManageWidget::dataSeriesDbClicked,
             this,
             &DAAppDockingArea::onDataManageWidgetDataSeriesDbClicked);
-    // 数据/绘图操作窗口的空状态引导页：两个入口直接复用主程序的「打开工程」「导入数据」动作，
+    // 数据/绘图操作窗口的空状态引导页：入口直接复用主程序动作（打开工程/导入数据/添加绘图），
     // 视图层只发请求、由 APP 接线，保持 DAGui 不反向依赖 APP
     if (DAAppActions* actions = qobject_cast< DAAppActions* >(ui()->getActionInterface())) {
         const auto bindNoDataGuide = [this, actions](DAAbstractOperateWidget* operateWidget) {
@@ -407,9 +408,36 @@ void DAAppDockingArea::initConnection()
                     actions->actionAddData->trigger();
                 }
             });
+            // 「添加绘图」与丝带「添加绘图」走同一动作，保证创建 figure/chart、撤销栈与切页行为一致
+            connect(operateWidget, &DAAbstractOperateWidget::addFigureRequested, this, [actions]() {
+                if (actions->actionAddFigure) {
+                    actions->actionAddFigure->trigger();
+                }
+            });
         };
         bindNoDataGuide(mDataOperateWidget);
         bindNoDataGuide(mChartOperateWidget);
+    }
+    // 引导页内容随数据管理器的数据量切换：
+    // 没有数据→两个窗口都提示打开工程/导入数据；已有数据→数据窗口提示双击打开数据表、绘图窗口提供「添加绘图」
+    if (mDataMgr) {
+        if (DADataManager* dataManager = mDataMgr->dataManager()) {
+            const auto syncGuideDataState = [this, dataManager]() {
+                const bool hasData = (dataManager->getDataCount() > 0);
+                mDataOperateWidget->setNoDataGuideDataAvailable(hasData);
+                mChartOperateWidget->setNoDataGuideDataAvailable(hasData);
+            };
+            connect(dataManager, &DADataManager::dataAdded, this, [syncGuideDataState](const DA::DAData&) {
+                syncGuideDataState();
+            });
+            connect(dataManager, &DADataManager::dataRemoved, this, [syncGuideDataState](const DA::DAData&, int) {
+                syncGuideDataState();
+            });
+            connect(dataManager, &DADataManager::datasCleared, this, syncGuideDataState);
+            connect(dataManager, &DADataManager::datasBatchAdded, this, syncGuideDataState);
+            // 初始状态（工程恢复等可能早于本连接的场景由上面的信号兜底）
+            syncGuideDataState();
+        }
     }
     // 设置窗口的绑定
     mSettingContainerWidget->getWorkFlowNodeItemSettingWidget()->setWorkFlowOperateWidget(mWorkFlowOperateWidget);
