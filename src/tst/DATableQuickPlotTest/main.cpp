@@ -15,6 +15,7 @@
 #include <QVariant>
 #include <QAction>
 #include <QComboBox>
+#include <QStandardItemModel>
 #include <QElapsedTimer>
 #include <QMenu>
 #include <QMouseEvent>
@@ -38,6 +39,8 @@
 #include "DATableDataSource.h"
 #include "Table/Chart/DAChartQuickPlot.h"
 #include "Table/Chart/DATableQuickPlotWindow.h"
+#include "Table/Chart/DATableQuickPlotSettingWidget.h"
+#include "Common/Settings/DASettingContainerWidget.h"
 #include "Table/Chart/DATableChartRolePanel.h"
 #include "Table/Chart/DAChartSeriesSampler.h"
 #include "Table/Chart/DATableChartPlanner.h"
@@ -286,7 +289,14 @@ private Q_SLOTS:
     void testCreate3DLineItem();
     void testTransferNewTypes();
     void testWindowRecommendedSize();
-    void testRolePanelManualMode();
+    // 设置页独立成右侧「设置」Dock 的一页后：绘图区不再内嵌任何设置控件
+    void testWindowHasNoSettingsUi();
+    // 右侧「设置」Dock 容器里注册了快速绘图设置页，且能切到该页
+    void testSettingContainerRegistersQuickPlotPage();
+    // 设置页绑定目标窗口后，角色编辑回写目标并进入手动配置模式
+    void testSettingWidgetBindsTarget();
+    // 设置页图型下拉驱动目标窗口的图型；不满足当前选区的图型置灰
+    void testSettingWidgetDrivesChartType();
     // 页面级端到端：真实选区 → 浮窗出图（Python 聚合）→ 转入绘图区 → 撤销/重做
     void testPageSelectPlotAndTransfer();
     // 方案 §5.3：删除当前列时自动关闭浮窗
@@ -299,6 +309,8 @@ private Q_SLOTS:
     // 子窗口承载：快速绘图贴入 DATableChildWindow 框架，完整落在主视口内
     //（不压表头与滚动条），关闭重开保持上次几何，页面收缩自动夹回
     void testQuickPlotChildWindowFrame();
+    // 页面注入的设置页绑定/解绑器：打开、点击绘图区、关闭、页面析构四条路径
+    void testPageSettingBinderOnOpenClickAndClose();
 
     void initTestCase();
 };
@@ -981,6 +993,89 @@ void DATableQuickPlotTest::testQuickPlotChildWindowFrame()
     QVERIFY(viewportRect().contains(frame->geometry()));
 }
 
+void DATableQuickPlotTest::testPageSettingBinderOnOpenClickAndClose()
+{
+    if (!DA::DAPyScripts::isInitScripts()) {
+        QSKIP("DAPyScripts not initialized");
+    }
+    DA::DATableMetadataRegistry registry(nullptr);
+    const DA::DAData data = makePandasData();
+
+    // 绑定/解绑计数：页面析构路径也会回调解绑器，故计数变量必须先于页面声明（比页面长寿）；
+    // 析构路径上的回调不能做 QCOMPARE（失败信息回不到测试栈），只记录标志位。
+    int bindCount                           = 0;
+    int releaseCount                        = 0;
+    DA::DATableQuickPlotWindow* boundWindow = nullptr;
+    bool releasedBoundWindow                = true;
+
+    DA::DADataOperateOfDataFrameWidget page(data, &registry);
+    page.resize(900, 520);
+    page.show();
+    QTest::qWait(50);
+    page.setQuickPlotSettingBinder([ &bindCount, &boundWindow ](DA::DATableQuickPlotWindow* window) {
+        ++bindCount;
+        boundWindow = window;
+    });
+    page.setQuickPlotSettingReleaser(
+        [ &releaseCount, &boundWindow, &releasedBoundWindow ](DA::DATableQuickPlotWindow* window) {
+            ++releaseCount;
+            if (boundWindow && window != boundWindow) {
+                releasedBoundWindow = false;
+            }
+        });
+
+    QVERIFY(selectColumnRange(page, 0, 1));
+    QVERIFY(page.showQuickPlot());
+    QVERIFY(page.isQuickPlotVisible());
+    // 打开即绑定：控制器把设置页指向本页的快速绘图窗口
+    QVERIFY(bindCount >= 1);
+    QVERIFY(boundWindow != nullptr);
+    QCOMPARE(boundWindow, page.quickPlotWindow());
+    // 等首次取数绘制完成，避免点击落在忙碌态（取数期间窗口被临时禁用）
+    QVERIFY2(waitForQuickPlotChart(boundWindow), "quick plot chart was not rendered");
+
+    // 点击绘图区 = 交互即激活：控制器再次调用绑定器（抬起设置 Dock）
+    const int bindCountBeforeClick = bindCount;
+    QTest::mouseClick(boundWindow, Qt::LeftButton);
+    QTest::qWait(20);
+    QVERIFY(bindCount > bindCountBeforeClick);
+
+    // 关闭 → 解绑（隐藏事件 + closeQuickPlot 兜底，至少各触发一次）
+    page.closeQuickPlot();
+    QTest::qWait(20);
+    QVERIFY(!page.isQuickPlotVisible());
+    QVERIFY(releaseCount >= 1);
+    QVERIFY(releasedBoundWindow);
+
+    // 页面析构 → 控制器析构路径也必须解绑（设置页不留悬空目标）
+    int destroyReleaseCount        = 0;
+    bool destroyReleasedSameWindow = true;
+    {
+        DA::DATableQuickPlotWindow* scopedWindow = nullptr;
+        const DA::DAData scopedData              = makePandasData();
+        DA::DADataOperateOfDataFrameWidget scopedPage(scopedData, &registry);
+        scopedPage.resize(900, 520);
+        scopedPage.show();
+        QTest::qWait(50);
+        scopedPage.setQuickPlotSettingBinder(
+            [ &scopedWindow ](DA::DATableQuickPlotWindow* window) { scopedWindow = window; });
+        scopedPage.setQuickPlotSettingReleaser(
+            [ &destroyReleaseCount, &scopedWindow, &destroyReleasedSameWindow ](
+                DA::DATableQuickPlotWindow* window) {
+                ++destroyReleaseCount;
+                if (!scopedWindow || window != scopedWindow) {
+                    destroyReleasedSameWindow = false;
+                }
+            });
+        QVERIFY(selectColumnRange(scopedPage, 0, 1));
+        QVERIFY(scopedPage.showQuickPlot());
+        QVERIFY(scopedPage.isQuickPlotVisible());
+        QCOMPARE(scopedWindow, scopedPage.quickPlotWindow());
+    }  // scopedPage 在这里析构（先于它捕获的计数/指针变量）
+    QVERIFY(destroyReleaseCount >= 1);
+    QVERIFY(destroyReleasedSameWindow);
+}
+
 void DATableQuickPlotTest::initTestCase()
 {
     // 与 APP main.cpp / DATableDataTest 一致的 Python 初始化：
@@ -1225,10 +1320,42 @@ void DATableQuickPlotTest::testTransferNewTypes()
 
 void DATableQuickPlotTest::testWindowRecommendedSize()
 {
-    QCOMPARE(DA::DATableQuickPlotWindow::recommendedSize(), QSize(640, 560));
+    QCOMPARE(DA::DATableQuickPlotWindow::recommendedSize(), QSize(560, 420));
 }
 
-void DATableQuickPlotTest::testRolePanelManualMode()
+void DATableQuickPlotTest::testSettingContainerRegistersQuickPlotPage()
+{
+    // 设置页是「设置」Dock 容器（QStackedWidget）里的一页：容器初始化即注册，
+    // 宿主（APP）拿到面板指针后 setTarget + showQuickPlotSettingWidget 即可切页
+    DA::DASettingContainerWidget container(nullptr);
+    DA::DATableQuickPlotSettingWidget* panel = container.getQuickPlotSettingWidget();
+    QVERIFY(panel != nullptr);
+    QVERIFY(container.isContainWidget(panel));
+    container.showQuickPlotSettingWidget();
+    QCOMPARE(container.currentWidget(), panel);
+}
+
+void DATableQuickPlotTest::testWindowHasNoSettingsUi()
+{
+    auto* source = new DAQuickPlotTestSource;
+    source->columns.append({ QStringLiteral("a"), QMetaType::Double, makeNumeric(30) });
+    source->columns.append({ QStringLiteral("b"), QMetaType::Double, makeNumeric(30, 7.0) });
+    const DA::DAData data = makeData(source);
+    const auto request    = requestFromColumns(data, { 0, 1 });
+
+    DA::DATableQuickPlotWindow window(nullptr);
+    window.showForRequest(request);
+    QTest::qWait(50);
+    QVERIFY(window.isVisible());
+
+    // 绘图区只承载 2D/3D 图表：图型下拉与角色行全部在右侧「设置」Dock 的设置页
+    QVERIFY(window.findChild< DA::DAChartWidget* >() != nullptr);
+    QVERIFY(window.findChild< DA::DATableChartRolePanel* >() == nullptr);
+    QVERIFY(window.findChild< QComboBox* >() == nullptr);
+    window.close();
+}
+
+void DATableQuickPlotTest::testSettingWidgetBindsTarget()
 {
     auto* source = new DAQuickPlotTestSource;
     source->columns.append({ QStringLiteral("a"), QMetaType::Double, makeNumeric(30) });
@@ -1241,10 +1368,17 @@ void DATableQuickPlotTest::testRolePanelManualMode()
     QTest::qWait(50);
     QVERIFY(window.isVisible());
     QVERIFY(!window.isManualMode());
+    // 两列数值的默认图型是散点（planner 能力矩阵）：角色面板的 X/Y 对应两个数值列
+    QCOMPARE(window.spec().type, DA::DATableChartType::Scatter);
 
-    auto* panel = window.findChild< DA::DATableChartRolePanel* >();
-    QVERIFY(panel != nullptr);
-    const QList< QComboBox* > combos = panel->findChildren< QComboBox* >();
+    DA::DATableQuickPlotSettingWidget panel(nullptr);
+    QVERIFY(panel.target() == nullptr);
+    panel.setTarget(&window);
+    QCOMPARE(panel.target(), &window);
+
+    auto* rolePanel = panel.findChild< DA::DATableChartRolePanel* >();
+    QVERIFY(rolePanel != nullptr);
+    const QList< QComboBox* > combos = rolePanel->findChildren< QComboBox* >();
     QVERIFY(combos.size() >= 2);  // 散点：X / Y
     QComboBox* xCombo = combos.first();
     const int target  = xCombo->findData(1);
@@ -1252,6 +1386,7 @@ void DATableQuickPlotTest::testRolePanelManualMode()
     xCombo->setCurrentIndex(target);
     QTest::qWait(50);
 
+    // 设置页的角色编辑回写目标窗口：进入手动配置模式并更新规格
     QVERIFY(window.isManualMode());
     QCOMPARE(window.spec().xColumn, 1);
 
@@ -1259,6 +1394,67 @@ void DATableQuickPlotTest::testRolePanelManualMode()
     window.updateRequest(request);
     QTest::qWait(30);
     QVERIFY(!window.isManualMode());
+
+    // 解绑后设置页不再持有目标（回到空态）
+    panel.releaseTarget(&window);
+    QVERIFY(panel.target() == nullptr);
+    window.close();
+}
+
+void DATableQuickPlotTest::testSettingWidgetDrivesChartType()
+{
+    auto* source = new DAQuickPlotTestSource;
+    source->columns.append({ QStringLiteral("a"), QMetaType::Double, makeNumeric(30) });
+    source->columns.append({ QStringLiteral("b"), QMetaType::Double, makeNumeric(30, 7.0) });
+    const DA::DAData data = makeData(source);
+    const auto request    = requestFromColumns(data, { 0, 1 });
+
+    DA::DATableQuickPlotWindow window(nullptr);
+    window.showForRequest(request);
+    QTest::qWait(50);
+
+    DA::DATableQuickPlotSettingWidget panel(nullptr);
+    panel.setTarget(&window);
+
+    auto* typeCombo = panel.findChild< QComboBox* >(QStringLiteral("DAQuickPlotTypeCombo"));
+    QVERIFY(typeCombo != nullptr);
+    // 下拉项 data 是 DATableChartType：绑定后当前项与窗口规格一致
+    QCOMPARE(typeCombo->findData(static_cast< int >(window.spec().type)), typeCombo->currentIndex());
+
+    // 图型下拉 → 窗口：先切折线再切回散点（避免默认值恰好相等而漏测这条链路）
+    const int lineIndex = typeCombo->findData(static_cast< int >(DA::DATableChartType::Line));
+    QVERIFY(lineIndex >= 0);
+    typeCombo->setCurrentIndex(lineIndex);
+    QTest::qWait(50);
+    QCOMPARE(window.spec().type, DA::DATableChartType::Line);
+
+    const int scatterIndex = typeCombo->findData(static_cast< int >(DA::DATableChartType::Scatter));
+    QVERIFY(scatterIndex >= 0);
+    typeCombo->setCurrentIndex(scatterIndex);
+    QTest::qWait(50);
+    QCOMPARE(window.spec().type, DA::DATableChartType::Scatter);
+
+    // 单列数值选区不支持散点：图型下拉按规划把该条目置灰（回归置灰逻辑）
+    auto* singleSource = new DAQuickPlotTestSource;
+    singleSource->columns.append({ QStringLiteral("v"), QMetaType::Double, makeNumeric(30) });
+    const DA::DAData singleData = makeData(singleSource);
+    const auto singleRequest    = requestFromColumns(singleData, { 0 });
+    DA::DATableQuickPlotWindow singleWindow(nullptr);
+    singleWindow.showForRequest(singleRequest);
+    QTest::qWait(50);
+    panel.setTarget(&singleWindow);
+
+    const int singleScatterIndex =
+        typeCombo->findData(static_cast< int >(DA::DATableChartType::Scatter));
+    QVERIFY(singleScatterIndex >= 0);
+    auto* typeModel = qobject_cast< QStandardItemModel* >(typeCombo->model());
+    QVERIFY(typeModel != nullptr);
+    QStandardItem* scatterItem = typeModel->item(singleScatterIndex);
+    QVERIFY(scatterItem != nullptr);
+    QVERIFY(!scatterItem->isEnabled());
+
+    panel.releaseTarget(&singleWindow);
+    singleWindow.close();
     window.close();
 }
 
