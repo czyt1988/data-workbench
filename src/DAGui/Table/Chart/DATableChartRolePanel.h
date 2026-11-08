@@ -3,28 +3,36 @@
 #include "DAGuiAPI.h"
 #include "Table/Chart/DATableChartTypes.h"
 #include "DAGlobals.h"
-#include <QWidget>
+#include <QList>
+#include <QObject>
 
 namespace DA
 {
+class DAPropertyPanelWidget;
 class DATableChartRolePanelPrivate;
 
 /**
- * @brief 快速绘图的轻量角色设置面板（v3）
+ * @brief 快速绘图的角色设置行生成器（v5）
  *
- * 按当前图型生成「角色标签 + 列下拉」行（2D/3D 统一），列下拉可换整表任意列；
- * 任何改动立即写回内部规格并发 specEdited，由浮窗即时重绘（不弹模态对话框）。
+ * 把「角色标签 + 列下拉」行写进宿主设置页的通用属性面板（DAPropertyPanelWidget 的分组内嵌面板），
+ * 行的外观、行高与属性名宽度由属性面板统一，与图表/工作流设置页保持一致；
+ * 任何改动立即写回内部规格并发 specEdited，由宿主即时重绘。
  *
  * 复用边界（实施方案 §5）：本类只写角色与聚合选择，不嵌入任何添加绘图向导页面；
  * 取数与图元构建仍由 DAChartQuickPlot 统一完成。
  */
-class DAGUI_API DATableChartRolePanel : public QWidget
+class DAGUI_API DATableChartRolePanel : public QObject
 {
     Q_OBJECT
     DA_DECLARE_PRIVATE(DATableChartRolePanel)
 public:
-    explicit DATableChartRolePanel(QWidget* parent = nullptr);
+    explicit DATableChartRolePanel(QObject* parent = nullptr);
     ~DATableChartRolePanel() override;
+
+    // 设置承载角色行的属性面板（设置页「数据角色」分组的内嵌面板；非拥有）
+    void setRowPanel(DAPropertyPanelWidget* panel);
+    // 当前承载面板（未设置返回 nullptr）
+    DAPropertyPanelWidget* rowPanel() const;
 
     // 设置请求与规格（会按规格图型重建角色行）
     void setContext(const DATableChartRequest& request, const DATableChartSpec& spec);
@@ -42,6 +50,8 @@ Q_SIGNALS:
 private:
     // 重建角色行（延迟调用，避免在下拉框自己的信号栈上销毁它）
     void rebuildRows();
+    // 移除当前全部角色行（deleteLater 释放，可在信号栈上安全调用）
+    void clearRows();
 };
 
 }  // namespace DA

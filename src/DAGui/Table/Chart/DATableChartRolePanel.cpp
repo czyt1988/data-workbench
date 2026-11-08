@@ -1,16 +1,18 @@
 #include "Table/Chart/DATableChartRolePanel.h"
 #include "Table/Chart/DATableChartPlanner.h"
+#include "Common/Settings/DAPropertyPanelWidget.h"
 #include "DATableDataSource.h"
 #include "DALogCategory.h"
 // Qt
 #include <QComboBox>
 #include <QHBoxLayout>
-#include <QLabel>
+#include <QIcon>
 #include <QPushButton>
+#include <QSize>
+#include <QSizePolicy>
 #include <QSpinBox>
 #include <QTimer>
 #include <QToolButton>
-#include <QVBoxLayout>
 #include <QVariant>
 #include <functional>
 
@@ -25,11 +27,11 @@ constexpr int kNoneItem     = -3;  ///< （不使用）
 
 enum class ColumnFilter
 {
-    Numeric,             ///< 只列数值列
-    NumericOrDateTime,   ///< 数值或时间列
-    Categorical,         ///< 只列分类列
-    CategoryLike,        ///< 分类列 + 数值列（低基数数值可作为分类）
-    Supported            ///< 所有可静态判定角色的列
+    Numeric,            ///< 只列数值列
+    NumericOrDateTime,  ///< 数值或时间列
+    Categorical,        ///< 只列分类列
+    CategoryLike,       ///< 分类列 + 数值列（低基数数值可作为分类）
+    Supported           ///< 所有可静态判定角色的列
 };
 
 bool acceptsRole(ColumnFilter filter, DATableColumnRole role)
@@ -47,6 +49,14 @@ bool acceptsRole(ColumnFilter filter, DATableColumnRole role)
         return role != DATableColumnRole::Unsupported;
     }
     return false;
+}
+
+// 属性面板中下拉/微调框统一横向填满（与 DAPropertyPanelWidget::addEnumProperty 一致）
+void makeEditorFillWidth(QWidget* editor)
+{
+    if (editor) {
+        editor->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    }
 }
 
 }  // namespace
@@ -85,7 +95,7 @@ public:
         return nullptr;
     }
 
-    // 数据列号 → request.columns 下标；不在选区时追加（设置区允许换整表任意列）
+    // 数据列号 → request.columns 下标；不在选区时追加（设置页允许换整表任意列）
     int ensureColumnIndex(int dataIndex)
     {
         if (dataIndex < 0) {
@@ -106,6 +116,22 @@ public:
         return request.columns.size() - 1;
     }
 
+    // 往属性面板追加一行角色行（label + editor），返回属性项 ID
+    int addRow(const QString& label, QWidget* editor)
+    {
+        if (!rowPanel || !editor) {
+            delete editor;
+            return -1;
+        }
+        const int id = rowPanel->addProperty(label, editor);
+        if (id < 0) {
+            delete editor;
+            return -1;
+        }
+        rowIds.append(id);
+        return id;
+    }
+
     // 编辑后统一刷新：先通知窗口重绘，再把角色行重建排到下一轮事件循环
     void afterEdit()
     {
@@ -113,14 +139,12 @@ public:
         QTimer::singleShot(0, q_func(), [ this ]() { q_func()->rebuildRows(); });
     }
 
-    QComboBox* createColumnCombo(QWidget* parent,
-                                 ColumnFilter filter,
-                                 int currentDataIndex,
-                                 bool includeRowIndex,
-                                 bool includeNone)
+    // 列下拉：候选列按角色过滤；当前值不在候选里时补一项，避免显示错位
+    QComboBox* createColumnCombo(ColumnFilter filter, int currentDataIndex, bool includeRowIndex, bool includeNone)
     {
-        QComboBox* combo = new QComboBox(parent);
+        QComboBox* combo = new QComboBox();
         combo->setSizeAdjustPolicy(QComboBox::AdjustToContents);
+        makeEditorFillWidth(combo);
         updating = true;
         if (includeRowIndex) {
             combo->addItem(DATableChartRolePanel::tr("Row number"), kRowIndexItem);  // cn:行号
@@ -135,14 +159,12 @@ public:
             }
             combo->addItem(DATableChartRolePanel::columnDisplayName(column), column.dataIndex);
         }
-        // 当前值不在候选里（例如手动换过列）时补一项，避免下拉显示错位
-        int comboIndex = -1;
+        int comboIndex   = -1;
         const int wanted = (currentDataIndex < 0) ? (includeRowIndex ? kRowIndexItem : kNoneItem) : currentDataIndex;
         comboIndex       = combo->findData(wanted);
         if (comboIndex < 0 && currentDataIndex >= 0) {
             const DATableChartColumn* column = findColumn(currentDataIndex);
-            combo->addItem(column ? DATableChartRolePanel::columnDisplayName(*column)
-                                  : QString::number(currentDataIndex),
+            combo->addItem(column ? DATableChartRolePanel::columnDisplayName(*column) : QString::number(currentDataIndex),
                            currentDataIndex);
             comboIndex = combo->count() - 1;
         }
@@ -153,80 +175,62 @@ public:
         return combo;
     }
 
-    QWidget* createRow(QWidget* parent)
-    {
-        QWidget* row = new QWidget(parent);
-        QHBoxLayout* layout = new QHBoxLayout(row);
-        layout->setContentsMargins(0, 0, 0, 0);
-        layout->setSpacing(4);
-        return row;
-    }
-
-    QLabel* createRoleLabel(QWidget* parent, const QString& text)
-    {
-        QLabel* label = new QLabel(text, parent);
-        label->setMinimumWidth(64);
-        label->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
-        return label;
-    }
-
-    // 单列角色行：标签 + 列下拉
+    // 单列角色行：属性名 + 列下拉
     void addSingleColumnRow(const QString& label,
                             ColumnFilter filter,
                             int currentDataIndex,
                             const std::function< void(int) >& apply,
                             bool includeRowIndex = false)
     {
-        QWidget* row        = createRow(content);
-        QHBoxLayout* layout = qobject_cast< QHBoxLayout* >(row->layout());
-        layout->addWidget(createRoleLabel(row, label));
-        QComboBox* combo = createColumnCombo(row, filter, currentDataIndex, includeRowIndex, false);
-        layout->addWidget(combo, 1);
-        connect(combo,
-                QOverload< int >::of(&QComboBox::currentIndexChanged),
-                q_func(),
-                [ this, combo, apply ](int) {
-                    if (updating) {
-                        return;
-                    }
-                    apply(combo->currentData().toInt());
-                    afterEdit();
-                });
-        rowsLayout->addWidget(row);
+        QComboBox* combo = createColumnCombo(filter, currentDataIndex, includeRowIndex, false);
+        addRow(label, combo);
+        QObject::connect(combo,
+                         QOverload< int >::of(&QComboBox::currentIndexChanged),
+                         q_func(),
+                         [ this, combo, apply ](int) {
+                             if (updating) {
+                                 return;
+                             }
+                             apply(combo->currentData().toInt());
+                             afterEdit();
+                         });
     }
 
-    // 多值角色行：每行一个列下拉 + 删除按钮，末尾一个「添加」按钮
+    // 多值角色行：每行一个列下拉 + 删除按钮，末尾一个「添加序列」按钮行
     void addMultiColumnRows(const QString& label,
                             const QList< int >& currentDataIndexes,
                             const std::function< void(const QList< int >&) >& apply,
                             bool allowEmpty)
     {
-        QList< int > values = currentDataIndexes;
+        const QList< int > values = currentDataIndexes;
         for (int position = 0; position < values.size(); ++position) {
-            QWidget* row        = createRow(content);
-            QHBoxLayout* layout = qobject_cast< QHBoxLayout* >(row->layout());
-            layout->addWidget(position == 0 ? createRoleLabel(row, label) : createRoleLabel(row, QString()));
-            QComboBox* combo = createColumnCombo(row, ColumnFilter::Numeric, values.at(position), false, false);
-            layout->addWidget(combo, 1);
-            connect(combo,
-                    QOverload< int >::of(&QComboBox::currentIndexChanged),
-                    q_func(),
-                    [ this, combo, values, position, apply ](int) {
-                        if (updating) {
-                            return;
-                        }
-                        QList< int > next = values;
-                        next[ position ]  = combo->currentData().toInt();
-                        apply(next);
-                        afterEdit();
-                    });
+            QWidget* row   = new QWidget();
+            QHBoxLayout* lay = new QHBoxLayout(row);
+            lay->setContentsMargins(0, 0, 0, 0);
+            lay->setSpacing(4);
+            QComboBox* combo = createColumnCombo(ColumnFilter::Numeric, values.at(position), false, false);
+            lay->addWidget(combo, 1);
             QToolButton* remove = new QToolButton(row);
             remove->setText(QStringLiteral("\u2212"));
             remove->setToolTip(DATableChartRolePanel::tr("Remove this series"));  // cn:移除此序列
             remove->setAutoRaise(true);
-            const bool canRemove = (values.size() > 1) || allowEmpty;
-            remove->setEnabled(canRemove);
-            connect(remove, &QToolButton::clicked, q_func(), [ this, values, position, apply ]() {
+            remove->setEnabled((values.size() > 1) || allowEmpty);
+            lay->addWidget(remove);
+            makeEditorFillWidth(row);
+            addRow(position == 0 ? label : QString(), row);
+            QObject::connect(combo,
+                             QOverload< int >::of(&QComboBox::currentIndexChanged),
+                             q_func(),
+                             [ this, combo, values, position, apply ](int) {
+                                 if (updating) {
+                                     return;
+                                 }
+                                 QList< int > next = values;
+                                 next[ position ]  = combo->currentData().toInt();
+                                 apply(next);
+                                 afterEdit();
+                             });
+            QObject::connect(remove, &QToolButton::clicked, q_func(), [ this, values, position, apply ]() {
                 QList< int > next = values;
                 if (position >= 0 && position < next.size()) {
                     next.removeAt(position);
@@ -234,17 +238,13 @@ public:
                 apply(next);
                 afterEdit();
             });
-            layout->addWidget(remove);
-            rowsLayout->addWidget(row);
         }
-        QWidget* addRow        = createRow(content);
-        QHBoxLayout* addLayout = qobject_cast< QHBoxLayout* >(addRow->layout());
-        addLayout->addWidget(createRoleLabel(addRow, QString()));
-        QPushButton* addButton = new QPushButton(DATableChartRolePanel::tr("Add series"), addRow);  // cn:添加序列
+        QPushButton* addButton = new QPushButton(DATableChartRolePanel::tr("Add series"));  // cn:添加序列
         addButton->setAutoDefault(false);
-        addLayout->addWidget(addButton, 0, Qt::AlignLeft);
-        addLayout->addStretch(1);
-        connect(addButton, &QPushButton::clicked, q_func(), [ this, values, apply ]() {
+        addButton->setIcon(QIcon(QStringLiteral(":/DAGui/icon/right-add.svg")));
+        addButton->setIconSize(QSize(12, 12));
+        addRow(QString(), addButton);
+        QObject::connect(addButton, &QPushButton::clicked, q_func(), [ this, values, apply ]() {
             QList< int > next = values;
             // 选一个尚未使用的数值列；都用了就重复第一个
             int candidate = -1;
@@ -275,62 +275,54 @@ public:
             apply(next);
             afterEdit();
         });
-        rowsLayout->addWidget(addRow);
     }
 
     // 聚合口径行
     void addAggregationRow(const DATableChartAggregation& current)
     {
-        QWidget* row        = createRow(content);
-        QHBoxLayout* layout = qobject_cast< QHBoxLayout* >(row->layout());
-        layout->addWidget(createRoleLabel(row, DATableChartRolePanel::tr("Aggregation")));  // cn:聚合
-        QComboBox* combo = new QComboBox(row);
-        updating         = true;
+        QComboBox* combo = new QComboBox();
+        makeEditorFillWidth(combo);
+        updating = true;
         const QList< DATableChartAggregation > all = DATableChartPlanner::allAggregations();
         for (DATableChartAggregation aggregation : all) {
-            combo->addItem(DATableChartQuickPlotAggregationText(aggregation), static_cast< int >(aggregation));
+            combo->addItem(aggregationText(aggregation), static_cast< int >(aggregation));
         }
         combo->setCurrentIndex(combo->findData(static_cast< int >(current)));
         updating = false;
-        layout->addWidget(combo, 1);
-        connect(combo,
-                QOverload< int >::of(&QComboBox::currentIndexChanged),
-                q_func(),
-                [ this, combo ](int) {
-                    if (updating) {
-                        return;
-                    }
-                    spec.aggregation = static_cast< DATableChartAggregation >(combo->currentData().toInt());
-                    afterEdit();
-                });
-        rowsLayout->addWidget(row);
+        addRow(DATableChartRolePanel::tr("Aggregation"), combo);  // cn:聚合
+        QObject::connect(combo,
+                         QOverload< int >::of(&QComboBox::currentIndexChanged),
+                         q_func(),
+                         [ this, combo ](int) {
+                             if (updating) {
+                                 return;
+                             }
+                             spec.aggregation = static_cast< DATableChartAggregation >(combo->currentData().toInt());
+                             afterEdit();
+                         });
     }
 
     // 直方图分箱行
     void addHistogramBinsRow(int bins)
     {
-        QWidget* row        = createRow(content);
-        QHBoxLayout* layout = qobject_cast< QHBoxLayout* >(row->layout());
-        layout->addWidget(createRoleLabel(row, DATableChartRolePanel::tr("Bins")));  // cn:分箱
-        QSpinBox* spin = new QSpinBox(row);
+        QSpinBox* spin = new QSpinBox();
         spin->setRange(1, 500);
+        makeEditorFillWidth(spin);
         updating = true;
         spin->setValue(bins);
         updating = false;
-        layout->addWidget(spin, 0, Qt::AlignLeft);
-        layout->addStretch(1);
-        connect(spin, QOverload< int >::of(&QSpinBox::valueChanged), q_func(), [ this, spin ](int) {
+        addRow(DATableChartRolePanel::tr("Bins"), spin);  // cn:分箱
+        QObject::connect(spin, QOverload< int >::of(&QSpinBox::valueChanged), q_func(), [ this, spin ](int) {
             if (updating) {
                 return;
             }
             spec.histogramBins = spin->value();
             afterEdit();
         });
-        rowsLayout->addWidget(row);
     }
 
     // 聚合口径显示名（面板内部用，与浮窗的静态方法保持同一文案）
-    static QString DATableChartQuickPlotAggregationText(DATableChartAggregation aggregation)
+    static QString aggregationText(DATableChartAggregation aggregation)
     {
         switch (aggregation) {
         case DATableChartAggregation::Mean:
@@ -356,8 +348,8 @@ public:
 public:
     DATableChartRequest request;
     DATableChartSpec spec;
-    QWidget* content { nullptr };
-    QVBoxLayout* rowsLayout { nullptr };
+    DAPropertyPanelWidget* rowPanel { nullptr };
+    QList< int > rowIds;  ///< 当前角色行在属性面板里的 ID（重建时逐个移除）
     bool updating { false };
 };
 
@@ -365,22 +357,37 @@ public:
 // DATableChartRolePanel
 // ============================================================
 
-DATableChartRolePanel::DATableChartRolePanel(QWidget* parent) : QWidget(parent), DA_PIMPL_CONSTRUCT
+DATableChartRolePanel::DATableChartRolePanel(QObject* parent) : QObject(parent), DA_PIMPL_CONSTRUCT
 {
-    DA_D(d);
-    QVBoxLayout* root = new QVBoxLayout(this);
-    root->setContentsMargins(4, 2, 4, 2);
-    root->setSpacing(2);
-    d->content     = new QWidget(this);
-    d->rowsLayout  = new QVBoxLayout(d->content);
-    d->rowsLayout->setContentsMargins(0, 0, 0, 0);
-    d->rowsLayout->setSpacing(2);
-    root->addWidget(d->content);
-    root->addStretch(1);
 }
 
 DATableChartRolePanel::~DATableChartRolePanel()
 {
+}
+
+/**
+ * @brief 设置承载角色行的属性面板
+ *
+ * 宿主设置页在「数据角色」分组创建后调用；切换面板时先清掉旧面板上的行。
+ */
+void DATableChartRolePanel::setRowPanel(DAPropertyPanelWidget* panel)
+{
+    DA_D(d);
+    if (d->rowPanel == panel) {
+        return;
+    }
+    clearRows();
+    d->rowPanel = panel;
+    rebuildRows();
+}
+
+/**
+ * @brief 当前承载面板
+ */
+DAPropertyPanelWidget* DATableChartRolePanel::rowPanel() const
+{
+    DA_DC(d);
+    return d->rowPanel;
 }
 
 /**
@@ -424,23 +431,36 @@ QString DATableChartRolePanel::columnDisplayName(const DATableChartColumn& colum
 }
 
 /**
+ * @brief 移除当前全部角色行
+ *
+ * removeProperty 走 deleteLater，可在下拉框自己的信号栈上安全调用。
+ */
+void DATableChartRolePanel::clearRows()
+{
+    DA_D(d);
+    if (d->rowPanel) {
+        for (int id : std::as_const(d->rowIds)) {
+            d->rowPanel->removeProperty(id);
+        }
+    }
+    d->rowIds.clear();
+}
+
+/**
  * @brief 按当前规格图型重建角色行
  *
  * 角色表见实施方案 §3.2。所有改动都直接写回 d->spec / d->request，
- * 通过 specEdited 让浮窗即时重绘。
+ * 通过 specEdited 让绘图区即时重绘。行本身写进通用属性面板（DATableChartRolePanel 只做编排），
+ * 外观/行高/属性名宽度与图表设置页一致。
  */
 void DATableChartRolePanel::rebuildRows()
 {
     DA_D(d);
-    d->updating = true;
-    // 清空旧行：先移出布局，再延迟删除（本函数可能由下拉框的信号栈触发）
-    while (QLayoutItem* item = d->rowsLayout->takeAt(0)) {
-        if (QWidget* widget = item->widget()) {
-            widget->hide();
-            widget->deleteLater();
-        }
-        delete item;
+    clearRows();
+    if (!d->rowPanel) {
+        return;
     }
+    d->updating = true;
 
     const QList< int > numericValues = d->spec.valueColumns;
 
@@ -522,27 +542,11 @@ void DATableChartRolePanel::rebuildRows()
                 }
             },
             false);
-        QWidget* row        = d->createRow(d->content);
-        QHBoxLayout* layout = qobject_cast< QHBoxLayout* >(row->layout());
-        layout->addWidget(d->createRoleLabel(row, tr("Group")));  // cn:分组
-        QComboBox* combo = d->createColumnCombo(
-            row,
+        d->addSingleColumnRow(
+            tr("Group"),  // cn:分组
             ColumnFilter::Categorical,
             d->spec.categoryColumn >= 0 ? d->request.columns.value(d->spec.categoryColumn).dataIndex : -1,
-            false,
-            true);
-        layout->addWidget(combo, 1);
-        connect(combo,
-                QOverload< int >::of(&QComboBox::currentIndexChanged),
-                this,
-                [ d, combo ](int) {
-                    if (d->updating) {
-                        return;
-                    }
-                    d->spec.categoryColumn = d->ensureColumnIndex(combo->currentData().toInt());
-                    d->afterEdit();
-                });
-        d->rowsLayout->addWidget(row);
+            [ d ](int dataIndex) { d->spec.categoryColumn = d->ensureColumnIndex(dataIndex); });
     } break;
     case DATableChartType::Bar: {
         d->addSingleColumnRow(
@@ -552,7 +556,7 @@ void DATableChartRolePanel::rebuildRows()
             [ d ](int dataIndex) { d->spec.categoryColumn = d->ensureColumnIndex(dataIndex); });
         if (!d->spec.valueColumns.isEmpty()) {
             d->addSingleColumnRow(
-                tr("Value"),  // cn:数值
+                tr("Value"),  // cn:值
                 ColumnFilter::Numeric,
                 d->request.columns.value(d->spec.valueColumns.first()).dataIndex,
                 [ d ](int dataIndex) {

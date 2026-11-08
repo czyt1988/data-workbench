@@ -2,27 +2,24 @@
 #include "Table/Chart/DATableQuickPlotWindow.h"
 #include "Table/Chart/DATableChartRolePanel.h"
 #include "Table/Chart/DATableChartPlanner.h"
+#include "Common/Settings/DAPropertyPanelContainerWidget.h"
+#include "Common/Settings/DAPropertyPanelWidget.h"
 #include "DALogCategory.h"
-// DAWidgets（通用折叠面板控件，与图表/工作流设置页同一套封装）
-#include "DACollapseItem.h"
-#include "DACollapseWidget.h"
 // Qt
 #include <QAction>
 #include <QComboBox>
-#include <QFont>
 #include <QFrame>
 #include <QHBoxLayout>
+#include <QIcon>
 #include <QLabel>
 #include <QMenu>
 #include <QPushButton>
-#include <QScrollArea>
 #include <QSizePolicy>
 #include <QStandardItem>
 #include <QStandardItemModel>
 #include <QToolButton>
 #include <QVBoxLayout>
 #include <QVariant>
-#include <functional>
 
 namespace DA
 {
@@ -48,11 +45,17 @@ bool isAggregateType(DATableChartType type)
     return type == DATableChartType::Bar || type == DATableChartType::MultiBar;
 }
 
-// 角色行/图型行的属性名标签宽度（与 DATableChartRolePanel 内部行同一视觉宽度）
-constexpr int kFieldLabelWidth = 68;
-
-// 八向边框分割线颜色（DESIGN.md 普通边框/分隔线色）
-constexpr char kHintColorStyle[] = "color: palette(dark);";
+// 底栏按钮图标（复用 DAGui 现有图标，见 DESIGN.md §5；转入绘图区沿用统计窗口的转入图标）
+const char* const kIconUpdateSelection = ":/DAGui/icon/updateSelection.svg";
+const char* const kIconRefresh         = ":/DAGui/icon/refresh.svg";
+const char* const kIconTransfer        = ":/DAGui/icon/stats/statsTransferToFigure.svg";
+const char* const kIconNewFigure       = ":/DAGui/icon/chart.svg";
+const char* const kIconAppend          = ":/DAGui/icon/right-add.svg";
+// 按钮图标显示尺寸（DESIGN.md §3.2 图标按钮约定）
+constexpr int kButtonIconSize = 16;
+// 咨询文字配色（DESIGN.md §3.1：正文 #5D6D7E、错误 #CE6043）
+constexpr char kHintColorStyle[]  = "color: #5D6D7E;";
+constexpr char kErrorColorStyle[] = "color: #CE6043;";
 }  // namespace
 
 // ============================================================
@@ -133,9 +136,9 @@ void DATableQuickPlotSettingWidget::syncFromTarget()
 /**
  * @brief 搭建界面
  *
- * 结构参考图表/工作流设置页：顶部是被设置对象摘要，中间是通用折叠分组
- * （DACollapseWidget + DACollapseItem），底部固定操作按钮与只读提示；
- * 无目标时整块换成空态提示。
+ * 与图表/工作流设置页同一套封装：主体是 DAPropertyPanelContainerWidget（可滚动属性面板 +
+ * 可折叠分组 + DAPropertyItemWidget 属性行），角色行由 DATableChartRolePanel 写进「数据角色」分组；
+ * 底部固定操作按钮与只读提示；无目标时整块换成空态提示。
  */
 void DATableQuickPlotSettingWidget::buildUi()
 {
@@ -143,113 +146,92 @@ void DATableQuickPlotSettingWidget::buildUi()
     root->setContentsMargins(0, 0, 0, 0);
     root->setSpacing(0);
 
-    // 顶部标题：功能名 + 当前列摘要（与子窗口标题同一文案）
-    QWidget* header        = new QWidget(this);
-    QVBoxLayout* headerLay = new QVBoxLayout(header);
-    headerLay->setContentsMargins(10, 8, 10, 6);
-    headerLay->setSpacing(2);
-    QLabel* titleLabel = new QLabel(tr("Quick plot"), header);  // cn:快速绘图
-    QFont titleFont    = titleLabel->font();
-    titleFont.setBold(true);
-    titleLabel->setFont(titleFont);
-    headerLay->addWidget(titleLabel);
-    mSummaryLabel = new QLabel(header);
-    mSummaryLabel->setWordWrap(true);
-    mSummaryLabel->setStyleSheet(QString::fromLatin1(kHintColorStyle));
-    headerLay->addWidget(mSummaryLabel);
-    root->addWidget(header);
-
-    // 空态（未打开快速绘图时）
-    mEmptyLabel = new QLabel(this);
-    mEmptyLabel->setWordWrap(true);
-    mEmptyLabel->setAlignment(Qt::AlignCenter);
-    mEmptyLabel->setContentsMargins(12, 20, 12, 20);
-    mEmptyLabel->setStyleSheet(QString::fromLatin1(kHintColorStyle));
-    mEmptyLabel->setText(tr("Open a quick plot from the data table to configure it here"));  // cn:请先在数据表格中打开快速绘图，再在此处设置
-    root->addWidget(mEmptyLabel, 1);
-
-    // 内容态：可滚动的设置分组 + 固定底栏
+    // 内容态：属性面板 + 固定底栏
     mBody                = new QWidget(this);
     QVBoxLayout* bodyLay = new QVBoxLayout(mBody);
     bodyLay->setContentsMargins(0, 0, 0, 0);
     bodyLay->setSpacing(0);
 
-    QScrollArea* scroll = new QScrollArea(mBody);
-    scroll->setWidgetResizable(true);
-    scroll->setFrameShape(QFrame::NoFrame);
-    scroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    QWidget* scrollContent     = new QWidget(scroll);
-    QVBoxLayout* contentLayout = new QVBoxLayout(scrollContent);
-    contentLayout->setContentsMargins(10, 0, 10, 6);
-    contentLayout->setSpacing(6);
+    mPanel = new DAPropertyPanelContainerWidget(mBody);
+    bodyLay->addWidget(mPanel, 1);
 
-    DACollapseWidget* collapse = new DACollapseWidget(scrollContent);
-    // 分组：图表（图型；角色行在下一个分组，随图型动态生成）
-    DACollapseItem* chartGroup = collapse->addItem(tr("Chart"), QStringLiteral("chart"));  // cn:图表
-    {
-        QWidget* row        = new QWidget(chartGroup);
-        QHBoxLayout* rowLay = new QHBoxLayout(row);
-        rowLay->setContentsMargins(0, 0, 0, 0);
-        rowLay->setSpacing(6);
-        QLabel* label = new QLabel(tr("Type"), row);  // cn:图型
-        label->setMinimumWidth(kFieldLabelWidth);
-        label->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
-        rowLay->addWidget(label);
-        mTypeCombo = new QComboBox(row);
-        mTypeCombo->setObjectName(QStringLiteral("DAQuickPlotTypeCombo"));
-        mTypeCombo->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
-        mTypeCombo->setToolTip(tr("Chart type (unavailable types are disabled with the reason)"));  // cn:图型（不满足当前选区的置灰并给出原因）
-        buildTypeComboItems();
-        rowLay->addWidget(mTypeCombo, 1);
-        chartGroup->contentLayout()->addWidget(row);
+    // 分组「图表」：图型 + 列摘要（只读）
+    mPanel->addCollapsibleGroup(tr("Chart"));  // cn:图表
+    mTypeCombo = new QComboBox();
+    mTypeCombo->setSizeAdjustPolicy(QComboBox::AdjustToContents);
+    mTypeCombo->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    mTypeCombo->setToolTip(tr("Chart type (unavailable types are disabled with the reason)"));  // cn:图型（不满足当前选区的置灰并给出原因）
+    buildTypeComboItems();
+    mPanel->addProperty(tr("Chart type"), mTypeCombo);  // cn:图型
+    // 属性项会在 setEditorWidget() 里把编辑器统一命名为 editorWidget，编辑器自己的可测试标识要在加入后再设
+    mTypeCombo->setObjectName(QStringLiteral("DAQuickPlotTypeCombo"));
+    mColumnsLabel = new QLabel();
+    mColumnsLabel->setWordWrap(true);
+    mColumnsLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
+    mPanel->addProperty(tr("Columns"), mColumnsLabel);  // cn:列
+    mPanel->endGroup();
+
+    // 分组「数据角色」：角色行写进该分组的内嵌属性面板（行外观与图表设置页一致）
+    const int rolesGroupId              = mPanel->addCollapsibleGroup(tr("Data roles"));  // cn:数据角色
+    DAPropertyPanelWidget* rolesPanel   = mPanel->getGroupPanel(rolesGroupId);
+    mRolePanel                          = new DATableChartRolePanel(this);
+    if (rolesPanel) {
+        mRolePanel->setRowPanel(rolesPanel);
     }
-    chartGroup->setExpanded(true);
-    // 分组：数据角色（按图型动态生成，复用快速绘图既有的轻量角色面板）
-    DACollapseItem* roleGroup = collapse->addItem(tr("Data roles"), QStringLiteral("roles"));  // cn:数据角色
-    mRolePanel                = new DATableChartRolePanel(roleGroup);
-    roleGroup->contentLayout()->addWidget(mRolePanel);
-    roleGroup->setExpanded(true);
-    contentLayout->addWidget(collapse);
-    contentLayout->addStretch(1);
-    scroll->setWidget(scrollContent);
-    bodyLay->addWidget(scroll, 1);
+    mPanel->endGroup();
 
     // 底栏：只读状态 + 操作按钮（绘图窗口只保留绘图区，操作入口都放这里）
-    QWidget* footer     = new QWidget(mBody);
-    QVBoxLayout* footerLay = new QVBoxLayout(footer);
-    footerLay->setContentsMargins(10, 4, 10, 8);
+    mFooter             = new QWidget(mBody);
+    QVBoxLayout* footerLay = new QVBoxLayout(mFooter);
+    footerLay->setContentsMargins(8, 6, 8, 8);
     footerLay->setSpacing(4);
 
-    mNoticeLabel = new QLabel(footer);
+    QFrame* separator = new QFrame(mFooter);
+    separator->setFrameShape(QFrame::HLine);
+    separator->setFrameShadow(QFrame::Sunken);
+    footerLay->addWidget(separator);
+
+    mNoticeLabel = new QLabel(mFooter);
     mNoticeLabel->setWordWrap(true);
     mNoticeLabel->setStyleSheet(QString::fromLatin1(kHintColorStyle));
     footerLay->addWidget(mNoticeLabel);
 
-    mErrorLabel = new QLabel(footer);
+    mErrorLabel = new QLabel(mFooter);
     mErrorLabel->setWordWrap(true);
-    mErrorLabel->setStyleSheet(QStringLiteral("color: palette(bright-text);"));
+    mErrorLabel->setStyleSheet(QString::fromLatin1(kErrorColorStyle));
     footerLay->addWidget(mErrorLabel);
 
     QHBoxLayout* firstRow = new QHBoxLayout();
     firstRow->setContentsMargins(0, 0, 0, 0);
     firstRow->setSpacing(4);
-    mUpdateButton = new QPushButton(tr("Update to current selection"), footer);  // cn:更新为当前选区
+    mUpdateButton = new QPushButton(tr("Update to current selection"), mFooter);  // cn:更新为当前选区
+    mUpdateButton->setObjectName(QStringLiteral("DAQuickPlotUpdateButton"));
+    mUpdateButton->setIcon(QIcon(QString::fromLatin1(kIconUpdateSelection)));
+    mUpdateButton->setIconSize(QSize(kButtonIconSize, kButtonIconSize));
     mUpdateButton->setToolTip(tr("Re-bind the chart to the current column selection"));  // cn:按当前表格选区重新绑定绘图
-    mRefreshButton = new QPushButton(tr("Refresh"), footer);  // cn:刷新
+    mRefreshButton = new QPushButton(tr("Refresh"), mFooter);  // cn:刷新
+    mRefreshButton->setObjectName(QStringLiteral("DAQuickPlotRefreshButton"));
+    mRefreshButton->setIcon(QIcon(QString::fromLatin1(kIconRefresh)));
+    mRefreshButton->setIconSize(QSize(kButtonIconSize, kButtonIconSize));
     mRefreshButton->setToolTip(tr("Redraw with the current data"));  // cn:按当前数据重绘
     firstRow->addWidget(mUpdateButton, 1);
     firstRow->addWidget(mRefreshButton);
     footerLay->addLayout(firstRow);
 
-    mTransferButton = new QToolButton(footer);
+    mTransferButton = new QToolButton(mFooter);
+    mTransferButton->setObjectName(QStringLiteral("DAQuickPlotTransferButton"));
     mTransferButton->setText(tr("Transfer to chart area"));  // cn:转入绘图区
+    mTransferButton->setIcon(QIcon(QString::fromLatin1(kIconTransfer)));
+    mTransferButton->setIconSize(QSize(kButtonIconSize, kButtonIconSize));
     mTransferButton->setToolTip(tr("Create a formal chart from this quick plot"));  // cn:把当前快速绘图转成正式图表
     mTransferButton->setPopupMode(QToolButton::MenuButtonPopup);
-    mTransferButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
+    mTransferButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
     mTransferButton->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     QMenu* transferMenu      = new QMenu(mTransferButton);
     QAction* newFigureAction = transferMenu->addAction(tr("New figure tab"));  // cn:新建绘图标签页
-    mAppendAction            = transferMenu->addAction(tr("Append to current chart"));  // cn:追加到当前图表
+    newFigureAction->setIcon(QIcon(QString::fromLatin1(kIconNewFigure)));
+    mAppendAction = transferMenu->addAction(tr("Append to current chart"));  // cn:追加到当前图表
+    mAppendAction->setIcon(QIcon(QString::fromLatin1(kIconAppend)));
     mTransferButton->setMenu(transferMenu);
     connect(transferMenu, &QMenu::aboutToShow, this, [ this ]() {
         if (mAppendAction && mTarget) {
@@ -259,8 +241,17 @@ void DATableQuickPlotSettingWidget::buildUi()
     connect(newFigureAction, &QAction::triggered, this, &DATableQuickPlotSettingWidget::onTransferNewFigure);
     connect(mAppendAction, &QAction::triggered, this, &DATableQuickPlotSettingWidget::onTransferAppendCurrent);
     footerLay->addWidget(mTransferButton);
-    bodyLay->addWidget(footer);
+    bodyLay->addWidget(mFooter);
     root->addWidget(mBody, 1);
+
+    // 空态（未打开快速绘图时）
+    mEmptyLabel = new QLabel(this);
+    mEmptyLabel->setWordWrap(true);
+    mEmptyLabel->setAlignment(Qt::AlignCenter);
+    mEmptyLabel->setContentsMargins(16, 24, 16, 24);
+    mEmptyLabel->setStyleSheet(QString::fromLatin1(kHintColorStyle));
+    mEmptyLabel->setText(tr("Open a quick plot from the data table to configure it here"));  // cn:请先在数据表格中打开快速绘图，再在此处设置
+    root->addWidget(mEmptyLabel, 1);
 
     // 接线：本页编辑 -> 目标窗口
     connect(mTypeCombo, QOverload< int >::of(&QComboBox::currentIndexChanged), this, &DATableQuickPlotSettingWidget::onTypeComboChanged);
@@ -278,7 +269,7 @@ void DATableQuickPlotSettingWidget::buildTypeComboItems()
     if (!mTypeCombo || mTypeCombo->count() > 0) {
         return;
     }
-    mIgnoreTypeSignals   = true;
+    mIgnoreTypeSignals      = true;
     bool insertedSeparator = false;
     for (DATableChartType type : kTypeOrder) {
         if (!insertedSeparator && isAggregateType(type)) {
@@ -333,14 +324,14 @@ void DATableQuickPlotSettingWidget::refreshTypeCombo()
 }
 
 /**
- * @brief 刷新标题摘要、提示/错误文字与按钮状态
+ * @brief 刷新列摘要、提示/错误文字与按钮状态
  */
 void DATableQuickPlotSettingWidget::refreshChrome()
 {
     if (!mTarget) {
         return;
     }
-    mSummaryLabel->setText(mTarget->displayTitle());
+    mColumnsLabel->setText(mTarget->displayTitle());
     const QString notice = mTarget->noticeText();
     mNoticeLabel->setText(notice);
     mNoticeLabel->setVisible(!notice.isEmpty());
@@ -357,7 +348,6 @@ void DATableQuickPlotSettingWidget::refreshEmptyState()
     const bool hasTarget = (mTarget && mTarget->isVisible());
     mBody->setVisible(hasTarget);
     mEmptyLabel->setVisible(!hasTarget);
-    mSummaryLabel->setVisible(hasTarget);
 }
 
 /**

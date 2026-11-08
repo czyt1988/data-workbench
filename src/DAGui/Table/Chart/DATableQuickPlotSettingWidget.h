@@ -12,24 +12,21 @@ class QToolButton;
 
 namespace DA
 {
-class DACollapseWidget;
+class DAPropertyPanelContainerWidget;
 class DATableChartRolePanel;
 class DATableQuickPlotWindow;
 
 /**
  * @brief 快速绘图的设置页（右侧「设置」Dock 内的一页）
  *
- * 快速绘图子窗口只保留绘图区，全部设置项集中到本页：
- * 图型下拉、按图型生成的角色设置（复用 DATableChartRolePanel）、
- * 「更新为当前选区」「刷新」「转入绘图区」与只读状态提示。
+ * 快速绘图子窗口只保留绘图区，全部设置项集中到本页。页面主体复用与图表设置页同一套
+ * 通用属性面板（DAPropertyPanelContainerWidget：可折叠分组 + DAPropertyItemWidget 属性行，
+ * 行高/属性名宽度/分组样式由面板统一），角色行由 DATableChartRolePanel 写进「数据角色」分组；
+ * 底部固定「更新为当前选区 / 刷新 / 转入绘图区」操作按钮与只读状态提示。
  *
  * 本页是单例（由 DASettingContainerWidget 持有），通过 setTarget() 绑定到某个表格页的
  * 快速绘图子窗口：绑定后与目标窗口双向同步（本页编辑立即回写目标并重绘；目标状态变化
  * 回推刷新本页）。没有打开快速绘图时显示空态提示。
- *
- * 分组折叠复用 DAWidgets 的 DACollapseWidget/DACollapseItem；
- * 角色行沿用 DATableChartRolePanel（按 12 种图型动态生成「角色 + 列下拉」，多序列可增删，
- * 无法用静态的 DAFormSpec 表达，故不走 DAPropertyFormWidget）。
  */
 class DAGUI_API DATableQuickPlotSettingWidget : public QWidget
 {
@@ -72,7 +69,7 @@ private:
     void buildTypeComboItems();
     // 按目标窗口的规划刷新图型下拉的可用状态/文案与当前项
     void refreshTypeCombo();
-    // 刷新标题摘要、提示/错误文字与按钮可用状态
+    // 刷新列摘要、提示/错误文字与按钮可用状态
     void refreshChrome();
     // 空态与内容态切换
     void refreshEmptyState();
@@ -86,13 +83,15 @@ private:
     bool mIgnoreTypeSignals { false };           ///< 程序化改图型下拉时不回写目标
     bool mApplyingOwnEdit { false };             ///< 角色面板自身编辑回写期间不回灌角色行
 
-    QLabel* mSummaryLabel { nullptr };   ///< 列摘要（与子窗口标题同一文案）
-    QWidget* mBody { nullptr };          ///< 有目标时显示的主体
-    QLabel* mEmptyLabel { nullptr };     ///< 无目标时的空态提示
+    DAPropertyPanelContainerWidget* mPanel { nullptr };  ///< 与图表设置页同一套通用属性面板
     QComboBox* mTypeCombo { nullptr };
+    QLabel* mColumnsLabel { nullptr };           ///< 列摘要（只读属性行）
     DATableChartRolePanel* mRolePanel { nullptr };
-    QLabel* mNoticeLabel { nullptr };    ///< 采样/数据变化等只读提示
-    QLabel* mErrorLabel { nullptr };     ///< 无法出图的错误提示
+    QWidget* mBody { nullptr };                  ///< 有目标时显示的主体（属性面板 + 底栏）
+    QWidget* mFooter { nullptr };
+    QLabel* mEmptyLabel { nullptr };             ///< 无目标时的空态提示
+    QLabel* mNoticeLabel { nullptr };            ///< 采样/数据变化等只读提示
+    QLabel* mErrorLabel { nullptr };             ///< 无法出图的错误提示
     QPushButton* mUpdateButton { nullptr };
     QPushButton* mRefreshButton { nullptr };
     QToolButton* mTransferButton { nullptr };

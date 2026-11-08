@@ -673,6 +673,9 @@ void DAPropertyPanelWidget::removeProperty(int id)
     if (item) {
         d->mWidgetList.removeOne(item);
         d->removeItemFromContent(item);
+        // 先从布局摘除后若仍可见，会残留一帧旧行（deleteLater 要等到下一轮事件循环），
+        // 重建属性行时表现为新旧行叠加；先隐藏再延迟销毁。
+        item->hide();
         item->deleteLater();
 
         if (d->mPropertyNameWidth < 0) {

@@ -23113,8 +23113,12 @@ Sample rate: %2 Hz | Channels: %3 | Duration: %4 s</source>
         <translation>图表</translation>
     </message>
     <message>
-        <source>Type</source>
+        <source>Chart type</source>
         <translation>图型</translation>
+    </message>
+    <message>
+        <source>Columns</source>
+        <translation>列</translation>
     </message>
     <message>
         <source>Chart type (unavailable types are disabled with the reason)</source>

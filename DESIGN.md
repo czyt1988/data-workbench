@@ -345,7 +345,7 @@ Debug：   #497CAD（蓝虫子，单色）
 > 新增图标前**先查本节与目录**：能复用现有图标就复用，能沿用现有模板（如 `data-type/` 蓝框白底）就沿用。
 > 以下清单核对于 2026-10-17；**目录为准**，调整图标后同步更新本节。
 
-### 5.1 `src/DAGui/icon/` 根目录（108 个功能性图标）
+### 5.1 `src/DAGui/icon/` 根目录（109 个功能性图标）
 
 | 类别 | 文件 |
 |------|------|
@@ -357,7 +357,7 @@ Debug：   #497CAD（蓝虫子，单色）
 | 展开/折叠、列显隐 | `expand-all.svg`、`collapse.svg`、`show-column.svg`、`show-all-columns.svg`、`hide-column.svg`、`hide-all-columns.svg` |
 | 选择 | `select-all.svg`、`showDataInList.svg`、`showDataInTree.svg` |
 | 数据 | `data.svg`、`data-table.svg`、`favorite.svg`、`removeFavorite.svg`、`folder.svg`、`picture.svg` |
-| 图表/绘图 | `chart.svg`、`figure-setting.svg`、`plot-setting.svg`、`plot-item-setting.svg`、`data-picker-setting.svg` |
+| 图表/绘图 | `chart.svg`、`figure-setting.svg`、`plot-setting.svg`、`plot-item-setting.svg`、`data-picker-setting.svg`、`updateSelection.svg`（快速绘图「更新为当前选区」：主蓝虚线选区框 + 浅蓝选中块 + 深蓝同步圆弧箭头） |
 | 节点/工作流 | `node.svg`、`workflow.svg`、`node-settting.svg`、`setting-node.svg` |
 | 设置类 | `setting.svg`、`setting-common.svg`、`setting-item.svg`、`setting-link.svg`、`setting-advanced.svg`、`setting-agent.svg`、`setting-log.svg`、`setting-python.svg`、`setting-shortcuts.svg` |
 | 会话 | `session.svg`、`session-manager.svg`、`session-new.svg`、`session-running.svg`、`session-waiting.svg`、`session-error.svg` |
