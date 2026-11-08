@@ -6,6 +6,7 @@
 >
 > 方案来源：仓库根目录 `tmp/表格相关实施方案/表格快速图表预览实施方案.md`（v2.1：数据流/采样/转入模型）
 > 与 `tmp/表格相关实施方案/表格快速绘图改造实施方案.md`（v3：右键子菜单、设置区、12 图型与 3D）。
+> v4 起设置区移出浮窗：浮窗只保留绘图区，全部设置项集中在右侧「设置」Dock 的快速绘图设置页。
 > 本文只写实现落位与扩展点，规则细节以方案文件为准。
 
 ---
@@ -21,17 +22,23 @@
 | L3 界面层 | `src/DAGui/Table/Chart/DATableChartPlanner.*` | 列角色判定、图型能力矩阵、默认规格、X 轴候选 |
 | L3 界面层 | `src/DAGui/Table/Chart/DAChartSeriesSampler.*` | 列 → 采样点/值的唯一采样入口（小表全量、大表确定性分块） |
 | L3 界面层 | `src/DAGui/Table/Chart/DAChartQuickPlot.*` | **唯一图元编排器**：按规格构建图元并挂到图表；转入绘图区 |
-| L3 界面层 | `src/DAGui/Table/Chart/DATableQuickPlotWindow.*` | 内容部件：图型下拉、内嵌设置区、2D/3D 图表区、更新选区、转入（位置/尺寸/标题由子窗口框架承载） |
-| L3 界面层 | `src/DAGui/Table/Chart/DATableChartRolePanel.*` | 轻量角色设置面板：按 12 种图型生成「角色标签 + 列下拉」（2D/3D 统一），换列即时重绘、可换整表任意列 |
+| L3 界面层 | `src/DAGui/Table/Chart/DATableQuickPlotWindow.*` | **绘图区部件**：只承载 2D/3D 图表堆叠区（位置/尺寸/标题由子窗口框架承载）；负责取数绘制、把状态回推设置页、接收设置页回写的请求/规格 |
+| L3 界面层 | `src/DAGui/Common/Settings/DASettingContainerWidget.*` | 右侧「设置」Dock 的页面容器（QStackedWidget）：挂工作流节点/绘图/3D/Figure/快速绘图设置页，按当前编辑对象切页 |
+| L3 界面层 | `src/DAGui/Table/Chart/DATableQuickPlotSettingWidget.*` | **快速绘图设置页**（右侧「设置」Dock 内）：图型下拉、按图型动态生成的角色行、更新为当前选区/刷新/转入绘图区、只读采样/错误提示；单实例绑定一个绘图区 |
+| L3 界面层 | `src/DAGui/Table/Chart/DATableChartRolePanel.*` | 轻量角色设置面板：按 12 种图型生成「角色标签 + 列下拉」（2D/3D 统一），换列即时重绘、可换整表任意列；被设置页复用 |
+| L3 界面层 | `src/DAGui/Table/Controllers/DATableQuickPlotController.*` | 选区→请求、绘图区与子窗口生命周期、设置页绑定/解绑时机（经 APP 注入的 binder/releaser）、转入处理与关闭 |
 | L3 界面层 | `src/DAGui/Chart/DAStatsPlotCoordinator.*` | 统计绘图核心（原在 APP，下沉到 DAGui 供统计向导与快速绘图共用） |
 | L3 界面层 | `src/DAGui/Chart/DAChartOperateWidgetCommands.*` | 「转入」新建 Figure 的撤销命令（摘/挂 dock 但保活 figure） |
 | L3 界面层 | `src/DAGui/Table/DADataOperateOfDataFrameWidget.*` | 表格页入口：有序选区 → 请求 → 贴入子窗口；转入处理器由 APP 注入 |
-| L5 应用层 | `src/APP/DAAppController.cpp` | Ribbon/表头动作接线、`setQuickPlotTransferHandler` 注入、动作置灰 |
+| L5 应用层 | `src/APP/Controller/DAAppControllerPage.cpp` | Ribbon/表头动作接线；注入转入处理器、追加可用性与设置页绑定/解绑器（`setQuickPlotSettingBinder` / `setQuickPlotSettingReleaser`：绑定 + 切页 + `raiseDockByWidget`）；动作置灰 |
 
 > **⚠️ 依赖方向**
 >
 > 快速绘图全部落在 DAGui，不反向依赖 APP。转入绘图区需要 `DAChartOperateWidget`（也在 DAGui，但只有 APP 知道它属于哪个停靠区），因此由 APP 通过
 > `DADataOperateOfDataFrameWidget::setQuickPlotTransferHandler()` 注入一个处理器，页面只负责调用。
+>
+> 快速绘图设置页虽然在 DAGui 的 `DASettingContainerWidget` 里，但承载它的「设置」Dock 由 APP 管理、DAGui 无法自己抬起，因此「绑定设置页 + 切页 + 抬起 Dock」同样由 APP 经
+> `setQuickPlotSettingBinder()` / `setQuickPlotSettingReleaser()` 注入；DAGui 只负责在窗口激活/隐藏时发 `activated` / `hidden` 信号。
 
 ---
 
@@ -48,7 +55,8 @@
   监听几何源，滚动条显隐、冻结分栏位移、页面缩放后全部子窗口自动夹回；
 - **关闭语义**：容器把 `closeRequested` 默认接到 `hide`（实例复用）；需要销毁的宿主自行接 `detach`；
 - **快速绘图的用法**：页内单实例，贴在主视口右上角；关闭 → 重开保持用户上次的位置与大小（不再重置），
-  标题栏由框架绘制（列名摘要经 `titleChanged` 同步）。
+  标题栏由框架绘制（列名摘要经 `titleChanged` 同步）；框架的 `activated()`（标题栏/缩放手柄/内容区按下）
+  与绘图区自身的 `activated()` 一起接到控制器，用于抬起右侧「设置」Dock 的快速绘图设置页。
 
 > **📌 为什么不用 QSizeGrip**：QSizeGrip 只作用于顶层窗口（`startSystemResize` 作用于 `window()`），
 > 表格页内的子控件浮层用它拖不动自己（旧实现「无法调整大小」的根因）。子窗口框架必须自绘 8 向手柄。
@@ -64,18 +72,23 @@
   → DATableChartSpec（图型 / X / 数值列 / 分类列 / 聚合 / Top N）
   → DAChartSeriesSampler（采样）
   → DAChartQuickPlot::render()（构建图元 → attach 到目标 DAChartWidget）
-  → 子窗口显示（容器贴入框架），或 transferToFigure() 转入正式图表
+  → 绘图区显示（容器贴入框架），或 transferToFigure() 转入正式图表
+  → 重画/状态变化后：contextChanged / statusChanged（把图型/角色/手动模式与采样/错误状态回推右侧设置页）
 ```
 
-子窗口与正式图表**共用同一份**请求、采样与构建实现；转入不是把子窗口的 chart reparent 过去，而是用同一份规格再构建一次图元。
+绘图区与正式图表**共用同一份**请求、采样与构建实现；转入不是把绘图区的 chart reparent 过去，而是用同一份规格再构建一次图元。
 
-v3 起请求额外携带 `allColumns`（整表列清单，只按静态类型判定角色）：设置区的列下拉据此可换整表任意列，
+设置页的编辑走反方向：设置页只调用绘图区的公开 API（`setChartType()` / `applyEditedContext()` / `refresh()` 等），
+绘图区按新状态重画，并把最新的结构（图型、角色、手动模式）经 `contextChanged()`、只读状态（采样提示、错误、数据变化）
+经 `statusChanged()` 回推设置页——**状态只有绘图区一个来源**。
+
+v3 起请求额外携带 `allColumns`（整表列清单，只按静态类型判定角色）：设置页的列下拉据此可换整表任意列，
 用户选到选区外的列时由角色面板把它追加进 `request.columns`，规格仍用「请求列下标」表达。
 
-右键「快速绘图」子菜单与浮窗图型下拉共用 `DATableChartPlanner::plan()`：
+右键「快速绘图」子菜单与设置页图型下拉共用 `DATableChartPlanner::plan()`：
 
 - 子菜单**只列当前选区能画的图型**（严格角色门槛），首项为默认图型；直接绘图段与聚合绘图段用分隔线分组；
-- 浮窗图型下拉列**全部 12 种图型**，不满足当前选区的置灰，悬浮提示缺什么（`chartTypeRequirementText()`）。
+- 设置页图型下拉列**全部 12 种图型**，不满足当前选区的置灰，悬浮提示缺什么（`chartTypeRequirementText()`）。
 
 ---
 
@@ -95,37 +108,72 @@ v3 起请求额外携带 `allColumns`（整表列清单，只按静态类型判�
 | 2 分类 / 单列时间 / 无数值 | 不出图（菜单置灰并给出可读原因） |
 
 - **严格角色门槛**：3 列数值才出等高线/误差棒/3D 曲面/3D 线图，4 列数值才出向量场；
-  多出来的列不阻碍出图（默认取前 N 个数值列，可在设置区更换）；
+  多出来的列不阻碍出图（默认取前 N 个数值列，可在设置页更换）；
 - 分类聚合口径默认 `mean`，可切 `min/max/sum/median/count/std/var`；
-- 分类柱状默认按聚合值降序；唯一值超过 50 时只显示 Top 30 并在浮窗底部标注；
+- 分类柱状默认按聚合值降序；唯一值超过 50 时只显示 Top 30 并在设置页标注；
 - 箱线图固定 `whis=1.5`、显示离群点、无 CI、无图例。
 
 ---
 
 ### 3.1 浮窗结构
 
+浮窗拆成两个界面：表格页里的绘图区，和右侧「设置」Dock 里的设置页。
+
 ```text
-┌ 标题栏（子窗口框架绘制）：列摘要 [（手动配置）]                    ✕ ┐
-├ 工具栏：[图型 ▼] │ [设置] │ [更新为当前选区] [刷新] │ [转入绘图区 ▾] ┤
-├ 设置区（默认展开，可折叠；图型感知角色行）                            │
-├ 图表区：2D（DAChartWidget）与 3D（DAChart3DWidget）堆叠切换         │
-└ 状态行：采样受限 / Top N 截断等只读文字                              │
+表格页内：DATableChildWindow 框架
+┌ 标题栏（框架绘制）：列摘要 [（手动配置）]                          ✕ ┐
+└ 绘图区：2D（DAChartWidget）/ 3D（DAChart3DWidget）堆叠，占满内容区  ┘
+
+右侧「设置」Dock：DATableQuickPlotSettingWidget
+├ 标题：快速绘图 + 列摘要（与浮窗标题同文案）
+├ 图型（折叠组）：[图型 ▼] 12 种图型，不可用项置灰
+├ 数据角色（折叠组）：按图型动态生成的角色行（列/聚合/分箱，多序列可增删）
+└ 底栏：[更新为当前选区] [刷新] [转入绘图区 ▾] + 采样/错误只读提示
 ```
 
-- 图型下拉列全部 12 种；不满足当前选区的置灰并给出原因；
-- 聚合、X 轴等角色配置只在设置区出现（工具栏不再放聚合/X 轴下拉）；
-- 设置区换列即重绘，并进入**手动模式**：标题后缀「（手动配置）」；点「更新为当前选区」回归选区跟随；
-- 设置区全部是新写的轻量面板，不嵌入添加绘图向导页面（向导页没有配置变化信号且按对话框尺寸设计）。
+- 绘图窗口只保留绘图区（标题栏由子窗口框架绘制）：原工具栏、设置区与状态行全部移入设置页；
+  推荐尺寸 560×420（原 640×560）、最小 320×220，图表铺满整个内容区；
+- 点在绘图区（图表画布/3D 视图）或子窗口框架（标题栏/缩放手柄/内容区）上会触发 `activated()`，
+  宿主随即把右侧设置 Dock 抬到顶层并切到快速绘图设置页——不需要用户先去右侧找设置；
+- 设置页图型下拉列全部 12 种；不满足当前选区的置灰，悬浮提示缺什么；
+- 聚合、X 轴等角色配置只在设置页出现；角色行换列即重绘，并进入**手动模式**：标题后缀「（手动配置）」；
+- 点「更新为当前选区」让绘图区回填表格当前选区（窗口发 `currentSelectionRequested` 给控制器）并退出手动模式；
+  「刷新」按当前数据立即重画，「转入绘图区」新建 Figure 或追加到当前图表；
+- 设置页角色区复用轻量的 `DATableChartRolePanel`，不嵌入添加绘图向导页面（向导页没有配置变化信号且按对话框尺寸设计）。
 
 ### 3.2 3D 图型
 
-- 浮窗图表区是 `QStackedWidget`，2D `DAChartWidget` 与 3D `DAChart3DWidget` 按图型切换；
+- 绘图区是 `QStackedWidget`，2D `DAChartWidget` 与 3D `DAChart3DWidget` 按图型切换；
   `DAChart3DWidget` 懒创建（首次切到 3D 才建 GL 上下文）；
-- 3D 预览沿用 2D 的采样预算（约 2000 点，状态行标注采样）；
-- 3D 曲面固定「散点 + scipy 插值 30×30 网格」；scipy 不可用时不出图并在状态行给出可读原因；
+- 3D 预览沿用 2D 的采样预算（约 2000 点，采样说明显示在设置页状态区）；
+- 3D 曲面固定「散点 + scipy 插值 30×30 网格」；scipy 不可用时不出图并在设置页给出可读原因；
 - 3D 线图直接用采样后的 `(x, y, z)` 轨迹；
 - 转入绘图区走 `DAChartQuickPlot::transferToFigure3D()`：新建/复用 Figure 的 3D 图表并全量重建图元；
 - 3D 曲面/柱状的「整表作矩阵」网格模式不进快速绘图（与选区模型不符，属添加绘图）。
+
+### 3.3 设置页（右侧 Dock）
+
+设置页 `DATableQuickPlotSettingWidget` 是 `DASettingContainerWidget` 里的一个单例页（与工作流节点/绘图/3D/Figure 设置页同一个
+`QStackedWidget`），由容器初始化时创建并 `addWidget`，经 `getQuickPlotSettingWidget()` / `showQuickPlotSettingWidget()` 取得与切换。
+它的生命周期是「一次只绑定一个绘图区」：
+
+- **绑定**：`setTarget(window)` 断开旧目标、连上新目标；重复绑定同一窗口只重新同步一次（宿主每次抬起页面都会调用，保证显示的是最新状态）；
+- **解绑**：`releaseTarget(window)` 仅当传入窗口就是当前目标时清空（避免别的表格页误清当前绑定）；目标被销毁时 `destroyed` 也会自动清空；
+- **空态**：没有目标或目标不可见时显示「请先在数据表格中打开快速绘图，再在此处设置」，设置内容整体隐藏；
+- **同步契约**：绑定后监听绘图区两个信号——`contextChanged()` 做整体同步（标题摘要、图型下拉的可用状态与当前项、角色行），
+  `statusChanged()` 只刷新状态文字与按钮；解绑时断开全部连接。设置页自身的编辑（图型、角色行）经窗口公开 API 回写并触发重绘，
+  回写期间不重建角色行，避免正在操作的下拉框被销毁；
+- **驱动信号**：绘图区本体、图表子控件或子窗口框架被按下时发 `activated()` → 控制器 `activateSetting()` → APP binder；
+  绘图区隐藏（关闭/切页）时发 `hidden()` → 控制器 `releaseSetting()` → APP releaser；
+- **APP 注入**：设置页在 DAGui，但「设置」Dock 由 APP 的停靠系统管理，DAGui 不能自己抬起 Dock；APP 在
+  `onDataOperatePageCreated` 里注入 binder（`setTarget` + `showQuickPlotSettingWidget` + `raiseDockByWidget`）与 releaser
+  （`releaseTarget`），控制器负责在打开、点击、隐藏与析构时调用。
+
+> **📌 为什么不用 DAFormSpec/DAPropertyFormWidget**
+>
+> 角色行随图型动态变化（多序列折线/多重柱状要增删行，每行还有列、聚合、分箱等不同控件），静态表单规格表达不了。
+> 因此沿用快速绘图原有的 `DATableChartRolePanel`（按 12 种图型生成角色行），折叠分组复用 DAWidgets 的
+> `DACollapseWidget`/`DACollapseItem`（与图表、工作流设置页同一套通用控件），外观与其它设置页保持一致。
 
 ## 4. 采样与精确性
 
@@ -134,9 +182,9 @@ v3 起请求额外携带 `allColumns`（整表列清单，只按静态类型判�
 | 小表（≤ 5000 行） | 全量绘制，不标注采样 |
 | 大表折线/散点 | 确定性分块均匀采样，约 2000 点（首尾都覆盖，不引入随机数） |
 | 大表直方图 | 约 2 万个值 |
-| 分类聚合 / 箱线图 | 内存 pandas 源且 ≤ 500 万行 → **全量精确**；惰性源或超阈值 → 采样并在浮窗底部标注近似 |
-| 取数预算 | `DAChartSeriesSampler::SampleBudget`：默认最多 128 次取数调用 / 25 万行，同一次构建的各列共用一个预算；耗尽即停止采样并置 `SampleInfo::limited`，`DATableChartBuildInfo::sampleLimited` 聚合后由浮窗标注「样本受限」 |
-| 忙碌状态 | `DAChartQuickPlot::render()` 全程持有等待光标；浮窗在取数前禁用交互并显示「正在取数…」，取数结束（含失败）后恢复 |
+| 分类聚合 / 箱线图 | 内存 pandas 源且 ≤ 500 万行 → **全量精确**；惰性源或超阈值 → 采样并在设置页标注近似 |
+| 取数预算 | `DAChartSeriesSampler::SampleBudget`：默认最多 128 次取数调用 / 25 万行，同一次构建的各列共用一个预算；耗尽即停止采样并置 `SampleInfo::limited`，`DATableChartBuildInfo::sampleLimited` 聚合后由设置页标注「样本受限」 |
+| 忙碌状态 | `DAChartQuickPlot::render()` 全程持有等待光标；绘图区在取数前禁用交互，设置页状态区显示「正在取数…」，取数结束（含失败）后恢复 |
 
 精确路径走 `DAPyScriptsStatistics` 的 DataFrame 接口（按列序号取列，重名列不歧义）；
 采样路径把采样后的标签/数值交给 `aggregate_by_category_from_lists` / `compute_boxplot_stats_from_lists`，
@@ -176,11 +224,17 @@ endMacro()
 
 ## 6. 扩展点
 
+- **新增设置项**：控件一律加在设置页 `DATableQuickPlotSettingWidget`（折叠分组复用 `DACollapseWidget`/`DACollapseItem`），
+  **不要**把控件加回绘图区 `DATableQuickPlotWindow`；设置页只调用绘图区的公开 API 驱动（`setChartType()` /
+  `applyEditedContext()` / `refresh()` / `requestTransfer()` 这类），不要直接操作窗口内部的图表。
+  绘图区状态改完必须发 `contextChanged()`（图型/角色/手动模式等结构变化）或 `statusChanged()`（采样提示/错误/数据变化），
+  设置页据此刷新；需要新的窗口能力时先在 `DATableQuickPlotWindow` 上加 public 方法，再让设置页调用。
 - **新增图型**：在 `DATableChartType` 加枚举、`DATableChartPlanner::plan()` 的矩阵与
   `defaultSpec()` 里登记、在 `DATableChartRolePanel::rebuildRows()` 里加角色行、在
   `DAChartQuickPlot` 里加一个 `build*()` 分支（3D 图型走 `create3DItem()/render3D()`）；
   图元一律复用既有添加绘图页（如 `DAChartAddContourWidget` 的 `setProgrammatic*` 入口）
-  或 `DAChartPlotRenderer`，不要出现第二处 `new QwtPlot*`。
+  或 `DAChartPlotRenderer`，不要出现第二处 `new QwtPlot*`。设置页的图型下拉与角色行会按
+  `DATableChartPlanner::plan()` 自动跟上，无需单独改设置页。
 - **新图型的编程式入口**：无界面调用方需要的添加页补 `setProgrammaticXxx()`，
   让 `createPlotItem()/create3DPlotItem()` 在编程式数据非空时跳过界面取值；
   取数仍走 `DAChartSeriesSampler`，不在页面里重复采样。
@@ -188,10 +242,10 @@ endMacro()
 > **📌 关于 `DATableChartType`**
 >
 > 它不是新的图表类型系统：`DA::DAChartTypes` 仍是图型身份的唯一枚举（决定用哪个添加页/渲染管线）。
-> `DATableChartType` 只描述「浮窗里用户能选的那几个预览图型」，是选层而非身份层；
+> `DATableChartType` 只描述「设置页里用户能选的那几个预览图型」，是选层而非身份层；
 > 选中的每一项最终都落到既有管线：折线/散点/多序列走 `DAChartAddCurveWidget`，
 > 直方图走 `DAChartAddHistogramWidget`，分类柱状与箱线图走统计管线的 `DAChartPlotRenderer`。
-> 两者不能 1:1 映射（浮窗的「柱状」是统计 barplot 管线，而 `DAChartTypes::Bar` 是数值 X 的柱状），
+> 两者不能 1:1 映射（设置页的「柱状」是统计 barplot 管线，而 `DAChartTypes::Bar` 是数值 X 的柱状），
 > 所以没有也不应该有转换函数。
 - **新增聚合口径**：`DATableChartAggregation` + `DATableChartPlanner::aggregationKey()` +
   Python `ESTIMATOR_MAP`。
@@ -203,6 +257,8 @@ endMacro()
 
 - 子窗口不随工程保存、不进撤销栈、不导出图片；这些能力在转入后由绘图区提供。
 - 子窗口不自动跟随选区与数据变化，只提供「更新为当前选区」与「刷新」；位置与大小也不持久化，页内关闭重开保持上次几何，数据页重建后回默认。
+- 快速绘图设置页是单例，只绑定当前活动的快速绘图窗口：每个数据页同时只有一个快速绘图（页内单实例），
+  关闭绘图区或切到别的数据页后设置页回到空态，下次在该页打开或点击绘图区时重新绑定；设置页不能同时展示多个快速绘图的设置。
 - 惰性/数据库源目前只能采样聚合（无 SQL 聚合下推）。
 - 「低基数数值作为分类」用采样（起始 2000 行）估计基数，极端分布下可能误判；真正的 Top N 守卫按聚合结果执行。
 - 3D 曲面依赖 scipy 插值；无 scipy 时只给可读原因、不出图。
