@@ -98,9 +98,10 @@ function(dafun_deploy_3rdparty_dlls _target_name)
     # 匹配规则：文件名（去扩展名）等于 <基名>（Release）或 <基名>d（Debug，CMAKE_DEBUG_POSTFIX）。
     # 注意：
     # - DAWidgets / DALiteCtk 虽以 DA 开头，但属第三方库（src/3rdparty 编译安装），必须列入
-    # - zlib 的实际产物是 zlib1.dll（Release）和 zd.dll（Debug），不是 zlib/zlibd，
-    #   所以必须按真实文件名 zlib1 / zd 列；quazip1-qt6.dll 直接 import zd.dll，
-    #   漏掉的话构建树里 quazip 加载不起来
+    # - zlib 的产物名随构建方式不同：新版 zlib 源码自带 CMake（SUFFIX "1.dll"）产出
+    #   zlib1.dll（Debug 对应 zd.dll），而既有的独立/vcpkg 安装可能仍是 zlib.dll /
+    #   zlibd.dll。两种命名都列入，否则内网（zlib.dll）干净构建时会被静默跳过，
+    #   运行期 quazip 加载失败。多列不会造成误拷。
     # - python312 的实际文件名随 Python 版本变，这里列当前使用的 3.12，
     #   换版本时同步改（安装期由 top-level CMakeLists 的 install(FILES) 兜底）
     # - 带 Qt 版本号的库用 ${QT_VERSION_MAJOR} 适配 Qt5/Qt6
@@ -116,6 +117,7 @@ function(dafun_deploy_3rdparty_dlls _target_name)
         qwtplot3d
         qtadvanceddocking-qt${QT_VERSION_MAJOR}
         quazip1-qt${QT_VERSION_MAJOR}
+        zlib
         zlib1
         zd
         spdlog
