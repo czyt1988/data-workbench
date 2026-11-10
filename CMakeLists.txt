@@ -467,6 +467,9 @@ endif()
 # 扫描构建树中的 exe、DAGui.dll（WebEngine/Qml 是它的传递依赖）和插件 DLL，
 # 通过 --dir 部署到安装目录，与安装规则的执行顺序无关。
 if(WIN32)
+    # 第三方库运行时 DLL（SARibbon/qwt/ads/quazip/zlib/spdlog 等）也必须随安装目录落地，
+    # 否则干净目录 `cmake --install` 的产物启动即 STATUS_DLL_NOT_FOUND（评审 D4/R9）。
+    dafun_install_3rdparty_runtime()
     # 插件私有的 Qt 模块不会出现在主程序 exe 的直接依赖里，安装期需显式要求（评审 D1）。
     set(_da_required_qt_modules)
     if(DA_BUILD_PLUGINS AND TARGET DASignalAnalysis)

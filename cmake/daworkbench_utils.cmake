@@ -49,6 +49,42 @@ function(dafun_set_bin_name _var)
 endfunction()
 
 
+# 第三方库运行时 DLL 基名白名单（构建期复制与安装期部署共用同一份，避免两处漂移）。
+#
+# 来源：src/3rdparty/CMakeLists.txt 中 add_subdirectory 的第三方库 + Python 运行时。
+# 匹配规则：文件名（去扩展名）等于 <基名>（Release）或 <基名>d（Debug，CMAKE_DEBUG_POSTFIX）。
+# 注意：
+# - DAWidgets / DALiteCtk 虽以 DA 开头，但属第三方库（src/3rdparty 编译安装），必须列入
+# - zlib 的产物名随构建方式不同：新版 zlib 源码自带 CMake（SUFFIX "1.dll"）产出
+#   zlib1.dll（Debug 对应 zd.dll），而既有的独立/vcpkg 安装可能仍是 zlib.dll /
+#   zlibd.dll。两种命名都列入，否则内网（zlib.dll）干净构建时会被静默跳过，
+#   运行期 quazip 加载失败。多列不会造成误拷。
+# - python311/python312 的实际文件名随 Python 版本变，这里列当前使用的两个，
+#   换版本时同步改（安装期由 top-level CMakeLists 的 install(FILES) 兜底）
+# - 带 Qt 版本号的库用 ${QT_VERSION_MAJOR} 适配 Qt5/Qt6，因此必须在**调用期**展开：
+#   本函数不能是文件顶层的 set()，否则 include 时 QT_VERSION_MAJOR 尚未由 find_package 确定。
+# - spdlog 默认构建为动态库（SPDLOG_BUILD_SHARED 默认 ON），DAMessageHandler
+#   链接后运行期依赖 spdlog.dll，必须列入；pybind11/ordered-map 是头文件库，无 DLL，不列入
+# 新增第三方库时，在此列表追加基名即可。
+function(dafun_3rdparty_dll_basenames _outvar)
+    set(_basenames
+        SARibbonBar
+        DAWidgets
+        DALiteCtk
+        qwtcore
+        qwtplot
+        qwtplot3d
+        qtadvanceddocking-qt${QT_VERSION_MAJOR}
+        quazip1-qt${QT_VERSION_MAJOR}
+        zlib
+        zlib1
+        zd
+        spdlog
+        python311
+        python312)
+    set(${_outvar} ${_basenames} PARENT_SCOPE)
+endfunction()
+
 # 将第三方库 DLL 部署到构建输出目录，确保开发调试时能正确加载。
 #
 # 第三方库（DAWidgets/SARibbonBar/qwt/ads/DALiteCtk/quazip/zlib/python 等）通过
@@ -93,36 +129,8 @@ function(dafun_deploy_3rdparty_dlls _target_name)
         return()
     endif()
 
-    # 第三方库 DLL 基名白名单（不含 .dll 扩展名，不含 Debug 'd' 后缀）。
-    # 来源：src/3rdparty/CMakeLists.txt 中 add_subdirectory 的第三方库 + Python 运行时。
-    # 匹配规则：文件名（去扩展名）等于 <基名>（Release）或 <基名>d（Debug，CMAKE_DEBUG_POSTFIX）。
-    # 注意：
-    # - DAWidgets / DALiteCtk 虽以 DA 开头，但属第三方库（src/3rdparty 编译安装），必须列入
-    # - zlib 的产物名随构建方式不同：新版 zlib 源码自带 CMake（SUFFIX "1.dll"）产出
-    #   zlib1.dll（Debug 对应 zd.dll），而既有的独立/vcpkg 安装可能仍是 zlib.dll /
-    #   zlibd.dll。两种命名都列入，否则内网（zlib.dll）干净构建时会被静默跳过，
-    #   运行期 quazip 加载失败。多列不会造成误拷。
-    # - python312 的实际文件名随 Python 版本变，这里列当前使用的 3.12，
-    #   换版本时同步改（安装期由 top-level CMakeLists 的 install(FILES) 兜底）
-    # - 带 Qt 版本号的库用 ${QT_VERSION_MAJOR} 适配 Qt5/Qt6
-    # - spdlog 默认构建为动态库（SPDLOG_BUILD_SHARED 默认 ON），DAMessageHandler
-    #   链接后运行期依赖 spdlog.dll，必须列入；pybind11/ordered-map 是头文件库，无 DLL，不列入
-    # 新增第三方库时，在此列表追加基名即可。
-    set(_3rdparty_dll_basenames
-        SARibbonBar
-        DAWidgets
-        DALiteCtk
-        qwtcore
-        qwtplot
-        qwtplot3d
-        qtadvanceddocking-qt${QT_VERSION_MAJOR}
-        quazip1-qt${QT_VERSION_MAJOR}
-        zlib
-        zlib1
-        zd
-        spdlog
-        python311
-        python312)
+    # 白名单见 dafun_3rdparty_dll_basenames()（构建期与安装期共用）。
+    dafun_3rdparty_dll_basenames(_3rdparty_dll_basenames)
 
     # 按白名单筛选：只复制基名匹配的 DLL
     set(_3rdparty_dlls)
@@ -179,6 +187,109 @@ function(dafun_deploy_3rdparty_dlls _target_name)
 
     list(LENGTH _3rdparty_dlls _dll_count)
     message(STATUS "dafun_deploy_3rdparty_dlls: ${_target_name} will deploy ${_dll_count} DLLs from ${_3rdparty_bin_dir}")
+endfunction()
+
+
+# 安装阶段部署第三方库运行时 DLL，保证 `cmake --install` 产物本身就是可直接运行/打包的目录。
+#
+# 背景（评审 D4）：dafun_deploy_3rdparty_dlls() 只在 POST_BUILD 把第三方 DLL 复制到 build/bin；
+# `cmake --install` 不会安装它们，干净安装目录缺少 SARibbonBar/qwt/DAWidgets/ads/quazip/
+# zlib/spdlog 等运行期依赖，启动即 STATUS_DLL_NOT_FOUND（发布流水线此前靠「补齐运行时 DLL」
+# 步骤手工兜底）。把部署下沉到安装期后，安装目录自身完整，流水线兜底退化为幂等冗余。
+#
+# 说明：
+# - 「来源目录」在配置期固定（= 第三方库安装前缀），不随 `cmake --install --prefix` 变化；
+#   目标目录取安装期的 ${CMAKE_INSTALL_PREFIX}，因此支持装到任意干净目录。
+# - Release 安装只取无后缀名；Debug 安装取 <基名>d（个别库如 zlib 的 Debug 名是 zd.dll，
+#   基名以 d 结尾时直接取其本身）。
+# - 安装后显式校验关键第三方 DLL 是否落盘，缺一个即安装失败（与 Qt 运行时校验同思路）。
+#
+# 用法（顶层 CMakeLists，include(GNUInstallDirs) 之后、dafun_install_deploy_qt_runtime 之前）：
+#   dafun_install_3rdparty_runtime()
+function(dafun_install_3rdparty_runtime)
+    if(NOT WIN32)
+        return()
+    endif()
+    set(_3rdparty_bin_dir "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}")
+    if(NOT EXISTS "${_3rdparty_bin_dir}")
+        message(WARNING "dafun_install_3rdparty_runtime: 3rdparty bin dir not found: ${_3rdparty_bin_dir}")
+        return()
+    endif()
+
+    dafun_3rdparty_dll_basenames(_3rdparty_dll_basenames)
+    # VC++ 运行库来源：windeployqt 的 --compiler-runtime 在 install(CODE) 里可能静默跳过
+    # （没有 VCINSTALLDIR），这里显式定位：优先第三方库安装前缀（本工程构建流程会在其中内置
+    # msvcp140*/vcruntime140*），其次 VS Redist 目录。找不到只告警——发布流水线还有补齐步骤，
+    # 最终由 scripts/verify_package.ps1 的导入表校验强校验（避免在无 VS 环境下误堵安装）。
+    set(_vc_runtime_src "")
+    if(EXISTS "${_3rdparty_bin_dir}/msvcp140.dll")
+        set(_vc_runtime_src "${_3rdparty_bin_dir}")
+    elseif(DEFINED ENV{VCToolsRedistDir} AND EXISTS "$ENV{VCToolsRedistDir}")
+        file(GLOB _vc_crt_dirs "$ENV{VCToolsRedistDir}x64/Microsoft.VC*.CRT" "$ENV{VCToolsRedistDir}Microsoft.VC*.CRT")
+        if(_vc_crt_dirs)
+            list(GET _vc_crt_dirs 0 _vc_runtime_src)
+        endif()
+    endif()
+
+    install(CODE "
+    set(_src_bin \"${_3rdparty_bin_dir}\")
+    set(_dst_bin \"\${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}\")
+    if(\"\${CMAKE_INSTALL_CONFIG_NAME}\" STREQUAL \"Debug\")
+        set(_postfix \"d\")
+    else()
+        set(_postfix \"\")
+    endif()
+    set(_install_dlls)
+    foreach(_base ${_3rdparty_dll_basenames})
+        if(_postfix)
+            if(EXISTS \"\${_src_bin}/\${_base}d.dll\")
+                list(APPEND _install_dlls \"\${_src_bin}/\${_base}d.dll\")
+            elseif(_base MATCHES \"d$\" AND EXISTS \"\${_src_bin}/\${_base}.dll\")
+                # 基名本身以 d 结尾（如 zlib 的 Debug 产物 zd.dll）
+                list(APPEND _install_dlls \"\${_src_bin}/\${_base}.dll\")
+            endif()
+        else()
+            if(EXISTS \"\${_src_bin}/\${_base}.dll\")
+                list(APPEND _install_dlls \"\${_src_bin}/\${_base}.dll\")
+            endif()
+        endif()
+    endforeach()
+    if(_install_dlls)
+        file(INSTALL DESTINATION \"\${_dst_bin}\" TYPE FILE FILES \${_install_dlls})
+    else()
+        message(WARNING \"dafun_install_3rdparty_runtime: no 3rdparty DLL found in \${_src_bin}\")
+    endif()
+    # 关键第三方运行时校验：缺任何一个都意味着安装产物启动不了。
+    set(_required_3rdparty SARibbonBar DAWidgets qwtplot qtadvanceddocking-qt${QT_VERSION_MAJOR} quazip1-qt${QT_VERSION_MAJOR} spdlog)
+    set(_missing_3rdparty)
+    foreach(_req \${_required_3rdparty})
+        if(NOT EXISTS \"\${_dst_bin}/\${_req}\${_postfix}.dll\")
+            list(APPEND _missing_3rdparty \"\${_req}\${_postfix}.dll\")
+        endif()
+    endforeach()
+    if(_missing_3rdparty)
+        string(JOIN \", \" _missing_3rdparty_txt \${_missing_3rdparty})
+        message(FATAL_ERROR \"3rdparty runtime deployment incomplete, missing in install dir: \${_missing_3rdparty_txt}\")
+    endif()
+    # VC++ 运行库：目标机器不一定装 Redist，必须随包（verify_package 也会按导入表复查）。
+    # Debug 配置用 *d.dll；来源目录为空时只告警，由打包自检兜底。
+    set(_vc_src \"${_vc_runtime_src}\")
+    if(_vc_src)
+        set(_vc_bases msvcp140 msvcp140_1 msvcp140_2 vcruntime140 vcruntime140_1 concrt140)
+        set(_vc_dlls)
+        foreach(_vc IN LISTS _vc_bases)
+            if(EXISTS \"\${_vc_src}/\${_vc}\${_postfix}.dll\")
+                list(APPEND _vc_dlls \"\${_vc_src}/\${_vc}\${_postfix}.dll\")
+            endif()
+        endforeach()
+        if(_vc_dlls)
+            file(INSTALL DESTINATION \"\${_dst_bin}\" TYPE FILE FILES \${_vc_dlls})
+        endif()
+    else()
+        message(WARNING \"dafun_install_3rdparty_runtime: VC++ runtime source not found, install dir may miss msvcp140/vcruntime140 (verify_package.ps1 will catch it at packaging time)\")
+    endif()
+")
+    message(STATUS "dafun_install_3rdparty_runtime: 3rdparty runtime DLLs will be deployed at install stage from ${_3rdparty_bin_dir}")
 endfunction()
 
 
