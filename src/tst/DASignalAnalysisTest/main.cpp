@@ -3,6 +3,9 @@
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QJsonValue>
+#include <QSignalSpy>
+#include <cmath>
+#include "Analysis/DASignalAmplitude.h"
 #include "Analysis/DASignalAnalysisParams.h"
 #include "Analysis/DAPeakTableModel.h"
 #include "Form/DASignalFormSpecBuilder.h"
@@ -53,6 +56,14 @@ private Q_SLOTS:
     void paramsPeakTopNStringCompat();
     // 频率分辨率 ↔ STFT 窗长联动换算（方案 §6.3 / 评审 C4）
     void stftResolutionLinkage();
+    // N-C4：默认参数自洽（stftWindowMs ↔ resolutionHz 互为倒数）
+    void paramsDefaultsSelfConsistent();
+    // N-C5/N-U6：最小间距「-1 = 自动」哨兵与表单派生默认值
+    void peakSpacingAutoSentinel();
+    // N-C2：幅值口径换算（峰值/均方根/dB，dBFS 参考无效时回退 1.0）
+    void amplitudeDisplayModes();
+    // U11/N-U4：峰值表时间列显隐（列数/表头映射，数据不丢）
+    void peakModelTimeColumnToggle();
 };
 
 /**
@@ -290,6 +301,162 @@ void DASignalAnalysisTest::stftRasterGrid()
     const QwtInterval zAuto = raster.interval(Qt::ZAxis);
     QCOMPARE(zAuto.minValue(), 0.0);
     QCOMPARE(zAuto.maxValue(), 19.0);
+}
+
+/**
+ * @brief N-C4：默认参数自洽 —— 10 赫兹分辨率 ↔ 100 毫秒 STFT 窗长
+ *
+ * 两处默认值曾独立定义（resolutionHz=10 与 stftWindowMs=50 ↔ 20 赫兹），
+ * 打开对话框不做联动就自相矛盾；默认值与空 JSON 反序列化都必须自洽。
+ */
+void DASignalAnalysisTest::paramsDefaultsSelfConsistent()
+{
+    const DA::DASignalAnalysisParams d = DA::DASignalAnalysisParams::defaults();
+    QCOMPARE(d.resolutionHz, 10.0);
+    QCOMPARE(d.stftWindowMs, 100.0);
+    // Δf = 1/窗长：两者必须互为倒数（评审 N-C4）
+    QVERIFY2(qAbs(DA::signalResolutionFromStftWindowMs(d.stftWindowMs) - d.resolutionHz) < 1e-9,
+             "default stftWindowMs is not consistent with resolutionHz");
+    QCOMPARE(DA::signalStftWindowMsFromResolution(d.resolutionHz), 100.0);
+
+    // 空 JSON（老工程/缺键）反序列化同样得到自洽默认值
+    const DA::DASignalAnalysisParams e = DA::DASignalAnalysisParams::fromJson(QJsonObject());
+    QCOMPARE(e.stftWindowMs, 100.0);
+    QVERIFY2(qAbs(DA::signalResolutionFromStftWindowMs(e.stftWindowMs) - e.resolutionHz) < 1e-9,
+             "empty-JSON defaults are not self-consistent");
+}
+
+/**
+ * @brief N-C5/N-U6：最小间距「-1 = 自动」哨兵与表单派生默认值
+ *
+ * 参数用 -1 表示「未手改 = 跟随分辨率」，表单字段 min=0 不能直接写 -1，
+ * 回显/默认值必须换算为 5×实际分辨率（否则显示 0，评审 N-U6）；
+ * 手改后固定用户值，JSON 往返保持 -1 与显式值两种语义（评审 N-C5）。
+ */
+void DASignalAnalysisTest::peakSpacingAutoSentinel()
+{
+    const DA::DASignalAnalysisParams defaults = DA::DASignalAnalysisParams::defaults();
+    // 1) 默认参数是「自动」哨兵，不是显式 0/50
+    QCOMPARE(defaults.peakMinSpacingHz, -1.0);
+    // 2) 自动口径 = 5 倍实际分辨率（实际分辨率 10 赫兹 → 50 赫兹）
+    QCOMPARE(DA::signalEffectivePeakMinSpacingHz(defaults, 10.0), 50.0);
+    // 实际分辨率随信号变化时，自动值继续跟随（20 赫兹 → 100 赫兹）
+    QCOMPARE(DA::signalEffectivePeakMinSpacingHz(defaults, 20.0), 100.0);
+    // 实际分辨率无效（如采样率未知）时退回参数里的 resolutionHz，避免回显 0
+    QCOMPARE(DA::signalEffectivePeakMinSpacingHz(defaults, 0.0), 50.0);
+    // 非法分辨率 → 自动间距 0（调用方据此跳过写入）
+    QCOMPARE(DA::signalAutoPeakMinSpacingHz(0.0), 0.0);
+    QCOMPARE(DA::signalAutoPeakMinSpacingHz(-5.0), 0.0);
+
+    // 3) 用户手改 33 后不再跟随分辨率（跨对话框保留显式值，评审 N-C5）
+    DA::DASignalAnalysisParams manual = defaults;
+    manual.peakMinSpacingHz            = 33.0;
+    QCOMPARE(DA::signalEffectivePeakMinSpacingHz(manual, 10.0), 33.0);
+    QCOMPARE(DA::signalEffectivePeakMinSpacingHz(manual, 20.0), 33.0);
+
+    // 4) 表单默认值：自动参数 → 5×实际分辨率（高级模式不再显示 0，评审 U7/N-U6）
+    const QJsonObject autoSpec   = DA::DASignalFormSpecBuilder::build(defaults, 10.0);
+    const QJsonObject autoField  = findFormField(autoSpec, QStringLiteral("peakMinSpacingHz"));
+    QVERIFY2(!autoField.isEmpty(), "peakMinSpacingHz field not found");
+    QCOMPARE(autoField.value(QStringLiteral("default")).toDouble(), 50.0);
+    // 手改参数 → 表单默认值保持用户值
+    const QJsonObject manualSpec  = DA::DASignalFormSpecBuilder::build(manual, 10.0);
+    const QJsonObject manualField = findFormField(manualSpec, QStringLiteral("peakMinSpacingHz"));
+    QVERIFY2(!manualField.isEmpty(), "peakMinSpacingHz field not found (manual)");
+    QCOMPARE(manualField.value(QStringLiteral("default")).toDouble(), 33.0);
+
+    // 5) JSON 往返分别保持「自动哨兵」与「显式值」，两者不互相污染
+    QCOMPARE(DA::DASignalAnalysisParams::fromJson(defaults.toJson()).peakMinSpacingHz, -1.0);
+    QCOMPARE(DA::DASignalAnalysisParams::fromJson(manual.toJson()).peakMinSpacingHz, 33.0);
+}
+
+/**
+ * @brief N-C2：幅值口径换算（唯一真相 DASignalAmplitude::toDisplay）
+ *
+ * 覆盖峰值/RMS（直流不除 √2）/dBFS/dbRef1，以及 dBFS 参考无效（<=0）时
+ * 回退 1.0 而不是 cEps（否则会出现 ≈ +600 dB 的荒谬结果）。
+ */
+void DASignalAnalysisTest::amplitudeDisplayModes()
+{
+    using DA::DASignalAmplitude::toDisplay;
+
+    // peak：乘标定（calibration=2、峰值 0.5 → 1.0）
+    QCOMPARE(toDisplay(0.5, false, QStringLiteral("peak"), QStringLiteral("fullScale"), 2.0, 1.0), 1.0);
+
+    // rms：非直流 = 峰值/√2；直流（零频）不除 √2
+    QVERIFY(qAbs(toDisplay(0.5, false, QStringLiteral("rms"), QStringLiteral("fullScale"), 1.0, 1.0) - 0.3535533906) < 1e-9);
+    QCOMPARE(toDisplay(0.5, true, QStringLiteral("rms"), QStringLiteral("fullScale"), 1.0, 1.0), 0.5);
+
+    // dbFS：20·log10(0.5 / 1.0) = -6.0206
+    const double dbFs = toDisplay(0.5, false, QStringLiteral("dbFS"), QStringLiteral("fullScale"), 1.0, 1.0);
+    QVERIFY2(qAbs(dbFs - (-6.020599913279624)) < 1e-9, "dbFS conversion of 0.5 re 1.0 must be -6.0206 dB");
+
+    // dBFS 参考无效（0 或负值）→ 回退 1.0 参考，结果仍有限且为 -6.0206（不是 +600 dB）
+    const double invalidRef = toDisplay(0.5, false, QStringLiteral("dbFS"), QStringLiteral("fullScale"), 1.0, 0.0);
+    const double negativeRef = toDisplay(0.5, false, QStringLiteral("dbFS"), QStringLiteral("fullScale"), 1.0, -3.0);
+    QVERIFY2(std::isfinite(invalidRef), "dbFS with invalid reference must stay finite");
+    QVERIFY2(std::isfinite(negativeRef), "dbFS with negative reference must stay finite");
+    QVERIFY(qAbs(invalidRef - dbFs) < 1e-9);
+    QVERIFY(qAbs(negativeRef - dbFs) < 1e-9);
+    QVERIFY2(invalidRef < 0.0 && invalidRef > -7.0, "invalid dBFS reference must not blow up to +600 dB");
+
+    // dbRef1 与 dbFS + dbReference=one 等价（都不依赖信号峰值参考）
+    QCOMPARE(toDisplay(0.5, false, QStringLiteral("dbRef1"), QStringLiteral("fullScale"), 1.0, 0.0),
+             toDisplay(0.5, false, QStringLiteral("dbFS"), QStringLiteral("one"), 1.0, 123.0));
+
+    // 口径判定与坐标轴文字（界面/导出共用）
+    QVERIFY(DA::DASignalAmplitude::isDbMode(QStringLiteral("dbFS")));
+    QVERIFY(DA::DASignalAmplitude::isDbMode(QStringLiteral("dbRef1")));
+    QVERIFY(!DA::DASignalAmplitude::isDbMode(QStringLiteral("peak")));
+    QVERIFY(DA::DASignalAmplitude::isRmsMode(QStringLiteral("rms")));
+    QCOMPARE(DA::DASignalAmplitude::axisLabelKey(QStringLiteral("dbFS")), QStringLiteral("dB (FS)"));
+}
+
+/**
+ * @brief U11/N-U4：峰值表时间列显隐（列数/表头映射，数据不丢）
+ *
+ * STFT/跟随滑块模式显示时间列，切回整段频谱隐藏时间列；隐藏时非序号列整体左移一列，
+ * 数值与表头都跟随映射（评审 §七-6 / U11）。
+ */
+void DASignalAnalysisTest::peakModelTimeColumnToggle()
+{
+    DA::DAPeakResult peaks;
+    peaks.frequencies = { 1000.0, 2000.0 };
+    peaks.magnitudes  = { 0.5, 0.25 };
+    peaks.relDb       = { 0.0, -6.02 };
+    peaks.share       = { 80.0, 20.0 };
+    peaks.frameTime   = 1.234;
+    peaks.hasFrameTime = true;
+
+    DA::DAPeakTableModel model;
+    model.setPeaks(peaks);
+    QSignalSpy headerSpy(&model, &DA::DAPeakTableModel::headerTextChanged);
+
+    // 显示时间列
+    model.setShowTimeColumn(true);
+    QCOMPARE(headerSpy.count(), 1);
+    QCOMPARE(model.columnCount(), int(DA::DAPeakTableModel::ColumnCount));
+    QCOMPARE(model.headerData(DA::DAPeakTableModel::ColumnTime, Qt::Horizontal).toString(), QStringLiteral("Time (s)"));
+    QCOMPARE(model.data(model.index(0, DA::DAPeakTableModel::ColumnTime)).toString(), QStringLiteral("1.234"));
+    QCOMPARE(model.data(model.index(0, DA::DAPeakTableModel::ColumnFrequency)).toString(), QStringLiteral("1000.00"));
+
+    // 重复设置在相同状态时不重复发信号（幂等）
+    model.setShowTimeColumn(true);
+    QCOMPARE(headerSpy.count(), 1);
+
+    // 隐藏时间列：列数 -1，非序号列左移一列，数值/表头不变
+    model.setShowTimeColumn(false);
+    QCOMPARE(headerSpy.count(), 2);
+    QCOMPARE(model.columnCount(), int(DA::DAPeakTableModel::ColumnCount) - 1);
+    const int freqViewColumn = int(DA::DAPeakTableModel::ColumnFrequency) - 1;
+    QCOMPARE(model.headerData(freqViewColumn, Qt::Horizontal).toString(), QStringLiteral("Frequency (Hz)"));
+    QCOMPARE(model.data(model.index(0, freqViewColumn)).toString(), QStringLiteral("1000.00"));
+    QCOMPARE(model.data(model.index(1, freqViewColumn)).toString(), QStringLiteral("2000.00"));
+
+    // 再次显示：行数/频率数据不丢
+    model.setShowTimeColumn(true);
+    QCOMPARE(model.rowCount(), 2);
+    QCOMPARE(model.data(model.index(1, DA::DAPeakTableModel::ColumnFrequency)).toString(), QStringLiteral("2000.00"));
 }
 
 QTEST_MAIN(DASignalAnalysisTest)
