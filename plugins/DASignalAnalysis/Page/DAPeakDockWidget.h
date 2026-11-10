@@ -40,6 +40,9 @@ public:
                              const QString& unit);
     // 曲线区占位文案（无峰值曲线数据时）
     void setCurvePlaceholderVisible(bool visible);
+    // D5：峰值曲线是否为「局部扫描」（只扫可见区段/隔帧降精度），界面标注「局部扫描」
+    void setPartialScan(bool on);
+    bool isPartialScan() const;
     // 时间原点（秒）：与波形/热图横向对齐（评审 U12）
     void setTimeOrigin(double seconds);
     // dBFS 参考信号峰值（标定后），与频谱图同一参考
@@ -79,6 +82,9 @@ private:
     QTableView* mTable { nullptr };
     DAChartWidget* mCurveChart { nullptr };
     QLabel* mCurvePlaceholder { nullptr };
+    // D5：局部扫描标注（仅峰值曲线区域，非局部时隐藏）
+    QLabel* mPartialLabel { nullptr };
+    bool mPartialScan { false };
     QSplitter* mSplitter { nullptr };
     QPushButton* mSendButton { nullptr };
     QPushButton* mExportButton { nullptr };

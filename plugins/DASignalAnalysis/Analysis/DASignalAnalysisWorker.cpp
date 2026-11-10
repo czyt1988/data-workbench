@@ -271,7 +271,10 @@ bool DASignalAnalysisWorker::computeEnvelope(const DASignalTaskContext& ctx, qin
 bool DASignalAnalysisWorker::computeHeatmap(const DASignalTaskContext& ctx,
                                             const DASignalAnalysisParams& params,
                                             int columns,
-                                            int rows)
+                                            int rows,
+                                            qint64 startSample,
+                                            qint64 endSample,
+                                            int blockFrames)
 {
     if (!ensureAnalyzable(ctx, nullptr)) {
         return false;
@@ -280,7 +283,11 @@ bool DASignalAnalysisWorker::computeHeatmap(const DASignalTaskContext& ctx,
         DAPyModule stft       = namedModule("DASignalAnalysis.stft");
         pybind11::dict source = buildSourceDict(ctx.signal, ctx.channel);
         pybind11::dict p      = paramsToDict(params);
-        pybind11::object res  = stft.attr("compute_heatmap_async")(source, p, columns, rows);
+        // D5：<0 表示整段（传 None），否则传采样点区间；blockFrames 只影响临时内存
+        pybind11::object pyStart = (startSample >= 0) ? pybind11::cast(startSample) : pybind11::none();
+        pybind11::object pyEnd   = (endSample >= 0) ? pybind11::cast(endSample) : pybind11::none();
+        pybind11::object pyBlock = (blockFrames > 0) ? pybind11::cast(blockFrames) : pybind11::none();
+        pybind11::object res     = stft.attr("compute_heatmap_async")(source, p, columns, rows, pyStart, pyEnd, pyBlock);
         TaskEntry entry;
         entry.id   = QString::fromStdString(res.cast< std::string >());
         entry.kind = HeatmapTask;
@@ -332,7 +339,11 @@ bool DASignalAnalysisWorker::computePeaks(const DASignalTaskContext& ctx, const 
 /**
  * @brief 发起每帧前 N 峰值曲线扫描
  */
-bool DASignalAnalysisWorker::computePeakCurves(const DASignalTaskContext& ctx, const DASignalAnalysisParams& params)
+bool DASignalAnalysisWorker::computePeakCurves(const DASignalTaskContext& ctx,
+                                               const DASignalAnalysisParams& params,
+                                               qint64 startSample,
+                                               qint64 endSample,
+                                               int frameStep)
 {
     if (!ensureAnalyzable(ctx, nullptr)) {
         return false;
@@ -341,7 +352,11 @@ bool DASignalAnalysisWorker::computePeakCurves(const DASignalTaskContext& ctx, c
         DAPyModule peaks      = namedModule("DASignalAnalysis.peaks");
         pybind11::dict source = buildSourceDict(ctx.signal, ctx.channel);
         pybind11::dict p      = paramsToDict(params);
-        pybind11::object res  = peaks.attr("compute_peak_curves_async")(source, p);
+        // D5：局部扫描（None=整段）与隔帧降精度
+        pybind11::object pyStart = (startSample >= 0) ? pybind11::cast(startSample) : pybind11::none();
+        pybind11::object pyEnd   = (endSample >= 0) ? pybind11::cast(endSample) : pybind11::none();
+        pybind11::object pyStep  = pybind11::cast(std::max(1, frameStep));
+        pybind11::object res     = peaks.attr("compute_peak_curves_async")(source, p, pyStart, pyEnd, pyStep);
         TaskEntry entry;
         entry.id   = QString::fromStdString(res.cast< std::string >());
         entry.kind = PeakCurvesTask;

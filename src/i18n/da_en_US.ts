@@ -21875,6 +21875,14 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <source>Settings...</source>
         <translation>Settings...</translation>
     </message>
+    <message>
+        <source>Local scan</source>
+        <translation>Local scan</translation>
+    </message>
+    <message>
+        <source>Peak curves cover only the visible time range or use a coarser frame step.</source>
+        <translation>Peak curves cover only the visible time range or use a coarser frame step.</translation>
+    </message>
 </context>
 <context>
     <name>DA::DAPeakTableModel</name>
@@ -22681,6 +22689,40 @@ Export the full matrix or downsample by 2?</translation>
     <message>
         <source>Signal imported.</source>
         <translation>Signal imported.</translation>
+    </message>
+    <message>
+        <source>The estimated peak memory for the %1 is about %2 GB, above the 1.5 GB budget.
+Reduce the precision, scan only the visible range, or cancel?</source>
+        <translation>The estimated peak memory for the %1 is about %2 GB, above the 1.5 GB budget.
+Reduce the precision, scan only the visible range, or cancel?</translation>
+    </message>
+    <message>
+        <source>Scan visible range</source>
+        <translation>Scan visible range</translation>
+    </message>
+    <message>
+        <source>peak curves</source>
+        <translation>peak curves</translation>
+    </message>
+    <message>
+        <source>Peak curves were limited to the visible time range (local scan).</source>
+        <translation>Peak curves were limited to the visible time range (local scan).</translation>
+    </message>
+    <message>
+        <source>Peak curves use a coarser frame step (local scan).</source>
+        <translation>Peak curves use a coarser frame step (local scan).</translation>
+    </message>
+    <message>
+        <source>heatmap</source>
+        <translation>heatmap</translation>
+    </message>
+    <message>
+        <source>Heatmap precision reduced to %1 x %2 (smaller block size).</source>
+        <translation>Heatmap precision reduced to %1 x %2 (smaller block size).</translation>
+    </message>
+    <message>
+        <source>Heatmap was limited to the visible time range.</source>
+        <translation>Heatmap was limited to the visible time range.</translation>
     </message>
 </context>
 <context>

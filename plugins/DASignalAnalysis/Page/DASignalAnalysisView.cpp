@@ -1060,6 +1060,30 @@ bool DASignalAnalysisView::isFollowSlider() const
     return mFollowSlider;
 }
 
+/**
+ * @brief 当前波形可见时间范围（秒，绝对时间，含 timeOrigin）
+ *
+ * 波形横轴 = 相对秒 + timeOrigin，因此直接取波形图 X 轴区间即绝对秒；无包络/未布局时
+ * 返回 false（调用方按整段处理）。
+ */
+bool DASignalAnalysisView::visibleTimeRange(double* startSec, double* endSec) const
+{
+    if (!mWavePanel || !mWavePanel->chart() || !mSignal) {
+        return false;
+    }
+    const QwtInterval interval = mWavePanel->chart()->axisScaleDiv(QwtPlot::xBottom).interval();
+    if (!interval.isValid() || interval.width() <= 0.0) {
+        return false;
+    }
+    if (startSec) {
+        *startSec = interval.minValue();
+    }
+    if (endSec) {
+        *endSec = interval.maxValue();
+    }
+    return true;
+}
+
 double DASignalAnalysisView::currentTime() const
 {
     if (!mSignal || mSignal->duration() <= 0.0) {

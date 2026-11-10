@@ -227,5 +227,10 @@ python -I -m pytest tests/test_signal_dsp.py tests/test_signal_import.py -q   # 
 - **导入在途状态**：`DASignalAnalysisUI::mImportTaskActive` 期间三个导入入口置灰（`updateImportActionsState()`），
   切工程/finalize/取消都要复位；临时 WAV 由 `newSessionTempWavPath()` 预分配并在取消/失败/构造失败时删除，
   成功构造的信号持有它，由 `cleanupTempFiles()` 按会话清理。
-- **内存预算口径**（D5 部分）：频谱/热图的估算公式在流式取数后不再需要「整段 float64 副本」，界面里的
-  `checkMemoryBudget()` 仍按旧口径偏保守；三选降级与峰值局部扫描（D5 剩余项）尚未实现。
+- **内存预算与降级（D5，2026-11-10 落地）**：估算公式统一在 `Analysis/DASignalMemoryEstimate.h`
+  （纯逻辑、DASignalAnalysisTest 覆盖）：频谱/热图为流式，峰值内存只与段长/栅格相关；峰值表/峰值曲线
+  含整段 float32 副本并按并发系数放大；包络按可见区段估算。超预算时三选：**降低精度**（热图栅格减半 +
+  分块帧数 64；峰值曲线隔帧 `frame_step=2`）/ **只扫可见区段**（`view->visibleTimeRange()` 换算采样点，
+  经 worker 传给 Python 的 `start_sample/end_sample`）/ **取消**。峰值曲线局部扫描时
+  `DAPeakDockWidget::setPartialScan(true)` 在窗口上标注「局部扫描」；切信号/清空峰值状态必须复位。
+  峰值表/峰值曲线仍整段取数（E 阶段再流式化），「降低精度」对它们只减少扫描帧数、不减少整段取数内存。

@@ -22053,6 +22053,14 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <source>Settings...</source>
         <translation>参数设置...</translation>
     </message>
+    <message>
+        <source>Local scan</source>
+        <translation>局部扫描</translation>
+    </message>
+    <message>
+        <source>Peak curves cover only the visible time range or use a coarser frame step.</source>
+        <translation>峰值曲线只覆盖可见时间范围，或使用了更粗的帧步进。</translation>
+    </message>
 </context>
 <context>
     <name>DA::DAPeakTableModel</name>
@@ -22856,6 +22864,39 @@ Export the full matrix or downsample by 2?</source>
     <message>
         <source>Signal imported.</source>
         <translation>信号导入完成。</translation>
+    </message>
+    <message>
+        <source>The estimated peak memory for the %1 is about %2 GB, above the 1.5 GB budget.
+Reduce the precision, scan only the visible range, or cancel?</source>
+        <translation>%1 的预计峰值内存约 %2 GB，超过 1.5 GB 预算。降低精度、只扫可见区段，还是取消？</translation>
+    </message>
+    <message>
+        <source>Scan visible range</source>
+        <translation>只扫可见区段</translation>
+    </message>
+    <message>
+        <source>peak curves</source>
+        <translation>峰值曲线</translation>
+    </message>
+    <message>
+        <source>Peak curves were limited to the visible time range (local scan).</source>
+        <translation>峰值曲线已限制为可见时间范围（局部扫描）。</translation>
+    </message>
+    <message>
+        <source>Peak curves use a coarser frame step (local scan).</source>
+        <translation>峰值曲线改用更粗的帧步进（局部扫描）。</translation>
+    </message>
+    <message>
+        <source>heatmap</source>
+        <translation>热图</translation>
+    </message>
+    <message>
+        <source>Heatmap precision reduced to %1 x %2 (smaller block size).</source>
+        <translation>热图精度已降至 %1 x %2（更小的分块）。</translation>
+    </message>
+    <message>
+        <source>Heatmap was limited to the visible time range.</source>
+        <translation>热图已限制为可见时间范围。</translation>
     </message>
 </context>
 <context>

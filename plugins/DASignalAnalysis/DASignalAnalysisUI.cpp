@@ -46,6 +46,7 @@
 #include "Dialogs/DASignalAnalysisSettingDialog.h"
 #include "Signal/DASignalImporter.h"
 #include "Analysis/DASignalAmplitude.h"
+#include "Analysis/DASignalMemoryEstimate.h"
 #include "Analysis/DASignalAnalysisWorker.h"
 #include "Playback/DASignalPlayer.h"
 #include "Archive/DASignalArchiveTask.h"
@@ -956,6 +957,48 @@ bool DASignalAnalysisUI::checkMemoryBudget(const DASignalPtr& sig, const QString
 }
 
 /**
+ * @brief D5：内存超预算时的降级选择
+ *
+ * 三选：降低精度（热图减半栅格/块帧数，峰值曲线隔帧）/ 只扫可见区段 / 取消；
+ * allowVisibleRange=false 时只给「降低精度 / 取消」两选。
+ */
+DASignalAnalysisUI::BudgetChoice DASignalAnalysisUI::promptBudgetChoice(const DASignalPtr& sig,
+                                                                        const QString& stage,
+                                                                        qint64 estimatedBytes,
+                                                                        bool allowVisibleRange)
+{
+    Q_UNUSED(sig)
+    const double estimatedGb = double(estimatedBytes) / (1024.0 * 1024.0 * 1024.0);
+    QMessageBox box(QMessageBox::Question,
+                    tr("Large Signal"),  // cn:大信号
+                    tr("The estimated peak memory for the %1 is about %2 GB, above the 1.5 GB budget.\n"
+                       "Reduce the precision, scan only the visible range, or cancel?")
+                        // cn:%1 的预计峰值内存约 %2 GB，超过 1.5 GB 预算。降低精度、只扫可见区段，还是取消？
+                        .arg(stage)
+                        .arg(estimatedGb, 0, 'f', 2),
+                    QMessageBox::NoButton,
+                    mPage);
+    QPushButton* reduceBtn  = box.addButton(tr("Reduce precision"), QMessageBox::ActionRole);  // cn:降低精度
+    QPushButton* visibleBtn = nullptr;
+    if (allowVisibleRange) {
+        visibleBtn = box.addButton(tr("Scan visible range"), QMessageBox::ActionRole);  // cn:只扫可见区段
+    }
+    QPushButton* cancelBtn = box.addButton(QMessageBox::Cancel);
+    box.setDefaultButton(cancelBtn);  // 默认安全：不误触大内存计算
+    box.exec();
+    if (box.clickedButton() == nullptr || box.clickedButton() == cancelBtn) {
+        return BudgetCancel;
+    }
+    if (visibleBtn && box.clickedButton() == visibleBtn) {
+        return BudgetVisibleRangeOnly;
+    }
+    if (box.clickedButton() == reduceBtn) {
+        return BudgetReducePrecision;
+    }
+    return BudgetProceed;
+}
+
+/**
  * @brief 触发当前信号的峰值表（与可选峰值曲线）计算
  */
 void DASignalAnalysisUI::requestPeaks(bool withCurves)
@@ -967,33 +1010,68 @@ void DASignalAnalysisUI::requestPeaks(bool withCurves)
     if (!sig || !sig->isValid()) {
         return;
     }
-    // 内存预算门（评审 N-C1c）：峰值表与频谱/包络共用同一预算，超限时先问用户
-    const qint64 samples = sig->sampleCount();
+    // 内存预算（D5）：按真实 dtype/并发副本估算；峰值表与频谱共用同一预算
+    const qint64 samples                = sig->sampleCount();
+    const DASignalAnalysisParams params = paramsForSignal(sig);
+    DASignalAnalysisView* view          = mPage->viewForSignal(sig.get());
+    const int channel                   = view ? view->currentChannel() : 0;
+    DASignalMemoryInputs in;
+    in.sampleCount         = samples;
+    in.sampleRate          = sig->sampleRate();
+    in.resolutionHz        = params.resolutionHz;
+    in.stftWindowMs        = params.stftWindowMs;
+    in.stftOverlapPercent  = params.stftOverlap;
+    in.peakTopN            = params.peakTopN;
     if (!checkMemoryBudget(sig,
                            tr("peak table"),  // cn:峰值表
-                           samples * qint64(sizeof(double)) * 2)) {
+                           dasignalEstimateAnalysisBytes(DASignalAnalysisStage::PeakTable, in))) {
         return;
     }
-    const DASignalAnalysisParams params = paramsForSignal(sig);
-    DASignalAnalysisView* view         = mPage->viewForSignal(sig.get());
-    const int channel                  = view ? view->currentChannel() : 0;
     mWorker->computePeaks(makeTaskContext(sig, channel), params);
-    if (withCurves) {
-        // 大信号的全帧扫描内存/耗时过高：明确跳过并提示（评审 D5；局部扫描留 v2）
-        constexpr qint64 cCurveBudgetBytes = qint64(1.5 * 1024 * 1024 * 1024);
-        if (sig->sampleCount() * qint64(sizeof(double)) * 2 > cCurveBudgetBytes) {
-            if (mUI) {
-                mUI->addInfoLogMessage(
-                    tr("Signal is too large for the full per-frame peak curve scan; peak curves were skipped."));
-                // cn:信号过大，已跳过全帧峰值曲线扫描。
-            }
+    if (!withCurves) {
+        return;
+    }
+    // 峰值曲线：超预算时三选降级（D5）——只扫可见区段 / 隔帧降精度 / 取消
+    const qint64 curveEstimated = dasignalEstimateAnalysisBytes(DASignalAnalysisStage::PeakCurves, in);
+    qint64 scanStart            = -1;
+    qint64 scanEnd              = -1;
+    int frameStep               = 1;
+    bool local                  = false;
+    if (curveEstimated > kDASignalAnalysisBudgetBytes) {
+        const BudgetChoice choice = promptBudgetChoice(sig, tr("peak curves"), curveEstimated, true);  // cn:峰值曲线
+        if (choice == BudgetCancel) {
             mPeakCurvesRequested = false;
             return;
         }
+        if (choice == BudgetVisibleRangeOnly) {
+            double startSec = 0.0;
+            double endSec   = 0.0;
+            if (view && view->visibleTimeRange(&startSec, &endSec) && sig->sampleRate() > 0.0) {
+                const double fs = sig->sampleRate();
+                scanStart       = qint64(qMax(0.0, (startSec - sig->timeOrigin()) * fs));
+                scanEnd         = qint64(qMin< double >(double(samples), (endSec - sig->timeOrigin()) * fs));
+                local           = (scanStart > 0 || scanEnd < samples);
+            }
+            if (mUI) {
+                mUI->addInfoLogMessage(tr("Peak curves were limited to the visible time range (local scan)."));
+                // cn:峰值曲线已限制为可见时间范围（局部扫描）。
+            }
+        } else if (choice == BudgetReducePrecision) {
+            frameStep = 2;
+            local     = true;
+            if (mUI) {
+                mUI->addInfoLogMessage(tr("Peak curves use a coarser frame step (local scan)."));
+                // cn:峰值曲线改用更粗的帧步进（局部扫描）。
+            }
+        }
     }
-    if (withCurves && !mPeakCurvesRequested) {
+    if (!mPeakCurvesRequested) {
         mPeakCurvesRequested = true;
-        mWorker->computePeakCurves(makeTaskContext(sig, channel), params);
+        mPeakCurvesLocal     = local;
+        if (mPeakPanel) {
+            mPeakPanel->setPartialScan(false);  // 新结果到达前先隐藏，避免上一信号的标注残留
+        }
+        mWorker->computePeakCurves(makeTaskContext(sig, channel), params, scanStart, scanEnd, frameStep);
     }
 }
 
@@ -1079,7 +1157,9 @@ int DASignalAnalysisUI::channelOfSignal(const DASignalPtr& sig) const
     mCurrentPeaksSignal  = nullptr;
     mCurrentPeaksChannel = 0;
     mPeakCurvesRequested = false;
+    mPeakCurvesLocal     = false;
     if (mPeakPanel) {
+        mPeakPanel->setPartialScan(false);
         mPeakPanel->setShowTimeColumn(false);
         mPeakPanel->setPeaks(mCurrentPeaks);
         mPeakPanel->setPeakCurves(mCurrentCurves);
@@ -2367,9 +2447,15 @@ void DASignalAnalysisUI::onViewRequestSpectrum(const DASignalPtr& signal, int ch
     if (!mWorker || !signal) {
         return;
     }
-    // 内存预算门（评审 N-C1c）：整通道 float64 取数副本 + 频谱/功率谱中间量
-    const qint64 estimated = signal->sampleCount() * qint64(sizeof(double)) * 2;
-    if (!checkMemoryBudget(signal, tr("spectrum"), estimated)) {  // cn:频谱
+    // 内存预算门（D5）：频谱/PSD 为流式取数，峰值内存只与段长相关（不随信号总长增长）
+    const DASignalAnalysisParams sp = paramsForSignal(signal);
+    DASignalMemoryInputs spIn;
+    spIn.sampleCount  = signal->sampleCount();
+    spIn.sampleRate   = signal->sampleRate();
+    spIn.resolutionHz = sp.resolutionHz;
+    if (!checkMemoryBudget(signal,
+                           tr("spectrum"),  // cn:频谱
+                           dasignalEstimateAnalysisBytes(DASignalAnalysisStage::Spectrum, spIn))) {
         return;
     }
     mWorker->computeSpectrum(makeTaskContext(signal, channel), paramsForSignal(signal));
@@ -2384,10 +2470,15 @@ void DASignalAnalysisUI::onViewRequestEnvelope(qint64 start, qint64 end, int wid
     if (!mWorker || !view || !view->signal()) {
         return;
     }
-    // 内存预算门（评审 N-C1c）：包络同样要整通道取数，与频谱共用同一预算
-    const qint64 samples = view->signal()->sampleCount();
-    const qint64 estimated = samples * qint64(sizeof(double)) + qint64(width) * qint64(sizeof(double)) * 2;
-    if (!checkMemoryBudget(view->signal(), tr("waveform envelope"), estimated)) {  // cn:波形包络
+    // 内存预算门（D5）：包络按可见区段取数，峰值内存只与区段长度/目标列数相关
+    DASignalMemoryInputs envIn;
+    envIn.sampleCount  = view->signal()->sampleCount();
+    envIn.sampleRate   = view->signal()->sampleRate();
+    envIn.rangeSamples = qMax< qint64 >(0, end - start);
+    envIn.gridColumns  = width;
+    if (!checkMemoryBudget(view->signal(),
+                           tr("waveform envelope"),  // cn:波形包络
+                           dasignalEstimateAnalysisBytes(DASignalAnalysisStage::Envelope, envIn))) {
         return;
     }
     mWorker->computeEnvelope(makeTaskContext(view->signal(), view->currentChannel()), start, end, width);
@@ -2658,51 +2749,56 @@ void DASignalAnalysisUI::onViewRequestHeatmap(int columns, int rows)
     if (!mWorker || !view || !view->signal()) {
         return;
     }
-    // 内存预算（方案 §11 / 评审 D5）：按真实峰值估算（float64 副本 × 并发任务 + 显示栅格）。
-    // 与频谱/峰值/包络共用 cAnalysisBudgetBytes，并复用每信号预算判定（评审 N-C1c）：
-    // 用户已在本信号上确认继续时不再重复弹窗
-    const qint64 samples        = view->signal()->sampleCount();
-    const qint64 estimatedBytes = samples * qint64(sizeof(double)) * 3
-                                  + qint64(columns) * qint64(rows) * qint64(sizeof(double));
-    const int verdict = mMemoryBudgetVerdict.value(view->signal().get(), cBudgetUnasked);
-    if (estimatedBytes > cAnalysisBudgetBytes && verdict == cBudgetDeclined) {
-        return;  // 该信号已取消过大内存计算
-    }
-    if (estimatedBytes > cAnalysisBudgetBytes && verdict != cBudgetAllowed) {
-        const double estimatedGb = double(estimatedBytes) / (1024.0 * 1024.0 * 1024.0);
-        QMessageBox box(QMessageBox::Question,
-                        tr("Large Signal"),  // cn:大信号
-                        tr("The estimated peak memory is about %1 GB, above the 1.5 GB budget.\n"
-                           "Reduce the heatmap precision or cancel?")
-                            // cn:预计峰值内存约 %1 GB，超过 1.5 GB 预算。降低热图精度还是取消？
-                            .arg(estimatedGb, 0, 'f', 2),
-                        QMessageBox::NoButton,
-                        mPage);
-        QPushButton* reduceBtn =
-            box.addButton(tr("Reduce precision"), QMessageBox::ActionRole);  // cn:降低精度
-        QPushButton* continueBtn =
-            box.addButton(tr("Continue"), QMessageBox::AcceptRole);  // cn:继续
-        QPushButton* cancelBtn = box.addButton(QMessageBox::Cancel);
-        box.setDefaultButton(cancelBtn);
-        box.exec();
-        if (box.clickedButton() == cancelBtn || box.clickedButton() == nullptr) {
-            mMemoryBudgetVerdict[ view->signal().get() ] = cBudgetDeclined;
+    // 内存预算（D5）：热图为流式取数，峰值内存 = 单块 float64 帧矩阵（∝ STFT 段长 × 块帧数）
+    // + 显示栅格；超限时三选：降低精度（栅格减半 + 块帧数 64）/ 只扫可见区段 / 取消
+    const DASignalAnalysisParams params = view->params();
+    DASignalMemoryInputs in;
+    in.sampleCount        = view->signal()->sampleCount();
+    in.sampleRate         = view->signal()->sampleRate();
+    in.stftWindowMs       = params.stftWindowMs;
+    in.stftOverlapPercent = params.stftOverlap;
+    in.gridColumns        = columns;
+    in.gridRows           = rows;
+    qint64 startSample    = -1;
+    qint64 endSample      = -1;
+    int blockFrames       = 256;
+    const qint64 estimatedBytes = dasignalEstimateAnalysisBytes(DASignalAnalysisStage::Heatmap, in);
+    if (estimatedBytes > kDASignalAnalysisBudgetBytes) {
+        const BudgetChoice choice = promptBudgetChoice(view->signal(), tr("heatmap"), estimatedBytes, true);  // cn:热图
+        if (choice == BudgetCancel) {
             return;
         }
-        if (box.clickedButton() == reduceBtn) {
-            columns = qMax(64, columns / 2);
-            rows    = qMax(64, rows / 2);
+        if (choice == BudgetReducePrecision) {
+            columns     = qMax(64, columns / 2);
+            rows        = qMax(64, rows / 2);
+            blockFrames = 64;  // 单块 float64 帧矩阵随块帧数线性下降（真正的内存降级）
             if (mUI) {
-                mUI->addInfoLogMessage(tr("Heatmap precision reduced to %1 x %2.").arg(columns).arg(rows));
-                // cn:热图精度已降至 %1 x %2。
+                mUI->addInfoLogMessage(
+                    tr("Heatmap precision reduced to %1 x %2 (smaller block size).").arg(columns).arg(rows));
+                // cn:热图精度已降至 %1 x %2（更小的分块）。
             }
-        } else if (box.clickedButton() != continueBtn) {
-            mMemoryBudgetVerdict[ view->signal().get() ] = cBudgetDeclined;
-            return;
+        } else if (choice == BudgetVisibleRangeOnly) {
+            double startSec = 0.0;
+            double endSec   = 0.0;
+            if (view->visibleTimeRange(&startSec, &endSec) && view->signal()->sampleRate() > 0.0) {
+                const double fs = view->signal()->sampleRate();
+                startSample     = qint64(qMax(0.0, (startSec - view->signal()->timeOrigin()) * fs));
+                endSample       = qint64(qMin< double >(double(view->signal()->sampleCount()),
+                                                  (endSec - view->signal()->timeOrigin()) * fs));
+            }
+            if (mUI) {
+                mUI->addInfoLogMessage(tr("Heatmap was limited to the visible time range."));
+                // cn:热图已限制为可见时间范围。
+            }
         }
-        mMemoryBudgetVerdict[ view->signal().get() ] = cBudgetAllowed;
     }
-    mWorker->computeHeatmap(makeTaskContext(view->signal(), view->currentChannel()), view->params(), columns, rows);
+    mWorker->computeHeatmap(makeTaskContext(view->signal(), view->currentChannel()),
+                            params,
+                            columns,
+                            rows,
+                            startSample,
+                            endSample,
+                            blockFrames);
 }
 
 /**
@@ -2777,6 +2873,9 @@ void DASignalAnalysisUI::onWorkerPeakCurvesReady(const DASignalTaskContext& ctx,
         return;
     }
     mCurrentCurves = result;
+    if (mPeakPanel) {
+        mPeakPanel->setPartialScan(mPeakCurvesLocal);
+    }
     if (mPeakPanel) {
         mPeakPanel->setPeakCurves(result);
     }

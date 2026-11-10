@@ -185,6 +185,18 @@ private:
     void syncAmplitudeUiFromParams(const DA::DASignalAnalysisParams& params);
     // 大信号内存预算门：返回 false 表示用户取消本次计算（评审 N-C1c）
     bool checkMemoryBudget(const DA::DASignalPtr& sig, const QString& stage, qint64 estimatedBytes);
+    // D5：内存超预算时的降级选择（降低精度 / 只扫可见区段 / 取消）
+    enum BudgetChoice
+    {
+        BudgetProceed,
+        BudgetReducePrecision,
+        BudgetVisibleRangeOnly,
+        BudgetCancel
+    };
+    BudgetChoice promptBudgetChoice(const DA::DASignalPtr& sig,
+                                    const QString& stage,
+                                    qint64 estimatedBytes,
+                                    bool allowVisibleRange);
     // 按当前信号是否为「来源缺失」占位刷新「重新指定来源」动作（评审 U16）
     void updateRelinkActionState();
     // 按在跑任务数刷新「取消计算」动作可用性（评审 N-C7）
@@ -289,6 +301,8 @@ private:
     ads::CDockWidget* mPeakDock { nullptr };
     bool mFirstSignalActivated { false };
     bool mPeakCurvesRequested { false };
+    // D5：本轮峰值曲线是否为局部扫描（只扫可见区段/隔帧降精度），峰值窗口据此显示「局部扫描」
+    bool mPeakCurvesLocal { false };
     DA::DAPeakResult mCurrentPeaks;
     DA::DAPeakCurveResult mCurrentCurves;
     // 当前峰值数据所属的信号与通道（切信号/通道后旧数据不再显示，评审 U4）

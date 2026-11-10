@@ -102,14 +102,15 @@ def _accumulate_grid(grid, mag, f0, f1, col_edges, pool):
         np.fmax(grid[:, col], pooled, out=grid[:, col])
 
 
-def _heatmap_axes(fs, nperseg, hop, nfft, n_frames, columns, pool):
+def _heatmap_axes(fs, nperseg, hop, nfft, n_frames, columns, pool, frame_offset=0):
     """行中心频率 / 列中心时间（整段与流式两条路径共用，§6.3）。
 
+    :param frame_offset: 本段首帧的绝对帧号（D5 局部区段扫描时时间轴仍按全局帧号换算）
     :return: (times[columns], freqs[rows])
     """
     freqs_all = np.fft.rfftfreq(nfft, d=1.0 / fs)
     freqs = np.array([0.5 * (freqs_all[s] + freqs_all[max(s, e - 1)]) for (s, e) in pool], dtype=np.float64)
-    times_all = (np.arange(n_frames, dtype=np.float64) * hop + nperseg / 2.0) / fs
+    times_all = ((np.arange(n_frames, dtype=np.float64) + float(frame_offset)) * hop + nperseg / 2.0) / fs
     col_edges = np.linspace(0, n_frames, columns + 1, dtype=np.int64)
     times = np.empty(columns, dtype=np.float64)
     for c in range(columns):
@@ -119,9 +120,9 @@ def _heatmap_axes(fs, nperseg, hop, nfft, n_frames, columns, pool):
     return times, freqs
 
 
-def _heatmap_result(grid, fs, nperseg, hop, nfft, n_frames, columns, pool):
+def _heatmap_result(grid, fs, nperseg, hop, nfft, n_frames, columns, pool, frame_offset=0):
     """累积栅格 → 返回字典（键与 C++ ``DAStftResult`` 读取的键一致）。"""
-    times, freqs = _heatmap_axes(fs, nperseg, hop, nfft, n_frames, columns, pool)
+    times, freqs = _heatmap_axes(fs, nperseg, hop, nfft, n_frames, columns, pool, frame_offset)
     # -inf 替换为 NaN（该单元无数据）
     grid[~np.isfinite(grid)] = np.nan
     return {
@@ -137,13 +138,27 @@ def _heatmap_result(grid, fs, nperseg, hop, nfft, n_frames, columns, pool):
     }
 
 
-def _compute_heatmap_from_provider(provider, sample_count, fs, params, columns, rows, progress_cb, task_id):
+def _compute_heatmap_from_provider(
+    provider,
+    sample_count,
+    fs,
+    params,
+    columns,
+    rows,
+    progress_cb,
+    task_id,
+    frame_start=0,
+    frame_stop=None,
+    block_frames=None,
+):
     """D1-b：有 readRange provider 时按 256 帧块流式计算 STFT 显示栅格。
 
     每块只请求该块帧范围所需的样本区间（``[(f0)*hop, (f1-1)*hop+nperseg)``），
     跨块由核心层 carry 保留重叠样本；块内成帧 → rfft → 频率/时间双向池化进 grid
     后立即丢弃块矩阵。全程不整段读入信号，也不保留整张 STFT 矩阵。
-    detrend/去直流与整段路径同语义（constant/linear 先做一遍流式统计）。
+
+    D5：支持只扫 [frame_start, frame_stop) 帧区间（局部区段降级）与 ``block_frames``
+    降低单块帧数（内存超限时「降低热图精度」）；时间轴仍按全局帧号换算。
 
     :param provider: 分块取数 callable provider(start, count) -> float32 一维数组
     :param sample_count: 信号总采样点数（来自 source["sampleCount"]）
@@ -153,12 +168,18 @@ def _compute_heatmap_from_provider(provider, sample_count, fs, params, columns, 
     :param rows: 频率方向目标行数
     :param progress_cb: 可选进度回调（0~100）
     :param task_id: 可选任务 id；传入时每个分块检查取消标志（C7）
+    :param frame_start: 本段首帧绝对帧号（局部扫描）
+    :param frame_stop: 本段末帧绝对帧号（不含；None 表示到信号末尾）
+    :param block_frames: 每块帧数（None 用默认 256；内存降级时可调小）
     :return: 与 compute_heatmap_sync 完全相同的返回字典
     """
-    nperseg, hop, nfft, n_frames = _stft_layout(fs, sample_count, params)
-    if n_frames <= 0:
+    nperseg, hop, nfft, n_frames_total = _stft_layout(fs, sample_count, params)
+    if n_frames_total <= 0:
         raise RuntimeError("signal is shorter than one STFT window")
-    columns = int(max(1, min(columns, n_frames)))
+    frame_start = int(max(0, min(int(frame_start), n_frames_total - 1)))
+    frame_stop = n_frames_total if frame_stop is None else int(max(frame_start + 1, min(int(frame_stop), n_frames_total)))
+    span = frame_stop - frame_start
+    columns = int(max(1, min(columns, span)))
     window = spectral.window_values(str(params.get("window", "hann")), nperseg)
     u = float(np.sum(window))
     if u <= 0.0:
@@ -166,9 +187,8 @@ def _compute_heatmap_from_provider(provider, sample_count, fs, params, columns, 
     n_freqs = nfft // 2 + 1
     rows = int(max(1, min(rows, n_freqs)))
     pool = _freq_pool_index(n_freqs, rows)
-    # grid：频率行 × 时间列，块内逐帧归并后丢弃块矩阵（§6.6）
     grid = np.full((rows, columns), -np.inf, dtype=np.float32)
-    col_edges = np.linspace(0, n_frames, columns + 1, dtype=np.int64)
+    col_edges = np.linspace(0, span, columns + 1, dtype=np.int64)
 
     def _cancel():
         """每块检查一次取消标志（C7）。"""
@@ -176,36 +196,40 @@ def _compute_heatmap_from_provider(provider, sample_count, fs, params, columns, 
             tsm.raise_if_canceled(task_id)
 
     block_samples = int(spectral._PROVIDER_BLOCK_SAMPLES)
+    # 去趋势统计必须基于**整段**信号（与整段路径口径一致），局部扫描也不例外
     plan = spectral._provider_detrend_plan(
         provider, sample_count, spectrum._detrend_mode(params), block_samples, _cancel
     )
-    # 每块帧数与 provider 块样本上限对齐，保证块样本跨度不超过 block_samples
-    chunk_frames = _BLOCK_FRAMES
+    chunk = int(block_frames) if block_frames else _BLOCK_FRAMES
+    chunk = int(max(1, chunk))
+    # 每块样本跨度不超过 provider 块上限（nperseg 很大时至少 1 帧）
     if hop > 0 and block_samples > nperseg:
-        chunk_frames = max(1, min(chunk_frames, (block_samples - nperseg) // hop + 1))
-    total_blocks = (n_frames + chunk_frames - 1) // chunk_frames
-    for block_idx, (f0, segs) in enumerate(
-        spectral._iter_provider_frames(
-            provider,
-            sample_count,
-            nperseg,
-            hop,
-            block_samples=block_samples,
-            cancel_hook=_cancel,
-            chunk_frames=chunk_frames,
-            detrend_plan=plan,
-        )
-    ):
-        f1 = f0 + segs.shape[0]
+        chunk = max(1, min(chunk, (block_samples - nperseg) // hop + 1))
+    total_blocks = (span + chunk - 1) // chunk
+    for block_idx in range(total_blocks):
+        _cancel()
+        a = frame_start + block_idx * chunk
+        b = min(frame_stop, a + chunk)
+        start_abs = a * hop
+        count = (b - 1) * hop + nperseg - start_abs
+        block = spectral._provider_read(provider, start_abs, count)
+        if plan is not None:
+            block = spectral._apply_provider_detrend(block, start_abs, plan)
+        segs = np.empty((b - a, nperseg), dtype=np.float64)
+        for k in range(a, b):
+            off = (k - a) * hop
+            segs[k - a, :] = block[off : off + nperseg]
         mag = _stft_frame_mag(segs, window, u, nfft)
-        _accumulate_grid(grid, mag, f0, f1, col_edges, pool)
+        _accumulate_grid(grid, mag, a - frame_start, b - frame_start, col_edges, pool)
         if progress_cb:
             progress_cb(100.0 * (block_idx + 1) / total_blocks)
-        del mag, segs
-    return _heatmap_result(grid, fs, nperseg, hop, nfft, n_frames, columns, pool)
+        del mag, segs, block
+    return _heatmap_result(grid, fs, nperseg, hop, nfft, span, columns, pool, frame_start)
 
 
-def compute_heatmap_sync(source, params, columns, rows, progress_cb=None, task_id=None):
+def compute_heatmap_sync(
+    source, params, columns, rows, progress_cb=None, task_id=None, start_sample=None, end_sample=None, block_frames=None
+):
     """计算显示用 STFT 栅格（线性幅值）。
 
     取数策略（D1-b）：
@@ -221,6 +245,9 @@ def compute_heatmap_sync(source, params, columns, rows, progress_cb=None, task_i
     :param rows: 频率方向目标行数
     :param progress_cb: 可选进度回调（0~100）
     :param task_id: 可选任务 id；传入时每个分块检查取消标志（C7）
+    :param start_sample: 可选，局部区段起点（采样点，D5「只扫可见区段」）；None 表示整段
+    :param end_sample: 可选，局部区段终点（采样点，不含）
+    :param block_frames: 可选，每块帧数（D5「降低热图精度」时调小以降低峰值内存）
     :return: dict{times, freqs, values(flat row-major, 行=频率), shape=(rows,cols), nperseg, hop, n_frames}
     """
     fs = float(source.get("sampleRate", 0.0))
@@ -229,8 +256,32 @@ def compute_heatmap_sync(source, params, columns, rows, progress_cb=None, task_i
     provider = spectrum._source_provider(source)
     sample_count = source.get("sampleCount")
     if provider is not None and sample_count is not None and int(sample_count) > 0:
+        # 局部区段：把采样点范围映射成帧区间（帧窗口起点落在 [start, end) 内）
+        layout_nperseg, layout_hop, _layout_nfft, layout_frames = _stft_layout(fs, int(sample_count), params)
+        frame_start = 0
+        frame_stop = None
+        if start_sample is not None or end_sample is not None:
+            total_frames = layout_frames
+            if total_frames <= 0:
+                raise RuntimeError("signal is shorter than one STFT window")
+            if start_sample is not None:
+                frame_start = int(max(0, int(start_sample) // max(1, layout_hop)))
+            if end_sample is not None:
+                frame_stop = int(max(frame_start + 1, (int(end_sample) + layout_hop - 1) // max(1, layout_hop)))
+                frame_stop = min(total_frames, frame_stop)
+            frame_start = min(frame_start, max(0, total_frames - 1))
         return _compute_heatmap_from_provider(
-            provider, int(sample_count), fs, params, columns, rows, progress_cb, task_id
+            provider,
+            int(sample_count),
+            fs,
+            params,
+            columns,
+            rows,
+            progress_cb,
+            task_id,
+            frame_start=frame_start,
+            frame_stop=frame_stop,
+            block_frames=block_frames,
         )
     # N-C1b：编排层保持 float32，块内成帧时由 float64 的 segs 承接（不在入口整段升精度）
     x = _load_channel(source)
@@ -272,8 +323,8 @@ def compute_heatmap_sync(source, params, columns, rows, progress_cb=None, task_i
     return _heatmap_result(grid, fs, nperseg, hop, nfft, n_frames, columns, pool)
 
 
-def compute_heatmap_async(source, params, columns, rows):
-    """在守护线程中计算 STFT 显示栅格，返回任务 id。"""
+def compute_heatmap_async(source, params, columns, rows, start_sample=None, end_sample=None, block_frames=None):
+    """在守护线程中计算 STFT 显示栅格，返回任务 id（支持 D5 局部区段/块帧数降级）。"""
     task_id, status = tsm.create_task_with_status("signal stft")
     status.start("signal stft")
 
@@ -282,7 +333,17 @@ def compute_heatmap_async(source, params, columns, rows):
 
     def worker():
         try:
-            result = compute_heatmap_sync(source, params, columns, rows, progress_cb=progress, task_id=task_id)
+            result = compute_heatmap_sync(
+                source,
+                params,
+                columns,
+                rows,
+                progress_cb=progress,
+                task_id=task_id,
+                start_sample=start_sample,
+                end_sample=end_sample,
+                block_frames=block_frames,
+            )
             if tsm.is_task_canceled(task_id):
                 # 取消后不写结果表，避免大数组滞留（C7）
                 return

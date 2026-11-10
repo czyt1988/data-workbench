@@ -89,6 +89,9 @@ public:
     void setPlayheadFromPlayback(double seconds);
     // 当前时间（秒）
     double currentTime() const;
+    // 当前波形可见时间范围（秒，绝对时间，含 timeOrigin）；无数据/未布局时返回 false
+    // D5：内存超限时「只扫可见区段」用它把范围换算成采样点
+    bool visibleTimeRange(double* startSec, double* endSec) const;
     // 当前通道（多通道信号一次分析一个通道）
     int currentChannel() const;
     void setCurrentChannel(int channel);

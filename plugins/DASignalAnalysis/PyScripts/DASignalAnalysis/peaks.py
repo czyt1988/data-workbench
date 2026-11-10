@@ -142,13 +142,27 @@ def compute_peaks_sync(source, params, task_id=None):
     }
 
 
-def compute_peak_curves_sync(source, params, progress_cb=None, task_id=None):
+def compute_peak_curves_sync(
+    source,
+    params,
+    progress_cb=None,
+    task_id=None,
+    start_sample=None,
+    end_sample=None,
+    frame_step=1,
+):
     """单趟扫描：每帧前 N 峰，返回排名曲线（§6.5）。
+
+    D5「局部扫描」：``start_sample``/``end_sample`` 限定扫描的采样点范围（时间轴仍是
+    全局绝对时间），``frame_step`` 用于「降低精度」（隔帧扫描）降级；默认与整段扫描一致。
 
     :param source: 来源描述（type/path 或 dataframeName/column）
     :param params: 参数字典（键名见 DASignalAnalysisParams::toJson）
     :param progress_cb: 可选进度回调（0~100）
     :param task_id: 可选任务 id；传入时每个分块检查取消标志（C7）
+    :param start_sample: 可选，扫描起点（采样点）
+    :param end_sample: 可选，扫描终点（采样点，不含）
+    :param frame_step: 帧步进（>=1；>1 表示隔帧扫描，结果帧数约为 1/step）
     :return: dict{times, freq_by_rank(N×frames, 缺失为 NaN), mag_by_rank(N×frames, 缺失为 NaN),
                   top_n, n_frames, nperseg, hop}
     """
@@ -163,9 +177,22 @@ def compute_peak_curves_sync(source, params, progress_cb=None, task_id=None):
     nperseg = int(max(2, round(fs * window_ms / 1000.0)))
     nperseg = min(nperseg, y.size)
     hop = spectral.hop_from_overlap(nperseg, overlap)
-    n_frames = spectral.frame_count(y.size, nperseg, hop)
-    if n_frames <= 0:
+    total_frames = spectral.frame_count(y.size, nperseg, hop)
+    if total_frames <= 0:
         raise RuntimeError("signal is shorter than one STFT window")
+    # 局部扫描：把采样点范围映射成帧区间（帧窗口起点落在 [start, end) 内）
+    frame_start = 0
+    frame_stop = total_frames
+    if start_sample is not None:
+        frame_start = int(max(0, int(start_sample) // max(1, hop)))
+    if end_sample is not None:
+        frame_stop = int(min(total_frames, max(frame_start + 1, (int(end_sample) + hop - 1) // max(1, hop))))
+    frame_start = min(frame_start, max(0, total_frames - 1))
+    frame_step = int(max(1, int(frame_step or 1)))
+    frame_indices = np.arange(frame_start, frame_stop, frame_step, dtype=np.int64)
+    n_frames = int(frame_indices.size)
+    if n_frames <= 0:
+        raise RuntimeError("no STFT frame in the requested range")
 
     top_n = int(params.get("peakTopN", 10) or 10)
     # 峰值曲线的实际频率分辨率由段长决定（Δf = fs/nperseg），两处默认间距口径一致（C5）
@@ -183,21 +210,22 @@ def compute_peak_curves_sync(source, params, progress_cb=None, task_id=None):
     for block_idx in range(total_blocks):
         if task_id is not None:
             tsm.raise_if_canceled(task_id)
-        f0 = block_idx * _BLOCK_FRAMES
-        f1 = min(n_frames, f0 + _BLOCK_FRAMES)
-        segs = np.empty((f1 - f0, nperseg), dtype=np.float64)
-        for k in range(f0, f1):
-            start = k * hop
-            segs[k - f0, :] = y[start : start + nperseg]
+        i0 = block_idx * _BLOCK_FRAMES
+        i1 = min(n_frames, i0 + _BLOCK_FRAMES)
+        block_frames = frame_indices[i0:i1]
+        segs = np.empty((block_frames.size, nperseg), dtype=np.float64)
+        for j, k in enumerate(block_frames):
+            start = int(k) * hop
+            segs[j, :] = y[start : start + nperseg]
         spec = np.fft.rfft(segs * w, n=nperseg, axis=1)
         mag = np.abs(spec) / u
         if mag.shape[1] > 1:
             mag[:, 1:] *= 2.0
             if nperseg % 2 == 0 and mag.shape[1] > 1:
                 mag[:, -1] /= 2.0
-        for k in range(f0, f1):
+        for j in range(block_frames.size):
             res = spectral.find_peaks_topn(
-                mag[k - f0],
+                mag[j],
                 freqs,
                 n=top_n,
                 prominence=kw["prominence"],
@@ -207,13 +235,13 @@ def compute_peak_curves_sync(source, params, progress_cb=None, task_id=None):
             )
             m = res["frequencies"].size
             if m > 0:
-                freq_by_rank[:m, k] = res["frequencies"]
-                mag_by_rank[:m, k] = res["magnitudes"]
+                freq_by_rank[:m, i0 + j] = res["frequencies"]
+                mag_by_rank[:m, i0 + j] = res["magnitudes"]
         if progress_cb:
             progress_cb(100.0 * (block_idx + 1) / total_blocks)
         del mag, spec, segs
 
-    times = (np.arange(n_frames, dtype=np.float64) * hop + nperseg / 2.0) / fs
+    times = (frame_indices.astype(np.float64) * hop + nperseg / 2.0) / fs
     return {
         "times": times,
         "freq_by_rank": freq_by_rank,
@@ -264,11 +292,17 @@ def compute_peaks_async(source, params):
     )
 
 
-def compute_peak_curves_async(source, params):
+def compute_peak_curves_async(source, params, start_sample=None, end_sample=None, frame_step=1):
     return _async(
         "signal peak curves",
         lambda progress, task_id: compute_peak_curves_sync(
-            source, params, progress_cb=progress, task_id=task_id
+            source,
+            params,
+            progress_cb=progress,
+            task_id=task_id,
+            start_sample=start_sample,
+            end_sample=end_sample,
+            frame_step=frame_step,
         ),
         "peak curves",
     )

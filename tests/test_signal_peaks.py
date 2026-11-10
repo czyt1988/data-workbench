@@ -268,7 +268,7 @@ def test_async_cancel_does_not_store_result(monkeypatch):
     proceed = threading.Event()
     returned = threading.Event()
 
-    def fake_compute(source, params, progress_cb=None, task_id=None):
+    def fake_compute(source, params, progress_cb=None, task_id=None, **kwargs):
         started.set()
         assert proceed.wait(5.0), "test did not release the fake compute"
         returned.set()
@@ -360,3 +360,24 @@ def test_peaks_to_dataframe_columns_for_table_page():
 
     df_db = exporter.peaks_to_dataframe([1000.0], [0.5], [0.0], [100.0], amplitude_label="Amplitude (dBFS)")
     assert list(df_db.columns)[1] == "Amplitude (dBFS)"
+
+def test_peak_curves_local_scan_matches_full(tmp_path):
+    """D5：局部扫描的时间轴/数值应与整段扫描的对应帧逐列一致（只裁剪范围，不改变算法）。"""
+    wav = tmp_path / "local.wav"
+    _write_wav(wav, _sweep())
+    src = {"type": "file", "path": str(wav), "sampleRate": FS}
+    params = _curve_params(peakTopN=3)
+    full = peaks.compute_peak_curves_sync(src, params)
+    start = int(FS * 0.2)
+    end = int(FS * 0.6)
+    local = peaks.compute_peak_curves_sync(src, params, start_sample=start, end_sample=end)
+    assert 0 < local["n_frames"] < full["n_frames"]
+    tmap = {round(float(t), 9): i for i, t in enumerate(full["times"])}
+    for j, t in enumerate(local["times"]):
+        i = tmap[round(float(t), 9)]
+        assert np.allclose(local["freq_by_rank"][:, j], full["freq_by_rank"][:, i], equal_nan=True)
+        assert np.allclose(local["mag_by_rank"][:, j], full["mag_by_rank"][:, i], equal_nan=True)
+    # 隔帧降精度：时间轴为局部扫描的隔帧子集
+    stepped = peaks.compute_peak_curves_sync(src, params, start_sample=start, end_sample=end, frame_step=2)
+    assert stepped["n_frames"] == len(range(0, local["n_frames"], 2))
+    assert np.allclose(stepped["times"], local["times"][::2])

@@ -1309,3 +1309,26 @@ def test_prepare_import_cancel_removes_partial_temp(tmp_path):
     assert info is not None and info["is_canceled"] is True
     assert importer.take_result(task_id) is None
     assert not out.exists()
+
+def test_stft_local_range_and_block_frames(tmp_path):
+    """D5：热图「只扫可见区段」时间轴落在请求范围内；块帧数只影响临时内存、不改变栅格。"""
+    from DASignalAnalysis import stft
+
+    wav = tmp_path / "range.wav"
+    _write_wav(wav, fs=8000, seconds=10.0)
+    n = 80000
+
+    def _read(channel, start, count):
+        return importer.read_range(wav, channel, start, count)
+
+    src = {"type": "file", "path": str(wav), "channel": 0, "sampleRate": 8000, "sampleCount": n, "read": _read}
+    params = {"stftWindowMs": 20.0, "stftOverlap": 50.0, "stftZeroPadding": 0, "window": "hann"}
+    full = stft.compute_heatmap_sync(src, params, 300, 100)
+    ranged = stft.compute_heatmap_sync(src, params, 300, 100, start_sample=16000, end_sample=48000)
+    assert ranged["n_frames"] < full["n_frames"]
+    assert ranged["times"][0] >= 16000 / 8000 - 0.05
+    assert ranged["times"][-1] <= 48000 / 8000 + 0.05
+    assert ranged["rows"] == full["rows"] and ranged["columns"] == 300
+    # 块帧数只限制临时内存：8 帧/块与默认 256 帧/块的结果应完全一致
+    coarse = stft.compute_heatmap_sync(src, params, 300, 100, block_frames=8)
+    assert np.allclose(coarse["values"], full["values"], equal_nan=True)

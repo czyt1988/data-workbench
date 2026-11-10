@@ -10,6 +10,7 @@
 #include <cmath>
 #include "Analysis/DASignalAmplitude.h"
 #include "Analysis/DASignalAnalysisParams.h"
+#include "Analysis/DASignalMemoryEstimate.h"
 #include "Analysis/DAPeakTableModel.h"
 #include "Form/DASignalFormSpecBuilder.h"
 #include "Render/DAStftRasterData.h"
@@ -69,6 +70,8 @@ private Q_SLOTS:
     void peakModelTimeColumnToggle();
     // D2/测试缺口：参数 → Python 编排字典的键集合/原生类型契约（paramsToDict 下沉后可纯逻辑测试）
     void paramsPythonDictContract();
+    // D5：内存估算公式契约（流式任务不随信号总长增长；整段取数任务按 float32 线性增长）
+    void memoryEstimateContract();
 };
 
 /**
@@ -538,6 +541,73 @@ void DASignalAnalysisTest::paramsPythonDictContract()
     QCOMPARE(def.value(QStringLiteral("peakTopN")).toInt(), 10);
     QCOMPARE(def.value(QStringLiteral("peakMinSpacingHz")).toDouble(), -1.0);
     QVERIFY(def.value(QStringLiteral("unit")).toString().isEmpty());
+}
+
+/**
+ * @brief D5：内存估算公式契约
+ *
+ * - 频谱/热图在 D1 取数架构后为流式，峰值内存只与段长/栅格相关，不随 sampleCount 增长；
+ * - 峰值表/峰值曲线仍整段取数，按 float32 × 并发副本线性增长；
+ * - 包络只按传入的区段长度估算；
+ * - 段长（分辨率越细、窗长越长）增大时估算单调上升。
+ */
+void DASignalAnalysisTest::memoryEstimateContract()
+{
+    DA::DASignalMemoryInputs in;
+    in.sampleRate         = 48000.0;
+    in.resolutionHz       = 10.0;
+    in.stftWindowMs       = 100.0;
+    in.stftOverlapPercent = 50.0;
+    in.peakTopN           = 10;
+    in.gridColumns        = 400;
+    in.gridRows           = 200;
+    in.sampleCount        = qint64(3600) * 48000;  // 1 小时 / 48 kHz
+
+    const qint64 spec1h = DA::dasignalEstimateAnalysisBytes(DA::DASignalAnalysisStage::Spectrum, in);
+    const qint64 heat1h = DA::dasignalEstimateAnalysisBytes(DA::DASignalAnalysisStage::Heatmap, in);
+    in.sampleCount      = in.sampleCount * 10;  // 10 小时
+    const qint64 spec10h = DA::dasignalEstimateAnalysisBytes(DA::DASignalAnalysisStage::Spectrum, in);
+    const qint64 heat10h = DA::dasignalEstimateAnalysisBytes(DA::DASignalAnalysisStage::Heatmap, in);
+    QCOMPARE(spec1h, spec10h);  // 流式：与信号总长无关
+    QCOMPARE(heat1h, heat10h);
+
+    // 峰值表/峰值曲线：含整段 float32 副本，随采样点数线性增长
+    in.sampleCount = qint64(3600) * 48000;
+    const qint64 peak1h  = DA::dasignalEstimateAnalysisBytes(DA::DASignalAnalysisStage::PeakTable, in);
+    const qint64 curve1h = DA::dasignalEstimateAnalysisBytes(DA::DASignalAnalysisStage::PeakCurves, in);
+    in.sampleCount       = in.sampleCount * 2;
+    QVERIFY(DA::dasignalEstimateAnalysisBytes(DA::DASignalAnalysisStage::PeakTable, in) > peak1h);
+    QVERIFY(DA::dasignalEstimateAnalysisBytes(DA::DASignalAnalysisStage::PeakCurves, in) > curve1h);
+
+    // 并发副本系数：2 份 > 1 份（频谱+峰值+曲线同批提交的保守放大）
+    DA::DASignalMemoryInputs one = in;
+    one.concurrentCopies         = 1;
+    QVERIFY(DA::dasignalEstimateAnalysisBytes(DA::DASignalAnalysisStage::PeakTable, in)
+            > DA::dasignalEstimateAnalysisBytes(DA::DASignalAnalysisStage::PeakTable, one));
+
+    // 段长越大（分辨率更细 / STFT 窗更长）→ 估算单调上升
+    DA::DASignalMemoryInputs fine = in;
+    fine.resolutionHz             = 1.0;  // Δf 更细 → nperseg 更大
+    QVERIFY(DA::dasignalEstimateAnalysisBytes(DA::DASignalAnalysisStage::Spectrum, fine) > spec1h);
+    DA::DASignalMemoryInputs longWin = in;
+    longWin.stftWindowMs             = 1000.0;
+    QVERIFY(DA::dasignalEstimateAnalysisBytes(DA::DASignalAnalysisStage::Heatmap, longWin) > heat1h);
+
+    // 包络只按区段估算：短区段远小于整段
+    DA::DASignalMemoryInputs env     = in;
+    env.sampleCount                  = qint64(3600) * 48000;
+    env.rangeSamples                 = 48000;  // 1 秒
+    env.gridColumns                  = 2000;
+    const qint64 envShort            = DA::dasignalEstimateAnalysisBytes(DA::DASignalAnalysisStage::Envelope, env);
+    env.rangeSamples                 = env.sampleCount;
+    QVERIFY(DA::dasignalEstimateAnalysisBytes(DA::DASignalAnalysisStage::Envelope, env) > envShort * 10);
+
+    // 流式频谱 1 h/48 kHz @10 Hz 的估算应远低于 1.5 GB 预算（与实际实测 187 MB 同量级）
+    DA::DASignalMemoryInputs real = in;
+    real.sampleCount              = qint64(3600) * 48000;
+    real.resolutionHz             = 10.0;
+    QVERIFY(DA::dasignalEstimateAnalysisBytes(DA::DASignalAnalysisStage::Spectrum, real)
+            < DA::kDASignalAnalysisBudgetBytes / 4);
 }
 
 QTEST_MAIN(DASignalAnalysisTest)

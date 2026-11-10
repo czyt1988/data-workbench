@@ -37,15 +37,24 @@ public:
     bool computeSpectrum(const DA::DASignalTaskContext& ctx, const DASignalAnalysisParams& params);
     // 发起波形包络计算（异步）；start/end 为采样点，width 为目标列数
     bool computeEnvelope(const DA::DASignalTaskContext& ctx, qint64 start, qint64 end, int width);
-    // 发起时频热图计算（异步）；columns/rows 为显示栅格的目标列数与行数
+    // 发起时频热图计算（异步）；columns/rows 为显示栅格目标列数/行数；
+    // D5：startSample/endSample 限定局部区段（<0 表示整段），blockFrames 降低单块帧数（内存降级）
     bool computeHeatmap(const DA::DASignalTaskContext& ctx,
                         const DASignalAnalysisParams& params,
                         int columns,
-                        int rows);
+                        int rows,
+                        qint64 startSample = -1,
+                        qint64 endSample   = -1,
+                        int blockFrames    = 256);
     // 发起整段峰值表计算（异步）
     bool computePeaks(const DA::DASignalTaskContext& ctx, const DASignalAnalysisParams& params);
-    // 发起每帧前 N 峰值曲线扫描（异步，单趟扫描，可能耗时几十秒）
-    bool computePeakCurves(const DA::DASignalTaskContext& ctx, const DASignalAnalysisParams& params);
+    // 发起每帧前 N 峰值曲线扫描（异步，单趟扫描，可能耗时几十秒）；
+    // D5：startSample/endSample 限定局部区段（<0 表示整段），frameStep>1 隔帧扫描（降低精度）
+    bool computePeakCurves(const DA::DASignalTaskContext& ctx,
+                           const DASignalAnalysisParams& params,
+                           qint64 startSample = -1,
+                           qint64 endSample   = -1,
+                           int frameStep      = 1);
     // 发起数据帧列 → 会话临时 WAV 的后台导出（U9：数据帧来源播放前准备）
     bool computePlaybackWav(const DA::DASignalTaskContext& ctx);
     // 发起音视频导入的后台准备（I2：视频/压缩音频转码搬进 Python 守护线程，界面不阻塞）

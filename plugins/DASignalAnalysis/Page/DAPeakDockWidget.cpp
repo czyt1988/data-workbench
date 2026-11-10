@@ -66,6 +66,11 @@ void DAPeakDockWidget::buildUI()
 
     // 按钮行
     QHBoxLayout* btnLay = new QHBoxLayout;
+    // D5：局部扫描标注放在按钮行左侧（峰值曲线只覆盖可见区段时提示用户）
+    mPartialLabel = new QLabel(this);
+    mPartialLabel->setStyleSheet(QStringLiteral("color:#b26a00;font-weight:600;"));
+    mPartialLabel->setVisible(false);
+    btnLay->addWidget(mPartialLabel);
     mSettingsButton     = new QPushButton(this);
     mSendButton         = new QPushButton(this);
     mExportButton       = new QPushButton(this);
@@ -115,6 +120,25 @@ void DAPeakDockWidget::setAmplitudeDisplay(const QString& amplitudeMode,
     mUnit          = unit;
     mModel->setAmplitudeMode(amplitudeMode, dbReference);
     mModel->setCalibration(calibration, unit);
+}
+
+/**
+ * @brief D5：标记峰值曲线为局部扫描（超预算降级后），显示/隐藏「局部扫描」标注
+ */
+void DAPeakDockWidget::setPartialScan(bool on)
+{
+    mPartialScan = on;
+    if (mPartialLabel) {
+        mPartialLabel->setVisible(on);
+    }
+}
+
+/**
+ * @brief D5：当前峰值曲线是否为局部扫描
+ */
+bool DAPeakDockWidget::isPartialScan() const
+{
+    return mPartialScan;
 }
 
 void DAPeakDockWidget::setCurvePlaceholderVisible(bool visible)
@@ -227,6 +251,11 @@ void DAPeakDockWidget::showEvent(QShowEvent* e)
 
 void DAPeakDockWidget::retranslateUi()
 {
+    if (mPartialLabel) {
+        mPartialLabel->setText(tr("Local scan"));  // cn:局部扫描
+        mPartialLabel->setToolTip(tr("Peak curves cover only the visible time range or use a coarser frame step."));
+        // cn:峰值曲线只覆盖可见时间范围，或使用了更粗的帧步进。
+    }
     if (mCurvePlaceholder) {
         mCurvePlaceholder->setText(tr("Open this window to compute the per-frame peak curves"));
         // cn:打开本窗口后计算每帧前 N 峰值曲线
