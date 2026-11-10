@@ -1,4 +1,5 @@
 #include "DASignalImportDialog.h"
+#include <QCheckBox>
 #include <QComboBox>
 #include <QDialogButtonBox>
 #include <QDoubleSpinBox>
@@ -7,13 +8,15 @@
 #include <QFileInfo>
 #include <QFormLayout>
 #include <QHBoxLayout>
+#include <QItemSelectionModel>
 #include <QLabel>
 #include <QLineEdit>
-#include <QListWidget>
 #include <QPushButton>
+#include <QSignalBlocker>
 #include <QVBoxLayout>
 #include <QDebug>
 #include "DADataManagerInterface.h"
+#include "Table/Views/DAPySeriesListView.h"
 #include "pandas/DAPyDataFrame.h"
 #include "Signal/DASignalImporter.h"
 
@@ -112,6 +115,10 @@ void DASignalImportDialog::updateFileInfo()
 
 /**
  * @brief 数据帧模式界面：源数据帧 / 时间列 / 幅值列 / 采样率 / 信号名
+ *
+ * 选列控件按 Q5 决定 ① 使用 DAPySeriesListView（评审 I6）：时间列与幅值列各一个列表，
+ * 列表项由 DADataManagerTreeModel 的 series item 提供（dtype 图标 + 名称/长度描述），
+ * 预填候选用 addSeries() 完成；时间列单选、幅值列多选用 QListView 的选择模式实现。
  */
 void DASignalImportDialog::buildDataFrameUI()
 {
@@ -123,11 +130,23 @@ void DASignalImportDialog::buildDataFrameUI()
     mDataLabel = new QLabel(this);
     form->addRow(mDataLabel, mDataCombo);
 
-    mTimeColumnCombo = new QComboBox(this);
-    mTimeLabel       = new QLabel(this);
-    form->addRow(mTimeLabel, mTimeColumnCombo);
+    // 时间列：单选取一列（预填候选需要 addSeries 多次，故内部用多序列模式）
+    mTimeColumnList = new DAPySeriesListView(this);
+    mTimeColumnList->setObjectName(QStringLiteral("da-signal-import-time-column"));
+    mTimeColumnList->setAcceptMode(DAPySeriesListView::AcceptMultDataframeMultSeries);
+    mTimeColumnList->setSelectionMode(QAbstractItemView::SingleSelection);
+    mTimeColumnList->setMinimumHeight(80);
+    mTimeLabel = new QLabel(this);
+    form->addRow(mTimeLabel, mTimeColumnList);
 
-    mValueColumnList = new QListWidget(this);
+    // 「无时间列」显式入口：取代表单原来的首项「No time column」（评审 I7），勾选后按手动采样率导入
+    mNoTimeColumnCheck = new QCheckBox(this);
+    form->addRow(QString(), mNoTimeColumnCheck);
+
+    // 幅值列：多选即多通道
+    mValueColumnList = new DAPySeriesListView(this);
+    mValueColumnList->setObjectName(QStringLiteral("da-signal-import-value-columns"));
+    mValueColumnList->setAcceptMode(DAPySeriesListView::AcceptMultDataframeMultSeries);
     mValueColumnList->setSelectionMode(QAbstractItemView::ExtendedSelection);
     mValueColumnList->setMinimumHeight(110);
     mValueLabel = new QLabel(this);
@@ -158,9 +177,12 @@ void DASignalImportDialog::buildDataFrameUI()
 
     connect(mDataCombo, QOverload< int >::of(&QComboBox::currentIndexChanged),
             this, &DASignalImportDialog::onSourceDataChanged);
-    connect(mTimeColumnCombo, QOverload< int >::of(&QComboBox::currentIndexChanged),
+    // 时间列选中行变化 → 重新推断采样率（选择模型信号参数多，槽可少收）
+    connect(mTimeColumnList->selectionModel(), &QItemSelectionModel::currentChanged,
             this, &DASignalImportDialog::onTimeColumnChanged);
-    connect(mValueColumnList, &QListWidget::itemSelectionChanged, this, &DASignalImportDialog::onValueSelectionChanged);
+    connect(mValueColumnList->selectionModel(), &QItemSelectionModel::selectionChanged,
+            this, &DASignalImportDialog::onValueSelectionChanged);
+    connect(mNoTimeColumnCheck, &QCheckBox::toggled, this, &DASignalImportDialog::onNoTimeColumnToggled);
     connect(mSampleRateSpin, QOverload< double >::of(&QDoubleSpinBox::valueChanged),
             this, &DASignalImportDialog::onSampleRateEdited);
 
@@ -187,7 +209,7 @@ void DASignalImportDialog::refreshDataFrameList()
     }
     mUpdatingUI = false;
     if (mDataFrames.isEmpty()) {
-        setStatusMessage(tr("No data frame is available. Import data first."), true);  // cn:没有可用的数据帧，请先导入数据。
+        setStatusMessage(StatusNoDataFrame);
     }
     onSourceDataChanged(mDataCombo->currentIndex());
 }
@@ -202,42 +224,92 @@ void DASignalImportDialog::onSourceDataChanged(int index)
 }
 
 /**
- * @brief 刷新列下拉与多选列表
+ * @brief 刷新时间列/幅值列两个序列列表
+ *
+ * DAPySeriesListView 没有 clear()，用 removeSeries() 同时清模型行与内部序列缓存；
+ * 预填用 addSeries(dataframe, 列名)，列表项自带 dtype 图标与「df.列,长度」描述。
  */
 void DASignalImportDialog::refreshColumnLists()
 {
-    if (mTimeColumnCombo == nullptr || mValueColumnList == nullptr) {
+    if (mTimeColumnList == nullptr || mValueColumnList == nullptr) {
         return;
     }
     mUpdatingUI = true;
-    mTimeColumnCombo->clear();
-    mValueColumnList->clear();
-    mTimeColumnCombo->addItem(tr("No time column"), QString());  // cn:无时间列
+    clearSeriesList(mTimeColumnList);
+    clearSeriesList(mValueColumnList);
     const DAData d = selectedData();
     if (d.isDataFrame()) {
         try {
-            DAPyDataFrame df = d.toDataFrame();
+            DAPyDataFrame df            = d.toDataFrame();
             const QList< QString > cols = df.columns();
             for (const QString& c : cols) {
-                mTimeColumnCombo->addItem(c, c);
-                auto item = new QListWidgetItem(c, mValueColumnList);
-                item->setData(Qt::UserRole, c);
+                mTimeColumnList->addSeries(d, c);
+                mValueColumnList->addSeries(d, c);
             }
         } catch (const std::exception& e) {
             qWarning() << "DASignalImportDialog::refreshColumnLists:" << e.what();
-            setStatusMessage(QString::fromUtf8(e.what()), true);
+            setStatusMessage(StatusDetail, QString::fromUtf8(e.what()));
         }
     }
     mUpdatingUI = false;
-    onTimeColumnChanged(mTimeColumnCombo->currentIndex());
+    // 换了数据帧，之前的「无时间列」选择失效：恢复成让用户重新指认
+    if (mNoTimeColumnCheck) {
+        QSignalBlocker blocker(mNoTimeColumnCheck);
+        mNoTimeColumnCheck->setChecked(false);
+    }
+    if (mTimeColumnList) {
+        mTimeColumnList->setEnabled(true);
+    }
+    refreshInference();
 }
 
 /**
- * @brief 时间列变化：重算推断采样率并预填
+ * @brief 清空一个序列列表（clear() 不存在，按内部序列逐条 removeSeries）
  */
-void DASignalImportDialog::onTimeColumnChanged(int index)
+void DASignalImportDialog::clearSeriesList(DAPySeriesListView* list)
 {
-    Q_UNUSED(index)
+    if (nullptr == list) {
+        return;
+    }
+    const QList< QPair< DAData, QStringList > > series = list->getSeries();
+    for (const auto& pair : series) {
+        for (const QString& name : pair.second) {
+            list->removeSeries(pair.first, name);
+        }
+    }
+}
+
+/**
+ * @brief 时间列选择变化：重算推断采样率并预填
+ */
+void DASignalImportDialog::onTimeColumnChanged()
+{
+    if (mUpdatingUI) {
+        return;
+    }
+    // 已经勾选「无时间列」时，选中行不应生效（选择变化只可能来自程序化清理）
+    if (mNoTimeColumnCheck && mNoTimeColumnCheck->isChecked()) {
+        return;
+    }
+    refreshInference();
+}
+
+/**
+ * @brief 「无时间列」勾选：清掉时间列选中行，改走手动填写采样率路径
+ */
+void DASignalImportDialog::onNoTimeColumnToggled(bool checked)
+{
+    if (mUpdatingUI) {
+        return;
+    }
+    if (mTimeColumnList) {
+        if (checked && mTimeColumnList->selectionModel()) {
+            mTimeColumnList->selectionModel()->clearSelection();
+            mTimeColumnList->selectionModel()->clearCurrentIndex();
+        }
+        // 勾选「无时间列」时禁用列表，避免选择与勾选语义互相打架
+        mTimeColumnList->setEnabled(!checked);
+    }
     refreshInference();
 }
 
@@ -267,9 +339,9 @@ void DASignalImportDialog::onSampleRateEdited(double v)
         return;
     }
     if (v <= 0.0) {
-        setStatusMessage(tr("Please enter a positive sample rate."), true);  // cn:请输入合法的正数采样率。
+        setStatusMessage(StatusNeedPositiveSampleRate);
     } else {
-        setStatusMessage(QString(), false);
+        setStatusMessage(StatusNone);
     }
     updateOkEnabled();
 }
@@ -280,6 +352,7 @@ void DASignalImportDialog::onSampleRateEdited(double v)
  * 规则（方案 §4.4）：
  * - 有时间列：fs = 1 / median(diff(t))，预填；
  * - 无时间列：采样率清空，确定按钮置灰并给内联提示。
+ * 推断结果缓存在 mInferenceState，语言切换时由 updateInferenceText() 按状态重新取词（评审 I7）。
  */
 void DASignalImportDialog::refreshInference()
 {
@@ -290,40 +363,104 @@ void DASignalImportDialog::refreshInference()
     const DAData d        = selectedData();
     mUpdatingUI           = true;
     if (timeCol.isEmpty() || !d.isDataFrame()) {
+        mInferenceState = InferenceNoTimeColumn;
         mSampleRateSpin->setValue(0.0);
-        mInferenceLabel->setText(tr("No time column: enter the sample rate manually."));
-        // cn:无时间列：请手动填写采样率。
         mUpdatingUI = false;
+        updateInferenceText();
         updateOkEnabled();
         return;
     }
     double fs = 0.0, dur = 0.0;
     QString err;
     if (DASignalImporter::inferSampleRate(d, timeCol, &fs, &dur, &err)) {
+        mInferenceState    = InferenceOk;
+        mInferredRate      = fs;
+        mInferredDuration  = dur;
         mSampleRateSpin->setValue(fs);
-        mInferenceLabel->setText(tr("Inferred sample rate = %1 Hz, duration = %2 s")
-                                     .arg(fs, 0, 'f', 3)
-                                     .arg(dur, 0, 'f', 3));
-        // cn:推断采样率 = %1 赫兹，时长 = %2 秒
-        setStatusMessage(QString(), false);
+        setStatusMessage(StatusNone);
     } else {
+        mInferenceState  = InferenceFailed;
+        mInferenceError  = err;
         mSampleRateSpin->setValue(0.0);
-        mInferenceLabel->setText(tr("Cannot infer the sample rate from the time column: %1").arg(err));
-        // cn:无法从时间列推断采样率：%1
     }
     mUpdatingUI = false;
+    updateInferenceText();
     updateOkEnabled();
 }
 
 /**
- * @brief 内联状态提示（字段校验不用模态消息框）
+ * @brief 按当前推断状态渲染提示文本（语言切换时也走这里，评审 I7）
  */
-void DASignalImportDialog::setStatusMessage(const QString& msg, bool isError)
+void DASignalImportDialog::updateInferenceText()
+{
+    if (nullptr == mInferenceLabel) {
+        return;
+    }
+    switch (mInferenceState) {
+    case InferenceNoTimeColumn:
+        mInferenceLabel->setText(tr("No time column: enter the sample rate manually."));
+        // cn:无时间列：请手动填写采样率。
+        break;
+    case InferenceOk:
+        mInferenceLabel->setText(tr("Inferred sample rate = %1 Hz, duration = %2 s")
+                                     .arg(mInferredRate, 0, 'f', 3)
+                                     .arg(mInferredDuration, 0, 'f', 3));
+        // cn:推断采样率 = %1 赫兹，时长 = %2 秒
+        break;
+    case InferenceFailed:
+        mInferenceLabel->setText(tr("Cannot infer the sample rate from the time column: %1").arg(mInferenceError));
+        // cn:无法从时间列推断采样率：%1
+        break;
+    case InferenceNone:
+    default:
+        mInferenceLabel->clear();
+        break;
+    }
+}
+
+/**
+ * @brief 内联状态提示（字段校验不用模态消息框）
+ *
+ * 只记录状态种类与明细，文本在 updateStatusText() 里取词渲染；
+ * 语言切换时 retranslateUi() 会按同一种类重新取 tr 文本（评审 I7）。
+ */
+void DASignalImportDialog::setStatusMessage(StatusKind kind, const QString& detail)
+{
+    mStatusKind   = kind;
+    mStatusDetail = detail;
+    updateStatusText();
+}
+
+/**
+ * @brief 按当前状态渲染内联提示文本（含语言切换后的重译）
+ */
+void DASignalImportDialog::updateStatusText()
 {
     if (nullptr == mStatusLabel) {
         return;
     }
-    mStatusLabel->setText(msg);
+    QString text;
+    bool isError = true;
+    switch (mStatusKind) {
+    case StatusNoDataFrame:
+        text = tr("No data frame is available. Import data first.");  // cn:没有可用的数据帧，请先导入数据。
+        break;
+    case StatusNeedPositiveSampleRate:
+        text = tr("Please enter a positive sample rate.");  // cn:请输入合法的正数采样率。
+        break;
+    case StatusNoFFmpeg:
+        text = tr("FFmpeg was not detected. Specify its path in the signal analysis settings.");
+        // cn:未检测到 FFmpeg，请在分析设置里指定路径。
+        break;
+    case StatusDetail:
+        text = mStatusDetail;
+        break;
+    case StatusNone:
+    default:
+        isError = false;
+        break;
+    }
+    mStatusLabel->setText(text);
     // 错误用橙红 #CE6043，正常提示用中性灰 #727272（DESIGN.md §2.3）
     mStatusLabel->setStyleSheet(isError ? QStringLiteral("color:#CE6043;") : QStringLiteral("color:#727272;"));
 }
@@ -389,23 +526,39 @@ DAData DASignalImportDialog::selectedData() const
     return mDataFrames.at(idx);
 }
 
+/**
+ * @brief 当前选中的时间列名（未选中 = 无时间列）
+ */
 QString DASignalImportDialog::selectedTimeColumn() const
 {
-    if (nullptr == mTimeColumnCombo) {
+    if (mNoTimeColumnCheck && mNoTimeColumnCheck->isChecked()) {
         return QString();
     }
-    return mTimeColumnCombo->currentData().toString();
+    if (nullptr == mTimeColumnList || nullptr == mTimeColumnList->selectionModel()) {
+        return QString();
+    }
+    const QModelIndexList selected = mTimeColumnList->selectionModel()->selectedIndexes();
+    if (selected.isEmpty()) {
+        return QString();
+    }
+    return selected.first().data(Qt::DisplayRole).toString();
 }
 
+/**
+ * @brief 当前选中的幅值列（可多选，顺序按列表顺序）
+ */
 QStringList DASignalImportDialog::selectedValueColumns() const
 {
     QStringList cols;
-    if (nullptr == mValueColumnList) {
+    if (nullptr == mValueColumnList || nullptr == mValueColumnList->selectionModel()) {
         return cols;
     }
-    const QList< QListWidgetItem* > items = mValueColumnList->selectedItems();
-    for (const QListWidgetItem* item : items) {
-        cols.append(item->data(Qt::UserRole).toString());
+    const QModelIndexList selected = mValueColumnList->selectionModel()->selectedIndexes();
+    for (const QModelIndex& idx : selected) {
+        const QString name = idx.data(Qt::DisplayRole).toString();
+        if (!name.isEmpty() && !cols.contains(name)) {
+            cols.append(name);
+        }
     }
     return cols;
 }
@@ -457,6 +610,9 @@ void DASignalImportDialog::retranslateUi()
     if (mTimeLabel) {
         mTimeLabel->setText(tr("Time Column"));  // cn:时间列
     }
+    if (mNoTimeColumnCheck) {
+        mNoTimeColumnCheck->setText(tr("No time column"));  // cn:无时间列
+    }
     if (mValueLabel) {
         mValueLabel->setText(tr("Value Columns"));  // cn:幅值列（可多选）
     }
@@ -468,14 +624,19 @@ void DASignalImportDialog::retranslateUi()
     }
     if (mMode != DataFrameMode) {
         updateFileInfo();  // 文件信息提示随语言刷新
+    } else {
+        // 推断提示（无时间列 / 推断成功 / 推断失败）随语言重新取词（评审 I7）
+        updateInferenceText();
     }
     if (mButtonBox) {
         mButtonBox->button(QDialogButtonBox::Ok)->setText(tr("Import"));  // cn:导入
         mButtonBox->button(QDialogButtonBox::Cancel)->setText(tr("Cancel"));  // cn:取消
     }
     if (mMode == VideoMode && mStatusLabel && !DASignalImporter::isFFmpegAvailable()) {
-        setStatusMessage(tr("FFmpeg was not detected. Specify its path in the signal analysis settings."), true);
-        // cn:未检测到 FFmpeg，请在分析设置里指定路径。
+        setStatusMessage(StatusNoFFmpeg);
+    } else {
+        // 数据帧模式的状态提示（无可用数据帧 / 采样率非法等）随语言刷新（评审 I7）
+        updateStatusText();
     }
 }
 }  // namespace DA
