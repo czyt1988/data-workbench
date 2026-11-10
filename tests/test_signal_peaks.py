@@ -305,3 +305,46 @@ def test_async_success_stores_contract_result(tmp_path):
         assert np.isfinite(result["freq_by_rank"][0]).any()
     finally:
         peaks.take_result(task_id)
+
+
+# ---------------------------------------------------------------- 返回字典契约与全零信号（§11.5）
+
+def test_peaks_sync_return_contract(tmp_path):
+    """compute_peaks_sync 返回键与 C++ DAPeakResult 读取键一致，各列等长。"""
+    wav = tmp_path / "tone.wav"
+    _write_wav(wav, _tone())
+    src = {"type": "file", "path": str(wav), "sampleRate": FS}
+    r = peaks.compute_peaks_sync(src, _table_params())
+    assert set(r.keys()) == {"frequencies", "magnitudes", "rel_db", "share", "resolution_hz"}
+    assert r["frequencies"].size == r["magnitudes"].size
+    assert r["frequencies"].size == r["rel_db"].size == r["share"].size
+    assert r["frequencies"].size > 0
+    assert isinstance(r["resolution_hz"], float)
+
+
+def test_peaks_all_zero_signal_returns_empty(tmp_path):
+    """全零信号：峰值表为空、无 NaN；峰值曲线整帧无峰（全 NaN），不崩溃。"""
+    wav = tmp_path / "silence.wav"
+    _write_wav(wav, np.zeros(int(FS * 0.2)))
+    src = {"type": "file", "path": str(wav), "sampleRate": FS}
+
+    r = peaks.compute_peaks_sync(src, _table_params())
+    assert r["frequencies"].size == 0
+    assert r["magnitudes"].size == r["rel_db"].size == r["share"].size == 0
+    assert np.isfinite(r["resolution_hz"])
+
+    curves = peaks.compute_peak_curves_sync(src, _curve_params(peakTopN=3))
+    assert curves["n_frames"] > 0
+    assert np.all(np.isnan(curves["freq_by_rank"]))
+    assert np.all(np.isnan(curves["mag_by_rank"]))
+
+
+def test_peak_curves_contract_float32_input(tmp_path):
+    """N-C1b：峰值曲线编排接受 float32 取数路径且契约不变。"""
+    wav = tmp_path / "sweep.wav"
+    _write_wav(wav, _sweep())
+    src = {"type": "file", "path": str(wav), "sampleRate": FS}
+    r = peaks.compute_peak_curves_sync(src, _curve_params(peakTopN=2))
+    assert r["freq_by_rank"].shape == (2, r["n_frames"])
+    assert r["freq_by_rank"].dtype == np.float64
+    assert np.isfinite(r["freq_by_rank"][0]).any()

@@ -12,6 +12,8 @@
   average（mean/median）平均；N <= nperseg 时退化为整段单次 FFT；
 - zeroPadding 语义为「额外点数」：nfft = 段长 + zeroPadding（与 stft.py 一致）；
 - 读入的 NaN/Inf 统一归零（nan_to_num），避免污染 FFT 与包络；
+- 取数与编排层全程 float32（N-C1b）：文件路径按块只读所需通道，不整段升 float64，
+  FFT 在核心层分块循环内部升 float64，避免「整段 float64 + nan_to_num 副本」；
 - 分块循环每个块检查取消标志，命中抛 TaskCanceledError，且不写结果表。
 """
 
@@ -30,10 +32,15 @@ _RESULT_STORE = {}
 
 
 def _load_channel(source):
-    """按来源描述读取单通道整段数据（文件路径读 float32，统一转 float64）。
+    """按来源描述读取单通道数据（float32，评审 N-C1b）。
 
-    NaN/Inf 统一用 np.nan_to_num 归零（C6）：数据帧列里的缺失值不能污染
-    FFT/包络（否则峰值被吞成 0、dBFS 参考失真）。
+    - 文件来源：按块只读目标通道（importer.read_channel_all），峰值内存是
+      「块 × 通道数」而不是「整文件所有通道」；
+    - 数据帧来源：取该列后转 float32（不整段升 float64）；
+    - NaN/Inf 统一用 np.nan_to_num 原地归零（C6），不产生第二份整段副本；
+    - FFT 的 float64 转换只发生在核心层分块循环内部。
+
+    :return: float32 一维数组
     """
     stype = str(source.get("type", "file"))
     channel = int(source.get("channel", 0))
@@ -47,11 +54,13 @@ def _load_channel(source):
         if df is None:
             raise RuntimeError("dataframe not found: %s" % source.get("dataframeName", ""))
         column = source.get("column", "")
-        values = np.asarray(df[column].to_numpy(), dtype=np.float64)
+        values = np.asarray(df[column].to_numpy(), dtype=np.float32)
     else:
-        values = importer.read_channel_all(source.get("path", ""), channel).astype(np.float64)
-    # 两路统一归零 NaN/Inf（C6）
-    values = np.nan_to_num(values, nan=0.0, posinf=0.0, neginf=0.0)
+        values = importer.read_channel_all(source.get("path", ""), channel)
+        if values.dtype != np.float32:
+            values = values.astype(np.float32, copy=False)
+    # 两路统一原地归零 NaN/Inf（C6），不再复制整段数组
+    values = np.nan_to_num(values, copy=False, nan=0.0, posinf=0.0, neginf=0.0)
     if values.size == 0:
         raise RuntimeError("signal contains no samples")
     return values
@@ -77,7 +86,8 @@ def compute_spectrum_sync(x, fs, params, task_id=None):
     :param task_id: 可选任务 id；传入时每个分块检查取消标志（C7）
     :return: dict{freqs, amplitudes, psd_freqs, psd_values, seg_len, resolution_hz, window, rms}
     """
-    y = _preprocess(np.asarray(x, dtype=np.float64), params)
+    # N-C1b：编排层保持 float32，FFT 段内由核心层升 float64
+    y = _preprocess(np.asarray(x), params)
     window = str(params.get("window", "hann"))
     # C2：口径统一在显示/导出层换算，计算层永远输出峰值幅度
     rms = False
@@ -122,6 +132,7 @@ def compute_spectrum_sync(x, fs, params, task_id=None):
         overlap=overlap,
         window=window,
         average=str(params.get("average", "mean")),
+        cancel_hook=cancel_hook,
     )
     return {
         "freqs": freqs,
@@ -159,6 +170,10 @@ def compute_spectrum_async(source, params):
                 return
             status.update_progress(95.0, "finalizing")
             _RESULT_STORE[task_id] = result
+            if tsm.is_task_canceled(task_id):
+                # 写结果表与取消的竞态：取消后自行清理，避免结果滞留（C7）
+                _RESULT_STORE.pop(task_id, None)
+                return
             status.finish(True, "")
         except tsm.TaskCanceledError:
             status.finish(False, "cancelled")

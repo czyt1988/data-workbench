@@ -71,7 +71,13 @@ public:
     // ---------------- 临时文件 ----------------
     // 插件专属临时目录（信号关闭/工程关闭/程序退出三处挂清理，避免残留）
     static QString tempDir();
-    // 清理临时目录中本插件的全部抽取文件
+    // 会话级临时目录（<tempDir>/session-<uuid>，首次调用时创建；评审 N-I12）
+    static QString sessionTempDir();
+    // 在会话临时目录内生成并登记一个 .wav 路径（转码产物、数据帧播放导出共用）
+    static QString newSessionTempWavPath();
+    // 登记本会话生成的临时文件（如播放器缓存），供 cleanupTempFiles 只清理本会话产物
+    static void registerTempFile(const QString& path);
+    // 清理本会话登记过的临时文件（不再按后缀通删其它会话产物，评审 N-I12）
     static void cleanupTempFiles();
 };
 }  // namespace DA

@@ -157,6 +157,12 @@ class ProcessingStatus:
         with self._lock:
             return not self._is_processing or self._is_canceled
 
+    @property
+    def is_canceled(self) -> bool:
+        """是否已被请求取消（线程安全，供长任务分块循环的低开销检查点使用）"""
+        with self._lock:
+            return self._is_canceled
+
 """
 # 使用示例函数
 def create_and_run_example_task(task_name: str) -> str:
@@ -469,14 +475,18 @@ def is_task_canceled(task_id: str) -> bool:
     """
     查询任务是否已被请求取消（供长任务分块循环中的检查点使用）
 
+    直接读状态对象的取消标志，不再构造整份状态字典（分块循环调用开销更低）。
+
     Args:
         task_id: 任务ID
 
     Returns:
         bool: True 表示已请求取消（任务不存在时返回 False）
     """
-    info = global_status_manager.get_status_info(task_id)
-    return bool(info and info.get("is_canceled"))
+    status = global_status_manager.get_status(task_id)
+    if status is None:
+        return False
+    return bool(status.is_canceled)
 
 
 def raise_if_canceled(task_id: str) -> None:

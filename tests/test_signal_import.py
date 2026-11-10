@@ -2,6 +2,8 @@
 
 import os
 import sys
+import threading
+import time
 
 import numpy as np
 import pytest
@@ -121,8 +123,10 @@ def test_probe_and_read_range(tmp_path):
     assert importer.read_range(wav, 5, 0, 100).size == 0
 
 
-def test_read_range_missing_file_returns_empty():
-    assert importer.read_range("no-such-file.wav", 0, 0, 100).size == 0
+def test_read_range_missing_file_raises():
+    """N-I1c：读失败不再静默返回空数组，而是抛出带原因的 RuntimeError（C++ error 已具备）。"""
+    with pytest.raises(RuntimeError, match="cannot read audio file"):
+        importer.read_range("no-such-file.wav", 0, 0, 100)
 
 
 # ---------------------------------------------------------------- 数据帧取数
@@ -550,7 +554,8 @@ def test_stft_cancellation_aborts(tmp_path):
 
 
 def test_soundfile_available_selfcheck():
-    """D3：依赖可用性自检入口（当前测试环境已安装 soundfile）。"""
+    """D3/N-test1：依赖可用性自检入口（无 soundfile 的部署环境自动 skip，不误报失败）。"""
+    pytest.importorskip("soundfile")
     assert importer.soundfile_available() is True
 
 
@@ -646,3 +651,351 @@ def test_package_all_lists_all_modules():
     assert set(DASignalAnalysis.__all__) == expected
     for name in expected:
         assert importlib.import_module("DASignalAnalysis." + name) is not None
+
+
+# ---------------------------------------------------------------- N-C1b 单通道 float32 取数
+
+def _wait_task(task_id, timeout=10.0):
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        info = tsm.get_task_status(task_id)
+        if info and not info["is_running"]:
+            return info
+        time.sleep(0.02)
+    raise AssertionError("task did not finish in %.1f s" % timeout)
+
+
+def test_read_channel_all_reads_single_channel_in_blocks(monkeypatch):
+    """N-C1b：soundfile 路径按块读取，且只保留目标通道（float32）。"""
+    import types
+
+    total = 2500
+    base = np.arange(total, dtype=np.float32)
+    two_ch = np.stack([base, -base], axis=1)
+    requests = []
+
+    class FakeSoundFile:
+        def __init__(self, path):
+            self.path = path
+            self.frames = total
+            self.channels = 2
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+        def read(self, frames=-1, dtype="float64", always_2d=False):
+            requests.append(int(frames))
+            start = sum(requests[:-1])
+            return np.ascontiguousarray(two_ch[start : start + frames])
+
+    fake_sf = types.SimpleNamespace(SoundFile=FakeSoundFile)
+    monkeypatch.setattr(importer, "_IO_BLOCK_FRAMES", 1000)
+    monkeypatch.setattr(importer, "_load_soundfile", lambda: fake_sf)
+
+    out = importer.read_channel_all("unused.wav", 1)
+    assert out.dtype == np.float32
+    assert out.size == total
+    assert np.array_equal(out, -base)
+    assert len(requests) == 3
+    assert max(requests) <= 1000
+
+
+def test_load_channel_returns_float32(tmp_path, monkeypatch):
+    """N-C1b：频谱编排取数（文件与数据帧两路）都返回 float32，不再整段升 float64。"""
+    from DASignalAnalysis import spectrum
+
+    wav = tmp_path / "tone.wav"
+    _write_wav(wav, fs=48000, seconds=0.2)
+    src = {"type": "file", "path": str(wav), "sampleRate": 48000}
+    values = spectrum._load_channel(src)
+    assert values.dtype == np.float32
+
+    pd = pytest.importorskip("pandas")
+
+    class FakeDM:
+        def getAllDataframes(self):
+            return {"df1": pd.DataFrame({"y": np.arange(100, dtype=np.float64)})}
+
+    class FakeCore:
+        def getDataManagerInterface(self):
+            return FakeDM()
+
+    import types
+
+    fake_app = types.ModuleType("da_app")
+    fake_app.getCore = lambda: FakeCore()
+    monkeypatch.setitem(sys.modules, "da_app", fake_app)
+    df_src = {"type": "dataframe", "dataframeName": "df1", "column": "y", "sampleRate": 100.0}
+    assert spectrum._load_channel(df_src).dtype == np.float32
+
+
+def test_spectrum_sync_float32_and_float64_inputs_match():
+    """N-C1b：float32 取数路径与 float64 输入的计算结果一致。"""
+    from DASignalAnalysis import spectrum
+
+    fs = 48000.0
+    t = np.arange(int(fs * 0.5)) / fs
+    x = 0.5 * np.sin(2 * np.pi * 1000.0 * t)
+    r32 = spectrum.compute_spectrum_sync(x.astype(np.float32), fs, _params())
+    r64 = spectrum.compute_spectrum_sync(x, fs, _params())
+    assert np.allclose(r32["freqs"], r64["freqs"])
+    # 绝对门限覆盖 float32 量化在 FFT 噪声底引入的 ~1e-8 级差异，相对门限约束主瓣/峰值
+    assert np.allclose(r32["amplitudes"], r64["amplitudes"], rtol=1e-4, atol=1e-7)
+    assert np.allclose(r32["psd_values"], r64["psd_values"], rtol=1e-4, atol=1e-8)
+
+
+# ---------------------------------------------------------------- N-I1a WAV 兜底按帧读取
+
+def test_probe_wav_reads_header_only(tmp_path, monkeypatch):
+    """N-I1a：缺 soundfile 时 probe_audio 只解析 WAV 头，不整文件读入。"""
+    wav = tmp_path / "tone.wav"
+    _write_wav(wav, fs=48000, seconds=0.5, channels=2)
+    monkeypatch.setitem(sys.modules, "soundfile", None)
+
+    def _no_full_read(*args, **kwargs):
+        raise AssertionError("probe_audio must not read sample data")
+
+    monkeypatch.setattr(importer, "_read_wav_channel_all", _no_full_read)
+    monkeypatch.setattr(importer, "_read_wav_channel_range", _no_full_read)
+    probe = importer.probe_audio(wav)
+    assert probe["ok"]
+    assert probe["sample_rate"] == pytest.approx(48000.0)
+    assert probe["channels"] == 2
+    assert probe["frames"] == 24000
+
+
+def test_wav_fallback_reading_matches_soundfile(tmp_path, monkeypatch):
+    """N-I1a：标准库 RIFF 按帧 seek 与 soundfile 读取结果一致。"""
+    wav = tmp_path / "tone.wav"
+    _write_wav(wav, fs=48000, seconds=0.2, channels=2)
+    full_sf = importer.read_channel_all(wav, 1)
+    chunk_sf = importer.read_range(wav, 1, 300, 400)
+
+    monkeypatch.setitem(sys.modules, "soundfile", None)
+    full_fb = importer.read_channel_all(wav, 1)
+    chunk_fb = importer.read_range(wav, 1, 300, 400)
+
+    assert full_fb.dtype == chunk_fb.dtype == np.float32
+    assert np.array_equal(full_sf, full_fb)
+    assert np.array_equal(chunk_sf, chunk_fb)
+
+
+def test_wav_fallback_reads_ieee_float_wav(tmp_path, monkeypatch):
+    """N-I1a：兜底解析支持 IEEE float WAV（FFmpeg pcm_f32le 产物），且可 seek。"""
+    from scipy.io import wavfile
+
+    data = (np.arange(100, dtype=np.float32) / 100.0).astype(np.float32)
+    path = tmp_path / "f32.wav"
+    wavfile.write(str(path), 8000, data)
+    monkeypatch.setitem(sys.modules, "soundfile", None)
+
+    probe = importer.probe_audio(path)
+    assert probe["ok"]
+    assert probe["sample_rate"] == pytest.approx(8000.0)
+    assert probe["frames"] == 100
+    full = importer.read_channel_all(path, 0)
+    assert full.dtype == np.float32
+    assert np.allclose(full, data)
+    assert np.allclose(importer.read_range(path, 0, 10, 20), data[10:30])
+
+
+def test_wav_read_failure_raises_not_empty(tmp_path, monkeypatch):
+    """N-I1c：坏 WAV 读取失败要抛错，不静默返回空数组。"""
+    bad = tmp_path / "bad.wav"
+    bad.write_bytes(b"this is not a wave file")
+    monkeypatch.setitem(sys.modules, "soundfile", None)
+    probe = importer.probe_audio(bad)
+    assert not probe["ok"]
+    assert probe["error"]
+    with pytest.raises(RuntimeError):
+        importer.read_range(bad, 0, 0, 10)
+    with pytest.raises(RuntimeError):
+        importer.read_channel_all(bad, 0)
+
+
+def test_load_soundfile_catches_missing_dll_oserror(monkeypatch):
+    """N-I1b：Windows 缺 libsndfile DLL 抛 OSError 时也要走降级并说明原因。"""
+    import builtins
+
+    real_import = builtins.__import__
+
+    def fake_import(name, globals=None, locals=None, fromlist=(), level=0):
+        if name == "soundfile" or name.startswith("soundfile."):
+            raise OSError("Could not find module 'libsndfile-1.dll' (or one of its dependencies)")
+        return real_import(name, globals, locals, fromlist, level)
+
+    monkeypatch.setattr(importer, "_SOUNDFILE_ERROR", "")
+    monkeypatch.setattr(builtins, "__import__", fake_import)
+    assert importer.soundfile_available() is False
+    message = importer._soundfile_missing_message()
+    assert "soundfile is not available" in message
+    assert "libsndfile-1.dll" in message
+
+
+# ---------------------------------------------------------------- U9 数据帧播放 WAV 后台导出
+
+def _fake_dataframe_app(monkeypatch, df):
+    import types
+
+    class FakeDM:
+        def getAllDataframes(self):
+            return {"df1": df}
+
+    class FakeCore:
+        def getDataManagerInterface(self):
+            return FakeDM()
+
+    fake_app = types.ModuleType("da_app")
+    fake_app.getCore = lambda: FakeCore()
+    monkeypatch.setitem(sys.modules, "da_app", fake_app)
+
+
+def test_export_playback_wav_async_writes_file(monkeypatch, tmp_path):
+    """U9：数据帧列在守护线程导出临时 WAV，结果经 take_result 取走。"""
+    pd = pytest.importorskip("pandas")
+    fs = 8000.0
+    df = pd.DataFrame({"v": np.sin(2 * np.pi * 100.0 * np.arange(800) / fs)})
+    _fake_dataframe_app(monkeypatch, df)
+    out = tmp_path / "playback.wav"
+    src = {"type": "dataframe", "dataframeName": "df1", "column": "v", "sampleRate": fs}
+
+    task_id = importer.export_playback_wav_async(src, str(out))
+    info = _wait_task(task_id)
+    assert info["is_success"] is True
+    result = importer.take_result(task_id)
+    assert result is not None
+    assert result["path"] == str(out)
+    assert result["sample_rate"] == pytest.approx(fs)
+    assert out.exists()
+    probe = importer.probe_audio(out)
+    assert probe["ok"]
+    assert probe["sample_rate"] == pytest.approx(fs)
+    assert probe["frames"] == 800
+    assert importer.take_result(task_id) is None
+
+
+def test_export_playback_wav_async_cancel_removes_partial(monkeypatch, tmp_path):
+    """U9/C7：导出被取消时不写结果表，并删除半成品 WAV。"""
+    pd = pytest.importorskip("pandas")
+    df = pd.DataFrame({"v": np.arange(64, dtype=np.float64)})
+    _fake_dataframe_app(monkeypatch, df)
+    out = tmp_path / "playback.wav"
+    started = threading.Event()
+    proceed = threading.Event()
+
+    def fake_export(dataframe, column, path, sample_rate, cancel_check=None):
+        started.set()
+        assert proceed.wait(5.0)
+        with open(path, "wb") as f:
+            f.write(b"partial")
+        if cancel_check is not None:
+            cancel_check()
+        return True
+
+    monkeypatch.setattr(importer, "export_column_to_wav", fake_export)
+    src = {"type": "dataframe", "dataframeName": "df1", "column": "v", "sampleRate": 8000.0}
+    task_id = importer.export_playback_wav_async(src, str(out))
+    assert started.wait(5.0)
+    assert importer.cancel_task(task_id)
+    proceed.set()
+    info = _wait_task(task_id)
+    assert info["is_canceled"] is True
+    time.sleep(0.1)
+    assert importer.take_result(task_id) is None
+    assert not out.exists()
+
+
+# ---------------------------------------------------------------- 返回字典契约（§11.5 第 9 项）
+
+def test_spectrum_sync_return_contract():
+    """spectrum 返回键与 C++ DASpectrumResult 读取键一致，矩阵长度自洽。"""
+    from DASignalAnalysis import spectrum
+
+    fs = 48000.0
+    t = np.arange(int(fs * 0.5)) / fs
+    x = 0.5 * np.sin(2 * np.pi * 1000.0 * t)
+    r = spectrum.compute_spectrum_sync(x, fs, _params())
+    assert set(r.keys()) == {
+        "freqs",
+        "amplitudes",
+        "psd_freqs",
+        "psd_values",
+        "seg_len",
+        "resolution_hz",
+        "window",
+        "rms",
+    }
+    assert r["freqs"].size == r["amplitudes"].size
+    assert r["psd_freqs"].size == r["psd_values"].size
+    assert isinstance(r["seg_len"], int)
+    assert isinstance(r["resolution_hz"], float)
+    assert r["rms"] is False
+    assert r["window"] == "hann"
+
+
+def test_heatmap_sync_return_contract(tmp_path):
+    """stft 返回键与 C++ DAStftResult 读取键一致，栅格长度 = rows × columns。"""
+    from DASignalAnalysis import stft
+
+    wav = tmp_path / "tone.wav"
+    _write_wav(wav, fs=48000, seconds=0.5)
+    src = {"type": "file", "path": str(wav), "sampleRate": 48000}
+    r = stft.compute_heatmap_sync(src, {"stftWindowMs": 20.0, "stftOverlap": 50.0}, 40, 20)
+    assert set(r.keys()) == {
+        "times",
+        "freqs",
+        "values",
+        "rows",
+        "columns",
+        "nperseg",
+        "hop",
+        "n_frames",
+        "window_seconds",
+    }
+    # C++ 读取的 8 个键必须全部存在
+    assert {"times", "freqs", "values", "rows", "columns", "nperseg", "hop", "window_seconds"} <= set(r.keys())
+    assert r["values"].size == r["rows"] * r["columns"]
+    assert r["times"].size == r["columns"]
+    assert r["freqs"].size == r["rows"]
+
+
+def test_envelope_sync_return_contract(tmp_path):
+    """envelope 返回键与 C++ envelopeReady 读取键一致。"""
+    from DASignalAnalysis import envelope
+
+    wav = tmp_path / "tone.wav"
+    _write_wav(wav, fs=48000, seconds=0.5)
+    src = {"type": "file", "path": str(wav), "sampleRate": 48000}
+    r = envelope.compute_envelope_sync(src, 0, 0, 24000, 200)
+    assert set(r.keys()) == {"x", "mins", "maxs"}
+    assert r["x"].size == r["mins"].size == r["maxs"].size
+    assert r["x"].size <= 200
+
+
+def test_envelope_cancel_helpers():
+    """C7：包络模块补齐与 spectrum/stft/peaks 一致的取消入口（worker 取消链路按 kind 分发）。"""
+    from DASignalAnalysis import envelope
+
+    task_id, _status = tsm.create_task_with_status("cancel envelope")
+    assert envelope.is_cancelled(task_id) is False
+    assert envelope.cancel_task(task_id) is True
+    assert envelope.is_cancelled(task_id) is True
+
+
+def test_export_column_to_wav_accepts_cancel_check(tmp_path):
+    """U9：同步导出的可选取消检查会被调用（后台异步编排复用同一实现）。"""
+    pd = pytest.importorskip("pandas")
+    df = pd.DataFrame({"v": [0.1, -0.2, 0.3]})
+    out = tmp_path / "cancel.wav"
+    calls = []
+
+    def cancel_check():
+        calls.append(1)
+        raise RuntimeError("cancelled")
+
+    with pytest.raises(RuntimeError, match="cancelled"):
+        importer.export_column_to_wav(df, "v", str(out), 48000, cancel_check=cancel_check)
+    assert len(calls) == 1

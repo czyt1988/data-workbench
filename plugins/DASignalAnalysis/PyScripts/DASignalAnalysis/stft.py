@@ -72,7 +72,8 @@ def compute_heatmap_sync(source, params, columns, rows, progress_cb=None, task_i
     fs = float(source.get("sampleRate", 0.0))
     if fs <= 0:
         raise RuntimeError("invalid sample rate")
-    x = _load_channel(source).astype(np.float64)
+    # N-C1b：编排层保持 float32，块内成帧时由 float64 的 segs 承接（不在入口整段升精度）
+    x = _load_channel(source)
     y = spectrum._preprocess(x, params)
     nperseg, hop, nfft, n_frames = _stft_layout(fs, y.size, params)
     if n_frames <= 0:
@@ -160,6 +161,10 @@ def compute_heatmap_async(source, params, columns, rows):
                 # 取消后不写结果表，避免大数组滞留（C7）
                 return
             _RESULT_STORE[task_id] = result
+            if tsm.is_task_canceled(task_id):
+                # 写结果表与取消的竞态：取消后自行清理，避免结果滞留（C7）
+                _RESULT_STORE.pop(task_id, None)
+                return
             status.finish(True, "")
         except tsm.TaskCanceledError:
             status.finish(False, "cancelled")

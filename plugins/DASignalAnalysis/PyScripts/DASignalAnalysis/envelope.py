@@ -90,11 +90,24 @@ def compute_envelope_async(source, channel, start, end, width):
     def worker():
         try:
             status.update_progress(10.0, "reading samples")
+            tsm.raise_if_canceled(task_id)
             result = compute_envelope_sync(source, channel, start, end, width)
+            if tsm.is_task_canceled(task_id):
+                # 取消后不写结果表（C7）
+                return
             status.update_progress(95.0, "finalizing")
             _RESULT_STORE[task_id] = result
+            if tsm.is_task_canceled(task_id):
+                # 写结果表与取消的竞态：取消后自行清理，避免结果滞留（C7）
+                _RESULT_STORE.pop(task_id, None)
+                return
             status.finish(True, "")
+        except tsm.TaskCanceledError:
+            status.finish(False, "cancelled")
         except Exception as e:  # noqa: BLE001 - 失败原因必须回传
+            if tsm.is_task_canceled(task_id):
+                status.finish(False, "cancelled")
+                return
             status.finish(False, "%s\n%s" % (str(e), traceback.format_exc()))
 
     threading.Thread(target=worker, daemon=True).start()
@@ -104,3 +117,13 @@ def compute_envelope_async(source, channel, start, end, width):
 def take_result(task_id):
     """取走包络结果。"""
     return _RESULT_STORE.pop(task_id, None)
+
+
+def cancel_task(task_id):
+    """请求取消任务（线程在下一个检查点退出，且不写结果表）。"""
+    return tsm.cancel_task(task_id, "cancelled by user")
+
+
+def is_cancelled(task_id):
+    """任务是否已被取消。"""
+    return tsm.is_task_canceled(task_id)

@@ -1,6 +1,7 @@
 #include "DASignalAnalysisWorker.h"
 #include <cstring>
 #include <utility>
+#include <QFile>
 #include <QTimer>
 #include <QDebug>
 #include "DAPybind11InQt.h"
@@ -8,6 +9,7 @@
 #include "DAPyObjectWrapper.h"
 #include "DAPybind11QtCaster.hpp"
 #include "Signal/DADataFrameSignalSource.h"
+#include "Signal/DASignalImporter.h"
 
 namespace DA
 {
@@ -148,7 +150,7 @@ bool DASignalAnalysisWorker::computeSpectrum(const DASignalTaskContext& ctx, con
         return true;
     } catch (const std::exception& e) {
         qWarning() << "DASignalAnalysisWorker::computeSpectrum:" << e.what();
-        Q_EMIT failed(QString::fromUtf8(e.what()));
+        Q_EMIT failed(tr("Failed to start the spectrum task."));  // cn:频谱任务启动失败。
         return false;
     }
 }
@@ -177,7 +179,7 @@ bool DASignalAnalysisWorker::computeEnvelope(const DASignalTaskContext& ctx, qin
         return true;
     } catch (const std::exception& e) {
         qWarning() << "DASignalAnalysisWorker::computeEnvelope:" << e.what();
-        Q_EMIT failed(QString::fromUtf8(e.what()));
+        Q_EMIT failed(tr("Failed to start the envelope task."));  // cn:包络任务启动失败。
         return false;
     }
 }
@@ -212,7 +214,7 @@ bool DASignalAnalysisWorker::computeHeatmap(const DASignalTaskContext& ctx,
         return true;
     } catch (const std::exception& e) {
         qWarning() << "DASignalAnalysisWorker::computeHeatmap:" << e.what();
-        Q_EMIT failed(QString::fromUtf8(e.what()));
+        Q_EMIT failed(tr("Failed to start the time-frequency task."));  // cn:时频任务启动失败。
         return false;
     }
 }
@@ -243,7 +245,7 @@ bool DASignalAnalysisWorker::computePeaks(const DASignalTaskContext& ctx, const 
         return true;
     } catch (const std::exception& e) {
         qWarning() << "DASignalAnalysisWorker::computePeaks:" << e.what();
-        Q_EMIT failed(QString::fromUtf8(e.what()));
+        Q_EMIT failed(tr("Failed to start the peak table task."));  // cn:峰值表任务启动失败。
         return false;
     }
 }
@@ -274,32 +276,184 @@ bool DASignalAnalysisWorker::computePeakCurves(const DASignalTaskContext& ctx, c
         return true;
     } catch (const std::exception& e) {
         qWarning() << "DASignalAnalysisWorker::computePeakCurves:" << e.what();
-        Q_EMIT failed(QString::fromUtf8(e.what()));
+        Q_EMIT failed(tr("Failed to start the peak curve task."));  // cn:峰值曲线任务启动失败。
         return false;
     }
 }
 
 /**
- * @brief 取消全部任务
+ * @brief 发起数据帧列 → 会话临时 WAV 的后台导出（U9）
+ *
+ * Python 守护线程导出 + 现有 QTimer 轮询，不新起 QThread；完成后 playbackWavReady
+ * 带回 ctx 与路径，界面层校验 ctx 后再交给播放器。临时文件登记在会话目录，
+ * 取消/失败/结果解析失败都会删除。
  */
-void DASignalAnalysisWorker::cancel()
+bool DASignalAnalysisWorker::computePlaybackWav(const DASignalTaskContext& ctx)
+{
+    if (!ctx.signal || !ctx.signal->isValid()) {
+        Q_EMIT failed(tr("Signal is invalid or not loaded."));  // cn:信号无效或未载入。
+        return false;
+    }
+    if (ctx.signal->sourceType() != DASignalSource::DataFrameSource) {
+        Q_EMIT failed(tr("Playback audio export is only available for dataframe signals."));
+        // cn:只有数据帧来源的信号需要导出播放音频。
+        return false;
+    }
+    const QString wavPath = DASignalImporter::newSessionTempWavPath();
+    if (wavPath.isEmpty()) {
+        Q_EMIT failed(tr("Failed to create the temporary audio file."));  // cn:创建临时音频文件失败。
+        return false;
+    }
+    try {
+        DAPyModule importer   = namedModule("DASignalAnalysis.importer");
+        pybind11::dict source = buildSourceDict(ctx.signal, ctx.channel);
+        pybind11::object res  = importer.attr("export_playback_wav_async")(source, wavPath.toStdString());
+        TaskEntry entry;
+        entry.id      = QString::fromStdString(res.cast< std::string >());
+        entry.kind    = PlaybackWavTask;
+        entry.ctx     = ctx;
+        entry.wavPath = wavPath;
+        if (entry.id.isEmpty()) {
+            QFile::remove(wavPath);
+            Q_EMIT failed(tr("Failed to start the playback audio export."));  // cn:播放音频导出任务启动失败。
+            return false;
+        }
+        mTasks[ entry.id ] = entry;
+        updateTimer();
+        Q_EMIT progressChanged(0.0, tr("Preparing playback audio..."));  // cn:正在准备播放音频...
+        return true;
+    } catch (const std::exception& e) {
+        qWarning() << "DASignalAnalysisWorker::computePlaybackWav:" << e.what();
+        QFile::remove(wavPath);
+        Q_EMIT failed(tr("Failed to start the playback audio export."));  // cn:播放音频导出任务启动失败。
+        return false;
+    }
+}
+
+/**
+ * @brief 按任务类型调用对应 Python 模块的 cancel_task（C7：取消链路按 kind 分发）
+ */
+void DASignalAnalysisWorker::cancelPythonTask(TaskKind kind, const QString& id)
+{
+    const std::string taskId = id.toStdString();
+    try {
+        switch (kind) {
+        case SpectrumTask:
+            namedModule("DASignalAnalysis.spectrum").attr("cancel_task")(taskId);
+            break;
+        case EnvelopeTask:
+            namedModule("DASignalAnalysis.envelope").attr("cancel_task")(taskId);
+            break;
+        case HeatmapTask:
+            namedModule("DASignalAnalysis.stft").attr("cancel_task")(taskId);
+            break;
+        case PeaksTask:
+        case PeakCurvesTask:
+            namedModule("DASignalAnalysis.peaks").attr("cancel_task")(taskId);
+            break;
+        case PlaybackWavTask:
+            namedModule("DASignalAnalysis.importer").attr("cancel_task")(taskId);
+            break;
+        }
+    } catch (const std::exception& e) {
+        qWarning() << "DASignalAnalysisWorker::cancelPythonTask task" << id << ":" << e.what();
+    }
+}
+
+/**
+ * @brief 丢弃某任务在 Python 结果表中的条目（C7：取消后不让大数组滞留）
+ */
+void DASignalAnalysisWorker::discardPythonResult(TaskKind kind, const QString& id)
+{
+    const std::string taskId = id.toStdString();
+    try {
+        switch (kind) {
+        case SpectrumTask:
+            namedModule("DASignalAnalysis.spectrum").attr("take_result")(taskId);
+            break;
+        case EnvelopeTask:
+            namedModule("DASignalAnalysis.envelope").attr("take_result")(taskId);
+            break;
+        case HeatmapTask:
+            namedModule("DASignalAnalysis.stft").attr("take_result")(taskId);
+            break;
+        case PeaksTask:
+        case PeakCurvesTask:
+            namedModule("DASignalAnalysis.peaks").attr("take_result")(taskId);
+            break;
+        case PlaybackWavTask:
+            namedModule("DASignalAnalysis.importer").attr("take_result")(taskId);
+            break;
+        }
+    } catch (const std::exception& e) {
+        qWarning() << "DASignalAnalysisWorker::discardPythonResult task" << id << ":" << e.what();
+    }
+}
+
+/**
+ * @brief 取消单个在跑任务
+ */
+bool DASignalAnalysisWorker::cancelTask(const QString& taskId)
+{
+    auto it = mTasks.find(taskId);
+    if (it == mTasks.end()) {
+        return false;
+    }
+    const TaskEntry entry = it.value();
+    mTasks.remove(taskId);
+    // 先置取消标志，再丢弃结果表里可能已完成的条目（C7）
+    cancelPythonTask(entry.kind, entry.id);
+    discardPythonResult(entry.kind, entry.id);
+    if (entry.kind == PlaybackWavTask && !entry.wavPath.isEmpty()) {
+        QFile::remove(entry.wavPath);
+    }
+    updateTimer();
+    Q_EMIT canceled(taskId);
+    return true;
+}
+
+/**
+ * @brief 取消全部在跑任务并清理结果表/未完成临时文件（C7）
+ */
+void DASignalAnalysisWorker::cancelAll()
 {
     if (mTasks.isEmpty()) {
         return;
     }
-    try {
-        DAPyModule spectrum = namedModule("DASignalAnalysis.spectrum");
-        for (const TaskEntry& entry : std::as_const(mTasks)) {
-            if (entry.kind == SpectrumTask) {
-                spectrum.attr("cancel_task")(entry.id.toStdString());
-            }
-            // 包络结果很小；热图/峰值在 Python 侧分块检查取消标志，交给任务自然结束
+    const QList< QString > ids = mTasks.keys();
+    for (const QString& id : ids) {
+        auto it = mTasks.find(id);
+        if (it == mTasks.end()) {
+            continue;
         }
-    } catch (const std::exception& e) {
-        qWarning() << "DASignalAnalysisWorker::cancel:" << e.what();
+        const TaskEntry entry = it.value();
+        mTasks.remove(id);
+        cancelPythonTask(entry.kind, entry.id);
+        discardPythonResult(entry.kind, entry.id);
+        if (entry.kind == PlaybackWavTask && !entry.wavPath.isEmpty()) {
+            QFile::remove(entry.wavPath);
+        }
+        Q_EMIT canceled(id);
     }
-    mTasks.clear();
     mTimer->stop();
+}
+
+/**
+ * @brief 兼容旧入口：等价 cancelAll()
+ */
+void DASignalAnalysisWorker::cancel()
+{
+    cancelAll();
+}
+
+int DASignalAnalysisWorker::runningTaskCount() const
+{
+    return mTasks.size();
+}
+
+QStringList DASignalAnalysisWorker::runningTaskIds() const
+{
+    return mTasks.keys();
 }
 
 /**
@@ -323,7 +477,7 @@ void DASignalAnalysisWorker::poll()
         mTasks.clear();
         mTimer->stop();
         qWarning() << "DASignalAnalysisWorker::poll:" << e.what();
-        Q_EMIT failed(QString::fromUtf8(e.what()));
+        Q_EMIT failed(tr("Failed to query background tasks."));  // cn:查询后台任务失败。
         return;
     }
     for (const QString& id : ids) {
@@ -352,12 +506,19 @@ void DASignalAnalysisWorker::poll()
             const bool isCanceled = d[ "is_canceled" ].cast< bool >();
             const bool isSuccess  = d[ "is_success" ].cast< bool >();
             if (isCanceled) {
-                Q_EMIT failed(tr("Computation was cancelled."));  // cn:计算已取消。
+                // 取消属于用户主动行为：走 canceled 信号让界面清进度，不再弹「失败」（C7）
+                if (entry.kind == PlaybackWavTask && !entry.wavPath.isEmpty()) {
+                    QFile::remove(entry.wavPath);
+                }
+                Q_EMIT canceled(id);
                 continue;
             }
             if (!isSuccess) {
+                // Python 侧错误文本（含 traceback）只进英文日志，界面显示可翻译消息（§七-9）
                 const QString msg = QString::fromStdString(d[ "message" ].cast< std::string >());
-                Q_EMIT failed(msg.isEmpty() ? tr("Computation failed.") : msg);  // cn:计算失败。
+                qWarning() << "DASignalAnalysisWorker::poll task" << id << "failed:" << msg;
+                Q_EMIT failed(tr("Computation failed. See the message log for details."));
+                // cn:计算失败，详见消息日志。
                 continue;
             }
             if (entry.kind == SpectrumTask) {
@@ -418,6 +579,28 @@ void DASignalAnalysisWorker::poll()
                 curves.nFrames    = r[ "n_frames" ].cast< int >();
                 curves.nperseg    = r[ "nperseg" ].cast< int >();
                 Q_EMIT peakCurvesReady(entry.ctx, curves);
+            } else if (entry.kind == PlaybackWavTask) {
+                DAPyModule importer  = namedModule("DASignalAnalysis.importer");
+                pybind11::object raw = importer.attr("take_result")(id.toStdString());
+                QString wavPath       = entry.wavPath;
+                if (raw.is_none()) {
+                    // 结果缺失（异常/被清理）：删掉可能存在的半成品并报错
+                    if (!entry.wavPath.isEmpty()) {
+                        QFile::remove(entry.wavPath);
+                    }
+                    Q_EMIT failed(tr("Playback audio export produced no result."));  // cn:播放音频导出没有结果。
+                    continue;
+                }
+                pybind11::dict r = pybind11::cast< pybind11::dict >(raw);
+                wavPath          = QString::fromStdString(r[ "path" ].cast< std::string >());
+                if (wavPath.isEmpty()) {
+                    wavPath = entry.wavPath;
+                }
+                if (wavPath.isEmpty() || !QFile::exists(wavPath)) {
+                    Q_EMIT failed(tr("Playback audio file was not created."));  // cn:播放音频文件未生成。
+                    continue;
+                }
+                Q_EMIT playbackWavReady(entry.ctx, wavPath);
             } else {
                 DAPyModule stft      = namedModule("DASignalAnalysis.stft");
                 pybind11::object raw = stft.attr("take_result")(id.toStdString());
@@ -440,7 +623,7 @@ void DASignalAnalysisWorker::poll()
             // 单个任务解析失败只丢弃它自己，不再清空整张任务表（评审 B1 的放大后果）
             mTasks.remove(id);
             qWarning() << "DASignalAnalysisWorker::poll task" << id << ":" << e.what();
-            Q_EMIT failed(QString::fromUtf8(e.what()));
+            Q_EMIT failed(tr("Failed to read the background result."));  // cn:读取后台结果失败。
         }
     }
     updateTimer();

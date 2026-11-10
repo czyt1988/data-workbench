@@ -1,10 +1,14 @@
 #include "DASignalImporter.h"
 #include <cmath>
+#include <utility>
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QMutex>
+#include <QMutexLocker>
+#include <QSet>
 #include <QStandardPaths>
 #include <QUuid>
 #include <QDebug>
@@ -23,6 +27,10 @@ namespace DA
 {
 namespace
 {
+/// 本会话登记过的临时文件（评审 N-I12：清理只针对本会话产物，不做后缀通删）
+QSet< QString > gSessionTempFiles;
+QMutex gSessionTempFilesMutex;
+
 DAPyModule importerModule()
 {
     return DAPyModule("DASignalAnalysis.importer");
@@ -117,8 +125,8 @@ QString transcodeWithFFmpeg(const QString& inputPath, QString* error)
         }
         return QString();
     }
-    const QString outPath =
-        QDir(DASignalImporter::tempDir()).absoluteFilePath(QUuid::createUuid().toString(QUuid::WithoutBraces) + QStringLiteral(".wav"));
+    // 转码产物落会话临时目录并登记，清理只删本会话文件（评审 N-I12）
+    const QString outPath = DASignalImporter::newSessionTempWavPath();
     try {
         DAPyModule importer = importerModule();
         pybind11::dict res = importer.attr("run_ffmpeg")(ffmpeg, inputPath, outPath);
@@ -134,8 +142,10 @@ QString transcodeWithFFmpeg(const QString& inputPath, QString* error)
             return QString();
         }
     } catch (const std::exception& e) {
+        qWarning() << "DASignalImporter::transcodeWithFFmpeg:" << e.what();
         if (error) {
-            *error = QString::fromUtf8(e.what());
+            *error = QCoreApplication::translate("DASignalImporter", "Failed to run the FFmpeg conversion.");
+            // cn:执行 FFmpeg 转码失败。
         }
         QFile::remove(outPath);  // 转码异常不留半成品（评审 I12）
         return QString();
@@ -175,8 +185,10 @@ DASignalPtr buildFileSignal(const QString& readPath,
         const QString name = QFileInfo(originalPath).fileName();
         return std::make_shared< DASignal >(name, src);
     } catch (const std::exception& e) {
+        qWarning() << "DASignalImporter::buildFileSignal:" << e.what();
         if (error) {
-            *error = QString::fromUtf8(e.what());
+            *error = QCoreApplication::translate("DASignalImporter", "Failed to read the audio file.");
+            // cn:读取音频文件失败。
         }
         return nullptr;
     }
@@ -256,18 +268,76 @@ QString DASignalImporter::tempDir()
 }
 
 /**
- * @brief 清理临时目录中的抽取文件
+ * @brief 会话级临时目录（<tempDir>/session-<uuid>）
+ *
+ * 评审 N-I12：每个插件会话使用独立子目录，避免多实例/多会话并行时
+ * cleanupTempFiles() 按后缀通删误伤其它会话的转码产物与播放缓存。
+ */
+QString DASignalImporter::sessionTempDir()
+{
+    static QMutex mutex;
+    static QString sessionDir;
+    QMutexLocker locker(&mutex);
+    if (sessionDir.isEmpty()) {
+        const QString base = tempDir();
+        if (base.isEmpty()) {
+            return QString();
+        }
+        sessionDir =
+            QDir(base).absoluteFilePath(QStringLiteral("session-") + QUuid::createUuid().toString(QUuid::WithoutBraces));
+    }
+    return sessionDir;
+}
+
+/**
+ * @brief 在会话临时目录内生成并登记一个 .wav 路径
+ */
+QString DASignalImporter::newSessionTempWavPath()
+{
+    const QString dirPath = sessionTempDir();
+    if (dirPath.isEmpty()) {
+        return QString();
+    }
+    QDir().mkpath(dirPath);
+    const QString path =
+        QDir(dirPath).absoluteFilePath(QUuid::createUuid().toString(QUuid::WithoutBraces) + QStringLiteral(".wav"));
+    registerTempFile(path);
+    return path;
+}
+
+/**
+ * @brief 登记本会话生成的临时文件（供 cleanupTempFiles 精确清理）
+ */
+void DASignalImporter::registerTempFile(const QString& path)
+{
+    if (path.isEmpty()) {
+        return;
+    }
+    const QString absPath = QFileInfo(path).absoluteFilePath();
+    QMutexLocker locker(&gSessionTempFilesMutex);
+    gSessionTempFiles.insert(absPath);
+}
+
+/**
+ * @brief 清理本会话登记过的临时文件（评审 N-I12：不做后缀通删）
  */
 void DASignalImporter::cleanupTempFiles()
 {
-    const QString dirPath = tempDir();
-    if (dirPath.isEmpty()) {
-        return;
+    QStringList paths;
+    {
+        QMutexLocker locker(&gSessionTempFilesMutex);
+        paths = gSessionTempFiles.values();
+        gSessionTempFiles.clear();
     }
-    QDir dir(dirPath);
-    const QFileInfoList files = dir.entryInfoList({ QStringLiteral("*.wav") }, QDir::Files);
-    for (const QFileInfo& fi : files) {
-        QFile::remove(fi.absoluteFilePath());
+    for (const QString& path : std::as_const(paths)) {
+        if (QFile::exists(path)) {
+            QFile::remove(path);
+        }
+    }
+    // 会话目录已空时删除，避免残留空目录（非空则保留，可能有其它在跑任务）
+    const QString dirPath = sessionTempDir();
+    if (!dirPath.isEmpty()) {
+        QDir().rmdir(dirPath);
     }
 }
 
@@ -374,8 +444,10 @@ bool DASignalImporter::probeAudioFile(const QString& path,
         }
         return true;
     } catch (const std::exception& e) {
+        qWarning() << "DASignalImporter::probeAudioFile:" << e.what();
         if (error) {
-            *error = QString::fromUtf8(e.what());
+            *error = QCoreApplication::translate("DASignalImporter", "Failed to probe the audio file.");
+            // cn:探测音频文件失败。
         }
         return false;
     }
@@ -474,8 +546,10 @@ DASignalPtr DASignalImporter::importVideoFile(const QString& path, QString* erro
             return nullptr;
         }
     } catch (const std::exception& e) {
+        qWarning() << "DASignalImporter::importVideoFile: cannot probe audio stream:" << e.what();
         if (error) {
-            *error = QString::fromUtf8(e.what());
+            *error = QCoreApplication::translate("DASignalImporter", "Failed to probe the video file.");
+            // cn:探测视频文件失败。
         }
         return nullptr;
     }
@@ -551,8 +625,10 @@ DASignalPtr DASignalImporter::importDataFrame(const DAData& data,
         }
         return sig;
     } catch (const std::exception& e) {
+        qWarning() << "DASignalImporter::importDataFrame:" << e.what();
         if (error) {
-            *error = QString::fromUtf8(e.what());
+            *error = QCoreApplication::translate("DASignalImporter", "Failed to create a signal from the dataframe.");
+            // cn:从数据帧创建信号失败。
         }
         return nullptr;
     }
@@ -598,8 +674,11 @@ bool DASignalImporter::inferSampleRate(const DAData& data,
         }
         return true;
     } catch (const std::exception& e) {
+        qWarning() << "DASignalImporter::inferSampleRate:" << e.what();
         if (error) {
-            *error = QString::fromUtf8(e.what());
+            *error = QCoreApplication::translate("DASignalImporter",
+                                                 "Failed to infer the sample rate from the time column.");
+            // cn:无法由时间列推断采样率。
         }
         return false;
     }

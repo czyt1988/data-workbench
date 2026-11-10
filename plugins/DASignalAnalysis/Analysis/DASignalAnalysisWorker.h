@@ -3,6 +3,7 @@
 #include <QObject>
 #include <QHash>
 #include <QString>
+#include <QStringList>
 #include <QVector>
 #include "Signal/DASignal.h"
 #include "Analysis/DASignalAnalysisParams.h"
@@ -45,8 +46,18 @@ public:
     bool computePeaks(const DA::DASignalTaskContext& ctx, const DASignalAnalysisParams& params);
     // 发起每帧前 N 峰值曲线扫描（异步，单趟扫描，可能耗时几十秒）
     bool computePeakCurves(const DA::DASignalTaskContext& ctx, const DASignalAnalysisParams& params);
-    // 取消全部任务
+    // 发起数据帧列 → 会话临时 WAV 的后台导出（U9：数据帧来源播放前准备）
+    bool computePlaybackWav(const DA::DASignalTaskContext& ctx);
+    // 取消单个在跑任务（含结果表清理与未完成临时 WAV 删除）；任务不存在返回 false
+    bool cancelTask(const QString& taskId);
+    // 取消全部在跑任务并清理（finalize/切工程时调用）
+    void cancelAll();
+    // 兼容旧入口：等价于 cancelAll()
     void cancel();
+    // 在跑任务数（供界面控制取消按钮可用性）
+    int runningTaskCount() const;
+    // 在跑任务 id 快照
+    QStringList runningTaskIds() const;
     // 是否有任务在跑
     bool isRunning() const;
 
@@ -64,6 +75,10 @@ Q_SIGNALS:
     void peaksReady(const DA::DASignalTaskContext& ctx, const DA::DAPeakResult& result);
     // 每帧前 N 峰值曲线结果
     void peakCurvesReady(const DA::DASignalTaskContext& ctx, const DA::DAPeakCurveResult& result);
+    // 数据帧播放 WAV 后台导出完成（U9）；wavPath 为会话临时目录内的可播放 WAV 绝对路径
+    void playbackWavReady(const DA::DASignalTaskContext& ctx, const QString& wavPath);
+    // 任务被主动取消（供界面清进度用；不弹「失败」提示）
+    void canceled(const QString& taskId);
     void failed(const QString& error);
 
 private Q_SLOTS:
@@ -76,16 +91,22 @@ private:
         EnvelopeTask,
         HeatmapTask,
         PeaksTask,
-        PeakCurvesTask
+        PeakCurvesTask,
+        PlaybackWavTask
     };
     struct TaskEntry
     {
         QString id;
         TaskKind kind { SpectrumTask };
         DASignalTaskContext ctx;
+        // 仅 PlaybackWavTask：会话临时目录内的目标 WAV 路径（取消/失败时删除）
+        QString wavPath;
     };
 
     void updateTimer();
+    // 按任务类型调用对应 Python 模块的 cancel_task / take_result（C7）
+    void cancelPythonTask(TaskKind kind, const QString& id);
+    void discardPythonResult(TaskKind kind, const QString& id);
 
 private:
     QTimer* mTimer { nullptr };

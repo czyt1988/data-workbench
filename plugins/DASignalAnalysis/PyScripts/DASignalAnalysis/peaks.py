@@ -72,7 +72,8 @@ def compute_peaks_sync(source, params, task_id=None):
     fs = float(source.get("sampleRate", 0.0))
     if fs <= 0:
         raise RuntimeError("invalid sample rate")
-    x = spectrum._load_channel(source).astype(np.float64)
+    # N-C1b：编排层保持 float32，FFT 段内由核心层升 float64
+    x = spectrum._load_channel(source)
     y = spectrum._preprocess(x, params)
     if task_id is not None:
         tsm.raise_if_canceled(task_id)
@@ -154,7 +155,8 @@ def compute_peak_curves_sync(source, params, progress_cb=None, task_id=None):
     fs = float(source.get("sampleRate", 0.0))
     if fs <= 0:
         raise RuntimeError("invalid sample rate")
-    x = spectrum._load_channel(source).astype(np.float64)
+    # N-C1b：编排层保持 float32，块内成帧时由 float64 的 segs 承接
+    x = spectrum._load_channel(source)
     y = spectrum._preprocess(x, params)
     window_ms = float(params.get("stftWindowMs", 50.0) or 50.0)
     overlap = float(params.get("stftOverlap", 50.0) or 0.0) / 100.0
@@ -237,6 +239,10 @@ def _async(kind, compute, progress_stage):
                 # 取消后不写结果表，避免大数组滞留（C7）
                 return
             _RESULT_STORE[task_id] = result
+            if tsm.is_task_canceled(task_id):
+                # 写结果表与取消的竞态：取消后自行清理，避免结果滞留（C7）
+                _RESULT_STORE.pop(task_id, None)
+                return
             status.finish(True, "")
         except tsm.TaskCanceledError:
             status.finish(False, "cancelled")
