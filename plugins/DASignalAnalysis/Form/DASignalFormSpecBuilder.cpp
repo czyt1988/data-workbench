@@ -269,7 +269,7 @@ QJsonObject DASignalFormSpecBuilder::build(const DASignalAnalysisParams& current
 
     QJsonObject spec;
     spec[ "version" ] = 2;
-    spec[ "title" ]   = QCoreApplication::translate("DASignalFormSpecBuilder", "Signal Analysis Settings");  // cn:信号分析设置
+    spec[ "title" ]   = QCoreApplication::translate("DASignalFormSpecBuilder", "Analysis Settings");  // cn:分析设置
     spec[ "items" ]   = topItems;
     return spec;
 }

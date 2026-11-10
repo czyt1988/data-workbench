@@ -1,13 +1,9 @@
 #include "DASignalAnalysisSettingDialog.h"
 #include <QDialogButtonBox>
-#include <QDir>
 #include <QEvent>
-#include <QFileDialog>
-#include <QFileInfo>
 #include <QHBoxLayout>
 #include <QJsonObject>
 #include <QLabel>
-#include <QLineEdit>
 #include <QPushButton>
 #include <QVBoxLayout>
 #include <QDebug>
@@ -15,7 +11,6 @@
 #include "DAFormSchemaIO.h"
 #include "DAFormSpec.h"
 #include "Form/DASignalFormSpecBuilder.h"
-#include "Signal/DASignalImporter.h"
 
 namespace DA
 {
@@ -25,12 +20,12 @@ DASignalAnalysisSettingDialog::DASignalAnalysisSettingDialog(const DASignalAnaly
     : QDialog(parent), mSampleRate(sampleRate)
 {
     setModal(true);
-    setMinimumSize(520, 620);
+    setMinimumSize(520, 560);
     buildUI();
     retranslateUi();
     // 上次值作为字段默认值（「记住上次值」）；派生分辨率按真实段长算（评审 U7：不能传 fs/100）
     const double derivedResolution = derivedResolutionFor(params);
-    const QJsonObject specJson = DASignalFormSpecBuilder::build(params, derivedResolution);
+    const QJsonObject specJson     = DASignalFormSpecBuilder::build(params, derivedResolution);
     DAFormSpec spec;
     QString err;
     if (DAFormSchemaIO::fromJsonObject(specJson, spec, &err)) {
@@ -104,6 +99,9 @@ DASignalAnalysisParams DASignalAnalysisSettingDialog::makeEchoParams(const DASig
 
 /**
  * @brief 构建界面：表单 + 派生信息 + 恢复默认 + 确定/取消
+ *
+ * 全局设置（FFmpeg 路径等）不在这里：它们在 主页 → 设置 → 信号分析 页里，
+ * 这样没导入数据时也能配置。
  */
 void DASignalAnalysisSettingDialog::buildUI()
 {
@@ -115,22 +113,6 @@ void DASignalAnalysisSettingDialog::buildUI()
     mDerivedLabel->setWordWrap(true);
     mDerivedLabel->setStyleSheet(QStringLiteral("color:#727272;"));  // 中性次要文字
     lay->addWidget(mDerivedLabel);
-
-    // FFmpeg 路径（方案 D7：视频/压缩音频依赖它；未装时相关入口置灰并在此可指定）
-    QHBoxLayout* ffmpegRow = new QHBoxLayout;
-    mFFmpegLabel           = new QLabel(this);
-    mFFmpegEdit            = new QLineEdit(this);
-    mFFmpegEdit->setText(DASignalImporter::ffmpegPath());
-    mFFmpegBrowse = new QPushButton(this);
-    ffmpegRow->addWidget(mFFmpegLabel);
-    ffmpegRow->addWidget(mFFmpegEdit, 1);
-    ffmpegRow->addWidget(mFFmpegBrowse);
-    lay->addLayout(ffmpegRow);
-    mFFmpegStatus = new QLabel(this);
-    mFFmpegStatus->setWordWrap(true);
-    lay->addWidget(mFFmpegStatus);
-    connect(mFFmpegBrowse, &QPushButton::clicked, this, &DASignalAnalysisSettingDialog::onBrowseFFmpeg);
-    connect(mFFmpegEdit, &QLineEdit::textChanged, this, &DASignalAnalysisSettingDialog::onFFmpegPathEdited);
 
     QHBoxLayout* bottom = new QHBoxLayout;
     mRestoreButton      = new QPushButton(this);
@@ -296,72 +278,6 @@ void DASignalAnalysisSettingDialog::refreshDerivedInfo()
     // cn:频谱：段长 = %1 点（%2 毫秒）、实际分辨率 = %3 赫兹；时频：窗长 = %4 点（%5 毫秒）、跳步 = %6 点
 }
 
-/**
- * @brief 选择 FFmpeg 可执行文件
- */
-void DASignalAnalysisSettingDialog::onBrowseFFmpeg()
-{
-    const QString path =
-        QFileDialog::getOpenFileName(this, tr("Select FFmpeg Executable"), QString(), tr("Executable (*.exe);;All files (*)"));
-    // cn:选择 FFmpeg 可执行文件
-    if (path.isEmpty()) {
-        return;
-    }
-    mFFmpegEdit->setText(QDir::toNativeSeparators(path));
-}
-
-/**
- * @brief 路径文本变化：内联校验（不用模态消息框做字段校验）
- */
-void DASignalAnalysisSettingDialog::onFFmpegPathEdited()
-{
-    const QString text = mFFmpegEdit ? mFFmpegEdit->text().trimmed() : QString();
-    if (text.isEmpty()) {
-        mFFmpegStatus->setStyleSheet(QStringLiteral("color:#727272;"));
-        mFFmpegStatus->setText(tr("Empty: fall back to the ffmpeg found in PATH."));
-        // cn:留空则回退到系统 PATH 中的 ffmpeg。
-        return;
-    }
-    const QFileInfo fi(text);
-    if (fi.exists() && fi.isFile()) {
-        mFFmpegStatus->setStyleSheet(QStringLiteral("color:#669E8B;"));  // 成功绿（官方色板）
-        mFFmpegStatus->setText(tr("FFmpeg path is valid."));            // cn:FFmpeg 路径有效。
-    } else {
-        mFFmpegStatus->setStyleSheet(QStringLiteral("color:#CE6043;"));  // 危险橙红（官方色板）
-        mFFmpegStatus->setText(tr("File does not exist."));              // cn:文件不存在。
-    }
-}
-
-/**
- * @brief 应用并持久化 FFmpeg 路径；路径无效返回 false
- */
-bool DASignalAnalysisSettingDialog::applyFFmpegPath()
-{
-    const QString text = mFFmpegEdit ? mFFmpegEdit->text().trimmed() : QString();
-    if (text.isEmpty()) {
-        DASignalImporter::setFFmpegPath(QString());
-        return true;
-    }
-    const QFileInfo fi(text);
-    if (!fi.exists() || !fi.isFile()) {
-        onFFmpegPathEdited();  // 显示内联错误
-        return false;
-    }
-    DASignalImporter::setFFmpegPath(fi.absoluteFilePath());
-    return true;
-}
-
-/**
- * @brief 确定：先应用 FFmpeg 路径（无效时留在对话框内）
- */
-void DASignalAnalysisSettingDialog::accept()
-{
-    if (!applyFFmpegPath()) {
-        return;
-    }
-    QDialog::accept();
-}
-
 void DASignalAnalysisSettingDialog::changeEvent(QEvent* e)
 {
     if (e && e->type() == QEvent::LanguageChange) {
@@ -372,16 +288,7 @@ void DASignalAnalysisSettingDialog::changeEvent(QEvent* e)
 
 void DASignalAnalysisSettingDialog::retranslateUi()
 {
-    setWindowTitle(tr("Signal Analysis Settings"));  // cn:信号分析设置
-    if (mFFmpegLabel) {
-        mFFmpegLabel->setText(tr("FFmpeg path"));  // cn:FFmpeg 路径
-    }
-    if (mFFmpegBrowse) {
-        mFFmpegBrowse->setText(tr("Browse..."));  // cn:浏览...
-    }
-    if (mFFmpegStatus) {
-        onFFmpegPathEdited();
-    }
+    setWindowTitle(tr("Analysis Settings"));  // cn:分析设置
     if (mRestoreButton) {
         mRestoreButton->setText(tr("Restore Defaults"));  // cn:恢复默认
     }

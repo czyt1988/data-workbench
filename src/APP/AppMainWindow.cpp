@@ -381,24 +381,26 @@ DAAppConfig* AppMainWindow::getAppConfig() const
 
 /**
  * @brief 显示设置对话框
+ *
+ * 每次打开都重新构建对话框并遍历当前已加载插件追加设置页：
+ * 设置页由插件提供，而插件在本进程内可能被停用（DLL 被卸载）或启用；若缓存对话框，
+ * 已卸载插件的设置页对象会继续被对话框持有，绘制/析构时会跳进已卸载的代码段而崩溃。
+ * 对话框在 exec() 返回后立即销毁，插件页的生命周期因此不会长于提供它的插件。
  */
 void AppMainWindow::showSettingDialog()
 {
-    if (nullptr == mSettingDialog) {
-        // 创建设置窗口
-        mSettingDialog = new DAAppSettingDialog(this);
-        connect(mSettingDialog, &DAAppSettingDialog::needSave, this, &AppMainWindow::onConfigNeedSave);
-        mSettingDialog->buildUI(getAppConfig(), mCore);
+    DAAppSettingDialog dlg(this);
+    connect(&dlg, &DAAppSettingDialog::needSave, this, &AppMainWindow::onConfigNeedSave);
+    dlg.buildUI(getAppConfig(), mCore);
 
-        QList< DAAbstractPlugin* > plugins = mPluginMgr->getAllPlugins();
-        for (DAAbstractPlugin* p : std::as_const(plugins)) {
-            DAAbstractSettingPage* page = p->createSettingPage();
-            if (page) {
-                mSettingDialog->settingWidget()->addPage(page);
-            }
+    const QList< DAAbstractPlugin* > plugins = mPluginMgr->getAllPlugins();
+    for (DAAbstractPlugin* p : std::as_const(plugins)) {
+        DAAbstractSettingPage* page = p->createSettingPage();
+        if (page) {
+            dlg.settingWidget()->addPage(page);
         }
     }
-    mSettingDialog->exec();
+    dlg.exec();
 }
 
 /**

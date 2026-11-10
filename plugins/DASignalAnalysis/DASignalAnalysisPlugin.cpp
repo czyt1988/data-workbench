@@ -2,6 +2,7 @@
 #include <QDebug>
 #include "DACoreInterface.h"
 #include "DASignalAnalysisUI.h"
+#include "Dialogs/DASignalAnalysisSettingPage.h"
 
 namespace DA
 {
@@ -94,6 +95,22 @@ std::shared_ptr< DA::DAAbstractArchiveTask > DASignalAnalysisPlugin::createArchi
         return mUI->createArchiveTask(isSave);
     }
     return DAAbstractPlugin::createArchiveTask(isSave);
+}
+
+/**
+ * @brief 创建插件全局设置页（主页 → 设置 → 信号分析）
+ *
+ * 只放与具体信号/数据无关的设置（FFmpeg 可执行文件路径），这样没导入数据时也能配置；
+ * 页面由设置对话框持有，这里把界面层注入给页面，应用设置后即时刷新插件入口。
+ */
+DAAbstractSettingPage* DASignalAnalysisPlugin::createSettingPage()
+{
+    if (nullptr == mUI) {
+        return nullptr;
+    }
+    auto* page = new DASignalAnalysisSettingPage();
+    page->setSignalAnalysisUI(mUI);
+    return page;
 }
 
 /**

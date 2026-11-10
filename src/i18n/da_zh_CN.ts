@@ -22138,52 +22138,22 @@ Sample rate: %2 Hz | Channels: %3 | Duration: %4 s</source>
     </message>
 </context>
 <context>
-    <name>DA::DASignalAnalysisSettingDialog</name>
+    <name>DA::DASignalAnalysisSettingPage</name>
     <message>
-        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalAnalysisSettingDialog.cpp" line="131" />
-        <source>Segment length: unknown (sample rate is invalid)</source>
-        <translation>段长：未知（采样率无效）</translation>
+        <source>The FFmpeg executable was not found, so the path was not saved.</source>
+        <translation>未找到 FFmpeg 可执行文件，路径未保存。</translation>
     </message>
     <message>
-        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalAnalysisSettingDialog.cpp" line="139" />
-        <source>Segment length = %1 samples (%2 ms), actual resolution = %3 Hz</source>
-        <translation>段长 = %1 点（%2 毫秒）、实际分辨率 = %3 赫兹</translation>
+        <source>Signal Analysis</source>
+        <translation>信号分析</translation>
     </message>
     <message>
-        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalAnalysisSettingDialog.cpp" line="156" />
-        <source>Signal Analysis Settings</source>
-        <translation>信号分析设置</translation>
+        <source>No FFmpeg was found in PATH. Specify an executable to enable video import.</source>
+        <translation>系统 PATH 中未找到 FFmpeg；指定可执行文件后才能导入视频。</translation>
     </message>
     <message>
-        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalAnalysisSettingDialog.cpp" line="158" />
-        <source>Restore Defaults</source>
-        <translation>恢复默认</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalAnalysisSettingDialog.cpp" line="161" />
-        <source>OK</source>
-        <translation>确定</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalAnalysisSettingDialog.cpp" line="162" />
-        <source>Cancel</source>
-        <translation>取消</translation>
-    </message>
-    <message>
-        <source>Browse...</source>
-        <translation>浏览...</translation>
-    </message>
-    <message>
-        <source>Empty: fall back to the ffmpeg found in PATH.</source>
-        <translation>留空：回退到系统 PATH 中的 ffmpeg。</translation>
-    </message>
-    <message>
-        <source>Executable (*.exe);;All files (*)</source>
-        <translation>可执行文件 (*.exe);;所有文件 (*)</translation>
-    </message>
-    <message>
-        <source>FFmpeg path</source>
-        <translation>FFmpeg 路径</translation>
+        <source>Empty: using the FFmpeg found in PATH: %1</source>
+        <translation>留空：使用系统 PATH 中的 FFmpeg：%1</translation>
     </message>
     <message>
         <source>FFmpeg path is valid.</source>
@@ -22194,8 +22164,48 @@ Sample rate: %2 Hz | Channels: %3 | Duration: %4 s</source>
         <translation>文件不存在。</translation>
     </message>
     <message>
-        <source>Select FFmpeg Executable</source>
-        <translation>选择 FFmpeg 可执行文件</translation>
+        <source>Analysis parameters (frequency resolution, windows, peak thresholds and calibration) are configured per signal in Analysis Settings on the Signal Analysis tab.</source>
+        <translation>频率分辨率、窗函数、峰值门限与标定等分析参数在「信号分析」标签页的「分析设置」里按信号单独配置。</translation>
+    </message>
+    <message>
+        <source>FFmpeg executable</source>
+        <translation>FFmpeg 可执行文件</translation>
+    </message>
+    <message>
+        <source>Used for video import and compressed audio decoding. Leave empty to use the ffmpeg found in PATH.</source>
+        <translation>用于视频导入与压缩音频解码；留空则使用系统 PATH 中的 ffmpeg。</translation>
+    </message>
+    <message>
+        <source>Executable (*.exe);;All files (*)</source>
+        <translation>可执行文件 (*.exe);;所有文件 (*)</translation>
+    </message>
+    <message>
+        <source>External Tools</source>
+        <translation>外部工具</translation>
+    </message>
+</context>
+
+<context>
+    <name>DA::DASignalAnalysisSettingDialog</name>
+    <message>
+        <source>Segment length: unknown (sample rate is invalid)</source>
+        <translation>段长：未知（采样率无效）</translation>
+    </message>
+    <message>
+        <source>Analysis Settings</source>
+        <translation>分析设置</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>恢复默认</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>确定</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>取消</translation>
     </message>
     <message>
         <source>Spectrum: segment = %1 samples (%2 ms), actual resolution = %3 Hz
@@ -22207,8 +22217,8 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</source>
 <context>
     <name>DA::DASignalAnalysisUI</name>
     <message>
-        <source>FFmpeg was not detected; video import is unavailable until a path is specified.</source>
-        <translation>未检测到 FFmpeg，视频导入在指定路径前不可用。</translation>
+        <source>FFmpeg was not detected; video import is unavailable until a path is specified in Settings &gt; Signal Analysis.</source>
+        <translation>未检测到 FFmpeg，在「设置 → 信号分析」里指定路径前视频导入不可用。</translation>
     </message>
     <message>
         <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="114" />
@@ -22530,8 +22540,8 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</source>
     </message>
     <message>
         <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1554" />
-        <source>Open the unified analysis parameter dialog</source>
-        <translation>打开统一参数对话框</translation>
+        <source>Configure the analysis parameters of the current signal</source>
+        <translation>配置当前信号的分析参数</translation>
     </message>
     <message>
         <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1558" />
@@ -22654,8 +22664,8 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</source>
         <translation>抽取视频音频轨</translation>
     </message>
     <message>
-        <source>FFmpeg was not detected. Specify its path in the signal analysis settings.</source>
-        <translation>未检测到 FFmpeg，请在分析设置里指定路径。</translation>
+        <source>FFmpeg was not detected. Specify its path in Settings &gt; Signal Analysis.</source>
+        <translation>未检测到 FFmpeg，请在「设置 → 信号分析」里指定路径。</translation>
     </message>
     <message>
         <source>Failed to create the signal analysis page.</source>
@@ -22834,6 +22844,14 @@ Export the full matrix or downsample by 2?</source>
     <message>
         <source>waveform envelope</source>
         <translation>波形包络</translation>
+    </message>
+    <message>
+        <source>FFmpeg is available; video import is enabled.</source>
+        <translation>FFmpeg 可用，视频导入已启用。</translation>
+    </message>
+    <message>
+        <source>FFmpeg is still not available; video import stays disabled.</source>
+        <translation>仍未检测到 FFmpeg，视频导入保持置灰。</translation>
     </message>
 </context>
 <context>
@@ -23144,8 +23162,8 @@ Export the full matrix or downsample by 2?</source>
     </message>
     <message>
         <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="412" />
-        <source>FFmpeg was not detected. Specify its path in the signal analysis settings.</source>
-        <translation>未检测到 FFmpeg，请在分析设置里指定路径。</translation>
+        <source>FFmpeg was not detected. Specify its path in Settings &gt; Signal Analysis.</source>
+        <translation>未检测到 FFmpeg，请在「设置 → 信号分析」里指定路径。</translation>
     </message>
     <message>
         <source>Sample rate: %1 Hz, channels: %2, duration: %3 s</source>
@@ -23379,8 +23397,8 @@ Export the full matrix or downsample by 2?</source>
     </message>
     <message>
         <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="269" />
-        <source>Signal Analysis Settings</source>
-        <translation>信号分析设置</translation>
+        <source>Analysis Settings</source>
+        <translation>分析设置</translation>
     </message>
     <message>
         <source>dB (FS)</source>
@@ -23396,8 +23414,8 @@ Export the full matrix or downsample by 2?</source>
     <message>
         <location filename="../plugins/DASignalAnalysis/Signal/DASignalImporter.cpp" line="114" />
         <location filename="../plugins/DASignalAnalysis/Signal/DASignalImporter.cpp" line="335" />
-        <source>FFmpeg is not available. Specify its path in the signal analysis settings.</source>
-        <translation>未检测到 FFmpeg，请在分析设置里指定路径。</translation>
+        <source>FFmpeg is not available. Specify its path in Settings &gt; Signal Analysis.</source>
+        <translation>未检测到 FFmpeg，请在「设置 → 信号分析」里指定路径。</translation>
     </message>
     <message>
         <location filename="../plugins/DASignalAnalysis/Signal/DASignalImporter.cpp" line="127" />

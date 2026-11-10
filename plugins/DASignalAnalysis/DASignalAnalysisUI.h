@@ -89,6 +89,8 @@ public Q_SLOTS:
     void importVideoFile();
     // 打开统一参数对话框（D20），确定后立即重算一次（D21）
     void openAnalysisSettings();
+    // 全局设置（设置 → 信号分析）应用后：刷新 FFmpeg 相关入口可用性
+    void onGlobalSettingsApplied();
     // 取消全部后台计算（评审 N-C7：界面可见的取消入口）
     void cancelAllComputations();
     // 幅值显示模式切换（只重绘，不重算）

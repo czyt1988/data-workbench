@@ -430,6 +430,10 @@ void connectFile(QWidget* editor, QObject* context, const std::function< void() 
 {
     if (auto* edit = qobject_cast< DAFilePathEditWidget* >(editor)) {
         QObject::connect(edit, &DAFilePathEditWidget::selectedPath, context, [ slot ](const QString&) { slot(); });
+        // 逐字符的文本变化也要通知：设置页需要随输入即时做内联校验/标记改动，
+        // 只在浏览选择或失焦时通知会让「输入路径」这一主要操作直到关窗都不被感知。
+        // 程序化回填（writeFile）会阻塞编辑器信号，不会误触发。
+        QObject::connect(edit, &DAFilePathEditWidget::pathChanged, context, [ slot ](const QString&) { slot(); });
     }
 }
 //@}

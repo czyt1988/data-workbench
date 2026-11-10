@@ -102,9 +102,8 @@ private:
     DAAppDockingArea* mDockArea { nullptr };
     DAAppController* mController { nullptr };
     DAAppPluginManager* mPluginMgr { nullptr };
-    DAAppConfig* mConfig { nullptr };                ///< 应用配置（非拥有指针，由 main() 持有）
-    DAAppSettingDialog* mSettingDialog { nullptr };  ///< 设置窗口,避免过多的中间传递
-    bool mIsSaveUIStateOnClose { false };            ///< 是否在退出时记录程序的状态
+    DAAppConfig* mConfig { nullptr };  ///< 应用配置（非拥有指针，由 main() 持有）
+    bool mIsSaveUIStateOnClose { false };  ///< 是否在退出时记录程序的状态
     QTimer* mAutosaveTimer { nullptr };               ///< 自动保存定时器
     QByteArray mDefaultUIStateSnapshot;               ///< 启动时抓取的默认布局快照（dock已建好、未加载用户状态）
     DAAppLayoutManager* mLayoutManager { nullptr };  ///< 布局方案管理器（预置+自定义）

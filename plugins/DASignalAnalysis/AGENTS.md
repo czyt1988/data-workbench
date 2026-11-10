@@ -3,7 +3,8 @@
 通用时序信号分析插件。主工作区可打开「信号分析」页面（惰性创建，与绘图/表格/工作流并列），
 页面内每个信号一个标签页；丝带新增「信号分析」标签页。开发方案见
 `tmp/信号分析插件开发方案.md`（决策记录 D1–D31 为定稿口径；**D11 已按用户要求修订为惰性创建**，
-见 §页面惰性加载，其余不得擅自更改）。
+见 §页面惰性加载；**D7 已在 v1.3 修订**：FFmpeg 路径入口从分析设置对话框移到插件全局设置页，
+探测顺序与配置键不变，见 §v1.3 修正要点；其余不得擅自更改）。
 
 ## 目录结构
 
@@ -33,7 +34,10 @@ plugins/DASignalAnalysis/
 │   ├── DAStftRasterData.*        # QwtMatrixRasterData 子类（显式 Z 色标范围）
 │   └── DAWaterfallBuilder.*      # 三维瀑布抽帧抽频点
 ├── Playback/DASignalPlayer.*     # QMediaPlayer 封装（Qt5/Qt6 分支）
-├── Dialogs/                      # 导入对话框 + 参数设置对话框
+├── Dialogs/                      # 导入对话框 + 参数设置对话框 + 插件全局设置页
+│   ├── DASignalImportDialog.*    # 导入对话框（音频 / 视频 / 数据帧）
+│   ├── DASignalAnalysisSettingDialog.*  # 信号分析标签页「分析设置」：按信号生效的分析参数
+│   └── DASignalAnalysisSettingPage.*    # 插件全局设置页（主页 → 设置 → 信号分析）：FFmpeg 路径
 ├── Form/DASignalFormSpecBuilder.*# DAFormSpec 表单规格（分组 + visible_when 联动）
 ├── Archive/DASignalArchiveTask.* # 工程存档任务（只存来源引用与参数）
 └── PyScripts/DASignalAnalysis/   # Python 包（安装到 <app>/PyScripts）
@@ -70,6 +74,10 @@ plugins/DASignalAnalysis/
 11. **信号来源干净**：文件来源读块、数据帧来源引用式（按块转换）；临时 WAV 随信号/控制器生命周期清理。
 12. **工程只存来源引用、参数与视图状态**（`Archive/DASignalArchiveTask`），不存分析结果/STFT 矩阵/峰值数据；
     任务在后台线程只做文件读写，界面重建走 `loadedCallBack`。
+13. **全局设置与按信号参数分开**：与具体信号/数据无关的全局项（当前为 FFmpeg 可执行文件路径）放插件设置页
+    （`DASignalAnalysisPlugin::createSettingPage()` → `Dialogs/DASignalAnalysisSettingPage`，入口是 主页 → 设置）；
+    信号分析标签页的「分析设置」对话框（`DASignalAnalysisSettingDialog`）只放按信号生效的分析参数，
+    不得加入与数据无关的全局项。界面文案引用设置入口时统一写「设置 → 信号分析」。
 
 ## 页面惰性加载（修订 D11）
 
@@ -170,3 +178,31 @@ python -I -m pytest tests/test_signal_dsp.py tests/test_signal_import.py -q   # 
   `retranslateUi()` 必须重译峰值停靠窗口标题（§七-5）；视图与峰值窗口首次显示时显式 `setSizes`
   （上下/左右 1:1、峰值表:曲线 2:1，§七-1）；`mWaterfallItem` 重建前用 `getWaterfalls()` 校验挂载
   （N-H4）；视图类中非 const Qt 容器迭代已全部改 `std::as_const`/索引（N-U10）。
+
+## v1.3 修正要点（全局设置拆分，2026-11-10）
+
+- **动机**：`ffmpegPath` 原先混在「分析设置」对话框（`DASignalAnalysisSettingDialog`）里，
+  未导入数据时该对话框不可打开，导致无法配置 FFmpeg。
+- **新增插件设置页**：`DASignalAnalysisPlugin::createSettingPage()` 返回
+  `Dialogs/DASignalAnalysisSettingPage`（`DAAbstractSettingPage` 子类），由宿主
+  `AppMainWindow::showSettingDialog()` 追加到设置对话框页列表末尾；页面标题 `tr("Signal Analysis")`
+  （cn:信号分析）。
+- **页面内容**：`DAPropertyFormWidget` 表单（`tr("External Tools")`/外部工具 分组 + `tr("FFmpeg executable")`/
+  FFmpeg 可执行文件 字段 + 浏览按钮），表单下方内联状态标签（留空显示 PATH 探测结果、有效绿色、
+  无效橙红「文件不存在」）与一行说明「频率分辨率、窗函数、峰值门限与标定等分析参数在「信号分析」标签页的
+  「分析设置」里按信号单独配置」；`setSignalAnalysisUI()` 注入插件 UI，`apply()` 后调用
+  `DASignalAnalysisUI::onGlobalSettingsApplied()`（内部 `refreshFFmpegAvailability()` 并在消息面板留结果），
+  视频导入入口立即刷新；路径无效时不落盘、表单回退到已保存值，`apply()` 里用 `daWarning` 记一条「路径未保存」。
+- **设置页生命周期（与宿主约定）**：宿主 `AppMainWindow::showSettingDialog()` **每次打开都重建设置对话框**
+  （`exec()` 返回即销毁），这是为了让插件设置页不会活过提供它的插件——插件在本进程内可被停用并卸载 DLL，
+  若对话框常驻缓存，页面析构/绘制会跳进已卸载代码段。因此：插件不得把设置页指针缓存为长期成员；
+  `finalize()` 也不需要清理设置页（对话框已先销毁）。宿主侧改动见 `src/APP/AppMainWindow.cpp`。
+- **file 字段逐字符变更**：`DAGui` 的 `DAFormEditorRegistry::connectFile` 现在同时连
+  `DAFilePathEditWidget::selectedPath` 与 `pathChanged`，表单值随输入即时变化（供内联校验与 dirty 标记）；
+  程序化回填经 `QSignalBlocker` 不会误触发。输入路径的即时校验口径与 `DASignalImporter::ffmpegPath()` 一致：
+  `exists + isFile + isExecutable`。
+- **分析设置对话框**：移除 FFmpeg 路径行，只保留六组按信号生效的分析参数；未导入数据时
+  「分析设置」按钮仍不可点（预期语义）。
+- **文案**：所有「未检测到 FFmpeg，请在分析设置里指定路径」提示统一改为指向「设置 → 信号分析」。
+- **配置不变**：仍为 `DASignalImporter` 读写的 `signal-analysis-config.json`（`ffmpegPath`、`colormap`、
+  `peakDockVisible`），设置页与导入层共用同一份。

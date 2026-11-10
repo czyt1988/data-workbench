@@ -5,7 +5,6 @@
 
 class QLabel;
 class QPushButton;
-class QLineEdit;
 class QDialogButtonBox;
 
 namespace DA
@@ -15,8 +14,12 @@ class DAPropertyFormWidget;
 /**
  * @brief 信号分析统一参数对话框（方案 §8.6 / D20 / D21）
  *
+ * 只放按信号生效的分析参数（信号预处理/频谱/功率谱/短时傅里叶变换/峰值查找/标定）：
  * 内容由 DAFormSpec 生成（可折叠分组），点确定后由调用方立即重算一次；
  * 参数不进全局撤销栈；记住上次生效参数，提供「恢复默认」。
+ *
+ * 与数据无关的全局设置（FFmpeg 路径等）不在本对话框里，而在 主页 → 设置 → 信号分析
+ * （DASignalAnalysisSettingPage），这样没有导入数据时也能配置。
  */
 class DASignalAnalysisSettingDialog : public QDialog
 {
@@ -35,14 +38,10 @@ public:
 
 protected:
     void changeEvent(QEvent* e) override;
-    // 确定前校验 FFmpeg 路径（路径指向不存在的文件时不关闭对话框）
-    void accept() override;
 
 private Q_SLOTS:
     void onFieldValueChanged(const QString& fieldName, const QVariant& value);
     void onRestoreDefaults();
-    void onBrowseFFmpeg();
-    void onFFmpegPathEdited();
 
 private:
     void buildUI();
@@ -60,8 +59,6 @@ private:
     void syncStftWindowWithResolution();
     void syncResolutionWithStftWindow();
     double currentDerivedResolution() const;
-    // FFmpeg 路径行状态（可用/无效的内联提示，不用模态消息框）
-    bool applyFFmpegPath();
 
 private:
     double mSampleRate { 0.0 };
@@ -69,10 +66,6 @@ private:
     bool mFormReady { false };        ///< 表单规格是否已就绪（retranslateUi 在构造早期也会被调用）
     DAPropertyFormWidget* mForm { nullptr };
     QLabel* mDerivedLabel { nullptr };
-    QLabel* mFFmpegLabel { nullptr };
-    QLineEdit* mFFmpegEdit { nullptr };
-    QPushButton* mFFmpegBrowse { nullptr };
-    QLabel* mFFmpegStatus { nullptr };
     QPushButton* mRestoreButton { nullptr };
     QDialogButtonBox* mButtonBox { nullptr };
 };

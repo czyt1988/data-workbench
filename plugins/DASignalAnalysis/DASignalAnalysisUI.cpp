@@ -235,8 +235,9 @@ bool DASignalAnalysisUI::initialize(DACoreInterface* core)
     refreshFFmpegAvailability();
     if (!DASignalImporter::isFFmpegAvailable()) {
         // 不是错误，只是能力提示：用普通消息，避免一启动就弹告警
-        mUI->addInfoLogMessage(tr("FFmpeg was not detected; video import is unavailable until a path is specified."));
-        // cn:未检测到 FFmpeg，视频导入在指定路径前不可用。
+        mUI->addInfoLogMessage(
+            tr("FFmpeg was not detected; video import is unavailable until a path is specified in Settings > Signal Analysis."));
+        // cn:未检测到 FFmpeg，在「设置 → 信号分析」里指定路径前视频导入不可用。
     }
     // 音频解码依赖自检（I1）：soundfile 缺失时非 WAV 直读格式给出明确提示而不是运行时崩溃
     try {
@@ -299,7 +300,7 @@ void DASignalAnalysisUI::reportError(const QString& text)
 /**
  * @brief 按 FFmpeg 可用性刷新入口状态（方案 §5.4）
  *
- * 未检测到时视频导入置灰并给出「在分析设置里指定路径」的悬浮提示；
+ * 未检测到时视频导入置灰并给出「在 设置 → 信号分析 里指定路径」的悬浮提示；
  * 检测到后恢复可用。MP3/M4A/AAC 与音频共用同一入口，按钮保持可用，
  * 选中需转码的格式时在导入阶段给出明确错误。
  */
@@ -310,8 +311,29 @@ void DASignalAnalysisUI::refreshFFmpegAvailability()
         actionImportVideo->setEnabled(available);
         actionImportVideo->setToolTip(
             available ? tr("Extract the audio track of a video file")  // cn:抽取视频音频轨
-                      : tr("FFmpeg was not detected. Specify its path in the signal analysis settings."));
-        // cn:未检测到 FFmpeg，请在分析设置里指定路径。
+                      : tr("FFmpeg was not detected. Specify its path in Settings > Signal Analysis."));
+        // cn:未检测到 FFmpeg，请在「设置 → 信号分析」里指定路径。
+    }
+}
+
+/**
+ * @brief 设置对话框应用了插件全局设置后刷新界面状态
+ *
+ * 目前全局设置只有 FFmpeg 路径：应用后立即按新路径刷新视频导入入口，
+ * 不用重启程序；状态日志在界面消息队列里留一条，方便用户确认生效结果。
+ */
+void DASignalAnalysisUI::onGlobalSettingsApplied()
+{
+    if (nullptr == mUI) {
+        return;
+    }
+    refreshFFmpegAvailability();
+    if (actionImportVideo && actionImportVideo->isEnabled()) {
+        mUI->addInfoLogMessage(tr("FFmpeg is available; video import is enabled."));
+        // cn:FFmpeg 可用，视频导入已启用。
+    } else {
+        mUI->addInfoLogMessage(tr("FFmpeg is still not available; video import stays disabled."));
+        // cn:仍未检测到 FFmpeg，视频导入保持置灰。
     }
 }
 
@@ -2178,7 +2200,6 @@ void DASignalAnalysisUI::openAnalysisSettings()
     syncAmplitudeUiFromParams(params);
     // 参数变了：大信号内存预算重新询问一次（用户可能是有意用更大段长重试，评审 N-C1c）
     mMemoryBudgetVerdict.remove(sig.get());
-    refreshFFmpegAvailability();  // 对话框里可能改了 FFmpeg 路径（D7）
     recomputeCurrentSignal();
 }
 
@@ -2986,7 +3007,8 @@ void DASignalAnalysisUI::retranslateUi()
     // 分析
     if (actionAnalysisSetting) {
         actionAnalysisSetting->setText(tr("Analysis Settings"));  // cn:分析设置
-        actionAnalysisSetting->setToolTip(tr("Open the unified analysis parameter dialog"));  // cn:打开统一参数对话框
+        actionAnalysisSetting->setToolTip(tr("Configure the analysis parameters of the current signal"));
+        // cn:配置当前信号的分析参数
     }
     if (actionCancelAnalysis) {
         actionCancelAnalysis->setText(tr("Cancel Analysis"));  // cn:取消计算

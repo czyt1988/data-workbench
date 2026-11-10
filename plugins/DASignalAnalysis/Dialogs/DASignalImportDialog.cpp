@@ -449,8 +449,8 @@ void DASignalImportDialog::updateStatusText()
         text = tr("Please enter a positive sample rate.");  // cn:请输入合法的正数采样率。
         break;
     case StatusNoFFmpeg:
-        text = tr("FFmpeg was not detected. Specify its path in the signal analysis settings.");
-        // cn:未检测到 FFmpeg，请在分析设置里指定路径。
+        text = tr("FFmpeg was not detected. Specify its path in Settings > Signal Analysis.");
+        // cn:未检测到 FFmpeg，请在「设置 → 信号分析」里指定路径。
         break;
     case StatusDetail:
         text = mStatusDetail;

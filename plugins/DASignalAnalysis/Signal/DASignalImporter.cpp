@@ -120,8 +120,8 @@ QString transcodeWithFFmpeg(const QString& inputPath, QString* error)
     if (ffmpeg.isEmpty()) {
         if (error) {
             *error = QCoreApplication::translate("DASignalImporter",
-                                                 "FFmpeg is not available. Specify its path in the signal analysis settings.");
-            // cn:未检测到 FFmpeg，请在分析设置里指定路径。
+                                                 "FFmpeg is not available. Specify its path in Settings > Signal Analysis.");
+            // cn:未检测到 FFmpeg，请在「设置 → 信号分析」里指定路径。
         }
         return QString();
     }
@@ -529,8 +529,8 @@ DASignalPtr DASignalImporter::importVideoFile(const QString& path, QString* erro
     if (ffmpeg.isEmpty()) {
         if (error) {
             *error = QCoreApplication::translate("DASignalImporter",
-                                                 "FFmpeg is not available. Specify its path in the signal analysis settings.");
-            // cn:未检测到 FFmpeg，请在分析设置里指定路径。
+                                                 "FFmpeg is not available. Specify its path in Settings > Signal Analysis.");
+            // cn:未检测到 FFmpeg，请在「设置 → 信号分析」里指定路径。
         }
         return nullptr;
     }

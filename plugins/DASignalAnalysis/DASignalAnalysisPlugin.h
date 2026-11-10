@@ -42,6 +42,9 @@ public:
     // 工程存档任务（只存来源引用与参数，方案 §10.1）
     std::shared_ptr< DA::DAAbstractArchiveTask > createArchiveTask(bool isSave) override;
 
+    // 全局设置页（主页 → 设置 → 信号分析）：与数据无关的插件设置（FFmpeg 路径）
+    DAAbstractSettingPage* createSettingPage() override;
+
 private:
     DASignalAnalysisUI* mUI { nullptr };
 };
