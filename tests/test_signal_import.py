@@ -1246,3 +1246,66 @@ def test_spectrum_provider_remove_dc_matches_whole_path(tmp_path):
         passes[-1].append(start)
         prev_start = start
     assert len(passes) == 3, "expected 1 stats pass + 2 spectrum passes, got %d" % len(passes)
+
+# ---------------------------------------------------------------- I2：导入后台准备
+
+def test_prepare_import_direct_wav_no_transcode(tmp_path):
+    """I2：直读 WAV 不转码，read_path 就是源文件；结果携带采样率供界面接线。"""
+    from DASignalAnalysis import importer
+
+    wav = tmp_path / "tone.wav"
+    _write_wav(wav, fs=8000, seconds=1.0)
+    out = tmp_path / "out.wav"
+    task_id = importer.prepare_import_async(str(wav), "audio", "", str(out))
+    status = None
+    for _ in range(1000):
+        info = tsm.get_task_status(task_id)
+        if info is not None and not info["is_running"]:
+            status = info
+            break
+        time.sleep(0.01)
+    assert status is not None and status["is_success"] is True, status
+    r = importer.take_result(task_id)
+    assert r["ok"] is True
+    assert r["read_path"] == str(wav)
+    assert r["is_temporary"] is False
+    assert r["sample_rate"] == pytest.approx(8000.0)
+    assert not out.exists()  # 没有转码就不应产生临时文件
+
+
+def test_prepare_import_video_without_ffmpeg_fails_clearly(tmp_path):
+    """I2：视频导入需要 FFmpeg，缺失时任务失败且带明确原因（不静默空结果）。"""
+    from DASignalAnalysis import importer
+
+    fake = tmp_path / "fake.mp4"
+    fake.write_bytes(b"not a video")
+    task_id = importer.prepare_import_async(str(fake), "video", "", str(tmp_path / "out.wav"))
+    info = None
+    for _ in range(1000):
+        info = tsm.get_task_status(task_id)
+        if info is not None and not info["is_running"]:
+            break
+        time.sleep(0.01)
+    assert info is not None and info["is_success"] is False
+    assert "ffmpeg is not available" in info["message"]
+    assert importer.take_result(task_id) is None
+
+
+def test_prepare_import_cancel_removes_partial_temp(tmp_path):
+    """I2：取消后台导入后无结果残留，预分配临时 WAV 被清理。"""
+    from DASignalAnalysis import importer
+
+    wav = tmp_path / "tone.wav"
+    _write_wav(wav, fs=8000, seconds=1.0)
+    out = tmp_path / "out.wav"
+    task_id = importer.prepare_import_async(str(wav), "audio", "", str(out))
+    assert tsm.cancel_task(task_id) is True
+    info = None
+    for _ in range(1000):
+        info = tsm.get_task_status(task_id)
+        if info is not None and not info["is_running"]:
+            break
+        time.sleep(0.01)
+    assert info is not None and info["is_canceled"] is True
+    assert importer.take_result(task_id) is None
+    assert not out.exists()

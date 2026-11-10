@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include <utility>
 #include <QFile>
+#include <QFileInfo>
 #include <QTimer>
 #include <QDebug>
 #include "DAPybind11InQt.h"
@@ -407,6 +408,65 @@ bool DASignalAnalysisWorker::computePlaybackWav(const DASignalTaskContext& ctx)
 }
 
 /**
+ * @brief 发起音视频导入的后台准备（I2）
+ *
+ * 视频/压缩音频导入的耗时点在 FFmpeg 转码与探测；这里只把「准备」交给 Python 守护线程
+ * （prepare_import_async：探测音频轨 → 转码到会话临时 WAV → 可读性校验），界面线程
+ * 立即返回，进度经 progressChanged 上报、取消走 cancelAll。完成后 poll() 在界面线程
+ * 用 DASignalImporter::importPreparedMedia 做文件头 probe 与信号构造（轻量）。
+ */
+bool DASignalAnalysisWorker::importMediaAsync(const QString& path, bool isVideo)
+{
+    if (path.isEmpty()) {
+        Q_EMIT failed(tr("No file selected."));  // cn:未选择文件。
+        return false;
+    }
+    if (!QFileInfo::exists(path)) {
+        Q_EMIT failed(tr("File does not exist."));  // cn:文件不存在。
+        return false;
+    }
+    const QString ffmpeg = DASignalImporter::ffmpegPath();
+    if (isVideo && ffmpeg.isEmpty()) {
+        Q_EMIT failed(tr("FFmpeg is not available. Specify its path in the signal analysis settings."));
+        // cn:未检测到 FFmpeg，请在信号分析设置里指定路径。
+        return false;
+    }
+    const QString tempWav = DASignalImporter::newSessionTempWavPath();
+    if (tempWav.isEmpty()) {
+        Q_EMIT failed(tr("Failed to create the temporary audio file."));  // cn:创建临时音频文件失败。
+        return false;
+    }
+    try {
+        DAPyModule importer = namedModule("DASignalAnalysis.importer");
+        pybind11::object res = importer.attr("prepare_import_async")(
+            path.toStdString(),
+            std::string(isVideo ? "video" : "audio"),
+            ffmpeg.toStdString(),
+            tempWav.toStdString());
+        TaskEntry entry;
+        entry.id            = QString::fromStdString(res.cast< std::string >());
+        entry.kind          = ImportTask;
+        entry.importPath    = path;
+        entry.importTempWav = tempWav;
+        entry.importIsVideo = isVideo;
+        if (entry.id.isEmpty()) {
+            QFile::remove(tempWav);
+            Q_EMIT failed(tr("Failed to start the import task."));  // cn:导入任务启动失败。
+            return false;
+        }
+        mTasks[ entry.id ] = entry;
+        updateTimer();
+        Q_EMIT progressChanged(0.0, tr("Preparing import..."));  // cn:正在准备导入...
+        return true;
+    } catch (const std::exception& e) {
+        QFile::remove(tempWav);
+        qWarning() << "DASignalAnalysisWorker::importMediaAsync:" << e.what();
+        Q_EMIT failed(tr("Failed to start the import task."));  // cn:导入任务启动失败。
+        return false;
+    }
+}
+
+/**
  * @brief 按任务类型调用对应 Python 模块的 cancel_task（C7：取消链路按 kind 分发）
  */
 void DASignalAnalysisWorker::cancelPythonTask(TaskKind kind, const QString& id)
@@ -483,8 +543,15 @@ bool DASignalAnalysisWorker::cancelTask(const QString& taskId)
     if (entry.kind == PlaybackWavTask && !entry.wavPath.isEmpty()) {
         QFile::remove(entry.wavPath);
     }
+    if (entry.kind == ImportTask && !entry.importTempWav.isEmpty()) {
+        QFile::remove(entry.importTempWav);
+    }
     updateTimer();
     Q_EMIT canceled(taskId);
+    if (entry.kind == ImportTask) {
+        // 空 error + 空信号 = 用户取消（界面据此复位导入状态，不弹失败）
+        Q_EMIT importFinished(DA::DASignalPtr(), QString());
+    }
     return true;
 }
 
@@ -514,7 +581,13 @@ void DASignalAnalysisWorker::cancelAll()
         if (entry.kind == PlaybackWavTask && !entry.wavPath.isEmpty()) {
             QFile::remove(entry.wavPath);
         }
+        if (entry.kind == ImportTask && !entry.importTempWav.isEmpty()) {
+            QFile::remove(entry.importTempWav);
+        }
         Q_EMIT canceled(id);
+        if (entry.kind == ImportTask) {
+            Q_EMIT importFinished(DA::DASignalPtr(), QString());
+        }
     }
     updateTimer();
 }
@@ -569,7 +642,13 @@ void DASignalAnalysisWorker::poll()
             if (entry.kind == PlaybackWavTask && !entry.wavPath.isEmpty()) {
                 QFile::remove(entry.wavPath);
             }
+            if (entry.kind == ImportTask && !entry.importTempWav.isEmpty()) {
+                QFile::remove(entry.importTempWav);
+            }
             Q_EMIT canceled(id);
+            if (entry.kind == ImportTask) {
+                Q_EMIT importFinished(DA::DASignalPtr(), QString());
+            }
         }
         mTasks.clear();
         updateTimer();
@@ -607,13 +686,26 @@ void DASignalAnalysisWorker::poll()
                 if (entry.kind == PlaybackWavTask && !entry.wavPath.isEmpty()) {
                     QFile::remove(entry.wavPath);
                 }
+                if (entry.kind == ImportTask && !entry.importTempWav.isEmpty()) {
+                    QFile::remove(entry.importTempWav);
+                }
                 Q_EMIT canceled(id);
+                if (entry.kind == ImportTask) {
+                    Q_EMIT importFinished(DA::DASignalPtr(), QString());
+                }
                 continue;
             }
             if (!isSuccess) {
                 // Python 侧错误文本（含 traceback）只进英文日志，界面显示可翻译消息（§七-9）
                 const QString msg = QString::fromStdString(d[ "message" ].cast< std::string >());
                 qWarning() << "DASignalAnalysisWorker::poll task" << id << "failed:" << msg;
+                if (entry.kind == ImportTask) {
+                    if (!entry.importTempWav.isEmpty()) {
+                        QFile::remove(entry.importTempWav);
+                    }
+                    Q_EMIT importFinished(DA::DASignalPtr(), msg);
+                    continue;
+                }
                 Q_EMIT failed(tr("Computation failed. See the message log for details."));
                 // cn:计算失败，详见消息日志。
                 continue;
@@ -676,6 +768,37 @@ void DASignalAnalysisWorker::poll()
                 curves.nFrames    = r[ "n_frames" ].cast< int >();
                 curves.nperseg    = r[ "nperseg" ].cast< int >();
                 Q_EMIT peakCurvesReady(entry.ctx, curves);
+            } else if (entry.kind == ImportTask) {
+                DAPyModule importer  = namedModule("DASignalAnalysis.importer");
+                pybind11::object raw = importer.attr("take_result")(id.toStdString());
+                if (raw.is_none()) {
+                    if (!entry.importTempWav.isEmpty()) {
+                        QFile::remove(entry.importTempWav);
+                    }
+                    Q_EMIT importFinished(DA::DASignalPtr(), QStringLiteral("import task produced no result"));
+                    continue;
+                }
+                pybind11::dict r   = pybind11::cast< pybind11::dict >(raw);
+                const QString readPath = QString::fromStdString(r[ "read_path" ].cast< std::string >());
+                const bool isTemporary = r[ "is_temporary" ].cast< bool >();
+                QString buildError;
+                DASignalPtr sig = DASignalImporter::importPreparedMedia(
+                    readPath,
+                    entry.importPath,
+                    isTemporary,
+                    entry.importIsVideo ? DASignalSource::VideoSource : DASignalSource::FileSource,
+                    &buildError);
+                if (!sig) {
+                    if (isTemporary && !readPath.isEmpty()) {
+                        QFile::remove(readPath);
+                    }
+                    Q_EMIT importFinished(DA::DASignalPtr(),
+                                          buildError.isEmpty()
+                                              ? QStringLiteral("failed to build a signal from the prepared file")
+                                              : buildError);
+                } else {
+                    Q_EMIT importFinished(sig, QString());
+                }
             } else if (entry.kind == PlaybackWavTask) {
                 DAPyModule importer  = namedModule("DASignalAnalysis.importer");
                 pybind11::object raw = importer.attr("take_result")(id.toStdString());

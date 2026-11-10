@@ -38,6 +38,13 @@ public:
     static DASignalPtr importAudioFile(const QString& path, QString* error);
     // 导入视频文件（抽取音频轨到临时目录）
     static DASignalPtr importVideoFile(const QString& path, QString* error);
+    // 用后台任务已准备好的文件创建信号（I2：视频/压缩音频转码已在 Python 守护线程完成，
+    // 本函数只在界面线程做文件头探测与信号对象构造，不做转码）
+    static DASignalPtr importPreparedMedia(const QString& readPath,
+                                           const QString& originalPath,
+                                           bool isTemporary,
+                                           DASignalSource::SourceType sourceType,
+                                           QString* error);
     // 文件是否需要 FFmpeg（压缩音频或视频）
     static bool fileNeedsFFmpeg(const QString& path);
     // 运行时是否可用 soundfile（缺失时直读格式降级，评审 I1）

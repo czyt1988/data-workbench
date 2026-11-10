@@ -114,6 +114,8 @@ private Q_SLOTS:
     void onWorkerPeakCurvesReady(const DA::DASignalTaskContext& ctx, const DA::DAPeakCurveResult& result);
     // 数据帧播放 WAV 后台导出完成（评审 U9）：校验上下文后交给播放器
     void onWorkerPlaybackWavReady(const DA::DASignalTaskContext& ctx, const QString& wavPath);
+    // 后台导入准备完成（I2）：成功则加入页面；失败显示可翻译提示；取消时 signal/error 都为空
+    void onWorkerImportFinished(const DA::DASignalPtr& signal, const QString& error);
     // 任务被用户取消：只清进度，不弹失败（评审 N-C7）
     void onWorkerCanceled(const QString& taskId);
     void onPeakWindowToggled(bool on);
@@ -187,6 +189,8 @@ private:
     void updateRelinkActionState();
     // 按在跑任务数刷新「取消计算」动作可用性（评审 N-C7）
     void updateCancelActionState();
+    // 导入在途时禁用三个导入入口（I2：视频/压缩音频转码在后台跑，避免并发导入互相覆盖）
+    void updateImportActionsState();
     // 按播放源/导出中状态刷新播放动作可用性（评审 U9：导出期间禁用播放）
     void updatePlaybackActionsState();
 
@@ -314,6 +318,10 @@ private:
     bool mCreatingPeakDock { false };
     // 数据帧播放 WAV 后台导出的在途键（信号:通道；非空表示导出中，导出期间禁用播放，评审 U9）
     QString mPlaybackWavPendingKey;
+    // 导入在途状态（I2）：true 表示后台正在准备导入，期间三个导入入口置灰
+    bool mImportTaskActive { false };
+    // 在途导入是否为视频（失败提示用「导入视频失败」还是「导入音频失败」）
+    bool mPendingImportIsVideo { false };
 };
 }  // namespace DA
 

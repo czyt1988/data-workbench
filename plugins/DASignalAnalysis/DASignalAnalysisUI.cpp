@@ -215,6 +215,7 @@ bool DASignalAnalysisUI::initialize(DACoreInterface* core)
     connect(mWorker, &DASignalAnalysisWorker::peaksReady, this, &DASignalAnalysisUI::onWorkerPeaksReady);
     connect(mWorker, &DASignalAnalysisWorker::peakCurvesReady, this, &DASignalAnalysisUI::onWorkerPeakCurvesReady);
     connect(mWorker, &DASignalAnalysisWorker::playbackWavReady, this, &DASignalAnalysisUI::onWorkerPlaybackWavReady);
+    connect(mWorker, &DASignalAnalysisWorker::importFinished, this, &DASignalAnalysisUI::onWorkerImportFinished);
     connect(mWorker, &DASignalAnalysisWorker::canceled, this, &DASignalAnalysisUI::onWorkerCanceled);
     if (actionPeakWindow) {
         connect(actionPeakWindow, &QAction::toggled, this, &DASignalAnalysisUI::onPeakWindowToggled);
@@ -351,13 +352,19 @@ void DASignalAnalysisUI::importAudioFile()
     if (dlg.exec() != QDialog::Accepted) {
         return;
     }
-    QString error;
-    DASignalPtr sig = DASignalImporter::importAudioFile(dlg.filePath(), &error);
-    if (!sig) {
-        reportOperationFailure(tr("Failed to import audio."), error);  // cn:导入音频失败。
-        return;
+    if (mImportTaskActive) {
+        return;  // 已有导入在跑：入口已置灰，这里是防御
     }
-    addSignalAndActivate(sig);
+    // I2：视频/压缩音频的转码与探测在 Python 守护线程做，界面立即返回；
+    // 成功走 importFinished → onWorkerImportFinished，进度/取消走既有 worker 通道。
+    mPendingImportIsVideo = false;
+    mImportTaskActive     = true;
+    updateImportActionsState();
+    if (!mWorker || !mWorker->importMediaAsync(dlg.filePath(), false)) {
+        mImportTaskActive = false;
+        updateImportActionsState();
+        // 启动失败原因由 worker failed 信号负责提示（已翻译文案）
+    }
 }
 
 /**
@@ -402,13 +409,16 @@ void DASignalAnalysisUI::importVideoFile()
     if (dlg.exec() != QDialog::Accepted) {
         return;
     }
-    QString error;
-    DASignalPtr sig = DASignalImporter::importVideoFile(dlg.filePath(), &error);
-    if (!sig) {
-        reportOperationFailure(tr("Failed to import video."), error);  // cn:导入视频失败。
-        return;
+    if (mImportTaskActive) {
+        return;  // 已有导入在跑：入口已置灰，这里是防御
     }
-    addSignalAndActivate(sig);
+    mPendingImportIsVideo = true;
+    mImportTaskActive     = true;
+    updateImportActionsState();
+    if (!mWorker || !mWorker->importMediaAsync(dlg.filePath(), true)) {
+        mImportTaskActive = false;
+        updateImportActionsState();
+    }
 }
 
 /**
@@ -1112,6 +1122,8 @@ void DASignalAnalysisUI::onProjectCleaned()
     if (mWorker) {
         mWorker->cancel();
     }
+    mImportTaskActive = false;
+    updateImportActionsState();
     if (mPlayer) {
         mPlayer->stop();
         mPlayer->clearSignal();
@@ -2499,6 +2511,21 @@ void DASignalAnalysisUI::updateCancelActionState()
 }
 
 /**
+ * @brief 按导入在途状态刷新三个导入入口（I2）
+ */
+void DASignalAnalysisUI::updateImportActionsState()
+{
+    const bool enabled = !mImportTaskActive;
+    if (actionImportAudio) {
+        actionImportAudio->setEnabled(enabled);
+    }
+    if (actionImportVideo) {
+        // 视频入口还要看 FFmpeg 是否可用（refreshFFmpegAvailability 已负责该条件）
+        actionImportVideo->setEnabled(enabled && DASignalImporter::isFFmpegAvailable());
+    }
+}
+
+/**
  * @brief 取消全部后台计算（评审 N-C7）
  */
 void DASignalAnalysisUI::cancelAllComputations()
@@ -2511,6 +2538,31 @@ void DASignalAnalysisUI::cancelAllComputations()
     clearProgressIfIdle();
     updateCancelActionState();
     updatePlaybackActionsState();
+}
+
+/**
+ * @brief 后台导入准备完成（I2）
+ *
+ * signal 非空 = 成功：加入页面并激活（与同步导入同一收尾入口）；
+ * signal 为空且 error 为空 = 用户取消：只清进度、不弹失败；
+ * signal 为空且 error 非空 = 失败：界面显示可翻译提示，英文细节只写日志（§七-9）。
+ */
+void DASignalAnalysisUI::onWorkerImportFinished(const DA::DASignalPtr& signal, const QString& error)
+{
+    const bool wasVideo = mPendingImportIsVideo;
+    mImportTaskActive   = false;
+    updateImportActionsState();
+    if (signal) {
+        addSignalAndActivate(signal);
+        if (mUI) {
+            mUI->addInfoLogMessage(tr("Signal imported."));  // cn:信号导入完成。
+        }
+    } else if (!error.isEmpty()) {
+        reportOperationFailure(wasVideo ? tr("Failed to import video.") : tr("Failed to import audio."), error);
+        // cn:导入视频失败。/导入音频失败。
+    }
+    clearProgressIfIdle();
+    updateCancelActionState();
 }
 
 /**
@@ -2545,6 +2597,12 @@ void DASignalAnalysisUI::onWorkerPlaybackWavReady(const DASignalTaskContext& ctx
 void DASignalAnalysisUI::onWorkerCanceled(const QString& taskId)
 {
     Q_UNUSED(taskId)
+    // 导入任务被取消：worker 会补发 importFinished(空信号, 空 error)；这里先复位入口状态，
+    // 保证即使信号时序变化，导入按钮也不会永久置灰。
+    if (mImportTaskActive) {
+        mImportTaskActive = false;
+        updateImportActionsState();
+    }
     mPlaybackWavPendingKey.clear();
     clearProgressIfIdle();
     updateCancelActionState();

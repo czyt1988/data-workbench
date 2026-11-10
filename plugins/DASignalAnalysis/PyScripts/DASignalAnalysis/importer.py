@@ -20,6 +20,7 @@ import os
 import struct
 import subprocess
 import threading
+import time
 import traceback
 from pathlib import Path
 
@@ -423,9 +424,11 @@ def read_channel_all(path, channel):
 # ---------------------------------------------------------------- FFmpeg
 
 
-def run_ffmpeg(ffmpeg_path, input_path, output_path, extra_args=None):
+def run_ffmpeg(ffmpeg_path, input_path, output_path, extra_args=None, cancel_check=None):
     """运行 FFmpeg 把输入转成 32 位浮点 WAV（或执行额外参数）。
 
+    :param cancel_check: 可选无参回调；返回 True 表示请求取消，会 kill 子进程并返回
+                         returncode=-3（I2：导入异步化后转码必须可取消）
     返回 dict：{ok, returncode, message}
     message 含失败原因（取最后 10 行输出，方案 §5.3）。
     """
@@ -442,21 +445,35 @@ def run_ffmpeg(ffmpeg_path, input_path, output_path, extra_args=None):
         # 默认：丢弃视频轨，转 32 位浮点 PCM WAV
         args.extend(["-vn", "-acodec", "pcm_f32le", str(output_path)])
     try:
-        proc = subprocess.run(
+        proc = subprocess.Popen(
             args,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
             encoding="utf-8",
             errors="replace",
-            timeout=1800,
         )
     except FileNotFoundError:
         return {"ok": False, "returncode": -1, "message": "ffmpeg executable not found"}
-    except subprocess.TimeoutExpired:
-        return {"ok": False, "returncode": -2, "message": "ffmpeg timed out"}
+
+    # 用轮询代替 subprocess.run：转码是长任务，必须在等待期间响应取消（I2）。
+    deadline = time.time() + 1800
+    stderr_text = ""
+    while True:
+        try:
+            _out, stderr_text = proc.communicate(timeout=0.2)
+            break
+        except subprocess.TimeoutExpired:
+            if cancel_check is not None and cancel_check():
+                proc.kill()
+                proc.communicate()
+                return {"ok": False, "returncode": -3, "message": "cancelled"}
+            if time.time() > deadline:
+                proc.kill()
+                proc.communicate()
+                return {"ok": False, "returncode": -2, "message": "ffmpeg timed out"}
     if proc.returncode != 0:
-        tail = "\n".join((proc.stderr or "").strip().splitlines()[-10:])
+        tail = "\n".join((stderr_text or "").strip().splitlines()[-10:])
         return {"ok": False, "returncode": int(proc.returncode), "message": tail}
     return {"ok": True, "returncode": 0, "message": ""}
 
@@ -612,6 +629,115 @@ def _safe_remove(path):
             os.remove(str(path))
     except OSError:
         pass
+
+
+def prepare_import_async(path, mode, ffmpeg_path, temp_wav_path):
+    """后台准备导入（I2：视频/压缩音频导入异步化）。
+
+    界面线程只负责选文件与结果接线；本函数在 Python 守护线程里做耗时的
+    「探测音频轨 / FFmpeg 转码 / 结果文件可读性校验」，进度与取消走
+    thread_status_manager（C++ 侧 QTimer 轮询，不新起 QThread）。
+
+    :param path: 用户选择的源文件
+    :param mode: "audio" 或 "video"
+    :param ffmpeg_path: FFmpeg 可执行文件路径（空串表示不可用）
+    :param temp_wav_path: C++ 会话临时目录里预分配的目标 WAV（仅转码时使用）
+    :return: 任务 id
+    结果 dict：{ok, read_path, is_temporary, sample_rate, error}
+    - 直读格式（WAV/AIFF/FLAC/OGG 且 soundfile 可用）：read_path 仍是源文件；
+    - 视频 / 压缩音频 / 无 soundfile 的非 WAV：read_path 是转码出的临时 WAV。
+    """
+    task_id, status = tsm.create_task_with_status("signal import")
+    status.start("signal import")
+    mode = str(mode or "audio").lower()
+    temp_wav_path = str(temp_wav_path or "")
+
+    def _check():
+        tsm.raise_if_canceled(task_id)
+
+    def _cleanup_temp():
+        # 只在「本次生成的临时产物」上删；源文件绝不删
+        if temp_wav_path:
+            _safe_remove(temp_wav_path)
+
+    def worker():
+        is_temporary = False
+        try:
+            _check()
+            if not os.path.isfile(str(path)):
+                raise RuntimeError("file does not exist: %s" % path)
+            ext = _ext(path)
+            needs_ffmpeg_convert = False
+            if mode == "video":
+                if not ffmpeg_path:
+                    raise RuntimeError("ffmpeg is not available for video import")
+                status.update_progress(5.0, "probing audio track")
+                probe = has_audio_stream(ffmpeg_path, path)
+                if not probe.get("ok"):
+                    raise RuntimeError(probe.get("message") or "failed to probe the video file")
+                if not probe.get("has_audio"):
+                    raise RuntimeError("the file does not contain an audio track")
+                needs_ffmpeg_convert = True
+            elif needs_ffmpeg(path):
+                if not ffmpeg_path:
+                    raise RuntimeError("ffmpeg is not available for this format")
+                needs_ffmpeg_convert = True
+            elif is_direct_audio(path) and not soundfile_available() and ext != ".wav":
+                # 运行时缺 soundfile：非 WAV 直读格式退化为 FFmpeg（与同步路径口径一致，评审 I1）
+                if not ffmpeg_path:
+                    raise RuntimeError(SOUNDFILE_MISSING_MESSAGE)
+                needs_ffmpeg_convert = True
+            if needs_ffmpeg_convert:
+                if not temp_wav_path:
+                    raise RuntimeError("temporary wav path is empty")
+                _check()
+                status.update_progress(15.0, "converting audio")
+
+                def _cancel_check():
+                    if tsm.is_task_canceled(task_id):
+                        return True
+                    status.update_progress(50.0, "converting audio")
+                    return False
+
+                res = run_ffmpeg(ffmpeg_path, path, temp_wav_path, cancel_check=_cancel_check)
+                if not res.get("ok"):
+                    if res.get("returncode") == -3:
+                        raise tsm.TaskCanceledError("cancelled")
+                    raise RuntimeError(res.get("message") or "ffmpeg failed")
+                read_path = temp_wav_path
+                is_temporary = True
+            else:
+                read_path = str(path)
+            _check()
+            status.update_progress(90.0, "verifying")
+            probe = probe_audio(read_path)
+            if not probe.get("ok"):
+                raise RuntimeError(probe.get("error") or "cannot read the imported audio file")
+            _check()
+            _RESULT_STORE[task_id] = {
+                "ok": True,
+                "read_path": read_path,
+                "is_temporary": bool(is_temporary),
+                "sample_rate": float(probe.get("sample_rate", 0.0) or 0.0),
+            }
+            if tsm.is_task_canceled(task_id):
+                _RESULT_STORE.pop(task_id, None)
+                _cleanup_temp()
+                return
+            status.update_progress(100.0, "done")
+            status.finish(True, "")
+        except tsm.TaskCanceledError:
+            _cleanup_temp()
+            status.finish(False, "cancelled")
+        except Exception as e:  # noqa: BLE001 - 失败原因必须回传界面
+            _cleanup_temp()
+            if tsm.is_task_canceled(task_id):
+                status.finish(False, "cancelled")
+                return
+            status.finish(False, "%s\n%s" % (str(e), traceback.format_exc()))
+
+    threading.Thread(target=worker, daemon=True).start()
+    return task_id
 
 
 def export_playback_wav_async(source, out_path):

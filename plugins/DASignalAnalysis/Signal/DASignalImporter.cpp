@@ -560,6 +560,28 @@ DASignalPtr DASignalImporter::importVideoFile(const QString& path, QString* erro
     return buildFileSignal(wav, path, true, DASignalSource::VideoSource, error);
 }
 
+/**
+ * @brief 用后台任务已准备好的文件创建信号（I2 异步导入的界面线程收尾）
+ *
+ * 转码/探测已在 Python 守护线程完成，这里只做文件头 probe 与信号对象构造（都是轻量操作）。
+ * readPath 可能是转码出的临时 WAV（isTemporary=true，生命周期随信号），也可能是原文件。
+ */
+DASignalPtr DASignalImporter::importPreparedMedia(const QString& readPath,
+                                                  const QString& originalPath,
+                                                  bool isTemporary,
+                                                  DASignalSource::SourceType sourceType,
+                                                  QString* error)
+{
+    if (readPath.isEmpty() || !QFileInfo::exists(readPath)) {
+        if (error) {
+            *error = QCoreApplication::translate("DASignalImporter", "The prepared audio file does not exist.");
+            // cn:准备好的音频文件不存在。
+        }
+        return nullptr;
+    }
+    return buildFileSignal(readPath, originalPath, isTemporary, sourceType, error);
+}
+
 // ---------------------------------------------------------------- 数据帧
 
 /**

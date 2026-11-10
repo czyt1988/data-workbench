@@ -48,6 +48,8 @@ public:
     bool computePeakCurves(const DA::DASignalTaskContext& ctx, const DASignalAnalysisParams& params);
     // 发起数据帧列 → 会话临时 WAV 的后台导出（U9：数据帧来源播放前准备）
     bool computePlaybackWav(const DA::DASignalTaskContext& ctx);
+    // 发起音视频导入的后台准备（I2：视频/压缩音频转码搬进 Python 守护线程，界面不阻塞）
+    bool importMediaAsync(const QString& path, bool isVideo);
     // 取消单个在跑任务（含结果表清理与未完成临时 WAV 删除）；任务不存在返回 false
     bool cancelTask(const QString& taskId);
     // 取消全部在跑任务并清理（finalize/切工程时调用）
@@ -77,6 +79,8 @@ Q_SIGNALS:
     void peakCurvesReady(const DA::DASignalTaskContext& ctx, const DA::DAPeakCurveResult& result);
     // 数据帧播放 WAV 后台导出完成（U9）；wavPath 为会话临时目录内的可播放 WAV 绝对路径
     void playbackWavReady(const DA::DASignalTaskContext& ctx, const QString& wavPath);
+    // 后台导入准备完成（I2）：成功时 signal 非空；失败/取消时 signal 为空、error 为英文细节（只写日志）
+    void importFinished(const DA::DASignalPtr& signal, const QString& error);
     // 任务被主动取消（供界面清进度用；不弹「失败」提示）
     void canceled(const QString& taskId);
     void failed(const QString& error);
@@ -92,7 +96,8 @@ private:
         HeatmapTask,
         PeaksTask,
         PeakCurvesTask,
-        PlaybackWavTask
+        PlaybackWavTask,
+        ImportTask
     };
     struct TaskEntry
     {
@@ -101,6 +106,10 @@ private:
         DASignalTaskContext ctx;
         // 仅 PlaybackWavTask：会话临时目录内的目标 WAV 路径（取消/失败时删除）
         QString wavPath;
+        // 仅 ImportTask：源文件、预分配的转码目标 WAV、是否视频（取消/失败时删临时产物）
+        QString importPath;
+        QString importTempWav;
+        bool importIsVideo { false };
     };
 
     void updateTimer();
