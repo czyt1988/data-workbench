@@ -41,7 +41,8 @@ inline bool isRmsMode(const QString& amplitudeMode)
  * @param amplitudeMode peak / rms / dbFS / dbRef1
  * @param dbReference fullScale / one（dbFS 时使用；one 等价 dbRef1）
  * @param calibration 标定系数
- * @param signalPeakCalibrated 信号峰值（已乘标定），作为 dBFS 参考
+ * @param signalPeakCalibrated 信号峰值（已乘标定，且按与频谱/峰值相同的预处理口径计算：
+ *        去直流/去趋势之后；评审 N-C2），作为 dBFS 参考
  */
 inline double toDisplay(double peakAmplitude,
                         bool isDc,
@@ -56,7 +57,9 @@ inline double toDisplay(double peakAmplitude,
     }
     if (isDbMode(amplitudeMode)) {
         const bool refIsOne = (dbReference == QLatin1String("one")) || (amplitudeMode == QLatin1String("dbRef1"));
-        const double ref    = refIsOne ? 1.0 : qMax(signalPeakCalibrated, cEps);
+        // 满量程参考无效（<=0）时回退 1.0 而不是 cEps：cEps 会把参考算成 0 dBFS 的
+        // 荒谬结果（20·log10(x/1e-30) ≈ +600 dB），评审 N-C2
+        const double ref = refIsOne ? 1.0 : ((signalPeakCalibrated > 0.0) ? signalPeakCalibrated : 1.0);
         return 20.0 * std::log10(qMax(std::fabs(calibrated), cEps) / ref);
     }
     return calibrated;

@@ -146,6 +146,52 @@ DASignalAnalysisView* DASignalAnalysisPage::viewForSignal(const DASignal* sig) c
 }
 
 /**
+ * @brief 某信号在标签栏中的索引（未找到返回 -1）
+ */
+int DASignalAnalysisPage::indexOfSignal(const DASignal* sig) const
+{
+    for (int i = 0; i < mSignals.size(); ++i) {
+        if (mSignals.at(i).get() == sig) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+/**
+ * @brief 用新信号替换指定索引的信号（重新指定来源用，评审 U16）
+ *
+ * 旧视图延后销毁（可能在信号发射链上），新视图按同一索引插入，保持标签顺序不变；
+ * 旧信号通过 signalRemoved 通知外部清理其参数/频谱/峰值缓存。
+ */
+bool DASignalAnalysisPage::replaceSignalAt(int index, const DASignalPtr& signal)
+{
+    if (!signal || index < 0 || index >= mSignals.size()) {
+        return false;
+    }
+    const DASignalPtr oldSignal   = mSignals.at(index);
+    DASignalAnalysisView* oldView = mViews.take(oldSignal.get());
+    if (oldView) {
+        mSignalStack->removeWidget(oldView);
+        oldView->deleteLater();
+    }
+    mSignals[ index ] = signal;
+    DASignalAnalysisView* view = new DASignalAnalysisView(signal, mSignalStack);
+    mSignalStack->insertWidget(index, view);
+    mViews.insert(signal.get(), view);
+    const bool oldBlocked = mTabBar->blockSignals(true);
+    mTabBar->setTabText(index, signal->name());
+    mTabBar->setTabToolTip(index, signal->source() ? signal->source()->sourceDescription() : QString());
+    mTabBar->setCurrentIndex(index);
+    mTabBar->blockSignals(oldBlocked);
+    mSignalStack->setCurrentWidget(view);
+    updateEmptyState();
+    Q_EMIT signalRemoved(oldSignal);  // 外部清理旧信号的缓存
+    Q_EMIT currentSignalChanged();
+    return true;
+}
+
+/**
  * @brief 构建界面：根堆叠 = 空状态页 + 信号视图页（标签栏 + 视图堆叠）
  */
 void DASignalAnalysisPage::buildUI()

@@ -35,11 +35,19 @@ bool DASignalArchiveTask::exec(DAAbstractArchive* archive, Mode mode)
         return archive->write(archivePath(), mData);
     }
     mData = archive->read(archivePath());
+    // 条目缺失时 read() 只返回空字节而不报错：记录「条目是否存在」，
+    // 界面层据此区分「本工程没有本插件数据」（要清掉上一工程残留）与正常读到内容（评审 N-U2）
+    mEntryFound = !mData.isEmpty();
     return true;
 }
 
 QByteArray DASignalArchiveTask::loadedData() const
 {
     return mData;
+}
+
+bool DASignalArchiveTask::archiveEntryFound() const
+{
+    return mEntryFound;
 }
 }  // namespace DA

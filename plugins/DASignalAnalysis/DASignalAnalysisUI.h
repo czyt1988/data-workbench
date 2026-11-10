@@ -3,7 +3,6 @@
 #include <QObject>
 #include <QAction>
 #include <QHash>
-#include <QSet>
 #include <memory>
 #include "Signal/DASignal.h"
 #include "Analysis/DASignalAnalysisParams.h"
@@ -52,7 +51,7 @@ public:
     explicit DASignalAnalysisUI(QObject* par = nullptr);
     ~DASignalAnalysisUI() override;
 
-    // 初始化：创建中央页面与丝带标签页
+    // 初始化：创建丝带标签页与动作（中央页面与峰值窗口惰性创建）
     bool initialize(DACoreInterface* core);
     // 清理：移除丝带标签页、动作与页面/峰值停靠窗口（插件热卸载前调用）
     void finalize();
@@ -90,6 +89,8 @@ public Q_SLOTS:
     void importVideoFile();
     // 打开统一参数对话框（D20），确定后立即重算一次（D21）
     void openAnalysisSettings();
+    // 取消全部后台计算（评审 N-C7：界面可见的取消入口）
+    void cancelAllComputations();
     // 幅值显示模式切换（只重绘，不重算）
     void onAmplitudeModeChanged();
     // 重新计算当前信号（参数变化后调用）：频谱、热图、峰值表与曲线统一提交
@@ -109,6 +110,10 @@ private Q_SLOTS:
     void onWorkerHeatmapReady(const DA::DASignalTaskContext& ctx, const DA::DAStftResult& result);
     void onWorkerPeaksReady(const DA::DASignalTaskContext& ctx, const DA::DAPeakResult& result);
     void onWorkerPeakCurvesReady(const DA::DASignalTaskContext& ctx, const DA::DAPeakCurveResult& result);
+    // 数据帧播放 WAV 后台导出完成（评审 U9）：校验上下文后交给播放器
+    void onWorkerPlaybackWavReady(const DA::DASignalTaskContext& ctx, const QString& wavPath);
+    // 任务被用户取消：只清进度，不弹失败（评审 N-C7）
+    void onWorkerCanceled(const QString& taskId);
     void onPeakWindowToggled(bool on);
     void onPeakMarkerToggled(bool on);
     void onPeakTopNChanged();
@@ -129,6 +134,10 @@ private Q_SLOTS:
     void exportHeatmapCsv();
     void exportImage();
     void sendPeaksToTable();
+    // 重新指定数据帧来源（当前信号来源缺失时可用，评审 U16）
+    void relinkCurrentSignalSource();
+    // 宿主清空工程（新建/加载前/快照回滚）：清理本插件信号、缓存与临时文件
+    void onProjectCleaned();
 
 private:
     void buildCenterPage();
@@ -156,12 +165,28 @@ private:
     void clearProgressIfIdle();
     // 统一错误上报：进界面消息队列（da.user）+ 唤起界面日志窗口，避免功能静默缺失
     void reportError(const QString& text);
+    // 统一失败上报：界面只显示翻译后的提示，英文诊断原文只写日志（评审 §七-9）
+    void reportOperationFailure(const QString& userText, const QString& detail);
     // 按 FFmpeg 可用性刷新入口状态（未检测到时视频导入置灰并说明原因）
     void refreshFFmpegAvailability();
     // 当前信号的播放源切换（信号标签切换时调用）
     void syncPlayerSource();
     // 导入成功后加入页面并激活依赖动作
     void addSignalAndActivate(const DA::DASignalPtr& sig);
+    // 连接单个信号视图的请求/事件信号并发起首次计算（导入与重新指定来源共用）
+    void connectSignalView(const DA::DASignalPtr& sig);
+    // 首次导入信号后按偏好决定是否显示峰值窗口（D24 / 评审 N-U1）
+    void showPeakDockForFirstSignal();
+    // 参数对话框改幅值口径后同步丝带勾选与全局状态（评审 N-U3）
+    void syncAmplitudeUiFromParams(const DA::DASignalAnalysisParams& params);
+    // 大信号内存预算门：返回 false 表示用户取消本次计算（评审 N-C1c）
+    bool checkMemoryBudget(const DA::DASignalPtr& sig, const QString& stage, qint64 estimatedBytes);
+    // 按当前信号是否为「来源缺失」占位刷新「重新指定来源」动作（评审 U16）
+    void updateRelinkActionState();
+    // 按在跑任务数刷新「取消计算」动作可用性（评审 N-C7）
+    void updateCancelActionState();
+    // 按播放源/导出中状态刷新播放动作可用性（评审 U9：导出期间禁用播放）
+    void updatePlaybackActionsState();
 
 private:
     DACoreInterface* mCore { nullptr };
@@ -205,6 +230,7 @@ public:
     QAction* actionImportAudio { nullptr };      ///< 导入音频
     QAction* actionImportDataFrame { nullptr };  ///< 导入数据帧
     QAction* actionImportVideo { nullptr };      ///< 导入视频
+    QAction* actionRelinkSource { nullptr };     ///< 重新指定数据帧来源（来源缺失时可用，评审 U16）
 
     //===================================================
     // 播放（Playback）
@@ -217,6 +243,7 @@ public:
     // 分析（Analysis）
     //===================================================
     QAction* actionAnalysisSetting { nullptr };  ///< 分析设置
+    QAction* actionCancelAnalysis { nullptr };   ///< 取消全部后台计算（评审 N-C7）
 
     //===================================================
     // 峰值（Peaks）
@@ -263,8 +290,8 @@ private:
     int mCurrentPeaksChannel { 0 };
     // 播放控制器（方案 D26）
     DASignalPlayer* mPlayer { nullptr };
-    // 已提示过「信号过大」的信号（避免重复提示）
-    QSet< const DA::DASignal* > mLargeSignalWarned;
+    // 大信号内存预算判定：信号 → 0=未询问 / 1=用户已确认继续 / 2=用户拒绝（评审 N-C1c/D19）
+    QHash< const DA::DASignal*, int > mMemoryBudgetVerdict;
     bool mSyncingFromPlayer { false };
     // 每个信号标签页记住上次生效参数（D21）
     QHash< const DA::DASignal*, DA::DASignalAnalysisParams > mParamsPerSignal;
@@ -279,6 +306,12 @@ private:
     QString mDbReference { QStringLiteral("fullScale") };
     // 插件偏好：上次使用的色带（P2）
     QString mLastColormap;
+    // 插件偏好：峰值窗口显隐（-1=从未设置 / 0=用户关闭 / 1=用户打开，评审 N-U1/P2）
+    int mPeakDockVisiblePref { -1 };
+    // 峰值停靠窗口创建期间屏蔽 visibilityChanged 对偏好的写入（评审 N-U1）
+    bool mCreatingPeakDock { false };
+    // 数据帧播放 WAV 后台导出的在途键（信号:通道；非空表示导出中，导出期间禁用播放，评审 U9）
+    QString mPlaybackWavPendingKey;
 };
 }  // namespace DA
 

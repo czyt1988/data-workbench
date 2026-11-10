@@ -33,6 +33,13 @@ public:
     // 清除播放源
     void clearSignal();
 
+    // 数据帧来源的临时 WAV 缓存路径（未导出返回空串）；后台导出流程据此判断是否需要导出
+    QString cachedWavPath(const DASignalPtr& signal, int channel) const;
+    // 登记后台导出的临时 WAV 并切为该信号的播放源（导出在工作线程完成后调用，评审 U9）
+    bool setPreparedDataFrameWav(const DASignalPtr& signal, int channel, const QString& wavPath, QString* error);
+    // 是否已装入可播放的媒体源（播放动作可用性用）
+    bool hasSource() const;
+
     void play();
     void pause();
     void stop();
@@ -51,6 +58,12 @@ Q_SIGNALS:
 
 private Q_SLOTS:
     void onPlayerError();
+
+private:
+    // 切当前播放源（本地文件路径）
+    void applyMediaPath(const QString& path);
+    // 「信号 + 通道」缓存键
+    static QString wavCacheKey(const DASignalPtr& signal, int channel);
 
 private:
     QMediaPlayer* mPlayer { nullptr };

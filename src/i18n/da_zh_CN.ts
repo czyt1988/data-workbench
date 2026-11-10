@@ -22037,6 +22037,22 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <source>Export CSV</source>
         <translation>导出 CSV</translation>
     </message>
+    <message>
+        <source>Add the peak table to the data manager; open it from the data manager</source>
+        <translation>把峰值表加入数据管理器；可从数据管理器里打开查看</translation>
+    </message>
+    <message>
+        <source>Open the analysis parameter dialog</source>
+        <translation>打开分析参数对话框</translation>
+    </message>
+    <message>
+        <source>Open this window to compute the per-frame peak curves</source>
+        <translation>打开本窗口后计算每帧前 N 峰值曲线</translation>
+    </message>
+    <message>
+        <source>Settings...</source>
+        <translation>参数设置...</translation>
+    </message>
 </context>
 <context>
     <name>DA::DAPeakTableModel</name>
@@ -22064,6 +22080,18 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <location filename="../plugins/DASignalAnalysis/Analysis/DAPeakTableModel.cpp" line="157" />
         <source>Share (%)</source>
         <translation>占比（%）</translation>
+    </message>
+    <message>
+        <source>Amplitude (dB)</source>
+        <translation>幅值（dB）</translation>
+    </message>
+    <message>
+        <source>RMS</source>
+        <translation>均方根</translation>
+    </message>
+    <message>
+        <source>Time (s)</source>
+        <translation>时间（秒）</translation>
     </message>
 </context>
 <context>
@@ -22140,6 +22168,40 @@ Sample rate: %2 Hz | Channels: %3 | Duration: %4 s</source>
         <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalAnalysisSettingDialog.cpp" line="162" />
         <source>Cancel</source>
         <translation>取消</translation>
+    </message>
+    <message>
+        <source>Browse...</source>
+        <translation>浏览...</translation>
+    </message>
+    <message>
+        <source>Empty: fall back to the ffmpeg found in PATH.</source>
+        <translation>留空：回退到系统 PATH 中的 ffmpeg。</translation>
+    </message>
+    <message>
+        <source>Executable (*.exe);;All files (*)</source>
+        <translation>可执行文件 (*.exe);;所有文件 (*)</translation>
+    </message>
+    <message>
+        <source>FFmpeg path</source>
+        <translation>FFmpeg 路径</translation>
+    </message>
+    <message>
+        <source>FFmpeg path is valid.</source>
+        <translation>FFmpeg 路径有效。</translation>
+    </message>
+    <message>
+        <source>File does not exist.</source>
+        <translation>文件不存在。</translation>
+    </message>
+    <message>
+        <source>Select FFmpeg Executable</source>
+        <translation>选择 FFmpeg 可执行文件</translation>
+    </message>
+    <message>
+        <source>Spectrum: segment = %1 samples (%2 ms), actual resolution = %3 Hz
+STFT: window = %4 samples (%5 ms), hop = %6 samples</source>
+        <translation>频谱：段长 = %1 点（%2 毫秒）、实际分辨率 = %3 赫兹
+时频：窗长 = %4 点（%5 毫秒）、跳步 = %6 点</translation>
     </message>
 </context>
 <context>
@@ -22551,6 +22613,228 @@ Sample rate: %2 Hz | Channels: %3 | Duration: %4 s</source>
         <source>Show the signal analysis workspace; it is created on first use</source>
         <translation>显示信号分析界面（首次使用时创建）</translation>
     </message>
+    <message>
+        <source>Audio/Video files (*.wav *.aiff *.aif *.flac *.ogg *.mp3 *.m4a *.mp4 *.mkv *.avi);;All files (*)</source>
+        <translation>音频/视频文件 (*.wav *.aiff *.aif *.flac *.ogg *.mp3 *.m4a *.mp4 *.mkv *.avi);;所有文件 (*)</translation>
+    </message>
+    <message>
+        <source>Cancel Analysis</source>
+        <translation>取消计算</translation>
+    </message>
+    <message>
+        <source>Cancel all running background computations</source>
+        <translation>取消全部在跑的后台计算</translation>
+    </message>
+    <message>
+        <source>Cannot start playback for this signal.</source>
+        <translation>无法开始播放该信号。</translation>
+    </message>
+    <message>
+        <source>Continue</source>
+        <translation>继续</translation>
+    </message>
+    <message>
+        <source>Data frame:</source>
+        <translation>数据帧：</translation>
+    </message>
+    <message>
+        <source>Downsample x2</source>
+        <translation>2 倍降采样</translation>
+    </message>
+    <message>
+        <source>Export Power Spectral Density</source>
+        <translation>导出功率谱密度</translation>
+    </message>
+    <message>
+        <source>Export full</source>
+        <translation>导出完整矩阵</translation>
+    </message>
+    <message>
+        <source>Extract the audio track of a video file</source>
+        <translation>抽取视频音频轨</translation>
+    </message>
+    <message>
+        <source>FFmpeg was not detected. Specify its path in the signal analysis settings.</source>
+        <translation>未检测到 FFmpeg，请在分析设置里指定路径。</translation>
+    </message>
+    <message>
+        <source>Failed to create the signal analysis page.</source>
+        <translation>创建信号分析页面失败。</translation>
+    </message>
+    <message>
+        <source>Failed to export the power spectral density.</source>
+        <translation>功率谱密度导出失败。</translation>
+    </message>
+    <message>
+        <source>Failed to import audio.</source>
+        <translation>导入音频失败。</translation>
+    </message>
+    <message>
+        <source>Failed to import data frame.</source>
+        <translation>导入数据帧失败。</translation>
+    </message>
+    <message>
+        <source>Failed to import video.</source>
+        <translation>导入视频失败。</translation>
+    </message>
+    <message>
+        <source>Failed to prepare the playback audio for this signal.</source>
+        <translation>准备该信号的播放音频失败。</translation>
+    </message>
+    <message>
+        <source>Failed to relink the data frame source.</source>
+        <translation>重新指定数据帧来源失败。</translation>
+    </message>
+    <message>
+        <source>Failed to restore signal &quot;%1&quot;.</source>
+        <translation>恢复信号「%1」失败。</translation>
+    </message>
+    <message>
+        <source>Failed to send the peak table.</source>
+        <translation>峰值表发送失败。</translation>
+    </message>
+    <message>
+        <source>Heatmap precision reduced to %1 x %2.</source>
+        <translation>热图精度已降至 %1 x %2。</translation>
+    </message>
+    <message>
+        <source>Large Signal</source>
+        <translation>大信号</translation>
+    </message>
+    <message>
+        <source>Large signal confirmed: %1 assumes about %2 GB of memory.</source>
+        <translation>大信号已确认：%1 预计占用约 %2 GB 内存。</translation>
+    </message>
+    <message>
+        <source>Locate Signal Source</source>
+        <translation>重新指定信号源</translation>
+    </message>
+    <message>
+        <source>Locate...</source>
+        <translation>重新指定...</translation>
+    </message>
+    <message>
+        <source>No data frame is available. Import or create a data frame first.</source>
+        <translation>没有可用的数据帧，请先导入或创建数据帧。</translation>
+    </message>
+    <message>
+        <source>No power spectral density data to export.</source>
+        <translation>没有可导出的功率谱密度数据。</translation>
+    </message>
+    <message>
+        <source>PSD (dB re 1.0/Hz)</source>
+        <translation>功率谱密度（dB，相对 1.0/赫兹）</translation>
+    </message>
+    <message>
+        <source>Peak Table</source>
+        <translation>峰值表</translation>
+    </message>
+    <message>
+        <source>Playback failed. See the message log for details.</source>
+        <translation>播放失败，详情见消息日志。</translation>
+    </message>
+    <message>
+        <source>Point a signal whose data frame is missing to an existing data frame</source>
+        <translation>把数据帧缺失的信号重新指向现有数据帧</translation>
+    </message>
+    <message>
+        <source>Power spectral density (CSV)</source>
+        <translation>功率谱密度（CSV）</translation>
+    </message>
+    <message>
+        <source>Power spectral density exported: %1</source>
+        <translation>功率谱密度已导出：%1</translation>
+    </message>
+    <message>
+        <source>Reduce precision</source>
+        <translation>降低精度</translation>
+    </message>
+    <message>
+        <source>Relink Data Frame Source</source>
+        <translation>重新指定数据帧来源</translation>
+    </message>
+    <message>
+        <source>Show or hide the peak table window</source>
+        <translation>显示或隐藏峰值表窗口</translation>
+    </message>
+    <message>
+        <source>Signal &quot;%1&quot; is a placeholder: its data frame is missing.</source>
+        <translation>信号「%1」为占位：其数据帧缺失。</translation>
+    </message>
+    <message>
+        <source>Signal &quot;%1&quot; refers to a missing file:
+%2
+
+Locate the file again?</source>
+        <translation>信号「%1」引用的文件不存在：%2。要重新指定文件吗？</translation>
+    </message>
+    <message>
+        <source>Signal &quot;%1&quot; relinked to data frame &quot;%2&quot;.</source>
+        <translation>信号「%1」已重新指向数据帧「%2」。</translation>
+    </message>
+    <message>
+        <source>Signal Source Missing</source>
+        <translation>信号源缺失</translation>
+    </message>
+    <message>
+        <source>Signal analysis cancelled: %1 needs more than the memory budget.</source>
+        <translation>已取消信号分析：%1 超出内存预算。</translation>
+    </message>
+    <message>
+        <source>Signal analysis failed. See the message log for details.</source>
+        <translation>信号分析失败，详情见消息日志。</translation>
+    </message>
+    <message>
+        <source>Signal analysis: parameters applied, recomputing.</source>
+        <translation>信号分析：参数已应用，正在重算。</translation>
+    </message>
+    <message>
+        <source>Signal is too large for the full per-frame peak curve scan; peak curves were skipped.</source>
+        <translation>信号过大，已跳过全帧峰值曲线扫描。</translation>
+    </message>
+    <message>
+        <source>Signal source missing: data frame &quot;%1&quot; (signal &quot;%2&quot;). Use &quot;Relink Data Frame Source&quot; to point it to an existing data frame.</source>
+        <translation>信号源缺失：数据帧「%1」（信号「%2」）。可用「重新指定数据帧来源」指向现有数据帧。</translation>
+    </message>
+    <message>
+        <source>Skip</source>
+        <translation>跳过</translation>
+    </message>
+    <message>
+        <source>The current signal's source is available; there is nothing to relink.</source>
+        <translation>当前信号的来源可用，无需重新指定。</translation>
+    </message>
+    <message>
+        <source>The estimated peak memory for the %1 is about %2 GB, above the 1.5 GB budget.
+Continue or cancel?</source>
+        <translation>%1 的预计峰值内存约 %2 GB，超过 1.5 GB 预算。继续还是取消？</translation>
+    </message>
+    <message>
+        <source>The estimated peak memory is about %1 GB, above the 1.5 GB budget.
+Reduce the heatmap precision or cancel?</source>
+        <translation>预计峰值内存约 %1 GB，超过 1.5 GB 预算。降低热图精度还是取消？</translation>
+    </message>
+    <message>
+        <source>The heatmap matrix is %1 x %2 = %3 cells (about %4 MB as CSV).
+Export the full matrix or downsample by 2?</source>
+        <translation>热图矩阵为 %1 x %2 = %3 个单元（CSV 约 %4 兆字节）。导出完整矩阵还是 2 倍降采样？</translation>
+    </message>
+    <message>
+        <source>peak table</source>
+        <translation>峰值表</translation>
+    </message>
+    <message>
+        <source>soundfile is not available; only WAV files can be read directly. Install soundfile or use FFmpeg.</source>
+        <translation>未安装 soundfile，只能直接读取 WAV；可安装 soundfile 或改用 FFmpeg。</translation>
+    </message>
+    <message>
+        <source>spectrum</source>
+        <translation>频谱</translation>
+    </message>
+    <message>
+        <source>waveform envelope</source>
+        <translation>波形包络</translation>
+    </message>
 </context>
 <context>
     <name>DA::DASignalAnalysisView</name>
@@ -22644,6 +22928,18 @@ Sample rate: %2 Hz | Channels: %3 | Duration: %4 s</source>
         <source>Show the current frame instead of the whole signal</source>
         <translation>显示当前帧而不是整段信号</translation>
     </message>
+    <message>
+        <source>Follow playback</source>
+        <translation>随播放滚动</translation>
+    </message>
+    <message>
+        <source>Scroll the time-frequency view while playback advances</source>
+        <translation>播放推进时平移时频图的时间轴</translation>
+    </message>
+    <message>
+        <source>Time-Frequency</source>
+        <translation>时频</translation>
+    </message>
 </context>
 <context>
     <name>DA::DASignalAnalysisWorker</name>
@@ -22689,6 +22985,54 @@ Sample rate: %2 Hz | Channels: %3 | Duration: %4 s</source>
         <location filename="../plugins/DASignalAnalysis/Analysis/DASignalAnalysisWorker.cpp" line="353" />
         <source>Spectrum result is empty.</source>
         <translation>频谱结果为空。</translation>
+    </message>
+    <message>
+        <source>Computation failed. See the message log for details.</source>
+        <translation>计算失败，详见消息日志。</translation>
+    </message>
+    <message>
+        <source>Failed to create the temporary audio file.</source>
+        <translation>创建临时音频文件失败。</translation>
+    </message>
+    <message>
+        <source>Failed to query background tasks.</source>
+        <translation>查询后台任务失败。</translation>
+    </message>
+    <message>
+        <source>Failed to read the background result.</source>
+        <translation>读取后台结果失败。</translation>
+    </message>
+    <message>
+        <source>Failed to start the envelope task.</source>
+        <translation>包络任务启动失败。</translation>
+    </message>
+    <message>
+        <source>Failed to start the peak curve task.</source>
+        <translation>峰值曲线任务启动失败。</translation>
+    </message>
+    <message>
+        <source>Failed to start the peak table task.</source>
+        <translation>峰值表任务启动失败。</translation>
+    </message>
+    <message>
+        <source>Failed to start the playback audio export.</source>
+        <translation>播放音频导出任务启动失败。</translation>
+    </message>
+    <message>
+        <source>Playback audio export is only available for dataframe signals.</source>
+        <translation>只有数据帧来源的信号需要导出播放音频。</translation>
+    </message>
+    <message>
+        <source>Playback audio export produced no result.</source>
+        <translation>播放音频导出没有结果。</translation>
+    </message>
+    <message>
+        <source>Playback audio file was not created.</source>
+        <translation>播放音频文件未生成。</translation>
+    </message>
+    <message>
+        <source>Preparing playback audio...</source>
+        <translation>正在准备播放音频...</translation>
     </message>
 </context>
 <context>
@@ -22803,6 +23147,10 @@ Sample rate: %2 Hz | Channels: %3 | Duration: %4 s</source>
         <source>FFmpeg was not detected. Specify its path in the signal analysis settings.</source>
         <translation>未检测到 FFmpeg，请在分析设置里指定路径。</translation>
     </message>
+    <message>
+        <source>Sample rate: %1 Hz, channels: %2, duration: %3 s</source>
+        <translation>采样率：%1 赫兹，通道数：%2，时长：%3 秒</translation>
+    </message>
 </context>
 <context>
     <name>DA::DASignalPlayer</name>
@@ -22815,6 +23163,10 @@ Sample rate: %2 Hz | Channels: %3 | Duration: %4 s</source>
         <location filename="../plugins/DASignalAnalysis/Playback/DASignalPlayer.cpp" line="132" />
         <source>No playable audio file for this signal.</source>
         <translation>该信号没有可播放的音频文件。</translation>
+    </message>
+    <message>
+        <source>The playback audio file is missing.</source>
+        <translation>播放音频文件缺失。</translation>
     </message>
 </context>
 <context>
@@ -23030,6 +23382,14 @@ Sample rate: %2 Hz | Channels: %3 | Duration: %4 s</source>
         <source>Signal Analysis Settings</source>
         <translation>信号分析设置</translation>
     </message>
+    <message>
+        <source>dB (FS)</source>
+        <translation>dB（满量程）</translation>
+    </message>
+    <message>
+        <source>dB (re 1.0)</source>
+        <translation>dB（相对 1.0）</translation>
+    </message>
 </context>
 <context>
     <name>DASignalImporter</name>
@@ -23096,6 +23456,38 @@ Sample rate: %2 Hz | Channels: %3 | Duration: %4 s</source>
         <location filename="../plugins/DASignalAnalysis/Signal/DASignalImporter.cpp" line="454" />
         <source>No time column selected.</source>
         <translation>未选择时间列。</translation>
+    </message>
+    <message>
+        <source>Failed to create a signal from the dataframe.</source>
+        <translation>从数据帧创建信号失败。</translation>
+    </message>
+    <message>
+        <source>Failed to infer the sample rate from the time column.</source>
+        <translation>无法由时间列推断采样率。</translation>
+    </message>
+    <message>
+        <source>Failed to probe the audio file.</source>
+        <translation>探测音频文件失败。</translation>
+    </message>
+    <message>
+        <source>Failed to probe the video file.</source>
+        <translation>探测视频文件失败。</translation>
+    </message>
+    <message>
+        <source>Failed to read the audio file.</source>
+        <translation>读取音频文件失败。</translation>
+    </message>
+    <message>
+        <source>Failed to run the FFmpeg conversion.</source>
+        <translation>执行 FFmpeg 转码失败。</translation>
+    </message>
+    <message>
+        <source>No file selected.</source>
+        <translation>未选择文件。</translation>
+    </message>
+    <message>
+        <source>This format is decoded through FFmpeg; the sample rate is shown after import.</source>
+        <translation>该格式经 FFmpeg 解码，采样率在导入后显示。</translation>
     </message>
 </context>
 <context>

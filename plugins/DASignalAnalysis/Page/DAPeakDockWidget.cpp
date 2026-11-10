@@ -5,6 +5,7 @@
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QPushButton>
+#include <QShowEvent>
 #include <QSplitter>
 #include <QTableView>
 #include <QVBoxLayout>
@@ -207,6 +208,23 @@ void DAPeakDockWidget::changeEvent(QEvent* e)
     QWidget::changeEvent(e);
 }
 
+/**
+ * @brief 首次显示时显式设定「表 2/3 + 曲线 1/3」分割（评审 §七-1）
+ *
+ * 只设 stretchFactor 时初次布局按 sizeHint 分配，表格行高会把曲线区挤到几乎没有；
+ * 停靠窗口真正显示后在这里显式 setSizes（D23 / 方案 §8.3）。
+ */
+void DAPeakDockWidget::showEvent(QShowEvent* e)
+{
+    QWidget::showEvent(e);
+    if (!mDefaultSplitterSizesApplied && mSplitter) {
+        mDefaultSplitterSizesApplied = true;
+        const int h = qMax(240, mSplitter->height());
+        const int tableH = (h * 2) / 3;
+        mSplitter->setSizes({ tableH, h - tableH });
+    }
+}
+
 void DAPeakDockWidget::retranslateUi()
 {
     if (mCurvePlaceholder) {
@@ -215,6 +233,9 @@ void DAPeakDockWidget::retranslateUi()
     }
     if (mSendButton) {
         mSendButton->setText(tr("Send to Table"));  // cn:送到表格页
+        // v1 口径（§10.2）：送表格页 = 加入数据管理器，不自动打开表格页（评审 I8）
+        mSendButton->setToolTip(tr("Add the peak table to the data manager; open it from the data manager"));
+        // cn:把峰值表加入数据管理器；可从数据管理器里打开查看
     }
     if (mSettingsButton) {
         mSettingsButton->setText(tr("Settings..."));  // cn:参数设置...

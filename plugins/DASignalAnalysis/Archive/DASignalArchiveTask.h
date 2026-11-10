@@ -24,11 +24,17 @@ public:
     // 读取到的 JSON 字节（ReadMode 执行后有效）
     QByteArray loadedData() const;
 
+    // 工程包里是否真的存在本插件的存档条目（ReadMode 执行后有效）
+    // 说明：read() 对「条目缺失」返回空 QByteArray 且不报错，单看 exec() 的返回值
+    // 无法区分「没有本插件数据」和「无需处理」，界面层据此清理上一工程残留（评审 N-U2）
+    bool archiveEntryFound() const;
+
     // 存档内的相对路径
     static QString archivePath();
 
 private:
     QByteArray mData;
+    bool mEntryFound { false };
 };
 }  // namespace DA
 

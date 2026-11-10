@@ -21859,6 +21859,22 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <source>Export CSV</source>
         <translation>Export CSV</translation>
     </message>
+    <message>
+        <source>Add the peak table to the data manager; open it from the data manager</source>
+        <translation>Add the peak table to the data manager; open it from the data manager</translation>
+    </message>
+    <message>
+        <source>Open the analysis parameter dialog</source>
+        <translation>Open the analysis parameter dialog</translation>
+    </message>
+    <message>
+        <source>Open this window to compute the per-frame peak curves</source>
+        <translation>Open this window to compute the per-frame peak curves</translation>
+    </message>
+    <message>
+        <source>Settings...</source>
+        <translation>Settings...</translation>
+    </message>
 </context>
 <context>
     <name>DA::DAPeakTableModel</name>
@@ -21886,6 +21902,18 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <location filename="../plugins/DASignalAnalysis/Analysis/DAPeakTableModel.cpp" line="157" />
         <source>Share (%)</source>
         <translation>Share (%)</translation>
+    </message>
+    <message>
+        <source>Amplitude (dB)</source>
+        <translation>Amplitude (dB)</translation>
+    </message>
+    <message>
+        <source>RMS</source>
+        <translation>RMS</translation>
+    </message>
+    <message>
+        <source>Time (s)</source>
+        <translation>Time (s)</translation>
     </message>
 </context>
 <context>
@@ -21962,6 +21990,40 @@ Sample rate: %2 Hz | Channels: %3 | Duration: %4 s</translation>
         <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalAnalysisSettingDialog.cpp" line="162" />
         <source>Cancel</source>
         <translation>Cancel</translation>
+    </message>
+    <message>
+        <source>Browse...</source>
+        <translation>Browse...</translation>
+    </message>
+    <message>
+        <source>Empty: fall back to the ffmpeg found in PATH.</source>
+        <translation>Empty: fall back to the ffmpeg found in PATH.</translation>
+    </message>
+    <message>
+        <source>Executable (*.exe);;All files (*)</source>
+        <translation>Executable (*.exe);;All files (*)</translation>
+    </message>
+    <message>
+        <source>FFmpeg path</source>
+        <translation>FFmpeg path</translation>
+    </message>
+    <message>
+        <source>FFmpeg path is valid.</source>
+        <translation>FFmpeg path is valid.</translation>
+    </message>
+    <message>
+        <source>File does not exist.</source>
+        <translation>File does not exist.</translation>
+    </message>
+    <message>
+        <source>Select FFmpeg Executable</source>
+        <translation>Select FFmpeg Executable</translation>
+    </message>
+    <message>
+        <source>Spectrum: segment = %1 samples (%2 ms), actual resolution = %3 Hz
+STFT: window = %4 samples (%5 ms), hop = %6 samples</source>
+        <translation>Spectrum: segment = %1 samples (%2 ms), actual resolution = %3 Hz
+STFT: window = %4 samples (%5 ms), hop = %6 samples</translation>
     </message>
 </context>
 <context>
@@ -22358,6 +22420,246 @@ Sample rate: %2 Hz | Channels: %3 | Duration: %4 s</translation>
         <source>Export Peaks</source>
         <translation>Export Peaks</translation>
     </message>
+    <message>
+        <source>Audio/Video files (*.wav *.aiff *.aif *.flac *.ogg *.mp3 *.m4a *.mp4 *.mkv *.avi);;All files (*)</source>
+        <translation>Audio/Video files (*.wav *.aiff *.aif *.flac *.ogg *.mp3 *.m4a *.mp4 *.mkv *.avi);;All files (*)</translation>
+    </message>
+    <message>
+        <source>Cancel Analysis</source>
+        <translation>Cancel Analysis</translation>
+    </message>
+    <message>
+        <source>Cancel all running background computations</source>
+        <translation>Cancel all running background computations</translation>
+    </message>
+    <message>
+        <source>Cannot start playback for this signal.</source>
+        <translation>Cannot start playback for this signal.</translation>
+    </message>
+    <message>
+        <source>Continue</source>
+        <translation>Continue</translation>
+    </message>
+    <message>
+        <source>Data frame:</source>
+        <translation>Data frame:</translation>
+    </message>
+    <message>
+        <source>Downsample x2</source>
+        <translation>Downsample x2</translation>
+    </message>
+    <message>
+        <source>Export Power Spectral Density</source>
+        <translation>Export Power Spectral Density</translation>
+    </message>
+    <message>
+        <source>Export full</source>
+        <translation>Export full</translation>
+    </message>
+    <message>
+        <source>Extract the audio track of a video file</source>
+        <translation>Extract the audio track of a video file</translation>
+    </message>
+    <message>
+        <source>FFmpeg was not detected. Specify its path in the signal analysis settings.</source>
+        <translation>FFmpeg was not detected. Specify its path in the signal analysis settings.</translation>
+    </message>
+    <message>
+        <source>Failed to create the signal analysis page.</source>
+        <translation>Failed to create the signal analysis page.</translation>
+    </message>
+    <message>
+        <source>Failed to export the power spectral density.</source>
+        <translation>Failed to export the power spectral density.</translation>
+    </message>
+    <message>
+        <source>Failed to import audio.</source>
+        <translation>Failed to import audio.</translation>
+    </message>
+    <message>
+        <source>Failed to import data frame.</source>
+        <translation>Failed to import data frame.</translation>
+    </message>
+    <message>
+        <source>Failed to import video.</source>
+        <translation>Failed to import video.</translation>
+    </message>
+    <message>
+        <source>Failed to prepare the playback audio for this signal.</source>
+        <translation>Failed to prepare the playback audio for this signal.</translation>
+    </message>
+    <message>
+        <source>Failed to relink the data frame source.</source>
+        <translation>Failed to relink the data frame source.</translation>
+    </message>
+    <message>
+        <source>Failed to restore signal &quot;%1&quot;.</source>
+        <translation>Failed to restore signal &quot;%1&quot;.</translation>
+    </message>
+    <message>
+        <source>Failed to send the peak table.</source>
+        <translation>Failed to send the peak table.</translation>
+    </message>
+    <message>
+        <source>Heatmap precision reduced to %1 x %2.</source>
+        <translation>Heatmap precision reduced to %1 x %2.</translation>
+    </message>
+    <message>
+        <source>Large Signal</source>
+        <translation>Large Signal</translation>
+    </message>
+    <message>
+        <source>Large signal confirmed: %1 assumes about %2 GB of memory.</source>
+        <translation>Large signal confirmed: %1 assumes about %2 GB of memory.</translation>
+    </message>
+    <message>
+        <source>Locate Signal Source</source>
+        <translation>Locate Signal Source</translation>
+    </message>
+    <message>
+        <source>Locate...</source>
+        <translation>Locate...</translation>
+    </message>
+    <message>
+        <source>No data frame is available. Import or create a data frame first.</source>
+        <translation>No data frame is available. Import or create a data frame first.</translation>
+    </message>
+    <message>
+        <source>No power spectral density data to export.</source>
+        <translation>No power spectral density data to export.</translation>
+    </message>
+    <message>
+        <source>Open Signal Analysis Window</source>
+        <translation>Open Signal Analysis Window</translation>
+    </message>
+    <message>
+        <source>PSD (dB re 1.0/Hz)</source>
+        <translation>PSD (dB re 1.0/Hz)</translation>
+    </message>
+    <message>
+        <source>Peak Table</source>
+        <translation>Peak Table</translation>
+    </message>
+    <message>
+        <source>Playback failed. See the message log for details.</source>
+        <translation>Playback failed. See the message log for details.</translation>
+    </message>
+    <message>
+        <source>Point a signal whose data frame is missing to an existing data frame</source>
+        <translation>Point a signal whose data frame is missing to an existing data frame</translation>
+    </message>
+    <message>
+        <source>Power spectral density (CSV)</source>
+        <translation>Power spectral density (CSV)</translation>
+    </message>
+    <message>
+        <source>Power spectral density exported: %1</source>
+        <translation>Power spectral density exported: %1</translation>
+    </message>
+    <message>
+        <source>Reduce precision</source>
+        <translation>Reduce precision</translation>
+    </message>
+    <message>
+        <source>Relink Data Frame Source</source>
+        <translation>Relink Data Frame Source</translation>
+    </message>
+    <message>
+        <source>Show or hide the peak table window</source>
+        <translation>Show or hide the peak table window</translation>
+    </message>
+    <message>
+        <source>Show the signal analysis workspace; it is created on first use</source>
+        <translation>Show the signal analysis workspace; it is created on first use</translation>
+    </message>
+    <message>
+        <source>Signal &quot;%1&quot; is a placeholder: its data frame is missing.</source>
+        <translation>Signal &quot;%1&quot; is a placeholder: its data frame is missing.</translation>
+    </message>
+    <message>
+        <source>Signal &quot;%1&quot; refers to a missing file:
+%2
+
+Locate the file again?</source>
+        <translation>Signal &quot;%1&quot; refers to a missing file:
+%2
+
+Locate the file again?</translation>
+    </message>
+    <message>
+        <source>Signal &quot;%1&quot; relinked to data frame &quot;%2&quot;.</source>
+        <translation>Signal &quot;%1&quot; relinked to data frame &quot;%2&quot;.</translation>
+    </message>
+    <message>
+        <source>Signal Source Missing</source>
+        <translation>Signal Source Missing</translation>
+    </message>
+    <message>
+        <source>Signal analysis cancelled: %1 needs more than the memory budget.</source>
+        <translation>Signal analysis cancelled: %1 needs more than the memory budget.</translation>
+    </message>
+    <message>
+        <source>Signal analysis failed. See the message log for details.</source>
+        <translation>Signal analysis failed. See the message log for details.</translation>
+    </message>
+    <message>
+        <source>Signal analysis: parameters applied, recomputing.</source>
+        <translation>Signal analysis: parameters applied, recomputing.</translation>
+    </message>
+    <message>
+        <source>Signal is too large for the full per-frame peak curve scan; peak curves were skipped.</source>
+        <translation>Signal is too large for the full per-frame peak curve scan; peak curves were skipped.</translation>
+    </message>
+    <message>
+        <source>Signal source missing: data frame &quot;%1&quot; (signal &quot;%2&quot;). Use &quot;Relink Data Frame Source&quot; to point it to an existing data frame.</source>
+        <translation>Signal source missing: data frame &quot;%1&quot; (signal &quot;%2&quot;). Use &quot;Relink Data Frame Source&quot; to point it to an existing data frame.</translation>
+    </message>
+    <message>
+        <source>Skip</source>
+        <translation>Skip</translation>
+    </message>
+    <message>
+        <source>The current signal's source is available; there is nothing to relink.</source>
+        <translation>The current signal's source is available; there is nothing to relink.</translation>
+    </message>
+    <message>
+        <source>The estimated peak memory for the %1 is about %2 GB, above the 1.5 GB budget.
+Continue or cancel?</source>
+        <translation>The estimated peak memory for the %1 is about %2 GB, above the 1.5 GB budget.
+Continue or cancel?</translation>
+    </message>
+    <message>
+        <source>The estimated peak memory is about %1 GB, above the 1.5 GB budget.
+Reduce the heatmap precision or cancel?</source>
+        <translation>The estimated peak memory is about %1 GB, above the 1.5 GB budget.
+Reduce the heatmap precision or cancel?</translation>
+    </message>
+    <message>
+        <source>The heatmap matrix is %1 x %2 = %3 cells (about %4 MB as CSV).
+Export the full matrix or downsample by 2?</source>
+        <translation>The heatmap matrix is %1 x %2 = %3 cells (about %4 MB as CSV).
+Export the full matrix or downsample by 2?</translation>
+    </message>
+    <message>
+        <source>Window</source>
+        <translation>Window</translation>
+    </message>
+    <message>
+        <source>peak table</source>
+        <translation>peak table</translation>
+    </message>
+    <message>
+        <source>soundfile is not available; only WAV files can be read directly. Install soundfile or use FFmpeg.</source>
+        <translation>soundfile is not available; only WAV files can be read directly. Install soundfile or use FFmpeg.</translation>
+    </message>
+    <message>
+        <source>spectrum</source>
+        <translation>spectrum</translation>
+    </message>
+    <message>
+        <source>waveform envelope</source>
+        <translation>waveform envelope</translation>
+    </message>
 </context>
 <context>
     <name>DA::DASignalAnalysisView</name>
@@ -22451,6 +22753,18 @@ Sample rate: %2 Hz | Channels: %3 | Duration: %4 s</translation>
         <source>Show the current frame instead of the whole signal</source>
         <translation>Show the current frame instead of the whole signal</translation>
     </message>
+    <message>
+        <source>Follow playback</source>
+        <translation>Follow playback</translation>
+    </message>
+    <message>
+        <source>Scroll the time-frequency view while playback advances</source>
+        <translation>Scroll the time-frequency view while playback advances</translation>
+    </message>
+    <message>
+        <source>Time-Frequency</source>
+        <translation>Time-Frequency</translation>
+    </message>
 </context>
 <context>
     <name>DA::DASignalAnalysisWorker</name>
@@ -22496,6 +22810,54 @@ Sample rate: %2 Hz | Channels: %3 | Duration: %4 s</translation>
         <location filename="../plugins/DASignalAnalysis/Analysis/DASignalAnalysisWorker.cpp" line="353" />
         <source>Spectrum result is empty.</source>
         <translation>Spectrum result is empty.</translation>
+    </message>
+    <message>
+        <source>Computation failed. See the message log for details.</source>
+        <translation>Computation failed. See the message log for details.</translation>
+    </message>
+    <message>
+        <source>Failed to create the temporary audio file.</source>
+        <translation>Failed to create the temporary audio file.</translation>
+    </message>
+    <message>
+        <source>Failed to query background tasks.</source>
+        <translation>Failed to query background tasks.</translation>
+    </message>
+    <message>
+        <source>Failed to read the background result.</source>
+        <translation>Failed to read the background result.</translation>
+    </message>
+    <message>
+        <source>Failed to start the envelope task.</source>
+        <translation>Failed to start the envelope task.</translation>
+    </message>
+    <message>
+        <source>Failed to start the peak curve task.</source>
+        <translation>Failed to start the peak curve task.</translation>
+    </message>
+    <message>
+        <source>Failed to start the peak table task.</source>
+        <translation>Failed to start the peak table task.</translation>
+    </message>
+    <message>
+        <source>Failed to start the playback audio export.</source>
+        <translation>Failed to start the playback audio export.</translation>
+    </message>
+    <message>
+        <source>Playback audio export is only available for dataframe signals.</source>
+        <translation>Playback audio export is only available for dataframe signals.</translation>
+    </message>
+    <message>
+        <source>Playback audio export produced no result.</source>
+        <translation>Playback audio export produced no result.</translation>
+    </message>
+    <message>
+        <source>Playback audio file was not created.</source>
+        <translation>Playback audio file was not created.</translation>
+    </message>
+    <message>
+        <source>Preparing playback audio...</source>
+        <translation>Preparing playback audio...</translation>
     </message>
 </context>
 <context>
@@ -22610,6 +22972,10 @@ Sample rate: %2 Hz | Channels: %3 | Duration: %4 s</translation>
         <source>FFmpeg was not detected. Specify its path in the signal analysis settings.</source>
         <translation>FFmpeg was not detected. Specify its path in the signal analysis settings.</translation>
     </message>
+    <message>
+        <source>Sample rate: %1 Hz, channels: %2, duration: %3 s</source>
+        <translation>Sample rate: %1 Hz, channels: %2, duration: %3 s</translation>
+    </message>
 </context>
 <context>
     <name>DA::DASignalPlayer</name>
@@ -22622,6 +22988,10 @@ Sample rate: %2 Hz | Channels: %3 | Duration: %4 s</translation>
         <location filename="../plugins/DASignalAnalysis/Playback/DASignalPlayer.cpp" line="132" />
         <source>No playable audio file for this signal.</source>
         <translation>No playable audio file for this signal.</translation>
+    </message>
+    <message>
+        <source>The playback audio file is missing.</source>
+        <translation>The playback audio file is missing.</translation>
     </message>
 </context>
 <context>
@@ -22837,6 +23207,14 @@ Sample rate: %2 Hz | Channels: %3 | Duration: %4 s</translation>
         <source>Signal Analysis Settings</source>
         <translation>Signal Analysis Settings</translation>
     </message>
+    <message>
+        <source>dB (FS)</source>
+        <translation>dB (FS)</translation>
+    </message>
+    <message>
+        <source>dB (re 1.0)</source>
+        <translation>dB (re 1.0)</translation>
+    </message>
 </context>
 <context>
     <name>DASignalImporter</name>
@@ -22903,6 +23281,38 @@ Sample rate: %2 Hz | Channels: %3 | Duration: %4 s</translation>
         <location filename="../plugins/DASignalAnalysis/Signal/DASignalImporter.cpp" line="454" />
         <source>No time column selected.</source>
         <translation>No time column selected.</translation>
+    </message>
+    <message>
+        <source>Failed to create a signal from the dataframe.</source>
+        <translation>Failed to create a signal from the dataframe.</translation>
+    </message>
+    <message>
+        <source>Failed to infer the sample rate from the time column.</source>
+        <translation>Failed to infer the sample rate from the time column.</translation>
+    </message>
+    <message>
+        <source>Failed to probe the audio file.</source>
+        <translation>Failed to probe the audio file.</translation>
+    </message>
+    <message>
+        <source>Failed to probe the video file.</source>
+        <translation>Failed to probe the video file.</translation>
+    </message>
+    <message>
+        <source>Failed to read the audio file.</source>
+        <translation>Failed to read the audio file.</translation>
+    </message>
+    <message>
+        <source>Failed to run the FFmpeg conversion.</source>
+        <translation>Failed to run the FFmpeg conversion.</translation>
+    </message>
+    <message>
+        <source>No file selected.</source>
+        <translation>No file selected.</translation>
+    </message>
+    <message>
+        <source>This format is decoded through FFmpeg; the sample rate is shown after import.</source>
+        <translation>This format is decoded through FFmpeg; the sample rate is shown after import.</translation>
     </message>
 </context>
 <context>

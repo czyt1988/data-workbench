@@ -25,6 +25,24 @@ DADataFrameSignalSource::DADataFrameSignalSource(const DAData& data,
 {
 }
 
+/**
+ * @brief 「来源缺失」占位构造（评审 U16）
+ *
+ * 工程里记录的数据帧在数据管理器里找不到时，用这个构造保留数据帧名/列名/采样率，
+ * 让信号标签页仍能占位显示并提示用户「重新指定数据帧来源」，而不是直接丢弃参数。
+ */
+DADataFrameSignalSource::DADataFrameSignalSource(const QString& dataframeName,
+                                                 const QString& timeColumn,
+                                                 const QStringList& valueColumns,
+                                                 double sampleRate)
+    : mTimeColumn(timeColumn)
+    , mValueColumns(valueColumns)
+    , mSampleRate(sampleRate)
+    , mMissingDataFrameName(dataframeName)
+{
+    mSampleCount = 0;  // 缺失占位没有数据，isValid() 为 false，不参与计算
+}
+
 DADataFrameSignalSource::~DADataFrameSignalSource()
 {
 }
@@ -44,6 +62,12 @@ bool DADataFrameSignalSource::readRange(int channel, qint64 start, qint64 count,
     out.clear();
     if (count <= 0) {
         return true;
+    }
+    if (isMissing()) {
+        if (error) {
+            *error = QStringLiteral("dataframe source is missing");
+        }
+        return false;
     }
     if (channel < 0 || channel >= mValueColumns.size()) {
         if (error) {
@@ -106,7 +130,24 @@ QString DADataFrameSignalSource::playbackFilePath() const
 
 QString DADataFrameSignalSource::sourceDescription() const
 {
+    if (isMissing()) {
+        // 缺失占位：给用户可读的来源描述（界面提示与日志都要能看懂）
+        return QStringLiteral("%1[%2] (missing)").arg(mMissingDataFrameName, mValueColumns.join(QLatin1Char(',')));
+    }
     return QStringLiteral("%1[%2]").arg(mData.getName(), mValueColumns.join(QLatin1Char(',')));
+}
+
+bool DADataFrameSignalSource::isMissing() const
+{
+    return !mData.isDataFrame();
+}
+
+QString DADataFrameSignalSource::dataframeName() const
+{
+    if (!mMissingDataFrameName.isEmpty()) {
+        return mMissingDataFrameName;
+    }
+    return mData.getName();
 }
 
 void DADataFrameSignalSource::setSampleRate(double fs)

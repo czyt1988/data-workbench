@@ -21,11 +21,12 @@ namespace DA
 /**
  * @brief 信号分析主页面（中央停靠区页面，与绘图/表格/工作流并列）
  *
- * 结构（方案 D11）：页面内每个信号一个标签页。信号视图容器（QTabBar + QStackedWidget）
+ * 结构（方案 D11 修订版）：页面惰性创建（首次打开/导入/工程恢复时才建），
+ * 页面内每个信号一个标签页；信号视图容器（QTabBar + QStackedWidget）
  * 与每个信号的分析视图（波形 + 频谱 + 时频）均由本页创建。
  *
- * 空状态不是「页面不存在」：页面始终在主工作区，只有内容区随信号数量切换
- * 空状态页 / 信号视图页。
+ * 空状态只是本页内容区的分支：页面已创建但没有信号时显示导入引导，
+ * 有信号时切换到信号视图页；页面本身由 DASignalAnalysisUI::ensurePageCreated 管理。
  */
 class DASignalAnalysisPage : public QWidget
 {
@@ -50,6 +51,10 @@ public:
     int signalCount() const;
     // 某信号对应的视图（无对应视图返回 nullptr）
     DA::DASignalAnalysisView* viewForSignal(const DA::DASignal* sig) const;
+    // 某信号在标签栏中的索引（未找到返回 -1）
+    int indexOfSignal(const DA::DASignal* sig) const;
+    // 用新信号替换指定索引的信号（重新指定来源用，评审 U16）：重建视图并通知外部清缓存
+    bool replaceSignalAt(int index, const DA::DASignalPtr& signal);
 
     // 空状态下点击导入按钮时，由外部（UI 层）接管实际导入流程
     Q_SIGNALS:

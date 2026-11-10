@@ -28,7 +28,10 @@ DAPyModule importerModule()
 }
 
 /**
- * @brief 把数据帧来源的某通道导出为 32 位浮点 WAV（临时文件）
+ * @brief 把数据帧来源的某通道导出为 32 位浮点 WAV（会话临时文件）
+ *
+ * 路径来自 DASignalImporter::newSessionTempWavPath()：落在 <tempDir>/session-<uuid>/ 内
+ * 并登记到本会话，cleanupTempFiles() 只清本会话产物（评审 N-I12）。
  * @return 成功返回 WAV 路径，失败返回空串并写 error
  */
 QString exportDataFrameChannelToWav(const DASignalPtr& signal, int channel, QString* error)
@@ -47,9 +50,13 @@ QString exportDataFrameChannelToWav(const DASignalPtr& signal, int channel, QStr
         }
         return QString();
     }
-    const QString outPath = QDir(DASignalImporter::tempDir())
-                                .absoluteFilePath(QUuid::createUuid().toString(QUuid::WithoutBraces)
-                                                  + QStringLiteral(".wav"));
+    const QString outPath = DASignalImporter::newSessionTempWavPath();
+    if (outPath.isEmpty()) {
+        if (error) {
+            *error = QStringLiteral("no session temp directory for playback audio");
+        }
+        return QString();
+    }
     try {
         DAPyDataFrame df     = dfSource->data().toDataFrame();
         DAPyModule importer  = importerModule();
@@ -103,11 +110,80 @@ DASignalPlayer::~DASignalPlayer()
     if (mPlayer) {
         mPlayer->stop();
     }
-    // 数据帧导出的临时 WAV 随控制器清理（T8）
-    for (const QString& path : std::as_const(mTempWavCache)) {
-        QFile::remove(path);
-    }
+    // 会话临时 WAV 由 DASignalImporter::cleanupTempFiles() 统一清理（评审 N-I12），
+    // 这里只清缓存表，不再按后缀删共享目录里的文件
     mTempWavCache.clear();
+}
+
+/**
+ * @brief 是否已装入可播放的媒体源
+ */
+bool DASignalPlayer::hasSource() const
+{
+    return !mMediaPath.isEmpty() && QFileInfo::exists(mMediaPath);
+}
+
+/**
+ * @brief 「信号 + 通道」缓存键
+ */
+QString DASignalPlayer::wavCacheKey(const DASignalPtr& signal, int channel)
+{
+    return QString::number(reinterpret_cast< quintptr >(signal.get())) + QLatin1Char(':') + QString::number(channel);
+}
+
+/**
+ * @brief 数据帧来源的临时 WAV 缓存路径（未导出返回空串）
+ */
+QString DASignalPlayer::cachedWavPath(const DASignalPtr& signal, int channel) const
+{
+    if (!signal) {
+        return QString();
+    }
+    const QString cached = mTempWavCache.value(wavCacheKey(signal, channel));
+    if (cached.isEmpty() || !QFileInfo::exists(cached)) {
+        return QString();
+    }
+    return cached;
+}
+
+/**
+ * @brief 切当前播放源（本地文件路径）
+ */
+void DASignalPlayer::applyMediaPath(const QString& path)
+{
+    if (!mPlayer) {
+        return;
+    }
+    mMediaPath = path;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    mPlayer->setSource(QUrl::fromLocalFile(path));
+#else
+    mPlayer->setMedia(QMediaContent(QUrl::fromLocalFile(path)));
+#endif
+}
+
+/**
+ * @brief 登记后台导出的临时 WAV 并切为该信号的播放源（评审 U9）
+ *
+ * 数据帧通道的 WAV 导出是 O(N) 工作，由界面层交给后台任务完成后调用这里，
+ * 避免在界面线程整列导出造成卡顿。
+ */
+bool DASignalPlayer::setPreparedDataFrameWav(const DASignalPtr& signal,
+                                             int channel,
+                                             const QString& wavPath,
+                                             QString* error)
+{
+    if (!signal || wavPath.isEmpty() || !QFileInfo::exists(wavPath)) {
+        if (error) {
+            *error = tr("The playback audio file is missing.");  // cn:播放音频文件缺失。
+        }
+        return false;
+    }
+    clearSignal();
+    mTempWavCache.insert(wavCacheKey(signal, channel), wavPath);
+    mTempWavPath = wavPath;
+    applyMediaPath(wavPath);
+    return true;
 }
 
 /**
@@ -127,21 +203,17 @@ bool DASignalPlayer::setSignal(const DASignalPtr& signal, int channel, QString* 
     QString path;
     if (signal->sourceType() == DASignalSource::DataFrameSource) {
         // 以「信号 + 通道」为键缓存导出结果，切回同一通道不再重复整列导出（评审 C8/U9）
-        const QString cacheKey =
-            QString::number(reinterpret_cast< quintptr >(signal.get())) + QLatin1Char(':') + QString::number(channel);
-        const QString cached = mTempWavCache.value(cacheKey);
-        if (!cached.isEmpty() && QFileInfo::exists(cached)) {
-            path         = cached;
-            mTempWavPath = cached;
-        } else {
+        path = cachedWavPath(signal, channel);
+        if (path.isEmpty()) {
+            // 同步兜底路径（界面层已发起后台导出时应先走 setPreparedDataFrameWav，评审 U9）
             path = exportDataFrameChannelToWav(signal, channel, error);
             if (path.isEmpty()) {
                 return false;
             }
-            mTempWavCache.insert(cacheKey, path);
-            mTempWavPath = path;
+            mTempWavCache.insert(wavCacheKey(signal, channel), path);
         }
-    } else {
+        mTempWavPath = path;
+    } else if (signal->source()) {
         path = signal->source()->playbackFilePath();
     }
     if (path.isEmpty() || !QFileInfo::exists(path)) {
@@ -150,12 +222,7 @@ bool DASignalPlayer::setSignal(const DASignalPtr& signal, int channel, QString* 
         }
         return false;
     }
-    mMediaPath = path;
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-    mPlayer->setSource(QUrl::fromLocalFile(path));
-#else
-    mPlayer->setMedia(QMediaContent(QUrl::fromLocalFile(path)));
-#endif
+    applyMediaPath(path);
     return true;
 }
 

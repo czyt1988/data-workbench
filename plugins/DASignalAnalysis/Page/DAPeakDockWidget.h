@@ -57,6 +57,7 @@ Q_SIGNALS:
 
 protected:
     void changeEvent(QEvent* e) override;
+    void showEvent(QShowEvent* e) override;
 
 private:
     void buildUI();
@@ -72,6 +73,8 @@ private:
     double mCalibration { 1.0 };
     QString mUnit;
     double mTimeOrigin { 0.0 };
+    // 首次显示时是否已显式设定 2:1 分割（评审 §七-1）
+    bool mDefaultSplitterSizesApplied { false };
 
     QTableView* mTable { nullptr };
     DAChartWidget* mCurveChart { nullptr };

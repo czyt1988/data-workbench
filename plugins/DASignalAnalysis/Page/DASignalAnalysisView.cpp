@@ -1,6 +1,8 @@
 #include "DASignalAnalysisView.h"
 #include <cmath>
 #include <limits>
+#include <utility>
+#include <QApplication>
 #include <QComboBox>
 #include <QEvent>
 #include <QHBoxLayout>
@@ -70,7 +72,7 @@ QwtColorMap* cloneLinearColorMap(const QwtLinearColorMap* src)
  */
 void clearPeakMarkers(QVector< QwtPlotMarker* >& markers)
 {
-    for (QwtPlotMarker* m : markers) {
+    for (QwtPlotMarker* m : std::as_const(markers)) {
         m->detach();
         delete m;
     }
@@ -133,17 +135,69 @@ void DASignalAnalysisView::setEnvelope(const QVector< double >& xs,
     mEnvMins  = mins;
     mEnvMaxs  = maxs;
     mEnvelopeValid = !xs.isEmpty();
-    // 信号峰值（用于 dB 满量程参考）
-    double peak = 0.0;
-    const int n = qMin(mEnvMins.size(), mEnvMaxs.size());
-    for (int i = 0; i < n; ++i) {
-        peak = qMax(peak, qMax(std::fabs(mEnvMins[ i ]), std::fabs(mEnvMaxs[ i ])));
-    }
-    mSignalPeak = peak;
+    // 信号峰值（波形范围 + dBFS 参考；两者口径不同，见 updateSignalPeaks）
+    updateSignalPeaks();
     rebuildWavePlot();
     if (mSpectrum.isValid()) {
         rebuildSpectrumPlot();
     }
+}
+
+/**
+ * @brief 按包络统计信号峰值
+ *
+ * 包络每列给出该像素列内的最小/最大值。这里同时产出两套峰值：
+ * - mSignalPeak：原始峰值（含直流/趋势），只用于波形上与 STFT 窗口矩形的纵向范围；
+ * - mDbfsReferencePeak：按与频谱/峰值相同的预处理口径（params.removeDc / params.detrend）
+ *   去掉基线后的峰值，作为 dBFS 参考（评审 N-C2：原实现用原始峰值当参考，
+ *   有直流偏置或趋势的信号 dB 值整体偏低，与去直流/去趋势后的频谱口径不一致）。
+ * 复杂度 O(列数)，列数 ≈ 画布像素宽，界面线程可接受。
+ */
+void DASignalAnalysisView::updateSignalPeaks()
+{
+    const int n = qMin(mEnvMins.size(), mEnvMaxs.size());
+    double rawPeak = 0.0;
+    for (int i = 0; i < n; ++i) {
+        rawPeak = qMax(rawPeak, qMax(std::fabs(mEnvMins[ i ]), std::fabs(mEnvMaxs[ i ])));
+    }
+    mSignalPeak = rawPeak;
+
+    const QString detrend = mParams.detrend.toLower();
+    const bool removeLinear = (detrend == QLatin1String("linear"));
+    const bool removeLevel  = mParams.removeDc || removeLinear || (detrend == QLatin1String("constant"));
+    if (!removeLevel || n <= 0) {
+        mDbfsReferencePeak = rawPeak;
+        return;
+    }
+    // 用每列中点估计基线：常量去趋势取均值，线性去趋势取最小二乘拟合
+    double meanCenter = 0.0;
+    for (int i = 0; i < n; ++i) {
+        meanCenter += 0.5 * (mEnvMins[ i ] + mEnvMaxs[ i ]);
+    }
+    meanCenter /= double(n);
+    double slope = 0.0;
+    if (removeLinear && n > 1) {
+        double sumX = 0.0, sumY = 0.0, sumXX = 0.0, sumXY = 0.0;
+        for (int i = 0; i < n; ++i) {
+            const double x = double(i);
+            const double y = 0.5 * (mEnvMins[ i ] + mEnvMaxs[ i ]);
+            sumX += x;
+            sumY += y;
+            sumXX += x * x;
+            sumXY += x * y;
+        }
+        const double denom = double(n) * sumXX - sumX * sumX;
+        if (std::fabs(denom) > 1e-12) {
+            slope = (double(n) * sumXY - sumX * sumY) / denom;
+        }
+    }
+    const double intercept = meanCenter - slope * 0.5 * double(n - 1);
+    double peak = 0.0;
+    for (int i = 0; i < n; ++i) {
+        const double base = intercept + slope * double(i);
+        peak = qMax(peak, qMax(std::fabs(mEnvMins[ i ] - base), std::fabs(mEnvMaxs[ i ] - base)));
+    }
+    mDbfsReferencePeak = (peak > 0.0) ? peak : rawPeak;
 }
 
 /**
@@ -371,7 +425,7 @@ void DASignalAnalysisView::rebuildSpectrumPlot()
                                                         mParams.amplitudeMode,
                                                         mParams.dbReference,
                                                         mParams.calibration,
-                                                        mSignalPeak * mParams.calibration);
+                                                        signalPeak() * mParams.calibration);
         }
     }
     // 对数频率轴从第一个正频率点开始（0 赫兹在对数轴下无意义）
@@ -391,7 +445,7 @@ void DASignalAnalysisView::rebuildSpectrumPlot()
     // 峰值标记（按当前幅值口径定位；第 1 名橙红，其余主蓝）
     clearPeakMarkers(mPeakMarkers);
     if (mPeakMarkersVisible && mPeaks.isValid()) {
-        const double signalPeakCal = mSignalPeak * mParams.calibration;
+        const double signalPeakCal = signalPeak() * mParams.calibration;
         for (int i = 0; i < mPeaks.frequencies.size(); ++i) {
             const double f = mPeaks.frequencies.at(i);
             const double y = DASignalAmplitude::toDisplay(mPeaks.magnitudes.value(i),
@@ -551,9 +605,31 @@ void DASignalAnalysisView::setSplitterSizes(const QList< int >& vertical, const 
 {
     if (mVerticalSplitter && vertical.size() == mVerticalSplitter->count()) {
         mVerticalSplitter->setSizes(vertical);
+        mDefaultSplitterSizesApplied = true;  // 存档值优先，首次显示的默认比例不再覆盖
     }
     if (mHorizontalSplitter && horizontal.size() == mHorizontalSplitter->count()) {
         mHorizontalSplitter->setSizes(horizontal);
+        mDefaultSplitterSizesApplied = true;
+    }
+}
+
+/**
+ * @brief 首次显示时显式设定分割比例（上下、左右各 1:1，方案 §8.2）
+ *
+ * 只设 stretchFactor 时初次布局按子控件 sizeHint 分配，波形区会被频谱图的
+ * 标题栏/坐标轴挤得比例失真；这里在网络布局有尺寸后显式 setSizes（评审 §七-1）。
+ */
+void DASignalAnalysisView::applyDefaultSplitterSizes()
+{
+    // 页面隐藏/尚未布局时尺寸可能为 0，用保底高度避免 setSizes 无效；
+    // 真正显示后 QSplitter 会按比例缩放，用户拖动后不再覆盖
+    if (mVerticalSplitter) {
+        const int h = qMax(240, mVerticalSplitter->height());
+        mVerticalSplitter->setSizes({ h / 2, h - h / 2 });
+    }
+    if (mHorizontalSplitter) {
+        const int w = qMax(320, mHorizontalSplitter->width());
+        mHorizontalSplitter->setSizes({ w / 2, w - w / 2 });
     }
 }
 
@@ -570,11 +646,11 @@ void DASignalAnalysisView::setTimeOrigin(double seconds)
 }
 
 /**
- * @brief 信号峰值幅度（未乘标定；包络回填时统计）
+ * @brief 信号峰值幅度（未乘标定；dBFS 参考口径，即去直流/去趋势后的峰值）
  */
 double DASignalAnalysisView::signalPeak() const
 {
-    return mSignalPeak;
+    return mDbfsReferencePeak;
 }
 
 /**
@@ -605,8 +681,9 @@ bool DASignalAnalysisView::isHeatmapAutoScroll() const
 /**
  * @brief 画布事件过滤：STFT 窗口矩形整体拖动（D30，不可拖边）
  *
- * 点击落在矩形内时进入拖动状态，按鼠标位移换算时间增量后调用 setCurrentTime，
- * 拖动期间窗长不变；矩形外保持 QwtPicker 的点击定位行为。
+ * 命中判定用矩形包围盒（含 Y 范围），按下时只记「拖动候选」，鼠标位移超过
+ * QApplication::startDragDistance() 才真正进入拖动——否则矩形内单击会被拖动逻辑吞掉，
+ * 无法定位播放头（评审 N-U5）；未进入拖动的左键释放交回 QwtPicker 的点击定位。
  */
 bool DASignalAnalysisView::eventFilter(QObject* watched, QEvent* e)
 {
@@ -617,24 +694,39 @@ bool DASignalAnalysisView::eventFilter(QObject* watched, QEvent* e)
     if (watched != chart->canvas()) {
         return QWidget::eventFilter(watched, e);
     }
+    // 鼠标位置是否落在 STFT 窗口矩形内（X 与 Y 都要命中，评审 N-U5）
+    auto hitWindowRect = [this, chart](const QPoint& pos) -> bool {
+        if (!mStftWindow || !mStftWindow->isVisible() || !mStft.isValid()) {
+            return false;
+        }
+        const QRectF rect = mStftWindow->boundingRect();
+        if (!rect.isValid()) {
+            return false;
+        }
+        const QPointF plotPos(chart->invTransform(QwtPlot::xBottom, pos.x()),
+                              chart->invTransform(QwtPlot::yLeft, pos.y()));
+        return rect.contains(plotPos);
+    };
     switch (e->type()) {
     case QEvent::MouseButtonPress: {
         auto* me = static_cast< QMouseEvent* >(e);
-        if (me->button() == Qt::LeftButton && mStftWindow && mStftWindow->isVisible() && mStft.isValid()) {
-            const double xTime = chart->invTransform(QwtPlot::xBottom, me->pos().x());
-            const QRectF rect  = mStftWindow->boundingRect();
-            if (rect.isValid() && xTime >= rect.left() && xTime <= rect.right()) {
-                mDraggingWindow = true;
-                mDragPressPos   = me->pos();
-                mDragPressTime  = currentTime();
-                chart->canvas()->setCursor(Qt::SizeAllCursor);
-                return true;  // 吞掉事件：拖动期间不触发点击定位
-            }
+        if (me->button() == Qt::LeftButton && hitWindowRect(me->pos())) {
+            // 只记候选：是否拖动等移动超过阈值再定，不吞 press（点击定位要能用）
+            mPressCandidate = true;
+            mDragPressPos   = me->pos();
+            mDragPressTime  = currentTime();
         }
         break;
     }
     case QEvent::MouseMove: {
         auto* me = static_cast< QMouseEvent* >(e);
+        if (mPressCandidate && !mDraggingWindow) {
+            const int moveDist = (me->pos() - mDragPressPos).manhattanLength();
+            if (moveDist >= QApplication::startDragDistance()) {
+                mDraggingWindow = true;
+                chart->canvas()->setCursor(Qt::SizeAllCursor);
+            }
+        }
         if (mDraggingWindow) {
             const double curTimeAtPixel = chart->invTransform(QwtPlot::xBottom, me->pos().x());
             const double delta          = curTimeAtPixel - chart->invTransform(QwtPlot::xBottom, mDragPressPos.x());
@@ -643,10 +735,7 @@ bool DASignalAnalysisView::eventFilter(QObject* watched, QEvent* e)
         }
         // 悬停提示：命中矩形内显示移动光标
         if (mStftWindow && mStftWindow->isVisible() && mStft.isValid()) {
-            const double xTime = chart->invTransform(QwtPlot::xBottom, me->pos().x());
-            const QRectF rect  = mStftWindow->boundingRect();
-            const bool inside  = rect.isValid() && xTime >= rect.left() && xTime <= rect.right();
-            const Qt::CursorShape want = inside ? Qt::SizeAllCursor : Qt::ArrowCursor;
+            const Qt::CursorShape want = hitWindowRect(me->pos()) ? Qt::SizeAllCursor : Qt::ArrowCursor;
             if (chart->canvas()->cursor().shape() != want) {
                 chart->canvas()->setCursor(want);
             }
@@ -655,10 +744,15 @@ bool DASignalAnalysisView::eventFilter(QObject* watched, QEvent* e)
     }
     case QEvent::MouseButtonRelease: {
         auto* me = static_cast< QMouseEvent* >(e);
-        if (me->button() == Qt::LeftButton && mDraggingWindow) {
-            mDraggingWindow = false;
+        if (me->button() == Qt::LeftButton) {
+            const bool wasDragging = mDraggingWindow;
+            mPressCandidate        = false;
+            mDraggingWindow        = false;
             chart->canvas()->setCursor(Qt::ArrowCursor);
-            return true;
+            if (wasDragging) {
+                return true;  // 拖动结束：不再当作点击定位
+            }
+            // 未拖动：交回 QwtPicker 处理本次点击（矩形内单击仍然定位）
         }
         break;
     }
@@ -683,9 +777,15 @@ void DASignalAnalysisView::rebuildWaterfall()
         return;
     }
     if (mWaterfallItem) {
-        mWaterfallItem->detach();
-        delete mWaterfallItem;
-        mWaterfallItem = nullptr;
+        // 瀑布图元已纳入 DAChart3DWidget::data3DRttis()（评审 H4），外部 clearAllData3D()
+        // 可能已经销毁它：先按当前挂载列表校验，失效则只置空，避免二次 delete（评审 N-H4）
+        const bool stillAttached = mWaterfallChart->getWaterfalls().contains(mWaterfallItem);
+        Qwt3DWaterfall* stale   = mWaterfallItem;
+        mWaterfallItem          = nullptr;
+        if (stillAttached) {
+            stale->detach();
+            delete stale;
+        }
     }
     mWaterfallItem = mWaterfallChart->addWaterfall(traces, binValues, tr("Waterfall"));  // cn:三维瀑布
     if (mWaterfallItem) {
@@ -708,7 +808,7 @@ void DASignalAnalysisView::rebuildHeatmap()
         return;
     }
     double peak = 0.0;
-    for (double v : mStft.values) {
+    for (double v : std::as_const(mStft.values)) {
         if (std::isfinite(v)) {
             peak = qMax(peak, std::fabs(v));
         }
@@ -856,7 +956,7 @@ QVector< double > DASignalAnalysisView::displayAmplitudes() const
 {
     QVector< double > out;
     out.reserve(mSpectrum.amplitudes.size());
-    const double signalPeakCal = mSignalPeak * mParams.calibration;
+    const double signalPeakCal = signalPeak() * mParams.calibration;
     for (int i = 0; i < mSpectrum.amplitudes.size(); ++i) {
         out.append(DASignalAmplitude::toDisplay(mSpectrum.amplitudes.at(i),
                                                i == 0,
@@ -876,7 +976,7 @@ double DASignalAnalysisView::dbReferenceValue() const
     if (mParams.dbReference == QLatin1String("one")) {
         return 1.0;
     }
-    const double ref = mSignalPeak * mParams.calibration;
+    const double ref = signalPeak() * mParams.calibration;
     return (ref > 0.0) ? ref : 1.0;
 }
 
@@ -1114,6 +1214,11 @@ void DASignalAnalysisView::resizeEvent(QResizeEvent* e)
 void DASignalAnalysisView::showEvent(QShowEvent* e)
 {
     QWidget::showEvent(e);
+    // 首次显示显式设定默认分割比例（恢复存档时由 setSplitterSizes 覆盖，评审 §七-1）
+    if (!mDefaultSplitterSizesApplied) {
+        mDefaultSplitterSizesApplied = true;
+        applyDefaultSplitterSizes();
+    }
     if (!mEnvelopeValid) {
         requestInitialAnalysis();
     }

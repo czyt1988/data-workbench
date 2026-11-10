@@ -8,6 +8,7 @@
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QIcon>
+#include <QInputDialog>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -34,6 +35,7 @@
 #include "DADockingAreaInterface.h"
 #include "DAActionsInterface.h"
 #include "DADataManagerInterface.h"
+#include "DAProjectInterface.h"
 #include "DAStatusBarInterface.h"
 #include "DockAreaWidget.h"
 // DASignalAnalysis
@@ -65,6 +67,12 @@ const char* const cPageDockObjectName      = "da-dock-signal-analysis-page";
 
 // 图标资源前缀
 const char* const cIconPrefix = ":/DASignalAnalysis/icon/";
+// 内存预算（方案 §11 / 评审 D5 / N-C1c）：频谱、峰值表、包络与热图共用同一预算门
+constexpr qint64 cAnalysisBudgetBytes = qint64(1.5 * 1024 * 1024 * 1024);
+// 内存预算判定（QHash 值）：0=未询问 / 1=用户已确认继续 / 2=用户拒绝
+constexpr int cBudgetUnasked  = 0;
+constexpr int cBudgetAllowed  = 1;
+constexpr int cBudgetDeclined = 2;
 }  // namespace
 
 DASignalAnalysisUI::DASignalAnalysisUI(QObject* par) : QObject(par)
@@ -90,6 +98,12 @@ bool DASignalAnalysisUI::initialize(DACoreInterface* core)
     mUI      = core->getUiInterface();
     mActions = mUI->getActionInterface();
 
+    // 工程生命周期（Q7）：新建工程 / 加载工程前 / 快照回滚时宿主会 clear() 工程并发
+    // projectIsCleaned()，插件在这里同步清掉旧信号、峰值缓存与临时文件（评审 N-U2/P5/U15）
+    if (DAProjectInterface* project = core->getProjectInterface()) {
+        connect(project, &DAProjectInterface::projectIsCleaned, this, &DASignalAnalysisUI::onProjectCleaned);
+    }
+
     // 注意：页面不在这里创建（惰性加载），见 ensurePageCreated()
     buildSignalCategory();
     retranslateUi();
@@ -109,8 +123,14 @@ bool DASignalAnalysisUI::initialize(DACoreInterface* core)
     if (actionImportVideo) {
         connect(actionImportVideo, &QAction::triggered, this, &DASignalAnalysisUI::importVideoFile);
     }
+    if (actionRelinkSource) {
+        connect(actionRelinkSource, &QAction::triggered, this, &DASignalAnalysisUI::relinkCurrentSignalSource);
+    }
     if (actionAnalysisSetting) {
         connect(actionAnalysisSetting, &QAction::triggered, this, &DASignalAnalysisUI::openAnalysisSettings);
+    }
+    if (actionCancelAnalysis) {
+        connect(actionCancelAnalysis, &QAction::triggered, this, &DASignalAnalysisUI::cancelAllComputations);
     }
     // 导出菜单：峰值表 CSV / 频谱 CSV / 功率谱 CSV / 热图矩阵 CSV
     if (actionExportPeaks) {
@@ -194,6 +214,8 @@ bool DASignalAnalysisUI::initialize(DACoreInterface* core)
     connect(mWorker, &DASignalAnalysisWorker::heatmapReady, this, &DASignalAnalysisUI::onWorkerHeatmapReady);
     connect(mWorker, &DASignalAnalysisWorker::peaksReady, this, &DASignalAnalysisUI::onWorkerPeaksReady);
     connect(mWorker, &DASignalAnalysisWorker::peakCurvesReady, this, &DASignalAnalysisUI::onWorkerPeakCurvesReady);
+    connect(mWorker, &DASignalAnalysisWorker::playbackWavReady, this, &DASignalAnalysisUI::onWorkerPlaybackWavReady);
+    connect(mWorker, &DASignalAnalysisWorker::canceled, this, &DASignalAnalysisUI::onWorkerCanceled);
     if (actionPeakWindow) {
         connect(actionPeakWindow, &QAction::toggled, this, &DASignalAnalysisUI::onPeakWindowToggled);
     }
@@ -242,6 +264,20 @@ DASignalAnalysisPage* DASignalAnalysisUI::page() const
 }
 
 // ---------------------------------------------------------------- 导入
+
+/**
+ * @brief 统一失败上报
+ *
+ * 界面只显示调用方给的翻译提示；`detail` 往往是后台/导入层抛出的英文异常原文
+ * （e.what()），按 i18n 规范只写日志文件，不再拼进用户可见消息（评审 §七-9）。
+ */
+void DASignalAnalysisUI::reportOperationFailure(const QString& userText, const QString& detail)
+{
+    if (!detail.isEmpty()) {
+        qWarning() << "DASignalAnalysisUI::operation failed:" << userText << "| detail:" << detail;
+    }
+    reportError(userText);
+}
 
 /**
  * @brief 统一错误上报
@@ -296,7 +332,7 @@ void DASignalAnalysisUI::importAudioFile()
     QString error;
     DASignalPtr sig = DASignalImporter::importAudioFile(dlg.filePath(), &error);
     if (!sig) {
-        reportError(tr("Failed to import audio: %1").arg(error));  // cn:导入音频失败：%1
+        reportOperationFailure(tr("Failed to import audio."), error);  // cn:导入音频失败。
         return;
     }
     addSignalAndActivate(sig);
@@ -324,7 +360,7 @@ void DASignalAnalysisUI::importDataFrame()
                                                         dlg.signalName(),
                                                         &error);
     if (!sig) {
-        reportError(tr("Failed to import data frame: %1").arg(error));  // cn:导入数据帧失败：%1
+        reportOperationFailure(tr("Failed to import data frame."), error);  // cn:导入数据帧失败。
         return;
     }
     addSignalAndActivate(sig);
@@ -347,7 +383,7 @@ void DASignalAnalysisUI::importVideoFile()
     QString error;
     DASignalPtr sig = DASignalImporter::importVideoFile(dlg.filePath(), &error);
     if (!sig) {
-        reportError(tr("Failed to import video: %1").arg(error));  // cn:导入视频失败：%1
+        reportOperationFailure(tr("Failed to import video."), error);  // cn:导入视频失败。
         return;
     }
     addSignalAndActivate(sig);
@@ -368,41 +404,99 @@ void DASignalAnalysisUI::addSignalAndActivate(const DASignalPtr& sig)
     mPage->addSignal(sig);
     setSignalDependentActionsEnabled(true);
     syncPlayerSource();
-    if (DASignalAnalysisView* view = mPage->viewForSignal(sig.get())) {
-        view->setParams(paramsForSignal(sig));
-        view->setTimeOrigin(sig->timeOrigin());
-        if (!mLastColormap.isEmpty()) {
-            view->setColormapName(mLastColormap);  // 插件偏好：上次色带（P2）
-        }
-        connect(view, &DASignalAnalysisView::spectrumRequested, this, &DASignalAnalysisUI::onViewRequestSpectrum);
-        connect(view, &DASignalAnalysisView::envelopeRequested, this, &DASignalAnalysisUI::onViewRequestEnvelope);
-        connect(view, &DASignalAnalysisView::heatmapRequested, this, &DASignalAnalysisUI::onViewRequestHeatmap);
-        connect(view, &DASignalAnalysisView::currentTimeChanged, this, &DASignalAnalysisUI::onViewTimeChanged);
-        connect(view, &DASignalAnalysisView::channelChanged, this, &DASignalAnalysisUI::onViewChannelChanged);
-        // 「跟随滑块」只刷新峰值表显示，不触发 seek
-        connect(view, &DASignalAnalysisView::followSliderToggled, this, [this](bool) {
-            updatePeaksForCurrentFrame();
-        });
-        // 连接就绪后再发起首次计算（视图显示早于 connect，showEvent 里的请求会丢）
-        view->requestInitialAnalysis();
-    }
+    connectSignalView(sig);
     // 切到「信号分析」页面标签（导入后用户应立刻看到信号视图，而不是停在原页面）
     if (auto* dockingArea = mUI->getDockingArea()) {
         dockingArea->raiseDockByWidget(mPage);
     }
-    // 首次导入信号成功后自动切到峰值窗口一次（D24），之后尊重用户开关
+    // 首次导入信号成功后按偏好自动切到峰值窗口一次（D24/N-U1）
     if (!mFirstSignalActivated) {
         mFirstSignalActivated = true;
-        if (mPeakDock) {
-            mPeakDock->toggleView(true);
-            mPeakDock->setAsCurrentTab();
-        }
+        showPeakDockForFirstSignal();
+    }
+    updateRelinkActionState();
+    if (sig->source() && sig->source()->isMissing()) {
+        // 来源缺失占位（工程恢复路径，评审 U16）：不谎报「已导入」，提示用重新指定入口
+        mUI->addInfoLogMessage(tr("Signal \"%1\" is a placeholder: its data frame is missing.").arg(sig->name()));
+        // cn:信号「%1」为占位：其数据帧缺失。
+        return;
     }
     mUI->addInfoLogMessage(tr("Signal imported: %1 (%2 Hz, %3 s)")
                                .arg(sig->name())
                                .arg(sig->sampleRate(), 0, 'f', 3)
                                .arg(sig->duration(), 0, 'f', 3));
     // cn:信号已导入：%1（%2 赫兹，%3 秒）
+}
+
+/**
+ * @brief 首次导入信号后按偏好决定是否显示峰值窗口（D24 / 评审 N-U1）
+ *
+ * 用户此前明确关掉过峰值窗口（配置 peakDockVisible=false）时不再强制显示，
+ * 否则重启/加载工程后偏好会被「首次导入自动显示」覆盖；从未有过偏好时按 D24 显示一次。
+ */
+void DASignalAnalysisUI::showPeakDockForFirstSignal()
+{
+    if (!mPeakDock) {
+        return;
+    }
+    const bool preferVisible = (mPeakDockVisiblePref >= 0) ? (mPeakDockVisiblePref == 1) : true;
+    if (!preferVisible) {
+        return;
+    }
+    mPeakDock->toggleView(true);
+    mPeakDock->setAsCurrentTab();
+}
+
+/**
+ * @brief 连接单个信号视图的请求/事件信号并发起首次计算
+ *
+ * 导入（addSignalAndActivate）与「重新指定数据帧来源」（relinkCurrentSignalSource）共用，
+ * 避免两条路径的连接逻辑分叉。
+ */
+void DASignalAnalysisUI::connectSignalView(const DASignalPtr& sig)
+{
+    if (!mPage || !sig) {
+        return;
+    }
+    DASignalAnalysisView* view = mPage->viewForSignal(sig.get());
+    if (!view) {
+        return;
+    }
+    view->setParams(paramsForSignal(sig));
+    view->setTimeOrigin(sig->timeOrigin());
+    if (!mLastColormap.isEmpty()) {
+        view->setColormapName(mLastColormap);  // 插件偏好：上次色带（P2）
+    }
+    connect(view, &DASignalAnalysisView::spectrumRequested, this, &DASignalAnalysisUI::onViewRequestSpectrum);
+    connect(view, &DASignalAnalysisView::envelopeRequested, this, &DASignalAnalysisUI::onViewRequestEnvelope);
+    connect(view, &DASignalAnalysisView::heatmapRequested, this, &DASignalAnalysisUI::onViewRequestHeatmap);
+    connect(view, &DASignalAnalysisView::currentTimeChanged, this, &DASignalAnalysisUI::onViewTimeChanged);
+    connect(view, &DASignalAnalysisView::channelChanged, this, &DASignalAnalysisUI::onViewChannelChanged);
+    // 「跟随滑块」只刷新峰值表显示，不触发 seek；关闭方向要恢复整段峰值（评审 N-U4）
+    connect(view, &DASignalAnalysisView::followSliderToggled, this, [this](bool on) {
+        if (on) {
+            updatePeaksForCurrentFrame();
+            return;
+        }
+        DASignalPtr current = (mPage) ? mPage->currentSignal() : DASignalPtr();
+        DASignalAnalysisView* currentView =
+            (mPage && current) ? mPage->viewForSignal(current.get()) : nullptr;
+        // 关闭跟随：峰值表回整段、隐藏时间列、频谱图峰值标记恢复整段（D13/评审 N-U4）
+        DAPeakResult peaks;
+        if (current && mCurrentPeaksSignal == current.get()) {
+            peaks = mCurrentPeaks;
+        }
+        if (mPeakPanel) {
+            mPeakPanel->setShowTimeColumn(false);
+            mPeakPanel->setPeaks(peaks);
+            mPeakPanel->setPeakCurves(mCurrentCurves);
+        }
+        if (currentView) {
+            currentView->setPeaks(peaks);
+        }
+    });
+    // 连接就绪后再发起首次计算（视图显示早于 connect，showEvent 里的请求会丢）
+    view->requestInitialAnalysis();
 }
 
 /**
@@ -422,7 +516,7 @@ void DASignalAnalysisUI::onSignalRemoved(const DASignalPtr& signal)
     mParamsVersion.remove(key);
     mSpectrumCache.remove(key);
     mSpectrumCacheChannel.remove(key);
-    mLargeSignalWarned.remove(key);
+    mMemoryBudgetVerdict.remove(key);
     if (mCurrentPeaksSignal == key) {
         clearPeakState();
     }
@@ -435,6 +529,7 @@ void DASignalAnalysisUI::onSignalRemoved(const DASignalPtr& signal)
         requestPeaks(peakViewOpen);
     }
     syncPlayerSource();
+    updateRelinkActionState();
 }
 
 /**
@@ -446,6 +541,7 @@ void DASignalAnalysisUI::onSignalRemoved(const DASignalPtr& signal)
  */
 void DASignalAnalysisUI::onCurrentSignalChanged()
 {
+    updateRelinkActionState();
     syncPlayerSource();
     if (!mPage || !mPeakPanel) {
         return;
@@ -466,6 +562,7 @@ void DASignalAnalysisUI::onCurrentSignalChanged()
     mPeakPanel->setTimeOrigin(sig->timeOrigin());
     const DASignalAnalysisParams params = paramsForSignal(sig);
     mPeakPanel->setAmplitudeDisplay(mAmplitudeMode, mDbReference, params.calibration, params.unit);
+    updateRelinkActionState();
 }
 
 /**
@@ -489,7 +586,12 @@ void DASignalAnalysisUI::buildCenterPage()
         // 中央区各页面 dock 都带图标（绘图/表格/工作流同款），信号分析页保持一致
         mPageDock->setIcon(QIcon(QString::fromUtf8(cIconPrefix) + QStringLiteral("showSignalAnalysis.svg")));
     } else {
+        // 中心区 dock 创建失败时页面成为孤儿：删掉页面并给出可见错误，
+        // 不能只留一条 qWarning 让入口静默失效（评审 N-U8）
         qWarning() << "DASignalAnalysisUI::buildCenterPage: failed to create center dock for signal page";
+        delete mPage;
+        mPage = nullptr;
+        reportError(tr("Failed to create the signal analysis page."));  // cn:创建信号分析页面失败。
     }
 }
 
@@ -503,12 +605,17 @@ void DASignalAnalysisUI::buildCenterPage()
  */
 bool DASignalAnalysisUI::ensurePageCreated()
 {
-    if (mPage) {
+    if (mPage && mPageDock) {
         return true;
     }
+    // 页面对象存在但 dock 没建成功（极端环境）：先把孤儿页面清掉再重建（评审 N-U8）
+    if (mPage && !mPageDock) {
+        delete mPage;
+        mPage = nullptr;
+    }
     buildCenterPage();
-    if (nullptr == mPage) {
-        return false;
+    if (nullptr == mPage || nullptr == mPageDock) {
+        return false;  // buildCenterPage 已在失败时删页面并报可见错误
     }
     // 页面内的导入入口与页面事件（页面创建前这些连接不存在）
     connect(mPage, &DASignalAnalysisPage::requestImportAudio, this, &DASignalAnalysisUI::importAudioFile);
@@ -516,14 +623,17 @@ bool DASignalAnalysisUI::ensurePageCreated()
     connect(mPage, &DASignalAnalysisPage::requestImportVideo, this, &DASignalAnalysisUI::importVideoFile);
     connect(mPage, &DASignalAnalysisPage::signalRemoved, this, &DASignalAnalysisUI::onSignalRemoved);
     connect(mPage, &DASignalAnalysisPage::currentSignalChanged, this, &DASignalAnalysisUI::onCurrentSignalChanged);
-    // 峰值停靠窗口与页面同批创建（创建后保持隐藏，首次导入信号成功时再自动切到前面一次）
-    buildPeakDock();
-    // 恢复插件偏好：上次使用的色带（P2）。
-    // 峰值窗口显隐不在这里恢复：创建页面时通常还没有信号，空峰值窗口没有意义；
-    // 首次导入信号成功时 addSignalAndActivate() 会按既有逻辑自动显示一次。
+    // 恢复插件偏好：上次使用的色带与峰值窗口显隐（P2/N-U1）。
+    // 峰值窗口的显隐偏好先读出来，buildPeakDock() 里首次显示时按它决定是否自动切到前面。
     const QJsonObject cfg = DASignalImporter::loadPluginConfig();
     mLastColormap         = cfg.value(QStringLiteral("colormap")).toString();
+    if (cfg.contains(QStringLiteral("peakDockVisible"))) {
+        mPeakDockVisiblePref = cfg.value(QStringLiteral("peakDockVisible")).toBool(true) ? 1 : 0;
+    }
+    // 峰值停靠窗口与页面同批创建（创建后保持隐藏，首次导入信号成功时按偏好再决定）
+    buildPeakDock();
     setSignalDependentActionsEnabled(mPage->signalCount() > 0);
+    updateRelinkActionState();
     return true;
 }
 
@@ -585,9 +695,15 @@ void DASignalAnalysisUI::buildSignalCategory()
     actionImportVideo = mActions->createAction(
         "actionSignalImportVideo",
         (QString::fromUtf8(cIconPrefix) + QStringLiteral("importVideo.svg")).toUtf8().constData());
+    // 重新指定数据帧来源（评审 U16）：当前信号的数据帧在工程里丢失时用它重新绑定
+    actionRelinkSource = mActions->createAction(
+        "actionSignalRelinkSource",
+        (QString::fromUtf8(cIconPrefix) + QStringLiteral("importDataframe.svg")).toUtf8().constData());
     mPanelSignal->addLargeAction(actionImportAudio);
     mPanelSignal->addLargeAction(actionImportDataFrame);
     mPanelSignal->addLargeAction(actionImportVideo);
+    mPanelSignal->addMediumAction(actionRelinkSource);
+    actionRelinkSource->setEnabled(false);  // 只有当前信号来源缺失时才可用
 
     // ---------- Playback：播放/暂停/停止 ----------
     mPanelPlayback = mCategory->addPanel(tr("Playback"));  // cn:播放
@@ -611,7 +727,13 @@ void DASignalAnalysisUI::buildSignalCategory()
     actionAnalysisSetting = mActions->createAction(
         "actionSignalAnalysisSetting",
         (QString::fromUtf8(cIconPrefix) + QStringLiteral("analysisSetting.svg")).toUtf8().constData());
+    // 取消全部后台计算（评审 N-C7）：长任务（PSD/峰值曲线/WAV 导出）用户可随时中止
+    actionCancelAnalysis = mActions->createAction(
+        "actionSignalCancelAnalysis",
+        (QString::fromUtf8(cIconPrefix) + QStringLiteral("stop.svg")).toUtf8().constData());
     mPanelAnalysis->addLargeAction(actionAnalysisSetting);
+    mPanelAnalysis->addMediumAction(actionCancelAnalysis);
+    actionCancelAnalysis->setEnabled(false);  // 有任务在跑才可用
 
     // ---------- Peaks：峰值标记 / 前 N / 峰值窗口 ----------
     mPanelPeaks = mCategory->addPanel(tr("Peaks"));  // cn:峰值
@@ -706,7 +828,10 @@ void DASignalAnalysisUI::buildPeakDock()
     if (nullptr == dockingArea) {
         return;
     }
-    mPeakPanel = new DAPeakDockWidget();
+    // 创建期间的显隐变化不算用户偏好（可能是创建即激活/随后隐藏）：
+    // 用 mCreatingPeakDock 屏蔽，避免把偏好覆盖成「隐藏」（评审 N-U1）
+    mCreatingPeakDock = true;
+    mPeakPanel        = new DAPeakDockWidget();
     mPeakPanel->setObjectName(QStringLiteral("da-signal-peak-panel"));
     // 与「设置」同区作为标签页
     ads::CDockWidget* settingDock =
@@ -731,17 +856,71 @@ void DASignalAnalysisUI::buildPeakDock()
                 const QSignalBlocker blocker(actionPeakTable);
                 actionPeakTable->setChecked(visible);
             }
+            if (!mCreatingPeakDock) {
+                mPeakDockVisiblePref = visible ? 1 : 0;  // 记录用户偏好（N-U1/P2）
+            }
             if (visible && !mPeakCurvesRequested) {
                 requestPeaks(true);
             }
         });
         // 创建即激活会让插件加载后右侧直接跳到空的峰值页（评审 D24/U14）：先隐藏，
-        // 首次导入成功后再自动切一次（见 addSignalAndActivate）
+        // 首次导入成功后再按偏好自动切一次（见 showPeakDockForFirstSignal）
         mPeakDock->toggleView(false);
     }
+    mCreatingPeakDock = false;
     connect(mPeakPanel, &DAPeakDockWidget::sendToTableRequested, this, &DASignalAnalysisUI::sendPeaksToTable);
     connect(mPeakPanel, &DAPeakDockWidget::exportCsvRequested, this, &DASignalAnalysisUI::exportPeaksCsv);
     connect(mPeakPanel, &DAPeakDockWidget::settingsRequested, this, &DASignalAnalysisUI::openAnalysisSettings);
+}
+
+/**
+ * @brief 大信号内存预算门（评审 N-C1c / D19）
+ *
+ * 频谱、峰值表、包络与热图共用同一预算（1.5 GB）：超预算时只提示一次，
+ * 用户确认后本信号不再重复弹窗；拒绝后本次会话对该信号跳过计算。
+ * @param stage 已翻译的环节名（如「频谱」「峰值表」），用于消息正文
+ * @return false 表示用户取消本次计算
+ */
+bool DASignalAnalysisUI::checkMemoryBudget(const DASignalPtr& sig, const QString& stage, qint64 estimatedBytes)
+{
+    if (!sig || estimatedBytes <= cAnalysisBudgetBytes) {
+        return true;
+    }
+    const int verdict = mMemoryBudgetVerdict.value(sig.get(), cBudgetUnasked);
+    if (verdict == cBudgetAllowed) {
+        return true;
+    }
+    if (verdict == cBudgetDeclined) {
+        return false;  // 该信号已被拒绝过，不再逐次弹窗
+    }
+    const double estimatedGb = double(estimatedBytes) / (1024.0 * 1024.0 * 1024.0);
+    QMessageBox box(QMessageBox::Question,
+                    tr("Large Signal"),  // cn:大信号
+                    tr("The estimated peak memory for the %1 is about %2 GB, above the 1.5 GB budget.\n"
+                       "Continue or cancel?")
+                        // cn:%1 的预计峰值内存约 %2 GB，超过 1.5 GB 预算。继续还是取消？
+                        .arg(stage)
+                        .arg(estimatedGb, 0, 'f', 2),
+                    QMessageBox::NoButton,
+                    mPage);
+    QPushButton* continueBtn = box.addButton(tr("Continue"), QMessageBox::AcceptRole);  // cn:继续
+    QPushButton* cancelBtn   = box.addButton(QMessageBox::Cancel);
+    box.setDefaultButton(cancelBtn);  // 默认安全：不误触大内存计算
+    box.exec();
+    if (box.clickedButton() != continueBtn) {
+        mMemoryBudgetVerdict[ sig.get() ] = cBudgetDeclined;
+        if (mUI) {
+            mUI->addInfoLogMessage(tr("Signal analysis cancelled: %1 needs more than the memory budget.").arg(stage));
+            // cn:已取消信号分析：%1 超出内存预算。
+        }
+        return false;
+    }
+    mMemoryBudgetVerdict[ sig.get() ] = cBudgetAllowed;
+    if (mUI) {
+        mUI->addInfoLogMessage(tr("Large signal confirmed: %1 assumes about %2 GB of memory.").arg(stage).arg(estimatedGb, 0, 'f', 2));
+        // cn:大信号已确认：%1 预计占用约 %2 GB 内存。
+    }
+    return true;
 }
 
 /**
@@ -754,6 +933,13 @@ void DASignalAnalysisUI::requestPeaks(bool withCurves)
     }
     DASignalPtr sig = mPage->currentSignal();
     if (!sig || !sig->isValid()) {
+        return;
+    }
+    // 内存预算门（评审 N-C1c）：峰值表与频谱/包络共用同一预算，超限时先问用户
+    const qint64 samples = sig->sampleCount();
+    if (!checkMemoryBudget(sig,
+                           tr("peak table"),  // cn:峰值表
+                           samples * qint64(sizeof(double)) * 2)) {
         return;
     }
     const DASignalAnalysisParams params = paramsForSignal(sig);
@@ -884,10 +1070,189 @@ void DASignalAnalysisUI::clearAllSignals()
     mParamsVersion.clear();
     mSpectrumCache.clear();
     mSpectrumCacheChannel.clear();
-    mLargeSignalWarned.clear();
+    mMemoryBudgetVerdict.clear();
     clearPeakState();
     setSignalDependentActionsEnabled(false);
+    updateRelinkActionState();
     mFirstSignalActivated = false;
+}
+
+/**
+ * @brief 宿主清空工程：清理本插件残留（评审 N-U2/P5/U15 / Q7）
+ *
+ * 宿主在新建工程、加载工程前、快照回滚时调用 DAProjectInterface::clear()，
+ * 那一步不会触碰插件（DAAppProject::clear 只清数据与图表）。这里做幂等清理：
+ * 页面/峰值窗口从未创建时也要安全返回，只剩缓存与临时文件需要处理。
+ */
+void DASignalAnalysisUI::onProjectCleaned()
+{
+    // 后台任务先停：旧工程的信号数据不再需要，避免继续占用内存/临时文件
+    if (mWorker) {
+        mWorker->cancel();
+    }
+    if (mPlayer) {
+        mPlayer->stop();
+        mPlayer->clearSignal();
+    }
+    if (mPage) {
+        clearAllSignals();  // 清信号标签页、峰值表/曲线、频谱缓存与动作使能
+    } else {
+        mParamsPerSignal.clear();
+        mParamsVersion.clear();
+        mSpectrumCache.clear();
+        mSpectrumCacheChannel.clear();
+        mMemoryBudgetVerdict.clear();
+        clearPeakState();
+        setSignalDependentActionsEnabled(false);
+        mFirstSignalActivated = false;
+    }
+    updateRelinkActionState();
+    // 纯「关闭工程」路径也要清掉临时 WAV（评审 P5），不必等到下次加载或插件卸载
+    DASignalImporter::cleanupTempFiles();
+    clearProgressIfIdle();
+    updateCancelActionState();
+}
+
+/**
+ * @brief 刷新「重新指定数据帧来源」动作可用性（评审 U16）
+ *
+ * 只有当前信号的数据帧来源缺失时才可用；其余情况置灰，避免用户误以为是「换数据帧」。
+ */
+void DASignalAnalysisUI::updateRelinkActionState()
+{
+    if (!actionRelinkSource) {
+        return;
+    }
+    bool missing = false;
+    if (mPage) {
+        DASignalPtr sig = mPage->currentSignal();
+        if (sig && sig->source()) {
+            auto dfSrc = std::dynamic_pointer_cast< DADataFrameSignalSource >(sig->source());
+            missing    = (dfSrc && dfSrc->isMissing());
+        }
+    }
+    actionRelinkSource->setEnabled(missing);
+}
+
+/**
+ * @brief 重新指定数据帧来源（当前信号来源缺失时可用，评审 U16）
+ *
+ * 占位信号保留了工程里记录的列名/采样率/参数：这里让用户从数据管理器里挑一个数据帧，
+ * 用保存的列名重新建信号并在同一标签位置替换，参数与视图状态尽量沿用。
+ */
+void DASignalAnalysisUI::relinkCurrentSignalSource()
+{
+    if (!mPage || !mCore) {
+        return;
+    }
+    DASignalPtr sig = mPage->currentSignal();
+    if (!sig) {
+        return;
+    }
+    auto dfSrc = std::dynamic_pointer_cast< DADataFrameSignalSource >(sig->source());
+    if (!dfSrc || !dfSrc->isMissing()) {
+        if (mUI) {
+            mUI->addInfoLogMessage(tr("The current signal's source is available; there is nothing to relink."));
+            // cn:当前信号的来源可用，无需重新指定。
+        }
+        return;
+    }
+    DADataManagerInterface* mgr = mCore->getDataManagerInterface();
+    if (!mgr) {
+        return;
+    }
+    const QList< DAData > all = mgr->getAllDatas();
+    QStringList names;
+    QList< DAData > frames;
+    for (const DAData& d : all) {
+        if (d.isDataFrame()) {
+            names.append(d.getName());
+            frames.append(d);
+        }
+    }
+    if (names.isEmpty()) {
+        reportError(tr("No data frame is available. Import or create a data frame first."));
+        // cn:没有可用的数据帧，请先导入或创建数据帧。
+        return;
+    }
+    int initial = names.indexOf(dfSrc->dataframeName());
+    if (initial < 0) {
+        initial = 0;
+    }
+    bool ok = false;
+    const QString chosen = QInputDialog::getItem(mPage,
+                                                 tr("Relink Data Frame Source"),  // cn:重新指定数据帧来源
+                                                 tr("Data frame:"),               // cn:数据帧：
+                                                 names,
+                                                 initial,
+                                                 false,
+                                                 &ok);
+    if (!ok || chosen.isEmpty()) {
+        return;
+    }
+    const int idx = names.indexOf(chosen);
+    if (idx < 0 || idx >= frames.size()) {
+        return;
+    }
+    // 保留原信号的显示元数据与参数（占位信号带着工程里的记录，评审 U16）
+    const DASignalAnalysisParams params = paramsForSignal(sig);
+    const double timeOrigin             = sig->timeOrigin();
+    const double calibration            = sig->calibration();
+    const QString unit                  = sig->unit();
+    const QString signalName            = sig->name();
+    // 旧视图的显示状态也尽量沿用（瀑布模式/色带/对数轴/色标下限/跟随滚动）
+    int oldWaterfallMode = 0;
+    QString oldColormap;
+    bool oldLogFrequency   = false;
+    double oldDbFloor      = -80.0;
+    bool oldAutoScroll     = false;
+    if (DASignalAnalysisView* oldView = mPage->viewForSignal(sig.get())) {
+        oldWaterfallMode = oldView->waterfallMode();
+        oldColormap      = oldView->colormapName();
+        oldLogFrequency  = oldView->isLogFrequency();
+        oldDbFloor       = oldView->dbFloor();
+        oldAutoScroll    = oldView->isHeatmapAutoScroll();
+    }
+    QString error;
+    DASignalPtr newSig = DASignalImporter::importDataFrame(frames.at(idx),
+                                                           dfSrc->timeColumn(),
+                                                           dfSrc->valueColumns(),
+                                                           dfSrc->sampleRate(),
+                                                           signalName,
+                                                           &error);
+    if (!newSig) {
+        reportOperationFailure(tr("Failed to relink the data frame source."), error);
+        // cn:重新指定数据帧来源失败。
+        return;
+    }
+    newSig->setName(signalName);
+    newSig->setTimeOrigin(timeOrigin);
+    newSig->setCalibration(calibration);
+    newSig->setUnit(unit);
+    // 参数先挂到新信号上：替换过程会 emit signalRemoved → 峰值重算，
+    // 此时 paramsForSignal(新信号) 必须已经拿到原参数而不是默认值（评审 U16）
+    mParamsPerSignal[ newSig.get() ] = params;
+    const int index = mPage->indexOfSignal(sig.get());
+    if (!mPage->replaceSignalAt(index, newSig)) {
+        mParamsPerSignal.remove(newSig.get());
+        reportError(tr("Failed to relink the data frame source."));  // cn:重新指定数据帧来源失败。
+        return;
+    }
+    connectSignalView(newSig);
+    if (DASignalAnalysisView* newView = mPage->viewForSignal(newSig.get())) {
+        newView->setWaterfallMode(oldWaterfallMode);
+        newView->setLogFrequency(oldLogFrequency);
+        newView->setDbFloor(oldDbFloor);
+        newView->setHeatmapAutoScroll(oldAutoScroll);
+        if (!oldColormap.isEmpty()) {
+            newView->setColormapName(oldColormap);
+        }
+    }
+    setSignalDependentActionsEnabled(true);
+    syncPlayerSource();
+    updateRelinkActionState();
+    mUI->addInfoLogMessage(tr("Signal \"%1\" relinked to data frame \"%2\".").arg(signalName, chosen));
+    // cn:信号「%1」已重新指向数据帧「%2」。
 }
 
 /**
@@ -1168,7 +1533,9 @@ void DASignalAnalysisUI::exportHeatmapCsv()
     // 大矩阵导出前给体积确认，并提供 2 倍降采样（方案 §10.2 / 评审 I10）
     int downsample = 1;
     if (cells > 2000000) {
-        const double estimatedMb = double(cells) * 8.0 / (1024.0 * 1024.0);
+        // 文本 CSV 每单元实际约 12–16 字节（数值文本 + 分隔符 + 行尾），按 14 B/单元估算（评审 N-I10）
+        constexpr double cBytesPerCsvCell = 14.0;
+        const double estimatedMb          = double(cells) * cBytesPerCsvCell / (1024.0 * 1024.0);
         QMessageBox box(QMessageBox::Question,
                         tr("Export Heatmap Matrix"),  // cn:导出热图矩阵
                         tr("The heatmap matrix is %1 x %2 = %3 cells (about %4 MB as CSV).\n"
@@ -1323,9 +1690,9 @@ void DASignalAnalysisUI::sendPeaksToTable()
         mUI->addInfoLogMessage(tr("Peak table added to the data manager as \"%1\".").arg(tableName));
         // cn:峰值表已作为「%1」加入数据管理器。
     } catch (const std::exception& e) {
-        qWarning() << "sendPeaksToTable failed:" << e.what();
-        reportError(tr("Failed to send the peak table: %1").arg(QString::fromUtf8(e.what())));
-        // cn:峰值表发送失败：%1
+        // 异常原文（英文）只写日志，界面给翻译后的提示（评审 §七-9）
+        reportOperationFailure(tr("Failed to send the peak table."), QString::fromUtf8(e.what()));
+        // cn:峰值表发送失败。
     }
 }
 
@@ -1346,7 +1713,8 @@ QByteArray DASignalAnalysisUI::serializeState() const
             case DASignalSource::DataFrameSource: {
                 auto dfSrc = std::dynamic_pointer_cast< DADataFrameSignalSource >(sig->source());
                 o[ QStringLiteral("sourceType") ]    = QStringLiteral("dataframe");
-                o[ QStringLiteral("dataframeName") ] = dfSrc ? dfSrc->data().getName() : QString();
+                // 缺失占位也要把工程里记录的数据帧名存回去（评审 U16）
+                o[ QStringLiteral("dataframeName") ] = dfSrc ? dfSrc->dataframeName() : QString();
                 o[ QStringLiteral("timeColumn") ]    = dfSrc ? dfSrc->timeColumn() : QString();
                 QJsonArray cols;
                 if (dfSrc) {
@@ -1409,6 +1777,13 @@ void DASignalAnalysisUI::restoreState(const QByteArray& json)
 {
     const QJsonDocument doc = QJsonDocument::fromJson(json);
     if (!doc.isObject()) {
+        // 工程包里没有本插件的存档条目（旧工程 / 保存时插件未启用 / 条目损坏）：
+        // 之前打开过页面时必须清掉上一工程残留的信号与临时文件，否则旧信号会被
+        // 再次保存进新工程（评审 N-U2/U15；宿主 clear() 不触碰插件，无法兜底）
+        if (mPage) {
+            clearAllSignals();
+        }
+        DASignalImporter::cleanupTempFiles();
         return;
     }
     const QJsonArray arr = doc.object().value(QStringLiteral("signals")).toArray();
@@ -1438,6 +1813,13 @@ void DASignalAnalysisUI::restoreState(const QByteArray& json)
         QString error;
         if (type == QLatin1String("dataframe")) {
             const QString dfName = o.value(QStringLiteral("dataframeName")).toString();
+            QStringList cols;
+            const QJsonArray colsArr = o.value(QStringLiteral("valueColumns")).toArray();
+            for (const QJsonValue& c : colsArr) {
+                cols.append(c.toString());
+            }
+            const QString timeCol = o.value(QStringLiteral("timeColumn")).toString();
+            const double savedFs  = o.value(QStringLiteral("sampleRate")).toDouble();
             DAData data;
             if (mgr) {
                 const QList< DAData > all = mgr->getAllDatas();
@@ -1449,22 +1831,18 @@ void DASignalAnalysisUI::restoreState(const QByteArray& json)
                 }
             }
             if (!data.isDataFrame()) {
-                reportError(tr("Failed to restore signal \"%1\": data frame \"%2\" was not found.")
-                                // cn:恢复信号「%1」失败：找不到数据帧「%2」。
-                                .arg(name, dfName));
-                continue;
+                // 数据帧缺失（评审 U16）：不再直接跳过，而是保留「来源缺失」占位信号与参数，
+                // 用户可用丝带「重新指定数据帧来源」重新绑定到现有数据帧
+                auto placeholder = std::make_shared< DADataFrameSignalSource >(dfName, timeCol, cols, savedFs);
+                sig              = std::make_shared< DASignal >(name, placeholder);
+                qWarning() << "DASignalAnalysisUI: dataframe source missing, placeholder kept:" << dfName;
+                reportError(tr("Signal source missing: data frame \"%1\" (signal \"%2\"). "
+                               "Use \"Relink Data Frame Source\" to point it to an existing data frame.")
+                                // cn:信号源缺失：数据帧「%1」（信号「%2」）。可用「重新指定数据帧来源」指向现有数据帧。
+                                .arg(dfName, name));
+            } else {
+                sig = DASignalImporter::importDataFrame(data, timeCol, cols, savedFs, name, &error);
             }
-            QStringList cols;
-            const QJsonArray colsArr = o.value(QStringLiteral("valueColumns")).toArray();
-            for (const QJsonValue& c : colsArr) {
-                cols.append(c.toString());
-            }
-            sig = DASignalImporter::importDataFrame(data,
-                                                    o.value(QStringLiteral("timeColumn")).toString(),
-                                                    cols,
-                                                    o.value(QStringLiteral("sampleRate")).toDouble(),
-                                                    name,
-                                                    &error);
         } else {
             QString path = o.value(QStringLiteral("path")).toString();
             if (!QFileInfo::exists(path)) {
@@ -1506,8 +1884,8 @@ void DASignalAnalysisUI::restoreState(const QByteArray& json)
             }
         }
         if (!sig) {
-            reportError(tr("Failed to restore signal \"%1\": %2").arg(name, error));
-            // cn:恢复信号「%1」失败：%2
+            reportOperationFailure(tr("Failed to restore signal \"%1\".").arg(name), error);
+            // cn:恢复信号「%1」失败。
             continue;
         }
         sig->setName(name);
@@ -1563,6 +1941,9 @@ void DASignalAnalysisUI::restoreState(const QByteArray& json)
             }
         }
     }
+    // 恢复后当前信号可能是「来源缺失」占位：刷新重新指定入口可用性（评审 U16）
+    updateRelinkActionState();
+    updatePlaybackActionsState();
 }
 
 /**
@@ -1577,9 +1958,15 @@ std::shared_ptr< DAAbstractArchiveTask > DASignalAnalysisUI::createArchiveTask(b
     auto task = std::make_shared< DASignalArchiveTask >();
     task->setLoadedCallBack([this](std::shared_ptr< DAAbstractArchiveTask > t) {
         auto sigTask = std::static_pointer_cast< DASignalArchiveTask >(t);
-        if (sigTask) {
-            restoreState(sigTask->loadedData());
+        if (!sigTask) {
+            return;
         }
+        if (!sigTask->archiveEntryFound()) {
+            // 工程包里没有 signal-analysis/signals.json（旧工程/保存时插件未启用/条目损坏）：
+            // restoreState 的空数据分支会清掉上一工程残留信号与临时文件（评审 N-U2）
+            qInfo() << "DASignalAnalysis: project has no signal-analysis archive entry; stale signals are cleared";
+        }
+        restoreState(sigTask->loadedData());
     });
     return task;
 }
@@ -1679,10 +2066,10 @@ void DASignalAnalysisUI::finalize()
         const QList< QAction* > allActions = {
             actionOpenSignalPage, actionImportAudio,    actionImportDataFrame, actionImportVideo,
             actionPlay,           actionPause,          actionStop,
-            actionAnalysisSetting, actionPeakMarker,    actionPeakTopN,
+            actionAnalysisSetting, actionCancelAnalysis, actionPeakMarker, actionPeakTopN,
             actionPeakWindow,     actionWaterfall2D,    actionWaterfall3D,
             actionWaterfallHide,  actionAmplitudeMode,  actionExportPeaks,
-            actionExportImage,    actionPeakTable
+            actionExportImage,    actionPeakTable,      actionRelinkSource
         };
         for (QAction* act : allActions) {
             if (act) {
@@ -1699,6 +2086,7 @@ void DASignalAnalysisUI::finalize()
     actionPause             = nullptr;
     actionStop              = nullptr;
     actionAnalysisSetting   = nullptr;
+    actionCancelAnalysis    = nullptr;
     actionPeakMarker        = nullptr;
     actionPeakTopN          = nullptr;
     actionPeakWindow        = nullptr;
@@ -1716,6 +2104,7 @@ void DASignalAnalysisUI::finalize()
     actionExportPeaks       = nullptr;
     actionExportImage       = nullptr;
     actionPeakTable         = nullptr;
+    actionRelinkSource      = nullptr;
     mPanelOpen              = nullptr;
     mPanelSignal            = nullptr;
     mPanelPlayback          = nullptr;
@@ -1727,7 +2116,7 @@ void DASignalAnalysisUI::finalize()
     mParamsVersion.clear();
     mSpectrumCache.clear();
     mSpectrumCacheChannel.clear();
-    mLargeSignalWarned.clear();
+    mMemoryBudgetVerdict.clear();
     // 插件卸载时清理本插件的临时音频文件（P5）
     DASignalImporter::cleanupTempFiles();
 }
@@ -1785,8 +2174,55 @@ void DASignalAnalysisUI::openAnalysisSettings()
     sig->setCalibration(params.calibration);
     sig->setUnit(params.unit);
     bumpParamsVersion(sig);
+    // 对话框里可能改了幅值口径：同步丝带勾选与全局状态，避免峰值表/导出/存档口径分叉（评审 N-U3）
+    syncAmplitudeUiFromParams(params);
+    // 参数变了：大信号内存预算重新询问一次（用户可能是有意用更大段长重试，评审 N-C1c）
+    mMemoryBudgetVerdict.remove(sig.get());
     refreshFFmpegAvailability();  // 对话框里可能改了 FFmpeg 路径（D7）
     recomputeCurrentSignal();
+}
+
+/**
+ * @brief 参数对话框改幅值口径后同步丝带勾选与全局状态（评审 N-U3）
+ *
+ * 幅值口径有两份状态：全局 mAmplitudeMode/mDbReference（丝带、峰值表、工程存档用）
+ * 与 params.amplitudeMode/dbReference（对话框、计算、视图用）。对话框只改后者时，
+ * 存档与峰值表仍按旧口径显示 → 这里按参数反查 actionAmp* 并静默同步勾选，
+ * 再用同一口径刷新峰值表与视图（不重算，只重绘）。
+ */
+void DASignalAnalysisUI::syncAmplitudeUiFromParams(const DASignalAnalysisParams& params)
+{
+    if (!params.amplitudeMode.isEmpty()) {
+        mAmplitudeMode = params.amplitudeMode;
+    }
+    if (!params.dbReference.isEmpty()) {
+        mDbReference = params.dbReference;
+    }
+    QAction* target = actionAmpPeak;
+    if (mAmplitudeMode == QLatin1String("rms")) {
+        target = actionAmpRms;
+    } else if (mAmplitudeMode == QLatin1String("dbFS")) {
+        target = actionAmpDbFs;
+    } else if (mAmplitudeMode == QLatin1String("dbRef1")) {
+        target = actionAmpDbRef1;
+    }
+    if (target) {
+        // 用 QSignalBlocker 避免勾选变化再触发 onAmplitudeModeChanged 造成反向覆盖
+        const QSignalBlocker blocker(target);
+        target->setChecked(true);
+    }
+    if (!mPage) {
+        return;
+    }
+    DASignalPtr sig = mPage->currentSignal();
+    if (DASignalAnalysisView* view = (sig ? mPage->viewForSignal(sig.get()) : nullptr)) {
+        view->setAmplitudeDisplay(mAmplitudeMode, mDbReference);
+    }
+    if (mPeakPanel) {
+        mPeakPanel->setAmplitudeDisplay(mAmplitudeMode, mDbReference, params.calibration, params.unit);
+        mPeakPanel->setPeaks(mCurrentPeaks);
+        mPeakPanel->setPeakCurves(mCurrentCurves);
+    }
 }
 
 /**
@@ -1821,6 +2257,8 @@ void DASignalAnalysisUI::recomputeCurrentSignal()
         mUI->getStatusBar()->showMessage(tr("Signal analysis: parameters applied, recomputing."));
         // cn:信号分析：参数已应用，正在重算。
     }
+    updateCancelActionState();
+    updatePlaybackActionsState();
 }
 
 /**
@@ -1832,6 +2270,8 @@ void DASignalAnalysisUI::onWorkerProgress(double percent, const QString& stage)
         mUI->getStatusBar()->showMessage(tr("Signal analysis: %1 (%2%)").arg(stage).arg(percent, 0, 'f', 0));
         // cn:信号分析：%1（%2%）
     }
+    // 进度信号是「任务在跑」的最早信号：在这里刷新取消按钮可用性（评审 N-C7）
+    updateCancelActionState();
 }
 
 /**
@@ -1840,10 +2280,15 @@ void DASignalAnalysisUI::onWorkerProgress(double percent, const QString& stage)
 void DASignalAnalysisUI::onWorkerSpectrumReady(const DASignalTaskContext& ctx, const DASpectrumResult& result)
 {
     if (!result.isValid()) {
+        clearProgressIfIdle();
+        updateCancelActionState();
         return;
     }
     if (!isContextCurrent(ctx, true)) {
-        return;  // 信号已关闭 / 已切通道 / 参数已过期：丢弃迟到结果
+        // 信号已关闭 / 已切通道 / 参数已过期：丢弃迟到结果，但仍要清状态栏进度（评审 N-U7）
+        clearProgressIfIdle();
+        updateCancelActionState();
+        return;
     }
     const DASignal* key = ctx.signal.get();
     mSpectrumCache[ key ]        = result;
@@ -1864,6 +2309,7 @@ void DASignalAnalysisUI::onWorkerSpectrumReady(const DASignalTaskContext& ctx, c
         requestPeaks(false);
     }
     clearProgressIfIdle();
+    updateCancelActionState();
 }
 
 /**
@@ -1871,10 +2317,13 @@ void DASignalAnalysisUI::onWorkerSpectrumReady(const DASignalTaskContext& ctx, c
  */
 void DASignalAnalysisUI::onWorkerFailed(const QString& error)
 {
-    if (mUI) {
-        reportError(tr("Signal analysis failed: %1").arg(error));  // cn:信号分析失败：%1
-    }
+    // 异常原文是英文诊断信息（e.what()），只写日志；界面给翻译后的可理解提示（评审 §七-9）
+    reportOperationFailure(tr("Signal analysis failed. See the message log for details."), error);
+    // cn:信号分析失败，详情见消息日志。
+    mPlaybackWavPendingKey.clear();  // 播放 WAV 导出失败也要解除「导出中」状态
+    updatePlaybackActionsState();
     clearProgressIfIdle();
+    updateCancelActionState();
 }
 
 /**
@@ -1883,6 +2332,11 @@ void DASignalAnalysisUI::onWorkerFailed(const QString& error)
 void DASignalAnalysisUI::onViewRequestSpectrum(const DASignalPtr& signal, int channel)
 {
     if (!mWorker || !signal) {
+        return;
+    }
+    // 内存预算门（评审 N-C1c）：整通道 float64 取数副本 + 频谱/功率谱中间量
+    const qint64 estimated = signal->sampleCount() * qint64(sizeof(double)) * 2;
+    if (!checkMemoryBudget(signal, tr("spectrum"), estimated)) {  // cn:频谱
         return;
     }
     mWorker->computeSpectrum(makeTaskContext(signal, channel), paramsForSignal(signal));
@@ -1895,6 +2349,12 @@ void DASignalAnalysisUI::onViewRequestEnvelope(qint64 start, qint64 end, int wid
 {
     auto* view = qobject_cast< DASignalAnalysisView* >(sender());
     if (!mWorker || !view || !view->signal()) {
+        return;
+    }
+    // 内存预算门（评审 N-C1c）：包络同样要整通道取数，与频谱共用同一预算
+    const qint64 samples = view->signal()->sampleCount();
+    const qint64 estimated = samples * qint64(sizeof(double)) + qint64(width) * qint64(sizeof(double)) * 2;
+    if (!checkMemoryBudget(view->signal(), tr("waveform envelope"), estimated)) {  // cn:波形包络
         return;
     }
     mWorker->computeEnvelope(makeTaskContext(view->signal(), view->currentChannel()), start, end, width);
@@ -1927,7 +2387,11 @@ void DASignalAnalysisUI::onViewChannelChanged(int channel)
 }
 
 /**
- * @brief 当前信号的播放源切换（数据帧来源会先导出临时 WAV）
+ * @brief 当前信号的播放源切换
+ *
+ * 文件/视频来源直接用本地文件；数据帧来源没有真实音频文件，需把所选通道导出成临时 WAV：
+ * 优先用本会话缓存，未缓存则在后台导出（评审 U9：不在界面线程整列导出），
+ * 导出期间禁用播放动作，完成后走 onWorkerPlaybackWavReady 切播放源。
  */
 void DASignalAnalysisUI::syncPlayerSource()
 {
@@ -1935,28 +2399,135 @@ void DASignalAnalysisUI::syncPlayerSource()
         return;
     }
     DASignalPtr sig = mPage->currentSignal();
-    if (!sig) {
+    if (!sig || !sig->isValid()) {
         mPlayer->clearSignal();
+        mPlaybackWavPendingKey.clear();
+        updatePlaybackActionsState();
         return;
     }
-    QString error;
-    // 播放当前查看的通道（评审 U9）；数据帧来源的临时 WAV 由播放器按「信号+通道」缓存
-    if (!mPlayer->setSignal(sig, channelOfSignal(sig), &error)) {
-        if (actionPlay) {
-            actionPlay->setEnabled(false);
+    const int channel = channelOfSignal(sig);
+    if (sig->sourceType() == DASignalSource::DataFrameSource) {
+        const QString cached = mPlayer->cachedWavPath(sig, channel);
+        if (cached.isEmpty()) {
+            // 未缓存：后台导出该通道 WAV（worker 的 Python 守护线程 + QTimer 轮询）
+            const QString key = QStringLiteral("%1:%2").arg(reinterpret_cast< quintptr >(sig.get())).arg(channel);
+            if (mWorker && mPlaybackWavPendingKey != key) {
+                if (mWorker->computePlaybackWav(makeTaskContext(sig, channel))) {
+                    mPlaybackWavPendingKey = key;
+                }
+            }
+            updatePlaybackActionsState();
+            updateCancelActionState();
+            if (mPeakPanel) {
+                mPeakPanel->setTimeOrigin(sig->timeOrigin());
+            }
+            return;
         }
-        if (!error.isEmpty()) {
-            qWarning() << "DASignalAnalysisUI: cannot prepare playback source:" << error;
-            reportError(tr("Cannot start playback for this signal."));  // cn:无法开始播放该信号。
+        QString error;
+        if (!mPlayer->setPreparedDataFrameWav(sig, channel, cached, &error)) {
+            reportOperationFailure(tr("Failed to prepare the playback audio for this signal."), error);
+            // cn:准备该信号的播放音频失败。
         }
-        return;
-    }
-    if (actionPlay) {
-        actionPlay->setEnabled(true);
+        mPlaybackWavPendingKey.clear();
+    } else {
+        QString error;
+        if (!mPlayer->setSignal(sig, channel, &error)) {
+            reportOperationFailure(tr("Cannot start playback for this signal."), error);
+            // cn:无法开始播放该信号。
+            updatePlaybackActionsState();
+            return;
+        }
+        mPlaybackWavPendingKey.clear();
     }
     if (mPeakPanel) {
         mPeakPanel->setTimeOrigin(sig->timeOrigin());  // 峰值曲线时间轴与波形/热图对齐（U12）
     }
+    updatePlaybackActionsState();
+}
+
+/**
+ * @brief 按播放源与导出状态刷新播放动作可用性（评审 U9）
+ */
+void DASignalAnalysisUI::updatePlaybackActionsState()
+{
+    const bool hasSignal = (mPage && mPage->currentSignal());
+    if (!hasSignal) {
+        return;  // 无信号时由 setSignalDependentActionsEnabled(false) 统一置灰
+    }
+    const bool exporting = !mPlaybackWavPendingKey.isEmpty();
+    const bool canPlay   = !exporting && mPlayer && mPlayer->hasSource();
+    if (actionPlay) {
+        actionPlay->setEnabled(canPlay);
+    }
+    if (actionPause) {
+        actionPause->setEnabled(canPlay);
+    }
+    if (actionStop) {
+        actionStop->setEnabled(canPlay);
+    }
+}
+
+/**
+ * @brief 按在跑任务数刷新「取消计算」动作可用性（评审 N-C7）
+ */
+void DASignalAnalysisUI::updateCancelActionState()
+{
+    if (actionCancelAnalysis) {
+        actionCancelAnalysis->setEnabled(mWorker && mWorker->runningTaskCount() > 0);
+    }
+}
+
+/**
+ * @brief 取消全部后台计算（评审 N-C7）
+ */
+void DASignalAnalysisUI::cancelAllComputations()
+{
+    if (!mWorker) {
+        return;
+    }
+    mWorker->cancelAll();  // 每个被取消的任务会发 canceled → onWorkerCanceled
+    mPlaybackWavPendingKey.clear();
+    clearProgressIfIdle();
+    updateCancelActionState();
+    updatePlaybackActionsState();
+}
+
+/**
+ * @brief 数据帧播放 WAV 后台导出完成（评审 U9）
+ *
+ * 导出期间用户可能已切信号/通道，迟到的结果不能覆盖播放器：先做上下文校验。
+ */
+void DASignalAnalysisUI::onWorkerPlaybackWavReady(const DASignalTaskContext& ctx, const QString& wavPath)
+{
+    mPlaybackWavPendingKey.clear();
+    if (!isContextCurrent(ctx, true)) {
+        clearProgressIfIdle();
+        updateCancelActionState();
+        updatePlaybackActionsState();
+        return;
+    }
+    QString error;
+    if (mPlayer && !mPlayer->setPreparedDataFrameWav(ctx.signal, ctx.channel, wavPath, &error)) {
+        reportOperationFailure(tr("Failed to prepare the playback audio for this signal."), error);
+        // cn:准备该信号的播放音频失败。
+    } else if (mPeakPanel && ctx.signal) {
+        mPeakPanel->setTimeOrigin(ctx.signal->timeOrigin());
+    }
+    clearProgressIfIdle();
+    updateCancelActionState();
+    updatePlaybackActionsState();
+}
+
+/**
+ * @brief 后台任务被用户取消：只清进度，不弹失败（评审 N-C7）
+ */
+void DASignalAnalysisUI::onWorkerCanceled(const QString& taskId)
+{
+    Q_UNUSED(taskId)
+    mPlaybackWavPendingKey.clear();
+    clearProgressIfIdle();
+    updateCancelActionState();
+    updatePlaybackActionsState();
 }
 
 /**
@@ -2008,13 +2579,17 @@ void DASignalAnalysisUI::onViewRequestHeatmap(int columns, int rows)
     if (!mWorker || !view || !view->signal()) {
         return;
     }
-    // 内存预算（方案 §11 / 评审 D5）：按真实峰值估算（float64 副本 × 并发任务 + 显示栅格），
-    // 超预算时让用户选择降低热图精度或取消，而不是继续分配
-    constexpr qint64 cBudgetBytes = qint64(1.5 * 1024 * 1024 * 1024);
-    const qint64 samples         = view->signal()->sampleCount();
-    const qint64 estimatedBytes  = samples * qint64(sizeof(double)) * 3
+    // 内存预算（方案 §11 / 评审 D5）：按真实峰值估算（float64 副本 × 并发任务 + 显示栅格）。
+    // 与频谱/峰值/包络共用 cAnalysisBudgetBytes，并复用每信号预算判定（评审 N-C1c）：
+    // 用户已在本信号上确认继续时不再重复弹窗
+    const qint64 samples        = view->signal()->sampleCount();
+    const qint64 estimatedBytes = samples * qint64(sizeof(double)) * 3
                                   + qint64(columns) * qint64(rows) * qint64(sizeof(double));
-    if (estimatedBytes > cBudgetBytes) {
+    const int verdict = mMemoryBudgetVerdict.value(view->signal().get(), cBudgetUnasked);
+    if (estimatedBytes > cAnalysisBudgetBytes && verdict == cBudgetDeclined) {
+        return;  // 该信号已取消过大内存计算
+    }
+    if (estimatedBytes > cAnalysisBudgetBytes && verdict != cBudgetAllowed) {
         const double estimatedGb = double(estimatedBytes) / (1024.0 * 1024.0 * 1024.0);
         QMessageBox box(QMessageBox::Question,
                         tr("Large Signal"),  // cn:大信号
@@ -2031,7 +2606,8 @@ void DASignalAnalysisUI::onViewRequestHeatmap(int columns, int rows)
         QPushButton* cancelBtn = box.addButton(QMessageBox::Cancel);
         box.setDefaultButton(cancelBtn);
         box.exec();
-        if (box.clickedButton() == cancelBtn) {
+        if (box.clickedButton() == cancelBtn || box.clickedButton() == nullptr) {
+            mMemoryBudgetVerdict[ view->signal().get() ] = cBudgetDeclined;
             return;
         }
         if (box.clickedButton() == reduceBtn) {
@@ -2042,8 +2618,10 @@ void DASignalAnalysisUI::onViewRequestHeatmap(int columns, int rows)
                 // cn:热图精度已降至 %1 x %2。
             }
         } else if (box.clickedButton() != continueBtn) {
+            mMemoryBudgetVerdict[ view->signal().get() ] = cBudgetDeclined;
             return;
         }
+        mMemoryBudgetVerdict[ view->signal().get() ] = cBudgetAllowed;
     }
     mWorker->computeHeatmap(makeTaskContext(view->signal(), view->currentChannel()), view->params(), columns, rows);
 }
@@ -2054,12 +2632,14 @@ void DASignalAnalysisUI::onViewRequestHeatmap(int columns, int rows)
 void DASignalAnalysisUI::onWorkerHeatmapReady(const DASignalTaskContext& ctx, const DAStftResult& result)
 {
     if (!isContextCurrent(ctx, true)) {
+        clearProgressIfIdle();  // 丢弃过期结果也要清进度（评审 N-U7）
         return;
     }
     if (DASignalAnalysisView* view = mPage->viewForSignal(ctx.signal.get())) {
         view->setStft(result);
     }
     clearProgressIfIdle();
+    updateCancelActionState();
 }
 
 /**
@@ -2068,14 +2648,18 @@ void DASignalAnalysisUI::onWorkerHeatmapReady(const DASignalTaskContext& ctx, co
 void DASignalAnalysisUI::onWorkerPeaksReady(const DASignalTaskContext& ctx, const DAPeakResult& result)
 {
     if (!isContextCurrent(ctx, false)) {
+        clearProgressIfIdle();  // 丢弃过期结果也要清进度（评审 N-U7）
         return;
     }
     DASignalPtr current = mPage ? mPage->currentSignal() : DASignalPtr();
     if (!current || current.get() != ctx.signal.get()) {
-        return;  // 峰值表/标记只属于当前信号
+        clearProgressIfIdle();  // 峰值表/标记只属于当前信号
+        return;
     }
     if (DASignalAnalysisView* view = mPage->viewForSignal(ctx.signal.get())) {
         if (view->currentChannel() != ctx.channel) {
+            clearProgressIfIdle();
+            updateCancelActionState();
             return;
         }
     }
@@ -2095,6 +2679,7 @@ void DASignalAnalysisUI::onWorkerPeaksReady(const DASignalTaskContext& ctx, cons
         view->setPeaks(result);
     }
     clearProgressIfIdle();
+    updateCancelActionState();
 }
 
 /**
@@ -2103,10 +2688,13 @@ void DASignalAnalysisUI::onWorkerPeaksReady(const DASignalTaskContext& ctx, cons
 void DASignalAnalysisUI::onWorkerPeakCurvesReady(const DASignalTaskContext& ctx, const DAPeakCurveResult& result)
 {
     if (!isContextCurrent(ctx, false)) {
+        clearProgressIfIdle();  // 丢弃过期结果也要清进度（评审 N-U7）
         return;
     }
     DASignalPtr current = mPage ? mPage->currentSignal() : DASignalPtr();
     if (!current || current.get() != ctx.signal.get()) {
+        clearProgressIfIdle();
+        updateCancelActionState();
         return;
     }
     mCurrentCurves = result;
@@ -2114,6 +2702,7 @@ void DASignalAnalysisUI::onWorkerPeakCurvesReady(const DASignalTaskContext& ctx,
         mPeakPanel->setPeakCurves(result);
     }
     clearProgressIfIdle();
+    updateCancelActionState();
 }
 
 /**
@@ -2242,12 +2831,14 @@ void DASignalAnalysisUI::onWorkerEnvelopeReady(const DASignalTaskContext& ctx,
                                                const QVector< double >& maxs)
 {
     if (!isContextCurrent(ctx, true)) {
+        clearProgressIfIdle();  // 丢弃过期结果也要清进度（评审 N-U7）
         return;
     }
     if (DASignalAnalysisView* view = mPage->viewForSignal(ctx.signal.get())) {
         view->setEnvelope(xs, mins, maxs);
     }
     clearProgressIfIdle();
+    updateCancelActionState();
 }
 
 /**
@@ -2303,13 +2894,15 @@ void DASignalAnalysisUI::setSignalDependentActionsEnabled(bool on)
         actionAnalysisSetting, actionPeakMarker,   actionPeakTopN,
         actionPeakWindow,    actionWaterfall2D,    actionWaterfall3D,
         actionWaterfallHide, actionAmplitudeMode,  actionExportPeaks,
-        actionExportImage,   actionPeakTable
+        actionExportImage,   actionPeakTable,      actionRelinkSource
     };
     for (QAction* act : acts) {
         if (act) {
             act->setEnabled(on);
         }
     }
+    // 「重新指定数据帧来源」只对来源缺失的当前信号可用（评审 U16）
+    updateRelinkActionState();
     if (actionPeakTopN) {
         actionPeakTopN->setEnabled(on);
     }
@@ -2329,6 +2922,10 @@ void DASignalAnalysisUI::retranslateUi()
     }
     if (mPageDock) {
         mPageDock->setWindowTitle(tr("Signal Analysis"));  // cn:信号分析
+    }
+    // 峰值停靠窗口标题必须自己重译：宿主 resetText() 只处理宿主自己的 dock（评审 §七-5）
+    if (mPeakDock) {
+        mPeakDock->setWindowTitle(tr("Peaks"));  // cn:峰值
     }
     // 面板
     if (mPanelOpen) {
@@ -2371,6 +2968,11 @@ void DASignalAnalysisUI::retranslateUi()
         actionImportVideo->setText(tr("Import Video"));  // cn:导入视频
         refreshFFmpegAvailability();  // tooltip 按 FFmpeg 是否可用给出不同说明
     }
+    if (actionRelinkSource) {
+        actionRelinkSource->setText(tr("Relink Data Frame Source"));  // cn:重新指定数据帧来源
+        actionRelinkSource->setToolTip(tr("Point a signal whose data frame is missing to an existing data frame"));
+        // cn:把数据帧缺失的信号重新指向现有数据帧
+    }
     // 播放
     if (actionPlay) {
         actionPlay->setText(tr("Play"));  // cn:播放
@@ -2385,6 +2987,10 @@ void DASignalAnalysisUI::retranslateUi()
     if (actionAnalysisSetting) {
         actionAnalysisSetting->setText(tr("Analysis Settings"));  // cn:分析设置
         actionAnalysisSetting->setToolTip(tr("Open the unified analysis parameter dialog"));  // cn:打开统一参数对话框
+    }
+    if (actionCancelAnalysis) {
+        actionCancelAnalysis->setText(tr("Cancel Analysis"));  // cn:取消计算
+        actionCancelAnalysis->setToolTip(tr("Cancel all running background computations"));  // cn:取消全部在跑的后台计算
     }
     // 峰值
     if (actionPeakMarker) {

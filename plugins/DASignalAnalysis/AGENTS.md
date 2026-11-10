@@ -110,14 +110,63 @@ python -I -m pytest tests/test_signal_dsp.py tests/test_signal_import.py -q   # 
   `mUI`/`mCategory` 为空时不能提前 return（评审 B5）。
 - **峰值归属**：峰值表/曲线缓存带 `mCurrentPeaksSignal`/`mCurrentPeaksChannel`；切信号走
   `onCurrentSignalChanged()` 先清空再按新信号重算，禁止把上一个信号的峰值停在新标签页下（评审 U4）。
-- **缺失信号源**：`restoreState()` 遇到文件不存在时弹「重新指定」，恢复后保留采样率与参数；数据帧缺失只能报错跳过
-  （数据帧由工程数据决定，需宿主生命周期回调才能更干净处理，评审 U16/Q7）。
+- **缺失信号源**：`restoreState()` 遇到文件不存在时弹「重新指定」，恢复后保留采样率与参数；
+  数据帧缺失在 v1.2 起保留「来源缺失」占位信号并提供「重新指定数据帧来源」入口（见下节，评审 U16/Q7）。
 - **PSD 出口**：韦尔奇功率谱密度已提供 CSV 导出（导出下拉里的「功率谱密度（CSV）」），
   换算口径为 10·log10（功率量），不随幅值模式变化（评审 C10）。
 - **Qt 运行时**：插件私有的 `Multimedia` 不在主程序 exe 依赖链里。插件 CMake 在构建后以插件 DLL 为扫描目标
   调 `windeployqt` 补齐 `build/bin`；安装目录由顶层 `dafun_install_deploy_qt_runtime(... REQUIRED_QT_MODULES Multimedia)`
   在安装期校验，缺 DLL 直接安装失败（评审 D1）。
-- **音频解码降级**：运行时缺 `soundfile` 时，WAV 由 `scipy.io.wavfile` 兜底；AIFF/FLAC/OGG 在
-  `DASignalImporter::importAudioFile()` 里自动改走 FFmpeg 转码，没有 FFmpeg 才给出明确错误，
-  不允许静默失败（评审 I1）。
+- **音频解码降级**：运行时缺 `soundfile` 时，**WAV 走标准库自实现的 RIFF 头解析 + 按帧 seek**
+  （支持 PCM 8/16/24/32 位、IEEE float32/64、EXTENSIBLE 格式；`probe_audio` 只读文件头，
+  不再整文件读入），AIFF/FLAC/OGG 在 `DASignalImporter::importAudioFile()` 里自动改走 FFmpeg 转码，
+  没有 FFmpeg 才给出明确错误，不允许静默失败（评审 I1/N-I1a）；
+  `scipy.io.wavfile` 仅用于**导出** WAV 的写路径。
 - **测试选择**：`plugins/DASignalAnalysis/` 的改动在 `scripts/test.ps1 -Changed` 下会选中 `data` 套件。
+
+## v1.2 修正要点（2026-11-09 复核整改）
+
+- **工程生命周期**：`DASignalAnalysisUI::initialize()` 连接宿主 `DAProjectInterface::projectIsCleaned`
+  （经 `core->getProjectInterface()`）。新建工程 / 加载工程前 / 快照回滚时宿主 `clear()` 会发该信号，
+  `onProjectCleaned()` 幂等清理：停 worker/播放器、清信号与峰值缓存、`cleanupTempFiles()`。
+  这样「工程包里没有 `signal-analysis/signals.json`」也不会把上一工程残留信号带进新工程（评审 N-U2/P5/U15）；
+  `restoreState()` 的 `!doc.isObject()` 分支仍保留防御性清理，`DASignalArchiveTask::archiveEntryFound()`
+  记录条目是否存在供界面判断。
+- **临时文件按会话隔离**：插件临时目录为 `<tempDir>/session-<uuid>/`，统一由
+  `DASignalImporter::sessionTempDir()/newSessionTempWavPath()/registerTempFile()` 分配与登记，
+  `cleanupTempFiles()` 只删本会话登记过的文件；**禁止**再按 `*.wav` 后缀通删共享临时目录（评审 N-I12）。
+  播放器（`DASignalPlayer`）不再自己按后缀删文件，只清自己的缓存表。
+- **数据帧播放音频后台导出**：数据帧来源没有真实音频文件，`syncPlayerSource()` 先查
+  `DASignalPlayer::cachedWavPath(信号, 通道)`，未缓存则 `DASignalAnalysisWorker::computePlaybackWav(ctx)`
+  在 Python 守护线程导出（`playbackWavReady` 回填）；导出期间 `mPlaybackWavPendingKey` 非空，
+  播放/暂停/停止动作置灰、状态栏显示进度，完成后 `setPreparedDataFrameWav()` 切源并恢复。
+  迟到的导出结果按 `isContextCurrent()` 校验丢弃（评审 U9）。
+- **取消入口**：丝带「分析」面板「取消计算」`actionCancelAnalysis`，enabled 绑
+  `mWorker->runningTaskCount()>0`；触发 `cancelAll()`，每个任务走 `canceled(taskId)` →
+  `onWorkerCanceled()` 只清进度不弹失败（评审 N-C7 UI 侧）。
+- **幅值口径单一同步点**：参数对话框确定后必须调用 `syncAmplitudeUiFromParams(params)`，
+  用 `QSignalBlocker` 同步 `actionAmpPeak/Rms/DbFs/DbRef1` 勾选并更新 `mAmplitudeMode/mDbReference`，
+  否则峰值表/导出/工程存档会与视图口径分叉（评审 N-U3）。
+- **内存预算门**：频谱、峰值表、包络、热图共用 `cAnalysisBudgetBytes`（1.5 GB）与
+  `checkMemoryBudget()`；判定结果按信号缓存在 `mMemoryBudgetVerdict`（1=确认继续、2=拒绝），
+  参数变化（对话框确定）时清除重新询问（评审 N-C1c/D19）。
+- **dBFS 参考口径**：`DASignalAnalysisView::signalPeak()` 返回**去直流/去趋势后**的峰值
+  （`updateSignalPeaks()` 由包络统计），原始峰值只用于波形/STFT 矩形纵向范围；
+  `DASignalAmplitude::toDisplay()` 在参考 `<=0` 时回退 1.0（不再用 cEps 算出 +600 dB 的荒谬值，评审 N-C2）。
+- **交互阈值**：波形画布上的 STFT 矩形拖动必须「按下只记候选 → 位移超过
+  `QApplication::startDragDistance()` 才进入拖动 → 未拖动的释放交回 QwtPicker 定位」，
+  命中判定用矩形包围盒（X/Y 都判断）；否则矩形内单击会被拖动逻辑吞掉（评审 N-U5）。
+- **峰值窗口显隐偏好**：`peakDockVisible` 在 `ensurePageCreated()` 读取、`finalize()` 写回；
+  首次导入信号时 `showPeakDockForFirstSignal()` 按偏好决定是否自动切到峰值窗口，
+  用户关闭过的偏好不再被「首次导入自动显示」覆盖（评审 N-U1/P2）。
+- **数据帧来源缺失占位**：`DADataFrameSignalSource` 支持「缺失占位」构造（数据帧名/列名/采样率保留、
+  `isMissing()==true`、`isValid()==false` 不参与计算）；工程恢复时不再直接跳过，而是保留占位信号，
+  丝带「信号」面板「重新指定数据帧来源」（`actionRelinkSource`）从数据管理器重选数据帧后
+  `DASignalAnalysisPage::replaceSignalAt()` 原地替换并沿用参数与视图状态（评审 U16）。
+- **失败消息口径**：UI 侧统一走 `reportOperationFailure(用户提示, 细节)`：界面只显示 `tr()` 后的提示，
+  英文异常原文（worker `failed`、`e.what()`）只写日志（评审 §七-9）。
+- **其他**：`ensurePageCreated()` 同时校验 `mPage` 与 `mPageDock`，dock 创建失败时删页面并
+  `reportError`（N-U8）；所有「上下文过期丢弃结果」分支也要 `clearProgressIfIdle()`（N-U7）；
+  `retranslateUi()` 必须重译峰值停靠窗口标题（§七-5）；视图与峰值窗口首次显示时显式 `setSizes`
+  （上下/左右 1:1、峰值表:曲线 2:1，§七-1）；`mWaterfallItem` 重建前用 `getWaterfalls()` 校验挂载
+  （N-H4）；视图类中非 const Qt 容器迭代已全部改 `std::as_const`/索引（N-U10）。

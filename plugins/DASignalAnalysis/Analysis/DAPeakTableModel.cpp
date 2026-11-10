@@ -120,11 +120,12 @@ int DAPeakTableModel::columnCount(const QModelIndex& parent) const
  */
 QString DAPeakTableModel::amplitudeText(double magnitude, bool isDc) const
 {
-    const double refPeak = (mSignalPeak > 0.0) ? mSignalPeak
-                                               : (mPeaks.magnitudes.isEmpty()
-                                                      ? 1.0
-                                                      : qMax(mPeaks.magnitudes.first() * mCalibration,
-                                                             DASignalAmplitude::cEps));
+    // dBFS 参考与频谱图共用「信号峰值」；没有回填时退化为最强峰（标定后），
+    // 仍无效则由 DASignalAmplitude::toDisplay 回退 1.0（评审 N-C2）
+    double refPeak = mSignalPeak;
+    if (!(refPeak > 0.0) && !mPeaks.magnitudes.isEmpty()) {
+        refPeak = mPeaks.magnitudes.first() * mCalibration;
+    }
     const double v = DASignalAmplitude::toDisplay(magnitude,
                                                   isDc,
                                                   mAmplitudeMode,

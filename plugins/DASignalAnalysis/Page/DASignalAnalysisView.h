@@ -80,7 +80,7 @@ public:
     void setSplitterSizes(const QList< int >& vertical, const QList< int >& horizontal);
     // 时间轴原点（秒）：数据帧时间列首值非 0 时三张图横向对齐用（评审 U12）
     void setTimeOrigin(double seconds);
-    // 信号峰值幅度（包络回填时统计；dBFS 参考与峰值表共用）
+    // 信号峰值幅度（dBFS 参考；按去直流/去趋势后的预处理口径统计，评审 N-C2）
     double signalPeak() const;
     // 热图随播放自动滚动开关（D27，默认关）
     void setHeatmapAutoScroll(bool on);
@@ -149,6 +149,10 @@ private:
     QVector< double > displayAmplitudes() const;
     // dB 参考值（满量程 = 信号峰值，1.0 = 固定 1.0）
     double dbReferenceValue() const;
+    // 按包络统计信号峰值：原始峰值与 dBFS 参考峰值（去直流/去趋势口径，评审 N-C2）
+    void updateSignalPeaks();
+    // 首次显示时显式设定分割比例（默认上下/左右各 1:1，评审 §七-1）
+    void applyDefaultSplitterSizes();
 
 private:
     DASignalPtr mSignal;
@@ -159,7 +163,9 @@ private:
     QVector< double > mEnvXs;
     QVector< double > mEnvMins;
     QVector< double > mEnvMaxs;
+    // 原始峰值（波形范围用）与 dBFS 参考峰值（预处理口径，signalPeak() 返回）
     double mSignalPeak { 0.0 };
+    double mDbfsReferencePeak { 0.0 };
     bool mEnvelopeValid { false };
 
     // 布局
@@ -200,8 +206,12 @@ private:
     bool mHeatmapAutoScroll { false };
     // STFT 窗口矩形拖动（D30：整体可拖、不可拖边）
     bool mDraggingWindow { false };
+    // 左键按下但还没超过拖动阈值（评审 N-U5：矩形内单击仍要能定位）
+    bool mPressCandidate { false };
     QPoint mDragPressPos;
     double mDragPressTime { 0.0 };
+    // 首次显示时是否已设定默认分割比例（评审 §七-1）
+    bool mDefaultSplitterSizesApplied { false };
     // 三维瀑布
     DA::DAChart3DWidget* mWaterfallChart { nullptr };
     Qwt3DWaterfall* mWaterfallItem { nullptr };

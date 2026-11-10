@@ -46,6 +46,11 @@ public:
     virtual QString playbackFilePath() const = 0;
     // 来源描述（工程保存与界面上「信号源缺失」提示用）
     virtual QString sourceDescription() const = 0;
+    // 来源是否缺失（数据帧来源在工程里找不回原数据帧时为占位状态，评审 U16）
+    virtual bool isMissing() const
+    {
+        return false;
+    }
 
     // 设置/覆盖采样率（导入确认后写入）
     virtual void setSampleRate(double fs) = 0;

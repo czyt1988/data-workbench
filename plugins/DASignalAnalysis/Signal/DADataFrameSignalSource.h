@@ -18,6 +18,11 @@ public:
                             const QString& timeColumn,
                             const QStringList& valueColumns,
                             double sampleRate);
+    // 「来源缺失」占位构造：工程记录的数据帧已不在数据管理器里，保留列名与采样率等待重新指定（评审 U16）
+    DADataFrameSignalSource(const QString& dataframeName,
+                            const QString& timeColumn,
+                            const QStringList& valueColumns,
+                            double sampleRate);
     ~DADataFrameSignalSource() override;
 
     SourceType type() const override;
@@ -29,6 +34,10 @@ public:
     QString playbackFilePath() const override;
     QString sourceDescription() const override;
     void setSampleRate(double fs) override;
+    // 是否为「来源缺失」占位（占位不参与计算，等待用户重新指定数据帧）
+    bool isMissing() const override;
+    // 工程里记录的数据帧名（缺失占位时也可用，序列化依赖它）
+    QString dataframeName() const;
 
     // 数据帧（引用式）
     DAData data() const;
@@ -45,6 +54,8 @@ private:
     QString mTimeColumn;
     QStringList mValueColumns;
     double mSampleRate { 0.0 };
+    // 缺失占位：工程里记录的数据帧名（mData 为空时用它保存/提示）
+    QString mMissingDataFrameName;
 };
 }  // namespace DA
 
