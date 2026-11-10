@@ -421,10 +421,15 @@ bool DASignalAnalysisWorker::cancelTask(const QString& taskId)
 
 /**
  * @brief 取消全部在跑任务并清理结果表/未完成临时文件（C7）
+ *
+ * 收尾用 updateTimer() 而不是无条件 mTimer->stop()：canceled 是直连信号，
+ * 界面槽可能在回调里同步发起新任务（切工程/finalize 前后都有清理后重算的路径），
+ * 若在遍历结束后强制停表，新任务会永远不被轮询、进度与结果都回不来（D2 幂等性复核）。
  */
 void DASignalAnalysisWorker::cancelAll()
 {
     if (mTasks.isEmpty()) {
+        updateTimer();
         return;
     }
     const QList< QString > ids = mTasks.keys();
@@ -442,7 +447,7 @@ void DASignalAnalysisWorker::cancelAll()
         }
         Q_EMIT canceled(id);
     }
-    mTimer->stop();
+    updateTimer();
 }
 
 /**
@@ -481,8 +486,24 @@ void DASignalAnalysisWorker::poll()
     try {
         statusMgr = statusModule();
     } catch (const std::exception& e) {
+        // 状态模块不可用：先按 kind 尽力取消 Python 任务并丢弃结果表，避免守护线程
+        // 继续跑、大数组滞留在结果表（D2 幂等性复核），再清空任务表。
+        const QList< QString > ids = mTasks.keys();
+        for (const QString& id : ids) {
+            auto it = mTasks.find(id);
+            if (it == mTasks.end()) {
+                continue;
+            }
+            const TaskEntry entry = it.value();
+            cancelPythonTask(entry.kind, entry.id);
+            discardPythonResult(entry.kind, entry.id);
+            if (entry.kind == PlaybackWavTask && !entry.wavPath.isEmpty()) {
+                QFile::remove(entry.wavPath);
+            }
+            Q_EMIT canceled(id);
+        }
         mTasks.clear();
-        mTimer->stop();
+        updateTimer();
         qWarning() << "DASignalAnalysisWorker::poll:" << e.what();
         Q_EMIT failed(tr("Failed to query background tasks."));  // cn:查询后台任务失败。
         return;
