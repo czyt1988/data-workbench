@@ -233,5 +233,10 @@ cat test_result.txt
    注意：WebEngine/Qml 是 `DAGui.dll` 的传递依赖而非主程序的直接依赖，手工运行
    windeployqt 时必须把 `DAGui.dll` 一并传入，否则会漏掉整条依赖链。
    新增 Qt 模块后（例如信号分析插件的 `Multimedia`）必须重新执行 `cmake --install`：
-   安装期会用 `REQUIRED_QT_MODULES` 校验关键 Qt DLL，缺失会直接安装失败而不是静默打包。
+   安装期会用 `REQUIRED_QT_MODULES` 校验关键 Qt DLL（含 `mediaservice/` 后端目录非空），
+   缺失会直接安装失败而不是静默打包。
    构建目录（`build/bin`）由插件 CMake 的 POST_BUILD `windeployqt` 自行补齐插件私有的 Qt 模块。
+7. **发布包 Python 依赖**：发布包内置的 Python 运行时依赖按 `requirements-runtime.txt` 安装
+   （与开发用 `requirements.txt` 分开，差异见该文件头注释）。其中 `soundfile` 缺失时音频导入走降级路径：
+   WAV 由 `scipy.io.wavfile` 兜底，AIFF/FLAC/OGG 走 FFmpeg 转码；`scripts/verify_package.ps1`
+   会在打包自检时对 `site-packages` 里的 `soundfile` 与 `libsndfile*.dll` 给出告警（不判失败）。

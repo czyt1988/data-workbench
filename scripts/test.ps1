@@ -160,6 +160,23 @@ function Get-SuitesForFile {
     return New-SuiteResult -Kind 'unmapped'
 }
 
+# 改动文件 → 额外构建目标。
+# 有些源码不参与任何测试目标编译（典型：信号分析插件的 UI/Page/Dialogs/Playback 源码只被
+# 插件 DLL 目标编译，而 DASignalAnalysisTest 只直接编译 4 个 cpp），只构建测试目标会漏掉
+# 这些文件的编译错误。这里给出"改动即需先构建"的额外目标映射（评审 N-D2）。
+# 返回字符串数组（PowerShell 会把单元素数组 unroll，调用方用 @() 包住）。
+function Get-ExtraBuildTargetsForFile {
+    param([string]$Path)
+
+    $p = $Path -replace '\\', '/'
+    $targets = New-Object System.Collections.Generic.List[string]
+
+    if ($p -match '^plugins/DASignalAnalysis/') {
+        $targets.Add('DASignalAnalysis')
+    }
+    return $targets.ToArray()
+}
+
 # 调用 git 并返回 @{ Ok = <bool>; Lines = <string[]> }。
 # 用对象而不是裸数组返回：PowerShell 会把空数组 unroll 成 $null，调用方无法区分
 # "命令失败" 和 "命令成功但没有输出"（-Changed 的基线探测正需要这个区分）。
@@ -260,6 +277,7 @@ if ($Changed -and $Suite) {
 }
 
 $selectedSuites = New-Object System.Collections.Generic.List[string]
+$extraBuildTargets = New-Object System.Collections.Generic.List[string]
 $reason = ''
 
 # --- CHANGED ---
@@ -277,6 +295,10 @@ if ($Changed) {
         $uncovered = @()
         foreach ($f in $changedFiles) {
             $res = Get-SuitesForFile -Path $f
+            # 额外构建目标与套件选择独立：即使该文件所在模块没有测试覆盖，也要保证它被编译
+            foreach ($t in @(Get-ExtraBuildTargetsForFile -Path $f)) {
+                if (-not $extraBuildTargets.Contains($t)) { $extraBuildTargets.Add($t) }
+            }
             if ($res.Kind -eq 'unmapped') {
                 $unmapped += $f
                 continue
@@ -367,7 +389,19 @@ if (-not $NoBuild) {
     if (-not $cmakeCmd) {
         throw 'cmake 未找到：请加入 PATH'
     }
-    $buildArgs = @('--build', $BuildDir, '--config', $Config, '--target') + $selected
+    # 额外构建目标（如信号分析插件 DLL）先单独构建：既保证"插件 UI 源码先编译、再跑 data 套件"，
+    # 也避免与几十个测试目标混在同一次 MSBuild 调用里（多目标并行 autogen 更容易偶发崩溃）
+    if ($extraBuildTargets.Count -gt 0) {
+        Write-Host ("[BUILD] 先构建额外目标（改动文件不参与测试目标编译）: {0}" -f ($extraBuildTargets -join ', ')) -ForegroundColor Cyan
+        $extraArgs = @('--build', $BuildDir, '--config', $Config, '--target') + @($extraBuildTargets)
+        & $cmakeCmd.Source @extraArgs
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "[ERROR] 额外构建目标失败（退出码 $LASTEXITCODE）" -ForegroundColor Red
+            exit $LASTEXITCODE
+        }
+    }
+    $buildTargets = @($selected)
+    $buildArgs = @('--build', $BuildDir, '--config', $Config, '--target') + $buildTargets
     & $cmakeCmd.Source @buildArgs
     if ($LASTEXITCODE -ne 0) {
         Write-Host "[ERROR] 构建失败（退出码 $LASTEXITCODE）" -ForegroundColor Red

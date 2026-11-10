@@ -1,4 +1,4 @@
-# ==============================================================================
+﻿# ==============================================================================
 # 发布包完整性校验
 #
 # 设计原则：**按实际导入表推导**，而不是手写"应该有这些文件"的清单。
@@ -67,6 +67,33 @@ $fixed = @(
 )
 foreach ($rel in $fixed) {
     if (-not (Test-Path (Join-Path $Stage $rel))) { Add-Missing $rel }
+}
+
+# ---------------------------------------------------------------------------
+# 2b. Python 运行时依赖（可降级项，缺失只告警不判失败）
+# ---------------------------------------------------------------------------
+# soundfile 是音频导入的首选解码器（requirements-runtime.txt 已列出）。缺失时
+# WAV 由 scipy.io.wavfile 兜底、AIFF/FLAC/OGG 走 FFmpeg 转码，属可降级路径，
+# 因此这里用 ::warning::（与现有非致命告警风格一致）而不是加入 $problems 判失败。
+# soundfile 依赖 libsndfile：新版 wheel 放在 _soundfile_data 子包，旧版放在 soundfile/ 同目录。
+$sitePackages = Join-Path $Stage 'python\Lib\site-packages'
+if (Test-Path $sitePackages) {
+    if (-not (Test-Path (Join-Path $sitePackages 'soundfile\__init__.py'))) {
+        Write-Host '::warning::发布包缺少 soundfile：音频导入将降级（WAV 走 scipy，AIFF/FLAC/OGG 需 FFmpeg）'
+    }
+    else {
+        Write-Host 'soundfile 包存在'
+    }
+    $libsndfile = @(Get-ChildItem $sitePackages -Recurse -File -Filter 'libsndfile*.dll' -ErrorAction SilentlyContinue)
+    if ($libsndfile.Count -lt 1) {
+        Write-Host '::warning::发布包缺少 libsndfile*.dll：soundfile 无法解码，音频导入将降级'
+    }
+    else {
+        Write-Host ("libsndfile 检查通过（{0}）" -f $libsndfile[0].Name)
+    }
+}
+else {
+    Write-Host "::warning::未找到 Python site-packages（$sitePackages），跳过 soundfile 运行时依赖检查"
 }
 
 foreach ($sub in 'plugins', 'translations') {

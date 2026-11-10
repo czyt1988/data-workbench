@@ -276,6 +276,18 @@ function(dafun_install_deploy_qt_runtime _target_name)
         list(APPEND _required_qt_dlls "Qt${QT_VERSION_MAJOR}${_qm}")
     endforeach()
 
+    # Multimedia 播放还依赖 mediaservice/ 下的后端插件（QMediaPlayer 运行时按平台从中加载），
+    # 只校验主 DLL 不够：后端目录为空时安装期同样判失败（评审 N-D1）。
+    set(_mediaservice_guard "")
+    list(FIND _arg_REQUIRED_QT_MODULES "Multimedia" _multimedia_idx)
+    if(NOT _multimedia_idx EQUAL -1)
+        string(APPEND _mediaservice_guard "
+    file(GLOB _mediaservice_dlls \"\${CMAKE_INSTALL_PREFIX}/bin/mediaservice/*.dll\")
+    if(NOT _mediaservice_dlls)
+        list(APPEND _qt_missing \"mediaservice/<backend>.dll（Qt Multimedia 播放依赖的后端目录为空或不存在）\")
+    endif()")
+    endif()
+
     cmake_policy(SET CMP0087 NEW)
     install(CODE "
     set(_wdq_scan_files ${_scan_files})${_glob_script}
@@ -317,7 +329,7 @@ function(dafun_install_deploy_qt_runtime _target_name)
         if(NOT EXISTS \"\${CMAKE_INSTALL_PREFIX}/bin/\${_qm}\${_qt_dll_suffix}.dll\")
             list(APPEND _qt_missing \"\${_qm}\${_qt_dll_suffix}.dll\")
         endif()
-    endforeach()
+    endforeach()${_mediaservice_guard}
     if(_qt_missing)
         string(JOIN \", \" _qt_missing_txt \${_qt_missing})
         message(FATAL_ERROR \"Qt runtime deployment incomplete, missing in install dir: \${_qt_missing_txt}\")

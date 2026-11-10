@@ -102,7 +102,18 @@ if(WIN32)
                         "$<TARGET_FILE:DASignalAnalysis>"
                 COMMENT "Deploying Qt runtime DLLs required by DASignalAnalysis (Multimedia)"
             )
+        else()
+            # 找不到 windeployqt 时不能静默跳过：缺 Qt5Multimedia.dll/mediaservice 后端的
+            # build/bin 运行时表现为无声/播放失败（评审 D1）
+            message(WARNING
+                "windeployqt not found in ${_signal_qt_bin_dir}; Qt Multimedia runtime for DASignalAnalysis "
+                "will NOT be deployed to build/bin. Playback may fail with a missing QtMultimedia DLL. "
+                "Install-stage deployment (dafun_install_deploy_qt_runtime) still validates the installed package.")
         endif()
+    else()
+        message(WARNING
+            "Qt qmake IMPORTED_LOCATION is unavailable; cannot locate windeployqt to deploy the Qt Multimedia "
+            "runtime required by DASignalAnalysis playback.")
     endif()
 endif()
 
