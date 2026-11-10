@@ -40,13 +40,28 @@ function Add-Missing {
 # ---------------------------------------------------------------------------
 # 1. dumpbin
 # ---------------------------------------------------------------------------
+# 通过 vswhere 定位任意版本的 VS（本机 CI 与本机既可能是 2019 也可能是 2022），
+# 不再写死 ProgramFiles\...\2022\* —— 写死会在 VS2019 环境直接误判「找不到 dumpbin」。
 $dumpbin = $null
 $cmd = Get-Command dumpbin.exe -ErrorAction SilentlyContinue
 if ($cmd) {
     $dumpbin = $cmd.Source
 } else {
-    $fi = Get-ChildItem "${env:ProgramFiles}\Microsoft Visual Studio\2022\*\VC\Tools\MSVC\*\bin\Hostx64\x64\dumpbin.exe" -ErrorAction SilentlyContinue |
-        Select-Object -First 1
+    $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe'
+    if (Test-Path $vswhere) {
+        $vsPath = & $vswhere -latest -products * -property installationPath 2>$null
+        if ($vsPath) {
+            $fi = Get-ChildItem (Join-Path $vsPath 'VC\Tools\MSVC\*\bin\Hostx64\x64\dumpbin.exe') -ErrorAction SilentlyContinue |
+                Sort-Object FullName | Select-Object -Last 1
+            if ($fi) { $dumpbin = $fi.FullName }
+        }
+    }
+}
+if (-not $dumpbin) {
+    $fi = @(
+        Get-ChildItem "${env:ProgramFiles}\Microsoft Visual Studio\2022\*\VC\Tools\MSVC\*\bin\Hostx64\x64\dumpbin.exe" -ErrorAction SilentlyContinue
+        Get-ChildItem "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\*\VC\Tools\MSVC\*\bin\Hostx64\x64\dumpbin.exe" -ErrorAction SilentlyContinue
+    ) | Sort-Object FullName | Select-Object -Last 1
     if ($fi) { $dumpbin = $fi.FullName }
 }
 if (-not $dumpbin) {
@@ -70,30 +85,53 @@ foreach ($rel in $fixed) {
 }
 
 # ---------------------------------------------------------------------------
-# 2b. Python 运行时依赖（可降级项，缺失只告警不判失败）
+# 2b. Python 运行时依赖（Q4①：soundfile 为强制依赖，缺失即发布包不合格）
 # ---------------------------------------------------------------------------
-# soundfile 是音频导入的首选解码器（requirements-runtime.txt 已列出）。缺失时
-# WAV 由 scipy.io.wavfile 兜底、AIFF/FLAC/OGG 走 FFmpeg 转码，属可降级路径，
-# 因此这里用 ::warning::（与现有非致命告警风格一致）而不是加入 $problems 判失败。
-# soundfile 依赖 libsndfile：新版 wheel 放在 _soundfile_data 子包，旧版放在 soundfile/ 同目录。
+# soundfile 是音频导入的首选解码器（requirements-runtime.txt 已列出）。Q4 拍板①后
+# 它不再是「可降级项」：发布包缺 soundfile / libsndfile 时直接判失败，避免发出去的包
+# 在用户机器上才发现音频导入不可用（之前用 ::warning:: 只告警，等于没测）。
+# soundfile 依赖 libsndfile：新版 wheel 放在 _soundfile_data 子包，旧版放在 soundfile/ 同目录；
+# soundfile 0.12 及以前是单文件 soundfile.py，新版可能是包目录，两种布局都要认。
 $sitePackages = Join-Path $Stage 'python\Lib\site-packages'
-if (Test-Path $sitePackages) {
-    if (-not (Test-Path (Join-Path $sitePackages 'soundfile\__init__.py'))) {
-        Write-Host '::warning::发布包缺少 soundfile：音频导入将降级（WAV 走 scipy，AIFF/FLAC/OGG 需 FFmpeg）'
+if (-not (Test-Path $sitePackages)) {
+    Add-Missing 'python\Lib\site-packages（随包 Python 运行时缺失）'
+}
+else {
+    $soundfileFound = @(
+        (Join-Path $sitePackages 'soundfile.py'),
+        (Join-Path $sitePackages 'soundfile\__init__.py')
+    ) | Where-Object { Test-Path $_ } | Select-Object -First 1
+    if (-not $soundfileFound) {
+        Add-Missing 'soundfile（音频解码强制依赖缺失，requirements-runtime.txt 已列出；Q4①）'
     }
     else {
-        Write-Host 'soundfile 包存在'
+        Write-Host "soundfile 包存在: $soundfileFound"
     }
     $libsndfile = @(Get-ChildItem $sitePackages -Recurse -File -Filter 'libsndfile*.dll' -ErrorAction SilentlyContinue)
     if ($libsndfile.Count -lt 1) {
-        Write-Host '::warning::发布包缺少 libsndfile*.dll：soundfile 无法解码，音频导入将降级'
+        Add-Missing 'libsndfile*.dll（soundfile 的本地解码库缺失，音频导入不可用）'
     }
     else {
         Write-Host ("libsndfile 检查通过（{0}）" -f $libsndfile[0].Name)
     }
-}
-else {
-    Write-Host "::warning::未找到 Python site-packages（$sitePackages），跳过 soundfile 运行时依赖检查"
+    # 真导入冒烟：只查文件不够，DLL 架构/ABI 不匹配、_soundfile_data 缺失只有 import 才会暴露。
+    # 用 cmd /c 包裹，避免 $ErrorActionPreference='Stop' 把 python 的 stderr 当终止错误。
+    $py = Join-Path $Stage 'python\python.exe'
+    if (Test-Path $py) {
+        $probeOut = Join-Path $env:TEMP 'dawb-soundfile-probe.txt'
+        cmd /c "`"$py`" -c `"import soundfile, sys; fmts = soundfile.available_formats(); sys.exit(0 if fmts else 3)`" > `"$probeOut`" 2>&1"
+        $probeCode = $LASTEXITCODE
+        if ($probeCode -ne 0) {
+            $probeMsg = if (Test-Path $probeOut) { (Get-Content $probeOut -Raw).Trim() } else { '' }
+            Add-Missing ("soundfile 导入/解码能力自检失败（exit {0}）：{1}" -f $probeCode, $probeMsg)
+        }
+        else {
+            Write-Host 'soundfile 导入与 libsndfile 可用性自检通过'
+        }
+    }
+    else {
+        Write-Host "::warning::未找到 $py，跳过 soundfile 导入冒烟（无法确认随包 Python 能否解码音频）"
+    }
 }
 
 foreach ($sub in 'plugins', 'translations') {
@@ -163,10 +201,21 @@ if ($RunSmoke) {
     Write-Host ''
     Write-Host '--- 启动冒烟：DAWorkBench.exe --version ---'
     $exe = Join-Path $Stage 'DAWorkBench.exe'
-    $outFile = Join-Path $env:RUNNER_TEMP 'pkg-smoke.out'
-    $errFile = Join-Path $env:RUNNER_TEMP 'pkg-smoke.err'
-    $proc = Start-Process -FilePath $exe -ArgumentList '--version' -WorkingDirectory $Stage -PassThru `
-        -NoNewWindow -RedirectStandardOutput $outFile -RedirectStandardError $errFile
+    # 用 .NET Process 直接重定向：PowerShell 5.1 的 Start-Process -PassThru + RedirectStandardOutput
+    # 对 GUI 子系统程序会拿不到 ExitCode（本机实测为 $null，导致「退出码非 0（）」误报），
+    # .NET 路径在 PS5.1/PS7 上都能稳定拿到退出码与输出。
+    $psi = New-Object System.Diagnostics.ProcessStartInfo
+    $psi.FileName = $exe
+    $psi.Arguments = '--version'
+    $psi.WorkingDirectory = $Stage
+    $psi.UseShellExecute = $false
+    $psi.RedirectStandardOutput = $true
+    $psi.RedirectStandardError = $true
+    $proc = New-Object System.Diagnostics.Process
+    $proc.StartInfo = $psi
+    [void]$proc.Start()
+    $stdoutTask = $proc.StandardOutput.ReadToEndAsync()
+    $stderrTask = $proc.StandardError.ReadToEndAsync()
 
     if (-not $proc.WaitForExit(90000)) {
         $proc.Kill()
@@ -174,18 +223,19 @@ if ($RunSmoke) {
         exit 1
     }
 
-    $stdout = if (Test-Path $outFile) { Get-Content $outFile -Raw } else { '' }
-    $stderr = if (Test-Path $errFile) { Get-Content $errFile -Raw } else { '' }
-    Write-Host "exit=$($proc.ExitCode)"
+    $exitCode = $proc.ExitCode
+    $stdout = $stdoutTask.Result
+    $stderr = $stderrTask.Result
+    Write-Host "exit=$exitCode"
     if ($stdout) { Write-Host $stdout.Trim() }
     if ($stderr) { Write-Host $stderr.Trim() }
 
-    if ($proc.ExitCode -eq -1073741515) {
+    if ($exitCode -eq -1073741515) {
         Write-Host '::error::启动失败：STATUS_DLL_NOT_FOUND（导入表校验没覆盖到的动态加载）'
         exit 1
     }
-    if ($proc.ExitCode -ne 0) {
-        Write-Host "::warning::--version 退出码非 0（$($proc.ExitCode)），请人工确认"
+    if ($exitCode -ne 0) {
+        Write-Host "::warning::--version 退出码非 0（$exitCode），请人工确认"
     } else {
         Write-Host '启动冒烟通过'
     }
