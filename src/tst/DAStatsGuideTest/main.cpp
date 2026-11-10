@@ -3,7 +3,11 @@
 #include <QComboBox>
 #include <QCoreApplication>
 #include <QDir>
+#include <QDomDocument>
 #include <QFileInfo>
+#include <QImage>
+#include <QRect>
+#include <QSet>
 #include <QTranslator>
 #include <QVariantMap>
 #include <cmath>
@@ -14,6 +18,8 @@
 #include <windows.h>
 #endif
 
+#include "Archive/DAXmlHelper.h"
+#include "Chart/AddItem/DAChartAddItemWidgetFactory.h"
 #include "Chart/AddItem/DAChartAddStatsBarplotWidget.h"
 #include "DAChartWidget.h"
 #include "DAFigureWidget.h"
@@ -30,7 +36,12 @@
 #include <QAction>
 #include <QMenu>
 #include <pybind11/eval.h>
+#include "qwt_colormap.h"
+#include "qwt_interval.h"
+#include "qwt_plot.h"
 #include "qwt_plot_item.h"
+#include "qwt_plot_spectrogram.h"
+#include "qwt_scale_widget.h"
 
 namespace
 {
@@ -72,6 +83,32 @@ QVector< double > dictDoubleList(const pybind11::dict& d, const char* key)
     return res;
 }
 
+/// 统计画布中心区域的颜色数（排除坐标轴/边距；全空白时只有背景一种颜色）
+int countCanvasColors(DA::DAChartWidget& chart)
+{
+    chart.replot();
+    const QPixmap pm = chart.grab();
+    if (pm.isNull()) {
+        return 0;
+    }
+    const QImage img = pm.toImage();
+    if (img.isNull() || !chart.canvas()) {
+        return 0;
+    }
+    const QRect canvasRect = chart.canvas()->geometry();
+    const QRect sample     = canvasRect.adjusted(8, 8, -8, -8).intersected(QRect(QPoint(0, 0), img.size()));
+    if (sample.isEmpty()) {
+        return 0;
+    }
+    QSet< QRgb > colors;
+    for (int y = sample.top(); y <= sample.bottom(); ++y) {
+        for (int x = sample.left(); x <= sample.right(); ++x) {
+            colors.insert(img.pixel(x, y));
+        }
+    }
+    return colors.size();
+}
+
 }  // namespace
 
 /**
@@ -98,8 +135,13 @@ private Q_SLOTS:
     void testToPythonParamsKeyWhitelist();
     // isValid()/errorString()：空列、空 data、空 figure 各一例（错误消息非空）
     void testIsValidErrorString();
-    // heatmap 死链修复回归：indexColumn/columnsColumn/valueColumn → 渲染出谱图图元
+    // heatmap 死链修复回归：indexColumn/columnsColumn/valueColumn → 渲染出谱图图元，
+    // 并做端到端像素断言（Z 区间有效 + 画布非空，而不只是数图元个数）
     void testHeatmapRendersSpectrogram();
+    // N-H1：QwtScaleWidget 色标条区间/色带的 XML 工程往返（旧工程无 <colorBar> 节点保持不绘制）
+    void testScaleWidgetXmlColorBarRoundTrip();
+    // N-H5：Waterfall3D 在工厂登记元数据（is3DType 返回 true）但不进入添加向导列表
+    void testChartAddFactoryWaterfall3D();
     // compute_describe：多列描述统计 + 箱线图五数概括（统计窗口的数据源）
     void testComputeDescribe();
     // compute_pareto：分箱降序 + 分布率 + 累计分布（统计窗口帕累托图的数据源）
@@ -457,12 +499,31 @@ _da_stats_heatmap_df = pd.DataFrame({
     QVERIFY2(coordinator.execute(req), "heatmap execute failed");
 
     int spectrogramCount = 0;
+    QwtPlotSpectrogram* spectro = nullptr;
     for (QwtPlotItem* item : chart.itemList()) {
         if (item && item->rtti() == QwtPlotItem::Rtti_PlotSpectrogram) {
             ++spectrogramCount;
+            spectro = static_cast< QwtPlotSpectrogram* >(item);
         }
     }
     QCOMPARE(spectrogramCount, 1);  // 修复前：plotHeatmap 开头即 return，渲染不出任何图元
+    QVERIFY(spectro);
+    QVERIFY(spectro->data());
+
+    // 端到端像素断言（H7）：Z 区间必须由 Python 返回的 vmin/vmax 推导且有效，
+    // 否则 QwtPlotSpectrogram::renderImage 返回空图 —— 只数图元个数测不出这种回归。
+    const QwtInterval z = spectro->data()->interval(Qt::ZAxis);
+    QVERIFY2(z.isValid(), "heatmap Z interval must be valid");
+    QCOMPARE(z.minValue(), 1.0);  // 矩阵值 1..4（每格单样本的 mean）
+    QCOMPARE(z.maxValue(), 4.0);
+
+    chart.resize(480, 360);
+    chart.show();
+    QTest::qWait(20);
+    const int colors = countCanvasColors(chart);
+    // 2x2 矩阵 → 4 个色块；空白（Z 区间无效/渲染失败）时画布只有背景色 1 种。
+    // 断言 >=3 表示确实按色图着色（不是整片空白），同时不依赖具体色图预设。
+    QVERIFY2(colors >= 3, qPrintable(QStringLiteral("heatmap canvas colors = %1 (blank?)").arg(colors)));
 }
 
 /**
@@ -777,6 +838,111 @@ void DAStatsGuideTest::testStatsWidgetCommands()
     widget.setPlotType(PlotType::Boxplot);
     QCOMPARE(widget.plotType(), PlotType::Boxplot);
     QVERIFY(!widget.command(Command::ParetoRate)->isEnabled());
+}
+
+/**
+ * @brief N-H1：QwtScaleWidget 色标条区间/色带的 XML 工程往返
+ *
+ * 工程持久化走 charts.xml（DAXmlHelper），H1 只修了二进制路径；此用例锁住 XML 侧：
+ * - 有有效区间时落盘 <colorBar min/max><colorMap .../></colorBar>，重开工程后
+ *   colorBarInterval() 有效、色带恢复（否则 qwt 的 drawColorBar 以 interval 有效为前提，色标条不画）；
+ * - 旧工程（没有 <colorBar> 子节点）保持默认无效区间，即原行为（不绘制），不会因缺字段抛异常；
+ * - 未知的更高格式版本（ver 过大）按不识别处理，避免用错规则解析坏数据。
+ */
+void DAStatsGuideTest::testScaleWidgetXmlColorBarRoundTrip()
+{
+    DA::DAChartWidget chart;
+    QwtScaleWidget* sw = chart.axisWidget(QwtAxis::YLeft);
+    QVERIFY(sw);
+    sw->setColorBarEnabled(true);
+    sw->setColorBarWidth(20);
+    auto* cmap = new QwtLinearColorMap(QColor(0, 0, 255), QColor(255, 0, 0));
+    cmap->addColorStop(0.5, QColor(0, 255, 0));
+    cmap->setMode(QwtLinearColorMap::FixedColors);
+    sw->setColorMap(QwtInterval(1.25, 8.75), cmap);
+
+    QDomDocument doc;
+    const QDomElement axisEle =
+        DA::DAXmlHelper::makeQwtPlotAxisElement(&chart, QwtAxis::YLeft, QStringLiteral("axis"), &doc);
+    QVERIFY(!axisEle.isNull());
+    const QDomElement scaleEle = axisEle.firstChildElement(QStringLiteral("scaleWidget"));
+    QVERIFY2(!scaleEle.isNull(), "scaleWidget node missing in chart XML");
+    const QDomElement colorBarEle = scaleEle.firstChildElement(QStringLiteral("colorBar"));
+    QVERIFY2(!colorBarEle.isNull(), "colorBar node must be persisted (N-H1: project XML lost color bar)");
+    QCOMPARE(colorBarEle.attribute(QStringLiteral("min")).toDouble(), 1.25);
+    QCOMPARE(colorBarEle.attribute(QStringLiteral("max")).toDouble(), 8.75);
+
+    DA::DAChartWidget restored;
+    QVERIFY(DA::DAXmlHelper::loadQwtPlotAxisElement(&restored, &axisEle, DA::DAXmlHelper::getCurrentVersionNumber()));
+    QwtScaleWidget* restoredWidget = restored.axisWidget(QwtAxis::YLeft);
+    QVERIFY(restoredWidget);
+    QCOMPARE(restoredWidget->isColorBarEnabled(), true);
+    QCOMPARE(restoredWidget->colorBarWidth(), 20);
+    const QwtInterval restoredInterval = restoredWidget->colorBarInterval();
+    QVERIFY2(restoredInterval.isValid(), "color bar interval must be restored from project XML");
+    QCOMPARE(restoredInterval.minValue(), 1.25);
+    QCOMPARE(restoredInterval.maxValue(), 8.75);
+    auto* restoredCmap = dynamic_cast< const QwtLinearColorMap* >(restoredWidget->colorMap());
+    QVERIFY2(restoredCmap, "color map must be restored from project XML");
+    QCOMPARE(static_cast< int >(restoredCmap->mode()), static_cast< int >(QwtLinearColorMap::FixedColors));
+    QVERIFY(restoredCmap->stopColors().size() >= 3);
+
+    // 旧工程兼容：去掉 <colorBar> 子节点（等价于老版本保存的文件）→ 不恢复，保持不绘制
+    QDomElement legacyAxis     = axisEle.cloneNode(true).toElement();
+    QDomElement legacyScaleEle = legacyAxis.firstChildElement(QStringLiteral("scaleWidget"));
+    QVERIFY(!legacyScaleEle.isNull());
+    legacyScaleEle.removeChild(legacyScaleEle.firstChildElement(QStringLiteral("colorBar")));
+    QVERIFY2(legacyScaleEle.firstChildElement(QStringLiteral("colorBar")).isNull(), "colorBar node not removed");
+    DA::DAChartWidget legacyLoaded;
+    QVERIFY(DA::DAXmlHelper::loadQwtPlotAxisElement(&legacyLoaded, &legacyAxis));
+    QVERIFY2(!legacyLoaded.axisWidget(QwtAxis::YLeft)->colorBarInterval().isValid(),
+             "legacy project without <colorBar> must keep color bar unconfigured (no drawing)");
+
+    // 未知的更高格式版本：忽略该节点（保持不绘制），不得按旧规则误解析
+    QDomElement futureAxis = axisEle.cloneNode(true).toElement();
+    futureAxis.firstChildElement(QStringLiteral("scaleWidget"))
+        .firstChildElement(QStringLiteral("colorBar"))
+        .setAttribute(QStringLiteral("ver"), 99);
+    DA::DAChartWidget futureLoaded;
+    QVERIFY(DA::DAXmlHelper::loadQwtPlotAxisElement(&futureLoaded, &futureAxis));
+    QVERIFY(!futureLoaded.axisWidget(QwtAxis::YLeft)->colorBarInterval().isValid());
+}
+
+/**
+ * @brief N-H5：Waterfall3D 在图表添加工厂中的登记口径
+ *
+ * 三维瀑布由信号分析页通过 DAChart3DWidget::addWaterfall 创建，添加向导不提供页面。
+ * 修复后它在工厂登记类型元数据：descriptor() 可查到、is3DType() 返回 true（按类型分派不会误判），
+ * 但没有 creator，因此不出现在 allDescriptors()/descriptors(Surface3D) 的向导列表中。
+ */
+void DAStatsGuideTest::testChartAddFactoryWaterfall3D()
+{
+    using DA::DAChartTypes;
+    auto& factory = DA::DAChartAddItemWidgetFactory::instance();
+
+    const auto* desc = factory.descriptor(DAChartTypes::Waterfall3D);
+    QVERIFY2(desc, "Waterfall3D must be registered in the add-item factory (N-H5)");
+    QVERIFY(desc->family == DA::DAChartAddWidgetFamily::Surface3D);
+    QVERIFY2(!desc->creator, "Waterfall3D must not expose a wizard creation page");
+
+    QVERIFY2(factory.isRegistered(DAChartTypes::Waterfall3D), "Waterfall3D must be reported as registered");
+    QVERIFY2(DA::DAChartAddItemWidgetFactory::is3DType(DAChartTypes::Waterfall3D),
+             "Waterfall3D must be recognized as a 3D type");
+
+    // 向导列表（allDescriptors / 按家族取）必须跳过这条无页面的元数据
+    const auto all = factory.allDescriptors();
+    for (const auto& d : all) {
+        QVERIFY2(d.type != DAChartTypes::Waterfall3D, "Waterfall3D must not appear in the chart guide list");
+    }
+    const auto surface3d = factory.descriptors(DA::DAChartAddWidgetFamily::Surface3D);
+    QVERIFY(!surface3d.isEmpty());
+    for (const auto& d : surface3d) {
+        QVERIFY2(d.type != DAChartTypes::Waterfall3D, "Waterfall3D must not appear in the 3D guide list");
+    }
+
+    // 既有三维类型不受影响（回归）
+    QVERIFY(DA::DAChartAddItemWidgetFactory::is3DType(DAChartTypes::Surface3D));
+    QVERIFY(!DA::DAChartAddItemWidgetFactory::is3DType(DAChartTypes::Curve));
 }
 
 /**

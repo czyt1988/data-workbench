@@ -514,12 +514,12 @@ QwtPlotItem* DAChartPlotRenderer::renderSpectrogram(const DA::DASpectrogramData&
         values[i] = data.values[i];
     }
 
-    // Z 轴（色标）区间优先级：style["vmin"]/["vmax"] > data.zmin/zmax > 有效数据最小/最大值。
+    // Z 轴（色标）区间优先级：style["vmin"]/["vmax"] > 有效数据最小/最大值。
     // 注意：QwtMatrixRasterData::update() 只计算行列步长，不会推导 Z 区间；Z 区间无效时
     // QwtPlotSpectrogram::renderImage 直接返回空图（统计热图/二维核密度图会整片空白），
     // 因此这里必须无条件给出一个有效区间。
-    double zmin = defaultDouble(style, "vmin", data.zmin);
-    double zmax = defaultDouble(style, "vmax", data.zmax);
+    double zmin = defaultDouble(style, "vmin", std::numeric_limits< double >::quiet_NaN());
+    double zmax = defaultDouble(style, "vmax", std::numeric_limits< double >::quiet_NaN());
     if (!std::isfinite(zmin) || !std::isfinite(zmax) || !(zmin < zmax)) {
         double dataMin = std::numeric_limits< double >::infinity();
         double dataMax = -std::numeric_limits< double >::infinity();
@@ -529,13 +529,20 @@ QwtPlotItem* DAChartPlotRenderer::renderSpectrogram(const DA::DASpectrogramData&
                 dataMax = qMax(dataMax, v);
             }
         }
-        if (std::isfinite(dataMin) && std::isfinite(dataMax) && dataMin < dataMax) {
-            zmin = dataMin;
-            zmax = dataMax;
+        if (std::isfinite(dataMin) && std::isfinite(dataMax)) {
+            if (dataMin < dataMax) {
+                zmin = dataMin;
+                zmax = dataMax;
+            } else {
+                // 常量矩阵：以常量值 v 为中心给 [v-0.5, v+0.5]，
+                // 而非与数据量纲脱节的固定 0..1（否则色标标签与数据对不上）
+                zmin = dataMin - 0.5;
+                zmax = dataMax + 0.5;
+            }
         }
     }
     if (!std::isfinite(zmin) || !std::isfinite(zmax) || !(zmin < zmax)) {
-        // 常量矩阵/全 NaN：给一个零宽区间之外的兜底区间，避免空图
+        // 全 NaN 矩阵：没有任何有效值可参照，退回 0..1 只为避免空图
         zmin = 0.0;
         zmax = 1.0;
     }

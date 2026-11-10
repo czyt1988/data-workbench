@@ -38,7 +38,7 @@ struct DAChartAddItemWidgetDescriptor
     const char* textContext { nullptr };  ///< 翻译上下文
     const char* textSource { nullptr };   ///< 未翻译源串（QT_TRANSLATE_NOOP 标记）
     const char* iconFile { nullptr };     ///< 图标文件名（位于 :/DAGui/ChartType/icon/chart-type/）
-    std::function< DAAbstractChartAddWidgetBase*() > creator;  ///< 页面创建函数
+    std::function< DAAbstractChartAddWidgetBase*() > creator;  ///< 页面创建函数（为空时仅登记类型元数据，不进入添加向导）
     std::function< void(QwtPlotItem*) > initPlotItem;         ///< 可选的 item 后置修饰
     // 可选：与其它类型共用同一个页面（如散点图复用曲线页面）。
     // 未设置时每个类型各自一个页面。
@@ -76,11 +76,11 @@ public:
     bool isRegistered(DA::DAChartTypes type) const;
     // 查找描述，未注册返回 nullptr
     const DAChartAddItemWidgetDescriptor* descriptor(DA::DAChartTypes type) const;
-    // 按注册顺序返回某一家族的全部描述
+    // 按注册顺序返回某一家族的全部描述（跳过 creator 为空的元数据条目）
     QList< DAChartAddItemWidgetDescriptor > descriptors(DAChartAddWidgetFamily family) const;
-    // 按注册顺序返回全部描述
+    // 按注册顺序返回全部描述（跳过 creator 为空的元数据条目）
     QList< DAChartAddItemWidgetDescriptor > allDescriptors() const;
-    // 是否为三维图表类型
+    // 是否为三维图表类型（含只在元数据中登记的 Waterfall3D）
     static bool is3DType(DA::DAChartTypes type);
 
 private:

@@ -201,6 +201,16 @@ void DAChartAddItemWidgetFactory::registerBuiltinTypes()
                    "chart-line3d.svg",
                    widgetCreator< DAChartAdd3DLineWidget >(),
                    {} });
+    // 三维瀑布：只有信号分析页通过 DAChart3DWidget::addWaterfall 创建，添加向导不提供创建入口。
+    // 这里登记类型元数据（family=Surface3D，使 is3DType(Waterfall3D) 返回 true）；
+    // creator 为空，descriptors()/allDescriptors() 会跳过它，因此不会出现在向导列表中。
+    registerType({ DAChartTypes::Waterfall3D,
+                   DAChartAddWidgetFamily::Surface3D,
+                   nullptr,
+                   nullptr,
+                   nullptr,
+                   nullptr,
+                   {} });
     // === 统计 ===
     registerType({ DAChartTypes::StatsHistplot,
                    DAChartAddWidgetFamily::Stats,
@@ -306,12 +316,15 @@ const DAChartAddItemWidgetDescriptor* DAChartAddItemWidgetFactory::descriptor(DA
 
 /**
  * @brief 按注册顺序返回某一家族的全部描述
+ *
+ * 仅返回可创建向导页面的描述：creator 为空的条目只登记类型元数据
+ * （如由业务页创建的 Waterfall3D），不参与添加向导列表。
  */
 QList< DAChartAddItemWidgetDescriptor > DAChartAddItemWidgetFactory::descriptors(DAChartAddWidgetFamily family) const
 {
     QList< DAChartAddItemWidgetDescriptor > res;
     for (const DAChartAddItemWidgetDescriptor& desc : std::as_const(mDescriptors)) {
-        if (desc.family == family) {
+        if (desc.family == family && desc.creator) {
             res.append(desc);
         }
     }
@@ -320,10 +333,20 @@ QList< DAChartAddItemWidgetDescriptor > DAChartAddItemWidgetFactory::descriptors
 
 /**
  * @brief 按注册顺序返回全部描述
+ *
+ * 仅返回可创建向导页面的描述：creator 为空的条目只登记类型元数据
+ * （如由业务页创建的 Waterfall3D），不参与添加向导列表；类型查询请用 descriptor()/isRegistered()。
  */
 QList< DAChartAddItemWidgetDescriptor > DAChartAddItemWidgetFactory::allDescriptors() const
 {
-    return mDescriptors;
+    QList< DAChartAddItemWidgetDescriptor > res;
+    res.reserve(mDescriptors.size());
+    for (const DAChartAddItemWidgetDescriptor& desc : std::as_const(mDescriptors)) {
+        if (desc.creator) {
+            res.append(desc);
+        }
+    }
+    return res;
 }
 
 /**

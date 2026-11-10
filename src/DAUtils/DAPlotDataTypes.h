@@ -41,6 +41,8 @@ struct DAIntervalCurveData {
 };
 
 // 2D光谱图数据（heatmap/kdeplot_2d用）
+// 色标（Z轴）区间不在此结构中携带：由 style 的 vmin/vmax 或有效数据范围推导，
+// 见 DAChartPlotRenderer::renderSpectrogram（避免声明了却无人赋值的死字段）
 struct DASpectrogramData {
     QVector<double> values;
     int nrows;
@@ -48,9 +50,6 @@ struct DASpectrogramData {
     double xmin, xmax, ymin, ymax;
     QStringList rowLabels;
     QStringList colLabels;
-    // 色标（Z轴）上下限；NaN 表示由数据自动确定
-    double zmin { std::numeric_limits< double >::quiet_NaN() };
-    double zmax { std::numeric_limits< double >::quiet_NaN() };
 };
 
 } // namespace DA

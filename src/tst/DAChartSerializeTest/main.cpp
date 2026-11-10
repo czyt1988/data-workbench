@@ -19,19 +19,25 @@
 #include <QVariantMap>
 #include <cstring>
 #include <limits>
+#include <memory>
 
+#include "DAChart3DSerialize.h"
 #include "DAChartPlotRenderer.h"
 #include "DAChartSerialize.h"
 #include "DAChartWidget.h"
 #include "DAPlotDataTypes.h"
 #include "qwt_colormap.h"
+#include "qwt_colormap_preset.h"
 #include "qwt_interval.h"
+#include "qwt_matrix_raster_data.h"
 #include "qwt_plot_item.h"
 #include "qwt_plot_spectrogram.h"
 #include "qwt_plot_zoneitem.h"
 #include "qwt_raster_data.h"
 #include "qwt_scale_widget.h"
+#include "qwt_text.h"
 #include "qwt_text_scale_draw.h"
+#include "qwt3d_waterfall.h"
 
 namespace
 {
@@ -77,26 +83,44 @@ int countCanvasColors(DA::DAChartWidget& chart)
     }
     return colors.size();
 }
+
+/// 以单元格中心坐标采样栅格数据（行主序：index = row * ncols + col）
+double rasterValueAtCell(const QwtRasterData* rd, int nrows, int ncols, int row, int col)
+{
+    const QwtInterval ix = rd->interval(Qt::XAxis);
+    const QwtInterval iy = rd->interval(Qt::YAxis);
+    const double x       = ix.minValue() + (col + 0.5) * ix.width() / ncols;
+    const double y       = iy.minValue() + (row + 0.5) * iy.width() / nrows;
+    return rd->value(x, y);
+}
 }  // namespace
 
 class DAChartSerializeTest : public QObject
 {
     Q_OBJECT
 private Q_SLOTS:
-    // 未给 zmin/zmax 时必须按有效数据推导 Z 区间（否则渲染空图）
+    // 未给 style vmin/vmax 时必须按有效数据推导 Z 区间（否则渲染空图）
     void testSpectrogramZIntervalFallsBackToDataRange();
     // style 的 vmin/vmax 优先于数据范围，真正压动态范围
     void testSpectrogramStyleVminVmaxOverride();
-    // 常量矩阵也要有有效 Z 区间（不能是零宽/无效区间）
+    // 常量矩阵兜底 Z 区间为 [v-0.5, v+0.5]（与数据量纲一致，不能是固定 0..1）
     void testSpectrogramConstantMatrixIntervalValid();
     // 渲染结果非空：修复前 renderImage 因 Z 区间无效直接返回空图
     void testSpectrogramRendersNonEmptyImage();
     // 同一数据、不同 vmin/vmax 的渲染像素必须不同（证明 vmin/vmax 生效）
     void testSpectrogramVminVmaxChangesPixels();
+    // H2：缺测单元必须以 NaN 填充（不是 0），渲染时该单元不着色
+    void testSpectrogramNaNFill();
+    // H7：谱图图元二进制往返（生产路径 DAChartItemSerialize：栅格数据 + Z 区间 + 色带）
+    void testSpectrogramItemBinaryRoundTrip();
+    // H7：三维瀑布图元二进制往返（生产路径 DAChart3DItemSerialize）
+    void testWaterfall3DItemBinaryRoundTrip();
     // v3 色标条块往返：启用状态/宽度/区间/色带停止点
     void testScaleWidgetRoundTripV3();
-    // v2 旧块：scaleDrawType 从 v2 起存在，必须能读回 QwtTextScaleDraw 与 labelMap
-    void testScaleWidgetReadsV2Stream();
+    // N-B4T：真实 v2 字节流（按 v2 布局手写、无色带段），读后必须正好消费完
+    void testScaleWidgetReadsRealV2Stream();
+    // N-B4T：v1 旧块（无 scaleDrawType、无色带段）兼容
+    void testScaleWidgetReadsV1Stream();
     // 区间高亮方向往返（水平区间重开后不能变垂直）
     void testZoneOrientationRoundTrip();
 };
@@ -141,6 +165,9 @@ void DAChartSerializeTest::testSpectrogramConstantMatrixIntervalValid()
     const QwtInterval z = static_cast< QwtPlotSpectrogram* >(item)->data()->interval(Qt::ZAxis);
     QVERIFY(z.isValid());
     QVERIFY(z.maxValue() > z.minValue());
+    // 常量矩阵 v=3：兜底区间必须是 [v-0.5, v+0.5]，而不是与量纲脱节的 0..1
+    QCOMPARE(z.minValue(), 2.5);
+    QCOMPARE(z.maxValue(), 3.5);
 }
 
 void DAChartSerializeTest::testSpectrogramRendersNonEmptyImage()
@@ -176,6 +203,108 @@ void DAChartSerializeTest::testSpectrogramVminVmaxChangesPixels()
     QVERIFY(!narrow.isNull() && !wide.isNull());
     QVERIFY(narrow.size() == wide.size());
     QVERIFY2(narrow != wide, "vmin/vmax must change the rendered colors");
+}
+
+void DAChartSerializeTest::testSpectrogramNaNFill()
+{
+    // 3x4 矩阵只给 10 个值：最后两个单元必须补 NaN，而不是 0（H2）
+    DA::DASpectrogramData data = makeSpectrogramData();
+    data.values.resize(10);
+    DA::DAChartWidget chart;
+    chart.resize(320, 240);
+    chart.show();
+    QTest::qWait(10);
+    DAChartPlotRenderer renderer(&chart);
+    QwtPlotItem* item = renderer.renderSpectrogram(data, QVariantMap());
+    QVERIFY(item);
+    const QwtRasterData* rd = static_cast< QwtPlotSpectrogram* >(item)->data();
+    QVERIFY(rd);
+    // 已提供单元保留原值（0..9）
+    QCOMPARE(rasterValueAtCell(rd, data.nrows, data.ncols, 0, 0), 0.0);
+    QCOMPARE(rasterValueAtCell(rd, data.nrows, data.ncols, 2, 1), 9.0);
+    // 缺测单元（index 10/11）为 NaN，渲染时不着色
+    QVERIFY2(std::isnan(rasterValueAtCell(rd, data.nrows, data.ncols, 2, 2)),
+             "missing cell (index 10) must be NaN, not 0");
+    QVERIFY2(std::isnan(rasterValueAtCell(rd, data.nrows, data.ncols, 2, 3)),
+             "missing cell (index 11) must be NaN, not 0");
+    // 有效单元仍可见（不是整片空白）
+    chart.replot();
+    const int colors = countCanvasColors(chart);
+    QVERIFY2(colors > 10, qPrintable(QStringLiteral("canvas colors = %1").arg(colors)));
+}
+
+void DAChartSerializeTest::testSpectrogramItemBinaryRoundTrip()
+{
+    // 生产路径（工程 zip 的 chart-data）序列化：spetrogram item 走 DAChartItemSerialize
+    DA::DAChartWidget chart;
+    DAChartPlotRenderer renderer(&chart);
+    QVariantMap style;
+    style[ QStringLiteral("vmin") ] = 1.5;
+    style[ QStringLiteral("vmax") ] = 9.5;
+    style[ QStringLiteral("cmap") ] = QStringLiteral("viridis");
+    style[ QStringLiteral("title") ] = QStringLiteral("spec-roundtrip");
+    QwtPlotItem* item             = renderer.renderSpectrogram(makeSpectrogramData(), style);
+    QVERIFY(item);
+
+    DA::DAChartItemSerialize serializer;
+    const QByteArray bytes = serializer.serializeOut(item);
+    QVERIFY(!bytes.isEmpty());
+    QCOMPARE(serializer.getRtti(bytes), static_cast< int >(QwtPlotItem::Rtti_PlotSpectrogram));
+
+    std::unique_ptr< QwtPlotItem > restored(serializer.serializeIn(bytes));
+    QVERIFY2(restored, "spectrogram item must be deserializable through the production path");
+    auto* spectro = dynamic_cast< QwtPlotSpectrogram* >(restored.get());
+    QVERIFY(spectro);
+    QVERIFY(spectro->data());
+    QCOMPARE(spectro->title().text(), QStringLiteral("spec-roundtrip"));
+    // X/Y 区间
+    const QwtInterval ix = spectro->data()->interval(Qt::XAxis);
+    const QwtInterval iy = spectro->data()->interval(Qt::YAxis);
+    QCOMPARE(ix.minValue(), 0.0);
+    QCOMPARE(ix.maxValue(), 3.0);
+    QCOMPARE(iy.minValue(), 0.0);
+    QCOMPARE(iy.maxValue(), 2.0);
+    // Z 区间（style vmin/vmax）
+    const QwtInterval z = spectro->data()->interval(Qt::ZAxis);
+    QCOMPARE(z.minValue(), 1.5);
+    QCOMPARE(z.maxValue(), 9.5);
+    // 栅格矩阵值本身
+    QCOMPARE(rasterValueAtCell(spectro->data(), 3, 4, 0, 0), 0.0);
+    QCOMPARE(rasterValueAtCell(spectro->data(), 3, 4, 2, 3), 11.0);
+    // 色带
+    auto* cmap = dynamic_cast< const QwtLinearColorMap* >(spectro->colorMap());
+    QVERIFY2(cmap, "spectrogram color map must survive the binary round trip");
+    QVERIFY(cmap->stopColors().size() >= 3);
+}
+
+void DAChartSerializeTest::testWaterfall3DItemBinaryRoundTrip()
+{
+    Qwt3DWaterfall src;
+    src.setTitle(QStringLiteral("wf-roundtrip"));
+    src.setTraceCapacity(5);
+    src.setPlotStyle(Qwt3DWaterfall::RibbonMesh);
+    src.setColorMode(Qwt3DWaterfall::ByAmplitude);
+    src.setDepthOrder(Qwt3DWaterfall::NewestBehind);
+    src.setBaseline(-1.25);
+    src.setBinValues(QVector< double >({ 0.0, 0.5, 1.0 }));
+
+    DA::DAChart3DItemSerialize serializer;
+    const QByteArray bytes = serializer.serializeOut(&src);
+    QVERIFY(!bytes.isEmpty());
+    QCOMPARE(serializer.getRtti(bytes), src.rtti());
+
+    std::unique_ptr< Qwt3DPlotItem > restored(serializer.serializeIn(bytes));
+    QVERIFY2(restored, "waterfall item must be deserializable through the production path");
+    auto* wf = dynamic_cast< Qwt3DWaterfall* >(restored.get());
+    QVERIFY(wf);
+    QCOMPARE(wf->rtti(), src.rtti());
+    QCOMPARE(wf->title(), QStringLiteral("wf-roundtrip"));
+    QCOMPARE(wf->traceCapacity(), 5);
+    QCOMPARE(static_cast< int >(wf->plotStyle()), static_cast< int >(Qwt3DWaterfall::RibbonMesh));
+    QCOMPARE(static_cast< int >(wf->colorMode()), static_cast< int >(Qwt3DWaterfall::ByAmplitude));
+    QCOMPARE(static_cast< int >(wf->depthOrder()), static_cast< int >(Qwt3DWaterfall::NewestBehind));
+    QCOMPARE(wf->baseline(), -1.25);
+    QCOMPARE(wf->binValues(), QVector< double >({ 0.0, 0.5, 1.0 }));
 }
 
 void DAChartSerializeTest::testScaleWidgetRoundTripV3()
@@ -220,42 +349,87 @@ void DAChartSerializeTest::testScaleWidgetRoundTripV3()
     QCOMPARE(readDraw->labelMap().value(8.75), QStringLiteral("high"));
 }
 
-void DAChartSerializeTest::testScaleWidgetReadsV2Stream()
+void DAChartSerializeTest::testScaleWidgetReadsRealV2Stream()
 {
-    // 先按 v3 写一遍，再把块版本改回 2：模拟存量 v2 工程（v2 有 scaleDrawType，但没有色带段）
-    QwtScaleWidget src;
-    auto* textDraw = new QwtTextScaleDraw();
-    QMap< double, QString > labelMap;
-    labelMap.insert(0.0, QStringLiteral("zero"));
-    labelMap.insert(1.0, QStringLiteral("one"));
-    textDraw->setLabelMap(labelMap);
-    src.setScaleDraw(textDraw);
-
+    // 按 v2 布局手写真实字节流：块版本=2（有 scaleDrawType，**没有** v3 的色带段）。
+    // 只改前 4 字节版本号的旧用例测不出"色带段闸门写错"：v3 色带字节仍留在流里。
     QByteArray bytes;
     {
         QDataStream out(&bytes, QIODevice::WriteOnly);
         out.setVersion(DA::gc_datastream_version);
-        out << static_cast< const QwtScaleWidget* >(&src);
+        out << 2 << DA::gc_dachart_magic_mark;
+        out << static_cast< unsigned int >(0x82fa34);
+        QwtText title;
+        title.setText(QStringLiteral("v2-title"));
+        out << title << false << 5 << 7 << 0 << 0 << 4 << 3 << true << 18
+            << static_cast< int >(QwtScaleDraw::LeftScale) << QwtInterval(2.0, 9.0);
+        // QwtScaleDraw：v2 起写子类类型标记
+        out << true << 1;
+        QwtTextScaleDraw srcDraw;
+        QMap< double, QString > labelMap;
+        labelMap.insert(0.0, QStringLiteral("zero"));
+        labelMap.insert(1.0, QStringLiteral("one"));
+        srcDraw.setLabelMap(labelMap);
+        out << static_cast< const QwtScaleDraw* >(&srcDraw);
+        // QwtTextScaleDraw 附加字段：labelMap + 显式 scaleDiv bounds
+        out << static_cast< quint32 >(2) << 0.0 << QStringLiteral("zero") << 1.0 << QStringLiteral("one") << 0.0 << 1.0;
+        // v2 到此结束：没有色带段
     }
-    QVERIFY(bytes.size() > 4);
-    // QDataStream 默认大端，块版本是写在前 4 个字节的 int
-    bytes[ 0 ] = 0x00;
-    bytes[ 1 ] = 0x00;
-    bytes[ 2 ] = 0x00;
-    bytes[ 3 ] = 0x02;
 
     QwtScaleWidget dst;
-    try {
+    {
         QDataStream in(&bytes, QIODevice::ReadOnly);
         in.setVersion(DA::gc_datastream_version);
         in >> static_cast< QwtScaleWidget* >(&dst);
-    } catch (const std::exception& e) {
-        QFAIL(qPrintable(QStringLiteral("v2 stream read threw: %1").arg(QString::fromUtf8(e.what()))));
+        // 若色带段闸门被错写成"无条件读"，这里会读越界 → 状态不再是 Ok
+        QVERIFY2(in.status() == QDataStream::Ok, "v2 stream must not be read past the end (color-map gate)");
+        QVERIFY2(in.atEnd(), "v2 stream must be consumed exactly (unexpected trailing bytes)");
     }
+    QCOMPARE(dst.isColorBarEnabled(), true);
+    QCOMPARE(dst.colorBarWidth(), 18);
     auto* readDraw = dynamic_cast< QwtTextScaleDraw* >(dst.scaleDraw());
-    QVERIFY2(readDraw, "v2 block must still restore QwtTextScaleDraw (scaleDrawType gate must be >= 2)");
+    QVERIFY2(readDraw, "v2 block must restore QwtTextScaleDraw (scaleDrawType gate must be >= 2)");
     QCOMPARE(readDraw->labelMap().value(0.0), QStringLiteral("zero"));
     QCOMPARE(readDraw->labelMap().value(1.0), QStringLiteral("one"));
+    // 旧 v2 文件本来就没有色带段，区间无法回填 → 保持不绘制（与旧行为一致，不视为回归）
+    QVERIFY(!dst.colorBarInterval().isValid());
+}
+
+void DAChartSerializeTest::testScaleWidgetReadsV1Stream()
+{
+    // v1 布局：无 scaleDrawType、无色带段；scaleDraw 直接写基类属性
+    QByteArray bytes;
+    {
+        QDataStream out(&bytes, QIODevice::WriteOnly);
+        out.setVersion(DA::gc_datastream_version);
+        out << 1 << DA::gc_dachart_magic_mark;
+        out << static_cast< unsigned int >(0x82fa34);
+        QwtText title;
+        title.setText(QStringLiteral("v1-title"));
+        out << title << false << 2 << 4 << 0 << 0 << 6 << 2 << false << 12
+            << static_cast< int >(QwtScaleDraw::BottomScale) << QwtInterval();
+        out << true;  // isSD
+        QwtScaleDraw plainDraw;
+        plainDraw.setLabelRotation(30.0);
+        out << static_cast< const QwtScaleDraw* >(&plainDraw);
+        // v1 到此结束
+    }
+
+    QwtScaleWidget dst;
+    {
+        QDataStream in(&bytes, QIODevice::ReadOnly);
+        in.setVersion(DA::gc_datastream_version);
+        in >> static_cast< QwtScaleWidget* >(&dst);
+        QVERIFY2(in.status() == QDataStream::Ok, "v1 stream must not be read past the end");
+        QVERIFY2(in.atEnd(), "v1 stream must be consumed exactly (unexpected trailing bytes)");
+    }
+    QCOMPARE(dst.isColorBarEnabled(), false);
+    QCOMPARE(dst.colorBarWidth(), 12);
+    QVERIFY2(dst.scaleDraw() != nullptr, "v1 block must keep/restore a QwtScaleDraw");
+    QVERIFY2(dynamic_cast< QwtTextScaleDraw* >(dst.scaleDraw()) == nullptr,
+             "v1 block has no scaleDrawType, must not turn into QwtTextScaleDraw");
+    QCOMPARE(dst.scaleDraw()->labelRotation(), 30.0);
+    QVERIFY(!dst.colorBarInterval().isValid());
 }
 
 void DAChartSerializeTest::testZoneOrientationRoundTrip()

@@ -20,6 +20,7 @@ da_add_test(
         DAWorkbench::DAFigure
         DAWorkbench::DAUtils
         qwt::plot
+        qwt::plot3d
     INCLUDE_PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}/../../DAFigure
         ${CMAKE_CURRENT_LIST_DIR}/../../DAUtils

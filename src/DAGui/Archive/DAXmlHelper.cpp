@@ -36,6 +36,7 @@
 #include "Workflow/DAPyWorkFlowOperateWidget.h"
 #include "Workflow/DAPyWorkFlowEditWidget.h"
 #include "DAQtContainerUtil.hpp"
+#include "da_qt5qt6_compat.hpp"
 #include "Chart/DAChartOperateWidget.h"
 #include "DAFigureWidget.h"
 #include "DAChartWidget.h"
@@ -53,6 +54,8 @@
 #include "qwt_plot_layout.h"
 #include "qwt_scale_widget.h"
 #include "qwt_scale_div.h"
+#include "qwt_colormap.h"
+#include "qwt_interval.h"
 #include "qwt_plot_series_data_picker.h"
 namespace DA
 {
@@ -2685,6 +2688,134 @@ bool DAXmlHelper::loadElement(QwtPlotLayout* value, const QDomElement* tag, cons
     return true;
 }
 
+namespace {
+// QwtScaleWidget 色标条 XML 子节点格式版本。
+// 兼容闸门用「节点存在性 + 可选子节点」：旧工程的 <scaleWidget> 节点没有 <colorBar> 子节点，
+// 加载时保持 QwtScaleWidget 默认的无效区间，即旧行为（不绘制色标条）。
+constexpr int gcScaleWidgetColorBarXmlVersion = 1;
+
+QString qwtColorToString(const QColor& c)
+{
+    return c.name(QColor::HexArgb);  // 带 alpha，Qt5/Qt6 通用
+}
+
+QColor qwtColorFromString(const QString& s)
+{
+    QColor c;
+    DA::compat::setNamedColor(c, s);
+    return c;
+}
+
+/**
+ * @brief 色图多态序列化为 XML 节点
+ *
+ * 与 DAChartSerialize.cpp 的 spectroColorMapOut/In 对应：先写类型，再写该类型字段。
+ * 未知色图类型写 type="none"（读回方保持默认色图，工程仍可打开）。
+ */
+QDomElement makeColorMapElement(const QwtColorMap* cmap, const QString& tagName, QDomDocument* doc)
+{
+    QDomElement ele = doc->createElement(tagName);
+    if (nullptr == cmap) {
+        ele.setAttribute(QStringLiteral("type"), QStringLiteral("none"));
+        return ele;
+    }
+    ele.setAttribute(QStringLiteral("format"), static_cast< int >(cmap->format()));
+    if (const QwtLinearColorMap* m = dynamic_cast< const QwtLinearColorMap* >(cmap)) {
+        ele.setAttribute(QStringLiteral("type"), QStringLiteral("linear"));
+        ele.setAttribute(QStringLiteral("mode"), static_cast< int >(m->mode()));
+        const QVector< double > positions = m->stopPos();
+        const QVector< QColor > colors     = m->stopColors();
+        const int cnt                      = qMin(positions.size(), colors.size());
+        for (int i = 0; i < cnt; ++i) {
+            QDomElement stopEle = doc->createElement(QStringLiteral("stop"));
+            stopEle.setAttribute(QStringLiteral("pos"), positions[ i ]);
+            stopEle.setAttribute(QStringLiteral("color"), qwtColorToString(colors[ i ]));
+            ele.appendChild(stopEle);
+        }
+    } else if (const QwtAlphaColorMap* m = dynamic_cast< const QwtAlphaColorMap* >(cmap)) {
+        ele.setAttribute(QStringLiteral("type"), QStringLiteral("alpha"));
+        ele.setAttribute(QStringLiteral("color"), qwtColorToString(m->color()));
+        ele.setAttribute(QStringLiteral("alpha1"), m->alpha1());
+        ele.setAttribute(QStringLiteral("alpha2"), m->alpha2());
+    } else if (const QwtHueColorMap* m = dynamic_cast< const QwtHueColorMap* >(cmap)) {
+        ele.setAttribute(QStringLiteral("type"), QStringLiteral("hue"));
+        ele.setAttribute(QStringLiteral("hue1"), m->hue1());
+        ele.setAttribute(QStringLiteral("hue2"), m->hue2());
+        ele.setAttribute(QStringLiteral("saturation"), m->saturation());
+        ele.setAttribute(QStringLiteral("value"), m->value());
+        ele.setAttribute(QStringLiteral("alpha"), m->alpha());
+    } else if (const QwtSaturationValueColorMap* m = dynamic_cast< const QwtSaturationValueColorMap* >(cmap)) {
+        ele.setAttribute(QStringLiteral("type"), QStringLiteral("saturationvalue"));
+        ele.setAttribute(QStringLiteral("hue"), m->hue());
+        ele.setAttribute(QStringLiteral("saturation1"), m->saturation1());
+        ele.setAttribute(QStringLiteral("saturation2"), m->saturation2());
+        ele.setAttribute(QStringLiteral("value1"), m->value1());
+        ele.setAttribute(QStringLiteral("value2"), m->value2());
+        ele.setAttribute(QStringLiteral("alpha"), m->alpha());
+    } else {
+        qWarning() << "DAXmlHelper: unknown QwtColorMap type, fallback to none";
+        ele.setAttribute(QStringLiteral("type"), QStringLiteral("none"));
+    }
+    return ele;
+}
+
+/**
+ * @brief 色图多态反序列化：按 XML 类型标签新建色图对象
+ * @return 新建的色图（调用方接管所有权）；none/未知类型返回 nullptr
+ */
+QwtColorMap* loadColorMapElement(const QDomElement& ele)
+{
+    if (ele.isNull()) {
+        return nullptr;
+    }
+    const QString type = ele.attribute(QStringLiteral("type")).toLower();
+    QwtColorMap* cmap  = nullptr;
+    if (type == QStringLiteral("linear")) {
+        auto* m = new QwtLinearColorMap();
+        // 逐个覆盖默认停止点（默认包含 0.0/1.0，序列化时这两个点始终存在）
+        QDomElement stopEle = ele.firstChildElement(QStringLiteral("stop"));
+        while (!stopEle.isNull()) {
+            bool ok = false;
+            const double pos = stopEle.attribute(QStringLiteral("pos")).toDouble(&ok);
+            if (ok) {
+                m->addColorStop(pos, qwtColorFromString(stopEle.attribute(QStringLiteral("color"))));
+            }
+            stopEle = stopEle.nextSiblingElement(QStringLiteral("stop"));
+        }
+        m->setMode(static_cast< QwtLinearColorMap::Mode >(
+            ele.attribute(QStringLiteral("mode"), QString::number(QwtLinearColorMap::ScaledColors)).toInt()));
+        cmap = m;
+    } else if (type == QStringLiteral("alpha")) {
+        auto* m = new QwtAlphaColorMap(qwtColorFromString(ele.attribute(QStringLiteral("color"))));
+        m->setAlphaInterval(ele.attribute(QStringLiteral("alpha1"), QStringLiteral("0")).toInt(),
+                            ele.attribute(QStringLiteral("alpha2"), QStringLiteral("255")).toInt());
+        cmap = m;
+    } else if (type == QStringLiteral("hue")) {
+        auto* m = new QwtHueColorMap();
+        m->setHueInterval(ele.attribute(QStringLiteral("hue1"), QStringLiteral("0")).toInt(),
+                          ele.attribute(QStringLiteral("hue2"), QStringLiteral("359")).toInt());
+        m->setSaturation(ele.attribute(QStringLiteral("saturation"), QStringLiteral("255")).toInt());
+        m->setValue(ele.attribute(QStringLiteral("value"), QStringLiteral("255")).toInt());
+        m->setAlpha(ele.attribute(QStringLiteral("alpha"), QStringLiteral("255")).toInt());
+        cmap = m;
+    } else if (type == QStringLiteral("saturationvalue")) {
+        auto* m = new QwtSaturationValueColorMap();
+        m->setHue(ele.attribute(QStringLiteral("hue"), QStringLiteral("0")).toInt());
+        m->setSaturationInterval(ele.attribute(QStringLiteral("saturation1"), QStringLiteral("0")).toInt(),
+                                 ele.attribute(QStringLiteral("saturation2"), QStringLiteral("255")).toInt());
+        m->setValueInterval(ele.attribute(QStringLiteral("value1"), QStringLiteral("0")).toInt(),
+                            ele.attribute(QStringLiteral("value2"), QStringLiteral("255")).toInt());
+        m->setAlpha(ele.attribute(QStringLiteral("alpha"), QStringLiteral("255")).toInt());
+        cmap = m;
+    }
+    if (cmap) {
+        cmap->setFormat(static_cast< QwtColorMap::Format >(
+            ele.attribute(QStringLiteral("format"), QString::number(QwtColorMap::RGB)).toInt()));
+    }
+    return cmap;
+}
+}  // namespace
+
 QDomElement DAXmlHelper::makeElement(const QwtScaleWidget* value, const QString& tagName, QDomDocument* doc)
 {
     int dist1, dist2;
@@ -2696,11 +2827,23 @@ QDomElement DAXmlHelper::makeElement(const QwtScaleWidget* value, const QString&
     scaleWidgetEle.setAttribute("spacing", value->spacing());
     scaleWidgetEle.setAttribute("colorBarEnabled", static_cast< int >(value->isColorBarEnabled()));
     scaleWidgetEle.setAttribute("colorBarWidth", value->colorBarWidth());
+    // 色标条区间与色带：仅在区间有效时落盘（QwtScaleWidget 只有 setColorMap(interval, cmap) 一个
+    // 设置入口，区间无效时即使有 enabled 也不会绘制）。旧工程没有 <colorBar> 节点即为兼容闸门。
+    const QwtInterval colorBarInterval = value->colorBarInterval();
+    if (colorBarInterval.isValid()) {
+        QDomElement colorBarEle = doc->createElement(QStringLiteral("colorBar"));
+        colorBarEle.setAttribute(QStringLiteral("ver"), gcScaleWidgetColorBarXmlVersion);
+        colorBarEle.setAttribute(QStringLiteral("min"), colorBarInterval.minValue());
+        colorBarEle.setAttribute(QStringLiteral("max"), colorBarInterval.maxValue());
+        colorBarEle.appendChild(makeColorMapElement(value->colorMap(), QStringLiteral("colorMap"), doc));
+        scaleWidgetEle.appendChild(colorBarEle);
+    }
     return scaleWidgetEle;
 }
 
 bool DAXmlHelper::loadElement(QwtScaleWidget* value, const QDomElement* tag, const QVersionNumber& version)
 {
+    Q_UNUSED(version);
     int dist1, dist2;
     dist1 = tag->attribute("dist1").toInt();
     dist2 = tag->attribute("dist2").toInt();
@@ -2709,6 +2852,27 @@ bool DAXmlHelper::loadElement(QwtScaleWidget* value, const QDomElement* tag, con
     value->setSpacing(tag->attribute("spacing").toInt());
     value->setColorBarEnabled(static_cast< bool >(tag->attribute("colorBarEnabled").toInt()));
     value->setColorBarWidth(tag->attribute("colorBarWidth").toInt());
+    // 色标条区间/色带：旧工程无 <colorBar> 子节点 → 保持默认（区间无效、不绘制），与原行为一致
+    const QDomElement colorBarEle = tag->firstChildElement(QStringLiteral("colorBar"));
+    if (!colorBarEle.isNull()) {
+        const int colorBarVer = colorBarEle.attribute(QStringLiteral("ver"), QStringLiteral("0")).toInt();
+        // 未知的更高格式版本：忽略，避免按旧规则解析坏数据（保持不绘制）
+        if (colorBarVer >= 1 && colorBarVer <= gcScaleWidgetColorBarXmlVersion) {
+            bool okMin = false;
+            bool okMax = false;
+            const double minValue = colorBarEle.attribute(QStringLiteral("min")).toDouble(&okMin);
+            const double maxValue = colorBarEle.attribute(QStringLiteral("max")).toDouble(&okMax);
+            if (okMin && okMax && minValue < maxValue) {
+                QwtColorMap* cmap = loadColorMapElement(colorBarEle.firstChildElement(QStringLiteral("colorMap")));
+                if (nullptr == cmap) {
+                    // 色带节点缺失/未知类型：用默认线性色图兜底，至少恢复区间与绘制
+                    cmap = new QwtLinearColorMap();
+                }
+                // setColorMap 接管 cmap 所有权，并同时回填区间（区间无效时色标条不绘制）
+                value->setColorMap(QwtInterval(minValue, maxValue), cmap);
+            }
+        }
+    }
     return true;
 }
 
