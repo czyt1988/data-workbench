@@ -22678,6 +22678,10 @@ Export the full matrix or downsample by 2?</translation>
         <source>FFmpeg is still not available; video import stays disabled.</source>
         <translation>FFmpeg is still not available; video import stays disabled.</translation>
     </message>
+    <message>
+        <source>Signal imported.</source>
+        <translation>Signal imported.</translation>
+    </message>
 </context>
 <context>
     <name>DA::DASignalAnalysisView</name>
@@ -22876,6 +22880,34 @@ Export the full matrix or downsample by 2?</translation>
     <message>
         <source>Preparing playback audio...</source>
         <translation>Preparing playback audio...</translation>
+    </message>
+    <message>
+        <source>No file selected.</source>
+        <translation>No file selected.</translation>
+    </message>
+    <message>
+        <source>File does not exist.</source>
+        <translation>File does not exist.</translation>
+    </message>
+    <message>
+        <source>FFmpeg is not available. Specify its path in Settings &gt; Signal Analysis.</source>
+        <translation>FFmpeg is not available. Specify its path in Settings &gt; Signal Analysis.</translation>
+    </message>
+    <message>
+        <source>Failed to start the import task.</source>
+        <translation>Failed to start the import task.</translation>
+    </message>
+    <message>
+        <source>Preparing import...</source>
+        <translation>Preparing import...</translation>
+    </message>
+    <message>
+        <source>The signal source is missing. Relink or re-import it before analyzing.</source>
+        <translation>The signal source is missing. Relink or re-import it before analyzing.</translation>
+    </message>
+    <message>
+        <source>The signal source cannot be read (it may have been renamed or removed, or the file is unavailable).</source>
+        <translation>The signal source cannot be read (it may have been renamed or removed, or the file is unavailable).</translation>
     </message>
 </context>
 <context>

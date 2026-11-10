@@ -22853,6 +22853,10 @@ Export the full matrix or downsample by 2?</source>
         <source>FFmpeg is still not available; video import stays disabled.</source>
         <translation>仍未检测到 FFmpeg，视频导入保持置灰。</translation>
     </message>
+    <message>
+        <source>Signal imported.</source>
+        <translation>信号导入完成。</translation>
+    </message>
 </context>
 <context>
     <name>DA::DASignalAnalysisView</name>
@@ -23051,6 +23055,34 @@ Export the full matrix or downsample by 2?</source>
     <message>
         <source>Preparing playback audio...</source>
         <translation>正在准备播放音频...</translation>
+    </message>
+    <message>
+        <source>No file selected.</source>
+        <translation>未选择文件。</translation>
+    </message>
+    <message>
+        <source>File does not exist.</source>
+        <translation>文件不存在。</translation>
+    </message>
+    <message>
+        <source>FFmpeg is not available. Specify its path in Settings &gt; Signal Analysis.</source>
+        <translation>未检测到 FFmpeg，请在「设置 → 信号分析」里指定路径。</translation>
+    </message>
+    <message>
+        <source>Failed to start the import task.</source>
+        <translation>导入任务启动失败。</translation>
+    </message>
+    <message>
+        <source>Preparing import...</source>
+        <translation>正在准备导入...</translation>
+    </message>
+    <message>
+        <source>The signal source is missing. Relink or re-import it before analyzing.</source>
+        <translation>信号源缺失，请重新指定来源或重新导入后再分析。</translation>
+    </message>
+    <message>
+        <source>The signal source cannot be read (it may have been renamed or removed, or the file is unavailable).</source>
+        <translation>信号源无法读取（可能已改名或移除，或文件不可用）。</translation>
     </message>
 </context>
 <context>

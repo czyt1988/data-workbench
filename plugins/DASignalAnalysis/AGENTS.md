@@ -206,3 +206,26 @@ python -I -m pytest tests/test_signal_dsp.py tests/test_signal_import.py -q   # 
 - **文案**：所有「未检测到 FFmpeg，请在分析设置里指定路径」提示统一改为指向「设置 → 信号分析」。
 - **配置不变**：仍为 `DASignalImporter` 读写的 `signal-analysis-config.json`（`ffmpegPath`、`colormap`、
   `peakDockVisible`），设置页与导入层共用同一份。
+
+## v1.4 修正要点（取数架构与异步导入，2026-11-10）
+
+- **取数唯一出口**：`DASignalAnalysisWorker::buildSourceDict()` 除 `type/path/dataframeName/column/channel/sampleRate/sampleCount` 外，
+  额外注入 `source["read"]`（pybind11::cpp_function，捕获 `DASignalPtr`，签名为 `read(channel:int, start:int, count:int) -> float32 ndarray`，
+  内部走 `DASignalSource::readRange` 的跨线程契约）。**Python 侧取数一律优先走它**：`spectrum._source_provider()` 识别后交给
+  `spectral.amplitude_spectrum_segmented_provider / welch_psd_provider` 流式计算；`stft.compute_heatmap_sync` 按 256 帧块请求样本、
+  块内池化进显示栅格后丢弃。无 reader 时保留原整段读取路径（pytest / 数据帧回退与旧口径不变）。
+- **新增分析任务前先探测可读性**：`ensureAnalyzable()` 在提交任务前 `readRange(channel,0,1)` 探测；来源缺失占位与「数据帧改名/移除、
+  文件不可用」分别给出可翻译的明确提示（英文细节只进日志），不要用「静默空结果」兜底。
+- **Python 侧契约**：`source["read"]` 返回长度必须等于请求 count（不是则抛 RuntimeError）；`source["sampleCount"]` 必须与可读长度一致，
+  否则流式分块会对不上尾部。频谱/STFT 的流式实现由 `tests/test_signal_dsp.py`、`tests/test_signal_import.py` 的 provider 用例锁定
+  （帧位置 k*hop、frame_count、median 缓冲、linear detrend 与 scipy 一致性、请求有界且不整段）。
+- **导入异步化（I2）**：视频/压缩音频导入拆成「Python 后台准备 + 界面收尾」——`importer.prepare_import_async(path, mode, ffmpeg_path, temp_wav)` 
+  在守护线程做音频轨探测、FFmpeg 转码（`run_ffmpeg(..., cancel_check=...)` 用 Popen 轮询等待，可取消、删半成品）与结果可读性校验；
+  `DASignalAnalysisWorker::importMediaAsync()` 提交 `ImportTask`，`poll()` 在界面线程调用
+  `DASignalImporter::importPreparedMedia()` 做文件头 probe 与信号构造（不做转码），结果走 `importFinished(signal, error)`：
+  成功 signal 非空；失败 error 为英文细节（只写日志）；取消时 signal 与 error 都为空（界面据此复位、不弹失败）。
+- **导入在途状态**：`DASignalAnalysisUI::mImportTaskActive` 期间三个导入入口置灰（`updateImportActionsState()`），
+  切工程/finalize/取消都要复位；临时 WAV 由 `newSessionTempWavPath()` 预分配并在取消/失败/构造失败时删除，
+  成功构造的信号持有它，由 `cleanupTempFiles()` 按会话清理。
+- **内存预算口径**（D5 部分）：频谱/热图的估算公式在流式取数后不再需要「整段 float64 副本」，界面里的
+  `checkMemoryBudget()` 仍按旧口径偏保守；三选降级与峰值局部扫描（D5 剩余项）尚未实现。
