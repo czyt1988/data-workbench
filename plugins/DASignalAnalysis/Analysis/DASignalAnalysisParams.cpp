@@ -100,6 +100,9 @@ DASignalAnalysisParams DASignalAnalysisParams::fromVariantMap(const QVariantMap&
 
 /**
  * @brief 默认参数（「恢复默认」使用）
+ *
+ * resolutionHz=10 赫兹与 stftWindowMs=100 毫秒互相自洽（Δf = 1/窗长，评审 N-C4）；
+ * peakMinSpacingHz 保持 -1 表示「自动 = 5 倍实际分辨率」（评审 N-C5/N-U6）。
  */
 DASignalAnalysisParams DASignalAnalysisParams::defaults()
 {
@@ -129,5 +132,34 @@ double signalResolutionFromStftWindowMs(double windowMs)
         return 0.0;
     }
     return 1000.0 / windowMs;
+}
+
+/**
+ * @brief 自动最小间距 = 5 倍频率分辨率（D17）
+ *
+ * peaks.py 对 <=0 的最小间距按「5 × 实际分辨率」兜底；界面回显与表单默认值
+ * 必须用同一口径，避免「显示 0 / 实际算 50」的两套真相（评审 N-U6）。
+ */
+double signalAutoPeakMinSpacingHz(double resolutionHz)
+{
+    if (!(resolutionHz > 0.0)) {
+        return 0.0;
+    }
+    return 5.0 * resolutionHz;
+}
+
+/**
+ * @brief 最小间距有效值（用户手改值优先，否则按 5 倍实际分辨率派生）
+ *
+ * 参数里的 peakMinSpacingHz 是「-1 = 自动」哨兵（跨对话框保留未手改语义，评审 N-C5），
+ * 表单不能直接写 -1（min=0 会被夹成 0），所以回显前统一经本函数换算成派生值。
+ */
+double signalEffectivePeakMinSpacingHz(const DASignalAnalysisParams& params, double derivedResolutionHz)
+{
+    if (params.peakMinSpacingHz > 0.0) {
+        return params.peakMinSpacingHz;
+    }
+    const double base = (derivedResolutionHz > 0.0) ? derivedResolutionHz : params.resolutionHz;
+    return signalAutoPeakMinSpacingHz(base);
 }
 }  // namespace DA

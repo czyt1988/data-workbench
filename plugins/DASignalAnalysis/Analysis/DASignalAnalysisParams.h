@@ -30,7 +30,8 @@ struct DASignalAnalysisParams
     double overlap { 50.0 };            ///< 重叠率（百分比）
 
     // ---------------- 短时傅里叶变换 ----------------
-    double stftWindowMs { 50.0 };       ///< 窗长（毫秒）
+    // 默认与 resolutionHz=10 赫兹自洽：Δf = 1/窗长 → 100 毫秒 ↔ 10 赫兹（评审 N-C4）
+    double stftWindowMs { 100.0 };      ///< 窗长（毫秒）
     double stftOverlap { 50.0 };        ///< 跳步重叠率（百分比）
     int stftZeroPadding { 0 };          ///< 零填充点数（高级，0 表示等于窗长）
     // 窗函数与频谱共用 window 字段（D18：同一信号共用窗函数口径，避免两个真相）
@@ -62,6 +63,11 @@ struct DASignalAnalysisParams
 double signalStftWindowMsFromResolution(double resolutionHz);
 // STFT 窗长（毫秒）→ 频率分辨率（赫兹），与上一条互逆（<=0 的输入返回 0）
 double signalResolutionFromStftWindowMs(double windowMs);
+// 自动最小间距 = 5 倍频率分辨率（D17；分辨率非法时返回 0）
+double signalAutoPeakMinSpacingHz(double resolutionHz);
+// 最小间距有效值：参数 >0 为用户手改值；<=0（自动哨兵）按 5 倍实际分辨率派生，
+// 实际分辨率无效时退回参数里的 resolutionHz（表单/对话框回显共用同一口径，评审 N-U6/N-C5）
+double signalEffectivePeakMinSpacingHz(const DASignalAnalysisParams& params, double derivedResolutionHz);
 }  // namespace DA
 
 #endif  // DASIGNALANALYSISPARAMS_H

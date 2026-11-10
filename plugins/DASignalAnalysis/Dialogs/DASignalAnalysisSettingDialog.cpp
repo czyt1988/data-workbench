@@ -29,11 +29,7 @@ DASignalAnalysisSettingDialog::DASignalAnalysisSettingDialog(const DASignalAnaly
     buildUI();
     retranslateUi();
     // 上次值作为字段默认值（「记住上次值」）；派生分辨率按真实段长算（评审 U7：不能传 fs/100）
-    double derivedResolution = 0.0;
-    if (sampleRate > 0.0 && params.resolutionHz > 0.0) {
-        const int segLen = qMax(8, int(qRound(sampleRate / params.resolutionHz)));
-        derivedResolution = sampleRate / double(segLen);
-    }
+    const double derivedResolution = derivedResolutionFor(params);
     const QJsonObject specJson = DASignalFormSpecBuilder::build(params, derivedResolution);
     DAFormSpec spec;
     QString err;
@@ -42,9 +38,12 @@ DASignalAnalysisSettingDialog::DASignalAnalysisSettingDialog(const DASignalAnaly
     } else {
         qWarning() << "DASignalAnalysisSettingDialog: invalid form spec:" << err;
     }
-    mForm->setValues(params.toVariantMap());
-    // 记录最小间距是否处于「自动跟随分辨率」状态（D17）：用户保存的是 0/负值即未手改
-    mAutoSpacing = (params.peakMinSpacingHz > 0.0 || derivedResolution <= 0.0) ? -1.0 : 5.0 * derivedResolution;
+    // 回显副本：自动哨兵（-1/0）换算成 5×实际分辨率再写入，避免 QDoubleSpinBox 的 min=0 把它夹成 0
+    // （评审 N-U6；直接 setValues(params.toVariantMap()) 会让「高级」里显示 0）
+    mForm->setValues(makeEchoParams(params, derivedResolution).toVariantMap());
+    // 记录最小间距是否处于「自动跟随分辨率」状态（D17）：参数为 <=0 即用户未手改
+    mPeakSpacingAuto = (params.peakMinSpacingHz <= 0.0);
+    mFormReady       = true;
     refreshDerivedInfo();
 }
 
@@ -70,13 +69,37 @@ bool DASignalAnalysisSettingDialog::edit(DASignalAnalysisParams* params, double 
 
 /**
  * @brief 结果参数
+ *
+ * 最小间距仍处于自动状态时写回 -1 哨兵（Python 侧对 <=0 按 5 倍实际分辨率兜底），
+ * 这样下次打开对话框仍然「未手改」，改分辨率继续跟随（评审 N-C5）。
  */
 DASignalAnalysisParams DASignalAnalysisSettingDialog::params() const
 {
     if (!mForm) {
         return DASignalAnalysisParams();
     }
-    return DASignalAnalysisParams::fromVariantMap(mForm->values());
+    DASignalAnalysisParams p = DASignalAnalysisParams::fromVariantMap(mForm->values());
+    if (mPeakSpacingAuto) {
+        p.peakMinSpacingHz = -1.0;
+    }
+    return p;
+}
+
+/**
+ * @brief 构造表单回显用的参数副本
+ *
+ * peakMinSpacingHz 的 -1/0 是「自动」哨兵，而表单字段 min=0 会把它夹成 0，
+ * 导致高级模式看不到「5×实际分辨率」派生默认值（评审 N-U6）。
+ * 回显前统一换算成 signalEffectivePeakMinSpacingHz() 的有效值。
+ */
+DASignalAnalysisParams DASignalAnalysisSettingDialog::makeEchoParams(const DASignalAnalysisParams& params,
+                                                                     double derivedResolution) const
+{
+    DASignalAnalysisParams echo = params;
+    if (echo.peakMinSpacingHz <= 0.0) {
+        echo.peakMinSpacingHz = signalEffectivePeakMinSpacingHz(params, derivedResolution);
+    }
+    return echo;
 }
 
 /**
@@ -140,21 +163,32 @@ void DASignalAnalysisSettingDialog::onFieldValueChanged(const QString& fieldName
         syncResolutionWithStftWindow();
         refreshDerivedInfo();
     } else if (fieldName == QLatin1String("peakMinSpacingHz")) {
-        mAutoSpacing = -1.0;  // 用户手改后不再跟随分辨率
+        // 用户手改后不再跟随分辨率（写回参数时保留显式值，不再写 -1 哨兵）
+        mPeakSpacingAuto = false;
     }
 }
 
 /**
- * @brief 当前生效的实际频率分辨率（由分辨率参数反推段长后回算）
+ * @brief 按给定参数反推实际频率分辨率（按真实段长回算，评审 U7）
+ */
+double DASignalAnalysisSettingDialog::derivedResolutionFor(const DASignalAnalysisParams& params) const
+{
+    if (mSampleRate <= 0.0 || !(params.resolutionHz > 0.0)) {
+        return 0.0;
+    }
+    const int segLen = qMax(8, int(qRound(mSampleRate / params.resolutionHz)));
+    return mSampleRate / double(segLen);
+}
+
+/**
+ * @brief 当前表单值对应的实际频率分辨率
  */
 double DASignalAnalysisSettingDialog::currentDerivedResolution() const
 {
-    if (mSampleRate <= 0.0 || !mForm) {
+    if (!mForm) {
         return 0.0;
     }
-    const DASignalAnalysisParams p = params();
-    const int segLen               = qMax(8, int(qRound(mSampleRate / qMax(p.resolutionHz, 1e-9))));
-    return mSampleRate / double(segLen);
+    return derivedResolutionFor(params());
 }
 
 /**
@@ -162,15 +196,14 @@ double DASignalAnalysisSettingDialog::currentDerivedResolution() const
  */
 void DASignalAnalysisSettingDialog::syncPeakSpacingWithResolution()
 {
-    if (!mForm || mAutoSpacing < 0.0) {
+    if (!mForm || !mPeakSpacingAuto) {
         return;
     }
-    const double derived = currentDerivedResolution();
-    if (derived <= 0.0) {
+    const double spacing = signalAutoPeakMinSpacingHz(currentDerivedResolution());
+    if (spacing <= 0.0) {
         return;
     }
-    mAutoSpacing = 5.0 * derived;
-    mForm->setValue(QStringLiteral("peakMinSpacingHz"), mAutoSpacing);  // 程序化写入不触发 fieldValueChanged
+    mForm->setValue(QStringLiteral("peakMinSpacingHz"), spacing);  // 程序化写入不触发 fieldValueChanged
 }
 
 /**
@@ -214,11 +247,18 @@ void DASignalAnalysisSettingDialog::syncResolutionWithStftWindow()
 
 /**
  * @brief 恢复默认参数
+ *
+ * 默认 peakMinSpacingHz=-1 表示自动，回显同样经 makeEchoParams() 换算成 5×实际分辨率，
+ * 否则会被表单 min=0 夹成 0（评审 N-U6）。
  */
 void DASignalAnalysisSettingDialog::onRestoreDefaults()
 {
+    if (!mForm) {
+        return;
+    }
     const DASignalAnalysisParams def = DASignalAnalysisParams::defaults();
-    mForm->setValues(def.toVariantMap());
+    mPeakSpacingAuto                 = true;
+    mForm->setValues(makeEchoParams(def, derivedResolutionFor(def)).toVariantMap());
     refreshDerivedInfo();
 }
 
@@ -349,5 +389,34 @@ void DASignalAnalysisSettingDialog::retranslateUi()
         mButtonBox->button(QDialogButtonBox::Ok)->setText(tr("OK"));          // cn:确定
         mButtonBox->button(QDialogButtonBox::Cancel)->setText(tr("Cancel"));  // cn:取消
     }
+    // 表单字段标签由 DAFormSpec 生成：语言切换后必须重建规格才能重译（评审 I7）
+    rebuildFormForLanguage();
+    if (mFormReady) {
+        refreshDerivedInfo();
+    }
+}
+
+/**
+ * @brief 语言切换时重建表单规格以重译字段标签
+ *
+ * DAFormSpec 的 label 在 build() 时经 QCoreApplication::translate 求值，构造后才改语言
+ * 不会自动刷新；这里先记下当前表单值，重建规格后原样写回，避免丢用户输入。
+ */
+void DASignalAnalysisSettingDialog::rebuildFormForLanguage()
+{
+    if (!mForm || !mFormReady) {
+        return;
+    }
+    const QVariantMap current      = mForm->values();
+    const DASignalAnalysisParams p = DASignalAnalysisParams::fromVariantMap(current);
+    const QJsonObject specJson     = DASignalFormSpecBuilder::build(p, derivedResolutionFor(p));
+    DAFormSpec spec;
+    QString err;
+    if (!DAFormSchemaIO::fromJsonObject(specJson, spec, &err)) {
+        qWarning() << "DASignalAnalysisSettingDialog: invalid form spec on retranslate:" << err;
+        return;
+    }
+    mForm->setFormSpec(spec);
+    mForm->setValues(current);
 }
 }  // namespace DA

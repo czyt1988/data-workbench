@@ -47,7 +47,13 @@ private Q_SLOTS:
 private:
     void buildUI();
     void retranslateUi();
+    // 回显用参数副本：<=0 的自动哨兵替换为 5 倍实际分辨率（表单 min=0 会把 -1 夹成 0，评审 N-U6）
+    DASignalAnalysisParams makeEchoParams(const DASignalAnalysisParams& params, double derivedResolution) const;
+    // 语言切换：重建表单规格以重译字段标签，保留当前值（评审 I7）
+    void rebuildFormForLanguage();
     void refreshDerivedInfo();
+    // 当前生效的实际分辨率（由分辨率参数反推段长后回算）
+    double derivedResolutionFor(const DASignalAnalysisParams& params) const;
     // 用户未手改最小间距时，跟随分辨率联动（D17）
     void syncPeakSpacingWithResolution();
     // 频率分辨率 ↔ STFT 窗长二选一联动（方案 §6.3 / 评审 C4）
@@ -59,7 +65,8 @@ private:
 
 private:
     double mSampleRate { 0.0 };
-    double mAutoSpacing { -1.0 };  ///< 当前自动跟随行距；-1 表示用户已手改
+    bool mPeakSpacingAuto { false };  ///< 最小间距是否自动跟随分辨率（参数里写回 -1 哨兵，评审 N-C5）
+    bool mFormReady { false };        ///< 表单规格是否已就绪（retranslateUi 在构造早期也会被调用）
     DAPropertyFormWidget* mForm { nullptr };
     QLabel* mDerivedLabel { nullptr };
     QLabel* mFFmpegLabel { nullptr };

@@ -225,11 +225,9 @@ QJsonObject DASignalFormSpecBuilder::build(const DASignalAnalysisParams& current
                       0.01,
                       6),
             advancedExpr));
-        // 最小间距默认 5 倍频率分辨率（D17）；用户手改后由对话框保持用户值
-        double spacingDefault = current.peakMinSpacingHz;
-        if (spacingDefault <= 0.0) {
-            spacingDefault = (derivedResolutionHz > 0.0 ? derivedResolutionHz : current.resolutionHz) * 5.0;
-        }
+        // 最小间距默认 5 倍频率分辨率（D17）；用户手改后由对话框保持用户值。
+        // 参数为 -1/0（自动哨兵）时换算为派生值，避免表单 min=0 把 -1 夹成 0（评审 N-U6/N-C5）
+        const double spacingDefault = signalEffectivePeakMinSpacingHz(current, derivedResolutionHz);
         items.append(withVisibleWhen(
             withRange(makeField(QStringLiteral("peakMinSpacingHz"),
                                 QStringLiteral("float"),
