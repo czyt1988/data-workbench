@@ -4,6 +4,9 @@
 #include <QJsonObject>
 #include <QJsonValue>
 #include <QSignalSpy>
+#include <QMetaType>
+#include <QStringList>
+#include <QVariantMap>
 #include <cmath>
 #include "Analysis/DASignalAmplitude.h"
 #include "Analysis/DASignalAnalysisParams.h"
@@ -64,6 +67,8 @@ private Q_SLOTS:
     void amplitudeDisplayModes();
     // U11/N-U4：峰值表时间列显隐（列数/表头映射，数据不丢）
     void peakModelTimeColumnToggle();
+    // D2/测试缺口：参数 → Python 编排字典的键集合/原生类型契约（paramsToDict 下沉后可纯逻辑测试）
+    void paramsPythonDictContract();
 };
 
 /**
@@ -457,6 +462,82 @@ void DASignalAnalysisTest::peakModelTimeColumnToggle()
     model.setShowTimeColumn(true);
     QCOMPARE(model.rowCount(), 2);
     QCOMPARE(model.data(model.index(1, DA::DAPeakTableModel::ColumnFrequency)).toString(), QStringLiteral("2000.00"));
+}
+
+/**
+ * @brief 参数 → Python 编排参数字典契约（D2 / 测试缺口补强）
+ *
+ * DASignalAnalysisWorker::paramsToDict 原先在 .cpp 匿名命名空间里写死一遍键名，无法单测；
+ * 键名映射下沉到 DASignalAnalysisParams::toPythonDict() 后，这里锁定跨语言契约：
+ * - 键集合精确等于 Python 侧 spectrum.py / stft.py / peaks.py 读取的键 + 4 个仅显示层键；
+ * - 原生类型不被 JSON 往返改成 double（peakTopN/zeroPadding 仍是 int 而非 double）；
+ * - 默认值与 DASignalAnalysisParams::defaults() 一致。
+ */
+void DASignalAnalysisTest::paramsPythonDictContract()
+{
+    DA::DASignalAnalysisParams p;
+    p.removeDc         = true;
+    p.detrend          = QStringLiteral("linear");
+    p.window           = QStringLiteral("blackman");
+    p.amplitudeMode    = QStringLiteral("rms");
+    p.dbReference      = QStringLiteral("one");
+    p.resolutionHz     = 2.5;
+    p.zeroPadding      = 4096;
+    p.average          = QStringLiteral("median");
+    p.overlap          = 75.0;
+    p.stftWindowMs     = 20.0;
+    p.stftOverlap      = 25.0;
+    p.stftZeroPadding  = 512;
+    p.peakMode         = QStringLiteral("advanced");
+    p.peakTopN         = 50;
+    p.peakRelDb        = 30.0;
+    p.peakProminence   = 0.05;
+    p.peakMinSpacingHz = 12.5;
+    p.peakMinHeight    = 0.001;
+    p.calibration      = 2.0;
+    p.unit             = QStringLiteral("Pa");
+
+    const QVariantMap d = p.toPythonDict();
+    // 20 个键：16 个被 Python 编排读取 + amplitudeMode/dbReference/calibration/unit 仅显示层使用
+    const QStringList expectedKeys = {
+        QStringLiteral("removeDc"),         QStringLiteral("detrend"),          QStringLiteral("window"),
+        QStringLiteral("amplitudeMode"),    QStringLiteral("dbReference"),      QStringLiteral("resolutionHz"),
+        QStringLiteral("zeroPadding"),      QStringLiteral("average"),          QStringLiteral("overlap"),
+        QStringLiteral("stftWindowMs"),     QStringLiteral("stftOverlap"),      QStringLiteral("stftZeroPadding"),
+        QStringLiteral("peakMode"),         QStringLiteral("peakTopN"),         QStringLiteral("peakRelDb"),
+        QStringLiteral("peakProminence"),   QStringLiteral("peakMinSpacingHz"), QStringLiteral("peakMinHeight"),
+        QStringLiteral("calibration"),      QStringLiteral("unit")
+    };
+    QCOMPARE(d.size(), expectedKeys.size());
+    for (const QString& key : expectedKeys) {
+        QVERIFY2(d.contains(key), qPrintable(QStringLiteral("missing python param key: %1").arg(key)));
+    }
+
+    // 原生类型：布尔/整数/浮点/字符串，不经 JSON 往返（否则 int 会被转成 double）
+    QCOMPARE(d.value(QStringLiteral("removeDc")).userType(), int(QMetaType::Bool));
+    QCOMPARE(d.value(QStringLiteral("zeroPadding")).userType(), int(QMetaType::Int));
+    QCOMPARE(d.value(QStringLiteral("peakTopN")).userType(), int(QMetaType::Int));
+    QCOMPARE(d.value(QStringLiteral("stftZeroPadding")).userType(), int(QMetaType::Int));
+    QCOMPARE(d.value(QStringLiteral("resolutionHz")).userType(), int(QMetaType::Double));
+    QCOMPARE(d.value(QStringLiteral("window")).userType(), int(QMetaType::QString));
+
+    // 取值（改哪个字段，Python 就应收到哪个值）
+    QCOMPARE(d.value(QStringLiteral("removeDc")).toBool(), true);
+    QCOMPARE(d.value(QStringLiteral("detrend")).toString(), QStringLiteral("linear"));
+    QCOMPARE(d.value(QStringLiteral("resolutionHz")).toDouble(), 2.5);
+    QCOMPARE(d.value(QStringLiteral("zeroPadding")).toInt(), 4096);
+    QCOMPARE(d.value(QStringLiteral("peakTopN")).toInt(), 50);
+    QCOMPARE(d.value(QStringLiteral("peakMinSpacingHz")).toDouble(), 12.5);
+    QCOMPARE(d.value(QStringLiteral("unit")).toString(), QStringLiteral("Pa"));
+
+    // 默认值口径与 defaults() 一致
+    const QVariantMap def = DA::DASignalAnalysisParams::defaults().toPythonDict();
+    QCOMPARE(def.value(QStringLiteral("window")).toString(), QStringLiteral("hann"));
+    QCOMPARE(def.value(QStringLiteral("resolutionHz")).toDouble(), 10.0);
+    QCOMPARE(def.value(QStringLiteral("stftWindowMs")).toDouble(), 100.0);
+    QCOMPARE(def.value(QStringLiteral("peakTopN")).toInt(), 10);
+    QCOMPARE(def.value(QStringLiteral("peakMinSpacingHz")).toDouble(), -1.0);
+    QVERIFY(def.value(QStringLiteral("unit")).toString().isEmpty());
 }
 
 QTEST_MAIN(DASignalAnalysisTest)

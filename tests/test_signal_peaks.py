@@ -348,3 +348,15 @@ def test_peak_curves_contract_float32_input(tmp_path):
     assert r["freq_by_rank"].shape == (2, r["n_frames"])
     assert r["freq_by_rank"].dtype == np.float64
     assert np.isfinite(r["freq_by_rank"][0]).any()
+
+def test_peaks_to_dataframe_columns_for_table_page():
+    """送表格页列名契约（§10.2 / I8）：英文列名固定，幅值列名随 dB/RMS 口径变化。"""
+    from DASignalAnalysis import exporter
+
+    df = exporter.peaks_to_dataframe([1000.0, 2000.0], [0.5, 0.25], [0.0, -6.0], [80.0, 20.0])
+    assert list(df.columns) == ["Frequency (Hz)", "Amplitude", "Rel. peak (dB)", "Share (%)"]
+    assert df.shape == (2, 4)
+    assert df["Frequency (Hz)"].iloc[1] == pytest.approx(2000.0)
+
+    df_db = exporter.peaks_to_dataframe([1000.0], [0.5], [0.0], [100.0], amplitude_label="Amplitude (dBFS)")
+    assert list(df_db.columns)[1] == "Amplitude (dBFS)"

@@ -54,6 +54,9 @@ struct DASignalAnalysisParams
     // 表单值映射（字段名与 Form/DASignalFormSpecBuilder 一致）
     QVariantMap toVariantMap() const;
     static DASignalAnalysisParams fromVariantMap(const QVariantMap& v);
+    // Python 编排参数字典（键名 = spectrum.py / stft.py / peaks.py 读取的键名，单一口径）。
+    // 抽成纯逻辑便于 DASignalAnalysisTest 直接断言键集合/类型/取值（不依赖 pybind11）
+    QVariantMap toPythonDict() const;
     // 恢复默认
     static DASignalAnalysisParams defaults();
 };

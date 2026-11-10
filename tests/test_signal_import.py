@@ -999,3 +999,47 @@ def test_export_column_to_wav_accepts_cancel_check(tmp_path):
     with pytest.raises(RuntimeError, match="cancelled"):
         importer.export_column_to_wav(df, "v", str(out), 48000, cancel_check=cancel_check)
     assert len(calls) == 1
+
+# ---------------------------------------------------------------- 跨语言参数键契约（D2 / 测试缺口）
+
+# C++ DASignalAnalysisParams::toPythonDict() 的键集合，与 DASignalAnalysisTest::paramsPythonDictContract
+# 用例保持同源；Python 编排只允许读取这里列出的键，防止 C++ 侧改名后 Python 静默取默认值。
+_CPP_PYTHON_PARAM_KEYS = {
+    "removeDc", "detrend", "window", "amplitudeMode", "dbReference", "resolutionHz",
+    "zeroPadding", "average", "overlap", "stftWindowMs", "stftOverlap", "stftZeroPadding",
+    "peakMode", "peakTopN", "peakRelDb", "peakProminence", "peakMinSpacingHz",
+    "peakMinHeight", "calibration", "unit",
+}
+# 仅显示/导出层使用、Python 计算编排不读取的键
+_DISPLAY_ONLY_PARAM_KEYS = {"amplitudeMode", "dbReference", "calibration", "unit"}
+
+
+def _module_param_keys(module):
+    """扫描模块内函数源码，收集 params.get("...") / params["..."] 读取的键名。"""
+    import inspect
+    import re
+
+    keys = set()
+    for _name, obj in vars(module).items():
+        if not inspect.isfunction(obj) or obj.__module__ != module.__name__:
+            continue
+        try:
+            src = inspect.getsource(obj)
+        except (OSError, TypeError):
+            continue
+        keys |= set(re.findall(r"params\.get\(\s*[\"']([A-Za-z_][A-Za-z0-9_]*)[\"']", src))
+        keys |= set(re.findall(r"params\[\s*[\"']([A-Za-z_][A-Za-z0-9_]*)[\"']\s*\]", src))
+    return keys
+
+
+def test_plugin_python_param_key_contract():
+    """跨语言输入契约：C++ 传的 20 个参数键中，16 个必须被 spectrum/stft/peaks 读取。"""
+    from DASignalAnalysis import peaks, spectrum, stft
+
+    used = _module_param_keys(spectrum) | _module_param_keys(stft) | _module_param_keys(peaks)
+    # C++ 侧多传不被读取的键可以容忍；但 Python 读取的键必须都在 C++ 契约集合里（否则取默认值静默跑偏）
+    assert used <= _CPP_PYTHON_PARAM_KEYS, "python reads undeclared param keys: %s" % sorted(
+        used - _CPP_PYTHON_PARAM_KEYS
+    )
+    missing = (_CPP_PYTHON_PARAM_KEYS - _DISPLAY_ONLY_PARAM_KEYS) - used
+    assert not missing, "declared compute params not read by python orchestration: %s" % sorted(missing)

@@ -99,6 +99,40 @@ DASignalAnalysisParams DASignalAnalysisParams::fromVariantMap(const QVariantMap&
 }
 
 /**
+ * @brief 转 Python 编排参数字典（键名 = spectrum.py / stft.py / peaks.py 读取的键名）
+ *
+ * 与 toVariantMap() 的区别：这里刻意保持原生类型（int 仍是 int、double 是 double），
+ * 不经 JSON 往返（QJsonObject 只有 double，会把 peakTopN 之类的整数变成浮点）。
+ * 唯一真相在此函数：DASignalAnalysisWorker 只做 QVariant → Python 对象的搬运，
+ * 键名/类型契约由 DASignalAnalysisTest 的 paramsPythonDict 用例锁定。
+ */
+QVariantMap DASignalAnalysisParams::toPythonDict() const
+{
+    QVariantMap p;
+    p[ QStringLiteral("removeDc") ]         = removeDc;
+    p[ QStringLiteral("detrend") ]          = detrend;
+    p[ QStringLiteral("window") ]           = window;
+    p[ QStringLiteral("amplitudeMode") ]    = amplitudeMode;
+    p[ QStringLiteral("dbReference") ]      = dbReference;
+    p[ QStringLiteral("resolutionHz") ]     = resolutionHz;
+    p[ QStringLiteral("zeroPadding") ]      = zeroPadding;
+    p[ QStringLiteral("average") ]          = average;
+    p[ QStringLiteral("overlap") ]          = overlap;
+    p[ QStringLiteral("stftWindowMs") ]     = stftWindowMs;
+    p[ QStringLiteral("stftOverlap") ]      = stftOverlap;
+    p[ QStringLiteral("stftZeroPadding") ]  = stftZeroPadding;
+    p[ QStringLiteral("peakMode") ]         = peakMode;
+    p[ QStringLiteral("peakTopN") ]         = peakTopN;
+    p[ QStringLiteral("peakRelDb") ]        = peakRelDb;
+    p[ QStringLiteral("peakProminence") ]   = peakProminence;
+    p[ QStringLiteral("peakMinSpacingHz") ] = peakMinSpacingHz;
+    p[ QStringLiteral("peakMinHeight") ]    = peakMinHeight;
+    p[ QStringLiteral("calibration") ]      = calibration;
+    p[ QStringLiteral("unit") ]             = unit;
+    return p;
+}
+
+/**
  * @brief 默认参数（「恢复默认」使用）
  *
  * resolutionHz=10 赫兹与 stftWindowMs=100 毫秒互相自洽（Δf = 1/窗长，评审 N-C4）；

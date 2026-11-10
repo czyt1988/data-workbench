@@ -65,30 +65,37 @@ pybind11::dict buildSourceDict(const DASignalPtr& signal, int channel)
 
 /**
  * @brief 参数结构体 → Python 参数字典（键名与 spectrum.py / stft.py / peaks.py 一致）
+ *
+ * 键名/类型契约唯一真相在 DASignalAnalysisParams::toPythonDict()（纯逻辑、可单测）；
+ * 这里只做 QVariant → Python 原生对象的显式搬运，不再重复一遍键名映射（避免两套真相）。
  */
 pybind11::dict paramsToDict(const DASignalAnalysisParams& params)
 {
     pybind11::dict p;
-    p[ "removeDc" ]         = params.removeDc;
-    p[ "detrend" ]          = params.detrend.toStdString();
-    p[ "window" ]           = params.window.toStdString();
-    p[ "amplitudeMode" ]    = params.amplitudeMode.toStdString();
-    p[ "dbReference" ]      = params.dbReference.toStdString();
-    p[ "resolutionHz" ]     = params.resolutionHz;
-    p[ "zeroPadding" ]      = params.zeroPadding;
-    p[ "average" ]          = params.average.toStdString();
-    p[ "overlap" ]          = params.overlap;
-    p[ "stftWindowMs" ]     = params.stftWindowMs;
-    p[ "stftOverlap" ]      = params.stftOverlap;
-    p[ "stftZeroPadding" ]  = params.stftZeroPadding;
-    p[ "peakMode" ]         = params.peakMode.toStdString();
-    p[ "peakTopN" ]         = params.peakTopN;
-    p[ "peakRelDb" ]        = params.peakRelDb;
-    p[ "peakProminence" ]   = params.peakProminence;
-    p[ "peakMinSpacingHz" ] = params.peakMinSpacingHz;
-    p[ "peakMinHeight" ]    = params.peakMinHeight;
-    p[ "calibration" ]      = params.calibration;
-    p[ "unit" ]             = params.unit.toStdString();
+    const QVariantMap map = params.toPythonDict();
+    for (auto it = map.constBegin(); it != map.constEnd(); ++it) {
+        const QVariant& v = it.value();
+        pybind11::object pyValue;
+        switch (v.userType()) {
+        case QMetaType::Bool:
+            pyValue = pybind11::bool_(v.toBool());
+            break;
+        case QMetaType::Int:
+            pyValue = pybind11::int_(v.toInt());
+            break;
+        case QMetaType::Double:
+            pyValue = pybind11::float_(v.toDouble());
+            break;
+        case QMetaType::QString:
+            pyValue = pybind11::str(v.toString().toStdString());
+            break;
+        default:
+            pyValue = pybind11::cast(v);  // 兜底交给 DAPybind11QtCaster 的 QVariant 转换器
+            break;
+        }
+        const QByteArray key = it.key().toUtf8();
+        p[ key.constData() ] = pyValue;
+    }
     return p;
 }
 }  // namespace
