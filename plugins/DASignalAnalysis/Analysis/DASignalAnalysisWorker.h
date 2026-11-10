@@ -104,6 +104,8 @@ private:
     };
 
     void updateTimer();
+    // 取数可用性前置检查（D1：来源缺失/数据帧被改名或移除/文件不可用时给出明确失败，而非静默空结果）
+    bool ensureAnalyzable(const DASignalTaskContext& ctx, QString* detail);
     // 按任务类型调用对应 Python 模块的 cancel_task / take_result（C7）
     void cancelPythonTask(TaskKind kind, const QString& id);
     void discardPythonResult(TaskKind kind, const QString& id);

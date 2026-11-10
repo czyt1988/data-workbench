@@ -1043,3 +1043,206 @@ def test_plugin_python_param_key_contract():
     )
     missing = (_CPP_PYTHON_PARAM_KEYS - _DISPLAY_ONLY_PARAM_KEYS) - used
     assert not missing, "declared compute params not read by python orchestration: %s" % sorted(missing)
+
+
+# ---------------------------------------------------------------- D1-a / D1-b 按块取数（readRange）
+
+def test_read_priority_spectrum_uses_reader_callable():
+    """D1-a：source 带 read callable 时频谱走 reader（不碰 path / da_app）。"""
+    from DASignalAnalysis import spectrum
+
+    fs = 1000.0
+    n = 1000
+    t = np.arange(n) / fs
+    x = (0.5 * np.sin(2.0 * np.pi * 100.0 * t)).astype(np.float32)
+    calls = []
+
+    def read(channel, start, count):
+        calls.append((int(channel), int(start), int(count)))
+        assert int(channel) == 0
+        assert int(start) >= 0 and int(count) > 0 and int(start) + int(count) <= n
+        return x[int(start) : int(start) + int(count)]
+
+    # path 指向不存在的文件：若走 _load_channel 会直接抛错，从而证明 reader 优先
+    src = {
+        "type": "file",
+        "path": "no-such-file.wav",
+        "sampleRate": fs,
+        "channel": 0,
+        "sampleCount": n,
+        "read": read,
+    }
+    assert spectrum._source_provider(src) is not None
+    assert spectrum._source_provider({"type": "file", "path": "x.wav"}) is None
+
+    r = spectrum.compute_spectrum_sync_from_source(src, _params(resolutionHz=10.0))
+    assert calls, "reader was not used"
+    assert all(c[0] == 0 for c in calls)
+    assert r["seg_len"] == 100
+    idx = int(np.argmax(r["amplitudes"]))
+    assert abs(r["freqs"][idx] - 100.0) <= 10.0
+    assert np.all(np.isfinite(r["amplitudes"]))
+    assert np.all(np.isfinite(r["psd_values"]))
+
+    # 与整段数组版结果一致（同一批样本）
+    ref = spectrum.compute_spectrum_sync(x, fs, _params(resolutionHz=10.0))
+    assert np.array_equal(ref["freqs"], r["freqs"])
+    assert np.allclose(ref["amplitudes"], r["amplitudes"], rtol=1e-5, atol=1e-9)
+    assert np.allclose(ref["psd_values"], r["psd_values"], rtol=1e-5, atol=0.0)
+
+
+def test_stft_provider_matches_whole_signal(tmp_path):
+    """D1-b：带 read provider 的 STFT 栅格与整段路径一致，且按块读取不整段读入。"""
+    from DASignalAnalysis import stft
+
+    fs = 48000
+    seconds = 10.0
+    wav = tmp_path / "long_tone.wav"
+    _write_wav(wav, fs=fs, seconds=seconds, freq=1000.0, amp=0.5)
+    sample_count = int(fs * seconds)
+    params = {
+        "stftWindowMs": 50.0,
+        "stftOverlap": 50.0,
+        "stftZeroPadding": 0,
+        "window": "hann",
+        "removeDc": False,
+        "detrend": "none",
+    }
+    plain = {"type": "file", "path": str(wav), "sampleRate": fs}
+    calls = []
+
+    def read(channel, start, count):
+        calls.append((int(channel), int(start), int(count)))
+        return importer.read_range(wav, channel, start, count)
+
+    src = {
+        "type": "file",
+        "path": str(wav),
+        "sampleRate": fs,
+        "channel": 0,
+        "sampleCount": sample_count,
+        "read": read,
+    }
+    whole = stft.compute_heatmap_sync(plain, params, 120, 60)
+    streamed = stft.compute_heatmap_sync(src, params, 120, 60)
+
+    assert calls, "reader was not used"
+    assert all(c[0] == 0 for c in calls)
+    # 不整段读入：每次请求都短于总采样数，且 399 帧需要多块
+    assert max(c[2] for c in calls) < sample_count
+    assert len(calls) >= 2
+
+    # 栅格形状/轴一致
+    assert streamed["rows"] == whole["rows"] == 60
+    assert streamed["columns"] == whole["columns"]
+    assert streamed["nperseg"] == whole["nperseg"] == 2400
+    assert streamed["hop"] == whole["hop"] == 1200
+    assert streamed["n_frames"] == whole["n_frames"]
+    np.testing.assert_array_equal(streamed["times"], whole["times"])
+    np.testing.assert_array_equal(streamed["freqs"], whole["freqs"])
+
+    ga = np.asarray(whole["values"]).reshape(whole["rows"], whole["columns"])
+    gb = np.asarray(streamed["values"]).reshape(streamed["rows"], streamed["columns"])
+    assert np.array_equal(np.isnan(ga), np.isnan(gb))
+    valid = ~np.isnan(ga)
+    assert np.allclose(gb[valid], ga[valid], rtol=1e-5)
+
+
+def test_stft_provider_detrend_matches_whole_signal(tmp_path):
+    """D1-b：去直流/线性去趋势时流式 STFT 与整段路径仍在容差内一致。"""
+    from DASignalAnalysis import stft
+
+    fs = 48000
+    wav = tmp_path / "drift_tone.wav"
+    n = 48000
+    t = np.arange(n) / fs
+    # 带直流偏置 + 线性漂移的单音
+    x = (0.4 * np.sin(2.0 * np.pi * 1000.0 * t) + 0.5 + 2.0e-4 * np.arange(n)).astype(np.float32)
+    import soundfile as sf
+
+    sf.write(str(wav), x, fs)
+
+    base = {
+        "stftWindowMs": 50.0,
+        "stftOverlap": 50.0,
+        "window": "hann",
+        "removeDc": False,
+        "detrend": "none",
+    }
+    plain = {"type": "file", "path": str(wav), "sampleRate": fs}
+    stream_src = {
+        "type": "file",
+        "path": str(wav),
+        "sampleRate": fs,
+        "channel": 0,
+        "sampleCount": n,
+        "read": lambda ch, start, count: importer.read_range(wav, ch, start, count),
+    }
+    for mode in ("constant", "linear"):
+        params = dict(base, detrend=mode, removeDc=False)
+        whole = stft.compute_heatmap_sync(plain, params, 80, 40)
+        streamed = stft.compute_heatmap_sync(stream_src, params, 80, 40)
+        np.testing.assert_array_equal(streamed["times"], whole["times"])
+        np.testing.assert_array_equal(streamed["freqs"], whole["freqs"])
+        ga = np.asarray(whole["values"]).reshape(whole["rows"], whole["columns"])
+        gb = np.asarray(streamed["values"]).reshape(streamed["rows"], streamed["columns"])
+        assert np.array_equal(np.isnan(ga), np.isnan(gb))
+        valid = ~np.isnan(ga)
+        # constant：provider 用 float64 全局均值（与 detrend_signal 同口径），差异仅求和顺序；
+        # linear：provider 用 float64 闭式最小二乘，整段路径用 scipy 的 float32 lstsq，
+        # 两者拟合系数存在 float32 量化差（相对信号约 1e-5），因此放宽到 rtol=1e-4/atol=1e-6。
+        if mode == "linear":
+            assert np.allclose(gb[valid], ga[valid], rtol=1e-4, atol=1e-6), mode
+        else:
+            assert np.allclose(gb[valid], ga[valid], rtol=1e-5, atol=1e-9), mode
+
+
+def test_spectrum_provider_remove_dc_matches_whole_path(tmp_path):
+    """D1-a：removeDc 合成 constant 去趋势，provider 路径与整段路径一致且只统计一遍趋势。"""
+    from DASignalAnalysis import spectrum
+
+    fs = 48000
+    n = 24000
+    wav = tmp_path / "tone_dc.wav"
+    t = np.arange(n) / fs
+    x = (0.5 * np.sin(2.0 * np.pi * 1000.0 * t) + 0.35).astype(np.float32)
+    import soundfile as sf
+
+    sf.write(str(wav), x, fs)
+
+    params = _params(removeDc=True, detrend="none", resolutionHz=10.0)
+    plain = {"type": "file", "path": str(wav), "sampleRate": fs}
+    calls = []
+
+    def read(channel, start, count):
+        calls.append((int(start), int(count)))
+        return importer.read_range(wav, channel, start, count)
+
+    stream_src = {
+        "type": "file",
+        "path": str(wav),
+        "sampleRate": fs,
+        "channel": 0,
+        "sampleCount": n,
+        "read": read,
+    }
+    whole = spectrum.compute_spectrum_sync_from_source(plain, params)
+    streamed = spectrum.compute_spectrum_sync_from_source(stream_src, params)
+
+    assert calls, "reader was not used"
+    assert np.array_equal(whole["freqs"], streamed["freqs"])
+    assert np.allclose(streamed["amplitudes"], whole["amplitudes"], rtol=1e-5, atol=1e-9)
+    assert np.allclose(streamed["psd_values"], whole["psd_values"], rtol=1e-5, atol=1e-12)
+    # 去掉 DC 后 DC 频点幅值应接近 0，而 1 千赫单音仍保留（确认 removeDc 真的生效）
+    assert abs(streamed["amplitudes"][0]) < 1e-6
+    assert np.max(streamed["amplitudes"][1:]) == pytest.approx(0.5, rel=0.05)
+
+    # 请求序列：1 遍趋势统计 + 幅度谱 1 遍 + PSD 1 遍（共用统计结果，不是 4 遍）
+    passes = []
+    prev_start = None
+    for start, _count in calls:
+        if prev_start is None or start <= prev_start:
+            passes.append([])
+        passes[-1].append(start)
+        prev_start = start
+    assert len(passes) == 3, "expected 1 stats pass + 2 spectrum passes, got %d" % len(passes)

@@ -464,3 +464,337 @@ def test_spectrum_float32_input_matches_float64():
     p64 = spectral.welch_psd(x, FS, nperseg=4800, overlap=0.5)
     assert np.allclose(p32[0], p64[0])
     assert np.allclose(p32[1], p64[1], rtol=1e-5, atol=1e-12)
+
+
+# ---------------------------------------------------------------- 按块取数 provider（D1-a）
+
+
+def _provider_from_array(x):
+    """把一维数组包成 provider(start, count)，并记录请求区间。
+
+    provider 只返回请求区间的切片（float32），模拟 C++ ``readRange`` 的语义。
+    """
+    requests = []
+
+    def provider(start, count):
+        requests.append((int(start), int(count)))
+        return np.ascontiguousarray(x[int(start) : int(start) + int(count)], dtype=np.float32)
+
+    provider.requests = requests
+    return provider
+
+
+def _deterministic_signal(n=24000, seed=2026):
+    """确定性多正弦 + 噪声（固定 seed），带少量直流避免零均值巧合。"""
+    rng = np.random.default_rng(seed)
+    t = np.arange(n) / FS
+    x = (
+        0.4 * np.sin(2.0 * np.pi * 440.0 * t)
+        + 0.2 * np.sin(2.0 * np.pi * 1500.0 * t + 0.3)
+        + 0.05 * rng.normal(size=n)
+        + 0.01
+    )
+    return x.astype(np.float32)
+
+
+def test_provider_amplitude_matches_array_version():
+    """D1-a：provider 版分块幅度谱与整段数组版数值一致（mean/median × detrend × 零填充）。"""
+    n = 24000
+    x = _deterministic_signal(n)
+    nperseg = 1000
+    for average in ("mean", "median"):
+        for detrend in ("none", "constant", "linear"):
+            for zero_padding in (0, 512):
+                nfft = (nperseg + zero_padding) if zero_padding else None
+                y = spectral.detrend_signal(x, detrend)
+                f_ref, a_ref = spectral.amplitude_spectrum_segmented(
+                    y,
+                    FS,
+                    nperseg=nperseg,
+                    overlap=0.5,
+                    window="hann",
+                    nfft=nfft,
+                    average=average,
+                )
+                f_p, a_p = spectral.amplitude_spectrum_segmented_provider(
+                    _provider_from_array(x),
+                    n,
+                    FS,
+                    nperseg=nperseg,
+                    overlap=0.5,
+                    window="hann",
+                    nfft=nfft,
+                    average=average,
+                    detrend=detrend,
+                    block_samples=4096,
+                )
+                # 频率轴必须完全一致
+                assert np.array_equal(f_ref, f_p), (average, detrend, zero_padding)
+                assert np.allclose(a_p, a_ref, rtol=1e-5, atol=1e-9), (
+                    "amplitude mismatch: average=%s detrend=%s zeroPadding=%s" % (average, detrend, zero_padding)
+                )
+
+
+def test_provider_welch_matches_array_version():
+    """D1-a：provider 版韦尔奇 PSD 与整段数组版数值一致（mean/median × detrend）。"""
+    n = 24000
+    x = _deterministic_signal(n)
+    nperseg = 1000
+    for average in ("mean", "median"):
+        for detrend in ("none", "constant", "linear"):
+            y = spectral.detrend_signal(x, detrend)
+            f_ref, p_ref = spectral.welch_psd(
+                y, FS, nperseg, overlap=0.5, window="hann", average=average
+            )
+            f_p, p_p = spectral.welch_psd_provider(
+                _provider_from_array(x),
+                n,
+                FS,
+                nperseg,
+                overlap=0.5,
+                window="hann",
+                average=average,
+                detrend=detrend,
+                block_samples=4096,
+            )
+            assert np.array_equal(f_ref, f_p), (average, detrend)
+            assert np.allclose(p_p, p_ref, rtol=1e-5, atol=1e-12), (
+                "welch mismatch: average=%s detrend=%s" % (average, detrend)
+            )
+
+
+def test_provider_frame_alignment_non_integer_blocks():
+    """帧边界：总长不是块的整数倍、段长/跳步也不能整除时，provider 分块不影响结果。"""
+    block_samples = 4096
+    n = int(3.7 * block_samples)  # 15155：卡在非整块位置
+    nperseg = 1003  # hop = round(1003*0.5) = 502，不能整除 N-段长
+    hop = spectral.hop_from_overlap(nperseg, 0.5)
+    assert hop == 502
+    x = _deterministic_signal(n)
+    for average in ("mean", "median"):
+        y = spectral.detrend_signal(x, "none")
+        f_ref, a_ref = spectral.amplitude_spectrum_segmented(
+            y, FS, nperseg=nperseg, overlap=0.5, window="hann", average=average
+        )
+        f_p, a_p = spectral.amplitude_spectrum_segmented_provider(
+            _provider_from_array(x),
+            n,
+            FS,
+            nperseg=nperseg,
+            overlap=0.5,
+            window="hann",
+            average=average,
+            detrend="none",
+            block_samples=block_samples,
+        )
+        assert np.array_equal(f_ref, f_p)
+        assert np.allclose(a_p, a_ref, rtol=1e-5, atol=1e-9)
+    y = spectral.detrend_signal(x, "none")
+    f_ref, p_ref = spectral.welch_psd(y, FS, nperseg, overlap=0.5, window="hann")
+    f_p, p_p = spectral.welch_psd_provider(
+        _provider_from_array(x), n, FS, nperseg, overlap=0.5, window="hann", block_samples=block_samples
+    )
+    assert np.array_equal(f_ref, f_p)
+    assert np.allclose(p_p, p_ref, rtol=1e-5, atol=1e-12)
+
+
+def test_provider_nperseg_ge_total_falls_back_to_whole_read():
+    """nperseg >= total_samples 时回退「整段读 + 现有函数」，且只读一次整段。"""
+    x = _tone(seconds=0.02)  # 960 点
+    n = x.size
+    nperseg = n
+
+    provider = _provider_from_array(x)
+    f_ref, a_ref = spectral.amplitude_spectrum_segmented(
+        x.astype(np.float32), FS, nperseg=nperseg, overlap=0.5, window="hann"
+    )
+    f_p, a_p = spectral.amplitude_spectrum_segmented_provider(
+        provider, n, FS, nperseg=nperseg, overlap=0.5, window="hann"
+    )
+    assert np.array_equal(f_ref, f_p)
+    assert np.array_equal(a_ref, a_p)
+    assert provider.requests == [(0, n)]
+
+    # nperseg 大于数据长度：同样退化为整段单次 FFT
+    provider2 = _provider_from_array(x)
+    f_ref2, a_ref2 = spectral.amplitude_spectrum_segmented(
+        x.astype(np.float32), FS, nperseg=n + 512, overlap=0.5, window="hann"
+    )
+    f_p2, a_p2 = spectral.amplitude_spectrum_segmented_provider(
+        provider2, n, FS, nperseg=n + 512, overlap=0.5, window="hann"
+    )
+    assert np.array_equal(f_ref2, f_p2)
+    assert np.array_equal(a_ref2, a_p2)
+
+    # PSD 同样回退，数值与整段版一致
+    provider3 = _provider_from_array(x)
+    f_ref3, p_ref3 = spectral.welch_psd(x.astype(np.float32), FS, nperseg=n)
+    f_p3, p_p3 = spectral.welch_psd_provider(provider3, n, FS, nperseg=n)
+    assert np.array_equal(f_ref3, f_p3)
+    assert np.array_equal(p_ref3, p_p3)
+    assert provider3.requests == [(0, n)]
+
+
+def test_provider_cancel_hook_aborts_on_first_block():
+    """C7：cancel_hook 在第一次按块取数时就中止（幅度/PSD、含统计遍与频谱遍）。"""
+    x = _tone(seconds=0.5)
+    for detrend in ("none", "constant"):
+        calls = []
+
+        def cancel_hook():
+            calls.append(1)
+            raise RuntimeError("cancelled")
+
+        with pytest.raises(RuntimeError, match="cancelled"):
+            spectral.amplitude_spectrum_segmented_provider(
+                _provider_from_array(x),
+                x.size,
+                FS,
+                nperseg=1024,
+                overlap=0.5,
+                window="hann",
+                detrend=detrend,
+                cancel_hook=cancel_hook,
+                block_samples=4096,
+            )
+        assert len(calls) == 1, "cancel_hook should abort on the first block (detrend=%s)" % detrend
+
+        calls.clear()
+        with pytest.raises(RuntimeError, match="cancelled"):
+            spectral.welch_psd_provider(
+                _provider_from_array(x),
+                x.size,
+                FS,
+                nperseg=1024,
+                overlap=0.5,
+                window="hann",
+                detrend=detrend,
+                cancel_hook=cancel_hook,
+                block_samples=4096,
+            )
+        assert len(calls) == 1
+
+
+def _request_passes(requests):
+    """把请求序列按「起点回退」切成多遍扫描（detrend 统计遍 + 频谱遍）。
+
+    每遍内部请求区间必须单调不重叠（allow carry 由实现内部完成，不重复请求）。
+    """
+    passes = []
+    prev_start = None
+    for start, count in requests:
+        if prev_start is None or start <= prev_start:
+            passes.append([])
+        passes[-1].append((start, count))
+        prev_start = start
+    return passes
+
+
+def test_provider_requests_bounded_and_never_whole_read():
+    """N-C1a/D1-a：N=2e6 时不整段读取，单次请求不超过 block_samples，请求区间单调不重叠。"""
+    n = 2_000_000
+    block_samples = 1 << 20
+    requests = []
+
+    def provider(start, count):
+        requests.append((int(start), int(count)))
+        idx = np.arange(int(start), int(start) + int(count), dtype=np.float64)
+        return (0.5 * np.sin(2.0 * np.pi * 1000.0 * idx / FS)).astype(np.float32)
+
+    f, a = spectral.amplitude_spectrum_segmented_provider(
+        provider, n, FS, nperseg=4096, overlap=0.5, window="hann", detrend="none", block_samples=block_samples
+    )
+    assert f.size == 4096 // 2 + 1 and a.size == f.size
+    assert requests, "provider was never called"
+    assert max(c for _s, c in requests) <= block_samples
+    assert all(c < n for _s, c in requests), "provider must not read the whole signal at once"
+    passes = _request_passes(requests)
+    assert len(passes) == 1  # detrend=none：只有一遍频谱扫描
+    _assert_pass_monotonic(passes[0], n)
+
+    # detrend=constant：先一遍统计均值、再一遍频谱；每遍都不整段、区间单调
+    requests.clear()
+    spectral.amplitude_spectrum_segmented_provider(
+        provider,
+        n,
+        FS,
+        nperseg=4096,
+        overlap=0.5,
+        window="hann",
+        detrend="constant",
+        block_samples=block_samples,
+    )
+    passes = _request_passes(requests)
+    assert len(passes) == 2, "constant detrend should do a stats pass + a spectrum pass"
+    for reqs in passes:
+        assert max(c for _s, c in reqs) <= block_samples
+        assert all(c < n for _s, c in reqs)
+        _assert_pass_monotonic(reqs, n)
+
+
+def _assert_pass_monotonic(reqs, n):
+    """单遍请求：从 0 开始、起点严格递增、区间首尾相接且不越界（不重复请求）。"""
+    pos = 0
+    for start, count in reqs:
+        assert start == pos, "request %r not contiguous after %d" % ((start, count), pos)
+        assert count > 0
+        pos += count
+    assert pos <= n
+    # 频谱遍可能因最后一帧不覆盖末尾少量样本而提前结束，但误差不超过一帧跨度
+    assert n - pos < 4096 + 2048
+
+
+def test_provider_defensive_handling_and_nan_sanitize():
+    """防御性：provider 返回 float64/含 NaN/Inf 时按 float32 + nan_to_num 口径处理。"""
+    n = 4800
+    x = _deterministic_signal(n).astype(np.float64)
+    x[10] = np.nan
+    x[11] = np.inf
+    x[12] = -np.inf
+    sanitized = np.nan_to_num(x, copy=True, nan=0.0, posinf=0.0, neginf=0.0).astype(np.float32)
+
+    def provider(start, count):
+        # 故意返回 float64（core 层必须防御性转 float32）
+        return x[int(start) : int(start) + int(count)]
+
+    f_ref, a_ref = spectral.amplitude_spectrum_segmented(
+        sanitized, FS, nperseg=512, overlap=0.5, window="hann"
+    )
+    f_p, a_p = spectral.amplitude_spectrum_segmented_provider(
+        provider, n, FS, nperseg=512, overlap=0.5, window="hann"
+    )
+    assert np.array_equal(f_ref, f_p)
+    assert np.all(np.isfinite(a_p))
+    assert np.array_equal(a_ref, a_p)
+
+    # provider 长度不足 → 明确报错（不静默错位成帧）
+    def short_provider(start, count):
+        return x[: min(n, 100)]
+
+    with pytest.raises(RuntimeError, match="sample provider returned"):
+        spectral.amplitude_spectrum_segmented_provider(
+            short_provider, n, FS, nperseg=100, overlap=0.5, window="hann"
+        )
+
+
+def test_provider_linear_detrend_matches_scipy():
+    """linear 去趋势的全局最小二乘直线与 scipy.signal.detrend(type="linear") 一致。"""
+    from scipy.signal import detrend as sp_detrend
+
+    rng = np.random.default_rng(31)
+    n = 20000
+    t = np.arange(n) / FS
+    # 带直流偏置 + 线性漂移 + 多正弦，确保最小二乘拟合有非零斜率
+    x = (
+        0.3 * np.sin(2.0 * np.pi * 700.0 * t)
+        + 2.0
+        + 3.0e-4 * np.arange(n)
+        + 0.01 * rng.normal(size=n)
+    ).astype(np.float32)
+    provider = _provider_from_array(x)
+    plan = spectral._provider_detrend_plan(provider, n, "linear")
+    ours = spectral._apply_provider_detrend(x, 0, plan)
+    ref = sp_detrend(x.astype(np.float64), type="linear")
+    assert ours.dtype == np.float32
+    # 与 scipy float64 结果比较：残差只来自 float32 落地（相对 ~1e-7）
+    assert np.allclose(ours, ref, rtol=1e-5, atol=1e-6)

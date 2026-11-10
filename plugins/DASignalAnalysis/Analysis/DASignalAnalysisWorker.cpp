@@ -1,5 +1,6 @@
 #include "DASignalAnalysisWorker.h"
 #include <cstring>
+#include <stdexcept>
 #include <utility>
 #include <QFile>
 #include <QTimer>
@@ -43,7 +44,36 @@ QVector< double > toDoubleVector(pybind11::object arr)
 
 /**
  * @brief 构造 Python 编排需要的来源描述
+ *
+ * D1-a（Q3①）：额外注入 `"read"` 可调用对象，把 DASignalSource::readRange 按块暴露给
+ * Python（read(channel, start, count) -> float32 ndarray）。Python 侧所有取数都优先走它，
+ * 不再按 path/dataframeName 自己整段读取，从而避免「整段 float32 + 预处理副本」的峰值内存，
+ * 也让数据帧改名不再断链（按 source 对象引用取数）。
+ *
+ * 生命周期：callable 捕获 shared_ptr<DASignal>，随任务结果/任务表引用释放；readRange 契约
+ * 保证可跨线程调用、不碰界面对象，因此在 Python 守护线程里直接调用是安全的。
  */
+pybind11::object makeSourceReader(const DASignalPtr& signal)
+{
+    return pybind11::cpp_function([signal](int channel, qint64 start, qint64 count) -> pybind11::array_t< float > {
+        QVector< float > out;
+        if (count <= 0) {
+            return pybind11::array_t< float >(0);
+        }
+        QString error;
+        if (!signal->readRange(channel, start, count, out, &error)) {
+            // pybind11 会把 std::runtime_error 转成 Python RuntimeError，Python 编排层原样上抛；
+            // worker 的 failed 分支只把英文细节写日志、界面显示可翻译消息（§七-9）。
+            throw std::runtime_error(error.isEmpty() ? std::string("readRange failed") : error.toStdString());
+        }
+        pybind11::array_t< float > arr(static_cast< pybind11::ssize_t >(out.size()));
+        if (!out.isEmpty()) {
+            std::memcpy(arr.mutable_data(), out.constData(), sizeof(float) * static_cast< size_t >(out.size()));
+        }
+        return arr;
+    });
+}
+
 pybind11::dict buildSourceDict(const DASignalPtr& signal, int channel)
 {
     pybind11::dict source;
@@ -60,6 +90,7 @@ pybind11::dict buildSourceDict(const DASignalPtr& signal, int channel)
     source[ "channel" ]     = channel;
     source[ "sampleRate" ]  = signal->sampleRate();
     source[ "sampleCount" ] = signal->sampleCount();
+    source[ "read" ]        = makeSourceReader(signal);
     return source;
 }
 
@@ -100,6 +131,49 @@ pybind11::dict paramsToDict(const DASignalAnalysisParams& params)
 }
 }  // namespace
 
+/**
+ * @brief 取数可用性前置检查（D1-a / D2）
+ *
+ * 分析任务发起前先探测一次单样本取数：
+ * - 来源缺失（数据帧被移出管理器后仍是占位状态）→ 明确提示重新指定/重新导入；
+ * - readRange 失败（数据帧改名/移除后引用失效、文件不可用）→ 明确提示「无法读取」；
+ * 而不是让 Python 侧静默拿到空数组或抛异常后只显示「计算失败」。英文细节只写日志（§七-9）。
+ */
+bool DASignalAnalysisWorker::ensureAnalyzable(const DASignalTaskContext& ctx, QString* detail)
+{
+    if (detail) {
+        detail->clear();
+    }
+    if (!ctx.signal || !ctx.signal->isValid()) {
+        if (detail) {
+            *detail = QStringLiteral("signal is invalid or not loaded");
+        }
+        Q_EMIT failed(tr("Signal is invalid or not loaded."));  // cn:信号无效或未载入。
+        return false;
+    }
+    if (ctx.signal->source() && ctx.signal->source()->isMissing()) {
+        if (detail) {
+            *detail = QStringLiteral("signal source is missing (placeholder)");
+        }
+        Q_EMIT failed(tr("The signal source is missing. Relink or re-import it before analyzing."));
+        // cn:信号源缺失，请重新指定来源或重新导入后再分析。
+        return false;
+    }
+    QVector< float > probe;
+    QString error;
+    if (!ctx.signal->readRange(ctx.channel, 0, 1, probe, &error)) {
+        if (detail) {
+            *detail = error;
+        }
+        qWarning() << "DASignalAnalysisWorker::ensureAnalyzable channel" << ctx.channel << ":" << error;
+        Q_EMIT failed(
+            tr("The signal source cannot be read (it may have been renamed or removed, or the file is unavailable)."));
+        // cn:信号源无法读取（可能已改名或移除，或文件不可用）。
+        return false;
+    }
+    return true;
+}
+
 DASignalAnalysisWorker::DASignalAnalysisWorker(QObject* par) : QObject(par)
 {
     mTimer = new QTimer(this);
@@ -134,8 +208,7 @@ void DASignalAnalysisWorker::updateTimer()
  */
 bool DASignalAnalysisWorker::computeSpectrum(const DASignalTaskContext& ctx, const DASignalAnalysisParams& params)
 {
-    if (!ctx.signal || !ctx.signal->isValid()) {
-        Q_EMIT failed(tr("Signal is invalid or not loaded."));  // cn:信号无效或未载入。
+    if (!ensureAnalyzable(ctx, nullptr)) {
         return false;
     }
     try {
@@ -167,7 +240,7 @@ bool DASignalAnalysisWorker::computeSpectrum(const DASignalTaskContext& ctx, con
  */
 bool DASignalAnalysisWorker::computeEnvelope(const DASignalTaskContext& ctx, qint64 start, qint64 end, int width)
 {
-    if (!ctx.signal || !ctx.signal->isValid()) {
+    if (!ensureAnalyzable(ctx, nullptr)) {
         return false;
     }
     try {
@@ -199,8 +272,7 @@ bool DASignalAnalysisWorker::computeHeatmap(const DASignalTaskContext& ctx,
                                             int columns,
                                             int rows)
 {
-    if (!ctx.signal || !ctx.signal->isValid()) {
-        Q_EMIT failed(tr("Signal is invalid or not loaded."));  // cn:信号无效或未载入。
+    if (!ensureAnalyzable(ctx, nullptr)) {
         return false;
     }
     try {
@@ -231,8 +303,7 @@ bool DASignalAnalysisWorker::computeHeatmap(const DASignalTaskContext& ctx,
  */
 bool DASignalAnalysisWorker::computePeaks(const DASignalTaskContext& ctx, const DASignalAnalysisParams& params)
 {
-    if (!ctx.signal || !ctx.signal->isValid()) {
-        Q_EMIT failed(tr("Signal is invalid or not loaded."));  // cn:信号无效或未载入。
+    if (!ensureAnalyzable(ctx, nullptr)) {
         return false;
     }
     try {
@@ -262,8 +333,7 @@ bool DASignalAnalysisWorker::computePeaks(const DASignalTaskContext& ctx, const 
  */
 bool DASignalAnalysisWorker::computePeakCurves(const DASignalTaskContext& ctx, const DASignalAnalysisParams& params)
 {
-    if (!ctx.signal || !ctx.signal->isValid()) {
-        Q_EMIT failed(tr("Signal is invalid or not loaded."));  // cn:信号无效或未载入。
+    if (!ensureAnalyzable(ctx, nullptr)) {
         return false;
     }
     try {
@@ -297,8 +367,7 @@ bool DASignalAnalysisWorker::computePeakCurves(const DASignalTaskContext& ctx, c
  */
 bool DASignalAnalysisWorker::computePlaybackWav(const DASignalTaskContext& ctx)
 {
-    if (!ctx.signal || !ctx.signal->isValid()) {
-        Q_EMIT failed(tr("Signal is invalid or not loaded."));  // cn:信号无效或未载入。
+    if (!ensureAnalyzable(ctx, nullptr)) {
         return false;
     }
     if (ctx.signal->sourceType() != DASignalSource::DataFrameSource) {

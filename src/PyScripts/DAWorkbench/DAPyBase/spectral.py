@@ -11,6 +11,9 @@
 - 韦尔奇功率谱密度：P[f] = 2/(fs·Σw²)·mean(|X_f|²)（单边，scipy.signal.welch 的 density 口径）；
   自实现分块流式累加（每块 256 帧，块内成帧后立即丢弃），mean 口径常驻内存只与频点数有关，
   不会为整段信号一次性分配「帧数 × 段长」矩阵（评审 N-C1a）
+- 按块取数 provider（方案 D1-a）：``amplitude_spectrum_segmented_provider`` /
+  ``welch_psd_provider`` 用 callable ``provider(start, count)`` 代替整段数组，跨块 carry 成帧，
+  不整段读入、不整段成帧；C++ ``DASignalSource::readRange`` 注入的 Python 可调用对象即 provider
 - dB：幅值类 20·log10(A/ref)，功率类 10·log10(P/ref)，ref=1.0 即 dBFS
 
 浮点口径（评审 N-C1b）：长信号读取/编排层保持 float32，FFT 只在段内（分块循环里）
@@ -434,3 +437,438 @@ def frame_count(sample_count, nperseg, hop):
     if sample_count < nperseg:
         return 0
     return int((int(sample_count) - int(nperseg)) // int(hop) + 1)
+
+
+# ---------------------------------------------------------------- 按块取数 provider（D1-a）
+
+
+# 默认每次向 provider 请求的样本数上限（只限制临时内存，不影响结果）
+_PROVIDER_BLOCK_SAMPLES = 1 << 20
+
+# detrend_plan 参数的「未提供」哨兵：区分「没传」与「显式传 None（不做去趋势）」
+_DETREND_PLAN_UNSET = object()
+
+
+def _provider_read(provider, start, count):
+    """从 provider 读取一段样本并做防御性处理（float32 一维 + NaN/Inf 归零）。
+
+    ``provider(start, count)`` 约定返回一维 float32（长度 count、C 连续，供 C++
+    ``DASignalSource::readRange`` 注入）。这里不假设调用方守约：
+
+    - 非一维结果按行优先展平；
+    - 超长截断到 count；长度不足抛 RuntimeError（避免静默错位成帧）；
+    - 统一转 float32（不整段升 float64，N-C1b）；
+    - NaN/Inf 归零（C6 口径，与 ``spectrum._load_channel`` 的整段 nan_to_num 等价）；
+      只在确实存在非有限值时复制，不污染 provider 返回的数组。
+
+    :param provider: 分块取数 callable provider(start, count) -> 一维数组
+    :param start: 起始采样点
+    :param count: 采样点数
+    :return: float32 一维 C 连续数组（长度 count）
+    """
+    count = int(count)
+    block = np.asarray(provider(int(start), count), dtype=np.float32)
+    if block.ndim != 1:
+        block = block.reshape(-1)
+    if block.size > count:
+        block = block[:count]
+    if block.size < count:
+        raise RuntimeError(
+            "sample provider returned %d samples, expected %d (start=%d)" % (block.size, count, int(start))
+        )
+    if block.size and not np.all(np.isfinite(block)):
+        block = np.nan_to_num(block, copy=True, nan=0.0, posinf=0.0, neginf=0.0)
+    return np.ascontiguousarray(block)
+
+
+def _provider_blocks(provider, total_samples, block_samples=_PROVIDER_BLOCK_SAMPLES, cancel_hook=None):
+    """单遍按块读取整段样本，产出 (start, float32 块)。
+
+    用于去趋势参数的流式统计（第一遍只读扫描）；每块调用一次 ``cancel_hook``。
+
+    :param provider: 分块取数 callable
+    :param total_samples: 信号总采样点数
+    :param block_samples: 每块样本数上限
+    :param cancel_hook: 可选无参回调，每块调用一次
+    :return: 生成器，逐块产出 (起始采样点, float32 一维数组)
+    """
+    total = int(max(0, total_samples))
+    block = int(max(1, block_samples))
+    pos = 0
+    while pos < total:
+        if cancel_hook is not None:
+            cancel_hook()
+        count = min(block, total - pos)
+        yield pos, _provider_read(provider, pos, count)
+        pos += count
+
+
+def _provider_detrend_plan(provider, total_samples, detrend, block_samples=_PROVIDER_BLOCK_SAMPLES, cancel_hook=None):
+    """第一遍流式统计全局去趋势参数（provider 版频谱 / STFT 共用）。
+
+    语义与 ``detrend_signal`` 一致：
+
+    - none / "" ：返回 None，第二遍原样成帧；
+    - constant：返回 ``{"mode": "constant", "mean": 全局均值}``，均值用 float64 流式累加；
+    - linear：返回 ``{"mode": "linear", "slope": a, "mean": 全局均值, "index_mean": (N-1)/2}``，
+      拟合直线 y ≈ mean + a·(i − index_mean)；用中心化索引累计 ``Σ(i−ī)·x``，
+      避免大 i 求和时的数值抵消，等价于 scipy.signal.detrend(type="linear") 的最小二乘直线；
+    - 其它模式按 none 处理（与 detrend_signal 的未知模式回退一致）。
+
+    统计前每块样本已经过 NaN/Inf 归零（见 ``_provider_read``），与整段 nan_to_num 后再
+    detrend_signal 的口径一致。
+
+    :param provider: 分块取数 callable
+    :param total_samples: 信号总采样点数
+    :param detrend: none / constant / linear
+    :param block_samples: 统计扫描的每块样本数上限
+    :param cancel_hook: 可选无参回调，每块调用一次
+    :return: None 或 dict（供 ``_apply_provider_detrend`` 使用）
+    """
+    mode = str(detrend or "none").strip().lower()
+    total = int(max(0, total_samples))
+    if mode not in ("constant", "linear") or total <= 0:
+        return None
+    if mode == "constant":
+        sum_x = 0.0
+        for _start, block in _provider_blocks(provider, total, block_samples, cancel_hook):
+            sum_x += float(np.sum(block, dtype=np.float64))
+        return {"mode": "constant", "mean": sum_x / float(total)}
+    # linear：y = mean + a·(i − index_mean)
+    index_mean = 0.5 * float(total - 1)
+    sum_x = 0.0
+    sum_cx = 0.0
+    for start, block in _provider_blocks(provider, total, block_samples, cancel_hook):
+        idx = np.arange(int(start), int(start) + block.size, dtype=np.float64)
+        sum_x += float(np.sum(block, dtype=np.float64))
+        sum_cx += float(np.dot(idx - index_mean, block.astype(np.float64)))
+    # Σ(i−ī)² = N(N²−1)/12 的闭式；N=1 时为 0，无法拟合斜率
+    sum_cc = float(total) * (float(total) ** 2 - 1.0) / 12.0
+    slope = (sum_cx / sum_cc) if sum_cc > 0.0 else 0.0
+    return {"mode": "linear", "slope": slope, "mean": sum_x / float(total), "index_mean": index_mean}
+
+
+def _apply_provider_detrend(block, start, plan):
+    """按去趋势参数对块内样本落地去趋势（float32 运算，与整段 detrend_signal 口径一致）。
+
+    - constant：减 ``np.float32(全局均值)``（与 detrend_signal 的 constant 分支同款）；
+    - linear：减 ``np.float32(mean + a·(i−ī))``，即全局最小二乘直线；
+    - plan 为 None（none/未知模式）时原样返回。
+
+    :param block: 一段 float32 样本（一维）
+    :param start: 该段首样本的全局索引（用于 linear 的 i）
+    :param plan: ``_provider_detrend_plan`` 的返回值
+    :return: float32 一维数组（去趋势后）
+    """
+    if plan is None:
+        return block
+    if plan["mode"] == "constant":
+        return block - np.float32(plan["mean"])
+    idx = np.arange(int(start), int(start) + block.size, dtype=np.float64)
+    trend = plan["mean"] + plan["slope"] * (idx - plan["index_mean"])
+    return block - trend.astype(np.float32)
+
+
+def _iter_provider_frames(
+    provider,
+    total_samples,
+    nperseg,
+    hop,
+    block_samples=_PROVIDER_BLOCK_SAMPLES,
+    cancel_hook=None,
+    chunk_frames=_SEG_BLOCK_FRAMES,
+    detrend_plan=None,
+):
+    """流式按帧产出 (k0, segs[float64])：segs 形状 (n, nperseg)，覆盖第 k0..k0+n-1 帧。
+
+    帧位置与 ``frame_count`` 完全一致（第 k 帧 = [k*hop, k*hop+nperseg)），跨块用 carry
+    保留 ``nperseg-hop`` 个重叠样本，不会漏帧/重帧；每块成帧后立即交付调用方 FFT，
+    调用方用完即丢弃，因此不会为整段信号或「帧数 × 段长」矩阵分配内存。
+
+    每次只请求「尚缺且本块需要」的样本（``min(block_samples, 需要量, 剩余量)``），
+    请求区间单调不重叠；每读取一个 provider 块调用一次 ``cancel_hook``。
+    单块帧数受 ``chunk_frames`` 与 ``block_samples`` 共同限制，块样本跨度不超过
+    ``block_samples``（nperseg 本身更大时至少 1 帧）。
+
+    :param provider: 分块取数 callable
+    :param total_samples: 信号总采样点数（决定帧数）
+    :param nperseg: 段长
+    :param hop: 帧跳步
+    :param block_samples: 单次请求样本数上限
+    :param cancel_hook: 可选无参回调，每块调用一次
+    :param chunk_frames: 每次交付的最大帧数
+    :param detrend_plan: 可选去趋势参数（``_provider_detrend_plan`` 返回值），逐帧落地
+    :return: 生成器，逐块产出 (首帧号, float64 二维数组)
+    """
+    total = int(max(0, total_samples))
+    nperseg = int(nperseg)
+    hop = int(hop)
+    n_frames = frame_count(total, nperseg, hop)
+    block = int(max(1, block_samples))
+    chunk = int(max(1, chunk_frames))
+    if hop > 0 and block > nperseg:
+        # 让单块 256 帧的样本跨度也不超过 block_samples
+        chunk = max(1, min(chunk, (block - nperseg) // hop + 1))
+    buf = np.empty(0, dtype=np.float32)
+    buf_start = 0
+    pos = 0
+    k = 0
+    while k < n_frames:
+        n = min(chunk, n_frames - k)
+        need_end = (k + n - 1) * hop + nperseg
+        while pos < need_end:
+            if cancel_hook is not None:
+                cancel_hook()
+            want = min(block, need_end - pos, total - pos)
+            if want <= 0:
+                raise RuntimeError("sample provider ended before the last frame")
+            part = _provider_read(provider, pos, want)
+            buf = part if buf.size == 0 else np.concatenate((buf, part))
+            pos += want
+        segs = np.empty((n, nperseg), dtype=np.float64)
+        base = k * hop - buf_start
+        for j in range(n):
+            off = base + j * hop
+            piece = buf[off : off + nperseg]
+            if detrend_plan is not None:
+                piece = _apply_provider_detrend(piece, k * hop + j * hop, detrend_plan)
+            segs[j, :] = piece
+        yield k, segs
+        k += n
+        if k < n_frames:
+            # carry：只保留下一帧起点之后的样本（跨块重叠部分）
+            cut = min(k * hop - buf_start, buf.size)
+            if cut > 0:
+                buf = np.ascontiguousarray(buf[cut:])
+                buf_start += cut
+        else:
+            buf = np.empty(0, dtype=np.float32)
+            buf_start = pos
+        del segs
+
+
+def amplitude_spectrum_segmented_provider(
+    provider,
+    total_samples,
+    fs,
+    nperseg,
+    overlap=0.5,
+    window="hann",
+    nfft=None,
+    average="mean",
+    rms=False,
+    detrend="none",
+    cancel_hook=None,
+    block_samples=_PROVIDER_BLOCK_SAMPLES,
+    detrend_plan=_DETREND_PLAN_UNSET,
+):
+    """按块取数的分块平均单边峰值幅度谱（D1-a：不整段读入、不整段成帧）。
+
+    数值口径与 ``amplitude_spectrum_segmented`` 完全一致（帧位置 k*hop、帧数
+    ``frame_count``、单边峰值幅度谱归一化、mean/median 平均、零填充语义都相同），
+    区别只在取数与成帧方式：数据经 ``provider(start, count)`` 按块拉取，跨块用 carry
+    保留重叠样本，块内成帧 → FFT → 立即归并后丢弃块矩阵。
+
+    内存口径：
+
+    - mean 口径常驻只有「频点数」量级的 float64 累加数组，不分配整段信号，也不分配
+      「帧数 × 段长」成帧矩阵；
+    - median 口径只分配「帧数 × 频点数」float32 段谱缓冲（与 ``welch_psd`` 的 median
+      同思路），同样没有整段信号/整段成帧矩阵；幅度路径**不**做 welch 的 median bias
+      修正（与 ``amplitude_spectrum_segmented`` 保持一致）；
+    - ``nperseg >= total_samples``（短信号）时允许回退「整段读 + 现有函数」，此时
+      内存与数值都与数组版完全相同。
+
+    浮点与预处理（N-C1b / C6）：
+
+    - 数据块保持 float32，FFT 只在段内升 float64；
+    - NaN/Inf 逐块归零（nan_to_num 口径，见 ``_provider_read``）；
+    - ``detrend`` 语义与 ``detrend_signal`` 相同：none / constant（去全局均值）/
+      linear（去全局最小二乘直线）。constant/linear 会先做一遍流式统计（多一次只读扫描），
+      再在块内减去趋势；未知模式按 none 处理。
+
+    :param provider: 分块取数 callable provider(start, count) -> 一维 float32（长度 count）
+    :param total_samples: 信号总采样点数（帧数由它决定）
+    :param fs: 采样率（赫兹）
+    :param nperseg: 段长（采样点数）
+    :param overlap: 段间重叠率 0~1（0.5 表示 50%）
+    :param window: 窗函数名（未知名称回退矩形窗）
+    :param nfft: FFT 总点数（大于段长即零填充；None 表示等于段长）
+    :param average: mean / median
+    :param rms: True 返回均方根谱（k ≥ 1 除 √2，直流分量不除）
+    :param detrend: none / constant / linear
+    :param cancel_hook: 可选无参回调，每次按块读取调用一次（供编排层取消）
+    :param block_samples: 每次向 provider 请求的样本数上限（只影响临时内存，不影响结果）
+    :param detrend_plan: 内部复用参数（编排层可先调 ``_provider_detrend_plan`` 算一次，
+        让幅度谱与 PSD 共用同一遍统计扫描）；不传则按 detrend 自行统计
+    :return: (freqs, amplitudes)
+    """
+    total = int(max(0, total_samples))
+    nperseg = int(max(1, nperseg))
+    if total == 0 or nperseg >= total:
+        x = _provider_read(provider, 0, total) if total > 0 else np.zeros(0, dtype=np.float32)
+        y = detrend_signal(x, detrend)
+        return amplitude_spectrum_segmented(
+            y,
+            fs,
+            nperseg=nperseg,
+            overlap=overlap,
+            window=window,
+            nfft=nfft,
+            average=average,
+            rms=rms,
+            cancel_hook=cancel_hook,
+        )
+    hop = hop_from_overlap(nperseg, max(0.0, min(0.99, float(overlap))))
+    n_frames = frame_count(total, nperseg, hop)
+    if n_frames <= 0:
+        x = _provider_read(provider, 0, total)
+        y = detrend_signal(x, detrend)
+        return amplitude_spectrum(arr=y, fs=fs, window=window, nfft=nfft, rms=rms)
+    n = int(nfft) if nfft else nperseg
+    n = max(n, nperseg)
+    w = window_values(window, nperseg)
+    u = float(np.sum(w))
+    use_median = str(average or "mean").strip().lower() == "median"
+    n_freqs = n // 2 + 1
+    if detrend_plan is _DETREND_PLAN_UNSET:
+        plan = _provider_detrend_plan(provider, total, detrend, block_samples, cancel_hook)
+    else:
+        plan = detrend_plan
+    median_buf = np.empty((n_frames, n_freqs), dtype=np.float32) if use_median else None
+    accum = None if use_median else np.zeros(n_freqs, dtype=np.float64)
+    for k0, segs in _iter_provider_frames(
+        provider,
+        total,
+        nperseg,
+        hop,
+        block_samples=block_samples,
+        cancel_hook=cancel_hook,
+        detrend_plan=plan,
+    ):
+        spec = np.fft.rfft(segs * w, n=n, axis=1)
+        mag = _amplitude_from_spec(spec, u, n, rms)
+        count = mag.shape[0]
+        if use_median:
+            median_buf[k0 : k0 + count, :] = mag
+        else:
+            accum += mag.sum(axis=0)
+        del mag, spec, segs
+    if use_median:
+        # 逐频点中位数（幅度路径不做 welch 的 median bias 修正）；逐列 partition，
+        # 不再复制整张「帧数 × 频点数」矩阵（与 welch_psd 的 median 同思路）
+        amps = np.empty(n_freqs, dtype=np.float64)
+        for i in range(n_freqs):
+            amps[i] = np.median(median_buf[:, i])
+        del median_buf
+    else:
+        amps = accum / float(n_frames)
+    freqs = np.fft.rfftfreq(n, d=1.0 / float(fs))
+    return freqs, amps
+
+
+def welch_psd_provider(
+    provider,
+    total_samples,
+    fs,
+    nperseg,
+    overlap=0.5,
+    window="hann",
+    average="mean",
+    detrend="none",
+    cancel_hook=None,
+    block_samples=_PROVIDER_BLOCK_SAMPLES,
+    detrend_plan=_DETREND_PLAN_UNSET,
+):
+    """按块取数的韦尔奇功率谱密度（D1-a：不整段读入、不整段成帧）。
+
+    数值口径与 ``welch_psd(x, ...)`` 完全一致：帧位置、单边功率、density 标定
+    1/(fs·Σw²)、median 口径的偏差修正都相同；区别只在取数与成帧方式——数据经
+    ``provider(start, count)`` 按块拉取，跨块 carry 保留重叠样本，块内成帧后立即
+    FFT 并归并/暂存，块矩阵随即释放。
+
+    内存口径与 ``welch_psd`` 相同：mean 口径常驻只有频点数级别；median 口径只分配
+    「帧数 × 频点数」float32 段谱缓冲，不分配整段信号或「帧数 × 段长」成帧矩阵。
+    ``nperseg >= total_samples`` 时回退「整段读 + 现有函数」。
+
+    NaN/Inf 归零与 detrend 语义见 ``amplitude_spectrum_segmented_provider``。
+
+    :param provider: 分块取数 callable provider(start, count) -> 一维 float32（长度 count）
+    :param total_samples: 信号总采样点数
+    :param fs: 采样率（赫兹）
+    :param nperseg: 段长（采样点数）
+    :param overlap: 段间重叠率 0~1
+    :param window: 窗函数名
+    :param average: mean / median
+    :param detrend: none / constant / linear
+    :param cancel_hook: 可选无参回调，每次按块读取调用一次（供编排层取消）
+    :param block_samples: 每次向 provider 请求的样本数上限（只影响临时内存，不影响结果）
+    :param detrend_plan: 内部复用参数（与 amplitude_spectrum_segmented_provider 共用一遍
+        ``_provider_detrend_plan`` 统计结果）；不传则按 detrend 自行统计
+    :return: (freqs, psd)
+    """
+    total = int(max(0, total_samples))
+    fs = float(fs)
+    nperseg = int(max(2, nperseg))
+    if total < 2 or fs <= 0.0:
+        return np.zeros(0), np.zeros(0)
+    nperseg = min(nperseg, total)
+    if nperseg >= total:
+        x = _provider_read(provider, 0, total)
+        y = detrend_signal(x, detrend)
+        return welch_psd(
+            y,
+            fs,
+            nperseg,
+            overlap=overlap,
+            window=window,
+            average=average,
+            cancel_hook=cancel_hook,
+        )
+    hop = int(max(1, round(nperseg * (1.0 - float(overlap)))))
+    n_frames = frame_count(total, nperseg, hop)
+    if n_frames <= 0:
+        return np.zeros(0), np.zeros(0)
+    w = window_values(window, nperseg)
+    u2 = float(np.sum(w * w))
+    if u2 <= 0.0:
+        u2 = 1.0
+    # density 标定：1/(fs·Σw²)；先累加功率再统一乘，避免逐帧乘法
+    scale = 1.0 / (fs * u2)
+    n_freqs = nperseg // 2 + 1
+    use_median = str(average or "mean").strip().lower() == "median"
+    if detrend_plan is _DETREND_PLAN_UNSET:
+        plan = _provider_detrend_plan(provider, total, detrend, block_samples, cancel_hook)
+    else:
+        plan = detrend_plan
+    frames_buf = np.empty((n_frames, n_freqs), dtype=np.float32) if use_median else None
+    accum = None if use_median else np.zeros(n_freqs, dtype=np.float64)
+    for k0, segs in _iter_provider_frames(
+        provider,
+        total,
+        nperseg,
+        hop,
+        block_samples=block_samples,
+        cancel_hook=cancel_hook,
+        detrend_plan=plan,
+    ):
+        spec = np.fft.rfft(segs * w, axis=1)
+        power = _single_sided_power(spec, nperseg)
+        count = power.shape[0]
+        if use_median:
+            frames_buf[k0 : k0 + count, :] = power
+        else:
+            accum += power.sum(axis=0)
+        del power, spec, segs
+    if use_median:
+        # 与 scipy.signal.welch(average="median") 同款中位数偏差修正
+        bias = _median_bias(n_frames)
+        psd = np.empty(n_freqs, dtype=np.float64)
+        for i in range(n_freqs):
+            psd[i] = np.median(frames_buf[:, i]) / bias
+        del frames_buf
+    else:
+        psd = accum / float(n_frames)
+    psd = psd * scale
+    freqs = np.fft.rfftfreq(nperseg, d=1.0 / fs)
+    return freqs, psd
