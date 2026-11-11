@@ -4,6 +4,7 @@
 #include <utility>
 #include <QFile>
 #include <QFileInfo>
+#include <QThread>
 #include <QTimer>
 #include <QDebug>
 #include "DAPybind11InQt.h"
@@ -17,8 +18,18 @@ namespace DA
 {
 namespace
 {
-/// 轮询间隔（毫秒）
-constexpr int cPollIntervalMs = 100;
+/// 轮询间隔（毫秒）：既决定结果回填延迟，也决定每轮让出 GIL 的频率（见 cGilYieldMs）
+constexpr int cPollIntervalMs = 20;
+/**
+ * @brief 每轮轮询后让出 GIL 的时长（毫秒）
+ *
+ * 内嵌解释器由 GUI 线程初始化后一直持有 GIL，Python 守护线程只能在 GUI 线程进入 Python
+ * 的那一瞬间拿到 GIL。只轮询不让出时，分析任务几乎每帧都要等一个轮询周期：实测 9M 点
+ * @32kHz 的频谱（约 1.1 万帧）要 20 分钟才回填，且频谱/时频/峰值表长时间空白。
+ * 这里与 DataframeIOWorker 的后台等待口径一致：释放 GIL + 短暂休眠，把 GIL 真正让给
+ * Python 任务线程；GUI 线程只阻塞轮询周期的一部分，期间仍能处理取消/重绘事件。
+ */
+constexpr int cGilYieldMs = 12;
 
 DAPyModule namedModule(const char* name)
 {
@@ -28,6 +39,22 @@ DAPyModule namedModule(const char* name)
 DAPyModule statusModule()
 {
     return DAPyModule("DAWorkbench.DAPyBase.thread_status_manager");
+}
+
+/**
+ * @brief 任务去重键：同类任务 + 信号 + 通道 + 参数版本，再拼调用方的请求特征
+ *
+ * 视图会在首次显示、外部连接完成后、resize 防抖、峰值窗口显示等时机重复请求同一份分析；
+ * 同一键的任务在跑时不再重复提交，避免把 O(N) 计算跑多遍（大信号时成倍拖慢出图）。
+ */
+QString makeDedupeKey(const char* kind, const DASignalTaskContext& ctx, const QString& extra = QString())
+{
+    return QStringLiteral("%1|%2|%3|%4|%5")
+        .arg(QString::fromLatin1(kind))
+        .arg(QString::number(reinterpret_cast< quintptr >(ctx.signal.get())))
+        .arg(ctx.channel)
+        .arg(ctx.paramsVersion)
+        .arg(extra);
 }
 
 /**
@@ -209,6 +236,10 @@ void DASignalAnalysisWorker::updateTimer()
  */
 bool DASignalAnalysisWorker::computeSpectrum(const DASignalTaskContext& ctx, const DASignalAnalysisParams& params)
 {
+    const QString key = makeDedupeKey("spectrum", ctx);
+    if (hasRunningTask(key)) {
+        return true;  // 同一份频谱已在计算：直接复用，不再提交重复任务
+    }
     if (!ensureAnalyzable(ctx, nullptr)) {
         return false;
     }
@@ -218,9 +249,10 @@ bool DASignalAnalysisWorker::computeSpectrum(const DASignalTaskContext& ctx, con
         pybind11::dict p      = paramsToDict(params);
         pybind11::object res  = spectrum.attr("compute_spectrum_async")(source, p);
         TaskEntry entry;
-        entry.id   = QString::fromStdString(res.cast< std::string >());
-        entry.kind = SpectrumTask;
-        entry.ctx  = ctx;
+        entry.id        = QString::fromStdString(res.cast< std::string >());
+        entry.kind      = SpectrumTask;
+        entry.ctx       = ctx;
+        entry.dedupeKey = key;
         if (entry.id.isEmpty()) {
             Q_EMIT failed(tr("Failed to start the spectrum task."));  // cn:频谱任务启动失败。
             return false;
@@ -241,6 +273,10 @@ bool DASignalAnalysisWorker::computeSpectrum(const DASignalTaskContext& ctx, con
  */
 bool DASignalAnalysisWorker::computeEnvelope(const DASignalTaskContext& ctx, qint64 start, qint64 end, int width)
 {
+    const QString key = makeDedupeKey("envelope", ctx, QStringLiteral("%1|%2|%3").arg(start).arg(end).arg(width));
+    if (hasRunningTask(key)) {
+        return true;  // 同一区段/同一目标宽度的包络已在计算
+    }
     if (!ensureAnalyzable(ctx, nullptr)) {
         return false;
     }
@@ -249,9 +285,10 @@ bool DASignalAnalysisWorker::computeEnvelope(const DASignalTaskContext& ctx, qin
         pybind11::dict source = buildSourceDict(ctx.signal, ctx.channel);
         pybind11::object res = envelope.attr("compute_envelope_async")(source, ctx.channel, start, end, width);
         TaskEntry entry;
-        entry.id   = QString::fromStdString(res.cast< std::string >());
-        entry.kind = EnvelopeTask;
-        entry.ctx  = ctx;
+        entry.id        = QString::fromStdString(res.cast< std::string >());
+        entry.kind      = EnvelopeTask;
+        entry.ctx       = ctx;
+        entry.dedupeKey = key;
         if (entry.id.isEmpty()) {
             return false;
         }
@@ -276,6 +313,13 @@ bool DASignalAnalysisWorker::computeHeatmap(const DASignalTaskContext& ctx,
                                             qint64 endSample,
                                             int blockFrames)
 {
+    const QString key = makeDedupeKey(
+        "heatmap",
+        ctx,
+        QStringLiteral("%1|%2|%3|%4|%5").arg(columns).arg(rows).arg(startSample).arg(endSample).arg(blockFrames));
+    if (hasRunningTask(key)) {
+        return true;  // 同一栅格尺寸/同一区段的热图已在计算
+    }
     if (!ensureAnalyzable(ctx, nullptr)) {
         return false;
     }
@@ -289,9 +333,10 @@ bool DASignalAnalysisWorker::computeHeatmap(const DASignalTaskContext& ctx,
         pybind11::object pyBlock = (blockFrames > 0) ? pybind11::cast(blockFrames) : pybind11::none();
         pybind11::object res     = stft.attr("compute_heatmap_async")(source, p, columns, rows, pyStart, pyEnd, pyBlock);
         TaskEntry entry;
-        entry.id   = QString::fromStdString(res.cast< std::string >());
-        entry.kind = HeatmapTask;
-        entry.ctx  = ctx;
+        entry.id        = QString::fromStdString(res.cast< std::string >());
+        entry.kind      = HeatmapTask;
+        entry.ctx       = ctx;
+        entry.dedupeKey = key;
         if (entry.id.isEmpty()) {
             Q_EMIT failed(tr("Failed to start the time-frequency task."));  // cn:时频任务启动失败。
             return false;
@@ -311,6 +356,10 @@ bool DASignalAnalysisWorker::computeHeatmap(const DASignalTaskContext& ctx,
  */
 bool DASignalAnalysisWorker::computePeaks(const DASignalTaskContext& ctx, const DASignalAnalysisParams& params)
 {
+    const QString key = makeDedupeKey("peaks", ctx);
+    if (hasRunningTask(key)) {
+        return true;  // 同一份峰值表已在计算
+    }
     if (!ensureAnalyzable(ctx, nullptr)) {
         return false;
     }
@@ -320,9 +369,10 @@ bool DASignalAnalysisWorker::computePeaks(const DASignalTaskContext& ctx, const 
         pybind11::dict p      = paramsToDict(params);
         pybind11::object res  = peaks.attr("compute_peaks_async")(source, p);
         TaskEntry entry;
-        entry.id   = QString::fromStdString(res.cast< std::string >());
-        entry.kind = PeaksTask;
-        entry.ctx  = ctx;
+        entry.id        = QString::fromStdString(res.cast< std::string >());
+        entry.kind      = PeaksTask;
+        entry.ctx       = ctx;
+        entry.dedupeKey = key;
         if (entry.id.isEmpty()) {
             return false;
         }
@@ -345,6 +395,10 @@ bool DASignalAnalysisWorker::computePeakCurves(const DASignalTaskContext& ctx,
                                                qint64 endSample,
                                                int frameStep)
 {
+    const QString key = makeDedupeKey("peakcurves", ctx, QStringLiteral("%1|%2|%3").arg(startSample).arg(endSample).arg(frameStep));
+    if (hasRunningTask(key)) {
+        return true;  // 同一区段/同一帧步进的峰值曲线已在扫描
+    }
     if (!ensureAnalyzable(ctx, nullptr)) {
         return false;
     }
@@ -358,9 +412,10 @@ bool DASignalAnalysisWorker::computePeakCurves(const DASignalTaskContext& ctx,
         pybind11::object pyStep  = pybind11::cast(std::max(1, frameStep));
         pybind11::object res     = peaks.attr("compute_peak_curves_async")(source, p, pyStart, pyEnd, pyStep);
         TaskEntry entry;
-        entry.id   = QString::fromStdString(res.cast< std::string >());
-        entry.kind = PeakCurvesTask;
-        entry.ctx  = ctx;
+        entry.id        = QString::fromStdString(res.cast< std::string >());
+        entry.kind      = PeakCurvesTask;
+        entry.ctx       = ctx;
+        entry.dedupeKey = key;
         if (entry.id.isEmpty()) {
             return false;
         }
@@ -383,6 +438,10 @@ bool DASignalAnalysisWorker::computePeakCurves(const DASignalTaskContext& ctx,
  */
 bool DASignalAnalysisWorker::computePlaybackWav(const DASignalTaskContext& ctx)
 {
+    const QString key = makeDedupeKey("playbackwav", ctx);
+    if (hasRunningTask(key)) {
+        return true;  // 同一通道的播放音频已在导出
+    }
     if (!ensureAnalyzable(ctx, nullptr)) {
         return false;
     }
@@ -401,10 +460,11 @@ bool DASignalAnalysisWorker::computePlaybackWav(const DASignalTaskContext& ctx)
         pybind11::dict source = buildSourceDict(ctx.signal, ctx.channel);
         pybind11::object res  = importer.attr("export_playback_wav_async")(source, wavPath.toStdString());
         TaskEntry entry;
-        entry.id      = QString::fromStdString(res.cast< std::string >());
-        entry.kind    = PlaybackWavTask;
-        entry.ctx     = ctx;
-        entry.wavPath = wavPath;
+        entry.id        = QString::fromStdString(res.cast< std::string >());
+        entry.kind      = PlaybackWavTask;
+        entry.ctx       = ctx;
+        entry.dedupeKey = key;
+        entry.wavPath   = wavPath;
         if (entry.id.isEmpty()) {
             QFile::remove(wavPath);
             Q_EMIT failed(tr("Failed to start the playback audio export."));  // cn:播放音频导出任务启动失败。
@@ -623,6 +683,24 @@ int DASignalAnalysisWorker::runningTaskCount() const
 QStringList DASignalAnalysisWorker::runningTaskIds() const
 {
     return mTasks.keys();
+}
+
+/**
+ * @brief 是否已有同 dedupeKey 的任务在跑
+ *
+ * 命中时不重复提交（调用方按「已受理」处理）：同一份 O(N) 计算只跑一遍。
+ */
+bool DASignalAnalysisWorker::hasRunningTask(const QString& dedupeKey) const
+{
+    if (dedupeKey.isEmpty()) {
+        return false;
+    }
+    for (auto it = mTasks.constBegin(); it != mTasks.constEnd(); ++it) {
+        if (it.value().dedupeKey == dedupeKey) {
+            return true;
+        }
+    }
+    return false;
 }
 
 /**
@@ -860,6 +938,13 @@ void DASignalAnalysisWorker::poll()
             qWarning() << "DASignalAnalysisWorker::poll task" << id << ":" << e.what();
             Q_EMIT failed(tr("Failed to read the background result."));  // cn:读取后台结果失败。
         }
+    }
+    // 让出 GIL 给 Python 守护线程：任务在跑时，GUI 线程若不主动释放，分析线程只能等到
+    // 下一次进入 Python 的瞬间，几乎每帧一次轮询周期（大信号会从秒级拖到几十分钟）。
+    // 释放 + 短暂休眠让守护线程连续计算；任务全部完成则不再休眠，正常停表。
+    if (!mTasks.isEmpty()) {
+        pybind11::gil_scoped_release release;
+        QThread::msleep(static_cast< unsigned long >(cGilYieldMs));
     }
     updateTimer();
 }

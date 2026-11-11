@@ -113,6 +113,9 @@ private:
         QString id;
         TaskKind kind { SpectrumTask };
         DASignalTaskContext ctx;
+        // 去重键：同类任务 + 信号 + 通道 + 参数版本（谱/包络/热图/曲线再带请求尺寸等），
+        // 同一份计算在跑时不再重复提交（视图重复请求/尺寸未变的 resize 防抖会命中）
+        QString dedupeKey;
         // 仅 PlaybackWavTask：会话临时目录内的目标 WAV 路径（取消/失败时删除）
         QString wavPath;
         // 仅 ImportTask：源文件、预分配的转码目标 WAV、是否视频（取消/失败时删临时产物）
@@ -122,6 +125,8 @@ private:
     };
 
     void updateTimer();
+    // 是否已有同 dedupeKey 的任务在跑（重复请求直接复用，不再提交）
+    bool hasRunningTask(const QString& dedupeKey) const;
     // 取数可用性前置检查（D1：来源缺失/数据帧被改名或移除/文件不可用时给出明确失败，而非静默空结果）
     bool ensureAnalyzable(const DASignalTaskContext& ctx, QString* detail);
     // 按任务类型调用对应 Python 模块的 cancel_task / take_result（C7）

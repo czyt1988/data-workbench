@@ -60,6 +60,9 @@ plugins/DASignalAnalysis/
    插件只放面向信号的编排；不得在 `DAGui` 写 DSP，不得在 `DAFigure` 放界面控件。
 4. **并发只走一套**：Python 守护线程 + `thread_status_manager` + C++ `QTimer` 轮询
    （`DASignalAnalysisWorker`）。不要新起 `QThread`；界面线程禁止 O(N) 计算。
+   轮询槽里必须**让出 GIL**（`pybind11::gil_scoped_release` + `QThread::msleep`）：内嵌解释器
+   由 GUI 线程初始化后一直持有 GIL，只轮询不让出时 Python 守护线程每帧只能等一个轮询周期，
+   大信号会被拖到几十分钟（见 v1.5 修正要点）。
 5. **STFT 不整矩阵常驻**：`stft.py` 分块（256 帧）计算并池化进显示栅格后丢弃块矩阵；
    峰值曲线单趟扫描（512 帧/块，只留前 N）。
 6. **`.cpp` 里出现 Qt↔Python 类型转换必须包含 `DAPybind11QtCaster.hpp`**；
@@ -235,3 +238,22 @@ python -I -m pytest tests/test_signal_dsp.py tests/test_signal_import.py -q   # 
   经 worker 传给 Python 的 `start_sample/end_sample`）/ **取消**。峰值曲线局部扫描时
   `DAPeakDockWidget::setPartialScan(true)` 在窗口上标注「局部扫描」；切信号/清空峰值状态必须复位。
   峰值表/峰值曲线仍整段取数（E 阶段再流式化），「降低精度」对它们只减少扫描帧数、不减少整段取数内存。
+
+## v1.5 修正要点（导入推断与 GIL 让出，2026-11-11）
+
+- **时间列选择推断采样率**：`DASignalImportDialog` 的时间列列表只接
+  `QItemSelectionModel::selectionChanged`（不再接 `currentChanged`）：鼠标点击时
+  `QAbstractItemView::mousePressEvent` 先 `setCurrentIndex(NoUpdate)` 再 `select`，
+  `currentChanged` 发射时 `selectedIndexes()` 仍为空/还是上一行，按它推断会读到空选择
+  （采样率一直是 0、提示误报「无时间列」）或白算一次旧列；`selectionChanged` 在真正选中后发射，
+  单选模式下鼠标与键盘选择都会发。
+- **轮询让出 GIL**：`DASignalAnalysisWorker::poll()` 在仍有任务时 `pybind11::gil_scoped_release`
+  + `QThread::msleep(cGilYieldMs)`。内嵌解释器由 GUI 线程初始化后一直持有 GIL（`main.cpp` 的
+  `app.exec()` 前后都没有 `PyEval_SaveThread`），Python 守护线程只能等 GUI 线程进入 Python 的瞬间；
+  不让出时实测每帧≈一个轮询周期，9M 点 @32kHz 的频谱要 20 分钟才回填，且频谱/时频/峰值表长时间空白。
+  该口径与 `plugins/DataAnalysis/DataframeIOWorker` 的后台等待一致；`cPollIntervalMs=20`、
+  `cGilYieldMs=12`。改这里要同时兼顾：结果回填延迟（轮询间隔）与界面事件处理（休眠时长）。
+- **同类任务去重**：`DASignalAnalysisWorker` 给任务带 `dedupeKey`（任务类型 + 信号 + 通道 + 参数版本，
+  谱/包络/热图/曲线再拼请求尺寸/区段），`computeXxx` 命中在跑任务时直接返回「已受理」。
+  视图会在首次显示、外部连接后、resize 防抖、峰值窗口显示等时机重复请求同一份分析，
+  重复提交会让 O(N) 计算跑多遍、大信号出图成倍变慢（实测 9M 点首导入的包络/热图各被请求 3 次）。

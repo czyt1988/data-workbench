@@ -177,8 +177,12 @@ void DASignalImportDialog::buildDataFrameUI()
 
     connect(mDataCombo, QOverload< int >::of(&QComboBox::currentIndexChanged),
             this, &DASignalImportDialog::onSourceDataChanged);
-    // 时间列选中行变化 → 重新推断采样率（选择模型信号参数多，槽可少收）
-    connect(mTimeColumnList->selectionModel(), &QItemSelectionModel::currentChanged,
+    // 时间列选中行变化 → 重新推断采样率（选择模型信号参数多，槽可少收）。
+    // 只用 selectionChanged 而不用 currentChanged：鼠标点击时 QAbstractItemView 先
+    // setCurrentIndex(NoUpdate) 再 select，currentChanged 发射时 selectedIndexes() 还是
+    // 空/上一行，按它推断会读到空选择（采样率一直 0、提示误报「无时间列」）或对上一列
+    // 白算一次推断；selectionChanged 在真正选中后发射，单选模式下鼠标与键盘选择都会发。
+    connect(mTimeColumnList->selectionModel(), &QItemSelectionModel::selectionChanged,
             this, &DASignalImportDialog::onTimeColumnChanged);
     connect(mValueColumnList->selectionModel(), &QItemSelectionModel::selectionChanged,
             this, &DASignalImportDialog::onValueSelectionChanged);
