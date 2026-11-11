@@ -25,6 +25,9 @@
 #include "DAAppCore.h"
 #include "DAAppUI.h"
 #include "DAAppDockingArea.h"
+// ADS：关闭时清理浮动停靠窗口需要遍历 floatingWidgets()
+#include "DockManager.h"
+#include "FloatingDockContainer.h"
 #include "Ribbon/DAAppRibbonArea.h"
 #include "DAAppWorkFlowOperateWidget.h"
 #include "DAAppProject.h"
@@ -129,7 +132,22 @@ AppMainWindow::AppMainWindow(DAAppConfig* config, QWidget* parent)
 
 AppMainWindow::~AppMainWindow()
 {
-    mPluginMgr->unloadAllPlugins();
+    // 顺序要求：先卸载插件，再销毁 dockManager。
+    // 插件的 finalize() 会操作自己创建的停靠窗口（CDockWidget，例如信号分析插件的
+    // 「Peaks」与页面窗口）：这些 dock 都在 dockManager 的子对象树里，dockManager 一旦
+    // 销毁就会连带销毁它们，插件里保存的裸指针随即悬空。历史实现把 dockManager 的
+    // deleteLater() 放在 closeEvent 里，Qt 会在 app.exec() 返回前处理该 DeferredDelete，
+    // 导致这里的 unloadAllPlugins() 访问已销毁的 CDockWidget（关闭程序时崩溃）。
+    if (mPluginMgr) {
+        mPluginMgr->unloadAllPlugins();
+    }
+    // 插件全部卸载后再销毁 dockManager，确保其子对象树里已没有插件仍在使用的对象。
+    // 此处事件循环已经结束，deleteLater() 不会被处理，必须直接 delete。
+    if (mDockArea) {
+        if (ads::CDockManager* dockManager = mDockArea->dockManager()) {
+            delete dockManager;
+        }
+    }
 }
 
 void AppMainWindow::retranslateUi()
@@ -215,9 +233,22 @@ void AppMainWindow::closeEvent(QCloseEvent* e)
             }
         }
     }
-    // Delete dock manager here to delete all floating widgets. This ensures
-    // that all top level windows of the dock manager are properly closed
-    mDockArea->dockManager()->deleteLater();
+    // 关闭所有浮动停靠窗口：它们是 dockManager 的独立顶层窗口，会阻止 QApplication 的
+    // lastWindowClosed -> quit（主窗口关闭后应用不退出，表现为卡在退出阶段）。
+    // 这里用 hide() 而不是 close()：close() 会把容器里的 dock 都置为「已关闭」，
+    // 改变插件 finalize() 读到的窗口显隐状态（例如信号分析的 peakDockVisible 偏好）。
+    // 注意：dockManager 本体的销毁不在这里做——它必须等 ~AppMainWindow 里插件全部
+    // unloadAllPlugins() 之后再销毁（顺序原因见析构函数注释）。
+    if (mDockArea) {
+        if (ads::CDockManager* dockManager = mDockArea->dockManager()) {
+            const QList< ads::CFloatingDockContainer* > floatings = dockManager->floatingWidgets();
+            for (ads::CFloatingDockContainer* floating : floatings) {
+                if (floating) {
+                    floating->hide();
+                }
+            }
+        }
+    }
     SARibbonMainWindow::closeEvent(e);
 }
 

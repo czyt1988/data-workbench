@@ -3,6 +3,7 @@
 #include <QObject>
 #include <QAction>
 #include <QHash>
+#include <QPointer>
 #include <memory>
 #include "Signal/DASignal.h"
 #include "Analysis/DASignalAnalysisParams.h"
@@ -10,22 +11,20 @@
 #include "Analysis/DASignalTaskContext.h"
 #include "Analysis/DASignalAnalysisWorker.h"
 #include "Analysis/DAPeakResult.h"
+// QPointer 成员要求完整类型（Qt6 的 QPointer 内部用 std::is_base_of 校验）
+#include "DockWidget.h"
+#include "Page/DASignalAnalysisPage.h"
 
 class QMenu;
 class QActionGroup;
 class SARibbonCategory;
 class SARibbonPanel;
-namespace ads
-{
-class CDockWidget;
-}
 
 namespace DA
 {
 class DACoreInterface;
 class DAUIInterface;
 class DAActionsInterface;
-class DASignalAnalysisPage;
 class DASignalAnalysisView;
 class DAPeakDockWidget;
 class DASignalPlayer;
@@ -211,8 +210,10 @@ private:
     DAUIInterface* mUI { nullptr };
     DAActionsInterface* mActions { nullptr };
     SARibbonCategory* mCategory { nullptr };
-    ads::CDockWidget* mPageDock { nullptr };
-    DASignalAnalysisPage* mPage { nullptr };
+    // 停靠窗口由 dockManager 拥有：宿主销毁 dockManager 时会被连带销毁，
+    // 用 QPointer 防止 finalize()/后台回调在窗口已销毁后继续访问（关闭程序时崩溃）
+    QPointer< ads::CDockWidget > mPageDock;
+    QPointer< DASignalAnalysisPage > mPage;
     QMenu* mPeakTopNMenu { nullptr };
     QMenu* mExportMenu { nullptr };
     QMenu* mAmplitudeModeMenu { nullptr };
@@ -298,7 +299,9 @@ private:
     DASignalAnalysisWorker* mWorker { nullptr };
     // 峰值停靠窗口（右侧停靠区第三个标签页，D24）
     DAPeakDockWidget* mPeakPanel { nullptr };
-    ads::CDockWidget* mPeakDock { nullptr };
+    // 峰值停靠窗口由 dockManager 拥有，宿主销毁 dockManager 时会被连带销毁；
+    // QPointer 保证窗口先被销毁时这里自动置空，finalize()/回调不会访问悬空对象
+    QPointer< ads::CDockWidget > mPeakDock;
     bool mFirstSignalActivated { false };
     bool mPeakCurvesRequested { false };
     // D5：本轮峰值曲线是否为局部扫描（只扫可见区段/隔帧降精度），峰值窗口据此显示「局部扫描」

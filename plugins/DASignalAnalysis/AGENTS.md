@@ -70,7 +70,8 @@ plugins/DASignalAnalysis/
 9. **界面文本**：`tr("English") //cn:中文`；非 QObject 类（`DASignalFormSpecBuilder`）
    必须用 `QCoreApplication::translate("上下文", "字面量")`（lupdate 只认字面量）。
 10. **动作经宿主 `DAActionsInterface` 创建与销毁**；停靠窗口用 `CDockWidget` 并在 `finalize()` 显式清理；
-    对话框以插件页面为父（`mPage`），避免卸载后残留。
+    插件持有的 `CDockWidget*` 与页面指针必须用 `QPointer` 保存（宿主可能在插件卸载前销毁 dockManager，
+    裸指针会悬空）；对话框以插件页面为父（`mPage`），避免卸载后残留。
 11. **信号来源干净**：文件来源读块、数据帧来源引用式（按块转换）；临时 WAV 随信号/控制器生命周期清理。
 12. **工程只存来源引用、参数与视图状态**（`Archive/DASignalArchiveTask`），不存分析结果/STFT 矩阵/峰值数据；
     任务在后台线程只做文件读写，界面重建走 `loadedCallBack`。
