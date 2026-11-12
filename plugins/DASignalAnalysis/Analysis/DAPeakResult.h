@@ -42,6 +42,9 @@ struct DAPeakCurveResult
     int topN { 0 };
     int nFrames { 0 };
     int nperseg { 0 };
+    /// 计算时所用信号的采样率（赫兹）：显示层据此换算频率分辨率 Δf = fs / nperseg，
+    /// 判断相邻帧是不是同一个峰（跳变过大不连线，见 Page/DAPeakCurvePlotSamples.h）
+    double sampleRateHz { 0.0 };
 
     bool isValid() const
     {

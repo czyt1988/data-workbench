@@ -81,6 +81,8 @@ private:
 
     QTableView* mTable { nullptr };
     DAChartWidget* mCurveChart { nullptr };
+    // 曲线区说明行（回答「这个窗口画的是什么」：每帧前 N 名峰值的频率，颜色 = 名次）
+    QLabel* mCurveHint { nullptr };
     QLabel* mCurvePlaceholder { nullptr };
     // D5：局部扫描标注（仅峰值曲线区域，非局部时隐藏）
     QLabel* mPartialLabel { nullptr };

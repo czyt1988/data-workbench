@@ -21883,6 +21883,14 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <source>Peak curves cover only the visible time range or use a coarser frame step.</source>
         <translation>Peak curves cover only the visible time range or use a coarser frame step.</translation>
     </message>
+    <message>
+        <source>Per-frame top N peaks: frequency over time (color = rank)</source>
+        <translation>Per-frame top N peaks: frequency over time (color = rank)</translation>
+    </message>
+    <message>
+        <source>Each color is one rank. Adjacent frames whose peak frequency jumps far apart are drawn as separate points instead of a connected line, so lines mean continuous peaks.</source>
+        <translation>Each color is one rank. Adjacent frames whose peak frequency jumps far apart are drawn as separate points instead of a connected line, so lines mean continuous peaks.</translation>
+    </message>
 </context>
 <context>
     <name>DA::DAPeakTableModel</name>

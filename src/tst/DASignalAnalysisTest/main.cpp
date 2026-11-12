@@ -13,6 +13,7 @@
 #include "Analysis/DASignalMemoryEstimate.h"
 #include "Analysis/DAPeakTableModel.h"
 #include "Form/DASignalFormSpecBuilder.h"
+#include "Page/DAPeakCurvePlotSamples.h"
 #include "Render/DAStftRasterData.h"
 #include "qwt_interval.h"
 
@@ -72,6 +73,10 @@ private Q_SLOTS:
     void paramsPythonDictContract();
     // D5：内存估算公式契约（流式任务不随信号总长增长；整段取数任务按 float32 线性增长）
     void memoryEstimateContract();
+    // 峰值曲线渲染：相邻帧跳变阈值（8 × Δf）与未知分辨率时的兜底
+    void peakCurveJumpThreshold();
+    // 峰值曲线渲染：连续段才连线，跳变/缺峰处插入 NaN 断开（其余帧仍以点保留）
+    void peakCurvePlotSamples();
 };
 
 /**
@@ -608,6 +613,85 @@ void DASignalAnalysisTest::memoryEstimateContract()
     real.resolutionHz             = 10.0;
     QVERIFY(DA::dasignalEstimateAnalysisBytes(DA::DASignalAnalysisStage::Spectrum, real)
             < DA::kDASignalAnalysisBudgetBytes / 4);
+}
+
+/**
+ * @brief 峰值曲线渲染采样：跳变阈值 = 8 × 频率分辨率，分辨率未知时返回 0（不断开）
+ */
+void DASignalAnalysisTest::peakCurveJumpThreshold()
+{
+    DA::DAPeakCurveResult curves;
+    curves.topN         = 1;
+    curves.nFrames      = 1;
+    curves.times        = QVector< double >{ 0.0 };
+    curves.freqByRank   = QVector< double >{ 100.0 };
+    curves.nperseg      = 5000;
+    curves.sampleRateHz = 50000.0;  // Δf = 10 Hz → 阈值 80 Hz
+    QCOMPARE(DA::daPeakCurveJumpThresholdHz(curves), 80.0);
+
+    // 采样率未知（旧数据/未回填）：返回 0，保持「整条折线」的旧行为
+    curves.sampleRateHz = 0.0;
+    QCOMPARE(DA::daPeakCurveJumpThresholdHz(curves), 0.0);
+
+    // 段长非法：同样返回 0
+    curves.sampleRateHz = 50000.0;
+    curves.nperseg      = 0;
+    QCOMPARE(DA::daPeakCurveJumpThresholdHz(curves), 0.0);
+}
+
+/**
+ * @brief 峰值曲线渲染采样：连续段才连线，跳变/缺峰处插入 NaN 断开
+ *
+ * 场景：100 → 150（连续）→ 900（跳变）→ 缺帧 → 910 → 920（连续），阈值 80 Hz。
+ * 点保留全部 5 个有效帧；折线被跳变与缺帧断成 3 段（2 个 NaN 分隔）。
+ */
+void DASignalAnalysisTest::peakCurvePlotSamples()
+{
+    DA::DAPeakCurveResult curves;
+    curves.topN         = 1;
+    curves.nFrames      = 6;
+    curves.times        = QVector< double >{ 0.0, 1.0, 2.0, 3.0, 4.0, 5.0 };
+    curves.freqByRank   = QVector< double >{ 100.0, 150.0, 900.0, std::nan(""), 910.0, 920.0 };
+    curves.nperseg      = 5000;
+    curves.sampleRateHz = 50000.0;
+
+    const double threshold = DA::daPeakCurveJumpThresholdHz(curves);
+    QCOMPARE(threshold, 80.0);
+    const DA::DAPeakCurvePlotSamples samples = DA::daPeakCurvePlotSamples(curves, 0, threshold);
+
+    // 点：缺峰帧不画（其余 5 帧都在）
+    QCOMPARE(samples.dotXs.size(), 5);
+    QCOMPARE(samples.dotYs.size(), 5);
+    QCOMPARE(samples.dotXs.at(0), 0.0);
+    QCOMPARE(samples.dotYs.at(0), 100.0);
+    QCOMPARE(samples.dotXs.at(3), 4.0);  // 缺帧之后的第一点
+    QCOMPARE(samples.dotYs.at(4), 920.0);
+
+    // 折线：100→150 连续；跳变/缺帧处各插入一个 NaN
+    QCOMPARE(samples.lineXs.size(), 7);
+    QCOMPARE(samples.lineYs.size(), 7);
+    QCOMPARE(samples.lineYs.at(0), 100.0);
+    QCOMPARE(samples.lineYs.at(1), 150.0);
+    QVERIFY(std::isnan(samples.lineYs.at(2)));  // 150 → 900 跳变断开
+    QCOMPARE(samples.lineYs.at(3), 900.0);
+    QVERIFY(std::isnan(samples.lineYs.at(4)));  // 缺帧断开
+    QCOMPARE(samples.lineYs.at(5), 910.0);
+    QCOMPARE(samples.lineYs.at(6), 920.0);
+
+    // 时间原点平移到 100 s：点与折线的 x 同步平移
+    const DA::DAPeakCurvePlotSamples shifted = DA::daPeakCurvePlotSamples(curves, 0, threshold, 100.0);
+    QCOMPARE(shifted.dotXs.at(0), 100.0);
+    QCOMPARE(shifted.lineXs.at(0), 100.0);
+
+    // 阈值 <= 0：不做断开（旧行为），只在缺帧处断开
+    const DA::DAPeakCurvePlotSamples noBreak = DA::daPeakCurvePlotSamples(curves, 0, 0.0);
+    QCOMPARE(noBreak.lineYs.size(), 6);  // 5 个有效点 + 缺帧处 1 个 NaN
+    QCOMPARE(noBreak.lineYs.at(2), 900.0);
+    QVERIFY(std::isnan(noBreak.lineYs.at(3)));
+
+    // rank 越界 / 空结果：返回空采样
+    QVERIFY(DA::daPeakCurvePlotSamples(curves, 1, threshold).dotXs.isEmpty());
+    QVERIFY(DA::daPeakCurvePlotSamples(DA::DAPeakCurveResult(), 0, threshold).lineXs.isEmpty());
 }
 
 QTEST_MAIN(DASignalAnalysisTest)

@@ -22061,6 +22061,14 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <source>Peak curves cover only the visible time range or use a coarser frame step.</source>
         <translation>峰值曲线只覆盖可见时间范围，或使用了更粗的帧步进。</translation>
     </message>
+    <message>
+        <source>Per-frame top N peaks: frequency over time (color = rank)</source>
+        <translation>每帧前 N 名峰值：频率随时间变化（颜色 = 名次）</translation>
+    </message>
+    <message>
+        <source>Each color is one rank. Adjacent frames whose peak frequency jumps far apart are drawn as separate points instead of a connected line, so lines mean continuous peaks.</source>
+        <translation>每种颜色是一个名次；相邻帧频率跳变过大时只画点不连线，因此连线表示连续的峰。</translation>
+    </message>
 </context>
 <context>
     <name>DA::DAPeakTableModel</name>

@@ -259,3 +259,22 @@ python -I -m pytest tests/test_signal_dsp.py tests/test_signal_import.py -q   # 
   谱/包络/热图/曲线再拼请求尺寸/区段），`computeXxx` 命中在跑任务时直接返回「已受理」。
   视图会在首次显示、外部连接后、resize 防抖、峰值窗口显示等时机重复请求同一份分析，
   重复提交会让 O(N) 计算跑多遍、大信号出图成倍变慢（实测 9M 点首导入的包络/热图各被请求 3 次）。
+
+## v1.6 修正要点（峰值曲线渲染，2026-11-12）
+
+- **问题**：峰值窗口下半区（`DAPeakDockWidget` 的曲线区）把「每帧第 k 名」按帧直接连成折线。
+  但 D10 的口径是**每帧独立取前 N**——同名次在相邻帧不一定是同一个峰；噪声底、名次互换、
+  采样率填错（频率整体缩放）时，相邻帧会产生横跨整个频段的连线，窗口看起来像一张「笼子」。
+- **渲染口径**：`Page/DAPeakCurvePlotSamples.*` 把每个名次拆成两层：
+  - **点**（`QwtPlotCurve::Dots`）：所有有效帧都画，缺峰帧跳过，跳变处不丢数据；
+  - **折线**（`Lines` + `QwtPlotCurve::BreakAtNan`）：只在相邻帧频率跳变 ≤ `8 × Δf` 时连线，
+    跳变/缺帧处插入 NaN 断开，折线因此只表示「连续的峰」（斜扫频、跳频的水平段、稳定音调）。
+- **跳变阈值**：`daPeakCurveJumpThresholdHz()` = `8 × fs / nperseg`；采样率/段长未知返回 0
+  （不断开，退化为旧行为）。采样率由 worker 回填到 `DAPeakCurveResult::sampleRateHz`
+  （Python 返回字典不变，只加 C++ 侧字段）。
+- **界面说明**：曲线区顶部加一行说明「每帧前 N 名峰值：频率随时间变化（颜色 = 名次）」，
+  tooltip 解释「相邻帧跳变过大只画点不连线」；曲线区改为 `QWidget` 容器（说明行 + `QwtPlot`）。
+- **测试**：`src/tst/DASignalAnalysisTest` 增加 `peakCurveJumpThreshold` 与 `peakCurvePlotSamples`
+  （阈值换算、连续段断开位置、缺帧断开、timeOrigin 平移、阈值 0 的旧行为、越界空结果）。
+- **注意**：这是显示层口径，不改变 D10 的计算语义（每帧独立取前 N）；不要为了「连成轨迹」
+  改成跨帧匹配/跟踪，那属于新功能（需另立方案）。

@@ -860,6 +860,10 @@ void DASignalAnalysisWorker::poll()
                 curves.topN       = r[ "top_n" ].cast< int >();
                 curves.nFrames    = r[ "n_frames" ].cast< int >();
                 curves.nperseg    = r[ "nperseg" ].cast< int >();
+                // 采样率供显示层换算频率分辨率（判断相邻帧是否同一个峰，避免伪连线）
+                if (entry.ctx.signal) {
+                    curves.sampleRateHz = entry.ctx.signal->sampleRate();
+                }
                 Q_EMIT peakCurvesReady(entry.ctx, curves);
             } else if (entry.kind == ImportTask) {
                 DAPyModule importer  = namedModule("DASignalAnalysis.importer");

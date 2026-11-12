@@ -16,6 +16,7 @@
 #include "DAChartWidget.h"
 #include "DAColorTheme.h"
 #include "Analysis/DAPeakTableModel.h"
+#include "DAPeakCurvePlotSamples.h"
 
 namespace DA
 {
@@ -51,15 +52,24 @@ void DAPeakDockWidget::buildUI()
     mTable->setAlternatingRowColors(true);
     mSplitter->addWidget(mTable);
 
-    // 峰值曲线
-    mCurveChart = new DAChartWidget(mSplitter);
+    // 峰值曲线：顶部说明行（曲线 / 点的含义）+ 图表
+    QWidget* curveArea        = new QWidget(mSplitter);
+    QVBoxLayout* curveAreaLay = new QVBoxLayout(curveArea);
+    curveAreaLay->setContentsMargins(0, 0, 0, 0);
+    curveAreaLay->setSpacing(2);
+    mCurveHint = new QLabel(curveArea);
+    mCurveHint->setStyleSheet(QStringLiteral("color:#727272;"));
+    mCurveHint->setWordWrap(true);
+    curveAreaLay->addWidget(mCurveHint);
+    mCurveChart       = new DAChartWidget(curveArea);
     mCurvePlaceholder = new QLabel(tr("Open this window to compute the per-frame peak curves"), mCurveChart);
     // cn:打开本窗口后计算每帧前 N 峰值曲线
     mCurvePlaceholder->setAlignment(Qt::AlignCenter);
     mCurvePlaceholder->setStyleSheet(QStringLiteral("color:#727272;"));
     QVBoxLayout* curveLay = new QVBoxLayout(mCurveChart);
     curveLay->addWidget(mCurvePlaceholder);
-    mSplitter->addWidget(mCurveChart);
+    curveAreaLay->addWidget(mCurveChart, 1);
+    mSplitter->addWidget(curveArea);
     mSplitter->setStretchFactor(0, 2);
     mSplitter->setStretchFactor(1, 1);
     rootLay->addWidget(mSplitter, 1);
@@ -180,6 +190,12 @@ void DAPeakDockWidget::setShowTimeColumn(bool on)
 
 /**
  * @brief 重绘峰值曲线：每条曲线 = 某名次的频率随时间（颜色按名次固定）
+ *
+ * 「每帧独立取前 N」意味着同名次在相邻帧不一定是同一个峰，直接逐帧连线会在噪声/名次互换时
+ * 画出横跨频段的伪连线（整个窗口像一张「笼子」）。这里按名次画两层：
+ * - 点（Dots）：所有有效帧，跳变/缺峰处也不丢数据；
+ * - 折线（Lines）：只连频率连续（跳变 <= 8 × Δf）的相邻帧，跳变处由 NaN 断开。
+ * 这样斜扫频、跳频的水平段、稳定的音调都会连成清楚的轨迹，噪声帧只留下散点。
  */
 void DAPeakDockWidget::rebuildCurves()
 {
@@ -201,23 +217,31 @@ void DAPeakDockWidget::rebuildCurves()
     mCurvePlaceholder->setVisible(false);
     // 系列色取项目图表主题顺序（与绘图区一致，不自造色板）
     const QList< QColor > seriesColors = DAColorTheme(DAColorTheme::Style_Cassatt1).toColorList();
+    // 相邻帧跳变阈值：超过即认为不是同一个峰，只画点不连线（避免伪连线）
+    const double jumpThresholdHz = daPeakCurveJumpThresholdHz(mCurves);
     for (int rank = 0; rank < mCurves.topN; ++rank) {
-        QVector< double > xs;
-        QVector< double > ys;
-        xs.reserve(mCurves.nFrames);
-        ys.reserve(mCurves.nFrames);
-        for (int i = 0; i < mCurves.nFrames; ++i) {
-            const double f = mCurves.at(rank, i);
-            xs.append(mCurves.times.at(i) + mTimeOrigin);
-            // 缺失帧写 NaN，让曲线断开（不用 0 补点）
-            ys.append(std::isfinite(f) ? f : std::nan(""));
-        }
-        auto* curve = new QwtPlotCurve(tr("Rank %1").arg(rank + 1));  // cn:第 N 名
         const QColor color = seriesColors.isEmpty() ? QColor(82, 128, 193) : seriesColors.at(rank % seriesColors.size());
-        curve->setPen(QPen(color, 1.4));
-        curve->setSamples(xs, ys);
-        curve->attach(mCurveChart);
-        mCurveItems.append(curve);
+        const QString title = tr("Rank %1").arg(rank + 1);  // cn:第 N 名
+        const DAPeakCurvePlotSamples samples = daPeakCurvePlotSamples(mCurves, rank, jumpThresholdHz, mTimeOrigin);
+        if (samples.hasDots()) {
+            auto* dots = new QwtPlotCurve(title);
+            dots->setStyle(QwtPlotCurve::Dots);
+            QPen dotPen(color);
+            dotPen.setWidthF(2.0);
+            dotPen.setCapStyle(Qt::RoundCap);
+            dots->setPen(dotPen);
+            dots->setSamples(samples.dotXs, samples.dotYs);
+            dots->attach(mCurveChart);
+            mCurveItems.append(dots);
+        }
+        if (samples.hasLines()) {
+            auto* line = new QwtPlotCurve(title);
+            line->setPen(QPen(color, 1.4));
+            line->setCurveAttribute(QwtPlotCurve::BreakAtNan, true);
+            line->setSamples(samples.lineXs, samples.lineYs);
+            line->attach(mCurveChart);
+            mCurveItems.append(line);
+        }
     }
     mCurveChart->setAxisTitle(QwtPlot::xBottom, tr("Time (s)"));      // cn:时间（秒）
     mCurveChart->setAxisTitle(QwtPlot::yLeft, tr("Frequency (Hz)"));  // cn:频率（赫兹）
@@ -255,6 +279,13 @@ void DAPeakDockWidget::retranslateUi()
         mPartialLabel->setText(tr("Local scan"));  // cn:局部扫描
         mPartialLabel->setToolTip(tr("Peak curves cover only the visible time range or use a coarser frame step."));
         // cn:峰值曲线只覆盖可见时间范围，或使用了更粗的帧步进。
+    }
+    if (mCurveHint) {
+        mCurveHint->setText(tr("Per-frame top N peaks: frequency over time (color = rank)"));
+        // cn:每帧前 N 名峰值：频率随时间变化（颜色 = 名次）
+        mCurveHint->setToolTip(
+            tr("Each color is one rank. Adjacent frames whose peak frequency jumps far apart are drawn as separate points instead of a connected line, so lines mean continuous peaks."));
+        // cn:每种颜色是一个名次；相邻帧频率跳变过大时只画点不连线，因此连线表示连续的峰。
     }
     if (mCurvePlaceholder) {
         mCurvePlaceholder->setText(tr("Open this window to compute the per-frame peak curves"));
