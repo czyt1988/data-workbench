@@ -1,6 +1,7 @@
 #ifndef DAFIGUREWIDGET_H
 #define DAFIGUREWIDGET_H
 #include "DAFigureAPI.h"
+#include <QList>
 #include <QScrollArea>
 #include <QPainter>
 #include "DAChartWidget.h"
@@ -23,6 +24,7 @@ class QwtPlotItem;
 class Qwt3DPlot;
 class Qwt3DPlotItem;
 class QwtFigure;
+class QwtFigureGrid;
 class QwtPlotSeriesDataPickerGroup;
 namespace DA
 {
@@ -125,6 +127,23 @@ public:
     bool has3DChart(DAChart3DWidget* chart) const;
     // 获取3D图表的数量
     int get3DChartCount() const;
+
+    // ========== 保留式网格布局（支持拖拽分隔条调整子图比例） ==========
+
+    // 启用网格布局（行/列轨道等分）；返回false表示行列数非法
+    bool enableGridLayout(int rows, int cols);
+    // 是否已启用网格布局
+    bool isGridLayoutEnabled() const;
+    // 获取底层网格模型，未启用时返回nullptr
+    QwtFigureGrid* grid() const;
+    // 把子图/子控件登记到网格单元格；未在figure中的会一并添加，已在figure中的移动单元格
+    bool setGridCell(QWidget* chartOrWidget, int row, int col, int rowSpan = 1, int colSpan = 1);
+    // 当前网格行比例（归一化，未启用返回空列表）
+    QList< qreal > gridRowSizes() const;
+    // 当前网格列比例（归一化，未启用返回空列表）
+    QList< qreal > gridColumnSizes() const;
+    // 设置网格行/列比例（供XML恢复），内部重算几何但不压入撤销栈
+    bool setGridSizes(const QList< qreal >& rows, const QList< qreal >& cols);
 
     // 添加一个已有的chart
     void addChart(DAChartWidget* chart, qreal xVersatile, qreal yVersatile, qreal wVersatile, qreal hVersatile);
@@ -340,11 +359,17 @@ private Q_SLOTS:
     void onFigureChartEditorFinished(bool isCancel);
     // 数据探针会话中，联动拾取组收到点击
     void onDataProbePickerGroupClicked(QwtPlotSeriesDataPicker* picker, const QPoint& pos);
+    // 网格轨道比例变化（拖动过程中也会触发）
+    void onGridSizesChanged();
+    // 网格轨道比例变化结束（松手/结束一次比例调整）
+    void onGridSizesChangeFinished();
 
 private:
     void init();
     // 建立DataPickerGroup
     void setupDataPickerGroup();
+    // 把已在figure中的网格成员按当前轨道比例重新排版
+    void updateGridGeometry();
     // 编辑器开始
     void emitChartEditorBeginEdit();
     void emitChartEditorFinishEdit();

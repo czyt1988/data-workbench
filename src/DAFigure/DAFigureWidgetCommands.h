@@ -4,6 +4,7 @@
 #include <QUndoCommand>
 #include <QPointer>
 #include <QRectF>
+#include <QVector>
 #include "DAChartElementHitTester.h"
 class QWidget;
 class QwtPlotItem;
@@ -136,6 +137,32 @@ public:
 	QPointer< QWidget > mWidget;
     QRectF mOldNormRect;
     QRectF mNewNormRect;
+};
+
+/**
+ * @brief 调整网格轨道的行列比例
+ *
+ * 拖动分隔条结束后由DAFigureWidget压入一条命令；重新执行/撤销都通过
+ * DAFigureWidget::setGridSizes完成（不重复入栈）。
+ */
+class DAFIGURE_API DAFigureWidgetCommandResizeGrid : public DAFigureWidgetCommandBase
+{
+public:
+    DAFigureWidgetCommandResizeGrid(DAFigureWidget* fig,
+                                    const QVector< qreal >& oldRows,
+                                    const QVector< qreal >& oldCols,
+                                    const QVector< qreal >& newRows,
+                                    const QVector< qreal >& newCols,
+                                    QUndoCommand* par = nullptr);
+    void redo() override;
+    void undo() override;
+
+private:
+    QVector< qreal > mOldRows;  ///< 调整前的行比例
+    QVector< qreal > mOldCols;  ///< 调整前的列比例
+    QVector< qreal > mNewRows;  ///< 调整后的行比例
+    QVector< qreal > mNewCols;  ///< 调整后的列比例
+    bool mSkipFirstRedo { true };  ///< 首帧比例已由拖动应用，跳过第一次redo
 };
 
 /**

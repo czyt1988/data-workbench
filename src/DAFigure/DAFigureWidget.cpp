@@ -46,6 +46,7 @@
 #include "DALogCategory.h"
 // qwt
 #include "qwt_figure.h"
+#include "qwt_figure_grid.h"
 #include "qwt_color_cycle.h"
 #include "qwt_figure_layout.h"
 #include "qwt_scale_draw.h"
@@ -81,6 +82,15 @@ public:
     QList< DAChartWidget* > m_2dCharts;                ///< 2D chart 列表（由onAxesAdded/onAxesRemoved维护）
     QList< DAChart3DWidget* > m_3dCharts;            ///< 3D chart 列表
     QPointer< DAChart3DWidget > mCurrent3DChart;    ///< 当前选中的 3D chart
+    // ===== 保留式网格布局状态 =====
+    bool mGridLayoutEnabled { false };        ///< 是否已启用网格布局
+    bool mSuppressGridUndo { false };         ///< 程序化设置比例期间抑制撤销记录
+    bool mGridChangeActive { false };         ///< 是否处于一次交互式比例调整会话中
+    bool mGridEditorBlockedWarned { false };  ///< 网格模式禁用子图编辑器的告警是否已发过
+    QVector< qreal > mGridCommittedRows;      ///< 最近一次提交的行比例（拖动基线）
+    QVector< qreal > mGridCommittedCols;      ///< 最近一次提交的列比例（拖动基线）
+    QVector< qreal > mGridOldRows;            ///< 一次比例调整开始前的行比例
+    QVector< qreal > mGridOldCols;            ///< 一次比例调整开始前的列比例
 public:
     PrivateData(DAFigureWidget* p) : q_ptr(p), mColorTheme(DAColorTheme::Style_Matplotlib_Tab10)
     {
@@ -407,6 +417,9 @@ void DAFigureWidget::init()
     connect(figure, &QwtFigure::axesAdded, this, &DAFigureWidget::onAxesAdded);
     connect(figure, &QwtFigure::axesRemoved, this, &DAFigureWidget::onAxesRemoved);
     connect(figure, &QwtFigure::currentAxesChanged, this, &DAFigureWidget::onCurrentAxesChanged);
+    // 网格拖动：sizesChanged 在拖动中反复触发（只记录基线），松手时一次性入撤销栈
+    connect(figure, &QwtFigure::gridSizesChanged, this, &DAFigureWidget::onGridSizesChanged);
+    connect(figure, &QwtFigure::gridSizesChangeFinished, this, &DAFigureWidget::onGridSizesChangeFinished);
 }
 
 /**
@@ -842,6 +855,236 @@ bool DAFigureWidget::has3DChart(DAChart3DWidget* chart3d) const
 int DAFigureWidget::get3DChartCount() const
 {
     return d_ptr->m_3dCharts.size();
+}
+
+//===================================================
+// 保留式网格布局
+//===================================================
+
+/**
+ * @brief 启用保留式网格布局
+ *
+ * 网格启用后子图的位置与大小由行列轨道比例决定，可拖动分隔条调整比例；
+ * 网格模式下子图编辑器（自由缩放）被禁用。
+ * @param rows 行数，必须大于0
+ * @param cols 列数，必须大于0
+ * @return 行列数非法或figure不存在时返回false
+ * @note 会重置QwtFigure的最小/最大尺寸：DAFigureWidgetSettingPanel会把qwtfig的
+ *       min/max尺寸写入配置，遗留的0值会让网格子图无法铺满
+ * @note 重复调用会按新的行列重建等分轨道（此前登记的网格成员被清空）
+ */
+bool DAFigureWidget::enableGridLayout(int rows, int cols)
+{
+    DA_D(d);
+    QwtFigure* fig = figure();
+    if (!fig) {
+        return false;
+    }
+    d->mGridLayoutEnabled = false;
+    d->mGridChangeActive = false;
+    if (!fig->enableGrid(rows, cols)) {
+        return false;
+    }
+    // 规避DAFigureWidgetSettingPanel把qwtfig的min/max写成塌陷值后网格无法铺满
+    fig->setMinimumSize(0, 0);
+    fig->setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
+    // 网格接管分隔带拖拽
+    fig->setGridEditable(true);
+    // 网格模式由轨道决定几何，退出自由缩放编辑器
+    if (d->mChartEditor) {
+        endChartEditor();
+    }
+    d->mGridLayoutEnabled = true;
+    if (QwtFigureGrid* g = fig->grid()) {
+        d->mGridCommittedRows = g->rowSizes();
+        d->mGridCommittedCols = g->columnSizes();
+    }
+    return true;
+}
+
+/**
+ * @brief 是否已启用网格布局
+ * @return 网格已启用返回true
+ */
+bool DAFigureWidget::isGridLayoutEnabled() const
+{
+    DA_DC(d);
+    const QwtFigure* fig = figure();
+    return d->mGridLayoutEnabled && fig && fig->isGridEnabled();
+}
+
+/**
+ * @brief 获取底层保留式网格模型
+ * @return 未启用网格时返回nullptr
+ */
+QwtFigureGrid* DAFigureWidget::grid() const
+{
+    QwtFigure* fig = figure();
+    return fig ? fig->grid() : nullptr;
+}
+
+/**
+ * @brief 把网格成员按当前轨道比例重新排版
+ *
+ * 仅改变网格登记（例如移动单元格）时layout不会自动重排，需要显式重算几何。
+ * 不调用QLayout::activate()：未显示的figure会按最小尺寸被改尺寸。
+ */
+void DAFigureWidget::updateGridGeometry()
+{
+    QwtFigure* fig = figure();
+    if (!fig) {
+        return;
+    }
+    if (QLayout* lay = fig->layout()) {
+        lay->invalidate();
+        lay->setGeometry(fig->rect());
+    }
+}
+
+/**
+ * @brief 把子图/子控件登记到网格单元格
+ *
+ * 支持的成员：
+ * - 已在figure中的2D/3D子图或普通控件：只更新网格登记并重新排版
+ * - 尚未加入figure的QwtPlot：按网格坐标直接加入（发射axesAdded/currentAxesChanged）
+ * - 尚未加入figure的DAChart3DWidget：复用add3DChart完成3D登记，再改为网格成员
+ * - 其它控件：按网格坐标加入figure
+ * @param chartOrWidget 子图或子控件指针
+ * @param row 起始行（0基）
+ * @param col 起始列（0基）
+ * @param rowSpan 行跨度
+ * @param colSpan 列跨度
+ * @return 登记成功返回true；网格未启用或位置越界返回false
+ */
+bool DAFigureWidget::setGridCell(QWidget* chartOrWidget, int row, int col, int rowSpan, int colSpan)
+{
+    DA_D(d);
+    QwtFigure* fig = figure();
+    QwtFigureGrid* g = fig ? fig->grid() : nullptr;
+    if (!chartOrWidget || !g || !g->isEnabled()) {
+        qWarning() << "DAFigureWidget::setGridCell: the grid layout is not enabled or the widget is null";
+        return false;
+    }
+    const bool inFigure = (chartOrWidget->parentWidget() == fig);
+    // 已在网格中则先注销，允许移动单元格
+    g->removeItem(chartOrWidget);
+    if (inFigure) {
+        // 已在figure中：只更新网格登记，不重建layout item
+        const bool ok = g->addItem(chartOrWidget, row, col, rowSpan, colSpan);
+        if (ok) {
+            updateGridGeometry();
+        }
+        return ok;
+    }
+    if (QwtPlot* plot = qobject_cast< QwtPlot* >(chartOrWidget)) {
+        fig->addAxes(plot, row, col, rowSpan, colSpan);
+        const bool ok = g->gridPosition(plot, nullptr, nullptr, nullptr, nullptr);
+        if (ok) {
+            if (DAChartWidget* chart = qobject_cast< DAChartWidget* >(plot)) {
+                d->syncColorCycleToChart(chart);
+                // 与addChart保持一致：属性变化联动（先断开避免重复连接）
+                disconnect(chart, &DAChartWidget::chartPropertiesChanged, this, nullptr);
+                connect(chart, &DAChartWidget::chartPropertiesChanged, this, &DAFigureWidget::onChartPropertyChanged);
+            }
+            // QwtFigureLayout会跳过不可见成员，必须与addChart一致显式显示
+            plot->show();
+        }
+        return ok;
+    }
+    if (DAChart3DWidget* chart3d = qobject_cast< DAChart3DWidget* >(chartOrWidget)) {
+        // 复用add3DChart完成3D激活/事件过滤/信号等登记，再改为网格成员
+        add3DChart(chart3d, g->normRectFor(row, col, rowSpan, colSpan));
+        g->removeItem(chart3d);
+        const bool ok = g->addItem(chart3d, row, col, rowSpan, colSpan);
+        if (ok) {
+            updateGridGeometry();
+        }
+        return ok;
+    }
+    // 普通控件（非QwtPlot/非3D图）：按网格坐标加入figure
+    // addGridItem只会往layout追加item，不会触发布局，且QwtFigureLayout会跳过不可见成员，
+    // 因此需要与addChart/add3DChart一致显式显示后再重排
+    const bool ok = fig->addGridItem(chartOrWidget, row, col, rowSpan, colSpan);
+    if (ok) {
+        chartOrWidget->show();
+        updateGridGeometry();
+    }
+    return ok;
+}
+
+/**
+ * @brief 当前网格行比例
+ * @return 归一化行比例；未启用网格返回空列表
+ */
+QList< qreal > DAFigureWidget::gridRowSizes() const
+{
+    QwtFigureGrid* g = grid();
+    if (!g) {
+        return QList< qreal >();
+    }
+    const QVector< qreal > sizes = g->rowSizes();
+    return QList< qreal >(sizes.cbegin(), sizes.cend());
+}
+
+/**
+ * @brief 当前网格列比例
+ * @return 归一化列比例；未启用网格返回空列表
+ */
+QList< qreal > DAFigureWidget::gridColumnSizes() const
+{
+    QwtFigureGrid* g = grid();
+    if (!g) {
+        return QList< qreal >();
+    }
+    const QVector< qreal > sizes = g->columnSizes();
+    return QList< qreal >(sizes.cbegin(), sizes.cend());
+}
+
+/**
+ * @brief 设置网格行/列比例
+ *
+ * 供XML恢复等程序化场景使用：内部重算几何，但不压入撤销栈
+ * （交互式拖动由onGridSizesChangeFinished统一入栈一次）。
+ * @param rows 行比例，个数必须等于网格行数，且全为有限正数
+ * @param cols 列比例，个数必须等于网格列数，且全为有限正数
+ * @return 网格未启用、个数不符或数值非法返回false
+ */
+bool DAFigureWidget::setGridSizes(const QList< qreal >& rows, const QList< qreal >& cols)
+{
+    DA_D(d);
+    QwtFigureGrid* g = grid();
+    if (!g || !g->isEnabled()) {
+        qWarning() << "DAFigureWidget::setGridSizes: the grid layout is not enabled";
+        return false;
+    }
+    if (rows.size() != g->rowCount() || cols.size() != g->columnCount()) {
+        qWarning() << "DAFigureWidget::setGridSizes: expected" << g->rowCount() << "rows and" << g->columnCount()
+                   << "columns, got" << rows.size() << cols.size();
+        return false;
+    }
+    const QVector< qreal > rowSizes(rows.cbegin(), rows.cend());
+    const QVector< qreal > colSizes(cols.cbegin(), cols.cend());
+    for (qreal v : rowSizes) {
+        if (!qIsFinite(v) || v <= 0.0) {
+            qWarning() << "DAFigureWidget::setGridSizes: row ratios must be finite and positive";
+            return false;
+        }
+    }
+    for (qreal v : colSizes) {
+        if (!qIsFinite(v) || v <= 0.0) {
+            qWarning() << "DAFigureWidget::setGridSizes: column ratios must be finite and positive";
+            return false;
+        }
+    }
+    d->mSuppressGridUndo = true;
+    g->setRowSizes(rowSizes);
+    g->setColumnSizes(colSizes);
+    d->mSuppressGridUndo = false;
+    // 程序化设置后同步撤销基线，避免下一次交互拖动把旧比例当成基线
+    d->mGridCommittedRows = g->rowSizes();
+    d->mGridCommittedCols = g->columnSizes();
+    d->mGridChangeActive = false;
+    return true;
 }
 
 /**
@@ -1280,6 +1523,15 @@ bool DAFigureWidget::isChartEditorActive() const
 void DAFigureWidget::beginChartEditor(ChartEditorType type)
 {
     DA_D(d);
+    // 网格模式下子图几何由轨道比例决定，禁止自由缩放（Resize Chart）编辑器
+    if (type == SubChartEditor && isGridLayoutEnabled()) {
+        if (!d->mGridEditorBlockedWarned) {
+            d->mGridEditorBlockedWarned = true;
+            qWarning() << "DAFigureWidget::beginChartEditor: the sub chart editor is disabled while the grid layout is "
+                          "enabled";
+        }
+        return;
+    }
     if (isChartEditorActive()) {
         endChartEditor();
     }
@@ -1786,6 +2038,61 @@ bool DAFigureWidget::eventFilter(QObject* obj, QEvent* event)
         }
     }
     return QScrollArea::eventFilter(obj, event);
+}
+
+/**
+ * @brief 网格轨道比例变化（拖动过程中反复触发）
+ *
+ * 不在此压栈：只在一次调整会话的第一帧记下上一次提交的比例作为撤销基线，
+ * 由onGridSizesChangeFinished在结束时统一压入一条命令。
+ */
+void DAFigureWidget::onGridSizesChanged()
+{
+    DA_D(d);
+    if (d->mSuppressGridUndo || !d->mGridLayoutEnabled) {
+        return;
+    }
+    if (d->mGridChangeActive) {
+        return;
+    }
+    d->mGridChangeActive = true;
+    d->mGridOldRows = d->mGridCommittedRows;
+    d->mGridOldCols = d->mGridCommittedCols;
+}
+
+/**
+ * @brief 网格轨道比例调整结束
+ *
+ * 一次拖动只产生一条撤销命令；程序化设置（setGridSizes）不会走到这里。
+ */
+void DAFigureWidget::onGridSizesChangeFinished()
+{
+    DA_D(d);
+    if (d->mSuppressGridUndo || !d->mGridLayoutEnabled) {
+        return;
+    }
+    QwtFigureGrid* g = grid();
+    if (!g) {
+        return;
+    }
+    const QVector< qreal > newRows = g->rowSizes();
+    const QVector< qreal > newCols = g->columnSizes();
+    if (!d->mGridChangeActive) {
+        // 没有观察到实际变化，只同步基线
+        d->mGridCommittedRows = newRows;
+        d->mGridCommittedCols = newCols;
+        return;
+    }
+    d->mGridChangeActive = false;
+    const QVector< qreal > oldRows = d->mGridOldRows;
+    const QVector< qreal > oldCols = d->mGridOldCols;
+    d->mGridCommittedRows = newRows;
+    d->mGridCommittedCols = newCols;
+    if (oldRows == newRows && oldCols == newCols) {
+        return;
+    }
+    // 比例已由拖动应用，命令的首个redo跳过，避免重复设置
+    push(new DAFigureWidgetCommandResizeGrid(this, oldRows, oldCols, newRows, newCols));
 }
 
 /**

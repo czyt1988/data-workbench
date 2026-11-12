@@ -362,6 +362,64 @@ void DAFigureWidgetCommandResizeWidget::undo()
 }
 
 //----------------------------------------------------
+// DAFigureWidgetCommandResizeGrid
+//----------------------------------------------------
+
+/**
+ * @brief 构造函数
+ * @param fig 关联的绘图窗口
+ * @param oldRows 调整前的行比例
+ * @param oldCols 调整前的列比例
+ * @param newRows 调整后的行比例
+ * @param newCols 调整后的列比例
+ * @param par 父命令
+ */
+DAFigureWidgetCommandResizeGrid::DAFigureWidgetCommandResizeGrid(DAFigureWidget* fig,
+                                                                 const QVector< qreal >& oldRows,
+                                                                 const QVector< qreal >& oldCols,
+                                                                 const QVector< qreal >& newRows,
+                                                                 const QVector< qreal >& newCols,
+                                                                 QUndoCommand* par)
+    : DAFigureWidgetCommandBase(fig, par)
+    , mOldRows(oldRows)
+    , mOldCols(oldCols)
+    , mNewRows(newRows)
+    , mNewCols(newCols)
+{
+    setText(QObject::tr("resize grid tracks"));  // cn:调整网格比例
+}
+
+/**
+ * @brief 重做操作：应用新的行/列比例
+ *
+ * 第一次redo由拖动本身完成，跳过以免重复设置。
+ */
+void DAFigureWidgetCommandResizeGrid::redo()
+{
+    if (mSkipFirstRedo) {
+        mSkipFirstRedo = false;
+        return;
+    }
+    if (!figureWidget) {
+        return;
+    }
+    figureWidget->setGridSizes(QList< qreal >(mNewRows.cbegin(), mNewRows.cend()),
+                               QList< qreal >(mNewCols.cbegin(), mNewCols.cend()));
+}
+
+/**
+ * @brief 撤销操作：恢复原来的行/列比例
+ */
+void DAFigureWidgetCommandResizeGrid::undo()
+{
+    if (!figureWidget) {
+        return;
+    }
+    figureWidget->setGridSizes(QList< qreal >(mOldRows.cbegin(), mOldRows.cend()),
+                               QList< qreal >(mOldCols.cbegin(), mOldCols.cend()));
+}
+
+//----------------------------------------------------
 // DAFigureWidgetCommandAttachItem
 //----------------------------------------------------
 
