@@ -62,7 +62,7 @@
 <context>
     <name>DA::AppMainWindow</name>
     <message>
-        <location filename="../APP/AppMainWindow.cpp" line="+83"/>
+        <location filename="../APP/AppMainWindow.cpp" line="+86"/>
         <source>Initializing core interface...</source>
         <translation>Initializing core interface...</translation>
     </message>
@@ -87,7 +87,7 @@
         <translation>Preparing interface...</translation>
     </message>
     <message>
-        <location line="+52"/>
+        <location line="+76"/>
         <source>Question</source>
         <translation>Question</translation>
     </message>
@@ -97,7 +97,7 @@
         <translation>Do you need to save the project?</translation>
     </message>
     <message>
-        <location line="+101"/>
+        <location line="+114"/>
         <source>Untitled</source>
         <translation>Untitled</translation>
     </message>
@@ -118,7 +118,7 @@
         <translation>Topology execution failed</translation>
     </message>
     <message>
-        <location line="+131"/>
+        <location line="+133"/>
         <source>failed to restore UI state</source>
         <translation>failed to restore UI state</translation>
     </message>
@@ -1447,7 +1447,7 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="../APP/DAAppActions.cpp" line="+477"/>
+        <location filename="../APP/DAAppActions.cpp" line="+494"/>
         <source>Open</source>
         <translation>Open</translation>
     </message>
@@ -1877,7 +1877,17 @@
         <translation>Legend</translation>
     </message>
     <message>
-        <location line="+54"/>
+        <location line="+4"/>
+        <source>Export Chart</source>
+        <translation>Export Chart</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Export the current sub-chart to an image file</source>
+        <translation>Export the current sub-chart to an image file</translation>
+    </message>
+    <message>
+        <location line="+51"/>
         <source>To Numeric</source>
         <translation>To Numeric</translation>
     </message>
@@ -1902,7 +1912,7 @@
         <translation>Show statistics of the selected columns in a dockable analysis window</translation>
     </message>
     <message>
-        <location line="+77"/>
+        <location line="+99"/>
         <source>Grouping</source>
         <translation>Grouping</translation>
     </message>
@@ -1917,7 +1927,7 @@
         <translation>Show Information Window</translation>
     </message>
     <message>
-        <location line="-198"/>
+        <location line="-222"/>
         <source>Enable or disable legend in the chart</source>
         <translation>Enable or disable legend in the chart</translation>
     </message>
@@ -2152,7 +2162,7 @@
         <translation>Copy the figure to the clipboard</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+3"/>
         <source>Legend Top</source>
         <translation>Legend Top</translation>
     </message>
@@ -2312,17 +2322,7 @@
         <translation>Remove a column from the table</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Remove Cell</source>
-        <translation>Remove Cell</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Remove a cell from the table</source>
-        <translation>Remove a cell from the table</translation>
-    </message>
-    <message>
-        <location line="+1"/>
+        <location line="+3"/>
         <source>Insert Row</source>
         <translation>Insert Row</translation>
     </message>
@@ -2467,7 +2467,57 @@
         <translation>Set number/date display format of the selected column</translation>
     </message>
     <message>
-        <location line="+64"/>
+        <location line="+68"/>
+        <source>Sort</source>
+        <translation>Sort</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Sort the current column, or open the custom sort dialog for multiple conditions</source>
+        <translation>Sort the current column, or open the custom sort dialog for multiple conditions</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Sort Ascending</source>
+        <translation>Sort Ascending</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Sort all rows by the current column in ascending order</source>
+        <translation>Sort all rows by the current column in ascending order</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Sort Descending</source>
+        <translation>Sort Descending</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Sort all rows by the current column in descending order</source>
+        <translation>Sort all rows by the current column in descending order</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Custom Sort...</source>
+        <translation>Custom Sort...</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Sort by multiple columns with a chosen priority order</source>
+        <translation>Sort by multiple columns with a chosen priority order</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Clear Sort</source>
+        <translation>Clear Sort</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Restore the original row order (sort by row index ascending, undoable)</source>
+        <translation>Restore the original row order (sort by row index ascending, undoable)</translation>
+    </message>
+    <message>
+        <location line="+5"/>
         <source>New Workflow</source>
         <translation>New Workflow</translation>
     </message>
@@ -2852,7 +2902,7 @@
         <translation>Undo the last action</translation>
     </message>
     <message>
-        <location line="-162"/>
+        <location line="-184"/>
         <source>Find</source>
         <translation>Find</translation>
     </message>
@@ -2892,7 +2942,7 @@
         <translation>Apply or clear cell borders of the selected area</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+7"/>
         <source>New Computed Column...</source>
         <translation>New Computed Column...</translation>
     </message>
@@ -2962,7 +3012,7 @@
         <translation>Unpivot wide columns into a long-format new dataset (in-place optional)</translation>
     </message>
     <message>
-        <location line="-68"/>
+        <location line="-76"/>
         <source>Data Probe</source>
         <translation>Data Probe</translation>
     </message>
@@ -2972,7 +3022,7 @@
         <translation>Data probe: click to create probes on all charts, values are listed in the data link table</translation>
     </message>
     <message>
-        <location line="+67"/>
+        <location line="+75"/>
         <source>Fill</source>
         <translation>Fill</translation>
     </message>
@@ -3102,7 +3152,7 @@
         <translation>Remove all notes of the current table (undoable)</translation>
     </message>
     <message>
-        <location line="+75"/>
+        <location line="+89"/>
         <source>Undo History</source>
         <translation>Undo History</translation>
     </message>
@@ -3112,7 +3162,7 @@
         <translation>Show the undo history panel (follows the active page, click an entry to undo/redo to it)</translation>
     </message>
     <message>
-        <location line="-74"/>
+        <location line="-88"/>
         <source>Freeze Columns</source>
         <translation>Freeze Columns</translation>
     </message>
@@ -3167,38 +3217,42 @@
         <translation>Jump to a row / index label / column</translation>
     </message>
     <message>
+        <location line="-102"/>
         <source>Clear Cells</source>
         <translation>Clear Cells</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Set the selected cells to empty (nan)</source>
         <translation>Set the selected cells to empty (nan)</translation>
     </message>
     <message>
-        <location filename="../APP/DAAppActions.cpp"/>
+        <location line="+44"/>
         <source>Cell Size</source>
         <translation>Cell Size</translation>
     </message>
     <message>
-        <location filename="../APP/DAAppActions.cpp"/>
+        <location line="+1"/>
         <source>Adjust column width or row height (auto-fit / set value)</source>
         <translation>Adjust column width or row height (auto-fit / set value)</translation>
     </message>
     <message>
-        <location filename="../APP/DAAppActions.cpp"/>
+        <location line="+3"/>
         <source>Wrap Text</source>
         <translation>Wrap Text</translation>
     </message>
     <message>
-        <location filename="../APP/DAAppActions.cpp"/>
+        <location line="+1"/>
         <source>Wrap the text of selected cells (raise row height manually if needed)</source>
         <translation>Wrap the text of selected cells (raise row height manually if needed)</translation>
     </message>
     <message>
+        <location line="-3"/>
         <source>Row Height</source>
         <translation>Row Height</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Set the row height of the whole table, or switch between compact and normal height</source>
         <translation>Set the row height of the whole table, or switch between compact and normal height</translation>
     </message>
@@ -3321,6 +3375,34 @@
     </message>
 </context>
 <context>
+    <name>DA::DAAppChartActionHandler</name>
+    <message>
+        <location filename="../APP/Controller/DAAppChartActionHandler.cpp" line="+1123"/>
+        <source>There is no figure to export</source>
+        <translation>There is no figure to export</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>There is no sub-chart to export</source>
+        <translation>There is no sub-chart to export</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Export Chart</source>
+        <translation>Export Chart</translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>Chart exported to &quot;%1&quot;</source>
+        <translation>Chart exported to "%1"</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Failed to export the chart to &quot;%1&quot;</source>
+        <translation>Failed to export the chart to "%1"</translation>
+    </message>
+</context>
+<context>
     <name>DA::DAAppConfig</name>
     <message>
         <location filename="../APP/SettingPages/DAAppConfig.cpp" line="+376"/>
@@ -3378,24 +3460,24 @@
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+875"/>
+        <location filename="../APP/Controller/DAAppControllerProject.cpp" line="+177"/>
         <source>Save Project</source>
         <translation>Save Project</translation>
     </message>
     <message>
         <location line="+19"/>
-        <location line="+1124"/>
+        <location filename="../APP/Controller/DAAppWorkflowActionHandler.cpp" line="+378"/>
         <source>Warning</source>
         <translation>Warning</translation>
     </message>
     <message>
-        <location line="-1112"/>
+        <location line="+12"/>
         <source>Failed to save project! Path: %1</source>
         <translation>Failed to save project! Path: %1</translation>
     </message>
     <message>
         <location line="+3"/>
-        <location line="+661"/>
+        <location line="+221"/>
         <source>Project saved successfully, path: %1</source>
         <translation>Project saved successfully, path: %1</translation>
     </message>
@@ -3415,17 +3497,18 @@
         <translation>Project loaded successfully, path: %1</translation>
     </message>
     <message>
-        <location line="+51"/>
+        <location filename="../APP/Controller/DAAppControllerPage.cpp" line="+224"/>
         <source>The chart area is not available</source>
         <translation>The chart area is not available</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+7"/>
+        <location line="+8"/>
         <source>There is no current chart to append to</source>
         <translation>There is no current chart to append to</translation>
     </message>
     <message>
-        <location line="+334"/>
+        <location filename="../APP/Controller/DAAppWorkflowActionHandler.cpp" line="-30"/>
         <source>Image saved successfully to %1</source>
         <translation>Image saved successfully to %1</translation>
     </message>
@@ -3435,7 +3518,7 @@
         <translation>Failed to save image to %1</translation>
     </message>
     <message>
-        <location line="+69"/>
+        <location filename="../APP/Controller/DAAppControllerView.cpp" line="+189"/>
         <source>Reset Layout</source>
         <translation>Reset Layout</translation>
     </message>
@@ -3445,19 +3528,19 @@
         <translation>This will restore the default window layout. Continue?</translation>
     </message>
     <message>
-        <location line="+348"/>
+        <location filename="../APP/Controller/DAAppDataActionHandler.cpp" line="+223"/>
         <source>Importing data files ...</source>
         <translation>Importing data files ...</translation>
     </message>
     <message>
         <location line="+1"/>
-        <location line="+353"/>
-        <location line="+102"/>
+        <location line="+361"/>
+        <location line="+104"/>
         <source>Cancel</source>
         <translation>Cancel</translation>
     </message>
     <message>
-        <location line="-451"/>
+        <location line="-461"/>
         <source>Import Data</source>
         <translation>Import Data</translation>
     </message>
@@ -3515,54 +3598,54 @@
     </message>
     <message>
         <location line="+1"/>
-        <location line="+254"/>
+        <location line="+264"/>
         <source>Markdown File</source>
         <translation>Markdown File</translation>
     </message>
     <message>
-        <location line="-253"/>
-        <location line="+254"/>
+        <location line="-263"/>
+        <location line="+264"/>
         <source>HTML File</source>
         <translation>HTML File</translation>
     </message>
     <message>
-        <location line="-231"/>
-        <location line="+242"/>
+        <location line="-241"/>
+        <location line="+252"/>
         <location line="+21"/>
         <source>Export Data</source>
         <translation>Export Data</translation>
     </message>
     <message>
-        <location line="-221"/>
+        <location line="-231"/>
         <source>Cannot determine export format, please select a file suffix</source>
         <translation>Cannot determine export format, please select a file suffix</translation>
     </message>
     <message>
         <location line="+16"/>
-        <location line="+231"/>
+        <location line="+241"/>
         <source>Data exported successfully, path: %1</source>
         <translation>Data exported successfully, path: %1</translation>
     </message>
     <message>
-        <location line="-229"/>
-        <location line="+225"/>
+        <location line="-239"/>
+        <location line="+235"/>
         <source>Data export failed, path: %1, reason: %2</source>
         <translation>Data export failed, path: %1, reason: %2</translation>
     </message>
     <message>
-        <location line="-196"/>
-        <location line="+215"/>
-        <location line="+32"/>
+        <location line="-201"/>
+        <location line="+225"/>
+        <location line="+35"/>
         <source>No open dataframe table</source>
         <translation>当前没有打开的 dataframe 表格</translation>
     </message>
     <message>
-        <location line="-234"/>
+        <location line="-247"/>
         <source>Please select a dataset first</source>
         <translation>Please select a dataset first</translation>
     </message>
     <message>
-        <location line="+43"/>
+        <location line="+46"/>
         <source>Copy Large Table</source>
         <translation>Copy Large Table</translation>
     </message>
@@ -3587,7 +3670,7 @@
         <translation>Table copied to clipboard (%1 rows x %2 columns)</translation>
     </message>
     <message>
-        <location line="+56"/>
+        <location line="+58"/>
         <source>Cannot open file for writing: %1</source>
         <translation>Cannot open file for writing: %1</translation>
     </message>
@@ -3597,7 +3680,7 @@
         <translation>Exporting table ...</translation>
     </message>
     <message>
-        <location line="+142"/>
+        <location filename="../APP/Controller/DAAppControllerAgent.cpp" line="+190"/>
         <source>Unsupported link type: %1</source>
         <translation>Unsupported link type: %1</translation>
     </message>
@@ -3612,29 +3695,29 @@
         <translation>Dataset &apos;%1&apos; not found, it may have been removed</translation>
     </message>
     <message>
-        <location line="+19"/>
+        <location filename="../APP/Controller/DAAppChartActionHandler.cpp" line="-614"/>
         <source>Before creating a new coordinate, you need to create a figure</source>
         <translation>Before creating a new coordinate, you need to create a figure</translation>
     </message>
     <message>
-        <location line="-2201"/>
+        <location filename="../APP/Controller/DAAppControllerCore.cpp" line="+574"/>
         <source>Please select the data operation window</source>
         <translation>Please select the data operation window</translation>
     </message>
     <message>
-        <location line="-51"/>
-        <location line="+571"/>
+        <location filename="../APP/Controller/DAAppControllerProject.cpp" line="-280"/>
+        <location line="+131"/>
         <location line="+73"/>
         <source>Project File</source>
         <translation>Project File</translation>
     </message>
     <message>
-        <location line="-626"/>
+        <location line="-186"/>
         <source>Whether to overwrite the file: %1</source>
         <translation>Whether to overwrite the file: %1</translation>
     </message>
     <message>
-        <location line="+477"/>
+        <location line="+37"/>
         <location line="+20"/>
         <location line="+22"/>
         <source>Question</source>
@@ -3657,84 +3740,84 @@
         <translation>Failed to load project file: %1</translation>
     </message>
     <message>
-        <location line="+376"/>
+        <location filename="../APP/Controller/DAAppWorkflowActionHandler.cpp" line="-76"/>
         <source>Image files</source>
         <translation>Image files</translation>
     </message>
     <message>
-        <location line="-441"/>
-        <location line="+442"/>
+        <location filename="../APP/Controller/DAAppControllerProject.cpp" line="-65"/>
+        <location filename="../APP/Controller/DAAppWorkflowActionHandler.cpp" line="+1"/>
         <source>Any files</source>
         <translation>Any files</translation>
     </message>
     <message>
-        <location line="-443"/>
+        <location line="-1"/>
         <source>Markdown files</source>
         <translation>Markdown files</translation>
     </message>
     <message>
-        <location line="+540"/>
+        <location filename="../APP/Controller/DAAppWorkflowActionHandler.cpp" line="+97"/>
         <source>Received null project interface</source>
         <translation>Received null project interface</translation>
     </message>
     <message>
-        <location line="-171"/>
-        <location line="+272"/>
+        <location filename="../APP/Controller/DAAppControllerCore.cpp" line="+375"/>
+        <location filename="../APP/Controller/DAAppControllerPage.cpp" line="+254"/>
         <source>No cells selected to copy</source>
         <translation>No cells selected to copy</translation>
     </message>
     <message>
-        <location line="-1552"/>
+        <location filename="../APP/Controller/DAAppTableActionHandler.cpp" line="+388"/>
         <source>No active table</source>
         <translation>No active table</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="-91"/>
         <source>All Borders</source>
         <translation>All Borders</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+3"/>
         <source>Outside Borders</source>
         <translation>Outside Borders</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+4"/>
         <source>No Border</source>
         <translation>No Border</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+3"/>
         <source>Top Border</source>
         <translation>Top Border</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+3"/>
         <source>Bottom Border</source>
         <translation>Bottom Border</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+3"/>
         <source>Left Border</source>
         <translation>Left Border</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+3"/>
         <source>Right Border</source>
         <translation>Right Border</translation>
     </message>
     <message>
-        <location line="+1940"/>
+        <location filename="../APP/Controller/DAAppDataActionHandler.cpp" line="-372"/>
         <source>Cannot rename a series, please select a dataset</source>
         <translation>Cannot rename a series, please select a dataset</translation>
     </message>
     <message>
-        <location line="+560"/>
+        <location filename="../APP/Controller/DAAppControllerAgent.cpp" line="-49"/>
         <source>Figure &apos;%1&apos; not found, it may have been closed or renamed</source>
         <translation>Figure &apos;%1&apos; not found, it may have been closed or renamed</translation>
     </message>
     <message>
-        <location line="+825"/>
+        <location filename="../APP/Controller/DAAppTableActionHandler.cpp" line="+232"/>
         <source>Rename Column</source>
         <translation>Rename Column</translation>
     </message>
@@ -3774,12 +3857,18 @@
         <translation>Column [%1] minimum value at row %2</translation>
     </message>
     <message>
-        <location line="+67"/>
+        <location line="+45"/>
         <source>Select the columns to plot first</source>
         <translation>Select the columns to plot first</translation>
     </message>
     <message>
-        <location line="+594"/>
+        <location line="+415"/>
+        <location line="+17"/>
+        <source>Please select a column to sort first</source>
+        <translation>Please select a column to sort first</translation>
+    </message>
+    <message>
+        <location line="+191"/>
         <source>Copy As</source>
         <translation>Copy As</translation>
     </message>
@@ -3814,7 +3903,7 @@
         <translation>HTML Document (with styles)...</translation>
     </message>
     <message>
-        <location line="+157"/>
+        <location filename="../APP/Controller/DAAppWorkflowActionHandler.cpp" line="+157"/>
         <source>New workflow name</source>
         <translation>New workflow name</translation>
     </message>
@@ -3824,63 +3913,45 @@
         <translation>New workflow name:</translation>
     </message>
     <message>
-        <location line="-1935"/>
-        <location line="+32"/>
-        <location line="+1083"/>
-        <location line="+997"/>
+        <location filename="../APP/Controller/DAAppDataActionHandler.cpp" line="+428"/>
+        <location line="+35"/>
+        <location filename="../APP/Controller/DAAppTableActionHandler.cpp" line="-669"/>
+        <location line="+938"/>
         <source>Please select a valid column</source>
         <translation>Please select a valid column</translation>
     </message>
     <message>
-        <location line="+52"/>
-        <source>No figure/chart available for statistical plot</source>
-        <translation>No figure/chart available for statistical plot</translation>
-    </message>
-    <message>
-        <location line="+27"/>
-        <source>No data column selected</source>
-        <translation>No data column selected</translation>
-    </message>
-    <message>
-        <location line="-22"/>
-        <source>Cannot resolve the data source for statistical plot; please ensure a dataframe is selected in the settings window</source>
-        <translation>Cannot resolve the data source for statistical plot; please ensure a dataframe is selected in the settings window</translation>
-    </message>
-    <message>
-        <location line="+28"/>
-        <source>The selected data source is empty</source>
-        <translation>The selected data source is empty</translation>
-    </message>
-    <message>
-        <location line="-3092"/>
+        <location filename="../APP/Controller/DAAppWorkflowActionHandler.cpp" line="-151"/>
         <source>Before running the workflow, you need to save the project</source>
         <translation>Before running the workflow, you need to save the project</translation>
     </message>
     <message>
-        <location line="+2357"/>
+        <location filename="../APP/Controller/DAAppTableActionHandler.cpp" line="-613"/>
         <source>Please select a column first</source>
         <translation>Please select a column first</translation>
     </message>
     <message>
-        <location filename="../APP/Controller/DAAppTableActionHandler.cpp"/>
+        <location line="-689"/>
         <source>AutoFit Column Width</source>
         <translation>AutoFit Column Width</translation>
     </message>
     <message>
-        <location filename="../APP/Controller/DAAppTableActionHandler.cpp"/>
+        <location line="+3"/>
         <source>Set Column Width...</source>
         <translation>Set Column Width...</translation>
     </message>
     <message>
-        <location filename="../APP/Controller/DAAppTableActionHandler.cpp"/>
+        <location line="+8"/>
         <source>Set Row Height...</source>
         <translation>Set Row Height...</translation>
     </message>
     <message>
+        <location line="+15"/>
         <source>Compact</source>
         <translation>Compact</translation>
     </message>
     <message>
+        <location line="+8"/>
         <source>Normal</source>
         <translation>Normal</translation>
     </message>
@@ -3927,7 +3998,7 @@
 <context>
     <name>DA::DAAppDockingArea</name>
     <message>
-        <location filename="../APP/DAAppDockingArea.cpp" line="+75"/>
+        <location filename="../APP/DAAppDockingArea.cpp" line="+82"/>
         <source>Workflow Node</source>
         <translation>Workflow Node</translation>
     </message>
@@ -3973,7 +4044,7 @@
     </message>
     <message>
         <location line="+3"/>
-        <location line="+565"/>
+        <location line="+628"/>
         <source>Statistics</source>
         <translation>Statistics</translation>
     </message>
@@ -3988,7 +4059,7 @@
         <translation>Failed to open markdown file: %1</translation>
     </message>
     <message>
-        <location line="-532"/>
+        <location line="-595"/>
         <source>Undo History</source>
         <translation>Undo History</translation>
     </message>
@@ -4431,7 +4502,7 @@
 <context>
     <name>DA::DAAppRibbonArea</name>
     <message>
-        <location filename="../APP/DAAppRibbonArea.cpp" line="+222"/>
+        <location filename="../APP/Ribbon/DAAppRibbonArea.cpp" line="+171"/>
         <location line="+3"/>
         <source>File</source>
         <translation>File</translation>
@@ -4447,13 +4518,13 @@
         <translation>Config</translation>
     </message>
     <message>
-        <location line="+29"/>
-        <location line="+411"/>
+        <location line="+31"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaWorkflow.cpp" line="+98"/>
         <source>Workflow</source>
         <translation>Workflow</translation>
     </message>
     <message>
-        <location line="-438"/>
+        <location line="-29"/>
         <source>Dataset</source>
         <translation>Dataset</translation>
     </message>
@@ -4474,15 +4545,17 @@
     </message>
     <message>
         <location line="+2"/>
+        <location line="+10"/>
         <location line="+11"/>
-        <location line="+21"/>
-        <location line="+282"/>
-        <location line="+195"/>
+        <location line="+15"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaTable.cpp" line="+139"/>
+        <location line="+124"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaWorkflow.cpp" line="+31"/>
         <source>View</source>
         <translation>View</translation>
     </message>
     <message>
-        <location line="-508"/>
+        <location line="-35"/>
         <source>Display</source>
         <translation>Display</translation>
     </message>
@@ -4493,140 +4566,130 @@
     </message>
     <message>
         <location line="+2"/>
-        <location line="+241"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaTable.cpp" line="-213"/>
         <source>DataFrame</source>
         <translation>DataFrame</translation>
     </message>
     <message>
-        <location line="-240"/>
-        <location line="+242"/>
+        <location line="+1"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaTable.cpp" line="+19"/>
         <source>Table Operations</source>
         <translation>Table Operations</translation>
     </message>
     <message>
-        <location line="-235"/>
-        <location line="+313"/>
+        <location line="+6"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaTable.cpp" line="+98"/>
         <source>Data Operations</source>
         <translation>Data Operations</translation>
     </message>
     <message>
-        <location line="-319"/>
-        <location line="+244"/>
-        <source>Axes</source>
-        <translation>Axes</translation>
-    </message>
-    <message>
-        <location line="-243"/>
-        <location line="+256"/>
+        <location line="-4"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaTable.cpp" line="-83"/>
         <source>Column</source>
         <translation>Column</translation>
     </message>
     <message>
-        <location line="-255"/>
-        <location line="+12"/>
-        <location line="+254"/>
-        <location line="+5"/>
+        <location line="+15"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaTable.cpp" line="+18"/>
         <source>Type</source>
         <translation>Type</translation>
     </message>
     <message>
-        <location line="-270"/>
-        <location line="+12"/>
-        <location line="+269"/>
-        <location line="+4"/>
+        <location line="+1"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaTable.cpp" line="+12"/>
         <source>Format</source>
         <translation>Format</translation>
     </message>
     <message>
-        <location line="-279"/>
-        <location line="+337"/>
+        <location line="-7"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaTable.cpp" line="+101"/>
         <source>Table Style</source>
         <translation>Table Style</translation>
     </message>
     <message>
-        <location line="-336"/>
-        <location line="+340"/>
+        <location line="+1"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaTable.cpp" line="+27"/>
         <source>Fill</source>
         <translation>Fill</translation>
     </message>
     <message>
-        <location line="-339"/>
-        <location line="+347"/>
+        <location line="+1"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaTable.cpp" line="-21"/>
         <source>Font</source>
         <translation>Font</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaTable.cpp" line="+8"/>
         <source>Alignment</source>
         <translation>Alignment</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+8"/>
         <source>Borders</source>
         <translation>Borders</translation>
     </message>
     <message>
-        <location line="-346"/>
-        <location line="+352"/>
+        <location filename="../APP/Ribbon/DAAppRibbonArea.cpp" line="+1"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaTable.cpp" line="+19"/>
         <source>Clear</source>
         <translation>Clear</translation>
     </message>
     <message>
-        <location line="-345"/>
+        <location line="+8"/>
         <source>Fill Color</source>
         <translation>Fill Color</translation>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+421"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaWorkflow.cpp" line="+53"/>
         <source>Workflow Edit</source>
         <translation>Workflow Edit</translation>
     </message>
     <message>
-        <location line="-456"/>
-        <location line="+36"/>
-        <location line="+424"/>
+        <location line="-37"/>
+        <location line="+39"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaWorkflow.cpp" line="+4"/>
         <source>Clipboard</source>
         <translation>Clipboard</translation>
     </message>
     <message>
-        <location line="-410"/>
-        <location line="+530"/>
+        <location line="+16"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaChart.cpp" line="+64"/>
         <source>Chart Style</source>
         <translation>Chart Style</translation>
     </message>
     <message>
-        <location line="-521"/>
-        <location line="+627"/>
+        <location line="+9"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaStats.cpp" line="+49"/>
         <source>Statistics</source>
         <translation>Statistics</translation>
     </message>
     <message>
-        <location line="-626"/>
-        <location line="+628"/>
+        <location line="+1"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaStats.cpp" line="+2"/>
         <source>Statistics Operations</source>
         <translation>Statistics Operations</translation>
     </message>
     <message>
-        <location line="-627"/>
-        <location line="+631"/>
+        <location line="+1"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaStats.cpp" line="+4"/>
         <source>Statistics Parameters</source>
         <translation>Statistics Parameters</translation>
     </message>
     <message>
-        <location line="-630"/>
-        <location line="+653"/>
+        <location line="+1"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaStats.cpp" line="+24"/>
         <source>Tests</source>
         <translation>Tests</translation>
     </message>
     <message>
-        <location line="-652"/>
-        <location line="+659"/>
+        <location line="+1"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaStats.cpp" line="+7"/>
         <source>Plots</source>
         <translation>Plots</translation>
     </message>
     <message>
-        <location line="+336"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaAgent.cpp" line="+45"/>
         <location line="+2"/>
         <source>AI Agent</source>
         <translation>AI Agent</translation>
@@ -4662,7 +4725,7 @@
         <translation>Open a new agent chat session</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+3"/>
         <source>Session Manager</source>
         <translation>Session Manager</translation>
     </message>
@@ -4677,7 +4740,7 @@
         <translation>Agent</translation>
     </message>
     <message>
-        <location line="+59"/>
+        <location line="+60"/>
         <location line="+7"/>
         <source>Tip</source>
         <translation>Tip</translation>
@@ -4693,43 +4756,43 @@
         <translation>Agent module is not ready</translation>
     </message>
     <message>
-        <location line="-1171"/>
-        <location line="+428"/>
+        <location filename="../APP/Ribbon/DAAppRibbonArea.cpp" line="-28"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaWorkflow.cpp" line="+5"/>
         <source>Item</source>
         <translation>Item</translation>
     </message>
     <message>
-        <location line="-427"/>
-        <location line="+436"/>
+        <location line="+1"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaWorkflow.cpp" line="+9"/>
         <source>Text</source>
         <translation>Text</translation>
     </message>
     <message>
-        <location line="-435"/>
-        <location line="+440"/>
+        <location line="+1"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaWorkflow.cpp" line="+5"/>
         <source>Background</source>
         <translation>Background</translation>
     </message>
     <message>
-        <location line="-437"/>
-        <location line="+519"/>
+        <location line="+5"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaWorkflow.cpp" line="+41"/>
         <source>Workflow Run</source>
         <translation>Workflow Run</translation>
     </message>
     <message>
-        <location line="-518"/>
-        <location line="+521"/>
+        <location line="+1"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaWorkflow.cpp" line="+3"/>
         <source>Run</source>
         <translation>Run</translation>
     </message>
     <message>
-        <location line="-519"/>
-        <location line="+352"/>
+        <location line="+2"/>
+        <location line="+213"/>
         <source>Figure</source>
         <translation>Figure</translation>
     </message>
     <message>
-        <location line="-346"/>
+        <location line="-207"/>
         <source>Figure Setting</source>
         <translation>Figure Setting</translation>
     </message>
@@ -4745,12 +4808,12 @@
     </message>
     <message>
         <location line="+5"/>
-        <location line="+584"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaChart.cpp" line="+67"/>
         <source>Chart Edit</source>
         <translation>Chart Edit</translation>
     </message>
     <message>
-        <location line="-586"/>
+        <location line="-2"/>
         <source>Chart Setting</source>
         <translation>Chart Setting</translation>
     </message>
@@ -4761,12 +4824,12 @@
     </message>
     <message>
         <location line="+2"/>
-        <location line="+593"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaChart.cpp" line="+10"/>
         <source>Select Tool</source>
         <translation>Select Tool</translation>
     </message>
     <message>
-        <location line="-592"/>
+        <location line="+1"/>
         <source>Chart Assist Tool</source>
         <translation>Chart Assist Tool</translation>
     </message>
@@ -4782,84 +4845,95 @@
         <translation>Export Image</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Export Workflow Graphics Scene To Image</source>
         <translation>Export Workflow Graphics Scene To Image</translation>
     </message>
     <message>
-        <location line="-23"/>
-        <location line="+376"/>
+        <location line="-24"/>
+        <location line="+236"/>
         <source>Stats Plot</source>
         <translation>Stats Plot</translation>
     </message>
     <message>
-        <location line="+63"/>
+        <location line="-245"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaWorkflow.cpp" line="-37"/>
         <source>Group</source>
         <translation>Group</translation>
     </message>
     <message>
-        <location line="+28"/>
+        <location line="-5"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaWorkflow.cpp" line="-86"/>
         <source>Workflow View</source>
         <translation>Workflow View</translation>
     </message>
     <message>
-        <location line="-509"/>
-        <location line="+546"/>
+        <location line="-33"/>
+        <location line="+40"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaWorkflow.cpp" line="+38"/>
         <source>Export</source>
         <translation>Export</translation>
     </message>
     <message>
-        <location line="+27"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaChart.cpp" line="-94"/>
         <source>Chart Operate</source>
         <translation>Chart Operate</translation>
     </message>
     <message>
-        <location line="+47"/>
+        <location line="+62"/>
         <source>Theme</source>
         <translation>Theme</translation>
     </message>
     <message>
-        <location line="+29"/>
+        <location line="+38"/>
         <source>Assist Tools</source>
         <translation>Assist Tools</translation>
     </message>
     <message>
-        <location line="-636"/>
-        <location line="+290"/>
+        <location filename="../APP/Ribbon/DAAppRibbonArea.cpp" line="-28"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaTable.cpp" line="-133"/>
         <source>Edit</source>
         <translation>Edit</translation>
     </message>
     <message>
-        <location line="-281"/>
-        <location line="+357"/>
+        <location line="+11"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaTable.cpp" line="+127"/>
         <source>Conditional</source>
         <translation>Conditional</translation>
     </message>
     <message>
-        <location line="-363"/>
-        <location line="+318"/>
+        <location line="-7"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaTable.cpp" line="-69"/>
         <source>Computed Column</source>
         <translation>Computed Column</translation>
     </message>
     <message>
-        <location line="-317"/>
-        <location line="+324"/>
+        <location line="+1"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaTable.cpp" line="+7"/>
         <source>Data Transform</source>
         <translation>Data Transform</translation>
     </message>
     <message>
+        <location line="-8"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaTable.cpp" line="-115"/>
         <source>Rows &amp; Columns</source>
         <translation>Rows &amp; Columns</translation>
     </message>
     <message>
+        <location line="+2"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaTable.cpp" line="+23"/>
         <source>Type &amp; Format</source>
         <translation>Type &amp; Format</translation>
     </message>
     <message>
+        <location line="+4"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaTable.cpp" line="+78"/>
         <source>Sort &amp; Filter</source>
         <translation>Sort &amp; Filter</translation>
     </message>
     <message>
+        <location line="+3"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaTable.cpp" line="+25"/>
         <source>Data Validation</source>
         <translation>Data Validation</translation>
     </message>
@@ -4896,7 +4970,7 @@
 <context>
     <name>DA::DACacheWindowTableView</name>
     <message>
-        <location filename="../DAGui/DACacheWindowTableView.cpp" line="+765"/>
+        <location filename="../DAGui/Table/Views/DACacheWindowTableView.cpp" line="+765"/>
         <source>Go To Row</source>
         <translation>Go To Row</translation>
     </message>
@@ -4909,7 +4983,7 @@
 <context>
     <name>DA::DAChart3DAxisSettingPanel</name>
     <message>
-        <location filename="../DAGui/Chart3DSetting/DAChart3DAxisSettingPanel.cpp" line="+127"/>
+        <location filename="../DAGui/Chart/Setting3D/DAChart3DAxisSettingPanel.cpp" line="+127"/>
         <source>Axis Selector</source>
         <translation>Axis Selector</translation>
     </message>
@@ -5032,7 +5106,7 @@
 <context>
     <name>DA::DAChart3DBarSettingPanel</name>
     <message>
-        <location filename="../DAGui/Chart3DSetting/DAChart3DBarSettingPanel.cpp" line="+35"/>
+        <location filename="../DAGui/Chart/Setting3D/DAChart3DBarSettingPanel.cpp" line="+35"/>
         <source>General</source>
         <translation>General</translation>
     </message>
@@ -5110,7 +5184,7 @@
 <context>
     <name>DA::DAChart3DColorLegendSettingPanel</name>
     <message>
-        <location filename="../DAGui/Chart3DSetting/DAChart3DColorLegendSettingPanel.cpp" line="+69"/>
+        <location filename="../DAGui/Chart/Setting3D/DAChart3DColorLegendSettingPanel.cpp" line="+69"/>
         <source>Display</source>
         <translation>Display</translation>
     </message>
@@ -5199,7 +5273,7 @@
 <context>
     <name>DA::DAChart3DCoordSysSettingPanel</name>
     <message>
-        <location filename="../DAGui/Chart3DSetting/DAChart3DCoordSysSettingPanel.cpp" line="+70"/>
+        <location filename="../DAGui/Chart/Setting3D/DAChart3DCoordSysSettingPanel.cpp" line="+70"/>
         <location line="+2"/>
         <source>Style</source>
         <translation>Style</translation>
@@ -5333,7 +5407,7 @@
 <context>
     <name>DA::DAChart3DLineSettingPanel</name>
     <message>
-        <location filename="../DAGui/Chart3DSetting/DAChart3DLineSettingPanel.cpp" line="+35"/>
+        <location filename="../DAGui/Chart/Setting3D/DAChart3DLineSettingPanel.cpp" line="+35"/>
         <source>General</source>
         <translation>General</translation>
     </message>
@@ -5451,7 +5525,7 @@
 <context>
     <name>DA::DAChart3DPlotSettingPanel</name>
     <message>
-        <location filename="../DAGui/Chart3DSetting/DAChart3DPlotSettingPanel.cpp" line="+70"/>
+        <location filename="../DAGui/Chart/Setting3D/DAChart3DPlotSettingPanel.cpp" line="+70"/>
         <source>Title</source>
         <translation>Title</translation>
     </message>
@@ -5627,7 +5701,7 @@
 <context>
     <name>DA::DAChart3DSettingWidget</name>
     <message>
-        <location filename="../DAGui/Chart3DSetting/DAChart3DSettingWidget.cpp" line="+177"/>
+        <location filename="../DAGui/Chart/Setting3D/DAChart3DSettingWidget.cpp" line="+177"/>
         <source>3D Chart Area</source>
         <translation>3D Chart Area</translation>
     </message>
@@ -5665,7 +5739,7 @@
 <context>
     <name>DA::DAChart3DSurfaceSettingPanel</name>
     <message>
-        <location filename="../DAGui/Chart3DSetting/DAChart3DSurfaceSettingPanel.cpp" line="+37"/>
+        <location filename="../DAGui/Chart/Setting3D/DAChart3DSurfaceSettingPanel.cpp" line="+37"/>
         <source>General</source>
         <translation>General</translation>
     </message>
@@ -5818,7 +5892,7 @@
 <context>
     <name>DA::DAChartAdd3DBarWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAdd3DBarWidget.cpp" line="+107"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAdd3DBarWidget.cpp" line="+107"/>
         <source>Bar3D</source>
         <translation>Bar3D</translation>
     </message>
@@ -5826,7 +5900,7 @@
 <context>
     <name>DA::DAChartAdd3DLineWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAdd3DLineWidget.cpp" line="+58"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAdd3DLineWidget.cpp" line="+61"/>
         <source>Line3D</source>
         <translation>Line3D</translation>
     </message>
@@ -5834,38 +5908,35 @@
 <context>
     <name>DA::DAChartAdd3DSurfaceWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAdd3DSurfaceWidget.cpp" line="+116"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAdd3DSurfaceWidget.cpp" line="+122"/>
         <source>Surface3D</source>
         <translation>Surface3D</translation>
     </message>
     <message>
-        <location line="+124"/>
+        <location line="+146"/>
         <source>scipy is not available, cannot perform scatter interpolation. Please install scipy: pip install scipy</source>
         <translation>scipy is not available, cannot perform scatter interpolation. Please install scipy: pip install scipy</translation>
     </message>
-
     <message>
-        <location line="+119"/>
+        <location line="-27"/>
         <source>Not enough valid points for surface interpolation</source>
         <translation>Not enough valid points for surface interpolation</translation>
-        </message>
-
+    </message>
     <message>
         <location line="+11"/>
         <source>The X or Y column has no variation, cannot build a surface</source>
         <translation>The X or Y column has no variation, cannot build a surface</translation>
-        </message>
-
+    </message>
     <message>
-        <location line="+57"/>
+        <location line="+73"/>
         <source>Failed to interpolate the surface: %1</source>
         <translation>Failed to interpolate the surface: %1</translation>
-        </message>
+    </message>
 </context>
 <context>
     <name>DA::DAChartAddBoxChartWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddBoxChartWidget.cpp" line="+79"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddBoxChartWidget.cpp" line="+79"/>
         <location line="+16"/>
         <location line="+28"/>
         <source>Warning</source>
@@ -5895,7 +5966,7 @@
 <context>
     <name>DA::DAChartAddContourWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddContourWidget.cpp" line="+18"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddContourWidget.cpp" line="+18"/>
         <source>X</source>
         <translation>X</translation>
     </message>
@@ -5910,7 +5981,7 @@
         <translation>Value</translation>
     </message>
     <message>
-        <location line="+31"/>
+        <location line="+34"/>
         <location line="+9"/>
         <location line="+9"/>
         <source>Warning</source>
@@ -5928,7 +5999,7 @@
         <translation>The selected data cannot be converted to a series</translation>
     </message>
     <message>
-        <location line="+36"/>
+        <location line="+22"/>
         <source>Exception occurred during extracting contour data:%1</source>
         <translation>Exception occurred during extracting contour data:%1</translation>
     </message>
@@ -5936,7 +6007,7 @@
 <context>
     <name>DA::DAChartAddErrorBarWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddErrorBarWidget.cpp" line="+22"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddErrorBarWidget.cpp" line="+24"/>
         <source>Error Bar</source>
         <translation>Error Bar</translation>
     </message>
@@ -5944,7 +6015,7 @@
 <context>
     <name>DA::DAChartAddHistogramWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddHistogramWidget.cpp" line="+18"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddHistogramWidget.cpp" line="+18"/>
         <source>Data</source>
         <translation>Data</translation>
     </message>
@@ -5969,7 +6040,7 @@
 <context>
     <name>DA::DAChartAddMultiBarWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddMultiBarWidget.cpp" line="+90"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddMultiBarWidget.cpp" line="+90"/>
         <location line="+26"/>
         <source>Warning</source>
         <translation>Warning</translation>
@@ -5990,7 +6061,7 @@
         <translation>Exception occurred during extracting y series:%1</translation>
     </message>
     <message>
-        <location line="+48"/>
+        <location line="+51"/>
         <source>Exception occurred during building multi-bar samples:%1</source>
         <translation>Exception occurred during building multi-bar samples:%1</translation>
     </message>
@@ -5998,7 +6069,7 @@
 <context>
     <name>DA::DAChartAddOHLCSeriesWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddOHLCSeriesWidget.cpp" line="+37"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddOHLCSeriesWidget.cpp" line="+37"/>
         <location line="+9"/>
         <source>Time</source>
         <translation>Time</translation>
@@ -6085,7 +6156,7 @@
 <context>
     <name>DA::DAChartAddStatsBarplotWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddStatsBarplotWidget.cpp" line="+21"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddStatsBarplotWidget.cpp" line="+21"/>
         <source>X axis (categorical)</source>
         <translation>X axis (categorical)</translation>
     </message>
@@ -6100,12 +6171,7 @@
         <translation>Hue</translation>
     </message>
     <message>
-        <location line="+83"/>
-        <source>Please select an X-axis data column before plotting</source>
-        <translation>Please select an X-axis data column before plotting</translation>
-    </message>
-    <message>
-        <location line="+44"/>
+        <location line="+111"/>
         <source>Barplot Settings</source>
         <translation>Barplot Settings</translation>
     </message>
@@ -6118,7 +6184,7 @@
 <context>
     <name>DA::DAChartAddStatsBoxplotWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddStatsBoxplotWidget.cpp" line="+21"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddStatsBoxplotWidget.cpp" line="+20"/>
         <source>Data</source>
         <translation>Data</translation>
     </message>
@@ -6127,22 +6193,11 @@
         <source>Hue</source>
         <translation>Hue</translation>
     </message>
-    <message>
-        <location line="+42"/>
-        <location line="+18"/>
-        <source>Please select one or more data columns before plotting</source>
-        <translation>Please select one or more data columns before plotting</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>Please select a data column before plotting</source>
-        <translation>Please select a data column before plotting</translation>
-    </message>
 </context>
 <context>
     <name>DA::DAChartAddStatsEcdfplotWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddStatsEcdfplotWidget.cpp" line="+20"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddStatsEcdfplotWidget.cpp" line="+20"/>
         <source>Data</source>
         <translation>Data</translation>
     </message>
@@ -6156,16 +6211,11 @@
         <source>Weights (optional)</source>
         <translation>Weights (optional)</translation>
     </message>
-    <message>
-        <location line="+53"/>
-        <source>Please select a data column before plotting</source>
-        <translation>Please select a data column before plotting</translation>
-    </message>
 </context>
 <context>
     <name>DA::DAChartAddStatsHeatmapWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddStatsHeatmapWidget.cpp" line="+20"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddStatsHeatmapWidget.cpp" line="+20"/>
         <source>X axis</source>
         <translation>X axis</translation>
     </message>
@@ -6179,23 +6229,11 @@
         <source>Value</source>
         <translation>Value</translation>
     </message>
-    <message>
-        <location line="+76"/>
-        <location line="+4"/>
-        <source>Please select an X-axis data column before plotting</source>
-        <translation>Please select an X-axis data column before plotting</translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <location line="+4"/>
-        <source>Please select a Y-axis data column before plotting</source>
-        <translation>Please select a Y-axis data column before plotting</translation>
-    </message>
 </context>
 <context>
     <name>DA::DAChartAddStatsHistplotWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddStatsHistplotWidget.cpp" line="+21"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddStatsHistplotWidget.cpp" line="+20"/>
         <source>Data</source>
         <translation>Data</translation>
     </message>
@@ -6203,18 +6241,12 @@
         <location line="+4"/>
         <source>Hue</source>
         <translation>Hue</translation>
-    </message>
-    <message>
-        <location line="+68"/>
-        <location line="+4"/>
-        <source>Please select a data column before plotting</source>
-        <translation>Please select a data column before plotting</translation>
     </message>
 </context>
 <context>
     <name>DA::DAChartAddStatsKdeplot1dWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddStatsKdeplot1dWidget.cpp" line="+21"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddStatsKdeplot1dWidget.cpp" line="+20"/>
         <source>Data</source>
         <translation>Data</translation>
     </message>
@@ -6223,17 +6255,11 @@
         <source>Hue</source>
         <translation>Hue</translation>
     </message>
-    <message>
-        <location line="+77"/>
-        <location line="+4"/>
-        <source>Please select a data column before plotting</source>
-        <translation>Please select a data column before plotting</translation>
-    </message>
 </context>
 <context>
     <name>DA::DAChartAddStatsKdeplot2dWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddStatsKdeplot2dWidget.cpp" line="+21"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddStatsKdeplot2dWidget.cpp" line="+20"/>
         <source>X axis</source>
         <translation>X axis</translation>
     </message>
@@ -6241,24 +6267,12 @@
         <location line="+4"/>
         <source>Y axis</source>
         <translation>Y axis</translation>
-    </message>
-    <message>
-        <location line="+54"/>
-        <location line="+4"/>
-        <source>Please select an X-axis data column before plotting</source>
-        <translation>Please select an X-axis data column before plotting</translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <location line="+4"/>
-        <source>Please select a Y-axis data column before plotting</source>
-        <translation>Please select a Y-axis data column before plotting</translation>
     </message>
 </context>
 <context>
     <name>DA::DAChartAddStatsRegplotWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddStatsRegplotWidget.cpp" line="+20"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddStatsRegplotWidget.cpp" line="+20"/>
         <source>X axis</source>
         <translation>X axis</translation>
     </message>
@@ -6267,21 +6281,11 @@
         <source>Y axis</source>
         <translation>Y axis</translation>
     </message>
-    <message>
-        <location line="+76"/>
-        <source>Please select an X-axis data column before plotting</source>
-        <translation>Please select an X-axis data column before plotting</translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>Please select a Y-axis data column before plotting</source>
-        <translation>Please select a Y-axis data column before plotting</translation>
-    </message>
 </context>
 <context>
     <name>DA::DAChartAddStatsScatterplotWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddStatsScatterplotWidget.cpp" line="+20"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddStatsScatterplotWidget.cpp" line="+20"/>
         <source>X axis</source>
         <translation>X axis</translation>
     </message>
@@ -6295,23 +6299,11 @@
         <source>Hue</source>
         <translation>Hue</translation>
     </message>
-    <message>
-        <location line="+39"/>
-        <location line="+4"/>
-        <source>Please select an X-axis data column before plotting</source>
-        <translation>Please select an X-axis data column before plotting</translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <location line="+4"/>
-        <source>Please select a Y-axis data column before plotting</source>
-        <translation>Please select a Y-axis data column before plotting</translation>
-    </message>
 </context>
 <context>
     <name>DA::DAChartAddVectorFieldWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddVectorFieldWidget.cpp" line="+16"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddVectorFieldWidget.cpp" line="+16"/>
         <source>X</source>
         <translation>X</translation>
     </message>
@@ -6331,7 +6323,7 @@
         <translation>V</translation>
     </message>
     <message>
-        <location line="+34"/>
+        <location line="+37"/>
         <location line="+10"/>
         <location line="+10"/>
         <source>Warning</source>
@@ -6349,7 +6341,7 @@
         <translation>The selected data cannot be converted to a series</translation>
     </message>
     <message>
-        <location line="+27"/>
+        <location line="+24"/>
         <source>Exception occurred during extracting vector field data:%1</source>
         <translation>Exception occurred during extracting vector field data:%1</translation>
     </message>
@@ -6357,7 +6349,7 @@
 <context>
     <name>DA::DAChartAddXYESeriesWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddXYESeriesWidget.cpp" line="+21"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddXYESeriesWidget.cpp" line="+21"/>
         <source>x</source>
         <translation>x</translation>
     </message>
@@ -6447,7 +6439,7 @@
 <context>
     <name>DA::DAChartAddXYSeriesWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddXYSeriesWidget.cpp" line="+26"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddXYSeriesWidget.cpp" line="+26"/>
         <source>x</source>
         <translation>x</translation>
     </message>
@@ -6521,7 +6513,7 @@
 <context>
     <name>DA::DAChartAddtGridRasterDataWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddtGridRasterDataWidget.cpp" line="+178"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddtGridRasterDataWidget.cpp" line="+178"/>
         <source>Warning</source>
         <translation>Warning</translation>
     </message>
@@ -6544,7 +6536,7 @@
 <context>
     <name>DA::DAChartArrowMarkerSettingPanel</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartArrowMarkerSettingPanel.cpp" line="+51"/>
+        <location filename="../DAGui/Chart/Setting/DAChartArrowMarkerSettingPanel.cpp" line="+51"/>
         <source>Basic</source>
         <translation>Basic</translation>
     </message>
@@ -6724,7 +6716,7 @@
 <context>
     <name>DA::DAChartAutoincrementSeriesWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAutoincrementSeriesWidget.cpp" line="+31"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAutoincrementSeriesWidget.cpp" line="+31"/>
         <source>Autoincrement series</source>
         <translation>Autoincrement series</translation>
     </message>
@@ -6742,7 +6734,7 @@
 <context>
     <name>DA::DAChartAxisSettingPanel</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartAxisSettingPanel.cpp" line="+192"/>
+        <location filename="../DAGui/Chart/Setting/DAChartAxisSettingPanel.cpp" line="+192"/>
         <source>Enable</source>
         <translation>Enable</translation>
     </message>
@@ -6825,7 +6817,7 @@
 <context>
     <name>DA::DAChartBarSettingPanel</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartBarSettingPanel.cpp" line="+51"/>
+        <location filename="../DAGui/Chart/Setting/DAChartBarSettingPanel.cpp" line="+51"/>
         <source>Basic</source>
         <translation>Basic</translation>
     </message>
@@ -6959,7 +6951,7 @@
 <context>
     <name>DA::DAChartBoxChartSettingPanel</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartBoxChartSettingPanel.cpp" line="+51"/>
+        <location filename="../DAGui/Chart/Setting/DAChartBoxChartSettingPanel.cpp" line="+51"/>
         <source>Basic</source>
         <translation>Basic</translation>
     </message>
@@ -7107,7 +7099,7 @@
 <context>
     <name>DA::DAChartCanvasSettingPanel</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartCanvasSettingPanel.cpp" line="+130"/>
+        <location filename="../DAGui/Chart/Setting/DAChartCanvasSettingPanel.cpp" line="+130"/>
         <source>Background</source>
         <translation>Background</translation>
     </message>
@@ -7170,7 +7162,7 @@
 <context>
     <name>DA::DAChartCurveSettingPanel</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartCurveSettingPanel.cpp" line="+45"/>
+        <location filename="../DAGui/Chart/Setting/DAChartCurveSettingPanel.cpp" line="+45"/>
         <source>General</source>
         <translation>General</translation>
     </message>
@@ -7291,7 +7283,7 @@
 <context>
     <name>DA::DAChartDataPickerSettingPanel</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartDataPickerSettingPanel.cpp" line="+115"/>
+        <location filename="../DAGui/Chart/Setting/DAChartDataPickerSettingPanel.cpp" line="+115"/>
         <source>Basic</source>
         <translation>Basic</translation>
     </message>
@@ -7449,7 +7441,7 @@
 <context>
     <name>DA::DAChartDataProbeMarkerSettingPanel</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartDataProbeMarkerSettingPanel.cpp" line="+48"/>
+        <location filename="../DAGui/Chart/Setting/DAChartDataProbeMarkerSettingPanel.cpp" line="+48"/>
         <source>Basic</source>
         <translation>Basic</translation>
     </message>
@@ -7532,7 +7524,7 @@
 <context>
     <name>DA::DAChartErrorBarSettingPanel</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartErrorBarSettingPanel.cpp" line="+49"/>
+        <location filename="../DAGui/Chart/Setting/DAChartErrorBarSettingPanel.cpp" line="+49"/>
         <source>Basic</source>
         <translation>Basic</translation>
     </message>
@@ -7623,9 +7615,37 @@
     </message>
 </context>
 <context>
+    <name>DA::DAChartGenericItemSettingPanel</name>
+    <message>
+        <location filename="../DAGui/Chart/Setting/DAChartGenericItemSettingPanel.cpp" line="+41"/>
+        <source>Basic</source>
+        <translation>Basic</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Title</source>
+        <translation>Title</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Legend Visible</source>
+        <translation>Legend Visible</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Visible</source>
+        <translation>Visible</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Z Value</source>
+        <translation>Z Value</translation>
+    </message>
+</context>
+<context>
     <name>DA::DAChartGraphicSettingPanel</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartGraphicSettingPanel.cpp" line="+42"/>
+        <location filename="../DAGui/Chart/Setting/DAChartGraphicSettingPanel.cpp" line="+42"/>
         <source>Basic</source>
         <translation>Basic</translation>
     </message>
@@ -7663,7 +7683,7 @@
 <context>
     <name>DA::DAChartGridSettingPanel</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartGridSettingPanel.cpp" line="+44"/>
+        <location filename="../DAGui/Chart/Setting/DAChartGridSettingPanel.cpp" line="+44"/>
         <source>Basic</source>
         <translation>Basic</translation>
     </message>
@@ -7711,7 +7731,7 @@
 <context>
     <name>DA::DAChartHistogramSettingPanel</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartHistogramSettingPanel.cpp" line="+46"/>
+        <location filename="../DAGui/Chart/Setting/DAChartHistogramSettingPanel.cpp" line="+46"/>
         <source>Basic</source>
         <translation>Basic</translation>
     </message>
@@ -7784,7 +7804,7 @@
 <context>
     <name>DA::DAChartItemSettingPanel</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartItemSettingPanel.cpp" line="+74"/>
+        <location filename="../DAGui/Chart/Setting/DAChartItemSettingPanel.cpp" line="+74"/>
         <source>Lines</source>
         <translation>Lines</translation>
     </message>
@@ -7963,7 +7983,7 @@
 <context>
     <name>DA::DAChartLegendSettingPanel</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartLegendSettingPanel.cpp" line="+52"/>
+        <location filename="../DAGui/Chart/Setting/DAChartLegendSettingPanel.cpp" line="+52"/>
         <source>Basic</source>
         <translation>Basic</translation>
     </message>
@@ -8057,8 +8077,8 @@
 <context>
     <name>DA::DAChartManageWidget</name>
     <message>
-        <location filename="../DAGui/Chart/DAChartManageWidget.cpp" line="+99"/>
-        <location line="+619"/>
+        <location filename="../DAGui/Chart/DAChartManageWidget.cpp" line="+102"/>
+        <location line="+809"/>
         <location line="+17"/>
         <location line="+20"/>
         <location line="+22"/>
@@ -8068,26 +8088,26 @@
         <translation>Rename</translation>
     </message>
     <message>
-        <location line="-713"/>
+        <location line="-903"/>
         <source>Visible</source>
         <translation>Visible</translation>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+817"/>
+        <location line="+1007"/>
         <location line="+24"/>
         <source>Delete</source>
         <translation>Delete</translation>
     </message>
     <message>
-        <location line="-839"/>
-        <location line="+888"/>
+        <location line="-1029"/>
+        <location line="+1078"/>
         <location line="+20"/>
         <source>Remove Chart</source>
         <translation>Remove Chart</translation>
     </message>
     <message>
-        <location line="-903"/>
+        <location line="-1093"/>
         <source>Transfer</source>
         <translation>Transfer</translation>
     </message>
@@ -8097,29 +8117,29 @@
         <translation>Setting</translation>
     </message>
     <message>
-        <location line="+103"/>
+        <location line="+104"/>
         <source>figure</source>
         <translation>figure</translation>
     </message>
     <message>
-        <location line="+288"/>
+        <location line="+482"/>
         <source>received figure create signal, but cannot find figure</source>
         <translation>received figure create signal, but cannot find figure</translation>
     </message>
     <message>
-        <location line="+25"/>
+        <location line="+10"/>
         <source>received figure close signal, but cannot find figure index</source>
         <translation>received figure close signal, but cannot find figure index</translation>
     </message>
     <message>
-        <location line="+465"/>
+        <location line="+475"/>
         <location line="+20"/>
         <source>Are you sure to remove chart &quot;%1&quot;? All its items will be removed.</source>
         <translation>Are you sure to remove chart &quot;%1&quot;? All its items will be removed.</translation>
     </message>
     <message>
-        <location line="-784"/>
-        <location line="+485"/>
+        <location line="-973"/>
+        <location line="+674"/>
         <location line="+275"/>
         <location line="+20"/>
         <source>chart</source>
@@ -8150,7 +8170,7 @@
 <context>
     <name>DA::DAChartMarkerSettingPanel</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartMarkerSettingPanel.cpp" line="+48"/>
+        <location filename="../DAGui/Chart/Setting/DAChartMarkerSettingPanel.cpp" line="+48"/>
         <source>Basic</source>
         <translation>Basic</translation>
     </message>
@@ -8251,7 +8271,7 @@
 <context>
     <name>DA::DAChartMultiBarSettingPanel</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartMultiBarSettingPanel.cpp" line="+47"/>
+        <location filename="../DAGui/Chart/Setting/DAChartMultiBarSettingPanel.cpp" line="+47"/>
         <source>Basic</source>
         <translation>Basic</translation>
     </message>
@@ -8354,12 +8374,12 @@
 <context>
     <name>DA::DAChartOperateWidget</name>
     <message>
-        <location filename="../DAGui/Chart/DAChartOperateWidget.cpp" line="+169"/>
+        <location filename="../DAGui/Chart/DAChartOperateWidget.cpp" line="+178"/>
         <source>figure-%1</source>
         <translation>figure-%1</translation>
     </message>
     <message>
-        <location line="+452"/>
+        <location line="+457"/>
         <source>Question</source>
         <translation>Question</translation>
     </message>
@@ -8372,7 +8392,7 @@
 <context>
     <name>DA::DAChartPlotSettingPanel</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartPlotSettingPanel.cpp" line="+114"/>
+        <location filename="../DAGui/Chart/Setting/DAChartPlotSettingPanel.cpp" line="+114"/>
         <source>Title</source>
         <translation>Title</translation>
     </message>
@@ -8415,7 +8435,7 @@
 <context>
     <name>DA::DAChartScaleSettingPanel</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartScaleSettingPanel.cpp" line="+47"/>
+        <location filename="../DAGui/Chart/Setting/DAChartScaleSettingPanel.cpp" line="+47"/>
         <source>Basic</source>
         <translation>Basic</translation>
     </message>
@@ -8494,7 +8514,7 @@
 <context>
     <name>DA::DAChartSeriesPickerWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartSeriesPickerWidget.cpp" line="+253"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartSeriesPickerWidget.cpp" line="+253"/>
         <source>Warning</source>
         <translation>Warning</translation>
     </message>
@@ -8565,7 +8585,7 @@
 <context>
     <name>DA::DAChartShapeSettingPanel</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartShapeSettingPanel.cpp" line="+46"/>
+        <location filename="../DAGui/Chart/Setting/DAChartShapeSettingPanel.cpp" line="+46"/>
         <source>Basic</source>
         <translation>Basic</translation>
     </message>
@@ -8638,7 +8658,7 @@
 <context>
     <name>DA::DAChartSpectroCurveSettingPanel</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartSpectroCurveSettingPanel.cpp" line="+46"/>
+        <location filename="../DAGui/Chart/Setting/DAChartSpectroCurveSettingPanel.cpp" line="+46"/>
         <source>Basic</source>
         <translation>Basic</translation>
     </message>
@@ -8701,7 +8721,7 @@
 <context>
     <name>DA::DAChartSpectrogramSettingPanel</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartSpectrogramSettingPanel.cpp" line="+46"/>
+        <location filename="../DAGui/Chart/Setting/DAChartSpectrogramSettingPanel.cpp" line="+46"/>
         <source>Basic</source>
         <translation>Basic</translation>
     </message>
@@ -8779,7 +8799,7 @@
 <context>
     <name>DA::DAChartSymbolComboBox</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartSymbolComboBox.cpp" line="+38"/>
+        <location filename="../DAGui/Chart/Setting/DAChartSymbolComboBox.cpp" line="+38"/>
         <source>No Symbol</source>
         <translation>No Symbol</translation>
     </message>
@@ -8875,7 +8895,7 @@
 <context>
     <name>DA::DAChartTextLabelSettingPanel</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartTextLabelSettingPanel.cpp" line="+47"/>
+        <location filename="../DAGui/Chart/Setting/DAChartTextLabelSettingPanel.cpp" line="+47"/>
         <source>Basic</source>
         <translation>Basic</translation>
     </message>
@@ -8948,7 +8968,7 @@
 <context>
     <name>DA::DAChartTextMarkerSettingPanel</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartTextMarkerSettingPanel.cpp" line="+54"/>
+        <location filename="../DAGui/Chart/Setting/DAChartTextMarkerSettingPanel.cpp" line="+54"/>
         <source>Basic</source>
         <translation>Basic</translation>
     </message>
@@ -9041,7 +9061,7 @@
 <context>
     <name>DA::DAChartTradingCurveSettingPanel</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartTradingCurveSettingPanel.cpp" line="+48"/>
+        <location filename="../DAGui/Chart/Setting/DAChartTradingCurveSettingPanel.cpp" line="+48"/>
         <source>Basic</source>
         <translation>Basic</translation>
     </message>
@@ -9139,7 +9159,7 @@
 <context>
     <name>DA::DAChartVectorFieldSettingPanel</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartVectorFieldSettingPanel.cpp" line="+49"/>
+        <location filename="../DAGui/Chart/Setting/DAChartVectorFieldSettingPanel.cpp" line="+49"/>
         <source>Basic</source>
         <translation>Basic</translation>
     </message>
@@ -9252,7 +9272,7 @@
 <context>
     <name>DA::DAChartZoneSettingPanel</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartZoneSettingPanel.cpp" line="+45"/>
+        <location filename="../DAGui/Chart/Setting/DAChartZoneSettingPanel.cpp" line="+45"/>
         <source>Basic</source>
         <translation>Basic</translation>
     </message>
@@ -9361,7 +9381,7 @@
 <context>
     <name>DA::DADataHeaderView</name>
     <message>
-        <location filename="../DAGui/DADataHeaderView.cpp" line="+371"/>
+        <location filename="../DAGui/Table/Views/DADataHeaderView.cpp" line="+484"/>
         <source>Sort Ascending</source>
         <translation>Sort Ascending</translation>
     </message>
@@ -9379,6 +9399,16 @@
         <location line="+2"/>
         <source>Add Secondary Sort (Descending)</source>
         <translation>Add Secondary Sort (Descending)</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Custom Sort...</source>
+        <translation>Custom Sort...</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Clear Sort</source>
+        <translation>Clear Sort</translation>
     </message>
     <message>
         <location line="+4"/>
@@ -9446,12 +9476,13 @@
         <translation>Show Statistics</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="-325"/>
+        <location line="+327"/>
         <source>Quick Plot</source>
         <translation>Quick Plot</translation>
     </message>
     <message>
-        <location line="+42"/>
+        <location line="+46"/>
         <source>Edit Formula</source>
         <translation>Edit Formula</translation>
     </message>
@@ -9501,6 +9532,7 @@
         <translation>Manage Columns...</translation>
     </message>
     <message>
+        <location line="+150"/>
         <source>Set Row Height...</source>
         <translation>Set Row Height...</translation>
     </message>
@@ -9610,7 +9642,7 @@
 <context>
     <name>DA::DADataManageTableView</name>
     <message>
-        <location filename="../DAGui/DADataManageTableView.cpp" line="+89"/>
+        <location filename="../DAGui/DataManager/DADataManageTableView.cpp" line="+89"/>
         <source>An item is selected in the data management table, but the corresponding data cannot be obtained</source>
         <translation>An item is selected in the data management table, but the corresponding data cannot be obtained</translation>
     </message>
@@ -9618,7 +9650,7 @@
 <context>
     <name>DA::DADataManageWidget</name>
     <message>
-        <location filename="../DAGui/DADataManageWidget.cpp" line="+83"/>
+        <location filename="../DAGui/DataManager/DADataManageWidget.cpp" line="+83"/>
         <source>Please select the data item to remove</source>
         <translation>Please select the data item to remove</translation>
     </message>
@@ -9644,7 +9676,7 @@
 <context>
     <name>DA::DADataManagerTableModel</name>
     <message>
-        <location filename="../DAGui/Models/DADataManagerTableModel.cpp" line="+33"/>
+        <location filename="../DAGui/DataManager/DADataManagerTableModel.cpp" line="+33"/>
         <source>name</source>
         <translation>name</translation>
     </message>
@@ -9657,7 +9689,7 @@
 <context>
     <name>DA::DADataManagerTreeModel</name>
     <message>
-        <location filename="../DAGui/Models/DADataManagerTreeModel.cpp" line="+289"/>
+        <location filename="../DAGui/DataManager/DADataManagerTreeModel.cpp" line="+289"/>
         <location line="+2"/>
         <location line="+87"/>
         <location line="+3"/>
@@ -9687,7 +9719,7 @@
 <context>
     <name>DA::DADataManagerTreeWidget</name>
     <message>
-        <location filename="../DAGui/DADataManagerTreeWidget.cpp" line="+438"/>
+        <location filename="../DAGui/DataManager/DADataManagerTreeWidget.cpp" line="+438"/>
         <source>Search...</source>
         <translation>Search...</translation>
     </message>
@@ -9695,694 +9727,34 @@
 <context>
     <name>DA::DADataOperateOfDataFrameWidget</name>
     <message>
-        <location filename="../DAGui/DADataOperateOfDataFrameWidget.cpp" line="+774"/>
-        <source>Warning</source>
-        <translation>Warning</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>The name of the new column to be inserted must be specified</source>
-        <translation>The name of the new column to be inserted must be specified</translation>
-    </message>
-    <message>
-        <location line="+65"/>
-        <source>Please select valid data cells</source>
-        <translation>Please select valid data cells</translation>
-    </message>
-    <message>
-        <location line="+57"/>
-        <location line="+501"/>
-        <location line="+40"/>
-        <location line="+46"/>
-        <location line="+47"/>
-        <location line="+2228"/>
-        <location line="+24"/>
+        <location filename="../DAGui/Table/DADataOperateOfDataFrameWidget.cpp" line="+1116"/>
+        <location line="+28"/>
+        <location line="+119"/>
         <source>Please select a valid column</source>
         <translation>Please select a valid column</translation>
     </message>
     <message>
-        <location line="-2720"/>
-        <location line="+2302"/>
-        <location line="+63"/>
-        <location line="+47"/>
-        <source>Please select a valid cell</source>
-        <translation>Please select a valid cell</translation>
-    </message>
-    <message>
-        <location line="-2348"/>
-        <source>Clipboard is empty</source>
-        <translation>Clipboard is empty</translation>
-    </message>
-    <message>
-        <location line="+15"/>
-        <source>Please select a cell to paste into</source>
-        <translation>Please select a cell to paste into</translation>
-    </message>
-    <message>
-        <location line="+50"/>
-        <source>Nothing to paste: the clipboard content exceeds the table boundary</source>
-        <translation>Nothing to paste: the clipboard content exceeds the table boundary</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>Paste partially dropped: %1 row(s) and %2 cell(s) outside the table were ignored</source>
-        <translation>Paste partially dropped: %1 row(s) and %2 cell(s) outside the table were ignored</translation>
-    </message>
-    <message>
-        <location line="+29"/>
-        <source>Paste failed: the content does not match the column data type</source>
-        <translation>Paste failed: the content does not match the column data type</translation>
-    </message>
-    <message>
-        <location line="+17"/>
-        <source>No cells selected to cut</source>
-        <translation>No cells selected to cut</translation>
-    </message>
-    <message>
-        <location line="+22"/>
-        <source>Table has no columns</source>
-        <translation>Table has no columns</translation>
-    </message>
-    <message>
-        <location line="+69"/>
-        <source>Column name cannot be empty</source>
-        <translation>Column name cannot be empty</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>Column name &quot;%1&quot; already exists, please use another name</source>
-        <translation>Column name &quot;%1&quot; already exists, please use another name</translation>
-    </message>
-    <message>
-        <location line="+2612"/>
+        <location line="+424"/>
         <source>This data source is read-only and cannot be sorted.</source>
         <translation>This data source is read-only and cannot be sorted.</translation>
     </message>
     <message>
-        <location line="+109"/>
-        <source>Cannot sort: the column contains values of incomparable mixed types.</source>
-        <translation>Cannot sort: the column contains values of incomparable mixed types.</translation>
-    </message>
-    <message>
-        <location line="+844"/>
-        <source>This data source is read-only and cannot be modified.</source>
-        <translation>This data source is read-only and cannot be modified.</translation>
-    </message>
-    <message>
-        <location line="+14"/>
-        <location line="+22"/>
-        <location line="+44"/>
-        <source>No matches found</source>
-        <translation>No matches found</translation>
-    </message>
-    <message>
-        <location line="-38"/>
-        <source>Replace All</source>
-        <translation>Replace All</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Too many cells will be changed (%1). This operation cannot be undone. Continue?</source>
-        <translation>Too many cells will be changed (%1). This operation cannot be undone. Continue?</translation>
-    </message>
-    <message>
-        <location line="-687"/>
-        <location line="+34"/>
-        <location line="+51"/>
-        <source>Please select a column first</source>
-        <translation>Please select a column first</translation>
-    </message>
-    <message>
-        <location line="-48"/>
-        <location line="+87"/>
-        <source>Clear Conditional Format Rules</source>
-        <translation>Clear Conditional Format Rules</translation>
-    </message>
-    <message>
-        <location line="-77"/>
-        <source>The selected columns have no conditional format rules</source>
-        <translation>The selected columns have no conditional format rules</translation>
-    </message>
-    <message>
-        <location line="+283"/>
-        <source>Change Conditional Format Rules</source>
-        <translation>Change Conditional Format Rules</translation>
-    </message>
-    <message>
-        <location line="+661"/>
-        <source>The table is read-only and does not support computed columns</source>
-        <translation>The table is read-only and does not support computed columns</translation>
-    </message>
-    <message>
-        <location line="-25"/>
-        <location line="+135"/>
-        <source>Failed to evaluate the formula of computed column &quot;%1&quot;: %2</source>
-        <translation>Failed to evaluate the formula of computed column &quot;%1&quot;: %2</translation>
-    </message>
-    <message>
-        <location line="-64"/>
-        <source>Column &quot;%1&quot; has no computed formula</source>
-        <translation>Column &quot;%1&quot; has no computed formula</translation>
-    </message>
-    <message>
-        <location line="-23"/>
-        <source>The formula must not reference the target column itself</source>
-        <translation>The formula must not reference the target column itself</translation>
-    </message>
-    <message>
-        <location line="-4231"/>
-        <source>Computed column(s) %1 became invalid because their dependency column(s) were removed</source>
-        <translation>Computed column(s) %1 became invalid because their dependency column(s) were removed</translation>
-    </message>
-    <message>
-        <location line="+4652"/>
-        <source>Computed column(s) %1 became invalid because their dependency column(s) were merged</source>
-        <translation>Computed column(s) %1 became invalid because their dependency column(s) were merged</translation>
-    </message>
-    <message>
-        <location line="-265"/>
-        <location line="+1018"/>
-        <source>Rename Column</source>
-        <translation>Rename Column</translation>
-    </message>
-    <message>
-        <location line="-1017"/>
-        <source>%1 computed column(s) reference the renamed column(s): %2. Their references will be updated automatically. Continue?</source>
-        <translation>%1 computed column(s) reference the renamed column(s): %2. Their references will be updated automatically. Continue?</translation>
-    </message>
-    <message>
-        <location line="-110"/>
-        <source>Recompute All Computed Columns</source>
-        <translation>Recompute All Computed Columns</translation>
-    </message>
-    <message>
-        <location line="+158"/>
-        <source>Split Column requires an editable table</source>
-        <translation>Split Column requires an editable table</translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>Please select exactly one column to split</source>
-        <translation>Please select exactly one column to split</translation>
-    </message>
-    <message>
-        <location line="+14"/>
-        <source>Failed to snapshot the source column</source>
-        <translation>Failed to snapshot the source column</translation>
-    </message>
-    <message>
-        <location line="+59"/>
-        <source>Split column failed: %1</source>
-        <translation>Split column failed: %1</translation>
-    </message>
-    <message>
-        <location line="+19"/>
-        <source>Merge Columns requires an editable table</source>
-        <translation>Merge Columns requires an editable table</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>Please select at least two columns to merge</source>
-        <translation>Please select at least two columns to merge</translation>
-    </message>
-    <message>
-        <location line="+16"/>
-        <source>Failed to snapshot the source columns</source>
-        <translation>Failed to snapshot the source columns</translation>
-    </message>
-    <message>
-        <location line="+89"/>
-        <source>Merge columns failed: %1</source>
-        <translation>Merge columns failed: %1</translation>
-    </message>
-    <message>
-        <location line="+43"/>
-        <source>%1_GroupBy</source>
-        <translation>%1_GroupBy</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Group-by aggregation of %1</source>
-        <translation>Group-by aggregation of %1</translation>
-    </message>
-    <message>
-        <location line="+155"/>
-        <source>%1_Melted</source>
-        <translation>%1_Melted</translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>Melt (wide to long) of %1</source>
-        <translation>Melt (wide to long) of %1</translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>%1_Transposed</source>
-        <translation>%1_Transposed</translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>Transpose of %1</source>
-        <translation>Transpose of %1</translation>
-    </message>
-    <message>
-        <location line="-13"/>
-        <source>Reshape failed: %1</source>
-        <translation>Reshape failed: %1</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>Melt table in place</source>
-        <translation>Melt table in place</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Transpose table in place</source>
-        <translation>Transpose table in place</translation>
-    </message>
-    <message>
-        <location line="-81"/>
-        <source>(no table metadata to clear)</source>
-        <translation>(no table metadata to clear)</translation>
-    </message>
-    <message>
-        <location line="-2958"/>
-        <source>Freeze the first N columns (added to already frozen columns, 0 = no change):</source>
-        <translation>Freeze the first N columns (added to already frozen columns, 0 = no change):</translation>
-    </message>
-    <message>
-        <location line="+213"/>
-        <source>Column names must be unique</source>
-        <translation>Column names must be unique</translation>
-    </message>
-    <message>
-        <location line="+54"/>
-        <source>Rename and update column view</source>
-        <translation>Rename and update column view</translation>
-    </message>
-    <message>
-        <location line="+1271"/>
-        <source>The table has no conditional format rules</source>
-        <translation>The table has no conditional format rules</translation>
-    </message>
-    <message>
-        <location line="+32"/>
-        <source>Blue</source>
-        <translation>Blue</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Green</source>
-        <translation>Green</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Red</source>
-        <translation>Red</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Yellow</source>
-        <translation>Yellow</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Cyan</source>
-        <translation>Cyan</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Purple</source>
-        <translation>Purple</translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Data Bars</source>
-        <translation>Data Bars</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>Gradient Fill</source>
-        <translation>Gradient Fill</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>%1 Gradient Fill</source>
-        <translation>%1 Gradient Fill</translation>
-    </message>
-    <message>
-        <location line="+10"/>
-        <source>Solid Fill</source>
-        <translation>Solid Fill</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>%1 Solid Fill</source>
-        <translation>%1 Solid Fill</translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <location line="+30"/>
-        <location line="+54"/>
-        <source>Other Rules...</source>
-        <translation>Other Rules...</translation>
-    </message>
-    <message>
-        <location line="-77"/>
-        <source>Color Scales</source>
-        <translation>Color Scales</translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>%1-Color Scale</source>
-        <translation>%1-Color Scale</translation>
-    </message>
-    <message>
-        <location line="+25"/>
-        <source>Highlight Cells Rules</source>
-        <translation>Highlight Cells Rules</translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Greater Than...</source>
-        <translation>Greater Than...</translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Less Than...</source>
-        <translation>Less Than...</translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Between...</source>
-        <translation>Between...</translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Equal To...</source>
-        <translation>Equal To...</translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Text Contains...</source>
-        <translation>Text Contains...</translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>A Date Occurring</source>
-        <translation>A Date Occurring</translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Yesterday</source>
-        <translation>Yesterday</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Today</source>
-        <translation>Today</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Tomorrow</source>
-        <translation>Tomorrow</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>In the Last 7 Days</source>
-        <translation>In the Last 7 Days</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Last Week</source>
-        <translation>Last Week</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>This Week</source>
-        <translation>This Week</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Next Week</source>
-        <translation>Next Week</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Last Month</source>
-        <translation>Last Month</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>This Month</source>
-        <translation>This Month</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Next Month</source>
-        <translation>Next Month</translation>
-    </message>
-    <message>
-        <location line="+19"/>
-        <source>Duplicate Values...</source>
-        <translation>Duplicate Values...</translation>
-    </message>
-    <message>
-        <location line="+11"/>
-        <source>Clear Rules</source>
-        <translation>Clear Rules</translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Clear Rules from Selected Columns</source>
-        <translation>Clear Rules from Selected Columns</translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Clear Rules from Entire Sheet</source>
-        <translation>Clear Rules from Entire Sheet</translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>Custom Rules...</source>
-        <translation>Custom Rules...</translation>
-    </message>
-    <message>
-        <location line="+1249"/>
-        <location line="+22"/>
-        <source>Replace In Place</source>
-        <translation>Replace In Place</translation>
-    </message>
-    <message>
-        <location line="-21"/>
-        <source>Replacing in place will clear the following table metadata:
-%1
-
-Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
-        <translation>Replacing in place will clear the following table metadata:
-%1
-
-Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</translation>
-    </message>
-    <message>
-        <location line="+22"/>
-        <source>The table is very large (%1 cells). Keeping the old data for undo would double memory usage, so this in-place replacement will NOT be undoable. Continue?</source>
-        <translation>The table is very large (%1 cells). Keeping the old data for undo would double memory usage, so this in-place replacement will NOT be undoable. Continue?</translation>
-    </message>
-    <message>
-        <location line="+169"/>
-        <source>Fill failed: the content does not match the column data type</source>
-        <translation>Fill failed: the content does not match the column data type</translation>
-    </message>
-    <message>
-        <location line="+24"/>
-        <location line="+64"/>
-        <source>Cannot fill a read-only data source</source>
-        <translation>Cannot fill a read-only data source</translation>
-    </message>
-    <message>
-        <location line="-52"/>
-        <source>Fill down</source>
-        <translation>Fill down</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>Fill up</source>
-        <translation>Fill up</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>Fill forward (ffill)</source>
-        <translation>Fill forward (ffill)</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>Fill backward (bfill)</source>
-        <translation>Fill backward (bfill)</translation>
-    </message>
-    <message>
-        <location line="+46"/>
-        <source>Please select cells to fill</source>
-        <translation>Please select cells to fill</translation>
-    </message>
-    <message>
-        <location line="+30"/>
-        <source>Failed to generate the fill series</source>
-        <translation>Failed to generate the fill series</translation>
-    </message>
-    <message>
-        <location line="+10"/>
-        <source>Fill series</source>
-        <translation>Fill series</translation>
-    </message>
-    <message>
-        <location line="+26"/>
-        <source>Numeric range</source>
-        <translation>Numeric range</translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Date range</source>
-        <translation>Date range</translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Allowed values (enum)</source>
-        <translation>Allowed values (enum)</translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Not empty</source>
-        <translation>Not empty</translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Unique</source>
-        <translation>Unique</translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Regex (full match)</source>
-        <translation>Regex (full match)</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>%1 (occurrence %2)</source>
-        <translation>%1 (occurrence %2)</translation>
-    </message>
-    <message>
-        <location line="+138"/>
-        <source>Validation failed: %1</source>
-        <translation>Validation failed: %1</translation>
-    </message>
-    <message>
-        <location line="+48"/>
-        <source>No enabled validation rules yet — add rules first</source>
-        <translation>No enabled validation rules yet — add rules first</translation>
-    </message>
-    <message>
-        <location line="+26"/>
-        <source>Row %1: %2</source>
-        <translation>Row %1: %2</translation>
-    </message>
-    <message>
-        <location line="+60"/>
-        <source>%1 validation rule(s) reference the renamed column(s): %2. Their references will be updated automatically. Continue?</source>
-        <translation>%1 validation rule(s) reference the renamed column(s): %2. Their references will be updated automatically. Continue?</translation>
-    </message>
-    <message>
-        <location line="+96"/>
-        <source>Please select a cell to annotate</source>
-        <translation>Please select a cell to annotate</translation>
-    </message>
-    <message>
-        <location line="+84"/>
-        <source>Please select a cell whose note is to be deleted</source>
-        <translation>Please select a cell whose note is to be deleted</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>The selected cell has no note</source>
-        <translation>The selected cell has no note</translation>
-    </message>
-    <message>
-        <location line="+18"/>
-        <source>This table has no notes</source>
-        <translation>This table has no notes</translation>
-    </message>
-    <message>
-        <location line="+123"/>
-        <source>The chart area is not available</source>
-        <translation>The chart area is not available</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>Failed to transfer to the chart area</source>
-        <translation>Failed to transfer to the chart area</translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>The chart has been transferred to the chart area</source>
-        <translation>The chart has been transferred to the chart area</translation>
-    </message>
-    <message>
-        <location line="-4519"/>
-        <source>Some column view settings were dropped because the table columns have changed.</source>
-        <translation>Some column view settings were dropped because the table columns have changed.</translation>
-    </message>
-    <message>
-        <location line="+578"/>
-        <source>Freeze Columns</source>
-        <translation>Freeze Columns</translation>
-    </message>
-    <message>
-        <location line="-1116"/>
-        <location line="+65"/>
-        <source>The column &quot;%1&quot; was hidden and has been made visible</source>
-        <translation>The column &quot;%1&quot; was hidden and has been made visible</translation>
-    </message>
-    <message>
-        <location line="+1205"/>
-        <source>Row number is out of range</source>
-        <translation>Row number is out of range</translation>
-    </message>
-    <message>
-        <location line="+27"/>
-        <source>Index label not found: %1</source>
-        <translation>Index label not found: %1</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>There are %1 rows with this index label; jumped to the first one</source>
-        <translation>There are %1 rows with this index label; jumped to the first one</translation>
-    </message>
-    <message>
-        <location line="+27"/>
-        <source>Column not found: %1</source>
-        <translation>Column not found: %1</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>There are %1 columns with this name; used the first one</source>
-        <translation>There are %1 columns with this name; used the first one</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/Table/DADataOperateOfDataFrameWidget.cpp"/>
+        <location line="-419"/>
         <source>Set Column Width</source>
         <translation>Set Column Width</translation>
     </message>
     <message>
-        <location filename="../DAGui/Table/DADataOperateOfDataFrameWidget.cpp"/>
+        <location line="+1"/>
         <source>Width (pixels):</source>
         <translation>Width (pixels):</translation>
     </message>
     <message>
-        <location filename="../DAGui/Table/DADataOperateOfDataFrameWidget.cpp"/>
+        <location line="+14"/>
         <source>Set Row Height</source>
         <translation>Set Row Height</translation>
     </message>
     <message>
-        <location filename="../DAGui/Table/DADataOperateOfDataFrameWidget.cpp"/>
+        <location line="+1"/>
         <source>Height (pixels):</source>
         <translation>Height (pixels):</translation>
     </message>
@@ -10390,12 +9762,12 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DA::DADataOperateWidget</name>
     <message>
-        <location filename="../DAGui/DADataOperateWidget.cpp" line="+425"/>
+        <location filename="../DAGui/Table/DADataOperateWidget.cpp" line="+431"/>
         <source>removing a widget that does not exist in the dock</source>
         <translation>removing a widget that does not exist in the dock</translation>
     </message>
     <message>
-        <location line="+79"/>
+        <location line="+81"/>
         <source>[deleted]</source>
         <translation>[deleted]</translation>
     </message>
@@ -10413,7 +9785,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DA::DADataStatsWidget</name>
     <message>
-        <location filename="../DAGui/Stats/DADataStatsWidget.cpp" line="+1233"/>
+        <location filename="../DAGui/Chart/DADataStatsWidget.cpp" line="+1233"/>
         <source>Refresh</source>
         <translation>Refresh</translation>
     </message>
@@ -10915,7 +10287,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DA::DADataTableModel</name>
     <message>
-        <location filename="../DAGui/Models/DADataTableModel.cpp" line="+256"/>
+        <location filename="../DAGui/Table/Models/DADataTableModel.cpp" line="+256"/>
         <source>Formula</source>
         <translation>Formula</translation>
     </message>
@@ -10928,7 +10300,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DA::DADataTableView</name>
     <message>
-        <location filename="../DAGui/DADataTableView.cpp" line="+57"/>
+        <location filename="../DAGui/Table/Views/DADataTableView.cpp" line="+57"/>
         <source>DADataTableView requires a model to be set first</source>
         <translation>DADataTableView requires a model to be set first</translation>
     </message>
@@ -11053,22 +10425,22 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation>Clear All Notes</translation>
     </message>
     <message>
-        <location filename="../DAGui/Table/Views/DADataTableView.cpp"/>
+        <location line="+14"/>
         <source>Cell Size</source>
         <translation>Cell Size</translation>
     </message>
     <message>
-        <location filename="../DAGui/Table/Views/DADataTableView.cpp"/>
+        <location line="+1"/>
         <source>AutoFit Column Width</source>
         <translation>AutoFit Column Width</translation>
     </message>
     <message>
-        <location filename="../DAGui/Table/Views/DADataTableView.cpp"/>
+        <location line="+3"/>
         <source>Set Column Width...</source>
         <translation>Set Column Width...</translation>
     </message>
     <message>
-        <location filename="../DAGui/Table/Views/DADataTableView.cpp"/>
+        <location line="+3"/>
         <source>Set Row Height...</source>
         <translation>Set Row Height...</translation>
     </message>
@@ -11076,7 +10448,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DA::DADialogAgentSessionManager</name>
     <message>
-        <location filename="../DAGui/Dialog/DADialogAgentSessionManager.cpp" line="+118"/>
+        <location filename="../DAGui/Agent/DADialogAgentSessionManager.cpp" line="+118"/>
         <source>Session Manager</source>
         <translation>Session Manager</translation>
     </message>
@@ -11242,37 +10614,37 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DA::DADialogComputedColumn</name>
     <message>
-        <location filename="../DAGui/Dialog/DADialogComputedColumn.cpp" line="+29"/>
+        <location filename="../DAGui/Table/Dialogs/DADialogComputedColumn.cpp" line="+42"/>
         <source>New Computed Column</source>
         <translation>New Computed Column</translation>
     </message>
     <message>
-        <location line="+93"/>
+        <location line="+139"/>
         <source>Edit Formula</source>
         <translation>Edit Formula</translation>
     </message>
     <message>
-        <location line="-72"/>
+        <location line="-114"/>
         <source>New column name</source>
         <translation>New column name</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+35"/>
         <source>Write a Python expression or code block. The last expression is the result, or assign it to `result`. Column names can be inserted from the menu.</source>
         <translation>Write a Python expression or code block. The last expression is the result, or assign it to `result`. Column names can be inserted from the menu.</translation>
     </message>
     <message>
-        <location line="-3"/>
+        <location line="-38"/>
         <source>Target column:</source>
         <translation>Target column:</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+13"/>
         <source>Python expression / code</source>
         <translation>Python expression / code</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+3"/>
         <source>Insert Column</source>
         <translation>Insert Column</translation>
     </message>
@@ -11282,17 +10654,17 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation>Insert a column name at the cursor</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+10"/>
         <source>(no columns)</source>
         <translation>(no columns)</translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location line="+35"/>
         <source>Preview (first %1 rows)</source>
         <translation>Preview (first %1 rows)</translation>
     </message>
     <message>
-        <location line="+15"/>
+        <location line="+21"/>
         <source>Cancel</source>
         <translation>Cancel</translation>
     </message>
@@ -11302,7 +10674,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation>OK</translation>
     </message>
     <message>
-        <location line="+112"/>
+        <location line="+115"/>
         <source>No data</source>
         <translation>No data</translation>
     </message>
@@ -11350,7 +10722,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DA::DADialogConditionalFormat</name>
     <message>
-        <location filename="../DAGui/Dialog/DADialogConditionalFormat.cpp" line="+58"/>
+        <location filename="../DAGui/Table/Dialogs/DADialogConditionalFormat.cpp" line="+58"/>
         <source>Conditional Formatting Rules</source>
         <translation>Conditional Formatting Rules</translation>
     </message>
@@ -11605,12 +10977,12 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation>Next Month</translation>
     </message>
     <message>
-        <location line="+70"/>
+        <location line="+76"/>
         <source>Please select at least one column first.</source>
         <translation>Please select at least one column first.</translation>
     </message>
     <message>
-        <location line="-483"/>
+        <location line="-489"/>
         <location line="+156"/>
         <location line="+177"/>
         <source>Column %1</source>
@@ -11685,7 +11057,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DA::DADialogConditionalFormatQuickRule</name>
     <message>
-        <location filename="../DAGui/Dialog/DADialogConditionalFormatQuickRule.cpp" line="+60"/>
+        <location filename="../DAGui/Table/Dialogs/DADialogConditionalFormatQuickRule.cpp" line="+60"/>
         <source>Value:</source>
         <translation>Value:</translation>
     </message>
@@ -11823,7 +11195,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DA::DADialogFillSeries</name>
     <message>
-        <location filename="../DAGui/Dialog/DADialogFillSeries.cpp" line="+107"/>
+        <location filename="../DAGui/Table/Dialogs/DADialogFillSeries.cpp" line="+107"/>
         <source>Fill Series</source>
         <translation>Fill Series</translation>
     </message>
@@ -11902,7 +11274,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DA::DADialogFindReplace</name>
     <message>
-        <location filename="../DAGui/Dialog/DADialogFindReplace.cpp" line="+40"/>
+        <location filename="../DAGui/Table/Dialogs/DADialogFindReplace.cpp" line="+40"/>
         <source>Entire table</source>
         <translation>Entire table</translation>
     </message>
@@ -11935,7 +11307,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DA::DADialogGotoCell</name>
     <message>
-        <location filename="../DAGui/Dialog/DADialogGotoCell.cpp" line="+36"/>
+        <location filename="../DAGui/Table/Dialogs/DADialogGotoCell.cpp" line="+36"/>
         <source>Go To</source>
         <translation>Go To</translation>
     </message>
@@ -11988,7 +11360,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DA::DADialogGroupBy</name>
     <message>
-        <location filename="../DAGui/Dialog/DADialogGroupBy.cpp" line="+28"/>
+        <location filename="../DAGui/Table/Dialogs/DADialogGroupBy.cpp" line="+28"/>
         <source>Group By</source>
         <translation>Group By</translation>
     </message>
@@ -12059,9 +11431,99 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     </message>
 </context>
 <context>
+    <name>DA::DADialogManageColumns</name>
+    <message>
+        <location filename="../DAGui/Table/Dialogs/DADialogManageColumns.cpp" line="+207"/>
+        <source>Manage Columns</source>
+        <translation>Manage Columns</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Search...</source>
+        <translation>Search...</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Rows are listed in column order. Drag a row number on the left or use Move Up/Down to reorder columns.</source>
+        <translation>Rows are listed in column order. Drag a row number on the left or use Move Up/Down to reorder columns.</translation>
+    </message>
+    <message>
+        <location line="+34"/>
+        <source>Drag a row number to reorder columns</source>
+        <translation>Drag a row number to reorder columns</translation>
+    </message>
+    <message>
+        <location line="-25"/>
+        <source>Column</source>
+        <translation>Column</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <location line="+6"/>
+        <source>Hidden</source>
+        <translation>Hidden</translation>
+    </message>
+    <message>
+        <location line="-5"/>
+        <location line="+8"/>
+        <source>Frozen</source>
+        <translation>Frozen</translation>
+    </message>
+    <message>
+        <location line="+32"/>
+        <source>Move Up</source>
+        <translation>Move Up</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Move the selected column forward</source>
+        <translation>Move the selected column forward</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Move Down</source>
+        <translation>Move Down</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Move the selected column backward</source>
+        <translation>Move the selected column backward</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Show All</source>
+        <translation>Show All</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Unhide all columns</source>
+        <translation>Unhide all columns</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Unfreeze All</source>
+        <translation>Unfreeze All</translation>
+    </message>
+    <message>
+        <location line="+245"/>
+        <source>Column name cannot be empty</source>
+        <translation>Column name cannot be empty</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Column name &quot;%1&quot; already exists, please use another name</source>
+        <translation>Column name &quot;%1&quot; already exists, please use another name</translation>
+    </message>
+    <message>
+        <location line="-251"/>
+        <source>Remove column freezing</source>
+        <translation>Remove column freezing</translation>
+    </message>
+</context>
+<context>
     <name>DA::DADialogMergeColumns</name>
     <message>
-        <location filename="../DAGui/Dialog/DADialogMergeColumns.cpp" line="+33"/>
+        <location filename="../DAGui/Table/Dialogs/DADialogMergeColumns.cpp" line="+33"/>
         <source>Merge Columns</source>
         <translation>Merge Columns</translation>
     </message>
@@ -12144,7 +11606,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DA::DADialogReshape</name>
     <message>
-        <location filename="../DAGui/Dialog/DADialogReshape.cpp" line="+36"/>
+        <location filename="../DAGui/Table/Dialogs/DADialogReshape.cpp" line="+36"/>
         <source>Reshape</source>
         <translation>Reshape</translation>
     </message>
@@ -12272,7 +11734,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DA::DADialogSplitColumn</name>
     <message>
-        <location filename="../DAGui/Dialog/DADialogSplitColumn.cpp" line="+35"/>
+        <location filename="../DAGui/Table/Dialogs/DADialogSplitColumn.cpp" line="+35"/>
         <source>Split Column</source>
         <translation>Split Column</translation>
     </message>
@@ -12433,97 +11895,9 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     </message>
 </context>
 <context>
-    <name>DA::DADialogManageColumns</name>
-    <message>
-        <location filename="../DAGui/Table/Dialogs/DADialogManageColumns.cpp" line="+40"/>
-        <source>Manage Columns</source>
-        <translation>Manage Columns</translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>Search...</source>
-        <translation>Search...</translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Rows are listed in column order. Drag a row number on the left or use Move Up/Down to reorder columns.</source>
-        <translation>Rows are listed in column order. Drag a row number on the left or use Move Up/Down to reorder columns.</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Drag a row number to reorder columns</source>
-        <translation>Drag a row number to reorder columns</translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>Column</source>
-        <translation>Column</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Hidden</source>
-        <translation>Hidden</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Frozen</source>
-        <translation>Frozen</translation>
-    </message>
-    <message>
-        <location line="+15"/>
-        <source>Move Up</source>
-        <translation>Move Up</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Move the selected column forward</source>
-        <translation>Move the selected column forward</translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Move Down</source>
-        <translation>Move Down</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Move the selected column backward</source>
-        <translation>Move the selected column backward</translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Show All</source>
-        <translation>Show All</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Unhide all columns</source>
-        <translation>Unhide all columns</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Unfreeze All</source>
-        <translation>Unfreeze All</translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>Column name cannot be empty</source>
-        <translation>Column name cannot be empty</translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>Column name &quot;%1&quot; already exists, please use another name</source>
-        <translation>Column name &quot;%1&quot; already exists, please use another name</translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Remove column freezing</source>
-        <translation>Remove column freezing</translation>
-    </message>
-</context>
-<context>
     <name>DA::DADialogTableDisplayFormat</name>
     <message>
-        <location filename="../DAGui/Dialog/DADialogTableDisplayFormat.cpp" line="+101"/>
+        <location filename="../DAGui/Table/Dialogs/DADialogTableDisplayFormat.cpp" line="+101"/>
         <source>Format Cells</source>
         <translation>Format Cells</translation>
     </message>
@@ -12586,7 +11960,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DA::DADialogValidationReport</name>
     <message>
-        <location filename="../DAGui/Dialog/DADialogValidationReport.cpp" line="+35"/>
+        <location filename="../DAGui/Table/Dialogs/DADialogValidationReport.cpp" line="+35"/>
         <location line="+116"/>
         <source>Validation Report</source>
         <translation>Validation Report</translation>
@@ -12667,7 +12041,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DA::DADialogValidationRules</name>
     <message>
-        <location filename="../DAGui/Dialog/DADialogValidationRules.cpp" line="+60"/>
+        <location filename="../DAGui/Table/Dialogs/DADialogValidationRules.cpp" line="+60"/>
         <source>Validation Rules</source>
         <translation>Validation Rules</translation>
     </message>
@@ -12946,17 +12320,22 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DA::DAFigureWidget</name>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="+153"/>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="+168"/>
         <source>Unexpected plotting operation: a chart that does not belong to the DAChartWidget type was added to the figure</source>
         <translation>Unexpected plotting operation: a chart that does not belong to the DAChartWidget type was added to the figure</translation>
     </message>
     <message>
-        <location line="+1168"/>
+        <location line="+1466"/>
+        <source>PNG Image (*.png);;SVG Image (*.svg);;PDF Document (*.pdf)</source>
+        <translation>PNG Image (*.png);;SVG Image (*.svg);;PDF Document (*.pdf)</translation>
+    </message>
+    <message>
+        <location line="+67"/>
         <source>Unsupported chart editor type: %1</source>
         <translation>Unsupported chart editor type: %1</translation>
     </message>
     <message>
-        <location line="+1000"/>
+        <location line="+1055"/>
         <source>add data probes</source>
         <translation>add data probes</translation>
     </message>
@@ -12964,7 +12343,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DA::DAFigureWidgetSettingPanel</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAFigureWidgetSettingPanel.cpp" line="+123"/>
+        <location filename="../DAGui/Chart/Setting/DAFigureWidgetSettingPanel.cpp" line="+123"/>
         <source>Size</source>
         <translation>Size</translation>
     </message>
@@ -13171,7 +12550,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DA::DAMarkdownView</name>
     <message>
-        <location filename="../DAGui/MarkdownView/DAMarkdownView.cpp" line="+325"/>
+        <location filename="../DAGui/Common/MarkdownView/DAMarkdownView.cpp" line="+325"/>
         <source>Copy</source>
         <translation>Copy</translation>
     </message>
@@ -13270,7 +12649,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DA::DAMessageLogViewWidget</name>
     <message>
-        <location filename="../DAGui/DAMessageLogViewWidget.cpp" line="+293"/>
+        <location filename="../DAGui/Common/DAMessageLogViewWidget.cpp" line="+293"/>
         <source>Info</source>
         <translation>Info</translation>
     </message>
@@ -13323,7 +12702,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DA::DAMessageLogsModel</name>
     <message>
-        <location filename="../DAGui/Models/DAMessageLogsModel.cpp" line="+66"/>
+        <location filename="../DAGui/Common/DAMessageLogsModel.cpp" line="+66"/>
         <source>date time</source>
         <translation>date time</translation>
     </message>
@@ -13402,9 +12781,62 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     </message>
 </context>
 <context>
+    <name>DA::DANoDataGuideWidget</name>
+    <message>
+        <location filename="../DAGui/Common/DANoDataGuideWidget.cpp" line="+115"/>
+        <source>No figure created</source>
+        <translation>No figure created</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Data is ready. Click Add Figure to start plotting.</source>
+        <translation>Data is ready. Click Add Figure to start plotting.</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>No data table open</source>
+        <translation>No data table open</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Double-click data in the Data Manager to open its table.</source>
+        <translation>Double-click data in the Data Manager to open its table.</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>No data loaded</source>
+        <translation>No data loaded</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Open an existing project or import data, then create a chart to start plotting.</source>
+        <translation>Open an existing project or import data, then create a chart to start plotting.</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Open an existing project or import data to start working with data.</source>
+        <translation>Open an existing project or import data to start working with data.</translation>
+    </message>
+    <message>
+        <location line="+27"/>
+        <source>Open Existing Project</source>
+        <translation>Open Existing Project</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Import Data</source>
+        <translation>Import Data</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add Figure</source>
+        <translation>Add Figure</translation>
+    </message>
+</context>
+<context>
     <name>DA::DANodeItemSettingWidget</name>
     <message>
-        <location filename="../DAGui/DANodeItemSettingWidget.cpp" line="+84"/>
+        <location filename="../DAGui/Workflow/NodeSetting/DANodeItemSettingWidget.cpp" line="+84"/>
         <source>Size</source>
         <translation>Size</translation>
     </message>
@@ -13477,7 +12909,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DA::DANodeLinkItemSettingWidget</name>
     <message>
-        <location filename="../DAGui/DANodeLinkItemSettingWidget.cpp" line="+33"/>
+        <location filename="../DAGui/Workflow/NodeSetting/DANodeLinkItemSettingWidget.cpp" line="+33"/>
         <source>pen</source>
         <translation>pen</translation>
     </message>
@@ -13525,7 +12957,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DA::DANodeParamSettingPanel</name>
     <message>
-        <location filename="../DAGui/NodeSetting/DANodeParamSettingPanel.cpp" line="+42"/>
+        <location filename="../DAGui/Workflow/NodeSetting/DANodeParamSettingPanel.cpp" line="+42"/>
         <source>No configurable parameters</source>
         <translation>No configurable parameters</translation>
     </message>
@@ -13533,7 +12965,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DA::DANodeParamSettingPanelWidget</name>
     <message>
-        <location filename="../DAGui/NodeSetting/DANodeParamSettingPanelWidget.cpp" line="+47"/>
+        <location filename="../DAGui/Workflow/NodeSetting/DANodeParamSettingPanelWidget.cpp" line="+47"/>
         <source>No node selected</source>
         <translation>No node selected</translation>
     </message>
@@ -13541,7 +12973,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DA::DANodeSettingWidget</name>
     <message>
-        <location filename="../DAGui/DANodeSettingWidget.cpp" line="+126"/>
+        <location filename="../DAGui/Workflow/NodeSetting/DANodeSettingWidget.cpp" line="+126"/>
         <source>Metadata</source>
         <translation>Metadata</translation>
     </message>
@@ -13564,7 +12996,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DA::DANodeTreeWidget</name>
     <message>
-        <location filename="../DAGui/DANodeTreeWidget.cpp" line="+180"/>
+        <location filename="../DAGui/Workflow/DANodeTreeWidget.cpp" line="+180"/>
         <source>Favorite</source>
         <translation>Favorite</translation>
     </message>
@@ -13575,6 +13007,118 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <location filename="../../plugins/DAPaperAgent/DAPaperAgentPlugin.h" line="+32"/>
         <source>Built-in paper writing agent with literature search tools</source>
         <translation>Built-in paper writing agent with literature search tools</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAPeakDockWidget</name>
+    <message>
+        <location filename="../../plugins/DASignalAnalysis/Page/DAPeakDockWidget.cpp" line="+224"/>
+        <source>Rank %1</source>
+        <translation>Rank %1</translation>
+    </message>
+    <message>
+        <location line="+22"/>
+        <source>Time (s)</source>
+        <translation>Time (s)</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Frequency (Hz)</source>
+        <translation>Frequency (Hz)</translation>
+    </message>
+    <message>
+        <location line="+48"/>
+        <source>Send to Table</source>
+        <translation>Send to Table</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Export CSV</source>
+        <translation>Export CSV</translation>
+    </message>
+    <message>
+        <location line="-8"/>
+        <source>Add the peak table to the data manager; open it from the data manager</source>
+        <translation>Add the peak table to the data manager; open it from the data manager</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Open the analysis parameter dialog</source>
+        <translation>Open the analysis parameter dialog</translation>
+    </message>
+    <message>
+        <location line="-237"/>
+        <location line="+226"/>
+        <source>Open this window to compute the per-frame peak curves</source>
+        <translation>Open this window to compute the per-frame peak curves</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Settings...</source>
+        <translation>Settings...</translation>
+    </message>
+    <message>
+        <location line="-22"/>
+        <source>Local scan</source>
+        <translation>Local scan</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Peak curves cover only the visible time range or use a coarser frame step.</source>
+        <translation>Peak curves cover only the visible time range or use a coarser frame step.</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Per-frame top N peaks: frequency over time (color = rank)</source>
+        <translation>Per-frame top N peaks: frequency over time (color = rank)</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Each color is one rank. Adjacent frames whose peak frequency jumps far apart are drawn as separate points instead of a connected line, so lines mean continuous peaks.</source>
+        <translation>Each color is one rank. Adjacent frames whose peak frequency jumps far apart are drawn as separate points instead of a connected line, so lines mean continuous peaks.</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAPeakTableModel</name>
+    <message>
+        <location filename="../../plugins/DASignalAnalysis/Analysis/DAPeakTableModel.cpp" line="+192"/>
+        <source>No.</source>
+        <translation>No.</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Frequency (Hz)</source>
+        <translation>Frequency (Hz)</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Amplitude</source>
+        <translation>Amplitude</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Rel. peak (dB)</source>
+        <translation>Rel. peak (dB)</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Share (%)</source>
+        <translation>Share (%)</translation>
+    </message>
+    <message>
+        <location line="-12"/>
+        <source>Amplitude (dB)</source>
+        <translation>Amplitude (dB)</translation>
+    </message>
+    <message>
+        <location line="-2"/>
+        <source>RMS</source>
+        <translation>RMS</translation>
+    </message>
+    <message>
+        <location line="-6"/>
+        <source>Time (s)</source>
+        <translation>Time (s)</translation>
     </message>
 </context>
 <context>
@@ -14040,7 +13584,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DA::DAPyDataFrameTableView</name>
     <message>
-        <location filename="../DAGui/DAPyDataFrameTableView.cpp" line="+32"/>
+        <location filename="../DAGui/Table/Views/DAPyDataFrameTableView.cpp" line="+32"/>
         <source>DataFrameTableView requires a model to be set first</source>
         <translation>DataFrameTableView requires a model to be set first</translation>
     </message>
@@ -14048,7 +13592,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DA::DAPyWorkFlowEditWidget</name>
     <message>
-        <location filename="../DAGui/DAPyWorkFlowEditWidget.cpp" line="+130"/>
+        <location filename="../DAGui/Workflow/DAPyWorkFlowEditWidget.cpp" line="+130"/>
         <source>no workflow has been set</source>
         <translation>no workflow has been set</translation>
     </message>
@@ -14056,7 +13600,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DA::DAPyWorkFlowGraphicsView</name>
     <message>
-        <location filename="../DAGui/DAPyWorkFlowGraphicsView.cpp" line="+225"/>
+        <location filename="../DAGui/Workflow/DAPyWorkFlowGraphicsView.cpp" line="+225"/>
         <source>cut</source>
         <translation>cut</translation>
     </message>
@@ -14079,7 +13623,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DA::DAPyWorkFlowNodeItemSettingWidget</name>
     <message>
-        <location filename="../DAGui/DAPyWorkFlowNodeItemSettingWidget.cpp" line="+39"/>
+        <location filename="../DAGui/Workflow/NodeSetting/DAPyWorkFlowNodeItemSettingWidget.cpp" line="+39"/>
         <source>Parameters</source>
         <translation>Parameters</translation>
     </message>
@@ -14087,7 +13631,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DA::DAPyWorkFlowNodeListWidget</name>
     <message>
-        <location filename="../DAGui/DAPyWorkFlowNodeListWidget.cpp" line="+137"/>
+        <location filename="../DAGui/Workflow/DAPyWorkFlowNodeListWidget.cpp" line="+137"/>
         <source>Favorite</source>
         <translation>Favorite</translation>
     </message>
@@ -14100,7 +13644,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DA::DAPyWorkFlowOperateWidget</name>
     <message>
-        <location filename="../DAGui/DAPyWorkFlowOperateWidget.cpp" line="+244"/>
+        <location filename="../DAGui/Workflow/DAPyWorkFlowOperateWidget.cpp" line="+244"/>
         <source>Title of new workflow</source>
         <translation>Title of new workflow</translation>
     </message>
@@ -14324,9 +13868,17 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     </message>
 </context>
 <context>
+    <name>DA::DAPythonCodeEdit</name>
+    <message>
+        <location filename="../DAGui/Common/CodeEditor/DAPythonCodeEdit.cpp" line="+42"/>
+        <source>e.g. tmp = A * 2, then np.where(tmp &gt; 0, tmp, 0)</source>
+        <translation>e.g. tmp = A * 2, then np.where(tmp &gt; 0, tmp, 0)</translation>
+    </message>
+</context>
+<context>
     <name>DA::DARecentFilesManager</name>
     <message>
-        <location filename="../DAGui/DARecentFilesManager.cpp" line="+176"/>
+        <location filename="../DAGui/Common/DARecentFilesManager.cpp" line="+176"/>
         <source>(empty)</source>
         <translation>(empty)</translation>
     </message>
@@ -14336,7 +13888,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation>Clear menu</translation>
     </message>
     <message>
-        <location filename="../DAGui/DARecentFilesManager.h" line="+24"/>
+        <location filename="../DAGui/Common/DARecentFilesManager.h" line="+24"/>
         <source>Recent files</source>
         <translation>Recent files</translation>
     </message>
@@ -14690,15 +14242,1367 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DA::DASettingWidget</name>
     <message>
-        <location filename="../DAGui/DASettingWidget.cpp" line="+97"/>
+        <location filename="../DAGui/Common/Settings/DASettingWidget.cpp" line="+97"/>
         <source>page changed, but cannot identify the sender widget</source>
         <translation>page changed, but cannot identify the sender widget</translation>
     </message>
 </context>
 <context>
+    <name>DA::DASignalAnalysisPage</name>
+    <message>
+        <location filename="../../plugins/DASignalAnalysis/Page/DASignalAnalysisPage.cpp" line="+299"/>
+        <source>No signal loaded</source>
+        <translation>No signal loaded</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Import an audio file, a video, or columns from an existing data frame to begin analysis.</source>
+        <translation>Import an audio file, a video, or columns from an existing data frame to begin analysis.</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Import Audio...</source>
+        <translation>Import Audio...</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Import Data Frame...</source>
+        <translation>Import Data Frame...</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Import Video...</source>
+        <translation>Import Video...</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DASignalAnalysisPlugin</name>
+    <message>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisPlugin.cpp" line="+85"/>
+        <source>General purpose time-series signal analysis (spectrum, spectrogram, peaks, playback)</source>
+        <translation>General purpose time-series signal analysis (spectrum, spectrogram, peaks, playback)</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DASignalAnalysisSettingDialog</name>
+    <message>
+        <location filename="../../plugins/DASignalAnalysis/Dialogs/DASignalAnalysisSettingDialog.cpp" line="+259"/>
+        <source>Segment length: unknown (sample rate is invalid)</source>
+        <translation>Segment length: unknown (sample rate is invalid)</translation>
+    </message>
+    <message>
+        <location line="+32"/>
+        <source>Analysis Settings</source>
+        <translation>Analysis Settings</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Restore Defaults</source>
+        <translation>Restore Defaults</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>OK</source>
+        <translation>OK</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Cancel</source>
+        <translation>Cancel</translation>
+    </message>
+    <message>
+        <location line="-26"/>
+        <source>Spectrum: segment = %1 samples (%2 ms), actual resolution = %3 Hz
+STFT: window = %4 samples (%5 ms), hop = %6 samples</source>
+        <translation>Spectrum: segment = %1 samples (%2 ms), actual resolution = %3 Hz
+STFT: window = %4 samples (%5 ms), hop = %6 samples</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DASignalAnalysisSettingPage</name>
+    <message>
+        <location filename="../../plugins/DASignalAnalysis/Dialogs/DASignalAnalysisSettingPage.cpp" line="+65"/>
+        <source>The FFmpeg executable was not found, so the path was not saved.</source>
+        <translation>The FFmpeg executable was not found, so the path was not saved.</translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <location line="+187"/>
+        <source>Signal Analysis</source>
+        <translation>Signal Analysis</translation>
+    </message>
+    <message>
+        <location line="-107"/>
+        <source>No FFmpeg was found in PATH. Specify an executable to enable video import.</source>
+        <translation>No FFmpeg was found in PATH. Specify an executable to enable video import.</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Empty: using the FFmpeg found in PATH: %1</source>
+        <translation>Empty: using the FFmpeg found in PATH: %1</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>FFmpeg path is valid.</source>
+        <translation>FFmpeg path is valid.</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>File does not exist.</source>
+        <translation>File does not exist.</translation>
+    </message>
+    <message>
+        <location line="+35"/>
+        <source>Analysis parameters (frequency resolution, windows, peak thresholds and calibration) are configured per signal in Analysis Settings on the Signal Analysis tab.</source>
+        <translation>Analysis parameters (frequency resolution, windows, peak thresholds and calibration) are configured per signal in Analysis Settings on the Signal Analysis tab.</translation>
+    </message>
+    <message>
+        <location line="+42"/>
+        <source>FFmpeg executable</source>
+        <translation>FFmpeg executable</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Used for video import and compressed audio decoding. Leave empty to use the ffmpeg found in PATH.</source>
+        <translation>Used for video import and compressed audio decoding. Leave empty to use the ffmpeg found in PATH.</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Executable (*.exe);;All files (*)</source>
+        <translation>Executable (*.exe);;All files (*)</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>External Tools</source>
+        <translation>External Tools</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DASignalAnalysisUI</name>
+    <message>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="+282"/>
+        <source>FFmpeg was not detected; video import is unavailable until a path is specified in Settings &gt; Signal Analysis.</source>
+        <translation>FFmpeg was not detected; video import is unavailable until a path is specified in Settings &gt; Signal Analysis.</translation>
+    </message>
+    <message>
+        <location line="-113"/>
+        <location line="+4046"/>
+        <source>Peak table (CSV)</source>
+        <translation>Peak table (CSV)</translation>
+    </message>
+    <message>
+        <location line="-4043"/>
+        <location line="+4046"/>
+        <source>Spectrum curve (CSV)</source>
+        <translation>Spectrum curve (CSV)</translation>
+    </message>
+    <message>
+        <location line="-4040"/>
+        <location line="+4046"/>
+        <source>Heatmap matrix (CSV)</source>
+        <translation>Heatmap matrix (CSV)</translation>
+    </message>
+    <message>
+        <location line="-3611"/>
+        <source>Signal imported: %1 (%2 Hz, %3 s)</source>
+        <translation>Signal imported: %1 (%2 Hz, %3 s)</translation>
+    </message>
+    <message>
+        <location line="+192"/>
+        <location line="+3"/>
+        <location line="+103"/>
+        <location line="+128"/>
+        <location line="+2996"/>
+        <location line="+3"/>
+        <location line="+27"/>
+        <source>Signal Analysis</source>
+        <translation>Signal Analysis</translation>
+    </message>
+    <message>
+        <location line="-3138"/>
+        <location line="+3122"/>
+        <source>Signal</source>
+        <translation>Signal</translation>
+    </message>
+    <message>
+        <location line="-3100"/>
+        <location line="+3103"/>
+        <source>Playback</source>
+        <translation>Playback</translation>
+    </message>
+    <message>
+        <location line="-3087"/>
+        <location line="+3090"/>
+        <source>Analysis</source>
+        <translation>Analysis</translation>
+    </message>
+    <message>
+        <location line="-3076"/>
+        <location line="+182"/>
+        <location line="+2"/>
+        <location line="+5"/>
+        <location line="+2874"/>
+        <location line="+16"/>
+        <source>Peaks</source>
+        <translation>Peaks</translation>
+    </message>
+    <message>
+        <location line="-3005"/>
+        <location line="+3018"/>
+        <source>Display</source>
+        <translation>Display</translation>
+    </message>
+    <message>
+        <location line="-3076"/>
+        <location line="+3066"/>
+        <source>Export</source>
+        <translation>Export</translation>
+    </message>
+    <message>
+        <location line="-3876"/>
+        <location line="+4048"/>
+        <source>Whole page (PNG)...</source>
+        <translation>Whole page (PNG)...</translation>
+    </message>
+    <message>
+        <location line="-4043"/>
+        <location line="+4046"/>
+        <source>Current sub-chart (PNG/SVG/PDF)...</source>
+        <translation>Current sub-chart (PNG/SVG/PDF)...</translation>
+    </message>
+    <message>
+        <location line="-4040"/>
+        <location line="+4044"/>
+        <source>Copy whole page to clipboard</source>
+        <translation>Copy whole page to clipboard</translation>
+    </message>
+    <message>
+        <location line="-4042"/>
+        <location line="+4045"/>
+        <source>Copy current sub-chart to clipboard</source>
+        <translation>Copy current sub-chart to clipboard</translation>
+    </message>
+    <message>
+        <location line="-3198"/>
+        <location line="+3023"/>
+        <source>Signal Display</source>
+        <translation>Signal Display</translation>
+    </message>
+    <message>
+        <location line="-3009"/>
+        <location line="+3132"/>
+        <source>Channel</source>
+        <translation>Channel</translation>
+    </message>
+    <message>
+        <location line="-3076"/>
+        <location line="+2959"/>
+        <source>Tools</source>
+        <translation>Tools</translation>
+    </message>
+    <message>
+        <location line="-2853"/>
+        <location line="+2973"/>
+        <source>Follow playback</source>
+        <translation>Follow playback</translation>
+    </message>
+    <message>
+        <location line="-2972"/>
+        <location line="+2973"/>
+        <source>Show the current frame while playback advances</source>
+        <translation>Show the current frame while playback advances</translation>
+    </message>
+    <message>
+        <location line="-2958"/>
+        <location line="+2962"/>
+        <source>Playback position</source>
+        <translation>Playback position</translation>
+    </message>
+    <message>
+        <location line="-2945"/>
+        <location line="+2948"/>
+        <source>Heatmap color scale lower limit</source>
+        <translation>Heatmap color scale lower limit</translation>
+    </message>
+    <message>
+        <location line="-2936"/>
+        <location line="+2939"/>
+        <source>Auto scroll</source>
+        <translation>Auto scroll</translation>
+    </message>
+    <message>
+        <location line="-2938"/>
+        <location line="+2939"/>
+        <source>Scroll the time-frequency view while playback advances</source>
+        <translation>Scroll the time-frequency view while playback advances</translation>
+    </message>
+    <message>
+        <location line="-2141"/>
+        <location line="+2084"/>
+        <source>Peak amplitude</source>
+        <translation>Peak amplitude</translation>
+    </message>
+    <message>
+        <location line="-2083"/>
+        <location line="+2086"/>
+        <source>RMS</source>
+        <translation>RMS</translation>
+    </message>
+    <message>
+        <location line="-2085"/>
+        <location line="+2088"/>
+        <source>dB (FS)</source>
+        <translation>dB (FS)</translation>
+    </message>
+    <message>
+        <location line="-2087"/>
+        <location line="+2090"/>
+        <source>dB (re 1.0)</source>
+        <translation>dB (re 1.0)</translation>
+    </message>
+    <message>
+        <location line="-2006"/>
+        <source>No peak data to export.</source>
+        <translation>No peak data to export.</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Export Peak Table</source>
+        <translation>Export Peak Table</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <location line="+53"/>
+        <location line="+55"/>
+        <location line="+82"/>
+        <source>CSV Files (*.csv)</source>
+        <translation>CSV Files (*.csv)</translation>
+    </message>
+    <message>
+        <location line="-159"/>
+        <source>Peak table exported: %1</source>
+        <translation>Peak table exported: %1</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Failed to export the peak table.</source>
+        <translation>Failed to export the peak table.</translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <location line="+54"/>
+        <location line="+40"/>
+        <location line="+112"/>
+        <location line="+24"/>
+        <location line="+45"/>
+        <location line="+17"/>
+        <location line="+703"/>
+        <source>No signal is selected.</source>
+        <translation>No signal is selected.</translation>
+    </message>
+    <message>
+        <location line="-990"/>
+        <source>No spectrum data to export.</source>
+        <translation>No spectrum data to export.</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Export Spectrum</source>
+        <translation>Export Spectrum</translation>
+    </message>
+    <message>
+        <location line="+28"/>
+        <source>Spectrum exported: %1</source>
+        <translation>Spectrum exported: %1</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Failed to export the spectrum.</source>
+        <translation>Failed to export the spectrum.</translation>
+    </message>
+    <message>
+        <location line="+64"/>
+        <source>No time-frequency data to export.</source>
+        <translation>No time-frequency data to export.</translation>
+    </message>
+    <message>
+        <location line="+37"/>
+        <source>Heatmap matrix: %1 x %2 = %3 cells, the CSV may be large.</source>
+        <translation>Heatmap matrix: %1 x %2 = %3 cells, the CSV may be large.</translation>
+    </message>
+    <message>
+        <location line="-26"/>
+        <location line="+32"/>
+        <source>Export Heatmap Matrix</source>
+        <translation>Export Heatmap Matrix</translation>
+    </message>
+    <message>
+        <location line="+44"/>
+        <source>Heatmap matrix exported: %1</source>
+        <translation>Heatmap matrix exported: %1</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Failed to export the heatmap matrix.</source>
+        <translation>Failed to export the heatmap matrix.</translation>
+    </message>
+    <message>
+        <location line="+1835"/>
+        <source>Export Image</source>
+        <translation>Export Image</translation>
+    </message>
+    <message>
+        <location line="-1818"/>
+        <source>PNG Image (*.png)</source>
+        <translation>PNG Image (*.png)</translation>
+    </message>
+    <message>
+        <location line="+100"/>
+        <source>No peak data to send.</source>
+        <translation>No peak data to send.</translation>
+    </message>
+    <message>
+        <location line="+30"/>
+        <source>Peaks - %1</source>
+        <translation>Peaks - %1</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Peak table added to the data manager as &quot;%1&quot;.</source>
+        <translation>Peak table added to the data manager as &quot;%1&quot;.</translation>
+    </message>
+    <message>
+        <location line="+756"/>
+        <source>Signal analysis: %1 (%2%)</source>
+        <translation>Signal analysis: %1 (%2%)</translation>
+    </message>
+    <message>
+        <location line="+30"/>
+        <source>Spectrum ready: resolution %1 Hz, %2 bins</source>
+        <translation>Spectrum ready: resolution %1 Hz, %2 bins</translation>
+    </message>
+    <message>
+        <location line="+755"/>
+        <source>Import Audio</source>
+        <translation>Import Audio</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Import an audio file (WAV/AIFF/FLAC/OGG)</source>
+        <translation>Import an audio file (WAV/AIFF/FLAC/OGG)</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Import Data Frame</source>
+        <translation>Import Data Frame</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Import columns from an existing data frame</source>
+        <translation>Import columns from an existing data frame</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Import Video</source>
+        <translation>Import Video</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Play</source>
+        <translation>Play</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Pause</source>
+        <translation>Pause</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Stop</source>
+        <translation>Stop</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Analysis Settings</source>
+        <translation>Analysis Settings</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Configure the analysis parameters of the current signal</source>
+        <translation>Configure the analysis parameters of the current signal</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Peak Markers</source>
+        <translation>Peak Markers</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Top N</source>
+        <translation>Top N</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Number of peaks to keep (10/20/50)</source>
+        <translation>Number of peaks to keep (10/20/50)</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Peak Window</source>
+        <translation>Peak Window</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Show or hide the peak dock window</source>
+        <translation>Show or hide the peak dock window</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>2D</source>
+        <translation>2D</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Show the 2D time-frequency heatmap</source>
+        <translation>Show the 2D time-frequency heatmap</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>3D</source>
+        <translation>3D</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Show the 3D surface waterfall</source>
+        <translation>Show the 3D surface waterfall</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Hide</source>
+        <translation>Hide</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Hide the waterfall view</source>
+        <translation>Hide the waterfall view</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Amplitude</source>
+        <translation>Amplitude</translation>
+    </message>
+    <message>
+        <location line="+16"/>
+        <source>Log frequency</source>
+        <translation>Log frequency</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Use a logarithmic frequency axis</source>
+        <translation>Use a logarithmic frequency axis</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Color Map</source>
+        <translation>Color Map</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Heatmap color map</source>
+        <translation>Heatmap color map</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Zoom</source>
+        <translation>Zoom</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Enable zoom on the current chart</source>
+        <translation>Enable zoom on the current chart</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Pan</source>
+        <translation>Pan</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Enable panning on the current chart</source>
+        <translation>Enable panning on the current chart</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Crosshair</source>
+        <translation>Crosshair</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Show a crosshair on the current chart</source>
+        <translation>Show a crosshair on the current chart</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Data Pick</source>
+        <translation>Data Pick</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Pick data values on the current chart</source>
+        <translation>Pick data values on the current chart</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Add Figure Item</source>
+        <translation>Add Figure Item</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add a plot item to the current chart</source>
+        <translation>Add a plot item to the current chart</translation>
+    </message>
+    <message>
+        <location line="+24"/>
+        <source>Export Peaks</source>
+        <translation>Export Peaks</translation>
+    </message>
+    <message>
+        <location line="-1475"/>
+        <source>Audio/Video files (*.wav *.aiff *.aif *.flac *.ogg *.mp3 *.m4a *.mp4 *.mkv *.avi);;All files (*)</source>
+        <translation>Audio/Video files (*.wav *.aiff *.aif *.flac *.ogg *.mp3 *.m4a *.mp4 *.mkv *.avi);;All files (*)</translation>
+    </message>
+    <message>
+        <location line="+1381"/>
+        <source>Cancel Analysis</source>
+        <translation>Cancel Analysis</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Cancel all running background computations</source>
+        <translation>Cancel all running background computations</translation>
+    </message>
+    <message>
+        <location line="-641"/>
+        <source>Cannot start playback for this signal.</source>
+        <translation>Cannot start playback for this signal.</translation>
+    </message>
+    <message>
+        <location line="-1885"/>
+        <source>Continue</source>
+        <translation>Continue</translation>
+    </message>
+    <message>
+        <location line="+367"/>
+        <source>Data frame:</source>
+        <translation>Data frame:</translation>
+    </message>
+    <message>
+        <location line="+368"/>
+        <source>Downsample x2</source>
+        <translation>Downsample x2</translation>
+    </message>
+    <message>
+        <location line="-64"/>
+        <source>Export Power Spectral Density</source>
+        <translation>Export Power Spectral Density</translation>
+    </message>
+    <message>
+        <location line="+62"/>
+        <source>Export full</source>
+        <translation>Export full</translation>
+    </message>
+    <message>
+        <location line="-1854"/>
+        <source>Extract the audio track of a video file</source>
+        <translation>Extract the audio track of a video file</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>FFmpeg was not detected. Specify its path in Settings &gt; Signal Analysis.</source>
+        <translation>FFmpeg was not detected. Specify its path in Settings &gt; Signal Analysis.</translation>
+    </message>
+    <message>
+        <location line="+345"/>
+        <source>Failed to create the signal analysis page.</source>
+        <translation>Failed to create the signal analysis page.</translation>
+    </message>
+    <message>
+        <location line="+1466"/>
+        <source>Failed to export the power spectral density.</source>
+        <translation>Failed to export the power spectral density.</translation>
+    </message>
+    <message>
+        <location line="+1287"/>
+        <source>Failed to import audio.</source>
+        <translation>Failed to import audio.</translation>
+    </message>
+    <message>
+        <location line="-3021"/>
+        <source>Failed to import data frame.</source>
+        <translation>Failed to import data frame.</translation>
+    </message>
+    <message>
+        <location line="+3021"/>
+        <source>Failed to import video.</source>
+        <translation>Failed to import video.</translation>
+    </message>
+    <message>
+        <location line="-100"/>
+        <location line="+123"/>
+        <source>Failed to prepare the playback audio for this signal.</source>
+        <translation>Failed to prepare the playback audio for this signal.</translation>
+    </message>
+    <message>
+        <location line="-1595"/>
+        <location line="+14"/>
+        <source>Failed to relink the data frame source.</source>
+        <translation>Failed to relink the data frame source.</translation>
+    </message>
+    <message>
+        <location line="+742"/>
+        <source>Failed to restore signal &quot;%1&quot;.</source>
+        <translation>Failed to restore signal &quot;%1&quot;.</translation>
+    </message>
+    <message>
+        <location line="-207"/>
+        <source>Failed to send the peak table.</source>
+        <translation>Failed to send the peak table.</translation>
+    </message>
+    <message>
+        <location line="-963"/>
+        <location line="+42"/>
+        <source>Large Signal</source>
+        <translation>Large Signal</translation>
+    </message>
+    <message>
+        <location line="-20"/>
+        <source>Large signal confirmed: %1 assumes about %2 GB of memory.</source>
+        <translation>Large signal confirmed: %1 assumes about %2 GB of memory.</translation>
+    </message>
+    <message>
+        <location line="+1128"/>
+        <source>Locate Signal Source</source>
+        <translation>Locate Signal Source</translation>
+    </message>
+    <message>
+        <location line="-9"/>
+        <source>Locate...</source>
+        <translation>Locate...</translation>
+    </message>
+    <message>
+        <location line="-777"/>
+        <source>No data frame is available. Import or create a data frame first.</source>
+        <translation>No data frame is available. Import or create a data frame first.</translation>
+    </message>
+    <message>
+        <location line="+311"/>
+        <source>No power spectral density data to export.</source>
+        <translation>No power spectral density data to export.</translation>
+    </message>
+    <message>
+        <location line="+1819"/>
+        <source>Open Signal Analysis Window</source>
+        <translation>Open Signal Analysis Window</translation>
+    </message>
+    <message>
+        <location line="-1804"/>
+        <source>PSD (dB re 1.0/Hz)</source>
+        <translation>PSD (dB re 1.0/Hz)</translation>
+    </message>
+    <message>
+        <location line="+1973"/>
+        <source>Peak Table</source>
+        <translation>Peak Table</translation>
+    </message>
+    <message>
+        <location line="-4015"/>
+        <source>Playback failed. See the message log for details.</source>
+        <translation>Playback failed. See the message log for details.</translation>
+    </message>
+    <message>
+        <location line="+3865"/>
+        <source>Point a signal whose data frame is missing to an existing data frame</source>
+        <translation>Point a signal whose data frame is missing to an existing data frame</translation>
+    </message>
+    <message>
+        <location line="-3922"/>
+        <location line="+4046"/>
+        <source>Power spectral density (CSV)</source>
+        <translation>Power spectral density (CSV)</translation>
+    </message>
+    <message>
+        <location line="-1941"/>
+        <source>Power spectral density exported: %1</source>
+        <translation>Power spectral density exported: %1</translation>
+    </message>
+    <message>
+        <location line="-646"/>
+        <source>Reduce precision</source>
+        <translation>Reduce precision</translation>
+    </message>
+    <message>
+        <location line="+324"/>
+        <location line="+2138"/>
+        <source>Relink Data Frame Source</source>
+        <translation>Relink Data Frame Source</translation>
+    </message>
+    <message>
+        <location line="+132"/>
+        <source>Export the chart page or the current sub-chart, or copy it to the clipboard</source>
+        <translation>Export the chart page or the current sub-chart, or copy it to the clipboard</translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>Show or hide the peak table window</source>
+        <translation>Show or hide the peak table window</translation>
+    </message>
+    <message>
+        <location line="-169"/>
+        <source>Show the signal analysis workspace; it is created on first use</source>
+        <translation>Show the signal analysis workspace; it is created on first use</translation>
+    </message>
+    <message>
+        <location line="-3470"/>
+        <source>Signal &quot;%1&quot; is a placeholder: its data frame is missing.</source>
+        <translation>Signal &quot;%1&quot; is a placeholder: its data frame is missing.</translation>
+    </message>
+    <message>
+        <location line="+2110"/>
+        <source>Signal &quot;%1&quot; refers to a missing file:
+%2
+
+Locate the file again?</source>
+        <translation>Signal &quot;%1&quot; refers to a missing file:
+%2
+
+Locate the file again?</translation>
+    </message>
+    <message>
+        <location line="-691"/>
+        <source>Signal &quot;%1&quot; relinked to data frame &quot;%2&quot;.</source>
+        <translation>Signal &quot;%1&quot; relinked to data frame &quot;%2&quot;.</translation>
+    </message>
+    <message>
+        <location line="+690"/>
+        <source>Signal Source Missing</source>
+        <translation>Signal Source Missing</translation>
+    </message>
+    <message>
+        <location line="-1119"/>
+        <source>Signal analysis cancelled: %1 needs more than the memory budget.</source>
+        <translation>Signal analysis cancelled: %1 needs more than the memory budget.</translation>
+    </message>
+    <message>
+        <location line="+1751"/>
+        <source>Signal analysis failed. See the message log for details.</source>
+        <translation>Signal analysis failed. See the message log for details.</translation>
+    </message>
+    <message>
+        <location line="-64"/>
+        <source>Signal analysis: parameters applied, recomputing.</source>
+        <translation>Signal analysis: parameters applied, recomputing.</translation>
+    </message>
+    <message>
+        <location line="-580"/>
+        <source>Signal source missing: data frame &quot;%1&quot; (signal &quot;%2&quot;). Use &quot;Relink Data Frame Source&quot; to point it to an existing data frame.</source>
+        <translation>Signal source missing: data frame &quot;%1&quot; (signal &quot;%2&quot;). Use &quot;Relink Data Frame Source&quot; to point it to an existing data frame.</translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>Skip</source>
+        <translation>Skip</translation>
+    </message>
+    <message>
+        <location line="-797"/>
+        <source>The current signal&apos;s source is available; there is nothing to relink.</source>
+        <translation>The current signal&apos;s source is available; there is nothing to relink.</translation>
+    </message>
+    <message>
+        <location line="-344"/>
+        <source>The estimated peak memory for the %1 is about %2 GB, above the 1.5 GB budget.
+Continue or cancel?</source>
+        <translation>The estimated peak memory for the %1 is about %2 GB, above the 1.5 GB budget.
+Continue or cancel?</translation>
+    </message>
+    <message>
+        <location line="+730"/>
+        <source>The heatmap matrix is %1 x %2 = %3 cells (about %4 MB as CSV).
+Export the full matrix or downsample by 2?</source>
+        <translation>The heatmap matrix is %1 x %2 = %3 cells (about %4 MB as CSV).
+Export the full matrix or downsample by 2?</translation>
+    </message>
+    <message>
+        <location line="-1396"/>
+        <location line="+3127"/>
+        <source>Window</source>
+        <translation>Window</translation>
+    </message>
+    <message>
+        <location line="-2367"/>
+        <source>peak table</source>
+        <translation>peak table</translation>
+    </message>
+    <message>
+        <location line="-1388"/>
+        <source>soundfile is not available; only WAV files can be read directly. Install soundfile or use FFmpeg.</source>
+        <translation>soundfile is not available; only WAV files can be read directly. Install soundfile or use FFmpeg.</translation>
+    </message>
+    <message>
+        <location line="+3082"/>
+        <source>spectrum</source>
+        <translation>spectrum</translation>
+    </message>
+    <message>
+        <location line="+23"/>
+        <source>waveform envelope</source>
+        <translation>waveform envelope</translation>
+    </message>
+    <message>
+        <location line="-2906"/>
+        <source>FFmpeg is available; video import is enabled.</source>
+        <translation>FFmpeg is available; video import is enabled.</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>FFmpeg is still not available; video import stays disabled.</source>
+        <translation>FFmpeg is still not available; video import stays disabled.</translation>
+    </message>
+    <message>
+        <location line="+3074"/>
+        <source>Signal imported.</source>
+        <translation>Signal imported.</translation>
+    </message>
+    <message>
+        <location line="-1940"/>
+        <source>The estimated peak memory for the %1 is about %2 GB, above the 1.5 GB budget.
+Reduce the precision, scan only the visible range, or cancel?</source>
+        <translation>The estimated peak memory for the %1 is about %2 GB, above the 1.5 GB budget.
+Reduce the precision, scan only the visible range, or cancel?</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Scan visible range</source>
+        <translation>Scan visible range</translation>
+    </message>
+    <message>
+        <location line="+57"/>
+        <source>peak curves</source>
+        <translation>peak curves</translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>Peak curves were limited to the visible time range (local scan).</source>
+        <translation>Peak curves were limited to the visible time range (local scan).</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Peak curves use a coarser frame step (local scan).</source>
+        <translation>Peak curves use a coarser frame step (local scan).</translation>
+    </message>
+    <message>
+        <location line="+693"/>
+        <source>Export Whole Page</source>
+        <translation>Export Whole Page</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Whole page exported: %1</source>
+        <translation>Whole page exported: %1</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Failed to export the whole page.</source>
+        <translation>Failed to export the whole page.</translation>
+    </message>
+    <message>
+        <location line="+19"/>
+        <source>Export Sub-chart</source>
+        <translation>Export Sub-chart</translation>
+    </message>
+    <message>
+        <location line="+27"/>
+        <source>Sub-chart exported: %1</source>
+        <translation>Sub-chart exported: %1</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Failed to export the sub-chart.</source>
+        <translation>Failed to export the sub-chart.</translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>Whole page copied to the clipboard.</source>
+        <translation>Whole page copied to the clipboard.</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Failed to copy the whole page to the clipboard.</source>
+        <translation>Failed to copy the whole page to the clipboard.</translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>Current sub-chart copied to the clipboard.</source>
+        <translation>Current sub-chart copied to the clipboard.</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Failed to copy the current sub-chart to the clipboard.</source>
+        <translation>Failed to copy the current sub-chart to the clipboard.</translation>
+    </message>
+    <message>
+        <location line="+1198"/>
+        <source>heatmap</source>
+        <translation>heatmap</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Heatmap precision reduced to %1 x %2 (smaller block size).</source>
+        <translation>Heatmap precision reduced to %1 x %2 (smaller block size).</translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Heatmap was limited to the visible time range.</source>
+        <translation>Heatmap was limited to the visible time range.</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DASignalAnalysisView</name>
+    <message>
+        <location filename="../../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="+304"/>
+        <location line="+1104"/>
+        <source>Envelope</source>
+        <translation>Envelope</translation>
+    </message>
+    <message>
+        <location line="-1066"/>
+        <location line="+1069"/>
+        <source>Amplitude spectrum</source>
+        <translation>Amplitude spectrum</translation>
+    </message>
+    <message>
+        <location line="-679"/>
+        <location line="+685"/>
+        <source>Waterfall</source>
+        <translation>Waterfall</translation>
+    </message>
+    <message>
+        <location line="-621"/>
+        <location line="+618"/>
+        <source>Spectrogram</source>
+        <translation>Spectrogram</translation>
+    </message>
+    <message>
+        <location line="-603"/>
+        <source>dB</source>
+        <translation>dB</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <location line="+162"/>
+        <source>Time (s)</source>
+        <translation>Time (s)</translation>
+    </message>
+    <message>
+        <location line="-161"/>
+        <location line="+169"/>
+        <source>Frequency (Hz)</source>
+        <translation>Frequency (Hz)</translation>
+    </message>
+    <message>
+        <location line="-7"/>
+        <location line="+8"/>
+        <source>Amplitude</source>
+        <translation>Amplitude</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>dB (FS)</source>
+        <translation>dB (FS)</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>dB (re 1.0)</source>
+        <translation>dB (re 1.0)</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>RMS</source>
+        <translation>RMS</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DASignalAnalysisWorker</name>
+    <message>
+        <location filename="../../plugins/DASignalAnalysis/Analysis/DASignalAnalysisWorker.cpp" line="+179"/>
+        <source>Signal is invalid or not loaded.</source>
+        <translation>Signal is invalid or not loaded.</translation>
+    </message>
+    <message>
+        <location line="+78"/>
+        <location line="+9"/>
+        <source>Failed to start the spectrum task.</source>
+        <translation>Failed to start the spectrum task.</translation>
+    </message>
+    <message>
+        <location line="-4"/>
+        <source>Computing spectrum...</source>
+        <translation>Computing spectrum...</translation>
+    </message>
+    <message>
+        <location line="+79"/>
+        <location line="+8"/>
+        <source>Failed to start the time-frequency task.</source>
+        <translation>Failed to start the time-frequency task.</translation>
+    </message>
+    <message>
+        <location line="+156"/>
+        <source>FFmpeg is not available. Specify its path in the signal analysis settings.</source>
+        <translation>FFmpeg is not available. Specify its path in the signal analysis settings.</translation>
+    </message>
+    <message>
+        <location line="+257"/>
+        <source>Background task disappeared.</source>
+        <translation>Background task disappeared.</translation>
+    </message>
+    <message>
+        <location line="+48"/>
+        <source>Spectrum result is empty.</source>
+        <translation>Spectrum result is empty.</translation>
+    </message>
+    <message>
+        <location line="-8"/>
+        <source>Computation failed. See the message log for details.</source>
+        <translation>Computation failed. See the message log for details.</translation>
+    </message>
+    <message>
+        <location line="-347"/>
+        <location line="+56"/>
+        <source>Failed to create the temporary audio file.</source>
+        <translation>Failed to create the temporary audio file.</translation>
+    </message>
+    <message>
+        <location line="+238"/>
+        <source>Failed to query background tasks.</source>
+        <translation>Failed to query background tasks.</translation>
+    </message>
+    <message>
+        <location line="+194"/>
+        <source>Failed to read the background result.</source>
+        <translation>Failed to read the background result.</translation>
+    </message>
+    <message>
+        <location line="-643"/>
+        <source>Failed to start the envelope task.</source>
+        <translation>Failed to start the envelope task.</translation>
+    </message>
+    <message>
+        <location line="+127"/>
+        <source>Failed to start the peak curve task.</source>
+        <translation>Failed to start the peak curve task.</translation>
+    </message>
+    <message>
+        <location line="-43"/>
+        <source>Failed to start the peak table task.</source>
+        <translation>Failed to start the peak table task.</translation>
+    </message>
+    <message>
+        <location line="+86"/>
+        <location line="+10"/>
+        <source>Failed to start the playback audio export.</source>
+        <translation>Failed to start the playback audio export.</translation>
+    </message>
+    <message>
+        <location line="-31"/>
+        <source>Playback audio export is only available for dataframe signals.</source>
+        <translation>Playback audio export is only available for dataframe signals.</translation>
+    </message>
+    <message>
+        <location line="+459"/>
+        <source>Playback audio export produced no result.</source>
+        <translation>Playback audio export produced no result.</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Playback audio file was not created.</source>
+        <translation>Playback audio file was not created.</translation>
+    </message>
+    <message>
+        <location line="-442"/>
+        <source>Preparing playback audio...</source>
+        <translation>Preparing playback audio...</translation>
+    </message>
+    <message>
+        <location line="+21"/>
+        <source>No file selected.</source>
+        <translation>No file selected.</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>File does not exist.</source>
+        <translation>File does not exist.</translation>
+    </message>
+    <message>
+        <location line="+29"/>
+        <location line="+10"/>
+        <source>Failed to start the import task.</source>
+        <translation>Failed to start the import task.</translation>
+    </message>
+    <message>
+        <location line="-5"/>
+        <source>Preparing import...</source>
+        <translation>Preparing import...</translation>
+    </message>
+    <message>
+        <location line="-348"/>
+        <source>The signal source is missing. Relink or re-import it before analyzing.</source>
+        <translation>The signal source is missing. Relink or re-import it before analyzing.</translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>The signal source cannot be read (it may have been renamed or removed, or the file is unavailable).</source>
+        <translation>The signal source cannot be read (it may have been renamed or removed, or the file is unavailable).</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DASignalImportDialog</name>
+    <message>
+        <location filename="../../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="+609"/>
+        <source>File</source>
+        <translation>File</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Data Frame</source>
+        <translation>Data Frame</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Time Column</source>
+        <translation>Time Column</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Value Columns</source>
+        <translation>Value Columns</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Sample Rate (Hz)</source>
+        <translation>Sample Rate (Hz)</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Signal Name</source>
+        <translation>Signal Name</translation>
+    </message>
+    <message>
+        <location line="-177"/>
+        <source>No data frame is available. Import data first.</source>
+        <translation>No data frame is available. Import data first.</translation>
+    </message>
+    <message>
+        <location line="+168"/>
+        <source>No time column</source>
+        <translation>No time column</translation>
+    </message>
+    <message>
+        <location line="-165"/>
+        <source>Please enter a positive sample rate.</source>
+        <translation>Please enter a positive sample rate.</translation>
+    </message>
+    <message>
+        <location line="-48"/>
+        <source>No time column: enter the sample rate manually.</source>
+        <translation>No time column: enter the sample rate manually.</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Inferred sample rate = %1 Hz, duration = %2 s</source>
+        <translation>Inferred sample rate = %1 Hz, duration = %2 s</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Cannot infer the sample rate from the time column: %1</source>
+        <translation>Cannot infer the sample rate from the time column: %1</translation>
+    </message>
+    <message>
+        <location line="+87"/>
+        <source>Video Files (*.mp4 *.mov *.m4v *.avi *.mkv *.webm *.flv *.wmv *.ts *.mts);;All Files (*)</source>
+        <translation>Video Files (*.mp4 *.mov *.m4v *.avi *.mkv *.webm *.flv *.wmv *.ts *.mts);;All Files (*)</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Audio Files (*.wav *.aiff *.aif *.flac *.ogg *.oga *.mp3 *.m4a *.aac *.wma *.opus);;All Files (*)</source>
+        <translation>Audio Files (*.wav *.aiff *.aif *.flac *.ogg *.oga *.mp3 *.m4a *.aac *.wma *.opus);;All Files (*)</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Select File</source>
+        <translation>Select File</translation>
+    </message>
+    <message>
+        <location line="+86"/>
+        <source>Import Audio</source>
+        <translation>Import Audio</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Import Video</source>
+        <translation>Import Video</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Import Data Frame</source>
+        <translation>Import Data Frame</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Browse...</source>
+        <translation>Browse...</translation>
+    </message>
+    <message>
+        <location line="+31"/>
+        <source>Import</source>
+        <translation>Import</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Cancel</source>
+        <translation>Cancel</translation>
+    </message>
+    <message>
+        <location line="-181"/>
+        <source>FFmpeg was not detected. Specify its path in Settings &gt; Signal Analysis.</source>
+        <translation>FFmpeg was not detected. Specify its path in Settings &gt; Signal Analysis.</translation>
+    </message>
+    <message>
+        <location line="-351"/>
+        <source>Sample rate: %1 Hz, channels: %2, duration: %3 s</source>
+        <translation>Sample rate: %1 Hz, channels: %2, duration: %3 s</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DASignalPlayer</name>
+    <message>
+        <location filename="../../plugins/DASignalAnalysis/Playback/DASignalPlayer.cpp" line="+199"/>
+        <source>Signal is invalid.</source>
+        <translation>Signal is invalid.</translation>
+    </message>
+    <message>
+        <location line="+22"/>
+        <source>No playable audio file for this signal.</source>
+        <translation>No playable audio file for this signal.</translation>
+    </message>
+    <message>
+        <location line="-43"/>
+        <source>The playback audio file is missing.</source>
+        <translation>The playback audio file is missing.</translation>
+    </message>
+</context>
+<context>
     <name>DA::DAStatusBarWidget</name>
     <message>
-        <location filename="../DAGui/DAStatusBarWidget.cpp" line="+49"/>
+        <location filename="../DAGui/Common/DAStatusBarWidget.cpp" line="+49"/>
         <source>Workflow</source>
         <translation>Workflow</translation>
     </message>
@@ -14752,9 +15656,372 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     </message>
 </context>
 <context>
+    <name>DA::DATableCellOps</name>
+    <message>
+        <location filename="../DAGui/Table/Ops/DATableCellOps.cpp" line="+66"/>
+        <source>Please select a valid cell</source>
+        <translation>Please select a valid cell</translation>
+    </message>
+    <message>
+        <location line="+49"/>
+        <source>Clipboard is empty</source>
+        <translation>Clipboard is empty</translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>Please select a cell to paste into</source>
+        <translation>Please select a cell to paste into</translation>
+    </message>
+    <message>
+        <location line="+50"/>
+        <source>Nothing to paste: the clipboard content exceeds the table boundary</source>
+        <translation>Nothing to paste: the clipboard content exceeds the table boundary</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Paste partially dropped: %1 row(s) and %2 cell(s) outside the table were ignored</source>
+        <translation>Paste partially dropped: %1 row(s) and %2 cell(s) outside the table were ignored</translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Paste failed: the content does not match the column data type</source>
+        <translation>Paste failed: the content does not match the column data type</translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>No cells selected to cut</source>
+        <translation>No cells selected to cut</translation>
+    </message>
+    <message>
+        <location line="-173"/>
+        <source>Cell Operations</source>
+        <translation>Cell Operations</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DATableChartRolePanel</name>
+    <message>
+        <location filename="../DAGui/Table/Chart/DATableChartRolePanel.cpp" line="+150"/>
+        <source>Row number</source>
+        <translation>Row number</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>(none)</source>
+        <translation>(none)</translation>
+    </message>
+    <message>
+        <location line="+62"/>
+        <source>Remove this series</source>
+        <translation>Remove this series</translation>
+    </message>
+    <message>
+        <location line="+27"/>
+        <source>Add series</source>
+        <translation>Add series</translation>
+    </message>
+    <message>
+        <location line="+50"/>
+        <source>Aggregation</source>
+        <translation>Aggregation</translation>
+    </message>
+    <message>
+        <location line="+22"/>
+        <source>Bins</source>
+        <translation>Bins</translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>Mean</source>
+        <translation>Mean</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Median</source>
+        <translation>Median</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Sum</source>
+        <translation>Sum</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Count</source>
+        <translation>Count</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Std</source>
+        <translation>Std</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Var</source>
+        <translation>Var</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Min</source>
+        <translation>Min</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Max</source>
+        <translation>Max</translation>
+    </message>
+    <message>
+        <location line="+127"/>
+        <location line="+35"/>
+        <source>X axis</source>
+        <translation>X axis</translation>
+    </message>
+    <message>
+        <location line="-29"/>
+        <location line="+17"/>
+        <location line="+18"/>
+        <location line="+85"/>
+        <location line="+17"/>
+        <location line="+17"/>
+        <location line="+23"/>
+        <source>Y</source>
+        <translation>Y</translation>
+    </message>
+    <message>
+        <location line="-165"/>
+        <location line="+103"/>
+        <location line="+17"/>
+        <location line="+17"/>
+        <location line="+23"/>
+        <source>X</source>
+        <translation>X</translation>
+    </message>
+    <message>
+        <location line="-125"/>
+        <location line="+36"/>
+        <location line="+42"/>
+        <source>Value</source>
+        <translation>Value</translation>
+    </message>
+    <message>
+        <location line="-65"/>
+        <location line="+42"/>
+        <source>Values</source>
+        <translation>Values</translation>
+    </message>
+    <message>
+        <location line="-32"/>
+        <source>Group</source>
+        <translation>Group</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <location line="+20"/>
+        <source>Category</source>
+        <translation>Category</translation>
+    </message>
+    <message>
+        <location line="+45"/>
+        <source>Error</source>
+        <translation>Error</translation>
+    </message>
+    <message>
+        <location line="+17"/>
+        <source>U</source>
+        <translation>U</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>V</source>
+        <translation>V</translation>
+    </message>
+    <message>
+        <location line="+18"/>
+        <source>Z</source>
+        <translation>Z</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DATableChildWindow</name>
+    <message>
+        <location filename="../DAGui/Table/Views/DATableChildWindow.cpp" line="+74"/>
+        <source>Drag to move</source>
+        <translation>Drag to move</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <location line="+619"/>
+        <source>Close</source>
+        <translation>Close</translation>
+    </message>
+    <message>
+        <location line="-4"/>
+        <source>Maximize</source>
+        <translation>Maximize</translation>
+    </message>
+    <message>
+        <location line="-1"/>
+        <source>Restore</source>
+        <translation>Restore</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Reset position and size</source>
+        <translation>Reset position and size</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DATableColumnCombineOps</name>
+    <message>
+        <location filename="../DAGui/Table/Ops/DATableColumnCombineOps.cpp" line="+76"/>
+        <source>Split Column requires an editable table</source>
+        <translation>Split Column requires an editable table</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Please select exactly one column to split</source>
+        <translation>Please select exactly one column to split</translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>Failed to snapshot the source column</source>
+        <translation>Failed to snapshot the source column</translation>
+    </message>
+    <message>
+        <location line="+59"/>
+        <source>Split column failed: %1</source>
+        <translation>Split column failed: %1</translation>
+    </message>
+    <message>
+        <location line="+23"/>
+        <source>Merge Columns requires an editable table</source>
+        <translation>Merge Columns requires an editable table</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Please select at least two columns to merge</source>
+        <translation>Please select at least two columns to merge</translation>
+    </message>
+    <message>
+        <location line="+16"/>
+        <source>Failed to snapshot the source columns</source>
+        <translation>Failed to snapshot the source columns</translation>
+    </message>
+    <message>
+        <location line="+88"/>
+        <source>Merge columns failed: %1</source>
+        <translation>Merge columns failed: %1</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Computed column(s) %1 became invalid because their dependency column(s) were merged</source>
+        <translation>Computed column(s) %1 became invalid because their dependency column(s) were merged</translation>
+    </message>
+    <message>
+        <location line="-244"/>
+        <source>Split / Merge Columns</source>
+        <translation>Split / Merge Columns</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DATableColumnOps</name>
+    <message>
+        <location filename="../DAGui/Table/Ops/DATableColumnOps.cpp" line="+172"/>
+        <source>Please select a valid column</source>
+        <translation>Please select a valid column</translation>
+    </message>
+    <message>
+        <location line="+152"/>
+        <source>Computed column(s) %1 became invalid because their dependency column(s) were removed</source>
+        <translation>Computed column(s) %1 became invalid because their dependency column(s) were removed</translation>
+    </message>
+    <message>
+        <location line="-242"/>
+        <source>Warning</source>
+        <translation>Warning</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>The name of the new column to be inserted must be specified</source>
+        <translation>The name of the new column to be inserted must be specified</translation>
+    </message>
+    <message>
+        <location line="-31"/>
+        <source>Column Operations</source>
+        <translation>Column Operations</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DATableColumnViewController</name>
+    <message>
+        <location filename="../DAGui/Table/Controllers/DATableColumnViewController.cpp" line="+312"/>
+        <source>Freeze Columns</source>
+        <translation>Freeze Columns</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Freeze the first N columns (added to already frozen columns, 0 = no change):</source>
+        <translation>Freeze the first N columns (added to already frozen columns, 0 = no change):</translation>
+    </message>
+    <message>
+        <location line="+232"/>
+        <source>Column names must be unique</source>
+        <translation>Column names must be unique</translation>
+    </message>
+    <message>
+        <location line="-38"/>
+        <source>Manage Columns</source>
+        <translation>Manage Columns</translation>
+    </message>
+    <message>
+        <location line="+100"/>
+        <source>Rename and update column view</source>
+        <translation>Rename and update column view</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DATableComputedColumnController</name>
+    <message>
+        <location filename="../DAGui/Table/Controllers/DATableComputedColumnController.cpp" line="+180"/>
+        <source>The table is read-only and does not support computed columns</source>
+        <translation>The table is read-only and does not support computed columns</translation>
+    </message>
+    <message>
+        <location line="+23"/>
+        <source>The formula must not reference the target column itself</source>
+        <translation>The formula must not reference the target column itself</translation>
+    </message>
+    <message>
+        <location line="+163"/>
+        <source>Rename Column</source>
+        <translation>Rename Column</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>%1 computed column(s) reference the renamed column(s): %2. Their references will be updated automatically. Continue?</source>
+        <translation>%1 computed column(s) reference the renamed column(s): %2. Their references will be updated automatically. Continue?</translation>
+    </message>
+    <message>
+        <location line="-115"/>
+        <source>Recompute All Computed Columns</source>
+        <translation>Recompute All Computed Columns</translation>
+    </message>
+    <message>
+        <location line="-100"/>
+        <location line="+139"/>
+        <source>Failed to evaluate the formula of computed column &quot;%1&quot;: %2</source>
+        <translation>Failed to evaluate the formula of computed column &quot;%1&quot;: %2</translation>
+    </message>
+    <message>
+        <location line="-64"/>
+        <source>Column &quot;%1&quot; has no computed formula</source>
+        <translation>Column &quot;%1&quot; has no computed formula</translation>
+    </message>
+</context>
+<context>
     <name>DA::DATableComputedColumnStore</name>
     <message>
-        <location filename="../DAGui/DATableComputedColumnStore.cpp" line="+461"/>
+        <location filename="../DAGui/Table/Metadata/DATableComputedColumnStore.cpp" line="+470"/>
         <source>Valid</source>
         <translation>Valid</translation>
     </message>
@@ -14770,9 +16037,222 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     </message>
 </context>
 <context>
+    <name>DA::DATableConditionalFormatController</name>
+    <message>
+        <location filename="../DAGui/Table/Controllers/DATableConditionalFormatController.cpp" line="+63"/>
+        <location line="+35"/>
+        <location line="+79"/>
+        <source>Please select a column first</source>
+        <translation>Please select a column first</translation>
+    </message>
+    <message>
+        <location line="-76"/>
+        <location line="+32"/>
+        <source>Clear Conditional Format Rules</source>
+        <translation>Clear Conditional Format Rules</translation>
+    </message>
+    <message>
+        <location line="-22"/>
+        <source>The selected columns have no conditional format rules</source>
+        <translation>The selected columns have no conditional format rules</translation>
+    </message>
+    <message>
+        <location line="+19"/>
+        <source>The table has no conditional format rules</source>
+        <translation>The table has no conditional format rules</translation>
+    </message>
+    <message>
+        <location line="+95"/>
+        <source>Blue</source>
+        <translation>Blue</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Green</source>
+        <translation>Green</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Red</source>
+        <translation>Red</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Yellow</source>
+        <translation>Yellow</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Cyan</source>
+        <translation>Cyan</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Purple</source>
+        <translation>Purple</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Data Bars</source>
+        <translation>Data Bars</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Gradient Fill</source>
+        <translation>Gradient Fill</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>%1 Gradient Fill</source>
+        <translation>%1 Gradient Fill</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Solid Fill</source>
+        <translation>Solid Fill</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>%1 Solid Fill</source>
+        <translation>%1 Solid Fill</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <location line="+30"/>
+        <location line="+54"/>
+        <source>Other Rules...</source>
+        <translation>Other Rules...</translation>
+    </message>
+    <message>
+        <location line="-77"/>
+        <source>Color Scales</source>
+        <translation>Color Scales</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>%1-Color Scale</source>
+        <translation>%1-Color Scale</translation>
+    </message>
+    <message>
+        <location line="+25"/>
+        <source>Highlight Cells Rules</source>
+        <translation>Highlight Cells Rules</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Greater Than...</source>
+        <translation>Greater Than...</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Less Than...</source>
+        <translation>Less Than...</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Between...</source>
+        <translation>Between...</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Equal To...</source>
+        <translation>Equal To...</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Text Contains...</source>
+        <translation>Text Contains...</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>A Date Occurring</source>
+        <translation>A Date Occurring</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Yesterday</source>
+        <translation>Yesterday</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Today</source>
+        <translation>Today</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Tomorrow</source>
+        <translation>Tomorrow</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>In the Last 7 Days</source>
+        <translation>In the Last 7 Days</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Last Week</source>
+        <translation>Last Week</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>This Week</source>
+        <translation>This Week</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Next Week</source>
+        <translation>Next Week</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Last Month</source>
+        <translation>Last Month</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>This Month</source>
+        <translation>This Month</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Next Month</source>
+        <translation>Next Month</translation>
+    </message>
+    <message>
+        <location line="+19"/>
+        <source>Duplicate Values...</source>
+        <translation>Duplicate Values...</translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Clear Rules</source>
+        <translation>Clear Rules</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Clear Rules from Selected Columns</source>
+        <translation>Clear Rules from Selected Columns</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Clear Rules from Entire Sheet</source>
+        <translation>Clear Rules from Entire Sheet</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Custom Rules...</source>
+        <translation>Custom Rules...</translation>
+    </message>
+    <message>
+        <location line="+17"/>
+        <source>Change Conditional Format Rules</source>
+        <translation>Change Conditional Format Rules</translation>
+    </message>
+</context>
+<context>
     <name>DA::DATableDisplayFormatComboBox</name>
     <message>
-        <location filename="../DAGui/DATableDisplayFormatComboBox.cpp" line="+38"/>
+        <location filename="../DAGui/Table/Views/DATableDisplayFormatComboBox.cpp" line="+38"/>
         <location line="+31"/>
         <source>General</source>
         <translation>General</translation>
@@ -14815,9 +16295,88 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     </message>
 </context>
 <context>
+    <name>DA::DATableFillOps</name>
+    <message>
+        <location filename="../DAGui/Table/Ops/DATableFillOps.cpp" line="+124"/>
+        <source>Fill down</source>
+        <translation>Fill down</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Fill up</source>
+        <translation>Fill up</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Fill forward (ffill)</source>
+        <translation>Fill forward (ffill)</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Fill backward (bfill)</source>
+        <translation>Fill backward (bfill)</translation>
+    </message>
+    <message>
+        <location line="-24"/>
+        <location line="+64"/>
+        <source>Cannot fill a read-only data source</source>
+        <translation>Cannot fill a read-only data source</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Please select cells to fill</source>
+        <translation>Please select cells to fill</translation>
+    </message>
+    <message>
+        <location line="+30"/>
+        <source>Failed to generate the fill series</source>
+        <translation>Failed to generate the fill series</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Fill series</source>
+        <translation>Fill series</translation>
+    </message>
+    <message>
+        <location line="-137"/>
+        <source>Fill failed: the content does not match the column data type</source>
+        <translation>Fill failed: the content does not match the column data type</translation>
+    </message>
+    <message>
+        <location line="-39"/>
+        <source>Fill Operations</source>
+        <translation>Fill Operations</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DATableFindController</name>
+    <message>
+        <location filename="../DAGui/Table/Controllers/DATableFindController.cpp" line="+361"/>
+        <source>This data source is read-only and cannot be modified.</source>
+        <translation>This data source is read-only and cannot be modified.</translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <location line="+22"/>
+        <location line="+51"/>
+        <source>No matches found</source>
+        <translation>No matches found</translation>
+    </message>
+    <message>
+        <location line="-45"/>
+        <source>Replace All</source>
+        <translation>Replace All</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Too many cells will be changed (%1). This operation cannot be undone. Continue?</source>
+        <translation>Too many cells will be changed (%1). This operation cannot be undone. Continue?</translation>
+    </message>
+</context>
+<context>
     <name>DA::DATableMetadata</name>
     <message>
-        <location filename="../DAGui/DATableMetadata.cpp" line="+241"/>
+        <location filename="../DAGui/Table/Metadata/DATableMetadata.cpp" line="+241"/>
         <source>Cell styles</source>
         <translation>Cell styles</translation>
     </message>
@@ -14848,9 +16407,66 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     </message>
 </context>
 <context>
+    <name>DA::DATableNavigationService</name>
+    <message>
+        <location filename="../DAGui/Table/Controllers/DATableNavigationService.cpp" line="+100"/>
+        <source>Row number is out of range</source>
+        <translation>Row number is out of range</translation>
+    </message>
+    <message>
+        <location line="+27"/>
+        <source>Index label not found: %1</source>
+        <translation>Index label not found: %1</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>There are %1 rows with this index label; jumped to the first one</source>
+        <translation>There are %1 rows with this index label; jumped to the first one</translation>
+    </message>
+    <message>
+        <location line="+27"/>
+        <source>Column not found: %1</source>
+        <translation>Column not found: %1</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>There are %1 columns with this name; used the first one</source>
+        <translation>There are %1 columns with this name; used the first one</translation>
+    </message>
+    <message>
+        <location line="+53"/>
+        <location line="+63"/>
+        <source>The column &quot;%1&quot; was hidden and has been made visible</source>
+        <translation>The column &quot;%1&quot; was hidden and has been made visible</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DATableNoteController</name>
+    <message>
+        <location filename="../DAGui/Table/Controllers/DATableNoteController.cpp" line="+41"/>
+        <source>Please select a cell to annotate</source>
+        <translation>Please select a cell to annotate</translation>
+    </message>
+    <message>
+        <location line="+93"/>
+        <source>Please select a cell whose note is to be deleted</source>
+        <translation>Please select a cell whose note is to be deleted</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>The selected cell has no note</source>
+        <translation>The selected cell has no note</translation>
+    </message>
+    <message>
+        <location line="+21"/>
+        <source>This table has no notes</source>
+        <translation>This table has no notes</translation>
+    </message>
+</context>
+<context>
     <name>DA::DATableNoteEditDialog</name>
     <message>
-        <location filename="../DAGui/DATableNoteEditDialog.cpp" line="+31"/>
+        <location filename="../DAGui/Table/Dialogs/DATableNoteEditDialog.cpp" line="+31"/>
         <source>Cell Note</source>
         <translation>Cell Note</translation>
     </message>
@@ -14866,37 +16482,100 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     </message>
 </context>
 <context>
-    <name>DA::DATableChildWindow</name>
+    <name>DA::DATableQuickPlotController</name>
     <message>
-        <location filename="../DAGui/TableChildWindow/DATableChildWindow.cpp" line="+99"/>
-        <source>Drag to move</source>
-        <translation>Drag to move</translation>
+        <location filename="../DAGui/Table/Controllers/DATableQuickPlotController.cpp" line="+168"/>
+        <source>The chart area is not available</source>
+        <translation>The chart area is not available</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Failed to transfer to the chart area</source>
+        <translation>Failed to transfer to the chart area</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>The chart has been transferred to the chart area</source>
+        <translation>The chart has been transferred to the chart area</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DATableQuickPlotSettingWidget</name>
+    <message>
+        <location filename="../DAGui/Table/Chart/DATableQuickPlotSettingWidget.cpp" line="+253"/>
+        <source>Open a quick plot from the data table to configure it here</source>
+        <translation>Open a quick plot from the data table to configure it here</translation>
+    </message>
+    <message>
+        <location line="-94"/>
+        <source>Chart</source>
+        <translation>Chart</translation>
     </message>
     <message>
         <location line="+6"/>
-        <source>Close</source>
-        <translation>Close</translation>
+        <source>Chart type</source>
+        <translation>Chart type</translation>
     </message>
     <message>
-        <location line="+427"/>
-        <source>Maximize</source>
-        <translation>Maximize</translation>
+        <location line="+6"/>
+        <source>Columns</source>
+        <translation>Columns</translation>
+    </message>
+    <message>
+        <location line="-8"/>
+        <source>Chart type (unavailable types are disabled with the reason)</source>
+        <translation>Chart type (unavailable types are disabled with the reason)</translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>Data roles</source>
+        <translation>Data roles</translation>
+    </message>
+    <message>
+        <location line="+32"/>
+        <source>Update to current selection</source>
+        <translation>Update to current selection</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Re-bind the chart to the current column selection</source>
+        <translation>Re-bind the chart to the current column selection</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Restore</source>
-        <translation>Restore</translation>
+        <source>Refresh</source>
+        <translation>Refresh</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Redraw with the current data</source>
+        <translation>Redraw with the current data</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Transfer to chart area</source>
+        <translation>Transfer to chart area</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Create a formal chart from this quick plot</source>
+        <translation>Create a formal chart from this quick plot</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>New figure tab</source>
+        <translation>New figure tab</translation>
     </message>
     <message>
         <location line="+2"/>
-        <source>Reset position and size</source>
-        <translation>Reset position and size</translation>
+        <source>Append to current chart</source>
+        <translation>Append to current chart</translation>
     </message>
 </context>
 <context>
     <name>DA::DATableQuickPlotWindow</name>
     <message>
-        <location filename="../DAGui/TableChart/DATableQuickPlotWindow.cpp" line="+84"/>
+        <location filename="../DAGui/Table/Chart/DATableQuickPlotWindow.cpp" line="+90"/>
         <source>Select one or more columns first</source>
         <translation>Select one or more columns first</translation>
     </message>
@@ -14951,7 +16630,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation>Multi-series line</translation>
     </message>
     <message>
-        <location line="+14"/>
+        <location line="+71"/>
         <source>Mean</source>
         <translation>Mean</translation>
     </message>
@@ -14991,62 +16670,17 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation>Max</translation>
     </message>
     <message>
-        <location line="+18"/>
-        <source>Aggregation:</source>
-        <translation>Aggregation:</translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>X axis:</source>
-        <translation>X axis:</translation>
-    </message>
-    <message>
-        <location line="+35"/>
-        <source>Update to current selection</source>
-        <translation>Update to current selection</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Refresh</source>
-        <translation>Refresh</translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Transfer to chart area</source>
-        <translation>Transfer to chart area</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>New figure tab</source>
-        <translation>New figure tab</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Append to current chart</source>
-        <translation>Append to current chart</translation>
-    </message>
-    <message>
-        <location line="+66"/>
-        <source>Row number</source>
-        <translation>Row number</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source> (as category)</source>
-        <translation> (as category)</translation>
-    </message>
-    <message>
-        <location line="+122"/>
+        <location line="+130"/>
         <source>Loading data...</source>
         <translation>Loading data...</translation>
     </message>
     <message>
-        <location line="-50"/>
+        <location line="-32"/>
         <source>Based on %1 of %2 sampled rows</source>
         <translation>Based on %1 of %2 sampled rows</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+3"/>
         <source>Aggregation uses the sample</source>
         <translation>Aggregation uses the sample</translation>
     </message>
@@ -15061,147 +16695,332 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation>Showing top %1 of %2 categories</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+3"/>
         <source>Sample limited: data fetching stopped at the budget limit</source>
         <translation>Sample limited: data fetching stopped at the budget limit</translation>
     </message>
     <message>
         <location line="+3"/>
-        <location line="+144"/>
+        <location line="+181"/>
         <source>The data has changed, click Refresh to redraw</source>
         <translation>The data has changed, click Refresh to redraw</translation>
     </message>
     <message>
-        <location line="-19"/>
+        <location line="-44"/>
         <source>The previous chart type is not available for the new selection, switched to the default type</source>
         <translation>The previous chart type is not available for the new selection, switched to the default type</translation>
     </message>
-
     <message>
-        <location line="+2"/>
+        <location line="-333"/>
         <source>Contour</source>
         <translation>Contour</translation>
-        </message>
-
+    </message>
     <message>
         <location line="+2"/>
         <source>Error bar</source>
         <translation>Error bar</translation>
-        </message>
-
+    </message>
     <message>
         <location line="+2"/>
         <source>Vector field</source>
         <translation>Vector field</translation>
-        </message>
-
+    </message>
     <message>
         <location line="+2"/>
         <source>Multi-bar</source>
         <translation>Multi-bar</translation>
-        </message>
-
+    </message>
     <message>
         <location line="+2"/>
         <source>3D surface</source>
         <translation>3D surface</translation>
-        </message>
-
+    </message>
     <message>
         <location line="+2"/>
         <source>3D line</source>
         <translation>3D line</translation>
-        </message>
-
+    </message>
     <message>
         <location line="+13"/>
         <source>Bar (count)</source>
         <translation>Bar (count)</translation>
-        </message>
-
+    </message>
     <message>
         <location line="+1"/>
         <source>Bar (aggregate)</source>
         <translation>Bar (aggregate)</translation>
-        </message>
-
+    </message>
     <message>
         <location line="+12"/>
         <location line="+6"/>
         <source>Requires at least 1 numeric column</source>
         <translation>Requires at least 1 numeric column</translation>
-        </message>
-
+    </message>
     <message>
         <location line="-4"/>
         <source>Requires 2 numeric columns</source>
         <translation>Requires 2 numeric columns</translation>
-        </message>
-
+    </message>
     <message>
         <location line="+2"/>
         <source>Requires 1 numeric column</source>
         <translation>Requires 1 numeric column</translation>
-        </message>
-
+    </message>
     <message>
         <location line="+4"/>
         <source>Requires 1 category column, or a low-cardinality numeric column</source>
         <translation>Requires 1 category column, or a low-cardinality numeric column</translation>
-        </message>
-
+    </message>
     <message>
         <location line="+2"/>
         <source>Requires 3 numeric columns, or 1 time column and 2 numeric columns</source>
         <translation>Requires 3 numeric columns, or 1 time column and 2 numeric columns</translation>
-        </message>
-
+    </message>
     <message>
         <location line="+5"/>
         <source>Requires 3 numeric columns</source>
         <translation>Requires 3 numeric columns</translation>
-        </message>
-
+    </message>
     <message>
         <location line="+2"/>
         <source>Requires 4 numeric columns</source>
         <translation>Requires 4 numeric columns</translation>
-        </message>
-
+    </message>
     <message>
         <location line="+2"/>
         <source>Requires 1 category column and at least 2 numeric columns</source>
         <translation>Requires 1 category column and at least 2 numeric columns</translation>
-        </message>
-
+    </message>
     <message>
-        <location line="-210"/>
-        <source>Chart type (unavailable types are disabled with the reason)</source>
-        <translation>Chart type (unavailable types are disabled with the reason)</translation>
-        </message>
-
-    <message>
-        <location line="+17"/>
-        <source>Settings</source>
-        <translation>Settings</translation>
-        </message>
-
-    <message>
-        <location line="+4"/>
-        <source>Show or hide the role settings</source>
-        <translation>Show or hide the role settings</translation>
-        </message>
-
-    <message>
-        <location line="-66"/>
+        <location line="+233"/>
         <source>%1 (manual)</source>
         <translation>%1 (manual)</translation>
-        </message>
+    </message>
+</context>
+<context>
+    <name>DA::DATableRenameOps</name>
+    <message>
+        <location filename="../DAGui/Table/Ops/DATableRenameOps.cpp" line="+67"/>
+        <source>Column name cannot be empty</source>
+        <translation>Column name cannot be empty</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Column name &quot;%1&quot; already exists, please use another name</source>
+        <translation>Column name &quot;%1&quot; already exists, please use another name</translation>
+    </message>
+    <message>
+        <location line="-32"/>
+        <source>Rename Column</source>
+        <translation>Rename Columns</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DATableReshapeOps</name>
+    <message>
+        <location filename="../DAGui/Table/Ops/DATableReshapeOps.cpp" line="+73"/>
+        <source>%1_GroupBy</source>
+        <translation>%1_GroupBy</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Group-by aggregation of %1</source>
+        <translation>Group-by aggregation of %1</translation>
+    </message>
+    <message>
+        <location line="+35"/>
+        <source>Reshape failed: %1</source>
+        <translation>Reshape failed: %1</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Melt table in place</source>
+        <translation>Melt table in place</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Transpose table in place</source>
+        <translation>Transpose table in place</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>%1_Melted</source>
+        <translation>%1_Melted</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Melt (wide to long) of %1</source>
+        <translation>Melt (wide to long) of %1</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>%1_Transposed</source>
+        <translation>%1_Transposed</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Transpose of %1</source>
+        <translation>Transpose of %1</translation>
+    </message>
+    <message>
+        <location line="-87"/>
+        <source>Reshape Operations</source>
+        <translation>Reshape Operations</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DATableResultOps</name>
+    <message>
+        <location filename="../DAGui/Table/Ops/DATableResultOps.cpp" line="+114"/>
+        <source>(no table metadata to clear)</source>
+        <translation>(no table metadata to clear)</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <location line="+22"/>
+        <source>Replace In Place</source>
+        <translation>Replace In Place</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>The table is very large (%1 cells). Keeping the old data for undo would double memory usage, so this in-place replacement will NOT be undoable. Continue?</source>
+        <translation>The table is very large (%1 cells). Keeping the old data for undo would double memory usage, so this in-place replacement will NOT be undoable. Continue?</translation>
+    </message>
+    <message>
+        <location line="-99"/>
+        <source>Result Operations</source>
+        <translation>Result Operations</translation>
+    </message>
+    <message>
+        <location line="+77"/>
+        <source>Replacing in place will clear the following table metadata:
+%1
+
+Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
+        <translation>Replacing in place will clear the following table metadata:
+%1
+
+Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DATableRowOps</name>
+    <message>
+        <location filename="../DAGui/Table/Ops/DATableRowOps.cpp" line="+126"/>
+        <source>Please select valid data cells</source>
+        <translation>Please select valid data cells</translation>
+    </message>
+    <message>
+        <location line="-87"/>
+        <source>Row Operations</source>
+        <translation>Row Operations</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DATableSortController</name>
+    <message>
+        <location filename="../DAGui/Table/Controllers/DATableSortController.cpp" line="+182"/>
+        <source>This data source is read-only and cannot be sorted.</source>
+        <translation>This data source is read-only and cannot be sorted.</translation>
+    </message>
+    <message>
+        <location line="+116"/>
+        <source>Cannot sort: the column contains values of incomparable mixed types.</source>
+        <translation>Cannot sort: the column contains values of incomparable mixed types.</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DATableSortDialog</name>
+    <message>
+        <location filename="../DAGui/Table/Dialogs/DATableSortDialog.cpp" line="+42"/>
+        <source>Sort</source>
+        <translation>Sort</translation>
+    </message>
+    <message>
+        <location line="+35"/>
+        <source>Add Condition</source>
+        <translation>Add Condition</translation>
+    </message>
+    <message>
+        <location line="+16"/>
+        <source>Column</source>
+        <translation>Column</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Sort On</source>
+        <translation>Sort On</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Order</source>
+        <translation>Order</translation>
+    </message>
+    <message>
+        <location line="+24"/>
+        <source>Tip: sorting does not renumber rows. Use &quot;Clear Sort&quot; to restore the original row order.</source>
+        <translation>Tip: sorting does not renumber rows. Use "Clear Sort" to restore the original row order.</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>OK</source>
+        <translation>OK</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Cancel</source>
+        <translation>Cancel</translation>
+    </message>
+    <message>
+        <location line="+29"/>
+        <source>Index (Row Number)</source>
+        <translation>Index (Row Number)</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Values</source>
+        <translation>Values</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Sorting always compares cell values (dates/numbers/text by their natural order)</source>
+        <translation>Sorting always compares cell values (dates/numbers/text by their natural order)</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Ascending</source>
+        <translation>Ascending</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Descending</source>
+        <translation>Descending</translation>
+    </message>
+    <message>
+        <location line="+17"/>
+        <source>Move up</source>
+        <translation>Move up</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Move down</source>
+        <translation>Move down</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Duplicate condition</source>
+        <translation>Duplicate condition</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Delete condition</source>
+        <translation>Delete condition</translation>
+    </message>
 </context>
 <context>
     <name>DA::DATableStatsWidget</name>
     <message>
-        <location filename="../DAGui/DATableStatsWidget.cpp" line="+158"/>
+        <location filename="../DAGui/Table/Views/DATableStatsWidget.cpp" line="+158"/>
         <source>%1 rows × %2 cols</source>
         <translation>%1 rows × %2 cols</translation>
     </message>
@@ -15284,6 +17103,144 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     </message>
 </context>
 <context>
+    <name>DA::DATableStyleController</name>
+    <message>
+        <location filename="../DAGui/Table/Controllers/DATableStyleController.cpp" line="+134"/>
+        <location line="+60"/>
+        <location line="+108"/>
+        <location line="+147"/>
+        <location line="+50"/>
+        <source>Please select a valid cell</source>
+        <translation>Please select a valid cell</translation>
+    </message>
+    <message>
+        <location line="+181"/>
+        <location line="+27"/>
+        <source>Please select a valid column</source>
+        <translation>Please select a valid column</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DATableTypeOps</name>
+    <message>
+        <location filename="../DAGui/Table/Ops/DATableTypeOps.cpp" line="+63"/>
+        <location line="+32"/>
+        <location line="+39"/>
+        <location line="+40"/>
+        <source>Please select a valid column</source>
+        <translation>Please select a valid column</translation>
+    </message>
+    <message>
+        <location line="-135"/>
+        <source>Type Operations</source>
+        <translation>Type Operations</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DATableValidationController</name>
+    <message>
+        <location filename="../DAGui/Table/Controllers/DATableValidationController.cpp" line="+46"/>
+        <source>Numeric range</source>
+        <translation>Numeric range</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Date range</source>
+        <translation>Date range</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Allowed values (enum)</source>
+        <translation>Allowed values (enum)</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Not empty</source>
+        <translation>Not empty</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Unique</source>
+        <translation>Unique</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Regex (full match)</source>
+        <translation>Regex (full match)</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>%1 (occurrence %2)</source>
+        <translation>%1 (occurrence %2)</translation>
+    </message>
+    <message>
+        <location line="+142"/>
+        <source>Validation failed: %1</source>
+        <translation>Validation failed: %1</translation>
+    </message>
+    <message>
+        <location line="+49"/>
+        <source>No enabled validation rules yet — add rules first</source>
+        <translation>No enabled validation rules yet — add rules first</translation>
+    </message>
+    <message>
+        <location line="+26"/>
+        <source>Row %1: %2</source>
+        <translation>Row %1: %2</translation>
+    </message>
+    <message>
+        <location line="+57"/>
+        <source>Rename Column</source>
+        <translation>Rename Column</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>%1 validation rule(s) reference the renamed column(s): %2. Their references will be updated automatically. Continue?</source>
+        <translation>%1 validation rule(s) reference the renamed column(s): %2. Their references will be updated automatically. Continue?</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DATableViewStateController</name>
+    <message>
+        <location filename="../DAGui/Table/Controllers/DATableViewStateController.cpp" line="+60"/>
+        <source>Some column view settings were dropped because the table columns have changed.</source>
+        <translation>Some column view settings were dropped because the table columns have changed.</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DATextAlignmentEditWidget</name>
+    <message>
+        <location filename="../3rdparty/DAWidgets/src/DATextAlignmentEditWidget.cpp" line="+142"/>
+        <source>Align Left</source>
+        <translation>Align Left</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Align Center</source>
+        <translation>Align Center</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Align Right</source>
+        <translation>Align Right</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Align Top</source>
+        <translation>Align Top</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Align Middle</source>
+        <translation>Align Middle</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Align Bottom</source>
+        <translation>Align Bottom</translation>
+    </message>
+</context>
+<context>
     <name>DA::DATimeFormatEditWidget</name>
     <message>
         <location filename="../3rdparty/DAWidgets/src/DATimeFormatEditWidget.cpp" line="+59"/>
@@ -15339,7 +17296,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DA::DAToolBox</name>
     <message>
-        <location filename="../DAGui/DAToolBox.cpp" line="+108"/>
+        <location filename="../DAGui/Workflow/DAToolBox.cpp" line="+108"/>
         <source>Favorite</source>
         <translation>Favorite</translation>
     </message>
@@ -15347,7 +17304,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DA::DATreeModel</name>
     <message>
-        <location filename="../DAGui/Models/DATreeModel.cpp" line="+114"/>
+        <location filename="../DAGui/Common/DATreeModel.cpp" line="+114"/>
         <source>DATreeModel encountered invalid item</source>
         <translation>DATreeModel encountered invalid item</translation>
     </message>
@@ -15355,7 +17312,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DA::DATxtFileImportDialog</name>
     <message>
-        <location filename="../DAGui/Dialog/DATxtFileImportDialog.cpp" line="+49"/>
+        <location filename="../DAGui/Table/Dialogs/DATxtFileImportDialog.cpp" line="+49"/>
         <source>,(comma)</source>
         <translation>,(comma)</translation>
     </message>
@@ -15411,7 +17368,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DA::DAVirtualScrollBar</name>
     <message>
-        <location filename="../DAGui/DAVirtualScrollBar.cpp" line="+193"/>
+        <location filename="../DAGui/Table/Views/DAVirtualScrollBar.cpp" line="+221"/>
         <source>Row %1 of %2</source>
         <translation>Row %1 of %2</translation>
     </message>
@@ -15691,7 +17648,17 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-4240"/>
+        <location filename="../APP/Controller/DAAppChartActionHandler.cpp" line="-401"/>
+        <location filename="../APP/Controller/DAAppControllerAgent.cpp" line="-106"/>
+        <location filename="../APP/Controller/DAAppControllerConnections.cpp" line="+140"/>
+        <location filename="../APP/Controller/DAAppControllerCore.cpp" line="-804"/>
+        <location filename="../APP/Controller/DAAppControllerPage.cpp" line="-348"/>
+        <location filename="../APP/Controller/DAAppControllerProject.cpp" line="-194"/>
+        <location filename="../APP/Controller/DAAppControllerView.cpp" line="-50"/>
+        <location filename="../APP/Controller/DAAppDataActionHandler.cpp" line="-638"/>
+        <location filename="../APP/Controller/DAAppTableActionHandler.cpp" line="-218"/>
+        <location filename="../APP/Controller/DAAppWorkflowActionHandler.cpp" line="-238"/>
+        <location filename="../APP/DAAppController.cpp" line="+140"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>
@@ -15700,11 +17667,31 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     <name>DAAppRibbonArea</name>
     <message>
         <location line="+11"/>
+        <location filename="../APP/Controller/DAAppControllerAgent.cpp" line="+11"/>
+        <location filename="../APP/Controller/DAAppControllerConnections.cpp" line="+11"/>
+        <location filename="../APP/Controller/DAAppControllerCore.cpp" line="+11"/>
+        <location filename="../APP/Controller/DAAppControllerPage.cpp" line="+11"/>
+        <location filename="../APP/Controller/DAAppControllerProject.cpp" line="+11"/>
+        <location filename="../APP/Controller/DAAppControllerView.cpp" line="+11"/>
+        <location filename="../APP/Controller/DAAppDataActionHandler.cpp" line="+11"/>
+        <location filename="../APP/Controller/DAAppTableActionHandler.cpp" line="+11"/>
+        <location filename="../APP/Controller/DAAppWorkflowActionHandler.cpp" line="+11"/>
+        <location filename="../APP/DAAppController.cpp" line="+11"/>
         <source>Warning</source>
         <translation>warning</translation>
     </message>
     <message>
         <location line="+1"/>
+        <location filename="../APP/Controller/DAAppControllerAgent.cpp" line="+1"/>
+        <location filename="../APP/Controller/DAAppControllerConnections.cpp" line="+1"/>
+        <location filename="../APP/Controller/DAAppControllerCore.cpp" line="+1"/>
+        <location filename="../APP/Controller/DAAppControllerPage.cpp" line="+1"/>
+        <location filename="../APP/Controller/DAAppControllerProject.cpp" line="+1"/>
+        <location filename="../APP/Controller/DAAppControllerView.cpp" line="+1"/>
+        <location filename="../APP/Controller/DAAppDataActionHandler.cpp" line="+1"/>
+        <location filename="../APP/Controller/DAAppTableActionHandler.cpp" line="+1"/>
+        <location filename="../APP/Controller/DAAppWorkflowActionHandler.cpp" line="+1"/>
+        <location filename="../APP/DAAppController.cpp" line="+1"/>
         <source>The current function is not implemented, only the UI is reserved, please pay attention: https://gitee.com/czyt1988/data-work-flow</source>
         <translation>The current function is not implemented, only the UI is reserved, please pay attention: https://gitee.com/czyt1988/data-work-flow</translation>
     </message>
@@ -15733,7 +17720,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DAChart3DCommonItemsSettingWidget</name>
     <message>
-        <location filename="../DAGui/Chart3DSetting/DAChart3DCommonItemsSettingWidget.ui" line="+14"/>
+        <location filename="../DAGui/Chart/Setting3D/DAChart3DCommonItemsSettingWidget.ui" line="+14"/>
         <source>3D Common Item Setting</source>
         <translation>3D Common Item Setting</translation>
     </message>
@@ -15741,7 +17728,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DAChart3DSettingWidget</name>
     <message>
-        <location filename="../DAGui/Chart3DSetting/DAChart3DSettingWidget.ui" line="+14"/>
+        <location filename="../DAGui/Chart/Setting3D/DAChart3DSettingWidget.ui" line="+14"/>
         <source>3D Chart Setting</source>
         <translation>3D Chart Setting</translation>
     </message>
@@ -15749,7 +17736,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DAChartAdd3DBarWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAdd3DBarWidget.ui" line="+14"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAdd3DBarWidget.ui" line="+14"/>
         <source>Add 3D Bar</source>
         <translation>Add 3D Bar</translation>
     </message>
@@ -15787,7 +17774,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DAChartAdd3DLineWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAdd3DLineWidget.ui" line="+14"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAdd3DLineWidget.ui" line="+14"/>
         <source>Add 3D Line</source>
         <translation>Add 3D Line</translation>
     </message>
@@ -15815,7 +17802,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DAChartAdd3DSurfaceWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAdd3DSurfaceWidget.ui" line="+14"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAdd3DSurfaceWidget.ui" line="+14"/>
         <source>Add 3D Surface</source>
         <translation>Add 3D Surface</translation>
     </message>
@@ -15863,7 +17850,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DAChartAddBoxChartWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddBoxChartWidget.ui" line="+14"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddBoxChartWidget.ui" line="+14"/>
         <source>Add Box Chart</source>
         <translation>Add Box Chart</translation>
     </message>
@@ -15886,7 +17873,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DAChartAddContourWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddContourWidget.ui" line="+14"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddContourWidget.ui" line="+14"/>
         <source>Add Contour Map</source>
         <translation>Add Contour Map</translation>
     </message>
@@ -15914,7 +17901,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DAChartAddHistogramWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddHistogramWidget.ui" line="+14"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddHistogramWidget.ui" line="+14"/>
         <source>Add Histogram</source>
         <translation>Add Histogram</translation>
     </message>
@@ -15952,7 +17939,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DAChartAddMultiBarWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddMultiBarWidget.ui" line="+14"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddMultiBarWidget.ui" line="+14"/>
         <source>Add Multi Bar Chart</source>
         <translation>Add Multi Bar Chart</translation>
     </message>
@@ -15975,7 +17962,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DAChartAddOHLCSeriesWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddOHLCSeriesWidget.ui" line="+14"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddOHLCSeriesWidget.ui" line="+14"/>
         <source>Add XY Series</source>
         <translation>Add XY Series</translation>
     </message>
@@ -16008,7 +17995,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DAChartAddSpectrogramWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddSpectrogramWidget.ui" line="+14"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddSpectrogramWidget.ui" line="+14"/>
         <source>Add Curve</source>
         <translation>Add Curve</translation>
     </message>
@@ -16031,7 +18018,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DAChartAddStatsBarplotWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddStatsBarplotWidget.ui" line="+14"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddStatsBarplotWidget.ui" line="+14"/>
         <source>Barplot Settings</source>
         <translation>Barplot Settings</translation>
     </message>
@@ -16159,7 +18146,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DAChartAddStatsBoxplotWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddStatsBoxplotWidget.ui" line="+14"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddStatsBoxplotWidget.ui" line="+14"/>
         <source>Stats Boxplot Settings</source>
         <translation>Stats Boxplot Settings</translation>
     </message>
@@ -16202,7 +18189,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DAChartAddStatsEcdfplotWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddStatsEcdfplotWidget.ui" line="+14"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddStatsEcdfplotWidget.ui" line="+14"/>
         <source>ECDF Plot Settings</source>
         <translation>ECDF Plot Settings</translation>
     </message>
@@ -16260,7 +18247,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DAChartAddStatsHeatmapWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddStatsHeatmapWidget.ui" line="+14"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddStatsHeatmapWidget.ui" line="+14"/>
         <source>Stats Heatmap Settings</source>
         <translation>Stats Heatmap Settings</translation>
     </message>
@@ -16423,7 +18410,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DAChartAddStatsHistplotWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddStatsHistplotWidget.ui" line="+14"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddStatsHistplotWidget.ui" line="+14"/>
         <source>Stats Histplot Settings</source>
         <translation>Stats Histplot Settings</translation>
     </message>
@@ -16531,7 +18518,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DAChartAddStatsKdeplot1dWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddStatsKdeplot1dWidget.ui" line="+14"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddStatsKdeplot1dWidget.ui" line="+14"/>
         <source>Stats KDE 1D Settings</source>
         <translation>Stats KDE 1D Settings</translation>
     </message>
@@ -16634,7 +18621,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DAChartAddStatsKdeplot2dWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddStatsKdeplot2dWidget.ui" line="+14"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddStatsKdeplot2dWidget.ui" line="+14"/>
         <source>Stats KDE 2D Settings</source>
         <translation>Stats KDE 2D Settings</translation>
     </message>
@@ -16717,7 +18704,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DAChartAddStatsRegplotWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddStatsRegplotWidget.ui" line="+14"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddStatsRegplotWidget.ui" line="+14"/>
         <source>Regplot Settings</source>
         <translation>Regplot Settings</translation>
     </message>
@@ -16810,7 +18797,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DAChartAddStatsScatterplotWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddStatsScatterplotWidget.ui" line="+14"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddStatsScatterplotWidget.ui" line="+14"/>
         <source>Stats Scatterplot Settings</source>
         <translation>Stats Scatterplot Settings</translation>
     </message>
@@ -16893,7 +18880,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DAChartAddVectorFieldWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddVectorFieldWidget.ui" line="+14"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddVectorFieldWidget.ui" line="+14"/>
         <source>Add Vector Field</source>
         <translation>Add Vector Field</translation>
     </message>
@@ -16926,7 +18913,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DAChartAddXYESeriesWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddXYESeriesWidget.ui" line="+14"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddXYESeriesWidget.ui" line="+14"/>
         <source>Add XY Series</source>
         <translation>Add XY Series</translation>
     </message>
@@ -16949,7 +18936,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DAChartAddXYSeriesWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddXYSeriesWidget.ui" line="+14"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddXYSeriesWidget.ui" line="+14"/>
         <source>Add XY Series</source>
         <translation>Add XY Series</translation>
     </message>
@@ -16982,7 +18969,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DAChartAddtGridRasterDataWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddtGridRasterDataWidget.ui" line="+14"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddtGridRasterDataWidget.ui" line="+14"/>
         <source>Add XY Series</source>
         <translation>Add XY Series</translation>
     </message>
@@ -17005,7 +18992,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DAChartCommonItemsSettingWidget</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartCommonItemsSettingWidget.ui" line="+14"/>
+        <location filename="../DAGui/Chart/Setting/DAChartCommonItemsSettingWidget.ui" line="+14"/>
         <source>Common Item Setting</source>
         <translation>Common Item Setting</translation>
     </message>
@@ -17021,7 +19008,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DAChartQuickPlot</name>
     <message>
-        <location filename="../DAGui/TableChart/DAChartQuickPlot.cpp" line="+149"/>
+        <location filename="../DAGui/Table/Chart/DAChartQuickPlot.cpp" line="+162"/>
         <source>mean</source>
         <translation>mean</translation>
     </message>
@@ -17038,12 +19025,12 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     <message>
         <location line="+2"/>
         <location line="+152"/>
-        <location line="+185"/>
+        <location line="+194"/>
         <source>count</source>
         <translation>count</translation>
     </message>
     <message>
-        <location line="-335"/>
+        <location line="-344"/>
         <source>std</source>
         <translation>std</translation>
     </message>
@@ -17071,12 +19058,15 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <location line="+6"/>
         <location line="+63"/>
         <location line="+33"/>
-        <location line="+92"/>
+        <location line="+101"/>
+        <location line="+115"/>
+        <location line="+169"/>
+        <location line="+48"/>
         <source>The selected columns cannot be plotted</source>
         <translation>The selected columns cannot be plotted</translation>
     </message>
     <message>
-        <location line="-180"/>
+        <location line="-521"/>
         <location line="+63"/>
         <source>No valid numeric data in the selected column</source>
         <translation>No valid numeric data in the selected column</translation>
@@ -17089,17 +19079,18 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     </message>
     <message>
         <location line="-7"/>
-        <location line="+143"/>
+        <location line="+152"/>
+        <location line="+158"/>
         <source>No valid numeric data in the selected columns</source>
         <translation>No valid numeric data in the selected columns</translation>
     </message>
     <message>
-        <location line="-94"/>
+        <location line="-261"/>
         <source>Failed to build the histogram</source>
         <translation>Failed to build the histogram</translation>
     </message>
     <message>
-        <location line="+93"/>
+        <location line="+102"/>
         <source>box plot</source>
         <translation>box plot</translation>
     </message>
@@ -17115,16 +19106,17 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     </message>
     <message>
         <location line="+1"/>
+        <location line="+331"/>
         <source>%1 by %2</source>
         <translation>%1 by %2</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="-328"/>
         <source>Failed to build the bar chart</source>
         <translation>Failed to build the bar chart</translation>
     </message>
     <message>
-        <location line="+24"/>
+        <location line="+384"/>
         <source>There is no chart to draw on</source>
         <translation>There is no chart to draw on</translation>
     </message>
@@ -17135,118 +19127,110 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     </message>
     <message>
         <location line="+4"/>
+        <location line="+89"/>
         <source>The chart specification is incomplete</source>
         <translation>The chart specification is incomplete</translation>
     </message>
     <message>
-        <location line="+63"/>
+        <location line="+90"/>
+        <location line="+88"/>
         <source>The chart area is not available</source>
         <translation>The chart area is not available</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="-81"/>
+        <location line="+97"/>
         <source>Failed to create a figure</source>
         <translation>Failed to create a figure</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="-92"/>
         <location line="+41"/>
+        <location line="+56"/>
         <source>quick plot</source>
         <translation>quick plot</translation>
     </message>
     <message>
-        <location line="-31"/>
+        <location line="-87"/>
         <source>Failed to create a chart</source>
         <translation>Failed to create a chart</translation>
     </message>
     <message>
         <location line="+26"/>
+        <location line="+54"/>
         <source>There is no current chart to append to</source>
         <translation>There is no current chart to append to</translation>
     </message>
-
     <message>
-        <location line="+103"/>
+        <location line="-570"/>
         <source>Failed to build the contour plot</source>
         <translation>Failed to build the contour plot</translation>
-        </message>
-
+    </message>
     <message>
         <location line="+41"/>
         <source>Failed to build the error bar chart</source>
         <translation>Failed to build the error bar chart</translation>
-        </message>
-
+    </message>
     <message>
         <location line="+42"/>
         <source>Failed to build the vector field chart</source>
         <translation>Failed to build the vector field chart</translation>
-        </message>
-
+    </message>
     <message>
         <location line="+54"/>
         <source>No valid data for the multi-bar chart</source>
         <translation>No valid data for the multi-bar chart</translation>
-        </message>
-
+    </message>
     <message>
         <location line="+93"/>
         <source>Failed to build the multi-bar chart</source>
         <translation>Failed to build the multi-bar chart</translation>
-        </message>
-
+    </message>
     <message>
         <location line="+30"/>
         <source>Not enough valid rows for the 3D chart</source>
         <translation>Not enough valid rows for the 3D chart</translation>
-        </message>
-
+    </message>
     <message>
-        <location line="-44"/>
+        <location line="+74"/>
         <source>The 3D chart must be drawn on a 3D chart widget</source>
         <translation>The 3D chart must be drawn on a 3D chart widget</translation>
-        </message>
-
+    </message>
     <message>
         <location line="+61"/>
         <source>Failed to build the 3D surface</source>
         <translation>Failed to build the 3D surface</translation>
-        </message>
-
+    </message>
     <message>
         <location line="+18"/>
         <source>Failed to build the 3D line chart</source>
         <translation>Failed to build the 3D line chart</translation>
-        </message>
-
+    </message>
     <message>
         <location line="+18"/>
         <source>There is no 3D chart to draw on</source>
         <translation>There is no 3D chart to draw on</translation>
-        </message>
-
+    </message>
     <message>
         <location line="+14"/>
         <source>%1 · %2 · %3</source>
         <translation>%1 · %2 · %3</translation>
-        </message>
-
+    </message>
     <message>
-        <location line="-9"/>
+        <location line="+116"/>
         <source>The chart type is not a 3D chart</source>
         <translation>The chart type is not a 3D chart</translation>
-        </message>
-
+    </message>
     <message>
         <location line="+34"/>
         <source>Failed to create a 3D chart</source>
         <translation>Failed to create a 3D chart</translation>
-        </message>
+    </message>
 </context>
 <context>
     <name>DAChartSeriesPickerWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartSeriesPickerWidget.ui" line="+14"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartSeriesPickerWidget.ui" line="+14"/>
         <source>Select Series</source>
         <translation>Select Series</translation>
     </message>
@@ -17274,7 +19258,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DAChartSeriesSelectWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartSeriesSelectWidget.ui" line="+14"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartSeriesSelectWidget.ui" line="+14"/>
         <source>Series Select</source>
         <translation>Series Select</translation>
     </message>
@@ -17300,7 +19284,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DAChartSymbolEditWidget</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartSymbolEditWidget.ui" line="+26"/>
+        <location filename="../DAGui/Chart/Setting/DAChartSymbolEditWidget.ui" line="+26"/>
         <source>Chart Symbol Edit</source>
         <translation>Chart Symbol Edit</translation>
     </message>
@@ -17328,7 +19312,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DADataManageWidget</name>
     <message>
-        <location filename="../DAGui/DADataManageWidget.ui" line="+14"/>
+        <location filename="../DAGui/DataManager/DADataManageWidget.ui" line="+14"/>
         <source>Data Manage</source>
         <translation>Data Manage</translation>
     </message>
@@ -17336,7 +19320,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DADataManagerTreeWidget</name>
     <message>
-        <location filename="../DAGui/DADataManagerTreeWidget.ui" line="+14"/>
+        <location filename="../DAGui/DataManager/DADataManagerTreeWidget.ui" line="+14"/>
         <source>Form</source>
         <translation>Form</translation>
     </message>
@@ -17349,7 +19333,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DADataOperateOfDataFrameWidget</name>
     <message>
-        <location filename="../DAGui/DADataOperateOfDataFrameWidget.ui" line="+14"/>
+        <location filename="../DAGui/Table/DADataOperateOfDataFrameWidget.ui" line="+14"/>
         <source>DataFrame Operate</source>
         <translation>DataFrame Operate</translation>
     </message>
@@ -17357,12 +19341,12 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DADialogChartGuide</name>
     <message>
-        <location filename="../DAGui/Dialog/DADialogChartGuide.ui" line="+14"/>
+        <location filename="../DAGui/Chart/DADialogChartGuide.ui" line="+14"/>
         <source>Chart Guide</source>
         <translation>Chart Guide</translation>
     </message>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddItemWidgetFactory.cpp" line="+114"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddItemWidgetFactory.cpp" line="+114"/>
         <source>curve</source>
         <translation>curve</translation>
     </message>
@@ -17430,7 +19414,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DADialogDataframeColumnCastToDatetime</name>
     <message>
-        <location filename="../DAGui/Dialog/DADialogDataframeColumnCastToDatetime.ui" line="+14"/>
+        <location filename="../DAGui/Table/Dialogs/DADialogDataframeColumnCastToDatetime.ui" line="+14"/>
         <source>Cast To Datetime</source>
         <translation>Cast To Datetime</translation>
     </message>
@@ -17615,7 +19599,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DADialogDataframeColumnCastToNumeric</name>
     <message>
-        <location filename="../DAGui/Dialog/DADialogDataframeColumnCastToNumeric.ui" line="+14"/>
+        <location filename="../DAGui/Table/Dialogs/DADialogDataframeColumnCastToNumeric.ui" line="+14"/>
         <source>Cast To Numeric</source>
         <translation>Cast To Numeric</translation>
     </message>
@@ -17699,7 +19683,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DADialogFindReplace</name>
     <message>
-        <location filename="../DAGui/Dialog/DADialogFindReplace.ui" line="+14"/>
+        <location filename="../DAGui/Table/Dialogs/DADialogFindReplace.ui" line="+14"/>
         <source>Find and Replace</source>
         <translation>Find and Replace</translation>
     </message>
@@ -17762,7 +19746,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DADialogInsertNewColumn</name>
     <message>
-        <location filename="../DAGui/Dialog/DADialogInsertNewColumn.ui" line="+14"/>
+        <location filename="../DAGui/Table/Dialogs/DADialogInsertNewColumn.ui" line="+14"/>
         <source>Insert New Column</source>
         <translation>Insert New Column</translation>
     </message>
@@ -17830,12 +19814,12 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DADialogStatsChartGuide</name>
     <message>
-        <location filename="../DAGui/Dialog/DADialogStatsChartGuide.ui" line="+14"/>
+        <location filename="../DAGui/Chart/DADialogStatsChartGuide.ui" line="+14"/>
         <source>Statistics Chart Guide</source>
         <translation>Statistics Chart Guide</translation>
     </message>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddItemWidgetFactory.cpp" line="+8"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddItemWidgetFactory.cpp" line="+18"/>
         <source>Histplot</source>
         <translation>Histplot</translation>
     </message>
@@ -17921,7 +19905,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DAFigureWidget</name>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="-2228"/>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="-2648"/>
         <source>Figure</source>
         <translation>Figure</translation>
     </message>
@@ -17955,7 +19939,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DAGraphicsPixmapItemSettingWidget</name>
     <message>
-        <location filename="../DAGui/DAGraphicsPixmapItemSettingWidget.ui" line="+14"/>
+        <location filename="../DAGui/Workflow/NodeSetting/DAGraphicsPixmapItemSettingWidget.ui" line="+14"/>
         <source>Pixmap Item Setting</source>
         <translation>Pixmap Item Setting</translation>
     </message>
@@ -17968,7 +19952,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DAMessageLogViewWidget</name>
     <message>
-        <location filename="../DAGui/DAMessageLogViewWidget.ui" line="+17"/>
+        <location filename="../DAGui/Common/DAMessageLogViewWidget.ui" line="+17"/>
         <source>Message View</source>
         <translation>Message View</translation>
     </message>
@@ -17982,7 +19966,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DANodeItemSettingWidget</name>
     <message>
-        <location filename="../DAGui/DANodeItemSettingWidget.ui" line="+14"/>
+        <location filename="../DAGui/Workflow/NodeSetting/DANodeItemSettingWidget.ui" line="+14"/>
         <source>Node Item Setting</source>
         <translation>Node Item Setting</translation>
     </message>
@@ -18065,7 +20049,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DANodeLinkItemSettingWidget</name>
     <message>
-        <location filename="../DAGui/DANodeLinkItemSettingWidget.ui" line="+14"/>
+        <location filename="../DAGui/Workflow/NodeSetting/DANodeLinkItemSettingWidget.ui" line="+14"/>
         <source>Node Link Item Setting</source>
         <translation>Node Link Item Setting</translation>
     </message>
@@ -18098,7 +20082,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DANodeSettingWidget</name>
     <message>
-        <location filename="../DAGui/DANodeSettingWidget.ui" line="+14"/>
+        <location filename="../DAGui/Workflow/NodeSetting/DANodeSettingWidget.ui" line="+14"/>
         <source>Node Setting</source>
         <translation>Node Setting</translation>
     </message>
@@ -18211,7 +20195,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DAPyWorkFlowEditWidget</name>
     <message>
-        <location filename="../DAGui/DAPyWorkFlowEditWidget.ui" line="+20"/>
+        <location filename="../DAGui/Workflow/DAPyWorkFlowEditWidget.ui" line="+20"/>
         <source>Workflow Edit</source>
         <translation>Workflow Edit</translation>
     </message>
@@ -18219,7 +20203,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DAPyWorkFlowNodeItemSettingWidget</name>
     <message>
-        <location filename="../DAGui/DAPyWorkFlowNodeItemSettingWidget.ui" line="+14"/>
+        <location filename="../DAGui/Workflow/NodeSetting/DAPyWorkFlowNodeItemSettingWidget.ui" line="+14"/>
         <source>Node Setting</source>
         <translation>Node Setting</translation>
     </message>
@@ -18247,7 +20231,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DAPyWorkFlowNodeListWidget</name>
     <message>
-        <location filename="../DAGui/DAPyWorkFlowNodeListWidget.ui" line="+23"/>
+        <location filename="../DAGui/Workflow/DAPyWorkFlowNodeListWidget.ui" line="+23"/>
         <source>Node List</source>
         <translation>Node List</translation>
     </message>
@@ -18293,7 +20277,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DASettingContainerWidget</name>
     <message>
-        <location filename="../DAGui/DASettingContainerWidget.ui" line="+20"/>
+        <location filename="../DAGui/Common/Settings/DASettingContainerWidget.ui" line="+20"/>
         <source>Setting</source>
         <translation>Setting</translation>
     </message>
@@ -18301,7 +20285,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DASettingDialog</name>
     <message>
-        <location filename="../DAGui/DASettingDialog.ui" line="+14"/>
+        <location filename="../DAGui/Common/Settings/DASettingDialog.ui" line="+14"/>
         <source>Setting</source>
         <translation>Setting</translation>
     </message>
@@ -18561,7 +20545,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DASettingWidget</name>
     <message>
-        <location filename="../DAGui/DASettingWidget.ui" line="+14"/>
+        <location filename="../DAGui/Common/Settings/DASettingWidget.ui" line="+14"/>
         <source>Setting</source>
         <translation>Setting</translation>
     </message>
@@ -18585,9 +20569,345 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     </message>
 </context>
 <context>
+    <name>DASignalFormSpecBuilder</name>
+    <message>
+        <location filename="../../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="+70"/>
+        <source>Remove DC</source>
+        <translation>Remove DC</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Detrend</source>
+        <translation>Detrend</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>None</source>
+        <translation>None</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Constant</source>
+        <translation>Constant</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Linear</source>
+        <translation>Linear</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Signal Preprocessing</source>
+        <translation>Signal Preprocessing</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Window</source>
+        <translation>Window</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Rectangular</source>
+        <translation>Rectangular</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Hann</source>
+        <translation>Hann</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Hamming</source>
+        <translation>Hamming</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Blackman</source>
+        <translation>Blackman</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Flat top</source>
+        <translation>Flat top</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Amplitude</source>
+        <translation>Amplitude</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Peak amplitude</source>
+        <translation>Peak amplitude</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>RMS</source>
+        <translation>RMS</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>dB reference</source>
+        <translation>dB reference</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Full scale (dBFS)</source>
+        <translation>Full scale (dBFS)</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Relative to 1.0</source>
+        <translation>Relative to 1.0</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Frequency resolution (Hz)</source>
+        <translation>Frequency resolution (Hz)</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <location line="+51"/>
+        <source>Zero padding points (advanced)</source>
+        <translation>Zero padding points (advanced)</translation>
+    </message>
+    <message>
+        <location line="-45"/>
+        <source>Spectrum</source>
+        <translation>Spectrum</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Averaging</source>
+        <translation>Averaging</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Mean</source>
+        <translation>Mean</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Median</source>
+        <translation>Median</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Overlap (%)</source>
+        <translation>Overlap (%)</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Power Spectrum</source>
+        <translation>Power Spectrum</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Window length (ms)</source>
+        <translation>Window length (ms)</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Hop overlap (%)</source>
+        <translation>Hop overlap (%)</translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>Short-Time Fourier Transform</source>
+        <translation>Short-Time Fourier Transform</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Mode</source>
+        <translation>Mode</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Simple</source>
+        <translation>Simple</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Advanced</source>
+        <translation>Advanced</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Top N</source>
+        <translation>Top N</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Relative threshold (dB)</source>
+        <translation>Relative threshold (dB)</translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>Prominence</source>
+        <translation>Prominence</translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Minimum spacing (Hz)</source>
+        <translation>Minimum spacing (Hz)</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Minimum height</source>
+        <translation>Minimum height</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Peak Search</source>
+        <translation>Peak Search</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Calibration factor</source>
+        <translation>Calibration factor</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Amplitude unit</source>
+        <translation>Amplitude unit</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Calibration</source>
+        <translation>Calibration</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Analysis Settings</source>
+        <translation>Analysis Settings</translation>
+    </message>
+    <message>
+        <location line="-169"/>
+        <source>dB (FS)</source>
+        <translation>dB (FS)</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>dB (re 1.0)</source>
+        <translation>dB (re 1.0)</translation>
+    </message>
+</context>
+<context>
+    <name>DASignalImporter</name>
+    <message>
+        <location filename="../../plugins/DASignalAnalysis/Signal/DASignalImporter.cpp" line="+122"/>
+        <location line="+409"/>
+        <source>FFmpeg is not available. Specify its path in Settings &gt; Signal Analysis.</source>
+        <translation>FFmpeg is not available. Specify its path in Settings &gt; Signal Analysis.</translation>
+    </message>
+    <message>
+        <location line="-396"/>
+        <source>FFmpeg failed to convert the file. Last output lines:
+%1</source>
+        <translation>FFmpeg failed to convert the file. Last output lines:
+%1</translation>
+    </message>
+    <message>
+        <location line="+35"/>
+        <source>Cannot read audio file: %1</source>
+        <translation>Cannot read audio file: %1</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Audio file contains no samples.</source>
+        <translation>Audio file contains no samples.</translation>
+    </message>
+    <message>
+        <location line="+298"/>
+        <location line="+45"/>
+        <source>File does not exist: %1</source>
+        <translation>File does not exist: %1</translation>
+    </message>
+    <message>
+        <location line="-29"/>
+        <source>The converted file could not be read: %1</source>
+        <translation>The converted file could not be read: %1</translation>
+    </message>
+    <message>
+        <location line="+49"/>
+        <source>The file does not contain an audio track.</source>
+        <translation>The file does not contain an audio track.</translation>
+    </message>
+    <message>
+        <location line="+34"/>
+        <source>The prepared audio file does not exist.</source>
+        <translation>The prepared audio file does not exist.</translation>
+    </message>
+    <message>
+        <location line="+22"/>
+        <source>The source data is not a dataframe.</source>
+        <translation>The source data is not a dataframe.</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Please select at least one value column.</source>
+        <translation>Please select at least one value column.</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Sample rate must be a positive number.</source>
+        <translation>Sample rate must be a positive number.</translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>The dataframe is empty.</source>
+        <translation>The dataframe is empty.</translation>
+    </message>
+    <message>
+        <location line="+51"/>
+        <source>No time column selected.</source>
+        <translation>No time column selected.</translation>
+    </message>
+    <message>
+        <location line="-24"/>
+        <source>Failed to create a signal from the dataframe.</source>
+        <translation>Failed to create a signal from the dataframe.</translation>
+    </message>
+    <message>
+        <location line="+49"/>
+        <source>Failed to infer the sample rate from the time column.</source>
+        <translation>Failed to infer the sample rate from the time column.</translation>
+    </message>
+    <message>
+        <location line="-252"/>
+        <source>Failed to probe the audio file.</source>
+        <translation>Failed to probe the audio file.</translation>
+    </message>
+    <message>
+        <location line="+102"/>
+        <source>Failed to probe the video file.</source>
+        <translation>Failed to probe the video file.</translation>
+    </message>
+    <message>
+        <location line="-361"/>
+        <source>Failed to read the audio file.</source>
+        <translation>Failed to read the audio file.</translation>
+    </message>
+    <message>
+        <location line="-43"/>
+        <source>Failed to run the FFmpeg conversion.</source>
+        <translation>Failed to run the FFmpeg conversion.</translation>
+    </message>
+    <message>
+        <location line="+267"/>
+        <source>No file selected.</source>
+        <translation>No file selected.</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>This format is decoded through FFmpeg; the sample rate is shown after import.</source>
+        <translation>This format is decoded through FFmpeg; the sample rate is shown after import.</translation>
+    </message>
+</context>
+<context>
     <name>DATableExporter</name>
     <message>
-        <location filename="../DAGui/DATableExporter.cpp" line="+293"/>
+        <location filename="../DAGui/Table/DATableExporter.cpp" line="+334"/>
         <source>Failed to read data block from row %1</source>
         <translation>Failed to read data block from row %1</translation>
     </message>
@@ -18633,7 +20953,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DATxtFileImportDialog</name>
     <message>
-        <location filename="../DAGui/Dialog/DATxtFileImportDialog.ui" line="+14"/>
+        <location filename="../DAGui/Table/Dialogs/DATxtFileImportDialog.ui" line="+14"/>
         <source>Txt Import</source>
         <translation>Txt Import</translation>
     </message>
@@ -18765,31 +21085,18 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DataAnalysisUI</name>
     <message>
-        <location filename="../../plugins/DataAnalysis/DataAnalysisUI.cpp" line="+184"/>
-        <location line="+84"/>
+        <location filename="../../plugins/DataAnalysis/DataAnalysisUI.cpp" line="+299"/>
         <source>Missing Values</source>
         <translation>Missing Values</translation>
     </message>
     <message>
-        <location line="-79"/>
-        <location line="+81"/>
-        <source>Outliers &amp; Duplicates</source>
-        <translation>Outliers &amp; Duplicates</translation>
-    </message>
-    <message>
-        <location line="-48"/>
-        <location line="+78"/>
-        <source>Data Filtering</source>
-        <translation>Data Filtering</translation>
-    </message>
-    <message>
-        <location line="-65"/>
-        <location line="+73"/>
+        <location line="-35"/>
+        <location line="+74"/>
         <source>Statistics</source>
         <translation>Statistics</translation>
     </message>
     <message>
-        <location line="-54"/>
+        <location line="-55"/>
         <source>Export Individual Data</source>
         <translation>Export Individual Data</translation>
     </message>
@@ -18814,7 +21121,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation>Export all data from the data management area to an Excel file, with each dataset as a separate sheet.</translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location line="+13"/>
         <source>Drop None</source>
         <translation>Drop None</translation>
     </message>
@@ -18834,12 +21141,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation>Drop duplicate data</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Missing Values</source>
-        <translation>Missing Values</translation>
-    </message>
-    <message>
-        <location line="+1"/>
+        <location line="-6"/>
         <source>Missing value handling: drop, fill or interpolate</source>
         <translation>Missing value handling: drop, fill or interpolate</translation>
     </message>
@@ -18854,7 +21156,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation>Outlier handling: IQR, Z-Score or skewed data transform</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+8"/>
         <source>Fill rows which contain missing values by interpolation</source>
         <translation>Fill rows which contain missing values by interpolation</translation>
     </message>
@@ -18869,7 +21171,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation>Transform Skewed</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+6"/>
         <source>Query Data</source>
         <translation>Query Data</translation>
     </message>
@@ -18879,7 +21181,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation>Data Description</translation>
     </message>
     <message>
-        <location line="-33"/>
+        <location line="-32"/>
         <source>Fill None</source>
         <translation>Fill None</translation>
     </message>
@@ -18914,7 +21216,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation>Transform skewed numerical data to improve distribution</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+6"/>
         <source>Filter data outside of the given criteria</source>
         <translation>Filter data outside of the given criteria</translation>
     </message>
@@ -18934,6 +21236,8 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation>Create Pivot Table</translation>
     </message>
     <message>
+        <location line="-143"/>
+        <location line="+99"/>
         <source>Missing &amp; Outliers</source>
         <translation>Missing &amp; Outliers</translation>
     </message>
@@ -19445,7 +21749,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>Python home path is %1</translation>
     </message>
     <message>
-        <location filename="../DAGui/Commands/DACommandsDataFrame.cpp" line="+24"/>
+        <location filename="../DAGui/Table/Ops/DACommandsDataFrame.cpp" line="+24"/>
         <source>set dataframe data</source>
         <translation>set dataframe data</translation>
     </message>
@@ -19496,12 +21800,12 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>set column to index</translation>
     </message>
     <message>
-        <location filename="../DAGui/Commands/DACommandsTableStyle.cpp" line="+16"/>
+        <location filename="../DAGui/Table/Commands/DACommandsTableStyle.cpp" line="+16"/>
         <source>change table style</source>
         <translation>change table style</translation>
     </message>
     <message>
-        <location filename="../DAGui/DAXmlHelper.cpp" line="+211"/>
+        <location filename="../DAGui/Archive/DAXmlHelper.cpp" line="+856"/>
         <location line="+281"/>
         <source>error occurred while loading nodes</source>
         <translation>error occurred while loading nodes</translation>
@@ -19667,12 +21971,12 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>unknown exception: get null figure widget at %1</translation>
     </message>
     <message>
-        <location line="+998"/>
+        <location line="+1242"/>
         <source>The attribute %1=%2 under the tag %3 cannot be converted to double</source>
         <translation>The attribute %1=%2 under the tag %3 cannot be converted to double</translation>
     </message>
     <message>
-        <location filename="../DAGui/DAZipArchive.cpp" line="+121"/>
+        <location filename="../DAGui/Archive/DAZipArchive.cpp" line="+121"/>
         <source>No error</source>
         <translation>No error</translation>
     </message>
@@ -19727,12 +22031,12 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>Failed to open archive</translation>
     </message>
     <message>
-        <location filename="../DAGui/DAZipArchiveTask_Xml.cpp" line="+57"/>
+        <location filename="../DAGui/Archive/DAZipArchiveTask_Xml.cpp" line="+57"/>
         <source>cannot create archive at &quot;%1&quot;, because %2</source>
         <translation>cannot create archive at &quot;%1&quot;, because %2</translation>
     </message>
     <message>
-        <location filename="../DAGui/Models/DADataManagerTreeModel.cpp" line="-446"/>
+        <location filename="../DAGui/DataManager/DADataManagerTreeModel.cpp" line="-446"/>
         <source>%1.%2,size:%3</source>
         <translation>%1.%2,size:%3</translation>
     </message>
@@ -20227,7 +22531,12 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>set figure widget size</translation>
     </message>
     <message>
-        <location line="+45"/>
+        <location line="+51"/>
+        <source>resize grid tracks</source>
+        <translation>resize grid tracks</translation>
+    </message>
+    <message>
+        <location line="+52"/>
         <source>add item in chart</source>
         <translation>add item in chart</translation>
     </message>
@@ -20372,17 +22681,12 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>cannot import DAWorkbench.DAStatistics</translation>
     </message>
     <message>
-        <location filename="../DAGui/Stats/DAStatsPlotCoordinator.cpp" line="+84"/>
+        <location filename="../DAGui/Chart/DAStatsPlotCoordinator.cpp" line="+81"/>
         <source>The selected data source is empty</source>
         <translation>The selected data source is empty</translation>
     </message>
     <message>
-        <location line="+26"/>
-        <source>Unknown plot type: %1</source>
-        <translation>Unknown plot type: %1</translation>
-    </message>
-    <message>
-        <location line="+7"/>
+        <location line="+11"/>
         <source>Python error in statistical plot: %1</source>
         <translation>Python error in statistical plot: %1</translation>
     </message>
@@ -20427,7 +22731,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>3D Chart</translation>
     </message>
     <message>
-        <location filename="../DAGui/Commands/DACommandsTableColumnFormat.cpp" line="+16"/>
+        <location filename="../DAGui/Table/Commands/DACommandsTableColumnFormat.cpp" line="+16"/>
         <source>change table display format</source>
         <translation>change table display format</translation>
     </message>
@@ -20512,7 +22816,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>Error</translation>
     </message>
     <message>
-        <location filename="../DAGui/Commands/DACommandsDataFrame.cpp" line="+35"/>
+        <location filename="../DAGui/Table/Ops/DACommandsDataFrame.cpp" line="+35"/>
         <source>Sort rows</source>
         <translation>Sort rows</translation>
     </message>
@@ -20522,7 +22826,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>Replace all</translation>
     </message>
     <message>
-        <location filename="../DAGui/Commands/DACommandsConditionalFormat.cpp" line="+24"/>
+        <location filename="../DAGui/Table/Commands/DACommandsConditionalFormat.cpp" line="+24"/>
         <source>Add Conditional Format Rule</source>
         <translation>Add Conditional Format Rule</translation>
     </message>
@@ -20547,7 +22851,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>Clear Conditional Format Rules of Column</translation>
     </message>
     <message>
-        <location filename="../DAGui/Commands/DACommandsDataFrame.cpp" line="-266"/>
+        <location filename="../DAGui/Table/Ops/DACommandsDataFrame.cpp" line="-266"/>
         <source>compute column &quot;%1&quot;</source>
         <translation>compute column &quot;%1&quot;</translation>
     </message>
@@ -20567,12 +22871,12 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>merge %1 columns into &quot;%2&quot;</translation>
     </message>
     <message>
-        <location filename="../DAGui/Commands/DACommandsTableValidation.cpp" line="+21"/>
+        <location filename="../DAGui/Table/Commands/DACommandsTableValidation.cpp" line="+21"/>
         <source>edit validation rules</source>
         <translation>edit validation rules</translation>
     </message>
     <message>
-        <location filename="../DAGui/Commands/DACommandsTableStyle.cpp" line="+117"/>
+        <location filename="../DAGui/Table/Commands/DACommandsTableStyle.cpp" line="+117"/>
         <source>add note</source>
         <translation>add note</translation>
     </message>
@@ -20592,7 +22896,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>clear all notes</translation>
     </message>
     <message>
-        <location filename="../DAGui/Commands/DACommandsForWorkFlow.cpp" line="+28"/>
+        <location filename="../DAGui/Workflow/DACommandsForWorkFlow.cpp" line="+28"/>
         <source>Set workflow background image</source>
         <translation>Set workflow background image</translation>
     </message>
@@ -20650,7 +22954,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>edit text document</translation>
     </message>
     <message>
-        <location filename="../DAGui/Commands/DACommandsDataFrame.cpp" line="-560"/>
+        <location filename="../DAGui/Table/Ops/DACommandsDataFrame.cpp" line="-560"/>
         <location line="+10"/>
         <source>rename columns</source>
         <translation>rename columns</translation>
@@ -20661,7 +22965,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>clear cells</translation>
     </message>
     <message>
-        <location filename="../DAGui/Commands/DACommandsTableColumnView.cpp" line="+48"/>
+        <location filename="../DAGui/Table/Commands/DACommandsTableColumnView.cpp" line="+48"/>
         <source>Reorder columns</source>
         <translation>Reorder columns</translation>
     </message>
@@ -20837,6 +23141,45 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <source>create figure</source>
         <translation>create figure</translation>
     </message>
+    <message>
+        <location filename="../DAGui/Chart/DAStatsPlotRequest.cpp" line="+28"/>
+        <source>No figure/chart available for statistical plot</source>
+        <translation>No figure/chart available for statistical plot</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Cannot resolve the data source for statistical plot; please ensure a dataframe is selected in the settings window</source>
+        <translation>Cannot resolve the data source for statistical plot; please ensure a dataframe is selected in the settings window</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/Chart/DAStatsPlotRequests.cpp" line="+30"/>
+        <location line="+48"/>
+        <location line="+333"/>
+        <source>Please select a data column before plotting</source>
+        <translation>Please select a data column before plotting</translation>
+    </message>
+    <message>
+        <location line="-288"/>
+        <location line="+99"/>
+        <location line="+55"/>
+        <location line="+43"/>
+        <location line="+44"/>
+        <source>Please select an X-axis data column before plotting</source>
+        <translation>Please select an X-axis data column before plotting</translation>
+    </message>
+    <message>
+        <location line="-238"/>
+        <location line="+99"/>
+        <location line="+55"/>
+        <location line="+87"/>
+        <source>Please select a Y-axis data column before plotting</source>
+        <translation>Please select a Y-axis data column before plotting</translation>
+    </message>
+    <message>
+        <location line="-195"/>
+        <source>Please select one or more data columns before plotting</source>
+        <translation>Please select one or more data columns before plotting</translation>
+    </message>
 </context>
 <context>
     <name>main</name>
@@ -20859,2623 +23202,6 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <location line="+9"/>
         <source>Disable the splash screen during startup, useful for debugging to avoid the splash window blocking the IDE</source>
         <translation>Disable the splash screen during startup, useful for debugging to avoid the splash window blocking the IDE</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DATableQuickPlotController</name>
-    <message>
-        <location filename="../DAGui/TableQuickPlot/DATableQuickPlotController.cpp" line="+96"/>
-        <source>The chart area is not available</source>
-        <translation>The chart area is not available</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>Failed to transfer to the chart area</source>
-        <translation>Failed to transfer to the chart area</translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>The chart has been transferred to the chart area</source>
-        <translation>The chart has been transferred to the chart area</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DATableNoteController</name>
-    <message>
-        <location filename="../DAGui/TableNote/DATableNoteController.cpp" line="+33"/>
-        <source>Please select a cell to annotate</source>
-        <translation>Please select a cell to annotate</translation>
-    </message>
-    <message>
-        <location line="+16"/>
-        <source>Please select a cell whose note is to be deleted</source>
-        <translation>Please select a cell whose note is to be deleted</translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>The selected cell has no note</source>
-        <translation>The selected cell has no note</translation>
-    </message>
-    <message>
-        <location line="+14"/>
-        <source>This table has no notes</source>
-        <translation>This table has no notes</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DATableValidationController</name>
-    <message>
-        <location filename="../DAGui/TableValidation/DATableValidationController.cpp" line="+0"/>
-        <source>Numeric range</source>
-        <translation>Numeric range</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableValidation/DATableValidationController.cpp" line="+1"/>
-        <source>Date range</source>
-        <translation>Date range</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableValidation/DATableValidationController.cpp" line="+1"/>
-        <source>Allowed values (enum)</source>
-        <translation>Allowed values (enum)</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableValidation/DATableValidationController.cpp" line="+1"/>
-        <source>Not empty</source>
-        <translation>Not empty</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableValidation/DATableValidationController.cpp" line="+1"/>
-        <source>Unique</source>
-        <translation>Unique</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableValidation/DATableValidationController.cpp" line="+1"/>
-        <source>Regex (full match)</source>
-        <translation>Regex (full match)</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableValidation/DATableValidationController.cpp" line="+1"/>
-        <source>%1 (occurrence %2)</source>
-        <translation>%1 (occurrence %2)</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableValidation/DATableValidationController.cpp" line="+1"/>
-        <source>Validation failed: %1</source>
-        <translation>Validation failed: %1</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableValidation/DATableValidationController.cpp" line="+1"/>
-        <source>No enabled validation rules yet — add rules first</source>
-        <translation>No enabled validation rules yet — add rules first</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableValidation/DATableValidationController.cpp" line="+1"/>
-        <source>Row %1: %2</source>
-        <translation>Row %1: %2</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableValidation/DATableValidationController.cpp" line="+1"/>
-        <source>Rename Column</source>
-        <translation>Rename Column</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableValidation/DATableValidationController.cpp" line="+1"/>
-        <source>%1 validation rule(s) reference the renamed column(s): %2. Their references will be updated automatically. Continue?</source>
-        <translation>%1 validation rule(s) reference the renamed column(s): %2. Their references will be updated automatically. Continue?</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DATableComputedColumnController</name>
-    <message>
-        <location filename="../DAGui/TableComputedColumn/DATableComputedColumnController.cpp" line="+0"/>
-        <source>The table is read-only and does not support computed columns</source>
-        <translation>The table is read-only and does not support computed columns</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableComputedColumn/DATableComputedColumnController.cpp" line="+1"/>
-        <source>The formula must not reference the target column itself</source>
-        <translation>The formula must not reference the target column itself</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableComputedColumn/DATableComputedColumnController.cpp" line="+1"/>
-        <source>Rename Column</source>
-        <translation>Rename Column</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableComputedColumn/DATableComputedColumnController.cpp" line="+1"/>
-        <source>%1 computed column(s) reference the renamed column(s): %2. Their references will be updated automatically. Continue?</source>
-        <translation>%1 computed column(s) reference the renamed column(s): %2. Their references will be updated automatically. Continue?</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableComputedColumn/DATableComputedColumnController.cpp" line="+1"/>
-        <source>Recompute All Computed Columns</source>
-        <translation>Recompute All Computed Columns</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableComputedColumn/DATableComputedColumnController.cpp" line="+1"/>
-        <source>Failed to evaluate the formula of computed column &quot;%1&quot;: %2</source>
-        <translation>Failed to evaluate the formula of computed column &quot;%1&quot;: %2</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableComputedColumn/DATableComputedColumnController.cpp" line="+1"/>
-        <source>Column &quot;%1&quot; has no computed formula</source>
-        <translation>Column &quot;%1&quot; has no computed formula</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DATableConditionalFormatController</name>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+0"/>
-        <source>Please select a column first</source>
-        <translation>Please select a column first</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>Clear Conditional Format Rules</source>
-        <translation>Clear Conditional Format Rules</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>The selected columns have no conditional format rules</source>
-        <translation>The selected columns have no conditional format rules</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>The table has no conditional format rules</source>
-        <translation>The table has no conditional format rules</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>Blue</source>
-        <translation>Blue</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>Green</source>
-        <translation>Green</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>Red</source>
-        <translation>Red</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>Yellow</source>
-        <translation>Yellow</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>Cyan</source>
-        <translation>Cyan</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>Purple</source>
-        <translation>Purple</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>Data Bars</source>
-        <translation>Data Bars</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>Gradient Fill</source>
-        <translation>Gradient Fill</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>%1 Gradient Fill</source>
-        <translation>%1 Gradient Fill</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>Solid Fill</source>
-        <translation>Solid Fill</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>%1 Solid Fill</source>
-        <translation>%1 Solid Fill</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>Other Rules...</source>
-        <translation>Other Rules...</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>Color Scales</source>
-        <translation>Color Scales</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>%1-Color Scale</source>
-        <translation>%1-Color Scale</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>Highlight Cells Rules</source>
-        <translation>Highlight Cells Rules</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>Greater Than...</source>
-        <translation>Greater Than...</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>Less Than...</source>
-        <translation>Less Than...</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>Between...</source>
-        <translation>Between...</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>Equal To...</source>
-        <translation>Equal To...</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>Text Contains...</source>
-        <translation>Text Contains...</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>A Date Occurring</source>
-        <translation>A Date Occurring</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>Yesterday</source>
-        <translation>Yesterday</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>Today</source>
-        <translation>Today</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>Tomorrow</source>
-        <translation>Tomorrow</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>In the Last 7 Days</source>
-        <translation>In the Last 7 Days</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>Last Week</source>
-        <translation>Last Week</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>This Week</source>
-        <translation>This Week</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>Next Week</source>
-        <translation>Next Week</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>Last Month</source>
-        <translation>Last Month</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>This Month</source>
-        <translation>This Month</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>Next Month</source>
-        <translation>Next Month</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>Duplicate Values...</source>
-        <translation>Duplicate Values...</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>Clear Rules</source>
-        <translation>Clear Rules</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>Clear Rules from Selected Columns</source>
-        <translation>Clear Rules from Selected Columns</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>Clear Rules from Entire Sheet</source>
-        <translation>Clear Rules from Entire Sheet</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>Custom Rules...</source>
-        <translation>Custom Rules...</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>Change Conditional Format Rules</source>
-        <translation>Change Conditional Format Rules</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DATableFindController</name>
-    <message>
-        <location filename="../DAGui/TableFind/DATableFindController.cpp" line="+0"/>
-        <source>This data source is read-only and cannot be modified.</source>
-        <translation>This data source is read-only and cannot be modified.</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableFind/DATableFindController.cpp" line="+1"/>
-        <source>No matches found</source>
-        <translation>No matches found</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableFind/DATableFindController.cpp" line="+1"/>
-        <source>Replace All</source>
-        <translation>Replace All</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableFind/DATableFindController.cpp" line="+1"/>
-        <source>Too many cells will be changed (%1). This operation cannot be undone. Continue?</source>
-        <translation>Too many cells will be changed (%1). This operation cannot be undone. Continue?</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DATableStyleController</name>
-    <message>
-        <location filename="../DAGui/TableStyle/DATableStyleController.cpp" line="+0"/>
-        <source>Please select a valid cell</source>
-        <translation>Please select a valid cell</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableStyle/DATableStyleController.cpp" line="+1"/>
-        <source>Please select a valid column</source>
-        <translation>Please select a valid column</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DATableSortController</name>
-    <message>
-        <location filename="../DAGui/TableSort/DATableSortController.cpp" line="+0"/>
-        <source>This data source is read-only and cannot be sorted.</source>
-        <translation>This data source is read-only and cannot be sorted.</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableSort/DATableSortController.cpp" line="+1"/>
-        <source>Cannot sort: the column contains values of incomparable mixed types.</source>
-        <translation>Cannot sort: the column contains values of incomparable mixed types.</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DATableViewStateController</name>
-    <message>
-        <location filename="../DAGui/TableViewState/DATableViewStateController.cpp" line="+0"/>
-        <source>Some column view settings were dropped because the table columns have changed.</source>
-        <translation>Some column view settings were dropped because the table columns have changed.</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DATableColumnViewController</name>
-    <message>
-        <location filename="../DAGui/TableColumnView/DATableColumnViewController.cpp" line="+0"/>
-        <source>Freeze Columns</source>
-        <translation>Freeze Columns</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableColumnView/DATableColumnViewController.cpp" line="+1"/>
-        <source>Freeze the first N columns (added to already frozen columns, 0 = no change):</source>
-        <translation>Freeze the first N columns (added to already frozen columns, 0 = no change):</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableColumnView/DATableColumnViewController.cpp" line="+1"/>
-        <source>Column names must be unique</source>
-        <translation>Column names must be unique</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableColumnView/DATableColumnViewController.cpp" line="+1"/>
-        <source>Manage Columns</source>
-        <translation>Manage Columns</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableColumnView/DATableColumnViewController.cpp" line="+1"/>
-        <source>Rename and update column view</source>
-        <translation>Rename and update column view</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DATableRowOps</name>
-    <message>
-        <location filename="../DAGui/TableOps/DATableRowOps.cpp" line="+0"/>
-        <source>Please select valid data cells</source>
-        <translation>Please select valid data cells</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableRowOps.cpp" line="+1"/>
-        <source>Row Operations</source>
-        <translation>Row Operations</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DATableCellOps</name>
-    <message>
-        <location filename="../DAGui/TableOps/DATableCellOps.cpp" line="+0"/>
-        <source>Please select a valid cell</source>
-        <translation>Please select a valid cell</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableCellOps.cpp" line="+1"/>
-        <source>Clipboard is empty</source>
-        <translation>Clipboard is empty</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableCellOps.cpp" line="+1"/>
-        <source>Please select a cell to paste into</source>
-        <translation>Please select a cell to paste into</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableCellOps.cpp" line="+1"/>
-        <source>Nothing to paste: the clipboard content exceeds the table boundary</source>
-        <translation>Nothing to paste: the clipboard content exceeds the table boundary</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableCellOps.cpp" line="+1"/>
-        <source>Paste partially dropped: %1 row(s) and %2 cell(s) outside the table were ignored</source>
-        <translation>Paste partially dropped: %1 row(s) and %2 cell(s) outside the table were ignored</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableCellOps.cpp" line="+1"/>
-        <source>Paste failed: the content does not match the column data type</source>
-        <translation>Paste failed: the content does not match the column data type</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableCellOps.cpp" line="+1"/>
-        <source>No cells selected to cut</source>
-        <translation>No cells selected to cut</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableCellOps.cpp" line="+1"/>
-        <source>Cell Operations</source>
-        <translation>Cell Operations</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DATableTypeOps</name>
-    <message>
-        <location filename="../DAGui/TableOps/DATableTypeOps.cpp" line="+0"/>
-        <source>Please select a valid column</source>
-        <translation>Please select a valid column</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableTypeOps.cpp" line="+1"/>
-        <source>Type Operations</source>
-        <translation>Type Operations</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DATableFillOps</name>
-    <message>
-        <location filename="../DAGui/TableOps/DATableFillOps.cpp" line="+0"/>
-        <source>Fill down</source>
-        <translation>Fill down</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableFillOps.cpp" line="+1"/>
-        <source>Fill up</source>
-        <translation>Fill up</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableFillOps.cpp" line="+1"/>
-        <source>Fill forward (ffill)</source>
-        <translation>Fill forward (ffill)</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableFillOps.cpp" line="+1"/>
-        <source>Fill backward (bfill)</source>
-        <translation>Fill backward (bfill)</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableFillOps.cpp" line="+1"/>
-        <source>Cannot fill a read-only data source</source>
-        <translation>Cannot fill a read-only data source</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableFillOps.cpp" line="+1"/>
-        <source>Please select cells to fill</source>
-        <translation>Please select cells to fill</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableFillOps.cpp" line="+1"/>
-        <source>Failed to generate the fill series</source>
-        <translation>Failed to generate the fill series</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableFillOps.cpp" line="+1"/>
-        <source>Fill series</source>
-        <translation>Fill series</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableFillOps.cpp" line="+1"/>
-        <source>Fill failed: the content does not match the column data type</source>
-        <translation>Fill failed: the content does not match the column data type</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableFillOps.cpp" line="+1"/>
-        <source>Fill Operations</source>
-        <translation>Fill Operations</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DATableResultOps</name>
-    <message>
-        <location filename="../DAGui/TableOps/DATableResultOps.cpp" line="+0"/>
-        <source>(no table metadata to clear)</source>
-        <translation>(no table metadata to clear)</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableResultOps.cpp" line="+1"/>
-        <source>Replace In Place</source>
-        <translation>Replace In Place</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableResultOps.cpp" line="+1"/>
-        <source>The table is very large (%1 cells). Keeping the old data for undo would double memory usage, so this in-place replacement will NOT be undoable. Continue?</source>
-        <translation>The table is very large (%1 cells). Keeping the old data for undo would double memory usage, so this in-place replacement will NOT be undoable. Continue?</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableResultOps.cpp" line="+1"/>
-        <source>Result Operations</source>
-        <translation>Result Operations</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableResultOps.cpp" line="+1"/>
-        <source>Replacing in place will clear the following table metadata:
-%1
-
-Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
-        <translation>Replacing in place will clear the following table metadata:
-%1
-
-Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DATableReshapeOps</name>
-    <message>
-        <location filename="../DAGui/TableOps/DATableReshapeOps.cpp" line="+0"/>
-        <source>%1_GroupBy</source>
-        <translation>%1_GroupBy</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableReshapeOps.cpp" line="+1"/>
-        <source>Group-by aggregation of %1</source>
-        <translation>Group-by aggregation of %1</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableReshapeOps.cpp" line="+1"/>
-        <source>Reshape failed: %1</source>
-        <translation>Reshape failed: %1</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableReshapeOps.cpp" line="+1"/>
-        <source>Melt table in place</source>
-        <translation>Melt table in place</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableReshapeOps.cpp" line="+1"/>
-        <source>Transpose table in place</source>
-        <translation>Transpose table in place</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableReshapeOps.cpp" line="+1"/>
-        <source>%1_Melted</source>
-        <translation>%1_Melted</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableReshapeOps.cpp" line="+1"/>
-        <source>Melt (wide to long) of %1</source>
-        <translation>Melt (wide to long) of %1</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableReshapeOps.cpp" line="+1"/>
-        <source>%1_Transposed</source>
-        <translation>%1_Transposed</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableReshapeOps.cpp" line="+1"/>
-        <source>Transpose of %1</source>
-        <translation>Transpose of %1</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableReshapeOps.cpp" line="+1"/>
-        <source>Reshape Operations</source>
-        <translation>Reshape Operations</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DATableColumnCombineOps</name>
-    <message>
-        <location filename="../DAGui/TableOps/DATableColumnCombineOps.cpp" line="+0"/>
-        <source>Split Column requires an editable table</source>
-        <translation>Split Column requires an editable table</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableColumnCombineOps.cpp" line="+1"/>
-        <source>Please select exactly one column to split</source>
-        <translation>Please select exactly one column to split</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableColumnCombineOps.cpp" line="+1"/>
-        <source>Failed to snapshot the source column</source>
-        <translation>Failed to snapshot the source column</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableColumnCombineOps.cpp" line="+1"/>
-        <source>Split column failed: %1</source>
-        <translation>Split column failed: %1</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableColumnCombineOps.cpp" line="+1"/>
-        <source>Merge Columns requires an editable table</source>
-        <translation>Merge Columns requires an editable table</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableColumnCombineOps.cpp" line="+1"/>
-        <source>Please select at least two columns to merge</source>
-        <translation>Please select at least two columns to merge</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableColumnCombineOps.cpp" line="+1"/>
-        <source>Failed to snapshot the source columns</source>
-        <translation>Failed to snapshot the source columns</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableColumnCombineOps.cpp" line="+1"/>
-        <source>Merge columns failed: %1</source>
-        <translation>Merge columns failed: %1</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableColumnCombineOps.cpp" line="+1"/>
-        <source>Computed column(s) %1 became invalid because their dependency column(s) were merged</source>
-        <translation>Computed column(s) %1 became invalid because their dependency column(s) were merged</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableColumnCombineOps.cpp" line="+1"/>
-        <source>Split / Merge Columns</source>
-        <translation>Split / Merge Columns</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DATableRenameOps</name>
-    <message>
-        <location filename="../DAGui/TableOps/DATableRenameOps.cpp" line="+0"/>
-        <source>Table has no columns</source>
-        <translation>Table has no columns</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableRenameOps.cpp" line="+1"/>
-        <source>Column name cannot be empty</source>
-        <translation>Column name cannot be empty</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableRenameOps.cpp" line="+1"/>
-        <source>Column name &quot;%1&quot; already exists, please use another name</source>
-        <translation>Column name &quot;%1&quot; already exists, please use another name</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableRenameOps.cpp" line="+1"/>
-        <source>Rename Column</source>
-        <translation>Rename Columns</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DATableColumnOps</name>
-    <message>
-        <location filename="../DAGui/TableOps/DATableColumnOps.cpp" line="+0"/>
-        <source>Please select a valid column</source>
-        <translation>Please select a valid column</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableColumnOps.cpp" line="+1"/>
-        <source>Computed column(s) %1 became invalid because their dependency column(s) were removed</source>
-        <translation>Computed column(s) %1 became invalid because their dependency column(s) were removed</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableColumnOps.cpp" line="+1"/>
-        <source>Warning</source>
-        <translation>Warning</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableColumnOps.cpp" line="+1"/>
-        <source>The name of the new column to be inserted must be specified</source>
-        <translation>The name of the new column to be inserted must be specified</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableColumnOps.cpp" line="+1"/>
-        <source>Column Operations</source>
-        <translation>Column Operations</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DATableNavigationService</name>
-    <message>
-        <location filename="../DAGui/TableNavigation/DATableNavigationService.cpp" line="+0"/>
-        <source>Row number is out of range</source>
-        <translation>Row number is out of range</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableNavigation/DATableNavigationService.cpp" line="+1"/>
-        <source>Index label not found: %1</source>
-        <translation>Index label not found: %1</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableNavigation/DATableNavigationService.cpp" line="+1"/>
-        <source>There are %1 rows with this index label; jumped to the first one</source>
-        <translation>There are %1 rows with this index label; jumped to the first one</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableNavigation/DATableNavigationService.cpp" line="+1"/>
-        <source>Column not found: %1</source>
-        <translation>Column not found: %1</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableNavigation/DATableNavigationService.cpp" line="+1"/>
-        <source>There are %1 columns with this name; used the first one</source>
-        <translation>There are %1 columns with this name; used the first one</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableNavigation/DATableNavigationService.cpp" line="+0"/>
-        <source>The column &quot;%1&quot; was hidden and has been made visible</source>
-        <translation>The column &quot;%1&quot; was hidden and has been made visible</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DAPythonCodeEdit</name>
-    <message>
-        <source>e.g. tmp = A * 2, then np.where(tmp &gt; 0, tmp, 0)</source>
-        <translation>e.g. tmp = A * 2, then np.where(tmp &gt; 0, tmp, 0)</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DATableChartRolePanel</name>
-    <message>
-        <location filename="../DAGui/Table/Chart/DATableChartRolePanel.cpp" line="+126"/>
-        <source>Row number</source>
-        <translation>Row number</translation>
-        </message>
-    <message>
-        <location line="+3"/>
-        <source>(none)</source>
-        <translation>(none)</translation>
-        </message>
-    <message>
-        <location line="+96"/>
-        <source>Remove this series</source>
-        <translation>Remove this series</translation>
-        </message>
-    <message>
-        <location line="+18"/>
-        <source>Add series</source>
-        <translation>Add series</translation>
-        </message>
-    <message>
-        <location line="+40"/>
-        <source>Aggregation</source>
-        <translation>Aggregation</translation>
-        </message>
-    <message>
-        <location line="+28"/>
-        <source>Bins</source>
-        <translation>Bins</translation>
-        </message>
-    <message>
-        <location line="+23"/>
-        <source>Mean</source>
-        <translation>Mean</translation>
-        </message>
-    <message>
-        <location line="+2"/>
-        <source>Median</source>
-        <translation>Median</translation>
-        </message>
-    <message>
-        <location line="+2"/>
-        <source>Sum</source>
-        <translation>Sum</translation>
-        </message>
-    <message>
-        <location line="+2"/>
-        <source>Count</source>
-        <translation>Count</translation>
-        </message>
-    <message>
-        <location line="+2"/>
-        <source>Std</source>
-        <translation>Std</translation>
-        </message>
-    <message>
-        <location line="+2"/>
-        <source>Var</source>
-        <translation>Var</translation>
-        </message>
-    <message>
-        <location line="+2"/>
-        <source>Min</source>
-        <translation>Min</translation>
-        </message>
-    <message>
-        <location line="+2"/>
-        <source>Max</source>
-        <translation>Max</translation>
-        </message>
-    <message>
-        <location line="+99"/>
-        <location line="+35"/>
-        <source>X axis</source>
-        <translation>X axis</translation>
-        </message>
-    <message>
-        <location line="-29"/>
-        <location line="+17"/>
-        <location line="+18"/>
-        <location line="+101"/>
-        <location line="+17"/>
-        <location line="+17"/>
-        <location line="+23"/>
-        <source>Y</source>
-        <translation>Y</translation>
-        </message>
-    <message>
-        <location line="-181"/>
-        <location line="+119"/>
-        <location line="+17"/>
-        <location line="+17"/>
-        <location line="+23"/>
-        <source>X</source>
-        <translation>X</translation>
-        </message>
-    <message>
-        <location line="-141"/>
-        <location line="+52"/>
-        <location line="+42"/>
-        <source>Value</source>
-        <translation>Value</translation>
-        </message>
-    <message>
-        <location line="-81"/>
-        <location line="+58"/>
-        <source>Values</source>
-        <translation>Values</translation>
-        </message>
-    <message>
-        <location line="-47"/>
-        <source>Group</source>
-        <translation>Group</translation>
-        </message>
-    <message>
-        <location line="+22"/>
-        <location line="+20"/>
-        <source>Category</source>
-        <translation>Category</translation>
-        </message>
-    <message>
-        <location line="+45"/>
-        <source>Error</source>
-        <translation>Error</translation>
-        </message>
-    <message>
-        <location line="+17"/>
-        <source>U</source>
-        <translation>U</translation>
-        </message>
-    <message>
-        <location line="+5"/>
-        <source>V</source>
-        <translation>V</translation>
-        </message>
-    <message>
-        <location line="+18"/>
-        <source>Z</source>
-        <translation>Z</translation>
-        </message>
-</context>
-<context>
-    <name>DA::DATextAlignmentEditWidget</name>
-    <message>
-        <location filename="../3rdparty/DAWidgets/src/DATextAlignmentEditWidget.cpp"/>
-        <source>Align Left</source>
-        <translation>Align Left</translation>
-    </message>
-    <message>
-        <location filename="../3rdparty/DAWidgets/src/DATextAlignmentEditWidget.cpp"/>
-        <source>Align Center</source>
-        <translation>Align Center</translation>
-    </message>
-    <message>
-        <location filename="../3rdparty/DAWidgets/src/DATextAlignmentEditWidget.cpp"/>
-        <source>Align Right</source>
-        <translation>Align Right</translation>
-    </message>
-    <message>
-        <location filename="../3rdparty/DAWidgets/src/DATextAlignmentEditWidget.cpp"/>
-        <source>Align Top</source>
-        <translation>Align Top</translation>
-    </message>
-    <message>
-        <location filename="../3rdparty/DAWidgets/src/DATextAlignmentEditWidget.cpp"/>
-        <source>Align Middle</source>
-        <translation>Align Middle</translation>
-    </message>
-    <message>
-        <location filename="../3rdparty/DAWidgets/src/DATextAlignmentEditWidget.cpp"/>
-        <source>Align Bottom</source>
-        <translation>Align Bottom</translation>
-    </message>
-</context>
-
-<context>
-    <name>DA::DAPeakDockWidget</name>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Page/DAPeakDockWidget.cpp" line="54" />
-        <location filename="../plugins/DASignalAnalysis/Page/DAPeakDockWidget.cpp" line="177" />
-        <source>Run the short-time Fourier transform first</source>
-        <translation>Run the short-time Fourier transform first</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Page/DAPeakDockWidget.cpp" line="154" />
-        <source>Rank %1</source>
-        <translation>Rank %1</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Page/DAPeakDockWidget.cpp" line="161" />
-        <source>Time (s)</source>
-        <translation>Time (s)</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Page/DAPeakDockWidget.cpp" line="162" />
-        <source>Frequency (Hz)</source>
-        <translation>Frequency (Hz)</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Page/DAPeakDockWidget.cpp" line="181" />
-        <source>Send to Table</source>
-        <translation>Send to Table</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Page/DAPeakDockWidget.cpp" line="184" />
-        <source>Export CSV</source>
-        <translation>Export CSV</translation>
-    </message>
-    <message>
-        <source>Add the peak table to the data manager; open it from the data manager</source>
-        <translation>Add the peak table to the data manager; open it from the data manager</translation>
-    </message>
-    <message>
-        <source>Open the analysis parameter dialog</source>
-        <translation>Open the analysis parameter dialog</translation>
-    </message>
-    <message>
-        <source>Open this window to compute the per-frame peak curves</source>
-        <translation>Open this window to compute the per-frame peak curves</translation>
-    </message>
-    <message>
-        <source>Settings...</source>
-        <translation>Settings...</translation>
-    </message>
-    <message>
-        <source>Local scan</source>
-        <translation>Local scan</translation>
-    </message>
-    <message>
-        <source>Peak curves cover only the visible time range or use a coarser frame step.</source>
-        <translation>Peak curves cover only the visible time range or use a coarser frame step.</translation>
-    </message>
-    <message>
-        <source>Per-frame top N peaks: frequency over time (color = rank)</source>
-        <translation>Per-frame top N peaks: frequency over time (color = rank)</translation>
-    </message>
-    <message>
-        <source>Each color is one rank. Adjacent frames whose peak frequency jumps far apart are drawn as separate points instead of a connected line, so lines mean continuous peaks.</source>
-        <translation>Each color is one rank. Adjacent frames whose peak frequency jumps far apart are drawn as separate points instead of a connected line, so lines mean continuous peaks.</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DAPeakTableModel</name>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Analysis/DAPeakTableModel.cpp" line="144" />
-        <source>No.</source>
-        <translation>No.</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Analysis/DAPeakTableModel.cpp" line="146" />
-        <source>Frequency (Hz)</source>
-        <translation>Frequency (Hz)</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Analysis/DAPeakTableModel.cpp" line="148" />
-        <source>Amplitude</source>
-        <translation>Amplitude</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Analysis/DAPeakTableModel.cpp" line="155" />
-        <source>Rel. peak (dB)</source>
-        <translation>Rel. peak (dB)</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Analysis/DAPeakTableModel.cpp" line="157" />
-        <source>Share (%)</source>
-        <translation>Share (%)</translation>
-    </message>
-    <message>
-        <source>Amplitude (dB)</source>
-        <translation>Amplitude (dB)</translation>
-    </message>
-    <message>
-        <source>RMS</source>
-        <translation>RMS</translation>
-    </message>
-    <message>
-        <source>Time (s)</source>
-        <translation>Time (s)</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DASignalAnalysisPage</name>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisPage.cpp" line="65" />
-        <source>%1
-Sample rate: %2 Hz | Channels: %3 | Duration: %4 s</source>
-        <translation>%1
-Sample rate: %2 Hz | Channels: %3 | Duration: %4 s</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisPage.cpp" line="217" />
-        <source>No signal loaded</source>
-        <translation>No signal loaded</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisPage.cpp" line="218" />
-        <source>Import an audio file, a video, or columns from an existing data frame to begin analysis.</source>
-        <translation>Import an audio file, a video, or columns from an existing data frame to begin analysis.</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisPage.cpp" line="220" />
-        <source>Import Audio...</source>
-        <translation>Import Audio...</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisPage.cpp" line="221" />
-        <source>Import Data Frame...</source>
-        <translation>Import Data Frame...</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisPage.cpp" line="222" />
-        <source>Import Video...</source>
-        <translation>Import Video...</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DASignalAnalysisPlugin</name>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisPlugin.cpp" line="84" />
-        <source>General purpose time-series signal analysis (spectrum, spectrogram, peaks, playback)</source>
-        <translation>General purpose time-series signal analysis (spectrum, spectrogram, peaks, playback)</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DASignalAnalysisSettingPage</name>
-    <message>
-        <source>The FFmpeg executable was not found, so the path was not saved.</source>
-        <translation>The FFmpeg executable was not found, so the path was not saved.</translation>
-    </message>
-    <message>
-        <source>Signal Analysis</source>
-        <translation>Signal Analysis</translation>
-    </message>
-    <message>
-        <source>No FFmpeg was found in PATH. Specify an executable to enable video import.</source>
-        <translation>No FFmpeg was found in PATH. Specify an executable to enable video import.</translation>
-    </message>
-    <message>
-        <source>Empty: using the FFmpeg found in PATH: %1</source>
-        <translation>Empty: using the FFmpeg found in PATH: %1</translation>
-    </message>
-    <message>
-        <source>FFmpeg path is valid.</source>
-        <translation>FFmpeg path is valid.</translation>
-    </message>
-    <message>
-        <source>File does not exist.</source>
-        <translation>File does not exist.</translation>
-    </message>
-    <message>
-        <source>Analysis parameters (frequency resolution, windows, peak thresholds and calibration) are configured per signal in Analysis Settings on the Signal Analysis tab.</source>
-        <translation>Analysis parameters (frequency resolution, windows, peak thresholds and calibration) are configured per signal in Analysis Settings on the Signal Analysis tab.</translation>
-    </message>
-    <message>
-        <source>FFmpeg executable</source>
-        <translation>FFmpeg executable</translation>
-    </message>
-    <message>
-        <source>Used for video import and compressed audio decoding. Leave empty to use the ffmpeg found in PATH.</source>
-        <translation>Used for video import and compressed audio decoding. Leave empty to use the ffmpeg found in PATH.</translation>
-    </message>
-    <message>
-        <source>Executable (*.exe);;All files (*)</source>
-        <translation>Executable (*.exe);;All files (*)</translation>
-    </message>
-    <message>
-        <source>External Tools</source>
-        <translation>External Tools</translation>
-    </message>
-</context>
-
-<context>
-    <name>DA::DASignalAnalysisSettingDialog</name>
-    <message>
-        <source>Segment length: unknown (sample rate is invalid)</source>
-        <translation>Segment length: unknown (sample rate is invalid)</translation>
-    </message>
-    <message>
-        <source>Analysis Settings</source>
-        <translation>Analysis Settings</translation>
-    </message>
-    <message>
-        <source>Restore Defaults</source>
-        <translation>Restore Defaults</translation>
-    </message>
-    <message>
-        <source>OK</source>
-        <translation>OK</translation>
-    </message>
-    <message>
-        <source>Cancel</source>
-        <translation>Cancel</translation>
-    </message>
-    <message>
-        <source>Spectrum: segment = %1 samples (%2 ms), actual resolution = %3 Hz
-STFT: window = %4 samples (%5 ms), hop = %6 samples</source>
-        <translation>Spectrum: segment = %1 samples (%2 ms), actual resolution = %3 Hz
-STFT: window = %4 samples (%5 ms), hop = %6 samples</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DASignalAnalysisUI</name>
-    <message>
-        <source>FFmpeg was not detected; video import is unavailable until a path is specified in Settings &gt; Signal Analysis.</source>
-        <translation>FFmpeg was not detected; video import is unavailable until a path is specified in Settings &gt; Signal Analysis.</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="114" />
-        <source>Peak table (CSV)</source>
-        <translation>Peak table (CSV)</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="116" />
-        <source>Spectrum curve (CSV)</source>
-        <translation>Spectrum curve (CSV)</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="118" />
-        <source>Heatmap matrix (CSV)</source>
-        <translation>Heatmap matrix (CSV)</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="157" />
-        <source>Playback failed: %1</source>
-        <translation>Playback failed: %1</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="226" />
-        <source>Failed to import audio: %1</source>
-        <translation>Failed to import audio: %1</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="250" />
-        <source>Failed to import data frame: %1</source>
-        <translation>Failed to import data frame: %1</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="269" />
-        <source>Failed to import video: %1</source>
-        <translation>Failed to import video: %1</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="299" />
-        <source>Signal imported: %1 (%2 Hz, %3 s)</source>
-        <translation>Signal imported: %1 (%2 Hz, %3 s)</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="318" />
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="321" />
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="339" />
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1504" />
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1507" />
-        <source>Signal Analysis</source>
-        <translation>Signal Analysis</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="347" />
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1511" />
-        <source>Signal</source>
-        <translation>Signal</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="363" />
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1514" />
-        <source>Playback</source>
-        <translation>Playback</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="379" />
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1517" />
-        <source>Analysis</source>
-        <translation>Analysis</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="387" />
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="478" />
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="480" />
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="485" />
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1520" />
-        <source>Peaks</source>
-        <translation>Peaks</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="410" />
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1523" />
-        <source>Display</source>
-        <translation>Display</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="447" />
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1526" />
-        <source>Export</source>
-        <translation>Export</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="551" />
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1585" />
-        <source>Peak amplitude</source>
-        <translation>Peak amplitude</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="552" />
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1588" />
-        <source>RMS</source>
-        <translation>RMS</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="553" />
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1591" />
-        <source>dB (FS)</source>
-        <translation>dB (FS)</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="554" />
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1594" />
-        <source>dB (re 1.0)</source>
-        <translation>dB (re 1.0)</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="605" />
-        <source>No peak data to export.</source>
-        <translation>No peak data to export.</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="609" />
-        <source>Export Peak Table</source>
-        <translation>Export Peak Table</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="609" />
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="641" />
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="704" />
-        <source>CSV Files (*.csv)</source>
-        <translation>CSV Files (*.csv)</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="619" />
-        <source>Peak table exported: %1</source>
-        <translation>Peak table exported: %1</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="621" />
-        <source>Failed to export the peak table.</source>
-        <translation>Failed to export the peak table.</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="632" />
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="685" />
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="728" />
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1084" />
-        <source>No signal is selected.</source>
-        <translation>No signal is selected.</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="637" />
-        <source>No spectrum data to export.</source>
-        <translation>No spectrum data to export.</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="641" />
-        <source>Export Spectrum</source>
-        <translation>Export Spectrum</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="672" />
-        <source>Spectrum exported: %1</source>
-        <translation>Spectrum exported: %1</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="674" />
-        <source>Failed to export the spectrum.</source>
-        <translation>Failed to export the spectrum.</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="694" />
-        <source>No time-frequency data to export.</source>
-        <translation>No time-frequency data to export.</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="698" />
-        <source>Heatmap matrix: %1 x %2 = %3 cells, the CSV may be large.</source>
-        <translation>Heatmap matrix: %1 x %2 = %3 cells, the CSV may be large.</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="704" />
-        <source>Export Heatmap Matrix</source>
-        <translation>Export Heatmap Matrix</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="715" />
-        <source>Heatmap matrix exported: %1</source>
-        <translation>Heatmap matrix exported: %1</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="717" />
-        <source>Failed to export the heatmap matrix.</source>
-        <translation>Failed to export the heatmap matrix.</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="736" />
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1601" />
-        <source>Export Image</source>
-        <translation>Export Image</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="736" />
-        <source>PNG Image (*.png)</source>
-        <translation>PNG Image (*.png)</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="742" />
-        <source>Image exported: %1</source>
-        <translation>Image exported: %1</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="744" />
-        <source>Failed to export the image.</source>
-        <translation>Failed to export the image.</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="754" />
-        <source>No peak data to send.</source>
-        <translation>No peak data to send.</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="772" />
-        <source>Peaks - %1</source>
-        <translation>Peaks - %1</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="776" />
-        <source>Peak table added to the data manager as "%1".</source>
-        <translation>Peak table added to the data manager as "%1".</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="780" />
-        <source>Failed to send the peak table: %1</source>
-        <translation>Failed to send the peak table: %1</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="870" />
-        <source>Signal source missing: dataframe "%1".</source>
-        <translation>Signal source missing: dataframe "%1".</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="888" />
-        <source>Signal source missing: %1</source>
-        <translation>Signal source missing: %1</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="903" />
-        <source>Failed to restore signal "%1": %2</source>
-        <translation>Failed to restore signal "%1": %2</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1117" />
-        <source>Signal analysis: %1 (%2%)</source>
-        <translation>Signal analysis: %1 (%2%)</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1136" />
-        <source>Spectrum ready: resolution %1 Hz, %2 bins</source>
-        <translation>Spectrum ready: resolution %1 Hz, %2 bins</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1152" />
-        <source>Signal analysis failed: %1</source>
-        <translation>Signal analysis failed: %1</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1264" />
-        <source>Signal is very large (&gt; 1.5 GB as float32); the heatmap uses display-precision data.</source>
-        <translation>Signal is very large (&gt; 1.5 GB as float32); the heatmap uses display-precision data.</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1530" />
-        <source>Import Audio</source>
-        <translation>Import Audio</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1531" />
-        <source>Import an audio file (WAV/AIFF/FLAC/OGG)</source>
-        <translation>Import an audio file (WAV/AIFF/FLAC/OGG)</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1534" />
-        <source>Import Data Frame</source>
-        <translation>Import Data Frame</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1535" />
-        <source>Import columns from an existing data frame</source>
-        <translation>Import columns from an existing data frame</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1538" />
-        <source>Import Video</source>
-        <translation>Import Video</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1539" />
-        <source>Extract the audio track of a video file (requires FFmpeg)</source>
-        <translation>Extract the audio track of a video file (requires FFmpeg)</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1543" />
-        <source>Play</source>
-        <translation>Play</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1546" />
-        <source>Pause</source>
-        <translation>Pause</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1549" />
-        <source>Stop</source>
-        <translation>Stop</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1553" />
-        <source>Analysis Settings</source>
-        <translation>Analysis Settings</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1554" />
-        <source>Configure the analysis parameters of the current signal</source>
-        <translation>Configure the analysis parameters of the current signal</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1558" />
-        <source>Peak Markers</source>
-        <translation>Peak Markers</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1561" />
-        <source>Top N</source>
-        <translation>Top N</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1562" />
-        <source>Number of peaks to keep (10/20/50)</source>
-        <translation>Number of peaks to keep (10/20/50)</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1565" />
-        <source>Peak Window</source>
-        <translation>Peak Window</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1566" />
-        <source>Show or hide the peak dock window</source>
-        <translation>Show or hide the peak dock window</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1570" />
-        <source>2D</source>
-        <translation>2D</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1571" />
-        <source>Show the 2D time-frequency heatmap</source>
-        <translation>Show the 2D time-frequency heatmap</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1574" />
-        <source>3D</source>
-        <translation>3D</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1575" />
-        <source>Show the 3D surface waterfall</source>
-        <translation>Show the 3D surface waterfall</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1578" />
-        <source>Hide</source>
-        <translation>Hide</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1579" />
-        <source>Hide the waterfall view</source>
-        <translation>Hide the waterfall view</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1582" />
-        <source>Amplitude</source>
-        <translation>Amplitude</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1598" />
-        <source>Export Peaks</source>
-        <translation>Export Peaks</translation>
-    </message>
-    <message>
-        <source>Audio/Video files (*.wav *.aiff *.aif *.flac *.ogg *.mp3 *.m4a *.mp4 *.mkv *.avi);;All files (*)</source>
-        <translation>Audio/Video files (*.wav *.aiff *.aif *.flac *.ogg *.mp3 *.m4a *.mp4 *.mkv *.avi);;All files (*)</translation>
-    </message>
-    <message>
-        <source>Cancel Analysis</source>
-        <translation>Cancel Analysis</translation>
-    </message>
-    <message>
-        <source>Cancel all running background computations</source>
-        <translation>Cancel all running background computations</translation>
-    </message>
-    <message>
-        <source>Cannot start playback for this signal.</source>
-        <translation>Cannot start playback for this signal.</translation>
-    </message>
-    <message>
-        <source>Continue</source>
-        <translation>Continue</translation>
-    </message>
-    <message>
-        <source>Data frame:</source>
-        <translation>Data frame:</translation>
-    </message>
-    <message>
-        <source>Downsample x2</source>
-        <translation>Downsample x2</translation>
-    </message>
-    <message>
-        <source>Export Power Spectral Density</source>
-        <translation>Export Power Spectral Density</translation>
-    </message>
-    <message>
-        <source>Export full</source>
-        <translation>Export full</translation>
-    </message>
-    <message>
-        <source>Extract the audio track of a video file</source>
-        <translation>Extract the audio track of a video file</translation>
-    </message>
-    <message>
-        <source>FFmpeg was not detected. Specify its path in Settings &gt; Signal Analysis.</source>
-        <translation>FFmpeg was not detected. Specify its path in Settings &gt; Signal Analysis.</translation>
-    </message>
-    <message>
-        <source>Failed to create the signal analysis page.</source>
-        <translation>Failed to create the signal analysis page.</translation>
-    </message>
-    <message>
-        <source>Failed to export the power spectral density.</source>
-        <translation>Failed to export the power spectral density.</translation>
-    </message>
-    <message>
-        <source>Failed to import audio.</source>
-        <translation>Failed to import audio.</translation>
-    </message>
-    <message>
-        <source>Failed to import data frame.</source>
-        <translation>Failed to import data frame.</translation>
-    </message>
-    <message>
-        <source>Failed to import video.</source>
-        <translation>Failed to import video.</translation>
-    </message>
-    <message>
-        <source>Failed to prepare the playback audio for this signal.</source>
-        <translation>Failed to prepare the playback audio for this signal.</translation>
-    </message>
-    <message>
-        <source>Failed to relink the data frame source.</source>
-        <translation>Failed to relink the data frame source.</translation>
-    </message>
-    <message>
-        <source>Failed to restore signal &quot;%1&quot;.</source>
-        <translation>Failed to restore signal &quot;%1&quot;.</translation>
-    </message>
-    <message>
-        <source>Failed to send the peak table.</source>
-        <translation>Failed to send the peak table.</translation>
-    </message>
-    <message>
-        <source>Heatmap precision reduced to %1 x %2.</source>
-        <translation>Heatmap precision reduced to %1 x %2.</translation>
-    </message>
-    <message>
-        <source>Large Signal</source>
-        <translation>Large Signal</translation>
-    </message>
-    <message>
-        <source>Large signal confirmed: %1 assumes about %2 GB of memory.</source>
-        <translation>Large signal confirmed: %1 assumes about %2 GB of memory.</translation>
-    </message>
-    <message>
-        <source>Locate Signal Source</source>
-        <translation>Locate Signal Source</translation>
-    </message>
-    <message>
-        <source>Locate...</source>
-        <translation>Locate...</translation>
-    </message>
-    <message>
-        <source>No data frame is available. Import or create a data frame first.</source>
-        <translation>No data frame is available. Import or create a data frame first.</translation>
-    </message>
-    <message>
-        <source>No power spectral density data to export.</source>
-        <translation>No power spectral density data to export.</translation>
-    </message>
-    <message>
-        <source>Open Signal Analysis Window</source>
-        <translation>Open Signal Analysis Window</translation>
-    </message>
-    <message>
-        <source>PSD (dB re 1.0/Hz)</source>
-        <translation>PSD (dB re 1.0/Hz)</translation>
-    </message>
-    <message>
-        <source>Peak Table</source>
-        <translation>Peak Table</translation>
-    </message>
-    <message>
-        <source>Playback failed. See the message log for details.</source>
-        <translation>Playback failed. See the message log for details.</translation>
-    </message>
-    <message>
-        <source>Point a signal whose data frame is missing to an existing data frame</source>
-        <translation>Point a signal whose data frame is missing to an existing data frame</translation>
-    </message>
-    <message>
-        <source>Power spectral density (CSV)</source>
-        <translation>Power spectral density (CSV)</translation>
-    </message>
-    <message>
-        <source>Power spectral density exported: %1</source>
-        <translation>Power spectral density exported: %1</translation>
-    </message>
-    <message>
-        <source>Reduce precision</source>
-        <translation>Reduce precision</translation>
-    </message>
-    <message>
-        <source>Relink Data Frame Source</source>
-        <translation>Relink Data Frame Source</translation>
-    </message>
-    <message>
-        <source>Show or hide the peak table window</source>
-        <translation>Show or hide the peak table window</translation>
-    </message>
-    <message>
-        <source>Show the signal analysis workspace; it is created on first use</source>
-        <translation>Show the signal analysis workspace; it is created on first use</translation>
-    </message>
-    <message>
-        <source>Signal &quot;%1&quot; is a placeholder: its data frame is missing.</source>
-        <translation>Signal &quot;%1&quot; is a placeholder: its data frame is missing.</translation>
-    </message>
-    <message>
-        <source>Signal &quot;%1&quot; refers to a missing file:
-%2
-
-Locate the file again?</source>
-        <translation>Signal &quot;%1&quot; refers to a missing file:
-%2
-
-Locate the file again?</translation>
-    </message>
-    <message>
-        <source>Signal &quot;%1&quot; relinked to data frame &quot;%2&quot;.</source>
-        <translation>Signal &quot;%1&quot; relinked to data frame &quot;%2&quot;.</translation>
-    </message>
-    <message>
-        <source>Signal Source Missing</source>
-        <translation>Signal Source Missing</translation>
-    </message>
-    <message>
-        <source>Signal analysis cancelled: %1 needs more than the memory budget.</source>
-        <translation>Signal analysis cancelled: %1 needs more than the memory budget.</translation>
-    </message>
-    <message>
-        <source>Signal analysis failed. See the message log for details.</source>
-        <translation>Signal analysis failed. See the message log for details.</translation>
-    </message>
-    <message>
-        <source>Signal analysis: parameters applied, recomputing.</source>
-        <translation>Signal analysis: parameters applied, recomputing.</translation>
-    </message>
-    <message>
-        <source>Signal is too large for the full per-frame peak curve scan; peak curves were skipped.</source>
-        <translation>Signal is too large for the full per-frame peak curve scan; peak curves were skipped.</translation>
-    </message>
-    <message>
-        <source>Signal source missing: data frame &quot;%1&quot; (signal &quot;%2&quot;). Use &quot;Relink Data Frame Source&quot; to point it to an existing data frame.</source>
-        <translation>Signal source missing: data frame &quot;%1&quot; (signal &quot;%2&quot;). Use &quot;Relink Data Frame Source&quot; to point it to an existing data frame.</translation>
-    </message>
-    <message>
-        <source>Skip</source>
-        <translation>Skip</translation>
-    </message>
-    <message>
-        <source>The current signal's source is available; there is nothing to relink.</source>
-        <translation>The current signal's source is available; there is nothing to relink.</translation>
-    </message>
-    <message>
-        <source>The estimated peak memory for the %1 is about %2 GB, above the 1.5 GB budget.
-Continue or cancel?</source>
-        <translation>The estimated peak memory for the %1 is about %2 GB, above the 1.5 GB budget.
-Continue or cancel?</translation>
-    </message>
-    <message>
-        <source>The estimated peak memory is about %1 GB, above the 1.5 GB budget.
-Reduce the heatmap precision or cancel?</source>
-        <translation>The estimated peak memory is about %1 GB, above the 1.5 GB budget.
-Reduce the heatmap precision or cancel?</translation>
-    </message>
-    <message>
-        <source>The heatmap matrix is %1 x %2 = %3 cells (about %4 MB as CSV).
-Export the full matrix or downsample by 2?</source>
-        <translation>The heatmap matrix is %1 x %2 = %3 cells (about %4 MB as CSV).
-Export the full matrix or downsample by 2?</translation>
-    </message>
-    <message>
-        <source>Window</source>
-        <translation>Window</translation>
-    </message>
-    <message>
-        <source>peak table</source>
-        <translation>peak table</translation>
-    </message>
-    <message>
-        <source>soundfile is not available; only WAV files can be read directly. Install soundfile or use FFmpeg.</source>
-        <translation>soundfile is not available; only WAV files can be read directly. Install soundfile or use FFmpeg.</translation>
-    </message>
-    <message>
-        <source>spectrum</source>
-        <translation>spectrum</translation>
-    </message>
-    <message>
-        <source>waveform envelope</source>
-        <translation>waveform envelope</translation>
-    </message>
-    <message>
-        <source>FFmpeg is available; video import is enabled.</source>
-        <translation>FFmpeg is available; video import is enabled.</translation>
-    </message>
-    <message>
-        <source>FFmpeg is still not available; video import stays disabled.</source>
-        <translation>FFmpeg is still not available; video import stays disabled.</translation>
-    </message>
-    <message>
-        <source>Signal imported.</source>
-        <translation>Signal imported.</translation>
-    </message>
-    <message>
-        <source>The estimated peak memory for the %1 is about %2 GB, above the 1.5 GB budget.
-Reduce the precision, scan only the visible range, or cancel?</source>
-        <translation>The estimated peak memory for the %1 is about %2 GB, above the 1.5 GB budget.
-Reduce the precision, scan only the visible range, or cancel?</translation>
-    </message>
-    <message>
-        <source>Scan visible range</source>
-        <translation>Scan visible range</translation>
-    </message>
-    <message>
-        <source>peak curves</source>
-        <translation>peak curves</translation>
-    </message>
-    <message>
-        <source>Peak curves were limited to the visible time range (local scan).</source>
-        <translation>Peak curves were limited to the visible time range (local scan).</translation>
-    </message>
-    <message>
-        <source>Peak curves use a coarser frame step (local scan).</source>
-        <translation>Peak curves use a coarser frame step (local scan).</translation>
-    </message>
-    <message>
-        <source>heatmap</source>
-        <translation>heatmap</translation>
-    </message>
-    <message>
-        <source>Heatmap precision reduced to %1 x %2 (smaller block size).</source>
-        <translation>Heatmap precision reduced to %1 x %2 (smaller block size).</translation>
-    </message>
-    <message>
-        <source>Heatmap was limited to the visible time range.</source>
-        <translation>Heatmap was limited to the visible time range.</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DASignalAnalysisView</name>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="298" />
-        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="833" />
-        <source>Envelope</source>
-        <translation>Envelope</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="331" />
-        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="836" />
-        <source>Amplitude spectrum</source>
-        <translation>Amplitude spectrum</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="463" />
-        <source>Waterfall</source>
-        <translation>Waterfall</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="512" />
-        <source>Spectrogram</source>
-        <translation>Spectrogram</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="525" />
-        <source>dB</source>
-        <translation>dB</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="527" />
-        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="650" />
-        <source>Time (s)</source>
-        <translation>Time (s)</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="528" />
-        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="658" />
-        <source>Frequency (Hz)</source>
-        <translation>Frequency (Hz)</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="651" />
-        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="659" />
-        <source>Amplitude</source>
-        <translation>Amplitude</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="661" />
-        <source>dB (FS)</source>
-        <translation>dB (FS)</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="663" />
-        <source>dB (re 1.0)</source>
-        <translation>dB (re 1.0)</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="665" />
-        <source>RMS</source>
-        <translation>RMS</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="818" />
-        <source>Waveform</source>
-        <translation>Waveform</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="821" />
-        <source>Spectrum</source>
-        <translation>Spectrum</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="824" />
-        <source>Linear</source>
-        <translation>Linear</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="825" />
-        <source>Log</source>
-        <translation>Log</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="828" />
-        <source>Follow slider</source>
-        <translation>Follow slider</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="829" />
-        <source>Show the current frame instead of the whole signal</source>
-        <translation>Show the current frame instead of the whole signal</translation>
-    </message>
-    <message>
-        <source>Follow playback</source>
-        <translation>Follow playback</translation>
-    </message>
-    <message>
-        <source>Scroll the time-frequency view while playback advances</source>
-        <translation>Scroll the time-frequency view while playback advances</translation>
-    </message>
-    <message>
-        <source>Time-Frequency</source>
-        <translation>Time-Frequency</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DASignalAnalysisWorker</name>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Analysis/DASignalAnalysisWorker.cpp" line="130" />
-        <location filename="../plugins/DASignalAnalysis/Analysis/DASignalAnalysisWorker.cpp" line="198" />
-        <location filename="../plugins/DASignalAnalysis/Analysis/DASignalAnalysisWorker.cpp" line="231" />
-        <location filename="../plugins/DASignalAnalysis/Analysis/DASignalAnalysisWorker.cpp" line="263" />
-        <source>Signal is invalid or not loaded.</source>
-        <translation>Signal is invalid or not loaded.</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Analysis/DASignalAnalysisWorker.cpp" line="142" />
-        <source>Failed to start the spectrum task.</source>
-        <translation>Failed to start the spectrum task.</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Analysis/DASignalAnalysisWorker.cpp" line="147" />
-        <source>Computing spectrum...</source>
-        <translation>Computing spectrum...</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Analysis/DASignalAnalysisWorker.cpp" line="210" />
-        <source>Failed to start the time-frequency task.</source>
-        <translation>Failed to start the time-frequency task.</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Analysis/DASignalAnalysisWorker.cpp" line="326" />
-        <source>Background task disappeared.</source>
-        <translation>Background task disappeared.</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Analysis/DASignalAnalysisWorker.cpp" line="341" />
-        <source>Computation was cancelled.</source>
-        <translation>Computation was cancelled.</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Analysis/DASignalAnalysisWorker.cpp" line="346" />
-        <source>Computation failed.</source>
-        <translation>Computation failed.</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Analysis/DASignalAnalysisWorker.cpp" line="353" />
-        <source>Spectrum result is empty.</source>
-        <translation>Spectrum result is empty.</translation>
-    </message>
-    <message>
-        <source>Computation failed. See the message log for details.</source>
-        <translation>Computation failed. See the message log for details.</translation>
-    </message>
-    <message>
-        <source>Failed to create the temporary audio file.</source>
-        <translation>Failed to create the temporary audio file.</translation>
-    </message>
-    <message>
-        <source>Failed to query background tasks.</source>
-        <translation>Failed to query background tasks.</translation>
-    </message>
-    <message>
-        <source>Failed to read the background result.</source>
-        <translation>Failed to read the background result.</translation>
-    </message>
-    <message>
-        <source>Failed to start the envelope task.</source>
-        <translation>Failed to start the envelope task.</translation>
-    </message>
-    <message>
-        <source>Failed to start the peak curve task.</source>
-        <translation>Failed to start the peak curve task.</translation>
-    </message>
-    <message>
-        <source>Failed to start the peak table task.</source>
-        <translation>Failed to start the peak table task.</translation>
-    </message>
-    <message>
-        <source>Failed to start the playback audio export.</source>
-        <translation>Failed to start the playback audio export.</translation>
-    </message>
-    <message>
-        <source>Playback audio export is only available for dataframe signals.</source>
-        <translation>Playback audio export is only available for dataframe signals.</translation>
-    </message>
-    <message>
-        <source>Playback audio export produced no result.</source>
-        <translation>Playback audio export produced no result.</translation>
-    </message>
-    <message>
-        <source>Playback audio file was not created.</source>
-        <translation>Playback audio file was not created.</translation>
-    </message>
-    <message>
-        <source>Preparing playback audio...</source>
-        <translation>Preparing playback audio...</translation>
-    </message>
-    <message>
-        <source>No file selected.</source>
-        <translation>No file selected.</translation>
-    </message>
-    <message>
-        <source>File does not exist.</source>
-        <translation>File does not exist.</translation>
-    </message>
-    <message>
-        <source>FFmpeg is not available. Specify its path in Settings &gt; Signal Analysis.</source>
-        <translation>FFmpeg is not available. Specify its path in Settings &gt; Signal Analysis.</translation>
-    </message>
-    <message>
-        <source>Failed to start the import task.</source>
-        <translation>Failed to start the import task.</translation>
-    </message>
-    <message>
-        <source>Preparing import...</source>
-        <translation>Preparing import...</translation>
-    </message>
-    <message>
-        <source>The signal source is missing. Relink or re-import it before analyzing.</source>
-        <translation>The signal source is missing. Relink or re-import it before analyzing.</translation>
-    </message>
-    <message>
-        <source>The signal source cannot be read (it may have been renamed or removed, or the file is unavailable).</source>
-        <translation>The signal source cannot be read (it may have been renamed or removed, or the file is unavailable).</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DASignalImportDialog</name>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="66" />
-        <source>File</source>
-        <translation>File</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="85" />
-        <source>Data Frame</source>
-        <translation>Data Frame</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="88" />
-        <source>Time Column</source>
-        <translation>Time Column</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="93" />
-        <source>Value Columns</source>
-        <translation>Value Columns</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="100" />
-        <source>Sample Rate (Hz)</source>
-        <translation>Sample Rate (Hz)</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="108" />
-        <source>Signal Name</source>
-        <translation>Signal Name</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="147" />
-        <source>No data frame is available. Import data first.</source>
-        <translation>No data frame is available. Import data first.</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="172" />
-        <source>No time column</source>
-        <translation>No time column</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="227" />
-        <source>Please enter a positive sample rate.</source>
-        <translation>Please enter a positive sample rate.</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="251" />
-        <source>No time column: enter the sample rate manually.</source>
-        <translation>No time column: enter the sample rate manually.</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="261" />
-        <source>Inferred sample rate = %1 Hz, duration = %2 s</source>
-        <translation>Inferred sample rate = %1 Hz, duration = %2 s</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="268" />
-        <source>Cannot infer the sample rate from the time column: %1</source>
-        <translation>Cannot infer the sample rate from the time column: %1</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="318" />
-        <source>Video Files (*.mp4 *.mov *.m4v *.avi *.mkv *.webm *.flv *.wmv *.ts *.mts);;All Files (*)</source>
-        <translation>Video Files (*.mp4 *.mov *.m4v *.avi *.mkv *.webm *.flv *.wmv *.ts *.mts);;All Files (*)</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="321" />
-        <source>Audio Files (*.wav *.aiff *.aif *.flac *.ogg *.oga *.mp3 *.m4a *.aac *.wma *.opus);;All Files (*)</source>
-        <translation>Audio Files (*.wav *.aiff *.aif *.flac *.ogg *.oga *.mp3 *.m4a *.aac *.wma *.opus);;All Files (*)</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="324" />
-        <source>Select File</source>
-        <translation>Select File</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="394" />
-        <source>Import Audio</source>
-        <translation>Import Audio</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="397" />
-        <source>Import Video</source>
-        <translation>Import Video</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="401" />
-        <source>Import Data Frame</source>
-        <translation>Import Data Frame</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="405" />
-        <source>Browse...</source>
-        <translation>Browse...</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="408" />
-        <source>Import</source>
-        <translation>Import</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="409" />
-        <source>Cancel</source>
-        <translation>Cancel</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="412" />
-        <source>FFmpeg was not detected. Specify its path in Settings &gt; Signal Analysis.</source>
-        <translation>FFmpeg was not detected. Specify its path in Settings &gt; Signal Analysis.</translation>
-    </message>
-    <message>
-        <source>Sample rate: %1 Hz, channels: %2, duration: %3 s</source>
-        <translation>Sample rate: %1 Hz, channels: %2, duration: %3 s</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DASignalPlayer</name>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Playback/DASignalPlayer.cpp" line="116" />
-        <source>Signal is invalid.</source>
-        <translation>Signal is invalid.</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Playback/DASignalPlayer.cpp" line="132" />
-        <source>No playable audio file for this signal.</source>
-        <translation>No playable audio file for this signal.</translation>
-    </message>
-    <message>
-        <source>The playback audio file is missing.</source>
-        <translation>The playback audio file is missing.</translation>
-    </message>
-</context>
-<context>
-    <name>DASignalFormSpecBuilder</name>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="70" />
-        <source>Remove DC</source>
-        <translation>Remove DC</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="74" />
-        <source>Detrend</source>
-        <translation>Detrend</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="76" />
-        <source>None</source>
-        <translation>None</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="77" />
-        <source>Constant</source>
-        <translation>Constant</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="78" />
-        <source>Linear</source>
-        <translation>Linear</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="80" />
-        <source>Signal Preprocessing</source>
-        <translation>Signal Preprocessing</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="88" />
-        <source>Window</source>
-        <translation>Window</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="90" />
-        <source>Rectangular</source>
-        <translation>Rectangular</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="91" />
-        <source>Hann</source>
-        <translation>Hann</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="92" />
-        <source>Hamming</source>
-        <translation>Hamming</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="93" />
-        <source>Blackman</source>
-        <translation>Blackman</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="94" />
-        <source>Flat top</source>
-        <translation>Flat top</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="99" />
-        <source>Amplitude</source>
-        <translation>Amplitude</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="101" />
-        <source>Peak amplitude</source>
-        <translation>Peak amplitude</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="102" />
-        <source>RMS</source>
-        <translation>RMS</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="107" />
-        <source>dB reference</source>
-        <translation>dB reference</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="109" />
-        <source>Full scale (dBFS)</source>
-        <translation>Full scale (dBFS)</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="110" />
-        <source>Relative to 1.0</source>
-        <translation>Relative to 1.0</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="115" />
-        <source>Frequency resolution (Hz)</source>
-        <translation>Frequency resolution (Hz)</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="123" />
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="174" />
-        <source>Zero padding points (advanced)</source>
-        <translation>Zero padding points (advanced)</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="129" />
-        <source>Spectrum</source>
-        <translation>Spectrum</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="137" />
-        <source>Averaging</source>
-        <translation>Averaging</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="139" />
-        <source>Mean</source>
-        <translation>Mean</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="140" />
-        <source>Median</source>
-        <translation>Median</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="144" />
-        <source>Overlap (%)</source>
-        <translation>Overlap (%)</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="150" />
-        <source>Power Spectrum</source>
-        <translation>Power Spectrum</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="158" />
-        <source>Window length (ms)</source>
-        <translation>Window length (ms)</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="166" />
-        <source>Hop overlap (%)</source>
-        <translation>Hop overlap (%)</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="180" />
-        <source>Short-Time Fourier Transform</source>
-        <translation>Short-Time Fourier Transform</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="189" />
-        <source>Mode</source>
-        <translation>Mode</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="191" />
-        <source>Simple</source>
-        <translation>Simple</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="192" />
-        <source>Advanced</source>
-        <translation>Advanced</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="197" />
-        <source>Top N</source>
-        <translation>Top N</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="204" />
-        <source>Relative threshold (dB)</source>
-        <translation>Relative threshold (dB)</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="216" />
-        <source>Prominence</source>
-        <translation>Prominence</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="231" />
-        <source>Minimum spacing (Hz)</source>
-        <translation>Minimum spacing (Hz)</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="241" />
-        <source>Minimum height</source>
-        <translation>Minimum height</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="248" />
-        <source>Peak Search</source>
-        <translation>Peak Search</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="256" />
-        <source>Calibration factor</source>
-        <translation>Calibration factor</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="262" />
-        <source>Amplitude unit</source>
-        <translation>Amplitude unit</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="264" />
-        <source>Calibration</source>
-        <translation>Calibration</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="269" />
-        <source>Analysis Settings</source>
-        <translation>Analysis Settings</translation>
-    </message>
-    <message>
-        <source>dB (FS)</source>
-        <translation>dB (FS)</translation>
-    </message>
-    <message>
-        <source>dB (re 1.0)</source>
-        <translation>dB (re 1.0)</translation>
-    </message>
-</context>
-<context>
-    <name>DASignalImporter</name>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Signal/DASignalImporter.cpp" line="114" />
-        <location filename="../plugins/DASignalAnalysis/Signal/DASignalImporter.cpp" line="335" />
-        <source>FFmpeg is not available. Specify its path in Settings &gt; Signal Analysis.</source>
-        <translation>FFmpeg is not available. Specify its path in Settings &gt; Signal Analysis.</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Signal/DASignalImporter.cpp" line="127" />
-        <source>FFmpeg failed to convert the file. Last output lines:
-%1</source>
-        <translation>FFmpeg failed to convert the file. Last output lines:
-%1</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Signal/DASignalImporter.cpp" line="158" />
-        <source>Cannot read audio file: %1</source>
-        <translation>Cannot read audio file: %1</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Signal/DASignalImporter.cpp" line="168" />
-        <source>Audio file contains no samples.</source>
-        <translation>Audio file contains no samples.</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Signal/DASignalImporter.cpp" line="295" />
-        <location filename="../plugins/DASignalAnalysis/Signal/DASignalImporter.cpp" line="327" />
-        <source>File does not exist: %1</source>
-        <translation>File does not exist: %1</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Signal/DASignalImporter.cpp" line="311" />
-        <source>The converted file could not be read: %1</source>
-        <translation>The converted file could not be read: %1</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Signal/DASignalImporter.cpp" line="347" />
-        <source>The file does not contain an audio track.</source>
-        <translation>The file does not contain an audio track.</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Signal/DASignalImporter.cpp" line="379" />
-        <source>The source data is not a dataframe.</source>
-        <translation>The source data is not a dataframe.</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Signal/DASignalImporter.cpp" line="386" />
-        <source>Please select at least one value column.</source>
-        <translation>Please select at least one value column.</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Signal/DASignalImporter.cpp" line="393" />
-        <source>Sample rate must be a positive number.</source>
-        <translation>Sample rate must be a positive number.</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Signal/DASignalImporter.cpp" line="405" />
-        <source>The dataframe is empty.</source>
-        <translation>The dataframe is empty.</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Signal/DASignalImporter.cpp" line="454" />
-        <source>No time column selected.</source>
-        <translation>No time column selected.</translation>
-    </message>
-    <message>
-        <source>Failed to create a signal from the dataframe.</source>
-        <translation>Failed to create a signal from the dataframe.</translation>
-    </message>
-    <message>
-        <source>Failed to infer the sample rate from the time column.</source>
-        <translation>Failed to infer the sample rate from the time column.</translation>
-    </message>
-    <message>
-        <source>Failed to probe the audio file.</source>
-        <translation>Failed to probe the audio file.</translation>
-    </message>
-    <message>
-        <source>Failed to probe the video file.</source>
-        <translation>Failed to probe the video file.</translation>
-    </message>
-    <message>
-        <source>Failed to read the audio file.</source>
-        <translation>Failed to read the audio file.</translation>
-    </message>
-    <message>
-        <source>Failed to run the FFmpeg conversion.</source>
-        <translation>Failed to run the FFmpeg conversion.</translation>
-    </message>
-    <message>
-        <source>No file selected.</source>
-        <translation>No file selected.</translation>
-    </message>
-    <message>
-        <source>This format is decoded through FFmpeg; the sample rate is shown after import.</source>
-        <translation>This format is decoded through FFmpeg; the sample rate is shown after import.</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DATableQuickPlotSettingWidget</name>
-    <message>
-        <source>Quick plot</source>
-        <translation>Quick plot</translation>
-    </message>
-    <message>
-        <source>Open a quick plot from the data table to configure it here</source>
-        <translation>Open a quick plot from the data table to configure it here</translation>
-    </message>
-    <message>
-        <source>Chart</source>
-        <translation>Chart</translation>
-    </message>
-    <message>
-        <source>Chart type</source>
-        <translation>Chart type</translation>
-    </message>
-    <message>
-        <source>Columns</source>
-        <translation>Columns</translation>
-    </message>
-    <message>
-        <source>Chart type (unavailable types are disabled with the reason)</source>
-        <translation>Chart type (unavailable types are disabled with the reason)</translation>
-    </message>
-    <message>
-        <source>Data roles</source>
-        <translation>Data roles</translation>
-    </message>
-    <message>
-        <source>Update to current selection</source>
-        <translation>Update to current selection</translation>
-    </message>
-    <message>
-        <source>Re-bind the chart to the current column selection</source>
-        <translation>Re-bind the chart to the current column selection</translation>
-    </message>
-    <message>
-        <source>Refresh</source>
-        <translation>Refresh</translation>
-    </message>
-    <message>
-        <source>Redraw with the current data</source>
-        <translation>Redraw with the current data</translation>
-    </message>
-    <message>
-        <source>Transfer to chart area</source>
-        <translation>Transfer to chart area</translation>
-    </message>
-    <message>
-        <source>Create a formal chart from this quick plot</source>
-        <translation>Create a formal chart from this quick plot</translation>
-    </message>
-    <message>
-        <source>New figure tab</source>
-        <translation>New figure tab</translation>
-    </message>
-    <message>
-        <source>Append to current chart</source>
-        <translation>Append to current chart</translation>
     </message>
 </context>
 </TS>

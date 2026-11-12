@@ -62,7 +62,7 @@
 <context>
     <name>DA::AppMainWindow</name>
     <message>
-        <location filename="../APP/AppMainWindow.cpp" line="+83"/>
+        <location filename="../APP/AppMainWindow.cpp" line="+86"/>
         <source>Initializing core interface...</source>
         <translation>正在初始化核心接口...</translation>
     </message>
@@ -87,7 +87,7 @@
         <translation>正在准备界面...</translation>
     </message>
     <message>
-        <location line="+52"/>
+        <location line="+76"/>
         <source>Question</source>
         <translation>疑问</translation>
     </message>
@@ -97,7 +97,7 @@
         <translation>是否保存工程？</translation>
     </message>
     <message>
-        <location line="+101"/>
+        <location line="+114"/>
         <source>Untitled</source>
         <translation>未命名</translation>
     </message>
@@ -118,7 +118,7 @@
         <translation>拓扑执行失败</translation>
     </message>
     <message>
-        <location line="+131"/>
+        <location line="+133"/>
         <source>failed to restore UI state</source>
         <translation>恢复界面状态过程中出错</translation>
     </message>
@@ -1447,7 +1447,7 @@
 <context>
     <name>DA::DAAppActions</name>
     <message>
-        <location filename="../APP/DAAppActions.cpp" line="+477"/>
+        <location filename="../APP/DAAppActions.cpp" line="+494"/>
         <source>Open</source>
         <translation>打开</translation>
     </message>
@@ -1879,7 +1879,17 @@
         <translation>图例</translation>
     </message>
     <message>
-        <location line="+54"/>
+        <location line="+4"/>
+        <source>Export Chart</source>
+        <translation>导出当前子图</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Export the current sub-chart to an image file</source>
+        <translation>把当前子图导出为图片文件</translation>
+    </message>
+    <message>
+        <location line="+51"/>
         <source>To Numeric</source>
         <translation>转换为数值类型</translation>
     </message>
@@ -1904,7 +1914,7 @@
         <translation>在可停靠的统计窗口中分析选中列（支持多列对比/箱线图）</translation>
     </message>
     <message>
-        <location line="+77"/>
+        <location line="+99"/>
         <source>Grouping</source>
         <translation>分组</translation>
     </message>
@@ -1919,7 +1929,7 @@
         <translation>信息窗口</translation>
     </message>
     <message>
-        <location line="-198"/>
+        <location line="-222"/>
         <source>Enable or disable legend in the chart</source>
         <translation>启用或禁用图表中的图例</translation>
     </message>
@@ -2156,7 +2166,7 @@
         <translation>将绘图复制到剪贴板</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+3"/>
         <source>Legend Top</source>
         <translation>图例在上</translation>
     </message>
@@ -2326,17 +2336,7 @@
         <translation>从表中删除列</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Remove Cell</source>
-        <translation>删除单元格</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Remove a cell from the table</source>
-        <translation>从表中移除单元格</translation>
-    </message>
-    <message>
-        <location line="+1"/>
+        <location line="+3"/>
         <source>Insert Row</source>
         <translation>插入行</translation>
     </message>
@@ -2483,7 +2483,7 @@
         <translation>设置选中列的数值/日期显示格式</translation>
     </message>
     <message>
-        <location line="+64"/>
+        <location line="+86"/>
         <source>New Workflow</source>
         <translation>新建
 工作流</translation>
@@ -2878,7 +2878,7 @@
         <translation>撤销</translation>
     </message>
     <message>
-        <location line="-162"/>
+        <location line="-184"/>
         <source>Find</source>
         <translation>查找</translation>
     </message>
@@ -2918,7 +2918,7 @@
         <translation>对选中区应用或清除单元格边框</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+7"/>
         <source>New Computed Column...</source>
         <translation>新建计算列...</translation>
     </message>
@@ -3118,7 +3118,7 @@
         <translation>清除本表全部批注（可撤销）</translation>
     </message>
     <message>
-        <location line="+75"/>
+        <location line="+89"/>
         <source>Undo History</source>
         <translation>撤销历史</translation>
     </message>
@@ -3128,7 +3128,7 @@
         <translation>显示撤销历史面板（跟随当前激活页面，点击条目可回退/前进）</translation>
     </message>
     <message>
-        <location line="-74"/>
+        <location line="-88"/>
         <source>Freeze Columns</source>
         <translation>冻结列</translation>
     </message>
@@ -3183,7 +3183,7 @@
         <translation>跳转到指定行、索引标签或列</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Sort</source>
         <translation>排序</translation>
     </message>
@@ -3193,7 +3193,7 @@
         <translation>对当前列排序，或打开自定义排序对话框按多个条件排序</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Sort Ascending</source>
         <translation>升序排序</translation>
     </message>
@@ -3203,7 +3203,7 @@
         <translation>按当前列升序排列全部行</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Sort Descending</source>
         <translation>降序排序</translation>
     </message>
@@ -3213,7 +3213,7 @@
         <translation>按当前列降序排列全部行</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Custom Sort...</source>
         <translation>自定义排序...</translation>
     </message>
@@ -3223,7 +3223,7 @@
         <translation>按多个列及指定优先级排序</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Clear Sort</source>
         <translation>清除排序</translation>
     </message>
@@ -3233,38 +3233,42 @@
         <translation>恢复原始行顺序（按索引升序，可撤销）</translation>
     </message>
     <message>
+        <location line="-117"/>
         <source>Clear Cells</source>
         <translation>清空单元格</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Set the selected cells to empty (nan)</source>
         <translation>把选中单元格置为空值</translation>
     </message>
     <message>
-        <location filename="../APP/DAAppActions.cpp"/>
+        <location line="+44"/>
         <source>Cell Size</source>
         <translation>单元格大小</translation>
     </message>
     <message>
-        <location filename="../APP/DAAppActions.cpp"/>
+        <location line="+1"/>
         <source>Adjust column width or row height (auto-fit / set value)</source>
         <translation>调整列宽或行高（自适应/设置数值）</translation>
     </message>
     <message>
-        <location filename="../APP/DAAppActions.cpp"/>
+        <location line="+3"/>
         <source>Wrap Text</source>
         <translation>自动换行</translation>
     </message>
     <message>
-        <location filename="../APP/DAAppActions.cpp"/>
+        <location line="+1"/>
         <source>Wrap the text of selected cells (raise row height manually if needed)</source>
         <translation>选中单元格文字自动换行（需要时用「单元格大小」手动调高行高）</translation>
     </message>
     <message>
+        <location line="-3"/>
         <source>Row Height</source>
         <translation>行高</translation>
     </message>
     <message>
+        <location line="+1"/>
         <source>Set the row height of the whole table, or switch between compact and normal height</source>
         <translation>设置整表行高，或在紧凑/普通行高之间切换</translation>
     </message>
@@ -3387,6 +3391,34 @@
     </message>
 </context>
 <context>
+    <name>DA::DAAppChartActionHandler</name>
+    <message>
+        <location filename="../APP/Controller/DAAppChartActionHandler.cpp" line="+1123"/>
+        <source>There is no figure to export</source>
+        <translation>没有可导出的绘图窗口</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>There is no sub-chart to export</source>
+        <translation>没有可导出的子图</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Export Chart</source>
+        <translation>导出当前子图</translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>Chart exported to &quot;%1&quot;</source>
+        <translation>子图已导出到“%1”</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Failed to export the chart to &quot;%1&quot;</source>
+        <translation>导出子图到“%1”失败</translation>
+    </message>
+</context>
+<context>
     <name>DA::DAAppConfig</name>
     <message>
         <location filename="../APP/SettingPages/DAAppConfig.cpp" line="+376"/>
@@ -3444,24 +3476,24 @@
 <context>
     <name>DA::DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="+875"/>
+        <location filename="../APP/Controller/DAAppControllerProject.cpp" line="+177"/>
         <source>Save Project</source>
         <translation>保存工程</translation>
     </message>
     <message>
         <location line="+19"/>
-        <location line="+1124"/>
+        <location filename="../APP/Controller/DAAppWorkflowActionHandler.cpp" line="+378"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location line="-1112"/>
+        <location line="+12"/>
         <source>Failed to save project! Path: %1</source>
         <translation>工程保存失败！路径为:%1</translation>
     </message>
     <message>
         <location line="+3"/>
-        <location line="+661"/>
+        <location line="+221"/>
         <source>Project saved successfully, path: %1</source>
         <translation>工程保存成功，路径为:%1</translation>
     </message>
@@ -3481,17 +3513,18 @@
         <translation>工程加载成功，路径为:%1</translation>
     </message>
     <message>
-        <location line="+51"/>
+        <location filename="../APP/Controller/DAAppControllerPage.cpp" line="+224"/>
         <source>The chart area is not available</source>
         <translation>绘图区不可用</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+7"/>
+        <location line="+8"/>
         <source>There is no current chart to append to</source>
         <translation>当前没有可追加的图表</translation>
     </message>
     <message>
-        <location line="+334"/>
+        <location filename="../APP/Controller/DAAppWorkflowActionHandler.cpp" line="-30"/>
         <source>Image saved successfully to %1</source>
         <translation>图片保存成功：%1</translation>
     </message>
@@ -3501,7 +3534,7 @@
         <translation>图片保存失败：%1</translation>
     </message>
     <message>
-        <location line="+69"/>
+        <location filename="../APP/Controller/DAAppControllerView.cpp" line="+189"/>
         <source>Reset Layout</source>
         <translation>恢复默认布局</translation>
     </message>
@@ -3511,19 +3544,19 @@
         <translation>将恢复默认窗口布局，是否继续？</translation>
     </message>
     <message>
-        <location line="+348"/>
+        <location filename="../APP/Controller/DAAppDataActionHandler.cpp" line="+223"/>
         <source>Importing data files ...</source>
         <translation>正在导入数据文件...</translation>
     </message>
     <message>
         <location line="+1"/>
-        <location line="+353"/>
-        <location line="+102"/>
+        <location line="+361"/>
+        <location line="+104"/>
         <source>Cancel</source>
         <translation>取消</translation>
     </message>
     <message>
-        <location line="-451"/>
+        <location line="-461"/>
         <source>Import Data</source>
         <translation>导入数据</translation>
     </message>
@@ -3581,54 +3614,54 @@
     </message>
     <message>
         <location line="+1"/>
-        <location line="+254"/>
+        <location line="+264"/>
         <source>Markdown File</source>
         <translation>Markdown 文件</translation>
     </message>
     <message>
-        <location line="-253"/>
-        <location line="+254"/>
+        <location line="-263"/>
+        <location line="+264"/>
         <source>HTML File</source>
         <translation>HTML 文件</translation>
     </message>
     <message>
-        <location line="-231"/>
-        <location line="+242"/>
+        <location line="-241"/>
+        <location line="+252"/>
         <location line="+21"/>
         <source>Export Data</source>
         <translation>导出数据</translation>
     </message>
     <message>
-        <location line="-221"/>
+        <location line="-231"/>
         <source>Cannot determine export format, please select a file suffix</source>
         <translation>无法确定导出格式，请选择带后缀的文件名</translation>
     </message>
     <message>
         <location line="+16"/>
-        <location line="+231"/>
+        <location line="+241"/>
         <source>Data exported successfully, path: %1</source>
         <translation>数据导出成功，路径:%1</translation>
     </message>
     <message>
-        <location line="-229"/>
-        <location line="+225"/>
+        <location line="-239"/>
+        <location line="+235"/>
         <source>Data export failed, path: %1, reason: %2</source>
         <translation>数据导出失败，路径:%1，原因:%2</translation>
     </message>
     <message>
-        <location line="-196"/>
-        <location line="+215"/>
-        <location line="+32"/>
+        <location line="-201"/>
+        <location line="+225"/>
+        <location line="+35"/>
         <source>No open dataframe table</source>
         <translation>当前没有打开的 dataframe 表格</translation>
     </message>
     <message>
-        <location line="-234"/>
+        <location line="-247"/>
         <source>Please select a dataset first</source>
         <translation>请先选中数据集</translation>
     </message>
     <message>
-        <location line="+43"/>
+        <location line="+46"/>
         <source>Copy Large Table</source>
         <translation>复制大表</translation>
     </message>
@@ -3653,7 +3686,7 @@
         <translation>表格已复制到剪贴板（%1 行 × %2 列）</translation>
     </message>
     <message>
-        <location line="+56"/>
+        <location line="+58"/>
         <source>Cannot open file for writing: %1</source>
         <translation>无法打开文件进行写入:%1</translation>
     </message>
@@ -3663,7 +3696,7 @@
         <translation>正在导出表格...</translation>
     </message>
     <message>
-        <location line="+142"/>
+        <location filename="../APP/Controller/DAAppControllerAgent.cpp" line="+190"/>
         <source>Unsupported link type: %1</source>
         <translation>不支持的链接类型：%1</translation>
     </message>
@@ -3678,29 +3711,29 @@
         <translation>未找到数据集&quot;%1&quot;，可能已被移除</translation>
     </message>
     <message>
-        <location line="+19"/>
+        <location filename="../APP/Controller/DAAppChartActionHandler.cpp" line="-614"/>
         <source>Before creating a new coordinate, you need to create a figure</source>
         <translation>在创建一个坐标系之前，需要先创建一个绘图窗口</translation>
     </message>
     <message>
-        <location line="-2201"/>
+        <location filename="../APP/Controller/DAAppControllerCore.cpp" line="+574"/>
         <source>Please select the data operation window</source>
         <translation>请选中数据操作窗口</translation>
     </message>
     <message>
-        <location line="-51"/>
-        <location line="+571"/>
+        <location filename="../APP/Controller/DAAppControllerProject.cpp" line="-280"/>
+        <location line="+131"/>
         <location line="+73"/>
         <source>Project File</source>
         <translation>工程文件</translation>
     </message>
     <message>
-        <location line="-626"/>
+        <location line="-186"/>
         <source>Whether to overwrite the file: %1</source>
         <translation>是否覆盖文件:%1</translation>
     </message>
     <message>
-        <location line="+477"/>
+        <location line="+37"/>
         <location line="+20"/>
         <location line="+22"/>
         <source>Question</source>
@@ -3723,84 +3756,84 @@
         <translation>加载工程文件失败:%1</translation>
     </message>
     <message>
-        <location line="+376"/>
+        <location filename="../APP/Controller/DAAppWorkflowActionHandler.cpp" line="-76"/>
         <source>Image files</source>
         <translation>图片文件</translation>
     </message>
     <message>
-        <location line="-441"/>
-        <location line="+442"/>
+        <location filename="../APP/Controller/DAAppControllerProject.cpp" line="-65"/>
+        <location filename="../APP/Controller/DAAppWorkflowActionHandler.cpp" line="+1"/>
         <source>Any files</source>
         <translation>任意文件</translation>
     </message>
     <message>
-        <location line="-443"/>
+        <location line="-1"/>
         <source>Markdown files</source>
         <translation>Markdown 文件</translation>
     </message>
     <message>
-        <location line="+540"/>
+        <location filename="../APP/Controller/DAAppWorkflowActionHandler.cpp" line="+97"/>
         <source>Received null project interface</source>
         <translation>获取到空工程接口</translation>
     </message>
     <message>
-        <location line="-171"/>
-        <location line="+272"/>
+        <location filename="../APP/Controller/DAAppControllerCore.cpp" line="+375"/>
+        <location filename="../APP/Controller/DAAppControllerPage.cpp" line="+254"/>
         <source>No cells selected to copy</source>
         <translation>没有选中可复制的单元格</translation>
     </message>
     <message>
-        <location line="-1552"/>
+        <location filename="../APP/Controller/DAAppTableActionHandler.cpp" line="+388"/>
         <source>No active table</source>
         <translation>无活动表格</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="-91"/>
         <source>All Borders</source>
         <translation>全框线</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+3"/>
         <source>Outside Borders</source>
         <translation>外框线</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+4"/>
         <source>No Border</source>
         <translation>无框线</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+3"/>
         <source>Top Border</source>
         <translation>上框线</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+3"/>
         <source>Bottom Border</source>
         <translation>下框线</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+3"/>
         <source>Left Border</source>
         <translation>左框线</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+3"/>
         <source>Right Border</source>
         <translation>右框线</translation>
     </message>
     <message>
-        <location line="+1940"/>
+        <location filename="../APP/Controller/DAAppDataActionHandler.cpp" line="-372"/>
         <source>Cannot rename a series, please select a dataset</source>
         <translation>无法重命名series，请选中数据集</translation>
     </message>
     <message>
-        <location line="+560"/>
+        <location filename="../APP/Controller/DAAppControllerAgent.cpp" line="-49"/>
         <source>Figure &apos;%1&apos; not found, it may have been closed or renamed</source>
         <translation>未找到绘图&quot;%1&quot;，可能已关闭或被重命名</translation>
     </message>
     <message>
-        <location line="+825"/>
+        <location filename="../APP/Controller/DAAppTableActionHandler.cpp" line="+232"/>
         <source>Rename Column</source>
         <translation>重命名此列</translation>
     </message>
@@ -3840,12 +3873,12 @@
         <translation>列[%1] 最小值位于第 %2 行</translation>
     </message>
     <message>
-        <location line="+67"/>
+        <location line="+45"/>
         <source>Select the columns to plot first</source>
         <translation>请先选择要绘图的列</translation>
     </message>
     <message>
-        <location line="+594"/>
+        <location line="+623"/>
         <source>Copy As</source>
         <translation>复制为</translation>
     </message>
@@ -3880,7 +3913,7 @@
         <translation>HTML 文档（含样式）...</translation>
     </message>
     <message>
-        <location line="+157"/>
+        <location filename="../APP/Controller/DAAppWorkflowActionHandler.cpp" line="+157"/>
         <source>New workflow name</source>
         <translation>新工作流名称</translation>
     </message>
@@ -3890,68 +3923,51 @@
         <translation>新工作流名称</translation>
     </message>
     <message>
-        <location line="-1935"/>
-        <location line="+32"/>
-        <location line="+1083"/>
-        <location line="+997"/>
+        <location filename="../APP/Controller/DAAppDataActionHandler.cpp" line="+428"/>
+        <location line="+35"/>
+        <location filename="../APP/Controller/DAAppTableActionHandler.cpp" line="-669"/>
+        <location line="+938"/>
         <source>Please select a valid column</source>
         <translation>请选择正确的列</translation>
     </message>
     <message>
-        <location line="+52"/>
-        <source>No figure/chart available for statistical plot</source>
-        <translation>没有可用于统计绘图的图表窗口</translation>
-    </message>
-    <message>
-        <location line="+27"/>
-        <source>No data column selected</source>
-        <translation>未选择数据列</translation>
-    </message>
-    <message>
-        <location line="-22"/>
-        <source>Cannot resolve the data source for statistical plot; please ensure a dataframe is selected in the settings window</source>
-        <translation>无法确定统计绘图的数据源，请确保在设置窗口中已选择数据表</translation>
-    </message>
-    <message>
-        <location line="+28"/>
-        <source>The selected data source is empty</source>
-        <translation>选中的数据源为空</translation>
-    </message>
-    <message>
-        <location line="-3092"/>
+        <location filename="../APP/Controller/DAAppWorkflowActionHandler.cpp" line="-151"/>
         <source>Before running the workflow, you need to save the project</source>
         <translation>在运行工作流之前，需要先保存工程</translation>
     </message>
     <message>
-        <location line="+2357"/>
+        <location filename="../APP/Controller/DAAppTableActionHandler.cpp" line="-613"/>
         <source>Please select a column first</source>
         <translation>请先选择列</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+114"/>
+        <location line="+17"/>
         <source>Please select a column to sort first</source>
         <translation>请先选择要排序的列</translation>
     </message>
     <message>
-        <location filename="../APP/Controller/DAAppTableActionHandler.cpp"/>
+        <location line="-820"/>
         <source>AutoFit Column Width</source>
         <translation>列宽自适应</translation>
     </message>
     <message>
-        <location filename="../APP/Controller/DAAppTableActionHandler.cpp"/>
+        <location line="+3"/>
         <source>Set Column Width...</source>
         <translation>设置列宽...</translation>
     </message>
     <message>
-        <location filename="../APP/Controller/DAAppTableActionHandler.cpp"/>
+        <location line="+8"/>
         <source>Set Row Height...</source>
         <translation>设置行高...</translation>
     </message>
     <message>
+        <location line="+15"/>
         <source>Compact</source>
         <translation>紧凑</translation>
     </message>
     <message>
+        <location line="+8"/>
         <source>Normal</source>
         <translation>普通</translation>
     </message>
@@ -3998,7 +4014,7 @@
 <context>
     <name>DA::DAAppDockingArea</name>
     <message>
-        <location filename="../APP/DAAppDockingArea.cpp" line="+75"/>
+        <location filename="../APP/DAAppDockingArea.cpp" line="+82"/>
         <source>Workflow Node</source>
         <translation>节点</translation>
     </message>
@@ -4049,7 +4065,7 @@
     </message>
     <message>
         <location line="+2"/>
-        <location line="+565"/>
+        <location line="+628"/>
         <source>Statistics</source>
         <translation>统计信息</translation>
     </message>
@@ -4064,7 +4080,7 @@
         <translation>打开 Markdown 文件失败:%1</translation>
     </message>
     <message>
-        <location line="-532"/>
+        <location line="-595"/>
         <source>Undo History</source>
         <translation>撤销历史</translation>
     </message>
@@ -4502,7 +4518,7 @@
 <context>
     <name>DA::DAAppRibbonArea</name>
     <message>
-        <location filename="../APP/DAAppRibbonArea.cpp" line="+222"/>
+        <location filename="../APP/Ribbon/DAAppRibbonArea.cpp" line="+171"/>
         <location line="+3"/>
         <source>File</source>
         <translation>文件</translation>
@@ -4518,13 +4534,13 @@
         <translation>配置</translation>
     </message>
     <message>
-        <location line="+29"/>
-        <location line="+411"/>
+        <location line="+31"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaWorkflow.cpp" line="+98"/>
         <source>Workflow</source>
         <translation>工作流</translation>
     </message>
     <message>
-        <location line="-438"/>
+        <location line="-29"/>
         <source>Dataset</source>
         <translation>数据集</translation>
     </message>
@@ -4545,15 +4561,17 @@
     </message>
     <message>
         <location line="+2"/>
+        <location line="+10"/>
         <location line="+11"/>
-        <location line="+21"/>
-        <location line="+282"/>
-        <location line="+195"/>
+        <location line="+15"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaTable.cpp" line="+139"/>
+        <location line="+124"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaWorkflow.cpp" line="+31"/>
         <source>View</source>
         <translation>视图</translation>
     </message>
     <message>
-        <location line="-508"/>
+        <location line="-35"/>
         <source>Display</source>
         <translation>视图显示</translation>
     </message>
@@ -4564,140 +4582,130 @@
     </message>
     <message>
         <location line="+2"/>
-        <location line="+241"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaTable.cpp" line="-213"/>
         <source>DataFrame</source>
         <translation>DataFrame</translation>
     </message>
     <message>
-        <location line="-240"/>
-        <location line="+242"/>
+        <location line="+1"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaTable.cpp" line="+19"/>
         <source>Table Operations</source>
         <translation>表格操作</translation>
     </message>
     <message>
-        <location line="-235"/>
-        <location line="+313"/>
+        <location line="+6"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaTable.cpp" line="+98"/>
         <source>Data Operations</source>
         <translation>数据操作</translation>
     </message>
     <message>
-        <location line="-319"/>
-        <location line="+244"/>
-        <source>Axes</source>
-        <translation>坐标轴</translation>
-    </message>
-    <message>
-        <location line="-243"/>
-        <location line="+256"/>
+        <location line="-4"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaTable.cpp" line="-83"/>
         <source>Column</source>
         <translation>列</translation>
     </message>
     <message>
-        <location line="-255"/>
-        <location line="+12"/>
-        <location line="+254"/>
-        <location line="+5"/>
+        <location line="+15"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaTable.cpp" line="+18"/>
         <source>Type</source>
         <translation>类型</translation>
     </message>
     <message>
-        <location line="-270"/>
-        <location line="+12"/>
-        <location line="+269"/>
-        <location line="+4"/>
+        <location line="+1"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaTable.cpp" line="+12"/>
         <source>Format</source>
         <translation>格式</translation>
     </message>
     <message>
-        <location line="-279"/>
-        <location line="+337"/>
+        <location line="-7"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaTable.cpp" line="+101"/>
         <source>Table Style</source>
         <translation>表格样式</translation>
     </message>
     <message>
-        <location line="-336"/>
-        <location line="+340"/>
+        <location line="+1"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaTable.cpp" line="+27"/>
         <source>Fill</source>
         <translation>底色</translation>
     </message>
     <message>
-        <location line="-339"/>
-        <location line="+347"/>
+        <location line="+1"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaTable.cpp" line="-21"/>
         <source>Font</source>
         <translation>字体</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaTable.cpp" line="+8"/>
         <source>Alignment</source>
         <translation>对齐</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+8"/>
         <source>Borders</source>
         <translation>边框</translation>
     </message>
     <message>
-        <location line="-346"/>
-        <location line="+352"/>
+        <location filename="../APP/Ribbon/DAAppRibbonArea.cpp" line="+1"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaTable.cpp" line="+19"/>
         <source>Clear</source>
         <translation>清除</translation>
     </message>
     <message>
-        <location line="-345"/>
+        <location line="+8"/>
         <source>Fill Color</source>
         <translation>填充颜色</translation>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+421"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaWorkflow.cpp" line="+53"/>
         <source>Workflow Edit</source>
         <translation>工作流编辑</translation>
     </message>
     <message>
-        <location line="-456"/>
-        <location line="+36"/>
-        <location line="+424"/>
+        <location line="-37"/>
+        <location line="+39"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaWorkflow.cpp" line="+4"/>
         <source>Clipboard</source>
         <translation>剪贴板</translation>
     </message>
     <message>
-        <location line="-410"/>
-        <location line="+530"/>
+        <location line="+16"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaChart.cpp" line="+64"/>
         <source>Chart Style</source>
         <translation>图表样式</translation>
     </message>
     <message>
-        <location line="-521"/>
-        <location line="+627"/>
+        <location line="+9"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaStats.cpp" line="+49"/>
         <source>Statistics</source>
         <translation>统计</translation>
     </message>
     <message>
-        <location line="-626"/>
-        <location line="+628"/>
+        <location line="+1"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaStats.cpp" line="+2"/>
         <source>Statistics Operations</source>
         <translation>统计操作</translation>
     </message>
     <message>
-        <location line="-627"/>
-        <location line="+631"/>
+        <location line="+1"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaStats.cpp" line="+4"/>
         <source>Statistics Parameters</source>
         <translation>统计参数</translation>
     </message>
     <message>
-        <location line="-630"/>
-        <location line="+653"/>
+        <location line="+1"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaStats.cpp" line="+24"/>
         <source>Tests</source>
         <translation>检验</translation>
     </message>
     <message>
-        <location line="-652"/>
-        <location line="+659"/>
+        <location line="+1"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaStats.cpp" line="+7"/>
         <source>Plots</source>
         <translation>绘图</translation>
     </message>
     <message>
-        <location line="+336"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaAgent.cpp" line="+45"/>
         <location line="+2"/>
         <source>AI Agent</source>
         <translation>AI智能体</translation>
@@ -4733,7 +4741,7 @@
         <translation>打开一个新的 Agent 会话标签页</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+3"/>
         <source>Session Manager</source>
         <translation>会话管理</translation>
     </message>
@@ -4748,7 +4756,7 @@
         <translation>Agent</translation>
     </message>
     <message>
-        <location line="+59"/>
+        <location line="+60"/>
         <location line="+7"/>
         <source>Tip</source>
         <translation>提示</translation>
@@ -4764,43 +4772,43 @@
         <translation>Agent 模块未就绪</translation>
     </message>
     <message>
-        <location line="-1171"/>
-        <location line="+428"/>
+        <location filename="../APP/Ribbon/DAAppRibbonArea.cpp" line="-28"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaWorkflow.cpp" line="+5"/>
         <source>Item</source>
         <translation>图元</translation>
     </message>
     <message>
-        <location line="-427"/>
-        <location line="+436"/>
+        <location line="+1"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaWorkflow.cpp" line="+9"/>
         <source>Text</source>
         <translation>文本</translation>
     </message>
     <message>
-        <location line="-435"/>
-        <location line="+440"/>
+        <location line="+1"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaWorkflow.cpp" line="+5"/>
         <source>Background</source>
         <translation>背景</translation>
     </message>
     <message>
-        <location line="-437"/>
-        <location line="+519"/>
+        <location line="+5"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaWorkflow.cpp" line="+41"/>
         <source>Workflow Run</source>
         <translation>工作流运行</translation>
     </message>
     <message>
-        <location line="-518"/>
-        <location line="+521"/>
+        <location line="+1"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaWorkflow.cpp" line="+3"/>
         <source>Run</source>
         <translation>运行</translation>
     </message>
     <message>
-        <location line="-519"/>
-        <location line="+352"/>
+        <location line="+2"/>
+        <location line="+213"/>
         <source>Figure</source>
         <translation>绘图</translation>
     </message>
     <message>
-        <location line="-346"/>
+        <location line="-207"/>
         <source>Figure Setting</source>
         <translation>绘图设置</translation>
     </message>
@@ -4816,12 +4824,12 @@
     </message>
     <message>
         <location line="+5"/>
-        <location line="+584"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaChart.cpp" line="+67"/>
         <source>Chart Edit</source>
         <translation>绘图编辑</translation>
     </message>
     <message>
-        <location line="-586"/>
+        <location line="-2"/>
         <source>Chart Setting</source>
         <translation>绘图设置</translation>
     </message>
@@ -4832,12 +4840,12 @@
     </message>
     <message>
         <location line="+2"/>
-        <location line="+593"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaChart.cpp" line="+10"/>
         <source>Select Tool</source>
         <translation>选区工具</translation>
     </message>
     <message>
-        <location line="-592"/>
+        <location line="+1"/>
         <source>Chart Assist Tool</source>
         <translation>图表辅助工具</translation>
     </message>
@@ -4853,89 +4861,95 @@
         <translation>导出为图片</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Export Workflow Graphics Scene To Image</source>
         <translation>把工作流的场景导出为图片</translation>
     </message>
     <message>
-        <location line="-23"/>
-        <location line="+376"/>
+        <location line="-24"/>
+        <location line="+236"/>
         <source>Stats Plot</source>
         <translation>统计绘图</translation>
     </message>
     <message>
-        <location line="+63"/>
+        <location line="-245"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaWorkflow.cpp" line="-37"/>
         <source>Group</source>
         <translation>分组</translation>
     </message>
     <message>
-        <location line="+28"/>
+        <location line="-5"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaWorkflow.cpp" line="-86"/>
         <source>Workflow View</source>
         <translation>工作流视图</translation>
     </message>
     <message>
-        <location line="-509"/>
-        <location line="+546"/>
+        <location line="-33"/>
+        <location line="+40"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaWorkflow.cpp" line="+38"/>
         <source>Export</source>
         <translation>导出</translation>
     </message>
     <message>
-        <location line="+27"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaChart.cpp" line="-94"/>
         <source>Chart Operate</source>
         <translation>绘图操作</translation>
     </message>
     <message>
-        <location line="+47"/>
+        <location line="+62"/>
         <source>Theme</source>
         <translation>主题</translation>
     </message>
     <message>
-        <location line="+29"/>
+        <location line="+38"/>
         <source>Assist Tools</source>
         <translation>辅助工具</translation>
     </message>
     <message>
-        <location line="-636"/>
-        <location line="+290"/>
+        <location filename="../APP/Ribbon/DAAppRibbonArea.cpp" line="-28"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaTable.cpp" line="-133"/>
         <source>Edit</source>
         <translation>编辑</translation>
     </message>
     <message>
-        <location line="-281"/>
-        <location line="+357"/>
+        <location line="+11"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaTable.cpp" line="+127"/>
         <source>Conditional</source>
         <translation>条件格式</translation>
     </message>
     <message>
-        <location line="-363"/>
-        <location line="+318"/>
+        <location line="-7"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaTable.cpp" line="-69"/>
         <source>Computed Column</source>
         <translation>计算列</translation>
     </message>
     <message>
-        <location line="-317"/>
-        <location line="+324"/>
+        <location line="+1"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaTable.cpp" line="+7"/>
         <source>Data Transform</source>
         <translation>数据变换</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Sort</source>
-        <translation>排序</translation>
-    </message>
-    <message>
+        <location line="-8"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaTable.cpp" line="-115"/>
         <source>Rows &amp; Columns</source>
         <translation>行与列</translation>
     </message>
     <message>
+        <location line="+2"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaTable.cpp" line="+23"/>
         <source>Type &amp; Format</source>
         <translation>类型与格式</translation>
     </message>
     <message>
+        <location line="+4"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaTable.cpp" line="+78"/>
         <source>Sort &amp; Filter</source>
         <translation>排序与筛选</translation>
     </message>
     <message>
+        <location line="+3"/>
+        <location filename="../APP/Ribbon/DAAppRibbonAreaTable.cpp" line="+25"/>
         <source>Data Validation</source>
         <translation>数据校验</translation>
     </message>
@@ -4972,7 +4986,7 @@
 <context>
     <name>DA::DACacheWindowTableView</name>
     <message>
-        <location filename="../DAGui/DACacheWindowTableView.cpp" line="+765"/>
+        <location filename="../DAGui/Table/Views/DACacheWindowTableView.cpp" line="+765"/>
         <source>Go To Row</source>
         <translation>定位到行</translation>
     </message>
@@ -4985,7 +4999,7 @@
 <context>
     <name>DA::DAChart3DAxisSettingPanel</name>
     <message>
-        <location filename="../DAGui/Chart3DSetting/DAChart3DAxisSettingPanel.cpp" line="+127"/>
+        <location filename="../DAGui/Chart/Setting3D/DAChart3DAxisSettingPanel.cpp" line="+127"/>
         <source>Axis Selector</source>
         <translation>轴选择</translation>
     </message>
@@ -5108,7 +5122,7 @@
 <context>
     <name>DA::DAChart3DBarSettingPanel</name>
     <message>
-        <location filename="../DAGui/Chart3DSetting/DAChart3DBarSettingPanel.cpp" line="+35"/>
+        <location filename="../DAGui/Chart/Setting3D/DAChart3DBarSettingPanel.cpp" line="+35"/>
         <source>General</source>
         <translation>通用</translation>
     </message>
@@ -5186,7 +5200,7 @@
 <context>
     <name>DA::DAChart3DColorLegendSettingPanel</name>
     <message>
-        <location filename="../DAGui/Chart3DSetting/DAChart3DColorLegendSettingPanel.cpp" line="+69"/>
+        <location filename="../DAGui/Chart/Setting3D/DAChart3DColorLegendSettingPanel.cpp" line="+69"/>
         <source>Display</source>
         <translation>视图显示</translation>
     </message>
@@ -5275,7 +5289,7 @@
 <context>
     <name>DA::DAChart3DCoordSysSettingPanel</name>
     <message>
-        <location filename="../DAGui/Chart3DSetting/DAChart3DCoordSysSettingPanel.cpp" line="+70"/>
+        <location filename="../DAGui/Chart/Setting3D/DAChart3DCoordSysSettingPanel.cpp" line="+70"/>
         <location line="+2"/>
         <source>Style</source>
         <translation>样式</translation>
@@ -5409,7 +5423,7 @@
 <context>
     <name>DA::DAChart3DLineSettingPanel</name>
     <message>
-        <location filename="../DAGui/Chart3DSetting/DAChart3DLineSettingPanel.cpp" line="+35"/>
+        <location filename="../DAGui/Chart/Setting3D/DAChart3DLineSettingPanel.cpp" line="+35"/>
         <source>General</source>
         <translation>通用</translation>
     </message>
@@ -5527,7 +5541,7 @@
 <context>
     <name>DA::DAChart3DPlotSettingPanel</name>
     <message>
-        <location filename="../DAGui/Chart3DSetting/DAChart3DPlotSettingPanel.cpp" line="+70"/>
+        <location filename="../DAGui/Chart/Setting3D/DAChart3DPlotSettingPanel.cpp" line="+70"/>
         <source>Title</source>
         <translation>标题</translation>
     </message>
@@ -5703,7 +5717,7 @@
 <context>
     <name>DA::DAChart3DSettingWidget</name>
     <message>
-        <location filename="../DAGui/Chart3DSetting/DAChart3DSettingWidget.cpp" line="+177"/>
+        <location filename="../DAGui/Chart/Setting3D/DAChart3DSettingWidget.cpp" line="+177"/>
         <source>3D Chart Area</source>
         <translation>3D图表区</translation>
     </message>
@@ -5741,7 +5755,7 @@
 <context>
     <name>DA::DAChart3DSurfaceSettingPanel</name>
     <message>
-        <location filename="../DAGui/Chart3DSetting/DAChart3DSurfaceSettingPanel.cpp" line="+37"/>
+        <location filename="../DAGui/Chart/Setting3D/DAChart3DSurfaceSettingPanel.cpp" line="+37"/>
         <source>General</source>
         <translation>通用</translation>
     </message>
@@ -5894,7 +5908,7 @@
 <context>
     <name>DA::DAChartAdd3DBarWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAdd3DBarWidget.cpp" line="+107"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAdd3DBarWidget.cpp" line="+107"/>
         <source>Bar3D</source>
         <translation>3D柱状</translation>
     </message>
@@ -5902,7 +5916,7 @@
 <context>
     <name>DA::DAChartAdd3DLineWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAdd3DLineWidget.cpp" line="+58"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAdd3DLineWidget.cpp" line="+61"/>
         <source>Line3D</source>
         <translation>3D线图</translation>
     </message>
@@ -5910,38 +5924,35 @@
 <context>
     <name>DA::DAChartAdd3DSurfaceWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAdd3DSurfaceWidget.cpp" line="+116"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAdd3DSurfaceWidget.cpp" line="+122"/>
         <source>Surface3D</source>
         <translation>3D曲面</translation>
     </message>
     <message>
-        <location line="+124"/>
+        <location line="+146"/>
         <source>scipy is not available, cannot perform scatter interpolation. Please install scipy: pip install scipy</source>
         <translation>scipy 不可用，无法进行散点插值。请安装 scipy：pip install scipy</translation>
     </message>
-
     <message>
-        <location line="+119"/>
+        <location line="-27"/>
         <source>Not enough valid points for surface interpolation</source>
         <translation>散点数量不足，无法插值成曲面</translation>
-        </message>
-
+    </message>
     <message>
         <location line="+11"/>
         <source>The X or Y column has no variation, cannot build a surface</source>
         <translation>X 或 Y 列没有变化范围，无法生成曲面</translation>
-        </message>
-
+    </message>
     <message>
-        <location line="+57"/>
+        <location line="+73"/>
         <source>Failed to interpolate the surface: %1</source>
         <translation>曲面插值失败：%1</translation>
-        </message>
+    </message>
 </context>
 <context>
     <name>DA::DAChartAddBoxChartWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddBoxChartWidget.cpp" line="+79"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddBoxChartWidget.cpp" line="+79"/>
         <location line="+16"/>
         <location line="+28"/>
         <source>Warning</source>
@@ -5971,7 +5982,7 @@
 <context>
     <name>DA::DAChartAddContourWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddContourWidget.cpp" line="+18"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddContourWidget.cpp" line="+18"/>
         <source>X</source>
         <translation>X</translation>
     </message>
@@ -5986,7 +5997,7 @@
         <translation>值</translation>
     </message>
     <message>
-        <location line="+31"/>
+        <location line="+34"/>
         <location line="+9"/>
         <location line="+9"/>
         <source>Warning</source>
@@ -6004,7 +6015,7 @@
         <translation>所选数据无法转换为序列</translation>
     </message>
     <message>
-        <location line="+36"/>
+        <location line="+22"/>
         <source>Exception occurred during extracting contour data:%1</source>
         <translation>提取等高线数据过程中出现异常:%1</translation>
     </message>
@@ -6012,7 +6023,7 @@
 <context>
     <name>DA::DAChartAddErrorBarWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddErrorBarWidget.cpp" line="+22"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddErrorBarWidget.cpp" line="+24"/>
         <source>Error Bar</source>
         <translation>误差棒</translation>
     </message>
@@ -6020,7 +6031,7 @@
 <context>
     <name>DA::DAChartAddHistogramWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddHistogramWidget.cpp" line="+18"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddHistogramWidget.cpp" line="+18"/>
         <source>Data</source>
         <translation>数据</translation>
     </message>
@@ -6045,7 +6056,7 @@
 <context>
     <name>DA::DAChartAddMultiBarWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddMultiBarWidget.cpp" line="+90"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddMultiBarWidget.cpp" line="+90"/>
         <location line="+26"/>
         <source>Warning</source>
         <translation>警告</translation>
@@ -6066,7 +6077,7 @@
         <translation>提取y序列过程中出现异常:%1</translation>
     </message>
     <message>
-        <location line="+48"/>
+        <location line="+51"/>
         <source>Exception occurred during building multi-bar samples:%1</source>
         <translation>构建多重柱状图样本过程中出现异常:%1</translation>
     </message>
@@ -6074,7 +6085,7 @@
 <context>
     <name>DA::DAChartAddOHLCSeriesWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddOHLCSeriesWidget.cpp" line="+37"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddOHLCSeriesWidget.cpp" line="+37"/>
         <location line="+9"/>
         <source>Time</source>
         <translation>时间</translation>
@@ -6161,7 +6172,7 @@
 <context>
     <name>DA::DAChartAddStatsBarplotWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddStatsBarplotWidget.cpp" line="+21"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddStatsBarplotWidget.cpp" line="+21"/>
         <source>X axis (categorical)</source>
         <translation>X 轴（分类）</translation>
     </message>
@@ -6176,12 +6187,7 @@
         <translation>分组</translation>
     </message>
     <message>
-        <location line="+83"/>
-        <source>Please select an X-axis data column before plotting</source>
-        <translation>请先选择 X 轴数据列再绘图</translation>
-    </message>
-    <message>
-        <location line="+44"/>
+        <location line="+111"/>
         <source>Barplot Settings</source>
         <translation>柱状图设置</translation>
     </message>
@@ -6194,7 +6200,7 @@
 <context>
     <name>DA::DAChartAddStatsBoxplotWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddStatsBoxplotWidget.cpp" line="+21"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddStatsBoxplotWidget.cpp" line="+20"/>
         <source>Data</source>
         <translation>数据</translation>
     </message>
@@ -6203,22 +6209,11 @@
         <source>Hue</source>
         <translation>分组</translation>
     </message>
-    <message>
-        <location line="+42"/>
-        <location line="+18"/>
-        <source>Please select one or more data columns before plotting</source>
-        <translation>请先选择数据列再绘图</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>Please select a data column before plotting</source>
-        <translation>请先选择数据列再绘图</translation>
-    </message>
 </context>
 <context>
     <name>DA::DAChartAddStatsEcdfplotWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddStatsEcdfplotWidget.cpp" line="+20"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddStatsEcdfplotWidget.cpp" line="+20"/>
         <source>Data</source>
         <translation>数据</translation>
     </message>
@@ -6232,16 +6227,11 @@
         <source>Weights (optional)</source>
         <translation>权重（可选）</translation>
     </message>
-    <message>
-        <location line="+53"/>
-        <source>Please select a data column before plotting</source>
-        <translation>请先选择数据列再绘图</translation>
-    </message>
 </context>
 <context>
     <name>DA::DAChartAddStatsHeatmapWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddStatsHeatmapWidget.cpp" line="+20"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddStatsHeatmapWidget.cpp" line="+20"/>
         <source>X axis</source>
         <translation>X 轴</translation>
     </message>
@@ -6255,23 +6245,11 @@
         <source>Value</source>
         <translation>值</translation>
     </message>
-    <message>
-        <location line="+76"/>
-        <location line="+4"/>
-        <source>Please select an X-axis data column before plotting</source>
-        <translation>请先选择 X 轴数据列再绘图</translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <location line="+4"/>
-        <source>Please select a Y-axis data column before plotting</source>
-        <translation>请先选择 Y 轴数据列再绘图</translation>
-    </message>
 </context>
 <context>
     <name>DA::DAChartAddStatsHistplotWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddStatsHistplotWidget.cpp" line="+21"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddStatsHistplotWidget.cpp" line="+20"/>
         <source>Data</source>
         <translation>数据</translation>
     </message>
@@ -6279,18 +6257,12 @@
         <location line="+4"/>
         <source>Hue</source>
         <translation>分组</translation>
-    </message>
-    <message>
-        <location line="+68"/>
-        <location line="+4"/>
-        <source>Please select a data column before plotting</source>
-        <translation>请先选择数据列再绘图</translation>
     </message>
 </context>
 <context>
     <name>DA::DAChartAddStatsKdeplot1dWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddStatsKdeplot1dWidget.cpp" line="+21"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddStatsKdeplot1dWidget.cpp" line="+20"/>
         <source>Data</source>
         <translation>数据</translation>
     </message>
@@ -6299,17 +6271,11 @@
         <source>Hue</source>
         <translation>分组</translation>
     </message>
-    <message>
-        <location line="+77"/>
-        <location line="+4"/>
-        <source>Please select a data column before plotting</source>
-        <translation>请先选择数据列再绘图</translation>
-    </message>
 </context>
 <context>
     <name>DA::DAChartAddStatsKdeplot2dWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddStatsKdeplot2dWidget.cpp" line="+21"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddStatsKdeplot2dWidget.cpp" line="+20"/>
         <source>X axis</source>
         <translation>X 轴</translation>
     </message>
@@ -6317,24 +6283,12 @@
         <location line="+4"/>
         <source>Y axis</source>
         <translation>Y 轴</translation>
-    </message>
-    <message>
-        <location line="+54"/>
-        <location line="+4"/>
-        <source>Please select an X-axis data column before plotting</source>
-        <translation>请先选择 X 轴数据列再绘图</translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <location line="+4"/>
-        <source>Please select a Y-axis data column before plotting</source>
-        <translation>请先选择 Y 轴数据列再绘图</translation>
     </message>
 </context>
 <context>
     <name>DA::DAChartAddStatsRegplotWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddStatsRegplotWidget.cpp" line="+20"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddStatsRegplotWidget.cpp" line="+20"/>
         <source>X axis</source>
         <translation>X 轴</translation>
     </message>
@@ -6343,21 +6297,11 @@
         <source>Y axis</source>
         <translation>Y 轴</translation>
     </message>
-    <message>
-        <location line="+76"/>
-        <source>Please select an X-axis data column before plotting</source>
-        <translation>请先选择 X 轴数据列再绘图</translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>Please select a Y-axis data column before plotting</source>
-        <translation>请先选择 Y 轴数据列再绘图</translation>
-    </message>
 </context>
 <context>
     <name>DA::DAChartAddStatsScatterplotWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddStatsScatterplotWidget.cpp" line="+20"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddStatsScatterplotWidget.cpp" line="+20"/>
         <source>X axis</source>
         <translation>X 轴</translation>
     </message>
@@ -6371,23 +6315,11 @@
         <source>Hue</source>
         <translation>分组</translation>
     </message>
-    <message>
-        <location line="+39"/>
-        <location line="+4"/>
-        <source>Please select an X-axis data column before plotting</source>
-        <translation>请先选择 X 轴数据列再绘图</translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <location line="+4"/>
-        <source>Please select a Y-axis data column before plotting</source>
-        <translation>请先选择 Y 轴数据列再绘图</translation>
-    </message>
 </context>
 <context>
     <name>DA::DAChartAddVectorFieldWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddVectorFieldWidget.cpp" line="+16"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddVectorFieldWidget.cpp" line="+16"/>
         <source>X</source>
         <translation>X</translation>
     </message>
@@ -6407,7 +6339,7 @@
         <translation>V</translation>
     </message>
     <message>
-        <location line="+34"/>
+        <location line="+37"/>
         <location line="+10"/>
         <location line="+10"/>
         <source>Warning</source>
@@ -6425,7 +6357,7 @@
         <translation>所选数据无法转换为序列</translation>
     </message>
     <message>
-        <location line="+27"/>
+        <location line="+24"/>
         <source>Exception occurred during extracting vector field data:%1</source>
         <translation>提取向量场数据过程中出现异常:%1</translation>
     </message>
@@ -6433,7 +6365,7 @@
 <context>
     <name>DA::DAChartAddXYESeriesWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddXYESeriesWidget.cpp" line="+21"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddXYESeriesWidget.cpp" line="+21"/>
         <source>x</source>
         <translation>x</translation>
     </message>
@@ -6523,7 +6455,7 @@
 <context>
     <name>DA::DAChartAddXYSeriesWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddXYSeriesWidget.cpp" line="+26"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddXYSeriesWidget.cpp" line="+26"/>
         <source>x</source>
         <translation>x</translation>
     </message>
@@ -6597,7 +6529,7 @@
 <context>
     <name>DA::DAChartAddtGridRasterDataWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddtGridRasterDataWidget.cpp" line="+178"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddtGridRasterDataWidget.cpp" line="+178"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
@@ -6620,7 +6552,7 @@
 <context>
     <name>DA::DAChartArrowMarkerSettingPanel</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartArrowMarkerSettingPanel.cpp" line="+51"/>
+        <location filename="../DAGui/Chart/Setting/DAChartArrowMarkerSettingPanel.cpp" line="+51"/>
         <source>Basic</source>
         <translation>基础</translation>
     </message>
@@ -6800,7 +6732,7 @@
 <context>
     <name>DA::DAChartAutoincrementSeriesWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAutoincrementSeriesWidget.cpp" line="+31"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAutoincrementSeriesWidget.cpp" line="+31"/>
         <source>Autoincrement series</source>
         <translation>自增序列</translation>
     </message>
@@ -6818,7 +6750,7 @@
 <context>
     <name>DA::DAChartAxisSettingPanel</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartAxisSettingPanel.cpp" line="+192"/>
+        <location filename="../DAGui/Chart/Setting/DAChartAxisSettingPanel.cpp" line="+192"/>
         <source>Enable</source>
         <translation>启用</translation>
     </message>
@@ -6901,7 +6833,7 @@
 <context>
     <name>DA::DAChartBarSettingPanel</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartBarSettingPanel.cpp" line="+51"/>
+        <location filename="../DAGui/Chart/Setting/DAChartBarSettingPanel.cpp" line="+51"/>
         <source>Basic</source>
         <translation>基础</translation>
     </message>
@@ -7035,7 +6967,7 @@
 <context>
     <name>DA::DAChartBoxChartSettingPanel</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartBoxChartSettingPanel.cpp" line="+51"/>
+        <location filename="../DAGui/Chart/Setting/DAChartBoxChartSettingPanel.cpp" line="+51"/>
         <source>Basic</source>
         <translation>基础</translation>
     </message>
@@ -7183,7 +7115,7 @@
 <context>
     <name>DA::DAChartCanvasSettingPanel</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartCanvasSettingPanel.cpp" line="+130"/>
+        <location filename="../DAGui/Chart/Setting/DAChartCanvasSettingPanel.cpp" line="+130"/>
         <source>Background</source>
         <translation>背景</translation>
     </message>
@@ -7246,7 +7178,7 @@
 <context>
     <name>DA::DAChartCurveSettingPanel</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartCurveSettingPanel.cpp" line="+45"/>
+        <location filename="../DAGui/Chart/Setting/DAChartCurveSettingPanel.cpp" line="+45"/>
         <source>General</source>
         <translation>通用</translation>
     </message>
@@ -7367,7 +7299,7 @@
 <context>
     <name>DA::DAChartDataPickerSettingPanel</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartDataPickerSettingPanel.cpp" line="+115"/>
+        <location filename="../DAGui/Chart/Setting/DAChartDataPickerSettingPanel.cpp" line="+115"/>
         <source>Basic</source>
         <translation>基础</translation>
     </message>
@@ -7525,7 +7457,7 @@
 <context>
     <name>DA::DAChartDataProbeMarkerSettingPanel</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartDataProbeMarkerSettingPanel.cpp" line="+48"/>
+        <location filename="../DAGui/Chart/Setting/DAChartDataProbeMarkerSettingPanel.cpp" line="+48"/>
         <source>Basic</source>
         <translation>基础</translation>
     </message>
@@ -7608,7 +7540,7 @@
 <context>
     <name>DA::DAChartErrorBarSettingPanel</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartErrorBarSettingPanel.cpp" line="+49"/>
+        <location filename="../DAGui/Chart/Setting/DAChartErrorBarSettingPanel.cpp" line="+49"/>
         <source>Basic</source>
         <translation>基础</translation>
     </message>
@@ -7699,9 +7631,37 @@
     </message>
 </context>
 <context>
+    <name>DA::DAChartGenericItemSettingPanel</name>
+    <message>
+        <location filename="../DAGui/Chart/Setting/DAChartGenericItemSettingPanel.cpp" line="+41"/>
+        <source>Basic</source>
+        <translation>基础</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Title</source>
+        <translation>标题</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Legend Visible</source>
+        <translation>图例可见</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Visible</source>
+        <translation>可见</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Z Value</source>
+        <translation>Z值</translation>
+    </message>
+</context>
+<context>
     <name>DA::DAChartGraphicSettingPanel</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartGraphicSettingPanel.cpp" line="+42"/>
+        <location filename="../DAGui/Chart/Setting/DAChartGraphicSettingPanel.cpp" line="+42"/>
         <source>Basic</source>
         <translation>基础</translation>
     </message>
@@ -7739,7 +7699,7 @@
 <context>
     <name>DA::DAChartGridSettingPanel</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartGridSettingPanel.cpp" line="+44"/>
+        <location filename="../DAGui/Chart/Setting/DAChartGridSettingPanel.cpp" line="+44"/>
         <source>Basic</source>
         <translation>基础</translation>
     </message>
@@ -7787,7 +7747,7 @@
 <context>
     <name>DA::DAChartHistogramSettingPanel</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartHistogramSettingPanel.cpp" line="+46"/>
+        <location filename="../DAGui/Chart/Setting/DAChartHistogramSettingPanel.cpp" line="+46"/>
         <source>Basic</source>
         <translation>基础</translation>
     </message>
@@ -7860,7 +7820,7 @@
 <context>
     <name>DA::DAChartItemSettingPanel</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartItemSettingPanel.cpp" line="+74"/>
+        <location filename="../DAGui/Chart/Setting/DAChartItemSettingPanel.cpp" line="+74"/>
         <source>Lines</source>
         <translation>线条</translation>
     </message>
@@ -8039,7 +7999,7 @@
 <context>
     <name>DA::DAChartLegendSettingPanel</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartLegendSettingPanel.cpp" line="+52"/>
+        <location filename="../DAGui/Chart/Setting/DAChartLegendSettingPanel.cpp" line="+52"/>
         <source>Basic</source>
         <translation>基础</translation>
     </message>
@@ -8133,8 +8093,8 @@
 <context>
     <name>DA::DAChartManageWidget</name>
     <message>
-        <location filename="../DAGui/Chart/DAChartManageWidget.cpp" line="+99"/>
-        <location line="+619"/>
+        <location filename="../DAGui/Chart/DAChartManageWidget.cpp" line="+102"/>
+        <location line="+809"/>
         <location line="+17"/>
         <location line="+20"/>
         <location line="+22"/>
@@ -8144,26 +8104,26 @@
         <translation>重命名</translation>
     </message>
     <message>
-        <location line="-713"/>
+        <location line="-903"/>
         <source>Visible</source>
         <translation>可见</translation>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+817"/>
+        <location line="+1007"/>
         <location line="+24"/>
         <source>Delete</source>
         <translation>删除</translation>
     </message>
     <message>
-        <location line="-839"/>
-        <location line="+888"/>
+        <location line="-1029"/>
+        <location line="+1078"/>
         <location line="+20"/>
         <source>Remove Chart</source>
         <translation>删除坐标系</translation>
     </message>
     <message>
-        <location line="-903"/>
+        <location line="-1093"/>
         <source>Transfer</source>
         <translation>转移</translation>
     </message>
@@ -8173,29 +8133,29 @@
         <translation>设置</translation>
     </message>
     <message>
-        <location line="+103"/>
+        <location line="+104"/>
         <source>figure</source>
         <translation>绘图</translation>
     </message>
     <message>
-        <location line="+288"/>
+        <location line="+482"/>
         <source>received figure create signal, but cannot find figure</source>
         <translation>获取了绘图创建的信号，但无法找到绘图</translation>
     </message>
     <message>
-        <location line="+25"/>
+        <location line="+10"/>
         <source>received figure close signal, but cannot find figure index</source>
         <translation>获取了绘图关闭的信号，但无法找到绘图的索引</translation>
     </message>
     <message>
-        <location line="+465"/>
+        <location line="+475"/>
         <location line="+20"/>
         <source>Are you sure to remove chart &quot;%1&quot;? All its items will be removed.</source>
         <translation>确认删除坐标系&quot;%1&quot;吗？其全部图元将一并移除。</translation>
     </message>
     <message>
-        <location line="-784"/>
-        <location line="+485"/>
+        <location line="-973"/>
+        <location line="+674"/>
         <location line="+275"/>
         <location line="+20"/>
         <source>chart</source>
@@ -8226,7 +8186,7 @@
 <context>
     <name>DA::DAChartMarkerSettingPanel</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartMarkerSettingPanel.cpp" line="+48"/>
+        <location filename="../DAGui/Chart/Setting/DAChartMarkerSettingPanel.cpp" line="+48"/>
         <source>Basic</source>
         <translation>基础</translation>
     </message>
@@ -8327,7 +8287,7 @@
 <context>
     <name>DA::DAChartMultiBarSettingPanel</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartMultiBarSettingPanel.cpp" line="+47"/>
+        <location filename="../DAGui/Chart/Setting/DAChartMultiBarSettingPanel.cpp" line="+47"/>
         <source>Basic</source>
         <translation>基础</translation>
     </message>
@@ -8430,12 +8390,12 @@
 <context>
     <name>DA::DAChartOperateWidget</name>
     <message>
-        <location filename="../DAGui/Chart/DAChartOperateWidget.cpp" line="+169"/>
+        <location filename="../DAGui/Chart/DAChartOperateWidget.cpp" line="+178"/>
         <source>figure-%1</source>
         <translation>图-%1</translation>
     </message>
     <message>
-        <location line="+452"/>
+        <location line="+457"/>
         <source>Question</source>
         <translation>疑问</translation>
     </message>
@@ -8448,7 +8408,7 @@
 <context>
     <name>DA::DAChartPlotSettingPanel</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartPlotSettingPanel.cpp" line="+114"/>
+        <location filename="../DAGui/Chart/Setting/DAChartPlotSettingPanel.cpp" line="+114"/>
         <source>Title</source>
         <translation>标题</translation>
     </message>
@@ -8491,7 +8451,7 @@
 <context>
     <name>DA::DAChartScaleSettingPanel</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartScaleSettingPanel.cpp" line="+47"/>
+        <location filename="../DAGui/Chart/Setting/DAChartScaleSettingPanel.cpp" line="+47"/>
         <source>Basic</source>
         <translation>基础</translation>
     </message>
@@ -8570,7 +8530,7 @@
 <context>
     <name>DA::DAChartSeriesPickerWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartSeriesPickerWidget.cpp" line="+253"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartSeriesPickerWidget.cpp" line="+253"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
@@ -8641,7 +8601,7 @@
 <context>
     <name>DA::DAChartShapeSettingPanel</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartShapeSettingPanel.cpp" line="+46"/>
+        <location filename="../DAGui/Chart/Setting/DAChartShapeSettingPanel.cpp" line="+46"/>
         <source>Basic</source>
         <translation>基础</translation>
     </message>
@@ -8714,7 +8674,7 @@
 <context>
     <name>DA::DAChartSpectroCurveSettingPanel</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartSpectroCurveSettingPanel.cpp" line="+46"/>
+        <location filename="../DAGui/Chart/Setting/DAChartSpectroCurveSettingPanel.cpp" line="+46"/>
         <source>Basic</source>
         <translation>基础</translation>
     </message>
@@ -8777,7 +8737,7 @@
 <context>
     <name>DA::DAChartSpectrogramSettingPanel</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartSpectrogramSettingPanel.cpp" line="+46"/>
+        <location filename="../DAGui/Chart/Setting/DAChartSpectrogramSettingPanel.cpp" line="+46"/>
         <source>Basic</source>
         <translation>基础</translation>
     </message>
@@ -8855,7 +8815,7 @@
 <context>
     <name>DA::DAChartSymbolComboBox</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartSymbolComboBox.cpp" line="+38"/>
+        <location filename="../DAGui/Chart/Setting/DAChartSymbolComboBox.cpp" line="+38"/>
         <source>No Symbol</source>
         <translation>无符号</translation>
     </message>
@@ -8951,7 +8911,7 @@
 <context>
     <name>DA::DAChartTextLabelSettingPanel</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartTextLabelSettingPanel.cpp" line="+47"/>
+        <location filename="../DAGui/Chart/Setting/DAChartTextLabelSettingPanel.cpp" line="+47"/>
         <source>Basic</source>
         <translation>基础</translation>
     </message>
@@ -9024,7 +8984,7 @@
 <context>
     <name>DA::DAChartTextMarkerSettingPanel</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartTextMarkerSettingPanel.cpp" line="+54"/>
+        <location filename="../DAGui/Chart/Setting/DAChartTextMarkerSettingPanel.cpp" line="+54"/>
         <source>Basic</source>
         <translation>基础</translation>
     </message>
@@ -9117,7 +9077,7 @@
 <context>
     <name>DA::DAChartTradingCurveSettingPanel</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartTradingCurveSettingPanel.cpp" line="+48"/>
+        <location filename="../DAGui/Chart/Setting/DAChartTradingCurveSettingPanel.cpp" line="+48"/>
         <source>Basic</source>
         <translation>基础</translation>
     </message>
@@ -9215,7 +9175,7 @@
 <context>
     <name>DA::DAChartVectorFieldSettingPanel</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartVectorFieldSettingPanel.cpp" line="+49"/>
+        <location filename="../DAGui/Chart/Setting/DAChartVectorFieldSettingPanel.cpp" line="+49"/>
         <source>Basic</source>
         <translation>基础</translation>
     </message>
@@ -9328,7 +9288,7 @@
 <context>
     <name>DA::DAChartZoneSettingPanel</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartZoneSettingPanel.cpp" line="+45"/>
+        <location filename="../DAGui/Chart/Setting/DAChartZoneSettingPanel.cpp" line="+45"/>
         <source>Basic</source>
         <translation>基础</translation>
     </message>
@@ -9437,7 +9397,7 @@
 <context>
     <name>DA::DADataHeaderView</name>
     <message>
-        <location filename="../DAGui/DADataHeaderView.cpp" line="+371"/>
+        <location filename="../DAGui/Table/Views/DADataHeaderView.cpp" line="+484"/>
         <source>Sort Ascending</source>
         <translation>升序排序</translation>
     </message>
@@ -9457,7 +9417,7 @@
         <translation>追加为次级排序（降序）</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+9"/>
         <source>Rename Column</source>
         <translation>重命名此列</translation>
     </message>
@@ -9522,12 +9482,13 @@
         <translation>显示统计信息</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="-325"/>
+        <location line="+327"/>
         <source>Quick Plot</source>
         <translation>快速绘图</translation>
     </message>
     <message>
-        <location line="+42"/>
+        <location line="+46"/>
         <source>Edit Formula</source>
         <translation>编辑公式</translation>
     </message>
@@ -9577,16 +9538,17 @@
         <translation>列管理…</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="-132"/>
         <source>Custom Sort...</source>
         <translation>自定义排序...</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Clear Sort</source>
         <translation>清除排序</translation>
     </message>
     <message>
+        <location line="+280"/>
         <source>Set Row Height...</source>
         <translation>设置整表行高...</translation>
     </message>
@@ -9696,7 +9658,7 @@
 <context>
     <name>DA::DADataManageTableView</name>
     <message>
-        <location filename="../DAGui/DADataManageTableView.cpp" line="+89"/>
+        <location filename="../DAGui/DataManager/DADataManageTableView.cpp" line="+89"/>
         <source>An item is selected in the data management table, but the corresponding data cannot be obtained</source>
         <translation>在数据管理表中选中了条目，但无法获取对应数据</translation>
     </message>
@@ -9704,7 +9666,7 @@
 <context>
     <name>DA::DADataManageWidget</name>
     <message>
-        <location filename="../DAGui/DADataManageWidget.cpp" line="+83"/>
+        <location filename="../DAGui/DataManager/DADataManageWidget.cpp" line="+83"/>
         <source>Please select the data item to remove</source>
         <translation>请选择需要删除的数据条目</translation>
     </message>
@@ -9730,7 +9692,7 @@
 <context>
     <name>DA::DADataManagerTableModel</name>
     <message>
-        <location filename="../DAGui/Models/DADataManagerTableModel.cpp" line="+33"/>
+        <location filename="../DAGui/DataManager/DADataManagerTableModel.cpp" line="+33"/>
         <source>name</source>
         <translation>名称</translation>
     </message>
@@ -9743,7 +9705,7 @@
 <context>
     <name>DA::DADataManagerTreeModel</name>
     <message>
-        <location filename="../DAGui/Models/DADataManagerTreeModel.cpp" line="+289"/>
+        <location filename="../DAGui/DataManager/DADataManagerTreeModel.cpp" line="+289"/>
         <location line="+2"/>
         <location line="+87"/>
         <location line="+3"/>
@@ -9773,7 +9735,7 @@
 <context>
     <name>DA::DADataManagerTreeWidget</name>
     <message>
-        <location filename="../DAGui/DADataManagerTreeWidget.cpp" line="+438"/>
+        <location filename="../DAGui/DataManager/DADataManagerTreeWidget.cpp" line="+438"/>
         <source>Search...</source>
         <translation>搜索</translation>
     </message>
@@ -9781,694 +9743,34 @@
 <context>
     <name>DA::DADataOperateOfDataFrameWidget</name>
     <message>
-        <location filename="../DAGui/DADataOperateOfDataFrameWidget.cpp" line="+774"/>
-        <source>Warning</source>
-        <translation>警告</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>The name of the new column to be inserted must be specified</source>
-        <translation>必须指定列的名字</translation>
-    </message>
-    <message>
-        <location line="+65"/>
-        <source>Please select valid data cells</source>
-        <translation>请选择正确的行</translation>
-    </message>
-    <message>
-        <location line="+57"/>
-        <location line="+501"/>
-        <location line="+40"/>
-        <location line="+46"/>
-        <location line="+47"/>
-        <location line="+2228"/>
-        <location line="+24"/>
+        <location filename="../DAGui/Table/DADataOperateOfDataFrameWidget.cpp" line="+1116"/>
+        <location line="+28"/>
+        <location line="+119"/>
         <source>Please select a valid column</source>
         <translation>请选择正确的列</translation>
     </message>
     <message>
-        <location line="-2720"/>
-        <location line="+2302"/>
-        <location line="+63"/>
-        <location line="+47"/>
-        <source>Please select a valid cell</source>
-        <translation>请选择正确的单元格</translation>
-    </message>
-    <message>
-        <location line="-2348"/>
-        <source>Clipboard is empty</source>
-        <translation>剪贴板为空</translation>
-    </message>
-    <message>
-        <location line="+15"/>
-        <source>Please select a cell to paste into</source>
-        <translation>请先选中要粘贴的起始单元格</translation>
-    </message>
-    <message>
-        <location line="+50"/>
-        <source>Nothing to paste: the clipboard content exceeds the table boundary</source>
-        <translation>无可粘贴内容：剪贴板内容超出表格边界</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>Paste partially dropped: %1 row(s) and %2 cell(s) outside the table were ignored</source>
-        <translation>粘贴部分丢弃：%1 行与 %2 个单元格超出表格范围被忽略</translation>
-    </message>
-    <message>
-        <location line="+29"/>
-        <source>Paste failed: the content does not match the column data type</source>
-        <translation>粘贴失败：内容与列数据类型不匹配</translation>
-    </message>
-    <message>
-        <location line="+17"/>
-        <source>No cells selected to cut</source>
-        <translation>没有选中可剪切的单元格</translation>
-    </message>
-    <message>
-        <location line="+22"/>
-        <source>Table has no columns</source>
-        <translation>表格没有列</translation>
-    </message>
-    <message>
-        <location line="+69"/>
-        <source>Column name cannot be empty</source>
-        <translation>列名不能为空</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>Column name &quot;%1&quot; already exists, please use another name</source>
-        <translation>列名&quot;%1&quot;已存在，请使用其他名称</translation>
-    </message>
-    <message>
-        <location line="+2612"/>
+        <location line="+424"/>
         <source>This data source is read-only and cannot be sorted.</source>
         <translation>该数据源为只读，无法排序</translation>
     </message>
     <message>
-        <location line="+109"/>
-        <source>Cannot sort: the column contains values of incomparable mixed types.</source>
-        <translation>无法排序：该列包含不可比较的混合类型</translation>
-    </message>
-    <message>
-        <location line="+844"/>
-        <source>This data source is read-only and cannot be modified.</source>
-        <translation>该数据源为只读，无法修改</translation>
-    </message>
-    <message>
-        <location line="+14"/>
-        <location line="+22"/>
-        <location line="+44"/>
-        <source>No matches found</source>
-        <translation>未找到匹配项</translation>
-    </message>
-    <message>
-        <location line="-38"/>
-        <source>Replace All</source>
-        <translation>全部替换</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Too many cells will be changed (%1). This operation cannot be undone. Continue?</source>
-        <translation>改动量过大（%1 格），本次替换将不可撤销，是否继续？</translation>
-    </message>
-    <message>
-        <location line="-687"/>
-        <location line="+34"/>
-        <location line="+51"/>
-        <source>Please select a column first</source>
-        <translation>请先选择列</translation>
-    </message>
-    <message>
-        <location line="-48"/>
-        <location line="+87"/>
-        <source>Clear Conditional Format Rules</source>
-        <translation>清除条件格式规则</translation>
-    </message>
-    <message>
-        <location line="-77"/>
-        <source>The selected columns have no conditional format rules</source>
-        <translation>所选列没有条件格式规则</translation>
-    </message>
-    <message>
-        <location line="+283"/>
-        <source>Change Conditional Format Rules</source>
-        <translation>更改条件格式规则</translation>
-    </message>
-    <message>
-        <location line="+661"/>
-        <source>The table is read-only and does not support computed columns</source>
-        <translation>只读表格不支持计算列</translation>
-    </message>
-    <message>
-        <location line="-25"/>
-        <location line="+135"/>
-        <source>Failed to evaluate the formula of computed column &quot;%1&quot;: %2</source>
-        <translation>计算列“%1”公式求值失败：%2</translation>
-    </message>
-    <message>
-        <location line="-64"/>
-        <source>Column &quot;%1&quot; has no computed formula</source>
-        <translation>列“%1”没有计算公式</translation>
-    </message>
-    <message>
-        <location line="-23"/>
-        <source>The formula must not reference the target column itself</source>
-        <translation>公式不得引用目标列自身</translation>
-    </message>
-    <message>
-        <location line="-4231"/>
-        <source>Computed column(s) %1 became invalid because their dependency column(s) were removed</source>
-        <translation>计算列 %1 因依赖列被删除已失效</translation>
-    </message>
-    <message>
-        <location line="+4652"/>
-        <source>Computed column(s) %1 became invalid because their dependency column(s) were merged</source>
-        <translation>计算列 %1 因依赖列被合并已失效</translation>
-    </message>
-    <message>
-        <location line="-265"/>
-        <location line="+1018"/>
-        <source>Rename Column</source>
-        <translation>重命名列</translation>
-    </message>
-    <message>
-        <location line="-1017"/>
-        <source>%1 computed column(s) reference the renamed column(s): %2. Their references will be updated automatically. Continue?</source>
-        <translation>有 %1 个计算列引用被改名的列：%2。其引用将自动批量更新，是否继续？</translation>
-    </message>
-    <message>
-        <location line="-110"/>
-        <source>Recompute All Computed Columns</source>
-        <translation>重算全部计算列</translation>
-    </message>
-    <message>
-        <location line="+158"/>
-        <source>Split Column requires an editable table</source>
-        <translation>分列需要可编辑的表格</translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>Please select exactly one column to split</source>
-        <translation>请选择要拆分的单个列</translation>
-    </message>
-    <message>
-        <location line="+14"/>
-        <source>Failed to snapshot the source column</source>
-        <translation>源列快照失败</translation>
-    </message>
-    <message>
-        <location line="+59"/>
-        <source>Split column failed: %1</source>
-        <translation>分列失败：%1</translation>
-    </message>
-    <message>
-        <location line="+19"/>
-        <source>Merge Columns requires an editable table</source>
-        <translation>合并列需要可编辑的表格</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>Please select at least two columns to merge</source>
-        <translation>请选择至少两列进行合并</translation>
-    </message>
-    <message>
-        <location line="+16"/>
-        <source>Failed to snapshot the source columns</source>
-        <translation>源列快照失败</translation>
-    </message>
-    <message>
-        <location line="+89"/>
-        <source>Merge columns failed: %1</source>
-        <translation>合并列失败：%1</translation>
-    </message>
-    <message>
-        <location line="+43"/>
-        <source>%1_GroupBy</source>
-        <translation>%1_分组聚合</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Group-by aggregation of %1</source>
-        <translation>生成%1的分组聚合结果</translation>
-    </message>
-    <message>
-        <location line="+155"/>
-        <source>%1_Melted</source>
-        <translation>%1_宽转长</translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>Melt (wide to long) of %1</source>
-        <translation>生成%1的宽转长结果</translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>%1_Transposed</source>
-        <translation>%1_转置</translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>Transpose of %1</source>
-        <translation>生成%1的转置结果</translation>
-    </message>
-    <message>
-        <location line="-13"/>
-        <source>Reshape failed: %1</source>
-        <translation>形状变换失败：%1</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>Melt table in place</source>
-        <translation>就地宽转长</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Transpose table in place</source>
-        <translation>就地转置</translation>
-    </message>
-    <message>
-        <location line="-81"/>
-        <source>(no table metadata to clear)</source>
-        <translation>（无需要清除的表元数据）</translation>
-    </message>
-    <message>
-        <location line="-2958"/>
-        <source>Freeze the first N columns (added to already frozen columns, 0 = no change):</source>
-        <translation>冻结前 N 列（追加到已冻结的列，0 = 不做修改）：</translation>
-    </message>
-    <message>
-        <location line="+213"/>
-        <source>Column names must be unique</source>
-        <translation>列名不能重复</translation>
-    </message>
-    <message>
-        <location line="+54"/>
-        <source>Rename and update column view</source>
-        <translation>重命名并更新列视图</translation>
-    </message>
-    <message>
-        <location line="+1271"/>
-        <source>The table has no conditional format rules</source>
-        <translation>本表没有条件格式规则</translation>
-    </message>
-    <message>
-        <location line="+32"/>
-        <source>Blue</source>
-        <translation>蓝色</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Green</source>
-        <translation>绿色</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Red</source>
-        <translation>红色</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Yellow</source>
-        <translation>黄色</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Cyan</source>
-        <translation>青色</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Purple</source>
-        <translation>紫色</translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Data Bars</source>
-        <translation>数据条</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>Gradient Fill</source>
-        <translation>渐变填充</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>%1 Gradient Fill</source>
-        <translation>%1渐变填充</translation>
-    </message>
-    <message>
-        <location line="+10"/>
-        <source>Solid Fill</source>
-        <translation>实心填充</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>%1 Solid Fill</source>
-        <translation>%1实心填充</translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <location line="+30"/>
-        <location line="+54"/>
-        <source>Other Rules...</source>
-        <translation>其他规则...</translation>
-    </message>
-    <message>
-        <location line="-77"/>
-        <source>Color Scales</source>
-        <translation>色阶</translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>%1-Color Scale</source>
-        <translation>%1色色阶</translation>
-    </message>
-    <message>
-        <location line="+25"/>
-        <source>Highlight Cells Rules</source>
-        <translation>突出显示单元格规则</translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Greater Than...</source>
-        <translation>大于...</translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Less Than...</source>
-        <translation>小于...</translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Between...</source>
-        <translation>介于...</translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Equal To...</source>
-        <translation>等于...</translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Text Contains...</source>
-        <translation>文本包含...</translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>A Date Occurring</source>
-        <translation>发生日期</translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Yesterday</source>
-        <translation>昨天</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Today</source>
-        <translation>今天</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Tomorrow</source>
-        <translation>明天</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>In the Last 7 Days</source>
-        <translation>最近 7 天</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Last Week</source>
-        <translation>上周</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>This Week</source>
-        <translation>本周</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Next Week</source>
-        <translation>下周</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Last Month</source>
-        <translation>上月</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>This Month</source>
-        <translation>本月</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Next Month</source>
-        <translation>下月</translation>
-    </message>
-    <message>
-        <location line="+19"/>
-        <source>Duplicate Values...</source>
-        <translation>重复值...</translation>
-    </message>
-    <message>
-        <location line="+11"/>
-        <source>Clear Rules</source>
-        <translation>清除规则</translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Clear Rules from Selected Columns</source>
-        <translation>清除所选列的规则</translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Clear Rules from Entire Sheet</source>
-        <translation>清除全表的规则</translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>Custom Rules...</source>
-        <translation>自定义设置...</translation>
-    </message>
-    <message>
-        <location line="+1249"/>
-        <location line="+22"/>
-        <source>Replace In Place</source>
-        <translation>就地替换</translation>
-    </message>
-    <message>
-        <location line="-21"/>
-        <source>Replacing in place will clear the following table metadata:
-%1
-
-Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
-        <translation>就地替换将清除本表的以下元数据：
-%1
-
-数据与元数据共用一个撤销单元（Ctrl+Z 一并还原）。是否继续？</translation>
-    </message>
-    <message>
-        <location line="+22"/>
-        <source>The table is very large (%1 cells). Keeping the old data for undo would double memory usage, so this in-place replacement will NOT be undoable. Continue?</source>
-        <translation>表格过大（%1 单元格）。保留旧数据用于撤销将使内存翻倍，本次就地替换将不可撤销。是否继续？</translation>
-    </message>
-    <message>
-        <location line="+169"/>
-        <source>Fill failed: the content does not match the column data type</source>
-        <translation>填充失败：内容与列数据类型不匹配</translation>
-    </message>
-    <message>
-        <location line="+24"/>
-        <location line="+64"/>
-        <source>Cannot fill a read-only data source</source>
-        <translation>只读数据源不能填充</translation>
-    </message>
-    <message>
-        <location line="-52"/>
-        <source>Fill down</source>
-        <translation>向下填充</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>Fill up</source>
-        <translation>向上填充</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>Fill forward (ffill)</source>
-        <translation>向下填充空值(ffill)</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>Fill backward (bfill)</source>
-        <translation>向上填充空值(bfill)</translation>
-    </message>
-    <message>
-        <location line="+46"/>
-        <source>Please select cells to fill</source>
-        <translation>请先选中要填充的单元格</translation>
-    </message>
-    <message>
-        <location line="+30"/>
-        <source>Failed to generate the fill series</source>
-        <translation>生成填充序列失败</translation>
-    </message>
-    <message>
-        <location line="+10"/>
-        <source>Fill series</source>
-        <translation>序列填充</translation>
-    </message>
-    <message>
-        <location line="+26"/>
-        <source>Numeric range</source>
-        <translation>数值区间</translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Date range</source>
-        <translation>日期区间</translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Allowed values (enum)</source>
-        <translation>枚举集合</translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Not empty</source>
-        <translation>非空</translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Unique</source>
-        <translation>唯一</translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Regex (full match)</source>
-        <translation>正则（整格匹配）</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>%1 (occurrence %2)</source>
-        <translation>%1（第 %2 个同名列）</translation>
-    </message>
-    <message>
-        <location line="+138"/>
-        <source>Validation failed: %1</source>
-        <translation>数据校验失败：%1</translation>
-    </message>
-    <message>
-        <location line="+48"/>
-        <source>No enabled validation rules yet — add rules first</source>
-        <translation>暂无启用的校验规则——请先添加规则</translation>
-    </message>
-    <message>
-        <location line="+26"/>
-        <source>Row %1: %2</source>
-        <translation>行 %1：%2</translation>
-    </message>
-    <message>
-        <location line="+60"/>
-        <source>%1 validation rule(s) reference the renamed column(s): %2. Their references will be updated automatically. Continue?</source>
-        <translation>有 %1 条校验规则引用被改名的列：%2。其引用将自动批量更新，是否继续？</translation>
-    </message>
-    <message>
-        <location line="+96"/>
-        <source>Please select a cell to annotate</source>
-        <translation>请先选中要批注的单元格</translation>
-    </message>
-    <message>
-        <location line="+84"/>
-        <source>Please select a cell whose note is to be deleted</source>
-        <translation>请先选中要删除批注的单元格</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>The selected cell has no note</source>
-        <translation>选中单元格没有批注</translation>
-    </message>
-    <message>
-        <location line="+18"/>
-        <source>This table has no notes</source>
-        <translation>本表没有批注</translation>
-    </message>
-    <message>
-        <location line="+123"/>
-        <source>The chart area is not available</source>
-        <translation>绘图区不可用</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>Failed to transfer to the chart area</source>
-        <translation>转入绘图区失败</translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>The chart has been transferred to the chart area</source>
-        <translation>已转入绘图区</translation>
-    </message>
-    <message>
-        <location line="-4519"/>
-        <source>Some column view settings were dropped because the table columns have changed.</source>
-        <translation>表格的列已变化，部分列视图设置已被丢弃</translation>
-    </message>
-    <message>
-        <location line="+578"/>
-        <source>Freeze Columns</source>
-        <translation>冻结列</translation>
-    </message>
-    <message>
-        <location line="-1116"/>
-        <location line="+65"/>
-        <source>The column &quot;%1&quot; was hidden and has been made visible</source>
-        <translation>列&quot;%1&quot;已隐藏，现已显示</translation>
-    </message>
-    <message>
-        <location line="+1205"/>
-        <source>Row number is out of range</source>
-        <translation>行号超出范围</translation>
-    </message>
-    <message>
-        <location line="+27"/>
-        <source>Index label not found: %1</source>
-        <translation>未找到索引标签：%1</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>There are %1 rows with this index label; jumped to the first one</source>
-        <translation>有 %1 行使用该索引标签，已跳到第一个</translation>
-    </message>
-    <message>
-        <location line="+27"/>
-        <source>Column not found: %1</source>
-        <translation>未找到列名：%1</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>There are %1 columns with this name; used the first one</source>
-        <translation>有 %1 个同名列，已取第一个</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/Table/DADataOperateOfDataFrameWidget.cpp"/>
+        <location line="-419"/>
         <source>Set Column Width</source>
         <translation>设置列宽</translation>
     </message>
     <message>
-        <location filename="../DAGui/Table/DADataOperateOfDataFrameWidget.cpp"/>
+        <location line="+1"/>
         <source>Width (pixels):</source>
         <translation>列宽（像素）：</translation>
     </message>
     <message>
-        <location filename="../DAGui/Table/DADataOperateOfDataFrameWidget.cpp"/>
+        <location line="+14"/>
         <source>Set Row Height</source>
         <translation>设置行高</translation>
     </message>
     <message>
-        <location filename="../DAGui/Table/DADataOperateOfDataFrameWidget.cpp"/>
+        <location line="+1"/>
         <source>Height (pixels):</source>
         <translation>行高（像素）：</translation>
     </message>
@@ -10476,12 +9778,12 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DA::DADataOperateWidget</name>
     <message>
-        <location filename="../DAGui/DADataOperateWidget.cpp" line="+425"/>
+        <location filename="../DAGui/Table/DADataOperateWidget.cpp" line="+431"/>
         <source>removing a widget that does not exist in the dock</source>
         <translation>正在移除一个不存在的窗口</translation>
     </message>
     <message>
-        <location line="+79"/>
+        <location line="+81"/>
         <source>[deleted]</source>
         <translation>[已删除]</translation>
     </message>
@@ -10499,7 +9801,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DA::DADataStatsWidget</name>
     <message>
-        <location filename="../DAGui/Stats/DADataStatsWidget.cpp" line="+1233"/>
+        <location filename="../DAGui/Chart/DADataStatsWidget.cpp" line="+1233"/>
         <source>Refresh</source>
         <translation>刷新</translation>
     </message>
@@ -11001,7 +10303,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DA::DADataTableModel</name>
     <message>
-        <location filename="../DAGui/Models/DADataTableModel.cpp" line="+256"/>
+        <location filename="../DAGui/Table/Models/DADataTableModel.cpp" line="+256"/>
         <source>Formula</source>
         <translation>公式</translation>
     </message>
@@ -11014,7 +10316,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DA::DADataTableView</name>
     <message>
-        <location filename="../DAGui/DADataTableView.cpp" line="+57"/>
+        <location filename="../DAGui/Table/Views/DADataTableView.cpp" line="+57"/>
         <source>DADataTableView requires a model to be set first</source>
         <translation>你需要先设置模型</translation>
     </message>
@@ -11139,22 +10441,22 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>清除本表批注</translation>
     </message>
     <message>
-        <location filename="../DAGui/Table/Views/DADataTableView.cpp"/>
+        <location line="+14"/>
         <source>Cell Size</source>
         <translation>单元格大小</translation>
     </message>
     <message>
-        <location filename="../DAGui/Table/Views/DADataTableView.cpp"/>
+        <location line="+1"/>
         <source>AutoFit Column Width</source>
         <translation>列宽自适应</translation>
     </message>
     <message>
-        <location filename="../DAGui/Table/Views/DADataTableView.cpp"/>
+        <location line="+3"/>
         <source>Set Column Width...</source>
         <translation>设置列宽...</translation>
     </message>
     <message>
-        <location filename="../DAGui/Table/Views/DADataTableView.cpp"/>
+        <location line="+3"/>
         <source>Set Row Height...</source>
         <translation>设置行高...</translation>
     </message>
@@ -11162,7 +10464,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DA::DADialogAgentSessionManager</name>
     <message>
-        <location filename="../DAGui/Dialog/DADialogAgentSessionManager.cpp" line="+118"/>
+        <location filename="../DAGui/Agent/DADialogAgentSessionManager.cpp" line="+118"/>
         <source>Session Manager</source>
         <translation>会话管理</translation>
     </message>
@@ -11328,37 +10630,37 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DA::DADialogComputedColumn</name>
     <message>
-        <location filename="../DAGui/Dialog/DADialogComputedColumn.cpp" line="+29"/>
+        <location filename="../DAGui/Table/Dialogs/DADialogComputedColumn.cpp" line="+42"/>
         <source>New Computed Column</source>
         <translation>新建计算列</translation>
     </message>
     <message>
-        <location line="+93"/>
+        <location line="+139"/>
         <source>Edit Formula</source>
         <translation>编辑公式</translation>
     </message>
     <message>
-        <location line="-72"/>
+        <location line="-114"/>
         <source>New column name</source>
         <translation>新列名</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+35"/>
         <source>Write a Python expression or code block. The last expression is the result, or assign it to `result`. Column names can be inserted from the menu.</source>
         <translation>写 Python 表达式或代码段；最后一行表达式为结果，或赋值给 result；列名可从菜单插入</translation>
     </message>
     <message>
-        <location line="-3"/>
+        <location line="-38"/>
         <source>Target column:</source>
         <translation>目标列名：</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+13"/>
         <source>Python expression / code</source>
         <translation>Python 表达式 / 代码段</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+3"/>
         <source>Insert Column</source>
         <translation>插入列名</translation>
     </message>
@@ -11368,17 +10670,17 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>在光标处插入列名</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+10"/>
         <source>(no columns)</source>
         <translation>（无列）</translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location line="+35"/>
         <source>Preview (first %1 rows)</source>
         <translation>预览（前 %1 行）</translation>
     </message>
     <message>
-        <location line="+15"/>
+        <location line="+21"/>
         <source>Cancel</source>
         <translation>取消</translation>
     </message>
@@ -11388,7 +10690,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>确定</translation>
     </message>
     <message>
-        <location line="+112"/>
+        <location line="+115"/>
         <source>No data</source>
         <translation>无数据</translation>
     </message>
@@ -11436,7 +10738,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DA::DADialogConditionalFormat</name>
     <message>
-        <location filename="../DAGui/Dialog/DADialogConditionalFormat.cpp" line="+58"/>
+        <location filename="../DAGui/Table/Dialogs/DADialogConditionalFormat.cpp" line="+58"/>
         <source>Conditional Formatting Rules</source>
         <translation>条件格式规则</translation>
     </message>
@@ -11691,12 +10993,12 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>下月</translation>
     </message>
     <message>
-        <location line="+70"/>
+        <location line="+76"/>
         <source>Please select at least one column first.</source>
         <translation>请先选择至少一列。</translation>
     </message>
     <message>
-        <location line="-483"/>
+        <location line="-489"/>
         <location line="+156"/>
         <location line="+177"/>
         <source>Column %1</source>
@@ -11771,7 +11073,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DA::DADialogConditionalFormatQuickRule</name>
     <message>
-        <location filename="../DAGui/Dialog/DADialogConditionalFormatQuickRule.cpp" line="+60"/>
+        <location filename="../DAGui/Table/Dialogs/DADialogConditionalFormatQuickRule.cpp" line="+60"/>
         <source>Value:</source>
         <translation>值：</translation>
     </message>
@@ -11909,7 +11211,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DA::DADialogFillSeries</name>
     <message>
-        <location filename="../DAGui/Dialog/DADialogFillSeries.cpp" line="+107"/>
+        <location filename="../DAGui/Table/Dialogs/DADialogFillSeries.cpp" line="+107"/>
         <source>Fill Series</source>
         <translation>序列填充</translation>
     </message>
@@ -11988,7 +11290,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DA::DADialogFindReplace</name>
     <message>
-        <location filename="../DAGui/Dialog/DADialogFindReplace.cpp" line="+40"/>
+        <location filename="../DAGui/Table/Dialogs/DADialogFindReplace.cpp" line="+40"/>
         <source>Entire table</source>
         <translation>全表</translation>
     </message>
@@ -12021,7 +11323,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DA::DADialogGotoCell</name>
     <message>
-        <location filename="../DAGui/Dialog/DADialogGotoCell.cpp" line="+36"/>
+        <location filename="../DAGui/Table/Dialogs/DADialogGotoCell.cpp" line="+36"/>
         <source>Go To</source>
         <translation>定位</translation>
     </message>
@@ -12074,7 +11376,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DA::DADialogGroupBy</name>
     <message>
-        <location filename="../DAGui/Dialog/DADialogGroupBy.cpp" line="+28"/>
+        <location filename="../DAGui/Table/Dialogs/DADialogGroupBy.cpp" line="+28"/>
         <source>Group By</source>
         <translation>分组聚合</translation>
     </message>
@@ -12145,9 +11447,99 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     </message>
 </context>
 <context>
+    <name>DA::DADialogManageColumns</name>
+    <message>
+        <location filename="../DAGui/Table/Dialogs/DADialogManageColumns.cpp" line="+207"/>
+        <source>Manage Columns</source>
+        <translation>列管理</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Search...</source>
+        <translation>搜索</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Rows are listed in column order. Drag a row number on the left or use Move Up/Down to reorder columns.</source>
+        <translation>行序即列序，拖动左侧行号或使用上移/下移调整列顺序</translation>
+    </message>
+    <message>
+        <location line="+34"/>
+        <source>Drag a row number to reorder columns</source>
+        <translation>拖动行号调整列顺序</translation>
+    </message>
+    <message>
+        <location line="-25"/>
+        <source>Column</source>
+        <translation>列</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <location line="+6"/>
+        <source>Hidden</source>
+        <translation>隐藏</translation>
+    </message>
+    <message>
+        <location line="-5"/>
+        <location line="+8"/>
+        <source>Frozen</source>
+        <translation>冻结</translation>
+    </message>
+    <message>
+        <location line="+32"/>
+        <source>Move Up</source>
+        <translation>上移</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Move the selected column forward</source>
+        <translation>把选中列向前移动</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Move Down</source>
+        <translation>下移</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Move the selected column backward</source>
+        <translation>把选中列向后移动</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Show All</source>
+        <translation>显示全部</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Unhide all columns</source>
+        <translation>取消所有列的隐藏</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Unfreeze All</source>
+        <translation>取消全部冻结</translation>
+    </message>
+    <message>
+        <location line="+245"/>
+        <source>Column name cannot be empty</source>
+        <translation>列名不能为空</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Column name &quot;%1&quot; already exists, please use another name</source>
+        <translation>列名&quot;%1&quot;已存在，请使用其他名称</translation>
+    </message>
+    <message>
+        <location line="-251"/>
+        <source>Remove column freezing</source>
+        <translation>取消所有列的冻结</translation>
+    </message>
+</context>
+<context>
     <name>DA::DADialogMergeColumns</name>
     <message>
-        <location filename="../DAGui/Dialog/DADialogMergeColumns.cpp" line="+33"/>
+        <location filename="../DAGui/Table/Dialogs/DADialogMergeColumns.cpp" line="+33"/>
         <source>Merge Columns</source>
         <translation>合并列</translation>
     </message>
@@ -12230,7 +11622,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DA::DADialogReshape</name>
     <message>
-        <location filename="../DAGui/Dialog/DADialogReshape.cpp" line="+36"/>
+        <location filename="../DAGui/Table/Dialogs/DADialogReshape.cpp" line="+36"/>
         <source>Reshape</source>
         <translation>形状变换</translation>
     </message>
@@ -12358,7 +11750,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DA::DADialogSplitColumn</name>
     <message>
-        <location filename="../DAGui/Dialog/DADialogSplitColumn.cpp" line="+35"/>
+        <location filename="../DAGui/Table/Dialogs/DADialogSplitColumn.cpp" line="+35"/>
         <source>Split Column</source>
         <translation>分列</translation>
     </message>
@@ -12519,97 +11911,9 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     </message>
 </context>
 <context>
-    <name>DA::DADialogManageColumns</name>
-    <message>
-        <location filename="../DAGui/Table/Dialogs/DADialogManageColumns.cpp" line="+40"/>
-        <source>Manage Columns</source>
-        <translation>列管理</translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>Search...</source>
-        <translation>搜索</translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Rows are listed in column order. Drag a row number on the left or use Move Up/Down to reorder columns.</source>
-        <translation>行序即列序，拖动左侧行号或使用上移/下移调整列顺序</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Drag a row number to reorder columns</source>
-        <translation>拖动行号调整列顺序</translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>Column</source>
-        <translation>列</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Hidden</source>
-        <translation>隐藏</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Frozen</source>
-        <translation>冻结</translation>
-    </message>
-    <message>
-        <location line="+15"/>
-        <source>Move Up</source>
-        <translation>上移</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Move the selected column forward</source>
-        <translation>把选中列向前移动</translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Move Down</source>
-        <translation>下移</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Move the selected column backward</source>
-        <translation>把选中列向后移动</translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Show All</source>
-        <translation>显示全部</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Unhide all columns</source>
-        <translation>取消所有列的隐藏</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Unfreeze All</source>
-        <translation>取消全部冻结</translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>Column name cannot be empty</source>
-        <translation>列名不能为空</translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>Column name &quot;%1&quot; already exists, please use another name</source>
-        <translation>列名&quot;%1&quot;已存在，请使用其他名称</translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Remove column freezing</source>
-        <translation>取消所有列的冻结</translation>
-    </message>
-</context>
-<context>
     <name>DA::DADialogTableDisplayFormat</name>
     <message>
-        <location filename="../DAGui/Dialog/DADialogTableDisplayFormat.cpp" line="+101"/>
+        <location filename="../DAGui/Table/Dialogs/DADialogTableDisplayFormat.cpp" line="+101"/>
         <source>Format Cells</source>
         <translation>设置单元格格式</translation>
     </message>
@@ -12672,7 +11976,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DA::DADialogValidationReport</name>
     <message>
-        <location filename="../DAGui/Dialog/DADialogValidationReport.cpp" line="+35"/>
+        <location filename="../DAGui/Table/Dialogs/DADialogValidationReport.cpp" line="+35"/>
         <location line="+116"/>
         <source>Validation Report</source>
         <translation>数据校验报告</translation>
@@ -12753,7 +12057,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DA::DADialogValidationRules</name>
     <message>
-        <location filename="../DAGui/Dialog/DADialogValidationRules.cpp" line="+60"/>
+        <location filename="../DAGui/Table/Dialogs/DADialogValidationRules.cpp" line="+60"/>
         <source>Validation Rules</source>
         <translation>数据校验规则</translation>
     </message>
@@ -13032,17 +12336,22 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DA::DAFigureWidget</name>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="+153"/>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="+168"/>
         <source>Unexpected plotting operation: a chart that does not belong to the DAChartWidget type was added to the figure</source>
         <translation>意外的绘图操作：不属于 DAChartWidget 类型的图表被添加到了 figure 中</translation>
     </message>
     <message>
-        <location line="+1168"/>
+        <location line="+1466"/>
+        <source>PNG Image (*.png);;SVG Image (*.svg);;PDF Document (*.pdf)</source>
+        <translation>PNG 图片 (*.png);;SVG 图片 (*.svg);;PDF 文档 (*.pdf)</translation>
+    </message>
+    <message>
+        <location line="+67"/>
         <source>Unsupported chart editor type: %1</source>
         <translation>不支持的图表编辑器类型：%1</translation>
     </message>
     <message>
-        <location line="+1000"/>
+        <location line="+1055"/>
         <source>add data probes</source>
         <translation>添加数据探针</translation>
     </message>
@@ -13050,7 +12359,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DA::DAFigureWidgetSettingPanel</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAFigureWidgetSettingPanel.cpp" line="+123"/>
+        <location filename="../DAGui/Chart/Setting/DAFigureWidgetSettingPanel.cpp" line="+123"/>
         <source>Size</source>
         <translation>尺寸</translation>
     </message>
@@ -13257,7 +12566,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DA::DAMarkdownView</name>
     <message>
-        <location filename="../DAGui/MarkdownView/DAMarkdownView.cpp" line="+325"/>
+        <location filename="../DAGui/Common/MarkdownView/DAMarkdownView.cpp" line="+325"/>
         <source>Copy</source>
         <translation>复制</translation>
     </message>
@@ -13356,7 +12665,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DA::DAMessageLogViewWidget</name>
     <message>
-        <location filename="../DAGui/DAMessageLogViewWidget.cpp" line="+293"/>
+        <location filename="../DAGui/Common/DAMessageLogViewWidget.cpp" line="+293"/>
         <source>Info</source>
         <translation>信息</translation>
     </message>
@@ -13409,7 +12718,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DA::DAMessageLogsModel</name>
     <message>
-        <location filename="../DAGui/Models/DAMessageLogsModel.cpp" line="+66"/>
+        <location filename="../DAGui/Common/DAMessageLogsModel.cpp" line="+66"/>
         <source>date time</source>
         <translation>日期时间</translation>
     </message>
@@ -13488,9 +12797,62 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     </message>
 </context>
 <context>
+    <name>DA::DANoDataGuideWidget</name>
+    <message>
+        <location filename="../DAGui/Common/DANoDataGuideWidget.cpp" line="+131"/>
+        <source>No data loaded</source>
+        <translation>尚未载入数据</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Open an existing project or import data, then create a chart to start plotting.</source>
+        <translation>打开已有工程或导入数据，然后新建绘图开始绘图。</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Open an existing project or import data to start working with data.</source>
+        <translation>打开已有工程或导入数据，开始处理数据。</translation>
+    </message>
+    <message>
+        <location line="+27"/>
+        <source>Open Existing Project</source>
+        <translation>打开已有工程</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Import Data</source>
+        <translation>导入数据</translation>
+    </message>
+    <message>
+        <location line="-49"/>
+        <source>No figure created</source>
+        <translation>尚未创建绘图</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Data is ready. Click Add Figure to start plotting.</source>
+        <translation>数据已就绪，点击「添加绘图」新建绘图。</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>No data table open</source>
+        <translation>尚未打开数据表</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Double-click data in the Data Manager to open its table.</source>
+        <translation>双击数据管理区的数据来打开数据表。</translation>
+    </message>
+    <message>
+        <location line="+42"/>
+        <source>Add Figure</source>
+        <translation>添加绘图</translation>
+    </message>
+</context>
+<context>
     <name>DA::DANodeItemSettingWidget</name>
     <message>
-        <location filename="../DAGui/DANodeItemSettingWidget.cpp" line="+84"/>
+        <location filename="../DAGui/Workflow/NodeSetting/DANodeItemSettingWidget.cpp" line="+84"/>
         <source>Size</source>
         <translation>尺寸</translation>
     </message>
@@ -13563,7 +12925,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DA::DANodeLinkItemSettingWidget</name>
     <message>
-        <location filename="../DAGui/DANodeLinkItemSettingWidget.cpp" line="+33"/>
+        <location filename="../DAGui/Workflow/NodeSetting/DANodeLinkItemSettingWidget.cpp" line="+33"/>
         <source>pen</source>
         <translation>画笔</translation>
     </message>
@@ -13611,7 +12973,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DA::DANodeParamSettingPanel</name>
     <message>
-        <location filename="../DAGui/NodeSetting/DANodeParamSettingPanel.cpp" line="+42"/>
+        <location filename="../DAGui/Workflow/NodeSetting/DANodeParamSettingPanel.cpp" line="+42"/>
         <source>No configurable parameters</source>
         <translation>无可配置参数</translation>
     </message>
@@ -13619,7 +12981,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DA::DANodeParamSettingPanelWidget</name>
     <message>
-        <location filename="../DAGui/NodeSetting/DANodeParamSettingPanelWidget.cpp" line="+47"/>
+        <location filename="../DAGui/Workflow/NodeSetting/DANodeParamSettingPanelWidget.cpp" line="+47"/>
         <source>No node selected</source>
         <translation>未选中节点</translation>
     </message>
@@ -13627,7 +12989,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DA::DANodeSettingWidget</name>
     <message>
-        <location filename="../DAGui/DANodeSettingWidget.cpp" line="+126"/>
+        <location filename="../DAGui/Workflow/NodeSetting/DANodeSettingWidget.cpp" line="+126"/>
         <source>Metadata</source>
         <translation>元数据</translation>
     </message>
@@ -13650,7 +13012,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DA::DANodeTreeWidget</name>
     <message>
-        <location filename="../DAGui/DANodeTreeWidget.cpp" line="+180"/>
+        <location filename="../DAGui/Workflow/DANodeTreeWidget.cpp" line="+180"/>
         <source>Favorite</source>
         <translation>收藏</translation>
     </message>
@@ -13661,6 +13023,118 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <location filename="../../plugins/DAPaperAgent/DAPaperAgentPlugin.h" line="+32"/>
         <source>Built-in paper writing agent with literature search tools</source>
         <translation>内置论文撰写 Agent（附文献检索工具）</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAPeakDockWidget</name>
+    <message>
+        <location filename="../../plugins/DASignalAnalysis/Page/DAPeakDockWidget.cpp" line="+224"/>
+        <source>Rank %1</source>
+        <translation>第 %1 名</translation>
+    </message>
+    <message>
+        <location line="+22"/>
+        <source>Time (s)</source>
+        <translation>时间（秒）</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Frequency (Hz)</source>
+        <translation>频率（赫兹）</translation>
+    </message>
+    <message>
+        <location line="+48"/>
+        <source>Send to Table</source>
+        <translation>送到表格页</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Export CSV</source>
+        <translation>导出 CSV</translation>
+    </message>
+    <message>
+        <location line="-8"/>
+        <source>Add the peak table to the data manager; open it from the data manager</source>
+        <translation>把峰值表加入数据管理器；可从数据管理器里打开查看</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Open the analysis parameter dialog</source>
+        <translation>打开分析参数对话框</translation>
+    </message>
+    <message>
+        <location line="-237"/>
+        <location line="+226"/>
+        <source>Open this window to compute the per-frame peak curves</source>
+        <translation>打开本窗口后计算每帧前 N 峰值曲线</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Settings...</source>
+        <translation>参数设置...</translation>
+    </message>
+    <message>
+        <location line="-22"/>
+        <source>Local scan</source>
+        <translation>局部扫描</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Peak curves cover only the visible time range or use a coarser frame step.</source>
+        <translation>峰值曲线只覆盖可见时间范围，或使用了更粗的帧步进。</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Per-frame top N peaks: frequency over time (color = rank)</source>
+        <translation>每帧前 N 名峰值：频率随时间变化（颜色 = 名次）</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Each color is one rank. Adjacent frames whose peak frequency jumps far apart are drawn as separate points instead of a connected line, so lines mean continuous peaks.</source>
+        <translation>每种颜色是一个名次；相邻帧频率跳变过大时只画点不连线，因此连线表示连续的峰。</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAPeakTableModel</name>
+    <message>
+        <location filename="../../plugins/DASignalAnalysis/Analysis/DAPeakTableModel.cpp" line="+192"/>
+        <source>No.</source>
+        <translation>序号</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Frequency (Hz)</source>
+        <translation>频率（赫兹）</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Amplitude</source>
+        <translation>幅值</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Rel. peak (dB)</source>
+        <translation>相对主峰（dB）</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Share (%)</source>
+        <translation>占比（%）</translation>
+    </message>
+    <message>
+        <location line="-12"/>
+        <source>Amplitude (dB)</source>
+        <translation>幅值（dB）</translation>
+    </message>
+    <message>
+        <location line="-2"/>
+        <source>RMS</source>
+        <translation>均方根</translation>
+    </message>
+    <message>
+        <location line="-6"/>
+        <source>Time (s)</source>
+        <translation>时间（秒）</translation>
     </message>
 </context>
 <context>
@@ -14126,7 +13600,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DA::DAPyDataFrameTableView</name>
     <message>
-        <location filename="../DAGui/DAPyDataFrameTableView.cpp" line="+32"/>
+        <location filename="../DAGui/Table/Views/DAPyDataFrameTableView.cpp" line="+32"/>
         <source>DataFrameTableView requires a model to be set first</source>
         <translation>你需要先设置模型</translation>
     </message>
@@ -14134,7 +13608,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DA::DAPyWorkFlowEditWidget</name>
     <message>
-        <location filename="../DAGui/DAPyWorkFlowEditWidget.cpp" line="+130"/>
+        <location filename="../DAGui/Workflow/DAPyWorkFlowEditWidget.cpp" line="+130"/>
         <source>no workflow has been set</source>
         <translation>未设置工作流</translation>
     </message>
@@ -14142,7 +13616,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DA::DAPyWorkFlowGraphicsView</name>
     <message>
-        <location filename="../DAGui/DAPyWorkFlowGraphicsView.cpp" line="+225"/>
+        <location filename="../DAGui/Workflow/DAPyWorkFlowGraphicsView.cpp" line="+225"/>
         <source>cut</source>
         <translation>剪切</translation>
     </message>
@@ -14165,7 +13639,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DA::DAPyWorkFlowNodeItemSettingWidget</name>
     <message>
-        <location filename="../DAGui/DAPyWorkFlowNodeItemSettingWidget.cpp" line="+39"/>
+        <location filename="../DAGui/Workflow/NodeSetting/DAPyWorkFlowNodeItemSettingWidget.cpp" line="+39"/>
         <source>Parameters</source>
         <translation>参数</translation>
     </message>
@@ -14173,7 +13647,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DA::DAPyWorkFlowNodeListWidget</name>
     <message>
-        <location filename="../DAGui/DAPyWorkFlowNodeListWidget.cpp" line="+137"/>
+        <location filename="../DAGui/Workflow/DAPyWorkFlowNodeListWidget.cpp" line="+137"/>
         <source>Favorite</source>
         <translation>收藏</translation>
     </message>
@@ -14186,7 +13660,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DA::DAPyWorkFlowOperateWidget</name>
     <message>
-        <location filename="../DAGui/DAPyWorkFlowOperateWidget.cpp" line="+244"/>
+        <location filename="../DAGui/Workflow/DAPyWorkFlowOperateWidget.cpp" line="+244"/>
         <source>Title of new workflow</source>
         <translation>新工作流标题</translation>
     </message>
@@ -14410,9 +13884,17 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     </message>
 </context>
 <context>
+    <name>DA::DAPythonCodeEdit</name>
+    <message>
+        <location filename="../DAGui/Common/CodeEditor/DAPythonCodeEdit.cpp" line="+42"/>
+        <source>e.g. tmp = A * 2, then np.where(tmp &gt; 0, tmp, 0)</source>
+        <translation>示例：tmp = A * 2，然后 np.where(tmp &gt; 0, tmp, 0)</translation>
+    </message>
+</context>
+<context>
     <name>DA::DARecentFilesManager</name>
     <message>
-        <location filename="../DAGui/DARecentFilesManager.cpp" line="+176"/>
+        <location filename="../DAGui/Common/DARecentFilesManager.cpp" line="+176"/>
         <source>(empty)</source>
         <translation>空</translation>
     </message>
@@ -14422,7 +13904,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>清空</translation>
     </message>
     <message>
-        <location filename="../DAGui/DARecentFilesManager.h" line="+24"/>
+        <location filename="../DAGui/Common/DARecentFilesManager.h" line="+24"/>
         <source>Recent files</source>
         <translation>最近打开文件</translation>
     </message>
@@ -14776,15 +14258,1361 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DA::DASettingWidget</name>
     <message>
-        <location filename="../DAGui/DASettingWidget.cpp" line="+97"/>
+        <location filename="../DAGui/Common/Settings/DASettingWidget.cpp" line="+97"/>
         <source>page changed, but cannot identify the sender widget</source>
         <translation>页面已更改，但无法识别发送者控件</translation>
     </message>
 </context>
 <context>
+    <name>DA::DASignalAnalysisPage</name>
+    <message>
+        <location filename="../../plugins/DASignalAnalysis/Page/DASignalAnalysisPage.cpp" line="+299"/>
+        <source>No signal loaded</source>
+        <translation>尚未载入信号</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Import an audio file, a video, or columns from an existing data frame to begin analysis.</source>
+        <translation>导入音频文件、视频，或从已有数据帧指定列，开始分析。</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Import Audio...</source>
+        <translation>导入音频</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Import Data Frame...</source>
+        <translation>导入数据帧</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Import Video...</source>
+        <translation>导入视频</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DASignalAnalysisPlugin</name>
+    <message>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisPlugin.cpp" line="+85"/>
+        <source>General purpose time-series signal analysis (spectrum, spectrogram, peaks, playback)</source>
+        <translation>通用时序信号分析（频谱、时频图、峰值、播放）</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DASignalAnalysisSettingDialog</name>
+    <message>
+        <location filename="../../plugins/DASignalAnalysis/Dialogs/DASignalAnalysisSettingDialog.cpp" line="+259"/>
+        <source>Segment length: unknown (sample rate is invalid)</source>
+        <translation>段长：未知（采样率无效）</translation>
+    </message>
+    <message>
+        <location line="+32"/>
+        <source>Analysis Settings</source>
+        <translation>分析设置</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Restore Defaults</source>
+        <translation>恢复默认</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>OK</source>
+        <translation>确定</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+    <message>
+        <location line="-26"/>
+        <source>Spectrum: segment = %1 samples (%2 ms), actual resolution = %3 Hz
+STFT: window = %4 samples (%5 ms), hop = %6 samples</source>
+        <translation>频谱：段长 = %1 点（%2 毫秒）、实际分辨率 = %3 赫兹
+时频：窗长 = %4 点（%5 毫秒）、跳步 = %6 点</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DASignalAnalysisSettingPage</name>
+    <message>
+        <location filename="../../plugins/DASignalAnalysis/Dialogs/DASignalAnalysisSettingPage.cpp" line="+65"/>
+        <source>The FFmpeg executable was not found, so the path was not saved.</source>
+        <translation>未找到 FFmpeg 可执行文件，路径未保存。</translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <location line="+187"/>
+        <source>Signal Analysis</source>
+        <translation>信号分析</translation>
+    </message>
+    <message>
+        <location line="-107"/>
+        <source>No FFmpeg was found in PATH. Specify an executable to enable video import.</source>
+        <translation>系统 PATH 中未找到 FFmpeg；指定可执行文件后才能导入视频。</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Empty: using the FFmpeg found in PATH: %1</source>
+        <translation>留空：使用系统 PATH 中的 FFmpeg：%1</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>FFmpeg path is valid.</source>
+        <translation>FFmpeg 路径有效。</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>File does not exist.</source>
+        <translation>文件不存在。</translation>
+    </message>
+    <message>
+        <location line="+35"/>
+        <source>Analysis parameters (frequency resolution, windows, peak thresholds and calibration) are configured per signal in Analysis Settings on the Signal Analysis tab.</source>
+        <translation>频率分辨率、窗函数、峰值门限与标定等分析参数在「信号分析」标签页的「分析设置」里按信号单独配置。</translation>
+    </message>
+    <message>
+        <location line="+42"/>
+        <source>FFmpeg executable</source>
+        <translation>FFmpeg 可执行文件</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Used for video import and compressed audio decoding. Leave empty to use the ffmpeg found in PATH.</source>
+        <translation>用于视频导入与压缩音频解码；留空则使用系统 PATH 中的 ffmpeg。</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Executable (*.exe);;All files (*)</source>
+        <translation>可执行文件 (*.exe);;所有文件 (*)</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>External Tools</source>
+        <translation>外部工具</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DASignalAnalysisUI</name>
+    <message>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="+282"/>
+        <source>FFmpeg was not detected; video import is unavailable until a path is specified in Settings &gt; Signal Analysis.</source>
+        <translation>未检测到 FFmpeg，在「设置 → 信号分析」里指定路径前视频导入不可用。</translation>
+    </message>
+    <message>
+        <location line="-113"/>
+        <location line="+4046"/>
+        <source>Peak table (CSV)</source>
+        <translation>峰值表（CSV）</translation>
+    </message>
+    <message>
+        <location line="-4043"/>
+        <location line="+4046"/>
+        <source>Spectrum curve (CSV)</source>
+        <translation>频谱曲线（CSV）</translation>
+    </message>
+    <message>
+        <location line="-4040"/>
+        <location line="+4046"/>
+        <source>Heatmap matrix (CSV)</source>
+        <translation>热图矩阵（CSV）</translation>
+    </message>
+    <message>
+        <location line="-3611"/>
+        <source>Signal imported: %1 (%2 Hz, %3 s)</source>
+        <translation>信号已导入：%1（%2 赫兹，%3 秒）</translation>
+    </message>
+    <message>
+        <location line="+192"/>
+        <location line="+3"/>
+        <location line="+103"/>
+        <location line="+128"/>
+        <location line="+2996"/>
+        <location line="+3"/>
+        <location line="+27"/>
+        <source>Signal Analysis</source>
+        <translation>信号分析</translation>
+    </message>
+    <message>
+        <location line="-3138"/>
+        <location line="+3122"/>
+        <source>Signal</source>
+        <translation>信号</translation>
+    </message>
+    <message>
+        <location line="-3100"/>
+        <location line="+3103"/>
+        <source>Playback</source>
+        <translation>播放</translation>
+    </message>
+    <message>
+        <location line="-3087"/>
+        <location line="+3090"/>
+        <source>Analysis</source>
+        <translation>分析</translation>
+    </message>
+    <message>
+        <location line="-3076"/>
+        <location line="+182"/>
+        <location line="+2"/>
+        <location line="+5"/>
+        <location line="+2874"/>
+        <location line="+16"/>
+        <source>Peaks</source>
+        <translation>峰值</translation>
+    </message>
+    <message>
+        <location line="-3005"/>
+        <location line="+3018"/>
+        <source>Display</source>
+        <translation>显示</translation>
+    </message>
+    <message>
+        <location line="-3076"/>
+        <location line="+3066"/>
+        <source>Export</source>
+        <translation>导出</translation>
+    </message>
+    <message>
+        <location line="-3876"/>
+        <location line="+4048"/>
+        <source>Whole page (PNG)...</source>
+        <translation>整页（PNG）...</translation>
+    </message>
+    <message>
+        <location line="-4043"/>
+        <location line="+4046"/>
+        <source>Current sub-chart (PNG/SVG/PDF)...</source>
+        <translation>当前子图（PNG/SVG/PDF）...</translation>
+    </message>
+    <message>
+        <location line="-4040"/>
+        <location line="+4044"/>
+        <source>Copy whole page to clipboard</source>
+        <translation>复制整页到剪贴板</translation>
+    </message>
+    <message>
+        <location line="-4042"/>
+        <location line="+4045"/>
+        <source>Copy current sub-chart to clipboard</source>
+        <translation>复制当前子图到剪贴板</translation>
+    </message>
+    <message>
+        <location line="-3198"/>
+        <location line="+3023"/>
+        <source>Signal Display</source>
+        <translation>信号显示</translation>
+    </message>
+    <message>
+        <location line="-3009"/>
+        <location line="+3132"/>
+        <source>Channel</source>
+        <translation>通道</translation>
+    </message>
+    <message>
+        <location line="-3076"/>
+        <location line="+2959"/>
+        <source>Tools</source>
+        <translation>工具</translation>
+    </message>
+    <message>
+        <location line="-2853"/>
+        <location line="+2973"/>
+        <source>Follow playback</source>
+        <translation>跟随播放</translation>
+    </message>
+    <message>
+        <location line="-2972"/>
+        <location line="+2973"/>
+        <source>Show the current frame while playback advances</source>
+        <translation>播放推进时显示当前帧</translation>
+    </message>
+    <message>
+        <location line="-2958"/>
+        <location line="+2962"/>
+        <source>Playback position</source>
+        <translation>播放位置</translation>
+    </message>
+    <message>
+        <location line="-2945"/>
+        <location line="+2948"/>
+        <source>Heatmap color scale lower limit</source>
+        <translation>热图色标下限</translation>
+    </message>
+    <message>
+        <location line="-2936"/>
+        <location line="+2939"/>
+        <source>Auto scroll</source>
+        <translation>自动滚动</translation>
+    </message>
+    <message>
+        <location line="-2938"/>
+        <location line="+2939"/>
+        <source>Scroll the time-frequency view while playback advances</source>
+        <translation>播放推进时滚动时频视图</translation>
+    </message>
+    <message>
+        <location line="-2141"/>
+        <location line="+2084"/>
+        <source>Peak amplitude</source>
+        <translation>峰值幅度</translation>
+    </message>
+    <message>
+        <location line="-2083"/>
+        <location line="+2086"/>
+        <source>RMS</source>
+        <translation>均方根</translation>
+    </message>
+    <message>
+        <location line="-2085"/>
+        <location line="+2088"/>
+        <source>dB (FS)</source>
+        <translation>dB（满量程）</translation>
+    </message>
+    <message>
+        <location line="-2087"/>
+        <location line="+2090"/>
+        <source>dB (re 1.0)</source>
+        <translation>dB（相对 1.0）</translation>
+    </message>
+    <message>
+        <location line="-2006"/>
+        <source>No peak data to export.</source>
+        <translation>没有可导出的峰值数据。</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Export Peak Table</source>
+        <translation>导出峰值表</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <location line="+53"/>
+        <location line="+55"/>
+        <location line="+82"/>
+        <source>CSV Files (*.csv)</source>
+        <translation>CSV 文件 (*.csv)</translation>
+    </message>
+    <message>
+        <location line="-159"/>
+        <source>Peak table exported: %1</source>
+        <translation>峰值表已导出：%1</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Failed to export the peak table.</source>
+        <translation>峰值表导出失败。</translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <location line="+54"/>
+        <location line="+40"/>
+        <location line="+112"/>
+        <location line="+24"/>
+        <location line="+45"/>
+        <location line="+17"/>
+        <location line="+703"/>
+        <source>No signal is selected.</source>
+        <translation>未选中信号。</translation>
+    </message>
+    <message>
+        <location line="-990"/>
+        <source>No spectrum data to export.</source>
+        <translation>没有可导出的频谱数据。</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Export Spectrum</source>
+        <translation>导出频谱</translation>
+    </message>
+    <message>
+        <location line="+28"/>
+        <source>Spectrum exported: %1</source>
+        <translation>频谱已导出：%1</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Failed to export the spectrum.</source>
+        <translation>频谱导出失败。</translation>
+    </message>
+    <message>
+        <location line="+64"/>
+        <source>No time-frequency data to export.</source>
+        <translation>没有可导出的时频数据。</translation>
+    </message>
+    <message>
+        <location line="+37"/>
+        <source>Heatmap matrix: %1 x %2 = %3 cells, the CSV may be large.</source>
+        <translation>热图矩阵：%1 x %2 = %3 个单元，CSV 可能较大。</translation>
+    </message>
+    <message>
+        <location line="-26"/>
+        <location line="+32"/>
+        <source>Export Heatmap Matrix</source>
+        <translation>导出热图矩阵</translation>
+    </message>
+    <message>
+        <location line="+44"/>
+        <source>Heatmap matrix exported: %1</source>
+        <translation>热图矩阵已导出：%1</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Failed to export the heatmap matrix.</source>
+        <translation>热图矩阵导出失败。</translation>
+    </message>
+    <message>
+        <location line="+1835"/>
+        <source>Export Image</source>
+        <translation>导出图片</translation>
+    </message>
+    <message>
+        <location line="-1818"/>
+        <source>PNG Image (*.png)</source>
+        <translation>PNG 图片 (*.png)</translation>
+    </message>
+    <message>
+        <location line="+100"/>
+        <source>No peak data to send.</source>
+        <translation>没有可发送的峰值数据。</translation>
+    </message>
+    <message>
+        <location line="+30"/>
+        <source>Peaks - %1</source>
+        <translation>峰值 - %1</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Peak table added to the data manager as &quot;%1&quot;.</source>
+        <translation>峰值表已作为「%1」加入数据管理器。</translation>
+    </message>
+    <message>
+        <location line="+756"/>
+        <source>Signal analysis: %1 (%2%)</source>
+        <translation>信号分析：%1（%2%）</translation>
+    </message>
+    <message>
+        <location line="+30"/>
+        <source>Spectrum ready: resolution %1 Hz, %2 bins</source>
+        <translation>频谱计算完成：分辨率 %1 赫兹，%2 个频点</translation>
+    </message>
+    <message>
+        <location line="+755"/>
+        <source>Import Audio</source>
+        <translation>导入音频</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Import an audio file (WAV/AIFF/FLAC/OGG)</source>
+        <translation>导入音频文件</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Import Data Frame</source>
+        <translation>导入数据帧</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Import columns from an existing data frame</source>
+        <translation>从已有数据帧指定列导入</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Import Video</source>
+        <translation>导入视频</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Play</source>
+        <translation>播放</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Pause</source>
+        <translation>暂停</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Stop</source>
+        <translation>停止</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Analysis Settings</source>
+        <translation>分析设置</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Configure the analysis parameters of the current signal</source>
+        <translation>配置当前信号的分析参数</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Peak Markers</source>
+        <translation>峰值标记</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Top N</source>
+        <translation>前 N 个</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Number of peaks to keep (10/20/50)</source>
+        <translation>保留的峰值数量</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Peak Window</source>
+        <translation>峰值窗口</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Show or hide the peak dock window</source>
+        <translation>显示或隐藏峰值停靠窗口</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>2D</source>
+        <translation>二维</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Show the 2D time-frequency heatmap</source>
+        <translation>显示二维时频热图</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>3D</source>
+        <translation>三维</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Show the 3D surface waterfall</source>
+        <translation>显示三维曲面瀑布</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Hide</source>
+        <translation>隐藏</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Hide the waterfall view</source>
+        <translation>隐藏瀑布视图</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Amplitude</source>
+        <translation>幅值模式</translation>
+    </message>
+    <message>
+        <location line="+16"/>
+        <source>Log frequency</source>
+        <translation>对数频率</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Use a logarithmic frequency axis</source>
+        <translation>使用对数频率轴</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Color Map</source>
+        <translation>颜色映射</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Heatmap color map</source>
+        <translation>热图色带</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Zoom</source>
+        <translation>缩放</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Enable zoom on the current chart</source>
+        <translation>在当前图表启用缩放</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Pan</source>
+        <translation>拖动</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Enable panning on the current chart</source>
+        <translation>在当前图表启用平移</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Crosshair</source>
+        <translation>十字线</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Show a crosshair on the current chart</source>
+        <translation>在当前图表显示十字线</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Data Pick</source>
+        <translation>数据拾取</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Pick data values on the current chart</source>
+        <translation>在当前图表拾取数据值</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Add Figure Item</source>
+        <translation>添加图元</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add a plot item to the current chart</source>
+        <translation>向当前图表添加图元</translation>
+    </message>
+    <message>
+        <location line="+24"/>
+        <source>Export Peaks</source>
+        <translation>导出峰值表</translation>
+    </message>
+    <message>
+        <location line="-3292"/>
+        <location line="+3127"/>
+        <source>Window</source>
+        <translation>窗口</translation>
+    </message>
+    <message>
+        <location line="+32"/>
+        <source>Open Signal Analysis Window</source>
+        <translation>打开信号分析窗口</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Show the signal analysis workspace; it is created on first use</source>
+        <translation>显示信号分析界面（首次使用时创建）</translation>
+    </message>
+    <message>
+        <location line="-1343"/>
+        <source>Audio/Video files (*.wav *.aiff *.aif *.flac *.ogg *.mp3 *.m4a *.mp4 *.mkv *.avi);;All files (*)</source>
+        <translation>音频/视频文件 (*.wav *.aiff *.aif *.flac *.ogg *.mp3 *.m4a *.mp4 *.mkv *.avi);;所有文件 (*)</translation>
+    </message>
+    <message>
+        <location line="+1381"/>
+        <source>Cancel Analysis</source>
+        <translation>取消计算</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Cancel all running background computations</source>
+        <translation>取消全部在跑的后台计算</translation>
+    </message>
+    <message>
+        <location line="-641"/>
+        <source>Cannot start playback for this signal.</source>
+        <translation>无法开始播放该信号。</translation>
+    </message>
+    <message>
+        <location line="-1885"/>
+        <source>Continue</source>
+        <translation>继续</translation>
+    </message>
+    <message>
+        <location line="+367"/>
+        <source>Data frame:</source>
+        <translation>数据帧：</translation>
+    </message>
+    <message>
+        <location line="+368"/>
+        <source>Downsample x2</source>
+        <translation>2 倍降采样</translation>
+    </message>
+    <message>
+        <location line="-64"/>
+        <source>Export Power Spectral Density</source>
+        <translation>导出功率谱密度</translation>
+    </message>
+    <message>
+        <location line="+62"/>
+        <source>Export full</source>
+        <translation>导出完整矩阵</translation>
+    </message>
+    <message>
+        <location line="-1854"/>
+        <source>Extract the audio track of a video file</source>
+        <translation>抽取视频音频轨</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>FFmpeg was not detected. Specify its path in Settings &gt; Signal Analysis.</source>
+        <translation>未检测到 FFmpeg，请在「设置 → 信号分析」里指定路径。</translation>
+    </message>
+    <message>
+        <location line="+345"/>
+        <source>Failed to create the signal analysis page.</source>
+        <translation>创建信号分析页面失败。</translation>
+    </message>
+    <message>
+        <location line="+1466"/>
+        <source>Failed to export the power spectral density.</source>
+        <translation>功率谱密度导出失败。</translation>
+    </message>
+    <message>
+        <location line="+1287"/>
+        <source>Failed to import audio.</source>
+        <translation>导入音频失败。</translation>
+    </message>
+    <message>
+        <location line="-3021"/>
+        <source>Failed to import data frame.</source>
+        <translation>导入数据帧失败。</translation>
+    </message>
+    <message>
+        <location line="+3021"/>
+        <source>Failed to import video.</source>
+        <translation>导入视频失败。</translation>
+    </message>
+    <message>
+        <location line="-100"/>
+        <location line="+123"/>
+        <source>Failed to prepare the playback audio for this signal.</source>
+        <translation>准备该信号的播放音频失败。</translation>
+    </message>
+    <message>
+        <location line="-1595"/>
+        <location line="+14"/>
+        <source>Failed to relink the data frame source.</source>
+        <translation>重新指定数据帧来源失败。</translation>
+    </message>
+    <message>
+        <location line="+742"/>
+        <source>Failed to restore signal &quot;%1&quot;.</source>
+        <translation>恢复信号「%1」失败。</translation>
+    </message>
+    <message>
+        <location line="-207"/>
+        <source>Failed to send the peak table.</source>
+        <translation>峰值表发送失败。</translation>
+    </message>
+    <message>
+        <location line="-963"/>
+        <location line="+42"/>
+        <source>Large Signal</source>
+        <translation>大信号</translation>
+    </message>
+    <message>
+        <location line="-20"/>
+        <source>Large signal confirmed: %1 assumes about %2 GB of memory.</source>
+        <translation>大信号已确认：%1 预计占用约 %2 GB 内存。</translation>
+    </message>
+    <message>
+        <location line="+1128"/>
+        <source>Locate Signal Source</source>
+        <translation>重新指定信号源</translation>
+    </message>
+    <message>
+        <location line="-9"/>
+        <source>Locate...</source>
+        <translation>重新指定...</translation>
+    </message>
+    <message>
+        <location line="-777"/>
+        <source>No data frame is available. Import or create a data frame first.</source>
+        <translation>没有可用的数据帧，请先导入或创建数据帧。</translation>
+    </message>
+    <message>
+        <location line="+311"/>
+        <source>No power spectral density data to export.</source>
+        <translation>没有可导出的功率谱密度数据。</translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>PSD (dB re 1.0/Hz)</source>
+        <translation>功率谱密度（dB，相对 1.0/赫兹）</translation>
+    </message>
+    <message>
+        <location line="+1954"/>
+        <source>Export the chart page or the current sub-chart, or copy it to the clipboard</source>
+        <translation>导出整页/当前子图或复制到剪贴板</translation>
+    </message>
+    <message>
+        <location line="+19"/>
+        <source>Peak Table</source>
+        <translation>峰值表</translation>
+    </message>
+    <message>
+        <location line="-4015"/>
+        <source>Playback failed. See the message log for details.</source>
+        <translation>播放失败，详情见消息日志。</translation>
+    </message>
+    <message>
+        <location line="+3865"/>
+        <source>Point a signal whose data frame is missing to an existing data frame</source>
+        <translation>把数据帧缺失的信号重新指向现有数据帧</translation>
+    </message>
+    <message>
+        <location line="-3922"/>
+        <location line="+4046"/>
+        <source>Power spectral density (CSV)</source>
+        <translation>功率谱密度（CSV）</translation>
+    </message>
+    <message>
+        <location line="-1941"/>
+        <source>Power spectral density exported: %1</source>
+        <translation>功率谱密度已导出：%1</translation>
+    </message>
+    <message>
+        <location line="-646"/>
+        <source>Reduce precision</source>
+        <translation>降低精度</translation>
+    </message>
+    <message>
+        <location line="+324"/>
+        <location line="+2138"/>
+        <source>Relink Data Frame Source</source>
+        <translation>重新指定数据帧来源</translation>
+    </message>
+    <message>
+        <location line="+152"/>
+        <source>Show or hide the peak table window</source>
+        <translation>显示或隐藏峰值表窗口</translation>
+    </message>
+    <message>
+        <location line="-3639"/>
+        <source>Signal &quot;%1&quot; is a placeholder: its data frame is missing.</source>
+        <translation>信号「%1」为占位：其数据帧缺失。</translation>
+    </message>
+    <message>
+        <location line="+2110"/>
+        <source>Signal &quot;%1&quot; refers to a missing file:
+%2
+
+Locate the file again?</source>
+        <translation>信号「%1」引用的文件不存在：%2。要重新指定文件吗？</translation>
+    </message>
+    <message>
+        <location line="-691"/>
+        <source>Signal &quot;%1&quot; relinked to data frame &quot;%2&quot;.</source>
+        <translation>信号「%1」已重新指向数据帧「%2」。</translation>
+    </message>
+    <message>
+        <location line="+690"/>
+        <source>Signal Source Missing</source>
+        <translation>信号源缺失</translation>
+    </message>
+    <message>
+        <location line="-1119"/>
+        <source>Signal analysis cancelled: %1 needs more than the memory budget.</source>
+        <translation>已取消信号分析：%1 超出内存预算。</translation>
+    </message>
+    <message>
+        <location line="+1751"/>
+        <source>Signal analysis failed. See the message log for details.</source>
+        <translation>信号分析失败，详情见消息日志。</translation>
+    </message>
+    <message>
+        <location line="-64"/>
+        <source>Signal analysis: parameters applied, recomputing.</source>
+        <translation>信号分析：参数已应用，正在重算。</translation>
+    </message>
+    <message>
+        <location line="-580"/>
+        <source>Signal source missing: data frame &quot;%1&quot; (signal &quot;%2&quot;). Use &quot;Relink Data Frame Source&quot; to point it to an existing data frame.</source>
+        <translation>信号源缺失：数据帧「%1」（信号「%2」）。可用「重新指定数据帧来源」指向现有数据帧。</translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>Skip</source>
+        <translation>跳过</translation>
+    </message>
+    <message>
+        <location line="-797"/>
+        <source>The current signal&apos;s source is available; there is nothing to relink.</source>
+        <translation>当前信号的来源可用，无需重新指定。</translation>
+    </message>
+    <message>
+        <location line="-344"/>
+        <source>The estimated peak memory for the %1 is about %2 GB, above the 1.5 GB budget.
+Continue or cancel?</source>
+        <translation>%1 的预计峰值内存约 %2 GB，超过 1.5 GB 预算。继续还是取消？</translation>
+    </message>
+    <message>
+        <location line="+730"/>
+        <source>The heatmap matrix is %1 x %2 = %3 cells (about %4 MB as CSV).
+Export the full matrix or downsample by 2?</source>
+        <translation>热图矩阵为 %1 x %2 = %3 个单元（CSV 约 %4 兆字节）。导出完整矩阵还是 2 倍降采样？</translation>
+    </message>
+    <message>
+        <location line="-636"/>
+        <source>peak table</source>
+        <translation>峰值表</translation>
+    </message>
+    <message>
+        <location line="-1388"/>
+        <source>soundfile is not available; only WAV files can be read directly. Install soundfile or use FFmpeg.</source>
+        <translation>未安装 soundfile，只能直接读取 WAV；可安装 soundfile 或改用 FFmpeg。</translation>
+    </message>
+    <message>
+        <location line="+3082"/>
+        <source>spectrum</source>
+        <translation>频谱</translation>
+    </message>
+    <message>
+        <location line="+23"/>
+        <source>waveform envelope</source>
+        <translation>波形包络</translation>
+    </message>
+    <message>
+        <location line="-2906"/>
+        <source>FFmpeg is available; video import is enabled.</source>
+        <translation>FFmpeg 可用，视频导入已启用。</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>FFmpeg is still not available; video import stays disabled.</source>
+        <translation>仍未检测到 FFmpeg，视频导入保持置灰。</translation>
+    </message>
+    <message>
+        <location line="+3074"/>
+        <source>Signal imported.</source>
+        <translation>信号导入完成。</translation>
+    </message>
+    <message>
+        <location line="-1940"/>
+        <source>The estimated peak memory for the %1 is about %2 GB, above the 1.5 GB budget.
+Reduce the precision, scan only the visible range, or cancel?</source>
+        <translation>%1 的预计峰值内存约 %2 GB，超过 1.5 GB 预算。降低精度、只扫可见区段，还是取消？</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Scan visible range</source>
+        <translation>只扫可见区段</translation>
+    </message>
+    <message>
+        <location line="+57"/>
+        <source>peak curves</source>
+        <translation>峰值曲线</translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>Peak curves were limited to the visible time range (local scan).</source>
+        <translation>峰值曲线已限制为可见时间范围（局部扫描）。</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Peak curves use a coarser frame step (local scan).</source>
+        <translation>峰值曲线改用更粗的帧步进（局部扫描）。</translation>
+    </message>
+    <message>
+        <location line="+693"/>
+        <source>Export Whole Page</source>
+        <translation>导出整页</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Whole page exported: %1</source>
+        <translation>整页已导出：%1</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Failed to export the whole page.</source>
+        <translation>整页导出失败。</translation>
+    </message>
+    <message>
+        <location line="+19"/>
+        <source>Export Sub-chart</source>
+        <translation>导出当前子图</translation>
+    </message>
+    <message>
+        <location line="+27"/>
+        <source>Sub-chart exported: %1</source>
+        <translation>当前子图已导出：%1</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Failed to export the sub-chart.</source>
+        <translation>当前子图导出失败。</translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>Whole page copied to the clipboard.</source>
+        <translation>整页已复制到剪贴板。</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Failed to copy the whole page to the clipboard.</source>
+        <translation>复制整页到剪贴板失败。</translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>Current sub-chart copied to the clipboard.</source>
+        <translation>当前子图已复制到剪贴板。</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Failed to copy the current sub-chart to the clipboard.</source>
+        <translation>复制当前子图到剪贴板失败。</translation>
+    </message>
+    <message>
+        <location line="+1198"/>
+        <source>heatmap</source>
+        <translation>热图</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Heatmap precision reduced to %1 x %2 (smaller block size).</source>
+        <translation>热图精度已降至 %1 x %2（更小的分块）。</translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Heatmap was limited to the visible time range.</source>
+        <translation>热图已限制为可见时间范围。</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DASignalAnalysisView</name>
+    <message>
+        <location filename="../../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="+304"/>
+        <location line="+1104"/>
+        <source>Envelope</source>
+        <translation>包络</translation>
+    </message>
+    <message>
+        <location line="-1066"/>
+        <location line="+1069"/>
+        <source>Amplitude spectrum</source>
+        <translation>幅值谱</translation>
+    </message>
+    <message>
+        <location line="-679"/>
+        <location line="+685"/>
+        <source>Waterfall</source>
+        <translation>三维瀑布</translation>
+    </message>
+    <message>
+        <location line="-621"/>
+        <location line="+618"/>
+        <source>Spectrogram</source>
+        <translation>时频图</translation>
+    </message>
+    <message>
+        <location line="-603"/>
+        <source>dB</source>
+        <translation>分贝</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <location line="+162"/>
+        <source>Time (s)</source>
+        <translation>时间（秒）</translation>
+    </message>
+    <message>
+        <location line="-161"/>
+        <location line="+169"/>
+        <source>Frequency (Hz)</source>
+        <translation>频率（赫兹）</translation>
+    </message>
+    <message>
+        <location line="-7"/>
+        <location line="+8"/>
+        <source>Amplitude</source>
+        <translation>幅值</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>dB (FS)</source>
+        <translation>dB（满量程）</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>dB (re 1.0)</source>
+        <translation>dB（相对 1.0）</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>RMS</source>
+        <translation>均方根</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DASignalAnalysisWorker</name>
+    <message>
+        <location filename="../../plugins/DASignalAnalysis/Analysis/DASignalAnalysisWorker.cpp" line="+179"/>
+        <source>Signal is invalid or not loaded.</source>
+        <translation>信号无效或未载入。</translation>
+    </message>
+    <message>
+        <location line="+78"/>
+        <location line="+9"/>
+        <source>Failed to start the spectrum task.</source>
+        <translation>频谱任务启动失败。</translation>
+    </message>
+    <message>
+        <location line="-4"/>
+        <source>Computing spectrum...</source>
+        <translation>正在计算频谱...</translation>
+    </message>
+    <message>
+        <location line="+79"/>
+        <location line="+8"/>
+        <source>Failed to start the time-frequency task.</source>
+        <translation>时频任务启动失败。</translation>
+    </message>
+    <message>
+        <location line="+156"/>
+        <source>FFmpeg is not available. Specify its path in the signal analysis settings.</source>
+        <translation>未检测到 FFmpeg，请在信号分析设置里指定路径。</translation>
+    </message>
+    <message>
+        <location line="+257"/>
+        <source>Background task disappeared.</source>
+        <translation>后台任务丢失。</translation>
+    </message>
+    <message>
+        <location line="+48"/>
+        <source>Spectrum result is empty.</source>
+        <translation>频谱结果为空。</translation>
+    </message>
+    <message>
+        <location line="-8"/>
+        <source>Computation failed. See the message log for details.</source>
+        <translation>计算失败，详见消息日志。</translation>
+    </message>
+    <message>
+        <location line="-347"/>
+        <location line="+56"/>
+        <source>Failed to create the temporary audio file.</source>
+        <translation>创建临时音频文件失败。</translation>
+    </message>
+    <message>
+        <location line="+238"/>
+        <source>Failed to query background tasks.</source>
+        <translation>查询后台任务失败。</translation>
+    </message>
+    <message>
+        <location line="+194"/>
+        <source>Failed to read the background result.</source>
+        <translation>读取后台结果失败。</translation>
+    </message>
+    <message>
+        <location line="-643"/>
+        <source>Failed to start the envelope task.</source>
+        <translation>包络任务启动失败。</translation>
+    </message>
+    <message>
+        <location line="+127"/>
+        <source>Failed to start the peak curve task.</source>
+        <translation>峰值曲线任务启动失败。</translation>
+    </message>
+    <message>
+        <location line="-43"/>
+        <source>Failed to start the peak table task.</source>
+        <translation>峰值表任务启动失败。</translation>
+    </message>
+    <message>
+        <location line="+86"/>
+        <location line="+10"/>
+        <source>Failed to start the playback audio export.</source>
+        <translation>播放音频导出任务启动失败。</translation>
+    </message>
+    <message>
+        <location line="-31"/>
+        <source>Playback audio export is only available for dataframe signals.</source>
+        <translation>只有数据帧来源的信号需要导出播放音频。</translation>
+    </message>
+    <message>
+        <location line="+459"/>
+        <source>Playback audio export produced no result.</source>
+        <translation>播放音频导出没有结果。</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Playback audio file was not created.</source>
+        <translation>播放音频文件未生成。</translation>
+    </message>
+    <message>
+        <location line="-442"/>
+        <source>Preparing playback audio...</source>
+        <translation>正在准备播放音频...</translation>
+    </message>
+    <message>
+        <location line="+21"/>
+        <source>No file selected.</source>
+        <translation>未选择文件。</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>File does not exist.</source>
+        <translation>文件不存在。</translation>
+    </message>
+    <message>
+        <location line="+29"/>
+        <location line="+10"/>
+        <source>Failed to start the import task.</source>
+        <translation>导入任务启动失败。</translation>
+    </message>
+    <message>
+        <location line="-5"/>
+        <source>Preparing import...</source>
+        <translation>正在准备导入...</translation>
+    </message>
+    <message>
+        <location line="-348"/>
+        <source>The signal source is missing. Relink or re-import it before analyzing.</source>
+        <translation>信号源缺失，请重新指定来源或重新导入后再分析。</translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>The signal source cannot be read (it may have been renamed or removed, or the file is unavailable).</source>
+        <translation>信号源无法读取（可能已改名或移除，或文件不可用）。</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DASignalImportDialog</name>
+    <message>
+        <location filename="../../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="+609"/>
+        <source>File</source>
+        <translation>文件</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Data Frame</source>
+        <translation>源数据帧</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Time Column</source>
+        <translation>时间列</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Value Columns</source>
+        <translation>幅值列（可多选）</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Sample Rate (Hz)</source>
+        <translation>采样率（赫兹）</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Signal Name</source>
+        <translation>信号名</translation>
+    </message>
+    <message>
+        <location line="-177"/>
+        <source>No data frame is available. Import data first.</source>
+        <translation>没有可用的数据帧，请先导入数据。</translation>
+    </message>
+    <message>
+        <location line="+168"/>
+        <source>No time column</source>
+        <translation>无时间列</translation>
+    </message>
+    <message>
+        <location line="-165"/>
+        <source>Please enter a positive sample rate.</source>
+        <translation>请输入合法的正数采样率。</translation>
+    </message>
+    <message>
+        <location line="-48"/>
+        <source>No time column: enter the sample rate manually.</source>
+        <translation>无时间列：请手动填写采样率。</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Inferred sample rate = %1 Hz, duration = %2 s</source>
+        <translation>推断采样率 = %1 赫兹，时长 = %2 秒</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Cannot infer the sample rate from the time column: %1</source>
+        <translation>无法从时间列推断采样率：%1</translation>
+    </message>
+    <message>
+        <location line="+87"/>
+        <source>Video Files (*.mp4 *.mov *.m4v *.avi *.mkv *.webm *.flv *.wmv *.ts *.mts);;All Files (*)</source>
+        <translation>视频文件 (*.mp4 *.mov *.m4v *.avi *.mkv *.webm *.flv *.wmv *.ts *.mts);;所有文件 (*)</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Audio Files (*.wav *.aiff *.aif *.flac *.ogg *.oga *.mp3 *.m4a *.aac *.wma *.opus);;All Files (*)</source>
+        <translation>音频文件 (*.wav *.aiff *.aif *.flac *.ogg *.oga *.mp3 *.m4a *.aac *.wma *.opus);;所有文件 (*)</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Select File</source>
+        <translation>选择文件</translation>
+    </message>
+    <message>
+        <location line="+86"/>
+        <source>Import Audio</source>
+        <translation>导入音频</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Import Video</source>
+        <translation>导入视频</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Import Data Frame</source>
+        <translation>导入数据帧</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Browse...</source>
+        <translation>浏览</translation>
+    </message>
+    <message>
+        <location line="+31"/>
+        <source>Import</source>
+        <translation>导入</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+    <message>
+        <location line="-181"/>
+        <source>FFmpeg was not detected. Specify its path in Settings &gt; Signal Analysis.</source>
+        <translation>未检测到 FFmpeg，请在「设置 → 信号分析」里指定路径。</translation>
+    </message>
+    <message>
+        <location line="-351"/>
+        <source>Sample rate: %1 Hz, channels: %2, duration: %3 s</source>
+        <translation>采样率：%1 赫兹，通道数：%2，时长：%3 秒</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DASignalPlayer</name>
+    <message>
+        <location filename="../../plugins/DASignalAnalysis/Playback/DASignalPlayer.cpp" line="+199"/>
+        <source>Signal is invalid.</source>
+        <translation>信号无效。</translation>
+    </message>
+    <message>
+        <location line="+22"/>
+        <source>No playable audio file for this signal.</source>
+        <translation>该信号没有可播放的音频文件。</translation>
+    </message>
+    <message>
+        <location line="-43"/>
+        <source>The playback audio file is missing.</source>
+        <translation>播放音频文件缺失。</translation>
+    </message>
+</context>
+<context>
     <name>DA::DAStatusBarWidget</name>
     <message>
-        <location filename="../DAGui/DAStatusBarWidget.cpp" line="+49"/>
+        <location filename="../DAGui/Common/DAStatusBarWidget.cpp" line="+49"/>
         <source>Workflow</source>
         <translation>工作流</translation>
     </message>
@@ -14838,9 +15666,372 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     </message>
 </context>
 <context>
+    <name>DA::DATableCellOps</name>
+    <message>
+        <location filename="../DAGui/Table/Ops/DATableCellOps.cpp" line="+66"/>
+        <source>Please select a valid cell</source>
+        <translation>请选择正确的单元格</translation>
+    </message>
+    <message>
+        <location line="+49"/>
+        <source>Clipboard is empty</source>
+        <translation>剪贴板为空</translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>Please select a cell to paste into</source>
+        <translation>请先选中要粘贴的起始单元格</translation>
+    </message>
+    <message>
+        <location line="+50"/>
+        <source>Nothing to paste: the clipboard content exceeds the table boundary</source>
+        <translation>无可粘贴内容：剪贴板内容超出表格边界</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Paste partially dropped: %1 row(s) and %2 cell(s) outside the table were ignored</source>
+        <translation>粘贴部分丢弃：%1 行与 %2 个单元格超出表格范围被忽略</translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Paste failed: the content does not match the column data type</source>
+        <translation>粘贴失败：内容与列数据类型不匹配</translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>No cells selected to cut</source>
+        <translation>没有选中可剪切的单元格</translation>
+    </message>
+    <message>
+        <location line="-173"/>
+        <source>Cell Operations</source>
+        <translation>单元格操作</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DATableChartRolePanel</name>
+    <message>
+        <location filename="../DAGui/Table/Chart/DATableChartRolePanel.cpp" line="+150"/>
+        <source>Row number</source>
+        <translation>行号</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>(none)</source>
+        <translation>（无）</translation>
+    </message>
+    <message>
+        <location line="+62"/>
+        <source>Remove this series</source>
+        <translation>移除此序列</translation>
+    </message>
+    <message>
+        <location line="+27"/>
+        <source>Add series</source>
+        <translation>添加序列</translation>
+    </message>
+    <message>
+        <location line="+50"/>
+        <source>Aggregation</source>
+        <translation>聚合</translation>
+    </message>
+    <message>
+        <location line="+22"/>
+        <source>Bins</source>
+        <translation>分箱</translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>Mean</source>
+        <translation>平均值</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Median</source>
+        <translation>中位数</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Sum</source>
+        <translation>求和</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Count</source>
+        <translation>计数</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Std</source>
+        <translation>标准差</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Var</source>
+        <translation>方差</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Min</source>
+        <translation>最小值</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Max</source>
+        <translation>最大值</translation>
+    </message>
+    <message>
+        <location line="+127"/>
+        <location line="+35"/>
+        <source>X axis</source>
+        <translation>X 轴</translation>
+    </message>
+    <message>
+        <location line="-29"/>
+        <location line="+17"/>
+        <location line="+18"/>
+        <location line="+85"/>
+        <location line="+17"/>
+        <location line="+17"/>
+        <location line="+23"/>
+        <source>Y</source>
+        <translation>Y</translation>
+    </message>
+    <message>
+        <location line="-165"/>
+        <location line="+103"/>
+        <location line="+17"/>
+        <location line="+17"/>
+        <location line="+23"/>
+        <source>X</source>
+        <translation>X</translation>
+    </message>
+    <message>
+        <location line="-125"/>
+        <location line="+36"/>
+        <location line="+42"/>
+        <source>Value</source>
+        <translation>值</translation>
+    </message>
+    <message>
+        <location line="-65"/>
+        <location line="+42"/>
+        <source>Values</source>
+        <translation>数值</translation>
+    </message>
+    <message>
+        <location line="-32"/>
+        <source>Group</source>
+        <translation>分组</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <location line="+20"/>
+        <source>Category</source>
+        <translation>分类</translation>
+    </message>
+    <message>
+        <location line="+45"/>
+        <source>Error</source>
+        <translation>误差</translation>
+    </message>
+    <message>
+        <location line="+17"/>
+        <source>U</source>
+        <translation>U</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>V</source>
+        <translation>V</translation>
+    </message>
+    <message>
+        <location line="+18"/>
+        <source>Z</source>
+        <translation>Z</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DATableChildWindow</name>
+    <message>
+        <location filename="../DAGui/Table/Views/DATableChildWindow.cpp" line="+74"/>
+        <source>Drag to move</source>
+        <translation>拖动移动</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <location line="+619"/>
+        <source>Close</source>
+        <translation>关闭</translation>
+    </message>
+    <message>
+        <location line="-4"/>
+        <source>Maximize</source>
+        <translation>最大化</translation>
+    </message>
+    <message>
+        <location line="-1"/>
+        <source>Restore</source>
+        <translation>还原</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Reset position and size</source>
+        <translation>重置位置与大小</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DATableColumnCombineOps</name>
+    <message>
+        <location filename="../DAGui/Table/Ops/DATableColumnCombineOps.cpp" line="+76"/>
+        <source>Split Column requires an editable table</source>
+        <translation>分列需要可编辑的表格</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Please select exactly one column to split</source>
+        <translation>请选择要拆分的单个列</translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>Failed to snapshot the source column</source>
+        <translation>源列快照失败</translation>
+    </message>
+    <message>
+        <location line="+59"/>
+        <source>Split column failed: %1</source>
+        <translation>分列失败：%1</translation>
+    </message>
+    <message>
+        <location line="+23"/>
+        <source>Merge Columns requires an editable table</source>
+        <translation>合并列需要可编辑的表格</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Please select at least two columns to merge</source>
+        <translation>请选择至少两列进行合并</translation>
+    </message>
+    <message>
+        <location line="+16"/>
+        <source>Failed to snapshot the source columns</source>
+        <translation>源列快照失败</translation>
+    </message>
+    <message>
+        <location line="+88"/>
+        <source>Merge columns failed: %1</source>
+        <translation>合并列失败：%1</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Computed column(s) %1 became invalid because their dependency column(s) were merged</source>
+        <translation>计算列 %1 因依赖列被合并已失效</translation>
+    </message>
+    <message>
+        <location line="-244"/>
+        <source>Split / Merge Columns</source>
+        <translation>分列/合并列</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DATableColumnOps</name>
+    <message>
+        <location filename="../DAGui/Table/Ops/DATableColumnOps.cpp" line="+172"/>
+        <source>Please select a valid column</source>
+        <translation>请选择正确的列</translation>
+    </message>
+    <message>
+        <location line="+152"/>
+        <source>Computed column(s) %1 became invalid because their dependency column(s) were removed</source>
+        <translation>计算列 %1 因依赖列被删除已失效</translation>
+    </message>
+    <message>
+        <location line="-242"/>
+        <source>Warning</source>
+        <translation>警告</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>The name of the new column to be inserted must be specified</source>
+        <translation>必须指定列的名字</translation>
+    </message>
+    <message>
+        <location line="-31"/>
+        <source>Column Operations</source>
+        <translation>列操作</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DATableColumnViewController</name>
+    <message>
+        <location filename="../DAGui/Table/Controllers/DATableColumnViewController.cpp" line="+312"/>
+        <source>Freeze Columns</source>
+        <translation>冻结列</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Freeze the first N columns (added to already frozen columns, 0 = no change):</source>
+        <translation>冻结前 N 列（追加到已冻结的列，0 = 不做修改）：</translation>
+    </message>
+    <message>
+        <location line="+232"/>
+        <source>Column names must be unique</source>
+        <translation>列名不能重复</translation>
+    </message>
+    <message>
+        <location line="-38"/>
+        <source>Manage Columns</source>
+        <translation>列管理</translation>
+    </message>
+    <message>
+        <location line="+100"/>
+        <source>Rename and update column view</source>
+        <translation>重命名并更新列视图</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DATableComputedColumnController</name>
+    <message>
+        <location filename="../DAGui/Table/Controllers/DATableComputedColumnController.cpp" line="+180"/>
+        <source>The table is read-only and does not support computed columns</source>
+        <translation>只读表格不支持计算列</translation>
+    </message>
+    <message>
+        <location line="+23"/>
+        <source>The formula must not reference the target column itself</source>
+        <translation>公式不得引用目标列自身</translation>
+    </message>
+    <message>
+        <location line="+163"/>
+        <source>Rename Column</source>
+        <translation>重命名列</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>%1 computed column(s) reference the renamed column(s): %2. Their references will be updated automatically. Continue?</source>
+        <translation>有 %1 个计算列引用被改名的列：%2。其引用将自动批量更新，是否继续？</translation>
+    </message>
+    <message>
+        <location line="-115"/>
+        <source>Recompute All Computed Columns</source>
+        <translation>重算全部计算列</translation>
+    </message>
+    <message>
+        <location line="-100"/>
+        <location line="+139"/>
+        <source>Failed to evaluate the formula of computed column &quot;%1&quot;: %2</source>
+        <translation>计算列“%1”公式求值失败：%2</translation>
+    </message>
+    <message>
+        <location line="-64"/>
+        <source>Column &quot;%1&quot; has no computed formula</source>
+        <translation>列“%1”没有计算公式</translation>
+    </message>
+</context>
+<context>
     <name>DA::DATableComputedColumnStore</name>
     <message>
-        <location filename="../DAGui/DATableComputedColumnStore.cpp" line="+461"/>
+        <location filename="../DAGui/Table/Metadata/DATableComputedColumnStore.cpp" line="+470"/>
         <source>Valid</source>
         <translation>有效</translation>
     </message>
@@ -14856,9 +16047,222 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     </message>
 </context>
 <context>
+    <name>DA::DATableConditionalFormatController</name>
+    <message>
+        <location filename="../DAGui/Table/Controllers/DATableConditionalFormatController.cpp" line="+63"/>
+        <location line="+35"/>
+        <location line="+79"/>
+        <source>Please select a column first</source>
+        <translation>请先选择列</translation>
+    </message>
+    <message>
+        <location line="-76"/>
+        <location line="+32"/>
+        <source>Clear Conditional Format Rules</source>
+        <translation>清除条件格式规则</translation>
+    </message>
+    <message>
+        <location line="-22"/>
+        <source>The selected columns have no conditional format rules</source>
+        <translation>所选列没有条件格式规则</translation>
+    </message>
+    <message>
+        <location line="+19"/>
+        <source>The table has no conditional format rules</source>
+        <translation>本表没有条件格式规则</translation>
+    </message>
+    <message>
+        <location line="+95"/>
+        <source>Blue</source>
+        <translation>蓝色</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Green</source>
+        <translation>绿色</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Red</source>
+        <translation>红色</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Yellow</source>
+        <translation>黄色</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Cyan</source>
+        <translation>青色</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Purple</source>
+        <translation>紫色</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Data Bars</source>
+        <translation>数据条</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Gradient Fill</source>
+        <translation>渐变填充</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>%1 Gradient Fill</source>
+        <translation>%1渐变填充</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Solid Fill</source>
+        <translation>实心填充</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>%1 Solid Fill</source>
+        <translation>%1实心填充</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <location line="+30"/>
+        <location line="+54"/>
+        <source>Other Rules...</source>
+        <translation>其他规则...</translation>
+    </message>
+    <message>
+        <location line="-77"/>
+        <source>Color Scales</source>
+        <translation>色阶</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>%1-Color Scale</source>
+        <translation>%1色色阶</translation>
+    </message>
+    <message>
+        <location line="+25"/>
+        <source>Highlight Cells Rules</source>
+        <translation>突出显示单元格规则</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Greater Than...</source>
+        <translation>大于...</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Less Than...</source>
+        <translation>小于...</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Between...</source>
+        <translation>介于...</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Equal To...</source>
+        <translation>等于...</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Text Contains...</source>
+        <translation>文本包含...</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>A Date Occurring</source>
+        <translation>发生日期</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Yesterday</source>
+        <translation>昨天</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Today</source>
+        <translation>今天</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Tomorrow</source>
+        <translation>明天</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>In the Last 7 Days</source>
+        <translation>最近 7 天</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Last Week</source>
+        <translation>上周</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>This Week</source>
+        <translation>本周</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Next Week</source>
+        <translation>下周</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Last Month</source>
+        <translation>上月</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>This Month</source>
+        <translation>本月</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Next Month</source>
+        <translation>下月</translation>
+    </message>
+    <message>
+        <location line="+19"/>
+        <source>Duplicate Values...</source>
+        <translation>重复值...</translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Clear Rules</source>
+        <translation>清除规则</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Clear Rules from Selected Columns</source>
+        <translation>清除所选列的规则</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Clear Rules from Entire Sheet</source>
+        <translation>清除全表的规则</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Custom Rules...</source>
+        <translation>自定义设置...</translation>
+    </message>
+    <message>
+        <location line="+17"/>
+        <source>Change Conditional Format Rules</source>
+        <translation>更改条件格式规则</translation>
+    </message>
+</context>
+<context>
     <name>DA::DATableDisplayFormatComboBox</name>
     <message>
-        <location filename="../DAGui/DATableDisplayFormatComboBox.cpp" line="+38"/>
+        <location filename="../DAGui/Table/Views/DATableDisplayFormatComboBox.cpp" line="+38"/>
         <location line="+31"/>
         <source>General</source>
         <translation>通用</translation>
@@ -14901,9 +16305,88 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     </message>
 </context>
 <context>
+    <name>DA::DATableFillOps</name>
+    <message>
+        <location filename="../DAGui/Table/Ops/DATableFillOps.cpp" line="+124"/>
+        <source>Fill down</source>
+        <translation>向下填充</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Fill up</source>
+        <translation>向上填充</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Fill forward (ffill)</source>
+        <translation>向下填充空值(ffill)</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Fill backward (bfill)</source>
+        <translation>向上填充空值(bfill)</translation>
+    </message>
+    <message>
+        <location line="-24"/>
+        <location line="+64"/>
+        <source>Cannot fill a read-only data source</source>
+        <translation>只读数据源不能填充</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Please select cells to fill</source>
+        <translation>请先选中要填充的单元格</translation>
+    </message>
+    <message>
+        <location line="+30"/>
+        <source>Failed to generate the fill series</source>
+        <translation>生成填充序列失败</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Fill series</source>
+        <translation>序列填充</translation>
+    </message>
+    <message>
+        <location line="-137"/>
+        <source>Fill failed: the content does not match the column data type</source>
+        <translation>填充失败：内容与列数据类型不匹配</translation>
+    </message>
+    <message>
+        <location line="-39"/>
+        <source>Fill Operations</source>
+        <translation>填充操作</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DATableFindController</name>
+    <message>
+        <location filename="../DAGui/Table/Controllers/DATableFindController.cpp" line="+361"/>
+        <source>This data source is read-only and cannot be modified.</source>
+        <translation>该数据源为只读，无法修改</translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <location line="+22"/>
+        <location line="+51"/>
+        <source>No matches found</source>
+        <translation>未找到匹配项</translation>
+    </message>
+    <message>
+        <location line="-45"/>
+        <source>Replace All</source>
+        <translation>全部替换</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Too many cells will be changed (%1). This operation cannot be undone. Continue?</source>
+        <translation>改动量过大（%1 格），本次替换将不可撤销，是否继续？</translation>
+    </message>
+</context>
+<context>
     <name>DA::DATableMetadata</name>
     <message>
-        <location filename="../DAGui/DATableMetadata.cpp" line="+241"/>
+        <location filename="../DAGui/Table/Metadata/DATableMetadata.cpp" line="+241"/>
         <source>Cell styles</source>
         <translation>样式</translation>
     </message>
@@ -14934,9 +16417,66 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     </message>
 </context>
 <context>
+    <name>DA::DATableNavigationService</name>
+    <message>
+        <location filename="../DAGui/Table/Controllers/DATableNavigationService.cpp" line="+100"/>
+        <source>Row number is out of range</source>
+        <translation>行号超出范围</translation>
+    </message>
+    <message>
+        <location line="+27"/>
+        <source>Index label not found: %1</source>
+        <translation>未找到索引标签：%1</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>There are %1 rows with this index label; jumped to the first one</source>
+        <translation>有 %1 行使用该索引标签，已跳到第一个</translation>
+    </message>
+    <message>
+        <location line="+27"/>
+        <source>Column not found: %1</source>
+        <translation>未找到列名：%1</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>There are %1 columns with this name; used the first one</source>
+        <translation>有 %1 个同名列，已取第一个</translation>
+    </message>
+    <message>
+        <location line="+53"/>
+        <location line="+63"/>
+        <source>The column &quot;%1&quot; was hidden and has been made visible</source>
+        <translation>列&quot;%1&quot;已隐藏，现已显示</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DATableNoteController</name>
+    <message>
+        <location filename="../DAGui/Table/Controllers/DATableNoteController.cpp" line="+41"/>
+        <source>Please select a cell to annotate</source>
+        <translation>请先选中要批注的单元格</translation>
+    </message>
+    <message>
+        <location line="+93"/>
+        <source>Please select a cell whose note is to be deleted</source>
+        <translation>请先选中要删除批注的单元格</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>The selected cell has no note</source>
+        <translation>选中单元格没有批注</translation>
+    </message>
+    <message>
+        <location line="+21"/>
+        <source>This table has no notes</source>
+        <translation>本表没有批注</translation>
+    </message>
+</context>
+<context>
     <name>DA::DATableNoteEditDialog</name>
     <message>
-        <location filename="../DAGui/DATableNoteEditDialog.cpp" line="+31"/>
+        <location filename="../DAGui/Table/Dialogs/DATableNoteEditDialog.cpp" line="+31"/>
         <source>Cell Note</source>
         <translation>单元格批注</translation>
     </message>
@@ -14952,37 +16492,100 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     </message>
 </context>
 <context>
-    <name>DA::DATableChildWindow</name>
+    <name>DA::DATableQuickPlotController</name>
     <message>
-        <location filename="../DAGui/TableChildWindow/DATableChildWindow.cpp" line="+99"/>
-        <source>Drag to move</source>
-        <translation>拖动移动</translation>
+        <location filename="../DAGui/Table/Controllers/DATableQuickPlotController.cpp" line="+168"/>
+        <source>The chart area is not available</source>
+        <translation>绘图区不可用</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Failed to transfer to the chart area</source>
+        <translation>转入绘图区失败</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>The chart has been transferred to the chart area</source>
+        <translation>已转入绘图区</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DATableQuickPlotSettingWidget</name>
+    <message>
+        <location filename="../DAGui/Table/Chart/DATableQuickPlotSettingWidget.cpp" line="+253"/>
+        <source>Open a quick plot from the data table to configure it here</source>
+        <translation>请先在数据表格中打开快速绘图，再在此处设置</translation>
+    </message>
+    <message>
+        <location line="-94"/>
+        <source>Chart</source>
+        <translation>图表</translation>
     </message>
     <message>
         <location line="+6"/>
-        <source>Close</source>
-        <translation>关闭</translation>
+        <source>Chart type</source>
+        <translation>图型</translation>
     </message>
     <message>
-        <location line="+427"/>
-        <source>Maximize</source>
-        <translation>最大化</translation>
+        <location line="+6"/>
+        <source>Columns</source>
+        <translation>列</translation>
+    </message>
+    <message>
+        <location line="-8"/>
+        <source>Chart type (unavailable types are disabled with the reason)</source>
+        <translation>图型（不满足当前选区的置灰并给出原因）</translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>Data roles</source>
+        <translation>数据角色</translation>
+    </message>
+    <message>
+        <location line="+32"/>
+        <source>Update to current selection</source>
+        <translation>更新为当前选区</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Re-bind the chart to the current column selection</source>
+        <translation>按当前表格选区重新绑定绘图</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Restore</source>
-        <translation>还原</translation>
+        <source>Refresh</source>
+        <translation>刷新</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Redraw with the current data</source>
+        <translation>按当前数据重绘</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Transfer to chart area</source>
+        <translation>转入绘图区</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Create a formal chart from this quick plot</source>
+        <translation>把当前快速绘图转成正式图表</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>New figure tab</source>
+        <translation>新建绘图标签页</translation>
     </message>
     <message>
         <location line="+2"/>
-        <source>Reset position and size</source>
-        <translation>重置位置与大小</translation>
+        <source>Append to current chart</source>
+        <translation>追加到当前图表</translation>
     </message>
 </context>
 <context>
     <name>DA::DATableQuickPlotWindow</name>
     <message>
-        <location filename="../DAGui/TableChart/DATableQuickPlotWindow.cpp" line="+84"/>
+        <location filename="../DAGui/Table/Chart/DATableQuickPlotWindow.cpp" line="+90"/>
         <source>Select one or more columns first</source>
         <translation>请先选择一列或多列</translation>
     </message>
@@ -15037,7 +16640,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>多序列折线</translation>
     </message>
     <message>
-        <location line="+14"/>
+        <location line="+71"/>
         <source>Mean</source>
         <translation>平均值</translation>
     </message>
@@ -15077,62 +16680,17 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>最大值</translation>
     </message>
     <message>
-        <location line="+18"/>
-        <source>Aggregation:</source>
-        <translation>聚合</translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>X axis:</source>
-        <translation>X 轴</translation>
-    </message>
-    <message>
-        <location line="+35"/>
-        <source>Update to current selection</source>
-        <translation>更新为当前选区</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Refresh</source>
-        <translation>刷新</translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Transfer to chart area</source>
-        <translation>转入绘图区</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>New figure tab</source>
-        <translation>新建绘图标签页</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Append to current chart</source>
-        <translation>追加到当前图表</translation>
-    </message>
-    <message>
-        <location line="+66"/>
-        <source>Row number</source>
-        <translation>行号</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source> (as category)</source>
-        <translation>（作为分类）</translation>
-    </message>
-    <message>
-        <location line="+122"/>
+        <location line="+130"/>
         <source>Loading data...</source>
         <translation>正在取数…</translation>
     </message>
     <message>
-        <location line="-50"/>
+        <location line="-32"/>
         <source>Based on %1 of %2 sampled rows</source>
         <translation>基于 %1 / %2 行采样</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+3"/>
         <source>Aggregation uses the sample</source>
         <translation>聚合结果基于采样</translation>
     </message>
@@ -15147,147 +16705,332 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>显示前 %1 类 / 共 %2 类</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+3"/>
         <source>Sample limited: data fetching stopped at the budget limit</source>
         <translation>样本受限：取数触及预算上限，图表只使用受限样本</translation>
     </message>
     <message>
         <location line="+3"/>
-        <location line="+144"/>
+        <location line="+181"/>
         <source>The data has changed, click Refresh to redraw</source>
         <translation>数据已变化，点击刷新</translation>
     </message>
     <message>
-        <location line="-19"/>
+        <location line="-44"/>
         <source>The previous chart type is not available for the new selection, switched to the default type</source>
         <translation>新选区不支持原来的图型，已切换为默认图型</translation>
     </message>
-
     <message>
-        <location line="+2"/>
+        <location line="-333"/>
         <source>Contour</source>
         <translation>等高线</translation>
-        </message>
-
+    </message>
     <message>
         <location line="+2"/>
         <source>Error bar</source>
         <translation>误差棒</translation>
-        </message>
-
+    </message>
     <message>
         <location line="+2"/>
         <source>Vector field</source>
         <translation>向量场</translation>
-        </message>
-
+    </message>
     <message>
         <location line="+2"/>
         <source>Multi-bar</source>
         <translation>多重柱状</translation>
-        </message>
-
+    </message>
     <message>
         <location line="+2"/>
         <source>3D surface</source>
         <translation>3D 曲面</translation>
-        </message>
-
+    </message>
     <message>
         <location line="+2"/>
         <source>3D line</source>
         <translation>3D 线图</translation>
-        </message>
-
+    </message>
     <message>
         <location line="+13"/>
         <source>Bar (count)</source>
         <translation>柱状（计数）</translation>
-        </message>
-
+    </message>
     <message>
         <location line="+1"/>
         <source>Bar (aggregate)</source>
         <translation>柱状（聚合）</translation>
-        </message>
-
+    </message>
     <message>
         <location line="+12"/>
         <location line="+6"/>
         <source>Requires at least 1 numeric column</source>
         <translation>需要至少 1 列数值</translation>
-        </message>
-
+    </message>
     <message>
         <location line="-4"/>
         <source>Requires 2 numeric columns</source>
         <translation>需要 2 列数值</translation>
-        </message>
-
+    </message>
     <message>
         <location line="+2"/>
         <source>Requires 1 numeric column</source>
         <translation>需要 1 列数值</translation>
-        </message>
-
+    </message>
     <message>
         <location line="+4"/>
         <source>Requires 1 category column, or a low-cardinality numeric column</source>
         <translation>需要 1 列分类，或低基数数值列</translation>
-        </message>
-
+    </message>
     <message>
         <location line="+2"/>
         <source>Requires 3 numeric columns, or 1 time column and 2 numeric columns</source>
         <translation>需要 3 列数值，或 1 列时间 + 2 列数值</translation>
-        </message>
-
+    </message>
     <message>
         <location line="+5"/>
         <source>Requires 3 numeric columns</source>
         <translation>需要 3 列数值</translation>
-        </message>
-
+    </message>
     <message>
         <location line="+2"/>
         <source>Requires 4 numeric columns</source>
         <translation>需要 4 列数值</translation>
-        </message>
-
+    </message>
     <message>
         <location line="+2"/>
         <source>Requires 1 category column and at least 2 numeric columns</source>
         <translation>需要 1 列分类 + 至少 2 列数值</translation>
-        </message>
-
+    </message>
     <message>
-        <location line="-210"/>
-        <source>Chart type (unavailable types are disabled with the reason)</source>
-        <translation>图型（不满足当前选区的置灰并给出原因）</translation>
-        </message>
-
-    <message>
-        <location line="+17"/>
-        <source>Settings</source>
-        <translation>设置</translation>
-        </message>
-
-    <message>
-        <location line="+4"/>
-        <source>Show or hide the role settings</source>
-        <translation>显示/隐藏角色设置</translation>
-        </message>
-
-    <message>
-        <location line="-66"/>
+        <location line="+233"/>
         <source>%1 (manual)</source>
         <translation>%1（手动配置）</translation>
-        </message>
+    </message>
+</context>
+<context>
+    <name>DA::DATableRenameOps</name>
+    <message>
+        <location filename="../DAGui/Table/Ops/DATableRenameOps.cpp" line="+67"/>
+        <source>Column name cannot be empty</source>
+        <translation>列名不能为空</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Column name &quot;%1&quot; already exists, please use another name</source>
+        <translation>列名&quot;%1&quot;已存在，请使用其他名称</translation>
+    </message>
+    <message>
+        <location line="-32"/>
+        <source>Rename Column</source>
+        <translation>重命名列</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DATableReshapeOps</name>
+    <message>
+        <location filename="../DAGui/Table/Ops/DATableReshapeOps.cpp" line="+73"/>
+        <source>%1_GroupBy</source>
+        <translation>%1_分组聚合</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Group-by aggregation of %1</source>
+        <translation>生成%1的分组聚合结果</translation>
+    </message>
+    <message>
+        <location line="+35"/>
+        <source>Reshape failed: %1</source>
+        <translation>形状变换失败：%1</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Melt table in place</source>
+        <translation>就地宽转长</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Transpose table in place</source>
+        <translation>就地转置</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>%1_Melted</source>
+        <translation>%1_宽转长</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Melt (wide to long) of %1</source>
+        <translation>生成%1的宽转长结果</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>%1_Transposed</source>
+        <translation>%1_转置</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Transpose of %1</source>
+        <translation>生成%1的转置结果</translation>
+    </message>
+    <message>
+        <location line="-87"/>
+        <source>Reshape Operations</source>
+        <translation>形状变换</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DATableResultOps</name>
+    <message>
+        <location filename="../DAGui/Table/Ops/DATableResultOps.cpp" line="+114"/>
+        <source>(no table metadata to clear)</source>
+        <translation>（无需要清除的表元数据）</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <location line="+22"/>
+        <source>Replace In Place</source>
+        <translation>就地替换</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>The table is very large (%1 cells). Keeping the old data for undo would double memory usage, so this in-place replacement will NOT be undoable. Continue?</source>
+        <translation>表格过大（%1 单元格）。保留旧数据用于撤销将使内存翻倍，本次就地替换将不可撤销。是否继续？</translation>
+    </message>
+    <message>
+        <location line="-99"/>
+        <source>Result Operations</source>
+        <translation>结果落库</translation>
+    </message>
+    <message>
+        <location line="+77"/>
+        <source>Replacing in place will clear the following table metadata:
+%1
+
+Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
+        <translation>就地替换将清除本表的以下元数据：
+%1
+
+数据与元数据共用一个撤销单元（Ctrl+Z 一并还原）。是否继续？</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DATableRowOps</name>
+    <message>
+        <location filename="../DAGui/Table/Ops/DATableRowOps.cpp" line="+126"/>
+        <source>Please select valid data cells</source>
+        <translation>请选择正确的行</translation>
+    </message>
+    <message>
+        <location line="-87"/>
+        <source>Row Operations</source>
+        <translation>行操作</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DATableSortController</name>
+    <message>
+        <location filename="../DAGui/Table/Controllers/DATableSortController.cpp" line="+182"/>
+        <source>This data source is read-only and cannot be sorted.</source>
+        <translation>该数据源为只读，无法排序</translation>
+    </message>
+    <message>
+        <location line="+116"/>
+        <source>Cannot sort: the column contains values of incomparable mixed types.</source>
+        <translation>无法排序：该列包含不可比较的混合类型</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DATableSortDialog</name>
+    <message>
+        <location filename="../DAGui/Table/Dialogs/DATableSortDialog.cpp" line="+42"/>
+        <source>Sort</source>
+        <translation>排序</translation>
+    </message>
+    <message>
+        <location line="+35"/>
+        <source>Add Condition</source>
+        <translation>添加条件</translation>
+    </message>
+    <message>
+        <location line="+16"/>
+        <source>Column</source>
+        <translation>列</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Sort On</source>
+        <translation>排序依据</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Order</source>
+        <translation>次序</translation>
+    </message>
+    <message>
+        <location line="+70"/>
+        <source>Values</source>
+        <translation>数值</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Sorting always compares cell values (dates/numbers/text by their natural order)</source>
+        <translation>排序始终比较单元格的值（日期/数值/文本按其自然顺序）</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Ascending</source>
+        <translation>升序</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Descending</source>
+        <translation>降序</translation>
+    </message>
+    <message>
+        <location line="+17"/>
+        <source>Move up</source>
+        <translation>上移</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Move down</source>
+        <translation>下移</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Duplicate condition</source>
+        <translation>复制条件</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Delete condition</source>
+        <translation>删除条件</translation>
+    </message>
+    <message>
+        <location line="-38"/>
+        <source>Index (Row Number)</source>
+        <translation>索引（行号）</translation>
+    </message>
+    <message>
+        <location line="-39"/>
+        <source>Tip: sorting does not renumber rows. Use &quot;Clear Sort&quot; to restore the original row order.</source>
+        <translation>提示：排序不会重新编号行，可用「清除排序」按索引恢复原始行顺序。</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>OK</source>
+        <translation>确定</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
 </context>
 <context>
     <name>DA::DATableStatsWidget</name>
     <message>
-        <location filename="../DAGui/DATableStatsWidget.cpp" line="+158"/>
+        <location filename="../DAGui/Table/Views/DATableStatsWidget.cpp" line="+158"/>
         <source>%1 rows × %2 cols</source>
         <translation>%1 行 × %2 列</translation>
     </message>
@@ -15370,6 +17113,144 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     </message>
 </context>
 <context>
+    <name>DA::DATableStyleController</name>
+    <message>
+        <location filename="../DAGui/Table/Controllers/DATableStyleController.cpp" line="+134"/>
+        <location line="+60"/>
+        <location line="+108"/>
+        <location line="+147"/>
+        <location line="+50"/>
+        <source>Please select a valid cell</source>
+        <translation>请选择正确的单元格</translation>
+    </message>
+    <message>
+        <location line="+181"/>
+        <location line="+27"/>
+        <source>Please select a valid column</source>
+        <translation>请选择正确的列</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DATableTypeOps</name>
+    <message>
+        <location filename="../DAGui/Table/Ops/DATableTypeOps.cpp" line="+63"/>
+        <location line="+32"/>
+        <location line="+39"/>
+        <location line="+40"/>
+        <source>Please select a valid column</source>
+        <translation>请选择正确的列</translation>
+    </message>
+    <message>
+        <location line="-135"/>
+        <source>Type Operations</source>
+        <translation>类型操作</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DATableValidationController</name>
+    <message>
+        <location filename="../DAGui/Table/Controllers/DATableValidationController.cpp" line="+46"/>
+        <source>Numeric range</source>
+        <translation>数值区间</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Date range</source>
+        <translation>日期区间</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Allowed values (enum)</source>
+        <translation>枚举集合</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Not empty</source>
+        <translation>非空</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Unique</source>
+        <translation>唯一</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Regex (full match)</source>
+        <translation>正则（整格匹配）</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>%1 (occurrence %2)</source>
+        <translation>%1（第 %2 个同名列）</translation>
+    </message>
+    <message>
+        <location line="+142"/>
+        <source>Validation failed: %1</source>
+        <translation>数据校验失败：%1</translation>
+    </message>
+    <message>
+        <location line="+49"/>
+        <source>No enabled validation rules yet — add rules first</source>
+        <translation>暂无启用的校验规则——请先添加规则</translation>
+    </message>
+    <message>
+        <location line="+26"/>
+        <source>Row %1: %2</source>
+        <translation>行 %1：%2</translation>
+    </message>
+    <message>
+        <location line="+57"/>
+        <source>Rename Column</source>
+        <translation>重命名列</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>%1 validation rule(s) reference the renamed column(s): %2. Their references will be updated automatically. Continue?</source>
+        <translation>有 %1 条校验规则引用被改名的列：%2。其引用将自动批量更新，是否继续？</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DATableViewStateController</name>
+    <message>
+        <location filename="../DAGui/Table/Controllers/DATableViewStateController.cpp" line="+60"/>
+        <source>Some column view settings were dropped because the table columns have changed.</source>
+        <translation>表格的列已变化，部分列视图设置已被丢弃</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DATextAlignmentEditWidget</name>
+    <message>
+        <location filename="../3rdparty/DAWidgets/src/DATextAlignmentEditWidget.cpp" line="+142"/>
+        <source>Align Left</source>
+        <translation>左对齐</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Align Center</source>
+        <translation>居中</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Align Right</source>
+        <translation>右对齐</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Align Top</source>
+        <translation>顶端对齐</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Align Middle</source>
+        <translation>垂直居中</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Align Bottom</source>
+        <translation>底端对齐</translation>
+    </message>
+</context>
+<context>
     <name>DA::DATimeFormatEditWidget</name>
     <message>
         <location filename="../3rdparty/DAWidgets/src/DATimeFormatEditWidget.cpp" line="+59"/>
@@ -15425,7 +17306,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DA::DAToolBox</name>
     <message>
-        <location filename="../DAGui/DAToolBox.cpp" line="+108"/>
+        <location filename="../DAGui/Workflow/DAToolBox.cpp" line="+108"/>
         <source>Favorite</source>
         <translation>收藏</translation>
     </message>
@@ -15433,7 +17314,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DA::DATreeModel</name>
     <message>
-        <location filename="../DAGui/Models/DATreeModel.cpp" line="+114"/>
+        <location filename="../DAGui/Common/DATreeModel.cpp" line="+114"/>
         <source>DATreeModel encountered invalid item</source>
         <translation>DATreeModel遇到无效的item</translation>
     </message>
@@ -15441,7 +17322,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DA::DATxtFileImportDialog</name>
     <message>
-        <location filename="../DAGui/Dialog/DATxtFileImportDialog.cpp" line="+49"/>
+        <location filename="../DAGui/Table/Dialogs/DATxtFileImportDialog.cpp" line="+49"/>
         <source>,(comma)</source>
         <translation>,逗号</translation>
     </message>
@@ -15497,7 +17378,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DA::DAVirtualScrollBar</name>
     <message>
-        <location filename="../DAGui/DAVirtualScrollBar.cpp" line="+193"/>
+        <location filename="../DAGui/Table/Views/DAVirtualScrollBar.cpp" line="+221"/>
         <source>Row %1 of %2</source>
         <translation>第 %1 行 / 共 %2 行</translation>
     </message>
@@ -15777,7 +17658,17 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/DAAppController.cpp" line="-4240"/>
+        <location filename="../APP/Controller/DAAppChartActionHandler.cpp" line="-401"/>
+        <location filename="../APP/Controller/DAAppControllerAgent.cpp" line="-106"/>
+        <location filename="../APP/Controller/DAAppControllerConnections.cpp" line="+140"/>
+        <location filename="../APP/Controller/DAAppControllerCore.cpp" line="-804"/>
+        <location filename="../APP/Controller/DAAppControllerPage.cpp" line="-348"/>
+        <location filename="../APP/Controller/DAAppControllerProject.cpp" line="-194"/>
+        <location filename="../APP/Controller/DAAppControllerView.cpp" line="-50"/>
+        <location filename="../APP/Controller/DAAppDataActionHandler.cpp" line="-638"/>
+        <location filename="../APP/Controller/DAAppTableActionHandler.cpp" line="-218"/>
+        <location filename="../APP/Controller/DAAppWorkflowActionHandler.cpp" line="-238"/>
+        <location filename="../APP/DAAppController.cpp" line="+140"/>
         <source>DA</source>
         <translation>DA</translation>
     </message>
@@ -15786,11 +17677,31 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     <name>DAAppRibbonArea</name>
     <message>
         <location line="+11"/>
+        <location filename="../APP/Controller/DAAppControllerAgent.cpp" line="+11"/>
+        <location filename="../APP/Controller/DAAppControllerConnections.cpp" line="+11"/>
+        <location filename="../APP/Controller/DAAppControllerCore.cpp" line="+11"/>
+        <location filename="../APP/Controller/DAAppControllerPage.cpp" line="+11"/>
+        <location filename="../APP/Controller/DAAppControllerProject.cpp" line="+11"/>
+        <location filename="../APP/Controller/DAAppControllerView.cpp" line="+11"/>
+        <location filename="../APP/Controller/DAAppDataActionHandler.cpp" line="+11"/>
+        <location filename="../APP/Controller/DAAppTableActionHandler.cpp" line="+11"/>
+        <location filename="../APP/Controller/DAAppWorkflowActionHandler.cpp" line="+11"/>
+        <location filename="../APP/DAAppController.cpp" line="+11"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
         <location line="+1"/>
+        <location filename="../APP/Controller/DAAppControllerAgent.cpp" line="+1"/>
+        <location filename="../APP/Controller/DAAppControllerConnections.cpp" line="+1"/>
+        <location filename="../APP/Controller/DAAppControllerCore.cpp" line="+1"/>
+        <location filename="../APP/Controller/DAAppControllerPage.cpp" line="+1"/>
+        <location filename="../APP/Controller/DAAppControllerProject.cpp" line="+1"/>
+        <location filename="../APP/Controller/DAAppControllerView.cpp" line="+1"/>
+        <location filename="../APP/Controller/DAAppDataActionHandler.cpp" line="+1"/>
+        <location filename="../APP/Controller/DAAppTableActionHandler.cpp" line="+1"/>
+        <location filename="../APP/Controller/DAAppWorkflowActionHandler.cpp" line="+1"/>
+        <location filename="../APP/DAAppController.cpp" line="+1"/>
         <source>The current function is not implemented, only the UI is reserved, please pay attention: https://gitee.com/czyt1988/data-work-flow</source>
         <translation>当前功能未实现，仅保留UI，请留意：https://gitee.com/czyt1988/data-work-flow</translation>
     </message>
@@ -15819,7 +17730,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DAChart3DCommonItemsSettingWidget</name>
     <message>
-        <location filename="../DAGui/Chart3DSetting/DAChart3DCommonItemsSettingWidget.ui" line="+14"/>
+        <location filename="../DAGui/Chart/Setting3D/DAChart3DCommonItemsSettingWidget.ui" line="+14"/>
         <source>3D Common Item Setting</source>
         <translation>3D 通用元素设置</translation>
     </message>
@@ -15827,7 +17738,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DAChart3DSettingWidget</name>
     <message>
-        <location filename="../DAGui/Chart3DSetting/DAChart3DSettingWidget.ui" line="+14"/>
+        <location filename="../DAGui/Chart/Setting3D/DAChart3DSettingWidget.ui" line="+14"/>
         <source>3D Chart Setting</source>
         <translation>3D 图表设置</translation>
     </message>
@@ -15835,7 +17746,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DAChartAdd3DBarWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAdd3DBarWidget.ui" line="+14"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAdd3DBarWidget.ui" line="+14"/>
         <source>Add 3D Bar</source>
         <translation>添加 3D 柱状图</translation>
     </message>
@@ -15873,7 +17784,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DAChartAdd3DLineWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAdd3DLineWidget.ui" line="+14"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAdd3DLineWidget.ui" line="+14"/>
         <source>Add 3D Line</source>
         <translation>添加 3D 折线图</translation>
     </message>
@@ -15901,7 +17812,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DAChartAdd3DSurfaceWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAdd3DSurfaceWidget.ui" line="+14"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAdd3DSurfaceWidget.ui" line="+14"/>
         <source>Add 3D Surface</source>
         <translation>添加 3D 曲面图</translation>
     </message>
@@ -15949,7 +17860,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DAChartAddBoxChartWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddBoxChartWidget.ui" line="+14"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddBoxChartWidget.ui" line="+14"/>
         <source>Add Box Chart</source>
         <translation>添加箱线图</translation>
     </message>
@@ -15972,7 +17883,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DAChartAddContourWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddContourWidget.ui" line="+14"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddContourWidget.ui" line="+14"/>
         <source>Add Contour Map</source>
         <translation>添加等高线图</translation>
     </message>
@@ -16000,7 +17911,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DAChartAddHistogramWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddHistogramWidget.ui" line="+14"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddHistogramWidget.ui" line="+14"/>
         <source>Add Histogram</source>
         <translation>添加直方图</translation>
     </message>
@@ -16038,7 +17949,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DAChartAddMultiBarWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddMultiBarWidget.ui" line="+14"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddMultiBarWidget.ui" line="+14"/>
         <source>Add Multi Bar Chart</source>
         <translation>添加多系列柱状图</translation>
     </message>
@@ -16061,7 +17972,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DAChartAddOHLCSeriesWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddOHLCSeriesWidget.ui" line="+14"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddOHLCSeriesWidget.ui" line="+14"/>
         <source>Add XY Series</source>
         <translation>添加 XY 序列</translation>
     </message>
@@ -16094,7 +18005,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DAChartAddSpectrogramWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddSpectrogramWidget.ui" line="+14"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddSpectrogramWidget.ui" line="+14"/>
         <source>Add Curve</source>
         <translation>折线图</translation>
     </message>
@@ -16117,7 +18028,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DAChartAddStatsBarplotWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddStatsBarplotWidget.ui" line="+14"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddStatsBarplotWidget.ui" line="+14"/>
         <source>Barplot Settings</source>
         <translation>柱状图设置</translation>
     </message>
@@ -16245,7 +18156,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DAChartAddStatsBoxplotWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddStatsBoxplotWidget.ui" line="+14"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddStatsBoxplotWidget.ui" line="+14"/>
         <source>Stats Boxplot Settings</source>
         <translation>统计箱线图设置</translation>
     </message>
@@ -16288,7 +18199,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DAChartAddStatsEcdfplotWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddStatsEcdfplotWidget.ui" line="+14"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddStatsEcdfplotWidget.ui" line="+14"/>
         <source>ECDF Plot Settings</source>
         <translation>ECDF 图设置</translation>
     </message>
@@ -16346,7 +18257,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DAChartAddStatsHeatmapWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddStatsHeatmapWidget.ui" line="+14"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddStatsHeatmapWidget.ui" line="+14"/>
         <source>Stats Heatmap Settings</source>
         <translation>统计热力图设置</translation>
     </message>
@@ -16509,7 +18420,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DAChartAddStatsHistplotWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddStatsHistplotWidget.ui" line="+14"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddStatsHistplotWidget.ui" line="+14"/>
         <source>Stats Histplot Settings</source>
         <translation>统计直方图设置</translation>
     </message>
@@ -16617,7 +18528,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DAChartAddStatsKdeplot1dWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddStatsKdeplot1dWidget.ui" line="+14"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddStatsKdeplot1dWidget.ui" line="+14"/>
         <source>Stats KDE 1D Settings</source>
         <translation>统计 KDE 一维设置</translation>
     </message>
@@ -16720,7 +18631,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DAChartAddStatsKdeplot2dWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddStatsKdeplot2dWidget.ui" line="+14"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddStatsKdeplot2dWidget.ui" line="+14"/>
         <source>Stats KDE 2D Settings</source>
         <translation>统计 KDE 二维设置</translation>
     </message>
@@ -16803,7 +18714,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DAChartAddStatsRegplotWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddStatsRegplotWidget.ui" line="+14"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddStatsRegplotWidget.ui" line="+14"/>
         <source>Regplot Settings</source>
         <translation>回归图设置</translation>
     </message>
@@ -16896,7 +18807,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DAChartAddStatsScatterplotWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddStatsScatterplotWidget.ui" line="+14"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddStatsScatterplotWidget.ui" line="+14"/>
         <source>Stats Scatterplot Settings</source>
         <translation>统计散点图设置</translation>
     </message>
@@ -16979,7 +18890,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DAChartAddVectorFieldWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddVectorFieldWidget.ui" line="+14"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddVectorFieldWidget.ui" line="+14"/>
         <source>Add Vector Field</source>
         <translation>添加向量场</translation>
     </message>
@@ -17012,7 +18923,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DAChartAddXYESeriesWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddXYESeriesWidget.ui" line="+14"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddXYESeriesWidget.ui" line="+14"/>
         <source>Add XY Series</source>
         <translation>添加 XY 序列</translation>
     </message>
@@ -17035,7 +18946,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DAChartAddXYSeriesWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddXYSeriesWidget.ui" line="+14"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddXYSeriesWidget.ui" line="+14"/>
         <source>Add XY Series</source>
         <translation>添加 XY 序列</translation>
     </message>
@@ -17068,7 +18979,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DAChartAddtGridRasterDataWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddtGridRasterDataWidget.ui" line="+14"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddtGridRasterDataWidget.ui" line="+14"/>
         <source>Add XY Series</source>
         <translation>添加 XY 序列</translation>
     </message>
@@ -17091,7 +19002,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DAChartCommonItemsSettingWidget</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartCommonItemsSettingWidget.ui" line="+14"/>
+        <location filename="../DAGui/Chart/Setting/DAChartCommonItemsSettingWidget.ui" line="+14"/>
         <source>Common Item Setting</source>
         <translation>通用图元设置</translation>
     </message>
@@ -17107,7 +19018,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DAChartQuickPlot</name>
     <message>
-        <location filename="../DAGui/TableChart/DAChartQuickPlot.cpp" line="+149"/>
+        <location filename="../DAGui/Table/Chart/DAChartQuickPlot.cpp" line="+162"/>
         <source>mean</source>
         <translation>平均值</translation>
     </message>
@@ -17124,12 +19035,12 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     <message>
         <location line="+2"/>
         <location line="+152"/>
-        <location line="+185"/>
+        <location line="+194"/>
         <source>count</source>
         <translation>计数</translation>
     </message>
     <message>
-        <location line="-335"/>
+        <location line="-344"/>
         <source>std</source>
         <translation>标准差</translation>
     </message>
@@ -17157,12 +19068,15 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <location line="+6"/>
         <location line="+63"/>
         <location line="+33"/>
-        <location line="+92"/>
+        <location line="+101"/>
+        <location line="+115"/>
+        <location line="+169"/>
+        <location line="+48"/>
         <source>The selected columns cannot be plotted</source>
         <translation>当前选区无法绘图</translation>
     </message>
     <message>
-        <location line="-180"/>
+        <location line="-521"/>
         <location line="+63"/>
         <source>No valid numeric data in the selected column</source>
         <translation>所选列没有可绘制的数值</translation>
@@ -17175,17 +19089,18 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     </message>
     <message>
         <location line="-7"/>
-        <location line="+143"/>
+        <location line="+152"/>
+        <location line="+158"/>
         <source>No valid numeric data in the selected columns</source>
         <translation>所选列没有可绘制的数值</translation>
     </message>
     <message>
-        <location line="-94"/>
+        <location line="-261"/>
         <source>Failed to build the histogram</source>
         <translation>构建直方图失败</translation>
     </message>
     <message>
-        <location line="+93"/>
+        <location line="+102"/>
         <source>box plot</source>
         <translation>箱线图</translation>
     </message>
@@ -17201,16 +19116,17 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     </message>
     <message>
         <location line="+1"/>
+        <location line="+331"/>
         <source>%1 by %2</source>
         <translation>%1 按 %2 聚合</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="-328"/>
         <source>Failed to build the bar chart</source>
         <translation>构建柱状图失败</translation>
     </message>
     <message>
-        <location line="+24"/>
+        <location line="+384"/>
         <source>There is no chart to draw on</source>
         <translation>没有可用的图表</translation>
     </message>
@@ -17221,118 +19137,110 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     </message>
     <message>
         <location line="+4"/>
+        <location line="+89"/>
         <source>The chart specification is incomplete</source>
         <translation>绘图规格不完整</translation>
     </message>
     <message>
-        <location line="+63"/>
+        <location line="+90"/>
+        <location line="+88"/>
         <source>The chart area is not available</source>
         <translation>绘图区不可用</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="-81"/>
+        <location line="+97"/>
         <source>Failed to create a figure</source>
         <translation>创建绘图失败</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="-92"/>
         <location line="+41"/>
+        <location line="+56"/>
         <source>quick plot</source>
         <translation>快速绘图</translation>
     </message>
     <message>
-        <location line="-31"/>
+        <location line="-87"/>
         <source>Failed to create a chart</source>
         <translation>创建子图失败</translation>
     </message>
     <message>
         <location line="+26"/>
+        <location line="+54"/>
         <source>There is no current chart to append to</source>
         <translation>当前没有可追加的图表</translation>
     </message>
-
     <message>
-        <location line="+103"/>
+        <location line="-570"/>
         <source>Failed to build the contour plot</source>
         <translation>构建等高线图失败</translation>
-        </message>
-
+    </message>
     <message>
         <location line="+41"/>
         <source>Failed to build the error bar chart</source>
         <translation>构建误差棒图失败</translation>
-        </message>
-
+    </message>
     <message>
         <location line="+42"/>
         <source>Failed to build the vector field chart</source>
         <translation>构建向量场图失败</translation>
-        </message>
-
+    </message>
     <message>
         <location line="+54"/>
         <source>No valid data for the multi-bar chart</source>
         <translation>没有可用于多重柱状图的数据</translation>
-        </message>
-
+    </message>
     <message>
         <location line="+93"/>
         <source>Failed to build the multi-bar chart</source>
         <translation>构建多重柱状图失败</translation>
-        </message>
-
+    </message>
     <message>
         <location line="+30"/>
         <source>Not enough valid rows for the 3D chart</source>
         <translation>有效数据行不足以绘制 3D 图</translation>
-        </message>
-
+    </message>
     <message>
-        <location line="-44"/>
+        <location line="+74"/>
         <source>The 3D chart must be drawn on a 3D chart widget</source>
         <translation>3D 图需要绘制在 3D 图表控件上</translation>
-        </message>
-
+    </message>
     <message>
         <location line="+61"/>
         <source>Failed to build the 3D surface</source>
         <translation>构建 3D 曲面失败</translation>
-        </message>
-
+    </message>
     <message>
         <location line="+18"/>
         <source>Failed to build the 3D line chart</source>
         <translation>构建 3D 线图失败</translation>
-        </message>
-
+    </message>
     <message>
         <location line="+18"/>
         <source>There is no 3D chart to draw on</source>
         <translation>没有可用的 3D 图表</translation>
-        </message>
-
+    </message>
     <message>
         <location line="+14"/>
         <source>%1 · %2 · %3</source>
         <translation>%1 · %2 · %3</translation>
-        </message>
-
+    </message>
     <message>
-        <location line="-9"/>
+        <location line="+116"/>
         <source>The chart type is not a 3D chart</source>
         <translation>当前图型不是 3D 图型</translation>
-        </message>
-
+    </message>
     <message>
         <location line="+34"/>
         <source>Failed to create a 3D chart</source>
         <translation>创建 3D 子图失败</translation>
-        </message>
+    </message>
 </context>
 <context>
     <name>DAChartSeriesPickerWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartSeriesPickerWidget.ui" line="+14"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartSeriesPickerWidget.ui" line="+14"/>
         <source>Select Series</source>
         <translation>选择序列</translation>
     </message>
@@ -17360,7 +19268,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DAChartSeriesSelectWidget</name>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartSeriesSelectWidget.ui" line="+14"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartSeriesSelectWidget.ui" line="+14"/>
         <source>Series Select</source>
         <translation>序列选择</translation>
     </message>
@@ -17386,7 +19294,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DAChartSymbolEditWidget</name>
     <message>
-        <location filename="../DAGui/ChartSetting/DAChartSymbolEditWidget.ui" line="+26"/>
+        <location filename="../DAGui/Chart/Setting/DAChartSymbolEditWidget.ui" line="+26"/>
         <source>Chart Symbol Edit</source>
         <translation>图表符号编辑</translation>
     </message>
@@ -17414,7 +19322,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DADataManageWidget</name>
     <message>
-        <location filename="../DAGui/DADataManageWidget.ui" line="+14"/>
+        <location filename="../DAGui/DataManager/DADataManageWidget.ui" line="+14"/>
         <source>Data Manage</source>
         <translation>数据管理</translation>
     </message>
@@ -17422,7 +19330,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DADataManagerTreeWidget</name>
     <message>
-        <location filename="../DAGui/DADataManagerTreeWidget.ui" line="+14"/>
+        <location filename="../DAGui/DataManager/DADataManagerTreeWidget.ui" line="+14"/>
         <source>Form</source>
         <translation>窗体</translation>
     </message>
@@ -17435,7 +19343,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DADataOperateOfDataFrameWidget</name>
     <message>
-        <location filename="../DAGui/DADataOperateOfDataFrameWidget.ui" line="+14"/>
+        <location filename="../DAGui/Table/DADataOperateOfDataFrameWidget.ui" line="+14"/>
         <source>DataFrame Operate</source>
         <translation>DataFrame 操作</translation>
     </message>
@@ -17443,12 +19351,12 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DADialogChartGuide</name>
     <message>
-        <location filename="../DAGui/Dialog/DADialogChartGuide.ui" line="+14"/>
+        <location filename="../DAGui/Chart/DADialogChartGuide.ui" line="+14"/>
         <source>Chart Guide</source>
         <translation>图表向导</translation>
     </message>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddItemWidgetFactory.cpp" line="+114"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddItemWidgetFactory.cpp" line="+114"/>
         <source>curve</source>
         <translation>曲线</translation>
     </message>
@@ -17516,7 +19424,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DADialogDataframeColumnCastToDatetime</name>
     <message>
-        <location filename="../DAGui/Dialog/DADialogDataframeColumnCastToDatetime.ui" line="+14"/>
+        <location filename="../DAGui/Table/Dialogs/DADialogDataframeColumnCastToDatetime.ui" line="+14"/>
         <source>Cast To Datetime</source>
         <translation>转换为日期时间</translation>
     </message>
@@ -17701,7 +19609,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DADialogDataframeColumnCastToNumeric</name>
     <message>
-        <location filename="../DAGui/Dialog/DADialogDataframeColumnCastToNumeric.ui" line="+14"/>
+        <location filename="../DAGui/Table/Dialogs/DADialogDataframeColumnCastToNumeric.ui" line="+14"/>
         <source>Cast To Numeric</source>
         <translation>转换为数值</translation>
     </message>
@@ -17785,7 +19693,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DADialogFindReplace</name>
     <message>
-        <location filename="../DAGui/Dialog/DADialogFindReplace.ui" line="+14"/>
+        <location filename="../DAGui/Table/Dialogs/DADialogFindReplace.ui" line="+14"/>
         <source>Find and Replace</source>
         <translation>查找和替换</translation>
     </message>
@@ -17848,7 +19756,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DADialogInsertNewColumn</name>
     <message>
-        <location filename="../DAGui/Dialog/DADialogInsertNewColumn.ui" line="+14"/>
+        <location filename="../DAGui/Table/Dialogs/DADialogInsertNewColumn.ui" line="+14"/>
         <source>Insert New Column</source>
         <translation>插入新列</translation>
     </message>
@@ -17916,12 +19824,12 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DADialogStatsChartGuide</name>
     <message>
-        <location filename="../DAGui/Dialog/DADialogStatsChartGuide.ui" line="+14"/>
+        <location filename="../DAGui/Chart/DADialogStatsChartGuide.ui" line="+14"/>
         <source>Statistics Chart Guide</source>
         <translation>统计图表向导</translation>
     </message>
     <message>
-        <location filename="../DAGui/ChartAddItem/DAChartAddItemWidgetFactory.cpp" line="+8"/>
+        <location filename="../DAGui/Chart/AddItem/DAChartAddItemWidgetFactory.cpp" line="+18"/>
         <source>Histplot</source>
         <translation>直方图</translation>
     </message>
@@ -18007,7 +19915,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DAFigureWidget</name>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="-2228"/>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="-2648"/>
         <source>Figure</source>
         <translation>绘图</translation>
     </message>
@@ -18041,7 +19949,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DAGraphicsPixmapItemSettingWidget</name>
     <message>
-        <location filename="../DAGui/DAGraphicsPixmapItemSettingWidget.ui" line="+14"/>
+        <location filename="../DAGui/Workflow/NodeSetting/DAGraphicsPixmapItemSettingWidget.ui" line="+14"/>
         <source>Pixmap Item Setting</source>
         <translation>图像图元设置</translation>
     </message>
@@ -18054,7 +19962,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DAMessageLogViewWidget</name>
     <message>
-        <location filename="../DAGui/DAMessageLogViewWidget.ui" line="+17"/>
+        <location filename="../DAGui/Common/DAMessageLogViewWidget.ui" line="+17"/>
         <source>Message View</source>
         <translation>消息视图</translation>
     </message>
@@ -18068,7 +19976,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DANodeItemSettingWidget</name>
     <message>
-        <location filename="../DAGui/DANodeItemSettingWidget.ui" line="+14"/>
+        <location filename="../DAGui/Workflow/NodeSetting/DANodeItemSettingWidget.ui" line="+14"/>
         <source>Node Item Setting</source>
         <translation>节点图元设置</translation>
     </message>
@@ -18151,7 +20059,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DANodeLinkItemSettingWidget</name>
     <message>
-        <location filename="../DAGui/DANodeLinkItemSettingWidget.ui" line="+14"/>
+        <location filename="../DAGui/Workflow/NodeSetting/DANodeLinkItemSettingWidget.ui" line="+14"/>
         <source>Node Link Item Setting</source>
         <translation>节点连线图元设置</translation>
     </message>
@@ -18184,7 +20092,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DANodeSettingWidget</name>
     <message>
-        <location filename="../DAGui/DANodeSettingWidget.ui" line="+14"/>
+        <location filename="../DAGui/Workflow/NodeSetting/DANodeSettingWidget.ui" line="+14"/>
         <source>Node Setting</source>
         <translation>节点设置</translation>
     </message>
@@ -18297,7 +20205,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DAPyWorkFlowEditWidget</name>
     <message>
-        <location filename="../DAGui/DAPyWorkFlowEditWidget.ui" line="+20"/>
+        <location filename="../DAGui/Workflow/DAPyWorkFlowEditWidget.ui" line="+20"/>
         <source>Workflow Edit</source>
         <translation>工作流编辑</translation>
     </message>
@@ -18305,7 +20213,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DAPyWorkFlowNodeItemSettingWidget</name>
     <message>
-        <location filename="../DAGui/DAPyWorkFlowNodeItemSettingWidget.ui" line="+14"/>
+        <location filename="../DAGui/Workflow/NodeSetting/DAPyWorkFlowNodeItemSettingWidget.ui" line="+14"/>
         <source>Node Setting</source>
         <translation>节点设置</translation>
     </message>
@@ -18333,7 +20241,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DAPyWorkFlowNodeListWidget</name>
     <message>
-        <location filename="../DAGui/DAPyWorkFlowNodeListWidget.ui" line="+23"/>
+        <location filename="../DAGui/Workflow/DAPyWorkFlowNodeListWidget.ui" line="+23"/>
         <source>Node List</source>
         <translation>节点列表</translation>
     </message>
@@ -18379,7 +20287,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DASettingContainerWidget</name>
     <message>
-        <location filename="../DAGui/DASettingContainerWidget.ui" line="+20"/>
+        <location filename="../DAGui/Common/Settings/DASettingContainerWidget.ui" line="+20"/>
         <source>Setting</source>
         <translation>设置</translation>
     </message>
@@ -18387,7 +20295,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DASettingDialog</name>
     <message>
-        <location filename="../DAGui/DASettingDialog.ui" line="+14"/>
+        <location filename="../DAGui/Common/Settings/DASettingDialog.ui" line="+14"/>
         <source>Setting</source>
         <translation>设置</translation>
     </message>
@@ -18647,7 +20555,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DASettingWidget</name>
     <message>
-        <location filename="../DAGui/DASettingWidget.ui" line="+14"/>
+        <location filename="../DAGui/Common/Settings/DASettingWidget.ui" line="+14"/>
         <source>Setting</source>
         <translation>设置</translation>
     </message>
@@ -18671,9 +20579,345 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     </message>
 </context>
 <context>
+    <name>DASignalFormSpecBuilder</name>
+    <message>
+        <location filename="../../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="+70"/>
+        <source>Remove DC</source>
+        <translation>去直流</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Detrend</source>
+        <translation>去趋势</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>None</source>
+        <translation>无</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Constant</source>
+        <translation>常数</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Linear</source>
+        <translation>线性</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Signal Preprocessing</source>
+        <translation>信号预处理</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Window</source>
+        <translation>窗函数</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Rectangular</source>
+        <translation>矩形</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Hann</source>
+        <translation>汉宁</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Hamming</source>
+        <translation>汉明</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Blackman</source>
+        <translation>布莱克曼</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Flat top</source>
+        <translation>平顶</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Amplitude</source>
+        <translation>幅值口径</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Peak amplitude</source>
+        <translation>峰值幅度</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>RMS</source>
+        <translation>均方根</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>dB reference</source>
+        <translation>dB 参考</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Full scale (dBFS)</source>
+        <translation>满量程</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Relative to 1.0</source>
+        <translation>相对 1.0</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Frequency resolution (Hz)</source>
+        <translation>频率分辨率（赫兹）</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <location line="+51"/>
+        <source>Zero padding points (advanced)</source>
+        <translation>零填充点数（高级）</translation>
+    </message>
+    <message>
+        <location line="-45"/>
+        <source>Spectrum</source>
+        <translation>频谱</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Averaging</source>
+        <translation>平均方式</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Mean</source>
+        <translation>均值</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Median</source>
+        <translation>中位数</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Overlap (%)</source>
+        <translation>重叠率（%）</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Power Spectrum</source>
+        <translation>功率谱</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Window length (ms)</source>
+        <translation>窗长（毫秒）</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Hop overlap (%)</source>
+        <translation>跳步重叠率（%）</translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>Short-Time Fourier Transform</source>
+        <translation>短时傅里叶变换</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Mode</source>
+        <translation>模式</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Simple</source>
+        <translation>简单</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Advanced</source>
+        <translation>高级</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Top N</source>
+        <translation>前 N 个</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Relative threshold (dB)</source>
+        <translation>相对门限（dB）</translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>Prominence</source>
+        <translation>突出度</translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Minimum spacing (Hz)</source>
+        <translation>最小间距（赫兹）</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Minimum height</source>
+        <translation>绝对高度门限</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Peak Search</source>
+        <translation>峰值查找</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Calibration factor</source>
+        <translation>标定系数</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Amplitude unit</source>
+        <translation>幅值单位</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Calibration</source>
+        <translation>标定</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Analysis Settings</source>
+        <translation>分析设置</translation>
+    </message>
+    <message>
+        <location line="-169"/>
+        <source>dB (FS)</source>
+        <translation>dB（满量程）</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>dB (re 1.0)</source>
+        <translation>dB（相对 1.0）</translation>
+    </message>
+</context>
+<context>
+    <name>DASignalImporter</name>
+    <message>
+        <location filename="../../plugins/DASignalAnalysis/Signal/DASignalImporter.cpp" line="+122"/>
+        <location line="+409"/>
+        <source>FFmpeg is not available. Specify its path in Settings &gt; Signal Analysis.</source>
+        <translation>未检测到 FFmpeg，请在「设置 → 信号分析」里指定路径。</translation>
+    </message>
+    <message>
+        <location line="-396"/>
+        <source>FFmpeg failed to convert the file. Last output lines:
+%1</source>
+        <translation>FFmpeg 执行失败，最后输出：
+%1</translation>
+    </message>
+    <message>
+        <location line="+35"/>
+        <source>Cannot read audio file: %1</source>
+        <translation>无法读取音频文件：%1</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Audio file contains no samples.</source>
+        <translation>音频文件不包含采样数据。</translation>
+    </message>
+    <message>
+        <location line="+298"/>
+        <location line="+45"/>
+        <source>File does not exist: %1</source>
+        <translation>文件不存在：%1</translation>
+    </message>
+    <message>
+        <location line="-29"/>
+        <source>The converted file could not be read: %1</source>
+        <translation>转码后的文件无法读取：%1</translation>
+    </message>
+    <message>
+        <location line="+49"/>
+        <source>The file does not contain an audio track.</source>
+        <translation>文件不含音频轨。</translation>
+    </message>
+    <message>
+        <location line="+34"/>
+        <source>The prepared audio file does not exist.</source>
+        <translation>准备好的音频文件不存在。</translation>
+    </message>
+    <message>
+        <location line="+22"/>
+        <source>The source data is not a dataframe.</source>
+        <translation>源数据不是数据帧。</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Please select at least one value column.</source>
+        <translation>请至少选择一个幅值列。</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Sample rate must be a positive number.</source>
+        <translation>采样率必须是正数。</translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>The dataframe is empty.</source>
+        <translation>数据帧为空。</translation>
+    </message>
+    <message>
+        <location line="+51"/>
+        <source>No time column selected.</source>
+        <translation>未选择时间列。</translation>
+    </message>
+    <message>
+        <location line="-24"/>
+        <source>Failed to create a signal from the dataframe.</source>
+        <translation>从数据帧创建信号失败。</translation>
+    </message>
+    <message>
+        <location line="+49"/>
+        <source>Failed to infer the sample rate from the time column.</source>
+        <translation>无法由时间列推断采样率。</translation>
+    </message>
+    <message>
+        <location line="-252"/>
+        <source>Failed to probe the audio file.</source>
+        <translation>探测音频文件失败。</translation>
+    </message>
+    <message>
+        <location line="+102"/>
+        <source>Failed to probe the video file.</source>
+        <translation>探测视频文件失败。</translation>
+    </message>
+    <message>
+        <location line="-361"/>
+        <source>Failed to read the audio file.</source>
+        <translation>读取音频文件失败。</translation>
+    </message>
+    <message>
+        <location line="-43"/>
+        <source>Failed to run the FFmpeg conversion.</source>
+        <translation>执行 FFmpeg 转码失败。</translation>
+    </message>
+    <message>
+        <location line="+267"/>
+        <source>No file selected.</source>
+        <translation>未选择文件。</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>This format is decoded through FFmpeg; the sample rate is shown after import.</source>
+        <translation>该格式经 FFmpeg 解码，采样率在导入后显示。</translation>
+    </message>
+</context>
+<context>
     <name>DATableExporter</name>
     <message>
-        <location filename="../DAGui/DATableExporter.cpp" line="+293"/>
+        <location filename="../DAGui/Table/DATableExporter.cpp" line="+334"/>
         <source>Failed to read data block from row %1</source>
         <translation>从第 %1 行读取数据块失败</translation>
     </message>
@@ -18719,7 +20963,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DATxtFileImportDialog</name>
     <message>
-        <location filename="../DAGui/Dialog/DATxtFileImportDialog.ui" line="+14"/>
+        <location filename="../DAGui/Table/Dialogs/DATxtFileImportDialog.ui" line="+14"/>
         <source>Txt Import</source>
         <translation>Txt 导入</translation>
     </message>
@@ -18851,31 +21095,18 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DataAnalysisUI</name>
     <message>
-        <location filename="../../plugins/DataAnalysis/DataAnalysisUI.cpp" line="+184"/>
-        <location line="+84"/>
+        <location filename="../../plugins/DataAnalysis/DataAnalysisUI.cpp" line="+299"/>
         <source>Missing Values</source>
         <translation>缺失值</translation>
     </message>
     <message>
-        <location line="-79"/>
-        <location line="+81"/>
-        <source>Outliers &amp; Duplicates</source>
-        <translation>异常与重复</translation>
-    </message>
-    <message>
-        <location line="-48"/>
-        <location line="+78"/>
-        <source>Data Filtering</source>
-        <translation>数据过滤</translation>
-    </message>
-    <message>
-        <location line="-65"/>
-        <location line="+73"/>
+        <location line="-35"/>
+        <location line="+74"/>
         <source>Statistics</source>
         <translation>数据统计</translation>
     </message>
     <message>
-        <location line="-54"/>
+        <location line="-55"/>
         <source>Export Individual Data</source>
         <translation>导出
 单个数据</translation>
@@ -18902,7 +21133,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>把数据管理区所有数据导出到一个 Excel 文件中，每个数据将作为 Excel 的一个工作表</translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location line="+13"/>
         <source>Drop None</source>
         <translation>删除缺失值</translation>
     </message>
@@ -18922,12 +21153,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>删除数据中的重复记录</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Missing Values</source>
-        <translation>缺失值</translation>
-    </message>
-    <message>
-        <location line="+1"/>
+        <location line="-6"/>
         <source>Missing value handling: drop, fill or interpolate</source>
         <translation>缺失值处理：删除、填充或插值</translation>
     </message>
@@ -18942,7 +21168,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>异常值处理：IQR、Z-Score 或偏态转换</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+8"/>
         <source>Fill rows which contain missing values by interpolation</source>
         <translation>插值法填充包含缺失值的行</translation>
     </message>
@@ -18957,7 +21183,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>转换偏态数据</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+6"/>
         <source>Query Data</source>
         <translation>条件筛选</translation>
     </message>
@@ -18967,7 +21193,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>数据描述</translation>
     </message>
     <message>
-        <location line="-33"/>
+        <location line="-32"/>
         <source>Fill None</source>
         <translation>填充缺失值</translation>
     </message>
@@ -19002,7 +21228,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>转换偏态数值数据以改善分布</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+6"/>
         <source>Filter data outside of the given criteria</source>
         <translation>过滤给定条件外的数据</translation>
     </message>
@@ -19023,6 +21249,8 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>创建数据透视表</translation>
     </message>
     <message>
+        <location line="-143"/>
+        <location line="+99"/>
         <source>Missing &amp; Outliers</source>
         <translation>缺失与异常</translation>
     </message>
@@ -19535,7 +21763,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>Python主目录路径为%1</translation>
     </message>
     <message>
-        <location filename="../DAGui/Commands/DACommandsDataFrame.cpp" line="+24"/>
+        <location filename="../DAGui/Table/Ops/DACommandsDataFrame.cpp" line="+24"/>
         <source>set dataframe data</source>
         <translation>改变单元格数据</translation>
     </message>
@@ -19586,12 +21814,12 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>转换列为索引</translation>
     </message>
     <message>
-        <location filename="../DAGui/Commands/DACommandsTableStyle.cpp" line="+16"/>
+        <location filename="../DAGui/Table/Commands/DACommandsTableStyle.cpp" line="+16"/>
         <source>change table style</source>
         <translation>改变表格样式</translation>
     </message>
     <message>
-        <location filename="../DAGui/DAXmlHelper.cpp" line="+211"/>
+        <location filename="../DAGui/Archive/DAXmlHelper.cpp" line="+856"/>
         <location line="+281"/>
         <source>error occurred while loading nodes</source>
         <translation>加载节点时发生错误</translation>
@@ -19757,12 +21985,12 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>未知异常：在第%1个位置获取到空的figure窗口</translation>
     </message>
     <message>
-        <location line="+998"/>
+        <location line="+1242"/>
         <source>The attribute %1=%2 under the tag %3 cannot be converted to double</source>
         <translation>标签%3下的属性%1=%2无法转换为double</translation>
     </message>
     <message>
-        <location filename="../DAGui/DAZipArchive.cpp" line="+121"/>
+        <location filename="../DAGui/Archive/DAZipArchive.cpp" line="+121"/>
         <source>No error</source>
         <translation>无错误</translation>
     </message>
@@ -19817,12 +22045,12 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>打开归档失败</translation>
     </message>
     <message>
-        <location filename="../DAGui/DAZipArchiveTask_Xml.cpp" line="+57"/>
+        <location filename="../DAGui/Archive/DAZipArchiveTask_Xml.cpp" line="+57"/>
         <source>cannot create archive at &quot;%1&quot;, because %2</source>
         <translation>无法在&quot;%1&quot;创建归档，因为%2</translation>
     </message>
     <message>
-        <location filename="../DAGui/Models/DADataManagerTreeModel.cpp" line="-446"/>
+        <location filename="../DAGui/DataManager/DADataManagerTreeModel.cpp" line="-446"/>
         <source>%1.%2,size:%3</source>
         <translation>%1.%2,长度:%3</translation>
     </message>
@@ -20317,7 +22545,12 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>设置绘图中窗体的尺寸</translation>
     </message>
     <message>
-        <location line="+45"/>
+        <location line="+51"/>
+        <source>resize grid tracks</source>
+        <translation>调整网格比例</translation>
+    </message>
+    <message>
+        <location line="+52"/>
         <source>add item in chart</source>
         <translation>添加图元到绘图</translation>
     </message>
@@ -20462,17 +22695,12 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>无法导入 DAWorkbench.DAStatistics 模块</translation>
     </message>
     <message>
-        <location filename="../DAGui/Stats/DAStatsPlotCoordinator.cpp" line="+84"/>
+        <location filename="../DAGui/Chart/DAStatsPlotCoordinator.cpp" line="+81"/>
         <source>The selected data source is empty</source>
         <translation>选中的数据源为空</translation>
     </message>
     <message>
-        <location line="+26"/>
-        <source>Unknown plot type: %1</source>
-        <translation>未知的绘图类型: %1</translation>
-    </message>
-    <message>
-        <location line="+7"/>
+        <location line="+11"/>
         <source>Python error in statistical plot: %1</source>
         <translation>统计绘图 Python 错误: %1</translation>
     </message>
@@ -20517,7 +22745,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>3D绘图</translation>
     </message>
     <message>
-        <location filename="../DAGui/Commands/DACommandsTableColumnFormat.cpp" line="+16"/>
+        <location filename="../DAGui/Table/Commands/DACommandsTableColumnFormat.cpp" line="+16"/>
         <source>change table display format</source>
         <translation>改变表格显示格式</translation>
     </message>
@@ -20602,7 +22830,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>出错</translation>
     </message>
     <message>
-        <location filename="../DAGui/Commands/DACommandsDataFrame.cpp" line="+35"/>
+        <location filename="../DAGui/Table/Ops/DACommandsDataFrame.cpp" line="+35"/>
         <source>Sort rows</source>
         <translation>排序</translation>
     </message>
@@ -20612,7 +22840,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>全部替换</translation>
     </message>
     <message>
-        <location filename="../DAGui/Commands/DACommandsConditionalFormat.cpp" line="+24"/>
+        <location filename="../DAGui/Table/Commands/DACommandsConditionalFormat.cpp" line="+24"/>
         <source>Add Conditional Format Rule</source>
         <translation>添加条件格式规则</translation>
     </message>
@@ -20637,7 +22865,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>清除列条件格式规则</translation>
     </message>
     <message>
-        <location filename="../DAGui/Commands/DACommandsDataFrame.cpp" line="-266"/>
+        <location filename="../DAGui/Table/Ops/DACommandsDataFrame.cpp" line="-266"/>
         <source>compute column &quot;%1&quot;</source>
         <translation>计算列“%1”</translation>
     </message>
@@ -20657,12 +22885,12 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>合并 %1 列为“%2”</translation>
     </message>
     <message>
-        <location filename="../DAGui/Commands/DACommandsTableValidation.cpp" line="+21"/>
+        <location filename="../DAGui/Table/Commands/DACommandsTableValidation.cpp" line="+21"/>
         <source>edit validation rules</source>
         <translation>编辑校验规则</translation>
     </message>
     <message>
-        <location filename="../DAGui/Commands/DACommandsTableStyle.cpp" line="+117"/>
+        <location filename="../DAGui/Table/Commands/DACommandsTableStyle.cpp" line="+117"/>
         <source>add note</source>
         <translation>添加批注</translation>
     </message>
@@ -20682,7 +22910,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>清除本表批注</translation>
     </message>
     <message>
-        <location filename="../DAGui/Commands/DACommandsForWorkFlow.cpp" line="+28"/>
+        <location filename="../DAGui/Workflow/DACommandsForWorkFlow.cpp" line="+28"/>
         <source>Set workflow background image</source>
         <translation>设置工作流背景图</translation>
     </message>
@@ -20740,7 +22968,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>编辑文本文档</translation>
     </message>
     <message>
-        <location filename="../DAGui/Commands/DACommandsDataFrame.cpp" line="-560"/>
+        <location filename="../DAGui/Table/Ops/DACommandsDataFrame.cpp" line="-560"/>
         <location line="+10"/>
         <source>rename columns</source>
         <translation>重命名列</translation>
@@ -20751,7 +22979,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <translation>清除单元格</translation>
     </message>
     <message>
-        <location filename="../DAGui/Commands/DACommandsTableColumnView.cpp" line="+48"/>
+        <location filename="../DAGui/Table/Commands/DACommandsTableColumnView.cpp" line="+48"/>
         <source>Reorder columns</source>
         <translation>重排列序</translation>
     </message>
@@ -20927,6 +23155,45 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <source>create figure</source>
         <translation>创建绘图</translation>
     </message>
+    <message>
+        <location filename="../DAGui/Chart/DAStatsPlotRequest.cpp" line="+28"/>
+        <source>No figure/chart available for statistical plot</source>
+        <translation>没有可用于统计绘图的图表窗口</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Cannot resolve the data source for statistical plot; please ensure a dataframe is selected in the settings window</source>
+        <translation>无法确定统计绘图的数据源，请确保在设置窗口中已选择数据表</translation>
+    </message>
+    <message>
+        <location filename="../DAGui/Chart/DAStatsPlotRequests.cpp" line="+30"/>
+        <location line="+48"/>
+        <location line="+333"/>
+        <source>Please select a data column before plotting</source>
+        <translation>请先选择数据列再绘图</translation>
+    </message>
+    <message>
+        <location line="-288"/>
+        <location line="+99"/>
+        <location line="+55"/>
+        <location line="+43"/>
+        <location line="+44"/>
+        <source>Please select an X-axis data column before plotting</source>
+        <translation>请先选择 X 轴数据列再绘图</translation>
+    </message>
+    <message>
+        <location line="-238"/>
+        <location line="+99"/>
+        <location line="+55"/>
+        <location line="+87"/>
+        <source>Please select a Y-axis data column before plotting</source>
+        <translation>请先选择 Y 轴数据列再绘图</translation>
+    </message>
+    <message>
+        <location line="-195"/>
+        <source>Please select one or more data columns before plotting</source>
+        <translation>请先选择数据列再绘图</translation>
+    </message>
 </context>
 <context>
     <name>main</name>
@@ -20949,2760 +23216,6 @@ If a column name contains spaces or special characters, enclose it in backticks 
         <location line="+9"/>
         <source>Disable the splash screen during startup, useful for debugging to avoid the splash window blocking the IDE</source>
         <translation>禁用启动画面，适用于调试时避免启动窗口遮挡IDE</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DATableQuickPlotController</name>
-    <message>
-        <location filename="../DAGui/TableQuickPlot/DATableQuickPlotController.cpp" line="+96"/>
-        <source>The chart area is not available</source>
-        <translation>绘图区不可用</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>Failed to transfer to the chart area</source>
-        <translation>转入绘图区失败</translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>The chart has been transferred to the chart area</source>
-        <translation>已转入绘图区</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DATableNoteController</name>
-    <message>
-        <location filename="../DAGui/TableNote/DATableNoteController.cpp" line="+33"/>
-        <source>Please select a cell to annotate</source>
-        <translation>请先选中要批注的单元格</translation>
-    </message>
-    <message>
-        <location line="+16"/>
-        <source>Please select a cell whose note is to be deleted</source>
-        <translation>请先选中要删除批注的单元格</translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>The selected cell has no note</source>
-        <translation>选中单元格没有批注</translation>
-    </message>
-    <message>
-        <location line="+14"/>
-        <source>This table has no notes</source>
-        <translation>本表没有批注</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DATableValidationController</name>
-    <message>
-        <location filename="../DAGui/TableValidation/DATableValidationController.cpp" line="+0"/>
-        <source>Numeric range</source>
-        <translation>数值区间</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableValidation/DATableValidationController.cpp" line="+1"/>
-        <source>Date range</source>
-        <translation>日期区间</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableValidation/DATableValidationController.cpp" line="+1"/>
-        <source>Allowed values (enum)</source>
-        <translation>枚举集合</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableValidation/DATableValidationController.cpp" line="+1"/>
-        <source>Not empty</source>
-        <translation>非空</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableValidation/DATableValidationController.cpp" line="+1"/>
-        <source>Unique</source>
-        <translation>唯一</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableValidation/DATableValidationController.cpp" line="+1"/>
-        <source>Regex (full match)</source>
-        <translation>正则（整格匹配）</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableValidation/DATableValidationController.cpp" line="+1"/>
-        <source>%1 (occurrence %2)</source>
-        <translation>%1（第 %2 个同名列）</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableValidation/DATableValidationController.cpp" line="+1"/>
-        <source>Validation failed: %1</source>
-        <translation>数据校验失败：%1</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableValidation/DATableValidationController.cpp" line="+1"/>
-        <source>No enabled validation rules yet — add rules first</source>
-        <translation>暂无启用的校验规则——请先添加规则</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableValidation/DATableValidationController.cpp" line="+1"/>
-        <source>Row %1: %2</source>
-        <translation>行 %1：%2</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableValidation/DATableValidationController.cpp" line="+1"/>
-        <source>Rename Column</source>
-        <translation>重命名列</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableValidation/DATableValidationController.cpp" line="+1"/>
-        <source>%1 validation rule(s) reference the renamed column(s): %2. Their references will be updated automatically. Continue?</source>
-        <translation>有 %1 条校验规则引用被改名的列：%2。其引用将自动批量更新，是否继续？</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DATableComputedColumnController</name>
-    <message>
-        <location filename="../DAGui/TableComputedColumn/DATableComputedColumnController.cpp" line="+0"/>
-        <source>The table is read-only and does not support computed columns</source>
-        <translation>只读表格不支持计算列</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableComputedColumn/DATableComputedColumnController.cpp" line="+1"/>
-        <source>The formula must not reference the target column itself</source>
-        <translation>公式不得引用目标列自身</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableComputedColumn/DATableComputedColumnController.cpp" line="+1"/>
-        <source>Rename Column</source>
-        <translation>重命名列</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableComputedColumn/DATableComputedColumnController.cpp" line="+1"/>
-        <source>%1 computed column(s) reference the renamed column(s): %2. Their references will be updated automatically. Continue?</source>
-        <translation>有 %1 个计算列引用被改名的列：%2。其引用将自动批量更新，是否继续？</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableComputedColumn/DATableComputedColumnController.cpp" line="+1"/>
-        <source>Recompute All Computed Columns</source>
-        <translation>重算全部计算列</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableComputedColumn/DATableComputedColumnController.cpp" line="+1"/>
-        <source>Failed to evaluate the formula of computed column &quot;%1&quot;: %2</source>
-        <translation>计算列“%1”公式求值失败：%2</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableComputedColumn/DATableComputedColumnController.cpp" line="+1"/>
-        <source>Column &quot;%1&quot; has no computed formula</source>
-        <translation>列“%1”没有计算公式</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DATableConditionalFormatController</name>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+0"/>
-        <source>Please select a column first</source>
-        <translation>请先选择列</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>Clear Conditional Format Rules</source>
-        <translation>清除条件格式规则</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>The selected columns have no conditional format rules</source>
-        <translation>所选列没有条件格式规则</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>The table has no conditional format rules</source>
-        <translation>本表没有条件格式规则</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>Blue</source>
-        <translation>蓝色</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>Green</source>
-        <translation>绿色</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>Red</source>
-        <translation>红色</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>Yellow</source>
-        <translation>黄色</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>Cyan</source>
-        <translation>青色</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>Purple</source>
-        <translation>紫色</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>Data Bars</source>
-        <translation>数据条</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>Gradient Fill</source>
-        <translation>渐变填充</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>%1 Gradient Fill</source>
-        <translation>%1渐变填充</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>Solid Fill</source>
-        <translation>实心填充</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>%1 Solid Fill</source>
-        <translation>%1实心填充</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>Other Rules...</source>
-        <translation>其他规则...</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>Color Scales</source>
-        <translation>色阶</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>%1-Color Scale</source>
-        <translation>%1色色阶</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>Highlight Cells Rules</source>
-        <translation>突出显示单元格规则</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>Greater Than...</source>
-        <translation>大于...</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>Less Than...</source>
-        <translation>小于...</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>Between...</source>
-        <translation>介于...</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>Equal To...</source>
-        <translation>等于...</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>Text Contains...</source>
-        <translation>文本包含...</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>A Date Occurring</source>
-        <translation>发生日期</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>Yesterday</source>
-        <translation>昨天</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>Today</source>
-        <translation>今天</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>Tomorrow</source>
-        <translation>明天</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>In the Last 7 Days</source>
-        <translation>最近 7 天</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>Last Week</source>
-        <translation>上周</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>This Week</source>
-        <translation>本周</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>Next Week</source>
-        <translation>下周</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>Last Month</source>
-        <translation>上月</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>This Month</source>
-        <translation>本月</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>Next Month</source>
-        <translation>下月</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>Duplicate Values...</source>
-        <translation>重复值...</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>Clear Rules</source>
-        <translation>清除规则</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>Clear Rules from Selected Columns</source>
-        <translation>清除所选列的规则</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>Clear Rules from Entire Sheet</source>
-        <translation>清除全表的规则</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>Custom Rules...</source>
-        <translation>自定义设置...</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableConditionalFormat/DATableConditionalFormatController.cpp" line="+1"/>
-        <source>Change Conditional Format Rules</source>
-        <translation>更改条件格式规则</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DATableFindController</name>
-    <message>
-        <location filename="../DAGui/TableFind/DATableFindController.cpp" line="+0"/>
-        <source>This data source is read-only and cannot be modified.</source>
-        <translation>该数据源为只读，无法修改</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableFind/DATableFindController.cpp" line="+1"/>
-        <source>No matches found</source>
-        <translation>未找到匹配项</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableFind/DATableFindController.cpp" line="+1"/>
-        <source>Replace All</source>
-        <translation>全部替换</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableFind/DATableFindController.cpp" line="+1"/>
-        <source>Too many cells will be changed (%1). This operation cannot be undone. Continue?</source>
-        <translation>改动量过大（%1 格），本次替换将不可撤销，是否继续？</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DATableStyleController</name>
-    <message>
-        <location filename="../DAGui/TableStyle/DATableStyleController.cpp" line="+0"/>
-        <source>Please select a valid cell</source>
-        <translation>请选择正确的单元格</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableStyle/DATableStyleController.cpp" line="+1"/>
-        <source>Please select a valid column</source>
-        <translation>请选择正确的列</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DATableSortController</name>
-    <message>
-        <location filename="../DAGui/TableSort/DATableSortController.cpp" line="+0"/>
-        <source>This data source is read-only and cannot be sorted.</source>
-        <translation>该数据源为只读，无法排序</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableSort/DATableSortController.cpp" line="+1"/>
-        <source>Cannot sort: the column contains values of incomparable mixed types.</source>
-        <translation>无法排序：该列包含不可比较的混合类型</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DATableViewStateController</name>
-    <message>
-        <location filename="../DAGui/TableViewState/DATableViewStateController.cpp" line="+0"/>
-        <source>Some column view settings were dropped because the table columns have changed.</source>
-        <translation>表格的列已变化，部分列视图设置已被丢弃</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DATableColumnViewController</name>
-    <message>
-        <location filename="../DAGui/TableColumnView/DATableColumnViewController.cpp" line="+0"/>
-        <source>Freeze Columns</source>
-        <translation>冻结列</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableColumnView/DATableColumnViewController.cpp" line="+1"/>
-        <source>Freeze the first N columns (added to already frozen columns, 0 = no change):</source>
-        <translation>冻结前 N 列（追加到已冻结的列，0 = 不做修改）：</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableColumnView/DATableColumnViewController.cpp" line="+1"/>
-        <source>Column names must be unique</source>
-        <translation>列名不能重复</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableColumnView/DATableColumnViewController.cpp" line="+1"/>
-        <source>Manage Columns</source>
-        <translation>列管理</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableColumnView/DATableColumnViewController.cpp" line="+1"/>
-        <source>Rename and update column view</source>
-        <translation>重命名并更新列视图</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DATableRowOps</name>
-    <message>
-        <location filename="../DAGui/TableOps/DATableRowOps.cpp" line="+0"/>
-        <source>Please select valid data cells</source>
-        <translation>请选择正确的行</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableRowOps.cpp" line="+1"/>
-        <source>Row Operations</source>
-        <translation>行操作</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DATableCellOps</name>
-    <message>
-        <location filename="../DAGui/TableOps/DATableCellOps.cpp" line="+0"/>
-        <source>Please select a valid cell</source>
-        <translation>请选择正确的单元格</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableCellOps.cpp" line="+1"/>
-        <source>Clipboard is empty</source>
-        <translation>剪贴板为空</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableCellOps.cpp" line="+1"/>
-        <source>Please select a cell to paste into</source>
-        <translation>请先选中要粘贴的起始单元格</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableCellOps.cpp" line="+1"/>
-        <source>Nothing to paste: the clipboard content exceeds the table boundary</source>
-        <translation>无可粘贴内容：剪贴板内容超出表格边界</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableCellOps.cpp" line="+1"/>
-        <source>Paste partially dropped: %1 row(s) and %2 cell(s) outside the table were ignored</source>
-        <translation>粘贴部分丢弃：%1 行与 %2 个单元格超出表格范围被忽略</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableCellOps.cpp" line="+1"/>
-        <source>Paste failed: the content does not match the column data type</source>
-        <translation>粘贴失败：内容与列数据类型不匹配</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableCellOps.cpp" line="+1"/>
-        <source>No cells selected to cut</source>
-        <translation>没有选中可剪切的单元格</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableCellOps.cpp" line="+1"/>
-        <source>Cell Operations</source>
-        <translation>单元格操作</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DATableTypeOps</name>
-    <message>
-        <location filename="../DAGui/TableOps/DATableTypeOps.cpp" line="+0"/>
-        <source>Please select a valid column</source>
-        <translation>请选择正确的列</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableTypeOps.cpp" line="+1"/>
-        <source>Type Operations</source>
-        <translation>类型操作</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DATableFillOps</name>
-    <message>
-        <location filename="../DAGui/TableOps/DATableFillOps.cpp" line="+0"/>
-        <source>Fill down</source>
-        <translation>向下填充</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableFillOps.cpp" line="+1"/>
-        <source>Fill up</source>
-        <translation>向上填充</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableFillOps.cpp" line="+1"/>
-        <source>Fill forward (ffill)</source>
-        <translation>向下填充空值(ffill)</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableFillOps.cpp" line="+1"/>
-        <source>Fill backward (bfill)</source>
-        <translation>向上填充空值(bfill)</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableFillOps.cpp" line="+1"/>
-        <source>Cannot fill a read-only data source</source>
-        <translation>只读数据源不能填充</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableFillOps.cpp" line="+1"/>
-        <source>Please select cells to fill</source>
-        <translation>请先选中要填充的单元格</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableFillOps.cpp" line="+1"/>
-        <source>Failed to generate the fill series</source>
-        <translation>生成填充序列失败</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableFillOps.cpp" line="+1"/>
-        <source>Fill series</source>
-        <translation>序列填充</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableFillOps.cpp" line="+1"/>
-        <source>Fill failed: the content does not match the column data type</source>
-        <translation>填充失败：内容与列数据类型不匹配</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableFillOps.cpp" line="+1"/>
-        <source>Fill Operations</source>
-        <translation>填充操作</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DATableResultOps</name>
-    <message>
-        <location filename="../DAGui/TableOps/DATableResultOps.cpp" line="+0"/>
-        <source>(no table metadata to clear)</source>
-        <translation>（无需要清除的表元数据）</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableResultOps.cpp" line="+1"/>
-        <source>Replace In Place</source>
-        <translation>就地替换</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableResultOps.cpp" line="+1"/>
-        <source>The table is very large (%1 cells). Keeping the old data for undo would double memory usage, so this in-place replacement will NOT be undoable. Continue?</source>
-        <translation>表格过大（%1 单元格）。保留旧数据用于撤销将使内存翻倍，本次就地替换将不可撤销。是否继续？</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableResultOps.cpp" line="+1"/>
-        <source>Result Operations</source>
-        <translation>结果落库</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableResultOps.cpp" line="+1"/>
-        <source>Replacing in place will clear the following table metadata:
-%1
-
-Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
-        <translation>就地替换将清除本表的以下元数据：
-%1
-
-数据与元数据共用一个撤销单元（Ctrl+Z 一并还原）。是否继续？</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DATableReshapeOps</name>
-    <message>
-        <location filename="../DAGui/TableOps/DATableReshapeOps.cpp" line="+0"/>
-        <source>%1_GroupBy</source>
-        <translation>%1_分组聚合</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableReshapeOps.cpp" line="+1"/>
-        <source>Group-by aggregation of %1</source>
-        <translation>生成%1的分组聚合结果</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableReshapeOps.cpp" line="+1"/>
-        <source>Reshape failed: %1</source>
-        <translation>形状变换失败：%1</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableReshapeOps.cpp" line="+1"/>
-        <source>Melt table in place</source>
-        <translation>就地宽转长</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableReshapeOps.cpp" line="+1"/>
-        <source>Transpose table in place</source>
-        <translation>就地转置</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableReshapeOps.cpp" line="+1"/>
-        <source>%1_Melted</source>
-        <translation>%1_宽转长</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableReshapeOps.cpp" line="+1"/>
-        <source>Melt (wide to long) of %1</source>
-        <translation>生成%1的宽转长结果</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableReshapeOps.cpp" line="+1"/>
-        <source>%1_Transposed</source>
-        <translation>%1_转置</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableReshapeOps.cpp" line="+1"/>
-        <source>Transpose of %1</source>
-        <translation>生成%1的转置结果</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableReshapeOps.cpp" line="+1"/>
-        <source>Reshape Operations</source>
-        <translation>形状变换</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DATableColumnCombineOps</name>
-    <message>
-        <location filename="../DAGui/TableOps/DATableColumnCombineOps.cpp" line="+0"/>
-        <source>Split Column requires an editable table</source>
-        <translation>分列需要可编辑的表格</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableColumnCombineOps.cpp" line="+1"/>
-        <source>Please select exactly one column to split</source>
-        <translation>请选择要拆分的单个列</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableColumnCombineOps.cpp" line="+1"/>
-        <source>Failed to snapshot the source column</source>
-        <translation>源列快照失败</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableColumnCombineOps.cpp" line="+1"/>
-        <source>Split column failed: %1</source>
-        <translation>分列失败：%1</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableColumnCombineOps.cpp" line="+1"/>
-        <source>Merge Columns requires an editable table</source>
-        <translation>合并列需要可编辑的表格</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableColumnCombineOps.cpp" line="+1"/>
-        <source>Please select at least two columns to merge</source>
-        <translation>请选择至少两列进行合并</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableColumnCombineOps.cpp" line="+1"/>
-        <source>Failed to snapshot the source columns</source>
-        <translation>源列快照失败</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableColumnCombineOps.cpp" line="+1"/>
-        <source>Merge columns failed: %1</source>
-        <translation>合并列失败：%1</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableColumnCombineOps.cpp" line="+1"/>
-        <source>Computed column(s) %1 became invalid because their dependency column(s) were merged</source>
-        <translation>计算列 %1 因依赖列被合并已失效</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableColumnCombineOps.cpp" line="+1"/>
-        <source>Split / Merge Columns</source>
-        <translation>分列/合并列</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DATableRenameOps</name>
-    <message>
-        <location filename="../DAGui/TableOps/DATableRenameOps.cpp" line="+0"/>
-        <source>Table has no columns</source>
-        <translation>表格没有列</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableRenameOps.cpp" line="+1"/>
-        <source>Column name cannot be empty</source>
-        <translation>列名不能为空</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableRenameOps.cpp" line="+1"/>
-        <source>Column name &quot;%1&quot; already exists, please use another name</source>
-        <translation>列名&quot;%1&quot;已存在，请使用其他名称</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableRenameOps.cpp" line="+1"/>
-        <source>Rename Column</source>
-        <translation>重命名列</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DATableColumnOps</name>
-    <message>
-        <location filename="../DAGui/TableOps/DATableColumnOps.cpp" line="+0"/>
-        <source>Please select a valid column</source>
-        <translation>请选择正确的列</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableColumnOps.cpp" line="+1"/>
-        <source>Computed column(s) %1 became invalid because their dependency column(s) were removed</source>
-        <translation>计算列 %1 因依赖列被删除已失效</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableColumnOps.cpp" line="+1"/>
-        <source>Warning</source>
-        <translation>警告</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableColumnOps.cpp" line="+1"/>
-        <source>The name of the new column to be inserted must be specified</source>
-        <translation>必须指定列的名字</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableOps/DATableColumnOps.cpp" line="+1"/>
-        <source>Column Operations</source>
-        <translation>列操作</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DATableNavigationService</name>
-    <message>
-        <location filename="../DAGui/TableNavigation/DATableNavigationService.cpp" line="+0"/>
-        <source>Row number is out of range</source>
-        <translation>行号超出范围</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableNavigation/DATableNavigationService.cpp" line="+1"/>
-        <source>Index label not found: %1</source>
-        <translation>未找到索引标签：%1</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableNavigation/DATableNavigationService.cpp" line="+1"/>
-        <source>There are %1 rows with this index label; jumped to the first one</source>
-        <translation>有 %1 行使用该索引标签，已跳到第一个</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableNavigation/DATableNavigationService.cpp" line="+1"/>
-        <source>Column not found: %1</source>
-        <translation>未找到列名：%1</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableNavigation/DATableNavigationService.cpp" line="+1"/>
-        <source>There are %1 columns with this name; used the first one</source>
-        <translation>有 %1 个同名列，已取第一个</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/TableNavigation/DATableNavigationService.cpp" line="+0"/>
-        <source>The column &quot;%1&quot; was hidden and has been made visible</source>
-        <translation>列&quot;%1&quot;已隐藏，现已显示</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DATableSortDialog</name>
-    <message>
-        <location line="+1"/>
-        <source>Sort</source>
-        <translation>排序</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Add Condition</source>
-        <translation>添加条件</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Column</source>
-        <translation>列</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Sort On</source>
-        <translation>排序依据</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Order</source>
-        <translation>次序</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Values</source>
-        <translation>数值</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Sorting always compares cell values (dates/numbers/text by their natural order)</source>
-        <translation>排序始终比较单元格的值（日期/数值/文本按其自然顺序）</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Ascending</source>
-        <translation>升序</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Descending</source>
-        <translation>降序</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Move up</source>
-        <translation>上移</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Move down</source>
-        <translation>下移</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Duplicate condition</source>
-        <translation>复制条件</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Delete condition</source>
-        <translation>删除条件</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Index (Row Number)</source>
-        <translation>索引（行号）</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Tip: sorting does not renumber rows. Use "Clear Sort" to restore the original row order.</source>
-        <translation>提示：排序不会重新编号行，可用「清除排序」按索引恢复原始行顺序。</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>OK</source>
-        <translation>确定</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Cancel</source>
-        <translation>取消</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DAPythonCodeEdit</name>
-    <message>
-        <source>e.g. tmp = A * 2, then np.where(tmp &gt; 0, tmp, 0)</source>
-        <translation>示例：tmp = A * 2，然后 np.where(tmp &gt; 0, tmp, 0)</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DATableChartRolePanel</name>
-    <message>
-        <location filename="../DAGui/Table/Chart/DATableChartRolePanel.cpp" line="+126"/>
-        <source>Row number</source>
-        <translation>行号</translation>
-        </message>
-    <message>
-        <location line="+3"/>
-        <source>(none)</source>
-        <translation>（无）</translation>
-        </message>
-    <message>
-        <location line="+96"/>
-        <source>Remove this series</source>
-        <translation>移除此序列</translation>
-        </message>
-    <message>
-        <location line="+18"/>
-        <source>Add series</source>
-        <translation>添加序列</translation>
-        </message>
-    <message>
-        <location line="+40"/>
-        <source>Aggregation</source>
-        <translation>聚合</translation>
-        </message>
-    <message>
-        <location line="+28"/>
-        <source>Bins</source>
-        <translation>分箱</translation>
-        </message>
-    <message>
-        <location line="+23"/>
-        <source>Mean</source>
-        <translation>平均值</translation>
-        </message>
-    <message>
-        <location line="+2"/>
-        <source>Median</source>
-        <translation>中位数</translation>
-        </message>
-    <message>
-        <location line="+2"/>
-        <source>Sum</source>
-        <translation>求和</translation>
-        </message>
-    <message>
-        <location line="+2"/>
-        <source>Count</source>
-        <translation>计数</translation>
-        </message>
-    <message>
-        <location line="+2"/>
-        <source>Std</source>
-        <translation>标准差</translation>
-        </message>
-    <message>
-        <location line="+2"/>
-        <source>Var</source>
-        <translation>方差</translation>
-        </message>
-    <message>
-        <location line="+2"/>
-        <source>Min</source>
-        <translation>最小值</translation>
-        </message>
-    <message>
-        <location line="+2"/>
-        <source>Max</source>
-        <translation>最大值</translation>
-        </message>
-    <message>
-        <location line="+99"/>
-        <location line="+35"/>
-        <source>X axis</source>
-        <translation>X 轴</translation>
-        </message>
-    <message>
-        <location line="-29"/>
-        <location line="+17"/>
-        <location line="+18"/>
-        <location line="+101"/>
-        <location line="+17"/>
-        <location line="+17"/>
-        <location line="+23"/>
-        <source>Y</source>
-        <translation>Y</translation>
-        </message>
-    <message>
-        <location line="-181"/>
-        <location line="+119"/>
-        <location line="+17"/>
-        <location line="+17"/>
-        <location line="+23"/>
-        <source>X</source>
-        <translation>X</translation>
-        </message>
-    <message>
-        <location line="-141"/>
-        <location line="+52"/>
-        <location line="+42"/>
-        <source>Value</source>
-        <translation>值</translation>
-        </message>
-    <message>
-        <location line="-81"/>
-        <location line="+58"/>
-        <source>Values</source>
-        <translation>数值</translation>
-        </message>
-    <message>
-        <location line="-47"/>
-        <source>Group</source>
-        <translation>分组</translation>
-        </message>
-    <message>
-        <location line="+22"/>
-        <location line="+20"/>
-        <source>Category</source>
-        <translation>分类</translation>
-        </message>
-    <message>
-        <location line="+45"/>
-        <source>Error</source>
-        <translation>误差</translation>
-        </message>
-    <message>
-        <location line="+17"/>
-        <source>U</source>
-        <translation>U</translation>
-        </message>
-    <message>
-        <location line="+5"/>
-        <source>V</source>
-        <translation>V</translation>
-        </message>
-    <message>
-        <location line="+18"/>
-        <source>Z</source>
-        <translation>Z</translation>
-        </message>
-</context>
-<context>
-    <name>DA::DATextAlignmentEditWidget</name>
-    <message>
-        <location filename="../3rdparty/DAWidgets/src/DATextAlignmentEditWidget.cpp"/>
-        <source>Align Left</source>
-        <translation>左对齐</translation>
-    </message>
-    <message>
-        <location filename="../3rdparty/DAWidgets/src/DATextAlignmentEditWidget.cpp"/>
-        <source>Align Center</source>
-        <translation>居中</translation>
-    </message>
-    <message>
-        <location filename="../3rdparty/DAWidgets/src/DATextAlignmentEditWidget.cpp"/>
-        <source>Align Right</source>
-        <translation>右对齐</translation>
-    </message>
-    <message>
-        <location filename="../3rdparty/DAWidgets/src/DATextAlignmentEditWidget.cpp"/>
-        <source>Align Top</source>
-        <translation>顶端对齐</translation>
-    </message>
-    <message>
-        <location filename="../3rdparty/DAWidgets/src/DATextAlignmentEditWidget.cpp"/>
-        <source>Align Middle</source>
-        <translation>垂直居中</translation>
-    </message>
-    <message>
-        <location filename="../3rdparty/DAWidgets/src/DATextAlignmentEditWidget.cpp"/>
-        <source>Align Bottom</source>
-        <translation>底端对齐</translation>
-    </message>
-</context>
-
-<context>
-    <name>DA::DAPeakDockWidget</name>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Page/DAPeakDockWidget.cpp" line="54" />
-        <location filename="../plugins/DASignalAnalysis/Page/DAPeakDockWidget.cpp" line="177" />
-        <source>Run the short-time Fourier transform first</source>
-        <translation>需先计算短时傅里叶变换</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Page/DAPeakDockWidget.cpp" line="154" />
-        <source>Rank %1</source>
-        <translation>第 %1 名</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Page/DAPeakDockWidget.cpp" line="161" />
-        <source>Time (s)</source>
-        <translation>时间（秒）</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Page/DAPeakDockWidget.cpp" line="162" />
-        <source>Frequency (Hz)</source>
-        <translation>频率（赫兹）</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Page/DAPeakDockWidget.cpp" line="181" />
-        <source>Send to Table</source>
-        <translation>送到表格页</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Page/DAPeakDockWidget.cpp" line="184" />
-        <source>Export CSV</source>
-        <translation>导出 CSV</translation>
-    </message>
-    <message>
-        <source>Add the peak table to the data manager; open it from the data manager</source>
-        <translation>把峰值表加入数据管理器；可从数据管理器里打开查看</translation>
-    </message>
-    <message>
-        <source>Open the analysis parameter dialog</source>
-        <translation>打开分析参数对话框</translation>
-    </message>
-    <message>
-        <source>Open this window to compute the per-frame peak curves</source>
-        <translation>打开本窗口后计算每帧前 N 峰值曲线</translation>
-    </message>
-    <message>
-        <source>Settings...</source>
-        <translation>参数设置...</translation>
-    </message>
-    <message>
-        <source>Local scan</source>
-        <translation>局部扫描</translation>
-    </message>
-    <message>
-        <source>Peak curves cover only the visible time range or use a coarser frame step.</source>
-        <translation>峰值曲线只覆盖可见时间范围，或使用了更粗的帧步进。</translation>
-    </message>
-    <message>
-        <source>Per-frame top N peaks: frequency over time (color = rank)</source>
-        <translation>每帧前 N 名峰值：频率随时间变化（颜色 = 名次）</translation>
-    </message>
-    <message>
-        <source>Each color is one rank. Adjacent frames whose peak frequency jumps far apart are drawn as separate points instead of a connected line, so lines mean continuous peaks.</source>
-        <translation>每种颜色是一个名次；相邻帧频率跳变过大时只画点不连线，因此连线表示连续的峰。</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DAPeakTableModel</name>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Analysis/DAPeakTableModel.cpp" line="144" />
-        <source>No.</source>
-        <translation>序号</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Analysis/DAPeakTableModel.cpp" line="146" />
-        <source>Frequency (Hz)</source>
-        <translation>频率（赫兹）</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Analysis/DAPeakTableModel.cpp" line="148" />
-        <source>Amplitude</source>
-        <translation>幅值</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Analysis/DAPeakTableModel.cpp" line="155" />
-        <source>Rel. peak (dB)</source>
-        <translation>相对主峰（dB）</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Analysis/DAPeakTableModel.cpp" line="157" />
-        <source>Share (%)</source>
-        <translation>占比（%）</translation>
-    </message>
-    <message>
-        <source>Amplitude (dB)</source>
-        <translation>幅值（dB）</translation>
-    </message>
-    <message>
-        <source>RMS</source>
-        <translation>均方根</translation>
-    </message>
-    <message>
-        <source>Time (s)</source>
-        <translation>时间（秒）</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DASignalAnalysisPage</name>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisPage.cpp" line="65" />
-        <source>%1
-Sample rate: %2 Hz | Channels: %3 | Duration: %4 s</source>
-        <translation>%1
-采样率：%2 赫兹 | 通道数：%3 | 时长：%4 秒</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisPage.cpp" line="217" />
-        <source>No signal loaded</source>
-        <translation>尚未载入信号</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisPage.cpp" line="218" />
-        <source>Import an audio file, a video, or columns from an existing data frame to begin analysis.</source>
-        <translation>导入音频文件、视频，或从已有数据帧指定列，开始分析。</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisPage.cpp" line="220" />
-        <source>Import Audio...</source>
-        <translation>导入音频</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisPage.cpp" line="221" />
-        <source>Import Data Frame...</source>
-        <translation>导入数据帧</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisPage.cpp" line="222" />
-        <source>Import Video...</source>
-        <translation>导入视频</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DASignalAnalysisPlugin</name>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisPlugin.cpp" line="84" />
-        <source>General purpose time-series signal analysis (spectrum, spectrogram, peaks, playback)</source>
-        <translation>通用时序信号分析（频谱、时频图、峰值、播放）</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DASignalAnalysisSettingPage</name>
-    <message>
-        <source>The FFmpeg executable was not found, so the path was not saved.</source>
-        <translation>未找到 FFmpeg 可执行文件，路径未保存。</translation>
-    </message>
-    <message>
-        <source>Signal Analysis</source>
-        <translation>信号分析</translation>
-    </message>
-    <message>
-        <source>No FFmpeg was found in PATH. Specify an executable to enable video import.</source>
-        <translation>系统 PATH 中未找到 FFmpeg；指定可执行文件后才能导入视频。</translation>
-    </message>
-    <message>
-        <source>Empty: using the FFmpeg found in PATH: %1</source>
-        <translation>留空：使用系统 PATH 中的 FFmpeg：%1</translation>
-    </message>
-    <message>
-        <source>FFmpeg path is valid.</source>
-        <translation>FFmpeg 路径有效。</translation>
-    </message>
-    <message>
-        <source>File does not exist.</source>
-        <translation>文件不存在。</translation>
-    </message>
-    <message>
-        <source>Analysis parameters (frequency resolution, windows, peak thresholds and calibration) are configured per signal in Analysis Settings on the Signal Analysis tab.</source>
-        <translation>频率分辨率、窗函数、峰值门限与标定等分析参数在「信号分析」标签页的「分析设置」里按信号单独配置。</translation>
-    </message>
-    <message>
-        <source>FFmpeg executable</source>
-        <translation>FFmpeg 可执行文件</translation>
-    </message>
-    <message>
-        <source>Used for video import and compressed audio decoding. Leave empty to use the ffmpeg found in PATH.</source>
-        <translation>用于视频导入与压缩音频解码；留空则使用系统 PATH 中的 ffmpeg。</translation>
-    </message>
-    <message>
-        <source>Executable (*.exe);;All files (*)</source>
-        <translation>可执行文件 (*.exe);;所有文件 (*)</translation>
-    </message>
-    <message>
-        <source>External Tools</source>
-        <translation>外部工具</translation>
-    </message>
-</context>
-
-<context>
-    <name>DA::DASignalAnalysisSettingDialog</name>
-    <message>
-        <source>Segment length: unknown (sample rate is invalid)</source>
-        <translation>段长：未知（采样率无效）</translation>
-    </message>
-    <message>
-        <source>Analysis Settings</source>
-        <translation>分析设置</translation>
-    </message>
-    <message>
-        <source>Restore Defaults</source>
-        <translation>恢复默认</translation>
-    </message>
-    <message>
-        <source>OK</source>
-        <translation>确定</translation>
-    </message>
-    <message>
-        <source>Cancel</source>
-        <translation>取消</translation>
-    </message>
-    <message>
-        <source>Spectrum: segment = %1 samples (%2 ms), actual resolution = %3 Hz
-STFT: window = %4 samples (%5 ms), hop = %6 samples</source>
-        <translation>频谱：段长 = %1 点（%2 毫秒）、实际分辨率 = %3 赫兹
-时频：窗长 = %4 点（%5 毫秒）、跳步 = %6 点</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DASignalAnalysisUI</name>
-    <message>
-        <source>FFmpeg was not detected; video import is unavailable until a path is specified in Settings &gt; Signal Analysis.</source>
-        <translation>未检测到 FFmpeg，在「设置 → 信号分析」里指定路径前视频导入不可用。</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="114" />
-        <source>Peak table (CSV)</source>
-        <translation>峰值表（CSV）</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="116" />
-        <source>Spectrum curve (CSV)</source>
-        <translation>频谱曲线（CSV）</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="118" />
-        <source>Heatmap matrix (CSV)</source>
-        <translation>热图矩阵（CSV）</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="157" />
-        <source>Playback failed: %1</source>
-        <translation>播放失败：%1</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="226" />
-        <source>Failed to import audio: %1</source>
-        <translation>导入音频失败：%1</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="250" />
-        <source>Failed to import data frame: %1</source>
-        <translation>导入数据帧失败：%1</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="269" />
-        <source>Failed to import video: %1</source>
-        <translation>导入视频失败：%1</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="299" />
-        <source>Signal imported: %1 (%2 Hz, %3 s)</source>
-        <translation>信号已导入：%1（%2 赫兹，%3 秒）</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="318" />
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="321" />
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="339" />
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1504" />
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1507" />
-        <source>Signal Analysis</source>
-        <translation>信号分析</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="347" />
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1511" />
-        <source>Signal</source>
-        <translation>信号</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="363" />
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1514" />
-        <source>Playback</source>
-        <translation>播放</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="379" />
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1517" />
-        <source>Analysis</source>
-        <translation>分析</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="387" />
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="478" />
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="480" />
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="485" />
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1520" />
-        <source>Peaks</source>
-        <translation>峰值</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="410" />
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1523" />
-        <source>Display</source>
-        <translation>显示</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="447" />
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1526" />
-        <source>Export</source>
-        <translation>导出</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="551" />
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1585" />
-        <source>Peak amplitude</source>
-        <translation>峰值幅度</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="552" />
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1588" />
-        <source>RMS</source>
-        <translation>均方根</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="553" />
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1591" />
-        <source>dB (FS)</source>
-        <translation>dB（满量程）</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="554" />
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1594" />
-        <source>dB (re 1.0)</source>
-        <translation>dB（相对 1.0）</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="605" />
-        <source>No peak data to export.</source>
-        <translation>没有可导出的峰值数据。</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="609" />
-        <source>Export Peak Table</source>
-        <translation>导出峰值表</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="609" />
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="641" />
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="704" />
-        <source>CSV Files (*.csv)</source>
-        <translation>CSV 文件 (*.csv)</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="619" />
-        <source>Peak table exported: %1</source>
-        <translation>峰值表已导出：%1</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="621" />
-        <source>Failed to export the peak table.</source>
-        <translation>峰值表导出失败。</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="632" />
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="685" />
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="728" />
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1084" />
-        <source>No signal is selected.</source>
-        <translation>未选中信号。</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="637" />
-        <source>No spectrum data to export.</source>
-        <translation>没有可导出的频谱数据。</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="641" />
-        <source>Export Spectrum</source>
-        <translation>导出频谱</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="672" />
-        <source>Spectrum exported: %1</source>
-        <translation>频谱已导出：%1</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="674" />
-        <source>Failed to export the spectrum.</source>
-        <translation>频谱导出失败。</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="694" />
-        <source>No time-frequency data to export.</source>
-        <translation>没有可导出的时频数据。</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="698" />
-        <source>Heatmap matrix: %1 x %2 = %3 cells, the CSV may be large.</source>
-        <translation>热图矩阵：%1 x %2 = %3 个单元，CSV 可能较大。</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="704" />
-        <source>Export Heatmap Matrix</source>
-        <translation>导出热图矩阵</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="715" />
-        <source>Heatmap matrix exported: %1</source>
-        <translation>热图矩阵已导出：%1</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="717" />
-        <source>Failed to export the heatmap matrix.</source>
-        <translation>热图矩阵导出失败。</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="736" />
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1601" />
-        <source>Export Image</source>
-        <translation>导出图片</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="736" />
-        <source>PNG Image (*.png)</source>
-        <translation>PNG 图片 (*.png)</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="742" />
-        <source>Image exported: %1</source>
-        <translation>图片已导出：%1</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="744" />
-        <source>Failed to export the image.</source>
-        <translation>图片导出失败。</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="754" />
-        <source>No peak data to send.</source>
-        <translation>没有可发送的峰值数据。</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="772" />
-        <source>Peaks - %1</source>
-        <translation>峰值 - %1</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="776" />
-        <source>Peak table added to the data manager as "%1".</source>
-        <translation>峰值表已作为「%1」加入数据管理器。</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="780" />
-        <source>Failed to send the peak table: %1</source>
-        <translation>峰值表发送失败：%1</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="870" />
-        <source>Signal source missing: dataframe "%1".</source>
-        <translation>信号源缺失：数据帧「%1」。</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="888" />
-        <source>Signal source missing: %1</source>
-        <translation>信号源缺失：%1</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="903" />
-        <source>Failed to restore signal "%1": %2</source>
-        <translation>恢复信号「%1」失败：%2</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1117" />
-        <source>Signal analysis: %1 (%2%)</source>
-        <translation>信号分析：%1（%2%）</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1136" />
-        <source>Spectrum ready: resolution %1 Hz, %2 bins</source>
-        <translation>频谱计算完成：分辨率 %1 赫兹，%2 个频点</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1152" />
-        <source>Signal analysis failed: %1</source>
-        <translation>信号分析失败：%1</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1264" />
-        <source>Signal is very large (&gt; 1.5 GB as float32); the heatmap uses display-precision data.</source>
-        <translation>信号非常大（按 float32 计超过 1.5 吉字节），热图按显示精度降级计算。</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1530" />
-        <source>Import Audio</source>
-        <translation>导入音频</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1531" />
-        <source>Import an audio file (WAV/AIFF/FLAC/OGG)</source>
-        <translation>导入音频文件</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1534" />
-        <source>Import Data Frame</source>
-        <translation>导入数据帧</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1535" />
-        <source>Import columns from an existing data frame</source>
-        <translation>从已有数据帧指定列导入</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1538" />
-        <source>Import Video</source>
-        <translation>导入视频</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1539" />
-        <source>Extract the audio track of a video file (requires FFmpeg)</source>
-        <translation>抽取视频音频轨（需 FFmpeg）</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1543" />
-        <source>Play</source>
-        <translation>播放</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1546" />
-        <source>Pause</source>
-        <translation>暂停</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1549" />
-        <source>Stop</source>
-        <translation>停止</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1553" />
-        <source>Analysis Settings</source>
-        <translation>分析设置</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1554" />
-        <source>Configure the analysis parameters of the current signal</source>
-        <translation>配置当前信号的分析参数</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1558" />
-        <source>Peak Markers</source>
-        <translation>峰值标记</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1561" />
-        <source>Top N</source>
-        <translation>前 N 个</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1562" />
-        <source>Number of peaks to keep (10/20/50)</source>
-        <translation>保留的峰值数量</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1565" />
-        <source>Peak Window</source>
-        <translation>峰值窗口</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1566" />
-        <source>Show or hide the peak dock window</source>
-        <translation>显示或隐藏峰值停靠窗口</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1570" />
-        <source>2D</source>
-        <translation>二维</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1571" />
-        <source>Show the 2D time-frequency heatmap</source>
-        <translation>显示二维时频热图</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1574" />
-        <source>3D</source>
-        <translation>三维</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1575" />
-        <source>Show the 3D surface waterfall</source>
-        <translation>显示三维曲面瀑布</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1578" />
-        <source>Hide</source>
-        <translation>隐藏</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1579" />
-        <source>Hide the waterfall view</source>
-        <translation>隐藏瀑布视图</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1582" />
-        <source>Amplitude</source>
-        <translation>幅值模式</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="1598" />
-        <source>Export Peaks</source>
-        <translation>导出峰值表</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" />
-        <source>Window</source>
-        <translation>窗口</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" />
-        <source>Open Signal Analysis Window</source>
-        <translation>打开信号分析窗口</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" />
-        <source>Show the signal analysis workspace; it is created on first use</source>
-        <translation>显示信号分析界面（首次使用时创建）</translation>
-    </message>
-    <message>
-        <source>Audio/Video files (*.wav *.aiff *.aif *.flac *.ogg *.mp3 *.m4a *.mp4 *.mkv *.avi);;All files (*)</source>
-        <translation>音频/视频文件 (*.wav *.aiff *.aif *.flac *.ogg *.mp3 *.m4a *.mp4 *.mkv *.avi);;所有文件 (*)</translation>
-    </message>
-    <message>
-        <source>Cancel Analysis</source>
-        <translation>取消计算</translation>
-    </message>
-    <message>
-        <source>Cancel all running background computations</source>
-        <translation>取消全部在跑的后台计算</translation>
-    </message>
-    <message>
-        <source>Cannot start playback for this signal.</source>
-        <translation>无法开始播放该信号。</translation>
-    </message>
-    <message>
-        <source>Continue</source>
-        <translation>继续</translation>
-    </message>
-    <message>
-        <source>Data frame:</source>
-        <translation>数据帧：</translation>
-    </message>
-    <message>
-        <source>Downsample x2</source>
-        <translation>2 倍降采样</translation>
-    </message>
-    <message>
-        <source>Export Power Spectral Density</source>
-        <translation>导出功率谱密度</translation>
-    </message>
-    <message>
-        <source>Export full</source>
-        <translation>导出完整矩阵</translation>
-    </message>
-    <message>
-        <source>Extract the audio track of a video file</source>
-        <translation>抽取视频音频轨</translation>
-    </message>
-    <message>
-        <source>FFmpeg was not detected. Specify its path in Settings &gt; Signal Analysis.</source>
-        <translation>未检测到 FFmpeg，请在「设置 → 信号分析」里指定路径。</translation>
-    </message>
-    <message>
-        <source>Failed to create the signal analysis page.</source>
-        <translation>创建信号分析页面失败。</translation>
-    </message>
-    <message>
-        <source>Failed to export the power spectral density.</source>
-        <translation>功率谱密度导出失败。</translation>
-    </message>
-    <message>
-        <source>Failed to import audio.</source>
-        <translation>导入音频失败。</translation>
-    </message>
-    <message>
-        <source>Failed to import data frame.</source>
-        <translation>导入数据帧失败。</translation>
-    </message>
-    <message>
-        <source>Failed to import video.</source>
-        <translation>导入视频失败。</translation>
-    </message>
-    <message>
-        <source>Failed to prepare the playback audio for this signal.</source>
-        <translation>准备该信号的播放音频失败。</translation>
-    </message>
-    <message>
-        <source>Failed to relink the data frame source.</source>
-        <translation>重新指定数据帧来源失败。</translation>
-    </message>
-    <message>
-        <source>Failed to restore signal &quot;%1&quot;.</source>
-        <translation>恢复信号「%1」失败。</translation>
-    </message>
-    <message>
-        <source>Failed to send the peak table.</source>
-        <translation>峰值表发送失败。</translation>
-    </message>
-    <message>
-        <source>Heatmap precision reduced to %1 x %2.</source>
-        <translation>热图精度已降至 %1 x %2。</translation>
-    </message>
-    <message>
-        <source>Large Signal</source>
-        <translation>大信号</translation>
-    </message>
-    <message>
-        <source>Large signal confirmed: %1 assumes about %2 GB of memory.</source>
-        <translation>大信号已确认：%1 预计占用约 %2 GB 内存。</translation>
-    </message>
-    <message>
-        <source>Locate Signal Source</source>
-        <translation>重新指定信号源</translation>
-    </message>
-    <message>
-        <source>Locate...</source>
-        <translation>重新指定...</translation>
-    </message>
-    <message>
-        <source>No data frame is available. Import or create a data frame first.</source>
-        <translation>没有可用的数据帧，请先导入或创建数据帧。</translation>
-    </message>
-    <message>
-        <source>No power spectral density data to export.</source>
-        <translation>没有可导出的功率谱密度数据。</translation>
-    </message>
-    <message>
-        <source>PSD (dB re 1.0/Hz)</source>
-        <translation>功率谱密度（dB，相对 1.0/赫兹）</translation>
-    </message>
-    <message>
-        <source>Peak Table</source>
-        <translation>峰值表</translation>
-    </message>
-    <message>
-        <source>Playback failed. See the message log for details.</source>
-        <translation>播放失败，详情见消息日志。</translation>
-    </message>
-    <message>
-        <source>Point a signal whose data frame is missing to an existing data frame</source>
-        <translation>把数据帧缺失的信号重新指向现有数据帧</translation>
-    </message>
-    <message>
-        <source>Power spectral density (CSV)</source>
-        <translation>功率谱密度（CSV）</translation>
-    </message>
-    <message>
-        <source>Power spectral density exported: %1</source>
-        <translation>功率谱密度已导出：%1</translation>
-    </message>
-    <message>
-        <source>Reduce precision</source>
-        <translation>降低精度</translation>
-    </message>
-    <message>
-        <source>Relink Data Frame Source</source>
-        <translation>重新指定数据帧来源</translation>
-    </message>
-    <message>
-        <source>Show or hide the peak table window</source>
-        <translation>显示或隐藏峰值表窗口</translation>
-    </message>
-    <message>
-        <source>Signal &quot;%1&quot; is a placeholder: its data frame is missing.</source>
-        <translation>信号「%1」为占位：其数据帧缺失。</translation>
-    </message>
-    <message>
-        <source>Signal &quot;%1&quot; refers to a missing file:
-%2
-
-Locate the file again?</source>
-        <translation>信号「%1」引用的文件不存在：%2。要重新指定文件吗？</translation>
-    </message>
-    <message>
-        <source>Signal &quot;%1&quot; relinked to data frame &quot;%2&quot;.</source>
-        <translation>信号「%1」已重新指向数据帧「%2」。</translation>
-    </message>
-    <message>
-        <source>Signal Source Missing</source>
-        <translation>信号源缺失</translation>
-    </message>
-    <message>
-        <source>Signal analysis cancelled: %1 needs more than the memory budget.</source>
-        <translation>已取消信号分析：%1 超出内存预算。</translation>
-    </message>
-    <message>
-        <source>Signal analysis failed. See the message log for details.</source>
-        <translation>信号分析失败，详情见消息日志。</translation>
-    </message>
-    <message>
-        <source>Signal analysis: parameters applied, recomputing.</source>
-        <translation>信号分析：参数已应用，正在重算。</translation>
-    </message>
-    <message>
-        <source>Signal is too large for the full per-frame peak curve scan; peak curves were skipped.</source>
-        <translation>信号过大，已跳过全帧峰值曲线扫描。</translation>
-    </message>
-    <message>
-        <source>Signal source missing: data frame &quot;%1&quot; (signal &quot;%2&quot;). Use &quot;Relink Data Frame Source&quot; to point it to an existing data frame.</source>
-        <translation>信号源缺失：数据帧「%1」（信号「%2」）。可用「重新指定数据帧来源」指向现有数据帧。</translation>
-    </message>
-    <message>
-        <source>Skip</source>
-        <translation>跳过</translation>
-    </message>
-    <message>
-        <source>The current signal's source is available; there is nothing to relink.</source>
-        <translation>当前信号的来源可用，无需重新指定。</translation>
-    </message>
-    <message>
-        <source>The estimated peak memory for the %1 is about %2 GB, above the 1.5 GB budget.
-Continue or cancel?</source>
-        <translation>%1 的预计峰值内存约 %2 GB，超过 1.5 GB 预算。继续还是取消？</translation>
-    </message>
-    <message>
-        <source>The estimated peak memory is about %1 GB, above the 1.5 GB budget.
-Reduce the heatmap precision or cancel?</source>
-        <translation>预计峰值内存约 %1 GB，超过 1.5 GB 预算。降低热图精度还是取消？</translation>
-    </message>
-    <message>
-        <source>The heatmap matrix is %1 x %2 = %3 cells (about %4 MB as CSV).
-Export the full matrix or downsample by 2?</source>
-        <translation>热图矩阵为 %1 x %2 = %3 个单元（CSV 约 %4 兆字节）。导出完整矩阵还是 2 倍降采样？</translation>
-    </message>
-    <message>
-        <source>peak table</source>
-        <translation>峰值表</translation>
-    </message>
-    <message>
-        <source>soundfile is not available; only WAV files can be read directly. Install soundfile or use FFmpeg.</source>
-        <translation>未安装 soundfile，只能直接读取 WAV；可安装 soundfile 或改用 FFmpeg。</translation>
-    </message>
-    <message>
-        <source>spectrum</source>
-        <translation>频谱</translation>
-    </message>
-    <message>
-        <source>waveform envelope</source>
-        <translation>波形包络</translation>
-    </message>
-    <message>
-        <source>FFmpeg is available; video import is enabled.</source>
-        <translation>FFmpeg 可用，视频导入已启用。</translation>
-    </message>
-    <message>
-        <source>FFmpeg is still not available; video import stays disabled.</source>
-        <translation>仍未检测到 FFmpeg，视频导入保持置灰。</translation>
-    </message>
-    <message>
-        <source>Signal imported.</source>
-        <translation>信号导入完成。</translation>
-    </message>
-    <message>
-        <source>The estimated peak memory for the %1 is about %2 GB, above the 1.5 GB budget.
-Reduce the precision, scan only the visible range, or cancel?</source>
-        <translation>%1 的预计峰值内存约 %2 GB，超过 1.5 GB 预算。降低精度、只扫可见区段，还是取消？</translation>
-    </message>
-    <message>
-        <source>Scan visible range</source>
-        <translation>只扫可见区段</translation>
-    </message>
-    <message>
-        <source>peak curves</source>
-        <translation>峰值曲线</translation>
-    </message>
-    <message>
-        <source>Peak curves were limited to the visible time range (local scan).</source>
-        <translation>峰值曲线已限制为可见时间范围（局部扫描）。</translation>
-    </message>
-    <message>
-        <source>Peak curves use a coarser frame step (local scan).</source>
-        <translation>峰值曲线改用更粗的帧步进（局部扫描）。</translation>
-    </message>
-    <message>
-        <source>heatmap</source>
-        <translation>热图</translation>
-    </message>
-    <message>
-        <source>Heatmap precision reduced to %1 x %2 (smaller block size).</source>
-        <translation>热图精度已降至 %1 x %2（更小的分块）。</translation>
-    </message>
-    <message>
-        <source>Heatmap was limited to the visible time range.</source>
-        <translation>热图已限制为可见时间范围。</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DASignalAnalysisView</name>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="298" />
-        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="833" />
-        <source>Envelope</source>
-        <translation>包络</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="331" />
-        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="836" />
-        <source>Amplitude spectrum</source>
-        <translation>幅值谱</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="463" />
-        <source>Waterfall</source>
-        <translation>三维瀑布</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="512" />
-        <source>Spectrogram</source>
-        <translation>时频图</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="525" />
-        <source>dB</source>
-        <translation>分贝</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="527" />
-        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="650" />
-        <source>Time (s)</source>
-        <translation>时间（秒）</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="528" />
-        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="658" />
-        <source>Frequency (Hz)</source>
-        <translation>频率（赫兹）</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="651" />
-        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="659" />
-        <source>Amplitude</source>
-        <translation>幅值</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="661" />
-        <source>dB (FS)</source>
-        <translation>dB（满量程）</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="663" />
-        <source>dB (re 1.0)</source>
-        <translation>dB（相对 1.0）</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="665" />
-        <source>RMS</source>
-        <translation>均方根</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="818" />
-        <source>Waveform</source>
-        <translation>波形</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="821" />
-        <source>Spectrum</source>
-        <translation>频谱</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="824" />
-        <source>Linear</source>
-        <translation>线性</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="825" />
-        <source>Log</source>
-        <translation>对数</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="828" />
-        <source>Follow slider</source>
-        <translation>跟随滑块</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="829" />
-        <source>Show the current frame instead of the whole signal</source>
-        <translation>显示当前帧而不是整段信号</translation>
-    </message>
-    <message>
-        <source>Follow playback</source>
-        <translation>随播放滚动</translation>
-    </message>
-    <message>
-        <source>Scroll the time-frequency view while playback advances</source>
-        <translation>播放推进时平移时频图的时间轴</translation>
-    </message>
-    <message>
-        <source>Time-Frequency</source>
-        <translation>时频</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DASignalAnalysisWorker</name>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Analysis/DASignalAnalysisWorker.cpp" line="130" />
-        <location filename="../plugins/DASignalAnalysis/Analysis/DASignalAnalysisWorker.cpp" line="198" />
-        <location filename="../plugins/DASignalAnalysis/Analysis/DASignalAnalysisWorker.cpp" line="231" />
-        <location filename="../plugins/DASignalAnalysis/Analysis/DASignalAnalysisWorker.cpp" line="263" />
-        <source>Signal is invalid or not loaded.</source>
-        <translation>信号无效或未载入。</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Analysis/DASignalAnalysisWorker.cpp" line="142" />
-        <source>Failed to start the spectrum task.</source>
-        <translation>频谱任务启动失败。</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Analysis/DASignalAnalysisWorker.cpp" line="147" />
-        <source>Computing spectrum...</source>
-        <translation>正在计算频谱...</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Analysis/DASignalAnalysisWorker.cpp" line="210" />
-        <source>Failed to start the time-frequency task.</source>
-        <translation>时频任务启动失败。</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Analysis/DASignalAnalysisWorker.cpp" line="326" />
-        <source>Background task disappeared.</source>
-        <translation>后台任务丢失。</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Analysis/DASignalAnalysisWorker.cpp" line="341" />
-        <source>Computation was cancelled.</source>
-        <translation>计算已取消。</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Analysis/DASignalAnalysisWorker.cpp" line="346" />
-        <source>Computation failed.</source>
-        <translation>计算失败。</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Analysis/DASignalAnalysisWorker.cpp" line="353" />
-        <source>Spectrum result is empty.</source>
-        <translation>频谱结果为空。</translation>
-    </message>
-    <message>
-        <source>Computation failed. See the message log for details.</source>
-        <translation>计算失败，详见消息日志。</translation>
-    </message>
-    <message>
-        <source>Failed to create the temporary audio file.</source>
-        <translation>创建临时音频文件失败。</translation>
-    </message>
-    <message>
-        <source>Failed to query background tasks.</source>
-        <translation>查询后台任务失败。</translation>
-    </message>
-    <message>
-        <source>Failed to read the background result.</source>
-        <translation>读取后台结果失败。</translation>
-    </message>
-    <message>
-        <source>Failed to start the envelope task.</source>
-        <translation>包络任务启动失败。</translation>
-    </message>
-    <message>
-        <source>Failed to start the peak curve task.</source>
-        <translation>峰值曲线任务启动失败。</translation>
-    </message>
-    <message>
-        <source>Failed to start the peak table task.</source>
-        <translation>峰值表任务启动失败。</translation>
-    </message>
-    <message>
-        <source>Failed to start the playback audio export.</source>
-        <translation>播放音频导出任务启动失败。</translation>
-    </message>
-    <message>
-        <source>Playback audio export is only available for dataframe signals.</source>
-        <translation>只有数据帧来源的信号需要导出播放音频。</translation>
-    </message>
-    <message>
-        <source>Playback audio export produced no result.</source>
-        <translation>播放音频导出没有结果。</translation>
-    </message>
-    <message>
-        <source>Playback audio file was not created.</source>
-        <translation>播放音频文件未生成。</translation>
-    </message>
-    <message>
-        <source>Preparing playback audio...</source>
-        <translation>正在准备播放音频...</translation>
-    </message>
-    <message>
-        <source>No file selected.</source>
-        <translation>未选择文件。</translation>
-    </message>
-    <message>
-        <source>File does not exist.</source>
-        <translation>文件不存在。</translation>
-    </message>
-    <message>
-        <source>FFmpeg is not available. Specify its path in Settings &gt; Signal Analysis.</source>
-        <translation>未检测到 FFmpeg，请在「设置 → 信号分析」里指定路径。</translation>
-    </message>
-    <message>
-        <source>Failed to start the import task.</source>
-        <translation>导入任务启动失败。</translation>
-    </message>
-    <message>
-        <source>Preparing import...</source>
-        <translation>正在准备导入...</translation>
-    </message>
-    <message>
-        <source>The signal source is missing. Relink or re-import it before analyzing.</source>
-        <translation>信号源缺失，请重新指定来源或重新导入后再分析。</translation>
-    </message>
-    <message>
-        <source>The signal source cannot be read (it may have been renamed or removed, or the file is unavailable).</source>
-        <translation>信号源无法读取（可能已改名或移除，或文件不可用）。</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DASignalImportDialog</name>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="66" />
-        <source>File</source>
-        <translation>文件</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="85" />
-        <source>Data Frame</source>
-        <translation>源数据帧</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="88" />
-        <source>Time Column</source>
-        <translation>时间列</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="93" />
-        <source>Value Columns</source>
-        <translation>幅值列（可多选）</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="100" />
-        <source>Sample Rate (Hz)</source>
-        <translation>采样率（赫兹）</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="108" />
-        <source>Signal Name</source>
-        <translation>信号名</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="147" />
-        <source>No data frame is available. Import data first.</source>
-        <translation>没有可用的数据帧，请先导入数据。</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="172" />
-        <source>No time column</source>
-        <translation>无时间列</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="227" />
-        <source>Please enter a positive sample rate.</source>
-        <translation>请输入合法的正数采样率。</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="251" />
-        <source>No time column: enter the sample rate manually.</source>
-        <translation>无时间列：请手动填写采样率。</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="261" />
-        <source>Inferred sample rate = %1 Hz, duration = %2 s</source>
-        <translation>推断采样率 = %1 赫兹，时长 = %2 秒</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="268" />
-        <source>Cannot infer the sample rate from the time column: %1</source>
-        <translation>无法从时间列推断采样率：%1</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="318" />
-        <source>Video Files (*.mp4 *.mov *.m4v *.avi *.mkv *.webm *.flv *.wmv *.ts *.mts);;All Files (*)</source>
-        <translation>视频文件 (*.mp4 *.mov *.m4v *.avi *.mkv *.webm *.flv *.wmv *.ts *.mts);;所有文件 (*)</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="321" />
-        <source>Audio Files (*.wav *.aiff *.aif *.flac *.ogg *.oga *.mp3 *.m4a *.aac *.wma *.opus);;All Files (*)</source>
-        <translation>音频文件 (*.wav *.aiff *.aif *.flac *.ogg *.oga *.mp3 *.m4a *.aac *.wma *.opus);;所有文件 (*)</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="324" />
-        <source>Select File</source>
-        <translation>选择文件</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="394" />
-        <source>Import Audio</source>
-        <translation>导入音频</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="397" />
-        <source>Import Video</source>
-        <translation>导入视频</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="401" />
-        <source>Import Data Frame</source>
-        <translation>导入数据帧</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="405" />
-        <source>Browse...</source>
-        <translation>浏览</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="408" />
-        <source>Import</source>
-        <translation>导入</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="409" />
-        <source>Cancel</source>
-        <translation>取消</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Dialogs/DASignalImportDialog.cpp" line="412" />
-        <source>FFmpeg was not detected. Specify its path in Settings &gt; Signal Analysis.</source>
-        <translation>未检测到 FFmpeg，请在「设置 → 信号分析」里指定路径。</translation>
-    </message>
-    <message>
-        <source>Sample rate: %1 Hz, channels: %2, duration: %3 s</source>
-        <translation>采样率：%1 赫兹，通道数：%2，时长：%3 秒</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DASignalPlayer</name>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Playback/DASignalPlayer.cpp" line="116" />
-        <source>Signal is invalid.</source>
-        <translation>信号无效。</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Playback/DASignalPlayer.cpp" line="132" />
-        <source>No playable audio file for this signal.</source>
-        <translation>该信号没有可播放的音频文件。</translation>
-    </message>
-    <message>
-        <source>The playback audio file is missing.</source>
-        <translation>播放音频文件缺失。</translation>
-    </message>
-</context>
-<context>
-    <name>DASignalFormSpecBuilder</name>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="70" />
-        <source>Remove DC</source>
-        <translation>去直流</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="74" />
-        <source>Detrend</source>
-        <translation>去趋势</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="76" />
-        <source>None</source>
-        <translation>无</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="77" />
-        <source>Constant</source>
-        <translation>常数</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="78" />
-        <source>Linear</source>
-        <translation>线性</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="80" />
-        <source>Signal Preprocessing</source>
-        <translation>信号预处理</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="88" />
-        <source>Window</source>
-        <translation>窗函数</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="90" />
-        <source>Rectangular</source>
-        <translation>矩形</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="91" />
-        <source>Hann</source>
-        <translation>汉宁</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="92" />
-        <source>Hamming</source>
-        <translation>汉明</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="93" />
-        <source>Blackman</source>
-        <translation>布莱克曼</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="94" />
-        <source>Flat top</source>
-        <translation>平顶</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="99" />
-        <source>Amplitude</source>
-        <translation>幅值口径</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="101" />
-        <source>Peak amplitude</source>
-        <translation>峰值幅度</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="102" />
-        <source>RMS</source>
-        <translation>均方根</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="107" />
-        <source>dB reference</source>
-        <translation>dB 参考</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="109" />
-        <source>Full scale (dBFS)</source>
-        <translation>满量程</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="110" />
-        <source>Relative to 1.0</source>
-        <translation>相对 1.0</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="115" />
-        <source>Frequency resolution (Hz)</source>
-        <translation>频率分辨率（赫兹）</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="123" />
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="174" />
-        <source>Zero padding points (advanced)</source>
-        <translation>零填充点数（高级）</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="129" />
-        <source>Spectrum</source>
-        <translation>频谱</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="137" />
-        <source>Averaging</source>
-        <translation>平均方式</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="139" />
-        <source>Mean</source>
-        <translation>均值</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="140" />
-        <source>Median</source>
-        <translation>中位数</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="144" />
-        <source>Overlap (%)</source>
-        <translation>重叠率（%）</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="150" />
-        <source>Power Spectrum</source>
-        <translation>功率谱</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="158" />
-        <source>Window length (ms)</source>
-        <translation>窗长（毫秒）</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="166" />
-        <source>Hop overlap (%)</source>
-        <translation>跳步重叠率（%）</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="180" />
-        <source>Short-Time Fourier Transform</source>
-        <translation>短时傅里叶变换</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="189" />
-        <source>Mode</source>
-        <translation>模式</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="191" />
-        <source>Simple</source>
-        <translation>简单</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="192" />
-        <source>Advanced</source>
-        <translation>高级</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="197" />
-        <source>Top N</source>
-        <translation>前 N 个</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="204" />
-        <source>Relative threshold (dB)</source>
-        <translation>相对门限（dB）</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="216" />
-        <source>Prominence</source>
-        <translation>突出度</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="231" />
-        <source>Minimum spacing (Hz)</source>
-        <translation>最小间距（赫兹）</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="241" />
-        <source>Minimum height</source>
-        <translation>绝对高度门限</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="248" />
-        <source>Peak Search</source>
-        <translation>峰值查找</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="256" />
-        <source>Calibration factor</source>
-        <translation>标定系数</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="262" />
-        <source>Amplitude unit</source>
-        <translation>幅值单位</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="264" />
-        <source>Calibration</source>
-        <translation>标定</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="269" />
-        <source>Analysis Settings</source>
-        <translation>分析设置</translation>
-    </message>
-    <message>
-        <source>dB (FS)</source>
-        <translation>dB（满量程）</translation>
-    </message>
-    <message>
-        <source>dB (re 1.0)</source>
-        <translation>dB（相对 1.0）</translation>
-    </message>
-</context>
-<context>
-    <name>DASignalImporter</name>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Signal/DASignalImporter.cpp" line="114" />
-        <location filename="../plugins/DASignalAnalysis/Signal/DASignalImporter.cpp" line="335" />
-        <source>FFmpeg is not available. Specify its path in Settings &gt; Signal Analysis.</source>
-        <translation>未检测到 FFmpeg，请在「设置 → 信号分析」里指定路径。</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Signal/DASignalImporter.cpp" line="127" />
-        <source>FFmpeg failed to convert the file. Last output lines:
-%1</source>
-        <translation>FFmpeg 执行失败，最后输出：
-%1</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Signal/DASignalImporter.cpp" line="158" />
-        <source>Cannot read audio file: %1</source>
-        <translation>无法读取音频文件：%1</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Signal/DASignalImporter.cpp" line="168" />
-        <source>Audio file contains no samples.</source>
-        <translation>音频文件不包含采样数据。</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Signal/DASignalImporter.cpp" line="295" />
-        <location filename="../plugins/DASignalAnalysis/Signal/DASignalImporter.cpp" line="327" />
-        <source>File does not exist: %1</source>
-        <translation>文件不存在：%1</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Signal/DASignalImporter.cpp" line="311" />
-        <source>The converted file could not be read: %1</source>
-        <translation>转码后的文件无法读取：%1</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Signal/DASignalImporter.cpp" line="347" />
-        <source>The file does not contain an audio track.</source>
-        <translation>文件不含音频轨。</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Signal/DASignalImporter.cpp" line="379" />
-        <source>The source data is not a dataframe.</source>
-        <translation>源数据不是数据帧。</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Signal/DASignalImporter.cpp" line="386" />
-        <source>Please select at least one value column.</source>
-        <translation>请至少选择一个幅值列。</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Signal/DASignalImporter.cpp" line="393" />
-        <source>Sample rate must be a positive number.</source>
-        <translation>采样率必须是正数。</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Signal/DASignalImporter.cpp" line="405" />
-        <source>The dataframe is empty.</source>
-        <translation>数据帧为空。</translation>
-    </message>
-    <message>
-        <location filename="../plugins/DASignalAnalysis/Signal/DASignalImporter.cpp" line="454" />
-        <source>No time column selected.</source>
-        <translation>未选择时间列。</translation>
-    </message>
-    <message>
-        <source>Failed to create a signal from the dataframe.</source>
-        <translation>从数据帧创建信号失败。</translation>
-    </message>
-    <message>
-        <source>Failed to infer the sample rate from the time column.</source>
-        <translation>无法由时间列推断采样率。</translation>
-    </message>
-    <message>
-        <source>Failed to probe the audio file.</source>
-        <translation>探测音频文件失败。</translation>
-    </message>
-    <message>
-        <source>Failed to probe the video file.</source>
-        <translation>探测视频文件失败。</translation>
-    </message>
-    <message>
-        <source>Failed to read the audio file.</source>
-        <translation>读取音频文件失败。</translation>
-    </message>
-    <message>
-        <source>Failed to run the FFmpeg conversion.</source>
-        <translation>执行 FFmpeg 转码失败。</translation>
-    </message>
-    <message>
-        <source>No file selected.</source>
-        <translation>未选择文件。</translation>
-    </message>
-    <message>
-        <source>This format is decoded through FFmpeg; the sample rate is shown after import.</source>
-        <translation>该格式经 FFmpeg 解码，采样率在导入后显示。</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DATableQuickPlotSettingWidget</name>
-    <message>
-        <source>Quick plot</source>
-        <translation>快速绘图</translation>
-    </message>
-    <message>
-        <source>Open a quick plot from the data table to configure it here</source>
-        <translation>请先在数据表格中打开快速绘图，再在此处设置</translation>
-    </message>
-    <message>
-        <source>Chart</source>
-        <translation>图表</translation>
-    </message>
-    <message>
-        <source>Chart type</source>
-        <translation>图型</translation>
-    </message>
-    <message>
-        <source>Columns</source>
-        <translation>列</translation>
-    </message>
-    <message>
-        <source>Chart type (unavailable types are disabled with the reason)</source>
-        <translation>图型（不满足当前选区的置灰并给出原因）</translation>
-    </message>
-    <message>
-        <source>Data roles</source>
-        <translation>数据角色</translation>
-    </message>
-    <message>
-        <source>Update to current selection</source>
-        <translation>更新为当前选区</translation>
-    </message>
-    <message>
-        <source>Re-bind the chart to the current column selection</source>
-        <translation>按当前表格选区重新绑定绘图</translation>
-    </message>
-    <message>
-        <source>Refresh</source>
-        <translation>刷新</translation>
-    </message>
-    <message>
-        <source>Redraw with the current data</source>
-        <translation>按当前数据重绘</translation>
-    </message>
-    <message>
-        <source>Transfer to chart area</source>
-        <translation>转入绘图区</translation>
-    </message>
-    <message>
-        <source>Create a formal chart from this quick plot</source>
-        <translation>把当前快速绘图转成正式图表</translation>
-    </message>
-    <message>
-        <source>New figure tab</source>
-        <translation>新建绘图标签页</translation>
-    </message>
-    <message>
-        <source>Append to current chart</source>
-        <translation>追加到当前图表</translation>
-    </message>
-</context>
-<context>
-    <name>DA::DANoDataGuideWidget</name>
-    <message>
-        <location filename="../DAGui/Common/DANoDataGuideWidget.cpp" />
-        <source>No data loaded</source>
-        <translation>尚未载入数据</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/Common/DANoDataGuideWidget.cpp" />
-        <source>Open an existing project or import data, then create a chart to start plotting.</source>
-        <translation>打开已有工程或导入数据，然后新建绘图开始绘图。</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/Common/DANoDataGuideWidget.cpp" />
-        <source>Open an existing project or import data to start working with data.</source>
-        <translation>打开已有工程或导入数据，开始处理数据。</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/Common/DANoDataGuideWidget.cpp" />
-        <source>Open Existing Project</source>
-        <translation>打开已有工程</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/Common/DANoDataGuideWidget.cpp" />
-        <source>Import Data</source>
-        <translation>导入数据</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/Common/DANoDataGuideWidget.cpp" />
-        <source>No figure created</source>
-        <translation>尚未创建绘图</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/Common/DANoDataGuideWidget.cpp" />
-        <source>Data is ready. Click Add Figure to start plotting.</source>
-        <translation>数据已就绪，点击「添加绘图」新建绘图。</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/Common/DANoDataGuideWidget.cpp" />
-        <source>No data table open</source>
-        <translation>尚未打开数据表</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/Common/DANoDataGuideWidget.cpp" />
-        <source>Double-click data in the Data Manager to open its table.</source>
-        <translation>双击数据管理区的数据来打开数据表。</translation>
-    </message>
-    <message>
-        <location filename="../DAGui/Common/DANoDataGuideWidget.cpp" />
-        <source>Add Figure</source>
-        <translation>添加绘图</translation>
     </message>
 </context>
 </TS>
