@@ -138,6 +138,14 @@ void DADataFrameTest::testIlocAndColumnAccess()
  */
 void DADataFrameTest::testColumnAtPositional()
 {
+    // 嵌入式解释器可能选不到带 pandas 的 Python（例如本机 PATH 里的 WindowsApps 存根）：
+    // 本用例直接用 pandas 造数据，无法导入时跳过，而不是抛 pybind11 异常让整用例失败
+    // （与同文件其它用例「IBM.csv/pandas 不可用则 QSKIP」的口径一致）。
+    try {
+        pybind11::exec("import pandas");
+    } catch (const pybind11::error_already_set&) {
+        QSKIP("pandas is not available in the embedded Python interpreter");
+    }
     pybind11::dict scope;
     pybind11::exec(R"(
 import pandas as pd
