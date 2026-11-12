@@ -281,8 +281,11 @@ void DASignalAnalysisView::buildFigure()
     connect(wavePicker, QOverload< const QPointF& >::of(&QwtPlotPicker::selected), this, [this](const QPointF& p) {
         setCurrentTime(p.x() - (mSignal ? mSignal->timeOrigin() : 0.0));
     });
-    // STFT 窗口矩形整体拖动（D30）：在画布上监听鼠标，命中矩形内才进入拖动
+    // STFT 窗口矩形整体拖动（D30）：在画布上监听鼠标，命中矩形内才进入拖动；
+    // 同时监听三个 2D 画布，点击即切换当前子图（T8 设置面板 target 跟随）。
     mWaveChart->canvas()->installEventFilter(this);
+    mSpectrumChart->canvas()->installEventFilter(this);
+    mHeatmapChart->canvas()->installEventFilter(this);
 }
 
 /**
@@ -601,6 +604,21 @@ bool DASignalAnalysisView::isFollowSlider() const
  */
 bool DASignalAnalysisView::eventFilter(QObject* watched, QEvent* e)
 {
+    // 点击任意 2D 子图即切换当前子图（T8 设置面板 target 跟随）。
+    // qwt 的 QwtFigure 只在鼠标事件传播到 QwtPlot 时才切换当前坐标轴，而波形画布上的
+    // QwtPicker 会消费点击事件；因此这里在画布层显式同步，且不消费事件（交互行为不变）。
+    if (e && e->type() == QEvent::MouseButtonPress && mFigure) {
+        auto* me = static_cast< QMouseEvent* >(e);
+        if (me->button() == Qt::LeftButton) {
+            if (mWaveChart && watched == mWaveChart->canvas()) {
+                mFigure->setCurrentChart(mWaveChart);
+            } else if (mSpectrumChart && watched == mSpectrumChart->canvas()) {
+                mFigure->setCurrentChart(mSpectrumChart);
+            } else if (mHeatmapChart && watched == mHeatmapChart->canvas()) {
+                mFigure->setCurrentChart(mHeatmapChart);
+            }
+        }
+    }
     if (!mWaveChart) {
         return QWidget::eventFilter(watched, e);
     }
@@ -1180,7 +1198,10 @@ DAChart3DWidget* DASignalAnalysisView::waterfall3DChart() const
 }
 
 /**
- * @brief 当前 2D 子图；无当前或当前不可见时回退波形
+ * @brief 当前 2D 子图；无当前或当前子图被瀑布模式隐藏时回退波形
+ *
+ * 注意：不能用 QWidget::isVisible() 判定（父窗口未显示时所有子控件都返回 false），
+ * 可见性由瀑布模式决定。
  */
 DAChartWidget* DASignalAnalysisView::currentChart() const
 {
@@ -1188,7 +1209,7 @@ DAChartWidget* DASignalAnalysisView::currentChart() const
         return nullptr;
     }
     DAChartWidget* chart = mFigure->getCurrentChart();
-    if (chart == mHeatmapChart && (!mHeatmapChart || !mHeatmapChart->isVisible())) {
+    if (chart == mHeatmapChart && mWaterfallMode != 0) {
         chart = nullptr;
     }
     return chart ? chart : mWaveChart;
@@ -1265,7 +1286,8 @@ QPixmap DASignalAnalysisView::grabForExport()
 {
     QwtFigure* fig = mFigure ? mFigure->figure() : nullptr;
     QPixmap page   = fig ? fig->grab() : grab();
-    if (mWaterfallMode != 1 || !mWaterfallChart || !mWaterfallChart->isVisible() || !fig) {
+    // 可见性以瀑布模式为准：父窗口未显示时 isVisible() 恒为 false，不能用于导出判定
+    if (mWaterfallMode != 1 || !mWaterfallChart || !fig) {
         return page;
     }
     const QPixmap gl = mWaterfallChart->renderPixmap(mWaterfallChart->width(), mWaterfallChart->height());

@@ -185,6 +185,8 @@ private Q_SLOTS:
     void signalViewTransientItems();
     // T7：瀑布模式切换热图/三维瀑布显隐与当前子图判定
     void signalViewWaterfallMode();
+    // T8：点击 2D 子图画布即切换当前子图（设置面板 target 跟随）
+    void signalViewClickSwitchesCurrentChart();
 };
 
 /**
@@ -969,6 +971,33 @@ void DASignalAnalysisTest::signalViewWaterfallMode()
     view.setWaterfallMode(2);
     QVERIFY(!heatmap->isVisibleTo(&view));
     QVERIFY(!waterfall->isVisibleTo(&view));
+    QVERIFY(!view.is3DChartActive());
+}
+
+/**
+ * @brief T8：点击 2D 子图画布即切换当前子图（设置面板 target 跟随）
+ *
+ * qwt 只在事件传播到 QwtPlot 时才切换当前坐标轴；波形画布上的 QwtPicker 会消费点击，
+ * 因此视图在画布层显式同步。这里直接向画布发鼠标事件验证三条路径。
+ */
+void DASignalAnalysisTest::signalViewClickSwitchesCurrentChart()
+{
+    if (!openGLAvailable()) {
+        QSKIP("OpenGL is not available: skip the signal view click test");
+    }
+    DA::DASignalAnalysisView view(makeTestSignal());
+    auto clickCanvas = [](QWidget* canvas) {
+        QTest::mouseClick(canvas, Qt::LeftButton, Qt::NoModifier, QPoint(20, 20));
+    };
+
+    view.setCurrentChart(view.heatmapChart());
+    QCOMPARE(view.currentChart(), view.heatmapChart());
+    clickCanvas(view.waveChart()->canvas());
+    QCOMPARE(view.currentChart(), view.waveChart());
+    clickCanvas(view.spectrumChart()->canvas());
+    QCOMPARE(view.currentChart(), view.spectrumChart());
+    clickCanvas(view.heatmapChart()->canvas());
+    QCOMPARE(view.currentChart(), view.heatmapChart());
     QVERIFY(!view.is3DChartActive());
 }
 
