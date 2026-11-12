@@ -2,6 +2,10 @@
 
 在 DAWorkBench 中，当 Python 脚本需要执行长时间运算（如读取 ZIP 文件、处理大型 CSV、调用 pandas 做聚合计算）时，直接在 Qt 主线程调用会导致界面冻结。本文详细说明如何通过 **5 层异步模式**在后台线程中运行 Python 代码，在不阻塞 UI 的前提下完成数据导入、进度报告和安全回调。
 
+> **⚠️ 先读架构前提**
+>
+> 内嵌解释器由 GUI 主线程初始化后**一直持有 GIL**，后台 Python 线程只能在主线程「进入 Python 并让出 GIL」的窗口里推进。本文的 5 层模式只是实现骨架；轮询槽**必须释放 GIL**，否则后台计算会被拖慢几十倍以上（典型现象：任务耗时 ≈ 工作块数 × 轮询周期）。完整规则、症状判定与参数取值见 [内嵌 Python 的 GIL 架构约束](./embedded-python-gil.md)，新增任何 C++ 驱动 Python 长任务的功能前必须先读该文。
+
 > **ℹ️ 适用范围**
 >
 > 本文描述的 5 层异步模式是 **插件级实现模式**，早期在 `GreeDataWorkBench` 插件（现已移除）中落地。框架层提供了 `DAPythonSignalHandler` 和 `thread_status_manager` 等基础工具，具体编排方式由各插件自行决定，下文代码作为该模式的典型示例保留。
@@ -13,6 +17,7 @@
 - [总览与环境搭建](./index.md)
 - [C++ 调用 Python](./cpp-calling-python.md)
 - [Python 绑定开发](./python-binding-development.md)
+- [内嵌 Python 的 GIL 架构约束](./embedded-python-gil.md)
 - [故障排除与最佳实践](./troubleshooting-and-best-practices.md)
 - [Python 脚本开发实战](./python-script-development.md)
 - [Python 多线程与异步任务](./python-multi-threading.md) ← 当前页
@@ -47,7 +52,7 @@
 | 1 | C++ 入口 | APP 层（`src/APP/`） | 调用 Python，立即返回 task_id | `QTimer` 启动轮询 |
 | 2 | Python 线程创建 | `data_analysis.py:16` | `threading.Thread(daemon=True)` | 非 QThread，普通 Python 线程 |
 | 3 | 工作线程 | `zip_csv_file_handle.py:924` | pandas 处理 + `ProcessingStatus` | `threading.RLock` 保护状态 |
-| 4 | C++ 轮询 | APP 层（`src/APP/`） | `gil_scoped_release` + `QTimer(20ms)` | GIL 管理是关键 |
+| 4 | C++ 轮询 | 插件 Worker 层（如 `DASignalAnalysisWorker`） | `QTimer(20ms)` + 每次让出 GIL + `msleep(12ms)` | **轮询槽必须让出 GIL**，详见 [GIL 架构约束](./embedded-python-gil.md) |
 | 5 | 回调桥 | `DAPythonSignalHandler.cpp` + `DAInterfacePythonBinding.cpp` | `Qt::QueuedConnection` + `gil_scoped_acquire` | 跨线程安全回调 |
 
 ### 完整时序图
@@ -346,9 +351,32 @@ class ProcessingStatus:
 
 C++ 主线程通过 `QTimer` 定期检查 Python 工作线程的状态，同时精细管理 GIL，避免主线程和 Python 线程互相阻塞。
 
-### 源代码
+### 当前推荐写法（非阻塞 + 让出 GIL）
 
-同样取自早期的 `GreeDataWorkBench.cpp`（已移除，当前轮询逻辑位于 `src/APP/` 层），作为 GIL 感知轮询的典型模式示例：
+轮询槽分两步：先在持有 GIL 的情况下处理结果、发进度信号；若本轮仍有任务，再释放 GIL 并短暂休眠，让 Python 守护线程连续计算。参考实现 `plugins/DASignalAnalysis/Analysis/DASignalAnalysisWorker::poll()`（`cPollIntervalMs = 20`、`cGilYieldMs = 12`）：
+
+```cpp
+void DASignalAnalysisWorker::poll()
+{
+    // 1) 持 GIL 处理已完成任务、发进度信号
+    //    （槽里可能同步发起新任务，所以让出要放在最后）
+    ...
+    // 2) 仍有任务：释放 GIL + 短暂休眠，把 GIL 让给 Python 守护线程
+    if (!mTasks.isEmpty()) {
+        pybind11::gil_scoped_release release;
+        QThread::msleep(static_cast<unsigned long>(cGilYieldMs));
+    }
+    updateTimer();
+}
+```
+
+> **💡 参数怎么选**
+>
+> 轮询间隔 20 ms 决定结果回填延迟；每轮让出 12 ms 让 Python 线程拿到约 60% 时间片，GUI 线程每 20 ms 只阻塞 12 ms，取消/重绘仍可响应。只查状态不让出会让大计算慢几十倍甚至上千倍；用 1 秒级 `sleep` 又会让界面卡顿（早期写法，见下）。判定指纹、完整约定与任务去重要求见 [内嵌 Python 的 GIL 架构约束](./embedded-python-gil.md)。
+
+### 历史示例：阻塞式轮询（仅原理参考）
+
+以下代码取自早期的 `GreeDataWorkBench.cpp`（已移除），用于说明「轮询必须让出 GIL」的原理。注意它是**阻塞式轮询**：每轮在主线程 `QThread::sleep(1)` 冻结界面 1 秒，当前项目**不要照抄**，新代码用上一节的非阻塞写法。
 
 ```cpp title="GIL 感知轮询（GreeDataWorkBench.cpp:316-414 模式示例）"
 void GreeDataWorkBench::checkZipDataImportStatus()
@@ -426,13 +454,13 @@ checkZipDataImportStatus()
 
 ### GIL 管理详解
 
-轮询中的 GIL 操作是本文的关键点，按「释放 → 让出 → 重新获取 → 调用」的顺序进行：
+轮询中的 GIL 操作顺序是固定的：**先让出 → 休眠一小段 → 重新持有 → 再调用 Python**。让出的时长决定后台 Python 线程能拿到多少时间片：
 
 ```cpp
-// 步骤1: 释放 GIL
+// 步骤1: 释放 GIL 并短暂休眠（让 Python 工作线程运行）
 {
     pybind11::gil_scoped_release release;
-    QThread::sleep(1);  // 让出 1 秒，Python 线程可运行
+    QThread::msleep(12);  // 当前约定每轮让出 10 ms 级（历史写法 sleep(1) 秒会冻结界面）
 }
 // 此时 release 析构，GIL 被重新获取
 
@@ -440,9 +468,13 @@ checkZipDataImportStatus()
 pybind11::dict status = get_task_status(m_importZipTaskID);
 ```
 
-> **⚠️ 为什么需要 sleep(1)？**
+> **⚠️ 为什么必须让出？**
 >
-> `QThread::sleep(1)` 让出 CPU 时间片，确保 Python 工作线程有足够的时间获得 GIL 并更新进度。没有 `sleep()`，C++ 轮询可能频繁占用 GIL，导致工作线程无法执行。
+> 内嵌解释器由 GUI 线程初始化后一直持有 GIL（详见 [内嵌 Python 的 GIL 架构约束](./embedded-python-gil.md)）。轮询槽如果不释放 GIL，Python 工作线程每轮只能等一个轮询周期，大计算会被拖到几十分钟；让出 10 ms 级的窗口后，后台线程才能连续计算。
+
+> **🚫 不要用 1 秒级 sleep 做轮询**
+>
+> `QThread::sleep(1)` 虽然也让出了 GIL，但它把主线程阻塞 1 秒，界面会明显卡顿。正确做法是非阻塞 QTimer（20 ms 级）+ 每轮让出 10 ms 级，兼顾界面响应与后台进度。
 
 > **ℹ️ 与基本 GIL 管理的区别**
 >
@@ -845,11 +877,12 @@ def background_worker():
 
 - [ ] Python 线程用 `daemon=True`，确保程序退出时自动终止
 - [ ] 用 `StatusManager` 生成 task_id，不要手动管理
-- [ ] C++ 轮询用 `gil_scoped_release` + `QTimer`，不要用忙等循环
+- [ ] C++ 轮询用非阻塞 `QTimer`（20 ms 级）且每轮 `gil_scoped_release` + `msleep(10 ms 级)`，不要用忙等或 1 秒级 sleep
 - [ ] 回调通过 `callInMainThread` 安全返回主线程
 - [ ] 工作线程异常必须调用 `status.finish(False, ...)` 和 `callback(None)`
 - [ ] 并发调用需保护 task_id（互斥锁或队列），当前模式的 task_id 存储为类成员变量，适用于串行导入场景
-- [ ] 轮询中合理使用 `QThread::sleep()` 让出 GIL
+- [ ] 轮询中合理使用 `QThread::msleep()` 让出 GIL（让出时长按 [GIL 架构约束](./embedded-python-gil.md) 取值）
+- [ ] 同一份 O(N) 任务按业务键去重（showEvent/连接/resize 防抖会重复请求同一份分析）
 - [ ] 在主线程槽函数中获取 GIL（`gil_scoped_acquire`），不要在调用 `callInMainThread` 时获取
 - [ ] 使用 `QTimer::singleShot(0, ...)` 确保所有回调完成后再执行最终处理
 - [ ] 异常路径正确隐藏进度条、设置状态栏
@@ -883,6 +916,7 @@ def background_worker():
 
 > **ℹ️ 参考文档**
 >
+> - [内嵌 Python 的 GIL 架构约束](./embedded-python-gil.md)——主线程持 GIL 的事实、症状判定与「轮询让出 GIL」强制约定
 > - [C++ 调用 Python 之 GIL 管理](./cpp-calling-python.md#gil安全全局解释器锁管理)
 > - [跨线程操作模式](./python-script-development.md#跨线程操作模式)
 > - [Python 脚本开发实战](./python-script-development.md)

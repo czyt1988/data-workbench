@@ -361,6 +361,7 @@ flowchart TD
 > - [ ] debugpy 的 `wait_for_client()` 模式：确保调试器连接后再执行，不会错过启动阶段的断点
 > - [ ] 在脚本入口处设置断点：远程调试时，脚本入口是最可靠的断点位置
 > - [ ] Mock 中使用 `assert` 语句：在 Mock 环境中用断言验证关键逻辑，相当于轻量级单元测试
+> - [ ] 后台 Python 任务「像卡死」时先按 [内嵌 Python 的 GIL 架构约束](./embedded-python-gil.md) 判定是否为 GIL 饥饿（耗时 ≈ 工作块数 × 轮询间隔），不要先怀疑算法或 pandas
 
 ---
 

@@ -42,6 +42,7 @@ F1 --> F2[检查模块是否正确编译]
 上图展示了问题诊断的流程：
 
 - 段错误 → 检查 [GIL 管理](./cpp-calling-python.md#gil安全全局解释器锁管理)，确保在调用 Python 前获取锁
+- 后台 Python 任务异常慢/像挂起 → 检查轮询槽是否让出 GIL，见 [内嵌 Python 的 GIL 架构约束](./embedded-python-gil.md)
 - 类型错误 → 检查 [Qt 类型转换器](./python-binding-development.md#qt-类型转换器)，查看支持的类型映射
 - 引用错误 → 检查所有权策略，设置正确的 `return_value_policy`
 - 导入错误 → 检查模块路径和编译状态
@@ -137,6 +138,24 @@ F1 --> F2[检查模块是否正确编译]
 > >
 > > 凡是 Python 库内部依赖 `sys._getframe` / `inspect` 回溯调用栈的接口（pandas `query/eval` 的 `@` 变量、某些 `exec`/`eval` 场景等），从 C++ 绑定直接调用都会遇到此问题。解法统一为：用 `pybind11::eval` 构造一个 Python 层的可调用对象（lambda 或函数）包一层，让真实调用发生在 Python 栈帧内。
 
+> **❌ 错误5：后台 Python 任务异常慢，像卡死（GIL 饥饿）**
+>
+> **原因**：内嵌解释器由 GUI 主线程初始化后一直持有 GIL，而轮询槽只调用 `get_task_status()`、没有让出 GIL。Python 守护线程每轮只能拿到极短的 GIL 窗口，任务耗时被拉长到「工作块数 × 轮询周期」（实测 900 万点信号频谱从 20 分钟才出图）。
+>
+> **判据**：进程内实测耗时 ≈ 工作块数（帧数/分块数）× 轮询间隔；同一计算抽成独立 Python 进程只要几秒；应用空闲时后台线程完全不动。
+>
+> **修复**：轮询槽在处理完结果后，若仍有任务，执行 `pybind11::gil_scoped_release` + `QThread::msleep(10 ms 级)`，把 GIL 让给 Python 线程；同时按业务键对同一份 O(N) 任务去重，避免 showEvent/resize 防抖重复提交。
+>
+> ```cpp
+> // 参考：plugins/DASignalAnalysis/Analysis/DASignalAnalysisWorker.cpp::poll()
+> if (!mTasks.isEmpty()) {
+>     pybind11::gil_scoped_release release;
+>     QThread::msleep(static_cast<unsigned long>(cGilYieldMs));
+> }
+> ```
+>
+> 完整约定、参数取值与排查步骤见 [内嵌 Python 的 GIL 架构约束](./embedded-python-gil.md)。
+
 ## 约束清单
 
 ### 调试技巧
@@ -213,6 +232,7 @@ def problematic_function():
     - 所有跨语言调用都要考虑 [GIL 管理](./cpp-calling-python.md#gil安全全局解释器锁管理)
     - UI 操作必须在主线程执行
     - 使用 `DAPythonSignalHandler` 进行跨线程通信
+    - 后台 Python 长任务按 [GIL 架构约束](./embedded-python-gil.md) 实现：QTimer 轮询 + 轮询槽让出 GIL + 任务去重
 
 3. **统一异常处理**
     - 建立跨语言的异常传递机制
@@ -229,6 +249,7 @@ def problematic_function():
 > **💡 代码审查检查清单**
 >
 > - [ ] 所有 Python 调用都有 GIL 管理
+> - [ ] 后台 Python 长任务走轮询驱动，轮询槽在任务运行期间让出 GIL（未出现「工作块数 × 轮询周期」级耗时）
 > - [ ] 所有权策略正确设置
 > - [ ] Python 回调函数引用计数正确
 > - [ ] 异常处理完善

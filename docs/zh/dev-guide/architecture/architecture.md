@@ -374,6 +374,10 @@ class DataFilter:
 
 - **权衡**：引入 Python 运行时依赖，增加了 GIL 管理和类型转换的复杂度
 
+> **⚠️ 嵌入式 Python 的 GIL 前提**
+>
+> 解释器由 GUI 主线程初始化后一直持有 GIL，后台 Python 线程只能在主线程让出 GIL 的窗口里推进。因此需要后台 Python 计算的功能必须按「Python 守护线程 + QTimer 轮询 + 轮询槽让出 GIL + 任务去重」实现，否则会被拖慢几十倍以上。事实、症状判定与强制约定见 [内嵌 Python 的 GIL 架构约束](../python-binding/embedded-python-gil.md)。
+
 ### 决策 3：DAG 工作流模型
 
 - **背景**：需要一种直观的方式描述数据处理流水线

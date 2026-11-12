@@ -10,6 +10,7 @@
 - [C++ 调用 Python](./cpp-calling-python.md)
 - [Python 绑定开发](./python-binding-development.md)
 - [Python 多线程与异步任务](./python-multi-threading.md)
+- [内嵌 Python 的 GIL 架构约束](./embedded-python-gil.md)
 - [故障排除与最佳实践](./troubleshooting-and-best-practices.md)
 - [Python 脚本开发实战](./python-script-development.md)
 - [pybind11 ↔ Qt 类型转换器](./dapybind11-qt-caster.md)

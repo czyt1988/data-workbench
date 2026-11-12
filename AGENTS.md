@@ -146,6 +146,7 @@ Python层: DAUtils → DAPyBindQt → DAPyScripts → DAPyCommonWidgets → DAPy
 | Python 绑定 | `src/DAPyBindQt/` | pybind11 胶水代码 |
 | pybind11↔Qt 类型转换 | `src/DAPyBindQt/DAPybind11QtCaster.hpp` | **重要**：QString/QVariant/QDateTime 等自动双向转换，详见`docs/zh/dev-guide/python-binding/dapybind11-qt-caster.md` |
 | Python 工作流节点 | `src/DAPyWorkFlow/` | Python 脚本节点执行 |
+| 内嵌 Python 的 GIL 约束（架构铁律） | [embedded-python-gil.md](docs/zh/dev-guide/python-binding/embedded-python-gil.md) | **主线程持 GIL**：后台 Python 长任务必须「守护线程 + QTimer 轮询 + 轮询让出 GIL + 任务去重」；新增 C++ 驱动 Python 的功能前必读 |
 | 命令行参数 | `src/APP/main.cpp` → `initCommandLine()` | --version, --help, import-data, 工程文件 |
 | UI 状态持久化 | `src/APP/AppMainWindow` | saveUIState/restoreUIState |
 | 翻译/国际化 | `src/i18n/`, `src/APP/App_zh_CN.ts` | DATranslatorManeger |
@@ -185,6 +186,22 @@ AI 编写代码时，日志宏的选择直接影响日志是否进入 UI 消息�
 > 📖 何时用 `da*` vs `q*` 的判断标准详见 § 国际化（i18n）规范；日志系统 API、配置、故障排查详见 [docs/zh/dev-guide/general/logging.md](docs/zh/dev-guide/general/logging.md)
 > 当用户报告运行异常、崩溃、行为不符合预期时，应主动读取程序运行日志分析根因，不要凭猜测下结论，详见上述文档。
 
+## 内嵌 Python 与 GIL（架构级铁律）
+
+DAWorkBench 把 CPython 作为**库**嵌入进程：解释器由 GUI 主线程初始化后**一直持有 GIL**（`src/DAPyBindQt/DAPyInterpreter.cpp` 用 `pybind11::scoped_interpreter`，pybind11 初始化结束**不调用** `PyEval_SaveThread`；`src/APP/main.cpp` 到 `app.exec()` 之间也没有释放）。因此 Python 后台线程不会「起了就并行跑」：它能推进多少，取决于 GUI 线程多久进一次 Python、每次让出 GIL 多久。
+
+> 📖 **完整说明（新增相关功能前必读）**：[内嵌 Python 的 GIL 架构约束](docs/zh/dev-guide/python-binding/embedded-python-gil.md)——架构事实、症状判定、参数取值、排查案例与 review 检查清单。
+
+**三条硬规则**：
+
+1. **GUI 主线程不做长 Python**：单次 C++→Python 调用应短于约 100 ms；O(N) 的 pandas/numpy 计算和逐块/逐帧的 Python 循环一律放后台。
+2. **后台 Python 长任务必须轮询驱动**：Python 守护线程 + `thread_status_manager` + C++ `QTimer` 轮询；**轮询槽在仍有任务时必须 `pybind11::gil_scoped_release` + `QThread::msleep(10 ms 级)` 让出 GIL**（参考 `plugins/DASignalAnalysis/Analysis/DASignalAnalysisWorker.cpp::poll()`：20 ms 轮询 / 12 ms 让出）。只查状态不让出 GIL 会让任务耗时 ≈ 工作块数 × 轮询周期（实测 900 万点信号频谱从 20 分钟降到数秒）。
+3. **同一份 O(N) 任务按业务键去重**：视图 showEvent、连接完成、resize 防抖、多个入口会重复请求同一份分析；命中在跑任务的同键请求直接复用（参考 `DASignalAnalysisWorker::dedupeKey`）。
+
+**判定指纹**：嵌入进程内某段 Python 计算耗时 ≈ 工作块数 × 轮询间隔，而同样计算在独立 Python 进程里只要几秒；或应用空闲时后台 Python 线程完全不动 → 优先怀疑 GIL 饥饿，按上述文档排查，不要先怀疑算法。
+
+**未来根治方向**（需专项评审，当前不做）：`app.exec()` 前 `PyEval_SaveThread()` 释放 GIL，并为每个 C++→Python 入口补 `gil_scoped_acquire`；改造完成前一律按上面的「轮询驱动 + 轮询让出 GIL + 任务去重」口径实现，**不要假设后台线程会自己跑**。
+
 ## 文档导航
 
 > 📖 **完整文档站点**：`mkdocs serve` 后访问 http://localhost:8000，或浏览 `docs/zh/`
@@ -204,6 +221,7 @@ AI 编写代码时，日志宏的选择直接影响日志是否进入 UI 消息�
 | | [workflow-overview.md](docs/zh/dev-guide/workflow/workflow-overview.md) | 工作流系统架构 |
 | | [workflow-python-node-dev.md](docs/zh/dev-guide/workflow/workflow-python-node-dev.md) | Python 节点开发 |
 | | [dapybind11-qt-caster.md](docs/zh/dev-guide/python-binding/dapybind11-qt-caster.md) | pybind11↔Qt 类型转换 |
+| | [embedded-python-gil.md](docs/zh/dev-guide/python-binding/embedded-python-gil.md) | **内嵌 Python 的 GIL 架构约束**：主线程持 GIL 的事实、症状判定、轮询让出 GIL 的强制约定与检查清单 |
 | | [chart-dock-nesting.md](docs/zh/dev-guide/graphics/chart-dock-nesting.md) | 绘图窗口 ADS 嵌套停靠区、FocusHighlighting 焦点陷阱 |
 | | [logging.md](docs/zh/dev-guide/general/logging.md) | 日志系统、故障排查 |
 | | [testing.md](docs/zh/dev-guide/general/testing.md) | 测试体系：套件分组、`test.ps1` 按改动/按领域跑、bench 约定、Python 退出崩溃模板 |
@@ -529,6 +547,9 @@ Linux GCC 下 `uint64_t` 是 `unsigned long`，MSVC 下是 `unsigned long long`�
   - 涉及的 Qt 类型包括：`QString`、`QByteArray`、`QDate`、`QTime`、`QDateTime`、`QList<T>`、`QVector<T>`(Qt5)、`QSet<T>`、`QHash<K,V>`、`QMap<K,V>`、`QVariant`
 
   遗漏 include **不会编译报错**（头文件间接可见时能编译通过），但运行时会抛 `Unable to convert call argument 'N' of type 'QString' to Python object`，且异常被 `dealException` 吞掉后表现为后续业务逻辑静默失败（如节点查找 KeyError、数据丢失等），极难排查。详见 `docs/zh/dev-guide/python-binding/dapybind11-qt-caster.md` 与 `src/DAPyWorkFlow/AGENTS.md` § 类型转换铁律
+- **禁止在 GUI 主线程执行 O(N) 的 Python 计算，或让轮询槽只查状态、不让出 GIL** — 内嵌解释器由 GUI 线程初始化后一直持有 GIL，后台 Python 线程只能在主线程让出 GIL 的窗口里推进；只轮询不让出会让任务耗时 ≈ 工作块数 × 轮询周期（实测 900 万点信号频谱从数秒拖到 20 分钟）。必须 `pybind11::gil_scoped_release` + `QThread::msleep(10 ms 级)`，详见 [embedded-python-gil.md](docs/zh/dev-guide/python-binding/embedded-python-gil.md)
+- **禁止对同一份 O(N) Python 分析重复提交** — 视图 showEvent、连接完成、resize 防抖、多个入口都会重复请求同一份分析；必须按业务键（类型 + 对象 + 参数版本 + 请求尺寸/区段）去重（参考 `DASignalAnalysisWorker::dedupeKey`），否则同一份计算会被跑多遍、出图成倍变慢
+- **禁止假设「起了 Python 后台线程就会并行跑」** — 在嵌入式 Python 里后台线程的推进由轮询窗口决定，性能评估与排查必须按 [GIL 架构约束](docs/zh/dev-guide/python-binding/embedded-python-gil.md) 的判定方法（耗时 ≈ 工作块数 × 轮询间隔即为 GIL 饥饿指纹）
 - **禁止在源码中直接写中文作为 UI 显示文本** — 必须用 `tr("English") //cn:中文`（C++）或 `_("English") # cn:中文`（Python）模式。源文本统一英文，翻译放 `.ts`/`.po` 文件。详见 § 国际化（i18n）规范
 - **禁止翻译 `@NodeDef(name=...)`** — `name` 参与 `qualified_name` 序列化（如 `DASystemNodes.Delay`），翻译会破坏已存工程的节点匹配。`category`/`description` 可翻译
 - **禁止翻译开发诊断日志** — `qInfo`/`qWarning`/`qCritical`/`qDebug`/`logger.*`/`print` 只写日志文件不进 UI 队列，保持纯英文便于跨语言检索

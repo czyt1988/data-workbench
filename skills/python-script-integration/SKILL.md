@@ -62,10 +62,12 @@ description: Use when integrating Python scripts with C++ in a DAWorkbench plugi
 
 ## !!!danger GIL 安全规则（所有场景适用）
 
+0. **架构前提**：本项目把 Python 作为库嵌入进程，解释器由 GUI 主线程初始化后**一直持有 GIL**，后台 Python 线程只能在主线程「进入 Python 并让出 GIL」的窗口里推进。因此 C++ 驱动的 Python 长任务必须走「Python 守护线程 + `thread_status_manager` + QTimer 轮询」，且**轮询槽在仍有任务时要让出 GIL**（`pybind11::gil_scoped_release` + `QThread::msleep(10 ms 级)`）；只查状态不让出会让任务耗时 ≈ 工作块数 × 轮询周期。完整规则与排查方法见 `docs/zh/dev-guide/python-binding/embedded-python-gil.md`。
 1. **C++ → Python 调用**必须在持有 GIL 时进行。pybind11 的函数调用会自动获取 GIL，但如果你在 C++ 线程中手动操作 Python 对象，需用 `pybind11::gil_scoped_acquire` / `pybind11::gil_scoped_release`
-2. **释放 GIL 让 Python 线程运行**：C++ 在等待 Python 后台线程时，必须释放 GIL
+2. **释放 GIL 让 Python 线程运行**：C++ 在等待 Python 后台线程时，必须释放 GIL（用 10 ms 级让出，不要用 1 秒级 sleep 冻结界面）
 3. **`pybind11::error_already_set` 异常**必须在 GIL 作用域内 catch 并消费
 4. **Python 后台线程**中不要直接操作 Qt 界面控件，必须通过 `callInMainThread`
+5. **同一份 O(N) 任务要按业务键去重**：视图显示/连接/resize 防抖/多个入口会重复请求同一份分析，重复提交会让同一份计算跑多遍
 
 ## 场景 A：Python 模块导入与函数调用
 
@@ -265,10 +267,10 @@ void MyWorker::startBackgroundTask()
 void MyWorker::checkTaskStatus()
 {
     try {
-        // 释放 GIL，让 Python 后台线程能运行
+        // 释放 GIL，让 Python 后台线程能运行；10 ms 级让出兼顾界面响应（不要 sleep(1)）
         {
             pybind11::gil_scoped_release release;
-            QThread::sleep(1);  // 短暂休眠
+            QThread::msleep(12);
         }
 
         // 调用 Python 获取任务状态
@@ -673,7 +675,7 @@ bin_Release_qtX.Y.Z_MSVC_x64/bin/
 
 3. C++ 启动 QTimer 轮询
    → checkZipDataImportStatus()
-   → 释放 GIL: pybind11::gil_scoped_release + QThread::sleep(1)
+   → 释放 GIL: pybind11::gil_scoped_release + QThread::msleep(12)
    → 获取状态: get_task_status(taskid) → dict
    → 更新状态栏: statusBar->setProgress(progress)
    → QTimer::singleShot(20, continue)
@@ -755,6 +757,7 @@ pybind11::dict custom_data = status["custom_data"];
 6. **`DAWidgets` 需要显式 `find_package`** — DAGui 依赖它但不自动加载
 7. **Python 异常必须在 GIL 作用域内 catch** — `pybind11::error_already_set` 的析构需要 GIL
 8. **`DAPyModule` 继承自 `DAPyObjectWrapper`（非 QObject）** — 不能使用 Qt 信号槽
+9. **GIL 饥饿** — 轮询槽只查状态、不让出 GIL 时，后台 Python 任务耗时 ≈ 工作块数 × 轮询周期（大信号可从数秒拖到几十分钟）；必须 `gil_scoped_release` + `msleep(10 ms 级)`，并按业务键对重复请求去重
 
 ## 参考文件
 
@@ -770,4 +773,5 @@ pybind11::dict custom_data = status["custom_data"];
 | `data-workbench/src/DAPyBindQt/DAPythonSignalHandler.h` | 跨线程通信机制 |
 | `data-workbench/src/DAInterface/DACoreInterface.h` | 核心接口（含 getPythonSignalHandler） |
 | `data-workbench/src/PyScripts/DAWorkbench/DAPyBase/thread_status_manager.py` | 线程状态管理器完整 API |
+| `data-workbench/docs/zh/dev-guide/python-binding/embedded-python-gil.md` | 内嵌 Python 的 GIL 架构约束（主线程持 GIL、轮询让出 GIL、症状判定与检查清单） |
 | `data-workbench/skills/add-python-binding/SKILL.md` | 添加 Python 绑定（暴露 C++ 给 Python）的技能 |

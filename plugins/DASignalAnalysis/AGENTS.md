@@ -253,6 +253,8 @@ python -I -m pytest tests/test_signal_dsp.py tests/test_signal_import.py -q   # 
   不让出时实测每帧≈一个轮询周期，9M 点 @32kHz 的频谱要 20 分钟才回填，且频谱/时频/峰值表长时间空白。
   该口径与 `plugins/DataAnalysis/DataframeIOWorker` 的后台等待一致；`cPollIntervalMs=20`、
   `cGilYieldMs=12`。改这里要同时兼顾：结果回填延迟（轮询间隔）与界面事件处理（休眠时长）。
+  架构级完整说明（症状判定、参数取值、review 清单）见
+  [内嵌 Python 的 GIL 架构约束](../../docs/zh/dev-guide/python-binding/embedded-python-gil.md)。
 - **同类任务去重**：`DASignalAnalysisWorker` 给任务带 `dedupeKey`（任务类型 + 信号 + 通道 + 参数版本，
   谱/包络/热图/曲线再拼请求尺寸/区段），`computeXxx` 命中在跑任务时直接返回「已受理」。
   视图会在首次显示、外部连接后、resize 防抖、峰值窗口显示等时机重复请求同一份分析，

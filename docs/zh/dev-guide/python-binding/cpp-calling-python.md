@@ -92,6 +92,15 @@ void initializePythonInterpreter(const DA::DAAppConfig& cfg)
 >
 > 在多线程环境下调用 Python 代码时，必须正确管理 GIL，否则会导致程序崩溃或死锁。
 
+> **⚠️ 先理解本项目的 GIL 现状**
+>
+> DAWorkBench 把 Python 作为库嵌入进程，解释器由 GUI 主线程初始化后**一直持有 GIL**（`pybind11::scoped_interpreter` 初始化后不会 `PyEval_SaveThread`）。由此得到两条与通用 GIL 文档不同的结论：
+>
+> - **GUI 主线程**调用 Python 时已持有 GIL，不需要额外 `gil_scoped_acquire`；
+> - **后台 Python 线程**只能在主线程让出 GIL 的窗口里运行——需要后台算 Python 的功能必须按「Python 守护线程 + QTimer 轮询 + 轮询槽让出 GIL」实现，否则会被拖慢几十倍以上。
+>
+> 完整事实、症状判定与强制约定见 [内嵌 Python 的 GIL 架构约束](./embedded-python-gil.md)；只在后台线程直接调用 Python 的短操作，按本文下面的 `DAPyGILGuard` 写法即可。
+
 下图是 GIL 管理的两种典型场景，对应 C++ 和 Python 两侧的锁获取：
 
 ```mermaid
