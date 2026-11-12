@@ -175,6 +175,8 @@ DATableDataBlock DADataPyDataFrame::fetchBlock(std::size_t startRow, std::size_t
  * @brief 按列取一段值（pandas 列切片快路径）
  *
  * 只把目标列转换到 Qt 侧，宽表上不再搬运整行宽的数据。
+ * 取列必须用 DAPyDataFrame::columnAt（iloc[:, c] 语义）：DataFrame.iloc[整数]
+ * 取的是「行」，一行的长度只等于列数，会让大表采样退化成几个点。
  * @param column 列号（从0开始）
  * @param startRow 起始绝对行号
  * @param rowCount 期望行数，超出实际行数时自动截断
@@ -199,7 +201,7 @@ QVariantList DADataPyDataFrame::fetchColumnRange(std::size_t column, std::size_t
             return res;
         }
         const std::size_t n = std::min(rowCount, sp.first - startRow);
-        DAPySeries s        = df.iloc(column);
+        DAPySeries s        = df.columnAt(column);
         res                 = s.valuesToVariantList(startRow, n);
     } catch (const std::exception& e) {
         qWarning() << QString("DADataPyDataFrame::fetchColumnRange failed at row %1: %2")

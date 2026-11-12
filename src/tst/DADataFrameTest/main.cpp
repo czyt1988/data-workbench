@@ -12,6 +12,7 @@
 #include "DAPyInterpreter.h"
 #include "DAPyModulePandas.h"
 #include "DAPyDataFrame.h"
+#include <pybind11/eval.h>
 
 class DADataFrameTest : public QObject
 {
@@ -22,6 +23,8 @@ private Q_SLOTS:
     void testColumns();
     void testEmptyAndShape();
     void testIlocAndColumnAccess();
+    // 回归：按列号取列必须走位置索引（iloc[整数] 取的是行），重名列也不能歧义
+    void testColumnAtPositional();
 
 private:
     bool loadCsv(DA::DAPyDataFrame& out, QString* err = nullptr);
@@ -124,6 +127,63 @@ void DADataFrameTest::testIlocAndColumnAccess()
     for (const QString& c : cols) {
         qDebug() << df[ c ];
     }
+}
+
+/**
+ * @brief 回归：按列号取列必须走位置索引
+ *
+ * 背景：pandas 的 DataFrame.iloc[整数] 取的是「行」，一行的长度等于列数；
+ * 若把它当成「按列号取列」用，大表按列取数就只会返回列数个值（10 万行 × 2 列 → 2 个点）。
+ * 本用例同时覆盖重名列：两列都叫 a 时，按位置取仍要拿到各自的值。
+ */
+void DADataFrameTest::testColumnAtPositional()
+{
+    pybind11::dict scope;
+    pybind11::exec(R"(
+import pandas as pd
+df = pd.DataFrame([[1, 10, 100], [2, 20, 200], [3, 30, 300]], columns=["a", "a", "b"])
+)",
+                   pybind11::globals(),
+                   scope);
+    DA::DAPyDataFrame df(scope[ "df" ]);
+    QVERIFY(df);
+    QCOMPARE(df.shape().first, std::size_t(3));
+    QCOMPARE(df.shape().second, std::size_t(3));
+
+    // iloc(整数) 是行：一行长度等于列数（这正是误用时会「丢点」的原因）
+    const DA::DAPySeries row0 = df.iloc(0);
+    QVERIFY(row0);
+    QCOMPARE(row0.size(), std::size_t(3));
+
+    // columnAt 按位置取列，重名列也各取各的
+    const DA::DAPySeries c0 = df.columnAt(0);
+    const DA::DAPySeries c1 = df.columnAt(1);
+    const DA::DAPySeries c2 = df.columnAt(2);
+    QVERIFY(c0);
+    QVERIFY(c1);
+    QVERIFY(c2);
+    QCOMPARE(c0.size(), std::size_t(3));
+
+    const QVariantList v0 = c0.valuesToVariantList(0, 3);
+    const QVariantList v1 = c1.valuesToVariantList(0, 3);
+    const QVariantList v2 = c2.valuesToVariantList(0, 3);
+    QCOMPARE(v0.size(), 3);
+    QCOMPARE(v1.size(), 3);
+    QCOMPARE(v2.size(), 3);
+    for (int i = 0; i < 3; ++i) {
+        QCOMPARE(v0.at(i).toInt(), i + 1);
+        QCOMPARE(v1.at(i).toInt(), (i + 1) * 10);
+        QCOMPARE(v2.at(i).toInt(), (i + 1) * 100);
+    }
+
+    // 带行偏移的区间切片
+    const QVariantList part = c1.valuesToVariantList(1, 2);
+    QCOMPARE(part.size(), 2);
+    QCOMPARE(part.at(0).toInt(), 20);
+    QCOMPARE(part.at(1).toInt(), 30);
+
+    // 越界列返回无效 Series
+    QVERIFY(!df.columnAt(3));
 }
 
 // 不用 QTEST_MAIN：嵌入式 Python 的静态对象（解释器句柄、pybind11 类型缓存）在进程

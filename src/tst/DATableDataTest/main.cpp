@@ -411,6 +411,8 @@ private Q_SLOTS:
     void testLazyTableFetchBlock();
     void testBlockBounds();
     void testPandasDataFrameEquivalence();
+    // 回归：按列取数必须返回「列」的值（iloc[整数] 是行），重名列按位置各取各的
+    void testPandasFetchColumnRange();
     void testPandasSeriesEquivalence();
     void testEmptyDataFrame();
     void testFactoryRoundTrip();
@@ -968,6 +970,65 @@ void DATableDataTest::testPandasDataFrameEquivalence()
     QVERIFY(tail.isValid());
     QCOMPARE(tail.rowCount(), static_cast< std::size_t >(1));
     QVERIFY(!ts->fetchBlock(10, 5).isValid());
+}
+
+/**
+ * @brief 回归：pandas 数据源按列取数必须返回「列」的值
+ *
+ * 背景：DADataPyDataFrame::fetchColumnRange 曾误用 DataFrame.iloc[整数]（取行），
+ * 导致快速绘图在大表上按列取数只拿到「列数个」值：10 万行 × 2 列只画出 2 个点。
+ * 这里同时覆盖重名列（两列都叫 a），必须按位置各取各的。
+ */
+void DATableDataTest::testPandasFetchColumnRange()
+{
+    if (!mPandasOk) {
+        QSKIP("pandas not available");
+    }
+    pybind11::dict scope;
+    pybind11::exec(R"(
+import pandas as pd
+df = pd.DataFrame([[1, 10, 100], [2, 20, 200], [3, 30, 300], [4, 40, 400]], columns=["a", "a", "b"])
+)",
+                   pybind11::globals(),
+                   scope);
+    DA::DAPyDataFrame df(scope[ "df" ]);
+    DA::DAData d(df);
+    DA::DATableDataSource* ts = d.tableSource();
+    QVERIFY(ts != nullptr);
+    QCOMPARE(ts->tableColumnCount(), static_cast< std::size_t >(3));
+    QCOMPARE(ts->tableRowCount(), static_cast< std::size_t >(4));
+
+    // 每列返回的长度是「行数」，而不是整行的列数
+    const QVariantList col0 = ts->fetchColumnRange(0, 0, 4);
+    const QVariantList col1 = ts->fetchColumnRange(1, 0, 4);
+    const QVariantList col2 = ts->fetchColumnRange(2, 0, 4);
+    QCOMPARE(col0.size(), 4);
+    QCOMPARE(col1.size(), 4);
+    QCOMPARE(col2.size(), 4);
+    for (int i = 0; i < 4; ++i) {
+        QCOMPARE(col0.at(i).toInt(), i + 1);
+        QCOMPARE(col1.at(i).toInt(), (i + 1) * 10);
+        QCOMPARE(col2.at(i).toInt(), (i + 1) * 100);
+    }
+
+    // 与逐格 iat 对齐（值 + QVariant 类型）
+    for (std::size_t r = 0; r < 4; ++r) {
+        const QVariant expect = df.iat(r, 1);
+        const QVariant got    = col1.at(static_cast< int >(r));
+        QVERIFY2(variantEquals(expect, got),
+                 qPrintable(QStringLiteral("column 1 row %1 mismatch").arg(static_cast< qulonglong >(r))));
+        QCOMPARE(got.userType(), expect.userType());
+    }
+
+    // 行偏移区间、尾部截断与越界列
+    const QVariantList part = ts->fetchColumnRange(1, 1, 2);
+    QCOMPARE(part.size(), 2);
+    QCOMPARE(part.at(0).toInt(), 20);
+    QCOMPARE(part.at(1).toInt(), 30);
+    const QVariantList tail = ts->fetchColumnRange(2, 3, 10);
+    QCOMPARE(tail.size(), 1);
+    QCOMPARE(tail.at(0).toInt(), 400);
+    QVERIFY(ts->fetchColumnRange(3, 0, 4).isEmpty());
 }
 
 // pandas Series：单列表格语义与逐元素value()等价

@@ -54,7 +54,10 @@ public:
     QVariantList rowsToVariantList(std::size_t start, std::size_t count) const;
     // 按行区间批量取index值（单次python调用）
     QVariantList indexToVariantList(std::size_t start, std::size_t count) const;
+    // 按行号取一行（pandas 的 iloc[整数] 语义）
     DAPySeries iloc(std::size_t c) const;
+    // 按列号取整列（位置索引；重名列不歧义，取列必须用本方法而不是 iloc）
+    DAPySeries columnAt(std::size_t c) const;
     DAPySeries loc(const QString& n) const;
     bool drop(std::size_t index, int axis = 0);
     DAPyIndex index() const;
