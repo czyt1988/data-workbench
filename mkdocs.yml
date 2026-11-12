@@ -136,6 +136,7 @@ nav:
           - 第三方库管理: zh/dev-guide/general/third-party-manage.md
           - 设置类窗体规范: zh/dev-guide/ui/settingwidget-standard.md
           - 创建设置面板: zh/dev-guide/ui/creating-setting-panel.md
+          - 设置上下文提供者: zh/dev-guide/ui/setting-context-provider.md
       - 架构说明:
           - 架构设计: zh/dev-guide/architecture/architecture.md
           - 模块依赖关系: zh/dev-guide/architecture/module-dependency.md
@@ -171,6 +172,7 @@ nav:
           - 图形与绘图模块:
               - 绘图模块概述: zh/dev-guide/graphics/figure-abstract.md
               - 绘图窗口停靠布局: zh/dev-guide/graphics/chart-dock-nesting.md
+              - 绘图窗口网格布局: zh/dev-guide/graphics/figure-grid-layout.md
               - 可缩放图元模块: zh/dev-guide/graphics/scalable-graphic-module.md
               - Qwt 序列化指南: zh/dev-guide/graphics/qwt-serialization-guide.md
           - Agent 模块:
