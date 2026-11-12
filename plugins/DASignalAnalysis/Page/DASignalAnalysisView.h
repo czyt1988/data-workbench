@@ -66,6 +66,10 @@ public:
     void setPeaks(const DAPeakResult& peaks);
     // 峰值标记显隐（丝带「峰值标记」开关）
     void setPeakMarkersVisible(bool on);
+    // 当前峰值标记图元（存档保存用）
+    QList< QwtPlotMarker* > peakMarkers() const;
+    // 接管从存档恢复的峰值标记（追加、同步显隐状态，不重建/replot）
+    void adoptRestoredPeakMarkers(const QList< QwtPlotMarker* >& markers);
     // 瀑布模式：0=二维热图 / 1=三维曲面 / 2=隐藏（D12 / D25）
     void setWaterfallMode(int mode);
     int waterfallMode() const;
@@ -139,6 +143,8 @@ public:
     QList< qreal > gridColumnSizes() const;
     // 恢复网格比例（尺寸不符/非法值忽略）
     void setGridSizes(const QList< qreal >& rows, const QList< qreal >& cols);
+    // 按 figure XML 恢复后刷新（replot/轴标题/瀑布模式显隐，不触发新的分析请求）
+    void refreshAfterFigureRestore();
 
 Q_SIGNALS:
     // 请求外部计算频谱（参数变化或首次显示）
@@ -242,6 +248,8 @@ private:
     QwtPlotSpectrogram* mSpectrogramItem { nullptr };
     DAStftRasterData* mStftRaster { nullptr };
     QVector< QwtPlotMarker* > mPeakMarkers;
+    // 峰值标记已从存档接管：rebuildPeakMarkers 不再删除重建（存档优先，用户可能手动调过）
+    bool mPeakMarkersRestored { false };
 
     // 时频热图结果与显示设置
     DAStftResult mStft;

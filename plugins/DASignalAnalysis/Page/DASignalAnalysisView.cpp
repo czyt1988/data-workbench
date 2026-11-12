@@ -391,10 +391,21 @@ void DASignalAnalysisView::rebuildSpectrumPlot()
  * @brief 重建频谱峰值标记（峰值标记非 transient：T9 会写入 chart-data）
  *
  * 只在峰值数据或显隐变化时调用；曲线数据更新不重建标记，避免闪烁。
+ * 若峰值标记已从存档接管（mPeakMarkersRestored 且列表非空），存档优先：不删除、
+ * 不按重算结果重建，只同步显隐（用户可能手动调整过峰位）。
  */
 void DASignalAnalysisView::rebuildPeakMarkers()
 {
     if (!mSpectrumChart) {
+        return;
+    }
+    if (mPeakMarkersRestored && !mPeakMarkers.isEmpty()) {
+        for (QwtPlotMarker* marker : std::as_const(mPeakMarkers)) {
+            if (marker) {
+                marker->setVisible(mPeakMarkersVisible);
+            }
+        }
+        mSpectrumChart->replot();
         return;
     }
     clearPeakMarkers(mPeakMarkers);
@@ -891,6 +902,40 @@ void DASignalAnalysisView::setPeakMarkersVisible(bool on)
 }
 
 /**
+ * @brief 当前峰值标记图元（存档保存用）
+ */
+QList< QwtPlotMarker* > DASignalAnalysisView::peakMarkers() const
+{
+    QList< QwtPlotMarker* > markers;
+    markers.reserve(mPeakMarkers.size());
+    for (QwtPlotMarker* marker : mPeakMarkers) {
+        markers.append(marker);
+    }
+    return markers;
+}
+
+/**
+ * @brief 接管从存档恢复的峰值标记
+ *
+ * 标记由 DAXmlHelper 从 chart-data 读回并已挂在频谱图上，这里只登记并同步显隐状态；
+ * 后续 rebuildPeakMarkers 不再删除重建（存档优先，用户可能手动调整过峰位）。
+ * @param markers 从 chart-data 恢复的峰值标记（所有权交给视图，随视图销毁/通道切换清理）
+ */
+void DASignalAnalysisView::adoptRestoredPeakMarkers(const QList< QwtPlotMarker* >& markers)
+{
+    for (QwtPlotMarker* marker : markers) {
+        if (marker && !mPeakMarkers.contains(marker)) {
+            mPeakMarkers.append(marker);
+        }
+    }
+    if (mPeakMarkers.isEmpty()) {
+        return;
+    }
+    mPeakMarkersRestored = true;
+    mPeakMarkersVisible  = mPeakMarkers.first()->isVisible();
+}
+
+/**
  * @brief 幅值 → 显示口径（乘标定系数；dB 时按参考换算）
  */
 QVector< double > DASignalAnalysisView::displayAmplitudes() const
@@ -1015,6 +1060,8 @@ void DASignalAnalysisView::setCurrentChannel(int channel)
         mSpectrumCurve->setSamples(QVector< double >(), QVector< double >());
     }
     clearPeakMarkers(mPeakMarkers);
+    // 通道切换会重算峰值：存档恢复的标记已随上面的清理删除，复位「存档接管」状态
+    mPeakMarkersRestored = false;
     requestEnvelopeRefresh();
     Q_EMIT spectrumRequested(mSignal, mCurrentChannel);
     requestHeatmapRefresh();
@@ -1256,6 +1303,36 @@ void DASignalAnalysisView::setGridSizes(const QList< qreal >& rows, const QList<
         return;
     }
     mFigure->setGridSizes(rows, cols);
+}
+
+/**
+ * @brief 按 figure XML 恢复后刷新视图
+ *
+ * 各子图 replot、更新坐标轴标题、按瀑布模式保持热图/三维瀑布显隐；
+ * 峰值标记若来自存档则只同步显隐（rebuildPeakMarkers 内部判断）。
+ * 这里不发起任何分析请求：分析结果类 transient 图元由外部按参数重算重建。
+ */
+void DASignalAnalysisView::refreshAfterFigureRestore()
+{
+    if (mHeatmapChart && mWaterfallChart) {
+        mHeatmapChart->setVisible(mWaterfallMode == 0);
+        mWaterfallChart->setVisible(mWaterfallMode == 1);
+    }
+    if (mWaveChart) {
+        mWaveChart->replot();
+    }
+    if (mSpectrumChart) {
+        rebuildPeakMarkers();
+        mSpectrumChart->replot();
+    }
+    if (mHeatmapChart) {
+        mHeatmapChart->replot();
+    }
+    if (mWaterfallChart) {
+        // 3D 子图是 QOpenGLWidget（Qwt3DPlot），没有 replot，交给 Qt 重新绘制
+        mWaterfallChart->update();
+    }
+    updateAxisTitles();
 }
 
 void DASignalAnalysisView::onFigureCurrentChartChanged(DA::DAChartWidget* chart)

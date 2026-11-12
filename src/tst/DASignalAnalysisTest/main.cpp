@@ -1,24 +1,38 @@
 #include <QtTest>
 #include <QCoreApplication>
+#include <QFile>
+#include <QFileInfo>
 #include <QGuiApplication>
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QJsonValue>
+#include <QLayout>
 #include <QOpenGLContext>
 #include <QSignalSpy>
 #include <QMetaType>
 #include <QStringList>
 #include <QSurfaceFormat>
+#include <QTemporaryDir>
 #include <QVariantMap>
+#include <QDomDocument>
+#include <QDomElement>
+#include <QHash>
+#include <QSet>
 #include <cmath>
 #include <memory>
 #include "Analysis/DASignalAmplitude.h"
 #include "Analysis/DASignalAnalysisParams.h"
 #include "Analysis/DASignalMemoryEstimate.h"
 #include "Analysis/DAPeakTableModel.h"
+#include "Archive/DAChartItemArchive.h"
+#include "Archive/DAAbstractArchive.h"
+#include "Archive/DASignalArchiveTask.h"
+#include "Archive/DASignalFigureArchive.h"
+#include "Chart/DAChartItemsManager.h"
 #include "Form/DASignalFormSpecBuilder.h"
 #include "Page/DAPeakCurvePlotSamples.h"
 #include "Page/DASignalAnalysisView.h"
+#include "Page/DASignalChartExport.h"
 #include "Render/DAStftRasterData.h"
 #include "DAChart3DWidget.h"
 #include "DAChartWidget.h"
@@ -140,6 +154,78 @@ QJsonObject findFormField(const QJsonObject& spec, const QString& fieldName)
     }
     return QJsonObject();
 }
+
+/// 内存 archive：验证存档任务的读写/旧工程分支，不依赖磁盘/zip
+class MemoryArchive : public DA::DAAbstractArchive
+{
+public:
+    MemoryArchive() : DA::DAAbstractArchive(nullptr)
+    {
+    }
+
+    bool write(const QString& relatePath, const QByteArray& byte) override
+    {
+        m_files.insert(relatePath, byte);
+        return true;
+    }
+
+    QByteArray read(const QString& relatePath) override
+    {
+        return m_files.value(relatePath);
+    }
+
+    bool remove(const QString& relatePath) override
+    {
+        return m_files.remove(relatePath) > 0;
+    }
+
+    void saveAll(const QString& filePath) override
+    {
+        Q_UNUSED(filePath);
+    }
+
+    void loadAll(const QString& filePath) override
+    {
+        Q_UNUSED(filePath);
+    }
+
+    // 与真实存档语义一致：只要 key 存在就返回 true（0 字节文件也算存在）
+    bool contains(const QString& relatePath) const override
+    {
+        return m_files.contains(relatePath);
+    }
+
+    QHash< QString, QByteArray > m_files;
+};
+
+/// 网格比例逐项比较（存档用 'g',12 格式写入，往返误差可忽略）
+void compareSizeList(const QList< qreal >& actual, const QList< qreal >& expected)
+{
+    QCOMPARE(actual.size(), expected.size());
+    for (int i = 0; i < expected.size(); ++i) {
+        QVERIFY2(qAbs(actual.at(i) - expected.at(i)) < 1e-6,
+                 qPrintable(QStringLiteral("size[%1]: actual=%2 expected=%3")
+                                .arg(i)
+                                .arg(actual.at(i))
+                                .arg(expected.at(i))));
+    }
+}
+
+/// 子图的非 transient 图元（存档应保存的图元集合）
+QList< QwtPlotItem* > nonTransientItems(DA::DAChartWidget* chart)
+{
+    QList< QwtPlotItem* > result;
+    if (!chart) {
+        return result;
+    }
+    const QList< QwtPlotItem* > items = chart->itemList();
+    for (QwtPlotItem* item : items) {
+        if (!chart->isItemTransient(item)) {
+            result.append(item);
+        }
+    }
+    return result;
+}
 }  // namespace
 
 /**
@@ -187,6 +273,16 @@ private Q_SLOTS:
     void signalViewWaterfallMode();
     // T8：点击 2D 子图画布即切换当前子图（设置面板 target 跟随）
     void signalViewClickSwitchesCurrentChart();
+    // T9：figure XML 保存（角色/峰值/网格比例/非 transient 图元集合）
+    void signalFigureSaveXml();
+    // T9：存档任务往返（signals.json + figures.xml + chart-data）与 figure 恢复
+    void signalArchiveRoundTrip();
+    // T9：旧工程无 figures.xml/chart-data 时加载成功且无图元
+    void signalArchiveLegacyWithoutFigures();
+    // T9：损坏 figures.xml 恢复失败且视图保持默认布局
+    void signalFigureRestoreCorruptXml();
+    // T9：图表导出工具（整页/当前子图 PNG/SVG/剪贴板）
+    void signalChartExportToFile();
 };
 
 /**
@@ -999,6 +1095,389 @@ void DASignalAnalysisTest::signalViewClickSwitchesCurrentChart()
     clickCanvas(view.heatmapChart()->canvas());
     QCOMPARE(view.currentChart(), view.heatmapChart());
     QVERIFY(!view.is3DChartActive());
+}
+
+/**
+ * @brief T9：figure XML 保存——角色/峰值/网格比例/非 transient 图元集合
+ *
+ * 校验：
+ * - 根节点 signal-figures/version、figure 的 signal-name；
+ * - <grid rows/cols/rowSizes/colSizes>；
+ * - chart 的 role（wave/spectrum/heatmap）与 chart3d 的 role=waterfall；
+ * - <items> 只含非 transient 图元（包络/频谱曲线/热图不出现），峰值标记 item 打 peak="1"；
+ * - 图元管理者记录了所有非 transient 图元的 key。
+ */
+void DASignalAnalysisTest::signalFigureSaveXml()
+{
+    if (!openGLAvailable()) {
+        QSKIP("OpenGL is not available: skip the signal figure archive test");
+    }
+    DA::DASignalAnalysisView view(makeTestSignal());
+    // 分析结果图元（transient）：包络 + 频谱曲线 + 热图
+    view.setEnvelope({ 0.0, 1.0, 2.0 }, { -1.0, -2.0, -1.5 }, { 1.0, 2.0, 1.5 });
+    DA::DASpectrumResult spectrum;
+    spectrum.freqs        = { 0.0, 10.0, 20.0 };
+    spectrum.amplitudes   = { 1.0, 2.0, 3.0 };
+    spectrum.resolutionHz = 10.0;
+    view.setSpectrum(spectrum);
+    DA::DAStftResult stft;
+    stft.rows          = 2;
+    stft.columns       = 3;
+    stft.times         = { 0.0, 0.5, 1.0 };
+    stft.freqs         = { 0.0, 10.0 };
+    stft.values        = { 1.0, 2.0, 3.0, 4.0, 5.0, 6.0 };
+    stft.windowSeconds = 0.1;
+    view.setStft(stft);
+    // 峰值标记（非 transient，可见）
+    DA::DAPeakResult peaks;
+    peaks.frequencies = { 10.0 };
+    peaks.magnitudes  = { 2.0 };
+    view.setPeaks(peaks);
+    view.setPeakMarkersVisible(true);
+    QCOMPARE(view.peakMarkers().size(), 1);
+
+    // 用户图元：波形 chart 上加一个非 transient 标记
+    auto* userMarker = new QwtPlotMarker();
+    userMarker->setXValue(1.0);
+    userMarker->setYValue(0.5);
+    userMarker->attach(view.waveChart());
+
+    // 改网格比例
+    const QList< qreal > gridRows { 0.62, 0.38 };
+    const QList< qreal > gridCols { 0.45, 0.55 };
+    view.setGridSizes(gridRows, gridCols);
+
+    DA::DAChartItemsManager itemsMgr;
+    const QByteArray xml = DA::DASignalFigureArchive::saveFigures({ &view }, &itemsMgr);
+    QVERIFY(!xml.isEmpty());
+
+    QDomDocument doc;
+    QString parseError;
+    QVERIFY2(doc.setContent(xml, &parseError), qPrintable(parseError));
+    const QDomElement root = doc.documentElement();
+    QCOMPARE(root.tagName(), QStringLiteral("signal-figures"));
+    QCOMPARE(root.attribute(QStringLiteral("version")), QStringLiteral("1"));
+
+    const QDomElement figureEle = root.firstChildElement(QStringLiteral("figure"));
+    QVERIFY(!figureEle.isNull());
+    QCOMPARE(figureEle.attribute(QStringLiteral("signal-name")), QStringLiteral("unit"));
+    QCOMPARE(figureEle.attribute(QStringLiteral("id")), QStringLiteral("sig-unit"));
+
+    // <grid>：2×2 且行列比例与设置一致
+    const QDomElement gridEle = figureEle.firstChildElement(QStringLiteral("grid"));
+    QVERIFY(!gridEle.isNull());
+    QCOMPARE(gridEle.attribute(QStringLiteral("rows")).toInt(), 2);
+    QCOMPARE(gridEle.attribute(QStringLiteral("cols")).toInt(), 2);
+    QStringList rowParts = gridEle.attribute(QStringLiteral("rowSizes")).split(QLatin1Char(','));
+    QStringList colParts = gridEle.attribute(QStringLiteral("colSizes")).split(QLatin1Char(','));
+    QCOMPARE(rowParts.size(), 2);
+    QCOMPARE(colParts.size(), 2);
+    QVERIFY(qAbs(rowParts.at(0).toDouble() - gridRows.at(0)) < 1e-6);
+    QVERIFY(qAbs(colParts.at(1).toDouble() - gridCols.at(1)) < 1e-6);
+
+    // <charts>：每个子图都有 role；<items> 只含非 transient 图元
+    const QDomElement chartsEle = figureEle.firstChildElement(QStringLiteral("charts"));
+    QVERIFY(!chartsEle.isNull());
+    QStringList roles;
+    int chartCount = 0;
+    for (QDomElement chartEle = chartsEle.firstChildElement(QStringLiteral("chart")); !chartEle.isNull();
+         chartEle             = chartEle.nextSiblingElement(QStringLiteral("chart"))) {
+        ++chartCount;
+        const QString role = chartEle.attribute(QStringLiteral("role"));
+        if (!role.isEmpty()) {
+            roles.append(role);
+        }
+        const QDomElement itemsEle = chartEle.firstChildElement(QStringLiteral("items"));
+        QVERIFY(!itemsEle.isNull());
+        if (role == QLatin1String("wave")) {
+            // 波形：只有用户图元（包络曲线/播放头/STFT 矩形都是 transient）
+            QCOMPARE(itemsEle.childNodes().size(), 1);
+            QCOMPARE(itemsEle.firstChildElement(QStringLiteral("item")).attribute(QStringLiteral("peak")),
+                     QString());
+        } else if (role == QLatin1String("spectrum")) {
+            // 频谱：只有峰值标记（幅值谱曲线是 transient），且打 peak="1"
+            QCOMPARE(itemsEle.childNodes().size(), 1);
+            QCOMPARE(itemsEle.firstChildElement(QStringLiteral("item")).attribute(QStringLiteral("peak")),
+                     QStringLiteral("1"));
+        } else if (role == QLatin1String("heatmap")) {
+            // 热图：时频栅格是 transient，不写任何 item
+            QCOMPARE(itemsEle.childNodes().size(), 0);
+        }
+    }
+    QCOMPARE(chartCount, 3);
+    QStringList expectedRoles;
+    expectedRoles << QStringLiteral("heatmap") << QStringLiteral("spectrum") << QStringLiteral("wave");
+    roles.sort();
+    QCOMPARE(roles, expectedRoles);
+
+    // chart3d：瀑布角色
+    const QDomElement chart3dEle = figureEle.firstChildElement(QStringLiteral("chart3d"));
+    QVERIFY(!chart3dEle.isNull());
+    QCOMPARE(chart3dEle.attribute(QStringLiteral("role")), QStringLiteral("waterfall"));
+
+    // 图元管理者：峰值标记 + 用户图元
+    QCOMPARE(itemsMgr.keys().size(), 2);
+
+    // 清理手动添加的用户图元（图元管理者不持有所有权）
+    userMarker->detach();
+    delete userMarker;
+}
+
+/**
+ * @brief T9：存档任务往返——signals.json + figures.xml + chart-data 与 figure 恢复
+ *
+ * 校验：三个条目的读写、字节一致、图元管理者有图元；新视图恢复网格比例、峰值标记
+ * （视图接管且再次回填频谱不丢）、用户图元、figure id；transient 图元不从存档恢复。
+ */
+void DASignalAnalysisTest::signalArchiveRoundTrip()
+{
+    if (!openGLAvailable()) {
+        QSKIP("OpenGL is not available: skip the signal archive round trip test");
+    }
+    // ---------- 1. 源视图：包络/频谱/热图/峰值(可见)/用户图元，改网格比例 ----------
+    DA::DASignalAnalysisView sourceView(makeTestSignal());
+    sourceView.setEnvelope({ 0.0, 1.0, 2.0 }, { -1.0, -2.0, -1.5 }, { 1.0, 2.0, 1.5 });
+    DA::DASpectrumResult spectrum;
+    spectrum.freqs        = { 0.0, 10.0, 20.0 };
+    spectrum.amplitudes   = { 1.0, 2.0, 3.0 };
+    spectrum.resolutionHz = 10.0;
+    sourceView.setSpectrum(spectrum);
+    DA::DAStftResult stft;
+    stft.rows          = 2;
+    stft.columns       = 3;
+    stft.times         = { 0.0, 0.5, 1.0 };
+    stft.freqs         = { 0.0, 10.0 };
+    stft.values        = { 1.0, 2.0, 3.0, 4.0, 5.0, 6.0 };
+    stft.windowSeconds = 0.1;
+    sourceView.setStft(stft);
+    DA::DAPeakResult peaks;
+    peaks.frequencies = { 10.0 };
+    peaks.magnitudes  = { 2.0 };
+    sourceView.setPeaks(peaks);
+    sourceView.setPeakMarkersVisible(true);
+    QCOMPARE(sourceView.peakMarkers().size(), 1);
+
+    auto* userMarker = new QwtPlotMarker();
+    userMarker->setXValue(1.0);
+    userMarker->setYValue(0.5);
+    userMarker->attach(sourceView.waveChart());
+
+    const QList< qreal > gridRows { 0.35, 0.65 };
+    const QList< qreal > gridCols { 0.7, 0.3 };
+    sourceView.setGridSizes(gridRows, gridCols);
+    sourceView.figure()->setFigureId(QStringLiteral("sig-archived"));
+
+    // ---------- 2. 保存：figure XML + chart-data 经存档任务写内存 archive ----------
+    const QByteArray signalsJson = QByteArrayLiteral("{\"signals\":[]}");
+    DA::DAChartItemsManager saveItems;
+    const QByteArray figuresXml = DA::DASignalFigureArchive::saveFigures({ &sourceView }, &saveItems);
+    QVERIFY(!figuresXml.isEmpty());
+    QVERIFY(!saveItems.isEmpty());
+
+    MemoryArchive mem;
+    DA::DASignalArchiveTask writeTask(signalsJson, figuresXml, saveItems);
+    QVERIFY(writeTask.exec(&mem, DA::DAAbstractArchiveTask::WriteMode));
+    QVERIFY(mem.contains(DA::DASignalArchiveTask::archivePath()));
+    QVERIFY(mem.contains(DA::DASignalArchiveTask::figuresArchivePath()));
+    QVERIFY(mem.contains(DA::DASignalArchiveTask::chartDataPrefix() + QStringLiteral("/chart-items.xml")));
+
+    // 保存后源视图的用户图元可删除（图元管理者不持有所有权）
+    userMarker->detach();
+    delete userMarker;
+
+    // ---------- 3. 读回 ----------
+    DA::DASignalArchiveTask readTask;
+    QVERIFY(readTask.exec(&mem, DA::DAAbstractArchiveTask::ReadMode));
+    QCOMPARE(readTask.loadedData(), signalsJson);
+    QVERIFY(readTask.figuresEntryFound());
+    QCOMPARE(readTask.loadedFiguresXml(), figuresXml);
+    QVERIFY(!readTask.chartItemsManager().isEmpty());
+    QCOMPARE(readTask.chartItemsManager().keys().size(), saveItems.keys().size());
+
+    // ---------- 4. 新视图恢复 ----------
+    QDomDocument doc;
+    QString parseError;
+    QVERIFY2(doc.setContent(readTask.loadedFiguresXml(), &parseError), qPrintable(parseError));
+    const QDomElement figureEle = DA::DASignalFigureArchive::findFigureElement(doc, QStringLiteral("unit"));
+    QVERIFY(!figureEle.isNull());
+
+    DA::DASignalAnalysisView restoredView(makeTestSignal());
+    QVERIFY(DA::DASignalFigureArchive::restoreFigure(&restoredView, figureEle, &readTask.chartItemsManager()));
+
+    // 网格比例恢复
+    compareSizeList(restoredView.gridRowSizes(), gridRows);
+    compareSizeList(restoredView.gridColumnSizes(), gridCols);
+    // figure id 往返
+    QCOMPARE(restoredView.figureId(), QStringLiteral("sig-archived"));
+    // 峰值标记恢复并被视图接管
+    QCOMPARE(restoredView.peakMarkers().size(), 1);
+    QwtPlotMarker* restoredPeak = restoredView.peakMarkers().first();
+    QVERIFY(restoredPeak);
+    QVERIFY(restoredPeak->isVisible());
+    QVERIFY(restoredView.spectrumChart()->itemList().contains(restoredPeak));
+    // 用户图元恢复到对应子图（波形），transient 分析结果图元未被恢复
+    const QList< QwtPlotItem* > waveItems = nonTransientItems(restoredView.waveChart());
+    QCOMPARE(waveItems.size(), 1);
+    QVERIFY(dynamic_cast< QwtPlotMarker* >(waveItems.first()));
+    bool hasEnvelope = false;
+    const QList< QwtPlotItem* > waveAllItems = restoredView.waveChart()->itemList();
+    for (QwtPlotItem* item : waveAllItems) {
+        if (dynamic_cast< QwtPlotIntervalCurve* >(item)) {
+            hasEnvelope = true;
+        }
+    }
+    QVERIFY(!hasEnvelope);
+    QCOMPARE(nonTransientItems(restoredView.spectrumChart()).size(), 1);
+    bool hasSpectrumCurve = false;
+    const QList< QwtPlotItem* > spectrumAllItems = restoredView.spectrumChart()->itemList();
+    for (QwtPlotItem* item : spectrumAllItems) {
+        if (dynamic_cast< QwtPlotCurve* >(item)) {
+            hasSpectrumCurve = true;
+        }
+    }
+    QVERIFY(!hasSpectrumCurve);
+    QCOMPARE(nonTransientItems(restoredView.heatmapChart()).size(), 0);
+
+    // 恢复后再次回填频谱：存档峰值标记不被删除/重建
+    restoredView.setSpectrum(spectrum);
+    QCOMPARE(restoredView.peakMarkers().size(), 1);
+    QCOMPARE(restoredView.peakMarkers().first(), restoredPeak);
+    QVERIFY(restoredView.spectrumChart()->itemList().contains(restoredPeak));
+}
+
+/**
+ * @brief T9：旧工程没有 figures.xml/chart-data 时加载成功且无图元
+ *
+ * 只有 signals.json 的旧存档：figuresEntryFound()==false、loadedFiguresXml() 为空、
+ * 图元管理者为空，exec 返回 true（界面按默认布局重建）。
+ */
+void DASignalAnalysisTest::signalArchiveLegacyWithoutFigures()
+{
+    const QByteArray signalsJson = QByteArrayLiteral("{\"signals\":[{\"name\":\"legacy\"}]}");
+    MemoryArchive mem;
+    QVERIFY(mem.write(DA::DASignalArchiveTask::archivePath(), signalsJson));
+
+    DA::DASignalArchiveTask task;
+    QVERIFY(task.exec(&mem, DA::DAAbstractArchiveTask::ReadMode));
+    QCOMPARE(task.loadedData(), signalsJson);
+    QVERIFY(task.archiveEntryFound());
+    QVERIFY(!task.figuresEntryFound());
+    QVERIFY(task.loadedFiguresXml().isEmpty());
+    QVERIFY(task.chartItemsManager().isEmpty());
+}
+
+/**
+ * @brief T9：损坏 figures.xml 恢复失败且视图保持默认布局
+ *
+ * 结构不完整（无 <chart>）的 figure 元素直接返回 false，不得崩、不得改动网格比例。
+ */
+void DASignalAnalysisTest::signalFigureRestoreCorruptXml()
+{
+    if (!openGLAvailable()) {
+        QSKIP("OpenGL is not available: skip the corrupt figure archive test");
+    }
+    DA::DASignalAnalysisView view(makeTestSignal());
+    QVERIFY(view.figure());
+    QVERIFY(view.figure()->grid());
+    const QList< qreal > defaultRows = view.gridRowSizes();
+    const QList< qreal > defaultCols = view.gridColumnSizes();
+
+    QDomDocument doc;
+    QString parseError;
+    QVERIFY2(doc.setContent(
+                 QByteArrayLiteral(
+                     "<signal-figures version=\"1\"><figure signal-name=\"unit\"><charts/></figure></signal-figures>"),
+                 &parseError),
+             qPrintable(parseError));
+    const QDomElement figureEle = DA::DASignalFigureArchive::findFigureElement(doc, QStringLiteral("unit"));
+    QVERIFY(!figureEle.isNull());
+    QVERIFY(!DA::DASignalFigureArchive::restoreFigure(&view, figureEle, nullptr));
+
+    // 视图仍是默认 2×2 网格与默认比例
+    QCOMPARE(view.figure()->grid()->rowCount(), 2);
+    QCOMPARE(view.figure()->grid()->columnCount(), 2);
+    compareSizeList(view.gridRowSizes(), defaultRows);
+    compareSizeList(view.gridColumnSizes(), defaultCols);
+
+    // 空元素/非法元素同样安全失败
+    QVERIFY(!DA::DASignalFigureArchive::restoreFigure(&view, QDomElement(), nullptr));
+    QDomDocument notFigureDoc;
+    QVERIFY(notFigureDoc.setContent(QByteArrayLiteral("<signal-figures version=\"1\"><charts/></signal-figures>")));
+    QDomElement rootAsFigure = notFigureDoc.documentElement();
+    QVERIFY(!DA::DASignalFigureArchive::restoreFigure(&view, rootAsFigure, nullptr));
+}
+
+/**
+ * @brief T9：图表导出工具（整页 PNG / 当前子图 PNG/SVG / 复制剪贴板）
+ *
+ * 只在有 OpenGL 的环境跑（视图含 3D 子控件）；导出依赖控件已布局出非零尺寸，
+ * 测试里不 show()/不进事件循环（会卡在 GL 上下文初始化），而是直接设尺寸并同步
+ * 激活 QwtFigure 布局。临时文件写到 QTemporaryDir，不污染工作目录。
+ */
+void DASignalAnalysisTest::signalChartExportToFile()
+{
+    if (!openGLAvailable()) {
+        QSKIP("OpenGL is not available: skip the signal chart export test");
+    }
+    DA::DASignalAnalysisView view(makeTestSignal());
+    // 不 show() 也不进事件循环：视图含 GL 子控件，测试进程里 show/qWait 会卡在 GL 上下文初始化。
+    // 直接设尺寸并同步激活 QwtFigure 的布局（QLayout::activate 会立刻给子图分配几何），
+    // 导出只依赖控件有非零尺寸。
+    view.resize(900, 640);
+    if (view.figure()) {
+        view.figure()->resize(900, 640);
+        if (view.figure()->layout()) {
+            view.figure()->layout()->activate();
+        }
+    }
+    // 兜底：布局未生效时直接给 2D 子图一个尺寸（导出要求 chart->size() 非空）
+    const QList< DA::DAChartWidget* > charts = { view.waveChart(), view.spectrumChart(), view.heatmapChart() };
+    for (DA::DAChartWidget* chart : charts) {
+        if (chart && chart->size().isEmpty()) {
+            chart->resize(400, 240);
+        }
+    }
+
+    // 造分析结果，让子图有可见内容（导出不应只抓空画布）
+    QVector< double > xs { 0.0, 1.0, 2.0 };
+    QVector< double > mins { -1.0, -2.0, -1.5 };
+    QVector< double > maxs { 1.0, 2.0, 1.5 };
+    view.setEnvelope(xs, mins, maxs);
+    DA::DASpectrumResult spectrum;
+    spectrum.freqs       = { 0.0, 10.0, 20.0 };
+    spectrum.amplitudes  = { 1.0, 2.0, 3.0 };
+    spectrum.resolutionHz = 10.0;
+    view.setSpectrum(spectrum);
+    view.setCurrentChart(view.waveChart());
+
+    // 整页抓图 + 保存 PNG
+    QVERIFY(!DA::DASignalChartExport::grabWholePage(&view).isNull());
+    QVERIFY(DA::DASignalChartExport::grabWholePage(nullptr).isNull());
+    QTemporaryDir tempDir;
+    QVERIFY(tempDir.isValid());
+    const QString wholePagePath = tempDir.filePath(QStringLiteral("page.png"));
+    QVERIFY(DA::DASignalChartExport::saveWholePage(&view, wholePagePath));
+    QVERIFY(QFileInfo(wholePagePath).size() > 0);
+    QVERIFY(!DA::DASignalChartExport::saveWholePage(&view, QString()));
+
+    // 当前子图：PNG + SVG 都要产出非空文件
+    const QString pngPath = tempDir.filePath(QStringLiteral("chart.png"));
+    QVERIFY(DA::DASignalChartExport::saveCurrentSubChart(&view, pngPath, DA::DAFigureExportFormat::Png));
+    QVERIFY(QFileInfo(pngPath).size() > 0);
+    const QString svgPath = tempDir.filePath(QStringLiteral("chart.svg"));
+    QVERIFY(DA::DASignalChartExport::saveCurrentSubChart(&view, svgPath, DA::DAFigureExportFormat::Svg));
+    QFile svgFile(svgPath);
+    QVERIFY(svgFile.open(QIODevice::ReadOnly));
+    const QByteArray svgHead = svgFile.read(256);
+    QVERIFY(svgHead.contains("<svg"));
+    QVERIFY(!DA::DASignalChartExport::saveCurrentSubChart(&view, QString(), DA::DAFigureExportFormat::Png));
+
+    // 剪贴板：整页与当前子图都应写入（该断言只验证工具类抓图成功并调用 setPixmap；
+    // 不回读系统剪贴板——无人交互的测试会话里 OpenClipboard 可能被其它进程占用而偶发失败）
+    QVERIFY(DA::DASignalChartExport::copyWholePageToClipboard(&view));
+    QVERIFY(DA::DASignalChartExport::copyCurrentSubChartToClipboard(&view));
+    QVERIFY(!DA::DASignalChartExport::copyWholePageToClipboard(nullptr));
+    QVERIFY(!DA::DASignalChartExport::copyCurrentSubChartToClipboard(nullptr));
 }
 
 QTEST_MAIN(DASignalAnalysisTest)

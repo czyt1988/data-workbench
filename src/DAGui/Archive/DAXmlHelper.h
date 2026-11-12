@@ -33,6 +33,7 @@ class DAColorTheme;
 class DAChartOperateWidget;
 class DAFigureWidget;
 class DAChartWidget;
+class DAChart3DWidget;
 class DAChartItemsManager;
 class DAChartAxisRangeBinder;
 
@@ -112,6 +113,8 @@ public:
                             const QDomElement* tag,
                             const DAChartItemsManager* itemsMgr,
                             const QVersionNumber& v = QVersionNumber());
+    // DAChart3DWidget（只恢复视图/主题/坐标轴，不恢复 3D 图元数据；应用在已有 3D 子图上）
+    static bool loadElement(DAChart3DWidget* chart3d, const QDomElement* tag);
     // DAChartAxisRangeBinder
     static QDomElement makeElement(const DAChartAxisRangeBinder* axisBinder, const QString& tagName, QDomDocument* doc);
     static bool

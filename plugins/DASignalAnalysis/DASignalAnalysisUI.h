@@ -39,6 +39,7 @@ class DASignalAnalysisSettingContext;
 class DAPeakDockWidget;
 class DASignalPlayer;
 class DAAbstractArchiveTask;
+class DAChartItemsManager;
 
 /**
  * @brief 信号分析插件的界面层：中央页面 + 丝带标签页 + 动作管理
@@ -89,10 +90,12 @@ public:
 
     // 工程保存/加载（经插件 createArchiveTask，任务在后台线程只做文件读写）
     std::shared_ptr< DA::DAAbstractArchiveTask > createArchiveTask(bool isSave);
-    // 序列化当前状态为 JSON（保存用）
+    // 序列化当前状态为 JSON（保存用，signals.json）
     QByteArray serializeState() const;
-    // 从 JSON 重建信号（加载用，主线程；先清空当前工程残留的信号与缓存）
-    void restoreState(const QByteArray& json);
+    // 从 signals.json 重建信号并应用随信号存档的 figures.xml 图表状态（主线程）
+    void restoreState(const QByteArray& json,
+                      const QByteArray& figuresXml = QByteArray(),
+                      const DAChartItemsManager* chartItems = nullptr);
 
 
 Q_SIGNALS:
@@ -150,12 +153,18 @@ private Q_SLOTS:
     void onViewTimeChanged(double seconds);
     // 通道切换：峰值与曲线按新通道重算
     void onViewChannelChanged(int channel);
-    // 导出：峰值表 CSV / 频谱 CSV / 热图矩阵 CSV / 整页位图 / 峰值表送表格页
+    // 导出：峰值表 CSV / 频谱 CSV / 热图矩阵 CSV / 整页位图 / 当前子图 / 剪贴板 / 峰值表送表格页
     void exportPeaksCsv();
     void exportSpectrumCsv();
     void exportPsdCsv();
     void exportHeatmapCsv();
-    void exportImage();
+    // 导出整页（2D 网格 + 3D 帧缓冲合帧）为 PNG
+    void exportWholePageImage();
+    // 导出当前子图（2D 支持 PNG/SVG/PDF，3D 仅 PNG）
+    void exportCurrentSubChartImage();
+    // 复制整页 / 当前子图到剪贴板
+    void copyWholePageToClipboard();
+    void copyCurrentSubChartToClipboard();
     void sendPeaksToTable();
     // 重新指定数据帧来源（当前信号来源缺失时可用，评审 U16）
     void relinkCurrentSignalSource();
@@ -242,6 +251,10 @@ private:
     void updateImportActionsState();
     // 按播放源/导出中状态刷新播放动作可用性（评审 U9：导出期间禁用播放）
     void updatePlaybackActionsState();
+    // 构建随工程存档的 figures.xml：逐信号 figure XML + 非 transient 图元（主线程）
+    QByteArray buildFiguresXml(DA::DAChartItemsManager* chartItems) const;
+    // 把 figures.xml 的 figure 状态应用到恢复后的信号视图（网格比例/子图样式/峰值/用户图元）
+    void applyFiguresXml(const QByteArray& figuresXml, const DA::DAChartItemsManager* chartItems);
 
 private:
     DACoreInterface* mCore { nullptr };
@@ -273,6 +286,12 @@ private:
     QPointer< DASignalAnalysisPage > mPage;
     QMenu* mPeakTopNMenu { nullptr };
     QMenu* mExportMenu { nullptr };
+    // 图片导出菜单（整页 / 当前子图 / 复制剪贴板，T9）
+    QMenu* mExportImageMenu { nullptr };
+    QAction* mActionExportWholePage { nullptr };
+    QAction* mActionExportCurrentSubChart { nullptr };
+    QAction* mActionCopyWholePage { nullptr };
+    QAction* mActionCopyCurrentSubChart { nullptr };
     QMenu* mAmplitudeModeMenu { nullptr };
     // 导出菜单项（retranslateUi 需要逐条刷新文本，评审 §七-5）
     QAction* mActionExportPeaksCsv { nullptr };
@@ -360,7 +379,7 @@ public:
     // 导出（Export）
     //===================================================
     QAction* actionExportPeaks { nullptr };  ///< 导出峰值表
-    QAction* actionExportImage { nullptr };  ///< 导出图片
+    QAction* actionExportImage { nullptr };  ///< 导出图片（带菜单：整页/当前子图/复制剪贴板）
 
 private:
     DASignalAnalysisWorker* mWorker { nullptr };

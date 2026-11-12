@@ -68,6 +68,11 @@
 #include "Analysis/DASignalAnalysisWorker.h"
 #include "Playback/DASignalPlayer.h"
 #include "Archive/DASignalArchiveTask.h"
+#include "Archive/DASignalFigureArchive.h"
+#include "Page/DASignalChartExport.h"
+#include "DAChartItemsManager.h"
+#include <QDomDocument>
+#include <QDomElement>
 
 namespace DA
 {
@@ -175,7 +180,26 @@ bool DASignalAnalysisUI::initialize(DACoreInterface* core)
         actionExportPeaks->setMenu(mExportMenu);
     }
     if (actionExportImage) {
-        connect(actionExportImage, &QAction::triggered, this, &DASignalAnalysisUI::exportImage);
+        // 图片导出菜单（T9）：整页（2D+3D 合帧）/ 当前子图（PNG/SVG/PDF）/ 复制到剪贴板
+        mExportImageMenu       = new QMenu();
+        mActionExportWholePage = mExportImageMenu->addAction(tr("Whole page (PNG)..."),
+                                                             this,
+                                                             &DASignalAnalysisUI::exportWholePageImage);
+        // cn:整页（PNG）...
+        mActionExportCurrentSubChart =
+            mExportImageMenu->addAction(tr("Current sub-chart (PNG/SVG/PDF)..."),
+                                        this,
+                                        &DASignalAnalysisUI::exportCurrentSubChartImage);
+        // cn:当前子图（PNG/SVG/PDF）...
+        mExportImageMenu->addSeparator();
+        mActionCopyWholePage =
+            mExportImageMenu->addAction(tr("Copy whole page to clipboard"), this, &DASignalAnalysisUI::copyWholePageToClipboard);
+        // cn:复制整页到剪贴板
+        mActionCopyCurrentSubChart = mExportImageMenu->addAction(tr("Copy current sub-chart to clipboard"),
+                                                                 this,
+                                                                 &DASignalAnalysisUI::copyCurrentSubChartToClipboard);
+        // cn:复制当前子图到剪贴板
+        actionExportImage->setMenu(mExportImageMenu);
     }
     // 瀑布模式切换（二维 / 三维 / 隐藏；动作位于上下文标签 Display 组）
     if (actionWaterfall2D) {
@@ -2370,30 +2394,109 @@ void DASignalAnalysisUI::exportHeatmapCsv()
 }
 
 /**
- * @brief 导出当前视图为位图（三维 GL 内容不保证被抓取，见 T7）
+ * @brief 导出整页（2D 网格 + 三维帧缓冲合帧）为 PNG
+ *
+ * 整页位图走 DASignalChartExport::grabWholePage：三维瀑布可见时把 OpenGL 帧缓冲
+ * 按子图位置合成到页面位图（沿用工程评审 I11 的 grabForExport 思路）。
  */
-void DASignalAnalysisUI::exportImage()
+void DASignalAnalysisUI::exportWholePageImage()
 {
-    DASignalPtr sig = mPage ? mPage->currentSignal() : DASignalPtr();
-    if (!sig || !mPage) {
+    DASignalAnalysisView* view = currentView();
+    if (!view) {
         reportError(tr("No signal is selected."));  // cn:未选中信号。
         return;
     }
-    DASignalAnalysisView* view = mPage->viewForSignal(sig.get());
-    if (!view) {
-        return;
-    }
-    const QString path =
-        askSavePath(mPage, tr("Export Image"), tr("PNG Image (*.png)"));  // cn:导出图片
+    const QString path = askSavePath(mPage, tr("Export Whole Page"), tr("PNG Image (*.png)"));  // cn:导出整页
     if (path.isEmpty()) {
         return;
     }
-    // 三维瀑布可见时把 OpenGL 帧缓冲合成进页面位图（评审 I11）
-    const QPixmap pixmap = view->grabForExport();
-    if (pixmap.save(path, "PNG")) {
-        mUI->addInfoLogMessage(tr("Image exported: %1").arg(path));  // cn:图片已导出：%1
+    if (DASignalChartExport::saveWholePage(view, path)) {
+        mUI->addInfoLogMessage(tr("Whole page exported: %1").arg(path));  // cn:整页已导出：%1
     } else {
-        reportError(tr("Failed to export the image."));  // cn:图片导出失败。
+        reportError(tr("Failed to export the whole page."));  // cn:整页导出失败。
+    }
+}
+
+/**
+ * @brief 导出当前子图（2D 支持 PNG/SVG/PDF；三维子图只有位图路径，退回 PNG）
+ *
+ * 后缀口径与绘图区「导出当前子图」一致：用户输入未知后缀时按所选过滤器补真实后缀，
+ * 避免「内容与后缀不一致」；三维子图没有矢量导出路径，非 PNG 时改存 PNG（qWarning 记录偏差）。
+ */
+void DASignalAnalysisUI::exportCurrentSubChartImage()
+{
+    DASignalAnalysisView* view = currentView();
+    if (!view) {
+        reportError(tr("No signal is selected."));  // cn:未选中信号。
+        return;
+    }
+    QString selectedFilter;
+    QString path = QFileDialog::getSaveFileName(mPage,
+                                                tr("Export Sub-chart"),  // cn:导出当前子图
+                                                QStringLiteral("chart.png"),
+                                                DAFigureWidget::exportFileFilter(),
+                                                &selectedFilter);
+    if (path.isEmpty()) {
+        return;
+    }
+    const QString suffix = QFileInfo(path).suffix().toLower();
+    if (suffix != QLatin1String("png") && suffix != QLatin1String("svg") && suffix != QLatin1String("pdf")) {
+        if (selectedFilter.contains(QLatin1String("*.svg"))) {
+            path += QStringLiteral(".svg");
+        } else if (selectedFilter.contains(QLatin1String("*.pdf"))) {
+            path += QStringLiteral(".pdf");
+        } else {
+            path += QStringLiteral(".png");
+        }
+    }
+    DAFigureExportFormat format = DAFigureWidget::exportFormatFromFilePath(path);
+    if (view->is3DChartActive() && format != DAFigureExportFormat::Png) {
+        // 三维子图没有矢量导出路径：改成 PNG 后缀，避免写出的内容与后缀不符
+        const QFileInfo fi(path);
+        path   = fi.path().isEmpty() ? fi.completeBaseName() + QStringLiteral(".png")
+                                     : fi.path() + QLatin1Char('/') + fi.completeBaseName() + QStringLiteral(".png");
+        format = DAFigureExportFormat::Png;
+        qWarning() << "DASignalAnalysisUI::exportCurrentSubChartImage: 3D sub-chart has no vector export, saved as PNG";
+    }
+    if (DASignalChartExport::saveCurrentSubChart(view, path, format)) {
+        mUI->addInfoLogMessage(tr("Sub-chart exported: %1").arg(path));  // cn:当前子图已导出：%1
+    } else {
+        reportError(tr("Failed to export the sub-chart."));  // cn:当前子图导出失败。
+    }
+}
+
+/**
+ * @brief 复制整页（2D + 三维合帧）到剪贴板
+ */
+void DASignalAnalysisUI::copyWholePageToClipboard()
+{
+    DASignalAnalysisView* view = currentView();
+    if (!view) {
+        reportError(tr("No signal is selected."));  // cn:未选中信号。
+        return;
+    }
+    if (DASignalChartExport::copyWholePageToClipboard(view)) {
+        mUI->addInfoLogMessage(tr("Whole page copied to the clipboard."));  // cn:整页已复制到剪贴板。
+    } else {
+        reportError(tr("Failed to copy the whole page to the clipboard."));  // cn:复制整页到剪贴板失败。
+    }
+}
+
+/**
+ * @brief 复制当前子图（二维或三维位图）到剪贴板
+ */
+void DASignalAnalysisUI::copyCurrentSubChartToClipboard()
+{
+    DASignalAnalysisView* view = currentView();
+    if (!view) {
+        reportError(tr("No signal is selected."));  // cn:未选中信号。
+        return;
+    }
+    if (DASignalChartExport::copyCurrentSubChartToClipboard(view)) {
+        mUI->addInfoLogMessage(tr("Current sub-chart copied to the clipboard."));  // cn:当前子图已复制到剪贴板。
+    } else {
+        reportError(tr("Failed to copy the current sub-chart to the clipboard."));
+        // cn:复制当前子图到剪贴板失败。
     }
 }
 
@@ -2500,6 +2603,8 @@ QByteArray DASignalAnalysisUI::serializeState() const
                 view[ QStringLiteral("colormap") ]      = v->colormapName();
                 view[ QStringLiteral("dbFloor") ]       = v->dbFloor();
                 view[ QStringLiteral("autoScroll") ]    = v->isHeatmapAutoScroll();
+                // 峰值标记开关（视图无 getter：以 UI 记录的开关状态存，恢复后新视图据此应用）
+                view[ QStringLiteral("peakMarkersVisible") ] = mPeakMarkersVisible;
                 // T7 起布局是保留式网格：存归一化行/列比例（旧 splitter 像素比例在加载时归一化兼容）
                 QJsonArray rowsArr;
                 const QList< qreal > gridRows = v->gridRowSizes();
@@ -2525,8 +2630,17 @@ QByteArray DASignalAnalysisUI::serializeState() const
 
 /**
  * @brief 从 JSON 重建信号（主线程；文件缺失时提示信号源缺失并跳过）
+ *
+ * T9：工程存档里同时带 figures.xml（figure 文档）与 chart-data（非 transient 图元）。
+ * 先按 signals.json 重建信号与视图（旧工程兼容路径），再把 figures.xml 的布局/样式/
+ * 峰值标记/用户图元应用到对应视图；分析结果（transient 图元）由视图按参数重新计算。
+ * @param json signals.json 字节
+ * @param figuresXml figures.xml 字节（旧工程为空，此时只走 signals.json view{} 兼容路径）
+ * @param chartItems 存档里读出的非 transient 图元（可为空）
  */
-void DASignalAnalysisUI::restoreState(const QByteArray& json)
+void DASignalAnalysisUI::restoreState(const QByteArray& json,
+                                      const QByteArray& figuresXml,
+                                      const DAChartItemsManager* chartItems)
 {
     const QJsonDocument doc = QJsonDocument::fromJson(json);
     if (!doc.isObject()) {
@@ -2653,6 +2767,10 @@ void DASignalAnalysisUI::restoreState(const QByteArray& json)
         if (view.contains(QStringLiteral("dbReference"))) {
             mDbReference = view.value(QStringLiteral("dbReference")).toString(mDbReference);
         }
+        // 峰值标记开关：在 addSignalAndActivate 之前恢复，connectSignalView 会把它应用到新视图
+        if (view.contains(QStringLiteral("peakMarkersVisible"))) {
+            mPeakMarkersVisible = view.value(QStringLiteral("peakMarkersVisible")).toBool(mPeakMarkersVisible);
+        }
         addSignalAndActivate(sig);
         // 恢复视图状态（P1）
         if (DASignalAnalysisView* v = mPage ? mPage->viewForSignal(sig.get()) : nullptr) {
@@ -2694,6 +2812,9 @@ void DASignalAnalysisUI::restoreState(const QByteArray& json)
             v->setAmplitudeDisplay(mAmplitudeMode, mDbReference);
         }
     }
+    // T9：把随信号存档的 figure 文档（网格比例/子图样式/峰值标记/用户图元）应用到恢复后的视图；
+    // 旧工程没有 figures.xml 时跳过，沿用 signals.json view{} 的兼容恢复结果
+    applyFiguresXml(figuresXml, chartItems);
     // 丝带上下文标签与底部工具栏跟随恢复后的当前视图（含瀑布模式/通道/色带/工具开关）
     syncSignalContextControls();
     syncSignalToolbar();
@@ -2704,11 +2825,18 @@ void DASignalAnalysisUI::restoreState(const QByteArray& json)
 
 /**
  * @brief 创建工程存档任务（isSave 时收集状态；加载时在回调里重建信号）
+ *
+ * T9：保存时在主线程生成 signals.json + figures.xml，并把非 transient 图元登记到
+ * DAChartItemsManager；后台存档任务负责把三份内容写入工程包（chart-data 走
+ * DAChartItemArchive::save）。加载时任务先读 chart-data 与 figures.xml，回调里再
+ * 恢复信号并应用 figure 文档。
  */
 std::shared_ptr< DAAbstractArchiveTask > DASignalAnalysisUI::createArchiveTask(bool isSave)
 {
     if (isSave) {
-        auto task = std::make_shared< DASignalArchiveTask >(serializeState());
+        DAChartItemsManager chartItems;
+        const QByteArray figuresXml = buildFiguresXml(&chartItems);
+        auto task = std::make_shared< DASignalArchiveTask >(serializeState(), figuresXml, chartItems);
         return task;
     }
     auto task = std::make_shared< DASignalArchiveTask >();
@@ -2722,9 +2850,81 @@ std::shared_ptr< DAAbstractArchiveTask > DASignalAnalysisUI::createArchiveTask(b
             // restoreState 的空数据分支会清掉上一工程残留信号与临时文件（评审 N-U2）
             qInfo() << "DASignalAnalysis: project has no signal-analysis archive entry; stale signals are cleared";
         }
-        restoreState(sigTask->loadedData());
+        if (sigTask->archiveEntryFound() && !sigTask->figuresEntryFound()) {
+            // 旧工程（T9 之前保存）没有 figures.xml：走 signals.json view{} 的兼容恢复路径
+            qInfo() << "DASignalAnalysis: project has no signal-analysis/figures.xml; restore legacy view state";
+        }
+        // chartItems 指向任务内的图元管理者，任务在回调期间仍存活（shared_ptr 由调用方持有）
+        restoreState(sigTask->loadedData(), sigTask->loadedFiguresXml(), &sigTask->chartItemsManager());
     });
     return task;
+}
+
+/**
+ * @brief 构建随工程存档的 figures.xml（逐信号 figure XML + 非 transient 图元）
+ *
+ * 只在主线程调用：figure XML 生成需要读取控件状态，并把非 transient 图元
+ * （峰值标记/用户添加的标注等）登记到 itemsMgr；后台存档任务只负责写字节。
+ * @param chartItems 输出：图元 key 映射（保存任务据此写 chart-data），不可为空
+ * @return figures.xml 字节；没有页面/信号时返回空（不写 figures.xml）
+ */
+QByteArray DASignalAnalysisUI::buildFiguresXml(DAChartItemsManager* chartItems) const
+{
+    QList< DASignalAnalysisView* > views;
+    if (mPage) {
+        const QList< DASignalPtr > signalList = mPage->allSignals();
+        for (const DASignalPtr& sig : signalList) {
+            if (!sig) {
+                continue;
+            }
+            if (DASignalAnalysisView* view = mPage->viewForSignal(sig.get())) {
+                views.append(view);
+            }
+        }
+    }
+    return DASignalFigureArchive::saveFigures(views, chartItems);
+}
+
+/**
+ * @brief 把 figures.xml 的 figure 状态应用到恢复后的信号视图
+ *
+ * 按信号名匹配 figure；恢复失败只记录诊断（英文）并保持默认布局，不影响信号本体恢复。
+ * 旧工程没有 figures.xml 时直接返回（兼容路径由 restoreState 的 view{} 分支负责）。
+ */
+void DASignalAnalysisUI::applyFiguresXml(const QByteArray& figuresXml, const DAChartItemsManager* chartItems)
+{
+    if (figuresXml.isEmpty() || nullptr == mPage) {
+        return;
+    }
+    QDomDocument figureDoc;
+    QString parseError;
+    if (!figureDoc.setContent(figuresXml, &parseError)) {
+        qWarning() << "DASignalAnalysisUI::applyFiguresXml: cannot parse figures.xml:" << parseError;
+        return;
+    }
+    const QList< DASignalPtr > signalList = mPage->allSignals();
+    for (const DASignalPtr& sig : signalList) {
+        if (!sig) {
+            continue;
+        }
+        DASignalAnalysisView* view = mPage->viewForSignal(sig.get());
+        if (!view) {
+            continue;
+        }
+        const QDomElement figureEle = DASignalFigureArchive::findFigureElement(figureDoc, sig->name());
+        if (figureEle.isNull()) {
+            qWarning() << "DASignalAnalysisUI::applyFiguresXml: no figure element for signal" << sig->name();
+            continue;
+        }
+        if (!DASignalFigureArchive::restoreFigure(view, figureEle, chartItems)) {
+            qWarning() << "DASignalAnalysisUI::applyFiguresXml: restore figure failed for signal" << sig->name();
+        }
+        // 存档里的峰值标记非 transient：视图接管后把 UI 开关同步为「可见」，
+        // 后续分析结果回填不再重建标记（以存档为准，用户在设置面板里调整过）
+        if (!view->peakMarkers().isEmpty() && view == currentView()) {
+            mPeakMarkersVisible = true;
+        }
+    }
 }
 
 /**
@@ -2790,6 +2990,18 @@ void DASignalAnalysisUI::finalize()
     mActionExportSpectrumCsv = nullptr;
     mActionExportPsdCsv      = nullptr;
     mActionExportHeatmapCsv  = nullptr;
+    // 图片导出菜单（整页/当前子图/复制到剪贴板，T9）
+    if (actionExportImage) {
+        actionExportImage->setMenu(nullptr);
+    }
+    if (mExportImageMenu) {
+        delete mExportImageMenu;
+        mExportImageMenu = nullptr;
+    }
+    mActionExportWholePage       = nullptr;
+    mActionExportCurrentSubChart = nullptr;
+    mActionCopyWholePage         = nullptr;
+    mActionCopyCurrentSubChart   = nullptr;
     // 后台任务先停：后续删视图/页面时不再有结果回填
     if (mWorker) {
         mWorker->cancel();
@@ -4013,6 +4225,23 @@ void DASignalAnalysisUI::retranslateUi()
     }
     if (actionExportImage) {
         actionExportImage->setText(tr("Export Image"));  // cn:导出图片
+        actionExportImage->setToolTip(tr("Export the chart page or the current sub-chart, or copy it to the clipboard"));
+        // cn:导出整页/当前子图或复制到剪贴板
+    }
+    // 图片导出菜单项（整页/当前子图/复制剪贴板，T9）
+    if (mActionExportWholePage) {
+        mActionExportWholePage->setText(tr("Whole page (PNG)..."));  // cn:整页（PNG）...
+    }
+    if (mActionExportCurrentSubChart) {
+        mActionExportCurrentSubChart->setText(tr("Current sub-chart (PNG/SVG/PDF)..."));
+        // cn:当前子图（PNG/SVG/PDF）...
+    }
+    if (mActionCopyWholePage) {
+        mActionCopyWholePage->setText(tr("Copy whole page to clipboard"));  // cn:复制整页到剪贴板
+    }
+    if (mActionCopyCurrentSubChart) {
+        mActionCopyCurrentSubChart->setText(tr("Copy current sub-chart to clipboard"));
+        // cn:复制当前子图到剪贴板
     }
     if (actionPeakTable) {
         actionPeakTable->setText(tr("Peak Table"));  // cn:峰值表

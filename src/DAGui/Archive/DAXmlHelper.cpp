@@ -3012,6 +3012,25 @@ bool DAXmlHelper::loadElement(DAChartWidget* chart,
     return true;
 }
 
+/**
+ * @brief 从 <chart3d> 节点恢复 3D 子图（应用在已存在的 3D 子图上）
+ *
+ * 只恢复视图/主题/坐标轴，不恢复 3D 图元数据（由图元所属业务层重算重建）。
+ * 供插件存档（信号分析等）把 figure XML 恢复到已有子图上时复用，避免插件重写 3D XML 解析。
+ * @param chart3d 目标 3D 子图
+ * @param tag <chart3d> 元素
+ * @return chart3d/tag 非空返回 true（缺省属性保持当前值）
+ */
+bool DAXmlHelper::loadElement(DAChart3DWidget* chart3d, const QDomElement* tag)
+{
+    if (!chart3d || !tag) {
+        qWarning() << "DAXmlHelper::loadElement(chart3d): null chart3d or element";
+        return false;
+    }
+    load3DChartElement(chart3d, *tag);
+    return true;
+}
+
 QDomElement DAXmlHelper::makeElement(const DAChartAxisRangeBinder* axisBinder, const QString& tagName, QDomDocument* doc)
 {
     if (!axisBinder->isValid()) {
