@@ -1,4 +1,4 @@
-﻿#include "Archive/DAAbstractArchive.h"
+#include "Archive/DAAbstractArchive.h"
 #include "Archive/DAAbstractArchiveTask.h"
 #include <deque>
 #include <QFileInfo>
@@ -56,7 +56,22 @@ bool DAAbstractArchive::setBaseFilePath(const QString& path)
 
 QString DAAbstractArchive::getBaseFilePath() const
 {
-	return d_ptr->mBaseFilePath;
+	DA_DC(d);
+	return d->mBaseFilePath;
+}
+
+/**
+ * @brief 检查存档内是否存在指定路径
+ *
+ * 基类没有通用的存在性判断方式（read 为非常量纯虚函数），默认返回 false；
+ * 需要区分「缺失」与「存在但为空」的存档（zip 等）应覆盖本函数。
+ * @param relatePath 存档内相对路径
+ * @return 存在返回true，默认返回false
+ */
+bool DAAbstractArchive::contains(const QString& relatePath) const
+{
+	Q_UNUSED(relatePath);
+	return false;
 }
 
 void DAAbstractArchive::appendTask(const std::shared_ptr< DA::DAAbstractArchiveTask >& task)

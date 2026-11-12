@@ -40,10 +40,12 @@
 #include "Chart/DAChartOperateWidget.h"
 #include "DAFigureWidget.h"
 #include "DAChartWidget.h"
+#include "DAChart3DWidget.h"
 #include "Chart/DAChartItemsManager.h"
 #include "DAChartAxisRangeBinder.h"
 // qwt
 #include "qwt_figure.h"
+#include "qwt_figure_grid.h"
 #include "qwt_plot.h"
 #include "qwt_plot_canvas.h"
 #include "qwt_scale_draw.h"
@@ -57,8 +59,648 @@
 #include "qwt_colormap.h"
 #include "qwt_interval.h"
 #include "qwt_plot_series_data_picker.h"
+// qwt3d（3D 子图持久化）
+#include "qwt3d_plot.h"
+#include "qwt3d_coordsys.h"
+#include "qwt3d_serialize.h"
+#include <QFont>
+#include <QDataStream>
+#include <QIODevice>
+#include <QStringList>
 namespace DA
 {
+//==============================================================
+// figure 网格/3D 子图序列化辅助
+//==============================================================
+namespace
+{
+/// 字体/主题二进制块使用的 QDataStream 版本（跨 Qt5/Qt6 固定，便于旧工程读取）
+constexpr QDataStream::Version c_xmlDataStreamVersion = QDataStream::Qt_5_12;
+
+/// 把实数列表编码为逗号分隔字符串（保留足够精度以完成往返）
+QString sizeListToString(const QList< qreal >& sizes)
+{
+    QStringList parts;
+    parts.reserve(sizes.size());
+    for (qreal v : sizes) {
+        parts.append(QString::number(v, 'g', 12));
+    }
+    return parts.join(QLatin1Char(','));
+}
+
+/// 解析逗号分隔的实数列表，忽略空项
+QList< qreal > parseSizeList(const QString& text)
+{
+    QList< qreal > res;
+    const QStringList parts = text.split(QLatin1Char(','), Qt::SkipEmptyParts);
+    res.reserve(parts.size());
+    for (const QString& part : parts) {
+        bool ok = false;
+        const qreal v = part.trimmed().toDouble(&ok);
+        if (ok) {
+            res.append(v);
+        }
+    }
+    return res;
+}
+
+/// QFont 编码为 base64（3D 坐标轴字体属性）
+QString fontToBase64(const QFont& f)
+{
+    QByteArray byte;
+    {
+        QDataStream st(&byte, QIODevice::WriteOnly);
+        st.setVersion(c_xmlDataStreamVersion);
+        st << f;
+    }
+    return QString::fromLatin1(byte.toBase64());
+}
+
+/// 从 base64 还原 QFont，失败返回默认字体并置 ok=false
+QFont fontFromBase64(const QString& text, bool* ok)
+{
+    const QByteArray byte = QByteArray::fromBase64(text.toLatin1());
+    if (byte.isEmpty()) {
+        if (ok) {
+            *ok = false;
+        }
+        return QFont();
+    }
+    QDataStream st(byte);
+    st.setVersion(c_xmlDataStreamVersion);
+    QFont f;
+    st >> f;
+    if (ok) {
+        *ok = (st.status() == QDataStream::Ok);
+    }
+    return f;
+}
+
+/// Qwt3DTheme 编码为 base64（3D 主题是复杂的值类型，逐字段写 XML 不稳定）
+QString themeToBase64(const Qwt3DTheme& theme)
+{
+    QByteArray byte;
+    {
+        QDataStream st(&byte, QIODevice::WriteOnly);
+        st.setVersion(c_xmlDataStreamVersion);
+        st << theme;
+    }
+    return QString::fromLatin1(byte.toBase64());
+}
+
+/// 从 base64 还原 Qwt3DTheme，失败返回 false
+bool themeFromBase64(const QString& text, Qwt3DTheme* theme)
+{
+    if (!theme) {
+        return false;
+    }
+    const QByteArray byte = QByteArray::fromBase64(text.toLatin1());
+    if (byte.isEmpty()) {
+        return false;
+    }
+    QDataStream st(byte);
+    st.setVersion(c_xmlDataStreamVersion);
+    st >> *theme;
+    return st.status() == QDataStream::Ok;
+}
+
+bool readDoubleAttr(const QDomElement& ele, const QString& name, double* out)
+{
+    bool ok = false;
+    const double v = ele.attribute(name).toDouble(&ok);
+    if (ok && out) {
+        *out = v;
+    }
+    return ok;
+}
+
+bool readIntAttr(const QDomElement& ele, const QString& name, int* out)
+{
+    bool ok = false;
+    const int v = ele.attribute(name).toInt(&ok);
+    if (ok && out) {
+        *out = v;
+    }
+    return ok;
+}
+
+bool readBoolAttr(const QDomElement& ele, const QString& name, bool* out)
+{
+    if (!ele.hasAttribute(name)) {
+        return false;
+    }
+    if (out) {
+        *out = (ele.attribute(name).toInt() != 0);
+    }
+    return true;
+}
+
+/// 以 12 位有效数字把实数编码为 XML 属性值（保证视图/外观参数往返精度）
+QString numberToString(qreal v)
+{
+    return QString::number(v, 'g', 12);
+}
+
+/// 写实数属性，统一精度
+void setNumberAttribute(QDomElement& ele, const QString& name, qreal v)
+{
+    ele.setAttribute(name, numberToString(v));
+}
+
+/// RGBA 编码为 "r,g,b,a"
+QString rgbaToString(const RGBA& c)
+{
+    return QStringLiteral("%1,%2,%3,%4")
+        .arg(numberToString(c.r), numberToString(c.g), numberToString(c.b), numberToString(c.a));
+}
+
+/// 解析 "r,g,b,a"，格式不合法返回 false
+bool rgbaFromString(const QString& text, RGBA* out)
+{
+    const QList< qreal > parts = parseSizeList(text);
+    if (parts.size() != 4 || !out) {
+        return false;
+    }
+    *out = RGBA(parts[ 0 ], parts[ 1 ], parts[ 2 ], parts[ 3 ]);
+    return true;
+}
+
+/**
+ * @brief 写 3D 运行期颜色到 <view>
+ *
+ * 3D 设置面板的「坐标轴/数字/标签/网格线颜色」直接修改 Qwt3DCoordinateSystem，
+ * 并不会同步回 Qwt3DTheme，只存 <theme> 会丢掉这些用户设置，因此单独按运行期值持久化。
+ */
+void save3DColorAttributes(Qwt3DCoordinateSystem* coordSys, QDomElement& viewEle)
+{
+    if (!coordSys) {
+        return;
+    }
+    viewEle.setAttribute(QStringLiteral("axescolor"), rgbaToString(coordSys->axesColor()));
+    viewEle.setAttribute(QStringLiteral("numbercolor"), rgbaToString(coordSys->numberColor()));
+    viewEle.setAttribute(QStringLiteral("labelcolor"), rgbaToString(coordSys->labelColor()));
+    viewEle.setAttribute(QStringLiteral("gridlinescolor"), rgbaToString(coordSys->gridLinesColor()));
+    viewEle.setAttribute(QStringLiteral("interiorgridlinescolor"),
+                         rgbaToString(coordSys->interiorGridLinesColor()));
+}
+
+/// 从 <view> 恢复 3D 运行期颜色（须在应用主题之后调用）
+void load3DColorAttributes(Qwt3DCoordinateSystem* coordSys, const QDomElement& viewEle)
+{
+    if (!coordSys) {
+        return;
+    }
+    RGBA c;
+    if (viewEle.hasAttribute(QStringLiteral("axescolor"))
+        && rgbaFromString(viewEle.attribute(QStringLiteral("axescolor")), &c)) {
+        coordSys->setAxesColor(c);
+    }
+    if (viewEle.hasAttribute(QStringLiteral("numbercolor"))
+        && rgbaFromString(viewEle.attribute(QStringLiteral("numbercolor")), &c)) {
+        coordSys->setNumberColor(c);
+    }
+    if (viewEle.hasAttribute(QStringLiteral("labelcolor"))
+        && rgbaFromString(viewEle.attribute(QStringLiteral("labelcolor")), &c)) {
+        coordSys->setLabelColor(c);
+    }
+    if (viewEle.hasAttribute(QStringLiteral("gridlinescolor"))
+        && rgbaFromString(viewEle.attribute(QStringLiteral("gridlinescolor")), &c)) {
+        coordSys->setGridLinesColor(c);
+    }
+    if (viewEle.hasAttribute(QStringLiteral("interiorgridlinescolor"))
+        && rgbaFromString(viewEle.attribute(QStringLiteral("interiorgridlinescolor")), &c)) {
+        coordSys->setInteriorGridLinesColor(c);
+    }
+}
+
+/**
+ * @brief 写 figure 的 <grid> 节点
+ *
+ * 只在保留式网格启用时写；成员网格坐标由调用方写到各自的 chart/chart3d 节点。
+ * 同时仍写 x/y/w/h（由 widgetNormRect 按网格换算而来），供旧版本/降级路径读取。
+ * @note QwtFigureGrid 当前没有 spacing 的 getter，写入端不写 wspace/hspace；
+ *       读取端仍支持这两个属性，待 qwt 补 getter 后写入端再补。
+ */
+void saveGridElement(const DAFigureWidget* fig, QDomDocument* doc, QDomElement& figEle)
+{
+    if (!fig || !fig->isGridLayoutEnabled()) {
+        return;
+    }
+    QwtFigureGrid* grid = fig->grid();
+    if (!grid || !grid->isEnabled()) {
+        return;
+    }
+    QDomElement gridEle = doc->createElement(QStringLiteral("grid"));
+    gridEle.setAttribute(QStringLiteral("rows"), grid->rowCount());
+    gridEle.setAttribute(QStringLiteral("cols"), grid->columnCount());
+    gridEle.setAttribute(QStringLiteral("rowSizes"), sizeListToString(fig->gridRowSizes()));
+    gridEle.setAttribute(QStringLiteral("colSizes"), sizeListToString(fig->gridColumnSizes()));
+    figEle.appendChild(gridEle);
+}
+
+/**
+ * @brief 读取 figure 的 <grid> 节点并启用网格
+ * @return 网格成功启用返回true；无 <grid> 节点返回false（走旧的自由布局路径）
+ */
+bool loadGridElement(DAFigureWidget* fig, const QDomElement& gridEle)
+{
+    if (!fig || gridEle.isNull()) {
+        return false;
+    }
+    const int rows = gridEle.attribute(QStringLiteral("rows")).toInt();
+    const int cols = gridEle.attribute(QStringLiteral("cols")).toInt();
+    if (rows <= 0 || cols <= 0) {
+        qWarning() << "DAXmlHelper::loadElement(figure): invalid <grid> row/column count" << rows << cols;
+        return false;
+    }
+    if (!fig->enableGridLayout(rows, cols)) {
+        qWarning() << "DAXmlHelper::loadElement(figure): enable grid layout failed" << rows << cols;
+        return false;
+    }
+    // 可选 spacing（写入端暂不写，读取端向前兼容）。
+    // 先设 spacing 再 setGridSizes：setGridSizes 末尾会把撤销基线同步为当前比例。
+    bool okW = false;
+    bool okH = false;
+    const qreal wspace = gridEle.attribute(QStringLiteral("wspace")).toDouble(&okW);
+    const qreal hspace = gridEle.attribute(QStringLiteral("hspace")).toDouble(&okH);
+    bool spacingApplied = false;
+    if (okW && okH) {
+        if (QwtFigureGrid* grid = fig->grid()) {
+            grid->setSpacing(wspace, hspace);
+            spacingApplied = true;
+        }
+    }
+    const QList< qreal > rowSizes = parseSizeList(gridEle.attribute(QStringLiteral("rowSizes")));
+    const QList< qreal > colSizes = parseSizeList(gridEle.attribute(QStringLiteral("colSizes")));
+    if (rowSizes.size() == rows && colSizes.size() == cols) {
+        if (!fig->setGridSizes(rowSizes, colSizes)) {
+            qWarning() << "DAXmlHelper::loadElement(figure): apply grid sizes failed";
+        }
+    } else {
+        if (!rowSizes.isEmpty() || !colSizes.isEmpty()) {
+            qWarning() << "DAXmlHelper::loadElement(figure): grid size count mismatch, keep equal tracks, expected"
+                       << rows << cols << "got" << rowSizes.size() << colSizes.size();
+        }
+        if (spacingApplied) {
+            // setSpacing 已经发过 sizesChanged（会置上“交互变更中”标记），这里用当前轨道比例
+            // 重新 setGridSizes（数值不变）把撤销基线与交互标记复位
+            fig->setGridSizes(fig->gridRowSizes(), fig->gridColumnSizes());
+        }
+    }
+    return true;
+}
+
+/**
+ * @brief 写单个 3D 子图的 <chart3d> 节点
+ *
+ * 一期只持久化「存在性 + 布局 + 视图 + 坐标轴 + 主题」，3D 图元数据不存（见 07 遗留项 O1），
+ * 由业务层按分析参数重算重建。
+ */
+QDomElement make3DChartElement(DAChart3DWidget* chart3d, QDomDocument* doc)
+{
+    QDomElement chart3dEle = doc->createElement(QStringLiteral("chart3d"));
+    Qwt3DPlot* plot        = static_cast< Qwt3DPlot* >(chart3d);
+    // --- view：旋转/平移/缩放/投影/背景/标题/光照/图例/坐标系 ---
+    QDomElement viewEle = doc->createElement(QStringLiteral("view"));
+    setNumberAttribute(viewEle, QStringLiteral("xrot"), plot->xRotation());
+    setNumberAttribute(viewEle, QStringLiteral("yrot"), plot->yRotation());
+    setNumberAttribute(viewEle, QStringLiteral("zrot"), plot->zRotation());
+    setNumberAttribute(viewEle, QStringLiteral("xshift"), plot->xShift());
+    setNumberAttribute(viewEle, QStringLiteral("yshift"), plot->yShift());
+    setNumberAttribute(viewEle, QStringLiteral("zshift"), plot->zShift());
+    setNumberAttribute(viewEle, QStringLiteral("xviewportshift"), plot->xViewportShift());
+    setNumberAttribute(viewEle, QStringLiteral("yviewportshift"), plot->yViewportShift());
+    setNumberAttribute(viewEle, QStringLiteral("xscale"), plot->xScale());
+    setNumberAttribute(viewEle, QStringLiteral("yscale"), plot->yScale());
+    setNumberAttribute(viewEle, QStringLiteral("zscale"), plot->zScale());
+    setNumberAttribute(viewEle, QStringLiteral("zoom"), plot->zoom());
+    viewEle.setAttribute(QStringLiteral("ortho"), plot->ortho() ? 1 : 0);
+    viewEle.setAttribute(QStringLiteral("aspectmode"), static_cast< int >(plot->aspectRatioMode()));
+    const RGBA bg = plot->backgroundRGBAColor();
+    viewEle.setAttribute(QStringLiteral("background"), rgbaToString(bg));
+    viewEle.setAttribute(QStringLiteral("title"), plot->title());
+    viewEle.setAttribute(QStringLiteral("lighting"), plot->lightingEnabled() ? 1 : 0);
+    setNumberAttribute(viewEle, QStringLiteral("xlightrot"), plot->xLightRotation());
+    setNumberAttribute(viewEle, QStringLiteral("ylightrot"), plot->yLightRotation());
+    setNumberAttribute(viewEle, QStringLiteral("zlightrot"), plot->zLightRotation());
+    setNumberAttribute(viewEle, QStringLiteral("xlightshift"), plot->xLightShift());
+    setNumberAttribute(viewEle, QStringLiteral("ylightshift"), plot->yLightShift());
+    setNumberAttribute(viewEle, QStringLiteral("zlightshift"), plot->zLightShift());
+    viewEle.setAttribute(QStringLiteral("legend"), plot->isColorLegendShown() ? 1 : 0);
+    if (Qwt3DCoordinateSystem* coordSys = plot->coordinates()) {
+        viewEle.setAttribute(QStringLiteral("coordstyle"), static_cast< int >(coordSys->style()));
+        double ticMajor = 0.0;
+        double ticMinor = 0.0;
+        coordSys->ticLength(ticMajor, ticMinor);
+        setNumberAttribute(viewEle, QStringLiteral("ticmajor"), ticMajor);
+        setNumberAttribute(viewEle, QStringLiteral("ticminor"), ticMinor);
+        viewEle.setAttribute(QStringLiteral("autoscale"), coordSys->autoScale() ? 1 : 0);
+        viewEle.setAttribute(QStringLiteral("linesmooth"), coordSys->lineSmooth() ? 1 : 0);
+        viewEle.setAttribute(QStringLiteral("autodecoration"), coordSys->autoDecoration() ? 1 : 0);
+        viewEle.setAttribute(QStringLiteral("tickposition"), static_cast< int >(coordSys->tickPosition()));
+        // 运行期颜色（设置面板直接改 coordsys，不会同步进 theme，必须单独持久化）
+        save3DColorAttributes(coordSys, viewEle);
+        // --- axes：12 根坐标轴的标签/刻度/缩放/范围/字体 ---
+        QDomElement axesEle = doc->createElement(QStringLiteral("axes"));
+        const std::vector< Qwt3DAxis >& axes = coordSys->axes;
+        for (size_t i = 0; i < axes.size(); ++i) {
+            const Qwt3DAxis& axis = axes[ i ];
+            QDomElement axisEle   = doc->createElement(QStringLiteral("axis"));
+            axisEle.setAttribute(QStringLiteral("index"), static_cast< uint >(i));
+            axisEle.setAttribute(QStringLiteral("label"), axis.labelString());
+            axisEle.setAttribute(QStringLiteral("majors"), axis.majors());
+            axisEle.setAttribute(QStringLiteral("minors"), axis.minors());
+            axisEle.setAttribute(QStringLiteral("scaling"), axis.scaling() ? 1 : 0);
+            axisEle.setAttribute(QStringLiteral("numbers"), axis.numbers() ? 1 : 0);
+            axisEle.setAttribute(QStringLiteral("autoscale"), axis.autoScale() ? 1 : 0);
+            double limStart = 0.0;
+            double limStop  = 0.0;
+            axis.limits(limStart, limStop);
+            setNumberAttribute(axisEle, QStringLiteral("limstart"), limStart);
+            setNumberAttribute(axisEle, QStringLiteral("limstop"), limStop);
+            axisEle.setAttribute(QStringLiteral("labelfont"), fontToBase64(axis.labelFont()));
+            axisEle.setAttribute(QStringLiteral("numberfont"), fontToBase64(axis.numberFont()));
+            // 逐轴标签/数字颜色：3D 轴设置面板直接写 Qwt3DAxis（不写 theme/coordsys 公共色），
+            // 这里按轴持久化，加载时在公共色之后恢复
+            axisEle.setAttribute(QStringLiteral("labelcolor"), rgbaToString(axis.labelColor()));
+            axisEle.setAttribute(QStringLiteral("numbercolor"), rgbaToString(axis.numberColor()));
+            axesEle.appendChild(axisEle);
+        }
+        chart3dEle.appendChild(axesEle);
+    }
+    chart3dEle.appendChild(viewEle);
+    // --- theme：复杂值类型，base64 保存完整主题 ---
+    QDomElement themeEle = doc->createElement(QStringLiteral("theme"));
+    themeEle.appendChild(doc->createTextNode(themeToBase64(plot->theme())));
+    chart3dEle.appendChild(themeEle);
+    return chart3dEle;
+}
+
+/// 从 <view> 节点恢复 3D 视图参数（缺省属性保持当前值）
+void load3DViewElement(Qwt3DPlot* plot, const QDomElement& viewEle)
+{
+    if (!plot || viewEle.isNull()) {
+        return;
+    }
+    double v0 = 0.0;
+    double v1 = 0.0;
+    double v2 = 0.0;
+    if (readDoubleAttr(viewEle, QStringLiteral("xrot"), &v0) && readDoubleAttr(viewEle, QStringLiteral("yrot"), &v1)
+        && readDoubleAttr(viewEle, QStringLiteral("zrot"), &v2)) {
+        plot->setRotation(v0, v1, v2);
+    }
+    if (readDoubleAttr(viewEle, QStringLiteral("xshift"), &v0) && readDoubleAttr(viewEle, QStringLiteral("yshift"), &v1)
+        && readDoubleAttr(viewEle, QStringLiteral("zshift"), &v2)) {
+        plot->setShift(v0, v1, v2);
+    }
+    if (readDoubleAttr(viewEle, QStringLiteral("xviewportshift"), &v0)
+        && readDoubleAttr(viewEle, QStringLiteral("yviewportshift"), &v1)) {
+        plot->setViewportShift(v0, v1);
+    }
+    if (readDoubleAttr(viewEle, QStringLiteral("xscale"), &v0) && readDoubleAttr(viewEle, QStringLiteral("yscale"), &v1)
+        && readDoubleAttr(viewEle, QStringLiteral("zscale"), &v2)) {
+        plot->setScale(v0, v1, v2);
+    }
+    if (readDoubleAttr(viewEle, QStringLiteral("zoom"), &v0)) {
+        plot->setZoom(v0);
+    }
+    bool b = false;
+    if (readBoolAttr(viewEle, QStringLiteral("ortho"), &b)) {
+        plot->setOrtho(b);
+    }
+    int iv = 0;
+    if (readIntAttr(viewEle, QStringLiteral("aspectmode"), &iv)) {
+        plot->setAspectRatioMode(static_cast< ASPECTRATIOMODE >(iv));
+    }
+    if (viewEle.hasAttribute(QStringLiteral("background"))) {
+        RGBA bg;
+        if (rgbaFromString(viewEle.attribute(QStringLiteral("background")), &bg)) {
+            plot->setBackgroundColor(bg);
+        }
+    }
+    if (viewEle.hasAttribute(QStringLiteral("title"))) {
+        plot->setTitle(viewEle.attribute(QStringLiteral("title")));
+    }
+    if (readBoolAttr(viewEle, QStringLiteral("legend"), &b)) {
+        plot->showColorLegend(b);
+    }
+    Qwt3DCoordinateSystem* coordSys = plot->coordinates();
+    if (!coordSys) {
+        return;
+    }
+    if (readIntAttr(viewEle, QStringLiteral("coordstyle"), &iv)) {
+        coordSys->setStyle(static_cast< COORDSTYLE >(iv));
+    }
+    if (readDoubleAttr(viewEle, QStringLiteral("ticmajor"), &v0)
+        && readDoubleAttr(viewEle, QStringLiteral("ticminor"), &v1)) {
+        coordSys->setTicLength(v0, v1);
+    }
+    if (readBoolAttr(viewEle, QStringLiteral("autoscale"), &b)) {
+        coordSys->setAutoScale(b);
+    }
+    if (readBoolAttr(viewEle, QStringLiteral("linesmooth"), &b)) {
+        coordSys->setLineSmooth(b);
+    }
+    if (readBoolAttr(viewEle, QStringLiteral("autodecoration"), &b)) {
+        coordSys->setAutoDecoration(b);
+    }
+    if (readIntAttr(viewEle, QStringLiteral("tickposition"), &iv)) {
+        coordSys->setTickPosition(static_cast< TICKPOSITION >(iv));
+    }
+    // 运行期颜色：必须在应用主题之后恢复，否则会被主题里的旧颜色覆盖
+    load3DColorAttributes(coordSys, viewEle);
+}
+
+/**
+ * @brief 恢复 3D 光照设置
+ *
+ * 必须在主题之后应用：Qwt3DTheme 内含光照预设，先设主题再按保存值覆盖光照开关/角度，
+ * 与既有 QDataStream 路径（theme → lightingEnabled）保持一致的语义。
+ */
+void load3DLightingElement(Qwt3DPlot* plot, const QDomElement& viewEle)
+{
+    if (!plot || viewEle.isNull()) {
+        return;
+    }
+    bool b = false;
+    if (readBoolAttr(viewEle, QStringLiteral("lighting"), &b)) {
+        plot->enableLighting(b);
+    }
+    double lr0 = 0.0;
+    double lr1 = 0.0;
+    double lr2 = 0.0;
+    if (readDoubleAttr(viewEle, QStringLiteral("xlightrot"), &lr0)
+        && readDoubleAttr(viewEle, QStringLiteral("ylightrot"), &lr1)
+        && readDoubleAttr(viewEle, QStringLiteral("zlightrot"), &lr2)) {
+        plot->setLightRotation(lr0, lr1, lr2);
+    }
+    if (readDoubleAttr(viewEle, QStringLiteral("xlightshift"), &lr0)
+        && readDoubleAttr(viewEle, QStringLiteral("ylightshift"), &lr1)
+        && readDoubleAttr(viewEle, QStringLiteral("zlightshift"), &lr2)) {
+        plot->setLightShift(lr0, lr1, lr2);
+    }
+}
+
+/// 从 <axes> 节点恢复 3D 坐标轴设置（仅恢复存在的轴，越界/坏数据跳过）
+void load3DAxesElement(DAChart3DWidget* chart3d, const QDomElement& axesEle)
+{
+    Qwt3DPlot* plot = static_cast< Qwt3DPlot* >(chart3d);
+    if (!plot || axesEle.isNull()) {
+        return;
+    }
+    Qwt3DCoordinateSystem* coordSys = plot->coordinates();
+    if (!coordSys) {
+        return;
+    }
+    QDomElement axisEle = axesEle.firstChildElement(QStringLiteral("axis"));
+    while (!axisEle.isNull()) {
+        int index = -1;
+        if (readIntAttr(axisEle, QStringLiteral("index"), &index)
+            && index >= 0 && index < static_cast< int >(coordSys->axes.size())) {
+            Qwt3DAxis& axis = coordSys->axes[ static_cast< size_t >(index) ];
+            if (axisEle.hasAttribute(QStringLiteral("label"))) {
+                // 走 DAChart3DWidget 的公开接口而不是直接改 Qwt3DAxis：
+                // get3DAxisLabel() 读的是 PrivateData 的标签缓存，直接改底层轴会让 getter 与真实状态不一致
+                chart3d->set3DAxisLabel(static_cast< AXIS >(index), axisEle.attribute(QStringLiteral("label")));
+            }
+            int iv = 0;
+            if (readIntAttr(axisEle, QStringLiteral("majors"), &iv)) {
+                axis.setMajors(iv);
+            }
+            if (readIntAttr(axisEle, QStringLiteral("minors"), &iv)) {
+                axis.setMinors(iv);
+            }
+            bool b = false;
+            if (readBoolAttr(axisEle, QStringLiteral("scaling"), &b)) {
+                axis.setScaling(b);
+            }
+            if (readBoolAttr(axisEle, QStringLiteral("numbers"), &b)) {
+                axis.setNumbers(b);
+            }
+            if (readBoolAttr(axisEle, QStringLiteral("autoscale"), &b)) {
+                axis.setAutoScale(b);
+            }
+            double limStart = 0.0;
+            double limStop  = 0.0;
+            if (readDoubleAttr(axisEle, QStringLiteral("limstart"), &limStart)
+                && readDoubleAttr(axisEle, QStringLiteral("limstop"), &limStop)) {
+                axis.setLimits(limStart, limStop);
+            }
+            bool fontOk      = false;
+            QFont labelFont  = fontFromBase64(axisEle.attribute(QStringLiteral("labelfont")), &fontOk);
+            if (fontOk) {
+                axis.setLabelFont(labelFont);
+            }
+            QFont numberFont = fontFromBase64(axisEle.attribute(QStringLiteral("numberfont")), &fontOk);
+            if (fontOk) {
+                axis.setNumberFont(numberFont);
+            }
+            // 逐轴颜色在公共色之后应用（本函数晚于 load3DColorAttributes），不被公共色覆盖
+            RGBA axisColor;
+            if (axisEle.hasAttribute(QStringLiteral("labelcolor"))
+                && rgbaFromString(axisEle.attribute(QStringLiteral("labelcolor")), &axisColor)) {
+                axis.setLabelColor(axisColor);
+            }
+            if (axisEle.hasAttribute(QStringLiteral("numbercolor"))
+                && rgbaFromString(axisEle.attribute(QStringLiteral("numbercolor")), &axisColor)) {
+                axis.setNumberColor(axisColor);
+            }
+        }
+        axisEle = axisEle.nextSiblingElement(QStringLiteral("axis"));
+    }
+}
+
+/// 从 <chart3d> 节点恢复 3D 子图的视图/主题/坐标轴（不恢复 3D 图元数据）
+void load3DChartElement(DAChart3DWidget* chart3d, const QDomElement& chart3dEle)
+{
+    if (!chart3d) {
+        return;
+    }
+    Qwt3DPlot* plot = static_cast< Qwt3DPlot* >(chart3d);
+    const QDomElement viewEle = chart3dEle.firstChildElement(QStringLiteral("view"));
+    // 应用顺序很重要：先应用主题（Qwt3DTheme::apply 会写背景色/坐标轴颜色等），
+    // 再用 <view> 的运行期值覆盖回来，否则用户自定义的背景/轴颜色会被主题旧值覆盖。
+    const QDomElement themeEle = chart3dEle.firstChildElement(QStringLiteral("theme"));
+    if (!themeEle.isNull()) {
+        Qwt3DTheme theme;
+        if (themeFromBase64(themeEle.text(), &theme)) {
+            plot->setTheme(theme);
+        } else {
+            qWarning() << "DAXmlHelper::loadElement(chart3d): invalid theme block, keep default theme";
+        }
+    }
+    load3DViewElement(plot, viewEle);
+    // 光照在主题之后应用（主题内含光照预设），与既有 QDataStream 路径语义一致
+    load3DLightingElement(plot, viewEle);
+    load3DAxesElement(chart3d, chart3dEle.firstChildElement(QStringLiteral("axes")));
+}
+
+/// 写成员的网格坐标属性（非网格成员不写），供读侧 setGridCell 使用
+void writeGridCellAttributes(const DAFigureWidget* fig, QWidget* member, QDomElement& ele)
+{
+    if (!fig || !member || !fig->isGridLayoutEnabled()) {
+        return;
+    }
+    QwtFigureGrid* grid = fig->grid();
+    if (!grid) {
+        return;
+    }
+    int row = -1;
+    int col = -1;
+    int rowSpan = 1;
+    int colSpan = 1;
+    if (!grid->gridPosition(member, &row, &col, &rowSpan, &colSpan)) {
+        return;
+    }
+    ele.setAttribute(QStringLiteral("grid-row"), row);
+    ele.setAttribute(QStringLiteral("grid-col"), col);
+    ele.setAttribute(QStringLiteral("grid-rowspan"), rowSpan);
+    ele.setAttribute(QStringLiteral("grid-colspan"), colSpan);
+}
+
+/// 读取成员网格坐标；无 grid-* 属性返回false
+bool readGridCellAttributes(const QDomElement& ele, int* row, int* col, int* rowSpan, int* colSpan)
+{
+    if (!ele.hasAttribute(QStringLiteral("grid-row")) || !ele.hasAttribute(QStringLiteral("grid-col"))) {
+        return false;
+    }
+    bool okRow = false;
+    bool okCol = false;
+    const int r = ele.attribute(QStringLiteral("grid-row")).toInt(&okRow);
+    const int c = ele.attribute(QStringLiteral("grid-col")).toInt(&okCol);
+    if (!okRow || !okCol) {
+        return false;
+    }
+    if (row) {
+        *row = r;
+    }
+    if (col) {
+        *col = c;
+    }
+    if (rowSpan) {
+        *rowSpan = ele.attribute(QStringLiteral("grid-rowspan"), QStringLiteral("1")).toInt();
+    }
+    if (colSpan) {
+        *colSpan = ele.attribute(QStringLiteral("grid-colspan"), QStringLiteral("1")).toInt();
+    }
+    return true;
+}
+
+/// 读取归一化矩形（旧版/降级路径的 x/y/w/h）；缺失/非法时给默认矩形，避免生成 0 尺寸子图
+QRectF readNormRect(const QDomElement& ele)
+{
+    QRectF pos;
+    pos.setX(ele.attribute(QStringLiteral("x")).toDouble());
+    pos.setY(ele.attribute(QStringLiteral("y")).toDouble());
+    pos.setWidth(ele.attribute(QStringLiteral("w")).toDouble());
+    pos.setHeight(ele.attribute(QStringLiteral("h")).toDouble());
+    if (pos.width() <= 0.0 || pos.height() <= 0.0) {
+        return QRectF(0.05, 0.05, 0.9, 0.9);
+    }
+    return pos;
+}
+}  // namespace
+
 //==============================================================
 // DAXmlHelperPrivate
 //==============================================================
@@ -1946,6 +2588,8 @@ DAXmlHelper::makeElement(const DAFigureWidget* fig, const QString& tagName, QDom
     const DAColorTheme cth  = fig->getColorTheme();
     QDomElement eleClrTheme = makeElement(&cth, QStringLiteral("colortheme"), doc);
     eleFig.appendChild(eleClrTheme);
+    // 保留式网格布局：网格 spec（行列数 + 轨道比例）
+    saveGridElement(fig, doc, eleFig);
     // 记录chart
     QDomElement chartsEle                = doc->createElement(QStringLiteral("charts"));
     const QList< DAChartWidget* > charts = fig->getCharts();
@@ -1957,10 +2601,28 @@ DAXmlHelper::makeElement(const DAFigureWidget* fig, const QString& tagName, QDom
         chartEle.setAttribute(QStringLiteral("y"), pos.y());
         chartEle.setAttribute(QStringLiteral("w"), pos.width());
         chartEle.setAttribute(QStringLiteral("h"), pos.height());
+        // 网格成员同时记录网格坐标（读侧优先按网格坐标登记）
+        writeGridCellAttributes(fig, chart, chartEle);
 
         chartsEle.appendChild(chartEle);
     }
     eleFig.appendChild(chartsEle);
+    // 记录3D子图（一期只存存在性/布局/视图/坐标轴/主题，不存3D图元数据）
+    const QList< DAChart3DWidget* > charts3d = fig->get3DCharts();
+    for (DAChart3DWidget* chart3d : charts3d) {
+        if (!chart3d) {
+            continue;
+        }
+        QDomElement chart3dEle = make3DChartElement(chart3d, doc);
+        // 位置：仍写 x/y/w/h，供旧版本/降级路径读取
+        const QRectF pos = fig->widgetNormRect(chart3d);
+        chart3dEle.setAttribute(QStringLiteral("x"), pos.x());
+        chart3dEle.setAttribute(QStringLiteral("y"), pos.y());
+        chart3dEle.setAttribute(QStringLiteral("w"), pos.width());
+        chart3dEle.setAttribute(QStringLiteral("h"), pos.height());
+        writeGridCellAttributes(fig, chart3d, chart3dEle);
+        eleFig.appendChild(chart3dEle);
+    }
     // 记录绑定关系
     const QList< DAChartAxisRangeBinder* > axisRangeBinders = fig->getBindAxisRangeInfos();
     if (axisRangeBinders.size() > 0) {
@@ -2022,6 +2684,8 @@ bool DAXmlHelper::loadElement(DAFigureWidget* fig,
     if (loadElement(&cth, &eleClrTheme)) {
         fig->setColorTheme(cth);
     }
+    // 保留式网格布局：必须先启用网格，后面才能按网格坐标登记成员
+    const bool gridEnabled = loadGridElement(fig, tag->firstChildElement(QStringLiteral("grid")));
     // chart
     QDomElement chartsEle = tag->firstChildElement(QStringLiteral("charts"));
     auto chartListEle     = chartsEle.childNodes();
@@ -2036,17 +2700,55 @@ bool DAXmlHelper::loadElement(DAFigureWidget* fig,
 
         std::unique_ptr< DAChartWidget > chart(fig->getChartFactory()->createChart());
 
-        // 获取位置
-        QRectF pos;
-        pos.setX(chartEle.attribute(QStringLiteral("x")).toDouble());
-        pos.setY(chartEle.attribute(QStringLiteral("y")).toDouble());
-        pos.setWidth(chartEle.attribute(QStringLiteral("w")).toDouble());
-        pos.setHeight(chartEle.attribute(QStringLiteral("h")).toDouble());
+        // 获取位置（网格模式仍是按网格换算出来的归一化矩形，作为降级路径）
+        const QRectF pos = readNormRect(chartEle);
         if (!loadElement(chart.get(), &chartEle, itemsMgr)) {
             continue;
         }
-        fig->addChart(chart.get(), pos);
+        // 网格模式：优先按网格坐标登记；登记失败（旧/坏数据）回退自由布局
+        bool added = false;
+        int row = 0;
+        int col = 0;
+        int rowSpan = 1;
+        int colSpan = 1;
+        if (gridEnabled && readGridCellAttributes(chartEle, &row, &col, &rowSpan, &colSpan)) {
+            added = fig->setGridCell(chart.get(), row, col, rowSpan, colSpan);
+            if (!added) {
+                qWarning() << "DAXmlHelper::loadElement(figure): grid cell" << row << col << rowSpan << colSpan
+                           << "rejected, fall back to free layout";
+            }
+        }
+        if (!added) {
+            fig->addChart(chart.get(), pos);
+        }
         chart.release();
+    }
+    // 3D 子图（旧工程无 <chart3d> 时行为不变）
+    auto figChildNodes = tag->childNodes();
+    for (int i = 0; i < figChildNodes.size(); ++i) {
+        QDomElement chart3dEle = figChildNodes.at(i).toElement();
+        if (chart3dEle.isNull() || chart3dEle.tagName() != QStringLiteral("chart3d")) {
+            continue;
+        }
+        std::unique_ptr< DAChart3DWidget > chart3d(new DAChart3DWidget());
+        load3DChartElement(chart3d.get(), chart3dEle);
+        const QRectF pos = readNormRect(chart3dEle);
+        bool added       = false;
+        int row          = 0;
+        int col          = 0;
+        int rowSpan      = 1;
+        int colSpan      = 1;
+        if (gridEnabled && readGridCellAttributes(chart3dEle, &row, &col, &rowSpan, &colSpan)) {
+            added = fig->setGridCell(chart3d.get(), row, col, rowSpan, colSpan);
+            if (!added) {
+                qWarning() << "DAXmlHelper::loadElement(figure): 3D grid cell" << row << col << rowSpan << colSpan
+                           << "rejected, fall back to free layout";
+            }
+        }
+        if (!added) {
+            fig->add3DChart(chart3d.get(), pos);
+        }
+        chart3d.release();
     }
     // 恢复绑定关系
     QDomElement axisRangeBindersEle = tag->firstChildElement(QStringLiteral("axisRangeBinders"));
@@ -2183,10 +2885,14 @@ QDomElement DAXmlHelper::makeElement(const DAChartWidget* chart,
     //!====================
     //! plot item
     //! 注意，这里仅仅保存plotitem的指针和映射关系，真实的保存将在线程中
+    //! transient 图元是派生数据（分析结果等），不记录 key：加载后由占用方重建
     //!====================
     QDomElement itemsEle        = doc->createElement(QStringLiteral("items"));
     const QwtPlotItemList items = chart->itemList();
     for (QwtPlotItem* item : items) {
+        if (chart->isItemTransient(item)) {
+            continue;
+        }
         QString key         = itemsMgr->recordItem(item);
         QDomElement itemEle = doc->createElement(QStringLiteral("item"));
         itemEle.setAttribute("key", key);

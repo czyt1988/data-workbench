@@ -1,4 +1,4 @@
-﻿#include "DAChartWidget.h"
+#include "DAChartWidget.h"
 // DAChartWidget.cpp
 #include "DAChartWidget.h"
 #include "DAChartUtil.h"
@@ -31,6 +31,7 @@
 #include <QPaintEvent>
 #include <QPainter>
 #include <QDebug>
+#include <QSet>
 
 namespace DA
 {
@@ -69,6 +70,8 @@ public:
     DAChartWidget::PannerFactory pannerFactory;
     DAChartWidget::PickerFactory pickerFactory;
     DAChartWidget::DataPickerFactory dataPickerFactory;
+    // transient 图元登记（只记录指针，不接管所有权；派生数据不进入 chart-data 持久化）
+    QSet< QwtPlotItem* > transientItems;
 };
 
 /**
@@ -123,6 +126,9 @@ DAChartWidget::DAChartWidget(QWidget* parent) : QwtPlot(parent), DA_PIMPL_CONSTR
 {
     d_ptr->initialize();
     enableMouseWheelZoom(true);  // 默认开启滚轮缩放
+    // 图元 detach（removeCurve/removePlotItem/clearAllData/占用方自行 detach）时同步清理
+    // transient 登记，避免 QSet 残留悬空指针、地址复用后把新图元误判为 transient
+    connect(this, &QwtPlot::itemAttached, this, &DAChartWidget::onPlotItemAttached);
 }
 
 /**
@@ -130,6 +136,10 @@ DAChartWidget::DAChartWidget(QWidget* parent) : QwtPlot(parent), DA_PIMPL_CONSTR
  */
 DAChartWidget::~DAChartWidget()
 {
+    // ~QwtPlot 析构时会 detach 仍挂在画布上的图元并 emit itemAttached(item,false)，
+    // 而此时本类的 PrivateData（d_ptr，含 transient 登记表）已经销毁，槽会访问悬空数据。
+    // 在派生析构体里先断开连接，避免析构期回调。
+    disconnect(this, &QwtPlot::itemAttached, this, &DAChartWidget::onPlotItemAttached);
     // 智能指针自动清理
 }
 
@@ -571,9 +581,68 @@ void DAChartWidget::removePlotItem(QwtPlotItem* item)
     if (!item) {
         return;
     }
-
+    DA_D(d);
+    d->transientItems.remove(item);
     item->detach();
     delete item;
+}
+
+/**
+ * @brief 标记/取消标记一个 transient 图元
+ *
+ * transient 图元是派生数据（例如信号分析结果曲线），它们不进入 chart-data 持久化：
+ * @ref DAXmlHelper::makeElement(const DAChartWidget*, ...) 记录图元 key 时跳过。
+ * 本类不接管图元所有权，也不负责删除 transient 图元（与现有图元所有权约定一致）。
+ * @note 图元 detach（含 removeCurve/removePlotItem/clearAllData 及占用方自行 detach）时会
+ *       自动注销 transient 登记；因此 detach 后重新 attach（例如 undo/redo 重建图元）必须
+ *       重新调用 setItemTransient，否则该图元会被当作普通图元持久化。
+ * @param item 图元，为空时忽略
+ * @param on true 标记为 transient，false 取消标记
+ */
+void DAChartWidget::setItemTransient(QwtPlotItem* item, bool on)
+{
+    DA_D(d);
+    if (!item) {
+        return;
+    }
+    if (on) {
+        d->transientItems.insert(item);
+    } else {
+        d->transientItems.remove(item);
+    }
+}
+
+/**
+ * @brief 判断图元是否为 transient 图元
+ * @param item 图元
+ * @return 已标记返回true；item为空返回false
+ */
+bool DAChartWidget::isItemTransient(const QwtPlotItem* item) const
+{
+    DA_DC(d);
+    if (!item) {
+        return false;
+    }
+    return d->transientItems.contains(const_cast< QwtPlotItem* >(item));
+}
+
+/**
+ * @brief 获取当前仍挂在图表上的 transient 图元
+ *
+ * 以图表实际图元列表为准做过滤，避免占用方直接 delete 图元后返回悬空指针。
+ * @return transient 图元列表（可能有多个）
+ */
+QList< QwtPlotItem* > DAChartWidget::transientItems() const
+{
+    DA_DC(d);
+    QList< QwtPlotItem* > res;
+    const QwtPlotItemList items = itemList();
+    for (QwtPlotItem* item : items) {
+        if (d->transientItems.contains(item)) {
+            res.append(item);
+        }
+    }
+    return res;
 }
 
 /**
@@ -582,12 +651,14 @@ void DAChartWidget::removePlotItem(QwtPlotItem* item)
  */
 void DAChartWidget::clearAllData()
 {
+    DA_D(d);
     const QwtPlotItemList items = itemList();
 
     // 删除所有数据相关的项目（保留网格、图例等显示元素）
     const QList< int > rttis = dataRttis();
     for (QwtPlotItem* item : items) {
         if (rttis.contains(item->rtti())) {
+            d->transientItems.remove(item);
             item->detach();
             delete item;
         }
@@ -1636,6 +1707,24 @@ void DAChartWidget::onLegendItemToggled(const QVariant& itemInfo, bool checked)
         item->setVisible(checked);
         replot();
     }
+}
+
+/**
+ * @brief 图元 attach/detach 联动，维护 transient 登记
+ *
+ * transient 图元仍由创建者管理所有权，插件可能直接 detach+delete（如 removeCurve 内部），
+ * 这里在图元 detach 时同步注销登记，避免 QSet 里残留悬空指针、地址复用后把新图元误判为
+ * transient 而静默漏存。
+ * @param item 发生 attach/detach 的图元
+ * @param on true=attach，false=detach
+ */
+void DAChartWidget::onPlotItemAttached(QwtPlotItem* item, bool on)
+{
+    if (on || !item) {
+        return;
+    }
+    DA_D(d);
+    d->transientItems.remove(item);
 }
 
 }  // namespace DA

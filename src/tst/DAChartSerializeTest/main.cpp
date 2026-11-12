@@ -12,24 +12,39 @@
 #include <QByteArray>
 #include <QColor>
 #include <QDataStream>
+#include <QDomDocument>
+#include <QFile>
+#include <QHash>
 #include <QImage>
 #include <QPen>
 #include <QPixmap>
 #include <QSet>
+#include <QSignalSpy>
+#include <QTemporaryDir>
 #include <QVariantMap>
 #include <cstring>
 #include <limits>
 #include <memory>
+#include <stdexcept>
 
+#include "Archive/DAChartItemArchive.h"
+#include "Archive/DAXmlHelper.h"
+#include "Archive/DAZipArchive.h"
+#include "Archive/DAZipArchiveTask_ChartItem.h"
+#include "Chart/DAChartItemsManager.h"
 #include "DAChart3DSerialize.h"
+#include "DAChartAxisRangeBinder.h"
 #include "DAChartPlotRenderer.h"
 #include "DAChartSerialize.h"
 #include "DAChartWidget.h"
+#include "DAFigureWidget.h"
 #include "DAPlotDataTypes.h"
 #include "qwt_colormap.h"
 #include "qwt_colormap_preset.h"
 #include "qwt_interval.h"
 #include "qwt_matrix_raster_data.h"
+#include "qwt_figure.h"
+#include "qwt_figure_grid.h"
 #include "qwt_plot_item.h"
 #include "qwt_plot_spectrogram.h"
 #include "qwt_plot_zoneitem.h"
@@ -93,6 +108,124 @@ double rasterValueAtCell(const QwtRasterData* rd, int nrows, int ncols, int row,
     const double y       = iy.minValue() + (row + 0.5) * iy.width() / nrows;
     return rd->value(x, y);
 }
+
+/// 归一化几何/比例比较（网格 layout 换算存在浮点误差）
+bool nearlyEqual(qreal lhs, qreal rhs, qreal eps = 1e-6)
+{
+    return qAbs(lhs - rhs) <= eps;
+}
+
+/// 解析 XML 里的逗号分隔实数列表（rowSizes/colSizes）
+QList< qreal > parseRealList(const QString& text)
+{
+    QList< qreal > result;
+    const QStringList parts = text.split(QLatin1Char(','), Qt::SkipEmptyParts);
+    for (const QString& part : parts) {
+        bool ok = false;
+        const qreal v = part.trimmed().toDouble(&ok);
+        if (ok) {
+            result.append(v);
+        }
+    }
+    return result;
+}
+
+/// 成员节点是否带完整的网格坐标属性
+bool hasGridCellAttributes(const QDomElement& ele)
+{
+    return ele.hasAttribute(QStringLiteral("grid-row")) && ele.hasAttribute(QStringLiteral("grid-col"))
+        && ele.hasAttribute(QStringLiteral("grid-rowspan")) && ele.hasAttribute(QStringLiteral("grid-colspan"));
+}
+
+/// 在 figure 元素下按 chart id 查找 <chart> 节点
+QDomElement findChartElement(const QDomElement& figureEle, const QString& chartId)
+{
+    const QDomElement chartsEle = figureEle.firstChildElement(QStringLiteral("charts"));
+    for (QDomElement ele = chartsEle.firstChildElement(QStringLiteral("chart")); !ele.isNull();
+         ele             = ele.nextSiblingElement(QStringLiteral("chart"))) {
+        if (ele.attribute(QStringLiteral("id")) == chartId) {
+            return ele;
+        }
+    }
+    return QDomElement();
+}
+
+/// 网格比例/几何列表比较
+bool realListNearlyEqual(const QList< qreal >& lhs, const QList< qreal >& rhs, qreal eps = 1e-6)
+{
+    if (lhs.size() != rhs.size()) {
+        return false;
+    }
+    for (int i = 0; i < lhs.size(); ++i) {
+        if (!nearlyEqual(lhs.at(i), rhs.at(i), eps)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+/// key 集合（DAChartItemsManager 内部 QHash 顺序不稳定，比较集合）
+QSet< QString > keySet(const QList< QString >& keys)
+{
+    QSet< QString > result;
+    for (const QString& key : keys) {
+        result.insert(key);
+    }
+    return result;
+}
+
+/// 内存 archive：验证 DAChartItemArchive 的 save/load，不依赖磁盘/zip
+class MemoryArchive : public DA::DAAbstractArchive
+{
+public:
+    MemoryArchive() : DA::DAAbstractArchive(nullptr)
+    {
+    }
+
+    bool write(const QString& relatePath, const QByteArray& byte) override
+    {
+        // 注入写失败/异常，用于验证 DAChartItemArchive::save 的单图元失败继续语义
+        if (throwWritePaths.contains(relatePath)) {
+            throw std::runtime_error("injected write failure");
+        }
+        if (failWritePaths.contains(relatePath)) {
+            return false;
+        }
+        m_files.insert(relatePath, byte);
+        return true;
+    }
+
+    QByteArray read(const QString& relatePath) override
+    {
+        return m_files.value(relatePath);
+    }
+
+    bool remove(const QString& relatePath) override
+    {
+        return m_files.remove(relatePath) > 0;
+    }
+
+    void saveAll(const QString& filePath) override
+    {
+        Q_UNUSED(filePath);
+    }
+
+    void loadAll(const QString& filePath) override
+    {
+        Q_UNUSED(filePath);
+    }
+
+    // 与真实存档语义一致：只要 key 存在就返回 true（0 字节文件也算存在）。
+    // DAChartItemArchive::load 依赖此语义区分「索引缺失」与「索引存在但为空/损坏」。
+    bool contains(const QString& relatePath) const override
+    {
+        return m_files.contains(relatePath);
+    }
+
+    QHash< QString, QByteArray > m_files;
+    QSet< QString > failWritePaths;
+    QSet< QString > throwWritePaths;
+};
 }  // namespace
 
 class DAChartSerializeTest : public QObject
@@ -123,6 +256,22 @@ private Q_SLOTS:
     void testScaleWidgetReadsV1Stream();
     // 区间高亮方向往返（水平区间重开后不能变垂直）
     void testZoneOrientationRoundTrip();
+    // transient 图元 API：标记/查询/列表，removePlotItem 后清理，空指针安全
+    void testTransientItemApi();
+    // transient 图元不进入 chart-data：<items> 与 itemsMgr 都只记录非 transient 图元
+    void testTransientItemSkippedInChartData();
+    // 析构时仍挂着 transient 图元不得崩溃（itemAttached 析构期悬空回调回归）
+    void testTransientChartDestruction();
+    // 网格 figure XML 往返：<grid> 行列/比例、成员 grid-* 坐标、x/y/w/h 兼容字段
+    void testFigureGridXmlRoundTrip();
+    // 旧工程兼容：无 <grid> 的 figure 走自由布局，且自由布局写出不带网格字段
+    void testLegacyFigureWithoutGrid();
+    // 非法 grid-* 坐标回退自由布局；缺 x/y/w/h 时回退默认矩形
+    void testInvalidGridMemberFallsBackToFreeLayout();
+    // DAChartItemArchive 内存 archive 往返（索引 + 每图元二进制）
+    void testChartItemArchiveMemoryRoundTrip();
+    // DAZipArchiveTask_ChartItem 真实 zip 往返（DAAppProject 图表存档路径）
+    void testZipArchiveTaskChartItemRoundTrip();
 };
 
 void DAChartSerializeTest::testSpectrogramZIntervalFallsBackToDataRange()
@@ -455,6 +604,572 @@ void DAChartSerializeTest::testZoneOrientationRoundTrip()
     QCOMPARE(dst.orientation(), Qt::Horizontal);
     QCOMPARE(dst.interval().minValue(), 2.0);
     QCOMPARE(dst.interval().maxValue(), 5.0);
+}
+
+void DAChartSerializeTest::testTransientItemApi()
+{
+    DA::DAChartWidget chart;
+    QwtPlotCurve* curveA   = chart.addCurve(QVector< double >{ 0.0, 1.0, 2.0 }, QVector< double >{ 0.0, 1.0, 4.0 },
+                                          QStringLiteral("curve-a"));
+    QwtPlotMarker* markerB = chart.addVerticalLine(2.0, QStringLiteral("marker-b"));
+    QVERIFY(curveA);
+    QVERIFY(markerB);
+
+    // 空指针安全：标记/查询空图元都不得崩溃
+    chart.setItemTransient(nullptr);
+    QVERIFY(!chart.isItemTransient(nullptr));
+    QVERIFY(chart.transientItems().isEmpty());
+
+    QVERIFY(!chart.isItemTransient(curveA));
+    chart.setItemTransient(curveA);
+    QVERIFY(chart.isItemTransient(curveA));
+    QVERIFY(!chart.isItemTransient(markerB));
+    QCOMPARE(chart.transientItems().size(), 1);
+    QCOMPARE(chart.transientItems().first(), curveA);
+
+    // 取消标记
+    chart.setItemTransient(curveA, false);
+    QVERIFY(!chart.isItemTransient(curveA));
+    QVERIFY(chart.transientItems().isEmpty());
+
+    // removePlotItem 负责清除 transient 登记（删除后不能残留悬空指针）
+    chart.setItemTransient(curveA);
+    chart.removePlotItem(curveA);
+    QVERIFY(chart.transientItems().isEmpty());
+    QVERIFY(chart.itemList().contains(markerB));
+
+    // 外部直接 detach（不经过 removePlotItem/removeCurve）也必须注销 transient 登记
+    QwtPlotCurve* detachedCurve = chart.addCurve(QVector< double >{ 0.0, 1.0 }, QVector< double >{ 5.0, 6.0 },
+                                                 QStringLiteral("detached-curve"));
+    QVERIFY(detachedCurve);
+    chart.setItemTransient(detachedCurve);
+    QVERIFY(chart.isItemTransient(detachedCurve));
+    detachedCurve->detach();
+    QVERIFY2(!chart.isItemTransient(detachedCurve), "detach must clear the transient registration");
+    QVERIFY(!chart.transientItems().contains(detachedCurve));
+    delete detachedCurve;  // detach 后图表不再持有，测试自行释放
+
+    // clearAllData：删除所有数据图元后不能残留 transient 登记
+    QwtPlotCurve* clearedCurve = chart.addCurve(QVector< double >{ 0.0, 1.0 }, QVector< double >{ 7.0, 8.0 },
+                                                QStringLiteral("cleared-curve"));
+    QVERIFY(clearedCurve);
+    chart.setItemTransient(clearedCurve);
+    QVERIFY(chart.isItemTransient(clearedCurve));
+    chart.clearAllData();
+    QVERIFY(chart.transientItems().isEmpty());
+}
+
+void DAChartSerializeTest::testTransientItemSkippedInChartData()
+{
+    DA::DAChartWidget chart;
+    QwtPlotCurve* curveA   = chart.addCurve(QVector< double >{ 0.0, 1.0 }, QVector< double >{ 2.0, 3.0 },
+                                          QStringLiteral("transient-curve"));
+    QwtPlotMarker* markerB = chart.addVerticalLine(1.0, QStringLiteral("persistent-marker"));
+    QVERIFY(curveA);
+    QVERIFY(markerB);
+    chart.setItemTransient(curveA);
+
+    QDomDocument doc;
+    DA::DAChartItemsManager mgr;
+    const QDomElement chartEle = DA::DAXmlHelper::makeElement(&chart, QStringLiteral("chart"), &doc, &mgr);
+    QVERIFY(!chartEle.isNull());
+
+    // <items> 只能出现持久化图元（marker），transient 曲线不记录 key
+    const QDomElement itemsEle = chartEle.firstChildElement(QStringLiteral("items"));
+    QVERIFY(!itemsEle.isNull());
+    QCOMPARE(itemsEle.childNodes().size(), 1);
+    const QDomElement itemEle = itemsEle.firstChildElement(QStringLiteral("item"));
+    QVERIFY(!itemEle.isNull());
+    QCOMPARE(itemEle.attribute(QStringLiteral("key")), mgr.itemToKey(markerB));
+
+    QCOMPARE(mgr.items().size(), 1);
+    QVERIFY(mgr.items().contains(markerB));
+    QVERIFY(mgr.itemToKey(curveA).isEmpty());
+    // 注意：本用例刻意保持 chart 析构时仍挂着 transient 曲线 + marker。
+    // 它同时作为 itemAttached 析构期悬空回调崩溃的回归用例：
+    // QwtPlot::~QwtPlot 会在派生 PrivateData 销毁后 emit itemAttached，若未先 disconnect 会堆破坏。
+}
+
+void DAChartSerializeTest::testTransientChartDestruction()
+{
+    // 回归：DAChartWidget 析构时若仍挂着图元，QwtPlot::~QwtPlot 会 emit itemAttached。
+    // 生产侧必须先在 ~DAChartWidget 中断开该信号，否则槽会访问已销毁的 PrivateData（堆破坏）。
+    // 本用例不做显式清理：函数结束让 chart 带着 transient 曲线 + marker 自然析构，不崩即通过。
+    DA::DAChartWidget chart;
+    QwtPlotCurve* curve   = chart.addCurve(QVector< double >{ 0.0, 1.0 }, QVector< double >{ 1.0, 2.0 },
+                                         QStringLiteral("dtor-curve"));
+    QwtPlotMarker* marker = chart.addVerticalLine(1.0, QStringLiteral("dtor-marker"));
+    QVERIFY(curve);
+    QVERIFY(marker);
+    chart.setItemTransient(curve);
+    QVERIFY(chart.isItemTransient(curve));
+}
+
+void DAChartSerializeTest::testFigureGridXmlRoundTrip()
+{
+    std::unique_ptr< DA::DAFigureWidget > src(new DA::DAFigureWidget());
+    src->resize(800, 600);
+    src->show();
+    QTest::qWaitForWindowExposed(src.get());
+
+    QVERIFY(src->enableGridLayout(2, 2));
+    QVERIFY(src->setGridSizes(QList< qreal >{ 0.6, 0.4 }, QList< qreal >{ 0.25, 0.75 }));
+
+    DA::DAChartWidget* c00 = src->getChartFactory()->createChart();
+    QVERIFY(c00);
+    c00->setPlotId(QStringLiteral("grid-c00"));
+    QVERIFY(src->setGridCell(c00, 0, 0, 1, 2));
+
+    DA::DAChartWidget* c10 = src->getChartFactory()->createChart();
+    QVERIFY(c10);
+    c10->setPlotId(QStringLiteral("grid-c10"));
+    QVERIFY(src->setGridCell(c10, 1, 0));
+
+    DA::DAChartWidget* c11 = src->getChartFactory()->createChart();
+    QVERIFY(c11);
+    c11->setPlotId(QStringLiteral("grid-c11"));
+    QVERIFY(src->setGridCell(c11, 1, 1));
+
+    QCOMPARE(src->getChartCount(), 3);
+
+    // 网格 figure 同时带坐标轴联动/对齐：XML 往返不崩且成员数量不变
+    QVERIFY(src->bindAxisRange(c00, QwtAxis::YLeft, c10, QwtAxis::YLeft));
+    QCOMPARE(src->getBindAxisRangeInfos().size(), 1);
+    const DA::DAChartAxisRangeBinder* srcBinder = src->getBindAxisRangeInfos().first();
+    QVERIFY(srcBinder);
+    QCOMPARE(srcBinder->getSourcePlot()->plotId(), QStringLiteral("grid-c00"));
+    QCOMPARE(srcBinder->getFollowerPlot()->plotId(), QStringLiteral("grid-c10"));
+    QCOMPARE(srcBinder->getSourceAxis(), static_cast< int >(QwtAxis::YLeft));
+    QCOMPARE(srcBinder->getFollowerAxis(), static_cast< int >(QwtAxis::YLeft));
+    src->figure()->addAxisAlignment(QList< QwtPlot* >{ c00, c10 }, QwtAxis::YLeft);
+    QCOMPARE(src->figure()->axisAligmentCount(), 1);
+
+    QDomDocument doc;
+    DA::DAChartItemsManager mgr;
+    const QDomElement figEle = DA::DAXmlHelper::makeElement(src.get(), QStringLiteral("figure"), &doc, &mgr);
+    QVERIFY(!figEle.isNull());
+
+    // <grid> spec：2x2 + 保存的比例
+    const QDomElement gridEle = figEle.firstChildElement(QStringLiteral("grid"));
+    QVERIFY(!gridEle.isNull());
+    QCOMPARE(gridEle.attribute(QStringLiteral("rows")).toInt(), 2);
+    QCOMPARE(gridEle.attribute(QStringLiteral("cols")).toInt(), 2);
+    QVERIFY(realListNearlyEqual(parseRealList(gridEle.attribute(QStringLiteral("rowSizes"))),
+                                QList< qreal >{ 0.6, 0.4 }));
+    QVERIFY(realListNearlyEqual(parseRealList(gridEle.attribute(QStringLiteral("colSizes"))),
+                                QList< qreal >{ 0.25, 0.75 }));
+
+    // 每个成员同时写 grid-* 与旧的 x/y/w/h
+    const auto verifyChartElement = [&](const QString& chartId, int row, int col, int rowSpan, int colSpan) {
+        const QDomElement chartEle = findChartElement(figEle, chartId);
+        QVERIFY2(!chartEle.isNull(), qPrintable(QStringLiteral("missing chart element: %1").arg(chartId)));
+        QVERIFY(hasGridCellAttributes(chartEle));
+        QCOMPARE(chartEle.attribute(QStringLiteral("grid-row")).toInt(), row);
+        QCOMPARE(chartEle.attribute(QStringLiteral("grid-col")).toInt(), col);
+        QCOMPARE(chartEle.attribute(QStringLiteral("grid-rowspan")).toInt(), rowSpan);
+        QCOMPARE(chartEle.attribute(QStringLiteral("grid-colspan")).toInt(), colSpan);
+        // 旧版本/降级路径仍需读到 x/y/w/h（网格换算值）
+        QVERIFY(chartEle.hasAttribute(QStringLiteral("x")));
+        QVERIFY(chartEle.hasAttribute(QStringLiteral("y")));
+        QVERIFY(chartEle.hasAttribute(QStringLiteral("w")));
+        QVERIFY(chartEle.hasAttribute(QStringLiteral("h")));
+    };
+    verifyChartElement(QStringLiteral("grid-c00"), 0, 0, 1, 2);
+    verifyChartElement(QStringLiteral("grid-c10"), 1, 0, 1, 1);
+    verifyChartElement(QStringLiteral("grid-c11"), 1, 1, 1, 1);
+
+    // 载入到全新 figure
+    std::unique_ptr< DA::DAFigureWidget > dst(new DA::DAFigureWidget());
+    dst->resize(800, 600);
+    dst->show();
+    QTest::qWaitForWindowExposed(dst.get());
+    QVERIFY(DA::DAXmlHelper::loadElement(dst.get(), &figEle, &mgr));
+
+    QVERIFY(dst->isGridLayoutEnabled());
+    QVERIFY(dst->grid());
+    QCOMPARE(dst->grid()->rowCount(), 2);
+    QCOMPARE(dst->grid()->columnCount(), 2);
+    QVERIFY(realListNearlyEqual(dst->gridRowSizes(), src->gridRowSizes()));
+    QVERIFY(realListNearlyEqual(dst->gridColumnSizes(), src->gridColumnSizes()));
+    QCOMPARE(dst->getChartCount(), 3);
+    // <axisRangeBinders>/<axisAliment> 与网格布局共存时往返不崩、chart 数不变
+    QCOMPARE(dst->getBindAxisRangeInfos().size(), 1);
+    const DA::DAChartAxisRangeBinder* dstBinder = dst->getBindAxisRangeInfos().first();
+    QVERIFY(dstBinder);
+    // 端点不能接反：source/follower 的 plotId 与保存前一致
+    QCOMPARE(dstBinder->getSourcePlot()->plotId(), QStringLiteral("grid-c00"));
+    QCOMPARE(dstBinder->getFollowerPlot()->plotId(), QStringLiteral("grid-c10"));
+    QCOMPARE(dstBinder->getSourceAxis(), static_cast< int >(QwtAxis::YLeft));
+    QCOMPARE(dstBinder->getFollowerAxis(), static_cast< int >(QwtAxis::YLeft));
+    QCOMPARE(dst->figure()->axisAligmentCount(), 1);
+
+    const auto verifyLoadedGridPosition = [&](const QString& chartId, int row, int col, int rowSpan, int colSpan) {
+        DA::DAChartWidget* chart = qobject_cast< DA::DAChartWidget* >(dst->findPlotById(chartId));
+        QVERIFY2(chart, qPrintable(QStringLiteral("missing loaded chart: %1").arg(chartId)));
+        int r = -1;
+        int c = -1;
+        int rs = -1;
+        int cs = -1;
+        QVERIFY(dst->grid()->gridPosition(chart, &r, &c, &rs, &cs));
+        QCOMPARE(r, row);
+        QCOMPARE(c, col);
+        QCOMPARE(rs, rowSpan);
+        QCOMPARE(cs, colSpan);
+    };
+    verifyLoadedGridPosition(QStringLiteral("grid-c00"), 0, 0, 1, 2);
+    verifyLoadedGridPosition(QStringLiteral("grid-c10"), 1, 0, 1, 1);
+    verifyLoadedGridPosition(QStringLiteral("grid-c11"), 1, 1, 1, 1);
+}
+
+void DAChartSerializeTest::testLegacyFigureWithoutGrid()
+{
+    // ① 自由布局写端不得写入 <grid> 或 grid-* 属性（旧工程/旧版本兼容路径）
+    std::unique_ptr< DA::DAFigureWidget > freeFig(new DA::DAFigureWidget());
+    freeFig->resize(640, 480);
+    freeFig->show();
+    QTest::qWaitForWindowExposed(freeFig.get());
+    DA::DAChartWidget* freeChart = freeFig->createChart(0.1f, 0.2f, 0.3f, 0.4f);
+    QVERIFY(freeChart);
+    freeChart->setPlotId(QStringLiteral("free-chart"));
+
+    QDomDocument freeDoc;
+    DA::DAChartItemsManager freeMgr;
+    const QDomElement freeEle = DA::DAXmlHelper::makeElement(freeFig.get(), QStringLiteral("figure"), &freeDoc, &freeMgr);
+    QVERIFY(!freeEle.isNull());
+    QVERIFY(freeEle.firstChildElement(QStringLiteral("grid")).isNull());
+    const QDomElement freeChartEle = findChartElement(freeEle, QStringLiteral("free-chart"));
+    QVERIFY(!freeChartEle.isNull());
+    QVERIFY(!hasGridCellAttributes(freeChartEle));
+    QVERIFY(freeChartEle.hasAttribute(QStringLiteral("x")));
+    QVERIFY(freeChartEle.hasAttribute(QStringLiteral("y")));
+    QVERIFY(freeChartEle.hasAttribute(QStringLiteral("w")));
+    QVERIFY(freeChartEle.hasAttribute(QStringLiteral("h")));
+
+    // ② 手写旧工程 XML：只有 <charts>/<chart x y w h>，没有 <grid>/<chart3d>
+    QDomDocument legacyDoc;
+    QDomElement legacyFigEle = legacyDoc.createElement(QStringLiteral("figure"));
+    legacyFigEle.setAttribute(QStringLiteral("id"), QStringLiteral("legacy-figure"));
+    legacyDoc.appendChild(legacyFigEle);
+    QDomElement legacyChartsEle = legacyDoc.createElement(QStringLiteral("charts"));
+    legacyFigEle.appendChild(legacyChartsEle);
+    const auto addLegacyChart = [&](const QString& id, qreal x, qreal y, qreal w, qreal h) {
+        QDomElement chartEle = legacyDoc.createElement(QStringLiteral("chart"));
+        chartEle.setAttribute(QStringLiteral("id"), id);
+        chartEle.setAttribute(QStringLiteral("x"), x);
+        chartEle.setAttribute(QStringLiteral("y"), y);
+        chartEle.setAttribute(QStringLiteral("w"), w);
+        chartEle.setAttribute(QStringLiteral("h"), h);
+        chartEle.appendChild(legacyDoc.createElement(QStringLiteral("items")));
+        legacyChartsEle.appendChild(chartEle);
+    };
+    addLegacyChart(QStringLiteral("legacy-1"), 0.05, 0.1, 0.4, 0.3);
+    addLegacyChart(QStringLiteral("legacy-2"), 0.5, 0.55, 0.45, 0.4);
+
+    std::unique_ptr< DA::DAFigureWidget > legacy(new DA::DAFigureWidget());
+    legacy->resize(640, 480);
+    legacy->show();
+    QTest::qWaitForWindowExposed(legacy.get());
+    DA::DAChartItemsManager legacyMgr;
+    QVERIFY(DA::DAXmlHelper::loadElement(legacy.get(), &legacyFigEle, &legacyMgr));
+
+    QVERIFY(!legacy->isGridLayoutEnabled());
+    QCOMPARE(legacy->getChartCount(), 2);
+
+    const auto verifyLegacyGeometry = [&](const QString& id, qreal x, qreal y, qreal w, qreal h) {
+        QwtPlot* plot = legacy->findPlotById(id);
+        QVERIFY2(plot, qPrintable(QStringLiteral("missing legacy chart: %1").arg(id)));
+        const QRectF rect = legacy->axesNormRect(plot);
+        QVERIFY2(nearlyEqual(rect.x(), x), qPrintable(QStringLiteral("%1 x=%2").arg(id).arg(rect.x())));
+        QVERIFY2(nearlyEqual(rect.y(), y), qPrintable(QStringLiteral("%1 y=%2").arg(id).arg(rect.y())));
+        QVERIFY2(nearlyEqual(rect.width(), w), qPrintable(QStringLiteral("%1 w=%2").arg(id).arg(rect.width())));
+        QVERIFY2(nearlyEqual(rect.height(), h), qPrintable(QStringLiteral("%1 h=%2").arg(id).arg(rect.height())));
+    };
+    verifyLegacyGeometry(QStringLiteral("legacy-1"), 0.05, 0.1, 0.4, 0.3);
+    verifyLegacyGeometry(QStringLiteral("legacy-2"), 0.5, 0.55, 0.45, 0.4);
+}
+
+void DAChartSerializeTest::testInvalidGridMemberFallsBackToFreeLayout()
+{
+    // ① 网格坐标非法（9,0 超出 2x2）：回退自由布局，位置用 x/y/w/h
+    QDomDocument doc;
+    QDomElement figEle = doc.createElement(QStringLiteral("figure"));
+    figEle.setAttribute(QStringLiteral("id"), QStringLiteral("bad-grid-figure"));
+    doc.appendChild(figEle);
+    QDomElement gridEle = doc.createElement(QStringLiteral("grid"));
+    gridEle.setAttribute(QStringLiteral("rows"), 2);
+    gridEle.setAttribute(QStringLiteral("cols"), 2);
+    gridEle.setAttribute(QStringLiteral("rowSizes"), QStringLiteral("0.5,0.5"));
+    gridEle.setAttribute(QStringLiteral("colSizes"), QStringLiteral("0.5,0.5"));
+    figEle.appendChild(gridEle);
+    QDomElement chartsEle = doc.createElement(QStringLiteral("charts"));
+    figEle.appendChild(chartsEle);
+    QDomElement chartEle = doc.createElement(QStringLiteral("chart"));
+    chartEle.setAttribute(QStringLiteral("id"), QStringLiteral("bad-grid-chart"));
+    chartEle.setAttribute(QStringLiteral("grid-row"), 9);
+    chartEle.setAttribute(QStringLiteral("grid-col"), 0);
+    chartEle.setAttribute(QStringLiteral("x"), 0.1);
+    chartEle.setAttribute(QStringLiteral("y"), 0.2);
+    chartEle.setAttribute(QStringLiteral("w"), 0.5);
+    chartEle.setAttribute(QStringLiteral("h"), 0.6);
+    chartEle.appendChild(doc.createElement(QStringLiteral("items")));
+    chartsEle.appendChild(chartEle);
+
+    std::unique_ptr< DA::DAFigureWidget > fig(new DA::DAFigureWidget());
+    fig->resize(640, 480);
+    fig->show();
+    QTest::qWaitForWindowExposed(fig.get());
+    DA::DAChartItemsManager mgr;
+    QVERIFY(DA::DAXmlHelper::loadElement(fig.get(), &figEle, &mgr));
+    QVERIFY(fig->isGridLayoutEnabled());
+    QCOMPARE(fig->getChartCount(), 1);
+
+    auto* badChart = qobject_cast< DA::DAChartWidget* >(fig->findPlotById(QStringLiteral("bad-grid-chart")));
+    QVERIFY(badChart);
+    int r = 0;
+    int c = 0;
+    int rs = 0;
+    int cs = 0;
+    QVERIFY2(!fig->grid()->gridPosition(badChart, &r, &c, &rs, &cs),
+             "invalid grid-* attributes must not register the chart as a grid member");
+    const QRectF badRect = fig->axesNormRect(badChart);
+    QVERIFY(nearlyEqual(badRect.x(), 0.1));
+    QVERIFY(nearlyEqual(badRect.y(), 0.2));
+    QVERIFY(nearlyEqual(badRect.width(), 0.5));
+    QVERIFY(nearlyEqual(badRect.height(), 0.6));
+
+    // ② 缺 x/y/w/h 且无合法 grid-*：回退默认矩形 (0.05,0.05,0.9,0.9)，不能生成 0 尺寸子图
+    QDomDocument defaultDoc;
+    QDomElement defaultFigEle = defaultDoc.createElement(QStringLiteral("figure"));
+    defaultFigEle.setAttribute(QStringLiteral("id"), QStringLiteral("default-rect-figure"));
+    defaultDoc.appendChild(defaultFigEle);
+    QDomElement defaultGridEle = defaultDoc.createElement(QStringLiteral("grid"));
+    defaultGridEle.setAttribute(QStringLiteral("rows"), 2);
+    defaultGridEle.setAttribute(QStringLiteral("cols"), 2);
+    defaultFigEle.appendChild(defaultGridEle);
+    QDomElement defaultChartsEle = defaultDoc.createElement(QStringLiteral("charts"));
+    defaultFigEle.appendChild(defaultChartsEle);
+    QDomElement defaultChartEle = defaultDoc.createElement(QStringLiteral("chart"));
+    defaultChartEle.setAttribute(QStringLiteral("id"), QStringLiteral("no-geometry-chart"));
+    defaultChartEle.appendChild(defaultDoc.createElement(QStringLiteral("items")));
+    defaultChartsEle.appendChild(defaultChartEle);
+
+    std::unique_ptr< DA::DAFigureWidget > defaultFig(new DA::DAFigureWidget());
+    defaultFig->resize(640, 480);
+    defaultFig->show();
+    QTest::qWaitForWindowExposed(defaultFig.get());
+    DA::DAChartItemsManager defaultMgr;
+    QVERIFY(DA::DAXmlHelper::loadElement(defaultFig.get(), &defaultFigEle, &defaultMgr));
+    QCOMPARE(defaultFig->getChartCount(), 1);
+    auto* defaultChart = qobject_cast< DA::DAChartWidget* >(defaultFig->findPlotById(QStringLiteral("no-geometry-chart")));
+    QVERIFY(defaultChart);
+    QVERIFY(!defaultFig->grid()->gridPosition(defaultChart, nullptr, nullptr, nullptr, nullptr));
+    const QRectF defaultRect = defaultFig->axesNormRect(defaultChart);
+    QVERIFY(nearlyEqual(defaultRect.x(), 0.05));
+    QVERIFY(nearlyEqual(defaultRect.y(), 0.05));
+    QVERIFY(nearlyEqual(defaultRect.width(), 0.9));
+    QVERIFY(nearlyEqual(defaultRect.height(), 0.9));
+}
+
+void DAChartSerializeTest::testChartItemArchiveMemoryRoundTrip()
+{
+    // 源绘图：两条不同长度/数据/标题的曲线
+    DA::DAChartWidget chart;
+    QwtPlotCurve* curveA = chart.addCurve(QVector< double >{ 0.0, 1.0, 2.0, 3.0 },
+                                          QVector< double >{ 10.0, 11.0, 12.0, 13.0 }, QStringLiteral("A"));
+    QwtPlotCurve* curveB
+        = chart.addCurve(QVector< double >{ 5.0, 6.0, 7.0 }, QVector< double >{ 1.0, 2.0, 3.0 }, QStringLiteral("B"));
+    QVERIFY(curveA);
+    QVERIFY(curveB);
+
+    DA::DAChartItemsManager srcMgr;
+    QDomDocument doc;
+    DA::DAXmlHelper::makeElement(&chart, QStringLiteral("chart"), &doc, &srcMgr);
+    QCOMPARE(srcMgr.items().size(), 2);
+
+    MemoryArchive mem;
+    QString error;
+    QVERIFY2(DA::DAChartItemArchive::save(&mem, &srcMgr, QStringLiteral("chart-data"), &error), qPrintable(error));
+
+    const QString indexRelPath = QStringLiteral("chart-data/") + DA::DAChartItemArchive::itemsIndexFileName();
+    QVERIFY2(mem.contains(indexRelPath), qPrintable(QStringLiteral("missing index: %1").arg(indexRelPath)));
+    const QList< QString > srcKeys = srcMgr.keys();
+    QCOMPARE(srcKeys.size(), 2);
+    for (const QString& key : srcKeys) {
+        QVERIFY2(mem.contains(QStringLiteral("chart-data/%1").arg(key)),
+                 qPrintable(QStringLiteral("missing item file for key: %1").arg(key)));
+    }
+    // 索引内容：<items> 下 2 个 <item key rtti/>
+    QDomDocument indexDoc;
+    QVERIFY(indexDoc.setContent(mem.read(indexRelPath)));
+    QCOMPARE(indexDoc.documentElement().tagName(), QStringLiteral("items"));
+    QCOMPARE(indexDoc.documentElement().childNodes().size(), 2);
+
+    // ① 单图元 write 返回 false：整体 save 仍 true + errorMessage，索引/其它图元仍写入
+    const QString firstItemPath = QStringLiteral("chart-data/%1").arg(srcKeys.first());
+    MemoryArchive writeFailMem;
+    writeFailMem.failWritePaths.insert(firstItemPath);
+    QString writeFailError;
+    QVERIFY2(DA::DAChartItemArchive::save(&writeFailMem, &srcMgr, QStringLiteral("chart-data"), &writeFailError),
+             "a single item write failure must not abort the whole save");
+    QVERIFY(!writeFailError.isEmpty());
+    QVERIFY(writeFailMem.contains(indexRelPath));
+    QVERIFY(!writeFailMem.contains(firstItemPath));
+    for (const QString& key : srcKeys) {
+        if (key == srcKeys.first()) {
+            continue;
+        }
+        QVERIFY2(writeFailMem.contains(QStringLiteral("chart-data/%1").arg(key)),
+                 qPrintable(QStringLiteral("other item file must still be written: %1").arg(key)));
+    }
+    // task 的 lastError 也应带上该失败信息
+    MemoryArchive writeFailTaskMem;
+    writeFailTaskMem.failWritePaths.insert(firstItemPath);
+    DA::DAZipArchiveTask_ChartItem writeFailTask(QStringLiteral("chart-data"), srcMgr);
+    QVERIFY(writeFailTask.exec(&writeFailTaskMem, DA::DAAbstractArchiveTask::WriteMode));
+    QVERIFY(!writeFailTask.getLastError().isEmpty());
+
+    // ② 单图元 write 抛 std::runtime_error：save 捕获异常后继续，整体 true 且不崩
+    MemoryArchive throwWriteMem;
+    throwWriteMem.throwWritePaths.insert(firstItemPath);
+    QString throwWriteError;
+    QVERIFY2(DA::DAChartItemArchive::save(&throwWriteMem, &srcMgr, QStringLiteral("chart-data"), &throwWriteError),
+             "a throwing item write must not abort the whole save");
+    QVERIFY(!throwWriteError.isEmpty());
+    QVERIFY(throwWriteMem.contains(indexRelPath));
+    QVERIFY(!throwWriteMem.contains(firstItemPath));
+
+    // 读回：key 集合、图元数量、类型与数据大小一致
+    DA::DAChartItemsManager dstMgr;
+    QVERIFY2(DA::DAChartItemArchive::load(&mem, &dstMgr, QStringLiteral("chart-data"), &error), qPrintable(error));
+    QCOMPARE(dstMgr.items().size(), 2);
+    QCOMPARE(keySet(dstMgr.keys()), keySet(srcKeys));
+    for (const QString& key : srcKeys) {
+        auto* restored = dynamic_cast< QwtPlotCurve* >(dstMgr.keyToItem(key));
+        QVERIFY2(restored, qPrintable(QStringLiteral("missing restored curve: %1").arg(key)));
+        QCOMPARE(restored->rtti(), static_cast< int >(QwtPlotItem::Rtti_PlotCurve));
+        const QString title = restored->title().text();
+        QVERIFY(title == QStringLiteral("A") || title == QStringLiteral("B"));
+        QCOMPARE(static_cast< int >(restored->dataSize()), title == QStringLiteral("A") ? 4 : 3);
+    }
+
+    // 无索引：旧工程/空绘图视为成功且不加载任何图元
+    MemoryArchive emptyMem;
+    DA::DAChartItemsManager emptyMgr;
+    QVERIFY(DA::DAChartItemArchive::load(&emptyMem, &emptyMgr, QStringLiteral("chart-data")));
+    QVERIFY(emptyMgr.items().isEmpty());
+
+    // 索引存在但为 0 字节：不能当成「旧工程无索引」，必须返回 false
+    MemoryArchive zeroIndexMem;
+    zeroIndexMem.m_files.insert(indexRelPath, QByteArray());
+    DA::DAChartItemsManager zeroIndexMgr;
+    QString zeroIndexError;
+    QVERIFY2(!DA::DAChartItemArchive::load(&zeroIndexMem, &zeroIndexMgr, QStringLiteral("chart-data"), &zeroIndexError),
+             "an existing but empty chart-items.xml must be reported as an error");
+    QVERIFY(!zeroIndexError.isEmpty());
+    QVERIFY(zeroIndexMgr.items().isEmpty());
+
+    // 索引存在但 XML 损坏：返回 false 且 errorMessage 非空
+    MemoryArchive badIndexMem;
+    badIndexMem.m_files.insert(indexRelPath, QByteArrayLiteral("not xml"));
+    DA::DAChartItemsManager badIndexMgr;
+    QString badIndexError;
+    QVERIFY2(!DA::DAChartItemArchive::load(&badIndexMem, &badIndexMgr, QStringLiteral("chart-data"), &badIndexError),
+             "a corrupt chart-items.xml must be reported as an error");
+    QVERIFY(!badIndexError.isEmpty());
+    QVERIFY(badIndexMgr.items().isEmpty());
+
+    // 单个图元数据损坏：跳过坏图元，整体仍 true，并把原因带进 errorMessage
+    MemoryArchive damagedItemMem;
+    damagedItemMem.m_files = mem.m_files;
+    damagedItemMem.m_files.insert(QStringLiteral("chart-data/%1").arg(srcKeys.first()), QByteArrayLiteral("broken-item"));
+    DA::DAChartItemsManager damagedItemMgr;
+    QString damagedItemError;
+    QVERIFY2(DA::DAChartItemArchive::load(&damagedItemMem, &damagedItemMgr, QStringLiteral("chart-data"),
+                                          &damagedItemError),
+             "a single corrupt item must not abort the whole load");
+    QCOMPARE(damagedItemMgr.items().size(), 1);
+    QVERIFY(!damagedItemError.isEmpty());
+    qDeleteAll(damagedItemMgr.items());
+
+    qDeleteAll(dstMgr.items());
+}
+
+void DAChartSerializeTest::testZipArchiveTaskChartItemRoundTrip()
+{
+    QTemporaryDir tempDir;
+    QVERIFY(tempDir.isValid());
+    const QString zipPath = tempDir.filePath(QStringLiteral("chart-data.zip"));
+
+    DA::DAChartWidget chart;
+    QVERIFY(chart.addCurve(QVector< double >{ 0.0, 1.0, 2.0 }, QVector< double >{ 4.0, 5.0, 6.0 },
+                           QStringLiteral("zip-A")));
+    QVERIFY(chart.addCurve(QVector< double >{ 3.0, 4.0 }, QVector< double >{ 7.0, 8.0 }, QStringLiteral("zip-B")));
+
+    DA::DAChartItemsManager srcMgr;
+    QDomDocument doc;
+    DA::DAXmlHelper::makeElement(&chart, QStringLiteral("chart"), &doc, &srcMgr);
+    QCOMPARE(srcMgr.items().size(), 2);
+
+    // 写：真实 zip（等价于 DAAppProject 的 chart-data 存档路径）
+    {
+        DA::DAZipArchive zip;
+        QSignalSpy finished(&zip, &DA::DAAbstractArchive::taskFinished);
+        auto saveTask = std::make_shared< DA::DAZipArchiveTask_ChartItem >(QStringLiteral("chart-data"), srcMgr);
+        zip.appendTask(saveTask);
+        zip.saveAll(zipPath);
+
+        QCOMPARE(finished.count(), 1);
+        QCOMPARE(finished.takeFirst().at(0).toInt(), static_cast< int >(DA::DAAbstractArchive::SaveSuccess));
+        QVERIFY2(saveTask->getLastError().isEmpty(), qPrintable(saveTask->getLastError()));
+    }
+    QVERIFY(QFile::exists(zipPath));
+
+    // 读：新任务/新 manager
+    DA::DAZipArchive zipIn;
+    auto loadTask = std::make_shared< DA::DAZipArchiveTask_ChartItem >(QStringLiteral("chart-data"));
+    QSignalSpy finishedIn(&zipIn, &DA::DAAbstractArchive::taskFinished);
+    zipIn.appendTask(loadTask);
+    zipIn.loadAll(zipPath);
+
+    QCOMPARE(finishedIn.count(), 1);
+    QCOMPARE(finishedIn.takeFirst().at(0).toInt(), static_cast< int >(DA::DAAbstractArchive::LoadSuccess));
+    QVERIFY2(loadTask->getLastError().isEmpty(), qPrintable(loadTask->getLastError()));
+
+    const DA::DAChartItemsManager& dstMgr = loadTask->getChartItemsManager();
+    QCOMPARE(dstMgr.items().size(), 2);
+    QCOMPARE(keySet(dstMgr.keys()), keySet(srcMgr.keys()));
+    for (const QString& key : srcMgr.keys()) {
+        auto* srcCurve      = dynamic_cast< QwtPlotCurve* >(srcMgr.keyToItem(key));
+        auto* restoredCurve = dynamic_cast< QwtPlotCurve* >(dstMgr.keyToItem(key));
+        QVERIFY(srcCurve);
+        QVERIFY2(restoredCurve, qPrintable(QStringLiteral("missing zip-restored curve: %1").arg(key)));
+        QCOMPARE(restoredCurve->title().text(), srcCurve->title().text());
+        QCOMPARE(static_cast< int >(restoredCurve->dataSize()), static_cast< int >(srcCurve->dataSize()));
+    }
+
+    // K：真实 zip 中索引存在但为 0 字节 → 载入失败且 lastError 非空
+    const QString emptyIndexZipPath = tempDir.filePath(QStringLiteral("chart-data-empty-index.zip"));
+    {
+        DA::DAZipArchive emptyIndexZip;
+        QVERIFY(emptyIndexZip.setBaseFilePath(emptyIndexZipPath));
+        QVERIFY(emptyIndexZip.create());
+        QVERIFY(emptyIndexZip.write(QStringLiteral("chart-data/") + DA::DAChartItemArchive::itemsIndexFileName(),
+                                    QByteArray()));
+        emptyIndexZip.close();
+    }
+    QVERIFY(QFile::exists(emptyIndexZipPath));
+
+    DA::DAZipArchive emptyIndexZipIn;
+    auto emptyIndexLoadTask = std::make_shared< DA::DAZipArchiveTask_ChartItem >(QStringLiteral("chart-data"));
+    QSignalSpy emptyIndexFinished(&emptyIndexZipIn, &DA::DAAbstractArchive::taskFinished);
+    emptyIndexZipIn.appendTask(emptyIndexLoadTask);
+    emptyIndexZipIn.loadAll(emptyIndexZipPath);
+    QCOMPARE(emptyIndexFinished.count(), 1);
+    QCOMPARE(emptyIndexFinished.takeFirst().at(0).toInt(), static_cast< int >(DA::DAAbstractArchive::LoadFailed));
+    QVERIFY2(!emptyIndexLoadTask->getLastError().isEmpty(),
+             "a 0-byte chart-items.xml in a real zip must make the chart-item task fail");
+
+    qDeleteAll(dstMgr.items());
 }
 
 int main(int argc, char* argv[])

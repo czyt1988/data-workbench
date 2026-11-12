@@ -58,6 +58,9 @@ public Q_SLOTS:
 	virtual void loadAll(const QString& filePath) = 0;
 
 public:
+	// 检查存档内是否存在指定路径（默认返回false；能区分“存在但为空”的存档如zip应覆盖）
+	virtual bool contains(const QString& relatePath) const;
+
 	// 转换为临时路径
 	static QString toTemporaryPath(const QString& path);
 	// 替换文件

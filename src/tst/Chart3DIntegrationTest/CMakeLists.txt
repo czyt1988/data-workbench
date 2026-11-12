@@ -4,6 +4,9 @@
 # DAFigure 模块以 PRIVATE 链接 qwt，头文件路径和库不传递到下游消费者。
 # 测试直接 include qwt3d 头文件并使用 Qwt3D* 类型，必须显式导入 qwt 依赖。
 find_package(qwt CONFIG REQUIRED)
+# DAXmlHelper.h 会间接拉入 DAPyNode/pybind11 头文件，需要 Python 开发头文件
+find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
+find_package(pybind11 PATHS ${DAWorkbench_INSTALL_DIR}/share/cmake)
 
 da_add_test(
     NAME Chart3DIntegrationTest
@@ -20,7 +23,10 @@ da_add_test(
         DAWorkbench::DAUtils
         qwt::plot
         qwt::plot3d
+        ${Python3_LIBRARIES}
+        pybind11::headers
     INCLUDE_PRIVATE
+        ${Python3_INCLUDE_DIRS}
         ${CMAKE_CURRENT_LIST_DIR}/../../APP
         ${CMAKE_CURRENT_LIST_DIR}/../../DAFigure
         ${CMAKE_CURRENT_LIST_DIR}/../../DAFigure/Models

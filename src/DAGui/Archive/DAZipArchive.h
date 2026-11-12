@@ -1,4 +1,4 @@
-﻿#ifndef DAZIPARCHIVE_H
+#ifndef DAZIPARCHIVE_H
 #define DAZIPARCHIVE_H
 #include "DAGuiAPI.h"
 #include "Archive/DAAbstractArchive.h"
@@ -45,7 +45,7 @@ public:
 	// 列出所有文件
 	QStringList getAllFiles() const;
 	// 检查文件是否存在
-	bool contains(const QString& relatePath) const;
+	bool contains(const QString& relatePath) const override;
 
 	//==============
 	// 归档信息

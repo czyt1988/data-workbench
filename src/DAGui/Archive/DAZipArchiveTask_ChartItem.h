@@ -1,4 +1,4 @@
-﻿#ifndef DAZIPARCHIVETASK_CHARTITEM_H
+#ifndef DAZIPARCHIVETASK_CHARTITEM_H
 #define DAZIPARCHIVETASK_CHARTITEM_H
 #include "DAGuiAPI.h"
 #include "Archive/DAAbstractArchiveTask.h"
@@ -9,6 +9,8 @@ class DAZipArchive;
 
 /**
  * @brief 把QwtPlotItem写zip命令
+ *
+ * 读写逻辑已抽到 @ref DAChartItemArchive，本任务只负责在存档任务队列/线程中调用它。
  */
 class DAGUI_API DAZipArchiveTask_ChartItem : public DAAbstractArchiveTask
 {
@@ -29,16 +31,10 @@ public:
     void setLastError(const QString& lastError);
 
 private:
-    QByteArray toXml() const;
-    bool fromXml(DAZipArchive* zip, QList< QPair< QString, int > >& res);
-    bool writeChartItems(DAZipArchive* zip, const DAChartItemsManager* itemsData);
-	bool readChartItems(DAZipArchive* zip, DAChartItemsManager* itemsData);
-	static QString chartItemsMgrXmlFileName();
-
-private:
 	QString mZipRelateFolderPath;
     DAChartItemsManager mItemsManager;
     QString mLastError;
 };
 }
 #endif  // DAZIPARCHIVETASK_CHARTITEM_H
+

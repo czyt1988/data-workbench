@@ -1,5 +1,6 @@
 #include <QtTest/QtTest>
 #include <QApplication>
+#include <QDomDocument>
 #include <QSignalSpy>
 #include <QSurfaceFormat>
 #include <QUndoStack>
@@ -7,12 +8,17 @@
 #include <QDataStream>
 
 // 测试目标
+#include "Archive/DAXmlHelper.h"
+#include "Chart/DAChartItemsManager.h"
 #include "DAFigureWidget.h"
 #include "DAChart3DWidget.h"
 #include "DAFigureElementSelection.h"
 #include "DAFigureTreeModel.h"
 #include "DAChart3DSerialize.h"
 #include "DAChart3DPlotItemFactory.h"
+
+// qwt
+#include "qwt_figure_grid.h"
 
 // qwt3d
 #include "qwt3d_plot.h"
@@ -24,7 +30,34 @@
 #include "qwt3d_types.h"
 
 // std::vector
+#include <memory>
 #include <vector>
+
+namespace
+{
+/// 浮点比较（视图/缩放参数经 XML 文本往返，1e-6 足够）
+bool nearlyEqual(double lhs, double rhs, double eps = 1e-6)
+{
+    return qAbs(lhs - rhs) <= eps;
+}
+
+/// 主题按生产路径（Qwt3DTheme 二进制序列化）转字节，便于二分比对
+QByteArray serializeTheme(const Qwt3DTheme& theme)
+{
+    QByteArray bytes;
+    QDataStream out(&bytes, QIODevice::WriteOnly);
+    out.setVersion(QDataStream::Qt_5_12);
+    out << theme;
+    return bytes;
+}
+
+/// RGBA 分量比较（3D 颜色是 double 0..1，XML 文本往返误差远小于 1e-6）
+bool rgbaNearlyEqual(const RGBA& lhs, const RGBA& rhs, double eps = 1e-6)
+{
+    return nearlyEqual(lhs.r, rhs.r, eps) && nearlyEqual(lhs.g, rhs.g, eps) && nearlyEqual(lhs.b, rhs.b, eps)
+        && nearlyEqual(lhs.a, rhs.a, eps);
+}
+}  // namespace
 
 /**
  * @brief 3D 绘图集成测试
@@ -37,6 +70,7 @@
  * 5. 序列化/反序列化往返
  * 6. 混合 2D/3D 场景
  * 7. undo/redo 命令
+ * 8. figure XML 中 3D 子图的布局/视图/主题/坐标轴往返
  */
 class Chart3DIntegrationTest : public QObject
 {
@@ -65,6 +99,12 @@ private slots:
     void testUndoRedo();
     // 测试9：网格数据布局为 z[row][column]（行列不等也不能转置）
     void testGridDataRowMajorLayout();
+    // 测试10：figure XML 中 3D 子图的网格布局/视图/主题/坐标轴往返
+    void test3DSubChartXmlRoundTrip();
+    // 测试11：3D-only figure 的 XML 不包含 chart item 数据
+    void test3DOnlyFigureNoChartItemData();
+    // 测试12：旧工程 figure XML 无 <chart3d> 时 3D 数量为 0、2D 正常恢复
+    void testLegacyFigureWithout3DXml();
 
 private:
     DA::DAFigureWidget* mFigure { nullptr };
@@ -548,6 +588,270 @@ void Chart3DIntegrationTest::testGridDataRowMajorLayout()
             }
         }
     }
+}
+
+/**
+ * @brief 测试10：figure XML 中 3D 子图的布局/视图/主题/坐标轴往返
+ *
+ * 覆盖 T5 的 XML 3D 子图持久化（一期只存存在性/布局/视图/主题/坐标轴，不存 3D 图元数据）。
+ */
+void Chart3DIntegrationTest::test3DSubChartXmlRoundTrip()
+{
+    std::unique_ptr< DA::DAFigureWidget > fig1(new DA::DAFigureWidget());
+    fig1->resize(800, 600);
+    fig1->show();
+    QTest::qWaitForWindowExposed(fig1.get());
+
+    QVERIFY(fig1->enableGridLayout(2, 2));
+    QVERIFY(fig1->setGridSizes(QList< qreal >{ 0.55, 0.45 }, QList< qreal >{ 0.4, 0.6 }));
+
+    // 2D 子图 (0,0) 与 3D 子图 (1,1) 混合，验证 2D 流程不受 3D 持久化影响
+    DA::DAChartWidget* chart2d = fig1->getChartFactory()->createChart();
+    QVERIFY(chart2d);
+    chart2d->setPlotId(QStringLiteral("xml-2d"));
+    QVERIFY(fig1->setGridCell(chart2d, 0, 0));
+
+    DA::DAChart3DWidget* chart3d = new DA::DAChart3DWidget();
+    QVERIFY(chart3d->coordinates());
+    chart3d->applyTheme(Qwt3DTheme::Scientific);
+    // 运行期颜色：theme 不含用户在设置面板改的这些值，必须单独写 <view> 并在主题之后恢复。
+    // 旧实现先 view 后主题，theme.apply() 会把背景/轴颜色覆盖回主题色（reviewer 应修-1）。
+    chart3d->set3DBackgroundColor(Qt::red);
+    chart3d->set3DAxesColor(Qt::blue);
+    chart3d->set3DGridLinesColor(Qt::green);
+    const RGBA expectedBackground     = chart3d->backgroundRGBAColor();
+    const RGBA expectedAxesColor      = chart3d->coordinates()->axesColor();
+    const RGBA expectedGridLinesColor = chart3d->coordinates()->gridLinesColor();
+    QVERIFY2(rgbaNearlyEqual(expectedBackground, RGBA(1.0, 0.0, 0.0, 1.0)), "background should be red");
+    QVERIFY2(rgbaNearlyEqual(expectedAxesColor, RGBA(0.0, 0.0, 1.0, 1.0)), "axes color should be blue");
+    QVERIFY2(rgbaNearlyEqual(expectedGridLinesColor, RGBA(0.0, 1.0, 0.0, 1.0)),
+             "grid lines color should be green");
+
+    // G：公共 label/number 色设为黄/青，轴 0 再单独设红/绿。
+    // 加载时必须先恢复公共色、再逐轴覆盖；顺序反了轴 0 会退回黄/青。
+    chart3d->coordinates()->setLabelColor(RGBA(1.0, 1.0, 0.0, 1.0));
+    chart3d->coordinates()->setNumberColor(RGBA(0.0, 1.0, 1.0, 1.0));
+    chart3d->coordinates()->axes[ 0 ].setLabelColor(RGBA(1.0, 0.0, 0.0, 1.0));
+    chart3d->coordinates()->axes[ 0 ].setNumberColor(RGBA(0.0, 1.0, 0.0, 1.0));
+    const RGBA expectedCommonLabelColor  = chart3d->coordinates()->labelColor();
+    const RGBA expectedCommonNumberColor = chart3d->coordinates()->numberColor();
+    const RGBA expectedAxis0LabelColor   = chart3d->coordinates()->axes[ 0 ].labelColor();
+    const RGBA expectedAxis0NumberColor  = chart3d->coordinates()->axes[ 0 ].numberColor();
+    QVERIFY2(rgbaNearlyEqual(expectedCommonLabelColor, RGBA(1.0, 1.0, 0.0, 1.0)), "common label color = yellow");
+    QVERIFY2(rgbaNearlyEqual(expectedCommonNumberColor, RGBA(0.0, 1.0, 1.0, 1.0)), "common number color = cyan");
+    QVERIFY2(rgbaNearlyEqual(expectedAxis0LabelColor, RGBA(1.0, 0.0, 0.0, 1.0)), "axis0 label color = red");
+    QVERIFY2(rgbaNearlyEqual(expectedAxis0NumberColor, RGBA(0.0, 1.0, 0.0, 1.0)), "axis0 number color = green");
+
+    chart3d->setRotation(30.0, 45.0, 15.0);
+    chart3d->setZoom(1.7);
+    chart3d->setOrtho(true);
+    chart3d->setTitle(QStringLiteral("wf"));
+    chart3d->set3DAxisLabel(X1, QStringLiteral("time"));
+    QCOMPARE(chart3d->coordinates()->axes[ 0 ].labelString(), QStringLiteral("time"));
+    QVERIFY(fig1->setGridCell(chart3d, 1, 1));
+
+    const QByteArray expectedTheme = serializeTheme(chart3d->theme());
+    QVERIFY(!expectedTheme.isEmpty());
+
+    DA::DAChartItemsManager mgr;
+    QDomDocument doc;
+    const QDomElement figEle = DA::DAXmlHelper::makeElement(fig1.get(), QStringLiteral("figure"), &doc, &mgr);
+    QVERIFY(!figEle.isNull());
+
+    // <chart3d> 节点：网格坐标 + 旧版 x/y/w/h + 视图/坐标轴/主题子节点
+    const QDomElement c3dEle = figEle.firstChildElement(QStringLiteral("chart3d"));
+    QVERIFY(!c3dEle.isNull());
+    QVERIFY(c3dEle.hasAttribute(QStringLiteral("grid-row")));
+    QVERIFY(c3dEle.hasAttribute(QStringLiteral("grid-col")));
+    QCOMPARE(c3dEle.attribute(QStringLiteral("grid-row")).toInt(), 1);
+    QCOMPARE(c3dEle.attribute(QStringLiteral("grid-col")).toInt(), 1);
+    QCOMPARE(c3dEle.attribute(QStringLiteral("grid-rowspan")).toInt(), 1);
+    QCOMPARE(c3dEle.attribute(QStringLiteral("grid-colspan")).toInt(), 1);
+    QVERIFY(c3dEle.hasAttribute(QStringLiteral("x")));
+    QVERIFY(c3dEle.hasAttribute(QStringLiteral("y")));
+    QVERIFY(c3dEle.hasAttribute(QStringLiteral("w")));
+    QVERIFY(c3dEle.hasAttribute(QStringLiteral("h")));
+
+    const QDomElement viewEle = c3dEle.firstChildElement(QStringLiteral("view"));
+    QVERIFY(!viewEle.isNull());
+    QVERIFY(nearlyEqual(viewEle.attribute(QStringLiteral("xrot")).toDouble(), 30.0));
+    QVERIFY(nearlyEqual(viewEle.attribute(QStringLiteral("yrot")).toDouble(), 45.0));
+    QVERIFY(nearlyEqual(viewEle.attribute(QStringLiteral("zrot")).toDouble(), 15.0));
+    QVERIFY(nearlyEqual(viewEle.attribute(QStringLiteral("zoom")).toDouble(), 1.7));
+    QCOMPARE(viewEle.attribute(QStringLiteral("ortho")).toInt(), 1);
+    QCOMPARE(viewEle.attribute(QStringLiteral("title")), QStringLiteral("wf"));
+    // 运行期颜色属性必须写进 <view>（否则重开后丢失用户设置）
+    QVERIFY(viewEle.hasAttribute(QStringLiteral("background")));
+    QVERIFY(viewEle.hasAttribute(QStringLiteral("axescolor")));
+    QVERIFY(viewEle.hasAttribute(QStringLiteral("gridlinescolor")));
+    QVERIFY(viewEle.attribute(QStringLiteral("background")).startsWith(QStringLiteral("1,0,0")));
+    QVERIFY(viewEle.attribute(QStringLiteral("axescolor")).startsWith(QStringLiteral("0,0,1")));
+
+    const QDomElement axesEle = c3dEle.firstChildElement(QStringLiteral("axes"));
+    QVERIFY(!axesEle.isNull());
+    QCOMPARE(axesEle.childNodes().size(), 12);
+    const QDomElement axis0Ele = axesEle.firstChildElement(QStringLiteral("axis"));
+    QVERIFY(!axis0Ele.isNull());
+    QCOMPARE(axis0Ele.attribute(QStringLiteral("index")).toInt(), 0);
+    QCOMPARE(axis0Ele.attribute(QStringLiteral("label")), QStringLiteral("time"));
+    // G：逐轴颜色属性必须写入 <axis>，且是轴 0 自己的值（不是公共色）
+    QVERIFY(axis0Ele.hasAttribute(QStringLiteral("labelcolor")));
+    QVERIFY(axis0Ele.hasAttribute(QStringLiteral("numbercolor")));
+    QVERIFY(axis0Ele.attribute(QStringLiteral("labelcolor")).startsWith(QStringLiteral("1,0,0")));
+    QVERIFY(axis0Ele.attribute(QStringLiteral("numbercolor")).startsWith(QStringLiteral("0,1,0")));
+
+    const QDomElement themeEle = c3dEle.firstChildElement(QStringLiteral("theme"));
+    QVERIFY(!themeEle.isNull());
+    QVERIFY(!themeEle.text().isEmpty());
+
+    // 2D 成员也带网格坐标（与 3D 同一条网格恢复路径）
+    const QDomElement chart2dEle = figEle.firstChildElement(QStringLiteral("charts"))
+                                       .firstChildElement(QStringLiteral("chart"));
+    QVERIFY(!chart2dEle.isNull());
+    QCOMPARE(chart2dEle.attribute(QStringLiteral("id")), QStringLiteral("xml-2d"));
+    QVERIFY(chart2dEle.hasAttribute(QStringLiteral("grid-row")));
+    QCOMPARE(chart2dEle.attribute(QStringLiteral("grid-row")).toInt(), 0);
+    QCOMPARE(chart2dEle.attribute(QStringLiteral("grid-col")).toInt(), 0);
+
+    // 读回新 figure
+    std::unique_ptr< DA::DAFigureWidget > fig2(new DA::DAFigureWidget());
+    fig2->resize(800, 600);
+    fig2->show();
+    QTest::qWaitForWindowExposed(fig2.get());
+    QVERIFY(DA::DAXmlHelper::loadElement(fig2.get(), &figEle, &mgr));
+
+    QVERIFY(fig2->isGridLayoutEnabled());
+    QCOMPARE(fig2->getChartCount(), 1);
+    QCOMPARE(fig2->get3DCharts().size(), 1);
+
+    DA::DAChart3DWidget* restored3d = fig2->get3DCharts().first();
+    QVERIFY(restored3d);
+    QVERIFY(nearlyEqual(restored3d->xRotation(), 30.0));
+    QVERIFY(nearlyEqual(restored3d->yRotation(), 45.0));
+    QVERIFY(nearlyEqual(restored3d->zRotation(), 15.0));
+    QVERIFY(nearlyEqual(restored3d->zoom(), 1.7));
+    QVERIFY(restored3d->ortho());
+    QCOMPARE(restored3d->title(), QStringLiteral("wf"));
+    QCOMPARE(serializeTheme(restored3d->theme()), expectedTheme);
+
+    // A：背景/轴/网格线颜色必须在主题之后恢复（不能只信 theme blob）
+    QVERIFY2(rgbaNearlyEqual(restored3d->backgroundRGBAColor(), expectedBackground),
+             "background color must survive the XML round trip");
+    QVERIFY(restored3d->coordinates());
+    QVERIFY2(rgbaNearlyEqual(restored3d->coordinates()->axesColor(), expectedAxesColor),
+             "axes color must survive the XML round trip");
+    QVERIFY2(rgbaNearlyEqual(restored3d->coordinates()->gridLinesColor(), expectedGridLinesColor),
+             "grid lines color must survive the XML round trip");
+    // G：公共色先恢复所有轴，逐轴色最后覆盖；轴 0 必须是红色/绿色，其它轴保持公共黄/青
+    QVERIFY2(rgbaNearlyEqual(restored3d->coordinates()->labelColor(), expectedCommonLabelColor),
+             "common label color must survive the XML round trip");
+    QVERIFY2(rgbaNearlyEqual(restored3d->coordinates()->numberColor(), expectedCommonNumberColor),
+             "common number color must survive the XML round trip");
+    QVERIFY2(rgbaNearlyEqual(restored3d->coordinates()->axes[ 0 ].labelColor(), expectedAxis0LabelColor),
+             "per-axis label color must override the common color on load");
+    QVERIFY2(rgbaNearlyEqual(restored3d->coordinates()->axes[ 0 ].numberColor(), expectedAxis0NumberColor),
+             "per-axis number color must override the common color on load");
+    QVERIFY2(rgbaNearlyEqual(restored3d->coordinates()->axes[ 1 ].labelColor(), expectedCommonLabelColor),
+             "other axes must keep the common label color");
+    QVERIFY2(rgbaNearlyEqual(restored3d->coordinates()->axes[ 1 ].numberColor(), expectedCommonNumberColor),
+             "other axes must keep the common number color");
+
+    // 坐标轴标签：XML 直接恢复 coordinates 的轴属性
+    QCOMPARE(restored3d->coordinates()->axes[ 0 ].labelString(), QStringLiteral("time"));
+    // 公开 getter 读的是 DAChart3DWidget 的标签缓存，XML 加载后必须同步
+    // （回归保护：load3DAxesElement 曾直接改底层 Qwt3DAxis，导致 get3DAxisLabel 返回空）
+    QCOMPARE(restored3d->get3DAxisLabel(X1), QStringLiteral("time"));
+
+    QVERIFY(fig2->grid());
+    int row = -1;
+    int col = -1;
+    int rowSpan = -1;
+    int colSpan = -1;
+    QVERIFY(fig2->grid()->gridPosition(restored3d, &row, &col, &rowSpan, &colSpan));
+    QCOMPARE(row, 1);
+    QCOMPARE(col, 1);
+    QCOMPARE(rowSpan, 1);
+    QCOMPARE(colSpan, 1);
+
+    // 2D 子图仍按网格坐标恢复，且数量不因 3D 节点变化
+    DA::DAChartWidget* restored2d = qobject_cast< DA::DAChartWidget* >(fig2->findPlotById(QStringLiteral("xml-2d")));
+    QVERIFY(restored2d);
+    QVERIFY(fig2->grid()->gridPosition(restored2d, &row, &col, &rowSpan, &colSpan));
+    QCOMPARE(row, 0);
+    QCOMPARE(col, 0);
+}
+
+/**
+ * @brief 测试11：3D-only figure 的 XML 不包含 chart item 数据
+ *
+ * 一期 3D 子图只存存在性/布局/视图/主题/坐标轴；3D 图元数据不进入 chart-data。
+ */
+void Chart3DIntegrationTest::test3DOnlyFigureNoChartItemData()
+{
+    std::unique_ptr< DA::DAFigureWidget > fig(new DA::DAFigureWidget());
+    fig->resize(640, 480);
+    fig->show();
+    QTest::qWaitForWindowExposed(fig.get());
+
+    DA::DAChart3DWidget* chart3d = new DA::DAChart3DWidget();
+    chart3d->setTitle(QStringLiteral("only-3d"));
+    fig->add3DChart(chart3d, 0.1, 0.1, 0.8, 0.8);
+    // 挂一个真实 3D 数据图元，确保“不写 chart-data”不是因为没有图元
+    Qwt3DSurface* surface = new Qwt3DSurface();
+    QVERIFY(surface);
+    surface->attach(chart3d);
+    QCOMPARE(chart3d->itemList().size(), 1);
+    QCOMPARE(fig->get3DCharts().size(), 1);
+    QCOMPARE(fig->getChartCount(), 0);
+
+    DA::DAChartItemsManager mgr;
+    QDomDocument doc;
+    const QDomElement figEle = DA::DAXmlHelper::makeElement(fig.get(), QStringLiteral("figure"), &doc, &mgr);
+    QVERIFY(!figEle.isNull());
+    const QDomElement c3dEle = figEle.firstChildElement(QStringLiteral("chart3d"));
+    QVERIFY(!c3dEle.isNull());
+    // 3D 节点中不应出现 <items>，itemsMgr 也不应有任何 key
+    QVERIFY(c3dEle.firstChildElement(QStringLiteral("items")).isNull());
+    QVERIFY2(mgr.items().isEmpty(), "3D-only figure must not record chart items for chart-data");
+}
+
+/**
+ * @brief 测试12：旧工程 figure XML 无 <chart3d> 时 3D 数量为 0、2D 正常恢复
+ */
+void Chart3DIntegrationTest::testLegacyFigureWithout3DXml()
+{
+    QDomDocument doc;
+    QDomElement figEle = doc.createElement(QStringLiteral("figure"));
+    figEle.setAttribute(QStringLiteral("id"), QStringLiteral("legacy-figure"));
+    doc.appendChild(figEle);
+    QDomElement chartsEle = doc.createElement(QStringLiteral("charts"));
+    figEle.appendChild(chartsEle);
+    QDomElement chartEle = doc.createElement(QStringLiteral("chart"));
+    chartEle.setAttribute(QStringLiteral("id"), QStringLiteral("legacy-2d"));
+    chartEle.setAttribute(QStringLiteral("x"), 0.1);
+    chartEle.setAttribute(QStringLiteral("y"), 0.2);
+    chartEle.setAttribute(QStringLiteral("w"), 0.5);
+    chartEle.setAttribute(QStringLiteral("h"), 0.6);
+    chartEle.appendChild(doc.createElement(QStringLiteral("items")));
+    chartsEle.appendChild(chartEle);
+
+    std::unique_ptr< DA::DAFigureWidget > fig(new DA::DAFigureWidget());
+    fig->resize(640, 480);
+    fig->show();
+    QTest::qWaitForWindowExposed(fig.get());
+    DA::DAChartItemsManager mgr;
+    QVERIFY(DA::DAXmlHelper::loadElement(fig.get(), &figEle, &mgr));
+
+    QCOMPARE(fig->get3DCharts().size(), 0);
+    QCOMPARE(fig->getChartCount(), 1);
+    QVERIFY(!fig->isGridLayoutEnabled());
+    DA::DAChartWidget* restored2d = qobject_cast< DA::DAChartWidget* >(fig->findPlotById(QStringLiteral("legacy-2d")));
+    QVERIFY(restored2d);
+    const QRectF rect = fig->axesNormRect(restored2d);
+    QVERIFY(nearlyEqual(rect.x(), 0.1));
+    QVERIFY(nearlyEqual(rect.y(), 0.2));
+    QVERIFY(nearlyEqual(rect.width(), 0.5));
+    QVERIFY(nearlyEqual(rect.height(), 0.6));
 }
 
 QTEST_MAIN(Chart3DIntegrationTest)

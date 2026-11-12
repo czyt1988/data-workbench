@@ -153,6 +153,11 @@ public:
     // 删除所有数据相关的项目（保留网格、图例等显示元素）
     void clearAllData() override;
 
+    // transient 图元：派生数据（分析结果等），序列化时跳过，加载后由占用方重建
+    void setItemTransient(QwtPlotItem* item, bool on = true);
+    bool isItemTransient(const QwtPlotItem* item) const;
+    QList< QwtPlotItem* > transientItems() const;
+
     // 数据工具函数
     QRectF getDataBounds() const override;
     bool hasData() const override;
@@ -280,6 +285,8 @@ public:
 
 public Q_SLOTS:
     void onLegendItemToggled(const QVariant& itemInfo, bool checked);
+    // 图元 attach/detach 联动：detach 时清掉 transient 登记，避免登记残留悬空指针
+    void onPlotItemAttached(QwtPlotItem* item, bool on);
 
 Q_SIGNALS:
     // 通用信号
